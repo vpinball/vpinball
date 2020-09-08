@@ -331,6 +331,10 @@ void Trigger::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(pht);
 }
 
+// Authors: toxieainc, fuzzelhjb, maddes
+// Ported at: VisualPinball.Engine/VPT/Trigger/TriggerHitGenerator.cs
+#ifdef LICENSE_NEW_TBD
+
 void Trigger::GetHitShapes(vector<HitObject*> &pvho)
 {
    m_hitEnabled = m_d.m_enabled;
@@ -352,6 +356,8 @@ void Trigger::GetHitShapes(vector<HitObject*> &pvho)
    else
       CurvesToShapes(pvho);
 }
+
+#endif
 
 void Trigger::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
@@ -400,6 +406,10 @@ void Trigger::GetHitShapesDebug(vector<HitObject*> &pvho)
    }
    }
 }
+
+// Authors: toxieainc, maddes, mukuste
+// Ported at: VisualPinball.Engine/VPT/Trigger/TriggerHitGenerator.cs
+#ifdef LICENSE_NEW_TBD
 
 void Trigger::CurvesToShapes(vector<HitObject*> &pvho)
 {
@@ -462,6 +472,8 @@ void Trigger::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
    plineseg->CalcNormal();
 }
 
+#endif
+
 void Trigger::EndPlay()
 {
    IEditable::EndPlay();
@@ -493,6 +505,10 @@ void Trigger::TriggerAnimationUnhit()
 {
    m_unhitEvent = true;
 }
+
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Trigger/TriggerAnimationSystem.cs
+#ifdef LICENSE_NEW
 
 void Trigger::UpdateAnimation()
 {
@@ -576,6 +592,9 @@ void Trigger::UpdateAnimation()
       }
    }
 }
+
+#endif
+
 void Trigger::RenderDynamic()
 {
    if (!m_d.m_visible || m_d.m_shape == TriggerNone)
@@ -650,6 +669,10 @@ void Trigger::ExportMesh(FILE *f)
    WaveFrontObj_WriteFaceInfoList(f, indices, m_numIndices);
    WaveFrontObj_UpdateFaceOffset(m_numVertices);
 }
+
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Engine/VPT/Trigger/TriggerMeshGenerator.cs
+#ifdef LICENSE_NEW
 
 void Trigger::GenerateMesh()
 {
@@ -760,6 +783,8 @@ void Trigger::GenerateMesh()
       }
    }
 }
+
+#endif
 
 void Trigger::RenderSetup()
 {

@@ -39,6 +39,10 @@ void LineSeg::CalcHitBBox()
    // zlow and zhigh were already set in ctor
 }
 
+// Authors: toxieainc, fuzzelhjb, maddes, mukuste
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/LineCollider.cs
+#ifdef LICENSE_NEW_TBD
+
 float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid) const
 {
    if (!m_enabled || ball.m_frozen) return -1.0f;
@@ -173,7 +177,12 @@ void LineSeg::CalcNormal()
    normal.y = -vT.x * inv_length;
 }
 
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
+// Authors: toxieainc, fuzzelhjb, maddes
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/CircleCollider.cs
+#ifdef LICENSE_NEW_TBD
 
 float HitCircle::HitTestBasicRadius(const BallS& ball, const float dtime, CollisionEvent& coll,
                                     const bool direction, const bool lateral, const bool rigid) const // all of these true = bumper/flipperbase/gate/spinner, all false = kicker/trigger
@@ -333,9 +342,13 @@ void HitCircle::Collide(const CollisionEvent& coll)
    coll.m_ball->Collide3DWall(coll.m_hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 }
 
+#endif
+
 
 ///////////////////////////////////////////////////////////////////////////////
-
+// Authors: toxieainc, maddes
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/LineZCollider.cs
+#ifdef LICENSE_NEW_TBD
 
 float HitLineZ::HitTest(const BallS &ball, const float dtime, CollisionEvent& coll) const
 {
@@ -430,9 +443,13 @@ void HitLineZ::Collide(const CollisionEvent& coll)
       FireHitEvent(coll.m_ball);
 }
 
+#endif
+
 
 ///////////////////////////////////////////////////////////////////////////////
-
+// Authors: toxieainc
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/PointCollider.cs
+#ifdef LICENSE_NEW
 
 float HitPoint::HitTest(const BallS &ball, const float dtime, CollisionEvent& coll) const
 {
@@ -515,6 +532,8 @@ void HitPoint::Collide(const CollisionEvent& coll)
    if (dot <= -m_threshold)
       FireHitEvent(coll.m_ball);
 }
+
+#endif
 
 void DoHitTest(const Ball *const pball, const HitObject *const pho, CollisionEvent& coll)
 {

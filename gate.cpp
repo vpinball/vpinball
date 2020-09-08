@@ -310,6 +310,10 @@ void Gate::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(pht);
 }
 
+// Authors: toxieainc, maddes, mukuste, fuzzelhjb
+// Ported at: VisualPinball.Engine/VPT/Gate/GateHitGenerator.cs
+#ifdef LICENSE_NEW_TBD
+
 void Gate::GetHitShapes(vector<HitObject*> &pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
@@ -360,6 +364,8 @@ void Gate::GetHitShapes(vector<HitObject*> &pvho)
       pvho.push_back(phitcircle);
    }
 }
+
+#endif
 
 void Gate::GetHitShapesDebug(vector<HitObject*> &pvho)
 {

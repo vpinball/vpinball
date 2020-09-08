@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/BulbMesh.cs
+#ifdef LICENSE_NEW
+
 const unsigned int bulbLightNumVertices=67;
 const unsigned int bulbLightNumFaces=360;
 const Vertex3D_NoTex2 bulbLight[67]=
@@ -194,3 +198,5 @@ const WORD bulbLightIndices[360]=
 21, 20, 18,
 18, 53, 21
 };
+
+#endif

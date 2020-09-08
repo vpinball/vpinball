@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/BumperCap.cs
+#ifdef LICENSE_NEW
+
 const unsigned int bumperCapNumVertices=839;
 const unsigned int bumperCapNumIndices=1194;
 const Vertex3D_NoTex2 bumperCap[839]=
@@ -1244,3 +1248,5 @@ const WORD bumperCapIndices[1194]=
 831, 832, 833,
 835, 836, 837
 };
+
+#endif

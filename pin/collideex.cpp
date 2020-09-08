@@ -1,5 +1,9 @@
 #include "stdafx.h"
 
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Bumper/BumperCollider.cs
+#ifdef LICENSE_NEW
+
 void BumperHitCircle::Collide(const CollisionEvent& coll)
 {
    if (!m_enabled) return;
@@ -18,7 +22,12 @@ void BumperHitCircle::Collide(const CollisionEvent& coll)
    }
 }
 
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
+// Authors: toxieainc, fuzzelhjb, mukuste, maddes
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/LineCollider.cs
+#ifdef LICENSE_NEW_TBD
 
 float LineSegSlingshot::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
@@ -69,6 +78,8 @@ void LineSegSlingshot::Collide(const CollisionEvent& coll)
    }
 }
 
+#endif
+
 void SlingshotAnimObject::Animate()
 {
    if (!m_iframe && (m_TimeReset != 0) && m_animations)
@@ -81,6 +92,16 @@ void SlingshotAnimObject::Animate()
       m_TimeReset = 0;
    }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Authors: toxieainc, fuzzelhjb, maddes
+// Ported at: VisualPinball.Engine/VPT/Gate/GateHit.cs
+//            VisualPinball.Engine/VPT/Gate/GateHitGenerator.cs
+//            VisualPinball.Engine/VPT/Spinner/SpinnerHit.cs
+//            VisualPinball.Unity/VisualPinball.Unity/VPT/Gate/GateCollider.cs
+//            VisualPinball.Unity/VisualPinball.Unity/VPT/Gate/GateDisplacementSystem.cs
+
+#ifdef LICENSE_NEW_TBD
 
 HitGate::HitGate(Gate * const pgate, const float height)
 {
@@ -263,6 +284,17 @@ void GateMoverObject::UpdateVelocities()
    }
 }
 
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+// Authors: toxieainc, fuzzelhjb, maddes, mukuste
+// Ported at: VisualPinball.Engine/Physics/Hit3DPoly.cs
+//            VisualPinball.Engine/VPT/Spinner/SpinnerHit.cs
+//            VisualPinball.Engine/VPT/Spinner/SpinnerHitGenerator.cs
+//            VisualPinball.Unity/VisualPinball.Unity/VPT/Spinner/SpinnerCollider.cs
+//            VisualPinball.Unity/VisualPinball.Unity/VPT/Spinner/SpinnerDisplacementSystem.cs
+#ifdef LICENSE_NEW_TBD
+
 HitSpinner::HitSpinner(Spinner * const pspinner, const float height)
 {
    m_spinnerMover.m_pspinner = pspinner;
@@ -444,6 +476,8 @@ void Hit3DPoly::Init(Vertex3Ds * const rgv, const int count)
    SetFriction(0.3f);
    m_scatter = 0.f;
 }
+
+#endif
 
 Hit3DPoly::Hit3DPoly(Vertex3Ds * const rgv, const int count)
 {
@@ -684,6 +718,12 @@ void Hit3DPoly::CalcHitBBox()
    }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Engine/Physics/HitTriangle.cs
+//            VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/TriangleCollider.cs
+#ifdef LICENSE_NEW
+
 HitTriangle::HitTriangle(const Vertex3Ds rgv[3])
 {
    m_rgv[0] = rgv[0];
@@ -818,9 +858,13 @@ void HitTriangle::CalcHitBBox()
    m_hitBBox.zhigh  = max(m_rgv[0].z, max(m_rgv[1].z, m_rgv[2].z));
 }
 
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
-
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Engine/Physics/HitPlane.cs
+//            VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/PlaneCollider.cs
+#ifdef LICENSE_NEW
 
 float HitPlane::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
@@ -910,8 +954,13 @@ void HitPlane::Collide(const CollisionEvent& coll)
 #endif
 }
 
-////////////////////////////////////////////////////////////////////////////////
+#endif
 
+////////////////////////////////////////////////////////////////////////////////
+// Authors: toxieainc, fuzzelhjb, maddes
+// Ported at: VisualPinball.Engine/Physics/HitLine3D.cs
+//            VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/Line3DCollider.cs
+#ifdef LICENSE_NEW_TBD
 
 HitLine3D::HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2)
 {
@@ -998,6 +1047,13 @@ void HitLine3D::Collide(const CollisionEvent& coll)
    }
 }
 
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+// Authors: toxieainc, maddes
+// Ported at: VisualPinball.Engine/VPT/Trigger/TriggerHitLineSeg.cs
+//            VisualPinball.Unity/VisualPinball.Unity/VPT/Trigger/TriggerCollider.cs
+#ifdef LICENSE_NEW_TBD
 
 float TriggerLineSeg::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
@@ -1068,3 +1124,5 @@ void TriggerHitCircle::Collide(const CollisionEvent& coll)
       }
    }
 }
+
+#endif

@@ -316,6 +316,10 @@ void Rubber::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
    }
 }
 
+// Authors: fuzzelhjb, toxieainc, mukuste, djrobx
+// Ported at: VisualPinball.Engine/Math/DragPoint.cs
+#ifdef LICENSE_NEW_TBD
+
 /*
  * Compute the vertices and additional information for the ramp shape.
  *
@@ -508,6 +512,8 @@ float Rubber::GetSurfaceHeight(float x, float y) const
     return zheight*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 }
 
+#endif
+
 void Rubber::GetTimers(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
@@ -522,6 +528,10 @@ void Rubber::GetTimers(vector<HitTimer*> &pvht)
    if (m_d.m_tdr.m_TimerEnabled)
       pvht.push_back(pht);
 }
+
+// Authors: fuzzelhjb, toxieainc
+// Ported at: VisualPinball.Engine/VPT/Rubber/RubberHitGenerator.cs
+#ifdef LICENSE_NEW
 
 void Rubber::GetHitShapes(vector<HitObject*> &pvho)
 {
@@ -555,6 +565,8 @@ void Rubber::GetHitShapes(vector<HitObject*> &pvho)
       SetupHitObject(pvho, new HitPoint(v));
    }
 }
+
+#endif
 
 void Rubber::AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j)
 {
@@ -604,6 +616,10 @@ void Rubber::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 
+// Authors: fuzzelhjb, toxieainc
+// Ported at: VisualPinball.Engine/VPT/Mesh.cs
+#ifdef LICENSE_NEW
+
 void Rubber::AddPoint(int x, int y, const bool smooth)
 {
     std::vector<RenderVertex> vvertex;
@@ -640,6 +656,8 @@ void Rubber::AddPoint(int x, int y, const bool smooth)
 
     STOPUNDO
 }
+
+#endif
 
 void Rubber::EndPlay()
 {
@@ -1281,6 +1299,10 @@ void Rubber::ExportMesh(FILE *f)
    }
 }
 
+// Authors: toxieainc, fuzzelhjb, mukuste
+// Ported at: VisualPinball.Engine/VPT/Rubber/RubberMeshGenerator.cs
+#ifdef LICENSE_NEW_TBD
+
 void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape) //!! hack, createHitShape==true needs adaption below if changing detail level for hitshape
 {
    int accuracy;
@@ -1497,6 +1519,8 @@ void Rubber::UpdateRubber(const bool updateVB, const float height)
       m_dynamicVertexBufferRegenerate = false;
    }
 }
+
+#endif
 
 
 void Rubber::SetDefaultPhysics(bool fromMouseClick)

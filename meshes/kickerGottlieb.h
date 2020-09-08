@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/KickerGottlieb.cs
+#ifdef LICENSE_NEW
+
 const unsigned int kickerGottliebNumVertices=2333;
 const unsigned int kickerGottliebNumIndices=6300;
 const Vertex3D_NoTex2 kickerGottliebMesh[2333]=
@@ -4440,3 +4444,5 @@ const WORD kickerGottliebIndices[6300]=
 2253, 2251, 2252,
 2253, 2254, 2251
 };
+
+#endif

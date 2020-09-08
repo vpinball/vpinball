@@ -1,6 +1,10 @@
 #include "stdafx.h"
 #include "kdtree.h"
 
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Engine/Physics/HitKd.cs
+#ifdef LICENSE_NEW
+
 HitKD::HitKD()
 {
    m_num_items = 0;
@@ -175,6 +179,11 @@ void HitKD::Update()
    FillFromVector(*m_org_vho);
 }
 
+#endif
+
+// Authors: toxieainc, fuzzelhjb, mukuste
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collision/KdNode.cs
+#ifdef LICENSE_NEW_TBD
 
 void HitKDNode::CreateNextLevel(const unsigned int level, unsigned int level_empty)
 {
@@ -447,6 +456,8 @@ void HitKDNode::HitTestBall(const Ball * const pball, CollisionEvent& coll) cons
    }
 #endif
 }
+
+#endif
 
 #ifdef KDTREE_SSE_LEAFTEST
 void HitKDNode::HitTestBallSse(const Ball * const pball, CollisionEvent& coll) const

@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/SpinnerPlate.cs
+#ifdef LICENSE_NEW
+
 const unsigned int spinnerPlateNumVertices=228;
 const unsigned int spinnerPlateNumFaces=912;
 const Vertex3D_NoTex2 spinnerPlate[228]=
@@ -539,3 +543,5 @@ const WORD spinnerPlateIndices[912]=
 219, 224, 223,
 219, 225, 224
 };
+
+#endif

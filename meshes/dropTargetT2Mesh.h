@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/DropTargetT2.cs
+#ifdef LICENSE_NEW
+
 const unsigned int hitTargetT2Vertices=88;
 const unsigned int hitTargetT2NumIndices=192;
 const Vertex3D_NoTex2 hitTargetT2Mesh[88]=
@@ -159,3 +163,5 @@ const WORD hitTargetT2Indices[192]=
 	85, 86, 84,
 	87, 86, 85
 };
+
+#endif

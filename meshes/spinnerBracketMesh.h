@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/SpinnerBracket.cs
+#ifdef LICENSE_NEW
+
 const unsigned int spinnerBracketNumVertices=152;
 const unsigned int spinnerBracketNumFaces=420;
 const Vertex3D_NoTex2 spinnerBracket[152]=
@@ -299,3 +303,5 @@ const WORD spinnerBracketIndices[420]=
 134, 144, 123,
 144, 151, 123
 };
+
+#endif

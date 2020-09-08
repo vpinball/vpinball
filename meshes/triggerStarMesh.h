@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/TriggerStar.cs
+#ifdef LICENSE_NEW
+
 const unsigned int triggerStarNumVertices=231;
 const unsigned int triggerStarNumIndices=510;
 const Vertex3D_NoTex2 triggerStar[231]=
@@ -408,3 +412,5 @@ const WORD triggerStarIndices[510]=
 225, 226, 227,
 228, 227, 226
 };
+
+#endif

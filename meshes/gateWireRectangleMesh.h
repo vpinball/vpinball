@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/GateWireRectangle.cs
+#ifdef LICENSE_NEW
+
 const unsigned int gateWireRectangleNumVertices=144;
 const unsigned int gateWireRectangleNumIndices=672;
 const Vertex3D_NoTex2 gateWireRectangleMesh[144]=
@@ -375,3 +379,5 @@ const WORD gateWireRectangleIndices[672]=
 	135, 140, 139,
 	135, 141, 140
 };
+
+#endif

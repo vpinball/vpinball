@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/FlipperBase.cs
+#ifdef LICENSE_NEW
+
 const unsigned int flipperBaseVertices=104;
 const unsigned int flipperBaseNumIndices=300;
 const Vertex3D_NoTex2 flipperBaseMesh[104]=
@@ -210,3 +214,5 @@ const WORD flipperBaseIndices[300]=
 	38, 61, 62,
 	38, 62, 63
 };
+
+#endif

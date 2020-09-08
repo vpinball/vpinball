@@ -69,6 +69,10 @@ void HitPlunger::CalcHitBBox()
    // zlow & zhigh gets set in constructor
 }
 
+// Authors: toxieainc, maddes
+// Ported at: VisualPinball.Engine/VPT/Plunger/PlungerHit.cs
+#ifdef LICENSE_NEW_TBD
+
 void PlungerMoverObject::SetObjects(const float len)
 {
    m_linesegBase.v1.x = m_x;
@@ -107,6 +111,12 @@ void PlungerMoverObject::SetObjects(const float len)
    m_linesegSide[0].CalcNormal();
    m_linesegSide[1].CalcNormal();
 }
+
+#endif
+
+// Authors: toxieainc, fuzzelhjb, maddes, djrobx
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Plunger/PlungerDisplacementSystem.cs
+#ifdef LICENSE_NEW_TBD
 
 void PlungerMoverObject::UpdateDisplacements(const float dtime)
 {
@@ -833,3 +843,5 @@ void HitPlunger::Collide(const CollisionEvent& coll)
    pball->m_dynamic = C_DYNAMIC;
 #endif
 }
+
+#endif

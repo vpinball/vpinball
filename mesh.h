@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb, mukuste
+// Ported at: VisualPinball.Engine/Math/CatmullCurve.cs
+#ifdef LICENSE_NEW_TBD
+
 #pragma once
 
 #include "Material.h"
@@ -131,6 +135,13 @@ private:
    float cz0, cz1, cz2, cz3;
 };
 
+#endif
+
+// Authors: toxieainc, fuzzelhjb, mukuste
+// Ported at: VisualPinball.Engine/Math/RenderVertex.cs
+//            VisualPinball.Engine/VPT/Mesh.cs
+//            VisualPinball.Engine/Math/DragPoint.cs
+#ifdef LICENSE_NEW_TBD
 
 class RenderVertex3D : public Vertex3Ds
 {
@@ -188,6 +199,12 @@ inline float GetDot(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoin
 {
    return (pvJoint->x - pvEnd1->x)*(pvJoint->y - pvEnd2->y) - (pvJoint->y - pvEnd1->y)*(pvJoint->x - pvEnd2->x);
 }
+
+#endif
+
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Engine/VPT/Mesh.cs
+#ifdef LICENSE_NEW
 
 inline bool FLinesIntersect(const Vertex2D * const Start1, const Vertex2D * const Start2, const Vertex2D * const End1, const Vertex2D * const End2)
 {
@@ -282,6 +299,8 @@ inline float GetCos(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoin
    return dot / sqrtf((vt1.x * vt1.x + vt1.y * vt1.y)*(vt2.x * vt2.x + vt2.y * vt2.y));
 }
 
+#endif
+
 /*
 inline float GetAngle(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
 {
@@ -331,6 +350,11 @@ void SetNormal(VtxType * const rgv, const IdxType * const rgi, const int count, 
       rgvApply[l].nz = vnormal.z;
    }
 }
+
+// Authors: toxieainc, mukuste
+// Ported at: VisualPinball.Engine/Math/DragPoint.cs
+//            VisualPinball.Engine/VPT/Mesh.cs
+#ifdef LICENSE_NEW_TBD
 
 // Calculate if two vectors are flat to each other
 // accuracy is a float greater 4 and smaller 4000000 (tested this out)
@@ -410,6 +434,7 @@ inline void ClosestPointOnPolygon(const VtxContType &rgv, const Vertex2D &pvin, 
    }
 }
 
+#endif
 
 enum WindingOrder
 {
@@ -479,6 +504,10 @@ inline WindingOrder DetermineWindingOrder(const RenderVertexCont& vertices)
     // Can that happen?  Do we need to check other vertices / eliminate duplicate vertices?
     return detOrient > 0.f ? Clockwise : CounterClockwise;
 }
+
+// Authors: toxieainc
+// Ported at: VisualPinball.Engine/VPT/Mesh.cs
+#ifdef LICENSE_NEW
 
 template <class RenderVertexCont, class Idx>
 void PolygonToTriangles(const RenderVertexCont& rgv, std::vector<unsigned int>& pvpoly, std::vector<Idx>& pvtri, const bool support_both_winding_orders)
@@ -566,3 +595,5 @@ void ComputeNormals(std::vector<Vertex3D_NoTex2>& vertices, const std::vector<T>
 {
    ComputeNormals(vertices.data(), (unsigned int)vertices.size(), indices.data(), (unsigned int)indices.size());
 }
+
+#endif

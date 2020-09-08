@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/KickerWilliams.cs
+#ifdef LICENSE_NEW
+
 const unsigned int kickerWilliamsNumVertices=1243;
 const unsigned int kickerWilliamsNumIndices=3582;
 const Vertex3D_NoTex2 kickerWilliamsMesh[1243]=
@@ -2444,3 +2448,5 @@ const WORD kickerWilliamsIndices[3582]=
 1239, 1238, 1237,
 1240, 1238, 1239
 };
+
+#endif

@@ -334,6 +334,11 @@ void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, const float heigh
          m_vdpoint[i]->m_calcHeight = height;
    }
 }
+
+// Authors: toxieainc, fuzzelhjb, maddes, mukuste
+// Ported at: VisualPinball.Engine/VPT/Ramp/RampMeshGenerator.cs
+#ifdef LICENSE_NEW_TBD
+
 /*
  * Compute the vertices and additional information for the ramp shape.
  *
@@ -506,6 +511,12 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
    return rgvLocal;
 }
 
+#endif
+
+// Authors: toxieainc, fuzzelhjb, mukuste
+// Ported at: VisualPinball.Engine/VPT/Ramp/Ramp.cs
+#ifdef LICENSE_NEW_TBD
+
 float Ramp::GetSurfaceHeight(float x, float y) const
 {
    std::vector<RenderVertex3D> vvertex;
@@ -545,6 +556,8 @@ float Ramp::GetSurfaceHeight(float x, float y) const
    return vvertex[iSeg].z + (startlength / totallength) * (topHeight - bottomHeight) + bottomHeight;
 }
 
+#endif
+
 void Ramp::GetTimers(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
@@ -559,6 +572,10 @@ void Ramp::GetTimers(vector<HitTimer*> &pvht)
    if (m_d.m_tdr.m_TimerEnabled)
       pvht.push_back(pht);
 }
+
+// Authors: toxieainc, fuzzelhjb, maddes, destruk, mukuste
+// Ported at: VisualPinball.Engine/VPT/Ramp/RampHitGenerator.cs
+#ifdef LICENSE_NEW_TBD
 
 void Ramp::GetHitShapes(vector<HitObject*> &pvho)
 {
@@ -854,6 +871,8 @@ void Ramp::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
    m_vhoCollidable.push_back(obj); //remember hit components of primitive
 }
 
+#endif
+
 void Ramp::EndPlay()
 {
    IEditable::EndPlay();
@@ -883,6 +902,10 @@ float Ramp::GetDepth(const Vertex3Ds& viewDir) const
    return m_d.m_depthBias + viewDir.x * center2D.x + viewDir.y * center2D.y + viewDir.z * centerZ;
 }
 
+// Authors: toxieainc
+// Ported at: VisualPinball.Engine/VPT/Ramp/RampHitGenerator.cs
+#ifdef LICENSE_NEW
+
 bool Ramp::isHabitrail() const
 {
    return m_d.m_type == RampType4Wire
@@ -891,6 +914,8 @@ bool Ramp::isHabitrail() const
        || m_d.m_type == RampType3WireLeft
        || m_d.m_type == RampType3WireRight;
 }
+
+#endif
 
 void Ramp::RenderStaticHabitrail(const Material * const mat)
 {
@@ -989,6 +1014,10 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
 
    //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 }
+
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Engine/VPT/Ramp/RampMeshGenerator.cs
+#ifdef LICENSE_NEW
 
 void Ramp::CreateWire(const int numRings, const int numSegments, const Vertex2D * const midPoints, Vertex3D_NoTex2 * const rgvbuf)
 {
@@ -1165,6 +1194,8 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
       delete[] middlePoints;
    delete[] tmpPoints;
 }
+
+#endif
 
 void Ramp::PrepareHabitrail()
 {
@@ -2231,6 +2262,10 @@ void Ramp::RenderDynamic()
    RenderRamp(mat);
 }
 
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Engine/VPT/Ramp/RampMeshGenerator.cs
+#ifdef LICENSE_NEW
+
 void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
 {
    const Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
@@ -2416,6 +2451,8 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
    if (rgratio)
       delete[] rgratio;
 }
+
+#endif
 
 void Ramp::GenerateVertexBuffer()
 {

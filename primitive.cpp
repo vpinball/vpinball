@@ -466,6 +466,10 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
 
    const unsigned int reduced_vertices = max((unsigned int)pow((double)m_vertices.size(), clamp(1.f - m_d.m_collision_reductionFactor, 0.f, 1.f)*0.25f + 0.75f), 420u); //!! 420 = magic
 
+// Authors: toxieainc
+// Ported at: VisualPinball.Engine/VPT/Primitive/PrimitiveHitGenerator.cs
+#ifdef LICENSE_NEW
+
    if (reduced_vertices < m_vertices.size())
    {
       std::vector<ProgMesh::float3> prog_vertices(m_vertices.size());
@@ -530,6 +534,9 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
       for (size_t i = 0; i < prog_vertices.size(); ++i)
          SetupHitObject(pvho, new HitPoint(prog_vertices[i].x, prog_vertices[i].y, prog_vertices[i].z));
    }
+
+#endif
+
    else
    {
       std::set< std::pair<unsigned, unsigned> > addedEdges;
@@ -563,6 +570,10 @@ void Primitive::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 
+// Authors: toxieainc, mukuste
+// Ported at: VisualPinball.Engine/Math/EdgeSet.cs
+#ifdef LICENSE_NEW_TBD
+
 void Primitive::AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj)
 {
    // create pair uniquely identifying the edge (i,j)
@@ -574,6 +585,8 @@ void Primitive::AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigne
       SetupHitObject(pvho, new HitLine3D(vi, vj));
    }
 }
+
+#endif
 
 void Primitive::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
 {
@@ -640,6 +653,10 @@ void Primitive::EndPlay()
 // Calculation
 //////////////////////////////
 
+// Authors: toxieainc, fuzzelhjb, mukuste, cupidsf
+// Ported at: VisualPinball.Engine/VPT/Primitive/PrimitiveMeshGenerator.cs
+#ifdef LICENSE_NEW_TBD
+
 void Primitive::RecalculateMatrices()
 {
    // scale matrix
@@ -675,6 +692,8 @@ void Primitive::RecalculateMatrices()
    Smatrix.SetScaling(1.0f, 1.0f, m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
    Smatrix.Multiply(m_fullMatrix, m_fullMatrix);
 }
+
+#endif
 
 // recalculate vertices for editor display
 void Primitive::TransformVertices()
@@ -907,6 +926,10 @@ void Primitive::RenderBlueprint(Sur *psur, const bool solid)
    }
 }
 
+// Authors: toxieainc, fuzzelhjb, mukuste, cupidsf, destruk
+// Ported at: VisualPinball.Engine/VPT/Primitive/PrimitiveMeshGenerator.cs
+#ifdef LICENSE_NEW_TBD
+
 void Primitive::CalculateBuiltinOriginal()
 {
     if (m_d.m_use3DMesh)
@@ -1097,6 +1120,8 @@ void Primitive::CalculateBuiltinOriginal()
    //SetNormal(&m_mesh.m_vertices[0], &m_mesh.m_indices[0], m_mesh.NumIndices()); // SetNormal only works for plane polygons
    //ComputeNormals(m_mesh.m_vertices, m_mesh.m_indices);
 }
+
+#endif
 
 void Primitive::UpdateStatusBarInfo()
 {

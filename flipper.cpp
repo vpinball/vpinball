@@ -743,6 +743,10 @@ void Flipper::ExportMesh(FILE *f)
    delete [] flipper;
 }
 
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Engine/VPT/Bumper/BumperMeshGenerator.cs
+#ifdef LICENSE_NEW
+
 static void ApplyFix(Vertex3D_NoTex2& vert, const Vertex2D& center, const float midAngle, const float radius, const Vertex2D& newCenter, const float fixAngleScale)
 {
    float vAngle = atan2f(vert.y - center.y, vert.x - center.x);
@@ -859,6 +863,8 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 
    delete [] temp;
 }
+
+#endif
 
 void Flipper::RenderSetup()
 {

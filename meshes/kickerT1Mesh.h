@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/KickerT1.cs
+#ifdef LICENSE_NEW
+
 const unsigned int kickerT1NumVertices=657;
 const unsigned int kickerT1NumIndices=2094;
 const Vertex3D_NoTex2 kickerT1Mesh[657]=
@@ -1362,3 +1366,5 @@ const WORD kickerT1Indices[2094]=
 647, 646, 645,
 648, 646, 647
 };
+
+#endif

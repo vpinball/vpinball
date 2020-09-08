@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/TriggerButton.cs
+#ifdef LICENSE_NEW
+
 const unsigned int triggerButtonNumVertices=528;
 const unsigned int triggerButtonNumIndices=948;
 const Vertex3D_NoTex2 triggerButtonMesh[528]=
@@ -599,3 +603,5 @@ const WORD triggerButtonIndices[948]=
    524,418,523,418,524,525,524,526,527,525,524,527,526,409,411,
    527,526,411
 };
+
+#endif

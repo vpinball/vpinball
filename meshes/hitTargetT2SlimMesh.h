@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/HitTargetT2Slim.cs
+#ifdef LICENSE_NEW
+
 const unsigned int hitTargetT2SlimVertices=302;
 const unsigned int hitTargetT2SlimNumIndices=942;
 const Vertex3D_NoTex2 hitTargetT2SlimMesh[302]=
@@ -623,3 +627,5 @@ const WORD hitTargetT2SlimIndices[942]=
 	300, 281, 284,
 	301, 300, 284
 };
+
+#endif

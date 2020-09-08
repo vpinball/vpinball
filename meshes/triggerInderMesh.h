@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/TriggerInder.cs
+#ifdef LICENSE_NEW
+
 const unsigned int triggerInderNumVertices=152;
 const unsigned int triggerInderNumIndices=312;
 const Vertex3D_NoTex2 triggerInderMesh[152]=
@@ -263,3 +267,5 @@ const WORD triggerInderIndices[312]=
 138, 139, 140,
 138, 140, 151
 };
+
+#endif

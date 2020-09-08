@@ -1,3 +1,6 @@
+// Authors: fuzzelhjb, toxieainc
+// Ported at: VisualPinball.Engine/Common/Constants.cs
+#ifdef LICENSE_NEW
 #pragma once
 
 
@@ -107,3 +110,4 @@
 
 //Plumb:
 #define	VELOCITY_EPSILON 0.05f	// The threshold for zero velocity.
+#endif

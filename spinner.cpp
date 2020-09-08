@@ -208,6 +208,10 @@ void Spinner::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(pht);
 }
 
+// Authors: fuzzelhjb, toxieainc, djrobx
+// Ported at: VisualPinball.Engine/VPT/Spinner/SpinnerHitGenerator.cs
+#ifdef LICENSE_NEW_TBD
+
 void Spinner::GetHitShapes(vector<HitObject*> &pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
@@ -240,6 +244,8 @@ void Spinner::GetHitShapes(vector<HitObject*> &pvho)
       pvho.push_back(phitcircle);
    }
 }
+
+#endif
 
 void Spinner::GetHitShapesDebug(vector<HitObject*> &pvho)
 {

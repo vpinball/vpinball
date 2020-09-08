@@ -1,3 +1,8 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/KickerCup.cs
+//            VisualPinball.Resources/Meshes/KickerPlate.cs
+#ifdef LICENSE_NEW
+
 const unsigned int kickerCupNumVertices=373;
 const unsigned int kickerCupNumIndices=774;
 const Vertex3D_NoTex2 kickerCupMesh[373]=
@@ -720,3 +725,5 @@ const WORD kickerPlateIndices[72]=
 45, 43, 46,
 47, 45, 48
 };
+
+#endif

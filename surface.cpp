@@ -367,6 +367,10 @@ void Surface::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 
+// Authors: toxieainc, maddes, mukuste
+// Ported at: VisualPinball.Engine/VPT/Surface/SurfaceHitGenerator.cs
+#ifdef LICENSE_NEW_TBD
+
 void Surface::CurvesToShapes(vector<HitObject*> &pvho)
 {
    std::vector<RenderVertex> vvertex;
@@ -410,6 +414,8 @@ void Surface::CurvesToShapes(vector<HitObject*> &pvho)
    }
 }
 
+#endif
+
 void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj)
 {
    Material * const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
@@ -440,6 +446,10 @@ void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj)
    if (m_d.m_droppable)
       m_vhoDrop.push_back(obj);
 }
+
+// Authors: toxieainc, maddes, mukuste, fuzzelhjb
+// Ported at: VisualPinball.Engine/VPT/Surface/SurfaceHitGenerator.cs
+#ifdef LICENSE_NEW_TBD
 
 void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2)
 {
@@ -486,6 +496,8 @@ void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
       SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1.x, pv1.y, bottom)));
    SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1.x, pv1.y, top)));
 }
+
+#endif
 
 void Surface::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
 {
@@ -550,6 +562,10 @@ void Surface::RenderDynamic()
       }
    }
 }
+
+// Authors: toxieainc, mukuste, fuzzelhjb
+// Ported at: VisualPinball.Engine/VPT/Surface/SurfaceMeshGenerator.cs
+#ifdef LICENSE_NEW_TBD
 
 void Surface::GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Vertex3D_NoTex2> &sideBuf, std::vector<WORD> &topBottomIndices, std::vector<WORD> &sideIndices)
 {
@@ -745,6 +761,8 @@ void Surface::GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Ver
       }
    }
 }
+
+#endif
 
 void Surface::ExportMesh(FILE *f)
 {

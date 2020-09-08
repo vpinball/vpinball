@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/GateBracket.cs
+#ifdef LICENSE_NEW
+
 const unsigned int gateBracketNumVertices=184;
 const unsigned int gateBracketNumIndices=516;
 const Vertex3D_NoTex2 gateBracket[184]=
@@ -363,3 +367,5 @@ const WORD gateBracketIndices[516]=
 	180, 181, 182,
 	180, 182, 183
 };
+
+#endif

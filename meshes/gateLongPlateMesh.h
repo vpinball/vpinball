@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/GateLongPlate.cs
+#ifdef LICENSE_NEW
+
 const unsigned int gateLongPlateVertices=62;
 const unsigned int gateLongPlateNumIndices=132;
 const Vertex3D_NoTex2 gateLongPlateMesh[62]=
@@ -113,3 +117,5 @@ const WORD gateLongPlateIndices[132]=
 	52, 53, 54,
 	54, 53, 55
 };
+
+#endif

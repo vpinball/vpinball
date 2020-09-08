@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/GateWire.cs
+#ifdef LICENSE_NEW
+
 const unsigned int gateWireNumVertices=186;
 const unsigned int gateWireNumIndices=1008;
 const Vertex3D_NoTex2 gateWire[186]=
@@ -529,3 +533,5 @@ const WORD gateWireIndices[1008]=
 	177, 183, 185,
 	177, 185, 184
 };
+
+#endif

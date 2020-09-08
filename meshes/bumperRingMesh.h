@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/BumperRing.cs
+#ifdef LICENSE_NEW
+
 const unsigned int bumperRingNumVertices=481;
 const unsigned int bumperRingNumIndices=2367;
 const Vertex3D_NoTex2 bumperRing[481]=
@@ -1277,3 +1281,5 @@ const WORD bumperRingIndices[2367]=
 	367, 325, 328,
 	322, 328, 325
 };
+
+#endif

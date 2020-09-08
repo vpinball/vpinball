@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/TriggerSimple.cs
+#ifdef LICENSE_NEW
+
 const unsigned int triggerSimpleNumVertices=49;
 const unsigned int triggerSimpleNumIndices=216;
 const Vertex3D_NoTex2 triggerSimple[49]=
@@ -128,3 +132,5 @@ const WORD triggerSimpleIndices[216]=
 1, 0, 13,
 0, 1, 2
 };
+
+#endif

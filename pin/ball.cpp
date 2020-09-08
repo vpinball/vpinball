@@ -124,6 +124,11 @@ void Ball::EnsureOMObject()
    m_pballex->m_pball = this;
 }
 
+
+// Authors: toxieainc, fuzzelhjb, maddes, mukuste
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Ball/BallCollider.cs
+#ifdef LICENSE_NEW_TBD
+
 void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const float elastFalloff, const float friction, float scatter_angle)
 {
    //speed normal to wall
@@ -478,6 +483,8 @@ void Ball::ApplySurfaceImpulse(const Vertex3Ds& rotI, const Vertex3Ds& impulse)
    //   m_angularmomentum *= (Inertia()*135.0f) / aml;
 }
 
+
+
 void Ball::CalcHitBBox()
 {
    /* this would be okay if travelling only in vel direction, but the ball could also be reflected by something
@@ -556,3 +563,5 @@ void Ball::UpdateVelocities()
    m_dynamic = C_DYNAMIC; // always set .. after adding velocity
 #endif
 }
+
+#endif

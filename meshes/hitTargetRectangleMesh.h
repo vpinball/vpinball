@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/HitTargetRectangle.cs
+#ifdef LICENSE_NEW
+
 const unsigned int hitTargetRectangleVertices=161;
 const unsigned int hitTargetRectangleNumIndices=378;
 const Vertex3D_NoTex2 hitTargetRectangleMesh[161]=
@@ -294,3 +298,5 @@ const WORD hitTargetRectangleIndices[378]=
 	157, 158, 159,
 	160, 157, 159
 };
+
+#endif

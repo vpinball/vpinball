@@ -260,6 +260,10 @@ void Plunger::RenderDynamic()
    pd3dDevice->basicShader->End();
 }
 
+// Authors: rascal?
+// Ported at: VisualPinball.Engine/VPT/Plunger/PlungerCoord.cs
+#ifdef LICENSE_NEW_TBD
+
 // Modern Plunger - added by rascal
 const static PlungerCoord modernCoords[] =
 {
@@ -274,6 +278,8 @@ const static PlungerCoord modernCoords[] =
 const static PlungerDesc modernDesc = {
    sizeof(modernCoords) / sizeof(modernCoords[0]), (PlungerCoord*)modernCoords
 };
+
+#endif
 
 // Flat Plunger.  This is a special case with no "lathe" entries;
 // instead we define a simple rectangle covering the stroke length
@@ -307,6 +313,12 @@ static const char *nextTipToken(const char* &p)
 }
 
 #define PLUNGER_FRAME_COUNT 25   //frame per 80 units distance
+
+
+// Authors: fuzzelhjb, toxieainc
+// Ported at: VisualPinball.Engine/VPT/Plunger/PlungerDesc.cs
+//            VisualPinball.Engine/VPT/Plunger/PlungerMeshGenerator.cs
+#ifdef LICENSE_NEW_TBD
 
 void Plunger::RenderSetup()
 {
@@ -848,6 +860,8 @@ void Plunger::RenderSetup()
    }
 }
 
+#endif
+
 void Plunger::RenderStatic()
 {
 }
@@ -1005,6 +1019,10 @@ STDMETHODIMP Plunger::MotionDevice(int *pVal)
    return S_OK;
 }
 
+// Authors: toxieainc, destruk, koadic, maddes
+// Not yet ported, but probably will have to.
+#ifdef LICENSE_NEW_TBD
+
 STDMETHODIMP Plunger::Position(float *pVal) // 0..25
 {
    if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_PBWIZARD ||
@@ -1065,6 +1083,12 @@ STDMETHODIMP Plunger::Position(float *pVal) // 0..25
    return S_OK;
 }
 
+#endif
+
+// Authors: fuzzelhjb, toxieainc, maddes
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Plunger/PlungerApi.cs
+#ifdef LICENSE_NEW_TBD
+
 STDMETHODIMP Plunger::Fire()
 {
    if (m_phitplunger)
@@ -1096,6 +1120,8 @@ STDMETHODIMP Plunger::Fire()
 
    return S_OK;
 }
+
+#endif
 
 STDMETHODIMP Plunger::get_PullSpeed(float *pVal)
 {

@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/BumperBase.cs
+#ifdef LICENSE_NEW
+
 const unsigned int bumperBaseNumVertices=517;
 const unsigned int bumperBaseNumIndices=2352;
 const Vertex3D_NoTex2 bumperBase[517]=
@@ -1308,3 +1312,5 @@ const WORD bumperBaseIndices[2352]=
 	514, 513, 515,
 	514, 515, 516
 };
+
+#endif

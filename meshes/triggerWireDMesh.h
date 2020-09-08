@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/TriggerWireD.cs
+#ifdef LICENSE_NEW
+
 const unsigned int triggerDWireNumVertices=203;
 const unsigned int triggerDWireNumIndices=798;
 const Vertex3D_NoTex2 triggerDWireMesh[203]=
@@ -476,3 +480,5 @@ const WORD triggerDWireIndices[798]=
 166, 155, 167,
 166, 167, 199
 };
+
+#endif

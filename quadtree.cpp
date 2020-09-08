@@ -96,6 +96,10 @@ void HitQuadtree::Initialize()
 #endif
 }
 
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Engine/Physics/HitQuadTree.cs
+#ifdef LICENSE_NEW
+
 void HitQuadtree::Initialize(const FRect3D& bounds)
 {
 #ifdef USE_EMBREE
@@ -110,6 +114,8 @@ void HitQuadtree::Initialize(const FRect3D& bounds)
    CreateNextLevel(bounds, 0, 0);
 #endif
 }
+
+#endif
 
 #ifdef USE_EMBREE
 void HitQuadtree::FillFromVector(vector<HitObject*>& vho)
@@ -127,6 +133,10 @@ void HitQuadtree::Update()
 }
 
 #else
+
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Engine/Physics/HitQuadTree.cs
+#ifdef LICENSE_NEW
 
 void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int level, unsigned int level_empty)
 {
@@ -215,6 +225,8 @@ void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int leve
       m_children[i]->InitSseArrays();
 }
 
+#endif
+
 void HitQuadtree::InitSseArrays()
 {
    // build SSE boundary arrays of the local hit-object list
@@ -284,6 +296,10 @@ void HitQuadtree::HitTestBall(const Ball * const pball, CollisionEvent& coll) co
 
 #else   /// without SSE optimization ////////////////////////
 
+// Authors: toxieainc, fuzzelhjb, mukuste
+// Ported at: VisualPinball.Engine/Physics/HitQuadTree.cs
+#ifdef LICENSE_NEW_TBD
+
    for (unsigned i=0; i<m_vho.size(); i++)
    {
 #ifdef DEBUGPHYSICS
@@ -316,6 +332,7 @@ void HitQuadtree::HitTestBall(const Ball * const pball, CollisionEvent& coll) co
          if (right) m_children[3]->HitTestBall(pball, coll);
       }
    }
+#endif
 #endif
 }
 

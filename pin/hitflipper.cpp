@@ -22,6 +22,10 @@
 
 #include "stdafx.h"
 
+// Authors: toxieainc, fuzzelhjb, maddes
+// Ported at: VisualPinball.Engine/VPT/Flipper/FlipperMover.cs
+#ifdef LICENSE_NEW_TBD
+
 FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, const float baser, const float endr, const float flipr, const float angleStart, float angleEnd,
    const float zlow, const float zhigh, Flipper* const pflipper) : m_hitcircleBase(center, baser, zlow, zhigh) // base section
 {
@@ -110,6 +114,8 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, const float baser
 #endif
 }
 
+#endif
+
 HitFlipper::HitFlipper(const Vertex2D& center, const float baser, const float endr, const float flipr, const float angleStart, const float angleEnd,
    const float zlow, const float zhigh, Flipper* const pflipper)
    : m_flipperMover(center, baser, endr, flipr, angleStart, angleEnd, zlow, zhigh, pflipper)
@@ -182,6 +188,13 @@ void FlipperMoverObject::SetMass(const float m)
    m_inertia = (float)(1.0 / 3.0) * m * (m_flipperradius*m_flipperradius); //!! also change if wiring of moment of inertia happens (see ctor)
 }
 
+
+VisualPinball.Unity/VisualPinball.Unity/VPT/Flipper/FlipperDisplacementSystem.cs
+
+// Authors: toxieainc
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Flipper/FlipperDisplacementSystem.cs
+#ifdef LICENSE_NEW
+
 void FlipperMoverObject::UpdateDisplacements(const float dtime)
 {
    m_angleCur += m_angleSpeed*dtime;	// move flipper angle
@@ -242,6 +255,12 @@ void FlipperMoverObject::UpdateDisplacements(const float dtime)
       m_enableRotateEvent = 0;
    }
 }
+
+#endif
+
+// Authors: toxieainc
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Flipper/FlipperVelocitySystem.cs
+#ifdef LICENSE_NEW
 
 void FlipperMoverObject::UpdateVelocities()
 {
@@ -315,6 +334,7 @@ void FlipperMoverObject::ApplyImpulse(const Vertex3Ds& rotI)
    m_angleSpeed = m_angularMomentum / m_inertia;    // TODO: figure out moment of inertia
 }
 
+#endif
 
 void FlipperMoverObject::SetSolenoidState(const bool s) // true = button pressed, false = released
 {
@@ -336,6 +356,10 @@ static inline Vertex3Ds CrossZ(const float rz, const Vertex3Ds& v)
    return Vertex3Ds(-rz * v.y, rz * v.x, 0.f);
 }
 
+// Authors: toxieainc
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Flipper/FlipperMovementData.cs
+#ifdef LICENSE_NEW
+
 Vertex3Ds FlipperMoverObject::SurfaceVelocity(const Vertex3Ds& surfP) const
 {
    //const Vertex3Ds angularVelocity(0, 0, m_angleSpeed);
@@ -356,6 +380,8 @@ Vertex3Ds FlipperMoverObject::SurfaceAcceleration(const Vertex3Ds& surfP) const
    return tangAcc + centrAcc;
 }
 
+#endif
+
 float FlipperMoverObject::GetHitTime() const
 {
    if (m_angleSpeed == 0.f)
@@ -375,6 +401,10 @@ float FlipperMoverObject::GetHitTime() const
    else
       return hittime;
 }
+
+// Authors: toxieainc, fuzzelhjb, maddes, mukuste
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Flipper/FlipperCollider.cs
+#ifdef LICENSE_NEW_TBD
 
 float HitFlipper::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
@@ -1005,3 +1035,5 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
       m_flipperMover.ApplyImpulse(-(dtime * fric) * crossF);
    }
 }
+
+#endif

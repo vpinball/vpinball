@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/BulbSocket.cs
+#ifdef LICENSE_NEW
+
 const unsigned int bulbSocketNumVertices=592;
 const unsigned int bulbSocketNumFaces=3384;
 const Vertex3D_NoTex2 bulbSocket[592]=
@@ -1727,3 +1731,5 @@ const WORD bulbSocketIndices[3384]=
 582, 583, 574,
 574, 583, 575
 };
+
+#endif

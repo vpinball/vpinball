@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/KickerHole.cs
+#ifdef LICENSE_NEW
+
 const unsigned int kickerHoleNumVertices=192;
 const unsigned int kickerHoleNumIndices=288;
 const Vertex3D_NoTex2 kickerHoleMesh[192]=
@@ -294,3 +298,5 @@ const WORD kickerHoleIndices[288]=
 	188, 189, 190,
 	189, 188, 191
 };
+
+#endif

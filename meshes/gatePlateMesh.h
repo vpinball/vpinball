@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/GatePlate.cs
+#ifdef LICENSE_NEW
+
 const unsigned int gatePlateNumVertices=70;
 const unsigned int gatePlateNumIndices=156;
 const Vertex3D_NoTex2 gatePlateMesh[70]=
@@ -129,3 +133,5 @@ const WORD gatePlateIndices[156]=
 	60, 61, 62,
 	62, 61, 63
 };
+
+#endif

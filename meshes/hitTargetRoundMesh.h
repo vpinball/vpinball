@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/HitTargetRound.cs
+#ifdef LICENSE_NEW
+
 const unsigned int hitTargetRoundVertices=209;
 const unsigned int hitTargetRoundNumIndices=522;
 const Vertex3D_NoTex2 hitTargetRoundMesh[209]=
@@ -390,3 +394,5 @@ const WORD hitTargetRoundIndices[522]=
 	205, 206, 207,
 	208, 205, 207
 };
+
+#endif

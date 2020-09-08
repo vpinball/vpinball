@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Engine/VPT/Kicker/KickerHitMesh.cs
+#ifdef LICENSE_NEW
+
 const unsigned int kickerHitNumVertices=216;
 const Vertex3D_NoTex2 kickerHitMesh[216]=
 {
@@ -218,3 +222,5 @@ const Vertex3D_NoTex2 kickerHitMesh[216]=
 { 0.758494f,0.210634f,-0.070770f, -0.991800f,-0.128200f,0.000000f, 0.541661f,0.041577f},
 { 0.758494f,0.210634f,-0.327910f, -0.991800f,-0.128200f,0.000000f, 0.541661f,0.120135f}
 };
+
+#endif

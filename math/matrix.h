@@ -21,12 +21,18 @@ public:
       m_d[2][2] *= factor;
    }
 
+// Authors: fuzzelhjb
+// Ported at: VisualPinball.Engine/Math/Matrix2D.cs
+#ifdef LICENSE_NEW
+
    void SkewSymmetric(const Vertex3Ds &pv3D)
    {
       m_d[0][0] = 0; m_d[0][1] = -pv3D.z; m_d[0][2] = pv3D.y;
       m_d[1][0] = pv3D.z; m_d[1][1] = 0; m_d[1][2] = -pv3D.x;
       m_d[2][0] = -pv3D.y; m_d[2][1] = pv3D.x; m_d[2][2] = 0;
    }
+
+#endif
 
    void MulScalar(const float scalar)
    {
@@ -90,7 +96,7 @@ public:
    }
 
    void OrthoNormalize()
-   {
+   {Rect3D
       Vertex3Ds vX(m_d[0][0], m_d[1][0], m_d[2][0]);
       Vertex3Ds vY(m_d[0][1], m_d[1][1], m_d[2][1]);
       Vertex3Ds vZ = CrossProduct(vX, vY);
@@ -122,6 +128,10 @@ public:
       m_d[2][0] = m_d[2][1] = 0.0f;
    }
 
+// Authors: toxieainc
+// Ported at: VisualPinball.Engine/Math/Matrix2D.cs
+#ifdef LICENSE_NEW
+
    // Create matrix for rotating around an arbitrary vector
    // NB: axis must be normalized
    // NB: this actually rotates by -angle in right-handed coordinates
@@ -142,6 +152,8 @@ public:
       m_d[1][2] = axis.y*axis.z*(1.0f - rcos) + axis.x*rsin;
       m_d[2][2] = axis.z*axis.z + rcos*(1.0f - axis.z*axis.z);
    }
+
+#endif
 
    void RotationAroundAxis(const Vertex3Ds& axis, const float rsin, const float rcos)
    {
@@ -171,6 +183,10 @@ class Matrix3D : public D3DMATRIX
 public:
    Matrix3D() {}
    Matrix3D(const float Scale) { SetScaling(Scale, Scale, Scale); }
+
+// Authors: toxieainc, fuzzelhjb, mukuste
+// Ported at: VisualPinball.Engine/Math/Matrix3D.cs
+#ifdef LICENSE_NEW_TBD
 
    // premultiply the given matrix, i.e., result = mult * (*this)
    void Multiply(const Matrix3D &mult, Matrix3D &result) const
@@ -245,6 +261,8 @@ public:
       _31 *= z; _32 *= z; _33 *= z;
    }
 
+#endif
+
    // extract the matrix corresponding to the 3x3 rotation part
    void GetRotationPart(Matrix3D& rot)
    {
@@ -270,6 +288,10 @@ public:
       vOut.z = zp*inv_wp;
    }
 
+// Authors: mukuste, fuzzelhjb, toxieainc
+// Ported at: VisualPinball.Engine/Math/Matrix3D.cs
+#ifdef LICENSE_NEW_TBD
+
    Vertex3Ds MultiplyVector(const Vertex3Ds &v) const
    {
       // Transform it through the current matrix set
@@ -291,6 +313,8 @@ public:
 
       return Vertex3Ds(xp,yp,zp);
    }
+
+#endif
 
    template <class VecIn, class VecOut>
    void MultiplyVectorNoTranslate(const VecIn& vIn, VecOut& vOut) const

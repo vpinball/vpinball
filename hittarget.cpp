@@ -228,6 +228,10 @@ void HitTarget::WriteRegDefaults()
 
 }
 
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Engine/VPT/HitTarget/HitTargetHitGenerator.cs
+#ifdef LICENSE_NEW
+
 const unsigned int num_dropTargetHitPlaneVertices = 16;
 const Vertex3Ds dropTargetHitPlaneVertices[num_dropTargetHitPlaneVertices] =
 {
@@ -256,6 +260,13 @@ const WORD dropTargetHitPlaneIndices[num_dropTargetHitPlaneIndices] =
    2, 1, 6, 4, 8, 9, 9, 5, 4, 8, 10, 11, 11, 9, 8,
    6, 12, 7, 12, 6, 13, 12, 13, 14, 13, 15, 14
 };
+
+#endif
+
+
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Engine/VPT/HitTarget/HitTargetHitGenerator.cs
+#ifdef LICENSE_NEW
 
 void HitTarget::GetHitShapes(vector<HitObject*> &pvho)
 {
@@ -368,6 +379,8 @@ void HitTarget::GetHitShapes(vector<HitObject*> &pvho)
     }
 }
 
+#endif
+
 void HitTarget::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
@@ -383,6 +396,10 @@ void HitTarget::AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigne
       SetupHitObject(pvho, new HitLine3D(vi, vj), setHitObject);
    }
 }
+
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Engine/Physics/HitObject.cs
+#ifdef LICENSE_NEW
 
 void HitTarget::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const bool setHitObject)
 {
@@ -410,6 +427,8 @@ void HitTarget::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const 
    pvho.push_back(obj);
    m_vhoCollidable.push_back(obj);	//remember hit components of primitive
 }
+
+#endif
 
 void HitTarget::EndPlay()
 {
@@ -586,6 +605,10 @@ void HitTarget::UpdateStatusBarInfo()
    TransformVertices();
 }
 
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/HitTarget/HitTargetAnimationSystem.cs
+#ifdef LICENSE_NEW
+
 void HitTarget::UpdateAnimation()
 {
     const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
@@ -670,6 +693,8 @@ void HitTarget::UpdateAnimation()
         }
     }
 }
+
+#endif
 
 void HitTarget::RenderObject()
 {

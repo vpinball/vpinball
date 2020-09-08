@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/HitTargetFatSquare.cs
+#ifdef LICENSE_NEW
+
 const unsigned int hitFatTargetSquareVertices=302;
 const unsigned int hitFatTargetSquareNumIndices=942;
 const Vertex3D_NoTex2 hitFatTargetSquareMesh[302]=
@@ -623,3 +627,5 @@ const WORD hitFatTargetSquareIndices[942]=
 	300, 281, 284,
 	301, 300, 284
 };
+
+#endif

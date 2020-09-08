@@ -1,3 +1,7 @@
+// Authors: toxieainc, fuzzelhjb
+// Ported at: VisualPinball.Resources/Meshes/BumperSocket.cs
+#ifdef LICENSE_NEW
+
 const unsigned int bumperSocketNumVertices=482;
 const unsigned int bumperSocketNumIndices=2232;
 const Vertex3D_NoTex2 bumperSocket[482]=
@@ -1233,3 +1237,5 @@ const WORD bumperSocketIndices[2232]=
 	454, 425, 481,
 	481, 425, 422
 };
+
+#endif
