@@ -10382,8 +10382,6 @@ PinTableMDI::PinTableMDI(VPinball *vpinball)
 
 PinTableMDI::~PinTableMDI()
 {
-   if(m_vpinball->GetLayersListDialog()->IsWindow())
-      m_vpinball->GetLayersListDialog()->ClearList();
     m_vpinball->CloseAllDialogs();
 
     if (m_table != nullptr)

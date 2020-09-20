@@ -1565,6 +1565,14 @@ LRESULT VPinball::OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam)
     return CMDIFrameT::OnMDIActivated(msg, wparam, lparam);
 }
 
+LRESULT VPinball::OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam)
+{
+   if (GetAllMDIChildren().size() == 1)
+      GetLayersListDialog()->ClearList();
+
+   return CMDIFrameT::OnMDIDestroyed(msg, wparam, lparam);
+}
+
 Win32xx::CDocker *VPinball::NewDockerFromID(int id)
 {
     switch (id)

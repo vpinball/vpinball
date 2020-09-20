@@ -249,6 +249,7 @@ protected:
    virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam);
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
    virtual LRESULT OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam);
+   virtual LRESULT OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam);
    virtual CDocker *NewDockerFromID(int id);
 
 private:
