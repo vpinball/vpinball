@@ -1103,7 +1103,6 @@
 #define IDC_STATIC_ELEMENTS             825
 #define IDC_STATIC_LAYERS               826
 #define IDC_PROP_TAB                    827
-#define IDC_REFLECT_ENABLE_CHECK        828
 #define IDC_MULTIPLE_ELEMENTS_SELECTED_STATIC 830
 #define IDC_ASSIGN_BUTTON               833
 #define IDC_LAYER_EDIT_BUTTON           834
