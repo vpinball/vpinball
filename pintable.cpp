@@ -4272,7 +4272,7 @@ void PinTable::ReImportSound(const HWND hwndListView, std::shared_ptr<PinSound>&
    if(pps->m_pdata)
        delete[] pps->m_pdata;
 
-   pps = ppsNew;
+   *pps = *ppsNew;
 
    //!! meh to all of this: set to 0, so this is not free'd in the dtor, as used in pps from now on
 
