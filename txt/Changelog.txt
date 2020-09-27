@@ -39,6 +39,8 @@ FEATURES:
 
 FIXES:
 
+- fix issue where saving a table can cost up to 4x (8x on 64bit) the temporary memory
+
 - fix issues when fallback search of core.vbs is triggered
 
 - properly save recently opened directory for all kinds of dialogs

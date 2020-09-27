@@ -736,13 +736,9 @@ void FastIStream::SetSize(const unsigned int i)
       void *m_rgNew;
 
       if (m_rg)
-      {
-         m_rgNew = realloc((void *)m_rg, sizeof(void *) * i);
-      }
+         m_rgNew = realloc((void *)m_rg, i);
       else
-      {
-         m_rgNew = malloc(sizeof(void *) * i);
-      }
+         m_rgNew = malloc(i);
 
       m_rg = (char *)m_rgNew;
       m_cMax = i;
@@ -789,9 +785,7 @@ long __stdcall FastIStream::Read(void *pv, const unsigned long count, unsigned l
 long __stdcall FastIStream::Write(const void *pv, const unsigned long count, unsigned long *foo)
 {
    if ((m_cSeek + count) > m_cMax)
-   {
       SetSize(max(m_cSeek * 2, m_cSeek + count));
-   }
 
    memcpy(m_rg + m_cSeek, pv, count);
    m_cSeek += count;
@@ -799,9 +793,7 @@ long __stdcall FastIStream::Write(const void *pv, const unsigned long count, uns
    m_cSize = max(m_cSize, m_cSeek);
 
    if (foo != NULL)
-   {
       *foo = count;
-   }
 
    return S_OK;
 }
