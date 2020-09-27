@@ -1671,8 +1671,6 @@ void PinTable::InitBuiltinTable(VPinball * const pvp, const bool useBlankTable)
 
    //pilb->Release();
 
-   //LoadGameFromFilename("d:\\gdk\\data\\tables\\newsave\\basetable6.vpt");
-
    const LocalString ls(IDS_TABLE);
    m_szTitle = ls.m_szbuffer/*"Table"*/ + std::to_string(m_vpinball->m_NextTableID);
    m_vpinball->m_NextTableID++;
@@ -2666,12 +2664,8 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
          {
             for (size_t i = 0; i < m_vedit.size(); i++)
             {
-               char szSuffix[32], szStmName[64];
-               strncpy_s(szStmName, "GameItem", sizeof(szStmName)-1);
-               _itoa_s((int)i, szSuffix, sizeof(szSuffix), 10);
-               strncat_s(szStmName, szSuffix, sizeof(szStmName)-strnlen_s(szStmName, sizeof(szStmName))-1);
-
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
+               const string szStmName = "GameItem" + std::to_string(i);
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
 
                if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
@@ -2691,12 +2685,8 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
             for (size_t i = 0; i < m_vsound.size(); i++)
             {
-               char szSuffix[32], szStmName[64];
-               strncpy_s(szStmName, "Sound", sizeof(szStmName)-1);
-               _itoa_s((int)i, szSuffix, sizeof(szSuffix), 10);
-               strncat_s(szStmName, szSuffix, sizeof(szStmName)-strnlen_s(szStmName, sizeof(szStmName))-1);
-
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
+               const string szStmName = "Sound" + std::to_string(i);
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
 
                if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
@@ -2711,12 +2701,8 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
             for (size_t i = 0; i < m_vimage.size(); i++)
             {
-               char szSuffix[32], szStmName[64];
-               strncpy_s(szStmName, "Image", sizeof(szStmName)-1);
-               _itoa_s((int)i, szSuffix, sizeof(szSuffix), 10);
-               strncat_s(szStmName, szSuffix, sizeof(szStmName)-strnlen_s(szStmName, sizeof(szStmName))-1);
-
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
+               const string szStmName = "Image" + std::to_string(i);
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
 
                if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
@@ -2731,12 +2717,8 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
             for (size_t i = 0; i < m_vfont.size(); i++)
             {
-               char szSuffix[32], szStmName[64];
-               strncpy_s(szStmName, "Font", sizeof(szStmName)-1);
-               _itoa_s((int)i, szSuffix, sizeof(szSuffix), 10);
-               strncat_s(szStmName, szSuffix, sizeof(szStmName)-strnlen_s(szStmName, sizeof(szStmName))-1);
-
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
+               const string szStmName = "Font" + std::to_string(i);
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
 
                if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
@@ -2751,12 +2733,8 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
             for (int i = 0; i < m_vcollection.Size(); i++)
             {
-               char szSuffix[32], szStmName[64];
-               strncpy_s(szStmName, "Collection", sizeof(szStmName)-1);
-               _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
-               strncat_s(szStmName, szSuffix, sizeof(szStmName)-strnlen_s(szStmName, sizeof(szStmName))-1);
-
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
+               const string szStmName = "Collection" + std::to_string(i);
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
 
                if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
@@ -3661,12 +3639,8 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
             for (int i = 0; i < csubobj; i++)
             {
-               char szSuffix[32], szStmName[64];
-               strncpy_s(szStmName, "GameItem", sizeof(szStmName)-1);
-               _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
-               strncat_s(szStmName, szSuffix, sizeof(szStmName)-strnlen_s(szStmName, sizeof(szStmName))-1);
-
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
+               const string szStmName = "GameItem" + std::to_string(i);
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
 
                IStream* pstmItem;
                if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
@@ -3695,12 +3669,8 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
             for (int i = 0; i < csounds; i++)
             {
-               char szSuffix[32], szStmName[64];
-               strncpy_s(szStmName, "Sound", sizeof(szStmName)-1);
-               _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
-               strncat_s(szStmName, szSuffix, sizeof(szStmName)-strnlen_s(szStmName, sizeof(szStmName))-1);
-
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
+               const string szStmName = "Sound" + std::to_string(i);
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
 
                IStream* pstmItem;
                if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
@@ -3712,24 +3682,23 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                cloadeditems++;
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
+
+            assert(m_vimage.size() == 0);
+            m_vimage.resize(ctextures); // due to multithreaded loading do pre-allocation
             {
                ThreadPool pool(logicalNumberOfProcessors);
 
                for (int i = 0; i < ctextures; i++)
                {
                   pool.enqueue([i, loadfileversion, pstgData, this] {
-                     HRESULT hr;
-                     char szSuffix[32], szStmName[64];
-                     strncpy_s(szStmName, "Image", sizeof(szStmName)-1);
-                     _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
-                     strncat_s(szStmName, szSuffix, sizeof(szStmName)-strnlen_s(szStmName, sizeof(szStmName))-1);
-
-                     MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
+                     const string szStmName = "Image" + std::to_string(i);
+                     MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
 
                      IStream* pstmItem;
+                     HRESULT hr;
                      if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                      {
-                        hr = LoadImageFromStream(pstmItem, loadfileversion);
+                        hr = LoadImageFromStream(pstmItem, i, loadfileversion);
                         if (FAILED(hr))
                            return;
                         pstmItem->Release();
@@ -3739,16 +3708,16 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   cloadeditems++;
                }
             }
+            // due to multithreaded loading and pre-allocation, check if some images could not be loaded and erase them
+            for (size_t i = 0; i < m_vimage.size(); ++i)
+                if (m_vimage[i]->m_pdsBuffer == NULL)
+                    m_vimage.erase(m_vimage.begin()+i);
             ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
 
             for (int i = 0; i < cfonts; i++)
             {
-               char szSuffix[32], szStmName[64];
-               strncpy_s(szStmName, "Font", sizeof(szStmName)-1);
-               _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
-               strncat_s(szStmName, szSuffix, sizeof(szStmName)-strnlen_s(szStmName, sizeof(szStmName))-1);
-
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
+               const string szStmName = "Font" + std::to_string(i);
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
 
                IStream* pstmItem;
                if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
@@ -3766,12 +3735,8 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
             for (int i = 0; i < ccollection; i++)
             {
-               char szSuffix[32], szStmName[64];
-               strncpy_s(szStmName, "Collection", sizeof(szStmName)-1);
-               _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
-               strncat_s(szStmName, szSuffix, sizeof(szStmName)-strnlen_s(szStmName, sizeof(szStmName))-1);
-
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
+               const string szStmName = "Collection" + std::to_string(i);
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
 
                IStream* pstmItem;
                if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
@@ -7630,7 +7595,7 @@ int PinTable::AddListItem(HWND hwndListView, const string& szName, const string&
 
 std::mutex g_table_mutex;
 
-HRESULT PinTable::LoadImageFromStream(IStream *pstm, int version)
+HRESULT PinTable::LoadImageFromStream(IStream *pstm, unsigned int idx, int version)
 {
    if (version < 100) // Tech Beta 3 and below
    {
@@ -7641,11 +7606,8 @@ HRESULT PinTable::LoadImageFromStream(IStream *pstm, int version)
    {
       Texture * const ppi = new Texture();
 
-	  if (ppi->LoadFromStream(pstm, version, this) == S_OK)
-	  {
-		  const std::lock_guard<std::mutex> lock(g_table_mutex); //!! needed nowadays due to multithreaded image decompression
-		  m_vimage.push_back(ppi);
-	  }
+      if (ppi->LoadFromStream(pstm, version, this) == S_OK)
+         m_vimage[idx] = ppi;
       else
          delete ppi;
    }
