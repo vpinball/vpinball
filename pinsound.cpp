@@ -407,9 +407,9 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    //return S_OK;
 }
 
-PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
+std::shared_ptr<PinSound> AudioMusicPlayer::LoadFile(const string& strFileName)
 {
-   PinSound * const pps = new PinSound();
+   std::shared_ptr<PinSound> pps = std::make_shared<PinSound>();
 
    pps->m_szPath = strFileName;
    TitleFromFilename(strFileName, pps->m_szName);
@@ -424,7 +424,6 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 	   {
 		   ShowError("Could not open wav file.");
 		   delete pWaveSoundRead;
-		   delete pps;
 		   return NULL;
 	   }
 
@@ -449,7 +448,6 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 	   {
 		   ShowError("Could not create static sound buffer.");
 		   delete pWaveSoundRead;
-		   delete pps;
 		   return NULL;
 	   }
 	   if (SoundMode3D != SNDCFG_SND3D2CH)
@@ -471,7 +469,6 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 		  {
 			  ShowError("Could not read wav file.");
 			  delete pWaveSoundRead;
-			  delete pps;
 			  return NULL;
 		  }
 
@@ -485,7 +482,6 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 			  &pbData2, &dwLength2, 0L)))
 		  {
 			  ShowError("Could not lock sound buffer.");
-			  delete pps;
 			  return NULL;
 		  }
 		  // Copy the memory to it.
@@ -525,8 +521,6 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 
 	   if (pps->m_BASSstream == NULL)
 	   {
-		   delete pps;
-
 		   const int code = BASS_ErrorGetCode();
 		   string bla2;
 		   BASS_ErrorMapCode(code, bla2);
@@ -559,7 +553,7 @@ float PinDirectSound::PanTo3D(float input)
 	}
 }
 
-PinDirectSoundWavCopy::PinDirectSoundWavCopy(class PinSound * const pOriginal)
+PinDirectSoundWavCopy::PinDirectSoundWavCopy(PinSound * const pOriginal)
 {
 	m_ppsOriginal = pOriginal;
 

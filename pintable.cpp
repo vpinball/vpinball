@@ -1582,8 +1582,7 @@ PinTable::~PinTable()
 
    m_vpinball->m_ps.ClearStoppedCopiedWavs();
 
-   for (size_t i = 0; i < m_vsound.size(); i++)
-      delete m_vsound[i];
+   m_vsound.clear();
 
    for (size_t i = 0; i < m_vimage.size(); i++)
       delete m_vimage[i];
@@ -2821,7 +2820,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
    return hr;
 }
 
-HRESULT PinTable::SaveSoundToStream(PinSound * const pps, IStream *pstm)
+HRESULT PinTable::SaveSoundToStream(const std::shared_ptr<PinSound>& pps, IStream *pstm)
 {
    ULONG writ = 0;
    int len = (int)pps->m_szName.length();
@@ -2898,11 +2897,10 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
    if (FAILED(hr = pstm->Read(&len, sizeof(len), &read)))
       return hr;
 
-   PinSound * const pps = new PinSound();
+   std::shared_ptr<PinSound> pps = std::make_shared<PinSound>();
    char* tmp = new char[len+1];
    if (FAILED(hr = pstm->Read(tmp, len, &read)))
    {
-       delete pps;
        return hr;
    }
    tmp[len] = 0;
@@ -2911,14 +2909,12 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 
    if (FAILED(hr = pstm->Read(&len, sizeof(len), &read)))
    {
-       delete pps;
        return hr;
    }
 
    tmp = new char[len+1];
    if (FAILED(hr = pstm->Read(tmp, len, &read)))
    {
-       delete pps;
        return hr;
    }
    tmp[len] = 0;
@@ -2927,7 +2923,6 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 
    if (FAILED(hr = pstm->Read(&len, sizeof(len), &read)))
    {
-       delete pps;
        return hr;
    }
 
@@ -2935,7 +2930,6 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
    tmp = new char[len+1];
    if (FAILED(hr = pstm->Read(tmp, len, &read)))
    {
-       delete pps;
        return hr;
    }
    delete[] tmp;
@@ -2944,13 +2938,11 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
    if (pps->IsWav2()) // only use old code if playing wav's
    if (FAILED(hr = pstm->Read(&pps->m_wfx, sizeof(pps->m_wfx), &read)))
    {
-       delete pps;
        return hr;
    }
 
    if (FAILED(hr = pstm->Read(&pps->m_cdata, sizeof(int), &read)))
    {
-       delete pps;
        return hr;
    }
 
@@ -3012,7 +3004,6 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
    if (FAILED(hr = pstm->Read(pps->m_pdata, pps->m_cdata, &read)))
 #endif
    {
-      delete pps;
       return hr;
    }
 #ifdef ONLY_USE_BASS
@@ -3028,27 +3019,22 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
    {
 	   if (FAILED(hr = pstm->Read(&pps->m_outputTarget, sizeof(char), &read)))
 	   {
-		   delete pps;
 		   return hr;
 	   }
 	   if (FAILED(hr = pstm->Read(&pps->m_volume, sizeof(int), &read)))
 	   {
-		   delete pps;
 		   return hr;
 	   }
 	   if (FAILED(hr = pstm->Read(&pps->m_balance, sizeof(int), &read)))
 	   {
-		   delete pps;
 		   return hr;
 	   }
 	   if (FAILED(hr = pstm->Read(&pps->m_fade, sizeof(int), &read)))
 	   {
-		   delete pps;
 		   return hr;
 	   }
 	   if (FAILED(hr = pstm->Read(&pps->m_volume, sizeof(int), &read)))
 	   {
-		   delete pps;
 		   return hr;
 	   }
    }
@@ -3057,7 +3043,6 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 	   bool toBackglassOutput = false; // false: for pre-VPX tables
 	   if (FAILED(hr = pstm->Read(&toBackglassOutput, sizeof(bool), &read)))
 	   {
-		   delete pps;
 		   return hr;
 	   }
 
@@ -3067,7 +3052,6 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 
    if (FAILED(hr = pps->ReInitialize()))
    {
-	   delete pps;
 	   return hr;
    }
 
@@ -4267,9 +4251,9 @@ bool PinTable::ExportSound(PinSound * const pps, const char * const szfilename)
    return false;
 }
 
-void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, const string& filename)
+void PinTable::ReImportSound(const HWND hwndListView, std::shared_ptr<PinSound>& pps, const string& filename)
 {
-   PinSound * const ppsNew = m_vpinball->m_ps.LoadFile(filename);
+   std::shared_ptr<PinSound> ppsNew = m_vpinball->m_ps.LoadFile(filename);
 
    if (ppsNew == NULL)
       return;
@@ -4288,7 +4272,7 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    if(pps->m_pdata)
        delete[] pps->m_pdata;
 
-   *pps = *ppsNew;
+   pps = ppsNew;
 
    //!! meh to all of this: set to 0, so this is not free'd in the dtor, as used in pps from now on
 
@@ -4296,8 +4280,6 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    ppsNew->m_pDS3DBuffer = NULL;
    ppsNew->m_pDSBuffer = NULL;
    ppsNew->m_BASSstream = 0;
-
-   delete ppsNew;
 
    // recopy old settings over to new sound file
    pps->m_balance = balance;
@@ -4313,8 +4295,7 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
 
 void PinTable::ImportSound(const HWND hwndListView, const string& szfilename)
 {
-   PinSound * const pps = m_vpinball->m_ps.LoadFile(szfilename);
-
+   std::shared_ptr<PinSound> pps = m_vpinball->m_ps.LoadFile(szfilename);;
    if (pps == NULL)
       return;
 
@@ -4336,14 +4317,14 @@ void PinTable::ListSounds(HWND hwndListView)
 }
 
 
-int PinTable::AddListSound(HWND hwndListView, PinSound * const pps)
+int PinTable::AddListSound(HWND hwndListView, const std::shared_ptr<PinSound>& pps)
 {
    LVITEM lvitem;
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
    lvitem.iItem = 0;
    lvitem.iSubItem = 0;
    lvitem.pszText = (LPSTR)pps->m_szName.c_str();
-   lvitem.lParam = (size_t)pps;
+   lvitem.lParam = (size_t)pps.get();
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
@@ -4369,11 +4350,9 @@ int PinTable::AddListSound(HWND hwndListView, PinSound * const pps)
    return index;
 }
 
-void PinTable::RemoveSound(PinSound * const pps)
+void PinTable::RemoveSound(const std::shared_ptr<PinSound>& pps)
 {
    RemoveFromVectorSingle(m_vsound, pps);
-
-   delete pps;
 }
 
 void PinTable::ImportFont(HWND hwndListView, const string& filename)
@@ -6880,7 +6859,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
       return S_OK;
    }
 
-   PinSound * const pps = m_vsound[i];
+   std::shared_ptr<PinSound>& pps = m_vsound[i];
 
    volume += dequantizeSignedPercent(pps->m_volume);
    pan += dequantizeSignedPercent(pps->m_balance);

@@ -52,7 +52,7 @@ enum SoundConfigTypes : int { SNDCFG_SND3D2CH = 0, SNDCFG_SND3DALLREAR = 1, SNDC
 class PinDirectSoundWavCopy
 {
 public:
-   PinDirectSoundWavCopy(class PinSound * const pOriginal);
+   PinDirectSoundWavCopy( class PinSound * const pOriginal);
 
 protected:
    void TestPlayInternal() { m_pDSBuffer->Play(0, 0, 0); }
@@ -62,7 +62,7 @@ public:
    void PlayInternal(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart);
    HRESULT Get3DBuffer();
 
-   class PinSound *m_ppsOriginal;
+   class PinSound* m_ppsOriginal;
    LPDIRECTSOUNDBUFFER m_pDSBuffer;
    LPDIRECTSOUND3DBUFFER m_pDS3DBuffer;
 };
@@ -235,7 +235,7 @@ public:
 	   }
 	}
 
-	void Play(PinSound * const pps, const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart)
+	void Play(std::shared_ptr<PinSound>& pps, const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart)
 	{
 		const int flags = (loopcount == -1) ? DSBPLAY_LOOPING : 0;
 
@@ -264,7 +264,7 @@ public:
 		}
 
 		if (ppsc == NULL)
-			ppsc = new PinDirectSoundWavCopy(pps);
+			ppsc = new PinDirectSoundWavCopy(pps.get());
 
 		if (ppsc->m_pDSBuffer)
 		{
@@ -280,7 +280,7 @@ public:
 		}
 	}
 
-	PinSound *LoadFile(const string& strFileName);
+	std::shared_ptr<PinSound> LoadFile(const string& strFileName);
 
 private:
 	PinDirectSound m_pds;
