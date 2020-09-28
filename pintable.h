@@ -362,12 +362,12 @@ public:
    void StopPlaying();
 
    void ImportSound(const HWND hwndListView, const string& filename);
-   void ReImportSound(const HWND hwndListView, std::shared_ptr<PinSound>& pps, const string& filename);
+   void ReImportSound(const HWND hwndListView, PinSound * const pps, const string& filename);
    bool ExportSound(PinSound * const pps, const char * const filename);
    void ListSounds(HWND hwndListView);
-   int AddListSound(HWND hwndListView, const std::shared_ptr<PinSound>& pps);
-   void RemoveSound(const std::shared_ptr<PinSound>& pps);
-   HRESULT SaveSoundToStream(const std::shared_ptr<PinSound>& pps, IStream* pstm);
+   int AddListSound(HWND hwndListView, PinSound * const pps);
+   void RemoveSound(PinSound * const pps);
+   HRESULT SaveSoundToStream(PinSound * const pps, IStream *pstm);
    HRESULT LoadSoundFromStream(IStream *pstm, const int LoadFileVersion);
    bool ExportImage(Texture * const ppi, const char * const filename);
    void ImportImage(HWND hwndListView, const string& filename);
@@ -708,7 +708,7 @@ public:
        return m_materials;
    }
 
-   vector<std::shared_ptr<PinSound>> m_vsound;
+   vector< PinSound* > m_vsound;
 
    vector< PinFont* > m_vfont;
 

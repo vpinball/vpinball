@@ -292,9 +292,7 @@ void SoundDialog::ReImport()
                 lvitem.iItem = sel;
                 lvitem.iSubItem = 0;
                 ListView_GetItem( hSoundList, &lvitem );
-                std::shared_ptr<PinSound> pps;
-                
-                pps.reset((PinSound*)lvitem.lParam);
+                PinSound * const pps = (PinSound *)lvitem.lParam;
 
                 const HANDLE hFile = CreateFile( pps->m_szPath.c_str(), GENERIC_READ, FILE_SHARE_READ,
                                                  NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
@@ -341,8 +339,7 @@ void SoundDialog::ReImportFrom()
                 lvitem.iItem = sel;
                 lvitem.iSubItem = 0;
                 ListView_GetItem( hSoundList, &lvitem );
-                std::shared_ptr<PinSound> pps;
-                pps.reset((PinSound*)lvitem.lParam);
+                PinSound * const pps = (PinSound *)lvitem.lParam;
 
                 pt->ReImportSound( hSoundList, pps, szFileName[0] );
                 ListView_SetItemText( hSoundList, sel, 1, (LPSTR)szFileName[0].c_str() );
@@ -576,9 +573,8 @@ void SoundDialog::DeleteSound()
                 lvitem.iItem = sel;
                 lvitem.iSubItem = 0;
                 ListView_GetItem( hSoundList, &lvitem );
+                PinSound * const pps = (PinSound *)lvitem.lParam;
                 ListView_DeleteItem( hSoundList, sel );
-                std::shared_ptr<PinSound> pps;
-                pps.reset((PinSound*)lvitem.lParam);
                 pt->RemoveSound(pps);
 
                 // The previous selection is now deleted, so look again from the top of the list
