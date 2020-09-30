@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/TriggerInder.cs
+
 const unsigned int triggerInderNumVertices=152;
 const unsigned int triggerInderNumIndices=312;
 const Vertex3D_NoTex2 triggerInderMesh[152]=

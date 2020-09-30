@@ -1,5 +1,24 @@
-Unless otherwise explicitly stated, all code in Visual Pinball is released under
-the following license (derived from the MAME license):
+IMPORTANT NOTE:
+---------------
+
+As of October 2020, we, the Visual Pinball team, are working on replacing
+the inherited 'old MAME'-like license (listed directly below) by
+the GPLv3+ License (see end of this file).
+
+Each source file/snippet that is already under GPLv3+ will have its
+very first line marked with
+// license:GPLv3+
+Every file/snippet that doesn't, will stay (for now) under the 'old MAME'-like license.
+
+
+===============================================================================
+===============================================================================
+===============================================================================
+
+
+Unless otherwise explicitly stated (e.g. external libraries/code),
+all code in Visual Pinball is released under the following license
+(derived from the MAME license):
 
 Copyright Randy Davis and the Visual Pinball team
 All rights reserved.
@@ -44,3 +63,24 @@ From the website https://www.un4seen.com/bass.html :
 BASS is free for non-commercial use.
 If you are a non-commercial entity (eg. an individual) and you are not making any money from your product (through sales, advertising, etc),
 then you can use BASS in it for free. Otherwise, one of the following licences will be required (see website for current prices).
+
+
+===============================================================================
+===============================================================================
+===============================================================================
+
+
+The GPLv3+ License:
+
+Copyright 2020 Visual Pinball development team and contributors
+               (unless specifically noted differently in a respective source file)
+
+Visual Pinball is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Visual Pinball is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details: <https://www.gnu.org/licenses/>.

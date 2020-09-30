@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/KickerWilliams.cs
+
 const unsigned int kickerWilliamsNumVertices=1243;
 const unsigned int kickerWilliamsNumIndices=3582;
 const Vertex3D_NoTex2 kickerWilliamsMesh[1243]=

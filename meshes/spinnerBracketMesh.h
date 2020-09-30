@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/SpinnerBracket.cs
+
 const unsigned int spinnerBracketNumVertices=152;
 const unsigned int spinnerBracketNumFaces=420;
 const Vertex3D_NoTex2 spinnerBracket[152]=

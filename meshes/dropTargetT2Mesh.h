@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/DropTargetT2.cs
+
 const unsigned int hitTargetT2Vertices=88;
 const unsigned int hitTargetT2NumIndices=192;
 const Vertex3D_NoTex2 hitTargetT2Mesh[88]=

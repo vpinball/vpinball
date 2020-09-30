@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/BulbSocket.cs
+
 const unsigned int bulbSocketNumVertices=592;
 const unsigned int bulbSocketNumFaces=3384;
 const Vertex3D_NoTex2 bulbSocket[592]=

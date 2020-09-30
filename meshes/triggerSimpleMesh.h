@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/TriggerSimple.cs
+
 const unsigned int triggerSimpleNumVertices=49;
 const unsigned int triggerSimpleNumIndices=216;
 const Vertex3D_NoTex2 triggerSimple[49]=

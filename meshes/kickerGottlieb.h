@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/KickerGottlieb.cs
+
 const unsigned int kickerGottliebNumVertices=2333;
 const unsigned int kickerGottliebNumIndices=6300;
 const Vertex3D_NoTex2 kickerGottliebMesh[2333]=

@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/TriggerWireD.cs
+
 const unsigned int triggerDWireNumVertices=203;
 const unsigned int triggerDWireNumIndices=798;
 const Vertex3D_NoTex2 triggerDWireMesh[203]=

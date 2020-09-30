@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/BumperRing.cs
+
 const unsigned int bumperRingNumVertices=481;
 const unsigned int bumperRingNumIndices=2367;
 const Vertex3D_NoTex2 bumperRing[481]=

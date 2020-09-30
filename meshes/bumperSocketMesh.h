@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/BumperSocket.cs
+
 const unsigned int bumperSocketNumVertices=482;
 const unsigned int bumperSocketNumIndices=2232;
 const Vertex3D_NoTex2 bumperSocket[482]=

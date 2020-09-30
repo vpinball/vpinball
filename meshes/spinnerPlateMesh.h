@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/SpinnerPlate.cs
+
 const unsigned int spinnerPlateNumVertices=228;
 const unsigned int spinnerPlateNumFaces=912;
 const Vertex3D_NoTex2 spinnerPlate[228]=

@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/GateWireRectangle.cs
+
 const unsigned int gateWireRectangleNumVertices=144;
 const unsigned int gateWireRectangleNumIndices=672;
 const Vertex3D_NoTex2 gateWireRectangleMesh[144]=

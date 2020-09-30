@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/KickerT1.cs
+
 const unsigned int kickerT1NumVertices=657;
 const unsigned int kickerT1NumIndices=2094;
 const Vertex3D_NoTex2 kickerT1Mesh[657]=

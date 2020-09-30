@@ -642,6 +642,11 @@ void Bumper::ExportMesh(FILE *f)
    }
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Bumper/BumperMeshGenerator.cs
+//
+
 void Bumper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 {
    const float scalexy = m_d.m_radius;
@@ -728,6 +733,10 @@ void Bumper::GenerateCapMesh(Vertex3D_NoTex2 *buf)
       buf[i].tv = bumperCap[i].tv;
    }
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void Bumper::RenderSetup()
 {

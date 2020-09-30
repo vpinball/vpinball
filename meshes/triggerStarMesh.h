@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/TriggerStar.cs
+
 const unsigned int triggerStarNumVertices=231;
 const unsigned int triggerStarNumIndices=510;
 const Vertex3D_NoTex2 triggerStar[231]=

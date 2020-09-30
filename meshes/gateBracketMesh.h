@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/GateBracket.cs
+
 const unsigned int gateBracketNumVertices=184;
 const unsigned int gateBracketNumIndices=516;
 const Vertex3D_NoTex2 gateBracket[184]=

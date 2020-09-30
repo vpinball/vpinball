@@ -49,6 +49,11 @@ public:
    PropertyPane *m_propVisuals;
    PropertyPane *m_propPosition;
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/Math/DragPoint.cs
+//
+
 protected:
    template <typename T>
    void GetRgVertex(std::vector<T> &vv, const bool loop = true, const float accuracy = 4.f) const // 4 = maximum precision that we allow for
@@ -110,6 +115,10 @@ protected:
 
    vector< CComObject<DragPoint>* > m_vdpoint;
 };
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 /////////////////////////////////////////////////////////////////////////////
 // DragPoint

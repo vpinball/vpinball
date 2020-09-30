@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/HitTargetRectangle.cs
+
 const unsigned int hitTargetRectangleVertices=161;
 const unsigned int hitTargetRectangleNumIndices=378;
 const Vertex3D_NoTex2 hitTargetRectangleMesh[161]=

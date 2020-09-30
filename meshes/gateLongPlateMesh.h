@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/GateLongPlate.cs
+
 const unsigned int gateLongPlateVertices=62;
 const unsigned int gateLongPlateNumIndices=132;
 const Vertex3D_NoTex2 gateLongPlateMesh[62]=

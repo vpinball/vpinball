@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/DropTargetT4.cs
+
 const unsigned int hitTargetT4Vertices=68;
 const unsigned int hitTargetT4NumIndices=174;
 const Vertex3D_NoTex2 hitTargetT4Mesh[68]=

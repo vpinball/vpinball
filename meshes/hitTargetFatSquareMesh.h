@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/HitTargetFatSquare.cs
+
 const unsigned int hitFatTargetSquareVertices=302;
 const unsigned int hitFatTargetSquareNumIndices=942;
 const Vertex3D_NoTex2 hitFatTargetSquareMesh[302]=

@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/HitTargetT2Slim.cs
+
 const unsigned int hitTargetT2SlimVertices=302;
 const unsigned int hitTargetT2SlimNumIndices=942;
 const Vertex3D_NoTex2 hitTargetT2SlimMesh[302]=

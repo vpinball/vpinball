@@ -233,6 +233,10 @@ inline Vertex3Ds CrossProduct(const Vertex3Ds &pv1, const Vertex3Ds &pv2)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/Math/Vertex3D.cs
+//
 
 inline Vertex3Ds GetRotatedAxis(const float angle, const Vertex3Ds &axis, const Vertex3Ds &temp)
 {
@@ -259,6 +263,10 @@ inline Vertex3Ds GetRotatedAxis(const float angle, const Vertex3Ds &axis, const 
 
    return Vertex3Ds(temp.Dot(rotMatrixRow0), temp.Dot(rotMatrixRow1), temp.Dot(rotMatrixRow2));
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void RotateAround(const Vertex3Ds &pvAxis, Vertex3D_NoTex2 * const pvPoint, int count, float angle);
 void RotateAround(const Vertex3Ds &pvAxis, Vertex3Ds * const pvPoint, int count, float angle);

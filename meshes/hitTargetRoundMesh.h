@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/HitTargetRound.cs
+
 const unsigned int hitTargetRoundVertices=209;
 const unsigned int hitTargetRoundNumIndices=522;
 const Vertex3D_NoTex2 hitTargetRoundMesh[209]=

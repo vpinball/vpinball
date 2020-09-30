@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/FlipperBase.cs
+
 const unsigned int flipperBaseVertices=104;
 const unsigned int flipperBaseNumIndices=300;
 const Vertex3D_NoTex2 flipperBaseMesh[104]=

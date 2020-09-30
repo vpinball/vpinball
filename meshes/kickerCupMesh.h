@@ -1,3 +1,7 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/KickerCup.cs
+//            VisualPinball.Resources/Meshes/KickerPlate.cs
+
 const unsigned int kickerCupNumVertices=373;
 const unsigned int kickerCupNumIndices=774;
 const Vertex3D_NoTex2 kickerCupMesh[373]=

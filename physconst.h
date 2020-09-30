@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/Common/Constants.cs
+
 #pragma once
 
 

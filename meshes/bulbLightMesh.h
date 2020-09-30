@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/BulbMesh.cs
+
 const unsigned int bulbLightNumVertices=67;
 const unsigned int bulbLightNumFaces=360;
 const Vertex3D_NoTex2 bulbLight[67]=

@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/TriggerButton.cs
+
 const unsigned int triggerButtonNumVertices=528;
 const unsigned int triggerButtonNumIndices=948;
 const Vertex3D_NoTex2 triggerButtonMesh[528]=

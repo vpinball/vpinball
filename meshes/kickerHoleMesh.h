@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/KickerHole.cs
+
 const unsigned int kickerHoleNumVertices=192;
 const unsigned int kickerHoleNumIndices=288;
 const Vertex3D_NoTex2 kickerHoleMesh[192]=

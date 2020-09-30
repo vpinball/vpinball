@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/BumperCap.cs
+
 const unsigned int bumperCapNumVertices=839;
 const unsigned int bumperCapNumIndices=1194;
 const Vertex3D_NoTex2 bumperCap[839]=

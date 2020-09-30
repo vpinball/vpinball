@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/GateWire.cs
+
 const unsigned int gateWireNumVertices=186;
 const unsigned int gateWireNumIndices=1008;
 const Vertex3D_NoTex2 gateWire[186]=

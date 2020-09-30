@@ -1,5 +1,10 @@
 #include "stdafx.h"
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/Math/Functions.cs
+//
+
 bool SolveQuadraticEq(const float a, const float b, const float c, float& sol1, float& sol2)
 {
    float discr = b*b - 4.0f*a*c;
@@ -15,6 +20,10 @@ bool SolveQuadraticEq(const float a, const float b, const float c, float& sol1, 
 
    return true;
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 // Blinn: How to solve a cubic equation, part 5: Back to numerics
 Vertex3Ds SolveCubicEq(Vertex4D Coefficient) // x = ^0, y = ^1, z = ^2, w = ^3

@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/GatePlate.cs
+
 const unsigned int gatePlateNumVertices=70;
 const unsigned int gatePlateNumIndices=156;
 const Vertex3D_NoTex2 gatePlateMesh[70]=

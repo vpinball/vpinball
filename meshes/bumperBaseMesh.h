@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Resources/Meshes/BumperBase.cs
+
 const unsigned int bumperBaseNumVertices=517;
 const unsigned int bumperBaseNumIndices=2352;
 const Vertex3D_NoTex2 bumperBase[517]=
