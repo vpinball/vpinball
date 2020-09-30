@@ -607,11 +607,11 @@ void FastIStream::SetSize(unsigned int i)
 
 		if (m_rg)
 			{
-			m_rgNew = realloc((void *)m_rg, sizeof(void *) * (i));
+			m_rgNew = realloc((void *)m_rg, i);
 			}
 		else
 			{
-			m_rgNew = malloc(sizeof(void *) * i);
+			m_rgNew = malloc(i);
 			}
 
 		m_rg = (char *)m_rgNew;
