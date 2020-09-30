@@ -523,6 +523,11 @@ void Rubber::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(pht);
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Rubber/RubberHitGenerator.cs
+//
+
 void Rubber::GetHitShapes(vector<HitObject*> &pvho)
 {
    std::set< std::pair<unsigned, unsigned> > addedEdges;
@@ -555,6 +560,10 @@ void Rubber::GetHitShapes(vector<HitObject*> &pvho)
       SetupHitObject(pvho, new HitPoint(v));
    }
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void Rubber::AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j)
 {
@@ -604,6 +613,11 @@ void Rubber::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Mesh.cs
+//
+
 void Rubber::AddPoint(int x, int y, const bool smooth)
 {
     std::vector<RenderVertex> vvertex;
@@ -640,6 +654,10 @@ void Rubber::AddPoint(int x, int y, const bool smooth)
 
     STOPUNDO
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void Rubber::EndPlay()
 {

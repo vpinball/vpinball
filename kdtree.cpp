@@ -1,6 +1,11 @@
 #include "stdafx.h"
 #include "kdtree.h"
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/Physics/HitKd.cs
+//
+
 HitKD::HitKD()
 {
    m_num_items = 0;
@@ -175,6 +180,9 @@ void HitKD::Update()
    FillFromVector(*m_org_vho);
 }
 
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void HitKDNode::CreateNextLevel(const unsigned int level, unsigned int level_empty)
 {

@@ -1,5 +1,10 @@
 #include "stdafx.h"
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Bumper/BumperCollider.cs
+//
+
 void BumperHitCircle::Collide(const CollisionEvent& coll)
 {
    if (!m_enabled) return;
@@ -17,6 +22,10 @@ void BumperHitCircle::Collide(const CollisionEvent& coll)
       m_pbumper->FireGroupEvent(DISPID_HitEvents_Hit);
    }
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -684,6 +693,12 @@ void Hit3DPoly::CalcHitBBox()
    }
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/Physics/HitTriangle.cs
+//            VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/TriangleCollider.cs
+//
+
 HitTriangle::HitTriangle(const Vertex3Ds rgv[3])
 {
    m_rgv[0] = rgv[0];
@@ -818,9 +833,9 @@ void HitTriangle::CalcHitBBox()
    m_hitBBox.zhigh  = max(m_rgv[0].z, max(m_rgv[1].z, m_rgv[2].z));
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
-
+// Ported at: VisualPinball.Engine/Physics/HitPlane.cs
+//            VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/PlaneCollider.cs
 
 float HitPlane::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
@@ -909,6 +924,10 @@ void HitPlane::Collide(const CollisionEvent& coll)
       coll.m_ball->m_d.m_pos -= bnd * m_normal;
 #endif
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 ////////////////////////////////////////////////////////////////////////////////
 

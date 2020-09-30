@@ -883,6 +883,11 @@ float Ramp::GetDepth(const Vertex3Ds& viewDir) const
    return m_d.m_depthBias + viewDir.x * center2D.x + viewDir.y * center2D.y + viewDir.z * centerZ;
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Ramp/RampHitGenerator.cs
+//
+
 bool Ramp::isHabitrail() const
 {
    return m_d.m_type == RampType4Wire
@@ -891,6 +896,10 @@ bool Ramp::isHabitrail() const
        || m_d.m_type == RampType3WireLeft
        || m_d.m_type == RampType3WireRight;
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void Ramp::RenderStaticHabitrail(const Material * const mat)
 {
@@ -989,6 +998,11 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
 
    //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 }
+
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Ramp/RampMeshGenerator.cs
+//
 
 void Ramp::CreateWire(const int numRings, const int numSegments, const Vertex2D * const midPoints, Vertex3D_NoTex2 * const rgvbuf)
 {
@@ -1165,6 +1179,10 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
       delete[] middlePoints;
    delete[] tmpPoints;
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void Ramp::PrepareHabitrail()
 {
@@ -2231,6 +2249,11 @@ void Ramp::RenderDynamic()
    RenderRamp(mat);
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Ramp/RampMeshGenerator.cs
+//
+
 void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
 {
    const Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
@@ -2416,6 +2439,10 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
    if (rgratio)
       delete[] rgratio;
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void Ramp::GenerateVertexBuffer()
 {

@@ -466,6 +466,11 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
 
    const unsigned int reduced_vertices = max((unsigned int)pow((double)m_vertices.size(), clamp(1.f - m_d.m_collision_reductionFactor, 0.f, 1.f)*0.25f + 0.75f), 420u); //!! 420 = magic
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Primitive/PrimitiveHitGenerator.cs
+//
+
    if (reduced_vertices < m_vertices.size())
    {
       std::vector<ProgMesh::float3> prog_vertices(m_vertices.size());
@@ -530,6 +535,11 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
       for (size_t i = 0; i < prog_vertices.size(); ++i)
          SetupHitObject(pvho, new HitPoint(prog_vertices[i].x, prog_vertices[i].y, prog_vertices[i].z));
    }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
+
    else
    {
       std::set< std::pair<unsigned, unsigned> > addedEdges;

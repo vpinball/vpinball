@@ -266,10 +266,10 @@ const static PlungerCoord modernCoords[] =
    { 0.20f, 0.0f, 0.00f, 1.0f, 0.0f },  // tip
    { 0.30f, 3.0f, 0.11f, 1.0f, 0.0f },  // tip
    { 0.35f, 5.0f, 0.14f, 1.0f, 0.0f },  // tip
-   { 0.35f, 23.0f, 0.19f, 1.0f, 0.0f },  // tip
-   { 0.45f, 23.0f, 0.21f, 0.8f, 0.0f },  // ring
-   { 0.25f, 24.0f, 0.25f, 0.3f, 0.0f },  // shaft
-   { 0.25f, 100.0f, 1.00f, 0.3f, 0.0f }   // shaft
+   { 0.35f, 23.0f, 0.19f, 1.0f, 0.0f }, // tip
+   { 0.45f, 23.0f, 0.21f, 0.8f, 0.0f }, // ring
+   { 0.25f, 24.0f, 0.25f, 0.3f, 0.0f }, // shaft
+   { 0.25f, 100.0f, 1.00f, 0.3f, 0.0f } // shaft
 };
 const static PlungerDesc modernDesc = {
    sizeof(modernCoords) / sizeof(modernCoords[0]), (PlungerCoord*)modernCoords
@@ -307,6 +307,13 @@ static const char *nextTipToken(const char* &p)
 }
 
 #define PLUNGER_FRAME_COUNT 25   //frame per 80 units distance
+
+
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Plunger/PlungerDesc.cs
+//            VisualPinball.Engine/VPT/Plunger/PlungerMeshGenerator.cs
+//
 
 void Plunger::RenderSetup()
 {
@@ -847,6 +854,10 @@ void Plunger::RenderSetup()
       delete customDesc;
    }
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void Plunger::RenderStatic()
 {

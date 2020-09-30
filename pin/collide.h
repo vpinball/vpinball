@@ -63,6 +63,11 @@ inline float ElasticityWithFalloff(const float elasticity, const float falloff, 
 }
 
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/Physics/CollisionEvent.cs
+//
+
 struct CollisionEvent
 {
    CollisionEvent() : m_ball(0), m_obj(0), m_hittime(0.0f), m_hitdistance(0.0f), /*m_hitmoment(0.0f)*/ m_hitmoment_bit(true), m_hitflag(false), /*m_hitRigid(false),*/ m_isContact(false) {}
@@ -90,6 +95,9 @@ struct CollisionEvent
    bool m_isContact; // set to true if impact velocity is ~0
 };
 
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 class HitObject
 {

@@ -96,6 +96,11 @@ void HitQuadtree::Initialize()
 #endif
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/Physics/HitQuadTree.cs
+//
+
 void HitQuadtree::Initialize(const FRect3D& bounds)
 {
 #ifdef USE_EMBREE
@@ -127,6 +132,8 @@ void HitQuadtree::Update()
 }
 
 #else
+
+// Ported at: VisualPinball.Engine/Physics/HitQuadTree.cs
 
 void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int level, unsigned int level_empty)
 {
@@ -214,6 +221,10 @@ void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int leve
    for (int i = 0; i < 4; ++i)
       m_children[i]->InitSseArrays();
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void HitQuadtree::InitSseArrays()
 {

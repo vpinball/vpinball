@@ -182,6 +182,11 @@ void FlipperMoverObject::SetMass(const float m)
    m_inertia = (float)(1.0 / 3.0) * m * (m_flipperradius*m_flipperradius); //!! also change if wiring of moment of inertia happens (see ctor)
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Flipper/FlipperDisplacementSystem.cs
+//
+
 void FlipperMoverObject::UpdateDisplacements(const float dtime)
 {
    m_angleCur += m_angleSpeed*dtime;	// move flipper angle
@@ -242,6 +247,8 @@ void FlipperMoverObject::UpdateDisplacements(const float dtime)
       m_enableRotateEvent = 0;
    }
 }
+
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Flipper/FlipperVelocitySystem.cs
 
 void FlipperMoverObject::UpdateVelocities()
 {
@@ -315,6 +322,9 @@ void FlipperMoverObject::ApplyImpulse(const Vertex3Ds& rotI)
    m_angleSpeed = m_angularMomentum / m_inertia;    // TODO: figure out moment of inertia
 }
 
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void FlipperMoverObject::SetSolenoidState(const bool s) // true = button pressed, false = released
 {
@@ -336,6 +346,11 @@ static inline Vertex3Ds CrossZ(const float rz, const Vertex3Ds& v)
    return Vertex3Ds(-rz * v.y, rz * v.x, 0.f);
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Flipper/FlipperMovementData.cs
+//
+
 Vertex3Ds FlipperMoverObject::SurfaceVelocity(const Vertex3Ds& surfP) const
 {
    //const Vertex3Ds angularVelocity(0, 0, m_angleSpeed);
@@ -355,6 +370,10 @@ Vertex3Ds FlipperMoverObject::SurfaceAcceleration(const Vertex3Ds& surfP) const
 
    return tangAcc + centrAcc;
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 float FlipperMoverObject::GetHitTime() const
 {

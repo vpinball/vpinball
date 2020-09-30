@@ -21,12 +21,21 @@ public:
       m_d[2][2] *= factor;
    }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/Math/Matrix2D.cs
+//
+
    void SkewSymmetric(const Vertex3Ds &pv3D)
    {
       m_d[0][0] = 0; m_d[0][1] = -pv3D.z; m_d[0][2] = pv3D.y;
       m_d[1][0] = pv3D.z; m_d[1][1] = 0; m_d[1][2] = -pv3D.x;
       m_d[2][0] = -pv3D.y; m_d[2][1] = pv3D.x; m_d[2][2] = 0;
    }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
    void MulScalar(const float scalar)
    {
@@ -122,6 +131,11 @@ public:
       m_d[2][0] = m_d[2][1] = 0.0f;
    }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/Math/Matrix2D.cs
+//
+
    // Create matrix for rotating around an arbitrary vector
    // NB: axis must be normalized
    // NB: this actually rotates by -angle in right-handed coordinates
@@ -142,6 +156,10 @@ public:
       m_d[1][2] = axis.y*axis.z*(1.0f - rcos) + axis.x*rsin;
       m_d[2][2] = axis.z*axis.z + rcos*(1.0f - axis.z*axis.z);
    }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
    void RotationAroundAxis(const Vertex3Ds& axis, const float rsin, const float rcos)
    {

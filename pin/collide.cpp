@@ -432,8 +432,10 @@ void HitLineZ::Collide(const CollisionEvent& coll)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-
-
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/PointCollider.cs
+//
 float HitPoint::HitTest(const BallS &ball, const float dtime, CollisionEvent& coll) const
 {
    if (!m_enabled)
@@ -515,6 +517,10 @@ void HitPoint::Collide(const CollisionEvent& coll)
    if (dot <= -m_threshold)
       FireHitEvent(coll.m_ball);
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void DoHitTest(const Ball *const pball, const HitObject *const pho, CollisionEvent& coll)
 {

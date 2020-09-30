@@ -494,6 +494,11 @@ void Trigger::TriggerAnimationUnhit()
    m_unhitEvent = true;
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Trigger/TriggerAnimationSystem.cs
+//
+
 void Trigger::UpdateAnimation()
 {
    const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
@@ -576,6 +581,11 @@ void Trigger::UpdateAnimation()
       }
    }
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
+
 void Trigger::RenderDynamic()
 {
    if (!m_d.m_visible || m_d.m_shape == TriggerNone)
@@ -650,6 +660,11 @@ void Trigger::ExportMesh(FILE *f)
    WaveFrontObj_WriteFaceInfoList(f, indices, m_numIndices);
    WaveFrontObj_UpdateFaceOffset(m_numVertices);
 }
+
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Trigger/TriggerMeshGenerator.cs
+//
 
 void Trigger::GenerateMesh()
 {
@@ -760,6 +775,10 @@ void Trigger::GenerateMesh()
       }
    }
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void Trigger::RenderSetup()
 {

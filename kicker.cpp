@@ -405,6 +405,11 @@ void Kicker::RenderSetup()
 
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Kicker/KickerMeshGenerator.cs
+//
+
    if (m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole || m_d.m_kickertype == KickerHoleSimple || m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb || m_d.m_kickertype == KickerCup2)
    {
       Vertex3D_NoTex2 *buf = new Vertex3D_NoTex2[kickerPlateNumVertices];
@@ -444,6 +449,10 @@ void Kicker::RenderSetup()
 
       delete[] buf;
    }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
    const WORD * indices;
    switch (m_d.m_kickertype)

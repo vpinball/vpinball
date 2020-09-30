@@ -189,6 +189,11 @@ inline float GetDot(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoin
    return (pvJoint->x - pvEnd1->x)*(pvJoint->y - pvEnd2->y) - (pvJoint->y - pvEnd1->y)*(pvJoint->x - pvEnd2->x);
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Mesh.cs
+//
+
 inline bool FLinesIntersect(const Vertex2D * const Start1, const Vertex2D * const Start2, const Vertex2D * const End1, const Vertex2D * const End2)
 {
    const float x1 = Start1->x;
@@ -281,6 +286,10 @@ inline float GetCos(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoin
 
    return dot / sqrtf((vt1.x * vt1.x + vt1.y * vt1.y)*(vt2.x * vt2.x + vt2.y * vt2.y));
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 /*
 inline float GetAngle(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
@@ -479,6 +488,11 @@ inline WindingOrder DetermineWindingOrder(const RenderVertexCont& vertices)
     // Can that happen?  Do we need to check other vertices / eliminate duplicate vertices?
     return detOrient > 0.f ? Clockwise : CounterClockwise;
 }
+
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Mesh.cs
+//
 
 template <class RenderVertexCont, class Idx>
 void PolygonToTriangles(const RenderVertexCont& rgv, std::vector<unsigned int>& pvpoly, std::vector<Idx>& pvtri, const bool support_both_winding_orders)
