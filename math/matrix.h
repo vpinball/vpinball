@@ -190,6 +190,11 @@ public:
    Matrix3D() {}
    Matrix3D(const float Scale) { SetScaling(Scale, Scale, Scale); }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/Math/Matrix3D.cs
+//
+
    // premultiply the given matrix, i.e., result = mult * (*this)
    void Multiply(const Matrix3D &mult, Matrix3D &result) const
    {
@@ -263,6 +268,10 @@ public:
       _31 *= z; _32 *= z; _33 *= z;
    }
 
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
+
    // extract the matrix corresponding to the 3x3 rotation part
    void GetRotationPart(Matrix3D& rot)
    {
@@ -288,6 +297,11 @@ public:
       vOut.z = zp*inv_wp;
    }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/Math/Matrix3D.cs
+//
+
    Vertex3Ds MultiplyVector(const Vertex3Ds &v) const
    {
       // Transform it through the current matrix set
@@ -309,6 +323,10 @@ public:
 
       return Vertex3Ds(xp,yp,zp);
    }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
    template <class VecIn, class VecOut>
    void MultiplyVectorNoTranslate(const VecIn& vIn, VecOut& vOut) const

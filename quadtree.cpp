@@ -295,6 +295,11 @@ void HitQuadtree::HitTestBall(const Ball * const pball, CollisionEvent& coll) co
 
 #else   /// without SSE optimization ////////////////////////
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/Physics/HitQuadTree.cs
+//
+
    for (unsigned i=0; i<m_vho.size(); i++)
    {
 #ifdef DEBUGPHYSICS
@@ -328,6 +333,9 @@ void HitQuadtree::HitTestBall(const Ball * const pball, CollisionEvent& coll) co
       }
    }
 #endif
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 }
 
 void HitQuadtree::HitTestBallSse(const Ball * const pball, CollisionEvent& coll) const

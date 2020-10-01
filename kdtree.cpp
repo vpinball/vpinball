@@ -180,9 +180,7 @@ void HitKD::Update()
    FillFromVector(*m_org_vho);
 }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collision/KdNode.cs
 
 void HitKDNode::CreateNextLevel(const unsigned int level, unsigned int level_empty)
 {
@@ -455,6 +453,10 @@ void HitKDNode::HitTestBall(const Ball * const pball, CollisionEvent& coll) cons
    }
 #endif
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 #ifdef KDTREE_SSE_LEAFTEST
 void HitKDNode::HitTestBallSse(const Ball * const pball, CollisionEvent& coll) const

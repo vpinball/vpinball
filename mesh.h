@@ -1,3 +1,6 @@
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/Math/CatmullCurve.cs
+
 #pragma once
 
 #include "Material.h"
@@ -131,6 +134,9 @@ private:
    float cz0, cz1, cz2, cz3;
 };
 
+// Ported at: VisualPinball.Engine/Math/RenderVertex.cs
+//            VisualPinball.Engine/VPT/Mesh.cs
+//            VisualPinball.Engine/Math/DragPoint.cs
 
 class RenderVertex3D : public Vertex3Ds
 {
@@ -189,10 +195,7 @@ inline float GetDot(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoin
    return (pvJoint->x - pvEnd1->x)*(pvJoint->y - pvEnd2->y) - (pvJoint->y - pvEnd1->y)*(pvJoint->x - pvEnd2->x);
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Mesh.cs
-//
 
 inline bool FLinesIntersect(const Vertex2D * const Start1, const Vertex2D * const Start2, const Vertex2D * const End1, const Vertex2D * const End2)
 {
@@ -341,6 +344,9 @@ void SetNormal(VtxType * const rgv, const IdxType * const rgi, const int count, 
    }
 }
 
+// Ported at: VisualPinball.Engine/Math/DragPoint.cs
+//            VisualPinball.Engine/VPT/Mesh.cs
+
 // Calculate if two vectors are flat to each other
 // accuracy is a float greater 4 and smaller 4000000 (tested this out)
 inline bool FlatWithAccuracy(const Vertex2D & v1, const Vertex2D & v2, const Vertex2D & vMid, const float accuracy)
@@ -419,6 +425,9 @@ inline void ClosestPointOnPolygon(const VtxContType &rgv, const Vertex2D &pvin, 
    }
 }
 
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 enum WindingOrder
 {

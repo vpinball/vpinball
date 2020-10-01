@@ -48,6 +48,10 @@ public:
    virtual void Animate() = 0;
 };
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/Math/Functions.cs
+//
 
 /*
  * Rubber has a coefficient of restitution which decreases with the impact velocity.
@@ -62,11 +66,7 @@ inline float ElasticityWithFalloff(const float elasticity, const float falloff, 
       return elasticity;
 }
 
-
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/Physics/CollisionEvent.cs
-//
 
 struct CollisionEvent
 {
