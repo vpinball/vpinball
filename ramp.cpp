@@ -506,6 +506,11 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
    return rgvLocal;
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Ramp/Ramp.cs
+//
+
 float Ramp::GetSurfaceHeight(float x, float y) const
 {
    std::vector<RenderVertex3D> vvertex;
@@ -544,6 +549,10 @@ float Ramp::GetSurfaceHeight(float x, float y) const
 
    return vvertex[iSeg].z + (startlength / totallength) * (topHeight - bottomHeight) + bottomHeight;
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void Ramp::GetTimers(vector<HitTimer*> &pvht)
 {

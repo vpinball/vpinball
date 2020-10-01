@@ -573,6 +573,11 @@ void Primitive::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/Math/EdgeSet.cs
+//
+
 void Primitive::AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj)
 {
    // create pair uniquely identifying the edge (i,j)
@@ -584,6 +589,10 @@ void Primitive::AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigne
       SetupHitObject(pvho, new HitLine3D(vi, vj));
    }
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void Primitive::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
 {

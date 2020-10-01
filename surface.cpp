@@ -551,6 +551,11 @@ void Surface::RenderDynamic()
    }
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Surface/SurfaceMeshGenerator.cs
+//
+
 void Surface::GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Vertex3D_NoTex2> &sideBuf, std::vector<WORD> &topBottomIndices, std::vector<WORD> &sideIndices)
 {
    std::vector<RenderVertex> vvertex;
@@ -745,6 +750,10 @@ void Surface::GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Ver
       }
    }
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void Surface::ExportMesh(FILE *f)
 {
