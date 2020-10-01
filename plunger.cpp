@@ -260,6 +260,11 @@ void Plunger::RenderDynamic()
    pd3dDevice->basicShader->End();
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Plunger/PlungerCoord.cs
+//
+
 // Modern Plunger - added by rascal
 const static PlungerCoord modernCoords[] =
 {
@@ -274,6 +279,10 @@ const static PlungerCoord modernCoords[] =
 const static PlungerDesc modernDesc = {
    sizeof(modernCoords) / sizeof(modernCoords[0]), (PlungerCoord*)modernCoords
 };
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 // Flat Plunger.  This is a special case with no "lathe" entries;
 // instead we define a simple rectangle covering the stroke length
