@@ -316,6 +316,11 @@ void Rubber::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
    }
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/Math/DragPoint.cs
+//
+
 /*
  * Compute the vertices and additional information for the ramp shape.
  *
@@ -507,6 +512,10 @@ float Rubber::GetSurfaceHeight(float x, float y) const
 
     return zheight*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void Rubber::GetTimers(vector<HitTimer*> &pvht)
 {
@@ -1299,6 +1308,11 @@ void Rubber::ExportMesh(FILE *f)
    }
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Rubber/RubberMeshGenerator.cs
+//
+
 void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape) //!! hack, createHitShape==true needs adaption below if changing detail level for hitshape
 {
    int accuracy;
@@ -1516,6 +1530,9 @@ void Rubber::UpdateRubber(const bool updateVB, const float height)
    }
 }
 
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void Rubber::SetDefaultPhysics(bool fromMouseClick)
 {
