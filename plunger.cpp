@@ -1025,6 +1025,11 @@ STDMETHODIMP Plunger::MotionDevice(int *pVal)
    return S_OK;
 }
 
+//
+// license:GPLv3+
+// Not yet ported to VPE, but probably will have to
+//
+
 STDMETHODIMP Plunger::Position(float *pVal) // 0..25
 {
    if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_PBWIZARD ||
@@ -1085,6 +1090,8 @@ STDMETHODIMP Plunger::Position(float *pVal) // 0..25
    return S_OK;
 }
 
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Plunger/PlungerApi.cs
+
 STDMETHODIMP Plunger::Fire()
 {
    if (m_phitplunger)
@@ -1116,6 +1123,10 @@ STDMETHODIMP Plunger::Fire()
 
    return S_OK;
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 STDMETHODIMP Plunger::get_PullSpeed(float *pVal)
 {
