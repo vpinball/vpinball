@@ -659,6 +659,11 @@ void Primitive::EndPlay()
 // Calculation
 //////////////////////////////
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Primitive/PrimitiveMeshGenerator.cs
+//
+
 void Primitive::RecalculateMatrices()
 {
    // scale matrix
@@ -694,6 +699,10 @@ void Primitive::RecalculateMatrices()
    Smatrix.SetScaling(1.0f, 1.0f, m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
    Smatrix.Multiply(m_fullMatrix, m_fullMatrix);
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 // recalculate vertices for editor display
 void Primitive::TransformVertices()
@@ -926,6 +935,11 @@ void Primitive::RenderBlueprint(Sur *psur, const bool solid)
    }
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Primitive/PrimitiveMeshGenerator.cs
+//
+
 void Primitive::CalculateBuiltinOriginal()
 {
     if (m_d.m_use3DMesh)
@@ -1116,6 +1130,10 @@ void Primitive::CalculateBuiltinOriginal()
    //SetNormal(&m_mesh.m_vertices[0], &m_mesh.m_indices[0], m_mesh.NumIndices()); // SetNormal only works for plane polygons
    //ComputeNormals(m_mesh.m_vertices, m_mesh.m_indices);
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void Primitive::UpdateStatusBarInfo()
 {
