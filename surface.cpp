@@ -367,6 +367,11 @@ void Surface::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Surface/SurfaceHitGenerator.cs
+//
+
 void Surface::CurvesToShapes(vector<HitObject*> &pvho)
 {
    std::vector<RenderVertex> vvertex;
@@ -410,6 +415,10 @@ void Surface::CurvesToShapes(vector<HitObject*> &pvho)
    }
 }
 
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
+
 void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj)
 {
    Material * const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
@@ -440,6 +449,11 @@ void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj)
    if (m_d.m_droppable)
       m_vhoDrop.push_back(obj);
 }
+
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Surface/SurfaceHitGenerator.cs
+//
 
 void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2)
 {
@@ -486,6 +500,10 @@ void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
       SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1.x, pv1.y, bottom)));
    SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1.x, pv1.y, top)));
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void Surface::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
 {
