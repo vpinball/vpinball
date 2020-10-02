@@ -22,6 +22,11 @@
 
 #include "stdafx.h"
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Flipper/FlipperMover.cs
+//
+
 FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, const float baser, const float endr, const float flipr, const float angleStart, float angleEnd,
    const float zlow, const float zhigh, Flipper* const pflipper) : m_hitcircleBase(center, baser, zlow, zhigh) // base section
 {
@@ -109,6 +114,10 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, const float baser
    //m_inertia = mass;  //stubbed to mass of flipper body
 #endif
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 HitFlipper::HitFlipper(const Vertex2D& center, const float baser, const float endr, const float flipr, const float angleStart, const float angleEnd,
    const float zlow, const float zhigh, Flipper* const pflipper)
@@ -394,6 +403,11 @@ float FlipperMoverObject::GetHitTime() const
    else
       return hittime;
 }
+
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Flipper/FlipperCollider.cs
+//
 
 float HitFlipper::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
