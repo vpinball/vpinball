@@ -254,6 +254,10 @@ void IHaveDragPoints::ReverseOrder()
    m_vdpoint[m_vdpoint.size() - 1]->m_slingshot = slingshotTemp;
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/Math/DragPoint.cs
+//
 
 void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, float **ppcoords)
 {
@@ -350,6 +354,10 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
       }
    }
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void IHaveDragPoints::ClearPointsForOverwrite()
 {
