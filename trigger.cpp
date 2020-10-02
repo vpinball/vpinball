@@ -331,6 +331,11 @@ void Trigger::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(pht);
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Trigger/TriggerHitGenerator.cs
+//
+
 void Trigger::GetHitShapes(vector<HitObject*> &pvho)
 {
    m_hitEnabled = m_d.m_enabled;
@@ -352,6 +357,10 @@ void Trigger::GetHitShapes(vector<HitObject*> &pvho)
    else
       CurvesToShapes(pvho);
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void Trigger::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
@@ -400,6 +409,11 @@ void Trigger::GetHitShapesDebug(vector<HitObject*> &pvho)
    }
    }
 }
+
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Trigger/TriggerHitGenerator.cs
+//
 
 void Trigger::CurvesToShapes(vector<HitObject*> &pvho)
 {
@@ -461,6 +475,10 @@ void Trigger::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
 
    plineseg->CalcNormal();
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void Trigger::EndPlay()
 {
