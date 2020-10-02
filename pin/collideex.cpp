@@ -28,6 +28,10 @@ void BumperHitCircle::Collide(const CollisionEvent& coll)
 //
 
 ////////////////////////////////////////////////////////////////////////////////
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/LineCollider.cs
+//
 
 float LineSegSlingshot::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
@@ -90,6 +94,12 @@ void SlingshotAnimObject::Animate()
       m_TimeReset = 0;
    }
 }
+
+// Ported at: VisualPinball.Engine/VPT/Gate/GateHit.cs
+//            VisualPinball.Engine/VPT/Gate/GateHitGenerator.cs
+//            VisualPinball.Engine/VPT/Spinner/SpinnerHit.cs
+//            VisualPinball.Unity/VisualPinball.Unity/VPT/Gate/GateCollider.cs
+//            VisualPinball.Unity/VisualPinball.Unity/VPT/Gate/GateDisplacementSystem.cs
 
 HitGate::HitGate(Gate * const pgate, const float height)
 {
@@ -272,6 +282,12 @@ void GateMoverObject::UpdateVelocities()
    }
 }
 
+// Ported at: VisualPinball.Engine/Physics/Hit3DPoly.cs
+//            VisualPinball.Engine/VPT/Spinner/SpinnerHit.cs
+//            VisualPinball.Engine/VPT/Spinner/SpinnerHitGenerator.cs
+//            VisualPinball.Unity/VisualPinball.Unity/VPT/Spinner/SpinnerCollider.cs
+//            VisualPinball.Unity/VisualPinball.Unity/VPT/Spinner/SpinnerDisplacementSystem.cs
+
 HitSpinner::HitSpinner(Spinner * const pspinner, const float height)
 {
    m_spinnerMover.m_pspinner = pspinner;
@@ -453,6 +469,10 @@ void Hit3DPoly::Init(Vertex3Ds * const rgv, const int count)
    SetFriction(0.3f);
    m_scatter = 0.f;
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 Hit3DPoly::Hit3DPoly(Vertex3Ds * const rgv, const int count)
 {
@@ -925,12 +945,10 @@ void HitPlane::Collide(const CollisionEvent& coll)
 #endif
 }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
 ////////////////////////////////////////////////////////////////////////////////
-
+// Ported at: VisualPinball.Engine/Physics/HitLine3D.cs
+//            VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/Line3DCollider.cs
+//
 
 HitLine3D::HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2)
 {
@@ -1017,6 +1035,8 @@ void HitLine3D::Collide(const CollisionEvent& coll)
    }
 }
 
+// Ported at: VisualPinball.Engine/VPT/Trigger/TriggerHitLineSeg.cs
+//            VisualPinball.Unity/VisualPinball.Unity/VPT/Trigger/TriggerCollider.cs
 
 float TriggerLineSeg::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
