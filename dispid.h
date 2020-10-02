@@ -45,6 +45,11 @@
 /// Events
 ///////////////////
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/Game/EventId.cs
+//
+
 // Table
 #define DISPID_GameEvents_KeyDown 1000
 #define DISPID_GameEvents_KeyUp 1001
@@ -93,6 +98,10 @@
 #define DISPID_HitEvents_Unhit 1401
 #define DISPID_LimitEvents_EOS 1402
 #define DISPID_LimitEvents_BOS 1403
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 // PerPropertyDispids
 #define DISPID_Image 1500
