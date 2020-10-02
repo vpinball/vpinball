@@ -39,6 +39,11 @@ void LineSeg::CalcHitBBox()
    // zlow and zhigh were already set in ctor
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/LineCollider.cs
+//
+
 float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid) const
 {
    if (!m_enabled || ball.m_frozen) return -1.0f;
@@ -174,6 +179,7 @@ void LineSeg::CalcNormal()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/CircleCollider.cs
 
 float HitCircle::HitTestBasicRadius(const BallS& ball, const float dtime, CollisionEvent& coll,
                                     const bool direction, const bool lateral, const bool rigid) const // all of these true = bumper/flipperbase/gate/spinner, all false = kicker/trigger
@@ -333,9 +339,8 @@ void HitCircle::Collide(const CollisionEvent& coll)
    coll.m_ball->Collide3DWall(coll.m_hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
-
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/LineZCollider.cs
 
 float HitLineZ::HitTest(const BallS &ball, const float dtime, CollisionEvent& coll) const
 {
@@ -430,12 +435,9 @@ void HitLineZ::Collide(const CollisionEvent& coll)
       FireHitEvent(coll.m_ball);
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/PointCollider.cs
-//
+
 float HitPoint::HitTest(const BallS &ball, const float dtime, CollisionEvent& coll) const
 {
    if (!m_enabled)
