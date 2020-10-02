@@ -69,6 +69,11 @@ void HitPlunger::CalcHitBBox()
    // zlow & zhigh gets set in constructor
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Plunger/PlungerHit.cs
+//
+
 void PlungerMoverObject::SetObjects(const float len)
 {
    m_linesegBase.v1.x = m_x;
@@ -107,6 +112,8 @@ void PlungerMoverObject::SetObjects(const float len)
    m_linesegSide[0].CalcNormal();
    m_linesegSide[1].CalcNormal();
 }
+
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Plunger/PlungerDisplacementSystem.cs
 
 void PlungerMoverObject::UpdateDisplacements(const float dtime)
 {
