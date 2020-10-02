@@ -174,6 +174,11 @@ void Kicker::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(pht);
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Kicker/KickerHit.cs
+//
+
 void Kicker::GetHitShapes(vector<HitObject*> &pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
@@ -210,6 +215,10 @@ void Kicker::GetHitShapes(vector<HitObject*> &pvho)
 
    m_phitkickercircle = phitcircle;
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void Kicker::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
@@ -789,6 +798,11 @@ STDMETHODIMP Kicker::DestroyBall(int *pVal)
    return S_OK;
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Ball/BallManager.cs
+//
+
 STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float x, float y, float z)
 {
    if (g_pplayer && m_phitkickercircle && m_phitkickercircle->m_pball)
@@ -846,6 +860,10 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 
    return S_OK;
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 STDMETHODIMP Kicker::KickZ(float angle, float speed, float inclination, float heightz)
 {
@@ -1144,6 +1162,11 @@ float KickerHitCircle::HitTest(const BallS& ball, const float dtime, CollisionEv
 {
    return HitTestBasicRadius(ball, dtime, coll, false, false, false); //any face, not-lateral, non-rigid
 }
+
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Kicker/KickerCollider.cs
+//
 
 void KickerHitCircle::DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& hitnormal) const
 {
