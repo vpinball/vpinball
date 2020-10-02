@@ -1113,6 +1113,11 @@ void Player::RecomputePseudoPauseState()
    }
 }
 
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Table/TableHitGenerator.cs
+//
+
 void Player::AddCabinetBoundingHitShapes()
 {
    // simple outer borders:
@@ -1165,6 +1170,10 @@ void Player::AddCabinetBoundingHitShapes()
    m_hitTopGlass = HitPlane(Vertex3Ds(0, 0, -1), m_ptable->m_glassheight);
    m_hitTopGlass.m_elasticity = 0.2f;
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void Player::InitKeys()
 {
