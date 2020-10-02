@@ -334,6 +334,12 @@ void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, const float heigh
          m_vdpoint[i]->m_calcHeight = height;
    }
 }
+
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Ramp/RampMeshGenerator.cs
+//
+
 /*
  * Compute the vertices and additional information for the ramp shape.
  *
@@ -506,10 +512,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
    return rgvLocal;
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Ramp/Ramp.cs
-//
 
 float Ramp::GetSurfaceHeight(float x, float y) const
 {
@@ -568,6 +571,8 @@ void Ramp::GetTimers(vector<HitTimer*> &pvht)
    if (m_d.m_tdr.m_TimerEnabled)
       pvht.push_back(pht);
 }
+
+// Ported at: VisualPinball.Engine/VPT/Ramp/RampHitGenerator.cs
 
 void Ramp::GetHitShapes(vector<HitObject*> &pvho)
 {
@@ -862,6 +867,10 @@ void Ramp::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
    pvho.push_back(obj);
    m_vhoCollidable.push_back(obj); //remember hit components of primitive
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void Ramp::EndPlay()
 {
