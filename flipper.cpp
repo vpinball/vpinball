@@ -683,11 +683,11 @@ void Flipper::ExportMesh(FILE *f)
    matTemp.RotateZMatrix(ANGTORAD(m_d.m_StartAngle));
    matTrafo.Multiply(matTemp, matTrafo);
 
-   Vertex3D_NoTex2 *flipper = new Vertex3D_NoTex2[flipperBaseVertices * 2];
+   Vertex3D_NoTex2 *const flipper = new Vertex3D_NoTex2[flipperBaseVertices * 2];
    GenerateBaseMesh(flipper);
 
    {
-   Vertex3D_NoTex2 *buf = flipper;
+   Vertex3D_NoTex2 *const buf = flipper;
    for (int i = 0; i < flipperBaseVertices; i++)
    {
       Vertex3Ds vert(buf[i].x, buf[i].y, buf[i].z);
@@ -794,7 +794,7 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
             // fixAngleScale = 0.0; // note: if you force fixAngleScale = 0.0 then all will look as old/buggy version
    const float baseRadius = m_d.m_BaseRadius - m_d.m_rubberthickness;
    const float endRadius = m_d.m_EndRadius - m_d.m_rubberthickness;
-   Vertex3D_NoTex2 *temp = new Vertex3D_NoTex2[flipperBaseVertices];
+   Vertex3D_NoTex2 *const temp = new Vertex3D_NoTex2[flipperBaseVertices];
 
    // scale the base and tip
    memcpy(temp, flipperBaseMesh, sizeof(Vertex3D_NoTex2)*flipperBaseVertices);

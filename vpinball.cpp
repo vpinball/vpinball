@@ -354,7 +354,7 @@ bool VPinball::OpenFileDialog(const char* const initDir, std::vector<std::string
    {
       int pos = 0;
       while (pos != -1)
-         filename.push_back(std::string(fileDlg.GetNextPathName(pos)));
+         filename.emplace_back(std::string(fileDlg.GetNextPathName(pos)));
 
       return true;
    }
@@ -373,7 +373,7 @@ bool VPinball::SaveFileDialog(const char* const initDir, std::vector<std::string
    {
       int pos = 0;
       while (pos != -1)
-         filename.push_back(std::string(fileDlg.GetNextPathName(pos)));
+         filename.emplace_back(std::string(fileDlg.GetNextPathName(pos)));
 
       return true;
    }
@@ -1947,9 +1947,8 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 void VPinball::ShowDrawingOrderDialog(bool select)
 {
-   DrawingOrderDialog *orderDlg = new DrawingOrderDialog(select);
-   orderDlg->DoModal();
-   delete orderDlg;
+   DrawingOrderDialog orderDlg(select);
+   orderDlg.DoModal();
 }
 
 void VPinball::CloseAllDialogs()

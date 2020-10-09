@@ -1720,13 +1720,13 @@ POINT PinTable::GetScreenPoint() const
 {std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator>::const_iterator \
    it = m_materialMap.find(pEditMaterial.c_str()); \
 if (it == m_materialMap.end()) \
-   pEditMaterial = "";}
+   pEditMaterial.clear();}
 
 #define CLEAN_IMAGE(pEditImage) \
 {std::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator>::const_iterator \
    it = m_textureMap.find(pEditImage.c_str()); \
 if (it == m_textureMap.end()) \
-   pEditImage = "";}
+   pEditImage.clear();}
 
 #define CLEAN_IMAGE_STR(pEditImage) \
 {std::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator>::const_iterator \
@@ -2195,20 +2195,20 @@ ISelect *PinTable::HitTest(const int x, const int y)
 
    const CRect rc = GetClientRect();
 
-   HitSur * const phs = new HitSur(dc.GetHDC(), m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
-   HitSur * const phs2 = new HitSur(dc.GetHDC(), m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
+   HitSur phs (dc.GetHDC(), m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
+   HitSur phs2(dc.GetHDC(), m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
 
    m_allHitElements.clear();
 
-   UIRenderPass2(phs);
+   UIRenderPass2(&phs);
 
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
       IEditable * const ptr = m_vedit[i];
       if (ptr->m_backglass == m_vpinball->m_backglassView)
       {
-         ptr->UIRenderPass1(phs2);
-         ISelect* const tmp = phs2->m_pselected;
+         ptr->UIRenderPass1(&phs2);
+         ISelect* const tmp = phs2.m_pselected;
          if (FindIndexOf(m_allHitElements, tmp) == -1 && tmp != NULL && tmp != this)
          {
             m_allHitElements.push_back(tmp);
@@ -2217,18 +2217,14 @@ ISelect *PinTable::HitTest(const int x, const int y)
    }
    // it's possible that UIRenderPass1 doesn't find all elements (gates,plunger)
    // check here if everything was already stored in the list
-   if (FindIndexOf(m_allHitElements, phs->m_pselected) == -1)
+   if (FindIndexOf(m_allHitElements, phs.m_pselected) == -1)
    {
-      m_allHitElements.push_back(phs->m_pselected);
+      m_allHitElements.push_back(phs.m_pselected);
    }
-   delete phs2;
 
    std::reverse(m_allHitElements.begin(), m_allHitElements.end());
 
-   ISelect * const pisel = phs->m_pselected;
-   delete phs;
-
-   return pisel;
+   return phs.m_pselected;
 }
 
 void PinTable::SetDirtyDraw()
@@ -5447,21 +5443,21 @@ void PinTable::ExportBlueprint()
    char *pbits;
    dc.CreateDIBSection(dc.GetHDC(), &bmi, DIB_RGB_COLORS, (void **)&pbits, NULL, 0);
 
-   PaintSur * const psur = new PaintSur(hdc2, (float)bmwidth / tablewidth, tablewidth*0.5f, tableheight*0.5f, bmwidth, bmheight, NULL);
+   {
+   PaintSur psur(hdc2, (float)bmwidth / tablewidth, tablewidth*0.5f, tableheight*0.5f, bmwidth, bmheight, NULL);
 
    dc.SelectObject(dc.GetStockObject(WHITE_BRUSH));
    dc.PatBlt(0, 0, bmwidth, bmheight, PATCOPY);
 
    if (m_vpinball->m_backglassView)
-      Render3DProjection(psur);
+      Render3DProjection(&psur);
 
    for(auto &ptr : m_vedit)
    {
       if (ptr->GetISelect()->m_isVisible && ptr->m_backglass == m_vpinball->m_backglassView)
-         ptr->RenderBlueprint(psur, solid);
+         ptr->RenderBlueprint(&psur, solid);
    }
-
-   delete psur;
+   }
 
 #if 0
    for (int i = 0; i < bmheight; i++)

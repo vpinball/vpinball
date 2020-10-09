@@ -138,18 +138,18 @@ void Rubber::DrawRubberMesh(Sur * const psur)
       const Vertex3Ds C = Vertex3Ds(m_vertices[m_ringIndices[i + 2]].x, m_vertices[m_ringIndices[i + 2]].y, m_vertices[m_ringIndices[i + 2]].z);
       if (fabsf(m_vertices[m_ringIndices[i]].nz + m_vertices[m_ringIndices[i + 1]].nz) < 1.f)
       {
-         drawVertices.push_back(Vertex2D(A.x, A.y));
-         drawVertices.push_back(Vertex2D(B.x, B.y));
+         drawVertices.emplace_back(Vertex2D(A.x, A.y));
+         drawVertices.emplace_back(Vertex2D(B.x, B.y));
       }
       if (fabsf(m_vertices[m_ringIndices[i + 1]].nz + m_vertices[m_ringIndices[i + 2]].nz) < 1.f)
       {
-         drawVertices.push_back(Vertex2D(B.x, B.y));
-         drawVertices.push_back(Vertex2D(C.x, C.y));
+         drawVertices.emplace_back(Vertex2D(B.x, B.y));
+         drawVertices.emplace_back(Vertex2D(C.x, C.y));
       }
       if (fabsf(m_vertices[m_ringIndices[i + 2]].nz + m_vertices[m_ringIndices[i]].nz) < 1.f)
       {
-         drawVertices.push_back(Vertex2D(C.x, C.y));
-         drawVertices.push_back(Vertex2D(A.x, A.y));
+         drawVertices.emplace_back(Vertex2D(C.x, C.y));
+         drawVertices.emplace_back(Vertex2D(A.x, A.y));
       }
    }
    if (drawVertices.size() > 0)

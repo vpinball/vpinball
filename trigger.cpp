@@ -673,6 +673,11 @@ void Trigger::ExportMesh(FILE *f)
       indices = triggerStarIndices;
       break;
    }
+   default:
+   {
+      assert(false);
+      break;
+   }
    }
 
    WaveFrontObj_WriteFaceInfoList(f, indices, m_numIndices);

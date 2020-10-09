@@ -784,18 +784,18 @@ void Primitive::UIRenderPass2(Sur * const psur)
             const float Cn = m_normals[m_mesh.m_indices[i + 2]];
             if (fabsf(An + Bn) < m_d.m_edgeFactorUI)
             {
-               drawVertices.push_back(Vertex2D(A->x, A->y));
-               drawVertices.push_back(Vertex2D(B->x, B->y));
+               drawVertices.emplace_back(Vertex2D(A->x, A->y));
+               drawVertices.emplace_back(Vertex2D(B->x, B->y));
             }
             if (fabsf(Bn + Cn) < m_d.m_edgeFactorUI)
             {
-               drawVertices.push_back(Vertex2D(B->x, B->y));
-               drawVertices.push_back(Vertex2D(C->x, C->y));
+               drawVertices.emplace_back(Vertex2D(B->x, B->y));
+               drawVertices.emplace_back(Vertex2D(C->x, C->y));
             }
             if (fabsf(Cn + An) < m_d.m_edgeFactorUI)
             {
-               drawVertices.push_back(Vertex2D(C->x, C->y));
-               drawVertices.push_back(Vertex2D(A->x, A->y));
+               drawVertices.emplace_back(Vertex2D(C->x, C->y));
+               drawVertices.emplace_back(Vertex2D(A->x, A->y));
             }
          }
 
@@ -915,18 +915,18 @@ void Primitive::RenderBlueprint(Sur *psur, const bool solid)
          const float Cn = m_normals[m_mesh.m_indices[i + 2]];
          if (fabsf(An + Bn) < m_d.m_edgeFactorUI)
          {
-            drawVertices.push_back(Vertex2D(A->x, A->y));
-            drawVertices.push_back(Vertex2D(B->x, B->y));
+            drawVertices.emplace_back(Vertex2D(A->x, A->y));
+            drawVertices.emplace_back(Vertex2D(B->x, B->y));
          }
          if (fabsf(Bn + Cn) < m_d.m_edgeFactorUI)
          {
-            drawVertices.push_back(Vertex2D(B->x, B->y));
-            drawVertices.push_back(Vertex2D(C->x, C->y));
+            drawVertices.emplace_back(Vertex2D(B->x, B->y));
+            drawVertices.emplace_back(Vertex2D(C->x, C->y));
          }
          if (fabsf(Cn + An) < m_d.m_edgeFactorUI)
          {
-            drawVertices.push_back(Vertex2D(C->x, C->y));
-            drawVertices.push_back(Vertex2D(A->x, A->y));
+            drawVertices.emplace_back(Vertex2D(C->x, C->y));
+            drawVertices.emplace_back(Vertex2D(A->x, A->y));
          }
       }
 

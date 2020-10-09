@@ -46,8 +46,8 @@ static HRESULT ReadMMIO(HMMIO hmmioIn, MMCKINFO* pckInRIFF, WAVEFORMATEX** ppwfx
    // word, and thats how many extra bytes to allocate.
    if (pcmWaveFormat.wf.wFormatTag == WAVE_FORMAT_PCM)
    {
-      if (NULL == (*ppwfxInfo = (WAVEFORMATEX*)new CHAR[sizeof(WAVEFORMATEX)]))
-         return E_FAIL;
+      /*if (NULL == (*/ *ppwfxInfo = (WAVEFORMATEX*)new CHAR[sizeof(WAVEFORMATEX)]; //))
+      //   return E_FAIL;
 
       // Copy the bytes from the pcm structure to the waveformatex structure
       memcpy(*ppwfxInfo, &pcmWaveFormat, sizeof(pcmWaveFormat));

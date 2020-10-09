@@ -288,7 +288,7 @@ bool WaveFrontObj_Load(const string& filename, const bool flipTv, const bool con
       if (idx == tmpCombined.end())
       {
          verts.push_back(tmp);
-         tmpCombined.insert(std::pair<const Vertex3D_NoTex2*,const unsigned int>(&verts.back(),(unsigned int)(verts.size() - 1)));
+         tmpCombined.emplace(std::pair<const Vertex3D_NoTex2*,const unsigned int>(&verts.back(),(unsigned int)(verts.size() - 1)));
          indices.push_back((unsigned int)(verts.size() - 1));
       }
       else
@@ -306,7 +306,7 @@ bool WaveFrontObj_Load(const string& filename, const bool flipTv, const bool con
       if (idx == tmpCombined.end())
       {
          verts.push_back(tmp);
-         tmpCombined.insert(std::pair<const Vertex3D_NoTex2*,const unsigned int>(&verts.back(),(unsigned int)(verts.size() - 1)));
+         tmpCombined.emplace(std::pair<const Vertex3D_NoTex2*,const unsigned int>(&verts.back(),(unsigned int)(verts.size() - 1)));
          indices.push_back((unsigned int)(verts.size() - 1));
       }
       else
@@ -324,7 +324,7 @@ bool WaveFrontObj_Load(const string& filename, const bool flipTv, const bool con
       if (idx == tmpCombined.end())
       {
          verts.push_back(tmp);
-         tmpCombined.insert(std::pair<const Vertex3D_NoTex2*,const unsigned int>(&verts.back(),(unsigned int)(verts.size() - 1)));
+         tmpCombined.emplace(std::pair<const Vertex3D_NoTex2*,const unsigned int>(&verts.back(),(unsigned int)(verts.size() - 1)));
          indices.push_back((unsigned int)(verts.size() - 1));
       }
       else

@@ -1530,7 +1530,7 @@ bool RenderDevice::SetRenderStateCache(const RenderStates p1, DWORD p2)
 {
    if (renderStateCache.find(p1) == renderStateCache.end())
    {
-      renderStateCache.insert(std::pair<RenderStates, DWORD>(p1, p2));
+      renderStateCache.emplace(std::pair<RenderStates, DWORD>(p1, p2));
       return false;
    }
    else if (renderStateCache[p1] != p2) {
