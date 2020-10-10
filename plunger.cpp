@@ -48,7 +48,7 @@ void Plunger::SetDefaults(bool fromMouseClick)
    char buf[MAXTOKEN] = { 0 };
    HRESULT hr = LoadValueString("DefaultProps\\Plunger", "Image", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImage = "";
+      m_d.m_szImage.clear();
    else
       m_d.m_szImage = buf;
 

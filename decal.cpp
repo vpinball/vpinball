@@ -56,7 +56,7 @@ void Decal::SetDefaults(bool fromMouseClick)
    char buf[MAXSTRING] = { 0 };
    HRESULT hr = LoadValueString("DefaultProps\\Decal", "Image", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImage = "";
+      m_d.m_szImage.clear();
    else
       m_d.m_szImage = buf;
 

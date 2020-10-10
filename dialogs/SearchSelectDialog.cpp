@@ -258,11 +258,11 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
    case eItemSurface:
    {
       const Surface *const sur = (Surface*)piedit;
-      firstImage = "";
+      firstImage.clear();
       if (IsValidString(sur->m_d.m_szImage))
          firstImage = sur->m_d.m_szImage;
       textBuf = firstImage;
-      secondImage = "";
+      secondImage.clear();
       if (IsValidString(sur->m_d.m_szSideImage))
          secondImage = sur->m_d.m_szSideImage;
       if (!secondImage.empty())
@@ -274,11 +274,11 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 1, "Wall");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
 
-      firstImage = "";
+      firstImage.clear();
       if (IsValidString(sur->m_d.m_szTopMaterial))
          firstImage = sur->m_d.m_szTopMaterial;
       textBuf = firstImage;
-      secondImage = "";
+      secondImage.clear();
       if (IsValidString(sur->m_d.m_szSideMaterial))
          secondImage = sur->m_d.m_szSideMaterial;
       std::string thirdImage;
@@ -317,10 +317,10 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
    case eItemFlasher:
    {
       const Flasher *const flasher = (Flasher*)piedit;
-      firstImage = "";
+      firstImage.clear();
       if (IsValidString(flasher->m_d.m_szImageA))
          firstImage = flasher->m_d.m_szImageA;
-      secondImage = "";
+      secondImage.clear();
       if (IsValidString(flasher->m_d.m_szImageB))
          secondImage = flasher->m_d.m_szImageB;
       textBuf = firstImage;
@@ -390,11 +390,11 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
    case eItemBumper:
    {
       const Bumper *const bumper = (Bumper*)piedit;
-      firstImage = "";
+      firstImage.clear();
       if (IsValidString(bumper->m_d.m_szBaseMaterial))
          firstImage = bumper->m_d.m_szBaseMaterial;
       textBuf = firstImage;
-      secondImage = "";
+      secondImage.clear();
       if (IsValidString(bumper->m_d.m_szCapMaterial))
          secondImage = bumper->m_d.m_szCapMaterial;
       std::string thirdImage;
@@ -435,11 +435,11 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 1, "Flipper");
       ListView_SetItemText(m_hElementList, idx, 3, "");
 
-      firstImage = "";
+      firstImage.clear();
       if (IsValidString(flipper->m_d.m_szMaterial))
          firstImage = flipper->m_d.m_szMaterial;
       textBuf = firstImage;
-      secondImage = "";
+      secondImage.clear();
       if (IsValidString(flipper->m_d.m_szRubberMaterial))
          secondImage = flipper->m_d.m_szRubberMaterial;
       if (!secondImage.empty())

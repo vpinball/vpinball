@@ -36,7 +36,7 @@ void DispReel::SetDefaults(bool fromMouseClick)
    char buf[MAXTOKEN] = { 0 };
    hr = LoadValueString("DefaultProps\\Ramp", "Image", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImage = "";
+      m_d.m_szImage.clear();
    else
       m_d.m_szImage = buf;
 

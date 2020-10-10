@@ -211,13 +211,13 @@ void Surface::SetDefaults(bool fromMouseClick)
    char buf[MAXTOKEN] = { 0 };
    hr = LoadValueString(strKeyName, "TopImage", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImage = "";
+      m_d.m_szImage.clear();
    else
       m_d.m_szImage = buf;
 
    hr = LoadValueString(strKeyName, "SideImage", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szSideImage = "";
+      m_d.m_szSideImage.clear();
    else
       m_d.m_szSideImage = buf;
 

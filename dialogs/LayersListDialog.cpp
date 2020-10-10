@@ -102,7 +102,7 @@ void LayersListDialog::UpdateLayerList(const std::string& name)
         return;
 
     ClearList();
-    const bool checkName = (name == "") ? false : true;
+    const bool checkName = name.empty() ? false : true;
     for (size_t t = 0; t < pt->m_vedit.size(); t++)
     {
         ISelect *const psel = pt->m_vedit[t]->GetISelect();
@@ -112,7 +112,7 @@ void LayersListDialog::UpdateLayerList(const std::string& name)
             AddLayer(psel->m_layerName, pt->m_vedit[t]);
         
     }
-    if (name != "")
+    if (!name.empty())
         ExpandAll();
     else
         ExpandLayers();
@@ -267,7 +267,7 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 void LayersListDialog::OnAssignButton()
 {
     const std::string layerName = m_layerTreeView.GetCurrentLayerName();
-    if (layerName == "")
+    if (layerName.empty())
     {
         ShowError("Please select a layer!");
         return;

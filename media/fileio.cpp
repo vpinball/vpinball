@@ -404,7 +404,7 @@ HRESULT BiffReader::GetString(std::string &szvalue)
 
    if (FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
    {
-      szvalue = "";
+      szvalue.clear();
       return hr;
    }
 

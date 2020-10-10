@@ -5386,8 +5386,8 @@ void Player::Render()
 
 			   //!! does not respect borders so far!!! -> remove them or change width/height accordingly ?? otherwise ignore as eventually it will be restored anyway??
 			   //!! like this the render window is scaled and thus implicitly blurred though!
-			   SetWindowLong(GetHwnd(), GWL_STYLE, windowflags);
-			   SetWindowLong(GetHwnd(), GWL_EXSTYLE, windowflagsex);
+			   SetWindowLongPtr(GWL_STYLE, windowflags);
+			   SetWindowLongPtr(GWL_EXSTYLE, windowflagsex);
 			   SetWindowPos(NULL, x, m_showWindowedCaption ? (y + captionheight) : (y - captionheight), m_width, m_height + (m_showWindowedCaption ? 0 : captionheight), SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
 			   ShowWindow(SW_SHOW);
 
