@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// ImPlot v0.7 WIP
+// ImPlot v0.8 WIP
 
 #include "stdafx.h"
 
@@ -50,9 +50,11 @@ namespace ImPlot {
 // Item Utils
 //-----------------------------------------------------------------------------
 
-ImPlotItem* RegisterOrGetItem(const char* label_id) {
+ImPlotItem* RegisterOrGetItem(const char* label_id, bool* just_created) {
     ImPlotContext& gp = *GImPlot;
     ImGuiID id = ImGui::GetID(label_id);
+    if (just_created != NULL)
+        *just_created = gp.CurrentPlot->Items.GetByKey(id) == NULL;
     ImPlotItem* item = gp.CurrentPlot->Items.GetOrAddByKey(id);
     if (item->SeenThisFrame)
         return item;
@@ -84,7 +86,7 @@ ImPlotItem* GetItem(const char* label_id) {
 }
 
 ImPlotItem* GetItem(const char* plot_title, const char* item_label_id) {
-    ImPlotState* plot = GetPlot(plot_title);
+    ImPlotPlot* plot = GetPlot(plot_title);
     if (plot) {
         ImGuiID id = ImGui::GetID(item_label_id);
         return plot->Items.GetByKey(id);
@@ -97,36 +99,90 @@ ImPlotItem* GetCurrentItem() {
     return gp.CurrentItem;
 }
 
+void SetNextLineStyle(const ImVec4& col, float weight) {
+    ImPlotContext& gp = *GImPlot;
+    gp.NextItemData.Colors[ImPlotCol_Line] = col;
+    gp.NextItemData.LineWeight             = weight;
+}
+
+void SetNextFillStyle(const ImVec4& col, float alpha) {
+    ImPlotContext& gp = *GImPlot;
+    gp.NextItemData.Colors[ImPlotCol_Fill] = col;
+    gp.NextItemData.FillAlpha              = alpha;
+}
+
+void SetNextMarkerStyle(ImPlotMarker marker, float size, const ImVec4& fill, float weight, const ImVec4& outline) {
+    ImPlotContext& gp = *GImPlot;
+    gp.NextItemData.Marker                          = marker;
+    gp.NextItemData.Colors[ImPlotCol_MarkerFill]    = fill;
+    gp.NextItemData.MarkerSize                      = size;
+    gp.NextItemData.Colors[ImPlotCol_MarkerOutline] = outline;
+    gp.NextItemData.MarkerWeight                    = weight;
+}
+
+void SetNextErrorBarStyle(const ImVec4& col, float size, float weight) {
+    ImPlotContext& gp = *GImPlot;
+    gp.NextItemData.Colors[ImPlotCol_ErrorBar] = col;
+    gp.NextItemData.ErrorBarSize               = size;
+    gp.NextItemData.ErrorBarWeight             = weight;
+}
+
+ImVec4 GetLastItemColor() {
+    ImPlotContext& gp = *GImPlot;
+    if (gp.PreviousItem)
+        return gp.PreviousItem->Color;
+    return ImVec4();
+}
+
+void HideNextItem(bool hidden, ImGuiCond cond) {
+    ImPlotContext& gp = *GImPlot;
+    gp.NextItemData.HasHidden  = true;
+    gp.NextItemData.Hidden     = hidden;
+    gp.NextItemData.HiddenCond = cond;
+}
+
 void BustItemCache() {
     ImPlotContext& gp = *GImPlot;
     for (int p = 0; p < gp.Plots.GetSize(); ++p) {
-        ImPlotState& plot = *gp.Plots.GetByIndex(p);
+        ImPlotPlot& plot = *gp.Plots.GetByIndex(p);
         plot.ColormapIdx = 0;
         plot.Items.Clear();
     }
 }
 
+//-----------------------------------------------------------------------------
+// Begin/EndItem
+//-----------------------------------------------------------------------------
+
 // Begins a new item. Returns false if the item should not be plotted.
 bool BeginItem(const char* label_id, ImPlotCol recolor_from) {
     ImPlotContext& gp = *GImPlot;
     IM_ASSERT_USER_ERROR(gp.CurrentPlot != NULL, "PlotX() needs to be called between BeginPlot() and EndPlot()!");
-    ImPlotItem* item = RegisterOrGetItem(label_id);
+    bool just_created;
+    ImPlotItem* item = RegisterOrGetItem(label_id, &just_created);
+    // set current item
+    gp.CurrentItem = item;
+    ImPlotNextItemData& s = gp.NextItemData;
+    // override item color
+    if (recolor_from != -1) {
+        if (!IsColorAuto(s.Colors[recolor_from]))
+            item->Color = s.Colors[recolor_from];
+        else if (!IsColorAuto(gp.Style.Colors[recolor_from]))
+            item->Color = gp.Style.Colors[recolor_from];
+    }
+    // hide/show item
+    if (gp.NextItemData.HasHidden) {
+        if (just_created || gp.NextItemData.HiddenCond == ImGuiCond_Always)
+            item->Show = !gp.NextItemData.Hidden;
+    }
     if (!item->Show) {
         // reset next item data
-        gp.NextItemStyle = ImPlotItemStyle();
+        gp.NextItemData = ImPlotNextItemData();
+        gp.PreviousItem = item;
+        gp.CurrentItem  = NULL;
         return false;
     }
     else {
-        // set current item
-        gp.CurrentItem = item;
-        ImPlotItemStyle& s = gp.NextItemStyle;
-        // override item color
-        if (recolor_from != -1) {
-            if (!IsColorAuto(s.Colors[recolor_from]))
-                item->Color = s.Colors[recolor_from];
-            else if (!IsColorAuto(gp.Style.Colors[recolor_from]))
-                item->Color = gp.Style.Colors[recolor_from];
-        }
         // stage next item colors
         s.Colors[ImPlotCol_Line]           = IsColorAuto(s.Colors[ImPlotCol_Line])          ? ( IsColorAuto(ImPlotCol_Line)           ? item->Color                : gp.Style.Colors[ImPlotCol_Line]          ) : s.Colors[ImPlotCol_Line];
         s.Colors[ImPlotCol_Fill]           = IsColorAuto(s.Colors[ImPlotCol_Fill])          ? ( IsColorAuto(ImPlotCol_Fill)           ? item->Color                : gp.Style.Colors[ImPlotCol_Fill]          ) : s.Colors[ImPlotCol_Fill];
@@ -147,7 +203,7 @@ bool BeginItem(const char* label_id, ImPlotCol recolor_from) {
         s.Colors[ImPlotCol_Fill].w       *= s.FillAlpha;
         // s.Colors[ImPlotCol_MarkerFill].w *= s.FillAlpha; // TODO: this should be separate, if it at all
         // apply highlight mods
-        if (item->LegendHovered && ImHasFlag(gp.CurrentPlot->Flags, ImPlotFlags_Highlight)) {
+        if (item->LegendHovered && !ImHasFlag(gp.CurrentPlot->Flags, ImPlotFlags_NoHighlight)) {
             s.LineWeight   *= 2;
             s.MarkerWeight *= 2;
             // TODO: highlight fills?
@@ -169,39 +225,11 @@ void EndItem() {
     // pop rendering clip rect
     PopPlotClipRect();
     // reset next item data
-    gp.NextItemStyle = ImPlotItemStyle();
+    gp.NextItemData = ImPlotNextItemData();
     // set current item
-    gp.CurrentItem = NULL;
+    gp.PreviousItem = gp.CurrentItem;
+    gp.CurrentItem  = NULL;
 }
-
-void SetNextLineStyle(const ImVec4& col, float weight) {
-    ImPlotContext& gp = *GImPlot;
-    gp.NextItemStyle.Colors[ImPlotCol_Line] = col;
-    gp.NextItemStyle.LineWeight             = weight;
-}
-
-void SetNextFillStyle(const ImVec4& col, float alpha) {
-    ImPlotContext& gp = *GImPlot;
-    gp.NextItemStyle.Colors[ImPlotCol_Fill] = col;
-    gp.NextItemStyle.FillAlpha              = alpha;
-}
-
-void SetNextMarkerStyle(ImPlotMarker marker, float size, const ImVec4& fill, float weight, const ImVec4& outline) {
-    ImPlotContext& gp = *GImPlot;
-    gp.NextItemStyle.Marker                          = marker;
-    gp.NextItemStyle.Colors[ImPlotCol_MarkerFill]    = fill;
-    gp.NextItemStyle.MarkerSize                      = size;
-    gp.NextItemStyle.Colors[ImPlotCol_MarkerOutline] = outline;
-    gp.NextItemStyle.MarkerWeight                    = weight;
-}
-
-void SetNextErrorBarStyle(const ImVec4& col, float size, float weight) {
-    ImPlotContext& gp = *GImPlot;
-    gp.NextItemStyle.Colors[ImPlotCol_ErrorBar] = col;
-    gp.NextItemStyle.ErrorBarSize               = size;
-    gp.NextItemStyle.ErrorBarWeight             = weight;
-}
-
 
 //-----------------------------------------------------------------------------
 // GETTERS
@@ -213,147 +241,138 @@ void SetNextErrorBarStyle(const ImVec4& col, float size, float weight) {
 // Interprets an array of Y points as ImPlotPoints where the X value is the index
 template <typename T>
 struct GetterYs {
-    GetterYs(const T* ys, int count, int offset, int stride) {
-        Ys = ys;
-        Count = count;
-        Offset = count ? ImPosMod(offset, count) : 0;
-        Stride = stride;
+    GetterYs(const T* ys, int count, double xscale, double x0, int offset, int stride) :
+        Ys(ys),
+        Count(count),
+        XScale(xscale),
+        X0(x0),
+        Offset(count ? ImPosMod(offset, count) : 0),
+        Stride(stride)
+    { }
+    inline ImPlotPoint operator()(int idx) const {
+        return ImPlotPoint(X0 + XScale * idx, (double)OffsetAndStride(Ys, idx, Count, Offset, Stride));
     }
-    const T* Ys;
-    int Count;
-    int Offset;
-    int Stride;
-    inline ImPlotPoint operator()(int idx) {
-        return ImPlotPoint((double)idx, (double)OffsetAndStride(Ys, idx, Count, Offset, Stride));
-    }
+    const T* const Ys;
+    const int Count;
+    const double XScale;
+    const double X0;
+    const int Offset;
+    const int Stride;
 };
 
 // Interprets separate arrays for X and Y points as ImPlotPoints
 template <typename T>
 struct GetterXsYs {
-    GetterXsYs(const T* xs, const T* ys, int count, int offset, int stride) {
-        Xs = xs; Ys = ys;
-        Count = count;
-        Offset = count ? ImPosMod(offset, count) : 0;
-        Stride = stride;
-    }
-    const T* Xs;
-    const T* Ys;
-    int Count;
-    int Offset;
-    int Stride;
-    inline ImPlotPoint operator()(int idx) {
+    GetterXsYs(const T* xs, const T* ys, int count, int offset, int stride) :
+        Xs(xs),
+        Ys(ys),
+        Count(count),
+        Offset(count ? ImPosMod(offset, count) : 0),
+        Stride(stride)
+    { }
+    inline ImPlotPoint operator()(int idx) const {
         return ImPlotPoint((double)OffsetAndStride(Xs, idx, Count, Offset, Stride), (double)OffsetAndStride(Ys, idx, Count, Offset, Stride));
     }
+    const T* const Xs;
+    const T* const Ys;
+    const int Count;
+    const int Offset;
+    const int Stride;
 };
 
 // Always returns a constant Y reference value where the X value is the index
-template <typename T>
 struct GetterYRef {
-    GetterYRef(T y_ref, int count) { YRef = y_ref; Count = count; }
-    inline ImPlotPoint operator()(int idx) {
-        return ImPlotPoint((double)idx, (double)YRef);
+    GetterYRef(double y_ref, int count, double xscale, double x0) :
+        YRef(y_ref),
+        Count(count),
+        XScale(xscale),
+        X0(x0)
+    { }
+    inline ImPlotPoint operator()(int idx) const {
+        return ImPlotPoint(X0 + XScale*idx, YRef);
     }
-    T YRef;
-    int Count;
+    const double YRef;
+    const int Count;
+    const double XScale;
+    const double X0;
 };
 
 // Interprets an array of X points as ImPlotPoints where the Y value is a constant reference value
 template <typename T>
 struct GetterXsYRef {
-    GetterXsYRef(const T* xs, T y_ref, int count, int offset, int stride) {
-        Xs = xs;
-        YRef = y_ref;
-        Count = count;
-        Offset = count ? ImPosMod(offset, count) : 0;
-        Stride = stride;
+    GetterXsYRef(const T* xs, double y_ref, int count, int offset, int stride) :
+        Xs(xs),
+        YRef(y_ref),
+        Count(count),
+        Offset(count ? ImPosMod(offset, count) : 0),
+        Stride(stride)
+    { }
+    inline ImPlotPoint operator()(int idx) const {
+        return ImPlotPoint((double)OffsetAndStride(Xs, idx, Count, Offset, Stride), YRef);
     }
-    const T* Xs;
-    T YRef;
-    int Count;
-    int Offset;
-    int Stride;
-    inline ImPlotPoint operator()(int idx) {
-        return ImPlotPoint((double)OffsetAndStride(Xs, idx, Count, Offset, Stride), (double)YRef);
-    }
-};
-
-// Interprets an array of ImVec2 points as ImPlotPoints
-struct GetterImVec2 {
-    GetterImVec2(const ImVec2* data, int count, int offset) {
-        Data = data;
-        Count = count;
-        Offset = count ? ImPosMod(offset, count) : 0;
-    }
-    inline ImPlotPoint operator()(int idx) {
-        idx = ImPosMod(Offset + idx, Count);
-        return ImPlotPoint((double)Data[idx].x, (double)Data[idx].y);
-    }
-    const ImVec2* Data;
-    int Count;
-    int Offset;
-};
-
-// Interprets an array of ImPlotPoints as ImPlotPoints (essentially a pass through)
-struct GetterImPlotPoint {
-    GetterImPlotPoint(const ImPlotPoint* data, int count, int offset) {
-        Data = data;
-        Count = count;
-        Offset = count ? ImPosMod(offset, count) : 0;
-    }
-    inline ImPlotPoint operator()(int idx) {
-        idx = ImPosMod(Offset + idx, Count);
-        return Data[idx];
-    }
-    const ImPlotPoint* Data;
-    int Count;
-    int Offset;
+    const T* const Xs;
+    const double YRef;
+    const int Count;
+    const int Offset;
+    const int Stride;
 };
 
 /// Interprets a user's function pointer as ImPlotPoints
-struct GetterFuncPtrImPlotPoint {
-    GetterFuncPtrImPlotPoint(ImPlotPoint (*g)(void* data, int idx), void* d, int count, int offset) {
-        getter = g;
-        Data = d;
-        Count = count;
-        Offset = count ? ImPosMod(offset, count) : 0;
-    }
-    inline ImPlotPoint operator()(int idx) {
+struct GetterFuncPtr {
+    GetterFuncPtr(ImPlotPoint (*getter)(void* data, int idx), void* data, int count, int offset) :
+        Getter(getter),
+        Data(data),
+        Count(count),
+        Offset(count ? ImPosMod(offset, count) : 0)
+    { }
+    inline ImPlotPoint operator()(int idx) const {
         idx = ImPosMod(Offset + idx, Count);
-        return getter(Data, idx);
+        return Getter(Data, idx);
     }
-    ImPlotPoint (*getter)(void* data, int idx);
-    void* Data;
-    int Count;
-    int Offset;
+    ImPlotPoint (* const Getter)(void* data, int idx);
+    void* const Data;
+    const int Count;
+    const int Offset;
 };
 
 template <typename T>
 struct GetterBarV {
-    const T* Ys; T XShift; int Count; int Offset; int Stride;
-    GetterBarV(const T* ys, T xshift, int count, int offset, int stride) { Ys = ys; XShift = xshift; Count = count; Offset = offset; Stride = stride; }
-    inline ImPlotPoint operator()(int idx) { return ImPlotPoint((double)idx + (double)XShift, (double)OffsetAndStride(Ys, idx, Count, Offset, Stride)); }
+    const T* Ys; double XShift; int Count; int Offset; int Stride;
+    GetterBarV(const T* ys, double xshift, int count, int offset, int stride) { Ys = ys; XShift = xshift; Count = count; Offset = offset; Stride = stride; }
+    inline ImPlotPoint operator()(int idx) const { return ImPlotPoint((double)idx + (double)XShift, (double)OffsetAndStride(Ys, idx, Count, Offset, Stride)); }
 };
 
 template <typename T>
 struct GetterBarH {
-    const T* Xs; T YShift; int Count; int Offset; int Stride;
-    GetterBarH(const T* xs, T yshift, int count, int offset, int stride) { Xs = xs; YShift = yshift; Count = count; Offset = offset; Stride = stride; }
-    inline ImPlotPoint operator()(int idx) { return ImPlotPoint((double)OffsetAndStride(Xs, idx, Count, Offset, Stride), (double)idx + (double)YShift); }
+    const T* Xs; double YShift; int Count; int Offset; int Stride;
+    GetterBarH(const T* xs, double yshift, int count, int offset, int stride) { Xs = xs; YShift = yshift; Count = count; Offset = offset; Stride = stride; }
+    inline ImPlotPoint operator()(int idx) const { return ImPlotPoint((double)OffsetAndStride(Xs, idx, Count, Offset, Stride), (double)idx + (double)YShift); }
 };
 
 template <typename T>
 struct GetterError {
-    const T* Xs; const T* Ys; const T* Neg; const T* Pos; int Count; int Offset; int Stride;
-    GetterError(const T* xs, const T* ys, const T* neg, const T* pos, int count, int offset, int stride) {
-        Xs = xs; Ys = ys; Neg = neg; Pos = pos; Count = count; Offset = offset; Stride = stride;
-    }
-    ImPlotPointError operator()(int idx) {
+    GetterError(const T* xs, const T* ys, const T* neg, const T* pos, int count, int offset, int stride) :
+        Xs(xs),
+        Ys(ys),
+        Neg(neg),
+        Pos(pos),
+        Count(count),
+        Offset(count ? ImPosMod(offset, count) : 0),
+        Stride(stride)
+    { }
+    inline ImPlotPointError operator()(int idx) const {
         return ImPlotPointError((double)OffsetAndStride(Xs,  idx, Count, Offset, Stride),
                                 (double)OffsetAndStride(Ys,  idx, Count, Offset, Stride),
                                 (double)OffsetAndStride(Neg, idx, Count, Offset, Stride),
                                 (double)OffsetAndStride(Pos, idx, Count, Offset, Stride));
     }
+    const T* const Xs;
+    const T* const Ys;
+    const T* const Neg;
+    const T* const Pos;
+    const int Count;
+    const int Offset;
+    const int Stride;
 };
 
 //-----------------------------------------------------------------------------
@@ -361,69 +380,58 @@ struct GetterError {
 //-----------------------------------------------------------------------------
 
 // Transforms convert points in plot space (i.e. ImPlotPoint) to pixel space (i.e. ImVec2)
-// TODO: Cache transformation variables
 
 // Transforms points for linear x and linear y space
 struct TransformerLinLin {
     TransformerLinLin() : YAxis(GetCurrentYAxis()) {}
-
-    inline ImVec2 operator()(const ImPlotPoint& plt) { return (*this)(plt.x, plt.y); }
-    inline ImVec2 operator()(double x, double y) {
+    // inline ImVec2 operator()(const ImPlotPoint& plt) const { return (*this)(plt.x, plt.y); }
+    inline ImVec2 operator()(const ImPlotPoint& plt) const {
         ImPlotContext& gp = *GImPlot;
-        return ImVec2( (float)(gp.PixelRange[YAxis].Min.x + gp.Mx * (x - gp.CurrentPlot->XAxis.Range.Min)),
-                       (float)(gp.PixelRange[YAxis].Min.y + gp.My[YAxis] * (y - gp.CurrentPlot->YAxis[YAxis].Range.Min)) );
+        return ImVec2( (float)(gp.PixelRange[YAxis].Min.x + gp.Mx * (plt.x - gp.CurrentPlot->XAxis.Range.Min)),
+                       (float)(gp.PixelRange[YAxis].Min.y + gp.My[YAxis] * (plt.y - gp.CurrentPlot->YAxis[YAxis].Range.Min)) );
     }
-
-    int YAxis;
+    const int YAxis;
 };
 
 // Transforms points for log x and linear y space
 struct TransformerLogLin {
     TransformerLogLin() : YAxis(GetCurrentYAxis()) {}
-
-    inline ImVec2 operator()(const ImPlotPoint& plt) { return (*this)(plt.x, plt.y); }
-    inline ImVec2 operator()(double x, double y) {
+    inline ImVec2 operator()(const ImPlotPoint& plt) const {
         ImPlotContext& gp = *GImPlot;
-        double t = ImLog10(x / gp.CurrentPlot->XAxis.Range.Min) / gp.LogDenX;
-        x        = ImLerp(gp.CurrentPlot->XAxis.Range.Min, gp.CurrentPlot->XAxis.Range.Max, (float)t);
+        double t = ImLog10(plt.x / gp.CurrentPlot->XAxis.Range.Min) / gp.LogDenX;
+        double x = ImLerp(gp.CurrentPlot->XAxis.Range.Min, gp.CurrentPlot->XAxis.Range.Max, (float)t);
         return ImVec2( (float)(gp.PixelRange[YAxis].Min.x + gp.Mx * (x - gp.CurrentPlot->XAxis.Range.Min)),
-                       (float)(gp.PixelRange[YAxis].Min.y + gp.My[YAxis] * (y - gp.CurrentPlot->YAxis[YAxis].Range.Min)) );
+                       (float)(gp.PixelRange[YAxis].Min.y + gp.My[YAxis] * (plt.y - gp.CurrentPlot->YAxis[YAxis].Range.Min)) );
     }
-
-    int YAxis;
+    const int YAxis;
 };
 
 // Transforms points for linear x and log y space
 struct TransformerLinLog {
     TransformerLinLog() : YAxis(GetCurrentYAxis()) {}
-
-    inline ImVec2 operator()(const ImPlotPoint& plt) { return (*this)(plt.x, plt.y); }
-    inline ImVec2 operator()(double x, double y) {
+    inline ImVec2 operator()(const ImPlotPoint& plt) const {
         ImPlotContext& gp = *GImPlot;
-        double t = ImLog10(y / gp.CurrentPlot->YAxis[YAxis].Range.Min) / gp.LogDenY[YAxis];
-        y        = ImLerp(gp.CurrentPlot->YAxis[YAxis].Range.Min, gp.CurrentPlot->YAxis[YAxis].Range.Max, (float)t);
-        return ImVec2( (float)(gp.PixelRange[YAxis].Min.x + gp.Mx * (x - gp.CurrentPlot->XAxis.Range.Min)),
+        double t = ImLog10(plt.y / gp.CurrentPlot->YAxis[YAxis].Range.Min) / gp.LogDenY[YAxis];
+        double y = ImLerp(gp.CurrentPlot->YAxis[YAxis].Range.Min, gp.CurrentPlot->YAxis[YAxis].Range.Max, (float)t);
+        return ImVec2( (float)(gp.PixelRange[YAxis].Min.x + gp.Mx * (plt.x - gp.CurrentPlot->XAxis.Range.Min)),
                        (float)(gp.PixelRange[YAxis].Min.y + gp.My[YAxis] * (y - gp.CurrentPlot->YAxis[YAxis].Range.Min)) );
     }
-    int YAxis;
+    const int YAxis;
 };
 
 // Transforms points for log x and log y space
 struct TransformerLogLog {
     TransformerLogLog() : YAxis(GetCurrentYAxis()) {}
-
-    inline ImVec2 operator()(const ImPlotPoint& plt) { return (*this)(plt.x, plt.y); }
-    inline ImVec2 operator()(double x, double y) {
+    inline ImVec2 operator()(const ImPlotPoint& plt) const {
         ImPlotContext& gp = *GImPlot;
-        double t = ImLog10(x / gp.CurrentPlot->XAxis.Range.Min) / gp.LogDenX;
-        x        = ImLerp(gp.CurrentPlot->XAxis.Range.Min, gp.CurrentPlot->XAxis.Range.Max, (float)t);
-        t        = ImLog10(y / gp.CurrentPlot->YAxis[YAxis].Range.Min) / gp.LogDenY[YAxis];
-        y        = ImLerp(gp.CurrentPlot->YAxis[YAxis].Range.Min, gp.CurrentPlot->YAxis[YAxis].Range.Max, (float)t);
+        double t = ImLog10(plt.x / gp.CurrentPlot->XAxis.Range.Min) / gp.LogDenX;
+        double x = ImLerp(gp.CurrentPlot->XAxis.Range.Min, gp.CurrentPlot->XAxis.Range.Max, (float)t);
+               t = ImLog10(plt.y / gp.CurrentPlot->YAxis[YAxis].Range.Min) / gp.LogDenY[YAxis];
+        double y = ImLerp(gp.CurrentPlot->YAxis[YAxis].Range.Min, gp.CurrentPlot->YAxis[YAxis].Range.Max, (float)t);
         return ImVec2( (float)(gp.PixelRange[YAxis].Min.x + gp.Mx * (x - gp.CurrentPlot->XAxis.Range.Min)),
                        (float)(gp.PixelRange[YAxis].Min.y + gp.My[YAxis] * (y - gp.CurrentPlot->YAxis[YAxis].Range.Min)) );
     }
-
-    int YAxis;
+    const int YAxis;
 };
 
 //-----------------------------------------------------------------------------
@@ -465,16 +473,16 @@ inline void AddLine(const ImVec2& P1, const ImVec2& P2, float weight, ImU32 col,
 
 template <typename TGetter, typename TTransformer>
 struct LineStripRenderer {
-    inline LineStripRenderer(TGetter getter, TTransformer transformer, ImU32 col, float weight) :
+    inline LineStripRenderer(const TGetter& getter, const TTransformer& transformer, ImU32 col, float weight) :
         Getter(getter),
-        Transformer(transformer)
+        Transformer(transformer),
+        Prims(Getter.Count - 1),
+        Col(col),
+        Weight(weight)
     {
-        Prims = Getter.Count - 1;
-        Col = col;
-        Weight = weight;
         P1 = Transformer(Getter(0));
     }
-    inline bool operator()(ImDrawList& DrawList, const ImRect& cull_rect, const ImVec2& uv, int prim) {
+    inline bool operator()(ImDrawList& DrawList, const ImRect& cull_rect, const ImVec2& uv, int prim) const {
         ImVec2 P2 = Transformer(Getter(prim + 1));
         if (!cull_rect.Overlaps(ImRect(ImMin(P1, P2), ImMax(P1, P2)))) {
             P1 = P2;
@@ -484,29 +492,27 @@ struct LineStripRenderer {
         P1 = P2;
         return true;
     }
-    TGetter Getter;
-    TTransformer Transformer;
-    int Prims;
-    ImU32 Col;
-    float Weight;
-    ImVec2 P1;
+    const TGetter& Getter;
+    const TTransformer& Transformer;
+    const int Prims;
+    const ImU32 Col;
+    const float Weight;
+    mutable ImVec2 P1;
     static const int IdxConsumed = 6;
     static const int VtxConsumed = 4;
 };
 
 template <typename TGetter1, typename TGetter2, typename TTransformer>
 struct LineSegmentsRenderer {
-    inline LineSegmentsRenderer(TGetter1 getter1, TGetter2 getter2, TTransformer transformer, ImU32 col, float weight) :
+    inline LineSegmentsRenderer(const TGetter1& getter1, const TGetter2& getter2, const TTransformer& transformer, ImU32 col, float weight) :
         Getter1(getter1),
         Getter2(getter2),
-        Transformer(transformer)
-    {
-
-        Prims = ImMin(Getter1.Count, Getter2.Count);
-        Col = col;
-        Weight = weight;
-    }
-    inline bool operator()(ImDrawList& DrawList, const ImRect& cull_rect, const ImVec2& uv, int prim) {
+        Transformer(transformer),
+        Prims(ImMin(Getter1.Count, Getter2.Count)),
+        Col(col),
+        Weight(weight)
+    {}
+    inline bool operator()(ImDrawList& DrawList, const ImRect& cull_rect, const ImVec2& uv, int prim) const {
         ImVec2 P1 = Transformer(Getter1(prim));
         ImVec2 P2 = Transformer(Getter2(prim));
         if (!cull_rect.Overlaps(ImRect(ImMin(P1, P2), ImMax(P1, P2))))
@@ -514,30 +520,30 @@ struct LineSegmentsRenderer {
         AddLine(P1,P2,Weight,Col,DrawList,uv);
         return true;
     }
-    TGetter1 Getter1;
-    TGetter2 Getter2;
-    TTransformer Transformer;
-    int Prims;
-    ImU32 Col;
-    float Weight;
+    const TGetter1& Getter1;
+    const TGetter2& Getter2;
+    const TTransformer& Transformer;
+    const int Prims;
+    const ImU32 Col;
+    const float Weight;
     static const int IdxConsumed = 6;
     static const int VtxConsumed = 4;
 };
 
 template <typename TGetter1, typename TGetter2, typename TTransformer>
 struct ShadedRenderer {
-    ShadedRenderer(TGetter1 getter1, TGetter2 getter2, TTransformer transformer, ImU32 col) :
+    ShadedRenderer(const TGetter1& getter1, const TGetter2& getter2, const TTransformer& transformer, ImU32 col) :
         Getter1(getter1),
         Getter2(getter2),
         Transformer(transformer),
+        Prims(ImMin(Getter1.Count, Getter2.Count) - 1),
         Col(col)
     {
-        Prims = ImMin(Getter1.Count, Getter2.Count) - 1;
         P11 = Transformer(Getter1(0));
         P12 = Transformer(Getter2(0));
     }
 
-    inline bool operator()(ImDrawList& DrawList, const ImRect& /*cull_rect*/, const ImVec2& uv, int prim) {
+    inline bool operator()(ImDrawList& DrawList, const ImRect& /*cull_rect*/, const ImVec2& uv, int prim) const {
         // TODO: Culling
         ImVec2 P21 = Transformer(Getter1(prim+1));
         ImVec2 P22 = Transformer(Getter2(prim+1));
@@ -571,26 +577,26 @@ struct ShadedRenderer {
         P12 = P22;
         return true;
     }
-    TGetter1 Getter1;
-    TGetter2 Getter2;
-    TTransformer Transformer;
-    int Prims;
-    ImU32 Col;
-    ImVec2 P11, P12;
+    const TGetter1& Getter1;
+    const TGetter2& Getter2;
+    const TTransformer& Transformer;
+    const int Prims;
+    const ImU32 Col;
+    mutable ImVec2 P11;
+    mutable ImVec2 P12;
     static const int IdxConsumed = 6;
     static const int VtxConsumed = 5;
 };
 
 template <typename TGetter, typename TTransformer>
 struct RectRenderer {
-    inline RectRenderer(TGetter getter, TTransformer transformer, ImU32 col) :
+    inline RectRenderer(const TGetter& getter, const TTransformer& transformer, ImU32 col) :
         Getter(getter),
-        Transformer(transformer)
-    {
-        Prims = Getter.Count / 2;
-        Col = col;
-    }
-    inline bool operator()(ImDrawList& DrawList, const ImRect& /*cull_rect*/, const ImVec2& uv, int prim) {
+        Transformer(transformer),
+        Prims(Getter.Count / 2),
+        Col(col)
+    {}
+    inline bool operator()(ImDrawList& DrawList, const ImRect& /*cull_rect*/, const ImVec2& uv, int prim) const {
         // TODO: Culling
         ImVec2 P1 = Transformer(Getter(2*prim));
         ImVec2 P2 = Transformer(Getter(2*prim+1));
@@ -619,10 +625,10 @@ struct RectRenderer {
         DrawList._VtxCurrentIdx += 4;
         return true;
     }
-    TGetter Getter;
-    TTransformer Transformer;
-    int Prims;
-    ImU32 Col;
+    const TGetter& Getter;
+    const TTransformer& Transformer;
+    const int Prims;
+    const ImU32 Col;
     static const int IdxConsumed = 6;
     static const int VtxConsumed = 4;
 };
@@ -635,7 +641,7 @@ template <> const unsigned int MaxIdx<unsigned int>::Value   = 4294967295;
 
 /// Renders primitive shapes in bulk as efficiently as possible.
 template <typename Renderer>
-inline void RenderPrimitives(Renderer renderer, ImDrawList& DrawList, const ImRect& cull_rect) {
+inline void RenderPrimitives(const Renderer& renderer, ImDrawList& DrawList, const ImRect& cull_rect) {
     unsigned int prims        = renderer.Prims;
     unsigned int prims_culled = 0;
     unsigned int idx          = 0;
@@ -672,7 +678,7 @@ inline void RenderPrimitives(Renderer renderer, ImDrawList& DrawList, const ImRe
 }
 
 template <typename Getter, typename Transformer>
-inline void RenderLineStrip(Getter getter, Transformer transformer, ImDrawList& DrawList, float line_weight, ImU32 col) {
+inline void RenderLineStrip(const Getter& getter, const Transformer& transformer, ImDrawList& DrawList, float line_weight, ImU32 col) {
     ImPlotContext& gp = *GImPlot;
     if (ImHasFlag(gp.CurrentPlot->Flags, ImPlotFlags_AntiAliased) || gp.Style.AntiAliasedLines) {
         ImVec2 p1 = transformer(getter(0));
@@ -689,7 +695,7 @@ inline void RenderLineStrip(Getter getter, Transformer transformer, ImDrawList& 
 }
 
 template <typename Getter1, typename Getter2, typename Transformer>
-inline void RenderLineSegments(Getter1 getter1, Getter2 getter2, Transformer transformer, ImDrawList& DrawList, float line_weight, ImU32 col) {
+inline void RenderLineSegments(const Getter1& getter1, const Getter2& getter2, const Transformer& transformer, ImDrawList& DrawList, float line_weight, ImU32 col) {
     ImPlotContext& gp = *GImPlot;
     if (ImHasFlag(gp.CurrentPlot->Flags, ImPlotFlags_AntiAliased) || gp.Style.AntiAliasedLines) {
         int I = ImMin(getter1.Count, getter2.Count);
@@ -815,11 +821,11 @@ inline void RenderMarkers(Getter getter, Transformer transformer, ImDrawList& Dr
 }
 
 //-----------------------------------------------------------------------------
-// PLOT LINES / MARKERS
+// PLOT LINE
 //-----------------------------------------------------------------------------
 
 template <typename Getter>
-inline void PlotLineEx(const char* label_id, Getter getter) {
+inline void PlotLineEx(const char* label_id, const Getter& getter) {
     if (BeginItem(label_id, ImPlotCol_Line)) {
         if (FitThisFrame()) {
             for (int i = 0; i < getter.Count; ++i) {
@@ -827,7 +833,7 @@ inline void PlotLineEx(const char* label_id, Getter getter) {
                 FitPoint(p);
             }
         }
-        const ImPlotItemStyle& s = GetItemStyle();
+        const ImPlotNextItemData& s = GetItemData();
         ImDrawList& DrawList = *GetPlotDrawList();
         if (getter.Count > 1 && s.RenderLine) {
             const ImU32 col_line    = ImGui::GetColorU32(s.Colors[ImPlotCol_Line]);
@@ -853,41 +859,43 @@ inline void PlotLineEx(const char* label_id, Getter getter) {
     }
 }
 
-// float
-void PlotLine(const char* label_id, const float* values, int count, int offset, int stride) {
-    GetterYs<float> getter(values,count,offset,stride);
+template <typename T>
+void PlotLine(const char* label_id, const T* values, int count, double xscale, double x0, int offset, int stride) {
+    GetterYs<T> getter(values,count,xscale,x0,offset,stride);
     PlotLineEx(label_id, getter);
 }
 
-void PlotLine(const char* label_id, const float* xs, const float* ys, int count, int offset, int stride) {
-    GetterXsYs<float> getter(xs,ys,count,offset,stride);
+template IMPLOT_API void PlotLine<ImS8> (const char* label_id, const ImS8* values, int count, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotLine<ImU8> (const char* label_id, const ImU8* values, int count, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotLine<ImS16>(const char* label_id, const ImS16* values, int count, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotLine<ImU16>(const char* label_id, const ImU16* values, int count, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotLine<ImS32>(const char* label_id, const ImS32* values, int count, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotLine<ImU32>(const char* label_id, const ImU32* values, int count, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotLine<ImS64>(const char* label_id, const ImS64* values, int count, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotLine<ImU64>(const char* label_id, const ImU64* values, int count, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotLine<float>(const char* label_id, const float* values, int count, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotLine<double>(const char* label_id, const double* values, int count, double xscale, double x0, int offset, int stride);
+
+template <typename T>
+void PlotLine(const char* label_id, const T* xs, const T* ys, int count, int offset, int stride) {
+    GetterXsYs<T> getter(xs,ys,count,offset,stride);
     return PlotLineEx(label_id, getter);
 }
 
-void PlotLine(const char* label_id, const ImVec2* data, int count, int offset) {
-    GetterImVec2 getter(data, count, offset);
-    return PlotLineEx(label_id, getter);
-}
-
-// double
-void PlotLine(const char* label_id, const double* values, int count, int offset, int stride) {
-    GetterYs<double> getter(values,count,offset,stride);
-    PlotLineEx(label_id, getter);
-}
-
-void PlotLine(const char* label_id, const double* xs, const double* ys, int count, int offset, int stride) {
-    GetterXsYs<double> getter(xs,ys,count,offset,stride);
-    return PlotLineEx(label_id, getter);
-}
-
-void PlotLine(const char* label_id, const ImPlotPoint* data, int count, int offset) {
-    GetterImPlotPoint getter(data, count, offset);
-    return PlotLineEx(label_id, getter);
-}
+template IMPLOT_API void PlotLine<ImS8>(const char* label_id, const ImS8* xs, const ImS8* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotLine<ImU8>(const char* label_id, const ImU8* xs, const ImU8* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotLine<ImS16>(const char* label_id, const ImS16* xs, const ImS16* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotLine<ImU16>(const char* label_id, const ImU16* xs, const ImU16* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotLine<ImS32>(const char* label_id, const ImS32* xs, const ImS32* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotLine<ImU32>(const char* label_id, const ImU32* xs, const ImU32* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotLine<ImS64>(const char* label_id, const ImS64* xs, const ImS64* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotLine<ImU64>(const char* label_id, const ImU64* xs, const ImU64* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotLine<float>(const char* label_id, const float* xs, const float* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotLine<double>(const char* label_id, const double* xs, const double* ys, int count, int offset, int stride);
 
 // custom
-void PlotLine(const char* label_id, ImPlotPoint (*getter_func)(void* data, int idx), void* data, int count, int offset) {
-    GetterFuncPtrImPlotPoint getter(getter_func,data, count, offset);
+void PlotLineG(const char* label_id, ImPlotPoint (*getter_func)(void* data, int idx), void* data, int count, int offset) {
+    GetterFuncPtr getter(getter_func,data, count, offset);
     return PlotLineEx(label_id, getter);
 }
 
@@ -896,7 +904,7 @@ void PlotLine(const char* label_id, ImPlotPoint (*getter_func)(void* data, int i
 //-----------------------------------------------------------------------------
 
 template <typename Getter>
-inline void PlotScatterEx(const char* label_id, Getter getter) {
+inline void PlotScatterEx(const char* label_id, const Getter& getter) {
     if (BeginItem(label_id, ImPlotCol_MarkerOutline)) {
         if (FitThisFrame()) {
             for (int i = 0; i < getter.Count; ++i) {
@@ -904,7 +912,7 @@ inline void PlotScatterEx(const char* label_id, Getter getter) {
                 FitPoint(p);
             }
         }
-        const ImPlotItemStyle& s = GetItemStyle();
+        const ImPlotNextItemData& s = GetItemData();
         ImDrawList& DrawList = *GetPlotDrawList();
         // render markers
         ImPlotMarker marker = s.Marker == ImPlotMarker_None ? ImPlotMarker_Circle : s.Marker;
@@ -922,41 +930,43 @@ inline void PlotScatterEx(const char* label_id, Getter getter) {
     }
 }
 
-// float
-void PlotScatter(const char* label_id, const float* values, int count, int offset, int stride) {
-    GetterYs<float> getter(values,count,offset,stride);
+template <typename T>
+void PlotScatter(const char* label_id, const T* values, int count, double xscale, double x0, int offset, int stride) {
+    GetterYs<T> getter(values,count,xscale,x0,offset,stride);
     PlotScatterEx(label_id, getter);
 }
 
-void PlotScatter(const char* label_id, const float* xs, const float* ys, int count, int offset, int stride) {
-    GetterXsYs<float> getter(xs,ys,count,offset,stride);
+template IMPLOT_API void PlotScatter<ImS8>(const char* label_id, const ImS8* values, int count, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotScatter<ImU8>(const char* label_id, const ImU8* values, int count, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotScatter<ImS16>(const char* label_id, const ImS16* values, int count, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotScatter<ImU16>(const char* label_id, const ImU16* values, int count, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotScatter<ImS32>(const char* label_id, const ImS32* values, int count, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotScatter<ImU32>(const char* label_id, const ImU32* values, int count, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotScatter<ImS64>(const char* label_id, const ImS64* values, int count, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotScatter<ImU64>(const char* label_id, const ImU64* values, int count, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotScatter<float>(const char* label_id, const float* values, int count, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotScatter<double>(const char* label_id, const double* values, int count, double xscale, double x0, int offset, int stride);
+
+template <typename T>
+void PlotScatter(const char* label_id, const T* xs, const T* ys, int count, int offset, int stride) {
+    GetterXsYs<T> getter(xs,ys,count,offset,stride);
     return PlotScatterEx(label_id, getter);
 }
 
-void PlotScatter(const char* label_id, const ImVec2* data, int count, int offset) {
-    GetterImVec2 getter(data, count, offset);
-    return PlotScatterEx(label_id, getter);
-}
-
-// double
-void PlotScatter(const char* label_id, const double* values, int count, int offset, int stride) {
-    GetterYs<double> getter(values,count,offset,stride);
-    PlotScatterEx(label_id, getter);
-}
-
-void PlotScatter(const char* label_id, const double* xs, const double* ys, int count, int offset, int stride) {
-    GetterXsYs<double> getter(xs,ys,count,offset,stride);
-    return PlotScatterEx(label_id, getter);
-}
-
-void PlotScatter(const char* label_id, const ImPlotPoint* data, int count, int offset) {
-    GetterImPlotPoint getter(data, count, offset);
-    return PlotScatterEx(label_id, getter);
-}
+template IMPLOT_API void PlotScatter<ImS8>(const char* label_id, const ImS8* xs, const ImS8* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotScatter<ImU8>(const char* label_id, const ImU8* xs, const ImU8* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotScatter<ImS16>(const char* label_id, const ImS16* xs, const ImS16* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotScatter<ImU16>(const char* label_id, const ImU16* xs, const ImU16* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotScatter<ImS32>(const char* label_id, const ImS32* xs, const ImS32* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotScatter<ImU32>(const char* label_id, const ImU32* xs, const ImU32* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotScatter<ImS64>(const char* label_id, const ImS64* xs, const ImS64* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotScatter<ImU64>(const char* label_id, const ImU64* xs, const ImU64* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotScatter<float>(const char* label_id, const float* xs, const float* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotScatter<double>(const char* label_id, const double* xs, const double* ys, int count, int offset, int stride);
 
 // custom
-void PlotScatter(const char* label_id, ImPlotPoint (*getter_func)(void* data, int idx), void* data, int count, int offset) {
-    GetterFuncPtrImPlotPoint getter(getter_func,data, count, offset);
+void PlotScatterG(const char* label_id, ImPlotPoint (*getter_func)(void* data, int idx), void* data, int count, int offset) {
+    GetterFuncPtr getter(getter_func,data, count, offset);
     return PlotScatterEx(label_id, getter);
 }
 
@@ -965,7 +975,7 @@ void PlotScatter(const char* label_id, ImPlotPoint (*getter_func)(void* data, in
 //-----------------------------------------------------------------------------
 
 template <typename Getter1, typename Getter2>
-inline void PlotShadedEx(const char* label_id, Getter1 getter1, Getter2 getter2) {
+inline void PlotShadedEx(const char* label_id, const Getter1& getter1, const Getter2& getter2) {
     if (BeginItem(label_id, ImPlotCol_Fill)) {
         if (FitThisFrame()) {
             for (int i = 0; i < ImMin(getter1.Count, getter2.Count); ++i) {
@@ -975,7 +985,7 @@ inline void PlotShadedEx(const char* label_id, Getter1 getter1, Getter2 getter2)
                 FitPoint(p2);
             }
         }
-        const ImPlotItemStyle& s = GetItemStyle();
+        const ImPlotNextItemData& s = GetItemData();
         ImDrawList & DrawList = *GetPlotDrawList();
         if (s.RenderFill) {
             ImU32 col = ImGui::GetColorU32(s.Colors[ImPlotCol_Fill]);
@@ -990,60 +1000,77 @@ inline void PlotShadedEx(const char* label_id, Getter1 getter1, Getter2 getter2)
     }
 }
 
-// float
-void PlotShaded(const char* label_id, const float* values, int count, float y_ref, int offset, int stride) {
-    GetterYs<float> getter1(values,count,offset,stride);
-    GetterYRef<float> getter2(y_ref, count);
-    PlotShadedEx(label_id, getter1, getter2);}
-
-void PlotShaded(const char* label_id, const float* xs, const float* ys1, const float* ys2, int count, int offset, int stride) {
-    GetterXsYs<float> getter1(xs, ys1, count, offset, stride);
-    GetterXsYs<float> getter2(xs, ys2, count, offset, stride);
+template <typename T>
+void PlotShaded(const char* label_id, const T* values, int count, double y_ref, double xscale, double x0, int offset, int stride) {
+    GetterYs<T> getter1(values,count,xscale,x0,offset,stride);
+    GetterYRef getter2(y_ref,count,xscale,x0);
     PlotShadedEx(label_id, getter1, getter2);
 }
 
-void PlotShaded(const char* label_id, const float* xs, const float* ys, int count, float y_ref, int offset, int stride) {
-    GetterXsYs<float> getter1(xs, ys, count, offset, stride);
-    GetterXsYRef<float> getter2(xs, y_ref, count, offset, stride);
+template IMPLOT_API void PlotShaded<ImS8>(const char* label_id, const ImS8* values, int count, double y_ref, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImU8>(const char* label_id, const ImU8* values, int count, double y_ref, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImS16>(const char* label_id, const ImS16* values, int count, double y_ref, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImU16>(const char* label_id, const ImU16* values, int count, double y_ref, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImS32>(const char* label_id, const ImS32* values, int count, double y_ref, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImU32>(const char* label_id, const ImU32* values, int count, double y_ref, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImS64>(const char* label_id, const ImS64* values, int count, double y_ref, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImU64>(const char* label_id, const ImU64* values, int count, double y_ref, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotShaded<float>(const char* label_id, const float* values, int count, double y_ref, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotShaded<double>(const char* label_id, const double* values, int count, double y_ref, double xscale, double x0, int offset, int stride);
+
+template <typename T>
+void PlotShaded(const char* label_id, const T* xs, const T* ys, int count, double y_ref, int offset, int stride) {
+    GetterXsYs<T> getter1(xs, ys, count, offset, stride);
+    GetterXsYRef<T> getter2(xs, y_ref, count, offset, stride);
     PlotShadedEx(label_id, getter1, getter2);
 }
 
-// double
-void PlotShaded(const char* label_id, const double* values, int count, double y_ref, int offset, int stride) {
-    GetterYs<double> getter1(values,count,offset,stride);
-    GetterYRef<double> getter2(y_ref, count);
+template IMPLOT_API void PlotShaded<ImS8>(const char* label_id, const ImS8* xs, const ImS8* ys, int count, double y_ref, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImU8>(const char* label_id, const ImU8* xs, const ImU8* ys, int count, double y_ref, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImS16>(const char* label_id, const ImS16* xs, const ImS16* ys, int count, double y_ref, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImU16>(const char* label_id, const ImU16* xs, const ImU16* ys, int count, double y_ref, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImS32>(const char* label_id, const ImS32* xs, const ImS32* ys, int count, double y_ref, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImU32>(const char* label_id, const ImU32* xs, const ImU32* ys, int count, double y_ref, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImS64>(const char* label_id, const ImS64* xs, const ImS64* ys, int count, double y_ref, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImU64>(const char* label_id, const ImU64* xs, const ImU64* ys, int count, double y_ref, int offset, int stride);
+template IMPLOT_API void PlotShaded<float>(const char* label_id, const float* xs, const float* ys, int count, double y_ref, int offset, int stride);
+template IMPLOT_API void PlotShaded<double>(const char* label_id, const double* xs, const double* ys, int count, double y_ref, int offset, int stride);
+
+template <typename T>
+void PlotShaded(const char* label_id, const T* xs, const T* ys1, const T* ys2, int count, int offset, int stride) {
+    GetterXsYs<T> getter1(xs, ys1, count, offset, stride);
+    GetterXsYs<T> getter2(xs, ys2, count, offset, stride);
     PlotShadedEx(label_id, getter1, getter2);
 }
 
-void PlotShaded(const char* label_id, const double* xs, const double* ys1, const double* ys2, int count, int offset, int stride) {
-    GetterXsYs<double> getter1(xs, ys1, count, offset, stride);
-    GetterXsYs<double> getter2(xs, ys2, count, offset, stride);
-    PlotShadedEx(label_id, getter1, getter2);
-}
-
-void PlotShaded(const char* label_id, const double* xs, const double* ys, int count, double y_ref, int offset, int stride) {
-    GetterXsYs<double> getter1(xs, ys, count, offset, stride);
-    GetterXsYRef<double> getter2(xs, y_ref, count, offset, stride);
-    PlotShadedEx(label_id, getter1, getter2);
-}
+template IMPLOT_API void PlotShaded<ImS8>(const char* label_id, const ImS8* xs, const ImS8* ys1, const ImS8* ys2, int count, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImU8>(const char* label_id, const ImU8* xs, const ImU8* ys1, const ImU8* ys2, int count, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImS16>(const char* label_id, const ImS16* xs, const ImS16* ys1, const ImS16* ys2, int count, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImU16>(const char* label_id, const ImU16* xs, const ImU16* ys1, const ImU16* ys2, int count, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImS32>(const char* label_id, const ImS32* xs, const ImS32* ys1, const ImS32* ys2, int count, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImU32>(const char* label_id, const ImU32* xs, const ImU32* ys1, const ImU32* ys2, int count, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImS64>(const char* label_id, const ImS64* xs, const ImS64* ys1, const ImS64* ys2, int count, int offset, int stride);
+template IMPLOT_API void PlotShaded<ImU64>(const char* label_id, const ImU64* xs, const ImU64* ys1, const ImU64* ys2, int count, int offset, int stride);
+template IMPLOT_API void PlotShaded<float>(const char* label_id, const float* xs, const float* ys1, const float* ys2, int count, int offset, int stride);
+template IMPLOT_API void PlotShaded<double>(const char* label_id, const double* xs, const double* ys1, const double* ys2, int count, int offset, int stride);
 
 // custom
-void PlotShaded(const char* label_id, ImPlotPoint (*g1)(void* data, int idx), void* data1, ImPlotPoint (*g2)(void* data, int idx), void* data2, int count, int offset) {
-    GetterFuncPtrImPlotPoint getter1(g1, data1, count, offset);
-    GetterFuncPtrImPlotPoint getter2(g2, data2, count, offset);
+void PlotShadedG(const char* label_id, ImPlotPoint (*g1)(void* data, int idx), void* data1, ImPlotPoint (*g2)(void* data, int idx), void* data2, int count, int offset) {
+    GetterFuncPtr getter1(g1, data1, count, offset);
+    GetterFuncPtr getter2(g2, data2, count, offset);
     PlotShadedEx(label_id, getter1, getter2);
 }
 
 //-----------------------------------------------------------------------------
-// PLOT BAR V
+// PLOT BAR
 //-----------------------------------------------------------------------------
 
 // TODO: Migrate to RenderPrimitives
 
-template <typename Getter, typename TWidth>
-void PlotBarsEx(const char* label_id, Getter getter, TWidth width) {
+template <typename Getter>
+void PlotBarsEx(const char* label_id, const Getter& getter, double width) {
     if (BeginItem(label_id, ImPlotCol_Fill)) {
-        const TWidth half_width = width / 2;
+        const double half_width = width / 2;
         if (FitThisFrame()) {
             for (int i = 0; i < getter.Count; ++i) {
                 ImPlotPoint p = getter(i);
@@ -1051,7 +1078,7 @@ void PlotBarsEx(const char* label_id, Getter getter, TWidth width) {
                 FitPoint(ImPlotPoint(p.x + half_width, 0));
             }
         }
-        const ImPlotItemStyle& s = GetItemStyle();
+        const ImPlotNextItemData& s = GetItemData();
         ImDrawList& DrawList = *GetPlotDrawList();
         ImU32 col_line  = ImGui::GetColorU32(s.Colors[ImPlotCol_Line]);
         ImU32 col_fill  = ImGui::GetColorU32(s.Colors[ImPlotCol_Fill]);
@@ -1073,31 +1100,43 @@ void PlotBarsEx(const char* label_id, Getter getter, TWidth width) {
     }
 }
 
-// float
-void PlotBars(const char* label_id, const float* values, int count, float width, float shift, int offset, int stride) {
-    GetterBarV<float> getter(values,shift,count,offset,stride);
+template <typename T>
+void PlotBars(const char* label_id, const T* values, int count, double width, double shift, int offset, int stride) {
+    GetterBarV<T> getter(values,shift,count,offset,stride);
     PlotBarsEx(label_id, getter, width);
 }
 
-void PlotBars(const char* label_id, const float* xs, const float* ys, int count, float width, int offset, int stride) {
-    GetterXsYs<float> getter(xs,ys,count,offset,stride);
+template IMPLOT_API void PlotBars<ImS8>(const char* label_id, const ImS8* values, int count, double width, double shift, int offset, int stride);
+template IMPLOT_API void PlotBars<ImU8>(const char* label_id, const ImU8* values, int count, double width, double shift, int offset, int stride);
+template IMPLOT_API void PlotBars<ImS16>(const char* label_id, const ImS16* values, int count, double width, double shift, int offset, int stride);
+template IMPLOT_API void PlotBars<ImU16>(const char* label_id, const ImU16* values, int count, double width, double shift, int offset, int stride);
+template IMPLOT_API void PlotBars<ImS32>(const char* label_id, const ImS32* values, int count, double width, double shift, int offset, int stride);
+template IMPLOT_API void PlotBars<ImU32>(const char* label_id, const ImU32* values, int count, double width, double shift, int offset, int stride);
+template IMPLOT_API void PlotBars<ImS64>(const char* label_id, const ImS64* values, int count, double width, double shift, int offset, int stride);
+template IMPLOT_API void PlotBars<ImU64>(const char* label_id, const ImU64* values, int count, double width, double shift, int offset, int stride);
+template IMPLOT_API void PlotBars<float>(const char* label_id, const float* values, int count, double width, double shift, int offset, int stride);
+template IMPLOT_API void PlotBars<double>(const char* label_id, const double* values, int count, double width, double shift, int offset, int stride);
+
+template <typename T>
+void PlotBars(const char* label_id, const T* xs, const T* ys, int count, double width, int offset, int stride) {
+    GetterXsYs<T> getter(xs,ys,count,offset,stride);
     PlotBarsEx(label_id, getter, width);
 }
 
-// double
-void PlotBars(const char* label_id, const double* values, int count, double width, double shift, int offset, int stride) {
-    GetterBarV<double> getter(values,shift,count,offset,stride);
-    PlotBarsEx(label_id, getter, width);
-}
-
-void PlotBars(const char* label_id, const double* xs, const double* ys, int count, double width, int offset, int stride) {
-    GetterXsYs<double> getter(xs,ys,count,offset,stride);
-    PlotBarsEx(label_id, getter, width);
-}
+template IMPLOT_API void PlotBars<ImS8>(const char* label_id, const ImS8* xs, const ImS8* ys, int count, double width, int offset, int stride);
+template IMPLOT_API void PlotBars<ImU8>(const char* label_id, const ImU8* xs, const ImU8* ys, int count, double width, int offset, int stride);
+template IMPLOT_API void PlotBars<ImS16>(const char* label_id, const ImS16* xs, const ImS16* ys, int count, double width, int offset, int stride);
+template IMPLOT_API void PlotBars<ImU16>(const char* label_id, const ImU16* xs, const ImU16* ys, int count, double width, int offset, int stride);
+template IMPLOT_API void PlotBars<ImS32>(const char* label_id, const ImS32* xs, const ImS32* ys, int count, double width, int offset, int stride);
+template IMPLOT_API void PlotBars<ImU32>(const char* label_id, const ImU32* xs, const ImU32* ys, int count, double width, int offset, int stride);
+template IMPLOT_API void PlotBars<ImS64>(const char* label_id, const ImS64* xs, const ImS64* ys, int count, double width, int offset, int stride);
+template IMPLOT_API void PlotBars<ImU64>(const char* label_id, const ImU64* xs, const ImU64* ys, int count, double width, int offset, int stride);
+template IMPLOT_API void PlotBars<float>(const char* label_id, const float* xs, const float* ys, int count, double width, int offset, int stride);
+template IMPLOT_API void PlotBars<double>(const char* label_id, const double* xs, const double* ys, int count, double width, int offset, int stride);
 
 // custom
-void PlotBars(const char* label_id, ImPlotPoint (*getter_func)(void* data, int idx), void* data, int count, double width, int offset) {
-    GetterFuncPtrImPlotPoint getter(getter_func, data, count, offset);
+void PlotBarsG(const char* label_id, ImPlotPoint (*getter_func)(void* data, int idx), void* data, int count, double width, int offset) {
+    GetterFuncPtr getter(getter_func, data, count, offset);
     PlotBarsEx(label_id, getter, width);
 }
 
@@ -1108,7 +1147,7 @@ void PlotBars(const char* label_id, ImPlotPoint (*getter_func)(void* data, int i
 // TODO: Migrate to RenderPrimitives
 
 template <typename Getter, typename THeight>
-void PlotBarsHEx(const char* label_id, Getter getter, THeight height) {
+void PlotBarsHEx(const char* label_id, const Getter& getter, THeight height) {
     if (BeginItem(label_id, ImPlotCol_Fill)) {
         const THeight half_height = height / 2;
         if (FitThisFrame()) {
@@ -1118,7 +1157,7 @@ void PlotBarsHEx(const char* label_id, Getter getter, THeight height) {
                 FitPoint(ImPlotPoint(p.x, p.y + half_height));
             }
         }
-        const ImPlotItemStyle& s = GetItemStyle();
+        const ImPlotNextItemData& s = GetItemData();
         ImDrawList& DrawList = *GetPlotDrawList();
         ImU32 col_line  = ImGui::GetColorU32(s.Colors[ImPlotCol_Line]);
         ImU32 col_fill  = ImGui::GetColorU32(s.Colors[ImPlotCol_Fill]);
@@ -1140,31 +1179,43 @@ void PlotBarsHEx(const char* label_id, Getter getter, THeight height) {
     }
 }
 
-// float
-void PlotBarsH(const char* label_id, const float* values, int count, float height, float shift, int offset, int stride) {
-    GetterBarH<float> getter(values,shift,count,offset,stride);
+template <typename T>
+void PlotBarsH(const char* label_id, const T* values, int count, double height, double shift, int offset, int stride) {
+    GetterBarH<T> getter(values,shift,count,offset,stride);
     PlotBarsHEx(label_id, getter, height);
 }
 
-void PlotBarsH(const char* label_id, const float* xs, const float* ys, int count, float height,  int offset, int stride) {
-    GetterXsYs<float> getter(xs,ys,count,offset,stride);
+template IMPLOT_API void PlotBarsH<ImS8>(const char* label_id, const ImS8* values, int count, double height, double shift, int offset, int stride);
+template IMPLOT_API void PlotBarsH<ImU8>(const char* label_id, const ImU8* values, int count, double height, double shift, int offset, int stride);
+template IMPLOT_API void PlotBarsH<ImS16>(const char* label_id, const ImS16* values, int count, double height, double shift, int offset, int stride);
+template IMPLOT_API void PlotBarsH<ImU16>(const char* label_id, const ImU16* values, int count, double height, double shift, int offset, int stride);
+template IMPLOT_API void PlotBarsH<ImS32>(const char* label_id, const ImS32* values, int count, double height, double shift, int offset, int stride);
+template IMPLOT_API void PlotBarsH<ImU32>(const char* label_id, const ImU32* values, int count, double height, double shift, int offset, int stride);
+template IMPLOT_API void PlotBarsH<ImS64>(const char* label_id, const ImS64* values, int count, double height, double shift, int offset, int stride);
+template IMPLOT_API void PlotBarsH<ImU64>(const char* label_id, const ImU64* values, int count, double height, double shift, int offset, int stride);
+template IMPLOT_API void PlotBarsH<float>(const char* label_id, const float* values, int count, double height, double shift, int offset, int stride);
+template IMPLOT_API void PlotBarsH<double>(const char* label_id, const double* values, int count, double height, double shift, int offset, int stride);
+
+template <typename T>
+void PlotBarsH(const char* label_id, const T* xs, const T* ys, int count, double height, int offset, int stride) {
+    GetterXsYs<T> getter(xs,ys,count,offset,stride);
     PlotBarsHEx(label_id, getter, height);
 }
 
-// double
-void PlotBarsH(const char* label_id, const double* values, int count, double height, double shift, int offset, int stride) {
-    GetterBarH<double> getter(values,shift,count,offset,stride);
-    PlotBarsHEx(label_id, getter, height);
-}
-
-void PlotBarsH(const char* label_id, const double* xs, const double* ys, int count, double height,  int offset, int stride) {
-    GetterXsYs<double> getter(xs,ys,count,offset,stride);
-    PlotBarsHEx(label_id, getter, height);
-}
+template IMPLOT_API void PlotBarsH<ImS8>(const char* label_id, const ImS8* xs, const ImS8* ys, int count, double height, int offset, int stride);
+template IMPLOT_API void PlotBarsH<ImU8>(const char* label_id, const ImU8* xs, const ImU8* ys, int count, double height, int offset, int stride);
+template IMPLOT_API void PlotBarsH<ImS16>(const char* label_id, const ImS16* xs, const ImS16* ys, int count, double height, int offset, int stride);
+template IMPLOT_API void PlotBarsH<ImU16>(const char* label_id, const ImU16* xs, const ImU16* ys, int count, double height, int offset, int stride);
+template IMPLOT_API void PlotBarsH<ImS32>(const char* label_id, const ImS32* xs, const ImS32* ys, int count, double height, int offset, int stride);
+template IMPLOT_API void PlotBarsH<ImU32>(const char* label_id, const ImU32* xs, const ImU32* ys, int count, double height, int offset, int stride);
+template IMPLOT_API void PlotBarsH<ImS64>(const char* label_id, const ImS64* xs, const ImS64* ys, int count, double height, int offset, int stride);
+template IMPLOT_API void PlotBarsH<ImU64>(const char* label_id, const ImU64* xs, const ImU64* ys, int count, double height, int offset, int stride);
+template IMPLOT_API void PlotBarsH<float>(const char* label_id, const float* xs, const float* ys, int count, double height, int offset, int stride);
+template IMPLOT_API void PlotBarsH<double>(const char* label_id, const double* xs, const double* ys, int count, double height, int offset, int stride);
 
 // custom
-void PlotBarsH(const char* label_id, ImPlotPoint (*getter_func)(void* data, int idx), void* data, int count, double height,  int offset) {
-    GetterFuncPtrImPlotPoint getter(getter_func, data, count, offset);
+void PlotBarsHG(const char* label_id, ImPlotPoint (*getter_func)(void* data, int idx), void* data, int count, double height,  int offset) {
+    GetterFuncPtr getter(getter_func, data, count, offset);
     PlotBarsHEx(label_id, getter, height);
 }
 
@@ -1173,7 +1224,7 @@ void PlotBarsH(const char* label_id, ImPlotPoint (*getter_func)(void* data, int 
 //-----------------------------------------------------------------------------
 
 template <typename Getter>
-void PlotErrorBarsEx(const char* label_id, Getter getter) {
+void PlotErrorBarsEx(const char* label_id, const Getter& getter) {
     if (BeginItem(label_id)) {
         if (FitThisFrame()) {
             for (int i = 0; i < getter.Count; ++i) {
@@ -1182,7 +1233,7 @@ void PlotErrorBarsEx(const char* label_id, Getter getter) {
                 FitPoint(ImPlotPoint(e.X , e.Y + e.Pos ));
             }
         }
-        const ImPlotItemStyle& s = GetItemStyle();
+        const ImPlotNextItemData& s = GetItemData();
         ImDrawList& DrawList = *GetPlotDrawList();
         const ImU32 col = ImGui::GetColorU32(s.Colors[ImPlotCol_ErrorBar]);
         const bool rend_whisker  = s.ErrorBarSize > 0;
@@ -1201,34 +1252,45 @@ void PlotErrorBarsEx(const char* label_id, Getter getter) {
     }
 }
 
-// float
-void PlotErrorBars(const char* label_id, const float* xs, const float* ys, const float* err, int count, int offset, int stride) {
-    GetterError<float> getter(xs, ys, err, err, count, offset, stride);
+template <typename T>
+void PlotErrorBars(const char* label_id, const T* xs, const T* ys, const T* err, int count, int offset, int stride) {
+    GetterError<T> getter(xs, ys, err, err, count, offset, stride);
     PlotErrorBarsEx(label_id, getter);
 }
 
-void PlotErrorBars(const char* label_id, const float* xs, const float* ys, const float* neg, const float* pos, int count, int offset, int stride) {
-    GetterError<float> getter(xs, ys, neg, pos, count, offset, stride);
-    PlotErrorBarsEx(label_id, getter);
-}
+template IMPLOT_API void PlotErrorBars<ImS8>(const char* label_id, const ImS8* xs, const ImS8* ys, const ImS8* err, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBars<ImU8>(const char* label_id, const ImU8* xs, const ImU8* ys, const ImU8* err, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBars<ImS16>(const char* label_id, const ImS16* xs, const ImS16* ys, const ImS16* err, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBars<ImU16>(const char* label_id, const ImU16* xs, const ImU16* ys, const ImU16* err, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBars<ImS32>(const char* label_id, const ImS32* xs, const ImS32* ys, const ImS32* err, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBars<ImU32>(const char* label_id, const ImU32* xs, const ImU32* ys, const ImU32* err, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBars<ImS64>(const char* label_id, const ImS64* xs, const ImS64* ys, const ImS64* err, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBars<ImU64>(const char* label_id, const ImU64* xs, const ImU64* ys, const ImU64* err, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBars<float>(const char* label_id, const float* xs, const float* ys, const float* err, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBars<double>(const char* label_id, const double* xs, const double* ys, const double* err, int count, int offset, int stride);
 
-// double
-void PlotErrorBars(const char* label_id, const double* xs, const double* ys, const double* err, int count, int offset, int stride) {
-    GetterError<double> getter(xs, ys, err, err, count, offset, stride);
+template <typename T>
+void PlotErrorBars(const char* label_id, const T* xs, const T* ys, const T* neg, const T* pos, int count, int offset, int stride) {
+    GetterError<T> getter(xs, ys, neg, pos, count, offset, stride);
     PlotErrorBarsEx(label_id, getter);
 }
-
-void PlotErrorBars(const char* label_id, const double* xs, const double* ys, const double* neg, const double* pos, int count, int offset, int stride) {
-    GetterError<double> getter(xs, ys, neg, pos, count, offset, stride);
-    PlotErrorBarsEx(label_id, getter);
-}
+template IMPLOT_API void PlotErrorBars<ImS8>(const char* label_id, const ImS8* xs, const ImS8* ys, const ImS8* neg, const ImS8* pos, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBars<ImU8>(const char* label_id, const ImU8* xs, const ImU8* ys, const ImU8* neg, const ImU8* pos, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBars<ImS16>(const char* label_id, const ImS16* xs, const ImS16* ys, const ImS16* neg, const ImS16* pos, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBars<ImU16>(const char* label_id, const ImU16* xs, const ImU16* ys, const ImU16* neg, const ImU16* pos, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBars<ImS32>(const char* label_id, const ImS32* xs, const ImS32* ys, const ImS32* neg, const ImS32* pos, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBars<ImU32>(const char* label_id, const ImU32* xs, const ImU32* ys, const ImU32* neg, const ImU32* pos, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBars<ImS64>(const char* label_id, const ImS64* xs, const ImS64* ys, const ImS64* neg, const ImS64* pos, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBars<ImU64>(const char* label_id, const ImU64* xs, const ImU64* ys, const ImU64* neg, const ImU64* pos, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBars<float>(const char* label_id, const float* xs, const float* ys, const float* neg, const float* pos, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBars<double>(const char* label_id, const double* xs, const double* ys, const double* neg, const double* pos, int count, int offset, int stride);
 
 //-----------------------------------------------------------------------------
 // PLOT ERROR BARS H
 //-----------------------------------------------------------------------------
 
 template <typename Getter>
-void PlotErrorBarsHEx(const char* label_id, Getter getter) {
+void PlotErrorBarsHEx(const char* label_id, const Getter& getter) {
     if (BeginItem(label_id)) {
         if (FitThisFrame()) {
             for (int i = 0; i < getter.Count; ++i) {
@@ -1237,7 +1299,7 @@ void PlotErrorBarsHEx(const char* label_id, Getter getter) {
                 FitPoint(ImPlotPoint(e.X + e.Pos, e.Y));
             }
         }
-        const ImPlotItemStyle& s = GetItemStyle();
+        const ImPlotNextItemData& s = GetItemData();
         ImDrawList& DrawList = *GetPlotDrawList();
         const ImU32 col = ImGui::GetColorU32(s.Colors[ImPlotCol_ErrorBar]);
         const bool rend_whisker  = s.ErrorBarSize > 0;
@@ -1256,34 +1318,46 @@ void PlotErrorBarsHEx(const char* label_id, Getter getter) {
     }
 }
 
-// float
-void PlotErrorBarsH(const char* label_id, const float* xs, const float* ys, const float* err, int count, int offset, int stride) {
-    GetterError<float> getter(xs, ys, err, err, count, offset, stride);
+template <typename T>
+void PlotErrorBarsH(const char* label_id, const T* xs, const T* ys, const T* err, int count, int offset, int stride) {
+    GetterError<T> getter(xs, ys, err, err, count, offset, stride);
     PlotErrorBarsHEx(label_id, getter);
 }
 
-void PlotErrorBarsH(const char* label_id, const float* xs, const float* ys, const float* neg, const float* pos, int count, int offset, int stride) {
-    GetterError<float> getter(xs, ys, neg, pos, count, offset, stride);
+template IMPLOT_API void PlotErrorBarsH<ImS8>(const char* label_id, const ImS8* xs, const ImS8* ys, const ImS8* err, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBarsH<ImU8>(const char* label_id, const ImU8* xs, const ImU8* ys, const ImU8* err, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBarsH<ImS16>(const char* label_id, const ImS16* xs, const ImS16* ys, const ImS16* err, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBarsH<ImU16>(const char* label_id, const ImU16* xs, const ImU16* ys, const ImU16* err, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBarsH<ImS32>(const char* label_id, const ImS32* xs, const ImS32* ys, const ImS32* err, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBarsH<ImU32>(const char* label_id, const ImU32* xs, const ImU32* ys, const ImU32* err, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBarsH<ImS64>(const char* label_id, const ImS64* xs, const ImS64* ys, const ImS64* err, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBarsH<ImU64>(const char* label_id, const ImU64* xs, const ImU64* ys, const ImU64* err, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBarsH<float>(const char* label_id, const float* xs, const float* ys, const float* err, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBarsH<double>(const char* label_id, const double* xs, const double* ys, const double* err, int count, int offset, int stride);
+
+template <typename T>
+void PlotErrorBarsH(const char* label_id, const T* xs, const T* ys, const T* neg, const T* pos, int count, int offset, int stride) {
+    GetterError<T> getter(xs, ys, neg, pos, count, offset, stride);
     PlotErrorBarsHEx(label_id, getter);
 }
 
-// double
-void PlotErrorBarsH(const char* label_id, const double* xs, const double* ys, const double* err, int count, int offset, int stride) {
-    GetterError<double> getter(xs, ys, err, err, count, offset, stride);
-    PlotErrorBarsHEx(label_id, getter);
-}
-
-void PlotErrorBarsH(const char* label_id, const double* xs, const double* ys, const double* neg, const double* pos, int count, int offset, int stride) {
-    GetterError<double> getter(xs, ys, neg, pos, count, offset, stride);
-    PlotErrorBarsHEx(label_id, getter);
-}
+template IMPLOT_API void PlotErrorBarsH<ImS8>(const char* label_id, const ImS8* xs, const ImS8* ys, const ImS8* neg, const ImS8* pos, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBarsH<ImU8>(const char* label_id, const ImU8* xs, const ImU8* ys, const ImU8* neg, const ImU8* pos, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBarsH<ImS16>(const char* label_id, const ImS16* xs, const ImS16* ys, const ImS16* neg, const ImS16* pos, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBarsH<ImU16>(const char* label_id, const ImU16* xs, const ImU16* ys, const ImU16* neg, const ImU16* pos, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBarsH<ImS32>(const char* label_id, const ImS32* xs, const ImS32* ys, const ImS32* neg, const ImS32* pos, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBarsH<ImU32>(const char* label_id, const ImU32* xs, const ImU32* ys, const ImU32* neg, const ImU32* pos, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBarsH<ImS64>(const char* label_id, const ImS64* xs, const ImS64* ys, const ImS64* neg, const ImS64* pos, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBarsH<ImU64>(const char* label_id, const ImU64* xs, const ImU64* ys, const ImU64* neg, const ImU64* pos, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBarsH<float>(const char* label_id, const float* xs, const float* ys, const float* neg, const float* pos, int count, int offset, int stride);
+template IMPLOT_API void PlotErrorBarsH<double>(const char* label_id, const double* xs, const double* ys, const double* neg, const double* pos, int count, int offset, int stride);
 
 //-----------------------------------------------------------------------------
 // PLOT STEMS
 //-----------------------------------------------------------------------------
 
 template <typename GetterM, typename GetterB>
-inline void PlotStemsEx(const char* label_id, GetterM get_mark, GetterB get_base) {
+inline void PlotStemsEx(const char* label_id, const GetterM& get_mark, const GetterB& get_base) {
     if (BeginItem(label_id, ImPlotCol_Line)) {
         if (FitThisFrame()) {
             for (int i = 0; i < get_base.Count; ++i) {
@@ -1291,7 +1365,7 @@ inline void PlotStemsEx(const char* label_id, GetterM get_mark, GetterB get_base
                 FitPoint(get_base(i));
             }
         }
-        const ImPlotItemStyle& s = GetItemStyle();
+        const ImPlotNextItemData& s = GetItemData();
         ImDrawList& DrawList = *GetPlotDrawList();
         // render stems
         if (s.RenderLine) {
@@ -1319,29 +1393,41 @@ inline void PlotStemsEx(const char* label_id, GetterM get_mark, GetterB get_base
     }
 }
 
-void PlotStems(const char* label_id, const float* values, int count, float y_ref, int offset, int stride) {
-    GetterYs<float> get_mark(values,count,offset,stride);
-    GetterYRef<float> get_base(y_ref,count);
+template <typename T>
+void PlotStems(const char* label_id, const T* values, int count, double y_ref, double xscale, double x0, int offset, int stride) {
+    GetterYs<T> get_mark(values,count,xscale,x0,offset,stride);
+    GetterYRef get_base(y_ref,count,xscale,x0);
     PlotStemsEx(label_id, get_mark, get_base);
 }
 
-void PlotStems(const char* label_id, const double* values, int count, double y_ref, int offset, int stride) {
-    GetterYs<double> get_mark(values,count,offset,stride);
-    GetterYRef<double> get_base(y_ref,count);
+template IMPLOT_API void PlotStems<ImS8>(const char* label_id, const ImS8* values, int count, double y_ref, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotStems<ImU8>(const char* label_id, const ImU8* values, int count, double y_ref, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotStems<ImS16>(const char* label_id, const ImS16* values, int count, double y_ref, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotStems<ImU16>(const char* label_id, const ImU16* values, int count, double y_ref, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotStems<ImS32>(const char* label_id, const ImS32* values, int count, double y_ref, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotStems<ImU32>(const char* label_id, const ImU32* values, int count, double y_ref, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotStems<ImS64>(const char* label_id, const ImS64* values, int count, double y_ref, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotStems<ImU64>(const char* label_id, const ImU64* values, int count, double y_ref, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotStems<float>(const char* label_id, const float* values, int count, double y_ref, double xscale, double x0, int offset, int stride);
+template IMPLOT_API void PlotStems<double>(const char* label_id, const double* values, int count, double y_ref, double xscale, double x0, int offset, int stride);
+
+template <typename T>
+void PlotStems(const char* label_id, const T* xs, const T* ys, int count, double y_ref, int offset, int stride) {
+    GetterXsYs<T> get_mark(xs,ys,count,offset,stride);
+    GetterXsYRef<T> get_base(xs,y_ref,count,offset,stride);
     PlotStemsEx(label_id, get_mark, get_base);
 }
 
-void PlotStems(const char* label_id, const float* xs, const float* ys, int count, float y_ref, int offset, int stride) {
-    GetterXsYs<float> get_mark(xs,ys,count,offset,stride);
-    GetterXsYRef<float> get_base(xs,y_ref,count,offset,stride);
-    PlotStemsEx(label_id, get_mark, get_base);
-}
-
-void PlotStems(const char* label_id, const double* xs, const double* ys, int count, double y_ref, int offset, int stride) {
-    GetterXsYs<double> get_mark(xs,ys,count,offset,stride);
-    GetterXsYRef<double> get_base(xs,y_ref,count,offset,stride);
-    PlotStemsEx(label_id, get_mark, get_base);
-}
+template IMPLOT_API void PlotStems<ImS8>(const char* label_id, const ImS8* xs, const ImS8* ys, int count, double y_ref, int offset, int stride);
+template IMPLOT_API void PlotStems<ImU8>(const char* label_id, const ImU8* xs, const ImU8* ys, int count, double y_ref, int offset, int stride);
+template IMPLOT_API void PlotStems<ImS16>(const char* label_id, const ImS16* xs, const ImS16* ys, int count, double y_ref, int offset, int stride);
+template IMPLOT_API void PlotStems<ImU16>(const char* label_id, const ImU16* xs, const ImU16* ys, int count, double y_ref, int offset, int stride);
+template IMPLOT_API void PlotStems<ImS32>(const char* label_id, const ImS32* xs, const ImS32* ys, int count, double y_ref, int offset, int stride);
+template IMPLOT_API void PlotStems<ImU32>(const char* label_id, const ImU32* xs, const ImU32* ys, int count, double y_ref, int offset, int stride);
+template IMPLOT_API void PlotStems<ImS64>(const char* label_id, const ImS64* xs, const ImS64* ys, int count, double y_ref, int offset, int stride);
+template IMPLOT_API void PlotStems<ImU64>(const char* label_id, const ImU64* xs, const ImU64* ys, int count, double y_ref, int offset, int stride);
+template IMPLOT_API void PlotStems<float>(const char* label_id, const float* xs, const float* ys, int count, double y_ref, int offset, int stride);
+template IMPLOT_API void PlotStems<double>(const char* label_id, const double* xs, const double* ys, int count, double y_ref, int offset, int stride);
 
 //-----------------------------------------------------------------------------
 // PLOT PIE CHART
@@ -1361,19 +1447,19 @@ inline void RenderPieSlice(ImDrawList& DrawList, const ImPlotPoint& center, doub
 }
 
 template <typename T>
-void PlotPieChartEx(const char** label_ids, const T* values, int count, T x, T y, T radius, bool normalize, const char* fmt, T angle0) {
+void PlotPieChart(const char* const label_ids[], const T* values, int count, double x, double y, double radius, bool normalize, const char* fmt, double angle0) {
     IM_ASSERT_USER_ERROR(GImPlot->CurrentPlot != NULL, "PlotPieChart() needs to be called between BeginPlot() and EndPlot()!");
     ImDrawList & DrawList = *GetPlotDrawList();
-    T sum = 0;
+    double sum = 0;
     for (int i = 0; i < count; ++i)
-        sum += values[i];
-    normalize = normalize || sum > 1.0f;
+        sum += (double)values[i];
+    normalize = normalize || sum > 1.0;
     ImPlotPoint center(x,y);
     PushPlotClipRect();
-    T a0 = angle0 * 2 * IM_PI / 360.0f;
-    T a1 = angle0 * 2 * IM_PI / 360.0f;
+    double a0 = angle0 * 2 * IM_PI / 360.0;
+    double a1 = angle0 * 2 * IM_PI / 360.0;
     for (int i = 0; i < count; ++i) {
-        T percent = normalize ? values[i] / sum : values[i];
+        double percent = normalize ? (double)values[i] / sum : (double)values[i];
         a1 = a0 + 2 * IM_PI * percent;
         if (BeginItem(label_ids[i])) {
             ImU32 col = ImGui::GetColorU32(GetCurrentItem()->Color);
@@ -1381,26 +1467,26 @@ void PlotPieChartEx(const char** label_ids, const T* values, int count, T x, T y
                 RenderPieSlice(DrawList, center, radius, a0, a1, col);
             }
             else  {
-                RenderPieSlice(DrawList, center, radius, a0, a0 + (a1 - a0) * 0.5f, col);
-                RenderPieSlice(DrawList, center, radius, a0 + (a1 - a0) * 0.5f, a1, col);
+                RenderPieSlice(DrawList, center, radius, a0, a0 + (a1 - a0) * 0.5, col);
+                RenderPieSlice(DrawList, center, radius, a0 + (a1 - a0) * 0.5, a1, col);
             }
             EndItem();
         }
         a0 = a1;
     }
     if (fmt != NULL) {
-        a0 = angle0 * 2 * IM_PI / 360.0f;
-        a1 = angle0 * 2 * IM_PI / 360.0f;
+        a0 = angle0 * 2 * IM_PI / 360.0;
+        a1 = angle0 * 2 * IM_PI / 360.0;
         char buffer[32];
         for (int i = 0; i < count; ++i) {
             ImPlotItem* item = GetItem(label_ids[i]);
-            T percent = normalize ? values[i] / sum : values[i];
+            double percent = normalize ? (double)values[i] / sum : (double)values[i];
             a1 = a0 + 2 * IM_PI * percent;
             if (item->Show) {
-                sprintf(buffer, fmt, values[i]);
+                sprintf(buffer, fmt, (double)values[i]);
                 ImVec2 size = ImGui::CalcTextSize(buffer);
-                T angle = a0 + (a1 - a0) * 0.5f;
-                ImVec2 pos = PlotToPixels(center.x + 0.5f * radius * cos(angle), center.y + 0.5f * radius * sin(angle));
+                double angle = a0 + (a1 - a0) * 0.5;
+                ImVec2 pos = PlotToPixels(center.x + 0.5 * radius * cos(angle), center.y + 0.5 * radius * sin(angle));
                 ImU32 col = CalcTextColor(item->Color);
                 DrawList.AddText(pos - size * 0.5f, col, buffer);
             }
@@ -1410,22 +1496,23 @@ void PlotPieChartEx(const char** label_ids, const T* values, int count, T x, T y
     PopPlotClipRect();
 }
 
-// float
-void PlotPieChart(const char** label_ids, const float* values, int count, float x, float y, float radius, bool normalize, const char* fmt, float angle0) {
-    return PlotPieChartEx(label_ids, values, count, x, y, radius, normalize, fmt, angle0);
-}
-
-// double
-void PlotPieChart(const char** label_ids, const double* values, int count, double x, double y, double radius, bool normalize, const char* fmt, double angle0) {
-    return PlotPieChartEx(label_ids, values, count, x, y, radius, normalize, fmt, angle0);
-}
+template IMPLOT_API void PlotPieChart<ImS8>(const char* const label_ids[], const ImS8* values, int count, double x, double y, double radius, bool normalize, const char* fmt, double angle0);
+template IMPLOT_API void PlotPieChart<ImU8>(const char* const label_ids[], const ImU8* values, int count, double x, double y, double radius, bool normalize, const char* fmt, double angle0);
+template IMPLOT_API void PlotPieChart<ImS16>(const char* const label_ids[], const ImS16* values, int count, double x, double y, double radius, bool normalize, const char* fmt, double angle0);
+template IMPLOT_API void PlotPieChart<ImU16>(const char* const label_ids[], const ImU16* values, int count, double x, double y, double radius, bool normalize, const char* fmt, double angle0);
+template IMPLOT_API void PlotPieChart<ImS32>(const char* const label_ids[], const ImS32* values, int count, double x, double y, double radius, bool normalize, const char* fmt, double angle0);
+template IMPLOT_API void PlotPieChart<ImU32>(const char* const label_ids[], const ImU32* values, int count, double x, double y, double radius, bool normalize, const char* fmt, double angle0);
+template IMPLOT_API void PlotPieChart<ImS64>(const char* const label_ids[], const ImS64* values, int count, double x, double y, double radius, bool normalize, const char* fmt, double angle0);
+template IMPLOT_API void PlotPieChart<ImU64>(const char* const label_ids[], const ImU64* values, int count, double x, double y, double radius, bool normalize, const char* fmt, double angle0);
+template IMPLOT_API void PlotPieChart<float>(const char* const label_ids[], const float* values, int count, double x, double y, double radius, bool normalize, const char* fmt, double angle0);
+template IMPLOT_API void PlotPieChart<double>(const char* const label_ids[], const double* values, int count, double x, double y, double radius, bool normalize, const char* fmt, double angle0);
 
 //-----------------------------------------------------------------------------
 // PLOT HEATMAP
 //-----------------------------------------------------------------------------
 
 template <typename T, typename Transformer>
-void RenderHeatmap(Transformer transformer, ImDrawList& DrawList, const T* values, int rows, int cols, T scale_min, T scale_max, const char* fmt, const ImPlotPoint& bounds_min, const ImPlotPoint& bounds_max) {
+void RenderHeatmap(Transformer transformer, ImDrawList& DrawList, const T* values, int rows, int cols, double scale_min, double scale_max, const char* fmt, const ImPlotPoint& bounds_min, const ImPlotPoint& bounds_max) {
     ImPlotContext& gp = *GImPlot;
     const double w = (bounds_max.x - bounds_min.x) / cols;
     const double h = (bounds_max.y - bounds_min.y) / rows;
@@ -1436,10 +1523,10 @@ void RenderHeatmap(Transformer transformer, ImDrawList& DrawList, const T* value
             ImPlotPoint p;
             p.x = bounds_min.x + 0.5*w + c*w;
             p.y = bounds_max.y - (0.5*h + r*h);
-            ImVec2 a  = transformer(p.x - half_size.x, p.y - half_size.y);
-            ImVec2 b  = transformer(p.x + half_size.x, p.y + half_size.y);
-            float t = (float)ImRemap(values[i], scale_min, scale_max, T(0), T(1));
-            ImVec4 color = LerpColormap(t);
+            ImVec2 a  = transformer(ImPlotPoint(p.x - half_size.x, p.y - half_size.y));
+            ImVec2 b  = transformer(ImPlotPoint(p.x + half_size.x, p.y + half_size.y));
+            double t = ImRemap((double)values[i], scale_min, scale_max, 0.0, 1.0);
+            ImVec4 color = LerpColormap((float)t);
             color.w *= gp.Style.FillAlpha;
             ImU32 col = ImGui::GetColorU32(color);
             DrawList.AddRectFilled(a, b, col);
@@ -1457,8 +1544,8 @@ void RenderHeatmap(Transformer transformer, ImDrawList& DrawList, const T* value
                 char buff[32];
                 sprintf(buff, fmt, values[i]);
                 ImVec2 size = ImGui::CalcTextSize(buff);
-                float t = (float)ImRemap(values[i], scale_min, scale_max, T(0), T(1));
-                ImVec4 color = LerpColormap(t);
+                double t = ImRemap((double)values[i], scale_min, scale_max, 0.0, 1.0);
+                ImVec4 color = LerpColormap((float)t);
                 ImU32 col = CalcTextColor(color);
                 DrawList.AddText(px - size * 0.5f, col, buff);
                 i++;
@@ -1468,7 +1555,7 @@ void RenderHeatmap(Transformer transformer, ImDrawList& DrawList, const T* value
 }
 
 template <typename T>
-void PlotHeatmapEx(const char* label_id, const T* values, int rows, int cols, T scale_min, T scale_max, const char* fmt, const ImPlotPoint& bounds_min, const ImPlotPoint& bounds_max) {
+void PlotHeatmap(const char* label_id, const T* values, int rows, int cols, double scale_min, double scale_max, const char* fmt, const ImPlotPoint& bounds_min, const ImPlotPoint& bounds_max) {
     IM_ASSERT_USER_ERROR(scale_min != scale_max, "Scale values must be different!");
     if (BeginItem(label_id)) {
         if (FitThisFrame()) {
@@ -1486,39 +1573,40 @@ void PlotHeatmapEx(const char* label_id, const T* values, int rows, int cols, T 
     }
 }
 
-// float
-void PlotHeatmap(const char* label_id, const float* values, int rows, int cols, float scale_min, float scale_max, const char* fmt, const ImPlotPoint& bounds_min, const ImPlotPoint& bounds_max) {
-    return PlotHeatmapEx(label_id, values, rows, cols, scale_min, scale_max, fmt, bounds_min, bounds_max);
-}
-
-// double
-void PlotHeatmap(const char* label_id, const double* values, int rows, int cols, double scale_min, double scale_max, const char* fmt, const ImPlotPoint& bounds_min, const ImPlotPoint& bounds_max) {
-    return PlotHeatmapEx(label_id, values, rows, cols, scale_min, scale_max, fmt, bounds_min, bounds_max);
-}
+template IMPLOT_API void PlotHeatmap<ImS8>(const char* label_id, const ImS8* values, int rows, int cols, double scale_min, double scale_max, const char* fmt, const ImPlotPoint& bounds_min, const ImPlotPoint& bounds_max);
+template IMPLOT_API void PlotHeatmap<ImU8>(const char* label_id, const ImU8* values, int rows, int cols, double scale_min, double scale_max, const char* fmt, const ImPlotPoint& bounds_min, const ImPlotPoint& bounds_max);
+template IMPLOT_API void PlotHeatmap<ImS16>(const char* label_id, const ImS16* values, int rows, int cols, double scale_min, double scale_max, const char* fmt, const ImPlotPoint& bounds_min, const ImPlotPoint& bounds_max);
+template IMPLOT_API void PlotHeatmap<ImU16>(const char* label_id, const ImU16* values, int rows, int cols, double scale_min, double scale_max, const char* fmt, const ImPlotPoint& bounds_min, const ImPlotPoint& bounds_max);
+template IMPLOT_API void PlotHeatmap<ImS32>(const char* label_id, const ImS32* values, int rows, int cols, double scale_min, double scale_max, const char* fmt, const ImPlotPoint& bounds_min, const ImPlotPoint& bounds_max);
+template IMPLOT_API void PlotHeatmap<ImU32>(const char* label_id, const ImU32* values, int rows, int cols, double scale_min, double scale_max, const char* fmt, const ImPlotPoint& bounds_min, const ImPlotPoint& bounds_max);
+template IMPLOT_API void PlotHeatmap<ImS64>(const char* label_id, const ImS64* values, int rows, int cols, double scale_min, double scale_max, const char* fmt, const ImPlotPoint& bounds_min, const ImPlotPoint& bounds_max);
+template IMPLOT_API void PlotHeatmap<ImU64>(const char* label_id, const ImU64* values, int rows, int cols, double scale_min, double scale_max, const char* fmt, const ImPlotPoint& bounds_min, const ImPlotPoint& bounds_max);
+template IMPLOT_API void PlotHeatmap<float>(const char* label_id, const float* values, int rows, int cols, double scale_min, double scale_max, const char* fmt, const ImPlotPoint& bounds_min, const ImPlotPoint& bounds_max);
+template IMPLOT_API void PlotHeatmap<double>(const char* label_id, const double* values, int rows, int cols, double scale_min, double scale_max, const char* fmt, const ImPlotPoint& bounds_min, const ImPlotPoint& bounds_max);
 
 //-----------------------------------------------------------------------------
 // PLOT DIGITAL
 //-----------------------------------------------------------------------------
 
-// TODO: Make this behave like all the other plot types
+// TODO: Make this behave like all the other plot types (.e. not fixed in y axis)
 
 template <typename Getter>
 inline void PlotDigitalEx(const char* label_id, Getter getter) {
     if (BeginItem(label_id, ImPlotCol_Fill)) {
         ImPlotContext& gp = *GImPlot;
         ImDrawList& DrawList = *GetPlotDrawList();
-        const ImPlotItemStyle& s = GetItemStyle();
+        const ImPlotNextItemData& s = GetItemData();
         if (getter.Count > 1 && s.RenderFill) {
             const int y_axis = GetCurrentYAxis();
             int pixYMax = 0;
             ImPlotPoint itemData1 = getter(0);
             for (int i = 0; i < getter.Count; ++i) {
                 ImPlotPoint itemData2 = getter(i);
-                if (NanOrInf(itemData1.y)) {
+                if (ImNanOrInf(itemData1.y)) {
                     itemData1 = itemData2;
                     continue;
                 }
-                if (NanOrInf(itemData2.y)) itemData2.y = ConstrainNan(ConstrainInf(itemData2.y));
+                if (ImNanOrInf(itemData2.y)) itemData2.y = ImConstrainNan(ImConstrainInf(itemData2.y));
                 int pixY_0 = (int)(s.LineWeight);
                 itemData1.y = ImMax(0.0, itemData1.y);
                 float pixY_1_float = s.DigitalBitHeight * (float)itemData1.y;
@@ -1534,7 +1622,7 @@ inline void PlotDigitalEx(const char* label_id, Getter getter) {
                 while (((i+2) < getter.Count) && (itemData1.y == itemData2.y)) {
                     const int in = (i + 1);
                     itemData2 = getter(in);
-                    if (NanOrInf(itemData2.y)) break;
+                    if (ImNanOrInf(itemData2.y)) break;
                     pMax.x = PlotToPixels(itemData2).x;
                     i++;
                 }
@@ -1558,21 +1646,27 @@ inline void PlotDigitalEx(const char* label_id, Getter getter) {
     }
 }
 
-// float
-void PlotDigital(const char* label_id, const float* xs, const float* ys, int count, int offset, int stride) {
-    GetterXsYs<float> getter(xs,ys,count,offset,stride);
+
+template <typename T>
+void PlotDigital(const char* label_id, const T* xs, const T* ys, int count, int offset, int stride) {
+    GetterXsYs<T> getter(xs,ys,count,offset,stride);
     return PlotDigitalEx(label_id, getter);
 }
 
-// double
-void PlotDigital(const char* label_id, const double* xs, const double* ys, int count, int offset, int stride) {
-    GetterXsYs<double> getter(xs,ys,count,offset,stride);
-    return PlotDigitalEx(label_id, getter);
-}
+template IMPLOT_API void PlotDigital<ImS8>(const char* label_id, const ImS8* xs, const ImS8* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotDigital<ImU8>(const char* label_id, const ImU8* xs, const ImU8* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotDigital<ImS16>(const char* label_id, const ImS16* xs, const ImS16* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotDigital<ImU16>(const char* label_id, const ImU16* xs, const ImU16* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotDigital<ImS32>(const char* label_id, const ImS32* xs, const ImS32* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotDigital<ImU32>(const char* label_id, const ImU32* xs, const ImU32* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotDigital<ImS64>(const char* label_id, const ImS64* xs, const ImS64* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotDigital<ImU64>(const char* label_id, const ImU64* xs, const ImU64* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotDigital<float>(const char* label_id, const float* xs, const float* ys, int count, int offset, int stride);
+template IMPLOT_API void PlotDigital<double>(const char* label_id, const double* xs, const double* ys, int count, int offset, int stride);
 
 // custom
-void PlotDigital(const char* label_id, ImPlotPoint (*getter_func)(void* data, int idx), void* data, int count, int offset) {
-    GetterFuncPtrImPlotPoint getter(getter_func,data,count,offset);
+void PlotDigitalG(const char* label_id, ImPlotPoint (*getter_func)(void* data, int idx), void* data, int count, int offset) {
+    GetterFuncPtr getter(getter_func,data,count,offset);
     return PlotDigitalEx(label_id, getter);
 }
 
@@ -1580,7 +1674,7 @@ void PlotDigital(const char* label_id, ImPlotPoint (*getter_func)(void* data, in
 // PLOT RECTS
 //-----------------------------------------------------------------------------
 template <typename Getter>
-void PlotRectsEx(const char* label_id, Getter getter) {
+void PlotRectsEx(const char* label_id, const Getter& getter) {
     if (BeginItem(label_id, ImPlotCol_Fill)) {
         if (FitThisFrame()) {
             for (int i = 0; i < getter.Count; ++i) {
@@ -1588,7 +1682,7 @@ void PlotRectsEx(const char* label_id, Getter getter) {
                 FitPoint(p);
             }
         }
-        const ImPlotItemStyle& s = GetItemStyle();
+        const ImPlotNextItemData& s = GetItemData();
         if (s.RenderFill) {
             ImDrawList& DrawList = *GetPlotDrawList();
             ImU32 col = ImGui::GetColorU32(s.Colors[ImPlotCol_Fill]);
@@ -1617,18 +1711,34 @@ void PlotRects(const char* label_id, const double* xs, const double* ys, int cou
 
 // custom
 void PlotRects(const char* label_id, ImPlotPoint (*getter_func)(void* data, int idx), void* data, int count, int offset) {
-    GetterFuncPtrImPlotPoint getter(getter_func,data,count,offset);
+    GetterFuncPtr getter(getter_func,data,count,offset);
     return PlotRectsEx(label_id, getter);
+}
+
+//-----------------------------------------------------------------------------
+// PLOT IMAGE
+//-----------------------------------------------------------------------------
+
+void PlotImage(const char* label_id, ImTextureID user_texture_id, const ImPlotPoint& bmin, const ImPlotPoint& bmax, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col) {
+    if (BeginItem(label_id)) {
+        if (FitThisFrame()) {
+            FitPoint(bmin);
+            FitPoint(bmax);
+        }
+        GetCurrentItem()->Color = tint_col;
+        ImDrawList& DrawList = *GetPlotDrawList();
+        ImVec2 p1 = PlotToPixels(bmin.x, bmax.y);
+        ImVec2 p2 = PlotToPixels(bmax.x, bmin.y);
+        PushPlotClipRect();
+        DrawList.AddImage(user_texture_id, p1, p2, uv0, uv1, ImGui::ColorConvertFloat4ToU32(tint_col));
+        PopPlotClipRect();
+        EndItem();
+    }
 }
 
 //-----------------------------------------------------------------------------
 // PLOT TEXT
 //-----------------------------------------------------------------------------
-
-// float
-void PlotText(const char* text, float x, float y, bool vertical, const ImVec2& pixel_offset) {
-    return PlotText(text, (double)x, (double)y, vertical, pixel_offset);
-}
 
 // double
 void PlotText(const char* text, double x, double y, bool vertical, const ImVec2& pixel_offset) {
