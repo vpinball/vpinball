@@ -917,6 +917,7 @@ void Player::Shutdown()
 #ifdef USE_IMGUI
    ImGui_ImplDX9_Shutdown();
    ImGui_ImplWin32_Shutdown();
+   ImPlot::DestroyContext();
    ImGui::DestroyContext();
 #endif
 
@@ -1638,6 +1639,7 @@ HRESULT Player::Init()
 #ifdef USE_IMGUI
    IMGUI_CHECKVERSION();
    ImGui::CreateContext();
+   ImPlot::CreateContext();
    ImGuiIO& io = ImGui::GetIO();
    io.IniFilename = nullptr;  //don't use an ini file for configuration
    ImGui_ImplWin32_Init(GetHwnd());
@@ -4342,8 +4344,8 @@ void Player::UpdateHUD_IMGUI()
        //rdata1.Span = history;
        //rdata2.Span = history;
        ImPlot::SetNextPlotLimitsX(t - history, t, ImGuiCond_Always);
-       const int rt_axis = ImPlotAxisFlags_Default & ~ImPlotAxisFlags_TickLabels;
-       if (ImPlot::BeginPlot("##ScrollingFPS", NULL, NULL, ImVec2(-1, 150), ImPlotFlags_Default, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
+       const int rt_axis = ImPlotAxisFlags_NoTickLabels;
+       if (ImPlot::BeginPlot("##ScrollingFPS", NULL, NULL, ImVec2(-1, 150), ImPlotFlags_None, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
            ImPlot::PlotLine("FPS", &sdata2.Data[0].x, &sdata2.Data[0].y, sdata2.Data.size(), sdata2.Offset, 2 * sizeof(float));
            ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
            ImPlot::PlotLine("Smoothed FPS", &sdata1.Data[0].x, &sdata1.Data[0].y, sdata1.Data.size(), sdata1.Offset, 2 * sizeof(float));
@@ -4357,7 +4359,7 @@ void Player::UpdateHUD_IMGUI()
            ImPlot::EndPlot();
        }*/
        ImPlot::SetNextPlotLimitsX(t - history, t, ImGuiCond_Always);
-       if (ImPlot::BeginPlot("##ScrollingPhysics", NULL, NULL, ImVec2(-1, 150), ImPlotFlags_Default, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
+       if (ImPlot::BeginPlot("##ScrollingPhysics", NULL, NULL, ImVec2(-1, 150), ImPlotFlags_None, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
            ImPlot::PlotLine("ms Physics", &sdata4.Data[0].x, &sdata4.Data[0].y, sdata4.Data.size(), sdata4.Offset, 2 * sizeof(float));
            ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
            ImPlot::PlotLine("Smoothed ms Physics", &sdata3.Data[0].x, &sdata3.Data[0].y, sdata3.Data.size(), sdata3.Offset, 2 * sizeof(float));
@@ -4365,7 +4367,7 @@ void Player::UpdateHUD_IMGUI()
            ImPlot::EndPlot();
        }
        ImPlot::SetNextPlotLimitsX(t - history, t, ImGuiCond_Always);
-       if (ImPlot::BeginPlot("##ScrollingScript", NULL, NULL, ImVec2(-1, 150), ImPlotFlags_Default, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
+       if (ImPlot::BeginPlot("##ScrollingScript", NULL, NULL, ImVec2(-1, 150), ImPlotFlags_None, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
            ImPlot::PlotLine("ms Script", &sdata6.Data[0].x, &sdata6.Data[0].y, sdata6.Data.size(), sdata6.Offset, 2 * sizeof(float));
            ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
            ImPlot::PlotLine("Smoothed ms Script", &sdata5.Data[0].x, &sdata5.Data[0].y, sdata5.Data.size(), sdata5.Offset, 2 * sizeof(float));
