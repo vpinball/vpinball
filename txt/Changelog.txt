@@ -37,6 +37,8 @@ FEATURES:
 
 - the script editor now works in UTF-8 mode and also saves it like that (note though that VBS itself may not digest all of UTF-8!)
 
+- improve quality and performance of internal DMD shader (especially visible on FSS tables)
+
 FIXES:
 
 - fix issue where saving a table can cost up to 4x (8x on 64bit) the temporary memory

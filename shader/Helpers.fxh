@@ -5,6 +5,11 @@ float sqr(const float v)
     return v*v;
 }
 
+float2 sqr(const float2 v)
+{
+    return v*v;
+}
+
 float3 sqr(const float3 v)
 {
     return v*v;

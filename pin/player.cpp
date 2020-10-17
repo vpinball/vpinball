@@ -3611,11 +3611,11 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
       const vec4 c = convertColor(DMDcolor, intensity);
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetVector("vColor_Intensity", &c);
 #ifdef DMD_UPSCALE
-      const vec4 r((float)(m_dmdx*3), (float)(m_dmdy*3), 1.f, 0.f);
+      const vec4 r((float)(m_dmdx*3), (float)(m_dmdy*3), 1.f, g_pplayer->m_overall_frames%2048);
 #else
-      const vec4 r((float)m_dmdx, (float)m_dmdy, 1.f, 0.f);
+      const vec4 r((float)m_dmdx, (float)m_dmdy, 1.f, g_pplayer->m_overall_frames%2048);
 #endif
-      m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetVector("vRes_Alpha", &r);
+      m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetVector("vRes_Alpha_time", &r);
 
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTexture("Texture0", m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(m_texdmd, false));
 
@@ -4011,7 +4011,7 @@ void Player::SSRefl()
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture4", &m_pin3d.m_aoDitherTexture, true); //!!!
 
-   const vec4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), 1.0f/*radical_inverse(m_overall_frames)*/, 1.0f);
+   const vec4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), 1.0f/*radical_inverse(m_overall_frames%2048)*/, 1.0f);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("w_h_height", &w_h_height);
 
    const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
@@ -4817,8 +4817,8 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
    
    const vec4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height),
-      radical_inverse(m_overall_frames)*(float)(1. / 8.0),
-      sobol(m_overall_frames)*(float)(5. / 8.0)); // jitter within lattice cell //!! ?
+      radical_inverse(m_overall_frames%2048)*(float)(1. / 8.0),
+      sobol(m_overall_frames%2048)*(float)(5. / 8.0)); // jitter within lattice cell //!! ?
    m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
 
    m_pin3d.m_pd3dDevice->FBShader->SetTechnique("normals");
@@ -4838,8 +4838,8 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
 
    const vec4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height),
-      radical_inverse(m_overall_frames)*(float)(1. / 8.0),
-      /*sobol*/radical_inverse<3>(m_overall_frames)*(float)(1. / 8.0)); // jitter within (64/8)x(64/8) neighborhood of 64x64 tex, good compromise between blotches and noise
+      radical_inverse(m_overall_frames%2048)*(float)(1. / 8.0),
+      /*sobol*/radical_inverse<3>(m_overall_frames%2048)*(float)(1. / 8.0)); // jitter within (64/8)x(64/8) neighborhood of 64x64 tex, good compromise between blotches and noise
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("w_h_height", &w_h_height);
    const vec4 ao_s_tb(m_ptable->m_AOScale, 0.4f, 0.f,0.f); //!! 0.4f: fake global option in video pref? or time dependent? //!! commonly used is 0.1, but would require to clear history for moving stuff
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("AO_scale_timeblur", &ao_s_tb);
