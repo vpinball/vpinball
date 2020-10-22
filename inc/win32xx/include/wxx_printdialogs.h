@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -83,7 +83,7 @@
 // NOTE: Use the following to retrieve the printer's device context
 // for the default or currently selected printer:
 //     CPrintDialog printDialog;
-//     CDC printerDC = printDialog.GetDefaults(); 
+//     CDC printerDC = printDialog.GetDefaults();
 //
 
 #ifndef _WIN32XX_PRINTDIALOGS_H_
@@ -506,7 +506,7 @@ namespace Win32xx
 
         // Ensure only one print dialog is running at a time.
         CThreadLock lock(GetApp()->m_printLock);
-                                
+
         // Update the default printer
         GetApp()->UpdateDefaultPrinter();
 
@@ -566,7 +566,6 @@ namespace Win32xx
         else
             return m_pd.nCopies;
     }
-
 
     // Sets the printer and the page settings to default, without displaying a dialog.
     // The hDevMode and hDevNames memory is freed and reallocated.
@@ -831,7 +830,7 @@ namespace Win32xx
     {
         assert(GetApp());      // Test if Win32++ has been started
         assert(!IsWindow());    // Only one window per CWnd instance allowed
-        
+
         // Ensure only one page-setup dialog is running at a time.
         CThreadLock lock(GetApp()->m_printLock);
 
@@ -930,6 +929,7 @@ namespace Win32xx
         case WM_PSD_PAGESETUPDLG:
             {
                 assert(lparam);
+                if (lparam == 0) return 0;
                 PAGESETUPDLG psd = *((LPPAGESETUPDLG)lparam);
                 return pDlg->OnPreDrawPage(LOWORD(wparam), HIWORD(wparam), psd);
             }
@@ -942,6 +942,7 @@ namespace Win32xx
         case WM_PSD_YAFULLPAGERECT:
             {
                 assert(lparam);
+                if (lparam == 0) return 0;
                 RECT rc = *((LPRECT)lparam);
                 return pDlg->OnDrawPage(reinterpret_cast<HDC>(wparam), message, rc);
             }

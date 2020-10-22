@@ -1,3 +1,10 @@
+////////////////////////////////////////////////////////////////////////
+// Header file used for WinCE (Windows Embedded Compact)
+//
+// WinCE is optimized for devices that have minimal memory. A Windows CE
+// kernel may run with one megabyte of memory. Devices which use WinCE
+// include the Pocket PC, industrial devices and embedded systems.
+//
 
 #pragma once
 
@@ -57,4 +64,4 @@
   #pragma comment(lib, "aygshell.lib")
 #endif // SHELL_AYGSHELL
 
-// TODO: reference additional headers your program requires here
+

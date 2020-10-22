@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -118,7 +118,9 @@
 
 namespace Win32xx
 {
-
+    ////////////////////////////////////////////////////////
+    // CFolderDialog manages a dialog box which allows users
+    // to select a folder.
     class CFolderDialog : public CDialog
     {
     public:
@@ -136,12 +138,12 @@ namespace Win32xx
         void SetExpanded(LPCWSTR pPath);
         void SetExpanded(LPITEMIDLIST pItemIDList);
         void SetFlags(UINT flags) { m_flags = flags; }
-        void SetOKText(LPCWSTR pText);
+        void SetOKText(LPCWSTR text);
         void SetRoot(LPITEMIDLIST pItemIDList);
         void SetSelection(LPITEMIDLIST pItemIDList);
-        void SetSelection(LPCTSTR pPath);
-        void SetStatusText(LPCTSTR pText);
-        void SetTitle(LPCTSTR pTitle);
+        void SetSelection(LPCTSTR path);
+        void SetStatusText(LPCTSTR text);
+        void SetTitle(LPCTSTR title);
 
     protected:
         virtual void OnCancel();
@@ -153,9 +155,9 @@ namespace Win32xx
 
     private:
         CFolderDialog(const CFolderDialog&);              // Disable copy construction
-        CFolderDialog& operator = (const CFolderDialog&); // Disable assignment operator    
+        CFolderDialog& operator = (const CFolderDialog&); // Disable assignment operator
 
-        static int CALLBACK BrowseCallbackProc(HWND wnd, UINT uMsg, LPARAM param1, LPARAM lparam2);
+        static int CALLBACK BrowseCallbackProc(HWND wnd, UINT msg, LPARAM param1, LPARAM lparam2);
 
         CString m_displayName;
         CString m_title;
@@ -186,9 +188,8 @@ namespace Win32xx
         //  BIF_NEWDIALOGSTYLE    - Provides a resizable dialog without an edit box.
         //  BIF_NONEWFOLDERBUTTON - Do not include the New Folder button in the browse dialog box.
         m_flags = BIF_RETURNONLYFSDIRS |BIF_NEWDIALOGSTYLE | BIF_NONEWFOLDERBUTTON;
-        HRESULT hr = ::CoInitialize(NULL);
-        if (FAILED(hr))
-            throw CWinException(g_msgCoInitialize);
+        HRESULT hr;
+        VERIFY(SUCCEEDED(hr = ::CoInitialize(NULL)));
     }
 
     inline CFolderDialog::~CFolderDialog()
@@ -334,9 +335,9 @@ namespace Win32xx
 
     // Sets the text of the OK button.
     // Refer to BFFM_SETOKTEXT in the Windows API documentation for more information.
-    inline void CFolderDialog::SetOKText(LPCWSTR pText)
+    inline void CFolderDialog::SetOKText(LPCWSTR text)
     {
-        SendMessage(BFFM_SETOKTEXT, 0, (LPARAM)pText);
+        SendMessage(BFFM_SETOKTEXT, 0, (LPARAM)text);
     }
 
     // Sets the location of the root folder from which to start browsing.
@@ -362,9 +363,9 @@ namespace Win32xx
     // Sets the status text.
     // This is incompatible with the BIF_USENEWUI or BIF_NEWDIALOGSTYLE flags.
     // Refer to BFFM_SETSTATUSTEXT in the Windows API documentation for more information.
-    inline void CFolderDialog::SetStatusText(LPCTSTR pText)
+    inline void CFolderDialog::SetStatusText(LPCTSTR text)
     {
-        SendMessage(BFFM_SETSTATUSTEXT, 0, (LPARAM)pText);
+        SendMessage(BFFM_SETSTATUSTEXT, 0, (LPARAM)text);
     }
 
     // Sets the title of the browse for folder dialog.

@@ -1,8 +1,8 @@
 About Win32++
 -------------
-Win32++ is simple and easy to understand framework for developing Win32 
-applications using C++. It brings an object oriented approach to programming 
-directly with the Win32 API. Each window created is a C++ class object capable 
+Win32++ is simple and easy to understand framework for developing Win32
+applications using C++. It brings an object oriented approach to programming
+directly with the Win32 API. Each window created is a C++ class object capable
 of having its own window procedure for routing messages.
 
 Win32++ supports the following compilers and development environments:
@@ -14,9 +14,9 @@ Win32++ supports the following compilers and development environments:
 * Microsoft Visual C++ 2010 Express Edition
 * Microsoft Visual C++ 2012 Express Edition
 * Microsoft Visual C++ 2013 Express Edition
-* Microsoft Visual Studio Community 2013 
+* Microsoft Visual Studio Community 2013
 * Microsoft Visual Studio Community 2015
-* Microsoft Visual Studio Community 2017
+* Microsoft Visual Studio Community 2019
 * Microsoft Visual Studio 6.0
 * Microsoft Visual Studio.net 2003
 * Microsoft Visual Studio.net 2005
@@ -25,7 +25,7 @@ Win32++ supports the following compilers and development environments:
 * Microsoft Visual Studio.net 2012
 * Microsoft Visual Studio.net 2013
 * Microsoft Visual Studio.net 2015
-* Microsoft Visual Studio.net 2017
+* Microsoft Visual Studio.net 2019
 * MinGW compiler
 * MinGW x64 compiler
 
@@ -62,7 +62,7 @@ Win32++ code has the following features
  * Themes support
  * Network support (including IP version 6)
  * Docking windows
- * Tabbed MDIs  
+ * Tabbed MDIs
 
 Frames produced by Win32++ include the following:
  * Rebar
@@ -82,10 +82,10 @@ The file download from Sourceforge includes the following:
 The sample applications include:
  * Browser - An Internet browser application with an event sink.
  * CommonDialogs - a Demo of windows common dialogs, such as File/Save
- * ContextHelp - Shows how to incorporate context help into an application. 
+ * ContextHelp - Shows how to incorporate context help into an application.
  * CustomControl - Shows how to put a web browser in a custom control for use in a dialog.
  * DateTime - A demo of a Date/time dialog for displaying and changing the time
- * DDXDemo - Demonstrates Dialog Data Exchange and validation. 
+ * DDXDemo - Demonstrates Dialog Data Exchange and validation.
  * Dialog - An example of a simple dialog application.
  * DialogBars - Demonstrates yhr use of a slider, scrollbar and progressbar control in a dialog.
  * DialogDemo - An interactive dialog application demonstrating slider controls and progress bars.
@@ -111,11 +111,11 @@ The sample applications include:
  * MetaFile  - Demonstrates how to create and display an enhanced metafile.
  * NetClient - Demonstrates a network chat client.
  * NetServer - Demonstrates a network chat server.
- * NetSimple - Simple client and server network programs. 
+ * NetSimple - Simple client and server network programs.
  * Notepad - A simple text editor with printing.
  * Performance - Measures Win32++'s message handling speed.
  * Picture - A simple picture rendering application.
- * PrintPreview - Extends the Notepad sample by adding a print preview. 
+ * PrintPreview - Extends the Notepad sample by adding a print preview.
  * PropertySheets - A demonstration of property sheets.
  * RebarDemo - Demonstrates the how to add a second ReBar to a frame application.
  * RibbonDockFrame - Demonstrates how to use a ribbon with a Docking Frame.
@@ -133,7 +133,7 @@ The sample applications include:
  * Threads - Demonstrates multi-threaded Windows.
  * TimeDemo - Demonstrates various uses of the CTime class.
  * ToolBarDemo - Demonstrates how to customize a toolbar.
- * Tray - Demonstrates how to "minimise" an application to the system tray.  
+ * Tray - Demonstrates how to "minimise" an application to the system tray.
  * WinCE samples - A small collection of samples for Windows CE
 
 Getting Started
@@ -144,8 +144,8 @@ Environment) that supports GNU GCC, Borland Developer Studio 2006 and Microsoft
 C++ Toolkit 2003.
 
 You  can start with one of the sample programs, and add your code. Alternatively
-you can start with the projects and sample code provided in the "new projects" 
-folder. 
+you can start with the projects and sample code provided in the "new projects"
+folder.
 
 For additional information on getting started, refer to the help included
 in the documentation.

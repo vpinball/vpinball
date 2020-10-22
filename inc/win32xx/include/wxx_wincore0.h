@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -114,9 +114,10 @@ namespace Win32xx
     // Registered messages defined by Win32++
     const UINT UWM_WINDOWCREATED = ::RegisterWindowMessage(_T("UWM_WINDOWCREATED"));    // Posted when a window is created or attached.
 
-    ////////////////////////////////
-    // The CWnd class provides the functionality of a generic window.
-    // Other classes which provide the functionality of more specialized windows inherit from CWnd.
+    ////////////////////////////////////////////////////////////////
+    // The CWnd class manages a generic window. Other classes
+    // which provide the functionality of more specialized windows,
+    // inherit from CWnd. These include dialogs and window controls.
     class CWnd : public CObject
     {
     friend class CColorDialog;
@@ -171,6 +172,7 @@ namespace Win32xx
         CWnd  ChildWindowFromPoint(POINT point) const;
         BOOL  ClientToScreen(POINT& point) const;
         BOOL  ClientToScreen(RECT& rect) const;
+        void  Close() const;
         LRESULT DefWindowProc(UINT msg, WPARAM wparam, LPARAM lparam) const;
         HDWP  DeferWindowPos(HDWP winPosInfo, HWND insertAfter, int x, int y, int cx, int cy, UINT flags) const;
         HDWP  DeferWindowPos(HDWP winPosInfo, HWND insertAfter, const RECT& rect, UINT flags) const;
@@ -183,8 +185,8 @@ namespace Win32xx
         ULONG_PTR GetClassLongPtr(int index) const;
         CString GetClassName() const;
         CRect GetClientRect() const;
-        CDC   GetDC() const;
-        CDC   GetDCEx(HRGN clip, DWORD flags) const;
+        CClientDC GetDC() const;
+        CClientDCEx GetDCEx(HRGN clip, DWORD flags) const;
         CWnd  GetDesktopWindow() const;
         int   GetDlgCtrlID() const;
         CWnd  GetDlgItem(int dlgItemID) const;
@@ -203,7 +205,7 @@ namespace Win32xx
         CRect GetUpdateRect(BOOL erase) const;
         int GetUpdateRgn(HRGN rgn, BOOL erase) const;
         CWnd  GetWindow(UINT cmd) const;
-        CDC   GetWindowDC() const;
+        CWindowDC GetWindowDC() const;
         LONG_PTR GetWindowLongPtr(int index) const;
         CRect GetWindowRect() const;
         CString GetWindowText() const;
@@ -219,7 +221,7 @@ namespace Win32xx
         BOOL  IsWindowEnabled() const;
         BOOL  IsWindowVisible() const;
         BOOL  KillTimer(UINT_PTR eventID) const;
-        int   MessageBox(LPCTSTR pText, LPCTSTR pCaption, UINT type) const;
+        int   MessageBox(LPCTSTR text, LPCTSTR caption, UINT type) const;
         void  MapWindowPoints(HWND to, POINT& point) const;
         void  MapWindowPoints(HWND to, RECT& rect) const;
         void  MapWindowPoints(HWND to, LPPOINT pointsArray, UINT count) const;
@@ -242,7 +244,7 @@ namespace Win32xx
         ULONG_PTR SetClassLongPtr(int index, LONG_PTR newLong) const;
         LONG_PTR SetDlgCtrlID(int id) const;
         BOOL  SetDlgItemInt(int dlgItemID, UINT value, BOOL isSigned) const;
-        BOOL  SetDlgItemText(int dlgItemID, LPCTSTR pString) const;
+        BOOL  SetDlgItemText(int dlgItemID, LPCTSTR string) const;
         void  SetExStyle(DWORD exStyle) const;
         HWND  SetFocus() const;
         void  SetFont(HFONT font, BOOL redraw = TRUE) const;
@@ -256,7 +258,7 @@ namespace Win32xx
         LONG_PTR SetWindowLongPtr(int index, LONG_PTR newLong) const;
         BOOL  SetWindowPos(HWND insertAfter, int x, int y, int cx, int cy, UINT flags) const;
         BOOL  SetWindowPos(HWND insertAfter, const RECT& rect, UINT flags) const;
-        int   SetWindowRgn(CRgn& rgn, BOOL redraw = TRUE) const;
+        int   SetWindowRgn(HRGN rgn, BOOL redraw = TRUE) const;
         BOOL  SetWindowText(LPCTSTR pString) const;
         HRESULT SetWindowTheme(LPCWSTR pSubAppName, LPCWSTR pSubIdList) const;
         BOOL  ShowWindow(int showCmd = SW_SHOWNORMAL) const;
@@ -264,14 +266,14 @@ namespace Win32xx
         BOOL  ValidateRect(const RECT& rect) const;
         BOOL  ValidateRect() const;
         BOOL  ValidateRgn(HRGN rgn) const;
-        static CWnd WindowFromPoint(POINT point);
+        CWnd  WindowFromPoint(POINT point) const;
 
   #ifndef _WIN32_WCE
         BOOL  CloseWindow() const;
-        int   DlgDirList(LPTSTR pPathSpec, int listBoxID, int staticPathID, UINT fileType) const;
-        int   DlgDirListComboBox(LPTSTR pPathSpec, int comboBoxID, int staticPathID, UINT filetype) const;
-        BOOL  DlgDirSelectEx(LPTSTR pString, int count, int listBoxID) const;
-        BOOL  DlgDirSelectComboBoxEx(LPTSTR pString, int count, int comboBoxID) const;
+        int   DlgDirList(LPTSTR pathSpec, int listBoxID, int staticPathID, UINT fileType) const;
+        int   DlgDirListComboBox(LPTSTR pathSpec, int comboBoxID, int staticPathID, UINT filetype) const;
+        BOOL  DlgDirSelectEx(LPTSTR string, int count, int listBoxID) const;
+        BOOL  DlgDirSelectComboBoxEx(LPTSTR string, int count, int comboBoxID) const;
         BOOL  DrawAnimatedRects(int aniID, const RECT& from, const RECT& to) const;
         BOOL  DrawCaption(HDC dc, const RECT& rect, UINT flags) const;
         BOOL  EnableScrollBar(UINT flags, UINT arrows) const;
@@ -348,7 +350,6 @@ namespace Win32xx
 
         HWND m_wnd;                    // handle to this object's window
         WNDPROC m_prevWindowProc;
-
     }; // class CWnd
 
 } // namespace Win32xx

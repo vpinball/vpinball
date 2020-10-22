@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -96,8 +96,10 @@ namespace Win32xx
     };
 
 
-    /////////////////////////////////////////
-    // Provides a Multiple Document Interface (MDI) frame with docking
+    //////////////////////////////////////////////////////////////////
+    // Provides a frame which supports the Multiple Document Interface
+    // (MDI) and docking. It also manages the creation and position
+    // of child windows, such as the menubar, toolbar, and statusbar.
     class CMDIDockFrame : public CMDIFrameT<CDockFrame>
     {
     public:
@@ -139,7 +141,7 @@ namespace Win32xx
     {
         GetDockClient().Create(GetHwnd());
         GetView().Create(GetDockClient());
-        
+
         // Set the caption height based on text height
         SetCaptionHeight( MAX(20, GetTextHeight() + 5) );
         return CFrameT<CDocker>::OnCreate(cs);

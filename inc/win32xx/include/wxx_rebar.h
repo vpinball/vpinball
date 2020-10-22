@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -47,8 +47,9 @@
 namespace Win32xx
 {
 
-    ////////////////////////////////////
-    // The CRebar class is provides the functionality of a rebar control.
+    /////////////////////////////////////////////////////
+    // CRebar manages a rebar control. Rebar controls act
+    // as containers for child windows such as toolbars.
     class CReBar : public CWnd
     {
     public:
@@ -460,7 +461,7 @@ namespace Win32xx
         HWND hToolBar = reinterpret_cast<HWND>(wparam);
         LPSIZE pToolBarSize = reinterpret_cast<LPSIZE>(lparam);
         int nBand = GetBand(hToolBar);
-        if (nBand != -1) 
+        if (nBand != -1)
             ResizeBand(nBand, *pToolBarSize);
 
         return FinalWindowProc(msg, wparam, lparam);

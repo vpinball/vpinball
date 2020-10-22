@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -66,16 +66,17 @@ namespace Win32xx
     } UNDONAMEID;
 #endif
 
-    ///////////////////////////////////////////////
-    // The CRichEdit class provides the functionality a rich edit control.
-    // It provides methods to create a rich edit control and modify its contents.
+    ////////////////////////////////////////////////////////////
+    // CRichEdit manages a rich edit control. Rich Edit controls
+    // support plain text and rich text. Rich text can utilize
+    // several fonts in a single document.
     class CRichEdit : public CWnd
     {
     public:
         CRichEdit();
         virtual ~CRichEdit();
 
-        void    AppendText(LPCTSTR pText) const;
+        void    AppendText(LPCTSTR text) const;
         BOOL    CanPaste(UINT format = 0) const;
         BOOL    CanRedo() const;
         BOOL    CanUndo() const;
@@ -233,19 +234,19 @@ namespace Win32xx
     }
 
     // Adds text to the end of the document
-    inline void CRichEdit::AppendText(LPCTSTR pText) const
+    inline void CRichEdit::AppendText(LPCTSTR text) const
     {
         LRESULT position = SendMessage(WM_GETTEXTLENGTH, 0, 0);
         SendMessage(EM_SETSEL, (WPARAM)position, (LPARAM)position);
-        SendMessage(EM_REPLACESEL, 0, (LPARAM)pText);
+        SendMessage(EM_REPLACESEL, 0, (LPARAM)text);
     }
 
     // Determines whether a rich edit control can paste a specified clipboard format.
     // Refer to EM_CANPASTE in the Windows API documentation for more information.
-    inline BOOL CRichEdit::CanPaste(UINT /* nFormat = 0 */) const
+    inline BOOL CRichEdit::CanPaste(UINT nFormat) const
     {
         assert(IsWindow());
-        return (0 != SendMessage(EM_CANPASTE, 0, 0));
+        return (0 != SendMessage(EM_CANPASTE, (WPARAM)nFormat, 0));
     }
 
     // Determines whether there are any actions in the control redo queue.
@@ -500,7 +501,17 @@ namespace Win32xx
     inline UNDONAMEID CRichEdit::GetRedoName() const
     {
         assert(IsWindow());
+
+#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+#pragma warning ( push )
+#pragma warning ( disable : 26812 )       // enum type is unscoped.
+#endif // (_MSC_VER) && (_MSC_VER >= 1400)
+
         return static_cast<UNDONAMEID>(SendMessage(EM_GETREDONAME, 0, 0));
+
+#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+#pragma warning ( pop )
+#endif // (_MSC_VER) && (_MSC_VER >= 1400)
     }
 
     // Retrieves the starting and ending character positions of the selection.

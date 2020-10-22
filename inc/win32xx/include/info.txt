@@ -14,7 +14,7 @@ filters   | An additional project file used by Visual Studio 2010 and above
 vcp       | A project file used by eMbedded Visual C++
 vcw       | A project file used by eMbedded Visual C++
 dev       | A project file used by Dev-C++
-cpp       | A C++ source file 
+cpp       | A C++ source file
 h         | A C++ header file
 rc        | A C++ resource script file
 jpg       | A jpeg resource file
@@ -53,8 +53,10 @@ Win32++ supports the following:
 * Visual Studio.net 2015 Community
 * Visual Studio.net 2017
 * Visual Studio.net 2017 Community
+* Visual Studio.net 2019
+* Visual Studio.net 2019 Community
 
-CodeBlocks is an IDE. The project files are configured for the following 
+CodeBlocks is an IDE. The project files are configured for the following
 compilers:
 * Borland Compiler Version 5.5
 * MinGW GNU compiler
@@ -88,20 +90,22 @@ The programs compiled with Win32++ can run on the following operating systems:
 * Windows Server 2008 x64
 * Windows Server 2012
 * Windows Server 2016
+* Windows Server 2019
 * Windows CE
 
-Note: Programs compiled with Visual Studio.net 2008 and Visual Studio.net 2008 
+Note: Programs compiled with Visual Studio.net 2008 and Visual Studio.net 2008
 Express will not run on Win32 operating systems earlier than Windows 2000.
 
 Win32++ is Unicode compliant and can therefore be used to develop Unicode
-applications. Users are advised that older operating systems (namely Win95, 
-Win98 and WinME) don't support Unicode applications.
+applications. Users are advised that older operating systems (namely Win95,
+Win98 and WinME) will require code to be compiled as ANSI, as they
+don't support Unicode applications.
 
 Win32++ supports 64bit compilers, and can be used to develop 64bit code.
 
 Directory Structure
 ===================
-When extracting the files from the zip archive, be sure to preserve the 
+When extracting the files from the zip archive, be sure to preserve the
 directory structure. The directory structure will typically look like this:
 
 .\help
@@ -113,7 +117,7 @@ directory structure. The directory structure will typically look like this:
 .\WCE samples
 
 The files which form the Win32++ library are contained in the include
-folder. 
+folder.
 
 Help
 ====

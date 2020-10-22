@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -63,8 +63,8 @@ namespace Win32xx
     class CRect;
 
 
-    /////////////////////////////////////////
-    // This class can be used to replace the SIZE structure
+    ////////////////////////////////////////////////////////
+    // This class can be used to replace the SIZE structure.
     class CSize : public SIZE
     {
     public:
@@ -97,8 +97,8 @@ namespace Win32xx
     };
 
 
-    /////////////////////////////////////////
-    // This class can be used to replace the POINT structure
+    /////////////////////////////////////////////////////////
+    // This class can be used to replace the POINT structure.
     class CPoint : public POINT
     {
     public:
@@ -136,7 +136,7 @@ namespace Win32xx
     };
 
 
-    /////////////////////////////////////////
+    ////////////////////////////////////////////////////////
     // This class can be used to replace the RECT structure.
     class CRect : public RECT
     {

@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -44,16 +44,17 @@
 
 namespace Win32xx
 {
-
-    // The CRegKey class manages access to the system registry. It provides a
-    // means of creating, querying, modifying and deleting registry entries.
+    ///////////////////////////////////////////////////////////
+    // The CRegKey class manages access to the system registry.
+    // It provides a means of creating, querying, modifying and
+    // deleting registry entries.
     class CRegKey
     {
     public:
         CRegKey();
         CRegKey(HKEY key);
         CRegKey(const CRegKey&);
-        ~CRegKey();
+        virtual ~CRegKey();
         operator HKEY() const { return m_key; }
         CRegKey& operator =(CRegKey& key);
 
@@ -92,7 +93,7 @@ namespace Win32xx
         LONG SetQWORDValue(LPCTSTR pValueName, ULONGLONG value) const;
 #endif
 
-#if (WINVER >= 0x0600)
+#if (WINVER >= 0x0600) && defined(RegSetKeyValue)
         LONG SetKeyValue(LPCTSTR pKeyName, LPCTSTR pValue, LPCTSTR pValueName = NULL) const;
 #endif
 
@@ -330,7 +331,7 @@ namespace Win32xx
             return SetStringValue(pValueName, OLEtoT(szGUID));
     }
 
-#if (WINVER >= 0x0600)
+#if (WINVER >= 0x0600) && defined(RegSetKeyValue)
 
     // Stores data in a specified value field of a specified key.
     inline LONG CRegKey::SetKeyValue(LPCTSTR pKeyName, LPCTSTR pValue, LPCTSTR pValueName) const

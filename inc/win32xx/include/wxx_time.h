@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -111,6 +111,7 @@ namespace Win32xx
     time_t UTCtime(time_tm *atm);
 
 
+    ////////////////////////////////////////////////////////
     // The CTime class represents an absolute time and date.
     class CTime
     {
@@ -174,7 +175,6 @@ namespace Win32xx
 
         // Static methods
         static  CTime   GetCurrentTime();
-        static  FILETIME FileTimePlus(const FILETIME& ft, double addend);
 
     private:
 
@@ -183,8 +183,9 @@ namespace Win32xx
     };
 
 
-    //  The CTimeSpan class defines the data type for differences between two
-    //  CTime values, measured in seconds of time.
+    ////////////////////////////////////////////////////////////
+    // The CTimeSpan class defines the data type for differences
+    // between two CTime values, measured in seconds of time.
     class CTimeSpan
     {
         friend class CTime;     // CTime can access private members
@@ -804,31 +805,6 @@ namespace Win32xx
         return CTime(::time(NULL));
     }
 
-    // Returns a FILETIME structure containing the FILETIME ft
-    // increased by addend seconds.
-    inline FILETIME CTime::FileTimePlus(const FILETIME& ft, double addend)
-    {
-        // convert ft to unsigned long long
-        ULONGLONG ftlong = static_cast<ULONGLONG>(ft.dwHighDateTime) << 32 | ft.dwLowDateTime;
-        BOOL sign = FALSE;
-        if (addend < 0.)
-        {
-            sign = TRUE;
-            addend = -addend;
-        }
-        ULONGLONG ftaddend = static_cast<ULONGLONG>(addend) * 10000000;
-        if (sign)
-        {
-            assert(ftlong >= ftaddend); //FILETIME addition underflow.
-            ftlong -= ftaddend;
-        }
-        else
-            ftlong += ftaddend;
-        FILETIME fts;
-        fts.dwHighDateTime = static_cast<DWORD>(ftlong >> 32);
-        fts.dwLowDateTime  = static_cast<DWORD>(ftlong & ~0);
-        return fts;
-    }
 
     //
     // Global functions within the Win32xx namespace

@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -47,8 +47,10 @@
 namespace Win32xx
 {
 
-    /////////////////////////////////////
-    // The ClistView class provides the functionality of a List View control
+    /////////////////////////////////////////////////////////////
+    // ClistView manages a List View control. A list-view control
+    // is a window that displays a collection of items. Each item
+    // consists of an icon and a label.
     class CListView : public CWnd
     {
     public:
@@ -85,7 +87,7 @@ namespace Win32xx
         BOOL    GetOrigin( CPoint& pt ) const;
         UINT    GetSelectedCount( ) const;
         int     GetSelectionMark( ) const;
-        int     GetStringWidth( LPCTSTR pString ) const;
+        int     GetStringWidth( LPCTSTR string ) const;
         BOOL    GetSubItemRect( int item, int subItem, int code, RECT& rc ) const;
         COLORREF GetTextBkColor( ) const;
         COLORREF GetTextColor( ) const;
@@ -108,7 +110,7 @@ namespace Win32xx
         CSize   SetIconSpacing( CSize sz ) const;
         HIMAGELIST SetImageList( HIMAGELIST images, int imageListType ) const;
         BOOL    SetItem( LVITEM& itemInfo ) const;
-        BOOL    SetItem( int item, int subItem, UINT mask, LPCTSTR pText, int image,
+        BOOL    SetItem( int item, int subItem, UINT mask, LPCTSTR text, int image,
                         UINT state, UINT stateMask, LPARAM lparam, int indent ) const;
         void    SetItemCount( int count ) const;
         void    SetItemCountEx( int count, DWORD flags = LVSICF_NOINVALIDATEALL ) const;
@@ -116,7 +118,7 @@ namespace Win32xx
         BOOL    SetItemPosition( int item, CPoint& pt ) const;
         BOOL    SetItemState( int item, LVITEM& itemInfo ) const;
         void    SetItemState( int item, UINT state, UINT mask ) const;
-        void    SetItemText( int item, int subItem, LPCTSTR pText ) const;
+        void    SetItemText( int item, int subItem, LPCTSTR text ) const;
         int     SetSelectionMark( int index ) const;
         BOOL    SetTextBkColor( COLORREF color ) const;
         BOOL    SetTextColor( COLORREF color ) const;
@@ -133,18 +135,20 @@ namespace Win32xx
         HWND    EditLabel( int item ) const;
         BOOL    EnsureVisible( int item, BOOL isPartialOK ) const;
         int     FindItem( LVFINDINFO& findInfo, int start = -1 ) const;
-        int     HitTest( LVHITTESTINFO& HitTestInfo ) const;
+        int     HitTest( LVHITTESTINFO& hitTestInfo ) const;
         int     HitTest( CPoint pt, UINT* flags = NULL ) const;
         int     InsertColumn( int col, const LVCOLUMN& colInfo ) const;
         int     InsertColumn( int col, LPCTSTR pColumnHeading, int format = LVCFMT_LEFT,
                             int width = -1, int subItem = -1 ) const;
         int     InsertItem( const LVITEM& itemInfo ) const;
-        int     InsertItem( int item, LPCTSTR pText ) const;
-        int     InsertItem( int item, LPCTSTR pText, int iImage ) const;
+        int     InsertItem( int item, LPCTSTR text ) const;
+        int     InsertItem( int item, LPCTSTR text, int image ) const;
+        int     InsertItem( UINT mask, int item, LPCTSTR text, UINT state,
+                            UINT stateMask, int image, LPARAM lparam ) const;
         BOOL    RedrawItems( int first, int last ) const;
         BOOL    Scroll( CSize sz ) const;
         BOOL    SortItems( PFNLVCOMPARE pCompareFn, DWORD_PTR data ) const;
-        BOOL    Update( int iItem ) const;
+        BOOL    Update( int item ) const;
 
     private:
         CListView(const CListView&);              // Disable copy construction
@@ -427,10 +431,10 @@ namespace Win32xx
 
     // Determines the width of a specified string using the list-view control's current font.
     // Refer to LVM_GETSTRINGWIDTH in the Windows API documentation for more information.
-    inline int CListView::GetStringWidth( LPCTSTR pString ) const
+    inline int CListView::GetStringWidth( LPCTSTR string ) const
     {
         assert(IsWindow());
-        return static_cast<int>(SendMessage( LVM_GETSTRINGWIDTH, 0, (LPARAM)pString));
+        return static_cast<int>(SendMessage( LVM_GETSTRINGWIDTH, 0, (LPARAM)string));
     }
 
     // Retrieves information about the rectangle that surrounds a subitem in the list-view control.
@@ -627,7 +631,7 @@ namespace Win32xx
 
     // Sets some or all of a list-view item's attributes.
     // Refer to ListView_SetItem in the Windows API documentation for more information.
-    inline BOOL CListView::SetItem( int item, int subItem, UINT mask, LPCTSTR pText, int image,
+    inline BOOL CListView::SetItem( int item, int subItem, UINT mask, LPCTSTR text, int image,
                     UINT state, UINT stateMask, LPARAM lparam, int indent ) const
     {
         assert(IsWindow());
@@ -637,7 +641,7 @@ namespace Win32xx
         lvi.iItem = item;
         lvi.iSubItem = subItem;
         lvi.mask = mask;
-        lvi.pszText = const_cast<LPTSTR>(pText);
+        lvi.pszText = const_cast<LPTSTR>(text);
         lvi.iImage = image;
         lvi.state = state;
         lvi.stateMask = stateMask;
@@ -710,10 +714,10 @@ namespace Win32xx
 
     // Sets the text color of the list-view control.
     // Refer to ListView_SetItemText in the Windows API documentation for more information.
-    inline void CListView::SetItemText( int item, int subItem, LPCTSTR pText ) const
+    inline void CListView::SetItemText( int item, int subItem, LPCTSTR text ) const
     {
         assert(IsWindow());
-        ListView_SetItemText(*this, item, subItem, const_cast<LPTSTR>(pText) );
+        ListView_SetItemText(*this, item, subItem, const_cast<LPTSTR>(text) );
     }
 
     // Sets the selection mark in the list-view control.
@@ -908,31 +912,48 @@ namespace Win32xx
 
     // Inserts a new item in the list-view control.
     // Refer to ListView_InsertItem in the Windows API documentation for more information.
-    inline int CListView::InsertItem( int item, LPCTSTR pText ) const
+    inline int CListView::InsertItem( int item, LPCTSTR text ) const
     {
         assert(IsWindow());
 
         LVITEM lvi;
         ZeroMemory(&lvi, sizeof(lvi));
         lvi.iItem = item;
-        lvi.pszText = const_cast<LPTSTR>(pText);
+        lvi.pszText = const_cast<LPTSTR>(text);
         lvi.mask = LVIF_TEXT;
         return ListView_InsertItem( *this, &lvi );
     }
 
     // Inserts a new item in the list-view control.
     // Refer to ListView_InsertItem in the Windows API documentation for more information.
-    inline int CListView::InsertItem( int item, LPCTSTR pText, int image ) const
+    inline int CListView::InsertItem( int item, LPCTSTR text, int image ) const
     {
         assert(IsWindow());
 
         LVITEM lvi;
         ZeroMemory(&lvi, sizeof(lvi));
         lvi.iItem = item;
-        lvi.pszText = const_cast<LPTSTR>(pText);
+        lvi.pszText = const_cast<LPTSTR>(text);
         lvi.iImage = image;
         lvi.mask = LVIF_TEXT | LVIF_IMAGE;
         return ListView_InsertItem( *this, &lvi );
+    }
+
+    inline int CListView::InsertItem(UINT mask, int item, LPCTSTR text, UINT state,
+                                     UINT stateMask, int image, LPARAM lparam) const
+    {
+        assert(IsWindow());
+
+        LVITEM lvi;
+        ZeroMemory(&lvi, sizeof(lvi));
+        lvi.mask = mask;
+        lvi.iItem = item;
+        lvi.pszText = const_cast<LPTSTR>(text);
+        lvi.iImage = image;
+        lvi.state = state;
+        lvi.stateMask = stateMask;
+        lvi.lParam = lparam;
+        return ListView_InsertItem(*this, &lvi);
     }
 
     // Forces the list-view control to redraw a range of items.

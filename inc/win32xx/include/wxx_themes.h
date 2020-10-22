@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -137,7 +137,7 @@ namespace Win32xx
     // Returns TRUE if XP themes are being used.
     inline BOOL IsXPThemed()
     {
-        BOOL IsXPThemed = FALSE;
+        BOOL isXPThemed = FALSE;
 
         // Test if Windows version is XP or greater
         if (GetWinVersion() >= 2501)
@@ -154,14 +154,14 @@ namespace Win32xx
                     if (pIsAppThemed() && pIsThemeActive())
                     {
                         // Test if ComCtl32 dll used is version 6 or later
-                        IsXPThemed = (GetComCtlVersion() >= 600);
+                        isXPThemed = (GetComCtlVersion() >= 600);
                     }
                 }
                 ::FreeLibrary(theme);
             }
         }
 
-        return IsXPThemed;
+        return isXPThemed;
     }
 
   #endif // #ifndef _WIN32_WCE

@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -59,8 +59,10 @@ namespace Win32xx
     class CMonthCalendar;
     class CToolTip;
 
-
+    ///////////////////////////////////////////////////////////////////////////
     // The CAnimation class provides the functionality of an animation control.
+    // An animation control is a window that displays an Audio-Video
+    // Interleaved (AVI) clip.
     class CAnimation : public CWnd
     {
     public:
@@ -68,7 +70,7 @@ namespace Win32xx
         virtual ~CAnimation() {}
 
         BOOL Close() const;
-        BOOL Open(LPTSTR pPathName) const;
+        BOOL Open(LPCTSTR pPathName) const;
         BOOL Play(int from, int to, int repeat) const;
         BOOL Seek(int frame) const;
         BOOL Stop() const;
@@ -83,7 +85,10 @@ namespace Win32xx
     };
 
 
-    // The CComboBox class provides the functionality of a combo box control.
+    ///////////////////////////////////////////////////////
+    // CComboBox class manages a combo box control.
+    // A combo box consists of either a static text box or
+    // an edit box combined with a list box.
     class CComboBox : public CWnd
     {
     public:
@@ -92,14 +97,14 @@ namespace Win32xx
 
         virtual int CompareItem(LPCOMPAREITEMSTRUCT pCompareItemStruct);
 
-        int   AddString(LPCTSTR pString) const;
+        int   AddString(LPCTSTR string) const;
         void  Clear() const;
         void  Copy() const;
         void  Cut() const;
         int   DeleteString(int index) const;
         int   Dir(UINT attr, LPCTSTR pWildCard ) const;
-        int   FindString(int indexStart, LPCTSTR pString) const;
-        int   FindStringExact(int indexStart, LPCTSTR pString) const;
+        int   FindString(int indexStart, LPCTSTR string) const;
+        int   FindStringExact(int indexStart, LPCTSTR string) const;
         int   GetCount() const;
         int   GetCurSel() const;
         CRect GetDroppedControlRect() const;
@@ -110,16 +115,16 @@ namespace Win32xx
         int   GetHorizontalExtent() const;
         DWORD GetItemData(int index) const;
         int   GetItemHeight(int index) const;
-        int   GetLBText(int index, LPTSTR pText) const;
+        int   GetLBText(int index, LPTSTR text) const;
         int   GetLBTextLen(int index) const;
         LCID  GetLocale() const;
         int   GetTopIndex() const;
         int   InitStorage(int items, int byteCount) const;
-        int   InsertString(int index, LPCTSTR pString) const;
+        int   InsertString(int index, LPCTSTR string) const;
         void  LimitText(int maxChars) const;
         void  Paste() const;
         void  ResetContent() const;
-        int   SelectString(int startAfter, LPCTSTR pString) const;
+        int   SelectString(int startAfter, LPCTSTR string) const;
         int   SetCurSel(int index) const;
         int   SetDroppedWidth(int width) const;
         BOOL  SetEditSel(int startChar, int endChar) const;
@@ -147,7 +152,10 @@ namespace Win32xx
     };
 
 
-    // The CComboBoxEx class provides the functionality of a ComboBoxEx control.
+    /////////////////////////////////////////////////////////////////
+    // CComboBoxEx manages a ComboBoxEx control. ComboBoxEx Controls
+    // are an extension of the combo box control that provides native
+    // support for item images.
     class CComboBoxEx : public CComboBox
     {
     public:
@@ -176,7 +184,11 @@ namespace Win32xx
     };
 
 
-    // The CHeader class provides the functionality of a header control.
+    ////////////////////////////////////////////////////////////
+    // CHeader manages a header control. A header control is
+    // a window that is usually positioned above columns of text
+    // or numbers. It contains a title for each column, and it
+    // can be divided into parts.
     class CHeader : public CWnd
     {
     public:
@@ -222,7 +234,10 @@ namespace Win32xx
     };
 
 
-    // The CHotKey class provides the functionality a hot key control.
+    ////////////////////////////////////////////////////////////
+    // CHotKey manages a hot key control. A hot key control is a
+    // window that enables the user to enter a combination of
+    // keystrokes to be used as a hot key.
     class CHotKey : public CWnd
     {
     public:
@@ -244,7 +259,10 @@ namespace Win32xx
     };
 
 
-    // The CIPAddress class provides the functionality of an IP Address control.
+    ////////////////////////////////////////////////////////////////////
+    // CIPAddress manages an IP Address control. An Internet Protocol
+    // (IP) address control allows the user to enter an IP address in an
+    // easily understood format.
     class CIPAddress : public CWnd
     {
     public:
@@ -271,7 +289,10 @@ namespace Win32xx
     };
 
 
-    // The CMonthCalendar class provides the functionality of a Month Calendar control.
+    //////////////////////////////////////////////////////
+    // CMonthCalendar manages a Month Calendar control.
+    // A month calendar control implements a calendar-like
+    // user interface.
     class CMonthCalendar : public CWnd
     {
     public:
@@ -296,7 +317,7 @@ namespace Win32xx
         SYSTEMTIME GetToday() const;
         LRESULT HitTest(MCHITTESTINFO& mcHitTest) const;
         BOOL SetCurSel(const SYSTEMTIME& dateTime) const;
-        BOOL SetDayState(int months, const MONTHDAYSTATE& states) const;
+        BOOL SetDayState(int months, LPMONTHDAYSTATE pStateArray) const;
         BOOL SetMaxSelCount(int max) const;
         BOOL SetRange(const SYSTEMTIME& minRange, const SYSTEMTIME& maxRange) const;
         BOOL SetSelRange(const SYSTEMTIME& MinRange, const SYSTEMTIME& maxRange) const;
@@ -311,8 +332,11 @@ namespace Win32xx
         CMonthCalendar& operator = (const CMonthCalendar&); // Disable assignment operator
     };
 
-
-    // The CDateTime class provides the functionality of a Date Time control.
+    ///////////////////////////////////////////////////////////
+    // CDateTime manages a Date and Time picker control.
+    // A date and time picker (DTP) control provides a
+    // simple and intuitive interface through which to exchange
+    // date and time information with a user.
     class CDateTime : public CWnd
     {
     public:
@@ -341,7 +365,10 @@ namespace Win32xx
     };
 
 
-    // The CProgressBar class provides the functionality of a ProgressBar control.
+    /////////////////////////////////////////////////////////////
+    // CProgressBar manages a ProgressBar control. A progress bar
+    // is a window that an application can use to indicate the
+    // progress of a lengthy operation.
     class CProgressBar : public CWnd
     {
     public:
@@ -367,10 +394,12 @@ namespace Win32xx
     };
 
 
-    // The CScrollBar class provides the functionality of a ScrollBar control.
-    // Note:  Windows usually implement scroll bars internally with the WS_HSCROLL
-    //        and WS_VSCROLL styles without the use of a separate ScrollBar control.
-    //        Use CScrollBar if the bar needs to be displayed outside the scrolling window.
+    /////////////////////////////////////////////////////////////////////////
+    // CScrollBar manages a ScrollBar control.
+    // Windows usually implement scroll bars internally with the WS_HSCROLL
+    // and WS_VSCROLL styles without the use of a separate ScrollBar control.
+    // Use CScrollBar if the bar needs to be displayed outside the scrolling
+    // window.
     class CScrollBar : public CWnd
     {
     public:
@@ -395,8 +424,12 @@ namespace Win32xx
         CScrollBar& operator = (const CScrollBar&); // Disable assignment operator
     };
 
-
-    // The CSlider class provides the functionality of a TrackBar (aka Slider) control.
+    ///////////////////////////////////////////////////////////////////
+    // CSlider manages a TrackBar control, also known a Slider control.
+    // A trackbar is a window that contains a slider and optional tick
+    // marks. When the user moves the slider, using either the mouse or
+    // the direction keys, the trackbar sends notification messages to
+    // indicate the change.
     class CSlider : public CWnd
     {
     public:
@@ -441,8 +474,12 @@ namespace Win32xx
         CSlider& operator = (const CSlider&);   // Disable assignment operator
     };
 
-
-    // The CSpinButton class provides the functionality of an Up-Down (aka SpinButton) control.
+    ////////////////////////////////////////////////////////////
+    // CSpinButton manages an Up-Down control, also known as a
+    // SpinButton control. An up-down control is a pair of arrow
+    // buttons that the user can click to increment or decrement
+    // a value, such as a scroll position or a number displayed
+    // in a companion control.
     class CSpinButton : public CWnd
     {
     public:
@@ -471,7 +508,9 @@ namespace Win32xx
     };
 
 
-    // The CToolTip class provides the functionality of a ToolTip control.
+    ///////////////////////////////////////////////////////////
+    // CToolTip manages a ToolTip control. ToolTip controls are
+    // pop-up windows that display text.
     class CToolTip : public CWnd
     {
     public:
@@ -502,25 +541,25 @@ namespace Win32xx
         void Activate(BOOL activate) const;
         BOOL AddTool(HWND control, const RECT& toolRect, UINT id, UINT textID) const;
         BOOL AddTool(HWND control, UINT textID) const;
-        BOOL AddTool(HWND control, const RECT& toolRect, UINT id, LPCTSTR pText = LPSTR_TEXTCALLBACK) const;
-        BOOL AddTool(HWND control, LPCTSTR pText = LPSTR_TEXTCALLBACK) const;
+        BOOL AddTool(HWND control, const RECT& toolRect, UINT id, LPCTSTR text = LPSTR_TEXTCALLBACK) const;
+        BOOL AddTool(HWND control, LPCTSTR text = LPSTR_TEXTCALLBACK) const;
         void DelTool(HWND control, UINT id = -1) const;
         BOOL HitTest(HWND wnd, CPoint pt, const TOOLINFO& toolInfo) const;
         void Pop() const;
         void RelayEvent(MSG& msg) const;
         void SetToolRect(const RECT& rc, HWND control, UINT id = -1) const;
         void Update() const;
-        void UpdateTipText(LPCTSTR pText, HWND control, UINT id = -1) const;
+        void UpdateTipText(LPCTSTR text, HWND control, UINT id = -1) const;
         void UpdateTipText(UINT textID, HWND control, UINT id = -1) const;
 
 #if (_WIN32_IE >=0x0500)
         BOOL AdjustRect(RECT& rc, BOOL isLarger = TRUE) const;
   #ifdef TTM_SETTITLE
-        BOOL SetTitle(UINT icon, LPCTSTR pTitle) const;
+        BOOL SetTitle(UINT icon, LPCTSTR title) const;
   #endif
 #endif
 #if (WINVER >= 0x0501) && defined(TTM_SETWINDOWTHEME)
-        void SetTTWindowTheme(LPCWSTR pTheme) const;
+        void SetTTWindowTheme(LPCWSTR theme) const;
 #endif
 
     protected:
@@ -557,10 +596,10 @@ namespace Win32xx
 
     // Opens an AVI clip and displays its first frame in an animation control.
     // Refer to Animate_Open in the Windows API documentation for more information.
-    inline BOOL CAnimation::Open(LPTSTR pPathName) const
+    inline BOOL CAnimation::Open(LPCTSTR pPathName) const
     {
         assert(IsWindow());
-        return Animate_Open(*this, pPathName);
+        return Animate_Open(*this, const_cast<LPTSTR>(pPathName));
     }
 
     // Plays an AVI clip in an animation control. The control plays the clip
@@ -602,10 +641,10 @@ namespace Win32xx
     // have the CBS_SORT style, the string is added to the end of the list.
     // Otherwise, the string is inserted into the list, and the list is sorted.
     // Refer to CB_ADDSTRING in the Windows API documentation for more information.
-    inline int  CComboBox::AddString(LPCTSTR pString) const
+    inline int  CComboBox::AddString(LPCTSTR string) const
     {
         assert(IsWindow());
-        return (int)SendMessage(CB_ADDSTRING, 0, (LPARAM)pString);
+        return (int)SendMessage(CB_ADDSTRING, 0, (LPARAM)string);
     }
 
     // Called by in response to the WM_COMPAREITEM message to determine the relative position
@@ -661,27 +700,27 @@ namespace Win32xx
     // Adds the names of directories and files that match a specified string
     // and set of file attributes.
     // Refer to CB_DIR in the Windows API documentation for more information.
-    inline int  CComboBox::Dir(UINT attr, LPCTSTR pWildCard ) const
+    inline int  CComboBox::Dir(UINT attr, LPCTSTR wildCard ) const
     {
         assert(IsWindow());
-        return (int)SendMessage(CB_DIR, (WPARAM)attr, (LPARAM)pWildCard);
+        return (int)SendMessage(CB_DIR, (WPARAM)attr, (LPARAM)wildCard);
     }
 
     // Search the list box of a combo box for an item beginning with the
     // characters in a specified string.
     // Refer to CB_FINDSTRING in the Windows API documentation for more information.
-    inline int  CComboBox::FindString(int indexStart, LPCTSTR pString) const
+    inline int  CComboBox::FindString(int indexStart, LPCTSTR string) const
     {
         assert(IsWindow());
-        return (int)SendMessage(CB_FINDSTRING, (WPARAM)indexStart, (LPARAM)pString);
+        return (int)SendMessage(CB_FINDSTRING, (WPARAM)indexStart, (LPARAM)string);
     }
 
-    // Find the first list box string in a combo box that matches the string specified in pString.
+    // Find the first list box string in a combo box that matches the string specified in string.
     // Refer to CB_FINDSTRINGEXACT in the Windows API documentation for more information.
-    inline int  CComboBox::FindStringExact(int indexStart, LPCTSTR pString) const
+    inline int  CComboBox::FindStringExact(int indexStart, LPCTSTR string) const
     {
         assert(IsWindow());
-        return (int)SendMessage(CB_FINDSTRINGEXACT, (WPARAM)indexStart, (LPARAM)pString);
+        return (int)SendMessage(CB_FINDSTRINGEXACT, (WPARAM)indexStart, (LPARAM)string);
     }
 
     // Retrieves the number of items in the list box of the combo box.
@@ -801,10 +840,10 @@ namespace Win32xx
 
     // Retrieves a string from the list of the combo box.
     // Refer to CB_GETLBTEXT in the Windows API documentation for more information.
-    inline int  CComboBox::GetLBText(int index, LPTSTR pText) const
+    inline int  CComboBox::GetLBText(int index, LPTSTR text) const
     {
         assert(IsWindow());
-        return (int)SendMessage(CB_GETLBTEXT, (WPARAM)index, (LPARAM)pText);
+        return (int)SendMessage(CB_GETLBTEXT, (WPARAM)index, (LPARAM)text);
     }
 
     // Retrieves the length, in characters, of a string in the list of the combo box.
@@ -843,10 +882,10 @@ namespace Win32xx
     // Inserts a string into the list box of the combo box. Unlike the AddString,
     // a list with the CBS_SORT style is not sorted.
     // Refer to CB_INSERTSTRING in the Windows API documentation for more information.
-    inline int  CComboBox::InsertString(int index, LPCTSTR pString) const
+    inline int  CComboBox::InsertString(int index, LPCTSTR string) const
     {
         assert(IsWindow());
-        return (int)SendMessage(CB_INSERTSTRING, (WPARAM)index, (LPARAM)pString);
+        return (int)SendMessage(CB_INSERTSTRING, (WPARAM)index, (LPARAM)string);
     }
 
     // Limits the length of the text the user may type into the edit control of the combo box.
@@ -892,10 +931,10 @@ namespace Win32xx
     // Searches the list of a combo box for an item that begins with the characters in a
     // specified string. If a matching item is found, it is selected and copied to the edit control.
     // Refer to CB_SELECTSTRING in the Windows API documentation for more information.
-    inline int  CComboBox::SelectString(int startAfter, LPCTSTR pString) const
+    inline int  CComboBox::SelectString(int startAfter, LPCTSTR string) const
     {
         assert(IsWindow());
-        return (int)SendMessage(CB_SELECTSTRING, (WPARAM)startAfter, (LPARAM)pString);
+        return (int)SendMessage(CB_SELECTSTRING, (WPARAM)startAfter, (LPARAM)string);
     }
 
     // Selects a string in the list of the combo box. If necessary, the list scrolls the string into view.
@@ -1406,7 +1445,7 @@ namespace Win32xx
         if (isExtended)
             lparam |= 0x01000000L;
 
-        CString str;
+        CString string;
         int incompleteLength = 64;
         int length = incompleteLength;
 
@@ -1414,12 +1453,12 @@ namespace Win32xx
         while (length == incompleteLength)
         {
             incompleteLength *= 4;
-            LPTSTR pStr = str.GetBuffer(incompleteLength);
-            length = ::GetKeyNameText(static_cast<LONG>(lparam), pStr, incompleteLength + 1);
-            str.ReleaseBuffer();
+            LPTSTR str = string.GetBuffer(incompleteLength);
+            length = ::GetKeyNameText(static_cast<LONG>(lparam), str, incompleteLength + 1);
+            string.ReleaseBuffer();
         }
 
-        return str;
+        return string;
     }
 
     // Sets the hot key combination for the control.
@@ -1646,10 +1685,10 @@ namespace Win32xx
         assert(IsWindow());
         SYSTEMTIME minMax[2];
         ZeroMemory(minMax, 2*sizeof(SYSTEMTIME));
-        LRESULT Value = SendMessage(MCM_GETRANGE, 0, (LPARAM)&minMax);
+        LRESULT value = SendMessage(MCM_GETRANGE, 0, (LPARAM)&minMax);
         minRange = minMax[0];
         maxRange = minMax[1];
-        return Value;
+        return value;
     }
 
     // Retrieves date information that represents the upper and lower limits of the date range currently selected by the user.
@@ -1659,10 +1698,10 @@ namespace Win32xx
         assert(IsWindow());
         SYSTEMTIME minMax[2];
         ZeroMemory(minMax, 2*sizeof(SYSTEMTIME));
-        LRESULT Value = MonthCal_GetSelRange(*this, &minMax);
+        LRESULT value = MonthCal_GetSelRange(*this, &minMax);
         minRange = minMax[0];
         maxRange = minMax[1];
-        return Value;
+        return value;
     }
 
     // Retrieves the date information for the date specified as "today" for the month calendar control.
@@ -1702,10 +1741,10 @@ namespace Win32xx
 
     // Sets the day states for all months that are currently visible within the month calendar control.
     // Refer to MonthCal_SetDayState in the Windows API documentation for more information.
-    inline BOOL CMonthCalendar::SetDayState(int months, const MONTHDAYSTATE& state) const
+    inline BOOL CMonthCalendar::SetDayState(int months, LPMONTHDAYSTATE pStateArray) const
     {
         assert(IsWindow());
-        return (MonthCal_SetDayState(*this, months, &state) != 0);
+        return (MonthCal_SetDayState(*this, months, pStateArray) != 0);
     }
 
     // Sets the first day of the week for the month calendar control.
@@ -2295,30 +2334,30 @@ namespace Win32xx
     // Registers a tool with a ToolTip control.
     // control specifies the window which triggers the tooltip.
     // toolRect specifies the part of the window which triggers the tooltip.
-    // If pText contains the value LPSTR_TEXTCALLBACK, TTN_NEEDTEXT notification
+    // If text contains the value LPSTR_TEXTCALLBACK, TTN_NEEDTEXT notification
     // messages are sent to the parent window.
     // id is a user defined ID. It is required if the control has multiple tooltips.
     // Refer to TTM_ADDTOOL in the Windows API documentation for more information.
-    inline BOOL CToolTip::AddTool(HWND control, const RECT& toolRect, UINT id, LPCTSTR pText /*= LPSTR_TEXTCALLBACK*/) const
+    inline BOOL CToolTip::AddTool(HWND control, const RECT& toolRect, UINT id, LPCTSTR text /*= LPSTR_TEXTCALLBACK*/) const
     {
         assert(IsWindow());
         TOOLINFO info;
         FillToolInfo(info, control, toolRect, id);
-        info.lpszText = const_cast<LPTSTR>(pText);
+        info.lpszText = const_cast<LPTSTR>(text);
         return (SendMessage(TTM_ADDTOOL, 0, (LPARAM)&info) != 0);
     }
 
     // Registers a tool with a ToolTip control.
     // control specifies the window which triggers the tooltip.
-    // If pText contains the value LPSTR_TEXTCALLBACK, TTN_NEEDTEXT notification
+    // If text contains the value LPSTR_TEXTCALLBACK, TTN_NEEDTEXT notification
     // messages are sent to the parent window.
     // Refer to TTM_ADDTOOL in the Windows API documentation for more information.
-    inline BOOL CToolTip::AddTool(HWND control, LPCTSTR pText /*= LPSTR_TEXTCALLBACK*/) const
+    inline BOOL CToolTip::AddTool(HWND control, LPCTSTR text /*= LPSTR_TEXTCALLBACK*/) const
     {
         assert(IsWindow());
         TOOLINFO info;
         FillToolInfo(info, control);
-        info.lpszText = const_cast<LPTSTR>(pText);
+        info.lpszText = const_cast<LPTSTR>(text);
         return (SendMessage(TTM_ADDTOOL, 0, (LPARAM)&info) != 0);
     }
 
@@ -2371,8 +2410,8 @@ namespace Win32xx
         CString str;
         TOOLINFO info = GetToolInfo(control, id);
 
-        LPTSTR pText = str.GetBuffer(80); // Maximum allowed ToolTip is 80 characters for Windows XP and below
-        info.lpszText = pText;
+        LPTSTR text = str.GetBuffer(80); // Maximum allowed ToolTip is 80 characters for Windows XP and below
+        info.lpszText = text;
         SendMessage(TTM_GETTEXT, 0, (LPARAM)&info);
         str.ReleaseBuffer();
 
@@ -2589,11 +2628,11 @@ namespace Win32xx
 
     // Sets the ToolTip text for a tool.
     // Refer to TTM_UPDATETIPTEXT in the Windows API documentation for more information.
-    inline void CToolTip::UpdateTipText(LPCTSTR pText, HWND control, UINT id) const
+    inline void CToolTip::UpdateTipText(LPCTSTR text, HWND control, UINT id) const
     {
         assert(IsWindow());
         TOOLINFO info = GetToolInfo(control, id);
-        info.lpszText = const_cast<LPTSTR>(pText);
+        info.lpszText = const_cast<LPTSTR>(text);
         SendMessage(TTM_UPDATETIPTEXT, 0, (LPARAM)&info);
     }
 
@@ -2633,10 +2672,10 @@ namespace Win32xx
 
     // Adds a standard icon and title string to a ToolTip.
     // Refer to TTM_SETTITLE in the Windows API documentation for more information.
-    inline BOOL CToolTip::SetTitle(UINT icon, LPCTSTR pTitle) const
+    inline BOOL CToolTip::SetTitle(UINT icon, LPCTSTR title) const
     {
         assert(IsWindow());
-        return (SendMessage(TTM_SETTITLE, (WPARAM)icon, (LPARAM)pTitle) != 0);
+        return (SendMessage(TTM_SETTITLE, (WPARAM)icon, (LPARAM)title) != 0);
     }
 
 #endif
@@ -2646,10 +2685,10 @@ namespace Win32xx
 
     // Sets the visual style of a ToolTip control.
     // Refer to TTM_SETWINDOWTHEME in the Windows API documentation for more information.
-    inline void CToolTip::SetTTWindowTheme(LPCWSTR pTheme) const
+    inline void CToolTip::SetTTWindowTheme(LPCWSTR theme) const
     {
         assert(IsWindow());
-        SendMessage(TTM_SETWINDOWTHEME, 0, (LPARAM)pTheme);
+        SendMessage(TTM_SETWINDOWTHEME, 0, (LPARAM)theme);
     }
 
 #endif

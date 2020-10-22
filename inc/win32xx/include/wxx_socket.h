@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -149,7 +149,8 @@ namespace Win32xx
     typedef int  WINAPI GETADDRINFO(LPCSTR, LPCSTR, const struct addrinfo*, struct addrinfo**);
     typedef void WINAPI FREEADDRINFO(struct addrinfo*);
 
-    // The CSocket class represents a network socket. It can be used to create
+    /////////////////////////////////////////////////////////////
+    // CSocket manages a network socket. It can be used to create
     // network connections, and pass data over those connections.
     class CSocket
     {
@@ -246,7 +247,6 @@ namespace Win32xx
 
     }
 
-
     inline CSocket::~CSocket()
     {
         Disconnect();
@@ -313,22 +313,16 @@ namespace Win32xx
             sockaddr_in clientService;
             clientService.sin_family = AF_INET;
 
-#if !defined (InetPton)     //  can require NTDDI_VERSION >= NTDDI_VISTA
-  #ifdef _MSC_VER
-    #pragma warning ( push )
-    #pragma warning ( disable : 4996 )
-  #endif // _MSC_VER
+#ifdef _MSC_VER
+  #pragma warning ( push )
+  #pragma warning ( disable : 4996 )
+#endif // _MSC_VER
 
-            clientService.sin_addr.s_addr = inet_addr( TtoA(addr) );
+                clientService.sin_addr.s_addr = inet_addr(TtoA(addr));
 
-  #ifdef _MSC_VER
-    #pragma warning ( pop )
-  #endif // _MSC_VER
-#else
-
-            InetPton(AF_INET, addr, &clientService.sin_addr.s_addr);
-
-#endif // InetPton
+#ifdef _MSC_VER
+  #pragma warning ( pop )
+#endif // _MSC_VER
 
             clientService.sin_port = htons( static_cast<u_short>(port) );
 
@@ -394,22 +388,16 @@ namespace Win32xx
             sockaddr_in clientService;
             clientService.sin_family = AF_INET;
 
-#if !defined (InetPton)     //  can require NTDDI_VERSION >= NTDDI_VISTA
-  #ifdef _MSC_VER
-    #pragma warning ( push )
-    #pragma warning ( disable : 4996 )
-  #endif // _MSC_VER
+#ifdef _MSC_VER
+  #pragma warning ( push )
+  #pragma warning ( disable : 4996 )
+#endif // _MSC_VER
 
             clientService.sin_addr.s_addr = inet_addr( TtoA(addr) );
 
-  #ifdef _MSC_VER
-    #pragma warning ( pop )
-  #endif // _MSC_VER
-#else
-
-            InetPton(AF_INET, addr, &clientService.sin_addr.s_addr);
-
-#endif // InetPton
+#ifdef _MSC_VER
+  #pragma warning ( pop )
+#endif // _MSC_VER
 
             clientService.sin_port = htons( static_cast<u_short>(port) );
 
@@ -783,22 +771,17 @@ namespace Win32xx
             sockaddr_in clientService;
             clientService.sin_family = AF_INET;
 
-#if !defined (InetPton)     //  can require NTDDI_VERSION >= NTDDI_VISTA
-  #ifdef _MSC_VER
-    #pragma warning ( push )
-    #pragma warning ( disable : 4996 )
-  #endif // _MSC_VER
+#ifdef _MSC_VER
+  #pragma warning ( push )
+  #pragma warning ( disable : 4996 )
+#endif // _MSC_VER
 
             clientService.sin_addr.s_addr = inet_addr(TtoA(addr));
 
-  #ifdef _MSC_VER
-    #pragma warning ( pop )
-  #endif // _MSC_VER
-#else
+#ifdef _MSC_VER
+  #pragma warning ( pop )
+#endif // _MSC_VER
 
-            InetPton(AF_INET, addr, &clientService.sin_addr.s_addr);
-
-#endif  // InetPton
 
             clientService.sin_port = htons( static_cast<u_short>(port) );
 

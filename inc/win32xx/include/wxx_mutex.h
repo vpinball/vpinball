@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -48,7 +48,7 @@
 //            the state of an event object to signalled. Use the ResetEvent function
 //            to reset the state of an event object to non-signalled. Threads can check
 //            the status of the event with one of the wait functions. When the state of
-//            an auto-reset event object is signalled, it remains signalled until a 
+//            an auto-reset event object is signalled, it remains signalled until a
 //            single waiting thread is released. The system then automatically resets the
 //            state to non-signalled. If no threads are waiting, the event object's state
 //            remains signalled.
@@ -59,7 +59,7 @@
 //            with one of the wait functions.
 //
 // 3) CSemaphore: Creates a named or unnamed semaphore. The state of a semaphore object is
-//            signalled when its count is greater than zero, and non-signalled when its 
+//            signalled when its count is greater than zero, and non-signalled when its
 //            count is equal to zero. The initialCount parameter specifies the initial count.
 //            Each time a waiting thread is released because of the semaphore's signalled
 //            state, the count of the semaphore is decreased by one. Threads can check
@@ -69,19 +69,22 @@
 
 namespace Win32xx
 {
-
+    ////////////////////////////////////////////////////////////////
+    // CEvent manages an event object. Event objects can be set to
+    // a signaled or nonsignaled state to facilitate synchronisation
+    // between threads.
     class CEvent
     {
     public:
-        CEvent(BOOL isInitiallySignaled = FALSE, BOOL isManualReset = FALSE, 
+        CEvent(BOOL isInitiallySignaled = FALSE, BOOL isManualReset = FALSE,
             LPCTSTR pName = NULL, LPSECURITY_ATTRIBUTES pAttributes = NULL);
 
         HANDLE GetHandle() const { return m_event; }
         operator HANDLE() const  { return m_event; }
-        
+
         void ResetEvent();
         void SetEvent();
-        
+
     private:
         CEvent(const CEvent&);              // Disable copy construction
         CEvent& operator = (const CEvent&); // Disable assignment operator
@@ -89,7 +92,12 @@ namespace Win32xx
         HANDLE m_event;
     };
 
-
+    ////////////////////////////////////////////////////////
+    // CMutex manages a mutex object. A mutex object is a
+    // synchronization object whose state is set to signaled
+    // when it is not owned by any thread, and nonsignaled
+    // when it is owned. Only one thread at a time can own
+    // a mutex object.
     class CMutex
     {
     public:
@@ -98,19 +106,24 @@ namespace Win32xx
 
         HANDLE GetHandle() const { return m_mutex; }
         operator HANDLE() const  { return m_mutex; }
-        
+
     private:
         CMutex(const CMutex&);              // Disable copy construction
         CMutex& operator = (const CMutex&); // Disable assignment operator
 
-        HANDLE m_mutex;    
+        HANDLE m_mutex;
     };
 
-
+    ///////////////////////////////////////////////////////////////
+    // CSemaphore manages a semaphore object. A semaphore object
+    // is a synchronization object that maintains a count between
+    // zero and a specified maximum value. The count is decremented
+    // each time a thread completes a wait for the semaphore object
+    // and incremented each time a thread releases the semaphore.
     class CSemaphore
     {
     public:
-        CSemaphore(LONG initialCount, LONG maxCount, LPCTSTR pName, 
+        CSemaphore(LONG initialCount, LONG maxCount, LPCTSTR pName,
             LPSECURITY_ATTRIBUTES pAttributes);
 
         HANDLE GetHandle() const { return m_semaphore; }
@@ -137,7 +150,7 @@ namespace Win32xx
     //                 - If pName matches an existing event, the existing handle is retrieved.
     //  pAttributes    - Pointer to a SECURITY_ATTRIBUTES structure that determines whether the returned
     //                   handle can be inherited by child processes. If lpEventAttributes is NULL, the
-    //                   handle cannot be inherited.    
+    //                   handle cannot be inherited.
     inline CEvent::CEvent(BOOL isInitiallySignaled, BOOL isManualReset, LPCTSTR pstrName,
                     LPSECURITY_ATTRIBUTES pAttributes)
     : m_event(0)
@@ -161,7 +174,7 @@ namespace Win32xx
 
 
     /////////////////////////////////////////
-    // CMutex member function definitions   
+    // CMutex member function definitions
 
     // Creates a named or unnamed mutex.
     // Parameters:
@@ -173,7 +186,7 @@ namespace Win32xx
     //                   handle cannot be inherited.
     inline CMutex::CMutex(BOOL isInitiallySignaled, LPCTSTR pName,
                             LPSECURITY_ATTRIBUTES pAttributes)
-    : m_mutex(0) 
+    : m_mutex(0)
     {
         m_mutex = ::CreateMutex(pAttributes, isInitiallySignaled, pName);
         if (m_mutex == NULL)
@@ -182,7 +195,7 @@ namespace Win32xx
 
 
     /////////////////////////////////////////
-    // CMutex member function definitions   
+    // CMutex member function definitions
 
     // Creates a named or unnamed semaphore.
     // Parameters:
@@ -191,7 +204,7 @@ namespace Win32xx
     //  maxCount       - Maximum count for the semaphore object. This value must be greater than zero.
     //  pAttributes    - Pointer to a SECURITY_ATTRIBUTES structure that determines whether the returned
     //                   handle can be inherited by child processes. If lpEventAttributes is NULL, the
-    //                   handle cannot be inherited.    
+    //                   handle cannot be inherited.
     inline CSemaphore::CSemaphore(LONG initialCount, LONG maxCount, LPCTSTR pName,
                             LPSECURITY_ATTRIBUTES pAttributes)
     : m_semaphore(0)
@@ -210,7 +223,7 @@ namespace Win32xx
     //                   must be greater than zero.
     //  pPreviousCount - pointer to a variable to receive the previous count.
     inline BOOL CSemaphore::ReleaseSemaphore(LONG releaseCount, LONG* pPreviousCount)
-    {   
+    {
         BOOL result = ::ReleaseSemaphore(m_semaphore, releaseCount, pPreviousCount);
         return result;
     }

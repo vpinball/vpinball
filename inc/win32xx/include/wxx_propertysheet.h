@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -71,8 +71,9 @@ namespace Win32xx
     typedef Shared_Ptr<CPropertyPage> PropertyPagePtr;
 
 
-    // This class provides support for property pages. A property page is an
-    // individual page used in a property sheet.
+    /////////////////////////////////////////////////////////////
+    // This class provides support for property pages. A property
+    // page is an individual page used in a property sheet.
     class CPropertyPage : public CDialog
     {
     public:
@@ -105,7 +106,6 @@ namespace Win32xx
         void SetTitle(LPCTSTR pTitle);
         void SetWizardButtons(DWORD flags) const;
 
-
     private:
         CPropertyPage(const CPropertyPage&);                // Disable copy construction
         CPropertyPage& operator = (const CPropertyPage&);   // Disable assignment operator
@@ -118,8 +118,11 @@ namespace Win32xx
     };
 
 
-    // This class provides support for a property sheet. A property sheet is
-    // also known as a tab dialog box. It has one or more property pages.
+    ///////////////////////////////////////////////////////////////
+    // This class provides support for a property sheet. A property
+    // sheet is also known as a tab dialog box. It has one or more
+    // property pages. A Property sheet can present its pages as a
+    // wizard.
     class CPropertySheet : public CWnd
     {
     public:
@@ -254,6 +257,8 @@ namespace Win32xx
     // Override this function in your derived class when if the cancel button is pressed.
     inline void CPropertyPage::OnCancel()
     {
+        // Close the propertysheet.
+        GetParent().PostMessage(WM_CLOSE);
     }
 
     // This function is called in response to the PSN_HELP notification.
@@ -309,7 +314,7 @@ namespace Win32xx
     // Override this function to perform tasks when the property sheet is closed.
     inline void CPropertyPage::OnOK()
     {
-        // Close the modeless propertysheet
+        // Close the propertysheet.
         GetParent().PostMessage(WM_CLOSE);
     }
 
@@ -321,6 +326,7 @@ namespace Win32xx
 
         LPPSHNOTIFY pNotify = (LPPSHNOTIFY)lparam;
         assert(pNotify);
+        if (!pNotify) return 0;
 
         switch(pNotify->hdr.code)
         {
@@ -338,6 +344,7 @@ namespace Win32xx
             return PSNRET_INVALID_NOCHANGEPAGE;
         case PSN_RESET:
             OnReset();
+            break;
         case PSN_QUERYCANCEL:
             return OnQueryCancel();
         case PSN_WIZNEXT:
@@ -477,6 +484,7 @@ namespace Win32xx
             {
                 TLSData* pTLSData = GetApp()->GetTlsData();
                 assert(pTLSData);
+                if (!pTLSData) return 0;
 
                 // Store the CPropertyPage pointer in Thread Local Storage
                 pTLSData->pWnd = reinterpret_cast<CWnd*>(ppsp->lParam);
@@ -558,6 +566,7 @@ namespace Win32xx
     inline CPropertyPage* CPropertySheet::AddPage(CPropertyPage* pPage)
     {
         assert(NULL != pPage);
+        if (!pPage) return NULL;
 
         m_allPages.push_back(PropertyPagePtr(pPage));
 
@@ -612,10 +621,11 @@ namespace Win32xx
                 // Retrieve pointer to CWnd object from Thread Local Storage
                 TLSData* pTLSData = GetApp()->GetTlsData();
                 assert(pTLSData);
+                if (!pTLSData) return;
 
                 CPropertySheet* w = static_cast<CPropertySheet*>(pTLSData->pWnd);
                 assert(w);
-                
+
                 if (w != 0)
                     w->Attach(wnd);
             }

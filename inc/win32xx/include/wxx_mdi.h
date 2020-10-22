@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -84,8 +84,9 @@ namespace Win32xx
     class CMDIChild;
     typedef Shared_Ptr<CMDIChild> MDIChildPtr;
 
-    /////////////////////////////////////
-    // The CMDIChild class the functionality of a MDI child window.
+    ///////////////////////////////////////////////////////////////
+    // CMDIChild manages a MDI child window. CMDIChild also manages
+    // the creation and position of the MDI Child's view window.
     class CMDIChild : public CWnd
     {
     public:
@@ -128,8 +129,8 @@ namespace Win32xx
     };
 
     /////////////////////////////////////
-    // The CMDIClient class provides the functionality of a MDI client window.
-    // This is used as the view window for a CMDIFrame window.
+    // CMDIClient manages the MDI frame's MDI client window.
+    // The MDI client window manages the arrangement of the MDI child windows.
     template <class T>
     class CMDIClient : public T     // The template parameter T is either CWnd, or CDocker::CDockClient
     {
@@ -207,7 +208,9 @@ namespace Win32xx
 
 
     /////////////////////////////////////////
-    // The CMDIFrame class provides a frame window that can host one or more MDI child windows.
+    // The CMDIFrame class provides a frame window that can host one or
+    // more MDI child windows. CMDIFrame also manages the creation and
+    // position of child windows, such as the menubar, toolbar, and statusbar.
     class CMDIFrame : public CMDIFrameT<CFrame>
     {
     public:
@@ -446,6 +449,7 @@ namespace Win32xx
         {
             CWnd* pMaxMDIChild = GetActiveMDIChild();
             assert(pMaxMDIChild);
+            if (!pMaxMDIChild)  return 0;
 
             // Suppress owner drawing of the MDI child's system menu
             if (::GetSystemMenu(*pMaxMDIChild, FALSE) == reinterpret_cast<HMENU>(wparam))
@@ -523,7 +527,7 @@ namespace Win32xx
     template <class T>
     inline BOOL CMDIFrameT<T>::OnViewStatusBar()
     {
-        T::OnViewStatusBar();
+        OnViewStatusBar();
         T::GetView().RedrawWindow(RDW_FRAME | RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN);
         return TRUE;
     }
@@ -532,7 +536,7 @@ namespace Win32xx
     template <class T>
     inline BOOL CMDIFrameT<T>::OnViewToolBar()
     {
-        T::OnViewToolBar();
+        OnViewToolBar();
         T::GetView().RedrawWindow(RDW_FRAME | RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN);
         return TRUE;
     }
@@ -781,7 +785,7 @@ namespace Win32xx
     //   HMENU hChildMenu = LoadMenu(GetApp()->GetResourceHandle(), _T("MdiMenuView"));
     //   HACCEL hChildAccel = LoadAccelerators(GetApp()->GetResourceHandle(), _T("MDIAccelView"));
     //   SetHandles(hChildMenu, hChildAccel);
-    //   SetView(m_View);
+    //   SetView(m_view);
     inline CMDIChild::CMDIChild() : m_pView(NULL), m_childAccel(0)
     {
 
@@ -810,7 +814,10 @@ namespace Win32xx
         BOOL Max = FALSE;
         CWnd* pParent = GetCWndPtr(parent);
         assert(pParent);
+        if (!pParent)  return 0;
+
         pParent->SendMessage(WM_MDIGETACTIVE, 0, (LPARAM)&Max);
+
         Max = Max | (cs.style & WS_MAXIMIZE);
 
         // Set the Window Class Name

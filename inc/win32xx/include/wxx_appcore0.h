@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -192,7 +192,7 @@ using namespace Win32xx;
 #define MIN(a,b)        (((a) < (b)) ? (a) : (b))
 
 // Version macro
-#define _WIN32XX_VER 0x0870     // Win32++ version 8.7.0
+#define _WIN32XX_VER 0x0880     // Win32++ version 8.8
 
 // Define the TRACE Macro
 // In debug mode, TRACE send text to the debug/output pane, or an external debugger
@@ -219,7 +219,7 @@ using namespace Win32xx;
 
 namespace Win32xx
 {
-    
+
     // Messages used for exceptions.
     LPCTSTR const g_msgAppThreadFailed = _T("Failed to create thread");
     LPCTSTR const g_msgAppInstanceFailed = _T("Only one instance of CWinApp is permitted");
@@ -241,8 +241,6 @@ namespace Win32xx
     LPCTSTR const g_msgIPControl  = _T("IP Address Control not supported!");
     LPCTSTR const g_msgRichEditDll = _T("Failed to load RICHED32.DLL");
     LPCTSTR const g_msgTaskDialog = _T("Failed to create Task Dialog");
-    LPCTSTR const g_msgCoInitialize = _T("Failed to initialize COM");
-    LPCTSTR const g_msgOleInitialize = _T("Failed to initialize OLE");
 
     LPCTSTR const g_msgFileClose  = _T("Failed to close file");
     LPCTSTR const g_msgFileFlush  = _T("Failed to flush file");
@@ -292,20 +290,25 @@ namespace Win32xx
     // Forward declarations.
     //  These classes are defined later or elsewhere
     class CArchive;
-    class CDC;
-    class CGDIObject;
-    class CMenu;
-    class CMenuBar;
-    class CWinApp;
-    class CWnd;
     class CBitmap;
     class CBrush;
+    class CClientDC;
+    class CClientDCEx;
+    class CDataExchange;
+    class CDC;
     class CFont;
+    class CGDIObject;
     class CImageList;
+    class CMemDC;
+    class CMenu;
+    class CMenuBar;
+    class CPaintDC;
     class CPalette;
     class CPen;
     class CRgn;
-    class CDataExchange;
+    class CWinApp;
+    class CWindowDC;
+    class CWnd;
     struct CDC_Data;
 
     // tString is a TCHAR std::string
@@ -430,7 +433,7 @@ namespace Win32xx
     class CCriticalSection
     {
     public:
-        CCriticalSection(); 
+        CCriticalSection();
         ~CCriticalSection();
 
         void Lock();
@@ -445,11 +448,11 @@ namespace Win32xx
     };
 
 
-    /////////////////////////////////////////
-    // Provides a convenient RAII-style mechanism for owning a CCriticalSection
-    // for the duration of a scoped block. Automatically locks the specified
-    // CCriticalSection when constructed, and releases the critical section
-    // when destroyed.
+    /////////////////////////////////////////////////////////////////
+    // CThreadLock provides a convenient RAII-style mechanism for
+    // owning a CCriticalSection for the duration of a scoped block.
+    // Automatically locks the specified CCriticalSection when
+    // constructed, and releases the critical section when destroyed.
     class CThreadLock
     {
     public:
@@ -462,10 +465,12 @@ namespace Win32xx
         CCriticalSection& m_cs;
     };
 
-    //////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////
     // CHGlobal is a class used to wrap a global memory handle.
-    // It automatically frees the global memory when the object goes out of scope.
-    // This class is used by CDevMode and CDevNames defined in wxx_printdialogs.h
+    // It automatically frees the global memory when the object goes
+    // out of scope. This class is used by CDevMode and CDevNames
+    // defined in wxx_printdialogs.h
     class CHGlobal
     {
     public:
@@ -482,14 +487,14 @@ namespace Win32xx
         operator HGLOBAL() const        { return m_hGlobal; }
 
     private:
-        CHGlobal(const CHGlobal&);              // Disable copy 
+        CHGlobal(const CHGlobal&);              // Disable copy
         CHGlobal& operator = (const CHGlobal&); // Disable assignment
 
         HGLOBAL m_hGlobal;
     };
 
 
-    ///////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
     // The CObject class provides support for Serialization by CArchive.
     class CObject
     {
@@ -505,8 +510,9 @@ namespace Win32xx
     typedef UINT (WINAPI *PFNTHREADPROC)(LPVOID);
 
 
-    //////////////////////////////////////
-    // CWinThread manages a thread. For a GUI thread, it runs the message loop.
+    //////////////////////////////////////////////////////////////
+    // CWinThread manages a thread. It supports GUI threads and
+    // worker threads. For a GUI thread, it runs the message loop.
     class CWinThread : public CObject
     {
     public:
@@ -517,7 +523,7 @@ namespace Win32xx
         // Overridables
         virtual BOOL InitInstance();
         virtual int MessageLoop();
-        virtual BOOL OnIdle(LONG lCount);
+        virtual BOOL OnIdle(LONG count);
         virtual BOOL PreTranslateMessage(MSG& msg);
 
         // Operations
@@ -552,8 +558,10 @@ namespace Win32xx
         HWND m_accelWnd;                // handle to the window for accelerator keys
     };
 
-    ///////////////////////////////////
-    // CWinApp manages the application, and runs the application's message loop.
+    ///////////////////////////////////////////////////////////////
+    // CWinApp manages the application. Its constructor initializes
+    // the Win32++ framework. The Run function calls InitInstance,
+    // and starts the message loop on the main thread.
     // There can only be one instance of CWinApp.
     class CWinApp : public CWinThread
     {
@@ -586,7 +594,7 @@ namespace Win32xx
         HCURSOR LoadCursor(int cursorID) const;
         HCURSOR LoadStandardCursor(LPCTSTR pCursorName) const;
         HICON   LoadIcon(LPCTSTR pResourceName) const;
-        HICON   LoadIcon(int nIDIcon) const;
+        HICON   LoadIcon(int iconID) const;
         HICON   LoadStandardIcon(LPCTSTR pIconName) const;
         HANDLE  LoadImage(LPCTSTR pResourceName, UINT type, int cx, int  cy, UINT flags = LR_DEFAULTCOLOR) const;
         HANDLE  LoadImage(int imageID, UINT type, int cx, int cy, UINT flags = LR_DEFAULTCOLOR) const;
@@ -617,12 +625,12 @@ namespace Win32xx
         CCriticalSection m_gdiLock;   // thread synchronisation for m_mapCDCData and m_mapCGDIData.
         CCriticalSection m_wndLock;   // thread synchronisation for m_mapHWND etc.
         CCriticalSection m_printLock; // thread synchronisation for printing.
-        HINSTANCE m_instance;          // handle to the application's instance
-        HINSTANCE m_resource;          // handle to the application's resources
-        DWORD m_tlsData;                // Thread Local Storage data
-        WNDPROC m_callback;             // callback address of CWnd::StaticWndowProc
-        CHGlobal m_devMode;             // Used by CPrintDialog and CPageSetupDialog
-        CHGlobal m_devNames;            // Used by CPrintDialog and CPageSetupDialog
+        HINSTANCE m_instance;         // handle to the application's instance
+        HINSTANCE m_resource;         // handle to the application's resources
+        DWORD m_tlsData;              // Thread Local Storage data
+        WNDPROC m_callback;           // callback address of CWnd::StaticWndowProc
+        CHGlobal m_devMode;           // Used by CPrintDialog and CPageSetupDialog
+        CHGlobal m_devNames;          // Used by CPrintDialog and CPageSetupDialog
 
 #ifndef _WIN32_WCE
         void AddCMenuData(HMENU menu, CMenu_Data* pData);
@@ -641,5 +649,6 @@ namespace Win32xx
 
 
 } // namespace Win32xx
+
 
 #endif // _WIN32XX_APPCORE0_H_

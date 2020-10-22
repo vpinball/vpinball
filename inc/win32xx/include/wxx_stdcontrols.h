@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -55,8 +55,10 @@
 namespace Win32xx
 {
 
-    ///////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
     // The CButton class provides the functionality of a button control.
+    // A button is a control the user can click to provide input to an
+    // application.
     class CButton : public CWnd
     {
     public:
@@ -87,8 +89,10 @@ namespace Win32xx
     };
 
 
-    ///////////////////////////////////////////////
-    // The CEdit class provides the functionality of an edit control.
+    ///////////////////////////////////////////////////////////////////
+    // CEdit manages an edit control. An edit control is a rectangular
+    // control window typically used in a dialog box to permit the user
+    // to enter and edit text by typing on the keyboard.
     class CEdit : public CWnd
     {
     public:
@@ -97,7 +101,7 @@ namespace Win32xx
         virtual ~CEdit() {}
 
         // Attributes
-        void   AppendText(LPCTSTR pText) const;
+        void   AppendText(LPCTSTR text) const;
         BOOL   CanUndo() const;
         int    CharFromPos(CPoint pt) const;
         int    GetFirstVisibleLine() const;
@@ -154,8 +158,9 @@ namespace Win32xx
     };
 
 
-    ///////////////////////////////////////////////
-    // The CListBox class provides the functionality of a list box control.
+    ////////////////////////////////////////////////////////////
+    // CListBox manages a list box control. List boxes display a
+    // list from which a user can select one or more items.
     class CListBox : public CWnd
     {
     public:
@@ -174,7 +179,7 @@ namespace Win32xx
         int  GetItemRect(int index, RECT& rc) const;
         LCID GetLocale() const;
         int  GetSel(int index) const;
-        int  GetText(int index, LPTSTR pBuffer) const;
+        int  GetText(int index, LPTSTR buffer) const;
         int  GetTextLen(int index) const;
         int  GetTopIndex() const;
         UINT ItemFromPoint(CPoint pt, BOOL& isOutside ) const;
@@ -204,14 +209,14 @@ namespace Win32xx
         int  SetSel(int index, BOOL isSelected) const;
 
         // String Operations
-        int  AddString(LPCTSTR pString) const;
+        int  AddString(LPCTSTR string) const;
         int  DeleteString(UINT index) const;
-        int  Dir(UINT attr, LPCTSTR pWildCard) const;
-        int  FindString(int startAfter, LPCTSTR pString) const;
-        int  FindStringExact(int indexStart, LPCTSTR pFindString) const;
-        int  InsertString(int index, LPCTSTR pString) const;
+        int  Dir(UINT attr, LPCTSTR wildCard) const;
+        int  FindString(int startAfter, LPCTSTR string) const;
+        int  FindStringExact(int indexStart, LPCTSTR findString) const;
+        int  InsertString(int index, LPCTSTR string) const;
         void ResetContent() const;
-        int  SelectString(int startAfter, LPCTSTR pString) const;
+        int  SelectString(int startAfter, LPCTSTR string) const;
 
     protected:
         // Overridables
@@ -224,8 +229,10 @@ namespace Win32xx
     };
 
 
-    ///////////////////////////////////////////////
-    // The CStatic class provides the functionality of a static control.
+    ///////////////////////////////////////////////////////////
+    // CStatic manages a static control. Applications often use
+    // static controls to label other controls or to separate a
+    // group of controls.
     class CStatic : public CWnd
     {
     public:
@@ -265,7 +272,7 @@ namespace Win32xx
     //
 
     // Returns the handle to the bitmap associated with the button.
-    // Refer to BM_GETIMAGE in the Windows API documentation for more information.  
+    // Refer to BM_GETIMAGE in the Windows API documentation for more information.
     inline HBITMAP CButton::GetBitmap() const
     {
         assert(IsWindow());
@@ -393,13 +400,13 @@ namespace Win32xx
     //
 
     // Adds text to the end of the document.
-    inline void CEdit::AppendText(LPCTSTR pText) const
+    inline void CEdit::AppendText(LPCTSTR text) const
     {
         LRESULT position = SendMessage(WM_GETTEXTLENGTH, 0, 0);
         SendMessage(EM_SETSEL, (WPARAM)position, (LPARAM)position);
-        SendMessage(EM_REPLACESEL, 0, (LPARAM)(pText));
+        SendMessage(EM_REPLACESEL, 0, (LPARAM)(text));
     }
-    
+
     // Returns TRUE if the edit control operation can be undone.
     // Refer to EM_CANUNDO in the Windows API documentation for more information.
     inline BOOL CEdit::CanUndo() const
@@ -455,7 +462,7 @@ namespace Win32xx
     inline int CEdit::GetLine(int index, LPTSTR pBuffer, int maxLength) const
     {
         assert(IsWindow());
-        
+
         // set the first word of this buffer to the size, in TCHARs, of the buffer.
         *pBuffer = static_cast<TCHAR>(maxLength);
         return (int)SendMessage(EM_GETLINE, (WPARAM)index, (LPARAM)pBuffer);
@@ -838,10 +845,10 @@ namespace Win32xx
 
     // Retrieves the string associated with a specified item and the length of the string.
     // Refer to LB_GETTEXT in the Windows API documentation for more information.
-    inline int CListBox::GetText(int index, LPTSTR pBuffer) const
+    inline int CListBox::GetText(int index, LPTSTR buffer) const
     {
         assert(IsWindow());
-        return (int)SendMessage(LB_GETTEXT, (WPARAM)index, (LPARAM)pBuffer);
+        return (int)SendMessage(LB_GETTEXT, (WPARAM)index, (LPARAM)buffer);
     }
 
     // Returns the length, in characters, of the string associated with a specified item.
@@ -1036,10 +1043,10 @@ namespace Win32xx
 
     // Adds a string to a list box and returns its index.
     // Refer to LB_ADDSTRING in the Windows API documentation for more information.
-    inline int CListBox::AddString(LPCTSTR pString) const
+    inline int CListBox::AddString(LPCTSTR string) const
     {
         assert(IsWindow());
-        return (int)SendMessage(LB_ADDSTRING, 0, (LPARAM)pString);
+        return (int)SendMessage(LB_ADDSTRING, 0, (LPARAM)string);
     }
 
     // Removes a string from a list box and returns the number of strings remaining in the list.
@@ -1052,34 +1059,34 @@ namespace Win32xx
 
     // Adds a list of filenames to a list box and returns the index of the last filename added.
     // Refer to LB_DIR in the Windows API documentation for more information.
-    inline int CListBox::Dir(UINT attr, LPCTSTR pWildCard) const
+    inline int CListBox::Dir(UINT attr, LPCTSTR wildCard) const
     {
         assert(IsWindow());
-        return (int)SendMessage(LB_DIR, (WPARAM)attr, (LPARAM)pWildCard);
+        return (int)SendMessage(LB_DIR, (WPARAM)attr, (LPARAM)wildCard);
     }
 
     // Returns the index of the first string in the list box that begins with a specified string.
     // Refer to LB_FINDSTRING in the Windows API documentation for more information.
-    inline int CListBox::FindString(int startAfter, LPCTSTR pString) const
+    inline int CListBox::FindString(int startAfter, LPCTSTR string) const
     {
         assert(IsWindow());
-        return (int)SendMessage(LB_FINDSTRING, (WPARAM)startAfter, (LPARAM)pString);
+        return (int)SendMessage(LB_FINDSTRING, (WPARAM)startAfter, (LPARAM)string);
     }
 
     // Returns the index of the string in the list box that is equal to a specified string.
     // Refer to LB_FINDSTRINGEXACT in the Windows API documentation for more information.
-    inline int CListBox::FindStringExact(int indexStart, LPCTSTR pFindString) const
+    inline int CListBox::FindStringExact(int indexStart, LPCTSTR findString) const
     {
         assert(IsWindow());
-        return (int)SendMessage(LB_FINDSTRINGEXACT, (WPARAM)indexStart, (LPARAM)pFindString);
+        return (int)SendMessage(LB_FINDSTRINGEXACT, (WPARAM)indexStart, (LPARAM)findString);
     }
 
     // Inserts a string at a specified index in a list box.
     // Refer to LB_INSERTSTRING in the Windows API documentation for more information.
-    inline int CListBox::InsertString(int index, LPCTSTR pString) const
+    inline int CListBox::InsertString(int index, LPCTSTR string) const
     {
         assert(IsWindow());
-        return (int)SendMessage(LB_INSERTSTRING, (WPARAM)index, (LPARAM)pString);
+        return (int)SendMessage(LB_INSERTSTRING, (WPARAM)index, (LPARAM)string);
     }
 
     // Removes all items from a list box.
@@ -1092,10 +1099,10 @@ namespace Win32xx
 
     // Selects the first string it finds that matches a specified prefix.
     // Refer to LB_SELECTSTRING in the Windows API documentation for more information.
-    inline int CListBox::SelectString(int startAfter, LPCTSTR pString) const
+    inline int CListBox::SelectString(int startAfter, LPCTSTR string) const
     {
         assert(IsWindow());
-        return (int)SendMessage(LB_SELECTSTRING, (WPARAM)startAfter, (LPARAM)pString);
+        return (int)SendMessage(LB_SELECTSTRING, (WPARAM)startAfter, (LPARAM)string);
     }
 
     // Handle messages reflected back from the parent window.
@@ -1115,7 +1122,7 @@ namespace Win32xx
             }
         }
 
-        return 0;   // Allow other messages to be handled elsewhere. 
+        return 0;   // Allow other messages to be handled elsewhere.
     }
 
     // Set the window class.

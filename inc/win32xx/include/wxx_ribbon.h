@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -62,40 +62,40 @@
 
 namespace Win32xx
 {
-    //////////////////////////////////////////////
-    // The CRibbon class is used to add the Ribbon framework to a window.
+    ////////////////////////////////////////////////////////////
+    // The CRibbon class is used to add the Ribbon to a window.
+    // The ribbon user interface typically replaces the menu and
+    // toolbar used by a frame window.
     class CRibbon : public IUICommandHandler, public IUIApplication
     {
     public:
         CRibbon();
-        ~CRibbon();
-
-        // IUnknown methods.
-        STDMETHOD_(ULONG, AddRef());
-        STDMETHOD_(ULONG, Release());
-        STDMETHOD(QueryInterface(REFIID iid, void** ppObject));
+        virtual ~CRibbon();
 
         // IUIApplication methods
-        STDMETHOD(OnCreateUICommand)(UINT nCmdID, __in UI_COMMANDTYPE typeID,
+        virtual STDMETHODIMP OnCreateUICommand(UINT nCmdID, __in UI_COMMANDTYPE typeID,
             __deref_out IUICommandHandler** ppCommandHandler);
-
-        STDMETHOD(OnDestroyUICommand)(UINT32 commandId, __in UI_COMMANDTYPE typeID,
+        virtual STDMETHODIMP OnDestroyUICommand(UINT32 commandId, __in UI_COMMANDTYPE typeID,
             __in_opt IUICommandHandler* commandHandler);
-
-        STDMETHOD(OnViewChanged)(UINT viewId, __in UI_VIEWTYPE typeId, __in IUnknown* pView,
+        virtual STDMETHODIMP OnViewChanged(UINT viewId, __in UI_VIEWTYPE typeId, __in IUnknown* pView,
             UI_VIEWVERB verb, INT uReasonCode);
 
         // IUICommandHandle methods
-        STDMETHODIMP Execute(UINT nCmdID, UI_EXECUTIONVERB verb, __in_opt const PROPERTYKEY* key, __in_opt const PROPVARIANT* value,
+        virtual STDMETHODIMP Execute(UINT nCmdID, UI_EXECUTIONVERB verb, __in_opt const PROPERTYKEY* key, __in_opt const PROPVARIANT* value,
                                           __in_opt IUISimplePropertySet* pCommandExecutionProperties);
-
-        STDMETHODIMP UpdateProperty(UINT nCmdID, __in REFPROPERTYKEY key, __in_opt const PROPVARIANT* currentValue,
+        virtual STDMETHODIMP UpdateProperty(UINT nCmdID, __in REFPROPERTYKEY key, __in_opt const PROPVARIANT* currentValue,
                                                  __out PROPVARIANT* newValue);
+        virtual STDMETHODIMP CreateRibbon(HWND wnd);
+        virtual STDMETHODIMP DestroyRibbon();
 
-        bool virtual CreateRibbon(HWND wnd);
-        void virtual DestroyRibbon();
-        IUIFramework* GetRibbonFramework() const { return m_pRibbonFramework; }
-        UINT GetRibbonHeight() const;
+        // IUnknown methods.
+        STDMETHODIMP_(ULONG) AddRef();
+        STDMETHODIMP_(ULONG) Release();
+        STDMETHODIMP QueryInterface(REFIID iid, void** ppObject);
+
+        // Other
+        STDMETHODIMP_(IUIFramework*) GetRibbonFramework() const { return m_pRibbonFramework; }
+        STDMETHODIMP_(UINT) GetRibbonHeight() const;
 
     private:
         CRibbon(const CRibbon&);              // Disable copy construction
@@ -164,7 +164,9 @@ namespace Win32xx
         virtual ~CRibbonFrame() {}
     };
 
-    // This class provide an SDI frame with a Ribbon Framework that supports docking.
+    ////////////////////////////////////////////////////
+    // CRibbonDockFrame manages a frame which supports the
+    // ribbon user interface and docking.
     class CRibbonDockFrame : public CRibbonFrameT<CDockFrame>
     {
     public:
@@ -172,7 +174,9 @@ namespace Win32xx
         virtual ~CRibbonDockFrame() {}
     };
 
-    // This class provides a MDI frame with a Ribbon Framework.
+    //////////////////////////////////////////////////////////////
+    // CRibbonMDIFrame manages a frame which supports the Multiple
+    // Document Interface (MDI) and the Ribbon user interface.
     class CRibbonMDIFrame : public CRibbonFrameT<CMDIFrame>
     {
     public:
@@ -180,7 +184,10 @@ namespace Win32xx
         virtual ~CRibbonMDIFrame() {}
     };
 
-    // This class provides a MDI frame with a Ribbon Framework that supports docking.
+    ////////////////////////////////////////////////////////////////
+    // CRibbonMDIDockFrame manages a frame which supports the
+    // Multiple Document Interface (MDI), the Ribbon user interface,
+    // and docking.
     class CRibbonMDIDockFrame : public CRibbonFrameT<CMDIDockFrame>
     {
     public:
@@ -202,14 +209,11 @@ namespace Win32xx
 
     inline CRibbon::CRibbon() : m_count(0), m_pRibbonFramework(NULL)
     {
-        if (FAILED(::CoInitialize(NULL)))
-            throw CWinException(g_msgCoInitialize);
+        VERIFY(SUCCEEDED(::CoInitialize(NULL)));
     }
 
     inline CRibbon::~CRibbon()
     {
-        // Reference count must be 0 or we have a leak!
-        assert(m_count == 0);
         ::CoUninitialize();
     }
 
@@ -224,10 +228,8 @@ namespace Win32xx
 
     inline STDMETHODIMP_(ULONG) CRibbon::Release()
     {
-        LONG cRef = InterlockedDecrement(&m_count);
-        return cRef;
+        return InterlockedDecrement(&m_count);
     }
-
 
     // Responds to execute events on Commands bound to the Command handler.
     inline STDMETHODIMP CRibbon::Execute(UINT cmdID, UI_EXECUTIONVERB verb, __in_opt const PROPERTYKEY* key, __in_opt const PROPVARIANT* value,
@@ -317,42 +319,40 @@ namespace Win32xx
     }
 
     // Creates the ribbon.
-    inline bool CRibbon::CreateRibbon(HWND wnd)
+    inline STDMETHODIMP CRibbon::CreateRibbon(HWND wnd)
     {
-        HRESULT result;
+        HRESULT hr;
         // Instantiate the Ribbon framework object.
-        result = ::CoCreateInstance(CLSID_UIRibbonFramework, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_pRibbonFramework));
-        if (FAILED(result))
-            return false;
+        if (SUCCEEDED(hr = ::CoCreateInstance(CLSID_UIRibbonFramework, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_pRibbonFramework))))
+        {
+            // Connect the host application to the Ribbon framework.
+            assert(m_pRibbonFramework);
+            if (SUCCEEDED(hr = m_pRibbonFramework->Initialize(wnd, this)))
+            {
+                // Load the binary markup. APPLICATION_RIBBON is the default name generated by uicc.
+                hr = m_pRibbonFramework->LoadUI(GetModuleHandle(NULL), L"APPLICATION_RIBBON");
+            }
+        }
 
-        // Connect the host application to the Ribbon framework.
-        assert(m_pRibbonFramework);
-        result = m_pRibbonFramework->Initialize(wnd, this);
-        if (FAILED(result))
-            return false;
-
-        // Load the binary markup. APPLICATION_RIBBON is the default name generated by uicc.
-        result = m_pRibbonFramework->LoadUI(GetModuleHandle(NULL), L"APPLICATION_RIBBON");
-        if (FAILED(result))
-            return false;
-
-        return true;
+        return hr;
     }
 
     // Destroys the ribbon.
-    inline void CRibbon::DestroyRibbon()
+    inline STDMETHODIMP CRibbon::DestroyRibbon()
     {
+        HRESULT hr = S_OK;
         if (m_pRibbonFramework)
         {
-            m_pRibbonFramework->Destroy();
+            hr = m_pRibbonFramework->Destroy();
             m_pRibbonFramework->Release();
             m_pRibbonFramework = NULL;
         }
 
+        return hr;
     }
 
     // Retrieves the height of the ribbon.
-    inline UINT CRibbon::GetRibbonHeight() const
+    inline STDMETHODIMP_(UINT) CRibbon::GetRibbonHeight() const
     {
         HRESULT result = E_FAIL;
         IUIRibbon* pRibbon = NULL;
@@ -408,7 +408,7 @@ namespace Win32xx
 
         if (GetWinVersion() >= 2601)    // WinVersion >= Windows 7
         {
-            if (CreateRibbon(*this))
+            if (SUCCEEDED(CreateRibbon(*this)))
             {
                 UseReBar(FALSE);     // Don't use a ReBar
                 UseToolBar(FALSE);   // Don't use a ToolBar

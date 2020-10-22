@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -76,7 +76,7 @@ namespace Win32xx
         CImageList(const CImageList& rhs);
         CImageList& operator = (const CImageList& rhs);
         void operator = (const HIMAGELIST rhs);
-        ~CImageList();
+        virtual ~CImageList();
 
         //Initialization
         BOOL Create(int cx, int cy, UINT flags, int initial, int grow);
@@ -92,6 +92,7 @@ namespace Win32xx
         int Add(HBITMAP bitmap, HBITMAP mask) const;
         int Add(HBITMAP bitmap, COLORREF mask) const;
         int Add(HICON icon) const;
+        int AddIcon(int iconID) const;
         void Attach(HIMAGELIST images);
         BOOL BeginDrag(int image, CPoint hotSpot) const;
         BOOL Copy(int dst, int src, UINT flags /*= ILCF_MOVE*/) const;
@@ -220,6 +221,8 @@ namespace Win32xx
     inline int CImageList::Add(HBITMAP bitmap, HBITMAP mask) const
     {
         assert(m_pData);
+        if (!m_pData) return 0;
+
         assert (m_pData->images);
         return ImageList_Add(m_pData->images, bitmap, mask );
     }
@@ -229,25 +232,38 @@ namespace Win32xx
     inline int CImageList::Add(HBITMAP bitmap, COLORREF mask) const
     {
         assert(m_pData);
+        if (!m_pData) return 0;
+
         assert (m_pData->images);
         return ImageList_AddMasked(m_pData->images, bitmap, mask);
     }
 
-    // Adds an Icon to the image list
+    // Adds an icon specified by its handle to the image list.
     // Refer to ImageList_ReplaceIcon in the Windows API documentation for more information.
     inline int CImageList::Add(HICON icon) const
     {
         assert(m_pData);
+        if (!m_pData) return 0;
+
         assert (m_pData->images);
 
         // Append the icon to the image list
         return ImageList_ReplaceIcon(m_pData->images, -1, icon);
     }
 
+    // Adds an icon specified by its resource ID to the image list.
+    // Refer to ImageList_ReplaceIcon in the Windows API documentation for more information.
+    inline int CImageList::AddIcon(int iconID) const
+    {
+        HICON icon = GetApp()->LoadIcon(iconID);
+        return Add(icon);
+    }
+
     // Attaches an existing ImageList to this CImageList.
     inline void CImageList::Attach(HIMAGELIST images)
     {
         assert(m_pData);
+        if (!m_pData) return;
 
         if (images != m_pData->images)
         {
@@ -282,6 +298,8 @@ namespace Win32xx
     inline BOOL CImageList::BeginDrag(int image, CPoint hotSpot) const
     {
         assert(m_pData);
+        if (!m_pData) return FALSE;
+
         assert(m_pData->images);
         return ImageList_BeginDrag(m_pData->images, image, hotSpot.x, hotSpot.y);
     }
@@ -292,6 +310,8 @@ namespace Win32xx
     inline BOOL CImageList::Copy(int Dest, int Src, UINT flags /*= ILCF_MOVE*/) const
     {
         assert(m_pData);
+        if (!m_pData) return FALSE;
+
         assert(m_pData->images);
         return ImageList_Copy(*this, Dest, *this, Src, flags);
     }
@@ -364,6 +384,8 @@ namespace Win32xx
     inline BOOL CImageList::Create(HIMAGELIST images)
     {
         assert(m_pData);
+        if (!m_pData) return FALSE;
+
         HIMAGELIST copyImages = ImageList_Duplicate(images);
 
         if (copyImages)
@@ -379,6 +401,8 @@ namespace Win32xx
     inline void CImageList::DeleteImageList()
     {
         assert(m_pData);
+        if (!m_pData) return;
+
         if (m_pData->images != 0)
         {
             ImageList_Destroy(Detach());
@@ -386,9 +410,13 @@ namespace Win32xx
     }
 
     // Detaches the HIMAGELIST from all CImageList objects.
+    // Note: We rarely need to detach the HIMAGELIST from CImageList.
+    // The framework will delete the HIMAGELIST automatically if required.
     inline HIMAGELIST CImageList::Detach()
     {
         assert(m_pData);
+        if (!m_pData) return 0;
+
         HIMAGELIST images = m_pData->images;
         RemoveFromMap();
         m_pData->images = 0;
@@ -482,7 +510,7 @@ namespace Win32xx
         assert(m_pData->images);
         ImageList_EndDrag();
     }
-    
+
     // Creates an icon or cursor based on an image and mask in an image list.
     // Refer to ImageList_ExtractIcon in the Windows API documentation for more information.
     inline HICON CImageList::ExtractIcon(int index) const
@@ -613,6 +641,8 @@ namespace Win32xx
     inline BOOL CImageList::SetDragCursorImage(int drag, int dxHotspot, int dyHotspot) const
     {
         assert(m_pData->images);
+        if (!m_pData) return FALSE;
+
         return ImageList_SetDragCursorImage(*this, drag, dxHotspot, dyHotspot);
     }
 
@@ -625,6 +655,7 @@ namespace Win32xx
     inline void CImageList::Release()
     {
         assert(m_pData);
+        if (!m_pData) return;
 
         if (InterlockedDecrement(&m_pData->count) == 0)
         {

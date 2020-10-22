@@ -92,7 +92,7 @@
 
 // Summing up:
 // Ideally, calls to "new" should be wrapped in some sort of smart pointer
-// wherever possible. This eliminates the possibility of memory leaks, 
+// wherever possible. This eliminates the possibility of memory leaks,
 // particularly in the event of exceptions. It also eliminates the
 // need for delete in user's code.
 

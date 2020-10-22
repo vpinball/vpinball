@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -270,11 +270,12 @@ namespace Win32xx
         m_prevWindowProc = 0;
     }
 
-    // Creates the window with default parameters. PreRegisterClass can be
-    //  used to register a new window class for the window, otherwise a 
-    //  default window class is used. PreCreate can be used to specify the
-    //  CREATESTRUCT parameters, otherwise default parameters are used. 
-    //  A failure to create a window throws an exception.
+    // Creates the window with default parameters. The PreRegisterClass and PreCreate
+    // functions are called when the Create function is used. Override PreRegisterClass
+    // to register a new window class for the window, otherwise a default window class is used.
+    // Override PreCreate to specify the CREATESTRUCT parameters, otherwise default parameters
+    // are used. A failure to create a window throws an exception.
+    // A failure to create a window throws an exception.
     inline HWND CWnd::Create(HWND parent /* = 0 */)
     {
         // Test if Win32++ has been started
@@ -359,7 +360,7 @@ namespace Win32xx
     inline HWND CWnd::CreateEx(DWORD exStyle, LPCTSTR pClassName, LPCTSTR pWindowName, DWORD style, int x, int y, int width, int height, HWND hWParent, HMENU idOrMenu, LPVOID lparam /*= NULL*/)
     {
         assert( GetApp() );        // Test if Win32++ has been started
-        assert( !IsWindow() );      // Only one window per CWnd instance allowed
+        assert( !IsWindow() );     // Only one window per CWnd instance allowed
 
         // Ensure a window class is registered
         CString className;
@@ -439,7 +440,7 @@ namespace Win32xx
         Cleanup();
     }
 
-    // Reverse an Attach
+    // Reverse an Attach or AttachDlgItem.
     inline HWND CWnd::Detach()
     {
         assert(m_prevWindowProc);   // Only previously attached CWnds can be detached
@@ -467,11 +468,11 @@ namespace Win32xx
         // Any dialog or window using DDX/DDV for its controls should
         // override of this member, and put calls to the DDX and DDV functions
         // there.  For example:
-        
+
         // connect to edit box holding int and specify limits.
         // dx.DDX_Text(IDC_EDIT_UINT,       m_iUINT);
-        // dx.DDV_MinMaxUInt(               m_iUINT, 10, 10000);        
-          
+        // dx.DDV_MinMaxUInt(               m_iUINT, 10, 10000);
+
         // connect to edit box holding double and specify limits.
         // dx.DDX_Text(IDC_EDIT_DOUBLE,     m_double);
         // dx.DDV_MinMaxDouble(             m_double, -10.0, 100000.);
@@ -513,7 +514,7 @@ namespace Win32xx
     }
 
     // Retrieves the pointer to the CWnd associated with the specified HWND.
-    // Returns NULL if a CWnd object doesn't already exist for this HWND. 
+    // Returns NULL if a CWnd object doesn't already exist for this HWND.
     inline CWnd* CWnd::GetCWndPtr(HWND wnd)
     {
         assert( GetApp() );
@@ -594,9 +595,11 @@ namespace Win32xx
         return str;
     }
 
-    // Called in response to WM_CLOSE. Override to suppress destroying the window
+    // Called in response to WM_CLOSE, before the window is destroyed.
+    // Override this function to suppress destroying the window.
     // WM_CLOSE is sent by SendMessage(WM_SYSCOMMAND, SC_CLOSE, 0) or by clicking X
-    //  in the top right corner. Usually, only top level windows receive WM_CLOSE.
+    //  in the top right corner.
+    // Child windows don't receive WM_CLOSE unless they are closed using the Close function.
     inline void CWnd::OnClose()
     {
         Destroy();
@@ -954,21 +957,22 @@ namespace Win32xx
         assert( GetApp() );
         assert(IsWindow());
 
+        // Large icon sizes
         int cxIcon = ::GetSystemMetrics(SM_CXICON);
         int cyIcon = ::GetSystemMetrics(SM_CYICON);
 
 #ifndef _WIN32_WCE
-        HICON hIconLarge = reinterpret_cast<HICON>(GetApp()->LoadImage(iconID, IMAGE_ICON, cxIcon, cyIcon, LR_SHARED));
+        HICON icon = reinterpret_cast<HICON>(GetApp()->LoadImage(iconID, IMAGE_ICON, cxIcon, cyIcon, LR_SHARED));
 #else
-        HICON hIconLarge = reinterpret_cast<HICON>(GetApp()->LoadImage(iconID, IMAGE_ICON, cxIcon, cyIcon, 0));
+        HICON icon = reinterpret_cast<HICON>(GetApp()->LoadImage(iconID, IMAGE_ICON, cxIcon, cyIcon, 0));
 #endif
 
-        if (hIconLarge != 0)
-            SendMessage (WM_SETICON, WPARAM (ICON_BIG), LPARAM (hIconLarge));
+        if (icon != 0)
+            SendMessage (WM_SETICON, WPARAM (ICON_BIG), LPARAM (icon));
         else
             TRACE("**WARNING** SetIconLarge Failed\n");
 
-        return hIconLarge;
+        return icon;
     }
 
     // Sets the small icon associated with the window.
@@ -977,21 +981,22 @@ namespace Win32xx
         assert( GetApp() );
         assert(IsWindow());
 
-        int cxSmallIcon = ::GetSystemMetrics(SM_CXSMICON);
-        int cySmallIcon = ::GetSystemMetrics(SM_CYSMICON);
+        // Small icon sizes
+        int cxIcon = ::GetSystemMetrics(SM_CXSMICON);
+        int cyIcon = ::GetSystemMetrics(SM_CYSMICON);
 
 #ifndef _WIN32_WCE
-        HICON hIconSmall = reinterpret_cast<HICON>(GetApp()->LoadImage(iconID, IMAGE_ICON, cxSmallIcon, cySmallIcon, LR_SHARED));
+        HICON icon = reinterpret_cast<HICON>(GetApp()->LoadImage(iconID, IMAGE_ICON, cxIcon, cyIcon, LR_SHARED));
 #else
-        HICON hIconSmall = reinterpret_cast<HICON>(GetApp()->LoadImage(iconID, IMAGE_ICON, cxSmallIcon, cySmallIcon, 0));
+        HICON icon = reinterpret_cast<HICON>(GetApp()->LoadImage(iconID, IMAGE_ICON, cxIcon, cyIcon, 0));
 #endif
 
-        if (hIconSmall != 0)
-            SendMessage (WM_SETICON, WPARAM (ICON_SMALL), LPARAM (hIconSmall));
+        if (icon != 0)
+            SendMessage (WM_SETICON, WPARAM (ICON_SMALL), LPARAM (icon));
         else
             TRACE("**WARNING** SetIconSmall Failed\n");
 
-        return hIconSmall;
+        return icon;
     }
 
     // All CWnd windows direct their messages here. This function redirects the message
@@ -1009,14 +1014,20 @@ namespace Win32xx
             TLSData* pTLSData = GetApp()->GetTlsData();
             assert(pTLSData);
 
-            // Retrieve pointer to CWnd object from Thread Local Storage TLS
-            w = pTLSData->pWnd;
-            assert(w);              // pTLSData->pCWnd is assigned in CreateEx
-            pTLSData->pWnd = NULL;
+            if (pTLSData)
+            {
+                // Retrieve pointer to CWnd object from Thread Local Storage TLS
+                w = pTLSData->pWnd;
+                assert(w);              // pTLSData->pCWnd is assigned in CreateEx
+                if (w)
+                {
+                    pTLSData->pWnd = NULL;
 
-            // Store the CWnd pointer in the HWND map
-            w->m_wnd = wnd;
-            w->AddToMap();
+                    // Store the CWnd pointer in the HWND map
+                    w->m_wnd = wnd;
+                    w->AddToMap();
+                }
+            }
         }
 
         return w->WndProc(msg, wparam, lparam);
@@ -1288,6 +1299,16 @@ namespace Win32xx
         return (::MapWindowPoints(*this, NULL, (LPPOINT)&rect, 2) != 0);
     }
 
+    // The Close function issues a close requests to the window. The OnClose function is called
+    // in response to this function. The default implementation of OnClose destroys the window.
+    // Override OnClose to perform tasks in addition to or instead of destroying the window.
+    // Refer to the WM_CLOSE message in the Windows API documentation for more information.
+    inline void CWnd::Close() const
+    {
+        assert(IsWindow());
+        SendMessage(WM_CLOSE);
+    }
+
     // The DeferWindowPos function updates the specified multiple window position structure for the window.
     // The insertAfter can one of:  HWND_BOTTOM, HWND_NOTOPMOST, HWND_TOP, or HWND_TOPMOST.
     // Refer to DeferWindowPos in the Windows API documentation for more information.
@@ -1303,7 +1324,7 @@ namespace Win32xx
     inline HDWP CWnd::DeferWindowPos(HDWP winPosInfo, HWND insertAfter, const RECT& rect, UINT flags) const
     {
         assert(IsWindow());
-        return ::DeferWindowPos(winPosInfo, *this, insertAfter, rect.left, 
+        return ::DeferWindowPos(winPosInfo, *this, insertAfter, rect.left,
             rect.top, rect.right - rect.left, rect.bottom - rect.top, flags);
     }
 
@@ -1335,7 +1356,7 @@ namespace Win32xx
     }
 
     // The EndPaint function marks the end of painting in the specified window.
-    // This function is required for each call to the BeginPaint function, 
+    // This function is required for each call to the BeginPaint function,
     // but only after painting is complete.
     // Refer to EndPaint in the Windows API documentation for more information.
     inline BOOL CWnd::EndPaint(PAINTSTRUCT& ps) const
@@ -1387,7 +1408,7 @@ namespace Win32xx
     // for the client area of the window. Use like this:
     // CDC dc = GetDC;
     // Refer to GetDC in the Windows API documentation for more information.
-    inline CDC CWnd::GetDC() const
+    inline CClientDC CWnd::GetDC() const
     {
         assert(IsWindow());
         return CClientDC(*this);
@@ -1397,7 +1418,7 @@ namespace Win32xx
     // client area or entire area of a window. Use like this:
     // CDC dc = GetDCEx(clip, flags);
     // Refer to GetDCEx in the Windows API documentation for more information.
-    inline CDC CWnd::GetDCEx(HRGN clip, DWORD flags) const
+    inline CClientDCEx CWnd::GetDCEx(HRGN clip, DWORD flags) const
     {
         assert(IsWindow());
         return CClientDCEx(*this, clip, flags);
@@ -1553,7 +1574,7 @@ namespace Win32xx
     // including title bar, menus, and scroll bars. Use like this:
     // CDC dc = GetWindowDC();
     // Refer to GetWindowDC in the Windows API documentation for more information.
-    inline CDC CWnd::GetWindowDC() const
+    inline CWindowDC CWnd::GetWindowDC() const
     {
         assert(IsWindow());
         return CWindowDC(*this);
@@ -1650,9 +1671,9 @@ namespace Win32xx
     // The IsDlgButtonChecked function determines whether a button control has a check mark next to it
     // or whether a three-state button control is grayed, checked, or neither.
     //
-    // The return value from a button created with the BS_AUTOCHECKBOX, BS_AUTORADIOBUTTON, BS_AUTO3STATE, 
+    // The return value from a button created with the BS_AUTOCHECKBOX, BS_AUTORADIOBUTTON, BS_AUTO3STATE,
     // BS_CHECKBOX, BS_RADIOBUTTON, or BS_3STATE style can be one of the following:
-    // BST_CHECKED Button is checked. 
+    // BST_CHECKED Button is checked.
     // BST_INDETERMINATE Button is grayed, indicating an indeterminate state (applies only if the button
     //      has the BS_3STATE or BS_AUTO3STATE style).
     // BST_UNCHECKED Button is cleared.
@@ -1721,10 +1742,10 @@ namespace Win32xx
     // Possible combinations of type values include: MB_OK, MB_HELP, MB_OKCANCEL, MB_RETRYCANCEL,
     // MB_YESNO, MB_YESNOCANCEL, MB_ICONEXCLAMATION, MB_ICONWARNING, MB_ICONERROR (+ many others).
     // Refer to MessageBox in the Windows API documentation for more information.
-    inline int CWnd::MessageBox(LPCTSTR pText, LPCTSTR pCaption, UINT type) const
+    inline int CWnd::MessageBox(LPCTSTR text, LPCTSTR caption, UINT type) const
     {
         assert(IsWindow());
-        return ::MessageBox(*this, pText, pCaption, type);
+        return ::MessageBox(*this, text, caption, type);
     }
 
     // The MoveWindow function changes the position and dimensions of the window.
@@ -1905,10 +1926,10 @@ namespace Win32xx
 
     // The SetDlgItemText function sets the title or text of a control in a dialog box.
     // Refer to SetDlgItemText in the Windows API documentation for more information.
-    inline BOOL CWnd::SetDlgItemText(int dlgItemID, LPCTSTR pString) const
+    inline BOOL CWnd::SetDlgItemText(int dlgItemID, LPCTSTR string) const
     {
         assert(IsWindow());
-        return ::SetDlgItemText(*this, dlgItemID, pString);
+        return ::SetDlgItemText(*this, dlgItemID, string);
     }
 
     // Assigns a new windows extended style to the window.
@@ -2021,23 +2042,23 @@ namespace Win32xx
     // The window region determines the area within the window where the system permits drawing.
     // The window now owns the region so it is detached from Rgn.
     // Refer to SetWindowRgn in the Windows API documentation for more information.
-    inline int CWnd::SetWindowRgn(CRgn& rgn, BOOL redraw /*= TRUE*/) const
+    inline int CWnd::SetWindowRgn(HRGN rgn, BOOL redraw /*= TRUE*/) const
     {
         assert(IsWindow());
-        HRGN rgnHandle = reinterpret_cast<HRGN>(rgn.GetHandle());
-        int iResult = ::SetWindowRgn(*this, rgnHandle, redraw);
-        if (iResult && rgnHandle)
-            rgn.Detach();   // The system owns the region now
+        int iResult = ::SetWindowRgn(*this, rgn, redraw);
+        CRgn region(rgn);
+        if (iResult)
+            region.Detach();   // The system owns the region now
 
         return iResult;
     }
 
     // The SetWindowText function changes the text of the window's title bar (if it has one).
     // Refer to SetWindowText in the Windows API documentation for more information.
-    inline BOOL CWnd::SetWindowText(LPCTSTR pString) const
+    inline BOOL CWnd::SetWindowText(LPCTSTR string) const
     {
         assert(IsWindow());
-        return ::SetWindowText(*this, pString);
+        return ::SetWindowText(*this, string);
     }
 
     // Set the XP Theme for a window.
@@ -2113,7 +2134,7 @@ namespace Win32xx
 
     // Retrieves the window that contains the specified point (in screen coordinates).
     // Refer to WindowFromPoint in the Windows API documentation for more information.
-    inline CWnd CWnd::WindowFromPoint(POINT point)
+    inline CWnd CWnd::WindowFromPoint(POINT point) const
     {
         return CWnd(::WindowFromPoint(point));
     }
@@ -2136,38 +2157,38 @@ namespace Win32xx
     // The DlgDirList function replaces the contents of a list box with the names of the subdirectories and files
     // in a specified directory. You can filter the list of names by specifying a set of file attributes.
     // Refer to DlgDirList in the Windows API documentation for more information.
-    inline int CWnd::DlgDirList(LPTSTR pPathSpec, int listBoxID, int staticPathID, UINT fileType) const
+    inline int CWnd::DlgDirList(LPTSTR pathSpec, int listBoxID, int staticPathID, UINT fileType) const
     {
         assert(IsWindow());
-        return ::DlgDirList(*this, pPathSpec, listBoxID, staticPathID, fileType);
+        return ::DlgDirList(*this, pathSpec, listBoxID, staticPathID, fileType);
     }
 
     // The DlgDirListComboBox function replaces the contents of a combo box with the names of the subdirectories
     // and files in a specified directory. You can filter the list of names by specifying a set of file attributes.
     // in a specified directory. You can filter the list of names by specifying a set of file attributes.
     // Refer to DlgDirListComboBox in the Windows API documentation for more information.
-    inline int CWnd::DlgDirListComboBox(LPTSTR pPathSpec, int comboBoxID, int staticPathID, UINT fileType) const
+    inline int CWnd::DlgDirListComboBox(LPTSTR pathSpec, int comboBoxID, int staticPathID, UINT fileType) const
     {
         assert(IsWindow());
-        return ::DlgDirListComboBox(*this, pPathSpec, comboBoxID, staticPathID, fileType);
+        return ::DlgDirListComboBox(*this, pathSpec, comboBoxID, staticPathID, fileType);
     }
 
     // The DlgDirSelectEx function retrieves the current selection from a single-selection list box. It assumes that the list box
     // has been filled by the DlgDirList function and that the selection is a drive letter, filename, or directory name.
     // Refer to DlgDirSelectEx in the Windows API documentation for more information.
-    inline BOOL CWnd::DlgDirSelectEx(LPTSTR pString, int count, int listBoxID) const
+    inline BOOL CWnd::DlgDirSelectEx(LPTSTR string, int count, int listBoxID) const
     {
         assert(IsWindow());
-        return ::DlgDirSelectEx(*this, pString, count, listBoxID);
+        return ::DlgDirSelectEx(*this, string, count, listBoxID);
     }
 
     // The DlgDirSelectComboBoxEx function retrieves the current selection from a combo box filled by using the
     // DlgDirListComboBox function. The selection is interpreted as a drive letter, a file, or a directory name.
     // Refer to DlgDirSelectComboBoxEx in the Windows API documentation for more information.
-    inline BOOL CWnd::DlgDirSelectComboBoxEx(LPTSTR pString, int count, int comboBoxID) const
+    inline BOOL CWnd::DlgDirSelectComboBoxEx(LPTSTR string, int count, int comboBoxID) const
     {
         assert(IsWindow());
-        return ::DlgDirSelectComboBoxEx(*this, pString, count, comboBoxID);
+        return ::DlgDirSelectComboBoxEx(*this, string, count, comboBoxID);
     }
 
     #ifndef WIN32_LEAN_AND_MEAN
@@ -2479,7 +2500,6 @@ namespace Win32xx
         }
     }
 
-
     // Formats the string as sprintf does.
     template <class T>
     inline void CStringT<T>::Format(UINT id, ...)
@@ -2493,7 +2513,6 @@ namespace Win32xx
             va_end(args);
         }
     }
-
 
     // Loads the string from a Windows resource.
     template <>
@@ -2524,7 +2543,6 @@ namespace Win32xx
         return (chars != 0);
     }
 
-
     // Loads the string from a Windows resource.
     // Refer to LoadString in the Windows API documentation for more information.
     template <>
@@ -2540,7 +2558,8 @@ namespace Win32xx
         Empty();
 
         // Increase the size of our array in a loop until we load the entire string
-        // The ANSI and _UNICODE versions of LoadString behave differently. This technique works for both.
+        // The ANSI and _UNICODE versions of LoadString behave differently.
+        // This technique works for both.
         while (startSize -1 <= chars )
         {
             startSize = startSize * 4;
@@ -2637,9 +2656,9 @@ namespace Win32xx
         while (index < CommandLine.GetLength())
         {
             // Is the argument quoted?
-            bool IsQuoted = (CommandLine[index] == _T('\"'));
+            bool isQuoted = (CommandLine[index] == _T('\"'));
 
-            if (IsQuoted)
+            if (isQuoted)
             {
                 // Find the terminating token (quote followed by space)
                 endPos = CommandLine.Find(_T("\" "), index);
@@ -2744,6 +2763,7 @@ namespace Win32xx
     //  2601     Windows 7 and Windows Server 2008 r2
     //  2602     Windows 8 and Windows Server 2012
     //  2603     Windows 8.1 and Windows Server 2012 r2
+    //  3000     Windows 10
     // Note: For windows 8.1 and above, the value returned is also affected by the embedded manifest
     //       Applications not manifested for Windows 8.1 or Windows 10 will return the Windows 8 OS (2602).
     inline int GetWinVersion()
@@ -2751,7 +2771,7 @@ namespace Win32xx
 #if defined (_MSC_VER) && (_MSC_VER >= 1400)
   #pragma warning ( push )
   #pragma warning ( disable : 4996 )        // GetVersion declared deprecated.
-  #pragma warning ( disable : 28159 )       // Deprecated function. Consider using IsWindows instead. 
+  #pragma warning ( disable : 28159 )       // Deprecated function. Consider using IsWindows instead.
 #endif // (_MSC_VER) && (_MSC_VER >= 1400)
 
         DWORD version = GetVersion();
@@ -2767,7 +2787,6 @@ namespace Win32xx
         int result = 1000 * platform + 100 * majorVer + minorVer;
         return result;
     }
-
 
     // Returns a NONCLIENTMETRICS struct filled from the system parameters.
     // Refer to NONCLIENTMETRICS in the Windows API documentation for more information.
@@ -2788,13 +2807,12 @@ namespace Win32xx
         return ncm;
     }
 
-
     // Reports the state of the left mouse button
     // Refer to GetAsyncKeyState in the Windows API documentation for more information.
     inline BOOL IsLeftButtonDown()
     {
         SHORT state;
-        if (GetSystemMetrics(SM_SWAPBUTTON))
+        if (::GetSystemMetrics(SM_SWAPBUTTON))
             // Mouse buttons are swapped
             state = ::GetAsyncKeyState(VK_RBUTTON);
         else
@@ -2855,7 +2873,6 @@ namespace Win32xx
         }
     }
 
-
     // Returns a CString containing the specified string resource.
     // Refer to LoadString in the Windows API documentation for more information.
     inline CString LoadString(UINT id)
@@ -2866,7 +2883,6 @@ namespace Win32xx
     }
 
 }
-
 
 
 #endif // _WIN32XX_WINCORE_H_

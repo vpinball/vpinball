@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -56,10 +56,7 @@
 namespace Win32xx
 {
 
-    ////////////////////////////////////
-    // Declaration of the CMenuBar class
-    //
-
+    /////////////////////////////////////////////////////////////
     // The CMenuBar class provides a menu inside a rebar control.
     // CMenuBar inherits from CToolBar.
     class CMenuBar : public CToolBar
@@ -194,8 +191,8 @@ namespace Win32xx
 
         if (IsMDIChildMaxed())
         {
-            int cx = GetSystemMetrics(SM_CXSMICON);
-            int cy = GetSystemMetrics(SM_CYSMICON);
+            int cx = ::GetSystemMetrics(SM_CXSMICON);
+            int cy = ::GetSystemMetrics(SM_CYSMICON);
             CRect rc = GetClientRect();
             int gap = 4;
             rc.right -= gap;
@@ -356,18 +353,18 @@ namespace Win32xx
         return pMDIChild;
     }
 
-    // Retrieves a pointer to the MDIClient. Returns NULL if there 
-	// is no MDIClient.
+    // Retrieves a pointer to the MDIClient. Returns NULL if there
+    // is no MDIClient.
     inline CWnd* CMenuBar::GetMDIClient() const
     {
         CWnd* pMDIClient = NULL;
 
-		// We use GetAncestor to send our message to the frame.
+        // We use GetAncestor to send our message to the frame.
         HWND wnd = reinterpret_cast<HWND>(GetAncestor().SendMessage(UWM_GETFRAMEVIEW, 0, 0));
         CWnd* pWnd = GetCWndPtr(wnd);
-        
-		// Only MDI frames have a MDIClient
-		if (pWnd && pWnd->GetClassName() == _T("MDIClient"))
+
+        // Only MDI frames have a MDIClient
+        if (pWnd && pWnd->GetClassName() == _T("MDIClient"))
             pMDIClient = pWnd;
 
         return pMDIClient;
@@ -418,7 +415,7 @@ namespace Win32xx
     // Forwards owner drawing to the frame.
     inline LRESULT CMenuBar::OnDrawItem(UINT, WPARAM wparam, LPARAM lparam)
     {
-		GetAncestor().SendMessage(WM_DRAWITEM, wparam, lparam);
+        GetAncestor().SendMessage(WM_DRAWITEM, wparam, lparam);
         return TRUE; // handled
     }
 
@@ -427,7 +424,7 @@ namespace Win32xx
     {
         if (m_isExitAfter)
             ExitMenu();
-		GetAncestor().SendMessage(WM_EXITMENULOOP, wparam, lparam);
+        GetAncestor().SendMessage(WM_EXITMENULOOP, wparam, lparam);
 
         return 0;
     }
@@ -435,7 +432,7 @@ namespace Win32xx
     // Called when a popup menu is created.
     inline LRESULT CMenuBar::OnInitMenuPopup(UINT, WPARAM wparam, LPARAM lparam)
     {
-		GetAncestor().SendMessage(WM_INITMENUPOPUP, wparam, lparam);
+        GetAncestor().SendMessage(WM_INITMENUPOPUP, wparam, lparam);
         return 0;
     }
 
@@ -563,7 +560,7 @@ namespace Win32xx
             CWnd* pMDIChild = GetActiveMDIChild();
             assert(pMDIClient);
 
-            if (pMDIChild && IsMDIChildMaxed())
+            if (pMDIChild && pMDIClient && IsMDIChildMaxed())
             {
                 CPoint pt = GetCursorPos();
                 ScreenToClient(pt);
@@ -597,7 +594,7 @@ namespace Win32xx
     // Forwards the owner draw processing to the frame.
     inline LRESULT CMenuBar::OnMeasureItem(UINT msg, WPARAM wparam, LPARAM lparam)
     {
-		GetAncestor().SendMessage(msg, wparam, lparam);
+        GetAncestor().SendMessage(msg, wparam, lparam);
         return TRUE; // handled
     }
 
@@ -688,11 +685,14 @@ namespace Win32xx
             {
                 CWnd* pMDIChild = GetActiveMDIChild();
                 assert(pMDIChild);
-                CMenu childMenu = pMDIChild->GetSystemMenu(FALSE);
+                if (pMDIChild)
+                {
+                    CMenu childMenu = pMDIChild->GetSystemMenu(FALSE);
 
-                UINT id = childMenu.GetDefaultItem(FALSE, 0);
-                if (id)
-                    pMDIChild->PostMessage(WM_SYSCOMMAND, (WPARAM)id, 0);
+                    UINT id = childMenu.GetDefaultItem(FALSE, 0);
+                    if (id)
+                        pMDIChild->PostMessage(WM_SYSCOMMAND, (WPARAM)id, 0);
+                }
             }
 
             m_isExitAfter = TRUE;
@@ -872,13 +872,13 @@ namespace Win32xx
         pTLSData->msgHook = ::SetWindowsHookEx(WH_MSGFILTER, (HOOKPROC)StaticMsgHook, NULL, ::GetCurrentThreadId());
 
         // Display the shortcut menu
-        BOOL IsRightToLeft = FALSE;
+        BOOL isRightToLeft = FALSE;
 
 #if (WINVER >= 0x0500)
-        IsRightToLeft = ((GetAncestor().GetExStyle()) & WS_EX_LAYOUTRTL);
+        isRightToLeft = ((GetAncestor().GetExStyle()) & WS_EX_LAYOUTRTL);
 #endif
 
-        int xPos = IsRightToLeft? rc.right : rc.left;
+        int xPos = isRightToLeft? rc.right : rc.left;
         UINT id = ::TrackPopupMenuEx(m_popupMenu, TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL,
             xPos, rc.bottom, *this, &tpm);
 
@@ -1103,6 +1103,8 @@ namespace Win32xx
         MSG* pMsg = reinterpret_cast<MSG*>(lparam);
         TLSData* pTLSData = GetApp()->GetTlsData();
         assert(pTLSData);
+        if (!pTLSData) return 0;
+
         CMenuBar* pMenuBar = pTLSData->pMenuBar;
 
         if (pMenuBar && (MSGF_MENU == code))

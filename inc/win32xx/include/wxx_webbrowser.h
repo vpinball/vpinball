@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -52,100 +52,108 @@
   #pragma warning ( pop )
 #endif // _MSC_VER
 
+#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+#pragma warning ( push )
+#pragma warning ( disable : 26812 )       // enum type is unscoped.
+#endif // (_MSC_VER) && (_MSC_VER >= 1400)
+
 
 namespace Win32xx
 {
-    ///////////////////////////////////////////////////
-    // Declaration of the CAXWindow class
-    // This class implements an ActiveX control container.
-    class CAXWindow : public IOleClientSite, public IOleInPlaceSite, public IOleInPlaceFrame,
-                            public IOleControlSite, public IDispatch
+    ////////////////////////////////////////////////////////////////////////
+    // This class implements a COM container which hosts an ActiveX control,
+    // such as internet explorer.
+    class CAXHost : public IOleInPlaceFrame, public IOleClientSite,
+                    public IOleInPlaceSite, public IOleControlSite,
+                    public IDispatch
     {
     public:
-        CAXWindow();
-        virtual ~CAXWindow();
-        virtual void Activate(BOOL focus);
-        virtual void CreateControl(BSTR clsidName);
-        virtual void CreateControl(REFCLSID clsid);
-        virtual void Remove();
-        virtual void SetParent(HWND hWndParent);
-        virtual void SetLocation(int x, int y, int width, int height);
-        virtual void SetVisible(BOOL isVisible);
-        virtual void SetStatusWindow(HWND status);
-        virtual void TranslateKey(MSG msg);
-        IDispatch* GetDispatch();
-        IUnknown* GetUnknown();
+        CAXHost();
+        virtual ~CAXHost();
 
-        // IUnknown Methods
-        STDMETHODIMP QueryInterface(REFIID riid, void** ppObject);
-        STDMETHODIMP_(ULONG) AddRef();
-        STDMETHODIMP_(ULONG) Release();
-
-        // IOleClientSite Methods
-        STDMETHODIMP SaveObject();
-        STDMETHODIMP GetMoniker(DWORD assign, DWORD whichMoniker, LPMONIKER* ppMk);
-        STDMETHODIMP GetContainer(LPOLECONTAINER* ppContainer);
-        STDMETHODIMP ShowObject();
-        STDMETHODIMP OnShowWindow(BOOL show);
-        STDMETHODIMP RequestNewObjectLayout();
-
-        // IOleWindow Methods
-        STDMETHODIMP GetWindow(HWND* pHwnd);
-        STDMETHODIMP ContextSensitiveHelp(BOOL enterMode);
-
-        // IOleInPlaceSite Methods
-        STDMETHODIMP CanInPlaceActivate();
-        STDMETHODIMP OnInPlaceActivate();
-        STDMETHODIMP OnUIActivate();
-        STDMETHODIMP GetWindowContext(IOleInPlaceFrame** ppFrame, IOleInPlaceUIWindow** ppDoc, LPRECT pRect, LPRECT pClipRect, LPOLEINPLACEFRAMEINFO pFrameInfo);
-        STDMETHODIMP Scroll(SIZE scrollExtent);
-        STDMETHODIMP OnUIDeactivate(BOOL undoable);
-        STDMETHODIMP OnInPlaceDeactivate();
-        STDMETHODIMP DiscardUndoState();
-        STDMETHODIMP DeactivateAndUndo();
-        STDMETHODIMP OnPosRectChange(LPCRECT pRect);
-
-        // IOleInPlaceUIWindow Methods
-        STDMETHODIMP GetBorder(LPRECT pBorderRect);
-        STDMETHODIMP RequestBorderSpace(LPCBORDERWIDTHS pBorderWidths);
-        STDMETHODIMP SetBorderSpace(LPCBORDERWIDTHS pBorderWidths);
-        STDMETHODIMP SetActiveObject(IOleInPlaceActiveObject* pActiveObject, LPCOLESTR pObjName);
-
-        // IOleInPlaceFrame Methods
-        STDMETHODIMP InsertMenus(HMENU shared, LPOLEMENUGROUPWIDTHS pMenuWidths);
-        STDMETHODIMP SetMenu(HMENU shared, HOLEMENU holemenu, HWND activeObject);
-        STDMETHODIMP RemoveMenus(HMENU shared);
-        STDMETHODIMP SetStatusText(LPCOLESTR pStatusText);
-        STDMETHODIMP EnableModeless(BOOL enable);
-        STDMETHODIMP TranslateAccelerator(LPMSG pMsg, WORD id);
-
-        // IOleControlSite Methods
-        STDMETHODIMP OnControlInfoChanged();
-        STDMETHODIMP LockInPlaceActive(BOOL lock);
-        STDMETHODIMP GetExtendedControl(IDispatch** ppDisp);
-        STDMETHODIMP TransformCoords(POINTL* pHimetric, POINTF* pContainer, DWORD flags);
-        STDMETHODIMP TranslateAccelerator(LPMSG pMsg, DWORD modifiers);
-        STDMETHODIMP OnFocus(BOOL gotFocus);
-        STDMETHODIMP ShowPropertyFrame();
+        // CAXHost methods
+        virtual STDMETHODIMP Activate();
+        virtual STDMETHODIMP CreateControl(BSTR clsidName, void** ppUnk);
+        virtual STDMETHODIMP CreateControl(REFCLSID clsid, void** ppUnk);
+        virtual STDMETHODIMP Remove();
+        virtual STDMETHODIMP SetParent(HWND hWndParent);
+        virtual STDMETHODIMP SetLocation(int x, int y, int width, int height);
+        virtual STDMETHODIMP SetVisible(BOOL isVisible);
 
         // IDispatch Methods
-        STDMETHODIMP GetIDsOfNames(REFIID riid, OLECHAR** pNames, unsigned int namesCount, LCID lcid, DISPID* pID);
-        STDMETHODIMP GetTypeInfo(unsigned int itinfo, LCID lcid, ITypeInfo** pptinfo);
-        STDMETHODIMP GetTypeInfoCount(unsigned int* pctinfo);
-        STDMETHODIMP Invoke(DISPID dispID, REFIID riid, LCID lcid, WORD flags, DISPPARAMS* pParams, VARIANT* result, EXCEPINFO* pExecInfo, unsigned int* pArgErr);
+        virtual STDMETHODIMP GetIDsOfNames(REFIID riid, OLECHAR** pNames,
+                                unsigned int namesCount, LCID lcid, DISPID* pID);
+        virtual STDMETHODIMP GetTypeInfo(unsigned int itinfo, LCID lcid, ITypeInfo** pptinfo);
+        virtual STDMETHODIMP GetTypeInfoCount(unsigned int* pctinfo);
+        virtual STDMETHODIMP Invoke(DISPID dispID, REFIID riid, LCID lcid, WORD flags,
+                                    DISPPARAMS* pParams, VARIANT* result, EXCEPINFO* pExecInfo,
+                                    unsigned int* pArgErr);
+
+        // IOleClientSite Methods
+        virtual STDMETHODIMP GetContainer(LPOLECONTAINER* ppContainer);
+        virtual STDMETHODIMP GetMoniker(DWORD assign, DWORD whichMoniker, LPMONIKER* ppMk);
+        virtual STDMETHODIMP OnShowWindow(BOOL show);
+        virtual STDMETHODIMP RequestNewObjectLayout();
+        virtual STDMETHODIMP SaveObject();
+        virtual STDMETHODIMP ShowObject();
+
+        // IOleControlSite Methods
+        virtual STDMETHODIMP GetExtendedControl(IDispatch** ppDisp);
+        virtual STDMETHODIMP LockInPlaceActive(BOOL lock);
+        virtual STDMETHODIMP OnControlInfoChanged();
+        virtual STDMETHODIMP OnFocus(BOOL gotFocus);
+        virtual STDMETHODIMP ShowPropertyFrame();
+        virtual STDMETHODIMP TransformCoords(POINTL* pHimetric, POINTF* pContainer, DWORD flags);
+        virtual STDMETHODIMP TranslateAccelerator(LPMSG pMsg, DWORD modifiers);
+
+        // IOleInPlaceFrame Methods
+        virtual STDMETHODIMP EnableModeless(BOOL enable);
+        virtual STDMETHODIMP InsertMenus(HMENU shared, LPOLEMENUGROUPWIDTHS pMenuWidths);
+        virtual STDMETHODIMP RemoveMenus(HMENU shared);
+        virtual STDMETHODIMP SetMenu(HMENU shared, HOLEMENU holemenu, HWND activeObject);
+        virtual STDMETHODIMP SetStatusText(LPCOLESTR pStatusText);
+        virtual STDMETHODIMP TranslateAccelerator(LPMSG pMsg, WORD id);
+
+        // IOleInPlaceSite Methods
+        virtual STDMETHODIMP CanInPlaceActivate();
+        virtual STDMETHODIMP DeactivateAndUndo();
+        virtual STDMETHODIMP DiscardUndoState();
+        virtual STDMETHODIMP GetWindowContext(IOleInPlaceFrame** ppFrame,
+                                  IOleInPlaceUIWindow** ppDoc, LPRECT pRect,
+                                  LPRECT pClipRect, LPOLEINPLACEFRAMEINFO pFrameInfo);
+        virtual STDMETHODIMP OnInPlaceActivate();
+        virtual STDMETHODIMP OnInPlaceDeactivate();
+        virtual STDMETHODIMP OnPosRectChange(LPCRECT pRect);
+        virtual STDMETHODIMP OnUIActivate();
+        virtual STDMETHODIMP OnUIDeactivate(BOOL undoable);
+        virtual STDMETHODIMP Scroll(SIZE scrollExtent);
+
+        // IOleInPlaceUIWindow Methods
+        virtual STDMETHODIMP GetBorder(LPRECT pBorderRect);
+        virtual STDMETHODIMP RequestBorderSpace(LPCBORDERWIDTHS pBorderWidths);
+        virtual STDMETHODIMP SetBorderSpace(LPCBORDERWIDTHS pBorderWidths);
+        virtual STDMETHODIMP SetActiveObject(IOleInPlaceActiveObject* pActiveObject,
+                                             LPCOLESTR pObjName);
+
+        // IOleWindow Methods
+        virtual STDMETHODIMP ContextSensitiveHelp(BOOL enterMode);
+        virtual STDMETHODIMP GetWindow(HWND* pHwnd);
+
+        // IUnknown Methods
+        virtual STDMETHODIMP_(ULONG) AddRef();
+        virtual STDMETHODIMP QueryInterface(REFIID riid, void** ppObject);
+        virtual STDMETHODIMP_(ULONG) Release();
 
     private:
-         ULONG       m_count;       // ref count
-         HWND        m_ax;          // window handle of the container
-         HWND        m_status;      // status window handle
+         HWND        m_hwnd;        // window handle of the container
          IUnknown*   m_pUnk;        // IUnknown of contained object
          CRect       m_controlRect; // size of control
     };
 
 
-    ///////////////////////////////////////////////
-    // Declaration of the CWebBrowser class
-    // This class provides the functionality of a WebBrower, using the IWebBrower2 interface.
+    ////////////////////////////////////////////////////////
+    // This class provides the functionality of a WebBrower,
+    // using the IWebBrower2 interface.
     class CWebBrowser : public CWnd
     {
     public:
@@ -153,58 +161,59 @@ namespace Win32xx
         virtual ~CWebBrowser();
 
         //Attributes
+        virtual CAXHost* GetAXHost() { return &m_axHost; }
+
         LPDISPATCH GetApplication() const;
-        CAXWindow& GetAXWindow() const { return m_axContainer; }
-        BOOL GetBusy() const;
+        BOOL    GetBusy() const;
         LPDISPATCH GetContainer() const;
         LPDISPATCH GetDocument() const;
-        BOOL GetFullScreen() const;
-        long GetHeight() const;
+        BOOL    GetFullScreen() const;
+        long    GetHeight() const;
         IWebBrowser2* GetIWebBrowser2() const { return m_pIWebBrowser2; }
-        long GetLeft() const;
+        long    GetLeft() const;
         CString GetLocationName() const;
         CString GetLocationURL() const;
-        BOOL GetOffline() const;
+        BOOL    GetOffline() const;
         LPDISPATCH GetParent() const;
+        VARIANT GetProperty(LPCTSTR pProperty) const;
         READYSTATE GetReadyState() const;
-        BOOL GetRegisterAsBrowser() const;
-        BOOL GetTheaterMode() const;
-        long GetTop() const;
-        BOOL GetTopLevelContainer() const;
+        BOOL    GetRegisterAsBrowser() const;
+        BOOL    GetTheaterMode() const;
+        long    GetTop() const;
+        BOOL    GetTopLevelContainer() const;
         CString GetType() const;
-        BOOL GetVisible() const;
-        long GetWidth() const;
-        void SetFullScreen(BOOL isFullScreen);
-        void SetHeight(long height);
-        void SetLeft(long leftEdge);
-        void SetOffline(BOOL isOffline);
-        void SetRegisterAsBrowser(BOOL isBrowser);
-        void SetTheaterMode(BOOL isTheaterMode);
-        void SetTop(long topEdge);
-        void SetVisible(BOOL isVisible);
-        void SetWidth(long width);
+        BOOL    GetVisible() const;
+        long    GetWidth() const;
+        HRESULT SetFullScreen(BOOL isFullScreen);
+        HRESULT SetHeight(long height);
+        HRESULT SetLeft(long leftEdge);
+        HRESULT SetOffline(BOOL isOffline);
+        HRESULT SetRegisterAsBrowser(BOOL isBrowser);
+        HRESULT SetTheaterMode(BOOL isTheaterMode);
+        HRESULT SetTop(long topEdge);
+        HRESULT SetVisible(BOOL isVisible);
+        HRESULT SetWidth(long width);
 
         // Operations
-        void AddWebBrowserControl();
-        void ExecWB(OLECMDID cmdID, OLECMDEXECOPT cmdExecOpt, VARIANT* pIn, VARIANT* pOut);
-        VARIANT GetProperty( LPCTSTR pProperty);
-        void GoBack();
-        void GoForward();
-        void GoHome();
-        void GoSearch();
-        void Navigate(LPCTSTR pURL, DWORD flags = 0, LPCTSTR pTargetFrameName = NULL,
+        HRESULT AddWebBrowserControl();
+        HRESULT ExecWB(OLECMDID cmdID, OLECMDEXECOPT cmdExecOpt, VARIANT* pIn, VARIANT* pOut);
+        HRESULT GoBack();
+        HRESULT GoForward();
+        HRESULT GoHome();
+        HRESULT GoSearch();
+        HRESULT Navigate(LPCTSTR pURL, DWORD flags = 0, LPCTSTR pTargetFrameName = NULL,
                         LPCTSTR pHeaders = NULL, LPVOID pPostData = NULL, DWORD postDataLen = 0);
-        void Navigate2(LPITEMIDLIST pIDL, DWORD flags = 0, LPCTSTR pTargetFrameName = NULL);
-        void Navigate2(LPCTSTR pURL, DWORD flags = 0, LPCTSTR pTargetFrameName = NULL,
+        HRESULT Navigate2(LPITEMIDLIST pIDL, DWORD flags = 0, LPCTSTR pTargetFrameName = NULL);
+        HRESULT Navigate2(LPCTSTR pURL, DWORD flags = 0, LPCTSTR pTargetFrameName = NULL,
                          LPCTSTR pHeaders = NULL, LPVOID pPostData = NULL, DWORD postDataLen = 0);
-        void PutProperty(LPCTSTR pPropertyName, const VARIANT& value);
-        void PutProperty(LPCTSTR pPropertyName, double value);
-        void PutProperty(LPCTSTR pPropertyName, long value);
-        void PutProperty(LPCTSTR pPropertyName, LPCTSTR pValue);
-        void PutProperty(LPCTSTR pPropertyName, short value);
-        void Refresh();
-        void Refresh2(int evel);
-        void Stop();
+        HRESULT PutProperty(LPCTSTR pPropertyName, const VARIANT& value);
+        HRESULT PutProperty(LPCTSTR pPropertyName, double value);
+        HRESULT PutProperty(LPCTSTR pPropertyName, long value);
+        HRESULT PutProperty(LPCTSTR pPropertyName, LPCTSTR pValue);
+        HRESULT PutProperty(LPCTSTR pPropertyName, short value);
+        HRESULT Refresh();
+        HRESULT Refresh2(int evel);
+        HRESULT Stop();
 
     protected:
         // Override these as required
@@ -218,7 +227,7 @@ namespace Win32xx
 
     private:
         UINT    GetPidlLength(LPITEMIDLIST pidl);
-        mutable CAXWindow  m_axContainer;    // The ActiveX Container
+        CAXHost  m_axHost;              // The ActiveX host
         IWebBrowser2* m_pIWebBrowser2;  // Interface to the ActiveX web browser control
     };
 
@@ -230,127 +239,143 @@ namespace Win32xx
 {
 
     /////////////////////////////////////////
-    // Definitions for the CAXWindow class
+    // Definitions for the CAXHost class
     //
 
-    inline CAXWindow::CAXWindow() : m_count(1), m_ax(NULL), m_status(0), m_pUnk(NULL)
+    inline CAXHost::CAXHost() : m_hwnd(NULL), m_pUnk(NULL)
     {
+        HRESULT hr;
+        VERIFY(SUCCEEDED(hr = OleInitialize(NULL)));
     }
 
-    inline CAXWindow::~CAXWindow()
+    inline CAXHost::~CAXHost()
     {
         if (m_pUnk)
             m_pUnk->Release();
 
-        Release();
+        OleUninitialize();
     }
 
-    inline void CAXWindow::CreateControl(BSTR clsidName)
+    // Activates the hosted control, along with any of its UI tools.
+    inline STDMETHODIMP CAXHost::Activate()
     {
-        CLSID   clsid;
-        if (NOERROR == CLSIDFromString(clsidName, &clsid))
-            CreateControl(clsid);
-    }
-
-    inline void CAXWindow::Activate(BOOL focus)
-    {
-        if (!m_pUnk)
-            return;
-
-        if (focus)
+        HRESULT hr = E_FAIL;
+        if (m_pUnk)
         {
             IOleObject* pObject;
-            HRESULT result = m_pUnk->QueryInterface(IID_IOleObject, reinterpret_cast<void**>(&pObject));
-            if (FAILED(result))
-                return;
+            VERIFY(SUCCEEDED(hr = m_pUnk->QueryInterface(IID_IOleObject, reinterpret_cast<void**>(&pObject))));
+            if (pObject)
+                VERIFY(SUCCEEDED(hr = pObject->DoVerb(OLEIVERB_UIACTIVATE, NULL, this, 0, m_hwnd, &m_controlRect)));
 
-            pObject->DoVerb(OLEIVERB_UIACTIVATE, NULL, this, 0, m_ax, &m_controlRect);
             pObject->Release();
         }
+
+        return hr;
     }
 
-    inline void CAXWindow::CreateControl(REFCLSID clsid)
+    // Creates the hosted control using its CLSID name, and adds it to the
+    // CAXHost container.
+    inline STDMETHODIMP CAXHost::CreateControl(BSTR clsidName, void** ppUnk)
     {
-        if (S_OK != CoCreateInstance(clsid, NULL, CLSCTX_INPROC_SERVER | CLSCTX_LOCAL_SERVER, IID_IUnknown, reinterpret_cast<void**>(&m_pUnk)))
-            return;
+        CLSID   clsid;
+        HRESULT hr;
+        VERIFY(SUCCEEDED(hr = CLSIDFromString(clsidName, &clsid)));
+        VERIFY(SUCCEEDED(hr = CreateControl(clsid, ppUnk)));
 
-        assert(m_pUnk);
+        return hr;
+    }
 
-        IOleObject* pObject;
-        HRESULT result = m_pUnk->QueryInterface(IID_IOleObject, reinterpret_cast<void**>(&pObject));
-        if (FAILED(result))
-            return;
+    // Creates the hosted control using its CLSID, and adds it to the
+    // CAXHost container.
+    inline STDMETHODIMP CAXHost::CreateControl(REFCLSID clsid, void** ppUnk)
+    {
+        HRESULT hr = E_FAIL;
 
-        pObject->SetClientSite(this);
-        pObject->Release();
-
-        IPersistStreamInit* ppsi;
-        result = m_pUnk->QueryInterface(IID_IPersistStreamInit, reinterpret_cast<void**>(&ppsi));
-        if (SUCCEEDED(result))
+        VERIFY(SUCCEEDED(hr = CoCreateInstance(clsid, NULL, CLSCTX_INPROC_SERVER | CLSCTX_LOCAL_SERVER, IID_IUnknown, ppUnk)));
+        m_pUnk = reinterpret_cast<IUnknown*>(*ppUnk);
+        if (m_pUnk)
         {
-            ppsi->InitNew();
-            ppsi->Release();
+            IOleObject* pObject;
+            VERIFY(SUCCEEDED(hr = m_pUnk->QueryInterface(IID_IOleObject, reinterpret_cast<void**>(&pObject))));
+            if (pObject)
+            {
+                VERIFY(SUCCEEDED(hr = pObject->SetClientSite(this)));
+                pObject->Release();
+
+                IPersistStreamInit* ppsi;
+                VERIFY(SUCCEEDED(hr = m_pUnk->QueryInterface(IID_IPersistStreamInit, reinterpret_cast<void**>(&ppsi))));
+                if (ppsi)
+                {
+                    VERIFY(SUCCEEDED(hr = ppsi->InitNew()));
+                    ppsi->Release();
+                }
+            }
         }
+
+        return hr;
     }
 
-    inline STDMETHODIMP_(ULONG) CAXWindow::AddRef()
+    // Sets CAXHost's reference count.
+    inline STDMETHODIMP_(ULONG) CAXHost::AddRef()
     {
-        return ++m_count;
+        // Automatic deletion is not required.
+        return 1;
     }
 
-    inline STDMETHODIMP CAXWindow::CanInPlaceActivate()
+    // Determines whether or not the container can activate the object in place.
+    inline STDMETHODIMP CAXHost::CanInPlaceActivate()
     {
         return S_OK;
     }
 
-    inline STDMETHODIMP CAXWindow::ContextSensitiveHelp(BOOL enterMode)
+    // Determines whether context-sensitive help mode should be entered during
+    // an in-place activation session.
+    inline STDMETHODIMP CAXHost::ContextSensitiveHelp(BOOL enterMode)
     {
         UNREFERENCED_PARAMETER(enterMode);
         return E_NOTIMPL;
     }
 
-    inline STDMETHODIMP CAXWindow::DeactivateAndUndo()
+    // Causes the container to end the in-place session, deactivate the object,
+    // and revert to its own saved undo state.
+    inline STDMETHODIMP CAXHost::DeactivateAndUndo()
     {
         return E_NOTIMPL;
     }
 
-    inline STDMETHODIMP CAXWindow::DiscardUndoState()
+    // Tells the container that the object no longer has any undo state and that
+    // the container should not call IOleInPlaceObject::ReActivateAndUndo.
+    inline STDMETHODIMP CAXHost::DiscardUndoState()
     {
         return E_NOTIMPL;
     }
 
-    inline STDMETHODIMP CAXWindow::EnableModeless(BOOL enable)
+    // Enables or disables a frame's modeless dialog boxes.
+    inline STDMETHODIMP CAXHost::EnableModeless(BOOL enable)
     {
         UNREFERENCED_PARAMETER(enable);
         return E_NOTIMPL;
     }
 
-    inline STDMETHODIMP CAXWindow::GetBorder(LPRECT pBorderRect)
+    // Returns a RECT structure in which the object can put toolbars
+    // and similar controls while active in place.
+    inline STDMETHODIMP CAXHost::GetBorder(LPRECT pBorderRect)
     {
         UNREFERENCED_PARAMETER(pBorderRect);
         return E_NOTIMPL;
     }
 
-    inline STDMETHODIMP CAXWindow::GetContainer(LPOLECONTAINER* ppContainer)
+    // Returns a pointer to the container's IOleContainer interface.
+    inline STDMETHODIMP CAXHost::GetContainer(LPOLECONTAINER* ppContainer)
     {
         UNREFERENCED_PARAMETER(ppContainer);
         return E_NOINTERFACE;
     }
 
-    // Returns the IDispatch COM interface.
-    // The caller should release the IDispatch pointer.
-    inline IDispatch* CAXWindow::GetDispatch()
-    {
-        if (!m_pUnk)
-            return NULL;
-
-        IDispatch*  pDisp;
-
-        m_pUnk->QueryInterface(IID_IDispatch, reinterpret_cast<void**>(&pDisp));
-        return pDisp;
-    }
-
-    inline STDMETHODIMP CAXWindow::GetExtendedControl(IDispatch** ppDisp)
+    // Requests an IDispatch pointer to the extended control that
+    // the container uses to wrap the real control.
+    // Call Release on this pointer when it is no longer required.
+    inline STDMETHODIMP CAXHost::GetExtendedControl(IDispatch** ppDisp)
     {
         if (ppDisp == NULL)
             return E_INVALIDARG;
@@ -361,7 +386,10 @@ namespace Win32xx
         return S_OK;
     }
 
-    inline STDMETHODIMP CAXWindow::GetIDsOfNames(REFIID riid, OLECHAR** pNames, unsigned int namesCount, LCID lcid, DISPID* pID)
+    // Maps a single member and an optional set of argument names to
+    // a corresponding set of integer DISPIDs, which can be used on
+    // subsequent calls to IDispatch::Invoke.
+    inline STDMETHODIMP CAXHost::GetIDsOfNames(REFIID riid, OLECHAR** pNames, unsigned int namesCount, LCID lcid, DISPID* pID)
     {
         UNREFERENCED_PARAMETER((IID)riid);      // IID cast required for the MinGW compiler
         UNREFERENCED_PARAMETER(pNames);
@@ -372,7 +400,9 @@ namespace Win32xx
         return DISP_E_UNKNOWNNAME;
     }
 
-    inline STDMETHODIMP CAXWindow::GetMoniker(DWORD assign, DWORD whichMoniker, LPMONIKER* ppMk)
+    // Retrieves an embedded object's moniker, which the caller
+    // can use to link to the object.
+    inline STDMETHODIMP CAXHost::GetMoniker(DWORD assign, DWORD whichMoniker, LPMONIKER* ppMk)
     {
         UNREFERENCED_PARAMETER(assign);
         UNREFERENCED_PARAMETER(whichMoniker);
@@ -380,7 +410,9 @@ namespace Win32xx
         return E_NOTIMPL;
     }
 
-    inline STDMETHODIMP CAXWindow::GetTypeInfo(unsigned int itinfo, LCID lcid, ITypeInfo** pptinfo)
+    // Retrieves the type information for an object, which can then
+    // be used to get the type information for the IDispatch interface.
+    inline STDMETHODIMP CAXHost::GetTypeInfo(unsigned int itinfo, LCID lcid, ITypeInfo** pptinfo)
     {
         UNREFERENCED_PARAMETER(itinfo);
         UNREFERENCED_PARAMETER(lcid);
@@ -388,38 +420,36 @@ namespace Win32xx
         return E_NOTIMPL;
     }
 
-    inline STDMETHODIMP CAXWindow::GetTypeInfoCount(unsigned int* pctinfo)
+    // Retrieves the number of type information interfaces that the IDispatch
+    // an object provides (either 0 or 1).
+    inline STDMETHODIMP CAXHost::GetTypeInfoCount(unsigned int* pctinfo)
     {
         UNREFERENCED_PARAMETER(pctinfo);
         return E_NOTIMPL;
     }
 
-    inline IUnknown* CAXWindow::GetUnknown()
+    // Returns the window handle assigned to the CAXHost container.
+    inline STDMETHODIMP CAXHost::GetWindow(HWND* pHwnd)
     {
-        if (!m_pUnk)
-            return NULL;
-
-        m_pUnk->AddRef();
-        return m_pUnk;
-    }
-
-    inline STDMETHODIMP CAXWindow::GetWindow(HWND* pHwnd)
-    {
-        if (!IsWindow(m_ax))
+        if (!IsWindow(m_hwnd))
             return S_FALSE;
 
-        *pHwnd = m_ax;
+        *pHwnd = m_hwnd;
         return S_OK;
     }
 
-    inline STDMETHODIMP CAXWindow::GetWindowContext (IOleInPlaceFrame** ppFrame, IOleInPlaceUIWindow** ppIIPUIWin,
+    // Enables the in - place object to retrieve the window interfaces that
+    // form the window object hierarchy, and the position in the parent
+    // window where the object's in-place activation window should be placed.
+    // Call Release on ppFrame when it is no longer required.
+    inline STDMETHODIMP CAXHost::GetWindowContext (IOleInPlaceFrame** ppFrame, IOleInPlaceUIWindow** ppIIPUIWin,
                                       LPRECT pRect, LPRECT pClipRect, LPOLEINPLACEFRAMEINFO pFrameInfo)
     {
         *ppFrame = (IOleInPlaceFrame*)this;
         *ppIIPUIWin = NULL;
 
         RECT rect;
-        GetClientRect(m_ax, &rect);
+        ::GetClientRect(m_hwnd, &rect);
         pRect->left       = 0;
         pRect->top        = 0;
         pRect->right      = rect.right;
@@ -429,7 +459,7 @@ namespace Win32xx
 
         pFrameInfo->cb             = sizeof(OLEINPLACEFRAMEINFO);
         pFrameInfo->fMDIApp        = FALSE;
-        pFrameInfo->hwndFrame      = m_ax;
+        pFrameInfo->hwndFrame      = m_hwnd;
         pFrameInfo->haccel         = 0;
         pFrameInfo->cAccelEntries  = 0;
 
@@ -437,14 +467,17 @@ namespace Win32xx
         return S_OK;
     }
 
-    inline STDMETHODIMP CAXWindow::InsertMenus(HMENU shared, LPOLEMENUGROUPWIDTHS pMenuWidths)
+    // Allows the container to insert its menu groups into the composite menu
+    // to be used during the in-place session.
+    inline STDMETHODIMP CAXHost::InsertMenus(HMENU shared, LPOLEMENUGROUPWIDTHS pMenuWidths)
     {
         UNREFERENCED_PARAMETER(shared);
         UNREFERENCED_PARAMETER(pMenuWidths);
         return E_NOTIMPL;
     }
 
-    inline STDMETHODIMP CAXWindow::Invoke(DISPID dispID, REFIID riid, LCID lcid, WORD flags, DISPPARAMS* pParams, VARIANT* result, EXCEPINFO* pExecInfo, unsigned int* pArgErr)
+    // Provides access to properties and methods exposed by the container.
+    inline STDMETHODIMP CAXHost::Invoke(DISPID dispID, REFIID riid, LCID lcid, WORD flags, DISPPARAMS* pParams, VARIANT* result, EXCEPINFO* pExecInfo, unsigned int* pArgErr)
     {
         UNREFERENCED_PARAMETER(dispID);
         UNREFERENCED_PARAMETER((IID)riid);      // IID cast required for the MinGW compiler
@@ -457,77 +490,93 @@ namespace Win32xx
         return DISP_E_MEMBERNOTFOUND;
     }
 
-    inline STDMETHODIMP CAXWindow::LockInPlaceActive(BOOL lock)
+    // Indicates whether or not a control should remain in-place active.
+    inline STDMETHODIMP CAXHost::LockInPlaceActive(BOOL lock)
     {
         UNREFERENCED_PARAMETER(lock);
         return E_NOTIMPL;
     }
 
-    inline STDMETHODIMP CAXWindow::OnControlInfoChanged()
+    // Informs the container that the control's CONTROLINFO structure
+    // has changed and that the container should call the control's
+    // IOleControl::GetControlInfo for an update.
+    inline STDMETHODIMP CAXHost::OnControlInfoChanged()
     {
         return E_NOTIMPL;
     }
 
-    inline STDMETHODIMP CAXWindow::OnFocus(BOOL gotFocus)
+    // Indicates whether the control managed by this control site has
+    // gained or lost the focus, according to the fGotFocus parameter.
+    inline STDMETHODIMP CAXHost::OnFocus(BOOL gotFocus)
     {
         UNREFERENCED_PARAMETER(gotFocus);
         return E_NOTIMPL;
     }
 
-    inline STDMETHODIMP CAXWindow::OnInPlaceActivate()
+    // Notifies the container that one of its objects is being activated
+    // in place.
+    inline STDMETHODIMP CAXHost::OnInPlaceActivate()
     {
         return S_OK;
     }
 
-    inline STDMETHODIMP CAXWindow::OnInPlaceDeactivate()
+    // Notifies the container that the object is no longer active in place.
+    inline STDMETHODIMP CAXHost::OnInPlaceDeactivate()
     {
         return S_OK;
     }
 
-    inline STDMETHODIMP CAXWindow::OnPosRectChange(LPCRECT pPosRect)
+    // Indicates the object's extents have changed.
+    inline STDMETHODIMP CAXHost::OnPosRectChange(LPCRECT pPosRect)
     {
         UNREFERENCED_PARAMETER(pPosRect);
         return S_OK;
     }
 
-    inline STDMETHODIMP CAXWindow::OnShowWindow(BOOL show)
+    // Notifies a container when an embedded object's window is
+    // about to become visible or invisible.
+    inline STDMETHODIMP CAXHost::OnShowWindow(BOOL show)
     {
         UNREFERENCED_PARAMETER(show);
         return S_OK;
     }
 
-    inline STDMETHODIMP CAXWindow::OnUIActivate()
+    // Notifies the container that the object is about to be activated
+    // in place and that the object is going to replace the container's
+    // main menu with an in-place composite menu.
+    inline STDMETHODIMP CAXHost::OnUIActivate()
     {
         return S_OK;
     }
 
-    inline STDMETHODIMP CAXWindow::OnUIDeactivate(BOOL undoable)
+    // Notifies the container on deactivation that it should reinstall
+    // its user interface and take focus, and whether or not the object
+    // has an undoable state.
+    inline STDMETHODIMP CAXHost::OnUIDeactivate(BOOL undoable)
     {
         UNREFERENCED_PARAMETER(undoable);
         return E_NOTIMPL;
     }
 
-    inline STDMETHODIMP CAXWindow::QueryInterface(REFIID riid, void** ppObject)
+    // Returns a pointer to the specified interface on an object.
+    // Call Release on this pointer when it is no longer required.
+    inline STDMETHODIMP CAXHost::QueryInterface(REFIID riid, void** ppObject)
     {
         if (!ppObject)
             return E_POINTER;
 
-        if (IsEqualIID(riid, IID_IOleClientSite))
-            *ppObject = static_cast<IOleClientSite*>(this);
+        if (IsEqualIID(riid, IID_IOleInPlaceFrame))
+            *ppObject = static_cast<IOleInPlaceFrame*>(this);
         else if (IsEqualIID(riid, IID_IOleInPlaceSite))
             *ppObject = static_cast<IOleInPlaceSite*>(this);
-        else if (IsEqualIID(riid, IID_IOleInPlaceFrame))
-            *ppObject = static_cast<IOleInPlaceFrame*>(this);
-        else if (IsEqualIID(riid, IID_IOleInPlaceUIWindow))
-            *ppObject = static_cast<IOleInPlaceUIWindow*>(this);
+        else if (IsEqualIID(riid, IID_IOleClientSite))
+            *ppObject = static_cast<IOleClientSite*>(this);
         else if (IsEqualIID(riid, IID_IOleControlSite))
             *ppObject = static_cast<IOleControlSite*>(this);
-        else if (IsEqualIID(riid, IID_IOleWindow))
-            *ppObject = this;
         else if (IsEqualIID(riid, IID_IDispatch))
             *ppObject = static_cast<IDispatch*>(this);
         else if (IsEqualIID(riid, IID_IUnknown))
-            *ppObject = this;
+            *ppObject = static_cast<IUnknown*>(static_cast<IOleInPlaceFrame*>(this));
         else
         {
             *ppObject = NULL;
@@ -538,94 +587,119 @@ namespace Win32xx
         return S_OK;
     }
 
-    inline STDMETHODIMP_(ULONG) CAXWindow::Release()
+    // Sets CAXHost's reference count.
+    inline STDMETHODIMP_(ULONG) CAXHost::Release()
     {
-        return --m_count;
+        // Automatic deletion is not required.
+        return 1;
     }
 
-    inline void CAXWindow::Remove()
+    // Removes the hosted control from the CAXHost container.
+    inline STDMETHODIMP CAXHost::Remove()
     {
-        if (!m_pUnk)
-            return;
+        HRESULT hr = E_FAIL;
 
-        IOleObject* pObject;
-        HRESULT result = m_pUnk->QueryInterface(IID_IOleObject, reinterpret_cast<void**>(&pObject));
-        if (SUCCEEDED(result))
+        if (m_pUnk)
         {
-            pObject->Close(OLECLOSE_NOSAVE);
-            pObject->SetClientSite(NULL);
-            pObject->Release();
+            IOleInPlaceObject* pipo;
+            VERIFY(SUCCEEDED(hr = m_pUnk->QueryInterface(IID_IOleInPlaceObject, reinterpret_cast<void**>(&pipo))));
+            if (pipo)
+            {
+                VERIFY(SUCCEEDED(hr = pipo->UIDeactivate()));
+                VERIFY(SUCCEEDED(hr = pipo->InPlaceDeactivate()));
+                pipo->Release();
+            }
+
+            IOleObject* pObject;
+            VERIFY(SUCCEEDED(hr = m_pUnk->QueryInterface(IID_IOleObject, reinterpret_cast<void**>(&pObject))));
+            if (pObject)
+            {
+                VERIFY(SUCCEEDED(hr = pObject->Close(OLECLOSE_NOSAVE)));
+                VERIFY(SUCCEEDED(hr = pObject->SetClientSite(NULL)));
+                pObject->Release();
+            }
         }
 
-        IOleInPlaceObject* pipo;
-        result = m_pUnk->QueryInterface(IID_IOleInPlaceObject, reinterpret_cast<void**>(&pipo));
-        if (SUCCEEDED(result))
-        {
-            pipo->UIDeactivate();
-            pipo->InPlaceDeactivate();
-            pipo->Release();
-        }
-
+        return hr;
     }
 
-    inline STDMETHODIMP CAXWindow::RemoveMenus(HMENU shared)
+    // Gives the container a chance to remove its menu elements from the
+    // in-place composite menu.
+    inline STDMETHODIMP CAXHost::RemoveMenus(HMENU shared)
     {
         UNREFERENCED_PARAMETER(shared);
         return E_NOTIMPL;
     }
 
-    inline STDMETHODIMP CAXWindow::RequestBorderSpace(LPCBORDERWIDTHS pBorderWidths)
+    // Determines if there is available space for tools to be installed around
+    // the object's window frame while the object is active in place.
+    inline STDMETHODIMP CAXHost::RequestBorderSpace(LPCBORDERWIDTHS pBorderWidths)
     {
         UNREFERENCED_PARAMETER(pBorderWidths);
         return E_NOTIMPL;
     }
 
-    inline STDMETHODIMP CAXWindow::RequestNewObjectLayout()
+    // Asks container to allocate more or less space for displaying an
+    // embedded object.
+    inline STDMETHODIMP CAXHost::RequestNewObjectLayout()
     {
         return E_NOTIMPL;
     }
 
-    inline STDMETHODIMP CAXWindow::SaveObject()
+    // Saves the object associated with the client site.
+    inline STDMETHODIMP CAXHost::SaveObject()
     {
         return E_NOTIMPL;
     }
 
-    inline STDMETHODIMP CAXWindow::Scroll(SIZE scrollExtent)
+    // Tells the container to scroll the view of the object by a specified
+    // number of pixels.
+    inline STDMETHODIMP CAXHost::Scroll(SIZE scrollExtent)
     {
         UNREFERENCED_PARAMETER(scrollExtent);
         return E_NOTIMPL;
     }
 
-    inline STDMETHODIMP CAXWindow::SetActiveObject(IOleInPlaceActiveObject* pActiveObject, LPCOLESTR pObjName)
+    // Provides a direct channel of communication between the object and each
+    // of the frame and document windows.
+    inline STDMETHODIMP CAXHost::SetActiveObject(IOleInPlaceActiveObject* pActiveObject, LPCOLESTR pObjName)
     {
         UNREFERENCED_PARAMETER(pActiveObject);
         UNREFERENCED_PARAMETER(pObjName);
         return E_NOTIMPL;
     }
 
-    inline STDMETHODIMP CAXWindow::SetBorderSpace(LPCBORDERWIDTHS pBorderWidths)
+    // Allocates space for the border requested in the call to
+    // IOleInPlaceUIWindow::RequestBorderSpace.
+    inline STDMETHODIMP CAXHost::SetBorderSpace(LPCBORDERWIDTHS pBorderWidths)
     {
         UNREFERENCED_PARAMETER(pBorderWidths);
         return E_NOTIMPL;
     }
 
-    inline void CAXWindow::SetLocation(int x, int y, int width, int height)
+    // Displays the specified portion of the hosted control.
+    inline STDMETHODIMP CAXHost::SetLocation(int x, int y, int width, int height)
     {
         m_controlRect.SetRect(x, y, x + width, y + height);
 
-        if (!m_pUnk)
-            return;
+        HRESULT hr = E_FAIL;
+        if (m_pUnk)
+        {
+            IOleInPlaceObject* pipo;
+            VERIFY(SUCCEEDED(hr = m_pUnk->QueryInterface(IID_IOleInPlaceObject, reinterpret_cast<void**>(&pipo))));
+            if (pipo)
+            {
+                VERIFY(SUCCEEDED(hr = pipo->SetObjectRects(&m_controlRect, &m_controlRect)));
+                pipo->Release();
+            }
+        }
 
-        IOleInPlaceObject* pipo;
-        HRESULT result = m_pUnk->QueryInterface(IID_IOleInPlaceObject, reinterpret_cast<void**>(&pipo));
-        if (FAILED(result))
-            return;
-
-        pipo->SetObjectRects(&m_controlRect, &m_controlRect);
-        pipo->Release();
+        return hr;
     }
 
-    inline STDMETHODIMP CAXWindow::SetMenu(HMENU shared, HOLEMENU holemenu, HWND activeObject)
+    // Installs the composite menu in the window frame containing the object
+    // being activated in place.
+    inline STDMETHODIMP CAXHost::SetMenu(HMENU shared, HOLEMENU holemenu, HWND activeObject)
     {
         UNREFERENCED_PARAMETER(shared);
         UNREFERENCED_PARAMETER(holemenu);
@@ -633,68 +707,67 @@ namespace Win32xx
         return E_NOTIMPL;
     }
 
-    inline void CAXWindow::SetParent(HWND hWndParent)
+    // Assigns the specified window handle to the CAXHost container.
+    inline STDMETHODIMP CAXHost::SetParent(HWND hWndParent)
     {
-        m_ax = hWndParent;
+        m_hwnd = hWndParent;
+        return S_OK;
     }
 
-    inline STDMETHODIMP CAXWindow::SetStatusText(LPCOLESTR pStatusText)
+    // Sets and displays status text about the in-place object in the
+    // container's frame window status line.
+    inline STDMETHODIMP CAXHost::SetStatusText(LPCOLESTR pStatusText)
     {
         if (NULL == pStatusText)
             return E_POINTER;
 
-#ifndef UNICODE
-        char status[MAX_PATH];
-        // Convert the Wide string to char
-        WideCharToMultiByte(CP_ACP, 0, pStatusText, -1, status, MAX_PATH, NULL, NULL);
-
-        if (IsWindow(m_status))
-            SendMessage(m_status, SB_SETTEXT, 0, (LPARAM)status);
-#else
-        if (IsWindow(m_status))
-            SendMessage(m_status, SB_SETTEXT, 0, (LPARAM)pStatusText);
-#endif
-
         return S_OK;
     }
 
-    inline void CAXWindow::SetStatusWindow(HWND status)
+    // Shows or hides the hosted control.
+    inline STDMETHODIMP CAXHost::SetVisible(BOOL isVisible)
     {
-        m_status = status;
-    }
-
-    inline void CAXWindow::SetVisible(BOOL isVisible)
-    {
-        if (!m_pUnk)
-            return;
-
-        IOleObject* pObject;
-        HRESULT result = m_pUnk->QueryInterface(IID_IOleObject, reinterpret_cast<void**>(&pObject));
-        if (FAILED(result))
-            return;
-
-        if (isVisible)
+        HRESULT hr = E_FAIL;
+        if (m_pUnk)
         {
-            pObject->DoVerb(OLEIVERB_INPLACEACTIVATE, NULL, this, 0, m_ax, &m_controlRect);
-            pObject->DoVerb(OLEIVERB_SHOW, NULL, this, 0, m_ax, &m_controlRect);
-        }
-        else
-            pObject->DoVerb(OLEIVERB_HIDE, NULL, this, 0, m_ax, NULL);
+            IOleObject* pObject;
+            VERIFY(SUCCEEDED(hr = m_pUnk->QueryInterface(IID_IOleObject, reinterpret_cast<void**>(&pObject))));
+            if (pObject)
+            {
+                if (isVisible)
+                {
+                    VERIFY(SUCCEEDED(hr = pObject->DoVerb(OLEIVERB_INPLACEACTIVATE, NULL, this, 0, m_hwnd, &m_controlRect)));
+                    VERIFY(SUCCEEDED(hr = pObject->DoVerb(OLEIVERB_SHOW, NULL, this, 0, m_hwnd, &m_controlRect)));
+                }
+                else
+                    VERIFY(SUCCEEDED(hr = pObject->DoVerb(OLEIVERB_HIDE, NULL, this, 0, m_hwnd, NULL)));
 
-        pObject->Release();
+                pObject->Release();
+            }
+        }
+
+        return hr;
     }
 
-    inline STDMETHODIMP CAXWindow::ShowObject()
+    // Tells the container to position the object so it is visible to the user.
+    // This method ensures that the container itself is visible and not
+    // minimized.
+    inline STDMETHODIMP CAXHost::ShowObject()
     {
         return S_OK;
     }
 
-    inline STDMETHODIMP CAXWindow::ShowPropertyFrame()
+    // Instructs a container to display a property sheet for the control
+    // embedded in this site.
+    inline STDMETHODIMP CAXHost::ShowPropertyFrame()
     {
         return E_NOTIMPL;
     }
 
-    inline STDMETHODIMP CAXWindow::TransformCoords(POINTL* pHimetric, POINTF* pContainer, DWORD flags)
+    // Converts between a POINTL structure expressed in HIMETRIC units
+    // (as is standard in OLE) and a POINTF structure expressed in units
+    // specified by the container.
+    inline STDMETHODIMP CAXHost::TransformCoords(POINTL* pHimetric, POINTF* pContainer, DWORD flags)
     {
         UNREFERENCED_PARAMETER(pHimetric);
         UNREFERENCED_PARAMETER(pContainer);
@@ -702,32 +775,22 @@ namespace Win32xx
         return E_NOTIMPL;
     }
 
-    inline STDMETHODIMP CAXWindow::TranslateAccelerator(LPMSG pMsg, WORD id)
+    // Translates accelerator keystrokes intended for the container's frame
+    // while an object is active in place.
+    inline STDMETHODIMP CAXHost::TranslateAccelerator(LPMSG pMsg, WORD id)
     {
         UNREFERENCED_PARAMETER(pMsg);
         UNREFERENCED_PARAMETER(id);
         return S_OK;
     }
 
-    inline STDMETHODIMP CAXWindow::TranslateAccelerator(LPMSG pMsg, DWORD modifiers)
+    // Instructs the control site to process the keystroke described in
+    // pMsg modified by the flags in modifiers.
+    inline STDMETHODIMP CAXHost::TranslateAccelerator(LPMSG pMsg, DWORD modifiers)
     {
         UNREFERENCED_PARAMETER(pMsg);
         UNREFERENCED_PARAMETER(modifiers);
         return S_FALSE;
-    }
-
-    inline void CAXWindow::TranslateKey(MSG msg)
-    {
-        if (!m_pUnk)
-            return;
-
-        IOleInPlaceActiveObject* pao;
-        HRESULT result = m_pUnk->QueryInterface(IID_IOleInPlaceActiveObject, reinterpret_cast<void**>(&pao));
-        if (FAILED(result))
-            return;
-
-        pao->TranslateAccelerator(&msg);
-        pao->Release();
     }
 
 
@@ -737,78 +800,70 @@ namespace Win32xx
 
     inline CWebBrowser::CWebBrowser() : m_pIWebBrowser2(0)
     {
-        HRESULT hr = OleInitialize(NULL);
-        if (FAILED(hr))
-            throw CWinException(g_msgOleInitialize);
     }
 
     inline CWebBrowser::~CWebBrowser()
     {
         if (m_pIWebBrowser2)
-        {
-            m_pIWebBrowser2->Stop();
             m_pIWebBrowser2->Release();
-        }
-
-        OleUninitialize();
     }
 
-    // Adds the IWebBrowser interface to the ActiveX container window.
+    // Adds the IWebBrowser interface to the ActiveX host.
     // Refer to IID_IWebBrowser2 in the Windows API documentation for more information.
-    inline void CWebBrowser::AddWebBrowserControl()
+    inline HRESULT CWebBrowser::AddWebBrowserControl()
     {
-        GetAXWindow().CreateControl(CLSID_WebBrowser);
-        GetAXWindow().SetParent(*this);
-        GetAXWindow().SetVisible(TRUE);
-        GetAXWindow().Activate(TRUE);
+        IUnknown* pUnk = NULL;
+        VERIFY(SUCCEEDED(GetAXHost()->CreateControl(CLSID_WebBrowser, (void**)&pUnk)));
+        VERIFY(SUCCEEDED(GetAXHost()->SetParent(*this)));
+        VERIFY(SUCCEEDED(GetAXHost()->SetVisible(TRUE)));
+        VERIFY(SUCCEEDED(GetAXHost()->Activate()));
 
-        IUnknown* pUnk = GetAXWindow().GetUnknown();
+        HRESULT hr = E_FAIL;
         if (pUnk)
         {
             // Store the pointer to the WebBrowser control
-            HRESULT result = pUnk->QueryInterface(IID_IWebBrowser2, reinterpret_cast<void**>(&m_pIWebBrowser2));
-            pUnk->Release();
+            VERIFY(SUCCEEDED(hr = pUnk->QueryInterface(IID_IWebBrowser2, reinterpret_cast<void**>(&m_pIWebBrowser2))));
 
             // Navigate to an empty page
-            if (SUCCEEDED(result))
-            {
-                Navigate(_T("about:blank"));
-            }
+            VERIFY(SUCCEEDED(hr = Navigate(_T("about:blank"))));
         }
+
+        return hr;
     }
 
-    // Called when the WebBrowser window is created and the HWND is attached this object.
+    // Called when the WebBrowser window's HWND is attached this object.
     inline void CWebBrowser::OnAttach()
     {
-        if (NULL == m_pIWebBrowser2)
-            AddWebBrowserControl();
+        if (m_pIWebBrowser2 == NULL)
+            VERIFY(SUCCEEDED(AddWebBrowserControl()));
     }
 
     // Called when the web browser window is created.
     inline int CWebBrowser::OnCreate(CREATESTRUCT& cs)
     {
         UNREFERENCED_PARAMETER(cs);
-        AddWebBrowserControl();
+        VERIFY(SUCCEEDED(AddWebBrowserControl()));
         return 0;
     }
 
     // Called when the window is destroyed.
     inline void CWebBrowser::OnDestroy()
     {
-        GetAXWindow().Remove();
+        VERIFY(SUCCEEDED(m_pIWebBrowser2->Stop()));
+        VERIFY(SUCCEEDED(GetAXHost()->Remove()));
     }
 
     // Called when the window is resized.
     inline void CWebBrowser::OnSize(int width, int height)
     {
         // position the container
-        GetAXWindow().SetLocation(0, 0, width, height);
+        VERIFY(SUCCEEDED(GetAXHost()->SetLocation(0, 0, width, height)));
     }
 
     // Provides default message processing for the web browser window.
     inline LRESULT CWebBrowser::WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam)
     {
-        switch(msg)
+        switch (msg)
         {
         case WM_SIZE:
             OnSize(LOWORD(lparam), HIWORD(lparam));
@@ -818,34 +873,40 @@ namespace Win32xx
         return CWnd::WndProcDefault(msg, wparam, lparam);
     }
 
-    // Retrieves the automation object for the application that is hosting the WebBrowser Control.
+    //////////////////////////////////////////////////
+    // Wrappers for the IWebBrowser2 interface
+
+    // Retrieves a pointer to the IDispatch interface for the the application that is hosting the WebBrowser Control.
     inline LPDISPATCH CWebBrowser::GetApplication() const
     {
-        LPDISPATCH Value;
-        GetIWebBrowser2()->get_Application(&Value);
-        return Value;
+        LPDISPATCH pDispatch = NULL;
+        GetIWebBrowser2()->get_Application(&pDispatch);
+        return pDispatch;
     }
 
     // Retrieves a value that indicates whether the object is engaged in a navigation or downloading operation.
     inline BOOL CWebBrowser::GetBusy() const
     {
-        VARIANT_BOOL Value = VARIANT_FALSE;
-        GetIWebBrowser2()->get_Busy(&Value);
-        return (Value != 0);
+        VARIANT_BOOL isBusy = VARIANT_FALSE;
+        GetIWebBrowser2()->get_Busy(&isBusy);
+        return (isBusy != 0);
     }
 
-    // Retrieves an object reference to a container.
+    // Retrieves a pointer to the IDispatch interface to a container. This property returns the same pointer
+    // as GetParent.
     inline LPDISPATCH CWebBrowser::GetContainer() const
     {
-        LPDISPATCH Value;
-        GetIWebBrowser2()->get_Container(&Value);
-        return Value;
+        LPDISPATCH pDispatch = NULL;
+        GetIWebBrowser2()->get_Container(&pDispatch);
+        return pDispatch;
     }
 
-    // Retrieves an object reference to a document.
+    // Retrieves a pointer to the IDispatch interface of the active document object. Call QueryInterface on the
+    // IDispatch received from this property get the Component Object Model (COM) interfaces IHTMLDocument,
+    // IHTMLDocument2, and IHTMLDocument3.
     inline LPDISPATCH CWebBrowser::GetDocument() const
     {
-        LPDISPATCH Value;
+        LPDISPATCH Value = NULL;
         GetIWebBrowser2()->get_Document(&Value);
         return Value;
     }
@@ -853,25 +914,25 @@ namespace Win32xx
     // Retrieves a value that indicates whether Internet Explorer is in full-screen mode or normal window mode.
     inline BOOL CWebBrowser::GetFullScreen() const
     {
-        VARIANT_BOOL Value = VARIANT_FALSE;
-        GetIWebBrowser2()->get_FullScreen(&Value);
-        return (Value != 0);
+        VARIANT_BOOL value = VARIANT_FALSE;
+        GetIWebBrowser2()->get_FullScreen(&value);
+        return (value != 0);
     }
 
     // Retrieves the height of the object.
     inline long CWebBrowser::GetHeight() const
     {
-        long lValue;
-        GetIWebBrowser2()->get_Height(&lValue);
-        return lValue;
+        long height = 0;
+        GetIWebBrowser2()->get_Height(&height);
+        return height;
     }
 
     // Retrieves the coordinate of the left edge of the object.
     inline long CWebBrowser::GetLeft() const
     {
-        long lValue;
-        GetIWebBrowser2()->get_Left(&lValue);
-        return lValue;
+        long left = 0;
+        GetIWebBrowser2()->get_Left(&left);
+        return left;
     }
 
     // Retrieves the path or title of the resource that is currently displayed.
@@ -894,6 +955,25 @@ namespace Win32xx
         return str;
     }
 
+    // Retrieves a value that indicates whether the object is operating in offline mode.
+    inline BOOL CWebBrowser::GetOffline() const
+    {
+        VARIANT_BOOL isOffLine = VARIANT_FALSE;
+        GetIWebBrowser2()->get_Offline(&isOffLine);
+        return (isOffLine != 0);
+    }
+
+    // Retrieves a pointer to the IDispatch interface of the object that is the
+    // container of the WebBrowser control. If the WebBrowser control is in a frame,
+    // this method returns the automation interface of the document object in the
+    // containing window. Otherwise, it delegates to the top-level control, if there is one.
+    inline LPDISPATCH CWebBrowser::GetParent() const
+    {
+        LPDISPATCH pDispatch = NULL;
+        GetIWebBrowser2()->get_Parent(&pDispatch);
+        return pDispatch;
+    }
+
     // Retrieves the accumulated  length of the ITEMIDLIST.
     inline UINT CWebBrowser::GetPidlLength(LPITEMIDLIST pidl)
     {
@@ -912,156 +992,141 @@ namespace Win32xx
         return cbPidl;
     }
 
-    // Retrieves a value that indicates whether the object is operating in offline mode.
-    inline BOOL CWebBrowser::GetOffline() const
-    {
-        VARIANT_BOOL Value = VARIANT_FALSE;
-        GetIWebBrowser2()->get_Offline(&Value);
-        return (Value != 0);
-    }
-
     // Retrieves the ready state of the object.
     inline READYSTATE CWebBrowser::GetReadyState() const
     {
-        READYSTATE rsValue;
-        GetIWebBrowser2()->get_ReadyState(&rsValue);
-        return rsValue;
+        READYSTATE rs = READYSTATE_UNINITIALIZED;
+        GetIWebBrowser2()->get_ReadyState(&rs);
+        return rs;
     }
 
     // Retrieves a value that indicates whether the object is registered as a top-level browser window.
     inline BOOL CWebBrowser::GetRegisterAsBrowser() const
     {
-        VARIANT_BOOL Value = VARIANT_FALSE;
+        VARIANT_BOOL isTopLevel = VARIANT_FALSE;
 #if !defined(__BORLANDC__) || (__BORLANDC__ >= 0x600)
-        GetIWebBrowser2()->get_RegisterAsBrowser(&Value);
+        GetIWebBrowser2()->get_RegisterAsBrowser(&isTopLevel);
 #endif
-        return (Value != 0);
+        return (isTopLevel != 0);
     }
 
     // Retrieves the theater mode state of the object.
     inline BOOL CWebBrowser::GetTheaterMode() const
     {
-        VARIANT_BOOL Value = VARIANT_FALSE;
-        GetIWebBrowser2()->get_TheaterMode(&Value);
-        return (Value != 0);
+        VARIANT_BOOL isTheater = VARIANT_FALSE;
+        GetIWebBrowser2()->get_TheaterMode(&isTheater);
+        return (isTheater != 0);
     }
 
     // Retrieves the coordinate of the top edge of the object.
     inline long CWebBrowser::GetTop() const
     {
-        long lValue;
-        GetIWebBrowser2()->get_Top(&lValue);
-        return lValue;
+        long top;
+        GetIWebBrowser2()->get_Top(&top);
+        return top;
     }
 
     //Returns TRUE  if the object is a top-level container.
     inline BOOL CWebBrowser::GetTopLevelContainer() const
     {
-        VARIANT_BOOL Value = VARIANT_FALSE;
-        GetIWebBrowser2()->get_TopLevelContainer(&Value);
-        return (Value != 0);
-    }
-
-    inline LPDISPATCH CWebBrowser::GetParent() const
-    {
-        LPDISPATCH pDispatch = NULL;
-        GetIWebBrowser2()->get_Parent(&pDispatch);
-        return pDispatch;
+        VARIANT_BOOL isTop = VARIANT_FALSE;
+        GetIWebBrowser2()->get_TopLevelContainer(&isTop);
+        return (isTop != 0);
     }
 
     // Retrieves the user type name of the contained document object.
     inline CString CWebBrowser::GetType() const
     {
-        BSTR bString;
-        GetIWebBrowser2()->get_Type(&bString);
-        CString str(bString);
-        SysFreeString(bString);
+        BSTR bstr;
+        GetIWebBrowser2()->get_Type(&bstr);
+        CString str(bstr);
+        SysFreeString(bstr);
         return str;
     }
 
     // Retrieves a value that indicates whether the object is visible or hidden.
     inline BOOL CWebBrowser::GetVisible() const
     {
-        VARIANT_BOOL Value = VARIANT_FALSE;
-        GetIWebBrowser2()->get_Visible(&Value);
-        return (Value != 0);
+        VARIANT_BOOL isVisible = VARIANT_FALSE;
+        GetIWebBrowser2()->get_Visible(&isVisible);
+        return (isVisible != 0);
     }
 
     // Retrieves the width of the object.
     inline long CWebBrowser::GetWidth() const
     {
-        long lValue;
-        GetIWebBrowser2()->get_Width(&lValue);
-        return lValue;
+        long width = 0;
+        GetIWebBrowser2()->get_Width(&width);
+        return width;
     }
 
     // Sets a value that indicates whether Internet Explorer is in full-screen mode or normal window mode.
-    inline void CWebBrowser::SetFullScreen(BOOL isFullScreen)
+    inline HRESULT CWebBrowser::SetFullScreen(BOOL isFullScreen)
     {
-        VARIANT_BOOL vBool = isFullScreen ? VARIANT_TRUE : VARIANT_FALSE;
-        GetIWebBrowser2()->put_FullScreen(vBool);
+        VARIANT_BOOL isFS = isFullScreen ? VARIANT_TRUE : VARIANT_FALSE;
+        return GetIWebBrowser2()->put_FullScreen(isFS);
     }
 
     // Sets the height of the object.
-    inline void CWebBrowser::SetHeight(long height)
+    inline HRESULT CWebBrowser::SetHeight(long height)
     {
-        GetIWebBrowser2()->put_Height(height);
+        return GetIWebBrowser2()->put_Height(height);
     }
 
     // Sets the coordinate of the left edge of the object.
-    inline void CWebBrowser::SetLeft(long leftEdge)
+    inline HRESULT CWebBrowser::SetLeft(long leftEdge)
     {
-        GetIWebBrowser2()->put_Left(leftEdge);
+        return GetIWebBrowser2()->put_Left(leftEdge);
     }
 
     // Sets a value that indicates whether the object is operating in offline mode.
-    inline void CWebBrowser::SetOffline(BOOL isOffline)
+    inline HRESULT CWebBrowser::SetOffline(BOOL isOffline)
     {
-        VARIANT_BOOL vBool = isOffline ? VARIANT_TRUE : VARIANT_FALSE;
-        GetIWebBrowser2()->put_Offline(vBool);
+        VARIANT_BOOL isOL = isOffline ? VARIANT_TRUE : VARIANT_FALSE;
+        return GetIWebBrowser2()->put_Offline(isOL);
     }
 
     // Sets a value that indicates whether the object is registered as a top-level browser window.
-    inline void CWebBrowser::SetRegisterAsBrowser(BOOL isBrowser)
+    inline HRESULT CWebBrowser::SetRegisterAsBrowser(BOOL isBrowser)
     {
-        VARIANT_BOOL vBool = isBrowser ? VARIANT_TRUE : VARIANT_FALSE;
-        GetIWebBrowser2()->put_RegisterAsBrowser(vBool);
+        VARIANT_BOOL isB = isBrowser ? VARIANT_TRUE : VARIANT_FALSE;
+        return GetIWebBrowser2()->put_RegisterAsBrowser(isB);
     }
 
     // Sets the theatre mode state of the object.
-    inline void CWebBrowser::SetTheaterMode(BOOL isTheaterMode)
+    inline HRESULT CWebBrowser::SetTheaterMode(BOOL isTheaterMode)
     {
-        VARIANT_BOOL vBool = isTheaterMode ? VARIANT_TRUE : VARIANT_FALSE;
-        GetIWebBrowser2()->put_TheaterMode(vBool);
+        VARIANT_BOOL isTM = isTheaterMode ? VARIANT_TRUE : VARIANT_FALSE;
+        return GetIWebBrowser2()->put_TheaterMode(isTM);
     }
 
     // Sets the coordinate of the top edge of the object.
-    inline void CWebBrowser::SetTop(long topEdge)
+    inline HRESULT CWebBrowser::SetTop(long topEdge)
     {
-        GetIWebBrowser2()->put_Top(topEdge);
+        return GetIWebBrowser2()->put_Top(topEdge);
     }
 
     // Sets a value that indicates whether the object is visible or hidden.
-    inline void CWebBrowser::SetVisible(BOOL isVisible)
+    inline HRESULT CWebBrowser::SetVisible(BOOL isVisible)
     {
-        VARIANT_BOOL vBool = isVisible ? VARIANT_TRUE : VARIANT_FALSE;
-        GetIWebBrowser2()->put_Visible(vBool);
+        VARIANT_BOOL isV = isVisible ? VARIANT_TRUE : VARIANT_FALSE;
+        return GetIWebBrowser2()->put_Visible(isV);
     }
 
     // Sets the width of the object.
-    inline void CWebBrowser::SetWidth(long width)
+    inline HRESULT CWebBrowser::SetWidth(long width)
     {
-        GetIWebBrowser2()->put_Width(width);
+        return GetIWebBrowser2()->put_Width(width);
     }
 
     // Executes a command using the IOleCommandTarget interface.
-    inline void CWebBrowser::ExecWB(OLECMDID cmdID, OLECMDEXECOPT cmdExecOpt, VARIANT* in, VARIANT* out)
+    inline HRESULT CWebBrowser::ExecWB(OLECMDID cmdID, OLECMDEXECOPT cmdExecOpt, VARIANT* in, VARIANT* out)
     {
-        GetIWebBrowser2()->ExecWB(cmdID, cmdExecOpt, in, out);
+        return GetIWebBrowser2()->ExecWB(cmdID, cmdExecOpt, in, out);
     }
 
     // Gets the value associated with the specified property name.
-    inline VARIANT CWebBrowser::GetProperty( LPCTSTR pProperty )
+    inline VARIANT CWebBrowser::GetProperty( LPCTSTR pProperty ) const
     {
         VARIANT v;
         GetIWebBrowser2()->GetProperty( TtoBSTR(pProperty), &v );
@@ -1069,192 +1134,206 @@ namespace Win32xx
     }
 
     // Navigates backward one item in the history list.
-    inline void CWebBrowser::GoBack()
+    inline HRESULT CWebBrowser::GoBack()
     {
-        GetIWebBrowser2()->GoBack();
+        return GetIWebBrowser2()->GoBack();
     }
 
     // Navigates forward one item in the history list.
-    inline void CWebBrowser::GoForward()
+    inline HRESULT CWebBrowser::GoForward()
     {
-        GetIWebBrowser2()->GoForward();
+        return GetIWebBrowser2()->GoForward();
     }
 
     // Navigates to the current home or start page.
-    inline void CWebBrowser::GoHome()
+    inline HRESULT CWebBrowser::GoHome()
     {
-        GetIWebBrowser2()->GoHome();
+        return GetIWebBrowser2()->GoHome();
     }
 
     // Navigates to the current search page.
-    inline void CWebBrowser::GoSearch()
+    inline HRESULT CWebBrowser::GoSearch()
     {
-        GetIWebBrowser2()->GoSearch();
+        return GetIWebBrowser2()->GoSearch();
     }
 
     // Navigates to a resource identified by a URL or to a file identified by a full path.
-    inline void CWebBrowser::Navigate(LPCTSTR pURL,   DWORD flags /*= 0*/, LPCTSTR pTargetFrameName /*= NULL*/,
+    inline HRESULT CWebBrowser::Navigate(LPCTSTR pURL,   DWORD flags /*= 0*/, LPCTSTR pTargetFrameName /*= NULL*/,
                     LPCTSTR pHeaders /*= NULL*/, LPVOID pPostData /*= NULL*/,   DWORD postDataLen /*= 0*/)
     {
-        VARIANT Flags;
-        Flags.vt = VT_I4;
-        Flags.lVal = flags;
+        VARIANT flagsVariant;
+        flagsVariant.vt = VT_I4;
+        flagsVariant.lVal = flags;
 
-        VARIANT TargetFrameName;
-        TargetFrameName.vt = VT_BSTR;
-        TargetFrameName.bstrVal = SysAllocString(TtoW(pTargetFrameName));
+        VARIANT targetVariant;
+        targetVariant.vt = VT_BSTR;
+        targetVariant.bstrVal = SysAllocString(TtoW(pTargetFrameName));
 
         SAFEARRAY* psa = SafeArrayCreateVector(VT_UI1, 0, postDataLen);
         CopyMemory(psa->pvData, pPostData, postDataLen);
-        VARIANT PostData;
-        PostData.vt = VT_ARRAY|VT_UI1;
-        PostData.parray = psa;
+        VARIANT dataVariant;
+        dataVariant.vt = VT_ARRAY|VT_UI1;
+        dataVariant.parray = psa;
 
-        VARIANT Headers;
-        Headers.vt = VT_BSTR;
-        Headers.bstrVal = SysAllocString(TtoW(pHeaders));
+        VARIANT headersVariant;
+        headersVariant.vt = VT_BSTR;
+        headersVariant.bstrVal = SysAllocString(TtoW(pHeaders));
         BSTR url = SysAllocString(TtoW(pURL));
-
+        HRESULT hr = E_FAIL;
         if (url)
-            GetIWebBrowser2()->Navigate(url, &Flags, &TargetFrameName, &PostData, &Headers);
+            hr = GetIWebBrowser2()->Navigate(url, &flagsVariant, &targetVariant, &dataVariant, &headersVariant);
 
-        VariantClear(&Flags);
-        VariantClear(&TargetFrameName);
-        VariantClear(&PostData);
-        VariantClear(&Headers);
+        VariantClear(&flagsVariant);
+        VariantClear(&targetVariant);
+        VariantClear(&dataVariant);
+        VariantClear(&headersVariant);
+
+        return hr;
     }
 
     // Navigates the browser to a location specified by a pointer to an item identifier list (PIDL) for an entity in the Microsoft Windows Shell namespace.
-    inline void CWebBrowser::Navigate2(LPITEMIDLIST pIDL, DWORD flags /*= 0*/, LPCTSTR pTargetFrameName /*= NULL*/)
+    inline HRESULT CWebBrowser::Navigate2(LPITEMIDLIST pIDL, DWORD flags /*= 0*/, LPCTSTR pTargetFrameName /*= NULL*/)
     {
         UINT cb = GetPidlLength(pIDL);
-        LPSAFEARRAY psa = SafeArrayCreateVector(VT_UI1, 0, cb);
-        VARIANT PIDL;
-        PIDL.vt = VT_ARRAY|VT_UI1;
-        PIDL.parray = psa;
-        CopyMemory(psa->pvData, pIDL, cb);
+        LPSAFEARRAY pSA = SafeArrayCreateVector(VT_UI1, 0, cb);
+        VARIANT pidlVariant;
+        pidlVariant.vt = VT_ARRAY|VT_UI1;
+        pidlVariant.parray = pSA;
+        CopyMemory(pSA->pvData, pIDL, cb);
 
-        VARIANT Flags;
-        Flags.vt = VT_I4;
-        Flags.lVal = flags;
+        VARIANT flagsVariant;
+        flagsVariant.vt = VT_I4;
+        flagsVariant.lVal = flags;
 
-        VARIANT TargetFrameName;
-        TargetFrameName.vt = VT_BSTR;
-        TargetFrameName.bstrVal = SysAllocString(TtoW(pTargetFrameName));
+        VARIANT targetVariant;
+        targetVariant.vt = VT_BSTR;
+        targetVariant.bstrVal = SysAllocString(TtoW(pTargetFrameName));
 
-        GetIWebBrowser2()->Navigate2(&PIDL, &Flags, &TargetFrameName, 0, 0);
+        HRESULT hr = GetIWebBrowser2()->Navigate2(&pidlVariant, &flagsVariant, &targetVariant, 0, 0);
 
-        VariantClear(&PIDL);
-        VariantClear(&Flags);
-        VariantClear(&TargetFrameName);
+        VariantClear(&pidlVariant);
+        VariantClear(&flagsVariant);
+        VariantClear(&targetVariant);
+
+        return hr;
     }
 
     // Navigates the browser to a location that is expressed as a URL.
-    inline void CWebBrowser::Navigate2(LPCTSTR pURL, DWORD flags /*= 0*/, LPCTSTR pTargetFrameName /*= NULL*/,
+    inline HRESULT CWebBrowser::Navigate2(LPCTSTR pURL, DWORD flags /*= 0*/, LPCTSTR pTargetFrameName /*= NULL*/,
                      LPCTSTR pHeaders /*= NULL*/,   LPVOID pPostData /*= NULL*/, DWORD postDataLen /*= 0*/)
     {
-        VARIANT URL;
-        URL.vt = VT_BSTR;
-        URL.bstrVal = SysAllocString(TtoW(pURL));
+        VARIANT urlVariant;
+        urlVariant.vt = VT_BSTR;
+        urlVariant.bstrVal = SysAllocString(TtoW(pURL));
 
-        VARIANT Flags;
-        Flags.vt = VT_I4;
-        Flags.lVal = flags;
+        VARIANT flagsVariant;
+        flagsVariant.vt = VT_I4;
+        flagsVariant.lVal = flags;
 
-        VARIANT TargetFrameName;
-        TargetFrameName.vt = VT_BSTR;
-        TargetFrameName.bstrVal = SysAllocString(TtoW(pTargetFrameName));
+        VARIANT TargetVariant;
+        TargetVariant.vt = VT_BSTR;
+        TargetVariant.bstrVal = SysAllocString(TtoW(pTargetFrameName));
 
         // Store the pidl in a SafeArray, and assign the SafeArray to a VARIANT
         SAFEARRAY* psa = SafeArrayCreateVector(VT_UI1, 0, postDataLen);
         CopyMemory(psa->pvData, pPostData, postDataLen);
-        VARIANT PostData;
-        PostData.vt = VT_ARRAY|VT_UI1;
-        PostData.parray = psa;
+        VARIANT dataVariant;
+        dataVariant.vt = VT_ARRAY|VT_UI1;
+        dataVariant.parray = psa;
 
-        VARIANT Headers;
-        Headers.vt = VT_BSTR;
-        Headers.bstrVal = SysAllocString(TtoW(pHeaders));
+        VARIANT headersVariant;
+        headersVariant.vt = VT_BSTR;
+        headersVariant.bstrVal = SysAllocString(TtoW(pHeaders));
 
-        GetIWebBrowser2()->Navigate2(&URL, &Flags, &TargetFrameName, &PostData, &Headers);
+        HRESULT hr = GetIWebBrowser2()->Navigate2(&urlVariant, &flagsVariant, &TargetVariant, &dataVariant, &headersVariant);
 
-        VariantClear(&URL);
-        VariantClear(&Flags);
-        VariantClear(&TargetFrameName);
-        VariantClear(&PostData);
-        VariantClear(&Headers);
+        VariantClear(&urlVariant);
+        VariantClear(&flagsVariant);
+        VariantClear(&TargetVariant);
+        VariantClear(&dataVariant);
+        VariantClear(&headersVariant);
+
+        return hr;
     }
 
     // Sets the value of a property associated with the object.
-    inline void CWebBrowser::PutProperty(LPCTSTR pProperty, const VARIANT& value)
+    inline HRESULT CWebBrowser::PutProperty(LPCTSTR pPropertyName, const VARIANT& value)
     {
-        GetIWebBrowser2()->PutProperty(TtoBSTR(pProperty), value);
+        return GetIWebBrowser2()->PutProperty(TtoBSTR(pPropertyName), value);
     }
 
     // Sets the value of a property associated with the object.
-    inline void CWebBrowser::PutProperty(LPCTSTR pPropertyName, double value)
+    inline HRESULT CWebBrowser::PutProperty(LPCTSTR pPropertyName, double value)
     {
         VARIANT v;
         v.vt = VT_I4;
         v.dblVal = value;
-        GetIWebBrowser2()->PutProperty(TtoBSTR(pPropertyName), v);
+        HRESULT hr = GetIWebBrowser2()->PutProperty(TtoBSTR(pPropertyName), v);
         VariantClear(&v);
+        return hr;
     }
 
     // Sets the value of a property associated with the object.
-    inline void CWebBrowser::PutProperty(LPCTSTR pPropertyName, long value)
+    inline HRESULT CWebBrowser::PutProperty(LPCTSTR pPropertyName, long value)
     {
         VARIANT v;
         v.vt = VT_I4;
         v.lVal= value;
-        GetIWebBrowser2()->PutProperty(TtoBSTR(pPropertyName), v);
+        HRESULT hr = GetIWebBrowser2()->PutProperty(TtoBSTR(pPropertyName), v);
         VariantClear(&v);
+        return hr;
     }
 
     // Sets the value of a property associated with the object.
-    inline void CWebBrowser::PutProperty(LPCTSTR pPropertyName, LPCTSTR pValue)
+    inline HRESULT CWebBrowser::PutProperty(LPCTSTR pPropertyName, LPCTSTR pValue)
     {
         VARIANT v;
         v.vt = VT_BSTR;
         v.bstrVal= SysAllocString(TtoW(pValue));
-        GetIWebBrowser2()->PutProperty(TtoBSTR(pPropertyName), v);
+        HRESULT hr = GetIWebBrowser2()->PutProperty(TtoBSTR(pPropertyName), v);
         VariantClear(&v);
+        return hr;
     }
 
     // Sets the value of a property associated with the object.
-    inline void CWebBrowser::PutProperty(LPCTSTR pPropertyName, short value)
+    inline HRESULT CWebBrowser::PutProperty(LPCTSTR pPropertyName, short value)
     {
         VARIANT v;
         v.vt = VT_I4;
         v.iVal = value;
-        GetIWebBrowser2()->PutProperty(TtoBSTR(pPropertyName), v);
+        HRESULT hr = GetIWebBrowser2()->PutProperty(TtoBSTR(pPropertyName), v);
         VariantClear(&v);
+        return hr;
     }
 
     // Reloads the file that is currently displayed in the object.
-    inline void CWebBrowser::Refresh()
+    inline HRESULT CWebBrowser::Refresh()
     {
-        GetIWebBrowser2()->Refresh();
+        return GetIWebBrowser2()->Refresh();
     }
 
     // Reloads the file that is currently displayed with the specified refresh level.
-    inline void CWebBrowser::Refresh2(int level)
+    inline HRESULT CWebBrowser::Refresh2(int level)
     {
         VARIANT v;
         v.vt = VT_I4;
         v.intVal = level;
-        GetIWebBrowser2()->Refresh2(&v);
+        HRESULT hr = GetIWebBrowser2()->Refresh2(&v);
         VariantClear(&v);
+        return hr;
     }
 
     // Cancels a pending navigation or download, and stops dynamic page elements, such as background sounds and animations.
-    inline void CWebBrowser::Stop()
+    inline HRESULT CWebBrowser::Stop()
     {
-        GetIWebBrowser2()->Stop();
+        return GetIWebBrowser2()->Stop();
     }
 
-
 }
+
+#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+#pragma warning ( pop )
+#endif // (_MSC_VER) && (_MSC_VER >= 1400)
 
 #endif  // _WIN32XX_WEBBROWSER_H_
 

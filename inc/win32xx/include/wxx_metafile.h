@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -60,7 +60,7 @@ namespace Win32xx
 #ifndef _WIN32_WCE
 
 
-    /////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
     // CMetaFile wraps a HMETAFILE. CMetaFile can be used anywhere a HMETAFILE can
     // be used. CMetaFile objects are reference counted, so they can be safely
     // copied. CMetatFile automatically deletes the HMETAFILE when the last copy of
@@ -72,7 +72,7 @@ namespace Win32xx
         CMetaFile();
         CMetaFile(HMETAFILE metaFile);
         CMetaFile(const CMetaFile& rhs);
-        ~CMetaFile();
+        virtual ~CMetaFile();
         CMetaFile& operator = (const CMetaFile& rhs);
         void operator = (const HMETAFILE metaFile);
         operator HMETAFILE() { return m_pData->metaFile; }
@@ -186,7 +186,7 @@ namespace Win32xx
     {
         assert(m_pData);
 
-        if (metaFile != m_pData->metaFile)
+        if (m_pData && metaFile != m_pData->metaFile)
         {
             // Release any existing enhanced metafile
             if (m_pData->metaFile != 0)
@@ -203,7 +203,7 @@ namespace Win32xx
     {
         assert(m_pData);
 
-        if (InterlockedDecrement(&m_pData->count) == 0)
+        if (m_pData && InterlockedDecrement(&m_pData->count) == 0)
         {
             if (m_pData->metaFile != NULL)
             {
@@ -264,7 +264,7 @@ namespace Win32xx
     {
         assert(m_pData);
 
-        if (enhMetaFile != m_pData->enhMetaFile)
+        if (m_pData && enhMetaFile != m_pData->enhMetaFile)
         {
             // Release any existing enhanced metafile
             if (m_pData->enhMetaFile != 0)
@@ -281,7 +281,7 @@ namespace Win32xx
     {
         assert(m_pData);
 
-        if (InterlockedDecrement(&m_pData->count) == 0)
+        if (m_pData && InterlockedDecrement(&m_pData->count) == 0)
         {
             if (m_pData->enhMetaFile != NULL)
             {

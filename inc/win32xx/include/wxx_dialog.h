@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -74,10 +74,20 @@
     #define SWP_NOCOPYBITS      0x0100
 #endif
 
+#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+#pragma warning ( push )
+#pragma warning ( disable : 26812 )       // enum type is unscoped.
+#endif // (_MSC_VER) && (_MSC_VER >= 1400)
 
 namespace Win32xx
 {
-    // This class displays and manages a dialog.
+    ///////////////////////////////////////////////////////////
+    // CDialog manages a dialog box. Dialog boxes are typically
+    // used by an application to retrieve user input.
+    // A modal dialog box requires the user to supply information or
+    // cancel the dialog box before allowing the application to continue.
+    // A modeless dialog box allows the user to supply information and
+    // return to the previous task without closing the dialog box.
     class CDialog : public CWnd
     {
 
@@ -87,16 +97,26 @@ namespace Win32xx
         CDialog(LPCDLGTEMPLATE pDlgTemplate);
         virtual ~CDialog();
 
-        // You probably won't need to override these functions
+        // Virtual functions
         virtual void AttachItem(int id, CWnd& wnd);
         virtual HWND Create(HWND parent = 0) { return DoModeless(parent); }
         virtual INT_PTR DoModal(HWND parent = 0);
         virtual HWND DoModeless(HWND parent = 0);
-        virtual BOOL IsModal() const { return m_isModal; }
+
+        // State functions
+        BOOL IsModal() const { return m_isModal; }
         BOOL IsIndirect() const { return (NULL != m_pDlgTemplate); }
 
+        // Wrappers for Windows API functions
+        DWORD GetDefID() const;
+        void GotoDlgCtrl(HWND control);
+        BOOL MapDialogRect(RECT& rc) const;
+        void NextDlgCtrl() const;
+        void PrevDlgCtrl() const;
+        void SetDefID(UINT id);
+
     protected:
-        // These are the functions you might wish to override
+        // Virtual functions you might wish to override
         virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual void EndDialog(INT_PTR result);
         virtual void OnCancel();
@@ -108,15 +128,8 @@ namespace Win32xx
         // Not intended to be overridden
         virtual INT_PTR DialogProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
 
-        // Can't override these functions
-        DWORD GetDefID() const;
-        void GotoDlgCtrl(HWND control);
-        BOOL MapDialogRect(RECT& rc) const;
-        void NextDlgCtrl() const;
-        void PrevDlgCtrl() const;
-        void SetDefID(UINT id);
-
     private:
+        using CWnd::WndProc;                  // Make WndProc private
         CDialog(const CDialog&);              // Disable copy construction
         CDialog& operator = (const CDialog&); // Disable assignment operator
 
@@ -128,7 +141,7 @@ namespace Win32xx
 
         BOOL m_isModal;                  // a flag for modal dialogs
         LPCTSTR m_pResName;              // the resource name for the dialog
-		LPCDLGTEMPLATE m_pDlgTemplate;   // the dialog template for indirect dialogs
+        LPCDLGTEMPLATE m_pDlgTemplate;   // the dialog template for indirect dialogs
     };
 
 
@@ -154,8 +167,10 @@ namespace Win32xx
     enum Alignment {topleft, topright, bottomleft, bottomright, center, leftcenter, rightcenter, topcenter, bottomcenter };
 
 
-    // The CResizer class can be used to rearrange a dialog's child
-    // windows when the dialog is resized.
+    ////////////////////////////////////////////////////////////////
+    // The CResizer class is used to automatically rearrange child
+    // child windows when the parent window is resized. It displays
+    // scroll bars as required. CResizer is often used with dialogs.
     class CResizer
     {
     public:
@@ -228,7 +243,7 @@ namespace Win32xx
         LoadCommonControls();
     }
 
-    //For indirect dialogs - created from a dialog box template in memory.
+    // Constructor for indirect dialogs, created from a dialog box template in memory.
     inline CDialog::CDialog(LPCDLGTEMPLATE pDlgTemplate) : m_isModal(TRUE),
                         m_pResName(NULL), m_pDlgTemplate(pDlgTemplate)
     {
@@ -253,7 +268,8 @@ namespace Win32xx
         wnd.AttachDlgItem(id, *this);
     }
 
-    // Override this function in your class derived from CDialog if you wish to handle messages.
+    // The dialog's message procedure. Override this function in your class derived
+    // from CDialog if you wish to handle messages.
     inline INT_PTR CDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
     {
         // A typical function might look like this:
@@ -329,20 +345,22 @@ namespace Win32xx
                 // Restricting OnNotifyReflect to child windows avoids double handling.
                 LPNMHDR pNmhdr = reinterpret_cast<LPNMHDR>(lparam);
                 assert(pNmhdr);
-                HWND from = pNmhdr->hwndFrom;
-                CWnd* pFrom = GetApp()->GetCWndFromMap(from);
+                if (pNmhdr)
+                {
+                    HWND from = pNmhdr->hwndFrom;
+                    CWnd* pFrom = GetApp()->GetCWndFromMap(from);
 
-                if (pFrom != NULL)
-                    if (::GetParent(from) == m_wnd)
-                        result = pFrom->OnNotifyReflect(wparam, lparam);
+                    if (pFrom != NULL)
+                        if (::GetParent(from) == m_wnd)
+                            result = pFrom->OnNotifyReflect(wparam, lparam);
 
-                // Handle user notifications
-                if (!result) result = OnNotify(wparam, lparam);
+                    // Handle user notifications
+                    if (!result) result = OnNotify(wparam, lparam);
 
-                // Set the return code for notifications
-                if (IsWindow())
-                    SetWindowLongPtr(DWLP_MSGRESULT, static_cast<LONG_PTR>(result));
-
+                    // Set the return code for notifications
+                    if (IsWindow())
+                        SetWindowLongPtr(DWLP_MSGRESULT, static_cast<LONG_PTR>(result));
+                }
                 return result;
             }
 
@@ -524,13 +542,15 @@ namespace Win32xx
             Destroy();
     }
 
-    // Called when the Cancel button is pressed. Override to customize OnCancel behaviour.
+    // Called when the Cancel button is pressed. Automatically closes the dialog.
+    // Override to customize OnCancel behaviour.
     inline void CDialog::OnCancel()
     {
         EndDialog(IDCANCEL);
     }
 
-    // Called when the Close button is pressed.
+    // Called when the Close button is pressed. Automatically closes the dialog.
+    // Override to customize OnClose behaviour.
     inline void CDialog::OnClose()
     {
         EndDialog(0);
@@ -544,7 +564,8 @@ namespace Win32xx
         return TRUE;
     }
 
-    // Called when the OK button is pressed. Override to customize OnOK behaviour.
+    // Called when the OK button is pressed. Automatically closes the dialog.
+    // Override to customize OnOK behaviour.
     inline void CDialog::OnOK()
     {
         if ( IsWindow() )
@@ -643,14 +664,21 @@ namespace Win32xx
             TLSData* pTLSData = GetApp()->GetTlsData();
             assert(pTLSData);
 
-            // Retrieve pointer to CWnd object from Thread Local Storage TLS
-            pDialog = static_cast<CDialog*>(pTLSData->pWnd);
-            assert(pDialog);
-            pTLSData->pWnd = NULL;
+            if (pTLSData)
+            {
 
-            // Store the Window pointer into the HWND map
-            pDialog->m_wnd = wnd;
-            pDialog->AddToMap();
+                // Retrieve pointer to CWnd object from Thread Local Storage TLS
+                pDialog = static_cast<CDialog*>(pTLSData->pWnd);
+                assert(pDialog);
+                if (pDialog)
+                {
+                    pTLSData->pWnd = NULL;
+
+                    // Store the Window pointer into the HWND map
+                    pDialog->m_wnd = wnd;
+                    pDialog->AddToMap();
+                }
+            }
         }
 
         return pDialog->DialogProc(msg, wparam, lparam);
@@ -686,8 +714,8 @@ namespace Win32xx
             assert(pMsg);
 
             // only pre-translate keyboard and mouse events
-            if ((pMsg->message >= WM_KEYFIRST && pMsg->message <= WM_KEYLAST) ||
-                (pMsg->message >= WM_MOUSEFIRST && pMsg->message <= WM_MOUSELAST))
+            if (pMsg && ((pMsg->message >= WM_KEYFIRST && pMsg->message <= WM_KEYLAST) ||
+                (pMsg->message >= WM_MOUSEFIRST && pMsg->message <= WM_MOUSELAST)))
             {
                 for (HWND wnd = pMsg->hwnd; wnd != NULL; wnd = ::GetParent(wnd))
                 {
@@ -833,27 +861,35 @@ namespace Win32xx
 
         switch (LOWORD(wparam))
         {
-            case SB_PAGEUP: // User clicked the scroll bar shaft left of the scroll box.
+            case SB_LEFT: // Scrolls to the upper left.
+                xNewPos = 0;
+                break;
+
+            case SB_RIGHT: // Scrolls to the lower right.
+                xNewPos = m_minRect.Width();
+                break;
+
+            case SB_PAGELEFT: // User clicked the scroll bar shaft left of the scroll box.
                 xNewPos = m_xScrollPos - 50;
                 break;
 
-            case SB_PAGEDOWN: // User clicked the scroll bar shaft right of the scroll box.
+            case SB_PAGERIGHT: // User clicked the scroll bar shaft right of the scroll box.
                 xNewPos = m_xScrollPos + 50;
                 break;
 
-            case SB_LINEUP: // User clicked the left arrow.
+            case SB_LINELEFT: // User clicked the left arrow.
                 xNewPos = m_xScrollPos - 5;
                 break;
 
-            case SB_LINEDOWN: // User clicked the right arrow.
+            case SB_LINERIGHT: // User clicked the right arrow.
                 xNewPos = m_xScrollPos + 5;
                 break;
 
-            case SB_THUMBPOSITION: // User dragged the scroll box.
+            case SB_THUMBPOSITION: // User has dragged the scroll box.
                 xNewPos = HIWORD(wparam);
                 break;
 
-            case SB_THUMBTRACK: // User dragging the scroll box.
+            case SB_THUMBTRACK: // User is dragging the scroll box.
                 xNewPos = HIWORD(wparam);
                 break;
 
@@ -886,6 +922,14 @@ namespace Win32xx
 
         switch (LOWORD(wparam))
         {
+            case SB_TOP: // Scrolls to the top.
+                yNewPos = 0;
+                break;
+
+            case SB_BOTTOM: // Scrolls to the bottom.
+                yNewPos = m_minRect.Height();
+                break;
+
             case SB_PAGEUP: // User clicked the scroll bar shaft above the scroll box.
                 yNewPos = m_yScrollPos - 50;
                 break;
@@ -902,11 +946,11 @@ namespace Win32xx
                 yNewPos = m_yScrollPos + 5;
                 break;
 
-            case SB_THUMBPOSITION: // User dragged the scroll box.
+            case SB_THUMBPOSITION: // User has dragged the scroll box.
                 yNewPos = HIWORD(wparam);
                 break;
 
-            case SB_THUMBTRACK: // User dragging the scroll box.
+            case SB_THUMBTRACK: // User is dragging the scroll box.
                 yNewPos = HIWORD(wparam);
                 break;
 
@@ -1065,7 +1109,9 @@ namespace Win32xx
 
 } // namespace Win32xx
 
-
+#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+#pragma warning ( pop )
+#endif // (_MSC_VER) && (_MSC_VER >= 1400)
 
 #endif // _WIN32XX_DIALOG_H_
 

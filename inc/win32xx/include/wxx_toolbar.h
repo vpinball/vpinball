@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -60,7 +60,7 @@ namespace Win32xx
         virtual BOOL AddReplaceBitmap(UINT id);
         virtual void Destroy();
         virtual BOOL ReplaceBitmap(UINT newBitmapID);
-        virtual BOOL SetButtonText(int buttonID, LPCTSTR pText);
+        virtual BOOL SetButtonText(int buttonID, LPCTSTR text);
 
         // Wrappers for Win32 API functions
         BOOL  AddButtons(UINT buttonCount, LPTBBUTTON pButtonInfoArray) const;
@@ -72,7 +72,7 @@ namespace Win32xx
         void  Customize() const;
         BOOL  DeleteButton(int index) const;
         BOOL  DisableButton(int buttonID) const;
-        BOOL  EnableButton(int buttonID) const;
+        BOOL  EnableButton(int buttonID, BOOL isEnabled = TRUE) const;
         BOOL  GetButton(int index, TBBUTTON& buttonInfo) const;
         int   GetButtonCount() const;
         DWORD GetButtonSize() const;
@@ -82,8 +82,8 @@ namespace Win32xx
         int   GetCommandID(int index) const;
         CImageList GetDisabledImageList();
         DWORD GetExtendedStyle() const;
-        int   GetHotItem() const;
         CImageList GetHotImageList();
+        int   GetHotItem() const;
         CImageList GetImageList();
         CRect GetItemRect(int index) const;
         CSize GetMaxSize() const;
@@ -106,8 +106,8 @@ namespace Win32xx
         BOOL  MoveButton(UINT oldPos, UINT newPos) const;
         BOOL  PressButton(int buttonID, BOOL press) const;
         void  SaveRestore(BOOL save, TBSAVEPARAMS* pSaveInfo) const;
-        void  SetButtonInfo(int buttonID, int buttonNewID, int image, BYTE style = 0, BYTE state = 0) const;
         BOOL  SetBitmapSize(int cx, int cy) const;
+        void  SetButtonInfo(int buttonID, int buttonNewID, int image, BYTE style = 0, BYTE state = 0) const;
         BOOL  SetButtonSize(int cx, int cy) const;
         BOOL  SetButtonState(int buttonID, UINT state) const;
         BOOL  SetButtonStyle(int buttonID, BYTE style) const;
@@ -170,7 +170,7 @@ namespace Win32xx
     // Note: AddBitmap supports a maximum colour depth of 8 bits (256 colours)
     //       This is an obsolete functioned retained for Win95 support.
     //       Unless Win95 support is required, use SetImageList instead.
-    // Refer to TB_ADDBITMAP in the Windows API documentation for more information. 
+    // Refer to TB_ADDBITMAP in the Windows API documentation for more information.
     inline int CToolBar::AddBitmap(UINT bitmapID)
     {
         assert(IsWindow());
@@ -194,17 +194,17 @@ namespace Win32xx
     }
 
     // Adds a single button to the Toolbar. It provides a convenient alternative to AddButtons.
-    // A resource ID of 0 is a separator.  iImage is the index of the image in the ImageList.
+    // A resource ID of 0 is a separator. image is the index of the image in the ImageList.
     // The default is -1 in which case the image based on the button's position is chosen.
-    // Refer to TB_ADDBUTTONS in the Windows API documentation for more information.        
-    inline BOOL CToolBar::AddButton(UINT id, BOOL IsEnabled /* = TRUE */, int iImage /* = -1 */)
+    // Refer to TB_ADDBUTTONS in the Windows API documentation for more information.
+    inline BOOL CToolBar::AddButton(UINT id, BOOL isEnabled /* = TRUE */, int image /* = -1 */)
     {
         assert(IsWindow());
 
         // Count toolbar buttons with Command IDs
         int nImages = 0;
 
-        if (iImage == -1)
+        if (image == -1)
         {
             // choose the image based on the number of buttons already used
             for (int i = 0; i < GetButtonCount(); ++i)
@@ -215,7 +215,7 @@ namespace Win32xx
         }
         else
         {
-            nImages = iImage;
+            nImages = image;
         }
 
         // TBBUTTON structure for each button in the toolbar
@@ -230,7 +230,7 @@ namespace Win32xx
         {
             tbb.iBitmap = nImages;
             tbb.idCommand = id;
-            tbb.fsState = IsEnabled? TBSTATE_ENABLED : 0;
+            tbb.fsState = isEnabled? TBSTATE_ENABLED : 0;
             tbb.fsStyle = TBSTYLE_BUTTON;
         }
 
@@ -355,10 +355,10 @@ namespace Win32xx
 
     // Enables the specified button in a ToolBar.
     // Refer to TB_ENABLEBUTTON in the Windows API documentation for more information.
-    inline BOOL CToolBar::EnableButton(int buttonID) const
+    inline BOOL CToolBar::EnableButton(int buttonID, BOOL isEnabled) const
     {
         assert(IsWindow());
-        return (SendMessage(TB_ENABLEBUTTON, (WPARAM)buttonID, (LPARAM)MAKELONG(TRUE,0 )) != 0);
+        return (SendMessage(TB_ENABLEBUTTON, (WPARAM)buttonID, (LPARAM)MAKELONG(isEnabled, 0 )) != 0);
     }
 
     // Receives the TBBUTTON structure information from the specified button.
@@ -729,7 +729,6 @@ namespace Win32xx
     // Called when the toolbar is resized.
     inline LRESULT CToolBar::OnWindowPosChanging(UINT msg, WPARAM wparam, LPARAM lparam)
     {
-
         //  Used by ReBar controls to adjust ToolBar window size
         if ( GetParent().SendMessage(UWM_TBWINPOSCHANGING, (WPARAM)GetHwnd(), lparam) )
         {
@@ -744,7 +743,6 @@ namespace Win32xx
     // Sets the CREATESTRUCT parameters prior to window creation
     inline void CToolBar::PreCreate(CREATESTRUCT& cs)
     {
-
         cs.style = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | TBSTYLE_TOOLTIPS | TBSTYLE_FLAT;
     }
 
@@ -793,9 +791,9 @@ namespace Win32xx
     }
 
     // Saves or restores the toolbar state in the registry. Parameter values:
-    //   save   If this parameter is TRUE, the information is saved, otherwise it is restored.
-    //   pSaveInfo  Pointer to a TBSAVEPARAMS structure that specifies the registry key, subkey,
-    //          and value name for the toolbar state information.
+    //  save       If this parameter is TRUE, the information is saved, otherwise it is restored.
+    //  pSaveInfo  Pointer to a TBSAVEPARAMS structure that specifies the registry key, subkey,
+    //             and value name for the toolbar state information.
     // Refer to TB_SAVERESTORE in the Windows API documentation for more information.
     inline void CToolBar::SaveRestore(BOOL save, TBSAVEPARAMS* pSaveInfo) const
     {
@@ -814,7 +812,7 @@ namespace Win32xx
     }
 
     // Sets the size of the buttons to be added to a ToolBar.
-    // The size can be set only before adding any buttons to the ToolBar.
+    // This function should generally be called after adding buttons.
     // Refer to TB_SETBUTTONSIZE in the Windows API documentation for more information.
     inline BOOL CToolBar::SetButtonSize(int cx, int cy) const
     {
@@ -891,14 +889,14 @@ namespace Win32xx
     // This rather convoluted approach to setting ToolBar button text supports
     // all versions of Windows, including Win95 with COMCTL32.DLL version 4.0.
     // Refer to TB_INSERTBUTTON in the Windows API documentation for more information.
-    inline BOOL CToolBar::SetButtonText(int buttonID, LPCTSTR pText)
+    inline BOOL CToolBar::SetButtonText(int buttonID, LPCTSTR text)
     {
         assert(IsWindow());
         int index = CommandToIndex(buttonID);
         assert(index != -1);
 
         BOOL succeeded = FALSE;
-        CString string = pText;
+        CString string = text;
         std::map<CString, int>::iterator m;
         int stringIndex;
 
@@ -918,7 +916,7 @@ namespace Win32xx
             }
 
             // No index for this string exists, so create it now
-            str = pText;
+            str = text;
             str += _T('\0');        // Double-null terminate
 
             stringIndex = AddStrings(str);
@@ -969,7 +967,7 @@ namespace Win32xx
     }
 
     // Sets the button width.
-    // The set button width can adjust the width of the button after it is created.
+    // Adjust the width of a toolbar button after it is created.
     // This is useful when replacing a button with a ComboBox or other control.
     // Refer to TB_SETBUTTONINFO in the Windows API documentation for more information.
     inline BOOL CToolBar::SetButtonWidth(int buttonID, int width) const
@@ -987,8 +985,8 @@ namespace Win32xx
         BOOL result = (SendMessage(TB_SETBUTTONINFO, (WPARAM)buttonID, (LPARAM)&tbbi) != 0);
 
         // Send a changed message to the parent (used by the ReBar)
-        SIZE MaxSize = GetMaxSize();
-        GetParent().SendMessage(UWM_TBRESIZE, (WPARAM)GetHwnd(), (LPARAM)&MaxSize);
+        SIZE maxSize = GetMaxSize();
+        GetParent().SendMessage(UWM_TBRESIZE, (WPARAM)GetHwnd(), (LPARAM)&maxSize);
 
         return result;
     }

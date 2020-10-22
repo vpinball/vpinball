@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -68,7 +68,7 @@ namespace Win32xx
     {
 #if defined (_MSC_VER) && (_MSC_VER >= 1400)
 #pragma warning ( push )
-#pragma warning ( disable : 28125 )       // call within __try __catch block. 
+#pragma warning ( disable : 28125 )       // call within __try __catch block.
 #endif // (_MSC_VER) && (_MSC_VER >= 1400)
 
         ::InitializeCriticalSection(&m_cs);
@@ -87,7 +87,6 @@ namespace Win32xx
 
         ::DeleteCriticalSection(&m_cs);
     }
-
 
     // Enter the critical section and increment the lock count.
     inline void CCriticalSection::Lock()
@@ -149,12 +148,12 @@ namespace Win32xx
     //  if (ar.IsStoring())
     //  {
     //      // Store a member variable in the archive
-    //      ar << m_SomeValue;
+    //      ar << m_someValue;
     //  }
     //  else
     //  {
     //      // Load a member variable from the archive
-    //      ar >> m_SomeValue;
+    //      ar >> m_someValue;
     //  }
 
     }
@@ -238,7 +237,7 @@ namespace Win32xx
         // TLSData is assigned when the first window in the thread is created.
         assert (pTLSData);
 
-        return pTLSData->mainWnd;
+        return pTLSData ? pTLSData->mainWnd : 0;
     }
 
     // Retrieves the handle of this thread.
@@ -287,7 +286,7 @@ namespace Win32xx
         while (status != 0)
         {
             // While idle, perform idle processing until OnIdle returns FALSE
-            while (!::PeekMessage(&Msg, 0, 0, 0, PM_NOREMOVE) && OnIdle(lCount) != FALSE  )
+            while (!::PeekMessage(&Msg, 0, 0, 0, PM_NOREMOVE) && OnIdle(lCount) != FALSE)
                 ++lCount;
 
             lCount = 0;
@@ -307,7 +306,7 @@ namespace Win32xx
         return LOWORD(Msg.wParam);
     }
 
-    // This functions is called by the MessageLoop. It is called when the message queue
+    // This function is called by the MessageLoop. It is called when the message queue
     // is empty. Return TRUE to continue idle processing or FALSE to end idle processing
     // until another message is queued. lCount is incremented each time OnIdle is called,
     // and reset to 0 each time a new messages is processed.
@@ -318,7 +317,7 @@ namespace Win32xx
         return FALSE;
     }
 
-    // This functions is called by the MessageLoop. It processes the
+    // This function is called by the MessageLoop. It processes the
     // keyboard accelerator keys and calls CWnd::PreTranslateMessage for
     // keyboard and mouse events.
     inline BOOL CWinThread::PreTranslateMessage(MSG& msg)
@@ -405,7 +404,7 @@ namespace Win32xx
     // When the thread starts, it runs this function.
     inline UINT WINAPI CWinThread::StaticThreadProc(LPVOID pCThread)
     {
-        // Get the pointer for this CMyThread object
+        // Get the pointer for this CWinThread object
         CWinThread* pThread = static_cast<CWinThread*>(pCThread);
         assert(pThread);
 
@@ -721,7 +720,7 @@ namespace Win32xx
 
         // Retrieve the class information
         ZeroMemory(&defaultWC, sizeof(defaultWC));
-        ::GetClassInfo(GetInstanceHandle(), pClassName, &defaultWC);
+        VERIFY(::GetClassInfo(GetInstanceHandle(), pClassName, &defaultWC));
 
         // Save the callback address of CWnd::StaticWindowProc
         assert(defaultWC.lpfnWndProc);  // Assert fails when running UNICODE build on ANSI OS.
@@ -762,7 +761,7 @@ namespace Win32xx
     // A resource dll can be used to define resources in different languages.
     // To use this function, place code like this in InitInstance
     //   HINSTANCE resource = LoadLibrary(_T("MyResourceDLL.dll"));
-    //   SetResourceHandle(hResource);
+    //   SetResourceHandle(resource);
     inline void CWinApp::SetResourceHandle(HINSTANCE resource)
     {
         m_resource = resource;
@@ -790,7 +789,7 @@ namespace Win32xx
     // Global Functions
     //
 
-    // Returns a reference to the CWinApp derived class.
+    // Returns a pointer to the CWinApp derived class.
     inline CWinApp* GetApp()
     {
         CWinApp* pApp = CWinApp::SetnGetThis();
@@ -802,26 +801,29 @@ namespace Win32xx
     // is specified, much like strcpy_s. The dst buffer is always null terminated.
     // Null or zero arguments cause an assert.
 
-    // Copies an ANSI string from src to dst. 
+    // Copies an ANSI string from src to dst.
     inline void StrCopyA(char* dst, const char* src, size_t dst_size)
     {
         assert(dst != 0);
         assert(src != 0);
         assert(dst_size != 0);
 
-        size_t index;
-
-        // Copy each character.
-        for (index = 0; index < dst_size - 1; ++index)
+        if (dst && src && dst_size != 0)
         {
-            dst[index] = src[index];
-            if (src[index] == '\0')
-                break;
-        }
+            size_t index;
 
-        // Add null termination if required.
-        if (dst[index] != '\0')
-            dst[dst_size - 1] = '\0';
+            // Copy each character.
+            for (index = 0; index < dst_size - 1; ++index)
+            {
+                dst[index] = src[index];
+                if (src[index] == '\0')
+                    break;
+            }
+
+            // Add null termination if required.
+            if (dst[index] != '\0')
+                dst[dst_size - 1] = '\0';
+        }
     }
 
     // Copies a wide string from src to dst.
@@ -831,20 +833,22 @@ namespace Win32xx
         assert(src != 0);
         assert(dst_size != 0);
 
-        size_t index;
-
-        // Copy each character.
-        for (index = 0; index < dst_size - 1; ++index)
+        if (dst && src && dst_size != 0)
         {
-            dst[index] = src[index];
-            if (src[index] == '\0')
-                break;
+            size_t index;
+
+            // Copy each character.
+            for (index = 0; index < dst_size - 1; ++index)
+            {
+                dst[index] = src[index];
+                if (src[index] == '\0')
+                    break;
+            }
+
+            // Add null termination if required.
+            if (dst[index] != '\0')
+                dst[dst_size - 1] = '\0';
         }
-
-        // Add null termination if required.
-        if (dst[index] != '\0')
-            dst[dst_size - 1] = '\0';
-
     }
 
     // Copies a TCHAR string from src to dst.

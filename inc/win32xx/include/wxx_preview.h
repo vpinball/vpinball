@@ -1,12 +1,12 @@
-// Win32++   Version 8.7.0
-// Release Date: 12th August 2019
+// Win32++   Version 8.8
+// Release Date: 15th October 2020
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2019  David Nash
+// Copyright (c) 2005-2020  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -105,9 +105,9 @@ namespace Win32xx
     };
 
 
-    //////////////////////////////////////////
-    // Declaration of the CPreviewPane class
-    // CPreviewPane provides a preview pane to CPrintPreview
+    //////////////////////////////////////////////
+    // CPreviewPane provides the preview pane used
+    // by CPrintPreview.
     class CPreviewPane : public CWnd
     {
     public:
@@ -129,9 +129,10 @@ namespace Win32xx
     };
 
 
-    //////////////////////////////////////////
-    // Declaration of the CPrintPreview class
-    //
+    ////////////////////////////////////////////////////////////
+    // CPrintPreview adds print preview support to applications.
+    // It is used to view print output before it is sent to the
+    // printer.
     template <typename T>
     class CPrintPreview : public CDialog
     {
@@ -382,7 +383,6 @@ namespace Win32xx
         return TRUE;
     }
 
-
     // Called when the Next Page button is pressed.
     template <typename T>
     inline BOOL CPrintPreview<T>::OnNextButton()
@@ -392,7 +392,6 @@ namespace Win32xx
 
         return TRUE;
     }
-
 
     // Called when the Prev Page button is pressed.
     template <typename T>
@@ -404,7 +403,6 @@ namespace Win32xx
         return TRUE;
     }
 
-
     // Called when the Print button is pressed.
     // Sends the UWM_PRINTNOW message to the owner window.
     template <typename T>
@@ -414,7 +412,6 @@ namespace Win32xx
         return TRUE;
     }
 
-    
     // Called in response to the Print Setup button.
     // Sends a UWM_PRINTSETUP message to the owner.
     template <typename T>
@@ -423,7 +420,6 @@ namespace Win32xx
         ::SendMessage(m_ownerWindow, UWM_PRINTSETUP, 0, 0);
         return TRUE;
     }
-
 
     // Initiate the print preview.
     // ownerWindow: Print Preview's notifications are sent to this window.
@@ -438,7 +434,6 @@ namespace Win32xx
         m_currentPage = 0;
         PreviewPage(0);
     }
-
 
     // Preview's the specified page.
     // This function calls the view's PrintPage function to render the same
