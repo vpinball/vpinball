@@ -281,7 +281,7 @@
 #define IDS_SIZE                        193
 #define IDS_ASSIGN_TO_LAYER             197
 #define IDS_DRAWING_ORDER_SELECT        200
-#define IDR_APPMENU                     201
+#define IDW_MAIN                        201
 #define IDC_SOUNDLIST                   201
 #define IDC_MATERIAL_LIST               201
 #define IDR_POINTMENU                   202

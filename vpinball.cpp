@@ -1398,7 +1398,7 @@ int VPinball::OnCreate(CREATESTRUCT& cs)
 //     UseStatusBar(FALSE);          // Don't use a StatusBar
 //     UseThemes(FALSE);             // Don't use themes
 //     UseToolBar(FALSE);            // Don't use a ToolBar
-    m_mainMenu.LoadMenu(IDR_APPMENU);
+    m_mainMenu.LoadMenu(_T("IDR_APPMENU"));
 
     SetFrameMenu(m_mainMenu.GetHandle());
 
