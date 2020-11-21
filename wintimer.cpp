@@ -1,6 +1,73 @@
 #include "StdAfx.h"
 #include <time.h>
 
+
+typedef LONG(CALLBACK* NTSETTIMERRESOLUTION)(IN ULONG DesiredTime,
+	IN BOOLEAN SetResolution,
+	OUT PULONG ActualTime);
+static NTSETTIMERRESOLUTION NtSetTimerResolution;
+
+typedef LONG(CALLBACK* NTQUERYTIMERRESOLUTION)(OUT PULONG MaximumTime,
+	OUT PULONG MinimumTime,
+	OUT PULONG CurrentTime);
+static NTQUERYTIMERRESOLUTION NtQueryTimerResolution;
+
+static HMODULE hNtDll = NULL;
+static ULONG win_timer_old_period = -1;
+
+static TIMECAPS win_timer_caps;
+static MMRESULT win_timer_result = TIMERR_NOCANDO;
+
+void set_lowest_possible_win_timer_resolution()
+{
+	// First crank up the multimedia timer resolution to its max
+	// this gives the system much finer timeslices (usually 1-2ms)
+	win_timer_result = timeGetDevCaps(&win_timer_caps, sizeof(win_timer_caps));
+	if (win_timer_result == TIMERR_NOERROR)
+		timeBeginPeriod(win_timer_caps.wPeriodMin);
+
+	// Then try the even finer sliced (usually 0.5ms) low level variant
+	hNtDll = LoadLibrary("NtDll.dll");
+	if (hNtDll) {
+		NtQueryTimerResolution = (NTQUERYTIMERRESOLUTION)GetProcAddress(hNtDll, "NtQueryTimerResolution");
+		NtSetTimerResolution = (NTSETTIMERRESOLUTION)GetProcAddress(hNtDll, "NtSetTimerResolution");
+		if (NtQueryTimerResolution && NtSetTimerResolution) {
+			ULONG min_period, tmp;
+			NtQueryTimerResolution(&tmp, &min_period, &win_timer_old_period);
+			if (min_period < 4500) // just to not screw around too much with the time (i.e. potential timer improvements in future HW/OSs), limit timer period to 0.45ms (picked 0.45 here instead of 0.5 as apparently some current setups can feature values just slightly below 0.5, so just leave them at this native rate then)
+				min_period = 5000;
+			if (min_period < 10000) // only set this if smaller 1ms, cause otherwise timeBeginPeriod already did the job
+				NtSetTimerResolution(min_period, TRUE, &tmp);
+			else
+				win_timer_old_period = -1;
+		}
+	}
+}
+
+void restore_win_timer_resolution()
+{
+	// restore both timer resolutions
+
+	if (hNtDll) {
+		if (win_timer_old_period != -1)
+		{
+			ULONG tmp;
+			NtSetTimerResolution(win_timer_old_period, FALSE, &tmp);
+			win_timer_old_period = -1;
+		}
+		FreeLibrary(hNtDll);
+		hNtDll = NULL;
+	}
+
+	if (win_timer_result == TIMERR_NOERROR)
+	{
+		timeEndPeriod(win_timer_caps.wPeriodMin);
+		win_timer_result = TIMERR_NOCANDO;
+	}
+}
+
+//
+
 static unsigned int sTimerInit = 0;
 static LARGE_INTEGER TimerFreq;
 static LARGE_INTEGER sTimerStart;

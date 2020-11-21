@@ -1431,26 +1431,26 @@ void VPinball::OnInitialUpdate()
     if (!firstRun)
         return;
 
+    wintimer_init();                    // calibrate the timer routines
+
     const int foo[6] = {120, 240, 400, 600, 800, 1400};
 
     m_hwndStatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE,
                                          "",
                                          GetHwnd(),
-                                         1);						// Create Status Line at the bottom
+                                         1);                     // Create Status Line at the bottom
 
-    ::SendMessage(m_hwndStatusBar, SB_SETPARTS, 6, (size_t)foo);	// Initialize Status bar with 6 empty cells
+    ::SendMessage(m_hwndStatusBar, SB_SETPARTS, 6, (size_t)foo); // Initialize Status bar with 6 empty cells
 
-    InitRegValues();					// get default values from registry
+    InitRegValues();                    // get default values from registry
 
-    SendMessage(WM_SIZE, 0, 0);			// Make our window relay itself out
+    SendMessage(WM_SIZE, 0, 0);	        // Make our window relay itself out
 
     m_ps.InitPinDirectSound(GetHwnd());
 
-    m_backglassView = false;			// we are viewing Pinfield and not the backglass at first
+    m_backglassView = false;            // we are viewing Pinfield and not the backglass at first
 
-    UpdateRecentFileList(string());		// update the recent loaded file list
-
-    wintimer_init();					// calibrate the timer routines
+    UpdateRecentFileList(string());     // update the recent loaded file list
 
     int left, top, right, bottom;
     BOOL maximized;
@@ -1486,14 +1486,14 @@ void VPinball::OnInitialUpdate()
     }
 #ifdef SLINTF
     // see slintf.cpp
-    slintf_init();									// initialize debug console (can be popupped by the following command)
+    slintf_init(); // initialize debug console (can be popupped by the following command)
     slintf_popup_console();
     slintf("Debug output:\n");
 #endif
 
     CreateDocker();
     ShowWindow(SW_SHOW);
-    //InitTools();
+//    InitTools();
 //    SetForegroundWindow();
     SetEnableMenuItems();
     firstRun = false;

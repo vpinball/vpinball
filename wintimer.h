@@ -1,5 +1,10 @@
 #pragma once
 
+// call if msec,usec or uSleep, etc. should be more precise
+void set_lowest_possible_win_timer_resolution();
+// and then call this after being finished with precise measurements to allow the OS to better save power
+void restore_win_timer_resolution();
+
 // call before 1st use of msec,usec or uSleep
 void wintimer_init();
 

@@ -921,11 +921,6 @@ void Player::Shutdown()
    ImGui::DestroyContext();
 #endif
 
-   // if limit framerate if requested by user (vsync Hz higher than refreshrate of gfxcard/monitor), restore timeEndPeriod
-   const int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
-   if (localvsync > m_refreshrate)
-      timeEndPeriod(1); // after last precise uSleep()
-
    if(m_toogle_DTFS && m_ptable->m_BG_current_set != 2)
        m_ptable->m_BG_current_set ^= 1;
 
@@ -1025,6 +1020,8 @@ void Player::Shutdown()
    m_controlclsidsafe.clear();
 
    m_changed_vht.clear();
+
+   restore_win_timer_resolution();
 }
 
 void Player::InitFPS()
@@ -1537,6 +1534,8 @@ HRESULT Player::Init()
 {
    TRACE_FUNCTION();
 
+   set_lowest_possible_win_timer_resolution();
+
    //m_hSongCompletionEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
 
    m_ptable->m_progressDialog.SetProgress(10);
@@ -1912,11 +1911,6 @@ HRESULT Player::Init()
    if (m_playback)
       m_fplaylog = fopen("c:\\badlog.txt", "r");
 #endif
-
-   // if limit framerate if requested by user (vsync Hz higher than refreshrate of gfxcard/monitor), set timeBeginPeriod
-   const int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
-   if (localvsync > m_refreshrate)
-      timeBeginPeriod(1); // for uSleep() to work more precise
 
    wintimer_init();
 
@@ -3436,7 +3430,7 @@ void Player::UpdatePhysics()
       {
           const U64 basetime = usec(); 
           const U64 targettime = ((U64)m_minphyslooptime * m_phys_iterations) + m_lastFlipTime;
-          // If we're 3/4 of the way through the loop fire a "frame sync" timer event so VPM can react to input.
+          // If we're 3/4 of the way through the loop, fire a "frame sync" timer event so VPM can react to input.
           // This will effectively double the "-1" timer rate, but the goal, when this option is enabled, is to reduce latency
           // and those "-1" timer calls should be roughly halfway through the cycle
           if (m_phys_iterations == 750 / ((int)m_fps + 1))
@@ -3611,9 +3605,9 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
       const vec4 c = convertColor(DMDcolor, intensity);
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetVector("vColor_Intensity", &c);
 #ifdef DMD_UPSCALE
-      const vec4 r((float)(m_dmdx*3), (float)(m_dmdy*3), 1.f, g_pplayer->m_overall_frames%2048);
+      const vec4 r((float)(m_dmdx*3), (float)(m_dmdy*3), 1.f, (float)(g_pplayer->m_overall_frames%2048));
 #else
-      const vec4 r((float)m_dmdx, (float)m_dmdy, 1.f, g_pplayer->m_overall_frames%2048);
+      const vec4 r((float)m_dmdx, (float)m_dmdy, 1.f, (float)(g_pplayer->m_overall_frames%2048));
 #endif
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetVector("vRes_Alpha_time", &r);
 

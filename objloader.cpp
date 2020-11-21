@@ -96,7 +96,7 @@ bool WaveFrontObj_LoadMaterial(const string& filename, Material * const mat)
       {
          float tmp;
          fscanf_s(f, "%f\n", &tmp);
-         const int d = (int)(tmp*100.f);
+         const int d = (int)(tmp*100.f+0.5f);
          tmp = d / 100.0f;
          // normally a wavefront material specular exponent ranges from 0..1000.
          // but our shininess calculation differs from the way how e.g. Blender is calculating the specular exponent

@@ -252,12 +252,12 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                if (aspect > controlaspect)
                {
                   width = xsize;
-                  height = (int)(xsize / aspect);
+                  height = (int)(xsize / aspect + 0.5f);
                }
                else
                {
                   height = ysize;
-                  width = (int)(ysize*aspect);
+                  width = (int)(ysize*aspect + 0.5f);
                }
 
                const int x = (xsize - width) / 2;
