@@ -190,7 +190,7 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 	//const float base = 0.0;
 	const float area = 0.06; //!!
 	const float falloff = 0.0002; //!!
-	const int samples = 8/*9*/; //4,8,9,13,21,25,32 korobov,fibonacci
+	const int samples = 8/*9*/; //4,8,9,13,16,21,25,32 korobov,fibonacci
 	const float radius = 0.001+/*frac*/(ushift.z)*0.009; // sample radius
 	const float depth_threshold_normal = 0.005;
 	const float total_strength = AO_scale_timeblur.x * (/*1.0 for uniform*/0.5 / samples);
@@ -200,7 +200,7 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 
 	float occlusion = 0.0;
 	[unroll] for(int i=0; i < samples; ++i) {
-		const float2 r = float2(i*(1.0 / samples), i*(5.0/*2.0*/ / samples)); //1,5,2,8,13,7,7 korobov,fibonacci //!! could also use progressive/extensible lattice via rad_inv(i)*(1501825329, 359975893) (check precision though as this should be done in double or uint64)
+		const float2 r = float2(i*(1.0 / samples), i*(5.0/*2.0*/ / samples)); //1,5,2,8,4,13,7,7 korobov,fibonacci //!! could also use progressive/extensible lattice via rad_inv(i)*(1501825329, 359975893) (check precision though as this should be done in double or uint64)
 		//const float3 ray = sphere_sample(frac(r+ushift.xy)); // shift lattice // uniform variant
 		const float2 ray = rotate_to_vector_upper(cos_hemisphere_sample(frac(r+ushift.xy)), normal).xy; // shift lattice
 		//!! maybe a bit worse distribution: const float2 ray = cos_hemisphere_sample(normal,frac(r+ushift.xy)).xy; // shift lattice
