@@ -1036,6 +1036,7 @@
 #define IDC_COLOR_BUTTON5               769
 #define IDC_LAYER_NAME_EDIT             769
 #define IDC_LAYER_FILTER_EDIT           769
+#define IDC_NOTES_EDIT                  769
 #define IDC_OK                          770
 #define IDC_STATIC_ALPHA                771
 #define IDC_STATIC_BASE_COLOR           772

@@ -8,21 +8,17 @@
 #include "Properties/PropertyDialog.h"
 #include <WindowsX.h>
 
-class RichEdit : public CRichEdit
+class NotesEdit : public CEdit
 {
+
 public:
-   RichEdit() = default;
-   ~RichEdit() = default;
-   virtual void SetFontDefaults();
+   NotesEdit() = default;
+   ~NotesEdit() = default;
 
 protected:
-   virtual void OnAttach();
-
-private:
-   CFont   m_Font;
+   virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
 
 };
-
 class NotesDialog : public CDialog
 {
 public:
@@ -39,7 +35,7 @@ protected:
 
 private:
    CResizer  m_resizer;
-   RichEdit  m_richEdit;
+   NotesEdit m_notesEdit;
 };
 
 class CContainNotes : public CDockContainer
