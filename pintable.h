@@ -888,10 +888,16 @@ public:
    WCHAR* GetCollectionNameByElement(const ISelect* const element);
    void RefreshProperties();
 
+   void SetNotesText(const CString& text) { m_notesText = text; }
+   CString GetNotesText() const
+   {
+      return m_notesText;
+   }
+
 private:
    PinTableMDI *m_mdiTable;
    bool m_moving;
-
+   CString m_notesText;
    std::unordered_map<const char*, Texture *, StringHashFunctor, StringComparator> m_textureMap;  // hash table to speed up texture lookup by name
    std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap; // hash table to speed up material lookup by name
 };

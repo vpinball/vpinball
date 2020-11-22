@@ -12,7 +12,13 @@ BOOL NotesDialog::OnInitDialog()
    m_resizer.Initialize(*this, CRect(0, 0, 400 , 300));
    AttachItem(IDC_NOTES_EDIT, m_notesEdit);
    m_resizer.AddChild(m_notesEdit.GetHwnd(), topright, RD_STRETCH_HEIGHT|RD_STRETCH_WIDTH);
-   return TRUE;
+
+   CCO(PinTable)* const pt = g_pvp->GetActiveTable();
+   if (pt != nullptr)
+   {
+      SetText(pt->GetNotesText());
+   }
+   return FALSE;
 }
 
 BOOL NotesDialog::OnCommand(WPARAM wParam, LPARAM lParam)
@@ -26,9 +32,6 @@ INT_PTR NotesDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    return DialogProcDefault(uMsg, wParam, lParam);
 }
 
-void NotesDialog::OnOK()
-{
-}
 
 bool NotesDialog::PreTranslateMessage(MSG* msg)
 {
@@ -60,6 +63,16 @@ CDockNotes::CDockNotes()
 {
    SetView(m_notesContainer);
    SetBarWidth(4);
+}
+
+void CDockNotes::OnClose()
+{
+   CCO(PinTable)* const pt = g_pvp->GetActiveTable();
+   if (pt == nullptr)
+      return;
+   pt->SetNotesText(m_notesContainer.GetNotesDialog()->GetText());
+
+   CDocker::OnClose();
 }
 
 LRESULT NotesEdit::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)

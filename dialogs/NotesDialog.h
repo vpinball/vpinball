@@ -25,13 +25,19 @@ public:
    NotesDialog();
    ~NotesDialog() = default;
    bool PreTranslateMessage(MSG* msg);
+   CString GetText() const
+   {
+      return m_notesEdit.GetWindowText();
+   }
+   void SetText(const CString& text)
+   {
+      m_notesEdit.SetWindowText(text.c_str());
+   }
 
 protected:
    virtual BOOL OnInitDialog();
    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-   virtual void OnOK();
-   //virtual void OnClose();
 
 private:
    CResizer  m_resizer;
@@ -62,6 +68,8 @@ public:
    {
       return &m_notesContainer;
    }
+protected:
+   virtual void OnClose();
 
 private:
    CContainNotes m_notesContainer;

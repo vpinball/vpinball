@@ -3396,6 +3396,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
    bw.WriteString(FID(BLIM), m_szBallImage);
    bw.WriteString(FID(BLIF), m_szBallImageDecal);
    bw.WriteString(FID(EIMG), m_szEnvImage);
+   bw.WriteString(FID(NOTX), m_notesText.c_str());
 
    bw.WriteString(FID(SSHT), m_szScreenShot);
 
@@ -4054,6 +4055,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(IMCG): pbr->GetString(m_szImageColorGrade); break;
    case FID(EIMG): pbr->GetString(m_szEnvImage); break;
    case FID(PLMA): pbr->GetString(m_szPlayfieldMaterial); break;
+   case FID(NOTX): {std::string txt;  pbr->GetString(txt); m_notesText = CString(txt.c_str()); break; }
    case FID(LZAM): pbr->GetInt(&m_lightAmbient); break;
    case FID(LZDI): pbr->GetInt(&m_Light[0].emission); break;
    case FID(LZHI): pbr->GetFloat(&m_lightHeight); break;
