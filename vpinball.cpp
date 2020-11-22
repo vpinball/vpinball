@@ -106,12 +106,6 @@ VPinball::VPinball()
    // DLL_API void DLL_CALLCONV FreeImage_Initialise(BOOL load_local_plugins_only FI_DEFAULT(FALSE)); //add FreeImage support BDS
    m_closing = false;
    m_unloadingTable = false;
-   m_toolbarDialog = NULL;
-   m_propertyDialog = NULL;
-   m_dockToolbar = NULL;
-   m_dockProperties = NULL;
-   m_layersListDialog = NULL;
-   m_dockLayers = NULL;
    m_cref = 0;				//inits Reference Count for IUnknown Interface. Every com Object must 
    //implement this and StdMethods QueryInterface, AddRef and Release
    m_open_minimized = 0;
@@ -422,11 +416,34 @@ CDockToolbar *VPinball::GetToolbarDocker()
     return m_dockToolbar;
 }
 
+CDockNotes* VPinball::GetDefaultNotesDocker()
+{
+   const int dockStyle = DS_CLIENTEDGE;
+   RECT rc;
+   rc.left = 0;
+   rc.top = 0;
+   rc.right = 480;
+   rc.bottom = 380;
+   m_dockNotes = (CDockNotes*)AddUndockedChild(new CDockNotes, dockStyle, 200, rc, IDD_NOTES_DIALOG);
+   assert(m_dockNotes->GetContainer());
+   m_dockNotes->GetContainer()->SetHideSingleTab(TRUE);
+   m_notesDialog = m_dockNotes->GetContainNotes()->GetNotesDialog();
+
+   return m_dockNotes;
+}
+
+CDockNotes* VPinball::GetNotesDocker()
+{
+   if (m_dockNotes == nullptr || !m_dockNotes->IsWindow())
+      return GetDefaultNotesDocker();
+   return m_dockNotes;
+}
+
 CDockLayers *VPinball::GetDefaultLayersDocker()
 {
     const int dockStyle = DS_DOCKED_BOTTOM | DS_CLIENTEDGE | DS_NO_CLOSE;
-    m_dockLayers = (CDockLayers *)AddDockedChild(new CDockLayers, dockStyle, 380, IDD_LAYERS);
-
+    m_dockLayers = (CDockLayers *)m_dockProperties->AddDockedChild(new CDockLayers, dockStyle, 380, IDD_LAYERS);
+    
     assert(m_dockLayers->GetContainer());
     m_dockLayers->GetContainer()->SetHideSingleTab(TRUE);
     m_layersListDialog = m_dockLayers->GetContainLayers()->GetLayersDialog();
@@ -782,6 +799,11 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
            }
            return TRUE;
        }
+       case ID_TABLE_NOTES:
+       {
+          GetNotesDocker();
+          return TRUE;
+       }
        case ID_TABLE_FONTMANAGER:
        {
            CComObject<PinTable> * const ptCur = GetActiveTable();
@@ -1059,6 +1081,7 @@ void VPinball::SetEnableMenuItems()
       mainMenu.EnableMenuItem(IDC_PASTE, flags);
       mainMenu.EnableMenuItem(IDC_PASTEAT, flags);
       mainMenu.EnableMenuItem(ID_DELETE, flags);
+      mainMenu.EnableMenuItem(ID_TABLE_NOTES, flags);
 
       mainMenu.CheckMenuItem(ID_VIEW_SOLID, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_CHECKED : MF_UNCHECKED));
       mainMenu.CheckMenuItem(ID_VIEW_OUTLINE, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_UNCHECKED : MF_CHECKED));
@@ -1084,6 +1107,7 @@ void VPinball::SetEnableMenuItems()
       mainMenu.EnableMenuItem(ID_DELETE, MF_BYCOMMAND | MF_GRAYED);
       mainMenu.EnableMenuItem(ID_EDIT_SCRIPT, MF_BYCOMMAND | MF_GRAYED);
       mainMenu.EnableMenuItem(ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_TABLE_NOTES, MF_BYCOMMAND | MF_GRAYED);
 
       mainMenu.EnableMenuItem(ID_TABLE_PLAY, MF_BYCOMMAND | MF_GRAYED);
       mainMenu.EnableMenuItem(ID_TABLE_CAMERAMODE, MF_BYCOMMAND | MF_GRAYED);
@@ -1191,23 +1215,25 @@ bool VPinball::processKeyInputForDialogs(MSG *pmsg)
     bool consumed = false;
     if (m_ptableActive)
     {
-      if (m_materialDialog.IsWindow())
+       if (m_materialDialog.IsWindow())
           consumed = !!m_materialDialog.IsDialogMessage(*pmsg);
-      if (!consumed && m_imageMngDlg.IsWindow())
+       if (!consumed && m_imageMngDlg.IsWindow())
           consumed = !!m_imageMngDlg.IsDialogMessage(*pmsg);
-      if (!consumed && m_soundMngDlg.IsWindow())
+       if (!consumed && m_soundMngDlg.IsWindow())
           consumed = !!m_soundMngDlg.IsDialogMessage(*pmsg);
-      if (!consumed && m_collectionMngDlg.IsWindow())
+       if (!consumed && m_collectionMngDlg.IsWindow())
           consumed = !!m_collectionMngDlg.IsDialogMessage(*pmsg);
-      if (!consumed && m_dimensionDialog.IsWindow())
+       if (!consumed && m_dimensionDialog.IsWindow())
           consumed = !!m_dimensionDialog.IsDialogMessage(*pmsg);
-  
-      if (!consumed && m_toolbarDialog)
-         consumed = m_toolbarDialog->PreTranslateMessage(pmsg);
-      if (!consumed && m_propertyDialog)
-         consumed = m_propertyDialog->PreTranslateMessage(pmsg);
-      if (!consumed && m_layersListDialog)
-         consumed = m_layersListDialog->PreTranslateMessage(pmsg);
+
+       if (!consumed && m_toolbarDialog)
+          consumed = m_toolbarDialog->PreTranslateMessage(pmsg);
+       if (!consumed && m_propertyDialog)
+          consumed = m_propertyDialog->PreTranslateMessage(pmsg);
+       if (!consumed && m_layersListDialog)
+          consumed = m_layersListDialog->PreTranslateMessage(pmsg);
+       if (!consumed && m_notesDialog)
+          consumed = m_notesDialog->PreTranslateMessage(pmsg);
     }
     return consumed;
 }
@@ -1604,6 +1630,15 @@ Win32xx::CDocker *VPinball::NewDockerFromID(int id)
             }
             return m_dockLayers;
         }
+//         case IDD_NOTES_DIALOG:
+//         {
+//            if (m_dockNotes == nullptr)
+//            {
+//               m_dockNotes = new CDockNotes();
+//               m_notesDialog = m_dockNotes->GetContainNotes()->GetNotesDialog();
+//            }
+//            return m_dockToolbar;
+//         }
     }
     return nullptr;
 }

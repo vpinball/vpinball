@@ -1938,6 +1938,7 @@ HRESULT Player::Init()
    g_pvp->GetPropertiesDocker()->EnableWindow(FALSE);
    g_pvp->GetLayersDocker()->EnableWindow(FALSE);
    g_pvp->GetToolbarDocker()->EnableWindow(FALSE);
+   g_pvp->GetNotesDocker()->EnableWindow(FALSE);
    m_ptable->EnableWindow(FALSE);
 
    m_ptable->m_progressDialog.Destroy();
@@ -6255,6 +6256,7 @@ void Player::StopPlayer()
    g_pvp->GetPropertiesDocker()->EnableWindow();
    g_pvp->GetLayersDocker()->EnableWindow();
    g_pvp->GetToolbarDocker()->EnableWindow();
+   g_pvp->GetNotesDocker()->EnableWindow();
    m_ptable->EnableWindow();
 
    LockForegroundWindow(false);

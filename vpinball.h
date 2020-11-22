@@ -22,6 +22,7 @@
 #include "DrawingOrderDialog.h"
 #include "ToolbarDialog.h"
 #include "LayersListDialog.h"
+#include "NotesDialog.h"
 #include "Properties/PropertyDialog.h"
 
 #define CURRENT_FILE_FORMAT_VERSION 1060
@@ -175,7 +176,8 @@ public:
 
    CDockProperty* GetPropertiesDocker();
    CDockToolbar *GetToolbarDocker();
-   CDockLayers *GetLayersDocker();
+   CDockNotes* GetNotesDocker();
+   CDockLayers* GetLayersDocker();
    void CreateDocker();
    LayersListDialog *GetLayersListDialog()
    {
@@ -256,7 +258,8 @@ private:
 
    CDockProperty *GetDefaultPropertiesDocker();
    CDockLayers *GetDefaultLayersDocker();
-   CDockToolbar *GetDefaultToolbarDocker();
+   CDockToolbar* GetDefaultToolbarDocker();
+   CDockNotes* GetDefaultNotesDocker();
    bool m_unloadingTable;
    CMenu m_mainMenu;
    std::vector<std::string> m_recentTableList;
@@ -278,12 +281,14 @@ private:
    DimensionDialog m_dimensionDialog;
    MaterialDialog m_materialDialog;
    AboutDialog m_aboutDialog;
-   ToolbarDialog *m_toolbarDialog;
-   PropertyDialog *m_propertyDialog;
-   CDockToolbar *m_dockToolbar;
-   CDockProperty *m_dockProperties;
-   LayersListDialog *m_layersListDialog;
-   CDockLayers *m_dockLayers;
+   ToolbarDialog *m_toolbarDialog = nullptr;
+   PropertyDialog *m_propertyDialog = nullptr;
+   CDockToolbar *m_dockToolbar = nullptr;
+   CDockProperty *m_dockProperties = nullptr;
+   LayersListDialog *m_layersListDialog = nullptr;
+   CDockLayers *m_dockLayers = nullptr;
+   NotesDialog *m_notesDialog = nullptr;
+   CDockNotes* m_dockNotes = nullptr;
 };
 
 #endif // !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)

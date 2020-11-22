@@ -277,6 +277,9 @@
     <ClCompile Include="imgui\implot\implot_items.cpp">
       <Filter>imgui\implot</Filter>
     </ClCompile>
+    <ClCompile Include="dialogs\NotesDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1426,6 +1429,9 @@
     </ClInclude>
     <ClInclude Include="imgui\implot\implot_internal.h">
       <Filter>imgui\implot</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\NotesDialog.h">
+      <Filter>dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

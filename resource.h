@@ -493,7 +493,6 @@
 #define IDD_PROPPLUNGER_PHYSICS         340
 #define IDC_SCREENSHOT                  340
 #define IDS_MAKEACTIVEBALL              340
-//#define IDC_MonitorCombo                340
 #define IDC_FUNCTIONLIST                340
 #define IDC_LIGHT_TYPE_CHECKBOX         340
 #define IDC_MATERIAL_COMBO              340
@@ -946,6 +945,7 @@
 #define IDI_ICON5                       666
 #define IDI_CAMERA                      666
 #define IDC_DATE_SAVED                  667
+#define IDD_NOTES_DIALOG                668
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -1113,6 +1113,7 @@
 #define IDC_LAYER_FILTER_STATIC         838
 #define IDC_STATIC_ELEMENT_TYPE         839
 #define ID_APPLY                        840
+#define IDC_NOTES_RICHEDIT              841
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1183,6 +1184,7 @@
 #define ID_NEW_EXAMPLETABLE             4021
 #define ID_WINDOW_SHOWTOOLBAR           4022
 #define ID_EDIT_SHOWTOOLBAR             4023
+#define ID_TABLE_NOTES                  4024
 #define IDC_ENABLE_EMREEL_CHECK         13432
 #define IDC_ENABLE_DECAL_CHECK          13433
 #define IDC_BG_TEST_DESKTOP_CHECK       13434
@@ -1300,9 +1302,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        668
-#define _APS_NEXT_COMMAND_VALUE         4024
-#define _APS_NEXT_CONTROL_VALUE         841
+#define _APS_NEXT_RESOURCE_VALUE        670
+#define _APS_NEXT_COMMAND_VALUE         4025
+#define _APS_NEXT_CONTROL_VALUE         842
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
