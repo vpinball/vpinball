@@ -178,6 +178,11 @@ public:
    CDockToolbar *GetToolbarDocker();
    CDockNotes* GetNotesDocker();
    CDockLayers* GetLayersDocker();
+   void DestroyNotesDocker()
+   {
+      m_notesDialog = nullptr;
+      m_dockNotes = nullptr;
+   }
    void CreateDocker();
    LayersListDialog *GetLayersListDialog()
    {

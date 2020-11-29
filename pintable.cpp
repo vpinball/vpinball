@@ -5085,8 +5085,8 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_ACTIVATE:
             if (LOWORD(wParam) != WA_INACTIVE)
             {
-                if(m_pvp->m_ptableActive != (CComObject<PinTable>*)this)
-                    m_pvp->m_ptableActive = (CComObject<PinTable> *)this;
+               if (m_pvp->m_ptableActive != (CComObject<PinTable>*)this)
+                  m_pvp->m_ptableActive = (CComObject<PinTable>*)this;
             }
             return FinalWindowProc(uMsg, wParam, lParam);
         case WM_PAINT:
@@ -10406,6 +10406,11 @@ void PinTableMDI::OnClose()
 {
     if(m_vpinball->IsClosing() || CanClose())
     {
+        if(g_pvp->GetNotesDocker() !=nullptr)
+        {
+           g_pvp->GetNotesDocker()->UpdateText();
+           g_pvp->GetNotesDocker()->CleanText();
+        }
         m_table->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
         CMDIChild::OnClose();
     }

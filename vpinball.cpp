@@ -428,14 +428,16 @@ CDockNotes* VPinball::GetDefaultNotesDocker()
    assert(m_dockNotes->GetContainer());
    m_dockNotes->GetContainer()->SetHideSingleTab(TRUE);
    m_notesDialog = m_dockNotes->GetContainNotes()->GetNotesDialog();
-
    return m_dockNotes;
 }
 
 CDockNotes* VPinball::GetNotesDocker()
 {
-   if (m_dockNotes == nullptr || !m_dockNotes->IsWindow())
-      return GetDefaultNotesDocker();
+   if (m_dockNotes!=nullptr && !m_dockNotes->IsWindowEnabled())
+   {
+      m_dockNotes->ShowWindow();
+      m_dockNotes->Enable();
+   }
    return m_dockNotes;
 }
 
@@ -801,7 +803,10 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
        }
        case ID_TABLE_NOTES:
        {
-          GetNotesDocker();
+          if (GetNotesDocker() == nullptr || !GetNotesDocker()->IsWindow())
+             GetDefaultNotesDocker();
+          else
+             GetNotesDocker()->ShowWindow();
           return TRUE;
        }
        case ID_TABLE_FONTMANAGER:
@@ -986,6 +991,9 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
           GetLayersListDialog()->CollapseLayers();
           GetLayersListDialog()->ExpandLayers();
           ToggleToolbar();
+          if(m_dockNotes!=nullptr)
+            m_dockNotes->Enable();
+
           SetFocus();
       }
    }
@@ -1022,6 +1030,7 @@ bool VPinball::CloseTable(PinTable * const ppt)
    m_unloadingTable = true;
    ppt->GetMDITable()->SendMessage(WM_SYSCOMMAND, SC_CLOSE, 0);
    m_unloadingTable = false;
+   
 
    std::vector<MDIChildPtr> allChildren = GetAllMDIChildren();
    if (allChildren.size() == 0)
@@ -1029,6 +1038,8 @@ bool VPinball::CloseTable(PinTable * const ppt)
        ToggleToolbar();
        if (m_propertyDialog && m_propertyDialog->IsWindow())
            m_propertyDialog->DeleteAllTabs();
+       if (m_notesDialog && m_notesDialog->IsWindow())
+          m_notesDialog->Disable();
    }
    return true;
 }
@@ -1587,7 +1598,10 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT VPinball::OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam)
 {
-    GetLayersListDialog()->UpdateLayerList();
+   if(m_dockLayers!=nullptr)
+      m_dockLayers->GetContainLayers()->GetLayersDialog()->UpdateLayerList();
+   if (m_dockNotes != nullptr)
+      m_dockNotes->Refresh();
     return CMDIFrameT::OnMDIActivated(msg, wparam, lparam);
 }
 

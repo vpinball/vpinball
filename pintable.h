@@ -52,6 +52,7 @@ protected:
     virtual int  OnCreate(CREATESTRUCT &cs);
     virtual void OnClose();
 
+
 private:
     CComObject<PinTable> *m_table;
     VPinball             *m_vpinball;
@@ -888,7 +889,11 @@ public:
    WCHAR* GetCollectionNameByElement(const ISelect* const element);
    void RefreshProperties();
 
-   void SetNotesText(const CString& text) { m_notesText = text; }
+   void SetNotesText(const CString& text) 
+   { 
+      m_notesText = text; 
+      SetDirtyDraw(); 
+   }
    CString GetNotesText() const
    {
       return m_notesText;

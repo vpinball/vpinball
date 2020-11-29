@@ -29,9 +29,19 @@ public:
    {
       return m_notesEdit.GetWindowText();
    }
-   void SetText(const CString& text)
+   void SetText();
+   void UpdateText();
+   void CleanText()
    {
-      m_notesEdit.SetWindowText(text.c_str());
+      m_notesEdit.SetWindowText("");
+   }
+   void Enable()
+   {
+      m_notesEdit.EnableWindow();
+   }
+   void Disable()
+   {
+      m_notesEdit.EnableWindow(FALSE);
    }
 
 protected:
@@ -40,6 +50,7 @@ protected:
    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
+
    CResizer  m_resizer;
    NotesEdit m_notesEdit;
 };
@@ -67,6 +78,23 @@ public:
    CContainNotes* GetContainNotes()
    {
       return &m_notesContainer;
+   }
+   void UpdateText();
+   void CleanText()
+   {
+      GetContainNotes()->GetNotesDialog()->CleanText();
+   }
+   void Refresh()
+   {
+      GetContainNotes()->GetNotesDialog()->SetText();
+   }
+   void Enable()
+   {
+      GetContainNotes()->GetNotesDialog()->Enable();
+   }
+   void Disable()
+   {
+      GetContainNotes()->GetNotesDialog()->Disable();
    }
 protected:
    virtual void OnClose();
