@@ -208,10 +208,10 @@
     <ClCompile Include="dialogs\Properties\TextboxVisualsProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
-    <ClCompile Include="dialogs\Properties\DispreelStateProperty.cpp">
+    <ClCompile Include="dialogs\Properties\DispreelVisualsProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
-    <ClCompile Include="dialogs\Properties\DispreelVisualsProperty.cpp">
+    <ClCompile Include="dialogs\Properties\DispreelStateProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
     <ClCompile Include="dialogs\Properties\LightseqStatesProperty.cpp">
@@ -229,16 +229,16 @@
     <ClCompile Include="dialogs\Properties\FlasherVisualsProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
-    <ClCompile Include="dialogs\Properties\RubberPhysicsProperty.cpp">
-      <Filter>dialogs\Properties</Filter>
-    </ClCompile>
     <ClCompile Include="dialogs\Properties\RubberVisualsProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
-    <ClCompile Include="dialogs\Properties\BackglassCameraProperty.cpp">
+    <ClCompile Include="dialogs\Properties\RubberPhysicsProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
     <ClCompile Include="dialogs\Properties\BackglassVisualsProperty.cpp">
+      <Filter>dialogs\Properties</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\Properties\BackglassCameraProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
     <ClCompile Include="dialogs\Properties\TableCustomProperty.cpp">
@@ -273,6 +273,12 @@
     </ClCompile>
     <ClCompile Include="imgui\implot\implot.cpp">
       <Filter>imgui\implot</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\implot\implot_items.cpp">
+      <Filter>imgui\implot</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\NotesDialog.cpp">
+      <Filter>dialogs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1352,10 +1358,10 @@
     <ClInclude Include="dialogs\Properties\TextboxVisualsProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
-    <ClInclude Include="dialogs\Properties\DispreelStateProperty.h">
+    <ClInclude Include="dialogs\Properties\DispreelVisualsProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
-    <ClInclude Include="dialogs\Properties\DispreelVisualsProperty.h">
+    <ClInclude Include="dialogs\Properties\DispreelStateProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\Properties\LightseqStatesProperty.h">
@@ -1373,16 +1379,16 @@
     <ClInclude Include="dialogs\Properties\FlasherVisualsProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
-    <ClInclude Include="dialogs\Properties\RubberPhysicsProperty.h">
-      <Filter>dialogs\Properties</Filter>
-    </ClInclude>
     <ClInclude Include="dialogs\Properties\RubberVisualsProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
-    <ClInclude Include="dialogs\Properties\BackglassCameraProperty.h">
+    <ClInclude Include="dialogs\Properties\RubberPhysicsProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\Properties\BackglassVisualsProperty.h">
+      <Filter>dialogs\Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\Properties\BackglassCameraProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\Properties\TableCustomProperty.h">
@@ -1400,7 +1406,9 @@
     <ClInclude Include="dialogs\LayersListDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="Debugger.h" />
+    <ClInclude Include="Debugger.h">
+      <Filter>headers</Filter>
+    </ClInclude>
     <ClInclude Include="imgui\imconfig.h">
       <Filter>imgui</Filter>
     </ClInclude>
@@ -1418,6 +1426,12 @@
     </ClInclude>
     <ClInclude Include="imgui\implot\implot.h">
       <Filter>imgui\implot</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\implot\implot_internal.h">
+      <Filter>imgui\implot</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\NotesDialog.h">
+      <Filter>dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
