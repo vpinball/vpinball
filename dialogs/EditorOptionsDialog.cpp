@@ -127,7 +127,7 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
            if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
            {
                g_pvp->m_elemSelectColor = m_colorDialog.GetColor();
-               m_colorButton2.SetColor(g_pvp->m_elemSelectColor);
+               m_colorButton3.SetColor(g_pvp->m_elemSelectColor);
            }
            break;
        }
@@ -140,7 +140,7 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
            if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
            {
                g_pvp->m_elemSelectLockedColor = m_colorDialog.GetColor();
-               m_colorButton2.SetColor(g_pvp->m_elemSelectLockedColor);
+               m_colorButton4.SetColor(g_pvp->m_elemSelectLockedColor);
            }
            break;
        }
@@ -153,7 +153,7 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
            if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
            {
                g_pvp->m_fillColor = m_colorDialog.GetColor();
-               m_colorButton2.SetColor(g_pvp->m_fillColor);
+               m_colorButton5.SetColor(g_pvp->m_fillColor);
            }
            break;
        }
@@ -166,7 +166,7 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
            if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
            {
                g_pvp->m_backgroundColor = m_colorDialog.GetColor();
-               m_colorButton2.SetColor(g_pvp->m_backgroundColor);
+               m_colorButton6.SetColor(g_pvp->m_backgroundColor);
            }
            break;
        }
