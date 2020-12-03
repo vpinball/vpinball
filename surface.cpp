@@ -99,6 +99,7 @@ void Surface::WriteRegDefaults()
    SaveValueFloat(strKeyName, "SlingshotForce", m_d.m_slingshotforce);
    SaveValueBool(strKeyName, "SlingshotAnimation", m_d.m_slingshotAnimation);
    SaveValueFloat(strKeyName, "Elasticity", m_d.m_elasticity);
+   SaveValueFloat(strKeyName, "ElasticityFallOff", m_d.m_elasticityFalloff);
    SaveValueFloat(strKeyName, "Friction", m_d.m_friction);
    SaveValueFloat(strKeyName, "Scatter", m_d.m_scatter);
    SaveValueBool(strKeyName, "Visible", m_d.m_topBottomVisible);
@@ -425,12 +426,14 @@ void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj)
    if (!m_d.m_overwritePhysics)
    {
       obj->m_elasticity = mat->m_fElasticity;
+      obj->m_elasticityFalloff = mat->m_fElasticityFalloff;
       obj->SetFriction(mat->m_fFriction);
       obj->m_scatter = ANGTORAD(mat->m_fScatterAngle);
    }
    else
    {
       obj->m_elasticity = m_d.m_elasticity;
+      obj->m_elasticityFalloff = m_d.m_elasticityFalloff;
       obj->SetFriction(m_d.m_friction);
       obj->m_scatter = ANGTORAD(m_d.m_scatter);
    }
@@ -1283,6 +1286,7 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backu
    bw.WriteFloat(FID(SLGF), m_d.m_slingshotforce);
    bw.WriteFloat(FID(SLTH), m_d.m_slingshot_threshold);
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
+   bw.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
    bw.WriteFloat(FID(WFCT), m_d.m_friction);
    bw.WriteFloat(FID(WSCT), m_d.m_scatter);
    bw.WriteBool(FID(VSBL), m_d.m_topBottomVisible);
@@ -1426,6 +1430,7 @@ bool Surface::LoadToken(const int id, BiffReader * const pbr)
    case FID(SLGF): pbr->GetFloat(&m_d.m_slingshotforce); break;
    case FID(SLTH): pbr->GetFloat(&m_d.m_slingshot_threshold); break;
    case FID(ELAS): pbr->GetFloat(&m_d.m_elasticity); break;
+   case FID(ELFO): pbr->GetFloat(&m_d.m_elasticityFalloff); break;
    case FID(WFCT): pbr->GetFloat(&m_d.m_friction); break;
    case FID(WSCT): pbr->GetFloat(&m_d.m_scatter); break;
    case FID(VSBL): pbr->GetBool(&m_d.m_topBottomVisible); break;
@@ -1758,6 +1763,19 @@ STDMETHODIMP Surface::put_Elasticity(float newVal)
    return S_OK;
 }
 
+STDMETHODIMP Surface::get_ElasticityFalloff(float* pVal)
+{
+   *pVal = m_d.m_elasticityFalloff;
+
+   return S_OK;
+}
+
+STDMETHODIMP Surface::put_ElasticityFalloff(float newVal)
+{
+   m_d.m_elasticityFalloff = newVal;
+
+   return S_OK;
+}
 
 STDMETHODIMP Surface::get_Friction(float *pVal)
 {
@@ -1979,6 +1997,7 @@ void Surface::SetDefaultPhysics(bool fromMouseClick)
 {
    static const char strKeyName[] = "DefaultProps\\Wall";
    m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Elasticity", 0.3f) : 0.3f;
+   m_d.m_elasticityFalloff = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "ElasticityFallOff", 0.0f) : 0.0f;
    m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Friction", 0.3f) : 0.3f;
    m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Scatter", 0) : 0;
 }

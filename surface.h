@@ -18,6 +18,7 @@ public:
    float m_slingshotforce;
    float m_disableLightingTop;   // was bool, now 0..1
    float m_disableLightingBelow; // 0..1
+   float m_elasticityFalloff;    // old type of walls set to 0.0
    bool m_droppable;
    bool m_flipbook;              // if enabled, dropped walls are not rendered
    bool m_displayTexture;        // in editor
@@ -174,6 +175,8 @@ public:
    STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Elasticity)(/*[in]*/ float newVal);
+   STDMETHOD(get_ElasticityFalloff)(/*[out, retval]*/ float* pVal);
+   STDMETHOD(put_ElasticityFalloff)(/*[in]*/ float newVal);
 
    STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Friction)(/*[in]*/ float newVal);

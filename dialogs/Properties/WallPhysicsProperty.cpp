@@ -8,6 +8,7 @@ WallPhysicsProperty::WallPhysicsProperty(const VectorProtected<ISelect> *pvsel) 
     m_slingshotForceEdit.SetDialog(this);
     m_slingshotThresholdEdit.SetDialog(this);
     m_elasticityEdit.SetDialog(this);
+    m_elasticityFallOffEdit.SetDialog(this);
     m_frictionEdit.SetDialog(this);
     m_scatterAngleEdit.SetDialog(this);
     m_physicsMaterialCombo.SetDialog(this);
@@ -25,6 +26,8 @@ void WallPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 11), wall->m_d.m_droppable);
     if (dispid == 116 || dispid == -1)
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 116), wall->m_d.m_isBottomSolid);
+    if (dispid == 120 || dispid == -1)
+       PropertyDialog::SetFloatTextbox(m_elasticityFallOffEdit, wall->m_d.m_elasticityFalloff);
 
     if (dispid == IDC_COLLIDABLE_CHECK || dispid == -1)
     {
@@ -68,6 +71,9 @@ void WallPhysicsProperty::UpdateProperties(const int dispid)
                 PropertyDialog::EndUndo(wall);
                 CHECK_UPDATE_ITEM(wall->m_d.m_isBottomSolid, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), wall);
                 break;
+            case 120:
+               CHECK_UPDATE_ITEM(wall->m_d.m_elasticityFalloff, PropertyDialog::GetFloatTextbox(m_elasticityFallOffEdit), wall);
+               break;
             default:
                 UpdateBaseProperties(wall, &wall->m_d, dispid);
                 break;
@@ -86,6 +92,7 @@ BOOL WallPhysicsProperty::OnInitDialog()
     m_elasticityEdit.AttachItem(IDC_ELASTICITY_EDIT);
     m_frictionEdit.AttachItem(IDC_FRICTION_EDIT);
     m_scatterAngleEdit.AttachItem(IDC_SCATTER_ANGLE_EDIT);
+    m_elasticityFallOffEdit.AttachItem(120);
 
     m_baseHitThresholdEdit = &m_hitThresholdEdit;
     m_baseElasticityEdit = &m_elasticityEdit;

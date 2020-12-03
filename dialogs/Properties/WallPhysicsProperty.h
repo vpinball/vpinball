@@ -20,6 +20,7 @@ private:
     EditBox   m_slingshotForceEdit;
     EditBox   m_slingshotThresholdEdit;
     EditBox   m_elasticityEdit;
+    EditBox   m_elasticityFallOffEdit;
     EditBox   m_frictionEdit;
     EditBox   m_scatterAngleEdit;
     ComboBox  m_physicsMaterialCombo;

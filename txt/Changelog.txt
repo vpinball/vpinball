@@ -41,6 +41,8 @@ FEATURES:
 
 - support to add custom notes to a table. To open a dockable notes dialog use the menu View -> Notes. Any text that was entered there is saved with the current active table.
 
+- add ElasticityFalloff to the wall physics properties
+
 FIXES:
 
 - fix issue where saving a table can cost up to 4x (8x on 64bit) the temporary memory
