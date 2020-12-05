@@ -80,8 +80,10 @@ void LayersListDialog::DeleteLayer()
             IEditable* const pedit = (IEditable*)tvItem.lParam;
             if (pedit)
             {
-                pedit->GetISelect()->m_layerName = fillLayerName;
-                m_layerTreeView.AddElement(pedit->GetName(), pedit);
+               ISelect* const psel = pedit->GetISelect();
+               if(psel!=nullptr)
+                  psel->m_layerName = fillLayerName;
+               m_layerTreeView.AddElement(pedit->GetName(), pedit);
             }
         }
     }
@@ -106,11 +108,13 @@ void LayersListDialog::UpdateLayerList(const std::string& name)
     for (size_t t = 0; t < pt->m_vedit.size(); t++)
     {
         ISelect *const psel = pt->m_vedit[t]->GetISelect();
-        if(!checkName)
-            AddLayer(psel->m_layerName, pt->m_vedit[t]);
-        else if(std::string(pt->m_vedit[t]->GetName()).find(name)!=std::string::npos)
-            AddLayer(psel->m_layerName, pt->m_vedit[t]);
-        
+        if(psel!=nullptr)
+        {
+           if (!checkName)
+              AddLayer(psel->m_layerName, pt->m_vedit[t]);
+           else if (std::string(pt->m_vedit[t]->GetName()).find(name) != std::string::npos)
+              AddLayer(psel->m_layerName, pt->m_vedit[t]);
+        }
     }
     if (!name.empty())
         ExpandAll();
@@ -557,8 +561,11 @@ void LayerTreeView::SetAllItemStates(const bool checked)
             if (GetItem(tvItem))
             {
                 IEditable * const pedit = (IEditable *)tvItem.lParam;
-                if(pedit!=NULL)
-                    pedit->GetISelect()->m_isVisible = checked;
+                if (pedit != NULL)
+                {
+                   ISelect* const psel = pedit->GetISelect();
+                   psel->m_isVisible = checked;
+                }
             }
 
             TreeView_SetCheckState(GetHwnd(), subItem, checked);
@@ -711,18 +718,19 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
                         {
                             ISelect* const psel = pedit->GetISelect();
                             HTREEITEM hLayerItem = GetLayerByItem(hSelectedDrop);
-                            psel->m_layerName = GetLayerName(hLayerItem);
+                            if(psel!=nullptr)
+                               psel->m_layerName = GetLayerName(hLayerItem);
                             HTREEITEM oldItem = GetItemByElement(pedit);
                             DeleteItem(oldItem);
                             AddElementToLayer(hLayerItem, pedit->GetName(), pedit);
                             std::vector<HTREEITEM> subItem = GetSubItems(dragItem->m_hDragLayer);
                             if (subItem.size() == 0)
                             {
-                                if (dragItem->m_hDragLayer == hCurrentLayerItem)
-                                    hCurrentLayerItem = hLayerItem;
+                               if (dragItem->m_hDragLayer == hCurrentLayerItem)
+                                  hCurrentLayerItem = hLayerItem;
 
-                                DeleteItem(dragItem->m_hDragLayer);
-                            }
+                               DeleteItem(dragItem->m_hDragLayer);
+                           }
                         }
                     }
                 }
@@ -792,7 +800,7 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
                 for (size_t t = 0; t < pt->m_vedit.size(); t++)
                 {
                     ISelect* const psel = pt->m_vedit[t]->GetISelect();
-                    if (psel->m_layerName == oldName)
+                    if (psel!=nullptr && psel->m_layerName == oldName)
                         psel->m_layerName = newName;
                 }
             }
@@ -843,7 +851,12 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
                         {
                             IEditable * const pedit = (IEditable *)tvItem.lParam;
                             if (pedit != NULL)
-                                pedit->GetISelect()->m_isVisible = checked;
+                            {
+                               ISelect* const psel = pedit->GetISelect();
+                               if(psel!=nullptr)
+                                  psel->m_isVisible = checked;
+                            }
+                                
                         }
 
                         TreeView_SetCheckState(GetHwnd(), subItem, checked);
@@ -855,7 +868,9 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
                     IEditable * const pedit = (IEditable *)tvItem.lParam;
                     if (pedit != NULL)
                     {
-                        pedit->GetISelect()->m_isVisible = IsItemChecked(tvItem.hItem);
+                       ISelect* const psel = pedit->GetISelect();
+                       if (psel != nullptr)
+                          psel->m_isVisible = IsItemChecked(tvItem.hItem);
                     }
                 }
             }
@@ -901,7 +916,11 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
                 {
                     IEditable* const pedit = (IEditable*)tvItem.lParam;
                     if (pedit != NULL)
-                        pt->AddMultiSel(pedit->GetISelect(), true, false, false);
+                    {
+                       ISelect* const psel = pedit->GetISelect();
+                       if(psel!=nullptr)
+                          pt->AddMultiSel(psel, true, false, false);
+                    }
                 }
 
                 subItem = GetNextItem(subItem, TVGN_NEXT);
@@ -912,8 +931,10 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
             IEditable* const pedit = (IEditable*)tvItem.lParam;
             if (pedit != NULL)
             {
-                pt->AddMultiSel(pedit->GetISelect(), false, false, false);
-                pt->RefreshProperties();
+               ISelect* const psel = pedit->GetISelect();
+               if(psel!=nullptr)
+                  pt->AddMultiSel(psel, false, false, false);
+               pt->RefreshProperties();
             }
         }
     }
@@ -944,14 +965,18 @@ LRESULT LayerTreeView::OnTVNSelChanged(LPNMTREEVIEW pNMTV)
 bool LayerTreeView::AddElementToLayer(const HTREEITEM hLayerItem, const string& name, IEditable* const pedit)
 {
     hCurrentElementItem = AddItem(hLayerItem, name.c_str(), pedit, 2);
-    if (!pedit->GetISelect()->m_isVisible)
+    ISelect* const psel = pedit->GetISelect();
+    if(psel!=nullptr)
     {
-        TreeView_SetCheckState(GetHwnd(), hCurrentElementItem, 0);
-    }
-    else
-    {
-        TreeView_SetCheckState(GetHwnd(), hCurrentElementItem, 1);
-        TreeView_SetCheckState(GetHwnd(), hLayerItem, 1);
+       if (!psel->m_isVisible)
+       {
+          TreeView_SetCheckState(GetHwnd(), hCurrentElementItem, 0);
+       }
+       else
+       {
+          TreeView_SetCheckState(GetHwnd(), hCurrentElementItem, 1);
+          TreeView_SetCheckState(GetHwnd(), hLayerItem, 1);
+       }
     }
     return hCurrentElementItem != NULL;
 }
