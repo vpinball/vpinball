@@ -564,7 +564,8 @@ void LayerTreeView::SetAllItemStates(const bool checked)
                 if (pedit != NULL)
                 {
                    ISelect* const psel = pedit->GetISelect();
-                   psel->m_isVisible = checked;
+                   if(psel!=nullptr)
+                      psel->m_isVisible = checked;
                 }
             }
 
@@ -856,7 +857,6 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
                                if(psel!=nullptr)
                                   psel->m_isVisible = checked;
                             }
-                                
                         }
 
                         TreeView_SetCheckState(GetHwnd(), subItem, checked);
