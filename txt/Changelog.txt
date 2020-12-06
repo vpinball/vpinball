@@ -45,6 +45,8 @@ FEATURES:
 
 FIXES:
 
+- fix problem with gate animations introduced in 10.1 when the open/close script functions were used before
+
 - fix issue where saving a table can cost up to 4x (8x on 64bit) the temporary memory
 
 - fix issues when fallback search of core.vbs is triggered
