@@ -216,8 +216,8 @@ void GateMoverObject::UpdateDisplacements(const float dtime)
             m_anglespeed = -m_anglespeed;
             m_anglespeed *= m_damping * 0.8f; //just some extra damping to reduce the anglespeed a bit faster
          }
-         else if (m_anglespeed>0.0f)
-            m_anglespeed = 0.0f;
+         else if (m_anglespeed > 0.0f)
+               m_anglespeed = 0.0f;
       }
       if (fabsf(m_angle) < m_angleMin)
       {
@@ -230,8 +230,8 @@ void GateMoverObject::UpdateDisplacements(const float dtime)
             m_anglespeed = -m_anglespeed;
             m_anglespeed *= m_damping * 0.8f; //just some extra damping to reduce the anglespeed a bit faster
          }
-         else if (m_anglespeed<0.0f)
-            m_anglespeed = 0.0f;
+         else if (m_anglespeed < 0.0f)
+               m_anglespeed = 0.0f;
       }
    }
    else
@@ -246,7 +246,7 @@ void GateMoverObject::UpdateDisplacements(const float dtime)
             m_anglespeed *= m_damping * 0.8f; //just some extra damping to reduce the anglespeed a bit faster
          }
          else if (m_anglespeed > 0.0f)
-            m_anglespeed = 0.0f;
+               m_anglespeed = 0.0f;
       }
       if (m_angle < m_angleMin)
       {
@@ -257,10 +257,13 @@ void GateMoverObject::UpdateDisplacements(const float dtime)
             m_anglespeed = -m_anglespeed;
             m_anglespeed *= m_damping * 0.8f; //just some extra damping to reduce the anglespeed a bit faster
          }
-         else if (m_anglespeed<0.0f)
-            m_anglespeed = 0.0f;
+         else if (m_anglespeed < 0.0f)
+               m_anglespeed = 0.0f;
       }
    }
+   if(m_anglespeed==0.0f)
+      m_forcedMove = false;
+
    m_angle += m_anglespeed * dtime;
 }
 
