@@ -1517,7 +1517,7 @@ PinTable::PinTable()
    m_tblAutoStart = LoadValueIntWithDefault("Player", "Autostart", 0) * 10;
    m_tblAutoStartRetry = LoadValueIntWithDefault("Player", "AutostartRetry", 0) * 10;
    m_tblAutoStartEnabled = LoadValueBoolWithDefault("Player", "asenable", false);
-   m_tblVolmod = (float)LoadValueIntWithDefault("Player", "Volmod", 1000) * (float)(1.0 / 1000.0);
+   m_tblVolmod = (float)LoadValueIntWithDefault("Player", "Volmod", 1000) * (float)(1.0/1000.0);
    m_tblExitConfirm = LoadValueIntWithDefault("Player", "Exitconfirm", 120) * 1000 / 60;
 
    SaveValueString("Version", "VPinball", VP_VERSION_STRING_DIGITS);
@@ -3723,7 +3723,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             }
             // due to multithreaded loading and pre-allocation, check if some images could not be loaded and erase them
             for (size_t i = 0; i < m_vimage.size(); ++i)
-                if (m_vimage[i]->m_pdsBuffer == NULL)
+                if (!m_vimage[i] || m_vimage[i]->m_pdsBuffer == NULL)
                     m_vimage.erase(m_vimage.begin()+i);
             ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
 
