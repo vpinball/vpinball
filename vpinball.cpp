@@ -16,12 +16,13 @@
 
 #define SCROLL_WIDTH GetSystemMetrics(SM_CXVSCROLL)
 
-#define MAIN_WINDOW_WIDTH		800
-#define MAIN_WINDOW_HEIGHT		550
+#define MAIN_WINDOW_WIDTH       800
+#define MAIN_WINDOW_HEIGHT      550
 
 #define DOCKER_REGISTRY_KEY     "Visual Pinball\\VP10\\Editor"
 
-#define	RECENT_FIRST_MENU_IDM	5000	// ID of the first recent file list filename
+#define	RECENT_FIRST_MENU_IDM   5000 // ID of the first recent file list filename
+#define OPEN_MDI_TABLE_IDM      56   // ID of the first open table
 
 #define AUTOSAVE_DEFAULT_TIME 10
 
@@ -541,12 +542,16 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
       return TRUE;
    }
 
-   /* a MDI client window starts with ID 4000 and is incremented by Windows if a new window(table) is loaded 
-      if the user switches a table (multiple tables are loaded) the code is 4000+ support up to 30 loaded tables here */
-   if (code >= 4000 && code < 4030)
+   /* a MDI client window starts with ID OPEN_MDI_TABLE_IDM and is incremented by Windows if a new window(table) is loaded 
+      if the user switches a table (multiple tables are loaded) the code is OPEN_MDI_TABLE_IDM+ support up to 30 loaded tables here */
+   if (code >= OPEN_MDI_TABLE_IDM && code < OPEN_MDI_TABLE_IDM+30) //!!
    {
        /* close all dialogs if the table is changed to prevent further issues */
        CloseAllDialogs();
+
+       // mark selected table as checked, all others as unchecked
+       for(unsigned int i = OPEN_MDI_TABLE_IDM; i < OPEN_MDI_TABLE_IDM+30; ++i) //!!
+          GetMenu().CheckMenuItem(i, MF_BYCOMMAND | ((i==code) ? MF_CHECKED : MF_UNCHECKED));
    }
 
    switch (code)
@@ -1001,14 +1006,9 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
 
 CComObject<PinTable> *VPinball::GetActiveTable()
 {
-    PinTableMDI *mdiTable = (PinTableMDI *)GetActiveMDIChild();
-    if (mdiTable)
-    {
-        if (!m_unloadingTable)
-            return (CComObject<PinTable>*)mdiTable->GetTable();
-        else
-            return nullptr;
-    }
+    PinTableMDI * const mdiTable = (PinTableMDI *)GetActiveMDIChild();
+    if (mdiTable && !m_unloadingTable)
+       return (CComObject<PinTable>*)mdiTable->GetTable();
     return nullptr;
 }
 
@@ -1036,7 +1036,7 @@ bool VPinball::CloseTable(PinTable * const ppt)
    {
        ToggleToolbar();
        if (m_propertyDialog && m_propertyDialog->IsWindow())
-           m_propertyDialog->DeleteAllTabs();
+          m_propertyDialog->DeleteAllTabs();
        if (m_notesDialog && m_notesDialog->IsWindow())
           m_notesDialog->Disable();
    }
@@ -1048,7 +1048,7 @@ void VPinball::SetEnableMenuItems()
    CComObject<PinTable> * const ptCur = GetActiveTable();
 
    // Set menu item to the correct state
-   CMenu mainMenu = GetMenu();
+   const CMenu mainMenu = GetMenu();
 
    mainMenu.CheckMenuItem(ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | (m_backglassView ? MF_CHECKED : MF_UNCHECKED));
 
@@ -1068,7 +1068,7 @@ void VPinball::SetEnableMenuItems()
       mainMenu.EnableMenuItem(ID_EDIT_DRAWINGORDER_HIT, MF_BYCOMMAND | MF_ENABLED);
       mainMenu.EnableMenuItem(ID_EDIT_DRAWINGORDER_SELECT, MF_BYCOMMAND | MF_ENABLED);
       // enable/disable save options
-      UINT flags = MF_BYCOMMAND | MF_ENABLED;
+      const UINT flags = MF_BYCOMMAND | MF_ENABLED;
       mainMenu.EnableMenuItem(IDM_SAVE, flags);
       mainMenu.EnableMenuItem(IDM_SAVEAS, flags);
       mainMenu.EnableMenuItem(ID_FILE_EXPORT_BLUEPRINT, flags);
@@ -1548,8 +1548,9 @@ BOOL VPinball::OnCommand(WPARAM wparam, LPARAM lparam)
 {
     if (!ParseCommand(LOWORD(wparam), HIWORD(wparam)))
     {
-        if(GetActiveMDIChild())
-            GetActiveMDIChild()->SendMessage(WM_COMMAND, wparam, lparam);
+        auto mdiTable = GetActiveMDIChild();
+        if(mdiTable)
+           mdiTable->SendMessage(WM_COMMAND, wparam, lparam);
         return FALSE;
     }
     return TRUE;
@@ -2258,6 +2259,9 @@ void VPinball::OpenNewTable(size_t tableId)
     GetLayersListDialog()->CollapseLayers();
     GetLayersListDialog()->ExpandLayers();
     ToggleToolbar();
+    if (m_dockNotes != nullptr)
+        m_dockNotes->Enable();
+
     SetFocus();
 }
 

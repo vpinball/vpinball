@@ -265,7 +265,7 @@ private:
    CDockLayers *GetDefaultLayersDocker();
    CDockToolbar* GetDefaultToolbarDocker();
    CDockNotes* GetDefaultNotesDocker();
-   bool m_unloadingTable;
+   volatile bool m_unloadingTable;
    CMenu m_mainMenu;
    std::vector<std::string> m_recentTableList;
    //char m_szRecentTableList[LAST_OPENED_TABLE_COUNT + 1][MAX_PATH];
