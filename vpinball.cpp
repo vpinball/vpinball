@@ -1030,7 +1030,6 @@ bool VPinball::CloseTable(PinTable * const ppt)
    m_unloadingTable = true;
    ppt->GetMDITable()->SendMessage(WM_SYSCOMMAND, SC_CLOSE, 0);
    m_unloadingTable = false;
-   
 
    std::vector<MDIChildPtr> allChildren = GetAllMDIChildren();
    if (allChildren.size() == 0)
@@ -1249,6 +1248,13 @@ bool VPinball::processKeyInputForDialogs(MSG *pmsg)
     return consumed;
 }
 
+static int GetZOrder(HWND hWnd)
+{
+    int z = 0;
+    for (HWND h = hWnd; h != NULL; h = GetWindow(h, GW_HWNDPREV)) z++;
+    return z;
+}
+
 bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
 {
    bool consumed=false;
@@ -1256,14 +1262,16 @@ bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
    if (g_pplayer==nullptr)
    {
       // check if message must be processed by the code editor
-      if (m_pcv) 
+      if (m_pcv && (GetZOrder(m_pcv->GetHwnd()) < GetZOrder(GetHwnd())))
+      {
          consumed = m_pcv->PreTranslateMessage(pmsg);
 
-      if (m_pcv && m_pcv->m_hwndFind && ::IsDialogMessage(m_pcv->m_hwndFind, pmsg))
-         consumed = true;
+         if (m_pcv->m_hwndFind && ::IsDialogMessage(m_pcv->m_hwndFind, pmsg))
+            consumed = true;
+      }
 
       if (!consumed)
-         // check/process events for other dialogs (material/sound/image manager, toolbar, properties
+         // check/process events for other dialogs (material/sound/image manager, toolbar, properties)
          consumed = processKeyInputForDialogs(pmsg);
 
       if (!consumed)

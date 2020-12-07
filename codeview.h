@@ -100,7 +100,6 @@ class CodeViewer :
 	public IServiceProvider,
 	public UserData,
 	public CVPrefrence
-
 {
 public:
    CodeViewer();
@@ -160,7 +159,7 @@ public:
 
    STDMETHODIMP GetWindow(HWND *phwnd)
    {
-      *phwnd = GetDesktopWindow(); return S_OK;
+      *phwnd = GetDesktopWindow(); return S_OK; //!! ?
    }
 
    STDMETHODIMP EnableModeless(BOOL)
