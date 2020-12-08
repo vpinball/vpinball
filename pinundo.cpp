@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include "vpversion.h"
 
 PinUndo::PinUndo()
 {

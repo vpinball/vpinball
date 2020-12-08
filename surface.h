@@ -18,7 +18,7 @@ public:
    float m_slingshotforce;
    float m_disableLightingTop;   // was bool, now 0..1
    float m_disableLightingBelow; // 0..1
-   float m_elasticityFalloff;    // old type of walls set to 0.0
+   float m_elasticityFalloff;    // old tables had this fixed to 0.0
    bool m_droppable;
    bool m_flipbook;              // if enabled, dropped walls are not rendered
    bool m_displayTexture;        // in editor

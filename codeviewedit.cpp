@@ -276,7 +276,7 @@ size_t UserData::FindOrInsertUD(vector<UserData>* ListIn, UserData &udIn)
 			++iterFound;
 			++Pos;
 			ListIn->insert(iterFound, udIn);
-		}	
+		}
 		return Pos;
 	}
 

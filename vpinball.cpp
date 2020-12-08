@@ -16,15 +16,11 @@
 
 #define SCROLL_WIDTH GetSystemMetrics(SM_CXVSCROLL)
 
-#define MAIN_WINDOW_WIDTH       800
-#define MAIN_WINDOW_HEIGHT      550
-
 #define DOCKER_REGISTRY_KEY     "Visual Pinball\\VP10\\Editor"
 
-#define	RECENT_FIRST_MENU_IDM   5000 // ID of the first recent file list filename
-#define OPEN_MDI_TABLE_IDM      56   // ID of the first open table
-
-#define AUTOSAVE_DEFAULT_TIME 10
+#define	RECENT_FIRST_MENU_IDM   5000           // ID of the first recent file list filename
+#define OPEN_MDI_TABLE_IDM      IDW_FIRSTCHILD // ID of the first open table
+#define LAST_MDI_TABLE_IDM      IDW_CHILD9
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -155,7 +151,7 @@ VPinball::VPinball()
 VPinball::~VPinball()
 {
    // DLL_API void DLL_CALLCONV FreeImage_DeInitialise(); //remove FreeImage support BDS
-   SetClipboard(NULL);
+   SetClipboard(nullptr);
    FreeLibrary(m_scintillaDll);
 }
 
@@ -525,32 +521,33 @@ CMenu VPinball::GetMainMenu(int id)
 }
 
 
-BOOL VPinball::ParseCommand(size_t code, size_t notify)
+bool VPinball::ParseCommand(const size_t code, const bool notify)
 {
    // check if it's an Editable tool
-   ItemTypeEnum type = EditableRegistry::TypeFromToolID((int)code);
+   const ItemTypeEnum type = EditableRegistry::TypeFromToolID((int)code);
    if (type != eItemInvalid)
    {
       m_ToolCur = (int)code;
 
-      if (notify == 1) // accelerator - mouse can be over table already
+      if (notify) // accelerator - mouse can be over table already
       {
          POINT pt;
          GetCursorPos(&pt);
          SetCursorPos(pt.x, pt.y);
       }
-      return TRUE;
+      return true;
    }
 
    /* a MDI client window starts with ID OPEN_MDI_TABLE_IDM and is incremented by Windows if a new window(table) is loaded 
-      if the user switches a table (multiple tables are loaded) the code is OPEN_MDI_TABLE_IDM+ support up to 30 loaded tables here */
-   if (code >= OPEN_MDI_TABLE_IDM && code < OPEN_MDI_TABLE_IDM+30) //!!
+      if the user switches a table (multiple tables are loaded) support up to MAX_OPEN_TABLES loaded tables here */
+   assert(MAX_OPEN_TABLES == (LAST_MDI_TABLE_IDM-OPEN_MDI_TABLE_IDM+1));
+   if (code >= OPEN_MDI_TABLE_IDM && code <= LAST_MDI_TABLE_IDM)
    {
        /* close all dialogs if the table is changed to prevent further issues */
        CloseAllDialogs();
 
        // mark selected table as checked, all others as unchecked
-       for(unsigned int i = OPEN_MDI_TABLE_IDM; i < OPEN_MDI_TABLE_IDM+30; ++i) //!!
+       for(unsigned int i = OPEN_MDI_TABLE_IDM; i <= LAST_MDI_TABLE_IDM; ++i)
           GetMenu().CheckMenuItem(i, MF_BYCOMMAND | ((i==code) ? MF_CHECKED : MF_UNCHECKED));
    }
 
@@ -561,34 +558,34 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
        case ID_NEW_EXAMPLETABLE:
        {
           OpenNewTable(code);
-          return TRUE;
+          return true;
        }
        case ID_DELETE:
        {
           ProcessDeleteElement();
-          return TRUE;
+          return true;
        }
        case ID_TABLE_CAMERAMODE:
        case ID_TABLE_PLAY:
        {
            DoPlay(code == ID_TABLE_CAMERAMODE);
-           return TRUE;
+           return true;
        }
        case ID_SCRIPT_SHOWIDE:
        case ID_EDIT_SCRIPT:
        {
           ToggleScriptEditor();
-          return TRUE;
+          return true;
        }
        case ID_EDIT_BACKGLASSVIEW:
        {
           ToggleBackglassView();
-          return TRUE;
+          return true;
        }
        case ID_EDIT_SEARCH:
        {
           ShowSearchSelect();
-          return TRUE;
+          return true;
        }
        case ID_EDIT_SETDEFAULTPHYSICS:
        {
@@ -600,67 +597,67 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
           CComObject<PinTable> * const ptCur = GetActiveTable();
           if (ptCur)
              ptCur->LockElements();
-          return TRUE;
+          return true;
        }
        case ID_EDIT_DRAWINGORDER_HIT:
        {
           //DialogBoxParam(theInstance, MAKEINTRESOURCE(IDD_DRAWING_ORDER), m_hwnd, DrawingOrderProc, 0);
           ShowDrawingOrderDialog(false);
-          return TRUE;
+          return true;
        }
        case ID_EDIT_DRAWINGORDER_SELECT:
        {
           //DialogBoxParam(theInstance, MAKEINTRESOURCE(IDD_DRAWING_ORDER), m_hwnd, DrawingOrderProc, 0);
           ShowDrawingOrderDialog(true);
-          return TRUE;
+          return true;
        }
        case ID_VIEW_SOLID:
        case ID_VIEW_OUTLINE:
        {
            SetViewSolidOutline(code);
-           return TRUE;
+           return true;
        }
        case ID_VIEW_GRID:
        {
            ShowGridView();
-           return TRUE;
+           return true;
        }
        case ID_VIEW_BACKDROP:
        {
            ShowBackdropView();
-           return TRUE;
+           return true;
        }
        case IDC_SELECT:
        case ID_TABLE_MAGNIFY:
        {
           m_ToolCur = (int)code;
-          if (notify == 1) // accelerator - mouse can be over table already
+          if (notify) // accelerator - mouse can be over table already
           {
              POINT pt;
              GetCursorPos(&pt);
              SetCursorPos(pt.x, pt.y);
           }
-          return TRUE;
+          return true;
        }
        case ID_ADD_CTRL_POINT:
        {
           AddControlPoint();
-          return TRUE;
+          return true;
        }
        case ID_ADD_SMOOTH_CTRL_POINT:
        {
           AddSmoothControlPoint();
-          return TRUE;
+          return true;
        }
        case IDM_SAVE:
        {
           SaveTable(false);
-          return TRUE;
+          return true;
        }
        case IDM_SAVEAS:
        {
           SaveTable(true);
-          return TRUE;
+          return true;
        }
 
        case RECENT_FIRST_MENU_IDM:
@@ -673,85 +670,85 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
        case RECENT_FIRST_MENU_IDM + 7:
        {
           OpenRecentFile(code);
-          return TRUE;
+          return true;
        }
 
        case IDM_OPEN:
        {
            LoadFile();
-           return TRUE;
+           return true;
        }
        case IDM_CLOSE:
        {
           CComObject<PinTable> * const ptCur = GetActiveTable();
           if (ptCur)
              CloseTable(ptCur);
-          return TRUE;
+          return true;
        }
        case IDC_COPY:
        {
           CopyPasteElement(COPY);
-          return TRUE;
+          return true;
        }
        case IDC_PASTE:
        {
           CopyPasteElement(PASTE);
-          return TRUE;
+          return true;
        }
        case IDC_PASTEAT:
        {
           CopyPasteElement(PASTE_AT);
-          return TRUE;
+          return true;
        }
        case ID_EDIT_UNDO:
        {
           CComObject<PinTable> * const ptCur = GetActiveTable();
           if (ptCur)
              ptCur->Undo();
-          return TRUE;
+          return true;
        }
        case ID_FILE_EXPORT_BLUEPRINT:
        {
           CComObject<PinTable> * const ptCur = GetActiveTable();
           if (ptCur)
              ptCur->ExportBlueprint();
-          return TRUE;
+          return true;
        }
        case ID_EXPORT_TABLEMESH:
        {
           CComObject<PinTable> * const ptCur = GetActiveTable();
           if (ptCur)
              ptCur->ExportTableMesh();
-          return TRUE;
+          return true;
        }
        case ID_IMPORT_BACKDROPPOV:
        {
           CComObject<PinTable> * const ptCur = GetActiveTable();
           if (ptCur)
              ptCur->ImportBackdropPOV(string());
-          return TRUE;
+          return true;
        }
        case ID_EXPORT_BACKDROPPOV:
        {
           CComObject<PinTable> * const ptCur = GetActiveTable();
           if (ptCur)
              ptCur->ExportBackdropPOV(string());
-          return TRUE;
+          return true;
        }
        case ID_FILE_EXIT:
        {
            PostMessage(WM_CLOSE, 0, 0);
-           return TRUE;
+           return true;
        }
        case ID_EDIT_AUDIOOPTIONS:
        {
            m_audioOptDialog.DoModal(GetHwnd());
-           return TRUE;
+           return true;
        }
        case ID_EDIT_PHYSICSOPTIONS:
        {
            m_physicsOptDialog.DoModal(GetHwnd());
-           return TRUE;
+           return true;
        }
        case ID_EDIT_EDITOROPTIONS:
        {
@@ -762,19 +759,19 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
           CComObject<PinTable> * const ptCur = GetActiveTable();
           if (ptCur)
              ptCur->SetDirtyDraw();
-          return TRUE;
+          return true;
        }
        case ID_EDIT_VIDEOOPTIONS:
        {
            m_videoOptDialog.DoModal(GetHwnd());
-           return TRUE;
+           return true;
        }
        case ID_TABLE_TABLEINFO:
        {
            CComObject<PinTable> * const ptCur = GetActiveTable();
            if (ptCur)
                m_tableInfoDialog.DoModal(GetHwnd());
-           return TRUE;
+           return true;
        }
        case IDM_IMAGE_EDITOR:
        case ID_TABLE_IMAGEMANAGER:
@@ -784,7 +781,7 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
            {
                ShowSubDialog(m_imageMngDlg);
            }
-           return TRUE;
+           return true;
        }
        case IDM_SOUND_EDITOR:
        case ID_TABLE_SOUNDMANAGER:
@@ -794,7 +791,7 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
            {
               ShowSubDialog(m_soundMngDlg);
            }
-           return TRUE;
+           return true;
        }
        case IDM_MATERIAL_EDITOR:
        case ID_TABLE_MATERIALMANAGER:
@@ -804,7 +801,7 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
            {
                ShowSubDialog(m_materialDialog);
            }
-           return TRUE;
+           return true;
        }
        case ID_TABLE_NOTES:
        {
@@ -812,19 +809,19 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
              GetDefaultNotesDocker();
           else
              GetNotesDocker()->ShowWindow();
-          return TRUE;
+          return true;
        }
        case ID_TABLE_FONTMANAGER:
        {
            CComObject<PinTable> * const ptCur = GetActiveTable();
            if (ptCur)
               /*const DWORD foo =*/ DialogBoxParam(theInstance, MAKEINTRESOURCE(IDD_FONTDIALOG), GetHwnd(), FontManagerProc, (size_t)ptCur);
-           return TRUE;
+           return true;
        }
        case ID_TABLE_DIMENSIONMANAGER:
        {
            ShowSubDialog(m_dimensionDialog);
-           return TRUE;
+           return true;
        }
        case IDM_COLLECTION_EDITOR:
        case ID_TABLE_COLLECTIONMANAGER:
@@ -834,7 +831,7 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
            {
                ShowSubDialog(m_collectionMngDlg);
            }
-           return TRUE;
+           return true;
        }
        case ID_PREFERENCES_SECURITYOPTIONS:
        {
@@ -842,37 +839,37 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
 
           // refresh editor options from the registry
           InitRegValues();
-          return TRUE;
+          return true;
        }
        case ID_EDIT_KEYS:
        {
           KeysConfigDialog * const keysConfigDlg = new KeysConfigDialog();
           keysConfigDlg->DoModal();
           delete keysConfigDlg;
-          return TRUE;
+          return true;
        }
        case ID_HELP_ABOUT:
        {
           ShowSubDialog(m_aboutDialog);
-          return TRUE;
+          return true;
        }
        case ID_WINDOW_CASCADE:
        {
           MDICascade();
-          return TRUE;
+          return true;
        }
        case ID_WINDOW_TILE:
        {
           MDITile();
-          return TRUE;
+          return true;
        }
        case ID_WINDOW_ARRANGEICONS:
        {
           MDIIconArrange();
-          return TRUE;
+          return true;
        }
    }
-   return FALSE;
+   return false;
 }
 
 void VPinball::ReInitSound()
@@ -891,7 +888,6 @@ void VPinball::ReInitSound()
 			ptT->m_vsound[j]->ReInitialize();
 	}
 }
-
 
 void VPinball::ToggleToolbar()
 {
@@ -933,6 +929,12 @@ bool VPinball::LoadFile()
 
 void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
 {
+   if (m_vtable.size() == MAX_OPEN_TABLES)
+   {
+      ShowError("Maximum amount of tables already loaded and open.");
+      return;
+   }
+
    if (firstRun)
       OnInitialUpdate();
 
@@ -1546,7 +1548,7 @@ void VPinball::OnInitialUpdate()
 
 BOOL VPinball::OnCommand(WPARAM wparam, LPARAM lparam)
 {
-    if (!ParseCommand(LOWORD(wparam), HIWORD(wparam)))
+    if (!ParseCommand(LOWORD(wparam), HIWORD(wparam) == 1))
     {
         auto mdiTable = GetActiveMDIChild();
         if(mdiTable)
@@ -2251,6 +2253,12 @@ void VPinball::SaveTable(const bool saveAs)
 
 void VPinball::OpenNewTable(size_t tableId)
 {
+    if (m_vtable.size() == MAX_OPEN_TABLES)
+    {
+        ShowError("Maximum amount of tables already loaded and open.");
+        return;
+    }
+
     PinTableMDI *mdiTable = new PinTableMDI(this);
 
     mdiTable->GetTable()->InitBuiltinTable(this, tableId != ID_NEW_EXAMPLETABLE);

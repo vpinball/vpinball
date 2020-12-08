@@ -25,36 +25,44 @@ Gate::Gate()
 
 void Gate::SetGateType(GateType type)
 {
-    if (m_d.m_type == GateWireW)
+    switch (m_d.m_type)
+    {
+    case GateWireW:
     {
         m_vertices = gateWire;
         m_indices = gateWireIndices;
         m_numIndices = gateWireNumIndices;
         m_numVertices = gateWireNumVertices;
+        break;
     }
-    else if (m_d.m_type == GateWireRectangle)
+    case GateWireRectangle:
     {
         m_vertices = gateWireRectangleMesh;
         m_indices = gateWireRectangleIndices;
         m_numIndices = gateWireRectangleNumIndices;
         m_numVertices = gateWireRectangleNumVertices;
+        break;
     }
-    else if (m_d.m_type == GateLongPlate)
+    case GateLongPlate:
     {
         m_vertices = gateLongPlateMesh;
         m_indices = gateLongPlateIndices;
         m_numIndices = gateLongPlateNumIndices;
         m_numVertices = gateLongPlateVertices;
+        break;
     }
-    else if (m_d.m_type == GatePlate)
+    case GatePlate:
     {
         m_vertices = gatePlateMesh;
         m_indices = gatePlateIndices;
         m_numIndices = gatePlateNumIndices;
         m_numVertices = gatePlateNumVertices;
+        break;
     }
-    else
+    default:
         ShowError("Unknown Gate type");
+        break;
+    }
 }
 
 Gate::~Gate()
@@ -151,7 +159,7 @@ void Gate::WriteRegDefaults()
 
 float Gate::GetOpenAngle() const
 {
-    return RADTOANG((g_pplayer) ? m_phitgate->m_gateMover.m_angleMax : m_d.m_angleMax);	// player active value
+    return RADTOANG(g_pplayer ? m_phitgate->m_gateMover.m_angleMax : m_d.m_angleMax);	// player active value
 }
 
 void Gate::SetOpenAngle(const float angle)
@@ -318,7 +326,7 @@ void Gate::GetTimers(vector<HitTimer*> &pvht)
 void Gate::GetHitShapes(vector<HitObject*> &pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   const float h = m_d.m_height;		//relative height of the gate 
+   const float h = m_d.m_height;		// relative height of the gate 
 
    const float halflength = m_d.m_length * 0.5f;
 
@@ -331,7 +339,7 @@ void Gate::GetHitShapes(vector<HitObject*> &pvho)
    const float radangle = ANGTORAD(m_d.m_rotation);
    const Vertex2D tangent(cosf(radangle), sinf(radangle));
 
-   const Vertex2D rgv[2] = { //oversize by the ball's radius to prevent the ball from clipping through
+   const Vertex2D rgv[2] = { // oversize by the ball's radius to prevent the ball from clipping through
       m_d.m_vCenter + (halflength + (float)PHYS_SKIN) * tangent,
       m_d.m_vCenter - (halflength + (float)PHYS_SKIN) * tangent
    };
@@ -606,7 +614,7 @@ void Gate::RenderStatic()
 
 void Gate::SetObjectPos()
 {
-    m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
+   m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
 }
 
 void Gate::MoveOffset(const float dx, const float dy)
@@ -845,6 +853,7 @@ STDMETHODIMP Gate::put_Open(VARIANT_BOOL newVal)
       if (newVal)
       {
          m_phitgate->m_gateMover.m_open = true;
+
          m_phitgate->m_enabled = false;
          if (!m_d.m_twoWay)
             m_plineseg->m_enabled = false;

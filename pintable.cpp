@@ -6592,7 +6592,7 @@ void PinTable::UseTool(int x, int y, int tool)
       AddMultiSel(pie->GetISelect(), false, true, false);
    }
 
-   m_vpinball->ParseCommand(IDC_SELECT, 0);
+   m_vpinball->ParseCommand(IDC_SELECT, false);
 }
 
 Vertex2D PinTable::TransformPoint(int x, int y) const

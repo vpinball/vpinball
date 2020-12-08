@@ -37,7 +37,8 @@ struct ProtectionData {
 };
 
 class ScriptGlobalTable;
-class PinTableMDI:public CMDIChild
+
+class PinTableMDI : public CMDIChild
 {
 public:
     PinTableMDI(VPinball *vpinball);
@@ -47,6 +48,7 @@ public:
         return m_table;
     }
     bool CanClose() const;
+
 protected:
     virtual void PreCreate(CREATESTRUCT &cs);
     virtual int  OnCreate(CREATESTRUCT &cs);

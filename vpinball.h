@@ -25,16 +25,6 @@
 #include "NotesDialog.h"
 #include "Properties/PropertyDialog.h"
 
-#define CURRENT_FILE_FORMAT_VERSION 1060
-#define NO_ENCRYPTION_FORMAT_VERSION 1050
-#define NEW_SOUND_FORMAT_VERSION 1031 // introduced surround option
-
-#define DEFAULT_SECURITY_LEVEL 0
-
-#define LAST_OPENED_TABLE_COUNT	8
-#define MAX_CUSTOM_PARAM_INDEX 10
-
-
 class PinTable;
 class PinTableMDI;
 
@@ -89,7 +79,7 @@ public:
    void CloseAllDialogs();
    void ToggleScriptEditor();
    void ToggleBackglassView();
-   BOOL ParseCommand(size_t code, size_t notify);
+   bool ParseCommand(const size_t code, const bool notify);
    void ReInitSound();
 
    CComObject<PinTable> *GetActiveTable();
@@ -197,13 +187,7 @@ public:
    vector< CComObject<PinTable>* > m_vtable;
    CComObject<PinTable> *m_ptableActive;
 
-//    HWND m_hwndSideBar;
-//    HWND m_hwndSideBarScroll;
-//    HWND m_hwndSideBarLayers;
-//    HWND m_hwndWork;
 //    HWND m_hwndToolbarMain;
-//    HWND m_hwndToolbarPalette;
-//    HWND m_hwndToolbarLayers;
    HWND m_hwndStatusBar;
 
    int m_palettescroll;
@@ -234,7 +218,6 @@ public:
    string m_currentTablePath;
 
    int m_autosaveTime;
-   static bool m_open_minimized;
 
    Material m_dummyMaterial;
    COLORREF m_elemSelectColor;
@@ -243,6 +226,7 @@ public:
    COLORREF m_fillColor;
    Vertex2D m_mouseCursorPosition;
 
+   static bool m_open_minimized;
    static WCHAR *m_customParameters[MAX_CUSTOM_PARAM_INDEX];
 
 protected:
@@ -265,12 +249,12 @@ private:
    CDockLayers *GetDefaultLayersDocker();
    CDockToolbar* GetDefaultToolbarDocker();
    CDockNotes* GetDefaultNotesDocker();
+
    volatile bool m_unloadingTable;
    CMenu m_mainMenu;
    std::vector<std::string> m_recentTableList;
-   //char m_szRecentTableList[LAST_OPENED_TABLE_COUNT + 1][MAX_PATH];
 
-   HANDLE m_workerthread;
+   HANDLE  m_workerthread;
    unsigned int m_workerthreadid;
    bool    m_closing;
    HMODULE m_scintillaDll;
@@ -286,6 +270,7 @@ private:
    DimensionDialog m_dimensionDialog;
    MaterialDialog m_materialDialog;
    AboutDialog m_aboutDialog;
+
    ToolbarDialog *m_toolbarDialog = nullptr;
    PropertyDialog *m_propertyDialog = nullptr;
    CDockToolbar *m_dockToolbar = nullptr;

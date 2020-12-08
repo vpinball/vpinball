@@ -15,7 +15,7 @@ Changelog:
 - document missing ActiveBall global call
 - add PullBackandRetract to the plunger element that can be used instead of PullBack in the KeyDown Sub.
   The plunger will move forth and back between the maximum and minimum position, allowing for a retry, if the desired firing position has been missed.
-- add ElasticityFalloff to the wall properties
+- add ElasticityFalloff to the wall element
 
 10.6:
 - add UpdateMaterial to the globals
