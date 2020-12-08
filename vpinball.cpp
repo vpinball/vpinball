@@ -1617,8 +1617,10 @@ LRESULT VPinball::OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam)
 LRESULT VPinball::OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam)
 {
    if (GetAllMDIChildren().size() == 1)
+   {
       GetLayersListDialog()->ClearList();
-
+      GetLayersListDialog()->SetActiveTable(nullptr);
+   }
    return CMDIFrameT::OnMDIDestroyed(msg, wparam, lparam);
 }
 

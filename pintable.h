@@ -51,7 +51,7 @@ protected:
     virtual void PreCreate(CREATESTRUCT &cs);
     virtual int  OnCreate(CREATESTRUCT &cs);
     virtual void OnClose();
-
+    virtual LRESULT OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam);
 
 private:
     CComObject<PinTable> *m_table;

@@ -52,8 +52,7 @@ void LayersListDialog::DeleteLayer()
         return;
     }
 
-    CCO(PinTable)* const pt = g_pvp->GetActiveTable();
-    if (pt == nullptr)
+    if (m_activeTable == nullptr)
         return;
 
     const int ans = MessageBox("Are you sure you want to delete the complete layer?", "Confirm delete", MB_YESNO | MB_DEFBUTTON2);
@@ -99,21 +98,20 @@ void LayersListDialog::ClearList()
 
 void LayersListDialog::UpdateLayerList(const std::string& name)
 {
-    CCO(PinTable) *const pt = g_pvp->GetActiveTable();
-    if (pt == nullptr)
+    if (m_activeTable == nullptr)
         return;
 
     ClearList();
     const bool checkName = name.empty() ? false : true;
-    for (size_t t = 0; t < pt->m_vedit.size(); t++)
+    for (size_t t = 0; t < m_activeTable->m_vedit.size(); t++)
     {
-        ISelect *const psel = pt->m_vedit[t]->GetISelect();
+        ISelect *const psel = m_activeTable->m_vedit[t]->GetISelect();
         if(psel!=nullptr)
         {
            if (!checkName)
-              AddLayer(psel->m_layerName, pt->m_vedit[t]);
-           else if (std::string(pt->m_vedit[t]->GetName()).find(name) != std::string::npos)
-              AddLayer(psel->m_layerName, pt->m_vedit[t]);
+              AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
+           else if (std::string(m_activeTable->m_vedit[t]->GetName()).find(name) != std::string::npos)
+              AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
         }
     }
     if (!name.empty())
@@ -222,8 +220,7 @@ INT_PTR LayersListDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
 BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
-    CCO(PinTable)* const pt = g_pvp->GetActiveTable();
-    if (pt == nullptr)
+    if (m_activeTable == nullptr)
         return FALSE;
 
     UNREFERENCED_PARAMETER(lParam);
@@ -277,13 +274,12 @@ void LayersListDialog::OnAssignButton()
         return;
     }
 
-    CCO(PinTable)* const pt = g_pvp->GetActiveTable();
-    if (pt == nullptr || pt->MultiSelIsEmpty())
+    if (m_activeTable == nullptr || m_activeTable->MultiSelIsEmpty())
         return;
 
-    for (int t=0;t<pt->m_vmultisel.size();t++)
+    for (int t=0;t<m_activeTable->m_vmultisel.size();t++)
     {
-        ISelect* const psel = pt->m_vmultisel.ElementAt(t);
+        ISelect* const psel = m_activeTable->m_vmultisel.ElementAt(t);
         IEditable* const pedit = psel->GetIEditable();
         psel->m_layerName = layerName;
         HTREEITEM oldItem = m_layerTreeView.GetItemByElement(pedit);
@@ -749,8 +745,7 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
 LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
 {
-    CCO(PinTable)* const pt = g_pvp->GetActiveTable();
-    if (pt == nullptr)
+    if (m_activeTable == nullptr)
         return FALSE;
 
     const LPNMHDR lpnmh = (LPNMHDR)lparam;
@@ -798,9 +793,9 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
                 const string oldName(GetItemText(pinfo->item.hItem));
                 const string newName(pinfo->item.pszText);
 
-                for (size_t t = 0; t < pt->m_vedit.size(); t++)
+                for (size_t t = 0; t < m_activeTable->m_vedit.size(); t++)
                 {
-                    ISelect* const psel = pt->m_vedit[t]->GetISelect();
+                    ISelect* const psel = m_activeTable->m_vedit[t]->GetISelect();
                     if (psel!=nullptr && psel->m_layerName == oldName)
                         psel->m_layerName = newName;
                 }
@@ -829,8 +824,6 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
 
     if (ht.flags & TVHT_ONITEMSTATEICON)
     {
-        CCO(PinTable) *const pt = g_pvp->GetActiveTable();
-
         if (ht.hItem == hRootItem)
             SetAllItemStates(IsItemChecked(hRootItem));
         else
@@ -876,10 +869,10 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
             }
         }
 
-        if (pt != nullptr)
+        if (m_activeTable != nullptr)
         {
-            pt->SetDirty(eSaveDirty);
-            pt->SetDirtyDraw();
+            m_activeTable->SetDirty(eSaveDirty);
+            m_activeTable->SetDirtyDraw();
         }
     }
     return 0;
@@ -894,11 +887,10 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
     ::MapWindowPoints(HWND_DESKTOP, lpnmh->hwndFrom, &ht.pt, 1);
     HitTest(ht);
 
-    CCO(PinTable)* const pt = g_pvp->GetActiveTable();
-    if (pt == nullptr)
+    if (m_activeTable == nullptr)
         return TRUE;
 
-    pt->ClearMultiSel();
+    m_activeTable->ClearMultiSel();
 
     TVITEM tvItem;
     ZeroMemory(&tvItem, sizeof(tvItem));
@@ -919,7 +911,7 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
                     {
                        ISelect* const psel = pedit->GetISelect();
                        if(psel!=nullptr)
-                          pt->AddMultiSel(psel, true, false, false);
+                          m_activeTable->AddMultiSel(psel, true, false, false);
                     }
                 }
 
@@ -933,13 +925,13 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
             {
                ISelect* const psel = pedit->GetISelect();
                if(psel!=nullptr)
-                  pt->AddMultiSel(psel, false, false, false);
-               pt->RefreshProperties();
+                  m_activeTable->AddMultiSel(psel, false, false, false);
+               m_activeTable->RefreshProperties();
             }
         }
     }
-    pt->SetDirty(eSaveDirty);
-    pt->SetDirtyDraw();
+    m_activeTable->SetDirty(eSaveDirty);
+    m_activeTable->SetDirtyDraw();
     return 0;
 }
 

@@ -10416,6 +10416,21 @@ void PinTableMDI::OnClose()
     }
 }
 
+LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
+{
+   //wparam holds HWND of the MDI frame that is about to be deactivated
+   //lparam holds HWND of the MDI frame that is about to be activated
+   if(GetHwnd()==(HWND)lparam)
+   {
+      if (g_pvp->GetLayersDocker() != nullptr)
+      {
+         g_pvp->GetLayersDocker()->GetContainLayers()->GetLayersDialog()->SetActiveTable(m_table);
+         g_pvp->GetLayersDocker()->GetContainLayers()->GetLayersDialog()->UpdateLayerList();
+      }
+   }
+   return CMDIChild::OnMDIActivate(msg, wparam, lparam);
+}
+
 #pragma endregion
 
 ProgressDialog::ProgressDialog() : CDialog(IDD_PROGRESS)
