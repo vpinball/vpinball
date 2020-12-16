@@ -1,7 +1,9 @@
 #include "StdAfx.h"
 #include <time.h>
 
+//#define USE_LOWLEVEL_PRECISION_SETTING // does allow to pick lower windows timer resolutions than 1ms (usually 0.5ms as of win10/2020) via undocumented API calls, BUT lead to sound distortion on some setups in PinMAME, so also disable it in VPX for now
 
+#ifdef USE_LOWLEVEL_PRECISION_SETTING
 typedef LONG(CALLBACK* NTSETTIMERRESOLUTION)(IN ULONG DesiredTime,
 	IN BOOLEAN SetResolution,
 	OUT PULONG ActualTime);
@@ -14,6 +16,7 @@ static NTQUERYTIMERRESOLUTION NtQueryTimerResolution;
 
 static HMODULE hNtDll = NULL;
 static ULONG win_timer_old_period = -1;
+#endif
 
 static TIMECAPS win_timer_caps;
 static MMRESULT win_timer_result = TIMERR_NOCANDO;
@@ -27,6 +30,7 @@ void set_lowest_possible_win_timer_resolution()
 		timeBeginPeriod(win_timer_caps.wPeriodMin);
 
 	// Then try the even finer sliced (usually 0.5ms) low level variant
+#ifdef USE_LOWLEVEL_PRECISION_SETTING
 	hNtDll = LoadLibrary("NtDll.dll");
 	if (hNtDll) {
 		NtQueryTimerResolution = (NTQUERYTIMERRESOLUTION)GetProcAddress(hNtDll, "NtQueryTimerResolution");
@@ -42,12 +46,13 @@ void set_lowest_possible_win_timer_resolution()
 				win_timer_old_period = -1;
 		}
 	}
+#endif
 }
 
 void restore_win_timer_resolution()
 {
 	// restore both timer resolutions
-
+#ifdef USE_LOWLEVEL_PRECISION_SETTING
 	if (hNtDll) {
 		if (win_timer_old_period != -1)
 		{
@@ -58,6 +63,7 @@ void restore_win_timer_resolution()
 		FreeLibrary(hNtDll);
 		hNtDll = NULL;
 	}
+#endif
 
 	if (win_timer_result == TIMERR_NOERROR)
 	{
