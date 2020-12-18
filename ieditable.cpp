@@ -215,12 +215,19 @@ void IEditable::SetName(const std::string& name)
     if (pt == nullptr)
         return;
 
-    WCHAR newName[sizeof(GetScriptable()->m_wzName)];
+	 WCHAR newName[sizeof(GetScriptable()->m_wzName)];
+	 WCHAR uniqueName[sizeof(GetScriptable()->m_wzName)];
+    WCHAR* namePtr = newName;
     MultiByteToWideChar(CP_ACP, 0, name.c_str(), -1, newName, sizeof(GetScriptable()->m_wzName));
+    if(!pt->IsNameUnique(newName))
+	 {
+		 pt->GetUniqueName(newName, uniqueName);
+       namePtr = uniqueName;
+	 }
     STARTUNDO
     // first update name in the codeview before updating it in the element itself
-    pt->m_pcv->ReplaceName(GetScriptable(), newName);
-    lstrcpynW(GetScriptable()->m_wzName, newName, sizeof(GetScriptable()->m_wzName));
+    pt->m_pcv->ReplaceName(GetScriptable(), namePtr);
+    lstrcpynW(GetScriptable()->m_wzName, namePtr, sizeof(GetScriptable()->m_wzName));
     g_pvp->GetLayersListDialog()->UpdateElement(this);
     g_pvp->SetPropSel(GetPTable()->m_vmultisel);
     STOPUNDO
