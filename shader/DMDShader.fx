@@ -83,33 +83,44 @@ float4 ps_main_DMD_no(in VS_OUTPUT IN) : COLOR
 }
 #endif
 
-float nrand(float2 uv)
+float nrand(const float2 uv)
 {
    return frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453);
 }
 
 #if 0
-float gold_noise(in float2 xy, in float seed)
+float gold_noise(const float2 xy, const float seed)
 {
    return frac(tan(distance(xy * 1.61803398874989484820459, xy) * seed) * xy.x); // tan is usually slower than sin/cos
 }
 #endif
 
+float triangularPDF(const float r) // from -1..1, c=0 (with random no r=0..1)
+{
+   float p = 2.*r;
+   const bool b = (p > 1.);
+   if (b)
+      p = 2.-p;
+   p = 1.-sqrt(p); //!! handle 0 explicitly due to compiler doing 1/rsqrt(0)? but might be still 0 according to spec, as rsqrt(0) = inf and 1/inf = 0, but values close to 0 could be screwed up still
+   return b ? p : -p;
+}
+
+//!! this is incredibly heavy for a supposedly simple DMD output shader, but then again this is pretty robust for all kinds of scales and input resolutions now, plus also for 'distorted' output (via the flashers)!
 float4 ps_main_DMD(in VS_OUTPUT IN) : COLOR
 {
-   const float blur = 0.75; // 0.5..1.0 looks best (between sharp and blurry)
-   const float2 ddxs = ddx(IN.tex0); // use ddx and ddy to help the oversampling below/make filtering radius dependent on projected 'dots'/texel
-   const float2 ddys = ddy(IN.tex0);
+   const float blur = 1.5; // 1.0..2.0 looks best (between sharp and blurry), and 1.5 matches the intention of the triangle filter (see triangularPDF calls below)!
+   const float2 ddxs = ddx(IN.tex0)*blur; // use ddx and ddy to help the oversampling below/make filtering radius dependent on projected 'dots'/texel
+   const float2 ddys = ddy(IN.tex0)*blur;
 
    const float2 offs = float2(nrand(IN.tex0 + vRes_Alpha_time.w), nrand(IN.tex0 + (2048.0 + vRes_Alpha_time.w))); // random offset for the oversampling
 
    // brute force oversampling of DMD-texture and especially the dot-function (using 25 samples)
    float3 color2 = float3(0., 0., 0.);
 
-   const int samples = 13; //4,8,9,13,21,25,32 korobov,fibonacci
+   const int samples = 21; //4,8,9,13,21,25,32 korobov,fibonacci
    [unroll] for (int i = 0; i < samples; ++i) // oversample the dots
    {
-      const float2 uv = IN.tex0 + (frac(i* (1.0 / samples) + offs.x)*(2.*blur)-blur)*ddxs + (frac(i* (8.0 / samples) + offs.y)*(2.*blur)-blur)*ddys; //1,5,2,8,13,7,7 korobov,fibonacci
+      const float2 uv = IN.tex0 + triangularPDF(frac(i* (1.0 / samples) + offs.x))*ddxs + triangularPDF(frac(i* (13.0 / samples) + offs.y))*ddys; //1,5,2,8,13,7,7 korobov,fibonacci //!! lots of ALU
 
       const float4 rgba = tex2Dlod(texSampler0, float4(uv, 0., 0.)); //!! lots of tex access by doing this all the time, but (tex) cache should be able to catch all of it
 
