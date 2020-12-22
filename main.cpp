@@ -328,7 +328,7 @@ public:
              const size_t len = strlen(szArglist[i + 1]);
              VPinball::m_customParameters[customIdx - 1] = new WCHAR[len + 1];
 
-             MultiByteToWideChar(CP_ACP, 0, szArglist[i + 1], (int)len, VPinball::m_customParameters[customIdx - 1], (int)len + 1);
+             MultiByteToWideCharNull(CP_ACP, 0, szArglist[i + 1], -1, VPinball::m_customParameters[customIdx - 1], (int)len + 1);
 
              ++i; // two params processed
 

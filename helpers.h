@@ -65,21 +65,21 @@ private:
 // not have to be declared, and no clean up must be done.
 //---------------------------------------------------------------------------
 //#define UNICODE_FROM_ANSI(pwszUnicode, pszAnsi, cb) \
-//    MultiByteToWideChar(CP_ACP, 0, pszAnsi, -1, pwszUnicode, cb);
+//    MultiByteToWideCharNull(CP_ACP, 0, pszAnsi, -1, pwszUnicode, cb);
 
 #if _MSC_VER != 1900 // otherwise internal compiler error
 #define MAKE_WIDEPTR_FROMANSI(ptrname, pszAnsi) \
     const char * const __psz##ptrname = pszAnsi?pszAnsi:""; \
     const long __l##ptrname = (lstrlen(__psz##ptrname) + 1) * (long)sizeof(WCHAR); \
     TempBuffer __TempBuffer##ptrname(__l##ptrname); \
-    MultiByteToWideChar(CP_ACP, 0, __psz##ptrname, -1, (LPWSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname); \
+    MultiByteToWideCharNull(CP_ACP, 0, __psz##ptrname, -1, (LPWSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname); \
     const LPWSTR ptrname = (LPWSTR)__TempBuffer##ptrname.GetBuffer()
 #else
 #define MAKE_WIDEPTR_FROMANSI(ptrname, pszAnsi) \
     const char * __psz##ptrname = pszAnsi?pszAnsi:""; \
     const long __l##ptrname = (lstrlen(__psz##ptrname) + 1) * (long)sizeof(WCHAR); \
     TempBuffer __TempBuffer##ptrname(__l##ptrname); \
-    MultiByteToWideChar(CP_ACP, 0, __psz##ptrname, -1, (LPWSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname); \
+    MultiByteToWideCharNull(CP_ACP, 0, __psz##ptrname, -1, (LPWSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname); \
     const LPWSTR ptrname = (LPWSTR)__TempBuffer##ptrname.GetBuffer()
 #endif
 
@@ -87,7 +87,7 @@ private:
     const WCHAR * const __pwsz##ptrname = pwszUnicode?pwszUnicode:L""; \
     const long __l##ptrname = (lstrlenW(__pwsz##ptrname) + 1) * (long)sizeof(char); \
     TempBuffer __TempBuffer##ptrname(__l##ptrname); \
-    WideCharToMultiByte(CP_ACP, 0, __pwsz##ptrname, -1, (LPSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname, NULL, NULL); \
+    WideCharToMultiByteNull(CP_ACP, 0, __pwsz##ptrname, -1, (LPSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname, NULL, NULL); \
     const LPSTR ptrname = (LPSTR)__TempBuffer##ptrname.GetBuffer()
 
 //--- EOF -------------------------------------------------------------------

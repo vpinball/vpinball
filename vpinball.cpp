@@ -181,7 +181,7 @@ void VPinball::GetMyPath()
    // store 2x
    m_szMyPath = szPath;
    WCHAR wzPath[MAXSTRING];
-   MultiByteToWideChar(CP_ACP, 0, szPath, -1, wzPath, MAXSTRING);
+   MultiByteToWideCharNull(CP_ACP, 0, szPath, -1, wzPath, MAXSTRING);
    m_wzMyPath = wzPath;
 }
 

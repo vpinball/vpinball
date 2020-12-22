@@ -75,7 +75,7 @@ void CollectionManagerDialog::EditCollection()
             pt->SetNonUndoableDirty(eSaveDirty);
 
         char szT[sizeof(pcol->m_wzName)/sizeof(pcol->m_wzName[0])];
-        WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szT, sizeof(szT), NULL, NULL);
+        WideCharToMultiByteNull(CP_ACP, 0, pcol->m_wzName, -1, szT, sizeof(szT), NULL, NULL);
         ListView_SetItemText(hListHwnd, sel, 0, szT);
     }
 }
@@ -206,7 +206,7 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 lvitem1.iItem = idx - 1;
                 ListView_InsertItem(hListHwnd, &lvitem1);
                 char szT[sizeof(pcol->m_wzName)/sizeof(pcol->m_wzName[0])];
-                WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szT, sizeof(szT), NULL, NULL);
+                WideCharToMultiByteNull(CP_ACP, 0, pcol->m_wzName, -1, szT, sizeof(szT), NULL, NULL);
                 ListView_SetItemText(hListHwnd, idx - 1, 0, szT);
 
                 char buf[16] = { 0 };
@@ -238,7 +238,7 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 lvitem1.iItem = idx + 1;
                 ListView_InsertItem(hListHwnd, &lvitem1);
                 char szT[sizeof(pcol->m_wzName)/sizeof(pcol->m_wzName[0])];
-                WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szT, sizeof(szT), NULL, NULL);
+                WideCharToMultiByteNull(CP_ACP, 0, pcol->m_wzName, -1, szT, sizeof(szT), NULL, NULL);
                 ListView_SetItemText(hListHwnd, idx + 1, 0, szT);
 
                 char buf[16] = { 0 };
@@ -325,7 +325,7 @@ BOOL CollectionDialog::OnInitDialog()
     const HWND hwndName = GetDlgItem(IDC_NAME).GetHwnd();
 
     char szT[sizeof(pcol->m_wzName)/sizeof(pcol->m_wzName[0])];
-    WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szT, sizeof(szT), NULL, NULL);
+    WideCharToMultiByteNull(CP_ACP, 0, pcol->m_wzName, -1, szT, sizeof(szT), NULL, NULL);
 
     ::SetWindowText(hwndName, szT);
 
@@ -348,7 +348,7 @@ BOOL CollectionDialog::OnInitDialog()
         IScriptable * const piscript = piedit->GetScriptable();
         if (piscript)
         {
-            WideCharToMultiByte(CP_ACP, 0, piscript->m_wzName, -1, szT, sizeof(szT), NULL, NULL);
+            WideCharToMultiByteNull(CP_ACP, 0, piscript->m_wzName, -1, szT, sizeof(szT), NULL, NULL);
             const size_t index = ::SendMessage(hwndIn, LB_ADDSTRING, 0, (size_t)szT);
             ::SendMessage(hwndIn, LB_SETITEMDATA, index, (size_t)piscript);
         }
@@ -371,7 +371,7 @@ BOOL CollectionDialog::OnInitDialog()
         if ((l == pcol->m_visel.Size()) && piscript)
             //if (!piedit->m_pcollection)
         {
-            WideCharToMultiByte(CP_ACP, 0, piscript->m_wzName, -1, szT, sizeof(szT), NULL, NULL);
+            WideCharToMultiByteNull(CP_ACP, 0, piscript->m_wzName, -1, szT, sizeof(szT), NULL, NULL);
             const size_t index = ::SendMessage(hwndOut, LB_ADDSTRING, 0, (size_t)szT);
             ::SendMessage(hwndOut, LB_SETITEMDATA, index, (size_t)piscript);
         }

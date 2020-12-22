@@ -8,7 +8,7 @@ float sz2f(const string& sz)
 {
    const int len = (int)sz.length()+1;
    WCHAR * const wzT = new WCHAR[len];
-   MultiByteToWideChar(CP_ACP, 0, sz.c_str(), -1, wzT, len);
+   MultiByteToWideCharNull(CP_ACP, 0, sz.c_str(), -1, wzT, len);
 
    CComVariant var = wzT;
 
@@ -34,7 +34,7 @@ void f2sz(const float f, string& sz)
    {
       const WCHAR * const wzT = V_BSTR(&var);
       char tmp[256];
-      WideCharToMultiByte(CP_ACP, 0, wzT, -1, tmp, 256, NULL, NULL);
+      WideCharToMultiByteNull(CP_ACP, 0, wzT, -1, tmp, 256, NULL, NULL);
       sz = tmp;
       VariantClear(&var);
    }
@@ -142,7 +142,7 @@ WCHAR *MakeWide(const string& sz)
 {
    const int len = (int)sz.length()+1;
    WCHAR * const wzT = new WCHAR[len];
-   MultiByteToWideChar(CP_ACP, 0, sz.c_str(), -1, wzT, len);
+   MultiByteToWideCharNull(CP_ACP, 0, sz.c_str(), -1, wzT, len);
 
    return wzT;
 }
@@ -151,7 +151,7 @@ char *MakeChar(const WCHAR * const wz)
 {
    const int len = lstrlenW(wz);
    char * const szT = new char[len + 1];
-   WideCharToMultiByte(CP_ACP, 0, wz, -1, szT, len + 1, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, wz, -1, szT, len + 1, NULL, NULL);
 
    return szT;
 }

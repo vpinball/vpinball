@@ -48,7 +48,7 @@ void EnumEventsFromDispatch(IDispatch *pdisp, EventListCallback Callback, LPARAM
 
                   // Add enum string to combo control
                   char szT[512];
-                  WideCharToMultiByte(CP_ACP, 0, rgstr[0], -1, szT, 512, NULL, NULL);
+                  WideCharToMultiByteNull(CP_ACP, 0, rgstr[0], -1, szT, 512, NULL, NULL);
                   (*Callback)(szT, l, pfd->memid, lparam);
 
                   for (unsigned int i2 = 0; i2 < cnames; i2++)

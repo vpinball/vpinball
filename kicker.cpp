@@ -264,7 +264,7 @@ void Kicker::ExportMesh(FILE *f)
        return;
 
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    int num_vertices;
@@ -911,7 +911,7 @@ STDMETHODIMP Kicker::put_Y(float newVal)
 STDMETHODIMP Kicker::get_Surface(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -920,7 +920,7 @@ STDMETHODIMP Kicker::get_Surface(BSTR *pVal)
 STDMETHODIMP Kicker::put_Surface(BSTR newVal)
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXTOKEN, NULL, NULL);
    STOPUNDO
 
    return S_OK;
@@ -1078,7 +1078,7 @@ STDMETHODIMP Kicker::put_DrawStyle(KickerType newVal)
 STDMETHODIMP Kicker::get_Material(BSTR *pVal)
 {
    WCHAR wz[MAXNAMEBUFFER];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1087,7 +1087,7 @@ STDMETHODIMP Kicker::get_Material(BSTR *pVal)
 STDMETHODIMP Kicker::put_Material(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
 
    STARTUNDO
    m_d.m_szMaterial = buf;

@@ -412,4 +412,40 @@ HRESULT OpenURL(const string& szURL);
 WCHAR *MakeWide(const string& sz);
 char *MakeChar(const WCHAR * const wz);
 
+// in case the incoming string length is >= the maximum char length of the outgoing one, WideCharToMultiByte will not produce a zero terminated string
+// this variant always makes sure that the outgoing string is zero terminated
+inline int WideCharToMultiByteNull(
+    const UINT     CodePage,
+    const DWORD    dwFlags,
+    LPCWSTR        lpWideCharStr,
+    const int      cchWideChar,
+    LPSTR          lpMultiByteStr,
+    const int      cbMultiByte,
+    LPCSTR         lpDefaultChar,
+    LPBOOL         lpUsedDefaultChar)
+{
+    const int res = WideCharToMultiByte(CodePage,dwFlags,lpWideCharStr,cchWideChar,lpMultiByteStr,cbMultiByte,lpDefaultChar,lpUsedDefaultChar);
+    if(cbMultiByte > 0 && lpMultiByteStr)
+        lpMultiByteStr[cbMultiByte-1] = '\0';
+    return res;
+}
+
+
+// in case the incoming string length is >= the maximum wchar length of the outgoing one, MultiByteToWideChar will not produce a zero terminated string
+// this variant always makes sure that the outgoing string is zero terminated
+inline int MultiByteToWideCharNull(
+    const UINT     CodePage,
+    const DWORD    dwFlags,
+    LPCSTR         lpMultiByteStr,
+    const int      cbMultiByte,
+    LPWSTR         lpWideCharStr,
+    const int      cchWideChar)
+{
+    const int res = MultiByteToWideChar(CodePage,dwFlags,lpMultiByteStr,cbMultiByte,lpWideCharStr,cchWideChar);
+    if(cchWideChar > 0 && lpWideCharStr)
+        lpWideCharStr[cchWideChar-1] = L'\0';
+    return res;
+}
+
+
 char* replace(const char* const original, const char* const pattern, const char* const replacement);

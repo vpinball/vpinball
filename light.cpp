@@ -662,7 +662,7 @@ void Light::PrepareMoversCustom()
    if (vtri.size() == 0)
    {
       char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-      WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
+      WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
       char textBuffer[MAX_PATH];
       _snprintf_s(textBuffer, MAX_PATH-1, "%s has an invalid shape! It can not be rendered!", name);
       ShowError(textBuffer);
@@ -1227,7 +1227,7 @@ void Light::InitShape()
 STDMETHODIMP Light::get_BlinkPattern(BSTR *pVal)
 {
    WCHAR wz[NUM_RGB_BLINK_PATTERN];
-   MultiByteToWideChar(CP_ACP, 0, m_rgblinkpattern, -1, wz, NUM_RGB_BLINK_PATTERN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_rgblinkpattern, -1, wz, NUM_RGB_BLINK_PATTERN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1235,7 +1235,7 @@ STDMETHODIMP Light::get_BlinkPattern(BSTR *pVal)
 
 STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_rgblinkpattern, NUM_RGB_BLINK_PATTERN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_rgblinkpattern, NUM_RGB_BLINK_PATTERN, NULL, NULL);
 
    if (m_rgblinkpattern[0] == '\0')
    {
@@ -1336,7 +1336,7 @@ STDMETHODIMP Light::put_IntensityScale(float newVal)
 STDMETHODIMP Light::get_Surface(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1344,7 +1344,7 @@ STDMETHODIMP Light::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Light::put_Surface(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXTOKEN, NULL, NULL);
 
    return S_OK;
 }
@@ -1353,7 +1353,7 @@ STDMETHODIMP Light::put_Surface(BSTR newVal)
 STDMETHODIMP Light::get_Image(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1362,7 +1362,7 @@ STDMETHODIMP Light::get_Image(BSTR *pVal)
 STDMETHODIMP Light::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
    m_d.m_szImage = szImage;
 
    return S_OK;

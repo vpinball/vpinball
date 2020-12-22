@@ -1173,7 +1173,7 @@ STDMETHODIMP Plunger::put_Type(PlungerType newVal)
 STDMETHODIMP Plunger::get_Material(BSTR *pVal)
 {
    WCHAR wz[MAXNAMEBUFFER];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1182,7 +1182,7 @@ STDMETHODIMP Plunger::get_Material(BSTR *pVal)
 STDMETHODIMP Plunger::put_Material(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
    m_d.m_szMaterial = buf;
 
    return S_OK;
@@ -1191,7 +1191,7 @@ STDMETHODIMP Plunger::put_Material(BSTR newVal)
 STDMETHODIMP Plunger::get_Image(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1200,7 +1200,7 @@ STDMETHODIMP Plunger::get_Image(BSTR *pVal)
 STDMETHODIMP Plunger::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -1229,7 +1229,7 @@ STDMETHODIMP Plunger::put_AnimFrames(int newVal)
 STDMETHODIMP Plunger::get_TipShape(BSTR *pVal)
 {
    WCHAR wz[MAXTIPSHAPE];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szTipShape, -1, wz, MAXTIPSHAPE);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szTipShape, -1, wz, MAXTIPSHAPE);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1237,7 +1237,7 @@ STDMETHODIMP Plunger::get_TipShape(BSTR *pVal)
 
 STDMETHODIMP Plunger::put_TipShape(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szTipShape, MAXTIPSHAPE, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_d.m_szTipShape, MAXTIPSHAPE, NULL, NULL);
 
    return S_OK;
 }
@@ -1432,7 +1432,7 @@ STDMETHODIMP Plunger::put_ZAdjust(float newVal)
 STDMETHODIMP Plunger::get_Surface(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1440,7 +1440,7 @@ STDMETHODIMP Plunger::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Plunger::put_Surface(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXTOKEN, NULL, NULL);
 
    return S_OK;
 }

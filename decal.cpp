@@ -94,7 +94,7 @@ void Decal::SetDefaults(bool fromMouseClick)
          const int len = lstrlen(tmp) + 1;
          fd.lpstrName = (LPOLESTR)malloc(len*sizeof(WCHAR));
          memset(fd.lpstrName, 0, len*sizeof(WCHAR));
-         MultiByteToWideChar(CP_ACP, 0, tmp, -1, fd.lpstrName, len);
+         MultiByteToWideCharNull(CP_ACP, 0, tmp, -1, fd.lpstrName, len);
       }
 
       fd.sWeight = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Decal", "FontWeight", FW_NORMAL) : FW_NORMAL;
@@ -115,7 +115,7 @@ char * Decal::GetFontName()
         /*HRESULT hr =*/ m_pIFont->get_Name(&bstr);
 
         static char fontName[LF_FACESIZE];
-        WideCharToMultiByte(CP_ACP, 0, bstr, -1, fontName, LF_FACESIZE, NULL, NULL);
+        WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, fontName, LF_FACESIZE, NULL, NULL);
         return fontName;
     }
     return NULL;
@@ -151,7 +151,7 @@ void Decal::WriteRegDefaults()
 
       const size_t charCnt = wcslen(fd.lpstrName) + 1;
       char * const strTmp = new char[2 * charCnt];
-      WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, (int)charCnt, strTmp, (int)(2 * charCnt), NULL, NULL);
+      WideCharToMultiByteNull(CP_ACP, 0, fd.lpstrName, -1, strTmp, (int)(2 * charCnt), NULL, NULL);
       SaveValueString("DefaultProps\\Decal", "FontName", strTmp);
       delete[] strTmp;
       const int weight = fd.sWeight;
@@ -788,7 +788,7 @@ HFONT Decal::GetFont()
    CComBSTR bstr;
    (void)m_pIFont->get_Name(&bstr);
 
-   WideCharToMultiByte(CP_ACP, 0, bstr, -1, lf.lfFaceName, LF_FACESIZE, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, lf.lfFaceName, LF_FACESIZE, NULL, NULL);
 
    BOOL bl;
    (void)m_pIFont->get_Bold(&bl);
@@ -821,7 +821,7 @@ STDMETHODIMP Decal::put_Rotation(float newVal)
 STDMETHODIMP Decal::get_Image(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -830,7 +830,7 @@ STDMETHODIMP Decal::get_Image(BSTR *pVal)
 STDMETHODIMP Decal::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -904,7 +904,7 @@ STDMETHODIMP Decal::put_Y(float newVal)
 STDMETHODIMP Decal::get_Surface(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -912,7 +912,7 @@ STDMETHODIMP Decal::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Decal::put_Surface(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXTOKEN, NULL, NULL);
 
    return S_OK;
 }
@@ -935,7 +935,7 @@ STDMETHODIMP Decal::put_Type(DecalType newVal)
 STDMETHODIMP Decal::get_Text(BSTR *pVal)
 {
    WCHAR wz[MAXSTRING];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_sztext.c_str(), -1, wz, MAXSTRING);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_sztext.c_str(), -1, wz, MAXSTRING);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -944,7 +944,7 @@ STDMETHODIMP Decal::get_Text(BSTR *pVal)
 STDMETHODIMP Decal::put_Text(BSTR newVal)
 {
    char buf[MAXSTRING];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXSTRING, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXSTRING, NULL, NULL);
    m_d.m_sztext = buf;
    EnsureSize();
 
@@ -983,7 +983,7 @@ STDMETHODIMP Decal::put_FontColor(OLE_COLOR newVal)
 STDMETHODIMP Decal::get_Material(BSTR *pVal)
 {
    WCHAR wz[MAXNAMEBUFFER];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -992,7 +992,7 @@ STDMETHODIMP Decal::get_Material(BSTR *pVal)
 STDMETHODIMP Decal::put_Material(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
    m_d.m_szMaterial = buf;
 
    return S_OK;

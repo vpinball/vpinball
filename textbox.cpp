@@ -82,7 +82,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
          const int len = lstrlen(tmp) + 1;
          fd.lpstrName = (LPOLESTR)malloc(len*sizeof(WCHAR));
          memset(fd.lpstrName, 0, len*sizeof(WCHAR));
-         MultiByteToWideChar(CP_ACP, 0, tmp, -1, fd.lpstrName, len);
+         MultiByteToWideCharNull(CP_ACP, 0, tmp, -1, fd.lpstrName, len);
 
          free_lpstrName = true;
       }
@@ -128,7 +128,7 @@ void Textbox::WriteRegDefaults()
    SaveValueFloat("DefaultProps\\TextBox", "FontSize", fTmp);
    size_t charCnt = wcslen(fd.lpstrName) + 1;
    char * const strTmp = new char[2 * charCnt];
-   WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, (int)charCnt, strTmp, (int)(2 * charCnt), NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, fd.lpstrName, -1, strTmp, (int)(2 * charCnt), NULL, NULL);
    SaveValueString("DefaultProps\\TextBox", "FontName", strTmp);
    delete[] strTmp;
    int weight = fd.sWeight;
@@ -150,7 +150,7 @@ char * Textbox::GetFontName()
         /*HRESULT hr =*/ m_pIFont->get_Name(&bstr);
 
         static char fontName[LF_FACESIZE];
-        WideCharToMultiByte(CP_ACP, 0, bstr, -1, fontName, LF_FACESIZE, NULL, NULL);
+        WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, fontName, LF_FACESIZE, NULL, NULL);
         return fontName;
     }
     return NULL;
@@ -168,7 +168,7 @@ HFONT Textbox::GetFont()
     CComBSTR bstr;
     HRESULT hr = m_pIFont->get_Name(&bstr);
 
-    WideCharToMultiByte(CP_ACP, 0, bstr, -1, lf.lfFaceName, LF_FACESIZE, NULL, NULL);
+    WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, lf.lfFaceName, LF_FACESIZE, NULL, NULL);
 
     BOOL bl;
     hr = m_pIFont->get_Bold(&bl);
@@ -473,7 +473,7 @@ STDMETHODIMP Textbox::put_FontColor(OLE_COLOR newVal)
 STDMETHODIMP Textbox::get_Text(BSTR *pVal)
 {
    WCHAR wz[MAXSTRING];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_sztext.c_str(), -1, wz, MAXSTRING);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_sztext.c_str(), -1, wz, MAXSTRING);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -482,7 +482,7 @@ STDMETHODIMP Textbox::get_Text(BSTR *pVal)
 STDMETHODIMP Textbox::put_Text(BSTR newVal)
 {
    char buf[MAXSTRING];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXSTRING, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXSTRING, NULL, NULL);
    m_d.m_sztext = buf;
    if (g_pplayer)
       PreRenderText();

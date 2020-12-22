@@ -32,7 +32,7 @@ void LightSeq::SetDefaults(bool fromMouseClick)
    else
    {
       WCHAR wtmp[MAXSTRING];
-      MultiByteToWideChar(CP_ACP, 0, tmp, -1, wtmp, MAXSTRING);
+      MultiByteToWideCharNull(CP_ACP, 0, tmp, -1, wtmp, MAXSTRING);
       m_d.m_wzCollection = wtmp;
    }
 
@@ -45,7 +45,7 @@ void LightSeq::SetDefaults(bool fromMouseClick)
 void LightSeq::WriteRegDefaults()
 {
    char strTmp[MAXSTRING];
-   WideCharToMultiByte(CP_ACP, 0, m_d.m_wzCollection.c_str(), -1, strTmp, MAXSTRING, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, m_d.m_wzCollection.c_str(), -1, strTmp, MAXSTRING, NULL, NULL);
    SaveValueInt("DefaultProps\\LightSequence", "UpdateInterval", m_d.m_updateinterval);
    SaveValueString("DefaultProps\\LightSequence", "Collection", strTmp);
    SaveValueFloat("DefaultProps\\LightSequence", "CenterX", m_d.m_vCenter.x);

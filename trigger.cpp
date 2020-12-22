@@ -635,7 +635,7 @@ void Trigger::ExportMesh(FILE *f)
       return;
 
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
    GenerateMesh();
    WaveFrontObj_WriteObjectName(f, name);
    WaveFrontObj_WriteVertexInfo(f, m_triggerVertices, m_numVertices);
@@ -1203,7 +1203,7 @@ STDMETHODIMP Trigger::put_Y(float newVal)
 STDMETHODIMP Trigger::get_Surface(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1211,7 +1211,7 @@ STDMETHODIMP Trigger::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Trigger::put_Surface(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXTOKEN, NULL, NULL);
 
    return S_OK;
 }
@@ -1362,7 +1362,7 @@ STDMETHODIMP Trigger::put_AnimSpeed(float newVal)
 STDMETHODIMP Trigger::get_Material(BSTR *pVal)
 {
    WCHAR wz[MAXNAMEBUFFER];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1371,7 +1371,7 @@ STDMETHODIMP Trigger::get_Material(BSTR *pVal)
 STDMETHODIMP Trigger::put_Material(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
    m_d.m_szMaterial = buf;
 
    return S_OK;

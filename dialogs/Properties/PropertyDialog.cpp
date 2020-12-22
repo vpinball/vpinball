@@ -487,7 +487,7 @@ void PropertyDialog::UpdateCollectionComboBox(const PinTable *const ptable, CCom
         for (int i = 0; i < ptable->m_vcollection.Size(); i++)
         {
             char szT[sizeof(ptable->m_vcollection[i].m_wzName)/sizeof(ptable->m_vcollection[i].m_wzName[0])];
-            WideCharToMultiByte(CP_ACP, 0, ptable->m_vcollection[i].m_wzName, -1, szT, sizeof(szT), NULL, NULL);
+            WideCharToMultiByteNull(CP_ACP, 0, ptable->m_vcollection[i].m_wzName, -1, szT, sizeof(szT), NULL, NULL);
             combo.AddString(szT);
         }
     }
@@ -564,12 +564,12 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
         const WCHAR * const wzName = psel->GetPTable()->GetCollectionNameByElement(psel);
         if (wzName != NULL)
         {
-            WideCharToMultiByte(CP_ACP, 0, wzName, -1, collection, 64, NULL, NULL);
+            WideCharToMultiByteNull(CP_ACP, 0, wzName, -1, collection, 64, NULL, NULL);
         }
         
         CComBSTR bstr;
         psel->GetTypeName(&bstr);
-        WideCharToMultiByte(CP_ACP, 0, bstr, -1, name, 64, NULL, NULL);
+        WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, name, 64, NULL, NULL);
         sprintf_s(header, "%s(%d)", name, pvsel.Size());
 
         if (collection[0] != 0)
