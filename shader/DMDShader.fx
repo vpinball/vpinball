@@ -79,7 +79,7 @@ float4 ps_main_DMD_no(in VS_OUTPUT IN) : COLOR
    else
       color *= rgba.b * (255.9 / 100.);
 
-   return float4(InvToneMap(InvGamma(color)), 1.); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+   return float4(InvToneMap(InvGamma(color)), vRes_Alpha_time.z); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
 }
 #endif
 
@@ -105,10 +105,23 @@ float triangularPDF(const float r) // from -1..1, c=0 (with random no r=0..1)
    return b ? p : -p;
 }
 
+#if 0
+// approximation, mainly to get limited support (i.e. not infinite, like real gauss, which is nonsense for a small amount of samples)
+float2 gaussianPDF(const float2 xi)
+{
+   float2 u;
+   sincos(6.283185307179586476925286766559 * xi.y, u.x, u.y);
+   const float root4 = sqrt(sqrt(1.0 - xi.x));
+   const float half_r = sqrt(0.25 - 0.25 * root4);
+   return u * half_r;
+}
+#endif
+
 //!! this is incredibly heavy for a supposedly simple DMD output shader, but then again this is pretty robust for all kinds of scales and input resolutions now, plus also for 'distorted' output (via the flashers)!
+//!! gaussianPDF is even more heavy, introduces more noise and is only barely higher quality (=bit less moiree) 
 float4 ps_main_DMD(in VS_OUTPUT IN) : COLOR
 {
-   const float blur = 1.5; // 1.0..2.0 looks best (between sharp and blurry), and 1.5 matches the intention of the triangle filter (see triangularPDF calls below)!
+   const float blur = /*gaussian: 4.0; /*/ 1.5; // 1.0..2.0 looks best (between sharp and blurry), and 1.5 matches the intention of the triangle filter (see triangularPDF calls below)!
    const float2 ddxs = ddx(IN.tex0)*blur; // use ddx and ddy to help the oversampling below/make filtering radius dependent on projected 'dots'/texel
    const float2 ddys = ddy(IN.tex0)*blur;
 
@@ -120,7 +133,9 @@ float4 ps_main_DMD(in VS_OUTPUT IN) : COLOR
    const int samples = 21; //4,8,9,13,21,25,32 korobov,fibonacci
    [unroll] for (int i = 0; i < samples; ++i) // oversample the dots
    {
-      const float2 uv = IN.tex0 + triangularPDF(frac(i* (1.0 / samples) + offs.x))*ddxs + triangularPDF(frac(i* (13.0 / samples) + offs.y))*ddys; //1,5,2,8,13,7,7 korobov,fibonacci //!! lots of ALU
+      const float2 xi = float2(frac(i* (1.0 / samples) + offs.x), frac(i* (13.0 / samples) + offs.y)); //1,5,2,8,13,7,7 korobov,fibonacci
+      //const float2 gxi = gaussianPDF(xi);
+      const float2 uv = IN.tex0 + /*gxi.x*ddxs + gxi.y*ddys; /*/ triangularPDF(xi.x)*ddxs + triangularPDF(xi.y)*ddys; //!! lots of ALU
 
       const float4 rgba = tex2Dlod(texSampler0, float4(uv, 0., 0.)); //!! lots of tex access by doing this all the time, but (tex) cache should be able to catch all of it
 
