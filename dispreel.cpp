@@ -695,7 +695,7 @@ STDMETHODIMP DispReel::put_IsTransparent(VARIANT_BOOL newVal)
 
 STDMETHODIMP DispReel::get_Image(BSTR *pVal)
 {
-   OLECHAR wz[MAXTOKEN];
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -732,7 +732,7 @@ STDMETHODIMP DispReel::put_Spacing(float newVal)
 
 STDMETHODIMP DispReel::get_Sound(BSTR *pVal)
 {
-   OLECHAR wz[MAXTOKEN];
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSound.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 

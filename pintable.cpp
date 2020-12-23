@@ -396,7 +396,6 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(const char * const szfilename, 
          WCHAR * const wzContents = new WCHAR[len + 1];
 
          MultiByteToWideCharNull(encoding, 0, (char *)szDataStart, len, wzContents, len + 1);
-         wzContents[len] = L'\0';
 
          *pContents = SysAllocString(wzContents);
          delete[] wzContents;
@@ -7831,7 +7830,6 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       cvar = 0;
 
       WCHAR *wzDst = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
-      //MultiByteToWideCharNull(CP_ACP, 0, "None", -1, wzDst, 5);
       // TEXT
       WideStrCopy(L"<None>", wzDst);
       rgstr[cvar] = wzDst;
@@ -7858,10 +7856,6 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
                ShowError("DISPID_Surface alloc failed (1)");
 
             WideStrCopy(bstr, wzDst);
-
-            //MultiByteToWideCharNull(CP_ACP, 0, "Hello", -1, wzDst, cwch);
-
-            //MsoWzCopy(szSrc,szDst);
             rgstr[cvar] = wzDst;
             rgdw[cvar] = (DWORD)ivar;
             cvar++;

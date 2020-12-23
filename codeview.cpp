@@ -884,7 +884,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
       ColorError(nLine, nChar);
    }
 
-   OLECHAR wszOutput[MAX_LINE_LENGTH];
+   WCHAR wszOutput[MAX_LINE_LENGTH];
    swprintf_s(wszOutput, L"Line: %u\n%s",
       nLine, ei.bstrDescription);
 

@@ -560,7 +560,7 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
     {
         char header[64];
         char collection[64] = {0};
-        char name[64] = {0};
+        char name[64];
         const WCHAR * const wzName = psel->GetPTable()->GetCollectionNameByElement(psel);
         if (wzName != NULL)
         {
