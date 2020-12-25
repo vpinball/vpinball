@@ -219,7 +219,8 @@ void IEditable::SetName(const std::string& name)
     WCHAR uniqueName[sizeof(GetScriptable()->m_wzName)];
     WCHAR* namePtr = newName;
     MultiByteToWideCharNull(CP_ACP, 0, name.c_str(), -1, newName, sizeof(GetScriptable()->m_wzName));
-    if(!pt->IsNameUnique(newName))
+    const bool isEqual = wcscmp(newName, GetScriptable()->m_wzName) == 0;
+    if(!isEqual && !pt->IsNameUnique(newName))
     {
        pt->GetUniqueName(newName, uniqueName);
        namePtr = uniqueName;
