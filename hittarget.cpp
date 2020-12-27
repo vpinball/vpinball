@@ -151,7 +151,7 @@ void HitTarget::SetDefaults(bool fromMouseClick)
    m_d.m_legacy = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "LegacyMode", false) : false;
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "TimerInterval", 100) : 100;
-   m_d.m_useHitEvent = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "HitEvent", true) : true;
+   m_d.m_hitEvent = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "HitEvent", true) : true;
    m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Visible", true) : true;
    m_d.m_isDropped = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "IsDropped", false) : false;
    
@@ -210,7 +210,7 @@ void HitTarget::WriteRegDefaults()
    SaveValueFloat(strKeyName, "Orientation", m_d.m_rotZ);
 
    SaveValueString(strKeyName, "Image", m_d.m_szImage);
-   SaveValueBool(strKeyName, "HitEvent", m_d.m_useHitEvent);
+   SaveValueBool(strKeyName, "HitEvent", m_d.m_hitEvent);
    SaveValueFloat(strKeyName, "HitThreshold", m_d.m_threshold);
    SaveValueFloat(strKeyName, "Elasticity", m_d.m_elasticity);
    SaveValueFloat(strKeyName, "ElasticityFalloff", m_d.m_elasticityFalloff);
@@ -414,7 +414,7 @@ void HitTarget::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const 
    obj->m_enabled = m_d.m_collidable;
    obj->m_ObjType = eHitTarget;
    obj->m_obj = (IFireEvents*)this;
-   obj->m_fe = setHitObject && m_d.m_useHitEvent;
+   obj->m_fe = setHitObject && m_d.m_hitEvent;
 
    pvho.push_back(obj);
    m_vhoCollidable.push_back(obj);	//remember hit components of primitive
@@ -641,7 +641,7 @@ void HitTarget::UpdateAnimation()
                     m_d.m_isDropped = true;
                     m_moveAnimation = false;
                     m_timeStamp = 0;
-                    if (m_d.m_useHitEvent)
+                    if (m_d.m_hitEvent)
                         FireGroupEvent(DISPID_TargetEvents_Dropped);
                 }
             }
@@ -652,7 +652,7 @@ void HitTarget::UpdateAnimation()
                     m_moveAnimationOffset = 0.0f;
                     m_moveAnimation = false;
                     m_d.m_isDropped = false;
-                    if (m_d.m_useHitEvent)
+                    if (m_d.m_hitEvent)
                         FireGroupEvent(DISPID_TargetEvents_Raised);
                 }
             }
@@ -913,7 +913,7 @@ HRESULT HitTarget::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool bac
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteBool(FID(TVIS), m_d.m_visible);
    bw.WriteBool(FID(LEMO), m_d.m_legacy);
-   bw.WriteBool(FID(HTEV), m_d.m_useHitEvent);
+   bw.WriteBool(FID(HTEV), m_d.m_hitEvent);
    bw.WriteFloat(FID(THRS), m_d.m_threshold);
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
    bw.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
@@ -971,7 +971,7 @@ bool HitTarget::LoadToken(const int id, BiffReader * const pbr)
    case FID(ISDR): pbr->GetBool(&m_d.m_isDropped); break;
    case FID(DRSP): pbr->GetFloat(&m_d.m_dropSpeed); break;
    case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
-   case FID(HTEV): pbr->GetBool(&m_d.m_useHitEvent); break;
+   case FID(HTEV): pbr->GetBool(&m_d.m_hitEvent); break;
    case FID(THRS): pbr->GetFloat(&m_d.m_threshold); break;
    case FID(ELAS): pbr->GetFloat(&m_d.m_elasticity); break;
    case FID(ELFO): pbr->GetFloat(&m_d.m_elasticityFalloff); break;
@@ -1177,14 +1177,14 @@ STDMETHODIMP HitTarget::put_Orientation(float newVal)
 
 STDMETHODIMP HitTarget::get_HasHitEvent(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_d.m_useHitEvent);
+   *pVal = FTOVB(m_d.m_hitEvent);
 
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_HasHitEvent(VARIANT_BOOL newVal)
 {
-   m_d.m_useHitEvent = VBTOb(newVal);
+   m_d.m_hitEvent = VBTOb(newVal);
 
    return S_OK;
 }

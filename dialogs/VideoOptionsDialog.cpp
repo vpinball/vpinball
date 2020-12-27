@@ -539,7 +539,7 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          {
             const int xsize = rgwindowsize[i/5];
             
-            int mulx, divy;
+            int mulx=1, divy=1;
             switch (i%5)
             {
                case 0: mulx = 3;  divy = 4;  break;

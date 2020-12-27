@@ -38,7 +38,6 @@ public:
    float m_disableLightingTop; // was bool, now 0..1
    float m_disableLightingBelow; // 0..1
 
-   bool m_useHitEvent;
    bool m_legacy;
    bool m_isDropped;
 };
