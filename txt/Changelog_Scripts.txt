@@ -6,6 +6,7 @@ New in 3.58 (Update by mfuegemann, DJRobX, toxie)
 - Add PullbackandRetract to cvpmImpulseP
 - Added joctronic.vbs
 - Added s8_StillCrazy.vbs (System 8/Still Crazy)
+- Added inder_atleta.vbs
 - Slightly updated LTD3.vbs (3 coin chutes)
 - Added constant (vpmFourStepSol) for new 4-solenoid stepper motor mech type used by High Roller Casino, Starship Troopers, and Playboy
 - Cleanup scripts and separate the major documentation part into Scripts.txt
