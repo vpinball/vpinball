@@ -57,6 +57,10 @@ extern "C" {
 }
 #endif
 
+#ifndef DISABLE_FORCE_AMD_HIGHPERF
+extern "C" { _declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001; }
+#endif
+
 #if (WINVER <= 0x0601 /* _WIN32_WINNT_WIN7 */ )
 typedef enum ORIENTATION_PREFERENCE {
    ORIENTATION_PREFERENCE_NONE = 0x0,
