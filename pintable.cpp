@@ -3446,7 +3446,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
    bw.WriteInt(FID(MASI), (int)m_materials.size());
    if (m_materials.size() > 0)
    {
-      SaveMaterial * const mats = (SaveMaterial*)malloc(sizeof(SaveMaterial)*m_materials.size());
+      vector<SaveMaterial> mats(m_materials.size());
       for (size_t i = 0; i < m_materials.size(); i++)
       {
          const Material* const m = m_materials[i];
@@ -3466,9 +3466,9 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
          for (size_t c = strnlen_s(mats[i].szName, sizeof(mats[i].szName)); c < sizeof(mats[i].szName); ++c) // to avoid garbage after 0
              mats[i].szName[c] = 0;
       }
-      bw.WriteStruct(FID(MATE), mats, (int)(sizeof(SaveMaterial)*m_materials.size()));
+      bw.WriteStruct(FID(MATE), mats.data(), (int)(sizeof(SaveMaterial)*m_materials.size()));
 
-      SavePhysicsMaterial * const phymats = (SavePhysicsMaterial*)malloc(sizeof(SavePhysicsMaterial)*m_materials.size());
+      vector<SavePhysicsMaterial> phymats(m_materials.size());
       for (size_t i = 0; i < m_materials.size(); i++)
       {
           const Material* const m = m_materials[i];
@@ -3480,10 +3480,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
           phymats[i].fFriction = m->m_fFriction;
           phymats[i].fScatterAngle = m->m_fScatterAngle;
       }
-      bw.WriteStruct(FID(PHMA), phymats, (int)(sizeof(SavePhysicsMaterial)*m_materials.size()));
-
-      free(mats);
-      free(phymats);
+      bw.WriteStruct(FID(PHMA), phymats.data(), (int)(sizeof(SavePhysicsMaterial)*m_materials.size()));
    }
    // HACK!!!! - Don't save special values when copying for undo.  For instance, don't reset the code.
    // Someday save these values into there own stream, used only when saving to file.
@@ -4126,8 +4123,8 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(MASI): pbr->GetInt(&m_numMaterials); break;
    case FID(MATE):
    {
-      SaveMaterial * const mats = (SaveMaterial*)malloc(sizeof(SaveMaterial)*m_numMaterials);
-      pbr->GetStruct(mats, (int)sizeof(SaveMaterial)*m_numMaterials);
+      vector<SaveMaterial> mats(m_numMaterials);
+      pbr->GetStruct(mats.data(), (int)sizeof(SaveMaterial)*m_numMaterials);
 
       for (size_t i = 0; i < m_materials.size(); ++i)
           delete m_materials[i];
@@ -4151,13 +4148,12 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
          pmat->m_szName = mats[i].szName;
          m_materials.push_back(pmat);
       }
-      free(mats);
       break;
    }
    case FID(PHMA):
    {
-       SavePhysicsMaterial * const mats = (SavePhysicsMaterial*)malloc(sizeof(SavePhysicsMaterial)*m_numMaterials);
-       pbr->GetStruct(mats, (int)sizeof(SavePhysicsMaterial)*m_numMaterials);
+       vector<SavePhysicsMaterial> mats(m_numMaterials);
+       pbr->GetStruct(mats.data(), (int)sizeof(SavePhysicsMaterial)*m_numMaterials);
 
        for (int i = 0; i < m_numMaterials; i++)
        {
@@ -4177,7 +4173,6 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
            if (!found)
               m_materials.push_back(pmat);
        }
-       free(mats);
        break;
    }
    }

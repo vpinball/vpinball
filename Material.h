@@ -1,9 +1,9 @@
 #pragma once
 
 // only used for loading and saving
-struct SaveMaterial
+struct SaveMaterial //!! could still squeeze some stuff in here, due to implicit padding after the bool & unsigned chars!
 {
-   SaveMaterial() { memset(szName,0,sizeof(szName)); }
+   SaveMaterial() { memset(this,0,sizeof(SaveMaterial)); }
 
    char szName[MAXNAMEBUFFER];
    COLORREF cBase; // can be overridden by texture on object itself
@@ -21,7 +21,7 @@ struct SaveMaterial
 
 struct SavePhysicsMaterial
 {
-    SavePhysicsMaterial() { memset(szName,0,sizeof(szName)); }
+    SavePhysicsMaterial() { memset(this,0,sizeof(SavePhysicsMaterial)); }
 
     char szName[MAXNAMEBUFFER];
     float fElasticity;
