@@ -311,7 +311,7 @@ BEGIN
     LTEXT           "DJRobX",IDC_STATIC,48,172,32,8
     CTEXT           "Mukuste",IDC_STATIC,82,172,42,9
     LTEXT           "Brandrew",IDC_STATIC,150,172,42,9
-    CTEXT           "Copyright (C) 2000-2020 Randy Davis and the\nVisual Pinball team. All rights reserved",IDC_STATIC,0,295,167,19
+    CTEXT           "Copyright (C) 2000-2021 Randy Davis and the\nVisual Pinball team. All rights reserved (see license.txt)",IDC_STATIC,0,295,167,19
     LTEXT           "Translator's Name - Translation",IDC_TRANSNAME,116,65,115,9,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,50,305,32,8,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "VP10 Active Development",IDC_STATIC,65,183,102,9
@@ -2738,7 +2738,7 @@ BEGIN
             VALUE "FileDescription", "Visual Pinball 10.7.0"
             VALUE "FileVersion", "10, 7, 0, 0"
             VALUE "InternalName", "Visual Pinball"
-            VALUE "LegalCopyright", "Copyright 2000-2020"
+            VALUE "LegalCopyright", "Copyright 2000-2021"
             VALUE "OriginalFilename", "VPinballX.exe"
             VALUE "ProductName", "Visual Pinball"
             VALUE "ProductVersion", "10, 7, 0, 0"
