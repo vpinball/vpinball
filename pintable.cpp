@@ -21,10 +21,6 @@ using namespace rapidxml;
 const unsigned char TABLE_KEY[] = "Visual Pinball";
 //const unsigned char PARAPHRASE_KEY[] = { 0xB4, 0x0B, 0xBE, 0x37, 0xC3, 0x0C, 0x8E, 0xA1, 0x5A, 0x05, 0xDF, 0x1B, 0x2D, 0x02, 0xEF, 0x8D };
 
-INT_PTR CALLBACK ProgressProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
 #pragma region ScriptGlobalTable
 
 //////////////////////////////////////////////////////////////////////
