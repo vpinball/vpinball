@@ -129,11 +129,31 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(flash->m_d.m_modulate_vs_add, PropertyDialog::GetFloatTextbox(m_modulateEdit), flash);
                 break;
             case 5:
-                CHECK_UPDATE_ITEM(flash->m_d.m_vCenter.x, PropertyDialog::GetFloatTextbox(m_posXEdit), flash);
-                break;
+            {
+               float oldX = flash->m_d.m_vCenter.x;
+               const float newX = PropertyDialog::GetFloatTextbox(m_posXEdit);
+               if (oldX != newX)
+               {
+                  const float dx = newX-oldX;
+                  PropertyDialog::StartUndo(flash);
+                  flash->MoveOffset(dx, 0.0f);
+                  PropertyDialog::EndUndo(flash);
+               }
+               break;
+            }
             case 6:
-                CHECK_UPDATE_ITEM(flash->m_d.m_vCenter.y, PropertyDialog::GetFloatTextbox(m_posYEdit), flash);
-                break;
+            {
+               float oldY = flash->m_d.m_vCenter.y;
+               const float newY = PropertyDialog::GetFloatTextbox(m_posYEdit);
+               if (oldY != newY)
+               {
+                  const float dy = newY-oldY;
+                  PropertyDialog::StartUndo(flash);
+                  flash->MoveOffset(0.0f, dy);
+                  PropertyDialog::EndUndo(flash);
+               }
+               break;
+            }
             case IDC_HEIGHT_EDIT:
                 CHECK_UPDATE_ITEM(flash->m_d.m_height, PropertyDialog::GetFloatTextbox(m_heightEdit), flash);
                 break;
