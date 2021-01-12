@@ -6496,8 +6496,13 @@ void PinTable::OnDelete()
 
    for (size_t i = 0; i < m_vseldelete.size(); i++)
    {
-      m_vpinball->GetLayersListDialog()->DeleteElement(m_vseldelete[i]->GetIEditable());
-      m_vseldelete[i]->Delete();
+      ISelect* pisel = m_vseldelete[i];
+      if (pisel != nullptr)
+      {
+         if(pisel->GetItemType()!=eItemDragPoint)
+            m_vpinball->GetLayersListDialog()->DeleteElement(m_vseldelete[i]->GetIEditable());
+         m_vseldelete[i]->Delete();
+      }
    }
    // update properties to show the properties of the table
    m_vpinball->SetPropSel(m_vmultisel);
