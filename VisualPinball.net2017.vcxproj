@@ -611,6 +611,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="imgui\imgui_draw.cpp" />
     <ClCompile Include="imgui\imgui_impl_dx9.cpp" />
     <ClCompile Include="imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="imgui\imgui_tables.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="imgui\implot\implot.cpp" />
     <ClCompile Include="imgui\implot\implot_items.cpp" />
