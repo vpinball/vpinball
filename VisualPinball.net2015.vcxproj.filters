@@ -280,6 +280,9 @@
     <ClCompile Include="dialogs\NotesDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="imgui\imgui_tables.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
