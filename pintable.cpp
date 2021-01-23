@@ -7607,8 +7607,6 @@ int PinTable::AddListItem(HWND hwndListView, const string& szName, const string&
    return index;
 }
 
-std::mutex g_table_mutex;
-
 HRESULT PinTable::LoadImageFromStream(IStream *pstm, unsigned int idx, int version)
 {
    if (version < 100) // Tech Beta 3 and below
