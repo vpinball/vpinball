@@ -355,6 +355,7 @@ public:
    void ExportTableMesh();
    void ImportBackdropPOV(const string& filename);
    void ExportBackdropPOV(const string& filename);
+   void ImportVPP(const string& filename);
 
    //void FireVoidEvent(int dispid);
    void FireKeyEvent(int dispid, int keycode);

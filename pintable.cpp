@@ -9441,12 +9441,19 @@ STDMETHODIMP PinTable::ImportPhysics()
        hr = SaveValueString("RecentDir", "PhysicsDir", newInitDir);
    }
 
+   ImportVPP(szFileName[0]);
+
+   return S_OK;
+}
+
+void PinTable::ImportVPP(const string& filename)
+{
    xml_document<> xmlDoc;
    float FlipperPhysicsMass, FlipperPhysicsStrength, FlipperPhysicsElasticity, FlipperPhysicsScatter, FlipperPhysicsTorqueDamping, FlipperPhysicsTorqueDampingAngle, FlipperPhysicsReturnStrength, FlipperPhysicsElasticityFalloff, FlipperPhysicsFriction, FlipperPhysicsCoilRampUp;
    try
    {
       std::stringstream buffer;
-      std::ifstream myFile(szFileName[0]);
+      std::ifstream myFile(filename);
       buffer << myFile.rdbuf();
       myFile.close();
 
@@ -9647,8 +9654,6 @@ STDMETHODIMP PinTable::ImportPhysics()
          flipper->put_EOSTorque(FlipperPhysicsTorqueDamping);
          flipper->put_EOSTorqueAngle(FlipperPhysicsTorqueDampingAngle);
       }
-
-   return S_OK;
 }
 
 STDMETHODIMP PinTable::ExportPhysics()

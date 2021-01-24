@@ -46,7 +46,7 @@ Private Sub gts3ShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
 		With vpmDips
-	  	.AddForm  80, 0, "Option Menu"
+		.AddForm  80, 0, "Option Menu"
 		.AddLabel 0,0,250,20,"No Options In This Table At This Time"
 		End With
 	End If

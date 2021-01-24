@@ -965,7 +965,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
 
       // auto-import POV settings, if it exists...
       string szFileNameAuto = m_currentTablePath + ppt->m_szTitle + ".pov";
-      if (Exists(szFileNameAuto)) // We check if there is a matching table pov settings first
+      if (Exists(szFileNameAuto)) // We check if there is a matching table pov settings file first
           ppt->ImportBackdropPOV(szFileNameAuto);
       else // Otherwise, we seek for autopov settings
       {
@@ -983,6 +983,17 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
           szFileNameAuto = g_pvp->m_szMyPath + "Scripts\\" + ppt->m_szTitle + ".vbs";
           if (Exists(szFileNameAuto))
               ppt->m_pcv->LoadFromFile(szFileNameAuto);
+      }
+
+      // auto-import VPP settings, if it exists...
+      szFileNameAuto = m_currentTablePath + ppt->m_szTitle + ".vpp";
+      if (Exists(szFileNameAuto)) // We check if there is a matching table vpp settings file first
+          ppt->ImportVPP(szFileNameAuto);
+      else // Otherwise, we seek for autovpp settings
+      {
+          szFileNameAuto = m_currentTablePath + "autovpp.vpp";
+          if (Exists(szFileNameAuto))
+              ppt->ImportVPP(szFileNameAuto);
       }
 
       // get the load path from the filename
