@@ -83,7 +83,7 @@ public:
    void ReInitSound();
 
    CComObject<PinTable> *GetActiveTable();
-   bool LoadFile();
+   bool LoadFile(const bool updateEditor);
    void LoadFileName(const string& szFileName, const bool updateEditor);
    void SetClipboard(vector<IStream*> * const pvstm);
 

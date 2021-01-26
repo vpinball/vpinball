@@ -675,7 +675,7 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
 
        case IDM_OPEN:
        {
-           LoadFile();
+           LoadFile(true);
            return true;
        }
        case IDM_CLOSE:
@@ -903,7 +903,7 @@ void VPinball::DoPlay(const bool _cameraMode)
       ptCur->Play(_cameraMode);
 }
 
-bool VPinball::LoadFile()
+bool VPinball::LoadFile(const bool updateEditor)
 {
    std::vector<std::string> szFileName;
    char szInitialDir[MAXSTRING];
@@ -922,7 +922,7 @@ bool VPinball::LoadFile()
        hr = SaveValueString("RecentDir", "LoadDir", newInitDir);
    }
 
-   LoadFileName(szFileName[0],true);
+   LoadFileName(szFileName[0], updateEditor);
 
    return true;
 }

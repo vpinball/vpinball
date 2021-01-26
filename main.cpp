@@ -470,7 +470,7 @@ public:
                table_played_via_command_line = play;
            }
            else
-               loadFileResult = m_vpinball.LoadFile();
+               loadFileResult = m_vpinball.LoadFile(!play);
 
            if (extractScript && loadFileResult)
            {
