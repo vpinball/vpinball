@@ -1603,6 +1603,8 @@ HRESULT Player::Init()
 
    if (m_fullScreen)
       SetWindowPos(NULL, 0, 0, m_width, m_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
+   else
+      SetWindowPos(NULL, 0, 0, m_width, m_height, SWP_NOOWNERZORDER | SWP_NOZORDER);
 
    m_pininput.Init(GetHwnd());
 
