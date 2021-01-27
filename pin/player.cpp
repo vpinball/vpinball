@@ -1708,6 +1708,8 @@ HRESULT Player::Init()
    InitFPS();
    m_showFPS = 0;
 
+   g_pvp->ProfileLog("Hitables");
+
    for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
    {
       IEditable * const pe = m_ptable->m_vedit[i];
@@ -1755,6 +1757,8 @@ HRESULT Player::Init()
    m_ptable->m_progressDialog.SetProgress(45);
    m_ptable->m_progressDialog.SetName(std::string("Initializing Octree..."));
 
+   g_pvp->ProfileLog("Octree");
+
    AddCabinetBoundingHitShapes();
 
    for (size_t i = 0; i < m_vho.size(); ++i)
@@ -1787,6 +1791,8 @@ HRESULT Player::Init()
 
    m_ptable->m_progressDialog.SetProgress(60);
    m_ptable->m_progressDialog.SetName(std::string("Rendering Table..."));
+
+   g_pvp->ProfileLog("Render Table");
 
    //g_viewDir = m_pin3d.m_viewVec;
    g_viewDir = Vertex3Ds(0, 0, -1.0f);
@@ -1902,6 +1908,8 @@ HRESULT Player::Init()
    m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
 
    m_ptable->m_progressDialog.SetName(std::string("Starting Game Scripts..."));
+
+   g_pvp->ProfileLog("Start Scripts");
 
    m_ptable->FireVoidEvent(DISPID_GameEvents_Init);
 

@@ -21,6 +21,12 @@ using namespace rapidxml;
 const unsigned char TABLE_KEY[] = "Visual Pinball";
 //const unsigned char PARAPHRASE_KEY[] = { 0xB4, 0x0B, 0xBE, 0x37, 0xC3, 0x0C, 0x8E, 0xA1, 0x5A, 0x05, 0xDF, 0x1B, 0x2D, 0x02, 0xEF, 0x8D };
 
+static void ProfileLog(const string& msg)
+{
+   if (g_pvp)
+      g_pvp->ProfileLog(msg);
+}
+
 #pragma region ScriptGlobalTable
 
 //////////////////////////////////////////////////////////////////////
@@ -1633,10 +1639,8 @@ void PinTable::DeleteFromLayer(IEditable *obj)
    }
 }
 
-void PinTable::InitBuiltinTable(VPinball * const pvp, const bool useBlankTable)
+void PinTable::InitBuiltinTable(const bool useBlankTable)
 {
-   m_pvp = pvp;
-
    HRSRC hrsrc;
    // Get our new table resource, get it to be opened as a storage, and open it like a normal file
    if (useBlankTable)
@@ -1676,8 +1680,6 @@ void PinTable::InitBuiltinTable(VPinball * const pvp, const bool useBlankTable)
 
    //MAKE_WIDEPTR_FROMANSI(wszFileName, m_szFileName.c_str());
    //ApcProject->APC_PUT(DisplayName)(wszFileName);
-
-   InitPostLoad(pvp);
 }
 
 void PinTable::SetDefaultView()
@@ -1729,10 +1731,11 @@ if (it == m_textureMap.end()) \
 if (it == m_textureMap.end()) \
    pEditImage[0] = 0;}
 
-void PinTable::InitPostLoad(VPinball *pvp)
+void PinTable::InitTablePostLoad()
 {
-   m_pvp = pvp;
-   pvp->m_ptableActive = (CComObject<PinTable> *)this;
+   ProfileLog("InitTablePostLoad");
+
+   g_pvp->m_ptableActive = (CComObject<PinTable> *)this;
 
    for (unsigned int i = 1; i < NUM_BG_SETS; ++i)
       if (m_BG_FOV[i] == FLT_MAX) // old table, copy FS and/or FSS settings over from old DT setting
@@ -3512,6 +3515,8 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
       return S_FALSE;
    }
 
+   ProfileLog("LoadGameFromFilename " + szFileName);
+
    m_szFileName = szFileName;
 
    MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName.c_str());
@@ -3530,6 +3535,8 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
 
 HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 {
+   ProfileLog("LoadGameFromStorage");
+
    RECT rc;
    ::SendMessage(m_vpinball->m_hwndStatusBar, SB_GETRECT, 2, (size_t)&rc);
 
@@ -3638,6 +3645,8 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
          if (SUCCEEDED(hr = LoadData(pstmGame, csubobj, csounds, ctextures, cfonts, ccollection, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : NULL)))
          {
+            ProfileLog("LoadData");
+
             const int ctotalitems = csubobj + csounds + ctextures + cfonts;
             int cloadeditems = 0;
             ::SendMessage(hwndProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, ctotalitems));
@@ -3656,7 +3665,6 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
                   IEditable * const piedit = EditableRegistry::Create(type);
 
-                  //AddSpriteProjItem();
                   int id = 0; // VBA id for this item
                   hr = piedit->InitLoad(pstmItem, this, &id, loadfileversion, (loadfileversion < 1000) ? hch : NULL, (loadfileversion < 1000) ? hkey : NULL); // 1000 (VP10 beta) removed the encryption
                   piedit->InitVBA(fFalse, id, NULL);
@@ -3671,6 +3679,8 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                cloadeditems++;
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
+
+            ProfileLog("GameItem");
 
             for (int i = 0; i < csounds; i++)
             {
@@ -3687,6 +3697,8 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                cloadeditems++;
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
+
+            ProfileLog("Sound");
 
             assert(m_vimage.size() == 0);
             m_vimage.resize(ctextures); // due to multithreaded loading do pre-allocation
@@ -3717,6 +3729,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             for (size_t i = 0; i < m_vimage.size(); ++i)
                 if (!m_vimage[i] || m_vimage[i]->m_pdsBuffer == NULL)
                     m_vimage.erase(m_vimage.begin()+i);
+
+            ProfileLog("Image");
+
             ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
 
             for (int i = 0; i < cfonts; i++)
@@ -3737,6 +3752,8 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                cloadeditems++;
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
+
+            ProfileLog("Font");
 
             for (int i = 0; i < ccollection; i++)
             {
@@ -3759,11 +3776,15 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
 
+            ProfileLog("Collection");
+
             for (size_t i = 0; i < m_vedit.size(); i++)
             {
                IEditable * const piedit = m_vedit[i];
                piedit->InitPostLoad();
             }
+
+            ProfileLog("IEditable PostLoad");
          }
          pstmGame->Release();
 
@@ -4347,7 +4368,6 @@ void PinTable::ImportFont(HWND hwndListView, const string& filename)
    }
 }
 
-
 void PinTable::RemoveFont(PinFont * const ppf)
 {
    RemoveFromVectorSingle(m_vfont, ppf);
@@ -4355,7 +4375,6 @@ void PinTable::RemoveFont(PinFont * const ppf)
    ppf->UnRegister();
    delete ppf;
 }
-
 
 void PinTable::ListFonts(HWND hwndListView)
 {
@@ -5075,8 +5094,8 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_ACTIVATE:
             if (LOWORD(wParam) != WA_INACTIVE)
             {
-               if (m_pvp->m_ptableActive != (CComObject<PinTable>*)this)
-                  m_pvp->m_ptableActive = (CComObject<PinTable>*)this;
+               if (g_pvp->m_ptableActive != (CComObject<PinTable>*)this)
+                  g_pvp->m_ptableActive = (CComObject<PinTable>*)this;
             }
             return FinalWindowProc(uMsg, wParam, lParam);
         case WM_PAINT:
@@ -10169,6 +10188,8 @@ void PinTable::InvokeBallBallCollisionCallback(Ball *b1, Ball *b2, float hitVelo
 
 void PinTable::OnInitialUpdate()
 {
+    ProfileLog("PinTable OnInitialUpdate");
+
     BeginAutoSaveCounter();
     SetWindowText(m_szFileName.c_str());
     SetCaption(m_szTitle);

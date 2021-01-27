@@ -115,6 +115,8 @@ void Pin3D::TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, cons
 
 void EnvmapPrecalc(const void* /*const*/ __restrict envmap, const DWORD env_xres, const DWORD env_yres, void* const __restrict rad_envmap, const DWORD rad_env_xres, const DWORD rad_env_yres, const bool isHDR)
 {
+   g_pvp->ProfileLog("EnvmapPrecalc Start");
+
 #define PREFILTER_ENVMAP_DIFFUSE
 #ifdef PREFILTER_ENVMAP_DIFFUSE
    // pre-filter envmap with a gauss (separable/two passes: x and y)
@@ -162,7 +164,7 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap, const DWORD env_xres
 
 	   // y-pass:
 
-   	   for (int y = 0; y < (int)env_yres; ++y)
+	   for (int y = 0; y < (int)env_yres; ++y)
 		   for (int x = 0; x < (int)env_xres; ++x)
 		   {
 			   float sum[3] = { 0.f, 0.f, 0.f };
@@ -403,6 +405,8 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap, const DWORD env_xres
    if (isHDR && (env_xres > 64))
 	   free((void*)envmap);
 #endif
+
+   g_pvp->ProfileLog("EnvmapPrecalc End");
 }
 
 HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool useAO, const bool ss_refl)

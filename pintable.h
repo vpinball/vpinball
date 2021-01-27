@@ -325,8 +325,8 @@ public:
    PinTable();
    virtual ~PinTable();
 
-   void InitBuiltinTable(VPinball * const pvp, const bool useBlankTable = false);
-   void InitPostLoad(VPinball *pvp);
+   void InitBuiltinTable(const bool useBlankTable);
+   void InitTablePostLoad();
 
    virtual HRESULT GetTypeName(BSTR *pVal);
 
@@ -586,8 +586,6 @@ public:
 
    string m_szFileName;
    string m_szTitle;
-
-   VPinball *m_pvp;
 
    // editor viewport
    Vertex2D m_offset;
