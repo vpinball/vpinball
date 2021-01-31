@@ -52,6 +52,8 @@ FEATURES:
 - ability to do a rough profiling of the table loading
   if a file 'Profile.txt' exists in the same directory as VPX, then statistics for the loaded tables will be appended
 
+- add a button to the video preferences that resets the (windowed mode) player window position
+
 FIXES:
 
 - fix problem with gate animations introduced in 10.1 when the open/close script functions were used before
