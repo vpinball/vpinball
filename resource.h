@@ -1025,6 +1025,7 @@
 #define IDC_SET_DEFAULTS_BUTTON         765
 #define IDC_COLOR_BUTTON1               765
 #define IDC_DELETE_LAYER_BUTTON         765
+#define IDC_RESET_WINDOW                765
 #define IDC_DBG_BULB_MODULATE_VS_ADD    766
 #define IDC_COLOR_BUTTON2               766
 #define IDC_DBG_TRANSMISSION_SCALE      767
@@ -1303,7 +1304,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        669
+#define _APS_NEXT_RESOURCE_VALUE        670
 #define _APS_NEXT_COMMAND_VALUE         4025
 #define _APS_NEXT_CONTROL_VALUE         842
 #define _APS_NEXT_SYMED_VALUE           188

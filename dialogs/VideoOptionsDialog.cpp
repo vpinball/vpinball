@@ -670,6 +670,12 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          ResetVideoPreferences(2);
          break;
       }
+      case IDC_RESET_WINDOW:
+      {
+         (void)DeleteValue("Player", "WindowPosX");
+         (void)DeleteValue("Player", "WindowPosY");
+         break;
+      }
       case IDC_OVERWRITE_BALL_IMAGE_CHECK:
       {
          const BOOL overwriteEnabled = (IsDlgButtonChecked(IDC_OVERWRITE_BALL_IMAGE_CHECK) == BST_CHECKED) ? TRUE : FALSE;
