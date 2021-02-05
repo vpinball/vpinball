@@ -725,7 +725,7 @@ void Player::PreRegisterClass(WNDCLASS& wc)
 {
     wc.style = 0;
     wc.hInstance = g_pvp->theInstance;
-    wc.lpszClassName = "VPPlayer";
+    wc.lpszClassName = "VPPlayer"; // leave as-is as e.g. VPM relies on this
     wc.hIcon = LoadIcon(g_pvp->theInstance, MAKEINTRESOURCE(IDI_TABLE));
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.lpszMenuName = NULL;
@@ -829,8 +829,8 @@ void Player::PreCreate(CREATESTRUCT& cs)
     cs.style = windowflags;
     cs.dwExStyle = windowflagsex;
     cs.hInstance = g_pvp->theInstance;
-    cs.lpszName = "Visual Pinball Player";
-    cs.lpszClass = "VPPlayer";
+    cs.lpszName = "Visual Pinball Player"; // leave as-is as e.g. VPM relies on this
+    cs.lpszClass = "VPPlayer"; // leave as-is as e.g. VPM relies on this
 }
 
 void Player::OnInitialUpdate()
@@ -1456,12 +1456,11 @@ void Player::InitBallShader()
 void Player::CreateDebugFont()
 {
     int fontSize = 20;
-
     if (m_width > 1024 && m_width <= 1920)
         fontSize = 24;
     else if (m_width > 1920)
-        fontSize = 30; 
-    
+        fontSize = 30;
+
     const HRESULT hr = D3DXCreateFont(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice(), //device
                                 fontSize,                              //font height
                                 0,                                     //font width
@@ -1476,11 +1475,11 @@ void Player::CreateDebugFont()
                                 &m_pFont);                             //font pointer
     if (FAILED(hr))
     {
-        ShowError("unable to create debug font!");
+        ShowError("Unable to create debug font via D3DXCreateFont!");
         m_pFont = NULL;
     }
     if (FAILED(D3DXCreateSprite(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice(), &m_fontSprite)))
-        ShowError("nope");
+        ShowError("D3DXCreateSprite failed!");
 
     SetRect(&m_fontRect, 0, 0, DBG_SPRITE_SIZE, DBG_SPRITE_SIZE);
 }
@@ -1488,30 +1487,26 @@ void Player::CreateDebugFont()
 
 void Player::SetDebugOutputPosition(const float x, const float y)
 {
-    D3DXMATRIX mat;
-    D3DXVECTOR2 spritePos(x,y);
-    D3DXVECTOR2 spriteCenter(DBG_SPRITE_SIZE/2, DBG_SPRITE_SIZE/2);
+    const D3DXVECTOR2 spritePos(x,y);
+    const D3DXVECTOR2 spriteCenter(DBG_SPRITE_SIZE/2, DBG_SPRITE_SIZE/2);
 
     const float angle = ANGTORAD(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set]);
+    D3DXMATRIX mat;
     D3DXMatrixTransformation2D(&mat, NULL, 0.0, NULL, &spriteCenter, angle, &spritePos);
     m_fontSprite->SetTransform(&mat);
 }
 
 void Player::DebugPrint(int x, int y, LPCSTR text, bool center /*= false*/)
 {
-   RECT fontRect;
-
    if(m_pFont)
    {
        int xx = x;
-       int yy = y;
        m_fontSprite->Begin(D3DXSPRITE_ALPHABLEND | D3DXSPRITE_SORT_TEXTURE);
+       RECT fontRect;
        SetRect(&fontRect, x, y, 0, 0);
        m_pFont->DrawText(m_fontSprite, text, -1, &fontRect, DT_CALCRECT, 0xFFFFFFFF);
        if (center)
-       {
            xx = x - (fontRect.right - fontRect.left) / 2;
-       }
        SetRect(&fontRect, xx, y, 0, 0);
 
        //if(shadow)
@@ -1522,7 +1517,6 @@ void Player::DebugPrint(int x, int y, LPCSTR text, bool center /*= false*/)
                SetRect( &shadowRect, xx + ((i == 0) ? -offset : (i == 1) ? offset : 0), y + ((i == 2) ? -offset : (i == 3) ? offset : 0), 0, 0 );
                m_pFont->DrawText(m_fontSprite, text, -1, &shadowRect, DT_NOCLIP, 0xFF000000);
             }
-
 
       m_pFont->DrawText(m_fontSprite, text, -1, &fontRect, DT_NOCLIP, 0xFFFFFFFF);
 
@@ -4307,17 +4301,17 @@ void Player::UpdateHUD_IMGUI()
       {
          for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
          {
-            len2 = sprintf_s(szFoo, "   %s: %.2f ms (%4.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
+            sprintf_s(szFoo, "   %s: %.2f ms (%4.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
             DebugPrint(0, 320 + gts * 20, szFoo);
          }
-         len2 = sprintf_s(szFoo, " Frame time: %.2f ms", float(1000.0 * (dTDrawTotal + m_pin3d.m_gpu_profiler.DtAvg(GTS_EndFrame))));
+         sprintf_s(szFoo, " Frame time: %.2f ms", float(1000.0 * (dTDrawTotal + m_pin3d.m_gpu_profiler.DtAvg(GTS_EndFrame))));
          DebugPrint(0, 320 + GTS_EndFrame * 20, szFoo);
       }
       else
       {
          for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
          {
-            len2 = sprintf_s(szFoo, " %s: %.2f ms (%4.1f%%)", GTS_name_item[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
+            sprintf_s(szFoo, " %s: %.2f ms (%4.1f%%)", GTS_name_item[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
             DebugPrint(0, 300 + gts * 20, szFoo);
          }
       }
@@ -4398,6 +4392,7 @@ void Player::RenderHUD_IMGUI()
 
 void Player::UpdateHUD()
 {
+    // set debug output pos for left aligned text
     float x = 0.f, y = 0.f;
     if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 270.0f)
     {
@@ -4410,24 +4405,6 @@ void Player::UpdateHUD()
         y = 0.0f;
     }
     SetDebugOutputPosition(x, y);
-    
-    if (!m_closeDown && (m_stereo3D != 0) && !m_stereo3Denabled && (usec() < m_StartTime_usec + 4e+6)) // show for max. 4 seconds
-	{
-		char szFoo[256];
-		const int len2 = sprintf_s(szFoo, "3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on");
-		DebugPrint(DBG_SPRITE_SIZE / 2, 10, szFoo, true);
-	}
-
-	if (!m_closeDown && m_supportsTouch && m_showTouchMessage && (usec() < m_StartTime_usec + 12e+6)) // show for max. 12 seconds
-	{
-		char szFoo[256];
-		int len2 = sprintf_s(szFoo, "You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger");
-		DebugPrint(DBG_SPRITE_SIZE / 2, 40, szFoo, true);
-		len2 = sprintf_s(szFoo, "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit");
-		DebugPrint(DBG_SPRITE_SIZE / 2, 70, szFoo, true);
-
-		//!! visualize with real buttons or at least the areas??
-	}
 
 	// draw all kinds of stats, incl. FPS counter
 	if (ShowFPS() && !m_cameraMode && !m_closeDown)
@@ -4441,7 +4418,7 @@ void Player::UpdateHUD()
 
 		// Draw the framerate.
 		const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
-		const int len2 = sprintf_s(szFoo, "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %u%%", m_fps+0.01f, fpsAvg+0.01f, RenderStaticOnly() ? "only static" : "all", (m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, quantizeUnsignedPercent(m_globalEmissionScale));
+		sprintf_s(szFoo, "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %u%%", m_fps+0.01f, fpsAvg+0.01f, RenderStaticOnly() ? "only static" : "all", (m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, quantizeUnsignedPercent(m_globalEmissionScale));
 		DebugPrint(0, 10, szFoo);
 
 		const U32 period = m_lastFrameDuration;
@@ -4542,7 +4519,7 @@ void Player::UpdateHUD()
 	if (ProfilingMode() != 0 && !m_closeDown && !m_cameraMode)
 	{
 		char szFoo[256];
-		int len2 = sprintf_s(szFoo, "Detailed (approximate) GPU profiling:");
+		sprintf_s(szFoo, "Detailed (approximate) GPU profiling:");
 		DebugPrint(0, 300, szFoo);
 
 		m_pin3d.m_gpu_profiler.WaitForDataAndUpdate();
@@ -4553,45 +4530,62 @@ void Player::UpdateHUD()
 
 		if (ProfilingMode() == 1)
 		{
-			len2 = sprintf_s(szFoo, " Draw time: %.2f ms", float(1000.0 * dTDrawTotal));
+			sprintf_s(szFoo, " Draw time: %.2f ms", float(1000.0 * dTDrawTotal));
 			DebugPrint(0, 320, szFoo);
 			for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
 			{
-				len2 = sprintf_s(szFoo, "   %s: %.2f ms (%4.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts)/dTDrawTotal));
+				sprintf_s(szFoo, "   %s: %.2f ms (%4.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts)/dTDrawTotal));
 				DebugPrint(0, 320 + gts * 20, szFoo);
 			}
-			len2 = sprintf_s(szFoo, " Frame time: %.2f ms", float(1000.0 * (dTDrawTotal + m_pin3d.m_gpu_profiler.DtAvg(GTS_EndFrame))));
+			sprintf_s(szFoo, " Frame time: %.2f ms", float(1000.0 * (dTDrawTotal + m_pin3d.m_gpu_profiler.DtAvg(GTS_EndFrame))));
 			DebugPrint(0, 320 + GTS_EndFrame * 20, szFoo);
 		}
 		else
 		{
 			for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
 			{
-				len2 = sprintf_s(szFoo, " %s: %.2f ms (%4.1f%%)", GTS_name_item[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts)/dTDrawTotal));
+				sprintf_s(szFoo, " %s: %.2f ms (%4.1f%%)", GTS_name_item[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts)/dTDrawTotal));
 				DebugPrint(0, 300 + gts * 20, szFoo);
 			}
 		}
 	}
 
-    if (m_closeDown)
+    // set debug output pos for centered text
+    x = (float)(m_width - DBG_SPRITE_SIZE)*0.5f;
+    if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 270.0f)
     {
-        x = (m_width-DBG_SPRITE_SIZE)*0.5f;
-        if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 270.0f)
-        {
-            x = 0.0f;
-            y = (m_height - DBG_SPRITE_SIZE)*0.5f;
-        }
-        else if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 90.0f)
-        {
-            x = (float)(m_width - DBG_SPRITE_SIZE);
-            y = (m_height - DBG_SPRITE_SIZE)*0.5f;
-        }
-        SetDebugOutputPosition(x, y);
+        x = 0.0f;
+        y = (float)(m_height - DBG_SPRITE_SIZE)*0.5f;
     }
+    else if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 90.0f)
+    {
+        x = (float)(m_width - DBG_SPRITE_SIZE);
+        y = (float)(m_height - DBG_SPRITE_SIZE)*0.5f;
+    }
+    SetDebugOutputPosition(x, y);
+
+    if (!m_closeDown && (m_stereo3D != 0) && !m_stereo3Denabled && (usec() < m_StartTime_usec + 4e+6)) // show for max. 4 seconds
+    {
+        char szFoo[256];
+        sprintf_s(szFoo, "3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on");
+        DebugPrint(DBG_SPRITE_SIZE/2, 10, szFoo, true);
+    }
+
+    if (!m_closeDown && m_supportsTouch && m_showTouchMessage && (usec() < m_StartTime_usec + 12e+6)) // show for max. 12 seconds
+    {
+        char szFoo[256];
+        sprintf_s(szFoo, "You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger");
+        DebugPrint(DBG_SPRITE_SIZE/2, 40, szFoo, true);
+        sprintf_s(szFoo, "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"); //!!!!!!!!!!!! Extra Button?
+        DebugPrint(DBG_SPRITE_SIZE/2, 70, szFoo, true);
+
+        //!! visualize with real buttons or at least the areas??
+    }
+
 	if (m_fullScreen && m_closeDown && !IsWindows10_1803orAbove()) // cannot use dialog boxes in exclusive fullscreen on older windows versions, so necessary
 	{
 		char szFoo[256];
-		const int len2 = sprintf_s(szFoo, "Press 'Enter' to continue or Press 'Q' to exit");
+		sprintf_s(szFoo, "Press 'Enter' to continue or Press 'Q' to exit");
 		DebugPrint(DBG_SPRITE_SIZE/2, m_height/2-5, szFoo, true);
 	}
 
@@ -4624,9 +4618,9 @@ void Player::UpdateHUD()
 
 		if (strnlen_s(szFoo,sizeof(szFoo)) > 0)
 		{
-			DebugPrint(DBG_SPRITE_SIZE / 2, line * 20 + 10, szFoo, true);
+			DebugPrint(DBG_SPRITE_SIZE/2, line * 20 + 10, szFoo, true);
 			line += 2;
-			DebugPrint(DBG_SPRITE_SIZE / 2, line * 20 + 10, "========================================", true);
+			DebugPrint(DBG_SPRITE_SIZE/2, line * 20 + 10, "========================================", true);
 			line += 2;
 		}
 
@@ -4646,7 +4640,7 @@ void Player::UpdateHUD()
 
 				szFoo[o] = 0;
 
-				DebugPrint(DBG_SPRITE_SIZE / 2, line * 20 + 10, szFoo, true);
+				DebugPrint(DBG_SPRITE_SIZE/2, line * 20 + 10, szFoo, true);
 
 				if (o < 100)
 					o++;
@@ -4659,7 +4653,7 @@ void Player::UpdateHUD()
 			if (i2 == 0 && !s.empty())
 			{
 				line++;
-				DebugPrint(DBG_SPRITE_SIZE / 2, line * 20 + 10, "========================================", true);
+				DebugPrint(DBG_SPRITE_SIZE/2, line * 20 + 10, "========================================", true);
 				line+=2;
 			}
 		}
@@ -5051,7 +5045,7 @@ void Player::UpdateCameraModeDisplay()
    float x = 0.f, y = 0.f;
    if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 270.0f)
    {
-       x = m_width - 256.0f;
+       x = (float)(m_width - 256);
        y = (float)(m_height - DBG_SPRITE_SIZE-10);
    }
    else if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 90.0f)
