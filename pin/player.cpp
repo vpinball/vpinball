@@ -741,24 +741,29 @@ void Player::PreCreate(CREATESTRUCT& cs)
     else if (disEnableTrueFullscreen == 1)
         m_fullScreen = true;
 
-    m_width = LoadValueIntWithDefault("Player", "Width", m_fullScreen ? DEFAULT_PLAYER_FS_WIDTH : DEFAULT_PLAYER_WIDTH);
-    m_height = LoadValueIntWithDefault("Player", "Height", m_width * 9 / 16);
-
-    int x = 0;
-    int y = 0;
-
+    int x, y;
     int display = LoadValueIntWithDefault("Player", "Display", -1);
     display = (display < getNumberOfDisplays()) ? display : -1;
+    getDisplaySetupByID(display, x, y, m_screenwidth, m_screenheight);
+
+    m_width = LoadValueIntWithDefault("Player", "Width", m_fullScreen ? -1 : DEFAULT_PLAYER_WIDTH);
+    m_height = LoadValueIntWithDefault("Player", "Height", m_width * 9 / 16);
+    if (m_width <= 0)
+    {
+        m_width = m_screenwidth;
+        m_height = m_screenheight;
+    }
 
     if (m_fullScreen)
     {
+        x = 0;
+        y = 0;
         m_screenwidth = m_width;
         m_screenheight = m_height;
         m_refreshrate = LoadValueIntWithDefault("Player", "RefreshRate", 0);
     }
     else
     {
-        getDisplaySetupByID(display, x, y, m_screenwidth, m_screenheight);
         m_refreshrate = 0; // The default
 
         // constrain window to screen

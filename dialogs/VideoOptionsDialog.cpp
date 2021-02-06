@@ -31,11 +31,10 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
 
    const int refreshrate = LoadValueIntWithDefault("Player", "RefreshRate", 0);
 
-   const int widthcur = LoadValueIntWithDefault("Player", "Width", true ? DEFAULT_PLAYER_FS_WIDTH : DEFAULT_PLAYER_WIDTH);
-
+   const int widthcur = LoadValueIntWithDefault("Player", "Width", true ? -1 : DEFAULT_PLAYER_WIDTH);
    const int heightcur = LoadValueIntWithDefault("Player", "Height", widthcur * 9 / 16);
 
-   SendMessage(GetHwnd(), true ? GET_FULLSCREENMODES : GET_WINDOW_MODES, widthcur << 16 | refreshrate, heightcur << 16 | depthcur);
+   SendMessage(GetHwnd(), true ? GET_FULLSCREENMODES : GET_WINDOW_MODES, (unsigned int)widthcur << 16 | refreshrate, (unsigned int)heightcur << 16 | depthcur);
 
    SendMessage(GetDlgItem(IDC_10BIT_VIDEO).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_Tex3072).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
@@ -114,8 +113,7 @@ void VideoOptionsDialog::FillVideoModesList(const std::vector<VideoMode>& modes,
    int bestMatch = 0; // to find closest matching res
    int bestMatchingPoints = 0; // dto.
 
-   int screenwidth;
-   int screenheight;
+   int screenwidth, screenheight;
    int x, y;
    const int display = (int)SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
    getDisplaySetupByID(display, x, y, screenwidth, screenheight);
@@ -424,14 +422,13 @@ BOOL VideoOptionsDialog::OnInitDialog()
 
    const bool fullscreen = LoadValueBoolWithDefault("Player", "FullScreen", IsWindows10_1803orAbove());
 
-   const int widthcur = LoadValueIntWithDefault("Player", "Width", fullscreen ? DEFAULT_PLAYER_FS_WIDTH : DEFAULT_PLAYER_WIDTH);
-
+   const int widthcur = LoadValueIntWithDefault("Player", "Width", fullscreen ? -1 : DEFAULT_PLAYER_WIDTH);
    const int heightcur = LoadValueIntWithDefault("Player", "Height", widthcur * 9 / 16);
 
    const HWND hwndFullscreen = GetDlgItem(IDC_FULLSCREEN).GetHwnd();
    if (fullscreen)
    {
-      SendMessage(hwndDlg, GET_FULLSCREENMODES, widthcur << 16 | refreshrate, heightcur << 16 | depthcur);
+      SendMessage(hwndDlg, GET_FULLSCREENMODES, (unsigned int)widthcur << 16 | refreshrate, (unsigned int)heightcur << 16 | depthcur);
       SendMessage(hwndFullscreen, BM_SETCHECK, BST_CHECKED, 0);
    }
    else
@@ -622,12 +619,11 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       case GET_FULLSCREENMODES:
       {
          HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
-         HWND hwndDisplay = GetDlgItem(IDC_DISPLAY_ID).GetHwnd();
-         int display = (int)SendMessage(hwndDisplay, CB_GETCURSEL, 0, 0);
+         int display = (int)SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
          EnumerateDisplayModes(display, allVideoModes);
 
          VideoMode curSelMode;
-         curSelMode.width = (int)wParam >> 16;
+         curSelMode.width = (int)wParam >> 16; //!! is this 64bit safe? especially if res was not setup in video preferences yet! (width should be -1 then here)
          curSelMode.height = (int)lParam >> 16;
          curSelMode.depth = (int)lParam & 0xffff;
          curSelMode.refreshrate = (int)wParam & 0xffff;
@@ -736,8 +732,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          const size_t checked = SendDlgItemMessage(IDC_FULLSCREEN, BM_GETCHECK, 0, 0);
          const size_t index = SendMessage(GetDlgItem(IDC_SIZELIST).GetHwnd(), LB_GETCURSEL, 0, 0);
          if (allVideoModes.size() == 0) {
-            const HWND hwndDisplay = GetDlgItem(IDC_DISPLAY_ID).GetHwnd();
-            const int display = (int)SendMessage(hwndDisplay, CB_GETCURSEL, 0, 0);
+            const int display = (int)SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
             EnumerateDisplayModes(display, allVideoModes);
          }
          if (allVideoModes.size() > index) {
