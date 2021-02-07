@@ -71,6 +71,7 @@ FIXES:
 - do not mark table as dirty if just starting to play it (i.e. due to backup phase)
 
 - replace dithering code with blue noise, fixes flickering patterns (especially in darker table areas)
+- disable dithering code when running in 10bit output mode
 - tweak AO (Ambient Occlusion) and SSR (Screen Space Reflections) to be a bit less noisy
 
 - tweak minimum physics cycle time, which mainly influences kickers

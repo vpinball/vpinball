@@ -7,6 +7,7 @@ float2 AO_scale_timeblur;
 float mirrorFactor;
 
 /*static*/ bool color_grade;
+/*static*/ bool do_dither;
 /*static*/ bool do_bloom;
 
 texture Texture0; // FB
@@ -174,7 +175,7 @@ float3 blue_gauss_noise(const float2 c1, const float3 rgb)
    const float4 r4 = 0.5*n1 - 0.125*(n0 + n2);
    const float  r  = r4.x+r4.y+r4.z+r4.w - 0.5;
 
-   const float quantSteps = 256.0; //!! how to choose/select this for 5/6/5 and 10/10/10bit??
+   const float quantSteps = 256.0; //!! how to choose/select this for 5/6/5bit??
    return rgb + float3(r,-r,r) * (1.0/(quantSteps - 1.0));
 }
 
@@ -183,7 +184,7 @@ float3 blue_gauss_noise(const float2 c1, const float3 rgb)
 float3 DitherVlachos(const float2 tex0, const float3 rgb)
 {
    // Vlachos 2016, "Advanced VR Rendering", but using a TPDF
-   const float quantSteps = 256.0; //!! how to choose/select this for 5/6/5 and 10/10/10bit??
+   const float quantSteps = 256.0; //!! how to choose/select this for 5/6/5bit??
 
    const float noise = dot(float2(171.0, 231.0), tex0);
    const float3 noise3 = frac(noise * (1.0 / float3(103.0, 71.0, 97.0)));
@@ -194,13 +195,16 @@ float3 DitherVlachos(const float2 tex0, const float3 rgb)
 
 float3 FBDither(const float3 color, /*const int2 pos*/const float2 tex0)
 {
+   [branch] if (!do_dither)
+       return color;
+
    //return color + bayer_dither_pattern[pos.x%8][pos.y%8];
 
 #ifndef BLUE_NOISE_DITHER
    //return DitherVlachos(floor(tex0*(1.0/(2.0*w_h_height.xy))+0.5) + w_h_height.z/*w*/, color);       // note that w_h_height.w is the same nowadays
    return blue_gauss_noise(floor(tex0*(1.0/(2.0*w_h_height.xy))+0.5) + 0.07*w_h_height.z/*w*/, color); // dto.
 #else // needs texSamplerAOdither
-   const float quantSteps = 256.0; //!! how to choose/select this for 5/6/5 and 10/10/10bit??
+   const float quantSteps = 256.0; //!! how to choose/select this for 5/6/5bit??
 
    // TPDF:
    const float3 dither = /*float3(GradientNoise(tex0 / (2.0*w_h_height.xy) + w_h_height.zw*3.141),
@@ -225,7 +229,7 @@ float3 FBDither(const float3 color, /*const int2 pos*/const float2 tex0)
    
    //const float luma = saturate(dot(color,float3(0.212655,0.715158,0.072187)));
    //const float3 amount = lerp(
-   //  InvGamma(4. / quantSteps), //!! precalc? would also solve 5/6/5 and 10/10/10bit issue!
+   //  InvGamma(4. / quantSteps), //!! precalc? would also solve 5/6/5bit issue!
    //  InvGamma((4. / quantSteps)+1.)-1.,
    //  luma);
 

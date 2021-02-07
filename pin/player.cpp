@@ -567,6 +567,7 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_disableDWM = LoadValueBoolWithDefault("Player", "DisableDWM", false);
    m_useNvidiaApi = LoadValueBoolWithDefault("Player", "UseNVidiaAPI", false);
    m_bloomOff = LoadValueBoolWithDefault("Player", "ForceBloomOff", false);
+   m_ditherOff = LoadValueBoolWithDefault("Player", "Render10Bit", false); // if rendering at 10bit output resolution, disable dithering
    m_BWrendering = LoadValueIntWithDefault("Player", "BWRendering", 0);
    m_detectScriptHang = LoadValueBoolWithDefault("Player", "DetectHang", false);
 
@@ -4733,6 +4734,7 @@ void Player::PrepareVideoBuffersNormal()
    if (pin)
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture4", pin, false);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool("color_grade", pin != NULL);
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool("do_dither", !m_ditherOff);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool("do_bloom", (m_ptable->m_bloom_strength > 0.0f && !m_bloomOff));
 
    //const unsigned int jittertime = (unsigned int)((U64)msec()*90/1000);
@@ -4894,6 +4896,7 @@ void Player::PrepareVideoBuffersAO()
    if (pin)
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture4", pin, false);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool("color_grade", pin != NULL);
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool("do_dither", !m_ditherOff);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool("do_bloom", (m_ptable->m_bloom_strength > 0.0f && !m_bloomOff));
 
    //const unsigned int jittertime = (unsigned int)((U64)msec()*90/1000);
