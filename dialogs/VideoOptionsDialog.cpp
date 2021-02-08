@@ -6,7 +6,7 @@
 #define GET_FULLSCREENMODES		WM_USER+101
 #define RESET_SIZELIST_CONTENT	WM_USER+102
 
-static const int rgwindowsize[] = { 640, 720, 800, 912, 1024, 1152, 1280, 1440, 1600, 1920, 2048, 2560, 3440, 3840, 4096, 5120, 6400, 7680, 8192, 11520, 15360 };  // windowed resolutions for selection list
+static const int rgwindowsize[] = { 640, 720, 800, 912, 1024, 1152, 1280, 1360, 1366, 1400, 1440, 1600, 1680, 1920, 2048, 2560, 3440, 3840, 4096, 5120, 6400, 7680, 8192, 11520, 15360 };  // windowed resolutions for selection list
 
 VideoOptionsDialog::VideoOptionsDialog() : CDialog(IDD_VIDEO_OPTIONS)
 {
@@ -510,9 +510,9 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          // 21:9 aspect ratio resolutions:  3440*1440,2560*1080
          // 21:10 aspect ratio resolution:  3840*1600
          // 4:3  aspect ratio resolutions:  1280*1024
-         const unsigned int num_portrait_modes = 17;
-         const int portrait_modes_width[num_portrait_modes] =  { 720, 720, 1024, 768, 800, 900, 900,1050,1050,1080,1200,1080,1440,1440,1600,1600,2160};
-         const int portrait_modes_height[num_portrait_modes] = {1024,1280, 1280,1366,1280,1440,1600,1600,1680,1920,1920,2560,2560,3440,2560,3840,3840};
+         const unsigned int num_portrait_modes = 28;
+         const int portrait_modes_width[num_portrait_modes] =  { 720, 768, 864, 600, 720, 768, 960,1024, 768, 768, 800,1050, 900, 900,1050,1200,1050,1080,1200,1536,1080,1440,1440,1600,1920,2048,1600,2160};
+         const int portrait_modes_height[num_portrait_modes] = {1024,1024,1152,1280,1280,1280,1280,1280,1360,1366,1280,1400,1440,1600,1600,1600,1680,1920,1920,2048,2560,2560,3440,2560,2560,2560,3840,3840};
 
          for (unsigned int i = 0; i < num_portrait_modes; ++i)
             if ((portrait_modes_width[i] <= screenwidth) && (portrait_modes_height[i] <= screenheight))
