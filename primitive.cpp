@@ -2248,10 +2248,7 @@ STDMETHODIMP Primitive::get_X(float *pVal)
 
 STDMETHODIMP Primitive::put_X(float newVal)
 {
-   if (m_d.m_vPosition.x != newVal)
-   {
-      m_d.m_vPosition.x = newVal;
-   }
+   m_d.m_vPosition.x = newVal;
 
    return S_OK;
 }
@@ -2265,10 +2262,7 @@ STDMETHODIMP Primitive::get_Y(float *pVal)
 
 STDMETHODIMP Primitive::put_Y(float newVal)
 {
-   if (m_d.m_vPosition.y != newVal)
-   {
-      m_d.m_vPosition.y = newVal;
-   }
+   m_d.m_vPosition.y = newVal;
 
    return S_OK;
 }
@@ -2282,10 +2276,7 @@ STDMETHODIMP Primitive::get_Z(float *pVal)
 
 STDMETHODIMP Primitive::put_Z(float newVal)
 {
-   if (m_d.m_vPosition.z != newVal)
-   {
-      m_d.m_vPosition.z = newVal;
-   }
+   m_d.m_vPosition.z = newVal;
 
    return S_OK;
 }
@@ -2299,10 +2290,7 @@ STDMETHODIMP Primitive::get_Size_X(float *pVal)
 
 STDMETHODIMP Primitive::put_Size_X(float newVal)
 {
-   if (m_d.m_vSize.x != newVal)
-   {
-      m_d.m_vSize.x = newVal;
-   }
+   m_d.m_vSize.x = newVal;
 
    return S_OK;
 }
@@ -2316,10 +2304,7 @@ STDMETHODIMP Primitive::get_Size_Y(float *pVal)
 
 STDMETHODIMP Primitive::put_Size_Y(float newVal)
 {
-   if (m_d.m_vSize.y != newVal)
-   {
-      m_d.m_vSize.y = newVal;
-   }
+   m_d.m_vSize.y = newVal;
 
    return S_OK;
 }
@@ -2333,10 +2318,7 @@ STDMETHODIMP Primitive::get_Size_Z(float *pVal)
 
 STDMETHODIMP Primitive::put_Size_Z(float newVal)
 {
-   if (m_d.m_vSize.z != newVal)
-   {
-      m_d.m_vSize.z = newVal;
-   }
+   m_d.m_vSize.z = newVal;
 
    return S_OK;
 }
@@ -2359,10 +2341,7 @@ STDMETHODIMP Primitive::get_RotX(float *pVal)
 
 STDMETHODIMP Primitive::put_RotX(float newVal)
 {
-   if (m_d.m_aRotAndTra[0] != newVal)
-   {
-      m_d.m_aRotAndTra[0] = newVal;
-   }
+   m_d.m_aRotAndTra[0] = newVal;
 
    return S_OK;
 }
@@ -2385,10 +2364,7 @@ STDMETHODIMP Primitive::get_RotY(float *pVal)
 
 STDMETHODIMP Primitive::put_RotY(float newVal)
 {
-   if (m_d.m_aRotAndTra[1] != newVal)
-   {
-      m_d.m_aRotAndTra[1] = newVal;
-   }
+   m_d.m_aRotAndTra[1] = newVal;
 
    return S_OK;
 }
@@ -2411,10 +2387,7 @@ STDMETHODIMP Primitive::get_RotZ(float *pVal)
 
 STDMETHODIMP Primitive::put_RotZ(float newVal)
 {
-   if (m_d.m_aRotAndTra[2] != newVal)
-   {
-      m_d.m_aRotAndTra[2] = newVal;
-   }
+   m_d.m_aRotAndTra[2] = newVal;
 
    return S_OK;
 }
@@ -2432,16 +2405,12 @@ STDMETHODIMP Primitive::put_RotAndTra3(float newVal)
 STDMETHODIMP Primitive::get_TransX(float *pVal)
 {
    *pVal = m_d.m_aRotAndTra[3];
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_TransX(float newVal)
 {
-   if (m_d.m_aRotAndTra[3] != newVal)
-   {
-      m_d.m_aRotAndTra[3] = newVal;
-   }
+   m_d.m_aRotAndTra[3] = newVal;
 
    return S_OK;
 }
@@ -2459,16 +2428,12 @@ STDMETHODIMP Primitive::put_RotAndTra4(float newVal)
 STDMETHODIMP Primitive::get_TransY(float *pVal)
 {
    *pVal = m_d.m_aRotAndTra[4];
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_TransY(float newVal)
 {
-   if (m_d.m_aRotAndTra[4] != newVal)
-   {
-      m_d.m_aRotAndTra[4] = newVal;
-   }
+   m_d.m_aRotAndTra[4] = newVal;
 
    return S_OK;
 }
@@ -2486,16 +2451,12 @@ STDMETHODIMP Primitive::put_RotAndTra5(float newVal)
 STDMETHODIMP Primitive::get_TransZ(float *pVal)
 {
    *pVal = m_d.m_aRotAndTra[5];
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_TransZ(float newVal)
 {
-   if (m_d.m_aRotAndTra[5] != newVal)
-   {
-      m_d.m_aRotAndTra[5] = newVal;
-   }
+   m_d.m_aRotAndTra[5] = newVal;
 
    return S_OK;
 }
@@ -2513,16 +2474,12 @@ STDMETHODIMP Primitive::put_RotAndTra6(float newVal)
 STDMETHODIMP Primitive::get_ObjRotX(float *pVal)
 {
    *pVal = m_d.m_aRotAndTra[6];
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_ObjRotX(float newVal)
 {
-   if (m_d.m_aRotAndTra[6] != newVal)
-   {
-      m_d.m_aRotAndTra[6] = newVal;
-   }
+   m_d.m_aRotAndTra[6] = newVal;
 
    return S_OK;
 }
@@ -2545,10 +2502,7 @@ STDMETHODIMP Primitive::get_ObjRotY(float *pVal)
 
 STDMETHODIMP Primitive::put_ObjRotY(float newVal)
 {
-   if (m_d.m_aRotAndTra[7] != newVal)
-   {
-      m_d.m_aRotAndTra[7] = newVal;
-   }
+   m_d.m_aRotAndTra[7] = newVal;
 
    return S_OK;
 }
@@ -2566,16 +2520,12 @@ STDMETHODIMP Primitive::put_RotAndTra8(float newVal)
 STDMETHODIMP Primitive::get_ObjRotZ(float *pVal)
 {
    *pVal = m_d.m_aRotAndTra[8];
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_ObjRotZ(float newVal)
 {
-   if (m_d.m_aRotAndTra[8] != newVal)
-   {
-      m_d.m_aRotAndTra[8] = newVal;
-   }
+   m_d.m_aRotAndTra[8] = newVal;
 
    return S_OK;
 }
