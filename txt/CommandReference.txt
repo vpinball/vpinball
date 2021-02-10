@@ -9,6 +9,7 @@ Also see https://docs.orbitalpin.com/welcome for some more detailed help
 
 Changelog:
 10.7:
+- document missing x,y,z to the target element
 - add GetMaterial to the globals (counterpart to UpdateMaterial)
 - add UpdateMaterialPhysics and GetMaterialPhysics to the globals
 - add ActiveTable to the globals
@@ -907,6 +908,9 @@ Variables
 ---------
 
 *Name(string)
+*X(float)
+*Y(float)
+*Z(float)
 *HasHitEvent(bool)           - if set a hit event is fired when the ball hits the drop/hit target without animation. An additional dropped/raised event
                                is fired for drop targets after the mesh animation is over.
 *Collidable(bool)
