@@ -618,7 +618,7 @@ void ImageDialog::DeleteImage()
             }
          }
          if (lastsel != -1)
-            ListView_SetItemState(hSoundList, (lastsel > 0) ? lastsel-1 : 0, LVNI_SELECTED | LVNI_FOCUSED, LVNI_SELECTED | LVNI_FOCUSED);
+            ListView_SetItemState(hSoundList, lastsel, LVNI_SELECTED | LVNI_FOCUSED, LVNI_SELECTED | LVNI_FOCUSED);
          pt->SetNonUndoableDirty(eSaveDirty);
       }
    }
