@@ -115,7 +115,7 @@ public:
 private:
    void RenderBase(const Material * const baseMaterial);
    void RenderCap(const Material * const capMaterial);
-   void RenderSocket(const Material * const baseMaterial);
+   void RenderSocket(const Material * const socketMaterial);
    void UpdateRing();
    void UpdateSkirt(const bool doCalculation);
    void GenerateBaseMesh(Vertex3D_NoTex2 *buf);

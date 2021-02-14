@@ -182,11 +182,14 @@ void HitGate::Collide(const CollisionEvent& coll)
    m_gateMover.m_anglespeed = speed;
    if (!coll.m_hitflag && !m_twoWay)
    {
+      m_gateMover.m_hitDirection = (dot > 0.f);
       m_gateMover.m_anglespeed *= (float)(1.0/8.0); // Give a little bounce-back.
-      return; // hit from back doesn't count if not two-way
+      return;                                       // hit from back doesn't count if not two-way
    }
 
-   // We encoded which side of the spinner the ball hit
+   m_gateMover.m_hitDirection = false;
+
+   // We encoded which side of the gate the ball hit
    if (coll.m_hitflag && m_twoWay)
        m_gateMover.m_anglespeed = -m_gateMover.m_anglespeed;
 
@@ -214,7 +217,7 @@ void GateMoverObject::UpdateDisplacements(const float dtime)
          if (!m_forcedMove)
          {
             m_anglespeed = -m_anglespeed;
-            m_anglespeed *= m_damping * 0.8f; //just some extra damping to reduce the anglespeed a bit faster
+            m_anglespeed *= m_damping * 0.8f; // just some extra damping to reduce the anglespeed a bit faster
          }
          else if (m_anglespeed > 0.0f)
                m_anglespeed = 0.0f;
@@ -228,7 +231,7 @@ void GateMoverObject::UpdateDisplacements(const float dtime)
          if (!m_forcedMove)
          {
             m_anglespeed = -m_anglespeed;
-            m_anglespeed *= m_damping * 0.8f; //just some extra damping to reduce the anglespeed a bit faster
+            m_anglespeed *= m_damping * 0.8f; // just some extra damping to reduce the anglespeed a bit faster
          }
          else if (m_anglespeed < 0.0f)
                m_anglespeed = 0.0f;
@@ -236,26 +239,27 @@ void GateMoverObject::UpdateDisplacements(const float dtime)
    }
    else
    {
-      if (m_angle > m_angleMax)
+      const float direction = m_hitDirection ? -1.f : 1.f;
+      if (direction * m_angle > m_angleMax)
       {
-         m_angle = m_angleMax;
+         m_angle = direction * m_angleMax;
          m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed)));	// send EOS event
          if (!m_forcedMove)
          {
             m_anglespeed = -m_anglespeed;
-            m_anglespeed *= m_damping * 0.8f; //just some extra damping to reduce the anglespeed a bit faster
+            m_anglespeed *= m_damping * 0.8f; // just some extra damping to reduce the anglespeed a bit faster
          }
          else if (m_anglespeed > 0.0f)
                m_anglespeed = 0.0f;
       }
-      if (m_angle < m_angleMin)
+      if (direction * m_angle < m_angleMin)
       {
-         m_angle = m_angleMin;
+         m_angle = direction * m_angleMin;
          m_pgate->FireVoidEventParm(DISPID_LimitEvents_BOS, fabsf(RADTOANG(m_anglespeed)));	// send Park event
          if (!m_forcedMove)
          {
             m_anglespeed = -m_anglespeed;
-            m_anglespeed *= m_damping * 0.8f; //just some extra damping to reduce the anglespeed a bit faster
+            m_anglespeed *= m_damping * 0.8f; // just some extra damping to reduce the anglespeed a bit faster
          }
          else if (m_anglespeed < 0.0f)
                m_anglespeed = 0.0f;
@@ -509,7 +513,7 @@ float Hit3DPoly::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
 {
    if (!m_enabled) return -1.0f;
 
-   const float bnv = m_normal.Dot(ball.m_vel);  //speed in Normal-vector direction
+   const float bnv = m_normal.Dot(ball.m_vel); //speed in Normal-vector direction
 
    if ((m_ObjType != eTrigger) && (bnv > C_LOWNORMVEL)) // return if clearly ball is receding from object
       return -1.0f;
@@ -520,7 +524,7 @@ float Hit3DPoly::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
    const float bnd = m_normal.Dot(hitPos - m_rgv[0]); // distance from plane to ball
 
    bool bUnHit = (bnv > C_LOWNORMVEL);
-   const bool inside = (bnd <= 0.f);                // in ball inside object volume
+   const bool inside = (bnd <= 0.f);                  // in ball inside object volume
 
    const bool rigid = (m_ObjType != eTrigger);
    float hittime;
@@ -549,7 +553,7 @@ float Hit3DPoly::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
               || (bnd <= (float)(-PHYS_TOUCH)))     // slow moving but embedded
               hittime = 0;
           else
-              hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
+              hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f; // don't compete for fast zero time events
 #endif
       }
       else if (fabsf(bnv) > C_LOWNORMVEL)           // not velocity low?
@@ -561,21 +565,21 @@ float Hit3DPoly::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
    {
       if (bnv * bnd >= 0.f)                         // outside-receding || inside-approaching
       {
-         if (//(m_ObjType != eTrigger) ||             // not a trigger? // always false due to rigid test
-            (!ball.m_vpVolObjs) ||                // temporary ball
+         if (//(m_ObjType != eTrigger) ||           // not a trigger? // always false due to rigid test
+            (!ball.m_vpVolObjs) ||                  // temporary ball
             // if trigger, then check:
-            (fabsf(bnd) >= ball.m_radius*0.5f) ||	// not too close ... nor too far away
+            (fabsf(bnd) >= ball.m_radius*0.5f) ||   // not too close ... nor too far away
             (inside != (FindIndexOf(*(ball.m_vpVolObjs), m_obj) < 0))) // ...ball outside and hit set or ball inside and no hit set
             return -1.0f;
 
          hittime = 0;
-         bUnHit = !inside;	// ball on outside is UnHit, otherwise it's a Hit
+         bUnHit = !inside; // ball on outside is UnHit, otherwise it's a Hit
       }
       else
          hittime = bnd / -bnv;
    }
 
-   if (infNaN(hittime) || hittime < 0.f || hittime > dtime) return -1.0f;	// time is outside this frame ... no collision
+   if (infNaN(hittime) || hittime < 0.f || hittime > dtime) return -1.0f; // time is outside this frame ... no collision
 
    hitPos += hittime * ball.m_vel;     // advance hit point to contact
 

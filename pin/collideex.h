@@ -176,6 +176,7 @@ public:
    bool m_visible;
    bool m_open;       // True if the table logic is opening the gate, not just the ball passing through
    bool m_forcedMove; // True if the table logic is opening/closing the gate
+   bool m_hitDirection; // For the direction of the little bounce-back
 };
 
 class HitGate : public HitObject
