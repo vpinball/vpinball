@@ -36,7 +36,9 @@
 #include <wincrypt.h>
 
 #include <intrin.h>
-#include <xmmintrin.h>
+#if defined(_M_IX86) || defined(_M_X64)
+ #include <xmmintrin.h>
+#endif
 
 #include <vector>
 #include <string>

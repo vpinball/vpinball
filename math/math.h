@@ -35,6 +35,7 @@ __forceinline float atan2_approx_div2PI(const float y, const float x)
     return (y < 0.f) ? -angle : angle;
 }
 
+#if defined(_M_IX86) || defined(_M_X64)
 __forceinline float precise_divide(const float a, const float b)
 {
     return _mm_cvtss_f32(_mm_div_ss(_mm_set_ss(a), _mm_set_ss(b)));
@@ -49,6 +50,10 @@ __forceinline double force_add_in_order(const double a, const double b, const do
 {
     return _mm_cvtsd_f64(_mm_add_sd(_mm_add_sd(_mm_set_sd(a), _mm_set_sd(b)),_mm_set_sd(c)));
 }
+#else
+#pragma
+#define precise_divide(a,b) ((a)/(b)) //!!
+#endif
 
 
 

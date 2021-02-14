@@ -3,7 +3,9 @@
 #include "pin/ball.h"
 #include "pin/collide.h"
 
+#if defined(_M_IX86) || defined(_M_X64)
 #define KDTREE_SSE_LEAFTEST
+#endif
 
 class HitKD;
 
@@ -57,7 +59,11 @@ public:
 
    void HitTestBall(const Ball * const pball, CollisionEvent& coll) const
    {
+#if defined(_M_IX86) || defined(_M_X64)
       m_rootNode.HitTestBallSse(pball, coll);
+#else
+      m_rootNode.HitTestBall(pball, coll);
+#endif
    }
 
    void HitTestXRay(const Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const

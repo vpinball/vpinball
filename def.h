@@ -215,6 +215,7 @@ public:
 #define VBTOb(x) (!!(x))
 #define FTOVB(x) ((x) ? (VARIANT_BOOL)-1 : (VARIANT_BOOL)0)
 
+#if defined(_M_IX86) || defined(_M_X64)
 __forceinline __m128 rcpps(const __m128 &T) //Newton Raphson
 {
    const __m128 TRCP = _mm_rcp_ps(T);
@@ -238,10 +239,11 @@ __forceinline __m128 sseHorizontalAdd(const __m128 &a) // could use dp instructi
    const __m128 ftemp = _mm_add_ps(a, _mm_movehl_ps(a, a));
    return _mm_add_ss(ftemp, _mm_shuffle_ps(ftemp, ftemp, 1));
 }
+#endif
 
 //
 
-__forceinline int float_as_int(const float x)
+__forceinline int float_as_int(const float x) //!! use bit_cast
 {
    union {
       float f;
@@ -251,7 +253,7 @@ __forceinline int float_as_int(const float x)
    return uc.i;
 }
 
-__forceinline float int_as_float(const int i)
+__forceinline float int_as_float(const int i) //!! use bit_cast
 {
    union {
       int i;

@@ -405,6 +405,8 @@ void HitKDNode::HitTestBall(const Ball * const pball, CollisionEvent& coll) cons
    const unsigned int org_items = (m_items&0x3FFFFFFF);
    const unsigned int axis = (m_items>>30);
 
+   const float rcHitRadiusSqr = pball->HitRadiusSqr();
+
    for (unsigned i=m_start; i<m_start+org_items; i++)
    {
 #ifdef DEBUGPHYSICS
@@ -413,7 +415,7 @@ void HitKDNode::HitTestBall(const Ball * const pball, CollisionEvent& coll) cons
       HitObject * const pho = m_hitoct->GetItemAt(i);
       if ((pball != pho) // ball can not hit itself
 		  /*&& fRectIntersect3D(pball->m_hitBBox, pho->m_hitBBox)*/ //!! do bbox test before to save alu-instructions? or not to save registers? -> currently not, as just sphere vs sphere
-		 && fRectIntersect3D(pball->m_pos, pball->m_rcHitRadiusSqr, pho->m_hitBBox))
+		 && fRectIntersect3D(pball->m_d.m_pos, rcHitRadiusSqr, pho->m_hitBBox))
       {
          DoHitTest(pball, pho, coll);
       }
