@@ -99,6 +99,8 @@ FIXES:
 - also search for table-script replacements (i.e. external .vbs with the same/table name) in the "Scripts" folder to match the core script behavior
 - when modifying the table-script, check if it was loaded from an external .vbs, and if yes, then save the modifications to that file (and only optionally to the .vpx table itself)
 
+- delete duplicate images and sounds (same filename/path in the Sound/Image Manager) and remove dead image/material/surface links from items (i.e. if that thingie's name does not exist anymore)
+
 - tweak flipper shadows (via script) implementation in the example/blank table
 
 - update BASS library to latest 2.4.15

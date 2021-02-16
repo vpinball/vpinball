@@ -1731,6 +1731,29 @@ if (it == m_textureMap.end()) \
 if (it == m_textureMap.end()) \
    pEditImage[0] = 0;}
 
+#define CLEAN_SURFACE(pEditSurface) \
+{if (!(pEditSurface == NULL || pEditSurface[0] == 0)) \
+{ \
+bool found = false; \
+for (size_t ie = 0; ie < m_vedit.size(); ie++) \
+{ \
+    IEditable* const item = m_vedit[ie]; \
+    if (item->GetItemType() == eItemSurface || item->GetItemType() == eItemRamp) \
+    { \
+        CComBSTR bstr; \
+        item->GetScriptable()->get_Name(&bstr); \
+        if (!WzSzStrCmp(bstr, pEditSurface)) \
+        { \
+            found = true; \
+            break; \
+        } \
+    } \
+} \
+if(!found) \
+    pEditSurface[0] = '\0'; \
+}}
+
+
 void PinTable::InitTablePostLoad()
 {
    ProfileLog("InitTablePostLoad");
@@ -1776,7 +1799,7 @@ void PinTable::InitTablePostLoad()
    m_pcv->AddItem(m_pcv->m_pdm, false);
 
    //
-   // cleanup old bugs, i.e. currently buggy/non-existing material and image names
+   // cleanup old bugs, i.e. currently buggy/non-existing material, image & surface names
    //
 
    // set up the texture & material hashtables for faster access
@@ -1826,6 +1849,7 @@ void PinTable::InitTablePostLoad()
             CLEAN_MATERIAL(((Decal*)pEdit)->m_d.m_szMaterial);
             //CLEAN_MATERIAL(((Decal*)pEdit)->m_d.m_szPhysicsMaterial);
             CLEAN_IMAGE(((Decal*)pEdit)->m_d.m_szImage);
+            CLEAN_SURFACE(((Decal*)pEdit)->m_d.m_szSurface);
             break;
         }
         case eItemFlipper:
@@ -1834,6 +1858,7 @@ void PinTable::InitTablePostLoad()
             //CLEAN_MATERIAL(((Flipper*)pEdit)->m_d.m_szPhysicsMaterial);
             CLEAN_MATERIAL(((Flipper*)pEdit)->m_d.m_szRubberMaterial);
             CLEAN_IMAGE(((Flipper*)pEdit)->m_d.m_szImage);
+            CLEAN_SURFACE(((Flipper*)pEdit)->m_d.m_szSurface);
             break;
         }
         case eItemHitTarget:
@@ -1848,6 +1873,7 @@ void PinTable::InitTablePostLoad()
             CLEAN_MATERIAL(((Plunger*)pEdit)->m_d.m_szMaterial);
             //CLEAN_MATERIAL(((Plunger*)pEdit)->m_d.m_szPhysicsMaterial);
             CLEAN_IMAGE(((Plunger*)pEdit)->m_d.m_szImage);
+            CLEAN_SURFACE(((Plunger*)pEdit)->m_d.m_szSurface);
             break;
         }
         case eItemSpinner:
@@ -1855,6 +1881,7 @@ void PinTable::InitTablePostLoad()
             CLEAN_MATERIAL(((Spinner*)pEdit)->m_d.m_szMaterial);
             //CLEAN_MATERIAL(((Spinner*)pEdit)->m_d.m_szPhysicsMaterial);
             CLEAN_IMAGE(((Spinner*)pEdit)->m_d.m_szImage);
+            CLEAN_SURFACE(((Spinner*)pEdit)->m_d.m_szSurface);
             break;
         }
         case eItemRubber:
@@ -1872,18 +1899,21 @@ void PinTable::InitTablePostLoad()
             CLEAN_MATERIAL(((Bumper*)pEdit)->m_d.m_szBaseMaterial);
             CLEAN_MATERIAL(((Bumper*)pEdit)->m_d.m_szSkirtMaterial);
             CLEAN_MATERIAL(((Bumper*)pEdit)->m_d.m_szRingMaterial);
+            CLEAN_SURFACE(((Bumper*)pEdit)->m_d.m_szSurface);
             break;
         }
         case eItemKicker:
         {
             CLEAN_MATERIAL(((Kicker*)pEdit)->m_d.m_szMaterial);
             //CLEAN_MATERIAL(((Kicker*)pEdit)->m_d.m_szPhysicsMaterial);
+            CLEAN_SURFACE(((Kicker*)pEdit)->m_d.m_szSurface);
             break;
         }
         case eItemTrigger:
         {
             CLEAN_MATERIAL(((Trigger*)pEdit)->m_d.m_szMaterial);
             //CLEAN_MATERIAL(((Trigger*)pEdit)->m_d.m_szPhysicsMaterial);
+            CLEAN_SURFACE(((Trigger*)pEdit)->m_d.m_szSurface);
             break;
         }
         case eItemDispReel:
@@ -1900,6 +1930,12 @@ void PinTable::InitTablePostLoad()
         case eItemLight:
         {
             CLEAN_IMAGE(((Light*)pEdit)->m_d.m_szImage);
+            CLEAN_SURFACE(((Light*)pEdit)->m_d.m_szSurface);
+            break;
+        }
+        case eItemGate:
+        {
+            CLEAN_SURFACE(((Gate*)pEdit)->m_d.m_szSurface);
             break;
         }
         default:
@@ -3043,6 +3079,14 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 	   return hr;
    }
 
+   // search for duplicate names, do not load dupes
+   for(size_t i = 0; i < m_vsound.size(); ++i)
+       if (m_vsound[i]->m_szName == pps->m_szName && m_vsound[i]->m_szPath == pps->m_szPath)
+       {
+           delete pps;
+           return S_FAIL;
+       }
+
    m_vsound.push_back(pps);
    return S_OK;
 }
@@ -3729,6 +3773,15 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             for (size_t i = 0; i < m_vimage.size(); ++i)
                 if (!m_vimage[i] || m_vimage[i]->m_pdsBuffer == NULL)
                     m_vimage.erase(m_vimage.begin()+i);
+
+            // search for duplicate names, delete dupes
+            for (size_t i = 0; i < m_vimage.size()-1; ++i)
+                for (size_t i2 = i+1; i2 < m_vimage.size(); ++i2)
+                    if (m_vimage[i]->m_szName == m_vimage[i2]->m_szName && m_vimage[i]->m_szPath == m_vimage[i2]->m_szPath)
+                    {
+                        m_vimage.erase(m_vimage.begin() + i2);
+                        --i2;
+                    }
 
             ProfileLog("Image");
 
