@@ -50,7 +50,7 @@
  *
  * The shader has three passes, chained together as follows:
  *
- *                           |input|------------------·
+ *                           |input|------------------+
  *                              v                     |
  *                    [ SMAA*EdgeDetection ]          |
  *                              v                     |
@@ -60,7 +60,7 @@
  *                              v                     |
  *                          |blendTex|                |
  *                              v                     |
- *                [ SMAANeighborhoodBlending ] <------·
+ *                [ SMAANeighborhoodBlending ] <------+
  *                              v
  *                           |output|
  *
@@ -436,7 +436,7 @@
  * How much to scale the global threshold used for luma or color edge
  * detection when using predication.
  *
- * Range: [1, 5]
+ * Range: [1, 16]
  */
 #ifndef SMAA_PREDICATION_SCALE
 #define SMAA_PREDICATION_SCALE 2.0
@@ -445,7 +445,7 @@
 /**
  * How much to locally decrease the threshold.
  *
- * Range: [0, 1]
+ * Range: [0, 4]
  */
 #ifndef SMAA_PREDICATION_STRENGTH
 #define SMAA_PREDICATION_STRENGTH 0.4
@@ -801,11 +801,11 @@ float2 SMAAColorEdgeDetectionPS(float2 texcoord,
 
     // Calculate left-left and top-top deltas:
     float3 Cleftleft  = SMAASamplePoint(colorTex, offset[2].xy).rgb;
-    t = abs(C - Cleftleft);
+    t = abs(Cleft - Cleftleft);
     delta.z = max(max(t.r, t.g), t.b);
 
     float3 Ctoptop = SMAASamplePoint(colorTex, offset[2].zw).rgb;
-    t = abs(C - Ctoptop);
+    t = abs(Ctop - Ctoptop);
     delta.w = max(max(t.r, t.g), t.b);
 
     // Calculate the final maximum delta:
