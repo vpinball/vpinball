@@ -34,9 +34,9 @@ float3 mul_w0(const float3 v, const float4x3 m)
 float acos_approx(const float v)
 {
     const float x = abs(v);
-    if(1.0 - x < 0.0000001) // necessary due to compiler doing 1./rsqrt instead of sqrt
+    if(1. - x < 0.0000001) // necessary due to compiler doing 1./rsqrt instead of sqrt
        return (v >= 0.) ? 0. : PI;
-    const float res = (-0.155972/*C1*/ * x + 1.56467/*C0*/) * sqrt(1.0 - x);
+    const float res = (-0.155972/*C1*/ * x + 1.56467/*C0*/) * sqrt(1. - x);
     return (v >= 0.) ? res : PI - res;
 }
 #endif
@@ -46,9 +46,9 @@ float acos_approx_divPI(const float v)
     //return acos(v)*(1./PI);
 
     const float x = abs(v);
-    if(1.0 - x < 0.0000001) // necessary due to compiler doing 1./rsqrt instead of sqrt
+    if(1. - x < 0.0000001) // necessary due to compiler doing 1./rsqrt instead of sqrt
        return (v >= 0.) ? 0. : 1.;
-    const float res = ((-0.155972/PI)/*C1*/ * x + (1.56467/PI)/*C0*/) * sqrt(1.0 - x);
+    const float res = ((-0.155972/PI)/*C1*/ * x + (1.56467/PI)/*C0*/) * sqrt(1. - x);
     return (v >= 0.) ? res : 1. - res;
 }
 
@@ -83,6 +83,22 @@ float atan2_approx_div2PI(const float y, const float x)
 	                  + (0.211868/*C3*//(2.*PI) * r * r - 0.987305/*C1*//(2.*PI)) * ((x < 0.) ? -r : r);
 	return (y < 0.) ? -angle : angle;
 }
+
+#if 0
+float asin_approx(const float v)
+{
+	return (0.5*PI) - acos_approx(v);
+}
+
+//!! this one is untested for special values (see atan2 approx!)
+// 4th order hyperbolical approximation
+// 7 * 10^-5 radians precision 
+// Reference : Efficient approximations for the arctangent function, Rajan, S. Sichun Wang Inkol, R. Joyal, A., May 2006
+float atan_approx(const float x)
+{
+	return x * (-0.1784 * abs(x) - 0.0663 * x*x + 1.0301);
+}
+#endif
 
 //
 // Gamma & ToneMapping
@@ -177,8 +193,8 @@ float3 FilmicToneMap(const float3 hdr, const float whitepoint) //!! test/experim
 
 float3 FilmicToneMap2(const float3 texColor) //!! test/experimental
 {
-   const float3 x = max(0.,texColor-0.004); // Filmic Curve
-   return (x*(6.2*x+.5))/(x*(6.2*x+1.7)+0.06);
+    const float3 x = max(0.,texColor-0.004); // Filmic Curve
+    return (x*(6.2*x+.5))/(x*(6.2*x+1.7)+0.06);
 }
 
 
@@ -216,7 +232,7 @@ float4 EncodeRGBD(const float3 rgb)
 
 float4 Additive(const float4 cBase, const float4 cBlend, const float percent)
 {
-   return cBase + cBlend*percent;
+	return cBase + cBlend*percent;
 }
 
 float3 Screen (const float3 cBase, const float3 cBlend)
@@ -251,13 +267,13 @@ float4 Overlay (const float4 cBase, const float4 cBlend)
 	// is below half or not
 
 	float4 cNew = step(0.5, cBase);
-	
+
 	// we pick either solution
 	// depending on pixel
-	
+
 	// first is case of < 0.5
 	// second is case for >= 0.5
-	
+
 	// interpolate between the two, 
 	// using color as influence value
 	cNew = lerp(cBase*cBlend*2.0, 1.0-2.0*(1.0-cBase)*(1.0-cBlend), cNew);
@@ -273,13 +289,13 @@ float4 OverlayHDR (const float4 cBase, const float4 cBlend)
 	// is below half or not
 
 	float4 cNew = step(0.5, cBase);
-	
+
 	// we pick either solution
 	// depending on pixel
 	
 	// first is case of < 0.5
 	// second is case for >= 0.5
-	
+
 	// interpolate between the two, 
 	// using color as influence value
 	cNew = max(lerp(cBase*cBlend*2.0, 1.0-2.0*(1.0-cBase)*(1.0-cBlend), cNew), float4(0.,0.,0.,0.));
