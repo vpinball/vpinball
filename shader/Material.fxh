@@ -14,26 +14,26 @@ struct CLight
 #define iLightPointBallsNum (NUM_LIGHTS+NUM_BALL_LIGHTS)
 
 #if iLightPointBallsNum == iLightPointNum // basic shader
-float4 packedLights[3]; //!! 4x3 = NUM_LIGHTSx6
-static CLight lights[iLightPointBallsNum] = (CLight[iLightPointBallsNum])packedLights;
+const float4 packedLights[3]; //!! 4x3 = NUM_LIGHTSx6
+static const CLight lights[iLightPointBallsNum] = (CLight[iLightPointBallsNum])packedLights;
 #else                                     // ball shader
-float4 packedLights[15]; //!! 4x15 = (NUM_LIGHTS+NUM_BALL_LIGHTS)x6
-static CLight lights[iLightPointBallsNum] = (CLight[iLightPointBallsNum])packedLights;
+const float4 packedLights[15]; //!! 4x15 = (NUM_LIGHTS+NUM_BALL_LIGHTS)x6
+static const CLight lights[iLightPointBallsNum] = (CLight[iLightPointBallsNum])packedLights;
 #endif
 
-float4 cAmbient_LightRange = float4(0.0,0.0,0.0, 0.0); //!! remove completely, just rely on envmap/IBL?
+const float4 cAmbient_LightRange = float4(0.0,0.0,0.0, 0.0); //!! remove completely, just rely on envmap/IBL?
 
-float2 fenvEmissionScale_TexWidth;
+const float2 fenvEmissionScale_TexWidth;
 
-float2 fDisableLighting_top_below = float2(0.,0.);
+const float2 fDisableLighting_top_below = float2(0.,0.);
 
 //
 // Material Params
 //
 
-float4 cBase_Alpha = float4(0.5,0.5,0.5, 1.0); //!! 0.04-0.95 in RGB
+const float4 cBase_Alpha = float4(0.5,0.5,0.5, 1.0); //!! 0.04-0.95 in RGB
 
-float4 Roughness_WrapL_Edge_Thickness = float4(4.0, 0.5, 1.0, 0.05); // wrap in [0..1] for rim/wrap lighting
+const float4 Roughness_WrapL_Edge_Thickness = float4(4.0, 0.5, 1.0, 0.05); // wrap in [0..1] for rim/wrap lighting
 
 //
 // Material Helper Functions
@@ -71,7 +71,7 @@ float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const floa
    // compute diffuse color (lambert with optional rim/wrap component)
    if (!is_metal && (NdotL + Roughness_WrapL_Edge_Thickness.y > 0.0))
       Out = diffuse * ((NdotL + Roughness_WrapL_Edge_Thickness.y) / sqr(1.0+Roughness_WrapL_Edge_Thickness.y));
-    
+
    // add glossy component (modified ashikhmin/blinn bastard), not fully energy conserving, but good enough
    [branch] if (NdotL > 0.0)
    {
@@ -82,10 +82,10 @@ float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const floa
 	 if ((NdotH > 0.0) && (LdotH > 0.0) && (VdotH > 0.0))
 		Out += FresnelSchlick(glossy, LdotH, edge) * (((glossyPower + 1.0) / (8.0*VdotH)) * pow(NdotH, glossyPower));
    }
- 
+
    //float fAtten = saturate( 1.0 - dot(lightDir/cAmbient_LightRange.w, lightDir/cAmbient_LightRange.w) );
    //float fAtten = 1.0/dot(lightDir,lightDir); // original/correct falloff
-   
+
    const float sqrl_lightDir = dot(lightDir,lightDir); // tweaked falloff to have ranged lightsources
    float fAtten = saturate(1.0 - sqrl_lightDir*sqrl_lightDir/(cAmbient_LightRange.w*cAmbient_LightRange.w*cAmbient_LightRange.w*cAmbient_LightRange.w)); //!! pre-mult/invert cAmbient_LightRange.w?
    fAtten = fAtten*fAtten/(sqrl_lightDir + 1.0);

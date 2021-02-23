@@ -1,6 +1,6 @@
 // uses texSamplerDepth & texSampler4,texSampler5 & texSamplerAOdither & w_h_height.xy
 
-float4 SSR_bumpHeight_fresnelRefl_scale_FS;
+const float4 SSR_bumpHeight_fresnelRefl_scale_FS;
 
 float3 approx_bump_normal(const float2 coords, const float2 offs, const float scale, const float sharpness)
 {

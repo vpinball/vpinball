@@ -1,10 +1,10 @@
 // transformation matrices
-float4x4 matWorldViewProj : WORLDVIEWPROJ;
+const float4x4 matWorldViewProj : WORLDVIEWPROJ;
 
-float4   lightColor_intensity;
-float4   lightColor2_falloff_power;
-float4   lightCenter_maxRange;
-float    blend_modulate_vs_add;
+const float4   lightColor_intensity;
+const float4   lightColor2_falloff_power;
+const float4   lightCenter_maxRange;
+const float    blend_modulate_vs_add;
 
 struct VS_LIGHTBULB_OUTPUT
 {
@@ -13,9 +13,9 @@ struct VS_LIGHTBULB_OUTPUT
 };
 
 // vertex shader is skipped for backglass elements, due to D3DDECLUSAGE_POSITIONT
-VS_LIGHTBULB_OUTPUT vs_lightbulb_main (in float4 vPosition : POSITION0/*,
-                                       in float3 vNormal   : NORMAL0,
-                                       in float2 tc        : TEXCOORD0*/)
+VS_LIGHTBULB_OUTPUT vs_lightbulb_main (const in float4 vPosition : POSITION0/*,
+                                       const in float3 vNormal   : NORMAL0,
+                                       const in float2 tc        : TEXCOORD0*/)
 {
    VS_LIGHTBULB_OUTPUT Out;
 
@@ -26,7 +26,7 @@ VS_LIGHTBULB_OUTPUT vs_lightbulb_main (in float4 vPosition : POSITION0/*,
    return Out; 
 }
 
-float4 PS_BulbLight(in VS_LIGHTBULB_OUTPUT IN) : COLOR
+float4 PS_BulbLight(const in VS_LIGHTBULB_OUTPUT IN) : COLOR
 {
 	const float len = length(lightCenter_maxRange.xyz - IN.tablePos) * lightCenter_maxRange.w;
 	const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
