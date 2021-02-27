@@ -302,11 +302,11 @@ float4 ps_main_fb_tonemap(const in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_bloom(const in VS_OUTPUT_2D IN) : COLOR
 {
-    // collect clipped contribution of the 3x3 texels (via box blur (offset: 0.25*pixel=w_h_height.xy*0.5), NOT gaussian, as this is wrong) from original FB
-    const float3 result = (tex2Dlod(texSampler5, float4(IN.tex0-w_h_height.xy*0.5, 0.,0.)).xyz
-                        +  tex2Dlod(texSampler5, float4(IN.tex0+w_h_height.xy*2.5, 0.,0.)).xyz
-                        +  tex2Dlod(texSampler5, float4(IN.tex0+float2(w_h_height.x*2.5,-w_h_height.y*0.5), 0.,0.)).xyz
-                        +  tex2Dlod(texSampler5, float4(IN.tex0+float2(-w_h_height.x*0.5,w_h_height.y*2.5), 0.,0.)).xyz)*0.25; //!! offset for useAA?
+    // collect clipped contribution of the 4x4 texels (via box blur, NOT gaussian, as this is wrong) from original FB
+    const float3 result = (tex2Dlod(texSampler5, float4(IN.tex0 + (w_h_height.xy*1.25 -w_h_height.xy), 0.,0.)).xyz
+                        +  tex2Dlod(texSampler5, float4(IN.tex0 + (w_h_height.xy*1.25 +w_h_height.xy), 0.,0.)).xyz
+                        +  tex2Dlod(texSampler5, float4(IN.tex0 + (w_h_height.xy*1.25 +float2(w_h_height.x,-w_h_height.y)), 0.,0.)).xyz
+                        +  tex2Dlod(texSampler5, float4(IN.tex0 + (w_h_height.xy*1.25 +float2(-w_h_height.x,w_h_height.y)), 0.,0.)).xyz)*0.25; //!! offset for useAA?
     return float4(max(FBToneMap(result)-float3(1.,1.,1.), float3(0.,0.,0.)), 1.0);
 }
 

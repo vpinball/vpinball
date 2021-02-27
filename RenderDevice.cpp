@@ -701,14 +701,14 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
                ReportError("Fatal Error: unable to create reflection map!", hr, __FILE__, __LINE__);
        }
    }
-   // alloc bloom tex at 1/3 x 1/3 res (allows for simple HQ downscale of clipped input while saving memory)
-   hr = m_pD3DDevice->CreateTexture(m_width / 3, m_height / 3, 1,
+   // alloc bloom tex at 1/4 x 1/4 res (allows for simple HQ downscale of clipped input while saving memory)
+   hr = m_pD3DDevice->CreateTexture(m_width / 4, m_height / 4, 1,
       D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pBloomBufferTexture, NULL); //!! 8bit enough?
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create bloom buffer!", hr, __FILE__, __LINE__);
 
    // temporary buffer for gaussian blur
-   hr = m_pD3DDevice->CreateTexture(m_width / 3, m_height / 3, 1,
+   hr = m_pD3DDevice->CreateTexture(m_width / 4, m_height / 4, 1,
       D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pBloomTmpBufferTexture, NULL); //!! 8bit are enough! //!! but used also for bulb light transmission hack now!
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create blur buffer!", hr, __FILE__, __LINE__);
