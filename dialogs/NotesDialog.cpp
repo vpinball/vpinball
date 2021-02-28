@@ -15,13 +15,11 @@ LRESULT NotesEdit::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       }
    }
    return WndProcDefault(msg, wparam, lparam);
-
 }
 
 NotesDialog::NotesDialog() : CDialog(IDD_NOTES_DIALOG)
 {
 }
-
 
 BOOL NotesDialog::OnInitDialog()
 {
@@ -69,7 +67,6 @@ void NotesDialog::SetText()
    {
       m_notesEdit.SetWindowText(pt->GetNotesText().c_str());
    }
-
 }
 
 void NotesDialog::UpdateText()
@@ -84,7 +81,6 @@ CContainNotes::CContainNotes()
    SetView(m_notesDialog);
    SetTabText(_T("Notes"));
    SetDockCaption(_T("Notes"));
-
 }
 
 CDockNotes::CDockNotes()
@@ -104,4 +100,3 @@ void CDockNotes::OnClose()
    CDocker::OnClose();
    g_pvp->DestroyNotesDocker();
 }
-

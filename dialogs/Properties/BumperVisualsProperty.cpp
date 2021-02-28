@@ -25,7 +25,7 @@ void BumperVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemBumper))
             continue;
         Bumper *const bumper = (Bumper*)m_pvsel->ElementAt(i);
-        if(dispid == IDC_MATERIAL_COMBO || dispid == -1)
+        if (dispid == IDC_MATERIAL_COMBO || dispid == -1)
             PropertyDialog::UpdateMaterialComboBox(bumper->GetPTable()->GetMaterialList(), m_capMaterialCombo, bumper->m_d.m_szCapMaterial);
         if (dispid == IDC_MATERIAL_COMBO2 || dispid == -1)
             PropertyDialog::UpdateMaterialComboBox(bumper->GetPTable()->GetMaterialList(), m_bumpBaseMaterialCombo, bumper->m_d.m_szBaseMaterial);

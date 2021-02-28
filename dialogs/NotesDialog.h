@@ -2,11 +2,11 @@
 
 #include <dlgs.h>
 #include <cderr.h>
+#include <WindowsX.h>
 #include <wxx_appcore.h>		// Add CCriticalSection, CObject, CWinThread, CWinApp
 #include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
 #include <wxx_richedit.h>
 #include "Properties/PropertyDialog.h"
-#include <WindowsX.h>
 
 class NotesEdit : public CEdit
 {
@@ -17,8 +17,8 @@ public:
 
 protected:
    virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
-
 };
+
 class NotesDialog : public CDialog
 {
 public:
