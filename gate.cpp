@@ -837,7 +837,7 @@ STDMETHODIMP Gate::put_Material(BSTR newVal)
 
 STDMETHODIMP Gate::get_Open(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB((m_phitgate) ? m_phitgate->m_gateMover.m_open : false);
+   *pVal = FTOVB(m_phitgate ? m_phitgate->m_gateMover.m_open : false);
 
    return S_OK;
 }
@@ -846,14 +846,16 @@ STDMETHODIMP Gate::put_Open(VARIANT_BOOL newVal)
 {
    if (m_phitgate)
    {
+      m_phitgate->m_gateMover.m_hitDirection = false;
+
       m_phitgate->m_gateMover.m_angleMax = m_d.m_angleMax;
       m_phitgate->m_gateMover.m_angleMin = m_d.m_angleMin;
       m_phitgate->m_gateMover.m_forcedMove = true;
 
-      if (newVal)
-      {
-         m_phitgate->m_gateMover.m_open = true;
+      m_phitgate->m_gateMover.m_open = VBTOb(newVal);
 
+      if (m_phitgate->m_gateMover.m_open)
+      {
          m_phitgate->m_enabled = false;
          if (!m_d.m_twoWay)
             m_plineseg->m_enabled = false;
@@ -863,8 +865,6 @@ STDMETHODIMP Gate::put_Open(VARIANT_BOOL newVal)
       }
       else
       {
-         m_phitgate->m_gateMover.m_open = false;
-
          m_phitgate->m_enabled = m_d.m_collidable;
          if (!m_d.m_twoWay)
             m_plineseg->m_enabled = m_d.m_collidable;
@@ -977,6 +977,8 @@ STDMETHODIMP Gate::Move(int dir, float speed, float angle) //move non-collidable
 {
    if (g_pplayer)
    {
+      m_phitgate->m_gateMover.m_hitDirection = false;
+
       m_phitgate->m_gateMover.m_forcedMove = true;
       m_phitgate->m_gateMover.m_open = true; // move always turns off natural swing
       m_phitgate->m_enabled = false;         // and collidable off

@@ -183,8 +183,8 @@ void HitGate::Collide(const CollisionEvent& coll)
    if (!coll.m_hitflag && !m_twoWay)
    {
       m_gateMover.m_hitDirection = (dot > 0.f);
-      m_gateMover.m_anglespeed *= (float)(1.0/8.0); // Give a little bounce-back.
-      return;                                       // hit from back doesn't count if not two-way
+      m_gateMover.m_anglespeed *= (float)(1.0/50.0); // Give a little bounce-back.
+      return;                                        // Hit from back doesn't count if not two-way
    }
 
    m_gateMover.m_hitDirection = false;
@@ -265,7 +265,7 @@ void GateMoverObject::UpdateDisplacements(const float dtime)
                m_anglespeed = 0.0f;
       }
    }
-   if(m_anglespeed==0.0f)
+   if(m_anglespeed == 0.0f)
       m_forcedMove = false;
 
    m_angle += m_anglespeed * dtime;
