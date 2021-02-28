@@ -76,7 +76,8 @@ FIXES:
 - replace dithering code with blue noise, fixes flickering patterns (especially in darker table areas)
 - disable dithering code when running in 10bit output mode
 - tweak AO (Ambient Occlusion) and SSR (Screen Space Reflections) to be a bit less noisy
-- slightly tweak bloom filter and light transmission filter to capture a larger radius (for very bright lights) and fix slightly wrong offsets for bloom (at slightly better performance)
+- slightly tweak light transmission filter to capture a larger radius (for very bright lights)
+- revamp bloom filter to capture a larger radius and to be more robust in general, incl. fixing slightly wrong offsets when downsampling
 - fix a small error in the original SMAA shader code, and also increase quality parameters slightly (to match reshade)
 
 - tweak minimum physics cycle time, which mainly influences kickers
