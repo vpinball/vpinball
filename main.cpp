@@ -77,7 +77,10 @@ static pSDARP SetDisplayAutoRotationPreferences = NULL;
 #if !defined(DEBUG_XXX) && !defined(_CRTDBG_MAP_ALLOC)
 void *operator new(const size_t size_req)
 {
-   return _aligned_malloc(size_req, 16);
+   void* ptr = _aligned_malloc(size_req, 16);
+   if (!ptr)
+       throw std::bad_alloc{};
+   return ptr;
 }
 void operator delete(void *address)
 {
@@ -85,7 +88,10 @@ void operator delete(void *address)
 }
 void *operator new[](const size_t size_req)
 {
-   return _aligned_malloc(size_req, 16);
+   void* ptr = _aligned_malloc(size_req, 16);
+   if (!ptr)
+       throw std::bad_alloc{};
+   return ptr;
 }
 void operator delete[](void *address)
 {

@@ -29,7 +29,7 @@ FEATURES:
 
 - optimize table loading/pre-processing time
 - optimize loading of JPG images in the table
-- reduce temporary memory needed for images
+- reduce temporary memory needed for images and automatically downscale textures if CPU memory is running out
 
 - add table save date and revision to table info and also show this in the pause info/menu
 
