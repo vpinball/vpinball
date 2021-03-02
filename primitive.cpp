@@ -122,7 +122,7 @@ void Mesh::SaveWavefrontObj(const string& fname, const string& description)
 
 void Mesh::UploadToVB(VertexBuffer * vb, const float frame) 
 {
-   if (frame != -1.f)
+   if (frame >= 0.f)
    {
       float intPart;
       const float fractpart = modf(frame, &intPart);
@@ -1209,6 +1209,8 @@ void Primitive::RenderObject()
                   m_vertexBufferRegenerate = false;
                }
             }
+            if(m_speed == 0.f)
+               m_vertexBufferRegenerate = false;
          }
          else
             m_vertexBufferRegenerate = false;
@@ -2891,13 +2893,16 @@ STDMETHODIMP Primitive::ContinueAnim(float speed)
 
 STDMETHODIMP Primitive::ShowFrame(float frame)
 {
-   if ((size_t)frame >= m_mesh.m_animationFrames.size())
-      frame = (float)(m_mesh.m_animationFrames.size() - 1);
+   if (m_mesh.m_animationFrames.size() > 0 && frame >= 0.f)
+   {
+      if ((size_t)frame >= m_mesh.m_animationFrames.size())
+         frame = (float)(m_mesh.m_animationFrames.size() - 1);
 
-   m_vertexBufferRegenerate = (m_currentFrame != frame) || m_doAnimation;
+      m_vertexBufferRegenerate = (m_currentFrame != frame) || m_doAnimation;
 
-   m_currentFrame = frame;
-   m_doAnimation = false;
+      m_currentFrame = frame;
+      m_doAnimation = false;
+   }
 
    return S_OK;
 }
