@@ -3772,14 +3772,17 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             // due to multithreaded loading and pre-allocation, check if some images could not be loaded and erase them
             for (size_t i = 0; i < m_vimage.size(); ++i)
                 if (!m_vimage[i] || m_vimage[i]->m_pdsBuffer == NULL)
+                {
                     m_vimage.erase(m_vimage.begin()+i);
+                    --i;
+                }
 
             // search for duplicate names, delete dupes
             for (size_t i = 0; i < m_vimage.size()-1; ++i)
                 for (size_t i2 = i+1; i2 < m_vimage.size(); ++i2)
                     if (m_vimage[i]->m_szName == m_vimage[i2]->m_szName && m_vimage[i]->m_szPath == m_vimage[i2]->m_szPath)
                     {
-                        m_vimage.erase(m_vimage.begin() + i2);
+                        m_vimage.erase(m_vimage.begin()+i2);
                         --i2;
                     }
 
