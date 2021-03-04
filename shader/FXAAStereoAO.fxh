@@ -1001,6 +1001,8 @@ float4 ps_main_fxaa3(const in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_CAS(const in VS_OUTPUT_2D IN) : COLOR
 {
+	// variant with better diagonals
+
 	const float Contrast   = 0.0; // 0..1, Adjusts the range the shader adapts to high contrast (0 is not all the way off).  Higher values = more high contrast sharpening.
 	const float Sharpening = 1.0; // 0..1, Adjusts sharpening intensity by averaging the original pixels to the sharpened result.  1.0 is the unmodified default.
 
@@ -1103,7 +1105,7 @@ float4 ps_main_BilateralSharp_CAS(const in VS_OUTPUT_2D IN) : COLOR
 			final_colour += factor*cc;
 		}
 
-	// CAS (crippled)
+	// CAS (without Better Diagonals)
 	const float2 um1 = u - w_h_height.xy;
 	const float2 up1 = u + w_h_height.xy;
 
@@ -1118,7 +1120,7 @@ float4 ps_main_BilateralSharp_CAS(const in VS_OUTPUT_2D IN) : COLOR
 
 	// Smooth minimum distance to signal limit divided by smooth max.
 	const float rcpMRGB = rcp(mxRGB);
-	const float ampRGB = saturate(min(mnRGB, 2.0 - mxRGB) * rcpMRGB); // 'correct' a la CAS, could also try something inbetween 1..2
+	const float ampRGB = saturate(min(mnRGB, 1.0 - mxRGB) * rcpMRGB);
 
 	const float3 sharpen = (e-final_colour/Z) * sharpness;
 	return float4(lerp(e, sharpen+e, ampRGB*saturate(sharpness)), 1.0);

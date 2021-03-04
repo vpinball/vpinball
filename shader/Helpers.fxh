@@ -106,14 +106,27 @@ float atan_approx(const float x)
 
 #define BURN_HIGHLIGHTS 0.25
 
-float InvGamma(const float color) //!! use hardware support? D3DSAMP_SRGBTEXTURE
+float InvsRGB(const float color)
 {
     //return /*color * (color * (color * 0.305306011 + 0.682171111) + 0.012522878);/*/ pow(color, 2.2); // pow does not matter anymore on current GPUs //!! not completely true for example when tested with FSS tables
 
-    if (color <= 0.04045)
+    if (color <= 0.04045) // 0.03928 ?
         return color * (1.0/12.92);
     else
         return pow(color * (1.0/1.055) + (0.055/1.055), 2.4);
+}
+
+float InvRec709(const float color)
+{
+    if (color <= 0.081)
+        return color * (1.0/4.5);
+    else
+        return pow(color * (1.0/1.099) + (0.099/1.099), 1.0/0.45);
+}
+
+float InvGamma(const float color) //!! use hardware support? D3DSAMP_SRGBTEXTURE
+{
+    return InvsRGB(color);
 }
 
 float3 InvGamma(const float3 color) //!! use hardware support? D3DSAMP_SRGBTEXTURE
@@ -151,17 +164,32 @@ float sRGB(const float f)
     return s;
 }
 
+float Rec709(const float f)
+{
+    float s;
+    //if (!(f > 0.0)) // also covers NaNs
+    //    s = 0.0;
+    /*else*/ if (f <= 0.018)
+        s = 4.5 * f;
+    else //if (f < 1.0)
+        s = 1.099 * pow(f, 0.45) - 0.099;
+    //else
+    //    s = 1.0;
+
+    return s;
+}
+
 float FBGamma(const float color)
 {
     return sRGB(color);
 }
 float2 FBGamma(const float2 color)
 {
-    return float2(sRGB(color.x),sRGB(color.y));
+    return float2(FBGamma(color.x),FBGamma(color.y));
 }
 float3 FBGamma(const float3 color)
 {
-    return float3(sRGB(color.x),sRGB(color.y),sRGB(color.z));
+    return float3(FBGamma(color.x),FBGamma(color.y),FBGamma(color.z));
 }
 #else
 #define FBGamma // uses hardware support via D3DRS_SRGBWRITEENABLE
