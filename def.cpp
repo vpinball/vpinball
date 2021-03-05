@@ -195,7 +195,7 @@ char* replace(const char* const original, const char* const pattern, const char*
   const char * patloc;
 
   // find how many times the pattern occurs in the original string
-  for (const char* oriptr = original; patloc = strstr(oriptr, pattern); oriptr = patloc + patlen)
+  for (const char* oriptr = original; (patloc = strstr(oriptr, pattern)); oriptr = patloc + patlen)
     patcnt++;
 
   {
@@ -209,7 +209,7 @@ char* replace(const char* const original, const char* const pattern, const char*
       // replacing all the instances of the pattern
       char * retptr = returned;
       const char* oriptr;
-      for (oriptr = original; patloc = strstr(oriptr, pattern); oriptr = patloc + patlen)
+      for (oriptr = original; (patloc = strstr(oriptr, pattern)); oriptr = patloc + patlen)
       {
         const size_t skplen = patloc - oriptr;
         // copy the section until the occurence of the pattern

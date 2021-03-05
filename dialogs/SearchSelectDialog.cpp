@@ -560,6 +560,9 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
 
       break;
    }
+   default:
+      assert(!"AddSearchItemToList unhandled case");
+      break;
    }
 }
 

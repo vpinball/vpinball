@@ -1239,17 +1239,6 @@
 #define ID_TABLE_TABLEINFO              32838
 #define ID_PREFERENCES_SECURITYOPTIONS  32839
 #define ID_INSERT_PRIMITIVE             32842
-#define ID_LAYER_LAYER1                 32849
-#define ID_LAYER_LAYER2                 32850
-#define ID_LAYER_LAYER3                 32851
-#define ID_LAYER_LAYER4                 32852
-#define ID_LAYER_LAYER5                 32853
-#define ID_LAYER_LAYER6                 32854
-#define ID_LAYER_LAYER7                 32855
-#define ID_LAYER_LAYER8                 32856
-#define ID_LAYER_LAYER9                 32857
-#define ID_LAYER_LAYER10                32858
-#define ID_LAYER_LAYER11                32859
 #define ID_LAYER_TOGGLEALL              32860
 #define ID_LAYER_MERGEALL               32861
 #define ID_WALLMENU_ASSIGNTO            32862

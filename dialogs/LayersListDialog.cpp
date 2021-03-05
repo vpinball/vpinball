@@ -816,7 +816,7 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
 LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
 {
     DWORD dwpos = GetMessagePos();
-    TVHITTESTINFO ht = {0};
+    TVHITTESTINFO ht = {};
     ht.pt.x = GET_X_LPARAM(dwpos);
     ht.pt.y = GET_Y_LPARAM(dwpos);
     ::MapWindowPoints(HWND_DESKTOP, lpnmh->hwndFrom, &ht.pt, 1);
@@ -881,7 +881,7 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
 LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
 {
     DWORD dwpos = GetMessagePos();
-    TVHITTESTINFO ht = { 0 };
+    TVHITTESTINFO ht = {};
     ht.pt.x = GET_X_LPARAM(dwpos);
     ht.pt.y = GET_Y_LPARAM(dwpos);
     ::MapWindowPoints(HWND_DESKTOP, lpnmh->hwndFrom, &ht.pt, 1);
@@ -991,7 +991,7 @@ LRESULT FilterEditBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 BOOL FilterEditBox::OnCommand(WPARAM wParam, LPARAM lParam)
 {
     UNREFERENCED_PARAMETER(lParam);
-    const int dispID = LOWORD(wParam);
+    //const int dispID = LOWORD(wParam);
 
     switch (HIWORD(wParam))
     {

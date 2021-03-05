@@ -79,7 +79,7 @@ LRESULT ComboBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
     return WndProcDefault(msg, wparam, lparam);
 }
 
-PropertyDialog::PropertyDialog() : CDialog(IDD_PROPERTY_DIALOG), m_curTabIndex(0), m_previousType((ItemTypeEnum)0), m_backglassView(false)
+PropertyDialog::PropertyDialog() : CDialog(IDD_PROPERTY_DIALOG), m_previousType((ItemTypeEnum)0), m_backglassView(false), m_curTabIndex(0)
 {
     memset(m_tabs, 0, sizeof(m_tabs));
 }
@@ -686,7 +686,7 @@ LRESULT PropertyDialog::OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam)
 BOOL PropertyDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
     UNREFERENCED_PARAMETER(lParam);
-    const int dispID = LOWORD(wParam);
+    //const int dispID = LOWORD(wParam);
 
     switch (HIWORD(wParam))
     {

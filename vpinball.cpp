@@ -51,22 +51,6 @@ INT_PTR   iString;
 } TBBUTTON, *PTBBUTTON, *LPTBBUTTON;
 */
 
-
-static const int allLayers[MAX_LAYERS] =
-{
-   ID_LAYER_LAYER1,
-   ID_LAYER_LAYER2,
-   ID_LAYER_LAYER3,
-   ID_LAYER_LAYER4,
-   ID_LAYER_LAYER5,
-   ID_LAYER_LAYER6,
-   ID_LAYER_LAYER7,
-   ID_LAYER_LAYER8,
-   ID_LAYER_LAYER9,
-   ID_LAYER_LAYER10,
-   ID_LAYER_LAYER11
-};
-
 WCHAR *VPinball::m_customParameters[MAX_CUSTOM_PARAM_INDEX] = {};
 
 INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -82,17 +66,6 @@ typedef struct _tagSORTDATA
 SORTDATA SortData;
 
 static bool firstRun = true;
-
-static void AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
-{
-    TOOLINFO toolInfo = { 0 };
-    toolInfo.cbSize = sizeof(toolInfo);
-    toolInfo.hwnd = parentHwnd;
-    toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
-    toolInfo.uId = (UINT_PTR)controlHwnd;
-    toolInfo.lpszText = text;
-    SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
-}
 
 ///<summary>
 ///VPinball Constructor
