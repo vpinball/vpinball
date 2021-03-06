@@ -333,7 +333,7 @@ bool VPinball::OpenFileDialog(const char* const initDir, std::vector<std::string
    {
       int pos = 0;
       while (pos != -1)
-         filename.emplace_back(std::string(fileDlg.GetNextPathName(pos)));
+         filename.emplace_back(fileDlg.GetNextPathName(pos));
 
       return true;
    }
@@ -352,7 +352,7 @@ bool VPinball::SaveFileDialog(const char* const initDir, std::vector<std::string
    {
       int pos = 0;
       while (pos != -1)
-         filename.emplace_back(std::string(fileDlg.GetNextPathName(pos)));
+         filename.emplace_back(fileDlg.GetNextPathName(pos));
 
       return true;
    }

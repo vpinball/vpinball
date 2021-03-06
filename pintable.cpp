@@ -69,8 +69,8 @@ STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
 
       if (g_pplayer->m_legacyNudge)
       {
-          g_pplayer->m_legacyNudgeBackX =  sn * g_pplayer->m_legacyNudgeStrength;
-          g_pplayer->m_legacyNudgeBackY = -cs * g_pplayer->m_legacyNudgeStrength;
+          g_pplayer->m_legacyNudgeBack.x =  sn * g_pplayer->m_legacyNudgeStrength;
+          g_pplayer->m_legacyNudgeBack.y = -cs * g_pplayer->m_legacyNudgeStrength;
           g_pplayer->m_legacyNudgeTime = 100;
       }
       else
@@ -148,20 +148,18 @@ STDMETHODIMP ScriptGlobalTable::NudgeSetCalibration(int XMax, int YMax, int XGai
 
 STDMETHODIMP ScriptGlobalTable::NudgeSensorStatus(VARIANT *XNudge, VARIANT *YNudge)
 {
-	CComVariant(m_pt->m_tblNudgeReadX).Detach(XNudge);
-	m_pt->m_tblNudgeReadX = 0.0f;
-	CComVariant(m_pt->m_tblNudgeReadY).Detach(YNudge);
-	m_pt->m_tblNudgeReadY = 0.0f;
+	CComVariant(m_pt->m_tblNudgeRead.x).Detach(XNudge);
+	CComVariant(m_pt->m_tblNudgeRead.y).Detach(YNudge);
+    m_pt->m_tblNudgeRead = Vertex2D(0.f,0.f);
 
 	return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::NudgeTiltStatus(VARIANT *XPlumb, VARIANT *YPlumb, VARIANT *Tilt)
 {
-	CComVariant(m_pt->m_tblNudgePlumbX).Detach(XPlumb);
-	m_pt->m_tblNudgePlumbX = 0.0f;
-	CComVariant(m_pt->m_tblNudgePlumbY).Detach(YPlumb);
-	m_pt->m_tblNudgePlumbY = 0.0f;
+	CComVariant(m_pt->m_tblNudgePlumb.x).Detach(XPlumb);
+	CComVariant(m_pt->m_tblNudgePlumb.y).Detach(YPlumb);
+    m_pt->m_tblNudgePlumb = Vertex2D(0.f,0.f);
 	CComVariant(m_pt->m_tblNudgeReadTilt).Detach(Tilt);
 	m_pt->m_tblNudgeReadTilt = 0.0f;
 
@@ -1530,11 +1528,9 @@ PinTable::PinTable()
    m_dbgChangedMaterials.clear();
    m_dbgChangedLights.clear();
 
-   m_tblNudgeReadX = 0.0f;
-   m_tblNudgeReadY = 0.0f;
+   m_tblNudgeRead = Vertex2D(0.f,0.f);
    m_tblNudgeReadTilt = 0.0f;
-   m_tblNudgePlumbX = 0.0f;
-   m_tblNudgePlumbY = 0.0f;
+   m_tblNudgePlumb = Vertex2D(0.f,0.f);
 
 #ifdef UNUSED_TILT
    m_jolt_amount = LoadValueIntWithDefault("Player", "JoltAmount", 500);
@@ -1554,10 +1550,10 @@ void PinTable::ReadAccelerometerCalibration()
 	if (accel)
 		m_tblAccelAngle = (float)LoadValueIntWithDefault("Player", "PBWRotationValue", 0);
 
-	m_tblAccelAmpX = dequantizeUnsignedPercentNoClamp(LoadValueIntWithDefault("Player", "PBWAccelGainX", 150));
-	m_tblAccelAmpY = dequantizeUnsignedPercentNoClamp(LoadValueIntWithDefault("Player", "PBWAccelGainY", 150));
-	m_tblAccelMaxX = LoadValueIntWithDefault("Player", "PBWAccelMaxX", 100) * JOYRANGEMX / 100;
-	m_tblAccelMaxY = LoadValueIntWithDefault("Player", "PBWAccelMaxY", 100) * JOYRANGEMX / 100;
+	m_tblAccelAmp.x = dequantizeUnsignedPercentNoClamp(LoadValueIntWithDefault("Player", "PBWAccelGainX", 150));
+	m_tblAccelAmp.y = dequantizeUnsignedPercentNoClamp(LoadValueIntWithDefault("Player", "PBWAccelGainY", 150));
+	m_tblAccelMax.x = LoadValueIntWithDefault("Player", "PBWAccelMaxX", 100) * JOYRANGEMX / 100;
+	m_tblAccelMax.y = LoadValueIntWithDefault("Player", "PBWAccelMaxY", 100) * JOYRANGEMX / 100;
 
 	// bug!! If tilt sensitivity is not set, it's supposed to disable analog tilting, see KeysConfigDialog.cpp
 	plumb_set_sensitivity((float)LoadValueIntWithDefault("Player", "TiltSensitivity", 400) * (float)(1.0/1000.0));
@@ -2279,7 +2275,7 @@ void PinTable::Play(const bool cameraMode)
    m_vpinball->ShowSubDialog(m_progressDialog);
 
    m_progressDialog.SetProgress(1);
-   m_progressDialog.SetName(std::string("Backing Up Table State..."));
+   m_progressDialog.SetName("Backing Up Table State...");
 
    BackupForPlay();
 
@@ -3916,7 +3912,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
              m_layer[i].push_back(piedit);
              if (psel->m_layerName == "")
              {
-                 const string name = string("Layer_") + std::to_string(i+1);
+                 const string name = "Layer_" + std::to_string(i+1);
                  psel->m_layerName = name;
                  m_vpinball->GetLayersListDialog()->AddLayer(name, piedit);
              }
@@ -6505,7 +6501,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
     piSelect = m_vmultisel.ElementAt(0);
     if (piSelect && piSelect->GetIEditable() && piSelect->GetIEditable()->GetScriptable())
     {
-        string info = string("Layer: ") + piSelect->m_layerName;
+        string info = "Layer: " + piSelect->m_layerName;
         if (piSelect->GetItemType() == eItemPrimitive)
         {
             const Primitive *const prim = (Primitive *)piSelect;
@@ -10331,24 +10327,24 @@ void PinTable::OnMouseMove(const short x, const short y)
     {
         // panning feature starts here...if the user holds the middle mouse button and moves the mouse 
         // everything is moved in the direction of the mouse was moved
-        const int dx = abs(m_oldMousePosX - x);
-        const int dy = abs(m_oldMousePosY - y);
-        if (m_oldMousePosX > x)  m_offset.x += dx;
-        if (m_oldMousePosX < x)  m_offset.x -= dx;
-        if (m_oldMousePosY > y)  m_offset.y += dy;
-        if (m_oldMousePosY < y)  m_offset.y -= dy;
+        const int dx = abs(m_oldMousePos.x - x);
+        const int dy = abs(m_oldMousePos.y - y);
+        if (m_oldMousePos.x > x) m_offset.x += dx;
+        if (m_oldMousePos.x < x) m_offset.x -= dx;
+        if (m_oldMousePos.y > y) m_offset.y += dy;
+        if (m_oldMousePos.y < y) m_offset.y -= dy;
 
         SetDirtyDraw();
         SetMyScrollInfo();
 
-        m_oldMousePosX = x;
-        m_oldMousePosY = y;
+        m_oldMousePos.x = x;
+        m_oldMousePos.y = y;
         return;
     }
 
     DoMouseMove(x, y);
-    m_oldMousePosX = x;
-    m_oldMousePosY = y;
+    m_oldMousePos.x = x;
+    m_oldMousePos.y = y;
 }
 
 void PinTable::OnMouseWheel(const short x, const short y, const short zDelta)

@@ -265,7 +265,7 @@ void EnumerateDisplayModes(const int display, std::vector<VideoMode>& modes)
    if (d3d == NULL)
    {
       ShowError("Could not create D3D9 object.");
-      throw 0;
+      return;
    }
 
    //for (int j = 0; j < 2; ++j)
@@ -309,7 +309,7 @@ BOOL CALLBACK MonitorEnumList(__in  HMONITOR hMonitor, __in  HDC hdcMonitor, __i
    config.display = (int)data->size(); // This number does neither map to the number form display settings nor something else.
    config.adapter = -1;
    memcpy(config.DeviceName, info.szDevice, CCHDEVICENAME); // Internal display name e.g. "\\\\.\\DISPLAY1"
-   data->insert(std::pair<std::string, DisplayConfig>(std::string(config.DeviceName), config));
+   data->insert(std::pair<std::string, DisplayConfig>(config.DeviceName, config));
    return TRUE;
 }
 
@@ -326,7 +326,7 @@ int getDisplayList(std::vector<DisplayConfig>& displays)
    if (pD3D == NULL)
    {
       ShowError("Could not create D3D9 object.");
-      throw 0;
+      return -1;
    }
    // Map the displays to the DX9 adapter. Otherwise this leads to an performance impact on systems with multiple GPUs
    int adapterCount = pD3D->GetAdapterCount();
@@ -465,10 +465,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    if (mDirect3DCreate9Ex)
    {
       const HRESULT hr = mDirect3DCreate9Ex(D3D_SDK_VERSION, &m_pD3DEx);
-      if (FAILED(hr))
-         ReportError("Fatal Error: unable to create D3D9Ex object!", hr, __FILE__, __LINE__);
-
-      if (m_pD3DEx == NULL)
+      if (FAILED(hr) || (m_pD3DEx == NULL))
       {
          ShowError("Could not create D3D9Ex object.");
          throw 0;

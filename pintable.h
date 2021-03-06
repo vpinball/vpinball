@@ -595,7 +595,7 @@ public:
    VectorProtected<ISelect> m_vmultisel;
 
    float m_left; // always zero for now
-   float m_top; // always zero for now
+   float m_top;  // always zero for now
    float m_right;
    float m_bottom;
 
@@ -653,27 +653,22 @@ public:
    bool  m_tblMirrorEnabled;		// Mirror tables left to right.  This is activated by a cheat during table selection.
 
    bool  m_tblAccelerometer;		// true if electronic accelerometer enabled
-   bool  m_tblAccelNormalMount;	// true is Normal Mounting (Left Hand Coordinates)
+   bool  m_tblAccelNormalMount;		// true is Normal Mounting (Left Hand Coordinates)
    float m_tblAccelAngle;			// 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
-   float m_tblAccelAmpX;			// Accelerometer gain X axis
-   float m_tblAccelAmpY;			// Accelerometer gain Y axis
-   int   m_tblAccelMaxX;           // Accelerometer max value X axis
-   int   m_tblAccelMaxY;			// Accelerometer max value Y axis
+   Vertex2D m_tblAccelAmp;			// Accelerometer gain X/Y axis
+   int2  m_tblAccelMax;				// Accelerometer max value X/Y axis
 
-   float m_tblNudgeReadX;
-   float m_tblNudgeReadY;
+   Vertex2D m_tblNudgeRead;
    float m_tblNudgeReadTilt;
-   float m_tblNudgePlumbX;
-   float m_tblNudgePlumbY;
+   Vertex2D m_tblNudgePlumb;
 
-   U32   m_tblAutoStart;           // msecs before trying an autostart if doing once-only method .. 0 is automethod
-   U32   m_tblAutoStartRetry;      // msecs before retrying to autostart.
-   float m_tblVolmod;              // volume modulation for doing audio balancing
-   U32   m_tblExitConfirm;         // msecs for esc button to be pressed to exit completely
-   float m_globalDifficulty;       // table Difficulty Level
+   U32   m_tblAutoStart;			// msecs before trying an autostart if doing once-only method .. 0 is automethod
+   U32   m_tblAutoStartRetry;		// msecs before retrying to autostart.
+   float m_tblVolmod;				// volume modulation for doing audio balancing
+   U32   m_tblExitConfirm;			// msecs for esc button to be pressed to exit completely
+   float m_globalDifficulty;		// table Difficulty Level
 
-   short m_oldMousePosX;
-   short m_oldMousePosY;
+   short2 m_oldMousePos;
 
    ProtectionData m_protectionData;
 
@@ -696,8 +691,7 @@ public:
    vector< IEditable* > m_layer[MAX_LAYERS];
    vector< ISelect* >   m_allHitElements;
 
-
-   vector< Texture* > m_vimage;
+   vector< Texture* >   m_vimage;
    const vector<Texture *>& GetImageList() const
    {
        return m_vimage;
@@ -712,7 +706,7 @@ public:
 
    vector< PinSound* > m_vsound;
 
-   vector< PinFont* > m_vfont;
+   vector< PinFont* >  m_vfont;
 
    VectorProtected< CComObject<Collection> > m_vcollection;
 

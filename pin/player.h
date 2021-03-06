@@ -205,7 +205,7 @@ class NudgeFilter
 public:
    NudgeFilter();
 
-   // adjust an acceleration sample (m_NudgeX or m_NudgeY)
+   // adjust an acceleration sample (m_Nudge.x or m_Nudge.y)
    void sample(float &a, const U64 frameTime);
 
 private:
@@ -358,8 +358,7 @@ public:
 
    PinInput m_pininput;
 
-   float m_NudgeX;
-   float m_NudgeY;
+   Vertex2D m_Nudge;
 
    NudgeFilterX m_NudgeFilterX;
    NudgeFilterY m_NudgeFilterY;
@@ -375,7 +374,7 @@ public:
    // legacy/VP9 style keyboard nudging
    bool m_legacyNudge;
    float m_legacyNudgeStrength;
-   float m_legacyNudgeBackX,m_legacyNudgeBackY;
+   Vertex2D m_legacyNudgeBack;
    int m_legacyNudgeTime;
 
    EnumAssignKeys m_rgKeys[eCKeys]; //Player's key assignments
@@ -539,16 +538,14 @@ private:
    std::vector< Hitable* > m_vHitNonTrans; // non-transparent hitables
    std::vector< Hitable* > m_vHitTrans;    // transparent hitables
 
-   int m_curAccel_x[PININ_JOYMXCNT];
-   int m_curAccel_y[PININ_JOYMXCNT];
+   int2 m_curAccel[PININ_JOYMXCNT];
 
 #ifdef PLAYBACK
    bool m_playback;
    FILE *m_fplaylog;
 #endif
 
-   float m_BallStretchX;
-   float m_BallStretchY;
+   Vertex2D m_BallStretch;
 
    float m_NudgeShake;         // whether to shake the screen during nudges and how much
    Vertex2D m_ScreenOffset;    // for screen shake effect during nudge
@@ -609,7 +606,7 @@ private:
 
    void InitShader();
    void CalcBallAspectRatio();
-   void GetBallAspectRatio(const Ball * const pball, float &stretchX, float &stretchY, const float zHeight);
+   void GetBallAspectRatio(const Ball * const pball, Vertex2D &stretch, const float zHeight);
    //void DrawBallReflection(Ball *pball, const float zheight, const bool lowDetailBall);
    unsigned int ProfilingMode();
 

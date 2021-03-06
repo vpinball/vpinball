@@ -390,3 +390,21 @@ public:
     bool2() {}
     bool2(const bool _x, const bool _y) : x(_x), y(_y) {}
 };
+
+class int2
+{
+public:
+    int x, y;
+
+    int2() {}
+    int2(const int _x, const int _y) : x(_x), y(_y) {}
+};
+
+class short2
+{
+public:
+    short x, y;
+
+    short2() {}
+    short2(const short _x, const short _y) : x(_x), y(_y) {}
+};

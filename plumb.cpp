@@ -84,14 +84,14 @@ void plumb_update(const U32 curr_time_msec, const float getx, const float gety) 
    // When the table script reads the values, they will reset to 0. 
    if (TiltPerc > g_pplayer->m_ptable->m_tblNudgeReadTilt)
       g_pplayer->m_ptable->m_tblNudgeReadTilt = TiltPerc;
-   if (fabsf(getx) > fabsf(g_pplayer->m_ptable->m_tblNudgeReadX))
-      g_pplayer->m_ptable->m_tblNudgeReadX = getx;
-   if (fabsf(gety) > fabsf(g_pplayer->m_ptable->m_tblNudgeReadY))
-      g_pplayer->m_ptable->m_tblNudgeReadY = gety;
-   if (fabsf(x) > fabsf(g_pplayer->m_ptable->m_tblNudgePlumbX))
-      g_pplayer->m_ptable->m_tblNudgePlumbX = x;
-   if (fabsf(y) > fabsf(g_pplayer->m_ptable->m_tblNudgePlumbY))
-      g_pplayer->m_ptable->m_tblNudgePlumbY = y;
+   if (fabsf(getx) > fabsf(g_pplayer->m_ptable->m_tblNudgeRead.x))
+      g_pplayer->m_ptable->m_tblNudgeRead.x = getx;
+   if (fabsf(gety) > fabsf(g_pplayer->m_ptable->m_tblNudgeRead.y))
+      g_pplayer->m_ptable->m_tblNudgeRead.y = gety;
+   if (fabsf(x) > fabsf(g_pplayer->m_ptable->m_tblNudgePlumb.x))
+      g_pplayer->m_ptable->m_tblNudgePlumb.x = x;
+   if (fabsf(y) > fabsf(g_pplayer->m_ptable->m_tblNudgePlumb.y))
+      g_pplayer->m_ptable->m_tblNudgePlumb.y = y;
 
    // Dampen the velocity.
    vx -= 2.50f * (vx * dt);

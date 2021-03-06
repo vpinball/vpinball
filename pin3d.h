@@ -8,9 +8,9 @@ extern int NumVideoBytes;
 
 enum
 {
-   TEXTURE_MODE_POINT,				// Point sampled (aka no) texture filtering.
-   TEXTURE_MODE_BILINEAR,			// Bilinar texture filtering. 
-   TEXTURE_MODE_TRILINEAR,			// Trilinar texture filtering. 
+   TEXTURE_MODE_POINT,			// Point sampled (aka no) texture filtering.
+   TEXTURE_MODE_BILINEAR,		// Bilinar texture filtering. 
+   TEXTURE_MODE_TRILINEAR,		// Trilinar texture filtering. 
    TEXTURE_MODE_ANISOTROPIC		// Anisotropic texture filtering. 
 };
 
@@ -111,7 +111,7 @@ public:
 
    Texture m_pinballEnvTexture; // loaded from Resources
    Texture m_builtinEnvTexture; // loaded from Resources
-   Texture m_aoDitherTexture; // loaded from Resources
+   Texture m_aoDitherTexture;   // loaded from Resources
 
    Texture* m_envTexture;
    BaseTexture* m_envRadianceTexture;

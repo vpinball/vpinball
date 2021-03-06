@@ -1974,7 +1974,7 @@ STDMETHODIMP Ramp::put_PhysicsMaterial(BSTR newVal)
 {
     char buf[MAXNAMEBUFFER];
     WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
-    m_d.m_szPhysicsMaterial = std::string(buf);
+    m_d.m_szPhysicsMaterial = buf;
 
     return S_OK;
 }

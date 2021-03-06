@@ -105,7 +105,6 @@ extern int disEnableTrueFullscreen; // set via command line
 //
 
 #define RECOMPUTEBUTTONCHECK WM_USER+100
-#define RESIZE_FROM_EXPAND WM_USER+101
 
 INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -158,10 +157,8 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_flog = NULL;
 #endif
 
-   for (int i = 0; i < PININ_JOYMXCNT; ++i) {
-      m_curAccel_x[i] = 0;
-      m_curAccel_y[i] = 0;
-   }
+   for (int i = 0; i < PININ_JOYMXCNT; ++i)
+      m_curAccel[i] = int2(0,0);
 
    m_sleeptime = 0;
 
@@ -869,9 +866,7 @@ static bool CompareHitableImage(Hitable* h1, Hitable* h2)
 
 void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 {
-   D3DMATRIX worldMat;
-   D3DMATRIX viewMat;
-   D3DMATRIX projMat;
+   D3DMATRIX worldMat,viewMat,projMat;
    m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_WORLD, &worldMat);
    m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
    m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_PROJECTION, &projMat);
@@ -944,9 +939,7 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 
 void Player::InitShader()
 {
-   /*D3DMATRIX worldMat;
-   D3DMATRIX viewMat;
-   D3DMATRIX projMat;
+   /*D3DMATRIX worldMat,viewMat,projMat;
    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_WORLD, &worldMat );
    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_PROJECTION, &projMat);
@@ -982,9 +975,7 @@ void Player::InitShader()
 
 void Player::UpdateBallShaderMatrix()
 {
-   D3DMATRIX worldMat;
-   D3DMATRIX viewMat;
-   D3DMATRIX projMat;
+   D3DMATRIX worldMat,viewMat,projMat;
    m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_WORLD, &worldMat);
    m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
    m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_PROJECTION, &projMat);
@@ -1163,7 +1154,7 @@ HRESULT Player::Init()
    //m_hSongCompletionEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
 
    m_ptable->m_progressDialog.SetProgress(10);
-   m_ptable->m_progressDialog.SetName(std::string("Initializing Visuals..."));
+   m_ptable->m_progressDialog.SetName("Initializing Visuals...");
 
    InitKeys();
 
@@ -1205,7 +1196,7 @@ HRESULT Player::Init()
 
    //
 
-   int vsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
+   const int vsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
 
    const bool useAA = (m_AA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
    const unsigned int FXAA = (m_ptable->m_useFXAA == -1) ? m_FXAA : m_ptable->m_useFXAA;
@@ -1277,16 +1268,14 @@ HRESULT Player::Init()
    m_gravity.y =  sinf(ANGTORAD(slope))*(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideGravityConstant : m_ptable->m_Gravity);
    m_gravity.z = -cosf(ANGTORAD(slope))*(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideGravityConstant : m_ptable->m_Gravity);
 
-   m_NudgeX = 0.f;
-   m_NudgeY = 0.f;
+   m_Nudge = Vertex2D(0.f,0.f);
 
    m_legacyNudgeTime = 0;
 
    m_legacyNudge = LoadValueBoolWithDefault("Player", "EnableLegacyNudge", false);
    m_legacyNudgeStrength = LoadValueFloatWithDefault("Player", "LegacyNudgeStrength", 1.f);
 
-   m_legacyNudgeBackX = 0.f;
-   m_legacyNudgeBackY = 0.f;
+   m_legacyNudgeBack = Vertex2D(0.f,0.f);
 
    m_movedPlunger = 0;
 
@@ -1294,7 +1283,7 @@ HRESULT Player::Init()
 
    CreateDebugFont();
    m_ptable->m_progressDialog.SetProgress(30);
-   m_ptable->m_progressDialog.SetName(std::string("Initializing Physics..."));
+   m_ptable->m_progressDialog.SetName("Initializing Physics...");
 
    // Initialize new nudging.
    m_tableVel.SetZero();
@@ -1347,7 +1336,7 @@ HRESULT Player::Init()
             CHAR wzDst[256];
             sprintf_s(wzDst, "Initializing Object-Physics %s...", bstr2);
             delete [] bstr2;
-            m_ptable->m_progressDialog.SetName(std::string(bstr2));
+            m_ptable->m_progressDialog.SetName(wzDst);
          }
 #endif
          const size_t currentsize = m_vho.size();
@@ -1377,7 +1366,7 @@ HRESULT Player::Init()
    }
 
    m_ptable->m_progressDialog.SetProgress(45);
-   m_ptable->m_progressDialog.SetName(std::string("Initializing Octree..."));
+   m_ptable->m_progressDialog.SetName("Initializing Octree...");
 
    g_pvp->ProfileLog("Octree");
 
@@ -1412,7 +1401,7 @@ HRESULT Player::Init()
    //----------------------------------------------------------------------------------
 
    m_ptable->m_progressDialog.SetProgress(60);
-   m_ptable->m_progressDialog.SetName(std::string("Rendering Table..."));
+   m_ptable->m_progressDialog.SetName("Rendering Table...");
 
    g_pvp->ProfileLog("Render Table");
 
@@ -1529,7 +1518,7 @@ HRESULT Player::Init()
 
    m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
 
-   m_ptable->m_progressDialog.SetName(std::string("Starting Game Scripts..."));
+   m_ptable->m_progressDialog.SetName("Starting Game Scripts...");
 
    g_pvp->ProfileLog("Start Scripts");
 
@@ -1565,7 +1554,7 @@ HRESULT Player::Init()
 #endif
 
    m_ptable->m_progressDialog.SetProgress(100);
-   m_ptable->m_progressDialog.SetName(std::string("Starting..."));
+   m_ptable->m_progressDialog.SetName("Starting...");
 
    g_pvp->GetPropertiesDocker()->EnableWindow(FALSE);
    g_pvp->GetLayersDocker()->EnableWindow(FALSE);
@@ -2288,21 +2277,18 @@ void Player::CalcBallAspectRatio()
    switch (ballStretchMode)
    {
    case 0:
-      m_BallStretchX = 1.0f;
-      m_BallStretchY = 1.0f;
+      m_BallStretch = Vertex2D(1.0f,1.0f);
       break;
    case 1:
-      m_BallStretchX = scalebackX*c + scalebackY*s;
-      m_BallStretchY = scalebackY*c + scalebackX*s;
+      m_BallStretch = Vertex2D(scalebackX*c + scalebackY*s, scalebackY*c + scalebackX*s);
       break;
    case 2:
-      m_BallStretchX = scalebackX*c + scalebackY*s;
-      m_BallStretchY = scalebackY*c + scalebackX*s;
+      m_BallStretch = Vertex2D(scalebackX*c + scalebackY*s, scalebackY*c + scalebackX*s);
       if (m_fullScreen || (m_width == m_screenwidth && m_height == m_screenheight)) // detect windowed fullscreen
       {
          m_antiStretchBall = true;
-         m_BallStretchX *= (float)(scalebackMonitorX*c + scalebackMonitorY*s);
-         m_BallStretchY *= (float)(scalebackMonitorY*c + scalebackMonitorX*s);
+         m_BallStretch.x *= (float)(scalebackMonitorX*c + scalebackMonitorY*s);
+         m_BallStretch.y *= (float)(scalebackMonitorY*c + scalebackMonitorX*s);
       }
       break;
    }
@@ -2311,21 +2297,21 @@ void Player::CalcBallAspectRatio()
 void Player::NudgeX(const int x, const int j)
 {
    int v = x;
-   if (x > m_ptable->m_tblAccelMaxX) v = m_ptable->m_tblAccelMaxX;
-   if (x < -m_ptable->m_tblAccelMaxX) v = -m_ptable->m_tblAccelMaxX;
-   m_curAccel_x[j] = v;
+   if (x >  m_ptable->m_tblAccelMax.x) v =  m_ptable->m_tblAccelMax.x;
+   if (x < -m_ptable->m_tblAccelMax.x) v = -m_ptable->m_tblAccelMax.x;
+   m_curAccel[j].x = v;
 }
 
 void Player::NudgeY(const int y, const int j)
 {
    int v = y;
-   if (y > m_ptable->m_tblAccelMaxY) v = m_ptable->m_tblAccelMaxY;
-   if (y < -m_ptable->m_tblAccelMaxY) v = -m_ptable->m_tblAccelMaxY;
-   m_curAccel_y[j] = v;
+   if (y >  m_ptable->m_tblAccelMax.y) v =  m_ptable->m_tblAccelMax.y;
+   if (y < -m_ptable->m_tblAccelMax.y) v = -m_ptable->m_tblAccelMax.y;
+   m_curAccel[j].y = v;
 }
 
-#define GetNudgeX() (((F32)m_curAccel_x[0]) * (F32)(2.0 / JOYRANGE)) // Get the -2 .. 2 values from joystick input tilt sensor / ushock //!! why 2?
-#define GetNudgeY() (((F32)m_curAccel_y[0]) * (F32)(2.0 / JOYRANGE))
+#define GetNudgeX() (((F32)m_curAccel[0].x) * (F32)(2.0 / JOYRANGE)) // Get the -2 .. 2 values from joystick input tilt sensor / ushock //!! why 2?
+#define GetNudgeY() (((F32)m_curAccel[0].y) * (F32)(2.0 / JOYRANGE))
 
 #ifdef UNUSED_TILT
 int Player::NudgeGetTilt()
@@ -2341,7 +2327,7 @@ int Player::NudgeGetTilt()
    U32 tilt_2 = 0;
    for(int j = 0; j < m_pininput.e_JoyCnt; ++j)    //find largest value
    {
-      tilt_2 = max(tilt_2, (U32)(m_curAccel_x[j] * m_curAccel_x[j] + m_curAccel_y[j] * m_curAccel_y[j])); //always postive numbers
+      tilt_2 = max(tilt_2, (U32)(m_curAccel[j].x * m_curAccel[j].x + m_curAccel[j].y * m_curAccel[j].y)); //always postive numbers
    }
 
    if( ( ms - last_jolt_time > m_ptable->m_jolt_trigger_time ) &&
@@ -2365,10 +2351,10 @@ int Player::NudgeGetTilt()
 
 void Player::NudgeUpdate()      // called on every integral physics frame
 {
-   m_NudgeX = 0.f;   // accumulate over joysticks, these acceleration values are used in update ball velocity calculations
-   m_NudgeY = 0.f;   // and are required to be acceleration values (not velocity or displacement)
+   m_Nudge = Vertex2D(0.f,0.f); // accumulate over joysticks, these acceleration values are used in update ball velocity calculations
+                                // and are required to be acceleration values (not velocity or displacement)
 
-   if (!m_ptable->m_tblAccelerometer) return;       // electronic accelerometer disabled 
+   if (!m_ptable->m_tblAccelerometer) return; // electronic accelerometer disabled 
 
    //rotate to match hardware mounting orentation, including left or right coordinates
    const float a = ANGTORAD(m_ptable->m_tblAccelAngle);
@@ -2377,13 +2363,13 @@ void Player::NudgeUpdate()      // called on every integral physics frame
 
    for (int j = 0; j < m_pininput.e_JoyCnt; ++j)
    {
-      float dx = ((float)m_curAccel_x[j])*(float)(1.0 / JOYRANGE);              // norm range -1 .. 1   
-      const float dy = ((float)m_curAccel_y[j])*(float)(1.0 / JOYRANGE);
+            float dx = ((float)m_curAccel[j].x)*(float)(1.0 / JOYRANGE); // norm range -1 .. 1   
+      const float dy = ((float)m_curAccel[j].y)*(float)(1.0 / JOYRANGE);
       if (m_ptable->m_tblMirrorEnabled)
          dx = -dx;
-      m_NudgeX += m_ptable->m_tblAccelAmpX * (dx*cna + dy*sna) * (1.0f - nudge_get_sensitivity());        // calc Green's transform component for X
-      const float nugY = m_ptable->m_tblAccelAmpY * (dy*cna - dx*sna) * (1.0f - nudge_get_sensitivity()); // calc Green's transform component for Y
-      m_NudgeY = m_ptable->m_tblAccelNormalMount ? (m_NudgeY + nugY) : (m_NudgeY - nugY);                 // add as left or right hand coordinate system
+            m_Nudge.x += m_ptable->m_tblAccelAmp.x * (dx*cna + dy*sna) * (1.0f - nudge_get_sensitivity()); // calc Green's transform component for X
+      const float nugY = m_ptable->m_tblAccelAmp.y * (dy*cna - dx*sna) * (1.0f - nudge_get_sensitivity()); // calc Green's transform component for Y
+      m_Nudge.y = m_ptable->m_tblAccelNormalMount ? (m_Nudge.y + nugY) : (m_Nudge.y - nugY);               // add as left or right hand coordinate system
    }
 }
 
@@ -2404,7 +2390,7 @@ const float IIR_b[IIR_Order + 1] = {
    -1.0546654f,
    0.1873795f };
 
-void Player::MechPlungerUpdate()        // called on every integral physics frame, only really triggered if before MechPlungerIn() was called, which again relies on USHOCKTYPE_GENERIC,USHOCKTYPE_ULTRACADE,USHOCKTYPE_PBWIZARD,USHOCKTYPE_VIRTUAPIN,USHOCKTYPE_SIDEWINDER being used
+void Player::MechPlungerUpdate()   // called on every integral physics frame, only really triggered if before MechPlungerIn() was called, which again relies on USHOCKTYPE_GENERIC,USHOCKTYPE_ULTRACADE,USHOCKTYPE_PBWIZARD,USHOCKTYPE_VIRTUAPIN,USHOCKTYPE_SIDEWINDER being used
 {
    static int init = IIR_Order;    // first time call
    static float x[IIR_Order + 1] = { 0, 0, 0, 0, 0 };
@@ -2673,8 +2659,8 @@ IF_DEBUG_NUDGE(void NudgeFilter::dbg(const char *fmt, ...) {
 // apply nudge acceleration data filtering
 void Player::FilterNudge()
 {
-   m_NudgeFilterX.sample(m_NudgeX, m_curPhysicsFrameTime);
-   m_NudgeFilterY.sample(m_NudgeY, m_curPhysicsFrameTime);
+   m_NudgeFilterX.sample(m_Nudge.x, m_curPhysicsFrameTime);
+   m_NudgeFilterY.sample(m_Nudge.y, m_curPhysicsFrameTime);
 }
 
 //++++++++++++++++++++++++++++++++++++++++
@@ -3149,17 +3135,17 @@ void Player::UpdatePhysics()
 
           if (m_legacyNudgeTime == 95)
           {
-              m_NudgeX = -m_legacyNudgeBackX * 2.0f;
-              m_NudgeY =  m_legacyNudgeBackY * 2.0f;
+              m_Nudge.x = -m_legacyNudgeBack.x * 2.0f;
+              m_Nudge.y =  m_legacyNudgeBack.y * 2.0f;
           }
           else if (m_legacyNudgeTime == 90)
           {
-              m_NudgeX =  m_legacyNudgeBackX;
-              m_NudgeY = -m_legacyNudgeBackY;
+              m_Nudge.x =  m_legacyNudgeBack.x;
+              m_Nudge.y = -m_legacyNudgeBack.y;
           }
 
           if (m_NudgeShake > 0.0f)
-              SetScreenOffset(m_NudgeShake * m_legacyNudgeBackX * sqrf((float)m_legacyNudgeTime*0.01f), -m_NudgeShake * m_legacyNudgeBackY * sqrf((float)m_legacyNudgeTime*0.01f));
+              SetScreenOffset(m_NudgeShake * m_legacyNudgeBack.x * sqrf((float)m_legacyNudgeTime*0.01f), -m_NudgeShake * m_legacyNudgeBack.y * sqrf((float)m_legacyNudgeTime*0.01f));
       }
       else
           if (m_NudgeShake > 0.0f)
@@ -3991,8 +3977,8 @@ void Player::UpdateHUD()
 
 		// Draw the amount of video memory used.
 		//!! Disabled until we can compute this correctly.
-		//int len = sprintf_s(szFoo, " Used Graphics Memory: %.2f MB ", (float)NumVideoBytes / (float)(1024 * 1024));
-		// TextOut(hdcNull, 10, 30, szFoo, len);
+		//sprintf_s(szFoo, " Used Graphics Memory: %.2f MB ", (float)NumVideoBytes / (float)(1024 * 1024));
+		//DebugPrint(0, 230, szFoo); //!!?
 
 		// Draw the framerate.
 		const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
@@ -4038,31 +4024,31 @@ void Player::UpdateHUD()
 			m_count++;
 		}
 
-		int len = sprintf_s(szFoo, "Overall: %.1f ms (%.1f (%.1f) avg %.1f max)",
+		sprintf_s(szFoo, "Overall: %.1f ms (%.1f (%.1f) avg %.1f max)",
 			float(1e-3*period), float(1e-3 * (double)m_total / (double)m_count), float(1e-3*m_max), float(1e-3*m_max_total));
 		DebugPrint(0, 30, szFoo);
-		len = sprintf_s(szFoo, "%4.1f%% Physics: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
+		sprintf_s(szFoo, "%4.1f%% Physics: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
 			float((m_phys_period-m_script_period)*100.0 / period), float(1e-3*(m_phys_period-m_script_period)),
 			float(1e-3 * (double)m_phys_total / (double)m_count), float(1e-3*m_phys_max), float((double)m_phys_total*100.0 / (double)m_total), float(1e-3*m_phys_max_total));
 		DebugPrint(0, 50, szFoo);
-		len = sprintf_s(szFoo, "%4.1f%% Scripts: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
+		sprintf_s(szFoo, "%4.1f%% Scripts: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
 			float(m_script_period*100.0 / period), float(1e-3*m_script_period),
 			float(1e-3 * (double)m_script_total / (double)m_count), float(1e-3*m_script_max), float((double)m_script_total*100.0 / (double)m_total), float(1e-3*m_script_max_total));
 		DebugPrint(0, 70, szFoo);
 
 		// performance counters
-		len = sprintf_s(szFoo, "Draw calls: %u (%u Locks)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumDrawCalls(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumLockCalls());
+		sprintf_s(szFoo, "Draw calls: %u (%u Locks)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumDrawCalls(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumLockCalls());
 		DebugPrint(0, 95, szFoo);
-		len = sprintf_s(szFoo, "State changes: %u", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumStateChanges());
+		sprintf_s(szFoo, "State changes: %u", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumStateChanges());
 		DebugPrint(0, 115, szFoo);
-		len = sprintf_s(szFoo, "Texture changes: %u (%u Uploads)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureUploads());
+		sprintf_s(szFoo, "Texture changes: %u (%u Uploads)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureUploads());
 		DebugPrint(0, 135, szFoo);
-		len = sprintf_s(szFoo, "Shader/Parameter changes: %u / %u (%u Material ID changes)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTechniqueChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumParameterChanges(), material_flips);
+		sprintf_s(szFoo, "Shader/Parameter changes: %u / %u (%u Material ID changes)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTechniqueChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumParameterChanges(), material_flips);
 		DebugPrint(0, 155, szFoo);
-		len = sprintf_s(szFoo, "Objects: %u Transparent, %u Solid", (unsigned int)m_vHitTrans.size(), (unsigned int)m_vHitNonTrans.size());
+		sprintf_s(szFoo, "Objects: %u Transparent, %u Solid", (unsigned int)m_vHitTrans.size(), (unsigned int)m_vHitNonTrans.size());
 		DebugPrint(0, 175, szFoo);
 
-		len = sprintf_s(szFoo, "Physics: %u iterations per frame (%u avg %u max)    Ball Velocity / Ang.Vel.: %.1f %.1f",
+		sprintf_s(szFoo, "Physics: %u iterations per frame (%u avg %u max)    Ball Velocity / Ang.Vel.: %.1f %.1f",
 			m_phys_iterations,
 			(U32)(m_phys_total_iterations / m_count),
 			m_phys_max_iterations,
@@ -4071,20 +4057,20 @@ void Player::UpdateHUD()
 
 #ifdef DEBUGPHYSICS
 #ifdef C_DYNAMIC
-		len = sprintf_s(szFoo, "Hits:%5u Collide:%5u Ctacs:%5u Static:%5u Embed:%5u TimeSearch:%5u",
+		sprintf_s(szFoo, "Hits:%5u Collide:%5u Ctacs:%5u Static:%5u Embed:%5u TimeSearch:%5u",
 			c_hitcnts, c_collisioncnt, c_contactcnt, c_staticcnt, c_embedcnts, c_timesearch);
 #else
-		len = sprintf_s(szFoo, "Hits:%5u Collide:%5u Ctacs:%5u Embed:%5u TimeSearch:%5u",
+		sprintf_s(szFoo, "Hits:%5u Collide:%5u Ctacs:%5u Embed:%5u TimeSearch:%5u",
 			c_hitcnts, c_collisioncnt, c_contactcnt, c_embedcnts, c_timesearch);
 #endif
 		DebugPrint(0, 220, szFoo);
 
-		len = sprintf_s(szFoo, "kDObjects: %5u kD:%5u QuadObjects: %5u Quadtree:%5u Traversed:%5u Tested:%5u DeepTested:%5u",
+		sprintf_s(szFoo, "kDObjects: %5u kD:%5u QuadObjects: %5u Quadtree:%5u Traversed:%5u Tested:%5u DeepTested:%5u",
 			c_kDObjects, c_kDNextlevels, c_quadObjects, c_quadNextlevels, c_traversed, c_tested, c_deepTested);
 		DebugPrint(0, 240, szFoo);
 #endif
 
-		len = sprintf_s(szFoo, "Left Flipper keypress to rotate: %.1f ms (%d f) to eos: %.1f ms (%d f)",
+		sprintf_s(szFoo, "Left Flipper keypress to rotate: %.1f ms (%d f) to eos: %.1f ms (%d f)",
 			(INT64)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) / 1000.,
 			(int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame),
 			(INT64)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) / 1000.,
@@ -4096,9 +4082,7 @@ void Player::UpdateHUD()
 	//  (whose data we're getting) will have finished on the GPU by now.
 	if (ProfilingMode() != 0 && !m_closeDown && !m_cameraMode)
 	{
-		char szFoo[256];
-		sprintf_s(szFoo, "Detailed (approximate) GPU profiling:");
-		DebugPrint(0, 300, szFoo);
+		DebugPrint(0, 300, "Detailed (approximate) GPU profiling:");
 
 		m_pin3d.m_gpu_profiler.WaitForDataAndUpdate();
 
@@ -4106,6 +4090,7 @@ void Player::UpdateHUD()
 		for (GTS gts = GTS_BeginFrame; gts < GTS_EndFrame; gts = GTS(gts + 1))
 			dTDrawTotal += m_pin3d.m_gpu_profiler.DtAvg(gts);
 
+		char szFoo[256];
 		if (ProfilingMode() == 1)
 		{
 			sprintf_s(szFoo, " Draw time: %.2f ms", float(1000.0 * dTDrawTotal));
@@ -4143,29 +4128,18 @@ void Player::UpdateHUD()
     SetDebugOutputPosition(x, y);
 
     if (!m_closeDown && (m_stereo3D != 0) && !m_stereo3Denabled && (usec() < m_StartTime_usec + 4e+6)) // show for max. 4 seconds
-    {
-        char szFoo[256];
-        sprintf_s(szFoo, "3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on");
-        DebugPrint(DBG_SPRITE_SIZE/2, 10, szFoo, true);
-    }
+        DebugPrint(DBG_SPRITE_SIZE/2, 10, "3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on", true);
 
     if (!m_closeDown && m_supportsTouch && m_showTouchMessage && (usec() < m_StartTime_usec + 12e+6)) // show for max. 12 seconds
     {
-        char szFoo[256];
-        sprintf_s(szFoo, "You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger");
-        DebugPrint(DBG_SPRITE_SIZE/2, 40, szFoo, true);
-        sprintf_s(szFoo, "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"); //!!!!!!!!!!!! Extra Button?
-        DebugPrint(DBG_SPRITE_SIZE/2, 70, szFoo, true);
+        DebugPrint(DBG_SPRITE_SIZE/2, 40, "You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger", true);
+        DebugPrint(DBG_SPRITE_SIZE/2, 70, "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit", true); //!!!!!!!!!!!! Extra Button?
 
         //!! visualize with real buttons or at least the areas??
     }
 
 	if (m_fullScreen && m_closeDown && !IsWindows10_1803orAbove()) // cannot use dialog boxes in exclusive fullscreen on older windows versions, so necessary
-	{
-		char szFoo[256];
-		sprintf_s(szFoo, "Press 'Enter' to continue or Press 'Q' to exit");
-		DebugPrint(DBG_SPRITE_SIZE/2, m_height/2-5, szFoo, true);
-	}
+		DebugPrint(DBG_SPRITE_SIZE/2, m_height/2-5, "Press 'Enter' to continue or Press 'Q' to exit", true);
 
 	if (m_closeDown) // print table name,author,version and blurb and description in pause mode
 	{
@@ -4604,7 +4578,6 @@ void Player::UpdateBackdropSettings(const bool up)
 void Player::UpdateCameraModeDisplay()
 {
    char szFoo[128];
-   int len;
 
    float x = 0.f, y = 0.f;
    if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 270.0f)
@@ -4619,98 +4592,94 @@ void Player::UpdateCameraModeDisplay()
    }
    SetDebugOutputPosition(x, y);
 
-   len = sprintf_s(szFoo, "Camera / Light / Material Edit Mode");
-   DebugPrint(0, 10, szFoo);
-   len = sprintf_s(szFoo, "Left / Right flipper key = decrease / increase value");
-   DebugPrint(0, 50, szFoo);
-   len = sprintf_s(szFoo, "Left / Right magna save key = previous / next option");
-   DebugPrint(0, 70, szFoo);
+   DebugPrint(0, 10, "Camera / Light / Material Edit Mode");
+   DebugPrint(0, 50, "Left / Right flipper key = decrease / increase value");
+   DebugPrint(0, 70, "Left / Right magna save key = previous / next option");
 
    switch (m_backdropSettingActive)
    {
    case 0:
    {
-      len = sprintf_s(szFoo, "Inclination: %.3f", m_ptable->m_BG_inclination[m_ptable->m_BG_current_set]);
+      sprintf_s(szFoo, "Inclination: %.3f", m_ptable->m_BG_inclination[m_ptable->m_BG_current_set]);
       break;
    }
    case 1:
    {
-      len = sprintf_s(szFoo, "Field Of View: %.3f", m_ptable->m_BG_FOV[m_ptable->m_BG_current_set]);
+      sprintf_s(szFoo, "Field Of View: %.3f", m_ptable->m_BG_FOV[m_ptable->m_BG_current_set]);
       break;
    }
    case 2:
    {
-      len = sprintf_s(szFoo, "Layback: %.3f", m_ptable->m_BG_layback[m_ptable->m_BG_current_set]);
+      sprintf_s(szFoo, "Layback: %.3f", m_ptable->m_BG_layback[m_ptable->m_BG_current_set]);
       break;
    }
    case 3:
    {
-       len = sprintf_s(szFoo, "X/Y Scale: %.3f / %.3f", m_ptable->m_BG_scalex[m_ptable->m_BG_current_set], m_ptable->m_BG_scaley[m_ptable->m_BG_current_set]);
-       break;
+      sprintf_s(szFoo, "X/Y Scale: %.3f / %.3f", m_ptable->m_BG_scalex[m_ptable->m_BG_current_set], m_ptable->m_BG_scaley[m_ptable->m_BG_current_set]);
+      break;
    }
    case 4:
    {
-      len = sprintf_s(szFoo, "X Scale: %.3f", m_ptable->m_BG_scalex[m_ptable->m_BG_current_set]);
+      sprintf_s(szFoo, "X Scale: %.3f", m_ptable->m_BG_scalex[m_ptable->m_BG_current_set]);
       break;
    }
    case 5:
    {
-      len = sprintf_s(szFoo, "Y Scale: %.3f", m_ptable->m_BG_scaley[m_ptable->m_BG_current_set]);
+      sprintf_s(szFoo, "Y Scale: %.3f", m_ptable->m_BG_scaley[m_ptable->m_BG_current_set]);
       break;
    }
    case 6:
    {
-      len = sprintf_s(szFoo, "Z Scale: %.3f", m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+      sprintf_s(szFoo, "Z Scale: %.3f", m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
       break;
    }
    case 7:
    {
-      len = sprintf_s(szFoo, "X Offset: %.3f", m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set]);
+      sprintf_s(szFoo, "X Offset: %.3f", m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set]);
       break;
    }
    case 8:
    {
-      len = sprintf_s(szFoo, "Y Offset: %.3f", m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set]);
+      sprintf_s(szFoo, "Y Offset: %.3f", m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set]);
       break;
    }
    case 9:
    {
-      len = sprintf_s(szFoo, "Z Offset: %.3f", m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set]);
+      sprintf_s(szFoo, "Z Offset: %.3f", m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set]);
       break;
    }
    case 10:
    {
-      len = sprintf_s(szFoo, "Light Emission Scale: %.3f", m_ptable->m_lightEmissionScale);
+      sprintf_s(szFoo, "Light Emission Scale: %.3f", m_ptable->m_lightEmissionScale);
       break;
    }
    case 11:
    {
-      len = sprintf_s(szFoo, "Light Range: %.3f", m_ptable->m_lightRange);
+      sprintf_s(szFoo, "Light Range: %.3f", m_ptable->m_lightRange);
       break;
    }
    case 12:
    {
-      len = sprintf_s(szFoo, "Light Height: %.3f", m_ptable->m_lightHeight);
+      sprintf_s(szFoo, "Light Height: %.3f", m_ptable->m_lightHeight);
       break;
    }
    case 13:
    {
-      len = sprintf_s(szFoo, "Environment Emission: %.3f", m_ptable->m_envEmissionScale);
+      sprintf_s(szFoo, "Environment Emission: %.3f", m_ptable->m_envEmissionScale);
       break;
    }
    default:
    {
-      len = sprintf_s(szFoo, "unknown");
+      sprintf_s(szFoo, "N/A");
+      break;
    }
    }
    DebugPrint(0, 130, szFoo);
    m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
-   len = sprintf_s(szFoo, "Camera at X: %f Y: %f Z: %f", -m_pin3d.m_proj.m_matView._41, (m_ptable->m_BG_current_set == 0 || m_ptable->m_BG_current_set == 2) ? m_pin3d.m_proj.m_matView._42 : -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43); // DT & FSS
+   sprintf_s(szFoo, "Camera at X: %f Y: %f Z: %f", -m_pin3d.m_proj.m_matView._41, (m_ptable->m_BG_current_set == 0 || m_ptable->m_BG_current_set == 2) ? m_pin3d.m_proj.m_matView._42 : -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43); // DT & FSS
    DebugPrint(0, 110, szFoo);
-   len = sprintf_s(szFoo, "Navigate around with the Arrow Keys and Left Alt Key (if enabled in the Key settings)");
-   DebugPrint(0, 170, szFoo);
-   len = sprintf_s(szFoo, "Use the Debugger / Interactive Editor to change Lights / Materials");
-   DebugPrint(0, 210, szFoo);
+   DebugPrint(0, 170, "Navigate around with the Arrow Keys and Left Alt Key (if enabled in the Key settings)");
+   DebugPrint(0, 210, "Use the Debugger / Interactive Editor to change Lights / Materials");
 }
 
 void Player::LockForegroundWindow(const bool enable)
@@ -5079,7 +5048,7 @@ void search_for_nearest(const Ball * const pball, const std::vector<Light*> &lig
    }
 }
 
-void Player::GetBallAspectRatio(const Ball * const pball, float &stretchX, float &stretchY, const float zHeight)
+void Player::GetBallAspectRatio(const Ball * const pball, Vertex2D &stretch, const float zHeight)
 {
    // always use lowest detail level for fastest update
    Vertex3Ds rgvIn[(basicBallLoNumVertices+1) / 2];
@@ -5115,9 +5084,8 @@ void Player::GetBallAspectRatio(const Ball * const pball, float &stretchX, float
 
    const float midX = maxX - minX;
    const float midY = maxY - minY;
-   stretchY = midY/midX;
-   //stretchX = midX/midY;
-   stretchX = 1.0f;
+   stretch.y = midY/midX;
+   stretch.x = 1.0f; // midX/midY;
 }
 
 // not used anymore. Reflection of the ball is done in RenderDynamicMirror()!
@@ -5273,15 +5241,13 @@ void Player::DrawBalls()
       m_ballShader->SetVector("Roughness_WrapL_Edge_Thickness", &rwem);
 
       // ************************* draw the ball itself ****************************
-      float sx, sy;
+      Vertex2D stretch;
       if (m_antiStretchBall && m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] != 0.0f)
-         //const vec4 bs(m_BallStretchX/* +sx*/, m_BallStretchY - sy, inv_tablewidth, inv_tableheight);
-         GetBallAspectRatio(pball, sx, sy, zheight);
+         //const vec4 bs(m_BallStretchX/* +stretch.x*/, m_BallStretchY - stretch.y, inv_tablewidth, inv_tableheight);
+         GetBallAspectRatio(pball, stretch, zheight);
       else
-      {
-         sx = m_BallStretchX;
-         sy = m_BallStretchY;
-      }
+         stretch = m_BallStretch;
+
 
       const vec4 diffuse = convertColor(pball->m_color, 1.0f);
       m_ballShader->SetVector("cBase_Alpha", &diffuse);
@@ -5293,7 +5259,7 @@ void Player::DrawBalls()
       Matrix3D temp;
       memcpy(temp.m, m.m, 4 * 4 * sizeof(float));
       Matrix3D m3D_full;
-      m3D_full.SetScaling(pball->m_d.m_radius*sx, pball->m_d.m_radius*sy, pball->m_d.m_radius);
+      m3D_full.SetScaling(pball->m_d.m_radius*stretch.x, pball->m_d.m_radius*stretch.y, pball->m_d.m_radius);
       m3D_full.Multiply(temp, m3D_full);
       temp.SetTranslation(pball->m_d.m_pos.x, pball->m_d.m_pos.y, zheight);
       temp.Multiply(m3D_full, m3D_full);
@@ -5356,10 +5322,7 @@ void Player::DrawBalls()
 
             if ((pball->m_oldpos[i3].x != FLT_MAX) && (pball->m_oldpos[io].x != FLT_MAX)) // only if already initialized
             {
-               Vertex3Ds vec;
-               vec.x = pball->m_oldpos[io].x - pball->m_oldpos[i3].x;
-               vec.y = pball->m_oldpos[io].y - pball->m_oldpos[i3].y;
-               vec.z = pball->m_oldpos[io].z - pball->m_oldpos[i3].z;
+               const Vertex3Ds vec(pball->m_oldpos[io].x - pball->m_oldpos[i3].x, pball->m_oldpos[io].y - pball->m_oldpos[i3].y, pball->m_oldpos[io].z - pball->m_oldpos[i3].z);
                const float bc = m_ptable->m_ballTrailStrength * powf(1.f - 1.f / max(vec.Length(), 1.0f), 64.0f); //!! 64=magic alpha falloff
                const float r = min(pball->m_d.m_radius*0.9f, 2.0f*pball->m_d.m_radius / powf((float)(i2 + 2), 0.6f)); //!! consts are for magic radius falloff
 
@@ -5368,10 +5331,7 @@ void Player::DrawBalls()
                   Vertex3Ds v = vec;
                   v.Normalize();
                   const Vertex3Ds up(0.f, 0.f, 1.f);
-                  Vertex3Ds n = CrossProduct(v, up);
-                  n.x *= r;
-                  n.y *= r;
-                  n.z *= r;
+                  const Vertex3Ds n = CrossProduct(v, up) * r;
 
                   Vertex3D_NoTex2 rgv3D[4];
                   rgv3D[0].x = pball->m_oldpos[i3].x - n.x;
@@ -5838,8 +5798,7 @@ INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
    {
       case WM_INITDIALOG:
       {
-         RECT rcDialog;
-         RECT rcMain;
+         RECT rcDialog,rcMain;
          GetWindowRect(GetParent(hwndDlg), &rcMain);
          GetWindowRect(hwndDlg, &rcDialog);
 

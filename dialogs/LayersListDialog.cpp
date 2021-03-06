@@ -229,10 +229,10 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
     {
         case IDC_ADD_LAYER_BUTTON:
         {
-            if (!AddLayer(string("New Layer 0"), nullptr))
+            if (!AddLayer("New Layer 0", nullptr))
             {
                 int i = 0;
-                while (!AddLayer(string("New Layer ") + std::to_string(i), nullptr))
+                while (!AddLayer("New Layer " + std::to_string(i), nullptr))
                 {
                     if (i > 10000) // something went wrong, so exit here and warn
                     {
