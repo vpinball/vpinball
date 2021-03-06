@@ -78,7 +78,8 @@ FIXES:
 - tweak AO (Ambient Occlusion) and SSR (Screen Space Reflections) to be a bit less noisy
 - slightly tweak light transmission filter to capture a larger radius (for very bright lights)
 - revamp bloom filter to capture a larger radius and to be more robust in general, incl. fixing slightly wrong offsets when downsampling
-- fix a small error in the original SMAA shader code, and also increase quality parameters slightly (to match reshade)
+- fix a small error in the original SMAA filter code, and also increase quality parameters slightly (to match reshade)
+- retweak Standard FXAA and Quality FXAA filters to be a bit sharper
 
 - tweak minimum physics cycle time, which mainly influences kickers
   also update default kicker physics (Hit height 0.35 and Hit accuracy 0.5)

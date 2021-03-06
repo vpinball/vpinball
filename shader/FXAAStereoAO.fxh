@@ -624,9 +624,9 @@ float4 ps_main_fxaa2(const in VS_OUTPUT_2D IN) : COLOR
 	const float minWN = min(lumaN, lumaW);
 	const float rangeMax = max(maxWN, maxESM);
 	const float rangeMin = min(minWN, minESM);
-	const float rangeMaxScaled = rangeMax * 0.166; //0.333 (faster) .. 0.063 (slower)
+	const float rangeMaxScaled = rangeMax * 0.125; //0.333 (faster) .. 0.063 (slower) // reshade: 0.125, fxaa : 0.166
 	const float range = rangeMax - rangeMin;
-	const float rangeMaxClamped = max(0.0833, rangeMaxScaled); //0.0625 (high quality/faster) .. 0.0312 (visible limit/slower)
+	const float rangeMaxClamped = max(0.0833, rangeMaxScaled); //0.0625 (high quality/faster) .. 0.0312 (visible limit/slower) // reshade: 0.0, fxaa : 0.0833
 	const bool earlyExit = range < rangeMaxClamped;
 	[branch] if(earlyExit)
 		return float4(rgbyM, 1.0);
@@ -713,7 +713,7 @@ float4 ps_main_fxaa2(const in VS_OUTPUT_2D IN) : COLOR
 	const bool goodSpan = directionN ? goodSpanN : goodSpanP;
 	const float subpixG = subpixF * subpixF;
 	const float pixelOffset = 0.5 - dst * spanLengthRcp;
-	const float subpixH = subpixG * 0.75; //1.00 (upper limit/softer) .. 0.50 (lower limit/sharper) .. 0.00 (completely off)
+	const float subpixH = subpixG * 0.5; //1.00 (upper limit/softer) .. 0.50 (lower limit/sharper) .. 0.00 (completely off) // reshade : 0.25, fxaa : 0.75
 	const float pixelOffsetGood = goodSpan ? pixelOffset : 0.0;
 	const float pixelOffsetSubpix = max(pixelOffsetGood, subpixH);
 	float2 un = u;
@@ -771,9 +771,9 @@ float4 ps_main_fxaa3(const in VS_OUTPUT_2D IN) : COLOR
 	const float minWN = min(lumaN, lumaW);
 	const float rangeMax = max(maxWN, maxESM);
 	const float rangeMin = min(minWN, minESM);
-	const float rangeMaxScaled = rangeMax * 0.166; //0.333 (faster) .. 0.063 (slower)
+	const float rangeMaxScaled = rangeMax * 0.125; //0.333 (faster) .. 0.063 (slower) // reshade: 0.125, fxaa : 0.166
 	const float range = rangeMax - rangeMin;
-	const float rangeMaxClamped = max(0.0833, rangeMaxScaled); //0.0625 (high quality/faster) .. 0.0312 (visible limit/slower)
+	const float rangeMaxClamped = max(0.0833, rangeMaxScaled); //0.0625 (high quality/faster) .. 0.0312 (visible limit/slower) // reshade: 0.0, fxaa : 0.0833
 	const bool earlyExit = range < rangeMaxClamped;
 	[branch] if(earlyExit)
 		return float4(rgbyM, 1.0);
@@ -988,7 +988,7 @@ float4 ps_main_fxaa3(const in VS_OUTPUT_2D IN) : COLOR
 	const bool goodSpan = directionN ? goodSpanN : goodSpanP;
 	const float subpixG = subpixF * subpixF;
 	const float pixelOffset = 0.5 - dst * spanLengthRcp;
-	const float subpixH = subpixG * 0.75; //1.00 (upper limit/softer) .. 0.50 (lower limit/sharper) .. 0.00 (completely off)
+	const float subpixH = subpixG * 0.5; //1.00 (upper limit/softer) .. 0.50 (lower limit/sharper) .. 0.00 (completely off) // reshade : 0.25, fxaa : 0.75
 	const float pixelOffsetGood = goodSpan ? pixelOffset : 0.0;
 	const float pixelOffsetSubpix = max(pixelOffsetGood, subpixH);
 	float2 un = u;
