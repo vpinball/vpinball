@@ -204,27 +204,13 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
       if (g_pplayer->m_audio)
          EndMusic();
 
+      g_pplayer->m_audio = new AudioPlayer();
+      const float MusicVolume = max(min((float)g_pplayer->m_MusicVolume*m_pt->m_TableMusicVolume*volume, 100.0f), 0.0f) * (float)(1.0/100.0);
+
       char szT[512];
-      char szPath[MAX_PATH + 512];
-      WideCharToMultiByteNull(CP_ACP, 0, m_vpinball->m_wzMyPath.c_str(), -1, szPath, MAX_PATH + 512, NULL, NULL);
       WideCharToMultiByteNull(CP_ACP, 0, str, -1, szT, 512, NULL, NULL);
 
-      //string szextension;
-      //ExtensionFromFilename(szT, szextension);
-
-      //ppi->m_ppb;// = new PinBinary();
-
-      lstrcat(szPath, "Music\\");
-
-      //WideCharToMultiByteNull(CP_ACP, 0, str, -1, szT, 512, NULL, NULL);
-
-      // We know that szT can't be more than 512 characters as this point, and that szPath can't be more than MAX_PATH
-      lstrcat(szPath, szT);
-
-      g_pplayer->m_audio = new AudioPlayer();
-
-      const float MusicVolume = max(min((float)g_pplayer->m_MusicVolume*m_pt->m_TableMusicVolume*volume, 100.0f), 0.0f) * (float)(1.0/100.0);
-      if (!g_pplayer->m_audio->MusicInit(szPath, MusicVolume))
+      if (!g_pplayer->m_audio->MusicInit(m_vpinball->m_szMyPath + "Music\\" + szT, string("C:\\Visual Pinball\\Music\\") + szT, MusicVolume))
       {
          delete g_pplayer->m_audio;
          g_pplayer->m_audio = NULL;
@@ -364,13 +350,12 @@ STDMETHODIMP ScriptGlobalTable::get_LockbarKey(long *pVal)
 bool ScriptGlobalTable::GetTextFileFromDirectory(const char * const szfilename, const char * const dirname, BSTR *pContents)
 {
    string szPath;
-   bool success = false;
-
    if (dirname != NULL)
       szPath = m_vpinball->m_szMyPath + dirname;
-   // else Current directory
+   // else: use current directory
    szPath += szfilename;
 
+   bool success = false;
    int len;
    BYTE *szContents;
 
@@ -431,12 +416,17 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
    // if that fails, try the User, Scripts and Tables sub-directorys under where VP was loaded from
    if (!success)
       success = GetTextFileFromDirectory(szFileName, "User\\", pContents);
-
    if (!success)
       success = GetTextFileFromDirectory(szFileName, "Scripts\\", pContents);
-
    if (!success)
       success = GetTextFileFromDirectory(szFileName, "Tables\\", pContents);
+   // if that also fails, try the standard installation path
+   if (!success)
+      success = GetTextFileFromDirectory((string("C:\\Visual Pinball\\User\\")+szFileName).c_str(), NULL, pContents);
+   if (!success)
+      success = GetTextFileFromDirectory((string("C:\\Visual Pinball\\Scripts\\")+szFileName).c_str(), NULL, pContents);
+   if (!success)
+      success = GetTextFileFromDirectory((string("C:\\Visual Pinball\\Tables\\")+szFileName).c_str(), NULL, pContents);
 
    return success ? S_OK : E_FAIL;
 }

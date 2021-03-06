@@ -127,16 +127,20 @@ bool AudioPlayer::MusicActive()
    }
 }*/
 
-bool AudioPlayer::MusicInit(const char * const szFileName, const float volume)
+bool AudioPlayer::MusicInit(const string& szFileName, const string& alt_szFileName, const float volume)
 {
    if (bass_BG_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_BG_idx);
-   m_stream = BASS_StreamCreateFile(FALSE, szFileName, 0, 0, /*BASS_SAMPLE_LOOP*/0); //!! ?
+
+   m_stream = BASS_StreamCreateFile(FALSE, szFileName.c_str(), 0, 0, /*BASS_SAMPLE_LOOP*/0); //!! ?
+   if (m_stream == NULL)
+      m_stream = BASS_StreamCreateFile(FALSE, alt_szFileName.c_str(), 0, 0, /*BASS_SAMPLE_LOOP*/0); //!! ?
+
    if (m_stream == NULL)
    {
       const int code = BASS_ErrorGetCode();
       string bla2;
       BASS_ErrorMapCode(code, bla2);
-      const string bla = string("BASS music/sound library cannot load \"") + szFileName + "\" (error " + std::to_string(code) + ": " + bla2 + ")";
+      const string bla = "BASS music/sound library cannot load \"" + szFileName + "\" (error " + std::to_string(code) + ": " + bla2 + ")";
       g_pvp->MessageBox(bla.c_str(), "Error", MB_ICONERROR);
       return false;
    }

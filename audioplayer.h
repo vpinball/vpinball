@@ -8,7 +8,7 @@ public:
    AudioPlayer();
    ~AudioPlayer();
 
-   bool MusicInit(const char * const szFileName, const float volume);
+   bool MusicInit(const string& szFileName, const string& alt_szFileName, const float volume);
 
    bool MusicActive();
 
