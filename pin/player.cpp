@@ -295,12 +295,11 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
 
    m_overall_frames = 0;
 
-   m_dmdx = 0;
-   m_dmdy = 0;
+   m_dmd = int2(0,0);
    m_texdmd = NULL;
    m_backdropSettingActive = 0;
 
-   m_ScreenOffset = Vertex2D(0, 0);
+   m_ScreenOffset = Vertex2D(0.f, 0.f);
 
    m_ballIndexBuffer = NULL;
    m_ballVertexBuffer = NULL;
@@ -615,8 +614,7 @@ void Player::Shutdown()
 
    m_vball.clear();
 
-   m_dmdx = 0;
-   m_dmdy = 0;
+   m_dmd = int2(0,0);
    if (m_texdmd)
    {
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTexture("Texture0", (D3DTexture*)NULL);
@@ -683,7 +681,7 @@ void Player::ToggleFPS()
    m_pin3d.m_gpu_profiler.Shutdown(); // Kill it so that it cannot influence standard rendering performance (and otherwise if just switching profile modes to not falsify counters and query info)
 }
 
-unsigned int Player::ProfilingMode()
+unsigned int Player::ProfilingMode() const
 {
    const unsigned int modes = (m_showFPS & 7);
    if (modes == 2)
@@ -693,19 +691,19 @@ unsigned int Player::ProfilingMode()
    else return 0;
 }
 
-bool Player::ShowFPS()
+bool Player::ShowFPS() const
 {
    const unsigned int modes = (m_showFPS & 7);
    return (modes == 1 || modes == 2 || modes == 3 || modes == 5 || modes == 7);
 }
 
-bool Player::RenderStaticOnly()
+bool Player::RenderStaticOnly() const
 {
    const unsigned int modes = (m_showFPS & 7);
    return (modes == 5);
 }
 
-bool Player::RenderAOOnly()
+bool Player::RenderAOOnly() const
 {
    const unsigned int modes = (m_showFPS & 7);
    return (modes == 7);
@@ -746,19 +744,10 @@ void Player::RecomputePseudoPauseState()
 void Player::AddCabinetBoundingHitShapes()
 {
    // simple outer borders:
-   LineSeg *plineseg;
-
-   plineseg = new LineSeg(Vertex2D(m_ptable->m_right, m_ptable->m_top), Vertex2D(m_ptable->m_right, m_ptable->m_bottom), m_ptable->m_tableheight, m_ptable->m_glassheight);
-   m_vho.push_back(plineseg);
-
-   plineseg = new LineSeg(Vertex2D(m_ptable->m_left, m_ptable->m_bottom), Vertex2D(m_ptable->m_left, m_ptable->m_top), m_ptable->m_tableheight, m_ptable->m_glassheight);
-   m_vho.push_back(plineseg);
-
-   plineseg = new LineSeg(Vertex2D(m_ptable->m_right, m_ptable->m_bottom), Vertex2D(m_ptable->m_left, m_ptable->m_bottom), m_ptable->m_tableheight, m_ptable->m_glassheight);
-   m_vho.push_back(plineseg);
-
-   plineseg = new LineSeg(Vertex2D(m_ptable->m_left, m_ptable->m_top), Vertex2D(m_ptable->m_right, m_ptable->m_top), m_ptable->m_tableheight, m_ptable->m_glassheight);
-   m_vho.push_back(plineseg);
+   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_right, m_ptable->m_top),    Vertex2D(m_ptable->m_right, m_ptable->m_bottom), m_ptable->m_tableheight, m_ptable->m_glassheight));
+   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_left,  m_ptable->m_bottom), Vertex2D(m_ptable->m_left,  m_ptable->m_top),    m_ptable->m_tableheight, m_ptable->m_glassheight));
+   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_right, m_ptable->m_bottom), Vertex2D(m_ptable->m_left,  m_ptable->m_bottom), m_ptable->m_tableheight, m_ptable->m_glassheight));
+   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_left,  m_ptable->m_top),    Vertex2D(m_ptable->m_right, m_ptable->m_top),    m_ptable->m_tableheight, m_ptable->m_glassheight));
 
    // glass:
    Vertex3Ds * const rgv3D = new Vertex3Ds[4];
@@ -766,8 +755,7 @@ void Player::AddCabinetBoundingHitShapes()
    rgv3D[1] = Vertex3Ds(m_ptable->m_right, m_ptable->m_top, m_ptable->m_glassheight);
    rgv3D[2] = Vertex3Ds(m_ptable->m_right, m_ptable->m_bottom, m_ptable->m_glassheight);
    rgv3D[3] = Vertex3Ds(m_ptable->m_left, m_ptable->m_bottom, m_ptable->m_glassheight);
-   Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D, 4); //!!
-   m_vho.push_back(ph3dpoly);
+   m_vho.push_back(new Hit3DPoly(rgv3D, 4)); //!!
 
    /*
    // playfield:
@@ -844,8 +832,8 @@ static bool CompareHitableDepth(Hitable* h1, Hitable* h2)
 
 static bool CompareHitableDepthInverse(Hitable* h1, Hitable* h2)
 {
-	// GetDepth approximates direction in view distance to camera; sort descending
-	return h1->GetDepth(g_viewDir) <= h2->GetDepth(g_viewDir);
+   // GetDepth approximates direction in view distance to camera; sort descending
+   return h1->GetDepth(g_viewDir) <= h2->GetDepth(g_viewDir);
 }
 
 static bool CompareHitableDepthReverse(Hitable* h1, Hitable* h2)
@@ -861,7 +849,7 @@ static bool CompareHitableMaterial(Hitable* h1, Hitable* h2)
 
 static bool CompareHitableImage(Hitable* h1, Hitable* h2)
 {
-	return h1->GetImageID() < h2->GetImageID();
+   return h1->GetImageID() < h2->GetImageID();
 }
 
 void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
@@ -888,14 +876,8 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 
    if (m_ptable->m_tblMirrorEnabled)
    {
-      const D3DXMATRIX flipx(-1, 0, 0, 0,
-         0, 1, 0, 0,
-         0, 0, 1, 0,
-         0, 0, 0, 1);
-      const D3DXMATRIX flipy(1, 0, 0, 0,
-         0, -1, 0, 0,
-         0, 0, 1, 0,
-         0, 0, 0, 1);
+      const D3DXMATRIX flipx(-1, 0, 0, 0,  0,  1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1);
+      const D3DXMATRIX flipy( 1, 0, 0, 0,  0, -1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1);
       const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
       matWorldViewProj = matWorldViewProj * (rotation != 0.0f ? flipy : flipx);
    }
@@ -989,14 +971,8 @@ void Player::UpdateBallShaderMatrix()
 
    if (m_ptable->m_tblMirrorEnabled)
    {
-      const D3DXMATRIX flipx(-1, 0, 0, 0,
-         0, 1, 0, 0,
-         0, 0, 1, 0,
-         0, 0, 0, 1);
-      const D3DXMATRIX flipy(1, 0, 0, 0,
-         0, -1, 0, 0,
-         0, 0, 1, 0,
-         0, 0, 0, 1);
+      const D3DXMATRIX flipx(-1, 0, 0, 0,  0,  1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1);
+      const D3DXMATRIX flipy( 1, 0, 0, 0,  0, -1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1);
       const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
       matWorldViewProj = matWorldViewProj * (rotation != 0.f ? flipy : flipx);
    }
@@ -1227,13 +1203,9 @@ HRESULT Player::Init()
 
    if (((GetAsyncKeyState(VK_LSHIFT) & 0x8000) && (GetAsyncKeyState(VK_RSHIFT) & 0x8000))
       || ((lflip != ~0u) && (rflip != ~0u) && (GetAsyncKeyState(lflip) & 0x8000) && (GetAsyncKeyState(rflip) & 0x8000)))
-   {
       m_ptable->m_tblMirrorEnabled = true;
-   }
    else
-   {
       m_ptable->m_tblMirrorEnabled = LoadValueBoolWithDefault("Player", "mirror", false);
-   }
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
@@ -1356,8 +1328,8 @@ HRESULT Player::Init()
          {
              DispReel * const dispReel = (DispReel*)pe;
              m_vanimate.push_back(&dispReel->m_dispreelanim);
-         } else
-         if (pe->GetItemType() == eItemLightSeq)
+         }
+         else if (pe->GetItemType() == eItemLightSeq)
          {
              LightSeq * const lightseq = (LightSeq*)pe;
              m_vanimate.push_back(&lightseq->m_lightseqanim);
@@ -1490,10 +1462,10 @@ HRESULT Player::Init()
       for (int j = -1; j <= 1; ++j)
       {
          const int numPts = (j == 0) ? 6 : 3;
-         const float theta = (float)(j * (M_PI / 4.0));
+         const float theta = (float)(j * (M_PI/4.0));
          for (int i = 0; i < numPts; ++i)
          {
-            const float phi = (float)(i * (2.0 * M_PI) / numPts);
+            const float phi = (float)(i * (2.0*M_PI) / numPts);
             Vertex3D_TexelOnly vtx;
             vtx.x = 25.0f * cosf(theta) * cosf(phi);
             vtx.y = 25.0f * cosf(theta) * sinf(phi);
@@ -2114,26 +2086,16 @@ void Player::DestroyBall(Ball *pball)
 {
    if (!pball) return;
 
-   bool activeball;
-   if (m_pactiveball == pball)
-   {
-      activeball = true;
+   const bool activeball = (m_pactiveball == pball);
+   if (activeball)
       m_pactiveball = NULL;
-   }
-   else
-      activeball = false;
 
-   bool debugball;
-   if (m_pactiveballDebug == pball)
-   {
-	   debugball = true;
-	   m_pactiveballDebug = NULL;
-   }
-   else
-	   debugball = false;
+   const bool debugball = (m_pactiveballDebug == pball);
+   if (debugball)
+      m_pactiveballDebug = NULL;
 
    if (m_pactiveballBC == pball)
-	   m_pactiveballBC = NULL;
+      m_pactiveballBC = NULL;
 
    if (pball->m_pballex)
    {
@@ -2376,14 +2338,14 @@ void Player::NudgeUpdate()      // called on every integral physics frame
 #define IIR_Order 4
 
 // coefficients for IIR_Order Butterworth filter set to 10 Hz passband
-const float IIR_a[IIR_Order + 1] = {
+static const float IIR_a[IIR_Order + 1] = {
    0.0048243445f,
    0.019297378f,
    0.028946068f,
    0.019297378f,
    0.0048243445f };
 
-const float IIR_b[IIR_Order + 1] = {
+static const float IIR_b[IIR_Order + 1] = {
    1.00000000f, //if not 1 add division below
    -2.369513f,
    2.3139884f,
@@ -2573,9 +2535,9 @@ void NudgeFilter::sample(float &a, const U64 now)
 {
    IF_DEBUG_NUDGE(char notes[128] = ""; float aIn = a;)
 
-      // if we're not roughly at rest, reset the last motion timer
-      if (fabsf(a) >= .02f)
-         m_tMotion = now;
+   // if we're not roughly at rest, reset the last motion timer
+   if (fabsf(a) >= .02f)
+      m_tMotion = now;
 
    // check for a sign change
    if (fabsf(a) > .01f && fabsf(m_prv) > .01f
@@ -3211,9 +3173,9 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
       const vec4 c = convertColor(DMDcolor, intensity);
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetVector("vColor_Intensity", &c);
 #ifdef DMD_UPSCALE
-      const vec4 r((float)(m_dmdx*3), (float)(m_dmdy*3), 1.f, (float)(g_pplayer->m_overall_frames%2048));
+      const vec4 r((float)(m_dmd.x*3), (float)(m_dmd.y*3), 1.f, (float)(g_pplayer->m_overall_frames%2048));
 #else
-      const vec4 r((float)m_dmdx, (float)m_dmdy, 1.f, (float)(g_pplayer->m_overall_frames%2048));
+      const vec4 r((float)m_dmd.x, (float)m_dmd.y, 1.f, (float)(g_pplayer->m_overall_frames%2048));
 #endif
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetVector("vRes_Alpha_time", &r);
 
@@ -3416,28 +3378,20 @@ void Player::RenderDynamics()
       m_pin3d.RenderPlayfieldGraphics(false);
 
       for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
-      {
          if (m_ptable->m_vedit[i]->GetItemType() != eItemDecal)
          {
             Hitable * const ph = m_ptable->m_vedit[i]->GetIHitable();
             if (ph)
-            {
                ph->RenderStatic();
-            }
          }
-      }
       // Draw decals (they have transparency, so they have to be drawn after the wall they are on)
       for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
-      {
          if (m_ptable->m_vedit[i]->GetItemType() == eItemDecal)
          {
             Hitable * const ph = m_ptable->m_vedit[i]->GetIHitable();
             if (ph)
-            {
                ph->RenderStatic();
-            }
          }
-      }
    }
 
    if (ProfilingMode() == 1)
@@ -3571,10 +3525,8 @@ void Player::RenderDynamics()
 
    if (!m_cameraMode)
    {
-      // Draw the mixer volume.
-      mixer_draw();
-      // Debug draw of plumb.
-      plumb_draw();
+      mixer_draw(); // Draw the mixer volume
+      plumb_draw(); // Debug draw of plumb
    }
 }
 
@@ -4572,13 +4524,14 @@ void Player::UpdateBackdropSettings(const bool up)
       m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
+   default:
+      assert(!"UpdateBackdropSettings unhandled case");
+      break;
    }
 }
 
 void Player::UpdateCameraModeDisplay()
 {
-   char szFoo[128];
-
    float x = 0.f, y = 0.f;
    if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 270.0f)
    {
@@ -4586,16 +4539,15 @@ void Player::UpdateCameraModeDisplay()
        y = (float)(m_height - DBG_SPRITE_SIZE-10);
    }
    else if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 90.0f)
-   {
        x = (float)(-DBG_SPRITE_SIZE/1.3);
-       y = 0.0f;
-   }
+
    SetDebugOutputPosition(x, y);
 
    DebugPrint(0, 10, "Camera / Light / Material Edit Mode");
    DebugPrint(0, 50, "Left / Right flipper key = decrease / increase value");
    DebugPrint(0, 70, "Left / Right magna save key = previous / next option");
 
+   char szFoo[128];
    switch (m_backdropSettingActive)
    {
    case 0:
@@ -4687,16 +4639,8 @@ void Player::LockForegroundWindow(const bool enable)
 #if(_WIN32_WINNT >= 0x0500)
     if (m_fullScreen) // revert special tweaks of exclusive fullscreen app
     {
-        if (enable)
-        {
-            ::LockSetForegroundWindow(LSFW_LOCK);
-            ::ShowCursor(FALSE);
-        }
-        else
-        {
-            ::LockSetForegroundWindow(LSFW_UNLOCK);
-            ::ShowCursor(TRUE);
-        }
+       ::LockSetForegroundWindow(enable ? LSFW_LOCK : LSFW_UNLOCK);
+       ::ShowCursor(enable ? FALSE : TRUE);
     }
 #else
 #pragma message ( "Warning: Missing LockSetForegroundWindow()" )

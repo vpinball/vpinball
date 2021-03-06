@@ -491,8 +491,7 @@ public:
    std::vector< CollisionEvent > m_contacts;
    char m_ballShaderTechnique[MAX_PATH];
 
-   int m_dmdx;
-   int m_dmdy;
+   int2 m_dmd;
    BaseTexture* m_texdmd;
 
    unsigned int m_current_renderstage; // currently only used for bulb lights
@@ -601,20 +600,20 @@ private:
 
    void SetScreenOffset(const float x, const float y);     // set render offset in screen coordinates, e.g., for the nudge shake
 
-   bool RenderStaticOnly();
-   bool RenderAOOnly();
+   bool RenderStaticOnly() const;
+   bool RenderAOOnly() const;
 
    void InitShader();
    void CalcBallAspectRatio();
    void GetBallAspectRatio(const Ball * const pball, Vertex2D &stretch, const float zHeight);
    //void DrawBallReflection(Ball *pball, const float zheight, const bool lowDetailBall);
-   unsigned int ProfilingMode();
+   unsigned int ProfilingMode() const;
 
 public:
    void StopPlayer();
    void ToggleFPS();
    void InitFPS();
-   bool ShowFPS();
+   bool ShowFPS() const;
 
    void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D(1.0f));
    void UpdateCameraModeDisplay();

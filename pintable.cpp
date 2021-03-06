@@ -815,14 +815,14 @@ STDMETHODIMP ScriptGlobalTable::get_WindowHeight(int *pVal)
 STDMETHODIMP ScriptGlobalTable::put_DMDWidth(int pVal)
 {
    if (g_pplayer)
-      g_pplayer->m_dmdx = pVal;
+      g_pplayer->m_dmd.x = pVal;
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::put_DMDHeight(int pVal)
 {
    if (g_pplayer)
-      g_pplayer->m_dmdy = pVal;
+      g_pplayer->m_dmd.y = pVal;
    return S_OK;
 }
 
@@ -854,7 +854,7 @@ static inline float eq_col2(const DWORD e1, const DWORD e2) //!! test vs above, 
 
 static inline float eq_brightness(const DWORD AD, const DWORD BD)
 {
-    return 1.f - (float)abs((int)(AD - BD)) * (float)(1.0 / 100.);
+    return 1.f - (float)abs((int)AD - (int)BD) * (float)(1.0 / 100.);
 }
 
 static const double SFX_CLR = 0.35;
@@ -893,8 +893,10 @@ static inline bool4 ambi_dom(const Vertex4D &jDx)
         jDx.w != 0.f && jDx.w + jDx.y > jDx.x + jDx.z);
 }
 
-void upscale(DWORD * const data, const unsigned int xres, const unsigned int yres, const bool is_brightness_data)
+void upscale(DWORD * const data, const int2 res, const bool is_brightness_data)
 {
+    const unsigned int xres = res.x;
+    const unsigned int yres = res.y;
     std::vector<Vertex4D> metric(xres*yres); //!! avoid constant reallocs?
 
     unsigned int o = 0;
@@ -939,10 +941,10 @@ void upscale(DWORD * const data, const unsigned int xres, const unsigned int yre
         }
     }
 
-    std::vector<bool4> g_res(xres*yres); //!! avoid constant reallocs?
+    std::vector<bool4> g_res (xres*yres); //!! avoid constant reallocs?
     std::vector<bool4> g_hori(xres*yres);
     std::vector<bool4> g_vert(xres*yres);
-    std::vector<bool4> g_or(xres*yres);
+    std::vector<bool4> g_or  (xres*yres);
 
     o = 0;
     for (unsigned int j = 0; j < yres; ++j)
@@ -1154,7 +1156,7 @@ void upscale(DWORD * const data, const unsigned int xres, const unsigned int yre
                     case 1: sp = mid_x; break;
                     case 2: sp = crn_y; break;
                     case 3: sp = mid_w; break;
-                    case 4: sp = 0; break;
+                    case 4: sp = 0;     break;
                     case 5: sp = mid_y; break;
                     case 6: sp = crn_w; break;
                     case 7: sp = mid_z; break;
@@ -1202,9 +1204,9 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) //!! use 64bit inste
 {
    SAFEARRAY *psa = pVal.parray;
 
-   if (psa && g_pplayer && g_pplayer->m_dmdx > 0 && g_pplayer->m_dmdy > 0)
+   if (psa && g_pplayer && g_pplayer->m_dmd.x > 0 && g_pplayer->m_dmd.y > 0)
    {
-      const LONG size = g_pplayer->m_dmdx*g_pplayer->m_dmdy;
+      const LONG size = g_pplayer->m_dmd.x*g_pplayer->m_dmd.y;
       if (!g_pplayer->m_texdmd
 #ifdef DMD_UPSCALE
           || (g_pplayer->m_texdmd->width()*g_pplayer->m_texdmd->height() != size*(3*3)))
@@ -1219,9 +1221,9 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) //!! use 64bit inste
             delete g_pplayer->m_texdmd;
          }
 #ifdef DMD_UPSCALE
-         g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmdx*3, g_pplayer->m_dmdy*3, BaseTexture::RGBA, false);
+         g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmd.x*3, g_pplayer->m_dmd.y*3, BaseTexture::RGBA, false);
 #else
-         g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmdx, g_pplayer->m_dmdy, BaseTexture::RGBA, false);
+         g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmd.x, g_pplayer->m_dmd.y, BaseTexture::RGBA, false);
 #endif
       }
 
@@ -1237,7 +1239,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) //!! use 64bit inste
       }
 
       if (g_pplayer->m_scaleFX_DMD)
-         upscale(data, g_pplayer->m_dmdx, g_pplayer->m_dmdy, true);
+         upscale(data, g_pplayer->m_dmd, true);
 
       g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.SetDirty(g_pplayer->m_texdmd);
    }
@@ -1249,9 +1251,9 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! use 64bi
 {
 	SAFEARRAY *psa = pVal.parray;
 
-	if (psa && g_pplayer && g_pplayer->m_dmdx > 0 && g_pplayer->m_dmdy > 0)
+	if (psa && g_pplayer && g_pplayer->m_dmd.x > 0 && g_pplayer->m_dmd.y > 0)
 	{
-		const LONG size = g_pplayer->m_dmdx*g_pplayer->m_dmdy;
+		const LONG size = g_pplayer->m_dmd.x*g_pplayer->m_dmd.y;
 		if (!g_pplayer->m_texdmd
 #ifdef DMD_UPSCALE
             || (g_pplayer->m_texdmd->width()*g_pplayer->m_texdmd->height() != size*(3*3)))
@@ -1266,9 +1268,9 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! use 64bi
 				delete g_pplayer->m_texdmd;
 			}
 #ifdef DMD_UPSCALE
-			g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmdx*3, g_pplayer->m_dmdy*3, BaseTexture::RGBA, false);
+			g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmd.x*3, g_pplayer->m_dmd.y*3, BaseTexture::RGBA, false);
 #else
-			g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmdx, g_pplayer->m_dmdy, BaseTexture::RGBA, false);
+			g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmd.x, g_pplayer->m_dmd.y, BaseTexture::RGBA, false);
 #endif
 		}
 
@@ -1283,8 +1285,8 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! use 64bi
 			data[ofs] = DMDState.uintVal | 0xFF000000u; // store RGB values and let shader do the rest (set alpha to let shader know that this is RGB and not just brightness)
 		}
 
-        if (g_pplayer->m_scaleFX_DMD)
-            upscale(data, g_pplayer->m_dmdx, g_pplayer->m_dmdy, false);
+		if (g_pplayer->m_scaleFX_DMD)
+			upscale(data, g_pplayer->m_dmd, false);
 
 		g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.SetDirty(g_pplayer->m_texdmd);
 	}
