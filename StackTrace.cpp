@@ -21,6 +21,9 @@ namespace
 
 	void InitStackFrameFromContext(PCONTEXT context, STACKFRAME64& stackFrame)
 	{
+#if defined(_M_ARM64)
+#pragma message ( "Warning: No CPU stack debug implemented yet" )
+#else
 #ifdef _WIN64
 		stackFrame.AddrPC.Offset	= context->Rip;
 		stackFrame.AddrFrame.Offset = context->Rbp;
@@ -29,6 +32,7 @@ namespace
 		stackFrame.AddrPC.Offset	= context->Eip;
 		stackFrame.AddrFrame.Offset = context->Ebp;
 		stackFrame.AddrStack.Offset = context->Esp;
+#endif
 #endif
 	}
 
@@ -94,6 +98,11 @@ int StackTrace::GetCallStack(Address* callStack, int maxDepth, int entriesToSkip
 int StackTrace::GetCallStack(void* vcontext, Address* callStack, int maxDepth, 
 							 int entriesToSkip)
 {
+#if defined(_M_ARM64)
+#pragma message ( "Warning: No CPU stack debug implemented yet" )
+	uintptr_t ebpReg[2];
+	uintptr_t espReg;
+#else
 #ifndef _WIN64
 	uintptr_t* ebpReg;
 	uintptr_t espReg;
@@ -102,11 +111,12 @@ int StackTrace::GetCallStack(void* vcontext, Address* callStack, int maxDepth,
 #else
 	uintptr_t ebpReg[2];
 	uintptr_t espReg;
-    CONTEXT Context;
+	CONTEXT Context;
 	RtlCaptureContext(&Context);
 	ebpReg[1] = Context.Rip;
 	ebpReg[0] = Context.Rbp;
 	espReg = Context.Rsp;
+#endif
 #endif
 
 	InitSymbols();
@@ -148,12 +158,16 @@ int StackTrace::GetCallStack(void* vcontext, Address* callStack, int maxDepth,
 int StackTrace::GetCallStack_Fast(Address* callStack, int maxDepth, int entriesToSkip)
 {
 	uintptr_t ebpReg;
+#if defined(_M_ARM64)
+#pragma message ( "Warning: No CPU stack debug implemented yet" )
+#else
 #ifndef _WIN64
 	__asm mov [ebpReg], ebp
 #else
-    CONTEXT Context;
+	CONTEXT Context;
 	RtlCaptureContext(&Context);
 	ebpReg = Context.Rbp;
+#endif
 #endif
 
 	void** sp = (void**)ebpReg;

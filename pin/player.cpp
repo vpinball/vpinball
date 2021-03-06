@@ -492,6 +492,9 @@ INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(cameraMode)
 {
+#if defined(_M_ARM64)
+#pragma message ( "Warning: No CPU float ignore denorm implemented" )
+#else
    {
       int regs[4];
       __cpuid(regs, 1);
@@ -506,6 +509,7 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
       else
          _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON); // only flush denorms to zero
    }
+#endif
 
 #ifdef STEPPING
    m_pause = false;

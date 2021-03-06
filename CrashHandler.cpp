@@ -166,8 +166,12 @@ namespace
 
       fprintf(f, "Reason: 0x%X - %s", exceptionPtrs->ExceptionRecord->ExceptionCode,
          GetExceptionString(exceptionPtrs->ExceptionRecord->ExceptionCode));
+#if defined(_M_ARM64)
+#pragma message ( "Warning: No CPU exception debug output implemented yet" )
+#else
       fprintf(f, " at %04X:%p\n", exceptionPtrs->ContextRecord->SegCs,
          exceptionPtrs->ExceptionRecord->ExceptionAddress);
+#endif
 
       if (exceptionPtrs->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION)
       {
@@ -246,6 +250,9 @@ namespace
 
       const CONTEXT* ctx = exceptionPtrs->ContextRecord;
       fprintf(f, "Registers\n=========\n");
+#if defined(_M_ARM64)
+#pragma message ( "Warning: No CPU state debug output implemented yet" )
+#else
 #ifdef _WIN64
       fprintf(f, "RAX=%08X RBX=%08X RCX=%08X RDX=%08X\n" \
          "RSI=%08X RDI=%08X RBP=%08X RSP=%08X RIP=%08X\n" \
@@ -260,6 +267,7 @@ namespace
          ctx->Eax, ctx->Ebx, ctx->Ecx, ctx->Edx, ctx->Esi, ctx->Edi,
          ctx->Ebp, ctx->Esp, ctx->Eip, ctx->EFlags, ctx->SegCs,
          ctx->SegDs, ctx->SegSs, ctx->SegEs, ctx->SegFs, ctx->SegGs);
+#endif
 #endif
    }
 
