@@ -245,8 +245,9 @@ public:
    D3DTexture* DuplicateTextureSingleChannel(RenderTarget* src);
    D3DTexture* DuplicateDepthTexture(RenderTarget* src);
 
-   void SetRenderTarget(RenderTarget*);
-   void SetZBuffer(RenderTarget*);
+   void SetRenderTarget(RenderTarget* surf);
+   void SetRenderTarget(D3DTexture* tex);
+   void SetZBuffer(RenderTarget* surf);
 
    void* AttachZBufferTo(RenderTarget* surf);
    void CopySurface(RenderTarget* dest, RenderTarget* src);

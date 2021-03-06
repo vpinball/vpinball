@@ -713,7 +713,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create blur buffer!", hr, __FILE__, __LINE__);
 
-   // alloc temporary buffer for postprocessing
+   // alloc temporary buffer for stereo3D/post-processing AA
    if (m_stereo3D || (m_FXAA > 0))
    {
       hr = m_pD3DDevice->CreateTexture(m_width, m_height, 1,
@@ -1256,9 +1256,7 @@ void RenderDevice::CopyDepth(D3DTexture* dest, D3DTexture* src)
    IDirect3DSurface9 *oldRT;
    CHECKD3D(m_pD3DDevice->GetRenderTarget(0, &oldRT));
 
-   IDirect3DSurface9 *destTextureSurface;
-   CHECKD3D(dest->GetSurfaceLevel(0, &destTextureSurface));
-   SetRenderTarget(destTextureSurface);
+   SetRenderTarget(dest);
 
    FBShader->SetTexture("Texture0", src);
    FBShader->SetFloat("mirrorFactor", 1.f); //!! use separate pass-through shader instead??
@@ -1275,7 +1273,6 @@ void RenderDevice::CopyDepth(D3DTexture* dest, D3DTexture* src)
 
    SetRenderTarget(oldRT);
    SAFE_RELEASE_NO_RCC(oldRT);
-   SAFE_RELEASE_NO_RCC(destTextureSurface);
 
    EndScene(); //!!
 #endif
@@ -1519,6 +1516,14 @@ void RenderDevice::SetTextureStageState(const DWORD p1, const D3DTEXTURESTAGESTA
 void RenderDevice::SetRenderTarget(RenderTarget* surf)
 {
    CHECKD3D(m_pD3DDevice->SetRenderTarget(0, surf));
+}
+
+void RenderDevice::SetRenderTarget(D3DTexture* tex)
+{
+   RenderTarget* tmpSurface;
+   tex->GetSurfaceLevel(0, &tmpSurface);
+   CHECKD3D(m_pD3DDevice->SetRenderTarget(0, tmpSurface));
+   SAFE_RELEASE_NO_RCC(tmpSurface); //!!
 }
 
 void RenderDevice::SetZBuffer(RenderTarget* surf)
