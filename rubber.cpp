@@ -1289,7 +1289,7 @@ void Rubber::RenderDynamic()
    }
 }
 
-void Rubber::ExportMesh(FILE *f)
+void Rubber::ExportMesh(ObjLoader& loader)
 {
    if (m_d.m_visible)
    {
@@ -1298,13 +1298,13 @@ void Rubber::ExportMesh(FILE *f)
       GenerateMesh();
       UpdateRubber(false, m_d.m_height);
 
-      WaveFrontObj_WriteObjectName(f, name);
-      WaveFrontObj_WriteVertexInfo(f, m_vertices.data(), m_numVertices);
+      loader.WriteObjectName(name);
+      loader.WriteVertexInfo(m_vertices.data(), m_numVertices);
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-      WaveFrontObj_WriteMaterial(m_d.m_szMaterial, string(), mat);
-      WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-      WaveFrontObj_WriteFaceInfo(f, m_ringIndices);
-      WaveFrontObj_UpdateFaceOffset(m_numVertices);
+      loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
+      loader.UseTexture(m_d.m_szMaterial);
+      loader.WriteFaceInfo(m_ringIndices);
+      loader.UpdateFaceOffset(m_numVertices);
    }
 }
 

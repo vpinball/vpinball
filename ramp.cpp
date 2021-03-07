@@ -1994,13 +1994,13 @@ STDMETHODIMP Ramp::put_OverwritePhysics(VARIANT_BOOL newVal)
 }
 
 
-void Ramp::ExportMesh(FILE *f)
+void Ramp::ExportMesh(ObjLoader& loader)
 {
    if (m_d.m_visible)
    {
       char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
       WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
-      WaveFrontObj_WriteObjectName(f, name);
+      loader.WriteObjectName(name);
       if (!isHabitrail())
       {
          Vertex3D_NoTex2 *rampMesh = NULL;
@@ -2010,33 +2010,33 @@ void Ramp::ExportMesh(FILE *f)
          unsigned int numVers = m_numVertices * 3;
          if (m_d.m_rightwallheightvisible == 0.0f && m_d.m_leftwallheightvisible == 0.0f)
             numVers = m_numVertices;
-         WaveFrontObj_WriteVertexInfo(f, rampMesh, numVers);
-         WaveFrontObj_WriteMaterial(m_d.m_szMaterial, string(), mat);
-         WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
+         loader.WriteVertexInfo(rampMesh, numVers);
+         loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
+         loader.UseTexture(m_d.m_szMaterial);
 
          if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f)
          {
-            WaveFrontObj_WriteFaceInfoList(f, m_meshIndices.data(), listLength * 3);
-            WaveFrontObj_UpdateFaceOffset(numVers);
+            loader.WriteFaceInfoList(m_meshIndices.data(), listLength * 3);
+            loader.UpdateFaceOffset(numVers);
          }
          else
          {
             if (m_d.m_rightwallheightvisible != 0.0f)
             {
-               WaveFrontObj_WriteFaceInfoList(f, m_meshIndices.data(), listLength * 2);
-               WaveFrontObj_UpdateFaceOffset(m_numVertices * 3);
+               loader.WriteFaceInfoList(m_meshIndices.data(), listLength * 2);
+               loader.UpdateFaceOffset(m_numVertices * 3);
             }
             else if (m_d.m_leftwallheightvisible != 0.0f)
             {
-               WaveFrontObj_WriteFaceInfoList(f, m_meshIndices.data(), listLength);
-               WaveFrontObj_UpdateFaceOffset(m_numVertices * 2);
-               WaveFrontObj_WriteFaceInfoList(f, m_meshIndices.data(), listLength);
-               WaveFrontObj_UpdateFaceOffset(m_numVertices);
+               loader.WriteFaceInfoList(m_meshIndices.data(), listLength);
+               loader.UpdateFaceOffset(m_numVertices * 2);
+               loader.WriteFaceInfoList(m_meshIndices.data(), listLength);
+               loader.UpdateFaceOffset(m_numVertices);
             }
             else
             {
-               WaveFrontObj_WriteFaceInfoList(f, m_meshIndices.data(), listLength);
-               WaveFrontObj_UpdateFaceOffset(m_numVertices);
+               loader.WriteFaceInfoList(m_meshIndices.data(), listLength);
+               loader.UpdateFaceOffset(m_numVertices);
             }
          }
          delete[] rampMesh;
@@ -2048,11 +2048,11 @@ void Ramp::ExportMesh(FILE *f)
          const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
          if (m_d.m_type == RampType1Wire)
          {
-            WaveFrontObj_WriteVertexInfo(f, tmpBuf1, m_numVertices);
-            WaveFrontObj_WriteMaterial(m_d.m_szMaterial, string(), mat);
-            WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-            WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
-            WaveFrontObj_UpdateFaceOffset(m_numVertices);
+            loader.WriteVertexInfo(tmpBuf1, m_numVertices);
+            loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
+            loader.UseTexture(m_d.m_szMaterial);
+            loader.WriteFaceInfo(m_meshIndices);
+            loader.UpdateFaceOffset(m_numVertices);
          }
          else if (m_d.m_type == RampType2Wire)
          {
@@ -2061,16 +2061,16 @@ void Ramp::ExportMesh(FILE *f)
             memcpy(&tmp[m_numVertices], tmpBuf2, sizeof(Vertex3D_NoTex2)*m_numVertices);
             for (int i = 0; i < m_numVertices * 2; i++)
                tmp[i].z += 3.0f;
-            WaveFrontObj_WriteVertexInfo(f, tmp, m_numVertices * 2);
+            loader.WriteVertexInfo(tmp, m_numVertices * 2);
             delete[] tmp;
-            WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
-            WaveFrontObj_WriteMaterial(m_d.m_szMaterial, string(), mat);
-            WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
+            loader.WriteFaceInfo(m_meshIndices);
+            loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
+            loader.UseTexture(m_d.m_szMaterial);
             WORD * const idx = new WORD[m_meshIndices.size()];
             for (size_t i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices;
-            WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)m_meshIndices.size());
-            WaveFrontObj_UpdateFaceOffset(m_numVertices * 2);
+            loader.WriteFaceInfoList(idx, (unsigned int)m_meshIndices.size());
+            loader.UpdateFaceOffset(m_numVertices * 2);
             delete[] idx;
          }
          else if (m_d.m_type == RampType4Wire)
@@ -2085,22 +2085,22 @@ void Ramp::ExportMesh(FILE *f)
 
             for (int i = m_numVertices * 2; i < m_numVertices * 4; i++)
                tmp[i].z += 3.0f;
-            WaveFrontObj_WriteVertexInfo(f, tmp, m_numVertices * 4);
+            loader.WriteVertexInfo(tmp, m_numVertices * 4);
             delete[] tmp;
-            WaveFrontObj_WriteMaterial(m_d.m_szMaterial, string(), mat);
-            WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-            WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
+            loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
+            loader.UseTexture(m_d.m_szMaterial);
+            loader.WriteFaceInfo(m_meshIndices);
             WORD * const idx = new WORD[m_meshIndices.size()];
             for (size_t i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices;
-            WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)m_meshIndices.size());
+            loader.WriteFaceInfoList(idx, (unsigned int)m_meshIndices.size());
             for (size_t i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices * 2;
-            WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)m_meshIndices.size());
+            loader.WriteFaceInfoList(idx, (unsigned int)m_meshIndices.size());
             for (size_t i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices * 3;
-            WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)m_meshIndices.size());
-            WaveFrontObj_UpdateFaceOffset(m_numVertices * 4);
+            loader.WriteFaceInfoList(idx, (unsigned int)m_meshIndices.size());
+            loader.UpdateFaceOffset(m_numVertices * 4);
             delete[] idx;
          }
          else if (m_d.m_type == RampType3WireLeft)
@@ -2114,19 +2114,19 @@ void Ramp::ExportMesh(FILE *f)
 
             for (int i = m_numVertices; i < m_numVertices * 3; i++)
                tmp[i].z += 3.0f;
-            WaveFrontObj_WriteVertexInfo(f, tmp, m_numVertices * 3);
+            loader.WriteVertexInfo(tmp, m_numVertices * 3);
             delete[] tmp;
-            WaveFrontObj_WriteMaterial(m_d.m_szMaterial, string(), mat);
-            WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-            WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
+            loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
+            loader.UseTexture(m_d.m_szMaterial);
+            loader.WriteFaceInfo(m_meshIndices);
             WORD * const idx = new WORD[m_meshIndices.size()];
             for (size_t i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices;
-            WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)m_meshIndices.size());
+            loader.WriteFaceInfoList(idx, (unsigned int)m_meshIndices.size());
             for (size_t i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices * 2;
-            WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)m_meshIndices.size());
-            WaveFrontObj_UpdateFaceOffset(m_numVertices * 3);
+            loader.WriteFaceInfoList(idx, (unsigned int)m_meshIndices.size());
+            loader.UpdateFaceOffset(m_numVertices * 3);
             delete[] idx;
          }
          else if (m_d.m_type == RampType3WireRight)
@@ -2140,19 +2140,19 @@ void Ramp::ExportMesh(FILE *f)
 
             for (int i = m_numVertices; i < m_numVertices * 3; i++)
                tmp[i].z += 3.0f;
-            WaveFrontObj_WriteVertexInfo(f, tmp, m_numVertices * 3);
+            loader.WriteVertexInfo(tmp, m_numVertices * 3);
             delete[] tmp;
-            WaveFrontObj_WriteMaterial(m_d.m_szMaterial, string(), mat);
-            WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-            WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
+            loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
+            loader.UseTexture(m_d.m_szMaterial);
+            loader.WriteFaceInfo(m_meshIndices);
             WORD * const idx = new WORD[m_meshIndices.size()];
             for (size_t i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices;
-            WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)m_meshIndices.size());
+            loader.WriteFaceInfoList(idx, (unsigned int)m_meshIndices.size());
             for (size_t i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices * 2;
-            WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)m_meshIndices.size());
-            WaveFrontObj_UpdateFaceOffset(m_numVertices * 3);
+            loader.WriteFaceInfoList(idx, (unsigned int)m_meshIndices.size());
+            loader.UpdateFaceOffset(m_numVertices * 3);
             delete[] idx;
          }
 

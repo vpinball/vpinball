@@ -575,7 +575,7 @@ void Bumper::RenderDynamic()
    }
 }
 
-void Bumper::ExportMesh(FILE *f)
+void Bumper::ExportMesh(ObjLoader& loader)
 {
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
    WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
@@ -586,58 +586,58 @@ void Bumper::ExportMesh(FILE *f)
    if (m_d.m_baseVisible)
    {
       const string subObjName = name + string("Base");
-      WaveFrontObj_WriteObjectName(f, subObjName);
+      loader.WriteObjectName(subObjName);
 
       Vertex3D_NoTex2* base = new Vertex3D_NoTex2[bumperBaseNumVertices];
       GenerateBaseMesh(base);
-      WaveFrontObj_WriteVertexInfo(f, base, bumperBaseNumVertices);
+      loader.WriteVertexInfo(base, bumperBaseNumVertices);
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
-      WaveFrontObj_WriteMaterial(m_d.m_szBaseMaterial, string(), mat);
-      WaveFrontObj_UseTexture(f, m_d.m_szBaseMaterial);
-      WaveFrontObj_WriteFaceInfoList(f, bumperBaseIndices, bumperBaseNumIndices);
-      WaveFrontObj_UpdateFaceOffset(bumperBaseNumVertices);
+      loader.WriteMaterial(m_d.m_szBaseMaterial, string(), mat);
+      loader.UseTexture(m_d.m_szBaseMaterial);
+      loader.WriteFaceInfoList(bumperBaseIndices, bumperBaseNumIndices);
+      loader.UpdateFaceOffset(bumperBaseNumVertices);
       delete[] base;
    }
    if (m_d.m_ringVisible)
    {
       const string subObjName = name + string("Ring");
-      WaveFrontObj_WriteObjectName(f, subObjName);
+      loader.WriteObjectName(subObjName);
 
       Vertex3D_NoTex2* const ring = new Vertex3D_NoTex2[bumperRingNumVertices];
       GenerateRingMesh(ring);
-      WaveFrontObj_WriteVertexInfo(f, ring, bumperRingNumVertices);
-      WaveFrontObj_WriteFaceInfoList(f, bumperRingIndices, bumperRingNumIndices);
-      WaveFrontObj_UpdateFaceOffset(bumperRingNumVertices);
+      loader.WriteVertexInfo(ring, bumperRingNumVertices);
+      loader.WriteFaceInfoList(bumperRingIndices, bumperRingNumIndices);
+      loader.UpdateFaceOffset(bumperRingNumVertices);
       delete[] ring;
    }
    if (m_d.m_skirtVisible)
    {
       const string subObjName = name + string("Skirt");
-      WaveFrontObj_WriteObjectName(f, subObjName);
+      loader.WriteObjectName(subObjName);
 
       Vertex3D_NoTex2* const socket = new Vertex3D_NoTex2[bumperSocketNumVertices];
       GenerateSocketMesh(socket);
-      WaveFrontObj_WriteVertexInfo(f, socket, bumperSocketNumVertices);
+      loader.WriteVertexInfo(socket, bumperSocketNumVertices);
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
-      WaveFrontObj_WriteMaterial(m_d.m_szSkirtMaterial, string(), mat);
-      WaveFrontObj_UseTexture(f, m_d.m_szSkirtMaterial);
-      WaveFrontObj_WriteFaceInfoList(f, bumperSocketIndices, bumperSocketNumIndices);
-      WaveFrontObj_UpdateFaceOffset(bumperSocketNumVertices);
+      loader.WriteMaterial(m_d.m_szSkirtMaterial, string(), mat);
+      loader.UseTexture(m_d.m_szSkirtMaterial);
+      loader.WriteFaceInfoList(bumperSocketIndices, bumperSocketNumIndices);
+      loader.UpdateFaceOffset(bumperSocketNumVertices);
       delete[] socket;
    }
    if (m_d.m_capVisible)
    {
       const string subObjName = name + string("Cap");
-      WaveFrontObj_WriteObjectName(f, subObjName);
+      loader.WriteObjectName(subObjName);
 
       Vertex3D_NoTex2* const cap = new Vertex3D_NoTex2[bumperCapNumVertices];
       GenerateCapMesh(cap);
-      WaveFrontObj_WriteVertexInfo(f, cap, bumperCapNumVertices);
+      loader.WriteVertexInfo(cap, bumperCapNumVertices);
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
-      WaveFrontObj_WriteMaterial(m_d.m_szCapMaterial, string(), mat);
-      WaveFrontObj_UseTexture(f, m_d.m_szCapMaterial);
-      WaveFrontObj_WriteFaceInfoList(f, bumperCapIndices, bumperCapNumIndices);
-      WaveFrontObj_UpdateFaceOffset(bumperCapNumVertices);
+      loader.WriteMaterial(m_d.m_szCapMaterial, string(), mat);
+      loader.UseTexture(m_d.m_szCapMaterial);
+      loader.WriteFaceInfoList(bumperCapIndices, bumperCapNumIndices);
+      loader.UpdateFaceOffset(bumperCapNumVertices);
       delete[] cap;
    }
 }

@@ -504,7 +504,7 @@ void HitTarget::TransformVertices()
    }
 }
 
-void HitTarget::ExportMesh(FILE *f)
+void HitTarget::ExportMesh(ObjLoader& loader)
 {
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
    WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
@@ -513,16 +513,16 @@ void HitTarget::ExportMesh(FILE *f)
 
    m_transformedVertices.resize(m_numVertices);
 
-   WaveFrontObj_WriteObjectName(f, name);
+   loader.WriteObjectName(name);
 
    GenerateMesh(m_transformedVertices);
 
-   WaveFrontObj_WriteVertexInfo(f, m_transformedVertices.data(), m_numVertices);
+   loader.WriteVertexInfo(m_transformedVertices.data(), m_numVertices);
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   WaveFrontObj_WriteMaterial(m_d.m_szMaterial, string(), mat);
-   WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-   WaveFrontObj_WriteFaceInfoList(f, m_indices, m_numIndices);
-   WaveFrontObj_UpdateFaceOffset(m_numVertices);
+   loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
+   loader.UseTexture(m_d.m_szMaterial);
+   loader.WriteFaceInfoList(m_indices, m_numIndices);
+   loader.UpdateFaceOffset(m_numVertices);
 }
 
 

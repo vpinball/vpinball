@@ -178,7 +178,7 @@ public:
 
 
 class EventProxyBase;
-
+class ObjLoader;
 // IEditable is the subclass for anything class which is a self-contained table element.
 // It knows how to draw itself, interact with event and properties,
 // And talk to the player
@@ -204,7 +204,7 @@ public:
 
    virtual void RenderBlueprint(Sur *psur, const bool solid);
 
-   virtual void ExportMesh(FILE *f) {}
+   virtual void ExportMesh(ObjLoader& loader) {}
 
    virtual ULONG STDMETHODCALLTYPE AddRef() = 0;
    virtual ULONG STDMETHODCALLTYPE Release() = 0;

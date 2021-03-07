@@ -629,7 +629,7 @@ void Trigger::RenderDynamic()
    pd3dDevice->basicShader->End();
 }
 
-void Trigger::ExportMesh(FILE *f)
+void Trigger::ExportMesh(ObjLoader& loader)
 {
    if (!m_d.m_visible || m_d.m_shape == TriggerNone)
       return;
@@ -637,11 +637,11 @@ void Trigger::ExportMesh(FILE *f)
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
    WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
    GenerateMesh();
-   WaveFrontObj_WriteObjectName(f, name);
-   WaveFrontObj_WriteVertexInfo(f, m_triggerVertices, m_numVertices);
+   loader.WriteObjectName(name);
+   loader.WriteVertexInfo(m_triggerVertices, m_numVertices);
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   WaveFrontObj_WriteMaterial(m_d.m_szMaterial, string(), mat);
-   WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
+   loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
+   loader.UseTexture(m_d.m_szMaterial);
 
    const WORD* indices;
    switch(m_d.m_shape)
@@ -680,8 +680,8 @@ void Trigger::ExportMesh(FILE *f)
    }
    }
 
-   WaveFrontObj_WriteFaceInfoList(f, indices, m_numIndices);
-   WaveFrontObj_UpdateFaceOffset(m_numVertices);
+   loader.WriteFaceInfoList(indices, m_numIndices);
+   loader.UpdateFaceOffset(m_numVertices);
 }
 
 //

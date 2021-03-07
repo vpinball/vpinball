@@ -96,7 +96,7 @@ public:
       virtual Vertex2D GetCenter() const;
       virtual void PutCenter(const Vertex2D& pv);
       virtual void SetDefaultPhysics(bool fromMouseClick);
-      virtual void ExportMesh(FILE *f);
+      virtual void ExportMesh(ObjLoader& loader);
 
       virtual unsigned long long GetMaterialID() const
       {

@@ -776,7 +776,7 @@ void Surface::GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Ver
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-void Surface::ExportMesh(FILE *f)
+void Surface::ExportMesh(ObjLoader& loader)
 {
    const float oldBottomHeight = m_d.m_heightbottom;
    const float oldTopHeight = m_d.m_heighttop;
@@ -797,52 +797,52 @@ void Surface::ExportMesh(FILE *f)
    WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
    if (topBuf.size() > 0 && m_d.m_topBottomVisible && !m_d.m_sideVisible)
    {
-      WaveFrontObj_WriteObjectName(f, name);
-      WaveFrontObj_WriteVertexInfo(f, topBuf.data(), m_numVertices);
+      loader.WriteObjectName(name);
+      loader.WriteVertexInfo(topBuf.data(), m_numVertices);
       const Texture * const tex = m_ptable->GetImage(m_d.m_szImage);
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
       if (tex)
       {
-         WaveFrontObj_WriteMaterial(m_d.m_szImage, tex->m_szPath, mat);
-         WaveFrontObj_UseTexture(f, m_d.m_szImage);
+         loader.WriteMaterial(m_d.m_szImage, tex->m_szPath, mat);
+         loader.UseTexture(m_d.m_szImage);
       }
       else
       {
-         WaveFrontObj_WriteMaterial("none", string(), mat);
-         WaveFrontObj_UseTexture(f, "none");
+         loader.WriteMaterial("none", string(), mat);
+         loader.UseTexture("none");
       }
-      WaveFrontObj_WriteFaceInfo(f, topBottomIndices);
-      WaveFrontObj_UpdateFaceOffset(m_numVertices);
+      loader.WriteFaceInfo(topBottomIndices);
+      loader.UpdateFaceOffset(m_numVertices);
    }
    else if (topBuf.size() > 0 && m_d.m_topBottomVisible && m_d.m_sideVisible)
    {
       Vertex3D_NoTex2 * const tmp = new Vertex3D_NoTex2[m_numVertices * 5];
       memcpy(tmp, sideBuf.data(), sizeof(Vertex3D_NoTex2) * m_numVertices * 4);
       memcpy(&tmp[m_numVertices * 4], topBuf.data(), sizeof(Vertex3D_NoTex2)*m_numVertices);
-      WaveFrontObj_WriteObjectName(f, name);
-      WaveFrontObj_WriteVertexInfo(f, tmp, m_numVertices * 5);
+      loader.WriteObjectName(name);
+      loader.WriteVertexInfo(tmp, m_numVertices * 5);
       delete[] tmp;
 
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
-      WaveFrontObj_WriteMaterial(m_d.m_szTopMaterial, string(), mat);
-      WaveFrontObj_UseTexture(f, m_d.m_szTopMaterial);
+      loader.WriteMaterial(m_d.m_szTopMaterial, string(), mat);
+      loader.UseTexture(m_d.m_szTopMaterial);
       WORD * const idx = new WORD[topBottomIndices.size() + sideIndices.size()];
       memcpy(idx, sideIndices.data(), sideIndices.size()*sizeof(WORD));
       for (size_t i = 0; i < topBottomIndices.size(); i++)
          idx[sideIndices.size() + i] = topBottomIndices[i] + m_numVertices * 4;
-      WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)(topBottomIndices.size() + sideIndices.size()));
-      WaveFrontObj_UpdateFaceOffset(m_numVertices * 5);
+      loader.WriteFaceInfoList(idx, (unsigned int)(topBottomIndices.size() + sideIndices.size()));
+      loader.UpdateFaceOffset(m_numVertices * 5);
       delete[] idx;
    }
    else if (!m_d.m_topBottomVisible && m_d.m_sideVisible)
    {
-      WaveFrontObj_WriteObjectName(f, name);
-      WaveFrontObj_WriteVertexInfo(f, sideBuf.data(), m_numVertices * 4);
+      loader.WriteObjectName(name);
+      loader.WriteVertexInfo(sideBuf.data(), m_numVertices * 4);
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
-      WaveFrontObj_WriteMaterial(m_d.m_szSideMaterial, string(), mat);
-      WaveFrontObj_UseTexture(f, m_d.m_szSideMaterial);
-      WaveFrontObj_WriteFaceInfo(f, sideIndices);
-      WaveFrontObj_UpdateFaceOffset(m_numVertices * 4);
+      loader.WriteMaterial(m_d.m_szSideMaterial, string(), mat);
+      loader.UseTexture(m_d.m_szSideMaterial);
+      loader.WriteFaceInfo(sideIndices);
+      loader.UpdateFaceOffset(m_numVertices * 4);
    }
 }
 

@@ -92,7 +92,7 @@ public:
    virtual void PutCenter(const Vertex2D& pv) { PutPointCenter(pv); }
    virtual Vertex2D GetPointCenter() const;
    virtual void PutPointCenter(const Vertex2D& pv);
-   virtual void ExportMesh(FILE *f);
+   virtual void ExportMesh(ObjLoader& loader);
    virtual ItemTypeEnum HitableGetItemType() const { return eItemTrigger; }
    virtual void UpdateStatusBarInfo();
 

@@ -281,7 +281,7 @@ void Spinner::EndPlay()
    }
 }
 
-void Spinner::ExportMesh(FILE *f)
+void Spinner::ExportMesh(ObjLoader& loader)
 {
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
    WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
@@ -296,7 +296,7 @@ void Spinner::ExportMesh(FILE *f)
    if (m_d.m_showBracket)
    {
       const string subObjName = name + string("Bracket");
-      WaveFrontObj_WriteObjectName(f, subObjName);
+      loader.WriteObjectName(subObjName);
 
       m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
 
@@ -319,13 +319,13 @@ void Spinner::ExportMesh(FILE *f)
          transformedVertices[i].tu = spinnerBracket[i].tu;
          transformedVertices[i].tv = spinnerBracket[i].tv;
       }
-      WaveFrontObj_WriteVertexInfo(f, transformedVertices.data(), spinnerBracketNumVertices);
+      loader.WriteVertexInfo(transformedVertices.data(), spinnerBracketNumVertices);
 
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-      WaveFrontObj_WriteMaterial(m_d.m_szMaterial, string(), mat);
-      WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-      WaveFrontObj_WriteFaceInfoList(f, spinnerBracketIndices, spinnerBracketNumFaces);
-      WaveFrontObj_UpdateFaceOffset(spinnerBracketNumVertices);
+      loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
+      loader.UseTexture(m_d.m_szMaterial);
+      loader.WriteFaceInfoList(spinnerBracketIndices, spinnerBracketNumFaces);
+      loader.UpdateFaceOffset(spinnerBracketNumVertices);
 
       transformedVertices.clear();
    }
@@ -335,11 +335,10 @@ void Spinner::ExportMesh(FILE *f)
    UpdatePlate(transformedVertices.data());
 
    const string subObjName = name + string("Plate");
-   WaveFrontObj_WriteObjectName(f, subObjName);
-
-   WaveFrontObj_WriteVertexInfo(f, transformedVertices.data(), spinnerPlateNumVertices);
-   WaveFrontObj_WriteFaceInfoList(f, spinnerPlateIndices, spinnerPlateNumFaces);
-   WaveFrontObj_UpdateFaceOffset(spinnerPlateNumVertices);
+   loader.WriteObjectName(subObjName);
+   loader.WriteVertexInfo(transformedVertices.data(), spinnerPlateNumVertices);
+   loader.WriteFaceInfoList(spinnerPlateIndices, spinnerPlateNumFaces);
+   loader.UpdateFaceOffset(spinnerPlateNumVertices);
    transformedVertices.clear();
 }
 

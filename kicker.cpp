@@ -258,7 +258,7 @@ void Kicker::RenderStatic()
 {
 }
 
-void Kicker::ExportMesh(FILE *f)
+void Kicker::ExportMesh(ObjLoader& loader)
 {
    if (m_d.m_kickertype == KickerInvisible)
        return;
@@ -321,13 +321,13 @@ void Kicker::ExportMesh(FILE *f)
 
    Vertex3D_NoTex2 *vertices = new Vertex3D_NoTex2[num_vertices];
    GenerateMesh(vertices);
-   WaveFrontObj_WriteObjectName(f, name);
-   WaveFrontObj_WriteVertexInfo(f, vertices, num_vertices);
+   loader.WriteObjectName(name);
+   loader.WriteVertexInfo(vertices, num_vertices);
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   WaveFrontObj_WriteMaterial(m_d.m_szMaterial, string(), mat);
-   WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-   WaveFrontObj_WriteFaceInfoList(f, indices, num_indices);
-   WaveFrontObj_UpdateFaceOffset(num_vertices);
+   loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
+   loader.UseTexture(m_d.m_szMaterial);
+   loader.WriteFaceInfoList(indices, num_indices);
+   loader.UpdateFaceOffset(num_vertices);
    delete[] vertices;
 }
 

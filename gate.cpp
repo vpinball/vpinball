@@ -493,7 +493,7 @@ void Gate::RenderDynamic()
    RenderObject();
 }
 
-void Gate::ExportMesh(FILE *f)
+void Gate::ExportMesh(ObjLoader& loader)
 {
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
    WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
@@ -502,30 +502,30 @@ void Gate::ExportMesh(FILE *f)
    if (m_d.m_showBracket)
    {
       const string subName = name + string("Bracket");
-      WaveFrontObj_WriteObjectName(f, subName);
+      loader.WriteObjectName(subName);
       Vertex3D_NoTex2* const buf = new Vertex3D_NoTex2[gateBracketNumVertices];
       GenerateBracketMesh(buf);
-      WaveFrontObj_WriteVertexInfo(f, buf, gateBracketNumVertices);
+      loader.WriteVertexInfo(buf, gateBracketNumVertices);
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-      WaveFrontObj_WriteMaterial(m_d.m_szMaterial, string(), mat);
-      WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-      WaveFrontObj_WriteFaceInfoList(f, gateBracketIndices, gateBracketNumIndices);
-      WaveFrontObj_UpdateFaceOffset(gateBracketNumVertices);
+      loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
+      loader.UseTexture(m_d.m_szMaterial);
+      loader.WriteFaceInfoList(gateBracketIndices, gateBracketNumIndices);
+      loader.UpdateFaceOffset(gateBracketNumVertices);
       delete[] buf;
    }
 
    SetGateType(m_d.m_type);
 
    const string subName = name + string("Wire");
-   WaveFrontObj_WriteObjectName(f, subName);
+   loader.WriteObjectName(subName);
    Vertex3D_NoTex2* const buf = new Vertex3D_NoTex2[m_numVertices];
    GenerateWireMesh(buf);
-   WaveFrontObj_WriteVertexInfo(f, buf, m_numVertices);
+   loader.WriteVertexInfo(buf, m_numVertices);
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   WaveFrontObj_WriteMaterial(m_d.m_szMaterial, string(), mat);
-   WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-   WaveFrontObj_WriteFaceInfoList(f, m_indices, m_numIndices);
-   WaveFrontObj_UpdateFaceOffset(m_numVertices);
+   loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
+   loader.UseTexture(m_d.m_szMaterial);
+   loader.WriteFaceInfoList(m_indices, m_numIndices);
+   loader.UpdateFaceOffset(m_numVertices);
    delete[] buf;
 }
 

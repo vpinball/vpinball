@@ -78,7 +78,7 @@ public:
 
    virtual void PreRenderStatic(RenderDevice* pd3dDevice);
    virtual void SetDefaultPhysics(bool fromMouseClick);
-   virtual void ExportMesh(FILE *f);
+   virtual void ExportMesh(ObjLoader& loader);
 
    virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
    virtual ItemTypeEnum HitableGetItemType() const { return eItemKicker; }

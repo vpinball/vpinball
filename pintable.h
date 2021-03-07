@@ -405,7 +405,7 @@ public:
    virtual void SelectItem(IScriptable *piscript);
    virtual void DoCodeViewCommand(int command);
    virtual void SetDirtyScript(SaveDirtyState sds);
-   virtual void ExportMesh(FILE *f);
+   virtual void ExportMesh(ObjLoader& loader);
 
    // Multi-object manipulation
    virtual Vertex2D GetCenter() const;

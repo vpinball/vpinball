@@ -9,13 +9,6 @@
 #include "inc\progmesh.h"
 #include "inc\ThreadPool.h"
 
-// defined in objloader.cpp
-extern bool WaveFrontObj_Load(const string& filename, const bool flipTv, const bool convertToLeftHanded);
-extern void WaveFrontObj_GetVertices(std::vector<Vertex3D_NoTex2>& verts);
-extern void WaveFrontObj_GetIndices(std::vector<unsigned int>& list);
-extern void WaveFrontObj_Save(const string& filename, const string& description, const Mesh& mesh);
-//
-
 ThreadPool *g_pPrimitiveDecompressThreadPool = NULL;
 extern int logicalNumberOfProcessors;
 
@@ -59,10 +52,10 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
    for (size_t i = 0; i < allFiles.size(); i++)
    {
       sname = allFiles[i];
-      if (WaveFrontObj_Load(sname, flipTV, convertToLeftHanded))
+      ObjLoader loader;
+      if (loader.Load(sname, flipTV, convertToLeftHanded))
       {
-         std::vector<Vertex3D_NoTex2> verts;
-         WaveFrontObj_GetVertices(verts);
+         std::vector<Vertex3D_NoTex2> verts = loader.GetVertices();
          for (size_t t = 0; t < verts.size(); t++)
          {
             VertData vd;
@@ -87,11 +80,11 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
 bool Mesh::LoadWavefrontObj(const string& fname, const bool flipTV, const bool convertToLeftHanded)
 {
    Clear();
-
-   if (WaveFrontObj_Load(fname, flipTV, convertToLeftHanded))
+   ObjLoader loader;
+   if (loader.Load(fname, flipTV, convertToLeftHanded))
    {
-      WaveFrontObj_GetVertices(m_vertices);
-      WaveFrontObj_GetIndices(m_indices);
+      m_vertices = loader.GetVertices();
+      m_indices = loader.GetIndices();
       float maxX = -FLT_MAX, minX = FLT_MAX;
       float maxY = -FLT_MAX, minY = FLT_MAX;
       float maxZ = -FLT_MAX, minZ = FLT_MAX;
@@ -117,7 +110,8 @@ bool Mesh::LoadWavefrontObj(const string& fname, const bool flipTV, const bool c
 
 void Mesh::SaveWavefrontObj(const string& fname, const string& description)
 {
-   WaveFrontObj_Save(fname, description.empty() ? fname : description, *this);
+   ObjLoader loader;
+   loader.Save(fname, description.empty() ? fname : description, *this);
 }
 
 void Mesh::UploadToVB(VertexBuffer * vb, const float frame) 
@@ -1150,7 +1144,7 @@ void Primitive::UpdateStatusBarInfo()
 
 }
 
-void Primitive::ExportMesh(FILE *f)
+void Primitive::ExportMesh(ObjLoader& loader)
 {
    if (m_d.m_visible)
    {
@@ -1175,13 +1169,13 @@ void Primitive::ExportMesh(FILE *f)
          buf[i].tu = v.tu;
          buf[i].tv = v.tv;
       }
-      WaveFrontObj_WriteObjectName(f, name);
-      WaveFrontObj_WriteVertexInfo(f, buf, (unsigned int)m_mesh.NumVertices());
+      loader.WriteObjectName(name);
+      loader.WriteVertexInfo(buf, (unsigned int)m_mesh.NumVertices());
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-      WaveFrontObj_WriteMaterial(m_d.m_szMaterial, string(), mat);
-      WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-      WaveFrontObj_WriteFaceInfoLong(f, m_mesh.m_indices);
-      WaveFrontObj_UpdateFaceOffset((unsigned int)m_mesh.NumVertices());
+      loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
+      loader.UseTexture(m_d.m_szMaterial);
+      loader.WriteFaceInfoLong(m_mesh.m_indices);
+      loader.UpdateFaceOffset((unsigned int)m_mesh.NumVertices());
       delete[] buf;
    }
 }
@@ -1844,7 +1838,8 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                if (ReplaceExtensionFromFilename(szMatName, "mtl"))
                {
                   Material * const mat = new Material();
-                  if (WaveFrontObj_LoadMaterial(szMatName, mat))
+                  ObjLoader loader;
+                  if (loader.LoadMaterial(szMatName, mat))
                   {
                      CComObject<PinTable> * const pActiveTable = g_pvp->GetActiveTable();
                      if (pActiveTable)

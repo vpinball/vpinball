@@ -83,7 +83,7 @@ public:
    virtual void SetDefaultPhysics(bool fromMouseClick);
 
    virtual void RenderBlueprint(Sur *psur, const bool solid);
-   virtual void ExportMesh(FILE *f);
+   virtual void ExportMesh(ObjLoader& loader);
 
    virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
    virtual ItemTypeEnum HitableGetItemType() const { return eItemGate; }

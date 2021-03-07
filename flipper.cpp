@@ -670,7 +670,7 @@ void Flipper::RenderDynamic()
    g_pplayer->UpdateBasicShaderMatrix();
 }
 
-void Flipper::ExportMesh(FILE *f)
+void Flipper::ExportMesh(ObjLoader& loader)
 {
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
    WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
@@ -705,13 +705,13 @@ void Flipper::ExportMesh(FILE *f)
    }
 
    string subObjName = name + string("Base");
-   WaveFrontObj_WriteObjectName(f, subObjName);
-   WaveFrontObj_WriteVertexInfo(f, flipper, flipperBaseVertices);
+   loader.WriteObjectName(subObjName);
+   loader.WriteVertexInfo(flipper, flipperBaseVertices);
    const Material * mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   WaveFrontObj_WriteMaterial(m_d.m_szMaterial, string(), mat);
-   WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-   WaveFrontObj_WriteFaceInfoList(f, flipperBaseIndices, flipperBaseNumIndices);
-   WaveFrontObj_UpdateFaceOffset(flipperBaseVertices);
+   loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
+   loader.UseTexture(m_d.m_szMaterial);
+   loader.WriteFaceInfoList(flipperBaseIndices, flipperBaseNumIndices);
+   loader.UpdateFaceOffset(flipperBaseVertices);
    if (m_d.m_rubberthickness > 0.f)
    {
       Vertex3D_NoTex2 *buf = &flipper[flipperBaseVertices];
@@ -731,13 +731,13 @@ void Flipper::ExportMesh(FILE *f)
       }
 
       subObjName = name + string("Rubber");
-      WaveFrontObj_WriteObjectName(f, subObjName);
-      WaveFrontObj_WriteVertexInfo(f, &flipper[flipperBaseVertices], flipperBaseVertices);
+      loader.WriteObjectName(subObjName);
+      loader.WriteVertexInfo(&flipper[flipperBaseVertices], flipperBaseVertices);
       mat = m_ptable->GetMaterial(m_d.m_szRubberMaterial);
-      WaveFrontObj_WriteMaterial(m_d.m_szRubberMaterial, string(), mat);
-      WaveFrontObj_UseTexture(f, m_d.m_szRubberMaterial);
-      WaveFrontObj_WriteFaceInfoList(f, flipperBaseIndices, flipperBaseNumIndices);
-      WaveFrontObj_UpdateFaceOffset(flipperBaseVertices);
+      loader.WriteMaterial(m_d.m_szRubberMaterial, string(), mat);
+      loader.UseTexture(m_d.m_szRubberMaterial);
+      loader.WriteFaceInfoList(flipperBaseIndices, flipperBaseNumIndices);
+      loader.UpdateFaceOffset(flipperBaseVertices);
    }
 
    delete [] flipper;

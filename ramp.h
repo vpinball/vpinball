@@ -110,7 +110,7 @@ public:
    virtual unsigned long long GetImageID() const { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
    virtual ItemTypeEnum HitableGetItemType() const { return eItemRamp; }
    virtual void SetDefaultPhysics(bool fromMouseClick);
-   virtual void ExportMesh(FILE *f);
+   virtual void ExportMesh(ObjLoader& loader);
    virtual void AddPoint(int x, int y, const bool smooth);
    virtual void UpdateStatusBarInfo();
 

@@ -118,7 +118,7 @@ public:
    virtual ItemTypeEnum HitableGetItemType() const { return eItemSurface; }
    virtual bool IsTransparent() const;
    virtual void SetDefaultPhysics(bool fromMouseClick);
-   virtual void ExportMesh(FILE *f);
+   virtual void ExportMesh(ObjLoader& loader);
    virtual void AddPoint(int x, int y, const bool smooth);
    virtual void UpdateStatusBarInfo();
 

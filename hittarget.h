@@ -168,7 +168,7 @@ public:
    virtual ItemTypeEnum HitableGetItemType() const { return eItemHitTarget; }
 
    virtual void SetDefaultPhysics(bool fromMouseClick);
-   virtual void ExportMesh(FILE *f);
+   virtual void ExportMesh(ObjLoader& loader);
 
    void GenerateMesh(std::vector<Vertex3D_NoTex2> &buf);
    void TransformVertices();

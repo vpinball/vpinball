@@ -268,7 +268,7 @@ public:
    virtual ItemTypeEnum HitableGetItemType() const { return eItemPrimitive; }
 
    virtual void SetDefaultPhysics(bool fromMouseClick);
-   virtual void ExportMesh(FILE *f);
+   virtual void ExportMesh(ObjLoader& loader);
    virtual void RenderBlueprint(Sur *psur, const bool solid);
    virtual void UpdateStatusBarInfo();
 

@@ -99,7 +99,7 @@ public:
    virtual unsigned long long GetImageID() const { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
    virtual ItemTypeEnum HitableGetItemType() const { return eItemRubber; }
    virtual void SetDefaultPhysics(bool fromMouseClick);
-   virtual void ExportMesh(FILE *f);
+   virtual void ExportMesh(ObjLoader& loader);
 
    virtual void WriteRegDefaults();
    virtual void UpdateStatusBarInfo();

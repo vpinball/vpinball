@@ -78,7 +78,7 @@ public:
    virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
    virtual unsigned long long GetImageID() const { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
    virtual ItemTypeEnum HitableGetItemType() const { return eItemSpinner; }
-   virtual void ExportMesh(FILE *f);
+   virtual void ExportMesh(ObjLoader& loader);
 
    virtual void WriteRegDefaults();
    virtual void UpdateStatusBarInfo();

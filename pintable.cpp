@@ -5167,7 +5167,7 @@ void PinTable::ExportBlueprint()
 #endif
 }
 
-void PinTable::ExportMesh(FILE *f)
+void PinTable::ExportMesh(ObjLoader& loader)
 {
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
    WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
@@ -5215,13 +5215,13 @@ void PinTable::ExportMesh(FILE *f)
 
    SetNormal(rgv, playfieldPolyIndices + 6, 4);
 
-   WaveFrontObj_WriteObjectName(f, name);
-   WaveFrontObj_WriteVertexInfo(f, buffer, 4);
+   loader.WriteObjectName(name);
+   loader.WriteVertexInfo(buffer, 4);
    const Material * const mat = GetMaterial(m_szPlayfieldMaterial);
-   WaveFrontObj_WriteMaterial(m_szPlayfieldMaterial, string(), mat);
-   WaveFrontObj_UseTexture(f, m_szPlayfieldMaterial);
-   WaveFrontObj_WriteFaceInfoList(f, playfieldPolyIndices, 6);
-   WaveFrontObj_UpdateFaceOffset(4);
+   loader.WriteMaterial(m_szPlayfieldMaterial, string(), mat);
+   loader.UseTexture(m_szPlayfieldMaterial);
+   loader.WriteFaceInfoList(playfieldPolyIndices, 6);
+   loader.UpdateFaceOffset(4);
    delete[] buffer;
 }
 
@@ -5246,21 +5246,18 @@ void PinTable::ExportTableMesh()
    // user canceled
    if (ret == 0)
       return;// S_FALSE;
+   std::string filename = std::string(szObjFileName);
 
-   FILE *f = WaveFrontObj_ExportStart(szObjFileName);
-   if (f == NULL)
-   {
-      ShowError("Unable to create obj file!");
-      return;
-   }
-   ExportMesh(f);
+   ObjLoader loader;
+   loader.ExportStart(filename);
+   ExportMesh(loader);
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
       IEditable * const ptr = m_vedit[i];
       if (ptr->GetISelect()->m_isVisible && ptr->m_backglass == m_vpinball->m_backglassView)
-         ptr->ExportMesh(f);
+         ptr->ExportMesh(loader);
    }
-   WaveFrontObj_ExportEnd(f);
+   loader.ExportEnd();
    m_vpinball->MessageBox("Export finished!", "Info", MB_OK | MB_ICONEXCLAMATION);
 }
 
