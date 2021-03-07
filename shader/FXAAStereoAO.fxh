@@ -1096,11 +1096,11 @@ float4 ps_main_BilateralSharp_CAS(const in VS_OUTPUT_2D IN) : COLOR
 	// Bilateral Blur (crippled)
 	float3 final_colour = float3(0.,0.,0.);
 	float Z = 0.0;
-	[unroll] for (int j=-2; j <= 2; ++j)
+	[unroll] for (int j=-2; j <= 2; ++j) // 2 = kernelradius
 		[unroll] for (int i=-2; i <= 2; ++i)
 		{
-			const float3 cc = tex2Dlod(texSampler4, float4(u.x + i*w_h_height.x, u.y + j*w_h_height.y, 0.,0.)).xyz;
-			const float factor = normpdf(cc-e, 0.25); // BSIGMA
+			const float3 cc = tex2Dlod(texSampler4, float4(u.x + i*(w_h_height.x*0.5), u.y + j*(w_h_height.y*0.5), 0.,0.)).xyz; // *0.5 = 1/kernelradius
+			const float factor = normpdf(cc-e, 0.25); // 0.25 = BSIGMA
 			Z += factor;
 			final_colour += factor*cc;
 		}
@@ -1122,6 +1122,10 @@ float4 ps_main_BilateralSharp_CAS(const in VS_OUTPUT_2D IN) : COLOR
 	const float rcpMRGB = rcp(mxRGB);
 	const float ampRGB = saturate(min(mnRGB, 1.0 - mxRGB) * rcpMRGB);
 
-	const float3 sharpen = (e-final_colour/Z) * sharpness;
+	float3 sharpen = (e-final_colour/Z) * sharpness;
+
+	const float gs_sharpen = dot(sharpen, 0.333333333333);
+	sharpen = lerp(gs_sharpen, sharpen, 0.5);
+
 	return float4(lerp(e, sharpen+e, ampRGB*saturate(sharpness)), 1.0);
 }
