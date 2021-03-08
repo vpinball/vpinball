@@ -51,8 +51,6 @@ INT_PTR   iString;
 } TBBUTTON, *PTBBUTTON, *LPTBBUTTON;
 */
 
-WCHAR *VPinball::m_customParameters[MAX_CUSTOM_PARAM_INDEX] = {};
-
 INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -85,12 +83,19 @@ VPinball::VPinball()
       }
    }
 
-   // DLL_API void DLL_CALLCONV FreeImage_Initialise(BOOL load_local_plugins_only FI_DEFAULT(FALSE)); //add FreeImage support BDS
+   // DLL_API void DLL_CALLCONV FreeImage_Initialise(BOOL load_local_plugins_only FI_DEFAULT(FALSE)); // would only be needed if linking statically
+
    m_closing = false;
    m_unloadingTable = false;
    m_cref = 0;				//inits Reference Count for IUnknown Interface. Every com Object must 
    //implement this and StdMethods QueryInterface, AddRef and Release
-   m_open_minimized = 0;
+
+   m_open_minimized = false;
+   m_disEnableTrueFullscreen = -1;
+   m_table_played_via_command_line = false;
+   m_logicalNumberOfProcessors = -1;
+   for (unsigned int i = 0; i < MAX_CUSTOM_PARAM_INDEX; ++i)
+      m_customParameters[i] = nullptr;
 
    m_mouseCursorPosition.x = 0.0f;
    m_mouseCursorPosition.y = 0.0f;
@@ -100,11 +105,11 @@ VPinball::VPinball()
 
    m_ptableActive = NULL;
 
-   m_workerthread = NULL;										//Workerthread - only for hanging scripts and autosave - will be created later
+   m_workerthread = NULL;	//Workerthread - only for hanging scripts and autosave - will be created later
 
    m_ToolCur = IDC_SELECT;
 
-   GetMyPath();													//Store path of vpinball.exe in m_szMyPath and m_wzMyPath
+   GetMyPath();				//Store path of vpinball.exe in m_szMyPath and m_wzMyPath
 
 #ifdef _WIN64
    m_scintillaDll = LoadLibrary("SciLexerVP64.DLL");
@@ -172,19 +177,6 @@ void VPinball::GetMyPath()
    MultiByteToWideCharNull(CP_ACP, 0, szPath, -1, wzPath, MAXSTRING);
    m_wzMyPath = wzPath;
 }
-
-// Class Variables
-bool VPinball::m_open_minimized;
-
-///<summary>
-///Sets m_open_minimized to 1
-///Called by CLI Option minimized 
-///</summary>
-void VPinball::SetOpenMinimized()
-{
-   m_open_minimized = 1;
-}
-
 
 ///<summary>
 ///Ensure that worker thread exists
@@ -766,9 +758,7 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
        {
            CComObject<PinTable> * const ptCur = GetActiveTable();
            if (ptCur)
-           {
-               ShowSubDialog(m_imageMngDlg);
-           }
+              ShowSubDialog(m_imageMngDlg,true);
            return true;
        }
        case IDM_SOUND_EDITOR:
@@ -776,9 +766,7 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
        {
            CComObject<PinTable> * const ptCur = GetActiveTable();
            if (ptCur)
-           {
-              ShowSubDialog(m_soundMngDlg);
-           }
+              ShowSubDialog(m_soundMngDlg,true);
            return true;
        }
        case IDM_MATERIAL_EDITOR:
@@ -786,9 +774,7 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
        {
            CComObject<PinTable> * const ptCur = GetActiveTable();
            if (ptCur)
-           {
-               ShowSubDialog(m_materialDialog);
-           }
+              ShowSubDialog(m_materialDialog,true);
            return true;
        }
        case ID_TABLE_NOTES:
@@ -808,7 +794,7 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
        }
        case ID_TABLE_DIMENSIONMANAGER:
        {
-           ShowSubDialog(m_dimensionDialog);
+           ShowSubDialog(m_dimensionDialog,true);
            return true;
        }
        case IDM_COLLECTION_EDITOR:
@@ -816,9 +802,7 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
        {
            CComObject<PinTable> * const ptCur = GetActiveTable();
            if (ptCur)
-           {
-               ShowSubDialog(m_collectionMngDlg);
-           }
+              ShowSubDialog(m_collectionMngDlg,true);
            return true;
        }
        case ID_PREFERENCES_SECURITYOPTIONS:
@@ -838,7 +822,7 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
        }
        case ID_HELP_ABOUT:
        {
-          ShowSubDialog(m_aboutDialog);
+          ShowSubDialog(m_aboutDialog,true);
           return true;
        }
        case ID_WINDOW_CASCADE:
@@ -1428,12 +1412,12 @@ void VPinball::OnDestroy()
     PostMessage(WM_QUIT, 0, 0);
 }
 
-void VPinball::ShowSubDialog(CDialog &dlg)
+void VPinball::ShowSubDialog(CDialog &dlg, const bool show)
 {
     if (!dlg.IsWindow())
     {
        dlg.Create(GetHwnd());
-       dlg.ShowWindow();
+       dlg.ShowWindow(show ? SW_SHOWNORMAL : SW_HIDE);
     }
     else
        dlg.SetForegroundWindow();
@@ -1451,20 +1435,17 @@ int VPinball::OnCreate(CREATESTRUCT& cs)
 //     UseStatusBar(FALSE);          // Don't use a StatusBar
 //     UseThemes(FALSE);             // Don't use themes
 //     UseToolBar(FALSE);            // Don't use a ToolBar
+
     m_mainMenu.LoadMenu(_T("IDR_APPMENU"));
 
     SetFrameMenu(m_mainMenu.GetHandle());
 
-    LPTSTR lpCmdLine = GetCommandLine();						//this line necessary for _ATL_MIN_CRT
-    if (strstr(lpCmdLine, "minimized"))
-        SetOpenMinimized();
+    const int result = CMDIDockFrame::OnCreate(cs);
 
     char szName[256];
     LoadString(theInstance, IDS_PROJNAME, szName, 256);
-    
-    const int result = CMDIDockFrame::OnCreate(cs);
-    
     SetWindowText(szName);
+
     return result;
 }
 

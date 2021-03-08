@@ -9,8 +9,6 @@
 #define STBI_NO_FAILURE_STRINGS
 #include "stb_image.h"
 
-extern bool table_played_via_command_line;
-
 BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
 {
    // check if Textures exceed the maximum texture dimension
@@ -473,7 +471,7 @@ void Texture::FreeStuff()
 void Texture::CreateGDIVersion()
 {
    if (m_hbmGDIVersion
-       || table_played_via_command_line) // only do anything in here (and waste memory on it) if UI needed (i.e. if not just play via command line is triggered!)
+    || g_pvp->m_table_played_via_command_line) // only do anything in here (and waste memory/time on it) if UI needed (i.e. if not just -Play via command line is triggered!)
       return;
 
    HDC hdcScreen = GetDC(NULL);

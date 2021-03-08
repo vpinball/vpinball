@@ -785,7 +785,7 @@ int PinInput::started()
 
 void PinInput::autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_time_msec)
 {
-   //	if (!VPinball::m_open_minimized)
+   //	if (!g_pvp->m_open_minimized)
    //		return;
 
    // Make sure we have a player.

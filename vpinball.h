@@ -48,7 +48,7 @@ public:
    virtual ~VPinball();
    void Quit();
 
-   void ShowSubDialog(CDialog& dlg);
+   void ShowSubDialog(CDialog& dlg, const bool show);
 
 private:
    void ShowSearchSelect();
@@ -120,7 +120,6 @@ public:
    HANDLE PostWorkToWorkerThread(int workid, LPARAM lParam);
 
    void SetAutoSaveMinutes(const int minutes);
-   static void SetOpenMinimized();
    void ShowDrawingOrderDialog(bool select);
 
    void SetStatusBarElementInfo(const string& info);
@@ -228,8 +227,12 @@ public:
    COLORREF m_fillColor;
    Vertex2D m_mouseCursorPosition;
 
-   static bool m_open_minimized;
-   static WCHAR *m_customParameters[MAX_CUSTOM_PARAM_INDEX];
+   // command line parameters
+   bool m_open_minimized;
+   int m_disEnableTrueFullscreen;
+   bool m_table_played_via_command_line;
+   int m_logicalNumberOfProcessors;
+   WCHAR *m_customParameters[MAX_CUSTOM_PARAM_INDEX];
 
 protected:
    virtual void PreCreate(CREATESTRUCT& cs);

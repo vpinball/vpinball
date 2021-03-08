@@ -2,8 +2,6 @@
 #include "RenderDevice.h"
 #include "inc\ThreadPool.h"
 
-extern int logicalNumberOfProcessors;
-
 int NumVideoBytes = 0;
 
 Pin3D::Pin3D()
@@ -198,7 +196,7 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap, const DWORD env_xres
    //!! (note though that even 4096 samples can be too low if very bright spots (i.e. sun) in the image! see Delta_2k.hdr -> thus pre-filter enabled above!)
    // but with this implementation one can also have custom maps/LUTs for glossy, etc. later-on
    {
-      ThreadPool pool(logicalNumberOfProcessors);
+      ThreadPool pool(g_pvp->m_logicalNumberOfProcessors);
 
       for (unsigned int y = 0; y < rad_env_yres; ++y) {
          pool.enqueue([y, rad_env_xres, rad_env_yres, isHDR, envmap, env_xres, env_yres, rad_envmap] {

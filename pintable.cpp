@@ -13,8 +13,6 @@
 #include "inc\ThreadPool.h"
 #include "inc\scalefx.h"
 
-extern int logicalNumberOfProcessors;
-
 using namespace rapidxml;
 
 #define HASHLENGTH 16
@@ -1901,7 +1899,7 @@ void PinTable::Play(const bool cameraMode)
    // make sure the load directory is the active directory
    SetCurrentDirectory(szLoadDir.c_str());
 
-   m_vpinball->ShowSubDialog(m_progressDialog);
+   m_vpinball->ShowSubDialog(m_progressDialog, !g_pvp->m_open_minimized);
 
    m_progressDialog.SetProgress(1);
    m_progressDialog.SetName("Backing Up Table State...");
@@ -3362,7 +3360,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             assert(m_vimage.size() == 0);
             m_vimage.resize(ctextures); // due to multithreaded loading do pre-allocation
             {
-               ThreadPool pool(logicalNumberOfProcessors);
+               ThreadPool pool(g_pvp->m_logicalNumberOfProcessors);
 
                for (int i = 0; i < ctextures; i++)
                {

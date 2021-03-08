@@ -10,7 +10,6 @@
 #include "inc\ThreadPool.h"
 
 ThreadPool *g_pPrimitiveDecompressThreadPool = NULL;
-extern int logicalNumberOfProcessors;
 
 void Mesh::Clear()
 {
@@ -1664,7 +1663,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
       mz_uint8 * c = (mz_uint8 *)malloc(m_compressedVertices);
       pbr->GetStruct(c, m_compressedVertices);
 	  if (g_pPrimitiveDecompressThreadPool == NULL)
-		  g_pPrimitiveDecompressThreadPool = new ThreadPool(logicalNumberOfProcessors);
+		  g_pPrimitiveDecompressThreadPool = new ThreadPool(g_pvp->m_logicalNumberOfProcessors);
 
 	  g_pPrimitiveDecompressThreadPool->enqueue([uclen, c, this] {
 		  mz_ulong uclen2 = uclen;
@@ -1708,7 +1707,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
          mz_uint8 * c = (mz_uint8 *)malloc(m_compressedIndices);
          pbr->GetStruct(c, m_compressedIndices);
 		 if (g_pPrimitiveDecompressThreadPool == NULL)
-			 g_pPrimitiveDecompressThreadPool = new ThreadPool(logicalNumberOfProcessors);
+			 g_pPrimitiveDecompressThreadPool = new ThreadPool(g_pvp->m_logicalNumberOfProcessors);
 
 		 g_pPrimitiveDecompressThreadPool->enqueue([uclen, c, this] {
 			 mz_ulong uclen2 = uclen;
@@ -1730,7 +1729,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
          mz_uint8 * c = (mz_uint8 *)malloc(m_compressedIndices);
          pbr->GetStruct(c, m_compressedIndices);
          if (g_pPrimitiveDecompressThreadPool == NULL)
-            g_pPrimitiveDecompressThreadPool = new ThreadPool(logicalNumberOfProcessors);
+            g_pPrimitiveDecompressThreadPool = new ThreadPool(g_pvp->m_logicalNumberOfProcessors);
 
          g_pPrimitiveDecompressThreadPool->enqueue([uclen, c, this] {
             std::vector<WORD> tmp(m_numIndices);

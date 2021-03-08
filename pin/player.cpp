@@ -100,8 +100,6 @@ EnumAssignKeys touchkeymap[8] = {
 static unsigned int material_flips = 0;
 static unsigned int stats_drawn_static_triangles = 0;
 
-extern int disEnableTrueFullscreen; // set via command line
-
 //
 
 #define RECOMPUTEBUTTONCHECK WM_USER+100
@@ -357,9 +355,9 @@ void Player::PreCreate(CREATESTRUCT& cs)
     m_fullScreen = LoadValueBoolWithDefault("Player", "FullScreen", IsWindows10_1803orAbove());
 
     // command line override
-    if (disEnableTrueFullscreen == 0)
+    if (g_pvp->m_disEnableTrueFullscreen == 0)
         m_fullScreen = false;
-    else if (disEnableTrueFullscreen == 1)
+    else if (g_pvp->m_disEnableTrueFullscreen == 1)
         m_fullScreen = true;
 
     int x, y;
@@ -548,7 +546,7 @@ void Player::Shutdown()
 #endif
 
    if(m_toogle_DTFS && m_ptable->m_BG_current_set != 2)
-       m_ptable->m_BG_current_set ^= 1;
+      m_ptable->m_BG_current_set ^= 1;
 
    m_pininput.UnInit();
 
@@ -3711,7 +3709,7 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
 }
 
 #ifdef USE_IMGUI
-// call UpddateHUD_IMGUI outside of m_pin3d.m_pd3dPrimaryDevice->BeginScene()/EndSecene()
+// call UpdateHUD_IMGUI outside of m_pin3d.m_pd3dPrimaryDevice->BeginScene()/EndSecene()
 void Player::UpdateHUD_IMGUI()
 {
    static bool profiling = false;
@@ -4890,7 +4888,7 @@ void Player::Render()
          {
             exit(-9999); // blast into space
          }
-         else if (!VPinball::m_open_minimized && m_closeType == 0)
+         else if (!g_pvp->m_open_minimized && m_closeType == 0)
          {
              ShowCursor(TRUE);
              option = DialogBox(g_pvp->theInstance, MAKEINTRESOURCE(IDD_GAMEPAUSE), GetHwnd(), PauseProc);
@@ -4911,7 +4909,7 @@ void Player::Render()
          if (option == ID_QUIT)
              m_ptable->SendMessage(WM_COMMAND, ID_TABLE_STOP_PLAY, 0);
       }
-      else if(m_showDebugger && !VPinball::m_open_minimized)
+      else if(m_showDebugger && !g_pvp->m_open_minimized)
       {
           m_debugMode = true;
           m_showDebugger = false;

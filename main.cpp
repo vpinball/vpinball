@@ -186,9 +186,6 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
 }
 
 std::map<ItemTypeEnum, EditableInfo> EditableRegistry::m_map;
-int disEnableTrueFullscreen = -1;
-bool table_played_via_command_line = false;
-int logicalNumberOfProcessors = -1;
 
 class VPApp : public CWinApp
 {
@@ -241,7 +238,7 @@ public:
       //!! max(2u, std::thread::hardware_concurrency()) ??
       SYSTEM_INFO sysinfo;
       GetSystemInfo(&sysinfo);
-      logicalNumberOfProcessors = sysinfo.dwNumberOfProcessors; //!! this ignores processor groups, so if at some point we need extreme multi threading, implement this in addition!
+      m_vpinball.m_logicalNumberOfProcessors = sysinfo.dwNumberOfProcessors; //!! this ignores processor groups, so if at some point we need extreme multi threading, implement this in addition!
 
 #if _WIN32_WINNT >= 0x0400 & defined(_ATL_FREE_THREADED)
       const HRESULT hRes = CoInitializeEx(NULL, COINIT_MULTITHREADED);
@@ -277,10 +274,10 @@ public:
             || lstrcmpi(szArglist[i], _T("-Help")) == 0 || lstrcmpi(szArglist[i], _T("/Help")) == 0
             || lstrcmpi(szArglist[i], _T("-?")) == 0 || lstrcmpi(szArglist[i], _T("/?")) == 0)
          {
-            m_vpinball.MessageBox("-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n\n-Edit [filename]  load file into VP\n-Play [filename]  load and play file\n-Pov [filename]  load, export pov and close\n-ExtractVBS [filename]  load, export table script and close\n-c1 [customparam] .. -c9 [customparam]  custom user parameters that can be accessed in the script via GetCustomParam(X)",
+            m_vpinball.MessageBox("-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n-Minimized  Start VP in the 'invisible' minimized window mode\n\n-Edit [filename]  Load file into VP\n-Play [filename]  load and play file\n-Pov [filename]  Load, export pov and close\n-ExtractVBS [filename]  Load, export table script and close\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)",
                  "VPinball Usage", MB_OK);
             run = false;
-            break;
+            exit(0);
          }
 
          //
@@ -308,12 +305,12 @@ public:
 
          if (lstrcmpi(szArglist[i], _T("-DisableTrueFullscreen")) == 0 || lstrcmpi(szArglist[i], _T("/DisableTrueFullscreen")) == 0)
          {
-             disEnableTrueFullscreen = 0;
+             m_vpinball.m_disEnableTrueFullscreen = 0;
              continue;
          }
          if (lstrcmpi(szArglist[i], _T("-EnableTrueFullscreen")) == 0 || lstrcmpi(szArglist[i], _T("/EnableTrueFullscreen")) == 0)
          {
-             disEnableTrueFullscreen = 1;
+             m_vpinball.m_disEnableTrueFullscreen = 1;
              continue;
          }
 
@@ -336,9 +333,9 @@ public:
          if (useCustomParams && (i+1<nArgs))
          {
              const size_t len = strlen(szArglist[i + 1]);
-             VPinball::m_customParameters[customIdx - 1] = new WCHAR[len + 1];
+             m_vpinball.m_customParameters[customIdx - 1] = new WCHAR[len + 1];
 
-             MultiByteToWideCharNull(CP_ACP, 0, szArglist[i + 1], -1, VPinball::m_customParameters[customIdx - 1], (int)len + 1);
+             MultiByteToWideCharNull(CP_ACP, 0, szArglist[i + 1], -1, m_vpinball.m_customParameters[customIdx - 1], (int)len + 1);
 
              ++i; // two params processed
 
@@ -346,6 +343,10 @@ public:
          }
 
          //
+
+         const bool minimized = (lstrcmpi(szArglist[i], _T("-Minimized")) == 0 || lstrcmpi(szArglist[i], _T("/Minimized")) == 0);
+         if (minimized)
+             m_vpinball.m_open_minimized = true;
 
          const bool editfile = (lstrcmpi(szArglist[i], _T("-Edit")) == 0 || lstrcmpi(szArglist[i], _T("/Edit")) == 0);
          const bool playfile = (lstrcmpi(szArglist[i], _T("-Play")) == 0 || lstrcmpi(szArglist[i], _T("/Play")) == 0);
@@ -473,7 +474,7 @@ public:
            if (!szTableFileName.empty())
            {
                m_vpinball.LoadFileName(szTableFileName, !play);
-               table_played_via_command_line = play;
+               m_vpinball.m_table_played_via_command_line = play;
            }
            else
                loadFileResult = m_vpinball.LoadFile(!play);
