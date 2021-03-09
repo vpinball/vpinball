@@ -1,3 +1,5 @@
+#pragma warning( once : 3571 ) // only output 'pow(f, e) will not work for negative f, use abs(f) or conditionally handle negative values if you expect them' once
+
 #define PI 3.1415926535897932384626433832795
 
 float sqr(const float v)

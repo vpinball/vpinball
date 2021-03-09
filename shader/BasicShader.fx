@@ -300,7 +300,7 @@ float4 ps_main_bg_decal_texture(const in VS_OUTPUT IN) : COLOR
 //------------------------------------------
 // Kicker boolean vertex shader
 
-const float fKickerScale = 1.;
+const float fKickerScale;
 
 VS_NOTEX_OUTPUT vs_kicker (const in float4 vPosition : POSITION0,
                            const in float3 vNormal   : NORMAL0,

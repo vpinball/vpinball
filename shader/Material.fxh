@@ -21,19 +21,19 @@ const float4 packedLights[15]; //!! 4x15 = (NUM_LIGHTS+NUM_BALL_LIGHTS)x6
 static const CLight lights[iLightPointBallsNum] = (CLight[iLightPointBallsNum])packedLights;
 #endif
 
-const float4 cAmbient_LightRange = float4(0.0,0.0,0.0, 0.0); //!! remove completely, just rely on envmap/IBL?
+const float4 cAmbient_LightRange; //!! remove completely, just rely on envmap/IBL?
 
 const float2 fenvEmissionScale_TexWidth;
 
-const float2 fDisableLighting_top_below = float2(0.,0.);
+const float2 fDisableLighting_top_below;
 
 //
 // Material Params
 //
 
-const float4 cBase_Alpha = float4(0.5,0.5,0.5, 1.0); //!! 0.04-0.95 in RGB
+const float4 cBase_Alpha; //!! 0.04-0.95 in RGB
 
-const float4 Roughness_WrapL_Edge_Thickness = float4(4.0, 0.5, 1.0, 0.05); // wrap in [0..1] for rim/wrap lighting
+const float4 Roughness_WrapL_Edge_Thickness; // wrap in [0..1] for rim/wrap lighting
 
 //
 // Material Helper Functions

@@ -58,7 +58,7 @@ sampler2D texSampler7 : TEXUNIT3 = sampler_state // ball decal
 	ADDRESSV  = Wrap;
 };
 
-const bool     hdrEnvTextures = false;
+const bool     hdrEnvTextures;
 
 #include "Material.fxh"
 
