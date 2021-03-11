@@ -1,0 +1,15 @@
+-?  Displays the following info
+
+-UnregServer  Unregister VP functions
+-RegServer    Register VP functions
+
+-DisableTrueFullscreen  Force-disable True Fullscreen setting
+-EnableTrueFullscreen   Force-enable True Fullscreen setting
+-Minimized              Start VP in the 'invisible' minimized window mode
+-LessCPUthreads         Limit the amount of parallel execution
+
+-Edit [filename]        Load file into VP
+-Play [filename]        Load and play file
+-Pov [filename]         Load, export pov and close
+-ExtractVBS [filename]  Load, export table script and close
+-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)

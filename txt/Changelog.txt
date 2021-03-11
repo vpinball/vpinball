@@ -28,6 +28,7 @@ FEATURES:
 - add WEBP to list of supported image formats
 
 - optimize table loading/pre-processing time
+  to reduce the amount of parallel CPU threads running, use the new command line parameter "-LessCPUthreads"
 - optimize loading of JPG images in the table
 - reduce temporary memory needed for images and automatically downscale textures if CPU memory is running out
 
