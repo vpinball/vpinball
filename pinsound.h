@@ -28,7 +28,7 @@ BOOL CALLBACK DSEnumCallBack(LPGUID guid, LPCSTR desc, LPCSTR mod, LPVOID list);
 
 enum SoundOutTypes : char { SNDOUT_TABLE = 0, SNDOUT_BACKGLASS = 1 };
 enum SoundConfigTypes : int { SNDCFG_SND3D2CH = 0, SNDCFG_SND3DALLREAR = 1, SNDCFG_SND3DFRONTISREAR = 2, 
-                              SNDCFG_SND3DFRONTISFRONT = 3, SNDCFG_SND3D6CH = 4};
+                              SNDCFG_SND3DFRONTISFRONT = 3, SNDCFG_SND3D6CH = 4, SNDCFG_SND3DSSF = 5};
 
 // Surround modes
 // ==============
@@ -48,6 +48,9 @@ enum SoundConfigTypes : int { SNDCFG_SND3D2CH = 0, SNDCFG_SND3DALLREAR = 1, SNDC
 //
 // 6CH: Rear of playfield shifted to the sides, and front of playfield shifted to the far rear.   Leaves front channels open
 // for default backglass and VPinMame. 
+//
+// SSF: 6CH still doesn't map sounds for SSF as distinctly as it could.. In this mode horizontal panning and vertical fading 
+// are enhanced for a more realistic experience.
 
 class PinDirectSoundWavCopy
 {
@@ -139,6 +142,8 @@ public:
 
    void InitDirectSound(const HWND hwnd, const bool IsBackglass);
    static float PanTo3D(float input);
+   static float PanSSF(float input);
+   static float FadeSSF(float input);
 
    LPDIRECTSOUND       m_pDS;
 
