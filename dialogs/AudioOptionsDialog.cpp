@@ -15,8 +15,7 @@ BOOL AudioOptionsDialog::OnInitDialog()
    const HWND hwndSoundSlider = GetDlgItem(IDC_SOUND_SLIDER).GetHwnd();
    bool fsound = LoadValueBoolWithDefault("Player", "PlayMusic", true);
 
-   HWND hwndControl = GetDlgItem(IDC_PLAY_MUSIC).GetHwnd();
-   SendMessage(hwndControl, BM_SETCHECK, fsound ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendMessage(GetDlgItem(IDC_PLAY_MUSIC).GetHwnd(), BM_SETCHECK, fsound ? BST_CHECKED : BST_UNCHECKED, 0);
    if (!fsound)
    {
       ::EnableWindow(hwndMusicSlider, FALSE);
@@ -25,8 +24,7 @@ BOOL AudioOptionsDialog::OnInitDialog()
 
    fsound = LoadValueBoolWithDefault("Player", "PlaySound", true);
 
-   hwndControl = GetDlgItem(IDC_PLAY_SOUND).GetHwnd();
-   SendMessage(hwndControl, BM_SETCHECK, fsound ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendMessage(GetDlgItem(IDC_PLAY_SOUND).GetHwnd(), BM_SETCHECK, fsound ? BST_CHECKED : BST_UNCHECKED, 0);
    if (!fsound)
    {
       ::EnableWindow(hwndSoundSlider, FALSE);
@@ -38,28 +36,22 @@ BOOL AudioOptionsDialog::OnInitDialog()
    switch (fmusic)
    {
    case SNDCFG_SND3DALLREAR:
-	   hwndControl = GetDlgItem(IDC_RADIO_SND3DALLREAR).GetHwnd();
-	   SendMessage(hwndControl, BM_SETCHECK, BST_CHECKED, 0);
+	   SendMessage(GetDlgItem(IDC_RADIO_SND3DALLREAR).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
 	   break;
    case SNDCFG_SND3DFRONTISFRONT:
-	   hwndControl = GetDlgItem(IDC_RADIO_SND3DFRONTISFRONT).GetHwnd();
-	   SendMessage(hwndControl, BM_SETCHECK, BST_CHECKED, 0);
+	   SendMessage(GetDlgItem(IDC_RADIO_SND3DFRONTISFRONT).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
 	   break;
    case SNDCFG_SND3DFRONTISREAR:
-	   hwndControl = GetDlgItem(IDC_RADIO_SND3DFRONTISREAR).GetHwnd();
-	   SendMessage(hwndControl, BM_SETCHECK, BST_CHECKED, 0);
+	   SendMessage(GetDlgItem(IDC_RADIO_SND3DFRONTISREAR).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
 	   break;
    case SNDCFG_SND3D6CH:
-	   hwndControl = GetDlgItem(IDC_RADIO_SND3D6CH).GetHwnd();
-	   SendMessage(hwndControl, BM_SETCHECK, BST_CHECKED, 0);
+	   SendMessage(GetDlgItem(IDC_RADIO_SND3D6CH).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
 	   break;
    case SNDCFG_SND3DSSF:
-	   hwndControl = GetDlgItem(IDC_RADIO_SND3DSSF).GetHwnd();
-	   SendMessage(hwndControl, BM_SETCHECK, BST_CHECKED, 0);
+	   SendMessage(GetDlgItem(IDC_RADIO_SND3DSSF).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
 	   break;
    default:
-	   hwndControl = GetDlgItem(IDC_RADIO_SND3D2CH).GetHwnd();
-	   SendMessage(hwndControl, BM_SETCHECK, BST_CHECKED, 0);
+	   SendMessage(GetDlgItem(IDC_RADIO_SND3D2CH).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
 	   break;
    }
 
@@ -152,45 +144,37 @@ BOOL AudioOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
 void AudioOptionsDialog::OnOK()
 {
-   HWND hwndControl;
    size_t checked;
 
-   hwndControl = GetDlgItem(IDC_PLAY_MUSIC).GetHwnd();
-   checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+   checked = SendMessage(GetDlgItem(IDC_PLAY_MUSIC).GetHwnd(), BM_GETCHECK, 0, 0);
    SaveValueBool("Player", "PlayMusic", (checked == BST_CHECKED));
 
-   hwndControl = GetDlgItem(IDC_PLAY_SOUND).GetHwnd();
-   checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+   checked = SendMessage(GetDlgItem(IDC_PLAY_SOUND).GetHwnd(), BM_GETCHECK, 0, 0);
    SaveValueBool("Player", "PlaySound", (checked == BST_CHECKED));
 
    int fmusic;
    fmusic = SNDCFG_SND3D2CH;
-   hwndControl = GetDlgItem(IDC_RADIO_SND3DALLREAR).GetHwnd();
-   checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+   checked = SendMessage(GetDlgItem(IDC_RADIO_SND3DALLREAR).GetHwnd(), BM_GETCHECK, 0, 0);
    if (checked)
    {
 	   fmusic = SNDCFG_SND3DALLREAR;
    }
-   hwndControl = GetDlgItem(IDC_RADIO_SND3DFRONTISFRONT).GetHwnd();
-   checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+   checked = SendMessage(GetDlgItem(IDC_RADIO_SND3DFRONTISFRONT).GetHwnd(), BM_GETCHECK, 0, 0);
    if (checked)
    {
 	   fmusic = SNDCFG_SND3DFRONTISFRONT;
    }
-   hwndControl = GetDlgItem(IDC_RADIO_SND3DFRONTISREAR).GetHwnd();
-   checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+   checked = SendMessage(GetDlgItem(IDC_RADIO_SND3DFRONTISREAR).GetHwnd(), BM_GETCHECK, 0, 0);
    if (checked)
    {
 	   fmusic = SNDCFG_SND3DFRONTISREAR;
    }
-   hwndControl = GetDlgItem(IDC_RADIO_SND3D6CH).GetHwnd();
-   checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+   checked = SendMessage(GetDlgItem(IDC_RADIO_SND3D6CH).GetHwnd(), BM_GETCHECK, 0, 0);
    if (checked)
    {
 	   fmusic = SNDCFG_SND3D6CH;
    }
-   hwndControl = GetDlgItem(IDC_RADIO_SND3DSSF).GetHwnd();
-   checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+   checked = SendMessage(GetDlgItem(IDC_RADIO_SND3DSSF).GetHwnd(), BM_GETCHECK, 0, 0);
    if (checked)
    {
 	   fmusic = SNDCFG_SND3DSSF;
