@@ -26,7 +26,7 @@ BOOL CALLBACK DSEnumCallBack(LPGUID guid, LPCSTR desc, LPCSTR mod, LPVOID list);
 
 enum SoundOutTypes : char { SNDOUT_TABLE = 0, SNDOUT_BACKGLASS = 1 };
 enum SoundConfigTypes : int { SNDCFG_SND3D2CH = 0, SNDCFG_SND3DALLREAR = 1, SNDCFG_SND3DFRONTISREAR = 2, 
-                              SNDCFG_SND3DFRONTISFRONT = 3, SNDCFG_SND3D6CH = 4};
+                              SNDCFG_SND3DFRONTISFRONT = 3, SNDCFG_SND3D6CH = 4, SNDCFG_SND3DSSF = 5};
 
 // Surround modes
 // ==============
@@ -46,6 +46,11 @@ enum SoundConfigTypes : int { SNDCFG_SND3D2CH = 0, SNDCFG_SND3DALLREAR = 1, SNDC
 //
 // 6CH: Rear of playfield shifted to the sides, and front of playfield shifted to the far rear.   Leaves front channels open
 // for default backglass and VPinMame. 
+//
+// SSF: 6CH still has significant surround sound directed to the backglass speakers in VPX 10.6 due to the way DirectSound3D
+// models sound. This mode ensures that these sounds are instead routed fully to the side channels by remapping table positions
+// to areas of the 3D sound stage that behave close what we are looking for. Furthermore horizontal panning and vertical fading
+// are enhanced for a more realistic experience.
 
 class PinSoundCopy
 {
@@ -97,6 +102,8 @@ public:
 
    void InitDirectSound(const HWND hwnd, const bool IsBackglass);
    static float PanTo3D(float input);
+   static float PanSSF(float input);
+   static float FadeSSF(float input);
 
    PinSound *LoadWaveFile(const TCHAR* const strFileName);
    HRESULT CreateStaticBuffer(const TCHAR* const strFileName, PinSound * const pps);

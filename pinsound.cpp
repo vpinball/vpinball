@@ -394,6 +394,160 @@ float PinDirectSound::PanTo3D(float input)
 	}
 }
 
+// This is a replacement function for PanTo3D() for sound effect panning (audio x-axis).
+// It performs the same calculations but maps the resulting values to an area of the 3D
+// sound stage that has the expected panning effect for this application. It is written
+// in a long form to facilitate tweaking the formulas.  *njk*
+
+float PinDirectSound::PanSSF(float pan)
+{
+	float x = 0.0f;
+
+	// This math could probably be simplified but it is kept in long form
+	// to aide in fine tuning and clarity of function.
+
+	// Clip the pan input range to -1.0 to 1.0
+
+	if (pan < -1.0f)
+		x = -1.0f;
+	else if (pan > 1.0f)
+		x = 1.0f;
+	else
+		x = pan;
+
+	// Rescale pan range from an exponential [-1,0] and [0,1] to a linear [-1.0, 1.0]
+	// Do not avoid values close to zero like PanTo3D() does as that
+	// prevents the middle range of the exponential curves converting back to
+	// a linear scale (which would leave a gap in the center of the range).
+	// This basically undoes the Pan() fading function in the table scripts.
+
+	x = (x < 0.0f) ? -powf(-x, 0.10f) : powf(x, 0.10f);
+
+	// Increase the pan range from [-1.0, 1.0] to [-3.0, 3.0] to improve the surround sound fade effect
+
+	x = x * 3.0f;
+
+	// Unfortuneately the above scaling is insufficient to provide a good panning effect.
+	// Through experimentation it was determined that sounds on the left side of the
+	// playfield pan nicely from -2.25 to -2.50 and sounds on the right side of the
+	// playfield pan nicely from 2.25 to 2.50. So we scale each side of the playfield
+	// accordingly.
+
+	// Rescale [-3.0,0.0) to [-2.50,-2.25] and [0,3.0] to [2.25,2.50]
+
+	// Reminder: Linear Conversion Formula [o1,o2] to [n1,n2]
+	// x' = ( (x - o1) / (o2 - o1) ) * (n2 - n1) + n1
+	//
+	// We retain the full formulas below to make it easier to tweak the values.
+	// The compiler will optimize away the excess math.
+
+	if (x >= 1.0f)
+		x = ((x - 0.00f) / (3.00f - 0.00f)) * (2.50f - 2.25f) + 2.25f;	// map [0,3.0] to [2.25,2.50]
+	else if (x <= -1.0f)
+		x = ((x - -3.00f) / (0.00f - -3.00f)) * (-2.25f - -2.50f) + -2.50f;	// map to [-3.0,0] to [-2.50,-2.25]
+	else if (x >= 0.0f)
+		x = 2.0f;
+	else if (x <= 0.0f)
+		x = -2.0f;
+
+	// If the final value is sufficiently close to zero it causes sound to come from
+	// all speakers and lose it's positional effect. We scale well away from zero
+	// above but will keep this check to document the effect or catch the condition
+	// if the formula above is later changed to one that can result in x = 0.0.
+
+	if (fabsf(x) < 0.0001f)
+		x = 0.0001f;
+
+	return x;
+}
+
+// This is a replacement function for PanTo3D() for sound effect fading (audio z-axis).
+// It performs the same calculations but maps the resulting values to
+// an area of the 3D sound stage that has the expected fading
+// effect for this application. It is written in a long form to facilitate tweaking the
+// values (which turned out to be more straightforward than originally coded). *njk*
+
+float PinDirectSound::FadeSSF(float front_rear_fade)
+{
+	float z = 0.0f;
+
+	// Clip the fade input range to -1.0 to 1.0
+
+	if (front_rear_fade < -1.0f)
+		z = -1.0f;
+	else if (front_rear_fade > 1.0f)
+		z = 1.0f;
+	else
+		z = front_rear_fade;
+
+	// Rescale fade range from an exponential [0,-1] and [0,1] to a linear [-1.0, 1.0]
+	// Do not avoid values close to zero like PanTo3D() does at this point as that
+	// prevents the middle range of the exponential curves converting back to
+	// a linear scale (which would leave a gap in the center of the range).
+	// This basically undoes the AudioFade() fading function in the table scripts.
+
+	z = (z < 0.0f) ? -powf(-z, 0.10f) : powf(z, 0.10f);
+
+	// Increase the fade range from [-1.0, 1.0] to [-3.0, 3.0] to improve the surround sound fade effect
+
+	z = z * 3.0f;
+
+	// Rescale fade range from [-3.0,3.0] to [0.0,-3.0] in an attempt to remove all sound from
+	// the surround sound front (backbox) speakers and place them close to the surround sound
+	// side (cabinet rear) speakers.
+	//
+	// Reminder: Linear Conversion Formula [o1,o2] to [n1,n2]
+	// z' = ( (z - o1) / (o2 - o1) ) * (n2 - n1) + n1
+	//
+	// We retain the full formulas below to make it easier to tweak the values.
+	// The compiler will optimize away the excess math.
+
+	z = ((z - -3.00f) / (3.00f - -3.00f)) * (-3.00f - 0.00f) + 0.00f;
+
+	// Unfortuneately the above scaling is insufficient to keep the playfield sounds in the
+	// fade range (-0.9,0.0) from playing into the surround sound front (backbox) speakers.
+	// Rescaling to (-0.9.3.0] isn't ideal as -0.9 is not full effect volume on the
+	// side channel. Instead we force values in the top third of the playfield (-1.0,0.0)
+	// to exactly 0.0 which just plays full effect volume on the side channels.
+
+	if (z > -1.0f)
+		z = 0.0f;
+
+	// To improve (exaggerate) the fade effect we apply the same logic to the bottom third
+	// [-2,-3] of the playfield so it plays entirely on the surround sound rear channels. Mostly
+	// this prevented the slingshots from being heard at all out of the side channels
+	// although the accuracy of this will vary by table.
+
+	if (z < -2.00f)
+		z = -3.00f;
+
+	// The remaining range [-1,-2] fades per DirectSound3D calculations
+
+	z = z;
+
+	// Clip the fade output range to 0.0 to -3.0
+	//
+	// This probably can never happen but is here in case the formulas above
+	// change or there is a rounding issue. A result even slightly greater
+	// than zero can bleed to the backbox speakers.
+
+	if (z > 0.0f)
+		z = 0.0f;
+	else if (z < -3.0f)
+		z = -3.0f;
+
+
+	// If the final value is sufficiently close to zero it causes sound to come from
+	// all speakers on some systems and lose it's positional effect. We do use 0.0 
+	// above and could set the safe value there. Instead will keep this check to document 
+	// the effect or catch the condition if the formula/conditions above are later changed
+
+	if (fabsf(z) < 0.0001f)
+		z = -0.0001f;
+
+	return z;
+}
+
 PinSoundCopy::PinSoundCopy(class PinSound *pOriginal)
 {
 	m_ppsOriginal = pOriginal;
@@ -445,6 +599,9 @@ void PinSoundCopy::Play(const float volume, const float randompitch, const int p
 		break;
 	case SNDCFG_SND3D6CH:
 		m_pDS3DBuffer->SetPosition(PinDirectSound::PanTo3D(pan), 0.0f, -((PinDirectSound::PanTo3D(front_rear_fade) + 3.0f) / 2.0f), DS3D_IMMEDIATE);
+		break;
+	case SNDCFG_SND3DSSF:
+		m_pDS3DBuffer->SetPosition(PinDirectSound::PanSSF(pan), 0.0f, PinDirectSound::FadeSSF(front_rear_fade), DS3D_IMMEDIATE);
 		break;
 	case SNDCFG_SND3D2CH:
 	default:
