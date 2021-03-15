@@ -140,7 +140,7 @@ VPinball::VPinball()
 ///</summary>
 VPinball::~VPinball()
 {
-   // DLL_API void DLL_CALLCONV FreeImage_DeInitialise(); //remove FreeImage support BDS
+   // DLL_API void DLL_CALLCONV FreeImage_DeInitialise(); // would only be needed if linking statically
    SetClipboard(nullptr);
    FreeLibrary(m_scintillaDll);
 
