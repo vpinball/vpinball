@@ -983,6 +983,7 @@
 #define IDC_EDIT_BALANCE                813
 #define IDC_RADIO_SND3D6CH              814
 #define IDC_EDIT_FADER                  814
+#define IDC_RADIO_SND3DSSF              815
 #define IDC_EDIT5                       815
 #define IDC_EDIT_VOL                    815
 #define IDC_DBG_MATERIAL_THICKNESS_EDIT 816

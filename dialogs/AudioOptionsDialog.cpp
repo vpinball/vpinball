@@ -53,6 +53,10 @@ BOOL AudioOptionsDialog::OnInitDialog()
 	   hwndControl = GetDlgItem(IDC_RADIO_SND3D6CH).GetHwnd();
 	   SendMessage(hwndControl, BM_SETCHECK, BST_CHECKED, 0);
 	   break;
+   case SNDCFG_SND3DSSF:
+	   hwndControl = GetDlgItem(IDC_RADIO_SND3DSSF).GetHwnd();
+	   SendMessage(hwndControl, BM_SETCHECK, BST_CHECKED, 0);
+	   break;
    default:
 	   hwndControl = GetDlgItem(IDC_RADIO_SND3D2CH).GetHwnd();
 	   SendMessage(hwndControl, BM_SETCHECK, BST_CHECKED, 0);
@@ -184,6 +188,12 @@ void AudioOptionsDialog::OnOK()
    if (checked)
    {
 	   fmusic = SNDCFG_SND3D6CH;
+   }
+   hwndControl = GetDlgItem(IDC_RADIO_SND3DSSF).GetHwnd();
+   checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+   if (checked)
+   {
+	   fmusic = SNDCFG_SND3DSSF;
    }
    SaveValueInt("Player", "Sound3D", fmusic);
 

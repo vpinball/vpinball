@@ -605,7 +605,7 @@ BEGIN
     LTEXT           "Y",IDC_STATIC,37,28,8,10
 END
 
-IDD_AUDIO_OPTIONS DIALOGEX 0, 0, 457, 159
+IDD_AUDIO_OPTIONS DIALOGEX 0, 0, 468, 159
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Audio Options"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -622,7 +622,7 @@ BEGIN
     LISTBOX         IDC_SoundListBG,123,86,171,40,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     DEFPUSHBUTTON   "OK",IDOK,350,141,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,403,141,50,14
-    GROUPBOX        "Multi-channel output",IDC_STATIC,303,11,147,89,BS_LEFT
+    GROUPBOX        "Multi-channel output",IDC_STATIC,303,11,159,104,BS_LEFT
     CONTROL         "Standard 2 channel",IDC_RADIO_SND3D2CH,"Button",BS_AUTORADIOBUTTON | WS_GROUP,309,24,125,10
     CONTROL         "Surround (All effects to rear channels)",IDC_RADIO_SND3DALLREAR,
                     "Button",BS_AUTORADIOBUTTON,309,37,137,10
@@ -631,7 +631,8 @@ BEGIN
     CONTROL         "Surround (Front is rear of cab)",IDC_RADIO_SND3DFRONTISREAR,
                     "Button",BS_AUTORADIOBUTTON,309,63,114,10
     CONTROL         "7.1 Surround (Front is rear,",IDC_RADIO_SND3D6CH,"Button",BS_AUTORADIOBUTTON,309,76,120,10
-    LTEXT           "back is side, backbox is front)",IDC_STATIC,320,86,101,8
+    LTEXT           "back is side, backbox is front)",IDC_STATIC,320,86,101,8,NOT WS_GROUP
+    CONTROL         "7.1 Surround Sound Feedback (enhanced)",IDC_RADIO_SND3DSSF,"Button",BS_AUTORADIOBUTTON,309,99,150,10
 END
 
 IDD_PHYSICS_OPTIONS DIALOGEX 0, 0, 199, 378
