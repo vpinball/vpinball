@@ -1,3 +1,10 @@
+VP 10.6.2 Changelog
+------------------------
+
+- add another 7.1 SurroundSound mode tuned for SSF cabinet configurations
+  this exaggerates the positional feel of the playfield sound effects when
+  played in a cabinet with exciter pairs positioned at each end of the cabinet
+
 VP 10.6.1 Changelog
 ------------------------
 
