@@ -106,8 +106,8 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
-      <TypeLibraryName>.\Debug/vpinball.tlb</TypeLibraryName>
-      <HeaderFileName />
+      <TypeLibraryName>vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>vpinball.h</HeaderFileName>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -162,19 +162,14 @@
       <Command>
       </Command>
     </PostBuildEvent>
-    <PreBuildEvent>
-      <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
-      <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
-    </PreBuildEvent>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
-      <TypeLibraryName>.\Debug/vpinball.tlb</TypeLibraryName>
-      <HeaderFileName>
-      </HeaderFileName>
+      <TypeLibraryName>vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>vpinball.h</HeaderFileName>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -229,8 +224,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
-      <TypeLibraryName>.\ReleaseMinDependency/vpinball.tlb</TypeLibraryName>
-      <HeaderFileName />
+      <TypeLibraryName>vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>vpinball.h</HeaderFileName>
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
@@ -285,19 +280,14 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Command>
       </Command>
     </PostBuildEvent>
-    <PreBuildEvent>
-      <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
-      <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
-    </PreBuildEvent>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
-      <TypeLibraryName>.\ReleaseMinDependency/vpinball.tlb</TypeLibraryName>
-      <HeaderFileName>
-      </HeaderFileName>
+      <TypeLibraryName>vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>vpinball.h</HeaderFileName>
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
@@ -364,16 +354,16 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="codeviewedit.cpp" />
     <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="Debugger.cpp" />
-    <ClCompile Include="Dialogs\AboutDialog.cpp" />
+    <ClCompile Include="dialogs\AboutDialog.cpp" />
     <ClCompile Include="dialogs\AudioOptionsDialog.cpp" />
     <ClCompile Include="dialogs\CollectionManagerDialog.cpp" />
     <ClCompile Include="dialogs\DimensionDialog.cpp" />
-    <ClCompile Include="Dialogs\DrawingOrderDialog.cpp" />
+    <ClCompile Include="dialogs\DrawingOrderDialog.cpp" />
     <ClCompile Include="dialogs\EditorOptionsDialog.cpp" />
-    <ClCompile Include="Dialogs\ImageDialog.cpp" />
+    <ClCompile Include="dialogs\ImageDialog.cpp" />
     <ClCompile Include="dialogs\KeysConfigDialog.cpp" />
     <ClCompile Include="dialogs\LayersListDialog.cpp" />
-    <ClCompile Include="Dialogs\MaterialDialog.cpp" />
+    <ClCompile Include="dialogs\MaterialDialog.cpp" />
     <ClCompile Include="dialogs\NotesDialog.cpp" />
     <ClCompile Include="dialogs\PhysicsOptionsDialog.cpp" />
     <ClCompile Include="dialogs\Properties\BackglassCameraProperty.cpp" />
@@ -417,9 +407,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\Properties\TriggerVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\WallPhysicsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\WallVisualsProperty.cpp" />
-    <ClCompile Include="Dialogs\SearchSelectDialog.cpp" />
-    <ClCompile Include="Dialogs\SoundDialog.cpp" />
-    <ClCompile Include="Dialogs\TableInfoDialog.cpp" />
+    <ClCompile Include="dialogs\SearchSelectDialog.cpp" />
+    <ClCompile Include="dialogs\SoundDialog.cpp" />
+    <ClCompile Include="dialogs\TableInfoDialog.cpp" />
     <ClCompile Include="dialogs\ToolbarDialog.cpp" />
     <ClCompile Include="dialogs\VideoOptionsDialog.cpp" />
     <ClCompile Include="flasher.cpp" />
@@ -577,7 +567,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MinSpace</Optimization>
     </ClCompile>
-    <ClCompile Include="Media\fileio.cpp">
+    <ClCompile Include="media\fileio.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -698,7 +688,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MinSpace</Optimization>
     </ClCompile>
-    <ClCompile Include="Media\lzwreader.cpp">
+    <ClCompile Include="media\lzwreader.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -708,7 +698,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MinSpace</Optimization>
     </ClCompile>
-    <ClCompile Include="Media\lzwwriter.cpp">
+    <ClCompile Include="media\lzwwriter.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -950,7 +940,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MinSpace</Optimization>
     </ClCompile>
-    <ClCompile Include="Media\wavread.cpp">
+    <ClCompile Include="media\wavread.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -983,24 +973,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="vpinball.idl">
-      <GenerateStublessProxies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</GenerateStublessProxies>
-      <GenerateStublessProxies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateStublessProxies>
-      <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\vpinball.tlb</TypeLibraryName>
-      <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\vpinball.tlb</TypeLibraryName>
-      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">vpinball_i.h</HeaderFileName>
-      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">vpinball_i.h</HeaderFileName>
-      <InterfaceIdentifierFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">vpinball_i.c</InterfaceIdentifierFileName>
-      <InterfaceIdentifierFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">vpinball_i.c</InterfaceIdentifierFileName>
-      <GenerateStublessProxies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</GenerateStublessProxies>
-      <GenerateStublessProxies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateStublessProxies>
-      <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\vpinball.tlb</TypeLibraryName>
-      <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\vpinball.tlb</TypeLibraryName>
-      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">vpinball_i.h</HeaderFileName>
-      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">vpinball_i.h</HeaderFileName>
-      <InterfaceIdentifierFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">vpinball_i.c</InterfaceIdentifierFileName>
-      <InterfaceIdentifierFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">vpinball_i.c</InterfaceIdentifierFileName>
-    </Midl>
+    <Midl Include="vpinball.idl" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1157,13 +1130,13 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="Debugger.h" />
     <ClInclude Include="decal.h" />
     <ClInclude Include="def.h" />
-    <ClInclude Include="Dialogs\AboutDialog.h" />
+    <ClInclude Include="dialogs\AboutDialog.h" />
     <ClInclude Include="dialogs\AudioOptionsDialog.h" />
     <ClInclude Include="dialogs\CollectionManagerDialog.h" />
     <ClInclude Include="dialogs\DimensionDialog.h" />
-    <ClInclude Include="Dialogs\DrawingOrderDialog.h" />
+    <ClInclude Include="dialogs\DrawingOrderDialog.h" />
     <ClInclude Include="dialogs\EditorOptionsDialog.h" />
-    <ClInclude Include="Dialogs\ImageDialog.h" />
+    <ClInclude Include="dialogs\ImageDialog.h" />
     <ClInclude Include="dialogs\KeysConfigDialog.h" />
     <ClInclude Include="dialogs\LayersListDialog.h" />
     <ClInclude Include="dialogs\MaterialDialog.h" />
@@ -1210,9 +1183,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="dialogs\Properties\TriggerVisualsProperty.h" />
     <ClInclude Include="dialogs\Properties\WallPhysicsProperty.h" />
     <ClInclude Include="dialogs\Properties\WallVisualsProperty.h" />
-    <ClInclude Include="Dialogs\SearchSelectDialog.h" />
-    <ClInclude Include="Dialogs\SoundDialog.h" />
-    <ClInclude Include="Dialogs\TableInfoDialog.h" />
+    <ClInclude Include="dialogs\SearchSelectDialog.h" />
+    <ClInclude Include="dialogs\SoundDialog.h" />
+    <ClInclude Include="dialogs\TableInfoDialog.h" />
     <ClInclude Include="dialogs\ToolbarDialog.h" />
     <ClInclude Include="dialogs\VideoOptionsDialog.h" />
     <ClInclude Include="dispid.h" />
@@ -1398,15 +1371,15 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="variant.h" />
     <ClInclude Include="vector.h" />
     <ClInclude Include="vectorsort.h" />
+    <ClInclude Include="vpinball_h.h" />
     <ClInclude Include="vpinball.h" />
-    <ClInclude Include="vpinball_i.h" />
     <ClInclude Include="vpversion.h" />
     <ClInclude Include="wintimer.h" />
     <ClInclude Include="worker.h" />
     <ClInclude Include="audioplayer.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="shader\BallShader.fx">
+    <FxCompile Include="shader\BallShader.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ballShaderCode</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Effect</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">2.0</ShaderModel>
@@ -1432,7 +1405,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ObjectFileOutput>
     </FxCompile>
-    <FxCompile Include="shader\BasicShader.fx">
+    <FxCompile Include="shader\BasicShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </ObjectFileOutput>
@@ -1458,7 +1431,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ObjectFileOutput>
     </FxCompile>
-    <FxCompile Include="shader\DMDShader.fx">
+    <FxCompile Include="shader\DMDShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </ObjectFileOutput>
@@ -1484,7 +1457,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ObjectFileOutput>
     </FxCompile>
-    <FxCompile Include="shader\FBShader.fx">
+    <FxCompile Include="shader\FBShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </ObjectFileOutput>
@@ -1510,7 +1483,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ObjectFileOutput>
     </FxCompile>
-    <FxCompile Include="shader\FlasherShader.fx">
+    <FxCompile Include="shader\FlasherShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </ObjectFileOutput>
@@ -1536,7 +1509,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ObjectFileOutput>
     </FxCompile>
-    <FxCompile Include="shader\LightShader.fx">
+    <FxCompile Include="shader\LightShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </ObjectFileOutput>
@@ -1562,7 +1535,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ObjectFileOutput>
     </FxCompile>
-    <FxCompile Include="shader\ClassicLightShader.fx">
+    <FxCompile Include="shader\ClassicLightShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </ObjectFileOutput>

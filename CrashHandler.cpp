@@ -9,7 +9,7 @@
 #include <windows.h>
 #include <dbghelp.h>
 #include <cassert>
-#include "svn_version.h"
+#include "git_version.h"
 
 namespace
 {
@@ -123,7 +123,7 @@ namespace
 
    void WriteHeader(FILE* f)
    {
-      fprintf(f, "Crash report VPX rev%i\n============\n",SVN_REVISION);
+      fprintf(f, "Crash report VPX rev%i (%s)\n============\n", GIT_REVISION, GIT_SHA);
    }
 
    const char* GetExceptionString(DWORD exc)

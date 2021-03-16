@@ -452,5 +452,5 @@ technique kickerBoolean_isNotMetal
 }
 
 #ifndef SEPARATE_CLASSICLIGHTSHADER
- #include "ClassicLightShader.fx"
+ #include "ClassicLightShader.hlsl"
 #endif

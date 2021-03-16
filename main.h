@@ -104,7 +104,7 @@ using std::vector;
 #include "variant.h"
 #include "vector.h"
 #include "vectorsort.h"
-#include "vpinball_i.h"
+#include "vpinball.h"
 #include "regutil.h"
 
 #include "idebug.h"
@@ -132,7 +132,7 @@ using std::vector;
 
 #include "extern.h"
 
-#include "vpinball.h"
+#include "vpinball_h.h"
 #include "pintable.h"
 
 #include "mesh.h"
