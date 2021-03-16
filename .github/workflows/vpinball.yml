@@ -1,0 +1,95 @@
+name: vpinball
+on:
+  push:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  dxsdk:
+    name: DirectX SDK
+    runs-on: windows-latest
+    steps:
+      - id: cache
+        uses: actions/cache@v2
+        with:
+          path: DXSDK
+          key: cache-dxsdk
+      - name: Create Cache
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          curl -sL https://download.microsoft.com/download/a/e/7/ae743f1f-632b-4809-87a9-aa1bb3458e31/DXSDK_Jun10.exe -o DXSDK_Jun10.exe
+          7z x DXSDK_Jun10.exe DXSDK/Include -otmp
+          7z x DXSDK_Jun10.exe DXSDK/Lib -otmp
+          mv tmp/DXSDK DXSDK
+          rm -fR DXSDK_Jun10.exe tmp
+          ls -Ra DXSDK
+
+  version:
+    name: Version
+    runs-on: ubuntu-latest
+    outputs:
+      revision: ${{ steps.version.outputs.revision }}
+      sha7: ${{ steps.version.outputs.sha7 }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - id: version
+        run: |
+          REVISION=$(git rev-list 3feea27328663974d4df819d2faa981d881773ad..HEAD --count)
+          echo "::set-output name=revision::${REVISION}"
+          echo "::set-output name=sha7::${GITHUB_SHA::7}"
+
+  build:
+    name: Build VPinballX-${{ matrix.platform }}
+    runs-on: windows-latest
+    needs: [ dxsdk, version ]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: win-x64
+            platform-name: x64
+            bass: x64/Bass64.dll
+            free-image: x64/FreeImage64.dll
+            sci-lexer-vp: x64/SciLexerVP64.dll
+          - platform: win-x86
+            platform-name: Win32
+            bass: Bass.dll
+            free-image: FreeImage.dll
+            sci-lexer-vp: SciLexerVP.dll
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: DXSDK
+          key: cache-dxsdk
+      - run: |
+          curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/46946159/zip -o upx.zip
+          7z x upx.zip -oupx
+          rm upx.zip
+      - run: |
+          sed -i "s/0/${{ needs.version.outputs.revision }}/g" git_version.h
+          sed -i "s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
+      - name: Build
+        run: |
+          export DXSDK_DIR="${GITHUB_WORKSPACE}/DXSDK"
+          cp cmake/CMakeLists_${{ matrix.platform}}.txt CMakeLists.txt
+          cmake -G "Visual Studio 16 2019" -A ${{ matrix.platform-name }} -B build
+          cmake --build build --config Release
+          ./upx/upx.exe --best --lzma build/Release/VPinballX.exe
+      - run: |
+          mkdir tmp 
+          cp build/Release/VPinballX.exe tmp
+          cp dll/${{ matrix.bass }} tmp
+          cp dll/${{ matrix.free-image }} tmp
+          cp dll/${{ matrix.sci-lexer-vp }} tmp
+          cp txt/license.txt tmp
+          cp txt/Changelog.txt tmp
+          cp -r scripts tmp/Scripts
+      - uses: actions/upload-artifact@v2
+        with:
+          name: VPinballX-${{ matrix.platform }}
+          path: tmp

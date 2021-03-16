@@ -1,0 +1,67 @@
+name: prerelease
+on: 
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: 'SHA (leave blank for HEAD)'     
+        required: false
+
+env:
+  ACTIONS_API_URL: "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions" 
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.sha.outputs.sha }}
+      sha7: ${{ steps.sha.outputs.sha7 }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - id: sha
+        run: |
+           SHA=$(if [[ "${{ github.event.inputs.sha }}" ]]; then echo "${{ github.event.inputs.sha }}"; else echo "${GITHUB_SHA}"; fi)
+           echo "::set-output name=sha::${SHA}"
+           echo "::set-output name=sha7::${SHA::7}"
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.sha.outputs.sha }}
+      - id: version
+        run: |
+          VERSION_MAJOR=$(grep -Eo "VP_VERSION_MAJOR\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
+          VERSION_MINOR=$(grep -Eo "VP_VERSION_MINOR\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
+          VERSION_REV=$(grep -Eo "VP_VERSION_REV\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
+          echo "::set-output name=version::${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+
+  prerelease:
+    runs-on: ubuntu-latest
+    needs: [ version ]
+    steps:
+      - id: download
+        run: |
+           curl -s "${{ env.ACTIONS_API_URL }}/runs" --output runs.json
+           RUN_ID=$(jq -r --arg SHA "${{ needs.version.outputs.sha }}" --arg NAME "vpinball" '.workflow_runs[] | select(.head_sha==$SHA and .name==$NAME) | .id' runs.json) 
+           echo "Downloading vpinball artifact list ${RUN_ID}..."
+           curl -s "${{ env.ACTIONS_API_URL }}/runs/${RUN_ID}/artifacts" --output artifacts.json
+           ARTIFACTS=($(jq -r '.artifacts[] | .archive_download_url' artifacts.json)) 
+           for url in ${ARTIFACTS[@]}
+           do
+              echo "Downloading artifact: ${url}..."
+              curl -s -OJ -L -H "authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" ${url}
+           done
+           rm *.json
+      - id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: "v${{ needs.version.outputs.version }}-${{ needs.version.outputs.sha7 }}" 
+          release_name: "v${{ needs.version.outputs.version }}-${{ needs.version.outputs.sha7 }}"
+          prerelease: true
+          commitish: ${{ needs.version.outputs.sha }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - id: upload_release_assets
+        uses: dwenegar/upload-release-assets@v1
+        with:
+          release_id: ${{ steps.create_release.outputs.id }}
+          assets_path: .
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

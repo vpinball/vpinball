@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "vpinball_i.h"
+#include "vpinball.h"
 
 BallEx::BallEx()
 {
