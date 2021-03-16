@@ -19,7 +19,7 @@
 #endif
 #include <windows.h>
 #include <tchar.h>
-#include <dwmapi.h>
+//#include <dwmapi.h>
 
 // Configuration flags to add in your imconfig.h file:
 //#define IMGUI_IMPL_WIN32_DISABLE_GAMEPAD              // Disable gamepad support (this used to be meaningful before <1.81) but we know load XInput dynamically so the option is less relevant now.
@@ -500,13 +500,13 @@ float ImGui_ImplWin32_GetDpiScaleForHwnd(void* hwnd)
 //--------------------------------------------------------------------------------------------------------
 
 #if defined(_MSC_VER)
-#pragma comment(lib, "dwmapi")  // Link with dwmapi.lib. MinGW will require linking with '-ldwmapi'
+//#pragma comment(lib, "dwmapi")  // Link with dwmapi.lib. MinGW will require linking with '-ldwmapi'
 #endif
 
 // [experimental]
 // Borrowed from GLFW's function updateFramebufferTransparency() in src/win32_window.c
 // (the Dwm* functions are Vista era functions but we are borrowing logic from GLFW)
-void ImGui_ImplWin32_EnableAlphaCompositing(void* hwnd)
+/*void ImGui_ImplWin32_EnableAlphaCompositing(void* hwnd)
 {
     if (!IsWindowsVistaOrGreater())
         return;
@@ -534,5 +534,5 @@ void ImGui_ImplWin32_EnableAlphaCompositing(void* hwnd)
         ::DwmEnableBlurBehindWindow((HWND)hwnd, &bb);
     }
 }
-
+*/
 //---------------------------------------------------------------------------------------------------------
