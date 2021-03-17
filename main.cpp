@@ -75,8 +75,8 @@ static pSDARP SetDisplayAutoRotationPreferences = NULL;
 #endif
 
 #if !defined(DEBUG_XXX) && !defined(_CRTDBG_MAP_ALLOC) && (!defined(__STDCPP_DEFAULT_NEW_ALIGNMENT__) || (__STDCPP_DEFAULT_NEW_ALIGNMENT__ < 16))
-// not needed anymore nowadays
-/*void *operator new(const size_t size_req)
+// somewhat needed otherwise VPX crashes when exiting the player
+void *operator new(const size_t size_req)
 {
    void* ptr = _aligned_malloc(size_req, 16);
    if (!ptr)
@@ -97,7 +97,7 @@ void *operator new[](const size_t size_req)
 void operator delete[](void *address)
 {
    _aligned_free(address);
-}*/
+}
 #endif
 
 CComModule _Module;
