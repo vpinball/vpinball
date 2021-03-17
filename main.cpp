@@ -74,11 +74,12 @@ typedef BOOL(WINAPI *pSDARP)(ORIENTATION_PREFERENCE orientation);
 static pSDARP SetDisplayAutoRotationPreferences = NULL;
 #endif
 
-#if !defined(DEBUG_XXX) && !defined(_CRTDBG_MAP_ALLOC) && (!defined(__STDCPP_DEFAULT_NEW_ALIGNMENT__) || (__STDCPP_DEFAULT_NEW_ALIGNMENT__ < 16))
-// somewhat needed otherwise VPX crashes when exiting the player
+#if !defined(DEBUG_XXX) && !defined(_CRTDBG_MAP_ALLOC) //&& (!defined(__STDCPP_DEFAULT_NEW_ALIGNMENT__) || (__STDCPP_DEFAULT_NEW_ALIGNMENT__ < 16))
+//!! somewhat custom new/delete still needed, otherwise VPX crashes when exiting the player
+// is this due to win32xx's whacky Shared_Ptr implementation?
 void *operator new(const size_t size_req)
 {
-   void* ptr = _aligned_malloc(size_req, 16);
+   void* const ptr = _aligned_malloc(size_req, 16);
    if (!ptr)
        throw std::bad_alloc{};
    return ptr;
@@ -87,9 +88,9 @@ void operator delete(void *address)
 {
    _aligned_free(address);
 }
-void *operator new[](const size_t size_req)
+/*void *operator new[](const size_t size_req)
 {
-   void* ptr = _aligned_malloc(size_req, 16);
+   void* const ptr = _aligned_malloc(size_req, 16);
    if (!ptr)
        throw std::bad_alloc{};
    return ptr;
@@ -97,7 +98,7 @@ void *operator new[](const size_t size_req)
 void operator delete[](void *address)
 {
    _aligned_free(address);
-}
+}*/
 #endif
 
 CComModule _Module;
