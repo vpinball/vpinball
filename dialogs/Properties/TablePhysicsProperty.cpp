@@ -174,5 +174,5 @@ BOOL TablePhysicsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
         default:
             break;
     }
-    return FALSE;
+    return BasePropertyDialog::OnCommand(wParam,lParam);
 }
