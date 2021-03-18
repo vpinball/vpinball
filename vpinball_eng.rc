@@ -283,12 +283,12 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,173,319,50,14
     PUSHBUTTON      "Web Site",IDC_WEBSITE,173,297,50,14
-    PUSHBUTTON      "Translator's Web Site Name",IDC_TRANSLATEWEBSITE,159,74,72,14,NOT WS_VISIBLE | WS_DISABLED
+    PUSHBUTTON      "Translator's Web Site Name",IDC_TRANSLATEWEBSITE,151,74,72,14,NOT WS_VISIBLE | WS_DISABLED
     EDITTEXT        IDC_CHANGELOG,7,211,216,79,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | ES_WANTRETURN | WS_VSCROLL
-    CTEXT           "This application uses Visual Basic Scripting Edition by Microsoft",IDC_STATIC,23,317,119,17
-    CONTROL         IDC_RIGHTFLIPPERBUTTON,IDC_STATIC,"Static",SS_BITMAP,21,13,188,44
-    LTEXT           "A Randy Davis and Visual Pinball team Production",IDC_STATIC,21,65,209,8
-    LTEXT           "Version 10.7.0",IDC_ABOUT_VERSION,21,75,135,10
+    CTEXT           "This application uses Visual Basic Scripting Edition by Microsoft",IDC_STATIC,23,318,119,17
+    CONTROL         IDC_RIGHTFLIPPERBUTTON,IDC_STATIC,"Static",SS_BITMAP | SS_CENTERIMAGE,7,7,218,49
+    LTEXT           "A Randy Davis and Visual Pinball team Production",IDC_STATIC,7,65,161,8
+    LTEXT           "Version 10.7.0",IDC_ABOUT_VERSION,7,75,200,10
     GROUPBOX        "Credits",IDC_STATIC,7,91,216,116
     LTEXT           "Original VP8/VP9 Team",IDC_STATIC,68,99,88,9
     LTEXT           "Randy Davis",IDC_STATIC,13,110,59,9
@@ -311,9 +311,9 @@ BEGIN
     LTEXT           "DJRobX",IDC_STATIC,48,172,32,8
     CTEXT           "Mukuste",IDC_STATIC,82,172,42,9
     LTEXT           "Brandrew",IDC_STATIC,150,172,42,9
-    CTEXT           "Copyright (C) 2000-2021 Randy Davis and the\nVisual Pinball team. All rights reserved (see license.txt)",IDC_STATIC,0,295,167,19
-    LTEXT           "Translator's Name - Translation",IDC_TRANSNAME,116,65,115,9,NOT WS_VISIBLE | WS_DISABLED
-    LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,50,305,32,8,NOT WS_VISIBLE | WS_DISABLED
+    CTEXT           "Copyright (C) 2000-2021 Randy Davis and the\nVisual Pinball team. All rights reserved (see license.txt)",IDC_STATIC,1,293,167,25
+    LTEXT           "Translator's Name - Translation",IDC_TRANSNAME,171,65,52,9,NOT WS_VISIBLE | WS_DISABLED
+    LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,0,328,32,8,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "VP10 Active Development",IDC_STATIC,65,183,102,9
     LTEXT           "Fuzzel",IDC_STATIC,13,194,21,8
     LTEXT           "Toxie",IDC_STATIC,48,194,37,9
@@ -669,7 +669,8 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON,309,63,114,10
     CONTROL         "7.1 Surround (Front is rear,",IDC_RADIO_SND3D6CH,"Button",BS_AUTORADIOBUTTON,309,76,120,10
     LTEXT           "back is side, backbox is front)",IDC_STATIC,320,86,101,8,NOT WS_GROUP
-    CONTROL         "7.1 Surround Sound Feedback (enhanced)",IDC_RADIO_SND3DSSF,"Button",BS_AUTORADIOBUTTON,309,99,150,10
+    CONTROL         "7.1 Surround Sound Feedback (enhanced)",IDC_RADIO_SND3DSSF,
+                    "Button",BS_AUTORADIOBUTTON,309,99,150,10
 END
 
 IDD_PHYSICS_OPTIONS DIALOGEX 0, 0, 199, 378
@@ -2368,7 +2369,6 @@ BEGIN
 
     IDD_ABOUT, DIALOG
     BEGIN
-        BOTTOMMARGIN, 258
     END
 
     IDD_VIDEO_OPTIONS, DIALOG
