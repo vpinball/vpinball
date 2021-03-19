@@ -155,7 +155,7 @@ HRESULT PinSound::ReInitialize()
       return E_FAIL;
    }
 
-   const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
+   const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
 
    DSBUFFERDESC dsbd;
    ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
@@ -766,7 +766,8 @@ void PinDirectSoundWavCopy::PlayInternal(const float volume, const float randomp
 		}
 	}
 
-	const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
+	const SoundConfigTypes SoundMode3D = (m_ppsOriginal->m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
+
 	switch (SoundMode3D)
 	{
 	case SNDCFG_SND3DALLREAR:
