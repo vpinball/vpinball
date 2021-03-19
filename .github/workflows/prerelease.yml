@@ -3,34 +3,37 @@ on:
   workflow_dispatch:
     inputs:
       sha:
-        description: 'SHA (leave blank for HEAD)'     
+        description: "SHA (leave blank for HEAD)"
         required: false
 
 env:
-  ACTIONS_API_URL: "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions" 
+  ACTIONS_API_URL: https://api.github.com/repos/${GITHUB_REPOSITORY}/actions
+  VERSION_START_SHA: 3feea27328663974d4df819d2faa981d881773ad
 
 jobs:
   version:
     runs-on: ubuntu-latest
     outputs:
       sha: ${{ steps.sha.outputs.sha }}
-      sha7: ${{ steps.sha.outputs.sha7 }}
       version: ${{ steps.version.outputs.version }}
     steps:
       - id: sha
         run: |
            SHA=$(if [[ "${{ github.event.inputs.sha }}" ]]; then echo "${{ github.event.inputs.sha }}"; else echo "${GITHUB_SHA}"; fi)
+           SHA7="${SHA::7}"
            echo "::set-output name=sha::${SHA}"
-           echo "::set-output name=sha7::${SHA::7}"
+           echo "::set-output name=sha7::${SHA7}"
       - uses: actions/checkout@v2
         with:
           ref: ${{ steps.sha.outputs.sha }}
+          fetch-depth: 0
       - id: version
         run: |
           VERSION_MAJOR=$(grep -Eo "VP_VERSION_MAJOR\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
           VERSION_MINOR=$(grep -Eo "VP_VERSION_MINOR\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
           VERSION_REV=$(grep -Eo "VP_VERSION_REV\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
-          echo "::set-output name=version::${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+          REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..${{ steps.sha.outputs.sha }} --count)
+          echo "::set-output name=version::${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}-${REVISION}-${{ steps.sha.outputs.sha7 }}"
 
   prerelease:
     runs-on: ubuntu-latest
@@ -52,8 +55,8 @@ jobs:
       - id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: "v${{ needs.version.outputs.version }}-${{ needs.version.outputs.sha7 }}" 
-          release_name: "v${{ needs.version.outputs.version }}-${{ needs.version.outputs.sha7 }}"
+          tag_name: "v${{ needs.version.outputs.version }}" 
+          release_name: "v${{ needs.version.outputs.version }}"
           prerelease: true
           commitish: ${{ needs.version.outputs.sha }}
         env:
