@@ -157,12 +157,28 @@ HRESULT PinSound::ReInitialize()
 
    const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
 
+   WAVEFORMATEX wfx = m_wfx;  // Use a copy as we might be modifying it
    DSBUFFERDESC dsbd;
    ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
    dsbd.dwSize = sizeof(DSBUFFERDESC);
    dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | ((SoundMode3D != SNDCFG_SND3D2CH) ? DSBCAPS_CTRL3D : DSBCAPS_CTRLPAN);
    dsbd.dwBufferBytes = m_cdata;
-   dsbd.lpwfxFormat = &m_wfx;
+   dsbd.lpwfxFormat = &wfx;
+
+   // If we are in a 2CH mode and the sample is a single channel and the .WAV file is in a
+   // PCM format then we double the size of our ds buffer here and below we duplicate the 
+   // mono channel so windows will play the sample on Left/Right channels and not center 
+   // channel if Windows audio is configured for SurroundSound. I don't know if non-PCM 
+   // formats were possible in the first place, but the channel duplication would definitely 
+   // not work so we try to check for that here. *njk*
+
+   if ((SoundMode3D == SNDCFG_SND3D2CH) && (m_wfx.nChannels == 1) && ((m_wfx.wFormatTag == WAVE_FORMAT_PCM) || (m_wfx.wFormatTag == WAVE_FORMAT_IEEE_FLOAT)))
+   {
+	   wfx.nChannels = m_wfx.nChannels * 2;
+	   wfx.nBlockAlign = m_wfx.nBlockAlign * 2;
+	   wfx.nAvgBytesPerSec = m_wfx.nAvgBytesPerSec * 2;
+	   dsbd.dwBufferBytes *= 2;
+   }
 
    // Create the static DirectSound buffer 
    HRESULT hr;
@@ -180,14 +196,39 @@ HRESULT PinSound::ReInitialize()
    VOID*   pbData = NULL;
    VOID*   pbData2 = NULL;
    DWORD   dwLength,dwLength2;
-   if (FAILED(hr = m_pDSBuffer->Lock(0, m_cdata, &pbData, &dwLength,
+   if (FAILED(hr = m_pDSBuffer->Lock(0, dsbd.dwBufferBytes, &pbData, &dwLength,
       &pbData2, &dwLength2, 0L)))
    {
       ShowError("Could not lock sound buffer for load.");
       return hr;
    }
-   // Copy the memory to it.
-   memcpy(pbData, m_pdata, m_cdata);
+   // Convert mono sample to dual channel to prevent Windows from playing it
+   // on the center channel when in Surround Sound mode. We double the sample
+   // buffer size above, now we duplicate data when copying it into the buffer.
+   // *njk*
+
+   if ((DWORD)m_cdata < dsbd.dwBufferBytes) // if buffer was resized then duplicate channel
+   {
+	   int bps = wfx.wBitsPerSample / 8;
+	   unsigned _int8 *s = (unsigned _int8 *) m_pdata;
+	   unsigned _int8 *d = (unsigned _int8 *) pbData;
+
+	   for (unsigned i = 0; i < dsbd.dwBufferBytes; i += wfx.nBlockAlign)
+	   {
+		   for (int j = 0; j < bps; j++)
+			   *d++ = *s++;
+
+		   s -= bps;
+
+		   for (int j = 0; j < bps; j++)
+			   *d++ = *s++;
+	   }
+   }
+   else
+   {
+	   // Copy the memory to it.
+	   memcpy(pbData, m_pdata, m_cdata);
+   }
    // Unlock the buffer, we don't need it anymore.
    m_pDSBuffer->Unlock(pbData, m_cdata, NULL, 0);
 
@@ -385,7 +426,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    WAVEFORMATEX wfx;
    ZeroMemory(&wfx, sizeof(WAVEFORMATEX));
    wfx.wFormatTag = WAVE_FORMAT_PCM;
-   wfx.nChannels = (SoundMode3D != SNDCFG_SND3D2CH) ?  1 : 2;
+   wfx.nChannels = (!IsBackglass && (SoundMode3D != SNDCFG_SND3D2CH)) ?  1 : 2;
    wfx.nSamplesPerSec = 44100;
    wfx.wBitsPerSample = 16;
    wfx.nBlockAlign = wfx.wBitsPerSample / (WORD)8 * wfx.nChannels;
