@@ -2,6 +2,9 @@ name: vpinball
 on:
   push:
 
+env:
+  VERSION_START_SHA: 3feea27328663974d4df819d2faa981d881773ad
+
 defaults:
   run:
     shell: bash
@@ -30,6 +33,7 @@ jobs:
     name: Version
     runs-on: ubuntu-latest
     outputs:
+      version: ${{ steps.version.outputs.version }}
       revision: ${{ steps.version.outputs.revision }}
       sha7: ${{ steps.version.outputs.sha7 }}
     steps:
@@ -38,9 +42,14 @@ jobs:
           fetch-depth: 0
       - id: version
         run: |
-          REVISION=$(git rev-list 3feea27328663974d4df819d2faa981d881773ad..HEAD --count)
+          VERSION_MAJOR=$(grep -Eo "VP_VERSION_MAJOR\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
+          VERSION_MINOR=$(grep -Eo "VP_VERSION_MINOR\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
+          VERSION_REV=$(grep -Eo "VP_VERSION_REV\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
+          REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..HEAD --count)
+          SHA7="${GITHUB_SHA::7}"
+          echo "::set-output name=version::${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}-${REVISION}-${SHA7}"
           echo "::set-output name=revision::${REVISION}"
-          echo "::set-output name=sha7::${GITHUB_SHA::7}"
+          echo "::set-output name=sha7::${SHA7}"
 
   build:
     name: Build VPinballX-${{ matrix.platform }}
@@ -86,10 +95,24 @@ jobs:
           cp dll/${{ matrix.bass }} tmp
           cp dll/${{ matrix.free-image }} tmp
           cp dll/${{ matrix.sci-lexer-vp }} tmp
-          cp txt/license.txt tmp
+          cp txt/Changelog_Scripts.txt tmp
           cp txt/Changelog.txt tmp
-          cp -r scripts tmp/Scripts
+          cp txt/CommandLineParameters.txt tmp
+          cp txt/CommandReference.txt tmp
+          cp txt/Hotkeys.txt tmp
+          cp "txt/JP's Arcade Physics Materials v3.0.mat" tmp
+          cp "txt/JP's Arcade Physics v3.0 2nd edition.pdf" tmp
+          cp "txt/JP's Arcade Physics v3.0.vbs" tmp
+          cp "txt/JP's Arcade Physics v3.0.vpp" tmp
+          cp txt/layoutGuideline.txt tmp
+          cp txt/license.txt tmp
+          cp "txt/New Plunger Documentation.pdf" tmp
+          cp txt/PhysicValues.txt tmp
+          cp txt/RegistryKeys.txt tmp
+          cp txt/Scripts.txt tmp  
+          cp -r scripts tmp
+          cp -r tables tmp
       - uses: actions/upload-artifact@v2
         with:
-          name: VPinballX-${{ matrix.platform }}
+          name: VPinballX-${{ needs.version.outputs.version }}-${{ matrix.platform }}
           path: tmp
