@@ -168,16 +168,16 @@ static UINT ComputePrimitiveCount(const RenderDevice::PrimitiveTypes type, const
 
 void ReportFatalError(const HRESULT hr, const char *file, const int line)
 {
-   char msg[128];
-   sprintf_s(msg, 128, "Fatal error %s (0x%x: %s) at %s:%d", DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
+   char msg[1024];
+   sprintf_s(msg, 1024, "Fatal error %s (0x%x: %s) at %s:%d", DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
    ShowError(msg);
    exit(-1);
 }
 
 void ReportError(const char *errorText, const HRESULT hr, const char *file, const int line)
 {
-   char msg[128];
-   sprintf_s(msg, 128, "%s %s (0x%x: %s) at %s:%d", errorText, DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
+   char msg[1024];
+   sprintf_s(msg, 1024, "%s %s (0x%x: %s) at %s:%d", errorText, DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
    ShowError(msg);
    exit(-1);
 }
