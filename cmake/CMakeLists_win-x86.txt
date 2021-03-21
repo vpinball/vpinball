@@ -545,6 +545,8 @@ target_link_libraries(vpinball
 
 target_link_options(vpinball PUBLIC
    /SAFESEH:NO
+   /LARGEADDRESSAWARE
+   /LTCG
 )
 
 set_target_properties(vpinball PROPERTIES

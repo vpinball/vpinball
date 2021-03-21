@@ -33,9 +33,9 @@ jobs:
     name: Version
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.outputs.version }}
       revision: ${{ steps.version.outputs.revision }}
       sha7: ${{ steps.version.outputs.sha7 }}
+      tag: ${{ steps.version.outputs.tag }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -47,9 +47,10 @@ jobs:
           VERSION_REV=$(grep -Eo "VP_VERSION_REV\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
           REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..HEAD --count)
           SHA7="${GITHUB_SHA::7}"
-          echo "::set-output name=version::${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}-${REVISION}-${SHA7}"
+          TAG="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}-${REVISION}-${SHA7}"
           echo "::set-output name=revision::${REVISION}"
           echo "::set-output name=sha7::${SHA7}"
+          echo "::set-output name=tag::${TAG}"
 
   build:
     name: Build VPinballX-${{ matrix.platform }}
@@ -114,5 +115,5 @@ jobs:
           cp -r tables tmp
       - uses: actions/upload-artifact@v2
         with:
-          name: VPinballX-${{ needs.version.outputs.version }}-${{ matrix.platform }}
+          name: VPinballX-${{ needs.version.outputs.tag }}-${{ matrix.platform }}
           path: tmp

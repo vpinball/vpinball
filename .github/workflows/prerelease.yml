@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       sha: ${{ steps.sha.outputs.sha }}
-      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
     steps:
       - id: sha
         run: |
@@ -33,7 +33,8 @@ jobs:
           VERSION_MINOR=$(grep -Eo "VP_VERSION_MINOR\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
           VERSION_REV=$(grep -Eo "VP_VERSION_REV\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
           REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..${{ steps.sha.outputs.sha }} --count)
-          echo "::set-output name=version::${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}-${REVISION}-${{ steps.sha.outputs.sha7 }}"
+          TAG="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}-${REVISION}-${{ steps.sha.outputs.sha7 }}"
+          echo "::set-output name=tag::${TAG}"
 
   prerelease:
     runs-on: ubuntu-latest
@@ -55,8 +56,8 @@ jobs:
       - id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: "v${{ needs.version.outputs.version }}" 
-          release_name: "v${{ needs.version.outputs.version }}"
+          tag_name: "v${{ needs.version.outputs.tag }}" 
+          release_name: "v${{ needs.version.outputs.tag }}"
           prerelease: true
           commitish: ${{ needs.version.outputs.sha }}
         env:
