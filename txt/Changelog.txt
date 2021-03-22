@@ -5,7 +5,8 @@ VP 10.6.2 Changelog
   this exaggerates the positional feel of the playfield sound effects when
   played in a cabinet with exciter pairs positioned at each end of the cabinet
 
-- fix a small error in the original SMAA shader code, and also increase quality parameters slightly (to match reshade)
+- fix a small error in the original SMAA filter code, and also increase quality parameters slightly (to match reshade)
+- retweak Standard FXAA and Quality FXAA filters to be a bit sharper
 
 VP 10.6.1 Changelog
 ------------------------
