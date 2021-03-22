@@ -209,18 +209,18 @@ HRESULT PinSound::ReInitialize()
 
    if ((DWORD)m_cdata < dsbd.dwBufferBytes) // if buffer was resized then duplicate channel
    {
-	   int bps = wfx.wBitsPerSample / 8;
-	   unsigned _int8 *s = (unsigned _int8 *) m_pdata;
-	   unsigned _int8 *d = (unsigned _int8 *) pbData;
+	   const unsigned int bps = wfx.wBitsPerSample / 8;
+	   char * __restrict s = m_pdata;
+	   char * __restrict d = (char*)pbData;
 
-	   for (unsigned i = 0; i < dsbd.dwBufferBytes; i += wfx.nBlockAlign)
+	   for (DWORD i = 0; i < dsbd.dwBufferBytes; i += wfx.nBlockAlign)
 	   {
-		   for (int j = 0; j < bps; j++)
+		   for (unsigned int j = 0; j < bps; j++)
 			   *d++ = *s++;
 
 		   s -= bps;
 
-		   for (int j = 0; j < bps; j++)
+		   for (unsigned int j = 0; j < bps; j++)
 			   *d++ = *s++;
 	   }
    }
@@ -303,10 +303,10 @@ void PinSound::Play(const float volume, const float randompitch, const int pitch
       }
       case SNDCFG_SND3DSSF:
       {
-          const BASS_3DVECTOR v(PinDirectSound::PanSSF(pan), 0.0f, PinDirectSound::FadeSSF(front_rear_fade));
-          BASS_ChannelSet3DPosition(m_BASSstream, &v, NULL, NULL);
-          BASS_Apply3D();
-          break;
+         const BASS_3DVECTOR v(PinDirectSound::PanSSF(pan), 0.0f, PinDirectSound::FadeSSF(front_rear_fade));
+         BASS_ChannelSet3DPosition(m_BASSstream, &v, NULL, NULL);
+         BASS_Apply3D();
+         break;
       }
       case SNDCFG_SND3D2CH:
       default:
@@ -634,11 +634,11 @@ float PinDirectSound::PanSSF(float pan)
 	// a linear scale (which would leave a gap in the center of the range).
 	// This basically undoes the Pan() fading function in the table scripts.
 
-	x = (x < 0.0f) ? -powf(-x, 0.10f) : powf(x, 0.10f);
+	x = (x < 0.0f) ? -powf(-x, 0.1f) : powf(x, 0.1f);
 
 	// Increase the pan range from [-1.0, 1.0] to [-3.0, 3.0] to improve the surround sound fade effect
 
-	x = x * 3.0f;
+	x *= 3.0f;
 
 	// BASS pan effect is much beter than VPX 10.6/DirectSound3d but it
 	// could still stand a little enhancement to exagerrate the effect.
@@ -655,9 +655,9 @@ float PinDirectSound::PanSSF(float pan)
 	// The compiler will optimize away the excess math.
 
 	if (x >= 0.0f)
-		x = ((x -  0.00f) / (3.00f -  0.00f)) * ( 3.00f -  2.0f) +  2.00f;
+		x = ((x -  0.0f) / (3.0f -  0.0f)) * ( 3.0f -  2.0f) +  2.0f;
 	else
-		x = ((x - -3.00f) / (0.00f - -3.00f)) * (-2.0f - -3.00f) + -2.00f;
+		x = ((x - -3.0f) / (0.0f - -3.0f)) * (-2.0f - -3.0f) + -2.0f;
 
 	// Clip the pan output range to 3.0 to -3.0
 	//
@@ -711,11 +711,11 @@ float PinDirectSound::FadeSSF(float front_rear_fade)
 	// a linear scale (which would leave a gap in the center of the range).
 	// This basically undoes the AudioFade() fading function in the table scripts.	
 
-	z = (z < 0.0f) ? -powf(-z, 0.10f) : powf(z, 0.10f);
+	z = (z < 0.0f) ? -powf(-z, 0.1f) : powf(z, 0.1f);
 
 	// Increase the fade range from [-1.0, 1.0] to [-3.0, 3.0] to improve the surround sound fade effect
 
-	z = z * 3.0f;
+	z *= 3.0f;
 
 	// Rescale fade range from [-3.0,3.0] to [0.0,-2.5] in an attempt to remove all sound from
 	// the surround sound front (backbox) speakers and place them close to the surround sound
@@ -728,7 +728,7 @@ float PinDirectSound::FadeSSF(float front_rear_fade)
 	// The compiler will optimize away the excess math.
 
 	// Rescale to -2.5 instead of -3.0 to further push sound away from rear channels
-	z = ((z - -3.00f) / (3.00f - -3.00f)) * (-2.50f - 0.00f) + 0.00f;
+	z = ((z - -3.0f) / (3.0f - -3.0f)) * (-2.5f - 0.0f) + 0.0f;
 
 	// With BASS the above scaling is sufficient to keep the playfield sounds out of 
 	// the backbox. However playfield sounds are heavily weighted to the rear channels. 

@@ -59,6 +59,8 @@ FEATURES:
 
 - add a button to the video preferences that resets the (windowed mode) player window position
 
+- add new command line parameter "-PovEdit [filename]" which loads and runs a table in camera mode, then exports a new pov on exit
+
 FIXES:
 
 - deleting an image will not copy the old alpha value over to the next image in the list anymore

@@ -91,6 +91,7 @@ VPinball::VPinball()
    //implement this and StdMethods QueryInterface, AddRef and Release
 
    m_open_minimized = false;
+   m_povEdit = false;
    m_disEnableTrueFullscreen = -1;
    m_table_played_via_command_line = false;
    m_logicalNumberOfProcessors = -1;

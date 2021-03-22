@@ -4544,6 +4544,7 @@ void Player::UpdateCameraModeDisplay()
    DebugPrint(0, 10, "Camera / Light / Material Edit Mode");
    DebugPrint(0, 50, "Left / Right flipper key = decrease / increase value");
    DebugPrint(0, 70, "Left / Right magna save key = previous / next option");
+   DebugPrint(0, 90, "Left / Right nudge key = rotate table orientation (if enabled in the Key settings)");
 
    char szFoo[128];
    switch (m_backdropSettingActive)
@@ -4624,12 +4625,16 @@ void Player::UpdateCameraModeDisplay()
       break;
    }
    }
-   DebugPrint(0, 130, szFoo);
+   DebugPrint(0, 150, szFoo);
    m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
-   sprintf_s(szFoo, "Camera at X: %f Y: %f Z: %f", -m_pin3d.m_proj.m_matView._41, (m_ptable->m_BG_current_set == 0 || m_ptable->m_BG_current_set == 2) ? m_pin3d.m_proj.m_matView._42 : -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43); // DT & FSS
-   DebugPrint(0, 110, szFoo);
-   DebugPrint(0, 170, "Navigate around with the Arrow Keys and Left Alt Key (if enabled in the Key settings)");
-   DebugPrint(0, 210, "Use the Debugger / Interactive Editor to change Lights / Materials");
+   sprintf_s(szFoo, "Camera at X: %.2f Y: %.2f Z: %.2f,  Rotation: %.2f", -m_pin3d.m_proj.m_matView._41, (m_ptable->m_BG_current_set == 0 || m_ptable->m_BG_current_set == 2) ? m_pin3d.m_proj.m_matView._42 : -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43, g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set]); // DT & FSS
+   DebugPrint(0, 130, szFoo);
+   DebugPrint(0, 190, "Navigate around with the Arrow Keys and Left Alt Key (if enabled in the Key settings)");
+   if(g_pvp->m_povEdit)
+      DebugPrint(0, 210, "Start Key: export POV file and quit, or Credit Key: quit without export");
+   else
+      DebugPrint(0, 210, "Start Key: reset POV to old values");
+   DebugPrint(0, 250, "Use the Debugger / Interactive Editor to change Lights / Materials");
 }
 
 void Player::LockForegroundWindow(const bool enable)

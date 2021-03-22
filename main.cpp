@@ -276,7 +276,7 @@ public:
             || lstrcmpi(szArglist[i], _T("-Help")) == 0 || lstrcmpi(szArglist[i], _T("/Help")) == 0
             || lstrcmpi(szArglist[i], _T("-?")) == 0 || lstrcmpi(szArglist[i], _T("/?")) == 0)
          {
-            m_vpinball.MessageBox("-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n-Minimized  Start VP in the 'invisible' minimized window mode\n\n-LessCPUthreads  Limit the amount of parallel execution\n\n-Edit [filename]  Load file into VP\n-Play [filename]  Load and play file\n-Pov [filename]  Load, export pov and close\n-ExtractVBS [filename]  Load, export table script and close\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)",
+            m_vpinball.MessageBox("-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n-Minimized  Start VP in the 'invisible' minimized window mode\n\n-LessCPUthreads  Limit the amount of parallel execution\n\n-Edit [filename]  Load file into VP\n-Play [filename]  Load and play file\n-PovEdit [filename]  Load and run file in camera mode, then export new pov on exit\n-Pov [filename]  Load, export pov and close\n-ExtractVBS [filename]  Load, export table script and close\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)",
                  "Visual Pinball Usage", MB_OK);
             //run = false;
             exit(0);
@@ -358,13 +358,17 @@ public:
          const bool editfile = (lstrcmpi(szArglist[i], _T("-Edit")) == 0 || lstrcmpi(szArglist[i], _T("/Edit")) == 0);
          const bool playfile = (lstrcmpi(szArglist[i], _T("-Play")) == 0 || lstrcmpi(szArglist[i], _T("/Play")) == 0);
 
+         const bool povEdit  = (lstrcmpi(szArglist[i], _T("-PovEdit")) == 0 || lstrcmpi(szArglist[i], _T("/PovEdit")) == 0);
+         if (povEdit)
+             m_vpinball.m_povEdit = true;
+
          const bool extractpov = (lstrcmpi(szArglist[i], _T("-Pov")) == 0 || lstrcmpi(szArglist[i], _T("/Pov")) == 0);
          const bool extractscript = (lstrcmpi(szArglist[i], _T("-ExtractVBS")) == 0 || lstrcmpi(szArglist[i], _T("/ExtractVBS")) == 0);
 
-         if ((editfile || playfile || extractpov || extractscript) && (i + 1 < nArgs))
+         if ((editfile || playfile || povEdit || extractpov || extractscript) && (i + 1 < nArgs))
          {
             file = true;
-            play = playfile;
+            play = playfile || povEdit;
             extractPov = extractpov;
             extractScript = extractscript;
 
@@ -386,7 +390,7 @@ public:
             }
             else
                // Or set from table path
-               if (playfile) {
+               if (play) {
                   string dir;
                   PathFromFilename(szTableFileName, dir);
                   SetCurrentDirectory(dir.c_str());
@@ -508,7 +512,7 @@ public:
       if (run)
       {
          if (play && loadFileResult)
-           m_vpinball.DoPlay(false);
+           m_vpinball.DoPlay(m_vpinball.m_povEdit);
 
          // VBA APC handles message loop (bastards)
          m_vpinball.MainMsgLoop();

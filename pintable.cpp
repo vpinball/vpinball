@@ -1222,7 +1222,6 @@ PinTable::~PinTable()
 
    if (m_hbmOffScreen)
       DeleteObject(m_hbmOffScreen);
-
 }
 
 void PinTable::FVerifySaveToClose()
@@ -10040,7 +10039,7 @@ PinTableMDI::~PinTableMDI()
 
 bool PinTableMDI::CanClose() const
 {
-    if (m_table!=nullptr && m_table->FDirty())
+    if (m_table!=nullptr && m_table->FDirty() && !g_pvp->m_povEdit)
     {
         const LocalString ls1(IDS_SAVE_CHANGES1);
         const LocalString ls2(IDS_SAVE_CHANGES2);
@@ -10086,7 +10085,7 @@ void PinTableMDI::OnClose()
 {
     if(m_vpinball->IsClosing() || CanClose())
     {
-        if(g_pvp->GetNotesDocker() !=nullptr)
+        if(g_pvp->GetNotesDocker() != nullptr)
         {
            g_pvp->GetNotesDocker()->UpdateText();
            g_pvp->GetNotesDocker()->CleanText();

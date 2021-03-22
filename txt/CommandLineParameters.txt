@@ -10,6 +10,7 @@
 
 -Edit [filename]        Load file into VP
 -Play [filename]        Load and play file
+-PovEdit [filename]     Load and run file in camera mode, then export new pov on exit
 -Pov [filename]         Load, export pov and close
 -ExtractVBS [filename]  Load, export table script and close
 -c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)
