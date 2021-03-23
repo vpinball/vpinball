@@ -178,6 +178,9 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 {
 	const float2 u = IN.tex0 + w_h_height.xy*0.5;
 
+	const float2 uv0 = IN.tex0 + w_h_height.xy; // half pixel shift in x & y for filter
+	const float2 uv1 = IN.tex0;                 // dto.
+
 	const float depth0 = tex2Dlod(texSamplerDepth, float4(u, 0.,0.)).x;
 	[branch] if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
 		return float4(1.0, 0.,0.,0.);
@@ -188,7 +191,7 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 	const float area = 0.06; //!!
 	const float falloff = 0.0002; //!!
 	const int samples = 8/*9*/; //4,8,9,13,21,25,32 korobov,fibonacci
-	const float radius = 0.001+frac(ushift.z+w_h_height.z*(float)(samples-1))*0.009; // sample radius //!! w_h_height.z reused, but should not be that bad
+	const float radius = 0.001+/*frac*/(ushift.z)*0.009; // sample radius
 	const float depth_threshold_normal = 0.005;
 	const float total_strength = AO_scale_timeblur.x * (/*1.0 for uniform*/0.5 / samples);
 	const float3 normal = normalize(get_nonunit_normal(depth0, u));
@@ -212,10 +215,10 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 	}
 	// weight with result(s) from previous frames
 	const float ao = 1.0 - total_strength * occlusion;
-	return float4( (tex2Dlod(texSampler5, float4(u+w_h_height.xy*0.5, 0.,0.)).x //abuse bilerp for filtering (by using half texel/pixel shift)
-				   +tex2Dlod(texSampler5, float4(u-w_h_height.xy*0.5, 0.,0.)).x
-				   +tex2Dlod(texSampler5, float4(u+float2(w_h_height.x,-w_h_height.y)*0.5, 0.,0.)).x
-				   +tex2Dlod(texSampler5, float4(u-float2(w_h_height.x,-w_h_height.y)*0.5, 0.,0.)).x)
+	return float4( (tex2Dlod(texSampler5, float4(uv0, 0.,0.)).x //abuse bilerp for filtering (by using half texel/pixel shift)
+				   +tex2Dlod(texSampler5, float4(uv1, 0.,0.)).x
+				   +tex2Dlod(texSampler5, float4(uv0.x,uv1.y, 0.,0.)).x
+				   +tex2Dlod(texSampler5, float4(uv1.x,uv0.y, 0.,0.)).x)
 		*(0.25*(1.0-AO_scale_timeblur.y))+saturate(ao /*+base*/)*AO_scale_timeblur.y, 0.,0.,0.);
 }
 
