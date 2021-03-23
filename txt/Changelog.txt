@@ -8,6 +8,7 @@ VP 10.6.2 Changelog
 - improve quality and performance of internal DMD shader (especially visible on FSS tables)
 
 - replace dithering code with blue noise, fixes flickering patterns (especially in darker table areas)
+- disable dithering code when running in 10bit output mode
 - tweak AO (Ambient Occlusion) and SSR (Screen Space Reflections) to be a bit less noisy
 - fix a small error in the original SMAA filter code, and also increase quality parameters slightly (to match reshade)
 - retweak Standard FXAA and Quality FXAA filters to be a bit sharper
