@@ -3471,9 +3471,9 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
       const vec4 c = convertColor(DMDcolor, intensity);
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetVector("vColor_Intensity", &c);
 #ifdef DMD_UPSCALE
-      const vec4 r((float)(m_dmdx*3), (float)(m_dmdy*3), 1.f, g_pplayer->m_overall_frames%2048);
+      const vec4 r((float)(m_dmdx*3), (float)(m_dmdy*3), 1.f, (float)(g_pplayer->m_overall_frames%2048));
 #else
-      const vec4 r((float)m_dmdx, (float)m_dmdy, 1.f, g_pplayer->m_overall_frames%2048);
+      const vec4 r((float)m_dmdx, (float)m_dmdy, 1.f, (float)(g_pplayer->m_overall_frames%2048));
 #endif
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetVector("vRes_Alpha_time", &r);
 
