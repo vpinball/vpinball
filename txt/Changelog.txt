@@ -25,7 +25,7 @@ FEATURES:
   these new file types are now also saved directly into the VPX file, unlike the music commands (which still use the 'music' folder for legacy reasons)
   Going forward, tables should only use the sound commands and not the music commands anymore
 
-- add another 7.1 SurroundSound mode tuned for SSF cabinet configurations
+- add another 7.1 SurroundSound mode tuned for SSF cabinet configurations (7.1 Surround Sound Feedback (enhanced))
   this exaggerates the positional feel of the playfield sound effects when
   played in a cabinet with exciter pairs positioned at each end of the cabinet
 
@@ -62,6 +62,8 @@ FEATURES:
 - add new command line parameter "-PovEdit [filename]" which loads and runs a table in camera mode, then exports a new pov on exit
 
 FIXES:
+
+- fix issues with 3D Audio setups and backglass sounds (like music)
 
 - deleting an image will not copy the old alpha value over to the next image in the list anymore
 
@@ -129,9 +131,12 @@ FIXES:
 VP 10.6.2 Changelog
 ------------------------
 
-- add another 7.1 SurroundSound mode tuned for SSF cabinet configurations
+- add another 7.1 SurroundSound mode tuned for SSF cabinet configurations (7.1 Surround Sound Feedback (enhanced))
   this exaggerates the positional feel of the playfield sound effects when
   played in a cabinet with exciter pairs positioned at each end of the cabinet
+
+- fix a small error in the original SMAA filter code, and also increase quality parameters slightly (to match reshade)
+- retweak Standard FXAA and Quality FXAA filters to be a bit sharper
 
 VP 10.6.1 Changelog
 ------------------------
