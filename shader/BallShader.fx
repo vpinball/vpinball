@@ -6,12 +6,12 @@
 #include "Helpers.fxh"
 
 // transformation matrices
-float4x4 matWorldViewProj : WORLDVIEWPROJ;
-float4x4 matWorldView     : WORLDVIEW;
-float4x3 matWorldViewInverse;
-//float4x4 matWorldViewInverseTranspose; // matWorldViewInverse used instead and multiplied from other side
-float4x3 matView;
-//float4x4 matViewInverseInverseTranspose; // matView used instead and multiplied from other side
+const float4x4 matWorldViewProj : WORLDVIEWPROJ;
+const float4x4 matWorldView     : WORLDVIEW;
+const float4x3 matWorldViewInverse;
+//const float4x4 matWorldViewInverseTranspose; // matWorldViewInverse used instead and multiplied from other side
+const float4x3 matView;
+//const float4x4 matViewInverseInverseTranspose; // matView used instead and multiplied from other side
 
 texture  Texture0; // base texture
 texture  Texture1; // playfield (should be envmap if specular or glossy needed/enabled, see below)
@@ -58,17 +58,17 @@ sampler2D texSampler7 : TEXUNIT3 = sampler_state // ball decal
 	ADDRESSV  = Wrap;
 };
 
-bool     hdrEnvTextures = false;
+const bool     hdrEnvTextures = false;
 
 #include "Material.fxh"
 
-float4   invTableRes__playfield_height_reflection;
+const float4   invTableRes__playfield_height_reflection;
 
-//float    reflection_ball_playfield;
+//const float    reflection_ball_playfield;
 
-float4x3 orientation;
+const float4x3 orientation;
 
-bool     hdrTexture0;
+const bool     hdrTexture0;
 
 //------------------------------------
 
@@ -106,7 +106,7 @@ struct voutTrail
 //------------------------------------
 // VERTEX SHADER
 
-vout vsBall( in vin IN )
+vout vsBall( const in vin IN )
 {
 	// apply spinning and move the ball to it's actual position
 	float4 pos = IN.position;
@@ -126,7 +126,7 @@ vout vsBall( in vin IN )
 }
 
 #if 0
-voutReflection vsBallReflection( in vin IN )
+voutReflection vsBallReflection( const in vin IN )
 {
 	// apply spinning and move the ball to it's actual position
 	float4 pos = IN.position;
@@ -152,10 +152,9 @@ voutReflection vsBallReflection( in vin IN )
 }
 #endif
 
-voutTrail vsBallTrail( in vin IN )
+voutTrail vsBallTrail( const in vin IN )
 {
     voutTrail OUT;
-    
     OUT.position = mul(IN.position, matWorldViewProj);
 	OUT.tex0_alpha = float3(IN.tex0, IN.normal.x); //!! abuses normal for now
 
@@ -240,7 +239,7 @@ float3 PFlightLoop(const float3 pos, const float3 N, const float3 diffuse)
 //------------------------------------
 // PIXEL SHADER
 
-float4 psBall( in vout IN, uniform bool cabMode, uniform bool decalMode ) : COLOR
+float4 psBall( const in vout IN, uniform bool cabMode, uniform bool decalMode ) : COLOR
 {
     const float3 v = normalize(/*camera=0,0,0,1*/-IN.worldPos_t0y.xyz);
     const float3 r = reflect(v, normalize(IN.normal_t0x.xyz));
@@ -307,7 +306,7 @@ float4 psBall( in vout IN, uniform bool cabMode, uniform bool decalMode ) : COLO
 }
 
 #if 0
-float4 psBallReflection( in voutReflection IN ) : COLOR
+float4 psBallReflection( const in voutReflection IN ) : COLOR
 {
    const float2 envTex = cabMode ? float2(IN.r.y*0.5f + 0.5f, -IN.r.x*0.5f + 0.5f) : float2(IN.r.x*0.5f + 0.5f, IN.r.y*0.5f + 0.5f);
    float3 ballImageColor = tex2D(texSampler0, envTex).xyz;

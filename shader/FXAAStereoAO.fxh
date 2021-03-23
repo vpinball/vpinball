@@ -80,7 +80,7 @@ float3 rotate_to_vector_upper(const float3 vec, const float3 normal)
 	return normal + spherePoint;
 }*/
 
-/*float4 ps_main_normals(in VS_OUTPUT_2D IN) : COLOR // separate pass to generate normals (should actually reduce bandwidth needed in AO pass, but overall close to no performance difference or even much worse perf, depending on gfxboard)
+/*float4 ps_main_normals(const in VS_OUTPUT_2D IN) : COLOR // separate pass to generate normals (should actually reduce bandwidth needed in AO pass, but overall close to no performance difference or even much worse perf, depending on gfxboard)
 {
 	const float2 u = IN.tex0 + w_h_height.xy*0.5;
 
@@ -174,7 +174,7 @@ float3 decompress_normal(const float2 c)
 }
 #endif
 
-float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_ao(const in VS_OUTPUT_2D IN) : COLOR
 {
 	const float2 u = IN.tex0 + w_h_height.xy*0.5;
 
@@ -225,7 +225,7 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 // stereo
 
 //!! opt.?
-float4 ps_main_stereo(in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_stereo(const in VS_OUTPUT_2D IN) : COLOR
 {
 	float2 u = IN.tex0 + w_h_height.xy*0.5;
 	const float MaxSeparation = ms_zpd_ya_td.x;
@@ -338,7 +338,7 @@ float2 findContrastByColor(const float2 XYCoord, const float filterSpread)
 }
 #endif
 
-float4 ps_main_nfaa(in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_nfaa(const in VS_OUTPUT_2D IN) : COLOR
 {
 #ifndef NFAA_VARIANT2
  #ifdef NFAA_VARIANT
@@ -415,7 +415,7 @@ float avg(const float3 l)
    return (l.x+l.y+l.z) * (1.0 / 3.0);
 }
 
-float4 ps_main_dlaa_edge(in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_dlaa_edge(const in VS_OUTPUT_2D IN) : COLOR
 {
    const float2 u = IN.tex0 + w_h_height.xy*0.5;
 
@@ -432,7 +432,7 @@ float4 ps_main_dlaa_edge(in VS_OUTPUT_2D IN) : COLOR
 }
 
 
-float4 ps_main_dlaa(in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_dlaa(const in VS_OUTPUT_2D IN) : COLOR
 {
    const float2 u = IN.tex0 + w_h_height.xy*0.5;
 
@@ -542,7 +542,7 @@ float luma(const float3 l)
 }
 
 // Approximation of FXAA
-float4 ps_main_fxaa1(in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fxaa1(const in VS_OUTPUT_2D IN) : COLOR
 {
 	const float2 u = IN.tex0 + w_h_height.xy*0.5;
 
@@ -594,7 +594,7 @@ float4 ps_main_fxaa1(in VS_OUTPUT_2D IN) : COLOR
 #define FXAA_QUALITY__P2 8.0
 
 // Full mid-quality PC FXAA 3.11
-float4 ps_main_fxaa2(in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fxaa2(const in VS_OUTPUT_2D IN) : COLOR
 {
 	const float2 u = IN.tex0 + w_h_height.xy*0.5;
 
@@ -741,7 +741,7 @@ float4 ps_main_fxaa2(in VS_OUTPUT_2D IN) : COLOR
 #define FXAA_QUALITY__P11 8.0
 
 // Full extreme-quality PC FXAA 3.11
-float4 ps_main_fxaa3(in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fxaa3(const in VS_OUTPUT_2D IN) : COLOR
 {
 	const float2 u = IN.tex0 + w_h_height.xy*0.5;
 

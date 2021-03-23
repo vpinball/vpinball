@@ -6,11 +6,11 @@
 #include "Helpers.fxh"
 
 // transformation matrices
-float4x4 matWorldViewProj : WORLDVIEWPROJ;
-float4x4 matWorldView     : WORLDVIEW;
-float3x4 matWorldViewInverseTranspose;
-float4x3 matView;
-//float4x4 matViewInverseInverseTranspose; // matView used instead and multiplied from other side
+const float4x4 matWorldViewProj : WORLDVIEWPROJ;
+const float4x4 matWorldView     : WORLDVIEW;
+const float3x4 matWorldViewInverseTranspose;
+const float4x3 matView;
+//const float4x4 matViewInverseInverseTranspose; // matView used instead and multiplied from other side
 
 texture Texture0; // base texture
 texture Texture1; // envmap
@@ -49,24 +49,24 @@ sampler2D texSampler2 : TEXUNIT2 = sampler_state // diffuse environment contribu
 
 #include "Material.fxh"
 
-float3 cGlossy_ImageLerp; // actually doesn't feature image lerp
-float3 cClearcoat_EdgeAlpha; // actually doesn't feature edge-alpha
+const float3 cGlossy_ImageLerp; // actually doesn't feature image lerp
+const float3 cClearcoat_EdgeAlpha; // actually doesn't feature edge-alpha
 //!! No value is under 0.02
 //!! Non-metals value are un-intuitively low: 0.02-0.08
 //!! Gemstones are 0.05-0.17
 //!! Metals have high specular reflectance:  0.5-1.0
 
-//float  alphaTestValue;
+//const float  alphaTestValue;
 
-bool hdrEnvTextures;
+const bool hdrEnvTextures;
 #endif
 
-float4 lightColor_intensity;
-float4 lightColor2_falloff_power;
-float4 lightCenter_maxRange;
-bool lightingOff;
+const float4 lightColor_intensity;
+const float4 lightColor2_falloff_power;
+const float4 lightCenter_maxRange;
+const bool lightingOff;
 
-bool hdrTexture0;
+const bool hdrTexture0;
 
 struct VS_LIGHT_OUTPUT
 {
@@ -79,9 +79,9 @@ struct VS_LIGHT_OUTPUT
 };
 
 // vertex shader is skipped for backglass elements, due to D3DDECLUSAGE_POSITIONT 
-VS_LIGHT_OUTPUT vs_light_main (in float4 vPosition : POSITION0,  
-                               in float3 vNormal   : NORMAL0,  
-                               in float2 tc        : TEXCOORD0) 
+VS_LIGHT_OUTPUT vs_light_main (const in float4 vPosition : POSITION0,
+                               const in float3 vNormal   : NORMAL0,
+                               const in float2 tc        : TEXCOORD0)
 {
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    const float3 P = mul(vPosition, matWorldView).xyz;
@@ -96,7 +96,7 @@ VS_LIGHT_OUTPUT vs_light_main (in float4 vPosition : POSITION0,
    return Out; 
 }
 
-float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLOR
+float4 PS_LightWithTexel(const in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLOR
 {
     float4 pixel = tex2D(texSampler0, IN.tex0);
     //if (!hdrTexture0)
@@ -133,7 +133,7 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLOR
     return color;
 }
 
-float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLOR
+float4 PS_LightWithoutTexel(const in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLOR
 {
     float4 result = float4(0.0, 0.0, 0.0, 0.0);
     [branch] if (lightColor_intensity.w != 0.0)
