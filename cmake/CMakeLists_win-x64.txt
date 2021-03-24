@@ -26,6 +26,7 @@ add_compile_options(
    $<$<CONFIG:RELEASE>:/GR->
    $<$<CONFIG:RELEASE>:/Oy>
    $<$<CONFIG:RELEASE>:/GT>
+   $<$<CONFIG:RELEASE>:/GL>
    $<$<CONFIG:RELEASE>:/w44005>
 )
 
@@ -544,7 +545,7 @@ target_link_libraries(vpinball
 )
 
 target_link_options(vpinball PUBLIC
-   /LTCG
+   $<$<CONFIG:RELEASE>:/LTCG>
 )
 
 set_target_properties(vpinball PROPERTIES
