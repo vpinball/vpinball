@@ -102,9 +102,10 @@ jobs:
           cp txt/CommandReference.txt tmp
           cp txt/Hotkeys.txt tmp
           cp "txt/JP's Arcade Physics Materials v3.0.mat" tmp
+          cp "txt/JP's Arcade Physics Materials v3.01 for 10.7.mat" tmp
           cp "txt/JP's Arcade Physics v3.0 2nd edition.pdf" tmp
           cp "txt/JP's Arcade Physics v3.0.vbs" tmp
-          cp "txt/JP's Arcade Physics v3.0.vpp" tmp
+          cp "txt/JP's Arcade Physics v3.01.vpp" tmp
           cp txt/layoutGuideline.txt tmp
           cp txt/license.txt tmp
           cp "txt/New Plunger Documentation.pdf" tmp
