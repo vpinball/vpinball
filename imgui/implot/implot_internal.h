@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2020 Evan Pezent
+// Copyright (c) 2021 Evan Pezent
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// ImPlot v0.8 WIP
+// ImPlot v0.9 WIP
 
 // You may use this file to debug, understand or extend ImPlot features but we
 // don't provide any guarantee of forward compatibility!
@@ -43,26 +43,7 @@
 #endif
 
 //-----------------------------------------------------------------------------
-// [SECTION] Forward Declarations
-//-----------------------------------------------------------------------------
-
-struct ImPlotTick;
-struct ImPlotAxis;
-struct ImPlotAxisState;
-struct ImPlotAxisColor;
-struct ImPlotItem;
-struct ImPlotLegendData;
-struct ImPlotPlot;
-struct ImPlotNextPlotData;
-
-//-----------------------------------------------------------------------------
-// [SECTION] Context Pointer
-//-----------------------------------------------------------------------------
-
-extern IMPLOT_API ImPlotContext* GImPlot; // Current implicit context pointer
-
-//-----------------------------------------------------------------------------
-// [SECTION] Macros and Constants
+// [SECTION] Constants
 //-----------------------------------------------------------------------------
 
 // Constants can be changed unless stated otherwise. We may move some of these
@@ -80,6 +61,34 @@ extern IMPLOT_API ImPlotContext* GImPlot; // Current implicit context pointer
 #define IMPLOT_MAX_TIME  32503680000
 
 //-----------------------------------------------------------------------------
+// [SECTION] Macros
+//-----------------------------------------------------------------------------
+
+// Split ImU32 color into RGB components [0 255]
+#define IM_COL32_SPLIT_RGB(col,r,g,b) \
+    ImU32 r = ((col >> IM_COL32_R_SHIFT) & 0xFF); \
+    ImU32 g = ((col >> IM_COL32_G_SHIFT) & 0xFF); \
+    ImU32 b = ((col >> IM_COL32_B_SHIFT) & 0xFF);
+
+//-----------------------------------------------------------------------------
+// [SECTION] Forward Declarations
+//-----------------------------------------------------------------------------
+
+struct ImPlotTick;
+struct ImPlotAxis;
+struct ImPlotAxisColor;
+struct ImPlotItem;
+struct ImPlotLegendData;
+struct ImPlotPlot;
+struct ImPlotNextPlotData;
+
+//-----------------------------------------------------------------------------
+// [SECTION] Context Pointer
+//-----------------------------------------------------------------------------
+
+extern IMPLOT_API ImPlotContext* GImPlot; // Current implicit context pointer
+
+//-----------------------------------------------------------------------------
 // [SECTION] Generic Helpers
 //-----------------------------------------------------------------------------
 
@@ -95,6 +104,9 @@ inline void ImFlipFlag(TSet& set, TFlag flag) { ImHasFlag(set, flag) ? set &= ~f
 // Linearly remaps x from [x0 x1] to [y0 y1].
 template <typename T>
 inline T ImRemap(T x, T x0, T x1, T y0, T y1) { return y0 + (x - x0) * (y1 - y0) / (x1 - x0); }
+// Linear rempas x from [x0 x1] to [0 1]
+template <typename T>
+inline T ImRemap01(T x, T x0, T x1) { return (x - x0) / (x1 - x0); }
 // Returns always positive modulo (assumes r != 0)
 inline int ImPosMod(int l, int r) { return (l % r + r) % r; }
 // Returns true if val is NAN or INFINITY
@@ -107,19 +119,84 @@ inline double ImConstrainInf(double val) { return val == HUGE_VAL ?  DBL_MAX : v
 inline double ImConstrainLog(double val) { return val <= 0 ? 0.001f : val; }
 // Turns numbers less than 0 to zero
 inline double ImConstrainTime(double val) { return val < IMPLOT_MIN_TIME ? IMPLOT_MIN_TIME : (val > IMPLOT_MAX_TIME ? IMPLOT_MAX_TIME : val); }
-
-// Offset calculator helper
-template <int Count>
-struct ImOffsetCalculator {
-    ImOffsetCalculator(const int* sizes) {
-        Offsets[0] = 0;
-        for (int i = 1; i < Count; ++i)
-            Offsets[i] = Offsets[i-1] + sizes[i-1];
+// True if two numbers are approximately equal using units in the last place.
+inline bool ImAlmostEqual(double v1, double v2, int ulp = 2) { return ImAbs(v1-v2) < DBL_EPSILON * ImAbs(v1+v2) * ulp || ImAbs(v1-v2) < DBL_MIN; }
+// Finds min value in an unsorted array
+template <typename T>
+inline T ImMinArray(const T* values, int count) { T m = values[0]; for (int i = 1; i < count; ++i) { if (values[i] < m) { m = values[i]; } } return m; }
+// Finds the max value in an unsorted array
+template <typename T>
+inline T ImMaxArray(const T* values, int count) { T m = values[0]; for (int i = 1; i < count; ++i) { if (values[i] > m) { m = values[i]; } } return m; }
+// Finds the min and max value in an unsorted array
+template <typename T>
+inline void ImMinMaxArray(const T* values, int count, T* min_out, T* max_out) {
+    T Min = values[0]; T Max = values[0];
+    for (int i = 1; i < count; ++i) {
+        if (values[i] < Min) { Min = values[i]; }
+        if (values[i] > Max) { Max = values[i]; }
     }
-    int Offsets[Count];
-};
+    *min_out = Min; *max_out = Max;
+}
+// Finds the mean of an array
+template <typename T>
+inline double ImMean(const T* values, int count) {
+    double den = 1.0 / count;
+    double mu  = 0;
+    for (int i = 0; i < count; ++i)
+        mu += values[i] * den;
+    return mu;
+}
+// Finds the sample standard deviation of an array
+template <typename T>
+inline double ImStdDev(const T* values, int count) {
+    double den = 1.0 / (count - 1.0);
+    double mu  = ImMean(values, count);
+    double x   = 0;
+    for (int i = 0; i < count; ++i)
+        x += (values[i] - mu) * (values[i] - mu) * den;
+    return sqrt(x);
+}
+// Mix color a and b by factor s in [0 256]
+inline ImU32 ImMixU32(ImU32 a, ImU32 b, ImU32 s) {
+#ifdef IMPLOT_MIX64
+    const ImU32 af = 256-s;
+    const ImU32 bf = s;
+    const ImU64 al = (a & 0x00ff00ff) | (((ImU64)(a & 0xff00ff00)) << 24);
+    const ImU64 bl = (b & 0x00ff00ff) | (((ImU64)(b & 0xff00ff00)) << 24);
+    const ImU64 mix = (al * af + bl * bf);
+    return ((mix >> 32) & 0xff00ff00) | ((mix & 0xff00ff00) >> 8);
+#else
+    const ImU32 af = 256-s;
+    const ImU32 bf = s;
+    const ImU32 al = (a & 0x00ff00ff);
+    const ImU32 ah = (a & 0xff00ff00) >> 8;
+    const ImU32 bl = (b & 0x00ff00ff);
+    const ImU32 bh = (b & 0xff00ff00) >> 8;
+    const ImU32 ml = (al * af + bl * bf);
+    const ImU32 mh = (ah * af + bh * bf);
+    return (mh & 0xff00ff00) | ((ml & 0xff00ff00) >> 8);
+#endif
+}
 
-// Character buffer writer helper
+// Lerp across an array of 32-bit collors given t in [0.0 1.0]
+inline ImU32 ImLerpU32(const ImU32* colors, int size, float t) {
+    int i1 = (int)((size - 1 ) * t);
+    int i2 = i1 + 1;
+    if (i2 == size || size == 1)
+        return colors[i1];
+    float den = 1.0f / (size - 1);
+    float t1 = i1 * den;
+    float t2 = i2 * den;
+    float tr = ImRemap01(t, t1, t2);
+    return ImMixU32(colors[i1], colors[i2], (ImU32)(tr*256));
+}
+
+// Set alpha channel of 32-bit color from float in range [0.0 1.0]
+inline ImU32 ImAlphaU32(ImU32 col, float alpha) {
+    return col & ~((ImU32)((1.0f-alpha)*255)<<IM_COL32_A_SHIFT);
+}
+
+// Character buffer writer helper (FIXME: Can't we replace this with ImGuiTextBuffer?)
 struct ImBufferWriter
 {
     char*  Buffer;
@@ -133,12 +210,16 @@ struct ImBufferWriter
     }
 
     void Write(const char* fmt, ...) {
-        va_list argp;
-        va_start(argp, fmt);
-        const int written = ::vsnprintf(&Buffer[Pos], Size - Pos - 1, fmt, argp);
+        va_list args;
+        va_start(args, fmt);
+        WriteV(fmt, args);
+        va_end(args);
+    }
+
+    void WriteV(const char* fmt, va_list args) {
+        const int written = ::vsnprintf(&Buffer[Pos], Size - Pos - 1, fmt, args);
         if (written > 0)
           Pos += ImMin(written, Size-Pos-1);
-        va_end(argp);
     }
 };
 
@@ -201,11 +282,28 @@ enum ImPlotTimeFmt_ {              // default        [ 24 Hour Clock ]
     ImPlotTimeFmt_Hr               // 7pm            [ 19:00        ]
 };
 
+// Input mapping structure, default values listed in the comments.
+struct ImPlotInputMap {
+    ImGuiMouseButton PanButton;             // LMB      enables panning when held
+    ImGuiKeyModFlags PanMod;                // none     optional modifier that must be held for panning
+    ImGuiMouseButton FitButton;             // LMB      fits visible data when double clicked
+    ImGuiMouseButton ContextMenuButton;     // RMB      opens plot context menu (if enabled) when clicked
+    ImGuiMouseButton BoxSelectButton;       // RMB      begins box selection when pressed and confirms selection when released
+    ImGuiKeyModFlags BoxSelectMod;          // none     optional modifier that must be held for box selection
+    ImGuiMouseButton BoxSelectCancelButton; // LMB      cancels active box selection when pressed
+    ImGuiMouseButton QueryButton;           // MMB      begins query selection when pressed and end query selection when released
+    ImGuiKeyModFlags QueryMod;              // none     optional modifier that must be held for query selection
+    ImGuiKeyModFlags QueryToggleMod;        // Ctrl     when held, active box selections turn into queries
+    ImGuiKeyModFlags HorizontalMod;         // Alt      expands active box selection/query horizontally to plot edge when held
+    ImGuiKeyModFlags VerticalMod;           // Shift    expands active box selection/query vertically to plot edge when held
+    IMPLOT_API ImPlotInputMap();
+};
+
 //-----------------------------------------------------------------------------
 // [SECTION] ImPlot Structs
 //-----------------------------------------------------------------------------
 
-// Combined data/time format spec
+// Combined date/time format spec
 struct ImPlotDateTimeFmt {
     ImPlotDateTimeFmt(ImPlotDateFmt date_fmt, ImPlotTimeFmt time_fmt, bool use_24_hr_clk = false, bool use_iso_8601 = false) {
         Date           = date_fmt;
@@ -245,19 +343,111 @@ static inline bool operator<=(const ImPlotTime& lhs, const ImPlotTime& rhs)
 static inline bool operator>=(const ImPlotTime& lhs, const ImPlotTime& rhs)
 { return lhs > rhs || lhs == rhs; }
 
-// Storage for colormap modifiers
-struct ImPlotColormapMod {
-    ImPlotColormapMod(const ImVec4* colormap, int colormap_size) {
-        Colormap     = colormap;
-        ColormapSize = colormap_size;
+// Colormap data storage
+struct ImPlotColormapData {
+    ImVector<ImU32> Keys;
+    ImVector<int>   KeyCounts;
+    ImVector<int>   KeyOffsets;
+    ImVector<ImU32> Tables;
+    ImVector<int>   TableSizes;
+    ImVector<int>   TableOffsets;
+    ImGuiTextBuffer Text;
+    ImVector<int>   TextOffsets;
+    ImVector<bool>  Quals;
+    ImGuiStorage    Map;
+    int             Count;
+
+    ImPlotColormapData() { Count = 0; }
+
+    int Append(const char* name, const ImU32* keys, int count, bool qual) {
+        if (GetIndex(name) != -1)
+            return -1;
+        KeyOffsets.push_back(Keys.size());
+        KeyCounts.push_back(count);
+        Keys.reserve(Keys.size()+count);
+        for (int i = 0; i < count; ++i)
+            Keys.push_back(keys[i]);
+        TextOffsets.push_back(Text.size());
+        Text.append(name, name + strlen(name) + 1);
+        Quals.push_back(qual);
+        ImGuiID id = ImHashStr(name);
+        int idx = Count++;
+        Map.SetInt(id,idx);
+        _AppendTable(idx);
+        return idx;
     }
-    const ImVec4* Colormap;
-    int ColormapSize;
+
+    void _AppendTable(ImPlotColormap cmap) {
+        int key_count     = GetKeyCount(cmap);
+        const ImU32* keys = GetKeys(cmap);
+        int off = Tables.size();
+        TableOffsets.push_back(off);
+        if (IsQual(cmap)) {
+            Tables.reserve(key_count);
+            for (int i = 0; i < key_count; ++i)
+                Tables.push_back(keys[i]);
+            TableSizes.push_back(key_count);
+        }
+        else {
+            int max_size = 255 * (key_count-1) + 1;
+            Tables.reserve(off + max_size);
+            // ImU32 last = keys[0];
+            // Tables.push_back(last);
+            // int n = 1;
+            for (int i = 0; i < key_count-1; ++i) {
+                for (int s = 0; s < 255; ++s) {
+                    ImU32 a = keys[i];
+                    ImU32 b = keys[i+1];
+                    ImU32 c = ImMixU32(a,b,s);
+                    // if (c != last) {
+                        Tables.push_back(c);
+                        // last = c;
+                        // n++;
+                    // }
+                }
+            }
+            ImU32 c = keys[key_count-1];
+            // if (c != last) {
+                Tables.push_back(c);
+                // n++;
+            // }
+            // TableSizes.push_back(n);
+            TableSizes.push_back(max_size);
+        }
+    }
+
+    void RebuildTables() {
+        Tables.resize(0);
+        TableSizes.resize(0);
+        TableOffsets.resize(0);
+        for (int i = 0; i < Count; ++i)
+            _AppendTable(i);
+    }
+
+    inline bool           IsQual(ImPlotColormap cmap) const                      { return Quals[cmap];                                             }
+    inline const char*    GetName(ImPlotColormap cmap) const                     { return cmap < Count ? Text.Buf.Data + TextOffsets[cmap] : NULL; }
+    inline ImPlotColormap GetIndex(const char* name) const                       { ImGuiID key = ImHashStr(name); return Map.GetInt(key,-1);       }
+
+    inline const ImU32*   GetKeys(ImPlotColormap cmap) const                     { return &Keys[KeyOffsets[cmap]];                                 }
+    inline int            GetKeyCount(ImPlotColormap cmap) const                 { return KeyCounts[cmap];                                         }
+    inline ImU32          GetKeyColor(ImPlotColormap cmap, int idx) const        { return Keys[KeyOffsets[cmap]+idx];                              }
+    inline void           SetKeyColor(ImPlotColormap cmap, int idx, ImU32 value) { Keys[KeyOffsets[cmap]+idx] = value; RebuildTables();            }
+
+    inline const ImU32*   GetTable(ImPlotColormap cmap) const                    { return &Tables[TableOffsets[cmap]];                             }
+    inline int            GetTableSize(ImPlotColormap cmap) const                { return TableSizes[cmap];                                        }
+    inline ImU32          GetTableColor(ImPlotColormap cmap, int idx) const      { return Tables[TableOffsets[cmap]+idx];                          }
+
+    inline ImU32 LerpTable(ImPlotColormap cmap, float t) const {
+        int off = TableOffsets[cmap];
+        int siz = TableSizes[cmap];
+        int idx = Quals[cmap] ? ImClamp((int)(siz*t),0,siz-1) : (int)((siz - 1) * t + 0.5f);
+        return Tables[off + idx];
+    }
+
 };
 
 // ImPlotPoint with positive/negative error values
-struct ImPlotPointError
-{
+struct ImPlotPointError {
     double X, Y, Neg, Pos;
     ImPlotPointError(double x, double y, double neg, double pos) {
         X = x; Y = y; Neg = neg; Pos = pos;
@@ -364,7 +554,7 @@ struct ImPlotTickCollection {
         Append(tick);
     }
 
-    const char* GetText(int idx) {
+    const char* GetText(int idx) const {
         return TextBuffer.Buf.Data + Ticks[idx].TextOffset;
     }
 
@@ -379,27 +569,34 @@ struct ImPlotTickCollection {
 // Axis state information that must persist after EndPlot
 struct ImPlotAxis
 {
-    ImPlotAxisFlags Flags;
-    ImPlotAxisFlags PreviousFlags;
-    ImPlotRange     Range;
-    ImPlotOrientation Direction;
-    bool            Dragging;
-    bool            HoveredExt;
-    bool            HoveredTot;
-    double*         LinkedMin;
-    double*         LinkedMax;
-    ImPlotTime      PickerTimeMin, PickerTimeMax;
-    int             PickerLevel;
+    ImPlotAxisFlags   Flags;
+    ImPlotAxisFlags   PreviousFlags;
+    ImPlotRange       Range;
+    float             Pixels;
+    ImPlotOrientation Orientation;
+    bool              Dragging;
+    bool              ExtHovered;
+    bool              AllHovered;
+    bool              Present;
+    bool              HasRange;
+    double*           LinkedMin;
+    double*           LinkedMax;
+    ImPlotTime        PickerTimeMin, PickerTimeMax;
+    int               PickerLevel;
+    ImU32             ColorMaj, ColorMin, ColorTxt;
+    ImGuiCond         RangeCond;
+    ImRect            HoverRect;
 
     ImPlotAxis() {
-        Flags      = PreviousFlags = ImPlotAxisFlags_None;
-        Range.Min  = 0;
-        Range.Max  = 1;
-        Dragging   = false;
-        HoveredExt = false;
-        HoveredTot = false;
-        LinkedMin  = LinkedMax = NULL;
+        Flags       = PreviousFlags = ImPlotAxisFlags_None;
+        Range.Min   = 0;
+        Range.Max   = 1;
+        Dragging    = false;
+        ExtHovered  = false;
+        AllHovered  = false;
+        LinkedMin   = LinkedMax = NULL;
         PickerLevel = 0;
+        ColorMaj    = ColorMin = ColorTxt = 0;
     }
 
     bool SetMin(double _min) {
@@ -440,6 +637,21 @@ struct ImPlotAxis
         SetRange(range.Min, range.Max);
     }
 
+    void SetAspect(double unit_per_pix) {
+        double new_size = unit_per_pix * Pixels;
+        double delta    = (new_size - Range.Size()) * 0.5f;
+        if (IsLocked())
+            return;
+        else if (IsLockedMin() && !IsLockedMax())
+            SetRange(Range.Min, Range.Max  + 2*delta);
+        else if (!IsLockedMin() && IsLockedMax())
+            SetRange(Range.Min - 2*delta, Range.Max);
+        else
+            SetRange(Range.Min - delta, Range.Max + delta);
+    }
+
+    double GetAspect() const { return Range.Size() / Pixels; }
+
     void Constrain() {
         Range.Min = ImConstrainNan(ImConstrainInf(Range.Min));
         Range.Max = ImConstrainNan(ImConstrainInf(Range.Max));
@@ -454,49 +666,24 @@ struct ImPlotAxis
         if (Range.Max <= Range.Min)
             Range.Max = Range.Min + DBL_EPSILON;
     }
-};
 
-// Axis state information only needed between BeginPlot/EndPlot
-struct ImPlotAxisState
-{
-    ImPlotAxis* Axis;
-    ImGuiCond   RangeCond;
-    bool        HasRange;
-    bool        Present;
-    bool        HasLabels;
-    bool        Invert;
-    bool        LockMin;
-    bool        LockMax;
-    bool        Lock;
-    bool        IsTime;
-
-    ImPlotAxisState(ImPlotAxis* axis, bool has_range, ImGuiCond range_cond, bool present) {
-        Axis         = axis;
-        HasRange     = has_range;
-        RangeCond    = range_cond;
-        Present      = present;
-        HasLabels    = !ImHasFlag(Axis->Flags, ImPlotAxisFlags_NoTickLabels);
-        Invert       = ImHasFlag(Axis->Flags, ImPlotAxisFlags_Invert);
-        LockMin      = ImHasFlag(Axis->Flags, ImPlotAxisFlags_LockMin) || (HasRange && RangeCond == ImGuiCond_Always);
-        LockMax      = ImHasFlag(Axis->Flags, ImPlotAxisFlags_LockMax) || (HasRange && RangeCond == ImGuiCond_Always);
-        Lock         = !Present || ((LockMin && LockMax) || (HasRange && RangeCond == ImGuiCond_Always));
-        IsTime       = ImHasFlag(Axis->Flags, ImPlotAxisFlags_Time);
-    }
-
-    ImPlotAxisState() { }
-};
-
-struct ImPlotAxisColor
-{
-    ImU32 Major, Minor, MajTxt, MinTxt;
-    ImPlotAxisColor() { Major = Minor = MajTxt = MinTxt = 0; }
+    inline bool IsLabeled()      const { return !ImHasFlag(Flags, ImPlotAxisFlags_NoTickLabels);                    }
+    inline bool IsInverted()     const { return ImHasFlag(Flags, ImPlotAxisFlags_Invert);                           }
+    inline bool IsAutoFitting()  const { return ImHasFlag(Flags, ImPlotAxisFlags_AutoFit);                          }
+    inline bool IsRangeLocked()  const { return HasRange && RangeCond == ImGuiCond_Always;                          }
+    inline bool IsLockedMin()    const { return ImHasFlag(Flags, ImPlotAxisFlags_LockMin) || IsRangeLocked();       }
+    inline bool IsLockedMax()    const { return ImHasFlag(Flags, ImPlotAxisFlags_LockMax) || IsRangeLocked();       }
+    inline bool IsLocked()       const { return !Present || ((IsLockedMin() && IsLockedMax()) || IsRangeLocked());  }
+    inline bool IsInputLocked()  const { return IsLocked() || IsAutoFitting();                                      }
+    inline bool IsTime()         const { return ImHasFlag(Flags, ImPlotAxisFlags_Time);                             }
+    inline bool IsLog()          const { return ImHasFlag(Flags, ImPlotAxisFlags_LogScale);                         }
 };
 
 // State information for Plot items
 struct ImPlotItem
 {
     ImGuiID      ID;
-    ImVec4       Color;
+    ImU32        Color;
     int          NameOffset;
     bool         Show;
     bool         LegendHovered;
@@ -504,7 +691,7 @@ struct ImPlotItem
 
     ImPlotItem() {
         ID            = 0;
-        Color         = ImPlot::NextColormapColor();
+        // Color         = ImPlot::NextColormapColor();
         NameOffset    = -1;
         Show          = true;
         SeenThisFrame = false;
@@ -536,25 +723,33 @@ struct ImPlotPlot
     ImVec2             QueryStart;
     ImRect             QueryRect;
     bool               Selecting;
+    bool               ContextLocked;
     bool               Querying;
     bool               Queried;
     bool               DraggingQuery;
     bool               LegendHovered;
     bool               LegendOutside;
-    bool               LegendFlipSide;
+    bool               LegendFlipSideNextFrame;
+    bool               FrameHovered;
+    bool               PlotHovered;
     int                ColormapIdx;
     int                CurrentYAxis;
     ImPlotLocation     MousePosLocation;
     ImPlotLocation     LegendLocation;
     ImPlotOrientation  LegendOrientation;
+    ImRect             FrameRect;
+    ImRect             CanvasRect;
+    ImRect             PlotRect;
+    ImRect             AxesRect;
+    ImRect             LegendRect;
 
     ImPlotPlot() {
-        Flags           = PreviousFlags = ImPlotFlags_None;
-        XAxis.Direction = ImPlotOrientation_Horizontal;
+        Flags             = PreviousFlags = ImPlotFlags_None;
+        XAxis.Orientation = ImPlotOrientation_Horizontal;
         for (int i = 0; i < IMPLOT_Y_AXES; ++i)
-            YAxis[i].Direction = ImPlotOrientation_Vertical;
+            YAxis[i].Orientation = ImPlotOrientation_Vertical;
         SelectStart       = QueryStart = ImVec2(0,0);
-        Selecting         = Querying = Queried = DraggingQuery = LegendHovered = LegendOutside = LegendFlipSide = false;
+        Selecting         = ContextLocked = Querying = Queried = DraggingQuery = LegendHovered = LegendOutside = LegendFlipSideNextFrame = false;
         ColormapIdx       = CurrentYAxis = 0;
         LegendLocation    = ImPlotLocation_North | ImPlotLocation_West;
         LegendOrientation = ImPlotOrientation_Vertical;
@@ -564,6 +759,8 @@ struct ImPlotPlot
     int         GetLegendCount() const   { return LegendData.Indices.size(); }
     ImPlotItem* GetLegendItem(int i);
     const char* GetLegendLabel(int i);
+
+    inline bool IsInputLocked() const { return XAxis.IsInputLocked() && YAxis[0].IsInputLocked() && YAxis[1].IsInputLocked() && YAxis[2].IsInputLocked(); }
 };
 
 // Temporary data storage for upcoming plot
@@ -584,7 +781,9 @@ struct ImPlotNextPlotData
     double*     LinkedYmin[IMPLOT_Y_AXES];
     double*     LinkedYmax[IMPLOT_Y_AXES];
 
-    ImPlotNextPlotData() {
+    ImPlotNextPlotData() { Reset(); }
+
+    void Reset() {
         HasXRange         = false;
         ShowDefaultTicksX = true;
         FitX              = false;
@@ -596,6 +795,7 @@ struct ImPlotNextPlotData
             LinkedYmin[i] = LinkedYmax[i] = NULL;
         }
     }
+
 };
 
 // Temporary data storage for upcoming item
@@ -617,7 +817,8 @@ struct ImPlotNextItemData {
     bool         HasHidden;
     bool         Hidden;
     ImGuiCond    HiddenCond;
-    ImPlotNextItemData() {
+    ImPlotNextItemData() { Reset(); }
+    void Reset() {
         for (int i = 0; i < 5; ++i)
             Colors[i] = IMPLOT_AUTO_COL;
         LineWeight    = MarkerSize = MarkerWeight = FillAlpha = ErrorBarSize = ErrorBarWeight = DigitalBitHeight = DigitalBitGap = IMPLOT_AUTO;
@@ -634,21 +835,8 @@ struct ImPlotContext {
     ImPlotItem*        CurrentItem;
     ImPlotItem*        PreviousItem;
 
-    // Bounding Boxes
-    ImRect BB_Frame;
-    ImRect BB_Canvas;
-    ImRect BB_Plot;
-    ImRect BB_Axes;
-    ImRect BB_X;
-    ImRect BB_Y[IMPLOT_Y_AXES];
-
-    // Axis States
-    ImPlotAxisColor Col_X;
-    ImPlotAxisColor Col_Y[IMPLOT_Y_AXES];
-    ImPlotAxisState X;
-    ImPlotAxisState Y[IMPLOT_Y_AXES];
-
     // Tick Marks and Labels
+    ImPlotTickCollection CTicks;
     ImPlotTickCollection XTicks;
     ImPlotTickCollection YTicks[IMPLOT_Y_AXES];
     float                YAxisReference[IMPLOT_Y_AXES];
@@ -671,28 +859,25 @@ struct ImPlotContext {
     bool FitX;
     bool FitY[IMPLOT_Y_AXES];
 
-    // Hover states
-    bool Hov_Frame;
-    bool Hov_Plot;
-
     // Axis Rendering Flags
     bool RenderX;
     bool RenderY[IMPLOT_Y_AXES];
 
     // Axis Locking Flags
-    bool LockPlot;
     bool ChildWindowMade;
 
     // Style and Colormaps
     ImPlotStyle                 Style;
     ImVector<ImGuiColorMod>     ColorModifiers;
     ImVector<ImGuiStyleMod>     StyleModifiers;
-    const ImVec4*               Colormap;
-    int                         ColormapSize;
-    ImVector<ImPlotColormapMod> ColormapModifiers;
+    ImPlotColormapData          ColormapData;
+    ImVector<ImPlotColormap>    ColormapModifiers;
 
     // Time
     tm Tm;
+
+    // Temp data for general use
+    ImVector<double>   Temp1, Temp2;
 
     // Misc
     int                VisibleItemCount;
@@ -702,17 +887,6 @@ struct ImPlotContext {
     ImPlotNextItemData NextItemData;
     ImPlotInputMap     InputMap;
     ImPlotPoint        MousePos[IMPLOT_Y_AXES];
-};
-
-struct ImPlotAxisScale
-{
-    ImPlotPoint Min, Max;
-
-    ImPlotAxisScale(int y_axis, float tx, float ty, float zoom_rate) {
-        ImPlotContext& gp = *GImPlot;
-        Min = ImPlot::PixelsToPlot(gp.BB_Plot.Min - gp.BB_Plot.GetSize() * ImVec2(tx * zoom_rate, ty * zoom_rate), y_axis);
-        Max = ImPlot::PixelsToPlot(gp.BB_Plot.Max + gp.BB_Plot.GetSize() * ImVec2((1 - tx) * zoom_rate, (1 - ty) * zoom_rate), y_axis);
-    }
 };
 
 //-----------------------------------------------------------------------------
@@ -730,6 +904,13 @@ namespace ImPlot {
 IMPLOT_API void Initialize(ImPlotContext* ctx);
 // Resets an ImPlot context for the next call to BeginPlot
 IMPLOT_API void Reset(ImPlotContext* ctx);
+
+//-----------------------------------------------------------------------------
+// [SECTION] Input Utils
+//-----------------------------------------------------------------------------
+
+// Allows changing how keyboard/mouse interaction works.
+IMPLOT_API ImPlotInputMap& GetInputMap();
 
 //-----------------------------------------------------------------------------
 // [SECTION] Plot Utils
@@ -770,7 +951,7 @@ IMPLOT_API void BustItemCache();
 // Gets the current y-axis for the current plot
 inline int GetCurrentYAxis() { return GImPlot->CurrentPlot->CurrentYAxis; }
 // Updates axis ticks, lins, and label colors
-IMPLOT_API void UpdateAxisColors(int axis_flag, ImPlotAxisColor* col);
+IMPLOT_API void UpdateAxisColors(int axis_flag, ImPlotAxis* axis);
 
 // Updates plot-to-pixel space transformation variables for the current plot.
 IMPLOT_API void UpdateTransformCache();
@@ -779,8 +960,12 @@ inline ImPlotScale GetCurrentScale() { return GImPlot->Scales[GetCurrentYAxis()]
 
 // Returns true if the user has requested data to be fit.
 inline bool FitThisFrame() { return GImPlot->FitThisFrame; }
-// Extends the current plots axes so that it encompasses point p
+// Extends the current plot's axes so that it encompasses point p
 IMPLOT_API void FitPoint(const ImPlotPoint& p);
+// Extends the current plot's axes so that it encompasses a vertical line at x
+IMPLOT_API void FitPointX(double x);
+// Extends the current plot's axes so that it encompasses a horizontal line at y
+IMPLOT_API void FitPointY(double y);
 
 // Returns true if two ranges overlap
 inline bool RangesOverlap(const ImPlotRange& r1, const ImPlotRange& r2)
@@ -792,7 +977,7 @@ IMPLOT_API void PushLinkedAxis(ImPlotAxis& axis);
 IMPLOT_API void PullLinkedAxis(ImPlotAxis& axis);
 
 // Shows an axis's context menu.
-IMPLOT_API void ShowAxisContextMenu(ImPlotAxisState& state, bool time_allowed = false);
+IMPLOT_API void ShowAxisContextMenu(ImPlotAxis& axis, ImPlotAxis* equal_axis, bool time_allowed = false);
 
 //-----------------------------------------------------------------------------
 // [SECTION] Legend Utils
@@ -823,7 +1008,7 @@ IMPLOT_API void AddTicksDefault(const ImPlotRange& range, int nMajor, int nMinor
 // Populates a list of ImPlotTicks with logarithmic space and formatted ticks
 IMPLOT_API void AddTicksLogarithmic(const ImPlotRange& range, int nMajor, ImPlotTickCollection& ticks);
 // Populates a list of ImPlotTicks with time formatted ticks.
-IMPLOT_API void AddTicksTime(const ImPlotRange& range, int nMajor, ImPlotTickCollection& ticks);
+IMPLOT_API void AddTicksTime(const ImPlotRange& range, float plot_width, ImPlotTickCollection& ticks);
 // Populates a list of ImPlotTicks with custom spaced and labeled ticks
 IMPLOT_API void AddTicksCustom(const double* values, const char* const labels[], int n, ImPlotTickCollection& ticks);
 
@@ -848,19 +1033,16 @@ IMPLOT_API ImVec4 GetAutoColor(ImPlotCol idx);
 inline ImVec4 GetStyleColorVec4(ImPlotCol idx) { return IsColorAuto(idx) ? GetAutoColor(idx) : GImPlot->Style.Colors[idx]; }
 inline ImU32  GetStyleColorU32(ImPlotCol idx)  { return ImGui::ColorConvertFloat4ToU32(GetStyleColorVec4(idx)); }
 
-// Get built-in colormap data and size
-IMPLOT_API const ImVec4* GetColormap(ImPlotColormap colormap, int* size_out);
-// Linearly interpolates a color from the current colormap given t between 0 and 1.
-IMPLOT_API ImVec4 LerpColormap(const ImVec4* colormap, int size, float t);
-// Resamples a colormap. #size_out must be greater than 1.
-IMPLOT_API void ResampleColormap(const ImVec4* colormap_in, int size_in, ImVec4* colormap_out, int size_out);
-
 // Draws vertical text. The position is the bottom left of the text rect.
 IMPLOT_API void AddTextVertical(ImDrawList *DrawList, ImVec2 pos, ImU32 col, const char* text_begin, const char* text_end = NULL);
 // Calculates the size of vertical text
-inline ImVec2 CalcTextSizeVertical(const char *text) { ImVec2 sz = ImGui::CalcTextSize(text); return ImVec2(sz.y, sz.x); }
+inline ImVec2 CalcTextSizeVertical(const char *text) {
+    ImVec2 sz = ImGui::CalcTextSize(text);
+    return ImVec2(sz.y, sz.x);
+}
 // Returns white or black text given background color
 inline ImU32 CalcTextColor(const ImVec4& bg) { return (bg.x * 0.299 + bg.y * 0.587 + bg.z * 0.114) > 0.5 ? IM_COL32_BLACK : IM_COL32_WHITE; }
+inline ImU32 CalcTextColor(ImU32 bg)         { return CalcTextColor(ImGui::ColorConvertU32ToFloat4(bg)); }
 
 // Clamps a label position so that it fits a rect defined by Min/Max
 inline ImVec2 ClampLabelPos(ImVec2 pos, const ImVec2& size, const ImVec2& Min, const ImVec2& Max) {
@@ -870,6 +1052,16 @@ inline ImVec2 ClampLabelPos(ImVec2 pos, const ImVec2& size, const ImVec2& Min, c
     if ((pos.y + size.y) > Max.y)   pos.y = Max.y - size.y;
     return pos;
 }
+
+// Returns a color from the Color map given an index >= 0 (modulo will be performed).
+IMPLOT_API ImU32  GetColormapColorU32(int idx, ImPlotColormap cmap);
+// Returns the next unused colormap color and advances the colormap. Can be used to skip colors if desired.
+IMPLOT_API ImU32  NextColormapColorU32();
+// Linearly interpolates a color from the current colormap given t between 0 and 1.
+IMPLOT_API ImU32  SampleColormapU32(float t, ImPlotColormap cmap);
+
+// Render a colormap bar
+IMPLOT_API void RenderColorBar(const ImU32* colors, int size, ImDrawList& DrawList, const ImRect& bounds, bool vert, bool reversed, bool continuous);
 
 //-----------------------------------------------------------------------------
 // [SECTION] Math and Misc Utils
@@ -906,6 +1098,27 @@ template <typename T>
 inline T OffsetAndStride(const T* data, int idx, int count, int offset, int stride) {
     idx = ImPosMod(offset + idx, count);
     return *(const T*)(const void*)((const unsigned char*)data + (size_t)idx * stride);
+}
+
+// Calculate histogram bin counts and widths
+template <typename T>
+void CalculateBins(const T* values, int count, ImPlotBin meth, const ImPlotRange& range, int& bins_out, double& width_out) {
+    switch (meth) {
+        case ImPlotBin_Sqrt:
+            bins_out  = (int)ceil(sqrt(count));
+            break;
+        case ImPlotBin_Sturges:
+            bins_out  = (int)ceil(1.0 + log2(count));
+            break;
+        case ImPlotBin_Rice:
+            bins_out  = (int)ceil(2 * cbrt(count));
+            break;
+        case ImPlotBin_Scott:
+            width_out = 3.49 * ImStdDev(values, count) / cbrt(count);
+            bins_out  = (int)round(range.Size() / width_out);
+            break;
+    }
+    width_out = range.Size() / bins_out;
 }
 
 //-----------------------------------------------------------------------------
@@ -967,15 +1180,5 @@ IMPLOT_API bool ShowDatePicker(const char* id, int* level, ImPlotTime* t, const 
 // Shows a time picker widget block (hour/min/sec).
 // #t will be set when a new hour, minute, or sec is selected or am/pm is toggled, and the function will return true.
 IMPLOT_API bool ShowTimePicker(const char* id, ImPlotTime* t);
-
-//-----------------------------------------------------------------------------
-// [SECTION] Internal / Experimental Plotters
-// No guarantee of forward compatibility here!
-//-----------------------------------------------------------------------------
-
-// Plots axis-aligned, filled rectangles. Every two consecutive points defines opposite corners of a single rectangle.
-IMPLOT_API void PlotRects(const char* label_id, const float* xs, const float* ys, int count, int offset = 0, int stride = sizeof(float));
-IMPLOT_API void PlotRects(const char* label_id, const double* xs, const double* ys, int count, int offset = 0, int stride = sizeof(double));
-IMPLOT_API void PlotRects(const char* label_id, ImPlotPoint (*getter)(void* data, int idx), void* data, int count, int offset = 0);
 
 } // namespace ImPlot
