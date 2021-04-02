@@ -546,6 +546,7 @@ target_link_libraries(vpinball
 
 target_link_options(vpinball PUBLIC
    $<$<CONFIG:RELEASE>:/LTCG>
+   $<$<CONFIG:RELEASE>:/DYNAMICBASE:NO>
 )
 
 set_target_properties(vpinball PROPERTIES
