@@ -548,6 +548,7 @@ target_link_options(vpinball PUBLIC
    /SAFESEH:NO
    /LARGEADDRESSAWARE
    $<$<CONFIG:RELEASE>:/LTCG>
+   $<$<CONFIG:RELEASE>:/DYNAMICBASE:NO>
 )
 
 set_target_properties(vpinball PROPERTIES
