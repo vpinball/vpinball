@@ -440,7 +440,7 @@ BOOL DbgLightDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         {
             CHOOSECOLOR cc = m_colorDialog.GetParameters();
             cc.Flags = CC_FULLOPEN | CC_RGBINIT;
-            Light* plight = GetLight();
+            Light* const plight = GetLight();
 
             m_colorDialog.SetParameters(cc);
             m_colorDialog.SetColor(plight->m_d.m_color2);
