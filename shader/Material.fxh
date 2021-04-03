@@ -60,7 +60,7 @@ float3 FresnelSchlick(const float3 spec, const float LdotH, const float edge)
 float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const float3 diffuse, const float3 glossy, const float edge, const float glossyPower, const int i, const bool is_metal) 
 { 
    // early out here or maybe we can add more material elements without lighting later?
-   if (fDisableLighting_top_below.x == 1.0)
+   [branch] if (fDisableLighting_top_below.x == 1.0)
       return diffuse;
 
    const float3 lightDir = mul_w1(lights[i].vPos, matView) - pos; //!! do in vertex shader?! or completely before?!
@@ -106,7 +106,7 @@ float3 DoEnvmapDiffuse(const float3 N, const float3 diffuse)
 {
    const float2 uv = float2( // remap to 2D envmap coords
 		0.5 + atan2_approx_div2PI(N.y, N.x),
-	    acos_approx_divPI(N.z));
+		acos_approx_divPI(N.z));
 
    float3 env = tex2Dlod(texSampler2, float4(uv, 0.,0.)).xyz;
    if (!hdrEnvTextures)
