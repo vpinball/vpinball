@@ -980,4 +980,26 @@ technique SSReflection
 
 //
 
+technique CAS
+{
+	pass P0
+	{
+		VertexShader = compile vs_3_0 vs_main_no_trafo();
+		PixelShader  = compile ps_3_0 ps_main_CAS();
+	}
+}
+
+//
+
+technique BilateralSharp_CAS
+{
+	pass P0
+	{
+		VertexShader = compile vs_3_0 vs_main_no_trafo();
+		PixelShader  = compile ps_3_0 ps_main_BilateralSharp_CAS();
+	}
+}
+
+//
+
 #include "SMAA.fxh"

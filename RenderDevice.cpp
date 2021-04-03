@@ -406,10 +406,10 @@ static pDF mDwmFlush = NULL;
 typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
 static pDEC mDwmEnableComposition = NULL;
 
-RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
+RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
     : m_windowHwnd(hwnd), m_width(width), m_height(height), m_fullscreen(fullscreen), 
       m_colorDepth(colordepth), m_vsync(VSync), m_useAA(useAA), m_stereo3D(stereo3D),
-      m_ssRefl(ss_refl), m_disableDwm(disable_dwm), m_FXAA(FXAA), m_BWrendering(BWrendering), m_useNvidiaApi(useNvidiaApi), m_texMan(*this)
+      m_ssRefl(ss_refl), m_disableDwm(disable_dwm), m_sharpen(sharpen), m_FXAA(FXAA), m_BWrendering(BWrendering), m_useNvidiaApi(useNvidiaApi), m_texMan(*this)
 {
     m_stats_drawn_triangles = 0;
 
@@ -710,13 +710,13 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create blur buffer!", hr, __FILE__, __LINE__);
 
-   // alloc temporary buffer for stereo3D/post-processing AA
-   if (m_stereo3D || (m_FXAA > 0))
+   // alloc temporary buffer for stereo3D/post-processing AA/sharpen
+   if (m_stereo3D || (m_FXAA > 0) || m_sharpen)
    {
       hr = m_pD3DDevice->CreateTexture(m_width, m_height, 1,
          D3DUSAGE_RENDERTARGET, (D3DFORMAT)(video10bit ? colorFormat::RGBA10 : colorFormat::RGBA8), (D3DPOOL)memoryPool::DEFAULT, &m_pOffscreenBackBufferTmpTexture, NULL);
       if (FAILED(hr))
-         ReportError("Fatal Error: unable to create stereo3D/post-processing AA buffer!", hr, __FILE__, __LINE__);
+         ReportError("Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!", hr, __FILE__, __LINE__);
    }
    else
       m_pOffscreenBackBufferTmpTexture = NULL;

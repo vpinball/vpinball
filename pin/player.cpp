@@ -171,7 +171,8 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_VSync = LoadValueIntWithDefault("Player", "AdaptiveVSync", 0);
    m_maxPrerenderedFrames = LoadValueIntWithDefault("Player", "MaxPrerenderedFrames", 0);
    m_NudgeShake = LoadValueFloatWithDefault("Player", "NudgeStrength", 2e-2f);
-   m_FXAA = LoadValueIntWithDefault("Player", "FXAA", Disabled);
+   m_FXAA = LoadValueIntWithDefault("Player", "FXAA", Standard_FXAA);
+   m_sharpen = LoadValueIntWithDefault("Player", "Sharpen", 0);
    m_trailForBalls = LoadValueBoolWithDefault("Player", "BallTrail", true);
    m_reflectionForBalls = LoadValueBoolWithDefault("Player", "BallReflection", true);
    m_AA = LoadValueBoolWithDefault("Player", "USEAA", false);
@@ -1180,7 +1181,7 @@ HRESULT Player::Init()
 
    // colordepth & refreshrate are only defined if fullscreen is true.
    const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_width, m_height, colordepth,
-                                        m_refreshrate, vsync, useAA, !!m_stereo3D, FXAA, !m_disableAO, ss_refl);
+                                        m_refreshrate, vsync, useAA, !!m_stereo3D, FXAA, !!m_sharpen, !m_disableAO, ss_refl);
 
    if (hr != S_OK)
    {
@@ -3627,11 +3628,14 @@ void Player::Bloom()
    }
 }
 
-void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, const bool NFAA, const bool FXAA1, const bool FXAA2, const bool FXAA3, const bool depth_available) //!! SMAA, luma sharpen, dither?
+void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, const bool NFAA, const bool FXAA1, const bool FXAA2, const bool FXAA3, const unsigned int sharpen, const bool depth_available) //!! SMAA, luma sharpen, dither?
 {
-   if (stereo) // stereo implicitly disables FXAA
+   if (stereo) // stereo implicitly disables FXAA/SMAA/etc
    {
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
+      if(sharpen && (m_stereo3D != 2)) // don't sharpen in interlaced stereo!
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture());
+      else
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture());
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
@@ -3650,7 +3654,7 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
    }
    else if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3)
    {
-      if(SMAA || DLAA)
+      if(SMAA || DLAA || sharpen)
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture());
       else
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
@@ -3692,7 +3696,10 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
          {
             CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("edgesTex2D", NULL)); //!! opt.??
 
-            m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
+            if (sharpen)
+               m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture());
+            else
+               m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
 
             CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("blendTex2D", m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture2())); //!! opt.?
 
@@ -3705,6 +3712,31 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
             CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("blendTex2D", NULL)); //!! opt.?
          }
       }
+   }
+
+   //
+
+   if (sharpen
+       && (!stereo || (m_stereo3D != 2))) // don't sharpen in interlaced stereo!
+   {
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
+
+      if (!(stereo || SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3))
+          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture());
+      else
+          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture());
+
+      if (depth_available)
+          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
+
+      const vec4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), (float)m_width, depth_available ? 1.f : 0.f);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("w_h_height", &w_h_height);
+
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique((sharpen == 1) ? "CAS" : "BilateralSharp_CAS");
+
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin(0);
+      m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
    }
 }
 
@@ -4174,6 +4206,7 @@ void Player::PrepareVideoBuffersNormal()
    const bool FXAA2 = (((m_FXAA == Standard_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_FXAA));
    const bool FXAA3 = (((m_FXAA == Quality_FXAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_FXAA));
    const bool ss_refl = (((m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1)) && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && m_ptable->m_SSRScale > 0.f);
+   const unsigned int sharpen = m_sharpen;
 
    if (stereo || ss_refl)
       m_pin3d.m_pd3dPrimaryDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer); // do not put inside BeginScene/EndScene Block
@@ -4208,7 +4241,7 @@ void Player::PrepareVideoBuffersNormal()
    }
 
    // switch to output buffer
-   if (!(stereo || SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3))
+   if (!(stereo || SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen))
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
    else
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture());
@@ -4241,7 +4274,7 @@ void Player::PrepareVideoBuffersNormal()
    m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)shiftedVerts);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
 
-   StereoFXAA(stereo, SMAA, DLAA, NFAA, FXAA1, FXAA2, FXAA3, false);
+   StereoFXAA(stereo, SMAA, DLAA, NFAA, FXAA1, FXAA2, FXAA3, sharpen, false);
 
    if (ProfilingMode() == 1)
       m_pin3d.m_gpu_profiler.Timestamp(GTS_PostProcess);
@@ -4285,6 +4318,7 @@ void Player::PrepareVideoBuffersAO()
    const bool FXAA2 = (((m_FXAA == Standard_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_FXAA));
    const bool FXAA3 = (((m_FXAA == Quality_FXAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_FXAA));
    const bool ss_refl = (((m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1)) && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && m_ptable->m_SSRScale > 0.f);
+   const unsigned int sharpen = m_sharpen;
 
    m_pin3d.m_pd3dPrimaryDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer); // do not put inside BeginScene/EndScene Block
 
@@ -4351,7 +4385,7 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pddsAOBackTmpBuffer = tmpAO;
 
    // switch to output buffer
-   if (!(stereo || SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3))
+   if (!(stereo || SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen))
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
    else
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture());
@@ -4393,7 +4427,7 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)shiftedVerts);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
 
-   StereoFXAA(stereo, SMAA, DLAA, NFAA, FXAA1, FXAA2, FXAA3, true);
+   StereoFXAA(stereo, SMAA, DLAA, NFAA, FXAA1, FXAA2, FXAA3, sharpen, true);
 
    if (ProfilingMode() == 1)
       m_pin3d.m_gpu_profiler.Timestamp(GTS_PostProcess);

@@ -48,6 +48,7 @@ FEATURES:
 
 - the script editor now works in UTF-8 mode and also saves it like that (note though that VBS itself may not digest all of UTF-8!)
 
+- add post-processed sharpening filters to the video preferences: CAS (less aggressive, rather subtle) and Bilateral CAS (can effectively counter the general blur coming in from FXAA or SMAA, etc, while keeping the AA alone)
 - improve quality and performance of internal DMD shader (especially visible on FSS tables)
 
 - support to add custom notes to a table. To open a dockable notes dialog use the menu View -> Notes. Any text that was entered there is saved with the current active table.
