@@ -322,18 +322,6 @@ void PinSound::Play(const float volume, const float randompitch, const int pitch
    }
 }
 
-void PinSound::TestPlay()
-{
-   if(IsWav())
-      TestPlayInternal();
-   else
-      if (m_BASSstream)
-      {
-         SetDevice();
-         BASS_ChannelPlay(m_BASSstream, 0); //!! reset all channel attributes to default
-      }
-}
-
 void PinSound::Stop()
 {
    if (IsWav())
@@ -787,6 +775,7 @@ void PinDirectSoundWavCopy::PlayInternal(const float volume, const float randomp
 	const float totalvolume = max(min(volume, 100.0f), 0.0f);
 	const int decibelvolume = (totalvolume == 0.0f) ? DSBVOLUME_MIN : (int)(logf(totalvolume)*(float)(1000.0 / log(10.0)) - 2000.0f);
 	m_pDSBuffer->SetVolume(decibelvolume);
+
 	// Frequency tweaks are relative to original sound.  If the copy failed for some reason, don't alter original
 	if (m_ppsOriginal != this)
 	{

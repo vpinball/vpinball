@@ -58,7 +58,6 @@ public:
    PinDirectSoundWavCopy(class PinSound * const pOriginal);
 
 protected:
-   void TestPlayInternal() { m_pDSBuffer->Play(0, 0, 0); }
    void StopInternal() { m_pDSBuffer->Stop(); }
 
 public:
@@ -82,7 +81,7 @@ public:
    void SetDevice(); //!! BASS only
 #ifdef ONLY_USE_BASS
    bool IsWav() const { return false; }
-   bool IsWav2() const 
+   bool IsWav2() const
    {
       const size_t pos = m_szPath.find_last_of('.');
       if(pos == string::npos)
@@ -100,7 +99,6 @@ public:
    bool IsWav2() const { return IsWav(); }
 #endif
    void Play(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart);
-   void TestPlay();
    void Stop();
 
    union
@@ -145,7 +143,7 @@ public:
    static float PanSSF(float input);
    static float FadeSSF(float input);
 
-   LPDIRECTSOUND       m_pDS;
+   LPDIRECTSOUND m_pDS;
 
 private:
    LPDIRECTSOUND3DLISTENER m_pDSListener;

@@ -3947,9 +3947,6 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    pps->m_volume = volume;
    pps->m_outputTarget = outputTarget;
    pps->m_szName = szName;
-
-   //if (play) //!! only do this when playing .wavs? or limit to a certain amount of time?
-   //   pps->TestPlay();
 }
 
 
@@ -3959,9 +3956,6 @@ void PinTable::ImportSound(const HWND hwndListView, const string& szfilename)
 
    if (pps == NULL)
       return;
-
-   //if (play) //!! only do this when playing .wavs? or limit to a certain amount of time?
-   //   pps->TestPlay();
 
    m_vsound.push_back(pps);
 

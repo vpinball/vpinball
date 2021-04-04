@@ -210,7 +210,11 @@ BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
                 ListView_GetItem( hSoundList, &lvitem );
 
                 PinSound * const pps = (PinSound *)lvitem.lParam;
-                pps->TestPlay();
+                const float volume = dequantizeSignedPercent(pps->m_volume);
+                const float pan = dequantizeSignedPercent(pps->m_balance);
+                const float front_rear_fade = dequantizeSignedPercent(pps->m_fade);
+                pps->Play((1.0f + volume) * 100.0f, 0.0f, 0, pan, front_rear_fade, 0, false);
+
                 ::EnableWindow(GetDlgItem(IDC_STOP).GetHwnd(), fTrue);
             }
             break;
