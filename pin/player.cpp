@@ -4927,12 +4927,12 @@ void Player::Render()
          {
             exit(-9999); // blast into space
          }
-         else if (!g_pvp->m_open_minimized && m_closeType == 0)
+         else if ((m_closeType == 0) && !g_pvp->m_disable_pause_menu)
          {
-             ShowCursor(TRUE);
-             option = DialogBox(g_pvp->theInstance, MAKEINTRESOURCE(IDD_GAMEPAUSE), GetHwnd(), PauseProc);
-             if(option!=ID_DEBUGWINDOW)
-                ShowCursor(FALSE);
+            ShowCursor(TRUE);
+            option = DialogBox(g_pvp->theInstance, MAKEINTRESOURCE(IDD_GAMEPAUSE), GetHwnd(), PauseProc);
+            if(option != ID_DEBUGWINDOW)
+               ShowCursor(FALSE);
          }
          else //m_closeType == all others
          {
@@ -4946,19 +4946,23 @@ void Player::Render()
          UnpauseMusic();
 
          if (option == ID_QUIT)
-             m_ptable->SendMessage(WM_COMMAND, ID_TABLE_STOP_PLAY, 0);
+         {
+            if (g_pvp->m_open_minimized && !g_pvp->m_disable_pause_menu)
+               SendMessage(g_pvp->GetHwnd(), WM_COMMAND, ID_FILE_EXIT, NULL);
+            m_ptable->SendMessage(WM_COMMAND, ID_TABLE_STOP_PLAY, 0);
+         }
       }
-      else if(m_showDebugger && !g_pvp->m_open_minimized)
+      else if (m_showDebugger && !g_pvp->m_disable_pause_menu)
       {
           m_debugMode = true;
           m_showDebugger = false;
           if (!m_debuggerDialog.IsWindow())
           {
-              m_debuggerDialog.Create(GetHwnd());
-              m_debuggerDialog.ShowWindow();
+             m_debuggerDialog.Create(GetHwnd());
+             m_debuggerDialog.ShowWindow();
           }
           else
-              m_debuggerDialog.SetForegroundWindow();
+             m_debuggerDialog.SetForegroundWindow();
 
           EndDialog( g_pvp->GetHwnd(), ID_DEBUGWINDOW );
       }
@@ -5787,6 +5791,9 @@ INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
             (rcMain.right + rcMain.left) / 2 - (rcDialog.right - rcDialog.left) / 2,
             (rcMain.bottom + rcMain.top) / 2 - (rcDialog.bottom - rcDialog.top) / 2,
             0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
+
+         if (g_pvp->m_open_minimized)
+            SetWindowText(GetDlgItem(hwndDlg, ID_QUIT), "Quit"); // Replace "Quit to Editor" with "Quit"
 
          return TRUE;
       }

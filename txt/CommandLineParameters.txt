@@ -6,6 +6,7 @@
 -DisableTrueFullscreen  Force-disable True Fullscreen setting
 -EnableTrueFullscreen   Force-enable True Fullscreen setting
 -Minimized              Start VP in the 'invisible' minimized window mode
+-ExtMinimized           Start VP in the 'invisible' minimized window mode, but with enabled Pause Menu
 -LessCPUthreads         Limit the amount of parallel execution
 
 -Edit [filename]        Load file into VP

@@ -91,6 +91,7 @@ VPinball::VPinball()
    //implement this and StdMethods QueryInterface, AddRef and Release
 
    m_open_minimized = false;
+   m_disable_pause_menu = false;
    m_povEdit = false;
    m_disEnableTrueFullscreen = -1;
    m_table_played_via_command_line = false;
@@ -1513,11 +1514,11 @@ void VPinball::OnInitialUpdate()
         winpl.rcNormalPosition.bottom = bottom;
 
         if (m_open_minimized)
-            winpl.showCmd |= SW_MINIMIZE;
+           winpl.showCmd |= SW_MINIMIZE;
         else if (hrmax == S_OK && maximized)
-            winpl.showCmd |= SW_MAXIMIZE;
+           winpl.showCmd |= SW_MAXIMIZE;
         else
-            winpl.showCmd |= SW_SHOWNORMAL;
+           winpl.showCmd |= SW_SHOWNORMAL;
 
         SetWindowPlacement(winpl);
     }

@@ -938,13 +938,13 @@ void PinInput::ProcessCameraKeys(const DIDEVICEOBJECTDATA * __restrict input)
 
 void PinInput::Joy(const unsigned int n, const int updown, const bool start)
 {
-   if (m_joylflipkey == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eLeftFlipperKey]);
-   if (m_joyrflipkey == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eRightFlipperKey]);
-   if (m_joyplungerkey == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[ePlungerKey]);
-   if (m_joyaddcreditkey == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eAddCreditKey]);
+   if (m_joylflipkey == n)      FireKeyEvent(updown, g_pplayer->m_rgKeys[eLeftFlipperKey]);
+   if (m_joyrflipkey == n)      FireKeyEvent(updown, g_pplayer->m_rgKeys[eRightFlipperKey]);
+   if (m_joyplungerkey == n)    FireKeyEvent(updown, g_pplayer->m_rgKeys[ePlungerKey]);
+   if (m_joyaddcreditkey == n)  FireKeyEvent(updown, g_pplayer->m_rgKeys[eAddCreditKey]);
    if (m_joyaddcreditkey2 == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eAddCreditKey2]);
-   if (m_joylmagnasave == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eLeftMagnaSave]);
-   if (m_joyrmagnasave == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eRightMagnaSave]);
+   if (m_joylmagnasave == n)    FireKeyEvent(updown, g_pplayer->m_rgKeys[eLeftMagnaSave]);
+   if (m_joyrmagnasave == n)    FireKeyEvent(updown, g_pplayer->m_rgKeys[eRightMagnaSave]);
    if (m_joystartgamekey == n)
    {
       if (start)
@@ -963,27 +963,27 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
       if (DISPID_GameEvents_KeyDown == updown)
          g_pplayer->ToggleFPS();
    }
-   if (m_joyvolumeup == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eVolumeUp]);
+   if (m_joyvolumeup == n)   FireKeyEvent(updown, g_pplayer->m_rgKeys[eVolumeUp]);
    if (m_joyvolumedown == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eVolumeDown]);
-   if (m_joylefttilt == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eLeftTiltKey]);
+   if (m_joylefttilt == n)   FireKeyEvent(updown, g_pplayer->m_rgKeys[eLeftTiltKey]);
    if (m_joycentertilt == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eCenterTiltKey]);
-   if (m_joyrighttilt == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eRightTiltKey]);
-   if (m_joymechtilt == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eMechanicalTilt]);
+   if (m_joyrighttilt == n)  FireKeyEvent(updown, g_pplayer->m_rgKeys[eRightTiltKey]);
+   if (m_joymechtilt == n)   FireKeyEvent(updown, g_pplayer->m_rgKeys[eMechanicalTilt]);
    if (m_joydebugballs == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eDBGBalls]);
-   if (m_joydebugger == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eDebugger]);
-   if (m_joylockbar == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eLockbarKey]);
-   if (m_joycustom1 == n) FireKeyEvent(updown, m_joycustom1key);
-   if (m_joycustom2 == n) FireKeyEvent(updown, m_joycustom2key);
-   if (m_joycustom3 == n) FireKeyEvent(updown, m_joycustom3key);
-   if (m_joycustom4 == n) FireKeyEvent(updown, m_joycustom4key);
-   if (m_joypmbuyin == n) FireKeyEvent(updown, DIK_2);
-   if (m_joypmcoin3 == n) FireKeyEvent(updown, DIK_5);
-   if (m_joypmcoin4 == n) FireKeyEvent(updown, DIK_6);
+   if (m_joydebugger == n)   FireKeyEvent(updown, g_pplayer->m_rgKeys[eDebugger]);
+   if (m_joylockbar == n)    FireKeyEvent(updown, g_pplayer->m_rgKeys[eLockbarKey]);
+   if (m_joycustom1 == n)    FireKeyEvent(updown, m_joycustom1key);
+   if (m_joycustom2 == n)    FireKeyEvent(updown, m_joycustom2key);
+   if (m_joycustom3 == n)    FireKeyEvent(updown, m_joycustom3key);
+   if (m_joycustom4 == n)    FireKeyEvent(updown, m_joycustom4key);
+   if (m_joypmbuyin == n)    FireKeyEvent(updown, DIK_2);
+   if (m_joypmcoin3 == n)    FireKeyEvent(updown, DIK_5);
+   if (m_joypmcoin4 == n)    FireKeyEvent(updown, DIK_6);
    if (m_joypmcoindoor == n) FireKeyEvent(updown, DIK_END);
-   if (m_joypmcancel == n) FireKeyEvent(updown, DIK_7);
-   if (m_joypmdown == n) FireKeyEvent(updown, DIK_8);
-   if (m_joypmup == n) FireKeyEvent(updown, DIK_9);
-   if (m_joypmenter == n) FireKeyEvent(updown, DIK_0);
+   if (m_joypmcancel == n)   FireKeyEvent(updown, DIK_7);
+   if (m_joypmdown == n)     FireKeyEvent(updown, DIK_8);
+   if (m_joypmup == n)       FireKeyEvent(updown, DIK_9);
+   if (m_joypmenter == n)    FireKeyEvent(updown, DIK_0);
 }
 
 void PinInput::ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input)
@@ -1620,27 +1620,17 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
       if (input->dwSequence == APP_MOUSE && g_pplayer)
       {
          if (g_pplayer->m_throwBalls)
-         {
-             ProcessThrowBalls(input);
-         }
+            ProcessThrowBalls(input);
          else if (g_pplayer->m_ballControl)
-         {
-             ProcessBallControl(input);
-         }
+            ProcessBallControl(input);
          else
          {
             if (input->dwOfs == 1 && m_joylflipkey==25)
-            {
                FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eLeftFlipperKey]);
-            }
             if (input->dwOfs == 2 && m_joyrflipkey == 26)
-            {
                FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightFlipperKey]);
-            }
             if (input->dwOfs == 3 && m_joyplungerkey == 27)
-            {
                FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[ePlungerKey]);
-            }
          }
       }
 
@@ -1706,13 +1696,10 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
             }
          }
          else
-         {
             FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, input->dwOfs);
-         }
       }
       else if (input->dwSequence >= APP_JOYSTICKMN && input->dwSequence <= APP_JOYSTICKMX)
           ProcessJoystick(input, curr_time_msec);
-
    }
 }
 

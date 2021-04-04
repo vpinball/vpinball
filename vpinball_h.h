@@ -230,6 +230,7 @@ public:
    // command line parameters
    int m_disEnableTrueFullscreen;
    bool m_open_minimized;
+   bool m_disable_pause_menu;
    bool m_povEdit; // table should be run in camera mode to change the POV (and then export that on exit), nothing else
    bool m_table_played_via_command_line;
    int m_logicalNumberOfProcessors;
