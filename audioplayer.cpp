@@ -4,6 +4,19 @@
 int bass_BG_idx = -1;
 int bass_STD_idx = -1;
 
+/*static*/ float convert2decibelvolume(const float volume) // 0..100 -> DSBVOLUME_MIN..DSBVOLUME_MAX (-10000..0) (db/log scale)
+{
+   const float totalvolume = max(min(volume, 100.0f), 0.0f);
+   const float decibelvolume = (totalvolume == 0.0f) ? DSBVOLUME_MIN : (logf(totalvolume)*(float)(1000.0 / log(10.0)) - 2000.0f);
+   return decibelvolume;
+}
+
+/*static*/ float mapdecibelrange2bass(const float volume) // DSBVOLUME_MIN..DSBVOLUME_MAX (-10000..0) -> 0..1 as BASS wants it (still db/log though!)
+{
+   const float decibelvolume = max(min(volume, (float)DSBVOLUME_MAX), (float)DSBVOLUME_MIN);
+   return (decibelvolume - (float)DSBVOLUME_MIN) * (float)(1.0/(DSBVOLUME_MAX - DSBVOLUME_MIN));
+}
+
 AudioPlayer::AudioPlayer()
 {
    m_stream = NULL;
@@ -60,6 +73,10 @@ AudioPlayer::AudioPlayer()
       }
 
       //BASS_SetConfig(BASS_CONFIG_FLOATDSP, fTrue);
+
+      BASS_SetConfig(BASS_CONFIG_CURVE_PAN, fTrue); // logarithmic scale, similar to DSound (although BASS still takes a 0..1 range)
+      BASS_SetConfig(BASS_CONFIG_CURVE_VOL, fTrue); // dto.
+      BASS_SetConfig(BASS_CONFIG_VISTA_SPEAKERS, fTrue); // to make BASS_ChannelSetAttribute(.., BASS_ATTRIB_PAN, pan); work, needs Vista or later
 
       for(unsigned int idx = 0; idx < 2; ++idx)
       {
@@ -145,7 +162,7 @@ bool AudioPlayer::MusicInit(const string& szFileName, const string& alt_szFileNa
       return false;
    }
 
-   BASS_ChannelSetAttribute(m_stream, BASS_ATTRIB_VOL, volume);
+   BASS_ChannelSetAttribute(m_stream, BASS_ATTRIB_VOL, mapdecibelrange2bass(convert2decibelvolume(volume*100.f)));
    BASS_ChannelPlay(m_stream, 0);
 
    return true;
@@ -156,6 +173,6 @@ void AudioPlayer::MusicVolume(const float volume)
    if (m_stream)
    {
       if(bass_BG_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_BG_idx);
-      BASS_ChannelSetAttribute(m_stream, BASS_ATTRIB_VOL, volume);
+      BASS_ChannelSetAttribute(m_stream, BASS_ATTRIB_VOL, mapdecibelrange2bass(convert2decibelvolume(volume*100.f)));
    }
 }

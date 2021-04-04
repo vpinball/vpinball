@@ -4,6 +4,9 @@ extern bool bass_init;
 extern int bass_BG_idx;
 extern int bass_STD_idx;
 
+float convert2decibelvolume(const float volume);
+float mapdecibelrange2bass(const float decibelvolume);
+
 void BASS_ErrorMapCode(const int code, string& text)
 {
 	switch (code)
@@ -252,8 +255,8 @@ void PinSound::Play(const float volume, const float randompitch, const int pitch
    {
       SetDevice();
 
-      //!! add missing attributes and compare how all the parameters are different from direct sound!
-      BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_VOL, volume);
+      BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_VOL, mapdecibelrange2bass(convert2decibelvolume(volume)));
+
       if (randompitch > 0.f)
       {
          float freq;
@@ -311,7 +314,8 @@ void PinSound::Play(const float volume, const float randompitch, const int pitch
       case SNDCFG_SND3D2CH:
       default:
          BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_PAN, pan);
-         //!! When using DirectSound output on Windows, this attribute has no effect when speaker assignment is used, except on Windows Vista and newer with the BASS_CONFIG_VISTA_SPEAKERS config option enabled.
+         //!! When using DirectSound output on Windows, this attribute has no effect when speaker assignment is used,
+         //   except on Windows Vista and newer with the BASS_CONFIG_VISTA_SPEAKERS config option enabled, so this would only be needed on pre-Vista systems now!
          //m_pan = pan;
          //if(pan != 0.f)
          //   BASS_ChannelSetDSP(m_BASSstream, PanDSP, &m_pan, 0);
@@ -319,6 +323,11 @@ void PinSound::Play(const float volume, const float randompitch, const int pitch
       }
 
       BASS_ChannelPlay(m_BASSstream, restart ? fTrue : fFalse);
+
+      if (flags & DSBPLAY_LOOPING)
+         BASS_ChannelFlags(m_BASSstream, BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
+      else
+         BASS_ChannelFlags(m_BASSstream, 0, BASS_SAMPLE_LOOP);
    }
 }
 
@@ -772,9 +781,7 @@ PinDirectSoundWavCopy::PinDirectSoundWavCopy(class PinSound * const pOriginal)
 
 void PinDirectSoundWavCopy::PlayInternal(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart)
 {
-	const float totalvolume = max(min(volume, 100.0f), 0.0f);
-	const int decibelvolume = (totalvolume == 0.0f) ? DSBVOLUME_MIN : (int)(logf(totalvolume)*(float)(1000.0 / log(10.0)) - 2000.0f);
-	m_pDSBuffer->SetVolume(decibelvolume);
+	m_pDSBuffer->SetVolume((LONG)convert2decibelvolume(volume));
 
 	// Frequency tweaks are relative to original sound.  If the copy failed for some reason, don't alter original
 	if (m_ppsOriginal != this)
