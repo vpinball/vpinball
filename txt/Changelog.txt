@@ -61,10 +61,12 @@ FEATURES:
 - add a button to the video preferences that resets the (windowed mode) player window position
 
 - add new command line parameter "-PovEdit [filename]" which loads and runs a table in camera mode, then exports a new pov on exit
+- add new command line parameter "-ExtMinimized" to start VP in the 'invisible' minimized window mode, but with enabled Pause Menu
 
 FIXES:
 
 - fix issues with 3D Audio setups and backglass sounds (like music)
+- the Play Button in the Sound dialog now respects the volume/pan/fade values
 
 - deleting an image will not copy the old alpha value over to the next image in the list anymore
 
