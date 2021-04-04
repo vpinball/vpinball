@@ -3866,6 +3866,22 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
 
 bool PinTable::ExportSound(PinSound * const pps, const char * const szfilename)
 {
+   if(!pps->IsWav2())
+   {
+      FILE* f;
+      if ((fopen_s(&f, szfilename, "wb") == 0) && f)
+      {
+         fwrite(pps->m_pdata, 1, pps->m_cdata, f);
+         fclose(f);
+         return true;
+      }
+
+      m_mdiTable->MessageBox("Can not Open/Create Sound file!", "Visual Pinball", MB_ICONERROR);
+      return false;
+   }
+
+   // standard/old .wav export pipeline:
+
    MMIOINFO mmio;
    ZeroMemory(&mmio, sizeof(mmio));
 
@@ -3876,14 +3892,12 @@ bool PinTable::ExportSound(PinSound * const pps, const char * const szfilename)
       MMCKINFO pck;
       ZeroMemory(&pck, sizeof(pck));
 
-      // quick and dirty ... in a big hurry
-
       pck.ckid = mmioStringToFOURCC("RIFF", MMIO_TOUPPER);
       pck.cksize = pps->m_cdata + 36;
       pck.fccType = mmioStringToFOURCC("WAVE", MMIO_TOUPPER);
 
       MMRESULT result = mmioCreateChunk(hmmio, &pck, MMIO_CREATERIFF); //RIFF header
-      mmioWrite(hmmio, "fmt ", 4);			//fmt
+      mmioWrite(hmmio, "fmt ", 4);                                     //fmt
 
       // Create the format chunk.
       pck.cksize = sizeof(WAVEFORMATEX);
@@ -3893,18 +3907,19 @@ bool PinTable::ExportSound(PinSound * const pps, const char * const szfilename)
       mmioWrite(hmmio, (char *)&i, 4);
       mmioWrite(hmmio, (char*)&pps->m_wfx, (LONG)sizeof(pps->m_wfx) - 2); //END OF CORRECTION
 
-      mmioWrite(hmmio, "data", 4);						//data chunk
-      i = pps->m_cdata; mmioWrite(hmmio, (char *)&i, 4);	// data size bytes
+      mmioWrite(hmmio, "data", 4);                       //data chunk
+      i = pps->m_cdata; mmioWrite(hmmio, (char *)&i, 4); // data size bytes
 
       const LONG wcch = mmioWrite(hmmio, pps->m_pdata, pps->m_cdata);
       result = mmioClose(hmmio, 0);
 
       if (wcch != pps->m_cdata) 
-          m_mdiTable->MessageBox("Sound file incomplete!", "Visual Pinball", MB_ICONERROR);
-      else return true;
+         m_mdiTable->MessageBox("Sound file incomplete!", "Visual Pinball", MB_ICONERROR);
+      else
+         return true;
    }
-   else 
-       m_mdiTable->MessageBox("Can not Open/Create Sound file!", "Visual Pinball", MB_ICONERROR);
+   else
+      m_mdiTable->MessageBox("Can not Open/Create Sound file!", "Visual Pinball", MB_ICONERROR);
 
    return false;
 }
@@ -6525,7 +6540,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    if (m_tblMirrorEnabled)
       pan = -pan;
 
-   m_vpinball->m_ps.Play(pps, volume * m_TableSoundVolume * ((float)g_pplayer->m_SoundVolume), randompitch, pitch, pan, front_rear_fade, loopcount, VBTOb(usesame), VBTOb(restart));
+   m_vpinball->m_ps.Play(pps, volume * m_TableSoundVolume * (float)g_pplayer->m_SoundVolume, randompitch, pitch, pan, front_rear_fade, loopcount, VBTOb(usesame), VBTOb(restart));
 
    return S_OK;
 }
