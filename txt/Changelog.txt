@@ -70,6 +70,8 @@ FIXES:
 
 - deleting an image will not copy the old alpha value over to the next image in the list anymore
 
+- fix problems when exporting multiple sounds or images
+
 - fix wrong bounceback direction of gate
 - fix problem with gate animations introduced in 10.1 when the open/close script functions were used before
 
