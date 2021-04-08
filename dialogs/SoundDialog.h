@@ -28,8 +28,6 @@ private:
     void SavePosition();
 
     HWND hSoundList;
-    char m_filename[MAXSTRING];
-    char m_initDir[MAXSTRING];
     static int m_columnSortOrder;
 };
 

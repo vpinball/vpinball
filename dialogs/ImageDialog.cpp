@@ -445,7 +445,6 @@ void ImageDialog::Export()
             ofn.lStructSize = sizeof(OPENFILENAME);
             ofn.hInstance = g_pvp->theInstance;
             ofn.hwndOwner = g_pvp->GetHwnd();
-            const int len0 = (int)ppi->m_szPath.length();
             char g_filename[MAXSTRING];
             g_filename[0] = '\0';
 
@@ -453,6 +452,7 @@ void ImageDialog::Export()
 
             if (!renameOnExport)
             {
+               const int len0 = (int)ppi->m_szPath.length();
                int begin; //select only file name from pathfilename
                for (begin = len0; begin >= 0; begin--)
                {
@@ -521,9 +521,8 @@ void ImageDialog::Export()
 
             if (GetSaveFileName(&ofn))	//Get filename from user
             {
-               const int len1 = lstrlen(ofn.lpstrFile);
                int begin; //select only file name from pathfilename
-               for (begin = len1; begin >= 0; begin--)
+               for (begin = lstrlen(ofn.lpstrFile); begin >= 0; begin--)
                {
                   if (ofn.lpstrFile[begin] == '\\')
                   {
@@ -540,22 +539,23 @@ void ImageDialog::Export()
                   memcpy(pathName, ofn.lpstrFile, begin);
                pathName[begin] = 0;
 
-               const int len2 = (int)ppi->m_szPath.length();
                while (sel != -1 && ppi != NULL)
                {
-                  for (begin = len2; begin >= 0; begin--)
-                  {
-                     if (ppi->m_szPath[begin] == '\\')
-                     {
-                        begin++;
-                        break;
-                     }
-                  }
                   if (selectedItemsCount>1)
                   {
                      strncpy_s(g_filename, pathName, sizeof(g_filename)-1);
                      if (!renameOnExport)
+                     {
+                        for (begin = (int)ppi->m_szPath.length(); begin >= 0; begin--)
+                        {
+                           if (ppi->m_szPath[begin] == '\\')
+                           {
+                              begin++;
+                              break;
+                           }
+                        }
                         strncat_s(g_filename, ppi->m_szPath.c_str()+begin, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
+                     }
                      else
                      {
                         strncat_s(g_filename, ppi->m_szName.c_str(), sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);

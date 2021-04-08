@@ -385,15 +385,15 @@ void SoundDialog::Export()
             ofn.lStructSize = sizeof( OPENFILENAME );
             ofn.hInstance = g_pvp->theInstance;
             ofn.hwndOwner = g_pvp->GetHwnd();
-            //TEXT
             ofn.lpstrFilter = "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0";
 
-            int begin; //select only file name from pathfilename
-            const int len0 = (int)pps->m_szPath.length();
-            memset(m_filename, 0, sizeof(m_filename));
+            char filename[MAXSTRING];
+            memset(filename, 0, sizeof(filename));
 
             if (!renameOnExport)
             {
+               const int len0 = (int)pps->m_szPath.length();
+               int begin; //select only file name from pathfilename
                for (begin = len0; begin >= 0; begin--)
                {
                   if (pps->m_szPath[begin] == '\\')
@@ -402,29 +402,30 @@ void SoundDialog::Export()
                      break;
                   }
                }
-               memcpy(m_filename, pps->m_szPath.c_str() + begin, len0 - begin);
+               memcpy(filename, pps->m_szPath.c_str() + begin, len0 - begin);
             }
             else
             {
-               strncat_s(m_filename, pps->m_szName.c_str(), sizeof(m_filename)-strnlen_s(m_filename, sizeof(m_filename))-1);
+               strncat_s(filename, pps->m_szName.c_str(), sizeof(filename)-strnlen_s(filename, sizeof(filename))-1);
                const size_t idx = pps->m_szPath.find_last_of('.');
-               strncat_s(m_filename, pps->m_szPath.c_str() + idx, sizeof(m_filename)-strnlen_s(m_filename, sizeof(m_filename))-1);
+               strncat_s(filename, pps->m_szPath.c_str() + idx, sizeof(filename)-strnlen_s(filename, sizeof(filename))-1);
             }
-            ofn.lpstrFile = m_filename;
-            ofn.nMaxFile = sizeof(m_filename);
+            ofn.lpstrFile = filename;
+            ofn.nMaxFile = sizeof(filename);
             ofn.lpstrDefExt = "mp3";
-            const HRESULT hr = LoadValueString( "RecentDir", "SoundDir", m_initDir, MAXSTRING);
+            char initDir[MAXSTRING];
+            const HRESULT hr = LoadValueString( "RecentDir", "SoundDir", initDir, MAXSTRING);
             if (hr != S_OK)
-               lstrcpy(m_initDir, "c:\\Visual Pinball\\Tables\\");
+               lstrcpy(initDir, "c:\\Visual Pinball\\Tables\\");
 
-            ofn.lpstrInitialDir = m_initDir;
+            ofn.lpstrInitialDir = initDir;
             //ofn.lpstrTitle = "SAVE AS";
             ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
             if (GetSaveFileName( &ofn ))	//Get filename from user
             {
-                const int len1 = lstrlen( ofn.lpstrFile );
-                for (begin = len1; begin >= 0; begin--)
+                int begin;
+                for (begin = lstrlen(ofn.lpstrFile); begin >= 0; begin--)
                 {
                     if (ofn.lpstrFile[begin] == '\\')
                     {
@@ -441,31 +442,32 @@ void SoundDialog::Export()
                     memcpy( pathName, ofn.lpstrFile, begin );
                 pathName[begin] = 0;
 
-                const int len2 = (int)pps->m_szPath.length();
                 while(sel != -1)
                 {
-                    for (begin = len2; begin >= 0; begin--)
-                    {
-                        if (pps->m_szPath[begin] == '\\')
-                        {
-                            begin++;
-                            break;
-                        }
-                    }
                     if (selectedItemsCount > 1)
                     {
-                       strncpy_s(m_filename, pathName, sizeof(m_filename)-1);
+                       strncpy_s(filename, pathName, sizeof(filename)-1);
                        if (!renameOnExport)
-                          strncat_s(m_filename, pps->m_szPath.c_str()+begin, sizeof(m_filename)-strnlen_s(m_filename, sizeof(m_filename))-1);
+                       {
+                          for (begin = (int)pps->m_szPath.length(); begin >= 0; begin--)
+                          {
+                             if (pps->m_szPath[begin] == '\\')
+                             {
+                                begin++;
+                                break;
+                             }
+                          }
+                          strncat_s(filename, pps->m_szPath.c_str()+begin, sizeof(filename)-strnlen_s(filename, sizeof(filename))-1);
+                       }
                        else
                        {
-                          strncat_s(m_filename, pps->m_szName.c_str(), sizeof(m_filename)-strnlen_s(m_filename, sizeof(m_filename))-1);
+                          strncat_s(filename, pps->m_szName.c_str(), sizeof(filename)-strnlen_s(filename, sizeof(filename))-1);
                           const size_t idx = pps->m_szPath.find_last_of('.');
-                          strncat_s(m_filename, pps->m_szPath.c_str() + idx, sizeof(m_filename)-strnlen_s(m_filename, sizeof(m_filename))-1);
+                          strncat_s(filename, pps->m_szPath.c_str() + idx, sizeof(filename)-strnlen_s(filename, sizeof(filename))-1);
                        }
                     }
 
-                    pt->ExportSound(pps, m_filename);
+                    pt->ExportSound(pps, filename);
                     sel = ListView_GetNextItem( hSoundList, sel, LVNI_SELECTED ); //next selected item
                     lvitem.iItem = sel;
                     lvitem.iSubItem = 0;
