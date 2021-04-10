@@ -5,7 +5,6 @@ extern int bass_BG_idx;
 extern int bass_STD_idx;
 
 float convert2decibelvolume(const float volume);
-float mapdecibelrange2bass(const float decibelvolume);
 
 void BASS_ErrorMapCode(const int code, string& text)
 {
@@ -255,7 +254,7 @@ void PinSound::Play(const float volume, const float randompitch, const int pitch
    {
       SetDevice();
 
-      BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_VOL, mapdecibelrange2bass(convert2decibelvolume(volume)));
+      BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_VOL, sqrtf(saturate(volume*(float)(1.0/100.)))); // to match VP legacy
 
       if (randompitch > 0.f)
       {
