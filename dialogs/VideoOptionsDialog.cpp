@@ -315,20 +315,22 @@ BOOL VideoOptionsDialog::OnInitDialog()
    }
 
    const int fxaa = LoadValueIntWithDefault("Player", "FXAA", Standard_FXAA);
-   SendMessage(GetDlgItem(IDC_FXAACB).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Disabled");
-   SendMessage(GetDlgItem(IDC_FXAACB).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Fast FXAA");
-   SendMessage(GetDlgItem(IDC_FXAACB).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Standard FXAA");
-   SendMessage(GetDlgItem(IDC_FXAACB).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Quality FXAA");
-   SendMessage(GetDlgItem(IDC_FXAACB).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Fast NFAA");
-   SendMessage(GetDlgItem(IDC_FXAACB).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Standard DLAA");
-   SendMessage(GetDlgItem(IDC_FXAACB).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Quality SMAA");
-   SendMessage(GetDlgItem(IDC_FXAACB).GetHwnd(), CB_SETCURSEL, fxaa, 0);
+   HWND hwnd = GetDlgItem(IDC_FXAACB).GetHwnd();
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Disabled");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Fast FXAA");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Standard FXAA");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Quality FXAA");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Fast NFAA");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Standard DLAA");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Quality SMAA");
+   SendMessage(hwnd, CB_SETCURSEL, fxaa, 0);
 
    const int sharpen = LoadValueIntWithDefault("Player", "Sharpen", 0);
-   SendMessage(GetDlgItem(IDC_SHARPENCB).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Disabled");
-   SendMessage(GetDlgItem(IDC_SHARPENCB).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"CAS");
-   SendMessage(GetDlgItem(IDC_SHARPENCB).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Bilateral CAS");
-   SendMessage(GetDlgItem(IDC_SHARPENCB).GetHwnd(), CB_SETCURSEL, sharpen, 0);
+   hwnd = GetDlgItem(IDC_SHARPENCB).GetHwnd();
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Disabled");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"CAS");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Bilateral CAS");
+   SendMessage(hwnd, CB_SETCURSEL, sharpen, 0);
 
    const bool scaleFX_DMD = LoadValueBoolWithDefault("Player", "ScaleFXDMD", false);
    SendMessage(GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd(), BM_SETCHECK, scaleFX_DMD ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -440,17 +442,18 @@ BOOL VideoOptionsDialog::OnInitDialog()
    // set selected Monitors
    // Monitors: 4:3, 16:9, 16:10, 21:10, 21:9
    /*const int selected = LoadValueIntWithDefault("Player", "BallStretchMonitor", 1); // assume 16:9 as standard
-   SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"4:3");
-   SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"16:9");
-   SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"16:10");
-   SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"21:10");
-   SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"3:4 (R)");
-   SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"9:16 (R)");
-   SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"10:16 (R)");
-   SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"10:21 (R)");
-   SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"9:21 (R)");
-   SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"21:9");
-   SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_SETCURSEL, selected, 0);*/
+   HWND hwnd = GetDlgItem(IDC_MonitorCombo).GetHwnd();
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"4:3");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"16:9");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"16:10");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"21:10");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"3:4 (R)");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"9:16 (R)");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"10:16 (R)");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"10:21 (R)");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"9:21 (R)");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"21:9");
+   SendMessage(hwnd, CB_SETCURSEL, selected, 0);*/
 
    return TRUE;
 }
@@ -619,8 +622,7 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       }
       case RESET_SIZELIST_CONTENT:
       {
-         HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
-         SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
+         SendMessage(GetDlgItem(IDC_SIZELIST).GetHwnd(), LB_RESETCONTENT, 0, 0);
          break;
       }
    }

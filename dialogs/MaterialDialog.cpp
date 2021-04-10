@@ -606,10 +606,8 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                      setItemText(IDC_OPACITY_EDIT, pmat->m_fOpacity);
                      setItemText(IDC_EDGEALPHA_EDIT, pmat->m_fEdgeAlpha);
 
-                     HWND checkboxHwnd = GetDlgItem(IDC_DIFFUSE_CHECK).GetHwnd();
-                     SendMessage(checkboxHwnd, BM_SETCHECK, pmat->m_bIsMetal ? BST_CHECKED : BST_UNCHECKED, 0);
-                     checkboxHwnd = GetDlgItem(IDC_OPACITY_CHECK).GetHwnd();
-                     SendMessage(checkboxHwnd, BM_SETCHECK, pmat->m_bOpacityActive ? BST_CHECKED : BST_UNCHECKED, 0);
+                     SendMessage(GetDlgItem(IDC_DIFFUSE_CHECK).GetHwnd(), BM_SETCHECK, pmat->m_bIsMetal ? BST_CHECKED : BST_UNCHECKED, 0);
+                     SendMessage(GetDlgItem(IDC_OPACITY_CHECK).GetHwnd(), BM_SETCHECK, pmat->m_bOpacityActive ? BST_CHECKED : BST_UNCHECKED, 0);
 
                      setItemText(IDC_MAT_ELASTICITY, pmat->m_fElasticity);
                      setItemText(IDC_MAT_ELASTICITY_FALLOFF, pmat->m_fElasticityFalloff);
@@ -709,11 +707,9 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   setItemText(IDC_SPECULAR_EDIT, pmat->m_fEdge);
                   setItemText(IDC_OPACITY_EDIT, pmat->m_fOpacity);
 
-                  HWND checkboxHwnd = GetDlgItem(IDC_DIFFUSE_CHECK).GetHwnd();
-                  SendMessage(checkboxHwnd, BM_SETCHECK, pmat->m_bIsMetal ? BST_CHECKED : BST_UNCHECKED, 0);
-                  checkboxHwnd = GetDlgItem(IDC_OPACITY_CHECK).GetHwnd();
-                  SendMessage(checkboxHwnd, BM_SETCHECK, pmat->m_bOpacityActive ? BST_CHECKED : BST_UNCHECKED, 0);
-                  
+                  SendMessage(GetDlgItem(IDC_DIFFUSE_CHECK).GetHwnd(), BM_SETCHECK, pmat->m_bIsMetal ? BST_CHECKED : BST_UNCHECKED, 0);
+                  SendMessage(GetDlgItem(IDC_OPACITY_CHECK).GetHwnd(), BM_SETCHECK, pmat->m_bOpacityActive ? BST_CHECKED : BST_UNCHECKED, 0);
+
                   setItemText(IDC_EDGEALPHA_EDIT, pmat->m_fEdgeAlpha);
                   setItemText(IDC_MAT_ELASTICITY, pmat->m_fElasticity);
                   setItemText(IDC_MAT_ELASTICITY_FALLOFF, pmat->m_fElasticityFalloff);

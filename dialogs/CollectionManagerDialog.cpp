@@ -322,21 +322,14 @@ BOOL CollectionDialog::OnInitDialog()
 {
     Collection * const pcol = pCurCollection.pcol;
 
-    const HWND hwndName = GetDlgItem(IDC_NAME).GetHwnd();
-
     char szT[sizeof(pcol->m_wzName)/sizeof(pcol->m_wzName[0])];
     WideCharToMultiByteNull(CP_ACP, 0, pcol->m_wzName, -1, szT, sizeof(szT), NULL, NULL);
 
-    ::SetWindowText(hwndName, szT);
+    ::SetWindowText(GetDlgItem(IDC_NAME).GetHwnd(), szT);
 
-    const HWND hwndFireEvents = GetDlgItem(IDC_FIRE).GetHwnd();
-    ::SendMessage(hwndFireEvents, BM_SETCHECK, pcol->m_fireEvents ? BST_CHECKED : BST_UNCHECKED, 0);
-
-    const HWND hwndStopSingle = GetDlgItem(IDC_SUPPRESS).GetHwnd();
-    ::SendMessage(hwndStopSingle, BM_SETCHECK, pcol->m_stopSingleEvents ? BST_CHECKED : BST_UNCHECKED, 0);
-
-    const HWND hwndGroupElements = GetDlgItem(IDC_GROUP_CHECK).GetHwnd();
-    ::SendMessage(hwndGroupElements, BM_SETCHECK, pcol->m_groupElements ? BST_CHECKED : BST_UNCHECKED, 0);
+    ::SendMessage(GetDlgItem(IDC_FIRE).GetHwnd(), BM_SETCHECK, pcol->m_fireEvents ? BST_CHECKED : BST_UNCHECKED, 0);
+    ::SendMessage(GetDlgItem(IDC_SUPPRESS).GetHwnd(), BM_SETCHECK, pcol->m_stopSingleEvents ? BST_CHECKED : BST_UNCHECKED, 0);
+    ::SendMessage(GetDlgItem(IDC_GROUP_CHECK).GetHwnd(), BM_SETCHECK, pcol->m_groupElements ? BST_CHECKED : BST_UNCHECKED, 0);
 
     const HWND hwndOut = GetDlgItem(IDC_OUTLIST).GetHwnd();
     const HWND hwndIn = GetDlgItem(IDC_INLIST).GetHwnd();
@@ -390,7 +383,7 @@ BOOL CollectionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_DOWN:
         {
             // Mode items up or down in the collection list
-            HWND hwndList = GetDlgItem(IDC_INLIST).GetHwnd();
+            const HWND hwndList = GetDlgItem(IDC_INLIST).GetHwnd();
             const size_t listsize = ::SendMessage(hwndList, LB_GETCOUNT, 0, 0);
             const size_t count = ::SendMessage(hwndList, LB_GETSELCOUNT, 0, 0);
             int * const rgsel = new int[count]; //!! size_t?

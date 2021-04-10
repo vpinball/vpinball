@@ -371,7 +371,7 @@ void PhysicsOptionsDialog::OnOK()
 
 void PhysicsOptionsDialog::OnDestroy()
 {
-    HWND hwndList = GetDlgItem(IDC_PhysicsList).GetHwnd();
+    const HWND hwndList = GetDlgItem(IDC_PhysicsList).GetHwnd();
     const size_t size = ::SendMessage(hwndList, LB_GETCOUNT, 0, 0);
     for (size_t i = 0; i < size; i++)
     {

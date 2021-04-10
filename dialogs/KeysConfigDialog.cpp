@@ -416,96 +416,108 @@ BOOL KeysConfigDialog::OnInitDialog()
     ::SendMessage(GetDlgItem(IDC_DOF_FORCEDISABLE).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     int selected = LoadValueIntWithDefault("Controller", "DOFContactors", 2); // assume both as standard
-    ::SendMessage(GetDlgItem(IDC_DOF_CONTACTORS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Sound FX");
-    ::SendMessage(GetDlgItem(IDC_DOF_CONTACTORS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"DOF");
-    ::SendMessage(GetDlgItem(IDC_DOF_CONTACTORS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Both");
-    ::SendMessage(GetDlgItem(IDC_DOF_CONTACTORS).GetHwnd(), CB_SETCURSEL, selected, 0);
+    HWND hwnd = GetDlgItem(IDC_DOF_CONTACTORS).GetHwnd();
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
+    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
     selected = LoadValueIntWithDefault("Controller", "DOFKnocker", 2); // assume both as standard
-    ::SendMessage(GetDlgItem(IDC_DOF_KNOCKER).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Sound FX");
-    ::SendMessage(GetDlgItem(IDC_DOF_KNOCKER).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"DOF");
-    ::SendMessage(GetDlgItem(IDC_DOF_KNOCKER).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Both");
-    ::SendMessage(GetDlgItem(IDC_DOF_KNOCKER).GetHwnd(), CB_SETCURSEL, selected, 0);
+    hwnd = GetDlgItem(IDC_DOF_KNOCKER).GetHwnd();
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
+    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
     selected = LoadValueIntWithDefault("Controller", "DOFChimes", 2); // assume both as standard
-    ::SendMessage(GetDlgItem(IDC_DOF_CHIMES).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Sound FX");
-    ::SendMessage(GetDlgItem(IDC_DOF_CHIMES).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"DOF");
-    ::SendMessage(GetDlgItem(IDC_DOF_CHIMES).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Both");
-    ::SendMessage(GetDlgItem(IDC_DOF_CHIMES).GetHwnd(), CB_SETCURSEL, selected, 0);
+    hwnd = GetDlgItem(IDC_DOF_CHIMES).GetHwnd();
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
+    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
     selected = LoadValueIntWithDefault("Controller", "DOFBell", 2); // assume both as standard
-    ::SendMessage(GetDlgItem(IDC_DOF_BELL).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Sound FX");
-    ::SendMessage(GetDlgItem(IDC_DOF_BELL).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"DOF");
-    ::SendMessage(GetDlgItem(IDC_DOF_BELL).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Both");
-    ::SendMessage(GetDlgItem(IDC_DOF_BELL).GetHwnd(), CB_SETCURSEL, selected, 0);
+    hwnd = GetDlgItem(IDC_DOF_BELL).GetHwnd();
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
+    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
     selected = LoadValueIntWithDefault("Controller", "DOFGear", 2); // assume both as standard
-    ::SendMessage(GetDlgItem(IDC_DOF_GEAR).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Sound FX");
-    ::SendMessage(GetDlgItem(IDC_DOF_GEAR).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"DOF");
-    ::SendMessage(GetDlgItem(IDC_DOF_GEAR).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Both");
-    ::SendMessage(GetDlgItem(IDC_DOF_GEAR).GetHwnd(), CB_SETCURSEL, selected, 0);
+    hwnd = GetDlgItem(IDC_DOF_GEAR).GetHwnd();
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
+    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
     selected = LoadValueIntWithDefault("Controller", "DOFShaker", 2); // assume both as standard
-    ::SendMessage(GetDlgItem(IDC_DOF_SHAKER).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Sound FX");
-    ::SendMessage(GetDlgItem(IDC_DOF_SHAKER).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"DOF");
-    ::SendMessage(GetDlgItem(IDC_DOF_SHAKER).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Both");
-    ::SendMessage(GetDlgItem(IDC_DOF_SHAKER).GetHwnd(), CB_SETCURSEL, selected, 0);
+    hwnd = GetDlgItem(IDC_DOF_SHAKER).GetHwnd();
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
+    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
     selected = LoadValueIntWithDefault("Controller", "DOFFlippers", 2); // assume both as standard
-    ::SendMessage(GetDlgItem(IDC_DOF_FLIPPERS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Sound FX");
-    ::SendMessage(GetDlgItem(IDC_DOF_FLIPPERS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"DOF");
-    ::SendMessage(GetDlgItem(IDC_DOF_FLIPPERS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Both");
-    ::SendMessage(GetDlgItem(IDC_DOF_FLIPPERS).GetHwnd(), CB_SETCURSEL, selected, 0);
+    hwnd = GetDlgItem(IDC_DOF_FLIPPERS).GetHwnd();
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
+    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
     selected = LoadValueIntWithDefault("Controller", "DOFTargets", 2); // assume both as standard
-    ::SendMessage(GetDlgItem(IDC_DOF_TARGETS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Sound FX");
-    ::SendMessage(GetDlgItem(IDC_DOF_TARGETS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"DOF");
-    ::SendMessage(GetDlgItem(IDC_DOF_TARGETS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Both");
-    ::SendMessage(GetDlgItem(IDC_DOF_TARGETS).GetHwnd(), CB_SETCURSEL, selected, 0);
+    hwnd = GetDlgItem(IDC_DOF_TARGETS).GetHwnd();
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
+    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
     selected = LoadValueIntWithDefault("Controller", "DOFDropTargets", 2); // assume both as standard
-    ::SendMessage(GetDlgItem(IDC_DOF_DROPTARGETS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Sound FX");
-    ::SendMessage(GetDlgItem(IDC_DOF_DROPTARGETS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"DOF");
-    ::SendMessage(GetDlgItem(IDC_DOF_DROPTARGETS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Both");
-    ::SendMessage(GetDlgItem(IDC_DOF_DROPTARGETS).GetHwnd(), CB_SETCURSEL, selected, 0);
+    hwnd = GetDlgItem(IDC_DOF_DROPTARGETS).GetHwnd();
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
+    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
     //
 
     selected = LoadValueIntWithDefault("Player", "PlungerAxis", 3); // assume Z Axis as standard
-    ::SendMessage(GetDlgItem(IDC_PLUNGERAXIS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"(disabled)");
-    ::SendMessage(GetDlgItem(IDC_PLUNGERAXIS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"X Axis");
-    ::SendMessage(GetDlgItem(IDC_PLUNGERAXIS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Y Axis");
-    ::SendMessage(GetDlgItem(IDC_PLUNGERAXIS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Z Axis");
-    ::SendMessage(GetDlgItem(IDC_PLUNGERAXIS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"rX Axis");
-    ::SendMessage(GetDlgItem(IDC_PLUNGERAXIS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"rY Axis");
-    ::SendMessage(GetDlgItem(IDC_PLUNGERAXIS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"rZ Axis");
-    ::SendMessage(GetDlgItem(IDC_PLUNGERAXIS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Slider 1");
-    ::SendMessage(GetDlgItem(IDC_PLUNGERAXIS).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Slider 2");
-    ::SendMessage(GetDlgItem(IDC_PLUNGERAXIS).GetHwnd(), CB_SETCURSEL, selected, 0);
+    hwnd = GetDlgItem(IDC_PLUNGERAXIS).GetHwnd();
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(disabled)");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"X Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Y Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Z Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rX Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rY Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rZ Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 1");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
+    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
     selected = LoadValueIntWithDefault("Player", "LRAxis", 1); // assume X Axis as standard
-    ::SendMessage(GetDlgItem(IDC_LRAXISCOMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"(disabled)");
-    ::SendMessage(GetDlgItem(IDC_LRAXISCOMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"X Axis");
-    ::SendMessage(GetDlgItem(IDC_LRAXISCOMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Y Axis");
-    ::SendMessage(GetDlgItem(IDC_LRAXISCOMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Z Axis");
-    ::SendMessage(GetDlgItem(IDC_LRAXISCOMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"rX Axis");
-    ::SendMessage(GetDlgItem(IDC_LRAXISCOMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"rY Axis");
-    ::SendMessage(GetDlgItem(IDC_LRAXISCOMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"rZ Axis");
-    ::SendMessage(GetDlgItem(IDC_LRAXISCOMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Slider 1");
-    ::SendMessage(GetDlgItem(IDC_LRAXISCOMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Slider 2");
-    ::SendMessage(GetDlgItem(IDC_LRAXISCOMBO).GetHwnd(), CB_SETCURSEL, selected, 0);
+    hwnd = GetDlgItem(IDC_LRAXISCOMBO).GetHwnd();
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(disabled)");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"X Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Y Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Z Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rX Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rY Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rZ Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 1");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
+    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
     selected = LoadValueIntWithDefault("Player", "UDAxis", 2); // assume Y Axis as standard
-    ::SendMessage(GetDlgItem(IDC_UDAXISCOMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"(disabled)");
-    ::SendMessage(GetDlgItem(IDC_UDAXISCOMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"X Axis");
-    ::SendMessage(GetDlgItem(IDC_UDAXISCOMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Y Axis");
-    ::SendMessage(GetDlgItem(IDC_UDAXISCOMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Z Axis");
-    ::SendMessage(GetDlgItem(IDC_UDAXISCOMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"rX Axis");
-    ::SendMessage(GetDlgItem(IDC_UDAXISCOMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"rY Axis");
-    ::SendMessage(GetDlgItem(IDC_UDAXISCOMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"rZ Axis");
-    ::SendMessage(GetDlgItem(IDC_UDAXISCOMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Slider 1");
-    ::SendMessage(GetDlgItem(IDC_UDAXISCOMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Slider 2");
-    ::SendMessage(GetDlgItem(IDC_UDAXISCOMBO).GetHwnd(), CB_SETCURSEL, selected, 0);
+    hwnd = GetDlgItem(IDC_UDAXISCOMBO).GetHwnd();
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(disabled)");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"X Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Y Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Z Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rX Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rY Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rZ Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 1");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
+    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
     for (unsigned int i = 0; i < eCKeys; ++i) if (regkey_idc[i] != -1)
     {

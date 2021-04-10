@@ -53,7 +53,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       case WM_INITDIALOG:
       {
          LVCOLUMN lvcol;
-         HWND hListView = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+         const HWND hListView = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
          m_resizer.Initialize(*this, CRect(0, 0, 500, 600));
          m_resizer.AddChild(hListView, topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
          m_resizer.AddChild(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), topright, 0);

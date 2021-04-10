@@ -635,32 +635,31 @@ void SoundPositionDialog::OnClose()
 
 BOOL SoundPositionDialog::OnInitDialog()
 {
-	m_Volume.Attach(GetDlgItem(IDC_AUD_VOLUME));
+	m_Volume.Attach(GetDlgItem(IDC_AUD_VOLUME).GetHwnd());
 	m_Volume.SetRangeMin(-100);
 	m_Volume.SetRangeMax(100);
 	m_Volume.SetTicFreq(25);
-	m_Balance.Attach(GetDlgItem(IDC_AUD_BALANCE));
+	m_Balance.Attach(GetDlgItem(IDC_AUD_BALANCE).GetHwnd());
 	m_Balance.SetRangeMin(-100);
 	m_Balance.SetRangeMax(100);
 	m_Balance.SetTicFreq(25);
-	m_Fader.Attach(GetDlgItem(IDC_AUD_FADER));
+	m_Fader.Attach(GetDlgItem(IDC_AUD_FADER).GetHwnd());
 	m_Fader.SetRangeMin(-100);
 	m_Fader.SetRangeMax(100);
 	m_Fader.SetTicFreq(25);
 	SetSliderValues();
 	SetTextValues();
 
-	HWND boxtocheck;
 	switch (m_cOutputTarget)
 	{
 	case SNDOUT_BACKGLASS:
-		boxtocheck = GetDlgItem(IDC_SPT_BACKGLASS);
+		::SendMessage(GetDlgItem(IDC_SPT_BACKGLASS).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
 		break;
 	default:  // SNDOUT_TABLE
-		boxtocheck = GetDlgItem(IDC_SPT_TABLE);
+		::SendMessage(GetDlgItem(IDC_SPT_TABLE).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
 		break;
 	}
-	::SendMessage(boxtocheck, BM_SETCHECK, BST_CHECKED, 0);
+
 	return TRUE;
 }
 
@@ -734,7 +733,7 @@ void SoundPositionDialog::SetTextValue(int ctl, int val)
 void SoundPositionDialog::GetDialogValues()
 {
 	m_cOutputTarget = SNDOUT_TABLE;
-	if (SendMessage(GetDlgItem(IDC_SPT_BACKGLASS), BM_GETCHECK, 0, 0))
+	if (SendMessage(GetDlgItem(IDC_SPT_BACKGLASS).GetHwnd(), BM_GETCHECK, 0, 0))
 	{
 		m_cOutputTarget = SNDOUT_BACKGLASS;
 	}

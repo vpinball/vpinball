@@ -197,22 +197,20 @@ INT_PTR SearchSelectDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       }
       case WM_SIZE:
       {
-         RECT buttonRc;
-
          const CRect rc = GetWindowRect();
          const int windowHeight = rc.bottom - rc.top;
          const int windowWidth = rc.right - rc.left;
 
          const HWND hOkButton = GetDlgItem(IDOK).GetHwnd();
-         const HWND hCancelButton = GetDlgItem(IDCANCEL).GetHwnd();
          const int buttonY = (windowHeight - 85) + 5;
+         RECT buttonRc;
          ::GetClientRect(hOkButton, &buttonRc);
          const int buttonWidth = buttonRc.right - buttonRc.left;
          const int buttonHeight = buttonRc.bottom - buttonRc.top;
          
          ::SetWindowPos(m_hElementList, NULL, 6, 5, windowWidth - 28, windowHeight - 90, 0);
          ::SetWindowPos(hOkButton, NULL, 6, buttonY, buttonWidth, buttonHeight, 0);
-         ::SetWindowPos(hCancelButton, NULL, 6 + buttonWidth + 50, buttonY, buttonWidth, buttonHeight, 0);
+         ::SetWindowPos(GetDlgItem(IDCANCEL).GetHwnd(), NULL, 6 + buttonWidth + 50, buttonY, buttonWidth, buttonHeight, 0);
          break;
       }
 
