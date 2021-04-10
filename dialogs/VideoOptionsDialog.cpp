@@ -339,11 +339,12 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(GetDlgItem(IDC_BG_SET).GetHwnd(), BM_SETCHECK, (bgset != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const int stereo3D = LoadValueIntWithDefault("Player", "Stereo3D", 0);
-   SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Disabled");
-   SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"TB (Top / Bottom)");
-   SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Interlaced (e.g. LG TVs)");
-   SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"SBS (Side by Side)");
-   SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_SETCURSEL, stereo3D, 0);
+   hwnd = GetDlgItem(IDC_3D_STEREO).GetHwnd();
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Disabled");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"TB (Top / Bottom)");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Interlaced (e.g. LG TVs)");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"SBS (Side by Side)");
+   SendMessage(hwnd, CB_SETCURSEL, stereo3D, 0);
 
    const bool stereo3DY = LoadValueBoolWithDefault("Player", "Stereo3DYAxis", false);
    SendMessage(GetDlgItem(IDC_3D_STEREO_Y).GetHwnd(), BM_SETCHECK, stereo3DY ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -392,7 +393,8 @@ BOOL VideoOptionsDialog::OnInitDialog()
    if ((hr != S_OK) || ((int)displays.size() <= display))
       display = -1;
 
-   SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_RESETCONTENT, 0, 0);
+   hwnd = GetDlgItem(IDC_DISPLAY_ID).GetHwnd();
+   SendMessage(hwnd, CB_RESETCONTENT, 0, 0);
 
    for (std::vector<DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end(); ++dispConf)
    {
@@ -400,9 +402,9 @@ BOOL VideoOptionsDialog::OnInitDialog()
          display = dispConf->display;
       char displayName[256];
       sprintf_s(displayName, "Display %d%s %dx%d %s", dispConf->display + 1, (dispConf->isPrimary) ? "*" : "", dispConf->width, dispConf->height, dispConf->GPU_Name);
-      SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)displayName);
+      SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)displayName);
    }
-   SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_SETCURSEL, display, 0);
+   SendMessage(hwnd, CB_SETCURSEL, display, 0);
 
    const bool fullscreen = LoadValueBoolWithDefault("Player", "FullScreen", IsWindows10_1803orAbove());
 
@@ -604,8 +606,8 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       } // end case GET_WINDOW_MODES
       case GET_FULLSCREENMODES:
       {
-         HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
-         int display = (int)SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
+         const HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
+         const int display = (int)SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
          EnumerateDisplayModes(display, allVideoModes);
 
          VideoMode curSelMode;

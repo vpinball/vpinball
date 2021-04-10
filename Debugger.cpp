@@ -62,9 +62,7 @@ BOOL DebuggerDialog::OnInitDialog()
     SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
 
     RECT rcEditSize;
-    HWND hwndEditSize = GetDlgItem(IDC_EDITSIZE);
-    
-    ::GetWindowRect(hwndEditSize, &rcEditSize);
+    ::GetWindowRect(GetDlgItem(IDC_EDITSIZE), &rcEditSize);
     ::ScreenToClient(GetHwnd(), (POINT*)&rcEditSize);
     ::ScreenToClient(GetHwnd(), &((POINT*)&rcEditSize)[1]);
 

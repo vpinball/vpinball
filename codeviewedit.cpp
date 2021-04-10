@@ -396,8 +396,7 @@ CVPrefrence* CVPrefrence::FillCVPreference(
 
 void CVPrefrence::SetCheckBox(const HWND hwndDlg)
 {
-	const HWND hChkBox = GetDlgItem(hwndDlg, IDC_ChkBox_code);
-	SNDMSG(hChkBox, BM_SETCHECK, m_highlight ? BST_CHECKED : BST_UNCHECKED, 0L);
+	SNDMSG(GetDlgItem(hwndDlg, IDC_ChkBox_code), BM_SETCHECK, m_highlight ? BST_CHECKED : BST_UNCHECKED, 0L);
 }
 
 void CVPrefrence::ReadCheckBox(const HWND hwndDlg)

@@ -2939,12 +2939,9 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 			}
 			pcv->m_bgColor = LoadValueIntWithDefault("CVEdit", "BackGroundColor", RGB(255,255,255));
 			pcv->UpdateScinFromPrefs();
-			HWND hChkBox = GetDlgItem(hwndDlg,IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE);
-			SNDMSG(hChkBox, BM_SETCHECK, pcv->m_displayAutoComplete ? BST_CHECKED : BST_UNCHECKED, 0L);
-			hChkBox = GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_DISPLAYDWELL);
-			SNDMSG(hChkBox, BM_SETCHECK, pcv->m_dwellDisplay ? BST_CHECKED : BST_UNCHECKED, 0L);
-			hChkBox = GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_HELPWITHDWELL);
-			SNDMSG(hChkBox, BM_SETCHECK, pcv->m_dwellHelp ? BST_CHECKED : BST_UNCHECKED, 0L);
+			SNDMSG(GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE), BM_SETCHECK, pcv->m_displayAutoComplete ? BST_CHECKED : BST_UNCHECKED, 0L);
+			SNDMSG(GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_DISPLAYDWELL), BM_SETCHECK, pcv->m_dwellDisplay ? BST_CHECKED : BST_UNCHECKED, 0L);
+			SNDMSG(GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_HELPWITHDWELL), BM_SETCHECK, pcv->m_dwellHelp ? BST_CHECKED : BST_UNCHECKED, 0L);
 
 			char foo[65];
 			sprintf_s(foo,"%i", pcv->m_displayAutoCompleteLength);
@@ -2956,13 +2953,11 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 		//SetFocus(hwndDlg);
 		//#if !(defined(IMSPANISH) | defined(IMGERMAN) | defined(IMFRENCH))
-		//      HWND hwndTransName = GetDlgItem(hwndDlg, IDC_TRANSNAME);
-		//      ShowWindow(hwndTransName, SW_HIDE);
+		//      ShowWindow(GetDlgItem(hwndDlg, IDC_TRANSNAME), SW_HIDE);
 		//#endif
 		//
 		//#if !(defined(IMSPANISH))
-		//      HWND hwndTransSite = GetDlgItem(hwndDlg, IDC_TRANSLATEWEBSITE);
-		//      ShowWindow(hwndTransSite, SW_HIDE);
+		//      ShowWindow(GetDlgItem(hwndDlg, IDC_TRANSLATEWEBSITE), SW_HIDE);
 		//#endif
 	}
    break; //case WM_INITDIALOG:
