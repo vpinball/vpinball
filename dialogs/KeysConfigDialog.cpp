@@ -297,7 +297,7 @@ BOOL KeysConfigDialog::OnInitDialog()
     on = LoadValueBoolWithDefault("Player", "ReversePlungerAxis", false);
     ::SendMessage(GetDlgItem(IDC_ReversePlunger).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault("Player", "PlungerRetract", true);
+    on = LoadValueBoolWithDefault("Player", "PlungerRetract", false);
     ::SendMessage(GetDlgItem(IDC_PLUNGERRETRACT).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     on = LoadValueBoolWithDefault("Player", "LRAxisFlip", false);
