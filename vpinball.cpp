@@ -1594,6 +1594,11 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             ::SendMessage(m_hwndStatusBar, WM_SIZE, 0, 0);
             break;
         }
+        case WM_HELP:
+        {
+            ShowSubDialog(m_aboutDialog, true);
+            return FinalWindowProc(uMsg, wParam, lParam);
+        }
     }
     return WndProcDefault(uMsg, wParam, lParam);
 }
