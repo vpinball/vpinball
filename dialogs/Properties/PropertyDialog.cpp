@@ -103,6 +103,8 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
             m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new BackglassCameraProperty(&pvsel), _T("Camera")));
             if (m_tab.m_activeTabText == CString("Visuals"))
                 activePage = 0;
+            else if (m_tab.m_activeTabText == CString("Camera"))
+                activePage = 1;
         }
         else
         {
@@ -119,7 +121,6 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
                 activePage = 2;
             else if (m_tab.m_activeTabText == CString("Lights"))
                 activePage = 3;
-
         }
         break;
     }
@@ -382,7 +383,7 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
             m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new DragpointVisualsProperty(IDD_PROPPOINT_VISUALS, &pvsel), _T("Visuals")));
         else
             m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new DragpointVisualsProperty(IDD_PROPPOINT_VISUALSWTEX, &pvsel), _T("Visuals")));
-
+        activePage = 0;
         break;
     }
     default:
