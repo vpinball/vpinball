@@ -143,7 +143,6 @@ BOOL WallVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_sideMaterialCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(m_slingshotMaterialCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(m_disableLightingEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_disableLightingEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(m_disableLightFromBelowEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(m_topHeightEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(m_bottomHeightEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
