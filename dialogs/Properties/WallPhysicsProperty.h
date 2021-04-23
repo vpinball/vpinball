@@ -14,6 +14,7 @@ public:
 
 protected:
     virtual BOOL OnInitDialog();
+    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
     EditBox   m_hitThresholdEdit;
@@ -24,6 +25,8 @@ private:
     EditBox   m_frictionEdit;
     EditBox   m_scatterAngleEdit;
     ComboBox  m_physicsMaterialCombo;
+    HWND      m_hCanDrop;
+    HWND      m_hIsBottomCollidable;
 };
 
 #endif

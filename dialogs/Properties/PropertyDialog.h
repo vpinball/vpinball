@@ -70,6 +70,8 @@ protected:
     HWND      m_hOverwritePhysicsCheck;
     HWND      m_hReflectionEnabledCheck;
     HWND      m_hVisibleCheck;
+
+    CResizer  m_resizer;
 };
 
 class EditBox : public CEdit

@@ -621,7 +621,8 @@ BOOL PropertyDialog::OnInitDialog()
     AttachItem(IDC_STATIC_ELEMENT_TYPE, m_elementTypeName);
     m_multipleElementsStatic.ShowWindow(SW_HIDE);
 
-    m_resizer.Initialize(*this, CRect(0, 0, 243, 308));
+    //set minimize size of the resizer at which scrollbars are shown when going under width=200 and height=610
+    m_resizer.Initialize(*this, CRect(0, 0, 200, 610)); 
     m_resizer.AddChild(m_elementTypeName, topcenter, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_nameEdit, topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_multipleElementsStatic, topleft, RD_STRETCH_WIDTH);

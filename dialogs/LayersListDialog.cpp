@@ -192,7 +192,7 @@ BOOL LayersListDialog::OnInitDialog()
     AddToolTip("Delete selected layer", GetHwnd(), toolTipHwnd, m_deleteLayerButton.GetHwnd());
     AddToolTip("Filter tree. Only elements that match the filter string will be shown!", GetHwnd(), toolTipHwnd, m_layerFilterEditBox.GetHwnd());
 
-    m_resizer.Initialize(*this, CRect(0, 0, 61, 200));
+    m_resizer.Initialize(*this, CRect(0, 0, 200, 200));
     m_resizer.AddChild(m_layerTreeView, leftcenter, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_addLayerButton, topright, 0);
     m_resizer.AddChild(m_deleteLayerButton, topright, 0);

@@ -160,39 +160,39 @@ BOOL ToolbarDialog::OnInitDialog()
     hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_RUBBER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_rubberButton.SetIcon((HICON)hIcon);
 
-/*
+
     m_resizer.Initialize(*this, CRect(0, 0, 61, 422));
 
-    m_resizer.AddChild(m_magnifyButton, topleft, 0);
-    m_resizer.AddChild(m_selectButton, topright, 0);
-    m_resizer.AddChild(m_scriptButton, rightcenter, 0);
-    m_resizer.AddChild(m_backglassButton, leftcenter, 0);
-    m_resizer.AddChild(m_playButton, rightcenter, 0);
-    m_resizer.AddChild(m_playCameraButton, rightcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC_ELEMENTS), bottomright, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_magnifyButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_selectButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_scriptButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_backglassButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_playButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_playCameraButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC_ELEMENTS), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
 
-    m_resizer.AddChild(m_wallButton, leftcenter, 0);
-    m_resizer.AddChild(m_gateButton, rightcenter, 0);
-    m_resizer.AddChild(m_rampButton, leftcenter, 0);
-    m_resizer.AddChild(m_flipperButton, rightcenter, 0);
-    m_resizer.AddChild(m_plungerButton, leftcenter, 0);
-    m_resizer.AddChild(m_bumperButton, rightcenter, 0);
-    m_resizer.AddChild(m_spinnerButton, leftcenter, 0);
-    m_resizer.AddChild(m_timerButton, rightcenter, 0);
-    m_resizer.AddChild(m_triggerButton, leftcenter, 0);
-    m_resizer.AddChild(m_lightButton, rightcenter, 0);
-    m_resizer.AddChild(m_kickerButton, leftcenter, 0);
-    m_resizer.AddChild(m_targetButton, rightcenter, 0);
-    m_resizer.AddChild(m_decalButton, leftcenter, 0);
-    m_resizer.AddChild(m_textboxButton, rightcenter, 0);
-    m_resizer.AddChild(m_reelButton, leftcenter, 0);
-    m_resizer.AddChild(m_lightseqButton, rightcenter, 0);
-    m_resizer.AddChild(m_primitiveButton, leftcenter, 0);
-    m_resizer.AddChild(m_flasherButton, rightcenter, 0);
-    m_resizer.AddChild(m_rubberButton, leftcenter, 0);
+    m_resizer.AddChild(m_wallButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_gateButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_rampButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_flipperButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_plungerButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_bumperButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_spinnerButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_timerButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_triggerButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_lightButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_kickerButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_targetButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_decalButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_textboxButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_reelButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_lightseqButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_primitiveButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_flasherButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_rubberButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
 
     m_resizer.RecalcLayout();
-*/
+
     EnableButtons();
     return TRUE;
 }
@@ -200,7 +200,7 @@ BOOL ToolbarDialog::OnInitDialog()
 INT_PTR ToolbarDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
 {
     // Pass resizing messages on to the resizer
-//    m_resizer.HandleMessage(msg, wparam, lparam);
+    m_resizer.HandleMessage(msg, wparam, lparam);
 
     switch (msg)
     {

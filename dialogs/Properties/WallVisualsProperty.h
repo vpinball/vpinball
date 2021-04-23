@@ -12,6 +12,7 @@ public:
 
 protected:
     virtual BOOL OnInitDialog();
+    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
     ComboBox  m_topImageCombo;
@@ -23,6 +24,11 @@ private:
     EditBox   m_disableLightFromBelowEdit;
     EditBox   m_topHeightEdit;
     EditBox   m_bottomHeightEdit;
+    HWND      m_hDisplayInEditor;
+    HWND      m_hTopImageVisible;
+    HWND      m_hSideImageVisible;
+    HWND      m_hAnimateSlingshot;
+    HWND      m_hFlipbook;
 };
 
 #endif 
