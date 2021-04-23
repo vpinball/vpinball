@@ -136,4 +136,3 @@ INT_PTR WallPhysicsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    m_resizer.HandleMessage(uMsg, wParam, lParam);
    return DialogProcDefault(uMsg, wParam, lParam);
 }
-

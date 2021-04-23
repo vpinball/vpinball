@@ -193,7 +193,6 @@ BOOL RampVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_distanceYEdit, center, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hReflectionEnabledCheck, center, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hVisibleCheck, center, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hVisibleCheck, center, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hApplyImageToWallCheck, center, RD_STRETCH_WIDTH);
 
     return TRUE;
