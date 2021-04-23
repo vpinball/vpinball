@@ -76,5 +76,21 @@ BOOL KickerPhysicsProperty::OnInitDialog()
     m_hitAccuracyEdit.AttachItem(IDC_HIT_ACC_EDIT);
     m_hitHeightEdit.AttachItem(IDC_KICKER_HIT_HEIGHT_EDIT);
     UpdateVisuals();
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
+    m_resizer.AddChild(m_hEnableCheck, leftcenter, 0);
+    m_resizer.AddChild(m_hFallThroughCheck, leftcenter, 0);
+    m_resizer.AddChild(m_hLegacyCheck, leftcenter, 0);
+    m_resizer.AddChild(m_scatterAngleEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hitAccuracyEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hitHeightEdit, leftcenter, RD_STRETCH_WIDTH);
     return TRUE;
+}
+
+INT_PTR KickerPhysicsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   return DialogProcDefault(uMsg, wParam, lParam);
 }

@@ -98,5 +98,28 @@ BOOL KickerVisualsProperty::OnInitDialog()
     m_posYEdit.AttachItem(903);
     m_surfaceCombo.AttachItem(IDC_SURFACE_COMBO);
     UpdateVisuals();
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_materialCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_displayCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_radiusEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_orientationEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posXEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posYEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_surfaceCombo, center, RD_STRETCH_WIDTH);
+
     return TRUE;
+}
+
+INT_PTR KickerVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   return DialogProcDefault(uMsg, wParam, lParam);
 }

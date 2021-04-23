@@ -82,5 +82,22 @@ BOOL LightseqStatesProperty::OnInitDialog()
     m_updateIntervalEdit.AttachItem(IDC_LIGHTSEQ_UPDATE_INTERVAL_EDIT);
     m_collectionCombo.AttachItem(DISPID_Collection);
     UpdateVisuals();
+
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posXEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posYEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_updateIntervalEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_collectionCombo, center, RD_STRETCH_WIDTH);
     return TRUE;
+}
+
+INT_PTR LightseqStatesProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   return DialogProcDefault(uMsg, wParam, lParam);
 }
