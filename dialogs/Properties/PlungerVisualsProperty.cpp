@@ -198,9 +198,7 @@ BOOL PlungerVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_tipShapeEdit, center, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ringGapEdit, center, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ringDiamEdit, center, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_ringGapEdit, center, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ringWidthEdit, center, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_ringDiamEdit, center, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_springDiamEdit, center, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_springGaugeEdit, center, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_springLoopsEdit, center, RD_STRETCH_WIDTH);
