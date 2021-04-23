@@ -102,5 +102,30 @@ BOOL PlungerPhysicsProperty::OnInitDialog()
     m_momentumXferEdit.AttachItem(IDC_MOMENTUM_XFER_EDIT);
     m_parkPositionEdit.AttachItem(IDC_PARK_POSITION_EDIT);
     UpdateVisuals();
+
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_pullSpeedEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_releaseSpeedEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_strokeLengthEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_scatterVelocityEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hAutoPlungerCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hEnableMechPlungerCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hVisibleCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_mechStrengthEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_momentumXferEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_parkPositionEdit, center, RD_STRETCH_WIDTH);
     return TRUE;
+}
+
+INT_PTR PlungerPhysicsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   return DialogProcDefault(uMsg, wParam, lParam);
 }

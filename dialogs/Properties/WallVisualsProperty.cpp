@@ -137,22 +137,22 @@ BOOL WallVisualsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC7), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC8), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC9), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_topImageCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_sideImageCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_topMaterialCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_sideMaterialCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_slingshotMaterialCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_disableLightingEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_disableLightFromBelowEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_topHeightEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_bottomHeightEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hReflectionEnabledCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hDisplayInEditor, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hTopImageVisible, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hSideImageVisible, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hAnimateSlingshot, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hFlipbook, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_bottomHeightEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_topImageCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_sideImageCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_topMaterialCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_sideMaterialCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_slingshotMaterialCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_disableLightingEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_disableLightFromBelowEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_topHeightEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_bottomHeightEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hReflectionEnabledCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hDisplayInEditor, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hTopImageVisible, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hSideImageVisible, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hAnimateSlingshot, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hFlipbook, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_bottomHeightEdit, center, RD_STRETCH_WIDTH);
     return TRUE;
 }
 

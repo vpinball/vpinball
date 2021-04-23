@@ -69,5 +69,21 @@ BOOL LightStatesProperty::OnInitDialog()
     m_blinkPatternEdit.AttachItem(IDC_BLINK_PATTERN_EDIT);
     m_blinkIntervalEdit.AttachItem(DISPID_Light_BlinkInterval);
     UpdateVisuals();
+    m_stateCombo.SetDroppedWidth(20);
+
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_stateCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_blinkPatternEdit, center, RD_STRETCH_WIDTH );
+    m_resizer.AddChild(m_blinkIntervalEdit, center, RD_STRETCH_WIDTH);
+
     return TRUE;
+}
+
+INT_PTR LightStatesProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   return DialogProcDefault(uMsg, wParam, lParam);
 }

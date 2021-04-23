@@ -146,20 +146,20 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC8), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC9), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC10), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hDisplayImageCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hObjectSpaceCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hVisibleCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hReflectionEnabledCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hRenderBackfacingCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hStaticRenderingCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_imageCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_normalMapCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_materialCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_depthBiasEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_disableLightingEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_disableLightFromBelowEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_legacySidesEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_edgeFactorUIEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_hDisplayImageCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hObjectSpaceCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hVisibleCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hReflectionEnabledCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hRenderBackfacingCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hStaticRenderingCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_imageCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_normalMapCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_materialCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_depthBiasEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_disableLightingEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_disableLightFromBelowEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_legacySidesEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_edgeFactorUIEdit, center, RD_STRETCH_WIDTH);
 
     return TRUE;
 }

@@ -227,12 +227,55 @@ BOOL LightVisualsProperty::OnInitDialog()
     AttachItem(IDC_COLOR_BUTTON1, m_colorButton1);
     AttachItem(IDC_COLOR_BUTTON2, m_colorButton2);
     UpdateVisuals();
+
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC11), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC12), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC13), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC14), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC15), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC16), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC17), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC18), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC19), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_falloffEdit, center, RD_STRETCH_WIDTH );
+    m_resizer.AddChild(m_falloffPowerEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_intensityEdit, center, RD_STRETCH_WIDTH );
+    m_resizer.AddChild(m_fadeSpeedUpEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_fadeSpeedDownEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hPassThroughCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_imageCombo, center, RD_STRETCH_WIDTH );
+    m_resizer.AddChild(m_depthBiasEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hEnableCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hShowMeshCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hStaticMeshCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_haloHeightEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_scaleMeshEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_modulateEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_transmitEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hRelectOnBalls, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posXEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posYEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_surfaceCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_colorButton1, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_colorButton2, center, RD_STRETCH_WIDTH);
     return TRUE;
 }
 
 INT_PTR LightVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    switch (uMsg)
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   switch (uMsg)
     {
         case WM_DRAWITEM:
         {

@@ -88,15 +88,15 @@ BOOL RubberPhysicsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC4), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC5), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC6), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_physicsMaterialCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hOverwritePhysicsCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hCollidableCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hHitEventCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_elasticityEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_elasticityFallOffEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_frictionEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_scatterAngleEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hitHeightEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_physicsMaterialCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hOverwritePhysicsCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hCollidableCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hHitEventCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_elasticityEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_elasticityFallOffEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_frictionEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_scatterAngleEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hitHeightEdit, center, RD_STRETCH_WIDTH);
 
     return TRUE;
 }

@@ -238,17 +238,17 @@ BOOL TextboxVisualsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC9), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC10), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC11), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hTransparentCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_backgroundColorButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_textColorButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_fontDialogButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_alignmentCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_posXEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_posYEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_widthEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_heightEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_textIntensityEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hUseScriptDMDCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_hTransparentCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_backgroundColorButton, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_textColorButton, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_fontDialogButton, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_alignmentCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posXEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posYEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_widthEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_heightEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_textIntensityEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hUseScriptDMDCheck, center, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_textEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     return TRUE;
 }

@@ -140,16 +140,16 @@ BOOL TableLightsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC8), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC9), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC10), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_colorButton1, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_colorButton2, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_lightEmissionScaleEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_lightHeightEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_lightRangeEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_envEmissionImageCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_envEmissionScaleEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_ambientOcclusionScaleEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_bloomStrengthEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_screenSpaceReflEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_colorButton1, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_colorButton2, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_lightEmissionScaleEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_lightHeightEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_lightRangeEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_envEmissionImageCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_envEmissionScaleEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_ambientOcclusionScaleEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_bloomStrengthEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_screenSpaceReflEdit, center, RD_STRETCH_WIDTH);
     return TRUE;
 }
 

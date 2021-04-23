@@ -90,16 +90,16 @@ BOOL PrimitivePhysicsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC5), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC6), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC7), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hitThresholdEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_elasticityEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_hitThresholdEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_elasticityEdit, center, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_frictionEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_elasticityFalloffEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_physicsMaterialCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_scatterAngleEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hToyCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hCollidableCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hOverwritePhysicsCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_reducePolyEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_elasticityFalloffEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_physicsMaterialCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_scatterAngleEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hToyCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hCollidableCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hOverwritePhysicsCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_reducePolyEdit, center, RD_STRETCH_WIDTH);
 
     return TRUE;
 }

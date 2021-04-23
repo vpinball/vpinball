@@ -127,19 +127,19 @@ BOOL SpinnerVisualsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC9), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC10), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC11), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hVisibleCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hReflectionEnabledCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hShowBracketCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_imageCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_materialCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_surfaceCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_posXEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_posYEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_lengthEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_heightEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_rotationEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_angleMaxEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_angleMinEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_hVisibleCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hReflectionEnabledCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hShowBracketCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_imageCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_materialCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_surfaceCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posXEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posYEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_lengthEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_heightEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_rotationEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_angleMaxEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_angleMinEdit, center, RD_STRETCH_WIDTH);
 
     return TRUE;
 }

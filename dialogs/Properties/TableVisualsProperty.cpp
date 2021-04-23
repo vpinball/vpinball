@@ -105,15 +105,15 @@ BOOL TableVisualsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC6), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC7), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC8), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_imageCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_materialCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_ballDecalCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_ballImageCombo, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hReflectElementsCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_reflectionStrengthEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hLogoModeCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_ballReflectPlayfieldEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_ballDefaultBulbIntensScaleEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_imageCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_materialCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_ballDecalCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_ballImageCombo, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hReflectElementsCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_reflectionStrengthEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hLogoModeCheck, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_ballReflectPlayfieldEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_ballDefaultBulbIntensScaleEdit, center, RD_STRETCH_WIDTH);
     return TRUE;
 }
 

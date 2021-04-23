@@ -177,21 +177,21 @@ BOOL PrimitivePositionProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC24), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC25), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC26), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_posXEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_posYEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_posZEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_scaleXEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_scaleYEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_scaleZEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_rotXEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_rotYEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_rotZEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_transXEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_transYEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_transZEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_objRotXEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_objRotYEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_objRotZEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_posXEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posYEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posZEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_scaleXEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_scaleYEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_scaleZEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_rotXEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_rotYEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_rotZEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_transXEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_transYEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_transZEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_objRotXEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_objRotYEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_objRotZEdit, center, RD_STRETCH_WIDTH);
 
     return TRUE;
 }
