@@ -14,6 +14,7 @@ public:
 
 protected:
     virtual BOOL OnInitDialog();
+    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
     ComboBox  m_physicsMaterialCombo;

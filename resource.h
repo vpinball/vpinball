@@ -1134,6 +1134,16 @@
 #define IDC_STATIC14                    855
 #define IDC_STATIC15                    856
 #define IDC_STATIC16                    857
+#define IDC_STATIC17                    858
+#define IDC_STATIC18                    859
+#define IDC_STATIC19                    860
+#define IDC_STATIC20                    861
+#define IDC_STATIC21                    862
+#define IDC_STATIC22                    863
+#define IDC_STATIC23                    864
+#define IDC_STATIC24                    865
+#define IDC_STATIC25                    866
+#define IDC_STATIC26                    867
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1311,9 +1321,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        669
+#define _APS_NEXT_RESOURCE_VALUE        670
 #define _APS_NEXT_COMMAND_VALUE         4025
-#define _APS_NEXT_CONTROL_VALUE         858
+#define _APS_NEXT_CONTROL_VALUE         868
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

@@ -51,5 +51,17 @@ BOOL TriggerPhysicsProperty::OnInitDialog()
     m_hEnableCheck = ::GetDlgItem(GetHwnd(), 904);
     m_hitHeightEdit.AttachItem(IDC_HIT_HEIGHT_EDIT);
     UpdateVisuals();
+    
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_hEnableCheck, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_hitHeightEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+
     return TRUE;
+}
+
+INT_PTR TriggerPhysicsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   return DialogProcDefault(uMsg, wParam, lParam);
 }

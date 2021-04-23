@@ -53,5 +53,18 @@ BOOL SpinnerPhysicsProperty::OnInitDialog()
     m_baseElasticityEdit = &m_elasticityEdit;
     m_dampingEdit.AttachItem(IDC_DAMPING_EDIT);
     UpdateVisuals();
+
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_elasticityEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_dampingEdit, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+
     return TRUE;
+}
+
+INT_PTR SpinnerPhysicsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   return DialogProcDefault(uMsg, wParam, lParam);
 }

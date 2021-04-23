@@ -15,6 +15,7 @@ public:
 
 protected:
     virtual BOOL OnInitDialog();
+    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
     ComboBox  m_typeCombo;
@@ -33,6 +34,7 @@ private:
     EditBox   m_distanceYEdit;
     vector<string> m_typeList;
     vector<string> m_imageModeList;
+    HWND      m_hApplyImageToWallCheck;
 };
 
 #endif
