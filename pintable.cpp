@@ -9904,6 +9904,11 @@ BOOL PinTable::OnCommand(WPARAM wparam, LPARAM lparam)
     return FALSE;
 }
 
+BOOL PinTable::OnEraseBkgnd(CDC& dc)
+{
+   return TRUE;
+}
+
 void PinTable::SetMouseCursor()
 {
     char *cursorid;
@@ -10117,6 +10122,11 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
       }
    }
    return CMDIChild::OnMDIActivate(msg, wparam, lparam);
+}
+
+BOOL PinTableMDI::OnEraseBkgnd(CDC& dc)
+{
+   return TRUE;
 }
 
 #pragma endregion

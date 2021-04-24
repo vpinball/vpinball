@@ -54,6 +54,7 @@ protected:
     virtual int  OnCreate(CREATESTRUCT &cs);
     virtual void OnClose();
     virtual LRESULT OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam);
+    virtual BOOL OnEraseBkgnd(CDC& dc);
 
 private:
     CComObject<PinTable> *m_table;
@@ -838,6 +839,7 @@ public:
    virtual void OnInitialUpdate();
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
    virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam);
+   virtual BOOL OnEraseBkgnd(CDC& dc);
 
    void SetMouseCursor();
    void OnLeftButtonDown(const short x, const short y);
