@@ -57,5 +57,21 @@ BOOL BumperPhysicsProperty::OnInitDialog()
     m_baseScatterAngleEdit = &m_scatterAngleEdit;
 
     UpdateVisuals();
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
+    m_resizer.AddChild(m_hHitEventCheck, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hCollidableCheck, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hitThresholdEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_forceEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_scatterAngleEdit, leftcenter, RD_STRETCH_WIDTH);
+
     return TRUE;
+}
+
+INT_PTR BumperPhysicsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   return DialogProcDefault(uMsg, wParam, lParam);
 }

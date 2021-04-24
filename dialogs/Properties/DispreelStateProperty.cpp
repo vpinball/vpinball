@@ -58,5 +58,20 @@ BOOL DispreelStateProperty::OnInitDialog()
     m_updateIntervalEdit.AttachItem(IDC_UPDATE_INTERVAL_EDIT);
     m_soundCombo.AttachItem(DISPID_Sound);
     UpdateVisuals();
+
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
+    m_resizer.AddChild(m_motorStepsEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_updateIntervalEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_soundCombo, leftcenter, RD_STRETCH_WIDTH);
+
     return TRUE;
+}
+
+INT_PTR DispreelStateProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   return DialogProcDefault(uMsg, wParam, lParam);
 }

@@ -127,5 +127,36 @@ BOOL BackglassCameraProperty::OnInitDialog()
 
     UpdateVisuals();
 
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC11), leftcenter, 0);
+    m_resizer.AddChild(m_hFssModeCheck, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hTestDesktopCheck, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_modeCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_inclinationEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_fovEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_laybackEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_xyRotationEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_xScaleEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_yScaleEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_zScaleEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_xOffsetEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_yOffsetEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_zOffsetEdit, leftcenter, RD_STRETCH_WIDTH);
     return TRUE;
+}
+
+INT_PTR BackglassCameraProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   return DialogProcDefault(uMsg, wParam, lParam);
 }

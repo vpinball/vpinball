@@ -135,12 +135,39 @@ BOOL DispreelVisualsProperty::OnInitDialog()
     m_reelHeightEdit.AttachItem(IDC_REEL_HEIGHT_EDIT);
     m_reelSpacingEdit.AttachItem(IDC_REEL_SPACING_EDIT);
     UpdateVisuals();
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), leftcenter, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), leftcenter, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC11), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC12), leftcenter, 0);
+    m_resizer.AddChild(m_hVisibleCheck, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hBackgroundTransparentCheck, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hUseImageGridCheck, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_colorButton, leftcenter, 0);
+    m_resizer.AddChild(m_imageCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_singleDigitRangeEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_imagePerRowEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posXEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posYEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_reelsEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_reelWidthEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_reelHeightEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_reelSpacingEdit, leftcenter, RD_STRETCH_WIDTH);
     return TRUE;
 }
 
 INT_PTR DispreelVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    switch (uMsg)
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   switch (uMsg)
     {
         case WM_DRAWITEM:
         {

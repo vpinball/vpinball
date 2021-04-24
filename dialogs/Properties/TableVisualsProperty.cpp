@@ -97,23 +97,23 @@ BOOL TableVisualsProperty::OnInitDialog()
     UpdateVisuals(); 
     
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_imageCombo, center, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_materialCombo, center, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_ballDecalCombo, center, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_ballImageCombo, center, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hReflectElementsCheck, center, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_reflectionStrengthEdit, center, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hLogoModeCheck, center, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_ballReflectPlayfieldEdit, center, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_ballDefaultBulbIntensScaleEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), leftcenter, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), leftcenter, 0);
+    m_resizer.AddChild(m_imageCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_materialCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_ballDecalCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_ballImageCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hReflectElementsCheck, leftcenter, 0);
+    m_resizer.AddChild(m_reflectionStrengthEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hLogoModeCheck, leftcenter, 0);
+    m_resizer.AddChild(m_ballReflectPlayfieldEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_ballDefaultBulbIntensScaleEdit, leftcenter, RD_STRETCH_WIDTH);
     return TRUE;
 }
 

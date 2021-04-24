@@ -150,5 +150,43 @@ BOOL BumperVisualsProperty::OnInitDialog()
     m_posYEdit.AttachItem(903);
     m_surfaceCombo.AttachItem(1502);
     UpdateVisuals();
+
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), leftcenter, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC11), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC12), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC13), leftcenter, 0);
+    m_resizer.AddChild(m_capMaterialCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_bumpBaseMaterialCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_skirtMaterialCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_ringMaterialCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_radiusEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_heightScaleEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_orientationEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_ringSpeedEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_ringDropOffsetEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hCapVisibleCheck, leftcenter, 0);
+    m_resizer.AddChild(m_hBaseVisibleCheck, leftcenter, 0);
+    m_resizer.AddChild(m_hRingVisibleCheck, leftcenter, 0);
+    m_resizer.AddChild(m_hSkirtVisibleCheck, leftcenter, 0);
+    m_resizer.AddChild(m_hReflectionEnabledCheck, leftcenter, 0);
+    m_resizer.AddChild(m_posXEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posYEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_surfaceCombo, leftcenter, RD_STRETCH_WIDTH);
     return TRUE;
+}
+
+INT_PTR BumperVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   return DialogProcDefault(uMsg, wParam, lParam);
 }

@@ -119,12 +119,35 @@ BOOL BackglassVisualsProperty::OnInitDialog()
     m_3dSteroZPDEdit.AttachItem(IDC_3D_STEREO_ZPD_EDIT);
     AttachItem(IDC_COLOR_BUTTON1, m_colorButton1);
     UpdateVisuals();
+    
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), leftcenter, 0);
+    m_resizer.AddChild(m_hApplyNightDayCheck, leftcenter, 0);
+    m_resizer.AddChild(m_dtImageCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_fsImageCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_fssImageCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_colorGradingCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hEnableEMReelCheck, leftcenter, 0);
+    m_resizer.AddChild(m_hEnableDecal, leftcenter, 0);
+    m_resizer.AddChild(m_hOverwriteGlobalStereoSettingsCheck, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_3dStereoOffsetEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_3dStereoSeparationEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_3dSteroZPDEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_colorButton1, leftcenter, 0);
     return TRUE;
 }
 
 INT_PTR BackglassVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    switch (uMsg)
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   switch (uMsg)
     {
         case WM_DRAWITEM:
         {

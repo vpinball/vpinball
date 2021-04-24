@@ -189,6 +189,7 @@ BOOL FlipperVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_surfaceCombo, leftcenter, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hVisibleCheck, leftcenter, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hReflectionEnabledCheck, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_FLIPPER_ENABLED), leftcenter, 0);
     return TRUE;
 }
 

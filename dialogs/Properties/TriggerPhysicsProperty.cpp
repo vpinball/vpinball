@@ -53,9 +53,9 @@ BOOL TriggerPhysicsProperty::OnInitDialog()
     UpdateVisuals();
     
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_hEnableCheck, center, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hitHeightEdit, center, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0| RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_hEnableCheck, leftcenter, 0);
+    m_resizer.AddChild(m_hitHeightEdit, leftcenter, RD_STRETCH_WIDTH);
 
     return TRUE;
 }
