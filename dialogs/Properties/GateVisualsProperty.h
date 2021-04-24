@@ -11,6 +11,7 @@ public:
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
+    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 protected:
     virtual BOOL OnInitDialog();

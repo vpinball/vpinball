@@ -153,6 +153,47 @@ BOOL FlipperVisualsProperty::OnInitDialog()
     m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
     m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
     UpdateVisuals();
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), leftcenter, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC11), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC12), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC13), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC14), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC15), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC16), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC17), leftcenter, 0);
+    m_resizer.AddChild(m_imageCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_materialCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_rubberMaterialCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_rubberThicknessEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_rubberOffsetHeightEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_rubberWidthEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posXEdit, leftcenter, 0);
+    m_resizer.AddChild(m_posYEdit, rightcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_baseRadiusEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_endRadiusEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_lengthEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_startAngleEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_endAngleEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_heightEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_maxDifficultLengthEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_surfaceCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hVisibleCheck, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hReflectionEnabledCheck, leftcenter, RD_STRETCH_WIDTH);
     return TRUE;
 }
 
+INT_PTR FlipperVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   return DialogProcDefault(uMsg, wParam, lParam);
+}

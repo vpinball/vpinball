@@ -121,6 +121,36 @@ BOOL GateVisualsProperty::OnInitDialog()
     m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
 
     UpdateVisuals();
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), leftcenter, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC11), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC12), leftcenter, 0);
+    m_resizer.AddChild(m_typeCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_surfaceCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_xposEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_yposEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_materialCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_lengthEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_heightEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_rotationEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_openAngleEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_closeAngleEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hVisibleCheck, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hReflectionEnabledCheck, leftcenter, RD_STRETCH_WIDTH);
     return TRUE;
 }
 
+INT_PTR GateVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   return DialogProcDefault(uMsg, wParam, lParam);
+}

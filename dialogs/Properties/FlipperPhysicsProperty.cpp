@@ -117,6 +117,34 @@ BOOL FlipperPhysicsProperty::OnInitDialog()
     m_eosTorqueAngleEdit.AttachItem(189);
     m_overwriteSettingsCombo.AttachItem(1044);
     UpdateVisuals();
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC11), leftcenter, 0);
+    m_resizer.AddChild(m_massEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_strengthEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_elasticityEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_elasticityFalloffEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_frictionEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_returnStrengthEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_coilUpRampEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_scatterAngleEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_eosTorqueEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_eosTorqueAngleEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_overwriteSettingsCombo, leftcenter, RD_STRETCH_WIDTH);
     return TRUE;
 }
 
+INT_PTR FlipperPhysicsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   return DialogProcDefault(uMsg, wParam, lParam);
+}

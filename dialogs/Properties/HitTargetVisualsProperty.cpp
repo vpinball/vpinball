@@ -159,5 +159,48 @@ BOOL HitTargetVisualsProperty::OnInitDialog()
     m_scaleZEdit.AttachItem(DISPID_SIZE_Z);
     m_orientationEdit.AttachItem(DISPID_ROT_Z);
     UpdateVisuals();
+
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), rightcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), leftcenter, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC11), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC12), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC13), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC14), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC15), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC16), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC17), leftcenter, 0);
+    m_resizer.AddChild(m_imageCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_materialCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hVisibleCheck, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hReflectionEnabledCheck, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_typeCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_dropSpeedEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_raiseDelayEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_depthBiasEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_disableLightingEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_disableLightBelowEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posXEdit, leftcenter, 0);
+    m_resizer.AddChild(m_posYEdit, leftcenter, 0);
+    m_resizer.AddChild(m_posZEdit, leftcenter, 0);
+    m_resizer.AddChild(m_scaleXEdit, rightcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_scaleYEdit, rightcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_scaleZEdit, rightcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_orientationEdit, leftcenter, RD_STRETCH_WIDTH);
+
     return TRUE;
+}
+
+INT_PTR HitTargetVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   return DialogProcDefault(uMsg, wParam, lParam);
 }

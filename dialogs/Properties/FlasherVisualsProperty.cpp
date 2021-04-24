@@ -214,12 +214,53 @@ BOOL FlasherVisualsProperty::OnInitDialog()
     m_rotZEdit.AttachItem(1);
     AttachItem(IDC_COLOR_BUTTON1, m_colorButton);
     UpdateVisuals();
+
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), rightcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), rightcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC11), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC12), leftcenter, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC13), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC14), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC15), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC16), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC17), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC18), leftcenter, 0);
+    m_resizer.AddChild(m_hVisibleCheck, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_imageACombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hDisplayInEditorCheck, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_imageBCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_modeCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_filterCombo, leftcenter, 0);
+    m_resizer.AddChild(m_hAdditiveBlendCheck, leftcenter, 0);
+    m_resizer.AddChild(m_hUseDMDCheck, leftcenter, 0);
+    m_resizer.AddChild(m_filterAmountEdit, rightcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_opacityAmountEdit, rightcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_depthBiasEdit, rightcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_modulateEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posXEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posYEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_heightEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_rotXEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_rotYEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_rotZEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_colorButton, leftcenter, 0);
+
     return TRUE;
 }
 
 INT_PTR FlasherVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    switch (uMsg)
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   switch (uMsg)
     {
         case WM_DRAWITEM:
         {
