@@ -10006,7 +10006,7 @@ void PinTable::OnMouseWheel(const short x, const short y, const short zDelta)
 void PinTable::OnSize()
 {
     SetMyScrollInfo();
-//    SetDirtyDraw();
+    SetDirtyDraw();
 }
 
 #pragma endregion
