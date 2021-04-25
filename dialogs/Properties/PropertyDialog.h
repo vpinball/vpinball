@@ -124,6 +124,7 @@ public:
 protected:
     virtual BOOL OnInitDialog();
     virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 private:
     EditBox m_timerIntervalEdit;
     EditBox m_userValueEdit;

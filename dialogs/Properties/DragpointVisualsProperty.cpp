@@ -111,6 +111,41 @@ BOOL DragpointVisualsProperty::OnInitDialog()
     AttachItem(IDC_POINT_COPY_BUTTON, m_copyButton);
     AttachItem(IDC_POINT_PASTE_BUTTON, m_pasteButton);
     UpdateVisuals();
+
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    if (m_id == IDD_PROPPOINT_VISUALSWTEX)
+    {
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC4), leftcenter, 0);
+       m_resizer.AddChild(m_textureCoordEdit, leftcenter, RD_STRETCH_WIDTH);
+       m_resizer.AddChild(GetDlgItem(4), leftcenter, 0);
+    }
+    else if(m_id==IDD_PROPPOINT_VISUALSWHEIGHT)
+    {
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC4), leftcenter, 0);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC5), leftcenter, 0);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC6), leftcenter, 0);
+       m_resizer.AddChild(m_heightOffsetEdit, leftcenter, RD_STRETCH_WIDTH);
+       m_resizer.AddChild(m_realHeightEdit, leftcenter, RD_STRETCH_WIDTH);
+       m_resizer.AddChild(GetDlgItem(4), leftcenter, 0);
+    }
+    else
+    {
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
+    }
+    m_resizer.AddChild(GetDlgItem(3), leftcenter, 0);
+    m_resizer.AddChild(m_posXEdit, leftcenter, 0);
+    m_resizer.AddChild(m_posYEdit, leftcenter, 0);
+    m_resizer.AddChild(m_copyButton, leftcenter, 0);
+    m_resizer.AddChild(m_pasteButton, leftcenter, 0);
+
     return TRUE;
 }
 
@@ -169,4 +204,10 @@ BOOL DragpointVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
         }
     }
     return FALSE;
+}
+
+INT_PTR DragpointVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   return DialogProcDefault(uMsg, wParam, lParam);
 }

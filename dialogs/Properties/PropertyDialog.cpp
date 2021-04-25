@@ -1072,6 +1072,12 @@ BOOL TimerProperty::OnInitDialog()
     m_timerIntervalEdit.AttachItem(901);
     m_userValueEdit.AttachItem(1504);
     UpdateVisuals();
+    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
+    m_resizer.AddChild(m_timerIntervalEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_userValueEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(900), leftcenter, 0);
     return TRUE;
 }
 
@@ -1092,6 +1098,12 @@ BOOL TimerProperty::OnCommand(WPARAM wParam, LPARAM lParam)
         }
     }
     return FALSE;
+}
+
+INT_PTR TimerProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+   return DialogProcDefault(uMsg, wParam, lParam);
 }
 
 #pragma endregion

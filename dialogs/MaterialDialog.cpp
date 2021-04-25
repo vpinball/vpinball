@@ -63,10 +63,11 @@ BOOL MaterialDialog::OnInitDialog()
 
    m_columnSortOrder = 1;
    m_deletingItem = false;
-   m_resizer.Initialize(*this, CRect(0, 0, 500, 600));
    AttachItem(IDC_COLOR_BUTTON1, m_colorButton1);
    AttachItem(IDC_COLOR_BUTTON2, m_colorButton2);
    AttachItem(IDC_COLOR_BUTTON3, m_colorButton3);
+
+   m_resizer.Initialize(*this, CRect(0, 0, 780, 520));
    m_resizer.AddChild(m_hMaterialList, topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
    m_resizer.AddChild(GetDlgItem(IDC_DIFFUSE_CHECK).GetHwnd(), topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC_BASE_COLOR).GetHwnd(), topright, 0);

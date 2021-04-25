@@ -440,7 +440,6 @@
 #define IDD_PROP_NAME                   287
 #define IDC_JOYCUSTOM3                  287
 #define IDC_SOUND_SLIDER                288
-#define IDD_PROP_TIMER                  288
 #define IDC_JOYCUSTOM4                  288
 #define IDC_STATIC_MUSIC                289
 #define IDD_PROPLIGHT_VISUALS           289
@@ -1321,7 +1320,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        670
+#define _APS_NEXT_RESOURCE_VALUE        672
 #define _APS_NEXT_COMMAND_VALUE         4025
 #define _APS_NEXT_CONTROL_VALUE         868
 #define _APS_NEXT_SYMED_VALUE           188

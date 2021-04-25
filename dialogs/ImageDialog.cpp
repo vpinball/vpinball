@@ -54,7 +54,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       {
          LVCOLUMN lvcol;
          const HWND hListView = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-         m_resizer.Initialize(*this, CRect(0, 0, 500, 600));
+         m_resizer.Initialize(*this, CRect(0, 0, 720, 450));
          m_resizer.AddChild(hListView, topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
          m_resizer.AddChild(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), topright, 0);
          m_resizer.AddChild(GetDlgItem(IDC_IMPORT).GetHwnd(), topright, 0);

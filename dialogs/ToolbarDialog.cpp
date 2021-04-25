@@ -161,8 +161,7 @@ BOOL ToolbarDialog::OnInitDialog()
     m_rubberButton.SetIcon((HICON)hIcon);
 
 
-    m_resizer.Initialize(*this, CRect(0, 0, 61, 422));
-
+    m_resizer.Initialize(*this, CRect(0, 0, 90, 600));
     m_resizer.AddChild(m_magnifyButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(m_selectButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(m_scriptButton, center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
