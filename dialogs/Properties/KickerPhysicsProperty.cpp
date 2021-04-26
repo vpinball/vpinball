@@ -77,15 +77,15 @@ BOOL KickerPhysicsProperty::OnInitDialog()
     m_hitHeightEdit.AttachItem(IDC_KICKER_HIT_HEIGHT_EDIT);
     UpdateVisuals();
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
-    m_resizer.AddChild(m_hEnableCheck, leftcenter, 0);
-    m_resizer.AddChild(m_hFallThroughCheck, leftcenter, 0);
-    m_resizer.AddChild(m_hLegacyCheck, leftcenter, 0);
-    m_resizer.AddChild(m_scatterAngleEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hitAccuracyEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hitHeightEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), topleft, 0);
+    m_resizer.AddChild(m_hEnableCheck, topleft, 0);
+    m_resizer.AddChild(m_hFallThroughCheck, topleft, 0);
+    m_resizer.AddChild(m_hLegacyCheck, topleft, 0);
+    m_resizer.AddChild(m_scatterAngleEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hitAccuracyEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hitHeightEdit, topleft, RD_STRETCH_WIDTH);
     return TRUE;
 }
 

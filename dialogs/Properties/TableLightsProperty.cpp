@@ -130,26 +130,26 @@ BOOL TableLightsProperty::OnInitDialog()
 
     UpdateVisuals();
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), leftcenter, 0);
-    m_resizer.AddChild(m_colorButton1, leftcenter, 0);
-    m_resizer.AddChild(m_colorButton2, leftcenter, 0);
-    m_resizer.AddChild(m_lightEmissionScaleEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_lightHeightEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_lightRangeEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_envEmissionImageCombo, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_envEmissionScaleEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_ambientOcclusionScaleEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_bloomStrengthEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_screenSpaceReflEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), topleft, 0);
+    m_resizer.AddChild(m_colorButton1, topleft, 0);
+    m_resizer.AddChild(m_colorButton2, topleft, 0);
+    m_resizer.AddChild(m_lightEmissionScaleEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_lightHeightEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_lightRangeEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_envEmissionImageCombo, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_envEmissionScaleEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_ambientOcclusionScaleEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_bloomStrengthEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_screenSpaceReflEdit, topleft, RD_STRETCH_WIDTH);
     return TRUE;
 }
 

@@ -58,14 +58,14 @@ BOOL BumperPhysicsProperty::OnInitDialog()
 
     UpdateVisuals();
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
-    m_resizer.AddChild(m_hHitEventCheck, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hCollidableCheck, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hitThresholdEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_forceEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_scatterAngleEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), topleft, 0);
+    m_resizer.AddChild(m_hHitEventCheck, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hCollidableCheck, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hitThresholdEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_forceEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_scatterAngleEdit, topleft, RD_STRETCH_WIDTH);
 
     return TRUE;
 }

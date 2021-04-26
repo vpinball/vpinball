@@ -121,26 +121,26 @@ BOOL BackglassVisualsProperty::OnInitDialog()
     UpdateVisuals();
     
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), leftcenter, 0);
-    m_resizer.AddChild(m_hApplyNightDayCheck, leftcenter, 0);
-    m_resizer.AddChild(m_dtImageCombo, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_fsImageCombo, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_fssImageCombo, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_colorGradingCombo, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hEnableEMReelCheck, leftcenter, 0);
-    m_resizer.AddChild(m_hEnableDecal, leftcenter, 0);
-    m_resizer.AddChild(m_hOverwriteGlobalStereoSettingsCheck, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_3dStereoOffsetEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_3dStereoSeparationEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_3dSteroZPDEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_colorButton1, leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), topleft, 0);
+    m_resizer.AddChild(m_hApplyNightDayCheck, topleft, 0);
+    m_resizer.AddChild(m_dtImageCombo, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_fsImageCombo, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_fssImageCombo, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_colorGradingCombo, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hEnableEMReelCheck, topleft, 0);
+    m_resizer.AddChild(m_hEnableDecal, topleft, 0);
+    m_resizer.AddChild(m_hOverwriteGlobalStereoSettingsCheck, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_3dStereoOffsetEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_3dStereoSeparationEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_3dSteroZPDEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_colorButton1, topleft, 0);
     return TRUE;
 }
 

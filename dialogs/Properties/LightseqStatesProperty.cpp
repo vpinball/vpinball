@@ -84,15 +84,15 @@ BOOL LightseqStatesProperty::OnInitDialog()
     UpdateVisuals();
 
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), leftcenter, 0);
-    m_resizer.AddChild(m_posXEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_posYEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_updateIntervalEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_collectionCombo, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), topleft, 0);
+    m_resizer.AddChild(m_posXEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posYEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_updateIntervalEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_collectionCombo, topleft, RD_STRETCH_WIDTH);
     return TRUE;
 }
 

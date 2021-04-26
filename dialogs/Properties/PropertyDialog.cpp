@@ -1073,11 +1073,11 @@ BOOL TimerProperty::OnInitDialog()
     m_userValueEdit.AttachItem(1504);
     UpdateVisuals();
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
-    m_resizer.AddChild(m_timerIntervalEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_userValueEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(GetDlgItem(900), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), topleft, 0);
+    m_resizer.AddChild(m_timerIntervalEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_userValueEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(900), topleft, 0);
     return TRUE;
 }
 

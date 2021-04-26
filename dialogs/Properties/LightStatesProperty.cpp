@@ -72,12 +72,12 @@ BOOL LightStatesProperty::OnInitDialog()
     m_stateCombo.SetDroppedWidth(20);
 
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
-    m_resizer.AddChild(m_stateCombo, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_blinkPatternEdit, leftcenter, RD_STRETCH_WIDTH );
-    m_resizer.AddChild(m_blinkIntervalEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), topleft, 0);
+    m_resizer.AddChild(m_stateCombo, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_blinkPatternEdit, topleft, RD_STRETCH_WIDTH );
+    m_resizer.AddChild(m_blinkIntervalEdit, topleft, RD_STRETCH_WIDTH);
 
     return TRUE;
 }

@@ -100,26 +100,26 @@ BOOL RubberVisualsProperty::OnInitDialog()
     UpdateVisuals();
 
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), leftcenter, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_imageCombo, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_materialCombo, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hStaticRenderingCheck, leftcenter, 0);
-    m_resizer.AddChild(m_hVisibleCheck, leftcenter, 0);
-    m_resizer.AddChild(m_hReflectionEnabledCheck, leftcenter, 0);
-    m_resizer.AddChild(m_heightEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_thicknessEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_rotXEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_rotYEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_rotZEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hShowInEditorCheck, leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_imageCombo, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_materialCombo, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hStaticRenderingCheck, topleft, 0);
+    m_resizer.AddChild(m_hVisibleCheck, topleft, 0);
+    m_resizer.AddChild(m_hReflectionEnabledCheck, topleft, 0);
+    m_resizer.AddChild(m_heightEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_thicknessEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_rotXEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_rotYEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_rotZEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hShowInEditorCheck, topleft, 0);
 
     return TRUE;
 }

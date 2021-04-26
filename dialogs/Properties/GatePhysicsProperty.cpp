@@ -69,16 +69,16 @@ BOOL GatePhysicsProperty::OnInitDialog()
     UpdateVisuals();
 
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), leftcenter, 0);
-    m_resizer.AddChild(m_dampingEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_gravityFactorEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_elasticityEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_frictionEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hCollidableCheck, leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_TWO_WAY_CHECK), leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), topleft, 0);
+    m_resizer.AddChild(m_dampingEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_gravityFactorEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_elasticityEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_frictionEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hCollidableCheck, topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_TWO_WAY_CHECK), topleft, 0);
 
     return TRUE;
 }

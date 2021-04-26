@@ -104,23 +104,23 @@ BOOL PlungerPhysicsProperty::OnInitDialog()
     UpdateVisuals();
 
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), leftcenter, 0);
-    m_resizer.AddChild(m_pullSpeedEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_releaseSpeedEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_strokeLengthEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_scatterVelocityEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hAutoPlungerCheck, leftcenter, 0);
-    m_resizer.AddChild(m_hEnableMechPlungerCheck, leftcenter, 0);
-    m_resizer.AddChild(m_hVisibleCheck, leftcenter, 0);
-    m_resizer.AddChild(m_mechStrengthEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_momentumXferEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_parkPositionEdit, leftcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), topleft, 0);
+    m_resizer.AddChild(m_pullSpeedEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_releaseSpeedEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_strokeLengthEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_scatterVelocityEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hAutoPlungerCheck, topleft, 0);
+    m_resizer.AddChild(m_hEnableMechPlungerCheck, topleft, 0);
+    m_resizer.AddChild(m_hVisibleCheck, topleft, 0);
+    m_resizer.AddChild(m_mechStrengthEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_momentumXferEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_parkPositionEdit, topleft, RD_STRETCH_WIDTH);
     return TRUE;
 }
 

@@ -107,26 +107,26 @@ BOOL WallPhysicsProperty::OnInitDialog()
 
     UpdateVisuals();
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), leftcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), leftcenter, 0);
-    m_resizer.AddChild(m_hitThresholdEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_slingshotForceEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_slingshotThresholdEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_physicsMaterialCombo, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_elasticityEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_frictionEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_scatterAngleEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_elasticityFallOffEdit, leftcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hHitEventCheck, leftcenter, 0);
-    m_resizer.AddChild(m_hCollidableCheck, leftcenter, 0);
-    m_resizer.AddChild(m_hOverwritePhysicsCheck, leftcenter, 0);
-    m_resizer.AddChild(m_hCanDrop, leftcenter, 0);
-    m_resizer.AddChild(m_hIsBottomCollidable, leftcenter, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), topleft, 0);
+    m_resizer.AddChild(m_hitThresholdEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_slingshotForceEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_slingshotThresholdEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_physicsMaterialCombo, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_elasticityEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_frictionEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_scatterAngleEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_elasticityFallOffEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hHitEventCheck, topleft, 0);
+    m_resizer.AddChild(m_hCollidableCheck, topleft, 0);
+    m_resizer.AddChild(m_hOverwritePhysicsCheck, topleft, 0);
+    m_resizer.AddChild(m_hCanDrop, topleft, 0);
+    m_resizer.AddChild(m_hIsBottomCollidable, topleft, 0);
 
     return TRUE;
 }
