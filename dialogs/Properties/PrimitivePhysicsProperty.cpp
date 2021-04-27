@@ -92,11 +92,12 @@ BOOL PrimitivePhysicsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC7), topleft, 0);
     m_resizer.AddChild(m_hitThresholdEdit, topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_elasticityEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_frictionEdit, topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_frictionEdit, topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_elasticityFalloffEdit, topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_physicsMaterialCombo, topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_scatterAngleEdit, topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hToyCheck, topleft, 0);
+    m_resizer.AddChild(m_hHitEventCheck, topleft, 0);
     m_resizer.AddChild(m_hCollidableCheck, topleft, 0);
     m_resizer.AddChild(m_hOverwritePhysicsCheck, topleft, 0);
     m_resizer.AddChild(m_reducePolyEdit, topleft, RD_STRETCH_WIDTH);
