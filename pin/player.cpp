@@ -694,7 +694,7 @@ unsigned int Player::ProfilingMode() const
 bool Player::ShowFPSonly() const
 {
    const unsigned int modes = (m_showFPS % 9);
-   return (modes == 1);
+   return (modes == 1 || modes == 6 || modes == 8);
 }
 
 bool Player::ShowStats() const
