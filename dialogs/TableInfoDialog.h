@@ -30,6 +30,8 @@ private:
    CEdit m_customNameEdit;
    CEdit m_customValueEdit;
    CListView m_customListView;
+   CComboBox m_screenshotCombo;
+   CResizer m_resizer;
 };
 
 #endif // !H_TABLE_INFO_DIALOG
