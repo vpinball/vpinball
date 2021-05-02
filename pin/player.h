@@ -614,7 +614,8 @@ public:
    void StopPlayer();
    void ToggleFPS();
    void InitFPS();
-   bool ShowFPS() const;
+   bool ShowFPSonly() const;
+   bool ShowStats() const;
 
    void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D(1.0f));
    void UpdateCameraModeDisplay();

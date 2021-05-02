@@ -683,30 +683,36 @@ void Player::ToggleFPS()
 
 unsigned int Player::ProfilingMode() const
 {
-   const unsigned int modes = (m_showFPS & 7);
-   if (modes == 2)
+   const unsigned int modes = (m_showFPS % 9);
+   if (modes == 3)
       return 1;
-   else if (modes == 3)
+   else if (modes == 4)
       return 2;
    else return 0;
 }
 
-bool Player::ShowFPS() const
+bool Player::ShowFPSonly() const
 {
-   const unsigned int modes = (m_showFPS & 7);
-   return (modes == 1 || modes == 2 || modes == 3 || modes == 5 || modes == 7);
+   const unsigned int modes = (m_showFPS % 9);
+   return (modes == 1);
+}
+
+bool Player::ShowStats() const
+{
+   const unsigned int modes = (m_showFPS % 9);
+   return (modes == 1 || modes == 2 || modes == 3 || modes == 4 || modes == 6 || modes == 8);
 }
 
 bool Player::RenderStaticOnly() const
 {
-   const unsigned int modes = (m_showFPS & 7);
-   return (modes == 5);
+   const unsigned int modes = (m_showFPS % 9);
+   return (modes == 6);
 }
 
 bool Player::RenderAOOnly() const
 {
-   const unsigned int modes = (m_showFPS & 7);
-   return (modes == 7);
+   const unsigned int modes = (m_showFPS % 9);
+   return (modes == 8);
 }
 
 void Player::RecomputePauseState()
@@ -2925,7 +2931,7 @@ void Player::UpdatePhysics()
       initial_time_usec = m_curPhysicsFrameTime;
 #endif
 
-   //if (ShowFPS())
+   //if (ShowStats())
    {
       m_lastFrameDuration = (U32)(initial_time_usec - m_lastTime_usec);
       if (m_lastFrameDuration > 1000000)
@@ -3746,20 +3752,29 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
 void Player::UpdateHUD_IMGUI()
 {
    static bool profiling = false;
-   if (!ShowFPS() || m_cameraMode || m_closeDown)
+   if (!ShowStats() || m_cameraMode || m_closeDown)
       return;
 
    ImGui_ImplDX9_NewFrame();
    ImGui_ImplWin32_NewFrame();
    ImGui::NewFrame();
-   ImGui::SetNextWindowSize(ImVec2(600, 350), ImGuiCond_FirstUseEver);
+   ImGui::SetNextWindowSize(ShowFPSonly() ? ImVec2(200, 50) : ImVec2(600, 350), ImGuiCond_FirstUseEver);
    ImGui::SetNextWindowPos(ImVec2(10, 10));
-   ImGui::Begin("Statistics");
+   ImGui::Begin(ShowFPSonly() ? "FPS" : "Statistics");
+
+   const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
+   if (ShowFPSonly())
+   {
+      ImGui::Text("FPS: %.1f (%.1f avg)", m_fps + 0.01f, fpsAvg + 0.01f);
+      ImGui::End();
+      ImGui::EndFrame();
+      return;
+   }
+
    if (ImGui::Button("Toggle Profiling"))
       profiling = !profiling;
 
-   const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
-   ImGui::Text("FPS: % .1f (% .1f avg)  Display % s Objects(% uk / % uk Triangles)", m_fps + 0.01f, fpsAvg + 0.01f, RenderStaticOnly() ? "only static" : "all", (m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000);
+   ImGui::Text("FPS: %.1f (%.1f avg)  Display %s Objects(%uk/%uk Triangles)", m_fps + 0.01f, fpsAvg + 0.01f, RenderStaticOnly() ? "only static" : "all", (m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000);
    ImGui::Text("DayNight %u%%", quantizeUnsignedPercent(m_globalEmissionScale));
 
    const U32 period = m_lastFrameDuration;
@@ -3928,7 +3943,7 @@ void Player::UpdateHUD_IMGUI()
 
 void Player::RenderHUD_IMGUI()
 {
-   if (!ShowFPS() || m_cameraMode || m_closeDown)
+   if (!ShowStats() || m_cameraMode || m_closeDown)
       return;
 
    ImGui::Render();
@@ -3954,17 +3969,24 @@ void Player::UpdateHUD()
     SetDebugOutputPosition(x, y);
 
 	// draw all kinds of stats, incl. FPS counter
-	if (ShowFPS() && !m_cameraMode && !m_closeDown)
+	if (ShowStats() && !m_cameraMode && !m_closeDown)
 	{
 		char szFoo[256];
 
+		const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
+		if (ShowFPSonly())
+		{
+			sprintf_s(szFoo, "FPS: %.1f (%.1f avg)", m_fps + 0.01f, fpsAvg + 0.01f);
+			DebugPrint(0, 10, szFoo);
+		}
+		else
+		{
 		// Draw the amount of video memory used.
 		//!! Disabled until we can compute this correctly.
 		//sprintf_s(szFoo, " Used Graphics Memory: %.2f MB ", (float)NumVideoBytes / (float)(1024 * 1024));
 		//DebugPrint(0, 230, szFoo); //!!?
 
 		// Draw the framerate.
-		const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
 		sprintf_s(szFoo, "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %u%%", m_fps+0.01f, fpsAvg+0.01f, RenderStaticOnly() ? "only static" : "all", (m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, quantizeUnsignedPercent(m_globalEmissionScale));
 		DebugPrint(0, 10, szFoo);
 
@@ -4059,6 +4081,7 @@ void Player::UpdateHUD()
 			(INT64)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) / 1000.,
 			(int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame));
 		DebugPrint(0, 260, szFoo);
+		}
 	}
 
 	// Draw performance readout - at end of CPU frame, so hopefully the previous frame
@@ -5234,7 +5257,6 @@ void Player::DrawBalls()
       else
          stretch = m_BallStretch;
 
-
       const vec4 diffuse = convertColor(pball->m_color, 1.0f);
       m_ballShader->SetVector("cBase_Alpha", &diffuse);
 
@@ -5388,8 +5410,8 @@ void Player::DrawBalls()
          }
       }
 
-#ifdef DEBUG_BALL_SPIN        // draw debug points for visualizing ball rotation
-      if (ShowFPS())
+#ifdef DEBUG_BALL_SPIN // draw debug points for visualizing ball rotation
+      if (ShowStats() && !ShowFPSonly())
       {
          // set transform
          Matrix3D matOrig, matNew, matRot;

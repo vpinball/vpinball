@@ -46,6 +46,7 @@ FEATURES:
 - add Inder/Playmatic trigger mesh
 
 - make debug text/FPS output adapt to resolution and rotation
+- first press of 'F11' will now show a minimalistic FPS-only text, then pressing it the next time will continue with the already known detailed statistics/profiling displays (as the latter had too much impact on the FPS itself)
 
 - the script editor now works in UTF-8 mode and also saves it like that (note though that VBS itself may not digest all of UTF-8!)
 
