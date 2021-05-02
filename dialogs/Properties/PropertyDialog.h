@@ -34,18 +34,25 @@ public:
         {
             switch (HIWORD(wParam))
             {
-            //case CBN_KILLFOCUS:
-            case EN_KILLFOCUS:
-            {
-               if(m_pvsel->Size()>1)
-                  break;   //early out here for multi-selected elements, otherwise the value of the last element in the list is assigned to all other elements as well
-            }
-            case CBN_SELCHANGE:
-            case BN_CLICKED:
-            {
-                UpdateProperties(dispID);
-                return TRUE;
-            }
+               case EN_CHANGE:
+               {
+                  m_lastChangedEdit = (HWND)lParam;
+                  break;
+               }
+               //case CBN_KILLFOCUS:
+               case EN_KILLFOCUS:
+               {
+                  //EN_KILLFOCUS is called multiple times with different HWND handles. 
+                  //Early out if the handle for this event isn't matching the handle of the last changed edit box
+                  if(m_lastChangedEdit!=(HWND)lParam)
+                     break;
+               }
+               case CBN_SELCHANGE:
+               case BN_CLICKED:
+               {
+                   UpdateProperties(dispID);
+                   return TRUE;
+               }
             }
         }
         return FALSE;
@@ -70,6 +77,7 @@ protected:
     HWND      m_hOverwritePhysicsCheck;
     HWND      m_hReflectionEnabledCheck;
     HWND      m_hVisibleCheck;
+    HWND      m_lastChangedEdit=0;
 
     CResizer  m_resizer;
 };
