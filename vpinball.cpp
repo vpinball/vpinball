@@ -93,6 +93,7 @@ VPinball::VPinball()
    m_open_minimized = false;
    m_disable_pause_menu = false;
    m_povEdit = false;
+   m_primaryDisplay = false;
    m_disEnableTrueFullscreen = -1;
    m_table_played_via_command_line = false;
    m_logicalNumberOfProcessors = -1;

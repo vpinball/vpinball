@@ -361,9 +361,10 @@ void Player::PreCreate(CREATESTRUCT& cs)
     else if (g_pvp->m_disEnableTrueFullscreen == 1)
         m_fullScreen = true;
 
-    int x, y;
     int display = LoadValueIntWithDefault("Player", "Display", -1);
-    display = (display < getNumberOfDisplays()) ? display : -1;
+    if (display >= getNumberOfDisplays() || g_pvp->m_primaryDisplay)
+        display = -1; // force primary monitor
+    int x, y;
     getDisplaySetupByID(display, x, y, m_screenwidth, m_screenheight);
 
     m_width = LoadValueIntWithDefault("Player", "Width", m_fullScreen ? -1 : DEFAULT_PLAYER_WIDTH);

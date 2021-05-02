@@ -40,7 +40,8 @@ FEATURES:
 
 - add new plunger option: Enable 1s retract
   The plunger will move forth and back between the maximum and minimum position, allowing for a retry, if the desired firing position has been missed.
-  Useful for button/key plunging and is now the new default.
+  Useful for button/key plunging and should become your new default.
+  Note that some few tables may (ab)use a manual plunger for e.g. kickbacks and these can then be fixed by enabling the autoplunger checkbox for that element.
 
 - add Inder/Playmatic trigger mesh
 
@@ -62,6 +63,7 @@ FEATURES:
 
 - add new command line parameter "-PovEdit [filename]" which loads and runs a table in camera mode, then exports a new pov on exit
 - add new command line parameter "-ExtMinimized" to start VP in the 'invisible' minimized window mode, but with enabled Pause Menu
+- add new command line parameter "-Primary" to force VP to render on the Primary/Pixel(0,0) Monitor
 
 FIXES:
 

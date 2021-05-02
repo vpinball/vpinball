@@ -409,7 +409,7 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap, const DWORD env_xres
 
 HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl)
 {
-   const int display = LoadValueIntWithDefault("Player", "Display", 0);
+   const int display = g_pvp->m_primaryDisplay ? 0 : LoadValueIntWithDefault("Player", "Display", 0);
    std::vector<DisplayConfig> displays;
    getDisplayList(displays);
    int adapter = 0;

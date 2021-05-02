@@ -7,11 +7,16 @@
 -EnableTrueFullscreen   Force-enable True Fullscreen setting
 -Minimized              Start VP in the 'invisible' minimized window mode
 -ExtMinimized           Start VP in the 'invisible' minimized window mode, but with enabled Pause Menu
+-Primary                Force VP to render on the Primary/Pixel(0,0) Monitor
+
 -LessCPUthreads         Limit the amount of parallel execution
 
 -Edit [filename]        Load file into VP
 -Play [filename]        Load and play file
+
 -PovEdit [filename]     Load and run file in camera mode, then export new pov on exit
 -Pov [filename]         Load, export pov and close
+
 -ExtractVBS [filename]  Load, export table script and close
+
 -c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)
