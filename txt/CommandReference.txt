@@ -9,6 +9,7 @@ Also see https://docs.orbitalpin.com/welcome for some more detailed help
 
 Changelog:
 10.7:
+- add VideoCapWidth,VideoCapHeight,VideoCapUpdate to the flasher element
 - document missing x,y,z to the target element
 - add GetMaterial to the globals (counterpart to UpdateMaterial)
 - add UpdateMaterialPhysics and GetMaterialPhysics to the globals
@@ -834,6 +835,9 @@ AddBlend(bool) - use additive alpha blending instead of classical alpha blending
 ImageAlignment
 ModulateVsAdd(float) - blends between modulating and additive when bulb is enabled (0..1)
 DMD(bool) - enable DMD image via script connection
+VideoCapWidth(int) - width of the window content to capture
+VideoCapHeight(int) - height of the window content to capture
+VideoCapUpdate(string) - uses the window title of the window content to capture, which is then copied into the flasher texture each time this function is called
 UserValue(any) - can store any user defined value for re-use later-on
 
 

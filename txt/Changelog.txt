@@ -66,6 +66,8 @@ FEATURES:
 - add new command line parameter "-ExtMinimized" to start VP in the 'invisible' minimized window mode, but with enabled Pause Menu
 - add new command line parameter "-Primary" to force VP to render on the Primary/Pixel(0,0) Monitor
 
+- add support for capturing any window content into a flasher texture (intended to be used with PUP content)
+
 FIXES:
 
 - fix issues with 3D Audio setups and backglass sounds (like music)
