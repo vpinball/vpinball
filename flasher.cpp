@@ -23,6 +23,8 @@ Flasher::Flasher()
 
 Flasher::~Flasher()
 {
+   ResetVideoCap();
+
    if (m_dynamicVertexBuffer) {
       m_dynamicVertexBuffer->release();
       m_dynamicVertexBuffer = 0;
@@ -989,6 +991,128 @@ STDMETHODIMP Flasher::put_DMD(VARIANT_BOOL newVal)
    return S_OK;
 }
 
+STDMETHODIMP Flasher::put_VideoCapWidth(long cWidth)
+{
+    if (m_videoCapWidth != cWidth) ResetVideoCap(); //resets capture
+    m_videoCapWidth = cWidth;
+
+    return S_OK;
+}
+
+STDMETHODIMP Flasher::put_VideoCapHeight(long cHeight)
+{
+    if (m_videoCapHeight != cHeight) ResetVideoCap(); //resets capture
+    m_videoCapHeight = cHeight;
+
+    return S_OK;
+}
+
+void Flasher::ResetVideoCap()
+{
+    m_isVideoCap = false;
+    if (m_videoCapTex)
+    {
+      //  g_pplayer->m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetTexture("Texture0", (D3DTexture*)NULL); //!! ??
+        g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.UnloadTexture(m_videoCapTex);
+        delete m_videoCapTex;
+        m_videoCapTex = NULL;
+    }
+}
+
+//if PASSED a blank title then we treat this as STOP capture and free resources.
+STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
+{
+    if (m_videoCapWidth == 0 || m_videoCapHeight == 0) return S_FALSE; //safety.  VideoCapWidth/Height needs to be set prior to this call
+
+    char szWinTitle[MAXNAMEBUFFER];
+    WideCharToMultiByteNull(CP_ACP, 0, cWinTitle, -1, szWinTitle, MAXNAMEBUFFER, NULL, NULL);
+
+    //if PASS blank title then we treat as STOP capture and free resources.  Should be called on table1_exit
+    if (szWinTitle[0] == '\0')
+    {
+        ResetVideoCap();
+        return S_OK;
+    }
+
+    if (m_isVideoCap == false) {  // VideoCap has not started because no sourcewin found
+        m_videoCapHwnd = ::FindWindow(0, szWinTitle);
+        if (m_videoCapHwnd == NULL)
+            return S_FALSE;
+
+        //source videocap found.  lets start!
+        GetClientRect(m_videoCapHwnd, &m_videoSourceRect);
+        ResetVideoCap();
+        m_videoCapTex = new BaseTexture(m_videoCapWidth, m_videoCapHeight, BaseTexture::RGBA, false);
+    }
+
+    // Retrieve the handle to a display device context for the client
+    // area of the window.
+
+    HDC hdcWindow = GetDC(m_videoCapHwnd);
+
+    // Create a compatible DC, which is used in a BitBlt from the window DC.
+    HDC hdcMemDC = CreateCompatibleDC(hdcWindow);
+
+    // Get the client area for size calculation.
+    const int pWidth = m_videoCapWidth;
+    const int pHeight = m_videoCapHeight;
+
+    // Create a compatible bitmap from the Window DC.
+    HBITMAP hbmScreen = CreateCompatibleBitmap(hdcWindow, pWidth, pHeight);
+
+    // Select the compatible bitmap into the compatible memory DC.
+    SelectObject(hdcMemDC, hbmScreen);
+    SetStretchBltMode(hdcMemDC, HALFTONE);
+    // Bit block transfer into our compatible memory DC.
+    m_isVideoCap = StretchBlt(hdcMemDC, 0, 0, pWidth, pHeight, hdcWindow, 0, 0, m_videoSourceRect.right - m_videoSourceRect.left, m_videoSourceRect.bottom - m_videoSourceRect.top, SRCCOPY);
+    if (m_isVideoCap)
+    {
+        // Get the BITMAP from the HBITMAP.
+        BITMAP bmpScreen;
+        GetObject(hbmScreen, sizeof(BITMAP), &bmpScreen);
+
+        BITMAPINFOHEADER bi;
+        bi.biSize = sizeof(BITMAPINFOHEADER);
+        bi.biWidth = bmpScreen.bmWidth;
+        bi.biHeight = -bmpScreen.bmHeight;
+        bi.biPlanes = 1;
+        bi.biBitCount = 32;
+        bi.biCompression = BI_RGB;
+        bi.biSizeImage = 0;
+        bi.biXPelsPerMeter = 0;
+        bi.biYPelsPerMeter = 0;
+        bi.biClrUsed = 0;
+        bi.biClrImportant = 0;
+
+        const DWORD dwBmpSize = ((bmpScreen.bmWidth * bi.biBitCount + 31) / 32) * 4 * bmpScreen.bmHeight;
+
+        HANDLE hDIB = GlobalAlloc(GHND, dwBmpSize);
+        char* lpbitmap = (char*)GlobalLock(hDIB);
+
+        // Gets the "bits" from the bitmap, and copies them into a buffer 
+        // that's pointed to by lpbitmap.
+        GetDIBits(hdcWindow, hbmScreen, 0, (UINT)bmpScreen.bmHeight, lpbitmap, (BITMAPINFO*)&bi, DIB_RGB_COLORS);
+
+        const DWORD* const __restrict pCurrPixel = (DWORD*)lpbitmap;
+        DWORD* const __restrict data = (DWORD*)m_videoCapTex->data();
+
+        //copy bitmap pixels to texture
+        for (int i = 0; i < (pWidth * pHeight); i++) //!! SSE opt.?
+            data[i] = pCurrPixel[i] | 0xFF000000u;
+
+        GlobalUnlock(hDIB);
+        GlobalFree(hDIB);
+
+        g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.SetDirty(m_videoCapTex);
+    }
+
+    ReleaseDC(m_videoCapHwnd, hdcWindow);
+    DeleteObject(hbmScreen);
+    DeleteObject(hdcMemDC);
+
+    return S_OK;
+}
+
 STDMETHODIMP Flasher::get_DepthBias(float *pVal)
 {
    *pVal = m_d.m_depthBias;
@@ -1136,8 +1260,11 @@ void Flasher::RenderDynamic()
        else
            hdrTex0 = false;
 
+       if (m_isVideoCap)
+           hdrTex0 = false;
+
        const vec4 ab((float)m_d.m_filterAmount / 100.0f, min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f), // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
-           hdrTex0 ? 1.f : 0.f, (pinA && pinB && pinB->IsHDR()) ? 1.f : 0.f);
+           hdrTex0 ? 1.f : 0.f, ((pinA || m_isVideoCap) && pinB && pinB->IsHDR()) ? 1.f : 0.f);
        pd3dDevice->flasherShader->SetVector("amount__blend_modulate_vs_add__hdrTexture01", &ab);
 
        pd3dDevice->flasherShader->SetFlasherColorAlpha(color);
@@ -1146,17 +1273,20 @@ void Flasher::RenderDynamic()
        float flasherMode;
        pd3dDevice->flasherShader->SetTechnique("basic_noLight");
 
-       if (pinA && !pinB)
+       if ((pinA || m_isVideoCap) && !pinB)
        {
            flasherMode = 0.f;
-           pd3dDevice->flasherShader->SetTexture("Texture0", pinA, false);
+           if (m_isVideoCap)
+               pd3dDevice->flasherShader->SetTexture("Texture0", g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(m_videoCapTex, false));
+           else
+               pd3dDevice->flasherShader->SetTexture("Texture0", pinA, false);
 
            if (!m_d.m_addBlend)
                flasherData.x = pinA->m_alphaTestValue * (float)(1.0 / 255.0);
 
            //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
        }
-       else if (!pinA && pinB)
+       else if (!(pinA || m_isVideoCap) && pinB)
        {
            flasherMode = 0.f;
            pd3dDevice->flasherShader->SetTexture("Texture0", pinB, false);
@@ -1166,10 +1296,13 @@ void Flasher::RenderDynamic()
 
            //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
        }
-       else if (pinA && pinB)
+       else if ((pinA || m_isVideoCap) && pinB)
        {
            flasherMode = 1.f;
-           pd3dDevice->flasherShader->SetTexture("Texture0", pinA, false);
+           if (m_isVideoCap)
+               pd3dDevice->flasherShader->SetTexture("Texture0", g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(m_videoCapTex, false));
+           else
+               pd3dDevice->flasherShader->SetTexture("Texture0", pinA, false);
            pd3dDevice->flasherShader->SetTexture("Texture1", pinB, false);
 
            if (!m_d.m_addBlend)

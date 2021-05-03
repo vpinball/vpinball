@@ -132,6 +132,8 @@ public:
       m_d.m_filterAmount = max(value,(long)0);
    }
 
+   BaseTexture* GetVideoCap(const std::string& szName);
+
    FlasherData m_d;
 
 private:
@@ -151,6 +153,14 @@ private:
    PropertyPane *m_propVisual;
 
    bool m_dynamicVertexBufferRegenerate;
+
+   void ResetVideoCap();
+   bool m_isVideoCap = false;
+   int m_videoCapWidth = 0;
+   int m_videoCapHeight = 0;
+   RECT m_videoSourceRect;
+   HWND m_videoCapHwnd = NULL;
+   BaseTexture* m_videoCapTex = NULL;
 
 // IFlasher
 public:
@@ -186,6 +196,10 @@ public:
    STDMETHOD(put_AddBlend)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_DMD)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_DMD)(/*[in]*/ VARIANT_BOOL newVal);
+
+   STDMETHOD(put_VideoCapWidth)(/*[in]*/ long cWidth);
+   STDMETHOD(put_VideoCapHeight)(/*[in]*/ long cHeight);
+   STDMETHOD(put_VideoCapUpdate)(/*[in]*/ BSTR cWinTitle);
 
    STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
