@@ -1600,6 +1600,8 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             ShowSubDialog(m_aboutDialog, true);
             return FinalWindowProc(uMsg, wParam, lParam);
         }
+        case UWM_UPDATECOMMAND:
+            return FinalWindowProc(uMsg, wParam, lParam);
     }
     return WndProcDefault(uMsg, wParam, lParam);
 }
