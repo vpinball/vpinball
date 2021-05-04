@@ -5134,7 +5134,7 @@ void PinTable::ExportBlueprint()
    {
    PaintSur psur(hdc2, (float)bmwidth / tablewidth, tablewidth*0.5f, tableheight*0.5f, bmwidth, bmheight, NULL);
 
-   dc.SelectObject(dc.GetStockObject(WHITE_BRUSH));
+   dc.SelectObject(reinterpret_cast<HBRUSH>(dc.GetStockObject(WHITE_BRUSH)));
    dc.PatBlt(0, 0, bmwidth, bmheight, PATCOPY);
 
    if (m_vpinball->m_backglassView)

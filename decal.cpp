@@ -363,9 +363,9 @@ void Decal::PreRenderText()
    /*const HDC hdc =*/ dc.CreateCompatibleDC(NULL);
    const HBITMAP oldBmp = dc.SelectObject(hbm);
 
-   dc.SelectObject(dc.GetStockObject(WHITE_BRUSH));
-
+   dc.SelectObject(reinterpret_cast<HBRUSH>(dc.GetStockObject(WHITE_BRUSH)));
    dc.PatBlt(0, 0, rcOut.right, rcOut.bottom, PATCOPY);
+
    hFontOld = dc.SelectObject(hFont);
 
    dc.SetTextColor(m_d.m_color);
