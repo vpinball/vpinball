@@ -23,8 +23,6 @@ Flasher::Flasher()
 
 Flasher::~Flasher()
 {
-   ResetVideoCap();
-
    if (m_dynamicVertexBuffer) {
       m_dynamicVertexBuffer->release();
       m_dynamicVertexBuffer = 0;
@@ -276,6 +274,8 @@ void Flasher::GetHitShapesDebug(vector<HitObject*> &pvho)
 void Flasher::EndPlay()
 {
    IEditable::EndPlay();
+
+   ResetVideoCap();
 
    if (m_dynamicVertexBuffer)
    {
