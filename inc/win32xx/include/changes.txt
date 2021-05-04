@@ -1,8 +1,117 @@
+Version 8.9
+===========
+
+This version adds support for the Clang compiler, and improves the handling
+of error messages.
+
+Bug fixes:
+- Corrected CRegKey::SetMultiStringValue
+- Corrected CRegKey::SetStringValue
+- Corrected CDC::LoadImage
+- Corrected CDC::GetNearestColor
+- Corrected CMDIFrameT<T>::OnViewStatusBar
+- Corrected CMDIFrameT<T>::OnViewToolBar()
+- CWnd::Close can now be used to close applications with a Ribbon UI.
+
+New Features and Enhancements
+-----------------------------
+* Adds support for the Clang C++ compiler available with Microsoft's
+   Visual Studio Community 2019.
+
+* The error messages displayed when an exception is raised have been moved to
+  CWinApp as a set of virtual member functions. These can be overridden to
+  support other languages if required.
+
+* A CResource exception is now thrown in additional circumstances:
+  - CMenu throws a CResourceException if the menu can't be created.
+  - CImageList throws a CResourceException if the image list can't be created.
+  - CDC throws a CResourceException the selection of a GDI object fails.
+
+* Updated CPrintPreview to support changes to Windows 10.
+
+* The samples demonstrate exception handling in their window procedures.
+   Exceptions that are raised when messages are processed are handled
+   gracefully, and allow the program to continue. Adding exception handling
+   to WndProc and DialogProc also catches exceptions raised in OnCommand,
+   OnNotify, OnDraw etc.
+   
+* Updated the manifests used in the samples.
+   The manifests now use GDI scaling. This provides better support for dual
+   monitors, and monitors with high resolution.
+
+
+Changes in detail
+-----------------
+Added the following set of virtual functions to CWinApp for error messages.
+  CWinApp::MsgAppThreadFailed
+  CWinApp::MsgArReadFail
+  CWinApp::MsgArNotCStringA
+  CWinApp::MsgArNotCStringW
+  CWinApp::MsgCriticalSection
+  CWinApp::MsgMtxEvent
+  CWinApp::MsgMtxMutex
+  CWinApp::MsgMtxSemaphore
+  CWinApp::MsgWndCreateEx
+  CWinApp::MsgWndDoModal
+  CWinApp::MsgWndGlobalLock
+  CWinApp::MsgWndPropertSheet
+  CWinApp::MsgSocWSAStartup
+  CWinApp::MsgSocWS2Dll
+  CWinApp::MsgIPControl
+  CWinApp::MsgRichEditDll
+  CWinApp::MsgTaskDialog
+  CWinApp::MsgFileClose
+  CWinApp::MsgFileFlush
+  CWinApp::MsgFileLock
+  CWinApp::MsgFileOpen
+  CWinApp::MsgFileRead
+  CWinApp::MsgFileRename
+  CWinApp::MsgFileRemove
+  CWinApp::MsgFileLength
+  CWinApp::MsgFileUnlock
+  CWinApp::MsgFileWrite
+  CWinApp::MsgGdiDC
+  CWinApp::MsgGdiIC
+  CWinApp::MsgGdiBitmap
+  CWinApp::MsgGdiBrush
+  CWinApp::MsgGdiFont
+  CWinApp::MsgGdiPalette
+  CWinApp::MsgGdiPen
+  CWinApp::MsgGdiRegion
+  CWinApp::MsgGdiGetDC
+  CWinApp::MsgGdiGetDCEx
+  CWinApp::MsgGdiSelObject
+  CWinApp::MsgGdiGetWinDC
+  CWinApp::MsgGdiBeginPaint
+  CWinApp::MsgImageList
+  CWinApp::MsgMenu
+  CWinApp::MsgPrintFound
+  CWinApp::MsgDDX_Byte
+  CWinApp::MsgDDX_Int
+  CWinApp::MsgDDX_Long
+  CWinApp::MsgDDX_Short
+  CWinApp::MsgDDX_Real
+  CWinApp::MsgDDX_UINT
+  CWinApp::MsgDDX_ULONG
+  CWinApp::MsgDDV_IntRange
+  CWinApp::MsgDDV_UINTRange
+  CWinApp::MsgDDV_RealRange
+  CWinApp::MsgDDV_StringSize
+
+The following functions now throw a CResourceException on failure:
+  CDC::SelectObject
+  CDC::SelectPalette
+  CImageList::Create
+  CImageList::CreateDisabledImageList
+  CMenu::CreateMenu
+  CMenu::CreatePopupMenu
+
+
 Version 8.8
 ===========
 
-This version adds the BrowserATL, MovieShow and WinPlot samples. It also adds support
-for Code::Blocks version 20.03.
+This version adds the BrowserATL, MovieShow and WinPlot samples. It also adds
+support for Code::Blocks version 20.03.
 
 Bug Fixes:
 - Corrected the definition of CEventSink in the Browser sample.
@@ -32,7 +141,7 @@ New Features and Enhancements
    It does the same thing as the Browser sample, except that it uses ATL.
 
 * Extended the Toolbar sample.
-   The toobar sample now demonstrates how to add additional toolbars to the
+   The toolbar sample now demonstrates how to add additional toolbars to the
    frame. It continues to demonstrate how to customise a toolbar in runtime,
    and how to add a horizontal or vertical toolbar to the frame's view.
 
@@ -70,13 +179,13 @@ Added BrowserATL                                   sample
 Added MovieShow                                    sample
 Added WinPlot                                      sample
 
-Added CDC::AbortPath                               member function  
+Added CDC::AbortPath                               member function
 Added CDC::CreatePointFont                         member function
 Added CDC::CreatePointFontIndirect                 member function
-Added CDC::CreateRgnFromData                       member function                     
+Added CDC::CreateRgnFromData                       member function
 Added CDC::CreateRgnFromPath                       member function
 Added CDC::CreateRoundRectRgn                      member function
-Added CDC::ExtCreatePen                            member function             
+Added CDC::ExtCreatePen                            member function
 Added CDC::StrokePath                              member function
 Added CDC::StrokeAndFillPath                       member function
 Added CFrameT::AddMenuIcon (additional overload)   member function

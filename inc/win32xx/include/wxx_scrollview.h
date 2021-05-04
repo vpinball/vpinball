@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -63,6 +63,10 @@
 
 #ifndef GET_WHEEL_DELTA_WPARAM
   #define GET_WHEEL_DELTA_WPARAM(wparam)  ((short)HIWORD(wparam))
+#endif
+
+#ifndef WM_MOUSEWHEEL
+  #define WM_MOUSEWHEEL                   0x020A
 #endif
 
 namespace Win32xx
@@ -143,7 +147,7 @@ namespace Win32xx
     {
         // Get the window size in client area co-ordinates
         CRect windowRect = GetWindowRect();
-        ScreenToClient(windowRect);
+        VERIFY(ScreenToClient(windowRect));
 
         // Fill the right side with the specified brush
         CRect rcRight(m_totalSize.cx, 0, windowRect.right, windowRect.bottom);
@@ -210,7 +214,7 @@ namespace Win32xx
 
         // Scroll the window
         int deltaX = newPos.x - m_currentPos.x;
-        ScrollWindowEx(-deltaX, 0, NULL, NULL, NULL, NULL, SW_INVALIDATE);
+        ScrollWindowEx(-deltaX, 0, NULL, NULL, 0, NULL, SW_INVALIDATE);
         SetScrollPosition(newPos);
 
         return 0;
@@ -276,7 +280,7 @@ namespace Win32xx
             // Scroll the window.
             int deltaX = newPos.x - m_currentPos.x;
             int deltaY = newPos.y - m_currentPos.y;
-            ScrollWindowEx(-deltaX, -deltaY, NULL, NULL, NULL, NULL, SW_INVALIDATE);
+            ScrollWindowEx(-deltaX, -deltaY, NULL, NULL, 0, NULL, SW_INVALIDATE);
             SetScrollPosition(newPos);
         }
 
@@ -336,7 +340,7 @@ namespace Win32xx
 
         // Scroll the window.
         int deltaY = newPos.y - m_currentPos.y;
-        ScrollWindowEx(0, -deltaY, NULL, NULL, NULL, NULL, SW_INVALIDATE);
+        ScrollWindowEx(0, -deltaY, NULL, NULL, 0, NULL, SW_INVALIDATE);
         SetScrollPosition(newPos);
 
         return 0;
@@ -387,7 +391,7 @@ namespace Win32xx
 
         // Scroll the window.
         int deltaY = newPos.y - m_currentPos.y;
-        ScrollWindowEx(0, -deltaY, NULL, NULL, NULL, NULL, SW_INVALIDATE);
+        ScrollWindowEx(0, -deltaY, NULL, NULL, 0, NULL, SW_INVALIDATE);
         SetScrollPosition(newPos);
 
         return 0;
@@ -561,7 +565,7 @@ namespace Win32xx
                 int yNewPos = MIN(m_currentPos.y, totalRect.Height() - viewRect.Height() + cyScroll);
                 yNewPos = MAX(yNewPos, 0);
                 int yDelta = yNewPos - m_currentPos.y;
-                ScrollWindowEx(-xDelta, -yDelta, NULL, NULL, NULL, NULL, SW_INVALIDATE);
+                ScrollWindowEx(-xDelta, -yDelta, NULL, NULL, 0, NULL, SW_INVALIDATE);
 
                 m_currentPos.x = xNewPos;
                 m_currentPos.y = yNewPos;

@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -78,7 +78,7 @@ namespace Win32xx
         void operator = (const HIMAGELIST rhs);
         virtual ~CImageList();
 
-        //Initialization
+        // Initialization
         BOOL Create(int cx, int cy, UINT flags, int initial, int grow);
         BOOL Create(UINT bitmapID, int cx, int grow, COLORREF mask);
         BOOL Create(LPCTSTR pBitmapID, int cx, int grow, COLORREF mask);
@@ -88,7 +88,7 @@ namespace Win32xx
         BOOL CreateDisabledImageList(HIMAGELIST normalImages);
 #endif
 
-        //Operations
+        // Operations
         int Add(HBITMAP bitmap, HBITMAP mask) const;
         int Add(HBITMAP bitmap, COLORREF mask) const;
         int Add(HICON icon) const;
@@ -113,7 +113,7 @@ namespace Win32xx
         int Replace(int image, HICON icon) const;
         BOOL Write(LPSTREAM pStream) const;
 
-        //Attributes
+        // Attributes
         COLORREF GetBkColor() const;
         HIMAGELIST GetDragImage(POINT* pPoint, POINT* pHotspot) const;
         HIMAGELIST GetHandle() const;
@@ -124,7 +124,7 @@ namespace Win32xx
         COLORREF SetBkColor(COLORREF bckgnd) const;
         BOOL SetDragCursorImage(int drag, int dxHotspot, int dyHotspot) const;
 
-        //Operators
+        // Operators
         operator HIMAGELIST () const;
 
     private:
@@ -185,7 +185,6 @@ namespace Win32xx
     // Store the HIMAGELIST and CImageList pointer in the HIMAGELIST map
     inline void CImageList::AddToMap() const
     {
-        assert( GetApp() );
         assert(m_pData->images);
 
         GetApp()->AddCImlData(m_pData->images, m_pData);
@@ -195,12 +194,12 @@ namespace Win32xx
     {
         BOOL success = FALSE;
 
-        if ( GetApp() )
+        CWinApp* pApp = CWinApp::SetnGetThis();
+        if (pApp != NULL)          // Is the CWinApp object still valid?
         {
             // Allocate an iterator for our CImageList data
             std::map<HIMAGELIST, CIml_Data*, CompareHIMAGELIST>::iterator m;
 
-            CWinApp* pApp = GetApp();
             CThreadLock mapLock(pApp->m_wndLock);
             m = pApp->m_mapCImlData.find(m_pData->images);
             if (m != pApp->m_mapCImlData.end())
@@ -216,12 +215,11 @@ namespace Win32xx
     }
 
     // Adds an image or images to an image list, generating a mask from the specified bitmap.
-    // The mask parameter can be NULL.
+    // The mask parameter can be 0.
     // Refer to ImageList_Add in the Windows API documentation for more information.
     inline int CImageList::Add(HBITMAP bitmap, HBITMAP mask) const
     {
         assert(m_pData);
-        if (!m_pData) return 0;
 
         assert (m_pData->images);
         return ImageList_Add(m_pData->images, bitmap, mask );
@@ -232,7 +230,6 @@ namespace Win32xx
     inline int CImageList::Add(HBITMAP bitmap, COLORREF mask) const
     {
         assert(m_pData);
-        if (!m_pData) return 0;
 
         assert (m_pData->images);
         return ImageList_AddMasked(m_pData->images, bitmap, mask);
@@ -243,7 +240,6 @@ namespace Win32xx
     inline int CImageList::Add(HICON icon) const
     {
         assert(m_pData);
-        if (!m_pData) return 0;
 
         assert (m_pData->images);
 
@@ -263,7 +259,6 @@ namespace Win32xx
     inline void CImageList::Attach(HIMAGELIST images)
     {
         assert(m_pData);
-        if (!m_pData) return;
 
         if (images != m_pData->images)
         {
@@ -298,7 +293,6 @@ namespace Win32xx
     inline BOOL CImageList::BeginDrag(int image, CPoint hotSpot) const
     {
         assert(m_pData);
-        if (!m_pData) return FALSE;
 
         assert(m_pData->images);
         return ImageList_BeginDrag(m_pData->images, image, hotSpot.x, hotSpot.y);
@@ -310,7 +304,6 @@ namespace Win32xx
     inline BOOL CImageList::Copy(int Dest, int Src, UINT flags /*= ILCF_MOVE*/) const
     {
         assert(m_pData);
-        if (!m_pData) return FALSE;
 
         assert(m_pData->images);
         return ImageList_Copy(*this, Dest, *this, Src, flags);
@@ -334,11 +327,11 @@ namespace Win32xx
 
         HIMAGELIST images = ImageList_Create(cx, cy, flags, initial, grow);
 
-        if (images)
-        {
-            Attach(images);
-            m_pData->isManagedHiml = TRUE;
-        }
+        if (images == 0)
+            throw CResourceException(GetApp()->MsgImageList());
+
+        Attach(images);
+        m_pData->isManagedHiml = true;
 
         return (images != 0 );
     }
@@ -369,12 +362,11 @@ namespace Win32xx
         assert(m_pData);
 
         HIMAGELIST images = ImageList_LoadBitmap(GetApp()->GetInstanceHandle(), pResourceName, cx, grow, mask);
+        if (images == 0)
+            throw CResourceException(GetApp()->MsgImageList());
 
-        if (images)
-        {
-            Attach(images);
-            m_pData->isManagedHiml = TRUE;
-        }
+        Attach(images);
+        m_pData->isManagedHiml = true;
 
         return (images != 0 );
     }
@@ -384,15 +376,13 @@ namespace Win32xx
     inline BOOL CImageList::Create(HIMAGELIST images)
     {
         assert(m_pData);
-        if (!m_pData) return FALSE;
 
         HIMAGELIST copyImages = ImageList_Duplicate(images);
+        if (copyImages == 0)
+            throw CResourceException(GetApp()->MsgImageList());
 
-        if (copyImages)
-        {
-            Attach(copyImages);
-            m_pData->isManagedHiml = TRUE;
-        }
+        Attach(copyImages);
+        m_pData->isManagedHiml = true;
 
         return (copyImages != 0 );
     }
@@ -401,7 +391,6 @@ namespace Win32xx
     inline void CImageList::DeleteImageList()
     {
         assert(m_pData);
-        if (!m_pData) return;
 
         if (m_pData->images != 0)
         {
@@ -415,11 +404,11 @@ namespace Win32xx
     inline HIMAGELIST CImageList::Detach()
     {
         assert(m_pData);
-        if (!m_pData) return 0;
 
         HIMAGELIST images = m_pData->images;
         RemoveFromMap();
         m_pData->images = 0;
+        m_pData->isManagedHiml = false;
 
         if (m_pData->count > 0)
         {
@@ -588,7 +577,7 @@ namespace Win32xx
 
         if (images)
         {
-            m_pData->isManagedHiml = TRUE;
+            m_pData->isManagedHiml = true;
             Attach(images);
         }
     }
@@ -641,7 +630,6 @@ namespace Win32xx
     inline BOOL CImageList::SetDragCursorImage(int drag, int dxHotspot, int dyHotspot) const
     {
         assert(m_pData->images);
-        if (!m_pData) return FALSE;
 
         return ImageList_SetDragCursorImage(*this, drag, dxHotspot, dyHotspot);
     }
@@ -652,14 +640,15 @@ namespace Win32xx
         return m_pData->images;
     }
 
+    // Decrements the reference count.
+    // Destroys m_pData if the reference count is zero.
     inline void CImageList::Release()
     {
         assert(m_pData);
-        if (!m_pData) return;
 
         if (InterlockedDecrement(&m_pData->count) == 0)
         {
-            if (m_pData->images != NULL)
+            if (m_pData->images != 0)
             {
                 if (m_pData->isManagedHiml)
                 {
@@ -680,7 +669,7 @@ namespace Win32xx
     // Creates a gray scale image list from the specified color image list.
     inline BOOL CImageList::CreateDisabledImageList(HIMAGELIST normalImages)
     {
-        assert(NULL == m_pData->images);
+        assert(0 == m_pData->images);
         assert(normalImages);
 
         int count = ImageList_GetImageCount(normalImages);
@@ -695,8 +684,8 @@ namespace Win32xx
             // Process each image in the ImageList
             for (int i = 0 ; i < count; ++i)
             {
-                CClientDC DesktopDC(NULL);
-                CMemDC memDC(NULL);
+                CClientDC DesktopDC(0);
+                CMemDC memDC(0);
                 memDC.CreateCompatibleBitmap(DesktopDC, cx, cx);
                 CRect rc;
                 rc.SetRect(0, 0, cx, cx);

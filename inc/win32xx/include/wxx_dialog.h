@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -74,10 +74,10 @@
     #define SWP_NOCOPYBITS      0x0100
 #endif
 
-#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+#if defined (_MSC_VER) && (_MSC_VER >= 1920)   // >= VS2019
 #pragma warning ( push )
-#pragma warning ( disable : 26812 )       // enum type is unscoped.
-#endif // (_MSC_VER) && (_MSC_VER >= 1400)
+#pragma warning ( disable : 26812 )            // enum type is unscoped.
+#endif // (_MSC_VER) && (_MSC_VER >= 1920)
 
 namespace Win32xx
 {
@@ -229,14 +229,14 @@ namespace Win32xx
     // Definitions for the CDialog class
     //
 
-    inline CDialog::CDialog(LPCTSTR pResName) : m_isModal(TRUE),
+    inline CDialog::CDialog(LPCTSTR pResName) : m_isModal(FALSE),
                         m_pResName(pResName), m_pDlgTemplate(NULL)
     {
         // Initialize the common controls.
         LoadCommonControls();
     }
 
-    inline CDialog::CDialog(UINT resID) : m_isModal(TRUE),
+    inline CDialog::CDialog(UINT resID) : m_isModal(FALSE),
                         m_pResName(MAKEINTRESOURCE (resID)), m_pDlgTemplate(NULL)
     {
         // Initialize the common controls.
@@ -244,7 +244,7 @@ namespace Win32xx
     }
 
     // Constructor for indirect dialogs, created from a dialog box template in memory.
-    inline CDialog::CDialog(LPCDLGTEMPLATE pDlgTemplate) : m_isModal(TRUE),
+    inline CDialog::CDialog(LPCDLGTEMPLATE pDlgTemplate) : m_isModal(FALSE),
                         m_pResName(NULL), m_pDlgTemplate(pDlgTemplate)
     {
         // Initialize the common controls.
@@ -258,7 +258,19 @@ namespace Win32xx
             if (IsModal())
                 ::EndDialog(GetHwnd(), 0);
             else
-                Destroy();
+            {
+                CWinApp* pApp = CWinApp::SetnGetThis();
+                if (pApp != NULL)          // Is the CWinApp object still valid?
+                {
+                    if (GetCWndPtr(*this) == this)  // Is window managed by Win32++?
+                    {
+                        if (IsWindow())
+                            ::DestroyWindow(*this);
+                    }
+
+                    RemoveFromMap();
+                }
+            }
         }
     }
 
@@ -432,7 +444,6 @@ namespace Win32xx
     // Refer to DialogBox and DialogBoxIndirect in the Windows API documentation for more information.
     inline INT_PTR CDialog::DoModal(HWND parent /* = 0 */)
     {
-        assert( GetApp() );        // Test if Win32++ has been started
         assert(!IsWindow());        // Only one window per CWnd instance allowed
         assert(m_pDlgTemplate || m_pResName);  // Dialog layout must be defined.
 
@@ -444,9 +455,9 @@ namespace Win32xx
         TLSData* pTLSData = GetApp()->SetTlsData();
 
     #ifndef _WIN32_WCE
-        if (NULL == pTLSData->msgHook )
+        if (0 == pTLSData->msgHook )
         {
-            pTLSData->msgHook = ::SetWindowsHookEx(WH_MSGFILTER, (HOOKPROC)StaticMsgHook, NULL, ::GetCurrentThreadId());
+            pTLSData->msgHook = ::SetWindowsHookEx(WH_MSGFILTER, (HOOKPROC)StaticMsgHook, 0, ::GetCurrentThreadId());
         }
         InterlockedIncrement(&pTLSData->dlgHooks);
     #endif
@@ -473,7 +484,7 @@ namespace Win32xx
         if (pTLSData->dlgHooks == 0)
         {
             ::UnhookWindowsHookEx(pTLSData->msgHook);
-            pTLSData->msgHook = NULL;
+            pTLSData->msgHook = 0;
         }
 
     #endif
@@ -481,7 +492,7 @@ namespace Win32xx
         // Throw an exception if the dialog creation fails
         if (result == -1)
         {
-            throw CWinException(g_msgWndDoModal);
+            throw CWinException(GetApp()->MsgWndDialog());
         }
 
         return result;
@@ -491,8 +502,6 @@ namespace Win32xx
     // Refer to CreateDialog and CreateDialogIndirect in the Windows API documentation for more information.
     inline HWND CDialog::DoModeless(HWND parent /* = 0 */)
     {
-        assert( GetApp() );        // Test if Win32++ has been started
-        assert(!IsWindow());        // Only one window per CWnd instance allowed
         assert(m_pDlgTemplate || m_pResName);  // Dialog layout must be defined.
 
         m_isModal=FALSE;
@@ -524,7 +533,7 @@ namespace Win32xx
         // Display information on dialog creation failure
         if (wnd == 0)
         {
-            throw CWinException(g_msgWndDoModal);
+            throw CWinException(GetApp()->MsgWndDialog());
         }
 
         return wnd;
@@ -583,7 +592,7 @@ namespace Win32xx
             if (!IsModal())
             {
                 TLSData* pTLSData = GetApp()->GetTlsData();
-                if (NULL == pTLSData->msgHook)
+                if (0 == pTLSData->msgHook)
                 {
                     if (IsDialogMessage(msg))
                         return TRUE;
@@ -662,14 +671,11 @@ namespace Win32xx
         {
             // The HWND wasn't in the map, so add it now
             TLSData* pTLSData = GetApp()->GetTlsData();
-            assert(pTLSData);
-
             if (pTLSData)
             {
 
                 // Retrieve pointer to CWnd object from Thread Local Storage TLS
                 pDialog = static_cast<CDialog*>(pTLSData->pWnd);
-                assert(pDialog);
                 if (pDialog)
                 {
                     pTLSData->pWnd = NULL;
@@ -679,6 +685,14 @@ namespace Win32xx
                     pDialog->AddToMap();
                 }
             }
+        }
+
+        if (pDialog == 0)
+        {
+            // Got a message for a window thats not in the map.
+            // We should never get here.
+            TRACE("*** Warning in CDialog::StaticDialogProc: HWND not in window map ***\n");
+            return 0;
         }
 
         return pDialog->DialogProc(msg, wparam, lparam);
@@ -691,7 +705,6 @@ namespace Win32xx
     // Used by Modal Dialogs for idle processing and PreTranslateMessage.
     inline LRESULT CALLBACK CDialog::StaticMsgHook(int code, WPARAM wparam, LPARAM lparam)
     {
-        TLSData* pTLSData = GetApp()->GetTlsData();
         MSG msg;
         ZeroMemory(&msg, sizeof(msg));
         LONG count = 0;
@@ -711,19 +724,17 @@ namespace Win32xx
         if (code == MSGF_DIALOGBOX)
         {
             MSG* pMsg = reinterpret_cast<MSG*>(lparam);
-            assert(pMsg);
 
             // only pre-translate keyboard and mouse events
             if (pMsg && ((pMsg->message >= WM_KEYFIRST && pMsg->message <= WM_KEYLAST) ||
                 (pMsg->message >= WM_MOUSEFIRST && pMsg->message <= WM_MOUSELAST)))
             {
-                for (HWND wnd = pMsg->hwnd; wnd != NULL; wnd = ::GetParent(wnd))
+                for (HWND wnd = pMsg->hwnd; wnd != 0; wnd = ::GetParent(wnd))
                 {
                     // Only CDialogs respond to this message
                     CDialog* pDialog = reinterpret_cast<CDialog*>(::SendMessage(wnd, UWM_GETCDIALOG, 0, 0));
                     if (pDialog != 0)
                     {
-                        assert(GetCWndPtr(wnd));
                         if (pDialog->PreTranslateMessage(*pMsg))
                             return 1; // Eat the message
 
@@ -731,6 +742,15 @@ namespace Win32xx
                     }
                 }
             }
+        }
+
+        TLSData* pTLSData = GetApp()->GetTlsData();
+        if (pTLSData == 0)
+        {
+            // Thread Local Storage data isn't assigned.
+            // We should never get here.
+            TRACE("*** Warning in CDialog::StaticMsgHook: TLS not assigned ***\n");
+            return 0;
         }
 
         return ::CallNextHookEx(pTLSData->msgHook, code, wparam, lparam);
@@ -773,8 +793,8 @@ namespace Win32xx
         rd.isFixedWidth  = !(style & RD_STRETCH_WIDTH);
         rd.isFixedHeight = !(style & RD_STRETCH_HEIGHT);
         CRect initRect;
-        ::GetWindowRect(wnd, &initRect);
-        ::MapWindowPoints(NULL, m_parent, (LPPOINT)&initRect, 2);
+        VERIFY(::GetWindowRect(wnd, &initRect));
+        ::MapWindowPoints(0, m_parent, (LPPOINT)&initRect, 2);
         rd.initRect = initRect;
         rd.wnd = wnd;
 
@@ -838,7 +858,7 @@ namespace Win32xx
         assert (::IsWindow(parent));
 
         m_parent = parent;
-        VERIFY(::GetClientRect(parent, &m_initRect) != 0);
+        VERIFY(::GetClientRect(parent, &m_initRect));
 
         m_minRect = minRect;
         m_maxRect = maxRect;
@@ -900,11 +920,11 @@ namespace Win32xx
         // Scroll the window.
         xNewPos = MAX(0, xNewPos);
         CRect rc;
-        VERIFY(::GetClientRect(m_parent, &rc) != 0);
+        VERIFY(::GetClientRect(m_parent, &rc));
         xNewPos = MIN( xNewPos, GetMinRect().Width() - rc.Width() );
         int xDelta = xNewPos - m_xScrollPos;
         m_xScrollPos = xNewPos;
-        ::ScrollWindow(m_parent, -xDelta, 0, NULL, NULL);
+        VERIFY(::ScrollWindow(m_parent, -xDelta, 0, NULL, NULL));
 
         // Reset the scroll bar.
         SCROLLINFO si;
@@ -961,11 +981,11 @@ namespace Win32xx
         // Scroll the window.
         yNewPos = MAX(0, yNewPos);
         CRect rc;
-        VERIFY(::GetClientRect(m_parent, &rc) != 0);
+        VERIFY(::GetClientRect(m_parent, &rc));
         yNewPos = MIN( yNewPos, GetMinRect().Height() - rc.Height() );
         int yDelta = yNewPos - m_yScrollPos;
         m_yScrollPos = yNewPos;
-        ::ScrollWindow(m_parent, 0, -yDelta, NULL, NULL);
+        VERIFY(::ScrollWindow(m_parent, 0, -yDelta, NULL, NULL));
 
         // Reset the scroll bar.
         SCROLLINFO si;
@@ -984,7 +1004,7 @@ namespace Win32xx
         assert (::IsWindow(m_parent));
 
         CRect currentRect;
-        VERIFY(::GetClientRect(m_parent, &currentRect) != 0);
+        VERIFY(::GetClientRect(m_parent, &currentRect));
 
         // Adjust the scrolling if required
         m_xScrollPos = MIN(m_xScrollPos, MAX(0, m_minRect.Width()  - currentRect.Width() ) );
@@ -1004,7 +1024,7 @@ namespace Win32xx
 
         // Note: calls to SetScrollInfo may have changed the client rect, so
         // we get it again.
-        VERIFY(::GetClientRect(m_parent, &currentRect) != 0);
+        VERIFY(::GetClientRect(m_parent, &currentRect));
 
         currentRect.right  = MAX(currentRect.Width(),  m_minRect.Width() );
         currentRect.bottom = MAX(currentRect.Height(), m_minRect.Height() );
@@ -1094,7 +1114,7 @@ namespace Win32xx
                 //       they are specified in the resource script (resource.rc).
 
                 // Store the window's new position. Repositioning happens later.
-                hdwp = ::DeferWindowPos(hdwp, (*iter).wnd, NULL, rc.left, rc.top, rc.Width(), rc.Height(), SWP_NOZORDER|SWP_NOCOPYBITS);
+                hdwp = ::DeferWindowPos(hdwp, (*iter).wnd, 0, rc.left, rc.top, rc.Width(), rc.Height(), SWP_NOZORDER|SWP_NOCOPYBITS);
 
                 (*iter).oldRect = rc;
             }
@@ -1102,16 +1122,16 @@ namespace Win32xx
         }
 
         // Reposition all the child windows simultaneously.
-        VERIFY(::EndDeferWindowPos(hdwp) != 0);
+        VERIFY(::EndDeferWindowPos(hdwp));
     }
 
 #endif // #ifndef _WIN32_WCE
 
 } // namespace Win32xx
 
-#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+#if defined (_MSC_VER) && (_MSC_VER >= 1920)
 #pragma warning ( pop )
-#endif // (_MSC_VER) && (_MSC_VER >= 1400)
+#endif // (_MSC_VER) && (_MSC_VER >= 1920)
 
 #endif // _WIN32XX_DIALOG_H_
 

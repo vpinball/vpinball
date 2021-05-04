@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -71,31 +71,31 @@ namespace Win32xx
         virtual ~CFile();
         operator HANDLE() const;
 
-        virtual void Close();
-        virtual void Flush();
-        virtual CString GetFileDirectory() const;
-        virtual const CString& GetFileName() const;
-        virtual CString GetFileNameExt() const;
-        virtual CString GetFileNameWOExt() const;
-        virtual const CString& GetFilePath() const;
-        virtual CString GetFileTitle() const;
+        void Close();
+        void Flush();
+        CString GetFileDirectory() const;
+        const CString& GetFileName() const;
+        CString GetFileNameExt() const;
+        CString GetFileNameWOExt() const;
+        const CString& GetFilePath() const;
+        CString GetFileTitle() const;
         HANDLE GetHandle() const;
-        virtual ULONGLONG GetLength() const;
-        virtual ULONGLONG GetPosition() const;
-        virtual void Open(LPCTSTR pFileName, UINT openFlags);
-        virtual UINT Read(void* pBuf, UINT count);
-        virtual void Remove(LPCTSTR pFileName);
-        virtual void Rename(LPCTSTR pOldName, LPCTSTR pNewName);
-        virtual ULONGLONG Seek(LONGLONG seekTo, UINT method);
-        virtual void SeekToBegin();
-        virtual ULONGLONG SeekToEnd();
-        virtual void SetLength(ULONGLONG length);
-        virtual void Write(const void* pBuf, UINT count);
+        ULONGLONG GetLength() const;
+        ULONGLONG GetPosition() const;
+        void Open(LPCTSTR pFileName, UINT openFlags);
+        UINT Read(void* pBuf, UINT count);
+        void Remove(LPCTSTR pFileName);
+        void Rename(LPCTSTR pOldName, LPCTSTR pNewName);
+        ULONGLONG Seek(LONGLONG seekTo, UINT method);
+        void SeekToBegin();
+        ULONGLONG SeekToEnd();
+        void SetLength(ULONGLONG length);
+        void Write(const void* pBuf, UINT count);
 
 #ifndef _WIN32_WCE
-        virtual void LockRange(ULONGLONG pos, ULONGLONG count);
-        virtual void SetFilePath(LPCTSTR pFileName);
-        virtual void UnlockRange(ULONGLONG pos, ULONGLONG count);
+        void LockRange(ULONGLONG pos, ULONGLONG count);
+        void SetFilePath(LPCTSTR pFileName);
+        void UnlockRange(ULONGLONG pos, ULONGLONG count);
 #endif
 
     private:
@@ -142,7 +142,7 @@ namespace Win32xx
     inline CFile::~CFile()
     {
         if (m_file != INVALID_HANDLE_VALUE)
-            VERIFY(::CloseHandle(m_file));
+            ::CloseHandle(m_file);
     }
 
     inline CFile::operator HANDLE() const
@@ -162,7 +162,7 @@ namespace Win32xx
             if (!::CloseHandle(m_file))
             {
                 m_file = INVALID_HANDLE_VALUE;
-                throw CFileException(GetFilePath(), g_msgFileClose);
+                throw CFileException(GetFilePath(), GetApp()->MsgFileClose());
             }
         }
 
@@ -175,7 +175,7 @@ namespace Win32xx
     {
         assert(m_file != INVALID_HANDLE_VALUE);
         if ( !::FlushFileBuffers(m_file))
-            throw CFileException(GetFilePath(), g_msgFileFlush);
+            throw CFileException(GetFilePath(), GetApp()->MsgFileFlush());
     }
 
     // Returns the file handle associated with this object.
@@ -288,7 +288,7 @@ namespace Win32xx
         DWORD countLow = static_cast<DWORD>(count & 0xFFFFFFFF);
 
         if (!::LockFile(m_file, posLow, posHigh, countLow, countHigh))
-            throw CFileException(GetFilePath(), g_msgFileLock);
+            throw CFileException(GetFilePath(), GetApp()->MsgFileLock());
     }
 
 #endif
@@ -339,11 +339,11 @@ namespace Win32xx
         if (create & OPEN_ALWAYS) openFlags = OPEN_ALWAYS;
         if (create == 0) create = OPEN_EXISTING;
 
-        m_file = ::CreateFile(pFileName, access, share, NULL, create, FILE_ATTRIBUTE_NORMAL, NULL);
+        m_file = ::CreateFile(pFileName, access, share, NULL, create, FILE_ATTRIBUTE_NORMAL, 0);
 
         if (INVALID_HANDLE_VALUE == m_file)
         {
-            throw CFileException(pFileName, g_msgFileOpen);
+            throw CFileException(pFileName, GetApp()->MsgFileOpen());
         }
 
 #ifndef _WIN32_WCE
@@ -367,7 +367,7 @@ namespace Win32xx
         DWORD read = 0;
 
         if (!::ReadFile(m_file, pBuf, count, &read, NULL))
-            throw CFileException(GetFilePath(), g_msgFileRead);
+            throw CFileException(GetFilePath(), GetApp()->MsgFileRead());
 
         return read;
     }
@@ -377,7 +377,7 @@ namespace Win32xx
     inline void CFile::Rename(LPCTSTR pOldName, LPCTSTR pNewName)
     {
         if (!::MoveFile(pOldName, pNewName))
-            throw CFileException(pOldName, g_msgFileRename);
+            throw CFileException(pOldName, GetApp()->MsgFileRename());
     }
 
     // Deletes the specified file.
@@ -385,7 +385,7 @@ namespace Win32xx
     inline void CFile::Remove(LPCTSTR pFileName)
     {
         if (!::DeleteFile(pFileName))
-            throw CFileException(pFileName, g_msgFileRemove);
+            throw CFileException(pFileName, GetApp()->MsgFileRemove());
     }
 
     // Positions the current file pointer.
@@ -396,8 +396,8 @@ namespace Win32xx
         assert(m_file != INVALID_HANDLE_VALUE);
         assert(method == FILE_BEGIN || method == FILE_CURRENT || method == FILE_END);
 
-        LONG high = LONG(seekTo >> 32);
-        LONG low = (LONG)(seekTo & 0xFFFFFFFF);
+        LONG high = static_cast<LONG>(seekTo >> 32);
+        LONG low  = static_cast<LONG>(seekTo & 0xFFFFFFFF);
 
         DWORD lowPos = SetFilePointer(m_file, low, &high, method);
 
@@ -455,7 +455,7 @@ namespace Win32xx
 
         Seek(length, FILE_BEGIN);
         if (!::SetEndOfFile(m_file))
-            throw CFileException(GetFilePath(), g_msgFileLength);
+            throw CFileException(GetFilePath(), GetApp()->MsgFileLength());
     }
 
 #ifndef _WIN32_WCE
@@ -472,7 +472,7 @@ namespace Win32xx
         DWORD countLow = static_cast<DWORD>(count & 0xFFFFFFFF);
 
         if (!::UnlockFile(m_file, posLow, posHigh, countLow, countHigh))
-            throw CFileException(GetFilePath(), g_msgFileUnlock);
+            throw CFileException(GetFilePath(), GetApp()->MsgFileUnlock());
     }
 
 #endif
@@ -489,10 +489,10 @@ namespace Win32xx
         assert(pBuf);
         DWORD written = 0;
         if (!::WriteFile(m_file, pBuf, count, &written, NULL))
-            throw CFileException(GetFilePath(), g_msgFileWrite);
+            throw CFileException(GetFilePath(), GetApp()->MsgFileWrite());
 
         if (written != count)
-            throw CFileException(GetFilePath(), g_msgFileWrite);
+            throw CFileException(GetFilePath(), GetApp()->MsgFileWrite());
     }
 
 

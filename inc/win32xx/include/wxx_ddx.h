@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -69,7 +69,6 @@
 
 #include <float.h>
 #include <iomanip>
-#include "wxx_cstring.h"
 #include "wxx_wincore0.h"
 #include "wxx_exception.h"
 
@@ -123,7 +122,7 @@ namespace Win32xx
         virtual void DDV_MinMaxUInt(UINT value, UINT min, UINT max) const;
         virtual void DDV_MinMaxULong(ULONG value, ULONG min, ULONG max) const;
 
-        // DDX Initialisation
+        // DDX Initialization
         virtual void DDX_Control(int id, CWnd& control);
 
         // Dialog Data eXchange (DDX) functions
@@ -244,11 +243,11 @@ namespace Win32xx
         if (m_retrieveAndValidate && value.GetLength() > count)
         {
             CString message;
-            message.Format(g_msgDDV_StringSize, value.c_str(), count);
+            message.Format(GetApp()->MsgDDV_StringSize(), value.c_str(), count);
 
             throw CUserException(message);
         }
-        else if (m_lastControl != NULL && m_isEditLastControl)
+        else if (m_lastControl != 0 && m_isEditLastControl)
         {
             // limit the control max-chars automatically
             ::SendMessage(m_lastControl, EM_LIMITTEXT, (WPARAM)count, 0);
@@ -321,7 +320,7 @@ namespace Win32xx
         // Throw includes an error message with the range tuple when
         // reading a number outside the range.
         CString message;
-        message.Format(g_msgDDV_RealRange, precision, min, precision, max);
+        message.Format(GetApp()->MsgDDV_RealRange(), precision, min, precision, max);
 
         throw CUserException(message);
     }
@@ -360,7 +359,7 @@ namespace Win32xx
         // Throw includes an error message with the range tuple when
         // reading a number outside the range.
         CString message;
-        message.Format(g_msgDDV_IntRange, min, max);
+        message.Format(GetApp()->MsgDDV_IntRange(), min, max);
 
         throw CUserException(message);
     }
@@ -467,7 +466,7 @@ namespace Win32xx
         // Throw includes an error message with the range tuple when
         // reading a number outside the range.
         CString message;
-        message.Format(g_msgDDV_UINTRange, min, max);
+        message.Format(GetApp()->MsgDDV_UINTRange(), min, max);
 
         throw CUserException(message);
     }
@@ -805,7 +804,7 @@ namespace Win32xx
         // traverse all buttons in the group: we've already established
         // there's a group, so set up for the radio buttons in the group
         firstInGroup = FALSE;
-        for (int iButton = 0; control != NULL && !firstInGroup; )
+        for (int iButton = 0; control != 0 && !firstInGroup; )
         {
             if (isRadioButton) // this control in the group is a radio button
             {
@@ -897,7 +896,7 @@ namespace Win32xx
             if (ts.fail())
             {
                 value = oldvalue;
-                throw CUserException(g_msgDDX_Byte);
+                throw CUserException(GetApp()->MsgDDX_Byte());
             }
         }
         else
@@ -923,7 +922,7 @@ namespace Win32xx
             if (ts.fail())
             {
                 value = oldvalue;
-                throw CUserException(g_msgDDX_Short);
+                throw CUserException(GetApp()->MsgDDX_Short());
             }
         }
         else
@@ -949,7 +948,7 @@ namespace Win32xx
             if (ts.fail())
             {
                 value = oldvalue;
-                throw CUserException(g_msgDDX_Int);
+                throw CUserException(GetApp()->MsgDDX_Int());
             }
         }
         else
@@ -975,7 +974,7 @@ namespace Win32xx
             if (ts.fail())
             {
                 value = oldvalue;
-                throw CUserException(g_msgDDX_UINT);
+                throw CUserException(GetApp()->MsgDDX_UINT());
             }
         }
         else
@@ -1001,7 +1000,7 @@ namespace Win32xx
             if (ts.fail())
             {
                 value = oldvalue;
-                throw CUserException(g_msgDDX_Long);
+                throw CUserException(GetApp()->MsgDDX_Long());
             }
         }
         else
@@ -1027,7 +1026,7 @@ namespace Win32xx
             if (ts.fail())
             {
                 value = oldvalue;
-                throw CUserException(g_msgDDX_ULONG);
+                throw CUserException(GetApp()->MsgDDX_ULONG());
             }
         }
         else
@@ -1053,7 +1052,7 @@ namespace Win32xx
             if (ts.fail())
             {
                 value = oldvalue;
-                throw CUserException(g_msgDDX_Real);
+                throw CUserException(GetApp()->MsgDDX_Real());
             }
         }
         else
@@ -1079,7 +1078,7 @@ namespace Win32xx
             if (ts.fail())
             {
                 value = oldvalue;
-                throw CUserException(g_msgDDX_Real);
+                throw CUserException(GetApp()->MsgDDX_Real());
             }
         }
         else
@@ -1129,14 +1128,14 @@ namespace Win32xx
     // be overridden as required.
     inline void CDataExchange::Fail(LPCTSTR message) const
     {
-        ::MessageBox(NULL, message, _T("Error"), MB_OK | MB_ICONEXCLAMATION | MB_TASKMODAL);
+        ::MessageBox(0, message, _T("Error"), MB_OK | MB_ICONEXCLAMATION | MB_TASKMODAL);
 
         if (!m_retrieveAndValidate)
         {
             TRACE(_T("Warning: CDataExchange::Fail() called while "));
             TRACE(_T("writing to a control.\n"));
         }
-        else if (m_lastControl != NULL)
+        else if (m_lastControl != 0)
         {
             if (m_isEditLastControl) // if the offender is an edit control
             {
@@ -1161,7 +1160,7 @@ namespace Win32xx
         // record the default action and parent window
         m_retrieveAndValidate = retrieveAndValidate;
         m_parent       = dlgWnd;
-        m_lastControl  = NULL;
+        m_lastControl  = 0;
     }
 
     // Find the handle to the control whose numeric identifier is id and

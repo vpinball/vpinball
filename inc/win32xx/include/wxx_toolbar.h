@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -175,9 +175,9 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        CBitmap Bitmap(bitmapID);
-        assert (Bitmap.GetHandle());
-        BITMAP data = Bitmap.GetBitmapData();
+        CBitmap bitmap(bitmapID);
+        assert (bitmap.GetHandle());
+        BITMAP data = bitmap.GetBitmapData();
         int imageWidth  = MAX(data.bmHeight, 16);
         int images = data.bmWidth / imageWidth;
 
@@ -616,7 +616,7 @@ namespace Win32xx
 
         assert(IsWindow());
         CPoint pos = GetCursorPos();
-        ScreenToClient(pos);
+        VERIFY(ScreenToClient(pos));
 
         int buttons = (int)SendMessage(TB_BUTTONCOUNT, 0, 0);
         int button = -1;

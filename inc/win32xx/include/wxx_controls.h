@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -1493,7 +1493,7 @@ namespace Win32xx
             InitCommonControlsEx(&initStruct);
         }
         else
-            throw CNotSupportedException(g_msgIPControl);
+            throw CNotSupportedException(GetApp()->MsgIPControl());
     }
 
     // Clears the contents of the IP address control.
@@ -1551,9 +1551,9 @@ namespace Win32xx
     inline void CIPAddress::SetAddress(BYTE field0, BYTE field1, BYTE field2, BYTE field3) const
     {
         assert(IsWindow());
-#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+#if defined (_MSC_VER) && (_MSC_VER >= 1400)   // >= VS2005
 #pragma warning ( push )
-#pragma warning ( disable : 26451 )     // Arithemetic overflow.
+#pragma warning ( disable : 26451 )            // Arithemetic overflow.
 #endif // (_MSC_VER) && (_MSC_VER >= 1400)
 
         SendMessage(IPM_SETADDRESS, 0, MAKEIPADDRESS(field0, field1, field2, field3));
@@ -1586,9 +1586,9 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+#if defined (_MSC_VER) && (_MSC_VER >= 1400)   // >= VS2005
 #pragma warning ( push )
-#pragma warning ( disable : 26451 )     // Arithemetic overflow.
+#pragma warning ( disable : 26451 )            // Arithemetic overflow.
 #endif // (_MSC_VER) && (_MSC_VER >= 1400)
 
         SendMessage(IPM_SETRANGE, (WPARAM)field, MAKEIPRANGE(int(lower), int(upper)));
@@ -2371,7 +2371,7 @@ namespace Win32xx
     }
 
     // Retrieves the initial, pop-up, and reshow durations currently set for a ToolTip control.
-    // Returns an intvalue with the specified duration in milliseconds.
+    // Returns an int value with the specified duration in milliseconds.
     //
     // duration is one of:
     //  TTDT_AUTOPOP - time the ToolTip window remains visible if the pointer is stationary

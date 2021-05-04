@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -71,8 +71,8 @@ namespace Win32xx
         BOOL UseThemes;         // TRUE if themes are used
         COLORREF clrBkgnd1;     // Colour 1 for rebar background
         COLORREF clrBkgnd2;     // Colour 2 for rebar background
-        COLORREF clrBand1;      // Colour 1 for rebar band background. Use NULL if not required
-        COLORREF clrBand2;      // Colour 2 for rebar band background. Use NULL if not required
+        COLORREF clrBand1;      // Colour 1 for rebar band background. Use 0 if not required
+        COLORREF clrBand2;      // Colour 2 for rebar band background. Use 0 if not required
         BOOL FlatStyle;         // Bands are rendered with flat rather than raised style
         BOOL BandsLeft;         // Position bands left on rearrange
         BOOL LockMenuBand;      // Lock MenuBar's band in dedicated top row, without gripper
@@ -127,7 +127,7 @@ namespace Win32xx
                         IsAeroThemed = TRUE;
                     }
                 }
-                ::FreeLibrary(module);
+                VERIFY(::FreeLibrary(module));
             }
         }
 
@@ -157,7 +157,7 @@ namespace Win32xx
                         isXPThemed = (GetComCtlVersion() >= 600);
                     }
                 }
-                ::FreeLibrary(theme);
+                VERIFY(::FreeLibrary(theme));
             }
         }
 

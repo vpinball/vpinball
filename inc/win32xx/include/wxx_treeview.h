@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -36,13 +36,12 @@
 
 
 
-
 #ifndef _WIN32XX_TREEVIEW_H_
 #define _WIN32XX_TREEVIEW_H_
 
 #include "wxx_wincore.h"
 #include "wxx_controls.h"
-#include <commctrl.h>
+#include <Commctrl.h>
 
 
 // Disable macros from Windowsx.h

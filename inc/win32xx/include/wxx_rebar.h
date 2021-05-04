@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -93,7 +93,7 @@ namespace Win32xx
         void SetToolTips(HWND toolTip) const;
 
     protected:
-        //Overridables
+        // Overridables
         virtual BOOL OnEraseBkgnd(CDC& dc);
         virtual LRESULT OnLButtonDown(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnLButtonUp(UINT msg, WPARAM wparam, LPARAM lparam);
@@ -148,7 +148,7 @@ namespace Win32xx
         assert(IsWindow());
 
         int result = -1;
-        if (NULL == wnd) return result;
+        if (0 == wnd) return result;
 
         for (int band = 0; band < GetBandCount(); ++band)
         {
@@ -284,7 +284,7 @@ namespace Win32xx
         assert(IsWindow());
 
         // Convert the point to client co-ordinates
-        ScreenToClient(pt);
+        VERIFY(ScreenToClient(pt));
 
         // Get the rebar band with the point
         RBHITTESTINFO rbhti;
@@ -304,7 +304,7 @@ namespace Win32xx
             return rbbi.hwndChild;
         }
         else
-            return NULL;
+            return 0;
     }
 
     // Converts a band identifier to a band index in a rebar control.

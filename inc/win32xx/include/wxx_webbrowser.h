@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -38,23 +38,23 @@
 #define _WIN32XX_WEBBROWSER_H_
 
 #include "wxx_appcore0.h"
-#include <exdisp.h>
-#include <ocidl.h>
+#include <ExDisp.h>
+#include <OCidl.h>
 
 #ifdef _MSC_VER
   #pragma warning ( push )
   #pragma warning ( disable : 4091 )  // temporarily disable C4091 warning
 #endif // _MSC_VER
 
-#include <shlobj.h>
+#include <ShlObj.h>
 
 #ifdef _MSC_VER
   #pragma warning ( pop )
 #endif // _MSC_VER
 
-#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+#if defined (_MSC_VER) && (_MSC_VER >= 1400)   // >= VS2005
 #pragma warning ( push )
-#pragma warning ( disable : 26812 )       // enum type is unscoped.
+#pragma warning ( disable : 26812 )            // enum type is unscoped.
 #endif // (_MSC_VER) && (_MSC_VER >= 1400)
 
 
@@ -244,8 +244,7 @@ namespace Win32xx
 
     inline CAXHost::CAXHost() : m_hwnd(NULL), m_pUnk(NULL)
     {
-        HRESULT hr;
-        VERIFY(SUCCEEDED(hr = OleInitialize(NULL)));
+        VERIFY(SUCCEEDED(OleInitialize(NULL)));
     }
 
     inline CAXHost::~CAXHost()
@@ -265,9 +264,10 @@ namespace Win32xx
             IOleObject* pObject;
             VERIFY(SUCCEEDED(hr = m_pUnk->QueryInterface(IID_IOleObject, reinterpret_cast<void**>(&pObject))));
             if (pObject)
+            {
                 VERIFY(SUCCEEDED(hr = pObject->DoVerb(OLEIVERB_UIACTIVATE, NULL, this, 0, m_hwnd, &m_controlRect)));
-
-            pObject->Release();
+                pObject->Release();
+            }
         }
 
         return hr;
@@ -449,7 +449,7 @@ namespace Win32xx
         *ppIIPUIWin = NULL;
 
         RECT rect;
-        ::GetClientRect(m_hwnd, &rect);
+        VERIFY(::GetClientRect(m_hwnd, &rect));
         pRect->left       = 0;
         pRect->top        = 0;
         pRect->right      = rect.right;

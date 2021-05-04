@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -46,14 +46,14 @@
 #include "wxx_wincore.h"
 #include "wxx_gdi.h"
 #include <Richedit.h>
-#include <Richole.h>
+#include <RichOle.h>
 
 
 namespace Win32xx
 {
 
 #ifdef __GNUC__
-   //   UndoName info (required by GNU compilers)
+   //   UndoName info (required by some GNU compilers)
     typedef enum _undonameid
     {
         UID_UNKNOWN     = 0,
@@ -194,7 +194,7 @@ namespace Win32xx
         m_rich1 = LoadLibrary(_T("riched32.dll"));
 
         if (m_rich1 == 0)
-            throw CNotSupportedException(g_msgRichEditDll);
+            throw CNotSupportedException(GetApp()->MsgRichEditDll());
 
         // Load RichEdit version 2.0 or 3.0 (for Win98 and above)
         m_rich2 = LoadLibrary(_T("riched20.dll"));
@@ -208,12 +208,12 @@ namespace Win32xx
         // Destroy the window before freeing the DLL
         Destroy();
 
-        ::FreeLibrary(m_rich1);
+        VERIFY(::FreeLibrary(m_rich1));
         if (m_rich2)
-            ::FreeLibrary(m_rich2);
+            VERIFY(::FreeLibrary(m_rich2));
 
         if (m_rich4_1)
-            ::FreeLibrary(m_rich4_1);
+            VERIFY(::FreeLibrary(m_rich4_1));
     }
 
     // Set the window class
@@ -502,16 +502,16 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+#if defined (_MSC_VER) && (_MSC_VER >= 1920)   // >= VS2019
 #pragma warning ( push )
-#pragma warning ( disable : 26812 )       // enum type is unscoped.
-#endif // (_MSC_VER) && (_MSC_VER >= 1400)
+#pragma warning ( disable : 26812 )            // enum type is unscoped.
+#endif // (_MSC_VER) && (_MSC_VER >= 1920)
 
         return static_cast<UNDONAMEID>(SendMessage(EM_GETREDONAME, 0, 0));
 
-#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+#if defined (_MSC_VER) && (_MSC_VER >= 1920)
 #pragma warning ( pop )
-#endif // (_MSC_VER) && (_MSC_VER >= 1400)
+#endif // (_MSC_VER) && (_MSC_VER >= 1920)
     }
 
     // Retrieves the starting and ending character positions of the selection.

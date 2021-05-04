@@ -103,8 +103,8 @@
 
 #include <cassert>
 #include <algorithm>        // For std::swap
-#include <winsock2.h>       // must include before windows.h
-#include <windows.h>        // For InterlockedIncrement and InterlockedDecrement
+#include <WinSock2.h>       // must include before windows.h
+#include <Windows.h>        // For InterlockedIncrement and InterlockedDecrement
 
 #ifdef __BORLANDC__
   #pragma option -w-8027    // function not expanded inline

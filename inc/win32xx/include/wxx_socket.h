@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -81,7 +81,7 @@
 // supports Windows 98 and above.
 
 // For a TCP server using event sockets, inherit a class from CSocket
-// and override OnAccept, OnDisconnect and OnRecieve. Create one instance
+// and override OnAccept, OnDisconnect and OnReceive. Create one instance
 // of this class and use it as a listening socket. The purpose of the
 // listening socket is to detect connections from clients and accept them.
 // For the listening socket, we do the following:
@@ -131,14 +131,12 @@
 #include "wxx_mutex.h"
 
 // Work around a bugs in older versions of Visual Studio
-#ifdef _MSC_VER
-  #if _MSC_VER < 1500
-    // Skip loading wspiapi.h
-    #define _WSPIAPI_H_
-  #endif
+#if defined (_MSC_VER) && (_MSC_VER < 1500)  // < VS2008
+  // Skip loading wspiapi.h
+  #define _WSPIAPI_H_
 #endif
 
-#include <ws2tcpip.h>
+#include <WS2tcpip.h>
 
 #define THREAD_TIMEOUT 100
 
@@ -210,8 +208,8 @@ namespace Win32xx
 
         SOCKET m_socket;
         HMODULE m_ws2_32;
-        Shared_Ptr<CWinThread> m_threadPtr;  // Smart pointer to the worker thread for the events
-        CEvent m_stopRequest;                // A manual reset event to signal the event thread should stop
+        ThreadPtr m_threadPtr;              // Smart pointer to the worker thread for the events
+        CEvent m_stopRequest;               // A manual reset event to signal the event thread should stop
 
         GETADDRINFO* m_pfnGetAddrInfo;      // pointer for the getaddrinfo function
         FREEADDRINFO* m_pfnFreeAddrInfo;    // pointer for the freeaddrinfo function
@@ -229,11 +227,11 @@ namespace Win32xx
         WSADATA wsaData;
 
         if (::WSAStartup(MAKEWORD(2,2), &wsaData) != 0)
-            throw CNotSupportedException(g_msgSocWSAStartup);
+            throw CNotSupportedException(GetApp()->MsgSocWSAStartup());
 
         m_ws2_32 = LoadLibrary(_T("WS2_32.dll"));
         if (m_ws2_32 == 0)
-            throw CNotSupportedException(g_msgSocWS2Dll);
+            throw CNotSupportedException(GetApp()->MsgSocWS2Dll());
 
 #ifdef _WIN32_WCE
         m_pfnGetAddrInfo = reinterpret_cast<GETADDRINFO*>( GetProcAddress(m_ws2_32, L"getaddrinfo") );
@@ -243,13 +241,30 @@ namespace Win32xx
         m_pfnFreeAddrInfo = reinterpret_cast<FREEADDRINFO*>( GetProcAddress(m_ws2_32, "freeaddrinfo") );
 #endif
 
-        m_threadPtr = new CWinThread(EventThread, this);
-
+        ThreadPtr threadPtr(new CWinThread(EventThread, this));
+        m_threadPtr = threadPtr;
     }
 
     inline CSocket::~CSocket()
     {
-        Disconnect();
+        ::shutdown(m_socket, SD_BOTH);
+        // Ask the event thread to stop
+        m_stopRequest.SetEvent();
+
+        // Wait for the event thread to stop.
+        while (WAIT_TIMEOUT == ::WaitForSingleObject(*m_threadPtr, THREAD_TIMEOUT * 10))
+        {
+            // Waiting for the event thread to signal the m_stopped event.
+
+            // Note: An excessive delay in processing any of the notification functions
+            // can cause us to get here.
+            TRACE("*** Error: Event Thread won't die ***\n");
+        }
+
+        m_stopRequest.ResetEvent();
+
+        ::closesocket(m_socket);
+        m_socket = INVALID_SOCKET;
 
         if (m_stopRequest.GetHandle())
             CloseHandle(m_stopRequest);
@@ -257,7 +272,7 @@ namespace Win32xx
         // Terminate the  Windows Socket services
         ::WSACleanup();
 
-        ::FreeLibrary(m_ws2_32);
+        VERIFY(::FreeLibrary(m_ws2_32));
     }
 
     // The accept function permits an incoming connection attempt on the socket.

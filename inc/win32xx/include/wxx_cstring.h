@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -100,7 +100,7 @@
 #include <stdio.h>
 #include <string>
 #include <algorithm>
-#include <windows.h>
+#include <Windows.h>
 #include "wxx_textconv.h"
 
 
@@ -115,7 +115,7 @@ namespace Win32xx
     };
 
     /////////////////////////////////////////////////
-    // CStringT is a class template used to impliment
+    // CStringT is a class template used to implement
     // CStringA, CStringW and CString.
     template <class T>
     class CStringT
@@ -693,7 +693,7 @@ namespace Win32xx
     inline BSTR CStringT<CHAR>::AllocSysString() const
     {
         BSTR bstr = ::SysAllocStringLen(AtoW(m_str.c_str()), static_cast<UINT>(m_str.size()));
-        if (bstr == NULL)
+        if (bstr == 0)
             throw std::bad_alloc();
 
         return bstr;
@@ -705,7 +705,7 @@ namespace Win32xx
     inline BSTR CStringT<WCHAR>::AllocSysString() const
     {
         BSTR bstr = ::SysAllocStringLen(m_str.c_str(), static_cast<UINT>(m_str.size()));
-        if (bstr == NULL)
+        if (bstr == 0)
             throw std::bad_alloc();
 
         return bstr;

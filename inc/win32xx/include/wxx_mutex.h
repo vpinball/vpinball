@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -71,7 +71,7 @@ namespace Win32xx
 {
     ////////////////////////////////////////////////////////////////
     // CEvent manages an event object. Event objects can be set to
-    // a signaled or nonsignaled state to facilitate synchronisation
+    // a signalled or nonsignalled state to facilitate synchronisation
     // between threads.
     class CEvent
     {
@@ -94,8 +94,8 @@ namespace Win32xx
 
     ////////////////////////////////////////////////////////
     // CMutex manages a mutex object. A mutex object is a
-    // synchronization object whose state is set to signaled
-    // when it is not owned by any thread, and nonsignaled
+    // synchronization object whose state is set to signalled
+    // when it is not owned by any thread, and non-signalled
     // when it is owned. Only one thread at a time can own
     // a mutex object.
     class CMutex
@@ -156,20 +156,20 @@ namespace Win32xx
     : m_event(0)
     {
         m_event = ::CreateEvent(pAttributes, isManualReset, isInitiallySignaled, pstrName);
-        if (m_event == NULL)
-            throw CResourceException(g_msgMtxEvent);
+        if (m_event == 0)
+            throw CResourceException(GetApp()->MsgMtxEvent());
     }
 
     // Sets the specified event object to the non-signalled state.
     inline void CEvent::ResetEvent()
     {
-        ::ResetEvent(m_event);
+        VERIFY(::ResetEvent(m_event));
     }
 
     // Sets the specified event object to the signalled state.
     inline void CEvent::SetEvent()
     {
-        ::SetEvent(m_event);
+        VERIFY(::SetEvent(m_event));
     }
 
 
@@ -189,8 +189,8 @@ namespace Win32xx
     : m_mutex(0)
     {
         m_mutex = ::CreateMutex(pAttributes, isInitiallySignaled, pName);
-        if (m_mutex == NULL)
-            throw CResourceException(g_msgMtxMutex);
+        if (m_mutex == 0)
+            throw CResourceException(GetApp()->MsgMtxMutex());
     }
 
 
@@ -213,8 +213,8 @@ namespace Win32xx
         assert(initialCount <= maxCount);
 
         m_semaphore = ::CreateSemaphore(pAttributes, initialCount, maxCount, pName);
-        if (m_semaphore == NULL)
-            throw CResourceException(g_msgMtxSemaphore);
+        if (m_semaphore == 0)
+            throw CResourceException(GetApp()->MsgMtxSemaphore());
     }
 
     // Increases the count of the specified semaphore object by a specified amount.

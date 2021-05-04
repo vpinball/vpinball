@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -162,7 +162,7 @@ namespace Win32xx
             m_ansiArray.assign(length, '\0');
 
             // Fill our vector with the converted char array
-            WideCharToMultiByte(codePage, 0, str, charCount, &m_ansiArray[0], length, NULL,NULL);
+            WideCharToMultiByte(codePage, 0, str, charCount, &m_ansiArray[0], length, NULL, NULL);
         }
 
         ~CWtoA()

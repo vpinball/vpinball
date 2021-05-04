@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -186,12 +186,15 @@ namespace Win32xx
     // Definitions for the CPreviewPane class
     // CPreviewPane provides a preview pane for CPrintPreview
     //
+
+    // Constructor.
     inline CPreviewPane::CPreviewPane()
     {
-        // The entry for the dialog's control in resource.rc must match this name.
+        // The class name of this custom dialog control.
+        // This matches the control's class name used in the dialog template.
         CString className = _T("PreviewPane");
 
-        // Register the window class for use as a custom control in the dialog
+        // Register the window class for use as a custom control in the dialog.
         WNDCLASS wc;
         ZeroMemory(&wc, sizeof(WNDCLASS));
 
@@ -201,26 +204,29 @@ namespace Win32xx
             wc.lpfnWndProc = ::DefWindowProc;
             wc.hInstance = GetApp()->GetInstanceHandle();
             wc.hbrBackground = (HBRUSH)GetStockObject(GRAY_BRUSH);
-            wc.hCursor = ::LoadCursor(NULL, IDC_ARROW);
-            ::RegisterClass(&wc);
+            wc.hCursor = ::LoadCursor(0, IDC_ARROW);
+            VERIFY(::RegisterClass(&wc));
         }
 
         assert(::GetClassInfo(GetApp()->GetInstanceHandle(), className, &wc));
     }
 
+    // Handle the WM_ERASEBKGND message.
     inline BOOL CPreviewPane::OnEraseBkgnd(CDC&)
     {
-        // prevent default erasure of the background
+        // Suppress background drawing to avoid flicker on Windows XP and earlier.
         return TRUE;
     }
 
+    // Called to perform the drawing on this window.
     inline void CPreviewPane::OnDraw(CDC& dc)
     {
         Render(dc);
     }
 
-    inline LRESULT CPreviewPane::OnPaint(UINT, WPARAM, LPARAM)
+    // Handle the WM_PAINT message and call OnDraw.
     // Normally OnDraw is suppressed for controls, but we need OnDraw for this window.
+    inline LRESULT CPreviewPane::OnPaint(UINT, WPARAM, LPARAM)
     {
         if (::GetUpdateRect(*this, NULL, FALSE))
         {
@@ -228,7 +234,7 @@ namespace Win32xx
             OnDraw(dc);
         }
         else
-            // RedrawWindow can require repainting without an update rect
+        // RedrawWindow can require repainting without an update rect
         {
             CClientDC dc(*this);
             OnDraw(dc);
@@ -238,14 +244,12 @@ namespace Win32xx
         return 0;
     }
 
+    // Copies the bitmap (m_Bitmap) to the PreviewPane as a Device
+    // Independent Bitmap (DIB), scaling the image to fit the window.
     inline void CPreviewPane::Render(CDC& dc)
-    // Copies the bitmap (m_Bitmap) to the PreviewPane, scaling the image
-    //  to fit the window.
     {
         if (m_bitmap.GetHandle())
         {
-            CMemDC memDC(dc);
-            memDC.SelectObject(m_bitmap);
             BITMAP bm = m_bitmap.GetBitmapData();
             int border = 10;
             CRect rcClient = GetClientRect();
@@ -273,15 +277,26 @@ namespace Win32xx
                 xBorder = (rcClient.Width() - previewWidth) / 2;
             }
 
-            // Use half tone stretch mode for smoother rendering
+            // Create the LPBITMAPINFO from the bitmap.
+            CBitmapInfoPtr pbmi(m_bitmap);
+            BITMAPINFOHEADER* pBIH = reinterpret_cast<BITMAPINFOHEADER*>(pbmi.get());
+
+            // Extract the device independent image data.
+            CMemDC memDC(dc);
+            VERIFY(memDC.GetDIBits(m_bitmap, 0, bm.bmHeight, NULL, pbmi, DIB_RGB_COLORS));
+            std::vector<byte> byteArray(pBIH->biSizeImage, 0);
+            byte* pByteArray = &byteArray.front();
+            VERIFY(memDC.GetDIBits(m_bitmap, 0, bm.bmHeight, pByteArray, pbmi, DIB_RGB_COLORS));
+
+            // Use half tone stretch mode for smoother rendering.
             dc.SetStretchBltMode(HALFTONE);
             dc.SetBrushOrgEx(0, 0);
 
-            // Copy from the memory dc to the PreviewPane's DC with stretching.
-            dc.StretchBlt(xBorder, yBorder, previewWidth, previewHeight, memDC, 0, 0, bm.bmWidth, bm.bmHeight, SRCCOPY);
+            // Copy the DIB bitmap data to the PreviewPane's DC with stretching.
+            VERIFY(dc.StretchDIBits(xBorder, yBorder, previewWidth, previewHeight, 0, 0,
+                   bm.bmWidth, bm.bmHeight, pByteArray, pbmi, DIB_RGB_COLORS, SRCCOPY));
 
-            // Draw a grey border around the preview
-            // OnEraseBkgnd suppresses background drawing to avoid flicker on Windows XP and earlier
+            // Draw a grey border around the preview.
             CRect rcFill(0, 0, xBorder, previewHeight + yBorder);
             dc.FillRect(rcFill, HBRUSH(::GetStockObject(GRAY_BRUSH)));
 
@@ -299,17 +314,21 @@ namespace Win32xx
     ///////////////////////////////////////////
     // Definitions for the CPrintPreview class
     //
+
+    // Constructor.
     template <typename T>
     inline CPrintPreview<T>::CPrintPreview() : CDialog((LPCDLGTEMPLATE)previewTemplate),
         m_pSource(0), m_currentPage(0), m_maxPage(1), m_ownerWindow(0)
     {
     }
 
+    // Destructor.
     template <typename T>
     inline CPrintPreview<T>::~CPrintPreview()
     {
     }
 
+    // The dialog's window procdure. It handles the dialog's window messages.
     template <typename T>
     inline INT_PTR CPrintPreview<T>::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
     {
@@ -318,24 +337,24 @@ namespace Win32xx
 
         //  switch (msg)
         //  {
-                //Additional messages to be handled go here
+        //  Additional messages to be handled go here
         //  }
 
             // Pass unhandled messages on to parent DialogProc
         return DialogProcDefault(msg, wparam, lparam);
     }
 
+    // Called when the close button is pressed.
     template <typename T>
     inline BOOL CPrintPreview<T>::OnCloseButton()
-    // Called when the close button is pressed.
     {
         ::SendMessage(m_ownerWindow, UWM_PREVIEWCLOSE, 0, 0);
         return TRUE;
     }
 
+    // Processes the dialog's buttons.
     template <typename T>
     inline BOOL CPrintPreview<T>::OnCommand(WPARAM wparam, LPARAM lparam)
-    // Processes the dialog's buttons.
     {
         UNREFERENCED_PARAMETER(lparam);
 
@@ -352,6 +371,7 @@ namespace Win32xx
         return FALSE;
     }
 
+    // Called when the dialog is initialized.
     template <typename T>
     inline BOOL CPrintPreview<T>::OnInitDialog()
     {
@@ -379,7 +399,6 @@ namespace Win32xx
         m_resizer.AddChild(m_buttonClose, topleft, 0);
         m_resizer.AddChild(m_previewPane, topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
 
-        m_currentPage = 0;
         return TRUE;
     }
 
@@ -442,11 +461,11 @@ namespace Win32xx
     template <typename T>
     inline void CPrintPreview<T>::PreviewPage(UINT page)
     {
-        // Get the device contect of the default or currently chosen printer
+        // Get the device context of the default or currently chosen printer
         CPrintDialog printDlg;
         CDC printerDC = printDlg.GetPrinterDC();
         if (printerDC.GetHDC() == 0)
-            throw CResourceException(g_msgPrintFound);
+            throw CResourceException(GetApp()->MsgPrintFound());
 
         // Create a memory DC for the printer.
         // Note: we use the printer's DC here to render text accurately
@@ -459,8 +478,6 @@ namespace Win32xx
         // A bitmap to hold all the pixels of the printed page would be too large.
         // Shrinking its dimensions by 4 reduces it to 1/16th its original size.
         int shrink = width > 8000 ? 8 : 4;
-
-        CDC previewDC = GetPreviewPane().GetDC();
         memDC.CreateCompatibleBitmap(printerDC, width / shrink, height / shrink);
 
         memDC.SetMapMode(MM_ANISOTROPIC);
@@ -481,6 +498,7 @@ namespace Win32xx
 
         // Display the print preview
         UpdateButtons();
+        CDC previewDC = GetPreviewPane().GetDC();
         GetPreviewPane().Render(previewDC);
     }
 

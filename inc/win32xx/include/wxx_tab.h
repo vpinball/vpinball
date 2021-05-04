@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -76,8 +76,9 @@ namespace Win32xx
     class CTab : public CWnd
     {
     protected:
-        // Declaration of the CSelectDialog class, a nested class of CTab
-        // It creates the dialog to choose which tab to activate
+        // Declaration of the CSelectDialog class, a nested class of CTab.
+        // It creates the dialog to choose which tab to activate.
+        // It is used when the tab control has 9 or more tabs.
         class CSelectDialog : public CDialog
         {
         public:
@@ -283,7 +284,7 @@ namespace Win32xx
     // Definitions for the CSelectDialog class nested within CTab
     //
     inline CTab::CSelectDialog::CSelectDialog(LPCDLGTEMPLATE pDlgTemplate) :
-                    CDialog(pDlgTemplate), IDC_LIST(121)
+                    CDialog(pDlgTemplate), IDC_LIST(122)
     {
     }
 
@@ -401,7 +402,7 @@ namespace Win32xx
         CRect rcClose = GetCloseRect();
 
         CPoint pt = GetCursorPos();
-        ScreenToClient(pt);
+        VERIFY(ScreenToClient(pt));
         UINT uState = rcClose.PtInRect(pt)? m_isClosePressed? 2: 1: 0;
 
         // Draw the outer highlight for the close button
@@ -484,7 +485,7 @@ namespace Win32xx
         CRect rcList = GetListRect();
 
         CPoint pt = GetCursorPos();
-        ScreenToClient(pt);
+        VERIFY(ScreenToClient(pt));
         UINT uState = rcList.PtInRect(pt)? 1: 0;
         if (m_isListMenuActive) uState = 2;
 
@@ -696,7 +697,7 @@ namespace Win32xx
             m_listMenu.AppendMenu(MF_STRING, IDW_FIRSTCHILD + UINT_PTR(u), menuString);
         }
         if (GetAllTabs().size() >= 10)
-            m_listMenu.AppendMenu(MF_STRING, IDW_FIRSTCHILD +9, _T("More Windows"));
+            m_listMenu.AppendMenu(MF_STRING, IDW_FIRSTCHILD +9, _T("More Tabs"));
 
         // Add a checkmark to the menu
         int selected = GetCurSel();
@@ -987,11 +988,11 @@ namespace Win32xx
     {
         // Ensure we have an arrow cursor when the tab has no view window
         if (GetAllTabs().size() == 0)
-            SetCursor(LoadCursor(NULL, IDC_ARROW));
+            SetCursor(LoadCursor(0, IDC_ARROW));
 
         // Cause WM_LBUTTONUP and WM_LBUTTONDOWN messages to be sent for buttons
         CPoint pt(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
-        ScreenToClient(pt);
+        VERIFY(ScreenToClient(pt));
         if (GetCloseRect().PtInRect(pt)) return HTCLIENT;
         if (GetListRect().PtInRect(pt))  return HTCLIENT;
 
@@ -1183,7 +1184,7 @@ namespace Win32xx
                 CRect rc = GetClientRect();
                 MapWindowPoints(GetParent(), rc);
                 AdjustRect(FALSE, &rc);
-                GetActiveView()->SetWindowPos(NULL, rc, SWP_SHOWWINDOW);
+                VERIFY(GetActiveView()->SetWindowPos(0, rc, SWP_SHOWWINDOW));
             }
 
             RedrawWindow(RDW_INVALIDATE|RDW_NOCHILDREN);
@@ -1259,7 +1260,7 @@ namespace Win32xx
 
             // Remove Image list for fixed width and Owner drawn tabs
             if (style & TCS_OWNERDRAWFIXED)
-                SetImageList(NULL);
+                SetImageList(0);
             else
                 SetImageList(m_odImages);
         }
@@ -1282,7 +1283,7 @@ namespace Win32xx
 
             // Remove Image list for tabs with both fixed width and Owner drawn tabs
             if (style & TCS_FIXEDWIDTH)
-                SetImageList(NULL);
+                SetImageList(0);
             else
                 SetImageList(m_odImages);
         }
@@ -1418,7 +1419,7 @@ namespace Win32xx
                 CRect rc = GetClientRect();
                 AdjustRect(FALSE, &rc);
                 MapWindowPoints(GetParent(), rc);
-                GetActiveView()->SetWindowPos(0, rc, SWP_SHOWWINDOW);
+                VERIFY(GetActiveView()->SetWindowPos(0, rc, SWP_SHOWWINDOW));
                 GetActiveView()->SetFocus();
             }
         }
@@ -1432,7 +1433,7 @@ namespace Win32xx
             m_isListPressed = TRUE;
 
             CPoint pt(GetListRect().left, GetListRect().top + GetTabHeight());
-            ClientToScreen(pt);
+            VERIFY(ClientToScreen(pt));
 
             // Choosing the frame's CWnd for the menu's messages will automatically theme the popup menu
             int nPage = 0;
@@ -1453,18 +1454,18 @@ namespace Win32xx
         unsigned char dlgTemplate[] =
         {
             0x01,0x00,0xff,0xff,0x00,0x00,0x00,0x00,0x00,0x00,0x04,0x00,0xc8,0x00,0xc8,0x90,0x03,
-            0x00,0x00,0x00,0x00,0x00,0xdc,0x00,0x8e,0x00,0x00,0x00,0x00,0x00,0x53,0x00,0x65,
-            0x00,0x6c,0x00,0x65,0x00,0x63,0x00,0x74,0x00,0x20,0x00,0x57,0x00,0x69,0x00,0x6e,
-            0x00,0x64,0x00,0x6f,0x00,0x77,0x00,0x00,0x00,0x08,0x00,0x00,0x00,0x00,0x01,0x4d,
-            0x00,0x53,0x00,0x20,0x00,0x53,0x00,0x68,0x00,0x65,0x00,0x6c,0x00,0x6c,0x00,0x20,
-            0x00,0x44,0x00,0x6c,0x00,0x67,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-            0x00,0x00,0x00,0x01,0x00,0x01,0x50,0x40,0x00,0x7a,0x00,0x25,0x00,0x0f,0x00,0x01,
-            0x00,0x00,0x00,0xff,0xff,0x80,0x00,0x4f,0x00,0x4b,0x00,0x00,0x00,0x00,0x00,0x00,
-            0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x50,0x7a,0x00,0x7a,0x00,0x25,
-            0x00,0x0f,0x00,0x02,0x00,0x00,0x00,0xff,0xff,0x80,0x00,0x43,0x00,0x61,0x00,0x6e,
-            0x00,0x63,0x00,0x65,0x00,0x6c,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-            0x00,0x02,0x00,0x01,0x01,0x21,0x50,0x06,0x00,0x06,0x00,0xcf,0x00,0x6d,0x00,0x79,
-            0x00,0x00,0x00,0xff,0xff,0x83,0x00,0x00,0x00,0x00,0x00
+            0x00,0x00,0x00,0x00,0x00,0xd0,0x00,0xca,0x00,0x00,0x00,0x00,0x00,0x53,0x00,0x65,
+            0x00,0x6c,0x00,0x65,0x00,0x63,0x00,0x74,0x00,0x20,0x00,0x54,0x00,0x61,0x00,0x62,
+            0x00,0x00,0x00,0x08,0x00,0x00,0x00,0x00,0x01,0x4d,0x00,0x53,0x00,0x20,0x00,0x53,
+            0x00,0x68,0x00,0x65,0x00,0x6c,0x00,0x6c,0x00,0x20,0x00,0x44,0x00,0x6c,0x00,0x67,
+            0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x01,0x01,0x21,0x50,0x10,
+            0x00,0x10,0x00,0xb0,0x00,0xa3,0x00,0x7a,0x00,0x00,0x00,0xff,0xff,0x83,0x00,0x00,
+            0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x50,0x27,
+            0x00,0xb7,0x00,0x31,0x00,0x0e,0x00,0x02,0x00,0x00,0x00,0xff,0xff,0x80,0x00,0x43,
+            0x00,0x61,0x00,0x6e,0x00,0x63,0x00,0x65,0x00,0x6c,0x00,0x00,0x00,0x00,0x00,0x00,
+            0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x00,0x01,0x50,0x77,0x00,0xb7,0x00,0x32,
+            0x00,0x0e,0x00,0x01,0x00,0x00,0x00,0xff,0xff,0x80,0x00,0x4f,0x00,0x4b,0x00,0x00,
+            0x00,0x00,0x00
         };
 
         // Display the modal dialog. The dialog is defined in the dialog template rather
@@ -1763,7 +1764,6 @@ namespace Win32xx
 
     inline CTabbedMDI::CTabbedMDI()
     {
-        GetTab().SetShowButtons(TRUE);
     }
 
     inline CTabbedMDI::~CTabbedMDI()
@@ -1817,7 +1817,7 @@ namespace Win32xx
     }
 
     // Creates the TabbedMDI window.
-    inline HWND CTabbedMDI::Create(HWND parent /* = NULL*/)
+    inline HWND CTabbedMDI::Create(HWND parent /* = 0*/)
     {
         CLIENTCREATESTRUCT clientcreate ;
         clientcreate.hWindowMenu  = *this;
@@ -1827,7 +1827,7 @@ namespace Win32xx
         // Create the MDICLIENT view window
         if (!CreateEx(0, _T("MDICLIENT"), _T(""),
             style, 0, 0, 0, 0, parent, NULL, (PSTR) &clientcreate))
-                throw CWinException(g_msgWndCreateEx);
+                throw CWinException(GetApp()->MsgWndCreate());
 
         return *this;
     }
@@ -1970,6 +1970,7 @@ namespace Win32xx
     inline void CTabbedMDI::OnAttach()
     {
         GetTab().Create(*this);
+        GetTab().SetShowButtons(TRUE);
         GetTab().SetFixedWidth(TRUE);
         GetTab().SetOwnerDraw(TRUE);
     }
@@ -1997,7 +1998,7 @@ namespace Win32xx
         case UWN_TABDRAGGED:
             {
                 CPoint pt = GetCursorPos();
-                GetTab().ScreenToClient(pt);
+                VERIFY(GetTab().ScreenToClient(pt));
 
                 TCHITTESTINFO info;
                 ZeroMemory(&info, sizeof(info));
@@ -2051,13 +2052,13 @@ namespace Win32xx
             if (GetTab().GetItemCount() >0)
             {
                 CRect rcClient = GetClientRect();
-                GetTab().SetWindowPos(NULL, rcClient, SWP_SHOWWINDOW);
+                VERIFY(GetTab().SetWindowPos(0, rcClient, SWP_SHOWWINDOW));
                 GetTab().UpdateWindow();
             }
             else
             {
                 CRect rcClient = GetClientRect();
-                GetTab().SetWindowPos(NULL, rcClient, SWP_HIDEWINDOW);
+                VERIFY(GetTab().SetWindowPos(0, rcClient, SWP_HIDEWINDOW));
                 Invalidate();
             }
         }
@@ -2069,19 +2070,19 @@ namespace Win32xx
         if (pKeyName)
         {
             CString KeyName = _T("Software\\") + CString(pKeyName);
-            HKEY hKey = NULL;
-            HKEY hKeyMDIChild = NULL;
+            HKEY hKey = 0;
+            HKEY hKeyMDIChild = 0;
 
             try
             {
                 if (ERROR_SUCCESS != RegCreateKeyEx(HKEY_CURRENT_USER, KeyName, 0, NULL, REG_OPTION_NON_VOLATILE,
                                                      KEY_ALL_ACCESS, NULL, &hKey, NULL))
-                    throw (CUserException(_T("RegCreateKeyEx Failed")));
+                    throw CUserException();
 
                 RegDeleteKey(hKey, _T("MDI Children"));
                 if (ERROR_SUCCESS != RegCreateKeyEx(hKey, _T("MDI Children"), 0, NULL, REG_OPTION_NON_VOLATILE,
                                                      KEY_ALL_ACCESS, NULL, &hKeyMDIChild, NULL))
-                    throw (CUserException(_T("RegCreateKeyEx Failed")));
+                    throw CUserException();
 
                 for (int i = 0; i < GetMDIChildCount(); ++i)
                 {
@@ -2090,7 +2091,7 @@ namespace Win32xx
 
                     SubKeyName.Format(_T("ID%d"), i);
                     if (ERROR_SUCCESS != RegSetValueEx(hKeyMDIChild, SubKeyName, 0, REG_DWORD, reinterpret_cast<const LPBYTE>(&pdi.idTab), sizeof(int)))
-                        throw (CUserException(_T("RegSetValueEx Failed")));
+                        throw CUserException();
 
                     SubKeyName.Format(_T("Text%d"), i);
                     CString TabText = GetTab().GetTabPageInfo(i).TabText;
@@ -2098,22 +2099,21 @@ namespace Win32xx
                                                            reinterpret_cast<const BYTE*>(TabText.c_str()),
                                                            (1 + TabText.GetLength() )*sizeof(TCHAR))
                                                            )
-                        throw (CUserException(_T("RegSetValueEx Failed")));
+                        throw CUserException();
                 }
 
                 // Add Active Tab to the registry
                 CString SubKeyName = _T("Active MDI Tab");
                 int nTab = GetActiveMDITab();
                 if (ERROR_SUCCESS != RegSetValueEx(hKeyMDIChild, SubKeyName, 0, REG_DWORD, reinterpret_cast<LPBYTE>(&nTab), sizeof(int)))
-                    throw (CUserException(_T("RegSetValueEx failed")));
+                    throw CUserException();
 
                 RegCloseKey(hKeyMDIChild);
                 RegCloseKey(hKey);
             }
-            catch (const CUserException& e)
+            catch (const CUserException&)
             {
-                Trace("*** Failed to save TabbedMDI settings in registry. ***\n");
-                Trace(e.GetText()); Trace("\n");
+                TRACE("*** Failed to save TabbedMDI settings in registry. ***\n");
 
                 // Roll back the registry changes by deleting the subkeys
                 if (hKey != 0)

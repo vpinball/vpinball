@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -197,10 +197,10 @@ namespace Win32xx
 namespace Win32xx
 {
 
-#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+#if defined (_MSC_VER) && (_MSC_VER >= 1920) // >= VS2019
 #pragma warning ( push )
-#pragma warning ( disable : 26812 )       // enum type is unscoped.
-#endif // (_MSC_VER) && (_MSC_VER >= 1400)
+#pragma warning ( disable : 26812 )          // enum type is unscoped.
+#endif // (_MSC_VER) && (_MSC_VER >= 1920)
 
     // Constructs a CArchive object.
     // The specified file must already be open for loading or storing.
@@ -310,7 +310,7 @@ namespace Win32xx
         {
             UINT nBytes = m_pFile->Read(pBuf, size);
             if (nBytes != size)
-                throw CFileException(m_pFile->GetFilePath(), g_msgArReadFail);
+                throw CFileException(m_pFile->GetFilePath(), GetApp()->MsgArReadFail());
         }
     }
 
@@ -703,7 +703,7 @@ namespace Win32xx
         *this >> chars;
 
         if (isUnicode)
-            throw CFileException(m_pFile->GetFilePath(), g_msgArNotCStringA);
+            throw CFileException(m_pFile->GetFilePath(), GetApp()->MsgArNotCStringA());
 
         Read(string.GetBuffer(chars), chars);
         string.ReleaseBuffer(chars);
@@ -723,7 +723,7 @@ namespace Win32xx
         *this >> chars;
 
         if (!isUnicode)
-            throw CFileException(m_pFile->GetFilePath(), g_msgArNotCStringW);
+            throw CFileException(m_pFile->GetFilePath(), GetApp()->MsgArNotCStringW());
 
         Read(string.GetBuffer(chars), chars * 2);
         string.ReleaseBuffer(chars);
@@ -754,7 +754,7 @@ namespace Win32xx
             memcpy(string.GetBuffer(chars), buf, size_t(chars)*2);
 #else
             // Convert the archive string from Wide to Ansi
-            WideCharToMultiByte(CP_ACP, 0, buf, chars, string.GetBuffer(chars), chars, NULL,NULL);
+            WideCharToMultiByte(CP_ACP, 0, buf, chars, string.GetBuffer(chars), chars, NULL, NULL);
 #endif
 
             string.ReleaseBuffer(chars);
@@ -816,7 +816,7 @@ namespace Win32xx
         Read(&size, sizeof(size));
         if (size != ao.m_size)
         {
-            throw CFileException(m_pFile->GetFilePath(), g_msgArReadFail);
+            throw CFileException(m_pFile->GetFilePath(), GetApp()->MsgArReadFail());
         }
 
         Read(ao.m_pData, ao.m_size);
@@ -929,9 +929,9 @@ namespace Win32xx
         Write(string, chars*sizeof(WCHAR));
     }
 
-#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+#if defined (_MSC_VER) && (_MSC_VER >= 1920)       // >= VS2019
 #pragma warning ( pop )  // ( disable : 26812 )    enum type is unscoped.
-#endif // (_MSC_VER) && (_MSC_VER >= 1400)
+#endif // (_MSC_VER) && (_MSC_VER >= 1920)
 
 } // namespace Win32xx
 

@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -81,8 +81,6 @@
 
 namespace Win32xx
 {
-    class CMDIChild;
-    typedef Shared_Ptr<CMDIChild> MDIChildPtr;
 
     ///////////////////////////////////////////////////////////////
     // CMDIChild manages a MDI child window. CMDIChild also manages
@@ -94,13 +92,13 @@ namespace Win32xx
         virtual ~CMDIChild();
 
         // These are the functions you might wish to override
-        virtual HWND Create(HWND parent = NULL);
+        virtual HWND Create(HWND parent = 0);
         virtual void RecalcLayout();
 
         // These functions aren't virtual, and shouldn't be overridden
         HACCEL GetChildAccel() const { return m_childAccel; }
         HMENU GetChildMenu() const { return m_childMenu; }
-        CWnd& GetView() const           { assert(m_pView); return *m_pView; }
+        CWnd& GetView() const;
         void SetView(CWnd& view);
         void SetHandles(HMENU menu, HACCEL accel);
         void MDIActivate() const;
@@ -159,6 +157,7 @@ namespace Win32xx
 
         // Overridable virtual functions
         virtual CMDIChild* AddMDIChild(CMDIChild* pMDIChild);
+        virtual HWND Create(HWND parent = 0);
         virtual CMDIChild* GetActiveMDIChild() const;
         virtual CMenu GetActiveMenu() const;
         virtual CWnd& GetMDIClient() const { return m_mdiClient; }
@@ -234,8 +233,16 @@ namespace Win32xx
     template <class T>
     inline CMDIFrameT<T>::CMDIFrameT()
     {
-        // The view for a CMDIFrame is the MDIClient
+    }
+
+    // Create the MDI frame.
+    template <class T>
+    inline HWND CMDIFrameT<T>::Create(HWND parent /* = 0 */)
+    {
+        // The view for a CMDIFrame is the MDIClient.
         T::SetView(GetMDIClient());
+
+        return T::Create(parent);
     }
 
     // Adds a MDI child to the MDI frame. The pointer to the MDI child will be
@@ -463,20 +470,21 @@ namespace Win32xx
     template <class T>
     inline void CMDIFrameT<T>::OnMenuUpdate(UINT id)
     {
+        CMenu activeMenu = GetActiveMenu();
         switch (id)
         {
         case IDW_VIEW_STATUSBAR:
             {
                 BOOL isVisible = T::GetStatusBar().IsWindow() && T::GetStatusBar().IsWindowVisible();
-                GetActiveMenu().CheckMenuItem(id, isVisible ? MF_CHECKED : MF_UNCHECKED);
+                activeMenu.CheckMenuItem(id, isVisible ? MF_CHECKED : MF_UNCHECKED);
             }
             break;
 
         case IDW_VIEW_TOOLBAR:
             {
                 BOOL isVisible = T::GetToolBar().IsWindow() && T::GetToolBar().IsWindowVisible();
-                GetActiveMenu().EnableMenuItem(id, T::IsUsingToolBar() ? MF_ENABLED : MF_DISABLED);
-                GetActiveMenu().CheckMenuItem(id, isVisible ? MF_CHECKED : MF_UNCHECKED);
+                activeMenu.EnableMenuItem(id, T::IsUsingToolBar() ? MF_ENABLED : MF_DISABLED);
+                activeMenu.CheckMenuItem(id, isVisible ? MF_CHECKED : MF_UNCHECKED);
             }
             break;
         }
@@ -527,7 +535,7 @@ namespace Win32xx
     template <class T>
     inline BOOL CMDIFrameT<T>::OnViewStatusBar()
     {
-        OnViewStatusBar();
+        T::OnViewStatusBar();
         T::GetView().RedrawWindow(RDW_FRAME | RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN);
         return TRUE;
     }
@@ -536,7 +544,7 @@ namespace Win32xx
     template <class T>
     inline BOOL CMDIFrameT<T>::OnViewToolBar()
     {
-        OnViewToolBar();
+        T::OnViewToolBar();
         T::GetView().RedrawWindow(RDW_FRAME | RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN);
         return TRUE;
     }
@@ -799,7 +807,7 @@ namespace Win32xx
 
     // Create the MDI child window and then maximize if required.
     // This technique avoids unnecessary flicker when creating maximized MDI children.
-    inline HWND CMDIChild::Create(HWND parent /*= NULL*/)
+    inline HWND CMDIChild::Create(HWND parent /*= 0*/)
     {
         CREATESTRUCT cs;
         WNDCLASS wc;
@@ -861,7 +869,7 @@ namespace Win32xx
         pParent->RedrawWindow(RDW_INVALIDATE | RDW_ALLCHILDREN);
 
         // Ensure bits revealed by round corners (XP themes) are redrawn
-        SetWindowPos(NULL, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE|SWP_FRAMECHANGED);
+        VERIFY(SetWindowPos(0, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE|SWP_FRAMECHANGED));
 
         return GetHwnd();
     }
@@ -870,6 +878,14 @@ namespace Win32xx
     inline LRESULT CMDIChild::FinalWindowProc(UINT msg, WPARAM wparam, LPARAM lparam)
     {
         return ::DefMDIChildProc(*this, msg, wparam, lparam);
+    }
+
+    // Returns a reference to the view window.
+    inline CWnd& CMDIChild::GetView() const
+    {
+        // Note: Use SetView to set the view window.
+        assert(m_pView);
+        return *m_pView;
     }
 
     // Activate a MDI child.
@@ -954,7 +970,7 @@ namespace Win32xx
     {
         // Resize the View window
         CRect rc = GetClientRect();
-        GetView().SetWindowPos( NULL, rc.left, rc.top, rc.Width(), rc.Height(), SWP_SHOWWINDOW );
+        VERIFY(GetView().SetWindowPos( 0, rc.left, rc.top, rc.Width(), rc.Height(), SWP_SHOWWINDOW ));
     }
 
     // Sets the MDI child's menu and accelerator handles.

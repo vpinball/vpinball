@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -56,6 +56,7 @@ namespace Win32xx
     public:
         CListView() {}
         virtual ~CListView() {}
+        virtual void PreCreate(CREATESTRUCT& cs);
         virtual void PreRegisterClass(WNDCLASS& wc);
 
         // Attributes
@@ -162,8 +163,17 @@ namespace Win32xx
 
 namespace Win32xx
 {
+    // Sets the window creation parameters.
+    inline void CListView::PreCreate(CREATESTRUCT& cs)
+    {
+        cs.style = WS_CHILD | WS_VISIBLE | LVS_SHAREIMAGELISTS;
 
-    // Sets the window class.
+        // LVS_SHAREIMAGELISTS:
+        // The image list will not be deleted when the control is destroyed.
+        // Allows Win32++ to control the destruction of the image list.
+    }
+
+    // Sets the window class parameters.
     inline void CListView::PreRegisterClass(WNDCLASS& wc)
     {
         wc.lpszClassName =  WC_LISTVIEW;

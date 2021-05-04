@@ -19,15 +19,16 @@ Win32++ supports the following compilers and development environments:
 * Microsoft Visual Studio Community 2019
 * Microsoft Visual Studio 6.0
 * Microsoft Visual Studio.net 2003
-* Microsoft Visual Studio.net 2005
-* Microsoft Visual Studio.net 2008
-* Microsoft Visual Studio.net 2010
-* Microsoft Visual Studio.net 2012
-* Microsoft Visual Studio.net 2013
-* Microsoft Visual Studio.net 2015
-* Microsoft Visual Studio.net 2019
+* Microsoft Visual Studio 2005
+* Microsoft Visual Studio 2008
+* Microsoft Visual Studio 2010
+* Microsoft Visual Studio 2012
+* Microsoft Visual Studio 2013
+* Microsoft Visual Studio 2015
+* Microsoft Visual Studio 2019
 * MinGW compiler
 * MinGW x64 compiler
+* Clang compiler provided with Visual Studio Community 2019.
 
 Win32++ supports the following operating systems
 * Windows 95
@@ -63,6 +64,7 @@ Win32++ code has the following features
  * Network support (including IP version 6)
  * Docking windows
  * Tabbed MDIs
+ * Print preview support.
 
 Frames produced by Win32++ include the following:
  * Rebar
@@ -109,6 +111,7 @@ The sample applications include:
  * MDIFrameDemo - Demonstrates some additional features of MDI frames.
  * MDIFrameSplitter - Demonstrates how to implement splitter windows in MDI Child windows.
  * MetaFile  - Demonstrates how to create and display an enhanced metafile.
+ * MovieShow - This program manages a video library.
  * NetClient - Demonstrates a network chat client.
  * NetServer - Demonstrates a network chat server.
  * NetSimple - Simple client and server network programs.
@@ -134,6 +137,7 @@ The sample applications include:
  * TimeDemo - Demonstrates various uses of the CTime class.
  * ToolBarDemo - Demonstrates how to customize a toolbar.
  * Tray - Demonstrates how to "minimise" an application to the system tray.
+ * WinPlot - Plots a function specified by the user.
  * WinCE samples - A small collection of samples for Windows CE
 
 Getting Started

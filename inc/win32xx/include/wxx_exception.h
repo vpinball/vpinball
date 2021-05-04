@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -53,7 +53,7 @@
 //  catch(const CException &e) // catch all exceptions inherited from CException
 //  {
 //      // display the exception in a message box
-//      ::MessageBox(NULL, LoadString(e.GetMessageID()), AtoT(e.what()), MB_ICONERROR);
+//      ::MessageBox(0, LoadString(e.GetMessageID()), AtoT(e.what()), MB_ICONERROR);
 //  }
 
 //
@@ -69,7 +69,7 @@
 //  catch(const CException &e) // catch all exceptions inherited from CException
 //  {
 //      // display the exception in a message box
-//      ::MessageBox(NULL, e.GetText(), AtoT(e.what()), MB_ICONERROR);
+//      ::MessageBox(0, e.GetText(), AtoT(e.what()), MB_ICONERROR);
 //  }
 
 
@@ -83,17 +83,17 @@ namespace Win32xx
     // inherited from CException. We can catch all exceptions inherited from
     // CException with a single catch statement.
     //
-    class CException
+    class CException : public std::exception
     {
     public:
-        CException(int messageID);
-        CException(LPCTSTR text = NULL, int messageID = 0);
-        virtual ~CException();
+        CException(int messageID) throw();
+        CException(LPCTSTR text = NULL, int messageID = 0) throw();
+        virtual ~CException() throw();
 
-        DWORD GetError() const;
-        LPCTSTR GetErrorString() const;
-        int GetMessageID() const;
-        LPCTSTR GetText() const;
+        DWORD GetError() const throw();
+        LPCTSTR GetErrorString() const throw();
+        int GetMessageID() const throw();
+        LPCTSTR GetText() const throw();
         virtual const char* what() const throw() = 0; // pure virtual function
 
     private:
@@ -111,12 +111,12 @@ namespace Win32xx
     class CFileException : public CException
     {
     public:
-        CFileException(LPCTSTR filePath, int messageID);
-        CFileException(LPCTSTR filePath, LPCTSTR text= NULL, int messageID = 0);
-        virtual ~CFileException();
+        CFileException(LPCTSTR filePath, int messageID) throw();
+        CFileException(LPCTSTR filePath, LPCTSTR text= NULL, int messageID = 0) throw();
+        virtual ~CFileException() throw();
 
-        LPCTSTR GetFilePath() const;
-        LPCTSTR GetFileName() const;
+        LPCTSTR GetFilePath() const throw();
+        LPCTSTR GetFileName() const throw();
         virtual const char* what () const throw();
 
     private:
@@ -131,9 +131,9 @@ namespace Win32xx
     class CNotSupportedException : public CException
     {
     public:
-        CNotSupportedException(int messageID);
-        CNotSupportedException(LPCTSTR text = NULL, int messageID = 0);
-        virtual ~CNotSupportedException();
+        CNotSupportedException(int messageID) throw();
+        CNotSupportedException(LPCTSTR text = NULL, int messageID = 0) throw();
+        virtual ~CNotSupportedException() throw();
         virtual const char* what() const throw();
     };
 
@@ -145,9 +145,9 @@ namespace Win32xx
     class CResourceException : public CException
     {
     public:
-        CResourceException(int messageID);
-        CResourceException(LPCTSTR text = NULL, int messageID = 0);
-        virtual ~CResourceException();
+        CResourceException(int messageID) throw();
+        CResourceException(LPCTSTR text = NULL, int messageID = 0) throw();
+        virtual ~CResourceException() throw();
         virtual const char* what() const throw();
     };
 
@@ -162,9 +162,9 @@ namespace Win32xx
     class CUserException : public CException
     {
     public:
-        CUserException(int messageID);
-        CUserException(LPCTSTR text = NULL, int messageID = 0);
-        virtual ~CUserException();
+        CUserException(int messageID) throw();
+        CUserException(LPCTSTR text = NULL, int messageID = 0) throw();
+        virtual ~CUserException() throw();
         virtual const char* what() const throw();
     };
 
@@ -176,9 +176,9 @@ namespace Win32xx
     class CWinException : public CException
     {
     public:
-        CWinException(int messageID);
-        CWinException(LPCTSTR text= NULL, int messageID = 0);
-        virtual ~CWinException();
+        CWinException(int messageID) throw();
+        CWinException(LPCTSTR text= NULL, int messageID = 0) throw();
+        virtual ~CWinException() throw();
         virtual const char* what () const throw();
     };
 
@@ -188,7 +188,7 @@ namespace Win32xx
     //
 
     // CException constructor
-    inline CException::CException(int messageID)
+    inline CException::CException(int messageID) throw()
             : m_messageID(messageID), m_error(::GetLastError())
     {
         memset(m_text, 0, MAX_STRING_SIZE * sizeof(TCHAR));
@@ -202,7 +202,7 @@ namespace Win32xx
 
 
     // CException constructor
-    inline CException::CException(LPCTSTR text /*= NULL*/, int messageID /*= 0*/)
+    inline CException::CException(LPCTSTR text /*= NULL*/, int messageID /*= 0*/) throw()
             : m_messageID(messageID), m_error(::GetLastError())
     {
         memset(m_text, 0, MAX_STRING_SIZE * sizeof(TCHAR));
@@ -217,31 +217,31 @@ namespace Win32xx
     }
 
     // CException destructor
-    inline CException::~CException()
+    inline CException::~CException() throw()
     {
     }
 
     // Returns the error reported by GetLastError
-    inline DWORD CException::GetError() const
+    inline DWORD CException::GetError() const throw()
     {
         return m_error;
     }
 
     // Retrieves the error string from GetLastError.
-    inline LPCTSTR CException::GetErrorString() const
+    inline LPCTSTR CException::GetErrorString() const throw()
     {
         return m_errorString;
     }
 
     // Retrieves the message ID specified when the exception is thrown.
     // This could be a resource ID for a string in the resource script (resource.rc).
-    inline int CException::GetMessageID() const
+    inline int CException::GetMessageID() const throw()
     {
         return m_messageID;
     }
 
     // Retrieves the string specified when the exception is thrown.
-    inline LPCTSTR CException::GetText() const
+    inline LPCTSTR CException::GetText() const throw()
     {
         return m_text;
     }
@@ -252,7 +252,7 @@ namespace Win32xx
     //
 
     // CFileException constructor
-    inline CFileException::CFileException(LPCTSTR pFilePath, int messageID)
+    inline CFileException::CFileException(LPCTSTR pFilePath, int messageID) throw()
         : CException(messageID)
     {
         // Display some text in the debugger
@@ -273,7 +273,7 @@ namespace Win32xx
     }
 
     // CFileException constructor
-    inline CFileException::CFileException(LPCTSTR pFilePath, LPCTSTR text /*= NULL*/, int messageID /*= 0*/)
+    inline CFileException::CFileException(LPCTSTR pFilePath, LPCTSTR text /*= NULL*/, int messageID /*= 0*/) throw()
         : CException(text, messageID)
     {
         // Display some text in the debugger
@@ -300,18 +300,18 @@ namespace Win32xx
     }
 
     // CFileException destructor
-    inline CFileException::~CFileException()
+    inline CFileException::~CFileException() throw()
     {
     }
 
     // Returns the filename and path specified when the exception was thrown
-    inline LPCTSTR CFileException::GetFilePath() const
+    inline LPCTSTR CFileException::GetFilePath() const throw()
     {
         return m_filePath;
     }
 
     // Returns the filename excluding the path.
-    inline LPCTSTR CFileException::GetFileName() const
+    inline LPCTSTR CFileException::GetFileName() const throw()
     {
         // Get the index of the first character after the last '\'
         int index = lstrlen(m_filePath);
@@ -335,7 +335,7 @@ namespace Win32xx
     //
 
     // CNotSupportedException constructor
-    inline CNotSupportedException::CNotSupportedException(int messageID)
+    inline CNotSupportedException::CNotSupportedException(int messageID) throw()
         : CException(messageID)
     {
         // Display some text in the debugger
@@ -346,7 +346,7 @@ namespace Win32xx
     }
 
     // CNotSupportedException constructor
-    inline CNotSupportedException::CNotSupportedException(LPCTSTR text /*= NULL*/, int messageID /*= 0*/)
+    inline CNotSupportedException::CNotSupportedException(LPCTSTR text /*= NULL*/, int messageID /*= 0*/) throw()
         : CException(text, messageID)
     {
         // Display some text in the debugger
@@ -363,7 +363,7 @@ namespace Win32xx
     }
 
     // CNotSupportedException destructor
-    inline CNotSupportedException::~CNotSupportedException()
+    inline CNotSupportedException::~CNotSupportedException() throw()
     {
         if (GetError() != 0)
             ::OutputDebugString(GetErrorString());
@@ -381,7 +381,7 @@ namespace Win32xx
     //
 
     // CResourceException constructor
-    inline CResourceException::CResourceException(int messageID)
+    inline CResourceException::CResourceException(int messageID) throw()
         : CException(messageID)
     {
         // Display some text in the debugger
@@ -392,7 +392,7 @@ namespace Win32xx
     }
 
     // CResourceException constructor
-    inline CResourceException::CResourceException(LPCTSTR text /*= NULL*/, int messageID /*= 0*/)
+    inline CResourceException::CResourceException(LPCTSTR text /*= NULL*/, int messageID /*= 0*/) throw()
         : CException(text, messageID)
     {
         // Display some text in the debugger
@@ -409,7 +409,7 @@ namespace Win32xx
     }
 
     // CResourceException destructor
-    inline CResourceException::~CResourceException()
+    inline CResourceException::~CResourceException() throw()
     {
     }
 
@@ -425,7 +425,7 @@ namespace Win32xx
     //
 
     // CUserException constructor
-    inline CUserException::CUserException(int messageID)
+    inline CUserException::CUserException(int messageID) throw()
             : CException(messageID)
     {
         // Display some text in the debugger
@@ -436,7 +436,7 @@ namespace Win32xx
     }
 
     // CUserException constructor
-    inline CUserException::CUserException(LPCTSTR text /*= NULL*/, int messageID /*= 0*/)
+    inline CUserException::CUserException(LPCTSTR text /*= NULL*/, int messageID /*= 0*/) throw()
             : CException(text, messageID)
     {
         // Display some text in the debugger
@@ -453,7 +453,7 @@ namespace Win32xx
     }
 
     // CUserException destructor
-    inline CUserException::~CUserException()
+    inline CUserException::~CUserException() throw()
     {
     }
 
@@ -469,7 +469,7 @@ namespace Win32xx
     //
 
     // CWinException constructor
-    inline CWinException::CWinException(int messageID)
+    inline CWinException::CWinException(int messageID) throw()
         : CException(messageID)
     {
         // Display some text in the debugger
@@ -480,7 +480,7 @@ namespace Win32xx
     }
 
     // CWinException constructor
-    inline CWinException::CWinException(LPCTSTR text, int messageID)
+    inline CWinException::CWinException(LPCTSTR text, int messageID) throw()
         : CException(text, messageID)
     {
         // Display some text in the debugger
@@ -496,7 +496,7 @@ namespace Win32xx
     }
 
     // CWinException destructor
-    inline CWinException::~CWinException()
+    inline CWinException::~CWinException() throw()
     {
     }
 

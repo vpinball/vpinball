@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -70,16 +70,17 @@
 //
 
 // Specify minimum acceptable version macros
-// These are suitable for Windows 95
+// These are suitable for Windows 95 and Windows NT
 #ifndef WINVER
-  #define WINVER          0x0400
-  #ifndef _WIN32_WINDOWS
-    #define _WIN32_WINDOWS  0x0400
-  #endif
+  #define WINVER            0x0400
+#endif
+#ifndef _WIN32_WINDOWS
+  #define _WIN32_WINDOWS    WINVER
 #endif
 #ifndef _WIN32_IE
- #define _WIN32_IE        0x0400
+ #define _WIN32_IE          WINVER
 #endif
+
 
 // Remove pointless warning messages
 #ifdef _MSC_VER
@@ -99,24 +100,22 @@
   #define STRICT 1
 #endif
 
-#ifdef __GNUC__
-  #pragma GCC diagnostic ignored "-Wmissing-braces"
-#endif
 
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include <cassert>
 #include <vector>
 #include <algorithm>
 #include <string>
 #include <map>
-#include <winsock2.h>
-#include <windows.h>
-#include <commctrl.h>
+#include <WinSock2.h>
+#include <Windows.h>
+#include <CommCtrl.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <tchar.h>
 #ifndef _WIN32_WCE
-  #include <shlwapi.h>
+  #include <Shlwapi.h>
   #include <process.h>
   #include <sstream>
 #endif
@@ -192,7 +191,7 @@ using namespace Win32xx;
 #define MIN(a,b)        (((a) < (b)) ? (a) : (b))
 
 // Version macro
-#define _WIN32XX_VER 0x0880     // Win32++ version 8.8
+#define _WIN32XX_VER 0x0890     // Win32++ version 8.9.0
 
 // Define the TRACE Macro
 // In debug mode, TRACE send text to the debug/output pane, or an external debugger
@@ -216,75 +215,10 @@ using namespace Win32xx;
   #endif
 #endif
 
+#include "wxx_cstring.h"
 
 namespace Win32xx
 {
-
-    // Messages used for exceptions.
-    LPCTSTR const g_msgAppThreadFailed = _T("Failed to create thread");
-    LPCTSTR const g_msgAppInstanceFailed = _T("Only one instance of CWinApp is permitted");
-    LPCTSTR const g_msgAppTLSFailed = _T("CWinApp::CWinApp  Failed to allocate Thread Local Storage");
-    LPCTSTR const g_msgArReadFail = _T("Failed to read from archive.");
-    LPCTSTR const g_msgArNotCStringA = _T("ANSI characters stored. Not a CStringW");
-    LPCTSTR const g_msgArNotCStringW = _T("Unicode characters stored. Not a CStringA");
-    LPCTSTR const g_msgCriticalSection = _T("Failed to create critical section");
-    LPCTSTR const g_msgMtxEvent = _T("Unable to create event");
-    LPCTSTR const g_msgMtxMutex = _T("Unable to create mutex");
-    LPCTSTR const g_msgMtxSemaphore = _T("Unable to create semaphore");
-
-    LPCTSTR const g_msgWndCreateEx = _T("Failed to create window");
-    LPCTSTR const g_msgWndDoModal = _T("Failed to create dialog");
-    LPCTSTR const g_msgWndGlobalLock = _T("CGlobalLock failed to lock handle");
-    LPCTSTR const g_msgWndPropertSheet = _T("Failed to create PropertySheet");
-    LPCTSTR const g_msgSocWSAStartup = _T("WSAStartup failed");
-    LPCTSTR const g_msgSocWS2Dll  = _T("Failed to load WS2_2.dll");
-    LPCTSTR const g_msgIPControl  = _T("IP Address Control not supported!");
-    LPCTSTR const g_msgRichEditDll = _T("Failed to load RICHED32.DLL");
-    LPCTSTR const g_msgTaskDialog = _T("Failed to create Task Dialog");
-
-    LPCTSTR const g_msgFileClose  = _T("Failed to close file");
-    LPCTSTR const g_msgFileFlush  = _T("Failed to flush file");
-    LPCTSTR const g_msgFileLock   = _T("Failed to lock the file");
-    LPCTSTR const g_msgFileOpen   = _T("Failed to open file");
-    LPCTSTR const g_msgFileRead   = _T("Failed to read from file");
-    LPCTSTR const g_msgFileRename = _T("Failed to rename file");
-    LPCTSTR const g_msgFileRemove = _T("Failed to delete file");
-    LPCTSTR const g_msgFileLength = _T("Failed to change the file length");
-    LPCTSTR const g_msgFileUnlock = _T("Failed to unlock the file");
-    LPCTSTR const g_msgFileWrite  = _T("Failed to write to file");
-
-    LPCTSTR const g_msgGdiDC      = _T("Failed to create device context");
-    LPCTSTR const g_msgGdiIC      = _T("Failed to create information context");
-    LPCTSTR const g_msgGdiBitmap  = _T("Failed to create bitmap");
-    LPCTSTR const g_msgGdiBrush   = _T("Failed to create brush");
-    LPCTSTR const g_msgGdiFont    = _T("Failed to create font");
-    LPCTSTR const g_msgGdiPalette = _T("Failed to create palette");
-    LPCTSTR const g_msgGdiPen     = _T("Failed to create pen");
-    LPCTSTR const g_msgGdiRegion  = _T("Failed to region");
-    LPCTSTR const g_msgGdiGetDC   = _T("GetDC failed");
-    LPCTSTR const g_msgGdiGetDCEx = _T("GetDCEx failed");
-    LPCTSTR const g_msgGdiSelObject = _T("Failed to select object into device context");
-    LPCTSTR const g_msgGdiGetWinDC  = _T("GetWindowDC failed");
-    LPCTSTR const g_msgGdiBeginPaint = _T("BeginPaint failed");
-
-    LPCTSTR const g_msgPrintFound = _T("No printer available");
-
-    // DDX anomaly prompting messages
-    LPCTSTR const g_msgDDX_Byte = _T("Please enter an integer between 0 and 255.");
-    LPCTSTR const g_msgDDX_Int = _T("Please enter an integer.");
-    LPCTSTR const g_msgDDX_Long = _T("Please enter a long integer.");
-    LPCTSTR const g_msgDDX_Short = _T("Please enter a short integer.");
-    LPCTSTR const g_msgDDX_Real = _T("Please enter a number.");
-    LPCTSTR const g_msgDDX_UINT = _T("Please enter a positive integer.");
-    LPCTSTR const g_msgDDX_ULONG = _T("Please enter a positive long integer.");
-
-    // DDV formats and prompts
-    LPCTSTR const g_msgDDV_IntRange = _T("Please enter an integer in (%ld, %ld).");
-    LPCTSTR const g_msgDDV_UINTRange = _T("Please enter an integer in (%lu, %lu).");
-    LPCTSTR const g_msgDDV_RealRange = _T("Please enter a number in (%.*g, %.*g).");
-    LPCTSTR const g_msgDDV_StringSize = _T("%s\n is too long.\nPlease enter no ")\
-        _T("more than %ld characters.");
-
 
     ////////////////////////////////////////////////
     // Forward declarations.
@@ -296,20 +230,26 @@ namespace Win32xx
     class CClientDCEx;
     class CDataExchange;
     class CDC;
+    class CDocker;
     class CFont;
     class CGDIObject;
     class CImageList;
+    class CMDIChild;
     class CMemDC;
     class CMenu;
     class CMenuBar;
     class CPaintDC;
     class CPalette;
     class CPen;
+    class CPropertyPage;
     class CRgn;
     class CWinApp;
+    class CWinThread;
     class CWindowDC;
     class CWnd;
     struct CDC_Data;
+    struct MenuItemData;
+    struct TLSData;
 
     // tString is a TCHAR std::string
     typedef std::basic_string<TCHAR> tString;
@@ -318,17 +258,41 @@ namespace Win32xx
   #endif
 
     // Some useful smart pointers
-    typedef Shared_Ptr<CDC> DCPtr;
-    typedef Shared_Ptr<CGDIObject> GDIPtr;
-    typedef Shared_Ptr<CMenu> MenuPtr;
-    typedef Shared_Ptr<CWnd> WndPtr;
+    // Note: Modern C++ compilers can use these typedefs instead.
+    // typedef std::shared_ptr<CBitmap> BitmapPtr;
+    // typedef std::shared_ptr<CBrush> BrushPtr;
+    // typedef std::shared_ptr<CDC> DCPtr;
+    // typedef std::shared_ptr<CDocker> DockPtr;
+    // typedef std::shared_ptr<CFont> FontPtr;
+    // typedef std::shared_ptr<CGDIObject> GDIPtr;
+    // typedef std::shared_ptr<CImageList> ImageListPtr;
+    // typedef std::shared_ptr<CMDIChild> MDIChildPtr;
+    // typedef std::shared_ptr<CMenu> MenuPtr;
+    // typedef std::shared_ptr<MenuItemData> ItemDataPtr;
+    // typedef std::shared_ptr<CPalette> PalettePtr;
+    // typedef std::shared_ptr<CPen> PenPtr;
+    // typedef std::shared_ptr<CPropertyPage> PropertyPagePtr;
+    // typedef std::shared_ptr<CRgn> RgnPtr;
+    // typedef std::shared_ptr<TLSData> TLSDataPtr;
+    // typedef std::shared_ptr<CWinThread> ThreadPtr;
+    // typedef std::shared_ptr<CWnd> WndPtr;
     typedef Shared_Ptr<CBitmap> BitmapPtr;
     typedef Shared_Ptr<CBrush> BrushPtr;
+    typedef Shared_Ptr<CDC> DCPtr;
+    typedef Shared_Ptr<CDocker> DockPtr;
     typedef Shared_Ptr<CFont> FontPtr;
+    typedef Shared_Ptr<CGDIObject> GDIPtr;
     typedef Shared_Ptr<CImageList> ImageListPtr;
+    typedef Shared_Ptr<CMDIChild> MDIChildPtr;
+    typedef Shared_Ptr<CMenu> MenuPtr;
+    typedef Shared_Ptr<MenuItemData> ItemDataPtr;
     typedef Shared_Ptr<CPalette> PalettePtr;
     typedef Shared_Ptr<CPen> PenPtr;
+    typedef Shared_Ptr<CPropertyPage> PropertyPagePtr;
     typedef Shared_Ptr<CRgn> RgnPtr;
+    typedef Shared_Ptr<TLSData> TLSDataPtr;
+    typedef Shared_Ptr<CWinThread> ThreadPtr;
+    typedef Shared_Ptr<CWnd> WndPtr;
 
 
     // A structure that contains the data members for CGDIObject.
@@ -429,7 +393,7 @@ namespace Win32xx
     // except that a critical section can be used only by the threads of a
     // single process. Critical sections are faster and more efficient than mutexes.
     // The CCriticalSection object should be created in the primary thread. Create
-    // them as member variables in your CWinApp derrived class.
+    // them as member variables in your CWinApp derived class.
     class CCriticalSection
     {
     public:
@@ -474,23 +438,23 @@ namespace Win32xx
     class CHGlobal
     {
     public:
-        CHGlobal() : m_hGlobal(0) {}
-        CHGlobal(HGLOBAL handle) : m_hGlobal(handle) {}
-        CHGlobal(size_t size) : m_hGlobal(0) { Alloc(size); }
+        CHGlobal() : m_global(0) {}
+        CHGlobal(HGLOBAL handle) : m_global(handle) {}
+        CHGlobal(size_t size) : m_global(0) { Alloc(size); }
         ~CHGlobal()                     { Free(); }
 
         void Alloc(size_t size);
         void Free();
-        HGLOBAL Get() const             { return m_hGlobal; }
-        void Reassign(HGLOBAL hGlobal);
+        HGLOBAL Get() const             { return m_global; }
+        void Reassign(HGLOBAL global);
 
-        operator HGLOBAL() const        { return m_hGlobal; }
+        operator HGLOBAL() const        { return m_global; }
 
     private:
         CHGlobal(const CHGlobal&);              // Disable copy
         CHGlobal& operator = (const CHGlobal&); // Disable assignment
 
-        HGLOBAL m_hGlobal;
+        HGLOBAL m_global;
     };
 
 
@@ -567,15 +531,15 @@ namespace Win32xx
     {
         // Provide these access to CWinApp's private members:
         friend class CDC;
+        friend class CDialog;
         friend class CGDIObject;
         friend class CImageList;
         friend class CMenu;
-        friend class CWnd;
-        friend class CPrintDialog;
         friend class CPageSetupDialog;
+        friend class CPrintDialog;
+        friend class CPropertyPage;
+        friend class CWnd;
         friend CWinApp* GetApp();
-
-        typedef Shared_Ptr<TLSData> TLSDataPtr;
 
     public:
         CWinApp();
@@ -638,6 +602,70 @@ namespace Win32xx
         std::map<HMENU, CMenu_Data*, CompareHMENU> m_mapCMenuData;
 #endif
 
+    public:
+        // Messages used for exceptions.
+        virtual CString MsgAppThread() const;
+        virtual CString MsgArReadFail() const;
+        virtual CString MsgArNotCStringA() const;
+        virtual CString MsgArNotCStringW() const;
+        virtual CString MsgCriticalSection() const;
+        virtual CString MsgMtxEvent() const;
+        virtual CString MsgMtxMutex() const;
+        virtual CString MsgMtxSemaphore() const;
+
+        virtual CString MsgWndCreate() const;
+        virtual CString MsgWndDialog() const;
+        virtual CString MsgWndGlobalLock() const;
+        virtual CString MsgWndPropertSheet() const;
+        virtual CString MsgSocWSAStartup() const;
+        virtual CString MsgSocWS2Dll() const;
+        virtual CString MsgIPControl() const;
+        virtual CString MsgRichEditDll() const;
+        virtual CString MsgTaskDialog() const;
+
+        virtual CString MsgFileClose() const;
+        virtual CString MsgFileFlush() const;
+        virtual CString MsgFileLock() const;
+        virtual CString MsgFileOpen() const;
+        virtual CString MsgFileRead() const;
+        virtual CString MsgFileRename() const;
+        virtual CString MsgFileRemove() const;
+        virtual CString MsgFileLength() const;
+        virtual CString MsgFileUnlock() const;
+        virtual CString MsgFileWrite() const;
+
+        virtual CString MsgGdiDC() const;
+        virtual CString MsgGdiIC() const;
+        virtual CString MsgGdiBitmap() const;
+        virtual CString MsgGdiBrush() const;
+        virtual CString MsgGdiFont() const;
+        virtual CString MsgGdiPalette() const;
+        virtual CString MsgGdiPen() const;
+        virtual CString MsgGdiRegion() const;
+        virtual CString MsgGdiGetDC() const;
+        virtual CString MsgGdiGetDCEx() const;
+        virtual CString MsgGdiSelObject() const;
+        virtual CString MsgGdiGetWinDC() const;
+        virtual CString MsgGdiBeginPaint() const;
+
+        virtual CString MsgImageList() const;
+        virtual CString MsgMenu() const;
+        virtual CString MsgPrintFound() const;
+
+        // DDX anomaly prompting messages
+        virtual CString MsgDDX_Byte() const;
+        virtual CString MsgDDX_Int() const;
+        virtual CString MsgDDX_Long() const;
+        virtual CString MsgDDX_Short() const;
+        virtual CString MsgDDX_Real() const;
+        virtual CString MsgDDX_UINT() const;
+        virtual CString MsgDDX_ULONG() const;
+
+        // DDV formats and prompts
+        virtual CString MsgDDV_IntRange() const;
+        virtual CString MsgDDV_UINTRange() const;
+        virtual CString MsgDDV_RealRange() const;
+        virtual CString MsgDDV_StringSize() const;
     };
 
 

@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -66,16 +66,16 @@ namespace Win32xx
     //
     inline CCriticalSection::CCriticalSection() : m_count(0)
     {
-#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+#if defined (_MSC_VER) && (_MSC_VER >= 1400)  // >= VS2005
 #pragma warning ( push )
-#pragma warning ( disable : 28125 )       // call within __try __catch block.
+#pragma warning ( disable : 28125 )           // call within __try __catch block.
 #endif // (_MSC_VER) && (_MSC_VER >= 1400)
 
         ::InitializeCriticalSection(&m_cs);
 
-#if defined (_MSC_VER) && (_MSC_VER >= 1400)
-#pragma warning ( pop )
-#endif // (_MSC_VER) && (_MSC_VER >= 1400)
+#if defined (_MSC_VER) && (_MSC_VER >= 1400)  // Note: Only Windows Server 2003 and Windows XP
+#pragma warning ( pop )                       //       require this warning to be suppressed.
+#endif // (_MSC_VER) && (_MSC_VER >= 1400)    //       This exception was removed in Vista and above.
     }
 
     inline CCriticalSection::~CCriticalSection()
@@ -115,27 +115,27 @@ namespace Win32xx
     inline void CHGlobal::Alloc(size_t size)
     {
         Free();
-        m_hGlobal = ::GlobalAlloc(GHND, size);
-        if (m_hGlobal == 0)
+        m_global = ::GlobalAlloc(GHND, size);
+        if (m_global == 0)
             throw std::bad_alloc();
     }
 
     // Manually frees the global memory assigned to this object
     inline void CHGlobal::Free()
     {
-        if (m_hGlobal != 0)
-            ::GlobalFree(m_hGlobal);
+        if (m_global != 0)
+            ::GlobalFree(m_global);
 
-        m_hGlobal = 0;
+        m_global = 0;
     }
 
     // Reassign is used when global memory has been reassigned, as
     // can occur after a call to ::PrintDlg or ::PageSetupDlg.
     // It assigns a new memory handle to be managed by this object
     // and assumes any old memory has already been freed.
-    inline void  CHGlobal::Reassign(HGLOBAL hGlobal)
+    inline void  CHGlobal::Reassign(HGLOBAL global)
     {
-        m_hGlobal = hGlobal;
+        m_global = global;
     }
 
     ///////////////////////////////////////
@@ -193,7 +193,7 @@ namespace Win32xx
             }
 
             // Close the thread's handle
-            VERIFY(::CloseHandle(m_thread));
+            ::CloseHandle(m_thread);
         }
     }
 
@@ -212,7 +212,7 @@ namespace Win32xx
         if (m_thread)
         {
             assert(!IsRunning());
-            VERIFY(CloseHandle(m_thread));
+            CloseHandle(m_thread);
         }
 
 #ifdef _WIN32_WCE
@@ -222,7 +222,7 @@ namespace Win32xx
 #endif
 
         if (m_thread == 0)
-            throw CWinException(g_msgAppThreadFailed);
+            throw CWinException(GetApp()->MsgAppThread());
 
         return m_thread;
     }
@@ -278,38 +278,38 @@ namespace Win32xx
     // to a window procedure.
     inline int CWinThread::MessageLoop()
     {
-        MSG Msg;
-        ZeroMemory(&Msg, sizeof(Msg));
+        MSG msg;
+        ZeroMemory(&msg, sizeof(msg));
         int status = 1;
         LONG lCount = 0;
 
         while (status != 0)
         {
             // While idle, perform idle processing until OnIdle returns FALSE
-            while (!::PeekMessage(&Msg, 0, 0, 0, PM_NOREMOVE) && OnIdle(lCount) != FALSE)
+            while (!::PeekMessage(&msg, 0, 0, 0, PM_NOREMOVE) && OnIdle(lCount) != FALSE)
                 ++lCount;
 
             lCount = 0;
 
             // Now wait until we get a message
-            if ((status = ::GetMessage(&Msg, NULL, 0, 0)) == -1)
+            if ((status = ::GetMessage(&msg, NULL, 0, 0)) == -1)
                 return -1;
 
-            if (!PreTranslateMessage(Msg))
+            if (!PreTranslateMessage(msg))
             {
-                ::TranslateMessage(&Msg);
-                ::DispatchMessage(&Msg);
+                ::TranslateMessage(&msg);
+                ::DispatchMessage(&msg);
             }
 
         }
 
-        return LOWORD(Msg.wParam);
+        return LOWORD(msg.wParam);
     }
 
     // This function is called by the MessageLoop. It is called when the message queue
     // is empty. Return TRUE to continue idle processing or FALSE to end idle processing
-    // until another message is queued. lCount is incremented each time OnIdle is called,
-    // and reset to 0 each time a new messages is processed.
+    // until another message is queued. The count is incremented each time OnIdle is
+    // called, and reset to 0 each time a new messages is processed.
     inline BOOL CWinThread::OnIdle(LONG count)
     {
         UNREFERENCED_PARAMETER(count);
@@ -334,7 +334,7 @@ namespace Win32xx
             else
             {
                 // Search the chain of parents for pretranslated messages.
-                for (HWND wnd = msg.hwnd; wnd != NULL; wnd = ::GetParent(wnd))
+                for (HWND wnd = msg.hwnd; wnd != 0; wnd = ::GetParent(wnd))
                 {
                     CWnd* pWnd = GetApp()->GetCWndFromMap(wnd);
                     if (pWnd)
@@ -406,9 +406,9 @@ namespace Win32xx
     {
         // Get the pointer for this CWinThread object
         CWinThread* pThread = static_cast<CWinThread*>(pCThread);
-        assert(pThread);
+        assert(pThread != 0);
 
-        if (pThread->InitInstance())
+        if ((pThread != 0) && (pThread->InitInstance()))
         {
             GetApp()->SetTlsData();
             return pThread->MessageLoop();
@@ -427,36 +427,47 @@ namespace Win32xx
 
     inline CWinApp::CWinApp() : m_callback(NULL)
     {
-        if ( 0 != SetnGetThis() )
+        static CCriticalSection cs;
+        CThreadLock appLock(cs);
+
+        if (0 == SetnGetThis())
         {
-            // Test if this is the only instance of CWinApp
-            throw CNotSupportedException(g_msgAppInstanceFailed);
-        }
+            m_tlsData = ::TlsAlloc();
+            if (m_tlsData != TLS_OUT_OF_INDEXES)
+            {
+                SetnGetThis(this);
 
-        m_tlsData = ::TlsAlloc();
-        if (m_tlsData == TLS_OUT_OF_INDEXES)
-        {
-            // We only get here in the unlikely event that all TLS indexes are already allocated by this app
-            // At least 64 TLS indexes per process are allowed. Win32++ requires only one TLS index.
-            throw CNotSupportedException(g_msgAppTLSFailed);
-        }
-
-        SetnGetThis(this);
-
-        // Set the instance handle
+                // Set the instance handle
 #ifdef _WIN32_WCE
-        m_instance = (HINSTANCE)GetModuleHandle(0);
+                m_instance = (HINSTANCE)GetModuleHandle(0);
 #else
-        MEMORY_BASIC_INFORMATION mbi;
-        ZeroMemory(&mbi, sizeof(mbi));
-        static int Address = 0;
-        VirtualQuery( &Address, &mbi, sizeof(mbi) );
-        assert(mbi.AllocationBase);
-        m_instance = (HINSTANCE)mbi.AllocationBase;
+                MEMORY_BASIC_INFORMATION mbi;
+                ZeroMemory(&mbi, sizeof(mbi));
+                static int Address = 0;
+                VirtualQuery(&Address, &mbi, sizeof(mbi));
+                assert(mbi.AllocationBase);
+                m_instance = (HINSTANCE)mbi.AllocationBase;
 #endif
 
-        m_resource = m_instance;
-        SetCallback();
+                m_resource = m_instance;
+                SetCallback();
+            }
+            else
+            {
+                // Should not get here.
+                // All TLS indexes are already allocated by this app.
+                // At least 64 TLS indexes per process are allowed.
+                // Win32++ requires only one TLS index.
+                TRACE("\n*** Error: Unable to allocate Thread Local Storage. ***");
+                TRACE("\n*** Error: Win32++ hasn't been started. ***\n\n");
+            }
+        }
+        else
+        {
+            // Should not get here.
+            TRACE("\n*** Warning: Win32++ has already been started. ***");
+            TRACE("\n*** Warning: This instance of CWinApp has been ignored. ***\n\n");
+        }
     }
 
     inline CWinApp::~CWinApp()
@@ -665,7 +676,7 @@ namespace Win32xx
     // Loads an icon, cursor, animated cursor, or bitmap image.
     // uType is the image type. It can be IMAGE_BITMAP, IMAGE_CURSOR or IMAGE_ICON.
     // cx and cy are the desired width and height in pixels.
-    // fuLoad can be LR_DEFAULTCOLOR, LR_CREATEDIBSECTION, LR_DEFAULTSIZE, LR_LOADFROMFILE,
+    // flags can be LR_DEFAULTCOLOR, LR_CREATEDIBSECTION, LR_DEFAULTSIZE, LR_LOADFROMFILE,
     // LR_LOADMAP3DCOLORS, R_LOADTRANSPARENT, LR_MONOCHROME, LR_SHARED, LR_VGACOLOR.
     // Ideally the image should be destroyed unless it is loaded with LR_SHARED.
     // Refer to LoadImage in the Windows API documentation for more information.
@@ -677,7 +688,7 @@ namespace Win32xx
     // Loads an icon, cursor, animated cursor, or bitmap.
     // uType is the image type. It can be IMAGE_BITMAP, IMAGE_CURSOR or IMAGE_ICON.
     // cx and cy are the desired width and height in pixels.
-    // fuLoad can be LR_DEFAULTCOLOR, LR_CREATEDIBSECTION, LR_DEFAULTSIZE, LR_LOADFROMFILE,
+    // flags can be LR_DEFAULTCOLOR, LR_CREATEDIBSECTION, LR_DEFAULTSIZE, LR_LOADFROMFILE,
     // LR_LOADMAP3DCOLORS, R_LOADTRANSPARENT, LR_MONOCHROME, LR_SHARED, LR_VGACOLOR.
     // Ideally the image should be destroyed unless it is loaded with LR_SHARED.
     // Refer to LoadImage in the Windows API documentation for more information.
@@ -716,7 +727,7 @@ namespace Win32xx
         defaultWC.lpfnWndProc   = CWnd::StaticWindowProc;
         defaultWC.lpszClassName = pClassName;
 
-        VERIFY(::RegisterClass(&defaultWC) != 0);
+        VERIFY(::RegisterClass(&defaultWC));
 
         // Retrieve the class information
         ZeroMemory(&defaultWC, sizeof(defaultWC));
@@ -725,7 +736,7 @@ namespace Win32xx
         // Save the callback address of CWnd::StaticWindowProc
         assert(defaultWC.lpfnWndProc);  // Assert fails when running UNICODE build on ANSI OS.
         m_callback = defaultWC.lpfnWndProc;
-        VERIFY(::UnregisterClass(pClassName, GetInstanceHandle()) != 0);
+        VERIFY(::UnregisterClass(pClassName, GetInstanceHandle()));
     }
 
     // Sets the current cursor and returns the previous one.
@@ -774,15 +785,184 @@ namespace Win32xx
         if (NULL == pTLSData)
         {
             pTLSData = new TLSData;
+            TLSDataPtr dataPtr(pTLSData);
 
             CThreadLock TLSLock(m_appLock);
-            m_allTLSData.push_back(pTLSData); // store as a Shared_Ptr
+            m_allTLSData.push_back(dataPtr); // store as a smart pointer
 
-            ::TlsSetValue(m_tlsData, pTLSData);
+            VERIFY(::TlsSetValue(m_tlsData, pTLSData));
         }
 
         return pTLSData;
     }
+
+    // Messages used for exceptions.
+    inline CString CWinApp::MsgAppThread() const
+    { return _T("Failed to create thread."); }
+
+    inline CString CWinApp::MsgArReadFail() const
+    { return _T("Failed to read from archive."); }
+
+    inline CString CWinApp::MsgArNotCStringA() const
+    { return _T("ANSI characters stored. Not a CStringW."); }
+
+    inline CString CWinApp::MsgArNotCStringW() const
+    { return _T("Unicode characters stored. Not a CStringA."); }
+
+    inline CString CWinApp::MsgCriticalSection() const
+    { return _T("Failed to create critical section."); }
+
+    inline CString CWinApp::MsgMtxEvent() const
+    { return _T("Unable to create event."); }
+
+    inline CString CWinApp::MsgMtxMutex() const
+    { return _T("Unable to create mutex."); }
+
+    inline CString CWinApp::MsgMtxSemaphore() const
+    { return _T("Unable to create semaphore."); }
+
+    inline CString CWinApp::MsgWndCreate() const
+    { return _T("Failed to create window."); }
+
+    inline CString CWinApp::MsgWndDialog() const
+    { return _T("Failed to create dialog."); }
+
+    inline CString CWinApp::MsgWndGlobalLock() const
+    { return _T("CGlobalLock failed to lock handle."); }
+
+    inline CString CWinApp::MsgWndPropertSheet() const
+    { return _T("Failed to create PropertySheet."); }
+
+    inline CString CWinApp::MsgSocWSAStartup() const
+    { return _T("WSAStartup failed."); }
+
+    inline CString CWinApp::MsgSocWS2Dll() const
+    { return _T("Failed to load WS2_2.dll."); }
+
+    inline CString CWinApp::MsgIPControl() const
+    { return _T("IP Address Control not supported!."); }
+
+    inline CString CWinApp::MsgRichEditDll() const
+    { return _T("Failed to load RICHED32.DLL."); }
+
+    inline CString CWinApp::MsgTaskDialog() const
+    { return _T("Failed to create Task Dialog."); }
+
+    // CFile Messages
+    inline CString CWinApp::MsgFileClose() const
+    { return _T("Failed to close file."); }
+
+    inline CString CWinApp::MsgFileFlush() const
+    { return _T("Failed to flush file."); }
+
+    inline CString CWinApp::MsgFileLock() const
+    { return _T("Failed to lock the file."); }
+
+    inline CString CWinApp::MsgFileOpen() const
+    { return _T("Failed to open file."); }
+
+    inline CString CWinApp::MsgFileRead() const
+    { return _T("Failed to read from file."); }
+
+    inline CString CWinApp::MsgFileRename() const
+    { return _T("Failed to rename file."); }
+
+    inline CString CWinApp::MsgFileRemove() const
+    { return _T("Failed to delete file."); }
+
+    inline CString CWinApp::MsgFileLength() const
+    { return _T("Failed to change the file length."); }
+
+    inline CString CWinApp::MsgFileUnlock() const
+    { return _T("Failed to unlock the file."); }
+
+    inline CString CWinApp::MsgFileWrite() const
+    { return _T("Failed to write to file."); }
+
+    // GDI Messages
+    inline CString CWinApp::MsgGdiDC() const
+    { return _T("Failed to create device context."); }
+
+    inline CString CWinApp::MsgGdiIC() const
+    { return _T("Failed to create information context."); }
+
+    inline CString CWinApp::MsgGdiBitmap() const
+    { return _T("Failed to create bitmap."); }
+
+    inline CString CWinApp::MsgGdiBrush() const
+    { return _T("Failed to create brush."); }
+
+    inline CString CWinApp::MsgGdiFont() const
+    { return _T("Failed to create font."); }
+
+    inline CString CWinApp::MsgGdiPalette() const
+    { return _T("Failed to create palette."); }
+
+    inline CString CWinApp::MsgGdiPen() const
+    { return _T("Failed to create pen."); }
+
+    inline CString CWinApp::MsgGdiRegion() const
+    { return  _T("Failed to create region."); }
+
+    inline CString CWinApp::MsgGdiGetDC() const
+    { return  _T("GetDC failed."); }
+
+    inline CString CWinApp::MsgGdiGetDCEx() const
+    { return _T("GetDCEx failed."); }
+
+    inline CString CWinApp::MsgGdiSelObject() const
+    { return _T("Failed to select object into device context."); }
+
+    inline CString CWinApp::MsgGdiGetWinDC() const
+    { return _T("GetWindowDC failed."); }
+
+    inline CString CWinApp::MsgGdiBeginPaint() const
+    { return _T("BeginPaint failed."); }
+
+    // Image list, Menu and Printer messages
+    inline CString CWinApp::MsgImageList() const
+    { return _T("Failed to create imagelist."); }
+
+    inline CString CWinApp::MsgMenu() const
+    { return _T("Failed to create menu."); }
+
+    inline CString CWinApp::MsgPrintFound() const
+    { return _T("No printer available."); }
+
+    // DDX anomaly prompting messages
+    inline CString CWinApp::MsgDDX_Byte() const
+    { return _T("Please enter an integer between 0 and 255."); }
+
+    inline CString CWinApp::MsgDDX_Int() const
+    { return _T("Please enter an integer."); }
+
+    inline CString CWinApp::MsgDDX_Long() const
+    { return _T("Please enter a long integer."); }
+
+    inline CString CWinApp::MsgDDX_Short() const
+    { return _T("Please enter a short integer."); }
+
+    inline CString CWinApp::MsgDDX_Real() const
+    { return _T("Please enter a number."); }
+
+    inline CString CWinApp::MsgDDX_UINT() const
+    { return _T("Please enter a positive integer."); }
+
+    inline CString CWinApp::MsgDDX_ULONG() const
+    { return _T("Please enter a positive long integer."); }
+
+    // DDV formats and prompts
+    inline CString CWinApp::MsgDDV_IntRange() const
+    { return _T("Please enter an integer in (%ld, %ld)."); }
+
+    inline CString CWinApp::MsgDDV_UINTRange() const
+    { return _T("Please enter an positive integer in (%lu, %lu)."); }
+
+    inline CString CWinApp::MsgDDV_RealRange() const
+    { return _T("Please enter a number in (%.*g, %.*g)."); }
+
+    inline CString CWinApp::MsgDDV_StringSize() const
+    { return _T("%s\n is too long.\nPlease enter no more than %ld characters."); }
 
 
     ////////////////////////////////////////
@@ -793,6 +973,10 @@ namespace Win32xx
     inline CWinApp* GetApp()
     {
         CWinApp* pApp = CWinApp::SetnGetThis();
+
+        // This assert fails if Win32++ isn't started.
+        assert(pApp);
+
         return pApp;
     }
 

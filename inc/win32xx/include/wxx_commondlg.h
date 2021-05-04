@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -296,7 +296,7 @@ namespace Win32xx
         // private data
         LOGFONT     m_logFont;          // Font characteristics
         CHOOSEFONT  m_cf;               // ChooseFont parameters
-        CString     m_styleName;     // Style name on the dialog
+        CString     m_styleName;        // Style name on the dialog
     };
 
 }
@@ -342,11 +342,21 @@ namespace Win32xx
 
             // Retrieve pointer to CWnd object from Thread Local Storage TLS
             pCommonDlg = static_cast<CCommonDialog*>(pTLSData->pWnd);
-            assert(pCommonDlg);
-            pTLSData->pWnd = NULL;
+            if (pCommonDlg)
+            {
+                pTLSData->pWnd = NULL;
 
-            // Attach the HWND to the CommonDialog object
-            pCommonDlg->Attach(wnd);
+                // Attach the HWND to the CommonDialog object
+                pCommonDlg->Attach(wnd);
+            }
+        }
+
+        if (pCommonDlg == 0)
+        {
+            // Got a message for a window thats not in the map.
+            // We should never get here.
+            TRACE("*** Warning in CCommonDialog::CDHookProc: HWND not in window map ***\n");
+            return 0;
         }
 
         return pCommonDlg->DialogProc(msg, wparam, lparam);
@@ -425,7 +435,6 @@ namespace Win32xx
     // An exception is thrown if the dialog box isn't created.
     inline INT_PTR CColorDialog::DoModal(HWND owner /* = 0 */)
     {
-        assert( GetApp() );    // Test if Win32++ has been started
         assert(!IsWindow());    // Only one window per CWnd instance allowed
 
         // Ensure this thread has the TLS index set
@@ -446,7 +455,7 @@ namespace Win32xx
             DWORD error = CommDlgExtendedError();
             if ((error != 0) && (error != CDERR_DIALOGFAILURE))
                 // ignore the exception caused by closing the dialog
-                throw CWinException(g_msgWndDoModal, error);
+                throw CWinException(GetApp()->MsgWndDialog(), error);
 
             OnCancel();
             return IDCANCEL;
@@ -621,7 +630,6 @@ namespace Win32xx
     // Use SetParamaters to set a larger size if required.
     inline INT_PTR CFileDialog::DoModal(HWND owner /* = 0 */)
     {
-        assert( GetApp() );    // Test if Win32++ has been started
         assert(!IsWindow());    // Only one window per CWnd instance allowed
 
         // Ensure this thread has the TLS index set
@@ -645,7 +653,7 @@ namespace Win32xx
             {
                 // ignore the exception caused by closing the dialog
                 if (error != CDERR_DIALOGFAILURE || (m_ofn.Flags & OFN_EXPLORER))
-                    throw CWinException(g_msgWndDoModal, error);
+                    throw CWinException(GetApp()->MsgWndDialog(), error);
             }
 
             OnCancel();
@@ -886,7 +894,8 @@ namespace Win32xx
                 return TRUE;
         }
 
-        // The framework will call SetWindowLongPtr(DWLP_MSGRESULT, result) for non-zero returns
+        // The framework will call SetWindowLongPtr(DWLP_MSGRESULT, result)
+        // for non-zero returns.
         return FALSE;   // not handled
     }
 
@@ -1079,7 +1088,6 @@ namespace Win32xx
     inline BOOL CFindReplaceDialog::Create(BOOL isFindDialogOnly, LPCTSTR pFindWhat,
             LPCTSTR pReplaceWith, DWORD flags, HWND parent /* = 0*/)
     {
-        assert( GetApp() );    // Test if Win32++ has been started
         assert(!IsWindow());    // Only one window per CWnd instance allowed
 
         m_isFindDialogOnly = isFindDialogOnly;
@@ -1111,7 +1119,7 @@ namespace Win32xx
         if (wnd == 0)
         {
             // Throw an exception when window creation fails
-            throw CWinException(g_msgWndDoModal);
+            throw CWinException(GetApp()->MsgWndDialog());
         }
 
         m_findWhat.ReleaseBuffer();
@@ -1278,7 +1286,7 @@ namespace Win32xx
         m_fr.lpfnHook           = reinterpret_cast<LPCCHOOKPROC>(CDHookProc);
         m_fr.lpTemplateName     = fr.lpTemplateName;
 
-        // Enable the hook proc for the help button
+        // Enable the hook procedure for the help button
         if (m_fr.Flags & FR_SHOWHELP)
             m_fr.Flags |= FR_ENABLEHOOK;
     }
@@ -1426,7 +1434,6 @@ namespace Win32xx
     // Display the FontDialog. hOwner specifies dialog's owner window.
     inline INT_PTR CFontDialog::DoModal(HWND owner /* = 0 */)
     {
-        assert( GetApp() );    // Test if Win32++ has been started
         assert(!IsWindow());    // Only one window per CWnd instance allowed
 
         // Ensure this thread has the TLS index set
@@ -1451,7 +1458,7 @@ namespace Win32xx
             DWORD error = CommDlgExtendedError();
             if ((error != 0) && (error != CDERR_DIALOGFAILURE))
                 // ignore the exception caused by closing the dialog
-                throw CWinException(g_msgWndDoModal, error);
+                throw CWinException(GetApp()->MsgWndDialog(), error);
 
             OnCancel();
             return IDCANCEL;
@@ -1511,14 +1518,13 @@ namespace Win32xx
     // Return the current font size, in 1/10th points (1 pt = 1/72 inch).
     inline int CFontDialog::GetSize() const
     {
-        HDC dc = ::GetDC(NULL); // the device context for the entire screen
+        CClientDC dc = GetDesktopWindow().GetDC(); // the device context for the entire screen
 
         // number of pixels per inch along the screen height.
-        int pxpi = GetDeviceCaps(dc, LOGPIXELSY);
+        int pxpi = dc.GetDeviceCaps(LOGPIXELSY);
 
         // point size is (pixel height) * 72 / pxpi, so in 1/10ths size is
         int charsize = -MulDiv(m_logFont.lfHeight, 720, pxpi);
-        ::ReleaseDC(NULL, dc);
         return charsize;
     }
 

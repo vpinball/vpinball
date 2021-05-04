@@ -1,12 +1,12 @@
-// Win32++   Version 8.8
-// Release Date: 15th October 2020
+// Win32++   Version 8.9
+// Release Date: 29th April 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2020  David Nash
+// Copyright (c) 2005-2021  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -75,7 +75,7 @@ namespace Win32xx
         virtual LRESULT OnSysCommand(UINT msg, WPARAM wparam, LPARAM lparam);
 
     protected:
-        //Overridables
+        // Overridables
         virtual void OnAttach();
         virtual LRESULT OnDrawItem(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnExitMenuLoop(UINT msg, WPARAM wparam, LPARAM lparam);
@@ -152,13 +152,13 @@ namespace Win32xx
     inline CMenuBar::CMenuBar()
     {
         m_isExitAfter   = FALSE;
-        m_topMenu      = NULL;
+        m_topMenu      = 0;
         m_hotItem       = -1;
         m_isSelPopup    = FALSE;
-        m_selMenu      = NULL;
+        m_selMenu      = 0;
         m_isMenuActive  = FALSE;
         m_isKeyMode     = FALSE;
-        m_prevFocus    = NULL;
+        m_prevFocus    = 0;
         m_mdiButton     = 0;
         m_popupMenu    = 0;
     }
@@ -204,7 +204,7 @@ namespace Win32xx
                 int top = rc.bottom/2 - cy/2;
                 int right = rc.right - i*cx - gap*(i+1);
                 int bottom = rc.bottom/2 + cy/2;
-                ::SetRect(&m_mdiRect[2 - i], left, top, right, bottom);
+                VERIFY(::SetRect(&m_mdiRect[2 - i], left, top, right, bottom));
             }
 
             // Hide the MDI button if it won't fit
@@ -213,7 +213,7 @@ namespace Win32xx
 
                 if (m_mdiRect[k].left < GetMaxSize().cx)
                 {
-                    ::SetRectEmpty(&m_mdiRect[k]);
+                    VERIFY(::SetRectEmpty(&m_mdiRect[k]));
                 }
             }
 
@@ -334,7 +334,7 @@ namespace Win32xx
         SetHotItem(-1);
 
         CPoint pt = GetCursorPos();
-        ScreenToClient(pt);
+        VERIFY(ScreenToClient(pt));
 
         // Update mouse mouse position for hot tracking
         SendMessage(WM_MOUSEMOVE, 0, (LPARAM)MAKELONG(pt.x, pt.y));
@@ -376,7 +376,7 @@ namespace Win32xx
         if (::GetFocus() != *this)
             m_prevFocus = ::SetFocus(*this);
         ::SetCapture(*this);
-        ::SetCursor(::LoadCursor(NULL, IDC_ARROW));
+        ::SetCursor(::LoadCursor(0, IDC_ARROW));
     }
 
     // Returns TRUE of the MDI child is maximized.
@@ -563,7 +563,7 @@ namespace Win32xx
             if (pMDIChild && pMDIClient && IsMDIChildMaxed())
             {
                 CPoint pt = GetCursorPos();
-                ScreenToClient(pt);
+                VERIFY(ScreenToClient(pt));
 
                 // Process the MDI button action when the left mouse button is up
                 if (m_mdiRect[0].PtInRect(pt))
@@ -721,7 +721,7 @@ namespace Win32xx
 
                 m_oldMousePos.x = pt.x;
                 m_oldMousePos.y = pt.y;
-                ScreenToClient(pt);
+                VERIFY(ScreenToClient(pt));
 
                 // Reflect messages back to the MenuBar for hot tracking
                 SendMessage(WM_MOUSEMOVE, 0, (LPARAM)MAKELPARAM(pt.x, pt.y));
@@ -844,7 +844,7 @@ namespace Win32xx
         CRect rc = GetItemRect(m_hotItem);
 
         // convert rectangle to desktop coordinates
-        ClientToScreen(rc);
+        VERIFY(ClientToScreen(rc));
 
         // Position popup above toolbar if it won't fit below
         TPMPARAMS tpm;
@@ -856,7 +856,7 @@ namespace Win32xx
         SendMessage(TB_PRESSBUTTON, (WPARAM)m_hotItem, (LPARAM)MAKELONG(TRUE, 0));
 
         m_isSelPopup = FALSE;
-        m_selMenu = NULL;
+        m_selMenu = 0;
         m_isMenuActive = TRUE;
 
         // We hook mouse input to process mouse and keyboard input during
@@ -1035,7 +1035,7 @@ namespace Win32xx
         if (m_prevFocus)
             ::SetFocus(m_prevFocus);
 
-        m_prevFocus = NULL;
+        m_prevFocus = 0;
         ::ReleaseCapture();
     }
 
@@ -1099,24 +1099,27 @@ namespace Win32xx
     // This callback used to capture keyboard input while a popup menu is active.
     inline LRESULT CALLBACK CMenuBar::StaticMsgHook(int code, WPARAM wparam, LPARAM lparam)
     {
-        assert( GetApp() );
         MSG* pMsg = reinterpret_cast<MSG*>(lparam);
         TLSData* pTLSData = GetApp()->GetTlsData();
-        assert(pTLSData);
-        if (!pTLSData) return 0;
 
-        CMenuBar* pMenuBar = pTLSData->pMenuBar;
-
-        if (pMenuBar && (MSGF_MENU == code))
+        if (pTLSData != NULL)
         {
-            // process menu message
-            if (pMenuBar->OnMenuInput(pMsg->message, pMsg->wParam, pMsg->lParam))
+            CMenuBar* pMenuBar = pTLSData->pMenuBar;
+
+            if ((pMenuBar != NULL) && (MSGF_MENU == code))
             {
-                return TRUE;
+                // process menu message
+                if (pMenuBar->OnMenuInput(pMsg->message, pMsg->wParam, pMsg->lParam))
+                {
+                    return TRUE;
+                }
             }
+
+            return CallNextHookEx(pTLSData->msgHook, code, wparam, lparam);
         }
 
-        return CallNextHookEx(pTLSData->msgHook, code, wparam, lparam);
+
+        return 0;
     }
 
     // Provides default message processing for the menubar.
