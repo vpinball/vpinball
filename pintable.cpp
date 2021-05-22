@@ -1566,43 +1566,44 @@ bool PinTable::IsNameUnique(const WCHAR * const wzName) const
    return m_pcv->m_vcvd.GetSortedIndex(wzName) == -1;
 }
 
-void PinTable::GetUniqueName(const ItemTypeEnum type, WCHAR * const wzUniqueName) const
+void PinTable::GetUniqueName(const ItemTypeEnum type, WCHAR * const wzUniqueName, const DWORD wzUniqueName_maxlength) const
 {
    WCHAR wzRoot[256];
    GetTypeNameForType(type, wzRoot);
-   GetUniqueName(wzRoot, wzUniqueName);
+   GetUniqueName(wzRoot, wzUniqueName, wzUniqueName_maxlength);
 }
 
-void PinTable::GetUniqueName(const WCHAR *const wzRoot, WCHAR * const wzUniqueName) const
+void PinTable::GetUniqueName(const WCHAR *const wzRoot, WCHAR * const wzUniqueName, const DWORD wzUniqueName_maxlength) const
 {
    int suffix = 1;
    bool found = false;
-   WCHAR wzName[128];
-   WCHAR wzSuffix[10];
+   WCHAR * const wzName = new WCHAR[wzUniqueName_maxlength];
+   WCHAR wzSuffix[4];
 
    while (!found)
    {
-      WideStrNCopy(wzRoot, wzName, sizeof(wzName)/sizeof(wzName[0]));
-      _itow_s(suffix, wzSuffix, sizeof(wzSuffix) / sizeof(WCHAR), 10);
+      WideStrNCopy(wzRoot, wzName, wzUniqueName_maxlength-3);
+      _itow_s(suffix, wzSuffix, sizeof(wzSuffix)/sizeof(wzSuffix[0]), 10);
       if(suffix < 10)
          WideStrCat(L"0", wzName);
       if(suffix < 100)
          WideStrCat(L"0", wzName);
       WideStrCat(wzSuffix, wzName);
 
-      if (IsNameUnique(wzName))
+      if (IsNameUnique(wzName) || suffix == 999)
          found = true;
       else
          suffix++;
    }
 
-   WideStrCopy(wzName, wzUniqueName);
+   WideStrNCopy(wzName, wzUniqueName, wzUniqueName_maxlength);
+   delete[] wzName;
 }
 
-void PinTable::GetUniqueNamePasting(const int type, WCHAR * const wzUniqueName)
+void PinTable::GetUniqueNamePasting(const int type, WCHAR * const wzUniqueName, const DWORD wzUniqueName_maxlength)
 {
    //if the original name is not yet used, use that one (so there's nothing we have to do) 
-   //otherwise add/increase the suffix untill we find a name that's not used yet
+   //otherwise add/increase the suffix until we find a name that's not used yet
    if (!IsNameUnique(wzUniqueName))
    {
       //first remove the existing suffix
@@ -1611,7 +1612,7 @@ void PinTable::GetUniqueNamePasting(const int type, WCHAR * const wzUniqueName)
          wzUniqueName[wcslen(wzUniqueName) - 1] = L'\0';
       }
 
-      GetUniqueName(wzUniqueName, wzUniqueName);
+      GetUniqueName(wzUniqueName, wzUniqueName, wzUniqueName_maxlength);
    }
 }
 
@@ -4083,7 +4084,7 @@ void PinTable::NewCollection(const HWND hwndListView, const bool fromSelection)
 
    const LocalStringW prefix(IDS_COLLECTION);
    WCHAR wzT[128];
-   GetUniqueName(prefix.m_szbuffer, wzT);
+   GetUniqueName(prefix.m_szbuffer, wzT, 128);
 
    WideStrNCopy(wzT, pcol->m_wzName, MAXNAMEBUFFER);
 
@@ -5943,7 +5944,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
 
          if (type != eItemDecal)
          {
-            GetUniqueNamePasting(type, peditNew->GetScriptable()->m_wzName);
+            GetUniqueNamePasting(type, peditNew->GetScriptable()->m_wzName, sizeof(peditNew->GetScriptable()->m_wzName)/sizeof(peditNew->GetScriptable()->m_wzName[0]));
             peditNew->InitVBA(fTrue, 0, peditNew->GetScriptable()->m_wzName);
          }
 

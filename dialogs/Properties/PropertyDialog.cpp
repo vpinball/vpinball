@@ -698,7 +698,10 @@ BOOL PropertyDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case BN_CLICKED:
         {
             if (m_tabs[0] && m_tabs[0]->m_pvsel->ElementAt(0) != NULL)
+            {
                 m_tabs[0]->m_pvsel->ElementAt(0)->GetIEditable()->SetName(string(m_nameEdit.GetWindowText()));
+                m_nameEdit.SetWindowText(m_tabs[0]->m_pvsel->ElementAt(0)->GetIEditable()->GetName()); // set it again in case it was truncated
+            }
             return TRUE;
         }
     }

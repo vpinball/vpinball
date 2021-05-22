@@ -3216,7 +3216,8 @@ bool Collection::LoadToken(const int id, BiffReader * const pbr)
       //!! BUG - item list must be up to date in table (loaded) for the reverse name lookup to work
       PinTable * const ppt = (PinTable *)pbr->m_pdata;
 
-      WCHAR wzT[MAXNAMEBUFFER];
+      //!! workaround: due to a bug in earlier versions, it can happen that the string written was twice the size
+      WCHAR wzT[MAXNAMEBUFFER*2];
       pbr->GetWideString(wzT);
 
       for (size_t i = 0; i < ppt->m_vedit.size(); ++i)
