@@ -52,7 +52,7 @@ public:
    HRESULT GetInt(void *pvalue);
    HRESULT GetString(char *szvalue);
    HRESULT GetString(std::string& szvalue);
-   HRESULT GetWideString(WCHAR* wzvalue);
+   HRESULT GetWideString(WCHAR* wzvalue, const DWORD wzvalue_maxlength);
    HRESULT GetWideString(std::basic_string<WCHAR>& wzvalue);
    HRESULT GetFloat(float *pvalue);
    HRESULT GetBool(BOOL *pfvalue);

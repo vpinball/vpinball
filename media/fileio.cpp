@@ -418,7 +418,7 @@ HRESULT BiffReader::GetString(std::string &szvalue)
    return hr;
 }
 
-HRESULT BiffReader::GetWideString(WCHAR *wzvalue)
+HRESULT BiffReader::GetWideString(WCHAR *wzvalue, const DWORD wzvalue_maxlength)
 {
    ULONG read = 0;
    HRESULT hr;
@@ -432,8 +432,11 @@ HRESULT BiffReader::GetWideString(WCHAR *wzvalue)
 
    m_bytesinrecordremaining -= len + (int)sizeof(int);
 
-   hr = ReadBytes(wzvalue, len, &read);
-   wzvalue[len/sizeof(WCHAR)] = 0;
+   WCHAR * tmp = new WCHAR[len/sizeof(WCHAR)+1];
+   hr = ReadBytes(tmp, len, &read);
+   tmp[len/sizeof(WCHAR)] = 0;
+   WideStrNCopy(tmp, wzvalue, wzvalue_maxlength);
+   delete[] tmp;
    return hr;
 }
 
@@ -457,7 +460,6 @@ HRESULT BiffReader::GetWideString(std::basic_string<WCHAR>& wzvalue)
    wzvalue = tmp;
    delete[] tmp;
    return hr;
-
 }
 
 HRESULT BiffReader::GetFloat(float *pvalue)

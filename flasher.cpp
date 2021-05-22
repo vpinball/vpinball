@@ -613,7 +613,7 @@ bool Flasher::LoadToken(const int id, BiffReader * const pbr)
       break;
    }
    case FID(MOVA): pbr->GetFloat(&m_d.m_modulate_vs_add); break;
-   case FID(NAME): pbr->GetWideString(m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
    case FID(FVIS): pbr->GetBool(&m_d.m_isVisible); break;
    case FID(ADDB): pbr->GetBool(&m_d.m_addBlend); break;
    case FID(IDMD): pbr->GetBool(&m_d.m_isDMD); break;

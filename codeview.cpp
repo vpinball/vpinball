@@ -3203,7 +3203,7 @@ bool Collection::LoadToken(const int id, BiffReader * const pbr)
    {
       //!! workaround: due to a bug in earlier versions, it can happen that the string written was one char too long
       WCHAR tmp[MAXNAMEBUFFER+1];
-      pbr->GetWideString(tmp);
+      pbr->GetWideString(tmp, MAXNAMEBUFFER+1);
       memcpy(m_wzName, tmp, (MAXNAMEBUFFER-1)*sizeof(WCHAR));
       m_wzName[MAXNAMEBUFFER-1] = 0;
       break;
@@ -3218,7 +3218,7 @@ bool Collection::LoadToken(const int id, BiffReader * const pbr)
 
       //!! workaround: due to a bug in earlier versions, it can happen that the string written was twice the size
       WCHAR wzT[MAXNAMEBUFFER*2];
-      pbr->GetWideString(wzT);
+      pbr->GetWideString(wzT, MAXNAMEBUFFER*2); //!! rather truncate for these special cases for the comparison below?
 
       for (size_t i = 0; i < ppt->m_vedit.size(); ++i)
       {

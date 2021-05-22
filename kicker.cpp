@@ -690,7 +690,7 @@ bool Kicker::LoadToken(const int id, BiffReader * const pbr)
       break;
    }
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(NAME): pbr->GetWideString(m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
    case FID(FATH): pbr->GetBool(&m_d.m_fallThrough); break;
    case FID(LEMO): pbr->GetBool(&m_d.m_legacyMode); break;
    default: ISelect::LoadToken(id, pbr); break;

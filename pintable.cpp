@@ -3729,7 +3729,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(SIMG): pbr->GetInt(&((int *)pbr->m_pdata)[3]); break;
    case FID(SFNT): pbr->GetInt(&((int *)pbr->m_pdata)[4]); break;
    case FID(SCOL): pbr->GetInt(&((int *)pbr->m_pdata)[5]); break;
-   case FID(NAME): pbr->GetWideString(m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
    case FID(BIMG): pbr->GetString(m_BG_szImage[0]); break;
    case FID(BIMF): pbr->GetString(m_BG_szImage[1]); break;
    case FID(BIMS): pbr->GetString(m_BG_szImage[2]); break;

@@ -545,7 +545,7 @@ bool Textbox::LoadToken(const int id, BiffReader * const pbr)
    case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
    case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
    case FID(TEXT): pbr->GetString(m_d.m_sztext); break;
-   case FID(NAME): pbr->GetWideString(m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
    case FID(ALGN): pbr->GetInt(&m_d.m_talign); break;
    case FID(TRNS): pbr->GetBool(&m_d.m_transparent); break;
    case FID(IDMD): pbr->GetBool(&m_d.m_isDMD); break;

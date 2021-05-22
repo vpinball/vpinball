@@ -968,7 +968,7 @@ bool Plunger::LoadToken(const int id, BiffReader * const pbr)
    case FID(MECH): pbr->GetBool(&m_d.m_mechPlunger); break;
    case FID(APLG): pbr->GetBool(&m_d.m_autoPlunger); break;
    case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
-   case FID(NAME): pbr->GetWideString(m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
    case FID(TYPE): pbr->GetInt(&m_d.m_type); break;
    case FID(ANFR): pbr->GetInt(&m_d.m_animFrames); break;
    case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;

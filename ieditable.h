@@ -55,7 +55,7 @@ public:
 		if (fNew && !wzName) \
 			{ \
 				{ \
-				GetPTable()->GetUniqueName(ItemType, wzUniqueName); \
+				GetPTable()->GetUniqueName(ItemType, wzUniqueName, 128); \
 				WideStrCopy(wzUniqueName, (WCHAR *)m_wzName);/*lstrcpyW((WCHAR *)m_wzName, wzUniqueName);*/ \
 				} \
 			} \
