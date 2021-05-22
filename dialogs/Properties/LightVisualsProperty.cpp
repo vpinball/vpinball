@@ -256,9 +256,9 @@ BOOL LightVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_hPassThroughCheck, topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_imageCombo, topleft, RD_STRETCH_WIDTH );
     m_resizer.AddChild(m_depthBiasEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hEnableCheck, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hShowMeshCheck, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hStaticMeshCheck, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hEnableCheck, topleft, 0);
+    m_resizer.AddChild(m_hShowMeshCheck, topleft, 0);
+    m_resizer.AddChild(m_hStaticMeshCheck, topleft, 0);
     m_resizer.AddChild(m_haloHeightEdit, topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_scaleMeshEdit, topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_modulateEdit, topleft, RD_STRETCH_WIDTH);
