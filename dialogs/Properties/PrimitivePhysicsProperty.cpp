@@ -22,7 +22,20 @@ void PrimitivePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
         Primitive *const prim = (Primitive *)m_pvsel->ElementAt(i);
 
         if (dispid == IDC_PRIMITIVE_IS_TOY || dispid == -1)
-            PropertyDialog::SetCheckboxState(m_hToyCheck, prim->m_d.m_toy);
+        {
+           PropertyDialog::SetCheckboxState(m_hToyCheck, prim->m_d.m_toy);
+           if(prim->m_d.m_toy)
+           {
+              prim->m_d.m_collidable=false;
+              PropertyDialog::SetCheckboxState(m_hCollidableCheck, false);
+              m_elasticityFalloffEdit.EnableWindow(false);
+           }
+           ::EnableWindow(m_hCollidableCheck, !prim->m_d.m_toy);
+        }
+        if (dispid == IDC_COLLIDABLE_CHECK || dispid == -1)
+        {
+           m_elasticityFalloffEdit.EnableWindow(prim->m_d.m_collidable);
+        }
         if (dispid == IDC_ELASTICITY_FALLOFF_EDIT || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_elasticityFalloffEdit, prim->m_d.m_elasticityFalloff);
         if (dispid == IDC_COLLISION_REDUCTION_FACTOR || dispid == -1)
