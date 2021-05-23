@@ -56,7 +56,7 @@ public:
 			{ \
 				{ \
 				GetPTable()->GetUniqueName(ItemType, wzUniqueName, 128); \
-				WideStrCopy(wzUniqueName, (WCHAR *)m_wzName);/*lstrcpyW((WCHAR *)m_wzName, wzUniqueName);*/ \
+				WideStrNCopy(wzUniqueName, (WCHAR *)m_wzName, sizeof(m_wzName)/sizeof(m_wzName[0]));/*lstrcpyW((WCHAR *)m_wzName, wzUniqueName);*/ \
 				} \
 			} \
 		InitScript(); \
@@ -102,7 +102,7 @@ public:
 			} \
 		if (GetPTable()->m_pcv->ReplaceName(this, newVal) == S_OK) \
 			{ \
-			WideStrCopy(newVal, (WCHAR *)m_wzName);/*lstrcpyW((WCHAR *)m_wzName, newVal);*/ \
+			WideStrNCopy(newVal, (WCHAR *)m_wzName, sizeof(m_wzName)/sizeof(m_wzName[0]));/*lstrcpyW((WCHAR *)m_wzName, newVal);*/ \
 			return S_OK; \
 			} \
 		return E_FAIL; \

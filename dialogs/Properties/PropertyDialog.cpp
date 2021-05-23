@@ -442,11 +442,11 @@ void PropertyDialog::UpdateMaterialComboBox(const vector<Material *>& contentLis
     combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
 
-void PropertyDialog::UpdateSurfaceComboBox(const PinTable * const ptable, CComboBox &combo, const char *selectName)
+void PropertyDialog::UpdateSurfaceComboBox(const PinTable * const ptable, CComboBox &combo, const string& selectName)
 {
     vector<string> contentList;
 
-    if(combo.FindStringExact(1, selectName) == CB_ERR)
+    if(combo.FindStringExact(1, selectName.c_str()) == CB_ERR)
     {
         for (size_t i = 0; i < ptable->m_vedit.size(); i++)
         {
@@ -464,7 +464,7 @@ void PropertyDialog::UpdateSurfaceComboBox(const PinTable * const ptable, CCombo
         for (size_t i = 0; i < contentList.size(); i++)
             combo.AddString(contentList[i].c_str());
     }
-    combo.SetCurSel(combo.FindStringExact(1, selectName));
+    combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
 
 void PropertyDialog::UpdateSoundComboBox(const PinTable *const ptable, CComboBox &combo, const string& selectName)

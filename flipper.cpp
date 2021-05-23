@@ -128,9 +128,9 @@ void Flipper::SetDefaults(bool fromMouseClick)
    m_d.m_color = fromMouseClick ? LoadValueIntWithDefault(regKey, "Color", RGB(255,255,255)) : RGB(255,255,255);
    m_d.m_rubbercolor = fromMouseClick ? LoadValueIntWithDefault(regKey, "RubberColor", RGB(128,50,50)) : RGB(128,50,50);
 
-   const HRESULT hr = LoadValueString(regKey, "Surface", m_d.m_szSurface, MAXTOKEN);
+   const HRESULT hr = LoadValueString(regKey, "Surface", m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szSurface[0] = 0;
+      m_d.m_szSurface.clear();
 
    m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Height", 50.f) : 50.f;
    m_d.m_rubberthickness = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RubberThickness", 7.f) : 7.f;
@@ -1198,7 +1198,7 @@ STDMETHODIMP Flipper::put_Y(float newVal)
 STDMETHODIMP Flipper::get_Surface(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1206,7 +1206,9 @@ STDMETHODIMP Flipper::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Flipper::put_Surface(BSTR newVal)
 {
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXTOKEN, NULL, NULL);
+   char buf[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
+   m_d.m_szSurface = buf;
 
    return S_OK;
 }

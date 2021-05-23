@@ -50,7 +50,7 @@ public:
 
    HRESULT GetIntNoHash(void *pvalue);
    HRESULT GetInt(void *pvalue);
-   HRESULT GetString(char *szvalue);
+   HRESULT GetString(char *szvalue, const DWORD szvalue_maxlength);
    HRESULT GetString(std::string& szvalue);
    HRESULT GetWideString(WCHAR* wzvalue, const DWORD wzvalue_maxlength);
    HRESULT GetWideString(std::basic_string<WCHAR>& wzvalue);

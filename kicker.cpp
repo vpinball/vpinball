@@ -16,7 +16,6 @@ Kicker::Kicker()
    m_indexBuffer = NULL;
    m_plateVertexBuffer = NULL;
    m_plateIndexBuffer = NULL;
-   memset(m_d.m_szSurface, 0, sizeof(m_d.m_szSurface));
    m_ptable = NULL;
    m_numVertices = 0;
    m_numIndices = 0;
@@ -79,9 +78,9 @@ void Kicker::SetDefaults(bool fromMouseClick)
 
    SetDefaultPhysics(fromMouseClick);
 
-   const HRESULT hr = LoadValueString("DefaultProps\\Kicker", "Surface", m_d.m_szSurface, MAXTOKEN);
+   const HRESULT hr = LoadValueString("DefaultProps\\Kicker", "Surface", m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szSurface[0] = 0;
+      m_d.m_szSurface.clear();
 
    m_d.m_kickertype = fromMouseClick ? (KickerType)LoadValueIntWithDefault("DefaultProps\\Kicker", "KickerType", KickerHole) : KickerHole;
    //legacy handling:
@@ -911,7 +910,7 @@ STDMETHODIMP Kicker::put_Y(float newVal)
 STDMETHODIMP Kicker::get_Surface(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -919,8 +918,10 @@ STDMETHODIMP Kicker::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Kicker::put_Surface(BSTR newVal)
 {
+   char buf[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
    STARTUNDO
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXTOKEN, NULL, NULL);
+   m_d.m_szSurface = buf;
    STOPUNDO
 
    return S_OK;

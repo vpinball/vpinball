@@ -10,8 +10,6 @@ Flasher::Flasher()
    m_dynamicVertexBufferRegenerate = true;
    m_vertices = 0;
    m_propVisual = NULL;
-   memset(m_d.m_szImageA, 0, sizeof(m_d.m_szImageA));
-   memset(m_d.m_szImageB, 0, sizeof(m_d.m_szImageB));
    m_ptable = NULL;
    m_numVertices = 0;
    m_numPolys = 0;
@@ -109,13 +107,13 @@ void Flasher::SetDefaults(bool fromMouseClick)
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Flasher", "TimerInterval", 100) : 100;
 
-   HRESULT hr = LoadValueString("DefaultProps\\Flasher", "ImageA", m_d.m_szImageA, MAXTOKEN);
+   HRESULT hr = LoadValueString("DefaultProps\\Flasher", "ImageA", m_d.m_szImageA);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImageA[0] = 0;
+      m_d.m_szImageA.clear();
 
-   hr = LoadValueString("DefaultProps\\Flasher", "ImageB", m_d.m_szImageB, MAXTOKEN);
+   hr = LoadValueString("DefaultProps\\Flasher", "ImageB", m_d.m_szImageB);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImageB[0] = 0;
+      m_d.m_szImageB.clear();
 
    m_d.m_alpha = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Flasher", "Opacity", 100) : 100;
 
@@ -781,7 +779,7 @@ STDMETHODIMP Flasher::put_Color(OLE_COLOR newVal)
 STDMETHODIMP Flasher::get_ImageA(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szImageA, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szImageA.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -789,11 +787,9 @@ STDMETHODIMP Flasher::get_ImageA(BSTR *pVal)
 
 STDMETHODIMP Flasher::put_ImageA(BSTR newVal)
 {
-   char szImage[sizeof(m_d.m_szImageA)];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, sizeof(m_d.m_szImageA), NULL, NULL);
-
-   if (strcmp(szImage, m_d.m_szImageA) != 0)
-      strncpy_s(m_d.m_szImageA, szImage, sizeof(m_d.m_szImageA)-1);
+   char szImage[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   m_d.m_szImageA = szImage;
 
    return S_OK;
 }
@@ -801,7 +797,7 @@ STDMETHODIMP Flasher::put_ImageA(BSTR newVal)
 STDMETHODIMP Flasher::get_ImageB(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szImageB, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szImageB.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -809,11 +805,9 @@ STDMETHODIMP Flasher::get_ImageB(BSTR *pVal)
 
 STDMETHODIMP Flasher::put_ImageB(BSTR newVal)
 {
-   char szImage[sizeof(m_d.m_szImageB)];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, sizeof(m_d.m_szImageB), NULL, NULL);
-
-   if (strcmp(szImage, m_d.m_szImageB) != 0)
-      strncpy_s(m_d.m_szImageB, szImage, sizeof(m_d.m_szImageB)-1);
+   char szImage[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   m_d.m_szImageB = szImage;
 
    return S_OK;
 }

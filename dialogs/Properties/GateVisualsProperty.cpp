@@ -68,7 +68,7 @@ void GateVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(gate->m_d.m_type, (GateType)(PropertyDialog::GetComboBoxIndex(m_typeCombo, m_typeList) + 1), gate);
                 break;
             case IDC_SURFACE_COMBO:
-                CHECK_UPDATE_COMBO_TEXT(gate->m_d.m_szSurface, m_surfaceCombo, gate);
+                CHECK_UPDATE_COMBO_TEXT_STRING(gate->m_d.m_szSurface, m_surfaceCombo, gate);
                 break;
             case 5:
                 CHECK_UPDATE_ITEM(gate->m_d.m_vCenter.x, PropertyDialog::GetFloatTextbox(m_xposEdit), gate);

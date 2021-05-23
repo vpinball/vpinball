@@ -377,7 +377,7 @@ HRESULT BiffReader::GetInt(void *pvalue)
    return ReadBytes(pvalue, sizeof(int), &read);
 }
 
-HRESULT BiffReader::GetString(char *szvalue)
+HRESULT BiffReader::GetString(char *szvalue, const DWORD szvalue_maxlength)
 {
    ULONG read = 0;
    HRESULT hr;
@@ -391,8 +391,11 @@ HRESULT BiffReader::GetString(char *szvalue)
 
    m_bytesinrecordremaining -= len + (int)sizeof(int);
 
-   hr = ReadBytes(szvalue, len, &read);
-   szvalue[len] = 0;
+   char *tmp = new char[len+1];
+   hr = ReadBytes(tmp, len, &read);
+   tmp[len] = 0;
+   strncpy_s(szvalue, szvalue_maxlength, tmp, len);
+   delete[] tmp;
    return hr;
 }
 
@@ -410,7 +413,7 @@ HRESULT BiffReader::GetString(std::string &szvalue)
 
    m_bytesinrecordremaining -= len + (int)sizeof(int);
 
-   char * tmp = new char[len+1];
+   char *tmp = new char[len+1];
    hr = ReadBytes(tmp, len, &read);
    tmp[len] = 0;
    szvalue = tmp;

@@ -268,27 +268,27 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
    hr = ppinput->m_pJoystick[ppinput->e_JoyCnt]->GetProperty(DIPROP_PRODUCTNAME, &dstr.diph);
    if (hr == S_OK)
    {
-      if (!WzSzStrCmp(dstr.wsz, "PinballWizard"))
+      if (!WzSzStrNCmp(dstr.wsz, "PinballWizard", strlen("PinballWizard")))
       {
          ppinput->uShockDevice = ppinput->e_JoyCnt; // remember uShock
          ppinput->uShockType = USHOCKTYPE_PBWIZARD; //set type 1 = PinballWizard
       }
-      else if (!WzSzStrCmp(dstr.wsz, "UltraCade Pinball"))
+      else if (!WzSzStrNCmp(dstr.wsz, "UltraCade Pinball", strlen("UltraCade Pinball")))
       {
          ppinput->uShockDevice = ppinput->e_JoyCnt;  // remember uShock
          ppinput->uShockType = USHOCKTYPE_ULTRACADE; //set type 2 = UltraCade Pinball
       }
-      else if (!WzSzStrCmp(dstr.wsz, "Microsoft SideWinder Freestyle Pro (USB)"))
+      else if (!WzSzStrNCmp(dstr.wsz, "Microsoft SideWinder Freestyle Pro (USB)", strlen("Microsoft SideWinder Freestyle Pro (USB)")))
       {
          ppinput->uShockDevice = ppinput->e_JoyCnt;   // remember uShock
          ppinput->uShockType = USHOCKTYPE_SIDEWINDER; //set type 3 = Microsoft SideWinder Freestyle Pro
       }
-      else if (!WzSzStrCmp(dstr.wsz, "VirtuaPin Controller"))
+      else if (!WzSzStrNCmp(dstr.wsz, "VirtuaPin Controller", strlen("VirtuaPin Controller")))
       {
          ppinput->uShockDevice = ppinput->e_JoyCnt;  // remember uShock
          ppinput->uShockType = USHOCKTYPE_VIRTUAPIN; //set type 4 = VirtuaPin Controller
       }
-      else if (!WzSzStrCmp(dstr.wsz, "Pinscape Controller"))
+      else if (!WzSzStrNCmp(dstr.wsz, "Pinscape Controller", strlen("Pinscape Controller")))
       {
          ppinput->uShockDevice = ppinput->e_JoyCnt; // remember uShock
          ppinput->uShockType = USHOCKTYPE_GENERIC;  //set type = Generic

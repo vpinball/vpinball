@@ -13,7 +13,7 @@ public:
    Vertex2D m_vCenter;
    float m_radius;
    TimerDataRoot m_tdr;
-   char m_szSurface[MAXTOKEN];
+   std::string m_szSurface;
    KickerType m_kickertype;
    float m_hitAccuracy; //kicker hit grabbing object height ... default ballsize*0.7
    float m_orientation;

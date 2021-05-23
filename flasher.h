@@ -22,8 +22,8 @@ public:
    int  m_filterAmount;
    Filters m_filter;
    RampImageAlignment m_imagealignment;
-   char m_szImageA[MAXTOKEN];
-   char m_szImageB[MAXTOKEN];
+   string m_szImageA;
+   string m_szImageB;
    bool m_displayTexture;
    bool m_isVisible;
    bool m_addBlend;

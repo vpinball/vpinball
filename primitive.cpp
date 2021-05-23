@@ -177,7 +177,6 @@ Primitive::Primitive()
    m_propPhysics = NULL;
    m_propPosition = NULL;
    m_propVisual = NULL;
-   memset(m_d.m_szNormalMap, 0, sizeof(m_d.m_szNormalMap));
    m_d.m_overwritePhysics = true;
    m_d.m_useAsPlayfield = false;
 }
@@ -362,9 +361,9 @@ void Primitive::SetDefaults(bool fromMouseClick)
    else
       m_d.m_szImage = buf;
 
-   hr = LoadValueString(strKeyName, "NormalMap", m_d.m_szNormalMap, MAXTOKEN);
+   hr = LoadValueString(strKeyName, "NormalMap", m_d.m_szNormalMap);
    if ((hr != S_OK) && fromMouseClick)
-       m_d.m_szNormalMap[0] = 0;
+       m_d.m_szNormalMap.clear();
 
    m_d.m_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HitThreshold", 2.0f) : 2.0f;
 
@@ -2059,7 +2058,7 @@ STDMETHODIMP Primitive::put_Image(BSTR newVal)
 STDMETHODIMP Primitive::get_NormalMap(BSTR *pVal)
 {
     WCHAR wz[MAXTOKEN];
-    MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szNormalMap, -1, wz, MAXTOKEN);
+    MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szNormalMap.c_str(), -1, wz, MAXTOKEN);
     *pVal = SysAllocString(wz);
 
     return S_OK;
@@ -2067,8 +2066,8 @@ STDMETHODIMP Primitive::get_NormalMap(BSTR *pVal)
 
 STDMETHODIMP Primitive::put_NormalMap(BSTR newVal)
 {
-    char szImage[sizeof(m_d.m_szNormalMap)];
-    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, sizeof(m_d.m_szNormalMap), NULL, NULL);
+    char szImage[MAXTOKEN];
+    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
     const Texture * const tex = m_ptable->GetImage(szImage);
     if (tex && tex->IsHDR())
     {
@@ -2076,7 +2075,7 @@ STDMETHODIMP Primitive::put_NormalMap(BSTR newVal)
         return E_FAIL;
     }
 
-    strncpy_s(m_d.m_szNormalMap, szImage, sizeof(m_d.m_szNormalMap)-1);
+    m_d.m_szNormalMap = szImage;
 
     return S_OK;
 }

@@ -18,7 +18,6 @@ Bumper::Bumper()
    m_socketVertexBuffer = NULL;
    m_ringAnimate = false;
    m_propVisual = NULL;
-   memset(m_d.m_szSurface, 0, sizeof(m_d.m_szSurface));
    m_d.m_ringDropOffset = 0.0f;
    m_ringDown = false;
    m_updateSkirt = false;
@@ -98,9 +97,9 @@ void Bumper::SetDefaults(bool fromMouseClick)
    m_d.m_orientation = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Bumper", "Orientation", 0.0f) : 0.0f;
    m_d.m_threshold = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Bumper", "Threshold", 1.f) : 1.f;
 
-   const HRESULT hr = LoadValueString("DefaultProps\\Bumper", "Surface", m_d.m_szSurface, MAXTOKEN);
+   const HRESULT hr = LoadValueString("DefaultProps\\Bumper", "Surface", m_d.m_szSurface);
    if (hr != S_OK || !fromMouseClick)
-      m_d.m_szSurface[0] = 0;
+      m_d.m_szSurface.clear();
 
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Bumper", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Bumper", "TimerInterval", 100) : 100;
@@ -1197,7 +1196,7 @@ STDMETHODIMP Bumper::put_Y(float newVal)
 STDMETHODIMP Bumper::get_Surface(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1205,7 +1204,9 @@ STDMETHODIMP Bumper::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Bumper::put_Surface(BSTR newVal)
 {
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXTOKEN, NULL, NULL);
+   char buf[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
+   m_d.m_szSurface = buf;
 
    return S_OK;
 }

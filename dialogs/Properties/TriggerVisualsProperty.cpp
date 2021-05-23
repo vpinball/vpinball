@@ -79,7 +79,7 @@ void TriggerVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(trigger->m_d.m_vCenter.y, PropertyDialog::GetFloatTextbox(m_posYEdit), trigger);
                 break;
             case IDC_SURFACE_COMBO:
-                CHECK_UPDATE_COMBO_TEXT(trigger->m_d.m_szSurface, m_surfaceCombo, trigger);
+                CHECK_UPDATE_COMBO_TEXT_STRING(trigger->m_d.m_szSurface, m_surfaceCombo, trigger);
                 break;
             case IDC_STAR_THICKNESS_EDIT:
                 CHECK_UPDATE_ITEM(trigger->m_d.m_wireThickness, PropertyDialog::GetFloatTextbox(m_wireThicknessEdit), trigger);

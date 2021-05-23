@@ -42,23 +42,18 @@ void f2sz(const float f, string& sz)
       sz = "0.0"; //!! must this be somehow localized, i.e. . vs ,
 }
 
-void WideStrCopy(const WCHAR *wzin, WCHAR *wzout)
-{
-   while (*wzin) { *wzout++ = *wzin++; }
-   *wzout = 0;
-}
-
 void WideStrNCopy(const WCHAR *wzin, WCHAR *wzout, const DWORD wzoutMaxLen)
 {
    DWORD i = 0;
-   while (*wzin && (i < wzoutMaxLen - 1)) { *wzout++ = *wzin++; i++; }
+   while (*wzin && (++i < wzoutMaxLen)) { *wzout++ = *wzin++; }
    *wzout = 0;
 }
 
-void WideStrCat(const WCHAR *wzin, WCHAR *wzout)
+void WideStrCat(const WCHAR *wzin, WCHAR *wzout, const DWORD wzoutMaxLen)
 {
-   wzout += lstrlenW(wzout);
-   while (*wzin) { *wzout++ = *wzin++; }
+   DWORD i = lstrlenW(wzout);
+   wzout += i;
+   while (*wzin && (++i < wzoutMaxLen)) { *wzout++ = *wzin++; }
    *wzout = 0;
 }
 
@@ -87,27 +82,11 @@ int WideStrCmp(const WCHAR *wz1, const WCHAR *wz2)
    return 0;
 }
 
-int WzSzStrCmp(const WCHAR *wz1, const char *sz2)
+int WzSzStrNCmp(const WCHAR *wz1, const char *sz2, const DWORD maxLen)
 {
-   while (*wz1 != L'\0')
-   {
-      if (*wz1++ != *sz2++)
-      {
-         return 1;
-      }
-   }
-   if (*sz2 != L'\0')
-   {
-      return 1;
-   }
-   return 0;
-}
+   DWORD i = 0;
 
-int WzSzStrnCmp(const WCHAR *wz1, const char *sz2, const int count)
-{
-   int i = 0;
-
-   while (*wz1 != L'\0' && i < count)
+   while (*wz1 != L'\0' && i < maxLen)
    {
       if (*wz1++ != *sz2++)
       {

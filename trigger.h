@@ -5,7 +5,7 @@
 #if !defined(AFX_TRIGGER_H__2CA7256C_4072_43C3_9D65_AE091B601377__INCLUDED_)
 #define AFX_TRIGGER_H__2CA7256C_4072_43C3_9D65_AE091B601377__INCLUDED_
 
-#include "resource.h"       // main symbols
+#include "resource.h"
 
 class TriggerData : public BaseProperty
 {
@@ -13,12 +13,12 @@ public:
    Vertex2D m_vCenter;
    float m_radius;
    TimerDataRoot m_tdr;
-   char m_szSurface[MAXTOKEN];
+   std::string m_szSurface;
    TriggerShape m_shape;
    float m_rotation;
    float m_scaleX;
    float m_scaleY;
-   float m_hit_height; //trigger hit object height ... default 50
+   float m_hit_height; // trigger hit object height ... default 50
    U32 m_time_msec;
    float m_animSpeed;
    float m_wireThickness;

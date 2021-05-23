@@ -32,7 +32,7 @@ public:
    Shape m_shape;
    //float m_borderwidth;
    //COLORREF m_bordercolor;
-   char m_szSurface[MAXTOKEN];
+   std::string m_szSurface;
 
    float m_depthBias; // for determining depth sorting
    float m_bulbHaloHeight;

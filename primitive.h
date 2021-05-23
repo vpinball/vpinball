@@ -55,7 +55,7 @@ public:
    Vertex3Ds m_vPosition;
    Vertex3Ds m_vSize;
    float m_aRotAndTra[9];
-   char m_szNormalMap[MAXTOKEN];
+   string m_szNormalMap;
    string m_meshFileName;
 
    COLORREF m_SideColor;

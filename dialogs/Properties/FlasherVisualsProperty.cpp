@@ -105,10 +105,10 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(flash->m_d.m_isDMD, PropertyDialog::GetCheckboxState(m_hUseDMDCheck), flash);
                 break;
             case DISPID_Image:
-                CHECK_UPDATE_COMBO_TEXT(flash->m_d.m_szImageA, m_imageACombo, flash);
+                CHECK_UPDATE_COMBO_TEXT_STRING(flash->m_d.m_szImageA, m_imageACombo, flash);
                 break;
             case DISPID_Image2:
-                CHECK_UPDATE_COMBO_TEXT(flash->m_d.m_szImageB, m_imageBCombo, flash);
+                CHECK_UPDATE_COMBO_TEXT_STRING(flash->m_d.m_szImageB, m_imageBCombo, flash);
                 break;
             case IDC_FLASHER_MODE_COMBO:
                 CHECK_UPDATE_ITEM(flash->m_d.m_imagealignment, (RampImageAlignment)(PropertyDialog::GetComboBoxIndex(m_modeCombo, m_imageAlignList)), flash);

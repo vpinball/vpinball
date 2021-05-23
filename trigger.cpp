@@ -191,9 +191,9 @@ void Trigger::SetDefaults(bool fromMouseClick)
    m_d.m_hit_height = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Trigger", "HitHeight", 50.f) : 50.f;
    m_d.m_shape = fromMouseClick ? (TriggerShape)LoadValueIntWithDefault("DefaultProps\\Trigger", "Shape", TriggerWireA) : TriggerWireA;
 
-   HRESULT hr = LoadValueString("DefaultProps\\Trigger", "Surface", m_d.m_szSurface, MAXTOKEN);
+   HRESULT hr = LoadValueString("DefaultProps\\Trigger", "Surface", m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szSurface[0] = 0;
+      m_d.m_szSurface.clear();
 
    m_d.m_animSpeed = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\trigger", "AnimSpeed", 1.f) : 1.f;
    m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Trigger", "ReflectionEnabled", true) : true;
@@ -1203,7 +1203,7 @@ STDMETHODIMP Trigger::put_Y(float newVal)
 STDMETHODIMP Trigger::get_Surface(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1211,7 +1211,9 @@ STDMETHODIMP Trigger::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Trigger::put_Surface(BSTR newVal)
 {
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXTOKEN, NULL, NULL);
+   char buf[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
+   m_d.m_szSurface = buf;
 
    return S_OK;
 }

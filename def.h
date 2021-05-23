@@ -402,12 +402,10 @@ __forceinline float millimetersToVPUnits(const float value)
 float sz2f(const string& sz);
 void f2sz(const float f, string& sz);
 
-void WideStrCopy(const WCHAR *wzin, WCHAR *wzout);
 void WideStrNCopy(const WCHAR *wzin, WCHAR *wzout, const DWORD wzoutMaxLen);
 int WideStrCmp(const WCHAR *wz1, const WCHAR *wz2);
-int WzSzStrCmp(const WCHAR *wz1, const char *sz2);
-void WideStrCat(const WCHAR *wzin, WCHAR *wzout);
-int WzSzStrnCmp(const WCHAR *wz1, const char *sz2, const int count);
+void WideStrCat(const WCHAR *wzin, WCHAR *wzout, const DWORD wzoutMaxLen);
+int WzSzStrNCmp(const WCHAR *wz1, const char *sz2, const DWORD maxLen);
 
 HRESULT OpenURL(const string& szURL);
 

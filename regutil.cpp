@@ -8,6 +8,16 @@
 #else
 HRESULT LoadValue(const std::string &szKey, const std::string &szValue, DWORD *ptype, void *pvalue, DWORD size);
 
+HRESULT LoadValueString(const std::string& szKey, const std::string& szValue, std::string& buffer)
+{
+   DWORD type = REG_NONE;
+   char szbuffer[MAXSTRING];
+   szbuffer[0] = 0;
+   const HRESULT hr = LoadValue(szKey, szValue, &type, szbuffer, MAXSTRING);
+   buffer = szbuffer;
+
+   return (type != REG_SZ) ? E_FAIL : hr;
+}
 
 HRESULT LoadValueString(const std::string& szKey, const std::string& szValue, void* const szbuffer, const DWORD size)
 {

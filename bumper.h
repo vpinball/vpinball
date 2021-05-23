@@ -23,7 +23,7 @@ public:
    std::string m_szBaseMaterial;
    std::string m_szSkirtMaterial;
    std::string m_szRingMaterial;
-   char m_szSurface[MAXTOKEN];
+   std::string m_szSurface;
    bool m_capVisible;
    bool m_baseVisible;
    bool m_ringVisible;

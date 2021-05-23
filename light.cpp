@@ -17,7 +17,6 @@ Light::Light() : m_lightcenter(this)
    m_roundLight = false;
    m_propVisual = NULL;
    m_updateBulbLightHeight = false;
-   memset(m_d.m_szSurface, 0, sizeof(m_d.m_szSurface));
 }
 
 Light::~Light()
@@ -107,9 +106,9 @@ void Light::SetDefaults(bool fromMouseClick)
 
    //m_d.m_bordercolor = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Light", "BorderColor", RGB(0,0,0)) : RGB(0,0,0);
 
-   hr = LoadValueString("DefaultProps\\Light", "Surface", m_d.m_szSurface, MAXTOKEN);
+   hr = LoadValueString("DefaultProps\\Light", "Surface", m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szSurface[0] = 0;
+      m_d.m_szSurface.clear();
 
    m_d.m_fadeSpeedUp = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Light", "FadeSpeedUp", 0.2f) : 0.2f;
    m_d.m_fadeSpeedDown = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Light", "FadeSpeedDown", 0.2f) : 0.2f;
@@ -935,7 +934,7 @@ bool Light::LoadToken(const int id, BiffReader * const pbr)
    case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
    case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
    case FID(SHAP): m_roundLight = true; break;
-   case FID(BPAT): pbr->GetString(m_rgblinkpattern); break;
+   case FID(BPAT): pbr->GetString(m_rgblinkpattern, sizeof(m_rgblinkpattern)); break;
    case FID(BINT): pbr->GetInt(&m_blinkinterval); break;
    //case FID(BCOL): pbr->GetInt(&m_d.m_bordercolor); break;
    case FID(BWTH): pbr->GetFloat(&m_d.m_intensity); break;
@@ -1336,7 +1335,7 @@ STDMETHODIMP Light::put_IntensityScale(float newVal)
 STDMETHODIMP Light::get_Surface(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1344,7 +1343,9 @@ STDMETHODIMP Light::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Light::put_Surface(BSTR newVal)
 {
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXTOKEN, NULL, NULL);
+   char buf[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
+   m_d.m_szSurface = buf;
 
    return S_OK;
 }

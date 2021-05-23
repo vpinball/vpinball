@@ -132,7 +132,7 @@ void PlungerVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(plunger->m_d.m_v.y, PropertyDialog::GetFloatTextbox(m_posYEdit), plunger);
                 break;
             case 1502:
-                CHECK_UPDATE_COMBO_TEXT(plunger->m_d.m_szSurface, m_surfaceCombo, plunger);
+                CHECK_UPDATE_COMBO_TEXT_STRING(plunger->m_d.m_szSurface, m_surfaceCombo, plunger);
                 break;
             default:
                 UpdateBaseProperties(plunger, &plunger->m_d, dispid);

@@ -11,7 +11,7 @@ public:
    Vertex2D m_vCenter;
    float m_width, m_height;
    float m_rotation;
-   char m_szSurface[MAXTOKEN];
+   std::string m_szSurface;
    DecalType m_decaltype;
    string m_sztext;
    SizingType m_sizingtype;

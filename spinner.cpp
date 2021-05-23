@@ -11,7 +11,6 @@ Spinner::Spinner()
    m_plateVertexBuffer = 0;
    m_plateIndexBuffer = 0;
    m_vertexBuffer_spinneranimangle = -FLT_MAX;
-   memset(m_d.m_szSurface, 0, sizeof(m_d.m_szSurface));
 }
 
 Spinner::~Spinner()
@@ -157,9 +156,9 @@ void Spinner::SetDefaults(bool fromMouseClick)
    else
       m_d.m_szImage = buf;
 
-   hr = LoadValueString("DefaultProps\\Spinner", "Surface", m_d.m_szSurface, MAXTOKEN);
+   hr = LoadValueString("DefaultProps\\Spinner", "Surface", m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szSurface[0] = 0;
+      m_d.m_szSurface.clear();
 }
 
 void Spinner::UIRenderPass1(Sur * const psur)
@@ -756,7 +755,7 @@ STDMETHODIMP Spinner::put_Y(float newVal)
 STDMETHODIMP Spinner::get_Surface(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -764,7 +763,9 @@ STDMETHODIMP Spinner::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Spinner::put_Surface(BSTR newVal)
 {
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXTOKEN, NULL, NULL);
+   char buf[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
+   m_d.m_szSurface = buf;
 
    return S_OK;
 }

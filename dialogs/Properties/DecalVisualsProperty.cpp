@@ -172,7 +172,7 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(decal->m_d.m_rotation, PropertyDialog::GetFloatTextbox(m_rotationEdit), decal);
                 break;
             case IDC_SURFACE_COMBO:
-                CHECK_UPDATE_COMBO_TEXT(decal->m_d.m_szSurface, m_surfaceCombo, decal);
+                CHECK_UPDATE_COMBO_TEXT_STRING(decal->m_d.m_szSurface, m_surfaceCombo, decal);
                 break;
             default:
                 UpdateBaseProperties(decal, &decal->m_d, dispid);

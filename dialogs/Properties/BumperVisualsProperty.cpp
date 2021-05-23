@@ -118,7 +118,7 @@ void BumperVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(bumper->m_d.m_vCenter.y, PropertyDialog::GetFloatTextbox(m_posYEdit), bumper);
                 break;
             case IDC_SURFACE_COMBO:
-                CHECK_UPDATE_COMBO_TEXT(bumper->m_d.m_szSurface, m_surfaceCombo, bumper);
+                CHECK_UPDATE_COMBO_TEXT_STRING(bumper->m_d.m_szSurface, m_surfaceCombo, bumper);
                 break;
 
             default:

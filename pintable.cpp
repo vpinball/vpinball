@@ -1118,7 +1118,6 @@ PinTable::PinTable()
    m_tblMirrorEnabled = false;
 
    memset(m_szImage, 0, sizeof(m_szImage));
-   memset(m_szEnvImage, 0, sizeof(m_szEnvImage));
 
    m_hMaterialManager = NULL;
 
@@ -1344,9 +1343,10 @@ if (it == m_textureMap.end()) \
    pEditImage[0] = 0;}
 
 #define CLEAN_SURFACE(pEditSurface) \
-{if (!(pEditSurface == NULL || pEditSurface[0] == 0)) \
+{if (!pEditSurface.empty()) \
 { \
 bool found = false; \
+const DWORD length = (DWORD)pEditSurface.length(); \
 for (size_t ie = 0; ie < m_vedit.size(); ie++) \
 { \
     IEditable* const item = m_vedit[ie]; \
@@ -1354,7 +1354,7 @@ for (size_t ie = 0; ie < m_vedit.size(); ie++) \
     { \
         CComBSTR bstr; \
         item->GetScriptable()->get_Name(&bstr); \
-        if (!WzSzStrCmp(bstr, pEditSurface)) \
+        if (!WzSzStrNCmp(bstr, pEditSurface.c_str(), length)) \
         { \
             found = true; \
             break; \
@@ -1362,7 +1362,7 @@ for (size_t ie = 0; ie < m_vedit.size(); ie++) \
     } \
 } \
 if(!found) \
-    pEditSurface[0] = '\0'; \
+    pEditSurface.clear(); \
 }}
 
 
@@ -1390,8 +1390,8 @@ void PinTable::InitTablePostLoad()
         m_BG_scalez[i] = m_BG_scalez[BG_DESKTOP];
         m_BG_xlatez[i] = m_BG_xlatez[BG_DESKTOP];
 
-        if (m_BG_szImage[i][0] == 0 && i == BG_FSS) // copy image over for FSS mode
-            strncpy_s(m_BG_szImage[i], m_BG_szImage[BG_DESKTOP], sizeof(m_BG_szImage[i])-1);
+        if (m_BG_szImage[i].empty() && i == BG_FSS) // copy image over for FSS mode
+           m_BG_szImage[i] = m_BG_szImage[BG_DESKTOP];
       }
 
    m_currentBackglassMode = m_BG_current_set;
@@ -1435,7 +1435,7 @@ void PinTable::InitTablePostLoad()
             CLEAN_MATERIAL(((Primitive*)pEdit)->m_d.m_szMaterial);
             CLEAN_MATERIAL(((Primitive*)pEdit)->m_d.m_szPhysicsMaterial);
             CLEAN_IMAGE(((Primitive*)pEdit)->m_d.m_szImage);
-            CLEAN_IMAGE_STR(((Primitive*)pEdit)->m_d.m_szNormalMap);
+            CLEAN_IMAGE(((Primitive*)pEdit)->m_d.m_szNormalMap);
             break;
         }
         case eItemRamp:
@@ -1535,8 +1535,8 @@ void PinTable::InitTablePostLoad()
         }
         case eItemFlasher:
         {
-            CLEAN_IMAGE_STR(((Flasher*)pEdit)->m_d.m_szImageA);
-            CLEAN_IMAGE_STR(((Flasher*)pEdit)->m_d.m_szImageB);
+            CLEAN_IMAGE(((Flasher*)pEdit)->m_d.m_szImageA);
+            CLEAN_IMAGE(((Flasher*)pEdit)->m_d.m_szImageB);
             break;
         }
         case eItemLight:
@@ -1585,10 +1585,10 @@ void PinTable::GetUniqueName(const WCHAR *const wzRoot, WCHAR * const wzUniqueNa
       WideStrNCopy(wzRoot, wzName, wzUniqueName_maxlength-3);
       _itow_s(suffix, wzSuffix, sizeof(wzSuffix)/sizeof(wzSuffix[0]), 10);
       if(suffix < 10)
-         WideStrCat(L"0", wzName);
+         WideStrCat(L"0", wzName, wzUniqueName_maxlength);
       if(suffix < 100)
-         WideStrCat(L"0", wzName);
-      WideStrCat(wzSuffix, wzName);
+         WideStrCat(L"0", wzName, wzUniqueName_maxlength);
+      WideStrCat(wzSuffix, wzName, wzUniqueName_maxlength);
 
       if (IsNameUnique(wzName) || suffix == 999)
          found = true;
@@ -3051,7 +3051,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
    bw.WriteString(FID(BLIM), m_szBallImage);
    bw.WriteString(FID(BLIF), m_szBallImageDecal);
    bw.WriteString(FID(EIMG), m_szEnvImage);
-   bw.WriteString(FID(NOTX), m_notesText.c_str());
+   bw.WriteString(FID(NOTX), m_notesText);
 
    bw.WriteString(FID(SSHT), m_szScreenShot);
 
@@ -3556,12 +3556,12 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 void PinTable::SetLoadDefaults()
 {
    for (unsigned int i = 0; i < NUM_BG_SETS; ++i)
-      m_BG_szImage[i][0] = 0;
-   m_szImageColorGrade[0] = 0;
-   m_szBallImage[0] = 0;
-   m_szBallImageDecal[0] = 0;
+      m_BG_szImage[i].clear();
+   m_szImageColorGrade.clear();
+   m_szBallImage.clear();
+   m_szBallImageDecal.clear();
    m_ImageBackdropNightDay = false;
-   m_szEnvImage[0] = 0;
+   m_szEnvImage.clear();
 
    m_szScreenShot.clear();
 
@@ -3719,7 +3719,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(SLOP): pbr->GetFloat(&m_angletiltMin); break;
    case FID(GLAS): pbr->GetFloat(&m_glassheight); break;
    case FID(TBLH): pbr->GetFloat(&m_tableheight); break;
-   case FID(IMAG): pbr->GetString(m_szImage); break;
+   case FID(IMAG): pbr->GetString(m_szImage, sizeof(m_szImage)); break;
    case FID(BLIM): pbr->GetString(m_szBallImage); break;
    case FID(BLIF): pbr->GetString(m_szBallImageDecal); break;
    case FID(SSHT): pbr->GetString(m_szScreenShot); break;
@@ -3792,9 +3792,9 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    }
    case FID(CUST):
    {
-      char szT[MAXSTRING];  //maximum length of tagnames right now
-      pbr->GetString(szT);
-      m_vCustomInfoTag.push_back(szT);
+      string tmp;
+      pbr->GetString(tmp);
+      m_vCustomInfoTag.push_back(tmp);
       break;
    }
    case FID(SVOL): pbr->GetFloat(&m_TableSoundVolume); break;
@@ -6775,13 +6775,13 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
 
    ListView_SetItemText(hwndListView, index, 4, sizeConv);
    if ((_stricmp(m_szImage, ppi->m_szName.c_str()) == 0)
-    || (_stricmp(m_szBallImage, ppi->m_szName.c_str()) == 0) 
-    || (_stricmp(m_szBallImageDecal, ppi->m_szName.c_str()) == 0)
-    || (_stricmp(m_szEnvImage, ppi->m_szName.c_str()) == 0)
-    || (_stricmp(m_BG_szImage[BG_DESKTOP], ppi->m_szName.c_str()) == 0)
-    || (_stricmp(m_BG_szImage[BG_FSS], ppi->m_szName.c_str()) == 0)
-    || (_stricmp(m_BG_szImage[BG_FULLSCREEN], ppi->m_szName.c_str()) == 0)
-    || (_stricmp(m_szImageColorGrade, ppi->m_szName.c_str()) == 0))
+    || (_stricmp(m_szBallImage.c_str(), ppi->m_szName.c_str()) == 0) 
+    || (_stricmp(m_szBallImageDecal.c_str(), ppi->m_szName.c_str()) == 0)
+    || (_stricmp(m_szEnvImage.c_str(), ppi->m_szName.c_str()) == 0)
+    || (_stricmp(m_BG_szImage[BG_DESKTOP].c_str(), ppi->m_szName.c_str()) == 0)
+    || (_stricmp(m_BG_szImage[BG_FSS].c_str(), ppi->m_szName.c_str()) == 0)
+    || (_stricmp(m_BG_szImage[BG_FULLSCREEN].c_str(), ppi->m_szName.c_str()) == 0)
+    || (_stricmp(m_szImageColorGrade.c_str(), ppi->m_szName.c_str()) == 0))
    {
        ListView_SetItemText(hwndListView, index, 3, usedStringYes);
    }
@@ -6806,7 +6806,7 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
                case eItemPrimitive:
                {
                    const Primitive * const pPrim = (Primitive*)pEdit;
-                   if ((_stricmp(pPrim->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0) || (_stricmp(pPrim->m_d.m_szNormalMap, ppi->m_szName.c_str()) == 0))
+                   if ((_stricmp(pPrim->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0) || (_stricmp(pPrim->m_d.m_szNormalMap.c_str(), ppi->m_szName.c_str()) == 0))
                        inUse = true;
                    break;
                }
@@ -6834,7 +6834,7 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
                case eItemFlasher:
                {
                    const Flasher * const pFlash = (Flasher*)pEdit;
-                   if ((_stricmp(pFlash->m_d.m_szImageA, ppi->m_szName.c_str()) == 0) || (_stricmp(pFlash->m_d.m_szImageB, ppi->m_szName.c_str()) == 0))
+                   if ((_stricmp(pFlash->m_d.m_szImageA.c_str(), ppi->m_szName.c_str()) == 0) || (_stricmp(pFlash->m_d.m_szImageB.c_str(), ppi->m_szName.c_str()) == 0))
                        inUse = true;
                    break;
                }
@@ -7518,8 +7518,10 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       cvar = 0;
 
       WCHAR *wzDst = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
+      if (wzDst == NULL)
+         ShowError("DISPID_Surface alloc failed (0)");
       // TEXT
-      WideStrCopy(L"<None>", wzDst);
+      WideStrNCopy(L"<None>", wzDst, 7);
       rgstr[cvar] = wzDst;
       rgdw[cvar] = ~0u;
       cvar++;
@@ -7539,11 +7541,11 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
             const DWORD cwch = lstrlenW(bstr) + 1;
             //wzDst = ::SysAllocString(bstr);
 
-            wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
+            wzDst = (WCHAR *)CoTaskMemAlloc(cwch * sizeof(WCHAR));
             if (wzDst == NULL)
                ShowError("DISPID_Surface alloc failed (1)");
 
-            WideStrCopy(bstr, wzDst);
+            WideStrNCopy(bstr, wzDst, cwch);
             rgstr[cvar] = wzDst;
             rgdw[cvar] = (DWORD)ivar;
             cvar++;
@@ -7725,10 +7727,12 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
    return var.Detach(pVarOut);
 }
 
-float PinTable::GetSurfaceHeight(const char * const szName, float x, float y) const
+float PinTable::GetSurfaceHeight(const string& name, float x, float y) const
 {
-   if (szName == NULL || szName[0] == 0)
+   if (name.empty())
       return m_tableheight;
+
+   const DWORD length = (DWORD)name.length();
 
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
@@ -7737,7 +7741,7 @@ float PinTable::GetSurfaceHeight(const char * const szName, float x, float y) co
       {
          CComBSTR bstr;
          item->GetScriptable()->get_Name(&bstr);
-         if (!WzSzStrCmp(bstr, szName))
+         if (!WzSzStrNCmp(bstr, name.c_str(), length))
          {
             if (item->GetItemType() == eItemSurface)
                return ((Surface *)item)->m_d.m_heighttop + m_tableheight;
@@ -7750,10 +7754,12 @@ float PinTable::GetSurfaceHeight(const char * const szName, float x, float y) co
    return m_tableheight;
 }
 
-Material* PinTable::GetSurfaceMaterial(const char * const szName) const
+Material* PinTable::GetSurfaceMaterial(const string& name) const
 {
-   if (szName == NULL || szName[0] == 0)
+   if (name.empty())
       return GetMaterial(m_szPlayfieldMaterial);
+
+   const DWORD length = (DWORD)name.length();
 
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
@@ -7762,7 +7768,7 @@ Material* PinTable::GetSurfaceMaterial(const char * const szName) const
       {
          CComBSTR bstr;
          item->GetScriptable()->get_Name(&bstr);
-         if (!WzSzStrCmp(bstr, szName))
+         if (!WzSzStrNCmp(bstr, name.c_str(), length))
          {
             if (item->GetItemType() == eItemSurface)
                return GetMaterial(((Surface *)item)->m_d.m_szTopMaterial);
@@ -7775,10 +7781,12 @@ Material* PinTable::GetSurfaceMaterial(const char * const szName) const
    return GetMaterial(m_szPlayfieldMaterial);
 }
 
-Texture* PinTable::GetSurfaceImage(const char * const szName) const
+Texture* PinTable::GetSurfaceImage(const string& name) const
 {
-   if (szName == NULL || szName[0] == 0)
+   if (name.empty())
       return GetImage(m_szImage);
+
+   const DWORD length = (DWORD)name.length();
 
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
@@ -7787,7 +7795,7 @@ Texture* PinTable::GetSurfaceImage(const char * const szName) const
       {
          CComBSTR bstr;
          item->GetScriptable()->get_Name(&bstr);
-         if (!WzSzStrCmp(bstr, szName))
+         if (!WzSzStrNCmp(bstr, name.c_str(), length))
          {
             if (item->GetItemType() == eItemSurface)
                return GetImage(((Surface *)item)->m_d.m_szImage);
@@ -7925,7 +7933,7 @@ STDMETHODIMP PinTable::put_Height(float newVal)
 STDMETHODIMP PinTable::get_PlayfieldMaterial(BSTR *pVal)
 {
    WCHAR wz[MAXNAMEBUFFER];
-   MultiByteToWideCharNull(CP_ACP, 0, m_szPlayfieldMaterial, -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideCharNull(CP_ACP, 0, m_szPlayfieldMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -7933,8 +7941,10 @@ STDMETHODIMP PinTable::get_PlayfieldMaterial(BSTR *pVal)
 
 STDMETHODIMP PinTable::put_PlayfieldMaterial(BSTR newVal)
 {
+   char buf[MAXNAMEBUFFER];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
    STARTUNDO
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_szPlayfieldMaterial, MAXNAMEBUFFER, NULL, NULL);
+   m_szPlayfieldMaterial = buf;
    STOPUNDO
 
    return S_OK;
@@ -8452,7 +8462,7 @@ STDMETHODIMP PinTable::put_ShowFSS(VARIANT_BOOL newVal)
 STDMETHODIMP PinTable::get_BackdropImage_DT(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_BG_szImage[0], -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_BG_szImage[0].c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -8460,8 +8470,10 @@ STDMETHODIMP PinTable::get_BackdropImage_DT(BSTR *pVal)
 
 STDMETHODIMP PinTable::put_BackdropImage_DT(BSTR newVal) //!! HDR??
 {
+   char buf[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
    STARTUNDO
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_BG_szImage[0], MAXTOKEN, NULL, NULL);
+   m_BG_szImage[0] = buf;
    STOPUNDO
 
    return S_OK;
@@ -8470,7 +8482,7 @@ STDMETHODIMP PinTable::put_BackdropImage_DT(BSTR newVal) //!! HDR??
 STDMETHODIMP PinTable::get_BackdropImage_FS(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_BG_szImage[1], -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_BG_szImage[1].c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -8478,8 +8490,10 @@ STDMETHODIMP PinTable::get_BackdropImage_FS(BSTR *pVal)
 
 STDMETHODIMP PinTable::put_BackdropImage_FS(BSTR newVal) //!! HDR??
 {
+   char buf[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
    STARTUNDO
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_BG_szImage[1], MAXTOKEN, NULL, NULL);
+   m_BG_szImage[1] = buf;
    STOPUNDO
 
    return S_OK;
@@ -8488,7 +8502,7 @@ STDMETHODIMP PinTable::put_BackdropImage_FS(BSTR newVal) //!! HDR??
 STDMETHODIMP PinTable::get_BackdropImage_FSS(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_BG_szImage[2], -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_BG_szImage[2].c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -8496,8 +8510,10 @@ STDMETHODIMP PinTable::get_BackdropImage_FSS(BSTR *pVal)
 
 STDMETHODIMP PinTable::put_BackdropImage_FSS(BSTR newVal) //!! HDR??
 {
+   char buf[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
    STARTUNDO
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_BG_szImage[2], MAXTOKEN, NULL, NULL);
+   m_BG_szImage[2] = buf;
    STOPUNDO
 
    return S_OK;
@@ -8506,7 +8522,7 @@ STDMETHODIMP PinTable::put_BackdropImage_FSS(BSTR newVal) //!! HDR??
 STDMETHODIMP PinTable::get_ColorGradeImage(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_szImageColorGrade, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_szImageColorGrade.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -8514,8 +8530,8 @@ STDMETHODIMP PinTable::get_ColorGradeImage(BSTR *pVal)
 
 STDMETHODIMP PinTable::put_ColorGradeImage(BSTR newVal)
 {
-   char szImage[sizeof(m_szImageColorGrade)];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, sizeof(m_szImageColorGrade), NULL, NULL);
+   char szImage[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
    const Texture * const tex = GetImage(szImage);
    if (tex && (tex->m_width != 256 || tex->m_height != 16))
    {
@@ -8524,7 +8540,7 @@ STDMETHODIMP PinTable::put_ColorGradeImage(BSTR newVal)
    }
 
    STARTUNDO
-   strncpy_s(m_szImageColorGrade,szImage,sizeof(m_szImageColorGrade)-1);
+   m_szImageColorGrade = szImage;
    STOPUNDO
 
    return S_OK;
@@ -8951,7 +8967,7 @@ STDMETHODIMP PinTable::put_SlopeMin(float newVal)
 STDMETHODIMP PinTable::get_BallImage(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_szBallImage, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_szBallImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -8959,8 +8975,10 @@ STDMETHODIMP PinTable::get_BallImage(BSTR *pVal)
 
 STDMETHODIMP PinTable::put_BallImage(BSTR newVal)
 {
+   char buf[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
    STARTUNDO
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_szBallImage, MAXTOKEN, NULL, NULL);
+   m_szBallImage = buf;
    STOPUNDO
 
    return S_OK;
@@ -8969,7 +8987,7 @@ STDMETHODIMP PinTable::put_BallImage(BSTR newVal)
 STDMETHODIMP PinTable::get_EnvironmentImage(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_szEnvImage, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_szEnvImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -8977,8 +8995,8 @@ STDMETHODIMP PinTable::get_EnvironmentImage(BSTR *pVal)
 
 STDMETHODIMP PinTable::put_EnvironmentImage(BSTR newVal)
 {
-   char szImage[sizeof(m_szEnvImage)];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, sizeof(m_szEnvImage), NULL, NULL);
+   char szImage[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
    const Texture * const tex = GetImage(szImage);
    if (tex && (tex->m_width != tex->m_height*2))
    {
@@ -8987,7 +9005,7 @@ STDMETHODIMP PinTable::put_EnvironmentImage(BSTR newVal)
    }
 
    STARTUNDO
-   strncpy_s(m_szEnvImage,szImage,sizeof(m_szEnvImage)-1);
+   m_szEnvImage = szImage;
    STOPUNDO
 
    return S_OK;
@@ -9760,7 +9778,7 @@ STDMETHODIMP PinTable::put_TiltTriggerTime(int newVal)
 STDMETHODIMP PinTable::get_BallFrontDecal(BSTR *pVal)
 {
    WCHAR wz[MAXNAMEBUFFER];
-   MultiByteToWideCharNull(CP_ACP, 0, m_szBallImageDecal, -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideCharNull(CP_ACP, 0, m_szBallImageDecal.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -9768,8 +9786,8 @@ STDMETHODIMP PinTable::get_BallFrontDecal(BSTR *pVal)
 
 STDMETHODIMP PinTable::put_BallFrontDecal(BSTR newVal)
 {
-   char szImage[sizeof(m_szBallImageDecal)];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, sizeof(m_szBallImageDecal), NULL, NULL);
+   char szImage[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
    const Texture * const tex = GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -9778,7 +9796,7 @@ STDMETHODIMP PinTable::put_BallFrontDecal(BSTR newVal)
    }
 
    STARTUNDO
-   strncpy_s(m_szBallImageDecal,szImage,sizeof(m_szBallImageDecal)-1);
+   m_szBallImageDecal = szImage;
    STOPUNDO
 
    return S_OK;

@@ -101,7 +101,7 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(prim->m_d.m_edgeFactorUI, PropertyDialog::GetFloatTextbox(m_edgeFactorUIEdit), prim);
                 break;
             case DISPID_Image2:
-                CHECK_UPDATE_COMBO_TEXT(prim->m_d.m_szNormalMap, m_normalMapCombo, prim);
+                CHECK_UPDATE_COMBO_TEXT_STRING(prim->m_d.m_szNormalMap, m_normalMapCombo, prim);
                 break;
             default:
                 UpdateBaseProperties(prim, &prim->m_d, dispid);

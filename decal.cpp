@@ -11,7 +11,6 @@ Decal::Decal()
    m_pIFont = NULL;
    vertexBuffer = NULL;
    m_textImg = NULL;
-   memset(m_d.m_szSurface, 0, sizeof(m_d.m_szSurface));
    m_ptable = NULL;
    m_leading = 0.0f;
    m_descent = 0.0f;
@@ -60,9 +59,9 @@ void Decal::SetDefaults(bool fromMouseClick)
    else
       m_d.m_szImage = buf;
 
-   hr = LoadValueString("DefaultProps\\Decal", "Surface", m_d.m_szSurface, MAXTOKEN);
+   hr = LoadValueString("DefaultProps\\Decal", "Surface", m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szSurface[0] = 0;
+      m_d.m_szSurface.clear();
 
    m_d.m_decaltype = fromMouseClick ? (enum DecalType)LoadValueIntWithDefault("DefaultProps\\Decal", "DecalType", (int)DecalImage) : DecalImage;
 
@@ -904,7 +903,7 @@ STDMETHODIMP Decal::put_Y(float newVal)
 STDMETHODIMP Decal::get_Surface(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -912,7 +911,9 @@ STDMETHODIMP Decal::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Decal::put_Surface(BSTR newVal)
 {
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXTOKEN, NULL, NULL);
+   char buf[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
+   m_d.m_szSurface = buf;
 
    return S_OK;
 }

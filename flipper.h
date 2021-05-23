@@ -23,7 +23,7 @@ public:
    Vertex2D m_Center;
    TimerDataRoot m_tdr;
 
-   char m_szSurface[MAXTOKEN];
+   std::string m_szSurface;
    COLORREF m_color;
 
    COLORREF m_rubbercolor;

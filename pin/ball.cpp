@@ -78,14 +78,14 @@ void Ball::Init(const float mass)
        m_pinballEnv = g_pplayer->m_ballImage;
    else
    {
-       if (g_pplayer->m_ptable->m_szBallImage[0] == '\0')
+       if (g_pplayer->m_ptable->m_szBallImage.empty())
        {
            m_szImage[0] = '\0';
            m_pinballEnv = NULL;
        }
        else
        {
-           lstrcpy(m_szImage, g_pplayer->m_ptable->m_szBallImage);
+           lstrcpy(m_szImage, g_pplayer->m_ptable->m_szBallImage.c_str());
            m_pinballEnv = g_pplayer->m_ptable->GetImage(m_szImage);
        }
    }
@@ -95,14 +95,14 @@ void Ball::Init(const float mass)
        m_pinballDecal = g_pplayer->m_decalImage;
    else
    {
-       if (g_pplayer->m_ptable->m_szBallImageDecal[0] == '\0')
+       if (g_pplayer->m_ptable->m_szBallImageDecal.empty())
        {
            m_szImageDecal[0] = '\0';
            m_pinballDecal = NULL;
        }
        else
        {
-           lstrcpy(m_szImageDecal, g_pplayer->m_ptable->m_szBallImageDecal);
+           lstrcpy(m_szImageDecal, g_pplayer->m_ptable->m_szBallImageDecal.c_str());
            m_pinballDecal = g_pplayer->m_ptable->GetImage(m_szImageDecal);
        }
    }

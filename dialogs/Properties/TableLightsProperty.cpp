@@ -95,7 +95,7 @@ void TableLightsProperty::UpdateProperties(const int dispid)
             CHECK_UPDATE_ITEM(table->m_lightRange, PropertyDialog::GetFloatTextbox(m_lightRangeEdit), table);
             break;
         case DISPID_Image7:
-            CHECK_UPDATE_COMBO_TEXT(table->m_szEnvImage, m_envEmissionImageCombo, table);
+            CHECK_UPDATE_COMBO_TEXT_STRING(table->m_szEnvImage, m_envEmissionImageCombo, table);
             break;
         case IDC_ENVEMISSIONSCALE:
             CHECK_UPDATE_ITEM(table->m_envEmissionScale, PropertyDialog::GetFloatTextbox(m_envEmissionScaleEdit), table);

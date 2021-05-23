@@ -15,7 +15,6 @@ Gate::Gate()
    m_wireIndexBuffer = NULL;
    m_wireVertexBuffer = NULL;
    m_vertexbuffer_angle = FLT_MAX;
-   memset(m_d.m_szSurface, 0, sizeof(m_d.m_szSurface));
    m_d.m_type = GateWireW;
    m_vertices = 0;
    m_indices = 0;
@@ -124,9 +123,9 @@ void Gate::SetDefaults(bool fromMouseClick)
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Gate", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Gate", "TimerInterval", 100) : 100;
 
-   const HRESULT hr = LoadValueString("DefaultProps\\Gate", "Surface", m_d.m_szSurface, MAXTOKEN);
+   const HRESULT hr = LoadValueString("DefaultProps\\Gate", "Surface", m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szSurface[0] = 0;
+      m_d.m_szSurface.clear();
 
    SetDefaultPhysics(fromMouseClick);
 
@@ -804,7 +803,7 @@ STDMETHODIMP Gate::put_Y(float newVal)
 STDMETHODIMP Gate::get_Surface(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -812,7 +811,9 @@ STDMETHODIMP Gate::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Gate::put_Surface(BSTR newVal)
 {
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXTOKEN, NULL, NULL);
+   char buf[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
+   m_d.m_szSurface = buf;
 
    return S_OK;
 }

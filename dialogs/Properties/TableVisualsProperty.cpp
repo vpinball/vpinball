@@ -53,7 +53,7 @@ void TableVisualsProperty::UpdateProperties(const int dispid)
             CHECK_UPDATE_COMBO_TEXT(table->m_szImage, m_imageCombo, table);
             break;
         case IDC_MATERIAL_COMBO:
-            CHECK_UPDATE_COMBO_TEXT(table->m_szPlayfieldMaterial, m_materialCombo, table);
+            CHECK_UPDATE_COMBO_TEXT_STRING(table->m_szPlayfieldMaterial, m_materialCombo, table);
             break;
         case IDC_REFLECT_ELEMENTS_CHECK:
             CHECK_UPDATE_ITEM(table->m_reflectElementsOnPlayfield, PropertyDialog::GetCheckboxState(m_hReflectElementsCheck), table);
@@ -65,10 +65,10 @@ void TableVisualsProperty::UpdateProperties(const int dispid)
             CHECK_UPDATE_ITEM(table->m_BallDecalMode, PropertyDialog::GetCheckboxState(m_hLogoModeCheck), table);
             break;
         case 1505:
-            CHECK_UPDATE_COMBO_TEXT(table->m_szBallImage, m_ballImageCombo, table);
+            CHECK_UPDATE_COMBO_TEXT_STRING(table->m_szBallImage, m_ballImageCombo, table);
             break;
         case 1508:
-            CHECK_UPDATE_COMBO_TEXT(table->m_szBallImageDecal, m_ballDecalCombo, table);
+            CHECK_UPDATE_COMBO_TEXT_STRING(table->m_szBallImageDecal, m_ballDecalCombo, table);
             break;
         case IDC_BALLPLAYFIELD_REFLECTION:
             CHECK_UPDATE_ITEM(table->m_ballPlayfieldReflectionStrength, PropertyDialog::GetFloatTextbox(m_ballReflectPlayfieldEdit), table);

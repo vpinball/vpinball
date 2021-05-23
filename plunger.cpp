@@ -5,7 +5,6 @@ Plunger::Plunger()
    m_phitplunger = NULL;
    m_vertexBuffer = NULL;
    m_indexBuffer = NULL;
-   memset(m_d.m_szSurface, 0, sizeof(m_d.m_szSurface));
 }
 
 Plunger::~Plunger()
@@ -56,9 +55,9 @@ void Plunger::SetDefaults(bool fromMouseClick)
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Plunger", "TimerInterval", 100) : 100;
 
-   hr = LoadValueString("DefaultProps\\Plunger", "Surface", m_d.m_szSurface, MAXTOKEN);
+   hr = LoadValueString("DefaultProps\\Plunger", "Surface", m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szSurface[0] = 0;
+      m_d.m_szSurface.clear();
 
    m_d.m_mechPlunger = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "MechPlunger", false) : false; // plungers require selection for mechanical input
    m_d.m_autoPlunger = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "AutoPlunger", false) : false;
@@ -976,7 +975,7 @@ bool Plunger::LoadToken(const int id, BiffReader * const pbr)
    case FID(VSBL): pbr->GetBool(&m_d.m_visible); break;
    case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(TIPS): pbr->GetString(m_d.m_szTipShape); break;
+   case FID(TIPS): pbr->GetString(m_d.m_szTipShape, sizeof(m_d.m_szTipShape)); break;
    case FID(RODD): pbr->GetFloat(&m_d.m_rodDiam); break;
    case FID(RNGG): pbr->GetFloat(&m_d.m_ringGap); break;
    case FID(RNGD): pbr->GetFloat(&m_d.m_ringDiam); break;
@@ -1432,7 +1431,7 @@ STDMETHODIMP Plunger::put_ZAdjust(float newVal)
 STDMETHODIMP Plunger::get_Surface(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1440,7 +1439,9 @@ STDMETHODIMP Plunger::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Plunger::put_Surface(BSTR newVal)
 {
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXTOKEN, NULL, NULL);
+   char buf[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
+   m_d.m_szSurface = buf;
 
    return S_OK;
 }

@@ -520,7 +520,7 @@ public:
    void GetUniqueName(const WCHAR * const prefix, WCHAR * const wzUniqueName, const DWORD wzUniqueName_maxlength) const;
    void GetUniqueNamePasting(const int type, WCHAR * const wzUniqueName, const DWORD wzUniqueName_maxlength);
 
-   float GetSurfaceHeight(const char * const szName, float x, float y) const;
+   float GetSurfaceHeight(const string& name, float x, float y) const;
 
    void SetLoadDefaults();
 
@@ -577,9 +577,9 @@ public:
    void UpdateDbgMaterial();
 
    bool IsMaterialNameUnique(const std::string &name) const;
-   Material* GetMaterial(const std::string &szName) const;
-   Material* GetSurfaceMaterial(const char * const szName) const;
-   Texture* GetSurfaceImage(const char * const szName) const;
+   Material* GetMaterial(const std::string &name) const;
+   Material* GetSurfaceMaterial(const std::string& name) const;
+   Texture* GetSurfaceImage(const std::string& name) const;
 
    bool GetCollectionIndex(const ISelect * const element, int &collectionIndex, int &elementIndex);
 
@@ -622,7 +622,7 @@ public:
    float m_BG_xlatex[NUM_BG_SETS];
    float m_BG_xlatey[NUM_BG_SETS];
    float m_BG_xlatez[NUM_BG_SETS];
-   char  m_BG_szImage[NUM_BG_SETS][MAXTOKEN];
+   string m_BG_szImage[NUM_BG_SETS];
 
    bool  m_BG_enable_FSS;
    int   m_currentBackglassMode;
@@ -674,17 +674,17 @@ public:
    ProtectionData m_protectionData;
 
    char m_szImage[MAXTOKEN];
-   char m_szPlayfieldMaterial[MAXNAMEBUFFER];
+   string m_szPlayfieldMaterial;
    COLORREF m_colorbackdrop;
    bool m_ImageBackdropNightDay;
 
-   char m_szImageColorGrade[MAXTOKEN];
+   string m_szImageColorGrade;
 
-   char m_szBallImage[MAXTOKEN];
-   char m_szBallImageDecal[MAXTOKEN];
+   string m_szBallImage;
+   string m_szBallImageDecal;
    bool m_BallDecalMode;
 
-   char m_szEnvImage[MAXTOKEN];
+   string m_szEnvImage;
 
    //CComObject<Surface> *m_psur;
 
