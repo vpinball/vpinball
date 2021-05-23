@@ -2919,7 +2919,7 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
    SAFE_VECTOR_DELETE(buffer);
 
    // Write the version to the registry.  This will be read later by the front end.
-   SaveValueString("Version", m_szTableName.c_str(), m_szVersion);
+   SaveValueString("Version", m_szTableName, m_szVersion);
 
    HRESULT hr;
    IStream *pstm;
