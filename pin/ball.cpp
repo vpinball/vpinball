@@ -33,7 +33,6 @@ Ball::Ball()
    m_decalMode = g_pplayer ? g_pplayer->m_ptable->m_BallDecalMode : false;
 
    memset(m_szImage, 0, sizeof(m_szImage));
-   memset(m_szImageDecal, 0, sizeof(m_szImageDecal));
 
    m_ringcounter_oldpos = 0;
    for (int i = 0; i < MAX_BALL_TRAIL_POS; ++i)
@@ -97,12 +96,12 @@ void Ball::Init(const float mass)
    {
        if (g_pplayer->m_ptable->m_szBallImageDecal.empty())
        {
-           m_szImageDecal[0] = '\0';
+           m_szImageDecal.clear();
            m_pinballDecal = NULL;
        }
        else
        {
-           lstrcpy(m_szImageDecal, g_pplayer->m_ptable->m_szBallImageDecal.c_str());
+           m_szImageDecal = g_pplayer->m_ptable->m_szBallImageDecal;
            m_pinballDecal = g_pplayer->m_ptable->GetImage(m_szImageDecal);
        }
    }

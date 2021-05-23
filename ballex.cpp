@@ -270,7 +270,7 @@ HRESULT BallEx::put_UserValue(VARIANT *newVal)
 STDMETHODIMP BallEx::get_FrontDecal(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_pball->m_szImageDecal, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_pball->m_szImageDecal.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -278,8 +278,8 @@ STDMETHODIMP BallEx::get_FrontDecal(BSTR *pVal)
 
 STDMETHODIMP BallEx::put_FrontDecal(BSTR newVal)
 {
-   char szImage[sizeof(m_pball->m_szImageDecal)];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, sizeof(m_pball->m_szImageDecal), NULL, NULL);
+   char szImage[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
    Texture * const tex = g_pplayer->m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -287,8 +287,7 @@ STDMETHODIMP BallEx::put_FrontDecal(BSTR newVal)
        return E_FAIL;
    }
 
-   strncpy_s(m_pball->m_szImageDecal, szImage, sizeof(m_pball->m_szImageDecal)-1);
-
+   m_pball->m_szImageDecal = szImage;
    m_pball->m_pinballDecal = tex;
 
    return S_OK;

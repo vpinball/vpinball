@@ -87,7 +87,7 @@ public:
    Matrix3 m_orientation;
 
    char m_szImage[MAXTOKEN];
-   char m_szImageDecal[MAXTOKEN];
+   string m_szImageDecal;
 
    float m_bulb_intensity_scale; // to dampen/increase contribution of the bulb lights (locally/by script)
 
