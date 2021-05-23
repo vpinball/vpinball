@@ -113,8 +113,11 @@ FIXES:
 - fix crash on (at least) one pre-forsyth-mesh-reorder table
 
 - fix crash on loading older tables with too long collection names
+- fix crash on loading older tables with too long item names (now its also prevented to create these)
 
 - fix hangs on loading/playing older tables due to invalid shapes
+
+- in general be more robust against invalid/'too long' names
 
 - add many more different windowed mode resolutions
 - more robustly handle display resolutions that are greater FullHD(1920x1080)
