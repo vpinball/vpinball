@@ -27,7 +27,7 @@ void LightseqStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
 
         if (dispid == DISPID_Collection || dispid == -1)
         {
-            char szT[MAX_PATH];
+            char szT[MAXSTRING];
             WideCharToMultiByteNull(CP_ACP, 0, lightseq->m_d.m_wzCollection.c_str(), -1, szT, sizeof(szT), NULL, NULL);
 
             PropertyDialog::UpdateCollectionComboBox(lightseq->GetPTable(), m_collectionCombo, szT);

@@ -4,7 +4,7 @@
 
 struct ManufacturerDimensions
 {
-   char name[MAXNAMEBUFFER];
+   string name;
    float width;
    float height;
 };
@@ -80,13 +80,14 @@ BOOL DimensionDialog::OnInitDialog()
    if (listHwnd != NULL)
       ListView_DeleteAllItems(listHwnd);
    lv.mask = LVIF_TEXT;
-   char textBuf[MAXNAMEBUFFER];
    for (int i = 0; i < DIM_TABLE_SIZE; i++)
    {
       lv.iItem = i;
       lv.iSubItem = 0;
-      lv.pszText = (LPSTR)dimTable[i].name;
+      lv.pszText = (LPSTR)dimTable[i].name.c_str();
       ListView_InsertItem(listHwnd, &lv);
+
+      char textBuf[MAXNAMEBUFFER];
       sprintf_s(textBuf, "%.03f", dimTable[i].width);
       ListView_SetItemText(listHwnd, i, 1, textBuf);
       sprintf_s(textBuf, "%.03f", dimTable[i].height);
@@ -146,48 +147,48 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                int ret = 0;
                if (LOWORD(wParam) == IDC_SIZE_WIDTH)
                {
-                  char textBuf[MAXNAMEBUFFER];
                   const CString textStr(GetDlgItemText(IDC_SIZE_WIDTH));
                   ret = sscanf_s(textStr.c_str(), "%f", &sizeWidth);
                   if (ret != 1 || sizeWidth < 0.0f)
                      sizeWidth = 0;
                   const int width = (int)(sizeWidth*47.0f + 0.5f);
+                  char textBuf[MAXNAMEBUFFER];
                   sprintf_s(textBuf, "%i", width);
                   CString textStr2(textBuf);
                   SetDlgItemText(IDC_VP_WIDTH, textStr2);
                }
                if (LOWORD(wParam) == IDC_SIZE_HEIGHT)
                {
-                  char textBuf[MAXNAMEBUFFER];
                   const CString textStr(GetDlgItemText(IDC_SIZE_HEIGHT));
                   ret = sscanf_s(textStr.c_str(), "%f", &sizeHeight);
                   if (ret != 1 || sizeHeight < 0.0f)
                      sizeHeight = 0;
                   const int height = (int)(sizeHeight*47.0f + 0.5f);
+                  char textBuf[MAXNAMEBUFFER];
                   sprintf_s(textBuf, "%i", height);
                   const CString textStr2(textBuf);
                   SetDlgItemText(IDC_VP_HEIGHT, textStr2);
                }
                if (LOWORD(wParam) == IDC_VP_WIDTH)
                {
-                  char textBuf[MAXNAMEBUFFER];
                   const CString textStr(GetDlgItemText(IDC_VP_WIDTH));
                   ret = sscanf_s(textStr.c_str(), "%i", &vpWidth);
                   if (ret != 1 || vpWidth < 0)
                      vpWidth = 0;
                   const float width = (float)vpWidth / 47.0f;
+                  char textBuf[MAXNAMEBUFFER];
                   sprintf_s(textBuf, "%.3f", width);
                   CString textStr2(textBuf);
                   SetDlgItemText(IDC_SIZE_WIDTH, textStr2);
                }
                if (LOWORD(wParam) == IDC_VP_HEIGHT)
                {
-                  char textBuf[MAXNAMEBUFFER];
                   const CString textStr(GetDlgItemText(IDC_VP_HEIGHT));
                   ret = sscanf_s(textStr.c_str(), "%i", &vpHeight);
                   if (ret != 1 || vpHeight < 0)
                      vpHeight = 0;
                   const float height = (float)vpHeight / 47.0f;
+                  char textBuf[MAXNAMEBUFFER];
                   sprintf_s(textBuf, "%.03f", height);
                   CString textStr2(textBuf);
                   SetDlgItemText(IDC_SIZE_HEIGHT, textStr2);

@@ -9771,8 +9771,8 @@ STDMETHODIMP PinTable::put_TiltTriggerTime(int newVal)
 
 STDMETHODIMP PinTable::get_BallFrontDecal(BSTR *pVal)
 {
-   WCHAR wz[MAXNAMEBUFFER];
-   MultiByteToWideCharNull(CP_ACP, 0, m_ballImageDecal.c_str(), -1, wz, MAXNAMEBUFFER);
+   WCHAR wz[MAXTOKEN];
+   MultiByteToWideCharNull(CP_ACP, 0, m_ballImageDecal.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
