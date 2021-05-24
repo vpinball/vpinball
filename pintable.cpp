@@ -2125,7 +2125,7 @@ HRESULT PinTable::Save(const bool saveAs)
       {
       string szInitialDir;
       string szFoo;
-      HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir);
+      const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir);
       if (hr == S_OK)
       {
          ofn.lpstrInitialDir = szInitialDir.c_str();
@@ -2143,10 +2143,11 @@ HRESULT PinTable::Save(const bool saveAs)
       }
 
       m_szFileName = fileName;
+
       char szInitialDir[MAXSTRING];
       strncpy_s(szInitialDir, m_szFileName.c_str(), sizeof(szInitialDir)-1);
-      szInitialDir[ofn.nFileOffset] = 0;
-      hr = SaveValueString("RecentDir", "LoadDir", szInitialDir);
+      szInitialDir[ofn.nFileOffset] = 0; // truncate after folder
+      HRESULT hr = SaveValueString("RecentDir", "LoadDir", szInitialDir);
 
       {
          MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName.c_str());
