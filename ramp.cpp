@@ -97,12 +97,9 @@ void Ramp::SetDefaults(bool fromMouseClick)
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "TimerInterval", 100) : 100;
 
-   char buf[MAXTOKEN] = { 0 };
-   HRESULT hr = LoadValueString(strKeyName, "Image", buf, MAXTOKEN);
+   HRESULT hr = LoadValueString(strKeyName, "Image", m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
-   else
-      m_d.m_szImage = buf;
 
    m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)LoadValueIntWithDefault(strKeyName, "ImageMode", ImageModeWorld) : ImageModeWorld;
    m_d.m_imageWalls = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ImageWalls", true) : true;

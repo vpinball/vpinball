@@ -2510,11 +2510,11 @@ void CodeViewer::ParseVPCore()
 
 	searchPaths.push_back("c:\\Visual Pinball\\Scripts\\core.vbs"); // default script path
 
-	char szLoadDir[MAX_PATH];
-	const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szLoadDir, MAX_PATH); // last known load dir path
+	string szLoadDir;
+	const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szLoadDir); // last known load dir path
 	if (hr != S_OK)
-		lstrcpy(szLoadDir, "c:\\Visual Pinball\\Tables\\"); // default table path
-	searchPaths.push_back(szLoadDir + string("core.vbs"));
+		szLoadDir = "c:\\Visual Pinball\\Tables\\"; // default table path
+	searchPaths.push_back(szLoadDir + "core.vbs");
 
 	FILE* fCore = NULL;
 	for(size_t i = 0; i < searchPaths.size(); ++i)

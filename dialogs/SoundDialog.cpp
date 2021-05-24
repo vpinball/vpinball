@@ -254,13 +254,13 @@ void SoundDialog::Import()
       return;
 
    std::vector<std::string> szFileName;
-   char szInitialDir[MAXSTRING];
+   string szInitialDir;
 
-   HRESULT hr = LoadValueString( "RecentDir", "SoundDir", szInitialDir, MAXSTRING);
+   HRESULT hr = LoadValueString( "RecentDir", "SoundDir", szInitialDir);
    if (hr != S_OK)
-      lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+      szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-   if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
+   if (g_pvp->OpenFileDialog(szInitialDir.c_str(), szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
    {
       const size_t index = szFileName[0].find_last_of('\\');
       if (index != std::string::npos)
@@ -329,14 +329,14 @@ void SoundDialog::ReImportFrom()
         const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to replace this sound with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2 );
         if (ans == IDYES)
         {
-            char szInitialDir[MAXSTRING];
+            string szInitialDir;
             std::vector<std::string> szFileName;
 
-            HRESULT hr = LoadValueString("RecentDir", "SoundDir", szInitialDir, MAXSTRING);
+            HRESULT hr = LoadValueString("RecentDir", "SoundDir", szInitialDir);
             if (hr != S_OK)
-                lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+                szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-            if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", 0))
+            if (g_pvp->OpenFileDialog(szInitialDir.c_str(), szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", 0))
             {
                 LVITEM lvitem;
                 lvitem.mask = LVIF_PARAM;
@@ -413,12 +413,13 @@ void SoundDialog::Export()
             ofn.lpstrFile = filename;
             ofn.nMaxFile = sizeof(filename);
             ofn.lpstrDefExt = "mp3";
-            char initDir[MAXSTRING];
-            const HRESULT hr = LoadValueString( "RecentDir", "SoundDir", initDir, MAXSTRING);
-            if (hr != S_OK)
-               lstrcpy(initDir, "c:\\Visual Pinball\\Tables\\");
 
-            ofn.lpstrInitialDir = initDir;
+            string initDir;
+            const HRESULT hr = LoadValueString("RecentDir", "SoundDir", initDir);
+            if (hr != S_OK)
+               initDir = "c:\\Visual Pinball\\Tables\\";
+
+            ofn.lpstrInitialDir = initDir.c_str();
             //ofn.lpstrTitle = "SAVE AS";
             ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 

@@ -225,7 +225,6 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case 1112:
         {
             char szFileName[MAXSTRING];
-            char szInitialDir[MAXSTRING];
             szFileName[0] = '\0';
 
             OPENFILENAME ofn;
@@ -236,15 +235,16 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             // TEXT
             ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
             ofn.lpstrFile = szFileName;
-            ofn.nMaxFile = MAXSTRING;
+            ofn.nMaxFile = sizeof(szFileName);
             ofn.lpstrDefExt = "vpp";
             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-            const HRESULT hr = LoadValueString("RecentDir", "PhysicsDir", szInitialDir, MAXSTRING);
+            string szInitialDir;
+            const HRESULT hr = LoadValueString("RecentDir", "PhysicsDir", szInitialDir);
             if (hr != S_OK)
-               lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+               szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-            ofn.lpstrInitialDir = szInitialDir;
+            ofn.lpstrInitialDir = szInitialDir.c_str();
 
             const int ret = GetSaveFileName(&ofn);
             if (ret == 0)
@@ -389,13 +389,13 @@ void PhysicsOptionsDialog::OnDestroy()
 bool PhysicsOptionsDialog::LoadSetting()
 {
     std::vector<std::string> szFileName;
-    char szInitialDir[MAXSTRING];
+    string szInitialDir;
 
-    HRESULT hr = LoadValueString("RecentDir", "PhysicsDir", szInitialDir, MAXSTRING);
+    HRESULT hr = LoadValueString("RecentDir", "PhysicsDir", szInitialDir);
     if (hr != S_OK)
-        lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+        szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-    if (!g_pvp->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
+    if (!g_pvp->OpenFileDialog(szInitialDir.c_str(), szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
         return false;
 
     const size_t index = szFileName[0].find_last_of('\\');

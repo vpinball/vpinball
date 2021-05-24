@@ -396,13 +396,13 @@ void ImageDialog::OnCancel()
 void ImageDialog::Import()
 {
    std::vector<std::string> szFileName;
-   char szInitialDir[MAXSTRING];
+   string szInitialDir;
 
-   HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir, MAXSTRING);
+   HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir);
    if (hr != S_OK)
-      lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+      szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-   if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0", "png", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
+   if (g_pvp->OpenFileDialog(szInitialDir.c_str(), szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0", "png", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
    {
       CCO(PinTable) * const pt = g_pvp->GetActiveTable();
       const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
@@ -507,13 +507,12 @@ void ImageDialog::Export()
             else if (!_stricmp(ofn.lpstrDefExt, "hdr"))
                ofn.nFilterIndex = 12;
 
-            char g_initDir[MAXSTRING];
-            memset(g_initDir, 0, sizeof(g_initDir));
-            const HRESULT hr = LoadValueString("RecentDir", "ImageDir", g_initDir, MAXSTRING);
+            string g_initDir;
+            const HRESULT hr = LoadValueString("RecentDir", "ImageDir", g_initDir);
             if (hr != S_OK)
-               lstrcpy(g_initDir, "c:\\Visual Pinball\\Tables\\");
+               g_initDir = "c:\\Visual Pinball\\Tables\\";
 
-            ofn.lpstrInitialDir = (hr == S_OK) ? g_initDir : NULL;
+            ofn.lpstrInitialDir = (hr == S_OK) ? g_initDir.c_str() : NULL;
             //ofn.lpstrTitle = "SAVE AS";
             ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
@@ -718,13 +717,13 @@ void ImageDialog::ReimportFrom()
       if (ans == IDYES)
       {
          std::vector<std::string> szFileName;
-         char szInitialDir[MAXSTRING];
+         string szInitialDir;
 
-         HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir, MAXSTRING);
+         HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir);
          if (hr != S_OK)
-            lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+            szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-         if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0","png",0))
+         if (g_pvp->OpenFileDialog(szInitialDir.c_str(), szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0","png",0))
          {
             LVITEM lvitem;
             lvitem.mask = LVIF_PARAM;

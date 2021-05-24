@@ -279,8 +279,8 @@ void VPinball::InitRegValues()
    // get the list of the last n loaded tables
    for (int i = 0; i < LAST_OPENED_TABLE_COUNT; i++)
    {
-      char szTableName[MAXSTRING];
-      if(LoadValueString("RecentDir", "TableFileName"+std::to_string(i), szTableName, MAXSTRING) == S_OK)
+      string szTableName;
+      if(LoadValueString("RecentDir", "TableFileName"+std::to_string(i), szTableName) == S_OK)
          m_recentTableList.push_back(szTableName);
       else
          break;
@@ -883,13 +883,13 @@ void VPinball::DoPlay(const bool _cameraMode)
 bool VPinball::LoadFile(const bool updateEditor)
 {
    std::vector<std::string> szFileName;
-   char szInitialDir[MAXSTRING];
+   string szInitialDir;
 
-   HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
+   HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir);
    if (hr != S_OK)
-      lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+      szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-   if (!OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0))
+   if (!OpenFileDialog(szInitialDir.c_str(), szFileName, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0))
       return false;
 
    const size_t index = szFileName[0].find_last_of('\\');
@@ -1876,13 +1876,13 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          case IDC_IMPORT:
          {
             std::vector<std::string> szFileName;
-            char szInitialDir[MAXSTRING];
+            string szInitialDir;
 
-            const HRESULT hr = LoadValueString("RecentDir", "FontDir", szInitialDir, MAXSTRING);
+            const HRESULT hr = LoadValueString("RecentDir", "FontDir", szInitialDir);
             if (hr != S_OK)
-               lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+               szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-            if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0))
+            if (g_pvp->OpenFileDialog(szInitialDir.c_str(), szFileName, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0))
             {
                const size_t index = szFileName[0].find_last_of('\\');
                if (index != std::string::npos)

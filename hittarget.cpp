@@ -166,12 +166,9 @@ void HitTarget::SetDefaults(bool fromMouseClick)
    // Rotation and Transposition
    m_d.m_rotZ = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Orientation", 0.0f) : 0.0f;
 
-   char buf[MAXTOKEN] = { 0 };
-   const HRESULT hr = LoadValueString(strKeyName, "Image", buf, MAXTOKEN);
+   const HRESULT hr = LoadValueString(strKeyName, "Image", m_d.m_szImage);
    if ((hr != S_OK) && fromMouseClick)
       m_d.m_szImage.clear();
-   else
-      m_d.m_szImage = buf;
 
    m_d.m_targetType = fromMouseClick ? (TargetType)LoadValueIntWithDefault(strKeyName, "TargetType", DropTargetSimple) : DropTargetSimple;
    m_d.m_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HitThreshold", 2.0f) : 2.0f;

@@ -33,18 +33,13 @@ void DispReel::SetDefaults(bool fromMouseClick)
 
    // set all the Data defaults
    HRESULT hr;
-   char buf[MAXTOKEN] = { 0 };
-   hr = LoadValueString("DefaultProps\\Ramp", "Image", buf, MAXTOKEN);
+   hr = LoadValueString("DefaultProps\\Ramp", "Image", m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
-   else
-      m_d.m_szImage = buf;
 
-   hr = LoadValueString("DefaultProps\\Ramp", "Sound", buf, MAXTOKEN);
+   hr = LoadValueString("DefaultProps\\Ramp", "Sound", m_d.m_szSound);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szSound = "";
-   else
-      m_d.m_szSound = buf;
+      m_d.m_szSound.clear();
 
    m_d.m_useImageGrid = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "UseImageGrid", false) : false;
    m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "Visible", true) : true;

@@ -165,13 +165,13 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    m_d.m_slingshot_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "SlingshotThreshold", 0.0f) : 0.0f;
    m_d.m_inner = true; //!! Deprecated, do not use anymore
 
-   HRESULT hr = LoadValueString(strKeyName, "TopImage", m_d.m_szImage, MAXTOKEN);
+   HRESULT hr = LoadValueString(strKeyName, "TopImage", m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImage = "";
+      m_d.m_szImage.clear();
 
-   hr = LoadValueString(strKeyName, "SideImage", m_d.m_szSideImage, MAXTOKEN);
+   hr = LoadValueString(strKeyName, "SideImage", m_d.m_szSideImage);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szSideImage = "";
+      m_d.m_szSideImage.clear();
 
    m_d.m_droppable = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Droppable", false) : false;
    m_d.m_flipbook = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Flipbook", false) : false;
@@ -209,18 +209,13 @@ void Surface::SetDefaults(bool fromMouseClick)
    m_d.m_slingshot_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "SlingshotThreshold", 0.0f) : 0.0f;
    m_d.m_inner = true; //!! Deprecated, do not use anymore
 
-   char buf[MAXTOKEN] = { 0 };
-   hr = LoadValueString(strKeyName, "TopImage", buf, MAXTOKEN);
+   hr = LoadValueString(strKeyName, "TopImage", m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
-   else
-      m_d.m_szImage = buf;
 
-   hr = LoadValueString(strKeyName, "SideImage", buf, MAXTOKEN);
+   hr = LoadValueString(strKeyName, "SideImage", m_d.m_szSideImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSideImage.clear();
-   else
-      m_d.m_szSideImage = buf;
 
    m_d.m_droppable = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Droppable", false) : false;
    m_d.m_flipbook = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Flipbook", false) : false;

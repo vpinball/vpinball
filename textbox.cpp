@@ -72,17 +72,17 @@ void Textbox::SetDefaults(bool fromMouseClick)
       const float fontSize = LoadValueFloatWithDefault("DefaultProps\\TextBox", "FontSize", 14.25f);
       fd.cySize.int64 = (LONGLONG)(fontSize * 10000.0f);
 
-      char tmp[MAXSTRING];
+      string tmp;
       HRESULT hr;
-      hr = LoadValueString("DefaultProps\\TextBox", "FontName", tmp, MAXSTRING);
+      hr = LoadValueString("DefaultProps\\TextBox", "FontName", tmp);
       if (hr != S_OK)
          fd.lpstrName = L"Arial";
       else
       {
-         const int len = lstrlen(tmp) + 1;
+         const int len = (int)tmp.length() + 1;
          fd.lpstrName = (LPOLESTR)malloc(len*sizeof(WCHAR));
          memset(fd.lpstrName, 0, len*sizeof(WCHAR));
-         MultiByteToWideCharNull(CP_ACP, 0, tmp, -1, fd.lpstrName, len);
+         MultiByteToWideCharNull(CP_ACP, 0, tmp.c_str(), -1, fd.lpstrName, len);
 
          free_lpstrName = true;
       }
@@ -93,11 +93,9 @@ void Textbox::SetDefaults(bool fromMouseClick)
       fd.fUnderline = LoadValueIntWithDefault("DefaultProps\\TextBox", "FontUnderline", 0);
       fd.fStrikethrough = LoadValueIntWithDefault("DefaultProps\\TextBox", "FontStrikeThrough", 0);
 
-      hr = LoadValueString("DefaultProps\\TextBox", "Text", tmp, MAXSTRING);
+      hr = LoadValueString("DefaultProps\\TextBox", "Text", m_d.m_sztext);
       if (hr != S_OK)
-         m_d.m_sztext = "";
-      else
-         m_d.m_sztext = tmp;
+         m_d.m_sztext.clear();
    }
 
    OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);

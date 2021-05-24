@@ -354,12 +354,9 @@ void Primitive::SetDefaults(bool fromMouseClick)
    m_d.m_aRotAndTra[7] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra7", 0.0f) : 0.0f;
    m_d.m_aRotAndTra[8] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra8", 0.0f) : 0.0f;
 
-   char buf[MAXTOKEN] = { 0 };
-   HRESULT hr = LoadValueString(strKeyName, "Image", buf, MAXTOKEN);
+   HRESULT hr = LoadValueString(strKeyName, "Image", m_d.m_szImage);
    if ((hr != S_OK) && fromMouseClick)
       m_d.m_szImage.clear();
-   else
-      m_d.m_szImage = buf;
 
    hr = LoadValueString(strKeyName, "NormalMap", m_d.m_szNormalMap);
    if ((hr != S_OK) && fromMouseClick)
@@ -1913,13 +1910,13 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             SetForegroundWindow(hwndDlg);
 
             std::vector<std::string> szFileName;
-            char szInitialDir[MAXSTRING];
+            string szInitialDir;
 
-            HRESULT hr = LoadValueString("RecentDir", "ImportDir", szInitialDir, MAXSTRING);
+            HRESULT hr = LoadValueString("RecentDir", "ImportDir", szInitialDir);
             if (hr != S_OK)
-               lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+               szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-            if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0))
+            if (g_pvp->OpenFileDialog(szInitialDir.c_str(), szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0))
             {
                SetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, szFileName[0].c_str());
 
@@ -1955,8 +1952,8 @@ bool Primitive::BrowseFor3DMeshFile()
    return false;
 #else
    char szFileName[MAXSTRING];
-   char szInitialDir[MAXSTRING];
    szFileName[0] = '\0';
+   string szInitialDir;
 
    OPENFILENAME ofn;
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
@@ -1970,11 +1967,11 @@ bool Primitive::BrowseFor3DMeshFile()
    ofn.lpstrDefExt = "obj";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-   const HRESULT hr = LoadValueString("RecentDir", "ImportDir", szInitialDir, MAXSTRING);
+   const HRESULT hr = LoadValueString("RecentDir", "ImportDir", szInitialDir);
    if (hr != S_OK)
-       lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-   ofn.lpstrInitialDir = szInitialDir;
+   ofn.lpstrInitialDir = szInitialDir.c_str();
 
    const int ret = GetOpenFileName(&ofn);
    if (ret == 0)
@@ -2110,14 +2107,14 @@ bool Primitive::LoadMeshDialog()
 
 void Primitive::ExportMeshDialog()
 {
-   char szInitialDir[MAXSTRING];
-   HRESULT hr = LoadValueString("RecentDir", "ImportDir", szInitialDir, MAXSTRING);
+   string szInitialDir;
+   HRESULT hr = LoadValueString("RecentDir", "ImportDir", szInitialDir);
    if (hr != S_OK)
-       lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
    std::vector<std::string> szFileName;
    
-   if (m_vpinball->SaveFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY))
+   if (m_vpinball->SaveFileDialog(szInitialDir.c_str(), szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY))
    {
       const size_t index = szFileName[0].find_last_of('\\');
       if (index != std::string::npos)

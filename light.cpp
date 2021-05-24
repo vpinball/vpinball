@@ -87,12 +87,9 @@ void Light::SetDefaults(bool fromMouseClick)
    m_d.m_color = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Light", "Color", RGB(255,255,0)) : RGB(255,255,0);
    m_d.m_color2 = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Light", "ColorFull", RGB(255,255,255)) : RGB(255,255,255);
 
-   char buf[MAXTOKEN] = { 0 };
-   HRESULT hr = LoadValueString("DefaultProps\\Light", "OffImage", buf, MAXTOKEN);
+   HRESULT hr = LoadValueString("DefaultProps\\Light", "OffImage", m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
-   else
-      m_d.m_szImage = buf;
 
    hr = LoadValueString("DefaultProps\\Light", "BlinkPattern", m_rgblinkpattern, NUM_RGB_BLINK_PATTERN);
    if ((hr != S_OK) || !fromMouseClick)

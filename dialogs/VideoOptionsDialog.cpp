@@ -296,16 +296,15 @@ BOOL VideoOptionsDialog::OnInitDialog()
    const bool overwiteBallImage = LoadValueBoolWithDefault("Player", "OverwriteBallImage", false);
    SendMessage(GetDlgItem(IDC_OVERWRITE_BALL_IMAGE_CHECK).GetHwnd(), BM_SETCHECK, overwiteBallImage ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   char imageName[MAX_PATH] = { 0 };
-   HRESULT hr = LoadValueString("Player", "BallImage", imageName, MAX_PATH);
+   string imageName;
+   HRESULT hr = LoadValueString("Player", "BallImage", imageName);
    if (hr != S_OK)
-      imageName[0] = 0;
-   SetDlgItemText(IDC_BALL_IMAGE_EDIT, imageName);
-   imageName[0] = 0;
-   hr = LoadValueString("Player", "DecalImage", imageName, MAX_PATH);
+      imageName.clear();
+   SetDlgItemText(IDC_BALL_IMAGE_EDIT, imageName.c_str());
+   hr = LoadValueString("Player", "DecalImage", imageName);
    if (hr != S_OK)
-      imageName[0] = 0;
-   SetDlgItemText(IDC_BALL_DECAL_EDIT, imageName);
+      imageName.clear();
+   SetDlgItemText(IDC_BALL_DECAL_EDIT, imageName.c_str());
    if (overwiteBallImage == 0)
    {
       ::EnableWindow(GetDlgItem(IDC_BROWSE_BALL_IMAGE).GetHwnd(), FALSE);

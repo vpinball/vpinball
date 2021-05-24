@@ -149,12 +149,9 @@ void Spinner::SetDefaults(bool fromMouseClick)
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Spinner", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Spinner", "TimerInterval", 100) : 100;
 
-   char buf[MAXTOKEN] = { 0 };
-   HRESULT hr = LoadValueString("DefaultProps\\Spinner", "Image", buf, MAXTOKEN);
+   HRESULT hr = LoadValueString("DefaultProps\\Spinner", "Image", m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
-   else
-      m_d.m_szImage = buf;
 
    hr = LoadValueString("DefaultProps\\Spinner", "Surface", m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)

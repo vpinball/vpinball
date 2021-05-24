@@ -25,14 +25,14 @@ void LightSeq::SetDefaults(bool fromMouseClick)
 {
    m_d.m_updateinterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\LightSequence", "UpdateInterval", 25) : 25;
 
-   char tmp[MAXSTRING];
-   const HRESULT hr = LoadValueString("DefaultProps\\LightSequence", "Collection", tmp, MAXNAMEBUFFER);
+   string tmp;
+   const HRESULT hr = LoadValueString("DefaultProps\\LightSequence", "Collection", tmp);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_wzCollection.clear();
    else
    {
       WCHAR wtmp[MAXSTRING];
-      MultiByteToWideCharNull(CP_ACP, 0, tmp, -1, wtmp, MAXSTRING);
+      MultiByteToWideCharNull(CP_ACP, 0, tmp.c_str(), -1, wtmp, MAXSTRING);
       m_d.m_wzCollection = wtmp;
    }
 

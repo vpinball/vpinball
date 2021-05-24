@@ -44,12 +44,9 @@ void Plunger::SetDefaults(bool fromMouseClick)
    m_d.m_type = fromMouseClick ? (PlungerType)LoadValueIntWithDefault("DefaultProps\\Plunger", "PlungerType", PlungerTypeModern) : PlungerTypeModern;
    m_d.m_color = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Plunger", "Color", RGB(76,76,76)) : RGB(76,76,76);
 
-   char buf[MAXTOKEN] = { 0 };
-   HRESULT hr = LoadValueString("DefaultProps\\Plunger", "Image", buf, MAXTOKEN);
+   HRESULT hr = LoadValueString("DefaultProps\\Plunger", "Image", m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
-   else
-      m_d.m_szImage = buf;
 
    m_d.m_animFrames = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Plunger", "AnimFrames", 1) : 1;
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "TimerEnabled", false) : false;

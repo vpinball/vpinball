@@ -52,12 +52,9 @@ void Decal::SetDefaults(bool fromMouseClick)
    m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Decal", "Height", 100.0f) : 100.0f;
    m_d.m_rotation = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Decal", "Rotation", 0.f) : 0.f;
 
-   char buf[MAXSTRING] = { 0 };
-   HRESULT hr = LoadValueString("DefaultProps\\Decal", "Image", buf, MAXTOKEN);
+   HRESULT hr = LoadValueString("DefaultProps\\Decal", "Image", m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
-   else
-      m_d.m_szImage = buf;
 
    hr = LoadValueString("DefaultProps\\Decal", "Surface", m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
@@ -65,11 +62,9 @@ void Decal::SetDefaults(bool fromMouseClick)
 
    m_d.m_decaltype = fromMouseClick ? (enum DecalType)LoadValueIntWithDefault("DefaultProps\\Decal", "DecalType", (int)DecalImage) : DecalImage;
 
-   hr = LoadValueString("DefaultProps\\Decal", "Text", buf, MAXSTRING);
+   hr = LoadValueString("DefaultProps\\Decal", "Text", m_d.m_sztext);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_sztext = "";
-   else
-      m_d.m_sztext = buf;
+      m_d.m_sztext.clear();
 
    m_d.m_sizingtype = fromMouseClick ? (enum SizingType)LoadValueIntWithDefault("DefaultProps\\Decal", "Sizing", (int)ManualSize) : ManualSize;
    m_d.m_color = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Decal", "Color", RGB(0,0,0)) : RGB(0,0,0);
@@ -84,8 +79,8 @@ void Decal::SetDefaults(bool fromMouseClick)
       hr = LoadValueFloat("DefaultProps\\Decal", "FontSize", &fTmp);
       fd.cySize.int64 = (hr == S_OK) && fromMouseClick ? (LONGLONG)(fTmp * 10000.0) : 142500;
 
-      char tmp[256];
-      hr = LoadValueString("DefaultProps\\Decal", "FontName", tmp, 256);
+      char tmp[MAXSTRING];
+      hr = LoadValueString("DefaultProps\\Decal", "FontName", tmp, MAXSTRING);
       if ((hr != S_OK) || !fromMouseClick)
          fd.lpstrName = L"Arial Black";
       else

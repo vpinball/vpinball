@@ -311,13 +311,13 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       case IDC_IMPORT:
       {
          std::vector<std::string> szFilename;
-         char szInitialDir[MAXSTRING];
+         string szInitialDir;
 
-         const HRESULT hr = LoadValueString("RecentDir", "MaterialDir", szInitialDir, MAXSTRING);
+         const HRESULT hr = LoadValueString("RecentDir", "MaterialDir", szInitialDir);
          if (hr != S_OK)
-            lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+            szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-         if (g_pvp->OpenFileDialog(szInitialDir, szFilename, "Material Files (.mat)\0*.mat\0", "mat", 0))
+         if (g_pvp->OpenFileDialog(szInitialDir.c_str(), szFilename, "Material Files (.mat)\0*.mat\0", "mat", 0))
          {
             int materialCount = 0;
             int versionNumber = 0;
@@ -376,13 +376,12 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       {
          if (ListView_GetSelectedCount(m_hMaterialList))	// if some items are selected???
          {
-            char szFileName[MAXSTRING];
-            char szInitialDir[MAXSTRING];
             int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
             const int selCount = ListView_GetSelectedCount(m_hMaterialList);
             if (sel == -1)
                break;
 
+            char szFileName[MAXSTRING];
             strncpy_s(szFileName, "Materials.mat", sizeof(szFileName)-1);
             OPENFILENAME ofn;
             ZeroMemory(&ofn, sizeof(OPENFILENAME));
@@ -395,11 +394,12 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             ofn.nMaxFile = sizeof(szFileName);
             ofn.lpstrDefExt = "mat";
 
-            const HRESULT hr = LoadValueString("RecentDir", "MaterialDir", szInitialDir, MAXSTRING);
+            string szInitialDir;
+            const HRESULT hr = LoadValueString("RecentDir", "MaterialDir", szInitialDir);
             if (hr != S_OK)
-               lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+               szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-            ofn.lpstrInitialDir = szInitialDir;
+            ofn.lpstrInitialDir = szInitialDir.c_str();
             ofn.lpstrTitle = "Export materials";
             ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
