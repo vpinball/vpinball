@@ -1029,7 +1029,7 @@ void Player::InitBallShader()
    const vec4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.05f);
    m_ballShader->SetVector("Roughness_WrapL_Edge_Thickness", &rwem);
 
-   Texture * const playfield = m_ptable->GetImage(m_ptable->m_szImage);
+   Texture * const playfield = m_ptable->GetImage(m_ptable->m_image);
    if (playfield)
       m_ballShader->SetTexture("Texture1", playfield, false);
 
@@ -4278,7 +4278,7 @@ void Player::PrepareVideoBuffersNormal()
    if (m_ptable->m_bloom_strength > 0.0f && !m_bloomOff)
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture1", m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture());
 
-   Texture * const pin = m_ptable->GetImage(m_ptable->m_szImageColorGrade);
+   Texture * const pin = m_ptable->GetImage(m_ptable->m_imageColorGrade);
    if (pin)
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture4", pin, false);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool("color_grade", pin != NULL);
@@ -4430,7 +4430,7 @@ void Player::PrepareVideoBuffersAO()
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture1", m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture());
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pddsAOBackBuffer);
 
-   Texture * const pin = m_ptable->GetImage(m_ptable->m_szImageColorGrade);
+   Texture * const pin = m_ptable->GetImage(m_ptable->m_imageColorGrade);
    if (pin)
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture4", pin, false);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool("color_grade", pin != NULL);
@@ -5144,7 +5144,7 @@ void Player::DrawBalls()
    //m_pin3d.m_pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
    //m_pin3d.m_pd3dDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
 
-   const Material * const playfield_mat = m_ptable->GetMaterial(m_ptable->m_szPlayfieldMaterial);
+   const Material * const playfield_mat = m_ptable->GetMaterial(m_ptable->m_playfieldMaterial);
    const vec4 playfield_cBaseF = convertColor(playfield_mat->m_cBase);
    const float playfield_avg_diffuse = playfield_cBaseF.x*0.176204f + playfield_cBaseF.y*0.812985f + playfield_cBaseF.z*0.0108109f;
 

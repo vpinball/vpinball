@@ -31,9 +31,6 @@ Ball::Ball()
    m_forceReflection = false;
    m_visible = true;
    m_decalMode = g_pplayer ? g_pplayer->m_ptable->m_BallDecalMode : false;
-
-   memset(m_szImage, 0, sizeof(m_szImage));
-
    m_ringcounter_oldpos = 0;
    for (int i = 0; i < MAX_BALL_TRAIL_POS; ++i)
       m_oldpos[i].x = FLT_MAX;
@@ -77,15 +74,15 @@ void Ball::Init(const float mass)
        m_pinballEnv = g_pplayer->m_ballImage;
    else
    {
-       if (g_pplayer->m_ptable->m_szBallImage.empty())
+       if (g_pplayer->m_ptable->m_ballImage.empty())
        {
-           m_szImage[0] = '\0';
+           m_image.clear();
            m_pinballEnv = NULL;
        }
        else
        {
-           lstrcpy(m_szImage, g_pplayer->m_ptable->m_szBallImage.c_str());
-           m_pinballEnv = g_pplayer->m_ptable->GetImage(m_szImage);
+           m_image = g_pplayer->m_ptable->m_ballImage;
+           m_pinballEnv = g_pplayer->m_ptable->GetImage(m_image);
        }
    }
 
@@ -94,15 +91,15 @@ void Ball::Init(const float mass)
        m_pinballDecal = g_pplayer->m_decalImage;
    else
    {
-       if (g_pplayer->m_ptable->m_szBallImageDecal.empty())
+       if (g_pplayer->m_ptable->m_ballImageDecal.empty())
        {
-           m_szImageDecal.clear();
+           m_imageDecal.clear();
            m_pinballDecal = NULL;
        }
        else
        {
-           m_szImageDecal = g_pplayer->m_ptable->m_szBallImageDecal;
-           m_pinballDecal = g_pplayer->m_ptable->GetImage(m_szImageDecal);
+           m_imageDecal = g_pplayer->m_ptable->m_ballImageDecal;
+           m_pinballDecal = g_pplayer->m_ptable->GetImage(m_imageDecal);
        }
    }
 

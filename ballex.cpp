@@ -238,7 +238,7 @@ STDMETHODIMP BallEx::put_Color(OLE_COLOR newVal)
 STDMETHODIMP BallEx::get_Image(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_pball->m_szImage, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_pball->m_image.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -246,9 +246,11 @@ STDMETHODIMP BallEx::get_Image(BSTR *pVal)
 
 STDMETHODIMP BallEx::put_Image(BSTR newVal)
 {
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_pball->m_szImage, MAXTOKEN, NULL, NULL);
+   char buf[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
+   m_pball->m_image = buf;
 
-   m_pball->m_pinballEnv = g_pplayer->m_ptable->GetImage(m_pball->m_szImage);
+   m_pball->m_pinballEnv = g_pplayer->m_ptable->GetImage(m_pball->m_image);
    m_pball->RenderSetup(); // nowadays does not do anything, but call it in case this changes in the future
 
    return S_OK;
@@ -270,7 +272,7 @@ HRESULT BallEx::put_UserValue(VARIANT *newVal)
 STDMETHODIMP BallEx::get_FrontDecal(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_pball->m_szImageDecal.c_str(), -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_pball->m_imageDecal.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -287,7 +289,7 @@ STDMETHODIMP BallEx::put_FrontDecal(BSTR newVal)
        return E_FAIL;
    }
 
-   m_pball->m_szImageDecal = szImage;
+   m_pball->m_imageDecal = szImage;
    m_pball->m_pinballDecal = tex;
 
    return S_OK;

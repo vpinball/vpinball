@@ -19,13 +19,13 @@ void BackglassVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
     if(dispid == IDC_BG_NIGHT_DAY || dispid == -1)
         PropertyDialog::SetCheckboxState(m_hApplyNightDayCheck, table->m_ImageBackdropNightDay);
     if (dispid == DISPID_Image2 || dispid == -1)
-        PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_dtImageCombo, table->m_BG_szImage[0]);
+        PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_dtImageCombo, table->m_BG_image[0]);
     if (dispid == DISPID_Image6 || dispid == -1)
-        PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_fsImageCombo, table->m_BG_szImage[1]);
+        PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_fsImageCombo, table->m_BG_image[1]);
     if (dispid == DISPID_Image8 || dispid == -1)
-        PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_fssImageCombo, table->m_BG_szImage[2]);
+        PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_fssImageCombo, table->m_BG_image[2]);
     if (dispid == 1509 || dispid == -1)
-        PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_colorGradingCombo, table->m_szImageColorGrade);
+        PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_colorGradingCombo, table->m_imageColorGrade);
     if (dispid == IDC_ENABLE_DECAL_CHECK || dispid == -1)
         PropertyDialog::SetCheckboxState(m_hEnableDecal, table->m_renderDecals);
     if (dispid == IDC_ENABLE_EMREEL_CHECK || dispid == -1)
@@ -51,16 +51,16 @@ void BackglassVisualsProperty::UpdateProperties(const int dispid)
             CHECK_UPDATE_ITEM(table->m_ImageBackdropNightDay, PropertyDialog::GetCheckboxState(m_hApplyNightDayCheck), table);
             break;
         case DISPID_Image2:
-            CHECK_UPDATE_COMBO_TEXT_STRING(table->m_BG_szImage[0], m_dtImageCombo, table);
+            CHECK_UPDATE_COMBO_TEXT_STRING(table->m_BG_image[0], m_dtImageCombo, table);
             break;
         case DISPID_Image6:
-            CHECK_UPDATE_COMBO_TEXT_STRING(table->m_BG_szImage[1], m_fsImageCombo, table);
+            CHECK_UPDATE_COMBO_TEXT_STRING(table->m_BG_image[1], m_fsImageCombo, table);
             break;
         case DISPID_Image8:
-            CHECK_UPDATE_COMBO_TEXT_STRING(table->m_BG_szImage[2], m_fssImageCombo, table);
+            CHECK_UPDATE_COMBO_TEXT_STRING(table->m_BG_image[2], m_fssImageCombo, table);
             break;
         case 1509:
-            CHECK_UPDATE_COMBO_TEXT_STRING(table->m_szImageColorGrade, m_colorGradingCombo, table);
+            CHECK_UPDATE_COMBO_TEXT_STRING(table->m_imageColorGrade, m_colorGradingCombo, table);
             break;
         case IDC_ENABLE_EMREEL_CHECK:
             CHECK_UPDATE_ITEM(table->m_renderEMReels, PropertyDialog::GetCheckboxState(m_hEnableEMReelCheck), table);

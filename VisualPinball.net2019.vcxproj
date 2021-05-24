@@ -301,7 +301,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -974,7 +973,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="vpinball.idl"/>
+    <Midl Include="vpinball.idl" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">

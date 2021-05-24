@@ -29,7 +29,7 @@ void TableLightsProperty::UpdateVisuals(const int dispid/*=-1*/)
     if (dispid == IDC_LIGHTRANGE || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_lightRangeEdit, table->m_lightRange);
     if (dispid == DISPID_Image7 || dispid == -1)
-        PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_envEmissionImageCombo, table->m_szEnvImage);
+        PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_envEmissionImageCombo, table->m_envImage);
     if (dispid == IDC_ENVEMISSIONSCALE || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_envEmissionScaleEdit, table->m_envEmissionScale);
     if (dispid == IDC_AOSCALE || dispid == -1)
@@ -95,7 +95,7 @@ void TableLightsProperty::UpdateProperties(const int dispid)
             CHECK_UPDATE_ITEM(table->m_lightRange, PropertyDialog::GetFloatTextbox(m_lightRangeEdit), table);
             break;
         case DISPID_Image7:
-            CHECK_UPDATE_COMBO_TEXT_STRING(table->m_szEnvImage, m_envEmissionImageCombo, table);
+            CHECK_UPDATE_COMBO_TEXT_STRING(table->m_envImage, m_envEmissionImageCombo, table);
             break;
         case IDC_ENVEMISSIONSCALE:
             CHECK_UPDATE_ITEM(table->m_envEmissionScale, PropertyDialog::GetFloatTextbox(m_envEmissionScaleEdit), table);

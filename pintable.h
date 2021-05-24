@@ -622,7 +622,7 @@ public:
    float m_BG_xlatex[NUM_BG_SETS];
    float m_BG_xlatey[NUM_BG_SETS];
    float m_BG_xlatez[NUM_BG_SETS];
-   string m_BG_szImage[NUM_BG_SETS];
+   string m_BG_image[NUM_BG_SETS];
 
    bool  m_BG_enable_FSS;
    int   m_currentBackglassMode;
@@ -673,20 +673,18 @@ public:
 
    ProtectionData m_protectionData;
 
-   char m_szImage[MAXTOKEN];
-   string m_szPlayfieldMaterial;
+   string m_image;
+   string m_playfieldMaterial;
    COLORREF m_colorbackdrop;
    bool m_ImageBackdropNightDay;
 
-   string m_szImageColorGrade;
+   string m_imageColorGrade;
 
-   string m_szBallImage;
-   string m_szBallImageDecal;
+   string m_ballImage;
+   string m_ballImageDecal;
    bool m_BallDecalMode;
 
-   string m_szEnvImage;
-
-   //CComObject<Surface> *m_psur;
+   string m_envImage;
 
    vector< IEditable* > m_vedit;
    vector< IEditable* > m_layer[MAX_LAYERS];
@@ -898,10 +896,10 @@ public:
 
 private:
    PinTableMDI *m_mdiTable;
-   bool m_moving;
    CString m_notesText;
    std::unordered_map<const char*, Texture *, StringHashFunctor, StringComparator> m_textureMap;  // hash table to speed up texture lookup by name
    std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap; // hash table to speed up material lookup by name
+   bool m_moving;
 };
 
 class ScriptGlobalTable :

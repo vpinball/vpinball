@@ -1117,8 +1117,6 @@ PinTable::PinTable()
 
    m_tblMirrorEnabled = false;
 
-   memset(m_szImage, 0, sizeof(m_szImage));
-
    m_hMaterialManager = NULL;
 
    m_numMaterials = 0;
@@ -1390,8 +1388,8 @@ void PinTable::InitTablePostLoad()
         m_BG_scalez[i] = m_BG_scalez[BG_DESKTOP];
         m_BG_xlatez[i] = m_BG_xlatez[BG_DESKTOP];
 
-        if (m_BG_szImage[i].empty() && i == BG_FSS) // copy image over for FSS mode
-           m_BG_szImage[i] = m_BG_szImage[BG_DESKTOP];
+        if (m_BG_image[i].empty() && i == BG_FSS) // copy image over for FSS mode
+           m_BG_image[i] = m_BG_image[BG_DESKTOP];
       }
 
    m_currentBackglassMode = m_BG_current_set;
@@ -1629,7 +1627,7 @@ void PinTable::UIRenderPass2(Sur * const psur)
 
    if (m_backdrop)
    {
-      Texture * const ppi = GetImage((!m_vpinball->m_backglassView) ? m_szImage : m_BG_szImage[m_BG_current_set]);
+      Texture * const ppi = GetImage((!m_vpinball->m_backglassView) ? m_image : m_BG_image[m_BG_current_set]);
 
       if (ppi)
       {
@@ -3042,15 +3040,15 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
    bw.WriteFloat(FID(STO), m_3DOffset);
    bw.WriteBool(FID(OGST), m_overwriteGlobalStereo3D);
 
-   bw.WriteString(FID(IMAG), m_szImage);
-   bw.WriteString(FID(BIMG), m_BG_szImage[0]);
-   bw.WriteString(FID(BIMF), m_BG_szImage[1]);
-   bw.WriteString(FID(BIMS), m_BG_szImage[2]);
+   bw.WriteString(FID(IMAG), m_image);
+   bw.WriteString(FID(BIMG), m_BG_image[0]);
+   bw.WriteString(FID(BIMF), m_BG_image[1]);
+   bw.WriteString(FID(BIMS), m_BG_image[2]);
    bw.WriteBool(FID(BIMN), m_ImageBackdropNightDay);
-   bw.WriteString(FID(IMCG), m_szImageColorGrade);
-   bw.WriteString(FID(BLIM), m_szBallImage);
-   bw.WriteString(FID(BLIF), m_szBallImageDecal);
-   bw.WriteString(FID(EIMG), m_szEnvImage);
+   bw.WriteString(FID(IMCG), m_imageColorGrade);
+   bw.WriteString(FID(BLIM), m_ballImage);
+   bw.WriteString(FID(BLIF), m_ballImageDecal);
+   bw.WriteString(FID(EIMG), m_envImage);
    bw.WriteString(FID(NOTX), m_notesText);
 
    bw.WriteString(FID(SSHT), m_szScreenShot);
@@ -3060,7 +3058,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
    bw.WriteFloat(FID(GLAS), m_glassheight);
    bw.WriteFloat(FID(TBLH), m_tableheight);
 
-   bw.WriteString(FID(PLMA), m_szPlayfieldMaterial);
+   bw.WriteString(FID(PLMA), m_playfieldMaterial);
    bw.WriteInt(FID(BCLR), m_colorbackdrop);
 
    bw.WriteFloat(FID(TDFT), m_globalDifficulty);
@@ -3556,12 +3554,12 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 void PinTable::SetLoadDefaults()
 {
    for (unsigned int i = 0; i < NUM_BG_SETS; ++i)
-      m_BG_szImage[i].clear();
-   m_szImageColorGrade.clear();
-   m_szBallImage.clear();
-   m_szBallImageDecal.clear();
+      m_BG_image[i].clear();
+   m_imageColorGrade.clear();
+   m_ballImage.clear();
+   m_ballImageDecal.clear();
    m_ImageBackdropNightDay = false;
-   m_szEnvImage.clear();
+   m_envImage.clear();
 
    m_szScreenShot.clear();
 
@@ -3719,9 +3717,9 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(SLOP): pbr->GetFloat(&m_angletiltMin); break;
    case FID(GLAS): pbr->GetFloat(&m_glassheight); break;
    case FID(TBLH): pbr->GetFloat(&m_tableheight); break;
-   case FID(IMAG): pbr->GetString(m_szImage, sizeof(m_szImage)); break;
-   case FID(BLIM): pbr->GetString(m_szBallImage); break;
-   case FID(BLIF): pbr->GetString(m_szBallImageDecal); break;
+   case FID(IMAG): pbr->GetString(m_image); break;
+   case FID(BLIM): pbr->GetString(m_ballImage); break;
+   case FID(BLIF): pbr->GetString(m_ballImageDecal); break;
    case FID(SSHT): pbr->GetString(m_szScreenShot); break;
    case FID(FBCK): pbr->GetBool(&m_backdrop); break;
    case FID(SEDT): pbr->GetInt(&((int *)pbr->m_pdata)[1]); break;
@@ -3730,13 +3728,13 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(SFNT): pbr->GetInt(&((int *)pbr->m_pdata)[4]); break;
    case FID(SCOL): pbr->GetInt(&((int *)pbr->m_pdata)[5]); break;
    case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
-   case FID(BIMG): pbr->GetString(m_BG_szImage[0]); break;
-   case FID(BIMF): pbr->GetString(m_BG_szImage[1]); break;
-   case FID(BIMS): pbr->GetString(m_BG_szImage[2]); break;
+   case FID(BIMG): pbr->GetString(m_BG_image[0]); break;
+   case FID(BIMF): pbr->GetString(m_BG_image[1]); break;
+   case FID(BIMS): pbr->GetString(m_BG_image[2]); break;
    case FID(BIMN): pbr->GetBool(&m_ImageBackdropNightDay); break;
-   case FID(IMCG): pbr->GetString(m_szImageColorGrade); break;
-   case FID(EIMG): pbr->GetString(m_szEnvImage); break;
-   case FID(PLMA): pbr->GetString(m_szPlayfieldMaterial); break;
+   case FID(IMCG): pbr->GetString(m_imageColorGrade); break;
+   case FID(EIMG): pbr->GetString(m_envImage); break;
+   case FID(PLMA): pbr->GetString(m_playfieldMaterial); break;
    case FID(NOTX): {std::string txt;  pbr->GetString(txt); m_notesText = CString(txt.c_str()); break; }
    case FID(LZAM): pbr->GetInt(&m_lightAmbient); break;
    case FID(LZDI): pbr->GetInt(&m_Light[0].emission); break;
@@ -4432,8 +4430,7 @@ void PinTable::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISe
     const LocalString ls16(IDS_TO_COLLECTION);
     mainMenu.AppendMenu(MF_POPUP | MF_STRING, (size_t)colSubMenu.GetHandle(), ls16.m_szbuffer);
 
-    int maxItems = m_vcollection.Size() - 1;
-    if (maxItems > 32) maxItems = 32;
+    const int maxItems = min(m_vcollection.Size() - 1, 32);
 
     // run through all collections and list up to 32 of them in the context menu
     // the actual processing is done in ISelect::DoCommand() 
@@ -4450,15 +4447,9 @@ void PinTable::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISe
     if (m_vmultisel.Size() == 1)
     {
         for (int i = maxItems; i >= 0; i--)
-        {
             for (int t = 0; t < m_vcollection.ElementAt(i)->m_visel.Size(); t++)
-            {
                 if (psel == m_vcollection.ElementAt(i)->m_visel.ElementAt(t))
-                {
                     colSubMenu.CheckMenuItem(0x40000 + i, MF_CHECKED);
-                }
-            }
-        }
     }
     else
     {
@@ -5224,9 +5215,9 @@ void PinTable::ExportMesh(ObjLoader& loader)
 
    loader.WriteObjectName(name);
    loader.WriteVertexInfo(buffer, 4);
-   const Material * const mat = GetMaterial(m_szPlayfieldMaterial);
-   loader.WriteMaterial(m_szPlayfieldMaterial, string(), mat);
-   loader.UseTexture(m_szPlayfieldMaterial);
+   const Material * const mat = GetMaterial(m_playfieldMaterial);
+   loader.WriteMaterial(m_playfieldMaterial, string(), mat);
+   loader.UseTexture(m_playfieldMaterial);
    loader.WriteFaceInfoList(playfieldPolyIndices, 6);
    loader.UpdateFaceOffset(4);
    delete[] buffer;
@@ -6774,14 +6765,14 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
    char * const sizeConv = StrFormatByteSize64(ppi->m_pdsBuffer->m_data.size(), sizeString, MAXTOKEN);
 
    ListView_SetItemText(hwndListView, index, 4, sizeConv);
-   if ((_stricmp(m_szImage, ppi->m_szName.c_str()) == 0)
-    || (_stricmp(m_szBallImage.c_str(), ppi->m_szName.c_str()) == 0) 
-    || (_stricmp(m_szBallImageDecal.c_str(), ppi->m_szName.c_str()) == 0)
-    || (_stricmp(m_szEnvImage.c_str(), ppi->m_szName.c_str()) == 0)
-    || (_stricmp(m_BG_szImage[BG_DESKTOP].c_str(), ppi->m_szName.c_str()) == 0)
-    || (_stricmp(m_BG_szImage[BG_FSS].c_str(), ppi->m_szName.c_str()) == 0)
-    || (_stricmp(m_BG_szImage[BG_FULLSCREEN].c_str(), ppi->m_szName.c_str()) == 0)
-    || (_stricmp(m_szImageColorGrade.c_str(), ppi->m_szName.c_str()) == 0))
+   if ((_stricmp(m_image.c_str(), ppi->m_szName.c_str()) == 0)
+    || (_stricmp(m_ballImage.c_str(), ppi->m_szName.c_str()) == 0) 
+    || (_stricmp(m_ballImageDecal.c_str(), ppi->m_szName.c_str()) == 0)
+    || (_stricmp(m_envImage.c_str(), ppi->m_szName.c_str()) == 0)
+    || (_stricmp(m_BG_image[BG_DESKTOP].c_str(), ppi->m_szName.c_str()) == 0)
+    || (_stricmp(m_BG_image[BG_FSS].c_str(), ppi->m_szName.c_str()) == 0)
+    || (_stricmp(m_BG_image[BG_FULLSCREEN].c_str(), ppi->m_szName.c_str()) == 0)
+    || (_stricmp(m_imageColorGrade.c_str(), ppi->m_szName.c_str()) == 0))
    {
        ListView_SetItemText(hwndListView, index, 3, usedStringYes);
    }
@@ -7058,7 +7049,7 @@ int PinTable::AddListMaterial(HWND hwndListView, Material * const pmat)
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
    ListView_SetItemText(hwndListView, index, 1, usedStringNo);
-   if(pmat->m_szName == m_szPlayfieldMaterial)
+   if(pmat->m_szName == m_playfieldMaterial)
    {
       ListView_SetItemText(hwndListView, index, 1, usedStringYes);
    }
@@ -7324,7 +7315,7 @@ HRESULT PinTable::LoadImageFromStream(IStream *pstm, unsigned int idx, int versi
 STDMETHODIMP PinTable::get_Image(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_szImage, -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_image.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -7332,8 +7323,8 @@ STDMETHODIMP PinTable::get_Image(BSTR *pVal)
 
 STDMETHODIMP PinTable::put_Image(BSTR newVal)
 {
-   char szImage[sizeof(m_szImage)];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, sizeof(m_szImage), NULL, NULL);
+   char szImage[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
    const Texture * const tex = GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -7342,7 +7333,7 @@ STDMETHODIMP PinTable::put_Image(BSTR newVal)
    }
 
    STARTUNDO
-   strncpy_s(m_szImage,szImage,sizeof(m_szImage)-1);
+   m_image = szImage;
    STOPUNDO
 
    return S_OK;
@@ -7729,9 +7720,8 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
 
 float PinTable::GetSurfaceHeight(const string& name, float x, float y) const
 {
-   if (name.empty())
-      return m_tableheight;
-
+   if (!name.empty())
+   {
    const DWORD length = (DWORD)name.length();
 
    for (size_t i = 0; i < m_vedit.size(); i++)
@@ -7750,15 +7740,15 @@ float PinTable::GetSurfaceHeight(const string& name, float x, float y) const
          }
       }
    }
+   }
 
    return m_tableheight;
 }
 
 Material* PinTable::GetSurfaceMaterial(const string& name) const
 {
-   if (name.empty())
-      return GetMaterial(m_szPlayfieldMaterial);
-
+   if (!name.empty())
+   {
    const DWORD length = (DWORD)name.length();
 
    for (size_t i = 0; i < m_vedit.size(); i++)
@@ -7777,15 +7767,15 @@ Material* PinTable::GetSurfaceMaterial(const string& name) const
          }
       }
    }
+   }
 
-   return GetMaterial(m_szPlayfieldMaterial);
+   return GetMaterial(m_playfieldMaterial);
 }
 
 Texture* PinTable::GetSurfaceImage(const string& name) const
 {
-   if (name.empty())
-      return GetImage(m_szImage);
-
+   if (!name.empty())
+   {
    const DWORD length = (DWORD)name.length();
 
    for (size_t i = 0; i < m_vedit.size(); i++)
@@ -7804,8 +7794,9 @@ Texture* PinTable::GetSurfaceImage(const string& name) const
          }
       }
    }
+   }
 
-   return GetImage(m_szImage);
+   return GetImage(m_image);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -7933,7 +7924,7 @@ STDMETHODIMP PinTable::put_Height(float newVal)
 STDMETHODIMP PinTable::get_PlayfieldMaterial(BSTR *pVal)
 {
    WCHAR wz[MAXNAMEBUFFER];
-   MultiByteToWideCharNull(CP_ACP, 0, m_szPlayfieldMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideCharNull(CP_ACP, 0, m_playfieldMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -7944,7 +7935,7 @@ STDMETHODIMP PinTable::put_PlayfieldMaterial(BSTR newVal)
    char buf[MAXNAMEBUFFER];
    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
    STARTUNDO
-   m_szPlayfieldMaterial = buf;
+   m_playfieldMaterial = buf;
    STOPUNDO
 
    return S_OK;
@@ -8462,7 +8453,7 @@ STDMETHODIMP PinTable::put_ShowFSS(VARIANT_BOOL newVal)
 STDMETHODIMP PinTable::get_BackdropImage_DT(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_BG_szImage[0].c_str(), -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_BG_image[0].c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -8473,7 +8464,7 @@ STDMETHODIMP PinTable::put_BackdropImage_DT(BSTR newVal) //!! HDR??
    char buf[MAXTOKEN];
    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
    STARTUNDO
-   m_BG_szImage[0] = buf;
+   m_BG_image[0] = buf;
    STOPUNDO
 
    return S_OK;
@@ -8482,7 +8473,7 @@ STDMETHODIMP PinTable::put_BackdropImage_DT(BSTR newVal) //!! HDR??
 STDMETHODIMP PinTable::get_BackdropImage_FS(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_BG_szImage[1].c_str(), -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_BG_image[1].c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -8493,7 +8484,7 @@ STDMETHODIMP PinTable::put_BackdropImage_FS(BSTR newVal) //!! HDR??
    char buf[MAXTOKEN];
    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
    STARTUNDO
-   m_BG_szImage[1] = buf;
+   m_BG_image[1] = buf;
    STOPUNDO
 
    return S_OK;
@@ -8502,7 +8493,7 @@ STDMETHODIMP PinTable::put_BackdropImage_FS(BSTR newVal) //!! HDR??
 STDMETHODIMP PinTable::get_BackdropImage_FSS(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_BG_szImage[2].c_str(), -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_BG_image[2].c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -8513,7 +8504,7 @@ STDMETHODIMP PinTable::put_BackdropImage_FSS(BSTR newVal) //!! HDR??
    char buf[MAXTOKEN];
    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
    STARTUNDO
-   m_BG_szImage[2] = buf;
+   m_BG_image[2] = buf;
    STOPUNDO
 
    return S_OK;
@@ -8522,7 +8513,7 @@ STDMETHODIMP PinTable::put_BackdropImage_FSS(BSTR newVal) //!! HDR??
 STDMETHODIMP PinTable::get_ColorGradeImage(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_szImageColorGrade.c_str(), -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_imageColorGrade.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -8540,7 +8531,7 @@ STDMETHODIMP PinTable::put_ColorGradeImage(BSTR newVal)
    }
 
    STARTUNDO
-   m_szImageColorGrade = szImage;
+   m_imageColorGrade = szImage;
    STOPUNDO
 
    return S_OK;
@@ -8967,7 +8958,7 @@ STDMETHODIMP PinTable::put_SlopeMin(float newVal)
 STDMETHODIMP PinTable::get_BallImage(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_szBallImage.c_str(), -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_ballImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -8978,7 +8969,7 @@ STDMETHODIMP PinTable::put_BallImage(BSTR newVal)
    char buf[MAXTOKEN];
    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
    STARTUNDO
-   m_szBallImage = buf;
+   m_ballImage = buf;
    STOPUNDO
 
    return S_OK;
@@ -8987,7 +8978,7 @@ STDMETHODIMP PinTable::put_BallImage(BSTR newVal)
 STDMETHODIMP PinTable::get_EnvironmentImage(BSTR *pVal)
 {
    WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_szEnvImage.c_str(), -1, wz, MAXTOKEN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_envImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -9005,7 +8996,7 @@ STDMETHODIMP PinTable::put_EnvironmentImage(BSTR newVal)
    }
 
    STARTUNDO
-   m_szEnvImage = szImage;
+   m_envImage = szImage;
    STOPUNDO
 
    return S_OK;
@@ -9778,7 +9769,7 @@ STDMETHODIMP PinTable::put_TiltTriggerTime(int newVal)
 STDMETHODIMP PinTable::get_BallFrontDecal(BSTR *pVal)
 {
    WCHAR wz[MAXNAMEBUFFER];
-   MultiByteToWideCharNull(CP_ACP, 0, m_szBallImageDecal.c_str(), -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideCharNull(CP_ACP, 0, m_ballImageDecal.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -9796,7 +9787,7 @@ STDMETHODIMP PinTable::put_BallFrontDecal(BSTR newVal)
    }
 
    STARTUNDO
-   m_szBallImageDecal = szImage;
+   m_ballImageDecal = szImage;
    STOPUNDO
 
    return S_OK;

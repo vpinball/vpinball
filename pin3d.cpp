@@ -493,7 +493,7 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    m_pinballEnvTexture.CreateFromResource(IDB_BALL);
    m_aoDitherTexture.CreateFromResource(IDB_AO_DITHER);
 
-   m_envTexture = g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_szEnvImage);
+   m_envTexture = g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_envImage);
    m_builtinEnvTexture.CreateFromResource(IDB_ENV);
 
    Texture * const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
@@ -633,7 +633,7 @@ void Pin3D::DrawBackground()
 
    PinTable * const ptable = g_pplayer->m_ptable;
    Texture * const pin = ptable->GetDecalsEnabled()
-      ? ptable->GetImage(ptable->m_BG_szImage[ptable->m_BG_current_set])
+      ? ptable->GetImage(ptable->m_BG_image[ptable->m_BG_current_set])
       : NULL;
    if (pin)
    {
@@ -1002,8 +1002,8 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
 {
    TRACE_FUNCTION();
 
-   const Material * const mat = g_pplayer->m_ptable->GetMaterial(g_pplayer->m_ptable->m_szPlayfieldMaterial);
-   Texture * const pin = (depth_only && !mat->m_bOpacityActive) ? NULL : g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_szImage);
+   const Material * const mat = g_pplayer->m_ptable->GetMaterial(g_pplayer->m_ptable->m_playfieldMaterial);
+   Texture * const pin = (depth_only && !mat->m_bOpacityActive) ? NULL : g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_image);
 
    if (depth_only)
    {
