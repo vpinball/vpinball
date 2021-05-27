@@ -1,4 +1,4 @@
-New in 3.58 (Update by mfuegemann, DJRobX, toxie)
+New in 3.58 (Update by mfuegemann, DJRobX, toxie, wiesshund)
 - Add possibility to selectively disable B2S by setting new variable "B2SOff=True" (after ExecuteGlobal GetTextFile("controller.vbs"), but before LoadXXX)
 - Added directional (pan/fade) sound to DropTargets, Kickers, Trough, BallStacks, Locks, Diverters
   VPinball versions prior 10.7 will use a constant size of 950x2100 for positional reference
@@ -8,6 +8,7 @@ New in 3.58 (Update by mfuegemann, DJRobX, toxie)
 - Added s8_StillCrazy.vbs (System 8/Still Crazy)
 - Added inder_atleta.vbs
 - Slightly updated LTD3.vbs (3 coin chutes)
+- Added WIP LTD4a.vbs
 - Added constant (vpmFourStepSol) for new 4-solenoid stepper motor mech type used by High Roller Casino, Starship Troopers, and Playboy
 - Cleanup scripts and separate the major documentation part into Scripts.txt
 - Fix an old bug in controller.vbs that did uninitialized validity/version checks
