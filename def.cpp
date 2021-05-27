@@ -64,40 +64,40 @@ int WideStrCmp(const WCHAR *wz1, const WCHAR *wz2)
       if (*wz1 != *wz2)
       {
          if (*wz1 > *wz2)
-         {
             return 1; // If *wz2 == 0, then wz1 will return as higher, which is correct
-         }
          else if (*wz1 < *wz2)
-         {
             return -1;
-         }
       }
       wz1++;
       wz2++;
    }
    if (*wz2 != L'\0')
-   {
       return -1; // wz2 is longer - and therefore higher
-   }
    return 0;
 }
 
-int WzSzStrNCmp(const WCHAR *wz1, const char *sz2, const DWORD maxLen)
+int WzSzStrCmp(const WCHAR *wz1, const char *sz2)
+{
+   while (*wz1 != L'\0')
+      if (*wz1++ != *sz2++)
+         return 1;
+   if (*sz2 != L'\0')
+      return 1;
+   return 0;
+}
+
+int WzSzStrNCmp(const WCHAR *wz1, const char *sz2, const DWORD maxComparisonLen)
 {
    DWORD i = 0;
 
-   while (*wz1 != L'\0' && i < maxLen)
+   while (*wz1 != L'\0' && i < maxComparisonLen)
    {
       if (*wz1++ != *sz2++)
-      {
          return 1;
-      }
       i++;
    }
    if (*sz2 != L'\0')
-   {
       return 1;
-   }
    return 0;
 }
 

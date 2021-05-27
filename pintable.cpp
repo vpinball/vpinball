@@ -1344,7 +1344,6 @@ if (it == m_textureMap.end()) \
 {if (!pEditSurface.empty()) \
 { \
 bool found = false; \
-const DWORD length = (DWORD)pEditSurface.length(); \
 for (size_t ie = 0; ie < m_vedit.size(); ie++) \
 { \
     IEditable* const item = m_vedit[ie]; \
@@ -1352,7 +1351,7 @@ for (size_t ie = 0; ie < m_vedit.size(); ie++) \
     { \
         CComBSTR bstr; \
         item->GetScriptable()->get_Name(&bstr); \
-        if (!WzSzStrNCmp(bstr, pEditSurface.c_str(), length)) \
+        if (!WzSzStrCmp(bstr, pEditSurface.c_str())) \
         { \
             found = true; \
             break; \
@@ -7724,9 +7723,6 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
 float PinTable::GetSurfaceHeight(const string& name, float x, float y) const
 {
    if (!name.empty())
-   {
-   const DWORD length = (DWORD)name.length();
-
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
       IEditable * const item = m_vedit[i];
@@ -7734,7 +7730,7 @@ float PinTable::GetSurfaceHeight(const string& name, float x, float y) const
       {
          CComBSTR bstr;
          item->GetScriptable()->get_Name(&bstr);
-         if (!WzSzStrNCmp(bstr, name.c_str(), length))
+         if (!WzSzStrCmp(bstr, name.c_str()))
          {
             if (item->GetItemType() == eItemSurface)
                return ((Surface *)item)->m_d.m_heighttop + m_tableheight;
@@ -7743,7 +7739,6 @@ float PinTable::GetSurfaceHeight(const string& name, float x, float y) const
          }
       }
    }
-   }
 
    return m_tableheight;
 }
@@ -7751,9 +7746,6 @@ float PinTable::GetSurfaceHeight(const string& name, float x, float y) const
 Material* PinTable::GetSurfaceMaterial(const string& name) const
 {
    if (!name.empty())
-   {
-   const DWORD length = (DWORD)name.length();
-
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
       IEditable * const item = m_vedit[i];
@@ -7761,7 +7753,7 @@ Material* PinTable::GetSurfaceMaterial(const string& name) const
       {
          CComBSTR bstr;
          item->GetScriptable()->get_Name(&bstr);
-         if (!WzSzStrNCmp(bstr, name.c_str(), length))
+         if (!WzSzStrCmp(bstr, name.c_str()))
          {
             if (item->GetItemType() == eItemSurface)
                return GetMaterial(((Surface *)item)->m_d.m_szTopMaterial);
@@ -7770,7 +7762,6 @@ Material* PinTable::GetSurfaceMaterial(const string& name) const
          }
       }
    }
-   }
 
    return GetMaterial(m_playfieldMaterial);
 }
@@ -7778,9 +7769,6 @@ Material* PinTable::GetSurfaceMaterial(const string& name) const
 Texture* PinTable::GetSurfaceImage(const string& name) const
 {
    if (!name.empty())
-   {
-   const DWORD length = (DWORD)name.length();
-
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
       IEditable * const item = m_vedit[i];
@@ -7788,7 +7776,7 @@ Texture* PinTable::GetSurfaceImage(const string& name) const
       {
          CComBSTR bstr;
          item->GetScriptable()->get_Name(&bstr);
-         if (!WzSzStrNCmp(bstr, name.c_str(), length))
+         if (!WzSzStrCmp(bstr, name.c_str()))
          {
             if (item->GetItemType() == eItemSurface)
                return GetImage(((Surface *)item)->m_d.m_szImage);
@@ -7796,7 +7784,6 @@ Texture* PinTable::GetSurfaceImage(const string& name) const
                return GetImage(((Ramp *)item)->m_d.m_szImage);
          }
       }
-   }
    }
 
    return GetImage(m_image);

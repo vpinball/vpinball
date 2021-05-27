@@ -405,7 +405,8 @@ void f2sz(const float f, string& sz);
 void WideStrNCopy(const WCHAR *wzin, WCHAR *wzout, const DWORD wzoutMaxLen);
 int WideStrCmp(const WCHAR *wz1, const WCHAR *wz2);
 void WideStrCat(const WCHAR *wzin, WCHAR *wzout, const DWORD wzoutMaxLen);
-int WzSzStrNCmp(const WCHAR *wz1, const char *sz2, const DWORD maxLen);
+int WzSzStrCmp(const WCHAR *wz1, const char *sz2);
+int WzSzStrNCmp(const WCHAR *wz1, const char *sz2, const DWORD maxComparisonLen);
 
 HRESULT OpenURL(const string& szURL);
 
