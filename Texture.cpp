@@ -369,9 +369,9 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
    {
    case FID(NAME): pbr->GetString(m_szName); break;
    case FID(PATH): pbr->GetString(m_szPath); break;
-   case FID(WDTH): pbr->GetInt(&m_width); break;
-   case FID(HGHT): pbr->GetInt(&m_height); break;
-   case FID(ALTV): pbr->GetFloat(&m_alphaTestValue); break;
+   case FID(WDTH): pbr->GetInt(m_width); break;
+   case FID(HGHT): pbr->GetInt(m_height); break;
+   case FID(ALTV): pbr->GetFloat(m_alphaTestValue); break;
    case FID(BITS):
    {
       if (m_pdsBuffer)
@@ -434,7 +434,7 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
    case FID(LINK):
    {
       int linkid;
-      pbr->GetInt(&linkid);
+      pbr->GetInt(linkid);
       PinTable * const pt = (PinTable *)pbr->m_pdata;
       m_ppb = pt->GetImageLinkBinary(linkid);
       return LoadFromMemory((BYTE*)m_ppb->m_pdata, m_ppb->m_cdata);

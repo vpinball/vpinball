@@ -613,7 +613,7 @@ HRESULT Decal::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupF
 {
    BiffWriter bw(pstm, hcrypthash);
 
-   bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
+   bw.WriteVector2(FID(VCEN), m_d.m_vCenter);
    bw.WriteFloat(FID(WDTH), m_d.m_width);
    bw.WriteFloat(FID(HIGH), m_d.m_height);
    bw.WriteFloat(FID(ROTA), m_d.m_rotation);
@@ -659,20 +659,20 @@ bool Decal::LoadToken(const int id, BiffReader * const pbr)
    switch (id)
    {
    case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
-   case FID(VCEN): pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D)); break;
-   case FID(WDTH): pbr->GetFloat(&m_d.m_width); break;
-   case FID(HIGH): pbr->GetFloat(&m_d.m_height); break;
-   case FID(ROTA): pbr->GetFloat(&m_d.m_rotation); break;
+   case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
+   case FID(WDTH): pbr->GetFloat(m_d.m_width); break;
+   case FID(HIGH): pbr->GetFloat(m_d.m_height); break;
+   case FID(ROTA): pbr->GetFloat(m_d.m_rotation); break;
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
    case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
    case FID(TEXT): pbr->GetString(m_d.m_sztext); break;
    case FID(TYPE): pbr->GetInt(&m_d.m_decaltype); break;
-   case FID(COLR): pbr->GetInt(&m_d.m_color); break;
+   case FID(COLR): pbr->GetInt(m_d.m_color); break;
    case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
    case FID(SIZE): pbr->GetInt(&m_d.m_sizingtype); break;
-   case FID(VERT): pbr->GetBool(&m_d.m_verticalText); break;
-   case FID(BGLS): pbr->GetBool(&m_backglass); break;
+   case FID(VERT): pbr->GetBool(m_d.m_verticalText); break;
+   case FID(BGLS): pbr->GetBool(m_backglass); break;
    case FID(FONT):
    {
       if (!m_pIFont)

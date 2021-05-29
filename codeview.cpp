@@ -3197,9 +3197,9 @@ bool Collection::LoadToken(const int id, BiffReader * const pbr)
       m_wzName[MAXNAMEBUFFER-1] = 0;
       break;
    }
-   case FID(EVNT): pbr->GetBool(&m_fireEvents); break;
-   case FID(SSNG): pbr->GetBool(&m_stopSingleEvents); break;
-   case FID(GREL): pbr->GetBool(&m_groupElements); break;
+   case FID(EVNT): pbr->GetBool(m_fireEvents); break;
+   case FID(SSNG): pbr->GetBool(m_stopSingleEvents); break;
+   case FID(GREL): pbr->GetBool(m_groupElements); break;
    case FID(ITEM):
    {
       //!! BUG - item list must be up to date in table (loaded) for the reverse name lookup to work

@@ -99,7 +99,7 @@ bool PinBinary::LoadToken(const int id, BiffReader * const pbr)
    case FID(PATH): pbr->GetString(m_szPath); break;
    case FID(SIZE):
    {
-      pbr->GetInt(&m_cdata);
+      pbr->GetInt(m_cdata);
       m_pdata = new char[m_cdata];
       break;
    }

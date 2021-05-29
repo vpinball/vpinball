@@ -219,7 +219,7 @@ HRESULT Timer::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupF
 {
    BiffWriter bw(pstm, hcrypthash);
 
-   bw.WriteStruct(FID(VCEN), &m_d.m_v, sizeof(Vertex2D));
+   bw.WriteVector2(FID(VCEN), m_d.m_v);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteWideString(FID(NAME), m_wzName);
@@ -250,11 +250,11 @@ bool Timer::LoadToken(const int id, BiffReader * const pbr)
    switch(id)
    {
    case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
-   case FID(VCEN): pbr->GetStruct(&m_d.m_v, sizeof(Vertex2D)); break;
-   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
+   case FID(VCEN): pbr->GetVector2(m_d.m_v); break;
+   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
    case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
-   case FID(BGLS): pbr->GetBool(&m_backglass); break;
+   case FID(BGLS): pbr->GetBool(m_backglass); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
    return true;

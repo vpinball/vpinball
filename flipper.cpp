@@ -895,7 +895,7 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backu
 {
    BiffWriter bw(pstm, hcrypthash);
 
-   bw.WriteStruct(FID(VCEN), &m_d.m_Center, sizeof(Vertex2D));
+   bw.WriteVector2(FID(VCEN), m_d.m_Center);
    bw.WriteFloat(FID(BASR), m_d.m_BaseRadius);
    bw.WriteFloat(FID(ENDR), m_d.m_EndRadius);
    bw.WriteFloat(FID(FLPR), m_d.m_FlipperRadiusMax);
@@ -956,20 +956,20 @@ bool Flipper::LoadToken(const int id, BiffReader * const pbr)
    switch(id)
    {
    case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
-   case FID(VCEN): pbr->GetStruct(&m_d.m_Center, sizeof(Vertex2D)); break;
-   case FID(BASR): pbr->GetFloat(&m_d.m_BaseRadius); break;
-   case FID(ENDR): pbr->GetFloat(&m_d.m_EndRadius); break;
-   case FID(FLPR): pbr->GetFloat(&m_d.m_FlipperRadiusMax); break;
-   //case FID(FAEO): pbr->GetFloat(&m_d.m_angleEOS); break;
-   case FID(FRTN): pbr->GetFloat(&m_d.m_return); break;
-   case FID(ANGS): pbr->GetFloat(&m_d.m_StartAngle); break;
-   case FID(ANGE): pbr->GetFloat(&m_d.m_EndAngle); break;
-   case FID(OVRP): pbr->GetInt(&m_d.m_OverridePhysics); break;
-   case FID(FORC): pbr->GetFloat(&m_d.m_mass); break;
-   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
+   case FID(VCEN): pbr->GetVector2(m_d.m_Center); break;
+   case FID(BASR): pbr->GetFloat(m_d.m_BaseRadius); break;
+   case FID(ENDR): pbr->GetFloat(m_d.m_EndRadius); break;
+   case FID(FLPR): pbr->GetFloat(m_d.m_FlipperRadiusMax); break;
+   //case FID(FAEO): pbr->GetFloat(m_d.m_angleEOS); break;
+   case FID(FRTN): pbr->GetFloat(m_d.m_return); break;
+   case FID(ANGS): pbr->GetFloat(m_d.m_StartAngle); break;
+   case FID(ANGE): pbr->GetFloat(m_d.m_EndAngle); break;
+   case FID(OVRP): pbr->GetInt(m_d.m_OverridePhysics); break;
+   case FID(FORC): pbr->GetFloat(m_d.m_mass); break;
+   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
    case FID(TMIN):
    {
-      pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
+      pbr->GetInt(m_d.m_tdr.m_TimerInterval);
       //m_d.m_tdr.m_TimerInterval = INT(m_d.m_tdr.m_TimerInterval);
       if (m_d.m_tdr.m_TimerInterval < 1)
          m_d.m_tdr.m_TimerInterval = 100;
@@ -982,40 +982,40 @@ bool Flipper::LoadToken(const int id, BiffReader * const pbr)
    case FID(RTHK): //!! deprecated, remove
    {
       int rt;
-      pbr->GetInt(&rt);
+      pbr->GetInt(rt);
       m_d.m_rubberthickness = (float)rt;
       break;
    }
-   case FID(RTHF): pbr->GetFloat(&m_d.m_rubberthickness); break;
+   case FID(RTHF): pbr->GetFloat(m_d.m_rubberthickness); break;
    case FID(RHGT): //!! deprecated, remove
    {
       int rh;
-      pbr->GetInt(&rh);
+      pbr->GetInt(rh);
       m_d.m_rubberheight = (float)rh;
       break;
    }
-   case FID(RHGF): pbr->GetFloat(&m_d.m_rubberheight); break;
+   case FID(RHGF): pbr->GetFloat(m_d.m_rubberheight); break;
    case FID(RWDT): //!! deprecated, remove
    {
       int rw;
-      pbr->GetInt(&rw);
+      pbr->GetInt(rw);
       m_d.m_rubberwidth = (float)rw;
       break;
    }
-   case FID(RWDF): pbr->GetFloat(&m_d.m_rubberwidth); break;
-   case FID(FHGT): pbr->GetFloat(&m_d.m_height); break;
-   case FID(STRG): pbr->GetFloat(&m_d.m_strength); break;
-   case FID(ELAS): pbr->GetFloat(&m_d.m_elasticity); break;
-   case FID(ELFO): pbr->GetFloat(&m_d.m_elasticityFalloff); break;
-   case FID(FRIC): pbr->GetFloat(&m_d.m_friction); break;
-   case FID(RPUP): pbr->GetFloat(&m_d.m_rampUp); break;
-   case FID(SCTR): pbr->GetFloat(&m_d.m_scatter); break;
-   case FID(TODA): pbr->GetFloat(&m_d.m_torqueDamping); break;
-   case FID(TDAA): pbr->GetFloat(&m_d.m_torqueDampingAngle); break;
-   case FID(FRMN): pbr->GetFloat(&m_d.m_FlipperRadiusMin); break;
-   case FID(VSBL): pbr->GetBool(&m_d.m_visible); break;
-   case FID(ENBL): pbr->GetBool(&m_d.m_enabled); break;
-   case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
+   case FID(RWDF): pbr->GetFloat(m_d.m_rubberwidth); break;
+   case FID(FHGT): pbr->GetFloat(m_d.m_height); break;
+   case FID(STRG): pbr->GetFloat(m_d.m_strength); break;
+   case FID(ELAS): pbr->GetFloat(m_d.m_elasticity); break;
+   case FID(ELFO): pbr->GetFloat(m_d.m_elasticityFalloff); break;
+   case FID(FRIC): pbr->GetFloat(m_d.m_friction); break;
+   case FID(RPUP): pbr->GetFloat(m_d.m_rampUp); break;
+   case FID(SCTR): pbr->GetFloat(m_d.m_scatter); break;
+   case FID(TODA): pbr->GetFloat(m_d.m_torqueDamping); break;
+   case FID(TDAA): pbr->GetFloat(m_d.m_torqueDampingAngle); break;
+   case FID(FRMN): pbr->GetFloat(m_d.m_FlipperRadiusMin); break;
+   case FID(VSBL): pbr->GetBool(m_d.m_visible); break;
+   case FID(ENBL): pbr->GetBool(m_d.m_enabled); break;
+   case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    default: ISelect::LoadToken(id, pbr); break;
    }

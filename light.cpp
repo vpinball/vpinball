@@ -839,7 +839,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupF
 {
    BiffWriter bw(pstm, hcrypthash);
 
-   bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
+   bw.WriteVector2(FID(VCEN), m_d.m_vCenter);
    bw.WriteFloat(FID(RADI), m_d.m_falloff);
    bw.WriteFloat(FID(FAPO), m_d.m_falloff_power);
    bw.WriteInt(FID(STAT), m_d.m_state);
@@ -916,40 +916,40 @@ bool Light::LoadToken(const int id, BiffReader * const pbr)
    switch(id)
    {
    case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
-   case FID(VCEN): pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D)); break;
-   case FID(RADI): pbr->GetFloat(&m_d.m_falloff); break;
-   case FID(FAPO): pbr->GetFloat(&m_d.m_falloff_power); break;
+   case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
+   case FID(RADI): pbr->GetFloat(m_d.m_falloff); break;
+   case FID(FAPO): pbr->GetFloat(m_d.m_falloff_power); break;
    case FID(STAT):
    {
       pbr->GetInt(&m_d.m_state);
       m_inPlayState = m_d.m_state;
       break;
    }
-   case FID(COLR): pbr->GetInt(&m_d.m_color); break;
-   case FID(COL2): pbr->GetInt(&m_d.m_color2); break;
+   case FID(COLR): pbr->GetInt(m_d.m_color); break;
+   case FID(COL2): pbr->GetInt(m_d.m_color2); break;
    case FID(IMG1): pbr->GetString(m_d.m_szImage); break;
-   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
+   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
    case FID(SHAP): m_roundLight = true; break;
    case FID(BPAT): pbr->GetString(m_rgblinkpattern); break;
-   case FID(BINT): pbr->GetInt(&m_blinkinterval); break;
-   //case FID(BCOL): pbr->GetInt(&m_d.m_bordercolor); break;
-   case FID(BWTH): pbr->GetFloat(&m_d.m_intensity); break;
-   case FID(TRMS): pbr->GetFloat(&m_d.m_transmissionScale); break;
+   case FID(BINT): pbr->GetInt(m_blinkinterval); break;
+   //case FID(BCOL): pbr->GetInt(m_d.m_bordercolor); break;
+   case FID(BWTH): pbr->GetFloat(m_d.m_intensity); break;
+   case FID(TRMS): pbr->GetFloat(m_d.m_transmissionScale); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
    case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
-   case FID(BGLS): pbr->GetBool(&m_backglass); break;
-   case FID(LIDB): pbr->GetFloat(&m_d.m_depthBias); break;
-   case FID(FASP): pbr->GetFloat(&m_d.m_fadeSpeedUp); break;
-   case FID(FASD): pbr->GetFloat(&m_d.m_fadeSpeedDown); break;
-   case FID(BULT): pbr->GetBool(&m_d.m_BulbLight); break;
-   case FID(IMMO): pbr->GetBool(&m_d.m_imageMode); break;
-   case FID(SHBM): pbr->GetBool(&m_d.m_showBulbMesh); break;
-   case FID(STBM): pbr->GetBool(&m_d.m_staticBulbMesh); break;
-   case FID(SHRB): pbr->GetBool(&m_d.m_showReflectionOnBall); break;
-   case FID(BMSC): pbr->GetFloat(&m_d.m_meshRadius); break;
-   case FID(BMVA): pbr->GetFloat(&m_d.m_modulate_vs_add); break;
-   case FID(BHHI): pbr->GetFloat(&m_d.m_bulbHaloHeight); break;
+   case FID(BGLS): pbr->GetBool(m_backglass); break;
+   case FID(LIDB): pbr->GetFloat(m_d.m_depthBias); break;
+   case FID(FASP): pbr->GetFloat(m_d.m_fadeSpeedUp); break;
+   case FID(FASD): pbr->GetFloat(m_d.m_fadeSpeedDown); break;
+   case FID(BULT): pbr->GetBool(m_d.m_BulbLight); break;
+   case FID(IMMO): pbr->GetBool(m_d.m_imageMode); break;
+   case FID(SHBM): pbr->GetBool(m_d.m_showBulbMesh); break;
+   case FID(STBM): pbr->GetBool(m_d.m_staticBulbMesh); break;
+   case FID(SHRB): pbr->GetBool(m_d.m_showReflectionOnBall); break;
+   case FID(BMSC): pbr->GetFloat(m_d.m_meshRadius); break;
+   case FID(BMVA): pbr->GetFloat(m_d.m_modulate_vs_add); break;
+   case FID(BHHI): pbr->GetFloat(m_d.m_bulbHaloHeight); break;
    default:
    {
       LoadPointToken(id, pbr, pbr->m_version);

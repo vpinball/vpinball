@@ -875,7 +875,7 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backup
 {
    BiffWriter bw(pstm, hcrypthash);
 
-   bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
+   bw.WriteVector2(FID(VCEN), m_d.m_vCenter);
    bw.WriteFloat(FID(RADI), m_d.m_radius);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
@@ -926,48 +926,48 @@ bool Bumper::LoadToken(const int id, BiffReader * const pbr)
    switch(id)
    {
    case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
-   case FID(VCEN): pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D)); break;
-   case FID(RADI): pbr->GetFloat(&m_d.m_radius); break;
+   case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
+   case FID(RADI): pbr->GetFloat(m_d.m_radius); break;
    case FID(MATR): pbr->GetString(m_d.m_szCapMaterial); break;
    case FID(RIMA): pbr->GetString(m_d.m_szRingMaterial); break;
    case FID(BAMA): pbr->GetString(m_d.m_szBaseMaterial); break;
    case FID(SKMA): pbr->GetString(m_d.m_szSkirtMaterial); break;
-   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
-   case FID(THRS): pbr->GetFloat(&m_d.m_threshold); break;
-   case FID(FORC): pbr->GetFloat(&m_d.m_force); break;
-   case FID(BSCT): pbr->GetFloat(&m_d.m_scatter); break;
-   case FID(HISC): pbr->GetFloat(&m_d.m_heightScale); break;
-   case FID(RISP): pbr->GetFloat(&m_d.m_ringSpeed); break;
-   case FID(ORIN): pbr->GetFloat(&m_d.m_orientation); break;
-   case FID(RDLI): pbr->GetFloat(&m_d.m_ringDropOffset); break;
+   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
+   case FID(THRS): pbr->GetFloat(m_d.m_threshold); break;
+   case FID(FORC): pbr->GetFloat(m_d.m_force); break;
+   case FID(BSCT): pbr->GetFloat(m_d.m_scatter); break;
+   case FID(HISC): pbr->GetFloat(m_d.m_heightScale); break;
+   case FID(RISP): pbr->GetFloat(m_d.m_ringSpeed); break;
+   case FID(ORIN): pbr->GetFloat(m_d.m_orientation); break;
+   case FID(RDLI): pbr->GetFloat(m_d.m_ringDropOffset); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
    case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
    case FID(BVIS):
    {
       // backwards compatibility when loading old VP9 tables
       bool value;
-      pbr->GetBool(&value);
+      pbr->GetBool(value);
       m_d.m_capVisible = value;
       m_d.m_baseVisible = value;
       m_d.m_ringVisible = value;
       m_d.m_skirtVisible = value;
       break;
    }
-   case FID(CAVI): pbr->GetBool(&m_d.m_capVisible); break;
-   case FID(HAHE): pbr->GetBool(&m_d.m_hitEvent); break;
-   case FID(COLI): pbr->GetBool(&m_d.m_collidable); break;
+   case FID(CAVI): pbr->GetBool(m_d.m_capVisible); break;
+   case FID(HAHE): pbr->GetBool(m_d.m_hitEvent); break;
+   case FID(COLI): pbr->GetBool(m_d.m_collidable); break;
    case FID(BSVS):
    {
-      pbr->GetBool(&m_d.m_baseVisible);
+      pbr->GetBool(m_d.m_baseVisible);
       // backwards compatibilty with pre 10.2 tables
       m_d.m_ringVisible = m_d.m_baseVisible;
       m_d.m_skirtVisible = m_d.m_baseVisible;
       break;
    }
-   case FID(RIVS): pbr->GetBool(&m_d.m_ringVisible); break;
-   case FID(SKVS): pbr->GetBool(&m_d.m_skirtVisible); break;
-   case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
+   case FID(RIVS): pbr->GetBool(m_d.m_ringVisible); break;
+   case FID(SKVS): pbr->GetBool(m_d.m_skirtVisible); break;
+   case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
    return true;

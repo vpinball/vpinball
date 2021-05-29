@@ -1403,44 +1403,44 @@ bool Surface::LoadToken(const int id, BiffReader * const pbr)
    switch(id)
    {
    case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
-   case FID(HTEV): pbr->GetBool(&m_d.m_hitEvent); break;
-   case FID(DROP): pbr->GetBool(&m_d.m_droppable); break;
-   case FID(FLIP): pbr->GetBool(&m_d.m_flipbook); break;
-   case FID(ISBS): pbr->GetBool(&m_d.m_isBottomSolid); break;
-   case FID(CLDW): pbr->GetBool(&m_d.m_collidable); break;
-   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
-   case FID(THRS): pbr->GetFloat(&m_d.m_threshold); break;
+   case FID(HTEV): pbr->GetBool(m_d.m_hitEvent); break;
+   case FID(DROP): pbr->GetBool(m_d.m_droppable); break;
+   case FID(FLIP): pbr->GetBool(m_d.m_flipbook); break;
+   case FID(ISBS): pbr->GetBool(m_d.m_isBottomSolid); break;
+   case FID(CLDW): pbr->GetBool(m_d.m_collidable); break;
+   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
+   case FID(THRS): pbr->GetFloat(m_d.m_threshold); break;
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    case FID(SIMG): pbr->GetString(m_d.m_szSideImage); break;
    case FID(SIMA): pbr->GetString(m_d.m_szSideMaterial); break;
    case FID(TOMA): pbr->GetString(m_d.m_szTopMaterial); break;
    case FID(MAPH): pbr->GetString(m_d.m_szPhysicsMaterial); break;
    case FID(SLMA): pbr->GetString(m_d.m_szSlingShotMaterial); break;
-   case FID(HTBT): pbr->GetFloat(&m_d.m_heightbottom); break;
-   case FID(HTTP): pbr->GetFloat(&m_d.m_heighttop); break;
-   case FID(INNR): pbr->GetBool(&m_d.m_inner); break; //!! Deprecated, do not use anymore
+   case FID(HTBT): pbr->GetFloat(m_d.m_heightbottom); break;
+   case FID(HTTP): pbr->GetFloat(m_d.m_heighttop); break;
+   case FID(INNR): pbr->GetBool(m_d.m_inner); break; //!! Deprecated, do not use anymore
    case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
-   case FID(DSPT): pbr->GetBool(&m_d.m_displayTexture); break;
-   case FID(SLGF): pbr->GetFloat(&m_d.m_slingshotforce); break;
-   case FID(SLTH): pbr->GetFloat(&m_d.m_slingshot_threshold); break;
-   case FID(ELAS): pbr->GetFloat(&m_d.m_elasticity); break;
-   case FID(ELFO): pbr->GetFloat(&m_d.m_elasticityFalloff); break;
-   case FID(WFCT): pbr->GetFloat(&m_d.m_friction); break;
-   case FID(WSCT): pbr->GetFloat(&m_d.m_scatter); break;
-   case FID(VSBL): pbr->GetBool(&m_d.m_topBottomVisible); break;
-   case FID(OVPH): pbr->GetBool(&m_d.m_overwritePhysics); break;
-   case FID(SLGA): pbr->GetBool(&m_d.m_slingshotAnimation); break;
+   case FID(DSPT): pbr->GetBool(m_d.m_displayTexture); break;
+   case FID(SLGF): pbr->GetFloat(m_d.m_slingshotforce); break;
+   case FID(SLTH): pbr->GetFloat(m_d.m_slingshot_threshold); break;
+   case FID(ELAS): pbr->GetFloat(m_d.m_elasticity); break;
+   case FID(ELFO): pbr->GetFloat(m_d.m_elasticityFalloff); break;
+   case FID(WFCT): pbr->GetFloat(m_d.m_friction); break;
+   case FID(WSCT): pbr->GetFloat(m_d.m_scatter); break;
+   case FID(VSBL): pbr->GetBool(m_d.m_topBottomVisible); break;
+   case FID(OVPH): pbr->GetBool(m_d.m_overwritePhysics); break;
+   case FID(SLGA): pbr->GetBool(m_d.m_slingshotAnimation); break;
    case FID(DILI):
    {
       int tmp;
-      pbr->GetInt(&tmp);
+      pbr->GetInt(tmp);
       m_d.m_disableLightingTop = (tmp == 1) ? 1.f : dequantizeUnsigned<8>(tmp); // backwards compatible hacky loading!
       break;
    }
-   case FID(DILB): pbr->GetFloat(&m_d.m_disableLightingBelow); break;
-   case FID(SVBL): pbr->GetBool(&m_d.m_sideVisible); break;
-   case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
+   case FID(DILB): pbr->GetFloat(m_d.m_disableLightingBelow); break;
+   case FID(SVBL): pbr->GetBool(m_d.m_sideVisible); break;
+   case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
    default:
    {
       LoadPointToken(id, pbr, pbr->m_version);

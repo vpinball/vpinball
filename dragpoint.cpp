@@ -568,11 +568,11 @@ bool DragPoint::LoadToken(const int id, BiffReader * const pbr)
    switch (id)
    {
    case FID(VCEN): pbr->GetStruct(&m_v, sizeof(Vertex2D)); break;
-   case FID(POSZ): pbr->GetFloat(&m_v.z); break;
-   case FID(SMTH): pbr->GetBool(&m_smooth); break;
-   case FID(SLNG): pbr->GetBool(&m_slingshot); break;
-   case FID(ATEX): pbr->GetBool(&m_autoTexture); break;
-   case FID(TEXC): pbr->GetFloat(&m_texturecoord); break;
+   case FID(POSZ): pbr->GetFloat(m_v.z); break;
+   case FID(SMTH): pbr->GetBool(m_smooth); break;
+   case FID(SLNG): pbr->GetBool(m_slingshot); break;
+   case FID(ATEX): pbr->GetBool(m_autoTexture); break;
+   case FID(TEXC): pbr->GetFloat(m_texturecoord); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
    return true;

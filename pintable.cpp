@@ -3634,97 +3634,97 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt(&((int *)pbr->m_pdata)[0]); break;
-   case FID(LEFT): pbr->GetFloat(&m_left); break;
-   case FID(TOPX): pbr->GetFloat(&m_top); break;
-   case FID(RGHT): pbr->GetFloat(&m_right); break;
-   case FID(BOTM): pbr->GetFloat(&m_bottom); break;
-   case FID(ROTA): pbr->GetFloat(&m_BG_rotation[BG_DESKTOP]); break;
-   case FID(LAYB): pbr->GetFloat(&m_BG_layback[BG_DESKTOP]); break;
-   case FID(INCL): pbr->GetFloat(&m_BG_inclination[BG_DESKTOP]); break;
-   case FID(FOVX): pbr->GetFloat(&m_BG_FOV[BG_DESKTOP]); break;
-   case FID(SCLX): pbr->GetFloat(&m_BG_scalex[BG_DESKTOP]); break;
-   case FID(SCLY): pbr->GetFloat(&m_BG_scaley[BG_DESKTOP]); break;
-   case FID(SCLZ): pbr->GetFloat(&m_BG_scalez[BG_DESKTOP]); break;
-   case FID(XLTX): pbr->GetFloat(&m_BG_xlatex[BG_DESKTOP]); break;
-   case FID(XLTY): pbr->GetFloat(&m_BG_xlatey[BG_DESKTOP]); break;
-   case FID(XLTZ): pbr->GetFloat(&m_BG_xlatez[BG_DESKTOP]); break;
-   case FID(ROTF): pbr->GetFloat(&m_BG_rotation[BG_FULLSCREEN]); break;
-   case FID(LAYF): pbr->GetFloat(&m_BG_layback[BG_FULLSCREEN]); break;
-   case FID(INCF): pbr->GetFloat(&m_BG_inclination[BG_FULLSCREEN]); break;
-   case FID(FOVF): pbr->GetFloat(&m_BG_FOV[BG_FULLSCREEN]); break;
-   case FID(SCFX): pbr->GetFloat(&m_BG_scalex[BG_FULLSCREEN]); break;
-   case FID(SCFY): pbr->GetFloat(&m_BG_scaley[BG_FULLSCREEN]); break;
-   case FID(SCFZ): pbr->GetFloat(&m_BG_scalez[BG_FULLSCREEN]); break;
-   case FID(XLFX): pbr->GetFloat(&m_BG_xlatex[BG_FULLSCREEN]); break;
-   case FID(XLFY): pbr->GetFloat(&m_BG_xlatey[BG_FULLSCREEN]); break;
-   case FID(XLFZ): pbr->GetFloat(&m_BG_xlatez[BG_FULLSCREEN]); break;
-   case FID(ROFS): pbr->GetFloat(&m_BG_rotation[BG_FSS]); break;
-   case FID(LAFS): pbr->GetFloat(&m_BG_layback[BG_FSS]); break;
-   case FID(INFS): pbr->GetFloat(&m_BG_inclination[BG_FSS]); break;
-   case FID(FOFS): pbr->GetFloat(&m_BG_FOV[BG_FSS]); break;
-   case FID(SCXS): pbr->GetFloat(&m_BG_scalex[BG_FSS]); break;
-   case FID(SCYS): pbr->GetFloat(&m_BG_scaley[BG_FSS]); break;
-   case FID(SCZS): pbr->GetFloat(&m_BG_scalez[BG_FSS]); break;
-   case FID(XLXS): pbr->GetFloat(&m_BG_xlatex[BG_FSS]); break;
-   case FID(XLYS): pbr->GetFloat(&m_BG_xlatey[BG_FSS]); break;
-   case FID(XLZS): pbr->GetFloat(&m_BG_xlatez[BG_FSS]); break;
+   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(LEFT): pbr->GetFloat(m_left); break;
+   case FID(TOPX): pbr->GetFloat(m_top); break;
+   case FID(RGHT): pbr->GetFloat(m_right); break;
+   case FID(BOTM): pbr->GetFloat(m_bottom); break;
+   case FID(ROTA): pbr->GetFloat(m_BG_rotation[BG_DESKTOP]); break;
+   case FID(LAYB): pbr->GetFloat(m_BG_layback[BG_DESKTOP]); break;
+   case FID(INCL): pbr->GetFloat(m_BG_inclination[BG_DESKTOP]); break;
+   case FID(FOVX): pbr->GetFloat(m_BG_FOV[BG_DESKTOP]); break;
+   case FID(SCLX): pbr->GetFloat(m_BG_scalex[BG_DESKTOP]); break;
+   case FID(SCLY): pbr->GetFloat(m_BG_scaley[BG_DESKTOP]); break;
+   case FID(SCLZ): pbr->GetFloat(m_BG_scalez[BG_DESKTOP]); break;
+   case FID(XLTX): pbr->GetFloat(m_BG_xlatex[BG_DESKTOP]); break;
+   case FID(XLTY): pbr->GetFloat(m_BG_xlatey[BG_DESKTOP]); break;
+   case FID(XLTZ): pbr->GetFloat(m_BG_xlatez[BG_DESKTOP]); break;
+   case FID(ROTF): pbr->GetFloat(m_BG_rotation[BG_FULLSCREEN]); break;
+   case FID(LAYF): pbr->GetFloat(m_BG_layback[BG_FULLSCREEN]); break;
+   case FID(INCF): pbr->GetFloat(m_BG_inclination[BG_FULLSCREEN]); break;
+   case FID(FOVF): pbr->GetFloat(m_BG_FOV[BG_FULLSCREEN]); break;
+   case FID(SCFX): pbr->GetFloat(m_BG_scalex[BG_FULLSCREEN]); break;
+   case FID(SCFY): pbr->GetFloat(m_BG_scaley[BG_FULLSCREEN]); break;
+   case FID(SCFZ): pbr->GetFloat(m_BG_scalez[BG_FULLSCREEN]); break;
+   case FID(XLFX): pbr->GetFloat(m_BG_xlatex[BG_FULLSCREEN]); break;
+   case FID(XLFY): pbr->GetFloat(m_BG_xlatey[BG_FULLSCREEN]); break;
+   case FID(XLFZ): pbr->GetFloat(m_BG_xlatez[BG_FULLSCREEN]); break;
+   case FID(ROFS): pbr->GetFloat(m_BG_rotation[BG_FSS]); break;
+   case FID(LAFS): pbr->GetFloat(m_BG_layback[BG_FSS]); break;
+   case FID(INFS): pbr->GetFloat(m_BG_inclination[BG_FSS]); break;
+   case FID(FOFS): pbr->GetFloat(m_BG_FOV[BG_FSS]); break;
+   case FID(SCXS): pbr->GetFloat(m_BG_scalex[BG_FSS]); break;
+   case FID(SCYS): pbr->GetFloat(m_BG_scaley[BG_FSS]); break;
+   case FID(SCZS): pbr->GetFloat(m_BG_scalez[BG_FSS]); break;
+   case FID(XLXS): pbr->GetFloat(m_BG_xlatex[BG_FSS]); break;
+   case FID(XLYS): pbr->GetFloat(m_BG_xlatey[BG_FSS]); break;
+   case FID(XLZS): pbr->GetFloat(m_BG_xlatez[BG_FSS]); break;
    case FID(EFSS):
    {
-      pbr->GetBool(&m_BG_enable_FSS);
+      pbr->GetBool(m_BG_enable_FSS);
       if (m_BG_enable_FSS)
          m_BG_current_set = BG_FSS; //!! FSS
       break;
    }
    //case FID(VERS): pbr->GetString(szVersion); break;
-   case FID(ORRP): pbr->GetInt(&m_overridePhysics); break;
-   case FID(ORPF): pbr->GetBool(&m_overridePhysicsFlipper); break;
-   case FID(GAVT): pbr->GetFloat(&m_Gravity); break;
-   case FID(FRCT): pbr->GetFloat(&m_friction); break;
-   case FID(ELAS): pbr->GetFloat(&m_elasticity); break;
-   case FID(ELFA): pbr->GetFloat(&m_elasticityFalloff); break;
-   case FID(PFSC): pbr->GetFloat(&m_scatter); break;
-   case FID(SCAT): pbr->GetFloat(&m_defaultScatter); break;
-   case FID(NDGT): pbr->GetFloat(&m_nudgeTime); break;
+   case FID(ORRP): pbr->GetInt(m_overridePhysics); break;
+   case FID(ORPF): pbr->GetBool(m_overridePhysicsFlipper); break;
+   case FID(GAVT): pbr->GetFloat(m_Gravity); break;
+   case FID(FRCT): pbr->GetFloat(m_friction); break;
+   case FID(ELAS): pbr->GetFloat(m_elasticity); break;
+   case FID(ELFA): pbr->GetFloat(m_elasticityFalloff); break;
+   case FID(PFSC): pbr->GetFloat(m_scatter); break;
+   case FID(SCAT): pbr->GetFloat(m_defaultScatter); break;
+   case FID(NDGT): pbr->GetFloat(m_nudgeTime); break;
    case FID(MPGC):
    {
       int tmp;
-      pbr->GetInt(&tmp);
+      pbr->GetInt(tmp);
       m_plungerNormalize = LoadValueIntWithDefault("Player", "PlungerNormalize", tmp);
       break;
    }
    case FID(MPDF):
    {
       bool tmp;
-      pbr->GetBool(&tmp);
+      pbr->GetBool(tmp);
       m_plungerFilter = LoadValueBoolWithDefault("Player", "PlungerFilter", tmp);
       break;
    }
    case FID(PHML):
    {
-      pbr->GetInt(&m_PhysicsMaxLoops);
+      pbr->GetInt(m_PhysicsMaxLoops);
       if (m_PhysicsMaxLoops == 0xFFFFFFFF)
          /*const HRESULT hr =*/ LoadValueInt("Player", "PhysicsMaxLoops", (int*)&m_PhysicsMaxLoops);
       break;
    }
-   case FID(DECL): pbr->GetBool(&m_renderDecals); break;
-   case FID(REEL): pbr->GetBool(&m_renderEMReels); break;
-   case FID(OFFX): pbr->GetFloat(&m_offset.x); break;
-   case FID(OFFY): pbr->GetFloat(&m_offset.y); break;
-   case FID(ZOOM): pbr->GetFloat(&m_zoom); break;
-   case FID(MAXSEP): pbr->GetFloat(&m_3DmaxSeparation); break;
-   case FID(ZPD): pbr->GetFloat(&m_3DZPD); break;
-   case FID(STO): pbr->GetFloat(&m_3DOffset); break;
-   case FID(OGST): pbr->GetBool(&m_overwriteGlobalStereo3D); break;
-   case FID(SLPX): pbr->GetFloat(&m_angletiltMax); break;
-   case FID(SLOP): pbr->GetFloat(&m_angletiltMin); break;
-   case FID(GLAS): pbr->GetFloat(&m_glassheight); break;
-   case FID(TBLH): pbr->GetFloat(&m_tableheight); break;
+   case FID(DECL): pbr->GetBool(m_renderDecals); break;
+   case FID(REEL): pbr->GetBool(m_renderEMReels); break;
+   case FID(OFFX): pbr->GetFloat(m_offset.x); break;
+   case FID(OFFY): pbr->GetFloat(m_offset.y); break;
+   case FID(ZOOM): pbr->GetFloat(m_zoom); break;
+   case FID(MAXSEP): pbr->GetFloat(m_3DmaxSeparation); break;
+   case FID(ZPD): pbr->GetFloat(m_3DZPD); break;
+   case FID(STO): pbr->GetFloat(m_3DOffset); break;
+   case FID(OGST): pbr->GetBool(m_overwriteGlobalStereo3D); break;
+   case FID(SLPX): pbr->GetFloat(m_angletiltMax); break;
+   case FID(SLOP): pbr->GetFloat(m_angletiltMin); break;
+   case FID(GLAS): pbr->GetFloat(m_glassheight); break;
+   case FID(TBLH): pbr->GetFloat(m_tableheight); break;
    case FID(IMAG): pbr->GetString(m_image); break;
    case FID(BLIM): pbr->GetString(m_ballImage); break;
    case FID(BLIF): pbr->GetString(m_ballImageDecal); break;
    case FID(SSHT): pbr->GetString(m_szScreenShot); break;
-   case FID(FBCK): pbr->GetBool(&m_backdrop); break;
+   case FID(FBCK): pbr->GetBool(m_backdrop); break;
    case FID(SEDT): pbr->GetInt(&((int *)pbr->m_pdata)[1]); break;
    case FID(SSND): pbr->GetInt(&((int *)pbr->m_pdata)[2]); break;
    case FID(SIMG): pbr->GetInt(&((int *)pbr->m_pdata)[3]); break;
@@ -3734,44 +3734,44 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(BIMG): pbr->GetString(m_BG_image[0]); break;
    case FID(BIMF): pbr->GetString(m_BG_image[1]); break;
    case FID(BIMS): pbr->GetString(m_BG_image[2]); break;
-   case FID(BIMN): pbr->GetBool(&m_ImageBackdropNightDay); break;
+   case FID(BIMN): pbr->GetBool(m_ImageBackdropNightDay); break;
    case FID(IMCG): pbr->GetString(m_imageColorGrade); break;
    case FID(EIMG): pbr->GetString(m_envImage); break;
    case FID(PLMA): pbr->GetString(m_playfieldMaterial); break;
    case FID(NOTX): {std::string txt;  pbr->GetString(txt); m_notesText = CString(txt.c_str()); break; }
-   case FID(LZAM): pbr->GetInt(&m_lightAmbient); break;
-   case FID(LZDI): pbr->GetInt(&m_Light[0].emission); break;
-   case FID(LZHI): pbr->GetFloat(&m_lightHeight); break;
-   case FID(LZRA): pbr->GetFloat(&m_lightRange); break;
-   case FID(LIES): pbr->GetFloat(&m_lightEmissionScale); break;
-   case FID(ENES): pbr->GetFloat(&m_envEmissionScale); break;
-   case FID(GLES): pbr->GetFloat(&m_globalEmissionScale); break;
-   case FID(AOSC): pbr->GetFloat(&m_AOScale); break;
-   case FID(SSSC): pbr->GetFloat(&m_SSRScale); break;
-   case FID(BREF): pbr->GetInt(&m_useReflectionForBalls); break;
+   case FID(LZAM): pbr->GetInt(m_lightAmbient); break;
+   case FID(LZDI): pbr->GetInt(m_Light[0].emission); break;
+   case FID(LZHI): pbr->GetFloat(m_lightHeight); break;
+   case FID(LZRA): pbr->GetFloat(m_lightRange); break;
+   case FID(LIES): pbr->GetFloat(m_lightEmissionScale); break;
+   case FID(ENES): pbr->GetFloat(m_envEmissionScale); break;
+   case FID(GLES): pbr->GetFloat(m_globalEmissionScale); break;
+   case FID(AOSC): pbr->GetFloat(m_AOScale); break;
+   case FID(SSSC): pbr->GetFloat(m_SSRScale); break;
+   case FID(BREF): pbr->GetInt(m_useReflectionForBalls); break;
    case FID(PLST):
    {
       int tmp;
-      pbr->GetInt(&tmp);
+      pbr->GetInt(tmp);
       m_playfieldReflectionStrength = dequantizeUnsigned<8>(tmp);
       break;
    }
-   case FID(BTRA): pbr->GetInt(&m_useTrailForBalls); break;
+   case FID(BTRA): pbr->GetInt(m_useTrailForBalls); break;
    case FID(BTST):
    {
       int tmp;
-      pbr->GetInt(&tmp);
+      pbr->GetInt(tmp);
       m_ballTrailStrength = dequantizeUnsigned<8>(tmp);
       break;
    }
-   case FID(BPRS): pbr->GetFloat(&m_ballPlayfieldReflectionStrength); break;
-   case FID(DBIS): pbr->GetFloat(&m_defaultBulbIntensityScaleOnBall); break;
-   case FID(UAAL): pbr->GetInt(&m_useAA); break;
-   case FID(UAOC): pbr->GetInt(&m_useAO); break;
-   case FID(USSR): pbr->GetInt(&m_useSSR); break;
-   case FID(UFXA): pbr->GetInt(&m_useFXAA); break;
-   case FID(BLST): pbr->GetFloat(&m_bloom_strength); break;
-   case FID(BCLR): pbr->GetInt(&m_colorbackdrop); break;
+   case FID(BPRS): pbr->GetFloat(m_ballPlayfieldReflectionStrength); break;
+   case FID(DBIS): pbr->GetFloat(m_defaultBulbIntensityScaleOnBall); break;
+   case FID(UAAL): pbr->GetInt(m_useAA); break;
+   case FID(UAOC): pbr->GetInt(m_useAO); break;
+   case FID(USSR): pbr->GetInt(m_useSSR); break;
+   case FID(UFXA): pbr->GetInt(m_useFXAA); break;
+   case FID(BLST): pbr->GetFloat(m_bloom_strength); break;
+   case FID(BCLR): pbr->GetInt(m_colorbackdrop); break;
    case FID(SECB): pbr->GetStruct(&m_protectionData, sizeof(ProtectionData)); break;
    case FID(CODE):
    {
@@ -3785,7 +3785,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(CCUS): pbr->GetStruct(m_rgcolorcustom, sizeof(COLORREF) * 16); break;
    case FID(TDFT):
    {
-      pbr->GetFloat(&m_globalDifficulty);
+      pbr->GetFloat(m_globalDifficulty);
       int tmp;
       const HRESULT hr = LoadValueInt("Player", "GlobalDifficulty", &tmp);
       if (hr == S_OK) m_globalDifficulty = dequantizeUnsignedPercent(tmp);
@@ -3798,16 +3798,16 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       m_vCustomInfoTag.push_back(tmp);
       break;
    }
-   case FID(SVOL): pbr->GetFloat(&m_TableSoundVolume); break;
-   case FID(BDMO): pbr->GetBool(&m_BallDecalMode); break;
-   case FID(MVOL): pbr->GetFloat(&m_TableMusicVolume); break;
-   case FID(AVSY): pbr->GetInt(&m_TableAdaptiveVSync); break;
-   case FID(OGAC): pbr->GetBool(&m_overwriteGlobalDetailLevel); break;
-   case FID(OGDN): pbr->GetBool(&m_overwriteGlobalDayNight); break;
-   case FID(GDAC): pbr->GetBool(&m_grid); break;
-   case FID(REOP): pbr->GetBool(&m_reflectElementsOnPlayfield); break;
-   case FID(ARAC): pbr->GetInt(&m_userDetailLevel); break;
-   case FID(MASI): pbr->GetInt(&m_numMaterials); break;
+   case FID(SVOL): pbr->GetFloat(m_TableSoundVolume); break;
+   case FID(BDMO): pbr->GetBool(m_BallDecalMode); break;
+   case FID(MVOL): pbr->GetFloat(m_TableMusicVolume); break;
+   case FID(AVSY): pbr->GetInt(m_TableAdaptiveVSync); break;
+   case FID(OGAC): pbr->GetBool(m_overwriteGlobalDetailLevel); break;
+   case FID(OGDN): pbr->GetBool(m_overwriteGlobalDayNight); break;
+   case FID(GDAC): pbr->GetBool(m_grid); break;
+   case FID(REOP): pbr->GetBool(m_reflectElementsOnPlayfield); break;
+   case FID(ARAC): pbr->GetInt(m_userDetailLevel); break;
+   case FID(MASI): pbr->GetInt(m_numMaterials); break;
    case FID(MATE):
    {
       vector<SaveMaterial> mats(m_numMaterials);

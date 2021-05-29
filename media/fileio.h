@@ -30,9 +30,10 @@ public:
    HRESULT WriteWideString(const int id, const std::basic_string<WCHAR>& wzvalue);
    HRESULT WriteBool(const int id, const BOOL value);
    HRESULT WriteFloat(const int id, const float value);
-   HRESULT WriteStruct(const int id, const void *pvalue, const int size);
-   HRESULT WriteVector3(const int id, const Vertex3Ds* vec);
-   HRESULT WriteVector3Padded(const int id, const Vertex3Ds* vec);
+   HRESULT WriteStruct(const int id, const void * const pvalue, const int size);
+   HRESULT WriteVector2(const int id, const Vertex2D& vec);
+   HRESULT WriteVector3(const int id, const Vertex3Ds& vec);
+   HRESULT WriteVector3Padded(const int id, const Vertex3Ds& vec);
    HRESULT WriteTag(const int id);
 
    HRESULT WriteBytes(const void *pv, const unsigned long count, unsigned long *foo);
@@ -48,18 +49,47 @@ class BiffReader
 public:
    BiffReader(IStream *pistream, ILoadable *piloadable, void *ppassdata, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey);
 
-   HRESULT GetIntNoHash(void *pvalue);
-   HRESULT GetInt(void *pvalue);
-   HRESULT GetString(char *szvalue, const DWORD szvalue_maxlength);
+   HRESULT GetIntNoHash(int &value);
+   HRESULT GetInt(void * const value);
+   HRESULT GetInt(int &value);
+   HRESULT GetInt(DWORD &value)
+   {
+      int val;
+      const HRESULT hr = GetInt(val);
+      value = val;
+      return hr;
+   }
+   HRESULT GetInt(unsigned int &value)
+   {
+      int val;
+      const HRESULT hr = GetInt(val);
+      value = val;
+      return hr;
+   }
+   HRESULT GetInt(long &value)
+   {
+      int val;
+      const HRESULT hr = GetInt(val);
+      value = val;
+      return hr;
+   }
+   HRESULT GetString(char * const szvalue, const DWORD szvalue_maxlength);
    HRESULT GetString(std::string& szvalue);
    HRESULT GetWideString(WCHAR* wzvalue, const DWORD wzvalue_maxlength);
    HRESULT GetWideString(std::basic_string<WCHAR>& wzvalue);
-   HRESULT GetFloat(float *pvalue);
-   HRESULT GetBool(BOOL *pfvalue);
-   HRESULT GetBool(bool *pvalue);
+   HRESULT GetFloat(float &value);
+   HRESULT GetBool(BOOL &value);
+   HRESULT GetBool(bool &value)
+   {
+      BOOL val;
+      const HRESULT hr = GetBool(val);
+      value = !!val;
+      return hr;
+   }
    HRESULT GetStruct(void *pvalue, const int size);
-   HRESULT GetVector3(Vertex3Ds* vec);
-   HRESULT GetVector3Padded(Vertex3Ds* vec);
+   HRESULT GetVector2(Vertex2D& vec);
+   HRESULT GetVector3(Vertex3Ds& vec);
+   HRESULT GetVector3Padded(Vertex3Ds& vec);
 
    HRESULT ReadBytes(void *pv, const unsigned long count, unsigned long *foo);
 

@@ -538,7 +538,7 @@ HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backu
 {
    BiffWriter bw(pstm, hcrypthash);
 
-   bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
+   bw.WriteVector2(FID(VCEN), m_d.m_vCenter);
    bw.WriteFloat(FID(ROTA), m_d.m_rotation);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
@@ -580,19 +580,19 @@ bool Spinner::LoadToken(const int id, BiffReader * const pbr)
    switch(id)
    {
    case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
-   case FID(VCEN): pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D)); break;
-   case FID(ROTA): pbr->GetFloat(&m_d.m_rotation); break;
+   case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
+   case FID(ROTA): pbr->GetFloat(m_d.m_rotation); break;
    case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
-   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
-   case FID(SSUP): pbr->GetBool(&m_d.m_showBracket); break;
-   case FID(HIGH): pbr->GetFloat(&m_d.m_height); break;
-   case FID(LGTH): pbr->GetFloat(&m_d.m_length); break;
-   case FID(AFRC): pbr->GetFloat(&m_d.m_damping); break;
-   case FID(SMAX): pbr->GetFloat(&m_d.m_angleMax); break;
-   case FID(SMIN): pbr->GetFloat(&m_d.m_angleMin); break;
-   case FID(SELA): pbr->GetFloat(&m_d.m_elasticity); break;
-   case FID(SVIS): pbr->GetBool(&m_d.m_visible); break;
+   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
+   case FID(SSUP): pbr->GetBool(m_d.m_showBracket); break;
+   case FID(HIGH): pbr->GetFloat(m_d.m_height); break;
+   case FID(LGTH): pbr->GetFloat(m_d.m_length); break;
+   case FID(AFRC): pbr->GetFloat(m_d.m_damping); break;
+   case FID(SMAX): pbr->GetFloat(m_d.m_angleMax); break;
+   case FID(SMIN): pbr->GetFloat(m_d.m_angleMin); break;
+   case FID(SELA): pbr->GetFloat(m_d.m_elasticity); break;
+   case FID(SVIS): pbr->GetBool(m_d.m_visible); break;
    case FID(IMGF): pbr->GetString(m_d.m_szImage); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
    case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;

@@ -630,7 +630,7 @@ HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backup
 {
    BiffWriter bw(pstm, hcrypthash);
 
-   bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
+   bw.WriteVector2(FID(VCEN), m_d.m_vCenter);
    bw.WriteFloat(FID(RADI), m_d.m_radius);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
@@ -671,15 +671,15 @@ bool Kicker::LoadToken(const int id, BiffReader * const pbr)
    {
    case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
    case FID(VCEN): pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D)); break;
-   case FID(RADI): pbr->GetFloat(&m_d.m_radius); break;
-   case FID(KSCT): pbr->GetFloat(&m_d.m_scatter); break;
-   case FID(KHAC): pbr->GetFloat(&m_d.m_hitAccuracy); break;
-   case FID(KHHI): pbr->GetFloat(&m_d.m_hit_height); break;
-   case FID(KORI): pbr->GetFloat(&m_d.m_orientation); break;
+   case FID(RADI): pbr->GetFloat(m_d.m_radius); break;
+   case FID(KSCT): pbr->GetFloat(m_d.m_scatter); break;
+   case FID(KHAC): pbr->GetFloat(m_d.m_hitAccuracy); break;
+   case FID(KHHI): pbr->GetFloat(m_d.m_hit_height); break;
+   case FID(KORI): pbr->GetFloat(m_d.m_orientation); break;
    case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
-   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
-   case FID(EBLD): pbr->GetBool(&m_d.m_enabled); break;
-   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
+   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+   case FID(EBLD): pbr->GetBool(m_d.m_enabled); break;
+   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
    case FID(TYPE):
    {
       pbr->GetInt(&m_d.m_kickertype);
@@ -690,8 +690,8 @@ bool Kicker::LoadToken(const int id, BiffReader * const pbr)
    }
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
    case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
-   case FID(FATH): pbr->GetBool(&m_d.m_fallThrough); break;
-   case FID(LEMO): pbr->GetBool(&m_d.m_legacyMode); break;
+   case FID(FATH): pbr->GetBool(m_d.m_fallThrough); break;
+   case FID(LEMO): pbr->GetBool(m_d.m_legacyMode); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
    return true;

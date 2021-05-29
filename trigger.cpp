@@ -1039,7 +1039,7 @@ HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backu
 {
    BiffWriter bw(pstm, hcrypthash);
 
-   bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
+   bw.WriteVector2(FID(VCEN), m_d.m_vCenter);
    bw.WriteFloat(FID(RADI), m_d.m_radius);
    bw.WriteFloat(FID(ROTA), m_d.m_rotation);
    bw.WriteFloat(FID(WITI), m_d.m_wireThickness);
@@ -1109,22 +1109,22 @@ bool Trigger::LoadToken(const int id, BiffReader * const pbr)
    switch(id)
    {
    case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
-   case FID(VCEN): pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D)); break;
-   case FID(RADI): pbr->GetFloat(&m_d.m_radius); break;
-   case FID(ROTA): pbr->GetFloat(&m_d.m_rotation); break;
-   case FID(WITI): pbr->GetFloat(&m_d.m_wireThickness); break;
-   case FID(SCAX): pbr->GetFloat(&m_d.m_scaleX); break;
-   case FID(SCAY): pbr->GetFloat(&m_d.m_scaleY); break;
+   case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
+   case FID(RADI): pbr->GetFloat(m_d.m_radius); break;
+   case FID(ROTA): pbr->GetFloat(m_d.m_rotation); break;
+   case FID(WITI): pbr->GetFloat(m_d.m_wireThickness); break;
+   case FID(SCAX): pbr->GetFloat(m_d.m_scaleX); break;
+   case FID(SCAY): pbr->GetFloat(m_d.m_scaleY); break;
    case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
-   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
+   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(EBLD): pbr->GetBool(&m_d.m_enabled); break;
-   case FID(THOT): pbr->GetFloat(&m_d.m_hit_height); break;
-   case FID(VSBL): pbr->GetBool(&m_d.m_visible); break;
-   case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
+   case FID(EBLD): pbr->GetBool(m_d.m_enabled); break;
+   case FID(THOT): pbr->GetFloat(m_d.m_hit_height); break;
+   case FID(VSBL): pbr->GetBool(m_d.m_visible); break;
+   case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
    case FID(SHAP): pbr->GetInt(&m_d.m_shape); break;
-   case FID(ANSP): pbr->GetFloat(&m_d.m_animSpeed); break;
+   case FID(ANSP): pbr->GetFloat(m_d.m_animSpeed); break;
    case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
    default:
    {

@@ -303,11 +303,11 @@ bool ISelect::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-       case FID(LOCK): pbr->GetBool(&m_locked); break;
+       case FID(LOCK): pbr->GetBool(m_locked); break;
        case FID(LAYR):
        {
           int tmp;
-          pbr->GetInt(&tmp);
+          pbr->GetInt(tmp);
           m_oldLayerIndex = (char)tmp;
           break;
        }
@@ -318,7 +318,7 @@ bool ISelect::LoadToken(const int id, BiffReader * const pbr)
        }
        case FID(LVIS):
        {
-           pbr->GetBool(&m_isVisible);
+           pbr->GetBool(m_isVisible);
            break;
        }
    }

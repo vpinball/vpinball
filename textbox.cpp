@@ -492,8 +492,8 @@ HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backu
 {
    BiffWriter bw(pstm, hcrypthash);
 
-   bw.WriteStruct(FID(VER1), &m_d.m_v1, sizeof(Vertex2D));
-   bw.WriteStruct(FID(VER2), &m_d.m_v2, sizeof(Vertex2D));
+   bw.WriteVector2(FID(VER1), m_d.m_v1);
+   bw.WriteVector2(FID(VER2), m_d.m_v2);
    bw.WriteInt(FID(CLRB), m_d.m_backcolor);
    bw.WriteInt(FID(CLRF), m_d.m_fontcolor);
    bw.WriteFloat(FID(INSC), m_d.m_intensity_scale);
@@ -535,18 +535,18 @@ bool Textbox::LoadToken(const int id, BiffReader * const pbr)
    switch(id)
    {
    case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
-   case FID(VER1): pbr->GetStruct(&m_d.m_v1, sizeof(Vertex2D)); break;
-   case FID(VER2): pbr->GetStruct(&m_d.m_v2, sizeof(Vertex2D)); break;
-   case FID(CLRB): pbr->GetInt(&m_d.m_backcolor); break;
-   case FID(CLRF): pbr->GetInt(&m_d.m_fontcolor); break;
-   case FID(INSC): pbr->GetFloat(&m_d.m_intensity_scale); break;
-   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
+   case FID(VER1): pbr->GetVector2(m_d.m_v1); break;
+   case FID(VER2): pbr->GetVector2(m_d.m_v2); break;
+   case FID(CLRB): pbr->GetInt(m_d.m_backcolor); break;
+   case FID(CLRF): pbr->GetInt(m_d.m_fontcolor); break;
+   case FID(INSC): pbr->GetFloat(m_d.m_intensity_scale); break;
+   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
    case FID(TEXT): pbr->GetString(m_d.m_sztext); break;
    case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
    case FID(ALGN): pbr->GetInt(&m_d.m_talign); break;
-   case FID(TRNS): pbr->GetBool(&m_d.m_transparent); break;
-   case FID(IDMD): pbr->GetBool(&m_d.m_isDMD); break;
+   case FID(TRNS): pbr->GetBool(m_d.m_transparent); break;
+   case FID(IDMD): pbr->GetBool(m_d.m_isDMD); break;
    case FID(FONT):
    {
       if (!m_pIFont)

@@ -471,8 +471,8 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool back
 {
    BiffWriter bw(pstm, hcrypthash);
 
-   bw.WriteStruct(FID(VER1), &m_d.m_v1, sizeof(Vertex2D));
-   bw.WriteStruct(FID(VER2), &m_d.m_v2, sizeof(Vertex2D));
+   bw.WriteVector2(FID(VER1), m_d.m_v1);
+   bw.WriteVector2(FID(VER2), m_d.m_v2);
    bw.WriteInt(FID(CLRB), m_d.m_backcolor);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
@@ -515,43 +515,43 @@ bool DispReel::LoadToken(const int id, BiffReader * const pbr)
    switch (id)
    {
    case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
-   case FID(VER1): pbr->GetStruct(&m_d.m_v1, sizeof(Vertex2D)); break;
-   case FID(VER2): pbr->GetStruct(&m_d.m_v2, sizeof(Vertex2D)); break;
-   case FID(WDTH): pbr->GetFloat(&m_d.m_width); break;
-   case FID(HIGH): pbr->GetFloat(&m_d.m_height); break;
-   case FID(CLRB): pbr->GetInt(&m_d.m_backcolor); break;
-   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
+   case FID(VER1): pbr->GetVector2(m_d.m_v1); break;
+   case FID(VER2): pbr->GetVector2(m_d.m_v2); break;
+   case FID(WDTH): pbr->GetFloat(m_d.m_width); break;
+   case FID(HIGH): pbr->GetFloat(m_d.m_height); break;
+   case FID(CLRB): pbr->GetInt(m_d.m_backcolor); break;
+   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
    case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
-   case FID(TRNS): pbr->GetBool(&m_d.m_transparent); break;
+   case FID(TRNS): pbr->GetBool(m_d.m_transparent); break;
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    case FID(RCNT):
    {
       float reel;
-      pbr->GetFloat(&reel);
+      pbr->GetFloat(reel);
       m_d.m_reelcount = (int)reel;
       break;
    }
-   case FID(RSPC): pbr->GetFloat(&m_d.m_reelspacing); break;
+   case FID(RSPC): pbr->GetFloat(m_d.m_reelspacing); break;
    case FID(MSTP):
    {
       float motorsteps;
-      pbr->GetFloat(&motorsteps);
+      pbr->GetFloat(motorsteps);
       m_d.m_motorsteps = (int)motorsteps;
       break;
    }
    case FID(SOUN): pbr->GetString(m_d.m_szSound); break;
-   case FID(UGRD): pbr->GetBool(&m_d.m_useImageGrid); break;
-   case FID(VISI): pbr->GetBool(&m_d.m_visible); break;
-   case FID(GIPR): pbr->GetInt(&m_d.m_imagesPerGridRow); break;
+   case FID(UGRD): pbr->GetBool(m_d.m_useImageGrid); break;
+   case FID(VISI): pbr->GetBool(m_d.m_visible); break;
+   case FID(GIPR): pbr->GetInt(m_d.m_imagesPerGridRow); break;
    case FID(RANG):
    {
       float dig;
-      pbr->GetFloat(&dig);
+      pbr->GetFloat(dig);
       m_d.m_digitrange = (int)dig;
       break;
    }
-   case FID(UPTM): pbr->GetInt(&m_d.m_updateinterval); break;
+   case FID(UPTM): pbr->GetInt(m_d.m_updateinterval); break;
    case FID(FONT): //!! deprecated, only here to support loading of old tables
    {
       IFont *pIFont;

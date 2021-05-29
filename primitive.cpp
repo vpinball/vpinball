@@ -1398,8 +1398,8 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool bac
     * the fourth padding float that they used to have, so now we have to write
     * them padded to 4 floats to maintain compatibility.
     */
-   bw.WriteVector3Padded(FID(VPOS), &m_d.m_vPosition);
-   bw.WriteVector3Padded(FID(VSIZ), &m_d.m_vSize);
+   bw.WriteVector3Padded(FID(VPOS), m_d.m_vPosition);
+   bw.WriteVector3Padded(FID(VSIZ), m_d.m_vSize);
    bw.WriteFloat(FID(RTV0), m_d.m_aRotAndTra[0]);
    bw.WriteFloat(FID(RTV1), m_d.m_aRotAndTra[1]);
    bw.WriteFloat(FID(RTV2), m_d.m_aRotAndTra[2]);
@@ -1561,54 +1561,54 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    switch(id)
    {
    case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
-   case FID(VPOS): pbr->GetVector3Padded(&m_d.m_vPosition); break;
-   case FID(VSIZ): pbr->GetVector3Padded(&m_d.m_vSize); break;
-   case FID(RTV0): pbr->GetFloat(&m_d.m_aRotAndTra[0]); break;
-   case FID(RTV1): pbr->GetFloat(&m_d.m_aRotAndTra[1]); break;
-   case FID(RTV2): pbr->GetFloat(&m_d.m_aRotAndTra[2]); break;
-   case FID(RTV3): pbr->GetFloat(&m_d.m_aRotAndTra[3]); break;
-   case FID(RTV4): pbr->GetFloat(&m_d.m_aRotAndTra[4]); break;
-   case FID(RTV5): pbr->GetFloat(&m_d.m_aRotAndTra[5]); break;
-   case FID(RTV6): pbr->GetFloat(&m_d.m_aRotAndTra[6]); break;
-   case FID(RTV7): pbr->GetFloat(&m_d.m_aRotAndTra[7]); break;
-   case FID(RTV8): pbr->GetFloat(&m_d.m_aRotAndTra[8]); break;
+   case FID(VPOS): pbr->GetVector3Padded(m_d.m_vPosition); break;
+   case FID(VSIZ): pbr->GetVector3Padded(m_d.m_vSize); break;
+   case FID(RTV0): pbr->GetFloat(m_d.m_aRotAndTra[0]); break;
+   case FID(RTV1): pbr->GetFloat(m_d.m_aRotAndTra[1]); break;
+   case FID(RTV2): pbr->GetFloat(m_d.m_aRotAndTra[2]); break;
+   case FID(RTV3): pbr->GetFloat(m_d.m_aRotAndTra[3]); break;
+   case FID(RTV4): pbr->GetFloat(m_d.m_aRotAndTra[4]); break;
+   case FID(RTV5): pbr->GetFloat(m_d.m_aRotAndTra[5]); break;
+   case FID(RTV6): pbr->GetFloat(m_d.m_aRotAndTra[6]); break;
+   case FID(RTV7): pbr->GetFloat(m_d.m_aRotAndTra[7]); break;
+   case FID(RTV8): pbr->GetFloat(m_d.m_aRotAndTra[8]); break;
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    case FID(NRMA): pbr->GetString(m_d.m_szNormalMap); break;
-   case FID(SIDS): pbr->GetInt(&m_d.m_Sides); break;
+   case FID(SIDS): pbr->GetInt(m_d.m_Sides); break;
    case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
    case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
-   case FID(SCOL): pbr->GetInt(&m_d.m_SideColor); break;
-   case FID(TVIS): pbr->GetBool(&m_d.m_visible); break;
-   case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
-   case FID(DTXI): pbr->GetBool(&m_d.m_drawTexturesInside); break;
-   case FID(HTEV): pbr->GetBool(&m_d.m_hitEvent); break;
-   case FID(THRS): pbr->GetFloat(&m_d.m_threshold); break;
-   case FID(ELAS): pbr->GetFloat(&m_d.m_elasticity); break;
-   case FID(ELFO): pbr->GetFloat(&m_d.m_elasticityFalloff); break;
-   case FID(RFCT): pbr->GetFloat(&m_d.m_friction); break;
-   case FID(RSCT): pbr->GetFloat(&m_d.m_scatter); break;
-   case FID(EFUI): pbr->GetFloat(&m_d.m_edgeFactorUI); break;
-   case FID(CORF): pbr->GetFloat(&m_d.m_collision_reductionFactor); break;
-   case FID(CLDR): pbr->GetBool(&m_d.m_collidable); break;
-   case FID(ISTO): pbr->GetBool(&m_d.m_toy); break;
+   case FID(SCOL): pbr->GetInt(m_d.m_SideColor); break;
+   case FID(TVIS): pbr->GetBool(m_d.m_visible); break;
+   case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
+   case FID(DTXI): pbr->GetBool(m_d.m_drawTexturesInside); break;
+   case FID(HTEV): pbr->GetBool(m_d.m_hitEvent); break;
+   case FID(THRS): pbr->GetFloat(m_d.m_threshold); break;
+   case FID(ELAS): pbr->GetFloat(m_d.m_elasticity); break;
+   case FID(ELFO): pbr->GetFloat(m_d.m_elasticityFalloff); break;
+   case FID(RFCT): pbr->GetFloat(m_d.m_friction); break;
+   case FID(RSCT): pbr->GetFloat(m_d.m_scatter); break;
+   case FID(EFUI): pbr->GetFloat(m_d.m_edgeFactorUI); break;
+   case FID(CORF): pbr->GetFloat(m_d.m_collision_reductionFactor); break;
+   case FID(CLDR): pbr->GetBool(m_d.m_collidable); break;
+   case FID(ISTO): pbr->GetBool(m_d.m_toy); break;
    case FID(MAPH): pbr->GetString(m_d.m_szPhysicsMaterial); break;
-   case FID(OVPH): pbr->GetBool(&m_d.m_overwritePhysics); break;
-   case FID(STRE): pbr->GetBool(&m_d.m_staticRendering); break;
+   case FID(OVPH): pbr->GetBool(m_d.m_overwritePhysics); break;
+   case FID(STRE): pbr->GetBool(m_d.m_staticRendering); break;
    case FID(DILI):
    {
       int tmp;
-      pbr->GetInt(&tmp);
+      pbr->GetInt(tmp);
       m_d.m_disableLightingTop = (tmp == 1) ? 1.f : dequantizeUnsigned<8>(tmp); // backwards compatible hacky loading!
       break;
    }
-   case FID(DILB): pbr->GetFloat(&m_d.m_disableLightingBelow); break;
-   case FID(U3DM): pbr->GetBool(&m_d.m_use3DMesh); break;
-   case FID(EBFC): pbr->GetBool(&m_d.m_backfacesEnabled); break;
-   case FID(DIPT): pbr->GetBool(&m_d.m_displayTexture); break;
+   case FID(DILB): pbr->GetFloat(m_d.m_disableLightingBelow); break;
+   case FID(U3DM): pbr->GetBool(m_d.m_use3DMesh); break;
+   case FID(EBFC): pbr->GetBool(m_d.m_backfacesEnabled); break;
+   case FID(DIPT): pbr->GetBool(m_d.m_displayTexture); break;
    case FID(M3DN): pbr->GetString(m_d.m_meshFileName); break;
    case FID(M3VN):
    {
-      pbr->GetInt(&m_numVertices);
+      pbr->GetInt(m_numVertices);
       if (m_mesh.m_animationFrames.size() > 0)
       {
          for (size_t i = 0; i < m_mesh.m_animationFrames.size(); i++)
@@ -1625,7 +1625,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
       break;
    }
 #ifdef COMPRESS_MESHES
-   case FID(M3AY): pbr->GetInt(&m_compressedAnimationVertices); break;
+   case FID(M3AY): pbr->GetInt(m_compressedAnimationVertices); break;
    case FID(M3AX):
    {
       Mesh::FrameData frameData;
@@ -1648,7 +1648,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
       m_mesh.m_animationFrames.push_back(frameData);
       break;
    }
-   case FID(M3CY): pbr->GetInt(&m_compressedVertices); break;
+   case FID(M3CY): pbr->GetInt(m_compressedVertices); break;
    case FID(M3CX):
    {
       m_mesh.m_vertices.clear();
@@ -1675,7 +1675,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
       break;
    }
 #endif
-   case FID(M3FN): pbr->GetInt(&m_numIndices); break;
+   case FID(M3FN): pbr->GetInt(m_numIndices); break;
    case FID(M3DI):
    {
       m_mesh.m_indices.resize(m_numIndices);
@@ -1691,7 +1691,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
       break;
    }
 #ifdef COMPRESS_MESHES
-   case FID(M3CJ): pbr->GetInt(&m_compressedIndices); break;
+   case FID(M3CJ): pbr->GetInt(m_compressedIndices); break;
    case FID(M3CI):
    {
       m_mesh.m_indices.resize(m_numIndices);
@@ -1746,8 +1746,8 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
       break;
    }
 #endif
-   case FID(PIDB): pbr->GetFloat(&m_d.m_depthBias); break;
-   case FID(OSNM): pbr->GetBool(&m_d.m_objectSpaceNormalMap); break;
+   case FID(PIDB): pbr->GetFloat(m_d.m_depthBias); break;
+   case FID(OSNM): pbr->GetBool(m_d.m_objectSpaceNormalMap); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
    return true;

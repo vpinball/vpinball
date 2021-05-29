@@ -901,8 +901,8 @@ HRESULT HitTarget::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool bac
     * the fourth padding float that they used to have, so now we have to write
     * them padded to 4 floats to maintain compatibility.
     */
-   bw.WriteVector3Padded(FID(VPOS), &m_d.m_vPosition);
-   bw.WriteVector3Padded(FID(VSIZ), &m_d.m_vSize);
+   bw.WriteVector3Padded(FID(VPOS), m_d.m_vPosition);
+   bw.WriteVector3Padded(FID(VSIZ), m_d.m_vSize);
    bw.WriteFloat(FID(ROTZ), m_d.m_rotZ);
    bw.WriteString(FID(IMAG), m_d.m_szImage);
    bw.WriteInt(FID(TRTY), m_d.m_targetType);
@@ -956,39 +956,39 @@ bool HitTarget::LoadToken(const int id, BiffReader * const pbr)
    switch(id)
    {
    case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
-   case FID(VPOS): pbr->GetVector3Padded(&m_d.m_vPosition); break;
-   case FID(VSIZ): pbr->GetVector3Padded(&m_d.m_vSize); break;
-   case FID(ROTZ): pbr->GetFloat(&m_d.m_rotZ); break;
+   case FID(VPOS): pbr->GetVector3Padded(m_d.m_vPosition); break;
+   case FID(VSIZ): pbr->GetVector3Padded(m_d.m_vSize); break;
+   case FID(ROTZ): pbr->GetFloat(m_d.m_rotZ); break;
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    case FID(TRTY): pbr->GetInt(&m_d.m_targetType); break;
    case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
    case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
-   case FID(TVIS): pbr->GetBool(&m_d.m_visible); break;
-   case FID(LEMO): pbr->GetBool(&m_d.m_legacy); break;
-   case FID(ISDR): pbr->GetBool(&m_d.m_isDropped); break;
-   case FID(DRSP): pbr->GetFloat(&m_d.m_dropSpeed); break;
-   case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
-   case FID(HTEV): pbr->GetBool(&m_d.m_hitEvent); break;
-   case FID(THRS): pbr->GetFloat(&m_d.m_threshold); break;
-   case FID(ELAS): pbr->GetFloat(&m_d.m_elasticity); break;
-   case FID(ELFO): pbr->GetFloat(&m_d.m_elasticityFalloff); break;
-   case FID(RFCT): pbr->GetFloat(&m_d.m_friction); break;
-   case FID(RSCT): pbr->GetFloat(&m_d.m_scatter); break;
-   case FID(CLDR): pbr->GetBool(&m_d.m_collidable); break;
+   case FID(TVIS): pbr->GetBool(m_d.m_visible); break;
+   case FID(LEMO): pbr->GetBool(m_d.m_legacy); break;
+   case FID(ISDR): pbr->GetBool(m_d.m_isDropped); break;
+   case FID(DRSP): pbr->GetFloat(m_d.m_dropSpeed); break;
+   case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
+   case FID(HTEV): pbr->GetBool(m_d.m_hitEvent); break;
+   case FID(THRS): pbr->GetFloat(m_d.m_threshold); break;
+   case FID(ELAS): pbr->GetFloat(m_d.m_elasticity); break;
+   case FID(ELFO): pbr->GetFloat(m_d.m_elasticityFalloff); break;
+   case FID(RFCT): pbr->GetFloat(m_d.m_friction); break;
+   case FID(RSCT): pbr->GetFloat(m_d.m_scatter); break;
+   case FID(CLDR): pbr->GetBool(m_d.m_collidable); break;
    case FID(DILI):
    {
       int tmp;
-      pbr->GetInt(&tmp);
+      pbr->GetInt(tmp);
       m_d.m_disableLightingTop = (tmp == 1) ? 1.f : dequantizeUnsigned<8>(tmp); // backwards compatible hacky loading!
       break;
    }
-   case FID(DILB): pbr->GetFloat(&m_d.m_disableLightingBelow); break;
-   case FID(PIDB): pbr->GetFloat(&m_d.m_depthBias); break;
-   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
-   case FID(RADE): pbr->GetInt(&m_d.m_raiseDelay); break;
+   case FID(DILB): pbr->GetFloat(m_d.m_disableLightingBelow); break;
+   case FID(PIDB): pbr->GetFloat(m_d.m_depthBias); break;
+   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
+   case FID(RADE): pbr->GetInt(m_d.m_raiseDelay); break;
    case FID(MAPH): pbr->GetString(m_d.m_szPhysicsMaterial); break;
-   case FID(OVPH): pbr->GetBool(&m_d.m_overwritePhysics); break;
+   case FID(OVPH): pbr->GetBool(m_d.m_overwritePhysics); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
    return true;

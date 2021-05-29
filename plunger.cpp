@@ -887,7 +887,7 @@ HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backu
 {
    BiffWriter bw(pstm, hcrypthash);
 
-   bw.WriteStruct(FID(VCEN), &m_d.m_v, sizeof(Vertex2D));
+   bw.WriteVector2(FID(VCEN), m_d.m_v);
    bw.WriteFloat(FID(WDTH), m_d.m_width);
    bw.WriteFloat(FID(HIGH), m_d.m_height);
    bw.WriteFloat(FID(ZADJ), m_d.m_zAdjust);
@@ -949,38 +949,38 @@ bool Plunger::LoadToken(const int id, BiffReader * const pbr)
    switch(id)
    {
    case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
-   case FID(VCEN): pbr->GetStruct(&m_d.m_v, sizeof(Vertex2D)); break;
-   case FID(WDTH): pbr->GetFloat(&m_d.m_width); break;
-   case FID(ZADJ): pbr->GetFloat(&m_d.m_zAdjust); break;
-   case FID(HIGH): pbr->GetFloat(&m_d.m_height); break;
-   case FID(HPSL): pbr->GetFloat(&m_d.m_stroke); break;
-   case FID(SPDP): pbr->GetFloat(&m_d.m_speedPull); break;
-   case FID(SPDF): pbr->GetFloat(&m_d.m_speedFire); break;
-   case FID(MEST): pbr->GetFloat(&m_d.m_mechStrength); break;
-   case FID(MPRK): pbr->GetFloat(&m_d.m_parkPosition); break;
-   case FID(PSCV): pbr->GetFloat(&m_d.m_scatterVelocity); break;
-   case FID(MOMX): pbr->GetFloat(&m_d.m_momentumXfer); break;
-   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
-   case FID(MECH): pbr->GetBool(&m_d.m_mechPlunger); break;
-   case FID(APLG): pbr->GetBool(&m_d.m_autoPlunger); break;
-   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
+   case FID(VCEN): pbr->GetVector2(m_d.m_v); break;
+   case FID(WDTH): pbr->GetFloat(m_d.m_width); break;
+   case FID(ZADJ): pbr->GetFloat(m_d.m_zAdjust); break;
+   case FID(HIGH): pbr->GetFloat(m_d.m_height); break;
+   case FID(HPSL): pbr->GetFloat(m_d.m_stroke); break;
+   case FID(SPDP): pbr->GetFloat(m_d.m_speedPull); break;
+   case FID(SPDF): pbr->GetFloat(m_d.m_speedFire); break;
+   case FID(MEST): pbr->GetFloat(m_d.m_mechStrength); break;
+   case FID(MPRK): pbr->GetFloat(m_d.m_parkPosition); break;
+   case FID(PSCV): pbr->GetFloat(m_d.m_scatterVelocity); break;
+   case FID(MOMX): pbr->GetFloat(m_d.m_momentumXfer); break;
+   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+   case FID(MECH): pbr->GetBool(m_d.m_mechPlunger); break;
+   case FID(APLG): pbr->GetBool(m_d.m_autoPlunger); break;
+   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
    case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
    case FID(TYPE): pbr->GetInt(&m_d.m_type); break;
-   case FID(ANFR): pbr->GetInt(&m_d.m_animFrames); break;
+   case FID(ANFR): pbr->GetInt(m_d.m_animFrames); break;
    case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
-   case FID(VSBL): pbr->GetBool(&m_d.m_visible); break;
-   case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
+   case FID(VSBL): pbr->GetBool(m_d.m_visible); break;
+   case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
    case FID(TIPS): pbr->GetString(m_d.m_szTipShape, sizeof(m_d.m_szTipShape)); break;
-   case FID(RODD): pbr->GetFloat(&m_d.m_rodDiam); break;
-   case FID(RNGG): pbr->GetFloat(&m_d.m_ringGap); break;
-   case FID(RNGD): pbr->GetFloat(&m_d.m_ringDiam); break;
-   case FID(RNGW): pbr->GetFloat(&m_d.m_ringWidth); break;
-   case FID(SPRD): pbr->GetFloat(&m_d.m_springDiam); break;
-   case FID(SPRG): pbr->GetFloat(&m_d.m_springGauge); break;
-   case FID(SPRL): pbr->GetFloat(&m_d.m_springLoops); break;
-   case FID(SPRE): pbr->GetFloat(&m_d.m_springEndLoops); break;
+   case FID(RODD): pbr->GetFloat(m_d.m_rodDiam); break;
+   case FID(RNGG): pbr->GetFloat(m_d.m_ringGap); break;
+   case FID(RNGD): pbr->GetFloat(m_d.m_ringDiam); break;
+   case FID(RNGW): pbr->GetFloat(m_d.m_ringWidth); break;
+   case FID(SPRD): pbr->GetFloat(m_d.m_springDiam); break;
+   case FID(SPRG): pbr->GetFloat(m_d.m_springGauge); break;
+   case FID(SPRL): pbr->GetFloat(m_d.m_springLoops); break;
+   case FID(SPRE): pbr->GetFloat(m_d.m_springEndLoops); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
    return true;

@@ -165,8 +165,7 @@ HRESULT BiffWriter::WriteBytes(const void *pv, const unsigned long count, unsign
 HRESULT BiffWriter::WriteRecordSize(const int size)
 {
    ULONG writ = 0;
-   HRESULT hr = m_pistream->Write(&size, sizeof(size), &writ);
-
+   const HRESULT hr = m_pistream->Write(&size, sizeof(size), &writ);
    return hr;
 }
 
@@ -298,7 +297,7 @@ HRESULT BiffWriter::WriteFloat(const int id, const float value)
    return hr;
 }
 
-HRESULT BiffWriter::WriteStruct(const int id, const void *pvalue, const int size)
+HRESULT BiffWriter::WriteStruct(const int id, const void * const pvalue, const int size)
 {
    ULONG writ = 0;
    HRESULT hr;
@@ -314,14 +313,19 @@ HRESULT BiffWriter::WriteStruct(const int id, const void *pvalue, const int size
    return hr;
 }
 
-HRESULT BiffWriter::WriteVector3(const int id, const Vertex3Ds* vec)
+HRESULT BiffWriter::WriteVector2(const int id, const Vertex2D& vec)
 {
-   return WriteStruct(id, &vec->x, 3 * sizeof(float));
+   return WriteStruct(id, &vec.x, 2 * sizeof(float));
 }
 
-HRESULT BiffWriter::WriteVector3Padded(const int id, const Vertex3Ds* vec)
+HRESULT BiffWriter::WriteVector3(const int id, const Vertex3Ds& vec)
 {
-   const float data[4] = { vec->x,vec->y,vec->z,0.0f };
+   return WriteStruct(id, &vec.x, 3 * sizeof(float));
+}
+
+HRESULT BiffWriter::WriteVector3Padded(const int id, const Vertex3Ds& vec)
+{
+   const float data[4] = { vec.x,vec.y,vec.z,0.0f };
    return WriteStruct(id, data, 4 * sizeof(float));
 }
 
@@ -353,7 +357,7 @@ BiffReader::BiffReader(IStream *pistream, ILoadable *piloadable, void *ppassdata
 
 HRESULT BiffReader::ReadBytes(void *pv, const unsigned long count, unsigned long *foo)
 {
-   HRESULT hr = m_pistream->Read(pv, count, foo);
+   const HRESULT hr = m_pistream->Read(pv, count, foo);
 
    if (m_hcrypthash)
       CryptHashData(m_hcrypthash, (BYTE *)pv, count, 0);
@@ -361,23 +365,31 @@ HRESULT BiffReader::ReadBytes(void *pv, const unsigned long count, unsigned long
    return hr;
 }
 
-HRESULT BiffReader::GetIntNoHash(void *pvalue)
+HRESULT BiffReader::GetIntNoHash(int &value)
 {
    m_bytesinrecordremaining -= sizeof(int);
 
    ULONG read = 0;
-   return m_pistream->Read(pvalue, sizeof(int), &read);
+   return m_pistream->Read(&value, sizeof(int), &read);
 }
 
-HRESULT BiffReader::GetInt(void *pvalue)
+HRESULT BiffReader::GetInt(void * const value)
 {
    m_bytesinrecordremaining -= sizeof(int);
 
    ULONG read = 0;
-   return ReadBytes(pvalue, sizeof(int), &read);
+   return ReadBytes(value, sizeof(int), &read);
 }
 
-HRESULT BiffReader::GetString(char *szvalue, const DWORD szvalue_maxlength)
+HRESULT BiffReader::GetInt(int &value)
+{
+   m_bytesinrecordremaining -= sizeof(int);
+
+   ULONG read = 0;
+   return ReadBytes(&value, sizeof(int), &read);
+}
+
+HRESULT BiffReader::GetString(char *const szvalue, const DWORD szvalue_maxlength)
 {
    ULONG read = 0;
    HRESULT hr;
@@ -465,29 +477,21 @@ HRESULT BiffReader::GetWideString(std::basic_string<WCHAR>& wzvalue)
    return hr;
 }
 
-HRESULT BiffReader::GetFloat(float *pvalue)
+HRESULT BiffReader::GetFloat(float &value)
 {
    m_bytesinrecordremaining -= sizeof(float);
 
    ULONG read = 0;
-   return ReadBytes(pvalue, sizeof(float), &read);
+   return ReadBytes(&value, sizeof(float), &read);
 }
 
-HRESULT BiffReader::GetBool(BOOL *pfvalue)
+HRESULT BiffReader::GetBool(BOOL &value)
 {
    m_bytesinrecordremaining -= sizeof(BOOL);
 
    ULONG read = 0;
-   //return m_pistream->Read(pfvalue, sizeof(BOOL), &read);
-   return ReadBytes(pfvalue, sizeof(BOOL), &read);
-}
-
-HRESULT BiffReader::GetBool(bool *pvalue)
-{
-   BOOL val;
-   HRESULT hr = GetBool(&val);
-   *pvalue = !!val;
-   return hr;
+   //return m_pistream->Read(&value, sizeof(BOOL), &read);
+   return ReadBytes(&value, sizeof(BOOL), &read);
 }
 
 HRESULT BiffReader::GetStruct(void *pvalue, const int size)
@@ -498,21 +502,27 @@ HRESULT BiffReader::GetStruct(void *pvalue, const int size)
    return ReadBytes(pvalue, size, &read);
 }
 
-HRESULT BiffReader::GetVector3(Vertex3Ds* vec)
+HRESULT BiffReader::GetVector2(Vertex2D& vec)
 {
-   assert(sizeof(Vertex3Ds) == 3 * sizeof(float));     // fields need to be contiguous
-   return GetStruct(&vec->x, 3 * sizeof(float));
+   assert(sizeof(Vertex2D) == 2 * sizeof(float));     // fields need to be contiguous
+   return GetStruct(&vec.x, 2 * sizeof(float));
 }
 
-HRESULT BiffReader::GetVector3Padded(Vertex3Ds* vec)
+HRESULT BiffReader::GetVector3(Vertex3Ds& vec)
+{
+   assert(sizeof(Vertex3Ds) == 3 * sizeof(float));     // fields need to be contiguous
+   return GetStruct(&vec.x, 3 * sizeof(float));
+}
+
+HRESULT BiffReader::GetVector3Padded(Vertex3Ds& vec)
 {
    float data[4];
-   HRESULT hr = GetStruct(data, 4 * sizeof(float));
+   const HRESULT hr = GetStruct(data, 4 * sizeof(float));
    if (SUCCEEDED(hr))
    {
-      vec->x = data[0];
-      vec->y = data[1];
-      vec->z = data[2];
+      vec.x = data[0];
+      vec.y = data[1];
+      vec.z = data[2];
    }
    return hr;
 }
@@ -524,10 +534,10 @@ HRESULT BiffReader::Load()
    {
       if (m_version > 30)
       {
-         /*const HRESULT hr =*/ GetIntNoHash(&m_bytesinrecordremaining);
+         /*const HRESULT hr =*/ GetIntNoHash(m_bytesinrecordremaining);
       }
 
-      const HRESULT hr = GetInt(&tag);
+      const HRESULT hr = GetInt(tag);
 
       bool cont = false;
       if (hr == S_OK)
@@ -768,7 +778,7 @@ unsigned long __stdcall FastIStream::Release()
 
    if (m_cref == 0)
    {
-      delete this;
+      delete this; //!! legal, but meh
    }
 
    return S_OK;
@@ -780,9 +790,7 @@ long __stdcall FastIStream::Read(void *pv, const unsigned long count, unsigned l
    m_cSeek += count;
 
    if (foo != NULL)
-   {
       *foo = count;
-   }
 
    return S_OK;
 }
@@ -817,9 +825,7 @@ long __stdcall FastIStream::Seek(union _LARGE_INTEGER li, const unsigned long or
    }
 
    if (puiOut)
-   {
       puiOut->QuadPart = m_cSeek;
-   }
 
    return S_OK;
 }
