@@ -91,9 +91,9 @@ void Light::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
 
-   hr = LoadValueString("DefaultProps\\Light", "BlinkPattern", m_rgblinkpattern, NUM_RGB_BLINK_PATTERN);
+   hr = LoadValueString("DefaultProps\\Light", "BlinkPattern", m_rgblinkpattern);
    if ((hr != S_OK) || !fromMouseClick)
-      strncpy_s(m_rgblinkpattern, "10", sizeof(m_rgblinkpattern)-1);
+      m_rgblinkpattern = "10";
 
    m_blinkinterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Light", "BlinkInterval", 125) : 125;
    m_d.m_intensity = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Light", "Intensity", 1.0f) : 1.0f;
@@ -895,7 +895,7 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
    m_d.m_color = RGB(255, 255, 0);
    m_d.m_color2 = RGB(255, 255, 255);
 
-   strncpy_s(m_rgblinkpattern, "10", sizeof(m_rgblinkpattern)-1);
+   m_rgblinkpattern = "10";
    m_blinkinterval = 125;
    //m_d.m_borderwidth = 0;
    //m_d.m_bordercolor = RGB(0,0,0);
@@ -931,7 +931,7 @@ bool Light::LoadToken(const int id, BiffReader * const pbr)
    case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
    case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
    case FID(SHAP): m_roundLight = true; break;
-   case FID(BPAT): pbr->GetString(m_rgblinkpattern, sizeof(m_rgblinkpattern)); break;
+   case FID(BPAT): pbr->GetString(m_rgblinkpattern); break;
    case FID(BINT): pbr->GetInt(&m_blinkinterval); break;
    //case FID(BCOL): pbr->GetInt(&m_d.m_bordercolor); break;
    case FID(BWTH): pbr->GetFloat(&m_d.m_intensity); break;
@@ -1223,7 +1223,7 @@ void Light::InitShape()
 STDMETHODIMP Light::get_BlinkPattern(BSTR *pVal)
 {
    WCHAR wz[NUM_RGB_BLINK_PATTERN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_rgblinkpattern, -1, wz, NUM_RGB_BLINK_PATTERN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_rgblinkpattern.c_str(), -1, wz, NUM_RGB_BLINK_PATTERN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1231,13 +1231,12 @@ STDMETHODIMP Light::get_BlinkPattern(BSTR *pVal)
 
 STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
 {
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_rgblinkpattern, NUM_RGB_BLINK_PATTERN, NULL, NULL);
+   char sz[NUM_RGB_BLINK_PATTERN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, sz, NUM_RGB_BLINK_PATTERN, NULL, NULL);
+   m_rgblinkpattern = sz;
 
-   if (m_rgblinkpattern[0] == '\0')
-   {
-      m_rgblinkpattern[0] = '0';
-      m_rgblinkpattern[1] = '\0';
-   }
+   if (m_rgblinkpattern.empty())
+      m_rgblinkpattern = "0"; // "10" ?
 
    if (g_pplayer)
       RestartBlinker(g_pplayer->m_time_msec);

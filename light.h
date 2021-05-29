@@ -8,7 +8,7 @@
 #include "resource.h"       // main symbols
 #include "RenderDevice.h"
 
-#define NUM_RGB_BLINK_PATTERN 33
+#define NUM_RGB_BLINK_PATTERN 33 //!! remove
 
 class LightData : public BaseProperty
 {
@@ -137,7 +137,7 @@ public:
    LightState m_inPlayState;
    float m_surfaceHeight;
    bool  m_lockedByLS;
-   char m_rgblinkpattern[NUM_RGB_BLINK_PATTERN];
+   string m_rgblinkpattern;
    int m_blinkinterval;
 
 private:
@@ -271,7 +271,7 @@ private:
       if (m_timenextblink <= time_msec)
       {
          m_iblinkframe++;
-         if (m_rgblinkpattern[m_iblinkframe] == 0)
+         if (m_iblinkframe >= m_rgblinkpattern.length() || m_rgblinkpattern[m_iblinkframe] == '\0')
             m_iblinkframe = 0;
 
          m_timenextblink += m_blinkinterval;

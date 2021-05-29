@@ -105,6 +105,8 @@ FIXES:
 
 - fix slightly wrong flipper mesh (visible for very short flippers)
 
+- extend light blinking patterns from size 32 to 'unlimited'
+
 - fix some broken insert lights if playfield reflections are disabled
 
 - fix OBJ-exported names for all ramp types
