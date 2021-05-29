@@ -36,27 +36,18 @@ IScriptable::IScriptable()
    m_wzName[0] = 0;
 }
 
-CodeViewDispatch::CodeViewDispatch()
-{
-   m_wzName[0] = 0;
-}
-
-CodeViewDispatch::~CodeViewDispatch()
-{
-}
-
 int CodeViewDispatch::SortAgainst(const CodeViewDispatch * const pcvd) const
 {
-   return SortAgainstValue(pcvd->m_wzName);
+   return SortAgainstValue(pcvd->m_wName);
 }
 
-int CodeViewDispatch::SortAgainstValue(const WCHAR* const pv) const
+int CodeViewDispatch::SortAgainstValue(const std::wstring& pv) const
 {
    char szName1[MAXSTRING];
-   WideCharToMultiByteNull(CP_ACP, 0, pv, -1, szName1, MAXSTRING, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, pv.c_str(), -1, szName1, MAXSTRING, NULL, NULL);
    CharLowerBuff(szName1, lstrlen(szName1));
    char szName2[MAXSTRING];
-   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, szName2, MAXSTRING, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, m_wName.c_str(), -1, szName2, MAXSTRING, NULL, NULL);
    CharLowerBuff(szName2, lstrlen(szName2));
    return lstrcmp(szName1, szName2); //WideStrCmp((WCHAR *)pv, m_wzName);
 }
@@ -128,7 +119,7 @@ CodeViewer::~CodeViewer()
 // allocates new mem block
 static char* iso8859_1_to_utf8(const char* str, const size_t length)
 {
-   char* utf8 = new char[1 + 2*length]; // worst case
+   char* const utf8 = new char[1 + 2*length]; // worst case
 
    char* c = utf8;
    for (size_t i = 0; i < length; ++i, ++str)
@@ -243,7 +234,7 @@ HRESULT CodeViewer::AddTemporaryItem(const BSTR bstr, IDispatch * const pdisp)
 {
    CodeViewDispatch * const pcvd = new CodeViewDispatch();
 
-   WideStrNCopy(bstr, pcvd->m_wzName, MAXNAMEBUFFER);
+   pcvd->m_wName = bstr;
    pcvd->m_pdisp = pdisp;
    pcvd->m_pdisp->QueryInterface(IID_IUnknown, (void **)&pcvd->m_punk);
    pcvd->m_punk->Release();
@@ -274,7 +265,7 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
    CComBSTR bstr;
    piscript->get_Name(&bstr);
 
-   WideStrNCopy(bstr, pcvd->m_wzName, MAXNAMEBUFFER);
+   pcvd->m_wName = bstr;
    pcvd->m_pdisp = piscript->GetDispatch();
    pcvd->m_pdisp->QueryInterface(IID_IUnknown, (void **)&pcvd->m_punk);
    pcvd->m_punk->Release();
@@ -290,8 +281,8 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
    m_vcvd.AddSortedString(pcvd);
 
    // Add item to dropdown
-   char szT[sizeof(pcvd->m_wzName)/sizeof(pcvd->m_wzName[0]) * 2]; // Names can only be 32 characters (plus terminator)
-   WideCharToMultiByteNull(CP_ACP, 0, pcvd->m_wzName, -1, szT, sizeof(szT), NULL, NULL);
+   char szT[MAXNAMEBUFFER * 2]; // Names can only be 32 characters (plus terminator)
+   WideCharToMultiByteNull(CP_ACP, 0, pcvd->m_wName.c_str(), -1, szT, sizeof(szT), NULL, NULL);
    const size_t index = SendMessage(m_hwndItemList, CB_ADDSTRING, 0, (size_t)szT);
    SendMessage(m_hwndItemList, CB_SETITEMDATA, index, (size_t)piscript);
    //AndyS - WIP insert new item into autocomplete list??
@@ -340,7 +331,7 @@ void CodeViewer::SelectItem(IScriptable * const piscript)
    }
 }
 
-HRESULT CodeViewer::ReplaceName(IScriptable * const piscript, WCHAR * const wzNew)
+HRESULT CodeViewer::ReplaceName(IScriptable * const piscript, const WCHAR * const wzNew)
 {
    if (m_vcvd.GetSortedIndex(wzNew) != -1)
       return E_FAIL;
@@ -358,7 +349,7 @@ HRESULT CodeViewer::ReplaceName(IScriptable * const piscript, WCHAR * const wzNe
 
    m_vcvd.RemoveElementAt(idx);
 
-   lstrcpynW(pcvd->m_wzName, wzNew, MAXNAMEBUFFER);
+   pcvd->m_wName = wzNew;
 
    m_vcvd.AddSortedString(pcvd);
 
@@ -931,7 +922,7 @@ void CodeViewer::Compile(const bool message)
          int flags = SCRIPTITEM_ISSOURCE | SCRIPTITEM_ISVISIBLE;
          if (m_vcvd[i]->m_global)
             flags |= SCRIPTITEM_GLOBALMEMBERS;
-         m_pScript->AddNamedItem(m_vcvd[i]->m_wzName, flags);
+         m_pScript->AddNamedItem(m_vcvd[i]->m_wName.c_str(), flags);
       }
 
       if (m_pScriptParse->ParseScriptText(wzText, 0, 0, 0, CONTEXTCOOKIE_NORMAL, 0,
@@ -1184,7 +1175,7 @@ void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash)
       if (!save_external_script_to_table)
       {
          delete[] szText;
-         szText = (char*)g_pvp->m_pcv->original_table_script.data();
+         szText = g_pvp->m_pcv->original_table_script.data();
          cchar = g_pvp->m_pcv->original_table_script.size();
       }
    }
@@ -1396,9 +1387,9 @@ void CodeViewer::GetParamsFromEvent(const UINT iEvent, char * const szParams)
                /*const HRESULT hr =*/ ptiChild->GetNames(pfd->memid, rgstr, 6, &cnames);
 
                // Add enum string to combo control
-               char szT[512];
                for (unsigned int l = 1; l < cnames; ++l)
                {
+                  char szT[512];
                   WideCharToMultiByteNull(CP_ACP, 0, rgstr[l], -1, szT, 512, NULL, NULL);
                   if (l > 1)
                   {
@@ -1463,8 +1454,8 @@ void CodeViewer::FindCodeFromEvent()
    size_t codelen = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
    size_t stopChar = codelen;
    SendMessage(m_hwndScintilla, SCI_TARGETWHOLEDOCUMENT, 0, 0);
-	SendMessage(m_hwndScintilla, SCI_SETSEARCHFLAGS, SCFIND_WHOLEWORD, 0);
-	size_t posFind;
+   SendMessage(m_hwndScintilla, SCI_SETSEARCHFLAGS, SCFIND_WHOLEWORD, 0);
+   size_t posFind;
    while ((posFind = SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, lstrlen(szItemName), (LPARAM)szItemName)) != -1)
    {
       const size_t line = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, posFind, 0);
@@ -1531,9 +1522,7 @@ void CodeViewer::FindCodeFromEvent()
 
    if (!found)
    {
-      char szNewCode[MAX_LINE_LENGTH];
       char szEnd[2];
-
       TEXTRANGE tr;
       tr.chrg.cpMax = (LONG)codelen;
       tr.chrg.cpMin = (LONG)codelen - 1;
@@ -1563,6 +1552,7 @@ void CodeViewer::FindCodeFromEvent()
 
       GetParamsFromEvent((UINT)iEventIndex, szParams);
 
+      char szNewCode[MAX_LINE_LENGTH];
       lstrcpy(szNewCode, "Sub ");
       lstrcat(szNewCode, szItemName);
       lstrcat(szNewCode, "(");
@@ -1937,7 +1927,7 @@ void CodeViewer::MarginClick(const Sci_Position position, const int modifiers)
    }
 }
 
-void AddComment(const HWND m_hwndScintilla)
+static void AddComment(const HWND m_hwndScintilla)
 {
    const char * const comment = "'";
 
@@ -1973,7 +1963,7 @@ void AddComment(const HWND m_hwndScintilla)
    SendMessage(m_hwndScintilla, SCI_ENDUNDOACTION, 0, 0);
 }
 
-void RemoveComment(const HWND m_hwndScintilla)
+static void RemoveComment(const HWND m_hwndScintilla)
 {
    //const char * const comment = "\b";
    size_t startSel = SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
@@ -2429,7 +2419,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		if (i->eTyping < eDim)
 		{
 			const char *c_str1 = i->m_keyName.c_str();
-			SendMessage(m_hwndFunctionList, CB_ADDSTRING, 0, (LPARAM)(c_str1));
+			SendMessage(m_hwndFunctionList, CB_ADDSTRING, 0, (LPARAM)c_str1);
 		}
 	}
 	//Collect Objects/Components from the menu. (cheat!)
@@ -3128,7 +3118,6 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
    }
    return FALSE; // be selfish - consume all
    //return DefWindowProc(hwndDlg, uMsg, wParam, lParam);
-
 }
 
 void CodeViewer::UpdateScinFromPrefs()
@@ -3267,14 +3256,6 @@ STDMETHODIMP Collection::get__NewEnum(IUnknown** ppunk)
    }
 
    return hr;
-}
-
-OMCollectionEnum::OMCollectionEnum()
-{
-}
-
-OMCollectionEnum::~OMCollectionEnum()
-{
 }
 
 STDMETHODIMP OMCollectionEnum::Init(Collection *pcol)

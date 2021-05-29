@@ -72,10 +72,10 @@ public:
 class CodeViewDispatch
 {
 public:
-   CodeViewDispatch();
-   ~CodeViewDispatch();
+   CodeViewDispatch() {}
+   ~CodeViewDispatch() {}
 
-   WCHAR m_wzName[MAXNAMEBUFFER];
+   std::wstring m_wName;
    IUnknown *m_punk;
    IDispatch *m_pdisp;
    IScriptable *m_piscript;
@@ -83,7 +83,7 @@ public:
 
    // for VectorSortString
    int SortAgainst(const CodeViewDispatch * const pcvd/*void *pvoid*/) const;
-   int SortAgainstValue(const WCHAR* const pv) const;
+   int SortAgainstValue(const std::wstring &pv) const;
 };
 
 
@@ -118,7 +118,7 @@ public:
 
    HRESULT AddItem(IScriptable * const piscript, const bool global);
    void RemoveItem(IScriptable * const piscript);
-   HRESULT ReplaceName(IScriptable * const piscript, WCHAR * const wzNew);
+   HRESULT ReplaceName(IScriptable * const piscript, const WCHAR * const wzNew);
    void SelectItem(IScriptable * const piscript);
 
    void Compile(const bool message);
@@ -429,8 +429,8 @@ public:
       COM_INTERFACE_ENTRY(IEnumVARIANT)
    END_COM_MAP()
 
-   OMCollectionEnum();
-   ~OMCollectionEnum();
+   OMCollectionEnum() {}
+   ~OMCollectionEnum() {}
 
    STDMETHOD(Init)(Collection *pcol);
 
