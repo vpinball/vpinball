@@ -20,16 +20,16 @@ End Sub
 ' Cabinet switches
 Const swSelfTest    = 9
 'Const swTilt        = -1 'ASK GASTON!
-Const swCoin3       = 13
+Const swCoin1       = 13
 Const swCoin2       = 13
 Const swStartButton = 14
 Const swEnter       = 10
 Const swDown        = 11
 
-Const swURFlip      = 4
-Const swULFlip      = 3
-Const swLRFlip      = 82
-Const swLLFlip      = 84
+Const swURFlip      = 3
+Const swULFlip      = 4
+Const swLRFlip      = 84
+Const swLLFlip      = 82
 
 ' Help Window
 vpmSystemHelp = "LTD System 4 keys:" & vbNewLine &_
@@ -68,13 +68,21 @@ Function vpmKeyDown(ByVal keycode)
 	With Controller
 		Select Case keycode
 			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False
+				If keycode = RightMagnaSave then 
+					.Switch(swURFlip) = True 
+					vpmKeyDown = False
+				End If
 			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False
-			Case RightMagnasaveKey .Switch(swURFlip) = True : vpmKeyDown = False
-			Case LeftMagnasaveKey  .Switch(swULFlip) = True : vpmKeyDown = False
-			Case keyStagedFlipperL .Switch(swLLFlip) = True : vpmKeyDown = False
+				If keycode = LeftMagnaSave Then
+					.Switch(swULFlip) = True
+					vpmKeyDown = False
+				End If
+			Case RightMagnaSave .Switch(swURFlip) = True : vpmKeyDown = False
+			Case LeftMagnaSave  .Switch(swULFlip) = True : vpmKeyDown = False
+			Case keyStagedFlipperL .Switch(swULFlip) = True : vpmKeyDown = False
 			Case keyStagedFlipperR .Switch(swURFlip) = True : vpmKeyDown = False
+			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
-			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
 			Case StartGameKey    .Switch(swStartButton) = True
 			Case keySelfTest     .Switch(swSelfTest)    = True
 			Case keyEnter        .Switch(swEnter)       = True
@@ -95,9 +103,17 @@ Function vpmKeyUp(ByVal keycode)
 	With Controller
 		Select Case keycode
 			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False
+				If keycode = RightMagnaSave then 
+					.Switch(swURFlip) = False 
+					vpmKeyUp = False
+				End If
 			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False
-			Case RightMagnasaveKey .Switch(swURFlip) = False : vpmKeyUp = False
-			Case LeftMagnasaveKey  .Switch(swULFlip) = False : vpmKeyUp = False
+				If keycode = LeftMagnaSave Then
+					.Switch(swULFlip) = False
+					vpmKeyUp = False
+				End If
+			Case RightMagnaSave .Switch(swURFlip) = False : vpmKeyUp = False
+			Case LeftMagnaSave  .Switch(swULFlip) = False : vpmKeyUp = False
 			Case keyStagedFlipperL .Switch(swULFlip) = False : vpmKeyUp = False
 			Case keyStagedFlipperR .Switch(swURFlip) = False : vpmKeyUp = False
 			Case StartGameKey    .Switch(swStartButton) = False
