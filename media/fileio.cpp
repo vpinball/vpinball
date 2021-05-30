@@ -121,7 +121,7 @@ bool ReplaceExtensionFromFilename(string& szfilename, const string& newextension
        return false;
 }
 
-bool RawReadFromFile(const char * const szfilename, int *psize, char **pszout)
+bool RawReadFromFile(const char * const szfilename, int *const psize, char **pszout)
 {
    const HANDLE hFile = CreateFile(szfilename,
       GENERIC_READ, FILE_SHARE_READ,

@@ -4,7 +4,7 @@
 bool Exists(const string& filePath);
 void TitleFromFilename(const string& szfilename, string& sztitle);
 void ExtensionFromFilename(const string& szfilename, string& szextension);
-bool RawReadFromFile(const char * const szfilename, int *psize, char **pszout);
+bool RawReadFromFile(const char * const szfilename, int *const psize, char **pszout);
 void PathFromFilename(const string& szfilename, string& szpath);
 void TitleAndPathFromFilename(const char * const szfilename, char *szpath);
 bool ReplaceExtensionFromFilename(string& szfilename, const string& newextension);
