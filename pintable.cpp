@@ -3581,7 +3581,7 @@ void PinTable::SetLoadDefaults()
    m_globalEmissionScale = 1.0f;
    m_envEmissionScale = 10.0f;
    m_AOScale = 1.75f;
-   m_SSRScale = 1.0f;
+   m_SSRScale = 0.5f;
 
    m_angletiltMax = 6.0f;
    m_angletiltMin = 4.5f;
