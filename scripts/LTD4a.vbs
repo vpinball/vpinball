@@ -19,7 +19,7 @@ End Sub
 '-------------------------
 ' Cabinet switches
 Const swSelfTest    = 9
-'Const swTilt        = -1 'ASK GASTON!
+Const swTilt        = -6
 Const swCoin1       = 13
 Const swCoin2       = 13
 Const swStartButton = 14
