@@ -436,7 +436,7 @@ public:
    IEditable *GetElementByName(const char * const name);
    void OnDelete();
 
-   void DoLeftButtonDown(int x, int y, bool zoomIn = true);
+   void DoLeftButtonDown(int x, int y, bool zoomIn);
    void OnLeftButtonUp(int x, int y);
    void OnRightButtonDown(int x, int y);
    void FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISelect *psel);

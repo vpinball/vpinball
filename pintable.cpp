@@ -2114,8 +2114,12 @@ HRESULT PinTable::Save(const bool saveAs)
       ofn.hwndOwner = m_vpinball->GetHwnd();
       // TEXT
       ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0";
+
       char fileName[MAXSTRING];
-      fileName[0] = '\0';
+      strncpy_s(fileName, m_szFileName.c_str(), sizeof(fileName)-1);
+      char* const ptr = StrStrI(fileName, ".vpt");
+      if (ptr != NULL)
+          strcpy_s(ptr, 5, ".vpx");
       ofn.lpstrFile = fileName;
       ofn.nMaxFile = sizeof(fileName);
       ofn.lpstrDefExt = "vpx";
@@ -2123,17 +2127,18 @@ HRESULT PinTable::Save(const bool saveAs)
 
       {
       string szInitialDir;
-      string szFoo;
-      const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir);
-      if (hr == S_OK)
-      {
-         ofn.lpstrInitialDir = szInitialDir.c_str();
-      }
+      // First, use dir of current table
+      const size_t index = m_szFileName.find_last_of('\\');
+      if (index != std::string::npos)
+          szInitialDir = m_szFileName.substr(0, index);
+      // Or try with the standard last-used dir
       else
       {
-         szFoo = m_vpinball->m_szMyPath + "Tables\\";
-         ofn.lpstrInitialDir = szFoo.c_str();
+         const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir);
+         if (hr != S_OK)
+            szInitialDir = m_vpinball->m_szMyPath + "Tables\\";
       }
+      ofn.lpstrInitialDir = szInitialDir.c_str();
 
       const int ret = GetSaveFileName(&ofn);
       // user cancelled
@@ -4326,7 +4331,7 @@ void PinTable::DoLeftButtonDown(int x, int y, bool zoomIn)
 
    // set the focus of the window so all keyboard and mouse inputs are processed.
    // (this fixes the problem of selecting a element on the properties dialog, clicking on a table
-   // object and not being able to use the cursor keys/wheely mouse
+   // object and not being able to use the cursor keys/wheely mouse)
    m_vpinball->SetFocus();
 
    if ((m_vpinball->m_ToolCur == ID_TABLE_MAGNIFY) || (ksctrl & 0x80000000))
@@ -9948,7 +9953,7 @@ void PinTable::OnLeftButtonDown(const short x, const short y)
 {
     if ((m_vpinball->m_ToolCur == IDC_SELECT) || (m_vpinball->m_ToolCur == ID_TABLE_MAGNIFY))
     {
-        DoLeftButtonDown(x, y);
+        DoLeftButtonDown(x, y, true);
     }
     else
     {

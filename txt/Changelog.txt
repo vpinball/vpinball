@@ -129,6 +129,8 @@ FIXES:
 
 - delete duplicate images and sounds (same filename/path in the Sound/Image Manager) and remove dead image/material/surface links from items (i.e. if that thingie's name does not exist anymore)
 
+- when using save-as for table saving, go to the same folder and prefill dialog using the same name as the current table
+
 - tweak flipper shadows (via script) implementation in the example/blank table
 
 - update BASS library to latest 2.4.15
