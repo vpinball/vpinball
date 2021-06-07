@@ -8,7 +8,7 @@
 
 // If standard library is disabled, user must provide implementations of required functions and typedefs
 #if !defined(RAPIDXML_NO_STDLIB)
-    #include <cstdlib>      // For std::size_t
+    #include <cstddef>      // For std::size_t
     #include <cassert>      // For assert
     #include <new>          // For placement new
 #endif
@@ -89,7 +89,7 @@ namespace rapidxml
 
         //! Gets pointer to character data where error happened.
         //! Ch should be the same as char type of xml_document that produced the error.
-        //! \return Pointer to location within the parsed string where error occured.
+        //! \return Pointer to location within the parsed string where error occurred.
         template<class Ch>
         Ch *where() const
         {
@@ -164,7 +164,7 @@ namespace rapidxml
 
     //! Parse flag instructing the parser to not use text of first data node as a value of parent element.
     //! Can be combined with other flags by use of | operator.
-    //! Note that child data nodes of element node take precendence over its value when printing. 
+    //! Note that child data nodes of element node take precedence over its value when printing.
     //! That is, if element has one or more child data nodes <em>and</em> a value, the value will be ignored.
     //! Use rapidxml::parse_no_data_nodes flag to prevent creation of data nodes if you want to manipulate data using values of elements.
     //! <br><br>
@@ -335,6 +335,19 @@ namespace rapidxml
             }
             return true;
         }
+
+        template<class Ch>
+        inline size_t get_index(const Ch c)
+        {
+            // If not ASCII char, its semantic is same as plain 'z'.
+            // char could be signed, so first stretch and make unsigned.
+            unsigned n = c;
+            if (n > 127)
+            {
+                return 'z';
+            }
+            return c;
+        }
     }
     //! \endcond
 
@@ -347,7 +360,7 @@ namespace rapidxml
     //! you are encouraged to use memory_pool of relevant xml_document to allocate the memory. 
     //! Not only is this faster than allocating them by using <code>new</code> operator, 
     //! but also their lifetime will be tied to the lifetime of document, 
-    //! possibly simplyfing memory management. 
+    //! possibly simplifying memory management.
     //! <br><br>
     //! Call allocate_node() or allocate_attribute() functions to obtain new nodes or attributes from the pool. 
     //! You can also call allocate_string() function to allocate strings.
@@ -403,7 +416,7 @@ namespace rapidxml
         }
 
         //! Allocates a new node from the pool, and optionally assigns name and value to it. 
-        //! If the allocation request cannot be accomodated, this function will throw <code>std::bad_alloc</code>.
+        //! If the allocation request cannot be accommodated, this function will throw <code>std::bad_alloc</code>.
         //! If exceptions are disabled by defining RAPIDXML_NO_EXCEPTIONS, this function
         //! will call rapidxml::parse_error_handler() function.
         //! \param type Type of node to create.
@@ -436,7 +449,7 @@ namespace rapidxml
         }
 
         //! Allocates a new attribute from the pool, and optionally assigns name and value to it.
-        //! If the allocation request cannot be accomodated, this function will throw <code>std::bad_alloc</code>.
+        //! If the allocation request cannot be accommodated, this function will throw <code>std::bad_alloc</code>.
         //! If exceptions are disabled by defining RAPIDXML_NO_EXCEPTIONS, this function
         //! will call rapidxml::parse_error_handler() function.
         //! \param name Name to assign to the attribute, or 0 to assign no name.
@@ -467,7 +480,7 @@ namespace rapidxml
         }
 
         //! Allocates a char array of given size from the pool, and optionally copies a given string to it.
-        //! If the allocation request cannot be accomodated, this function will throw <code>std::bad_alloc</code>.
+        //! If the allocation request cannot be accommodated, this function will throw <code>std::bad_alloc</code>.
         //! If exceptions are disabled by defining RAPIDXML_NO_EXCEPTIONS, this function
         //! will call rapidxml::parse_error_handler() function.
         //! \param source String to initialize the allocated memory with, or 0 to not initialize it.
@@ -710,7 +723,7 @@ namespace rapidxml
         //! <br><br>
         //! Note that node does not own its name or value, it only stores a pointer to it. 
         //! It will not delete or otherwise free the pointer on destruction.
-        //! It is reponsibility of the user to properly manage lifetime of the string.
+        //! It is responsibility of the user to properly manage lifetime of the string.
         //! The easiest way to achieve it is to use memory_pool of the document to allocate the string -
         //! on destruction of the document the string will be automatically freed.
         //! <br><br>
@@ -737,7 +750,7 @@ namespace rapidxml
         //! <br><br>
         //! Note that node does not own its name or value, it only stores a pointer to it. 
         //! It will not delete or otherwise free the pointer on destruction.
-        //! It is reponsibility of the user to properly manage lifetime of the string.
+        //! It is responsibility of the user to properly manage lifetime of the string.
         //! The easiest way to achieve it is to use memory_pool of the document to allocate the string -
         //! on destruction of the document the string will be automatically freed.
         //! <br><br>
@@ -1327,7 +1340,7 @@ namespace rapidxml
     
         // Note that some of the pointers below have UNDEFINED values if certain other pointers are 0.
         // This is required for maximum performance, as it allows the parser to omit initialization of 
-        // unneded/redundant values.
+        // unneeded/redundant values.
         //
         // The rules are as follows:
         // 1. first_node and first_attribute contain valid pointers, or 0 if node has no children/attributes respectively
@@ -1390,7 +1403,7 @@ namespace rapidxml
             parse_bom<Flags>(text);
             
             // Parse children
-            while (1)
+            while (true)
             {
                 // Skip whitespace before node
                 skip<whitespace_pred, Flags>(text);
@@ -1429,7 +1442,7 @@ namespace rapidxml
         {
             static unsigned char test(Ch ch)
             {
-                return internal::lookup_tables<0>::lookup_whitespace[static_cast<unsigned char>(ch)];
+                return internal::lookup_tables<0>::lookup_whitespace[internal::get_index(ch)];
             }
         };
 
@@ -1438,7 +1451,7 @@ namespace rapidxml
         {
             static unsigned char test(Ch ch)
             {
-                return internal::lookup_tables<0>::lookup_node_name[static_cast<unsigned char>(ch)];
+                return internal::lookup_tables<0>::lookup_node_name[internal::get_index(ch)];
             }
         };
 
@@ -1447,7 +1460,7 @@ namespace rapidxml
         {
             static unsigned char test(Ch ch)
             {
-                return internal::lookup_tables<0>::lookup_attribute_name[static_cast<unsigned char>(ch)];
+                return internal::lookup_tables<0>::lookup_attribute_name[internal::get_index(ch)];
             }
         };
 
@@ -1456,7 +1469,7 @@ namespace rapidxml
         {
             static unsigned char test(Ch ch)
             {
-                return internal::lookup_tables<0>::lookup_text[static_cast<unsigned char>(ch)];
+                return internal::lookup_tables<0>::lookup_text[internal::get_index(ch)];
             }
         };
 
@@ -1465,7 +1478,7 @@ namespace rapidxml
         {
             static unsigned char test(Ch ch)
             {
-                return internal::lookup_tables<0>::lookup_text_pure_no_ws[static_cast<unsigned char>(ch)];
+                return internal::lookup_tables<0>::lookup_text_pure_no_ws[internal::get_index(ch)];
             }
         };
 
@@ -1474,7 +1487,7 @@ namespace rapidxml
         {
             static unsigned char test(Ch ch)
             {
-                return internal::lookup_tables<0>::lookup_text_pure_with_ws[static_cast<unsigned char>(ch)];
+                return internal::lookup_tables<0>::lookup_text_pure_with_ws[internal::get_index(ch)];
             }
         };
 
@@ -1485,9 +1498,9 @@ namespace rapidxml
             static unsigned char test(Ch ch)
             {
                 if (Quote == Ch('\''))
-                    return internal::lookup_tables<0>::lookup_attribute_data_1[static_cast<unsigned char>(ch)];
+                    return internal::lookup_tables<0>::lookup_attribute_data_1[internal::get_index(ch)];
                 if (Quote == Ch('\"'))
-                    return internal::lookup_tables<0>::lookup_attribute_data_2[static_cast<unsigned char>(ch)];
+                    return internal::lookup_tables<0>::lookup_attribute_data_2[internal::get_index(ch)];
                 return 0;       // Should never be executed, to avoid warnings on Comeau
             }
         };
@@ -1499,9 +1512,9 @@ namespace rapidxml
             static unsigned char test(Ch ch)
             {
                 if (Quote == Ch('\''))
-                    return internal::lookup_tables<0>::lookup_attribute_data_1_pure[static_cast<unsigned char>(ch)];
+                    return internal::lookup_tables<0>::lookup_attribute_data_1_pure[internal::get_index(ch)];
                 if (Quote == Ch('\"'))
-                    return internal::lookup_tables<0>::lookup_attribute_data_2_pure[static_cast<unsigned char>(ch)];
+                    return internal::lookup_tables<0>::lookup_attribute_data_2_pure[internal::get_index(ch)];
                 return 0;       // Should never be executed, to avoid warnings on Comeau
             }
         };
@@ -1522,28 +1535,28 @@ namespace rapidxml
                 // Insert UTF8 sequence
                 if (code < 0x80)    // 1 byte sequence
                 {
-	                text[0] = static_cast<unsigned char>(code);
+                    text[0] = static_cast<unsigned char>(code);
                     text += 1;
                 }
                 else if (code < 0x800)  // 2 byte sequence
                 {
-	                text[1] = static_cast<unsigned char>((code | 0x80) & 0xBF); code >>= 6;
-	                text[0] = static_cast<unsigned char>(code | 0xC0);
+                    text[1] = static_cast<unsigned char>((code | 0x80) & 0xBF); code >>= 6;
+                    text[0] = static_cast<unsigned char>(code | 0xC0);
                     text += 2;
                 }
-	            else if (code < 0x10000)    // 3 byte sequence
+                else if (code < 0x10000)    // 3 byte sequence
                 {
-	                text[2] = static_cast<unsigned char>((code | 0x80) & 0xBF); code >>= 6;
-	                text[1] = static_cast<unsigned char>((code | 0x80) & 0xBF); code >>= 6;
-	                text[0] = static_cast<unsigned char>(code | 0xE0);
+                    text[2] = static_cast<unsigned char>((code | 0x80) & 0xBF); code >>= 6;
+                    text[1] = static_cast<unsigned char>((code | 0x80) & 0xBF); code >>= 6;
+                    text[0] = static_cast<unsigned char>(code | 0xE0);
                     text += 3;
                 }
-	            else if (code < 0x110000)   // 4 byte sequence
+                else if (code < 0x110000)   // 4 byte sequence
                 {
-	                text[3] = static_cast<unsigned char>((code | 0x80) & 0xBF); code >>= 6;
-	                text[2] = static_cast<unsigned char>((code | 0x80) & 0xBF); code >>= 6;
-	                text[1] = static_cast<unsigned char>((code | 0x80) & 0xBF); code >>= 6;
-	                text[0] = static_cast<unsigned char>(code | 0xF0);
+                    text[3] = static_cast<unsigned char>((code | 0x80) & 0xBF); code >>= 6;
+                    text[2] = static_cast<unsigned char>((code | 0x80) & 0xBF); code >>= 6;
+                    text[1] = static_cast<unsigned char>((code | 0x80) & 0xBF); code >>= 6;
+                    text[0] = static_cast<unsigned char>(code | 0xF0);
                     text += 4;
                 }
                 else    // Invalid, only codes up to 0x10FFFF are allowed in Unicode
@@ -1652,7 +1665,7 @@ namespace rapidxml
                             {
                                 unsigned long code = 0;
                                 src += 3;   // Skip &#x
-                                while (1)
+                                while (true)
                                 {
                                     unsigned char digit = internal::lookup_tables<0>::lookup_digits[static_cast<unsigned char>(*src)];
                                     if (digit == 0xFF)
@@ -1666,7 +1679,7 @@ namespace rapidxml
                             {
                                 unsigned long code = 0;
                                 src += 2;   // Skip &#
-                                while (1)
+                                while (true)
                                 {
                                     unsigned char digit = internal::lookup_tables<0>::lookup_digits[static_cast<unsigned char>(*src)];
                                     if (digit == 0xFF)
@@ -1720,16 +1733,26 @@ namespace rapidxml
         ///////////////////////////////////////////////////////////////////////
         // Internal parsing functions
         
-        // Parse BOM, if any
+        // Parse UTF-8 BOM, if any
         template<int Flags>
-        void parse_bom(Ch *&text)
+        void parse_bom(char *&text)
         {
-            // UTF-8?
             if (static_cast<unsigned char>(text[0]) == 0xEF && 
                 static_cast<unsigned char>(text[1]) == 0xBB && 
                 static_cast<unsigned char>(text[2]) == 0xBF)
             {
-                text += 3;      // Skup utf-8 bom
+                text += 3;
+            }
+        }
+        
+        // Parse UTF-16/32 BOM, if any
+        template<int Flags>
+        void parse_bom(wchar_t *&text)
+        {
+            const wchar_t bom = 0xFEFF;
+            if (text[0] == bom)
+            {
+                ++text;
             }
         }
 
@@ -1836,6 +1859,7 @@ namespace rapidxml
                             case Ch('['): ++depth; break;
                             case Ch(']'): --depth; break;
                             case 0: RAPIDXML_PARSE_ERROR("unexpected end of data", text);
+                            default: break;
                         }
                         ++text;
                     }
@@ -1907,8 +1931,8 @@ namespace rapidxml
                 }
 
                 // Set pi value (verbatim, no entity expansion or whitespace normalization)
-                pi->value(value, text - value);     
-                
+                pi->value(value, text - value);
+
                 // Place zero terminator after name and value
                 if (!(Flags & parse_no_string_terminators))
                 {
@@ -2145,6 +2169,9 @@ namespace rapidxml
                         text += 9;      // skip '!DOCTYPE '
                         return parse_doctype<Flags>(text);
                     }
+                    break;
+
+                default: break;
 
                 }   // switch
 
@@ -2167,11 +2194,12 @@ namespace rapidxml
         void parse_node_contents(Ch *&text, xml_node<Ch> *node)
         {
             // For all children and text
-            while (1)
+            while (true)
             {
                 // Skip whitespace between > and node contents
                 Ch *contents_start = text;      // Store start of node contents before whitespace is skipped
-                skip<whitespace_pred, Flags>(text);
+                if (Flags & parse_trim_whitespace)
+                    skip<whitespace_pred, Flags>(text);
                 Ch next_char = *text;
 
             // After data nodes, instead of continuing the loop, control jumps here.
@@ -2396,7 +2424,7 @@ namespace rapidxml
              1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1   // F
         };
 
-        // Text (i.e. PCDATA) that does not require processing when ws normalizationis is enabled
+        // Text (i.e. PCDATA) that does not require processing when ws normalizations is enabled
         // (anything but < \0 & space \n \r \t)
         template<int Dummy>
         const unsigned char lookup_tables<Dummy>::lookup_text_pure_with_ws[256] = 
