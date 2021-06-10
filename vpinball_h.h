@@ -234,8 +234,11 @@ public:
    bool m_povEdit; // table should be run in camera mode to change the POV (and then export that on exit), nothing else
    bool m_primaryDisplay; // force use of pixel(0,0) monitor
    bool m_table_played_via_command_line;
+   bool m_table_played_via_SelectTableOnStart;
    int m_logicalNumberOfProcessors;
    WCHAR *m_customParameters[MAX_CUSTOM_PARAM_INDEX];
+
+   HBITMAP m_hbmInPlayMode;
 
 protected:
    virtual void PreCreate(CREATESTRUCT& cs);

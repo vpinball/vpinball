@@ -63,7 +63,7 @@ typedef struct _tagSORTDATA
 
 SORTDATA SortData;
 
-static bool firstRun = true;
+static volatile bool firstRun = true;
 
 ///<summary>
 ///VPinball Constructor
@@ -96,6 +96,7 @@ VPinball::VPinball()
    m_primaryDisplay = false;
    m_disEnableTrueFullscreen = -1;
    m_table_played_via_command_line = false;
+   m_table_played_via_SelectTableOnStart = false;
    m_logicalNumberOfProcessors = -1;
    for (unsigned int i = 0; i < MAX_CUSTOM_PARAM_INDEX; ++i)
       m_customParameters[i] = nullptr;
@@ -111,6 +112,8 @@ VPinball::VPinball()
    m_workerthread = NULL;	//Workerthread - only for hanging scripts and autosave - will be created later
 
    m_ToolCur = IDC_SELECT;
+
+   m_hbmInPlayMode = nullptr;
 
    GetMyPath();				//Store path of vpinball.exe in m_szMyPath and m_wzMyPath
 
@@ -502,7 +505,6 @@ CMenu VPinball::GetMainMenu(int id)
    const int count = m_mainMenu.GetMenuItemCount();
    return m_mainMenu.GetSubMenu(id + ((count > NUM_MENUS) ? 1 : 0)); // MDI has added its stuff (table icon for first menu item)
 }
-
 
 bool VPinball::ParseCommand(const size_t code, const bool notify)
 {
@@ -957,7 +959,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
           ppt->m_pcv->LoadFromFile(szFileNameAuto);
       else // Otherwise we seek in the Scripts folder
       {
-          szFileNameAuto = g_pvp->m_szMyPath + "Scripts\\" + ppt->m_szTitle + ".vbs";
+          szFileNameAuto = m_szMyPath + "Scripts\\" + ppt->m_szTitle + ".vbs";
           if (Exists(szFileNameAuto))
               ppt->m_pcv->LoadFromFile(szFileNameAuto);
       }
@@ -1307,7 +1309,22 @@ void VPinball::MainMsgLoop()
          if (g_pplayer && !g_pplayer->m_pause)
             g_pplayer->Render(); // always render on idle
          else
+         {
+            // if player has been closed in the meantime, check if we should display the file open dialog again to select/play the next table
+            if (m_table_played_via_SelectTableOnStart)
+            {
+               // first close the current table
+               CComObject<PinTable>* const pt = GetActiveTable();
+               if (pt)
+                  CloseTable(pt);
+               // then select the new one, and if one was selected, play it
+               m_table_played_via_SelectTableOnStart = LoadFile(false);
+               if (m_table_played_via_SelectTableOnStart)
+                  DoPlay(false);
+            }
+
             WaitMessage(); // otherwise wait for input
+         }
       }
    }
 }
@@ -1535,6 +1552,13 @@ void VPinball::OnInitialUpdate()
 //    InitTools();
 //    SetForegroundWindow();
     SetEnableMenuItems();
+
+    // Load 'in playing mode' image for UI
+
+    m_hbmInPlayMode = (HBITMAP)LoadImage(theInstance, MAKEINTRESOURCE(IDB_INPLAYMODE), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+
+    // all done, let's go
+
     firstRun = false;
 }
 

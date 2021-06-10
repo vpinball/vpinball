@@ -499,7 +499,10 @@ public:
                m_vpinball.m_table_played_via_command_line = play;
            }
            else
+           {
                loadFileResult = m_vpinball.LoadFile(!play);
+               m_vpinball.m_table_played_via_SelectTableOnStart = loadFileResult;
+           }
 
            if (extractScript && loadFileResult)
            {

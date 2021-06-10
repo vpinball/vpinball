@@ -1197,6 +1197,7 @@
 #define IDC_BALLPLAYFIELD_REFLECTION2   1713
 #define IDC_BULBINTENSITYSCALE          1713
 #define IDC_BG_COMBOBOX                 1714
+#define IDB_INPLAYMODE                  1715
 #define ID_SHOWTOOLTIP                  4001
 #define ID_SHOWAUTOCOMPLETE             4001
 #define ID_SCRIPT_PREFERENCES           4002

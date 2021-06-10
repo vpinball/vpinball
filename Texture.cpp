@@ -450,7 +450,8 @@ void Texture::FreeStuff()
    m_pdsBuffer = NULL;
    if (m_hbmGDIVersion)
    {
-      DeleteObject(m_hbmGDIVersion);
+      if(m_hbmGDIVersion != g_pvp->m_hbmInPlayMode)
+          DeleteObject(m_hbmGDIVersion);
       m_hbmGDIVersion = NULL;
    }
    if (m_ppb)
@@ -462,9 +463,14 @@ void Texture::FreeStuff()
 
 void Texture::CreateGDIVersion()
 {
-   if (m_hbmGDIVersion
-    || g_pvp->m_table_played_via_command_line) // only do anything in here (and waste memory/time on it) if UI needed (i.e. if not just -Play via command line is triggered!)
+   if (m_hbmGDIVersion)
       return;
+
+   if (g_pvp->m_table_played_via_command_line || g_pvp->m_table_played_via_SelectTableOnStart) // only do anything in here (and waste memory/time on it) if UI needed (i.e. if not just -Play via command line is triggered or selected on VPX start with the file popup!)
+   {
+      m_hbmGDIVersion = g_pvp->m_hbmInPlayMode;
+      return;
+   }
 
    HDC hdcScreen = GetDC(NULL);
    m_hbmGDIVersion = CreateCompatibleBitmap(hdcScreen, m_width, m_height);

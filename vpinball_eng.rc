@@ -3029,6 +3029,7 @@ IDB_LAYER_ICONS16       BITMAP                  "res\\layerIcons16.bmp"
 
 IDB_LAYER_ICONS32       BITMAP                  "res\\layerIcons32.bmp"
 
+IDB_INPLAYMODE          BITMAP                  "res\\PlayWarning.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //

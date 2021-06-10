@@ -310,7 +310,6 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
 
 Player::~Player()
 {
-
     if (m_fontSprite)
     {
         m_fontSprite->Release();
@@ -5626,6 +5625,7 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case MM_MIXM_CONTROL_CHANGE:
         mixer_get_volume();
+
         break;
 
     case WM_CLOSE:
@@ -5644,11 +5644,13 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         Shutdown();
         m_ptable->SendMessage(WM_COMMAND, ID_TABLE_PLAYER_STOPPED, 0);
+
         return 0;
     }
     case WM_KEYDOWN:
         m_drawCursor = false;
         SetCursor(NULL);
+
         break;
 
     case WM_MOUSEMOVE:
