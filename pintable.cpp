@@ -1407,10 +1407,13 @@ void PinTable::InitTablePostLoad()
    m_pcv->AddItem(m_psgt, true);
    m_pcv->AddItem(m_pcv->m_pdm, false);
 
-   //
-   // cleanup old bugs, i.e. currently buggy/non-existing material, image & surface names
-   //
+   RemoveInvalidReferences();
+}
 
+// cleanup old bugs, i.e. currently buggy/non-existing material, image & surface names
+// (also does the same for the <None> entries of droplists)
+void PinTable::RemoveInvalidReferences()
+{
    // set up the texture & material hashtables for faster access
    m_textureMap.clear();
    for (size_t i = 0; i < m_vimage.size(); i++)
@@ -2200,6 +2203,8 @@ HRESULT PinTable::Save(const bool saveAs)
       m_vpinball->SetActionCur(ls.m_szbuffer);
       m_vpinball->SetCursorCur(NULL, IDC_WAIT);
    }
+
+   RemoveInvalidReferences();
 
    const HRESULT hr = SaveToStorage(pstgRoot);
 

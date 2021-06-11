@@ -328,6 +328,7 @@ public:
 
    void InitBuiltinTable(const bool useBlankTable);
    void InitTablePostLoad();
+   void RemoveInvalidReferences();
 
    virtual HRESULT GetTypeName(BSTR *pVal);
 
