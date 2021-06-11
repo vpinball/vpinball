@@ -87,17 +87,17 @@ STDMETHODIMP ScriptGlobalTable::NudgeGetCalibration(VARIANT *XMax, VARIANT *YMax
 {
 	int tmp;
 
-	if (SUCCEEDED(LoadValue("Player", "PBWAccelGainX", tmp)))
+	if (SUCCEEDED(::LoadValue("Player", "PBWAccelGainX", tmp)))
 		CComVariant(tmp).Detach(XGain);
-	if (SUCCEEDED(LoadValue("Player", "PBWAccelGainY", tmp)))
+	if (SUCCEEDED(::LoadValue("Player", "PBWAccelGainY", tmp)))
 		CComVariant(tmp).Detach(YGain);
-	if (SUCCEEDED(LoadValue("Player", "PBWAccelMaxX", tmp)))
+	if (SUCCEEDED(::LoadValue("Player", "PBWAccelMaxX", tmp)))
 		CComVariant(tmp).Detach(XMax);
-	if (SUCCEEDED(LoadValue("Player", "PBWAccelMaxY", tmp)))
+	if (SUCCEEDED(::LoadValue("Player", "PBWAccelMaxY", tmp)))
 		CComVariant(tmp).Detach(YMax);
-	if (SUCCEEDED(LoadValue("player", "DeadZone", tmp)))
+	if (SUCCEEDED(::LoadValue("player", "DeadZone", tmp)))
 		CComVariant(tmp).Detach(DeadZone);
-	if (SUCCEEDED(LoadValue("Player", "TiltSensitivity", tmp)))
+	if (SUCCEEDED(::LoadValue("Player", "TiltSensitivity", tmp)))
 		CComVariant(tmp).Detach(TiltSensitivty);
 
 	return S_OK;
