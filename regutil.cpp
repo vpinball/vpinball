@@ -30,7 +30,7 @@ HRESULT LoadValueString(const std::string& szKey, const std::string& szValue, vo
    return (type != REG_SZ) ? E_FAIL : hr;
 }
 
-HRESULT LoadValueFloat(const std::string &szKey, const std::string &szValue, float *pfloat)
+HRESULT LoadValueFloat(const std::string &szKey, const std::string &szValue, float &pfloat)
 {
    DWORD type = REG_NONE;
    char szbuffer[16];
@@ -51,23 +51,28 @@ HRESULT LoadValueFloat(const std::string &szKey, const std::string &szValue, flo
    {
       if (len < 2)
          return E_FAIL;
-      *pfloat = (float)atof(&szbuffer[1]);
-      *pfloat = -*pfloat;
+      pfloat = (float)atof(&szbuffer[1]);
+      pfloat = -pfloat;
    }
    else
-      *pfloat = (float)atof(&szbuffer[0]);
+      pfloat = (float)atof(&szbuffer[0]);
 
    return hr;
 }
 
-HRESULT LoadValueInt(const std::string &szKey, const std::string &szValue, int *pint)
+HRESULT LoadValueInt(const std::string &szKey, const std::string &szValue, int &pint)
 {
    DWORD type = REG_NONE;
-   const HRESULT hr = LoadValue(szKey, szValue, &type, (void *)pint, 4);
+   const HRESULT hr = LoadValue(szKey, szValue, &type, (void *)&pint, 4);
 
-   if (type != REG_DWORD)
-      return E_FAIL;
+   return (type != REG_DWORD) ? E_FAIL : hr;
+}
 
+HRESULT LoadValueInt(const std::string &szKey, const std::string &szValue, unsigned int &pint)
+{
+   int val;
+   const HRESULT hr = LoadValueInt(szKey, szValue, val);
+   pint = val;
    return hr;
 }
 
@@ -101,14 +106,14 @@ HRESULT LoadValue(const std::string &szKey, const std::string &szValue, DWORD *p
 int LoadValueIntWithDefault(const std::string &szKey, const std::string &szValue, const int def)
 {
    int val;
-   const HRESULT hr = LoadValueInt(szKey, szValue, &val);
+   const HRESULT hr = LoadValueInt(szKey, szValue, val);
    return SUCCEEDED(hr) ? val : def;
 }
 
 float LoadValueFloatWithDefault(const char *szKey, const char *szValue, const float def)
 {
    float val;
-   const HRESULT hr = LoadValueFloat(szKey, szValue, &val);
+   const HRESULT hr = LoadValueFloat(szKey, szValue, val);
    return SUCCEEDED(hr) ? val : def;
 }
 

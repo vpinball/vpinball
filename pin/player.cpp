@@ -795,7 +795,7 @@ void Player::InitKeys()
    for(unsigned int i = 0; i < eCKeys; ++i)
    {
       int key;
-      const HRESULT hr = LoadValueInt("Player", regkey_string[i], &key);
+      const HRESULT hr = LoadValueInt("Player", regkey_string[i], key);
       if (hr != S_OK || key > 0xdd)
           key = regkey_defdik[i];
       m_rgKeys[i] = (EnumAssignKeys)key;

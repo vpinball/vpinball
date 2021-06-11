@@ -339,37 +339,37 @@ BOOL KeysConfigDialog::OnInitDialog()
         int item,selected;
         switch (i)
         {
-            case 0: hr = LoadValueInt("Player", "JoyLFlipKey", &selected); item = IDC_JOYLFLIPCOMBO; break;
-            case 1: hr = LoadValueInt("Player", "JoyRFlipKey", &selected); item = IDC_JOYRFLIPCOMBO; break;
-            case 2: hr = LoadValueInt("Player", "JoyPlungerKey", &selected); item = IDC_JOYPLUNGERCOMBO; break;
-            case 3: hr = LoadValueInt("Player", "JoyAddCreditKey", &selected); item = IDC_JOYADDCREDITCOMBO; break;
-            case 4: hr = LoadValueInt("Player", "JoyAddCredit2Key", &selected); item = IDC_JOYADDCREDIT2COMBO; break;
-            case 5: hr = LoadValueInt("Player", "JoyLMagnaSave", &selected); item = IDC_JOYLMAGNACOMBO; break;
-            case 6: hr = LoadValueInt("Player", "JoyRMagnaSave", &selected); item = IDC_JOYRMAGNACOMBO; break;
-            case 7: hr = LoadValueInt("Player", "JoyStartGameKey", &selected); item = IDC_JOYSTARTCOMBO; break;
-            case 8: hr = LoadValueInt("Player", "JoyExitGameKey", &selected); item = IDC_JOYEXITCOMBO; break;
-            case 9: hr = LoadValueInt("Player", "JoyFrameCount", &selected); item = IDC_JOYFPSCOMBO; break;
-            case 10:hr = LoadValueInt("Player", "JoyVolumeUp", &selected); item = IDC_JOYVOLUPCOMBO; break;
-            case 11:hr = LoadValueInt("Player", "JoyVolumeDown", &selected); item = IDC_JOYVOLDNCOMBO; break;
-            case 12:hr = LoadValueInt("Player", "JoyLTiltKey", &selected); item = IDC_JOYLTILTCOMBO; break;
-            case 13:hr = LoadValueInt("Player", "JoyCTiltKey", &selected); item = IDC_JOYCTILTCOMBO; break;
-            case 14:hr = LoadValueInt("Player", "JoyRTiltKey", &selected); item = IDC_JOYRTILTCOMBO; break;
-            case 15:hr = LoadValueInt("Player", "JoyMechTiltKey", &selected); item = IDC_JOYMECHTILTCOMBO; break;
-            case 16:hr = LoadValueInt("Player", "JoyDebugKey", &selected); item = IDC_JOYDEBUGCOMBO; break;
-            case 17:hr = LoadValueInt("Player", "JoyDebuggerKey", &selected); item = IDC_JOYDEBUGGERCOMBO; break;
-            case 18:hr = LoadValueInt("Player", "JoyCustom1", &selected); item = IDC_JOYCUSTOM1COMBO; break;
-            case 19:hr = LoadValueInt("Player", "JoyCustom2", &selected); item = IDC_JOYCUSTOM2COMBO; break;
-            case 20:hr = LoadValueInt("Player", "JoyCustom3", &selected); item = IDC_JOYCUSTOM3COMBO; break;
-            case 21:hr = LoadValueInt("Player", "JoyCustom4", &selected); item = IDC_JOYCUSTOM4COMBO; break;
-            case 22:hr = LoadValueInt("Player", "JoyPMBuyIn", &selected); item = IDC_JOYPMBUYIN; break;
-            case 23:hr = LoadValueInt("Player", "JoyPMCoin3", &selected); item = IDC_JOYPMCOIN3; break;
-            case 24:hr = LoadValueInt("Player", "JoyPMCoin4", &selected); item = IDC_JOYPMCOIN4; break;
-            case 25:hr = LoadValueInt("Player", "JoyPMCoinDoor", &selected); item = IDC_JOYPMCOINDOOR; break;
-            case 26:hr = LoadValueInt("Player", "JoyPMCancel", &selected); item = IDC_JOYPMCANCEL; break;
-            case 27:hr = LoadValueInt("Player", "JoyPMDown", &selected); item = IDC_JOYPMDOWN; break;
-            case 28:hr = LoadValueInt("Player", "JoyPMUp", &selected); item = IDC_JOYPMUP; break;
-            case 29:hr = LoadValueInt("Player", "JoyPMEnter", &selected); item = IDC_JOYPMENTER; break;
-            case 30:hr = LoadValueInt("Player", "JoyLockbarKey", &selected); item = IDC_JOYLOCKBARCOMBO; break;
+            case 0: hr = LoadValueInt("Player", "JoyLFlipKey", selected); item = IDC_JOYLFLIPCOMBO; break;
+            case 1: hr = LoadValueInt("Player", "JoyRFlipKey", selected); item = IDC_JOYRFLIPCOMBO; break;
+            case 2: hr = LoadValueInt("Player", "JoyPlungerKey", selected); item = IDC_JOYPLUNGERCOMBO; break;
+            case 3: hr = LoadValueInt("Player", "JoyAddCreditKey", selected); item = IDC_JOYADDCREDITCOMBO; break;
+            case 4: hr = LoadValueInt("Player", "JoyAddCredit2Key", selected); item = IDC_JOYADDCREDIT2COMBO; break;
+            case 5: hr = LoadValueInt("Player", "JoyLMagnaSave", selected); item = IDC_JOYLMAGNACOMBO; break;
+            case 6: hr = LoadValueInt("Player", "JoyRMagnaSave", selected); item = IDC_JOYRMAGNACOMBO; break;
+            case 7: hr = LoadValueInt("Player", "JoyStartGameKey", selected); item = IDC_JOYSTARTCOMBO; break;
+            case 8: hr = LoadValueInt("Player", "JoyExitGameKey", selected); item = IDC_JOYEXITCOMBO; break;
+            case 9: hr = LoadValueInt("Player", "JoyFrameCount", selected); item = IDC_JOYFPSCOMBO; break;
+            case 10:hr = LoadValueInt("Player", "JoyVolumeUp", selected); item = IDC_JOYVOLUPCOMBO; break;
+            case 11:hr = LoadValueInt("Player", "JoyVolumeDown", selected); item = IDC_JOYVOLDNCOMBO; break;
+            case 12:hr = LoadValueInt("Player", "JoyLTiltKey", selected); item = IDC_JOYLTILTCOMBO; break;
+            case 13:hr = LoadValueInt("Player", "JoyCTiltKey", selected); item = IDC_JOYCTILTCOMBO; break;
+            case 14:hr = LoadValueInt("Player", "JoyRTiltKey", selected); item = IDC_JOYRTILTCOMBO; break;
+            case 15:hr = LoadValueInt("Player", "JoyMechTiltKey", selected); item = IDC_JOYMECHTILTCOMBO; break;
+            case 16:hr = LoadValueInt("Player", "JoyDebugKey", selected); item = IDC_JOYDEBUGCOMBO; break;
+            case 17:hr = LoadValueInt("Player", "JoyDebuggerKey", selected); item = IDC_JOYDEBUGGERCOMBO; break;
+            case 18:hr = LoadValueInt("Player", "JoyCustom1", selected); item = IDC_JOYCUSTOM1COMBO; break;
+            case 19:hr = LoadValueInt("Player", "JoyCustom2", selected); item = IDC_JOYCUSTOM2COMBO; break;
+            case 20:hr = LoadValueInt("Player", "JoyCustom3", selected); item = IDC_JOYCUSTOM3COMBO; break;
+            case 21:hr = LoadValueInt("Player", "JoyCustom4", selected); item = IDC_JOYCUSTOM4COMBO; break;
+            case 22:hr = LoadValueInt("Player", "JoyPMBuyIn", selected); item = IDC_JOYPMBUYIN; break;
+            case 23:hr = LoadValueInt("Player", "JoyPMCoin3", selected); item = IDC_JOYPMCOIN3; break;
+            case 24:hr = LoadValueInt("Player", "JoyPMCoin4", selected); item = IDC_JOYPMCOIN4; break;
+            case 25:hr = LoadValueInt("Player", "JoyPMCoinDoor", selected); item = IDC_JOYPMCOINDOOR; break;
+            case 26:hr = LoadValueInt("Player", "JoyPMCancel", selected); item = IDC_JOYPMCANCEL; break;
+            case 27:hr = LoadValueInt("Player", "JoyPMDown", selected); item = IDC_JOYPMDOWN; break;
+            case 28:hr = LoadValueInt("Player", "JoyPMUp", selected); item = IDC_JOYPMUP; break;
+            case 29:hr = LoadValueInt("Player", "JoyPMEnter", selected); item = IDC_JOYPMENTER; break;
+            case 30:hr = LoadValueInt("Player", "JoyLockbarKey", selected); item = IDC_JOYLOCKBARCOMBO; break;
         }
 
         if (hr != S_OK)
@@ -521,7 +521,7 @@ BOOL KeysConfigDialog::OnInitDialog()
 
     for (unsigned int i = 0; i < eCKeys; ++i) if (regkey_idc[i] != -1)
     {
-        const HRESULT hr = LoadValueInt("Player", regkey_string[i], &key);
+        const HRESULT hr = LoadValueInt("Player", regkey_string[i], key);
         if (hr != S_OK || key > 0xdd)
             key = regkey_defdik[i];
         const HWND hwndControl = GetDlgItem(regkey_idc[i]);
@@ -529,28 +529,28 @@ BOOL KeysConfigDialog::OnInitDialog()
         ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
     }
 
-    HRESULT hr = LoadValueInt("Player", "JoyCustom1Key", &key);
+    HRESULT hr = LoadValueInt("Player", "JoyCustom1Key", key);
     if (hr != S_OK || key > 0xdd)
         key = DIK_UP;
     HWND hwndControl = GetDlgItem(IDC_JOYCUSTOM1);
     ::SetWindowText(hwndControl, rgszKeyName[key]);
     ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
-    hr = LoadValueInt("Player", "JoyCustom2Key", &key);
+    hr = LoadValueInt("Player", "JoyCustom2Key", key);
     if (hr != S_OK || key > 0xdd)
         key = DIK_DOWN;
     hwndControl = GetDlgItem(IDC_JOYCUSTOM2);
     ::SetWindowText(hwndControl, rgszKeyName[key]);
     ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
-    hr = LoadValueInt("Player", "JoyCustom3Key", &key);
+    hr = LoadValueInt("Player", "JoyCustom3Key", key);
     if (hr != S_OK || key > 0xdd)
         key = DIK_LEFT;
     hwndControl = GetDlgItem(IDC_JOYCUSTOM3);
     ::SetWindowText(hwndControl, rgszKeyName[key]);
     ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
-    hr = LoadValueInt("Player", "JoyCustom4Key", &key);
+    hr = LoadValueInt("Player", "JoyCustom4Key", key);
     if (hr != S_OK || key > 0xdd)
         key = DIK_RIGHT;
     hwndControl = GetDlgItem(IDC_JOYCUSTOM4);
@@ -674,7 +674,7 @@ INT_PTR KeysConfigDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (key < 0xDD)	// Key mapping
                 {
                     int key_esc;
-                    const HRESULT hr = LoadValueInt("Player", "EscapeKey", &key_esc);
+                    const HRESULT hr = LoadValueInt("Player", "EscapeKey", key_esc);
                     if (hr != S_OK || key_esc > 0xdd)
                         key_esc = DIK_ESCAPE;
 

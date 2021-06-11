@@ -552,9 +552,9 @@ void Flipper::SetDefaultPhysics(bool fromMouseClick)
    m_d.m_return = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ReturnStrength", 0.058f) : 0.058f;
 
    float fTmp;
-   HRESULT hr = LoadValueFloat(regKey, "Mass", &fTmp);
+   HRESULT hr = LoadValueFloat(regKey, "Mass", fTmp);
    if (hr != S_OK)
-      hr = LoadValueFloat(regKey, "Speed", &fTmp); // previously Mass was called Speed, deprecated!
+      hr = LoadValueFloat(regKey, "Speed", fTmp); // previously Mass was called Speed, deprecated!
    m_d.m_mass = (hr == S_OK) && fromMouseClick ? fTmp : 1.0f;
 
    m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Elasticity", 0.8f) : 0.8f;

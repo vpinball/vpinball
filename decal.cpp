@@ -76,7 +76,7 @@ void Decal::SetDefaults(bool fromMouseClick)
       fd.cbSizeofstruct = sizeof(FONTDESC);
 
       float fTmp;
-      hr = LoadValueFloat("DefaultProps\\Decal", "FontSize", &fTmp);
+      hr = LoadValueFloat("DefaultProps\\Decal", "FontSize", fTmp);
       fd.cySize.int64 = (hr == S_OK) && fromMouseClick ? (LONGLONG)(fTmp * 10000.0) : 142500;
 
       char tmp[MAXSTRING];

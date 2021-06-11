@@ -386,7 +386,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    const int refreshrate = LoadValueIntWithDefault("Player", "RefreshRate", 0);
    
    int display;
-   hr = LoadValueInt("Player", "Display", &display);
+   hr = LoadValueInt("Player", "Display", display);
    std::vector<DisplayConfig> displays;
    getDisplayList(displays);
    if ((hr != S_OK) || ((int)displays.size() <= display))

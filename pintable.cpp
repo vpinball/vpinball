@@ -87,17 +87,17 @@ STDMETHODIMP ScriptGlobalTable::NudgeGetCalibration(VARIANT *XMax, VARIANT *YMax
 {
 	int tmp;
 
-	if (SUCCEEDED(LoadValueInt("Player", "PBWAccelGainX", &tmp)))
+	if (SUCCEEDED(LoadValueInt("Player", "PBWAccelGainX", tmp)))
 		CComVariant(tmp).Detach(XGain);
-	if (SUCCEEDED(LoadValueInt("Player", "PBWAccelGainY", &tmp)))
+	if (SUCCEEDED(LoadValueInt("Player", "PBWAccelGainY", tmp)))
 		CComVariant(tmp).Detach(YGain);
-	if (SUCCEEDED(LoadValueInt("Player", "PBWAccelMaxX", &tmp)))
+	if (SUCCEEDED(LoadValueInt("Player", "PBWAccelMaxX", tmp)))
 		CComVariant(tmp).Detach(XMax);
-	if (SUCCEEDED(LoadValueInt("Player", "PBWAccelMaxY", &tmp)))
+	if (SUCCEEDED(LoadValueInt("Player", "PBWAccelMaxY", tmp)))
 		CComVariant(tmp).Detach(YMax);
-	if (SUCCEEDED(LoadValueInt("player", "DeadZone", &tmp)))
+	if (SUCCEEDED(LoadValueInt("player", "DeadZone", tmp)))
 		CComVariant(tmp).Detach(DeadZone);
-	if (SUCCEEDED(LoadValueInt("Player", "TiltSensitivity", &tmp)))
+	if (SUCCEEDED(LoadValueInt("Player", "TiltSensitivity", tmp)))
 		CComVariant(tmp).Detach(TiltSensitivty);
 
 	return S_OK;
@@ -657,7 +657,7 @@ STDMETHODIMP ScriptGlobalTable::get_ShowFSS(VARIANT_BOOL *pVal)
    if (m_BG_enable_FSS)
       m_BG_current_set = FULL_SINGLE_SCREEN;
    else
-      LoadValueInt("Player", "BGSet", (int*)&m_BG_current_set);
+      LoadValueInt("Player", "BGSet", m_BG_current_set);
    STOPUNDO
 
    return S_OK;
@@ -3714,7 +3714,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    {
       pbr->GetInt(m_PhysicsMaxLoops);
       if (m_PhysicsMaxLoops == 0xFFFFFFFF)
-         /*const HRESULT hr =*/ LoadValueInt("Player", "PhysicsMaxLoops", (int*)&m_PhysicsMaxLoops);
+         /*const HRESULT hr =*/ LoadValueInt("Player", "PhysicsMaxLoops", m_PhysicsMaxLoops);
       break;
    }
    case FID(DECL): pbr->GetBool(m_renderDecals); break;
@@ -3797,7 +3797,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    {
       pbr->GetFloat(m_globalDifficulty);
       int tmp;
-      const HRESULT hr = LoadValueInt("Player", "GlobalDifficulty", &tmp);
+      const HRESULT hr = LoadValueInt("Player", "GlobalDifficulty", tmp);
       if (hr == S_OK) m_globalDifficulty = dequantizeUnsignedPercent(tmp);
       break;
    }
@@ -8431,7 +8431,7 @@ void PinTable::SetShowFSS(const bool enable)
    if (m_BG_enable_FSS)
       m_BG_current_set = FULL_SINGLE_SCREEN;
    else
-      LoadValueInt("Player", "BGSet", (int*)&m_BG_current_set);
+      LoadValueInt("Player", "BGSet", m_BG_current_set);
 }
 
 STDMETHODIMP PinTable::get_ShowFSS(VARIANT_BOOL *pVal)
@@ -9607,7 +9607,7 @@ float PinTable::GetGlobalDifficulty() const
 void PinTable::SetGlobalDifficulty(const float value)
 {
     int tmp;
-    const HRESULT hr = LoadValueInt("Player", "GlobalDifficulty", &tmp);
+    const HRESULT hr = LoadValueInt("Player", "GlobalDifficulty", tmp);
     if (hr == S_OK)
         m_globalDifficulty = dequantizeUnsignedPercent(tmp);
     else

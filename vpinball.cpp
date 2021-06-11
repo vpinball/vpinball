@@ -1511,12 +1511,12 @@ void VPinball::OnInitialUpdate()
     int left, top, right, bottom;
     BOOL maximized;
 
-    const HRESULT hrleft = LoadValueInt("Editor", "WindowLeft", &left);
-    const HRESULT hrtop = LoadValueInt("Editor", "WindowTop", &top);
-    const HRESULT hrright = LoadValueInt("Editor", "WindowRight", &right);
-    const HRESULT hrbottom = LoadValueInt("Editor", "WindowBottom", &bottom);
+    const HRESULT hrleft = LoadValueInt("Editor", "WindowLeft", left);
+    const HRESULT hrtop = LoadValueInt("Editor", "WindowTop", top);
+    const HRESULT hrright = LoadValueInt("Editor", "WindowRight", right);
+    const HRESULT hrbottom = LoadValueInt("Editor", "WindowBottom", bottom);
 
-    const HRESULT hrmax = LoadValueInt("Editor", "WindowMaximized", &maximized);
+    const HRESULT hrmax = LoadValueInt("Editor", "WindowMaximized", maximized);
 
     if (hrleft == S_OK && hrtop == S_OK && hrright == S_OK && hrbottom == S_OK)
     {
