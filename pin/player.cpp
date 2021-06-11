@@ -200,7 +200,7 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    if (m_overwriteBallImages)
    {
        string imageName;
-       HRESULT hr = LoadValueString("Player", "BallImage", imageName);
+       HRESULT hr = LoadValue("Player", "BallImage", imageName);
        if (hr == S_OK)
        {
            BaseTexture * const tex = BaseTexture::CreateFromFile(imageName);
@@ -208,7 +208,7 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
            if (tex != NULL)
                m_ballImage = new Texture(tex);
        }
-       hr = LoadValueString("Player", "DecalImage", imageName);
+       hr = LoadValue("Player", "DecalImage", imageName);
        if (hr == S_OK)
        {
            BaseTexture * const tex = BaseTexture::CreateFromFile(imageName);
@@ -795,7 +795,7 @@ void Player::InitKeys()
    for(unsigned int i = 0; i < eCKeys; ++i)
    {
       int key;
-      const HRESULT hr = LoadValueInt("Player", regkey_string[i], key);
+      const HRESULT hr = LoadValue("Player", regkey_string[i], key);
       if (hr != S_OK || key > 0xdd)
           key = regkey_defdik[i];
       m_rgKeys[i] = (EnumAssignKeys)key;

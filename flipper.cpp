@@ -128,7 +128,7 @@ void Flipper::SetDefaults(bool fromMouseClick)
    m_d.m_color = fromMouseClick ? LoadValueIntWithDefault(regKey, "Color", RGB(255,255,255)) : RGB(255,255,255);
    m_d.m_rubbercolor = fromMouseClick ? LoadValueIntWithDefault(regKey, "RubberColor", RGB(128,50,50)) : RGB(128,50,50);
 
-   const HRESULT hr = LoadValueString(regKey, "Surface", m_d.m_szSurface);
+   const HRESULT hr = LoadValue(regKey, "Surface", m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface.clear();
 
@@ -165,7 +165,7 @@ void Flipper::WriteRegDefaults()
    SaveValueInt(regKey, "TimerInterval", m_d.m_tdr.m_TimerInterval);
    SaveValueInt(regKey, "Color", m_d.m_color);
    SaveValueInt(regKey, "RubberColor", m_d.m_rubbercolor);
-   SaveValueString(regKey, "Surface", m_d.m_szSurface);
+   SaveValue(regKey, "Surface", m_d.m_szSurface);
    SaveValueFloat(regKey, "Height", m_d.m_height);
    SaveValueFloat(regKey, "RubberThickness", m_d.m_rubberthickness);
    SaveValueFloat(regKey, "RubberHeight", m_d.m_rubberheight);
@@ -552,9 +552,9 @@ void Flipper::SetDefaultPhysics(bool fromMouseClick)
    m_d.m_return = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ReturnStrength", 0.058f) : 0.058f;
 
    float fTmp;
-   HRESULT hr = LoadValueFloat(regKey, "Mass", fTmp);
+   HRESULT hr = LoadValue(regKey, "Mass", fTmp);
    if (hr != S_OK)
-      hr = LoadValueFloat(regKey, "Speed", fTmp); // previously Mass was called Speed, deprecated!
+      hr = LoadValue(regKey, "Speed", fTmp); // previously Mass was called Speed, deprecated!
    m_d.m_mass = (hr == S_OK) && fromMouseClick ? fTmp : 1.0f;
 
    m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Elasticity", 0.8f) : 0.8f;

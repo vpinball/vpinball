@@ -191,7 +191,7 @@ void Trigger::SetDefaults(bool fromMouseClick)
    m_d.m_hit_height = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Trigger", "HitHeight", 50.f) : 50.f;
    m_d.m_shape = fromMouseClick ? (TriggerShape)LoadValueIntWithDefault("DefaultProps\\Trigger", "Shape", TriggerWireA) : TriggerWireA;
 
-   HRESULT hr = LoadValueString("DefaultProps\\Trigger", "Surface", m_d.m_szSurface);
+   HRESULT hr = LoadValue("DefaultProps\\Trigger", "Surface", m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface.clear();
 
@@ -1086,7 +1086,7 @@ void Trigger::WriteRegDefaults()
    SaveValueFloat("DefaultProps\\Trigger", "ScaleX", m_d.m_scaleX);
    SaveValueFloat("DefaultProps\\Trigger", "ScaleY", m_d.m_scaleY);
    SaveValueInt("DefaultProps\\Trigger", "Shape", m_d.m_shape);
-   SaveValueString("DefaultProps\\Trigger", "Surface", m_d.m_szSurface);
+   SaveValue("DefaultProps\\Trigger", "Surface", m_d.m_szSurface);
    SaveValueFloat("DefaultProps\\Trigger", "AnimSpeed", m_d.m_animSpeed);
    SaveValueBool("DefaultProps\\Trigger", "ReflectionEnabled", m_d.m_reflectionEnabled);
 }

@@ -354,11 +354,11 @@ void Primitive::SetDefaults(bool fromMouseClick)
    m_d.m_aRotAndTra[7] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra7", 0.0f) : 0.0f;
    m_d.m_aRotAndTra[8] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra8", 0.0f) : 0.0f;
 
-   HRESULT hr = LoadValueString(strKeyName, "Image", m_d.m_szImage);
+   HRESULT hr = LoadValue(strKeyName, "Image", m_d.m_szImage);
    if ((hr != S_OK) && fromMouseClick)
       m_d.m_szImage.clear();
 
-   hr = LoadValueString(strKeyName, "NormalMap", m_d.m_szNormalMap);
+   hr = LoadValue(strKeyName, "NormalMap", m_d.m_szNormalMap);
    if ((hr != S_OK) && fromMouseClick)
        m_d.m_szNormalMap.clear();
 
@@ -404,8 +404,8 @@ void Primitive::WriteRegDefaults()
    SaveValueFloat(strKeyName, "RotAndTra7", m_d.m_aRotAndTra[7]);
    SaveValueFloat(strKeyName, "RotAndTra8", m_d.m_aRotAndTra[8]);
 
-   SaveValueString(strKeyName, "Image", m_d.m_szImage);
-   SaveValueString(strKeyName, "NormalMap", m_d.m_szNormalMap);
+   SaveValue(strKeyName, "Image", m_d.m_szImage);
+   SaveValue(strKeyName, "NormalMap", m_d.m_szNormalMap);
    SaveValueBool(strKeyName, "HitEvent", m_d.m_hitEvent);
    SaveValueFloat(strKeyName, "HitThreshold", m_d.m_threshold);
    SaveValueFloat(strKeyName, "Elasticity", m_d.m_elasticity);
@@ -1912,7 +1912,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             std::vector<std::string> szFileName;
             string szInitialDir;
 
-            HRESULT hr = LoadValueString("RecentDir", "ImportDir", szInitialDir);
+            HRESULT hr = LoadValue("RecentDir", "ImportDir", szInitialDir);
             if (hr != S_OK)
                szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -1924,7 +1924,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                if (index != std::string::npos)
                {
                   const std::string newInitDir(szFileName[0].substr(0, index));
-                  hr = SaveValueString("RecentDir", "ImportDir", newInitDir);
+                  hr = SaveValue("RecentDir", "ImportDir", newInitDir);
                   index++;
                   prim->m_d.m_meshFileName = szFileName[0].substr(index, szFileName[0].length() - index);
                }
@@ -1967,7 +1967,7 @@ bool Primitive::BrowseFor3DMeshFile()
    ofn.lpstrDefExt = "obj";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-   const HRESULT hr = LoadValueString("RecentDir", "ImportDir", szInitialDir);
+   const HRESULT hr = LoadValue("RecentDir", "ImportDir", szInitialDir);
    if (hr != S_OK)
        szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -1982,7 +1982,7 @@ bool Primitive::BrowseFor3DMeshFile()
    if (index != std::string::npos)
    {
       const std::string newInitDir(szFilename.substr(0, index));
-      SaveValueString("RecentDir", "ImportDir", newInitDir);
+      SaveValue("RecentDir", "ImportDir", newInitDir);
       index++;
       m_d.m_meshFileName = filename.substr(index, filename.length() - index);
    }
@@ -2108,7 +2108,7 @@ bool Primitive::LoadMeshDialog()
 void Primitive::ExportMeshDialog()
 {
    string szInitialDir;
-   HRESULT hr = LoadValueString("RecentDir", "ImportDir", szInitialDir);
+   HRESULT hr = LoadValue("RecentDir", "ImportDir", szInitialDir);
    if (hr != S_OK)
        szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -2120,7 +2120,7 @@ void Primitive::ExportMeshDialog()
       if (index != std::string::npos)
       {
          const std::string newInitDir(szFileName[0].substr(0, index));
-         hr = SaveValueString("RecentDir", "ImportDir", newInitDir);
+         hr = SaveValue("RecentDir", "ImportDir", newInitDir);
       }
 
       char name[sizeof(m_wzName) / sizeof(m_wzName[0])];

@@ -297,11 +297,11 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(GetDlgItem(IDC_OVERWRITE_BALL_IMAGE_CHECK).GetHwnd(), BM_SETCHECK, overwiteBallImage ? BST_CHECKED : BST_UNCHECKED, 0);
 
    string imageName;
-   HRESULT hr = LoadValueString("Player", "BallImage", imageName);
+   HRESULT hr = LoadValue("Player", "BallImage", imageName);
    if (hr != S_OK)
       imageName.clear();
    SetDlgItemText(IDC_BALL_IMAGE_EDIT, imageName.c_str());
-   hr = LoadValueString("Player", "DecalImage", imageName);
+   hr = LoadValue("Player", "DecalImage", imageName);
    if (hr != S_OK)
       imageName.clear();
    SetDlgItemText(IDC_BALL_DECAL_EDIT, imageName.c_str());
@@ -386,7 +386,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    const int refreshrate = LoadValueIntWithDefault("Player", "RefreshRate", 0);
    
    int display;
-   hr = LoadValueInt("Player", "Display", display);
+   hr = LoadValue("Player", "Display", display);
    std::vector<DisplayConfig> displays;
    getDisplayList(displays);
    if ((hr != S_OK) || ((int)displays.size() <= display))
@@ -790,19 +790,19 @@ void VideoOptionsDialog::OnOK()
 
    CString tmpStr;
    tmpStr = GetDlgItemTextA(IDC_CORRECTION_X);
-   SaveValueString("Player", "BallCorrectionX", tmpStr);
+   SaveValue("Player", "BallCorrectionX", tmpStr);
 
    tmpStr = GetDlgItemTextA(IDC_CORRECTION_Y);
-   SaveValueString("Player", "BallCorrectionY", tmpStr);
+   SaveValue("Player", "BallCorrectionY", tmpStr);
 
    tmpStr = GetDlgItemTextA(IDC_DN_LONGITUDE);
-   SaveValueString("Player", "Longitude", tmpStr);
+   SaveValue("Player", "Longitude", tmpStr);
 
    tmpStr = GetDlgItemTextA(IDC_DN_LATITUDE);
-   SaveValueString("Player", "Latitude", tmpStr);
+   SaveValue("Player", "Latitude", tmpStr);
 
    tmpStr = GetDlgItemTextA(IDC_NUDGE_STRENGTH);
-   SaveValueString("Player", "NudgeStrength", tmpStr);
+   SaveValue("Player", "NudgeStrength", tmpStr);
 
    size_t fxaa = SendMessage(GetDlgItem(IDC_FXAACB).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (fxaa == LB_ERR)
@@ -860,13 +860,13 @@ void VideoOptionsDialog::OnOK()
    SaveValueInt("Player", "AlphaRampAccuracy", (int)alphaRampsAccuracy);
 
    tmpStr = GetDlgItemTextA(IDC_3D_STEREO_OFS);
-   SaveValueString("Player", "Stereo3DOffset", tmpStr);
+   SaveValue("Player", "Stereo3DOffset", tmpStr);
 
    tmpStr = GetDlgItemTextA(IDC_3D_STEREO_MS);
-   SaveValueString("Player", "Stereo3DMaxSeparation", tmpStr);
+   SaveValue("Player", "Stereo3DMaxSeparation", tmpStr);
 
    tmpStr = GetDlgItemTextA(IDC_3D_STEREO_ZPD);
-   SaveValueString("Player", "Stereo3DZPD", tmpStr);
+   SaveValue("Player", "Stereo3DZPD", tmpStr);
 
    const bool disableDWM = (SendMessage(GetDlgItem(IDC_DISABLE_DWM).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValueBool("Player", "DisableDWM", disableDWM);
@@ -897,9 +897,9 @@ void VideoOptionsDialog::OnOK()
    {
       SaveValueBool("Player", "OverwriteBallImage", true);
       tmpStr = GetDlgItemText(IDC_BALL_IMAGE_EDIT);
-      SaveValueString("Player", "BallImage", tmpStr);
+      SaveValue("Player", "BallImage", tmpStr);
       tmpStr = GetDlgItemText(IDC_BALL_DECAL_EDIT);
-      SaveValueString("Player", "DecalImage", tmpStr);
+      SaveValue("Player", "DecalImage", tmpStr);
    }
    else
       SaveValueBool("Player", "OverwriteBallImage", false);

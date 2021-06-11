@@ -87,17 +87,17 @@ STDMETHODIMP ScriptGlobalTable::NudgeGetCalibration(VARIANT *XMax, VARIANT *YMax
 {
 	int tmp;
 
-	if (SUCCEEDED(LoadValueInt("Player", "PBWAccelGainX", tmp)))
+	if (SUCCEEDED(LoadValue("Player", "PBWAccelGainX", tmp)))
 		CComVariant(tmp).Detach(XGain);
-	if (SUCCEEDED(LoadValueInt("Player", "PBWAccelGainY", tmp)))
+	if (SUCCEEDED(LoadValue("Player", "PBWAccelGainY", tmp)))
 		CComVariant(tmp).Detach(YGain);
-	if (SUCCEEDED(LoadValueInt("Player", "PBWAccelMaxX", tmp)))
+	if (SUCCEEDED(LoadValue("Player", "PBWAccelMaxX", tmp)))
 		CComVariant(tmp).Detach(XMax);
-	if (SUCCEEDED(LoadValueInt("Player", "PBWAccelMaxY", tmp)))
+	if (SUCCEEDED(LoadValue("Player", "PBWAccelMaxY", tmp)))
 		CComVariant(tmp).Detach(YMax);
-	if (SUCCEEDED(LoadValueInt("player", "DeadZone", tmp)))
+	if (SUCCEEDED(LoadValue("player", "DeadZone", tmp)))
 		CComVariant(tmp).Detach(DeadZone);
-	if (SUCCEEDED(LoadValueInt("Player", "TiltSensitivity", tmp)))
+	if (SUCCEEDED(LoadValue("Player", "TiltSensitivity", tmp)))
 		CComVariant(tmp).Detach(TiltSensitivty);
 
 	return S_OK;
@@ -657,7 +657,7 @@ STDMETHODIMP ScriptGlobalTable::get_ShowFSS(VARIANT_BOOL *pVal)
    if (m_BG_enable_FSS)
       m_BG_current_set = FULL_SINGLE_SCREEN;
    else
-      LoadValueInt("Player", "BGSet", m_BG_current_set);
+      LoadValue("Player", "BGSet", m_BG_current_set);
    STOPUNDO
 
    return S_OK;
@@ -1133,7 +1133,7 @@ PinTable::PinTable()
    m_tblVolmod = (float)LoadValueIntWithDefault("Player", "Volmod", 1000) * (float)(1.0/1000.0);
    m_tblExitConfirm = LoadValueIntWithDefault("Player", "Exitconfirm", 120) * 1000 / 60;
 
-   SaveValueString("Version", "VPinball", VP_VERSION_STRING_DIGITS);
+   SaveValue("Version", "VPinball", VP_VERSION_STRING_DIGITS);
 
    m_globalDetailLevel = LoadValueIntWithDefault("Player", "AlphaRampAccuracy", 10);
    m_userDetailLevel = 10;
@@ -2137,7 +2137,7 @@ HRESULT PinTable::Save(const bool saveAs)
       // Or try with the standard last-used dir
       else
       {
-         const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir);
+         const HRESULT hr = LoadValue("RecentDir", "LoadDir", szInitialDir);
          if (hr != S_OK)
             szInitialDir = m_vpinball->m_szMyPath + "Tables\\";
       }
@@ -2154,7 +2154,7 @@ HRESULT PinTable::Save(const bool saveAs)
       char szInitialDir[MAXSTRING];
       strncpy_s(szInitialDir, m_szFileName.c_str(), sizeof(szInitialDir)-1);
       szInitialDir[ofn.nFileOffset] = 0; // truncate after folder
-      HRESULT hr = SaveValueString("RecentDir", "LoadDir", szInitialDir);
+      HRESULT hr = SaveValue("RecentDir", "LoadDir", szInitialDir);
 
       {
          MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName.c_str());
@@ -2930,7 +2930,7 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
    SAFE_VECTOR_DELETE(buffer);
 
    // Write the version to the registry.  This will be read later by the front end.
-   SaveValueString("Version", m_szTableName, m_szVersion);
+   SaveValue("Version", m_szTableName, m_szVersion);
 
    HRESULT hr;
    IStream *pstm;
@@ -3714,7 +3714,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    {
       pbr->GetInt(m_PhysicsMaxLoops);
       if (m_PhysicsMaxLoops == 0xFFFFFFFF)
-         /*const HRESULT hr =*/ LoadValueInt("Player", "PhysicsMaxLoops", m_PhysicsMaxLoops);
+         /*const HRESULT hr =*/ LoadValue("Player", "PhysicsMaxLoops", m_PhysicsMaxLoops);
       break;
    }
    case FID(DECL): pbr->GetBool(m_renderDecals); break;
@@ -3797,7 +3797,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    {
       pbr->GetFloat(m_globalDifficulty);
       int tmp;
-      const HRESULT hr = LoadValueInt("Player", "GlobalDifficulty", tmp);
+      const HRESULT hr = LoadValue("Player", "GlobalDifficulty", tmp);
       if (hr == S_OK) m_globalDifficulty = dequantizeUnsignedPercent(tmp);
       break;
    }
@@ -5280,7 +5280,7 @@ void PinTable::ImportBackdropPOV(const string& filename)
     if (filename.empty())
     {
        string szInitialDir;
-       HRESULT hr = LoadValueString("RecentDir", "POVDir", szInitialDir);
+       HRESULT hr = LoadValue("RecentDir", "POVDir", szInitialDir);
        if (hr != S_OK)
           szInitialDir = "c:\\Visual Pinball\\Tables\\";
    
@@ -5291,7 +5291,7 @@ void PinTable::ImportBackdropPOV(const string& filename)
        if (index != std::string::npos)
        {
            const std::string newInitDir(szFileName[0].substr(0, index));
-           hr = SaveValueString("RecentDir", "POVDir", newInitDir);
+           hr = SaveValue("RecentDir", "POVDir", newInitDir);
        }
     }
     else
@@ -8431,7 +8431,7 @@ void PinTable::SetShowFSS(const bool enable)
    if (m_BG_enable_FSS)
       m_BG_current_set = FULL_SINGLE_SCREEN;
    else
-      LoadValueInt("Player", "BGSet", m_BG_current_set);
+      LoadValue("Player", "BGSet", m_BG_current_set);
 }
 
 STDMETHODIMP PinTable::get_ShowFSS(VARIANT_BOOL *pVal)
@@ -9130,7 +9130,7 @@ STDMETHODIMP PinTable::ImportPhysics()
    std::vector<std::string> szFileName;
    string szInitialDir;
 
-   HRESULT hr = LoadValueString("RecentDir", "PhysicsDir", szInitialDir);
+   HRESULT hr = LoadValue("RecentDir", "PhysicsDir", szInitialDir);
    if (hr != S_OK)
       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -9141,7 +9141,7 @@ STDMETHODIMP PinTable::ImportPhysics()
    if (index != std::string::npos)
    {
        const std::string newInitDir(szFileName[0].substr(0, index));
-       hr = SaveValueString("RecentDir", "PhysicsDir", newInitDir);
+       hr = SaveValue("RecentDir", "PhysicsDir", newInitDir);
    }
 
    ImportVPP(szFileName[0]);
@@ -9396,7 +9396,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
    string szInitialDir;
-   const HRESULT hr = LoadValueString("RecentDir", "PhysicsDir", szInitialDir);
+   const HRESULT hr = LoadValue("RecentDir", "PhysicsDir", szInitialDir);
    if (hr != S_OK)
        szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -9411,7 +9411,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    if (index != std::string::npos)
    {
        const std::string newInitDir(szFilename.substr(0, index));
-       SaveValueString("RecentDir", "PhysicsDir", newInitDir);
+       SaveValue("RecentDir", "PhysicsDir", newInitDir);
    }
 
    xml_document<> xmlDoc;
@@ -9607,7 +9607,7 @@ float PinTable::GetGlobalDifficulty() const
 void PinTable::SetGlobalDifficulty(const float value)
 {
     int tmp;
-    const HRESULT hr = LoadValueInt("Player", "GlobalDifficulty", tmp);
+    const HRESULT hr = LoadValue("Player", "GlobalDifficulty", tmp);
     if (hr == S_OK)
         m_globalDifficulty = dequantizeUnsignedPercent(tmp);
     else

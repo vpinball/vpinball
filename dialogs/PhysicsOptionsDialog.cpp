@@ -39,7 +39,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
         physicsoptions[i] = new char[256];
         char tmp[256];
         sprintf_s(tmp, 256, "PhysicsSetName%u", i);
-        if (LoadValueString("Player", tmp, physicsoptions[i], 256) != S_OK)
+        if (LoadValue("Player", tmp, physicsoptions[i], 256) != S_OK)
             sprintf_s(physicsoptions[i], 256, "Set %u", i + 1);
         sprintf_s(tmp, 256, "%u: %s", i + 1, physicsoptions[i]);
         const size_t index = SendMessage(hwndList, LB_ADDSTRING, 0, (size_t)tmp);
@@ -240,7 +240,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
             string szInitialDir;
-            const HRESULT hr = LoadValueString("RecentDir", "PhysicsDir", szInitialDir);
+            const HRESULT hr = LoadValue("RecentDir", "PhysicsDir", szInitialDir);
             if (hr != S_OK)
                szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -255,7 +255,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             if (index != std::string::npos)
             {
                 const std::string newInitDir(szFilename.substr(0, index));
-                SaveValueString("RecentDir", "PhysicsDir", newInitDir);
+                SaveValue("RecentDir", "PhysicsDir", newInitDir);
             }
 
             xml_document<> xmlDoc;
@@ -391,7 +391,7 @@ bool PhysicsOptionsDialog::LoadSetting()
     std::vector<std::string> szFileName;
     string szInitialDir;
 
-    HRESULT hr = LoadValueString("RecentDir", "PhysicsDir", szInitialDir);
+    HRESULT hr = LoadValue("RecentDir", "PhysicsDir", szInitialDir);
     if (hr != S_OK)
         szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -402,7 +402,7 @@ bool PhysicsOptionsDialog::LoadSetting()
     if (index != std::string::npos)
     {
         const std::string newInitDir(szFileName[0].substr(0, index));
-        hr = SaveValueString("RecentDir", "PhysicsDir", newInitDir);
+        hr = SaveValue("RecentDir", "PhysicsDir", newInitDir);
     }
 
     xml_document<> xmlDoc;
@@ -480,77 +480,77 @@ void PhysicsOptionsDialog::SaveCurrentPhysicsSetting()
 
     str = GetItemText(DISPID_Flipper_Speed);
     sprintf_s(tmp, 256, "FlipperPhysicsMass%u", physicsselection);
-    SaveValueString("Player", tmp, str);
+    SaveValue("Player", tmp, str);
 
     str = GetItemText(19);
     sprintf_s(tmp, 256, "FlipperPhysicsStrength%u", physicsselection);
-    SaveValueString("Player", tmp, str);
+    SaveValue("Player", tmp, str);
 
     str = GetItemText(21);
     sprintf_s(tmp, 256, "FlipperPhysicsElasticity%u", physicsselection);
-    SaveValueString("Player", tmp, str);
+    SaveValue("Player", tmp, str);
 
     str=GetItemText(112);
     sprintf_s(tmp, 256, "FlipperPhysicsScatter%u", physicsselection);
-    SaveValueString("Player", tmp, str);
+    SaveValue("Player", tmp, str);
 
     str = GetItemText(113);
     sprintf_s(tmp, 256, "FlipperPhysicsEOSTorque%u", physicsselection);
-    SaveValueString("Player", tmp, str);
+    SaveValue("Player", tmp, str);
 
     str = GetItemText(189);
     sprintf_s(tmp, 256, "FlipperPhysicsEOSTorqueAngle%u", physicsselection);
-    SaveValueString("Player", tmp, str);
+    SaveValue("Player", tmp, str);
 
     str = GetItemText(23);
     sprintf_s(tmp, 256, "FlipperPhysicsReturnStrength%u", physicsselection);
-    SaveValueString("Player", tmp, str);
+    SaveValue("Player", tmp, str);
 
     str = GetItemText(22);
     sprintf_s(tmp, 256, "FlipperPhysicsElasticityFalloff%u", physicsselection);
-    SaveValueString("Player", tmp, str);
+    SaveValue("Player", tmp, str);
 
     str = GetItemText(109);
     sprintf_s(tmp, 256, "FlipperPhysicsFriction%u", physicsselection);
-    SaveValueString("Player", tmp, str);
+    SaveValue("Player", tmp, str);
 
     str = GetItemText(110);
     sprintf_s(tmp, 256, "FlipperPhysicsCoilRampUp%u", physicsselection);
-    SaveValueString("Player", tmp, str);
+    SaveValue("Player", tmp, str);
 
     str = GetItemText(1100);
     sprintf_s(tmp, 256, "TablePhysicsGravityConstant%u", physicsselection);
-    SaveValueString("Player", tmp, str);
+    SaveValue("Player", tmp, str);
 
     str = GetItemText(1101);
     sprintf_s(tmp, 256, "TablePhysicsContactFriction%u", physicsselection);
-    SaveValueString("Player", tmp, str);
+    SaveValue("Player", tmp, str);
 
     str = GetItemText(1708);
     sprintf_s(tmp, 256, "TablePhysicsElasticity%u", physicsselection);
-    SaveValueString("Player", tmp, str);
+    SaveValue("Player", tmp, str);
 
     str = GetItemText(1709);
     sprintf_s(tmp, 256, "TablePhysicsElasticityFalloff%u", physicsselection);
-    SaveValueString("Player", tmp, str);
+    SaveValue("Player", tmp, str);
 
     str = GetItemText(1710);
     sprintf_s(tmp, 256, "TablePhysicsScatterAngle%u", physicsselection);
-    SaveValueString("Player", tmp, str);
+    SaveValue("Player", tmp, str);
 
     str = GetItemText(1102);
     sprintf_s(tmp, 256, "TablePhysicsContactScatterAngle%u", physicsselection);
-    SaveValueString("Player", tmp, str);
+    SaveValue("Player", tmp, str);
 
     str = GetItemText(1103);
     sprintf_s(tmp, 256, "TablePhysicsMinSlope%u", physicsselection);
-    SaveValueString("Player", tmp, str);
+    SaveValue("Player", tmp, str);
 
     str = GetItemText(1104);
     sprintf_s(tmp, 256, "TablePhysicsMaxSlope%u", physicsselection);
-    SaveValueString("Player", tmp, str);
+    SaveValue("Player", tmp, str);
 
     str = GetItemText(1110);
     sprintf_s(tmp, 256, "PhysicsSetName%u", physicsselection);
-    SaveValueString("Player", tmp, str);
+    SaveValue("Player", tmp, str);
 }

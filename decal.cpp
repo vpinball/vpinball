@@ -52,17 +52,17 @@ void Decal::SetDefaults(bool fromMouseClick)
    m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Decal", "Height", 100.0f) : 100.0f;
    m_d.m_rotation = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Decal", "Rotation", 0.f) : 0.f;
 
-   HRESULT hr = LoadValueString("DefaultProps\\Decal", "Image", m_d.m_szImage);
+   HRESULT hr = LoadValue("DefaultProps\\Decal", "Image", m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
 
-   hr = LoadValueString("DefaultProps\\Decal", "Surface", m_d.m_szSurface);
+   hr = LoadValue("DefaultProps\\Decal", "Surface", m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface.clear();
 
    m_d.m_decaltype = fromMouseClick ? (enum DecalType)LoadValueIntWithDefault("DefaultProps\\Decal", "DecalType", (int)DecalImage) : DecalImage;
 
-   hr = LoadValueString("DefaultProps\\Decal", "Text", m_d.m_sztext);
+   hr = LoadValue("DefaultProps\\Decal", "Text", m_d.m_sztext);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_sztext.clear();
 
@@ -76,11 +76,11 @@ void Decal::SetDefaults(bool fromMouseClick)
       fd.cbSizeofstruct = sizeof(FONTDESC);
 
       float fTmp;
-      hr = LoadValueFloat("DefaultProps\\Decal", "FontSize", fTmp);
+      hr = LoadValue("DefaultProps\\Decal", "FontSize", fTmp);
       fd.cySize.int64 = (hr == S_OK) && fromMouseClick ? (LONGLONG)(fTmp * 10000.0) : 142500;
 
       char tmp[MAXSTRING];
-      hr = LoadValueString("DefaultProps\\Decal", "FontName", tmp, MAXSTRING);
+      hr = LoadValue("DefaultProps\\Decal", "FontName", tmp, MAXSTRING);
       if ((hr != S_OK) || !fromMouseClick)
          fd.lpstrName = L"Arial Black";
       else
@@ -120,13 +120,13 @@ void Decal::WriteRegDefaults()
    SaveValueFloat("DefaultProps\\Decal", "Width", m_d.m_width);
    SaveValueFloat("DefaultProps\\Decal", "Height", m_d.m_height);
    SaveValueFloat("DefaultProps\\Decal", "Rotation", m_d.m_rotation);
-   SaveValueString("DefaultProps\\Decal", "Image", m_d.m_szImage);
+   SaveValue("DefaultProps\\Decal", "Image", m_d.m_szImage);
    SaveValueInt("DefaultProps\\Decal", "DecalType", m_d.m_decaltype);
-   SaveValueString("DefaultProps\\Decal", "Text", m_d.m_sztext);
+   SaveValue("DefaultProps\\Decal", "Text", m_d.m_sztext);
    SaveValueInt("DefaultProps\\Decal", "Sizing", m_d.m_sizingtype);
    SaveValueInt("DefaultProps\\Decal", "Color", m_d.m_color);
    SaveValueBool("DefaultProps\\Decal", "VerticalText", m_d.m_verticalText);
-   SaveValueString("DefaultProps\\Decal", "Surface", m_d.m_szSurface);
+   SaveValue("DefaultProps\\Decal", "Surface", m_d.m_szSurface);
 
    if (m_pIFont)
    {
@@ -146,7 +146,7 @@ void Decal::WriteRegDefaults()
       const size_t charCnt = wcslen(fd.lpstrName) + 1;
       char * const strTmp = new char[2 * charCnt];
       WideCharToMultiByteNull(CP_ACP, 0, fd.lpstrName, -1, strTmp, (int)(2 * charCnt), NULL, NULL);
-      SaveValueString("DefaultProps\\Decal", "FontName", strTmp);
+      SaveValue("DefaultProps\\Decal", "FontName", strTmp);
       delete[] strTmp;
       const int weight = fd.sWeight;
       const int charset = fd.sCharset;

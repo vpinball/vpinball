@@ -88,8 +88,8 @@ void Surface::WriteRegDefaults()
    SaveValueBool(strKeyName, "HitEvent", m_d.m_hitEvent);
    SaveValueFloat(strKeyName, "HitThreshold", m_d.m_threshold);
    SaveValueFloat(strKeyName, "SlingshotThreshold", m_d.m_slingshot_threshold);
-   SaveValueString(strKeyName, "TopImage", m_d.m_szImage);
-   SaveValueString(strKeyName, "SideImage", m_d.m_szSideImage);
+   SaveValue(strKeyName, "TopImage", m_d.m_szImage);
+   SaveValue(strKeyName, "SideImage", m_d.m_szSideImage);
    SaveValueBool(strKeyName, "Droppable", m_d.m_droppable);
    SaveValueBool(strKeyName, "Flipbook", m_d.m_flipbook);
    SaveValueBool(strKeyName, "IsBottomSolid", m_d.m_isBottomSolid);
@@ -165,11 +165,11 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    m_d.m_slingshot_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "SlingshotThreshold", 0.0f) : 0.0f;
    m_d.m_inner = true; //!! Deprecated, do not use anymore
 
-   HRESULT hr = LoadValueString(strKeyName, "TopImage", m_d.m_szImage);
+   HRESULT hr = LoadValue(strKeyName, "TopImage", m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
 
-   hr = LoadValueString(strKeyName, "SideImage", m_d.m_szSideImage);
+   hr = LoadValue(strKeyName, "SideImage", m_d.m_szSideImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSideImage.clear();
 
@@ -209,11 +209,11 @@ void Surface::SetDefaults(bool fromMouseClick)
    m_d.m_slingshot_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "SlingshotThreshold", 0.0f) : 0.0f;
    m_d.m_inner = true; //!! Deprecated, do not use anymore
 
-   hr = LoadValueString(strKeyName, "TopImage", m_d.m_szImage);
+   hr = LoadValue(strKeyName, "TopImage", m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
 
-   hr = LoadValueString(strKeyName, "SideImage", m_d.m_szSideImage);
+   hr = LoadValue(strKeyName, "SideImage", m_d.m_szSideImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSideImage.clear();
 

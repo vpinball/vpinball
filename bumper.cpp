@@ -97,7 +97,7 @@ void Bumper::SetDefaults(bool fromMouseClick)
    m_d.m_orientation = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Bumper", "Orientation", 0.0f) : 0.0f;
    m_d.m_threshold = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Bumper", "Threshold", 1.f) : 1.f;
 
-   const HRESULT hr = LoadValueString("DefaultProps\\Bumper", "Surface", m_d.m_szSurface);
+   const HRESULT hr = LoadValue("DefaultProps\\Bumper", "Surface", m_d.m_szSurface);
    if (hr != S_OK || !fromMouseClick)
       m_d.m_szSurface.clear();
 
@@ -131,7 +131,7 @@ void Bumper::WriteRegDefaults()
    SaveValueBool("DefaultProps\\Bumper", "HasHitEvent", m_d.m_hitEvent);
    SaveValueBool("DefaultProps\\Bumper", "Collidable", m_d.m_collidable);
    SaveValueBool("DefaultProps\\Bumper", "ReflectionEnabled", m_d.m_reflectionEnabled);
-   SaveValueString("DefaultProps\\Bumper", "Surface", m_d.m_szSurface);
+   SaveValue("DefaultProps\\Bumper", "Surface", m_d.m_szSurface);
 }
 
 STDMETHODIMP Bumper::InterfaceSupportsErrorInfo(REFIID riid)

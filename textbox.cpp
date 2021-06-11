@@ -74,7 +74,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
 
       string tmp;
       HRESULT hr;
-      hr = LoadValueString("DefaultProps\\TextBox", "FontName", tmp);
+      hr = LoadValue("DefaultProps\\TextBox", "FontName", tmp);
       if (hr != S_OK)
          fd.lpstrName = L"Arial";
       else
@@ -93,7 +93,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
       fd.fUnderline = LoadValueIntWithDefault("DefaultProps\\TextBox", "FontUnderline", 0);
       fd.fStrikethrough = LoadValueIntWithDefault("DefaultProps\\TextBox", "FontStrikeThrough", 0);
 
-      hr = LoadValueString("DefaultProps\\TextBox", "Text", m_d.m_sztext);
+      hr = LoadValue("DefaultProps\\TextBox", "Text", m_d.m_sztext);
       if (hr != S_OK)
          m_d.m_sztext.clear();
    }
@@ -127,7 +127,7 @@ void Textbox::WriteRegDefaults()
    size_t charCnt = wcslen(fd.lpstrName) + 1;
    char * const strTmp = new char[2 * charCnt];
    WideCharToMultiByteNull(CP_ACP, 0, fd.lpstrName, -1, strTmp, (int)(2 * charCnt), NULL, NULL);
-   SaveValueString("DefaultProps\\TextBox", "FontName", strTmp);
+   SaveValue("DefaultProps\\TextBox", "FontName", strTmp);
    delete[] strTmp;
    int weight = fd.sWeight;
    int charset = fd.sCharset;
@@ -137,7 +137,7 @@ void Textbox::WriteRegDefaults()
    SaveValueInt("DefaultProps\\TextBox", "FontUnderline", fd.fUnderline);
    SaveValueInt("DefaultProps\\TextBox", "FontStrikeThrough", fd.fStrikethrough);
 
-   SaveValueString("DefaultProps\\TextBox", "Text", m_d.m_sztext);
+   SaveValue("DefaultProps\\TextBox", "Text", m_d.m_sztext);
 }
 
 char * Textbox::GetFontName()

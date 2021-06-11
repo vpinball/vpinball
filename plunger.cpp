@@ -44,7 +44,7 @@ void Plunger::SetDefaults(bool fromMouseClick)
    m_d.m_type = fromMouseClick ? (PlungerType)LoadValueIntWithDefault("DefaultProps\\Plunger", "PlungerType", PlungerTypeModern) : PlungerTypeModern;
    m_d.m_color = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Plunger", "Color", RGB(76,76,76)) : RGB(76,76,76);
 
-   HRESULT hr = LoadValueString("DefaultProps\\Plunger", "Image", m_d.m_szImage);
+   HRESULT hr = LoadValue("DefaultProps\\Plunger", "Image", m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
 
@@ -52,7 +52,7 @@ void Plunger::SetDefaults(bool fromMouseClick)
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Plunger", "TimerInterval", 100) : 100;
 
-   hr = LoadValueString("DefaultProps\\Plunger", "Surface", m_d.m_szSurface);
+   hr = LoadValue("DefaultProps\\Plunger", "Surface", m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface.clear();
 
@@ -60,7 +60,7 @@ void Plunger::SetDefaults(bool fromMouseClick)
    m_d.m_autoPlunger = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "AutoPlunger", false) : false;
    m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "Visible", true) : true;
 
-   hr = LoadValueString("DefaultProps\\Plunger", "CustomTipShape", m_d.m_szTipShape, MAXTIPSHAPE);
+   hr = LoadValue("DefaultProps\\Plunger", "CustomTipShape", m_d.m_szTipShape, MAXTIPSHAPE);
    if ((hr != S_OK) || !fromMouseClick)
       strncpy_s(m_d.m_szTipShape,
       "0 .34; 2 .6; 3 .64; 5 .7; 7 .84; 8 .88; 9 .9; 11 .92; 14 .92; 39 .84", sizeof(m_d.m_szTipShape)-1);
@@ -87,10 +87,10 @@ void Plunger::WriteRegDefaults()
    SaveValueInt("DefaultProps\\Plunger", "PlungerType", m_d.m_type);
    SaveValueInt("DefaultProps\\Plunger", "AnimFrames", m_d.m_animFrames);
    SaveValueInt("DefaultProps\\Plunger", "Color", m_d.m_color);
-   SaveValueString("DefaultProps\\Plunger", "Image", m_d.m_szImage);
+   SaveValue("DefaultProps\\Plunger", "Image", m_d.m_szImage);
    SaveValueBool("DefaultProps\\Plunger", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
    SaveValueInt("DefaultProps\\Plunger", "TimerInterval", m_d.m_tdr.m_TimerInterval);
-   SaveValueString("DefaultProps\\Plunger", "Surface", m_d.m_szSurface);
+   SaveValue("DefaultProps\\Plunger", "Surface", m_d.m_szSurface);
    SaveValueBool("DefaultProps\\Plunger", "MechPlunger", m_d.m_mechPlunger);
    SaveValueBool("DefaultProps\\Plunger", "AutoPlunger", m_d.m_autoPlunger);
    SaveValueFloat("DefaultProps\\Plunger", "MechStrength", m_d.m_mechStrength);
@@ -98,7 +98,7 @@ void Plunger::WriteRegDefaults()
    SaveValueBool("DefaultProps\\Plunger", "Visible", m_d.m_visible);
    SaveValueFloat("DefaultProps\\Plunger", "ScatterVelocity", m_d.m_scatterVelocity);
    SaveValueFloat("DefaultProps\\Plunger", "MomentumXfer", m_d.m_momentumXfer);
-   SaveValueString("DefaultProps\\Plunger", "CustomTipShape", m_d.m_szTipShape);
+   SaveValue("DefaultProps\\Plunger", "CustomTipShape", m_d.m_szTipShape);
    SaveValueFloat("DefaultProps\\Plunger", "CustomRodDiam", m_d.m_rodDiam);
    SaveValueFloat("DefaultProps\\Plunger", "CustomRingGap", m_d.m_ringGap);
    SaveValueFloat("DefaultProps\\Plunger", "CustomRingDiam", m_d.m_ringDiam);

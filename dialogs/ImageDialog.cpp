@@ -398,7 +398,7 @@ void ImageDialog::Import()
    std::vector<std::string> szFileName;
    string szInitialDir;
 
-   HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir);
+   HRESULT hr = LoadValue("RecentDir", "ImageDir", szInitialDir);
    if (hr != S_OK)
       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -414,7 +414,7 @@ void ImageDialog::Import()
       if (index != std::string::npos)
       {
           const std::string newInitDir(szFileName[0].substr(0, index));
-          hr = SaveValueString("RecentDir", "ImageDir", newInitDir);
+          hr = SaveValue("RecentDir", "ImageDir", newInitDir);
       }
 
       pt->SetNonUndoableDirty(eSaveDirty);
@@ -508,7 +508,7 @@ void ImageDialog::Export()
                ofn.nFilterIndex = 12;
 
             string g_initDir;
-            const HRESULT hr = LoadValueString("RecentDir", "ImageDir", g_initDir);
+            const HRESULT hr = LoadValue("RecentDir", "ImageDir", g_initDir);
             if (hr != S_OK)
                g_initDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -573,7 +573,7 @@ void ImageDialog::Export()
                   ppi = (Texture*)lvitem.lParam;
                }
 
-               SaveValueString("RecentDir", "ImageDir", pathName);
+               SaveValue("RecentDir", "ImageDir", pathName);
             } // finished all selected items
          }
       }
@@ -719,7 +719,7 @@ void ImageDialog::ReimportFrom()
          std::vector<std::string> szFileName;
          string szInitialDir;
 
-         HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir);
+         HRESULT hr = LoadValue("RecentDir", "ImageDir", szInitialDir);
          if (hr != S_OK)
             szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -737,7 +737,7 @@ void ImageDialog::ReimportFrom()
                if (index != std::string::npos)
                {
                   const std::string newInitDir(szFileName[0].substr(0, index));
-                  SaveValueString("RecentDir", "ImageDir", newInitDir);
+                  SaveValue("RecentDir", "ImageDir", newInitDir);
                }
 
                CCO(PinTable) * const pt = g_pvp->GetActiveTable();

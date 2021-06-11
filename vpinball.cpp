@@ -283,7 +283,7 @@ void VPinball::InitRegValues()
    for (int i = 0; i < LAST_OPENED_TABLE_COUNT; i++)
    {
       string szTableName;
-      if(LoadValueString("RecentDir", "TableFileName"+std::to_string(i), szTableName) == S_OK)
+      if(LoadValue("RecentDir", "TableFileName"+std::to_string(i), szTableName) == S_OK)
          m_recentTableList.push_back(szTableName);
       else
          break;
@@ -887,7 +887,7 @@ bool VPinball::LoadFile(const bool updateEditor)
    std::vector<std::string> szFileName;
    string szInitialDir;
 
-   HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir);
+   HRESULT hr = LoadValue("RecentDir", "LoadDir", szInitialDir);
    if (hr != S_OK)
       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -898,7 +898,7 @@ bool VPinball::LoadFile(const bool updateEditor)
    if (index != std::string::npos)
    {
        const std::string newInitDir(szFileName[0].substr(0, index));
-       hr = SaveValueString("RecentDir", "LoadDir", newInitDir);
+       hr = SaveValue("RecentDir", "LoadDir", newInitDir);
    }
 
    LoadFileName(szFileName[0], updateEditor);
@@ -976,7 +976,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
       }
 
       // get the load path from the filename
-      SaveValueString("RecentDir", "LoadDir", m_currentTablePath);
+      SaveValue("RecentDir", "LoadDir", m_currentTablePath);
 
       // make sure the load directory is the active directory
       SetCurrentDirectory(m_currentTablePath.c_str());
@@ -1158,7 +1158,7 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
 
           // write entry to the registry
           sprintf_s(szRegName, "TableFileName%d", i);
-          SaveValueString("RecentDir", szRegName, tableName);
+          SaveValue("RecentDir", szRegName, tableName);
 
           if(++i == LAST_OPENED_TABLE_COUNT)
              break;
@@ -1511,12 +1511,12 @@ void VPinball::OnInitialUpdate()
     int left, top, right, bottom;
     BOOL maximized;
 
-    const HRESULT hrleft = LoadValueInt("Editor", "WindowLeft", left);
-    const HRESULT hrtop = LoadValueInt("Editor", "WindowTop", top);
-    const HRESULT hrright = LoadValueInt("Editor", "WindowRight", right);
-    const HRESULT hrbottom = LoadValueInt("Editor", "WindowBottom", bottom);
+    const HRESULT hrleft = LoadValue("Editor", "WindowLeft", left);
+    const HRESULT hrtop = LoadValue("Editor", "WindowTop", top);
+    const HRESULT hrright = LoadValue("Editor", "WindowRight", right);
+    const HRESULT hrbottom = LoadValue("Editor", "WindowBottom", bottom);
 
-    const HRESULT hrmax = LoadValueInt("Editor", "WindowMaximized", maximized);
+    const HRESULT hrmax = LoadValue("Editor", "WindowMaximized", maximized);
 
     if (hrleft == S_OK && hrtop == S_OK && hrright == S_OK && hrbottom == S_OK)
     {
@@ -1902,7 +1902,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
             std::vector<std::string> szFileName;
             string szInitialDir;
 
-            const HRESULT hr = LoadValueString("RecentDir", "FontDir", szInitialDir);
+            const HRESULT hr = LoadValue("RecentDir", "FontDir", szInitialDir);
             if (hr != S_OK)
                szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -1912,7 +1912,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
                if (index != std::string::npos)
                {
                   const std::string newInitDir(szFileName[0].substr(0, index));
-                  SaveValueString("RecentDir", "FontDir", newInitDir);
+                  SaveValue("RecentDir", "FontDir", newInitDir);
                }
 
                pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), szFileName[0]);

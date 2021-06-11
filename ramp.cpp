@@ -97,7 +97,7 @@ void Ramp::SetDefaults(bool fromMouseClick)
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "TimerInterval", 100) : 100;
 
-   HRESULT hr = LoadValueString(strKeyName, "Image", m_d.m_szImage);
+   HRESULT hr = LoadValue(strKeyName, "Image", m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
 
@@ -133,7 +133,7 @@ void Ramp::WriteRegDefaults()
    SaveValueInt(strKeyName, "RampType", m_d.m_type);
    SaveValueBool(strKeyName, "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
    SaveValueInt(strKeyName, "TimerInterval", m_d.m_tdr.m_TimerInterval);
-   SaveValueString(strKeyName, "Image", m_d.m_szImage);
+   SaveValue(strKeyName, "Image", m_d.m_szImage);
    SaveValueInt(strKeyName, "ImageMode", m_d.m_imagealignment);
    SaveValueBool(strKeyName, "ImageWalls", m_d.m_imageWalls);
    SaveValueFloat(strKeyName, "LeftWallHeight", m_d.m_leftwallheight);

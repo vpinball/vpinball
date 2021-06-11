@@ -412,7 +412,7 @@ void CVPrefrence::GetPrefsFromReg()
 
 	char bakupFaceName[LF_FACESIZE]; // to save the default font name, in case the corresponding registry entry is empty
 	strncpy_s(bakupFaceName, m_logFont.lfFaceName, sizeof(bakupFaceName)-1);
-	if (LoadValueString("CVEdit", szRegName+"_Font", m_logFont.lfFaceName, LF_FACESIZE) != S_OK)
+	if (LoadValue("CVEdit", szRegName+"_Font", m_logFont.lfFaceName, LF_FACESIZE) != S_OK)
 		strncpy_s(m_logFont.lfFaceName, bakupFaceName, sizeof(m_logFont.lfFaceName)-1);
 
 	m_logFont.lfWeight = LoadValueIntWithDefault("CVEdit", szRegName+"_FontWeight", m_logFont.lfWeight);
@@ -426,7 +426,7 @@ void CVPrefrence::SetPrefsToReg()
 	SaveValueBool("CVEdit", szRegName, m_highlight);
 	SaveValueInt("CVEdit", szRegName+"_color", m_rgb);
 	SaveValueInt("CVEdit", szRegName+"_FontPointSize", m_pointSize);
-	SaveValueString("CVEdit", szRegName+"_Font", m_logFont.lfFaceName);
+	SaveValue("CVEdit", szRegName+"_Font", m_logFont.lfFaceName);
 	SaveValueInt("CVEdit", szRegName+"_FontWeight", m_logFont.lfWeight);
 	SaveValueInt("CVEdit", szRegName+"_FontItalic", m_logFont.lfItalic);
 	SaveValueInt("CVEdit", szRegName+"_FontUnderline", m_logFont.lfUnderline);

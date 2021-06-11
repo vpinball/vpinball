@@ -128,8 +128,8 @@ void Spinner::WriteRegDefaults()
    SaveValueBool("DefaultProps\\Spinner", "Visible", m_d.m_visible);
    SaveValueBool("DefaultProps\\Spinner", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
    SaveValueInt("DefaultProps\\Spinner", "TimerInterval", m_d.m_tdr.m_TimerInterval);
-   SaveValueString("DefaultProps\\Spinner", "Image", m_d.m_szImage);
-   SaveValueString("DefaultProps\\Spinner", "Surface", m_d.m_szSurface);
+   SaveValue("DefaultProps\\Spinner", "Image", m_d.m_szImage);
+   SaveValue("DefaultProps\\Spinner", "Surface", m_d.m_szSurface);
    SaveValueBool("DefaultProps\\Spinner", "ReflectionEnabled", m_d.m_reflectionEnabled);
 }
 
@@ -149,11 +149,11 @@ void Spinner::SetDefaults(bool fromMouseClick)
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Spinner", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Spinner", "TimerInterval", 100) : 100;
 
-   HRESULT hr = LoadValueString("DefaultProps\\Spinner", "Image", m_d.m_szImage);
+   HRESULT hr = LoadValue("DefaultProps\\Spinner", "Image", m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
 
-   hr = LoadValueString("DefaultProps\\Spinner", "Surface", m_d.m_szSurface);
+   hr = LoadValue("DefaultProps\\Spinner", "Surface", m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface.clear();
 }

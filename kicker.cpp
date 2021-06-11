@@ -78,7 +78,7 @@ void Kicker::SetDefaults(bool fromMouseClick)
 
    SetDefaultPhysics(fromMouseClick);
 
-   const HRESULT hr = LoadValueString("DefaultProps\\Kicker", "Surface", m_d.m_szSurface);
+   const HRESULT hr = LoadValue("DefaultProps\\Kicker", "Surface", m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface.clear();
 
@@ -102,7 +102,7 @@ void Kicker::WriteRegDefaults()
    SaveValueFloat("DefaultProps\\Kicker", "Radius", m_d.m_radius);
    SaveValueFloat("DefaultProps\\Kicker", "Scatter", m_d.m_scatter);
    SaveValueInt("DefaultProps\\Kicker", "KickerType", m_d.m_kickertype);
-   SaveValueString("DefaultProps\\Kicker", "Surface", m_d.m_szSurface);
+   SaveValue("DefaultProps\\Kicker", "Surface", m_d.m_szSurface);
    SaveValueBool("DefaultProps\\Kicker", "FallThrough", m_d.m_fallThrough);
    SaveValueBool("DefaultProps\\Kicker", "Legacy", m_d.m_legacyMode);
 }

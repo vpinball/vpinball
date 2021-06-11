@@ -87,11 +87,11 @@ void Light::SetDefaults(bool fromMouseClick)
    m_d.m_color = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Light", "Color", RGB(255,255,0)) : RGB(255,255,0);
    m_d.m_color2 = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Light", "ColorFull", RGB(255,255,255)) : RGB(255,255,255);
 
-   HRESULT hr = LoadValueString("DefaultProps\\Light", "OffImage", m_d.m_szImage);
+   HRESULT hr = LoadValue("DefaultProps\\Light", "OffImage", m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
 
-   hr = LoadValueString("DefaultProps\\Light", "BlinkPattern", m_rgblinkpattern);
+   hr = LoadValue("DefaultProps\\Light", "BlinkPattern", m_rgblinkpattern);
    if ((hr != S_OK) || !fromMouseClick)
       m_rgblinkpattern = "10";
 
@@ -103,7 +103,7 @@ void Light::SetDefaults(bool fromMouseClick)
 
    //m_d.m_bordercolor = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Light", "BorderColor", RGB(0,0,0)) : RGB(0,0,0);
 
-   hr = LoadValueString("DefaultProps\\Light", "Surface", m_d.m_szSurface);
+   hr = LoadValue("DefaultProps\\Light", "Surface", m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface.clear();
 
@@ -128,11 +128,11 @@ void Light::WriteRegDefaults()
    SaveValueInt("DefaultProps\\Light", "TimerInterval", m_d.m_tdr.m_TimerInterval);
    SaveValueInt("DefaultProps\\Light", "Color", m_d.m_color);
    SaveValueInt("DefaultProps\\Light", "ColorFull", m_d.m_color2);
-   SaveValueString("DefaultProps\\Light", "OffImage", m_d.m_szImage);
-   SaveValueString("DefaultProps\\Light", "BlinkPattern", m_rgblinkpattern);
+   SaveValue("DefaultProps\\Light", "OffImage", m_d.m_szImage);
+   SaveValue("DefaultProps\\Light", "BlinkPattern", m_rgblinkpattern);
    SaveValueInt("DefaultProps\\Light", "BlinkInterval", m_blinkinterval);
    //SaveValueInt("DefaultProps\\Light","BorderColor", m_d.m_bordercolor);
-   SaveValueString("DefaultProps\\Light", "Surface", m_d.m_szSurface);
+   SaveValue("DefaultProps\\Light", "Surface", m_d.m_szSurface);
    SaveValueFloat("DefaultProps\\Light", "FadeSpeedUp", m_d.m_fadeSpeedUp);
    SaveValueFloat("DefaultProps\\Light", "FadeSpeedDown", m_d.m_fadeSpeedDown);
    SaveValueFloat("DefaultProps\\Light", "Intensity", m_d.m_intensity);

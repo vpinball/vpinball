@@ -107,11 +107,11 @@ void Flasher::SetDefaults(bool fromMouseClick)
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Flasher", "TimerInterval", 100) : 100;
 
-   HRESULT hr = LoadValueString("DefaultProps\\Flasher", "ImageA", m_d.m_szImageA);
+   HRESULT hr = LoadValue("DefaultProps\\Flasher", "ImageA", m_d.m_szImageA);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImageA.clear();
 
-   hr = LoadValueString("DefaultProps\\Flasher", "ImageB", m_d.m_szImageB);
+   hr = LoadValue("DefaultProps\\Flasher", "ImageB", m_d.m_szImageB);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImageB.clear();
 
@@ -138,8 +138,8 @@ void Flasher::WriteRegDefaults()
    SaveValueInt("DefaultProps\\Flasher", "Color", m_d.m_color);
    SaveValueBool("DefaultProps\\Flasher", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
    SaveValueInt("DefaultProps\\Flasher", "TimerInterval", m_d.m_tdr.m_TimerInterval);
-   SaveValueString("DefaultProps\\Flasher", "ImageA", m_d.m_szImageA);
-   SaveValueString("DefaultProps\\Flasher", "ImageB", m_d.m_szImageB);
+   SaveValue("DefaultProps\\Flasher", "ImageA", m_d.m_szImageA);
+   SaveValue("DefaultProps\\Flasher", "ImageB", m_d.m_szImageB);
    SaveValueInt("DefaultProps\\Flasher", "Alpha", m_d.m_alpha);
    SaveValueFloat("DefaultProps\\Flasher", "ModulateVsAdd", m_d.m_modulate_vs_add);
    SaveValueBool("DefaultProps\\Flasher", "Visible", m_d.m_isVisible);

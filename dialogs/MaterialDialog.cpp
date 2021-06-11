@@ -313,7 +313,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          std::vector<std::string> szFilename;
          string szInitialDir;
 
-         const HRESULT hr = LoadValueString("RecentDir", "MaterialDir", szInitialDir);
+         const HRESULT hr = LoadValue("RecentDir", "MaterialDir", szInitialDir);
          if (hr != S_OK)
             szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -355,7 +355,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             if (index != std::string::npos)
             {
                const std::string newInitDir(szFilename[0].substr(0, index));
-               SaveValueString("RecentDir", "MaterialDir", newInitDir);
+               SaveValue("RecentDir", "MaterialDir", newInitDir);
             }
 
             pt->SetNonUndoableDirty(eSaveDirty);
@@ -395,7 +395,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             ofn.lpstrDefExt = "mat";
 
             string szInitialDir;
-            const HRESULT hr = LoadValueString("RecentDir", "MaterialDir", szInitialDir);
+            const HRESULT hr = LoadValue("RecentDir", "MaterialDir", szInitialDir);
             if (hr != S_OK)
                szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -448,7 +448,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                if (index != std::string::npos)
                {
                    const std::string newInitDir(szFilename.substr(0, index));
-                   SaveValueString("RecentDir", "MaterialDir", newInitDir);
+                   SaveValue("RecentDir", "MaterialDir", newInitDir);
                }
             }
          }

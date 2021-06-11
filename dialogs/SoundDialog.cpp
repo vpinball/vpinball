@@ -256,7 +256,7 @@ void SoundDialog::Import()
    std::vector<std::string> szFileName;
    string szInitialDir;
 
-   HRESULT hr = LoadValueString( "RecentDir", "SoundDir", szInitialDir);
+   HRESULT hr = LoadValue( "RecentDir", "SoundDir", szInitialDir);
    if (hr != S_OK)
       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -266,7 +266,7 @@ void SoundDialog::Import()
       if (index != std::string::npos)
       {
          const std::string newInitDir(szFileName[0].substr(0, index));
-         hr = SaveValueString("RecentDir", "SoundDir", newInitDir);
+         hr = SaveValue("RecentDir", "SoundDir", newInitDir);
       }
 
       for (const std::string &file : szFileName)
@@ -332,7 +332,7 @@ void SoundDialog::ReImportFrom()
             string szInitialDir;
             std::vector<std::string> szFileName;
 
-            HRESULT hr = LoadValueString("RecentDir", "SoundDir", szInitialDir);
+            HRESULT hr = LoadValue("RecentDir", "SoundDir", szInitialDir);
             if (hr != S_OK)
                 szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -352,7 +352,7 @@ void SoundDialog::ReImportFrom()
                 if (index != std::string::npos)
                 {
                    const std::string newInitDir(szFileName[0].substr(0, index));
-                   hr = SaveValueString("RecentDir", "SoundDir", newInitDir);
+                   hr = SaveValue("RecentDir", "SoundDir", newInitDir);
                 }
 
                 pt->SetNonUndoableDirty( eSaveDirty );
@@ -415,7 +415,7 @@ void SoundDialog::Export()
             ofn.lpstrDefExt = "mp3";
 
             string initDir;
-            const HRESULT hr = LoadValueString("RecentDir", "SoundDir", initDir);
+            const HRESULT hr = LoadValue("RecentDir", "SoundDir", initDir);
             if (hr != S_OK)
                initDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -476,7 +476,7 @@ void SoundDialog::Export()
                     pps = (PinSound *)lvitem.lParam;
                 }
 
-                SaveValueString( "RecentDir", "SoundDir", pathName);
+                SaveValue( "RecentDir", "SoundDir", pathName);
             }
         }
     }

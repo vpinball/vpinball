@@ -75,7 +75,7 @@ void Rubber::SetDefaults(bool fromMouseClick)
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "TimerInterval", 100) : 100;
 
-   const HRESULT hr = LoadValueString(strKeyName, "Image", m_d.m_szImage);
+   const HRESULT hr = LoadValue(strKeyName, "Image", m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
 
@@ -106,7 +106,7 @@ void Rubber::WriteRegDefaults()
    SaveValueBool(strKeyName, "HitEvent", m_d.m_hitEvent);
    SaveValueBool(strKeyName, "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
    SaveValueInt(strKeyName, "TimerInterval", m_d.m_tdr.m_TimerInterval);
-   SaveValueString(strKeyName, "Image", m_d.m_szImage);
+   SaveValue(strKeyName, "Image", m_d.m_szImage);
    SaveValueFloat(strKeyName, "Elasticity", m_d.m_elasticity);
    SaveValueFloat(strKeyName, "ElasticityFalloff", m_d.m_elasticityFalloff);
    SaveValueFloat(strKeyName, "Friction", m_d.m_friction);

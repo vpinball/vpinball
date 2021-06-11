@@ -26,7 +26,7 @@ void LightSeq::SetDefaults(bool fromMouseClick)
    m_d.m_updateinterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\LightSequence", "UpdateInterval", 25) : 25;
 
    string tmp;
-   const HRESULT hr = LoadValueString("DefaultProps\\LightSequence", "Collection", tmp);
+   const HRESULT hr = LoadValue("DefaultProps\\LightSequence", "Collection", tmp);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_wzCollection.clear();
    else
@@ -47,7 +47,7 @@ void LightSeq::WriteRegDefaults()
    char strTmp[MAXSTRING];
    WideCharToMultiByteNull(CP_ACP, 0, m_d.m_wzCollection.c_str(), -1, strTmp, MAXSTRING, NULL, NULL);
    SaveValueInt("DefaultProps\\LightSequence", "UpdateInterval", m_d.m_updateinterval);
-   SaveValueString("DefaultProps\\LightSequence", "Collection", strTmp);
+   SaveValue("DefaultProps\\LightSequence", "Collection", strTmp);
    SaveValueFloat("DefaultProps\\LightSequence", "CenterX", m_d.m_vCenter.x);
    SaveValueFloat("DefaultProps\\LightSequence", "CenterY", m_d.m_vCenter.y);
    SaveValueBool("DefaultProps\\LightSequence", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);

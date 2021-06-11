@@ -123,7 +123,7 @@ void Gate::SetDefaults(bool fromMouseClick)
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Gate", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Gate", "TimerInterval", 100) : 100;
 
-   const HRESULT hr = LoadValueString("DefaultProps\\Gate", "Surface", m_d.m_szSurface);
+   const HRESULT hr = LoadValue("DefaultProps\\Gate", "Surface", m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface.clear();
 
@@ -146,7 +146,7 @@ void Gate::WriteRegDefaults()
    SaveValueBool("DefaultProps\\Gate", "Visible", m_d.m_visible);
    SaveValueBool("DefaultProps\\Gate", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
    SaveValueInt("DefaultProps\\Gate", "TimerInterval", m_d.m_tdr.m_TimerInterval);
-   SaveValueString("DefaultProps\\Gate", "Surface", m_d.m_szSurface);
+   SaveValue("DefaultProps\\Gate", "Surface", m_d.m_szSurface);
    SaveValueFloat("DefaultProps\\Gate", "Elasticity", m_d.m_elasticity);
    SaveValueFloat("DefaultProps\\Gate", "Friction", m_d.m_friction);
    SaveValueFloat("DefaultProps\\Gate", "Scatter", m_d.m_scatter);

@@ -166,7 +166,7 @@ void HitTarget::SetDefaults(bool fromMouseClick)
    // Rotation and Transposition
    m_d.m_rotZ = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Orientation", 0.0f) : 0.0f;
 
-   const HRESULT hr = LoadValueString(strKeyName, "Image", m_d.m_szImage);
+   const HRESULT hr = LoadValue(strKeyName, "Image", m_d.m_szImage);
    if ((hr != S_OK) && fromMouseClick)
       m_d.m_szImage.clear();
 
@@ -206,7 +206,7 @@ void HitTarget::WriteRegDefaults()
 
    SaveValueFloat(strKeyName, "Orientation", m_d.m_rotZ);
 
-   SaveValueString(strKeyName, "Image", m_d.m_szImage);
+   SaveValue(strKeyName, "Image", m_d.m_szImage);
    SaveValueBool(strKeyName, "HitEvent", m_d.m_hitEvent);
    SaveValueFloat(strKeyName, "HitThreshold", m_d.m_threshold);
    SaveValueFloat(strKeyName, "Elasticity", m_d.m_elasticity);

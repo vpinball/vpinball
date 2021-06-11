@@ -33,11 +33,11 @@ void DispReel::SetDefaults(bool fromMouseClick)
 
    // set all the Data defaults
    HRESULT hr;
-   hr = LoadValueString("DefaultProps\\Ramp", "Image", m_d.m_szImage);
+   hr = LoadValue("DefaultProps\\Ramp", "Image", m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
 
-   hr = LoadValueString("DefaultProps\\Ramp", "Sound", m_d.m_szSound);
+   hr = LoadValue("DefaultProps\\Ramp", "Sound", m_d.m_szSound);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSound.clear();
 
@@ -59,8 +59,8 @@ void DispReel::SetDefaults(bool fromMouseClick)
 
 void DispReel::WriteRegDefaults()
 {
-   SaveValueString("DefaultProps\\EMReel", "Image", m_d.m_szImage);
-   SaveValueString("DefaultProps\\EMReel", "Sound", m_d.m_szSound);
+   SaveValue("DefaultProps\\EMReel", "Image", m_d.m_szImage);
+   SaveValue("DefaultProps\\EMReel", "Sound", m_d.m_szSound);
    SaveValueBool("DefaultProps\\Decal", "UseImageGrid", m_d.m_useImageGrid);
    SaveValueBool("DefaultProps\\Decal", "Visible", m_d.m_visible);
    SaveValueInt("DefaultProps\\Decal", "ImagesPerRow", m_d.m_imagesPerGridRow);
