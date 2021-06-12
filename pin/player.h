@@ -624,7 +624,7 @@ public:
 
 #ifdef STEPPING
    U32 m_pauseTimeTarget;
-   bool m_pause;
+   volatile bool m_pause;
    bool m_step;
 #endif
 

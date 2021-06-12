@@ -1311,7 +1311,7 @@ void VPinball::MainMsgLoop()
          else
          {
             // if player has been closed in the meantime, check if we should display the file open dialog again to select/play the next table
-            if (m_table_played_via_SelectTableOnStart)
+            if (m_table_played_via_SelectTableOnStart && (!g_pplayer || !g_pplayer->m_pause))
             {
                // first close the current table
                CComObject<PinTable>* const pt = GetActiveTable();

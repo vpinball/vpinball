@@ -1972,26 +1972,25 @@ void PinTable::Play(const bool cameraMode)
 
       // create Player and init that one
 
-      if (!m_pcv->m_scriptError)
-      {
-         g_pplayer = new Player(cameraMode, this);
-         g_pplayer->Create();
+      g_pplayer = new Player(cameraMode, this);
+      g_pplayer->Create();
 
-         const float minSlope = (m_overridePhysics ? m_fOverrideMinSlope : m_angletiltMin);
-         const float maxSlope = (m_overridePhysics ? m_fOverrideMaxSlope : m_angletiltMax);
-         const float slope = minSlope + (maxSlope - minSlope) * m_globalDifficulty;
-         g_pplayer->SetGravity(slope, m_overridePhysics ? m_fOverrideGravityConstant : m_Gravity);
+      const float minSlope = (m_overridePhysics ? m_fOverrideMinSlope : m_angletiltMin);
+      const float maxSlope = (m_overridePhysics ? m_fOverrideMaxSlope : m_angletiltMax);
+      const float slope = minSlope + (maxSlope - minSlope) * m_globalDifficulty;
+      g_pplayer->SetGravity(slope, m_overridePhysics ? m_fOverrideGravityConstant : m_Gravity);
 
-         m_pcv->SetEnabled(false); // Can't edit script while playing
+      m_pcv->SetEnabled(false); // Can't edit script while playing
 
-         m_vpinball->ToggleToolbar();
-      }
+      m_vpinball->ToggleToolbar();
    }
    else
    {
       RestoreBackup();
       g_keepUndoRecords = true;
       m_pcv->EndSession();
+
+      g_pvp->m_table_played_via_SelectTableOnStart = false;
    }
 }
 
