@@ -324,9 +324,11 @@ void VPinball::SetStatusBarElementInfo(const string& info)
    SendMessage(m_hwndStatusBar, SB_SETTEXT, 4 | 0, (size_t)info.c_str());
 }
 
-bool VPinball::OpenFileDialog(const char* const initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags)
+bool VPinball::OpenFileDialog(const char* const initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const std::string& windowTitle)
 {
    CFileDialog fileDlg(TRUE, defaultExt, initDir, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
+   if (!windowTitle.empty())
+      fileDlg.SetTitle(windowTitle.c_str());
    if (fileDlg.DoModal(*this)==IDOK)
    {
       int pos = 0;
@@ -343,9 +345,11 @@ bool VPinball::OpenFileDialog(const char* const initDir, std::vector<std::string
    }
 }
 
-bool VPinball::SaveFileDialog(const char* const initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags)
+bool VPinball::SaveFileDialog(const char* const initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const std::string& windowTitle)
 {
    CFileDialog fileDlg(FALSE, defaultExt, initDir, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
+   if (!windowTitle.empty())
+      fileDlg.SetTitle(windowTitle.c_str());
    if (fileDlg.DoModal(*this) == IDOK)
    {
       int pos = 0;
@@ -891,7 +895,7 @@ bool VPinball::LoadFile(const bool updateEditor)
    if (hr != S_OK)
       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-   if (!OpenFileDialog(szInitialDir.c_str(), szFileName, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0))
+   if (!OpenFileDialog(szInitialDir.c_str(), szFileName, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0, !updateEditor ? string("Select a Table to Play or press Cancel to enter Editor-Mode") : string()))
       return false;
 
    const size_t index = szFileName[0].find_last_of('\\');
