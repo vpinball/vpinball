@@ -501,7 +501,7 @@ public:
            else
            {
                loadFileResult = m_vpinball.LoadFile(!play);
-               m_vpinball.m_table_played_via_SelectTableOnStart = loadFileResult;
+               m_vpinball.m_table_played_via_SelectTableOnStart = LoadValueBoolWithDefault("Editor", "SelectTableOnPlayerClose", true) ? loadFileResult : false;
            }
 
            if (extractScript && loadFileResult)

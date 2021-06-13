@@ -479,6 +479,7 @@
     <Image Include="res\camera.ico">
       <Filter>res</Filter>
     </Image>
+    <Image Include="res\PlayWarning.bmp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\vpinball.rgs">

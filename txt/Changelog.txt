@@ -68,7 +68,8 @@ FEATURES:
 
 - add support for capturing any window content into a flasher texture (intended to be used with PUP content)
 
-- 'loop' the loading/select-file dialog when enabled in the preferences (i.e. after having played a table this way and exited, then unload it and directly be able to select the next table)
+- be able to 'loop' the automatic loading/select-file dialog if this new setting is enabled in the editor preferences
+  (i.e. after having played a table and one exits, the table is unloaded and one can directly select the next one to play)
 
 FIXES:
 

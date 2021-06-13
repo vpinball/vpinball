@@ -83,6 +83,9 @@ BOOL EditorOptionsDialog::OnInitDialog()
     const bool startVPfileDialog = LoadValueBoolWithDefault("Editor", "SelectTableOnStart", true);
     SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_SETCHECK, startVPfileDialog ? BST_CHECKED : BST_UNCHECKED, 0);
 
+    const bool startVPfileDialogPlayerClose = LoadValueBoolWithDefault("Editor", "SelectTableOnPlayerClose", true);
+    SendDlgItemMessage(IDC_START_VP_FILE_DIALOG2, BM_SETCHECK, startVPfileDialogPlayerClose ? BST_CHECKED : BST_UNCHECKED, 0);
+
     const float throwBallMass = LoadValueFloatWithDefault("Editor", "ThrowBallMass", 1.0f);
     string textBuf;
     f2sz(throwBallMass, textBuf);
@@ -200,6 +203,7 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
           SendDlgItemMessage(IDC_ALWAYSVIEWSCRIPT, BM_SETCHECK, BST_CHECKED, 0);
           SetDlgItemInt(IDC_THROW_BALLS_SIZE_EDIT, 50, FALSE);
           SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_SETCHECK, BST_CHECKED, 0);
+          SendDlgItemMessage(IDC_START_VP_FILE_DIALOG2, BM_SETCHECK, BST_CHECKED, 0);
           SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_SETCURSEL, 0, 0);
           SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, "1.0");
           const int x = 0;
@@ -312,6 +316,9 @@ void EditorOptionsDialog::OnOK()
 
     checked = (SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_GETCHECK, 0, 0) == BST_CHECKED);
     SaveValueBool("Editor", "SelectTableOnStart", checked);
+
+    checked = (SendDlgItemMessage(IDC_START_VP_FILE_DIALOG2, BM_GETCHECK, 0, 0) == BST_CHECKED);
+    SaveValueBool("Editor", "SelectTableOnPlayerClose", checked);
 
     size_t units = SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
     if (units == LB_ERR)
