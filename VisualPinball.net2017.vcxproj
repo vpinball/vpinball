@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugCoverage|Win32">
@@ -477,7 +477,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -1594,6 +1593,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\lightseq.ico" />
     <Image Include="res\magnify.ico" />
     <Image Include="res\options.ico" />
+    <Image Include="res\PlayWarning.bmp" />
     <Image Include="res\plunger.ico" />
     <Image Include="res\primitive.ico" />
     <Image Include="res\ramp.ico" />
