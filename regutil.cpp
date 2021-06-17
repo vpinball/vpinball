@@ -70,10 +70,10 @@ HRESULT LoadValue(const std::string &szKey, const std::string &szValue, int &pin
 
 HRESULT LoadValue(const std::string &szKey, const std::string &szValue, unsigned int &pint)
 {
-   int val;
-   const HRESULT hr = LoadValue(szKey, szValue, val);
-   pint = val;
-   return hr;
+   DWORD type = REG_NONE;
+   const HRESULT hr = LoadValue(szKey, szValue, type, (void *)&pint, 4);
+
+   return (type != REG_DWORD) ? E_FAIL : hr;
 }
 
 static HRESULT LoadValue(const std::string &szKey, const std::string &szValue, DWORD &type, void *pvalue, DWORD size)
