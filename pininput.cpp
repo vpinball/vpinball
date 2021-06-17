@@ -61,7 +61,7 @@ PinInput::PinInput()
    m_lr_axis = 1;
    m_ud_axis = 2;
    m_plunger_reverse = false;
-   m_plunger_retract = true;
+   m_plunger_retract = false;
    m_lr_axis_reverse = false;
    m_ud_axis_reverse = false;
    m_override_default_buttons = false;
