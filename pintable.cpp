@@ -5206,7 +5206,7 @@ void PinTable::ExportMesh(ObjLoader& loader)
 
    const WORD playfieldPolyIndices[10] = { 0, 1, 3, 0, 3, 2, 2, 3, 5, 6 };
 
-   Vertex3D_NoTex2 * const buffer = new Vertex3D_NoTex2[4 + 7];
+   Vertex3D_NoTex2 buffer[4 + 7];
    unsigned int offs = 0;
    for (unsigned int y = 0; y <= 1; ++y)
       for (unsigned int x = 0; x <= 1; ++x, ++offs)
@@ -5232,7 +5232,6 @@ void PinTable::ExportMesh(ObjLoader& loader)
    loader.UseTexture(m_playfieldMaterial);
    loader.WriteFaceInfoList(playfieldPolyIndices, 6);
    loader.UpdateFaceOffset(4);
-   delete[] buffer;
 }
 
 void PinTable::ExportTableMesh()

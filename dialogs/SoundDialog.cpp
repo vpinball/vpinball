@@ -370,7 +370,6 @@ void SoundDialog::Export()
 
     if (selectedItemsCount)
     {
-        OPENFILENAME ofn;
         LVITEM lvitem;
         int sel = ListView_GetNextItem( hSoundList, -1, LVNI_SELECTED ); //next selected item 	
         if (sel != -1)
@@ -381,6 +380,7 @@ void SoundDialog::Export()
             ListView_GetItem( hSoundList, &lvitem );
             PinSound *pps = (PinSound *)lvitem.lParam;
 
+            OPENFILENAME ofn;
             ZeroMemory( &ofn, sizeof( OPENFILENAME ) );
             ofn.lStructSize = sizeof( OPENFILENAME );
             ofn.hInstance = g_pvp->theInstance;

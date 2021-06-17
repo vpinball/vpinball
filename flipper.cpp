@@ -794,10 +794,10 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
             // fixAngleScale = 0.0; // note: if you force fixAngleScale = 0.0 then all will look as old/buggy version
    const float baseRadius = m_d.m_BaseRadius - m_d.m_rubberthickness;
    const float endRadius = m_d.m_EndRadius - m_d.m_rubberthickness;
-   Vertex3D_NoTex2 *const temp = new Vertex3D_NoTex2[flipperBaseVertices];
+   vector<Vertex3D_NoTex2> temp(flipperBaseVertices);
 
    // scale the base and tip
-   memcpy(temp, flipperBaseMesh, sizeof(Vertex3D_NoTex2)*flipperBaseVertices);
+   memcpy(temp.data(), flipperBaseMesh, sizeof(Vertex3D_NoTex2)*flipperBaseVertices);
    for (int t = 0; t < 13; t++)
    {
       for (unsigned int i = 0; i < flipperBaseVertices; i++)
@@ -830,7 +830,7 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
    //rubber
    if (m_d.m_rubberthickness > 0.f)
    {
-      memcpy(temp, flipperBaseMesh, sizeof(Vertex3D_NoTex2)*flipperBaseVertices);
+      memcpy(temp.data(), flipperBaseMesh, sizeof(Vertex3D_NoTex2)*flipperBaseVertices);
       for (int t = 0; t < 13; t++)
       {
          for (unsigned int i = 0; i < flipperBaseVertices; i++)
@@ -861,8 +861,6 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
          buf[i + flipperBaseVertices].tv = flipperBaseMesh[i].tv + 0.5f;
       }
    }
-
-   delete [] temp;
 }
 
 //

@@ -1784,7 +1784,7 @@ void CodeViewer::GetMembers(vector<UserData>* ListIn, const string &strIn)
 		size_t i = 0;
 		while (i < NumberOfMembers)
 		{
-			UserData UD = GetUDfromUniqueKey(ListIn, udParent.m_children.at(i));
+			UserData UD = GetUDfromUniqueKey(ListIn, udParent.m_children[i]);
 			FindOrInsertUD(m_currentMembers, UD);
 			++i;
 		}

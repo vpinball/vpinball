@@ -133,16 +133,17 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
 
                     fd.cbSizeofstruct = sizeof(FONTDESC);
 
-                    const int len = lstrlen(m_font->GetLogFont().lfFaceName) + 1;
+                    const LOGFONT font = m_font->GetLogFont();
+                    const int len = lstrlen(font.lfFaceName) + 1;
                     fd.lpstrName = (LPOLESTR)malloc(len * sizeof(WCHAR));
                     memset(fd.lpstrName, 0, len * sizeof(WCHAR));
-                    MultiByteToWideCharNull(CP_ACP, 0, m_font->GetLogFont().lfFaceName, -1, fd.lpstrName, len);
+                    MultiByteToWideCharNull(CP_ACP, 0, font.lfFaceName, -1, fd.lpstrName, len);
 
-                    fd.sWeight = (SHORT)m_font->GetLogFont().lfWidth;
-                    fd.sCharset = m_font->GetLogFont().lfCharSet;
-                    fd.fItalic = m_font->GetLogFont().lfItalic;
-                    fd.fUnderline = m_font->GetLogFont().lfUnderline;
-                    fd.fStrikethrough = m_font->GetLogFont().lfStrikeOut;
+                    fd.sWeight = (SHORT)font.lfWidth;
+                    fd.sCharset = font.lfCharSet;
+                    fd.fItalic = font.lfItalic;
+                    fd.fUnderline = font.lfUnderline;
+                    fd.fStrikethrough = font.lfStrikeOut;
 
                     // free old font first
                     decal->m_pIFont->Release();

@@ -61,7 +61,7 @@ static inline bool4 ambi_dom(const Vertex4D &jDx)
         jDx.w != 0.f && jDx.w + jDx.y > jDx.x + jDx.z);
 }
 
-void upscale(DWORD * const data, const int2 res, const bool is_brightness_data)
+void upscale(DWORD * const data, const int2 &res, const bool is_brightness_data)
 {
     const unsigned int xres = res.x;
     const unsigned int yres = res.y;
