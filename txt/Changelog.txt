@@ -71,6 +71,8 @@ FEATURES:
 - be able to 'loop' the automatic loading/select-file dialog if this new setting is enabled in the editor preferences
   (i.e. after having played a table and one exits, the table is unloaded and one can directly select the next one to play)
 
+- retweak default saving filenames for Blueprint-images, .obj, .pov and .vpp: It's now copied from the table filename
+
 FIXES:
 
 - fix issues with 3D Audio setups and backglass sounds (like music)
