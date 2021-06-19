@@ -324,9 +324,9 @@ void VPinball::SetStatusBarElementInfo(const string& info)
    SendMessage(m_hwndStatusBar, SB_SETTEXT, 4 | 0, (size_t)info.c_str());
 }
 
-bool VPinball::OpenFileDialog(const char* const initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const std::string& windowTitle)
+bool VPinball::OpenFileDialog(const string& initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const std::string& windowTitle) //!! use this all over the place and move to some standard header
 {
-   CFileDialog fileDlg(TRUE, defaultExt, initDir, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
+   CFileDialog fileDlg(TRUE, defaultExt, initDir.c_str(), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
    if (!windowTitle.empty())
       fileDlg.SetTitle(windowTitle.c_str());
    if (fileDlg.DoModal(*this)==IDOK)
@@ -345,9 +345,9 @@ bool VPinball::OpenFileDialog(const char* const initDir, std::vector<std::string
    }
 }
 
-bool VPinball::SaveFileDialog(const char* const initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const std::string& windowTitle)
+bool VPinball::SaveFileDialog(const string& initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const std::string& windowTitle) //!! use this all over the place and move to some standard header
 {
-   CFileDialog fileDlg(FALSE, defaultExt, initDir, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
+   CFileDialog fileDlg(FALSE, defaultExt, initDir.c_str(), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
    if (!windowTitle.empty())
       fileDlg.SetTitle(windowTitle.c_str());
    if (fileDlg.DoModal(*this) == IDOK)
@@ -895,15 +895,12 @@ bool VPinball::LoadFile(const bool updateEditor)
    if (hr != S_OK)
       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-   if (!OpenFileDialog(szInitialDir.c_str(), szFileName, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0, !updateEditor ? string("Select a Table to Play or press Cancel to enter Editor-Mode") : string()))
+   if (!OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0, !updateEditor ? string("Select a Table to Play or press Cancel to enter Editor-Mode") : string()))
       return false;
 
    const size_t index = szFileName[0].find_last_of('\\');
    if (index != std::string::npos)
-   {
-       const std::string newInitDir(szFileName[0].substr(0, index));
-       hr = SaveValue("RecentDir", "LoadDir", newInitDir);
-   }
+      hr = SaveValue("RecentDir", "LoadDir", szFileName[0].substr(0, index));
 
    LoadFileName(szFileName[0], updateEditor);
 
@@ -1910,14 +1907,11 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
             if (hr != S_OK)
                szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-            if (g_pvp->OpenFileDialog(szInitialDir.c_str(), szFileName, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0))
+            if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0))
             {
                const size_t index = szFileName[0].find_last_of('\\');
                if (index != std::string::npos)
-               {
-                  const std::string newInitDir(szFileName[0].substr(0, index));
-                  SaveValue("RecentDir", "FontDir", newInitDir);
-               }
+                  SaveValue("RecentDir", "FontDir", szFileName[0].substr(0, index));
 
                pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), szFileName[0]);
             }

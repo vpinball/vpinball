@@ -317,7 +317,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          if (hr != S_OK)
             szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-         if (g_pvp->OpenFileDialog(szInitialDir.c_str(), szFilename, "Material Files (.mat)\0*.mat\0", "mat", 0))
+         if (g_pvp->OpenFileDialog(szInitialDir, szFilename, "Material Files (.mat)\0*.mat\0", "mat", 0))
          {
             int materialCount = 0;
             int versionNumber = 0;
@@ -353,10 +353,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
             const size_t index = szFilename[0].find_last_of('\\');
             if (index != std::string::npos)
-            {
-               const std::string newInitDir(szFilename[0].substr(0, index));
-               SaveValue("RecentDir", "MaterialDir", newInitDir);
-            }
+               SaveValue("RecentDir", "MaterialDir", szFilename[0].substr(0, index));
 
             pt->SetNonUndoableDirty(eSaveDirty);
          }

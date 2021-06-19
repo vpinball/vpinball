@@ -260,14 +260,11 @@ void SoundDialog::Import()
    if (hr != S_OK)
       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-   if (g_pvp->OpenFileDialog(szInitialDir.c_str(), szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
+   if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
    {
       const size_t index = szFileName[0].find_last_of('\\');
       if (index != std::string::npos)
-      {
-         const std::string newInitDir(szFileName[0].substr(0, index));
-         hr = SaveValue("RecentDir", "SoundDir", newInitDir);
-      }
+         hr = SaveValue("RecentDir", "SoundDir", szFileName[0].substr(0, index));
 
       for (const std::string &file : szFileName)
          pt->ImportSound(hSoundList, file);
@@ -336,7 +333,7 @@ void SoundDialog::ReImportFrom()
             if (hr != S_OK)
                 szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-            if (g_pvp->OpenFileDialog(szInitialDir.c_str(), szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", 0))
+            if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", 0))
             {
                 LVITEM lvitem;
                 lvitem.mask = LVIF_PARAM;
@@ -350,10 +347,7 @@ void SoundDialog::ReImportFrom()
 
                 const size_t index = szFileName[0].find_last_of('\\');
                 if (index != std::string::npos)
-                {
-                   const std::string newInitDir(szFileName[0].substr(0, index));
-                   hr = SaveValue("RecentDir", "SoundDir", newInitDir);
-                }
+                   hr = SaveValue("RecentDir", "SoundDir", szFileName[0].substr(0, index));
 
                 pt->SetNonUndoableDirty( eSaveDirty );
             }

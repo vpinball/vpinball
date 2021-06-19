@@ -2132,7 +2132,7 @@ HRESULT PinTable::Save(const bool saveAs)
       // First, use dir of current table
       const size_t index = m_szFileName.find_last_of('\\');
       if (index != std::string::npos)
-          szInitialDir = m_szFileName.substr(0, index);
+         szInitialDir = m_szFileName.substr(0, index);
       // Or try with the standard last-used dir
       else
       {
@@ -2152,7 +2152,7 @@ HRESULT PinTable::Save(const bool saveAs)
 
       char szInitialDir[MAXSTRING];
       strncpy_s(szInitialDir, m_szFileName.c_str(), sizeof(szInitialDir)-1);
-      szInitialDir[ofn.nFileOffset] = 0; // truncate after folder
+      szInitialDir[ofn.nFileOffset] = '\0'; // truncate after folder
       HRESULT hr = SaveValue("RecentDir", "LoadDir", szInitialDir);
 
       {
@@ -5061,7 +5061,10 @@ void PinTable::ExportBlueprint()
       ofn.hwndOwner = m_vpinball->GetHwnd();
       ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0WEBP (.webp)\0*.webp;\0";
       char szBlueprintFileName[MAXSTRING];
-      szBlueprintFileName[0] = '\0';
+      strncpy_s(szBlueprintFileName, m_szFileName.c_str(), sizeof(szBlueprintFileName)-1);
+      const size_t idx = m_szFileName.find_last_of('.');
+      if (idx != string::npos && idx < MAXSTRING)
+          szBlueprintFileName[idx] = '\0';
       ofn.lpstrFile = szBlueprintFileName;
       ofn.nMaxFile = sizeof(szBlueprintFileName);
       ofn.lpstrDefExt = "png";
@@ -5237,7 +5240,10 @@ void PinTable::ExportMesh(ObjLoader& loader)
 void PinTable::ExportTableMesh()
 {
    char szObjFileName[MAXSTRING];
-   szObjFileName[0] = '\0';
+   strncpy_s(szObjFileName, m_szFileName.c_str(), sizeof(szObjFileName)-1);
+   const size_t idx = m_szFileName.find_last_of('.');
+   if (idx != string::npos && idx < MAXSTRING)
+       szObjFileName[idx] = '\0';
    OPENFILENAME ofn;
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
    ofn.lStructSize = sizeof(OPENFILENAME);
@@ -5282,15 +5288,12 @@ void PinTable::ImportBackdropPOV(const string& filename)
        if (hr != S_OK)
           szInitialDir = "c:\\Visual Pinball\\Tables\\";
    
-       if (!m_vpinball->OpenFileDialog(szInitialDir.c_str(), szFileName, "POV file (*.pov)\0*.pov\0Old POV file(*.xml)\0*.xml\0", "pov", 0))
+       if (!m_vpinball->OpenFileDialog(szInitialDir, szFileName, "POV file (*.pov)\0*.pov\0Old POV file(*.xml)\0*.xml\0", "pov", 0))
           return;
 
        const size_t index = szFileName[0].find_last_of('\\');
        if (index != std::string::npos)
-       {
-           const std::string newInitDir(szFileName[0].substr(0, index));
-           hr = SaveValue("RecentDir", "POVDir", newInitDir);
-       }
+           hr = SaveValue("RecentDir", "POVDir", szFileName[0].substr(0, index));
     }
     else
        szFileName.push_back(filename);
@@ -5461,7 +5464,7 @@ void PinTable::ImportBackdropPOV(const string& filename)
 
 void PinTable::ExportBackdropPOV(const string& filename)
 {
-	string objFileName;
+	string povFileName;
 	if (filename.empty())
 	{
 		OPENFILENAME ofn;
@@ -5471,10 +5474,13 @@ void PinTable::ExportBackdropPOV(const string& filename)
 		ofn.hwndOwner = m_vpinball->GetHwnd();
 		// TEXT
 		ofn.lpstrFilter = "POV file(*.pov)\0*.pov\0";
-		char szObjFileName[MAXSTRING];
-		szObjFileName[0] = '\0';
-		ofn.lpstrFile = szObjFileName;
-		ofn.nMaxFile = sizeof(szObjFileName);
+		char szFileName[MAXSTRING];
+		strncpy_s(szFileName, m_szFileName.c_str(), sizeof(szFileName)-1);
+		const size_t idx = m_szFileName.find_last_of('.');
+		if(idx != string::npos && idx < MAXSTRING)
+			szFileName[idx] = '\0';
+		ofn.lpstrFile = szFileName;
+		ofn.nMaxFile = sizeof(szFileName);
 		ofn.lpstrDefExt = "pov";
 		ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
@@ -5484,10 +5490,10 @@ void PinTable::ExportBackdropPOV(const string& filename)
 		if (ret == 0)
 			return;// S_FALSE;
 
-		objFileName = szObjFileName;
+		povFileName = szFileName;
 	}
 	else
-		objFileName = filename;
+		povFileName = filename;
 
     char strBuf[MAX_PATH];
     xml_document<> xmlDoc;
@@ -5691,7 +5697,7 @@ void PinTable::ExportBackdropPOV(const string& filename)
         root->append_node(custom);
 
         xmlDoc.append_node(root);
-        std::ofstream myfile(objFileName);
+        std::ofstream myfile(povFileName);
         myfile << xmlDoc;
         myfile.close();
     }
@@ -9132,15 +9138,12 @@ STDMETHODIMP PinTable::ImportPhysics()
    if (hr != S_OK)
       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-   if (!m_vpinball->OpenFileDialog(szInitialDir.c_str(), szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
+   if (!m_vpinball->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
        return S_OK;
 
    const size_t index = szFileName[0].find_last_of('\\');
    if (index != std::string::npos)
-   {
-       const std::string newInitDir(szFileName[0].substr(0, index));
-       hr = SaveValue("RecentDir", "PhysicsDir", newInitDir);
-   }
+       hr = SaveValue("RecentDir", "PhysicsDir", szFileName[0].substr(0, index));
 
    ImportVPP(szFileName[0]);
 
@@ -9379,7 +9382,10 @@ STDMETHODIMP PinTable::ExportPhysics()
    Flipper * const flipper = (Flipper *)m_vedit[i];
 
    char szFileName[MAXSTRING];
-   szFileName[0] = '\0';
+   strncpy_s(szFileName, m_szFileName.c_str(), sizeof(szFileName)-1);
+   const size_t idx = m_szFileName.find_last_of('.');
+   if (idx != string::npos && idx < MAXSTRING)
+      szFileName[idx] = '\0';
 
    OPENFILENAME ofn;
    ZeroMemory(&ofn, sizeof(OPENFILENAME));

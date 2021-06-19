@@ -1916,15 +1916,14 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             if (hr != S_OK)
                szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-            if (g_pvp->OpenFileDialog(szInitialDir.c_str(), szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0))
+            if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0))
             {
                SetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, szFileName[0].c_str());
 
                size_t index = szFileName[0].find_last_of('\\');
                if (index != std::string::npos)
                {
-                  const std::string newInitDir(szFileName[0].substr(0, index));
-                  hr = SaveValue("RecentDir", "ImportDir", newInitDir);
+                  hr = SaveValue("RecentDir", "ImportDir", szFileName[0].substr(0, index));
                   index++;
                   prim->m_d.m_meshFileName = szFileName[0].substr(index, szFileName[0].length() - index);
                }
@@ -2114,7 +2113,7 @@ void Primitive::ExportMeshDialog()
 
    std::vector<std::string> szFileName;
    
-   if (m_vpinball->SaveFileDialog(szInitialDir.c_str(), szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY))
+   if (m_vpinball->SaveFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY))
    {
       const size_t index = szFileName[0].find_last_of('\\');
       if (index != std::string::npos)

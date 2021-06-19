@@ -162,8 +162,8 @@ public:
     SendMessage(m_hwndStatusBar, SB_SETTEXT, 5 | 0, (size_t)textBuf.c_str());
    }
 
-   bool OpenFileDialog(const char* const initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const std::string& windowTitle = string());
-   bool SaveFileDialog(const char* const initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const std::string& windowTitle = string());
+   bool OpenFileDialog(const string& initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const std::string& windowTitle = string());
+   bool SaveFileDialog(const string& initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const std::string& windowTitle = string());
 
    CDockProperty* GetPropertiesDocker();
    CDockToolbar *GetToolbarDocker();

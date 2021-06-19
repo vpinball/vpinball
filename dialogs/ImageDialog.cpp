@@ -402,7 +402,7 @@ void ImageDialog::Import()
    if (hr != S_OK)
       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-   if (g_pvp->OpenFileDialog(szInitialDir.c_str(), szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0", "png", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
+   if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0", "png", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
    {
       CCO(PinTable) * const pt = g_pvp->GetActiveTable();
       const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
@@ -412,10 +412,7 @@ void ImageDialog::Import()
 
       const size_t index = szFileName[0].find_last_of('\\');
       if (index != std::string::npos)
-      {
-          const std::string newInitDir(szFileName[0].substr(0, index));
-          hr = SaveValue("RecentDir", "ImageDir", newInitDir);
-      }
+         hr = SaveValue("RecentDir", "ImageDir", szFileName[0].substr(0, index));
 
       pt->SetNonUndoableDirty(eSaveDirty);
       SetFocus();
@@ -723,7 +720,7 @@ void ImageDialog::ReimportFrom()
          if (hr != S_OK)
             szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-         if (g_pvp->OpenFileDialog(szInitialDir.c_str(), szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0","png",0))
+         if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0","png",0))
          {
             LVITEM lvitem;
             lvitem.mask = LVIF_PARAM;
@@ -735,10 +732,7 @@ void ImageDialog::ReimportFrom()
             {
                const size_t index = szFileName[0].find_last_of('\\');
                if (index != std::string::npos)
-               {
-                  const std::string newInitDir(szFileName[0].substr(0, index));
-                  SaveValue("RecentDir", "ImageDir", newInitDir);
-               }
+                  SaveValue("RecentDir", "ImageDir", szFileName[0].substr(0, index));
 
                CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                pt->ReImportImage(ppi, szFileName[0]);

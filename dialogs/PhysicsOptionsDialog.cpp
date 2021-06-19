@@ -225,7 +225,17 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case 1112:
         {
             char szFileName[MAXSTRING];
-            szFileName[0] = '\0';
+            /*CComObject<PinTable>* const pt = g_pvp->GetActiveTable();
+            if (pt)
+            {
+               strncpy_s(szFileName, pt->m_szFileName.c_str(), sizeof(szFileName)-1);
+               const size_t idx = pt->m_szFileName.find_last_of('.');
+               if (idx != string::npos && idx < MAXSTRING)
+                  szFileName[idx] = '\0';
+            }
+            else
+               szFileName[0] = '\0';*/
+            strncpy_s(szFileName, "Physics.vpp", sizeof(szFileName)-1);
 
             OPENFILENAME ofn;
             ZeroMemory(&ofn, sizeof(OPENFILENAME));
@@ -395,15 +405,12 @@ bool PhysicsOptionsDialog::LoadSetting()
     if (hr != S_OK)
         szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-    if (!g_pvp->OpenFileDialog(szInitialDir.c_str(), szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
+    if (!g_pvp->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
         return false;
 
     const size_t index = szFileName[0].find_last_of('\\');
     if (index != std::string::npos)
-    {
-        const std::string newInitDir(szFileName[0].substr(0, index));
-        hr = SaveValue("RecentDir", "PhysicsDir", newInitDir);
-    }
+        hr = SaveValue("RecentDir", "PhysicsDir", szFileName[0].substr(0, index));
 
     xml_document<> xmlDoc;
     try
