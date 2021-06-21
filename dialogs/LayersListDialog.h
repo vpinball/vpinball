@@ -52,7 +52,7 @@ private:
    HTREEITEM   hCurrentElementItem;
    CImageList  m_normalImages;
    bool        m_dragging;
-   PinTable*   m_activeTable;
+   PinTable*   m_activeTable = nullptr;
    struct  DragItem
    {
       HTREEITEM   m_hDragItem;
