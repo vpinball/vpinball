@@ -12,7 +12,7 @@ HRESULT LoadValue(const std::string& szKey, const std::string& szValue, std::str
 {
    DWORD type = REG_NONE;
    char szbuffer[MAXSTRING];
-   szbuffer[0] = 0;
+   szbuffer[0] = '\0';
    const HRESULT hr = LoadValue(szKey, szValue, type, szbuffer, MAXSTRING);
    buffer = szbuffer;
 
@@ -22,7 +22,7 @@ HRESULT LoadValue(const std::string& szKey, const std::string& szValue, std::str
 HRESULT LoadValue(const std::string& szKey, const std::string& szValue, void* const szbuffer, const DWORD size)
 {
    if (size > 0) // clear string in case of reg value being set, but being null string which results in szbuffer being kept as-is
-      ((char*)szbuffer)[0] = 0;
+      ((char*)szbuffer)[0] = '\0';
 
    DWORD type = REG_NONE;
    const HRESULT hr = LoadValue(szKey, szValue, type, szbuffer, size);
@@ -55,7 +55,7 @@ HRESULT LoadValue(const std::string &szKey, const std::string &szValue, float &p
       pfloat = -pfloat;
    }
    else
-      pfloat = (float)atof(&szbuffer[0]);
+      pfloat = (float)atof(szbuffer);
 
    return hr;
 }

@@ -1753,8 +1753,6 @@ int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOpti
 int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)
 {
     LVFINDINFO lvf;
-    char buf1[MAX_PATH], buf2[MAX_PATH];
-
     SORTDATA * const lpsd = (SORTDATA *)lSortOption;
 
     lvf.flags = LVFI_PARAM;
@@ -1764,6 +1762,7 @@ int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM 
     lvf.lParam = lSortParam2;
     const int nItem2 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
 
+    char buf1[20], buf2[20];
     ListView_GetItemText(lpsd->hwndList, nItem1, lpsd->subItemIndex, buf1, sizeof(buf1));
     ListView_GetItemText(lpsd->hwndList, nItem2, lpsd->subItemIndex, buf2, sizeof(buf2));
 
@@ -1775,6 +1774,47 @@ int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM 
         return(value1-value2);
     else
         return(value2-value1);
+}
+
+int CALLBACK MyCompProcMemValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)
+{
+    LVFINDINFO lvf;
+    SORTDATA * const lpsd = (SORTDATA *)lSortOption;
+
+    lvf.flags = LVFI_PARAM;
+    lvf.lParam = lSortParam1;
+    const int nItem1 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
+
+    lvf.lParam = lSortParam2;
+    const int nItem2 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
+
+    char buf1[20], buf2[20];
+    ListView_GetItemText(lpsd->hwndList, nItem1, lpsd->subItemIndex, buf1, sizeof(buf1));
+    ListView_GetItemText(lpsd->hwndList, nItem2, lpsd->subItemIndex, buf2, sizeof(buf2));
+
+    float value[2];
+    for(int i = 0; i < 2; ++i)
+    {
+    char mem1[10], mem1b[10];
+    sscanf_s(i == 0 ? buf1 : buf2, "%s %s", mem1b, sizeof(mem1b), mem1, sizeof(mem1));
+    char* const fo = strchr(mem1b, ',');
+    if (fo != NULL)
+        *fo = '.';
+    value[i] = (float)atof(mem1b);
+    if (!_stricmp(mem1, "bytes"))
+        ;
+    else if (!_stricmp(mem1, "KB"))
+        value[i] *= (float)1024;
+    else if (!_stricmp(mem1, "MB"))
+        value[i] *= (float)(1024*1024);
+    else if (!_stricmp(mem1, "GB"))
+        value[i] *= (float)(1024*1024*1024);
+    }
+
+    if (lpsd->sortUpDown == 1)
+        return(int)(value[0]-value[1]);
+    else
+        return(int)(value[1]-value[0]);
 }
 
 static const int rgDlgIDFromSecurityLevel[] = { IDC_ACTIVEX0, IDC_ACTIVEX1, IDC_ACTIVEX2, IDC_ACTIVEX3, IDC_ACTIVEX4 };

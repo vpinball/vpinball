@@ -12,7 +12,7 @@ typedef struct _tagSORTDATA
 
 extern SORTDATA SortData;
 extern int CALLBACK MyCompProc( LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption );
-extern int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption);
+extern int CALLBACK MyCompProcMemValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption);
 int ImageDialog::m_columnSortOrder;
 bool ImageDialog::m_doNotChange;
 
@@ -52,7 +52,6 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    {
       case WM_INITDIALOG:
       {
-         LVCOLUMN lvcol;
          const HWND hListView = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
          m_resizer.Initialize(*this, CRect(0, 0, 720, 450));
          m_resizer.AddChild(hListView, topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
@@ -73,6 +72,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          ListView_SetExtendedListViewStyle(hListView, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
+         LVCOLUMN lvcol;
          lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
          const LocalString ls(IDS_NAME);
          lvcol.pszText = (LPSTR)ls.m_szbuffer; // = "Name";
@@ -127,7 +127,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                SortData.subItemIndex = columnNumber;
                SortData.sortUpDown = m_columnSortOrder;
                if (columnNumber==4)
-                   ListView_SortItems(SortData.hwndList, MyCompProcIntValues, &SortData);
+                   ListView_SortItems(SortData.hwndList, MyCompProcMemValues, &SortData);
                else
                    ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
             }
