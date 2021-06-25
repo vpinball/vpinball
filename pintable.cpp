@@ -10133,6 +10133,7 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
       {
          g_pvp->GetLayersDocker()->GetContainLayers()->GetLayersDialog()->SetActiveTable(m_table);
          g_pvp->GetLayersDocker()->GetContainLayers()->GetLayersDialog()->UpdateLayerList();
+         g_pvp->SetPropSel(m_table->m_vmultisel);
       }
    }
    return CMDIChild::OnMDIActivate(msg, wparam, lparam);
