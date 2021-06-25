@@ -501,7 +501,9 @@ void VPinball::SetPropSel(VectorProtected<ISelect> &pvsel)
 {
     if (m_propertyDialog && m_propertyDialog->IsWindow())
         m_propertyDialog->UpdateTabs(pvsel);
-    GetActiveTable()->SetFocus();
+    CComObject<PinTable>* const pt = GetActiveTable();
+    if(pt)
+        pt->SetFocus();
 }
 
 CMenu VPinball::GetMainMenu(int id)

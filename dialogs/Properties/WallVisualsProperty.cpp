@@ -19,6 +19,8 @@ void WallVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     //only show the first element on multi-select
     Surface* const wall = (Surface*)m_pvsel->ElementAt(0);
+    if (wall == nullptr)
+        return;
 
     if (dispid == DISPID_Image2 || dispid == -1)
         PropertyDialog::UpdateTextureComboBox(wall->GetPTable()->GetImageList(), m_sideImageCombo, wall->m_d.m_szSideImage);

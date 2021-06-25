@@ -48,7 +48,6 @@ void DispreelVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         UpdateBaseVisuals(reel, &reel->m_d);
         //only show the first element on multi-select
         break;
-
     }
 }
 

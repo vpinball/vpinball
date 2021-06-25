@@ -18,6 +18,9 @@ void WallPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     //only show the first element on multi-select
     Surface * const wall = (Surface*)m_pvsel->ElementAt(0);
+    if (wall == nullptr)
+        return;
+
     if (dispid == 14 || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_slingshotForceEdit, wall->GetSlingshotStrength());
     if (dispid == 427 || dispid == -1)
@@ -27,7 +30,7 @@ void WallPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
     if (dispid == 116 || dispid == -1)
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 116), wall->m_d.m_isBottomSolid);
     if (dispid == 120 || dispid == -1)
-       PropertyDialog::SetFloatTextbox(m_elasticityFallOffEdit, wall->m_d.m_elasticityFalloff);
+        PropertyDialog::SetFloatTextbox(m_elasticityFallOffEdit, wall->m_d.m_elasticityFalloff);
 
     if (dispid == IDC_COLLIDABLE_CHECK || dispid == -1)
     {

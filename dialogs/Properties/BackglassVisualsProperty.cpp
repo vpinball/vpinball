@@ -16,6 +16,9 @@ BackglassVisualsProperty::BackglassVisualsProperty(const VectorProtected<ISelect
 void BackglassVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
+    if (table == nullptr)
+        return;
+
     if(dispid == IDC_BG_NIGHT_DAY || dispid == -1)
         PropertyDialog::SetCheckboxState(m_hApplyNightDayCheck, table->m_ImageBackdropNightDay);
     if (dispid == DISPID_Image2 || dispid == -1)
@@ -45,6 +48,9 @@ void BackglassVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 void BackglassVisualsProperty::UpdateProperties(const int dispid)
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
+    if (table == nullptr)
+        return;
+
     switch (dispid)
     {
         case IDC_BG_NIGHT_DAY:
@@ -82,19 +88,16 @@ void BackglassVisualsProperty::UpdateProperties(const int dispid)
             break;
         case IDC_COLOR_BUTTON1:
         {
-            CComObject<PinTable>* const ptable = g_pvp->GetActiveTable();
-            if (ptable == nullptr)
-                break;
             CHOOSECOLOR cc = m_colorDialog.GetParameters();
             cc.Flags = CC_FULLOPEN | CC_RGBINIT;
             m_colorDialog.SetParameters(cc);
             m_colorDialog.SetColor(table->m_colorbackdrop);
-            m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
+            m_colorDialog.SetCustomColors(table->m_rgcolorcustom);
             if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
             {
                 table->m_colorbackdrop = m_colorDialog.GetColor();
                 m_colorButton1.SetColor(table->m_colorbackdrop);
-                memcpy(ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(ptable->m_rgcolorcustom));
+                memcpy(table->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(table->m_rgcolorcustom));
             }
             break;
         }

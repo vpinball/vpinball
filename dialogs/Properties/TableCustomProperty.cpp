@@ -45,7 +45,6 @@ TableCustomProperty::TableCustomProperty(const VectorProtected<ISelect> *pvsel) 
 void TableCustomProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
-
     if (table == nullptr)
         return;
 
@@ -93,8 +92,7 @@ void TableCustomProperty::UpdateVisuals(const int dispid/*=-1*/)
 void TableCustomProperty::UpdateProperties(const int dispid)
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
-
-    if (table == NULL)
+    if (table == nullptr)
         return;
     
     switch (dispid)

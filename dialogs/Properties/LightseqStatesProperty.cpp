@@ -35,7 +35,6 @@ void LightseqStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
 
         //only show the first element on multi-select
         break;
-
     }
 }
 

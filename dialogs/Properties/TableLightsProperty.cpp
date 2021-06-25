@@ -17,6 +17,8 @@ TableLightsProperty::TableLightsProperty(const VectorProtected<ISelect> *pvsel) 
 void TableLightsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
+    if (table == nullptr)
+        return;
 
     if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
         m_colorButton1.SetColor(table->m_lightAmbient);
@@ -43,7 +45,6 @@ void TableLightsProperty::UpdateVisuals(const int dispid/*=-1*/)
 void TableLightsProperty::UpdateProperties(const int dispid)
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
-
     if (table == nullptr)
         return;
 
