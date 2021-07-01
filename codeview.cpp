@@ -982,7 +982,7 @@ void CodeViewer::ShowFindDialog()
       m_findreplacestruct.Flags = FR_DOWN | FR_HIDEWHOLEWORD;
       m_findreplacestruct.lpstrFindWhat = szFindString;
       m_findreplacestruct.lpstrReplaceWith = NULL;
-      m_findreplacestruct.wFindWhatLen = 80;
+      m_findreplacestruct.wFindWhatLen = MAX_FIND_LENGTH-1;
       m_findreplacestruct.wReplaceWithLen = 0;
       m_findreplacestruct.lCustData = 0;
       m_findreplacestruct.lpfnHook = NULL;
@@ -1005,8 +1005,8 @@ void CodeViewer::ShowFindReplaceDialog()
       m_findreplacestruct.Flags = FR_DOWN | FR_HIDEWHOLEWORD;
       m_findreplacestruct.lpstrFindWhat = szFindString;
       m_findreplacestruct.lpstrReplaceWith = szReplaceString;
-      m_findreplacestruct.wFindWhatLen = 80;
-      m_findreplacestruct.wReplaceWithLen = 80;
+      m_findreplacestruct.wFindWhatLen = MAX_FIND_LENGTH-1;
+      m_findreplacestruct.wReplaceWithLen = MAX_FIND_LENGTH-1;
       m_findreplacestruct.lCustData = 0;
       m_findreplacestruct.lpfnHook = NULL;
       m_findreplacestruct.lpTemplateName = NULL;
@@ -2960,7 +2960,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 			CodeViewer * const pcv = g_pvp->m_pcv;
 			if (pcv)
 			{
-				int wParamLowWord = LOWORD(wParam);
+				const int wParamLowWord = LOWORD(wParam);
 				switch (wParamLowWord)
 				{
 				case IDC_CVP_BUT_CANCEL:
