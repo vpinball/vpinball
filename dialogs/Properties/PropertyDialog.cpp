@@ -606,7 +606,8 @@ bool PropertyDialog::PreTranslateMessage(MSG* msg)
    {
       const int keyPressed = LOWORD(msg->wParam);
       // only pass F1-F12 to the main VPinball class to open subdialogs from everywhere
-      if(keyPressed>=VK_F1 && keyPressed<=VK_F12 && TranslateAccelerator(g_pvp->GetHwnd(), g_haccel, msg))
+      //!! also grab VK_ESCAPE here to avoid weird results when pressing ESC in textboxes (property gets stuck then)
+      if(((keyPressed>=VK_F1 && keyPressed<=VK_F12) || keyPressed == VK_ESCAPE) && TranslateAccelerator(g_pvp->GetHwnd(), g_haccel, msg))
          return true;
    }
 
