@@ -128,6 +128,7 @@ FIXES:
 
 - add many more different windowed mode resolutions
 - more robustly handle display resolutions that are greater FullHD(1920x1080)
+- fix various issues (wrong resolution selected, etc) in the resolution selection list
 
 - also search for table-script replacements (i.e. external .vbs with the same/table name) in the "Scripts" folder to match the core script behavior
 - when modifying the table-script, check if it was loaded from an external .vbs, and if yes, then save the modifications to that file (and only optionally to the .vpx table itself)
