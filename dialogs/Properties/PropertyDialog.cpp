@@ -56,6 +56,8 @@ LRESULT EditBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
                     m_basePropertyDialog->UpdateProperties(m_id);
                 return 0;
             }
+            if (wparam == VK_ESCAPE)
+               return 1;
         }
     }
     return WndProcDefault(msg, wparam, lparam);
@@ -607,7 +609,7 @@ bool PropertyDialog::PreTranslateMessage(MSG* msg)
       const int keyPressed = LOWORD(msg->wParam);
       // only pass F1-F12 to the main VPinball class to open subdialogs from everywhere
       //!! also grab VK_ESCAPE here to avoid weird results when pressing ESC in textboxes (property gets stuck then)
-      if(((keyPressed>=VK_F1 && keyPressed<=VK_F12) || keyPressed == VK_ESCAPE) && TranslateAccelerator(g_pvp->GetHwnd(), g_haccel, msg))
+      if((keyPressed>=VK_F1 && keyPressed<=VK_F12) && TranslateAccelerator(g_pvp->GetHwnd(), g_haccel, msg))
          return true;
    }
 
@@ -663,6 +665,14 @@ BOOL PropertyDialog::IsSubDialogMessage(MSG &msg) const
                     g_pvp->ParseCommand(ID_DELETE, false);
                     return TRUE;
                 }
+            }
+            if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE)
+            {
+               const CString className = GetFocus().GetClassName();
+               // filter ESC-key otherwise the VPX will enter an endless event loop!?
+               if (className == "Edit" || className == "msctls_trackbar32" || className=="Button")
+                  return TRUE;
+
             }
             else
             {
