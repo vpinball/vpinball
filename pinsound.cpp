@@ -186,7 +186,9 @@ HRESULT PinSound::ReInitialize()
    HRESULT hr;
    if (FAILED(hr = pds->m_pDS->CreateSoundBuffer(&dsbd, &m_pDSBuffer, NULL)))
    {
-      ShowError("Could not create sound buffer for load.");
+      char bla[128];
+      sprintf_s(bla, "Error: 0x%X. Could not create sound buffer for load.", hr);
+      ShowError(bla);
       m_pPinDirectSound = NULL;
       m_pDSBuffer = NULL;
       return hr;
@@ -384,7 +386,9 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    HRESULT hr;
    if (FAILED(hr = DirectSoundCreate((DSidx != 0) ? DSads[DSidx]->guid : NULL, &m_pDS, NULL)))
    {
-      ShowError("Could not create Direct Sound.");
+      char bla[128];
+      sprintf_s(bla, "Error 0x%X. Could not create Direct Sound.", hr);
+      ShowError(bla);
       return;// hr;
    }
 
@@ -395,7 +399,9 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    // Set coop level to DSSCL_PRIORITY
    if (FAILED(hr = m_pDS->SetCooperativeLevel(hwnd, DSSCL_PRIORITY)))
    {
-      ShowError("Could not set Direct Sound Priority.");
+      char bla[128];
+      sprintf_s(bla, "Error 0x%X. Could not set Direct Sound Priority.", hr);
+      ShowError(bla);
       return;// hr;
    }
 
@@ -414,7 +420,9 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    LPDIRECTSOUNDBUFFER pDSBPrimary = NULL;
    if (FAILED(hr = m_pDS->CreateSoundBuffer(&dsbd, &pDSBPrimary, NULL)))
    {
-      ShowError("Could not create primary sound buffer.");
+      char bla[128];
+      sprintf_s(bla, "Error 0x%X. Could not create primary sound buffer.", hr);
+      ShowError(bla);
       return;// hr;
    }
 
@@ -430,7 +438,9 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
 
    if (FAILED(hr = pDSBPrimary->SetFormat(&wfx)))
    {
-      ShowError("Could not set sound format.");
+      char bla[128];
+      sprintf_s(bla, "Error 0x%X. Could not set sound format.", hr);
+      ShowError(bla);
       return;// hr;
    }
    if (!IsBackglass && (SoundMode3D != SNDCFG_SND3D2CH))
@@ -439,8 +449,10 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
 	   hr = pDSBPrimary->QueryInterface(IID_IDirectSound3DListener, (LPVOID*)&m_pDSListener);
 	   if (FAILED(hr))
 	   {
-		   ShowError("Could not acquire 3D listener interface.");
-		   return;// hr;
+	      char bla[128];
+	      sprintf_s(bla, "Error 0x%X. Could not acquire 3D listener interface.", hr);
+	      ShowError(bla);
+	      return;// hr;
 	   }
 
 	   // Set the initial position of the listener to be sitting in between the front two speakers. 
@@ -491,7 +503,9 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 	   HRESULT hr;
 	   if (FAILED(hr = m_pds.m_pDS->CreateSoundBuffer(&dsbd, &pps->m_pDSBuffer, NULL)))
 	   {
-		   ShowError("Could not create static sound buffer.");
+		   char bla[128];
+		   sprintf_s(bla, "Error 0x%X. Could not create static sound buffer.", hr);
+		   ShowError(bla);
 		   delete pWaveSoundRead;
 		   delete pps;
 		   return NULL;
@@ -840,7 +854,11 @@ HRESULT PinDirectSoundWavCopy::Get3DBuffer()
 {
 	const HRESULT hr = m_pDSBuffer->QueryInterface(IID_IDirectSound3DBuffer, (void**)&m_pDS3DBuffer);
 	if (FAILED(hr))
-		ShowError("Could not get interface to 3D sound buffer.");
+	{
+		char bla[128];
+		sprintf_s(bla, "Error 0x%X. Could not get interface to 3D sound buffer.", hr);
+		ShowError(bla);
+	}
 	else
 		m_pDS3DBuffer->SetMinDistance(5.0f, DS3D_IMMEDIATE);
 	return hr;
