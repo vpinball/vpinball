@@ -140,6 +140,8 @@ FIXES:
 - fix crash when importing older .vpp files in the physics import
 - import min & max slope, too, when importing a .vpp file directly in a table
 
+- when setting up the defaults for low- or high-end PCs in the video preferences via the respective buttons, ignore settings that do not influence performance like display, FS mode, etc
+
 - tweak flipper shadows (via script) implementation in the example/blank table
 
 - update BASS library to 2.4.16
