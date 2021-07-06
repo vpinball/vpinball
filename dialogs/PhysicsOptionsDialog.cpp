@@ -422,9 +422,9 @@ bool PhysicsOptionsDialog::LoadSetting()
 
         std::string content(buffer.str());
         xmlDoc.parse<0>(&content[0]);
-        xml_node<> *root = xmlDoc.first_node("physics");
-        xml_node<> *table = root->first_node("table");
-        xml_node<> *flipper = root->first_node("flipper");
+        const xml_node<> *root = xmlDoc.first_node("physics");
+        const xml_node<> *table = root->first_node("table");
+        const xml_node<> *flipper = root->first_node("flipper");
 
         strncpy_s(loadValues.gravityConstant, table->first_node("gravityConstant")->value(), sizeof(loadValues.gravityConstant)-1);
         strncpy_s(loadValues.contactFriction, table->first_node("contactFriction")->value(), sizeof(loadValues.contactFriction)-1);
@@ -432,17 +432,16 @@ bool PhysicsOptionsDialog::LoadSetting()
         strncpy_s(loadValues.tableElasticityFalloff, table->first_node("elasticityFalloff")->value(), sizeof(loadValues.tableElasticityFalloff)-1);
         strncpy_s(loadValues.playfieldScatter, table->first_node("playfieldScatter")->value(), sizeof(loadValues.playfieldScatter)-1);
         strncpy_s(loadValues.defaultElementScatter, table->first_node("defaultElementScatter")->value(), sizeof(loadValues.defaultElementScatter)-1);
-        try
-        {
-            strncpy_s(loadValues.minSlope, table->first_node("playfieldminslope")->value(), sizeof(loadValues.minSlope)-1);
-            strncpy_s(loadValues.maxSlope, table->first_node("playfieldmaxslope")->value(), sizeof(loadValues.maxSlope)-1);
-        } 
-        catch(...)
-        {
-            sprintf_s(loadValues.minSlope, "%f", DEFAULT_TABLE_MIN_SLOPE);
-            sprintf_s(loadValues.maxSlope, "%f", DEFAULT_TABLE_MAX_SLOPE);
-        }
-
+        const xml_node<char> *tmp = table->first_node("playfieldminslope");
+        if(tmp)
+           strncpy_s(loadValues.minSlope, tmp->value(), sizeof(loadValues.minSlope)-1);
+        else
+           sprintf_s(loadValues.minSlope, "%f", DEFAULT_TABLE_MIN_SLOPE);
+        tmp = table->first_node("playfieldmaxslope");
+        if(tmp)
+           strncpy_s(loadValues.maxSlope, tmp->value(), sizeof(loadValues.maxSlope)-1);
+        else
+           sprintf_s(loadValues.maxSlope, "%f", DEFAULT_TABLE_MAX_SLOPE);
         strncpy_s(loadValues.speed, flipper->first_node("speed")->value(), sizeof(loadValues.speed)-1);
         strncpy_s(loadValues.strength, flipper->first_node("strength")->value(), sizeof(loadValues.strength)-1);
         strncpy_s(loadValues.elasticity, flipper->first_node("elasticity")->value(), sizeof(loadValues.elasticity)-1);

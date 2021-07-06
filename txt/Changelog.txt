@@ -137,6 +137,9 @@ FIXES:
 
 - when using save-as for table saving, go to the same folder and prefill dialog using the same name as the current table
 
+- fix crash when importing older .vpp files in the physics import
+- import min & max slope, too, when importing a .vpp file directly in a table
+
 - tweak flipper shadows (via script) implementation in the example/blank table
 
 - update BASS library to 2.4.16

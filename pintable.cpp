@@ -9225,6 +9225,26 @@ void PinTable::ImportVPP(const string& filename)
       else
           ShowError("defaultElementScatter is missing");
 
+      if (physTab->first_node("playfieldminslope") != nullptr)
+      {
+          strncpy_s(str, physTab->first_node("playfieldminslope")->value(), sizeof(str)-1);
+          sscanf_s(str, "%f", &val);
+          put_SlopeMin(val);
+      }
+      else
+      //    ShowError("playfieldminslope is missing"); //was added lateron, so don't error
+          put_SlopeMin(DEFAULT_TABLE_MIN_SLOPE);
+
+      if (physTab->first_node("playfieldmaxslope") != nullptr)
+      {
+          strncpy_s(str, physTab->first_node("playfieldmaxslope")->value(), sizeof(str)-1);
+          sscanf_s(str, "%f", &val);
+          put_SlopeMax(val);
+      }
+      else
+      //    ShowError("playfieldmaxslope is missing"); //was added lateron, so don't error
+          put_SlopeMax(DEFAULT_TABLE_MAX_SLOPE);
+
       if(physFlip->first_node("speed")!=nullptr)
       {
           strncpy_s(str, physFlip->first_node("speed")->value(), sizeof(str)-1);
