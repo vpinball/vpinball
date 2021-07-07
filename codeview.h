@@ -86,8 +86,6 @@ public:
    int SortAgainstValue(const std::wstring &pv) const;
 };
 
-
-
 class CodeViewer :
 	public CWnd,
 	public CComObjectRoot,
@@ -95,6 +93,7 @@ class CodeViewer :
 	//public CComCoClass<CodeViewer,&CLSID_DragPoint>,
 	//public CComObjectRootEx<CComSingleThreadModel>,
 	public IActiveScriptSite,
+    public IActiveScriptSiteDebug,
 	public IActiveScriptSiteWindow,
 	public IInternetHostSecurityManager,
 	public IServiceProvider,
@@ -167,6 +166,29 @@ public:
       return S_OK;
    }
 
+   // IActiveScriptSiteDebug interface
+
+   STDMETHOD(GetDocumentContextFromPosition)(
+       DWORD_PTR dwSourceContext,
+       ULONG uCharacterOffset,
+       ULONG uNumChars,
+       IDebugDocumentContext** ppsc
+       );
+
+   STDMETHOD(GetApplication)(
+       IDebugApplication** ppda
+       );
+
+   STDMETHOD(GetRootApplicationNode)(
+       IDebugApplicationNode** ppdanRoot
+       );
+
+   STDMETHOD(OnScriptErrorDebug)(
+       IActiveScriptErrorDebug* pscripterror,
+       BOOL* pfEnterDebugger,
+       BOOL* pfCallOnScriptErrorWhenContinuing
+       );
+
    // Internet Security interface
 
    virtual HRESULT STDMETHODCALLTYPE GetSecurityId(
@@ -205,6 +227,7 @@ public:
    BEGIN_COM_MAP(CodeViewer)
       //COM_INTERFACE_ENTRY(IDispatch)
       COM_INTERFACE_ENTRY(IActiveScriptSite)
+      COM_INTERFACE_ENTRY(IActiveScriptSiteDebug)
       COM_INTERFACE_ENTRY(IActiveScriptSiteWindow)
       COM_INTERFACE_ENTRY(IInternetHostSecurityManager)
       COM_INTERFACE_ENTRY(IServiceProvider)
@@ -333,6 +356,7 @@ private:
 
    IActiveScriptParse* m_pScriptParse;
    IActiveScriptDebug* m_pScriptDebug;
+   IProcessDebugManager* m_pProcessDebugManager;
    FINDREPLACE m_findreplacestruct;
    char szFindString[MAX_FIND_LENGTH];
    char szReplaceString[MAX_FIND_LENGTH];

@@ -30,7 +30,6 @@ static char ConstructTextBuff[MAX_FIND_LENGTH];
 
 INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-
 IScriptable::IScriptable()
 {
    m_wzName[0] = 0;
@@ -371,9 +370,17 @@ HRESULT CodeViewer::ReplaceName(IScriptable * const piscript, const WCHAR * cons
 
 STDMETHODIMP CodeViewer::InitializeScriptEngine()
 {
-   const HRESULT result = CoCreateInstance(CLSID_VBScript, 0, CLSCTX_ALL/*CLSCTX_INPROC_SERVER*/, IID_IActiveScriptParse, (LPVOID*)&m_pScriptParse); //!! CLSCTX_INPROC_SERVER good enough?!
+   HRESULT result = CoCreateInstance(CLSID_VBScript, 0, CLSCTX_ALL/*CLSCTX_INPROC_SERVER*/, IID_IActiveScriptParse, (LPVOID*)&m_pScriptParse); //!! CLSCTX_INPROC_SERVER good enough?!
    if (result == S_OK)
    {
+	   result = CoCreateInstance(
+		   CLSID_ProcessDebugManager,
+		   0,
+		   CLSCTX_ALL,
+		   IID_IProcessDebugManager,
+		   (LPVOID*)&m_pProcessDebugManager
+	   );
+
       m_pScriptParse->QueryInterface(IID_IActiveScript,
          (LPVOID*)&m_pScript);
 
@@ -396,7 +403,7 @@ STDMETHODIMP CodeViewer::InitializeScriptEngine()
          pios->Release();
       }
 
-      return S_OK;
+      return result;
    }
 
    return result;
@@ -411,6 +418,7 @@ STDMETHODIMP CodeViewer::CleanUpScriptEngine()
       m_pScript->Release();
       m_pScriptParse->Release();
       m_pScriptDebug->Release();
+	  m_pProcessDebugManager->Release();
    }
    return S_OK;
 }
@@ -838,6 +846,11 @@ STDMETHODIMP CodeViewer::GetItemInfo(LPCOLESTR pstrName, DWORD dwReturnMask,
    return S_OK;
 }
 
+/**
+ * Called on compilation errors
+ *
+ * See CodeViewer::OnScriptErrorDebug for runtime errors
+ */
 STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 {
    DWORD dwCookie;
@@ -897,6 +910,158 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
       ::SetFocus(m_hwndScintilla);
 
    return S_OK;
+}
+
+STDMETHODIMP CodeViewer::GetDocumentContextFromPosition(
+	DWORD_PTR dwSourceContext,
+	ULONG uCharacterOffset,
+	ULONG uNumChars,
+	IDebugDocumentContext** ppsc
+)
+{
+	return E_NOTIMPL;
+}
+
+STDMETHODIMP CodeViewer::GetApplication(
+	IDebugApplication** ppda
+)
+{
+	return m_pProcessDebugManager->GetDefaultApplication(ppda);
+}
+
+STDMETHODIMP CodeViewer::GetRootApplicationNode(
+	IDebugApplicationNode** ppdanRoot
+)
+{
+	IDebugApplication* app;
+	GetApplication(&app);
+
+	return app->GetRootNode(ppdanRoot);
+}
+
+/**
+ * Called on runtime errors
+ *
+ * See CodeViewer::OnScriptError for compilation errors
+ */
+STDMETHODIMP CodeViewer::OnScriptErrorDebug(
+	IActiveScriptErrorDebug* pscripterror,
+	BOOL* pfEnterDebugger,
+	BOOL* pfCallOnScriptErrorWhenContinuing
+)
+{
+	*pfEnterDebugger = false;
+	*pfCallOnScriptErrorWhenContinuing = false;
+
+	DWORD dwCookie;
+	ULONG nLine;
+	LONG nChar;
+	pscripterror->GetSourcePosition(&dwCookie, &nLine, &nChar);
+	BSTR bstr = 0;
+	pscripterror->GetSourceLineText(&bstr);
+	EXCEPINFO ei;
+	ZeroMemory(&ei, sizeof(ei));
+	pscripterror->GetExceptionInfo(&ei);
+	nLine++;
+	if (dwCookie == CONTEXTCOOKIE_DEBUG)
+	{
+		char* szT = MakeChar(ei.bstrDescription);
+		AddToDebugOutput(szT);
+		delete[] szT;
+		SysFreeString(bstr);
+		return S_OK;
+	}
+
+	m_scriptError = true;
+
+	if (g_pplayer)
+	{
+		g_pplayer->LockForegroundWindow(false);
+		g_pplayer->EnableWindow(FALSE);
+	}
+
+	CComObject<PinTable>* const pt = g_pvp->GetActiveTable();
+	if (pt)
+	{
+		SetVisible(true);
+		ShowWindow(SW_RESTORE);
+		ColorError(nLine, nChar);
+	}
+	
+	// Message box content
+	WCHAR wszOutput[MAX_LINE_LENGTH * 8];
+
+	// Get stack trace
+	IDebugStackFrame* errStackFrame;
+	if (pscripterror->GetStackFrame(&errStackFrame) == S_OK)
+	{
+		IDebugApplicationThread* thread;
+		errStackFrame->GetThread(&thread);
+
+		IEnumDebugStackFrames* stackFramesEnum;
+		thread->EnumStackFrames(&stackFramesEnum);
+
+		DebugStackFrameDescriptor stackFrames[128];
+		ULONG numStackFrames;
+		stackFramesEnum->Next(128, stackFrames, &numStackFrames);
+
+		WCHAR stackStr[MAX_LINE_LENGTH * 8];
+		stackStr[0] = '\0';
+		for (ULONG i = 0; i < numStackFrames; i++)
+		{
+			BSTR frameDesc;
+			stackFrames[i].pdsf->GetDescriptionString(true, &frameDesc);
+
+			swprintf_s(
+				stackStr,
+				L"%s\n%s",
+				stackStr,
+				frameDesc
+			);
+
+			SysFreeString(frameDesc);
+		}
+
+		swprintf_s(
+			wszOutput,
+			L"Line: %u\n%s\n\nStack trace (Most recent call first)\n====================================\n%s",
+			nLine,
+			ei.bstrDescription,
+			stackStr
+		);
+	}
+	else
+	{
+		// No stack trace available
+		swprintf_s(
+			wszOutput,
+			L"Line: %u\n%s",
+			nLine,
+			ei.bstrDescription
+		);
+	}
+
+	SysFreeString(bstr);
+	SysFreeString(ei.bstrSource);
+	SysFreeString(ei.bstrDescription);
+	SysFreeString(ei.bstrHelpFile);
+
+	g_pvp->EnableWindow(FALSE);
+
+	/*const int result =*/ MessageBoxW(m_hwndMain,
+		wszOutput,
+		L"Script Error",
+		MB_SETFOREGROUND);
+
+	g_pvp->EnableWindow(TRUE);
+
+	if (pt != NULL)
+		::SetFocus(m_hwndScintilla);
+
+	return S_OK;
+
+	*pfEnterDebugger = false;
+	*pfCallOnScriptErrorWhenContinuing = false;
 }
 
 void CodeViewer::Compile(const bool message)
