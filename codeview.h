@@ -5,6 +5,7 @@
 #include <activdbg.h>
 #include <atlcom.h>
 #include "codeviewedit.h"
+#include "ScriptErrorDialog.h"
 #include "inc\scintilla.h"
 #include "inc\scilexer.h"
 
@@ -354,6 +355,21 @@ private:
 
    void GetParamsFromEvent(const UINT iEvent, char * const szParams);
 
+   /**
+    * Resizes the Scintilla widget (the text editor) and the last error widget (if it's visible)
+    * 
+    * This is called when the window is resized (when we get a WM_SIZE message)
+    * or when the last error widget is toggled (since that appears below the text editor)
+    */
+   void ResizeScintillaAndLastError();
+
+   /**
+    * Sets the visibility of the last error information, shown below the Scintilla text editor.
+    */
+   void SetLastErrorVisibility(bool show);
+   void SetLastErrorTextW(LPCWSTR text);
+   void AppendLastErrorTextW(LPCWSTR text);
+
    IActiveScriptParse* m_pScriptParse;
    IActiveScriptDebug* m_pScriptDebug;
    IProcessDebugManager* m_pProcessDebugManager;
@@ -394,6 +410,26 @@ private:
    HWND m_hwndEventList;
    HWND m_hwndEventText;
    HWND m_hwndFunctionText;
+
+   /**
+    * Whether the last error widget is visible
+    */
+   bool m_lastErrorWidgetVisible = false;
+
+   /**
+    * If true, error dialogs will be suppressed for the play session
+    * 
+    * This gets reset to false whenever the script is started
+    */
+   bool m_suppressErrorDialogs = false;
+
+   /**
+    * Handle for the last error widget
+    * 
+    * The last error widget is a read-only text area that appears below the Scintilla text editor, with the contents of
+    * the last reported compile or runtime error.
+    */
+   HWND m_hwndLastErrorTextArea;
 };
 
 class Collection :

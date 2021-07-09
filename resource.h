@@ -1144,6 +1144,12 @@
 #define IDC_STATIC24                    865
 #define IDC_STATIC25                    866
 #define IDC_STATIC26                    867
+#define IDD_SCRIPT_ERROR                868
+#define IDC_ERROR_EDIT                  869
+#define IDC_SCRIPT_CONTINUE             870
+#define IDC_SCRIPT_STOP                 871
+#define IDC_SUPPRESS_ERRORS_CHECK       872
+#define ID_SCRIPT_TOGGLE_LAST_ERROR_VISIBILITY 873
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042

@@ -181,7 +181,7 @@
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
       <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -365,6 +365,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\LayersListDialog.cpp" />
     <ClCompile Include="dialogs\MaterialDialog.cpp" />
     <ClCompile Include="dialogs\NotesDialog.cpp" />
+    <ClCompile Include="dialogs\ScriptErrorDialog.cpp" />
     <ClCompile Include="dialogs\PhysicsOptionsDialog.cpp" />
     <ClCompile Include="dialogs\Properties\BackglassCameraProperty.cpp" />
     <ClCompile Include="dialogs\Properties\BackglassVisualsProperty.cpp" />
@@ -1142,6 +1143,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="dialogs\LayersListDialog.h" />
     <ClInclude Include="dialogs\MaterialDialog.h" />
     <ClInclude Include="dialogs\NotesDialog.h" />
+    <ClInclude Include="dialogs\ScriptErrorDialog.h" />
     <ClInclude Include="dialogs\PhysicsOptionsDialog.h" />
     <ClInclude Include="dialogs\Properties\BackglassCameraProperty.h" />
     <ClInclude Include="dialogs\Properties\BackglassVisualsProperty.h" />

@@ -283,6 +283,9 @@
     <ClCompile Include="imgui\imgui_tables.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="dialogs\ScriptErrorDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1272,6 +1275,9 @@
       <Filter>dialogs</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\KeysConfigDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\ScriptErrorDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
     <ClInclude Include="meshes\kickerSimpleHoleMesh.h">

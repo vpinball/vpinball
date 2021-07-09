@@ -14,6 +14,8 @@ DEFINE_GUID(CLSID_VBScript, 0xb54f3741, 0x5b07, 0x11cf, 0xa4, 0xb0, 0x0, 0xaa, 0
 #define CONTEXTCOOKIE_NORMAL 1000
 #define CONTEXTCOOKIE_DEBUG 1001
 
+static const int LAST_ERROR_WIDGET_HEIGHT = 256;
+
 static UINT g_FindMsgString; // Windows message for the FindText dialog
 
 //Scintillia Lexer parses only lower case unless otherwise told
@@ -602,7 +604,15 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
    const int foo[4] = { 220, 420, 450, 500 };
    ::SendMessage(m_hwndStatus, SB_SETPARTS, 4, (size_t)foo);
 
-   //
+   //////////////////////// Last error widget
+
+   m_hwndLastErrorTextArea = CreateWindowEx(0, "Edit", "",
+      WS_CHILD | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE,
+      0, 0, 0, 0, m_hwndMain, NULL, g_pvp->theInstance, 0);
+   SendMessage(m_hwndLastErrorTextArea, EM_SETREADONLY, TRUE, 0);
+   ::SendMessage(m_hwndLastErrorTextArea, WM_SETFONT, (size_t)GetStockObject(ANSI_FIXED_FONT), 0);
+   
+   //////////////////////// Scintilla text editor
 
    m_hwndScintilla = CreateWindowEx(0, "Scintilla", "",
       WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN,
@@ -889,7 +899,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
    }
 
    WCHAR wszOutput[MAX_LINE_LENGTH];
-   swprintf_s(wszOutput, L"Line: %u\n%s",
+   swprintf_s(wszOutput, L"Compile error\r\n-------------\r\nLine: %u\r\n%s\r\n\r\n",
       nLine, ei.bstrDescription);
 
    SysFreeString(bstr);
@@ -899,10 +909,8 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 
    g_pvp->EnableWindow(FALSE);
 
-   /*const int result =*/ MessageBoxW(m_hwndMain,
-      wszOutput,
-      L"Script Error",
-      MB_SETFOREGROUND);
+   AppendLastErrorTextW(wszOutput);
+   SetLastErrorVisibility(true);
 
    g_pvp->EnableWindow(TRUE);
 
@@ -950,6 +958,8 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	BOOL* pfCallOnScriptErrorWhenContinuing
 )
 {
+	// TODO: What debuggers even work with VBScript? It might be an idea to offer a "Debug" button (set pfEnterDebugger to
+	//       true) if it can pop open some old version of visual studio to debug stuff.
 	*pfEnterDebugger = false;
 	*pfCallOnScriptErrorWhenContinuing = false;
 
@@ -988,75 +998,109 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 		ColorError(nLine, nChar);
 	}
 	
-	// Message box content
-	WCHAR wszOutput[MAX_LINE_LENGTH * 8];
+	// Error log content
+	std::wstringstream errorStream;
+	errorStream << L"Runtime error\r\n";
+	errorStream << L"-------------\r\n";
+	errorStream << L"Line: " << nLine << "\r\n";
+	errorStream << ei.bstrDescription << "\r\n";
 
 	// Get stack trace
 	IDebugStackFrame* errStackFrame;
 	if (pscripterror->GetStackFrame(&errStackFrame) == S_OK)
 	{
-		IDebugApplicationThread* thread;
+		errorStream << L"\r\nStack trace (Most recent call first):\r\n";
+
+		IDebugApplicationThread *thread;
 		errStackFrame->GetThread(&thread);
 
-		IEnumDebugStackFrames* stackFramesEnum;
+		IEnumDebugStackFrames *stackFramesEnum;
 		thread->EnumStackFrames(&stackFramesEnum);
 
 		DebugStackFrameDescriptor stackFrames[128];
 		ULONG numStackFrames;
 		stackFramesEnum->Next(128, stackFrames, &numStackFrames);
 
-		WCHAR stackStr[MAX_LINE_LENGTH * 8];
-		stackStr[0] = '\0';
 		for (ULONG i = 0; i < numStackFrames; i++)
 		{
+			// The frame description is the name of the function in this stack frame
 			BSTR frameDesc;
 			stackFrames[i].pdsf->GetDescriptionString(true, &frameDesc);
 
-			swprintf_s(
-				stackStr,
-				L"%s\n%s",
-				stackStr,
-				frameDesc
+			// Fetch local variables and args
+			std::wstringstream stackVariablesStream;
+
+			IDebugProperty *debugProp;
+			stackFrames[i].pdsf->GetDebugProperty(&debugProp);
+
+			IEnumDebugPropertyInfo* propInfoEnum;
+			debugProp->EnumMembers(
+				DBGPROP_INFO_FULLNAME | DBGPROP_INFO_VALUE,
+				10, // Radix (for numerical info)
+				IID_IDebugPropertyEnumType_LocalsPlusArgs,
+				&propInfoEnum
 			);
+
+			DebugPropertyInfo infos[128];
+			ULONG numInfos;
+			propInfoEnum->Next(128, infos, &numInfos);
+
+			for (ULONG i = 0; i < numInfos; i++)
+			{
+				stackVariablesStream << infos[i].m_bstrFullName << L"=" << infos[i].m_bstrValue;
+				// Add a comma if this isn't the last item in the list
+				if (i != numInfos - 1) stackVariablesStream << L", ";
+			}
+
+			propInfoEnum->Release();
+			debugProp->Release();
+			// End fetch local variables and args
+
+			errorStream << L"    " << frameDesc;
+
+			// If there are any locals/args, add them to the end of the frame description
+			if (numInfos > 0)
+			{
+				errorStream << L" (";
+				errorStream << stackVariablesStream.str();
+				errorStream << L")";
+			}
+
+			errorStream << L"\r\n";
 
 			SysFreeString(frameDesc);
 		}
 
-		swprintf_s(
-			wszOutput,
-			L"Line: %u\n%s\n\nStack trace (Most recent call first)\n====================================\n%s",
-			nLine,
-			ei.bstrDescription,
-			stackStr
-		);
+		stackFramesEnum->Release();
+		thread->Release();
 	}
-	else
-	{
-		// No stack trace available
-		swprintf_s(
-			wszOutput,
-			L"Line: %u\n%s",
-			nLine,
-			ei.bstrDescription
-		);
-	}
+
+	errorStream << L"\r\n";
 
 	SysFreeString(bstr);
 	SysFreeString(ei.bstrSource);
 	SysFreeString(ei.bstrDescription);
 	SysFreeString(ei.bstrHelpFile);
 
-	g_pvp->EnableWindow(FALSE);
+	std::wstring errorStr = errorStream.str();
+	const wchar_t *errorCStr = errorStr.c_str();
 
-	/*const int result =*/ MessageBoxW(m_hwndMain,
-		wszOutput,
-		L"Script Error",
-		MB_SETFOREGROUND);
+	// Show the error in the last error log
+	AppendLastErrorTextW(errorCStr);
+	SetLastErrorVisibility(true);
 
-	g_pvp->EnableWindow(TRUE);
+	// Also pop up a dialog
+	if (!m_suppressErrorDialogs)
+	{
+		g_pvp->EnableWindow(FALSE);
+		ScriptErrorDialog scriptErrorDialog(errorStr);
+		scriptErrorDialog.DoModal();
+		m_suppressErrorDialogs = scriptErrorDialog.WasSuppressErrorsRequested();
+		g_pvp->EnableWindow(TRUE);
 
-	if (pt != NULL)
-		::SetFocus(m_hwndScintilla);
+		if (pt != NULL)
+			::SetFocus(m_hwndScintilla);
+	}
 
 	return S_OK;
 
@@ -1104,9 +1148,14 @@ void CodeViewer::Compile(const bool message)
 
 void CodeViewer::Start()
 {
-   //ShowError("CodeViewer::Start"); //debug logging BDS
-   if (m_pScript)
-      m_pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
+	//ShowError("CodeViewer::Start"); //debug logging BDS
+	if (m_pScript)
+
+	{
+		m_pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
+		SetLastErrorTextW(L"Script started\r\n\r\n");
+		m_suppressErrorDialogs = false;
+	}
 }
 
 void CodeViewer::EvaluateScriptStatement(const char * const szScript)
@@ -2742,6 +2791,11 @@ BOOL CodeViewer::ParseClickEvents(const int id)
          pcv->EndSession();
          return TRUE;
       }
+	  case ID_SCRIPT_TOGGLE_LAST_ERROR_VISIBILITY:
+	  {
+		  SetLastErrorVisibility(!m_lastErrorWidgetVisible);
+		  return TRUE;
+	  }
       case ID_SCRIPT_PREFERENCES:
       {
          DialogBox(g_pvp->theInstance, MAKEINTRESOURCE(IDD_CODEVIEW_PREFS), GetHwnd(), CVPrefProc);
@@ -2928,13 +2982,7 @@ LRESULT CodeViewer::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          {
             ::SendMessage(pcv->m_hwndStatus, WM_SIZE, wParam, lParam);
 
-            CRect rc = GetClientRect();
-            RECT rcStatus;
-            ::GetClientRect(pcv->m_hwndStatus, &rcStatus);
-            const int statheight = rcStatus.bottom - rcStatus.top;
-
-            ::SetWindowPos(pcv->m_hwndScintilla, NULL,
-               0, 0, rc.right - rc.left, rc.bottom - rc.top - statheight - (30+2 +40), SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+			ResizeScintillaAndLastError();
          }
          break;
       }
@@ -3302,6 +3350,67 @@ void CodeViewer::UpdateScinFromPrefs()
 	prefVPcore->ApplyPreferences(m_hwndScintilla, m_prefEverythingElse);
 	SendMessage(m_hwndScintilla, SCI_STYLESETBACK, SCE_B_KEYWORD5, RGB(200,200,200));
 	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 4 , (LPARAM)m_wordUnderCaret.lpstrText);
+}
+
+void CodeViewer::ResizeScintillaAndLastError()
+{
+	CodeViewer* const pcv = GetCodeViewerPtr();
+
+	CRect rc = GetClientRect();
+	RECT rcStatus;
+	::GetClientRect(pcv->m_hwndStatus, &rcStatus);
+	const int statheight = rcStatus.bottom - rcStatus.top;
+
+	int scintillaHeight = rc.bottom - rc.top - statheight - (30 + 2 + 40) - (m_lastErrorWidgetVisible ? LAST_ERROR_WIDGET_HEIGHT : 0);
+	::SetWindowPos(pcv->m_hwndScintilla, NULL,
+		0, 0,
+		rc.right - rc.left, scintillaHeight,
+		SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+
+	if (m_lastErrorWidgetVisible)
+	{
+		::SetWindowPos(pcv->m_hwndLastErrorTextArea, NULL,
+			0, (30 + 2 + 40) + scintillaHeight,
+			rc.right - rc.left, LAST_ERROR_WIDGET_HEIGHT,
+			SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+	}
+}
+
+void CodeViewer::SetLastErrorVisibility(bool show)
+{
+	if (show == m_lastErrorWidgetVisible) return;
+	m_lastErrorWidgetVisible = show;
+
+	ResizeScintillaAndLastError();
+
+	::ShowWindow(m_hwndLastErrorTextArea, show ? SW_SHOW : SW_HIDE);
+}
+
+void CodeViewer::SetLastErrorTextW(LPCWSTR text)
+{
+	::SetWindowTextW(m_hwndLastErrorTextArea, text);
+
+	// Scroll to the bottom
+	SendMessage(m_hwndLastErrorTextArea, EM_LINESCROLL, 0, 9999);
+}
+
+void CodeViewer::AppendLastErrorTextW(LPCWSTR text)
+{
+	int requiredLength = ::GetWindowTextLength(m_hwndLastErrorTextArea) + lstrlenW(text) + 1;
+	wchar_t* buf = new wchar_t[requiredLength];
+
+    // Get existing text from edit control and put into buffer
+    ::GetWindowTextW(m_hwndLastErrorTextArea, buf, requiredLength);
+
+    // Append the new text to the buffer
+    wcscat_s(buf, requiredLength, text);
+
+	::SetWindowTextW(m_hwndLastErrorTextArea, buf);
+
+	// Scroll to the bottom
+	SendMessage(m_hwndLastErrorTextArea, EM_LINESCROLL, 0, 9999);
+
+	delete[] buf;
 }
 
 Collection::Collection()
