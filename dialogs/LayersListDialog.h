@@ -116,6 +116,7 @@ public:
       m_layerTreeView.CollapseLayer();
       m_collapsed = true;
    }
+   HWND GetLayerTreeHwnd() { return m_layerTreeView.GetHwnd(); }
 
 protected:
    virtual BOOL OnInitDialog();

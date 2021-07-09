@@ -298,7 +298,7 @@ bool LayersListDialog::PreTranslateMessage(MSG* msg)
    {
       const int keyPressed = LOWORD(msg->wParam);
       // only pass F1-F12 to the main VPinball class to open subdialogs from everywhere
-      if (((keyPressed >= VK_F1 && keyPressed <= VK_F12) || (keyPressed == VK_ESCAPE)) && TranslateAccelerator(g_pvp->GetHwnd(), g_haccel, msg)) //!! VK_ESCAPE is a workaround, otherwise there is a hickup when changing a layername and pressing this
+      if (((keyPressed >= VK_F3 && keyPressed <= VK_F12) || (keyPressed == VK_ESCAPE)) && TranslateAccelerator(g_pvp->GetHwnd(), g_haccel, msg)) //!! VK_ESCAPE is a workaround, otherwise there is a hickup when changing a layername and pressing this
          return true;
    }
 
@@ -634,10 +634,14 @@ bool LayerTreeView::PreTranslateMessage(MSG* msg)
    if (msg->hwnd != GetHwnd())
       return false;
 
-   // only pre-translate mouse and keyboard input events
-   if (((msg->message >= WM_KEYFIRST && msg->message <= WM_KEYLAST) || (msg->message >= WM_MOUSEFIRST && msg->message <= WM_MOUSELAST))
-      && TranslateAccelerator(GetHwnd(), g_haccel, msg))
-      return true;
+   const int keyPressed = LOWORD(msg->wParam);
+   if(keyPressed != VK_F2)
+   {
+       // only pre-translate mouse and keyboard input events
+       if (((msg->message >= WM_KEYFIRST && msg->message <= WM_KEYLAST) || (msg->message >= WM_MOUSEFIRST && msg->message <= WM_MOUSELAST))
+           && TranslateAccelerator(GetHwnd(), g_haccel, msg))
+           return true;
+   }
 
    return !!IsDialogMessage(*msg);
 }
@@ -670,6 +674,13 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg)
     {
+        case WM_KEYUP:
+            if (wparam == VK_F2)
+            {
+                HTREEITEM item = GetSelection();
+                EditLabel(item);
+            }
+            break;
         case WM_MOUSEACTIVATE:
             SetFocus();
             break;

@@ -1225,6 +1225,7 @@ bool VPinball::processKeyInputForDialogs(MSG *pmsg)
     bool consumed = false;
     if (m_ptableActive)
     {
+
        if (m_materialDialog.IsWindow())
           consumed = !!m_materialDialog.IsDialogMessage(*pmsg);
        if (!consumed && m_imageMngDlg.IsWindow())
@@ -1236,13 +1237,14 @@ bool VPinball::processKeyInputForDialogs(MSG *pmsg)
        if (!consumed && m_dimensionDialog.IsWindow())
           consumed = !!m_dimensionDialog.IsDialogMessage(*pmsg);
 
-       if (!consumed && m_toolbarDialog)
+       const HWND activeHwnd = ::GetFocus();
+       if (!consumed && m_toolbarDialog && activeHwnd==m_toolbarDialog->GetHwnd())
           consumed = m_toolbarDialog->PreTranslateMessage(pmsg);
-       if (!consumed && m_propertyDialog)
+       if (!consumed && m_propertyDialog && activeHwnd == m_propertyDialog->GetHwnd())
           consumed = m_propertyDialog->PreTranslateMessage(pmsg);
-       if (!consumed && m_layersListDialog)
+       if (!consumed && m_layersListDialog && (activeHwnd == m_layersListDialog->GetHwnd() || activeHwnd == m_layersListDialog->GetLayerTreeHwnd()))
           consumed = m_layersListDialog->PreTranslateMessage(pmsg);
-       if (!consumed && m_notesDialog)
+       if (!consumed && m_notesDialog && activeHwnd == m_notesDialog->GetHwnd())
           consumed = m_notesDialog->PreTranslateMessage(pmsg);
     }
     return consumed;
