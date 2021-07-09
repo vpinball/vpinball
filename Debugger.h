@@ -74,4 +74,7 @@ private:
 
     DbgLightDialog    m_lightDialog;
     DbgMaterialDialog m_materialDialog;
+
+    CResizer  m_resizer;
+    CEdit     m_notesEdit;
 };

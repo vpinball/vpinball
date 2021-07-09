@@ -142,6 +142,8 @@ FIXES:
 
 - when setting up the defaults for low- or high-end PCs in the video preferences via the respective buttons, ignore settings that do not influence performance like display, FS mode, etc
 
+- make debug dialog (and its text edit) resizable
+
 - tweak flipper shadows (via script) implementation in the example/blank table
 
 - update BASS library to 2.4.16

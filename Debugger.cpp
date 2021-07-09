@@ -42,10 +42,8 @@ BOOL DebuggerDialog::OnInitDialog()
     AttachItem(IDC_THROW_BALL_SIZE_EDIT2, m_ballSizeEdit);
     AttachItem(IDC_THROW_BALL_MASS_EDIT2, m_ballMassEdit);
 
-    CRect rcDialog;
-    CRect rcMain;
-    rcMain = GetParent().GetWindowRect();
-    rcDialog = GetWindowRect();
+    const CRect rcMain = GetParent().GetWindowRect();
+    const CRect rcDialog = GetWindowRect();
 
     SetWindowPos(NULL, (rcMain.right + rcMain.left) / 2 - (rcDialog.right - rcDialog.left) / 2,
                        (rcMain.bottom + rcMain.top) / 2 - (rcDialog.bottom - rcDialog.top) / 2,
@@ -85,6 +83,10 @@ BOOL DebuggerDialog::OnInitDialog()
     string textBuf;
     f2sz(g_pplayer->m_debugBallMass, textBuf);
     m_ballMassEdit.SetWindowText(textBuf.c_str());
+
+    m_resizer.Initialize(*this, rcDialog);
+    AttachItem(IDC_EDITSIZE, m_notesEdit);
+    m_resizer.AddChild(m_notesEdit.GetHwnd(), bottomright, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
 
     SendMessage(RESIZE_FROM_EXPAND, 0, 0);
     return TRUE;
@@ -134,13 +136,13 @@ BOOL DebuggerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         }
         case IDC_BALL_THROWING:
         {
-            size_t checked = SendMessage(m_hThrowBallsInPlayerCheck, BM_GETCHECK, 0, 0);
+            const size_t checked = SendMessage(m_hThrowBallsInPlayerCheck, BM_GETCHECK, 0, 0);
             g_pplayer->m_throwBalls = !!checked;
             return TRUE;
         }
         case IDC_BALL_CONTROL:
         {
-            size_t checked = SendMessage(m_hBallControlCheck, BM_GETCHECK, 0, 0);
+            const size_t checked = SendMessage(m_hBallControlCheck, BM_GETCHECK, 0, 0);
             g_pplayer->m_ballControl = !!checked;
             return TRUE;
         }
@@ -247,6 +249,8 @@ LRESULT DebuggerDialog::OnNotify(WPARAM wparam, LPARAM lparam)
 
 INT_PTR DebuggerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    m_resizer.HandleMessage(uMsg, wParam, lParam);
+
     switch (uMsg)
     {
         case RECOMPUTEBUTTONCHECK:
@@ -302,11 +306,16 @@ INT_PTR DebuggerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             const int diffx = rcSizer2.right - rcSizer1.right;
             const int diffy = rcSizer2.bottom - rcSizer1.bottom;
 
-            RECT rcDialog;
-            rcDialog = GetWindowRect();
+            const RECT rcDialog = GetWindowRect();
 
             SetWindowPos(NULL, rcDialog.left, rcDialog.top, rcDialog.right - rcDialog.left + diffx * mult, rcDialog.bottom - rcDialog.top + diffy * mult, SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
             return TRUE;
+        }
+        case WM_SIZE:
+        {
+            const CRect rc = m_notesEdit.GetClientRect();
+            ::SetWindowPos(g_pplayer->m_hwndDebugOutput, NULL,
+                0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
         }
     }
     return DialogProcDefault(uMsg, wParam, lParam);
@@ -773,7 +782,7 @@ INT_PTR DbgMaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_DRAWITEM:
         {
             LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
-            UINT nID = static_cast<UINT>(wParam);
+            const UINT nID = static_cast<UINT>(wParam);
             if (nID == IDC_COLOR_BUTTON1)
             {
                 m_colorButton1.DrawItem(lpDrawItemStruct);
