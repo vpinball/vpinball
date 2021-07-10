@@ -277,15 +277,26 @@ void LightSeq::RenderSetup()
       if (type == eItemLight || type == eItemFlasher)
       {
          float x, y;
-         // process a light
-         Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(i);
-         pLight->get_X(&x);
-         pLight->get_Y(&y);
 
-         if (pLight->m_backglass)
+         if (type == eItemLight)
          {
-            // if the light is on the backglass then scale up its Y position
-            y *= 2.666f; // 2 little devils ;-)
+             // process a light
+             Light* const pLight = (Light*)m_pcollection->m_visel.ElementAt(i);
+             pLight->get_X(&x);
+             pLight->get_Y(&y);
+
+             if (pLight->m_backglass)
+             {
+                 // if the light is on the backglass then scale up its Y position
+                 y *= 2.666f; // 2 little devils ;-)
+             }
+         }
+         else //is a flasher
+         {
+             // process a flasher
+             Flasher* const pFlasher = (Flasher*)m_pcollection->m_visel.ElementAt(i);
+             pFlasher->get_X(&x);
+             pFlasher->get_Y(&y);
          }
 
          // scale down to suit the size of the light sequence grid
