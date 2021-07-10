@@ -144,6 +144,12 @@ FIXES:
 
 - make debug dialog (and its text edit) resizable
 
+- improved script error messages and handling
+   o there is a new dialog when you get a script error, showing a stack trace of where the error came from, as well as local variables and function arguments at each point in the stack
+   o this information is saved with you quit out of gameplay, and can be shown from "Script > Toggle error log" in the script editor
+   o compile errors are now also shown in this log, instead of popping up a dialog box
+   o further runtime errors can be suppressed from showing a dialog box for the current play session, which can be useful if you keep getting errors on a timer
+
 - tweak flipper shadows (via script) implementation in the example/blank table
 
 - update BASS library to 2.4.16
