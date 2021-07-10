@@ -372,43 +372,42 @@ HRESULT CodeViewer::ReplaceName(IScriptable * const piscript, const WCHAR * cons
 
 STDMETHODIMP CodeViewer::InitializeScriptEngine()
 {
-   HRESULT result = CoCreateInstance(CLSID_VBScript, 0, CLSCTX_ALL/*CLSCTX_INPROC_SERVER*/, IID_IActiveScriptParse, (LPVOID*)&m_pScriptParse); //!! CLSCTX_INPROC_SERVER good enough?!
-   if (result == S_OK)
-   {
-	   result = CoCreateInstance(
-		   CLSID_ProcessDebugManager,
-		   0,
-		   CLSCTX_ALL,
-		   IID_IProcessDebugManager,
-		   (LPVOID*)&m_pProcessDebugManager
-	   );
+	HRESULT vbScriptResult = CoCreateInstance(CLSID_VBScript, 0, CLSCTX_ALL/*CLSCTX_INPROC_SERVER*/, IID_IActiveScriptParse, (LPVOID*)&m_pScriptParse); //!! CLSCTX_INPROC_SERVER good enough?!
+	if (vbScriptResult != S_OK) return vbScriptResult;
 
-      m_pScriptParse->QueryInterface(IID_IActiveScript,
-         (LPVOID*)&m_pScript);
+	// This can fail on some systems (I tested with wine 6.9 and this fails)
+	// In that case, m_pProcessDebugManager will remain as nullptr
+	CoCreateInstance(
+		CLSID_ProcessDebugManager,
+		0,
+		CLSCTX_ALL,
+		IID_IProcessDebugManager,
+		(LPVOID*)&m_pProcessDebugManager
+	);
 
-      m_pScriptParse->QueryInterface(IID_IActiveScriptDebug,
-         (LPVOID*)&m_pScriptDebug);
+	m_pScriptParse->QueryInterface(IID_IActiveScript,
+		(LPVOID*)&m_pScript);
 
-      m_pScriptParse->InitNew();
-      m_pScript->SetScriptSite(this);
+	m_pScriptParse->QueryInterface(IID_IActiveScriptDebug,
+		(LPVOID*)&m_pScriptDebug);
 
-      IObjectSafety *pios;
-      m_pScriptParse->QueryInterface(IID_IObjectSafety, (LPVOID*)&pios);
+	m_pScriptParse->InitNew();
+	m_pScript->SetScriptSite(this);
 
-      if (pios)
-      {
-         DWORD supported, enabled;
-         pios->GetInterfaceSafetyOptions(IID_IActiveScript, &supported, &enabled);
+	IObjectSafety* pios;
+	m_pScriptParse->QueryInterface(IID_IObjectSafety, (LPVOID*)&pios);
 
-         /*const HRESULT hr =*/ pios->SetInterfaceSafetyOptions(IID_IActiveScript, supported, INTERFACE_USES_SECURITY_MANAGER);
+	if (pios)
+	{
+		DWORD supported, enabled;
+		pios->GetInterfaceSafetyOptions(IID_IActiveScript, &supported, &enabled);
 
-         pios->Release();
-      }
+		/*const HRESULT hr =*/ pios->SetInterfaceSafetyOptions(IID_IActiveScript, supported, INTERFACE_USES_SECURITY_MANAGER);
 
-      return result;
-   }
+		pios->Release();
+	}
 
-   return result;
+	return S_OK;
 }
 
 STDMETHODIMP CodeViewer::CleanUpScriptEngine()
@@ -420,7 +419,7 @@ STDMETHODIMP CodeViewer::CleanUpScriptEngine()
       m_pScript->Release();
       m_pScriptParse->Release();
       m_pScriptDebug->Release();
-	  m_pProcessDebugManager->Release();
+	  if (m_pProcessDebugManager != nullptr) m_pProcessDebugManager->Release();
    }
    return S_OK;
 }
@@ -857,67 +856,104 @@ STDMETHODIMP CodeViewer::GetItemInfo(LPCOLESTR pstrName, DWORD dwReturnMask,
 }
 
 /**
- * Called on compilation errors
+ * Called on compilation errors. Also called on runtime errors in we couldn't create a "process debug manager" (such
+ * as when running on wine).
  *
  * See CodeViewer::OnScriptErrorDebug for runtime errors
  */
 STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 {
-   DWORD dwCookie;
-   ULONG nLine;
-   LONG nChar;
-   pscripterror->GetSourcePosition(&dwCookie, &nLine, &nChar);
-   BSTR bstr = 0;
-   pscripterror->GetSourceLineText(&bstr);
-   EXCEPINFO ei;
-   ZeroMemory(&ei, sizeof(ei));
-   pscripterror->GetExceptionInfo(&ei);
-   nLine++;
-   if (dwCookie == CONTEXTCOOKIE_DEBUG)
-   {
-      char *szT = MakeChar(ei.bstrDescription);
-      AddToDebugOutput(szT);
-      delete[] szT;
-      SysFreeString(bstr);
-      return S_OK;
-   }
+	DWORD dwCookie;
+	ULONG nLine;
+	LONG nChar;
+	pscripterror->GetSourcePosition(&dwCookie, &nLine, &nChar);
+	BSTR bstr = 0;
+	pscripterror->GetSourceLineText(&bstr);
+	EXCEPINFO ei;
+	ZeroMemory(&ei, sizeof(ei));
+	pscripterror->GetExceptionInfo(&ei);
+	nLine++;
+	if (dwCookie == CONTEXTCOOKIE_DEBUG)
+	{
+		char* szT = MakeChar(ei.bstrDescription);
+		AddToDebugOutput(szT);
+		delete[] szT;
+		SysFreeString(bstr);
+		return S_OK;
+	}
 
-   m_scriptError = true;
+	m_scriptError = true;
 
-   if (g_pplayer)
-   {
-       g_pplayer->LockForegroundWindow(false);
-       g_pplayer->EnableWindow(FALSE);
-   }
+	if (g_pplayer)
+	{
+		g_pplayer->LockForegroundWindow(false);
+		g_pplayer->EnableWindow(FALSE);
+	}
 
-   CComObject<PinTable> * const pt = g_pvp->GetActiveTable();
-   if (pt)
-   {
-      SetVisible(true);
-      ShowWindow(SW_RESTORE);
-      ColorError(nLine, nChar);
-   }
+	CComObject<PinTable>* const pt = g_pvp->GetActiveTable();
+	if (pt)
+	{
+		SetVisible(true);
+		ShowWindow(SW_RESTORE);
+		ColorError(nLine, nChar);
+	}
 
-   WCHAR wszOutput[MAX_LINE_LENGTH];
-   swprintf_s(wszOutput, L"Compile error\r\n-------------\r\nLine: %u\r\n%s\r\n\r\n",
-      nLine, ei.bstrDescription);
+	// Check if this is a compile error or a runtime error
+	SCRIPTSTATE state;
+	m_pScript->GetScriptState(&state);
+	bool isRuntimeError = state == SCRIPTSTATE_CONNECTED;
 
-   SysFreeString(bstr);
-   SysFreeString(ei.bstrSource);
-   SysFreeString(ei.bstrDescription);
-   SysFreeString(ei.bstrHelpFile);
+	// Error log content
+	std::wstringstream errorStream;
 
-   g_pvp->EnableWindow(FALSE);
+	if (isRuntimeError)
+	{
+		errorStream << L"Runtime error\r\n";
+		errorStream << L"-------------\r\n";
+	}
+	else
+	{
+		errorStream << L"Compile error\r\n";
+		errorStream << L"-------------\r\n";
+	}
 
-   AppendLastErrorTextW(wszOutput);
-   SetLastErrorVisibility(true);
+	errorStream << L"Line: " << nLine << "\r\n";
+	errorStream << ei.bstrDescription << "\r\n";
+	errorStream << L"\r\n";
 
-   g_pvp->EnableWindow(TRUE);
+	SysFreeString(bstr);
+	SysFreeString(ei.bstrSource);
+	SysFreeString(ei.bstrDescription);
+	SysFreeString(ei.bstrHelpFile);
 
-   if (pt != NULL)
-      ::SetFocus(m_hwndScintilla);
+	g_pvp->EnableWindow(FALSE);
 
-   return S_OK;
+	std::wstring errorStr = errorStream.str();
+	const wchar_t *errorCStr = errorStr.c_str();
+
+	// Show the error in the last error log
+	AppendLastErrorTextW(errorCStr);
+	SetLastErrorVisibility(true);
+
+	// Also pop up a dialog if this is a runtime error
+	if (isRuntimeError && !m_suppressErrorDialogs)
+	{
+		g_pvp->EnableWindow(FALSE);
+		ScriptErrorDialog scriptErrorDialog(errorStr);
+		scriptErrorDialog.DoModal();
+		m_suppressErrorDialogs = scriptErrorDialog.WasSuppressErrorsRequested();
+		g_pvp->EnableWindow(TRUE);
+
+		if (pt != NULL)
+			::SetFocus(m_hwndScintilla);
+	}
+
+	g_pvp->EnableWindow(TRUE);
+
+	if (pt != NULL)
+		::SetFocus(m_hwndScintilla);
+
+	return S_OK;
 }
 
 STDMETHODIMP CodeViewer::GetDocumentContextFromPosition(
@@ -934,7 +970,14 @@ STDMETHODIMP CodeViewer::GetApplication(
 	IDebugApplication** ppda
 )
 {
-	return m_pProcessDebugManager->GetDefaultApplication(ppda);
+	if (m_pProcessDebugManager != nullptr)
+	{
+		return m_pProcessDebugManager->GetDefaultApplication(ppda);
+	}
+	else
+	{
+		return E_NOTIMPL;
+	}
 }
 
 STDMETHODIMP CodeViewer::GetRootApplicationNode(
@@ -942,9 +985,15 @@ STDMETHODIMP CodeViewer::GetRootApplicationNode(
 )
 {
 	IDebugApplication* app;
-	GetApplication(&app);
-
-	return app->GetRootNode(ppdanRoot);
+	HRESULT result = GetApplication(&app);
+	if (SUCCEEDED(result))
+	{
+		return app->GetRootNode(ppdanRoot);
+	}
+	else
+	{
+		return result;
+	}
 }
 
 /**
