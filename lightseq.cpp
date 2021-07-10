@@ -274,7 +274,7 @@ void LightSeq::RenderSetup()
       // get the type of object
       const ItemTypeEnum type = m_pcollection->m_visel.ElementAt(i)->GetIEditable()->GetItemType();
       // must be a light
-      if (type == eItemLight)
+      if (type == eItemLight || type == eItemFlasher)
       {
          float x, y;
          // process a light
@@ -605,6 +605,14 @@ STDMETHODIMP LightSeq::StopPlay()
             pLight->get_State(&state);
             pLight->m_lockedByLS = false;
             pLight->put_State(state);
+         }
+         else if (type == eItemFlasher) 
+         {
+             Flasher* const pFlasher = (Flasher*)m_pcollection->m_visel.ElementAt(i);
+             VARIANT_BOOL state;
+             pFlasher->get_Visible(&state);
+             pFlasher->m_lockedByLS = false;
+             pFlasher->put_Visible(state);
          }
       }
    }
@@ -1653,6 +1661,13 @@ void LightSeq::SetElementToState(const int index, const LightState State)
       pLight->m_lockedByLS = true;
       pLight->setInPlayState(State);
    }
+   else if (type == eItemFlasher) 
+   {
+       Flasher* const pFlasher = (Flasher*)m_pcollection->m_visel.ElementAt(index);
+       pFlasher->m_lockedByLS = true;
+       BOOL s = State == LightStateOff ? false : true;
+       pFlasher->put_Visible(s);
+   }
 }
 
 bool LightSeq::VerifyAndSetGridElement(const int x, const int y, const LightState State)
@@ -1687,6 +1702,13 @@ LightState LightSeq::GetElementState(const int index) const
    {
       Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
       rc = pLight->m_inPlayState;
+   }
+   else if (type == eItemFlasher)
+   {
+       Flasher* const pFlasher = (Flasher*)m_pcollection->m_visel.ElementAt(index);
+       VARIANT_BOOL flashState = false;
+       pFlasher->get_Visible(&flashState);
+       rc = flashState ? LightStateOn : LightStateOff;
    }
 
    return rc;

@@ -17,6 +17,7 @@ Flasher::Flasher()
    m_maxx = -FLT_MAX;
    m_miny = FLT_MAX;
    m_maxy = -FLT_MAX;
+   m_lockedByLS = false;
 }
 
 Flasher::~Flasher()
@@ -273,6 +274,9 @@ void Flasher::EndPlay()
 {
    IEditable::EndPlay();
 
+   // ensure not locked just in case the player exits during a LS sequence
+   m_lockedByLS = false;
+   
    ResetVideoCap();
 
    if (m_dynamicVertexBuffer)
