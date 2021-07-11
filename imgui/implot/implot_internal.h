@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// ImPlot v0.10 WIP
+// ImPlot v0.11 WIP
 
 // You may use this file to debug, understand or extend ImPlot features but we
 // don't provide any guarantee of forward compatibility!
@@ -42,8 +42,9 @@
 #error Must include implot.h before implot_internal.h
 #endif
 
+// Support for pre-1.84 versions. ImPool's GetSize() -> GetBufSize()
 #if (IMGUI_VERSION_NUM < 18303)
-#define GetBufSize GetSize          // A little bit ugly since 'GetBufSize' could technically be used elsewhere (but currently isn't). Could use a proxy define if needed.
+#define GetBufSize GetSize
 #endif
 
 //-----------------------------------------------------------------------------
@@ -1268,8 +1269,8 @@ void FillRange(ImVector<T>& buffer, int n, T vmin, T vmax) {
 
 // Offsets and strides a data buffer
 template <typename T>
-static inline T OffsetAndStride(const T* data, int idx, int count, int offset, int stride) {
-    idx = ImPosMod(offset + idx, count);
+static inline T OffsetAndStride(const T* data, int idx, int , int , int stride) {
+    // idx = ImPosMod(offset + idx, count);
     return *(const T*)(const void*)((const unsigned char*)data + (size_t)idx * stride);
 }
 
