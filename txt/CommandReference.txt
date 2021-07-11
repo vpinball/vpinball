@@ -5,7 +5,7 @@ This is a quick overview of all commands/variables VP knows. A lot of them do no
 Variables starting with a (*) can't be changed by the script (most can be read though) or don't have an effect.
 
 Also see https://docs.orbitalpin.com/welcome for some more detailed help
-
+As for coding light sequences for original tables, please check this helper app: https://github.com/horseyhorsey/VpLightSequencing
 
 Changelog:
 10.7:
