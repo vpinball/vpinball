@@ -136,6 +136,8 @@ public:
 
    FlasherData m_d;
 
+   bool  m_lockedByLS;
+
 private:
    void UpdateMesh();
    void InitShape();
