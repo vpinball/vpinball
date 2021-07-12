@@ -55,12 +55,16 @@ void LayersListDialog::DeleteLayer()
     if (m_activeTable == nullptr)
         return;
 
-    const int ans = MessageBox("Are you sure you want to delete the complete layer?", "Confirm delete", MB_YESNO | MB_DEFBUTTON2);
-    if (ans != IDYES)
-        return;
-
     HTREEITEM layerToDelete = m_layerTreeView.GetCurrentLayerItem();
     std::vector<HTREEITEM> allSubItems = m_layerTreeView.GetSubItems(layerToDelete);
+
+    if (!allSubItems.empty())
+    {
+        const int ans = MessageBox("Are you sure you want to delete the complete layer?", "Confirm delete", MB_YESNO | MB_DEFBUTTON2);
+        if (ans != IDYES)
+            return;
+    }
+
     HTREEITEM hFillLayer = m_layerTreeView.GetChild(m_layerTreeView.GetRootItem());
     if (hFillLayer == m_layerTreeView.GetCurrentLayerItem())
     {
@@ -799,7 +803,7 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
             if (!GetItem(tvItem))
                 return FALSE;
 
-            if(tvItem.cChildren <= 1)
+            if(tvItem.cChildren == 1) //!! <= ?
             {
                 const string oldName(GetItemText(pinfo->item.hItem));
                 const string newName(pinfo->item.pszText);
@@ -845,7 +849,7 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
             tvItem.hItem = ht.hItem;
             if (GetItem(tvItem))
             {
-                if (tvItem.cChildren <= 1) // layer checkbox was clicked
+                if (tvItem.cChildren == 1) //!! <= ? // layer checkbox was clicked
                 {
                     const bool checked = IsItemChecked(tvItem.hItem);
                     HTREEITEM subItem = GetChild(tvItem.hItem);
@@ -909,7 +913,7 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
     tvItem.hItem = ht.hItem;
     if (GetItem(tvItem))
     {
-        if (tvItem.cChildren <= 1) // layer checkbox was clicked
+        if (tvItem.cChildren == 1) //!! <= ? // layer checkbox was clicked
         {
             HTREEITEM subItem = GetChild(tvItem.hItem);
             while (subItem)
