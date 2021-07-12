@@ -799,7 +799,7 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
             if (!GetItem(tvItem))
                 return FALSE;
 
-            if(tvItem.cChildren==1)
+            if(tvItem.cChildren <= 1)
             {
                 const string oldName(GetItemText(pinfo->item.hItem));
                 const string newName(pinfo->item.pszText);
@@ -845,7 +845,7 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
             tvItem.hItem = ht.hItem;
             if (GetItem(tvItem))
             {
-                if (tvItem.cChildren == 1) // layer checkbox was clicked
+                if (tvItem.cChildren <= 1) // layer checkbox was clicked
                 {
                     const bool checked = IsItemChecked(tvItem.hItem);
                     HTREEITEM subItem = GetChild(tvItem.hItem);
@@ -909,7 +909,7 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
     tvItem.hItem = ht.hItem;
     if (GetItem(tvItem))
     {
-        if (tvItem.cChildren == 1) // layer checkbox was clicked
+        if (tvItem.cChildren <= 1) // layer checkbox was clicked
         {
             HTREEITEM subItem = GetChild(tvItem.hItem);
             while (subItem)
@@ -956,7 +956,7 @@ LRESULT LayerTreeView::OnTVNSelChanged(LPNMTREEVIEW pNMTV)
     {
         if(tvItem.hItem!=hRootItem)
         {
-            if (tvItem.cChildren == 1)
+            if (tvItem.cChildren <= 1)
                 hCurrentLayerItem = tvItem.hItem;
             else
                 hCurrentElementItem = tvItem.hItem;
