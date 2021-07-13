@@ -1152,10 +1152,7 @@ STDMETHODIMP Flasher::put_ImageAlignment(RampImageAlignment newVal)
 //Sets the in play state for light sequencing rendering
 void Flasher::setInPlayState(const bool newVal)
 {
-    if (newVal != m_inPlayState) // state changed?
-    {
-        m_inPlayState = newVal;
-    }
+   m_inPlayState = newVal;
 }
 
 void Flasher::RenderDynamic()
