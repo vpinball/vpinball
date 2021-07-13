@@ -332,6 +332,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
    m_d.m_SideColor = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "SideColor", RGB(150, 150, 150)) : RGB(150, 150, 150);
 
    m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Visible", true) : true;
+   m_inPlayState = m_d.m_visible;
    m_d.m_staticRendering = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "StaticRendering", true) : true;
    m_d.m_drawTexturesInside = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "DrawTexturesInside", false) : false;
 
@@ -1567,6 +1568,8 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
          delete[] tmp;
       }
    }
+
+   m_inPlayState = m_d.m_visible;
 
    return S_OK;
 }
@@ -2937,8 +2940,5 @@ STDMETHODIMP Primitive::put_DepthBias(float newVal)
 //Sets the in play state for light sequencing rendering
 void Primitive::setInPlayState(const bool newVal)
 {
-    if (newVal != m_inPlayState) // state changed?
-    {
-        m_inPlayState = newVal;
-    }
+    m_inPlayState = newVal;
 }

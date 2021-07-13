@@ -57,7 +57,7 @@ FEATURES:
 
 - add ElasticityFalloff to the wall physics properties
 
-- add Flashers to Light sequencer collections
+- add Flashers and Primitives to Light sequencer collections
 
 - ability to do a rough profiling of the table loading
   if a file 'Profile.txt' exists in the same directory as VPX, then statistics for the loaded tables will be appended
