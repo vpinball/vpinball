@@ -521,7 +521,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propget, id(103), helpstring("property Xlatey")] HRESULT Xlatey([out, retval] float *pVal);
                 [propput, id(103), helpstring("property Xlatey")] HRESULT Xlatey([in] float newVal);
                 [propget, id(110), helpstring("property Xlatez")] HRESULT Xlatez([out, retval] float *pVal);
-                [propput, id(110), helpstring("property Xlatez")] HRESULT Xlatez([in] float newVal);              
+                [propput, id(110), helpstring("property Xlatez")] HRESULT Xlatez([in] float newVal);
                 
                 [propget, id(1100), helpstring("property Gravity")] HRESULT Gravity([out, retval] float *pVal);
                 [propput, id(1100), helpstring("property Gravity")] HRESULT Gravity([in] float newVal);
@@ -1040,7 +1040,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [id(DISPID_TimerEvents_Timer)]  void Timer();
                 [id(DISPID_LimitEvents_EOS)]  void LimitEOS( [in] float parm);
                 [id(DISPID_LimitEvents_BOS)]  void LimitBOS( [in] float parm);
-                [id(DISPID_FlipperEvents_Collide)]  void Collide( [in] float parm);             
+                [id(DISPID_FlipperEvents_Collide)]  void Collide( [in] float parm);
         }
 
 
@@ -1403,6 +1403,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(432), helpstring("property FalloffPower")] HRESULT FalloffPower([in] float newVal);
                 [propget, id(DISPID_Light_State), helpstring("property State")] HRESULT State([out, retval] LightState *pVal);
                 [propput, id(DISPID_Light_State), helpstring("property State")] HRESULT State([in] LightState newVal);
+                [id(595), helpstring("method GetInPlayState")] HRESULT GetInPlayState([out, retval] LightState* pVal);
                 [propget, id(3), helpstring("property Color")] HRESULT Color([out, retval] OLE_COLOR *pVal);
                 [propput, id(3), helpstring("property Color")] HRESULT Color([in] OLE_COLOR newVal);
                 [propget, id(457), helpstring("property ColorFull")] HRESULT ColorFull([out, retval] OLE_COLOR *pVal);
@@ -2075,16 +2076,16 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(115), helpstring("property Scatter")] HRESULT Scatter([in] float newVal);
 
                 [propget, id(397), helpstring("property DepthBias")] HRESULT DepthBias([out, retval] float *pVal);
-                [propput, id(397), helpstring("property DepthBias")] HRESULT DepthBias([in] float newVal);      
+                [propput, id(397), helpstring("property DepthBias")] HRESULT DepthBias([in] float newVal);
 
                 [propget, id(377), helpstring("property WireDiameter")] HRESULT WireDiameter([out, retval] float *pVal);
-                [propput, id(377), helpstring("property WireDiameter")] HRESULT WireDiameter([in] float newVal);        
+                [propput, id(377), helpstring("property WireDiameter")] HRESULT WireDiameter([in] float newVal);
 
                 [propget, id(398), helpstring("property WireDistanceX")] HRESULT WireDistanceX([out, retval] float *pVal);
-                [propput, id(398), helpstring("property WireDistanceX")] HRESULT WireDistanceX([in] float newVal);      
+                [propput, id(398), helpstring("property WireDistanceX")] HRESULT WireDistanceX([in] float newVal);
 
                 [propget, id(425), helpstring("property WireDistanceY")] HRESULT WireDistanceY([out, retval] float *pVal);
-                [propput, id(425), helpstring("property WireDistanceY")] HRESULT WireDistanceY([in] float newVal);                      
+                [propput, id(425), helpstring("property WireDistanceY")] HRESULT WireDistanceY([in] float newVal);
 
                 [propget, id(431), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(431), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([in] VARIANT_BOOL newVal);
@@ -2266,7 +2267,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propget, id(15), helpstring("property AngVelY")] HRESULT AngVelY([out, retval] float* pVal);
                 [propput, id(15), helpstring("property AngVelY")] HRESULT AngVelY([in] float newVal);
                 [propget, id(16), helpstring("property AngVelZ")] HRESULT AngVelZ([out, retval] float* pVal);
-                [propput, id(16), helpstring("property AngVelZ")] HRESULT AngVelZ([in] float newVal); 
+                [propput, id(16), helpstring("property AngVelZ")] HRESULT AngVelZ([in] float newVal);
                 [propget, id(17), helpstring("property AngMomX")] HRESULT AngMomX([out, retval] float* pVal);
                 [propput, id(17), helpstring("property AngMomX")] HRESULT AngMomX([in] float newVal);
                 [propget, id(18), helpstring("property AngMomY")] HRESULT AngMomY([out, retval] float *pVal);

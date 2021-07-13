@@ -1100,7 +1100,7 @@ STDMETHODIMP Light::get_State(LightState *pVal)
    if (g_pplayer && !m_lockedByLS)
       *pVal = m_inPlayState;
    else
-      *pVal = getLightState(); //the LS needs the old m_d.m_state and not the current one, m_fLockedByLS is true if under the light is under control of the LS
+      *pVal = m_d.m_state; //the LS needs the old m_d.m_state and not the current one, m_fLockedByLS is true if under the light is under control of the LS
    return S_OK;
 }
 
@@ -1542,13 +1542,18 @@ void Light::setInPlayState(const LightState newVal)
    }
 }
 
+STDMETHODIMP Light::GetInPlayState(LightState* pVal)
+{
+    *pVal = m_inPlayState;
+    return S_OK;
+}
+
 void Light::setLightState(const LightState newVal)
 {
    if (!m_lockedByLS)
       setInPlayState(newVal);
 
    m_d.m_state = newVal;
-
 }
 
 LightState Light::getLightState() const

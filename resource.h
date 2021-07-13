@@ -892,6 +892,7 @@
 #define IDC_PLUNGERRETRACT              592
 #define IDC_IMPORT_NO_FORSYTH           593
 #define IDC_SHARPENCB                   594
+#define IDC_GET_INPLAYSTATE             595
 #define IDD_PROPRUBBER_PHYSICS          602
 #define IDC_RUBBER                      602
 #define IDD_PROPRUBBER_VISUALS          604
