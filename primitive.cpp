@@ -115,6 +115,9 @@ void Mesh::SaveWavefrontObj(const string& fname, const string& description)
 
 void Mesh::UploadToVB(VertexBuffer * vb, const float frame) 
 {
+   if(!vb)
+      return;
+
    if (frame >= 0.f)
    {
       float intPart;
@@ -171,6 +174,8 @@ Primitive::Primitive()
    m_d.m_reflectionEnabled = true;
    m_numGroupIndices = 0;
    m_numGroupVertices = 0;
+   m_currentFrame = -1.f;
+   m_lockedByLS = false;
 
    m_numIndices = 0;
    m_numVertices = 0;
@@ -1331,7 +1336,7 @@ void Primitive::RenderDynamic()
            return;
        if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
            return;
-   }          
+   }
 
    RenderObject();
 }
