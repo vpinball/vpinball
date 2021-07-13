@@ -93,8 +93,6 @@ HRESULT Flasher::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    InitShape();
 
-   m_inPlayState = m_d.m_isVisible;
-
    InitVBA(fTrue, 0, NULL);
 
    return S_OK;
@@ -125,6 +123,7 @@ void Flasher::SetDefaults(bool fromMouseClick)
    m_d.m_modulate_vs_add = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Flasher", "ModulateVsAdd", 0.9f) : 0.9f;
    m_d.m_filterAmount = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Flasher", "FilterAmount", 100) : 100;
    m_d.m_isVisible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "Visible", true) : true;
+   m_inPlayState = m_d.m_isVisible;
    m_d.m_addBlend = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "AddBlend", false) : false;
    m_d.m_isDMD = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "DMD", false) : false;
    m_d.m_displayTexture = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "DisplayTexture", false) : false;
@@ -588,6 +587,9 @@ HRESULT Flasher::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
    m_ptable = ptable;
 
    br.Load();
+
+   m_inPlayState = m_d.m_isVisible;
+
    return S_OK;
 }
 

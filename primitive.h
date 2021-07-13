@@ -277,15 +277,16 @@ public:
    void TransformVertices();
    void RenderObject();
 
+   void setInPlayState(const bool newVal);
+
    static INT_PTR CALLBACK ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
    Mesh m_mesh;
 
    PrimitiveData m_d;
 
-   bool  m_lockedByLS;
+   bool m_lockedByLS;
    bool m_inPlayState;
-   void setInPlayState(const bool newVal);
 
 private:
    PinTable *m_ptable;
