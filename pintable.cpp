@@ -1248,14 +1248,28 @@ void PinTable::DeleteFromLayer(IEditable *obj)
    }
 }
 
-void PinTable::InitBuiltinTable(const bool useBlankTable)
+void PinTable::InitBuiltinTable(const size_t tableId)
 {
    HRSRC hrsrc;
    // Get our new table resource, get it to be opened as a storage, and open it like a normal file
-   if (useBlankTable)
-      hrsrc = FindResource(NULL, MAKEINTRESOURCE(IDR_BLANK_TABLE), "TABLE");
-   else
-      hrsrc = FindResource(NULL, MAKEINTRESOURCE(IDR_EXAMPLE_TABLE), "TABLE");
+   switch (tableId)
+   {
+       case ID_NEW_BLANKTABLE:
+           hrsrc = FindResource(NULL, MAKEINTRESOURCE(IDR_BLANK_TABLE), "TABLE");
+           break;
+       case ID_NEW_EXAMPLETABLE:
+           hrsrc = FindResource(NULL, MAKEINTRESOURCE(IDR_EXAMPLE_TABLE), "TABLE");
+           break;
+       case ID_NEW_STRIPPEDTABLE:
+           hrsrc = FindResource(NULL, MAKEINTRESOURCE(IDR_STRIPPED_TABLE), "TABLE");
+           break;
+       case ID_NEW_LIGHTSEQTABLE:
+           hrsrc = FindResource(NULL, MAKEINTRESOURCE(IDR_LIGHTSEQ_TABLE), "TABLE");
+           break;
+       default:
+           hrsrc = FindResource(NULL, MAKEINTRESOURCE(IDR_BLANK_TABLE), "TABLE");
+           break;
+   }
 
    HGLOBAL hglobal = LoadResource(NULL, hrsrc);
    char *pchar = (char *)LockResource(hglobal);
