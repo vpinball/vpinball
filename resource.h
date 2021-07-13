@@ -603,8 +603,6 @@
 #define IDR_EXAMPLE_TABLE               383
 #define IDI_TIMER                       383
 #define IDC_ARASlider                   384
-#define IDR_TABLE1                      384
-#define IDR_EXAMPLETABLE                384
 #define IDI_LIGHT                       384
 #define IDC_PRIMITIVE                   385
 #define IDI_TARGET                      385
