@@ -64,7 +64,6 @@ private:
     CButton m_pauseButton;
     CButton m_stepButton;
     CEdit   m_stepAmountEdit;
-    CButton m_editorExpandButton;
     CButton m_dbgLightsButton;
     CButton m_dbgMaterialsButton;
     HWND    m_hThrowBallsInPlayerCheck;
