@@ -2794,10 +2794,10 @@ BEGIN
     BEGIN
         POPUP "&New"
         BEGIN
-            MENUITEM "Blank Table\tCtrl+N",         ID_NEW_BLANKTABLE
-            MENUITEM "Example Table",               ID_NEW_EXAMPLETABLE
-            MENUITEM "Stripped Table",              ID_NEW_STRIPPEDTABLE
-            MENUITEM "LightSeq Table",              ID_NEW_LIGHTSEQTABLE            
+            MENUITEM "New Table\tCtrl+N",           ID_NEW_BLANKTABLE
+            MENUITEM "Completely Blank Table",      ID_NEW_STRIPPEDTABLE
+            MENUITEM "Full Example Table",          ID_NEW_EXAMPLETABLE
+            MENUITEM "Light Sequence Demo Table",   ID_NEW_LIGHTSEQTABLE
         END
         MENUITEM "&Open...\tCtrl+O",            IDM_OPEN
         MENUITEM "&Close",                      IDM_CLOSE
