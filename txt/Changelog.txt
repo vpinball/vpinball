@@ -75,6 +75,8 @@ FEATURES:
 
 - retweak default saving filenames for Blueprint-images, .obj, .pov and .vpp: It's now copied from the table filename
 
+- add 2 new tables to the 'File->New' menu: A completely empty table and a light sequencer demo table
+
 FIXES:
 
 - fix issues with 3D Audio setups and backglass sounds (like music)
