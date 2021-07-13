@@ -283,6 +283,10 @@ public:
 
    PrimitiveData m_d;
 
+   bool  m_lockedByLS;
+   bool m_inPlayState;
+   void setInPlayState(const bool newVal);
+
 private:
    PinTable *m_ptable;
 

@@ -1318,10 +1318,19 @@ void Primitive::RenderDynamic()
 {
    TRACE_FUNCTION();
 
-   if (m_d.m_staticRendering || !m_d.m_visible || m_d.m_skipRendering)
-      return;
-   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
-      return;
+   if (m_d.m_staticRendering) return; //don't render static
+   if (m_lockedByLS) 
+   {
+       //don't render in LS when state off
+       if (!m_inPlayState) return;
+   }
+   else
+   {
+       if (!m_d.m_visible || m_d.m_skipRendering)
+           return;
+       if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+           return;
+   }          
 
    RenderObject();
 }
@@ -1347,13 +1356,19 @@ void Primitive::RenderSetup()
 
 void Primitive::RenderStatic()
 {
-   if (m_d.m_staticRendering && m_d.m_visible)
+   if (!m_d.m_staticRendering) return; //don't render dynamic
+   if (m_lockedByLS)
    {
-      if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
-         return;
-
-      RenderObject();
+       if(!m_inPlayState) return; //don't render in LS when state off
    }
+   else 
+   {
+       if (!m_d.m_visible) return;
+       if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+           return;
+   }
+
+   RenderObject();
 }
 
 //////////////////////////////
@@ -2917,4 +2932,13 @@ STDMETHODIMP Primitive::put_DepthBias(float newVal)
    m_d.m_depthBias = newVal;
 
    return S_OK;
+}
+
+//Sets the in play state for light sequencing rendering
+void Primitive::setInPlayState(const bool newVal)
+{
+    if (newVal != m_inPlayState) // state changed?
+    {
+        m_inPlayState = newVal;
+    }
 }
