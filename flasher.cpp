@@ -93,6 +93,8 @@ HRESULT Flasher::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    InitShape();
 
+   m_inPlayState = m_d.m_isVisible;
+
    InitVBA(fTrue, 0, NULL);
 
    return S_OK;
@@ -1147,15 +1149,27 @@ STDMETHODIMP Flasher::put_ImageAlignment(RampImageAlignment newVal)
    return S_OK;
 }
 
+//Sets the in play state for light sequencing rendering
+void Flasher::setInPlayState(const bool newVal)
+{
+    if (newVal != m_inPlayState) // state changed?
+    {
+        m_inPlayState = newVal;
+    }
+}
+
 void Flasher::RenderDynamic()
 {
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    TRACE_FUNCTION();
-
-   // Don't render if invisible (or DMD connection not set)
-   if (!m_d.m_isVisible || m_dynamicVertexBuffer == NULL || m_ptable->m_reflectionEnabled || (m_d.m_isDMD && !g_pplayer->m_texdmd))
-      return;
+   
+   //Don't render if LightSequence in play and state is off
+   if ((m_lockedByLS && !m_inPlayState)) 
+       return;
+   //Don't render if invisible (or DMD connection not set)
+   else if (!m_d.m_isVisible || m_dynamicVertexBuffer == NULL || m_ptable->m_reflectionEnabled || (m_d.m_isDMD && !g_pplayer->m_texdmd))
+       return;
 
    const vec4 color = convertColor(m_d.m_color, (float)m_d.m_alpha*m_d.m_intensity_scale / 100.0f);
    if (color.w == 0.f)
