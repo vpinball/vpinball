@@ -1254,9 +1254,6 @@ void PinTable::InitBuiltinTable(const size_t tableId)
    // Get our new table resource, get it to be opened as a storage, and open it like a normal file
    switch (tableId)
    {
-       case ID_NEW_BLANKTABLE:
-           hrsrc = FindResource(NULL, MAKEINTRESOURCE(IDR_BLANK_TABLE), "TABLE");
-           break;
        case ID_NEW_EXAMPLETABLE:
            hrsrc = FindResource(NULL, MAKEINTRESOURCE(IDR_EXAMPLE_TABLE), "TABLE");
            break;
@@ -1266,6 +1263,7 @@ void PinTable::InitBuiltinTable(const size_t tableId)
        case ID_NEW_LIGHTSEQTABLE:
            hrsrc = FindResource(NULL, MAKEINTRESOURCE(IDR_LIGHTSEQ_TABLE), "TABLE");
            break;
+       case ID_NEW_BLANKTABLE:
        default:
            hrsrc = FindResource(NULL, MAKEINTRESOURCE(IDR_BLANK_TABLE), "TABLE");
            break;
