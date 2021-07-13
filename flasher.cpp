@@ -1165,8 +1165,10 @@ void Flasher::RenderDynamic()
    TRACE_FUNCTION();
    
    //Don't render if LightSequence in play and state is off
-   if ((m_lockedByLS && !m_inPlayState)) 
-       return;
+   if (m_lockedByLS) 
+   {
+       if (!m_inPlayState) return;
+   }
    //Don't render if invisible (or DMD connection not set)
    else if (!m_d.m_isVisible || m_dynamicVertexBuffer == NULL || m_ptable->m_reflectionEnabled || (m_d.m_isDMD && !g_pplayer->m_texdmd))
        return;
