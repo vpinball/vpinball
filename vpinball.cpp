@@ -547,6 +547,8 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
        case IDM_NEW:
        case ID_NEW_BLANKTABLE:
        case ID_NEW_EXAMPLETABLE:
+       case ID_NEW_STRIPPEDTABLE:
+       case ID_NEW_LIGHTSEQTABLE:       
        {
           OpenNewTable(code);
           return true;
@@ -2327,7 +2329,7 @@ void VPinball::OpenNewTable(size_t tableId)
     PinTableMDI *mdiTable = new PinTableMDI(this);
     CComObject<PinTable>* ppt = mdiTable->GetTable();
     m_vtable.push_back(ppt);
-    ppt->InitBuiltinTable(tableId != ID_NEW_EXAMPLETABLE);
+    ppt->InitBuiltinTable(tableId);
     ppt->InitTablePostLoad();
 
     AddMDITable(mdiTable);

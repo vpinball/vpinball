@@ -917,6 +917,8 @@
 #define IDD_SOUND_POSITION_DIALOG       629
 #define IDR_BLANK_TABLE                 630
 #define IDD_TOOLBAR                     630
+#define IDR_STRIPPED_TABLE              631
+#define IDR_LIGHTSEQ_TABLE              632
 #define IDB_KICKER_WILLIAMS             640
 #define IDB_KICKER_GOTTLIEB             645
 #define IDB_KICKER_T1                   646
@@ -1216,6 +1218,8 @@
 #define ID_WINDOW_SHOWTOOLBAR           4022
 #define ID_EDIT_SHOWTOOLBAR             4023
 #define ID_TABLE_NOTES                  4024
+#define ID_NEW_STRIPPEDTABLE            4025
+#define ID_NEW_LIGHTSEQTABLE            4026
 #define IDC_ENABLE_EMREEL_CHECK         13432
 #define IDC_ENABLE_DECAL_CHECK          13433
 #define IDC_BG_TEST_DESKTOP_CHECK       13434
