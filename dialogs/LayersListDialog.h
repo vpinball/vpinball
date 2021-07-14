@@ -74,7 +74,7 @@ protected:
    virtual BOOL    OnCommand(WPARAM wParam, LPARAM lParam);
 
 private:
-   LayersListDialog* m_layerDialog;
+   LayersListDialog* m_layerDialog;   
 };
 
 class LayersListDialog : public CDialog
@@ -116,7 +116,16 @@ public:
       m_layerTreeView.CollapseLayer();
       m_collapsed = true;
    }
-   HWND GetLayerTreeHwnd() { return m_layerTreeView.GetHwnd(); }
+   bool GetCaseSensitiveFilter()
+   {       
+       return m_isCaseSensitive;
+   }
+   void SetCaseSensitiveFilter(bool enable)
+   {
+       m_isCaseSensitive = enable;
+   }
+   
+   HWND GetLayerTreeHwnd() { return m_layerTreeView.GetHwnd(); }   
 
 protected:
    virtual BOOL OnInitDialog();
@@ -132,7 +141,9 @@ private:
    CButton         m_deleteLayerButton;
    CButton         m_expandCollapseButton;
    FilterEditBox   m_layerFilterEditBox;
-   bool            m_collapsed;
+   CButton         m_layerFilterCaseButton;
+   bool            m_collapsed;   
+   bool             m_isCaseSensitive;
    PinTable* m_activeTable = nullptr;
 };
 

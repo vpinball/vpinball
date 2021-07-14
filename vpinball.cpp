@@ -462,11 +462,32 @@ void VPinball::CreateDocker()
 
 void VPinball::SetPosCur(float x, float y)
 {
+   // display position 1st column in VP units
    char szT[256];
    sprintf_s(szT, "%.4f, %.4f", x, y);
+   SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 0, (size_t)szT);
+
+   // display converted position in separate status
+   if (m_convertToUnit != 2) 
+   {
+       char szS[256];        
+       switch (m_convertToUnit)
+       {
+           case 0:
+               sprintf_s(szS, "%.2f, %.2f %s", ConvertToUnit(x), ConvertToUnit(y), " (inch)");
+               break;
+           case 1:
+               sprintf_s(szS, "%.2f, %.2f %s", ConvertToUnit(x), ConvertToUnit(y), " (mm)");
+               break;
+           default:
+               assert(!"wrong unit");
+               break;
+       }       
+       SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 2, (size_t)szS);
+   }   
+
    m_mouseCursorPosition.x = x;
    m_mouseCursorPosition.y = y;
-   SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 0, (size_t)szT);
 }
 
 void VPinball::SetObjectPosCur(float x, float y)
@@ -1201,10 +1222,10 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
          menuInfo.cbSize = GetSizeofMenuItemInfo();
          menuInfo.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE;
          menuInfo.fType = MFT_STRING;
-         menuInfo.wID = RECENT_FIRST_MENU_IDM + (UINT)i;
-         menuInfo.dwTypeData = recentMenuname;
+         menuInfo.wID = RECENT_FIRST_MENU_IDM + (UINT)i;         
+         menuInfo.dwTypeData = recentMenuname;         
 
-         menuFile.InsertMenuItem(count, menuInfo, TRUE);
+         menuFile.InsertMenuItem(count, menuInfo, TRUE);         
          count++;
       }
 
