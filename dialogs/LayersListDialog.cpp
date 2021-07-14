@@ -107,6 +107,10 @@ void LayersListDialog::UpdateLayerList(const std::string& name)
 
     ClearList();
     const bool checkName = name.empty() ? false : true;
+    std::string sName = name;
+    if(checkName) //transform the name to lower
+        std::transform(sName.begin(), sName.end(), sName.begin(), std::tolower);
+
     for (size_t t = 0; t < m_activeTable->m_vedit.size(); t++)
     {
         ISelect *const psel = m_activeTable->m_vedit[t]->GetISelect();
@@ -114,8 +118,20 @@ void LayersListDialog::UpdateLayerList(const std::string& name)
         {
            if (!checkName)
               AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
-           else if (std::string(m_activeTable->m_vedit[t]->GetName()).find(name) != std::string::npos)
-              AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
+           else if(!GetCaseSensitiveFilter())
+           {    
+               //filter obj name and filter to lower
+               std::string objName = std::string(m_activeTable->m_vedit[t]->GetName());
+               std::transform(objName.begin(), objName.end(), objName.begin(), std::tolower);
+               if (std::string(objName).find(sName) != std::string::npos)
+                   AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
+           }
+           else
+           {
+               //filter std
+               if (std::string(m_activeTable->m_vedit[t]->GetName()).find(name) != std::string::npos)
+                   AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
+           }
         }
     }
     if (!name.empty())
@@ -171,13 +187,15 @@ void LayersListDialog::AddToolTip(const char* const text, HWND parentHwnd, HWND 
 BOOL LayersListDialog::OnInitDialog()
 {
     const HWND toolTipHwnd = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), NULL, g_pvp->theInstance, NULL);
-    m_layerFilterEditBox.SetDialog(this);
+    m_layerFilterEditBox.SetDialog(this);    
+    m_isCaseSensitive = BST_UNCHECKED;
 
     AttachItem(IDC_LAYER_TREEVIEW, m_layerTreeView);
     AttachItem(IDC_ADD_LAYER_BUTTON, m_addLayerButton);
     AttachItem(IDC_DELETE_LAYER_BUTTON, m_deleteLayerButton);
     AttachItem(IDC_ASSIGN_BUTTON, m_assignButton);
     AttachItem(IDC_LAYER_FILTER_EDIT, m_layerFilterEditBox);
+    AttachItem(IDC_LAYER_FILTER_CASE_BUTTON, m_layerFilterCaseButton);
     AttachItem(IDC_EXPAND_COLLAPSE_BUTTON, m_expandCollapseButton);
 
     const int iconSize = 16;
@@ -195,14 +213,16 @@ BOOL LayersListDialog::OnInitDialog()
     AddToolTip("Add a new layer", GetHwnd(), toolTipHwnd, m_addLayerButton.GetHwnd());
     AddToolTip("Delete selected layer", GetHwnd(), toolTipHwnd, m_deleteLayerButton.GetHwnd());
     AddToolTip("Filter tree. Only elements that match the filter string will be shown!", GetHwnd(), toolTipHwnd, m_layerFilterEditBox.GetHwnd());
+    AddToolTip("Enable case sensitive filtering", GetHwnd(), toolTipHwnd, m_layerFilterCaseButton.GetHwnd());
 
     m_resizer.Initialize(*this, CRect(0, 0, 200, 200));
     m_resizer.AddChild(m_layerTreeView, topleft, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_addLayerButton, topright, 0);
     m_resizer.AddChild(m_deleteLayerButton, topright, 0);
     m_resizer.AddChild(m_assignButton, topleft, 0);
+    m_resizer.AddChild(m_layerFilterCaseButton, topright, 0);
     m_resizer.AddChild(m_expandCollapseButton, topleft, 0);
-    m_resizer.AddChild(m_layerFilterEditBox, topright, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_layerFilterEditBox, topright, RD_STRETCH_WIDTH);    
     m_resizer.RecalcLayout();
 
     return TRUE;
@@ -263,6 +283,11 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             CollapseLayers();
             return TRUE;
         }
+        case IDC_LAYER_FILTER_CASE_BUTTON:   
+            SetCaseSensitiveFilter(!GetCaseSensitiveFilter());
+            Button_SetCheck(m_layerFilterCaseButton, GetCaseSensitiveFilter() ? BST_CHECKED : BST_UNCHECKED);
+            UpdateLayerList(string(GetWindowText()));
+            return TRUE;
         default:
             break;
     }
