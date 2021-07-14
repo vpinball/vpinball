@@ -558,6 +558,15 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
 
       break;
    }
+   case eItemLightSeq:
+   {
+       const LightSeq* const lightSeq = (LightSeq*)piedit;
+       ListView_SetItemText(m_hElementList, idx, 1, "LightSeq");
+       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
+       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
+
+       break;
+   }
    default:
       assert(!"AddSearchItemToList unhandled case");
       break;
