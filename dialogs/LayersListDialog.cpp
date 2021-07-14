@@ -109,7 +109,7 @@ void LayersListDialog::UpdateLayerList(const std::string& name)
     const bool checkName = name.empty() ? false : true;
     std::string sName = name;
     if(checkName) //transform the name to lower
-        std::transform(sName.begin(), sName.end(), sName.begin(), std::tolower);
+        std::transform(sName.begin(), sName.end(), sName.begin(), tolower);
 
     for (size_t t = 0; t < m_activeTable->m_vedit.size(); t++)
     {
@@ -122,7 +122,7 @@ void LayersListDialog::UpdateLayerList(const std::string& name)
            {    
                //filter obj name and filter to lower
                std::string objName = std::string(m_activeTable->m_vedit[t]->GetName());
-               std::transform(objName.begin(), objName.end(), objName.begin(), std::tolower);
+               std::transform(objName.begin(), objName.end(), objName.begin(), tolower);
                if (std::string(objName).find(sName) != std::string::npos)
                    AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
            }
