@@ -116,16 +116,16 @@ public:
       m_layerTreeView.CollapseLayer();
       m_collapsed = true;
    }
-   bool GetCaseSensitiveFilter()
-   {       
+   bool GetCaseSensitiveFilter() const
+   {
        return m_isCaseSensitive;
    }
-   void SetCaseSensitiveFilter(bool enable)
+   void SetCaseSensitiveFilter(const bool enable)
    {
        m_isCaseSensitive = enable;
    }
    
-   HWND GetLayerTreeHwnd() { return m_layerTreeView.GetHwnd(); }   
+   HWND GetLayerTreeHwnd() { return m_layerTreeView.GetHwnd(); }
 
 protected:
    virtual BOOL OnInitDialog();
@@ -142,8 +142,8 @@ private:
    CButton         m_expandCollapseButton;
    FilterEditBox   m_layerFilterEditBox;
    CButton         m_layerFilterCaseButton;
-   bool            m_collapsed;   
-   bool             m_isCaseSensitive;
+   bool            m_collapsed;
+   bool            m_isCaseSensitive;
    PinTable* m_activeTable = nullptr;
 };
 

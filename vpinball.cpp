@@ -470,21 +470,20 @@ void VPinball::SetPosCur(float x, float y)
    // display converted position in separate status
    if (m_convertToUnit != 2) 
    {
-       char szS[256];        
        switch (m_convertToUnit)
        {
            case 0:
-               sprintf_s(szS, "%.2f, %.2f %s", ConvertToUnit(x), ConvertToUnit(y), " (inch)");
+               sprintf_s(szT, "%.2f, %.2f %s", ConvertToUnit(x), ConvertToUnit(y), " (inch)");
                break;
            case 1:
-               sprintf_s(szS, "%.2f, %.2f %s", ConvertToUnit(x), ConvertToUnit(y), " (mm)");
+               sprintf_s(szT, "%.2f, %.2f %s", ConvertToUnit(x), ConvertToUnit(y), " (mm)");
                break;
            default:
                assert(!"wrong unit");
                break;
-       }       
-       SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 2, (size_t)szS);
-   }   
+       }
+       SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 2, (size_t)szT);
+   }
 
    m_mouseCursorPosition.x = x;
    m_mouseCursorPosition.y = y;
@@ -1615,7 +1614,6 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 CComObject<PinTable>* const ptCur = GetActiveTable();
                 if (ptCur)
                     ptCur->SetMouseCursor();
-
             }
             return FinalWindowProc(uMsg, wParam, lParam);
         }
