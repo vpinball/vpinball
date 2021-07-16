@@ -664,7 +664,8 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
    // blink all lights on and off
    case SeqBlinking:
       m_th1.type = eSeqBlink;
-      m_th1.length = 0;
+      m_th1.length = TailLength;
+      TailLength = 0;
       m_th1.frameCount = 2;
       break;
 
@@ -1488,12 +1489,12 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
          switch (pTracer->frameCount--)
          {
          case 2:
-            SetAllLightsToState(LightStateOn);
+            SetAllLightsToState(pTracer->length <=0 ? LightStateOn : LightStateOff);
             m_timeNextUpdate = g_pplayer->m_time_msec + m_pauseValue;
             break;
 
          case 1:
-            SetAllLightsToState(LightStateOff);
+            SetAllLightsToState(pTracer->length <= 0 ? LightStateOff : LightStateOn);
             m_timeNextUpdate = g_pplayer->m_time_msec + m_pauseValue;
             break;
 
