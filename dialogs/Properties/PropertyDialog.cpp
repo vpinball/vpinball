@@ -84,7 +84,7 @@ LRESULT ComboBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 PropertyDialog::PropertyDialog() : CDialog(IDD_PROPERTY_DIALOG), m_previousType((ItemTypeEnum)0), m_backglassView(false), m_curTabIndex(0)
 {
     memset(m_tabs, 0, sizeof(m_tabs));
-    m_accel = LoadAccelerators(g_pvp->theInstance, MAKEINTRESOURCE(IDR_VPSIMPLACCEL));
+    m_accel = LoadAccelerators(g_pvp->theInstance, MAKEINTRESOURCE(IDR_VPSIMPELACCEL));
 }
 
 void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
