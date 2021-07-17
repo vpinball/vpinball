@@ -149,6 +149,7 @@ FIXES:
 - make debug dialog (and its text edit) resizable
 
 - fix an issue where the light sequencer could become stuck
+- any light sequencer TailLength value higher than 0 will now 'Reverse', i.e. the lights will turn 'off/on' instead of default 'on/off'
 
 - tweak flipper shadows (via script) implementation in the example/blank table
 
