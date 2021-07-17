@@ -4,6 +4,7 @@
 
 LayersListDialog::LayersListDialog() : CDialog(IDD_LAYERS), m_collapsed(true)
 {
+   m_accel = LoadAccelerators(g_pvp->theInstance, MAKEINTRESOURCE(IDR_VPSIMPELACCEL));
 }
 
 LayersListDialog::~LayersListDialog()
@@ -327,7 +328,7 @@ bool LayersListDialog::PreTranslateMessage(MSG* msg)
    {
       const int keyPressed = LOWORD(msg->wParam);
       // only pass F1-F12 to the main VPinball class to open subdialogs from everywhere
-      if (((keyPressed >= VK_F3 && keyPressed <= VK_F12) || (keyPressed == VK_ESCAPE)) && TranslateAccelerator(g_pvp->GetHwnd(), g_haccel, msg)) //!! VK_ESCAPE is a workaround, otherwise there is a hickup when changing a layername and pressing this
+      if (((keyPressed >= VK_F3 && keyPressed <= VK_F12) || (keyPressed == VK_ESCAPE)) && TranslateAccelerator(g_pvp->GetHwnd(), m_accel, msg)) //!! VK_ESCAPE is a workaround, otherwise there is a hickup when changing a layername and pressing this
          return true;
    }
 
@@ -354,6 +355,12 @@ CDockLayers::CDockLayers()
 void CDockLayers::OnClose()
 {
     // nothing to do only to prevent closing the window
+}
+
+LayerTreeView::LayerTreeView()
+{
+   m_dragging = false;
+   m_accel = LoadAccelerators(g_pvp->theInstance, MAKEINTRESOURCE(IDR_VPSIMPELACCEL));
 }
 
 HTREEITEM LayerTreeView::AddItem(HTREEITEM hParent, LPCTSTR text, IEditable * const pedit, int image)
@@ -668,7 +675,7 @@ bool LayerTreeView::PreTranslateMessage(MSG* msg)
    {
        // only pre-translate mouse and keyboard input events
        if (((msg->message >= WM_KEYFIRST && msg->message <= WM_KEYLAST) || (msg->message >= WM_MOUSEFIRST && msg->message <= WM_MOUSELAST))
-           && TranslateAccelerator(GetHwnd(), g_haccel, msg))
+           && TranslateAccelerator(GetHwnd(), m_accel, msg))
            return true;
    }
 
