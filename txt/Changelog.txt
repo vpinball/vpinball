@@ -148,6 +148,8 @@ FIXES:
 
 - make debug dialog (and its text edit) resizable
 
+- fix an issue where the light sequencer could become stuck
+
 - tweak flipper shadows (via script) implementation in the example/blank table
 
 - update BASS library to 2.4.16
