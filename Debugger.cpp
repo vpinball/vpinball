@@ -34,7 +34,6 @@ BOOL DebuggerDialog::OnInitDialog()
     AttachItem(IDC_PAUSE, m_pauseButton);
     AttachItem(IDC_STEP, m_stepButton);
     AttachItem(IDC_STEPAMOUNT, m_stepAmountEdit);
-    AttachItem(IDC_EXPAND, m_editorExpandButton);
     AttachItem(IDC_DBGLIGHTSBUTTON, m_dbgLightsButton);
     AttachItem(IDC_DBG_MATERIALS_BUTTON, m_dbgMaterialsButton);
     m_hThrowBallsInPlayerCheck = ::GetDlgItem(GetHwnd(), IDC_BALL_THROWING);
@@ -87,8 +86,9 @@ BOOL DebuggerDialog::OnInitDialog()
     m_resizer.Initialize(*this, rcDialog);
     AttachItem(IDC_EDITSIZE, m_notesEdit);
     m_resizer.AddChild(m_notesEdit.GetHwnd(), bottomright, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
-
-    SendMessage(RESIZE_FROM_EXPAND, 0, 0);
+    m_resizer.AddChild(g_pplayer->m_hwndDebugOutput, bottomright, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_GUIDE1).GetHwnd(), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_GUIDE2).GetHwnd(), bottomright, 0);
     return TRUE;
 }
 
@@ -283,34 +283,6 @@ INT_PTR DebuggerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             return TRUE;
         }
 
-        case RESIZE_FROM_EXPAND:
-        {
-            const size_t state = SendDlgItemMessage(IDC_EXPAND, BM_GETCHECK, 0, 0);
-            int mult;
-            if (state == BST_CHECKED)
-            {
-                mult = 1;
-                m_editorExpandButton.SetWindowText("< Editor");
-            }
-            else
-            {
-                mult = -1;
-                m_editorExpandButton.SetWindowText("> Editor");
-            }
-
-            RECT rcSizer1;
-            RECT rcSizer2;
-            ::GetWindowRect(GetDlgItem(IDC_GUIDE1), &rcSizer1);
-            ::GetWindowRect(GetDlgItem(IDC_GUIDE2), &rcSizer2);
-
-            const int diffx = rcSizer2.right - rcSizer1.right;
-            const int diffy = rcSizer2.bottom - rcSizer1.bottom;
-
-            const RECT rcDialog = GetWindowRect();
-
-            SetWindowPos(NULL, rcDialog.left, rcDialog.top, rcDialog.right - rcDialog.left + diffx * mult, rcDialog.bottom - rcDialog.top + diffy * mult, SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
-            return TRUE;
-        }
         case WM_SIZE:
         {
             const CRect rc = m_notesEdit.GetClientRect();

@@ -17,6 +17,7 @@ Flasher::Flasher()
    m_maxx = -FLT_MAX;
    m_miny = FLT_MAX;
    m_maxy = -FLT_MAX;
+   m_lockedByLS = false;
 }
 
 Flasher::~Flasher()
@@ -122,6 +123,7 @@ void Flasher::SetDefaults(bool fromMouseClick)
    m_d.m_modulate_vs_add = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Flasher", "ModulateVsAdd", 0.9f) : 0.9f;
    m_d.m_filterAmount = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Flasher", "FilterAmount", 100) : 100;
    m_d.m_isVisible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "Visible", true) : true;
+   m_inPlayState = m_d.m_isVisible;
    m_d.m_addBlend = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "AddBlend", false) : false;
    m_d.m_isDMD = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "DMD", false) : false;
    m_d.m_displayTexture = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "DisplayTexture", false) : false;
@@ -273,6 +275,9 @@ void Flasher::EndPlay()
 {
    IEditable::EndPlay();
 
+   // ensure not locked just in case the player exits during a LS sequence
+   m_lockedByLS = false;
+   
    ResetVideoCap();
 
    if (m_dynamicVertexBuffer)
@@ -582,6 +587,9 @@ HRESULT Flasher::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
    m_ptable = ptable;
 
    br.Load();
+
+   m_inPlayState = m_d.m_isVisible;
+
    return S_OK;
 }
 
@@ -1143,15 +1151,26 @@ STDMETHODIMP Flasher::put_ImageAlignment(RampImageAlignment newVal)
    return S_OK;
 }
 
+//Sets the in play state for light sequencing rendering
+void Flasher::setInPlayState(const bool newVal)
+{
+   m_inPlayState = newVal;
+}
+
 void Flasher::RenderDynamic()
 {
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    TRACE_FUNCTION();
-
-   // Don't render if invisible (or DMD connection not set)
-   if (!m_d.m_isVisible || m_dynamicVertexBuffer == NULL || m_ptable->m_reflectionEnabled || (m_d.m_isDMD && !g_pplayer->m_texdmd))
-      return;
+   
+   //Don't render if LightSequence in play and state is off
+   if (m_lockedByLS) 
+   {
+       if (!m_inPlayState) return;
+   }
+   //Don't render if invisible (or DMD connection not set)
+   else if (!m_d.m_isVisible || m_dynamicVertexBuffer == NULL || m_ptable->m_reflectionEnabled || (m_d.m_isDMD && !g_pplayer->m_texdmd))
+       return;
 
    const vec4 color = convertColor(m_d.m_color, (float)m_d.m_alpha*m_d.m_intensity_scale / 100.0f);
    if (color.w == 0.f)

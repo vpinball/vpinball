@@ -380,6 +380,8 @@
 #define IDR_CODEVIEWACCEL               271
 #define IDD_COLLECTDIALOG               271
 #define IDD_COLLECTION                  272
+#define IDR_VPACCEL1                    272
+#define IDR_VPSIMPELACCEL               272
 #define IDC_LEFTFLIPPER                 273
 #define IDD_PROPDISPREEL                273
 #define IDC_RIGHTFLIPPER                274
@@ -603,8 +605,6 @@
 #define IDR_EXAMPLE_TABLE               383
 #define IDI_TIMER                       383
 #define IDC_ARASlider                   384
-#define IDR_TABLE1                      384
-#define IDR_EXAMPLETABLE                384
 #define IDI_LIGHT                       384
 #define IDC_PRIMITIVE                   385
 #define IDI_TARGET                      385
@@ -894,6 +894,7 @@
 #define IDC_PLUNGERRETRACT              592
 #define IDC_IMPORT_NO_FORSYTH           593
 #define IDC_SHARPENCB                   594
+#define IDC_GET_INPLAYSTATE             595
 #define IDD_PROPRUBBER_PHYSICS          602
 #define IDC_RUBBER                      602
 #define IDD_PROPRUBBER_VISUALS          604
@@ -917,6 +918,8 @@
 #define IDD_SOUND_POSITION_DIALOG       629
 #define IDR_BLANK_TABLE                 630
 #define IDD_TOOLBAR                     630
+#define IDR_STRIPPED_TABLE              631
+#define IDR_LIGHTSEQ_TABLE              632
 #define IDB_KICKER_WILLIAMS             640
 #define IDB_KICKER_GOTTLIEB             645
 #define IDB_KICKER_T1                   646
@@ -1027,6 +1030,7 @@
 #define IDC_COLOR_BUTTON1               765
 #define IDC_DELETE_LAYER_BUTTON         765
 #define IDC_RESET_WINDOW                765
+#define IDC_LAYER_FILTER_CASE_BUTTON    766
 #define IDC_DBG_BULB_MODULATE_VS_ADD    766
 #define IDC_COLOR_BUTTON2               766
 #define IDC_DBG_TRANSMISSION_SCALE      767
@@ -1223,6 +1227,8 @@
 #define ID_WINDOW_SHOWTOOLBAR           4022
 #define ID_EDIT_SHOWTOOLBAR             4023
 #define ID_TABLE_NOTES                  4024
+#define ID_NEW_STRIPPEDTABLE            4025
+#define ID_NEW_LIGHTSEQTABLE            4026
 #define IDC_ENABLE_EMREEL_CHECK         13432
 #define IDC_ENABLE_DECAL_CHECK          13433
 #define IDC_BG_TEST_DESKTOP_CHECK       13434
@@ -1330,8 +1336,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        669
-#define _APS_NEXT_COMMAND_VALUE         4025
 #define _APS_NEXT_CONTROL_VALUE         874
+#define _APS_NEXT_COMMAND_VALUE         4027
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

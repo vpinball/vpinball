@@ -4,6 +4,7 @@
 
 LayersListDialog::LayersListDialog() : CDialog(IDD_LAYERS), m_collapsed(true)
 {
+   m_accel = LoadAccelerators(g_pvp->theInstance, MAKEINTRESOURCE(IDR_VPSIMPELACCEL));
 }
 
 LayersListDialog::~LayersListDialog()
@@ -55,12 +56,16 @@ void LayersListDialog::DeleteLayer()
     if (m_activeTable == nullptr)
         return;
 
-    const int ans = MessageBox("Are you sure you want to delete the complete layer?", "Confirm delete", MB_YESNO | MB_DEFBUTTON2);
-    if (ans != IDYES)
-        return;
-
     HTREEITEM layerToDelete = m_layerTreeView.GetCurrentLayerItem();
     std::vector<HTREEITEM> allSubItems = m_layerTreeView.GetSubItems(layerToDelete);
+
+    if (!allSubItems.empty())
+    {
+        const int ans = MessageBox("Are you sure you want to delete the complete layer?", "Confirm delete", MB_YESNO | MB_DEFBUTTON2);
+        if (ans != IDYES)
+            return;
+    }
+
     HTREEITEM hFillLayer = m_layerTreeView.GetChild(m_layerTreeView.GetRootItem());
     if (hFillLayer == m_layerTreeView.GetCurrentLayerItem())
     {
@@ -103,6 +108,10 @@ void LayersListDialog::UpdateLayerList(const std::string& name)
 
     ClearList();
     const bool checkName = name.empty() ? false : true;
+    std::string sName = name;
+    if(checkName) //transform the name to lower
+        std::transform(sName.begin(), sName.end(), sName.begin(), tolower);
+
     for (size_t t = 0; t < m_activeTable->m_vedit.size(); t++)
     {
         ISelect *const psel = m_activeTable->m_vedit[t]->GetISelect();
@@ -110,8 +119,20 @@ void LayersListDialog::UpdateLayerList(const std::string& name)
         {
            if (!checkName)
               AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
-           else if (std::string(m_activeTable->m_vedit[t]->GetName()).find(name) != std::string::npos)
-              AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
+           else if(!GetCaseSensitiveFilter())
+           {    
+               //filter obj name and filter to lower
+               std::string objName = std::string(m_activeTable->m_vedit[t]->GetName());
+               std::transform(objName.begin(), objName.end(), objName.begin(), tolower);
+               if (std::string(objName).find(sName) != std::string::npos)
+                   AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
+           }
+           else
+           {
+               //filter std
+               if (std::string(m_activeTable->m_vedit[t]->GetName()).find(name) != std::string::npos)
+                   AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
+           }
         }
     }
     if (!name.empty())
@@ -167,13 +188,15 @@ void LayersListDialog::AddToolTip(const char* const text, HWND parentHwnd, HWND 
 BOOL LayersListDialog::OnInitDialog()
 {
     const HWND toolTipHwnd = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), NULL, g_pvp->theInstance, NULL);
-    m_layerFilterEditBox.SetDialog(this);
+    m_layerFilterEditBox.SetDialog(this);    
+    m_isCaseSensitive = BST_UNCHECKED;
 
     AttachItem(IDC_LAYER_TREEVIEW, m_layerTreeView);
     AttachItem(IDC_ADD_LAYER_BUTTON, m_addLayerButton);
     AttachItem(IDC_DELETE_LAYER_BUTTON, m_deleteLayerButton);
     AttachItem(IDC_ASSIGN_BUTTON, m_assignButton);
     AttachItem(IDC_LAYER_FILTER_EDIT, m_layerFilterEditBox);
+    AttachItem(IDC_LAYER_FILTER_CASE_BUTTON, m_layerFilterCaseButton);
     AttachItem(IDC_EXPAND_COLLAPSE_BUTTON, m_expandCollapseButton);
 
     const int iconSize = 16;
@@ -191,14 +214,16 @@ BOOL LayersListDialog::OnInitDialog()
     AddToolTip("Add a new layer", GetHwnd(), toolTipHwnd, m_addLayerButton.GetHwnd());
     AddToolTip("Delete selected layer", GetHwnd(), toolTipHwnd, m_deleteLayerButton.GetHwnd());
     AddToolTip("Filter tree. Only elements that match the filter string will be shown!", GetHwnd(), toolTipHwnd, m_layerFilterEditBox.GetHwnd());
+    AddToolTip("Enable case sensitive filtering", GetHwnd(), toolTipHwnd, m_layerFilterCaseButton.GetHwnd());
 
     m_resizer.Initialize(*this, CRect(0, 0, 200, 200));
     m_resizer.AddChild(m_layerTreeView, topleft, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_addLayerButton, topright, 0);
     m_resizer.AddChild(m_deleteLayerButton, topright, 0);
     m_resizer.AddChild(m_assignButton, topleft, 0);
+    m_resizer.AddChild(m_layerFilterCaseButton, topright, 0);
     m_resizer.AddChild(m_expandCollapseButton, topleft, 0);
-    m_resizer.AddChild(m_layerFilterEditBox, topright, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_layerFilterEditBox, topright, RD_STRETCH_WIDTH);    
     m_resizer.RecalcLayout();
 
     return TRUE;
@@ -259,6 +284,11 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             CollapseLayers();
             return TRUE;
         }
+        case IDC_LAYER_FILTER_CASE_BUTTON:   
+            SetCaseSensitiveFilter(!GetCaseSensitiveFilter());
+            Button_SetCheck(m_layerFilterCaseButton, GetCaseSensitiveFilter() ? BST_CHECKED : BST_UNCHECKED);
+            UpdateLayerList(string(GetWindowText()));
+            return TRUE;
         default:
             break;
     }
@@ -298,7 +328,7 @@ bool LayersListDialog::PreTranslateMessage(MSG* msg)
    {
       const int keyPressed = LOWORD(msg->wParam);
       // only pass F1-F12 to the main VPinball class to open subdialogs from everywhere
-      if (((keyPressed >= VK_F3 && keyPressed <= VK_F12) || (keyPressed == VK_ESCAPE)) && TranslateAccelerator(g_pvp->GetHwnd(), g_haccel, msg)) //!! VK_ESCAPE is a workaround, otherwise there is a hickup when changing a layername and pressing this
+      if (((keyPressed >= VK_F3 && keyPressed <= VK_F12) || (keyPressed == VK_ESCAPE)) && TranslateAccelerator(g_pvp->GetHwnd(), m_accel, msg)) //!! VK_ESCAPE is a workaround, otherwise there is a hickup when changing a layername and pressing this
          return true;
    }
 
@@ -325,6 +355,12 @@ CDockLayers::CDockLayers()
 void CDockLayers::OnClose()
 {
     // nothing to do only to prevent closing the window
+}
+
+LayerTreeView::LayerTreeView()
+{
+   m_dragging = false;
+   m_accel = LoadAccelerators(g_pvp->theInstance, MAKEINTRESOURCE(IDR_VPSIMPELACCEL));
 }
 
 HTREEITEM LayerTreeView::AddItem(HTREEITEM hParent, LPCTSTR text, IEditable * const pedit, int image)
@@ -639,7 +675,7 @@ bool LayerTreeView::PreTranslateMessage(MSG* msg)
    {
        // only pre-translate mouse and keyboard input events
        if (((msg->message >= WM_KEYFIRST && msg->message <= WM_KEYLAST) || (msg->message >= WM_MOUSEFIRST && msg->message <= WM_MOUSELAST))
-           && TranslateAccelerator(GetHwnd(), g_haccel, msg))
+           && TranslateAccelerator(GetHwnd(), m_accel, msg))
            return true;
    }
 
@@ -799,7 +835,7 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
             if (!GetItem(tvItem))
                 return FALSE;
 
-            if(tvItem.cChildren==1)
+            if(tvItem.cChildren == 1) //!! <= ?
             {
                 const string oldName(GetItemText(pinfo->item.hItem));
                 const string newName(pinfo->item.pszText);
@@ -845,7 +881,7 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
             tvItem.hItem = ht.hItem;
             if (GetItem(tvItem))
             {
-                if (tvItem.cChildren == 1) // layer checkbox was clicked
+                if (tvItem.cChildren == 1) //!! <= ? // layer checkbox was clicked
                 {
                     const bool checked = IsItemChecked(tvItem.hItem);
                     HTREEITEM subItem = GetChild(tvItem.hItem);
@@ -909,7 +945,7 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
     tvItem.hItem = ht.hItem;
     if (GetItem(tvItem))
     {
-        if (tvItem.cChildren == 1) // layer checkbox was clicked
+        if (tvItem.cChildren == 1) //!! <= ? // layer checkbox was clicked
         {
             HTREEITEM subItem = GetChild(tvItem.hItem);
             while (subItem)
@@ -956,7 +992,7 @@ LRESULT LayerTreeView::OnTVNSelChanged(LPNMTREEVIEW pNMTV)
     {
         if(tvItem.hItem!=hRootItem)
         {
-            if (tvItem.cChildren == 1)
+            if (tvItem.cChildren <= 1)
                 hCurrentLayerItem = tvItem.hItem;
             else
                 hCurrentElementItem = tvItem.hItem;

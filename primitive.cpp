@@ -115,6 +115,9 @@ void Mesh::SaveWavefrontObj(const string& fname, const string& description)
 
 void Mesh::UploadToVB(VertexBuffer * vb, const float frame) 
 {
+   if(!vb)
+      return;
+
    if (frame >= 0.f)
    {
       float intPart;
@@ -171,6 +174,8 @@ Primitive::Primitive()
    m_d.m_reflectionEnabled = true;
    m_numGroupIndices = 0;
    m_numGroupVertices = 0;
+   m_currentFrame = -1.f;
+   m_lockedByLS = false;
 
    m_numIndices = 0;
    m_numVertices = 0;
@@ -332,6 +337,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
    m_d.m_SideColor = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "SideColor", RGB(150, 150, 150)) : RGB(150, 150, 150);
 
    m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Visible", true) : true;
+   m_inPlayState = m_d.m_visible;
    m_d.m_staticRendering = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "StaticRendering", true) : true;
    m_d.m_drawTexturesInside = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "DrawTexturesInside", false) : false;
 
@@ -1318,10 +1324,19 @@ void Primitive::RenderDynamic()
 {
    TRACE_FUNCTION();
 
-   if (m_d.m_staticRendering || !m_d.m_visible || m_d.m_skipRendering)
-      return;
-   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
-      return;
+   if (m_d.m_staticRendering) return; //don't render static
+   if (m_lockedByLS) 
+   {
+       //don't render in LS when state off
+       if (!m_inPlayState) return;
+   }
+   else
+   {
+       if (!m_d.m_visible || m_d.m_skipRendering)
+           return;
+       if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+           return;
+   }
 
    RenderObject();
 }
@@ -1347,13 +1362,19 @@ void Primitive::RenderSetup()
 
 void Primitive::RenderStatic()
 {
-   if (m_d.m_staticRendering && m_d.m_visible)
+   if (!m_d.m_staticRendering) return; //don't render dynamic
+   if (m_lockedByLS)
    {
-      if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
-         return;
-
-      RenderObject();
+       if(!m_inPlayState) return; //don't render in LS when state off
    }
+   else 
+   {
+       if (!m_d.m_visible) return;
+       if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+           return;
+   }
+
+   RenderObject();
 }
 
 //////////////////////////////
@@ -1552,6 +1573,8 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
          delete[] tmp;
       }
    }
+
+   m_inPlayState = m_d.m_visible;
 
    return S_OK;
 }
@@ -2917,4 +2940,10 @@ STDMETHODIMP Primitive::put_DepthBias(float newVal)
    m_d.m_depthBias = newVal;
 
    return S_OK;
+}
+
+//Sets the in play state for light sequencing rendering
+void Primitive::setInPlayState(const bool newVal)
+{
+    m_inPlayState = newVal;
 }

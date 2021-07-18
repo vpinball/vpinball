@@ -462,11 +462,31 @@ void VPinball::CreateDocker()
 
 void VPinball::SetPosCur(float x, float y)
 {
+   // display position 1st column in VP units
    char szT[256];
    sprintf_s(szT, "%.4f, %.4f", x, y);
+   SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 0, (size_t)szT);
+
+   // display converted position in separate status
+   if (m_convertToUnit != 2) 
+   {
+       switch (m_convertToUnit)
+       {
+           case 0:
+               sprintf_s(szT, "%.2f, %.2f %s", ConvertToUnit(x), ConvertToUnit(y), " (inch)");
+               break;
+           case 1:
+               sprintf_s(szT, "%.2f, %.2f %s", ConvertToUnit(x), ConvertToUnit(y), " (mm)");
+               break;
+           default:
+               assert(!"wrong unit");
+               break;
+       }
+       SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 2, (size_t)szT);
+   }
+
    m_mouseCursorPosition.x = x;
    m_mouseCursorPosition.y = y;
-   SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 0, (size_t)szT);
 }
 
 void VPinball::SetObjectPosCur(float x, float y)
@@ -547,6 +567,8 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
        case IDM_NEW:
        case ID_NEW_BLANKTABLE:
        case ID_NEW_EXAMPLETABLE:
+       case ID_NEW_STRIPPEDTABLE:
+       case ID_NEW_LIGHTSEQTABLE:       
        {
           OpenNewTable(code);
           return true;
@@ -1199,10 +1221,10 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
          menuInfo.cbSize = GetSizeofMenuItemInfo();
          menuInfo.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE;
          menuInfo.fType = MFT_STRING;
-         menuInfo.wID = RECENT_FIRST_MENU_IDM + (UINT)i;
-         menuInfo.dwTypeData = recentMenuname;
+         menuInfo.wID = RECENT_FIRST_MENU_IDM + (UINT)i;         
+         menuInfo.dwTypeData = recentMenuname;         
 
-         menuFile.InsertMenuItem(count, menuInfo, TRUE);
+         menuFile.InsertMenuItem(count, menuInfo, TRUE);         
          count++;
       }
 
@@ -1225,7 +1247,7 @@ bool VPinball::processKeyInputForDialogs(MSG *pmsg)
     bool consumed = false;
     if (m_ptableActive)
     {
-
+       const int keyPressed = LOWORD(pmsg->wParam);
        if (m_materialDialog.IsWindow())
           consumed = !!m_materialDialog.IsDialogMessage(*pmsg);
        if (!consumed && m_imageMngDlg.IsWindow())
@@ -1240,9 +1262,9 @@ bool VPinball::processKeyInputForDialogs(MSG *pmsg)
        const HWND activeHwnd = ::GetFocus();
        if (!consumed && m_toolbarDialog && activeHwnd==m_toolbarDialog->GetHwnd())
           consumed = m_toolbarDialog->PreTranslateMessage(pmsg);
-       if (!consumed && m_propertyDialog && activeHwnd == m_propertyDialog->GetHwnd())
+       if (!consumed && m_propertyDialog)
           consumed = m_propertyDialog->PreTranslateMessage(pmsg);
-       if (!consumed && m_layersListDialog && (activeHwnd == m_layersListDialog->GetHwnd() || activeHwnd == m_layersListDialog->GetLayerTreeHwnd()))
+       if (!consumed && m_layersListDialog)
           consumed = m_layersListDialog->PreTranslateMessage(pmsg);
        if (!consumed && m_notesDialog && activeHwnd == m_notesDialog->GetHwnd())
           consumed = m_notesDialog->PreTranslateMessage(pmsg);
@@ -1592,7 +1614,6 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 CComObject<PinTable>* const ptCur = GetActiveTable();
                 if (ptCur)
                     ptCur->SetMouseCursor();
-
             }
             return FinalWindowProc(uMsg, wParam, lParam);
         }
@@ -2327,7 +2348,7 @@ void VPinball::OpenNewTable(size_t tableId)
     PinTableMDI *mdiTable = new PinTableMDI(this);
     CComObject<PinTable>* ppt = mdiTable->GetTable();
     m_vtable.push_back(ppt);
-    ppt->InitBuiltinTable(tableId != ID_NEW_EXAMPLETABLE);
+    ppt->InitBuiltinTable(tableId);
     ppt->InitTablePostLoad();
 
     AddMDITable(mdiTable);

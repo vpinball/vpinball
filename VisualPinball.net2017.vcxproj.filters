@@ -637,6 +637,12 @@
     <None Include="res\SplitV.cur">
       <Filter>res</Filter>
     </None>
+    <None Include="res\strippedTable.vpx">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\lightSeqTable.vpx">
+      <Filter>res</Filter>
+    </None>    
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inc">

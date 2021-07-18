@@ -6,7 +6,7 @@
 class LayerTreeView : public CTreeView
 {
 public:
-   LayerTreeView() { m_dragging = false; }
+   LayerTreeView();
    ~LayerTreeView() { }
    virtual HTREEITEM       AddItem(HTREEITEM hParent, LPCTSTR text, IEditable* const pedit, int image);
    bool                    AddLayer(const string& name);
@@ -53,6 +53,7 @@ private:
    CImageList  m_normalImages;
    bool        m_dragging;
    PinTable*   m_activeTable = nullptr;
+   HACCEL      m_accel;
    struct  DragItem
    {
       HTREEITEM   m_hDragItem;
@@ -74,7 +75,7 @@ protected:
    virtual BOOL    OnCommand(WPARAM wParam, LPARAM lParam);
 
 private:
-   LayersListDialog* m_layerDialog;
+   LayersListDialog* m_layerDialog;   
 };
 
 class LayersListDialog : public CDialog
@@ -116,6 +117,15 @@ public:
       m_layerTreeView.CollapseLayer();
       m_collapsed = true;
    }
+   bool GetCaseSensitiveFilter() const
+   {
+       return m_isCaseSensitive;
+   }
+   void SetCaseSensitiveFilter(const bool enable)
+   {
+       m_isCaseSensitive = enable;
+   }
+   
    HWND GetLayerTreeHwnd() { return m_layerTreeView.GetHwnd(); }
 
 protected:
@@ -132,8 +142,11 @@ private:
    CButton         m_deleteLayerButton;
    CButton         m_expandCollapseButton;
    FilterEditBox   m_layerFilterEditBox;
+   CButton         m_layerFilterCaseButton;
    bool            m_collapsed;
+   bool            m_isCaseSensitive;
    PinTable* m_activeTable = nullptr;
+   HACCEL          m_accel;
 };
 
 class CContainLayers : public CDockContainer
