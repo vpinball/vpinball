@@ -1167,6 +1167,10 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	{
 		g_pvp->EnableWindow(FALSE);
 		ScriptErrorDialog scriptErrorDialog(errorStr);
+
+		// Since we got a "debug error", we don't need to prompt to install a debugger for more detailed errors
+		scriptErrorDialog.HideInstallDebuggerText();
+
 		scriptErrorDialog.DoModal();
 		m_suppressErrorDialogs = scriptErrorDialog.WasSuppressErrorsRequested();
 		g_pvp->EnableWindow(TRUE);

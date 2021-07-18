@@ -24,6 +24,13 @@ public:
 		return shouldSuppressErrors;
 	}
 
+	/**
+	 * Hides the prompt to install a script debugger.
+	 *
+	 * Call this if detailed debugging info is available.
+	 */
+	void HideInstallDebuggerText();
+
 private:
 	/**
 	 * The error message shown on the dialog when it is created
@@ -34,6 +41,12 @@ private:
 	 * Set after either continue or stop are pressed
 	 */
 	bool shouldSuppressErrors = false;
+
+	/**
+	 * If set to true before the window is shown, the prompt to install a script debugger for more detailed error
+	 * information is hidden.
+	 */
+	bool shouldHideInstallDebuggerText = false;
 };
 
 #endif

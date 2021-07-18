@@ -1145,6 +1145,7 @@
 #define IDC_STATIC25                    866
 #define IDC_STATIC26                    867
 #define IDD_SCRIPT_ERROR                868
+#define IDC_STATIC_INSTALL_DEBUGGER     868
 #define IDC_ERROR_EDIT                  869
 #define IDC_SCRIPT_CONTINUE             870
 #define IDC_SCRIPT_STOP                 871
@@ -1330,7 +1331,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        669
 #define _APS_NEXT_COMMAND_VALUE         4025
-#define _APS_NEXT_CONTROL_VALUE         868
+#define _APS_NEXT_CONTROL_VALUE         874
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

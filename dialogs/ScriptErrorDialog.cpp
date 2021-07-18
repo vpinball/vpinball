@@ -8,10 +8,15 @@ ScriptErrorDialog::ScriptErrorDialog(const std::wstring &message) :
 
 BOOL ScriptErrorDialog::OnInitDialog()
 {
-	HWND textBoxHwnd = ::GetDlgItem(GetHwnd(), IDC_ERROR_EDIT);
+	HWND textBoxHwnd = GetDlgItem(IDC_ERROR_EDIT);
 
 	::SendMessage(textBoxHwnd, WM_SETFONT, (size_t)GetStockObject(ANSI_FIXED_FONT), 0);
 	::SetWindowTextW(textBoxHwnd, initMessage.c_str());
+
+	if (shouldHideInstallDebuggerText)
+	{
+		::ShowWindow(GetDlgItem(IDC_STATIC_INSTALL_DEBUGGER), SW_HIDE);
+	}
 
 	return TRUE;
 }
@@ -38,4 +43,9 @@ BOOL ScriptErrorDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 	}
 
 	return FALSE;
+}
+
+void ScriptErrorDialog::HideInstallDebuggerText()
+{
+	shouldHideInstallDebuggerText = true;
 }
