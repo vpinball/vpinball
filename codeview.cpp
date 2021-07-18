@@ -385,6 +385,19 @@ STDMETHODIMP CodeViewer::InitializeScriptEngine()
 		(LPVOID*)&m_pProcessDebugManager
 	);
 
+	// Also check if we have a debugger installed
+	// If not, we should abandon the process debug manager and fall back to plain basic errors
+	IDebugApplication* debugApp;
+	if (SUCCEEDED(GetApplication(&debugApp)))
+	{
+		debugApp->Release();
+	}
+	else
+	{
+		m_pProcessDebugManager->Release();
+		m_pProcessDebugManager = nullptr;
+	}
+
 	m_pScriptParse->QueryInterface(IID_IActiveScript,
 		(LPVOID*)&m_pScript);
 
@@ -972,7 +985,18 @@ STDMETHODIMP CodeViewer::GetApplication(
 {
 	if (m_pProcessDebugManager != nullptr)
 	{
-		return m_pProcessDebugManager->GetDefaultApplication(ppda);
+		IDebugApplication* app;
+		HRESULT result = m_pProcessDebugManager->GetDefaultApplication(&app);
+
+		if (SUCCEEDED(result) && app->FCanJitDebug())
+		{
+			*ppda = app;
+			return S_OK;
+		}
+		else
+		{
+			return E_FAIL;
+		}
 	}
 	else
 	{
