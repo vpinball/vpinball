@@ -107,6 +107,8 @@ add_executable(vpinball WIN32
    dialogs/MaterialDialog.h
    dialogs/NotesDialog.cpp
    dialogs/NotesDialog.h
+   dialogs/ScriptErrorDialog.cpp
+   dialogs/ScriptErrorDialog.h
    dialogs/PhysicsOptionsDialog.cpp
    dialogs/PhysicsOptionsDialog.h
    dialogs/Properties/BackglassCameraProperty.cpp
