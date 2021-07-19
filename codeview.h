@@ -5,6 +5,7 @@
 #include <activdbg.h>
 #include <atlcom.h>
 #include "codeviewedit.h"
+#include "ScriptErrorDialog.h"
 #include "inc\scintilla.h"
 #include "inc\scilexer.h"
 
@@ -86,8 +87,6 @@ public:
    int SortAgainstValue(const std::wstring &pv) const;
 };
 
-
-
 class CodeViewer :
 	public CWnd,
 	public CComObjectRoot,
@@ -95,6 +94,7 @@ class CodeViewer :
 	//public CComCoClass<CodeViewer,&CLSID_DragPoint>,
 	//public CComObjectRootEx<CComSingleThreadModel>,
 	public IActiveScriptSite,
+    public IActiveScriptSiteDebug,
 	public IActiveScriptSiteWindow,
 	public IInternetHostSecurityManager,
 	public IServiceProvider,
@@ -167,6 +167,29 @@ public:
       return S_OK;
    }
 
+   // IActiveScriptSiteDebug interface
+
+   STDMETHOD(GetDocumentContextFromPosition)(
+       DWORD_PTR dwSourceContext,
+       ULONG uCharacterOffset,
+       ULONG uNumChars,
+       IDebugDocumentContext** ppsc
+       );
+
+   STDMETHOD(GetApplication)(
+       IDebugApplication** ppda
+       );
+
+   STDMETHOD(GetRootApplicationNode)(
+       IDebugApplicationNode** ppdanRoot
+       );
+
+   STDMETHOD(OnScriptErrorDebug)(
+       IActiveScriptErrorDebug* pscripterror,
+       BOOL* pfEnterDebugger,
+       BOOL* pfCallOnScriptErrorWhenContinuing
+       );
+
    // Internet Security interface
 
    virtual HRESULT STDMETHODCALLTYPE GetSecurityId(
@@ -205,6 +228,7 @@ public:
    BEGIN_COM_MAP(CodeViewer)
       //COM_INTERFACE_ENTRY(IDispatch)
       COM_INTERFACE_ENTRY(IActiveScriptSite)
+      COM_INTERFACE_ENTRY(IActiveScriptSiteDebug)
       COM_INTERFACE_ENTRY(IActiveScriptSiteWindow)
       COM_INTERFACE_ENTRY(IInternetHostSecurityManager)
       COM_INTERFACE_ENTRY(IServiceProvider)
@@ -331,8 +355,33 @@ private:
 
    void GetParamsFromEvent(const UINT iEvent, char * const szParams);
 
+   /**
+    * Resizes the Scintilla widget (the text editor) and the last error widget (if it's visible)
+    * 
+    * This is called when the window is resized (when we get a WM_SIZE message)
+    * or when the last error widget is toggled (since that appears below the text editor)
+    */
+   void ResizeScintillaAndLastError();
+
+   /**
+    * Sets the visibility of the last error information, shown below the Scintilla text editor.
+    */
+   void SetLastErrorVisibility(bool show);
+   void SetLastErrorTextW(LPCWSTR text);
+   void AppendLastErrorTextW(LPCWSTR text);
+
    IActiveScriptParse* m_pScriptParse;
    IActiveScriptDebug* m_pScriptDebug;
+
+   /**
+    * Will be nullptr on systems that don't support debugging.
+    * 
+    * For example, wine 6.9 says ...
+    * > no class object {78a51822-51f4-11d0-8f20-00805f2cd064} could be created for context 0x17
+    * ... if I try to create CLSID_PrrocessDebugManager
+    */
+   IProcessDebugManager* m_pProcessDebugManager = nullptr;
+
    FINDREPLACE m_findreplacestruct;
    char szFindString[MAX_FIND_LENGTH];
    char szReplaceString[MAX_FIND_LENGTH];
@@ -370,6 +419,26 @@ private:
    HWND m_hwndEventList;
    HWND m_hwndEventText;
    HWND m_hwndFunctionText;
+
+   /**
+    * Whether the last error widget is visible
+    */
+   bool m_lastErrorWidgetVisible = false;
+
+   /**
+    * If true, error dialogs will be suppressed for the play session
+    * 
+    * This gets reset to false whenever the script is started
+    */
+   bool m_suppressErrorDialogs = false;
+
+   /**
+    * Handle for the last error widget
+    * 
+    * The last error widget is a read-only text area that appears below the Scintilla text editor, with the contents of
+    * the last reported compile or runtime error.
+    */
+   HWND m_hwndLastErrorTextArea;
 };
 
 class Collection :

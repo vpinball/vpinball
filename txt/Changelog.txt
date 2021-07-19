@@ -148,6 +148,14 @@ FIXES:
 
 - make debug dialog (and its text edit) resizable
 
+- improved script error messages and handling
+   o there is a new dialog when you get a script error, showing a stack trace of where the error came from, as well as local variables and function arguments at each point in the stack
+   o a script debugger needs to be installed to get this more detailed error information
+   o installing Visual Studio 2010 Isolated Shell seems to work
+   o this information is saved with you quit out of gameplay, and can be shown from "Script > Toggle error log" in the script editor
+   o compile errors are now also shown in this log, instead of popping up a dialog box
+   o further runtime errors can be suppressed from showing a dialog box for the current play session, which can be useful if you keep getting errors on a timer
+
 - fix an issue where the light sequencer could become stuck
 - any light sequencer TailLength value higher than 0 will now 'Reverse', i.e. the lights will turn 'off/on' instead of default 'on/off'
 

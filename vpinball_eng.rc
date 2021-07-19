@@ -2288,6 +2288,19 @@ BEGIN
     EDITTEXT        IDC_NOTES_EDIT,7,7,148,114,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | WS_VSCROLL | WS_HSCROLL
 END
 
+IDD_SCRIPT_ERROR DIALOGEX 0, 0, 327, 194
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Script Runtime Error"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Continue",IDC_SCRIPT_CONTINUE,217,173,50,14
+    PUSHBUTTON      "Stop",IDC_SCRIPT_STOP,270,173,50,14
+    EDITTEXT        IDC_ERROR_EDIT,7,7,313,146,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL | WS_HSCROLL
+    CONTROL         "Suppress additional script errors from this session",IDC_SUPPRESS_ERRORS_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,155,313,10
+    LTEXT           "Install a script debugger for more detailed error information.\r\nVisual Studio 2010 Isolated Shell is known to work.",IDC_STATIC_INSTALL_DEBUGGER,7,171,208,16
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2669,6 +2682,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 121
     END
+
+    IDD_SCRIPT_ERROR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 320
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 187
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -2943,13 +2964,14 @@ BEGIN
     POPUP "&Script"
     BEGIN
         MENUITEM "&Compile",                    ID_COMPILE
+        MENUITEM "Toggle error &log",           ID_SCRIPT_TOGGLE_LAST_ERROR_VISIBILITY
         MENUITEM "&Preferences",                ID_SCRIPT_PREFERENCES
     END
     POPUP "&Edit"
     BEGIN
         MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
         MENUITEM SEPARATOR
-        MENUITEM "&Copy\tCrtl+C",               ID_EDIT_COPY
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
         MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
         MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
         MENUITEM SEPARATOR
@@ -3600,6 +3622,11 @@ BEGIN
 END
 
 IDD_NOTES_DIALOG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SCRIPT_ERROR AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

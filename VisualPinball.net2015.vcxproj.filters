@@ -283,6 +283,9 @@
     <ClCompile Include="imgui\imgui_tables.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="dialogs\ScriptErrorDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1443,6 +1446,9 @@
       <Filter>imgui\implot</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\NotesDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\ScriptErrorDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
   </ItemGroup>
