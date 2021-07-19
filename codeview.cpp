@@ -1044,8 +1044,8 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	//       HKEY_CLASSES_ROOT\CLSID\{834128A2-51F4-11D0-8F20-00805F2CD064}\LocalServer32 seems to be the registry key
 	//       to select the default debugger.
 	//       (https://stackoverflow.com/questions/2288043/how-do-i-debug-a-stand-alone-vbscript-script#comment36315883_2288064)
-	*pfEnterDebugger = false;
-	*pfCallOnScriptErrorWhenContinuing = false;
+	*pfEnterDebugger = FALSE;
+	*pfCallOnScriptErrorWhenContinuing = FALSE;
 
 	DWORD dwCookie;
 	ULONG nLine;
@@ -1109,7 +1109,7 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 		{
 			// The frame description is the name of the function in this stack frame
 			BSTR frameDesc;
-			stackFrames[i].pdsf->GetDescriptionString(true, &frameDesc);
+			stackFrames[i].pdsf->GetDescriptionString(TRUE, &frameDesc);
 
 			// Fetch local variables and args
 			std::wstringstream stackVariablesStream;
@@ -1191,9 +1191,6 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	}
 
 	return S_OK;
-
-	*pfEnterDebugger = false;
-	*pfCallOnScriptErrorWhenContinuing = false;
 }
 
 void CodeViewer::Compile(const bool message)
