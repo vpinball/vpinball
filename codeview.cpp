@@ -870,9 +870,10 @@ STDMETHODIMP CodeViewer::GetItemInfo(LPCOLESTR pstrName, DWORD dwReturnMask,
 
 /**
  * Called on compilation errors. Also called on runtime errors in we couldn't create a "process debug manager" (such
- * as when running on wine).
+ * as when running on wine), or if no debug application is available (where a "debug application" is something like
+ * VS 2010 Isolated Shell).
  *
- * See CodeViewer::OnScriptErrorDebug for runtime errors
+ * See CodeViewer::OnScriptErrorDebug for runtime errors, when a debug application is available
  */
 STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 {
@@ -988,6 +989,8 @@ STDMETHODIMP CodeViewer::GetApplication(
 		IDebugApplication* app;
 		HRESULT result = m_pProcessDebugManager->GetDefaultApplication(&app);
 
+		// We want to make sure the debug application supports JIT debugging, otherwise we don't seem to get notified
+		// of runtime errors at all (neither in OnScriptError or in OnScriptErrorDebug)!
 		if (SUCCEEDED(result) && app->FCanJitDebug())
 		{
 			*ppda = app;
@@ -1021,9 +1024,9 @@ STDMETHODIMP CodeViewer::GetRootApplicationNode(
 }
 
 /**
- * Called on runtime errors
+ * Called on runtime errors, if debugging is supported, and a debug application is available.
  *
- * See CodeViewer::OnScriptError for compilation errors
+ * See CodeViewer::OnScriptError for compilation errors, and also runtime errors when debugging isn't available.
  */
 STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	IActiveScriptErrorDebug* pscripterror,
@@ -1033,6 +1036,14 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 {
 	// TODO: What debuggers even work with VBScript? It might be an idea to offer a "Debug" button (set pfEnterDebugger to
 	//       true) if it can pop open some old version of visual studio to debug stuff.
+	//
+	//       VS 2010 Isolated Shell seems to work, but trying to enter debugging with it complains with an "invalid
+	//       license" error. I haven't found anything else to work yet, not even regular VS 2010 (though, it might be
+	//       that you need to manually set some registry keys to select the default debugger?)
+	//
+	//       HKEY_CLASSES_ROOT\CLSID\{834128A2-51F4-11D0-8F20-00805F2CD064}\LocalServer32 seems to be the registry key
+	//       to select the default debugger.
+	//       (https://stackoverflow.com/questions/2288043/how-do-i-debug-a-stand-alone-vbscript-script#comment36315883_2288064)
 	*pfEnterDebugger = false;
 	*pfCallOnScriptErrorWhenContinuing = false;
 
