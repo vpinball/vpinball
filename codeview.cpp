@@ -1229,9 +1229,9 @@ void CodeViewer::Start()
 	if (m_pScript)
 
 	{
-		m_pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
-		SetLastErrorTextW(L"Script started\r\n\r\n");
+		SetLastErrorTextW(L"Starting script\r\n\r\n");
 		m_suppressErrorDialogs = false;
+		m_pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
 	}
 }
 
