@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include <initguid.h>
+#include <DbgProp.h>
 //#include <Windowsx.h>
 // The GUID used to identify the coclass of the VB Script engine
 //  {B54F3741-5B07-11cf-A4B0-00AA004A55E8}
@@ -1119,7 +1120,7 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 
 			IEnumDebugPropertyInfo* propInfoEnum;
 			debugProp->EnumMembers(
-				DBGPROP_INFO_FULLNAME | DBGPROP_INFO_VALUE,
+				PROP_INFO_FULLNAME | PROP_INFO_VALUE,
 				10, // Radix (for numerical info)
 				IID_IDebugPropertyEnumType_LocalsPlusArgs,
 				&propInfoEnum
