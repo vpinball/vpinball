@@ -395,8 +395,11 @@ STDMETHODIMP CodeViewer::InitializeScriptEngine()
 	}
 	else
 	{
-		m_pProcessDebugManager->Release();
-		m_pProcessDebugManager = nullptr;
+		if (m_pProcessDebugManager) 
+		{
+			m_pProcessDebugManager->Release();
+			m_pProcessDebugManager = nullptr;
+		}
 	}
 
 	m_pScriptParse->QueryInterface(IID_IActiveScript,
