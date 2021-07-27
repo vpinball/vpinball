@@ -213,19 +213,19 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
          if (m_drawingOrderSelect)
          {
             ISelect * const psel = pt->m_vmultisel.ElementAt(idx);
-            pt->m_vmultisel.RemoveElementAt(idx);
+            pt->m_vmultisel.erase(idx);
 
-            pt->m_vmultisel.InsertElementAt(psel, idx - 1);
+            pt->m_vmultisel.insert(psel, idx - 1);
 
             for (int i = pt->m_vmultisel.size() - 1; i >= 0; i--)
             {
-               IEditable * const pedit = pt->m_vmultisel.ElementAt(i)->GetIEditable();
+               IEditable * const pedit = pt->m_vmultisel[i].GetIEditable();
                RemoveFromVectorSingle(pt->m_vedit, pedit);
             }
 
             for (int i = pt->m_vmultisel.size() - 1; i >= 0; i--)
             {
-               IEditable * const pedit = pt->m_vmultisel.ElementAt(i)->GetIEditable();
+               IEditable * const pedit = pt->m_vmultisel[i].GetIEditable();
                pt->m_vedit.push_back(pedit);
             }
          }
@@ -271,23 +271,23 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
             ListView_SetItemState(hOrderList, idx + 1, LVIS_SELECTED, LVIS_SELECTED);
             ListView_SetItemState(hOrderList, idx + 1, LVIS_FOCUSED, LVIS_FOCUSED);
             ::SetFocus(hOrderList);
-            ISelect *psel = pt->m_vmultisel.ElementAt(idx);
-            pt->m_vmultisel.RemoveElementAt(idx);
+            ISelect * const psel = pt->m_vmultisel.ElementAt(idx);
+            pt->m_vmultisel.erase(idx);
 
             if (idx + 1 >= pt->m_vmultisel.size())
                pt->m_vmultisel.push_back(psel);
             else
-               pt->m_vmultisel.InsertElementAt(psel, idx + 1);
+               pt->m_vmultisel.insert(psel, idx + 1);
 
             for (int i = pt->m_vmultisel.size() - 1; i >= 0; i--)
             {
-               IEditable * const pedit = pt->m_vmultisel.ElementAt(i)->GetIEditable();
+               IEditable * const pedit = pt->m_vmultisel[i].GetIEditable();
                RemoveFromVectorSingle(pt->m_vedit, pedit);
             }
 
             for (int i = pt->m_vmultisel.size() - 1; i >= 0; i--)
             {
-               IEditable * const pedit = pt->m_vmultisel.ElementAt(i)->GetIEditable();
+               IEditable * const pedit = pt->m_vmultisel[i].GetIEditable();
                pt->m_vedit.push_back(pedit);
             }
          }

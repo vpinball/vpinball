@@ -15,7 +15,7 @@ public:
    inline void resize(const int i) { m_rg.resize(i); }
    inline void push_back(void* const pItem) { m_rg.push_back(pItem); }
 
-   inline int IndexOf(const void * const pvItem) const
+   inline int find(const void * const pvItem) const
    {
       const auto i = std::find(m_rg.begin(), m_rg.end(), pvItem);
       if (i != m_rg.end())
@@ -24,21 +24,21 @@ public:
          return -1;
    }
 
-   inline void InsertElementAt(void * const pItem, const int iPos)
+   inline void insert(void * const pItem, const int iPos)
    {
       assert(iPos <= (int)m_rg.size());
       if (iPos <= (int)m_rg.size())
          m_rg.insert(m_rg.begin()+iPos,pItem);
    }
 
-   inline void RemoveElementAt(const int iPos)
+   inline void erase(const int iPos)
    {
       assert(iPos < (int)m_rg.size());
       if (iPos < (int)m_rg.size())
          m_rg.erase(m_rg.begin()+iPos);
    }
 
-   inline void RemoveElement(const void * const pvItem)
+   inline void find_erase(const void * const pvItem)
    {
       const auto i = std::find(m_rg.begin(), m_rg.end(), pvItem);
       if (i != m_rg.end())

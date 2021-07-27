@@ -227,7 +227,7 @@ void LightSeq::RenderSetup()
    {
       // get the name of this collection
       CComBSTR bstr;
-      m_ptable->m_vcollection.ElementAt(i)->get_Name(&bstr);
+      m_ptable->m_vcollection[i].get_Name(&bstr);
       // is it the one we are to use?
       if (WideStrCmp(bstr, bstrCollection) == 0)
       {
@@ -272,7 +272,7 @@ void LightSeq::RenderSetup()
    for (int i = 0; i < size; ++i)
    {
       // get the type of object
-      const ItemTypeEnum type = m_pcollection->m_visel.ElementAt(i)->GetIEditable()->GetItemType();
+      const ItemTypeEnum type = m_pcollection->m_visel[i].GetIEditable()->GetItemType();
       // must be a light, flasher, prim
       if (type == eItemLight || type == eItemFlasher || type == eItemPrimitive)
       {
@@ -613,7 +613,7 @@ STDMETHODIMP LightSeq::StopPlay()
       const int size = m_pcollection->m_visel.size();
       for (int i = 0; i < size; ++i)
       {
-         const ItemTypeEnum type = m_pcollection->m_visel.ElementAt(i)->GetIEditable()->GetItemType();
+         const ItemTypeEnum type = m_pcollection->m_visel[i].GetIEditable()->GetItemType();
          if (type == eItemLight)
          {
             Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(i);
@@ -1674,7 +1674,7 @@ void LightSeq::SetElementToState(const int index, const LightState State)
    if (m_pcollection->m_visel.empty())
       return;
 
-   const ItemTypeEnum type = m_pcollection->m_visel.ElementAt(index)->GetIEditable()->GetItemType();
+   const ItemTypeEnum type = m_pcollection->m_visel[index].GetIEditable()->GetItemType();
    if (type == eItemLight)
    {
       Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
@@ -1722,7 +1722,7 @@ LightState LightSeq::GetElementState(const int index) const
    if (m_pcollection->m_visel.empty())
       return rc;
 
-   const ItemTypeEnum type = m_pcollection->m_visel.ElementAt(index)->GetIEditable()->GetItemType();
+   const ItemTypeEnum type = m_pcollection->m_visel[index].GetIEditable()->GetItemType();
    if (type == eItemLight)
    {
       Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(index);

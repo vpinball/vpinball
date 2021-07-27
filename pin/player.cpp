@@ -1392,7 +1392,7 @@ HRESULT Player::Init()
       {
          // search for a primitive in the group, if found try to create a grouped render element
          ISelect * const pisel = pcol->m_visel.ElementAt(t);
-         if (pisel !=NULL && pisel->GetItemType() == eItemPrimitive)
+         if (pisel != nullptr && pisel->GetItemType() == eItemPrimitive)
          {
             Primitive * const prim = (Primitive*)pisel;
             prim->CreateRenderGroup(pcol);

@@ -2191,7 +2191,7 @@ void VPinball::SetDefaultPhysics()
         {
             ptCur->BeginUndo();
             for (int i = 0; i < ptCur->m_vmultisel.size(); i++)
-                ptCur->m_vmultisel.ElementAt(i)->SetDefaultPhysics(true);
+                ptCur->m_vmultisel[i].SetDefaultPhysics(true);
             ptCur->EndUndo();
         }
     }
@@ -2234,13 +2234,13 @@ void VPinball::ShowBackdropView()
 void VPinball::AddControlPoint()
 {
     CComObject<PinTable> * const ptCur = GetActiveTable();
-    if (ptCur == NULL)
+    if (ptCur == nullptr)
         return;
 
     if (!ptCur->m_vmultisel.empty())
     {
         ISelect * const psel = ptCur->m_vmultisel.ElementAt(0);
-        if (psel != NULL)
+        if (psel != nullptr)
         {
             const POINT pt = ptCur->GetScreenPoint();
             switch (psel->GetItemType())
@@ -2279,13 +2279,13 @@ void VPinball::AddControlPoint()
 void VPinball::AddSmoothControlPoint()
 {
     CComObject<PinTable> * const ptCur = GetActiveTable();
-    if (ptCur == NULL)
+    if (ptCur == nullptr)
         return;
 
     if (!ptCur->m_vmultisel.empty())
     {
         ISelect * const psel = ptCur->m_vmultisel.ElementAt(0);
-        if (psel != NULL)
+        if (psel != nullptr)
         {
             const POINT pt = ptCur->GetScreenPoint();
             switch (psel->GetItemType())

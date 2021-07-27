@@ -3525,8 +3525,7 @@ HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool ba
 
    for (int i = 0; i < m_visel.size(); ++i)
    {
-      IEditable * const piedit = m_visel.ElementAt(i)->GetIEditable();
-      IScriptable * const piscript = piedit->GetScriptable();
+      IScriptable * const piscript = m_visel[i].GetIEditable()->GetScriptable();
       bw.WriteWideString(FID(ITEM), piscript->m_wzName);
    }
 
@@ -3603,7 +3602,7 @@ STDMETHODIMP Collection::get_Item(long index, IDispatch __RPC_FAR * __RPC_FAR *p
    if (index < 0 || index >= m_visel.size())
       return TYPE_E_OUTOFBOUNDS;
 
-   IDispatch * const pdisp = m_visel.ElementAt(index)->GetDispatch();
+   IDispatch * const pdisp = m_visel[index].GetDispatch();
    return pdisp->QueryInterface(IID_IDispatch, (void **)ppidisp);
 }
 
@@ -3650,8 +3649,7 @@ STDMETHODIMP OMCollectionEnum::Next(ULONG celt, VARIANT __RPC_FAR *rgVar, ULONG 
 
    for (int i = m_index; i < last; ++i)
    {
-      IDispatch * const pdisp = m_pcol->m_visel.ElementAt(i)->GetDispatch();
-
+      IDispatch * const pdisp = m_pcol->m_visel[i].GetDispatch();
       pdisp->QueryInterface(IID_IDispatch, (void **)&pdisp);
 
       V_VT(&rgVar[i - m_index]) = VT_DISPATCH;

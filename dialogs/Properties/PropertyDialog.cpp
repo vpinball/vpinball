@@ -90,7 +90,7 @@ PropertyDialog::PropertyDialog() : CDialog(IDD_PROPERTY_DIALOG), m_previousType(
 void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
 {
     ISelect* const psel = pvsel.ElementAt(0);
-    if (psel == NULL)
+    if (psel == nullptr)
         return;
 
     int activePage = m_tab.m_activePage;
@@ -518,7 +518,6 @@ void PropertyDialog::UpdateComboBox(const vector<string>& contentList, CComboBox
 void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
 {
     ISelect * const psel = pvsel.ElementAt(0);
-
     if (psel == nullptr)
         return;
 
@@ -733,7 +732,7 @@ void TimerProperty::UpdateProperties(const int dispid)
 {
     for (int i = 0; i < m_pvsel->size(); i++)
     {
-        if (m_pvsel->ElementAt(i) == NULL)
+        if (m_pvsel->ElementAt(i) == nullptr)
             continue;
         switch (m_pvsel->ElementAt(i)->GetItemType())
         {
@@ -918,7 +917,7 @@ void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->size(); i++)
     {
-        if(m_pvsel->ElementAt(i) == NULL)
+        if (m_pvsel->ElementAt(i) == nullptr)
             continue;
         switch (m_pvsel->ElementAt(i)->GetItemType())
         {

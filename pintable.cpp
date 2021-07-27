@@ -2404,7 +2404,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
                if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
-                  m_vcollection.ElementAt(i)->SaveData(pstmItem, hch, false);
+                  m_vcollection[i].SaveData(pstmItem, hch, false);
                   pstmItem->Release();
                   pstmItem = NULL;
                }
@@ -4174,18 +4174,19 @@ void PinTable::ListCollections(HWND hwndListView)
 void PinTable::RemoveCollection(CComObject<Collection> *pcol)
 {
    m_pcv->RemoveItem((IScriptable *)pcol);
-   m_vcollection.RemoveElement(pcol);
+   m_vcollection.find_erase(pcol);
    pcol->Release();
 }
 
 void PinTable::MoveCollectionUp(CComObject<Collection> *pcol)
 {
-   const int idx = m_vcollection.IndexOf(pcol);
-   m_vcollection.RemoveElementAt(idx);
+   const int idx = m_vcollection.find(pcol);
+   assert(idx >= 0);
+   m_vcollection.erase(idx);
    if (idx - 1 < 0)
       m_vcollection.push_back(pcol);
    else
-      m_vcollection.InsertElementAt(pcol, idx - 1);
+      m_vcollection.insert(pcol, idx - 1);
 }
 
 int PinTable::GetDetailLevel() const
@@ -4240,12 +4241,13 @@ FRect3D PinTable::GetBoundingBox() const
 
 void PinTable::MoveCollectionDown(CComObject<Collection> *pcol)
 {
-   int idx = m_vcollection.IndexOf(pcol);
-   m_vcollection.RemoveElementAt(idx);
+   const int idx = m_vcollection.find(pcol);
+   assert(idx >= 0);
+   m_vcollection.erase(idx);
    if (idx + 1 >= m_vcollection.size())
-      m_vcollection.InsertElementAt(pcol, 0);
+      m_vcollection.insert(pcol, 0);
    else
-      m_vcollection.InsertElementAt(pcol, idx + 1);
+      m_vcollection.insert(pcol, idx + 1);
 }
 
 void PinTable::SetCollectionName(Collection *pcol, const char *szName, HWND hwndList, int index)
@@ -4395,7 +4397,7 @@ void PinTable::OnLeftButtonUp(int x, int y)
    {
       for (int i = 0; i < m_vmultisel.size(); i++)
       {
-         ISelect *pisel = m_vmultisel.ElementAt(i);
+         ISelect * const pisel = m_vmultisel.ElementAt(i);
          if (pisel)
             pisel->OnLButtonUp(x, y);
       }
@@ -4461,7 +4463,7 @@ void PinTable::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISe
     for (int i = maxItems; i >= 0; i--)
     {
         CComBSTR bstr;
-        m_vcollection.ElementAt(i)->get_Name(&bstr);
+        m_vcollection[i].get_Name(&bstr);
         char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
         WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szT, MAXNAMEBUFFER*2, NULL, NULL);
 
@@ -4471,8 +4473,8 @@ void PinTable::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISe
     if (m_vmultisel.size() == 1)
     {
         for (int i = maxItems; i >= 0; i--)
-            for (int t = 0; t < m_vcollection.ElementAt(i)->m_visel.size(); t++)
-                if (psel == m_vcollection.ElementAt(i)->m_visel.ElementAt(t))
+            for (int t = 0; t < m_vcollection[i].m_visel.size(); t++)
+                if (psel == m_vcollection[i].m_visel.ElementAt(t))
                     colSubMenu.CheckMenuItem(0x40000 + i, MF_CHECKED);
     }
     else
@@ -4484,8 +4486,8 @@ void PinTable::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISe
             const ISelect * const iSel = m_vmultisel.ElementAt(t);
 
             for (int i = maxItems; i >= 0; i--)
-                for (int t = 0; t < m_vcollection.ElementAt(i)->m_visel.size(); t++)
-                    if ((iSel == m_vcollection.ElementAt(i)->m_visel.ElementAt(t)))
+                for (int t = 0; t < m_vcollection[i].m_visel.size(); t++)
+                    if ((iSel == m_vcollection[i].m_visel.ElementAt(t)))
                         allIndices.push_back(i);
         }
         for (size_t i = 0; i < allIndices.size(); i++)
@@ -4638,7 +4640,7 @@ IEditable *PinTable::GetElementByName(const char * const name)
 bool PinTable::FMutilSelLocked()
 {
    for (int i = 0; i < m_vmultisel.size(); i++)
-      if (m_vmultisel.ElementAt(i)->m_locked)
+      if (m_vmultisel[i].m_locked)
          return true;
 
    return false;
@@ -4699,11 +4701,11 @@ void PinTable::UpdateCollection(const int index)
          for (int t = 0; t < m_vmultisel.size(); t++)
          {
             ISelect * const ptr = m_vmultisel.ElementAt(t);
-            for (int k = 0; k < m_vcollection.ElementAt(index)->m_visel.size(); k++)
+            for (int k = 0; k < m_vcollection[index].m_visel.size(); k++)
             {
-               if (ptr == m_vcollection.ElementAt(index)->m_visel.ElementAt(k))
+               if (ptr == m_vcollection[index].m_visel.ElementAt(k))
                {
-                  m_vcollection.ElementAt(index)->m_visel.RemoveElement(ptr);
+                  m_vcollection[index].m_visel.find_erase(ptr);
                   removeOnly = true;
                   break;
                }
@@ -4727,9 +4729,9 @@ bool PinTable::GetCollectionIndex(const ISelect * const element, int &collection
 {
    for (int i = 0; i < m_vcollection.size(); i++)
    {
-      for (int t = 0; t < m_vcollection.ElementAt(i)->m_visel.size(); t++)
+      for (int t = 0; t < m_vcollection[i].m_visel.size(); t++)
       {
-         if (element == m_vcollection.ElementAt(i)->m_visel.ElementAt(t))
+         if (element == m_vcollection[i].m_visel.ElementAt(t))
          {
             collectionIndex = i;
             elementIndex = t;
@@ -4743,15 +4745,10 @@ bool PinTable::GetCollectionIndex(const ISelect * const element, int &collection
 WCHAR *PinTable::GetCollectionNameByElement(const ISelect * const element)
 {
     for (int i = 0; i < m_vcollection.size(); i++)
-    {
-        for (int t = 0; t < m_vcollection.ElementAt(i)->m_visel.size(); t++)
-        {
-            if (element == m_vcollection.ElementAt(i)->m_visel.ElementAt(t))
-            {
-                return m_vcollection.ElementAt(i)->m_wzName;
-            }
-        }
-    }
+        for (int t = 0; t < m_vcollection[i].m_visel.size(); t++)
+            if (element == m_vcollection[i].m_visel.ElementAt(t))
+                return m_vcollection[i].m_wzName;
+
     return NULL;
 }
 
@@ -4952,7 +4949,7 @@ void PinTable::FlipY(const Vertex2D& pvCenter)
 {
    BeginUndo();
    for (int i = 0; i < m_vmultisel.size(); i++)
-      m_vmultisel.ElementAt(i)->FlipY(pvCenter);
+      m_vmultisel[i].FlipY(pvCenter);
    EndUndo();
 }
 
@@ -4960,7 +4957,7 @@ void PinTable::FlipX(const Vertex2D& pvCenter)
 {
    BeginUndo();
    for (int i = 0; i < m_vmultisel.size(); i++)
-      m_vmultisel.ElementAt(i)->FlipX(pvCenter);
+      m_vmultisel[i].FlipX(pvCenter);
    EndUndo();
 }
 
@@ -4968,7 +4965,7 @@ void PinTable::Rotate(const float ang, const Vertex2D& pvCenter, const bool useE
 {
    BeginUndo();
    for (int i = 0; i < m_vmultisel.size(); i++)
-      m_vmultisel.ElementAt(i)->Rotate(ang, pvCenter, useElementCenter);
+      m_vmultisel[i].Rotate(ang, pvCenter, useElementCenter);
    EndUndo();
 }
 
@@ -4976,7 +4973,7 @@ void PinTable::Scale(const float scalex, const float scaley, const Vertex2D& pvC
 {
    BeginUndo();
    for (int i = 0; i < m_vmultisel.size(); i++)
-      m_vmultisel.ElementAt(i)->Scale(scalex, scaley, pvCenter, useElementCenter);
+      m_vmultisel[i].Scale(scalex, scaley, pvCenter, useElementCenter);
    EndUndo();
 }
 
@@ -4984,7 +4981,7 @@ void PinTable::Translate(const Vertex2D &pvOffset)
 {
    BeginUndo();
    for (int i = 0; i < m_vmultisel.size(); i++)
-      m_vmultisel.ElementAt(i)->Translate(pvOffset);
+      m_vmultisel[i].Translate(pvOffset);
    EndUndo();
 }
 
@@ -5048,7 +5045,7 @@ void PinTable::DoMouseMove(int x, int y)
    if (!m_dragging) // Not doing band select
    {
        for (int i = 0; i < m_vmultisel.size(); i++)
-         m_vmultisel.ElementAt(i)->OnMouseMove(x, y);
+         m_vmultisel[i].OnMouseMove(x, y);
    }
    else
       OnMouseMove(x, y);
@@ -5897,7 +5894,7 @@ void PinTable::Copy(int x, int y)
        IStream *pstm;
        CreateStreamOnHGlobal(hglobal, TRUE, &pstm);
 
-       IEditable * const pe = m_vmultisel.ElementAt(i)->GetIEditable();
+       IEditable * const pe = m_vmultisel[i].GetIEditable();
 
        ////////!! BUG!  With multi-select, if you have multiple dragpoints on
        //////// a surface selected, the surface will get copied multiple times
@@ -6032,7 +6029,7 @@ void PinTable::SetDefaultPhysics(bool fromMouseClick)
 void PinTable::ClearMultiSel(ISelect* newSel)
 {
    for (int i = 0; i < m_vmultisel.size(); i++)
-      m_vmultisel.ElementAt(i)->m_selectstate = eNotSelected;
+      m_vmultisel[i].m_selectstate = eNotSelected;
 
    //remove the clone of the multi selection in the smart browser class
    //to sync the clone and the actual multi-selection 
@@ -6056,9 +6053,9 @@ bool PinTable::MultiSelIsEmpty()
 // down the pipe (speeds up drag-selection)
 void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick)
 {
-   const int index = m_vmultisel.IndexOf(psel);
+   const int index = m_vmultisel.find(psel);
    ISelect *piSelect = NULL;
-   //_ASSERTE(m_vmultisel.ElementAt(0)->m_selectstate == eSelected);
+   //_ASSERTE(m_vmultisel[0].m_selectstate == eSelected);
 
    if (index == -1) // If we aren't selected yet, do that
    {
@@ -6092,9 +6089,9 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
       {
          // Make this new selection the primary one for the group
          piSelect = m_vmultisel.ElementAt(0);
-         if (piSelect != NULL)
+         if (piSelect != nullptr)
             piSelect->m_selectstate = eMultiSelected;
-         m_vmultisel.InsertElementAt(psel, 0);
+         m_vmultisel.insert(psel, 0);
       }
 
       psel->m_selectstate = eSelected;
@@ -6105,7 +6102,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
    else if (add) // Take the element off the list
    {
       _ASSERTE(psel->m_selectstate != eNotSelected);
-      m_vmultisel.RemoveElementAt(index);
+      m_vmultisel.erase(index);
       psel->m_selectstate = eNotSelected;
       if (m_vmultisel.empty())
       {
@@ -6114,7 +6111,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
       }
       // The main element might have changed
       piSelect = m_vmultisel.ElementAt(0);
-      if (piSelect != NULL)
+      if (piSelect != nullptr)
          piSelect->m_selectstate = eSelected;
 
       if (update)
@@ -6130,10 +6127,10 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
 
          // Make this new selection the primary one for the group
          piSelect = m_vmultisel.ElementAt(0);
-         if (piSelect != NULL)
+         if (piSelect != nullptr)
             piSelect->m_selectstate = eMultiSelected;
-         m_vmultisel.RemoveElementAt(index);
-         m_vmultisel.InsertElementAt(psel, 0);
+         m_vmultisel.erase(index);
+         m_vmultisel.insert(psel, 0);
 
          psel->m_selectstate = eSelected;
       }
@@ -6147,7 +6144,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
    if (update)
    {
        m_vpinball->SetPropSel(m_vmultisel);
-       m_vmultisel.ElementAt(0)->UpdateStatusBarInfo();
+       m_vmultisel[0].UpdateStatusBarInfo();
    }
 
     piSelect = m_vmultisel.ElementAt(0);
@@ -6189,9 +6186,9 @@ void PinTable::OnDelete()
       const ISelect * const ptr = m_vseldelete[t];
       for (int i = 0; i < m_vcollection.size() && !inCollection; i++)
       {
-         for (int k = 0; k < m_vcollection.ElementAt(i)->m_visel.size(); k++)
+         for (int k = 0; k < m_vcollection[i].m_visel.size(); k++)
          {
-            if (ptr == m_vcollection.ElementAt(i)->m_visel.ElementAt(k))
+            if (ptr == m_vcollection[i].m_visel.ElementAt(k))
             {
                inCollection = true;
                break;
@@ -7492,12 +7489,12 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         const DWORD cwch = sizeof(m_vcollection.ElementAt((int)ivar)->m_wzName) + sizeof(DWORD); //!! +DWORD?
+         const DWORD cwch = sizeof(m_vcollection[(int)ivar].m_wzName) + sizeof(DWORD); //!! +DWORD?
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch);
          if (wzDst == NULL)
             ShowError("DISPID_Collection alloc failed (1)");
          else
-            memcpy(wzDst, m_vcollection.ElementAt((int)ivar)->m_wzName, cwch);
+            memcpy(wzDst, m_vcollection[(int)ivar].m_wzName, cwch);
          rgstr[ivar + 1] = wzDst;
          rgdw[ivar + 1] = (DWORD)ivar;
       }
@@ -7683,12 +7680,12 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         const size_t cwch = sizeof(m_vcollection.ElementAt(dwCookie)->m_wzName) + sizeof(DWORD); //!! +DWORD?
+         const size_t cwch = sizeof(m_vcollection[dwCookie].m_wzName) + sizeof(DWORD); //!! +DWORD?
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch);
          if (wzDst == NULL)
             ShowError("DISPID_Collection alloc failed (2)");
          else
-            memcpy(wzDst, m_vcollection.ElementAt(dwCookie)->m_wzName, cwch - sizeof(DWORD)); //!! see above
+            memcpy(wzDst, m_vcollection[dwCookie].m_wzName, cwch - sizeof(DWORD)); //!! see above
       }
    }
    break;

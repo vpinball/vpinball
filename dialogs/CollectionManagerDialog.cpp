@@ -336,8 +336,7 @@ BOOL CollectionDialog::OnInitDialog()
 
     for (int i = 0; i < pcol->m_visel.size(); i++)
     {
-        ISelect * const pisel = pcol->m_visel.ElementAt(i);
-        IEditable * const piedit = pisel->GetIEditable();
+        IEditable * const piedit = pcol->m_visel[i].GetIEditable();
         IScriptable * const piscript = piedit->GetScriptable();
         if (piscript)
         {
@@ -457,7 +456,7 @@ void CollectionDialog::OnOK()
 
     for (int i = 0; i < pcol->m_visel.size(); i++)
     {
-        IEditable * const ie = pcol->m_visel.ElementAt(i)->GetIEditable();
+        IEditable * const ie = pcol->m_visel[i].GetIEditable();
         const int index = FindIndexOf(ie->m_vCollection, pcol);
         if (index != -1)
         {
