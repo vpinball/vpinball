@@ -1054,7 +1054,7 @@ bool VPinball::CloseTable(PinTable * const ppt)
    m_unloadingTable = false;
 
    std::vector<MDIChildPtr> allChildren = GetAllMDIChildren();
-   if (allChildren.size() == 0)
+   if (allChildren.empty())
    {
        ToggleToolbar();
        if (m_propertyDialog && m_propertyDialog->IsWindow())
@@ -2237,7 +2237,7 @@ void VPinball::AddControlPoint()
     if (ptCur == NULL)
         return;
 
-    if (ptCur->m_vmultisel.Size() > 0)
+    if (!ptCur->m_vmultisel.empty())
     {
         ISelect * const psel = ptCur->m_vmultisel.ElementAt(0);
         if (psel != NULL)
@@ -2282,7 +2282,7 @@ void VPinball::AddSmoothControlPoint()
     if (ptCur == NULL)
         return;
 
-    if (ptCur->m_vmultisel.Size() > 0)
+    if (!ptCur->m_vmultisel.empty())
     {
         ISelect * const psel = ptCur->m_vmultisel.ElementAt(0);
         if (psel != NULL)

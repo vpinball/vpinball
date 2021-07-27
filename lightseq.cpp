@@ -222,7 +222,7 @@ void LightSeq::RenderSetup()
    CComBSTR bstrCollection = m_d.m_wzCollection.c_str();
 
    // get the number of collections available
-   int size = m_ptable->m_vcollection.Size();
+   int size = m_ptable->m_vcollection.size();
    for (int i = 0; i < size; ++i)
    {
       // get the name of this collection
@@ -266,7 +266,7 @@ void LightSeq::RenderSetup()
       ZeroMemory((void *)m_pgridData, (size_t)((m_lightSeqGridHeight*m_lightSeqGridWidth)*sizeof(short)));
 
    // get the number of elements (objects) in the collection (referenced by m_visel)
-   size = m_pcollection->m_visel.Size();
+   size = m_pcollection->m_visel.size();
 
    // go though the collection and get the cordinates of all the lights
    for (int i = 0; i < size; ++i)
@@ -610,7 +610,7 @@ STDMETHODIMP LightSeq::StopPlay()
    // Reset lights back to original state
    if (m_pcollection != NULL)
    {
-      const int size = m_pcollection->m_visel.Size();
+      const int size = m_pcollection->m_visel.size();
       for (int i = 0; i < size; ++i)
       {
          const ItemTypeEnum type = m_pcollection->m_visel.ElementAt(i)->GetIEditable()->GetItemType();
@@ -1489,7 +1489,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
          switch (pTracer->frameCount--)
          {
          case 2:
-            SetAllLightsToState(pTracer->length <=0 ? LightStateOn : LightStateOff);
+            SetAllLightsToState(pTracer->length <= 0 ? LightStateOn : LightStateOff);
             m_timeNextUpdate = g_pplayer->m_time_msec + m_pauseValue;
             break;
 
@@ -1507,7 +1507,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
       // process the random type of effect
       case eSeqRandom: {
          // get the number of elements in this
-         const float size = (float)m_pcollection->m_visel.Size();
+         const float size = (float)m_pcollection->m_visel.size();
          // randomly pick n elements and invert their state
          for (int i = 0; i < pTracer->length; ++i)
          {
@@ -1663,7 +1663,7 @@ void LightSeq::SetAllLightsToState(const LightState State)
 {
    if (m_pcollection != NULL)
    {
-      const int size = m_pcollection->m_visel.Size();
+      const int size = m_pcollection->m_visel.size();
       for (int i = 0; i < size; ++i)
          SetElementToState(i, State);
    }
@@ -1671,7 +1671,7 @@ void LightSeq::SetAllLightsToState(const LightState State)
 
 void LightSeq::SetElementToState(const int index, const LightState State)
 {
-   if (m_pcollection->m_visel.size() == 0)
+   if (m_pcollection->m_visel.empty())
       return;
 
    const ItemTypeEnum type = m_pcollection->m_visel.ElementAt(index)->GetIEditable()->GetItemType();
@@ -1719,7 +1719,7 @@ LightState LightSeq::GetElementState(const int index) const
    // just in case the element isn't a compatible object
    LightState rc = LightStateOff;
 
-   if (m_pcollection->m_visel.size() == 0)
+   if (m_pcollection->m_visel.empty())
       return rc;
 
    const ItemTypeEnum type = m_pcollection->m_visel.ElementAt(index)->GetIEditable()->GetItemType();

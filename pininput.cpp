@@ -788,7 +788,7 @@ int PinInput::started()
    if (m_pressed_start)
       return 1;
 
-   if (g_pplayer->m_vball.size() > 0)
+   if (!g_pplayer->m_vball.empty())
    {
       m_pressed_start = 1;
       return 1;

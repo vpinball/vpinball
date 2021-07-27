@@ -285,7 +285,7 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
       }
    }
 
-   if (vitexpoints.size() == 0)
+   if (vitexpoints.empty())
    {
       // Special case - no texture coordinates were specified
       // Make them up starting at point 0

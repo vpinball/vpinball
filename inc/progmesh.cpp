@@ -163,7 +163,7 @@ __forceinline Vertex::Vertex(const float3 &v, const size_t _id) : position(v), i
 
 __forceinline Vertex::~Vertex()
 {
-	assert(face.size() == 0);
+	assert(face.empty());
 
 	while (neighbor.size()) {
 		RemoveFillWithBack(neighbor[0]->neighbor, this);
@@ -231,7 +231,7 @@ __forceinline void ComputeEdgeCostAtVertex(Vertex * const v)
 	// only cache the cost of the least cost edge at this vertex
 	// (in member variable collapse) as well as the value of the 
 	// cost (in member variable objdist).
-	if (v->neighbor.size() == 0) {
+	if (v->neighbor.empty()) {
 		// v doesn't have neighbors so it costs nothing to collapse
 		v->collapse = NULL;
 		v->objdist = -0.01f;
@@ -326,7 +326,7 @@ __forceinline Vertex *MinimumCostEdge()
 void ProgressiveMesh(const std::vector<float3> &vert, const std::vector<tridata> &tri,
 					 std::vector<unsigned int> &map, std::vector<unsigned int> &permutation)
 {
-	if (vert.size() == 0 || tri.size() == 0)
+	if (vert.empty() || tri.empty())
 		return;
 
 	vertices.reserve(vert.size());
@@ -340,7 +340,7 @@ void ProgressiveMesh(const std::vector<float3> &vert, const std::vector<tridata>
 	map.resize(vertices.size());          // allocate space
 
 	// reduce the object down to nothing:
-	while (vertices.size() > 0) {
+	while (!vertices.empty()) {
 		// get the next vertex to collapse
 		Vertex *mn = MinimumCostEdge();
 		// keep track of this vertex, i.e. the collapse ordering
@@ -358,8 +358,8 @@ void ProgressiveMesh(const std::vector<float3> &vert, const std::vector<tridata>
 	// The caller of this function should reorder their vertices
 	// according to the returned "permutation".
 
-	assert(vertices.size() == 0);
-	assert(triangles.size() == 0);
+	assert(vertices.empty());
+	assert(triangles.empty());
 }
 
 // Note that the use of the MapVertex() function and the map
@@ -404,8 +404,8 @@ __forceinline unsigned int MapVertex(unsigned int a, const unsigned int mx, cons
 
 void ReMapIndices(const unsigned int num_vertices, const std::vector<tridata> &tri, std::vector<tridata> &new_tri, const std::vector<unsigned int> &map)
 {
-	assert(new_tri.size() == 0);
-	assert(map.size() != 0);
+	assert(new_tri.empty());
+	assert(!map.empty());
 	assert(num_vertices != 0);
 
 	for (size_t i = 0; i < tri.size(); i++) {

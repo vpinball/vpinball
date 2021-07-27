@@ -54,7 +54,7 @@ void SearchSelectDialog::Update()
       ListView_DeleteAllItems(m_hElementList);
 
    int idx = 0;
-   for (int i = 0; i < m_curTable->m_vcollection.Size(); i++)
+   for (int i = 0; i < m_curTable->m_vcollection.size(); i++)
    {
       CComObject<Collection> *const pcol = m_curTable->m_vcollection.ElementAt(i);
       char szT[sizeof(pcol->m_wzName)/sizeof(pcol->m_wzName[0])];
@@ -136,7 +136,7 @@ void SearchSelectDialog::SelectElement()
            if (strcmp(szType, "Collection") == 0)
            {
               CComObject<Collection> *const pcol = (CComObject<Collection>*)lv.lParam;
-              if (pcol->m_visel.Size()>0)
+              if (!pcol->m_visel.empty())
               {
                  ISelect *const pisel = pcol->m_visel.ElementAt(0);
                  if (pisel)

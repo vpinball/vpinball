@@ -182,7 +182,7 @@ void IEditable::Undelete()
    for (size_t i = 0; i < m_vCollection.size(); i++)
    {
       Collection * const pcollection = m_vCollection[i];
-      pcollection->m_visel.AddElement(GetISelect());
+      pcollection->m_visel.push_back(GetISelect());
    }
 }
 

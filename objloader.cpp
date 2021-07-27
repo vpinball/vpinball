@@ -109,17 +109,17 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
       }
       else if (strcmp(lineHeader, "f") == 0)
       {
-         if (m_tmpVerts.size() == 0)
+         if (m_tmpVerts.empty())
          {
             ShowError("No vertices found in obj file, import is impossible!");
             goto Error;
          }
-         if (m_tmpTexel.size() == 0)
+         if (m_tmpTexel.empty())
          {
             ShowError("No texture coordinates (UVs) found in obj file, import is impossible!");
             goto Error;
          }
-         if (m_tmpNorms.size() == 0)
+         if (m_tmpNorms.empty())
          {
             ShowError("No normals found in obj file, import is impossible!");
             goto Error;
@@ -288,7 +288,7 @@ void ObjLoader::Save(const string& filename, const string& description, const Me
    fclose(f);
    return;
    */
-   if (mesh.m_animationFrames.size() == 0)
+   if (mesh.m_animationFrames.empty())
    {
       ExportStart(filename);
       fprintf_s(m_fHandle, "# Visual Pinball OBJ file\n");

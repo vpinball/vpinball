@@ -203,7 +203,7 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
    size_t overall_size = 0;
    vector<Primitive*> prims;
    vector<Primitive*> renderedPrims;
-   for (int i = 0; i < collection->m_visel.Size(); i++)
+   for (int i = 0; i < collection->m_visel.size(); i++)
    {
       const ISelect * const pisel = collection->m_visel.ElementAt(i);
       if (pisel->GetItemType() != eItemPrimitive)
@@ -794,7 +794,7 @@ void Primitive::UIRenderPass2(Sur * const psur)
             }
          }
 
-         if (drawVertices.size() > 0)
+         if (!drawVertices.empty())
             psur->Lines(&drawVertices[0], (int)(drawVertices.size() / 2));
       }
    }
@@ -925,7 +925,7 @@ void Primitive::RenderBlueprint(Sur *psur, const bool solid)
          }
       }
 
-      if (drawVertices.size() > 0)
+      if (!drawVertices.empty())
          psur->Lines(&drawVertices[0], (int)(drawVertices.size() / 2));
    }
 }
@@ -1527,7 +1527,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool bac
 #endif
       }
       
-      if (m_mesh.m_animationFrames.size() > 0)
+      if (!m_mesh.m_animationFrames.empty())
       {
          const mz_ulong slen = (mz_ulong)(sizeof(Mesh::VertData)*m_mesh.NumVertices());
          for (size_t i = 0; i < m_mesh.m_animationFrames.size(); i++)
@@ -1632,7 +1632,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    case FID(M3VN):
    {
       pbr->GetInt(m_numVertices);
-      if (m_mesh.m_animationFrames.size() > 0)
+      if (!m_mesh.m_animationFrames.empty())
       {
          for (size_t i = 0; i < m_mesh.m_animationFrames.size(); i++)
             m_mesh.m_animationFrames[i].m_frameVerts.clear();
@@ -2684,7 +2684,7 @@ STDMETHODIMP Primitive::put_Collidable(VARIANT_BOOL newVal)
       m_d.m_collidable = val;
    else
    {
-       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_enabled != val)
+       if (!m_vhoCollidable.empty() && m_vhoCollidable[0]->m_enabled != val)
            for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
                m_vhoCollidable[i]->m_enabled = val; //copy to hit-testing on entities composing the object
    }
@@ -2844,7 +2844,7 @@ STDMETHODIMP Primitive::put_DisplayTexture(VARIANT_BOOL newVal)
 
 STDMETHODIMP Primitive::PlayAnim(float startFrame, float speed)
 {
-   if (m_mesh.m_animationFrames.size() > 0)
+   if (!m_mesh.m_animationFrames.empty())
    {
       if ((size_t)startFrame >= m_mesh.m_animationFrames.size())
          startFrame = 0.0f;
@@ -2865,7 +2865,7 @@ STDMETHODIMP Primitive::PlayAnim(float startFrame, float speed)
 
 STDMETHODIMP Primitive::PlayAnimEndless(float speed)
 {
-   if (m_mesh.m_animationFrames.size() > 0)
+   if (!m_mesh.m_animationFrames.empty())
    {
       if (speed < 0.0f) speed = -speed;
 
@@ -2905,7 +2905,7 @@ STDMETHODIMP Primitive::ContinueAnim(float speed)
 
 STDMETHODIMP Primitive::ShowFrame(float frame)
 {
-   if (m_mesh.m_animationFrames.size() > 0 && frame >= 0.f)
+   if (!m_mesh.m_animationFrames.empty() && frame >= 0.f)
    {
       if ((size_t)frame >= m_mesh.m_animationFrames.size())
          frame = (float)(m_mesh.m_animationFrames.size() - 1);

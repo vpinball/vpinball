@@ -27,7 +27,7 @@ UserData::~UserData()
 int UserData::FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::iterator& UDiterOut, int &Pos)
 {
 	RemovePadding(strIn);
-	if (strIn.size() == 0 || (!ListIn) || ListIn->size() == 0) return -2;
+	if (strIn.empty() || (!ListIn) || ListIn->empty()) return -2;
 
 	Pos = -1;
 	const int KeyResult = FindUDbyKey(ListIn, strIn, UDiterOut, Pos);
@@ -115,7 +115,7 @@ int UserData::FindClosestUD(vector<UserData>* ListIn, const int CurrentLine, con
 int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<UserData>::iterator &UDiterOut, int &PosOut)
 {
 	int result = -2;
-	if (ListIn && (ListIn->size() > 0) && (strIn.size() > 0))// Sanity chq.
+	if (ListIn && !ListIn->empty() && !strIn.empty())// Sanity chq.
 	{
 		const unsigned int ListSize = (int)ListIn->size();
 		UINT32 iCurPos = (ListSize >> 1);
@@ -150,7 +150,7 @@ int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<
 //Returns current Index of strIn in ListIn based on m_uniqueKey, or -1 if not found
 int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 {
-	if ((!ListIn) || (ListIn->size() == 0) || (strIn.size() == 0)) return -1;
+	if ((!ListIn) || ListIn->empty() || strIn.empty()) return -1;
 	int result = -2;
 	const unsigned int ListSize = (int)ListIn->size();
 	UINT32 iCurPos = (ListSize >> 1);
@@ -186,7 +186,7 @@ int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 //Returns current Index of strIn in ListIn based on m_keyName, or -1 if not found
 int UserData::UDIndex(vector<UserData>* ListIn, const string &strIn)
 {
-	if ((!ListIn) || (ListIn->size() == 0) || (strIn.size() == 0)) return -1;
+	if ((!ListIn) || ListIn->empty() || strIn.empty()) return -1;
 	int result = -2;
 	const unsigned int ListSize = (int)ListIn->size();
 	UINT32 iCurPos = (ListSize >> 1);
@@ -255,7 +255,7 @@ size_t UserData::GetUDPointerfromUniqueKey(vector<UserData>* ListIn, const strin
 //Returns index or insertion point (-1 == error)
 size_t UserData::FindOrInsertUD(vector<UserData>* ListIn, UserData &udIn)
 {
-	if (ListIn->size() == 0)	//First in
+	if (ListIn->empty())	//First in
 	{
 		ListIn->push_back(udIn);
 		return 0;

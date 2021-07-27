@@ -47,10 +47,10 @@ void PinUndo::BeginUndo()
 
 void PinUndo::MarkForUndo(IEditable * const pie, const bool backupForPlay)
 {
-   if(g_pplayer)
+   if (g_pplayer)
       return;
 
-   if(m_vur.size() == 0)
+   if (m_vur.empty())
    {
       _ASSERTE(fFalse);
       return;
@@ -69,7 +69,7 @@ void PinUndo::MarkForUndo(IEditable * const pie, const bool backupForPlay)
 
 void PinUndo::MarkForCreate(IEditable * const pie)
 {
-   if (m_vur.size() == 0)
+   if (m_vur.empty())
    {
       _ASSERTE(fFalse);
       return;
@@ -88,7 +88,7 @@ void PinUndo::MarkForCreate(IEditable * const pie)
 
 void PinUndo::MarkForDelete(IEditable * const pie)
 {
-   if (m_vur.size() == 0)
+   if (m_vur.empty())
    {
       _ASSERTE(fFalse);
       return;
@@ -107,7 +107,7 @@ void PinUndo::MarkForDelete(IEditable * const pie)
 
 void PinUndo::Undo()
 {
-   if (m_vur.size() == 0)
+   if (m_vur.empty())
    {
       //_ASSERTE(fFalse);
       return;

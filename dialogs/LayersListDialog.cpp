@@ -768,7 +768,7 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
                             DeleteItem(oldItem);
                             AddElementToLayer(hLayerItem, pedit->GetName(), pedit);
                             std::vector<HTREEITEM> subItem = GetSubItems(dragItem->m_hDragLayer);
-                            if (subItem.size() == 0)
+                            if (subItem.empty())
                             {
                                if (dragItem->m_hDragLayer == hCurrentLayerItem)
                                   hCurrentLayerItem = hLayerItem;

@@ -149,7 +149,7 @@ void Rubber::DrawRubberMesh(Sur * const psur)
          drawVertices.emplace_back(Vertex2D(A.x, A.y));
       }
    }
-   if (drawVertices.size() > 0)
+   if (!drawVertices.empty())
       psur->Lines(drawVertices.data(), (int)(drawVertices.size() / 2));
 }
 
@@ -1078,7 +1078,7 @@ STDMETHODIMP Rubber::put_Collidable(VARIANT_BOOL newVal)
       m_d.m_collidable = val;
    else
    {
-       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_enabled != val)
+       if (!m_vhoCollidable.empty() && m_vhoCollidable[0]->m_enabled != val)
            for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
                m_vhoCollidable[i]->m_enabled = val; //copy to hit checking on entities composing the object
    }

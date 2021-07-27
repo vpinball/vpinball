@@ -8,7 +8,7 @@ ScriptErrorDialog::ScriptErrorDialog(const std::wstring &message) :
 
 BOOL ScriptErrorDialog::OnInitDialog()
 {
-	HWND textBoxHwnd = GetDlgItem(IDC_ERROR_EDIT);
+	const HWND textBoxHwnd = GetDlgItem(IDC_ERROR_EDIT);
 
 	::SendMessage(textBoxHwnd, WM_SETFONT, (size_t)GetStockObject(ANSI_FIXED_FONT), 0);
 	::SetWindowTextW(textBoxHwnd, initMessage.c_str());

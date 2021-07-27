@@ -790,7 +790,7 @@ void Surface::ExportMesh(ObjLoader& loader)
 
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
    WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
-   if (topBuf.size() > 0 && m_d.m_topBottomVisible && !m_d.m_sideVisible)
+   if (!topBuf.empty() && m_d.m_topBottomVisible && !m_d.m_sideVisible)
    {
       loader.WriteObjectName(name);
       loader.WriteVertexInfo(topBuf.data(), m_numVertices);
@@ -809,7 +809,7 @@ void Surface::ExportMesh(ObjLoader& loader)
       loader.WriteFaceInfo(topBottomIndices);
       loader.UpdateFaceOffset(m_numVertices);
    }
-   else if (topBuf.size() > 0 && m_d.m_topBottomVisible && m_d.m_sideVisible)
+   else if (!topBuf.empty() && m_d.m_topBottomVisible && m_d.m_sideVisible)
    {
       Vertex3D_NoTex2 * const tmp = new Vertex3D_NoTex2[m_numVertices * 5];
       memcpy(tmp, sideBuf.data(), sizeof(Vertex3D_NoTex2) * m_numVertices * 4);
@@ -856,13 +856,13 @@ void Surface::PrepareWallsAtHeight()
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
-   pd3dDevice->CreateVertexBuffer(m_numVertices * 4 + ((topBottomBuf.size() > 0) ? m_numVertices * 3 : 0), 0, MY_D3DFVF_NOTEX2_VERTEX, &m_VBuffer);
+   pd3dDevice->CreateVertexBuffer(m_numVertices * 4 + (!topBottomBuf.empty() ? m_numVertices * 3 : 0), 0, MY_D3DFVF_NOTEX2_VERTEX, &m_VBuffer);
 
    Vertex3D_NoTex2 *verts;
    m_VBuffer->lock(0, 0, (void**)&verts, VertexBuffer::WRITEONLY);
    memcpy(verts, sideBuf.data(), sizeof(Vertex3D_NoTex2)*m_numVertices * 4);
 
-   if (topBottomBuf.size() > 0)
+   if (!topBottomBuf.empty())
       //if (m_d.m_visible) // Visible could still be set later if rendered dynamically
       {
          memcpy(verts+m_numVertices * 4, topBottomBuf.data(), sizeof(Vertex3D_NoTex2)*m_numVertices * 3);
@@ -877,7 +877,7 @@ void Surface::PrepareWallsAtHeight()
    WORD* buf;
    m_IBuffer->lock(0, 0, (void**)&buf, 0);
    memcpy(buf, sideIndices.data(), sideIndices.size() * sizeof(WORD));
-   if (topBottomIndices.size() > 0)
+   if (!topBottomIndices.empty())
       memcpy(buf + sideIndices.size(), topBottomIndices.data(), topBottomIndices.size() * sizeof(WORD));
    m_IBuffer->unlock();
 }
@@ -1010,7 +1010,7 @@ void Surface::RenderStatic()
 
 void Surface::RenderSlingshots()
 {
-   if (!m_d.m_sideVisible || (m_vlinesling.size() == 0))
+   if (!m_d.m_sideVisible || m_vlinesling.empty())
       return;
 
    bool nothing_to_draw = true;
@@ -1707,7 +1707,7 @@ STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
       m_isDropped = val;
 
       const bool b = !m_isDropped && m_d.m_collidable;
-      if (m_vhoDrop.size() > 0 && m_vhoDrop[0]->m_enabled != b)
+      if (!m_vhoDrop.empty() && m_vhoDrop[0]->m_enabled != b)
         for (size_t i = 0; i < m_vhoDrop.size(); i++) //!! costly
           m_vhoDrop[i]->m_enabled = b; //disable hit on entities composing the object 
    }
@@ -1882,7 +1882,7 @@ STDMETHODIMP Surface::put_Collidable(VARIANT_BOOL newVal)
    else
    {
        const bool b = m_d.m_droppable ? (fNewVal && !m_isDropped) : fNewVal;
-       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_enabled != b)
+       if (!m_vhoCollidable.empty() && m_vhoCollidable[0]->m_enabled != b)
            for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
               m_vhoCollidable[i]->m_enabled = b; //copy to hit checking on entities composing the object 
    }

@@ -1208,7 +1208,7 @@ PinTable::~PinTable()
       delete m_vfont[i];
    }
 
-   for (int i = 0; i < m_vcollection.Size(); i++)
+   for (int i = 0; i < m_vcollection.size(); i++)
       m_vcollection.ElementAt(i)->Release();
 
    m_pcv->Release();
@@ -1223,7 +1223,7 @@ PinTable::~PinTable()
 
 void PinTable::FVerifySaveToClose()
 {
-   if (m_vAsyncHandles.size() > 0)
+   if (!m_vAsyncHandles.empty())
    {
       /*const DWORD wait =*/ WaitForMultipleObjects((DWORD)m_vAsyncHandles.size(), m_vAsyncHandles.data(), TRUE, INFINITE);
       //m_vpinball->MessageBox("Async work items not done", NULL, 0);
@@ -1270,10 +1270,10 @@ void PinTable::InitBuiltinTable(const size_t tableId)
    }
 
    HGLOBAL hglobal = LoadResource(NULL, hrsrc);
-   char *pchar = (char *)LockResource(hglobal);
-   DWORD size = SizeofResource(NULL, hrsrc);
+   const char * const pchar = (char *)LockResource(hglobal);
+   const DWORD size = SizeofResource(NULL, hrsrc);
    HGLOBAL hcopiedmem = GlobalAlloc(GMEM_MOVEABLE, size);
-   char *pcopied = (char *)GlobalLock(hcopiedmem);
+   char * const pcopied = (char *)GlobalLock(hcopiedmem);
    memcpy(pcopied, pchar, size);
    GlobalUnlock(hcopiedmem);
 
@@ -2287,7 +2287,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
    ////////////// End Encryption
 
-   const int ctotalitems = (int)(m_vedit.size() + m_vsound.size() + m_vimage.size() + m_vfont.size() + m_vcollection.Size());
+   const int ctotalitems = (int)(m_vedit.size() + m_vsound.size() + m_vimage.size() + m_vfont.size() + m_vcollection.size());
    int csaveditems = 0;
 
    ::SendMessage(hwndProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, ctotalitems));
@@ -2397,7 +2397,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
             }
 
-            for (int i = 0; i < m_vcollection.Size(); i++)
+            for (int i = 0; i < m_vcollection.size(); i++)
             {
                const string szStmName = "Collection" + std::to_string(i);
                MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
@@ -3122,7 +3122,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
    bw.WriteFloat(FID(BLST), m_bloom_strength);
 
    bw.WriteInt(FID(MASI), (int)m_materials.size());
-   if (m_materials.size() > 0)
+   if (!m_materials.empty())
    {
       vector<SaveMaterial> mats(m_materials.size());
       for (size_t i = 0; i < m_materials.size(); i++)
@@ -3169,7 +3169,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
       bw.WriteInt(FID(SSND), (int)m_vsound.size());
       bw.WriteInt(FID(SIMG), (int)m_vimage.size());
       bw.WriteInt(FID(SFNT), (int)m_vfont.size());
-      bw.WriteInt(FID(SCOL), m_vcollection.Size());
+      bw.WriteInt(FID(SCOL), m_vcollection.size());
 
       bw.WriteWideString(FID(NAME), m_wzName);
 
@@ -3379,7 +3379,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
             ProfileLog("Sound");
 
-            assert(m_vimage.size() == 0);
+            assert(m_vimage.empty());
             m_vimage.resize(ctextures); // due to multithreaded loading do pre-allocation
             {
                ThreadPool pool(g_pvp->m_logicalNumberOfProcessors); //!! Note that this dramatically increases the amount of temporary memory needed, especially if Max Texture Dimension is set (as then all the additional conversion/rescale mem is also needed 'in parallel')
@@ -3458,7 +3458,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   CComObject<Collection>::CreateInstance(&pcol);
                   pcol->AddRef();
                   pcol->LoadData(pstmItem, this, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : NULL);
-                  m_vcollection.AddElement(pcol);
+                  m_vcollection.push_back(pcol);
                   m_pcv->AddItem((IScriptable *)pcol, false);
                   pstmItem->Release();
                   pstmItem = NULL;
@@ -4112,7 +4112,7 @@ void PinTable::NewCollection(const HWND hwndListView, const bool fromSelection)
 
    if (fromSelection && !MultiSelIsEmpty())
    {
-      for (int i = 0; i < m_vmultisel.Size(); i++)
+      for (int i = 0; i < m_vmultisel.size(); i++)
       {
          ISelect * const pisel = m_vmultisel.ElementAt(i);
          IEditable * const piedit = pisel->GetIEditable();
@@ -4123,8 +4123,8 @@ void PinTable::NewCollection(const HWND hwndListView, const bool fromSelection)
                if (piedit->GetScriptable()) // check for scriptable because can't add decals to a collection - they have no name
                {
                   piedit->m_vCollection.push_back(pcol);
-                  piedit->m_viCollection.push_back(pcol->m_visel.Size());
-                  pcol->m_visel.AddElement(m_vmultisel.ElementAt(i));
+                  piedit->m_viCollection.push_back(pcol->m_visel.size());
+                  pcol->m_visel.push_back(m_vmultisel.ElementAt(i));
                }
             }
          }
@@ -4135,7 +4135,7 @@ void PinTable::NewCollection(const HWND hwndListView, const bool fromSelection)
 
    ListView_SetItemState(hwndListView, index, LVIS_SELECTED, LVIS_SELECTED);
 
-   m_vcollection.AddElement(pcol);
+   m_vcollection.push_back(pcol);
    m_pcv->AddItem((IScriptable *)pcol, false);
 }
 
@@ -4154,7 +4154,7 @@ int PinTable::AddListCollection(HWND hwndListView, CComObject<Collection> *pcol)
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
    char buf[16] = { 0 };
-   sprintf_s(buf, "%i", pcol->m_visel.Size());
+   sprintf_s(buf, "%i", pcol->m_visel.size());
    ListView_SetItemText(hwndListView, index, 1, buf);
    return index;
 }
@@ -4163,7 +4163,7 @@ void PinTable::ListCollections(HWND hwndListView)
 {
    //ListView_DeleteAllItems(hwndListView);
 
-   for (int i = 0; i < m_vcollection.Size(); i++)
+   for (int i = 0; i < m_vcollection.size(); i++)
    {
       CComObject<Collection> * const pcol = m_vcollection.ElementAt(i);
 
@@ -4183,7 +4183,7 @@ void PinTable::MoveCollectionUp(CComObject<Collection> *pcol)
    const int idx = m_vcollection.IndexOf(pcol);
    m_vcollection.RemoveElementAt(idx);
    if (idx - 1 < 0)
-      m_vcollection.AddElement(pcol);
+      m_vcollection.push_back(pcol);
    else
       m_vcollection.InsertElementAt(pcol, idx - 1);
 }
@@ -4242,7 +4242,7 @@ void PinTable::MoveCollectionDown(CComObject<Collection> *pcol)
 {
    int idx = m_vcollection.IndexOf(pcol);
    m_vcollection.RemoveElementAt(idx);
-   if (idx + 1 >= m_vcollection.Size())
+   if (idx + 1 >= m_vcollection.size())
       m_vcollection.InsertElementAt(pcol, 0);
    else
       m_vcollection.InsertElementAt(pcol, idx + 1);
@@ -4380,7 +4380,7 @@ void PinTable::DoLeftButtonDown(int x, int y, bool zoomIn)
       AddMultiSel(pisel, add, true, false);
 
       m_moving = true;
-      for (int i = 0; i < m_vmultisel.Size(); i++)
+      for (int i = 0; i < m_vmultisel.size(); i++)
       {
          ISelect *const pisel2 = m_vmultisel.ElementAt(i);
          if (pisel2)
@@ -4393,7 +4393,7 @@ void PinTable::OnLeftButtonUp(int x, int y)
 {
    if (!m_dragging) // Not doing band select
    {
-      for (int i = 0; i < m_vmultisel.Size(); i++)
+      for (int i = 0; i < m_vmultisel.size(); i++)
       {
          ISelect *pisel = m_vmultisel.ElementAt(i);
          if (pisel)
@@ -4432,7 +4432,7 @@ void PinTable::OnRightButtonDown(int x, int y)
       // keep the selection if clicking over a selected object, even if
       // the selected object is hidden behind other objects
       ISelect *hit = HitTest(x, y);
-      for (int i = 0; i < m_vmultisel.Size(); i++)
+      for (int i = 0; i < m_vmultisel.size(); i++)
       {
          if (FindIndexOf(m_allHitElements, m_vmultisel.ElementAt(i)) != -1)
          {
@@ -4454,7 +4454,7 @@ void PinTable::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISe
     const LocalString ls16(IDS_TO_COLLECTION);
     mainMenu.AppendMenu(MF_POPUP | MF_STRING, (size_t)colSubMenu.GetHandle(), ls16.m_szbuffer);
 
-    const int maxItems = min(m_vcollection.Size() - 1, 32);
+    const int maxItems = min(m_vcollection.size() - 1, 32);
 
     // run through all collections and list up to 32 of them in the context menu
     // the actual processing is done in ISelect::DoCommand() 
@@ -4468,10 +4468,10 @@ void PinTable::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISe
         colSubMenu.AppendMenu(MF_POPUP, 0x40000 + i, szT);
         colSubMenu.CheckMenuItem(0x40000 + i, MF_UNCHECKED);
     }
-    if (m_vmultisel.Size() == 1)
+    if (m_vmultisel.size() == 1)
     {
         for (int i = maxItems; i >= 0; i--)
-            for (int t = 0; t < m_vcollection.ElementAt(i)->m_visel.Size(); t++)
+            for (int t = 0; t < m_vcollection.ElementAt(i)->m_visel.size(); t++)
                 if (psel == m_vcollection.ElementAt(i)->m_visel.ElementAt(t))
                     colSubMenu.CheckMenuItem(0x40000 + i, MF_CHECKED);
     }
@@ -4479,12 +4479,12 @@ void PinTable::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISe
     {
         vector<int> allIndices;
 
-        for (int t = 0; t < m_vmultisel.Size(); t++)
+        for (int t = 0; t < m_vmultisel.size(); t++)
         {
             const ISelect * const iSel = m_vmultisel.ElementAt(t);
 
             for (int i = maxItems; i >= 0; i--)
-                for (int t = 0; t < m_vcollection.ElementAt(i)->m_visel.Size(); t++)
+                for (int t = 0; t < m_vcollection.ElementAt(i)->m_visel.size(); t++)
                     if ((iSel == m_vcollection.ElementAt(i)->m_visel.ElementAt(t)))
                         allIndices.push_back(i);
         }
@@ -4637,7 +4637,7 @@ IEditable *PinTable::GetElementByName(const char * const name)
 
 bool PinTable::FMutilSelLocked()
 {
-   for (int i = 0; i < m_vmultisel.Size(); i++)
+   for (int i = 0; i < m_vmultisel.size(); i++)
       if (m_vmultisel.ElementAt(i)->m_locked)
          return true;
 
@@ -4665,7 +4665,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
        case ID_DRAWINFRONT:
        case ID_DRAWINBACK:
        {
-           for (int i = 0; i < m_vmultisel.Size(); i++)
+           for (int i = 0; i < m_vmultisel.size(); i++)
            {
                ISelect *const psel = m_vmultisel.ElementAt(i);
                _ASSERTE(psel != this); // Would make an infinite loop
@@ -4690,16 +4690,16 @@ void PinTable::DoCommand(int icmd, int x, int y)
 
 void PinTable::UpdateCollection(const int index)
 {
-   if (index < m_vcollection.Size() && index < 32)
+   if (index < m_vcollection.size() && index < 32)
    {
-      if (m_vmultisel.Size() > 0)
+      if (!m_vmultisel.empty())
       {
          bool removeOnly = false;
          /* if the selection is part of the selected collection remove only these elements*/
-         for (int t = 0; t < m_vmultisel.Size(); t++)
+         for (int t = 0; t < m_vmultisel.size(); t++)
          {
             ISelect * const ptr = m_vmultisel.ElementAt(t);
-            for (int k = 0; k < m_vcollection.ElementAt(index)->m_visel.Size(); k++)
+            for (int k = 0; k < m_vcollection.ElementAt(index)->m_visel.size(); k++)
             {
                if (ptr == m_vcollection.ElementAt(index)->m_visel.ElementAt(k))
                {
@@ -4714,10 +4714,10 @@ void PinTable::UpdateCollection(const int index)
             return;
 
          /*selected elements are not part of the selected collection and can be added*/
-         for (int t = 0; t < m_vmultisel.Size(); t++)
+         for (int t = 0; t < m_vmultisel.size(); t++)
          {
             ISelect * const ptr = m_vmultisel.ElementAt(t);
-            m_vcollection.ElementAt(index)->m_visel.AddElement(ptr);
+            m_vcollection.ElementAt(index)->m_visel.push_back(ptr);
         }
       }
    }
@@ -4759,7 +4759,7 @@ void PinTable::LockElements()
 {
    BeginUndo();
    const bool lock = !FMutilSelLocked();
-   for (int i = 0; i < m_vmultisel.Size(); i++)
+   for (int i = 0; i < m_vmultisel.size(); i++)
    {
       ISelect * const psel = m_vmultisel.ElementAt(i);
       if (psel)
@@ -4951,7 +4951,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 void PinTable::FlipY(const Vertex2D& pvCenter)
 {
    BeginUndo();
-   for (int i = 0; i < m_vmultisel.Size(); i++)
+   for (int i = 0; i < m_vmultisel.size(); i++)
       m_vmultisel.ElementAt(i)->FlipY(pvCenter);
    EndUndo();
 }
@@ -4959,7 +4959,7 @@ void PinTable::FlipY(const Vertex2D& pvCenter)
 void PinTable::FlipX(const Vertex2D& pvCenter)
 {
    BeginUndo();
-   for (int i = 0; i < m_vmultisel.Size(); i++)
+   for (int i = 0; i < m_vmultisel.size(); i++)
       m_vmultisel.ElementAt(i)->FlipX(pvCenter);
    EndUndo();
 }
@@ -4967,7 +4967,7 @@ void PinTable::FlipX(const Vertex2D& pvCenter)
 void PinTable::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    BeginUndo();
-   for (int i = 0; i < m_vmultisel.Size(); i++)
+   for (int i = 0; i < m_vmultisel.size(); i++)
       m_vmultisel.ElementAt(i)->Rotate(ang, pvCenter, useElementCenter);
    EndUndo();
 }
@@ -4975,7 +4975,7 @@ void PinTable::Rotate(const float ang, const Vertex2D& pvCenter, const bool useE
 void PinTable::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    BeginUndo();
-   for (int i = 0; i < m_vmultisel.Size(); i++)
+   for (int i = 0; i < m_vmultisel.size(); i++)
       m_vmultisel.ElementAt(i)->Scale(scalex, scaley, pvCenter, useElementCenter);
    EndUndo();
 }
@@ -4983,7 +4983,7 @@ void PinTable::Scale(const float scalex, const float scaley, const Vertex2D& pvC
 void PinTable::Translate(const Vertex2D &pvOffset)
 {
    BeginUndo();
-   for (int i = 0; i < m_vmultisel.Size(); i++)
+   for (int i = 0; i < m_vmultisel.size(); i++)
       m_vmultisel.ElementAt(i)->Translate(pvOffset);
    EndUndo();
 }
@@ -4995,7 +4995,7 @@ Vertex2D PinTable::GetCenter() const
    float miny = FLT_MAX;
    float maxy = -FLT_MAX;
 
-   for (int i = 0; i < m_vmultisel.Size(); i++)
+   for (int i = 0; i < m_vmultisel.size(); i++)
    {
       const ISelect * const psel = m_vmultisel.ElementAt(i);
       const Vertex2D vCenter = psel->GetCenter();
@@ -5024,7 +5024,7 @@ void PinTable::OnRightButtonUp(int x, int y)
    // Only bring up context menu if we weren't in magnify mode
    if (!((m_vpinball->m_ToolCur == ID_TABLE_MAGNIFY) || (ks & 0x80000000)))
    {
-      if (m_vmultisel.Size() > 1)
+      if (m_vmultisel.size() > 1)
       {
          DoContextMenu(x, y, IDR_MULTIMENU, this);
       }
@@ -5047,7 +5047,7 @@ void PinTable::DoMouseMove(int x, int y)
 
    if (!m_dragging) // Not doing band select
    {
-       for (int i = 0; i < m_vmultisel.Size(); i++)
+       for (int i = 0; i < m_vmultisel.size(); i++)
          m_vmultisel.ElementAt(i)->OnMouseMove(x, y);
    }
    else
@@ -5876,7 +5876,7 @@ void PinTable::Copy(int x, int y)
    if (MultiSelIsEmpty()) // Can't copy table
       return;
 
-   if (m_vmultisel.Size() == 1)
+   if (m_vmultisel.size() == 1)
    {
        // special check if the user selected a Control Point and wants to copy the coordinates
        ISelect *const pItem = HitTest(x, y);
@@ -5890,7 +5890,7 @@ void PinTable::Copy(int x, int y)
 
    vector<IStream*> vstm;
    //m_vstmclipboard
-   for (int i = 0; i < m_vmultisel.Size(); i++)
+   for (int i = 0; i < m_vmultisel.size(); i++)
    {
        const HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE, 1);
 
@@ -5918,7 +5918,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
    bool error = false;
    int cpasted = 0;
 
-   if (m_vmultisel.Size() == 1)
+   if (m_vmultisel.size() == 1)
    {
        // User wants to paste the copied coordinates of a Control Point
        ISelect * const pItem = HitTest(x, y);
@@ -6031,24 +6031,24 @@ void PinTable::SetDefaultPhysics(bool fromMouseClick)
 
 void PinTable::ClearMultiSel(ISelect* newSel)
 {
-   for (int i = 0; i < m_vmultisel.Size(); i++)
+   for (int i = 0; i < m_vmultisel.size(); i++)
       m_vmultisel.ElementAt(i)->m_selectstate = eNotSelected;
 
    //remove the clone of the multi selection in the smart browser class
    //to sync the clone and the actual multi-selection 
    //it will be updated again on AddMultiSel() call
-   m_vmultisel.RemoveAllElements();
+   m_vmultisel.clear();
 
    if (newSel == NULL)
       newSel = this;
-   m_vmultisel.AddElement(newSel);
+   m_vmultisel.push_back(newSel);
    newSel->m_selectstate = eSelected;
 }
 
 bool PinTable::MultiSelIsEmpty()
 {
    // empty selection means only the table itself is selected
-   return (m_vmultisel.Size() == 1 && m_vmultisel.ElementAt(0) == this);
+   return (m_vmultisel.size() == 1 && m_vmultisel.ElementAt(0) == this);
 }
 
 // 'update' tells us whether to go ahead and change the UI
@@ -6082,7 +6082,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
                      col->m_visel[i].m_selectstate = eMultiSelected;
                      // current element is already in m_vmultisel. (ClearMultiSel(psel) added it
                      if (col->m_visel.ElementAt(i) != psel)
-                        m_vmultisel.AddElement(&col->m_visel[i]);
+                        m_vmultisel.push_back(&col->m_visel[i]);
                   }
                }
             }
@@ -6107,10 +6107,10 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
       _ASSERTE(psel->m_selectstate != eNotSelected);
       m_vmultisel.RemoveElementAt(index);
       psel->m_selectstate = eNotSelected;
-      if (m_vmultisel.Size() == 0)
+      if (m_vmultisel.empty())
       {
          // Have to have something selected
-         m_vmultisel.AddElement((ISelect *)this);
+         m_vmultisel.push_back((ISelect *)this);
       }
       // The main element might have changed
       piSelect = m_vmultisel.ElementAt(0);
@@ -6157,7 +6157,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
         if (piSelect->GetItemType() == eItemPrimitive)
         {
             const Primitive *const prim = (Primitive *)piSelect;
-            if (prim->m_mesh.m_animationFrames.size() > 0)
+            if (!prim->m_mesh.m_animationFrames.empty())
                 info += " (animated " + std::to_string((unsigned long long)prim->m_mesh.m_animationFrames.size() - 1) + " frames)";
         }
         m_vpinball->SetStatusBarElementInfo(info);
@@ -6173,9 +6173,9 @@ void PinTable::RefreshProperties()
 void PinTable::OnDelete()
 {
    vector<ISelect*> m_vseldelete;
-   m_vseldelete.reserve(m_vmultisel.Size());
+   m_vseldelete.reserve(m_vmultisel.size());
 
-   for (int i = 0; i < m_vmultisel.Size(); i++)
+   for (int i = 0; i < m_vmultisel.size(); i++)
    {
       // Can't delete these items yet - ClearMultiSel() will try to mark them as unselected
       m_vseldelete.push_back(m_vmultisel.ElementAt(i));
@@ -6189,7 +6189,7 @@ void PinTable::OnDelete()
       const ISelect * const ptr = m_vseldelete[t];
       for (int i = 0; i < m_vcollection.size() && !inCollection; i++)
       {
-         for (int k = 0; k < m_vcollection.ElementAt(i)->m_visel.Size(); k++)
+         for (int k = 0; k < m_vcollection.ElementAt(i)->m_visel.size(); k++)
          {
             if (ptr == m_vcollection.ElementAt(i)->m_visel.ElementAt(k))
             {
@@ -6242,7 +6242,7 @@ void PinTable::OnKeyDown(int key)
    {
       BeginUndo();
       const int distance = shift ? 10 : 1;
-      for (int i = 0; i < m_vmultisel.Size(); i++)
+      for (int i = 0; i < m_vmultisel.size(); i++)
       {
          ISelect *const pisel = m_vmultisel.ElementAt(i);
          if (!pisel->GetIEditable()->GetISelect()->m_locked) // control points get lock info from parent - UNDONE - make this code snippet be in one place
@@ -6357,29 +6357,19 @@ void PinTable::OnLButtonUp(int x, int y)
          int minlevel = INT_MAX;
 
          for(auto &ptr : vsel)
-         {
             minlevel = min(minlevel, ptr->GetSelectLevel());
-         }
 
-         if (vsel.size() > 0)
+         if (!vsel.empty())
          {
             size_t lastItemForUpdate = -1;
             // first check which item is the last item to add to the multi selection
             for (size_t i = 0; i < vsel.size(); i++)
-            {
                if (vsel[i]->GetSelectLevel() == minlevel)
-               {
                   lastItemForUpdate = i;
-               }
-            }
 
             for (size_t i = 0; i < vsel.size(); i++)
-            {
                if (vsel[i]->GetSelectLevel() == minlevel)
-               {
                   AddMultiSel(vsel[i], true, (i == lastItemForUpdate), false); //last item updates the (multi-)selection in the editor
-               }
-            }
          }
 
          delete phrs;
@@ -7489,7 +7479,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
    case DISPID_Collection:
    {
-      cvar = m_vcollection.Size();
+      cvar = m_vcollection.size();
 
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
       rgdw = (DWORD *)CoTaskMemAlloc((cvar + 1) * sizeof(DWORD));

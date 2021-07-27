@@ -16,7 +16,7 @@ void DragpointVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     const DragPoint *prev = NULL;
 
-    for (int i = 0; i < m_pvsel->Size(); i++)
+    for (int i = 0; i < m_pvsel->size(); i++)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDragPoint))
             continue;
@@ -63,7 +63,7 @@ void DragpointVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void DragpointVisualsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->Size(); i++)
+    for (int i = 0; i < m_pvsel->size(); i++)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDragPoint))
             continue;
@@ -159,7 +159,7 @@ BOOL DragpointVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_POINT_COPY_BUTTON:
         {
             ISelect *const pItem = m_pvsel->ElementAt(0);
-            if ((m_pvsel->Size() == 1) && (pItem->GetItemType() == eItemDragPoint))
+            if ((m_pvsel->size() == 1) && (pItem->GetItemType() == eItemDragPoint))
             {
                 DragPoint * const pPoint = (DragPoint *)pItem;
                 pPoint->Copy();
@@ -169,7 +169,7 @@ BOOL DragpointVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_POINT_PASTE_BUTTON:
         {
             ISelect *const pItem = m_pvsel->ElementAt(0);
-            if ((m_pvsel->Size() == 1) && (pItem->GetItemType() == eItemDragPoint))
+            if ((m_pvsel->size() == 1) && (pItem->GetItemType() == eItemDragPoint))
             {
                 DragPoint * const pPoint = (DragPoint *)pItem;
                 pPoint->Paste();
@@ -191,7 +191,7 @@ BOOL DragpointVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
         {
             if (dispID == 3)
             {
-                for (int i = 0; i < m_pvsel->Size(); i++)
+                for (int i = 0; i < m_pvsel->size(); i++)
                 {
                     if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDragPoint))
                         continue;

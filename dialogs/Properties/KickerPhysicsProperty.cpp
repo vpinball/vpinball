@@ -11,7 +11,7 @@ KickerPhysicsProperty::KickerPhysicsProperty(const VectorProtected<ISelect> *pvs
 
 void KickerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->Size(); i++)
+    for (int i = 0; i < m_pvsel->size(); i++)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemKicker))
             continue;
@@ -35,7 +35,7 @@ void KickerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void KickerPhysicsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->Size(); i++)
+    for (int i = 0; i < m_pvsel->size(); i++)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemKicker))
             continue;

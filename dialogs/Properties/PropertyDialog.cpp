@@ -488,7 +488,7 @@ void PropertyDialog::UpdateCollectionComboBox(const PinTable *const ptable, CCom
     {
         combo.ResetContent();
         combo.AddString(_T("<None>"));
-        for (int i = 0; i < ptable->m_vcollection.Size(); i++)
+        for (int i = 0; i < ptable->m_vcollection.size(); i++)
         {
             char szT[sizeof(ptable->m_vcollection[i].m_wzName)/sizeof(ptable->m_vcollection[i].m_wzName[0])];
             WideCharToMultiByteNull(CP_ACP, 0, ptable->m_vcollection[i].m_wzName, -1, szT, sizeof(szT), NULL, NULL);
@@ -534,7 +534,7 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
                 m_tabs[i] = NULL;
             }
 
-        for (int i = 0; i < pvsel.Size(); i++)
+        for (int i = 0; i < pvsel.size(); i++)
         {
             // check for multiple selection
             if (psel->GetItemType() != pvsel.ElementAt(i)->GetItemType())
@@ -560,7 +560,7 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
         m_tab.ShowWindow(SW_SHOW);
     }
 
-    if (pvsel.Size() > 1)
+    if (pvsel.size() > 1)
     {
         char header[64];
         char collection[64] = {0};
@@ -574,12 +574,12 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
         CComBSTR bstr;
         psel->GetTypeName(&bstr);
         WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, name, 64, NULL, NULL);
-        sprintf_s(header, "%s(%d)", name, pvsel.Size());
+        sprintf_s(header, "%s(%d)", name, pvsel.size());
 
         if (collection[0] != 0)
-            sprintf_s(header, "%s [%s](%d)", collection, name, pvsel.Size());
+            sprintf_s(header, "%s [%s](%d)", collection, name, pvsel.size());
         else
-            sprintf_s(header, "%s(%d)", name, pvsel.Size());
+            sprintf_s(header, "%s(%d)", name, pvsel.size());
 
         m_nameEdit.SetWindowText(header);
         m_nameEdit.SetReadOnly();
@@ -673,7 +673,6 @@ BOOL PropertyDialog::IsSubDialogMessage(MSG &msg) const
                // filter ESC-key otherwise the VPX will enter an endless event loop!?
                if (className == "Edit" || className == "msctls_trackbar32" || className=="Button")
                   return TRUE;
-
             }
             else
             {
@@ -732,7 +731,7 @@ TimerProperty::TimerProperty(const VectorProtected<ISelect> *pvsel) : BaseProper
 
 void TimerProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->Size(); i++)
+    for (int i = 0; i < m_pvsel->size(); i++)
     {
         if (m_pvsel->ElementAt(i) == NULL)
             continue;
@@ -917,9 +916,9 @@ void TimerProperty::UpdateProperties(const int dispid)
 
 void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->Size(); i++)
+    for (int i = 0; i < m_pvsel->size(); i++)
     {
-        if(m_pvsel->ElementAt(i)==NULL)
+        if(m_pvsel->ElementAt(i) == NULL)
             continue;
         switch (m_pvsel->ElementAt(i)->GetItemType())
         {

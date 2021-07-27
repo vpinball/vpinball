@@ -189,9 +189,9 @@ void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int leve
    m_vho.swap(vRemain);
 
    // check if at least two nodes feature objects, otherwise don't bother subdividing further
-   unsigned int count_empty = (m_vho.size() == 0) ? 1 : 0;
+   unsigned int count_empty = m_vho.empty() ? 1 : 0;
    for (int i = 0; i < 4; ++i)
-      if (m_children[i]->m_vho.size() == 0)
+      if (m_children[i]->m_vho.empty())
          ++count_empty;
 
    if (count_empty >= 4)

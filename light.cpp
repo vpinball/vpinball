@@ -619,7 +619,7 @@ void Light::PrepareMoversCustom()
 {
    GetRgVertex(m_vvertex);
 
-   if (m_vvertex.size() == 0)
+   if (m_vvertex.empty())
       return;
 
    float maxdist = 0.f;
@@ -655,7 +655,7 @@ void Light::PrepareMoversCustom()
    if (m_customMoverVBuffer)
       m_customMoverVBuffer->release();
 
-   if (vtri.size() == 0)
+   if (vtri.empty())
    {
       char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
       WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);

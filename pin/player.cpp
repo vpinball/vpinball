@@ -30,13 +30,13 @@ public:
         }
     }
     void Erase() {
-        if (Data.size() > 0) {
+        if (!Data.empty()) {
             Data.shrink(0);
             Offset  = 0;
         }
     }
     ImVec2 GetLast() {
-        if (Data.size() == 0)
+        if (Data.empty())
             return ImVec2(0.f, 0.f);
         else if (Data.size() < MaxSize || Offset == 0)
             return Data.back();
@@ -1385,7 +1385,7 @@ HRESULT Player::Init()
    InitShader();
 
    // search through all collection for elements which support group rendering
-   for (int i = 0; i < m_ptable->m_vcollection.Size(); i++)
+   for (int i = 0; i < m_ptable->m_vcollection.size(); i++)
    {
       Collection * const pcol = m_ptable->m_vcollection.ElementAt(i);
       for (int t = 0; t < pcol->m_visel.size(); t++)
@@ -1421,7 +1421,7 @@ HRESULT Player::Init()
 
    material_flips = 0;
    unsigned long long m;
-   if (m_vHitNonTrans.size() > 0)
+   if (!m_vHitNonTrans.empty())
    {
       std::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableDepthReverse); // stable, so that em reels (=same depth) will keep user defined order
       std::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableImage); // stable, so that objects with same images will keep depth order
@@ -1437,7 +1437,7 @@ HRESULT Player::Init()
          }
    }
 
-   if (m_vHitTrans.size() > 0)
+   if (!m_vHitTrans.empty())
    {
       std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableImage); // see above
       // sort by vertexbuffer not useful currently
@@ -5461,7 +5461,7 @@ void AddEventToDebugMenu(char *sz, int index, int dispid, LPARAM lparam)
 
 void Player::DoDebugObjectMenu(const int x, const int y)
 {
-   if (m_vdebugho.size() == 0)
+   if (m_vdebugho.empty())
    {
       // First time the debug hit-testing has been used
       InitDebugHitStructure();
@@ -5508,7 +5508,7 @@ void Player::DoDebugObjectMenu(const int x, const int y)
    m_hitoctree.HitTestXRay(&ballT, vhoHit, ballT.m_coll);
    m_debugoctree.HitTestXRay(&ballT, vhoHit, ballT.m_coll);
 
-   if (vhoHit.size() == 0)
+   if (vhoHit.empty())
    {
       // Nothing was hit-tested
       return;
@@ -5586,7 +5586,7 @@ void Player::DoDebugObjectMenu(const int x, const int y)
 
    const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD | TPM_RIGHTBUTTON, pt.x, pt.y, GetHwnd(), NULL);
 
-   if (icmd != 0 && vsubmenu.size() > 0)
+   if (icmd != 0 && !vsubmenu.empty())
    {
       const int highword = HIWORD(icmd) - 1;
       const int lowword = icmd & 0xffff;

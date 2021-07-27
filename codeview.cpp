@@ -2056,13 +2056,13 @@ void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
 		m_currentConstruct.lpstrText = ConstructTextBuff;
 		GetMembers(m_VPcoreDict, m_currentConstruct.lpstrText);
 		//Check Table Script
-		if (m_currentMembers->size() == 0)
+		if (m_currentMembers->empty())
 		{
 			m_currentConstruct.lpstrText = ConstructTextBuff;
 			GetMembers(m_pageConstructsDict, m_currentConstruct.lpstrText);
 		}
 		//if no contruct (no children) exit
-		if (m_currentMembers->size() == 0) return;
+		if (m_currentMembers->empty()) return;
 		//autocomp string  = members of construct
 		m_autoCompMembersString = "";
 		for (vector<UserData>::iterator i = m_currentMembers->begin(); i != m_currentMembers->end(); ++i)
@@ -2128,7 +2128,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 		string DwellWord = szLCDwellWord;
 		RemovePadding(DwellWord);
 		RemoveNonVBSChars(DwellWord);
-		if (DwellWord.size() == 0) return false;
+		if (DwellWord.empty()) return false;
 		// Serarch for VBS reserved words
 		// ToDo: Should be able get some MS help for better descriptions
 		vector<UserData>::iterator i;
@@ -2142,7 +2142,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 		{
 			//Has function list been filled?
 			m_stopErrorDisplay = true;
-			if (m_pageConstructsDict->size() == 0) ParseForFunction();
+			if (m_pageConstructsDict->empty()) ParseForFunction();
 
 			//search subs/funcs
 			if (FindUD(m_pageConstructsDict, DwellWord, i, idx) == 0)
@@ -2392,7 +2392,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 			ud.m_uniqueParent = CurrentParentKey;
 			FindOrInsertUD(ListIn, ud);
 			size_t iCurParent = GetUDPointerfromUniqueKey(ListIn, CurrentParentKey);
-			if (CurrentParentKey.size() != 0 && ud.m_uniqueKey.size() != 0 && iCurParent<ListIn->size())
+			if (!CurrentParentKey.empty() && !ud.m_uniqueKey.empty() && (iCurParent < ListIn->size()))
 			{
 				ListIn->at(iCurParent).m_children.push_back(ud.m_uniqueKey);//add child to parent
 			}
@@ -2413,7 +2413,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 					ud.m_uniqueKey = lowerCase(ud.m_keyName) + CurrentParentKey + "\0";
 					ud.m_uniqueParent = CurrentParentKey;
 					FindOrInsertUD(ListIn, ud);
-					if (CurrentParentKey.size() != 0 && iCurParent<ListIn->size())
+					if (!CurrentParentKey.empty() && (iCurParent < ListIn->size()))
 					{
 						ListIn->at(iCurParent).m_children.push_back(ud.m_uniqueKey);//add child to parent
 					}	
@@ -2454,7 +2454,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 					ud.m_uniqueKey = lowerCase(ud.m_keyName) + CurrentParentKey + "\0";
 					ud.m_uniqueParent = CurrentParentKey;
 					FindOrInsertUD(ListIn, ud);
-					if (CurrentParentKey.size() != 0)
+					if (!CurrentParentKey.empty())
 					{
 						ListIn->at(iCurParent).m_children.push_back(ud.m_uniqueKey);//add child to parent
 					}	
@@ -3523,7 +3523,7 @@ HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool ba
 
    bw.WriteWideString(FID(NAME), m_wzName);
 
-   for (int i = 0; i < m_visel.Size(); ++i)
+   for (int i = 0; i < m_visel.size(); ++i)
    {
       IEditable * const piedit = m_visel.ElementAt(i)->GetIEditable();
       IScriptable * const piscript = piedit->GetScriptable();
@@ -3580,8 +3580,8 @@ bool Collection::LoadToken(const int id, BiffReader * const pbr)
             if (!WideStrCmp(piscript->m_wzName, wzT))
             {
                piscript->GetISelect()->GetIEditable()->m_vCollection.push_back(this);
-               piscript->GetISelect()->GetIEditable()->m_viCollection.push_back(m_visel.Size());
-               m_visel.AddElement(piscript->GetISelect());
+               piscript->GetISelect()->GetIEditable()->m_viCollection.push_back(m_visel.size());
+               m_visel.push_back(piscript->GetISelect());
                return true;
             }
          }
@@ -3594,13 +3594,13 @@ bool Collection::LoadToken(const int id, BiffReader * const pbr)
 
 STDMETHODIMP Collection::get_Count(long __RPC_FAR *plCount)
 {
-   *plCount = m_visel.Size();
+   *plCount = m_visel.size();
    return S_OK;
 }
 
 STDMETHODIMP Collection::get_Item(long index, IDispatch __RPC_FAR * __RPC_FAR *ppidisp)
 {
-   if (index < 0 || index >= m_visel.Size())
+   if (index < 0 || index >= m_visel.size())
       return TYPE_E_OUTOFBOUNDS;
 
    IDispatch * const pdisp = m_visel.ElementAt(index)->GetDispatch();
@@ -3635,11 +3635,11 @@ STDMETHODIMP OMCollectionEnum::Next(ULONG celt, VARIANT __RPC_FAR *rgVar, ULONG 
    const int cwanted = celt;
    int creturned;
 
-   if (m_index + cwanted > m_pcol->m_visel.Size())
+   if (m_index + cwanted > m_pcol->m_visel.size())
    {
       hr = S_FALSE;
-      last = m_pcol->m_visel.Size();
-      creturned = m_pcol->m_visel.Size() - m_index;
+      last = m_pcol->m_visel.size();
+      creturned = m_pcol->m_visel.size() - m_index;
    }
    else
    {
@@ -3669,7 +3669,7 @@ STDMETHODIMP OMCollectionEnum::Next(ULONG celt, VARIANT __RPC_FAR *rgVar, ULONG 
 STDMETHODIMP OMCollectionEnum::Skip(ULONG celt)
 {
    m_index += celt;
-   return (m_index >= m_pcol->m_visel.Size()) ? S_FALSE : S_OK;
+   return (m_index >= m_pcol->m_visel.size()) ? S_FALSE : S_OK;
 }
 
 STDMETHODIMP OMCollectionEnum::Reset()
