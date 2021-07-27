@@ -1,9 +1,10 @@
 #pragma once
 
-template<class T> class VectorProtected  // keeps only -pointers- of elements and does -not- free them afterwards! AND with a critical section
+template<class T> class VectorProtected  // keeps only -pointers- of elements and does -not- free them afterwards! AND with a critical section for some operations (see end of file)
 {
 private:
    std::vector<void*> m_rg; // Data buffer
+   CRITICAL_SECTION m_CriticalSection;
 
 public:
 
@@ -16,47 +17,36 @@ public:
 
    inline int IndexOf(const void * const pvItem) const
    {
-      for (int i = 0; i < (int)m_rg.size(); ++i)
-         if (pvItem == m_rg[i])
-            return i;
-
-      return -1;
+      const auto i = std::find(m_rg.begin(), m_rg.end(), pvItem);
+      if (i != m_rg.end())
+         return i - m_rg.begin();
+      else
+         return -1;
    }
 
    inline void InsertElementAt(void * const pItem, const int iPos)
    {
-      const int cSize = (int)m_rg.size();
-      m_rg.resize(cSize + 1);
-      assert(iPos < (int)m_rg.size());
-
-      if (cSize != iPos)
-         memmove(m_rg.data() + iPos + 1, m_rg.data() + iPos, sizeof(void *) * (cSize - iPos));
-
-      m_rg[iPos] = pItem;
+      assert(iPos <= (int)m_rg.size());
+      if (iPos <= (int)m_rg.size())
+         m_rg.insert(m_rg.begin()+iPos,pItem);
    }
 
-   inline void ReplaceElementAt(void * const pItem, const int iPos)
+   inline void RemoveElementAt(const int iPos)
    {
       assert(iPos < (int)m_rg.size());
       if (iPos < (int)m_rg.size())
-         m_rg[iPos] = pItem;
+         m_rg.erase(m_rg.begin()+iPos);
    }
 
-   inline void RemoveElementAt(const int iItem)
+   inline void RemoveElement(const void * const pvItem)
    {
-      assert(iItem < (int)m_rg.size());
-      if (iItem < (int)m_rg.size())
+      const auto i = std::find(m_rg.begin(), m_rg.end(), pvItem);
+      if (i != m_rg.end())
+         m_rg.erase(i);
+      else
       {
-         memmove(m_rg.data() + iItem, m_rg.data() + iItem + 1, sizeof(void *) * ((int)m_rg.size() - iItem - 1));
-         m_rg.resize(m_rg.size() - 1);
+         assert(!"Element not found");
       }
-   }
-
-   inline void RemoveElement(void * const pvItem)
-   {
-      const int i = IndexOf(pvItem);
-      if (i >= 0)
-         RemoveElementAt(i);
    }
 
    //
@@ -65,21 +55,14 @@ public:
 
     VectorProtected()
     {
-        InitializeCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
+        InitializeCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
     }
-
-    /*VectorProtected(const int reservedSize)
-    {
-        InitializeCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
-
-        m_rg.reserve(reservedSize);
-    }*/
 
     ~VectorProtected()
     {
        unsigned long counter = 0;
        //try to enter the critical section. If it's used by another thread try again up to 1 second
-       while ((TryEnterCriticalSection((LPCRITICAL_SECTION)&hCriticalSection) == 0) && (counter<10))
+       while ((TryEnterCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection) == 0) && (counter < 10))
        {
           Sleep(100);
           counter++;
@@ -88,33 +71,31 @@ public:
        {
            //critical section is now blocked by us leave and delete is
            //if counter=10 don't do anything
-           LeaveCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
-           DeleteCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
+           LeaveCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
+           DeleteCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
        }
     }
 
-    T *ElementAt(const int iItem) const
+    T *ElementAt(const int iPos) const
     {
-        EnterCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
-        T *value = (T *)(m_rg[iItem]);
-        LeaveCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
+        EnterCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
+        T * const value = (T *)(m_rg[iPos]);
+        LeaveCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
         return value;
     }
 
-    T& operator[](const int iItem)
+    T& operator[](const int iPos)
     {
-        EnterCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
-        T &value = *((T *)(m_rg[iItem]));
-        LeaveCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
+        EnterCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
+        T &value = *((T *)(m_rg[iPos]));
+        LeaveCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
         return value;
     }
-    const T& operator[](const int iItem) const
+    const T& operator[](const int iPos) const
     {
-        EnterCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
-        const T &value = *((T *)(m_rg[iItem]));
-        LeaveCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
+        EnterCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
+        const T &value = *((T *)(m_rg[iPos]));
+        LeaveCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
         return value;
     }
-private:
-    CRITICAL_SECTION hCriticalSection;
 };
