@@ -844,10 +844,10 @@ STDMETHODIMP CodeViewer::GetItemInfo(LPCOLESTR pstrName, DWORD dwReturnMask,
 
    CodeViewDispatch *pcvd = m_vcvd.GetSortedElement((void *)pstrName);
 
-   if (pcvd == NULL)
+   if (pcvd == nullptr)
    {
       pcvd = m_vcvdTemp.GetSortedElement((void *)pstrName);
-      if (pcvd == NULL)
+      if (pcvd == nullptr)
          return E_FAIL;
    }
 
@@ -925,16 +925,11 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	std::wstringstream errorStream;
 
 	if (isRuntimeError)
-	{
 		errorStream << L"Runtime error\r\n";
-		errorStream << L"-------------\r\n";
-	}
 	else
-	{
 		errorStream << L"Compile error\r\n";
-		errorStream << L"-------------\r\n";
-	}
 
+	errorStream << L"-------------\r\n";
 	errorStream << L"Line: " << nLine << "\r\n";
 	errorStream << ei.bstrDescription << "\r\n";
 	errorStream << L"\r\n";
@@ -946,11 +941,10 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 
 	g_pvp->EnableWindow(FALSE);
 
-	std::wstring errorStr = errorStream.str();
-	const wchar_t *errorCStr = errorStr.c_str();
+	const std::wstring errorStr = errorStream.str();
 
 	// Show the error in the last error log
-	AppendLastErrorTextW(errorCStr);
+	AppendLastErrorTextW(errorStr);
 	SetLastErrorVisibility(true);
 
 	// Also pop up a dialog if this is a runtime error
@@ -1170,11 +1164,10 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	SysFreeString(ei.bstrDescription);
 	SysFreeString(ei.bstrHelpFile);
 
-	std::wstring errorStr = errorStream.str();
-	const wchar_t *errorCStr = errorStr.c_str();
+	const std::wstring errorStr = errorStream.str();
 
 	// Show the error in the last error log
-	AppendLastErrorTextW(errorCStr);
+	AppendLastErrorTextW(errorStr);
 	SetLastErrorVisibility(true);
 
 	// Also pop up a dialog
@@ -3475,7 +3468,7 @@ void CodeViewer::SetLastErrorVisibility(bool show)
 	::ShowWindow(m_hwndLastErrorTextArea, show ? SW_SHOW : SW_HIDE);
 }
 
-void CodeViewer::SetLastErrorTextW(LPCWSTR text)
+void CodeViewer::SetLastErrorTextW(const LPCWSTR text)
 {
 	::SetWindowTextW(m_hwndLastErrorTextArea, text);
 
@@ -3483,16 +3476,16 @@ void CodeViewer::SetLastErrorTextW(LPCWSTR text)
 	SendMessage(m_hwndLastErrorTextArea, EM_LINESCROLL, 0, 9999);
 }
 
-void CodeViewer::AppendLastErrorTextW(LPCWSTR text)
+void CodeViewer::AppendLastErrorTextW(const std::wstring& text)
 {
-	int requiredLength = ::GetWindowTextLength(m_hwndLastErrorTextArea) + lstrlenW(text) + 1;
+	int requiredLength = ::GetWindowTextLength(m_hwndLastErrorTextArea) + lstrlenW(text.c_str()) + 1;
 	wchar_t* buf = new wchar_t[requiredLength];
 
     // Get existing text from edit control and put into buffer
     ::GetWindowTextW(m_hwndLastErrorTextArea, buf, requiredLength);
 
     // Append the new text to the buffer
-    wcscat_s(buf, requiredLength, text);
+    wcscat_s(buf, requiredLength, text.c_str());
 
 	::SetWindowTextW(m_hwndLastErrorTextArea, buf);
 

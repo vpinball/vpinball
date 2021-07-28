@@ -367,8 +367,8 @@ private:
     * Sets the visibility of the last error information, shown below the Scintilla text editor.
     */
    void SetLastErrorVisibility(bool show);
-   void SetLastErrorTextW(LPCWSTR text);
-   void AppendLastErrorTextW(LPCWSTR text);
+   void SetLastErrorTextW(const LPCWSTR text);
+   void AppendLastErrorTextW(const std::wstring& text);
 
    IActiveScriptParse* m_pScriptParse;
    IActiveScriptDebug* m_pScriptDebug;
