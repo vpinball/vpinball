@@ -4,6 +4,7 @@ on:
 
 env:
   VERSION_START_SHA: 3feea27328663974d4df819d2faa981d881773ad
+  UPX_ARTIFACT: 81481576
 
 defaults:
   run:
@@ -53,7 +54,7 @@ jobs:
           echo "::set-output name=tag::${TAG}"
 
   build:
-    name: Build VPinballX-${{ matrix.platform }}
+    name: Build VPinballX-${{ matrix.config }}-${{ matrix.platform }}
     runs-on: windows-latest
     needs: [ dxsdk, version ]
     strategy:
@@ -65,21 +66,31 @@ jobs:
             bass: x64/Bass64.dll
             free-image: x64/FreeImage64.dll
             sci-lexer-vp: x64/SciLexerVP64.dll
+            config: Release
+          - platform: win-x64
+            platform-name: x64
+            bass: x64/Bass64.dll
+            free-image: x64/FreeImage64.dll
+            sci-lexer-vp: x64/SciLexerVP64.dll
+            config: Debug
           - platform: win-x86
             platform-name: Win32
             bass: Bass.dll
             free-image: FreeImage.dll
             sci-lexer-vp: SciLexerVP.dll
+            config: Release
+          - platform: win-x86
+            platform-name: Win32
+            bass: Bass.dll
+            free-image: FreeImage.dll
+            sci-lexer-vp: SciLexerVP.dll
+            config: Debug
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
           path: DXSDK
           key: cache-dxsdk
-      - run: |
-          curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/60879541/zip -o upx.zip
-          7z x upx.zip -oupx
-          rm upx.zip
       - run: |
           sed -i "s/0/${{ needs.version.outputs.revision }}/g" git_version.h
           sed -i "s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
@@ -88,11 +99,17 @@ jobs:
           export DXSDK_DIR="${GITHUB_WORKSPACE}/DXSDK"
           cp cmake/CMakeLists_${{ matrix.platform}}.txt CMakeLists.txt
           cmake -G "Visual Studio 16 2019" -A ${{ matrix.platform-name }} -B build
-          cmake --build build --config Release
-          ./upx/upx.exe --best --lzma build/Release/VPinballX.exe
+          cmake --build build --config ${{ matrix.config }}
+      - name: Compress 
+        if: matrix.config == 'Release'
+        run: |
+          curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/${{ env.UPX_ARTIFACT }}/zip -o upx.zip
+          7z x upx.zip -oupx
+          rm upx.zip
+          ./upx/upx.exe --best --lzma build/${{ matrix.config }}/VPinballX.exe
       - run: |
           mkdir tmp 
-          cp build/Release/VPinballX.exe tmp
+          cp build/${{ matrix.config }}/VPinballX.* tmp
           cp dll/${{ matrix.bass }} tmp
           cp dll/${{ matrix.free-image }} tmp
           cp dll/${{ matrix.sci-lexer-vp }} tmp
@@ -116,5 +133,5 @@ jobs:
           cp -r tables tmp
       - uses: actions/upload-artifact@v2
         with:
-          name: VPinballX-${{ needs.version.outputs.tag }}-${{ matrix.platform }}
+          name: VPinballX-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
           path: tmp
