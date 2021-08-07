@@ -887,13 +887,13 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	pscripterror->GetSourcePosition(&dwCookie, &nLine, &nChar);
 	BSTR bstr = 0;
 	pscripterror->GetSourceLineText(&bstr);
-	EXCEPINFO ei;
-	ZeroMemory(&ei, sizeof(ei));
-	pscripterror->GetExceptionInfo(&ei);
+	EXCEPINFO exception;
+	ZeroMemory(&exception, sizeof(exception));
+	pscripterror->GetExceptionInfo(&exception);
 	nLine++;
 	if (dwCookie == CONTEXTCOOKIE_DEBUG)
 	{
-		char* szT = MakeChar(ei.bstrDescription);
+		char* szT = MakeChar(exception.bstrDescription);
 		AddToDebugOutput(szT);
 		delete[] szT;
 		SysFreeString(bstr);
@@ -931,13 +931,13 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 
 	errorStream << L"-------------\r\n";
 	errorStream << L"Line: " << nLine << "\r\n";
-	errorStream << ei.bstrDescription << "\r\n";
+	errorStream << (exception.bstrDescription ? exception.bstrDescription : L"Description unavailable") << "\r\n";
 	errorStream << L"\r\n";
 
 	SysFreeString(bstr);
-	SysFreeString(ei.bstrSource);
-	SysFreeString(ei.bstrDescription);
-	SysFreeString(ei.bstrHelpFile);
+	SysFreeString(exception.bstrSource);
+	SysFreeString(exception.bstrDescription);
+	SysFreeString(exception.bstrHelpFile);
 
 	g_pvp->EnableWindow(FALSE);
 
@@ -1051,13 +1051,13 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	pscripterror->GetSourcePosition(&dwCookie, &nLine, &nChar);
 	BSTR bstr = 0;
 	pscripterror->GetSourceLineText(&bstr);
-	EXCEPINFO ei;
-	ZeroMemory(&ei, sizeof(ei));
-	pscripterror->GetExceptionInfo(&ei);
+	EXCEPINFO exception;
+	ZeroMemory(&exception, sizeof(exception));
+	pscripterror->GetExceptionInfo(&exception);
 	nLine++;
 	if (dwCookie == CONTEXTCOOKIE_DEBUG)
 	{
-		char* szT = MakeChar(ei.bstrDescription);
+		char* szT = MakeChar(exception.bstrDescription);
 		AddToDebugOutput(szT);
 		delete[] szT;
 		SysFreeString(bstr);
@@ -1085,7 +1085,7 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	errorStream << L"Runtime error\r\n";
 	errorStream << L"-------------\r\n";
 	errorStream << L"Line: " << nLine << "\r\n";
-	errorStream << ei.bstrDescription << "\r\n";
+	errorStream << (exception.bstrDescription ? exception.bstrDescription : L"Description unavailable") << "\r\n";
 
 	// Get stack trace
 	IDebugStackFrame* errStackFrame;
@@ -1160,9 +1160,9 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	errorStream << L"\r\n";
 
 	SysFreeString(bstr);
-	SysFreeString(ei.bstrSource);
-	SysFreeString(ei.bstrDescription);
-	SysFreeString(ei.bstrHelpFile);
+	SysFreeString(exception.bstrSource);
+	SysFreeString(exception.bstrDescription);
+	SysFreeString(exception.bstrHelpFile);
 
 	const std::wstring errorStr = errorStream.str();
 
