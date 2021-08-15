@@ -111,7 +111,7 @@ public:
 
    void MainMsgLoop();
 
-   bool CloseTable(PinTable * const ppt);
+   void CloseTable(PinTable * const ppt);
 
    void ToggleToolbar();
    void SetEnableMenuItems();

@@ -557,9 +557,10 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
        /* close all dialogs if the table is changed to prevent further issues */
        CloseAllDialogs();
 
+       const CMenu mainMenu = GetMenu();
        // mark selected table as checked, all others as unchecked
        for(unsigned int i = OPEN_MDI_TABLE_IDM; i <= LAST_MDI_TABLE_IDM; ++i)
-          GetMenu().CheckMenuItem(i, MF_BYCOMMAND | ((i==code) ? MF_CHECKED : MF_UNCHECKED));
+           mainMenu.CheckMenuItem(i, MF_BYCOMMAND | ((i==code) ? MF_CHECKED : MF_UNCHECKED));
    }
 
    switch (code)
@@ -581,8 +582,8 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
        case ID_TABLE_CAMERAMODE:
        case ID_TABLE_PLAY:
        {
-           DoPlay(code == ID_TABLE_CAMERAMODE);
-           return true;
+          DoPlay(code == ID_TABLE_CAMERAMODE);
+          return true;
        }
        case ID_SCRIPT_SHOWIDE:
        case ID_EDIT_SCRIPT:
@@ -692,6 +693,7 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
            return true;
        }
        case IDM_CLOSE:
+       case SC_CLOSE:
        {
           CComObject<PinTable> * const ptCur = GetActiveTable();
           if (ptCur)
@@ -765,14 +767,14 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
        }
        case ID_EDIT_EDITOROPTIONS:
        {
-          m_editorOptDialog.DoModal(GetHwnd());
-          // refresh editor options from the registry
-          InitRegValues();
-          // force a screen refresh (it an active table is loaded)
-          CComObject<PinTable> * const ptCur = GetActiveTable();
-          if (ptCur)
-             ptCur->SetDirtyDraw();
-          return true;
+           m_editorOptDialog.DoModal(GetHwnd());
+           // refresh editor options from the registry
+           InitRegValues();
+           // force a screen refresh (it an active table is loaded)
+           CComObject<PinTable> * const ptCur = GetActiveTable();
+           if (ptCur)
+              ptCur->SetDirtyDraw();
+           return true;
        }
        case ID_EDIT_VIDEOOPTIONS:
        {
@@ -783,7 +785,7 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
        {
            CComObject<PinTable> * const ptCur = GetActiveTable();
            if (ptCur)
-               m_tableInfoDialog.DoModal(GetHwnd());
+              m_tableInfoDialog.DoModal(GetHwnd());
            return true;
        }
        case IDM_IMAGE_EDITOR:
@@ -812,11 +814,11 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
        }
        case ID_TABLE_NOTES:
        {
-          if (GetNotesDocker() == nullptr || !GetNotesDocker()->IsWindow())
-             GetDefaultNotesDocker();
-          else
-             GetNotesDocker()->ShowWindow();
-          return true;
+           if (GetNotesDocker() == nullptr || !GetNotesDocker()->IsWindow())
+              GetDefaultNotesDocker();
+           else
+              GetNotesDocker()->ShowWindow();
+           return true;
        }
        case ID_TABLE_FONTMANAGER:
        {
@@ -946,8 +948,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
    CloseAllDialogs();
 
    PinTableMDI * const mdiTable = new PinTableMDI(this);
-   CComObject<PinTable> *ppt = mdiTable->GetTable();
-   m_vtable.push_back(ppt);
+   CComObject<PinTable> * const ppt = mdiTable->GetTable();
    const HRESULT hr = ppt->LoadGameFromFilename(szFileName);
 
    if (!SUCCEEDED(hr))
@@ -962,6 +963,8 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
    }
    else
    {
+      m_vtable.push_back(ppt);
+
       TitleFromFilename(szFileName, ppt->m_szTitle);
       ppt->InitTablePostLoad();
 
@@ -1047,7 +1050,7 @@ bool VPinball::CanClose()
    return true;
 }
 
-bool VPinball::CloseTable(PinTable * const ppt)
+void VPinball::CloseTable(PinTable * const ppt)
 {
    m_unloadingTable = true;
    ppt->GetMDITable()->SendMessage(WM_SYSCOMMAND, SC_CLOSE, 0);
@@ -1062,7 +1065,6 @@ bool VPinball::CloseTable(PinTable * const ppt)
        if (m_notesDialog && m_notesDialog->IsWindow())
           m_notesDialog->Disable();
    }
-   return true;
 }
 
 void VPinball::SetEnableMenuItems()
@@ -1658,7 +1660,7 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT VPinball::OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam)
 {
-   if(m_dockLayers!=nullptr)
+   if (m_dockLayers!=nullptr)
       m_dockLayers->GetContainLayers()->GetLayersDialog()->UpdateLayerList();
    if (m_dockNotes != nullptr)
       m_dockNotes->Refresh();

@@ -10062,8 +10062,7 @@ PinTableMDI::PinTableMDI(VPinball *vpinball)
     SetView(*m_table);
 
     //m_menu.LoadMenu(IDR_APPMENU);
-    m_menu = vpinball->GetMenu();
-    SetHandles(m_menu, NULL);
+    SetHandles(m_vpinball->GetMenu(), NULL);
 }
 
 PinTableMDI::~PinTableMDI()
@@ -10073,7 +10072,7 @@ PinTableMDI::~PinTableMDI()
     if (m_table != nullptr)
     {
         if (m_table->m_searchSelectDlg.IsWindow())
-            m_table->m_searchSelectDlg.Destroy();
+           m_table->m_searchSelectDlg.Destroy();
 
         m_table->FVerifySaveToClose();
 

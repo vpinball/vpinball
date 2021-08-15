@@ -59,7 +59,6 @@ protected:
 private:
     CComObject<PinTable> *m_table;
     VPinball             *m_vpinball;
-    CMenu                 m_menu;
 };
 
 class ProgressDialog : public CDialog
