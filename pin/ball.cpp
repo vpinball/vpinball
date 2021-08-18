@@ -63,9 +63,8 @@ void Ball::Init(const float mass)
    m_dynamic = C_DYNAMIC; // assume dynamic
 #endif
 
-   m_pballex = NULL;
-
-   m_d.m_vpVolObjs = new vector<IFireEvents*>;
+   if(!m_d.m_vpVolObjs)
+       m_d.m_vpVolObjs = new vector<IFireEvents*>;
 
    m_color = RGB(255, 255, 255);
 
