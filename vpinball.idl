@@ -1404,6 +1404,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propget, id(DISPID_Light_State), helpstring("property State")] HRESULT State([out, retval] LightState *pVal);
                 [propput, id(DISPID_Light_State), helpstring("property State")] HRESULT State([in] LightState newVal);
                 [id(595), helpstring("method GetInPlayState")] HRESULT GetInPlayState([out, retval] LightState* pVal);
+                [id(596), helpstring("method GetInPlayStateBool")] HRESULT GetInPlayStateBool([out, retval] VARIANT_BOOL* pVal);
                 [propget, id(3), helpstring("property Color")] HRESULT Color([out, retval] OLE_COLOR *pVal);
                 [propput, id(3), helpstring("property Color")] HRESULT Color([in] OLE_COLOR newVal);
                 [propget, id(457), helpstring("property ColorFull")] HRESULT ColorFull([out, retval] OLE_COLOR *pVal);

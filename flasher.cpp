@@ -941,7 +941,7 @@ STDMETHODIMP Flasher::put_Amount(long newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flasher::get_Visible(VARIANT_BOOL *pVal) //temporary value of object
+STDMETHODIMP Flasher::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_isVisible);
 
@@ -954,7 +954,7 @@ STDMETHODIMP Flasher::put_Visible(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flasher::get_DisplayTexture(VARIANT_BOOL *pVal) //temporary value of object
+STDMETHODIMP Flasher::get_DisplayTexture(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_displayTexture);
 
@@ -967,7 +967,7 @@ STDMETHODIMP Flasher::put_DisplayTexture(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flasher::get_AddBlend(VARIANT_BOOL *pVal) //temporary value of object
+STDMETHODIMP Flasher::get_AddBlend(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_addBlend);
 
@@ -980,7 +980,7 @@ STDMETHODIMP Flasher::put_AddBlend(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flasher::get_DMD(VARIANT_BOOL *pVal) //temporary value of object
+STDMETHODIMP Flasher::get_DMD(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_isDMD);
 

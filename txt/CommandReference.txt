@@ -9,7 +9,7 @@ As for coding light sequences for original tables, please check this helper app:
 
 Changelog:
 10.7:
-- add GetInPlayState to the light element
+- add GetInPlayState,GetInPlayStateBool to the light element
 - add VideoCapWidth,VideoCapHeight,VideoCapUpdate to the flasher element
 - document missing x,y,z to the target element
 - add GetMaterial to the globals (counterpart to UpdateMaterial)
@@ -538,8 +538,9 @@ Variables
 *Shape(Shape) - 0=Circle, 1=Custom
 Falloff(float)
 FalloffPower(float)
-State(LightState) - 0=Off, 1=On, 2=Blinking, if Light Sequencer is running, returns the 'original' state
-*GetInPlayState(LightState) - if Light Sequencer is running, returns the current state set by the Light Sequencer
+State(LightState) - 0=Off, 1=On, 2=Blinking. Note that if Light Sequencer is running, still returns the 'normal' state
+*GetInPlayState(LightState) - 0=Off, 1=On, 2=Blinking. Note that if Light Sequencer is running, returns the current state set by the Light Sequencer, otherwise the 'normal' state
+*GetInPlayStateBool(bool) - 0=Off, 1=On. Note that if Light Sequencer is running, returns the current state set by the Light Sequencer, otherwise the 'normal' state. 2=Blinking is mapped to the current state the light is actually in (0 or 1)
 Color(OLE_COLOR) - 'normal' color
 ColorFull(OLE_COLOR) - full brightness color
 Intensity(float) - sets the lights brightness/emission

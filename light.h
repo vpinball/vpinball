@@ -129,6 +129,7 @@ public:
    void InitShape();
    void setInPlayState(const LightState newVal);
    STDMETHOD(GetInPlayState)(/*[out, retval]*/ LightState* pVal);
+   STDMETHOD(GetInPlayStateBool)(/*[out, retval]*/ VARIANT_BOOL* pVal);
    void setLightState(const LightState newVal);
    LightState getLightState() const;
    void RenderBulbMesh();

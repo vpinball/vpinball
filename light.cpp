@@ -1548,6 +1548,14 @@ STDMETHODIMP Light::GetInPlayState(LightState* pVal)
     return S_OK;
 }
 
+STDMETHODIMP Light::GetInPlayStateBool(VARIANT_BOOL* pVal)
+{
+    const bool isOn = (m_inPlayState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_inPlayState != LightStateOff);
+
+    *pVal = FTOVB(isOn);
+    return S_OK;
+}
+
 void Light::setLightState(const LightState newVal)
 {
    if (!m_lockedByLS)
@@ -1561,7 +1569,7 @@ LightState Light::getLightState() const
    return m_d.m_state;
 }
 
-STDMETHODIMP Light::get_Visible(VARIANT_BOOL *pVal) //temporary value of object
+STDMETHODIMP Light::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_visible);
 
