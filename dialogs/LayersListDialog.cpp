@@ -363,7 +363,7 @@ LayerTreeView::LayerTreeView()
    m_accel = LoadAccelerators(g_pvp->theInstance, MAKEINTRESOURCE(IDR_VPSIMPELACCEL));
 }
 
-HTREEITEM LayerTreeView::AddItem(HTREEITEM hParent, LPCTSTR text, IEditable * const pedit, int image)
+HTREEITEM LayerTreeView::AddItem(const HTREEITEM hParent, const HTREEITEM insertAfterItem, LPCTSTR text, IEditable * const pedit, int image)
 {
     TVITEM tvi;
     ZeroMemory(&tvi, sizeof(TVITEM));
@@ -376,6 +376,7 @@ HTREEITEM LayerTreeView::AddItem(HTREEITEM hParent, LPCTSTR text, IEditable * co
     TVINSERTSTRUCT tvis;
     ZeroMemory(&tvis, sizeof(TVINSERTSTRUCT));
     tvis.hParent = hParent;
+    tvis.hInsertAfter = insertAfterItem;
     tvis.item = tvi;
 
     HTREEITEM item = InsertItem(tvis);
@@ -384,13 +385,13 @@ HTREEITEM LayerTreeView::AddItem(HTREEITEM hParent, LPCTSTR text, IEditable * co
 
 bool LayerTreeView::AddLayer(const string& name)
 {
-    hCurrentLayerItem = AddItem(hRootItem, name.c_str(), NULL, 1);
+    hCurrentLayerItem = AddItem(hRootItem, nullptr, name.c_str(), NULL, 1);
     return hCurrentLayerItem != NULL;
 }
 
 bool LayerTreeView::AddElement(const string& name, IEditable * const pedit)
 {
-    return AddElementToLayer(hCurrentLayerItem, name, pedit);
+    return AddElementToLayer(hCurrentLayerItem, nullptr, name, pedit);
 }
 
 bool LayerTreeView::ContainsLayer(const string& name) const
@@ -498,6 +499,40 @@ HTREEITEM LayerTreeView::GetItemByElement(const IEditable* const pedit)
         }
     }
     return NULL;
+}
+
+IEditable* LayerTreeView::GetElementByItem(HTREEITEM hChildItem)
+{
+	std::vector<HTREEITEM> children;
+	HTREEITEM item = GetChild(hRootItem);
+	while (item)
+	{
+		children.push_back(item);
+		item = GetNextItem(item, TVGN_NEXT);
+	}
+	for (HTREEITEM child : children)
+	{
+		HTREEITEM subItem = GetChild(child);
+		while (subItem)
+		{
+            if(subItem == hChildItem)
+			{
+				char text[MAX_PATH];
+				TVITEM tvItem;
+				ZeroMemory(&tvItem, sizeof(tvItem));
+				tvItem.mask = TVIF_PARAM | TVIF_TEXT;
+				tvItem.cchTextMax = MAX_PATH;
+				tvItem.pszText = text;
+				tvItem.hItem = subItem;
+				if (GetItem(tvItem))
+				{
+                    return (IEditable*)tvItem.lParam;
+				}
+			}
+			subItem = GetNextItem(subItem, TVGN_NEXT);
+		}
+	}
+	return NULL;
 }
 
 int LayerTreeView::GetItemCount() const
@@ -610,7 +645,7 @@ void LayerTreeView::SetAllItemStates(const bool checked)
 void LayerTreeView::DeleteAll()
 {
     DeleteAllItems();
-    hRootItem = AddItem(NULL, _T("Layers"), NULL, 0);
+    hRootItem = AddItem(nullptr, nullptr, _T("Layers"), NULL, 0);
     TreeView_SetCheckState(GetHwnd(), hRootItem, 1);
 }
 
@@ -694,7 +729,7 @@ void LayerTreeView::OnAttach()
     SetStyle(style);
 
     DeleteAllItems();
-    hRootItem = AddItem(NULL, _T("Layers"), NULL, 0);
+    hRootItem = AddItem(nullptr, nullptr, _T("Layers"), NULL, 0);
     Expand(hRootItem, TVE_EXPAND);
 }
 
@@ -748,7 +783,7 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
                 hSelectedDrop = GetDropHiLightItem();
                 SelectItem(hSelectedDrop);
                 SelectDropTarget(NULL);
-
+                const int itemCount = GetSubItemsCount(hSelectedDrop);
                 for(auto dragItem : m_DragItems)
                 {
                     TVITEM tvItem;
@@ -766,9 +801,10 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
                                psel->m_layerName = GetLayerName(hLayerItem);
                             HTREEITEM oldItem = GetItemByElement(pedit);
                             DeleteItem(oldItem);
-                            AddElementToLayer(hLayerItem, pedit->GetName(), pedit);
-                            std::vector<HTREEITEM> subItem = GetSubItems(dragItem->m_hDragLayer);
-                            if (subItem.empty())
+                            AddElementToLayer(hLayerItem, hSelectedDrop, pedit->GetName(), pedit);
+
+                            std::vector<HTREEITEM> subItems = GetSubItems(dragItem->m_hDragLayer);
+                            if (subItems.empty())
                             {
                                if (dragItem->m_hDragLayer == hCurrentLayerItem)
                                   hCurrentLayerItem = hLayerItem;
@@ -776,6 +812,20 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
                                DeleteItem(dragItem->m_hDragLayer);
                            }
                         }
+                        else // it's a layer
+                        {
+							std::vector<HTREEITEM> subItems = GetSubItems(dragItem->m_hDragLayer);
+                            HTREEITEM targetLayer = AddItem(hRootItem, hSelectedDrop, GetLayerName(dragItem->m_hDragLayer).c_str(), nullptr, 1);
+                            for (auto& item : subItems)
+                            {
+                                IEditable* const pedit = GetElementByItem(item);
+								HTREEITEM oldItem = GetItemByElement(pedit);
+								DeleteItem(oldItem);
+                                AddElementToLayer(targetLayer, item, pedit->GetName(), pedit);
+                            }
+                            DeleteItem(dragItem->m_hDragLayer);
+                        }
+
                     }
                 }
                 m_DragItems.clear();
@@ -1001,9 +1051,9 @@ LRESULT LayerTreeView::OnTVNSelChanged(LPNMTREEVIEW pNMTV)
     return 0;
 }
 
-bool LayerTreeView::AddElementToLayer(const HTREEITEM hLayerItem, const string& name, IEditable* const pedit)
+bool LayerTreeView::AddElementToLayer(const HTREEITEM hLayerItem, const HTREEITEM insertAfterItem, const string& name, IEditable* const pedit)
 {
-    hCurrentElementItem = AddItem(hLayerItem, name.c_str(), pedit, 2);
+    hCurrentElementItem = AddItem(hLayerItem, insertAfterItem, name.c_str(), pedit, 2);
     ISelect* const psel = pedit->GetISelect();
     if(psel!=nullptr)
     {

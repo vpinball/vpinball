@@ -8,7 +8,7 @@ class LayerTreeView : public CTreeView
 public:
    LayerTreeView();
    ~LayerTreeView() { }
-   virtual HTREEITEM       AddItem(HTREEITEM hParent, LPCTSTR text, IEditable* const pedit, int image);
+   virtual HTREEITEM       AddItem(const HTREEITEM hParent, const HTREEITEM insertAfterItem, LPCTSTR text, IEditable* const pedit, int image);
    bool                    AddLayer(const string& name);
    bool                    AddElement(const string& name, IEditable* const pedit);
    bool                    ContainsLayer(const string& name) const;
@@ -16,6 +16,7 @@ public:
    HTREEITEM               GetLayerByElement(const IEditable* const pedit);
    HTREEITEM               GetLayerByItem(HTREEITEM hChildItem);
    HTREEITEM               GetItemByElement(const IEditable* const pedit);
+   IEditable*              GetElementByItem(HTREEITEM hChildItem);
    int                     GetItemCount() const;
    int                     GetLayerCount() const;
    std::vector<HTREEITEM>  GetSubItems(HTREEITEM hParent);
@@ -45,7 +46,7 @@ protected:
    virtual LRESULT OnTVNSelChanged(LPNMTREEVIEW pNMTV);
 
 private:
-   bool AddElementToLayer(const HTREEITEM hLayerItem, const string& name, IEditable* const pedit);
+   bool AddElementToLayer(const HTREEITEM hLayerItem, const HTREEITEM insertAfterItem, const string& name, IEditable* const pedit);
 
    HTREEITEM   hRootItem;
    HTREEITEM   hCurrentLayerItem;
