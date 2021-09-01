@@ -20,25 +20,25 @@ LRESULT LayersListDialog::OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam
     return FinalWindowProc(msg, wparam, lparam);
 }
 
-bool LayersListDialog::AddLayer(const string &name, IEditable *piedit) 
+bool LayersListDialog::AddLayer(const string &name, IEditable *piedit, HTREEITEM parent) 
 {
     bool success = false;
 
     if (m_layerTreeView.GetItemCount() == 0)
     {
-        success = m_layerTreeView.AddLayer(name);
+        success = m_layerTreeView.AddLayer(name, parent);
     }
     else
     {
         if (!m_layerTreeView.ContainsLayer(name))
         {
-            success = m_layerTreeView.AddLayer(name);
+            success = m_layerTreeView.AddLayer(name, parent);
         }
         else
             m_layerTreeView.SetActiveLayer(name);
     }
     if (piedit != nullptr)
-        success = m_layerTreeView.AddElement(piedit->GetName(), piedit);
+        success = m_layerTreeView.AddElement(piedit->GetName(), piedit, parent);
 
     if (success)
         m_layerTreeView.InvalidateRect();
@@ -111,28 +111,42 @@ void LayersListDialog::UpdateLayerList(const std::string& name)
     std::string sName = name;
     if(checkName) //transform the name to lower
         std::transform(sName.begin(), sName.end(), sName.begin(), tolower);
-
-    for (size_t t = 0; t < m_activeTable->m_vedit.size(); t++)
+    m_layerTreeView.EnableFiltering(checkName);
+    std::string layerName;
+    HTREEITEM prevItem = nullptr;
+    for (const auto& layout : m_activeTable->m_layerLayoutList)
     {
-        ISelect *const psel = m_activeTable->m_vedit[t]->GetISelect();
-        if(psel!=nullptr)
+        if (layout.isLayer)
         {
-           if (!checkName)
-              AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
-           else if(!GetCaseSensitiveFilter())
-           {    
-               //filter obj name and filter to lower
-               std::string objName = std::string(m_activeTable->m_vedit[t]->GetName());
-               std::transform(objName.begin(), objName.end(), objName.begin(), tolower);
-               if (std::string(objName).find(sName) != std::string::npos)
-                   AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
-           }
-           else
-           {
-               //filter std
-               if (std::string(m_activeTable->m_vedit[t]->GetName()).find(name) != std::string::npos)
-                   AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
-           }
+            layerName = layout.name;
+        }
+        else
+        {
+            for (IEditable* const piedit : m_activeTable->m_vedit)
+            {
+                ISelect* psel = piedit->GetISelect();
+                if (psel->m_layerName == layerName && layout.name == std::string(piedit->GetName()))
+                {
+                    if (!checkName)
+                        AddLayer(layerName, piedit, prevItem);
+                    else if (!GetCaseSensitiveFilter())
+                    {
+                        //filter obj name and filter to lower
+                        std::string objName = std::string(piedit->GetName());
+                        std::transform(objName.begin(), objName.end(), objName.begin(), tolower);
+                        if (std::string(objName).find(sName) != std::string::npos)
+                            AddLayer(layerName, piedit, prevItem);
+                    }
+                    else
+                    {
+                        //filter std
+                        if (std::string(piedit->GetName()).find(name) != std::string::npos)
+                            AddLayer(layerName, piedit, prevItem);
+                    }
+                    prevItem = m_layerTreeView.GetCurrentElementItem();
+                }
+            }
+
         }
     }
     if (!name.empty())
@@ -338,6 +352,7 @@ bool LayersListDialog::PreTranslateMessage(MSG* msg)
    return !!IsDialogMessage(*msg);
 }
 
+
 CContainLayers::CContainLayers()
 {
     SetView(m_layersDialog);
@@ -383,15 +398,15 @@ HTREEITEM LayerTreeView::AddItem(const HTREEITEM hParent, const HTREEITEM insert
     return item;
 }
 
-bool LayerTreeView::AddLayer(const string& name)
+bool LayerTreeView::AddLayer(const string& name, HTREEITEM parent)
 {
-    hCurrentLayerItem = AddItem(hRootItem, nullptr, name.c_str(), NULL, 1);
+    hCurrentLayerItem = AddItem(hRootItem, parent, name.c_str(), NULL, 1);
     return hCurrentLayerItem != NULL;
 }
 
-bool LayerTreeView::AddElement(const string& name, IEditable * const pedit)
+bool LayerTreeView::AddElement(const string& name, IEditable * const pedit, HTREEITEM parent)
 {
-    return AddElementToLayer(hCurrentLayerItem, nullptr, name, pedit);
+    return AddElementToLayer(hCurrentLayerItem, parent, name, pedit);
 }
 
 bool LayerTreeView::ContainsLayer(const string& name) const
@@ -697,6 +712,90 @@ void LayerTreeView::SetActiveLayer(const string& name)
     }
 }
 
+
+void LayerTreeView::UpdateLayerLayout()
+{
+    std::string layerName;
+    HTREEITEM prevChildItem = nullptr;
+    HTREEITEM layerItem = nullptr;
+    for (const auto& item : m_activeTable->m_layerLayoutList)
+    {
+        if (item.isLayer)
+        {
+            layerName = item.name;
+            layerItem = AddItem(nullptr, TVI_ROOT, item.name.c_str(), nullptr, 1);
+        }
+        else
+        {
+            for (IEditable* const piedit : m_activeTable->m_vedit)
+            {
+                ISelect* pisel = piedit->GetISelect();
+                if (pisel->m_layerName == layerName && item.name == std::string(piedit->GetName()))
+                    prevChildItem = AddItem(layerItem, prevChildItem, item.name.c_str(), piedit, 2);
+            }
+        }
+    }
+}
+
+std::string LayerTreeView::GetItemName(HTREEITEM hItem)
+{
+    char text[MAX_PATH];
+    std::vector<HTREEITEM> children;
+    HTREEITEM item = GetChild(hRootItem);
+    while (item)
+    {
+        if(item==hItem)
+        { 
+            CString itemName = GetItemText(item);
+            return std::string(itemName.c_str());
+        }
+        
+        children.push_back(item);
+        item = GetNextItem(item, TVGN_NEXT);
+    }
+    for (HTREEITEM child : children)
+    {
+        HTREEITEM subItem = GetChild(child);
+        while (subItem)
+        {
+            if (subItem == hItem)
+            {
+                CString itemName = GetItemText(item);
+                return std::string(itemName.c_str());
+            }
+            subItem = GetNextItem(subItem, TVGN_NEXT);
+        }
+    }
+    return std::string();
+}
+
+std::vector<LayerTreeView::LayerLayout> LayerTreeView::GetLayerLayout()
+{
+    std::vector<LayerLayout> layoutList;
+    HTREEITEM item = GetChild(hRootItem);
+    LayerLayout lay;
+    
+    if (m_filteringActive)
+        return layoutList;
+
+    while (item)
+    {
+        lay.isLayer = true;
+        lay.name = std::string(GetItemText(item).c_str());
+        layoutList.push_back(lay);
+        HTREEITEM subItem = GetChild(item);
+        while (subItem)
+        {
+            lay.isLayer = false;
+            lay.name = std::string(GetItemText(subItem).c_str());
+            layoutList.push_back(lay);
+            subItem = GetNextItem(subItem, TVGN_NEXT);
+        }
+        item = GetNextItem(item, TVGN_NEXT);
+    }
+    return layoutList;
+}
+
 bool LayerTreeView::PreTranslateMessage(MSG* msg)
 {
    if (!IsWindow())
@@ -832,6 +931,7 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
                 ReleaseCapture();
                 ShowCursor(TRUE);
                 m_dragging = false;
+                m_activeTable->m_layerLayoutList = GetLayerLayout();
             }
             break;
         }
@@ -851,6 +951,8 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
     {
         case TVN_BEGINDRAG:
         {
+            if (m_filteringActive)
+                return FALSE;
             HIMAGELIST hImg;
             LPNMTREEVIEW lpnmtv = (LPNMTREEVIEW)lparam;
             hImg = TreeView_CreateDragImage(GetHwnd(), lpnmtv->itemNew.hItem);

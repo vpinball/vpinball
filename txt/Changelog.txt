@@ -11,6 +11,7 @@ FEATURES:
    o with a slow double-click on a layer or element let you rename it
    o toolbar, properties and layers are now dockable windows without the need to restart VP
    o add context menu item to assign selected elements to the current selected layer.
+   o support to sort elements and complete layers by drag&drop. drag&drop only works if no filtering is applied.
 
 - when exporting/importing a POV file, the custom user settings per table are now also exported/imported
 - when importing a primitive mesh, there is now a new option that prevents internal reordering/optimization of the data
