@@ -6029,6 +6029,7 @@ HRESULT PinTable::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versio
 {
    SetDefaults(false);
 
+   m_layerLayoutList.clear();
    int csubobj, csounds, ctextures, cfonts, ccollection;
    LoadData(pstm, csubobj, csounds, ctextures, cfonts, ccollection, version, hcrypthash, hcryptkey);
 
