@@ -1,0 +1,16 @@
+# Format Style Options - Created with Clang Power Tools
+---
+BasedOnStyle: WebKit
+AccessModifierOffset: -3
+AllowShortCaseLabelsOnASingleLine: true
+BreakBeforeBraces: Allman
+ColumnLimit: 190
+ConstructorInitializerIndentWidth : 3
+ContinuationIndentWidth: 3
+DerivePointerAlignment: true
+IndentWidth: 3
+MaxEmptyLinesToKeep: 2
+ReflowComments: false
+SortIncludes: false
+TabWidth: 3
+...
