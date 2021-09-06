@@ -3160,18 +3160,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
       }
       bw.WriteStruct(FID(PHMA), phymats.data(), (int)(sizeof(SavePhysicsMaterial)*m_materials.size()));
    }
-   bw.WriteInt(FID(LAYI), (int)m_layerLayoutList.size());
-
-   std::vector<LayerTreeView::SaveLayerLayout> saveLayerList;
-   for (const auto& item : m_layerLayoutList)
-   {
-       LayerTreeView::SaveLayerLayout saveItem;
-       saveItem.isLayer = item.isLayer;
-       strncpy_s(saveItem.name, item.name.c_str(), MAXNAMEBUFFER - 1);
-       saveLayerList.push_back(saveItem);
-   }
-   bw.WriteStruct(FID(LAYL), saveLayerList.data(), (int)(sizeof(LayerTreeView::SaveLayerLayout) * saveLayerList.size()));
-
    // HACK!!!! - Don't save special values when copying for undo.  For instance, don't reset the code.
    // Someday save these values into there own stream, used only when saving to file.
 
@@ -3560,36 +3548,29 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
    m_vpinball->GetLayersListDialog()->ClearList();
    // copy all elements into their layers
-   m_vpinball->GetLayersListDialog()->SetActiveTable(this);
-   if(m_layerLayoutList.empty())
+   for (int i = 0; i < MAX_LAYERS; i++)
    {
-       for (int i = 0; i < MAX_LAYERS; i++)
-       {
-           m_layer[i].clear();
+      m_layer[i].clear();
 
-           for (size_t t = 0; t < m_vedit.size(); t++)
-           {
-               IEditable* const piedit = m_vedit[t];
-               ISelect* const psel = piedit->GetISelect();
-               if (psel->m_oldLayerIndex == i)
-               {
-                   m_layer[i].push_back(piedit);
-                   if (psel->m_layerName == "")
-                   {
-                       const string name = "Layer_" + std::to_string(i + 1);
-                       psel->m_layerName = name;
-                       m_vpinball->GetLayersListDialog()->AddLayer(name, piedit);
-                   }
-                   else
-                       m_vpinball->GetLayersListDialog()->AddLayer(psel->m_layerName, piedit);
-               }
-           }
-       }
-       m_layerLayoutList = m_vpinball->GetLayersListDialog()->GetLayerTreeView().GetLayerLayout();
-   }
-   else
-   {
-       m_vpinball->GetLayersListDialog()->GetLayerTreeView().UpdateLayerLayout();
+      for (size_t t = 0; t < m_vedit.size(); t++)
+      {
+         IEditable * const piedit = m_vedit[t];
+         ISelect * const psel = piedit->GetISelect();
+         if (psel->m_oldLayerIndex == i)
+         {
+             m_layer[i].push_back(piedit);
+             if (psel->m_layerName == "")
+             {
+                 const string name = "Layer_" + std::to_string(i+1);
+                 psel->m_layerName = name;
+                 m_vpinball->GetLayersListDialog()->AddLayer(name, piedit);
+             }
+             else
+             {
+                 m_vpinball->GetLayersListDialog()->AddLayer(psel->m_layerName, piedit);
+             }
+         }
+      }
    }
    return hr;
 }
@@ -3899,20 +3880,6 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
            pmat->m_fScatterAngle = mats[i].fScatterAngle;
            if (!found)
               m_materials.push_back(pmat);
-       }
-       break;
-   }
-   case FID(LAYI): pbr->GetInt(m_numLayerEntries); break;
-   case FID(LAYL):
-   {
-       std::vector<LayerTreeView::SaveLayerLayout> saveLayoutList(m_numLayerEntries);
-       pbr->GetStruct(saveLayoutList.data(), (int)sizeof(LayerTreeView::SaveLayerLayout) * m_numLayerEntries);
-       for (const auto& saveItem : saveLayoutList)
-       {
-           LayerTreeView::LayerLayout item;
-           item.isLayer = saveItem.isLayer;
-           item.name = std::string(saveItem.name);
-           m_layerLayoutList.push_back(item);
        }
        break;
    }
@@ -6029,7 +5996,6 @@ HRESULT PinTable::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versio
 {
    SetDefaults(false);
 
-   m_layerLayoutList.clear();
    int csubobj, csounds, ctextures, cfonts, ccollection;
    LoadData(pstm, csubobj, csounds, ctextures, cfonts, ccollection, version, hcrypthash, hcryptkey);
 

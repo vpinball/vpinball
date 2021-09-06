@@ -703,9 +703,6 @@ public:
        return m_materials;
    }
 
-   int m_numLayerEntries;
-   vector<LayerTreeView::LayerLayout> m_layerLayoutList;
-
    vector< PinSound* > m_vsound;
 
    vector< PinFont* >  m_vfont;
