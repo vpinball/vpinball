@@ -1,9 +1,9 @@
 // license:GPLv3+
 // Ported at: VisualPinball.Resources/Meshes/DropTargetT3.cs
 
-const unsigned int hitTargetT3Vertices=36;
-const unsigned int hitTargetT3NumIndices=66;
-const Vertex3D_NoTex2 hitTargetT3Mesh[36]=
+constexpr unsigned int hitTargetT3Vertices=36;
+constexpr unsigned int hitTargetT3NumIndices=66;
+constexpr Vertex3D_NoTex2 hitTargetT3Mesh[36]=
 {
 { 0.525000f,0.175000f,0.135199f, 0.000000f,1.000000f,-0.000000f, 0.827424f,0.854512f},
 { -0.525000f,0.175000f,0.135199f, 0.000000f,1.000000f,-0.000000f, 0.003450f,0.854512f},
@@ -43,7 +43,7 @@ const Vertex3D_NoTex2 hitTargetT3Mesh[36]=
 { -0.525000f,0.175000f,0.135199f, 0.000000f,0.780900f,-0.624700f, 0.003450f,0.854512f}
 };
 
-const WORD hitTargetT3Indices[66]=
+constexpr WORD hitTargetT3Indices[66]=
 {
 	0, 1, 2,
 	1, 3, 2,

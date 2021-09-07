@@ -81,7 +81,7 @@ inline void initForsyth() {
 			score = LAST_TRI_SCORE;
 		} else {
 			// Points for being high in the cache.
-			const float scaler = 1.0f / (float)(CACHE_FUNCTION_LENGTH - 3);
+			constexpr float scaler = 1.0f / (float)(CACHE_FUNCTION_LENGTH - 3);
 			score = powf(1.0f - (float)(i - 3) * scaler, CACHE_DECAY_POWER);
 		}
 		cachePositionScore[i] = (ScoreType) (SCORE_SCALING * score);

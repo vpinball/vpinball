@@ -19,7 +19,7 @@ public:
    HRESULT CompressBits(int init_bits);
 
 private:
-   HRESULT WriteSz(char *sz, int cbytes);
+   HRESULT WriteSz(const char *sz, int cbytes);
    HRESULT WriteByte(char ch);
    HRESULT WriteWord(short word);
    int bNextPixel();

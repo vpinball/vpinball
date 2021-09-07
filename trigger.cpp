@@ -124,8 +124,8 @@ void Trigger::UpdateStatusBarInfo()
 
 void Trigger::InitShape(float x, float y)
 {
-   float lengthX = 30.0f;
-   float lengthY = 30.0f;
+   constexpr float lengthX = 30.0f;
+   constexpr float lengthY = 30.0f;
    UpdateStatusBarInfo();
    for (size_t i = 0; i < m_vdpoint.size(); i++)
       m_vdpoint[i]->Release();
@@ -191,7 +191,7 @@ void Trigger::SetDefaults(bool fromMouseClick)
    m_d.m_hit_height = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Trigger", "HitHeight", 50.f) : 50.f;
    m_d.m_shape = fromMouseClick ? (TriggerShape)LoadValueIntWithDefault("DefaultProps\\Trigger", "Shape", TriggerWireA) : TriggerWireA;
 
-   HRESULT hr = LoadValue("DefaultProps\\Trigger", "Surface", m_d.m_szSurface);
+   const HRESULT hr = LoadValue("DefaultProps\\Trigger", "Surface", m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface.clear();
 
@@ -246,7 +246,7 @@ void Trigger::UIRenderPass2(Sur * const psur)
          // if any of the dragpoints of this object are selected then draw all the dragpoints
          for (size_t i = 0; i < m_vdpoint.size(); i++)
          {
-            CComObject<DragPoint> * const pdp = m_vdpoint[i];
+            const CComObject<DragPoint> * const pdp = m_vdpoint[i];
             if (pdp->m_selectstate != eNotSelected)
             {
                drawDragpoints = true;
@@ -817,7 +817,7 @@ void Trigger::RenderSetup()
    if (!m_d.m_visible || m_d.m_shape == TriggerNone)
       return;
 
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+   const Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    const WORD* indices;
    switch(m_d.m_shape)
    {

@@ -15,7 +15,7 @@ protected:
 
 private:
     Light           *GetLight();
-    void            SetCheckButtonState(Light *plight);
+    void            SetCheckButtonState(const Light *plight);
 
     CComboBox       m_lightsCombo;
     HWND            m_hLightOnCheck;

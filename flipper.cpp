@@ -2,7 +2,7 @@
 #include "meshes/flipperBase.h"
 #include "objloader.h"
 
-static const float vertsTipBottomf[13 * 3] =
+static constexpr float vertsTipBottomf[13 * 3] =
 {
    -0.101425f, 0.786319f, 0.003753f,
    -0.097969f, 0.812569f, 0.003753f,
@@ -21,7 +21,7 @@ static const float vertsTipBottomf[13 * 3] =
 
 static const Vertex3Ds* const vertsTipBottom = (Vertex3Ds*)vertsTipBottomf;
 
-static const float vertsTipTopf[13 * 3] =
+static constexpr float vertsTipTopf[13 * 3] =
 {
    -0.101425f, 0.786319f, 1.004253f,
    -0.097969f, 0.812569f, 1.004253f,
@@ -40,7 +40,7 @@ static const float vertsTipTopf[13 * 3] =
 
 static const Vertex3Ds* const vertsTipTop = (Vertex3Ds*)vertsTipTopf;
 
-static const float vertsBaseBottomf[13 * 3] =
+static constexpr float vertsBaseBottomf[13 * 3] =
 {
    -0.100762f, -0.000000f, 0.003753f,
    -0.097329f, -0.026079f, 0.003753f,
@@ -59,7 +59,7 @@ static const float vertsBaseBottomf[13 * 3] =
 
 static const Vertex3Ds* const vertsBaseBottom = (Vertex3Ds*)vertsBaseBottomf;
 
-static const float vertsBaseTopf[13 * 3] =
+static constexpr float vertsBaseTopf[13 * 3] =
 {
    -0.100762f, 0.000000f, 1.004253f,
    -0.097329f, -0.026079f, 1.004253f,
@@ -110,7 +110,7 @@ HRESULT Flipper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Flipper::SetDefaults(bool fromMouseClick)
 {
-   static const char regKey[] = "DefaultProps\\Flipper";
+   static constexpr char regKey[] = "DefaultProps\\Flipper";
 
    SetDefaultPhysics(fromMouseClick);
 
@@ -143,7 +143,7 @@ void Flipper::SetDefaults(bool fromMouseClick)
 
 void Flipper::WriteRegDefaults()
 {
-   static const char regKey[] = "DefaultProps\\Flipper";
+   static constexpr char regKey[] = "DefaultProps\\Flipper";
 
    SaveValueFloat(regKey, "Scatter", m_d.m_scatter);
    SaveValueFloat(regKey, "Strength", m_d.m_strength);
@@ -540,7 +540,7 @@ void Flipper::PutCenter(const Vertex2D& pv)
 
 void Flipper::SetDefaultPhysics(bool fromMouseClick)
 {
-   static const char regKey[] = "DefaultProps\\Flipper";
+   static constexpr char regKey[] = "DefaultProps\\Flipper";
 
    m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Scatter", 0.f) : 0.f;
    m_d.m_strength = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Strength", 2200.f) : 2200.f;

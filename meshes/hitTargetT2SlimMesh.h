@@ -1,9 +1,9 @@
 // license:GPLv3+
 // Ported at: VisualPinball.Resources/Meshes/HitTargetT2Slim.cs
 
-const unsigned int hitTargetT2SlimVertices=302;
-const unsigned int hitTargetT2SlimNumIndices=942;
-const Vertex3D_NoTex2 hitTargetT2SlimMesh[302]=
+constexpr unsigned int hitTargetT2SlimVertices=302;
+constexpr unsigned int hitTargetT2SlimNumIndices=942;
+constexpr Vertex3D_NoTex2 hitTargetT2SlimMesh[302]=
 {
 { 0.250118f,-0.011992f,1.623817f, 1.000000f,0.000000f,-0.000000f, 0.751514f,0.265156f},
 { 0.250118f,-0.161988f,0.686317f, 1.000000f,0.000000f,-0.000000f, 0.851082f,0.194305f},
@@ -309,7 +309,7 @@ const Vertex3D_NoTex2 hitTargetT2SlimMesh[302]=
 { -0.274882f,0.163002f,0.587215f, 0.000000f,-1.000000f,0.000000f, 0.034635f,0.926440f}
 };
 
-const WORD hitTargetT2SlimIndices[942]=
+constexpr WORD hitTargetT2SlimIndices[942]=
 {
 	0, 1, 2,
 	0, 3, 1,

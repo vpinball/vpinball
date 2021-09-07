@@ -84,7 +84,7 @@ BOOL ToolbarDialog::OnInitDialog()
     m_tooltip.AddTool(m_flasherButton, _T("Insert Flasher"));
     m_tooltip.AddTool(m_rubberButton, _T("Insert Rubber"));
 
-    const int iconSize = 24;
+    constexpr int iconSize = 24;
     HANDLE hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MAGNIFY), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_magnifyButton.SetIcon((HICON)hIcon);
 
@@ -350,7 +350,7 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case ID_INSERT_FLASHER:
         case ID_INSERT_RUBBER:
         {
-            ItemTypeEnum type = EditableRegistry::TypeFromToolID((int)id);
+            const ItemTypeEnum type = EditableRegistry::TypeFromToolID((int)id);
             if (type != eItemInvalid)
             {
                 g_pvp->m_ToolCur = (int)id;

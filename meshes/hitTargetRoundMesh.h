@@ -1,9 +1,9 @@
 // license:GPLv3+
 // Ported at: VisualPinball.Resources/Meshes/HitTargetRound.cs
 
-const unsigned int hitTargetRoundVertices=209;
-const unsigned int hitTargetRoundNumIndices=522;
-const Vertex3D_NoTex2 hitTargetRoundMesh[209]=
+constexpr unsigned int hitTargetRoundVertices=209;
+constexpr unsigned int hitTargetRoundNumIndices=522;
+constexpr Vertex3D_NoTex2 hitTargetRoundMesh[209]=
 {
 { 0.588605f,0.085699f,0.972723f, 0.980800f,0.000000f,-0.195100f, 0.218750f,0.629625f},
 { 0.600370f,0.195698f,1.092180f, 1.000000f,0.000000f,0.000000f, 0.250000f,0.598375f},
@@ -216,7 +216,7 @@ const Vertex3D_NoTex2 hitTargetRoundMesh[209]=
 { 0.263053f,-0.209258f,-0.282820f, -0.000000f,-1.000000f,0.000000f, 0.995664f,0.829507f}
 };
 
-const WORD hitTargetRoundIndices[522]=
+constexpr WORD hitTargetRoundIndices[522]=
 {
 	132, 133, 134,
 	132, 135, 133,

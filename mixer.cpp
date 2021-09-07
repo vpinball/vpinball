@@ -12,11 +12,11 @@ static U32 gMixerVolumeStamp = 0;
 bool gMixerKeyDown;
 bool gMixerKeyUp;
 
-const F32 volume_adjustment_bar_pos[2] = { (float)(15.0 / 1000.0), (float)(500.0 / 1000.0) };
-const F32 volume_adjustment_bar_big_size[2] = { (float)(20.0 / 1000.0), (float)(4.0 / 1000.0) };
-const F32 volume_adjustment_bar_small_size[2] = { (float)(10.0 / 1000.0), (float)(2.0 / 1000.0) };
-const F32 volume_adjustment_bar_ysize = (float)(720.0 / 1000.0);
-const U32 volume_adjustment_color[3] = { 0x00ff00, 0xffff, 0xff };
+constexpr F32 volume_adjustment_bar_pos[2] = { (float)(15.0 / 1000.0), (float)(500.0 / 1000.0) };
+constexpr F32 volume_adjustment_bar_big_size[2] = { (float)(20.0 / 1000.0), (float)(4.0 / 1000.0) };
+constexpr F32 volume_adjustment_bar_small_size[2] = { (float)(10.0 / 1000.0), (float)(2.0 / 1000.0) };
+constexpr F32 volume_adjustment_bar_ysize = (float)(720.0 / 1000.0);
+constexpr U32 volume_adjustment_color[3] = { 0x00ff00, 0xffff, 0xff };
 
 bool mixer_init(const HWND wnd)
 {
@@ -133,7 +133,7 @@ void mixer_update()
    if (!nmixers || !m_hMixer)
       return;
 
-   const F32 delta = (F32)(1.0 / 500.0);
+   constexpr F32 delta = (F32)(1.0 / 500.0);
 
    float vol;
    if (gMixerKeyDown)
@@ -160,7 +160,7 @@ void mixer_update()
    if (modded_volume > 1.0f)
       modded_volume = 1.0f;  //hardcap maximum
 
-   DWORD dwVal = (DWORD)((F32)m_dwMinimum + (modded_volume * modded_volume) * (F32)(m_dwMaximum - m_dwMinimum));
+   const DWORD dwVal = (DWORD)((F32)m_dwMinimum + (modded_volume * modded_volume) * (F32)(m_dwMaximum - m_dwMinimum));
 
    MIXERCONTROLDETAILS_UNSIGNED mxcdVolume = { dwVal };
    MIXERCONTROLDETAILS mxcd;
@@ -203,7 +203,7 @@ void mixer_draw()
 
    fade *= (float)(222.2 / 255.0);
 
-   const F32 yoff = volume_adjustment_bar_big_size[1] * 2.0f;
+   constexpr F32 yoff = volume_adjustment_bar_big_size[1] * 2.0f;
 
    for (F32 vol = 0.f, y = -volume_adjustment_bar_ysize * 0.5f;
       vol < 1.0f;

@@ -372,9 +372,9 @@ public:
    void ListSounds(HWND hwndListView);
    int AddListSound(HWND hwndListView, PinSound * const pps);
    void RemoveSound(PinSound * const pps);
-   HRESULT SaveSoundToStream(PinSound * const pps, IStream *pstm);
+   HRESULT SaveSoundToStream(const PinSound * const pps, IStream *pstm);
    HRESULT LoadSoundFromStream(IStream *pstm, const int LoadFileVersion);
-   bool ExportImage(Texture * const ppi, const char * const filename);
+   bool ExportImage(const Texture * const ppi, const char * const filename);
    void ImportImage(HWND hwndListView, const string& filename);
    void ReImportImage(Texture * const ppi, const string& filename);
    void ListImages(HWND hwndListView);
@@ -382,7 +382,7 @@ public:
    void RemoveImage(Texture * const ppi);
    HRESULT LoadImageFromStream(IStream *pstm, unsigned int idx, int version);
    Texture* GetImage(const std::string &szName) const;
-   bool GetImageLink(Texture * const ppi) const;
+   bool GetImageLink(const Texture * const ppi) const;
    PinBinary *GetImageLinkBinary(const int id);
 
    void ListCustomInfo(HWND hwndListView);
@@ -552,7 +552,7 @@ public:
 
    bool RenderSolid() const { return m_renderSolid; }
 
-   void InvokeBallBallCollisionCallback(Ball *b1, Ball *b2, float hitVelocity);
+   void InvokeBallBallCollisionCallback(const Ball *b1, const Ball *b2, float hitVelocity);
 
    BEGIN_COM_MAP(PinTable)
       COM_INTERFACE_ENTRY(ITable)
@@ -573,7 +573,7 @@ public:
    void AddDbgLight(Light * const plight);
    void UpdateDbgLight();
    void AddMaterial(Material * const pmat);
-   void AddDbgMaterial(Material * const pmat);
+   void AddDbgMaterial(const Material * const pmat);
    void UpdateDbgMaterial();
 
    bool IsMaterialNameUnique(const std::string &name) const;

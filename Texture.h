@@ -127,7 +127,7 @@ public:
    // ILoadable callback
    virtual bool LoadToken(const int id, BiffReader * const pbr);
 
-   HRESULT SaveToStream(IStream *pstream, PinTable *pt);
+   HRESULT SaveToStream(IStream *pstream, const PinTable *pt);
    HRESULT LoadFromStream(IStream *pstream, int version, PinTable *pt);
 
    void FreeStuff();

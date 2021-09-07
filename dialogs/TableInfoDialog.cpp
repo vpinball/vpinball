@@ -63,7 +63,7 @@ BOOL TableInfoDialog::OnInitDialog()
 
    for (size_t i = 0; i < pt->m_vimage.size(); ++i)
    {
-      Texture * const pin = pt->m_vimage[i];
+      const Texture * const pin = pt->m_vimage[i];
       if (pin->m_ppb)
          m_screenshotCombo.AddString(pin->m_szName.c_str());
    }
@@ -134,7 +134,7 @@ INT_PTR TableInfoDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    {
       case WM_NOTIFY:
       {
-         LPNMHDR pnmhdr = (LPNMHDR)lParam;
+         const LPNMHDR pnmhdr = (LPNMHDR)lParam;
          switch (pnmhdr->code)
          {
             case LVN_ITEMCHANGING:
@@ -146,10 +146,10 @@ INT_PTR TableInfoDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   {
                      const int sel = plistview->iItem;
 
-                     CString name = m_customListView.GetItemText(sel, 0, MAXSTRING);
+                     const CString name = m_customListView.GetItemText(sel, 0, MAXSTRING);
                      m_customNameEdit.SetWindowText(name.c_str());
 
-                     CString value = m_customListView.GetItemText(sel, 1, MAXSTRING);
+                     const CString value = m_customListView.GetItemText(sel, 1, MAXSTRING);
                      m_customValueEdit.SetWindowText(value.c_str());
                   }
                }
@@ -162,7 +162,7 @@ INT_PTR TableInfoDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    return DialogProcDefault(uMsg, wParam, lParam);
 }
 
-void TableInfoDialog::VPGetDialogItemText(CEdit &edit, string &psztext)
+void TableInfoDialog::VPGetDialogItemText(const CEdit &edit, string &psztext)
 {
    psztext = edit.GetWindowText();
 }

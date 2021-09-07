@@ -1,9 +1,9 @@
 // license:GPLv3+
 // Ported at: VisualPinball.Resources/Meshes/GateWire.cs
 
-const unsigned int gateWireNumVertices=186;
-const unsigned int gateWireNumIndices=1008;
-const Vertex3D_NoTex2 gateWire[186]=
+constexpr unsigned int gateWireNumVertices=186;
+constexpr unsigned int gateWireNumIndices=1008;
+constexpr Vertex3D_NoTex2 gateWire[186]=
 {
 { -0.384004f,0.000002f,0.001804f, -1.000000f,0.000000f,-0.000000f, 0.500000f,0.500000f},
 { -0.384004f,-0.004240f,0.006047f, -1.000000f,0.000000f,-0.000000f, 0.500000f,0.500000f},
@@ -193,7 +193,7 @@ const Vertex3D_NoTex2 gateWire[186]=
 { 0.383997f,-0.004241f,-0.002437f, 1.000000f,-0.000000f,-0.000000f, 0.500000f,0.500000f}
 };
 
-const WORD gateWireIndices[1008]=
+constexpr WORD gateWireIndices[1008]=
 {
 	0, 1, 2,
 	0, 3, 1,

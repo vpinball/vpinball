@@ -32,7 +32,7 @@ public:
       int currentnode = m_searchstart - 1;  // Zero based
       int jumpnode = m_searchstart >> 1;
 
-      while (1)
+      while (true)
       {
          //assert(currentnode >= 0);
 
@@ -67,7 +67,7 @@ public:
       int currentnode = m_searchstart - 1;  // Zero based
       int jumpnode = m_searchstart >> 1;
 
-      while (1)
+      while (true)
       {
          //assert(currentnode >= 0);
          int strcmp;

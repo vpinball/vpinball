@@ -1,9 +1,9 @@
 // license:GPLv3+
 // Ported at: VisualPinball.Resources/Meshes/GateWireRectangle.cs
 
-const unsigned int gateWireRectangleNumVertices=144;
-const unsigned int gateWireRectangleNumIndices=672;
-const Vertex3D_NoTex2 gateWireRectangleMesh[144]=
+constexpr unsigned int gateWireRectangleNumVertices=144;
+constexpr unsigned int gateWireRectangleNumIndices=672;
+constexpr Vertex3D_NoTex2 gateWireRectangleMesh[144]=
 {
 { 0.192000f,0.003563f,-0.329365f, -0.077600f,0.797600f,0.598100f, 0.625000f,0.421512f},
 { -0.192000f,0.000000f,-0.327299f, 0.121000f,0.004000f,0.992600f, 0.500000f,0.578488f},
@@ -151,7 +151,7 @@ const Vertex3D_NoTex2 gateWireRectangleMesh[144]=
 { 0.368000f,-0.003563f,0.006635f, 1.000000f,0.000000f,-0.000000f, 0.146446f,0.106694f}
 };
 
-const WORD gateWireRectangleIndices[672]=
+constexpr WORD gateWireRectangleIndices[672]=
 {
 	105, 114, 113,
 	113, 104, 105,

@@ -58,7 +58,7 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    SetDefaults(fromMouseClick);
    m_d.m_visible = true;
 
-   float length = 0.5f * LoadValueFloatWithDefault("DefaultProps\\Ramp", "Length", 400.0f);
+   const float length = 0.5f * LoadValueFloatWithDefault("DefaultProps\\Ramp", "Length", 400.0f);
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -86,7 +86,7 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Ramp::SetDefaults(bool fromMouseClick)
 {
-   static const char strKeyName[] = "DefaultProps\\Ramp";
+   static constexpr char strKeyName[] = "DefaultProps\\Ramp";
    
    m_d.m_heightbottom = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HeightBottom", 0.0f) : 0.0f;
    m_d.m_heighttop = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HeightTop", 50.0f) : 50.0f;
@@ -97,7 +97,7 @@ void Ramp::SetDefaults(bool fromMouseClick)
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "TimerInterval", 100) : 100;
 
-   HRESULT hr = LoadValue(strKeyName, "Image", m_d.m_szImage);
+   const HRESULT hr = LoadValue(strKeyName, "Image", m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
 
@@ -124,7 +124,7 @@ void Ramp::SetDefaults(bool fromMouseClick)
 
 void Ramp::WriteRegDefaults()
 {
-   static const char strKeyName[] = "DefaultProps\\Ramp";
+   static constexpr char strKeyName[] = "DefaultProps\\Ramp";
 
    SaveValueFloat(strKeyName, "HeightBottom", m_d.m_heightbottom);
    SaveValueFloat(strKeyName, "HeightTop", m_d.m_heighttop);
@@ -657,7 +657,7 @@ void Ramp::GetHitShapes(vector<HitObject*> &pvho)
 
    // Add hit triangles for the ramp floor.
    {
-      HitTriangle *ph3dpolyOld = NULL;
+      const HitTriangle *ph3dpolyOld = NULL;
       const Vertex2D *pv3, *pv4;
 
       for (int i = 0; i < (cvertex - 1); i++)
@@ -939,7 +939,7 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
 
    if (m_d.m_type == RampType2Wire)
    {
-      Matrix3D matTrafo, matTemp;
+      Matrix3D matTrafo;
       matTrafo.SetIdentity();
       matTrafo._43 = 3.0f;                // raise the wire a bit because the ball runs on a flat ramp physically
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
@@ -951,7 +951,7 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
    }
    else if (m_d.m_type == RampType4Wire)
    {
-      Matrix3D matTrafo, matTemp;
+      Matrix3D matTrafo;
       matTrafo.SetIdentity();
       matTrafo._43 = m_d.m_wireDistanceY*0.5f;
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
@@ -970,7 +970,7 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
    }
    else if (m_d.m_type == RampType3WireLeft)
    {
-      Matrix3D matTrafo, matTemp;
+      Matrix3D matTrafo;
       matTrafo.SetIdentity();
       matTrafo._43 = m_d.m_wireDistanceY*0.5f;
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
@@ -988,7 +988,7 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
    }
    else if (m_d.m_type == RampType3WireRight)
    {
-      Matrix3D matTrafo, matTemp;
+      Matrix3D matTrafo;
       matTrafo.SetIdentity();
       matTrafo._43 = m_d.m_wireDistanceY*0.5f;
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
@@ -2495,7 +2495,8 @@ void Ramp::GenerateVertexBuffer()
 
 void Ramp::SetDefaultPhysics(bool fromMouseClick)
 {
-   static const char strKeyName[] = "DefaultProps\\Ramp";
+   static constexpr char strKeyName[] = "DefaultProps\\Ramp";
+
    m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Elasticity", 0.3f) : 0.3f;
    m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Friction", 0.3f) : 0.3f;
    m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Scatter", 0) : 0;

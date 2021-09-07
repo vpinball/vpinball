@@ -27,7 +27,7 @@ void PrimitivePositionProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPrimitive))
             continue;
-        Primitive *const prim = (Primitive*)m_pvsel->ElementAt(i);
+        const Primitive *const prim = (Primitive*)m_pvsel->ElementAt(i);
 
         if (dispid == DISPID_POSITION_X || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_posXEdit, prim->m_d.m_vPosition.x);

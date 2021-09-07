@@ -1,9 +1,9 @@
 // license:GPLv3+
 // Ported at: VisualPinball.Resources/Meshes/GatePlate.cs
 
-const unsigned int gatePlateNumVertices=70;
-const unsigned int gatePlateNumIndices=156;
-const Vertex3D_NoTex2 gatePlateMesh[70]=
+constexpr unsigned int gatePlateNumVertices=70;
+constexpr unsigned int gatePlateNumIndices=156;
+constexpr Vertex3D_NoTex2 gatePlateMesh[70]=
 {
 { 0.218057f,-0.005280f,-0.350277f, -0.000000f,-1.000000f,-0.000000f, 0.598837f,0.899413f},
 { -0.235543f,-0.005280f,-0.338377f, -0.000000f,-1.000000f,-0.000000f, 0.912791f,0.876158f},
@@ -77,7 +77,7 @@ const Vertex3D_NoTex2 gatePlateMesh[70]=
 { 0.360857f,-0.005280f,0.006723f, -0.000000f,0.000000f,1.000000f, 0.246821f,0.119566f}
 };
 
-const WORD gatePlateIndices[156]=
+constexpr WORD gatePlateIndices[156]=
 {
 	38, 39, 40,
 	40, 39, 41,

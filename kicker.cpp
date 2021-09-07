@@ -120,7 +120,7 @@ void Kicker::UIRenderPass2(Sur * const psur)
    // Draw Arrow to display (default) orientation
    {
        const float radangle = ANGTORAD(m_d.m_orientation);
-       const float halflength = 50.0f;
+       constexpr float halflength = 50.0f;
 
        psur->SetLineColor(RGB(255, 0, 0), false, 1);
 
@@ -129,13 +129,13 @@ void Kicker::UIRenderPass2(Sur * const psur)
            const float sn = sinf(radangle);
            const float cs = cosf(radangle);
 
-           const float len1 = halflength * 0.5f;
+           constexpr float len1 = halflength * 0.5f;
            tmp.x = m_d.m_vCenter.x + sn * len1;
            tmp.y = m_d.m_vCenter.y - cs * len1;
        }
 
        psur->Line(tmp.x, tmp.y, m_d.m_vCenter.x, m_d.m_vCenter.y);
-       const float len2 = halflength * 0.25f;
+       constexpr float len2 = halflength * 0.25f;
        {
            const float arrowang = radangle + 0.6f;
            const float sn = sinf(arrowang);
@@ -732,7 +732,7 @@ STDMETHODIMP Kicker::CreateSizedBallWithMass(/*[in]*/float radius, /*[in]*/float
       pball->m_pballex->AddRef();
 
       pball->m_coll.m_hitflag = true;           // HACK: avoid capture leaving kicker
-      Vertex3Ds hitnormal(FLT_MAX, FLT_MAX, FLT_MAX); // unused due to newBall being true
+      const Vertex3Ds hitnormal(FLT_MAX, FLT_MAX, FLT_MAX); // unused due to newBall being true
       m_phitkickercircle->DoCollide(pball, hitnormal, false, true);
    }
 
@@ -752,7 +752,7 @@ STDMETHODIMP Kicker::CreateSizedBall(/*[in]*/float radius, /*out, retval]*/ IBal
       pball->m_pballex->AddRef();
 
       pball->m_coll.m_hitflag = true;           // HACK: avoid capture leaving kicker
-      Vertex3Ds hitnormal(FLT_MAX, FLT_MAX, FLT_MAX); // unused due to newBall being true
+      const Vertex3Ds hitnormal(FLT_MAX, FLT_MAX, FLT_MAX); // unused due to newBall being true
       m_phitkickercircle->DoCollide(pball, hitnormal, false, true);
    }
 
@@ -771,7 +771,7 @@ STDMETHODIMP Kicker::CreateBall(IBall **pBallEx)
       pball->m_pballex->AddRef();
 
       pball->m_coll.m_hitflag = true;           // HACK: avoid capture leaving kicker
-      Vertex3Ds hitnormal(FLT_MAX, FLT_MAX, FLT_MAX); // unused due to newBall being true
+      const Vertex3Ds hitnormal(FLT_MAX, FLT_MAX, FLT_MAX); // unused due to newBall being true
       m_phitkickercircle->DoCollide(pball, hitnormal, false, true);
    }
 
@@ -1216,7 +1216,7 @@ void KickerHitCircle::DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& 
         pball->m_dynamic = C_DYNAMIC;
 #endif
 
-        const float friction = 0.3f;
+        constexpr float friction = 0.3f;
         const float tangentSpSq = tangent.LengthSquared();
 
         if (tangentSpSq > 1e-6f)

@@ -1,9 +1,9 @@
 // license:GPLv3+
 // Ported at: VisualPinball.Resources/Meshes/BumperRing.cs
 
-const unsigned int bumperRingNumVertices=481;
-const unsigned int bumperRingNumIndices=2367;
-const Vertex3D_NoTex2 bumperRing[481]=
+constexpr unsigned int bumperRingNumVertices=481;
+constexpr unsigned int bumperRingNumIndices=2367;
+constexpr Vertex3D_NoTex2 bumperRing[481]=
 {
 { 0.008260f,0.599155f,0.543984f, 0.050900f,-0.784800f,-0.617700f, 0.901094f,0.977991f},
 { 0.008260f,0.599155f,-0.122016f, 0.057000f,-0.998400f,-0.000000f, 0.543477f,0.995757f},
@@ -488,7 +488,7 @@ const Vertex3D_NoTex2 bumperRing[481]=
 { -0.212984f,0.801088f,0.612837f, 0.034500f,-0.777200f,-0.628300f, 0.385090f,0.032915f}
 };
 
-const WORD bumperRingIndices[2367]=
+constexpr WORD bumperRingIndices[2367]=
 {
 	0, 1, 2,
 	0, 2, 3,

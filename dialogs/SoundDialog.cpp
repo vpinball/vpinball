@@ -39,7 +39,7 @@ void SoundDialog::OnClose()
 
 long GetSystemDPI()
 {
-    CClientDC clientDC(NULL);
+	const CClientDC clientDC(NULL);
 	const SIZE ret = { clientDC.GetDeviceCaps(LOGPIXELSX), clientDC.GetDeviceCaps(LOGPIXELSY) };
 	return ret.cx;
 }
@@ -111,10 +111,10 @@ INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
     {
         case WM_NOTIFY:
         {
-            LPNMHDR pnmhdr = (LPNMHDR)lParam;
+            const LPNMHDR pnmhdr = (LPNMHDR)lParam;
             if (wParam == IDC_SOUNDLIST)
             {
-                LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
+                const LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
                 if (lpnmListView->hdr.code == LVN_COLUMNCLICK)
                 {
                     const int columnNumber = lpnmListView->iSubItem;
@@ -381,8 +381,7 @@ void SoundDialog::Export()
             ofn.hwndOwner = g_pvp->GetHwnd();
             ofn.lpstrFilter = "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0";
 
-            char filename[MAXSTRING];
-            memset(filename, 0, sizeof(filename));
+            char filename[MAXSTRING] = {};
 
             if (!renameOnExport)
             {

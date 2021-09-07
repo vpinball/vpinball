@@ -3,7 +3,7 @@
 #include <WindowsX.h>
 
 
-DragpointVisualsProperty::DragpointVisualsProperty(int id, VectorProtected<ISelect> *pvsel) :BasePropertyDialog(id, pvsel), m_id(id)
+DragpointVisualsProperty::DragpointVisualsProperty(int id, const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(id, pvsel), m_id(id)
 {
     m_posXEdit.SetDialog(this);
     m_posYEdit.SetDialog(this);

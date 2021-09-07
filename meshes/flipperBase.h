@@ -1,9 +1,9 @@
 // license:GPLv3+
 // Ported at: VisualPinball.Resources/Meshes/FlipperBase.cs
 
-const unsigned int flipperBaseVertices=104;
-const unsigned int flipperBaseNumIndices=300;
-const Vertex3D_NoTex2 flipperBaseMesh[104]=
+constexpr unsigned int flipperBaseVertices=104;
+constexpr unsigned int flipperBaseNumIndices=300;
+constexpr Vertex3D_NoTex2 flipperBaseMesh[104]=
 {
 { -0.101425f,0.786319f,0.003753f, -0.997900f,0.065000f,-0.000000f, 0.126235f,0.422635f},
 { -0.101425f,0.786319f,1.004253f, -0.997900f,0.065000f,-0.000000f, 0.068619f,0.486620f},
@@ -110,7 +110,8 @@ const Vertex3D_NoTex2 flipperBaseMesh[104]=
 { 0.087837f,0.837031f,0.003753f, 0.866000f,0.500000f,-0.000000f, 0.104696f,0.353845f},
 { 0.087837f,0.837031f,1.004253f, 0.866000f,0.500000f,-0.000000f, 0.027922f,0.313093f}
 };
-const WORD flipperBaseIndices[300]=
+
+constexpr WORD flipperBaseIndices[300]=
 {
 	12, 13, 14,
 	12, 14, 15,

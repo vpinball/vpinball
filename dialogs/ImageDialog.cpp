@@ -308,7 +308,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void ImageDialog::UpdateImages()
 {
-    HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+    const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
     const int count = ListView_GetSelectedCount(hSoundList);
 
     if (count > 0)
@@ -683,7 +683,7 @@ void ImageDialog::UpdateAll()
       Texture * const ppi = (Texture*)lvitem.lParam;
       if (ppi != NULL)
       {
-         HANDLE hFile = CreateFile(ppi->m_szPath.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+         const HANDLE hFile = CreateFile(ppi->m_szPath.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
          if (hFile != INVALID_HANDLE_VALUE)
          {
             CloseHandle(hFile);
@@ -716,7 +716,7 @@ void ImageDialog::ReimportFrom()
          std::vector<std::string> szFileName;
          string szInitialDir;
 
-         HRESULT hr = LoadValue("RecentDir", "ImageDir", szInitialDir);
+         const HRESULT hr = LoadValue("RecentDir", "ImageDir", szInitialDir);
          if (hr != S_OK)
             szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -761,13 +761,12 @@ void ImageDialog::LoadPosition()
 
 void ImageDialog::SavePosition()
 {
-    int w, h;
-    CRect rect = GetWindowRect();
+    const CRect rect = GetWindowRect();
 
     SaveValueInt("Editor", "ImageMngPosX", rect.left);
     SaveValueInt("Editor", "ImageMngPosY", rect.top);
-    w = rect.right - rect.left;
+    const int w = rect.right - rect.left;
     SaveValueInt("Editor", "ImageMngWidth", w);
-    h = rect.bottom - rect.top;
+    const int h = rect.bottom - rect.top;
     SaveValueInt("Editor", "ImageMngHeight", h);
 }

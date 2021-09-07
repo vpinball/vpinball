@@ -16,7 +16,7 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////
-const float HitTarget::DROP_TARGET_LIMIT = 52.0f;
+constexpr float HitTarget::DROP_TARGET_LIMIT = 52.0f;
 
 
 HitTarget::HitTarget()
@@ -146,7 +146,7 @@ HRESULT HitTarget::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void HitTarget::SetDefaults(bool fromMouseClick)
 {
-   static const char strKeyName[] = "DefaultProps\\HitTarget";
+   static constexpr char strKeyName[] = "DefaultProps\\HitTarget";
 
    m_d.m_legacy = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "LegacyMode", false) : false;
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "TimerEnabled", false) : false;
@@ -189,7 +189,7 @@ void HitTarget::SetDefaults(bool fromMouseClick)
 
 void HitTarget::WriteRegDefaults()
 {
-   static const char strKeyName[] = "DefaultProps\\HitTarget";
+   static constexpr char strKeyName[] = "DefaultProps\\HitTarget";
 
    SaveValueBool(strKeyName, "LegacyMode", m_d.m_legacy);
    SaveValueBool(strKeyName, "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
@@ -230,8 +230,8 @@ void HitTarget::WriteRegDefaults()
 // Ported at: VisualPinball.Engine/VPT/HitTarget/HitTargetHitGenerator.cs
 //
 
-const unsigned int num_dropTargetHitPlaneVertices = 16;
-const Vertex3Ds dropTargetHitPlaneVertices[num_dropTargetHitPlaneVertices] =
+constexpr unsigned int num_dropTargetHitPlaneVertices = 16;
+static const Vertex3Ds dropTargetHitPlaneVertices[num_dropTargetHitPlaneVertices] =
 {
    Vertex3Ds(-0.300000f, 0.001737f, -0.160074f),
    Vertex3Ds(-0.300000f, 0.001738f, 0.439926f),
@@ -251,8 +251,8 @@ const Vertex3Ds dropTargetHitPlaneVertices[num_dropTargetHitPlaneVertices] =
    Vertex3Ds(0.550000f, 0.001738f, 1.739926f)
 };
 
-const unsigned int num_dropTargetHitPlaneIndices = 42;
-const WORD dropTargetHitPlaneIndices[num_dropTargetHitPlaneIndices] =
+constexpr unsigned int num_dropTargetHitPlaneIndices = 42;
+constexpr WORD dropTargetHitPlaneIndices[num_dropTargetHitPlaneIndices] =
 {
    0, 1, 2, 2, 3, 0, 1, 4, 5, 6, 7, 2, 5, 6, 1,
    2, 1, 6, 4, 8, 9, 9, 5, 4, 8, 10, 11, 11, 9, 8,
@@ -379,7 +379,7 @@ void HitTarget::GetHitShapesDebug(vector<HitObject*> &pvho)
 void HitTarget::AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool setHitObject)
 {
    // create pair uniquely identifying the edge (i,j)
-   std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
+   const std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
 
    if (addedEdges.count(p) == 0)   // edge not yet added?
    {
@@ -552,9 +552,9 @@ void HitTarget::UIRenderPass2(Sur * const psur)
        return;
 
     const float radangle = ANGTORAD(m_d.m_rotZ-180.0f);
-    const float halflength = 50.0f;
-    const float len1 = halflength * 0.5f;
-    const float len2 = len1 * 0.5f;
+    constexpr float halflength = 50.0f;
+    constexpr float len1 = halflength * 0.5f;
+    constexpr float len2 = len1 * 0.5f;
     Vertex2D tmp;
     {
        // Draw Arrow
@@ -1336,7 +1336,8 @@ STDMETHODIMP HitTarget::put_ReflectionEnabled(VARIANT_BOOL newVal)
 
 void HitTarget::SetDefaultPhysics(bool fromMouseClick)
 {
-   static const char strKeyName[] = "DefaultProps\\HitTarget";
+   static constexpr char strKeyName[] = "DefaultProps\\HitTarget";
+
    m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Elasticity", 0.35f) : 0.35f;
    m_d.m_elasticityFalloff = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "ElasticityFalloff", 0.5f) : 0.5f;
    m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Friction", 0.2f) : 0.2f;

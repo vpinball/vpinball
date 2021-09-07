@@ -409,10 +409,10 @@ void PropertyDialog::DeleteAllTabs()
     m_backglassView = false;
 }
 
-void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList, CComboBox &combo, const std::string &selectName)
+void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList, const CComboBox &combo, const std::string &selectName)
 {
     bool texelFound = false;
-    for (auto texel : contentList)
+    for (const auto texel : contentList)
     {
         if (strncmp(texel->m_szName.c_str(), selectName.c_str(), MAXTOKEN) == 0) //!! _stricmp?
             texelFound = true;
@@ -427,10 +427,10 @@ void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList,
     combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
 
-void PropertyDialog::UpdateMaterialComboBox(const vector<Material *>& contentList, CComboBox &combo, const std::string &selectName)
+void PropertyDialog::UpdateMaterialComboBox(const vector<Material *>& contentList, const CComboBox &combo, const std::string &selectName)
 {
     bool matFound = false;
-    for (auto mat : contentList)
+    for (const auto mat : contentList)
     {
         if (mat->m_szName==selectName)
             matFound = true;
@@ -445,7 +445,7 @@ void PropertyDialog::UpdateMaterialComboBox(const vector<Material *>& contentLis
     combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
 
-void PropertyDialog::UpdateSurfaceComboBox(const PinTable * const ptable, CComboBox &combo, const string& selectName)
+void PropertyDialog::UpdateSurfaceComboBox(const PinTable * const ptable, const CComboBox &combo, const string& selectName)
 {
     vector<string> contentList;
 
@@ -470,7 +470,7 @@ void PropertyDialog::UpdateSurfaceComboBox(const PinTable * const ptable, CCombo
     combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
 
-void PropertyDialog::UpdateSoundComboBox(const PinTable *const ptable, CComboBox &combo, const string& selectName)
+void PropertyDialog::UpdateSoundComboBox(const PinTable *const ptable, const CComboBox &combo, const string& selectName)
 {
     if(combo.FindStringExact(1, selectName.c_str())==CB_ERR)
     {
@@ -482,7 +482,7 @@ void PropertyDialog::UpdateSoundComboBox(const PinTable *const ptable, CComboBox
     combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
 
-void PropertyDialog::UpdateCollectionComboBox(const PinTable *const ptable, CComboBox &combo, const char *selectName)
+void PropertyDialog::UpdateCollectionComboBox(const PinTable *const ptable, const CComboBox &combo, const char *selectName)
 {
     if(combo.FindStringExact(1, selectName)==CB_ERR)
     {
@@ -498,7 +498,7 @@ void PropertyDialog::UpdateCollectionComboBox(const PinTable *const ptable, CCom
     combo.SetCurSel(combo.FindStringExact(1, selectName));
 }
 
-void PropertyDialog::UpdateComboBox(const vector<string>& contentList, CComboBox &combo, const string& selectName)
+void PropertyDialog::UpdateComboBox(const vector<string>& contentList, const CComboBox &combo, const string& selectName)
 {
     bool strFound = false;
     for (auto str : contentList)

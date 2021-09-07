@@ -1,9 +1,9 @@
 // license:GPLv3+
 // Ported at: VisualPinball.Resources/Meshes/BumperCap.cs
 
-const unsigned int bumperCapNumVertices=839;
-const unsigned int bumperCapNumIndices=1194;
-const Vertex3D_NoTex2 bumperCap[839]=
+constexpr unsigned int bumperCapNumVertices=839;
+constexpr unsigned int bumperCapNumIndices=1194;
+constexpr Vertex3D_NoTex2 bumperCap[839]=
 {
 { 0.229962f,-0.553872f,-0.084697f, 0.300600f,-0.725600f,0.619000f, 0.645999f,0.124135f},
 { 0.000081f,-0.798889f,-0.260302f, 0.300600f,-0.725600f,0.619000f, 0.493255f,0.022220f},
@@ -846,7 +846,7 @@ const Vertex3D_NoTex2 bumperCap[839]=
 { -0.156848f,0.791251f,-0.321858f, -0.290300f,0.956900f,-0.000000f, 0.403302f,0.990462f}
 };
 
-const WORD bumperCapIndices[1194]=
+constexpr WORD bumperCapIndices[1194]=
 {
 0, 1, 2,
 3, 4, 5,

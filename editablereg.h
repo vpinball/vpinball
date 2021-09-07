@@ -74,7 +74,7 @@ private:
 
    static EditableInfo* FindOrFail(ItemTypeEnum type)
    {
-      std::map<ItemTypeEnum, EditableInfo>::iterator it = m_map.find(type);
+      const std::map<ItemTypeEnum, EditableInfo>::iterator it = m_map.find(type);
       if (it == m_map.end())
       {
          ShowError("Editable type not found.");

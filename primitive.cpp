@@ -322,7 +322,7 @@ HRESULT Primitive::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Primitive::SetDefaults(bool fromMouseClick)
 {
-   static const char strKeyName[] = "DefaultProps\\Primitive";
+   static constexpr char strKeyName[] = "DefaultProps\\Primitive";
 
    m_d.m_useAsPlayfield = false;
    m_d.m_use3DMesh = false;
@@ -387,7 +387,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
 
 void Primitive::WriteRegDefaults()
 {
-   static const char strKeyName[] = "DefaultProps\\Primitive";
+   static constexpr char strKeyName[] = "DefaultProps\\Primitive";
 
    SaveValueInt(strKeyName, "SideColor", m_d.m_SideColor);
    SaveValueBool(strKeyName, "Visible", m_d.m_visible);
@@ -576,7 +576,7 @@ void Primitive::GetHitShapesDebug(vector<HitObject*> &pvho)
 void Primitive::AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj)
 {
    // create pair uniquely identifying the edge (i,j)
-   std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
+   const std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
 
    if (addedEdges.count(p) == 0)   // edge not yet added?
    {
@@ -1450,8 +1450,10 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool bac
    bw.WriteBool(FID(ISTO), m_d.m_toy);
    bw.WriteBool(FID(U3DM), m_d.m_use3DMesh);
    bw.WriteBool(FID(STRE), m_d.m_staticRendering);
+   {
    const int tmp = quantizeUnsigned<8>(clamp(m_d.m_disableLightingTop, 0.f, 1.f));
    bw.WriteInt(FID(DILI), (tmp == 1) ? 0 : tmp); // backwards compatible saving
+   }
    bw.WriteFloat(FID(DILB), m_d.m_disableLightingBelow);
    bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
    bw.WriteBool(FID(EBFC), m_d.m_backfacesEnabled);
@@ -1802,7 +1804,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
    {
    case WM_INITDIALOG:
    {
-      char nullstring[8] = { 0 };
+      constexpr char nullstring[8] = { 0 };
 
       prim = (Primitive*)lParam;
       SetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, nullstring);
@@ -1843,7 +1845,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                prim->m_vertexBuffer->release();
                prim->m_vertexBuffer = 0;
             }
-            bool flipTV = false;
+            constexpr bool flipTV = false;
             const bool convertToLeftHanded = IsDlgButtonChecked(hwndDlg, IDC_CONVERT_COORD_CHECK) == BST_CHECKED;
             const bool importAbsolutePosition = IsDlgButtonChecked(hwndDlg, IDC_ABS_POSITION_RADIO) == BST_CHECKED;
             const bool centerMesh = IsDlgButtonChecked(hwndDlg, IDC_CENTER_MESH) == BST_CHECKED;
@@ -2921,7 +2923,7 @@ STDMETHODIMP Primitive::ShowFrame(float frame)
 
 void Primitive::SetDefaultPhysics(bool fromMouseClick)
 {
-   static const char strKeyName[] = "DefaultProps\\Primitive";
+   static constexpr char strKeyName[] = "DefaultProps\\Primitive";
    m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Elasticity", 0.3f) : 0.3f;
    m_d.m_elasticityFalloff = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "ElasticityFalloff", 0.5f) : 0.5f;
    m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Friction", 0.3f) : 0.3f;

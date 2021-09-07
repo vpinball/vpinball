@@ -130,7 +130,7 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case 5:
             {
-               float oldX = flash->m_d.m_vCenter.x;
+               const float oldX = flash->m_d.m_vCenter.x;
                const float newX = PropertyDialog::GetFloatTextbox(m_posXEdit);
                if (oldX != newX)
                {
@@ -143,7 +143,7 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
             }
             case 6:
             {
-               float oldY = flash->m_d.m_vCenter.y;
+               const float oldY = flash->m_d.m_vCenter.y;
                const float newY = PropertyDialog::GetFloatTextbox(m_posYEdit);
                if (oldY != newY)
                {
@@ -264,7 +264,7 @@ INT_PTR FlasherVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPar
     {
         case WM_DRAWITEM:
         {
-            LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
+            const LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
             const UINT nID = static_cast<UINT>(wParam);
             if (nID == IDC_COLOR_BUTTON1)
             {

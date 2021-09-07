@@ -370,9 +370,9 @@ private:
 
    UINT m_adapter;      // index of the display adapter to use
 
-   static const DWORD TEXTURE_SAMPLERS = 8;
-   static const DWORD TEXTURE_STATE_CACHE_SIZE = 256;
-   static const DWORD TEXTURE_SAMPLER_CACHE_SIZE = 14;
+   static constexpr DWORD TEXTURE_SAMPLERS = 8;
+   static constexpr DWORD TEXTURE_STATE_CACHE_SIZE = 256;
+   static constexpr DWORD TEXTURE_SAMPLER_CACHE_SIZE = 14;
 
    std::map<RenderStates, DWORD> renderStateCache;                          // for caching
    DWORD textureStateCache[TEXTURE_SAMPLERS][TEXTURE_STATE_CACHE_SIZE];     // dto.
@@ -599,7 +599,7 @@ private:
 
    vec4 currentDisableLighting; // x and y: top and below, z and w unused
 
-   static const DWORD TEXTURESET_STATE_CACHE_SIZE = 5; // current convention: SetTexture gets "TextureX", where X 0..4
+   static constexpr DWORD TEXTURESET_STATE_CACHE_SIZE = 5; // current convention: SetTexture gets "TextureX", where X 0..4
    BaseTexture *currentTexture[TEXTURESET_STATE_CACHE_SIZE];
    float   currentAlphaTestValue;
    char    currentTechnique[64];

@@ -203,12 +203,12 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const flo
 
 float Ball::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
-   Vertex3Ds d = m_d.m_pos - ball.m_pos;  // delta position
+   const Vertex3Ds d = m_d.m_pos - ball.m_pos;  // delta position
 
-   Vertex3Ds dv = m_d.m_vel - ball.m_vel; // delta velocity
+   const Vertex3Ds dv = m_d.m_vel - ball.m_vel; // delta velocity
 
-   float bcddsq = d.LengthSquared();    // square of ball center's delta distance
-   float bcdd = sqrtf(bcddsq);          // length of delta
+   const float bcddsq = d.LengthSquared();      // square of ball center's delta distance
+   const float bcdd = sqrtf(bcddsq);            // length of delta
 
 #if 0 //!! TODO was this really necessary, must this be re-activated somehow??
    if (bcdd < 1.0e-8f)                  // two balls center-over-center embedded

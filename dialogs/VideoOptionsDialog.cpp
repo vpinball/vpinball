@@ -44,20 +44,20 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
 
    if(profile == 0)
    {
-   float ballAspecRatioOffsetX = 0.0f;
+   constexpr float ballAspecRatioOffsetX = 0.0f;
    char tmp[256];
    sprintf_s(tmp, 256, "%f", ballAspecRatioOffsetX);
    SetDlgItemTextA(IDC_CORRECTION_X, tmp);
-   float ballAspecRatioOffsetY = 0.0f;
+   constexpr float ballAspecRatioOffsetY = 0.0f;
    sprintf_s(tmp, 256, "%f", ballAspecRatioOffsetY);
    SetDlgItemTextA(IDC_CORRECTION_Y, tmp);
-   float latitude = 52.52f;
+   constexpr float latitude = 52.52f;
    sprintf_s(tmp, 256, "%f", latitude);
    SetDlgItemTextA(IDC_DN_LATITUDE, tmp);
-   float longitude = 13.37f;
+   constexpr float longitude = 13.37f;
    sprintf_s(tmp, 256, "%f", longitude);
    SetDlgItemTextA(IDC_DN_LONGITUDE, tmp);
-   float nudgeStrength = 2e-2f;
+   constexpr float nudgeStrength = 2e-2f;
    sprintf_s(tmp, 256, "%f", nudgeStrength);
    SetDlgItemTextA(IDC_NUDGE_STRENGTH, tmp);
    }
@@ -92,14 +92,14 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    SendMessage(GetDlgItem(IDC_BG_SET).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_SETCURSEL, 0, 0);
    SendMessage(GetDlgItem(IDC_3D_STEREO_Y).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
-   float stereo3DOfs = 0.0f;
+   constexpr float stereo3DOfs = 0.0f;
    char tmp[256];
    sprintf_s(tmp, 256, "%f", stereo3DOfs);
    SetDlgItemTextA(IDC_3D_STEREO_OFS, tmp);
-   float stereo3DMS = 0.03f;
+   constexpr float stereo3DMS = 0.03f;
    sprintf_s(tmp, 256, "%f", stereo3DMS);
    SetDlgItemTextA(IDC_3D_STEREO_MS, tmp);
-   float stereo3DZPD = 0.5f;
+   constexpr float stereo3DZPD = 0.5f;
    sprintf_s(tmp, 256, "%f", stereo3DZPD);
    SetDlgItemTextA(IDC_3D_STEREO_ZPD, tmp);
    SendMessage(GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -502,9 +502,9 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          // 21:9 aspect ratio resolutions:  3440*1440,2560*1080
          // 21:10 aspect ratio resolution:  3840*1600
          // 4:3  aspect ratio resolutions:  1280*1024
-         const unsigned int num_portrait_modes = 33;
-         static const int portrait_modes_width[num_portrait_modes] =  {431, 505, 720, 768, 606, 864, 600, 720, 768, 960,1024, 768, 768, 800,1050, 808, 900, 900,1050,1200,1050,1080,1200,1536,1212,1080,1440,1440,1600,1920,2048,1600,2160};
-         static const int portrait_modes_height[num_portrait_modes] = {768, 900,1024,1024,1080,1152,1280,1280,1280,1280,1280,1360,1366,1280,1400,1440,1440,1600,1600,1600,1680,1920,1920,2048,2160,2560,2560,3440,2560,2560,2560,3840,3840};
+         constexpr unsigned int num_portrait_modes = 33;
+         static constexpr int portrait_modes_width[num_portrait_modes] =  {431, 505, 720, 768, 606, 864, 600, 720, 768, 960,1024, 768, 768, 800,1050, 808, 900, 900,1050,1200,1050,1080,1200,1536,1212,1080,1440,1440,1600,1920,2048,1600,2160};
+         static constexpr int portrait_modes_height[num_portrait_modes] = {768, 900,1024,1024,1080,1152,1280,1280,1280,1280,1280,1360,1366,1280,1400,1440,1440,1600,1600,1600,1680,1920,1920,2048,2160,2560,2560,3440,2560,2560,2560,3840,3840};
 
          for (unsigned int i = 0; i < num_portrait_modes; ++i)
             if ((portrait_modes_width[i] <= screenwidth) && (portrait_modes_height[i] <= screenheight)
@@ -523,7 +523,7 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
 
          // add landscape play modes
-         static const int rgwindowsize[] = { 640, 720, 800, 912, 1024, 1152, 1280, 1360, 1366, 1400, 1440, 1600, 1680, 1920, 2048, 2560, 3440, 3840, 4096, 5120, 6400, 7680, 8192, 11520, 15360 };
+         static constexpr int rgwindowsize[] = { 640, 720, 800, 912, 1024, 1152, 1280, 1360, 1366, 1400, 1440, 1600, 1680, 1920, 2048, 2560, 3440, 3840, 4096, 5120, 6400, 7680, 8192, 11520, 15360 };
 
          for (size_t i = 0; i < sizeof(rgwindowsize)/sizeof(int) * 5; ++i)
          {

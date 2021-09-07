@@ -233,9 +233,9 @@ void Decal::GetTextSize(int * const px, int * const py)
 {
    const int len = (int)m_d.m_sztext.length();
    const HFONT hFont = GetFont();
-   const int alignment = DT_LEFT;
+   constexpr int alignment = DT_LEFT;
 
-   CClientDC clientDC(NULL);
+   const CClientDC clientDC(NULL);
    const HFONT hFontOld = clientDC.SelectObject(hFont);
 
    TEXTMETRIC tm;
@@ -286,7 +286,7 @@ void Decal::PreRenderText()
    const HFONT hFont = GetFont();
    int alignment = DT_LEFT;
 
-   CClientDC clientDC(NULL);
+   const CClientDC clientDC(NULL);
 
    HFONT hFontOld = clientDC.SelectObject(hFont);
 
@@ -428,7 +428,7 @@ void Decal::RenderDynamic()
       RenderObject();
 }
 
-static const WORD rgi0123[4] = { 0, 1, 2, 3 };
+static constexpr WORD rgi0123[4] = { 0, 1, 2, 3 };
 
 void Decal::RenderSetup()
 {
@@ -566,7 +566,7 @@ void Decal::RenderObject()
 
    if (!m_backglass)
    {
-      const float depthbias = -5.f * BASEDEPTHBIAS;
+      constexpr float depthbias = -5.f * BASEDEPTHBIAS;
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
    }
    else

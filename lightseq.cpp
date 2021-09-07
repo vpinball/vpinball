@@ -219,7 +219,7 @@ void LightSeq::RenderSetup()
    m_queue.Tail = 0;
 
    // get a BSTR version of the collection we are to use
-   CComBSTR bstrCollection = m_d.m_wzCollection.c_str();
+   const CComBSTR bstrCollection = m_d.m_wzCollection.c_str();
 
    // get the number of collections available
    int size = m_ptable->m_vcollection.size();
@@ -1725,17 +1725,17 @@ LightState LightSeq::GetElementState(const int index) const
    const ItemTypeEnum type = m_pcollection->m_visel[index].GetIEditable()->GetItemType();
    if (type == eItemLight)
    {
-      Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
-      rc = pLight->m_inPlayState;
+       const Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
+       rc = pLight->m_inPlayState;
    }
    else if (type == eItemFlasher)
    {
-       Flasher* const pFlasher = (Flasher*)m_pcollection->m_visel.ElementAt(index);
+       const Flasher* const pFlasher = (Flasher*)m_pcollection->m_visel.ElementAt(index);
        rc = pFlasher->m_inPlayState ? LightStateOn : LightStateOff;
    }
    else if (type == eItemPrimitive)
    {
-       Primitive* const pPrimitive = (Primitive*)m_pcollection->m_visel.ElementAt(index);
+       const Primitive* const pPrimitive = (Primitive*)m_pcollection->m_visel.ElementAt(index);
        rc = pPrimitive->m_inPlayState ? LightStateOn : LightStateOff;
    }
 

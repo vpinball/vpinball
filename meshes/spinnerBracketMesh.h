@@ -1,9 +1,9 @@
 // license:GPLv3+
 // Ported at: VisualPinball.Resources/Meshes/SpinnerBracket.cs
 
-const unsigned int spinnerBracketNumVertices=152;
-const unsigned int spinnerBracketNumFaces=420;
-const Vertex3D_NoTex2 spinnerBracket[152]=
+constexpr unsigned int spinnerBracketNumVertices=152;
+constexpr unsigned int spinnerBracketNumFaces=420;
+constexpr Vertex3D_NoTex2 spinnerBracket[152]=
 {
 { 0.509953f,0.008467f,0.476188f, -0.000000f,0.000000f,1.000000f, 0.000000f,0.000000f},
 { -0.509953f,0.008466f,0.476187f, -0.000000f,0.000000f,1.000000f, 0.000000f,0.000000f},
@@ -159,7 +159,7 @@ const Vertex3D_NoTex2 spinnerBracket[152]=
 { 0.940624f,0.096001f,-0.045435f, -0.000000f,0.000000f,1.000000f, 0.000000f,0.000000f}
 };
 
-const WORD spinnerBracketIndices[420]=
+constexpr WORD spinnerBracketIndices[420]=
 {
 0, 1, 2,
 1, 3, 2,

@@ -98,7 +98,7 @@ static HRESULT WaveOpenFile(const string& strFileName, HMMIO* phmmioIn, WAVEFORM
    MMCKINFO* pckInRIFF)
 {
    HRESULT hr;
-   HMMIO   hmmioIn = NULL;
+   HMMIO   hmmioIn;
 
    if (NULL == (hmmioIn = mmioOpen((LPSTR)strFileName.c_str(), NULL, MMIO_ALLOCBUF | MMIO_READ)))
       return E_FAIL;
@@ -122,8 +122,8 @@ static HRESULT WaveOpenFile(const string& strFileName, HMMIO* phmmioIn, WAVEFORM
 //       moved to a separate routine so there was more control on the chunks
 //       that are before the data chunk, such as 'fact', etc...
 //-----------------------------------------------------------------------------
-static HRESULT WaveStartDataRead(HMMIO* phmmioIn, MMCKINFO* pckIn,
-   MMCKINFO* pckInRIFF)
+static HRESULT WaveStartDataRead(const HMMIO* phmmioIn, MMCKINFO* pckIn,
+   const MMCKINFO* pckInRIFF)
 {
    // Seek to the data
    if (-1 == mmioSeek(*phmmioIn, pckInRIFF->dwDataOffset + (DWORD)sizeof(FOURCC),

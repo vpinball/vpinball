@@ -392,7 +392,7 @@ void DispReel::Animate()
             {
                WCHAR mySound[MAXTOKEN];
                MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSound.c_str(), -1, mySound, MAXTOKEN);
-               BSTR mySoundBSTR = SysAllocString(mySound);
+               const BSTR mySoundBSTR = SysAllocString(mySound);
                m_ptable->PlaySound(mySoundBSTR, 0, 1.0f, 0.f, 0.f, 0, VARIANT_FALSE, VARIANT_TRUE, 0.f);
                SysFreeString(mySoundBSTR);
             }

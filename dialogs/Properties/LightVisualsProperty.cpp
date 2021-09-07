@@ -160,7 +160,7 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
                 }
                 else
                 {
-                   Light* const firstLight = (Light*)m_pvsel->ElementAt(0);
+                   const Light* const firstLight = (Light*)m_pvsel->ElementAt(0);
                    light->m_d.m_color = firstLight->m_d.m_color;
                    m_colorButton1.SetColor(light->m_d.m_color);
                    ptable->SetDirtyDraw();
@@ -188,7 +188,7 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
                 }
                 else
                 {
-                   Light* const firstLight = (Light*)m_pvsel->ElementAt(0);
+                   const Light* const firstLight = (Light*)m_pvsel->ElementAt(0);
                    light->m_d.m_color2 = firstLight->m_d.m_color2;
                    m_colorButton2.SetColor(light->m_d.m_color2);
                 }
@@ -279,8 +279,8 @@ INT_PTR LightVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam
     {
         case WM_DRAWITEM:
         {
-            LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
-            UINT nID = static_cast<UINT>(wParam);
+            const LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
+            const UINT nID = static_cast<UINT>(wParam);
             if (nID == IDC_COLOR_BUTTON1)
             {
                 m_colorButton1.DrawItem(lpDrawItemStruct);

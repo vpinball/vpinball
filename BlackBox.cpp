@@ -68,8 +68,8 @@ namespace
       LONGLONG			ticks;
    };
 
-   const int	kMaxMessages = 128;
-   ScopedPtr<BlackBoxEntry>							s_messages;
+   constexpr int	kMaxMessages = 128;
+   ScopedPtr<BlackBoxEntry>		s_messages;
 
    volatile long	s_topMessageIndex(0);
    volatile long	s_enabled(1);
@@ -130,8 +130,7 @@ namespace rde
       {
          va_list args;
          va_start(args, fmt);
-         char buff[sizeof(BlackBoxMessage)];
-         memset(buff, 0, sizeof(buff));
+         char buff[sizeof(BlackBoxMessage)] = {};
          _vsnprintf_s(buff, sizeof(buff) - 1, fmt, args);
          va_end(args);
          AddMessage(buff);

@@ -310,7 +310,7 @@ void VPinball::SetClipboard(vector<IStream*> * const pvstm)
 
 void VPinball::SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName)
 {
-   HCURSOR hcursor = LoadCursor(hInstance, lpCursorName);
+   const HCURSOR hcursor = LoadCursor(hInstance, lpCursorName);
    SetCursor(hcursor);
 }
 
@@ -368,7 +368,7 @@ bool VPinball::SaveFileDialog(const string& initDir, std::vector<std::string>& f
 
 CDockProperty *VPinball::GetDefaultPropertiesDocker()
 {
-    const int dockStyle = DS_DOCKED_RIGHT | DS_CLIENTEDGE | DS_NO_CLOSE;
+    constexpr int dockStyle = DS_DOCKED_RIGHT | DS_CLIENTEDGE | DS_NO_CLOSE;
     m_dockProperties = (CDockProperty *)AddDockedChild(new CDockProperty, dockStyle, 280, IDD_PROPERTY_DIALOG);
 
     assert(m_dockProperties->GetContainer());
@@ -387,7 +387,7 @@ CDockProperty *VPinball::GetPropertiesDocker()
 
 CDockToolbar *VPinball::GetDefaultToolbarDocker()
 {
-    const int dockStyle = DS_DOCKED_LEFT | DS_CLIENTEDGE | DS_NO_CLOSE;
+    constexpr int dockStyle = DS_DOCKED_LEFT | DS_CLIENTEDGE | DS_NO_CLOSE;
     m_dockToolbar = (CDockToolbar *)AddDockedChild(new CDockToolbar, dockStyle, 110, IDD_TOOLBAR);
     assert(m_dockToolbar->GetContainer());
     m_dockToolbar->GetContainer()->SetHideSingleTab(TRUE);
@@ -405,7 +405,7 @@ CDockToolbar *VPinball::GetToolbarDocker()
 
 CDockNotes* VPinball::GetDefaultNotesDocker()
 {
-   const int dockStyle = DS_CLIENTEDGE;
+   constexpr int dockStyle = DS_CLIENTEDGE;
    RECT rc;
    rc.left = 0;
    rc.top = 0;
@@ -430,13 +430,13 @@ CDockNotes* VPinball::GetNotesDocker()
 
 CDockLayers *VPinball::GetDefaultLayersDocker()
 {
-    const int dockStyle = DS_DOCKED_BOTTOM | DS_CLIENTEDGE | DS_NO_CLOSE;
+    constexpr int dockStyle = DS_DOCKED_BOTTOM | DS_CLIENTEDGE | DS_NO_CLOSE;
     m_dockLayers = (CDockLayers *)m_dockProperties->AddDockedChild(new CDockLayers, dockStyle, 380, IDD_LAYERS);
-    
+
     assert(m_dockLayers->GetContainer());
     m_dockLayers->GetContainer()->SetHideSingleTab(TRUE);
     m_layersListDialog = m_dockLayers->GetContainLayers()->GetLayersDialog();
-    
+
     return m_dockLayers;
 }
 
@@ -883,14 +883,14 @@ void VPinball::ReInitSound()
 {
 	for (size_t i = 0; i < m_vtable.size(); i++)
 	{
-		PinTable * const ptT = m_vtable[i];
+		const PinTable * const ptT = m_vtable[i];
 		for (size_t j = 0; j < ptT->m_vsound.size(); j++)
 			ptT->m_vsound[j]->UnInitialize();
 	}
 	m_ps.ReInitPinDirectSound(GetHwnd());
 	for (size_t i = 0; i < m_vtable.size(); i++)
 	{
-		PinTable * const ptT = m_vtable[i];
+		const PinTable * const ptT = m_vtable[i];
 		for (size_t j = 0; j < ptT->m_vsound.size(); j++)
 			ptT->m_vsound[j]->ReInitialize();
 	}
@@ -1050,13 +1050,13 @@ bool VPinball::CanClose()
    return true;
 }
 
-void VPinball::CloseTable(PinTable * const ppt)
+void VPinball::CloseTable(const PinTable * const ppt)
 {
    m_unloadingTable = true;
    ppt->GetMDITable()->SendMessage(WM_SYSCOMMAND, SC_CLOSE, 0);
    m_unloadingTable = false;
 
-   std::vector<MDIChildPtr> allChildren = GetAllMDIChildren();
+   const std::vector<MDIChildPtr> allChildren = GetAllMDIChildren();
    if (allChildren.empty())
    {
        ToggleToolbar();
@@ -1092,7 +1092,7 @@ void VPinball::SetEnableMenuItems()
       mainMenu.EnableMenuItem(ID_EDIT_DRAWINGORDER_HIT, MF_BYCOMMAND | MF_ENABLED);
       mainMenu.EnableMenuItem(ID_EDIT_DRAWINGORDER_SELECT, MF_BYCOMMAND | MF_ENABLED);
       // enable/disable save options
-      const UINT flags = MF_BYCOMMAND | MF_ENABLED;
+      constexpr UINT flags = MF_BYCOMMAND | MF_ENABLED;
       mainMenu.EnableMenuItem(IDM_SAVE, flags);
       mainMenu.EnableMenuItem(IDM_SAVEAS, flags);
       mainMenu.EnableMenuItem(ID_FILE_EXPORT_BLUEPRINT, flags);
@@ -1197,7 +1197,7 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
    if (!m_recentTableList.empty())
    {
       // update the file menu to contain the last n recent loaded files
-      CMenu menuFile = GetMainMenu(FILEMENU);
+      const CMenu menuFile = GetMainMenu(FILEMENU);
 
       // delete all the recent file IDM's and the separator from this menu
       for (UINT i = RECENT_FIRST_MENU_IDM; i <= RECENT_FIRST_MENU_IDM+(UINT)old_count; i++)
@@ -1249,7 +1249,7 @@ bool VPinball::processKeyInputForDialogs(MSG *pmsg)
     bool consumed = false;
     if (m_ptableActive)
     {
-       const int keyPressed = LOWORD(pmsg->wParam);
+       //const int keyPressed = LOWORD(pmsg->wParam);
        if (m_materialDialog.IsWindow())
           consumed = !!m_materialDialog.IsDialogMessage(*pmsg);
        if (!consumed && m_imageMngDlg.IsWindow())
@@ -1398,8 +1398,8 @@ void VPinball::PreCreate(CREATESTRUCT& cs)
 
     const int x = (screenwidth - MAIN_WINDOW_WIDTH) / 2;
     const int y = (screenheight - MAIN_WINDOW_HEIGHT) / 2;
-    const int width = MAIN_WINDOW_WIDTH;
-    const int height = MAIN_WINDOW_HEIGHT;
+    constexpr int width = MAIN_WINDOW_WIDTH;
+    constexpr int height = MAIN_WINDOW_HEIGHT;
 
     cs.x = x;  // set initial window placement
     cs.y = y;
@@ -1518,7 +1518,7 @@ void VPinball::OnInitialUpdate()
 
     ProfileLog("OnInitialUpdate");
 
-    const int foo[6] = {120, 240, 400, 600, 800, 1400};
+    constexpr int foo[6] = {120, 240, 400, 600, 800, 1400};
 
     m_hwndStatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE,
                                          "",
@@ -1595,7 +1595,7 @@ BOOL VPinball::OnCommand(WPARAM wparam, LPARAM lparam)
 {
     if (!ParseCommand(LOWORD(wparam), HIWORD(wparam) == 1))
     {
-        auto mdiTable = GetActiveMDIChild();
+        const auto mdiTable = GetActiveMDIChild();
         if(mdiTable)
            mdiTable->SendMessage(WM_COMMAND, wparam, lparam);
         return FALSE;
@@ -1757,7 +1757,7 @@ int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOpti
    LVFINDINFO lvf;
    char buf1[MAX_PATH], buf2[MAX_PATH];
 
-   SORTDATA *lpsd = (SORTDATA *)lSortOption;
+   const SORTDATA *lpsd = (SORTDATA *)lSortOption;
 
    lvf.flags = LVFI_PARAM;
    lvf.lParam = lSortParam1;
@@ -1780,7 +1780,7 @@ int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOpti
 int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)
 {
     LVFINDINFO lvf;
-    SORTDATA * const lpsd = (SORTDATA *)lSortOption;
+    const SORTDATA * const lpsd = (SORTDATA *)lSortOption;
 
     lvf.flags = LVFI_PARAM;
     lvf.lParam = lSortParam1;
@@ -1806,7 +1806,7 @@ int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM 
 int CALLBACK MyCompProcMemValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)
 {
     LVFINDINFO lvf;
-    SORTDATA * const lpsd = (SORTDATA *)lSortOption;
+    const SORTDATA * const lpsd = (SORTDATA *)lSortOption;
 
     lvf.flags = LVFI_PARAM;
     lvf.lParam = lSortParam1;
@@ -1844,7 +1844,7 @@ int CALLBACK MyCompProcMemValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM 
         return(int)(value[1]-value[0]);
 }
 
-static const int rgDlgIDFromSecurityLevel[] = { IDC_ACTIVEX0, IDC_ACTIVEX1, IDC_ACTIVEX2, IDC_ACTIVEX3, IDC_ACTIVEX4 };
+static constexpr int rgDlgIDFromSecurityLevel[] = { IDC_ACTIVEX0, IDC_ACTIVEX1, IDC_ACTIVEX2, IDC_ACTIVEX3, IDC_ACTIVEX4 };
 
 INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {

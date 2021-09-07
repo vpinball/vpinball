@@ -101,7 +101,7 @@ class Primitive :
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 public:
-   static const int Max_Primitive_Sides = 100; //!! 100 works for sleepy, 99 doesn't
+   static constexpr int Max_Primitive_Sides = 100; //!! 100 works for sleepy, 99 doesn't
 
    STDMETHOD(get_Sides)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_Sides)(/*[in]*/ int newVal);

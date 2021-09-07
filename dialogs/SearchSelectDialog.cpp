@@ -30,8 +30,7 @@ void SearchSelectDialog::Update()
 {
    ListView_SetExtendedListViewStyle(m_hElementList, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
-   LVCOLUMN lvc;
-   memset(&lvc, 0, sizeof(LVCOLUMN));
+   LVCOLUMN lvc = {};
    lvc.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
    lvc.cx = 200;
    lvc.pszText = TEXT("Name");
@@ -186,7 +185,7 @@ INT_PTR SearchSelectDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          }
          else if (wParam == IDC_ELEMENT_LIST)
          {
-            LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
+            const LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
             if (lpnmListView->hdr.code == LVN_COLUMNCLICK)
             {
                const int columnNumber = lpnmListView->iSubItem;

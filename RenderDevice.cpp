@@ -76,7 +76,7 @@ bool IsWindows10_1803orAbove()
 	return false;
 }
 
-const VertexElement VertexTexelElement[] =
+constexpr VertexElement VertexTexelElement[] =
 {
    { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
    { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
@@ -84,7 +84,7 @@ const VertexElement VertexTexelElement[] =
 };
 VertexDeclaration* RenderDevice::m_pVertexTexelDeclaration = NULL;
 
-const VertexElement VertexNormalTexelElement[] =
+constexpr VertexElement VertexNormalTexelElement[] =
 {
    { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
    { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },  // normal
@@ -105,7 +105,7 @@ VertexDeclaration* RenderDevice::m_pVertexNormalTexelDeclaration = NULL;
 VertexDeclaration* RenderDevice::m_pVertexNormalTexelTexelDeclaration = NULL;*/
 
 // pre-transformed, take care that this is a float4 and needs proper w component setup (also see https://docs.microsoft.com/en-us/windows/desktop/direct3d9/mapping-fvf-codes-to-a-directx-9-declaration)
-const VertexElement VertexTrafoTexelElement[] =
+constexpr VertexElement VertexTrafoTexelElement[] =
 {
    { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITIONT, 0 }, // transformed pos
    { 0, 4 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD,  1 }, // (mostly, except for classic lights) unused, there to be able to share same code as VertexNormalTexelElement
@@ -329,7 +329,7 @@ int getDisplayList(std::vector<DisplayConfig>& displays)
       return -1;
    }
    // Map the displays to the DX9 adapter. Otherwise this leads to an performance impact on systems with multiple GPUs
-   int adapterCount = pD3D->GetAdapterCount();
+   const int adapterCount = pD3D->GetAdapterCount();
    for (int i = 0;i < adapterCount;++i) {
       D3DADAPTER_IDENTIFIER9 adapter;
       pD3D->GetAdapterIdentifier(i, 0, &adapter);
@@ -745,7 +745,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    CreateVertexBuffer(4, 0, MY_D3DFVF_TEX, &m_quadVertexBuffer);
    Vertex3D_TexelOnly* bufvb;
    m_quadVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::WRITEONLY);
-   static const float verts[4 * 5] =
+   static constexpr float verts[4 * 5] =
    {
       1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
       -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
@@ -1642,8 +1642,8 @@ void* RenderDevice::AttachZBufferTo(RenderTarget* surf)
    else
    {
       IDirect3DSurface9 *pZBuf;
-      HRESULT hr = m_pD3DDevice->CreateDepthStencilSurface(desc.Width, desc.Height, D3DFMT_D16 /*D3DFMT_D24X8*/, //!!
-                                                           desc.MultiSampleType, desc.MultiSampleQuality, FALSE, &pZBuf, NULL);
+      const HRESULT hr = m_pD3DDevice->CreateDepthStencilSurface(desc.Width, desc.Height, D3DFMT_D16 /*D3DFMT_D24X8*/, //!!
+                                                                 desc.MultiSampleType, desc.MultiSampleQuality, FALSE, &pZBuf, NULL);
       if (FAILED(hr))
          ReportError("Fatal Error: unable to create depth buffer!", hr, __FILE__, __LINE__);
 
@@ -1806,7 +1806,7 @@ Shader::~Shader()
 bool Shader::Load(const BYTE* shaderCodeName, UINT codeSize)
 {
    LPD3DXBUFFER pBufferErrors;
-   DWORD dwShaderFlags = 0; //D3DXSHADER_SKIPVALIDATION // these do not have a measurable effect so far (also if used in the offline fxc step): D3DXSHADER_PARTIALPRECISION, D3DXSHADER_PREFER_FLOW_CONTROL/D3DXSHADER_AVOID_FLOW_CONTROL
+   constexpr DWORD dwShaderFlags = 0; //D3DXSHADER_SKIPVALIDATION // these do not have a measurable effect so far (also if used in the offline fxc step): D3DXSHADER_PARTIALPRECISION, D3DXSHADER_PREFER_FLOW_CONTROL/D3DXSHADER_AVOID_FLOW_CONTROL
    HRESULT hr;
    /*
        if(fromFile)
@@ -1840,11 +1840,11 @@ bool Shader::Load(const BYTE* shaderCodeName, UINT codeSize)
    {
       if (pBufferErrors)
       {
-         LPVOID pCompileErrors = pBufferErrors->GetBufferPointer();
+         const LPVOID pCompileErrors = pBufferErrors->GetBufferPointer();
          g_pvp->MessageBox((const char*)pCompileErrors, "Compile Error", MB_OK | MB_ICONEXCLAMATION);
       }
       else
-          g_pvp->MessageBox("Unknown Error", "Compile Error", MB_OK | MB_ICONEXCLAMATION);
+         g_pvp->MessageBox("Unknown Error", "Compile Error", MB_OK | MB_ICONEXCLAMATION);
 
       return false;
    }

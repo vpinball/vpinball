@@ -152,7 +152,7 @@ private:
 };
 
 #define VK_TO_DIK_SIZE 105
-static const unsigned char VK_TO_DIK[VK_TO_DIK_SIZE][2] =
+static constexpr unsigned char VK_TO_DIK[VK_TO_DIK_SIZE][2] =
 {
    { VK_BACK, DIK_BACK },
    { VK_TAB, DIK_TAB },

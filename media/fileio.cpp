@@ -663,7 +663,7 @@ long __stdcall FastIStorage::CopyTo(unsigned long, const struct _GUID *, WCHAR *
 
    for (size_t i = 0; i < m_vstm.size(); i++)
    {
-      FastIStream * const pstmCur = m_vstm[i];
+      const FastIStream * const pstmCur = m_vstm[i];
       if (SUCCEEDED(hr = pstgNew->CreateStream(pstmCur->m_wzName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmT)))
       {
          ULONG writ;

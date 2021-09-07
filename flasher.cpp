@@ -44,7 +44,7 @@ void Flasher::InitShape()
       // First time shape has been set to custom - set up some points
       const float x = m_d.m_vCenter.x;
       const float y = m_d.m_vCenter.y;
-      const float size = 100.0f;
+      constexpr float size = 100.0f;
 
       CComObject<DragPoint> *pdp;
       CComObject<DragPoint>::CreateInstance(&pdp);
@@ -1050,17 +1050,17 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
     // Retrieve the handle to a display device context for the client
     // area of the window.
 
-    HDC hdcWindow = GetDC(m_videoCapHwnd);
+    const HDC hdcWindow = GetDC(m_videoCapHwnd);
 
     // Create a compatible DC, which is used in a BitBlt from the window DC.
-    HDC hdcMemDC = CreateCompatibleDC(hdcWindow);
+    const HDC hdcMemDC = CreateCompatibleDC(hdcWindow);
 
     // Get the client area for size calculation.
     const int pWidth = m_videoCapWidth;
     const int pHeight = m_videoCapHeight;
 
     // Create a compatible bitmap from the Window DC.
-    HBITMAP hbmScreen = CreateCompatibleBitmap(hdcWindow, pWidth, pHeight);
+    const HBITMAP hbmScreen = CreateCompatibleBitmap(hdcWindow, pWidth, pHeight);
 
     // Select the compatible bitmap into the compatible memory DC.
     SelectObject(hdcMemDC, hbmScreen);
@@ -1088,7 +1088,7 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
 
         const DWORD dwBmpSize = ((bmpScreen.bmWidth * bi.biBitCount + 31) / 32) * 4 * bmpScreen.bmHeight;
 
-        HANDLE hDIB = GlobalAlloc(GHND, dwBmpSize);
+        const HANDLE hDIB = GlobalAlloc(GHND, dwBmpSize);
         char* lpbitmap = (char*)GlobalLock(hDIB);
 
         // Gets the "bits" from the bitmap, and copies them into a buffer 

@@ -24,14 +24,14 @@ public:
    ~UserData();
 
    bool FindOrInsertStringIntoAutolist(vector<string>* ListIn, const string &strIn);
-   size_t FindOrInsertUD(vector<UserData>* ListIn, UserData& udIn);
+   size_t FindOrInsertUD(vector<UserData>* ListIn, const UserData& udIn);
    int FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::iterator& UDiterOut, int &Pos);
-   int FindClosestUD(vector<UserData>* ListIn, const int CurrentLine, const int CurrentIdx);
+   int FindClosestUD(const vector<UserData>* ListIn, const int CurrentLine, const int CurrentIdx);
    int FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<UserData>::iterator& UDiterOut, int &PosOut);
    int UDKeyIndex(vector<UserData>* ListIn, const string &strIn);
    int UDIndex(vector<UserData>* ListIn, const string &strIn);
-   UserData GetUDfromUniqueKey(vector<UserData>* ListIn, const string &UniKey);
-   size_t GetUDPointerfromUniqueKey(vector<UserData>* ListIn, const string &UniKey);
+   UserData GetUDfromUniqueKey(const vector<UserData>* ListIn, const string &UniKey);
+   size_t GetUDPointerfromUniqueKey(const vector<UserData>* ListIn, const string &UniKey);
 };
 
 // CodeViewer Preferences 

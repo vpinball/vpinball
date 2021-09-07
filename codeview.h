@@ -214,10 +214,10 @@ public:
       /* [in] */ DWORD cbContext,
       /* [in] */ DWORD dwReserved);
 
-   bool FControlAlreadyOkayed(CONFIRMSAFETY *pcs);
-   void AddControlToOkayedList(CONFIRMSAFETY *pcs);
-   bool FControlMarkedSafe(CONFIRMSAFETY *pcs);
-   bool FUserManuallyOkaysControl(CONFIRMSAFETY *pcs);
+   bool FControlAlreadyOkayed(const CONFIRMSAFETY *pcs);
+   void AddControlToOkayedList(const CONFIRMSAFETY *pcs);
+   bool FControlMarkedSafe(const CONFIRMSAFETY *pcs);
+   bool FUserManuallyOkaysControl(const CONFIRMSAFETY *pcs);
 
    virtual HRESULT STDMETHODCALLTYPE QueryService(
       REFGUID guidService,
@@ -247,7 +247,7 @@ public:
    void LoadFromFile(const string& filename);
    void SetCaption(const string& szCaption);
 
-   bool ShowTooltip(SCNotification *Scn);
+   bool ShowTooltip(const SCNotification *Scn);
    void ShowAutoComplete(SCNotification *pSCN);
 
    void UpdateRegWithPrefs();

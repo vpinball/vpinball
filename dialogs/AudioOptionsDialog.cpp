@@ -152,8 +152,7 @@ void AudioOptionsDialog::OnOK()
    checked = SendMessage(GetDlgItem(IDC_PLAY_SOUND).GetHwnd(), BM_GETCHECK, 0, 0);
    SaveValueBool("Player", "PlaySound", (checked == BST_CHECKED));
 
-   int fmusic;
-   fmusic = SNDCFG_SND3D2CH;
+   int fmusic = SNDCFG_SND3D2CH;
    checked = SendMessage(GetDlgItem(IDC_RADIO_SND3DALLREAR).GetHwnd(), BM_GETCHECK, 0, 0);
    if (checked)
    {
@@ -181,8 +180,7 @@ void AudioOptionsDialog::OnOK()
    }
    SaveValueInt("Player", "Sound3D", fmusic);
 
-   size_t volume;
-   volume = SendMessage(GetDlgItem(IDC_MUSIC_SLIDER).GetHwnd(), TBM_GETPOS, 0, 0);
+   size_t volume = SendMessage(GetDlgItem(IDC_MUSIC_SLIDER).GetHwnd(), TBM_GETPOS, 0, 0);
    SaveValueInt("Player", "MusicVolume", (int)volume);
 
    volume = SendMessage(GetDlgItem(IDC_SOUND_SLIDER).GetHwnd(), TBM_GETPOS, 0, 0);

@@ -206,12 +206,12 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
           SendDlgItemMessage(IDC_START_VP_FILE_DIALOG2, BM_SETCHECK, BST_CHECKED, 0);
           SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_SETCURSEL, 0, 0);
           SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, "1.0");
-          const int x = 0;
-          const int y = 0;
+          constexpr int x = 0;
+          constexpr int y = 0;
           SaveValueInt("Editor", "CodeViewPosX", x);
           SaveValueInt("Editor", "CodeViewPosY", y);
-          const int width = 640;
-          const int height = 490;
+          constexpr int width = 640;
+          constexpr int height = 490;
           SaveValueInt("Editor", "CodeViewPosWidth", width);
           SaveValueInt("Editor", "CodeViewPosHeight", height);
 
@@ -228,7 +228,7 @@ INT_PTR EditorOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         case WM_DRAWITEM:
         {
-            LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
+            const LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
             const UINT nID = static_cast<UINT>(wParam);
             if (nID == IDC_COLOR_BUTTON2)
             {

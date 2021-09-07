@@ -91,7 +91,7 @@ private:
 
         ~handle_in_flight_decrement()
         {
-            std::size_t prev
+            const std::size_t prev
                 = std::atomic_fetch_sub_explicit(&tp.in_flight,
                     std::size_t(1),
                     std::memory_order_acq_rel);
@@ -109,7 +109,7 @@ inline ThreadPool::ThreadPool(std::size_t threads)
     : pool_size(threads)
     , in_flight(0)
 {
-    std::unique_lock<std::mutex> lock(this->queue_mutex);
+    const std::unique_lock<std::mutex> lock(this->queue_mutex);
     for (std::size_t i = 0; i != threads; ++i)
         start_worker(i, lock);
 }
@@ -206,7 +206,7 @@ inline void ThreadPool::set_pool_size(std::size_t limit)
     if (limit < 1)
         limit = 1;
 
-    std::unique_lock<std::mutex> lock(this->queue_mutex);
+    const std::unique_lock<std::mutex> lock(this->queue_mutex);
 
     if (stop)
         return;

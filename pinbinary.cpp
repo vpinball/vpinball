@@ -16,7 +16,7 @@ PinBinary::~PinBinary()
 
 bool PinBinary::ReadFromFile(const string& szFileName)
 {
-   HANDLE hFile = CreateFile(szFileName.c_str(),
+   const HANDLE hFile = CreateFile(szFileName.c_str(),
       GENERIC_READ, FILE_SHARE_READ,
       NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
@@ -49,7 +49,7 @@ bool PinBinary::ReadFromFile(const string& szFileName)
 
 bool PinBinary::WriteToFile(const string& szfilename)
 {
-   HANDLE hFile = CreateFile(szfilename.c_str(),
+   const HANDLE hFile = CreateFile(szfilename.c_str(),
       GENERIC_WRITE, FILE_SHARE_READ,
       NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
@@ -121,7 +121,7 @@ int CALLBACK EnumFontFamExProc(
 
 void PinFont::Register()
 {
-   HDC hdcScreen = GetDC(NULL);
+   const HDC hdcScreen = GetDC(NULL);
 
    LOGFONT lf;
    lf.lfCharSet = DEFAULT_CHARSET;

@@ -1,9 +1,9 @@
 // license:GPLv3+
 // Ported at: VisualPinball.Resources/Meshes/HitTargetRectangle.cs
 
-const unsigned int hitTargetRectangleVertices=161;
-const unsigned int hitTargetRectangleNumIndices=378;
-const Vertex3D_NoTex2 hitTargetRectangleMesh[161]=
+constexpr unsigned int hitTargetRectangleVertices=161;
+constexpr unsigned int hitTargetRectangleNumIndices=378;
+constexpr Vertex3D_NoTex2 hitTargetRectangleMesh[161]=
 {
 { 0.656542f,0.087036f,0.662663f, 0.995100f,0.000000f,-0.098400f, 0.459613f,0.599376f},
 { 0.656542f,0.197081f,0.662663f, 0.995100f,0.000000f,-0.098400f, 0.459613f,0.630626f},
@@ -168,7 +168,7 @@ const Vertex3D_NoTex2 hitTargetRectangleMesh[161]=
 { 0.256505f,-0.207938f,-0.287322f, -0.000000f,-1.000000f,0.000000f, 0.995664f,0.829507f}
 };
 
-const WORD hitTargetRectangleIndices[378]=
+constexpr WORD hitTargetRectangleIndices[378]=
 {
 	84, 85, 86,
 	84, 87, 85,

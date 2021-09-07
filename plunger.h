@@ -7,7 +7,7 @@
 
 #include "resource.h"       // main symbols
 
-const int MAXTIPSHAPE = 256;
+constexpr int MAXTIPSHAPE = 256;
 
 class PlungerData : public BaseProperty
 {

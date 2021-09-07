@@ -252,7 +252,7 @@ Texture::~Texture()
    FreeStuff();
 }
 
-HRESULT Texture::SaveToStream(IStream *pstream, PinTable *pt)
+HRESULT Texture::SaveToStream(IStream *pstream, const PinTable *pt)
 {
    BiffWriter bw(pstream, NULL);
 
@@ -323,7 +323,7 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
 
       // copy, but exchange R,B channels //!! meh, could this be done somewhere else to avoid additional overhead?
       DWORD* const __restrict pdst = (DWORD*)tex->data();
-      DWORD* const __restrict psrc = (DWORD*)stbi_data;
+      const DWORD* const __restrict psrc = (DWORD*)stbi_data;
       assert(tex->pitch() == x*4);
       unsigned int o = 0;
       for (int yo = 0; yo < y; ++yo)
@@ -472,10 +472,10 @@ void Texture::CreateGDIVersion()
       return;
    }
 
-   HDC hdcScreen = GetDC(NULL);
+   const HDC hdcScreen = GetDC(NULL);
    m_hbmGDIVersion = CreateCompatibleBitmap(hdcScreen, m_width, m_height);
-   HDC hdcNew = CreateCompatibleDC(hdcScreen);
-   HBITMAP hbmOld = (HBITMAP)SelectObject(hdcNew, m_hbmGDIVersion);
+   const HDC hdcNew = CreateCompatibleDC(hdcScreen);
+   const HBITMAP hbmOld = (HBITMAP)SelectObject(hdcNew, m_hbmGDIVersion);
 
    BITMAPINFO bmi;
    ZeroMemory(&bmi, sizeof(bmi));

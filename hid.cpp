@@ -12,17 +12,14 @@ extern "C" {
 HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
 {
    GUID hidGUID;
-   HDEVINFO hardwareDeviceInfoSet;
    SP_DEVICE_INTERFACE_DATA deviceInterfaceData;
-   PSP_INTERFACE_DEVICE_DETAIL_DATA deviceDetail;
    ULONG requiredSize;
-   DWORD result;
 
    //Get the HID GUID value - used as mask to get list of devices
    HidD_GetHidGuid(&hidGUID);
 
    //Get a list of devices matching the criteria (hid interface, present)
-   hardwareDeviceInfoSet = SetupDiGetClassDevs(&hidGUID,
+   HDEVINFO hardwareDeviceInfoSet = SetupDiGetClassDevs(&hidGUID,
       NULL, // Define no enumerator (global)
       NULL, // Define no
       (DIGCF_PRESENT | // Only Devices present
@@ -31,7 +28,7 @@ HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
    deviceInterfaceData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
 
    //Go through the list and get the interface data
-   result = SetupDiEnumDeviceInterfaces(hardwareDeviceInfoSet,
+   DWORD result = SetupDiEnumDeviceInterfaces(hardwareDeviceInfoSet,
       NULL, //infoData,
       &hidGUID, //interfaceClassGuid,
       deviceIndex,
@@ -53,7 +50,7 @@ HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
       0); //infoData))
 
    //Allocate the buffer
-   deviceDetail = (PSP_INTERFACE_DEVICE_DETAIL_DATA)calloc(requiredSize, 1);
+   PSP_INTERFACE_DEVICE_DETAIL_DATA deviceDetail = (PSP_INTERFACE_DEVICE_DETAIL_DATA)calloc(requiredSize, 1);
    deviceDetail->cbSize = sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA);
 
    DWORD newRequiredSize;
@@ -133,7 +130,6 @@ void hid_init()
       printf("Connected to PBW controller\n");
       unsigned char buffer[1024] = { 0 };
       unsigned char inbuffer[1024] = { 0 };
-      HANDLE sReportEvent;
 
       HidD_GetPreparsedData(hnd, &HidParsedData);
 
@@ -147,7 +143,7 @@ void hid_init()
 
       if (HidParsedData) HidD_FreePreparsedData(HidParsedData); //make sure not null, otherwise crash		
 
-      sReportEvent = CreateEvent(NULL, 1, 0, NULL);
+      HANDLE sReportEvent = CreateEvent(NULL, 1, 0, NULL);
 
       ol.hEvent = sReportEvent;
       ol.Offset = 0;
@@ -266,8 +262,7 @@ void hid_update(const U32 cur_time_msec)
       {
          unsigned char buffer[1024] = { 0 };
 
-         HANDLE sReportEvent;
-         sReportEvent = CreateEvent(NULL, 1, 0, NULL);
+         HANDLE sReportEvent = CreateEvent(NULL, 1, 0, NULL);
 
          ol.hEvent = sReportEvent;
          ol.Offset = 0;

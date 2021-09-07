@@ -2,7 +2,7 @@
 #include "resource.h"
 #include "KeysConfigDialog.h"
 
-const char rgszKeyName[][10] = {
+static constexpr char rgszKeyName[][10] = {
     "",
     "Escape", //DIK_ESCAPE          0x01
     "1", //DIK_1               0x02
@@ -1008,7 +1008,7 @@ void KeysConfigDialog::SetValue(int nID, const char * const regKey, const char *
 void KeysConfigDialog::StartTimer(int nID)
 {
     KeyWindowStruct * const pksw = (KeyWindowStruct *)::GetWindowLongPtr(GetHwnd(), GWLP_USERDATA);
-    HWND hwndKeyWindow = GetItemHwnd(nID);
+    const HWND hwndKeyWindow = GetItemHwnd(nID);
     if (pksw->m_timerid == NULL) //add
     { //add
         // corrects input error with space bar

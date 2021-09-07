@@ -153,7 +153,7 @@ void uOverSleep(const unsigned long long u)
 
 //
 
-static const unsigned int daysPerMonths[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }; // Number of days per month
+static constexpr unsigned int daysPerMonths[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }; // Number of days per month
 
 // (Rough) angle of the day (radian)
 double AngleOfDay(const unsigned int day, const unsigned int month, const unsigned int year)
@@ -275,7 +275,7 @@ double TheoreticRadiation(const unsigned int day, const unsigned int month, cons
 	const double c0 = cos(declination - rlat);
 	const double c1 = cos(declination + rlat);
 	// Theoretical radiation in W.m-2
-	const double solarConst = 1367.; // solar constant W.m-2
+	constexpr double solarConst = 1367.; // solar constant W.m-2
 	return 0.5 * solarConst * e0 * ((c0 + c1)*sin(sunriseHourAngle) / sunriseHourAngle + c0 - c1);
 }
 

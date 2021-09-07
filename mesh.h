@@ -143,7 +143,7 @@ class RenderVertex3D : public Vertex3Ds
 public:
    void set(const Vertex3Ds &v) { x = v.x; y = v.y; z = v.z; }
 
-   static const int Dim = 3;
+   static constexpr int Dim = 3;
 
    bool smooth;
    bool slingshot;
@@ -158,7 +158,7 @@ public:
    void set(const RenderVertex &v) { *this = v; }
    void set(const RenderVertex3D &v) { x = v.x; y = v.y; smooth = v.smooth; slingshot = v.slingshot; controlPoint = v.controlPoint; }
 
-   static const int Dim = 2;
+   static constexpr int Dim = 2;
 
    bool smooth;
    bool slingshot;

@@ -124,13 +124,13 @@ void Textbox::WriteRegDefaults()
 
    const float fTmp = (float)(fd.cySize.int64 / 10000.0);
    SaveValueFloat("DefaultProps\\TextBox", "FontSize", fTmp);
-   size_t charCnt = wcslen(fd.lpstrName) + 1;
+   const size_t charCnt = wcslen(fd.lpstrName) + 1;
    char * const strTmp = new char[2 * charCnt];
    WideCharToMultiByteNull(CP_ACP, 0, fd.lpstrName, -1, strTmp, (int)(2 * charCnt), NULL, NULL);
    SaveValue("DefaultProps\\TextBox", "FontName", strTmp);
    delete[] strTmp;
-   int weight = fd.sWeight;
-   int charset = fd.sCharset;
+   const int weight = fd.sWeight;
+   const int charset = fd.sCharset;
    SaveValueInt("DefaultProps\\TextBox", "FontWeight", weight);
    SaveValueInt("DefaultProps\\TextBox", "FontCharSet", charset);
    SaveValueInt("DefaultProps\\TextBox", "FontItalic", fd.fItalic);
@@ -177,8 +177,7 @@ HFONT Textbox::GetFont()
 
     lf.lfItalic = (BYTE)bl;
 
-    HFONT hFont = CreateFontIndirect(&lf);
-
+    const HFONT hFont = CreateFontIndirect(&lf);
     return hFont;
 }
 
@@ -271,8 +270,8 @@ void Textbox::RenderDynamic()
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 
-   const float mult  = (float)(1.0 / EDITOR_BG_WIDTH);
-   const float ymult = (float)(1.0 / EDITOR_BG_HEIGHT);
+   constexpr float mult  = (float)(1.0 / EDITOR_BG_WIDTH);
+   constexpr float ymult = (float)(1.0 / EDITOR_BG_HEIGHT);
 
    const float rect_left = min(m_d.m_v1.x, m_d.m_v2.x);
    const float rect_top = min(m_d.m_v1.y, m_d.m_v2.y);
@@ -358,7 +357,7 @@ void Textbox::PreRenderText()
 
    HFONT hFont;
    m_pIFontPlay->get_hFont(&hFont);
-   HFONT oldFont = (HFONT)SelectObject(hdc, hFont);
+   const HFONT oldFont = (HFONT)SelectObject(hdc, hFont);
    SetTextColor(hdc, m_d.m_fontcolor);
    SetBkMode(hdc, TRANSPARENT);
    SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);

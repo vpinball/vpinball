@@ -56,8 +56,8 @@ void LayersListDialog::DeleteLayer()
    if (m_activeTable == nullptr)
       return;
 
-   HTREEITEM layerToDelete = m_layerTreeView.GetCurrentLayerItem();
-   std::vector<HTREEITEM> allSubItems = m_layerTreeView.GetSubItems(layerToDelete);
+   const HTREEITEM layerToDelete = m_layerTreeView.GetCurrentLayerItem();
+   const std::vector<HTREEITEM> allSubItems = m_layerTreeView.GetSubItems(layerToDelete);
 
    if (!allSubItems.empty())
    {
@@ -73,7 +73,7 @@ void LayersListDialog::DeleteLayer()
    }
    const std::string fillLayerName(m_layerTreeView.GetItemText(hFillLayer));
    m_layerTreeView.SetActiveLayer(fillLayerName);
-   for (HTREEITEM item : allSubItems)
+   for (const HTREEITEM item : allSubItems)
    {
       TVITEM tvItem;
       ZeroMemory(&tvItem, sizeof(tvItem));
@@ -91,7 +91,7 @@ void LayersListDialog::DeleteLayer()
          }
       }
    }
-   for (HTREEITEM item : allSubItems)
+   for (const HTREEITEM item : allSubItems)
       m_layerTreeView.DeleteItem(item);
    m_layerTreeView.DeleteItem(layerToDelete);
 }
@@ -143,7 +143,7 @@ void LayersListDialog::UpdateElement(IEditable* const pedit)
    if (pedit == nullptr)
       return;
 
-   HTREEITEM item = m_layerTreeView.GetItemByElement(pedit);
+   const HTREEITEM item = m_layerTreeView.GetItemByElement(pedit);
    if (item == nullptr)
       return;
 
@@ -155,8 +155,8 @@ void LayersListDialog::DeleteElement(IEditable* const pedit)
    if (pedit == nullptr)
       return;
 
-   HTREEITEM parent = m_layerTreeView.GetLayerByElement(pedit);
-   HTREEITEM item = m_layerTreeView.GetItemByElement(pedit);
+   const HTREEITEM parent = m_layerTreeView.GetLayerByElement(pedit);
+   const HTREEITEM item = m_layerTreeView.GetItemByElement(pedit);
    if (item == nullptr || parent == nullptr)
       return;
    m_layerTreeView.DeleteItem(item);
@@ -194,7 +194,7 @@ BOOL LayersListDialog::OnInitDialog()
    AttachItem(IDC_LAYER_FILTER_CASE_BUTTON, m_layerFilterCaseButton);
    AttachItem(IDC_EXPAND_COLLAPSE_BUTTON, m_expandCollapseButton);
 
-   const int iconSize = 16;
+   constexpr int iconSize = 16;
    HANDLE hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ASSIGN), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
    m_assignButton.SetIcon((HICON)hIcon);
    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ADD), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
@@ -305,7 +305,7 @@ void LayersListDialog::OnAssignButton()
       ISelect* const psel = m_activeTable->m_vmultisel.ElementAt(t);
       IEditable* const pedit = psel->GetIEditable();
       psel->m_layerName = layerName;
-      HTREEITEM oldItem = m_layerTreeView.GetItemByElement(pedit);
+      const HTREEITEM oldItem = m_layerTreeView.GetItemByElement(pedit);
       m_layerTreeView.AddElement(pedit->GetName(), pedit);
       m_layerTreeView.DeleteItem(oldItem);
    }
@@ -372,7 +372,7 @@ HTREEITEM LayerTreeView::AddItem(HTREEITEM hParent, LPCTSTR text, IEditable* con
    tvis.hParent = hParent;
    tvis.item = tvi;
 
-   HTREEITEM item = InsertItem(tvis);
+   const HTREEITEM item = InsertItem(tvis);
    return item;
 }
 
@@ -408,7 +408,7 @@ HTREEITEM LayerTreeView::GetLayerByElement(const IEditable* const pedit)
       children.push_back(item);
       item = GetNextItem(item, TVGN_NEXT);
    }
-   for (HTREEITEM child : children)
+   for (const HTREEITEM child : children)
    {
       HTREEITEM subItem = GetChild(child);
       while (subItem)
@@ -442,7 +442,7 @@ HTREEITEM LayerTreeView::GetLayerByItem(HTREEITEM hChildItem)
          return item;
       item = GetNextItem(item, TVGN_NEXT);
    }
-   for (HTREEITEM child : children)
+   for (const HTREEITEM child : children)
    {
       HTREEITEM subItem = GetChild(child);
       while (subItem)
@@ -465,7 +465,7 @@ HTREEITEM LayerTreeView::GetItemByElement(const IEditable* const pedit)
       children.push_back(item);
       item = GetNextItem(item, TVGN_NEXT);
    }
-   for (HTREEITEM child : children)
+   for (const HTREEITEM child : children)
    {
       HTREEITEM subItem = GetChild(child);
       while (subItem)
@@ -492,14 +492,13 @@ int LayerTreeView::GetItemCount() const
 {
    std::vector<HTREEITEM> children;
    HTREEITEM item = GetChild(hRootItem);
-   int count = 0;
    while (item)
    {
       children.push_back(item);
       item = GetNextItem(item, TVGN_NEXT);
    }
-   count = (int)children.size();
-   for (HTREEITEM child : children)
+   int count = (int)children.size();
+   for (const HTREEITEM child : children)
    {
       HTREEITEM subItem = GetChild(child);
       while (subItem)
@@ -572,7 +571,7 @@ void LayerTreeView::SetAllItemStates(const bool checked)
       TreeView_SetCheckState(GetHwnd(), item, checked);
       item = GetNextItem(item, TVGN_NEXT);
    }
-   for (HTREEITEM child : children)
+   for (const HTREEITEM child : children)
    {
       HTREEITEM subItem = GetChild(child);
       while (subItem)
@@ -669,7 +668,7 @@ bool LayerTreeView::PreTranslateMessage(MSG* msg)
 void LayerTreeView::OnAttach()
 {
    m_normalImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 1, 0);
-   CBitmap bm(IDB_LAYER_ICONS16);
+   const CBitmap bm(IDB_LAYER_ICONS16);
    m_normalImages.Add(bm, RGB(255, 255, 255));
    SetImageList(m_normalImages, LVSIL_NORMAL);
 
@@ -699,7 +698,7 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
    case WM_KEYUP:
       if (wparam == VK_F2)
       {
-         HTREEITEM item = GetSelection();
+         const HTREEITEM item = GetSelection();
          EditLabel(item);
       }
       break;
@@ -714,7 +713,7 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
          TVHITTESTINFO tvht;
          tvht.pt.x = Pos.x - 20; // the highlight items should be as the same points as the drag
          tvht.pt.y = Pos.y - 20; //
-         HTREEITEM hitTarget = HitTest(tvht);
+         const HTREEITEM hitTarget = HitTest(tvht);
          if (hitTarget) // if there is a hit
             SelectDropTarget(hitTarget);
 
@@ -728,8 +727,7 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       {
          ImageList_DragLeave(GetHwnd());
          ImageList_EndDrag();
-         HTREEITEM hSelectedDrop;
-         hSelectedDrop = GetDropHiLightItem();
+         HTREEITEM hSelectedDrop = GetDropHiLightItem();
          SelectItem(hSelectedDrop);
          SelectDropTarget(NULL);
 
@@ -745,10 +743,10 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
                if (pedit != nullptr)
                {
                   ISelect* const psel = pedit->GetISelect();
-                  HTREEITEM hLayerItem = GetLayerByItem(hSelectedDrop);
+                  const HTREEITEM hLayerItem = GetLayerByItem(hSelectedDrop);
                   if (psel != nullptr)
                      psel->m_layerName = GetLayerName(hLayerItem);
-                  HTREEITEM oldItem = GetItemByElement(pedit);
+                  const HTREEITEM oldItem = GetItemByElement(pedit);
                   DeleteItem(oldItem);
                   AddElementToLayer(hLayerItem, pedit->GetName(), pedit);
                   std::vector<HTREEITEM> subItem = GetSubItems(dragItem->m_hDragLayer);
@@ -785,13 +783,12 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
    {
    case TVN_BEGINDRAG:
    {
-      HIMAGELIST hImg;
-      LPNMTREEVIEW lpnmtv = (LPNMTREEVIEW)lparam;
-      hImg = TreeView_CreateDragImage(GetHwnd(), lpnmtv->itemNew.hItem);
+      const LPNMTREEVIEW lpnmtv = (LPNMTREEVIEW)lparam;
+      HIMAGELIST hImg = TreeView_CreateDragImage(GetHwnd(), lpnmtv->itemNew.hItem);
       ImageList_BeginDrag(hImg, 0, 0, 0);
       ImageList_DragEnter(GetHwnd(), lpnmtv->ptDrag.x, lpnmtv->ptDrag.y);
 
-      std::shared_ptr<DragItem> dragItem = std::make_shared<DragItem>();
+      const std::shared_ptr<DragItem> dragItem = std::make_shared<DragItem>();
       dragItem->m_hDragItem = lpnmtv->itemNew.hItem;
       dragItem->m_hDragLayer = GetLayerByItem(dragItem->m_hDragItem);
       m_DragItems.push_back(dragItem);
@@ -806,7 +803,7 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
    case NM_DBLCLK: return OnNMDBClick(lpnmh);
    case TVN_ENDLABELEDIT:
    {
-      LPNMTVDISPINFO pinfo = (LPNMTVDISPINFO)lparam;
+      const LPNMTVDISPINFO pinfo = (LPNMTVDISPINFO)lparam;
 
       if (pinfo->item.pszText == NULL || pinfo->item.pszText[0] == '\0')
       {
@@ -846,7 +843,7 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
 
 LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
 {
-   DWORD dwpos = GetMessagePos();
+   const DWORD dwpos = GetMessagePos();
    TVHITTESTINFO ht = {};
    ht.pt.x = GET_X_LPARAM(dwpos);
    ht.pt.y = GET_Y_LPARAM(dwpos);
@@ -911,7 +908,7 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
 
 LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
 {
-   DWORD dwpos = GetMessagePos();
+   const DWORD dwpos = GetMessagePos();
    TVHITTESTINFO ht = {};
    ht.pt.x = GET_X_LPARAM(dwpos);
    ht.pt.y = GET_Y_LPARAM(dwpos);

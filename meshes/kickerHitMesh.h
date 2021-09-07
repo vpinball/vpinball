@@ -1,8 +1,8 @@
 // license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Kicker/KickerHitMesh.cs
 
-const unsigned int kickerHitNumVertices=216;
-const Vertex3D_NoTex2 kickerHitMesh[216]=
+constexpr unsigned int kickerHitNumVertices=216;
+constexpr Vertex3D_NoTex2 kickerHitMesh[216]=
 {
 { -0.736232f,-0.407777f,-0.070769f, 0.388800f,0.298400f,0.871700f, 0.083212f,0.041577f},
 { -0.895651f,-0.500504f,0.032088f, 0.388800f,0.298400f,0.871700f, 0.083329f,0.001500f},

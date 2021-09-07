@@ -15,12 +15,12 @@ DEFINE_GUID(CLSID_VBScript, 0xb54f3741, 0x5b07, 0x11cf, 0xa4, 0xb0, 0x0, 0xaa, 0
 #define CONTEXTCOOKIE_NORMAL 1000
 #define CONTEXTCOOKIE_DEBUG 1001
 
-static const int LAST_ERROR_WIDGET_HEIGHT = 256;
+static constexpr int LAST_ERROR_WIDGET_HEIGHT = 256;
 
 static UINT g_FindMsgString; // Windows message for the FindText dialog
 
 //Scintillia Lexer parses only lower case unless otherwise told
-static const char vbsReservedWords[] =
+static constexpr char vbsReservedWords[] =
 "and as byref byval case call const "
 "continue dim do each else elseif end error exit false for function global "
 "goto if in loop me new next not nothing on optional or private public "
@@ -148,7 +148,7 @@ static char* iso8859_1_to_utf8(const char* str, const size_t length)
 #define UTF8_ACCEPT 0
 #define UTF8_REJECT 1
 
-static const uint8_t utf8d[] = {
+static constexpr uint8_t utf8d[] = {
   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 00..1f
   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 20..3f
   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 40..5f
@@ -251,7 +251,7 @@ HRESULT CodeViewer::AddTemporaryItem(const BSTR bstr, IDispatch * const pdisp)
 
    m_vcvdTemp.AddSortedString(pcvd);
 
-   const int flags = SCRIPTITEM_ISSOURCE | SCRIPTITEM_ISVISIBLE;
+   constexpr int flags = SCRIPTITEM_ISSOURCE | SCRIPTITEM_ISVISIBLE;
 
    /*const HRESULT hr =*/ m_pScript->AddNamedItem(bstr, flags);
 
@@ -301,7 +301,7 @@ void CodeViewer::RemoveItem(IScriptable * const piscript)
    if (idx == -1)
       return;
 
-   CodeViewDispatch * const pcvd = m_vcvd[idx];
+   const CodeViewDispatch * const pcvd = m_vcvd[idx];
 
    _ASSERTE(pcvd);
 
@@ -373,7 +373,7 @@ HRESULT CodeViewer::ReplaceName(IScriptable * const piscript, const WCHAR * cons
 
 STDMETHODIMP CodeViewer::InitializeScriptEngine()
 {
-	HRESULT vbScriptResult = CoCreateInstance(CLSID_VBScript, 0, CLSCTX_ALL/*CLSCTX_INPROC_SERVER*/, IID_IActiveScriptParse, (LPVOID*)&m_pScriptParse); //!! CLSCTX_INPROC_SERVER good enough?!
+	const HRESULT vbScriptResult = CoCreateInstance(CLSID_VBScript, 0, CLSCTX_ALL/*CLSCTX_INPROC_SERVER*/, IID_IActiveScriptParse, (LPVOID*)&m_pScriptParse); //!! CLSCTX_INPROC_SERVER good enough?!
 	if (vbScriptResult != S_OK) return vbScriptResult;
 
 	// This can fail on some systems (I tested with wine 6.9 and this fails)
@@ -617,7 +617,7 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 
    m_hwndStatus = CreateStatusWindow(WS_CHILD | WS_VISIBLE, "", m_hwndMain, 1);
 
-   const int foo[4] = { 220, 420, 450, 500 };
+   constexpr int foo[4] = { 220, 420, 450, 500 };
    ::SendMessage(m_hwndStatus, SB_SETPARTS, 4, (size_t)foo);
 
    //////////////////////// Last error widget
@@ -637,7 +637,7 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 	//if still using old dll load VB lexer instead
 	//use SCI_SETLEXERLANGUAGE as SCI_GETLEXER doesn't return the correct value with SCI_SETLEXER
 	::SendMessage(m_hwndScintilla, SCI_SETLEXERLANGUAGE, 0, (LPARAM)"vpscript");
-	LRESULT lexVersion = SendMessage(m_hwndScintilla, SCI_GETLEXER, 0, 0);
+	const LRESULT lexVersion = SendMessage(m_hwndScintilla, SCI_GETLEXER, 0, 0);
 	if (lexVersion != SCLEX_VPSCRIPT)
 	{
 		::SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0);
@@ -893,7 +893,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	nLine++;
 	if (dwCookie == CONTEXTCOOKIE_DEBUG)
 	{
-		char* szT = MakeChar(exception.bstrDescription);
+		const char* const szT = MakeChar(exception.bstrDescription);
 		AddToDebugOutput(szT);
 		delete[] szT;
 		SysFreeString(bstr);
@@ -919,7 +919,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	// Check if this is a compile error or a runtime error
 	SCRIPTSTATE state;
 	m_pScript->GetScriptState(&state);
-	bool isRuntimeError = state == SCRIPTSTATE_CONNECTED;
+	const bool isRuntimeError = (state == SCRIPTSTATE_CONNECTED);
 
 	// Error log content
 	std::wstringstream errorStream;
@@ -985,7 +985,7 @@ STDMETHODIMP CodeViewer::GetApplication(
 	if (m_pProcessDebugManager != nullptr)
 	{
 		IDebugApplication* app;
-		HRESULT result = m_pProcessDebugManager->GetDefaultApplication(&app);
+		const HRESULT result = m_pProcessDebugManager->GetDefaultApplication(&app);
 
 		// We want to make sure the debug application supports JIT debugging, otherwise we don't seem to get notified
 		// of runtime errors at all (neither in OnScriptError or in OnScriptErrorDebug)!
@@ -1010,7 +1010,7 @@ STDMETHODIMP CodeViewer::GetRootApplicationNode(
 )
 {
 	IDebugApplication* app;
-	HRESULT result = GetApplication(&app);
+	const HRESULT result = GetApplication(&app);
 	if (SUCCEEDED(result))
 	{
 		return app->GetRootNode(ppdanRoot);
@@ -1127,11 +1127,11 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 			ULONG numInfos;
 			propInfoEnum->Next(128, infos, &numInfos);
 
-			for (ULONG i = 0; i < numInfos; i++)
+			for (ULONG i2 = 0; i2 < numInfos; i2++)
 			{
-				stackVariablesStream << infos[i].m_bstrFullName << L"=" << infos[i].m_bstrValue;
+				stackVariablesStream << infos[i2].m_bstrFullName << L"=" << infos[i2].m_bstrValue;
 				// Add a comma if this isn't the last item in the list
-				if (i != numInfos - 1) stackVariablesStream << L", ";
+				if (i2 != numInfos - 1) stackVariablesStream << L", ";
 			}
 
 			propInfoEnum->Release();
@@ -1715,7 +1715,7 @@ void CodeViewer::GetParamsFromEvent(const UINT iEvent, char * const szParams)
    }
 }
 
-void AddEventToList(char * const sz, const int index, const int dispid, const LPARAM lparam)
+void AddEventToList(const char * const sz, const int index, const int dispid, const LPARAM lparam)
 {
    const HWND hwnd = (HWND)lparam;
    const size_t listindex = SendMessage(hwnd, CB_ADDSTRING, 0, (size_t)sz);
@@ -1748,7 +1748,7 @@ void CodeViewer::FindCodeFromEvent()
    lstrcat(szItemName, "_"); // VB Specific event names
    lstrcat(szItemName, szEventName);
    size_t codelen = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-   size_t stopChar = codelen;
+   const size_t stopChar = codelen;
    SendMessage(m_hwndScintilla, SCI_TARGETWHOLEDOCUMENT, 0, 0);
    SendMessage(m_hwndScintilla, SCI_SETSEARCHFLAGS, SCFIND_WHOLEWORD, 0);
    size_t posFind;
@@ -1934,7 +1934,7 @@ HRESULT STDMETHODCALLTYPE CodeViewer::QueryCustomPolicy(
    return S_OK;
 }
 
-bool CodeViewer::FControlAlreadyOkayed(CONFIRMSAFETY *pcs)
+bool CodeViewer::FControlAlreadyOkayed(const CONFIRMSAFETY *pcs)
 {
    if (g_pplayer)
    {
@@ -1949,7 +1949,7 @@ bool CodeViewer::FControlAlreadyOkayed(CONFIRMSAFETY *pcs)
    return false;
 }
 
-void CodeViewer::AddControlToOkayedList(CONFIRMSAFETY *pcs)
+void CodeViewer::AddControlToOkayedList(const CONFIRMSAFETY *pcs)
 {
    if (g_pplayer)
    {
@@ -1959,7 +1959,7 @@ void CodeViewer::AddControlToOkayedList(CONFIRMSAFETY *pcs)
    }
 }
 
-bool CodeViewer::FControlMarkedSafe(CONFIRMSAFETY *pcs)
+bool CodeViewer::FControlMarkedSafe(const CONFIRMSAFETY *pcs)
 {
    bool safe = false;
    IObjectSafety *pios = NULL;
@@ -1991,7 +1991,7 @@ LError:
    return safe;
 }
 
-bool CodeViewer::FUserManuallyOkaysControl(CONFIRMSAFETY *pcs)
+bool CodeViewer::FUserManuallyOkaysControl(const CONFIRMSAFETY *pcs)
 {
    OLECHAR *wzT;
    if (FAILED(OleRegGetUserType(pcs->clsid, USERCLASSTYPE_FULL, &wzT)))
@@ -2040,7 +2040,7 @@ void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
 	{
 		//Get member construct
 
-		LRESULT ConstructPos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0 ) - 2;
+		const LRESULT ConstructPos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0 ) - 2;
 		m_currentConstruct.chrg.cpMin = (Sci_PositionCR)SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, ConstructPos, TRUE);
 		m_currentConstruct.chrg.cpMax = (Sci_PositionCR)SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, ConstructPos, TRUE);
 		if ((m_currentConstruct.chrg.cpMax - m_currentConstruct.chrg.cpMin) > MAX_FIND_LENGTH) return;
@@ -2087,12 +2087,12 @@ void CodeViewer::GetMembers(vector<UserData>* ListIn, const string &strIn)
 	}
 }
 
-bool CodeViewer::ShowTooltip(SCNotification *pSCN)
+bool CodeViewer::ShowTooltip(const SCNotification *pSCN)
 {
 	//get word under pointer
 	const Sci_Position dwellpos = pSCN->position;
-	LRESULT wordstart = SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, dwellpos, TRUE);
-	LRESULT wordfinish = SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, dwellpos, TRUE);
+	const LRESULT wordstart = SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, dwellpos, TRUE);
+	const LRESULT wordfinish = SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, dwellpos, TRUE);
 	char Mess[MAX_LINE_LENGTH*4] = {}; int MessLen = 0;
 	const int CurrentLineNo = (int)SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, dwellpos, 0);
 	//return if in a comment
@@ -2128,8 +2128,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 		int idx = 0;
 		if (FindUD(m_VBwordsDict, DwellWord, i, idx) == 0)
 		{
-			string ptemp = i->m_keyName;
-			MessLen = sprintf_s(Mess, "VBS:%s", ptemp.c_str());
+			MessLen = sprintf_s(Mess, "VBS:%s", i->m_keyName.c_str());
 		}
 		else //if (MessLen == 0)
 		{
@@ -2225,7 +2224,7 @@ void CodeViewer::MarginClick(const Sci_Position position, const int modifiers)
 
 static void AddComment(const HWND m_hwndScintilla)
 {
-   const char * const comment = "'";
+   constexpr char * const comment = "'";
 
    const size_t startSel = SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
    size_t endSel = SendMessage(m_hwndScintilla, SCI_GETSELECTIONEND, 0, 0);
@@ -2262,7 +2261,7 @@ static void AddComment(const HWND m_hwndScintilla)
 static void RemoveComment(const HWND m_hwndScintilla)
 {
    //const char * const comment = "\b";
-   size_t startSel = SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
+   const size_t startSel = SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
    size_t endSel = SendMessage(m_hwndScintilla, SCI_GETSELECTIONEND, 0, 0);
 
    const size_t selStartLine = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, startSel, 0);
@@ -2287,8 +2286,8 @@ static void RemoveComment(const HWND m_hwndScintilla)
       {
          char buf[MAX_LINE_LENGTH];
          GetRange(m_hwndScintilla, lineStart, lineEnd, buf);
-         string line(buf);
-         size_t idx = line.find_first_of('\'');
+         const string line(buf);
+         const size_t idx = line.find_first_of('\'');
          if (idx == 0)
          {
             SendMessage(m_hwndScintilla, SCI_SETSEL, lineStart, lineStart + 1);
@@ -2722,8 +2721,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 	size_t CBCount = SendMessage(m_hwndItemList, CB_GETCOUNT, 0, 0)-1;//Zero Based
 	while ((SSIZE_T)CBCount >= 0)
 	{
-		char c_str1[256];
-		memset(c_str1,0,sizeof(c_str1));
+		char c_str1[256] = {};
 		SendMessage(m_hwndItemList, CB_GETLBTEXT, CBCount, (LPARAM)c_str1);
 		if (strnlen_s(c_str1, sizeof(c_str1)) > 1)
 		{
@@ -2821,8 +2819,7 @@ void CodeViewer::ParseVPCore()
 	int linecount = 0;
 	while (!feof(fCore))
 	{
-		char text[MAX_LINE_LENGTH];
-		memset(text, 0, sizeof(text));
+		char text[MAX_LINE_LENGTH] = {};
 		fgets(text, MAX_LINE_LENGTH, fCore);
 		if (text[0] != '\0')
 		{
@@ -2840,8 +2837,7 @@ string CodeViewer::ExtractWordOperand(const string &line, const size_t StartPos)
 {
 	size_t Substart = StartPos;
 	const size_t lineLength = line.size();
-	char linechar = 0;
-	linechar = line[Substart];
+	char linechar = line[Substart];
 	while ((m_validChars.find(linechar) == string::npos) && (Substart < lineLength))
 	{
 		Substart++;
@@ -3128,10 +3124,10 @@ BOOL CodeViewer::OnCommand(WPARAM wparam, LPARAM lparam)
 
 LRESULT CodeViewer::OnNotify(WPARAM wparam, LPARAM lparam)
 {
-   NMHDR* const pnmh = (LPNMHDR)lparam;
+   const NMHDR* const pnmh = (LPNMHDR)lparam;
    SCNotification* const pscn = (SCNotification*)lparam;
 
-   HWND hwndRE = pnmh->hwndFrom;
+   const HWND hwndRE = pnmh->hwndFrom;
    const int code = pnmh->code;
    CodeViewer* pcv = GetCodeViewerPtr();
    switch (code)
@@ -3170,7 +3166,7 @@ LRESULT CodeViewer::OnNotify(WPARAM wparam, LPARAM lparam)
       case SCN_UPDATEUI:
       {
          char szT[256];
-         size_t pos = ::SendMessage(hwndRE, SCI_GETCURRENTPOS, 0, 0);
+         const size_t pos = ::SendMessage(hwndRE, SCI_GETCURRENTPOS, 0, 0);
          const size_t line = ::SendMessage(hwndRE, SCI_LINEFROMPOSITION, pos, 0) + 1;
          const size_t column = ::SendMessage(hwndRE, SCI_GETCOLUMN, pos, 0);
 
@@ -3314,8 +3310,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 				case IDC_CVP_BUT_COL_EVERYTHINGELSE:
 				{
-					CHOOSECOLOR cc;
-					memset(&cc, 0, sizeof(CHOOSECOLOR));
+					CHOOSECOLOR cc = {};
 					cc.lStructSize = sizeof(CHOOSECOLOR);
 					cc.hwndOwner = hwndDlg;
 					cc.rgbResult = pcv->m_prefEverythingElse->m_rgb;
@@ -3332,8 +3327,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				case IDC_CVP_BUT_FONT_EVERYTHINGELSE:
 				{
 					pcv->m_prefEverythingElse->m_logFont.lfHeight = pcv->m_prefEverythingElse->GetHeightFromPointSize(hwndDlg);
-					CHOOSEFONT cf;
-					memset(&cf, 0, sizeof(CHOOSEFONT));
+					CHOOSEFONT cf = {};
 					cf.lStructSize = sizeof(CHOOSEFONT);
 					cf.Flags = CF_NOVERTFONTS | CF_EFFECTS | CF_INITTOLOGFONTSTRUCT;
 					cf.hDC = GetDC(hwndDlg);
@@ -3364,8 +3358,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 						if (Pref->IDC_ColorBut_code == wParamLowWord)
 						{
-							CHOOSECOLOR cc;
-							memset(&cc, 0, sizeof(CHOOSECOLOR));
+							CHOOSECOLOR cc = {};
 							cc.lStructSize = sizeof(CHOOSECOLOR);
 							cc.hwndOwner = hwndDlg;
 							cc.rgbResult = Pref->m_rgb;
@@ -3383,8 +3376,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 						if (Pref->IDC_Font_code == wParamLowWord)
 						{
 							Pref->m_logFont.lfHeight = Pref->GetHeightFromPointSize(hwndDlg);
-							CHOOSEFONT cf;
-							memset(&cf, 0, sizeof(CHOOSEFONT));
+							CHOOSEFONT cf = {};
 							cf.lStructSize = sizeof(CHOOSEFONT);
 							cf.Flags = CF_NOVERTFONTS | CF_EFFECTS | CF_INITTOLOGFONTSTRUCT;
 							cf.hDC = GetDC(hwndDlg);
@@ -3436,14 +3428,14 @@ void CodeViewer::UpdateScinFromPrefs()
 
 void CodeViewer::ResizeScintillaAndLastError()
 {
-	CodeViewer* const pcv = GetCodeViewerPtr();
+	const CodeViewer* const pcv = GetCodeViewerPtr();
 
-	CRect rc = GetClientRect();
+	const CRect rc = GetClientRect();
 	RECT rcStatus;
 	::GetClientRect(pcv->m_hwndStatus, &rcStatus);
 	const int statheight = rcStatus.bottom - rcStatus.top;
 
-	int scintillaHeight = rc.bottom - rc.top - statheight - (30 + 2 + 40) - (m_lastErrorWidgetVisible ? LAST_ERROR_WIDGET_HEIGHT : 0);
+	const int scintillaHeight = rc.bottom - rc.top - statheight - (30 + 2 + 40) - (m_lastErrorWidgetVisible ? LAST_ERROR_WIDGET_HEIGHT : 0);
 	::SetWindowPos(pcv->m_hwndScintilla, NULL,
 		0, 0,
 		rc.right - rc.left, scintillaHeight,
@@ -3478,7 +3470,7 @@ void CodeViewer::SetLastErrorTextW(const LPCWSTR text)
 
 void CodeViewer::AppendLastErrorTextW(const std::wstring& text)
 {
-	int requiredLength = ::GetWindowTextLength(m_hwndLastErrorTextArea) + lstrlenW(text.c_str()) + 1;
+	const int requiredLength = ::GetWindowTextLength(m_hwndLastErrorTextArea) + lstrlenW(text.c_str()) + 1;
 	wchar_t* buf = new wchar_t[requiredLength];
 
     // Get existing text from edit control and put into buffer
@@ -3518,7 +3510,7 @@ HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool ba
 
    for (int i = 0; i < m_visel.size(); ++i)
    {
-      IScriptable * const piscript = m_visel[i].GetIEditable()->GetScriptable();
+      const IScriptable * const piscript = m_visel[i].GetIEditable()->GetScriptable();
       bw.WriteWideString(FID(ITEM), piscript->m_wzName);
    }
 
@@ -3558,7 +3550,7 @@ bool Collection::LoadToken(const int id, BiffReader * const pbr)
    case FID(ITEM):
    {
       //!! BUG - item list must be up to date in table (loaded) for the reverse name lookup to work
-      PinTable * const ppt = (PinTable *)pbr->m_pdata;
+      const PinTable * const ppt = (PinTable *)pbr->m_pdata;
 
       //!! workaround: due to a bug in earlier versions, it can happen that the string written was twice the size
       WCHAR wzT[MAXNAMEBUFFER*2];
@@ -3711,7 +3703,7 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
       return S_OK;
    }
 
-   WCHAR * const wzT = V_BSTR(&varT);
+   const WCHAR * const wzT = V_BSTR(&varT);
    const int len = lstrlenW(wzT);
 
    char * const szT = new char[len + 1];

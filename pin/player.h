@@ -60,7 +60,7 @@ static const char* regkey_string[eCKeys] = {
    "Enable3DKey",
    "EscapeKey"
 };
-static const int regkey_defdik[eCKeys] = {
+static constexpr int regkey_defdik[eCKeys] = {
    DIK_LSHIFT,
    DIK_RSHIFT,
    DIK_Z,
@@ -83,7 +83,7 @@ static const int regkey_defdik[eCKeys] = {
    DIK_F10,
    DIK_ESCAPE
 };
-static const int regkey_idc[eCKeys] = {
+static constexpr int regkey_idc[eCKeys] = {
    IDC_LEFTFLIPPER,
    IDC_RIGHTFLIPPER,
    IDC_LEFTTILT,

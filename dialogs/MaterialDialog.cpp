@@ -404,7 +404,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             {
                FILE *f;
                fopen_s(&f, ofn.lpstrFile, "wb");
-               const int mv = MATERIAL_VERSION;
+               constexpr int mv = MATERIAL_VERSION;
                fwrite(&mv, 4, 1, f);
                fwrite(&selCount, 4, 1, f);
                while (sel != -1)
@@ -864,13 +864,12 @@ void MaterialDialog::LoadPosition()
 
 void MaterialDialog::SavePosition()
 {
-    int w, h;
-    CRect rect = GetWindowRect();
+    const CRect rect = GetWindowRect();
 
     SaveValueInt("Editor", "MaterialMngPosX", rect.left);
     SaveValueInt("Editor", "MaterialMngPosY", rect.top);
-    w = rect.right - rect.left;
+    const int w = rect.right - rect.left;
     SaveValueInt("Editor", "MaterialMngWidth", w);
-    h = rect.bottom - rect.top;
+    const int h = rect.bottom - rect.top;
     SaveValueInt("Editor", "MaterialMngHeight", h);
 }

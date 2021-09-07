@@ -262,7 +262,7 @@ void Plunger::RenderDynamic()
 //
 
 // Modern Plunger - added by rascal
-const static PlungerCoord modernCoords[] =
+constexpr static PlungerCoord modernCoords[] =
 {
    { 0.20f, 0.0f, 0.00f, 1.0f, 0.0f },  // tip
    { 0.30f, 3.0f, 0.11f, 1.0f, 0.0f },  // tip
@@ -285,7 +285,7 @@ const static PlungerDesc modernDesc = {
 // by 2x the nominal width (1x the width on each side of the centerline).
 // The pre-render code knows to set up the flat rendering when there are
 // no lathe coordinates.
-const static PlungerDesc flatDesc = { 0, 0 };
+constexpr static PlungerDesc flatDesc = { 0, 0 };
 
 
 // Find and skip the next token in a TipShape string.  Finds the
@@ -335,7 +335,7 @@ void Plunger::RenderSetup()
    float springLoops = 0.0f, springEndLoops = 0.0f;
    float springGauge = 0.0f;
    float springRadius = 0.0f;
-   const float springMinSpacing = 2.2f;
+   constexpr float springMinSpacing = 2.2f;
    float rody = beginy + m_d.m_height;
    const float zScale = m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
@@ -417,7 +417,7 @@ void Plunger::RenderSetup()
 
       // Figure the normals and the texture coordinates
       c = customDesc->c;
-      const PlungerCoord c0 = { 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
+      constexpr PlungerCoord c0 = { 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
       const PlungerCoord *cprv = &c0;
       for (int i = 0; i < nTip; ++i, cprv = c++)
       {

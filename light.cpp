@@ -480,7 +480,7 @@ void Light::RenderDynamic()
    if (!m_backglass)
    {
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
-      const float depthbias = -BASEDEPTHBIAS;
+      constexpr float depthbias = -BASEDEPTHBIAS;
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
    }
    else
@@ -540,7 +540,7 @@ void Light::RenderDynamic()
 
       pd3dDevice->lightShader->SetTechnique("bulb_light");
 
-      Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+      const Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       ppin3d->EnableAlphaBlend(false, false, false);
       //pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  RenderDevice::SRC_ALPHA);  // add the lightcontribution
       pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
@@ -1206,8 +1206,8 @@ void Light::InitShape()
       for (int i = 8; i > 0; i--)
       {
          const float angle = (float)(M_PI*2.0 / 8.0)*(float)i;
-         float xx = x + sinf(angle)*m_d.m_falloff;
-         float yy = y - cosf(angle)*m_d.m_falloff;
+         const float xx = x + sinf(angle)*m_d.m_falloff;
+         const float yy = y - cosf(angle)*m_d.m_falloff;
          CComObject<DragPoint> *pdp;
          CComObject<DragPoint>::CreateInstance(&pdp);
          if (pdp)

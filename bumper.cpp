@@ -386,7 +386,7 @@ void Bumper::RenderCap(const Material * const capMaterial)
 
 void Bumper::UpdateSkirt(const bool doCalculation)
 {
-   const float SKIRT_TILT = 5.0f;
+   constexpr float SKIRT_TILT = 5.0f;
 
    const float scalexy = m_d.m_radius;
    float rotx = 0.0f, roty = 0.0f;
@@ -824,7 +824,7 @@ void Bumper::RenderSetup()
 
 void Bumper::RenderStatic()
 {
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   const RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
       return;

@@ -2,9 +2,9 @@
 // Ported at: VisualPinball.Resources/Meshes/KickerCup.cs
 //            VisualPinball.Resources/Meshes/KickerPlate.cs
 
-const unsigned int kickerCupNumVertices=373;
-const unsigned int kickerCupNumIndices=774;
-const Vertex3D_NoTex2 kickerCupMesh[373]=
+constexpr unsigned int kickerCupNumVertices=373;
+constexpr unsigned int kickerCupNumIndices=774;
+constexpr Vertex3D_NoTex2 kickerCupMesh[373]=
 {
 { 0.160498f,-0.969978f,-0.437316f, -0.132000f,0.991300f,-0.000000f, 0.473903f,0.120135f},
 { 0.000000f,-0.991344f,-1.023521f, -0.132000f,0.991300f,-0.000000f, 0.500000f,0.403981f},
@@ -380,7 +380,8 @@ const Vertex3D_NoTex2 kickerCupMesh[373]=
 { 0.000000f,0.991341f,-0.437316f, 0.000000f,-1.000000f,-0.000000f, 1.000000f,0.120135f},
 { -0.417163f,0.890804f,-0.437316f, 0.383800f,-0.923400f,-0.000000f, 0.930297f,0.120135f}
 };
-const WORD kickerCupIndices[774]=
+
+constexpr WORD kickerCupIndices[774]=
 {
 0, 1, 2,
 3, 4, 5,
@@ -642,9 +643,9 @@ const WORD kickerCupIndices[774]=
 289, 287, 286
 };
 
-const unsigned int kickerPlateNumVertices=49;
-const unsigned int kickerPlateNumIndices=72;
-const Vertex3D_NoTex2 kickerPlate[49]=
+constexpr unsigned int kickerPlateNumVertices=49;
+constexpr unsigned int kickerPlateNumIndices=72;
+constexpr Vertex3D_NoTex2 kickerPlate[49]=
 {
 { -1.160550f,0.001521f,0.002516f, 0.000000f,0.000000f,1.000000f, 0.500000f,0.001500f},
 { -1.121706f,-0.293496f,0.002516f, 0.000000f,0.000000f,1.000000f, 0.458338f,0.001500f},
@@ -697,7 +698,7 @@ const Vertex3D_NoTex2 kickerPlate[49]=
 { -0.020550f,0.001521f,0.002516f, 0.000000f,0.000000f,1.000000f, 0.958338f,0.001500f}
 };
 
-const WORD kickerPlateIndices[72]=
+constexpr WORD kickerPlateIndices[72]=
 {
 21, 23, 24,
 19, 21, 22,

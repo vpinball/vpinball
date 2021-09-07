@@ -67,7 +67,7 @@ HRESULT Rubber::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Rubber::SetDefaults(bool fromMouseClick)
 {
-   static const char strKeyName[] = "DefaultProps\\Rubber";
+   static constexpr char strKeyName[] = "DefaultProps\\Rubber";
 
    m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Height", 25.0f) : 25.0f;
    m_d.m_thickness = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "Thickness", 8) : 8;
@@ -98,7 +98,7 @@ void Rubber::SetDefaults(bool fromMouseClick)
 
 void Rubber::WriteRegDefaults()
 {
-   static const char strKeyName[] = "DefaultProps\\Rubber";
+   static constexpr char strKeyName[] = "DefaultProps\\Rubber";
 
    SaveValueFloat(strKeyName, "Height", m_d.m_height);
    SaveValueFloat(strKeyName, "HitHeight", m_d.m_hitHeight);
@@ -546,7 +546,7 @@ void Rubber::GetHitShapes(vector<HitObject*> &pvho)
    {
       Vertex3Ds rgv3D[3];
       // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
-      Vertex3D_NoTex2 *v = &m_vertices[m_ringIndices[i]];
+      const Vertex3D_NoTex2 *v = &m_vertices[m_ringIndices[i]];
       rgv3D[0] = Vertex3Ds(v->x, v->y, v->z);
       v = &m_vertices[m_ringIndices[i + 2]];
       rgv3D[1] = Vertex3Ds(v->x, v->y, v->z);
@@ -574,7 +574,7 @@ void Rubber::GetHitShapes(vector<HitObject*> &pvho)
 void Rubber::AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j)
 {
    // create pair uniquely identifying the edge (i,j)
-   std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
+   const std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
 
    if (addedEdges.count(p) == 0)   // edge not yet added?
    {
@@ -1533,7 +1533,7 @@ void Rubber::UpdateRubber(const bool updateVB, const float height)
 
 void Rubber::SetDefaultPhysics(bool fromMouseClick)
 {
-   static const char strKeyName[] = "DefaultProps\\Rubber";
+   static constexpr char strKeyName[] = "DefaultProps\\Rubber";
 
    m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Elasticity", 0.8f) : 0.8f;
    m_d.m_elasticityFalloff = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "ElasticityFalloff", 0.3f) : 0.3f;

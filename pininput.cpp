@@ -187,7 +187,7 @@ void PinInput::LoadSettings()
 BOOL CALLBACK EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* pdidoi,
    VOID* pContext)
 {
-   PinInput * const ppinput = (PinInput *)pContext;
+   const PinInput * const ppinput = (PinInput *)pContext;
 
 #ifdef _DEBUG
    static int nAxis = 0;
@@ -292,7 +292,7 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
       {
          ppinput->uShockDevice = ppinput->e_JoyCnt; // remember uShock
          ppinput->uShockType = USHOCKTYPE_GENERIC;  // set type = Generic
-         ppinput->m_linearPlunger = 1;              // use linear plunger calibration
+         ppinput->m_linearPlunger = true;           // use linear plunger calibration
       }
       else
       {
@@ -1112,7 +1112,7 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
 void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int curr_time_msec)
 {
     const int joyk = input->dwSequence - APP_JOYSTICKMN; // joystick index
-    static const bool rotLeftManual = false; //!! delete
+    static constexpr bool rotLeftManual = false; //!! delete
 
     if (input->dwOfs >= DIJOFS_BUTTON0 && input->dwOfs <= DIJOFS_BUTTON31)
     {
@@ -1714,7 +1714,7 @@ int PinInput::GetNextKey() // return last valid keyboard key
 #ifdef USE_DINPUT8
       LPDIRECTINPUTDEVICE8 pkyb = m_pKeyboard;
 #else
-      LPDIRECTINPUTDEVICE pkyb = m_pKeyboard;
+      const LPDIRECTINPUTDEVICE pkyb = m_pKeyboard;
 #endif
       for (int j = 0; j < 2; ++j)
       {

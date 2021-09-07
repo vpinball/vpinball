@@ -13,7 +13,7 @@ LZWWriter::~LZWWriter()
 {
 }
 
-HRESULT LZWWriter::WriteSz(char *sz, int cbytes)
+HRESULT LZWWriter::WriteSz(const char *sz, int cbytes)
 {
    return m_pistream->Write(sz, cbytes, NULL);
 }
@@ -105,7 +105,7 @@ HRESULT LZWWriter::CompressBits(int init_bits)
             disp = 1;
          else
             disp = HSIZE - i;
-         while (1)
+         while (true)
          {
             i -= disp;
             if (i < 0)

@@ -1,9 +1,9 @@
 // license:GPLv3+
 // Ported at: VisualPinball.Resources/Meshes/BumperBase.cs
 
-const unsigned int bumperBaseNumVertices=517;
-const unsigned int bumperBaseNumIndices=2352;
-const Vertex3D_NoTex2 bumperBase[517]=
+constexpr unsigned int bumperBaseNumVertices=517;
+constexpr unsigned int bumperBaseNumIndices=2352;
+constexpr Vertex3D_NoTex2 bumperBase[517]=
 {
 { 0.198024f,-0.210365f,-0.003978f, -0.697200f,0.716900f,0.000100f, 0.016391f,0.331046f},
 { 0.198024f,-0.210365f,0.202859f, -0.697200f,0.716900f,-0.000000f, 0.016390f,0.211405f},
@@ -524,7 +524,7 @@ const Vertex3D_NoTex2 bumperBase[517]=
 { -0.198152f,0.196647f,-0.003978f, 0.928000f,-0.328000f,-0.176600f, 0.478323f,0.185920f}
 };
 
-const WORD bumperBaseIndices[2352]=
+constexpr WORD bumperBaseIndices[2352]=
 {
 	0, 1, 2,
 	0, 2, 3,

@@ -73,7 +73,7 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
    std::vector<VertInfo> faceVerts;
 
    // need some small data type 
-   while (1)
+   while (true)
    {
       char lineHeader[256];
       const int res = fscanf_s(f, "\n%s", lineHeader, 256);
@@ -363,7 +363,7 @@ bool ObjLoader::ExportStart(const string& filename)
    char nameOnly[MAX_PATH] = { 0 };
    memcpy(nameOnly, matName + i, len - i);
    if ((fopen_s(&m_matFile, matName, "wt") != 0) || !m_matFile)
-      return 0;
+      return false;
    fprintf_s(m_matFile, "# Visual Pinball table mat file\n");
 
    if ((fopen_s(&m_fHandle, filename.c_str(), "wt") != 0) || !m_fHandle)
@@ -438,7 +438,7 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
    if ((fopen_s(&f, filename.c_str(), "r") != 0) || !f)
       return false;
 
-   while (1)
+   while (true)
    {
       char lineHeader[256];
       const int res = fscanf_s(f, "\n%s", lineHeader, 256);

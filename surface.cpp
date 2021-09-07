@@ -198,9 +198,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 
 void Surface::SetDefaults(bool fromMouseClick)
 {
-   static const char strKeyName[] = "DefaultProps\\Wall";
-
-   HRESULT hr;
+   static constexpr char strKeyName[] = "DefaultProps\\Wall";
 
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "TimerInterval", 100) : 100;
@@ -209,7 +207,7 @@ void Surface::SetDefaults(bool fromMouseClick)
    m_d.m_slingshot_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "SlingshotThreshold", 0.0f) : 0.0f;
    m_d.m_inner = true; //!! Deprecated, do not use anymore
 
-   hr = LoadValue(strKeyName, "TopImage", m_d.m_szImage);
+   HRESULT hr = LoadValue(strKeyName, "TopImage", m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
 
@@ -417,7 +415,7 @@ void Surface::CurvesToShapes(vector<HitObject*> &pvho)
 
 void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj)
 {
-   Material * const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
    if (!m_d.m_overwritePhysics)
    {
       obj->m_elasticity = mat->m_fElasticity;
@@ -882,7 +880,7 @@ void Surface::PrepareWallsAtHeight()
    m_IBuffer->unlock();
 }
 
-static const WORD rgiSlingshot[24] = { 0, 4, 3, 0, 1, 4, 1, 2, 5, 1, 5, 4, 4, 8, 5, 4, 7, 8, 3, 7, 4, 3, 6, 7 };
+static constexpr WORD rgiSlingshot[24] = { 0, 4, 3, 0, 1, 4, 1, 2, 5, 1, 5, 4, 4, 8, 5, 4, 7, 8, 3, 7, 4, 3, 6, 7 };
 
 static IndexBuffer* slingIBuffer = NULL;        // this is constant so we only have one global instance
 
@@ -1016,7 +1014,7 @@ void Surface::RenderSlingshots()
    bool nothing_to_draw = true;
    for (size_t i = 0; i < m_vlinesling.size(); i++)
    {
-      LineSegSlingshot * const plinesling = m_vlinesling[i];
+      const LineSegSlingshot * const plinesling = m_vlinesling[i];
       if (plinesling->m_slingshotanim.m_iframe || plinesling->m_doHitEvent)
       {
          nothing_to_draw = false;
@@ -1990,7 +1988,7 @@ STDMETHODIMP Surface::PlaySlingshotHit()
 
 void Surface::SetDefaultPhysics(bool fromMouseClick)
 {
-   static const char strKeyName[] = "DefaultProps\\Wall";
+   static constexpr char strKeyName[] = "DefaultProps\\Wall";
    m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Elasticity", 0.3f) : 0.3f;
    m_d.m_elasticityFalloff = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "ElasticityFallOff", 0.0f) : 0.0f;
    m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Friction", 0.3f) : 0.3f;

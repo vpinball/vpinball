@@ -22,12 +22,12 @@ public:
    void RotateView(float x, float y, float z);
    void TranslateView(const float x, const float y, const float z);
 
-   void FitCameraToVerticesFS(std::vector<Vertex3Ds>& pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback);
-   void FitCameraToVertices(std::vector<Vertex3Ds>& pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback);
+   void FitCameraToVerticesFS(const std::vector<Vertex3Ds>& pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback);
+   void FitCameraToVertices(const std::vector<Vertex3Ds>& pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback);
    void CacheTransform();      // compute m_matrixTotal = m_World * m_View * m_Proj
    void TransformVertices(const Vertex3Ds * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const;
 
-   void ComputeNearFarPlane(std::vector<Vertex3Ds>& verts);
+   void ComputeNearFarPlane(const std::vector<Vertex3Ds>& verts);
 
    Matrix3D m_matWorld;
    Matrix3D m_matView;

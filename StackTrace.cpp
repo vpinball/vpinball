@@ -78,7 +78,7 @@ bool StackTrace::InitSymbols()
 int StackTrace::GetCallStack(Address* callStack, int maxDepth, int entriesToSkip)
 {
 	PCONTEXT pContext(0);
-	HMODULE hKernel32Dll = GetModuleHandle("kernel32.dll");
+	const HMODULE hKernel32Dll = GetModuleHandle("kernel32.dll");
 	typedef void(WINAPI* pRtlCaptureContext)(PCONTEXT);
 	static pRtlCaptureContext RtlCaptureContext = NULL;
 	if(RtlCaptureContext == NULL)
@@ -121,8 +121,7 @@ int StackTrace::GetCallStack(void* vcontext, Address* callStack, int maxDepth,
 
 	InitSymbols();
 
-	STACKFRAME64 stackFrame;
-	memset(&stackFrame, 0, sizeof(stackFrame));
+	STACKFRAME64 stackFrame = {};
 
 	PCONTEXT context = (PCONTEXT)vcontext;
 	if (context == 0)
@@ -243,7 +242,7 @@ int StackTrace::GetSymbolInfo(Address address, char* symbol, int maxSymbolLen)
 	{
 		char fileName[MAXSTRING + 1];
 		GetFileFromPath(lineInfo.FileName, fileName, MAXSTRING);
-		int fileLineChars(0);
+		int fileLineChars;
 		if (displacementLine > 0)
 		{
 			fileLineChars = _snprintf_s(symbol, maxSymbolLen, _TRUNCATE, 
@@ -264,14 +263,13 @@ int StackTrace::GetSymbolInfo(Address address, char* symbol, int maxSymbolLen)
 void StackTrace::GetCallStack(void* vcontext, bool includeArguments, 
 							  char* symbol, int maxSymbolLen)
 {
-	PCONTEXT context = (PCONTEXT)vcontext;
+	const PCONTEXT context = (PCONTEXT)vcontext;
 	if (context == 0)
 		return;
 
 	InitSymbols();
 
-	STACKFRAME64 stackFrame;
-	memset(&stackFrame, 0, sizeof(stackFrame));
+	STACKFRAME64 stackFrame = {};
 
 	InitStackFrameFromContext(context, stackFrame);
 	stackFrame.AddrPC.Mode		= AddrModeFlat;
@@ -285,7 +283,7 @@ void StackTrace::GetCallStack(void* vcontext, bool includeArguments,
 			SymFunctionTableAccess64, SymGetModuleBase64, NULL) != FALSE &&
 		stackFrame.AddrFrame.Offset != 0)
 	{
-		Address addr = reinterpret_cast<Address>(stackFrame.AddrPC.Offset);
+		const Address addr = reinterpret_cast<Address>(stackFrame.AddrPC.Offset);
 		int charsAdded = GetSymbolInfo(addr, symbol, maxSymbolLen);
 		maxSymbolLen -= charsAdded;
 		symbol += charsAdded;

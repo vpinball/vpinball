@@ -71,7 +71,7 @@ int UserData::FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::
 
 //Finds the closest UD from CurrentLine in ListIn
 //On entry CurrentIdx must be set to the UD in the line
-int UserData::FindClosestUD(vector<UserData>* ListIn, const int CurrentLine, const int CurrentIdx)
+int UserData::FindClosestUD(const vector<UserData>* ListIn, const int CurrentLine, const int CurrentIdx)
 {
 	const string strSearchData = lowerCase(ListIn->at(CurrentIdx).m_keyName);
 	const size_t SearchWidth = strSearchData.size();
@@ -118,7 +118,6 @@ int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<
 	if (ListIn && !ListIn->empty() && !strIn.empty())// Sanity chq.
 	{
 		const unsigned int ListSize = (int)ListIn->size();
-		UINT32 iCurPos = (ListSize >> 1);
 		int iNewPos = 1u << 30;
 		while ((!(iNewPos & ListSize)) && (iNewPos > 1))
 		{
@@ -127,6 +126,7 @@ int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<
 		int iJumpDelta = ((iNewPos) >> 1);
 		--iNewPos;//Zero Base
 		const string strSearchData = lowerCase(strIn);
+		UINT32 iCurPos;
 		while (true)
 		{
 			iCurPos = iNewPos;
@@ -151,9 +151,7 @@ int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<
 int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 {
 	if ((!ListIn) || ListIn->empty() || strIn.empty()) return -1;
-	int result = -2;
 	const unsigned int ListSize = (int)ListIn->size();
-	UINT32 iCurPos = (ListSize >> 1);
 	UINT32 iNewPos = 1u << 30;
 	while ((!(iNewPos & ListSize)) && (iNewPos > 1))
 	{
@@ -162,6 +160,8 @@ int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 	int iJumpDelta = ((iNewPos) >> 1);
 	--iNewPos;//Zero Base
 	const string strSearchData = lowerCase(strIn);
+	UINT32 iCurPos;
+	int result;
 	while (true)
 	{
 		iCurPos = iNewPos;
@@ -187,9 +187,7 @@ int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 int UserData::UDIndex(vector<UserData>* ListIn, const string &strIn)
 {
 	if ((!ListIn) || ListIn->empty() || strIn.empty()) return -1;
-	int result = -2;
 	const unsigned int ListSize = (int)ListIn->size();
-	UINT32 iCurPos = (ListSize >> 1);
 	UINT32 iNewPos = 1u << 30;
 	while ((!(iNewPos & ListSize)) && (iNewPos > 1))
 	{
@@ -198,6 +196,8 @@ int UserData::UDIndex(vector<UserData>* ListIn, const string &strIn)
 	int iJumpDelta = ((iNewPos) >> 1);
 	--iNewPos;//Zero Base
 	const string strSearchData = lowerCase(strIn);
+	UINT32 iCurPos;
+	int result;
 	while (true)
 	{
 		iCurPos = iNewPos;
@@ -219,7 +219,7 @@ int UserData::UDIndex(vector<UserData>* ListIn, const string &strIn)
 		return -1;
 }
 //Needs speeding up.
-UserData UserData::GetUDfromUniqueKey(vector<UserData>* ListIn, const string &UniKey)
+UserData UserData::GetUDfromUniqueKey(const vector<UserData>* ListIn, const string &UniKey)
 {
 	UserData RetVal;
 	RetVal.eTyping = eUnknown;
@@ -236,7 +236,7 @@ UserData UserData::GetUDfromUniqueKey(vector<UserData>* ListIn, const string &Un
 	return RetVal;
 }
 //TODO: Needs speeding up.
-size_t UserData::GetUDPointerfromUniqueKey(vector<UserData>* ListIn, const string &UniKey)
+size_t UserData::GetUDPointerfromUniqueKey(const vector<UserData>* ListIn, const string &UniKey)
 {
 	size_t i = 0;
 	const size_t ListSize = ListIn->size();
@@ -253,7 +253,7 @@ size_t UserData::GetUDPointerfromUniqueKey(vector<UserData>* ListIn, const strin
 
 //Assumes case insensitive sorted list
 //Returns index or insertion point (-1 == error)
-size_t UserData::FindOrInsertUD(vector<UserData>* ListIn, UserData &udIn)
+size_t UserData::FindOrInsertUD(vector<UserData>* ListIn, const UserData &udIn)
 {
 	if (ListIn->empty())	//First in
 	{
@@ -311,9 +311,7 @@ bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn, const stri
 		ListIn->push_back(strIn);
 		return true;
 	}
-	int result = -2;
 	const unsigned int ListSize = (unsigned int)ListIn->size();
-	UINT32 iCurPos = (ListSize >> 1);
 	UINT32 iNewPos = 1u << 31;
 	while ((!(iNewPos & ListSize)) && (iNewPos > 1))
 	{
@@ -322,6 +320,8 @@ bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn, const stri
 	int iJumpDelta = ((iNewPos) >> 1);
 	--iNewPos;//Zero Base
 	const string strSearchData = lowerCase(strIn);
+	UINT32 iCurPos;
+	int result;
 	while (true)
 	{
 		iCurPos = iNewPos;
@@ -447,7 +447,7 @@ void CVPrefrence::SetDefaultFont(const HWND hwndDlg)
 
 int CVPrefrence::GetHeightFromPointSize(const HWND hwndDlg)
 {
-	CClientDC clientDC(hwndDlg);
+	const CClientDC clientDC(hwndDlg);
 	const int Height = -MulDiv(m_pointSize, clientDC.GetDeviceCaps(LOGPIXELSY), 72);
 	return Height;
 }

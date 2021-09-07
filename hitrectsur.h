@@ -4,7 +4,7 @@ class HitRectSur : public Sur
 {
 public:
 
-   HitRectSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, FRect * const prcRect, vector<ISelect*> * const pvsel);
+   HitRectSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, const FRect * const prcRect, vector<ISelect*> * const pvsel);
    virtual ~HitRectSur();
 
    virtual void Line(const float x, const float y, const float x2, const float y2);

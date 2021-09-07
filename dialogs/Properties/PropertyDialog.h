@@ -175,7 +175,7 @@ public:
         // button rectangle when the button has the focus.
         if (lpDrawItemStruct->itemAction & ODA_FOCUS)
         {
-            const int iChange = 3;
+            constexpr int iChange = 3;
             rect.top += iChange;
             rect.left += iChange;
             rect.right -= iChange;
@@ -246,12 +246,12 @@ public:
     void UpdateTabs(VectorProtected<ISelect> &pvsel);
     bool PreTranslateMessage(MSG* msg);
 
-    static void UpdateTextureComboBox(const vector<Texture*>& contentList, CComboBox &combo, const string &selectName);
-    static void UpdateComboBox(const vector<string>& contentList, CComboBox &combo, const string &selectName);
-    static void UpdateMaterialComboBox(const vector<Material *>& contentList, CComboBox &combo, const string &selectName);
-    static void UpdateSurfaceComboBox(const PinTable *const ptable, CComboBox &combo, const string &selectName);
-    static void UpdateSoundComboBox(const PinTable *const ptable, CComboBox &combo, const string &selectName);
-    static void UpdateCollectionComboBox(const PinTable *const ptable, CComboBox &combo, const char *selectName);
+    static void UpdateTextureComboBox(const vector<Texture*>& contentList, const CComboBox &combo, const string &selectName);
+    static void UpdateComboBox(const vector<string>& contentList, const CComboBox &combo, const string &selectName);
+    static void UpdateMaterialComboBox(const vector<Material *>& contentList, const CComboBox &combo, const string &selectName);
+    static void UpdateSurfaceComboBox(const PinTable *const ptable, const CComboBox &combo, const string &selectName);
+    static void UpdateSoundComboBox(const PinTable *const ptable, const CComboBox &combo, const string &selectName);
+    static void UpdateCollectionComboBox(const PinTable *const ptable, const CComboBox &combo, const char *selectName);
 
     static void StartUndo(ISelect *const psel)
     {
@@ -276,39 +276,39 @@ public:
         ::SendMessage(checkBoxHwnd, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
     }
     
-    static float GetFloatTextbox(CEdit &textbox)
+    static float GetFloatTextbox(const CEdit &textbox)
     {
         const float fv = sz2f(string(textbox.GetWindowText()));
         return fv;
     }
 
-    static int GetIntTextbox(CEdit &textbox)
+    static int GetIntTextbox(const CEdit &textbox)
     {
         int value = 0;
         sscanf_s(textbox.GetWindowText().c_str(), "%i", &value);
         return value;
     }
 
-    static void SetFloatTextbox(CEdit &textbox, const float value)
+    static void SetFloatTextbox(const CEdit &textbox, const float value)
     {
         string strValue;
         f2sz(value, strValue);
         textbox.SetWindowText(strValue.c_str());
     }
 
-    static void SetIntTextbox(CEdit &textbox, const int value)
+    static void SetIntTextbox(const CEdit &textbox, const int value)
     {
         textbox.SetWindowText(std::to_string(value).c_str());
     }
 
-    static void GetComboBoxText(CComboBox &combo, char * const strbuf, const size_t maxlength)
+    static void GetComboBoxText(const CComboBox &combo, char * const strbuf, const size_t maxlength)
     {
         char buf[MAXSTRING];
         combo.GetLBText(combo.GetCurSel(), buf);
         strncpy_s(strbuf, maxlength, buf, maxlength-1);
     }
 
-    static int GetComboBoxIndex(CComboBox &combo, const vector<string>& contentList)
+    static int GetComboBoxIndex(const CComboBox &combo, const vector<string>& contentList)
     {
         char buf[MAXSTRING];
         combo.GetLBText(combo.GetCurSel(), buf);

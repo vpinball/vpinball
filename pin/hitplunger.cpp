@@ -2,7 +2,7 @@
 
 #define PLUNGERHEIGHT 50.0f
 
-const float PlungerMoverObject::m_mass = 30.0f;
+constexpr float PlungerMoverObject::m_mass = 30.0f;
 
 HitPlunger::HitPlunger(const float x, const float y, const float x2, const float zheight,
    const float frameTop, const float frameBottom,
@@ -247,7 +247,7 @@ void PlungerMoverObject::Fire(float startPos)
    // out (i.e., go all the way to the forward travel
    // limit, position 0.0) if the pull position is
    // more than about halfway.
-   const float maxPull = .5f;
+   constexpr float maxPull = .5f;
    const float bounceDist = (dx < maxPull ? dx / maxPull : 1.0f);
 
    // the initial bounce will be negative, since we're moving upwards,
@@ -292,7 +292,7 @@ void PlungerMoverObject::UpdateVelocities()
    // manual movements for releases.  In practice, it seems safe to
    // lower it to about 0.2 - this doesn't seem to cause false
    // positives and seems reliable at identifying actual releases.
-   const float ReleaseThreshold = 0.2f;
+   constexpr float ReleaseThreshold = 0.2f;
 
    // note if we're acting as an auto plunger
    const bool autoPlunger = m_plunger->m_d.m_autoPlunger;
@@ -559,9 +559,9 @@ void PlungerMoverObject::UpdateVelocities()
       // timing, so we need to adjust for the new VP 10 time base.  VP 10
       // runs physics frames at roughly 10x the rate of VP 9, so the time
       // per frame is about 1/10 the VP 9 time.
-      const float plungerFriction = 0.95f;
+      constexpr float plungerFriction = 0.95f;
       const float normalize = g_pplayer->m_ptable->m_plungerNormalize / 13.0f / 100.0f;
-      const float dt = 0.1f;
+      constexpr float dt = 0.1f;
       m_speed *= plungerFriction;
       m_speed += error * m_frameLen
          * m_plunger->m_d.m_mechStrength / m_mass
@@ -816,7 +816,7 @@ void HitPlunger::Collide(const CollisionEvent& coll)
       // apply a fudge factor to make it look more real.  The fudge factor
       // isn't entirely unreasonable physically - you could look at it as
       // accounting for the spring tension and friction.
-      const float reverseImpulseFudgeFactor = .22f;
+      constexpr float reverseImpulseFudgeFactor = .22f;
       m_plungerMover.m_reverseImpulse = pball->m_d.m_vel.y * impulse
          * (pball->m_d.m_mass / m_plungerMover.m_mass)
          * reverseImpulseFudgeFactor;

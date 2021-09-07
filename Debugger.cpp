@@ -307,7 +307,7 @@ BOOL DbgLightDialog::OnInitDialog()
     AttachItem(IDC_COLOR_BUTTON4, m_colorButton2);
 
     vector<string> lightNames;
-    PinTable* const ptable = g_pplayer->m_ptable;
+    const PinTable* const ptable = g_pplayer->m_ptable;
 
     for (size_t i = 0; i < ptable->m_vedit.size(); i++)
     {
@@ -502,8 +502,8 @@ INT_PTR DbgLightDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         case WM_DRAWITEM:
         {
-            LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
-            UINT nID = static_cast<UINT>(wParam);
+            const LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
+            const UINT nID = static_cast<UINT>(wParam);
             if (nID == IDC_COLOR_BUTTON1)
             {
                 m_colorButton.DrawItem(lpDrawItemStruct);
@@ -530,7 +530,7 @@ Light* DbgLightDialog::GetLight()
     return nullptr;
 }
 
-void DbgLightDialog::SetCheckButtonState(Light *plight)
+void DbgLightDialog::SetCheckButtonState(const Light *plight)
 {
     if (plight->m_d.m_state == LightStateOn)
     {
@@ -753,7 +753,7 @@ INT_PTR DbgMaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         case WM_DRAWITEM:
         {
-            LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
+            const LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
             const UINT nID = static_cast<UINT>(wParam);
             if (nID == IDC_COLOR_BUTTON1)
             {

@@ -108,7 +108,7 @@ int LoadValueIntWithDefault(const std::string &szKey, const std::string &szValue
    return SUCCEEDED(hr) ? val : def;
 }
 
-float LoadValueFloatWithDefault(const char *szKey, const char *szValue, const float def)
+float LoadValueFloatWithDefault(const std::string &szKey, const std::string &szValue, const float def)
 {
    float val;
    const HRESULT hr = LoadValue(szKey, szValue, val);

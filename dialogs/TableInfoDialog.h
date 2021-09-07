@@ -15,7 +15,7 @@ protected:
    virtual void OnCancel();
 
 private:
-   void VPGetDialogItemText(CEdit &edit, string &psztext);
+   void VPGetDialogItemText(const CEdit &edit, string &psztext);
 
    CEdit m_tableNameEdit;
    CEdit m_authorEdit;

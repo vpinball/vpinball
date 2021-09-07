@@ -71,7 +71,7 @@ public:
 #include "../inc/winsdk/legacy_touch.h"
 
 
-const RECT touchregion[8] = { //left,top,right,bottom (in % of screen)
+constexpr RECT touchregion[8] = { //left,top,right,bottom (in % of screen)
    { 0, 0, 50, 10 },      // ExtraBall
    { 0, 10, 50, 50 },     // 2nd Left Button
    { 0, 50, 50, 90 },     // 1st Left Button (Flipper)
@@ -508,7 +508,7 @@ void Player::OnInitialUpdate()
         SetWindowFeedbackSetting = (pSWFS)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetWindowFeedbackSetting");
     if (SetWindowFeedbackSetting)
     {
-        const BOOL enabled = FALSE;
+        constexpr BOOL enabled = FALSE;
 
         SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(enabled), &enabled);
         SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_TOUCH_TAP, 0, sizeof(enabled), &enabled);
@@ -826,30 +826,30 @@ void Player::InitDebugHitStructure()
 
 Vertex3Ds g_viewDir;
 
-static bool CompareHitableDepth(Hitable* h1, Hitable* h2)
+static bool CompareHitableDepth(const Hitable* h1, const Hitable* h2)
 {
    // GetDepth approximates direction in view distance to camera; sort ascending
    return h1->GetDepth(g_viewDir) >= h2->GetDepth(g_viewDir);
 }
 
-static bool CompareHitableDepthInverse(Hitable* h1, Hitable* h2)
+static bool CompareHitableDepthInverse(const Hitable* h1, const Hitable* h2)
 {
    // GetDepth approximates direction in view distance to camera; sort descending
    return h1->GetDepth(g_viewDir) <= h2->GetDepth(g_viewDir);
 }
 
-static bool CompareHitableDepthReverse(Hitable* h1, Hitable* h2)
+static bool CompareHitableDepthReverse(const Hitable* h1, const Hitable* h2)
 {
    // GetDepth approximates direction in view distance to camera; sort descending
    return h1->GetDepth(g_viewDir) < h2->GetDepth(g_viewDir);
 }
 
-static bool CompareHitableMaterial(Hitable* h1, Hitable* h2)
+static bool CompareHitableMaterial(const Hitable* h1, const Hitable* h2)
 {
    return h1->GetMaterialID() < h2->GetMaterialID();
 }
 
-static bool CompareHitableImage(Hitable* h1, Hitable* h2)
+static bool CompareHitableImage(const Hitable* h1, const Hitable* h2)
 {
    return h1->GetImageID() < h2->GetImageID();
 }
@@ -1021,7 +1021,7 @@ void Player::InitBallShader()
    m_ballShader->SetVector("fenvEmissionScale_TexWidth", &st);
    //m_ballShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
-   const float Roughness = 0.8f;
+   constexpr float Roughness = 0.8f;
    const vec4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.05f);
    m_ballShader->SetVector("Roughness_WrapL_Edge_Thickness", &rwem);
 
@@ -1111,7 +1111,7 @@ void Player::DebugPrint(int x, int y, LPCSTR text, bool center /*= false*/)
        //if(shadow)
             for(unsigned int i = 0; i < 4; ++i)
             {
-               const int offset = 1;
+               constexpr int offset = 1;
                RECT shadowRect;
                SetRect( &shadowRect, xx + ((i == 0) ? -offset : (i == 1) ? offset : 0), y + ((i == 2) ? -offset : (i == 3) ? offset : 0), 0, 0 );
                m_pFont->DrawText(m_fontSprite, text, -1, &shadowRect, DT_NOCLIP, 0xFF000000);
@@ -1271,7 +1271,7 @@ HRESULT Player::Init()
    // See http://en.wikipedia.org/wiki/Damping#Linear_damping
 
    const float nudgeTime = m_ptable->m_nudgeTime;      // T
-   const float dampingRatio = 0.5f;                    // zeta
+   constexpr float dampingRatio = 0.5f;                // zeta
 
    // time for one half period (one swing and swing back):
    //   T = pi / omega_d,
@@ -2340,14 +2340,14 @@ void Player::NudgeUpdate()      // called on every integral physics frame
 #define IIR_Order 4
 
 // coefficients for IIR_Order Butterworth filter set to 10 Hz passband
-static const float IIR_a[IIR_Order + 1] = {
+static constexpr float IIR_a[IIR_Order + 1] = {
    0.0048243445f,
    0.019297378f,
    0.028946068f,
    0.019297378f,
    0.0048243445f };
 
-static const float IIR_b[IIR_Order + 1] = {
+static constexpr float IIR_b[IIR_Order + 1] = {
    1.00000000f, //if not 1 add division below
    -2.369513f,
    2.3139884f,
@@ -3537,7 +3537,7 @@ void Player::SetClipPlanePlayfield(const bool clip_orientation)
 	Matrix3D mT = m_pin3d.m_proj.m_matrixTotal; // = world * view * proj
 	mT.Invert();
 	mT.Transpose();
-	D3DXMATRIX m(mT);
+	const D3DXMATRIX m(mT);
 	D3DXPLANE clipSpacePlane;
 	const D3DXPLANE plane(0.0f, 0.0f, clip_orientation ? -1.0f : 1.0f, clip_orientation ? m_ptable->m_tableheight : -m_ptable->m_tableheight);
 	D3DXPlaneTransform(&clipSpacePlane, &plane, &m);
@@ -4868,7 +4868,7 @@ void Player::Render()
 
    for (size_t i = 0; i < m_vballDelete.size(); i++)
    {
-      Ball * const pball = m_vballDelete[i];
+      const Ball * const pball = m_vballDelete[i];
       delete pball->m_d.m_vpVolObjs;
       delete pball;
    }
@@ -5423,7 +5423,7 @@ void Player::DrawBalls()
          m_pin3d.DisableAlphaBlend();
 
          // draw points
-         const float ptsize = 5.0f;
+         constexpr float ptsize = 5.0f;
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState((RenderDevice::RenderStates)D3DRS_POINTSIZE, *((DWORD*)&ptsize));
          m_pin3d.m_pd3dPrimaryDevice->DrawPrimitiveVB(RenderDevice::POINTLIST, MY_D3DFVF_TEX, m_ballDebugPoints, 0, 12);
 
@@ -5450,9 +5450,9 @@ struct DebugMenuItem
    HMENU hmenu;
 };
 
-void AddEventToDebugMenu(char *sz, int index, int dispid, LPARAM lparam)
+void AddEventToDebugMenu(const char *sz, int index, int dispid, LPARAM lparam)
 {
-   DebugMenuItem * const pdmi = (DebugMenuItem *)lparam;
+   const DebugMenuItem * const pdmi = (DebugMenuItem *)lparam;
    const HMENU hmenu = pdmi->hmenu;
    const int menuid = ((pdmi->objectindex + 1) << 16) | (int)pdmi->pvdispid->size();
    pdmi->pvdispid->push_back(dispid);

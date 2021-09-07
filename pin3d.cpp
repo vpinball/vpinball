@@ -212,7 +212,7 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap, const DWORD env_xres
                float sum[3];
                sum[0] = sum[1] = sum[2] = 0.0f;
 
-               const unsigned int num_samples = 4096;
+               constexpr unsigned int num_samples = 4096;
                for (unsigned int s = 0; s < num_samples; ++s)
                {
                   //!! discard directions pointing below the playfield?? or give them another "average playfield" color??
@@ -496,7 +496,7 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    m_envTexture = g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_envImage);
    m_builtinEnvTexture.CreateFromResource(IDB_ENV);
 
-   Texture * const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
+   const Texture * const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
 
    const unsigned int envTexHeight = min(envTex->m_pdsBuffer->height(),256) / 8;
    const unsigned int envTexWidth = envTexHeight*2;
@@ -631,7 +631,7 @@ void Pin3D::DrawBackground()
 {
    SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
 
-   PinTable * const ptable = g_pplayer->m_ptable;
+   const PinTable * const ptable = g_pplayer->m_ptable;
    Texture * const pin = ptable->GetDecalsEnabled()
       ? ptable->GetImage(ptable->m_BG_image[ptable->m_BG_current_set])
       : NULL;
@@ -738,7 +738,7 @@ void Pin3D::InitLayoutFS()
    TRACE_FUNCTION();
 
    const float rotation = ANGTORAD(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set]);
-   const float inclination = 0.0f;// ANGTORAD(g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set]);
+   constexpr float inclination = 0.0f;// ANGTORAD(g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set]);
    //const float FOV = (g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set] < 1.0f) ? 1.0f : g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set];
 
    std::vector<Vertex3Ds> vvertex3D;
@@ -754,7 +754,7 @@ void Pin3D::InitLayoutFS()
 
    //m_proj.FitCameraToVerticesFS(vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]);
    const float yof = g_pplayer->m_ptable->m_bottom*0.5f + g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set];
-   const float camx = 0.0f;
+   constexpr float camx = 0.0f;
    const float camy = g_pplayer->m_ptable->m_bottom*0.5f + g_pplayer->m_ptable->m_BG_xlatex[g_pplayer->m_ptable->m_BG_current_set];
    const float camz = g_pplayer->m_ptable->m_bottom + g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set];
    m_proj.m_matWorld.SetIdentity();
@@ -784,7 +784,7 @@ void Pin3D::InitLayoutFS()
    //D3DXMatrixPerspectiveFovLH(&proj, (float)(M_PI / 4.0), aspect, m_proj.m_rznear, m_proj.m_rzfar);
 
    D3DXMatrixIdentity(&proj);
-   const float monitorPixel = 1.0f;// 25.4f * 23.3f / sqrt(1920.0f*1920.0f + 1080.0f*1080.0f);
+   constexpr float monitorPixel = 1.0f;// 25.4f * 23.3f / sqrt(1920.0f*1920.0f + 1080.0f*1080.0f);
    const float viewRight = monitorPixel*(float)m_viewPort.Width *0.5f;
    const float viewTop = monitorPixel*(float)m_viewPort.Height *0.5f;
    //eye.x = g_pplayer->m_ptable->m_bottom*0.4f;
@@ -1097,26 +1097,24 @@ Vertex3Ds Pin3D::Unproject(const Vertex3Ds& point)
 
    Matrix3D m2 = m_proj.m_matrixTotal; // = world * view * proj
    m2.Invert();
-   Vertex3Ds p, p3;
-
-   p.x = 2.0f * (point.x - (float)m_viewPort.X) / (float)m_viewPort.Width - 1.0f;
-   p.y = 1.0f - 2.0f * (point.y - (float)m_viewPort.Y) / (float)m_viewPort.Height;
-   p.z = (point.z - m_viewPort.MinZ) / (m_viewPort.MaxZ - m_viewPort.MinZ);
-   p3 = m2.MultiplyVector(p);
+   const Vertex3Ds p(
+       2.0f * (point.x - (float)m_viewPort.X) / (float)m_viewPort.Width - 1.0f,
+       1.0f - 2.0f * (point.y - (float)m_viewPort.Y) / (float)m_viewPort.Height,
+       (point.z - m_viewPort.MinZ) / (m_viewPort.MaxZ - m_viewPort.MinZ));
+   const Vertex3Ds p3 = m2.MultiplyVector(p);
    return p3;
 }
 
 Vertex3Ds Pin3D::Get3DPointFrom2D(const POINT& p)
 {
-   Vertex3Ds p1, p2, pNear, pFar;
-   pNear.x = (float)p.x; pNear.y = (float)p.y; pNear.z = m_viewPort.MinZ;
-   pFar.x = (float)p.x; pFar.y = (float)p.y; pFar.z = m_viewPort.MaxZ;
-   p1 = Unproject(pNear);
-   p2 = Unproject(pFar);
-   float wz = g_pplayer->m_ptable->m_tableheight;
-   float wx = ((wz - p1.z)*(p2.x - p1.x)) / (p2.z - p1.z) + p1.x;
-   float wy = ((wz - p1.z)*(p2.y - p1.y)) / (p2.z - p1.z) + p1.y;
-   Vertex3Ds vertex(wx, wy, wz);
+   const Vertex3Ds pNear((float)p.x,(float)p.y,m_viewPort.MinZ);
+   const Vertex3Ds pFar ((float)p.x,(float)p.y,m_viewPort.MaxZ);
+   const Vertex3Ds p1 = Unproject(pNear);
+   const Vertex3Ds p2 = Unproject(pFar);
+   const float wz = g_pplayer->m_ptable->m_tableheight;
+   const float wx = ((wz - p1.z)*(p2.x - p1.x)) / (p2.z - p1.z) + p1.x;
+   const float wy = ((wz - p1.z)*(p2.y - p1.y)) / (p2.z - p1.z) + p1.y;
+   const Vertex3Ds vertex(wx, wy, wz);
    return vertex;
 }
 
@@ -1149,7 +1147,7 @@ void PinProjection::MultiplyView(const Matrix3D& mat)
    m_matView.Multiply(mat, m_matView);
 }
 
-void PinProjection::FitCameraToVerticesFS(std::vector<Vertex3Ds>& pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback)
+void PinProjection::FitCameraToVerticesFS(const std::vector<Vertex3Ds>& pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback)
 {
    // Determine camera distance
    const float rrotsin = sinf(rotation);
@@ -1209,7 +1207,7 @@ void PinProjection::FitCameraToVerticesFS(std::vector<Vertex3Ds>& pvvertex3D, fl
    m_vertexcamera.x = (float)((maxxintercept + minxintercept) * 0.5f);
 }
 
-void PinProjection::FitCameraToVertices(std::vector<Vertex3Ds>& pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback)
+void PinProjection::FitCameraToVertices(const std::vector<Vertex3Ds>& pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback)
 {
    // Determine camera distance
    const float rrotsin = sinf(rotation);
@@ -1229,7 +1227,7 @@ void PinProjection::FitCameraToVertices(std::vector<Vertex3Ds>& pvvertex3D, floa
    float maxxintercept = -FLT_MAX;
    float minxintercept = FLT_MAX;
 
-   Matrix3D laybackTrans = ComputeLaybackTransform(layback);
+   const Matrix3D laybackTrans = ComputeLaybackTransform(layback);
 
    for (size_t i = 0; i < pvvertex3D.size(); ++i)
    {
@@ -1266,7 +1264,7 @@ void PinProjection::FitCameraToVertices(std::vector<Vertex3Ds>& pvvertex3D, floa
    m_vertexcamera.x = (maxxintercept + minxintercept) * 0.5f;
 }
 
-void PinProjection::ComputeNearFarPlane(std::vector<Vertex3Ds>& verts)
+void PinProjection::ComputeNearFarPlane(const std::vector<Vertex3Ds>& verts)
 {
    m_rznear = FLT_MAX;
    m_rzfar = -FLT_MAX;

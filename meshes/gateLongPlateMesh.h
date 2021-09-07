@@ -1,9 +1,9 @@
 // license:GPLv3+
 // Ported at: VisualPinball.Resources/Meshes/GateLongPlate.cs
 
-const unsigned int gateLongPlateVertices=62;
-const unsigned int gateLongPlateNumIndices=132;
-const Vertex3D_NoTex2 gateLongPlateMesh[62]=
+constexpr unsigned int gateLongPlateVertices=62;
+constexpr unsigned int gateLongPlateNumIndices=132;
+constexpr Vertex3D_NoTex2 gateLongPlateMesh[62]=
 {
 { 0.138000f,-0.004875f,-0.489790f, -0.000000f,-1.000000f,-0.000000f, 0.659091f,0.925632f},
 { -0.161000f,-0.004875f,-0.469790f, -0.000000f,-1.000000f,-0.000000f, 0.856061f,0.895329f},
@@ -69,7 +69,7 @@ const Vertex3D_NoTex2 gateLongPlateMesh[62]=
 { 0.379500f,-0.004875f,0.010210f, -0.000000f,0.000000f,1.000000f, 0.304109f,0.106320f}
 };
 
-const WORD gateLongPlateIndices[132]=
+constexpr WORD gateLongPlateIndices[132]=
 {
 	30, 31, 32,
 	32, 31, 33,

@@ -1,9 +1,9 @@
 // license:GPLv3+
 // Ported at: VisualPinball.Resources/Meshes/KickerSimpleHole.cs
 
-const unsigned int kickerSimpleHoleNumVertices=42;
-const unsigned int kickerSimpleHoleNumIndices=126;
-const Vertex3D_NoTex2 kickerSimpleHoleMesh[42]=
+constexpr unsigned int kickerSimpleHoleNumVertices=42;
+constexpr unsigned int kickerSimpleHoleNumIndices=126;
+constexpr Vertex3D_NoTex2 kickerSimpleHoleMesh[42]=
 {
 { -0.300698f,0.871887f,-0.623927f, 0.312300f,-0.950000f,0.000000f, 0.497836f,0.036364f},
 { -0.583629f,0.720173f,-0.006035f, 0.618400f,-0.785800f,0.000000f, 0.331702f,0.985736f},
@@ -49,7 +49,7 @@ const Vertex3D_NoTex2 kickerSimpleHoleMesh[42]=
 { 0.331326f,0.852006f,-0.623927f, -0.527000f,-0.849900f,0.000000f, 0.810279f,0.036364f}
 };
 
-const WORD kickerSimpleHoleIndices[126]=
+constexpr WORD kickerSimpleHoleIndices[126]=
 {
 	0, 1, 2,
 	3, 1, 0,

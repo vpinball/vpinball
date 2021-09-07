@@ -88,10 +88,10 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
     {
         case WM_NOTIFY:
         {
-            LPNMHDR pnmhdr = (LPNMHDR)lParam;
+            const LPNMHDR pnmhdr = (LPNMHDR)lParam;
             if (wParam == IDC_SOUNDLIST)
             {
-                LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
+                const LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
                 if (lpnmListView->hdr.code == LVN_COLUMNCLICK)
                 {
                     const int columnNumber = lpnmListView->iSubItem;
@@ -106,7 +106,7 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
                         ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
                     else
                         ListView_SortItems(SortData.hwndList, MyCompProcIntValues, &SortData);
-                    int count = ListView_GetItemCount(hListHwnd);
+                    const int count = ListView_GetItemCount(hListHwnd);
                     for (int i = 0; i < count; i++)
                     {
                        LVITEM lvitem;
@@ -114,7 +114,7 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
                        lvitem.iItem = i;
                        lvitem.iSubItem = 0;
                        ListView_GetItem(hListHwnd, &lvitem);
-                       Collection * const pcol = (Collection *)lvitem.lParam;
+                       const Collection * const pcol = (Collection *)lvitem.lParam;
                        char buf[16] = { 0 };
                        sprintf_s(buf, "%i", pcol->m_visel.size());
                        ListView_SetItemText(hListHwnd, i, 1, buf);
@@ -193,8 +193,7 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             if (idx > 0)
             {
                 ::SetFocus(hListHwnd);
-                LVITEM lvitem1;
-                memset(&lvitem1, 0, sizeof(LVITEM));
+                LVITEM lvitem1 = {};
                 lvitem1.mask = LVCF_TEXT | LVIF_PARAM;
                 lvitem1.iItem = idx;
                 lvitem1.iSubItem = 0;
@@ -225,8 +224,7 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             if (idx != -1 && (idx < pt->m_vcollection.size() - 1))
             {
                 ::SetFocus(hListHwnd);
-                LVITEM lvitem1;
-                memset(&lvitem1, 0, sizeof(LVITEM));
+                LVITEM lvitem1 = {};
                 lvitem1.mask = LVCF_TEXT | LVIF_PARAM;
                 lvitem1.iItem = idx;
                 lvitem1.iSubItem = 0;
@@ -346,7 +344,7 @@ BOOL CollectionDialog::OnInitDialog()
         }
     }
 
-    PinTable * const ppt = pCurCollection.ppt;
+    const PinTable * const ppt = pCurCollection.ppt;
 
     for (size_t i = 0; i < ppt->m_vedit.size(); i++)
     {

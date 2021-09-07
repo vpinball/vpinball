@@ -1,9 +1,9 @@
 // license:GPLv3+
 // Ported at: VisualPinball.Resources/Meshes/TriggerSimple.cs
 
-const unsigned int triggerSimpleNumVertices=49;
-const unsigned int triggerSimpleNumIndices=216;
-const Vertex3D_NoTex2 triggerSimple[49]=
+constexpr unsigned int triggerSimpleNumVertices=49;
+constexpr unsigned int triggerSimpleNumIndices=216;
+constexpr Vertex3D_NoTex2 triggerSimple[49]=
 {
 { 1.283477f,-22.522591f,33.562248f, 0.999100f,-0.036100f,0.019600f, 0.166667f,0.625000f},
 { 1.283433f,-45.411259f,-29.149363f, 0.992900f,-0.111800f,0.040700f, 0.166667f,1.000000f},
@@ -56,7 +56,7 @@ const Vertex3D_NoTex2 triggerSimple[49]=
 { 0.641842f,42.753124f,-29.149363f, 0.507300f,0.857900f,-0.082000f, 0.333333f,0.000000f}
 };
 
-const WORD triggerSimpleIndices[216]=
+constexpr WORD triggerSimpleIndices[216]=
 {
 4, 5, 6,
 6, 7, 4,

@@ -1,9 +1,9 @@
 // license:GPLv3+
 // Ported at: VisualPinball.Resources/Meshes/TriggerStar.cs
 
-const unsigned int triggerStarNumVertices=231;
-const unsigned int triggerStarNumIndices=510;
-const Vertex3D_NoTex2 triggerStar[231]=
+constexpr unsigned int triggerStarNumVertices=231;
+constexpr unsigned int triggerStarNumIndices=510;
+constexpr Vertex3D_NoTex2 triggerStar[231]=
 {
 { 0.000000f,0.002343f,0.291799f, 0.000000f,0.000000f,1.000000f, 0.500000f,0.430000f},
 { 0.179117f,-0.055860f,0.291800f, 0.061500f,-0.020000f,0.997900f, 0.524350f,0.504941f},
@@ -238,7 +238,7 @@ const Vertex3D_NoTex2 triggerStar[231]=
 { 0.768531f,0.591459f,-0.036548f, -0.553100f,0.833100f,-0.000000f, 0.489685f,0.998195f}
 };
 
-const WORD triggerStarIndices[510]=
+constexpr WORD triggerStarIndices[510]=
 {
 19, 20, 21,
 22, 21, 20,

@@ -168,7 +168,7 @@ void Spinner::UIRenderPass2(Sur * const psur)
    psur->SetLineColor(RGB(0, 0, 0), false, 3);
    psur->SetObject(this);
 
-   float halflength = m_d.m_length * 0.5f;
+   const float halflength = m_d.m_length * 0.5f;
 
    const float radangle = ANGTORAD(m_d.m_rotation);
    float sn = sinf(radangle);
@@ -485,7 +485,7 @@ void Spinner::RenderStatic()
       return;
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+   const Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
    Material mat;
    mat.m_bIsMetal = true;

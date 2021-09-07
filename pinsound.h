@@ -193,7 +193,7 @@ public:
 	{
 		for (size_t i = 0; i < m_copiedwav.size(); i++)
 		{
-			PinDirectSoundWavCopy * const ppsc = m_copiedwav[i];
+			const PinDirectSoundWavCopy * const ppsc = m_copiedwav[i];
 			if (!lstrcmpi(ppsc->m_ppsOriginal->m_szName.c_str(), szName))
 			{
 				ppsc->m_pDSBuffer->Stop();
@@ -224,7 +224,7 @@ public:
 	   size_t i = 0;
 	   while (i < m_copiedwav.size())
 	   {
-		  PinDirectSoundWavCopy * const ppsc = m_copiedwav[i];
+		  const PinDirectSoundWavCopy * const ppsc = m_copiedwav[i];
 		  DWORD status;
 		  ppsc->m_pDSBuffer->GetStatus(&status);
 		  if (!(status & DSBSTATUS_PLAYING)) // sound is done, we can throw it away now

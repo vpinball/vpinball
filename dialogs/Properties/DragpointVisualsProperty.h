@@ -4,7 +4,7 @@
 class DragpointVisualsProperty: public BasePropertyDialog
 {
 public:
-    DragpointVisualsProperty(int id, VectorProtected<ISelect> *pvsel);
+    DragpointVisualsProperty(int id, const VectorProtected<ISelect> *pvsel);
     virtual ~DragpointVisualsProperty()
     {
     }

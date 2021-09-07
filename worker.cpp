@@ -40,7 +40,7 @@ unsigned int WINAPI VPWorkerThreadStart(void *param)
       {
       case COMPLETE_AUTOSAVE:
       {
-         HANDLE hEvent = (HANDLE)msg.wParam;
+         const HANDLE hEvent = (HANDLE)msg.wParam;
          CompleteAutoSave(hEvent, msg.lParam);
       }
       break;
@@ -49,7 +49,7 @@ unsigned int WINAPI VPWorkerThreadStart(void *param)
       {
          lasthangsnoopvalue = -1;
          hangsnooptimerid = SetTimer(NULL, 0, 1000, (TIMERPROC)HangSnoopProc);
-         HANDLE hEvent = (HANDLE)msg.wParam;
+         const HANDLE hEvent = (HANDLE)msg.wParam;
          CloseHandle(hEvent);
          //HangSnoopProc(NULL, 0, 0, 0);
       }
@@ -58,7 +58,7 @@ unsigned int WINAPI VPWorkerThreadStart(void *param)
       case HANG_SNOOP_STOP:
       {
          KillTimer(NULL, hangsnooptimerid);
-         HANDLE hEvent = (HANDLE)msg.wParam;
+         const HANDLE hEvent = (HANDLE)msg.wParam;
          CloseHandle(hEvent);
       }
       break;
@@ -76,7 +76,7 @@ unsigned int WINAPI VPWorkerThreadStart(void *param)
 
 void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 {
-   AutoSavePackage * const pasp = (AutoSavePackage *)lParam;
+   const AutoSavePackage * const pasp = (AutoSavePackage *)lParam;
 
    FastIStorage * const pstgroot = pasp->pstg;
 

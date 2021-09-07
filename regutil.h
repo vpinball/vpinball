@@ -4,7 +4,7 @@ HRESULT LoadValue(const std::string &szKey, const std::string &zValue, std::stri
 HRESULT LoadValue(const std::string &szKey, const std::string &szValue, void* const szbuffer, const DWORD size);
 
 HRESULT LoadValue(const std::string &szKey, const std::string &szValue, float &pfloat);
-float   LoadValueFloatWithDefault(const char *szKey, const char *szValue, const float def); 
+float   LoadValueFloatWithDefault(const std::string &szKey, const std::string &szValue, const float def); 
 
 HRESULT LoadValue(const std::string &szKey, const std::string &szValue, int &pint);
 HRESULT LoadValue(const std::string &szKey, const std::string &szValue, unsigned int &pint);

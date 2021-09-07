@@ -20,7 +20,7 @@ namespace
    {
       fprintf(f, "Process: ");
       char buffer[MAX_PATH + 1];
-      HMODULE hModule = NULL;
+      const HMODULE hModule = NULL;
       GetModuleFileName(hModule, buffer, MAX_PATH);
       const char* lastSeparatorPos = strrchr(buffer, '\\');
       if (lastSeparatorPos != 0)
@@ -52,8 +52,7 @@ namespace
       }
       else
       {
-         OSVERSIONINFOEX sysInfo;
-         memset(&sysInfo, 0, sizeof(sysInfo));
+         OSVERSIONINFOEX sysInfo = {};
          sysInfo.dwOSVersionInfoSize = sizeof(sysInfo);
          ::GetVersionEx((OSVERSIONINFO*)&sysInfo);
 
@@ -105,8 +104,7 @@ namespace
 
    void WriteProcessorInfo(FILE* f)
    {
-      SYSTEM_INFO sysInfo;
-      memset(&sysInfo, 0, sizeof(sysInfo));
+      SYSTEM_INFO sysInfo = {};
       GetSystemInfo(&sysInfo);
       fprintf(f, "Number of CPUs: %lu\nProcessor type: %lu\n",
          sysInfo.dwNumberOfProcessors, sysInfo.dwProcessorType);
@@ -159,7 +157,7 @@ namespace
 #undef EXC_CASE
    }
 
-   void WriteExceptionInfo(FILE* f, EXCEPTION_POINTERS* exceptionPtrs)
+   void WriteExceptionInfo(FILE* f, const EXCEPTION_POINTERS* exceptionPtrs)
    {
       WriteProcessName(f);
       fprintf(f, "\n");
@@ -194,7 +192,7 @@ namespace
 
    bool WriteMiniDump(EXCEPTION_POINTERS* exceptionPtrs, const char* fileName)
    {
-      HANDLE hDump = ::CreateFile(fileName, GENERIC_WRITE, FILE_SHARE_READ, 0,
+      const HANDLE hDump = ::CreateFile(fileName, GENERIC_WRITE, FILE_SHARE_READ, 0,
          CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
       if (hDump != INVALID_HANDLE_VALUE)
       {
@@ -203,7 +201,7 @@ namespace
          dumpInfo.ExceptionPointers = exceptionPtrs;
          dumpInfo.ThreadId = ::GetCurrentThreadId();
 
-         MINIDUMP_TYPE dumpType = (MINIDUMP_TYPE)(MiniDumpWithPrivateReadWriteMemory |
+         const MINIDUMP_TYPE dumpType = (MINIDUMP_TYPE)(MiniDumpWithPrivateReadWriteMemory |
             MiniDumpWithThreadInfo | MiniDumpWithUnloadedModules);
 
          const BOOL success = ::MiniDumpWriteDump(
@@ -243,7 +241,7 @@ namespace
          status.largestFree >> 20);
    }
 
-   void WriteRegisters(FILE* f, EXCEPTION_POINTERS* exceptionPtrs)
+   void WriteRegisters(FILE* f, const EXCEPTION_POINTERS* exceptionPtrs)
    {
       if (IsBadReadPtr(exceptionPtrs, sizeof(EXCEPTION_POINTERS)))
          return;
@@ -273,8 +271,7 @@ namespace
 
    void WriteCallStack(FILE* f, PCONTEXT context)
    {
-      char callStack[2048];
-      memset(callStack, 0, sizeof(callStack));
+      char callStack[2048] = {};
       rde::StackTrace::GetCallStack(context, true, callStack, sizeof(callStack) - 1);
       fprintf(f, "Call stack\n==========\n%s\n", callStack);
    }
@@ -283,7 +280,7 @@ namespace
 
    LONG __stdcall MyExceptionFilter(EXCEPTION_POINTERS* exceptionPtrs)
    {
-      LONG returnCode = EXCEPTION_CONTINUE_SEARCH;
+      const LONG returnCode = EXCEPTION_CONTINUE_SEARCH;
 
       // Ignore multiple calls.
       if (s_inFilter != 0)
@@ -306,7 +303,7 @@ namespace
 		  WriteCallStack(f, exceptionPtrs->ContextRecord);
 
 		  WriteEnvironmentInfo(f);
-		  rde::MemoryStatus memStatus = rde::MemoryStatus::GetCurrent();
+		  const rde::MemoryStatus memStatus = rde::MemoryStatus::GetCurrent();
 		  WriteMemoryStatus(f, memStatus);
 		  WriteRegisters(f, exceptionPtrs);
 		  WriteBlackBoxMessages(f);
