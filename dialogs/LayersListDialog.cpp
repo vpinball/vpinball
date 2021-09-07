@@ -688,7 +688,9 @@ void LayerTreeView::PreCreate(CREATESTRUCT& cs)
    cs.lpszClass = WC_TREEVIEW;
 }
 
+#ifndef MAKEPOINTS
 #define MAKEPOINTS(l) (*((POINTS FAR*)&(l)))
+#endif
 
 LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 {
