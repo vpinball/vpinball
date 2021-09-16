@@ -20,10 +20,10 @@ enum eObjType : unsigned char
    eTextbox,
    eDispReel,
    eLightSeq,
-   ePrimitive,  // also (ab)used for Rubbers and Ramps (as both are made out of triangles, too)
+   ePrimitive,	// also (ab)used for Rubbers and Ramps (as both are made out of triangles, too)
    eHitTarget,
    eTrigger,	// this value and greater are volume set tested, add rigid or non-volume set above
-   eKicker,		// this is done to limit to one test
+   eKicker		// this is done to limit to one test
 };
 
 extern float c_hardScatter;
@@ -104,7 +104,7 @@ class HitObject
 public:
    HitObject() : m_pfedebug(NULL), m_obj(NULL), m_threshold(0.f),
       m_elasticity(0.3f), m_elasticityFalloff(0.0f), m_friction(0.3f), m_scatter(0.0f),
-      m_ObjType(eNull), m_enabled(true), m_fe(false), m_e(false) {}
+      m_ObjType(eNull), m_enabled(true), m_fe(false), m_e(0) {}
    virtual ~HitObject() {}
 
    virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const { return -1.f; } //!! shouldn't need to do this, but for whatever reason there is a pure virtual function call triggered otherwise that refuses to be debugged (all derived classes DO implement this one!)
@@ -136,7 +136,7 @@ public:
    bool  m_enabled;
 
    bool  m_fe;  // FireEvents for m_obj?
-   bool  m_e;   // currently only used to determine which HitTriangles/HitLines/HitPoints are being part of the same Primitive element m_obj, to be able to early out intersection traversal if primitive is flagged as not collidable
+   unsigned char m_e;   // currently only used to determine which HitTriangles/HitLines/HitPoints are being part of the same Primitive(1)/HitTarget(2) element m_obj, to be able to early out intersection traversal if primitive is flagged as not collidable, its 0 if no unique element
 };
 
 //

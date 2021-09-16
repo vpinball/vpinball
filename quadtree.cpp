@@ -4,23 +4,14 @@
 HitQuadtree::~HitQuadtree()
 {
 #ifndef USE_EMBREE
-   if (lefts != 0)
-   {
-      _aligned_free(lefts);
-      _aligned_free(rights);
-      _aligned_free(tops);
-      _aligned_free(bottoms);
-      _aligned_free(zlows);
-      _aligned_free(zhighs);
-   }
+   if (lefts_rights_tops_bottoms_zlows_zhighs != 0)
+      _aligned_free(lefts_rights_tops_bottoms_zlows_zhighs);
 
    if (!m_leaf)
-   {
       for (int i = 0; i < 4; i++)
       {
          delete m_children[i];
       }
-   }
 #else
    rtcReleaseScene(m_scene);
    rtcReleaseDevice(m_embree_device);
@@ -155,17 +146,18 @@ void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int leve
 
    std::vector<HitObject*> vRemain; // hit objects which did not go to a quadrant
 
-   m_unique = m_vho[0]->m_e ? (Primitive *)(m_vho[0]->m_obj) : NULL;
+   m_unique = (m_vho[0]->m_e != 0) ? m_vho[0]->m_obj : NULL;
+   m_ObjType = m_vho[0]->m_ObjType;
 
    // sort items into appropriate child nodes
    for (size_t i = 0; i < m_vho.size(); i++)
    {
-      int oct;
       HitObject * const pho = m_vho[i];
 
-      if ((pho->m_e ? (Primitive *)(pho->m_obj) : NULL) != m_unique) // are all objects in current node unique/belong to the same primitive?
+      if (((pho->m_e != 0) ? pho->m_obj : NULL) != m_unique) // are all objects in current node unique/belong to the same primitive?
          m_unique = NULL;
 
+      int oct;
       if (pho->m_hitBBox.right < m_vcenter.x)
          oct = 0;
       else if (pho->m_hitBBox.left > m_vcenter.x)
@@ -231,15 +223,15 @@ void HitQuadtree::InitSseArrays()
    // build SSE boundary arrays of the local hit-object list
    // (don't init twice)
    const size_t padded = ((m_vho.size() + 3) / 4) * 4;
-   const size_t ssebytes = sizeof(float) * padded;
-   if (ssebytes > 0 && lefts == 0)
+   if (padded > 0 && lefts_rights_tops_bottoms_zlows_zhighs == 0)
    {
-      lefts = (float*)_aligned_malloc(ssebytes, 16);
-      rights = (float*)_aligned_malloc(ssebytes, 16);
-      tops = (float*)_aligned_malloc(ssebytes, 16);
-      bottoms = (float*)_aligned_malloc(ssebytes, 16);
-      zlows = (float*)_aligned_malloc(ssebytes, 16);
-      zhighs = (float*)_aligned_malloc(ssebytes, 16);
+      lefts_rights_tops_bottoms_zlows_zhighs = (float*)_aligned_malloc(padded * (6 * sizeof(float)), 16);
+      float* const __restrict lefts = lefts_rights_tops_bottoms_zlows_zhighs;
+      float* const __restrict rights = lefts_rights_tops_bottoms_zlows_zhighs + padded;
+      float* const __restrict tops = lefts_rights_tops_bottoms_zlows_zhighs + (padded+padded);
+      float* const __restrict bottoms = lefts_rights_tops_bottoms_zlows_zhighs + (padded+padded+padded);
+      float* const __restrict zlows = lefts_rights_tops_bottoms_zlows_zhighs + (padded+padded+padded+padded);
+      float* const __restrict zhighs = lefts_rights_tops_bottoms_zlows_zhighs + (padded+padded+padded+padded+padded);
 
       for (size_t j = 0; j < m_vho.size(); j++)
       {
@@ -367,20 +359,23 @@ void HitQuadtree::HitTestBallSse(const Ball * const pball, CollisionEvent& coll)
 
    do
    {
-      if (current->m_unique == NULL || current->m_unique->m_d.m_collidable) // early out if only one unique primitive stored inside all of the subtree/current node that is also not collidable (at the moment)
+      if (current->m_unique == NULL
+          || (current->m_ObjType == ePrimitive && ((Primitive*)current->m_unique)->m_d.m_collidable)
+          || (current->m_ObjType == eHitTarget && ((HitTarget*)current->m_unique)->m_d.m_isDropped == false)) // early out if only one unique primitive/hittarget stored inside all of the subtree/current node that is also not collidable (at the moment)
       {
-         if (current->lefts != 0) // does node contain hitables?
+         if (current->lefts_rights_tops_bottoms_zlows_zhighs != 0) // does node contain hitables?
          {
-            const __m128* const pL = (__m128*)current->lefts;
-            const __m128* const pR = (__m128*)current->rights;
-            const __m128* const pT = (__m128*)current->tops;
-            const __m128* const pB = (__m128*)current->bottoms;
-            const __m128* const pZl = (__m128*)current->zlows;
-            const __m128* const pZh = (__m128*)current->zhighs;
+            const size_t size = (current->m_vho.size() + 3) / 4;
+
+            const __m128* const __restrict pL  = (__m128*)current->lefts_rights_tops_bottoms_zlows_zhighs;
+            const __m128* const __restrict pR  = (__m128*)current->lefts_rights_tops_bottoms_zlows_zhighs + size;
+            const __m128* const __restrict pT  = (__m128*)current->lefts_rights_tops_bottoms_zlows_zhighs + (size+size);
+            const __m128* const __restrict pB  = (__m128*)current->lefts_rights_tops_bottoms_zlows_zhighs + (size+size+size);
+            const __m128* const __restrict pZl = (__m128*)current->lefts_rights_tops_bottoms_zlows_zhighs + (size+size+size+size);
+            const __m128* const __restrict pZh = (__m128*)current->lefts_rights_tops_bottoms_zlows_zhighs + (size+size+size+size+size);
 
             // loop implements 4 collision checks at once
             // (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow)
-            const size_t size = (current->m_vho.size() + 3) / 4;
             const size_t start = traversal_order ? 0 : (size - 1);
             const size_t end = traversal_order ? size : -1;
             for (size_t i = start; i != end; i += dt)

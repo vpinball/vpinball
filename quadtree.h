@@ -15,12 +15,7 @@ public:
 #ifndef USE_EMBREE
       m_unique = NULL;
       m_leaf = true;
-      lefts = 0;
-      rights = 0;
-      tops = 0;
-      bottoms = 0;
-      zlows = 0;
-      zhighs = 0;
+      lefts_rights_tops_bottoms_zlows_zhighs = 0;
 #else
       m_embree_device = rtcNewDevice(nullptr);
       m_scene = nullptr;
@@ -52,21 +47,17 @@ private:
    void CreateNextLevel(const FRect3D& bounds, const unsigned int level, unsigned int level_empty);
    void HitTestBallSse(const Ball * const pball, CollisionEvent& coll) const;
 
-   Primitive* m_unique; // everything below/including this node shares the same original primitive object (just for early outs if not collidable)
+   void* __restrict m_unique; // everything below/including this node shares the same original primitive/hittarget object (just for early outs if not collidable)
 
    HitQuadtree * __restrict m_children[4];
    Vertex3Ds m_vcenter;
 
    // helper arrays for SSE boundary checks
    void InitSseArrays();
-   float* __restrict lefts;
-   float* __restrict rights;
-   float* __restrict tops;
-   float* __restrict bottoms;
-   float* __restrict zlows;
-   float* __restrict zhighs;
+   float* __restrict lefts_rights_tops_bottoms_zlows_zhighs;
 
    bool m_leaf;
+   unsigned char m_ObjType; // only used if m_unique != NULL, to identify which object this is (eObjType)
 #else
    std::vector<HitObject*> *m_pvho;
 

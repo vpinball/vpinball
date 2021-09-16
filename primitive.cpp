@@ -622,7 +622,7 @@ void Primitive::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
    obj->m_threshold = m_d.m_threshold;
    obj->m_ObjType = ePrimitive;
    obj->m_obj = (IFireEvents *)this;
-   obj->m_e = true;
+   obj->m_e = 1;
    obj->m_fe = m_d.m_hitEvent;
 
    pvho.push_back(obj);

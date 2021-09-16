@@ -411,6 +411,7 @@ void HitTarget::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const 
    obj->m_enabled = m_d.m_collidable;
    obj->m_ObjType = eHitTarget;
    obj->m_obj = (IFireEvents*)this;
+   obj->m_e = 2;
    obj->m_fe = setHitObject && m_d.m_hitEvent;
 
    pvho.push_back(obj);
