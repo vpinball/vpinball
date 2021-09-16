@@ -115,10 +115,6 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, const float baser
 #endif
 }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
 HitFlipper::HitFlipper(const Vertex2D& center, const float baser, const float endr, const float flipr, const float angleStart, const float angleEnd,
    const float zlow, const float zhigh, Flipper* const pflipper)
    : m_flipperMover(center, baser, endr, flipr, angleStart, angleEnd, zlow, zhigh, pflipper)
@@ -136,8 +132,87 @@ void HitFlipper::UpdatePhysicsFromFlipper()
    m_scatter = ANGTORAD((m_flipperMover.m_pflipper->m_d.m_OverridePhysics || (m_flipperMover.m_pflipper->m_ptable->m_overridePhysicsFlipper && m_flipperMover.m_pflipper->m_ptable->m_overridePhysics)) ? m_flipperMover.m_pflipper->m_d.m_OverrideScatterAngle : m_flipperMover.m_pflipper->m_d.m_scatter);
 }
 
+// helpers for BBox computation:
+
+static float ClampDegrees(const float angle)
+{
+   const float deg = fmodf(angle,360.f);
+   return deg > 180.f ? deg - 360.f : deg;
+}
+
+static FRect3D ExtendBacksideBounds(FRect3D bounds, const Vertex2D& center, const float fixedRadius, const float angle)
+{
+   switch(lroundf(angle))
+   {
+   case -90:
+      bounds.right  = max(bounds.right,  center.x + fixedRadius);
+      break;
+   case 90:
+      bounds.left   = min(bounds.left,   center.x - fixedRadius);
+      break;
+   case 0:
+      bounds.bottom = max(bounds.bottom, center.y + fixedRadius);
+      break;
+   case 180:
+      bounds.top    = min(bounds.top,    center.y - fixedRadius);
+      break;
+   default:
+      assert(false);
+      break;
+   }
+
+   return bounds;
+}
+
+static FRect3D ExtendBoundsAtPosition(FRect3D bounds, const Vertex2D& center, const float length, const float fixedRadius, const float angle)
+{
+   const float deg = ClampDegrees(angle);
+   if (deg > 0.f)
+   {
+      const float l = sinf(ANGTORAD(180.f - deg));
+      const float d1 = length * l;
+      const float d2 = l < 0.f ? -fixedRadius : fixedRadius;
+      bounds.right = max(bounds.right, center.x + d1 + d2);
+   }
+   else
+   {
+      const float l = sinf(ANGTORAD(180.f - deg));
+      const float d1 = length * l;
+      const float d2 = l < 0.f ? -fixedRadius : fixedRadius;
+      bounds.left = min(bounds.left, center.x + d1 + d2);
+   }
+
+   if (deg > 90.f || deg < -90.f)
+   {
+      const float l = cosf(ANGTORAD(180.f - deg));
+      const float d1 = length * l;
+      const float d2 = l < 0.f ? -fixedRadius : fixedRadius;
+      bounds.bottom = max(bounds.bottom, center.y + d1 + d2);
+   }
+   else
+   {
+      const float l = cosf(ANGTORAD(180.f - deg));
+      const float d1 = length * l;
+      const float d2 = l < 0.f ? -fixedRadius : fixedRadius;
+      bounds.top = min(bounds.top, center.y + d1 + d2);
+   }
+
+   return bounds;
+}
+
+static FRect3D ExtendBoundsAtExtreme(const FRect3D& aabb, const Vertex2D& c, const float length, const float endRadius, const float startRadius, const float startAngle, const float endAngle, const float angle)
+{
+   if (startAngle < angle && endAngle > angle || endAngle < angle && startAngle > angle)
+      // extend front side
+      return ExtendBoundsAtPosition(aabb, c, length, endRadius, angle);
+   else
+      // extend back side
+      return ExtendBacksideBounds(aabb, c, startRadius, ClampDegrees(angle + 180.f));
+}
+
 void HitFlipper::CalcHitBBox()
 {
+#if 0 // old, simple version:
    // Allow roundoff
    m_hitBBox.left   = m_flipperMover.m_hitcircleBase.center.x - (m_flipperMover.m_flipperradius + m_flipperMover.m_endradius + 0.1f);
    m_hitBBox.right  = m_flipperMover.m_hitcircleBase.center.x + (m_flipperMover.m_flipperradius + m_flipperMover.m_endradius + 0.1f);
@@ -145,7 +220,35 @@ void HitFlipper::CalcHitBBox()
    m_hitBBox.bottom = m_flipperMover.m_hitcircleBase.center.y + (m_flipperMover.m_flipperradius + m_flipperMover.m_endradius + 0.1f);
    m_hitBBox.zlow   = m_flipperMover.m_hitcircleBase.m_hitBBox.zlow;
    m_hitBBox.zhigh  = m_flipperMover.m_hitcircleBase.m_hitBBox.zhigh;
+#else
+   // compute bounds. we look at the flipper angles to compute the smallest possible bounds.
+   const Vertex2D c = m_flipperMover.m_hitcircleBase.center;
+   const float r2 = m_flipperMover.m_endradius + 0.1f;
+   const float r3 = m_flipperMover.m_hitcircleBase.radius + 0.1f;
+
+   const float a0 = ClampDegrees(RADTOANG(m_flipperMover.m_angleStart));
+   const float a1 = ClampDegrees(RADTOANG(m_flipperMover.m_angleEnd));
+
+   // start with no bounds
+   FRect3D aabb = FRect3D(c.x, c.x, c.y, c.y, m_flipperMover.m_hitcircleBase.m_hitBBox.zlow, m_flipperMover.m_hitcircleBase.m_hitBBox.zhigh);
+
+   // extend with start and end position
+   aabb = ExtendBoundsAtPosition(aabb, c, m_flipperMover.m_flipperradius, r2, a0);
+   aabb = ExtendBoundsAtPosition(aabb, c, m_flipperMover.m_flipperradius, r2, a1);
+
+   // extend with extremes (-90°, 0°, 90° and 180°)
+   aabb = ExtendBoundsAtExtreme(aabb, c, m_flipperMover.m_flipperradius, r2, r3, a0, a1, -90.f);
+   aabb = ExtendBoundsAtExtreme(aabb, c, m_flipperMover.m_flipperradius, r2, r3, a0, a1, 0.f);
+   aabb = ExtendBoundsAtExtreme(aabb, c, m_flipperMover.m_flipperradius, r2, r3, a0, a1, 90.f);
+   aabb = ExtendBoundsAtExtreme(aabb, c, m_flipperMover.m_flipperradius, r2, r3, a0, a1, 180.f);
+
+   m_hitBBox = aabb;
+#endif
 }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
 
 void FlipperMoverObject::SetStartAngle(const float r)
 {
