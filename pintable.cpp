@@ -1335,22 +1335,16 @@ POINT PinTable::GetScreenPoint() const
 }
 
 #define CLEAN_MATERIAL(pEditMaterial) \
-{std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator>::const_iterator \
-   it = m_materialMap.find(pEditMaterial.c_str()); \
+{std::unordered_map<std::string, Material*, StringHashFunctor, StringComparator>::const_iterator \
+   it = m_materialMap.find(pEditMaterial); \
 if (it == m_materialMap.end()) \
    pEditMaterial.clear();}
 
 #define CLEAN_IMAGE(pEditImage) \
-{std::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator>::const_iterator \
-   it = m_textureMap.find(pEditImage.c_str()); \
-if (it == m_textureMap.end()) \
-   pEditImage.clear();}
-
-#define CLEAN_IMAGE_STR(pEditImage) \
-{std::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator>::const_iterator \
+{std::unordered_map<std::string, Texture*, StringHashFunctor, StringComparator>::const_iterator \
    it = m_textureMap.find(pEditImage); \
 if (it == m_textureMap.end()) \
-   pEditImage[0] = 0;}
+   pEditImage.clear();}
 
 #define CLEAN_SURFACE(pEditSurface) \
 {if (!pEditSurface.empty()) \
@@ -1429,10 +1423,10 @@ void PinTable::RemoveInvalidReferences()
    // set up the texture & material hashtables for faster access
    m_textureMap.clear();
    for (size_t i = 0; i < m_vimage.size(); i++)
-       m_textureMap[m_vimage[i]->m_szName.c_str()] = m_vimage[i];
+       m_textureMap[m_vimage[i]->m_szName] = m_vimage[i];
    m_materialMap.clear();
    for (size_t i = 0; i < m_materials.size(); i++)
-       m_materialMap[m_materials[i]->m_szName.c_str()] = m_materials[i];
+       m_materialMap[m_materials[i]->m_szName] = m_materials[i];
 
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
@@ -1943,10 +1937,10 @@ void PinTable::Play(const bool cameraMode)
       // set up the texture & material hashtables for faster access
       m_textureMap.clear();
       for (size_t i = 0; i < m_vimage.size(); i++)
-         m_textureMap[m_vimage[i]->m_szName.c_str()] = m_vimage[i];
+         m_textureMap[m_vimage[i]->m_szName] = m_vimage[i];
       m_materialMap.clear();
       for (size_t i = 0; i < m_materials.size(); i++)
-         m_materialMap[m_materials[i]->m_szName.c_str()] = m_materials[i];
+         m_materialMap[m_materials[i]->m_szName] = m_materials[i];
 
       // parse the (optional) override-physics-sets that can be set globally
       float fOverrideContactScatterAngle;
@@ -6560,8 +6554,8 @@ Texture* PinTable::GetImage(const std::string &szName) const
    // during playback, we use the hashtable for lookup
    if (!m_textureMap.empty())
    {
-      const std::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator>::const_iterator
-         it = m_textureMap.find(szName.c_str());
+      const std::unordered_map<std::string, Texture*, StringHashFunctor, StringComparator>::const_iterator
+         it = m_textureMap.find(szName);
       if (it != m_textureMap.end())
          return it->second;
       else
@@ -6932,8 +6926,8 @@ Material* PinTable::GetMaterial(const std::string &szName) const
    // during playback, we use the hashtable for lookup
    if (!m_materialMap.empty())
    {
-      const std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator>::const_iterator
-         it = m_materialMap.find(szName.c_str());
+      const std::unordered_map<std::string, Material*, StringHashFunctor, StringComparator>::const_iterator
+         it = m_materialMap.find(szName);
       if (it != m_materialMap.end())
          return it->second;
       else

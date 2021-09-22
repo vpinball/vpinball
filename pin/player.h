@@ -2,7 +2,6 @@
 
 #include "kdtree.h"
 #include "quadtree.h"
-#include <unordered_set>
 #include "Debugger.h"
 
 #define DEFAULT_PLAYER_WIDTH 1024
