@@ -1335,13 +1335,13 @@ POINT PinTable::GetScreenPoint() const
 }
 
 #define CLEAN_MATERIAL(pEditMaterial) \
-{std::unordered_map<std::string, Material*, StringHashFunctor, StringComparator>::const_iterator \
+{robin_hood::unordered_map<std::string, Material*, StringHashFunctor, StringComparator>::const_iterator \
    it = m_materialMap.find(pEditMaterial); \
 if (it == m_materialMap.end()) \
    pEditMaterial.clear();}
 
 #define CLEAN_IMAGE(pEditImage) \
-{std::unordered_map<std::string, Texture*, StringHashFunctor, StringComparator>::const_iterator \
+{robin_hood::unordered_map<std::string, Texture*, StringHashFunctor, StringComparator>::const_iterator \
    it = m_textureMap.find(pEditImage); \
 if (it == m_textureMap.end()) \
    pEditImage.clear();}
@@ -6554,7 +6554,7 @@ Texture* PinTable::GetImage(const std::string &szName) const
    // during playback, we use the hashtable for lookup
    if (!m_textureMap.empty())
    {
-      const std::unordered_map<std::string, Texture*, StringHashFunctor, StringComparator>::const_iterator
+      const robin_hood::unordered_map<std::string, Texture*, StringHashFunctor, StringComparator>::const_iterator
          it = m_textureMap.find(szName);
       if (it != m_textureMap.end())
          return it->second;
@@ -6926,7 +6926,7 @@ Material* PinTable::GetMaterial(const std::string &szName) const
    // during playback, we use the hashtable for lookup
    if (!m_materialMap.empty())
    {
-      const std::unordered_map<std::string, Material*, StringHashFunctor, StringComparator>::const_iterator
+      const robin_hood::unordered_map<std::string, Material*, StringHashFunctor, StringComparator>::const_iterator
          it = m_materialMap.find(szName);
       if (it != m_materialMap.end())
          return it->second;

@@ -5,7 +5,8 @@
 #if !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)
 #define AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_
 
-#include <unordered_map>
+#include <inc/robin_hood.h>
+
 #include <atomic>
 #include "hash.h"
 #include "SearchSelectDialog.h"
@@ -897,8 +898,8 @@ public:
 private:
    PinTableMDI *m_mdiTable;
    CString m_notesText;
-   std::unordered_map<std::string, Texture *,  StringHashFunctor, StringComparator> m_textureMap;  // hash table to speed up texture lookup by name
-   std::unordered_map<std::string, Material *, StringHashFunctor, StringComparator> m_materialMap; // hash table to speed up material lookup by name
+   robin_hood::unordered_map<std::string, Texture *,  StringHashFunctor, StringComparator> m_textureMap;  // hash table to speed up texture lookup by name
+   robin_hood::unordered_map<std::string, Material *, StringHashFunctor, StringComparator> m_materialMap; // hash table to speed up material lookup by name
    bool m_moving;
 };
 
