@@ -1,5 +1,22 @@
 #pragma once
 
+//#define ENABLE_XINPUT
+
+#ifdef ENABLE_XINPUT
+#include <XInput.h>
+#pragma comment(lib, "XInput.lib")
+#endif
+
+#ifdef ENABLE_SDL_INPUT //!! misses SDL_Init, SDL_Quit, etc
+#include <sdl2/SDL.h>
+#include <sdl2/SDL_gamecontroller.h>
+#endif
+
+#ifdef ENABLE_IGAMECONTROLLER //!! not implemented yet
+#include "windows.gaming.input.h"
+#pragma comment(lib, "runtimeobject.lib")
+#endif
+
 #define MAX_KEYQUEUE_SIZE 32
 
 #if MAX_KEYQUEUE_SIZE & (MAX_KEYQUEUE_SIZE-1)
@@ -34,7 +51,7 @@ class PinInput
 public:
    PinInput();
    void LoadSettings();
-   ~PinInput() {}
+   ~PinInput();
 
    void Init(const HWND hwnd);
    void UnInit();
@@ -57,6 +74,8 @@ public:
 
    void ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input);
    void ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input);
+
+   void PlayRumble(const int leftMotor, const int rightMotor, const int duration);
 
    int GetNextKey();
 
@@ -99,6 +118,11 @@ public:
 private:
    int started();
    void Joy(const unsigned int n, const int updown, const bool start);
+
+   void handleInputDI(DIDEVICEOBJECTDATA *didod);
+   void handleInputXI(DIDEVICEOBJECTDATA *didod);
+   void handleInputSDL(DIDEVICEOBJECTDATA *didod);
+   void handleInputIGC(DIDEVICEOBJECTDATA *didod);
 
    //int InputControlRun;
 
@@ -149,6 +173,22 @@ private:
    int m_cameraMode;
    bool m_keyPressedState[4];
    DWORD m_nextKeyPressedTime;
+
+   int m_inputApi;   // 0=DirectInput 1=XInput, 2=SDL, 3=iGamecontroller
+   int m_rumbleMode; // 0=Off, 1=Table only, 2=Generic only, 3=Table with generic as fallback
+
+#ifdef ENABLE_XINPUT
+   int m_inputDeviceXI;
+   XINPUT_STATE m_inputDeviceXIstate;
+   DWORD m_rumbleOffTime;
+   bool m_rumbleRunning;
+#endif
+#ifdef ENABLE_SDL_INPUT
+   SDL_Joystick* m_inputDeviceSDL;
+   SDL_Haptic* m_rumbleDeviceSDL;
+#endif
+#ifdef ENABLE_IGAMECONTROLLER
+#endif
 };
 
 #define VK_TO_DIK_SIZE 105

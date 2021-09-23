@@ -1155,6 +1155,10 @@
 #define IDC_SCRIPT_STOP                 871
 #define IDC_SUPPRESS_ERRORS_CHECK       872
 #define ID_SCRIPT_TOGGLE_LAST_ERROR_VISIBILITY 873
+#define IDC_LABEL_INPUT_API             874
+#define IDC_COMBO_INPUT_API             875
+#define IDC_COMBO_RUMBLE                876
+#define IDC_LABEL_RUMBLE                877
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1336,7 +1340,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        669
-#define _APS_NEXT_CONTROL_VALUE         874
+#define _APS_NEXT_CONTROL_VALUE         878
 #define _APS_NEXT_COMMAND_VALUE         4027
 #define _APS_NEXT_SYMED_VALUE           188
 #endif

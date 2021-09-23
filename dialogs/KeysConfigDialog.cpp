@@ -658,6 +658,52 @@ BOOL KeysConfigDialog::OnInitDialog()
     ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
     ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
+    int inputApi = LoadValueIntWithDefault("Player", "InputApi", 0);
+    int inputApiIndex = inputApi;
+    const HWND hwndInputApi = GetDlgItem(IDC_COMBO_INPUT_API).GetHwnd();
+
+    int inputApiCount = 1;
+    ::SendMessage(hwndInputApi, CB_ADDSTRING, 0, (LPARAM)"Direct Input");//0
+#ifdef ENABLE_XINPUT
+    ::SendMessage(hwndInputApi, CB_ADDSTRING, 0, (LPARAM)"XInput");//1
+    inputApiCount++;
+#else
+    if (inputApi == 1) inputApiIndex = 0;
+    if (inputApi > 1) inputApiIndex--;
+#endif
+#ifdef ENABLE_SDL_INPUT
+    ::SendMessage(hwndInputApi, CB_ADDSTRING, 0, (LPARAM)"SDL");//2
+    inputApiCount++;
+#else
+    if (inputApi == 2) inputApiIndex = 0;
+    if (inputApi > 2) inputApiIndex--;
+#endif
+#ifdef ENABLE_IGAMECONTROLLER
+    ::SendMessage(hwndInputApi, CB_ADDSTRING, 0, (LPARAM)"IGameController");//3
+    inputApiCount++;
+#else
+    if (inputApi == 3) inputApiIndex = 0;
+    if (inputApi > 3) inputApiIndex--;
+#endif
+#ifdef ENABLE_VRCONTROLLER
+    ::SendMessage(hwndInputApi, CB_ADDSTRING, 0, (LPARAM)"VR Controller");//4
+    inputApiCount++;
+#else
+    if (inputApi == 4) inputApiIndex = 0;
+    if (inputApi > 4) inputApiIndex--;
+#endif
+    ::SendMessage(hwndInputApi, CB_SETCURSEL, inputApiIndex, 0);
+
+    GetDlgItem(IDC_COMBO_RUMBLE).EnableWindow(inputApiCount > 1);
+
+    const int rumbleMode = LoadValueIntWithDefault("Player", "RumbleMode", 3);
+    const HWND hwndRumble = GetDlgItem(IDC_COMBO_RUMBLE).GetHwnd();
+    ::SendMessage(hwndRumble, CB_ADDSTRING, 0, (LPARAM)"Off");
+    ::SendMessage(hwndRumble, CB_ADDSTRING, 0, (LPARAM)"Table only (N/A yet)"); //!! not supported yet
+    ::SendMessage(hwndRumble, CB_ADDSTRING, 0, (LPARAM)"Generic only (N/A yet)"); //!! not supported yet
+    ::SendMessage(hwndRumble, CB_ADDSTRING, 0, (LPARAM)"Table with generic fallback");
+    ::SendMessage(hwndRumble, CB_SETCURSEL, rumbleMode, 0);
+
     return TRUE;
 }
 
@@ -825,6 +871,12 @@ BOOL KeysConfigDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 return FALSE;
         }//switch
     }//if (HIWORD(wParam) == BN_CLICKED)
+
+    if (LOWORD(wParam) == IDC_COMBO_INPUT_API) {
+       const size_t inputApi = SendMessage(GetDlgItem(IDC_COMBO_INPUT_API).GetHwnd(), CB_GETCURSEL, 0, 0);
+       GetDlgItem(IDC_COMBO_RUMBLE).EnableWindow(inputApi > 0);
+    }
+
     return TRUE;
 }
 
@@ -976,6 +1028,24 @@ void KeysConfigDialog::OnOK()
 
     selected = ::SendMessage(GetDlgItem(IDC_DOF_FORCEDISABLE).GetHwnd(), BM_GETCHECK, 0, 0);
     SaveValueBool("Controller", "ForceDisableB2S", selected != 0);
+
+    size_t inputApi = SendMessage(GetDlgItem(IDC_COMBO_INPUT_API).GetHwnd(), CB_GETCURSEL, 0, 0);
+#ifndef ENABLE_XINPUT
+    if (inputApi >= 1) inputApi++;
+#endif
+#ifndef ENABLE_SDL_INPUT
+    if (inputApi >= 2) inputApi++;
+#endif
+#ifndef ENABLE_IGAMECONTROLLER
+    if (inputApi >= 3) inputApi++;
+#endif
+#ifndef ENABLE_VRCONTROLLER
+    if (inputApi >= 4) inputApi++;
+#endif
+    SaveValueInt("Player", "InputApi", inputApi);
+
+    const size_t rumble = SendMessage(GetDlgItem(IDC_COMBO_RUMBLE).GetHwnd(), CB_GETCURSEL, 0, 0);
+    SaveValueInt("Player", "RumbleMode", rumble);
 
     CDialog::OnOK();
 }

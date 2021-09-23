@@ -895,7 +895,7 @@ void Surface::PrepareSlingshots()
    for (size_t i = 0; i < m_vlinesling.size(); i++, offset += 9)
    {
       LineSegSlingshot * const plinesling = m_vlinesling[i];
-      plinesling->m_slingshotanim.m_animations = (m_d.m_slingshotAnimation != 0);
+      plinesling->m_slingshotanim.m_animations = m_d.m_slingshotAnimation;
 
       rgv3D[offset].x = plinesling->v1.x;
       rgv3D[offset].y = plinesling->v1.y;

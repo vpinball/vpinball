@@ -125,6 +125,17 @@ PinInput::PinInput()
    gMixerKeyUp = false;
 }
 
+PinInput::~PinInput()
+{
+#ifdef ENABLE_SDL_INPUT
+   if (m_rumbleDeviceSDL)
+      SDL_HapticClose(m_rumbleDeviceSDL);
+   if (m_inputDeviceSDL) {
+      SDL_JoystickClose(m_inputDeviceSDL);
+   }
+#endif
+}
+
 void PinInput::LoadSettings()
 {
    m_lr_axis = LoadValueIntWithDefault("Player", "LRAxis", m_lr_axis);
@@ -508,6 +519,25 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
    }
 
    // same for joysticks 
+   switch (m_inputApi) {
+   case 1:
+      handleInputXI(didod);
+      break;
+   case 2:
+      handleInputSDL(didod);
+      break;
+   case 3:
+      handleInputIGC(didod);
+      break;
+   case 0:
+   default:
+      handleInputDI(didod);
+      break;
+   }
+}
+
+void PinInput::handleInputDI(DIDEVICEOBJECTDATA *didod)
+{
    for (int k = 0; k < e_JoyCnt; ++k)
    {
 #ifdef USE_DINPUT8
@@ -531,6 +561,215 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
             }
          }
       }
+   }
+}
+
+void PinInput::handleInputXI(DIDEVICEOBJECTDATA *didod)
+{
+#ifdef ENABLE_XINPUT
+   typedef struct {
+      WORD xi; DWORD di;
+   } mappingElement;
+   static constexpr mappingElement mappingTable[] = {
+      {XINPUT_GAMEPAD_A, DIJOFS_BUTTON0 },
+      {XINPUT_GAMEPAD_B, DIJOFS_BUTTON1 },
+      {XINPUT_GAMEPAD_X, DIJOFS_BUTTON2 },
+      {XINPUT_GAMEPAD_Y, DIJOFS_BUTTON3 },
+      {XINPUT_GAMEPAD_LEFT_SHOULDER, DIJOFS_BUTTON4 },
+      {XINPUT_GAMEPAD_RIGHT_SHOULDER, DIJOFS_BUTTON5 },
+      {XINPUT_GAMEPAD_BACK, DIJOFS_BUTTON6},
+      {XINPUT_GAMEPAD_START, DIJOFS_BUTTON7},
+      {XINPUT_GAMEPAD_LEFT_THUMB, DIJOFS_BUTTON8},
+      {XINPUT_GAMEPAD_RIGHT_THUMB, DIJOFS_BUTTON9},
+      {XINPUT_GAMEPAD_DPAD_LEFT, DIJOFS_BUTTON10},
+      {XINPUT_GAMEPAD_DPAD_RIGHT, DIJOFS_BUTTON11},
+      {XINPUT_GAMEPAD_DPAD_UP, DIJOFS_BUTTON12},
+      {XINPUT_GAMEPAD_DPAD_DOWN, DIJOFS_BUTTON13},
+      {0, 0} };
+   XINPUT_STATE state;
+   ZeroMemory(&state, sizeof(XINPUT_STATE));
+   if (m_inputDeviceXI == -1 || XInputGetState(m_inputDeviceXI, &state) != ERROR_SUCCESS) {
+      m_inputDeviceXI = -1;
+      for (DWORD i = 0; i < XUSER_MAX_COUNT; i++)
+      {
+         ZeroMemory(&state, sizeof(XINPUT_STATE));
+         if (XInputGetState(i, &state) == ERROR_SUCCESS) {
+            m_inputDeviceXI = i;
+            break;
+         }
+      }
+   }
+   if (m_rumbleRunning && m_inputDeviceXI >= 0) {
+      DWORD now = timeGetTime();
+      if (m_rumbleOffTime <= now || m_rumbleOffTime - now > 65535) {
+         m_rumbleRunning = false;
+         XINPUT_VIBRATION vibration;
+         ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
+         XInputSetState(m_inputDeviceXI, &vibration);
+      }
+   }
+   int i = 0;
+   int j = 0;
+   while (mappingTable[i].xi != 0) {
+      if ((m_inputDeviceXIstate.Gamepad.wButtons & mappingTable[i].xi) != (state.Gamepad.wButtons & mappingTable[i].xi)) {
+         didod[j].dwOfs = mappingTable[i].di;
+         didod[j].dwData = (state.Gamepad.wButtons & mappingTable[i].xi) > 0 ? 0x80 : 0x00;
+         PushQueue(&didod[j], APP_JOYSTICK(0));
+         j++;
+      }
+      i++;
+   }
+   if (m_inputDeviceXIstate.Gamepad.bLeftTrigger != state.Gamepad.bLeftTrigger) {
+      didod[j].dwOfs = DIJOFS_Z;
+      const int value = state.Gamepad.bLeftTrigger * 512;
+      didod[j].dwData = (DWORD)(value);
+      PushQueue(&didod[j], APP_JOYSTICK(0));
+      j++;
+   }
+   if (m_inputDeviceXIstate.Gamepad.bRightTrigger != state.Gamepad.bRightTrigger) {
+      didod[j].dwOfs = DIJOFS_RZ;
+      const int value = state.Gamepad.bRightTrigger * 512;
+      didod[j].dwData = (DWORD)(value);
+      PushQueue(&didod[j], APP_JOYSTICK(0));
+      j++;
+   }
+   if (m_inputDeviceXIstate.Gamepad.sThumbLX != state.Gamepad.sThumbLX) {
+      didod[j].dwOfs = DIJOFS_X;
+      const int value = state.Gamepad.sThumbLX * -2;
+      didod[j].dwData = (DWORD)(value);
+      PushQueue(&didod[j], APP_JOYSTICK(0));
+      j++;
+   }
+   if (m_inputDeviceXIstate.Gamepad.sThumbLY != state.Gamepad.sThumbLY) {
+      didod[j].dwOfs = DIJOFS_Y;
+      const int value = state.Gamepad.sThumbLY * -2;
+      didod[j].dwData = (DWORD)(value);
+      PushQueue(&didod[j], APP_JOYSTICK(0));
+      j++;
+   }
+   if (m_inputDeviceXIstate.Gamepad.sThumbRX != state.Gamepad.sThumbRX) {
+      didod[j].dwOfs = DIJOFS_RX;
+      const int value = state.Gamepad.sThumbRX * -2;
+      didod[j].dwData = (DWORD)(value);
+      PushQueue(&didod[j], APP_JOYSTICK(0));
+      j++;
+   }
+   if (m_inputDeviceXIstate.Gamepad.sThumbRY != state.Gamepad.sThumbRY) {
+      didod[j].dwOfs = DIJOFS_RY;
+      const int value = state.Gamepad.sThumbRY * -2;
+      didod[j].dwData = (DWORD)(value);
+      PushQueue(&didod[j], APP_JOYSTICK(0));
+      j++;
+   }
+   memcpy(&m_inputDeviceXIstate, &state, sizeof(XINPUT_STATE));
+#endif
+}
+
+void PinInput::handleInputSDL(DIDEVICEOBJECTDATA *didod)
+{
+#ifdef ENABLE_SDL_INPUT
+   static constexpr DWORD axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_RX, DIJOFS_RY, DIJOFS_Z , DIJOFS_RZ };
+   static constexpr int axisMultiplier[] = { 2, 2, 2, 2, 256 , 256 };
+   SDL_Event e;
+   int j = 0;
+   while (SDL_PollEvent(&e) != 0 && j<32)
+   {
+      //User requests quit
+      switch (e.type) {
+      case SDL_QUIT:
+         //Open Exit dialog
+         break;
+      case SDL_JOYDEVICEADDED:
+         if (!m_inputDeviceSDL) {
+            m_inputDeviceSDL = SDL_JoystickOpen(0);
+            if (m_inputDeviceSDL && SDL_JoystickIsHaptic(m_inputDeviceSDL)) {
+               m_rumbleDeviceSDL = SDL_HapticOpenFromJoystick(m_inputDeviceSDL);
+               const int error = SDL_HapticRumbleInit(m_rumbleDeviceSDL);
+               if (error < 0) {
+                  ShowError(SDL_GetError());
+                  SDL_HapticClose(m_rumbleDeviceSDL);
+                  m_rumbleDeviceSDL = nullptr;
+               }
+            }
+         }
+         break;
+      case SDL_JOYDEVICEREMOVED:
+         if (m_rumbleDeviceSDL)
+            SDL_HapticClose(m_rumbleDeviceSDL);
+         m_rumbleDeviceSDL = nullptr;
+         if (m_inputDeviceSDL)
+            SDL_JoystickClose(m_inputDeviceSDL);
+         if (SDL_NumJoysticks() > 0) {
+            m_inputDeviceSDL = SDL_JoystickOpen(0);
+            if (m_inputDeviceSDL && SDL_JoystickIsHaptic(m_inputDeviceSDL)) {
+               m_rumbleDeviceSDL = SDL_HapticOpenFromJoystick(m_inputDeviceSDL);
+               const int error = SDL_HapticRumbleInit(m_rumbleDeviceSDL);
+               if (error < 0) {
+                  ShowError(SDL_GetError());
+                  SDL_HapticClose(m_rumbleDeviceSDL);
+                  m_rumbleDeviceSDL = nullptr;
+               }
+            }
+         }
+         else
+            m_inputDeviceSDL = nullptr;
+         break;
+      case SDL_JOYAXISMOTION:
+         if (e.jaxis.axis < 6) {
+            didod[j].dwOfs = axes[e.jaxis.axis];
+            const int value = e.jaxis.value * axisMultiplier[e.jaxis.axis];
+            didod[j].dwData = (DWORD)(value);
+            PushQueue(&didod[j], APP_JOYSTICK(0));
+            j++;
+         }
+         break;
+      case SDL_JOYBUTTONDOWN:
+      case SDL_JOYBUTTONUP:
+         if (e.jbutton.button < 32) {
+            didod[j].dwOfs = DIJOFS_BUTTON0 + (DWORD)e.jbutton.button;
+            didod[j].dwData = e.type == SDL_JOYBUTTONDOWN ? 0x80 : 0x00;
+            PushQueue(&didod[j], APP_JOYSTICK(0));
+            j++;
+         }
+      }
+   }
+#endif
+}
+
+void PinInput::handleInputIGC(DIDEVICEOBJECTDATA *didod)
+{
+#ifdef ENABLE_IGAMECONTROLLER
+#endif
+}
+
+void PinInput::PlayRumble(const int leftMotor, const int rightMotor, const int duration)
+{
+   if (m_rumbleMode == 0) return;
+
+   switch (m_inputApi) {
+   case 1: //XInput
+#ifdef ENABLE_XINPUT
+      if (m_inputDeviceXI >= 0) {
+         m_rumbleOffTime = duration + timeGetTime();
+         m_rumbleRunning = true;
+         XINPUT_VIBRATION vibration;
+         ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
+         vibration.wLeftMotorSpeed = leftMotor;
+         vibration.wRightMotorSpeed = rightMotor;
+         XInputSetState(m_inputDeviceXI, &vibration);
+      }
+#endif
+      break;
+   case 2: //SDL2
+#ifdef ENABLE_SDL_INPUT
+      if (m_rumbleDeviceSDL)
+         SDL_HapticRumblePlay(m_rumbleDeviceSDL, (float)max(leftMotor, rightMotor) / 65535.0f, duration);
+#endif
+      break;
+   case 3: //IGameControler
+#ifdef ENABLE_IGAMECONTROLLER
+#endif
+      break;
    }
 }
 
@@ -603,11 +842,56 @@ void PinInput::Init(const HWND hwnd)
    m_nextKeyPressedTime = 0;
    uShockDevice = -1;
    uShockType = 0;
-#ifdef USE_DINPUT8
-   m_pDI->EnumDevices(DI8DEVCLASS_GAMECTRL, DIEnumJoystickCallback, this, DIEDFL_ATTACHEDONLY);//enum Joysticks
+
+   m_inputApi = LoadValueIntWithDefault("Player", "InputApi", 0);
+
+   switch (m_inputApi) {
+   case 1: //xInput
+#ifdef ENABLE_XINPUT
+      m_inputDeviceXI = -1;
+      uShockType = USHOCKTYPE_GENERIC;
+      m_rumbleRunning = false;
 #else
-   m_pDI->EnumDevices(DIDEVTYPE_JOYSTICK, DIEnumJoystickCallback, this, DIEDFL_ATTACHEDONLY);//enum Joysticks
+      m_inputApi = 0;
 #endif
+      break;
+   case 2: //SDL2
+#ifdef ENABLE_SDL_INPUT
+      m_inputDeviceSDL = SDL_JoystickOpen(0);
+      if (m_inputDeviceSDL && SDL_JoystickIsHaptic(m_inputDeviceSDL)) {
+         m_rumbleDeviceSDL = SDL_HapticOpenFromJoystick(m_inputDeviceSDL);
+         int error = SDL_HapticRumbleInit(m_rumbleDeviceSDL);
+         if (error < 0) {
+            ShowError(SDL_GetError());
+            SDL_HapticClose(m_rumbleDeviceSDL);
+            m_rumbleDeviceSDL = nullptr;
+         }
+      }
+      uShockType = USHOCKTYPE_GENERIC;
+#else
+      m_inputApi = 0;
+#endif
+      break;
+   case 3: //iGameController
+#ifdef ENABLE_IGAMECONTROLLER
+#else
+      m_inputApi = 0;
+#endif
+      break;
+   default:
+      m_inputApi = 0;
+      break;
+   }
+
+   m_rumbleMode = (m_inputApi > 0) ? LoadValueIntWithDefault("Player", "RumbleMode", 3) : 0;
+
+   if (m_inputApi == 0) {
+#ifdef USE_DINPUT8
+      m_pDI->EnumDevices(DI8DEVCLASS_GAMECTRL, DIEnumJoystickCallback, this, DIEDFL_ATTACHEDONLY); //enum Joysticks
+#else
+      m_pDI->EnumDevices(DIDEVTYPE_JOYSTICK, DIEnumJoystickCallback, this, DIEDFL_ATTACHEDONLY);   //enum Joysticks
+#endif
+   }
 
    gMixerKeyDown = false;
    gMixerKeyUp = false;
@@ -650,7 +934,6 @@ void PinInput::UnInit()
    SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &m_StartupStickyKeys, SPIF_SENDCHANGE);
 
    for (int k = 0; k < e_JoyCnt; ++k)
-   {
       if (m_pJoystick[k])
       {
          // Unacquire the device one last time just in case 
@@ -659,7 +942,6 @@ void PinInput::UnInit()
          m_pJoystick[k]->Release();
          m_pJoystick[k] = NULL;
       }
-   }
 
    // Release any DirectInput objects.
    if (m_pDI)
