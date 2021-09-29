@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -57,7 +57,7 @@
 
 // Use the Dialog generic program as the starting point for your own dialog
 // applications.
-// The DialogDemo sample demonstrates how to use subclassing to customise
+// The DialogDemo sample demonstrates how to use subclassing to customize
 // the behaviour of common controls in a dialog.
 
 // Note: The following functions often used with dialogs are provided by CWnd:
@@ -232,23 +232,17 @@ namespace Win32xx
     inline CDialog::CDialog(LPCTSTR pResName) : m_isModal(FALSE),
                         m_pResName(pResName), m_pDlgTemplate(NULL)
     {
-        // Initialize the common controls.
-        LoadCommonControls();
     }
 
     inline CDialog::CDialog(UINT resID) : m_isModal(FALSE),
                         m_pResName(MAKEINTRESOURCE (resID)), m_pDlgTemplate(NULL)
     {
-        // Initialize the common controls.
-        LoadCommonControls();
     }
 
     // Constructor for indirect dialogs, created from a dialog box template in memory.
     inline CDialog::CDialog(LPCDLGTEMPLATE pDlgTemplate) : m_isModal(FALSE),
                         m_pResName(NULL), m_pDlgTemplate(pDlgTemplate)
     {
-        // Initialize the common controls.
-        LoadCommonControls();
     }
 
     inline CDialog::~CDialog()
@@ -396,12 +390,8 @@ namespace Win32xx
         case WM_ERASEBKGND:
             {
                 CDC dc(reinterpret_cast<HDC>(wparam));
-                BOOL PreventErasure;
-
-                PreventErasure = OnEraseBkgnd(dc);
-                if (PreventErasure) return TRUE;
+                return OnEraseBkgnd(dc);
             }
-            break;
 
         // A set of messages to be reflected back to the control that generated them
         case WM_CTLCOLORBTN:
@@ -552,14 +542,14 @@ namespace Win32xx
     }
 
     // Called when the Cancel button is pressed. Automatically closes the dialog.
-    // Override to customize OnCancel behaviour.
+    // Override to customize OnCancel behavior.
     inline void CDialog::OnCancel()
     {
         EndDialog(IDCANCEL);
     }
 
     // Called when the Close button is pressed. Automatically closes the dialog.
-    // Override to customize OnClose behaviour.
+    // Override to customize OnClose behavior.
     inline void CDialog::OnClose()
     {
         EndDialog(0);
@@ -574,7 +564,7 @@ namespace Win32xx
     }
 
     // Called when the OK button is pressed. Automatically closes the dialog.
-    // Override to customize OnOK behaviour.
+    // Override to customize OnOK behavior.
     inline void CDialog::OnOK()
     {
         if ( IsWindow() )
@@ -689,7 +679,7 @@ namespace Win32xx
 
         if (pDialog == 0)
         {
-            // Got a message for a window thats not in the map.
+            // Got a message for a window that's not in the map.
             // We should never get here.
             TRACE("*** Warning in CDialog::StaticDialogProc: HWND not in window map ***\n");
             return 0;
@@ -702,7 +692,7 @@ namespace Win32xx
 
 #ifndef _WIN32_WCE
 
-    // Used by Modal Dialogs for idle processing and PreTranslateMessage.
+    // Used by modal dialogs for idle processing and PreTranslateMessage.
     inline LRESULT CALLBACK CDialog::StaticMsgHook(int code, WPARAM wparam, LPARAM lparam)
     {
         MSG msg;

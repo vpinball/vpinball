@@ -1,3 +1,65 @@
+Version 8.9.1
+=============
+
+New Features and Enhancements
+-----------------------------
+* Added CPrintDialogEx.
+  - The CPrintDialogEx class uses PrintDlgEx to display a property sheet
+    which allows the user to select the printer to use.
+    Requires Windows 2000 or newer ( WINVER >= 0500 ).
+
+* Updated CMenuBar.
+  - CMenuBar now emulates the behavior of a traditional menu more closely.
+  - The accelerator prefixes are now normally hidden, but are displayed for
+    keyboard navigation.
+
+ * Updated CDC.
+  - A CDC restores its device context to its original state when its last
+    copy is destroyed, unless the Detach function is used to detach it.
+    Use Detach to keep changes made to the device context, such as when
+    handling WM_CTLCOLORBTN, WM_CTLCOLOREDIT, WM_CTLCOLORDLG,
+    WM_CTLCOLORLISTBOX, WM_CTLCOLORSCROLLBAR or WM_CTLCOLORSTATIC.
+    Detach is not required unless we need to keep the changes made to the
+    device context.
+
+ * Updated CBitmap.
+  - Added CopyImage.
+  - Added GetSize.
+
+ * Updated CString.
+  - Added << operator overload. It accepts integers, doubles, characters,
+    character arrays and CStrings. Use as follows:
+    CString str;
+    int x = 5;
+    double y = 3.14;
+    str << "Equation: " << x << " + " << y << " = " << x+y << '\n';
+
+ * Updated CPropertySheet.
+   OnSetDEFID can be overridden to set the default push button for the 
+   property sheet.
+
+ * Updated CTaskTialog
+   The declarations of several member functions have changed. Member functions
+   which previously used a LPTCSTR parameter now use use a LPWCSTR parameter.   
+
+ * Added ListView sample.
+
+
+
+Changes in Detail
+-----------------
+Added CPrintDialogEx                class
+Added CBitmap::CopyImage            member function
+Added CBitmap::GetSize              member function
+Added CBitmap::LoadImage            (additional overloads)
+Added CFrameT::OnKeyboardHook       member function
+Added CMenuBar::IsAltMode           member function
+Added CPropertySheet::OnSetDEFID    member function
+Added CString::operator <<          global function
+Added CStringT::operator <<         global function
+Modified CTaskDialog. Replaced LPCTSTR function arguments with LPCWSTR
+
+
 Version 8.9
 ===========
 
@@ -142,7 +204,7 @@ New Features and Enhancements
 
 * Extended the Toolbar sample.
    The toolbar sample now demonstrates how to add additional toolbars to the
-   frame. It continues to demonstrate how to customise a toolbar in runtime,
+   frame. It continues to demonstrate how to customisz a toolbar in runtime,
    and how to add a horizontal or vertical toolbar to the frame's view.
 
 * Updated the Code::Blocks project files support version 20.03.
@@ -974,7 +1036,7 @@ New Features and Enhancements
       to resource.rc in the frame sample for an example.
 
 * Updated Dockers
-   - Dock targets invalidated by DS_NO_DOCKCHILD_XXXX are hidden or greyed.
+   - Dock targets invalidated by DS_NO_DOCKCHILD_XXXX are hidden or grayed.
    - Click and drag tab swaps to swap them for DockContainers and TabbedMDIs.
    - Parent dockers have a minimum size.
    - Added support for DS_FIXED_RESIZE. Normally dock children are resized
@@ -1110,7 +1172,7 @@ New Features and Enhancements
       without Aero continue to use the Win32++ theme for popup menus.
     - Frames now honour the current window theme's menu and status fonts.
     - the frame's appearance changes dynamically to reflect changes to the window theme.
-    - minor adjustment to the ReBar theme colours for the "Modern" theme.
+    - minor adjustment to the ReBar theme colors for the "Modern" theme.
 * Added the following controls
    - CDateTime
    - CHeader

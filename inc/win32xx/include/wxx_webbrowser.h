@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -330,9 +330,8 @@ namespace Win32xx
 
     // Determines whether context-sensitive help mode should be entered during
     // an in-place activation session.
-    inline STDMETHODIMP CAXHost::ContextSensitiveHelp(BOOL enterMode)
+    inline STDMETHODIMP CAXHost::ContextSensitiveHelp(BOOL)
     {
-        UNREFERENCED_PARAMETER(enterMode);
         return E_NOTIMPL;
     }
 
@@ -351,24 +350,21 @@ namespace Win32xx
     }
 
     // Enables or disables a frame's modeless dialog boxes.
-    inline STDMETHODIMP CAXHost::EnableModeless(BOOL enable)
+    inline STDMETHODIMP CAXHost::EnableModeless(BOOL)
     {
-        UNREFERENCED_PARAMETER(enable);
         return E_NOTIMPL;
     }
 
     // Returns a RECT structure in which the object can put toolbars
     // and similar controls while active in place.
-    inline STDMETHODIMP CAXHost::GetBorder(LPRECT pBorderRect)
+    inline STDMETHODIMP CAXHost::GetBorder(LPRECT)
     {
-        UNREFERENCED_PARAMETER(pBorderRect);
         return E_NOTIMPL;
     }
 
     // Returns a pointer to the container's IOleContainer interface.
-    inline STDMETHODIMP CAXHost::GetContainer(LPOLECONTAINER* ppContainer)
+    inline STDMETHODIMP CAXHost::GetContainer(LPOLECONTAINER*)
     {
-        UNREFERENCED_PARAMETER(ppContainer);
         return E_NOINTERFACE;
     }
 
@@ -389,42 +385,30 @@ namespace Win32xx
     // Maps a single member and an optional set of argument names to
     // a corresponding set of integer DISPIDs, which can be used on
     // subsequent calls to IDispatch::Invoke.
-    inline STDMETHODIMP CAXHost::GetIDsOfNames(REFIID riid, OLECHAR** pNames, unsigned int namesCount, LCID lcid, DISPID* pID)
+    inline STDMETHODIMP CAXHost::GetIDsOfNames(REFIID, OLECHAR**, unsigned int, LCID, DISPID* pID)
     {
-        UNREFERENCED_PARAMETER((IID)riid);      // IID cast required for the MinGW compiler
-        UNREFERENCED_PARAMETER(pNames);
-        UNREFERENCED_PARAMETER(namesCount);
-        UNREFERENCED_PARAMETER(lcid);
-
         *pID = DISPID_UNKNOWN;
         return DISP_E_UNKNOWNNAME;
     }
 
     // Retrieves an embedded object's moniker, which the caller
     // can use to link to the object.
-    inline STDMETHODIMP CAXHost::GetMoniker(DWORD assign, DWORD whichMoniker, LPMONIKER* ppMk)
+    inline STDMETHODIMP CAXHost::GetMoniker(DWORD, DWORD, LPMONIKER*)
     {
-        UNREFERENCED_PARAMETER(assign);
-        UNREFERENCED_PARAMETER(whichMoniker);
-        UNREFERENCED_PARAMETER(ppMk);
         return E_NOTIMPL;
     }
 
     // Retrieves the type information for an object, which can then
     // be used to get the type information for the IDispatch interface.
-    inline STDMETHODIMP CAXHost::GetTypeInfo(unsigned int itinfo, LCID lcid, ITypeInfo** pptinfo)
+    inline STDMETHODIMP CAXHost::GetTypeInfo(unsigned int, LCID, ITypeInfo**)
     {
-        UNREFERENCED_PARAMETER(itinfo);
-        UNREFERENCED_PARAMETER(lcid);
-        UNREFERENCED_PARAMETER(pptinfo);
         return E_NOTIMPL;
     }
 
     // Retrieves the number of type information interfaces that the IDispatch
     // an object provides (either 0 or 1).
-    inline STDMETHODIMP CAXHost::GetTypeInfoCount(unsigned int* pctinfo)
+    inline STDMETHODIMP CAXHost::GetTypeInfoCount(unsigned int*)
     {
-        UNREFERENCED_PARAMETER(pctinfo);
         return E_NOTIMPL;
     }
 
@@ -469,31 +453,20 @@ namespace Win32xx
 
     // Allows the container to insert its menu groups into the composite menu
     // to be used during the in-place session.
-    inline STDMETHODIMP CAXHost::InsertMenus(HMENU shared, LPOLEMENUGROUPWIDTHS pMenuWidths)
+    inline STDMETHODIMP CAXHost::InsertMenus(HMENU, LPOLEMENUGROUPWIDTHS)
     {
-        UNREFERENCED_PARAMETER(shared);
-        UNREFERENCED_PARAMETER(pMenuWidths);
         return E_NOTIMPL;
     }
 
     // Provides access to properties and methods exposed by the container.
-    inline STDMETHODIMP CAXHost::Invoke(DISPID dispID, REFIID riid, LCID lcid, WORD flags, DISPPARAMS* pParams, VARIANT* result, EXCEPINFO* pExecInfo, unsigned int* pArgErr)
+    inline STDMETHODIMP CAXHost::Invoke(DISPID, REFIID, LCID, WORD, DISPPARAMS*, VARIANT*, EXCEPINFO*, unsigned int*)
     {
-        UNREFERENCED_PARAMETER(dispID);
-        UNREFERENCED_PARAMETER((IID)riid);      // IID cast required for the MinGW compiler
-        UNREFERENCED_PARAMETER(lcid);
-        UNREFERENCED_PARAMETER(flags);
-        UNREFERENCED_PARAMETER(pParams);
-        UNREFERENCED_PARAMETER(result);
-        UNREFERENCED_PARAMETER(pExecInfo);
-        UNREFERENCED_PARAMETER(pArgErr);
         return DISP_E_MEMBERNOTFOUND;
     }
 
     // Indicates whether or not a control should remain in-place active.
-    inline STDMETHODIMP CAXHost::LockInPlaceActive(BOOL lock)
+    inline STDMETHODIMP CAXHost::LockInPlaceActive(BOOL)
     {
-        UNREFERENCED_PARAMETER(lock);
         return E_NOTIMPL;
     }
 
@@ -507,9 +480,8 @@ namespace Win32xx
 
     // Indicates whether the control managed by this control site has
     // gained or lost the focus, according to the fGotFocus parameter.
-    inline STDMETHODIMP CAXHost::OnFocus(BOOL gotFocus)
+    inline STDMETHODIMP CAXHost::OnFocus(BOOL)
     {
-        UNREFERENCED_PARAMETER(gotFocus);
         return E_NOTIMPL;
     }
 
@@ -527,17 +499,15 @@ namespace Win32xx
     }
 
     // Indicates the object's extents have changed.
-    inline STDMETHODIMP CAXHost::OnPosRectChange(LPCRECT pPosRect)
+    inline STDMETHODIMP CAXHost::OnPosRectChange(LPCRECT)
     {
-        UNREFERENCED_PARAMETER(pPosRect);
         return S_OK;
     }
 
     // Notifies a container when an embedded object's window is
     // about to become visible or invisible.
-    inline STDMETHODIMP CAXHost::OnShowWindow(BOOL show)
+    inline STDMETHODIMP CAXHost::OnShowWindow(BOOL)
     {
-        UNREFERENCED_PARAMETER(show);
         return S_OK;
     }
 
@@ -552,9 +522,8 @@ namespace Win32xx
     // Notifies the container on deactivation that it should reinstall
     // its user interface and take focus, and whether or not the object
     // has an undoable state.
-    inline STDMETHODIMP CAXHost::OnUIDeactivate(BOOL undoable)
+    inline STDMETHODIMP CAXHost::OnUIDeactivate(BOOL)
     {
-        UNREFERENCED_PARAMETER(undoable);
         return E_NOTIMPL;
     }
 
@@ -625,17 +594,15 @@ namespace Win32xx
 
     // Gives the container a chance to remove its menu elements from the
     // in-place composite menu.
-    inline STDMETHODIMP CAXHost::RemoveMenus(HMENU shared)
+    inline STDMETHODIMP CAXHost::RemoveMenus(HMENU)
     {
-        UNREFERENCED_PARAMETER(shared);
         return E_NOTIMPL;
     }
 
     // Determines if there is available space for tools to be installed around
     // the object's window frame while the object is active in place.
-    inline STDMETHODIMP CAXHost::RequestBorderSpace(LPCBORDERWIDTHS pBorderWidths)
+    inline STDMETHODIMP CAXHost::RequestBorderSpace(LPCBORDERWIDTHS)
     {
-        UNREFERENCED_PARAMETER(pBorderWidths);
         return E_NOTIMPL;
     }
 
@@ -654,26 +621,22 @@ namespace Win32xx
 
     // Tells the container to scroll the view of the object by a specified
     // number of pixels.
-    inline STDMETHODIMP CAXHost::Scroll(SIZE scrollExtent)
+    inline STDMETHODIMP CAXHost::Scroll(SIZE)
     {
-        UNREFERENCED_PARAMETER(scrollExtent);
         return E_NOTIMPL;
     }
 
     // Provides a direct channel of communication between the object and each
     // of the frame and document windows.
-    inline STDMETHODIMP CAXHost::SetActiveObject(IOleInPlaceActiveObject* pActiveObject, LPCOLESTR pObjName)
+    inline STDMETHODIMP CAXHost::SetActiveObject(IOleInPlaceActiveObject*, LPCOLESTR)
     {
-        UNREFERENCED_PARAMETER(pActiveObject);
-        UNREFERENCED_PARAMETER(pObjName);
         return E_NOTIMPL;
     }
 
     // Allocates space for the border requested in the call to
     // IOleInPlaceUIWindow::RequestBorderSpace.
-    inline STDMETHODIMP CAXHost::SetBorderSpace(LPCBORDERWIDTHS pBorderWidths)
+    inline STDMETHODIMP CAXHost::SetBorderSpace(LPCBORDERWIDTHS)
     {
-        UNREFERENCED_PARAMETER(pBorderWidths);
         return E_NOTIMPL;
     }
 
@@ -699,11 +662,8 @@ namespace Win32xx
 
     // Installs the composite menu in the window frame containing the object
     // being activated in place.
-    inline STDMETHODIMP CAXHost::SetMenu(HMENU shared, HOLEMENU holemenu, HWND activeObject)
+    inline STDMETHODIMP CAXHost::SetMenu(HMENU, HOLEMENU, HWND)
     {
-        UNREFERENCED_PARAMETER(shared);
-        UNREFERENCED_PARAMETER(holemenu);
-        UNREFERENCED_PARAMETER(activeObject);
         return E_NOTIMPL;
     }
 
@@ -767,29 +727,22 @@ namespace Win32xx
     // Converts between a POINTL structure expressed in HIMETRIC units
     // (as is standard in OLE) and a POINTF structure expressed in units
     // specified by the container.
-    inline STDMETHODIMP CAXHost::TransformCoords(POINTL* pHimetric, POINTF* pContainer, DWORD flags)
+    inline STDMETHODIMP CAXHost::TransformCoords(POINTL*, POINTF*, DWORD)
     {
-        UNREFERENCED_PARAMETER(pHimetric);
-        UNREFERENCED_PARAMETER(pContainer);
-        UNREFERENCED_PARAMETER(flags);
         return E_NOTIMPL;
     }
 
     // Translates accelerator keystrokes intended for the container's frame
     // while an object is active in place.
-    inline STDMETHODIMP CAXHost::TranslateAccelerator(LPMSG pMsg, WORD id)
+    inline STDMETHODIMP CAXHost::TranslateAccelerator(LPMSG, WORD)
     {
-        UNREFERENCED_PARAMETER(pMsg);
-        UNREFERENCED_PARAMETER(id);
         return S_OK;
     }
 
     // Instructs the control site to process the keystroke described in
     // pMsg modified by the flags in modifiers.
-    inline STDMETHODIMP CAXHost::TranslateAccelerator(LPMSG pMsg, DWORD modifiers)
+    inline STDMETHODIMP CAXHost::TranslateAccelerator(LPMSG, DWORD)
     {
-        UNREFERENCED_PARAMETER(pMsg);
-        UNREFERENCED_PARAMETER(modifiers);
         return S_FALSE;
     }
 
@@ -839,9 +792,8 @@ namespace Win32xx
     }
 
     // Called when the web browser window is created.
-    inline int CWebBrowser::OnCreate(CREATESTRUCT& cs)
+    inline int CWebBrowser::OnCreate(CREATESTRUCT&)
     {
-        UNREFERENCED_PARAMETER(cs);
         VERIFY(SUCCEEDED(AddWebBrowserControl()));
         return 0;
     }
@@ -1323,7 +1275,8 @@ namespace Win32xx
         return hr;
     }
 
-    // Cancels a pending navigation or download, and stops dynamic page elements, such as background sounds and animations.
+    // Cancels a pending navigation or download, and stops dynamic page elements,
+    // such as background sounds and animations.
     inline HRESULT CWebBrowser::Stop()
     {
         return GetIWebBrowser2()->Stop();

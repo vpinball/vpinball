@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -146,7 +146,7 @@
 
 
 // The CBitmapInfoPtr class is a convenient wrapper for the BITMAPINFO structure.
-// The size of the BITMAPINFO structure is dependant on the type of HBITMAP, and its
+// The size of the BITMAPINFO structure is dependent on the type of HBITMAP, and its
 // space needs to be allocated dynamically. CBitmapInfoPtr automatically allocates
 // and deallocates the memory for the structure. A CBitmapInfoPtr object can be
 // used anywhere in place of a LPBITMAPINFO. LPBITMAPINFO is used in functions like
@@ -224,10 +224,13 @@ namespace Win32xx
 
         // Create and load methods
         BOOL LoadBitmap(LPCTSTR pResName);
-        BOOL LoadBitmap(int resID);
-        BOOL LoadImage(LPCTSTR pResName, UINT flags);
-        BOOL LoadImage(UINT resID, UINT flags);
+        BOOL LoadBitmap(int id);
+        BOOL LoadImage(LPCTSTR pResName, UINT flags = 0);
+        BOOL LoadImage(UINT id, UINT flags = 0);
+        BOOL LoadImage(LPCTSTR pResName, int cxDesired, int cyDesired, UINT flags);
+        BOOL LoadImage(UINT id, int cxDesired, int cyDesired, UINT flags);
         BOOL LoadOEMBitmap(UINT bitmapID);
+        HBITMAP CopyImage(HBITMAP origBitmap, int cxDesired = 0, int cyDesired = 0, UINT fuFlags = 0);
         HBITMAP CreateBitmap(int width, int height, UINT planes, UINT bitsPerPixel, LPCVOID pBits);
         HBITMAP CreateCompatibleBitmap(HDC dc, int width, int height);
         HBITMAP CreateDIBSection(HDC dc, const LPBITMAPINFO pBMI, UINT colorUse, LPVOID* ppBits, HANDLE section, DWORD offset);
@@ -247,6 +250,7 @@ namespace Win32xx
 
         // Attributes
         BITMAP GetBitmapData() const;
+        CSize  GetSize() const;
     };
 
 
@@ -408,7 +412,11 @@ namespace Win32xx
     struct CDC_Data
     {
         // Constructor
-        CDC_Data() : dc(0), count(1L), isManagedHDC(FALSE), wnd(0), savedDCState(0) {}
+        CDC_Data() : dc(0), count(1L), isManagedHDC(FALSE), wnd(0),
+                     savedDCState(0), isPaintDC(false)
+        {
+            ZeroMemory(&ps, sizeof(ps));
+        }
 
         CBitmap bitmap;
         CBrush  brush;
@@ -421,6 +429,8 @@ namespace Win32xx
         bool    isManagedHDC;   // Delete/Release the HDC on destruction
         HWND    wnd;            // The HWND of a Window or Client window DC
         int     savedDCState;   // The save state of the HDC.
+        bool    isPaintDC;
+        PAINTSTRUCT ps;
     };
 
 
@@ -434,18 +444,15 @@ namespace Win32xx
     // operations, and a path for painting and drawing operations.
     class CDC
     {
-        friend class CWinApp;
-        friend class CWnd;
-
     public:
         CDC();                                  // Constructs a new CDC without assigning a HDC
-        CDC(HDC dc, HWND wnd = 0);              // Constructs a new CDC and assigns a HDC
+        CDC(HDC dc);                            // Constructs a new CDC and assigns a HDC
         CDC(const CDC& rhs);                    // Constructs a new copy of the CDC
         virtual ~CDC();
         operator HDC() const { return m_pData->dc; }   // Converts a CDC to a HDC
         CDC& operator = (const CDC& rhs);       // Assigns a CDC to an existing CDC
 
-        void Attach(HDC dc, HWND wnd = 0);
+        void Attach(HDC dc);
         void Destroy();
         HDC  Detach();
         HDC GetHDC() const { return m_pData->dc; }
@@ -745,8 +752,10 @@ namespace Win32xx
 #endif
 
         // Layout Functions
+#if (WINVER >= 0x0500)
         DWORD GetLayout() const;
         DWORD SetLayout(DWORD layout) const;
+#endif
 
         // Mapping functions
 #ifndef _WIN32_WCE
@@ -822,11 +831,15 @@ namespace Win32xx
 #endif  // _WIN32_WCE
 
     protected:
+        PAINTSTRUCT* GetPaintStruct() const { return &m_pData->ps; }
         void Release();
-        void SetManaged(bool IsManaged) { m_pData->isManagedHDC = IsManaged; }
+        void SetManaged(bool isManaged) { m_pData->isManagedHDC = isManaged; }
+        void SetPaintDC(bool isPaintDC) { m_pData->isPaintDC = isPaintDC; }
+        void SetWindow(HWND wnd) { m_pData->wnd = wnd; }
 
     private:
         void AddToMap();
+        void Initialize();
         BOOL RemoveFromMap();
 
         CDC_Data* m_pData;      // pointer to the class's data members
@@ -850,8 +863,9 @@ namespace Win32xx
                 if (dc == 0)
                     throw CResourceException(GetApp()->MsgGdiGetDC());
 
-                Attach(dc, wnd);
+                Attach(dc);
                 SetManaged(true);
+                SetWindow(wnd);
             }
 
             catch(...)
@@ -885,8 +899,9 @@ namespace Win32xx
                 if (dc == 0)
                     throw CResourceException(GetApp()->MsgGdiGetDCEx());
 
-                Attach(dc, wnd);
+                Attach(dc);
                 SetManaged(true);
+                SetWindow(wnd);
             }
 
             catch(...)
@@ -930,17 +945,20 @@ namespace Win32xx
     class CPaintDC : public CDC
     {
     public:
-        CPaintDC(HWND wnd) : m_paint(wnd)
+        CPaintDC(HWND wnd)
         {
             assert(::IsWindow(wnd));
 
             try
             {
-                HDC dc = ::BeginPaint(wnd, &m_ps);
+                HDC dc = ::BeginPaint(wnd, GetPaintStruct());
                 if (dc == 0)
                     throw CResourceException(GetApp()->MsgGdiBeginPaint());
 
-                Attach(dc, wnd);
+                Attach(dc);
+                SetManaged(true);
+                SetPaintDC(true);
+                SetWindow(wnd);
             }
 
             catch(...)
@@ -950,32 +968,7 @@ namespace Win32xx
             }
         }
 
-        CPaintDC(const CPaintDC& rhs)  : CDC(rhs) // Copy constructor
-        {
-            m_paint = rhs.m_paint;
-            m_ps = rhs.m_ps;
-        }
-
-        CPaintDC& operator = (const CPaintDC& rhs)
-        {
-            if (this != &rhs)
-            {
-                CDC::operator=(rhs);
-                m_paint = rhs.m_paint;
-                m_ps = rhs.m_ps;
-            }
-
-            return *this;
-        }
-
-        virtual ~CPaintDC()
-        {
-            ::EndPaint(m_paint, &m_ps);
-        }
-
-    private:
-        HWND m_paint;
-        PAINTSTRUCT m_ps;
+        virtual ~CPaintDC()  {}
     };
 
 
@@ -996,8 +989,9 @@ namespace Win32xx
                 if (dc == 0)
                     throw CResourceException(GetApp()->MsgGdiGetWinDC());
 
-                Attach(dc, wnd);
+                Attach(dc);
                 SetManaged(true);
+                SetWindow(wnd);
             }
 
             catch(...)
@@ -1174,7 +1168,7 @@ namespace Win32xx
 {
 
     ///////////////////////////////////////////////
-    // Declarations for the CGDIObject class
+    // Definitions for the CGDIObject class
     //
 
     // Constructs the CGDIObject
@@ -1231,7 +1225,7 @@ namespace Win32xx
 
         if (m_pData && object != m_pData->hGDIObject)
         {
-            // Release any existing GDI object
+            // Release any existing GDI object.
             if (m_pData->hGDIObject != 0)
             {
                 Release();
@@ -1240,7 +1234,7 @@ namespace Win32xx
 
             if (object)
             {
-                // Add the GDI object to this CCGDIObject
+                // Add the GDI object to this CCGDIObject.
                 CGDI_Data* pCGDIData = GetApp()->GetCGDIData(object);
                 if (pCGDIData)
                 {
@@ -1363,7 +1357,7 @@ namespace Win32xx
 
 
     ///////////////////////////////////////////////
-    // Declarations for the CBitmap class
+    // Definitions for the CBitmap class
     //
 
     inline CBitmap::CBitmap()
@@ -1416,9 +1410,16 @@ namespace Win32xx
 
     // Loads a bitmap from a resource using the resource ID.
     // Refer to LoadImage in the Windows API documentation for more information.
-    inline BOOL CBitmap::LoadImage(UINT resID, UINT flags)
+    inline BOOL CBitmap::LoadImage(UINT id, UINT flags)
     {
-        return LoadImage(MAKEINTRESOURCE(resID), flags);
+        return LoadImage(MAKEINTRESOURCE(id), flags);
+    }
+
+    // Loads a bitmap from a resource using the resource ID.
+    // Refer to LoadImage in the Windows API documentation for more information.
+    inline BOOL CBitmap::LoadImage(UINT id, int cxDesired, int cyDesired, UINT flags)
+    {
+        return LoadImage(MAKEINTRESOURCE(id), cxDesired, cyDesired, flags);
     }
 
     // Loads a bitmap from a resource using the resource string.
@@ -1426,6 +1427,20 @@ namespace Win32xx
     inline BOOL CBitmap::LoadImage(LPCTSTR pResName, UINT flags)
     {
         HBITMAP bitmap = reinterpret_cast<HBITMAP>(::LoadImage(GetApp()->GetResourceHandle(), pResName, IMAGE_BITMAP, 0, 0, flags));
+        if (bitmap != 0)
+        {
+            Attach(bitmap);
+            SetManaged(true);
+        }
+        return (0 != bitmap);  // boolean expression
+    }
+
+    // Loads a bitmap from a resource using the resource string.
+    // Refer to LoadImage in the Windows API documentation for more information.
+    inline BOOL CBitmap::LoadImage(LPCTSTR pResName, int cxDesired, int cyDesired, UINT flags)
+    {
+        HBITMAP bitmap = reinterpret_cast<HBITMAP>(::LoadImage(GetApp()->GetResourceHandle(),
+                                       pResName, IMAGE_BITMAP, cxDesired, cyDesired, flags));
         if (bitmap != 0)
         {
             Attach(bitmap);
@@ -1511,6 +1526,32 @@ namespace Win32xx
         }
 
         VERIFY(dc.SetDIBits(*this, 0, data.bmHeight, bits, pbmi, DIB_RGB_COLORS));
+    }
+
+    // Creates a new image and copies the attributes of the specified image
+    // to the new one. If necessary, the function stretches the bits to fit
+    // the desired size of the new image.
+    // Refer to CopyImage in the Windows API documentation for more information.
+    inline HBITMAP CBitmap::CopyImage(HBITMAP origBitmap, int cxDesired, int cyDesired, UINT flags)
+    {
+        assert(origBitmap);
+        CBitmap orig(origBitmap);
+
+        HBITMAP bitmap = (HBITMAP)::CopyImage(origBitmap, IMAGE_BITMAP, cxDesired, cyDesired, flags);
+        if (bitmap == 0)
+            throw CResourceException(GetApp()->MsgGdiBitmap());
+
+        Attach(bitmap);
+        if (bitmap != origBitmap)
+        {
+            SetManaged(true);
+            if (flags & LR_COPYDELETEORG)
+            {
+                orig.Detach();
+            }
+        }
+
+        return bitmap;
     }
 
     // Creates a new bitmap using the bitmap data and colors specified by the bitmap resource and the color mapping information.
@@ -1617,6 +1658,15 @@ namespace Win32xx
         return bitmap;
     }
 
+    inline CSize CBitmap::GetSize() const
+    {
+        assert(GetHandle() != 0);
+        BITMAP bitmap = GetBitmapData();
+        CSize size(bitmap.bmWidth, bitmap.bmHeight);
+
+        return size;
+    }
+
     // Convert a bitmap image to gray scale.
     inline void CBitmap::GrayScaleBitmap()
     {
@@ -1633,7 +1683,7 @@ namespace Win32xx
         // Create the reference DC for GetDIBits to use
         CMemDC memDC(0);
 
-        // Use GetDIBits to create a DIB from our DDB, and extract the colour data
+        // Use GetDIBits to create a DIB from our DDB, and extract the color data
         VERIFY(GetDIBits(memDC, 0, bmiHeader.biHeight, NULL, pbmi, DIB_RGB_COLORS));
         std::vector<byte> vBits(bmiHeader.biSizeImage, 0);
         byte* pByteArray = &vBits[0];
@@ -1667,13 +1717,13 @@ namespace Win32xx
             yOffset += widthBytes;
         }
 
-        // Save the modified colour back into our source DDB
+        // Save the modified color back into our source DDB
         VERIFY(SetDIBits(memDC, 0, bmiHeader.biHeight, pByteArray, pbmi, DIB_RGB_COLORS));
     }
 
-    // Modifies the colour of the Device Dependant Bitmap, by the colour.
+    // Modifies the color of the Device Dependent Bitmap, by the color.
     // correction values specified. The correction values can range from -255 to +255.
-    // This function gains its speed by accessing the bitmap colour information
+    // This function gains its speed by accessing the bitmap color information
     // directly, rather than using GetPixel/SetPixel.
     inline void CBitmap::TintBitmap (int cRed, int cGreen, int cBlue)
     {
@@ -1685,7 +1735,7 @@ namespace Win32xx
         // Create the reference DC for GetDIBits to use
         CMemDC memDC(0);
 
-        // Use GetDIBits to create a DIB from our DDB, and extract the colour data
+        // Use GetDIBits to create a DIB from our DDB, and extract the color data
         VERIFY(GetDIBits(memDC, 0, bmiHeader.biHeight, NULL, pbmi, DIB_RGB_COLORS));
         std::vector<byte> vBits(bmiHeader.biSizeImage, 0);
         byte* pByteArray = &vBits[0];
@@ -1693,7 +1743,7 @@ namespace Win32xx
         VERIFY(GetDIBits(memDC, 0, bmiHeader.biHeight, pByteArray, pbmi, DIB_RGB_COLORS));
         UINT widthBytes = bmiHeader.biSizeImage/bmiHeader.biHeight;
 
-        // Ensure sane colour correction values
+        // Ensure sane color correction values
         cBlue  = MIN(cBlue, 255);
         cBlue  = MAX(cBlue, -255);
         cRed   = MIN(cRed, 255);
@@ -1710,7 +1760,7 @@ namespace Win32xx
         int g2 = 256 + cGreen;
         int r2 = 256 + cRed;
 
-        // Modify the colour
+        // Modify the color
         int yOffset = 0;
         int xOffset;
         size_t index;
@@ -1723,7 +1773,7 @@ namespace Win32xx
                 // Calculate index
                 index = size_t(yOffset) + size_t(xOffset);
 
-                // Adjust the colour values
+                // Adjust the color values
                 if (cBlue > 0)
                     pByteArray[index]   = (BYTE)(cBlue + (((pByteArray[index] *b1)) >>8));
                 else if (cBlue < 0)
@@ -1747,7 +1797,7 @@ namespace Win32xx
             yOffset += widthBytes;
         }
 
-        // Save the modified colour back into our source DDB
+        // Save the modified color back into our source DDB
         VERIFY(SetDIBits(memDC, 0, bmiHeader.biHeight, pByteArray, pbmi, DIB_RGB_COLORS));
     }
 
@@ -2533,16 +2583,14 @@ namespace Win32xx
         m_pData = new CDC_Data;
     }
 
-    // This constructor assigns an existing HDC to the CDC
-    // The HDC WILL be released or deleted when the CDC object is destroyed
-    // The wnd parameter is only used in WindowsCE. It specifies the HWND of a Window or
-    // Window Client DC.
+    // This constructor assigns a pre-existing HDC to the CDC.
+    // The HDC will NOT be released or deleted when the CDC object is destroyed.
     // Note: this constructor permits a call like this:
     // CDC MyCDC = SomeHDC;
-    inline CDC::CDC(HDC dc, HWND wnd /*= 0*/)
+    inline CDC::CDC(HDC dc)
     {
         m_pData = new CDC_Data;
-        Attach(dc, wnd);
+        Attach(dc);
     }
 
 #ifndef _WIN32_WCE
@@ -2594,10 +2642,8 @@ namespace Win32xx
     }
 
     // Attaches a HDC to the CDC object.
-    // The wnd parameter is only required on WinCE.
-    inline void CDC::Attach(HDC dc, HWND wnd /* = 0*/)
+    inline void CDC::Attach(HDC dc)
     {
-        UNREFERENCED_PARAMETER(wnd);
         assert(m_pData);
 
         if (m_pData && dc != m_pData->dc)
@@ -2623,14 +2669,8 @@ namespace Win32xx
                 {
                     m_pData->dc = dc;
 
-        #ifndef _WIN32_WCE
-                    m_pData->wnd = ::WindowFromDC(dc);
-        #else
-                    m_pData->wnd = wnd;
-        #endif
-
                     AddToMap();
-                    m_pData->savedDCState = ::SaveDC(dc);
+                    m_pData->savedDCState = SaveDC();
                 }
             }
         }
@@ -2638,19 +2678,21 @@ namespace Win32xx
 
     // Detaches the HDC from this CDC object and all its copies.
     // The CDC object and its copies are returned to the default state.
+    // The detached HDC is left untouched.
     // Note: We rarely need to detach the HDC from a CDC. The framework will
     //       release or delete the HDC automatically if required when the
     //       last copy of the CDC goes out of scope.
+    //       Use Detach to keep changes made to the device context, such as
+    //       when handling WM_CTLCOLORBTN, WM_CTLCOLOREDIT, WM_CTLCOLORDLG,
+    //       WM_CTLCOLORLISTBOX, WM_CTLCOLORSCROLLBAR or WM_CTLCOLORSTATIC.
     inline HDC CDC::Detach()
     {
-        HDC dc = 0;
         assert(m_pData);
         assert(m_pData->dc != 0);
+        HDC dc = m_pData->dc;
 
-        dc = m_pData->dc;
         RemoveFromMap();
-        m_pData->dc = 0;
-        SetManaged(false);
+        Initialize();
 
         if (m_pData->count > 0)
         {
@@ -2731,7 +2773,7 @@ namespace Win32xx
 
 #endif
 
-    // Draws the specified bitmap to the specified DC using the mask colour provided as the transparent colour
+    // Draws the specified bitmap to the specified DC using the mask color provided as the transparent colour
     // Suitable for use with a Window DC or a memory DC
     inline void CDC::DrawBitmap(int x, int y, int cx, int cy, HBITMAP bitmap, COLORREF mask) const
     {
@@ -2857,7 +2899,7 @@ namespace Win32xx
         assert(m_pData->dc != 0);
         HBITMAP oldBitmap = reinterpret_cast<HBITMAP>(::SelectObject(m_pData->dc, bitmap));
         if (oldBitmap == 0)
-            // throws if an error occurs (bitmap is invalid or incompatable).
+            // throws if an error occurs (bitmap is invalid or incompatible).
             throw CResourceException(GetApp()->MsgGdiSelObject());
 
         return oldBitmap;
@@ -3034,23 +3076,36 @@ namespace Win32xx
         {
             RemoveFromMap();
 
+            // Return the DC back to its initial state
+            ::RestoreDC(m_pData->dc, m_pData->savedDCState);
+
             if (m_pData->isManagedHDC)
             {
-                // Return the DC back to its initial state
-                ::RestoreDC(m_pData->dc, m_pData->savedDCState);
-
-                // We need to release a Window DC, and delete a memory DC
+                // We need to release a window DC, end a paint DC,
+                // and delete a memory DC.
                 if (m_pData->wnd != 0)
-                    ::ReleaseDC(m_pData->wnd, m_pData->dc);
+                {
+                    if (m_pData->isPaintDC)
+                        ::EndPaint(m_pData->wnd, &m_pData->ps);
+                    else
+                        ::ReleaseDC(m_pData->wnd, m_pData->dc);
+                }
                 else
-                    if (!::DeleteDC(m_pData->dc))
-                        ::ReleaseDC(0, m_pData->dc);
+                    ::DeleteDC(m_pData->dc);
             }
 
-            m_pData->dc = 0;
-            m_pData->wnd = 0;
-            SetManaged(false);
+            Initialize();
         }
+    }
+
+    inline void CDC::Initialize()
+    {
+        m_pData->savedDCState = 0;
+        m_pData->dc = 0;
+        SetWindow(0);
+        SetPaintDC(false);
+        ZeroMemory(&m_pData->ps, sizeof(m_pData->ps));
+        SetManaged(false);
     }
 
     // Retrieves the BITMAP information for the current HBITMAP.
@@ -4017,7 +4072,8 @@ namespace Win32xx
     inline CPoint CDC::MoveTo(int x, int y) const
     {
         assert(m_pData->dc != 0);
-        return ::MoveToEx(m_pData->dc, x, y, NULL);
+        ::MoveToEx(m_pData->dc, x, y, NULL);
+        return CPoint(x, y);
     }
 
     // Updates the current position to the specified point
@@ -4025,7 +4081,8 @@ namespace Win32xx
     inline CPoint CDC::MoveTo(POINT pt) const
     {
         assert(m_pData->dc != 0);
-        return ::MoveToEx(m_pData->dc, pt.x, pt.y, NULL);
+        ::MoveToEx(m_pData->dc, pt.x, pt.y, NULL);
+        return pt;
     }
 
     // Draws a line from the current position up to, but not including, the specified point.
@@ -4485,13 +4542,13 @@ namespace Win32xx
     }
 
     // Combines the color data for the source and destination bitmaps using the specified mask and raster operation.
-    //  xDest     x-coord of destination upper-left corner
-    //  yDest     y-coord of destination upper-left corner
+    //  xDest     x coordinate of destination upper-left corner
+    //  yDest     y coordinate of destination upper-left corner
     //  width     width of source and destination
-    //  yeight    height of source and destination
+    //  height    height of source and destination
     //  hSrc      pointer to source DC
-    //  xSrc      x-coord of upper-left corner of source
-    //  ySrc      y-coord of upper-left corner of source
+    //  xSrc      x coordinate of upper-left corner of source
+    //  ySrc      y coordinate of upper-left corner of source
     //  mask      handle to monochrome bit mask
     //  xMask     horizontal offset into mask bitmap
     //  yMask     vertical offset into mask bitmap
@@ -4505,13 +4562,13 @@ namespace Win32xx
 
     // Copies a bitmap from a source rectangle into a destination rectangle, stretching or compressing
     // the bitmap to fit the dimensions of the destination rectangle, if necessary.
-    //  x            x-coord of destination upper-left corner
-    //  y            y-coord of destination upper-left corner
+    //  x            x coordinate of destination upper-left corner
+    //  y            y coordinate of destination upper-left corner
     //  width        width of destination rectangle
     //  height       height of destination rectangle
     //  hSrc         handle to source DC
-    //  xSrc         x-coord of source upper-left corner
-    //  ySrc         y-coord of source upper-left corner
+    //  xSrc         x coordinate of source upper-left corner
+    //  ySrc         y coordinate of source upper-left corner
     //  srcWidth     width of source rectangle
     //  srcHeight    height of source rectangle
     //  rop          raster operation code
@@ -4566,13 +4623,13 @@ namespace Win32xx
 
     // Performs a bit-block transfer of the color data corresponding to a rectangle
     // of pixels from the specified source device context into a destination device context.
-    //  x             x-coord of destination upper-left corner
-    //  y             y-coord of destination upper-left corner
+    //  x             x coordinate of destination upper-left corner
+    //  y             y coordinate of destination upper-left corner
     //  width         width of destination rectangle
     //  height        height of destination rectangle
     //  hSrc          handle to source DC
-    //  xSrc          x-coord of source upper-left corner
-    //  ySrc          y-coord of source upper-left corner
+    //  xSrc          x coordinate of source upper-left corner
+    //  ySrc          y coordinate of source upper-left corner
     //  widthSrc      width of source rectangle
     //  heightSrc     height of source rectangle
     //  transparent   color to make transparent
@@ -4647,36 +4704,24 @@ namespace Win32xx
     ///////////////////
     // Layout Functions
 
-
+#if (WINVER >= 0x0500)
     // Returns the layout of a device context (LAYOUT_RTL and LAYOUT_BITMAPORIENTATIONPRESERVED).
     // Refer to GetLayout in the Windows API documentation for more information.
     inline DWORD CDC::GetLayout() const
     {
         assert(m_pData->dc != 0);
-
-#if (WINVER >= 0x0500)
         return ::GetLayout(m_pData->dc);
-#else
-        return 0;
-#endif
     }
 
-
-    // changes the layout of a device context (DC).
+    // Sets the layout of a device context (DC).
     // layout values:  LAYOUT_RTL or LAYOUT_BITMAPORIENTATIONPRESERVED
     // Refer to SetLayout in the Windows API documentation for more information.
     inline DWORD CDC::SetLayout(DWORD layout) const
     {
         assert(m_pData->dc != 0);
-
-#if (WINVER >= 0x0500)
-        // Sets the layout of a device context
         return ::SetLayout(m_pData->dc, layout);
-#else
-        UNREFERENCED_PARAMETER(layout); // no-op
-        return 0;
-#endif
     }
+#endif
 
     ////////////////////
     // Mapping Functions

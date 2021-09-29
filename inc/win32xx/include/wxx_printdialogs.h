@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -54,7 +54,7 @@
 // CPrintDialog displays the Print dialog which allows the user to
 // select the printer to use.
 
-// CPageSetupDialog displays the PageSetup dialg which allows the user
+// CPageSetupDialog displays the PageSetup dialog which allows the user
 // to select the page settings.
 
 // The CPrintDialog and CPageSetupDialog classes share global memory
@@ -402,19 +402,8 @@ namespace Win32xx
         ZeroMemory(&m_pd, sizeof(m_pd));
 
         m_pd.Flags = flags;
-
-        // Support the PD_PRINTSETUP flag which displays the obsolete PrintSetup dialog.
-        // Note: CPageSetupDialog should be used instead of the PrintSetup dialog.
-        if (flags & PD_PRINTSETUP)
-        {
-            m_pd.Flags &= ~PD_RETURNDC;
-        }
-        else
-        {
-            m_pd.Flags |= PD_RETURNDC;
-        }
-
         m_pd.Flags &= ~PD_RETURNIC;
+        m_pd.Flags &= ~PD_RETURNDC;   // use GetPrinterDC to retrieve the dc.
 
         // Enable the hook proc for the help button
         if (m_pd.Flags & PD_SHOWHELP)
@@ -425,8 +414,6 @@ namespace Win32xx
 
     inline CPrintDialog::~CPrintDialog()
     {
-        if (m_pd.hDC)
-            ::DeleteDC(m_pd.hDC);
     }
 
     // Returns the device context of the default or currently chosen printer.
@@ -447,7 +434,7 @@ namespace Win32xx
     }
 
     // Dialog procedure for the Font dialog. Override this function
-    // to customise the message handling.
+    // to customize the message handling.
     inline INT_PTR CPrintDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
     {
         //  A typical override might look like this:
@@ -472,11 +459,9 @@ namespace Win32xx
     //  The default message handling for CPrintDialog. Don't override this
     //  function, override DialogProc instead.
     //  Note: OnCancel and OnOK are called by DoModal.
-    inline INT_PTR CPrintDialog::DialogProcDefault(UINT message, WPARAM wparam, LPARAM lparam)
+    inline INT_PTR CPrintDialog::DialogProcDefault(UINT msg, WPARAM wparam, LPARAM)
     {
-        UNREFERENCED_PARAMETER(lparam);
-
-        switch (message)
+        switch (msg)
         {
             case WM_INITDIALOG:
             {     // handle the initialization message
@@ -516,12 +501,6 @@ namespace Win32xx
         m_pd.hDevNames = GetApp()->m_devNames;
         m_pd.hwndOwner = owner;
 
-        if (m_pd.hDC != 0)
-        {
-            ::DeleteDC(m_pd.hDC);
-            m_pd.hDC = 0;
-        }
-
         // Ensure this thread has the TLS index set
         TLSData* pTLSData = GetApp()->SetTlsData();
         // Create the modal dialog
@@ -555,6 +534,9 @@ namespace Win32xx
 
         m_pd.hDevMode = 0;
         m_pd.hDevNames = 0;
+
+        // Prepare the CWnd for reuse.
+        Destroy();
 
         return ok;
     }
@@ -620,10 +602,10 @@ namespace Win32xx
     {
         CThreadLock lock(GetApp()->m_printLock);
 
-        if (GetApp()->m_devNames.Get() == 0)
+        if (GetApp()->m_devMode.Get() == 0)
             GetApp()->UpdateDefaultPrinter();
 
-        if (GetApp()->m_devNames.Get() == 0)
+        if (GetApp()->m_devMode.Get() == 0)
             throw CResourceException(GetApp()->MsgPrintFound());
 
         return CDevMode(GetApp()->m_devMode);
@@ -641,6 +623,9 @@ namespace Win32xx
 
         if (GetApp()->m_devNames.Get() == 0)
             GetApp()->UpdateDefaultPrinter();
+
+        if (GetApp()->m_devNames.Get() == 0)
+            throw CResourceException(GetApp()->MsgPrintFound());
 
         return CDevNames(GetApp()->m_devNames);
     }
@@ -758,6 +743,8 @@ namespace Win32xx
         m_pd.hSetupTemplate = pd.hSetupTemplate;
         m_pd.lpPrintTemplateName = pd.lpPrintTemplateName;
         m_pd.lpSetupTemplateName = pd.lpSetupTemplateName;
+        m_pd.Flags &= ~PD_RETURNIC;
+        m_pd.Flags &= ~PD_RETURNDC;   // use GetPrinterDC to retrieve the dc.
     }
 
 
@@ -782,7 +769,7 @@ namespace Win32xx
     }
 
     // Dialog procedure for the PageSetup dialog. Override this function
-    // to customise the message handling.
+    // to customize the message handling.
     inline INT_PTR CPageSetupDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
     {
         //  A typical override might look like this:
@@ -807,10 +794,8 @@ namespace Win32xx
     //  The Default message handling for CPageSetupDialog. Don't override this
     //  function, override DialogProc instead.
     //  Note: OnCancel and OnOK are called by DoModal.
-    inline INT_PTR CPageSetupDialog::DialogProcDefault(UINT msg, WPARAM wparam, LPARAM lparam)
+    inline INT_PTR CPageSetupDialog::DialogProcDefault(UINT msg, WPARAM wparam, LPARAM)
     {
-        UNREFERENCED_PARAMETER(lparam);
-
         switch (msg)
         {
         case WM_INITDIALOG:
@@ -884,6 +869,9 @@ namespace Win32xx
         m_psd.hDevMode = 0;
         m_psd.hDevNames = 0;
 
+        // Prepare the CWnd for reuse.
+        Destroy();
+
         return ok;
     }
 
@@ -896,8 +884,13 @@ namespace Win32xx
     inline CDevMode CPageSetupDialog::GetDevMode() const
     {
         CThreadLock lock(GetApp()->m_printLock);
-        if (GetApp()->m_devNames.Get() == 0)
+
+        if (GetApp()->m_devMode.Get() == 0)
             GetApp()->UpdateDefaultPrinter();
+
+        if (GetApp()->m_devMode.Get() == 0)
+            throw CResourceException(GetApp()->MsgPrintFound());
+
         return CDevMode(GetApp()->m_devMode);
     }
 
@@ -974,20 +967,14 @@ namespace Win32xx
     // Override this function to customize drawing of the sample page in the Page Setup dialog box.
     // It is called in response to the following messages: WM_PSD_FULLPAGERECT; WM_PSD_MINMARGINRECT;
     // WM_PSD_MARGINRECT; WM_PSD_GREEKTEXTRECT; WM_PSD_ENVSTAMPRECT; and WM_PSD_YAFULLPAGERECT.
-    inline UINT CPageSetupDialog::OnDrawPage(HDC dc, UINT message, const RECT& /* rc*/)
+    inline UINT CPageSetupDialog::OnDrawPage(HDC, UINT, const RECT&)
     {
-        UNREFERENCED_PARAMETER(dc);
-        UNREFERENCED_PARAMETER(message);
-
         return 0; // do the default
     }
 
     // Called before drawing is preformed on the sample page.
-    inline UINT CPageSetupDialog::OnPreDrawPage(WORD paper, WORD flags, const PAGESETUPDLG& /*psd*/)
+    inline UINT CPageSetupDialog::OnPreDrawPage(WORD /*paper*/, WORD /*flags*/, const PAGESETUPDLG& /*psd*/)
     {
-        UNREFERENCED_PARAMETER(paper);
-        UNREFERENCED_PARAMETER(flags);
-
         return 0;
     }
 

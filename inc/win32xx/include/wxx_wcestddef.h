@@ -35,7 +35,7 @@
 
 #if _MSC_VER >= 1300
 
-  // NOTE - this value is not strongly correlated to the Windows CE OS version being targeted
+  // NOTE - This value is not strongly correlated to the Windows CE OS version being targeted.
   #undef  WINVER
   #define WINVER _WIN32_WCE
 

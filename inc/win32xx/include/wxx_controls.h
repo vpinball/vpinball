@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -1553,7 +1553,7 @@ namespace Win32xx
         assert(IsWindow());
 #if defined (_MSC_VER) && (_MSC_VER >= 1400)   // >= VS2005
 #pragma warning ( push )
-#pragma warning ( disable : 26451 )            // Arithemetic overflow.
+#pragma warning ( disable : 26451 )            // Arithmetic overflow.
 #endif // (_MSC_VER) && (_MSC_VER >= 1400)
 
         SendMessage(IPM_SETADDRESS, 0, MAKEIPADDRESS(field0, field1, field2, field3));
@@ -2370,7 +2370,7 @@ namespace Win32xx
         SendMessage(TTM_DELTOOL, 0, (LPARAM)&info);
     }
 
-    // Retrieves the initial, pop-up, and reshow durations currently set for a ToolTip control.
+    // Retrieves the initial, pop-up, and reshow duration currently set for a ToolTip control.
     // Returns an int value with the specified duration in milliseconds.
     //
     // duration is one of:

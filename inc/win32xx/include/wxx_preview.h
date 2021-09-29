@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -234,7 +234,7 @@ namespace Win32xx
             OnDraw(dc);
         }
         else
-        // RedrawWindow can require repainting without an update rect
+        // RedrawWindow can require repainting without an update rect.
         {
             CClientDC dc(*this);
             OnDraw(dc);
@@ -283,20 +283,20 @@ namespace Win32xx
 
             // Extract the device independent image data.
             CMemDC memDC(dc);
-            VERIFY(memDC.GetDIBits(m_bitmap, 0, bm.bmHeight, NULL, pbmi, DIB_RGB_COLORS));
+            memDC.GetDIBits(m_bitmap, 0, bm.bmHeight, NULL, pbmi, DIB_RGB_COLORS);
             std::vector<byte> byteArray(pBIH->biSizeImage, 0);
             byte* pByteArray = &byteArray.front();
-            VERIFY(memDC.GetDIBits(m_bitmap, 0, bm.bmHeight, pByteArray, pbmi, DIB_RGB_COLORS));
+            memDC.GetDIBits(m_bitmap, 0, bm.bmHeight, pByteArray, pbmi, DIB_RGB_COLORS);
 
             // Use half tone stretch mode for smoother rendering.
             dc.SetStretchBltMode(HALFTONE);
             dc.SetBrushOrgEx(0, 0);
 
             // Copy the DIB bitmap data to the PreviewPane's DC with stretching.
-            VERIFY(dc.StretchDIBits(xBorder, yBorder, previewWidth, previewHeight, 0, 0,
-                   bm.bmWidth, bm.bmHeight, pByteArray, pbmi, DIB_RGB_COLORS, SRCCOPY));
+            dc.StretchDIBits(xBorder, yBorder, previewWidth, previewHeight, 0, 0,
+                   bm.bmWidth, bm.bmHeight, pByteArray, pbmi, DIB_RGB_COLORS, SRCCOPY);
 
-            // Draw a grey border around the preview.
+            // Draw a gray border around the preview.
             CRect rcFill(0, 0, xBorder, previewHeight + yBorder);
             dc.FillRect(rcFill, HBRUSH(::GetStockObject(GRAY_BRUSH)));
 
@@ -354,10 +354,8 @@ namespace Win32xx
 
     // Processes the dialog's buttons.
     template <typename T>
-    inline BOOL CPrintPreview<T>::OnCommand(WPARAM wparam, LPARAM lparam)
+    inline BOOL CPrintPreview<T>::OnCommand(WPARAM wparam, LPARAM)
     {
-        UNREFERENCED_PARAMETER(lparam);
-
         UINT id = LOWORD(wparam);
         switch (id)
         {
@@ -468,7 +466,7 @@ namespace Win32xx
             throw CResourceException(GetApp()->MsgPrintFound());
 
         // Create a memory DC for the printer.
-        // Note: we use the printer's DC here to render text accurately
+        // Note: we use the printer's DC here to render text accurately.
         CMemDC memDC(printerDC);
 
         // Create a compatible bitmap for the memory DC
@@ -501,7 +499,6 @@ namespace Win32xx
         CDC previewDC = GetPreviewPane().GetDC();
         GetPreviewPane().Render(previewDC);
     }
-
 
     // Enables or disables the page selection buttons.
     template <typename T>

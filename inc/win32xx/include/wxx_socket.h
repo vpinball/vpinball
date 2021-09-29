@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -164,8 +164,12 @@ namespace Win32xx
         virtual int  Connect(const struct sockaddr* name, int namelen) const;
         virtual bool Create( int family, int type, int protocol = IPPROTO_IP);
         virtual void Disconnect();
+
+#ifdef GetAddrInfo
         virtual void FreeAddrInfo( struct addrinfo* ai ) const;
         virtual int  GetAddrInfo( LPCTSTR nodename, LPCTSTR servname, const struct addrinfo* hints, struct addrinfo** res) const;
+#endif
+
         virtual CString GetErrorString() const;
         virtual int  ioCtlSocket(long cmd, u_long* argp) const;
         virtual bool IsIPV6Supported() const;
@@ -223,7 +227,7 @@ namespace Win32xx
 
     inline CSocket::CSocket() : m_socket(INVALID_SOCKET), m_stopRequest(FALSE, TRUE)
     {
-        // Initialise the Windows Socket services
+        // Initialize the Windows Socket services
         WSADATA wsaData;
 
         if (::WSAStartup(MAKEWORD(2,2), &wsaData) != 0)
@@ -272,7 +276,7 @@ namespace Win32xx
         // Terminate the  Windows Socket services
         ::WSACleanup();
 
-        VERIFY(::FreeLibrary(m_ws2_32));
+        ::FreeLibrary(m_ws2_32);
     }
 
     // The accept function permits an incoming connection attempt on the socket.
@@ -564,27 +568,23 @@ namespace Win32xx
         }
     }
 
+
+#ifdef GetAddrInfo
+
+    // Frees address resources allocated by the GetAddrInfo function.
+    inline void CSocket::FreeAddrInfo(struct addrinfo* ai) const
+    {
+        m_pfnFreeAddrInfo(ai);
+    }
+
     // Provides protocol-independent translation from host name to address.
     // Refer to getaddrinfo in the Windows API documentation for additional information.
     inline int CSocket::GetAddrInfo( LPCTSTR nodename, LPCTSTR servname, const struct addrinfo* hints, struct addrinfo** res) const
     {
-
-#ifdef GetAddrInfo
-
         return m_pfnGetAddrInfo(TtoA(nodename), TtoA(servname), hints, res);
-
-#else
-
-        UNREFERENCED_PARAMETER(nodename);
-        UNREFERENCED_PARAMETER(servname);
-        UNREFERENCED_PARAMETER(hints);
-        UNREFERENCED_PARAMETER(res);
-
-        return WSAVERNOTSUPPORTED;
+    }
 
 #endif
-
-    }
 
     // Returns a string containing the most recent network error.
     // Refer to WSAGetLastError in the Windows API documentation for additional information.
@@ -639,23 +639,6 @@ namespace Win32xx
             TRACE("GetSockOpt Failed\n");
 
         return result;
-    }
-
-
-    // Frees address resources allocated by the GetAddrInfo function.
-    inline void CSocket::FreeAddrInfo( struct addrinfo* ai ) const
-    {
-
-#ifdef GetAddrInfo
-
-        m_pfnFreeAddrInfo(ai);
-
-#else
-
-        UNREFERENCED_PARAMETER(ai);
-
-#endif
-
     }
 
     // Controls the I/O mode of the socket.

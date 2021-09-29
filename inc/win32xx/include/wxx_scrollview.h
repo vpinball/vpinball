@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -159,10 +159,8 @@ namespace Win32xx
     }
 
     // Called when the background for the window is erased.
-    inline BOOL CScrollView::OnEraseBkgnd(CDC& dc)
+    inline BOOL CScrollView::OnEraseBkgnd(CDC&)
     {
-        UNREFERENCED_PARAMETER(dc);
-
         if (m_totalSize == CSize(0, 0))
             return FALSE;   // Allow background erasure when the scroll bars are disabled
         else
@@ -170,11 +168,8 @@ namespace Win32xx
     }
 
     // Called when an event occurs in the horizontal scroll bar.
-    inline LRESULT CScrollView::OnHScroll(UINT msg, WPARAM wparam, LPARAM lparam)
+    inline LRESULT CScrollView::OnHScroll(UINT, WPARAM wparam, LPARAM)
     {
-        UNREFERENCED_PARAMETER(msg);
-        UNREFERENCED_PARAMETER(lparam);
-
         CPoint newPos = m_currentPos;
         SCROLLINFO si;
         ZeroMemory(&si, sizeof(si));
@@ -325,11 +320,8 @@ namespace Win32xx
     }
 
     // Called when the mouse wheel is rotated.
-    inline LRESULT CScrollView::OnMouseWheel(UINT msg, WPARAM wparam, LPARAM lparam)
+    inline LRESULT CScrollView::OnMouseWheel(UINT, WPARAM wparam, LPARAM)
     {
-        UNREFERENCED_PARAMETER(msg);
-        UNREFERENCED_PARAMETER(lparam);
-
         int WheelDelta = GET_WHEEL_DELTA_WPARAM(wparam);
         int cyPos = ::MulDiv(WheelDelta, m_lineSize.cy, WHEEL_DELTA);
         CPoint newPos = GetScrollPosition();
@@ -347,11 +339,8 @@ namespace Win32xx
     }
 
     // Called when an event occurs in the vertical scroll bar.
-    inline LRESULT CScrollView::OnVScroll(UINT msg, WPARAM wparam, LPARAM lparam)
+    inline LRESULT CScrollView::OnVScroll(UINT, WPARAM wparam, LPARAM)
     {
-        UNREFERENCED_PARAMETER(msg);
-        UNREFERENCED_PARAMETER(lparam);
-
         CPoint newPos = m_currentPos;
         SCROLLINFO si;
         ZeroMemory(&si, sizeof(si));
@@ -400,10 +389,6 @@ namespace Win32xx
     // Called after a window's size has changed.
     inline LRESULT CScrollView::OnWindowPosChanged(UINT msg, WPARAM wparam, LPARAM lparam)
     {
-        UNREFERENCED_PARAMETER(msg);
-        UNREFERENCED_PARAMETER(wparam);
-        UNREFERENCED_PARAMETER(lparam);
-
         UpdateBars();
         Invalidate();
 

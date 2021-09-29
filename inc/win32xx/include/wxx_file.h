@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -136,7 +136,7 @@ namespace Win32xx
     inline CFile::CFile(LPCTSTR pFileName, UINT openFlags) : m_file(INVALID_HANDLE_VALUE)
     {
         assert(pFileName);
-        Open(pFileName, openFlags);  // throws CFileException on failure
+        Open(pFileName, openFlags);  // Throws CFileException on failure.
     }
 
     inline CFile::~CFile()

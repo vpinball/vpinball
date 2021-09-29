@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -124,13 +124,13 @@ namespace Win32xx
     inline void CHGlobal::Free()
     {
         if (m_global != 0)
-            ::GlobalFree(m_global);
+            VERIFY(::GlobalFree(m_global) == 0);  // Fails if the memory was already freed.
 
         m_global = 0;
     }
 
     // Reassign is used when global memory has been reassigned, as
-    // can occur after a call to ::PrintDlg or ::PageSetupDlg.
+    // can occur after a call to ::PrintDlg, ::PrintDlgEx, or ::PageSetupDlg.
     // It assigns a new memory handle to be managed by this object
     // and assumes any old memory has already been freed.
     inline void  CHGlobal::Reassign(HGLOBAL global)
@@ -310,10 +310,8 @@ namespace Win32xx
     // is empty. Return TRUE to continue idle processing or FALSE to end idle processing
     // until another message is queued. The count is incremented each time OnIdle is
     // called, and reset to 0 each time a new messages is processed.
-    inline BOOL CWinThread::OnIdle(LONG count)
+    inline BOOL CWinThread::OnIdle(LONG /*count*/)
     {
-        UNREFERENCED_PARAMETER(count);
-
         return FALSE;
     }
 
@@ -451,6 +449,7 @@ namespace Win32xx
 
                 m_resource = m_instance;
                 SetCallback();
+                LoadCommonControls();
             }
             else
             {
@@ -493,6 +492,8 @@ namespace Win32xx
         }
 
         SetnGetThis(0, true);
+        if (m_resource != 0)
+            ::FreeLibrary(m_resource);
     }
 
     // Adds a HDC and CDC_Data* pair to the map.
@@ -773,8 +774,13 @@ namespace Win32xx
     // To use this function, place code like this in InitInstance
     //   HINSTANCE resource = LoadLibrary(_T("MyResourceDLL.dll"));
     //   SetResourceHandle(resource);
+    //
+    // The resource is automatically freed when it is no longer required.
     inline void CWinApp::SetResourceHandle(HINSTANCE resource)
     {
+        if ((resource != m_resource) && (m_resource != 0))
+            ::FreeLibrary(m_resource);
+
         m_resource = resource;
     }
 

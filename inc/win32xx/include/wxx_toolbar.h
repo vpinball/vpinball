@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -167,7 +167,7 @@ namespace Win32xx
     }
 
     // Adds one or more images to the list of button images available for a ToolBar.
-    // Note: AddBitmap supports a maximum colour depth of 8 bits (256 colours)
+    // Note: AddBitmap supports a maximum color depth of 8 bits (256 colors)
     //       This is an obsolete functioned retained for Win95 support.
     //       Unless Win95 support is required, use SetImageList instead.
     // Refer to TB_ADDBITMAP in the Windows API documentation for more information.
@@ -247,7 +247,7 @@ namespace Win32xx
     }
 
     // Adds images to the toolbar, or replaces the existing ones.
-    // Note: AddReplaceBitmap supports a maximum colour depth of 8 bits (256 colours)
+    // Note: AddReplaceBitmap supports a maximum color depth of 8 bits (256 colors)
     //       This is an obsolete functioned retained for Win95 support.
     //       Unless Win95 support is required, use SetImageList instead.
     // Refer to AddBitmap and ReplaceBitmap for more information.
@@ -761,7 +761,7 @@ namespace Win32xx
     }
 
     // Replaces an existing bitmap with a new bitmap.
-    // Note: ReplaceBitmap supports a maximum colour depth of 8 bits (256 colours)
+    // Note: ReplaceBitmap supports a maximum color depth of 8 bits (256 colors)
     //       This is an obsolete functioned retained for Win95 support.
     //       Unless Win95 support is required, use SetImageList instead.
     // Refer to TB_REPLACEBITMAP in the Windows API documentation for more information.

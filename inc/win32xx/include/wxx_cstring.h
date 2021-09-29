@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -63,7 +63,7 @@
 //      CString string1(_T("Hello World"));
 //      CString string2;
 //
-//      // This is invalid, and produces undefined behaviour.
+//      // This is invalid, and produces undefined behavior.
 //      string2.Format(_T("String1 is: %s"), string1); // No! you can't do this
 //
 //      // This is ok
@@ -266,7 +266,8 @@ namespace Win32xx
     class CString : public CStringT<TCHAR>
     {
         friend CString operator + (const CString& string1, const CString& string2);
-        friend CString operator + (const CString& string1, const TCHAR* text);
+        friend CString operator + (const CString& string1, const WCHAR* text);
+        friend CString operator + (const CString& string1, const CHAR* text);
         friend CString operator + (const CString& string1, CHAR ch);
         friend CString operator + (const CString& string1, WCHAR ch);
         friend CString operator + (const CString& string1, int val);
@@ -1578,7 +1579,6 @@ namespace Win32xx
 
     //////////////////////////////////////
     // CStringT global operator functions
-    //  These functions are declared as friends of CStringT.
     //
 
     // Addition operator.
@@ -1781,11 +1781,49 @@ namespace Win32xx
         return (string1.Compare(text) >= 0); // boolean expression
     }
 
+    // Appends the specified text to the string.
+    template <class T>
+    inline CStringT<T>& operator << (CStringT<T>& str, CStringT<T>& text)
+    {
+        str += text;
+        return str;
+    }
+
+    // Appends the specified text to the string.
+    template <class T>
+    inline CStringT<T>& operator << (CStringT<T>& str, const T* text)
+    {
+        str += text;
+        return str;
+    }
+
+    // Appends the specified character to the string.
+    template <class T>
+    inline CStringT<T>& operator << (CStringT<T>& str, const T ch)
+    {
+        str += ch;
+        return str;
+    }
+
+    // Appends the specified integer to the string.
+    template <class T>
+    inline CStringT<T>& operator << (CStringT<T>& str, int val)
+    {
+        str += val;
+        return str;
+    }
+
+    // Appends the specified double to the string.
+    template <class T>
+    inline CStringT<T>& operator << (CStringT<T>& str, double val)
+    {
+        str += val;
+        return str;
+    }
 
 
     //////////////////////////////////////////////
     // CString global operator functions
-    //  These functions are declared friends of CString
     //
     inline CString operator + (const CString& string1, const CString& string2)
     {
@@ -1794,10 +1832,17 @@ namespace Win32xx
         return str;
     }
 
-    inline CString operator + (const CString& string1, const TCHAR* text)
+    inline CString operator + (const CString& string1, const CHAR* text)
     {
         CString str(string1);
-        str.m_str.append(text);
+        str.m_str.append(AtoT(text));
+        return str;
+    }
+
+    inline CString operator + (const CString& string1, const WCHAR* text)
+    {
+        CString str(string1);
+        str.m_str.append(WtoT(text));
         return str;
     }
 
@@ -1865,6 +1910,55 @@ namespace Win32xx
     {
         CString str;
         str.Format(_T("%g%s"), val, string1.c_str());
+        return str;
+    }
+
+    // Appends the specified string to the string.
+    inline CString& operator << (CString& str, const CString& str2)
+    {
+        str += str2;
+        return str;
+    }
+
+    // Appends the specified text to the string.
+    inline CString& operator<<(CString& str, const LPCSTR text)
+    {
+        str += text;
+        return str;
+    }
+
+    // Appends the specified text to the string.
+    inline CString& operator<<(CString& str, const LPCWSTR text)
+    {
+        str += text;
+        return str;
+    }
+
+    // Appends the specified character to the string.
+    inline CString& operator << (CString& str, const char ch)
+    {
+        str += ch;
+        return str;
+    }
+
+    // Appends the specified character to the string.
+    inline CString& operator << (CString& str, const WCHAR ch)
+    {
+        str += ch;
+        return str;
+    }
+
+    // Appends the specified integer to the string.
+    inline CString& operator << (CString& str, int val)
+    {
+        str += val;
+        return str;
+    }
+
+    // Appends the specified double to the string.
+    inline CString& operator << (CString& str, double val)
+    {
+        str += val;
         return str;
     }
 

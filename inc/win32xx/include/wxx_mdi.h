@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -118,7 +118,7 @@ namespace Win32xx
         LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
 
     private:
-        CMDIChild(const CMDIChild&);                // Disable copy construction
+        CMDIChild(const CMDIChild&);              // Disable copy construction
         CMDIChild& operator = (const CMDIChild&); // Disable assignment operator
 
         CWnd* m_pView;              // pointer to the View CWnd object
@@ -166,7 +166,7 @@ namespace Win32xx
         virtual void RemoveMDIChild(HWND wnd);
         virtual BOOL RemoveAllMDIChildren();
 
-        // These functions aren't virtual. Don't override these
+        // These functions aren't virtual. Don't override these.
         const std::vector<MDIChildPtr>& GetAllMDIChildren() const { return m_mdiChildren; }
         void MDICascade(int nType = 0) const;
         void MDIIconArrange() const;
@@ -523,12 +523,10 @@ namespace Win32xx
 
     // Called when a MDI Child maximized state of the MDI child is checked.
     template <class T>
-    inline void CMDIFrameT<T>::OnMDIMaximized(BOOL isMax)
+    inline void CMDIFrameT<T>::OnMDIMaximized(BOOL)
     {
         // Override this function to take an action when a MDI child is
         // maximized or restored from maximized.
-
-        UNREFERENCED_PARAMETER(isMax);
     }
 
     // Called when the StatusBar is shown.
@@ -735,11 +733,11 @@ namespace Win32xx
 
     // Called when the MDI child window is activated.
     template <class T>
-    inline LRESULT CMDIClient<T>::OnMDIActivate(UINT, WPARAM wparam, LPARAM lparam)
+    inline LRESULT CMDIClient<T>::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
     {
-        // Suppress redraw to avoid flicker when activating maximised MDI children
+        // Suppress redraw to avoid flicker when activating maximized MDI children
         T::SetRedraw(FALSE);
-        LRESULT result = T::CallWindowProc(T::GetPrevWindowProc(), WM_MDIACTIVATE, wparam, lparam);
+        LRESULT result = T::FinalWindowProc(msg, wparam, lparam);
         T::SetRedraw(TRUE);
         T::RedrawWindow(RDW_FRAME | RDW_INVALIDATE | RDW_ALLCHILDREN);
 
@@ -751,7 +749,7 @@ namespace Win32xx
     inline LRESULT CMDIClient<T>::OnMDIDestroy(UINT msg, WPARAM wparam, LPARAM lparam)
     {
         // Do default processing first
-        T::CallWindowProc(T::GetPrevWindowProc(), msg, wparam, lparam);
+        T::FinalWindowProc(msg, wparam, lparam);
 
         // Now remove MDI child
         T::GetParent().SendMessage(UWM_MDIDESTROYED, wparam, 0);
@@ -764,7 +762,7 @@ namespace Win32xx
     inline LRESULT CMDIClient<T>::OnMDIGetActive(UINT msg, WPARAM wparam, LPARAM lparam)
     {
         // Do default processing first
-        LRESULT result = T::CallWindowProc(T::GetPrevWindowProc(), msg, wparam, lparam);
+        LRESULT result = T::FinalWindowProc(msg, wparam, lparam);
 
         SendMessage(T::GetParent(), UWM_MDIGETACTIVE, (WPARAM)result, lparam);
         return result;
@@ -916,19 +914,17 @@ namespace Win32xx
         GetParent().SendMessage(WM_MDIRESTORE, (WPARAM)GetHwnd(), 0);
     }
 
-    // Override this to customise what happens when the window asks to be closed.
+    // Override this to customize what happens when the window asks to be closed.
     inline void CMDIChild::OnClose()
     {
         MDIDestroy();
     }
 
     // Called when the MDI child is created.
-    inline int CMDIChild::OnCreate(CREATESTRUCT& cs)
+    inline int CMDIChild::OnCreate(CREATESTRUCT&)
     {
-        UNREFERENCED_PARAMETER(cs);
-
         // Create the view window
-        assert( &GetView() );           // Use SetView in CMDIChild's constructor to set the view window
+        assert( &GetView() );           // Use SetView in CMDIChild's constructor to set the view window.
         GetView().Create(*this);
         GetView().SetFocus();
         RecalcLayout();
@@ -937,11 +933,8 @@ namespace Win32xx
     }
 
     // Called when the MDI child is activated.
-    inline LRESULT CMDIChild::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
+    inline LRESULT CMDIChild::OnMDIActivate(UINT, WPARAM, LPARAM lparam)
     {
-        UNREFERENCED_PARAMETER(msg);
-        UNREFERENCED_PARAMETER(wparam);
-
         // This child is being activated
         if (lparam == (LPARAM)GetHwnd())
         {
@@ -979,7 +972,7 @@ namespace Win32xx
         m_childMenu.Attach(menu);
         m_childAccel = accel;
 
-        // Note: It is valid to call SetHandles before the window is created
+        // Note: It is valid to call SetHandles before the window is created.
         if (IsWindow())
         {
             GetParent().SendMessage(WM_MDIACTIVATE, (WPARAM)GetHwnd(), 0);

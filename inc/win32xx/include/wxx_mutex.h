@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -71,7 +71,7 @@ namespace Win32xx
 {
     ////////////////////////////////////////////////////////////////
     // CEvent manages an event object. Event objects can be set to
-    // a signalled or nonsignalled state to facilitate synchronisation
+    // a signalled or nonsignalled state to facilitate synchronization
     // between threads.
     class CEvent
     {

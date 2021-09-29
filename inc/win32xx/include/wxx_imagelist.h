@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -361,7 +361,7 @@ namespace Win32xx
     {
         assert(m_pData);
 
-        HIMAGELIST images = ImageList_LoadBitmap(GetApp()->GetInstanceHandle(), pResourceName, cx, grow, mask);
+        HIMAGELIST images = ImageList_LoadBitmap(GetApp()->GetResourceHandle(), pResourceName, cx, grow, mask);
         if (images == 0)
             throw CResourceException(GetApp()->MsgImageList());
 
@@ -690,7 +690,7 @@ namespace Win32xx
                 CRect rc;
                 rc.SetRect(0, 0, cx, cx);
 
-                // Set the mask color to grey for the new ImageList
+                // Set the mask color to gray for the new ImageList
                 COLORREF mask = RGB(200, 200, 200);
                 if (GetDeviceCaps(DesktopDC, BITSPIXEL) < 24)
                 {

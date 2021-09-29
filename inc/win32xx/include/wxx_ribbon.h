@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -234,15 +234,9 @@ namespace Win32xx
     }
 
     // Responds to execute events on Commands bound to the Command handler.
-    inline STDMETHODIMP CRibbon::Execute(UINT cmdID, UI_EXECUTIONVERB verb, __in_opt const PROPERTYKEY* key, __in_opt const PROPVARIANT* value,
-                                          __in_opt IUISimplePropertySet* pCommandExecutionProperties)
+    inline STDMETHODIMP CRibbon::Execute(UINT, UI_EXECUTIONVERB, __in_opt const PROPERTYKEY*, __in_opt const PROPVARIANT*,
+                                          __in_opt IUISimplePropertySet*)
     {
-        UNREFERENCED_PARAMETER (cmdID);
-        UNREFERENCED_PARAMETER (verb);
-        UNREFERENCED_PARAMETER (key);
-        UNREFERENCED_PARAMETER (value);
-        UNREFERENCED_PARAMETER (pCommandExecutionProperties);
-
         return E_NOTIMPL;
     }
 
@@ -272,12 +266,9 @@ namespace Win32xx
 
 
     // Called by the Ribbon framework for each command specified in markup, to bind the Command to an IUICommandHandler.
-    inline STDMETHODIMP CRibbon::OnCreateUICommand(UINT cmdID, __in UI_COMMANDTYPE typeID,
+    inline STDMETHODIMP CRibbon::OnCreateUICommand(UINT, __in UI_COMMANDTYPE,
                                                  __deref_out IUICommandHandler** ppCommandHandler)
     {
-        UNREFERENCED_PARAMETER(typeID);
-        UNREFERENCED_PARAMETER(cmdID);
-
         // By default we use the single command handler provided as part of CRibbon.
         // Override this function to account for multiple command handlers.
 
@@ -285,38 +276,23 @@ namespace Win32xx
     }
 
     // Called when the state of the Ribbon changes, for example, created, destroyed, or resized.
-    inline STDMETHODIMP CRibbon::OnViewChanged(UINT viewId, __in UI_VIEWTYPE typeId, __in IUnknown* pView,
-                                             UI_VIEWVERB verb, INT reasonCode)
+    inline STDMETHODIMP CRibbon::OnViewChanged(UINT, __in UI_VIEWTYPE, __in IUnknown*,
+                                             UI_VIEWVERB, INT)
     {
-        UNREFERENCED_PARAMETER(viewId);
-        UNREFERENCED_PARAMETER(typeId);
-        UNREFERENCED_PARAMETER(pView);
-        UNREFERENCED_PARAMETER(verb);
-        UNREFERENCED_PARAMETER(reasonCode);
-
         return E_NOTIMPL;
     }
 
     // Called by the Ribbon framework for each command at the time of ribbon destruction.
-    inline STDMETHODIMP CRibbon::OnDestroyUICommand(UINT32 cmdID, __in UI_COMMANDTYPE typeID,
-                                                  __in_opt IUICommandHandler* commandHandler)
+    inline STDMETHODIMP CRibbon::OnDestroyUICommand(UINT32, __in UI_COMMANDTYPE,
+                                                  __in_opt IUICommandHandler*)
     {
-        UNREFERENCED_PARAMETER(commandHandler);
-        UNREFERENCED_PARAMETER(typeID);
-        UNREFERENCED_PARAMETER(cmdID);
-
         return E_NOTIMPL;
     }
 
     // Called by the Ribbon framework when a command property (PKEY) needs to be updated.
-    inline STDMETHODIMP CRibbon::UpdateProperty(UINT cmdID, __in REFPROPERTYKEY key, __in_opt const PROPVARIANT* currentValue,
-                                                 __out PROPVARIANT* newValue)
+    inline STDMETHODIMP CRibbon::UpdateProperty(UINT, __in REFPROPERTYKEY, __in_opt const PROPVARIANT*,
+                                                 __out PROPVARIANT*)
     {
-        UNREFERENCED_PARAMETER(cmdID);
-        UNREFERENCED_PARAMETER(key);
-        UNREFERENCED_PARAMETER(currentValue);
-        UNREFERENCED_PARAMETER(newValue);
-
         return E_NOTIMPL;
     }
 
@@ -406,8 +382,6 @@ namespace Win32xx
     template <class T>
     inline int CRibbonFrameT<T>::OnCreate(CREATESTRUCT& cs)
     {
-        UNREFERENCED_PARAMETER(cs);
-
         if (GetWinVersion() >= 2601)    // WinVersion >= Windows 7
         {
             if (SUCCEEDED(CreateRibbon(*this)))
@@ -442,12 +416,8 @@ namespace Win32xx
 
     // Called when the ribbon's view has changed.
     template <class T>
-    inline STDMETHODIMP CRibbonFrameT<T>::OnViewChanged(UINT32 viewId, UI_VIEWTYPE typeId, IUnknown* pView, UI_VIEWVERB verb, INT32 reasonCode)
+    inline STDMETHODIMP CRibbonFrameT<T>::OnViewChanged(UINT32, UI_VIEWTYPE typeId, IUnknown*, UI_VIEWVERB verb, INT32)
     {
-        UNREFERENCED_PARAMETER(viewId);
-        UNREFERENCED_PARAMETER(pView);
-        UNREFERENCED_PARAMETER(reasonCode);
-
         HRESULT result = E_NOTIMPL;
 
         // Checks to see if the view that was changed was a Ribbon view.
@@ -458,7 +428,7 @@ namespace Win32xx
             case UI_VIEWVERB_CREATE:    // The view was newly created.
                 result = S_OK;
                 break;
-            case UI_VIEWVERB_SIZE:      // Ribbon size has changed
+            case UI_VIEWVERB_SIZE:      // Ribbon size has changed.
                 T::RecalcLayout();
                 break;
             case UI_VIEWVERB_DESTROY:   // The view was destroyed.
@@ -502,7 +472,7 @@ namespace Win32xx
             SafeArrayRedim(psa, &sab);
             result = UIInitPropertyFromIUnknownArray(UI_PKEY_RecentItems, psa, pvarValue);
 
-            SafeArrayDestroy(psa);  // Calls release for each element in the array
+            SafeArrayDestroy(psa);  // Calls release for each element in the array.
         }
 
         return result;
@@ -512,7 +482,7 @@ namespace Win32xx
     template <class T>
     inline void CRibbonFrameT<T>::UpdateMRUMenu()
     {
-        // Suppress UpdateMRUMenu when ribbon is used
+        // Suppress UpdateMRUMenu when ribbon is used.
         if (GetRibbonFramework() != 0) return;
 
         T::UpdateMRUMenu();

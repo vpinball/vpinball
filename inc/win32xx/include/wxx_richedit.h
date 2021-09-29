@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -208,12 +208,12 @@ namespace Win32xx
         // Destroy the window before freeing the DLL
         Destroy();
 
-        VERIFY(::FreeLibrary(m_rich1));
+        ::FreeLibrary(m_rich1);
         if (m_rich2)
-            VERIFY(::FreeLibrary(m_rich2));
+            ::FreeLibrary(m_rich2);
 
         if (m_rich4_1)
-            VERIFY(::FreeLibrary(m_rich4_1));
+            ::FreeLibrary(m_rich4_1);
     }
 
     // Set the window class

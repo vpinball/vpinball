@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -118,24 +118,8 @@ namespace Win32xx
     class CAtoW
     {
     public:
-        CAtoW(LPCSTR str, UINT codePage = CP_ACP, int charCount = -1) : m_str(str)
-        {
-            if (str)
-            {
-                // Resize the vector and assign null WCHAR to each element
-                int charBytes = (charCount == -1) ? -1 : 2 * charCount;
-                int length = MultiByteToWideChar(codePage, 0, str, charBytes, NULL, 0) + 1;
-                m_wideArray.assign(length, L'\0');
-
-                // Fill our vector with the converted WCHAR array
-                MultiByteToWideChar(codePage, 0, str, charBytes, &m_wideArray[0], length);
-            }
-        }
-        ~CAtoW()
-        {
-            // Clear the array.
-            std::fill(m_wideArray.begin(), m_wideArray.end(), L'\0');
-        }
+        CAtoW(LPCSTR str, UINT codePage = CP_ACP, int charCount = -1);
+        ~CAtoW();
         operator LPCWSTR() { return m_str? &m_wideArray[0] : NULL; }
         operator LPOLESTR() { return m_str? (LPOLESTR)&m_wideArray[0] : (LPOLESTR)NULL; }
 
@@ -149,27 +133,8 @@ namespace Win32xx
     class CWtoA
     {
     public:
-        CWtoA(LPCWSTR str, UINT codePage = CP_ACP, int charCount = -1) : m_str(str)
-        // Usage:
-        //   CWtoA ansiString(L"Some Text");
-        //   CWtoA utf8String(L"Some Text", CP_UTF8);
-        //
-        // or
-        //   SetWindowTextA( WtoA(L"Some Text") ); The ANSI version of SetWindowText
-        {
-            // Resize the vector and assign null char to each element
-            int length = WideCharToMultiByte(codePage, 0, str, charCount, NULL, 0, NULL, NULL) + 1;
-            m_ansiArray.assign(length, '\0');
-
-            // Fill our vector with the converted char array
-            WideCharToMultiByte(codePage, 0, str, charCount, &m_ansiArray[0], length, NULL, NULL);
-        }
-
-        ~CWtoA()
-        {
-            // Clear the array.
-            std::fill(m_ansiArray.begin(), m_ansiArray.end(), '\0');
-        }
+        CWtoA(LPCWSTR str, UINT codePage = CP_ACP, int charCount = -1);
+        ~CWtoA();
         operator LPCSTR() { return m_str? &m_ansiArray[0] : NULL; }
 
     private:
@@ -182,11 +147,7 @@ namespace Win32xx
     class CWtoW
     {
     public:
-        CWtoW(LPCWSTR pWStr, UINT codePage = CP_ACP, int charCount = -1) : m_pWStr(pWStr)
-        {
-            UNREFERENCED_PARAMETER(codePage);
-            UNREFERENCED_PARAMETER(charCount);
-        }
+        CWtoW(LPCWSTR pWStr, UINT codePage = CP_ACP, int charCount = -1);
         operator LPCWSTR() { return m_pWStr; }
         operator LPOLESTR() { return (LPOLESTR)m_pWStr; }
 
@@ -200,11 +161,7 @@ namespace Win32xx
     class CAtoA
     {
     public:
-        CAtoA(LPCSTR str, UINT codePage = CP_ACP, int charCount = -1) : m_str(str)
-        {
-            UNREFERENCED_PARAMETER(codePage);
-            UNREFERENCED_PARAMETER(charCount);
-        }
+        CAtoA(LPCSTR str, UINT codePage = CP_ACP, int charCount = -1);
         operator LPCSTR() { return m_str; }
 
     private:
@@ -240,19 +197,75 @@ namespace Win32xx
         BSTR m_bstrString;
     };
 
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+namespace Win32xx
+{
+
+    inline CAtoW::CAtoW(LPCSTR str, UINT codePage /*= CP_ACP*/, int charCount /*= -1*/) : m_str(str)
+    {
+        if (str)
+        {
+            // Resize the vector and assign null WCHAR to each element.
+            int charBytes = (charCount == -1) ? -1 : 2 * charCount;
+            int length = MultiByteToWideChar(codePage, 0, str, charBytes, NULL, 0) + 1;
+            m_wideArray.assign(length, L'\0');
+
+            // Fill our vector with the converted WCHAR array.
+            MultiByteToWideChar(codePage, 0, str, charBytes, &m_wideArray[0], length);
+        }
+    }
+
+    inline CAtoW::~CAtoW()
+    {
+        // Clear the array.
+        std::fill(m_wideArray.begin(), m_wideArray.end(), L'\0');
+    }
+
+    // Usage:
+    //   CWtoA ansiString(L"Some Text");
+    //   CWtoA utf8String(L"Some Text", CP_UTF8);
+    //
+    // or
+    //   SetWindowTextA( WtoA(L"Some Text") ); The ANSI version of SetWindowText
+    inline CWtoA::CWtoA(LPCWSTR str, UINT codePage /*= CP_ACP*/, int charCount /*= -1*/) : m_str(str)
+    {
+        // Resize the vector and assign null char to each element
+        int length = WideCharToMultiByte(codePage, 0, str, charCount, NULL, 0, NULL, NULL) + 1;
+        m_ansiArray.assign(length, '\0');
+
+        // Fill our vector with the converted char array
+        WideCharToMultiByte(codePage, 0, str, charCount, &m_ansiArray[0], length, NULL, NULL);
+    }
+
+    inline CWtoA::~CWtoA()
+    {
+        // Clear the array.
+        std::fill(m_ansiArray.begin(), m_ansiArray.end(), '\0');
+    }
+
+    inline CWtoW::CWtoW(LPCWSTR pWStr, UINT /*codePage = CP_ACP*/, int /*charCount = -1*/) : m_pWStr(pWStr)
+    {
+    }
+
+    inline CAtoA::CAtoA(LPCSTR str, UINT /*codePage = CP_ACP*/, int /*charCount = -1*/) : m_str(str)
+    {
+    }
 
 
     ////////////////////////////////////////
     // Global Functions
     //
 
-    // Trace sends a string to the debug/output pane, or an external debugger
+    // Trace sends a string to the debug/output pane, or an external debugger.
     inline void Trace(LPCSTR str)
     {
         OutputDebugString(AtoT(str));
     }
 
-    // Trace sends a string to the debug/output pane, or an external debugger
+    // Trace sends a string to the debug/output pane, or an external debugger.
     inline void Trace(LPCWSTR str)
     {
         OutputDebugString(WtoT(str));

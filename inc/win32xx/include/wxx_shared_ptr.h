@@ -69,7 +69,7 @@
 // std::vector already handles this for us. Consider the following example:
 //    int length = ::GetWindowTextLength(wnd);
 //    pTChar = new TCHAR[length+1];
-//    memset(pTChar, 0, (length+1)*sizeof(TCHAR));
+//    ZeroMemory(pTChar, (length+1)*sizeof(TCHAR));
 //    ::GetWindowText(wnd, m_pTChar, length);
 //    ....
 //    delete[] pTChar;
@@ -116,12 +116,12 @@ namespace Win32xx
 
     // Shared_Ptr is a smart pointer suitable for elements in a vector.
     // Shared_Ptr behaves much like the shared_ptr introduced in C++11
-    template <class T1>
+    template <class T>
     class Shared_Ptr
     {
     public:
         Shared_Ptr() : m_ptr(0), m_count(0) { }
-        Shared_Ptr(T1 * p) : m_ptr(p), m_count(0)
+        Shared_Ptr(T* p) : m_ptr(p), m_count(0)
         {
             try
             {
@@ -147,7 +147,7 @@ namespace Win32xx
             }
         }
 
-        T1* get() const { return m_ptr; }
+        T* get() const { return m_ptr; }
         long use_count() const { return m_count? *m_count : 0; }
         bool unique() const { return (m_count && (*m_count == 1)); }
 
@@ -164,13 +164,13 @@ namespace Win32xx
              return *this;
         }
 
-        T1* operator->() const
+        T* operator->() const
         {
             assert(m_ptr);
             return m_ptr;
         }
 
-        T1& operator*() const
+        T& operator*() const
         {
             assert (m_ptr);
             return *m_ptr;
@@ -209,7 +209,7 @@ namespace Win32xx
             return InterlockedDecrement(m_count);
         }
 
-        T1* m_ptr;
+        T* m_ptr;
         long* m_count;
     };
 

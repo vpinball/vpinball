@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -113,7 +113,7 @@ namespace Win32xx
         operator HENHMETAFILE() { return m_pData->enhMetaFile; }
 
     private:
-        struct CEnhMetaFile_Data    // A structure that contains the data members for CEnhMetaFile
+        struct CEnhMetaFile_Data    // A structure that contains the data members for CEnhMetaFile.
         {
             // Constructor
             CEnhMetaFile_Data() : enhMetaFile(0), count(1L) {}
@@ -180,15 +180,15 @@ namespace Win32xx
         Attach(metaFile);
     }
 
-    // Attaches an existing HMETAFILE to this CMetaFile
-    // The HMETAFILE can be 0
+    // Attaches an existing HMETAFILE to this CMetaFile.
+    // The HMETAFILE can be 0.
     inline void CMetaFile::Attach(HMETAFILE metaFile)
     {
         assert(m_pData);
 
         if (m_pData && metaFile != m_pData->metaFile)
         {
-            // Release any existing enhanced metafile
+            // Release any existing enhanced metafile.
             if (m_pData->metaFile != 0)
             {
                 Release();
@@ -258,8 +258,8 @@ namespace Win32xx
         Attach(enhMetaFile);
     }
 
-    // Attaches an existing HENHMETAFILE to this CEnhMetaFile
-    // The HENHMETAFILE can be 0
+    // Attaches an existing HENHMETAFILE to this CEnhMetaFile.
+    // The HENHMETAFILE can be 0.
     inline void CEnhMetaFile::Attach(HENHMETAFILE enhMetaFile)
     {
         assert(m_pData);

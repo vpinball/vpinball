@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -135,7 +135,7 @@ namespace Win32xx
         CWnd();             // Constructor
         virtual ~CWnd();    // Destructor
 
-        // These virtual functions can be overridden
+        // These virtual functions can be overridden.
         virtual BOOL Attach(HWND wnd);
         virtual BOOL AttachDlgItem(UINT id, HWND parent);
         virtual void CenterWindow() const;
@@ -161,8 +161,8 @@ namespace Win32xx
         HWND GetHwnd() const                { return m_wnd; }
         WNDPROC GetPrevWindowProc() const   { return m_prevWindowProc; }
 
-        // Wrappers for Win32 API functions
-        // These functions aren't virtual, and shouldn't be overridden
+        // Wrappers for Win32 API functions.
+        // These functions aren't virtual, and shouldn't be overridden.
         HDC   BeginPaint(PAINTSTRUCT& ps) const;
         BOOL  BringWindowToTop() const;
         LRESULT CallWindowProc(WNDPROC pPrevWndFunc, UINT msg, WPARAM wparam, LPARAM lparam) const;

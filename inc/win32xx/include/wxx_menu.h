@@ -1,5 +1,5 @@
-// Win32++   Version 8.9
-// Release Date: 29th April 2021
+// Win32++   Version 8.9.1
+// Release Date: 10th September 2021
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -718,7 +718,7 @@ namespace Win32xx
         return 0 != m_pData->menu;
     }
 
-    // Changes an existing menu item. This function is used to specify the content, appearance, and behaviour of the menu item.
+    // Changes an existing menu item. This function is used to specify the content, appearance, and behavior of the menu item.
     // Refer to ModifyMenu in the Windows API documentation for more information.
     inline BOOL CMenu::ModifyMenu(UINT pos, UINT flags, UINT_PTR newItemID /*= 0*/, LPCTSTR pNewItem /*= NULL*/) const
     {
@@ -728,7 +728,7 @@ namespace Win32xx
         return ::ModifyMenu(m_pData->menu, pos, flags, newItemID, pNewItem);
     }
 
-    // Changes an existing menu item. This function is used to specify the content, appearance, and behaviour of the menu item.
+    // Changes an existing menu item. This function is used to specify the content, appearance, and behavior of the menu item.
     // Refer to ModifyMenu in the Windows API documentation for more information.
     inline BOOL CMenu::ModifyMenu(UINT pos, UINT flags, UINT_PTR newItemID, HBITMAP bitmap) const
     {
