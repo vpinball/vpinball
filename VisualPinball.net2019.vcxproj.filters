@@ -640,7 +640,7 @@
     </None>
     <None Include="res\lightSeqTable.vpx">
       <Filter>res</Filter>
-    </None>    
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inc">
@@ -1448,6 +1448,15 @@
     </ClInclude>
     <ClInclude Include="inc\Sci_Position.h">
       <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\default_resource.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_preview.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_printdialogex.h">
+      <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

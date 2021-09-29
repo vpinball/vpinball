@@ -1451,6 +1451,15 @@
     <ClInclude Include="dialogs\ScriptErrorDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
+    <ClInclude Include="inc\win32xx\include\default_resource.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_preview.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_printdialogex.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.hlsl">
