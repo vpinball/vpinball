@@ -133,6 +133,8 @@ void PlungerMoverObject::UpdateDisplacements(const float dtime)
    if (m_fireTimer != 0 && dtime != 0.0f
       && ((m_fireSpeed < 0.0f ? relPos <= bouncePos : relPos >= bouncePos)))
    {
+      g_pplayer->m_pininput.PlayRumble(m_fireSpeed * 0.05f, m_fireSpeed * 0.05f, 50);
+
       // stop at the bounce position
       m_pos = m_frameEnd + bouncePos*m_frameLen;
 

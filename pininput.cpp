@@ -742,7 +742,7 @@ void PinInput::handleInputIGC(DIDEVICEOBJECTDATA *didod)
 #endif
 }
 
-void PinInput::PlayRumble(const int leftMotor, const int rightMotor, const int duration)
+void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration)
 {
    if (m_rumbleMode == 0) return;
 
@@ -750,12 +750,16 @@ void PinInput::PlayRumble(const int leftMotor, const int rightMotor, const int d
    case 1: //XInput
 #ifdef ENABLE_XINPUT
       if (m_inputDeviceXI >= 0) {
-         m_rumbleOffTime = duration + timeGetTime();
+         m_rumbleOffTime = ms_duration + timeGetTime();
          m_rumbleRunning = true;
          XINPUT_VIBRATION vibration;
          ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
-         vibration.wLeftMotorSpeed = leftMotor;
-         vibration.wRightMotorSpeed = rightMotor;
+         // On both PS4 and X360:
+         // The left motor is the low - frequency rumble motor. (explosions, etc)
+         // The right motor is the high - frequency rumble motor. (subtle stuff)
+         // The two motors are not the same, and they create different vibration effects.
+         vibration.wLeftMotorSpeed = (WORD)(saturate(lowFrequencySpeed) * 65535.f);
+         vibration.wRightMotorSpeed = (WORD)(saturate(highFrequencySpeed) * 65535.f);
          XInputSetState(m_inputDeviceXI, &vibration);
       }
 #endif
@@ -763,10 +767,10 @@ void PinInput::PlayRumble(const int leftMotor, const int rightMotor, const int d
    case 2: //SDL2
 #ifdef ENABLE_SDL_INPUT
       if (m_rumbleDeviceSDL)
-         SDL_HapticRumblePlay(m_rumbleDeviceSDL, (float)max(leftMotor, rightMotor) / 65535.0f, duration);
+         SDL_HapticRumblePlay(m_rumbleDeviceSDL, saturate(max(lowFrequencySpeed, highFrequencySpeed)), ms_duration); //!! meh
 #endif
       break;
-   case 3: //IGameControler
+   case 3: //IGameController
 #ifdef ENABLE_IGAMECONTROLLER
 #endif
       break;
@@ -1054,6 +1058,9 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          delete g_pplayer->m_pBCTarget;
          g_pplayer->m_pBCTarget = NULL;
       }
+
+      if ((keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] || keycode == g_pplayer->m_rgKeys[eRightFlipperKey]) && dispid == DISPID_GameEvents_KeyDown)
+         g_pplayer->m_pininput.PlayRumble(0.f, 0.2f, 150);
 
       // Mixer volume only
       gMixerKeyDown = (keycode == g_pplayer->m_rgKeys[eVolumeDown] && dispid == DISPID_GameEvents_KeyDown);

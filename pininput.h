@@ -1,6 +1,6 @@
 #pragma once
 
-//#define ENABLE_XINPUT
+#define ENABLE_XINPUT
 
 #ifdef ENABLE_XINPUT
 #include <XInput.h>
@@ -75,7 +75,8 @@ public:
    void ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input);
    void ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input);
 
-   void PlayRumble(const int leftMotor, const int rightMotor, const int duration);
+   // Speed: 0..1
+   void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration);
 
    int GetNextKey();
 
@@ -174,7 +175,7 @@ private:
    bool m_keyPressedState[4];
    DWORD m_nextKeyPressedTime;
 
-   int m_inputApi;   // 0=DirectInput 1=XInput, 2=SDL, 3=iGamecontroller
+   int m_inputApi;   // 0=DirectInput 1=XInput, 2=SDL, 3=IGamecontroller
    int m_rumbleMode; // 0=Off, 1=Table only, 2=Generic only, 3=Table with generic as fallback
 
 #ifdef ENABLE_XINPUT

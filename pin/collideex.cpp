@@ -78,6 +78,8 @@ void LineSegSlingshot::Collide(const CollisionEvent& coll)
        {
            ((IFireEvents *)m_obj)->FireGroupEvent(DISPID_SurfaceEvents_Slingshot);
            m_slingshotanim.m_TimeReset = g_pplayer->m_time_msec + 100;
+
+           g_pplayer->m_pininput.PlayRumble(0.15f, 0.1f, 100);
        }
    }
 }
@@ -1024,6 +1026,7 @@ void HitLine3D::Collide(const CollisionEvent& coll)
    const Vertex3Ds& hitnormal = coll.m_hitnormal;
 
    const float dot = -(hitnormal.Dot(pball->m_d.m_vel));
+
    pball->Collide3DWall(hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
    if (m_obj && m_fe && dot >= m_threshold)
