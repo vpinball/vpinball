@@ -35,7 +35,7 @@ void PaintSur::Line(const float x, const float y, const float x2, const float y2
 
    SelectObject(m_hdc, m_hpnLine);
 
-   ::MoveToEx(m_hdc, ix, iy, NULL);
+   ::MoveToEx(m_hdc, ix, iy, nullptr);
    ::LineTo(m_hdc, ix2, iy2);
    ::LineTo(m_hdc, ix, iy); // To get the last pixel drawn //!! meh
 }
@@ -125,9 +125,9 @@ void PaintSur::Polygon(const std::vector<RenderVertex> &rgv)
       POINT pnt;
       ::MoveToEx(m_hdc, rgpt[0].x, rgpt[0].y, &pnt);
       ::LineTo(m_hdc, rgpt[2].x, rgpt[2].y);
-      ::MoveToEx(m_hdc, rgpt[1].x, rgpt[1].y, NULL);
+      ::MoveToEx(m_hdc, rgpt[1].x, rgpt[1].y, nullptr);
       ::LineTo(m_hdc, rgpt[3].x, rgpt[3].y);
-      ::MoveToEx(m_hdc, pnt.x, pnt.y, NULL);
+      ::MoveToEx(m_hdc, pnt.x, pnt.y, nullptr);
    }
 }
 
@@ -157,7 +157,7 @@ void PaintSur::PolygonImage(const std::vector<RenderVertex> &rgv, HBITMAP hbm, c
       constexpr BLENDFUNCTION blendf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
       AlphaBlend(m_hdc, ix, iy, ix2 - ix, iy2 - iy, hdcNew, 0, 0, bitmapwidth, bitmapheight, blendf);
 
-      SelectClipRgn(m_hdc, NULL);
+      SelectClipRgn(m_hdc, nullptr);
       DeleteObject(hrgn);
    }
    else // do XOR trick for masking (draw image, draw black polygon, draw image again, and the XOR will do an implicit mask op)
@@ -255,7 +255,7 @@ void PaintSur::Image(const float x, const float y, const float x2, const float y
 
 void PaintSur::SetObject(ISelect * const psel)
 {
-   if ((m_psel != NULL) && (psel != NULL)) // m_psel can be null when rendering a blueprint or other item which has no selection feedback
+   if ((m_psel != nullptr) && (psel != nullptr)) // m_psel can be null when rendering a blueprint or other item which has no selection feedback
    {
       if (psel->m_selectstate == eSelected)
       {

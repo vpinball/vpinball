@@ -233,12 +233,12 @@ __forceinline void ComputeEdgeCostAtVertex(Vertex * const v)
 	// cost (in member variable objdist).
 	if (v->neighbor.empty()) {
 		// v doesn't have neighbors so it costs nothing to collapse
-		v->collapse = NULL;
+		v->collapse = nullptr;
 		v->objdist = -0.01f;
 		return;
 	}
 	v->objdist = FLT_MAX;
-	v->collapse = NULL;
+	v->collapse = nullptr;
 	// search all neighboring edges for "least cost" edge
 	for (size_t i = 0; i < v->neighbor.size(); i++) {
 		const float dist = ComputeEdgeCollapseCost(v, v->neighbor[i]);

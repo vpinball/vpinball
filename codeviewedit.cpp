@@ -438,7 +438,7 @@ void CVPrefrence::SetDefaultFont(const HWND hwndDlg)
 	LOGFONT* const plfont = &m_logFont;
 	memset(plfont, 0, sizeof(LOGFONT));
 	HFONT hFont = (HFONT)GetStockObject(ANSI_FIXED_FONT);
-	if (hFont == NULL)
+	if (hFont == nullptr)
 		hFont = (HFONT)GetStockObject(SYSTEM_FONT);
 	GetObject(hFont, sizeof(LOGFONT), plfont);
 	m_pointSize = 10;

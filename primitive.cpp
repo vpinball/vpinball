@@ -9,7 +9,7 @@
 #include "inc\progmesh.h"
 #include "inc\ThreadPool.h"
 
-ThreadPool *g_pPrimitiveDecompressThreadPool = NULL;
+ThreadPool *g_pPrimitiveDecompressThreadPool = nullptr;
 
 void Mesh::Clear()
 {
@@ -179,9 +179,9 @@ Primitive::Primitive()
 
    m_numIndices = 0;
    m_numVertices = 0;
-   m_propPhysics = NULL;
-   m_propPosition = NULL;
-   m_propVisual = NULL;
+   m_propPhysics = nullptr;
+   m_propPosition = nullptr;
+   m_propVisual = nullptr;
    m_d.m_overwritePhysics = true;
    m_d.m_useAsPlayfield = false;
 }
@@ -313,7 +313,7 @@ HRESULT Primitive::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    SetDefaults(fromMouseClick);
 
-   InitVBA(fTrue, 0, NULL);
+   InitVBA(fTrue, 0, nullptr);
 
    UpdateStatusBarInfo();
 
@@ -441,7 +441,7 @@ void Primitive::GetTimers(vector<HitTimer*> &pvht)
 void Primitive::GetHitShapes(vector<HitObject*> &pvho)
 {
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
    if (strcmp(name, "playfield_mesh") == 0)
    {
       m_d.m_visible = false;
@@ -594,7 +594,7 @@ void Primitive::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
    if (!m_d.m_useAsPlayfield)
    {
-       if (mat != NULL && !m_d.m_overwritePhysics)
+       if (mat != nullptr && !m_d.m_overwritePhysics)
        {
            obj->m_elasticity = mat->m_fElasticity;
            obj->m_elasticityFalloff = mat->m_fElasticityFalloff;
@@ -1150,7 +1150,7 @@ void Primitive::ExportMesh(ObjLoader& loader)
    if (m_d.m_visible)
    {
       char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-      WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
+      WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
       Vertex3D_NoTex2 *const buf = new Vertex3D_NoTex2[m_mesh.NumVertices()];
       RecalculateMatrices();
       for (size_t i = 0; i < m_mesh.NumVertices(); i++)
@@ -1569,7 +1569,7 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
       WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression
 
       unsigned int* const tmp = reorderForsyth(m_mesh.m_indices, (int)m_mesh.NumVertices());
-      if (tmp != NULL)
+      if (tmp != nullptr)
       {
          memcpy(m_mesh.m_indices.data(), tmp, m_mesh.NumIndices() * sizeof(unsigned int));
          delete[] tmp;
@@ -1683,7 +1683,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
       mz_ulong uclen = (mz_ulong)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
       mz_uint8 * c = (mz_uint8 *)malloc(m_compressedVertices);
       pbr->GetStruct(c, m_compressedVertices);
-	  if (g_pPrimitiveDecompressThreadPool == NULL)
+	  if (g_pPrimitiveDecompressThreadPool == nullptr)
 		  g_pPrimitiveDecompressThreadPool = new ThreadPool(g_pvp->m_logicalNumberOfProcessors);
 
 	  g_pPrimitiveDecompressThreadPool->enqueue([uclen, c, this] {
@@ -1727,7 +1727,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
          mz_ulong uclen = (mz_ulong)(sizeof(unsigned int)*m_mesh.NumIndices());
          mz_uint8 * c = (mz_uint8 *)malloc(m_compressedIndices);
          pbr->GetStruct(c, m_compressedIndices);
-		 if (g_pPrimitiveDecompressThreadPool == NULL)
+		 if (g_pPrimitiveDecompressThreadPool == nullptr)
 			 g_pPrimitiveDecompressThreadPool = new ThreadPool(g_pvp->m_logicalNumberOfProcessors);
 
 		 g_pPrimitiveDecompressThreadPool->enqueue([uclen, c, this] {
@@ -1749,7 +1749,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
          mz_ulong uclen = (mz_ulong)(sizeof(WORD)*m_mesh.NumIndices());
          mz_uint8 * c = (mz_uint8 *)malloc(m_compressedIndices);
          pbr->GetStruct(c, m_compressedIndices);
-         if (g_pPrimitiveDecompressThreadPool == NULL)
+         if (g_pPrimitiveDecompressThreadPool == nullptr)
             g_pPrimitiveDecompressThreadPool = new ThreadPool(g_pvp->m_logicalNumberOfProcessors);
 
          g_pPrimitiveDecompressThreadPool->enqueue([uclen, c, this] {
@@ -1784,7 +1784,7 @@ void Primitive::WaitForMeshDecompression()
    {
       // This will wait for the threads to finish decompressing meshes.
       delete g_pPrimitiveDecompressThreadPool;
-      g_pPrimitiveDecompressThreadPool = NULL;
+      g_pPrimitiveDecompressThreadPool = nullptr;
    }
 }
 
@@ -1799,7 +1799,7 @@ HRESULT Primitive::InitPostLoad()
 
 INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   static Primitive *prim = NULL;
+   static Primitive *prim = nullptr;
    switch (uMsg)
    {
    case WM_INITDIALOG:
@@ -1818,7 +1818,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
    }
    case WM_CLOSE:
    {
-      prim = NULL;
+      prim = nullptr;
       EndDialog(hwndDlg, FALSE);
       break;
    }
@@ -1913,14 +1913,14 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                if (doForsyth)
                {
                    unsigned int* const tmp = reorderForsyth(prim->m_mesh.m_indices, (int)prim->m_mesh.NumVertices());
-                   if (tmp != NULL)
+                   if (tmp != nullptr)
                    {
                        memcpy(prim->m_mesh.m_indices.data(), tmp, prim->m_mesh.NumIndices() * sizeof(unsigned int));
                        delete[] tmp;
                    }
                }
                prim->UpdateStatusBarInfo();
-               prim = NULL;
+               prim = nullptr;
                EndDialog(hwndDlg, TRUE);
             }
             else
@@ -1929,7 +1929,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
          }
          case IDC_BROWSE_BUTTON:
          {
-            if (prim == NULL)
+            if (prim == nullptr)
                break;
 
             SetForegroundWindow(hwndDlg);
@@ -1959,7 +1959,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
          }
          case IDCANCEL:
          {
-            prim = NULL;
+            prim = nullptr;
             EndDialog(hwndDlg, FALSE);
             break;
          }
@@ -2064,13 +2064,14 @@ STDMETHODIMP Primitive::get_Image(BSTR *pVal)
 STDMETHODIMP Primitive::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
        ShowError("Cannot use a HDR image (.exr/.hdr) here");
        return E_FAIL;
    }
+
    m_d.m_szImage = szImage;
 
    return S_OK;
@@ -2088,7 +2089,7 @@ STDMETHODIMP Primitive::get_NormalMap(BSTR *pVal)
 STDMETHODIMP Primitive::put_NormalMap(BSTR newVal)
 {
     char szImage[MAXTOKEN];
-    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
     const Texture * const tex = m_ptable->GetImage(szImage);
     if (tex && tex->IsHDR())
     {
@@ -2113,7 +2114,7 @@ STDMETHODIMP Primitive::get_MeshFileName(BSTR *pVal)
 STDMETHODIMP Primitive::put_MeshFileName(BSTR newVal)
 {
    char buf[MAXSTRING];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXSTRING, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXSTRING, nullptr, nullptr);
    m_d.m_meshFileName = buf;
 
    return S_OK;
@@ -2148,7 +2149,7 @@ void Primitive::ExportMeshDialog()
       }
 
       char name[sizeof(m_wzName) / sizeof(m_wzName[0])];
-      WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
+      WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
       m_mesh.SaveWavefrontObj(szFileName[0], m_d.m_use3DMesh ? name : "Primitive");
    }
 
@@ -2203,7 +2204,7 @@ STDMETHODIMP Primitive::get_Material(BSTR *pVal)
 STDMETHODIMP Primitive::put_Material(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
    m_d.m_szMaterial = buf;
 
    return S_OK;
@@ -2802,7 +2803,7 @@ STDMETHODIMP Primitive::get_PhysicsMaterial(BSTR *pVal)
 STDMETHODIMP Primitive::put_PhysicsMaterial(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
    m_d.m_szPhysicsMaterial = buf;
 
    return S_OK;

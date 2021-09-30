@@ -25,7 +25,7 @@ void PrimitivePositionProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->size(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPrimitive))
+        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPrimitive))
             continue;
         const Primitive *const prim = (Primitive*)m_pvsel->ElementAt(i);
 
@@ -73,7 +73,7 @@ void PrimitivePositionProperty::UpdateProperties(const int dispid)
 {
     for (int i = 0; i < m_pvsel->size(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPrimitive))
+        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPrimitive))
             continue;
         Primitive *const prim = (Primitive*)m_pvsel->ElementAt(i);
         switch (dispid)

@@ -18,12 +18,12 @@ int SearchSelectDialog::m_lastSortColumn;
 
 SearchSelectDialog::SearchSelectDialog() : CDialog(IDD_SEARCH_SELECT_ELEMENT)
 {
-    m_hElementList = NULL;
+    m_hElementList = nullptr;
 
     m_switchSortOrder = false;
     m_columnSortOrder = 1;
     m_lastSortColumn = 0;
-    m_curTable = NULL;
+    m_curTable = nullptr;
 }
 
 void SearchSelectDialog::Update()
@@ -49,7 +49,7 @@ void SearchSelectDialog::Update()
    lvc.pszText = TEXT("Material");
    index = ListView_InsertColumn(m_hElementList, 4, &lvc);
 
-   if (m_hElementList != NULL)
+   if (m_hElementList != nullptr)
       ListView_DeleteAllItems(m_hElementList);
 
    int idx = 0;
@@ -57,7 +57,7 @@ void SearchSelectDialog::Update()
    {
       CComObject<Collection> *const pcol = m_curTable->m_vcollection.ElementAt(i);
       char szT[sizeof(pcol->m_wzName)/sizeof(pcol->m_wzName[0])];
-      WideCharToMultiByteNull(CP_ACP, 0, pcol->m_wzName, -1, szT, sizeof(szT), NULL, NULL);
+      WideCharToMultiByteNull(CP_ACP, 0, pcol->m_wzName, -1, szT, sizeof(szT), nullptr, nullptr);
       LVITEM lv;
       lv.mask = LVIF_TEXT | LVIF_PARAM;
       lv.iItem = idx;
@@ -207,9 +207,9 @@ INT_PTR SearchSelectDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          const int buttonWidth = buttonRc.right - buttonRc.left;
          const int buttonHeight = buttonRc.bottom - buttonRc.top;
          
-         ::SetWindowPos(m_hElementList, NULL, 6, 5, windowWidth - 28, windowHeight - 90, 0);
-         ::SetWindowPos(hOkButton, NULL, 6, buttonY, buttonWidth, buttonHeight, 0);
-         ::SetWindowPos(GetDlgItem(IDCANCEL).GetHwnd(), NULL, 6 + buttonWidth + 50, buttonY, buttonWidth, buttonHeight, 0);
+         ::SetWindowPos(m_hElementList, nullptr, 6, 5, windowWidth - 28, windowHeight - 90, 0);
+         ::SetWindowPos(hOkButton, nullptr, 6, buttonY, buttonWidth, buttonHeight, 0);
+         ::SetWindowPos(GetDlgItem(IDCANCEL).GetHwnd(), nullptr, 6 + buttonWidth + 50, buttonY, buttonWidth, buttonHeight, 0);
          break;
       }
 
@@ -579,7 +579,7 @@ void SearchSelectDialog::LoadPosition()
    const int w = LoadValueIntWithDefault("Editor", "SearchSelectWidth", 650);
    const int h = LoadValueIntWithDefault("Editor", "SearchSelectHeight", 400);
 
-   SetWindowPos(NULL, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
+   SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
 void SearchSelectDialog::SavePosition()

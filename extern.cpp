@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 
-VPinball *g_pvp = NULL;
-Player *g_pplayer = NULL;
+VPinball *g_pvp = nullptr;
+Player *g_pplayer = nullptr;
 HACCEL g_haccel;
 bool g_keepUndoRecords = true;

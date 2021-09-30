@@ -3,7 +3,7 @@
 
 IEditable::IEditable()
 {
-   m_phittimer = NULL;
+   m_phittimer = nullptr;
 
    m_backglass = false;
    VariantInit(&m_uservalue);
@@ -144,7 +144,7 @@ void IEditable::EndPlay()
    if (m_phittimer)
    {
       delete m_phittimer;
-      m_phittimer = NULL;
+      m_phittimer = nullptr;
    }
 }
 
@@ -188,7 +188,7 @@ void IEditable::Undelete()
 
 char *IEditable::GetName()
 {
-    WCHAR *elemName = NULL;
+    WCHAR *elemName = nullptr;
     if (GetItemType() == eItemDecal)
         return "Decal";
 
@@ -199,10 +199,10 @@ char *IEditable::GetName()
     if (elemName)
     {
         static char elementName[256];
-        WideCharToMultiByteNull(CP_ACP, 0, elemName, -1, elementName, 256, NULL, NULL);
+        WideCharToMultiByteNull(CP_ACP, 0, elemName, -1, elementName, 256, nullptr, nullptr);
         return elementName;
     }
-    return NULL;
+    return nullptr;
 }
 
 void IEditable::SetName(const std::string& name)

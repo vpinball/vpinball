@@ -381,7 +381,7 @@ short LZWReader::Decoder()
    toofar--;  // m_readahead == the byte we just read, so we actually used up one more than the math shows
    LARGE_INTEGER li;
    li.QuadPart = -toofar;
-   m_pstm->Seek(li, STREAM_SEEK_CUR, NULL);
+   m_pstm->Seek(li, STREAM_SEEK_CUR, nullptr);
 
    return (0);
 }

@@ -11,11 +11,11 @@ Rubber::Rubber()
    m_dynamicVertexBuffer = 0;
    m_dynamicIndexBuffer = 0;
    m_dynamicVertexBufferRegenerate = true;
-   m_propPhysics = NULL;
-   m_propPosition = NULL;
-   m_propVisual = NULL;
+   m_propPhysics = nullptr;
+   m_propPosition = nullptr;
+   m_propVisual = nullptr;
    m_d.m_overwritePhysics = true;
-   m_ptable = NULL;
+   m_ptable = nullptr;
    m_d.m_tdr.m_TimerEnabled = false;
    m_d.m_tdr.m_TimerInterval = 0;
 }
@@ -60,7 +60,7 @@ HRESULT Rubber::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    SetDefaults(fromMouseClick);
 
-   InitVBA(fTrue, 0, NULL);
+   InitVBA(fTrue, 0, nullptr);
 
    return S_OK;
 }
@@ -166,7 +166,7 @@ void Rubber::UIRenderPass1(Sur * const psur)
    if (!m_d.m_showInEditor)
    {
       int cvertex;
-      const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, NULL, 4.0f*powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL)*(float)(1.0 / 1.5)));
+      const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, nullptr, nullptr, 4.0f*powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL)*(float)(1.0 / 1.5)));
       psur->Polygon(rgvLocal, cvertex* 2);
       delete[] rgvLocal;
    }
@@ -182,13 +182,13 @@ void Rubber::UIRenderPass2(Sur * const psur)
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
    psur->SetObject(this);
-   psur->SetObject(NULL); // NULL so this won't be hit-tested
+   psur->SetObject(nullptr); // nullptr so this won't be hit-tested
 
    if (!m_d.m_showInEditor)
    {
       int cvertex;
       bool *pfCross;
-      const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, &pfCross, NULL, 4.0f*powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL)*(float)(1.0 / 1.5)));
+      const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, &pfCross, nullptr, 4.0f*powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL)*(float)(1.0 / 1.5)));
 
       psur->Polygon(rgvLocal, cvertex* 2);
       for (int i = 0; i < cvertex; i++)
@@ -245,13 +245,13 @@ void Rubber::RenderBlueprint(Sur *psur, const bool solid)
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
    psur->SetObject(this);
-   psur->SetObject(NULL); // NULL so this won't be hit-tested
+   psur->SetObject(nullptr); // nullptr so this won't be hit-tested
 
    if (!m_d.m_showInEditor)
    {
       int cvertex;
       bool *pfCross;
-      const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, &pfCross, NULL, 4.0f*powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL)*(float)(1.0 / 1.5)));
+      const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, &pfCross, nullptr, 4.0f*powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL)*(float)(1.0 / 1.5)));
 
       psur->Polygon(rgvLocal, cvertex* 2);
       for (int i = 0; i < cvertex; i++)
@@ -271,7 +271,7 @@ void Rubber::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
 {
    //!! meh, this is delivering something loosely related to the bounding vertices, but its only used in the cam fitting code so far, so keep for legacy reasons
    int cvertex;
-   const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, NULL);
+   const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, nullptr, nullptr);
 
    //pvvertex3D.reserve(pvvertex3D.size() + cvertex * 2);
    Vertex3Ds bbox_min(FLT_MAX, FLT_MAX, FLT_MAX);
@@ -958,7 +958,7 @@ STDMETHODIMP Rubber::get_Material(BSTR *pVal)
 STDMETHODIMP Rubber::put_Material(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
    m_d.m_szMaterial = buf;
 
    return S_OK;
@@ -976,7 +976,7 @@ STDMETHODIMP Rubber::get_Image(BSTR *pVal)
 STDMETHODIMP Rubber::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -1210,7 +1210,7 @@ STDMETHODIMP Rubber::get_PhysicsMaterial(BSTR *pVal)
 STDMETHODIMP Rubber::put_PhysicsMaterial(BSTR newVal)
 {
     char buf[MAXNAMEBUFFER];
-    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
     m_d.m_szPhysicsMaterial = buf;
 
     return S_OK;
@@ -1291,7 +1291,7 @@ void Rubber::ExportMesh(ObjLoader& loader)
    if (m_d.m_visible)
    {
       char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-      WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
+      WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
       GenerateMesh();
       UpdateRubber(false, m_d.m_height);
 
@@ -1329,7 +1329,7 @@ void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape) //!! h
 
    Vertex2D * middlePoints = 0;
    int splinePoints;
-   const Vertex2D * const rgvLocal = GetSplineVertex(splinePoints, NULL, &middlePoints, (_accuracy != -1) ? 4.0f*powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL)*(float)(1.0 / 1.5)) : -1.f);
+   const Vertex2D * const rgvLocal = GetSplineVertex(splinePoints, nullptr, &middlePoints, (_accuracy != -1) ? 4.0f*powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL)*(float)(1.0 / 1.5)) : -1.f);
    const int numRings = splinePoints - 1;
    const int numSegments = accuracy;
    m_numVertices = numRings*numSegments;
@@ -1444,7 +1444,7 @@ void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape) //!! h
 
    // not necessary to reorder
    /*WORD* const tmp = reorderForsyth(m_ringIndices, m_numVertices);
-   if (tmp != NULL)
+   if (tmp != nullptr)
    {
    memcpy(m_ringIndices.data(), tmp, m_ringIndices.size()*sizeof(WORD));
    delete[] tmp;

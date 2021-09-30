@@ -101,7 +101,7 @@ public:
       if (!m_d.m_baseVisible && m_d.m_capVisible)
          return (unsigned long long)&m_capTexture; //!! meh
       else
-         return NULL;
+         return 0;
    }
    
    virtual ItemTypeEnum HitableGetItemType() const { return eItemBumper; }

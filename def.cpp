@@ -34,7 +34,7 @@ void f2sz(const float f, string& sz)
    {
       const WCHAR * const wzT = V_BSTR(&var);
       char tmp[256];
-      WideCharToMultiByteNull(CP_ACP, 0, wzT, -1, tmp, 256, NULL, NULL);
+      WideCharToMultiByteNull(CP_ACP, 0, wzT, -1, tmp, 256, nullptr, nullptr);
       sz = tmp;
       VariantClear(&var);
    }
@@ -130,7 +130,7 @@ char *MakeChar(const WCHAR * const wz)
 {
    const int len = lstrlenW(wz);
    char * const szT = new char[len + 1];
-   WideCharToMultiByteNull(CP_ACP, 0, wz, -1, szT, len + 1, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, wz, -1, szT, len + 1, nullptr, nullptr);
 
    return szT;
 }
@@ -139,7 +139,7 @@ HRESULT OpenURL(const string& szURL)
 {
    IUniformResourceLocator* pURL;
 
-   HRESULT hres = CoCreateInstance(CLSID_InternetShortcut, NULL, CLSCTX_INPROC_SERVER, IID_IUniformResourceLocator, (void**)&pURL);
+   HRESULT hres = CoCreateInstance(CLSID_InternetShortcut, nullptr, CLSCTX_INPROC_SERVER, IID_IUniformResourceLocator, (void**)&pURL);
    if (!SUCCEEDED(hres))
    {
       return hres;
@@ -182,7 +182,7 @@ char* replace(const char* const original, const char* const pattern, const char*
     const size_t retlen = orilen + patcnt * (replen - patlen);
     char * const returned = new char[retlen + 1];
 
-    //if (returned != NULL)
+    //if (returned != nullptr)
     {
       // copy the original string, 
       // replacing all the instances of the pattern

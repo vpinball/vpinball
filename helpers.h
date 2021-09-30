@@ -87,7 +87,7 @@ private:
     const WCHAR * const __pwsz##ptrname = pwszUnicode?pwszUnicode:L""; \
     const long __l##ptrname = lstrlenW(__pwsz##ptrname) + 1; \
     TempBuffer __TempBuffer##ptrname(__l##ptrname * (long)sizeof(char)); \
-    WideCharToMultiByteNull(CP_ACP, 0, __pwsz##ptrname, -1, (LPSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname, NULL, NULL); \
+    WideCharToMultiByteNull(CP_ACP, 0, __pwsz##ptrname, -1, (LPSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname, nullptr, nullptr); \
     const LPSTR ptrname = (LPSTR)__TempBuffer##ptrname.GetBuffer()
 
 //--- EOF -------------------------------------------------------------------

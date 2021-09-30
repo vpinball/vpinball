@@ -11,12 +11,12 @@
 
 Kicker::Kicker()
 {
-   m_phitkickercircle = NULL;
-   m_vertexBuffer = NULL;
-   m_indexBuffer = NULL;
-   m_plateVertexBuffer = NULL;
-   m_plateIndexBuffer = NULL;
-   m_ptable = NULL;
+   m_phitkickercircle = nullptr;
+   m_vertexBuffer = nullptr;
+   m_indexBuffer = nullptr;
+   m_plateVertexBuffer = nullptr;
+   m_plateIndexBuffer = nullptr;
+   m_ptable = nullptr;
    m_numVertices = 0;
    m_numIndices = 0;
    m_baseHeight = 0.0f;
@@ -63,7 +63,7 @@ HRESULT Kicker::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    SetDefaults(fromMouseClick);
 
-   return InitVBA(fTrue, 0, NULL);
+   return InitVBA(fTrue, 0, nullptr);
 }
 
 void Kicker::SetDefaults(bool fromMouseClick)
@@ -225,7 +225,7 @@ void Kicker::GetHitShapesDebug(vector<HitObject*> &pvho)
 
 void Kicker::EndPlay()
 {
-   m_phitkickercircle = NULL;
+   m_phitkickercircle = nullptr;
    if (m_vertexBuffer)
    {
       m_vertexBuffer->release();
@@ -263,7 +263,7 @@ void Kicker::ExportMesh(ObjLoader& loader)
        return;
 
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    int num_vertices;
@@ -699,7 +699,7 @@ bool Kicker::LoadToken(const int id, BiffReader * const pbr)
 
 HRESULT Kicker::InitPostLoad()
 {
-   m_phitkickercircle = NULL;
+   m_phitkickercircle = nullptr;
    return S_OK;
 }
 
@@ -788,7 +788,7 @@ STDMETHODIMP Kicker::DestroyBall(int *pVal)
       _ASSERTE(g_pplayer);
       ++cnt;
       Ball * const b = m_phitkickercircle->m_pball;
-      m_phitkickercircle->m_pball = NULL;
+      m_phitkickercircle->m_pball = nullptr;
       g_pplayer->DestroyBall(b);
    }
 
@@ -806,7 +806,7 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 {
    if (g_pplayer && m_phitkickercircle && m_phitkickercircle->m_pball)
    {
-	   if (g_pplayer->m_pactiveballBC == NULL)
+	   if (g_pplayer->m_pactiveballBC == nullptr)
 	   {
 		   // Ball control most recently kicked if none currently.  
 		   g_pplayer->m_pactiveballBC = m_phitkickercircle->m_pball;
@@ -815,7 +815,7 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 	   {
 		  // Clear any existing ball control target to allow kickout to work correctly.
 		   delete g_pplayer->m_pBCTarget;
-		   g_pplayer->m_pBCTarget = NULL;
+		   g_pplayer->m_pBCTarget = nullptr;
 	   }
       float anglerad = ANGTORAD(angle);					// yaw angle, zero is along -Y axis
 
@@ -854,7 +854,7 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 #ifdef C_DYNAMIC
       m_phitkickercircle->m_pball->m_dynamic = C_DYNAMIC;
 #endif
-      m_phitkickercircle->m_pball = NULL;
+      m_phitkickercircle->m_pball = nullptr;
    }
 
    return S_OK;
@@ -919,7 +919,7 @@ STDMETHODIMP Kicker::get_Surface(BSTR *pVal)
 STDMETHODIMP Kicker::put_Surface(BSTR newVal)
 {
    char buf[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, nullptr, nullptr);
    STARTUNDO
    m_d.m_szSurface = buf;
    STOPUNDO
@@ -1088,7 +1088,7 @@ STDMETHODIMP Kicker::get_Material(BSTR *pVal)
 STDMETHODIMP Kicker::put_Material(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
 
    STARTUNDO
    m_d.m_szMaterial = buf;
@@ -1279,7 +1279,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
                m_pball = pball;
                m_lastCapturedBall = pball;
                if (pball == g_pplayer->m_pactiveballBC)
-                  g_pplayer->m_pactiveballBC = NULL;
+                  g_pplayer->m_pactiveballBC = nullptr;
             }
 
             // Don't fire the hit event if the ball was just created
@@ -1307,7 +1307,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
                   pball->m_d.m_pos.z = m_hitBBox.zlow + pball->m_d.m_radius/**pball->m_radius/radius*/;
             }
             else
-               m_pball = NULL; // make sure
+               m_pball = nullptr; // make sure
          }
       }
       else // exiting kickers volume

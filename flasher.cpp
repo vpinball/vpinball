@@ -9,8 +9,8 @@ Flasher::Flasher()
    m_dynamicIndexBuffer = 0;
    m_dynamicVertexBufferRegenerate = true;
    m_vertices = 0;
-   m_propVisual = NULL;
-   m_ptable = NULL;
+   m_propVisual = nullptr;
+   m_ptable = nullptr;
    m_numVertices = 0;
    m_numPolys = 0;
    m_minx = FLT_MAX;
@@ -93,7 +93,7 @@ HRESULT Flasher::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    InitShape();
 
-   InitVBA(fTrue, 0, NULL);
+   InitVBA(fTrue, 0, nullptr);
 
    return S_OK;
 }
@@ -205,7 +205,7 @@ void Flasher::UIRenderPass2(Sur * const psur)
    psur->SetFillColor(-1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetObject(this); // For selected formatting
-   psur->SetObject(NULL);
+   psur->SetObject(nullptr);
 
    {
       std::vector<RenderVertex> vvertex; //!! check/reuse from UIRenderPass1
@@ -796,7 +796,7 @@ STDMETHODIMP Flasher::get_ImageA(BSTR *pVal)
 STDMETHODIMP Flasher::put_ImageA(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
    m_d.m_szImageA = szImage;
 
    return S_OK;
@@ -814,7 +814,7 @@ STDMETHODIMP Flasher::get_ImageB(BSTR *pVal)
 STDMETHODIMP Flasher::put_ImageB(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
    m_d.m_szImageB = szImage;
 
    return S_OK;
@@ -862,7 +862,7 @@ STDMETHODIMP Flasher::get_Filter(BSTR *pVal)
 STDMETHODIMP Flasher::put_Filter(BSTR newVal)
 {
    char m_szFilter[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_szFilter, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_szFilter, MAXNAMEBUFFER, nullptr, nullptr);
 
    if (strcmp(m_szFilter, "Additive") == 0 && m_d.m_filter != Filter_Additive)
    {
@@ -1014,10 +1014,10 @@ void Flasher::ResetVideoCap()
     m_isVideoCap = false;
     if (m_videoCapTex)
     {
-      //  g_pplayer->m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetTexture("Texture0", (D3DTexture*)NULL); //!! ??
+      //  g_pplayer->m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetTexture("Texture0", (D3DTexture*)nullptr); //!! ??
         g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.UnloadTexture(m_videoCapTex);
         delete m_videoCapTex;
-        m_videoCapTex = NULL;
+        m_videoCapTex = nullptr;
     }
 }
 
@@ -1027,7 +1027,7 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
     if (m_videoCapWidth == 0 || m_videoCapHeight == 0) return S_FALSE; //safety.  VideoCapWidth/Height needs to be set prior to this call
 
     char szWinTitle[MAXNAMEBUFFER];
-    WideCharToMultiByteNull(CP_ACP, 0, cWinTitle, -1, szWinTitle, MAXNAMEBUFFER, NULL, NULL);
+    WideCharToMultiByteNull(CP_ACP, 0, cWinTitle, -1, szWinTitle, MAXNAMEBUFFER, nullptr, nullptr);
 
     //if PASS blank title then we treat as STOP capture and free resources.  Should be called on table1_exit
     if (szWinTitle[0] == '\0')
@@ -1038,7 +1038,7 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
 
     if (m_isVideoCap == false) {  // VideoCap has not started because no sourcewin found
         m_videoCapHwnd = ::FindWindow(0, szWinTitle);
-        if (m_videoCapHwnd == NULL)
+        if (m_videoCapHwnd == nullptr)
             return S_FALSE;
 
         //source videocap found.  lets start!
@@ -1169,7 +1169,7 @@ void Flasher::RenderDynamic()
        if (!m_inPlayState) return;
    }
    //Don't render if invisible (or DMD connection not set)
-   else if (!m_d.m_isVisible || m_dynamicVertexBuffer == NULL || m_ptable->m_reflectionEnabled || (m_d.m_isDMD && !g_pplayer->m_texdmd))
+   else if (!m_d.m_isVisible || m_dynamicVertexBuffer == nullptr || m_ptable->m_reflectionEnabled || (m_d.m_isDMD && !g_pplayer->m_texdmd))
        return;
 
    const vec4 color = convertColor(m_d.m_color, (float)m_d.m_alpha*m_d.m_intensity_scale / 100.0f);

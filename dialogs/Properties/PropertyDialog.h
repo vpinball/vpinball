@@ -10,13 +10,13 @@ class BasePropertyDialog: public CDialog
 public:
     BasePropertyDialog(const int id, const VectorProtected<ISelect> *pvsel) : CDialog(id), m_pvsel(pvsel)
     {
-        m_baseHitThresholdEdit = NULL;
-        m_baseElasticityEdit = NULL;
-        m_baseFrictionEdit = NULL;
-        m_baseScatterAngleEdit = NULL;
-        m_basePhysicsMaterialCombo = NULL;
-        m_baseMaterialCombo = NULL;
-        m_baseImageCombo = NULL;
+        m_baseHitThresholdEdit = nullptr;
+        m_baseElasticityEdit = nullptr;
+        m_baseFrictionEdit = nullptr;
+        m_baseScatterAngleEdit = nullptr;
+        m_basePhysicsMaterialCombo = nullptr;
+        m_baseMaterialCombo = nullptr;
+        m_baseImageCombo = nullptr;
         m_hCollidableCheck = 0;
         m_hHitEventCheck = 0;
         m_hOverwritePhysicsCheck = 0;

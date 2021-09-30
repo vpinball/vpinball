@@ -20,7 +20,7 @@ namespace
    {
       fprintf(f, "Process: ");
       char buffer[MAX_PATH + 1];
-      const HMODULE hModule = NULL;
+      const HMODULE hModule = nullptr;
       GetModuleFileName(hModule, buffer, MAX_PATH);
       const char* lastSeparatorPos = strrchr(buffer, '\\');
       if (lastSeparatorPos != 0)
@@ -30,16 +30,16 @@ namespace
    }
 
    typedef HRESULT(STDAPICALLTYPE *pRGV)(LPOSVERSIONINFOEXW osi);
-   static pRGV mRtlGetVersion = NULL;
+   static pRGV mRtlGetVersion = nullptr;
 
    void WriteSystemInfo(FILE* f)
    {
-      if (mRtlGetVersion == NULL)
+      if (mRtlGetVersion == nullptr)
          mRtlGetVersion = (pRGV)GetProcAddress(GetModuleHandle(TEXT("ntdll")), "RtlGetVersion"); // apparently the only really reliable solution to get the OS version (as of Win10 1803)
 
       DWORD major, minor, build;
       BYTE product;
-      if (mRtlGetVersion != NULL) // Windows 10 1803 and above
+      if (mRtlGetVersion != nullptr) // Windows 10 1803 and above
       {
          OSVERSIONINFOEXW osInfo;
          osInfo.dwOSVersionInfoSize = sizeof(osInfo);

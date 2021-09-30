@@ -54,8 +54,8 @@ class DebuggerModule :
    virtual IDispatch *GetDispatch() { return (IDispatch *)this; }
    virtual const IDispatch *GetDispatch() const { return (const IDispatch *)this; }
 
-   virtual ISelect *GetISelect() { return NULL; }
-   virtual const ISelect *GetISelect() const { return NULL; }
+   virtual ISelect *GetISelect() { return nullptr; }
+   virtual const ISelect *GetISelect() const { return nullptr; }
 
    STDMETHOD(get_Name)(BSTR *pVal);
 
@@ -458,8 +458,9 @@ public:
    STDMETHOD(get_Name)(BSTR *pVal);
    virtual IDispatch *GetDispatch() { return (IDispatch *)this; }
    virtual const IDispatch *GetDispatch() const { return (const IDispatch *)this; }
-   virtual ISelect *GetISelect() { return NULL; }
-   virtual const ISelect *GetISelect() const { return NULL; }
+
+   virtual ISelect *GetISelect() { return nullptr; }
+   virtual const ISelect *GetISelect() const { return nullptr; }
 
    //ILoadable
    virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay);

@@ -7,7 +7,7 @@
 #pragma comment(lib, "XInput.lib")
 #endif
 
-#ifdef ENABLE_SDL_INPUT //!! misses SDL_Init, SDL_Quit, etc
+#ifdef ENABLE_SDL_INPUT //!! test
 #include <sdl2/SDL.h>
 #include <sdl2/SDL_gamecontroller.h>
 #endif

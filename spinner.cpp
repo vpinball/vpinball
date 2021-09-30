@@ -5,7 +5,7 @@
 
 Spinner::Spinner()
 {
-   m_phitspinner = NULL;
+   m_phitspinner = nullptr;
    m_bracketVertexBuffer = 0;
    m_bracketIndexBuffer = 0;
    m_plateVertexBuffer = 0;
@@ -108,7 +108,7 @@ HRESULT Spinner::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    SetDefaults(fromMouseClick);
 
-   InitVBA(fTrue, 0, NULL);
+   InitVBA(fTrue, 0, nullptr);
 
    return S_OK;
 }
@@ -253,7 +253,7 @@ void Spinner::GetHitShapesDebug(vector<HitObject*> &pvho)
 void Spinner::EndPlay()
 {
    IEditable::EndPlay();
-   m_phitspinner = NULL;
+   m_phitspinner = nullptr;
 
    if (m_bracketVertexBuffer)
    {
@@ -280,7 +280,7 @@ void Spinner::EndPlay()
 void Spinner::ExportMesh(ObjLoader& loader)
 {
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
    std::vector<Vertex3D_NoTex2> transformedVertices;
    vector<HitObject*> dummyHitObj;
 
@@ -356,7 +356,7 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
    rotzMat.Multiply(fullMatrix, fullMatrix);
 
    Vertex3D_NoTex2 *buf;
-   if (vertBuffer == NULL)
+   if (vertBuffer == nullptr)
       m_plateVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
    else
       buf = vertBuffer;
@@ -378,7 +378,7 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
       buf[i].tu = spinnerPlate[i].tu;
       buf[i].tv = spinnerPlate[i].tv;
    }
-   if (vertBuffer == NULL)
+   if (vertBuffer == nullptr)
       m_plateVertexBuffer->unlock();
 }
 
@@ -394,7 +394,7 @@ void Spinner::RenderDynamic()
    if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
       return;
 
-   UpdatePlate(NULL);
+   UpdatePlate(nullptr);
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
@@ -473,7 +473,7 @@ void Spinner::RenderSetup()
    pd3dDevice->CreateVertexBuffer(spinnerPlateNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_plateVertexBuffer);
 
    m_vertexBuffer_spinneranimangle = -FLT_MAX;
-   UpdatePlate(NULL);
+   UpdatePlate(nullptr);
 }
 
 void Spinner::RenderStatic()
@@ -691,7 +691,7 @@ STDMETHODIMP Spinner::get_Material(BSTR *pVal)
 STDMETHODIMP Spinner::put_Material(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
    m_d.m_szMaterial = buf;
 
    return S_OK;
@@ -709,7 +709,7 @@ STDMETHODIMP Spinner::get_Image(BSTR *pVal)
 STDMETHODIMP Spinner::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -761,7 +761,7 @@ STDMETHODIMP Spinner::get_Surface(BSTR *pVal)
 STDMETHODIMP Spinner::put_Surface(BSTR newVal)
 {
    char buf[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, nullptr, nullptr);
    m_d.m_szSurface = buf;
 
    return S_OK;

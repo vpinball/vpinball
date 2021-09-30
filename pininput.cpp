@@ -36,11 +36,11 @@ PinInput::PinInput()
 
    //InputControlRun = 0;
 
-   m_pDI = NULL;
+   m_pDI = nullptr;
 #ifdef USE_DINPUT_FOR_KEYBOARD
-   m_pKeyboard = NULL;
+   m_pKeyboard = nullptr;
 #endif
-   m_pMouse = NULL;
+   m_pMouse = nullptr;
 
    leftMouseButtonDown = false;
    rightMouseButtonDown = false;
@@ -52,7 +52,7 @@ PinInput::PinInput()
 
    e_JoyCnt = 0;
    for (int k = 0; k < PININ_JOYMXCNT; ++k)
-      m_pJoystick[k] = NULL;
+      m_pJoystick[k] = nullptr;
 
    uShockDevice = -1;	// only one uShock device
    uShockType = 0;
@@ -269,11 +269,11 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 
    HRESULT hr;
 
-   hr = ppinput->m_pDI->CreateDevice(lpddi->guidInstance, &ppinput->m_pJoystick[ppinput->e_JoyCnt], NULL);
+   hr = ppinput->m_pDI->CreateDevice(lpddi->guidInstance, &ppinput->m_pJoystick[ppinput->e_JoyCnt], nullptr);
    if (FAILED(hr))
    {
-      ppinput->m_pJoystick[ppinput->e_JoyCnt] = NULL; // make sure no garbage
-      return DIENUM_CONTINUE;                         // try for another joystick
+      ppinput->m_pJoystick[ppinput->e_JoyCnt] = nullptr; // make sure no garbage
+      return DIENUM_CONTINUE;                            // try for another joystick
    }
 
    hr = ppinput->m_pJoystick[ppinput->e_JoyCnt]->GetProperty(DIPROP_PRODUCTNAME, &dstr.diph);
@@ -352,7 +352,7 @@ void PinInput::PushQueue(DIDEVICEOBJECTDATA * const data, const unsigned int app
 const DIDEVICEOBJECTDATA *PinInput::GetTail(/*const U32 curr_sim_msec*/)
 {
    if (m_head == m_tail)
-      return NULL; // queue empty?
+      return nullptr; // queue empty?
 
    const DIDEVICEOBJECTDATA * const ptr = &m_diq[m_tail];
 
@@ -363,7 +363,7 @@ const DIDEVICEOBJECTDATA *PinInput::GetTail(/*const U32 curr_sim_msec*/)
 
       return ptr;
    }
-   //else return NULL;
+   //else return nullptr;
 }
 
 void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
@@ -781,16 +781,20 @@ void PinInput::Init(const HWND hwnd)
 {
    m_hwnd = hwnd;
 
+#if defined(ENABLE_SDL_INPUT)
+   SDL_Init(SDL_INIT_JOYSTICK);
+#endif
+
    HRESULT hr;
 #ifdef USE_DINPUT8
-   hr = DirectInput8Create(g_pvp->theInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&m_pDI, NULL);
+   hr = DirectInput8Create(g_pvp->theInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&m_pDI, nullptr);
 #else
-   hr = DirectInputCreate(g_pvp->theInstance, DIRECTINPUT_VERSION, &m_pDI, NULL);
+   hr = DirectInputCreate(g_pvp->theInstance, DIRECTINPUT_VERSION, &m_pDI, nullptr);
 #endif
 
 #ifdef USE_DINPUT_FOR_KEYBOARD
    // Create keyboard device
-   hr = m_pDI->CreateDevice(GUID_SysKeyboard, &m_pKeyboard, NULL); //Standard Keyboard device
+   hr = m_pDI->CreateDevice(GUID_SysKeyboard, &m_pKeyboard, nullptr); //Standard Keyboard device
 
    hr = m_pKeyboard->SetDataFormat(&c_dfDIKeyboard);
 
@@ -809,7 +813,7 @@ void PinInput::Init(const HWND hwnd)
    if (m_enableMouseInPlayer)
    {
       // Create mouse device
-      if (!FAILED(m_pDI->CreateDevice(GUID_SysMouse, &m_pMouse, NULL)))
+      if (!FAILED(m_pDI->CreateDevice(GUID_SysMouse, &m_pMouse, nullptr)))
       {
          hr = m_pMouse->SetDataFormat(&c_dfDIMouse2);
 
@@ -825,7 +829,7 @@ void PinInput::Init(const HWND hwnd)
          hr = m_pMouse->SetProperty(DIPROP_BUFFERSIZE, &dipdwm.diph);
       }
       else
-         m_pMouse = NULL;
+         m_pMouse = nullptr;
    }
 
    /* Disable Sticky Keys */
@@ -901,7 +905,7 @@ void PinInput::Init(const HWND hwnd)
    gMixerKeyUp = false;
 
    //InputControlRun = 1; //0==stalled, 1==run,  0 < shutting down, 2==terminated
-   //_beginthread( InputControlProcess, 0, NULL );
+   //_beginthread( InputControlProcess, 0, nullptr );
 }
 
 
@@ -916,6 +920,10 @@ void PinInput::UnInit()
    //if (!InputControlRun)	//0 == stalled, 1==run,  0 < shutting down, 2==terminated
    //{exit (-1500);}
 
+#if defined(ENABLE_SDL_INPUT)
+   SDL_Quit();
+#endif
+
 #ifdef USE_DINPUT_FOR_KEYBOARD
    if (m_pKeyboard)
    {
@@ -923,7 +931,7 @@ void PinInput::UnInit()
       // the app tried to exit while the device is still acquired.
       m_pKeyboard->Unacquire();
       m_pKeyboard->Release();
-      m_pKeyboard = NULL;
+      m_pKeyboard = nullptr;
    }
 #endif
 
@@ -931,7 +939,7 @@ void PinInput::UnInit()
    {
       m_pMouse->Unacquire();
       m_pMouse->Release();
-      m_pMouse = NULL;
+      m_pMouse = nullptr;
    }
 
    // restore the state of the sticky keys
@@ -944,14 +952,14 @@ void PinInput::UnInit()
          // the app tried to exit while the device is still acquired.
          m_pJoystick[k]->Unacquire();
          m_pJoystick[k]->Release();
-         m_pJoystick[k] = NULL;
+         m_pJoystick[k] = nullptr;
       }
 
    // Release any DirectInput objects.
    if (m_pDI)
    {
       m_pDI->Release();
-      m_pDI = NULL;
+      m_pDI = nullptr;
    }
 
    m_head = m_tail = 0;
@@ -1056,7 +1064,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          m_leftkey_down_usec = usec();
          m_leftkey_down_frame = g_pplayer->m_overall_frames;
          delete g_pplayer->m_pBCTarget;
-         g_pplayer->m_pBCTarget = NULL;
+         g_pplayer->m_pBCTarget = nullptr;
       }
 
       if ((keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] || keycode == g_pplayer->m_rgKeys[eRightFlipperKey]) && dispid == DISPID_GameEvents_KeyDown)
@@ -1995,7 +2003,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
 int PinInput::GetNextKey() // return last valid keyboard key 
 {
 #ifdef USE_DINPUT_FOR_KEYBOARD
-   if (m_pKeyboard != NULL)
+   if (m_pKeyboard != nullptr)
    {
       DIDEVICEOBJECTDATA didod[1];  // Receives buffered data
       DWORD dwElements;

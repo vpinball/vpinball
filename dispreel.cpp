@@ -19,7 +19,7 @@ HRESULT DispReel::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_d.m_v2.x = x + getBoxWidth();
    m_d.m_v2.y = y + getBoxHeight();
 
-   return InitVBA(fTrue, 0, NULL);
+   return InitVBA(fTrue, 0, nullptr);
 }
 
 // set the defaults for the objects persistent data (m_d.*) in case this
@@ -136,7 +136,7 @@ void DispReel::UIRenderPass2(Sur * const psur)
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetFillColor(-1);
    psur->SetObject(this);
-   psur->SetObject(NULL);
+   psur->SetObject(nullptr);
 
    // draw background box
    psur->Rectangle(m_d.m_v1.x, m_d.m_v1.y, m_d.m_v2.x, m_d.m_v2.y);
@@ -700,7 +700,7 @@ STDMETHODIMP DispReel::get_Image(BSTR *pVal)
 STDMETHODIMP DispReel::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -737,7 +737,7 @@ STDMETHODIMP DispReel::get_Sound(BSTR *pVal)
 STDMETHODIMP DispReel::put_Sound(BSTR newVal)
 {
    char buf[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, nullptr, nullptr);
    m_d.m_szSound = buf;
 
    return S_OK;

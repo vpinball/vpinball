@@ -1091,7 +1091,7 @@ void KeysConfigDialog::StartTimer(int nID)
 
         pksw->pi.GetNextKey(); // Clear the current buffer out
 
-        pksw->m_timerid = ::SetTimer(GetHwnd(), 100, 50, NULL);
+        pksw->m_timerid = ::SetTimer(GetHwnd(), 100, 50, nullptr);
         pksw->hwndKeyControl = hwndKeyWindow;
         ::SetWindowText(pksw->hwndKeyControl, "????");
         while (pksw->pi.GetNextKey() != NULL) //clear entire keyboard buffer contents

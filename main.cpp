@@ -71,7 +71,7 @@ typedef enum ORIENTATION_PREFERENCE {
 } ORIENTATION_PREFERENCE;
 typedef BOOL(WINAPI *pSDARP)(ORIENTATION_PREFERENCE orientation);
 
-static pSDARP SetDisplayAutoRotationPreferences = NULL;
+static pSDARP SetDisplayAutoRotationPreferences = nullptr;
 #endif
 
 #if !defined(DEBUG_XXX) && !defined(_CRTDBG_MAP_ALLOC) //&& (!defined(__STDCPP_DEFAULT_NEW_ALIGNMENT__) || (__STDCPP_DEFAULT_NEW_ALIGNMENT__ < 16))
@@ -181,7 +181,7 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
       i++;
    }
    _argv[j] = '\0';
-   argv[argc] = NULL;
+   argv[argc] = nullptr;
 
    (*_argc) = argc;
    return argv;
@@ -212,7 +212,7 @@ public:
    {
       _Module.Term();
       CoUninitialize();
-      g_pvp = NULL;
+      g_pvp = nullptr;
 
 #ifdef _CRTDBG_MAP_ALLOC
 #ifdef DEBUG_XXX  //disable this in perference to DevPartner
@@ -243,9 +243,9 @@ public:
       m_vpinball.m_logicalNumberOfProcessors = sysinfo.dwNumberOfProcessors; //!! this ignores processor groups, so if at some point we need extreme multi threading, implement this in addition!
 
 #if _WIN32_WINNT >= 0x0400 & defined(_ATL_FREE_THREADED)
-      const HRESULT hRes = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+      const HRESULT hRes = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 #else
-      const HRESULT hRes = CoInitialize(NULL);
+      const HRESULT hRes = CoInitialize(nullptr);
 #endif
       _ASSERTE(SUCCEEDED(hRes));
       _Module.Init(ObjectMap, m_vpinball.theInstance, &LIBID_VPinballLib);
@@ -422,16 +422,16 @@ public:
       char szFileName[MAXSTRING];
       if (GetModuleFileName(m_vpinball.theInstance, szFileName, MAXSTRING))
       {
-         ITypeLib *ptl = NULL;
+         ITypeLib *ptl = nullptr;
          MAKE_WIDEPTR_FROMANSI(wszFileName, szFileName);
          if (SUCCEEDED(LoadTypeLib(wszFileName, &ptl)))
          {
             // first try to register system-wide (if running as admin)
-            HRESULT hr = RegisterTypeLib(ptl, wszFileName, NULL);
+            HRESULT hr = RegisterTypeLib(ptl, wszFileName, nullptr);
             if (!SUCCEEDED(hr))
             {
                // if failed, register only for current user
-               hr = RegisterTypeLibForUser(ptl, wszFileName, NULL);
+               hr = RegisterTypeLibForUser(ptl, wszFileName, nullptr);
                if (!SUCCEEDED(hr))
                   m_vpinball.MessageBox("Could not register type library. Try running Visual Pinball as administrator.", "Error", MB_ICONWARNING);
             }
@@ -488,7 +488,7 @@ public:
 
        m_vpinball.AddRef();
        g_pvp = &m_vpinball;
-       m_vpinball.Create(NULL);
+       m_vpinball.Create(nullptr);
        g_haccel = LoadAccelerators(m_vpinball.theInstance, MAKEINTRESOURCE(IDR_VPACCEL));
 
        if (file)
@@ -558,7 +558,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
    catch (const CException &e)
    {
       // Display the exception and quit
-      MessageBox(NULL, e.GetText(), AtoT(e.what()), MB_ICONERROR);
+      MessageBox(nullptr, e.GetText(), AtoT(e.what()), MB_ICONERROR);
 
       retval = -1;
    }

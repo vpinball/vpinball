@@ -12,7 +12,7 @@ void SpinnerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->size(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemSpinner))
+        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemSpinner))
             continue;
         Spinner *const spinner = (Spinner *)m_pvsel->ElementAt(i);
 
@@ -29,7 +29,7 @@ void SpinnerPhysicsProperty::UpdateProperties(const int dispid)
 {
     for (int i = 0; i < m_pvsel->size(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemSpinner))
+        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemSpinner))
             continue;
         Spinner *const spinner = (Spinner *)m_pvsel->ElementAt(i);
 

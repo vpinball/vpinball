@@ -8,11 +8,11 @@ Ball::Ball()
    ballID++;
 
    m_coll.m_ball = this;   // TODO: this needs to move somewhere else
-   m_coll.m_obj = NULL;
-   m_pballex = NULL;
-   m_d.m_vpVolObjs = NULL; // should be NULL ... only real balls have this value
-   m_pinballEnv = NULL;
-   m_pinballDecal = NULL;
+   m_coll.m_obj = nullptr;
+   m_pballex = nullptr;
+   m_d.m_vpVolObjs = nullptr; // should be nullptr ... only real balls have this value
+   m_pinballEnv = nullptr;
+   m_pinballDecal = nullptr;
    m_lastEventPos.x = m_lastEventPos.y = m_lastEventPos.z = -10000.0f; // last pos is far far away
    m_d.m_frozen = false;
    m_color = RGB(255, 255, 255);
@@ -58,7 +58,7 @@ void Ball::Init(const float mass)
    m_visible = true;
    m_decalMode = g_pplayer->m_ptable->m_BallDecalMode;
 
-   m_coll.m_obj = NULL;
+   m_coll.m_obj = nullptr;
 #ifdef C_DYNAMIC
    m_dynamic = C_DYNAMIC; // assume dynamic
 #endif
@@ -76,7 +76,7 @@ void Ball::Init(const float mass)
        if (g_pplayer->m_ptable->m_ballImage.empty())
        {
            m_image.clear();
-           m_pinballEnv = NULL;
+           m_pinballEnv = nullptr;
        }
        else
        {
@@ -93,7 +93,7 @@ void Ball::Init(const float mass)
        if (g_pplayer->m_ptable->m_ballImageDecal.empty())
        {
            m_imageDecal.clear();
-           m_pinballDecal = NULL;
+           m_pinballDecal = nullptr;
        }
        else
        {
@@ -534,7 +534,7 @@ void Ball::UpdateVelocities()
 {
    if (!m_d.m_frozen)  // Gravity
    {
-      if (g_pplayer->m_ballControl && this == g_pplayer->m_pactiveballBC && g_pplayer->m_pBCTarget != NULL)
+      if (g_pplayer->m_ballControl && this == g_pplayer->m_pactiveballBC && g_pplayer->m_pBCTarget != nullptr)
       {
          m_d.m_vel.x *= 0.5f;  // Null out most of the X/Y velocity, want a little bit so the ball can sort of find its way out of obstacles.
          m_d.m_vel.y *= 0.5f;

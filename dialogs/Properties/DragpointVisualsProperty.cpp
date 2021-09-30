@@ -14,21 +14,21 @@ DragpointVisualsProperty::DragpointVisualsProperty(int id, const VectorProtected
 
 void DragpointVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    const DragPoint *prev = NULL;
+    const DragPoint *prev = nullptr;
 
     for (int i = 0; i < m_pvsel->size(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDragPoint))
+        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDragPoint))
             continue;
         const DragPoint * const dpoint = (DragPoint *)m_pvsel->ElementAt(i);
 
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 3), dpoint->m_smooth);
-        if (prev!=NULL)
+        if (prev!=nullptr)
         {
             if(prev->m_v.x!=dpoint->m_v.x && (dispid==1 || dispid==-1))
-                m_posXEdit.SetWindowText(NULL);
+                m_posXEdit.SetWindowText(nullptr);
             if (prev->m_v.y != dpoint->m_v.y && (dispid == 2 || dispid == -1))
-                m_posYEdit.SetWindowText(NULL);
+                m_posYEdit.SetWindowText(nullptr);
         }
         else
         {
@@ -50,8 +50,8 @@ void DragpointVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
                 PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 4), dpoint->m_autoTexture);
             if (dispid == 5 || dispid == -1)
             {
-                if (prev != NULL && prev->m_texturecoord != dpoint->m_texturecoord)
-                    m_textureCoordEdit.SetWindowText(NULL);
+                if (prev != nullptr && prev->m_texturecoord != dpoint->m_texturecoord)
+                    m_textureCoordEdit.SetWindowText(nullptr);
                 else
                     PropertyDialog::SetFloatTextbox(m_textureCoordEdit, dpoint->m_texturecoord);
             }
@@ -65,7 +65,7 @@ void DragpointVisualsProperty::UpdateProperties(const int dispid)
 {
     for (int i = 0; i < m_pvsel->size(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDragPoint))
+        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDragPoint))
             continue;
         DragPoint * const dpoint = (DragPoint *)m_pvsel->ElementAt(i);
 
@@ -193,7 +193,7 @@ BOOL DragpointVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
             {
                 for (int i = 0; i < m_pvsel->size(); i++)
                 {
-                    if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDragPoint))
+                    if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDragPoint))
                         continue;
                     DragPoint * const dpoint = (DragPoint *)m_pvsel->ElementAt(i);
                     dpoint->DoCommand(ID_POINTMENU_SMOOTH, 0, 0);

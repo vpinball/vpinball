@@ -53,7 +53,7 @@ void MaterialDialog::setItemText(int id, float value)
 
 MaterialDialog::MaterialDialog() : CDialog(IDD_MATERIALDIALOG)
 {
-    m_hMaterialList = NULL;
+    m_hMaterialList = nullptr;
 }
 
 BOOL MaterialDialog::OnInitDialog()
@@ -530,7 +530,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             case LVN_ENDLABELEDIT:
             {
                NMLVDISPINFO * const pinfo = (NMLVDISPINFO *)lParam;
-               if (pinfo->item.pszText == NULL || pinfo->item.pszText[0] == '\0')
+               if (pinfo->item.pszText == nullptr || pinfo->item.pszText[0] == '\0')
                {
                   return FALSE;
                }
@@ -859,7 +859,7 @@ void MaterialDialog::LoadPosition()
 
     const int w = LoadValueIntWithDefault("Editor", "MaterialMngWidth", 1000);
     const int h = LoadValueIntWithDefault("Editor", "MaterialMngHeight", 800);
-    SetWindowPos(NULL, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
+    SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
 void MaterialDialog::SavePosition()

@@ -14,7 +14,7 @@ struct DSAudioDevice
    string module;
 
    DSAudioDevice() {
-      guid = NULL;
+      guid = nullptr;
    }
    ~DSAudioDevice() {
       if (guid)
@@ -135,7 +135,7 @@ public:
 class PinDirectSound
 {
 public:
-   PinDirectSound() : m_pDS(NULL), m_pDSListener(NULL) {}
+   PinDirectSound() : m_pDS(nullptr), m_pDSListener(nullptr) {}
    ~PinDirectSound();
 
    void InitDirectSound(const HWND hwnd, const bool IsBackglass);
@@ -153,7 +153,7 @@ private:
 class AudioMusicPlayer
 {
 public:
-	AudioMusicPlayer() : m_pbackglassds(NULL) {}
+	AudioMusicPlayer() : m_pbackglassds(nullptr) {}
 	~AudioMusicPlayer() { if (m_pbackglassds != &m_pds) delete m_pbackglassds; }
 
 	void InitPinDirectSound(const HWND hwnd)
@@ -250,7 +250,7 @@ public:
 
 		ClearStoppedCopiedWavs();
 
-		PinDirectSoundWavCopy * ppsc = NULL;
+		PinDirectSoundWavCopy * ppsc = nullptr;
 		bool foundsame = false;
 		if (usesame)
 		{
@@ -266,7 +266,7 @@ public:
 			}
 		}
 
-		if (ppsc == NULL)
+		if (ppsc == nullptr)
 			ppsc = new PinDirectSoundWavCopy(pps);
 
 		if (ppsc->m_pDSBuffer)

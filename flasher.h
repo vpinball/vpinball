@@ -103,7 +103,7 @@ public:
    {
       Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
       Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
-      Texture *tex = NULL;
+      Texture *tex = nullptr;
       if (pinA && !pinB)
          tex = pinA;
       else if (!pinA && pinB)
@@ -164,8 +164,8 @@ private:
    int m_videoCapWidth = 0;
    int m_videoCapHeight = 0;
    RECT m_videoSourceRect;
-   HWND m_videoCapHwnd = NULL;
-   BaseTexture* m_videoCapTex = NULL;
+   HWND m_videoCapHwnd = nullptr;
+   BaseTexture* m_videoCapTex = nullptr;
 
 // IFlasher
 public:

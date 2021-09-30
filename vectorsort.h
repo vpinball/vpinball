@@ -111,7 +111,7 @@ public:
          return vector<T>::data()[i];
       }
 
-      return NULL;
+      return nullptr;
    }
 
    inline void RemoveElementAt(const int iItem)

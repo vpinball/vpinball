@@ -2,9 +2,9 @@
 
 Plunger::Plunger()
 {
-   m_phitplunger = NULL;
-   m_vertexBuffer = NULL;
-   m_indexBuffer = NULL;
+   m_phitplunger = nullptr;
+   m_vertexBuffer = nullptr;
+   m_indexBuffer = nullptr;
 }
 
 Plunger::~Plunger()
@@ -12,12 +12,12 @@ Plunger::~Plunger()
    if (m_vertexBuffer)
    {
       m_vertexBuffer->release();
-      m_vertexBuffer = NULL;
+      m_vertexBuffer = nullptr;
    }
    if (m_indexBuffer)
    {
       m_indexBuffer->release();
-      m_indexBuffer = NULL;
+      m_indexBuffer = nullptr;
    }
 }
 
@@ -29,7 +29,7 @@ HRESULT Plunger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_d.m_v.y = y;
 
    SetDefaults(fromMouseClick);
-   return InitVBA(fTrue, 0, NULL);
+   return InitVBA(fTrue, 0, nullptr);
 }
 
 void Plunger::SetDefaults(bool fromMouseClick)
@@ -168,18 +168,18 @@ void Plunger::GetTimers(vector<HitTimer*> &pvht)
 
 void Plunger::EndPlay()
 {
-   m_phitplunger = NULL;       // possible memory leak here?
+   m_phitplunger = nullptr;       // possible memory leak here?
 
    IEditable::EndPlay();
    if (m_vertexBuffer)
    {
       m_vertexBuffer->release();
-      m_vertexBuffer = NULL;
+      m_vertexBuffer = nullptr;
    }
    if (m_indexBuffer)
    {
       m_indexBuffer->release();
-      m_indexBuffer = NULL;
+      m_indexBuffer = nullptr;
    }
 }
 
@@ -1178,7 +1178,7 @@ STDMETHODIMP Plunger::get_Material(BSTR *pVal)
 STDMETHODIMP Plunger::put_Material(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
    m_d.m_szMaterial = buf;
 
    return S_OK;
@@ -1196,7 +1196,7 @@ STDMETHODIMP Plunger::get_Image(BSTR *pVal)
 STDMETHODIMP Plunger::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -1233,7 +1233,7 @@ STDMETHODIMP Plunger::get_TipShape(BSTR *pVal)
 
 STDMETHODIMP Plunger::put_TipShape(BSTR newVal)
 {
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_d.m_szTipShape, MAXTIPSHAPE, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_d.m_szTipShape, MAXTIPSHAPE, nullptr, nullptr);
 
    return S_OK;
 }
@@ -1437,7 +1437,7 @@ STDMETHODIMP Plunger::get_Surface(BSTR *pVal)
 STDMETHODIMP Plunger::put_Surface(BSTR newVal)
 {
    char buf[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, nullptr, nullptr);
    m_d.m_szSurface = buf;
 
    return S_OK;

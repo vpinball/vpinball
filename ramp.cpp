@@ -15,11 +15,11 @@ Ramp::Ramp()
    m_d.m_wireDiameter = 6.0f;
    m_d.m_wireDistanceX = 38.0f;
    m_d.m_wireDistanceY = 88.0f;
-   m_propPosition = NULL;
-   m_propPhysics = NULL;
+   m_propPosition = nullptr;
+   m_propPhysics = nullptr;
    m_d.m_hitEvent = false;
    m_d.m_overwritePhysics = true;
-   m_rgheightInit = NULL;
+   m_rgheightInit = nullptr;
 }
 
 Ramp::~Ramp()
@@ -79,7 +79,7 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
       m_vdpoint.push_back(pdp);
    }
 
-   InitVBA(fTrue, 0, NULL);
+   InitVBA(fTrue, 0, nullptr);
 
    return S_OK;
 }
@@ -161,7 +161,7 @@ void Ramp::UIRenderPass1(Sur * const psur)
    psur->SetObject(this);
 
    int cvertex;
-   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, NULL, NULL, NULL, HIT_SHAPE_DETAIL_LEVEL, false);
+   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, nullptr, nullptr, nullptr, nullptr, HIT_SHAPE_DETAIL_LEVEL, false);
    psur->Polygon(rgvLocal, cvertex * 2);
 
    delete[] rgvLocal;
@@ -173,12 +173,12 @@ void Ramp::UIRenderPass2(Sur * const psur)
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
    psur->SetObject(this);
-   psur->SetObject(NULL); // NULL so this won't be hit-tested
+   psur->SetObject(nullptr); // nullptr so this won't be hit-tested
 
    bool *pfCross;
    Vertex2D *middlePoints;
    int cvertex;
-   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints, HIT_SHAPE_DETAIL_LEVEL, false);
+   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, nullptr, &pfCross, nullptr, &middlePoints, HIT_SHAPE_DETAIL_LEVEL, false);
    psur->Polygon(rgvLocal, cvertex * 2);
 
    if (isHabitrail())
@@ -242,12 +242,12 @@ void Ramp::RenderBlueprint(Sur *psur, const bool solid)
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
    psur->SetObject(this);
-   psur->SetObject(NULL); // NULL so this won't be hit-tested
+   psur->SetObject(nullptr); // nullptr so this won't be hit-tested
 
    bool *pfCross;
    Vertex2D *middlePoints;
    int cvertex;
-   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints, HIT_SHAPE_DETAIL_LEVEL, false);
+   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, nullptr, &pfCross, nullptr, &middlePoints, HIT_SHAPE_DETAIL_LEVEL, false);
    psur->Polygon(rgvLocal, cvertex * 2);
 
    if (isHabitrail())
@@ -280,7 +280,7 @@ void Ramp::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
    //!! meh, this is delivering something loosely related to the bounding vertices, but its only used in the cam fitting code so far, so keep for legacy reasons
    float *rgheight1;
    int cvertex;
-   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL, HIT_SHAPE_DETAIL_LEVEL, true);
+   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, nullptr, nullptr, nullptr, HIT_SHAPE_DETAIL_LEVEL, true);
 
    //pvvertex3D.reserve(pvvertex3D.size() + cvertex * 2);
    Vertex3Ds bbox_min(FLT_MAX, FLT_MAX, FLT_MAX);
@@ -575,7 +575,7 @@ void Ramp::GetHitShapes(vector<HitObject*> &pvho)
 {
    float *rgheight1;
    int cvertex;
-   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL, HIT_SHAPE_DETAIL_LEVEL, true);
+   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, nullptr, nullptr, nullptr, HIT_SHAPE_DETAIL_LEVEL, true);
 
    float wallheightright, wallheightleft;
 
@@ -657,7 +657,7 @@ void Ramp::GetHitShapes(vector<HitObject*> &pvho)
 
    // Add hit triangles for the ramp floor.
    {
-      const HitTriangle *ph3dpolyOld = NULL;
+      const HitTriangle *ph3dpolyOld = nullptr;
       const Vertex2D *pv3, *pv4;
 
       for (int i = 0; i < (cvertex - 1); i++)
@@ -1099,14 +1099,14 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
        delete [] m_rgheightInit;
 
    int splinePoints;
-   const Vertex2D * const rgvLocal = GetRampVertex(splinePoints, &m_rgheightInit, NULL, NULL, (m_d.m_type != RampType1Wire) ? NULL : &middlePoints, -1, false);
+   const Vertex2D * const rgvLocal = GetRampVertex(splinePoints, &m_rgheightInit, nullptr, nullptr, (m_d.m_type != RampType1Wire) ? nullptr : &middlePoints, -1, false);
 
    const int numRings = splinePoints;
    const int numSegments = accuracy;
    m_numVertices = numRings*numSegments;
    m_numIndices = 6 * m_numVertices; //m_numVertices*2+2;
 
-   if (*meshBuf1 == NULL)
+   if (*meshBuf1 == nullptr)
       *meshBuf1 = new Vertex3D_NoTex2[m_numVertices];
 
    Vertex2D *tmpPoints = new Vertex2D[splinePoints];
@@ -1114,13 +1114,13 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
       tmpPoints[i] = rgvLocal[splinePoints * 2 - i - 1];
 
    m_vertBuffer = new Vertex3D_NoTex2[m_numVertices];
-   m_vertBuffer2 = NULL;
+   m_vertBuffer2 = nullptr;
    m_meshIndices.resize(m_numIndices);
 
    if (m_d.m_type != RampType1Wire)
    {
       m_vertBuffer2 = new Vertex3D_NoTex2[m_numVertices];
-      if (*meshBuf2 == NULL)
+      if (*meshBuf2 == nullptr)
          *meshBuf2 = new Vertex3D_NoTex2[m_numVertices];
    }
 
@@ -1183,7 +1183,7 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
 
    // not necessary to reorder
    /*WORD* const tmp = reorderForsyth(m_meshIndices, m_numVertices);
-   if (tmp != NULL)
+   if (tmp != nullptr)
    {
    memcpy(m_meshIndices.data(), tmp, m_meshIndices.size()*sizeof(WORD));
    delete[] tmp;
@@ -1202,8 +1202,8 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
 void Ramp::PrepareHabitrail()
 {
    m_dynamicVertexBufferRegenerate = false;
-   Vertex3D_NoTex2 *tmpBuf1 = NULL;
-   Vertex3D_NoTex2 *tmpBuf2 = NULL;
+   Vertex3D_NoTex2 *tmpBuf1 = nullptr;
+   Vertex3D_NoTex2 *tmpBuf2 = nullptr;
    GenerateWireMesh(&tmpBuf1, &tmpBuf2);
 
    if (m_dynamicVertexBuffer)
@@ -1607,7 +1607,7 @@ STDMETHODIMP Ramp::get_Material(BSTR *pVal)
 STDMETHODIMP Ramp::put_Material(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
    m_d.m_szMaterial = buf;
 
    return S_OK;
@@ -1643,7 +1643,7 @@ STDMETHODIMP Ramp::get_Image(BSTR *pVal)
 STDMETHODIMP Ramp::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -1970,7 +1970,7 @@ STDMETHODIMP Ramp::get_PhysicsMaterial(BSTR *pVal)
 STDMETHODIMP Ramp::put_PhysicsMaterial(BSTR newVal)
 {
     char buf[MAXNAMEBUFFER];
-    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
     m_d.m_szPhysicsMaterial = buf;
 
     return S_OK;
@@ -1996,11 +1996,11 @@ void Ramp::ExportMesh(ObjLoader& loader)
    if (m_d.m_visible)
    {
       char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-      WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
+      WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
       loader.WriteObjectName(name);
       if (!isHabitrail())
       {
-         Vertex3D_NoTex2 *rampMesh = NULL;
+         Vertex3D_NoTex2 *rampMesh = nullptr;
          GenerateRampMesh(&rampMesh);
          const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
          const int listLength = (m_rampVertex - 1) * 6;
@@ -2040,7 +2040,7 @@ void Ramp::ExportMesh(ObjLoader& loader)
       }
       else
       {
-         Vertex3D_NoTex2 *tmpBuf1 = NULL, *tmpBuf2 = NULL;
+         Vertex3D_NoTex2 *tmpBuf1 = nullptr, *tmpBuf2 = nullptr;
          GenerateWireMesh(&tmpBuf1, &tmpBuf2);
          const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
          if (m_d.m_type == RampType1Wire)
@@ -2273,8 +2273,8 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
 {
    const Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    float *rgheight;
-   float *rgratio = NULL;
-   const Vertex2D * const rgvLocal = GetRampVertex(m_rampVertex, &rgheight, NULL, (m_d.m_imagealignment == ImageModeWorld) ? NULL : &rgratio, NULL, -1, true);
+   float *rgratio = nullptr;
+   const Vertex2D * const rgvLocal = GetRampVertex(m_rampVertex, &rgheight, nullptr, (m_d.m_imagealignment == ImageModeWorld) ? nullptr : &rgratio, nullptr, -1, true);
 
    const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
    const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
@@ -2283,7 +2283,7 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
    const unsigned int rgioffset = (m_rampVertex - 1) * 6;
    m_numIndices = rgioffset * 3; // to draw the full ramp in one go (could only use *1, and draw three times with offsets into vertices)
 
-   if (*meshBuf == NULL)
+   if (*meshBuf == nullptr)
    {
       *meshBuf = new Vertex3D_NoTex2[m_numVertices * 3];
    }
@@ -2463,7 +2463,7 @@ void Ramp::GenerateVertexBuffer()
 {
    m_dynamicVertexBufferRegenerate = false;
 
-   Vertex3D_NoTex2 *tmpBuffer = NULL;
+   Vertex3D_NoTex2 *tmpBuffer = nullptr;
    GenerateRampMesh(&tmpBuffer);
 
    if (m_dynamicVertexBuffer)
@@ -2480,7 +2480,7 @@ void Ramp::GenerateVertexBuffer()
 
    // not necessary to reorder //!! also potentially unsafe, as walls can be disabled, so order is important!
    /*WORD* const tmp = reorderForsyth(m_meshIndices, m_numVertices * 3);
-   if (tmp != NULL)
+   if (tmp != nullptr)
    {
    memcpy(m_meshIndices.data(), tmp, m_meshIndices.size()*sizeof(WORD));
    delete[] tmp;

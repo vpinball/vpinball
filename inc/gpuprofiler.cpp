@@ -16,10 +16,10 @@ CGpuProfiler::CGpuProfiler ()
 :   m_init(false),
 	m_iFrameQuery(0),
 	m_iFrameCollect(-1),
-	m_frequencyQuery(NULL),
+	m_frequencyQuery(nullptr),
 	m_frameCountAvg(0),
 	m_tBeginAvg(0.0),
-	m_device(NULL)
+	m_device(nullptr)
 {
 	memset(m_apQueryTsDisjoint, 0, sizeof(m_apQueryTsDisjoint));
 	memset(m_apQueryTs, 0, sizeof(m_apQueryTs));
@@ -37,9 +37,9 @@ bool CGpuProfiler::Init (IDirect3DDevice9 * const pDevice)
 {
 	m_init = true;
 
-	const HRESULT tsHr  = pDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMP, NULL);
-	const HRESULT tsdHr = pDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMPDISJOINT, NULL);
-	const HRESULT tsfHr = pDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ, NULL);
+	const HRESULT tsHr  = pDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMP, nullptr);
+	const HRESULT tsdHr = pDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMPDISJOINT, nullptr);
+	const HRESULT tsfHr = pDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ, nullptr);
 
 	if (tsHr != D3D_OK || tsdHr != D3D_OK || tsfHr != D3D_OK)
 	{
@@ -132,7 +132,7 @@ void CGpuProfiler::Shutdown ()
 	}
 
 	m_init = false;
-	m_device = NULL;
+	m_device = nullptr;
 
 	m_iFrameQuery = 0;
 	m_iFrameCollect = -1;

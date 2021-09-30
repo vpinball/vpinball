@@ -182,7 +182,7 @@ void LayersListDialog::AddToolTip(const char* const text, HWND parentHwnd, HWND 
 BOOL LayersListDialog::OnInitDialog()
 {
    const HWND toolTipHwnd = CreateWindowEx(
-      NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), NULL, g_pvp->theInstance, NULL);
+      NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_pvp->theInstance, nullptr);
    m_layerFilterEditBox.SetDialog(this);
    m_isCaseSensitive = BST_UNCHECKED;
 
@@ -195,13 +195,13 @@ BOOL LayersListDialog::OnInitDialog()
    AttachItem(IDC_EXPAND_COLLAPSE_BUTTON, m_expandCollapseButton);
 
    constexpr int iconSize = 16;
-   HANDLE hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ASSIGN), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+   HANDLE hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_ASSIGN), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
    m_assignButton.SetIcon((HICON)hIcon);
-   hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ADD), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+   hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_ADD), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
    m_addLayerButton.SetIcon((HICON)hIcon);
-   hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_REMOVE), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+   hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_REMOVE), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
    m_deleteLayerButton.SetIcon((HICON)hIcon);
-   hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_EXPANDCOLLAPSE), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+   hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_EXPANDCOLLAPSE), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
    m_expandCollapseButton.SetIcon((HICON)hIcon);
 
    AddToolTip("Assign selected elements to selected layer", GetHwnd(), toolTipHwnd, m_assignButton.GetHwnd());
@@ -378,8 +378,8 @@ HTREEITEM LayerTreeView::AddItem(HTREEITEM hParent, LPCTSTR text, IEditable* con
 
 bool LayerTreeView::AddLayer(const string& name)
 {
-   hCurrentLayerItem = AddItem(hRootItem, name.c_str(), NULL, 1);
-   return hCurrentLayerItem != NULL;
+   hCurrentLayerItem = AddItem(hRootItem, name.c_str(), nullptr, 1);
+   return hCurrentLayerItem != nullptr;
 }
 
 bool LayerTreeView::AddElement(const string& name, IEditable* const pedit) { return AddElementToLayer(hCurrentLayerItem, name, pedit); }
@@ -428,7 +428,7 @@ HTREEITEM LayerTreeView::GetLayerByElement(const IEditable* const pedit)
          subItem = GetNextItem(subItem, TVGN_NEXT);
       }
    }
-   return NULL;
+   return nullptr;
 }
 
 HTREEITEM LayerTreeView::GetLayerByItem(HTREEITEM hChildItem)
@@ -485,7 +485,7 @@ HTREEITEM LayerTreeView::GetItemByElement(const IEditable* const pedit)
          subItem = GetNextItem(subItem, TVGN_NEXT);
       }
    }
-   return NULL;
+   return nullptr;
 }
 
 int LayerTreeView::GetItemCount() const
@@ -580,7 +580,7 @@ void LayerTreeView::SetAllItemStates(const bool checked)
          if (GetItem(tvItem))
          {
             IEditable* const pedit = (IEditable*)tvItem.lParam;
-            if (pedit != NULL)
+            if (pedit != nullptr)
             {
                ISelect* const psel = pedit->GetISelect();
                if (psel != nullptr)
@@ -597,7 +597,7 @@ void LayerTreeView::SetAllItemStates(const bool checked)
 void LayerTreeView::DeleteAll()
 {
    DeleteAllItems();
-   hRootItem = AddItem(NULL, _T("Layers"), NULL, 0);
+   hRootItem = AddItem(nullptr, _T("Layers"), nullptr, 0);
    TreeView_SetCheckState(GetHwnd(), hRootItem, 1);
 }
 
@@ -677,7 +677,7 @@ void LayerTreeView::OnAttach()
    SetStyle(style);
 
    DeleteAllItems();
-   hRootItem = AddItem(NULL, _T("Layers"), NULL, 0);
+   hRootItem = AddItem(nullptr, _T("Layers"), nullptr, 0);
    Expand(hRootItem, TVE_EXPAND);
 }
 
@@ -729,7 +729,7 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
          ImageList_EndDrag();
          HTREEITEM hSelectedDrop = GetDropHiLightItem();
          SelectItem(hSelectedDrop);
-         SelectDropTarget(NULL);
+         SelectDropTarget(nullptr);
 
          for (auto dragItem : m_DragItems)
          {
@@ -805,7 +805,7 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
    {
       const LPNMTVDISPINFO pinfo = (LPNMTVDISPINFO)lparam;
 
-      if (pinfo->item.pszText == NULL || pinfo->item.pszText[0] == '\0')
+      if (pinfo->item.pszText == nullptr || pinfo->item.pszText[0] == '\0')
       {
          return FALSE;
       }
@@ -872,7 +872,7 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
                   if (GetItem(tvItem))
                   {
                      IEditable* const pedit = (IEditable*)tvItem.lParam;
-                     if (pedit != NULL)
+                     if (pedit != nullptr)
                      {
                         ISelect* const psel = pedit->GetISelect();
                         if (psel != nullptr)
@@ -887,7 +887,7 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
             else // element checkbox was clicked
             {
                IEditable* const pedit = (IEditable*)tvItem.lParam;
-               if (pedit != NULL)
+               if (pedit != nullptr)
                {
                   ISelect* const psel = pedit->GetISelect();
                   if (psel != nullptr)
@@ -935,7 +935,7 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
             if (GetItem(tvItem))
             {
                IEditable* const pedit = (IEditable*)tvItem.lParam;
-               if (pedit != NULL)
+               if (pedit != nullptr)
                {
                   ISelect* const psel = pedit->GetISelect();
                   if (psel != nullptr)
@@ -949,7 +949,7 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
       else // element checkbox was clicked
       {
          IEditable* const pedit = (IEditable*)tvItem.lParam;
-         if (pedit != NULL)
+         if (pedit != nullptr)
          {
             ISelect* const psel = pedit->GetISelect();
             if (psel != nullptr)
@@ -1001,7 +1001,7 @@ bool LayerTreeView::AddElementToLayer(const HTREEITEM hLayerItem, const string& 
          TreeView_SetCheckState(GetHwnd(), hLayerItem, 1);
       }
    }
-   return hCurrentElementItem != NULL;
+   return hCurrentElementItem != nullptr;
 }
 
 LRESULT FilterEditBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)

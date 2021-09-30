@@ -3,7 +3,7 @@
 
 BallEx::BallEx()
 {
-   m_pball = NULL;
+   m_pball = nullptr;
 }
 
 BallEx::~BallEx()
@@ -247,7 +247,7 @@ STDMETHODIMP BallEx::get_Image(BSTR *pVal)
 STDMETHODIMP BallEx::put_Image(BSTR newVal)
 {
    char buf[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, nullptr, nullptr);
    m_pball->m_image = buf;
 
    m_pball->m_pinballEnv = g_pplayer->m_ptable->GetImage(m_pball->m_image);
@@ -281,7 +281,7 @@ STDMETHODIMP BallEx::get_FrontDecal(BSTR *pVal)
 STDMETHODIMP BallEx::put_FrontDecal(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
    Texture * const tex = g_pplayer->m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -459,7 +459,7 @@ STDMETHODIMP BallEx::DestroyBall(int *pVal)
    {
       ++cnt;
       Ball * const b = g_pplayer->m_pactiveball;
-      g_pplayer->m_pactiveball = NULL;
+      g_pplayer->m_pactiveball = nullptr;
       g_pplayer->DestroyBall(b); // clear ActiveBall
    }
 

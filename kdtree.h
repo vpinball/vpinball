@@ -12,7 +12,7 @@ class HitKD;
 class HitKDNode
 {
 private:
-   void Reset() { m_children = NULL; m_hitoct = NULL; m_start = 0; m_items = 0; }
+   void Reset() { m_children = nullptr; m_hitoct = nullptr; m_start = 0; m_items = 0; }
 
    void HitTestBall(const Ball * const pball, CollisionEvent& coll) const;
    void HitTestXRay(const Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const;
@@ -27,7 +27,7 @@ private:
    unsigned int m_start;
    unsigned int m_items; // contains the 2 bits for axis (bits 30/31)
 
-   HitKDNode * m_children; // if NULL, is a leaf; otherwise keeps the 2 children
+   HitKDNode * m_children; // if nullptr, is a leaf; otherwise keeps the 2 children
 
    HitKD * m_hitoct; //!! meh, stupid
 

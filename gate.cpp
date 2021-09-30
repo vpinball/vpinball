@@ -8,12 +8,12 @@
 
 Gate::Gate()
 {
-   m_phitgate = NULL;
-   m_plineseg = NULL;
-   m_bracketIndexBuffer = NULL;
-   m_bracketVertexBuffer = NULL;
-   m_wireIndexBuffer = NULL;
-   m_wireVertexBuffer = NULL;
+   m_phitgate = nullptr;
+   m_plineseg = nullptr;
+   m_bracketIndexBuffer = nullptr;
+   m_bracketVertexBuffer = nullptr;
+   m_wireIndexBuffer = nullptr;
+   m_wireVertexBuffer = nullptr;
    m_vertexbuffer_angle = FLT_MAX;
    m_d.m_type = GateWireW;
    m_vertices = 0;
@@ -69,22 +69,22 @@ Gate::~Gate()
    if (m_bracketVertexBuffer)
    {
       m_bracketVertexBuffer->release();
-      m_bracketVertexBuffer = NULL;
+      m_bracketVertexBuffer = nullptr;
    }
    if (m_bracketIndexBuffer)
    {
       m_bracketIndexBuffer->release();
-      m_bracketIndexBuffer = NULL;
+      m_bracketIndexBuffer = nullptr;
    }
    if (m_wireIndexBuffer)
    {
       m_wireIndexBuffer->release();
-      m_wireIndexBuffer = NULL;
+      m_wireIndexBuffer = nullptr;
    }
    if (m_wireVertexBuffer)
    {
       m_wireVertexBuffer->release();
-      m_wireVertexBuffer = NULL;
+      m_wireVertexBuffer = nullptr;
    }
 }
 
@@ -104,7 +104,7 @@ HRESULT Gate::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    SetDefaults(fromMouseClick);
 
-   InitVBA(fTrue, 0, NULL);
+   InitVBA(fTrue, 0, nullptr);
 
    return S_OK;
 }
@@ -385,28 +385,28 @@ void Gate::EndPlay()
 {
    IEditable::EndPlay();
 
-   m_phitgate = NULL;
-   m_plineseg = NULL;
+   m_phitgate = nullptr;
+   m_plineseg = nullptr;
 
    if (m_bracketVertexBuffer)
    {
       m_bracketVertexBuffer->release();
-      m_bracketVertexBuffer = NULL;
+      m_bracketVertexBuffer = nullptr;
    }
    if (m_bracketIndexBuffer)
    {
       m_bracketIndexBuffer->release();
-      m_bracketIndexBuffer = NULL;
+      m_bracketIndexBuffer = nullptr;
    }
    if (m_wireIndexBuffer)
    {
       m_wireIndexBuffer->release();
-      m_wireIndexBuffer = NULL;
+      m_wireIndexBuffer = nullptr;
    }
    if (m_wireVertexBuffer)
    {
       m_wireVertexBuffer->release();
-      m_wireVertexBuffer = NULL;
+      m_wireVertexBuffer = nullptr;
       m_vertexbuffer_angle = FLT_MAX;
    }
 }
@@ -495,7 +495,7 @@ void Gate::RenderDynamic()
 void Gate::ExportMesh(ObjLoader& loader)
 {
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    if (m_d.m_showBracket)
@@ -812,7 +812,7 @@ STDMETHODIMP Gate::get_Surface(BSTR *pVal)
 STDMETHODIMP Gate::put_Surface(BSTR newVal)
 {
    char buf[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, nullptr, nullptr);
    m_d.m_szSurface = buf;
 
    return S_OK;
@@ -830,7 +830,7 @@ STDMETHODIMP Gate::get_Material(BSTR *pVal)
 STDMETHODIMP Gate::put_Material(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
    m_d.m_szMaterial = buf;
 
    return S_OK;

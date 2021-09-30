@@ -14,7 +14,7 @@ typedef LONG(CALLBACK* NTQUERYTIMERRESOLUTION)(OUT PULONG MaximumTime,
 	OUT PULONG CurrentTime);
 static NTQUERYTIMERRESOLUTION NtQueryTimerResolution;
 
-static HMODULE hNtDll = NULL;
+static HMODULE hNtDll = nullptr;
 static ULONG win_timer_old_period = -1;
 #endif
 
@@ -61,7 +61,7 @@ void restore_win_timer_resolution()
 			win_timer_old_period = -1;
 		}
 		FreeLibrary(hNtDll);
-		hNtDll = NULL;
+		hNtDll = nullptr;
 	}
 #endif
 

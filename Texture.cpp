@@ -21,7 +21,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
 
    FIBITMAP* dibResized = dib;
    FIBITMAP* dibConv = dib;
-   BaseTexture* tex = NULL;
+   BaseTexture* tex = nullptr;
 
    // do loading in a loop, in case memory runs out and we need to scale the texture down due to this
    bool success = false;
@@ -31,7 +31,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
    if (maxTexDim <= 0)
    {
       FreeImage_Unload(dib);
-      return NULL;
+      return nullptr;
    }
 
    if ((pictureHeight > maxTexDim) || (pictureWidth > maxTexDim))
@@ -136,7 +136,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
 BaseTexture* BaseTexture::CreateFromFile(const string& szfile)
 {
    if (szfile.empty())
-      return NULL;
+      return nullptr;
 
    FREE_IMAGE_FORMAT fif;
 
@@ -152,7 +152,7 @@ BaseTexture* BaseTexture::CreateFromFile(const string& szfile)
       // ok, let's load the file
       FIBITMAP * const dib = FreeImage_Load(fif, szfile.c_str(), 0);
       if (!dib)
-         return NULL;
+         return nullptr;
       
       BaseTexture* const mySurface = BaseTexture::CreateFromFreeImage(dib);
 
@@ -162,7 +162,7 @@ BaseTexture* BaseTexture::CreateFromFile(const string& szfile)
       return mySurface;
    }
    else
-      return NULL;
+      return nullptr;
 }
 
 BaseTexture* BaseTexture::CreateFromData(const void *data, const size_t size)
@@ -170,7 +170,7 @@ BaseTexture* BaseTexture::CreateFromData(const void *data, const size_t size)
    // check the file signature and deduce its format
    FIMEMORY * const dataHandle = FreeImage_OpenMemory((BYTE*)data, (DWORD)size);
    if (!dataHandle)
-      return NULL;
+      return nullptr;
    const FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(dataHandle, (int)size);
 
    // check that the plugin has reading capabilities ...
@@ -179,7 +179,7 @@ BaseTexture* BaseTexture::CreateFromData(const void *data, const size_t size)
       FIBITMAP * const dib = FreeImage_LoadFromMemory(fif, dataHandle, 0);
       FreeImage_CloseMemory(dataHandle);
       if (!dib)
-         return NULL;
+         return nullptr;
 
       BaseTexture* const mySurface = BaseTexture::CreateFromFreeImage(dib);
 
@@ -191,7 +191,7 @@ BaseTexture* BaseTexture::CreateFromData(const void *data, const size_t size)
    else
    {
       FreeImage_CloseMemory(dataHandle);
-      return NULL;
+      return nullptr;
    }
 }
 
@@ -202,14 +202,14 @@ static FIBITMAP* HBitmapToFreeImage(HBITMAP hbmp)
    GetObject(hbmp, sizeof(BITMAP), &bm);
    FIBITMAP* dib = FreeImage_Allocate(bm.bmWidth, bm.bmHeight, bm.bmBitsPixel);
    if (!dib)
-      return NULL;
+      return nullptr;
    // The GetDIBits function clears the biClrUsed and biClrImportant BITMAPINFO members (dont't know why)
    // So we save these infos below. This is needed for palettized images only.
    const int nColors = FreeImage_GetColorsUsed(dib);
-   const HDC dc = GetDC(NULL);
+   const HDC dc = GetDC(nullptr);
    /*const int Success =*/ GetDIBits(dc, hbmp, 0, FreeImage_GetHeight(dib),
       FreeImage_GetBits(dib), FreeImage_GetInfo(dib), DIB_RGB_COLORS);
-   ReleaseDC(NULL, dc);
+   ReleaseDC(nullptr, dc);
    // restore BITMAPINFO members
    FreeImage_GetInfoHeader(dib)->biClrUsed = nColors;
    FreeImage_GetInfoHeader(dib)->biClrImportant = nColors;
@@ -220,7 +220,7 @@ BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbm)
 {
    FIBITMAP* const dib = HBitmapToFreeImage(hbm);
    if (!dib)
-      return NULL;
+      return nullptr;
    BaseTexture* const pdds = BaseTexture::CreateFromFreeImage(dib);
    return pdds;
 }
@@ -231,9 +231,9 @@ BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbm)
 
 Texture::Texture()
 {
-   m_pdsBuffer = NULL;
-   m_hbmGDIVersion = NULL;
-   m_ppb = NULL;
+   m_pdsBuffer = nullptr;
+   m_hbmGDIVersion = nullptr;
+   m_ppb = nullptr;
    m_alphaTestValue = 1.0f;
 }
 
@@ -242,8 +242,8 @@ Texture::Texture(BaseTexture * const base)
    m_pdsBuffer = base;
    SetSizeFrom(base);
 
-   m_hbmGDIVersion = NULL;
-   m_ppb = NULL;
+   m_hbmGDIVersion = nullptr;
+   m_ppb = nullptr;
    m_alphaTestValue = 1.0f;
 }
 
@@ -291,7 +291,7 @@ HRESULT Texture::LoadFromStream(IStream *pstream, int version, PinTable *pt)
 
    br.Load();
 
-   return ((m_pdsBuffer != NULL) ? S_OK : E_FAIL);
+   return ((m_pdsBuffer != nullptr) ? S_OK : E_FAIL);
 }
 
 
@@ -307,7 +307,7 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
    unsigned char * const __restrict stbi_data = stbi_load_from_memory(data, size, &x, &y, &channels_in_file, 4);
    if (stbi_data) // will only enter this path for JPG files
    {
-      BaseTexture* tex = NULL;
+      BaseTexture* tex = nullptr;
       try
       {
          tex = new BaseTexture(x, y, BaseTexture::RGBA, channels_in_file == 4); //!! stbi at the moment does not support alpha channel JPGs, so channels_in_file will be 3 or 1
@@ -447,17 +447,17 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
 void Texture::FreeStuff()
 {
    delete m_pdsBuffer;
-   m_pdsBuffer = NULL;
+   m_pdsBuffer = nullptr;
    if (m_hbmGDIVersion)
    {
       if(m_hbmGDIVersion != g_pvp->m_hbmInPlayMode)
           DeleteObject(m_hbmGDIVersion);
-      m_hbmGDIVersion = NULL;
+      m_hbmGDIVersion = nullptr;
    }
    if (m_ppb)
    {
       delete m_ppb;
-      m_ppb = NULL;
+      m_ppb = nullptr;
    }
 }
 
@@ -472,7 +472,7 @@ void Texture::CreateGDIVersion()
       return;
    }
 
-   const HDC hdcScreen = GetDC(NULL);
+   const HDC hdcScreen = GetDC(nullptr);
    m_hbmGDIVersion = CreateCompatibleBitmap(hdcScreen, m_width, m_height);
    const HDC hdcNew = CreateCompatibleDC(hdcScreen);
    const HBITMAP hbmOld = (HBITMAP)SelectObject(hdcNew, m_hbmGDIVersion);
@@ -506,13 +506,13 @@ void Texture::CreateGDIVersion()
 
    SelectObject(hdcNew, hbmOld);
    DeleteDC(hdcNew);
-   ReleaseDC(NULL, hdcScreen);
+   ReleaseDC(nullptr, hdcScreen);
 }
 
 void Texture::GetTextureDC(HDC *pdc)
 {
    CreateGDIVersion();
-   *pdc = CreateCompatibleDC(NULL);
+   *pdc = CreateCompatibleDC(nullptr);
    m_oldHBM = (HBITMAP)SelectObject(*pdc, m_hbmGDIVersion);
 }
 
@@ -529,7 +529,7 @@ void Texture::CreateFromResource(const int id)
    if (m_pdsBuffer)
       FreeStuff();
 
-   if (hbm == NULL)
+   if (hbm == nullptr)
       return;
 
    m_pdsBuffer = CreateFromHBitmap(hbm);

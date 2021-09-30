@@ -18,7 +18,7 @@ HRESULT LightSeq::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    SetDefaults(fromMouseClick);
 
-   return InitVBA(fTrue, 0, NULL);
+   return InitVBA(fTrue, 0, nullptr);
 }
 
 void LightSeq::SetDefaults(bool fromMouseClick)
@@ -45,7 +45,7 @@ void LightSeq::SetDefaults(bool fromMouseClick)
 void LightSeq::WriteRegDefaults()
 {
    char strTmp[MAXSTRING];
-   WideCharToMultiByteNull(CP_ACP, 0, m_d.m_wzCollection.c_str(), -1, strTmp, MAXSTRING, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, m_d.m_wzCollection.c_str(), -1, strTmp, MAXSTRING, nullptr, nullptr);
    SaveValueInt("DefaultProps\\LightSequence", "UpdateInterval", m_d.m_updateinterval);
    SaveValue("DefaultProps\\LightSequence", "Collection", strTmp);
    SaveValueFloat("DefaultProps\\LightSequence", "CenterX", m_d.m_vCenter.x);
@@ -188,10 +188,10 @@ void LightSeq::GetHitShapesDebug(vector<HitObject*> &pvho)
 //
 void LightSeq::EndPlay()
 {
-   if (m_pgridData != NULL)
+   if (m_pgridData != nullptr)
    {
       delete[] m_pgridData;
-      m_pgridData = NULL;
+      m_pgridData = nullptr;
    }
 
    IEditable::EndPlay();
@@ -204,8 +204,8 @@ void LightSeq::RenderDynamic()
 void LightSeq::RenderSetup()
 {
    // zero pointers as a safe guard
-   m_pcollection = NULL;
-   m_pgridData = NULL;
+   m_pcollection = nullptr;
+   m_pgridData = nullptr;
    // no animation in progress
    m_playInProgress = false;
    m_pauseInProgress = false;
@@ -238,7 +238,7 @@ void LightSeq::RenderSetup()
    }
 
    // if the collection wasn't found or there are no collections available then bomb out
-   if (m_pcollection == NULL)
+   if (m_pcollection == nullptr)
       return;
 
    // get the grid demensions (from the table size)
@@ -256,10 +256,10 @@ void LightSeq::RenderSetup()
 
    // allocate the grid for this sequence
    m_pgridData = new short[m_lightSeqGridHeight*m_lightSeqGridWidth];
-   /*if (m_pgridData == NULL)
+   /*if (m_pgridData == nullptr)
    {
       // make the entire collection (for the sequencer) invalid and bomb out
-      m_pcollection = NULL;
+      m_pcollection = nullptr;
       return;
    }
    else*/
@@ -608,7 +608,7 @@ STDMETHODIMP LightSeq::StopPlay()
    m_queue.Tail = 0;
 
    // Reset lights back to original state
-   if (m_pcollection != NULL)
+   if (m_pcollection != nullptr)
    {
       const int size = m_pcollection->m_visel.size();
       for (int i = 0; i < size; ++i)
@@ -1477,7 +1477,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
    bool rc = false;
 
    // if this tracer isn't valid or there is no collection, then exit with a finished return code
-   if (pTracer->type == eSeqNull || m_pcollection == NULL)
+   if (pTracer->type == eSeqNull || m_pcollection == nullptr)
 	   return true;
 
    if (pTracer->delay == 0)
@@ -1661,7 +1661,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
 
 void LightSeq::SetAllLightsToState(const LightState State)
 {
-   if (m_pcollection != NULL)
+   if (m_pcollection != nullptr)
    {
       const int size = m_pcollection->m_visel.size();
       for (int i = 0; i < size; ++i)

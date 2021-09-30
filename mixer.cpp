@@ -26,7 +26,7 @@ bool mixer_init(const HWND wnd)
    if (!nmixers)
       return false;
 
-   m_hMixer = NULL;
+   m_hMixer = nullptr;
    //ZeroMemory(&sMxCaps, sizeof(MIXERCAPS));
 
    m_dwMinimum = 0;
@@ -240,7 +240,7 @@ void mixer_draw()
             g_pplayer->Spritedraw( (cabMode ? fX : fY) - (float)(1.0/1000.0), (cabMode ? fY : fX) - (float)(1.0/1000.0),
             (cabMode ? size[0] : size[1]) + (float)(2.0/1000.0), (cabMode ? size[1] : size[0]) + (float)(2.0/1000.0),
             drop_color,
-            (Texture*)NULL,
+            (Texture*)nullptr,
             fade);
             */
       // Set the color.
@@ -248,7 +248,7 @@ void mixer_draw()
       g_pplayer->Spritedraw(cabMode ? fX : fY, cabMode ? fY : fX,
          cabMode ? size[0] : size[1], cabMode ? size[1] : size[0],
          color,
-         (Texture*)NULL,
+         (Texture*)nullptr,
          fade);
    }
 

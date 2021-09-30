@@ -85,79 +85,79 @@ BOOL ToolbarDialog::OnInitDialog()
     m_tooltip.AddTool(m_rubberButton, _T("Insert Rubber"));
 
     constexpr int iconSize = 24;
-    HANDLE hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MAGNIFY), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    HANDLE hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_MAGNIFY), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_magnifyButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SELECT), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_SELECT), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_selectButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SCRIPT), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_SCRIPT), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_scriptButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_BACKGLASS), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_BACKGLASS), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_backglassButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_PLAY), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_PLAY), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_playButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_CAMERA), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_CAMERA), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_playCameraButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_WALL), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_WALL), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_wallButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_GATE), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_GATE), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_gateButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_RAMP), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_RAMP), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_rampButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FLIPPER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_FLIPPER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_flipperButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_PLUNGER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_PLUNGER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_plungerButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_BUMPER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_BUMPER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_bumperButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SPINNER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_SPINNER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_spinnerButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_TIMER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_TIMER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_timerButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_TRIGGER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_TRIGGER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_triggerButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_LIGHT), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_LIGHT), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_lightButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_KICKER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_KICKER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_kickerButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_TARGET), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_TARGET), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_targetButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_DECAL), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_DECAL), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_decalButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_TEXTBOX), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_TEXTBOX), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_textboxButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_REEL), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_REEL), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_reelButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_LIGHTSEQ), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_LIGHTSEQ), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_lightseqButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_PRIMITIVE), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_PRIMITIVE), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_primitiveButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FLASHER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_FLASHER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_flasherButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_RUBBER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_RUBBER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_rubberButton.SetIcon((HICON)hIcon);
 
 
@@ -215,7 +215,7 @@ void ToolbarDialog::EnableButtons()
     if (!IsWindow())
         return;
     CComObject<PinTable> * const ptCur = g_pvp->GetActiveTable();
-    if (ptCur == NULL && !g_pplayer)
+    if (ptCur == nullptr && !g_pplayer)
     {
         m_magnifyButton.EnableWindow(FALSE);
         m_selectButton.EnableWindow(FALSE);

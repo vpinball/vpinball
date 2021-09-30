@@ -45,7 +45,7 @@ AudioPlayer::AudioPlayer()
           DSAudioDevices DSads;
           if (!FAILED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
           {
-              if ((size_t)DSidx >= DSads.size() || DSads[DSidx]->guid != NULL) // primary device has guid NULL, so use BASS_idx = -1 in that case
+              if ((size_t)DSidx >= DSads.size() || DSads[DSidx]->guid != nullptr) // primary device has guid nullptr, so use BASS_idx = -1 in that case
               {
                   BASS_DEVICEINFO dinfo;
                   for (int i = 1; BASS_GetDeviceInfo(i, &dinfo); i++) // 0 = no sound/no device
@@ -75,7 +75,7 @@ AudioPlayer::AudioPlayer()
 
       for(unsigned int idx = 0; idx < 2; ++idx)
       {
-      if (!BASS_Init((idx == 0) ? bass_STD_idx : bass_BG_idx, 44100, (SoundMode3D != SNDCFG_SND3D2CH) && (idx == 0) ? 0 /*| BASS_DEVICE_MONO*/ /*| BASS_DEVICE_DSOUND*/ : 0, g_pvp->GetHwnd(), NULL)) // note that sample rate is usually ignored and set depending on the input/file automatically
+      if (!BASS_Init((idx == 0) ? bass_STD_idx : bass_BG_idx, 44100, (SoundMode3D != SNDCFG_SND3D2CH) && (idx == 0) ? 0 /*| BASS_DEVICE_MONO*/ /*| BASS_DEVICE_DSOUND*/ : 0, g_pvp->GetHwnd(), nullptr)) // note that sample rate is usually ignored and set depending on the input/file automatically
       {
          const int code = BASS_ErrorGetCode();
          string bla2;

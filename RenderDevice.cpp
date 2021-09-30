@@ -52,14 +52,14 @@ static bool IsWindowsVistaOr7()
 }
 
 typedef HRESULT(STDAPICALLTYPE *pRGV)(LPOSVERSIONINFOEXW osi);
-static pRGV mRtlGetVersion = NULL;
+static pRGV mRtlGetVersion = nullptr;
 
 bool IsWindows10_1803orAbove()
 {
-	if (mRtlGetVersion == NULL)
+	if (mRtlGetVersion == nullptr)
 		mRtlGetVersion = (pRGV)GetProcAddress(GetModuleHandle(TEXT("ntdll")), "RtlGetVersion"); // apparently the only really reliable solution to get the OS version (as of Win10 1803)
 
-	if (mRtlGetVersion != NULL)
+	if (mRtlGetVersion != nullptr)
 	{
 		OSVERSIONINFOEXW osInfo;
 		osInfo.dwOSVersionInfoSize = sizeof(osInfo);
@@ -82,7 +82,7 @@ constexpr VertexElement VertexTexelElement[] =
    { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
    D3DDECL_END()
 };
-VertexDeclaration* RenderDevice::m_pVertexTexelDeclaration = NULL;
+VertexDeclaration* RenderDevice::m_pVertexTexelDeclaration = nullptr;
 
 constexpr VertexElement VertexNormalTexelElement[] =
 {
@@ -91,7 +91,7 @@ constexpr VertexElement VertexNormalTexelElement[] =
    { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
    D3DDECL_END()
 };
-VertexDeclaration* RenderDevice::m_pVertexNormalTexelDeclaration = NULL;
+VertexDeclaration* RenderDevice::m_pVertexNormalTexelDeclaration = nullptr;
 
 /*const VertexElement VertexNormalTexelTexelElement[] =
 {
@@ -102,7 +102,7 @@ VertexDeclaration* RenderDevice::m_pVertexNormalTexelDeclaration = NULL;
    D3DDECL_END()
 };
 
-VertexDeclaration* RenderDevice::m_pVertexNormalTexelTexelDeclaration = NULL;*/
+VertexDeclaration* RenderDevice::m_pVertexNormalTexelTexelDeclaration = nullptr;*/
 
 // pre-transformed, take care that this is a float4 and needs proper w component setup (also see https://docs.microsoft.com/en-us/windows/desktop/direct3d9/mapping-fvf-codes-to-a-directx-9-declaration)
 constexpr VertexElement VertexTrafoTexelElement[] =
@@ -112,7 +112,7 @@ constexpr VertexElement VertexTrafoTexelElement[] =
    { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD,  0 }, // tex0
    D3DDECL_END()
 };
-VertexDeclaration* RenderDevice::m_pVertexTrafoTexelDeclaration = NULL;
+VertexDeclaration* RenderDevice::m_pVertexTrafoTexelDeclaration = nullptr;
 
 static unsigned int fvfToSize(const DWORD fvf)
 {
@@ -141,7 +141,7 @@ static VertexDeclaration* fvfToDecl(const DWORD fvf)
       return RenderDevice::m_pVertexTexelDeclaration;
    default:
       assert(0 && "Unknown FVF type in fvfToDecl");
-      return NULL;
+      return nullptr;
    }
 }
 
@@ -262,7 +262,7 @@ void EnumerateDisplayModes(const int display, std::vector<VideoMode>& modes)
    const int adapter = displays[display].adapter;
 
    IDirect3D9 *d3d = Direct3DCreate9(D3D_SDK_VERSION);
-   if (d3d == NULL)
+   if (d3d == nullptr)
    {
       ShowError("Could not create D3D9 object.");
       return;
@@ -318,12 +318,12 @@ int getDisplayList(std::vector<DisplayConfig>& displays)
    displays.clear();
    std::map<std::string, DisplayConfig> displayMap;
    // Get the resolution of all enabled displays.
-   EnumDisplayMonitors(NULL, NULL, MonitorEnumList, reinterpret_cast<LPARAM>(&displayMap));
+   EnumDisplayMonitors(nullptr, nullptr, MonitorEnumList, reinterpret_cast<LPARAM>(&displayMap));
    DISPLAY_DEVICE DispDev;
    ZeroMemory(&DispDev, sizeof(DispDev));
    DispDev.cb = sizeof(DispDev);
    IDirect3D9* pD3D = Direct3DCreate9(D3D_SDK_VERSION);
-   if (pD3D == NULL)
+   if (pD3D == nullptr)
    {
       ShowError("Could not create D3D9 object.");
       return -1;
@@ -394,17 +394,17 @@ bool RenderDevice::m_INTZ_support = false;
 
 #ifdef USE_D3D9EX
  typedef HRESULT(WINAPI *pD3DC9Ex)(UINT SDKVersion, IDirect3D9Ex**);
- static pD3DC9Ex mDirect3DCreate9Ex = NULL;
+ static pD3DC9Ex mDirect3DCreate9Ex = nullptr;
 #endif
 
 #define DWM_EC_DISABLECOMPOSITION         0
 #define DWM_EC_ENABLECOMPOSITION          1
 typedef HRESULT(STDAPICALLTYPE *pDICE)(BOOL* pfEnabled);
-static pDICE mDwmIsCompositionEnabled = NULL;
+static pDICE mDwmIsCompositionEnabled = nullptr;
 typedef HRESULT(STDAPICALLTYPE *pDF)();
-static pDF mDwmFlush = NULL;
+static pDF mDwmFlush = nullptr;
 typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
-static pDEC mDwmEnableComposition = NULL;
+static pDEC mDwmEnableComposition = nullptr;
 
 RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
     : m_windowHwnd(hwnd), m_width(width), m_height(height), m_fullscreen(fullscreen), 
@@ -437,8 +437,8 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
     m_curIndexBuffer = 0;
     m_curVertexBuffer = 0;
-    currentDeclaration = NULL;
-    //m_curShader = NULL;
+    currentDeclaration = nullptr;
+    //m_curShader = nullptr;
 
     // fill state caches with dummy values
     memset(textureStateCache, 0xCC, sizeof(DWORD) * TEXTURE_SAMPLERS * TEXTURE_STATE_CACHE_SIZE);
@@ -458,14 +458,14 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 {
 #ifdef USE_D3D9EX
-   m_pD3DEx = NULL;
-   m_pD3DDeviceEx = NULL;
+   m_pD3DEx = nullptr;
+   m_pD3DDeviceEx = nullptr;
 
    mDirect3DCreate9Ex = (pD3DC9Ex)GetProcAddress(GetModuleHandle(TEXT("d3d9.dll")), "Direct3DCreate9Ex"); //!! remove as soon as win xp support dropped and use static link
    if (mDirect3DCreate9Ex)
    {
       const HRESULT hr = mDirect3DCreate9Ex(D3D_SDK_VERSION, &m_pD3DEx);
-      if (FAILED(hr) || (m_pD3DEx == NULL))
+      if (FAILED(hr) || (m_pD3DEx == nullptr))
       {
          ShowError("Could not create D3D9Ex object.");
          throw 0;
@@ -476,7 +476,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 #endif
    {
       m_pD3D = Direct3DCreate9(D3D_SDK_VERSION);
-      if (m_pD3D == NULL)
+      if (m_pD3D == nullptr)
       {
          ShowError("Could not create D3D9 object.");
          throw 0;
@@ -627,13 +627,13 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
          m_windowHwnd,
          flags /*| D3DCREATE_PUREDEVICE*/,
          &params,
-         m_fullscreen ? &mode : NULL,
+         m_fullscreen ? &mode : nullptr,
          &m_pD3DDeviceEx));
 
       m_pD3DDeviceEx->QueryInterface(__uuidof(IDirect3DDevice9), reinterpret_cast<void**>(&m_pD3DDevice));
 
       // Get the display mode so that we can report back the actual refresh rate.
-      CHECKD3D(m_pD3DDeviceEx->GetDisplayModeEx(0, &mode, NULL)); //!! what is the actual correct value for the swapchain here?
+      CHECKD3D(m_pD3DDeviceEx->GetDisplayModeEx(0, &mode, nullptr)); //!! what is the actual correct value for the swapchain here?
 
       refreshrate = mode.RefreshRate;
    }
@@ -672,7 +672,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 
    // alloc float buffer for rendering (optionally 2x2 res for manual super sampling)
    hr = m_pD3DDevice->CreateTexture(m_useAA ? 2 * m_width : m_width, m_useAA ? 2 * m_height : m_height, 1,
-      D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pOffscreenBackBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
+      D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pOffscreenBackBufferTexture, nullptr); //!! D3DFMT_A32B32G32R32F?
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create render buffer!", hr, __FILE__, __LINE__);
 
@@ -680,33 +680,33 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    if (m_ssRefl)
    {
       hr = m_pD3DDevice->CreateTexture(m_useAA ? 2 * m_width : m_width, m_useAA ? 2 * m_height : m_height, 1,
-         D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pReflectionBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
+         D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pReflectionBufferTexture, nullptr); //!! D3DFMT_A32B32G32R32F?
       if (FAILED(hr))
          ReportError("Fatal Error: unable to create reflection buffer!", hr, __FILE__, __LINE__);
    }
    else
-      m_pReflectionBufferTexture = NULL;
+      m_pReflectionBufferTexture = nullptr;
 
-   if (g_pplayer != NULL)
+   if (g_pplayer != nullptr)
    {
        const bool drawBallReflection = ((g_pplayer->m_reflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
        if ((g_pplayer->m_ptable->m_reflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
        {
            hr = m_pD3DDevice->CreateTexture(m_useAA ? 2 * m_width : m_width, m_useAA ? 2 * m_height : m_height, 1,
-                                            D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pMirrorTmpBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
+                                            D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pMirrorTmpBufferTexture, nullptr); //!! D3DFMT_A32B32G32R32F?
            if(FAILED(hr))
                ReportError("Fatal Error: unable to create reflection map!", hr, __FILE__, __LINE__);
        }
    }
    // alloc bloom tex at 1/4 x 1/4 res (allows for simple HQ downscale of clipped input while saving memory)
    hr = m_pD3DDevice->CreateTexture(m_width / 4, m_height / 4, 1,
-      D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pBloomBufferTexture, NULL); //!! 8bit enough?
+      D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pBloomBufferTexture, nullptr); //!! 8bit enough?
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create bloom buffer!", hr, __FILE__, __LINE__);
 
    // temporary buffer for gaussian blur
    hr = m_pD3DDevice->CreateTexture(m_width / 4, m_height / 4, 1,
-      D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pBloomTmpBufferTexture, NULL); //!! 8bit are enough! //!! but used also for bulb light transmission hack now!
+      D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pBloomTmpBufferTexture, nullptr); //!! 8bit are enough! //!! but used also for bulb light transmission hack now!
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create blur buffer!", hr, __FILE__, __LINE__);
 
@@ -714,23 +714,23 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    if (m_stereo3D || (m_FXAA > 0) || m_sharpen)
    {
       hr = m_pD3DDevice->CreateTexture(m_width, m_height, 1,
-         D3DUSAGE_RENDERTARGET, (D3DFORMAT)(video10bit ? colorFormat::RGBA10 : colorFormat::RGBA8), (D3DPOOL)memoryPool::DEFAULT, &m_pOffscreenBackBufferTmpTexture, NULL);
+         D3DUSAGE_RENDERTARGET, (D3DFORMAT)(video10bit ? colorFormat::RGBA10 : colorFormat::RGBA8), (D3DPOOL)memoryPool::DEFAULT, &m_pOffscreenBackBufferTmpTexture, nullptr);
       if (FAILED(hr))
          ReportError("Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!", hr, __FILE__, __LINE__);
    }
    else
-      m_pOffscreenBackBufferTmpTexture = NULL;
+      m_pOffscreenBackBufferTmpTexture = nullptr;
 
    // alloc one more temporary buffer for SMAA
    if (m_FXAA == Quality_SMAA)
    {
       hr = m_pD3DDevice->CreateTexture(m_width, m_height, 1,
-         D3DUSAGE_RENDERTARGET, (D3DFORMAT)(video10bit ? colorFormat::RGBA10 : colorFormat::RGBA8), (D3DPOOL)memoryPool::DEFAULT, &m_pOffscreenBackBufferTmpTexture2, NULL);
+         D3DUSAGE_RENDERTARGET, (D3DFORMAT)(video10bit ? colorFormat::RGBA10 : colorFormat::RGBA8), (D3DPOOL)memoryPool::DEFAULT, &m_pOffscreenBackBufferTmpTexture2, nullptr);
       if (FAILED(hr))
          ReportError("Fatal Error: unable to create SMAA buffer!", hr, __FILE__, __LINE__);
    }
    else
-      m_pOffscreenBackBufferTmpTexture2 = NULL;
+      m_pOffscreenBackBufferTmpTexture2 = nullptr;
 
    if (video10bit && (m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA))
       ShowError("SMAA or DLAA post-processing AA should not be combined with 10Bit-output rendering (will result in visible artifacts)!");
@@ -741,7 +741,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    //CreateVertexDeclaration( VertexNormalTexelTexelElement, &m_pVertexNormalTexelTexelDeclaration );
    CreateVertexDeclaration(VertexTrafoTexelElement, &m_pVertexTrafoTexelDeclaration);
 
-   m_quadVertexBuffer = NULL;
+   m_quadVertexBuffer = nullptr;
    CreateVertexBuffer(4, 0, MY_D3DFVF_TEX, &m_quadVertexBuffer);
    Vertex3D_TexelOnly* bufvb;
    m_quadVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::WRITEONLY);
@@ -755,7 +755,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    memcpy(bufvb,verts,4*sizeof(Vertex3D_TexelOnly));
    m_quadVertexBuffer->unlock();
 
-   //m_quadDynVertexBuffer = NULL;
+   //m_quadDynVertexBuffer = nullptr;
    //CreateVertexBuffer(4, USAGE_DYNAMIC, MY_D3DFVF_TEX, &m_quadDynVertexBuffer);
 
    if(m_FXAA == Quality_SMAA)
@@ -835,45 +835,45 @@ static void CheckForD3DLeak(IDirect3DDevice9* d3d)
 #endif
 
 
-static RenderTarget *srcr_cache = NULL; //!! meh, for nvidia depth read only
-static D3DTexture *srct_cache = NULL;
-static D3DTexture* dest_cache = NULL;
+static RenderTarget *srcr_cache = nullptr; //!! meh, for nvidia depth read only
+static D3DTexture *srct_cache = nullptr;
+static D3DTexture* dest_cache = nullptr;
 
 void RenderDevice::FreeShader()
 {
    if (basicShader)
    {
-      CHECKD3D(basicShader->Core()->SetTexture("Texture0", NULL));
-      CHECKD3D(basicShader->Core()->SetTexture("Texture1", NULL));
-      CHECKD3D(basicShader->Core()->SetTexture("Texture2", NULL));
-      CHECKD3D(basicShader->Core()->SetTexture("Texture3", NULL));
-      CHECKD3D(basicShader->Core()->SetTexture("Texture4", NULL));
+      CHECKD3D(basicShader->Core()->SetTexture("Texture0", nullptr));
+      CHECKD3D(basicShader->Core()->SetTexture("Texture1", nullptr));
+      CHECKD3D(basicShader->Core()->SetTexture("Texture2", nullptr));
+      CHECKD3D(basicShader->Core()->SetTexture("Texture3", nullptr));
+      CHECKD3D(basicShader->Core()->SetTexture("Texture4", nullptr));
       delete basicShader;
       basicShader = 0;
    }
    if (DMDShader)
    {
-      CHECKD3D(DMDShader->Core()->SetTexture("Texture0", NULL));
+      CHECKD3D(DMDShader->Core()->SetTexture("Texture0", nullptr));
       delete DMDShader;
       DMDShader = 0;
    }
    if (FBShader)
    {
-      CHECKD3D(FBShader->Core()->SetTexture("Texture0", NULL));
-      CHECKD3D(FBShader->Core()->SetTexture("Texture1", NULL));
-      CHECKD3D(FBShader->Core()->SetTexture("Texture3", NULL));
-      CHECKD3D(FBShader->Core()->SetTexture("Texture4", NULL));
+      CHECKD3D(FBShader->Core()->SetTexture("Texture0", nullptr));
+      CHECKD3D(FBShader->Core()->SetTexture("Texture1", nullptr));
+      CHECKD3D(FBShader->Core()->SetTexture("Texture3", nullptr));
+      CHECKD3D(FBShader->Core()->SetTexture("Texture4", nullptr));
 
-      CHECKD3D(FBShader->Core()->SetTexture("areaTex2D", NULL));
-      CHECKD3D(FBShader->Core()->SetTexture("searchTex2D", NULL));
+      CHECKD3D(FBShader->Core()->SetTexture("areaTex2D", nullptr));
+      CHECKD3D(FBShader->Core()->SetTexture("searchTex2D", nullptr));
 
       delete FBShader;
       FBShader = 0;
    }
    if (flasherShader)
    {
-      CHECKD3D(flasherShader->Core()->SetTexture("Texture0", NULL));
-      CHECKD3D(flasherShader->Core()->SetTexture("Texture1", NULL));
+      CHECKD3D(flasherShader->Core()->SetTexture("Texture0", nullptr));
+      CHECKD3D(flasherShader->Core()->SetTexture("Texture1", nullptr));
       delete flasherShader;
       flasherShader = 0;
    }
@@ -885,9 +885,9 @@ void RenderDevice::FreeShader()
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    if (classicLightShader)
    {
-      CHECKD3D(classicLightShader->Core()->SetTexture("Texture0",NULL));
-      CHECKD3D(classicLightShader->Core()->SetTexture("Texture1",NULL));
-      CHECKD3D(classicLightShader->Core()->SetTexture("Texture2",NULL));
+      CHECKD3D(classicLightShader->Core()->SetTexture("Texture0",nullptr));
+      CHECKD3D(classicLightShader->Core()->SetTexture("Texture1",nullptr));
+      CHECKD3D(classicLightShader->Core()->SetTexture("Texture2",nullptr));
       delete classicLightShader;
       classicLightShader=0;
    }
@@ -898,34 +898,34 @@ RenderDevice::~RenderDevice()
 {
    if (m_quadVertexBuffer)
       m_quadVertexBuffer->release();
-   m_quadVertexBuffer = NULL;
+   m_quadVertexBuffer = nullptr;
 
    //m_quadDynVertexBuffer->release();
 
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
-   if (srcr_cache != NULL)
+   if (srcr_cache != nullptr)
       CHECKNVAPI(NvAPI_D3D9_UnregisterResource(srcr_cache)); //!! meh
-   srcr_cache = NULL;
-   if (srct_cache != NULL)
+   srcr_cache = nullptr;
+   if (srct_cache != nullptr)
       CHECKNVAPI(NvAPI_D3D9_UnregisterResource(srct_cache)); //!! meh
-   srct_cache = NULL;
-   if (dest_cache != NULL)
+   srct_cache = nullptr;
+   if (dest_cache != nullptr)
       CHECKNVAPI(NvAPI_D3D9_UnregisterResource(dest_cache)); //!! meh
-   dest_cache = NULL;
+   dest_cache = nullptr;
    if (NVAPIinit) //!! meh
       CHECKNVAPI(NvAPI_Unload());
    NVAPIinit = false;
 #endif
 
    //
-   m_pD3DDevice->SetStreamSource(0, NULL, 0, 0);
-   m_pD3DDevice->SetIndices(NULL);
-   m_pD3DDevice->SetVertexShader(NULL);
-   m_pD3DDevice->SetPixelShader(NULL);
+   m_pD3DDevice->SetStreamSource(0, nullptr, 0, 0);
+   m_pD3DDevice->SetIndices(nullptr);
+   m_pD3DDevice->SetVertexShader(nullptr);
+   m_pD3DDevice->SetPixelShader(nullptr);
    m_pD3DDevice->SetFVF(D3DFVF_XYZ);
-   //m_pD3DDevice->SetVertexDeclaration(NULL); // invalid call
-   //m_pD3DDevice->SetRenderTarget(0, NULL); // invalid call
-   m_pD3DDevice->SetDepthStencilSurface(NULL);
+   //m_pD3DDevice->SetVertexDeclaration(nullptr); // invalid call
+   //m_pD3DDevice->SetRenderTarget(0, nullptr); // invalid call
+   m_pD3DDevice->SetDepthStencilSurface(nullptr);
 
    FreeShader();
 
@@ -958,7 +958,7 @@ RenderDevice::~RenderDevice()
 #endif
 
 #ifdef USE_D3D9EX
-   //!! if (m_pD3DDeviceEx == m_pD3DDevice) m_pD3DDevice = NULL; //!! needed for Caligula if m_adapter > 0 ?? weird!! BUT MESSES UP FULLSCREEN EXIT (=hangs)
+   //!! if (m_pD3DDeviceEx == m_pD3DDevice) m_pD3DDevice = nullptr; //!! needed for Caligula if m_adapter > 0 ?? weird!! BUT MESSES UP FULLSCREEN EXIT (=hangs)
    SAFE_RELEASE_NO_RCC(m_pD3DDeviceEx);
 #endif
 #ifdef DEBUG_REFCOUNT_TRIGGER
@@ -1003,7 +1003,7 @@ void RenderDevice::EndScene()
    if (pEventQuery)
    {
       pEventQuery->Issue(D3DISSUE_END);
-      while (S_FALSE == pEventQuery->GetData(NULL, 0, D3DGETDATA_FLUSH))
+      while (S_FALSE == pEventQuery->GetData(nullptr, 0, D3DGETDATA_FLUSH))
          ;
       SAFE_RELEASE(pEventQuery);
    }
@@ -1043,7 +1043,7 @@ void RenderDevice::Flip(const bool vsync)
    }
 #endif
 
-   CHECKD3D(m_pD3DDevice->Present(NULL, NULL, NULL, NULL)); //!! could use D3DPRESENT_DONOTWAIT and do some physics work meanwhile??
+   CHECKD3D(m_pD3DDevice->Present(nullptr, nullptr, nullptr, nullptr)); //!! could use D3DPRESENT_DONOTWAIT and do some physics work meanwhile??
 
    if (mDwmFlush && vsync && dwm)
       mDwmFlush(); //!! also above present?? (internet sources are not clear about order)
@@ -1068,13 +1068,13 @@ RenderTarget* RenderDevice::DuplicateRenderTarget(RenderTarget* src)
    D3DSURFACE_DESC desc;
    src->GetDesc(&desc);
    CHECKD3D(m_pD3DDevice->CreateRenderTarget(desc.Width, desc.Height, desc.Format,
-      desc.MultiSampleType, desc.MultiSampleQuality, FALSE /* lockable */, &dup, NULL));
+      desc.MultiSampleType, desc.MultiSampleQuality, FALSE /* lockable */, &dup, nullptr));
    return dup;
 }
 
 void RenderDevice::CopySurface(RenderTarget* dest, RenderTarget* src)
 {
-   CHECKD3D(m_pD3DDevice->StretchRect(src, NULL, dest, NULL, D3DTEXF_NONE));
+   CHECKD3D(m_pD3DDevice->StretchRect(src, nullptr, dest, nullptr, D3DTEXF_NONE));
 }
 
 D3DTexture* RenderDevice::DuplicateTexture(RenderTarget* src)
@@ -1083,7 +1083,7 @@ D3DTexture* RenderDevice::DuplicateTexture(RenderTarget* src)
    src->GetDesc(&desc);
    D3DTexture* dup;
    CHECKD3D(m_pD3DDevice->CreateTexture(desc.Width, desc.Height, 1,
-      D3DUSAGE_RENDERTARGET, desc.Format, (D3DPOOL)memoryPool::DEFAULT, &dup, NULL)); // D3DUSAGE_AUTOGENMIPMAP?
+      D3DUSAGE_RENDERTARGET, desc.Format, (D3DPOOL)memoryPool::DEFAULT, &dup, nullptr)); // D3DUSAGE_AUTOGENMIPMAP?
    return dup;
 }
 
@@ -1094,7 +1094,7 @@ D3DTexture* RenderDevice::DuplicateTextureSingleChannel(RenderTarget* src)
    desc.Format = (D3DFORMAT)colorFormat::GREY8;
    D3DTexture* dup;
    CHECKD3D(m_pD3DDevice->CreateTexture(desc.Width, desc.Height, 1,
-      D3DUSAGE_RENDERTARGET, desc.Format, (D3DPOOL)memoryPool::DEFAULT, &dup, NULL)); // D3DUSAGE_AUTOGENMIPMAP?
+      D3DUSAGE_RENDERTARGET, desc.Format, (D3DPOOL)memoryPool::DEFAULT, &dup, nullptr)); // D3DUSAGE_AUTOGENMIPMAP?
    return dup;
 }
 
@@ -1104,7 +1104,7 @@ D3DTexture* RenderDevice::DuplicateDepthTexture(RenderTarget* src)
    src->GetDesc(&desc);
    D3DTexture* dup;
    CHECKD3D(m_pD3DDevice->CreateTexture(desc.Width, desc.Height, 1,
-      D3DUSAGE_DEPTHSTENCIL, (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'), (D3DPOOL)memoryPool::DEFAULT, &dup, NULL)); // D3DUSAGE_AUTOGENMIPMAP?
+      D3DUSAGE_DEPTHSTENCIL, (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'), (D3DPOOL)memoryPool::DEFAULT, &dup, nullptr)); // D3DUSAGE_AUTOGENMIPMAP?
    return dup;
 }
 
@@ -1112,7 +1112,7 @@ void RenderDevice::CopySurface(D3DTexture* dest, RenderTarget* src)
 {
    IDirect3DSurface9 *textureSurface;
    CHECKD3D(dest->GetSurfaceLevel(0, &textureSurface));
-   CHECKD3D(m_pD3DDevice->StretchRect(src, NULL, textureSurface, NULL, D3DTEXF_NONE));
+   CHECKD3D(m_pD3DDevice->StretchRect(src, nullptr, textureSurface, nullptr, D3DTEXF_NONE));
    SAFE_RELEASE_NO_RCC(textureSurface);
 }
 
@@ -1120,7 +1120,7 @@ void RenderDevice::CopySurface(RenderTarget* dest, D3DTexture* src)
 {
    IDirect3DSurface9 *textureSurface;
    CHECKD3D(src->GetSurfaceLevel(0, &textureSurface));
-   CHECKD3D(m_pD3DDevice->StretchRect(textureSurface, NULL, dest, NULL, D3DTEXF_NONE));
+   CHECKD3D(m_pD3DDevice->StretchRect(textureSurface, nullptr, dest, nullptr, D3DTEXF_NONE));
    SAFE_RELEASE_NO_RCC(textureSurface);
 }
 
@@ -1138,7 +1138,7 @@ void RenderDevice::CopySurface(D3DTexture* dest, D3DTexture* src)
    CHECKD3D(dest->GetSurfaceLevel(0, &destTextureSurface));
    IDirect3DSurface9 *srcTextureSurface;
    CHECKD3D(src->GetSurfaceLevel(0, &srcTextureSurface));
-   const HRESULT hr = m_pD3DDevice->StretchRect(srcTextureSurface, NULL, destTextureSurface, NULL, D3DTEXF_NONE);
+   const HRESULT hr = m_pD3DDevice->StretchRect(srcTextureSurface, nullptr, destTextureSurface, nullptr, D3DTEXF_NONE);
    if (FAILED(hr))
    {
        ShowError("Unable to access texture surface!\r\nTry to set \"Alternative Depth Buffer processing\" in the video options!\r\nOr disable Ambient Occlusion and/or 3D stereo!");
@@ -1155,21 +1155,21 @@ void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
    {
       if (src != srcr_cache)
       {
-         if (srcr_cache != NULL)
+         if (srcr_cache != nullptr)
             CHECKNVAPI(NvAPI_D3D9_UnregisterResource(srcr_cache)); //!! meh
          CHECKNVAPI(NvAPI_D3D9_RegisterResource(src)); //!! meh
          srcr_cache = src;
       }
       if (dest != dest_cache)
       {
-         if (dest_cache != NULL)
+         if (dest_cache != nullptr)
             CHECKNVAPI(NvAPI_D3D9_UnregisterResource(dest_cache)); //!! meh
          CHECKNVAPI(NvAPI_D3D9_RegisterResource(dest)); //!! meh
          dest_cache = dest;
       }
 
       //CHECKNVAPI(NvAPI_D3D9_AliasSurfaceAsTexture(m_pD3DDevice,src,dest,0));
-      CHECKNVAPI(NvAPI_D3D9_StretchRectEx(m_pD3DDevice, src, NULL, dest, NULL, D3DTEXF_NONE));
+      CHECKNVAPI(NvAPI_D3D9_StretchRectEx(m_pD3DDevice, src, nullptr, dest, nullptr, D3DTEXF_NONE));
    }
 #endif
 #if 0 // leftover resolve z code, maybe useful later-on
@@ -1185,8 +1185,8 @@ void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
 
       m_pD3DDevice->BeginScene();
 
-      m_pD3DDevice->SetVertexShader(NULL);
-      m_pD3DDevice->SetPixelShader(NULL);
+      m_pD3DDevice->SetVertexShader(nullptr);
+      m_pD3DDevice->SetPixelShader(nullptr);
       m_pD3DDevice->SetFVF(D3DFVF_XYZ);
 
       // Bind depth stencil texture to texture sampler 0
@@ -1230,21 +1230,21 @@ void RenderDevice::CopyDepth(D3DTexture* dest, D3DTexture* src)
    {
       if (src != srct_cache)
       {
-         if (srct_cache != NULL)
+         if (srct_cache != nullptr)
             CHECKNVAPI(NvAPI_D3D9_UnregisterResource(srct_cache)); //!! meh
          CHECKNVAPI(NvAPI_D3D9_RegisterResource(src)); //!! meh
          srct_cache = src;
       }
       if (dest != dest_cache)
       {
-         if (dest_cache != NULL)
+         if (dest_cache != nullptr)
             CHECKNVAPI(NvAPI_D3D9_UnregisterResource(dest_cache)); //!! meh
          CHECKNVAPI(NvAPI_D3D9_RegisterResource(dest)); //!! meh
          dest_cache = dest;
       }
 
       //CHECKNVAPI(NvAPI_D3D9_AliasSurfaceAsTexture(m_pD3DDevice,src,dest,0));
-      CHECKNVAPI(NvAPI_D3D9_StretchRectEx(m_pD3DDevice, src, NULL, dest, NULL, D3DTEXF_NONE));
+      CHECKNVAPI(NvAPI_D3D9_StretchRectEx(m_pD3DDevice, src, nullptr, dest, nullptr, D3DTEXF_NONE));
    }
 #endif
 #if 0 // leftover manual pixel shader texture copy
@@ -1293,7 +1293,7 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const boo
 
    IDirect3DTexture9 *sysTex;
    HRESULT hr;
-   hr = m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? 1 : 0, 0, (D3DFORMAT)texformat, (D3DPOOL)memoryPool::SYSTEM, &sysTex, NULL);
+   hr = m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? 1 : 0, 0, (D3DFORMAT)texformat, (D3DPOOL)memoryPool::SYSTEM, &sysTex, nullptr);
    if (FAILED(hr))
    {
       ReportError("Fatal Error: unable to create texture!", hr, __FILE__, __LINE__);
@@ -1303,7 +1303,7 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const boo
    if (texformat == colorFormat::RGBA32F)
    {
       D3DLOCKED_RECT locked;
-      CHECKD3D(sysTex->LockRect(0, &locked, NULL, 0));
+      CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
 
       // old RGBA copy code, just for reference:
       //BYTE *pdest = (BYTE*)locked.pBits;
@@ -1331,13 +1331,13 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const boo
       sysRect.left = 0;
       sysRect.right = texwidth;
       sysRect.bottom = texheight;
-      CHECKD3D(D3DXLoadSurfaceFromMemory(sysSurf, NULL, NULL, surf->data(), (D3DFORMAT)colorFormat::RGBA8, surf->pitch(), NULL, &sysRect, D3DX_FILTER_NONE, 0));
+      CHECKD3D(D3DXLoadSurfaceFromMemory(sysSurf, nullptr, nullptr, surf->data(), (D3DFORMAT)colorFormat::RGBA8, surf->pitch(), nullptr, &sysRect, D3DX_FILTER_NONE, 0));
       SAFE_RELEASE_NO_RCC(sysSurf);
    }
 
    if (!(texformat != colorFormat::DXT5 && m_autogen_mipmap))
       // normal maps or float textures are already in linear space!
-      CHECKD3D(D3DXFilterTexture(sysTex, NULL, D3DX_DEFAULT, (texformat == colorFormat::RGBA32F || linearRGB) ? D3DX_FILTER_TRIANGLE : (D3DX_FILTER_TRIANGLE | D3DX_FILTER_SRGB)));
+      CHECKD3D(D3DXFilterTexture(sysTex, nullptr, D3DX_DEFAULT, (texformat == colorFormat::RGBA32F || linearRGB) ? D3DX_FILTER_TRIANGLE : (D3DX_FILTER_TRIANGLE | D3DX_FILTER_SRGB)));
 
    return sysTex;
 }
@@ -1357,7 +1357,7 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* const surf, int * const pTe
    const colorFormat texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (texwidth > 256) && (texheight > 256) && (basetexformat != BaseTexture::RGB_FP)) ? colorFormat::DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? colorFormat::RGBA32F : colorFormat::RGBA8);
 
    D3DTexture *tex;
-   HRESULT hr = m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? 0 : sysTex->GetLevelCount(), (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? textureUsage::AUTOMIPMAP : 0, (D3DFORMAT)texformat, (D3DPOOL)memoryPool::DEFAULT, &tex, NULL);
+   HRESULT hr = m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? 0 : sysTex->GetLevelCount(), (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? textureUsage::AUTOMIPMAP : 0, (D3DFORMAT)texformat, (D3DPOOL)memoryPool::DEFAULT, &tex, nullptr);
    if (FAILED(hr))
       ReportError("Fatal Error: out of VRAM!", hr, __FILE__, __LINE__);
 
@@ -1380,16 +1380,16 @@ void RenderDevice::UploadAndSetSMAATextures()
 {
    {
    IDirect3DTexture9 *sysTex;
-   HRESULT hr = m_pD3DDevice->CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 0, 0, (D3DFORMAT)colorFormat::GREY8, (D3DPOOL)memoryPool::SYSTEM, &sysTex, NULL);
+   HRESULT hr = m_pD3DDevice->CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 0, 0, (D3DFORMAT)colorFormat::GREY8, (D3DPOOL)memoryPool::SYSTEM, &sysTex, nullptr);
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create texture!", hr, __FILE__, __LINE__);
-   hr = m_pD3DDevice->CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 0, 0, (D3DFORMAT)colorFormat::GREY8, (D3DPOOL)memoryPool::DEFAULT, &m_SMAAsearchTexture, NULL);
+   hr = m_pD3DDevice->CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 0, 0, (D3DFORMAT)colorFormat::GREY8, (D3DPOOL)memoryPool::DEFAULT, &m_SMAAsearchTexture, nullptr);
    if (FAILED(hr))
       ReportError("Fatal Error: out of VRAM!", hr, __FILE__, __LINE__);
 
    //!! use D3DXLoadSurfaceFromMemory
    D3DLOCKED_RECT locked;
-   CHECKD3D(sysTex->LockRect(0, &locked, NULL, 0));
+   CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
    void * const pdest = locked.pBits;
    const void * const psrc = searchTexBytes;
    memcpy(pdest,psrc,SEARCHTEX_SIZE);
@@ -1401,16 +1401,16 @@ void RenderDevice::UploadAndSetSMAATextures()
    //
    {
    IDirect3DTexture9 *sysTex;
-   HRESULT hr = m_pD3DDevice->CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 0, 0, (D3DFORMAT)colorFormat::GREYA8, (D3DPOOL)memoryPool::SYSTEM, &sysTex, NULL);
+   HRESULT hr = m_pD3DDevice->CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 0, 0, (D3DFORMAT)colorFormat::GREYA8, (D3DPOOL)memoryPool::SYSTEM, &sysTex, nullptr);
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create texture!", hr, __FILE__, __LINE__);
-   hr = m_pD3DDevice->CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 0, 0, (D3DFORMAT)colorFormat::GREYA8, (D3DPOOL)memoryPool::DEFAULT, &m_SMAAareaTexture, NULL);
+   hr = m_pD3DDevice->CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 0, 0, (D3DFORMAT)colorFormat::GREYA8, (D3DPOOL)memoryPool::DEFAULT, &m_SMAAareaTexture, nullptr);
    if (FAILED(hr))
       ReportError("Fatal Error: out of VRAM!", hr, __FILE__, __LINE__);
 
    //!! use D3DXLoadSurfaceFromMemory
    D3DLOCKED_RECT locked;
-   CHECKD3D(sysTex->LockRect(0, &locked, NULL, 0));
+   CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
    void * const pdest = locked.pBits;
    const void * const psrc = areaTexBytes;
    memcpy(pdest,psrc,AREATEX_SIZE);
@@ -1572,7 +1572,7 @@ void RenderDevice::CreateVertexBuffer(const unsigned int vertexCount, const DWOR
    // This means we cannot read from vertex buffers, but I don't think we need to.
    HRESULT hr;
    hr = m_pD3DDevice->CreateVertexBuffer(vertexCount * fvfToSize(fvf), USAGE_STATIC | usage, 0,
-      (D3DPOOL)memoryPool::DEFAULT, (IDirect3DVertexBuffer9**)vBuffer, NULL);
+      (D3DPOOL)memoryPool::DEFAULT, (IDirect3DVertexBuffer9**)vBuffer, nullptr);
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create vertex buffer!", hr, __FILE__, __LINE__);
 }
@@ -1584,7 +1584,7 @@ void RenderDevice::CreateIndexBuffer(const unsigned int numIndices, const DWORD 
    HRESULT hr;
    const unsigned idxSize = (format == IndexBuffer::FMT_INDEX16) ? 2 : 4;
    hr = m_pD3DDevice->CreateIndexBuffer(idxSize * numIndices, usage | USAGE_STATIC, (D3DFORMAT)format,
-      (D3DPOOL)memoryPool::DEFAULT, (IDirect3DIndexBuffer9**)idxBuffer, NULL);
+      (D3DPOOL)memoryPool::DEFAULT, (IDirect3DIndexBuffer9**)idxBuffer, nullptr);
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create index buffer!", hr, __FILE__, __LINE__);
 }
@@ -1635,7 +1635,7 @@ void* RenderDevice::AttachZBufferTo(RenderTarget* surf)
    {
       D3DTexture* dup;
       CHECKD3D(m_pD3DDevice->CreateTexture(desc.Width, desc.Height, 1,
-               D3DUSAGE_DEPTHSTENCIL, (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'), (D3DPOOL)memoryPool::DEFAULT, &dup, NULL)); // D3DUSAGE_AUTOGENMIPMAP?
+               D3DUSAGE_DEPTHSTENCIL, (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'), (D3DPOOL)memoryPool::DEFAULT, &dup, nullptr)); // D3DUSAGE_AUTOGENMIPMAP?
 
       return dup;
    }
@@ -1643,7 +1643,7 @@ void* RenderDevice::AttachZBufferTo(RenderTarget* surf)
    {
       IDirect3DSurface9 *pZBuf;
       const HRESULT hr = m_pD3DDevice->CreateDepthStencilSurface(desc.Width, desc.Height, D3DFMT_D16 /*D3DFMT_D24X8*/, //!!
-                                                                 desc.MultiSampleType, desc.MultiSampleQuality, FALSE, &pZBuf, NULL);
+                                                                 desc.MultiSampleType, desc.MultiSampleQuality, FALSE, &pZBuf, nullptr);
       if (FAILED(hr))
          ReportError("Fatal Error: unable to create depth buffer!", hr, __FILE__, __LINE__);
 
@@ -1664,7 +1664,7 @@ void RenderDevice::DrawPrimitive(const RenderDevice::PrimitiveTypes type, const 
    if (FAILED(hr))
       ReportError("Fatal Error: DrawPrimitiveUP failed!", hr, __FILE__, __LINE__);
 
-   m_curVertexBuffer = 0;      // DrawPrimitiveUP sets the VB to NULL
+   m_curVertexBuffer = 0;      // DrawPrimitiveUP sets the VB to nullptr
 
    m_curDrawCalls++;
 }
@@ -1812,30 +1812,30 @@ bool Shader::Load(const BYTE* shaderCodeName, UINT codeSize)
        if(fromFile)
        {
        dwShaderFlags = D3DXSHADER_DEBUG|D3DXSHADER_SKIPOPTIMIZATION;
-       hr = D3DXCreateEffectFromFile(	m_renderDevice->GetCoreDevice(),		// pDevice
+       hr = D3DXCreateEffectFromFile(m_renderDevice->GetCoreDevice(),		// pDevice
        shaderName,			// pSrcFile
-       NULL,				// pDefines
-       NULL,				// pInclude
+       nullptr,				// pDefines
+       nullptr,				// pInclude
        dwShaderFlags,		// Flags
-       NULL,				// pPool
+       nullptr,				// pPool
        &m_shader,			// ppEffect
-       &pBufferErrors);	// ppCompilationErrors
+       &pBufferErrors);		// ppCompilationErrors
        }
        else
        {
-       hr = D3DXCreateEffectFromResource(	m_renderDevice->GetCoreDevice(),		// pDevice
-       NULL,
-       shaderName,         // resource name
-       NULL,				// pDefines
-       NULL,				// pInclude
+       hr = D3DXCreateEffectFromResource(m_renderDevice->GetCoreDevice(),		// pDevice
+       nullptr,
+       shaderName,			// resource name
+       nullptr,				// pDefines
+       nullptr,				// pInclude
        dwShaderFlags,		// Flags
-       NULL,				// pPool
+       nullptr,				// pPool
        &m_shader,			// ppEffect
-       &pBufferErrors);	// ppCompilationErrors
+       &pBufferErrors);		// ppCompilationErrors
 
        }
        */
-   hr = D3DXCreateEffect(m_renderDevice->GetCoreDevice(), shaderCodeName, codeSize, NULL, NULL, dwShaderFlags, NULL, &m_shader, &pBufferErrors);
+   hr = D3DXCreateEffect(m_renderDevice->GetCoreDevice(), shaderCodeName, codeSize, nullptr, nullptr, dwShaderFlags, nullptr, &m_shader, &pBufferErrors);
    if (FAILED(hr))
    {
       if (pBufferErrors)
@@ -1862,9 +1862,9 @@ void Shader::SetTexture(const D3DXHANDLE texelName, Texture *texel, const bool l
    assert(idx < TEXTURESET_STATE_CACHE_SIZE);
 
    if (!texel || !texel->m_pdsBuffer) {
-      currentTexture[idx] = NULL; // invalidate the cache
+      currentTexture[idx] = nullptr; // invalidate the cache
 
-      CHECKD3D(m_shader->SetTexture(texelName, NULL));
+      CHECKD3D(m_shader->SetTexture(texelName, nullptr));
 
       m_renderDevice->m_curTextureChanges++;
 
@@ -1885,7 +1885,7 @@ void Shader::SetTexture(const D3DXHANDLE texelName, D3DTexture *texel)
    const unsigned int idx = texelName[strlen(texelName) - 1] - '0'; // current convention: SetTexture gets "TextureX", where X 0..4
    assert(idx < TEXTURESET_STATE_CACHE_SIZE);
 
-   currentTexture[idx] = NULL; // direct set of device tex invalidates the cache
+   currentTexture[idx] = nullptr; // direct set of device tex invalidates the cache
 
    CHECKD3D(m_shader->SetTexture(texelName, texel));
 

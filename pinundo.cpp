@@ -141,7 +141,7 @@ void PinUndo::Undo()
       // Go back to beginning of stream to load
       LARGE_INTEGER foo;
       foo.QuadPart = 0;
-      pstm->Seek(foo, STREAM_SEEK_SET, NULL);
+      pstm->Seek(foo, STREAM_SEEK_SET, nullptr);
 
       DWORD read;
       IEditable *pie;

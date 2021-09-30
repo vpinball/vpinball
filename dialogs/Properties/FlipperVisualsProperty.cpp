@@ -26,7 +26,7 @@ void FlipperVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->size(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemFlipper))
+        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemFlipper))
             continue;
         Flipper * const flipper = (Flipper *)m_pvsel->ElementAt(i);
         if (dispid == IDC_MATERIAL_COMBO2 || dispid == -1)
@@ -69,7 +69,7 @@ void FlipperVisualsProperty::UpdateProperties(const int dispid)
 {
     for (int i = 0; i < m_pvsel->size(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemFlipper))
+        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemFlipper))
             continue;
         Flipper * const flipper = (Flipper *)m_pvsel->ElementAt(i);
         switch (dispid)

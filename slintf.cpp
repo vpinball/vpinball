@@ -25,7 +25,7 @@ void RedirectIoToConsole()
 
    CONSOLE_SCREEN_BUFFER_INFO coninfo;
 
-   FILE* fp = NULL;
+   FILE* fp = nullptr;
 
    // allocate a console for this app	
    AllocConsole();
@@ -36,7 +36,7 @@ void RedirectIoToConsole()
       char name[256];
       HWND win;
       GetConsoleTitle(name, 255);
-      win = FindWindow(NULL, name);
+      win = FindWindow(nullptr, name);
       SetWindowPos(win, HWND_TOP, 0, 640, 640, 480, SWP_NOSIZE);
       ShowWindow(win, SW_SHOWNORMAL);
    }
@@ -59,7 +59,7 @@ void RedirectIoToConsole()
 
    *stdout = *fp;
 
-   setvbuf(stdout, NULL, _IONBF, 0);
+   setvbuf(stdout, nullptr, _IONBF, 0);
 
    // redirect unbuffered STDIN to the console
 
@@ -71,7 +71,7 @@ void RedirectIoToConsole()
 
    *stdin = *fp;
 
-   setvbuf(stdin, NULL, _IONBF, 0);
+   setvbuf(stdin, nullptr, _IONBF, 0);
 
    // redirect unbuffered STDERR to the console
 
@@ -83,7 +83,7 @@ void RedirectIoToConsole()
 
    *stderr = *fp;
 
-   setvbuf(stderr, NULL, _IONBF, 0);
+   setvbuf(stderr, nullptr, _IONBF, 0);
 
    // make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog
    // point to console as well

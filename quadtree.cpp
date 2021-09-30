@@ -146,7 +146,7 @@ void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int leve
 
    std::vector<HitObject*> vRemain; // hit objects which did not go to a quadrant
 
-   m_unique = (m_vho[0]->m_e != 0) ? m_vho[0]->m_obj : NULL;
+   m_unique = (m_vho[0]->m_e != 0) ? m_vho[0]->m_obj : nullptr;
    m_ObjType = m_vho[0]->m_ObjType;
 
    // sort items into appropriate child nodes
@@ -154,8 +154,8 @@ void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int leve
    {
       HitObject * const pho = m_vho[i];
 
-      if (((pho->m_e != 0) ? pho->m_obj : NULL) != m_unique) // are all objects in current node unique/belong to the same primitive?
-         m_unique = NULL;
+      if (((pho->m_e != 0) ? pho->m_obj : nullptr) != m_unique) // are all objects in current node unique/belong to the same primitive?
+         m_unique = nullptr;
 
       int oct;
       if (pho->m_hitBBox.right < m_vcenter.x)
@@ -337,7 +337,7 @@ void HitQuadtree::HitTestBallSse(const Ball * const pball, CollisionEvent& coll)
 {
    const HitQuadtree* stack[128]; //!! should be enough, but better implement test in construction to not exceed this
    unsigned int stackpos = 0;
-   stack[0] = NULL; // sentinel
+   stack[0] = nullptr; // sentinel
 
    const HitQuadtree* __restrict current = this;
 
@@ -359,7 +359,7 @@ void HitQuadtree::HitTestBallSse(const Ball * const pball, CollisionEvent& coll)
 
    do
    {
-      if (current->m_unique == NULL
+      if (current->m_unique == nullptr
           || (current->m_ObjType == ePrimitive && ((Primitive*)current->m_unique)->m_d.m_collidable)
           || (current->m_ObjType == eHitTarget && ((HitTarget*)current->m_unique)->m_d.m_isDropped == false)) // early out if only one unique primitive/hittarget stored inside all of the subtree/current node that is also not collidable (at the moment)
       {
@@ -462,7 +462,7 @@ void HitQuadtree::HitTestBallSse(const Ball * const pball, CollisionEvent& coll)
       //current = stack[stackpos];
       //if (stackpos > 0)
       //    stackpos--;
-      current = stack[stackpos--]; // above test not needed due to sentinel in stack[0]=NULL
+      current = stack[stackpos--]; // above test not needed due to sentinel in stack[0]=nullptr
 
    } while (current);
 }

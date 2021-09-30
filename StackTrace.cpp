@@ -63,7 +63,7 @@ bool StackTrace::InitSymbols()
 						SYMOPT_LOAD_LINES |
 						SYMOPT_UNDNAME;
 		SymSetOptions(options);
-		const char* dir = NULL;
+		const char* dir = nullptr;
 		if (!SymInitialize(GetCurrentProcess(), dir, options & SYMOPT_DEFERRED_LOADS))
 		{
 			OutputDebugString("Cannot initialize symbol engine");
@@ -80,8 +80,8 @@ int StackTrace::GetCallStack(Address* callStack, int maxDepth, int entriesToSkip
 	PCONTEXT pContext(0);
 	const HMODULE hKernel32Dll = GetModuleHandle("kernel32.dll");
 	typedef void(WINAPI* pRtlCaptureContext)(PCONTEXT);
-	static pRtlCaptureContext RtlCaptureContext = NULL;
-	if(RtlCaptureContext == NULL)
+	static pRtlCaptureContext RtlCaptureContext = nullptr;
+	if(RtlCaptureContext == nullptr)
 		RtlCaptureContext = (pRtlCaptureContext)GetProcAddress(hKernel32Dll, "RtlCaptureContext");
 	CONTEXT context;
 	if (RtlCaptureContext)
@@ -143,7 +143,7 @@ int StackTrace::GetCallStack(void* vcontext, Address* callStack, int maxDepth,
 
 	int numEntries(0);
 	while (::StackWalk64(IMAGE_FILE_MACHINE_I386, process, thread, 
-		&stackFrame, context, 0, SymFunctionTableAccess64, SymGetModuleBase64, NULL) &&
+		&stackFrame, context, 0, SymFunctionTableAccess64, SymGetModuleBase64, nullptr) &&
 		stackFrame.AddrFrame.Offset != 0 && numEntries < maxDepth)
 	{
 		if (entriesToSkip > 0)
@@ -279,8 +279,8 @@ void StackTrace::GetCallStack(void* vcontext, bool includeArguments,
 	while (maxSymbolLen > 0 &&
 		::StackWalk64(IMAGE_FILE_MACHINE_I386,
 			::GetCurrentProcess(), ::GetCurrentThread(), &stackFrame,
-			context, NULL, /*Internal_ReadProcessMemory,*/
-			SymFunctionTableAccess64, SymGetModuleBase64, NULL) != FALSE &&
+			context, nullptr, /*Internal_ReadProcessMemory,*/
+			SymFunctionTableAccess64, SymGetModuleBase64, nullptr) != FALSE &&
 		stackFrame.AddrFrame.Offset != 0)
 	{
 		const Address addr = reinterpret_cast<Address>(stackFrame.AddrPC.Offset);

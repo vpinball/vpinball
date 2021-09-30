@@ -2,7 +2,7 @@
 #include "Properties/DecalVisualsProperty.h"
 #include <WindowsX.h>
 
-DecalVisualsProperty::DecalVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPDECAL_VISUALS, pvsel), m_font(NULL)
+DecalVisualsProperty::DecalVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPDECAL_VISUALS, pvsel), m_font(nullptr)
 {
     m_typeList.push_back("Text");
     m_typeList.push_back("Image");
@@ -33,7 +33,7 @@ void DecalVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->size(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDecal))
+        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDecal))
             continue;
         Decal * const decal = (Decal *)m_pvsel->ElementAt(i);
 
@@ -77,7 +77,7 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
 {
     for (int i = 0; i < m_pvsel->size(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDecal))
+        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDecal))
             continue;
         Decal * const decal = (Decal *)m_pvsel->ElementAt(i);
         switch (dispid)

@@ -108,7 +108,7 @@ public:
    }
    virtual unsigned long long GetImageID() const
    {
-      Texture* tex = NULL;
+      Texture* tex = nullptr;
       if (m_d.m_sideVisible)
          tex = m_ptable->GetImage(m_d.m_szSideImage);
       if (m_d.m_topBottomVisible)

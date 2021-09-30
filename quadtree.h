@@ -13,7 +13,7 @@ public:
    HitQuadtree()
    {
 #ifndef USE_EMBREE
-      m_unique = NULL;
+      m_unique = nullptr;
       m_leaf = true;
       lefts_rights_tops_bottoms_zlows_zhighs = 0;
 #else
@@ -57,7 +57,7 @@ private:
    float* __restrict lefts_rights_tops_bottoms_zlows_zhighs;
 
    bool m_leaf;
-   unsigned char m_ObjType; // only used if m_unique != NULL, to identify which object this is (eObjType)
+   unsigned char m_ObjType; // only used if m_unique != nullptr, to identify which object this is (eObjType)
 #else
    std::vector<HitObject*> *m_pvho;
 

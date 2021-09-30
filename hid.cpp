@@ -20,8 +20,8 @@ HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
 
    //Get a list of devices matching the criteria (hid interface, present)
    HDEVINFO hardwareDeviceInfoSet = SetupDiGetClassDevs(&hidGUID,
-      NULL, // Define no enumerator (global)
-      NULL, // Define no
+      nullptr, // Define no enumerator (global)
+      nullptr, // Define no
       (DIGCF_PRESENT | // Only Devices present
       DIGCF_DEVICEINTERFACE)); // Function class devices.
 
@@ -29,7 +29,7 @@ HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
 
    //Go through the list and get the interface data
    DWORD result = SetupDiEnumDeviceInterfaces(hardwareDeviceInfoSet,
-      NULL, //infoData,
+      nullptr,  //infoData,
       &hidGUID, //interfaceClassGuid,
       deviceIndex,
       &deviceInterfaceData);
@@ -44,7 +44,7 @@ HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
    //Get the details with null values to get the required size of the buffer
    SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfoSet,
       &deviceInterfaceData,
-      NULL, //interfaceDetail,
+      nullptr, //interfaceDetail,
       0, //interfaceDetailSize,
       &requiredSize,
       0); //infoData))
@@ -61,7 +61,7 @@ HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
       deviceDetail,
       requiredSize,
       &newRequiredSize,
-      NULL))
+      nullptr))
    {
       SetupDiDestroyDeviceInfoList(hardwareDeviceInfoSet);
       free(deviceDetail);
@@ -72,17 +72,17 @@ HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
    const HANDLE deviceHandle = CreateFile(deviceDetail->DevicePath,
       GENERIC_READ | GENERIC_WRITE,
       FILE_SHARE_READ | FILE_SHARE_WRITE,
-      NULL,        // no SECURITY_ATTRIBUTES structure
+      nullptr,       // no SECURITY_ATTRIBUTES structure
       OPEN_EXISTING, // No special create flags
       FILE_FLAG_OVERLAPPED,
-      NULL);       // No template file
+      nullptr);      // No template file
 
    SetupDiDestroyDeviceInfoList(hardwareDeviceInfoSet);
    free(deviceDetail);
    return deviceHandle;
 }
 
-static HANDLE hid_connect(U32 vendorID, U32 productID, U32 *versionNumber = NULL)
+static HANDLE hid_connect(U32 vendorID, U32 productID, U32 *versionNumber = nullptr)
 {
    DWORD index = 0;
    HIDD_ATTRIBUTES deviceAttributes;
@@ -143,7 +143,7 @@ void hid_init()
 
       if (HidParsedData) HidD_FreePreparsedData(HidParsedData); //make sure not null, otherwise crash		
 
-      HANDLE sReportEvent = CreateEvent(NULL, 1, 0, NULL);
+      HANDLE sReportEvent = CreateEvent(nullptr, 1, 0, nullptr);
 
       ol.hEvent = sReportEvent;
       ol.Offset = 0;
@@ -262,7 +262,7 @@ void hid_update(const U32 cur_time_msec)
       {
          unsigned char buffer[1024] = { 0 };
 
-         HANDLE sReportEvent = CreateEvent(NULL, 1, 0, NULL);
+         HANDLE sReportEvent = CreateEvent(nullptr, 1, 0, nullptr);
 
          ol.hEvent = sReportEvent;
          ol.Offset = 0;

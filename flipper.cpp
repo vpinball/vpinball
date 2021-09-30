@@ -80,10 +80,10 @@ static const Vertex3Ds* const vertsBaseTop = (Vertex3Ds*)vertsBaseTopf;
 
 Flipper::Flipper()
 {
-   m_phitflipper = NULL;
-   m_vertexBuffer = NULL;
-   m_indexBuffer = NULL;
-   m_ptable = NULL;
+   m_phitflipper = nullptr;
+   m_vertexBuffer = nullptr;
+   m_indexBuffer = nullptr;
+   m_ptable = nullptr;
 }
 
 Flipper::~Flipper()
@@ -103,9 +103,9 @@ HRESULT Flipper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    SetDefaults(fromMouseClick);
 
-   m_phitflipper = NULL;
+   m_phitflipper = nullptr;
 
-   return InitVBA(fTrue, 0, NULL);
+   return InitVBA(fTrue, 0, nullptr);
 }
 
 void Flipper::SetDefaults(bool fromMouseClick)
@@ -295,17 +295,17 @@ void Flipper::EndPlay()
 {
    if (m_phitflipper) // Failed player case
    {
-      m_phitflipper = NULL;
+      m_phitflipper = nullptr;
    }
    if (m_vertexBuffer)
    {
       m_vertexBuffer->release();
-      m_vertexBuffer = NULL;
+      m_vertexBuffer = nullptr;
    }
    if (m_indexBuffer)
    {
       m_indexBuffer->release();
-      m_indexBuffer = NULL;
+      m_indexBuffer = nullptr;
    }
 
    IEditable::EndPlay();
@@ -611,7 +611,7 @@ void Flipper::RenderDynamic()
 
    if (m_phitflipper && !m_phitflipper->m_flipperMover.m_visible)
       return;
-   if (m_phitflipper == NULL && !m_d.m_visible)
+   if (m_phitflipper == nullptr && !m_d.m_visible)
       return;
 
    if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
@@ -673,7 +673,7 @@ void Flipper::RenderDynamic()
 void Flipper::ExportMesh(ObjLoader& loader)
 {
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
 
    Matrix3D matTrafo, matTemp;
    matTrafo.SetIdentity();
@@ -1205,7 +1205,7 @@ STDMETHODIMP Flipper::get_Surface(BSTR *pVal)
 STDMETHODIMP Flipper::put_Surface(BSTR newVal)
 {
    char buf[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, nullptr, nullptr);
    m_d.m_szSurface = buf;
 
    return S_OK;
@@ -1223,7 +1223,7 @@ STDMETHODIMP Flipper::get_Material(BSTR *pVal)
 STDMETHODIMP Flipper::put_Material(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
    m_d.m_szMaterial = buf;
 
    return S_OK;
@@ -1284,7 +1284,7 @@ STDMETHODIMP Flipper::get_RubberMaterial(BSTR *pVal)
 STDMETHODIMP Flipper::put_RubberMaterial(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
    m_d.m_szRubberMaterial = buf;
 
    return S_OK;
@@ -1532,7 +1532,7 @@ STDMETHODIMP Flipper::get_Image(BSTR *pVal)
 STDMETHODIMP Flipper::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {

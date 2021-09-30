@@ -143,16 +143,16 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
 
    m_throwBalls = false;
    m_ballControl = false;
-   m_pactiveballBC = NULL;
-   m_pBCTarget = NULL;
+   m_pactiveballBC = nullptr;
+   m_pBCTarget = nullptr;
 
 #ifdef PLAYBACK
    m_playback = false;
-   m_fplaylog = NULL;
+   m_fplaylog = nullptr;
 #endif
 
 #ifdef LOG
-   m_flog = NULL;
+   m_flog = nullptr;
 #endif
 
    for (int i = 0; i < PININ_JOYMXCNT; ++i)
@@ -160,8 +160,8 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
 
    m_sleeptime = 0;
 
-   m_audio = NULL;
-   m_pactiveball = NULL;
+   m_audio = nullptr;
+   m_pactiveball = nullptr;
 
    m_curPlunger = JOYRANGEMN - 1;
 
@@ -191,8 +191,8 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_BWrendering = LoadValueIntWithDefault("Player", "BWRendering", 0);
    m_detectScriptHang = LoadValueBoolWithDefault("Player", "DetectHang", false);
 
-   m_ballImage = NULL;
-   m_decalImage = NULL;
+   m_ballImage = nullptr;
+   m_decalImage = nullptr;
 
    m_overwriteBallImages = LoadValueBoolWithDefault("Player", "OverwriteBallImage", false);
    m_minphyslooptime = min(LoadValueIntWithDefault("Player", "MinPhysLoopTime", 0), 1000);
@@ -205,7 +205,7 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
        {
            BaseTexture * const tex = BaseTexture::CreateFromFile(imageName);
 
-           if (tex != NULL)
+           if (tex != nullptr)
                m_ballImage = new Texture(tex);
        }
        hr = LoadValue("Player", "DecalImage", imageName);
@@ -213,7 +213,7 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
        {
            BaseTexture * const tex = BaseTexture::CreateFromFile(imageName);
 
-           if (tex != NULL)
+           if (tex != nullptr)
                m_decalImage = new Texture(tex);
        }
    }
@@ -247,12 +247,12 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
 #ifdef STEPPING
    m_pauseTimeTarget = 0;
 #endif
-   m_pactiveballDebug = NULL;
+   m_pactiveballDebug = nullptr;
 
    m_gameWindowActive = false;
    m_debugWindowActive = false;
    m_userDebugPaused = false;
-   m_hwndDebugOutput = NULL;
+   m_hwndDebugOutput = nullptr;
 
    m_LastKnownGoodCounter = 0;
    m_ModalRefCount = 0;
@@ -292,18 +292,18 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_overall_frames = 0;
 
    m_dmd = int2(0,0);
-   m_texdmd = NULL;
+   m_texdmd = nullptr;
    m_backdropSettingActive = 0;
 
    m_ScreenOffset = Vertex2D(0.f, 0.f);
 
-   m_ballIndexBuffer = NULL;
-   m_ballVertexBuffer = NULL;
+   m_ballIndexBuffer = nullptr;
+   m_ballVertexBuffer = nullptr;
 #ifdef DEBUG_BALL_SPIN
-   m_ballDebugPoints = NULL;
+   m_ballDebugPoints = nullptr;
 #endif
-   m_ballTrailVertexBuffer = NULL;
-   m_pFont = NULL;
+   m_ballTrailVertexBuffer = nullptr;
+   m_pFont = nullptr;
    m_meshAsPlayfield = false;
    m_ptable = ptable;
 }
@@ -313,22 +313,22 @@ Player::~Player()
     if (m_fontSprite)
     {
         m_fontSprite->Release();
-        m_fontSprite = NULL;
+        m_fontSprite = nullptr;
     }
     if (m_pFont)
     {
         m_pFont->Release();
-        m_pFont = NULL;
+        m_pFont = nullptr;
     }
     if (m_ballImage)
     {
        delete m_ballImage;
-       m_ballImage = NULL;
+       m_ballImage = nullptr;
     }
     if (m_decalImage)
     {
        delete m_decalImage;
-       m_decalImage = NULL;
+       m_decalImage = nullptr;
     }
     if (m_pBCTarget)
     {
@@ -343,8 +343,8 @@ void Player::PreRegisterClass(WNDCLASS& wc)
     wc.hInstance = g_pvp->theInstance;
     wc.lpszClassName = "VPPlayer"; // leave as-is as e.g. VPM relies on this
     wc.hIcon = LoadIcon(g_pvp->theInstance, MAKEINTRESOURCE(IDI_TABLE));
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.lpszMenuName = NULL;
+    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wc.lpszMenuName = nullptr;
 }
 
 void Player::PreCreate(CREATESTRUCT& cs)
@@ -410,7 +410,7 @@ void Player::PreCreate(CREATESTRUCT& cs)
             r.top = yn;
             r.right = xn + m_width;
             r.bottom = yn + m_height;
-            if (MonitorFromRect(&r, MONITOR_DEFAULTTONULL) != NULL) // window is visible somewhere, so use the coords from the registry
+            if (MonitorFromRect(&r, MONITOR_DEFAULTTONULL) != nullptr) // window is visible somewhere, so use the coords from the registry
             {
                 x = xn;
                 y = yn;
@@ -552,10 +552,10 @@ void Player::Shutdown()
    SAFE_RELEASE(m_ballIndexBuffer);
    if (m_ballShader)
    {
-      CHECKD3D(m_ballShader->Core()->SetTexture("Texture0", NULL));
-      CHECKD3D(m_ballShader->Core()->SetTexture("Texture1", NULL));
-      CHECKD3D(m_ballShader->Core()->SetTexture("Texture2", NULL));
-      CHECKD3D(m_ballShader->Core()->SetTexture("Texture3", NULL));
+      CHECKD3D(m_ballShader->Core()->SetTexture("Texture0", nullptr));
+      CHECKD3D(m_ballShader->Core()->SetTexture("Texture1", nullptr));
+      CHECKD3D(m_ballShader->Core()->SetTexture("Texture2", nullptr));
+      CHECKD3D(m_ballShader->Core()->SetTexture("Texture3", nullptr));
       delete m_ballShader;
       m_ballShader = 0;
    }
@@ -566,12 +566,12 @@ void Player::Shutdown()
    if (m_ballImage)
    {
        delete m_ballImage;
-       m_ballImage = NULL;
+       m_ballImage = nullptr;
    }
    if (m_decalImage)
    {
        delete m_decalImage;
-       m_decalImage = NULL;
+       m_decalImage = nullptr;
    }
 
    m_limiter.Shutdown();
@@ -595,7 +595,7 @@ void Player::Shutdown()
       Ball * const pball = m_vball[i];
       if (pball->m_pballex)
       {
-         pball->m_pballex->m_pball = NULL;
+         pball->m_pballex->m_pball = nullptr;
          pball->m_pballex->Release();
       }
 
@@ -613,10 +613,10 @@ void Player::Shutdown()
    m_dmd = int2(0,0);
    if (m_texdmd)
    {
-      m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTexture("Texture0", (D3DTexture*)NULL);
+      m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTexture("Texture0", (D3DTexture*)nullptr);
       m_pin3d.m_pd3dPrimaryDevice->m_texMan.UnloadTexture(m_texdmd);
       delete m_texdmd;
-      m_texdmd = NULL;
+      m_texdmd = nullptr;
    }
 
 #ifdef LOG
@@ -633,7 +633,7 @@ void Player::Shutdown()
    if (m_audio)
    {
       delete m_audio;
-      m_audio = NULL;
+      m_audio = nullptr;
    }
 
    for (size_t i = 0; i < m_controlclsidsafe.size(); i++)
@@ -1031,12 +1031,12 @@ void Player::InitBallShader()
 
    m_ballShader->SetTexture("Texture2", m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(m_pin3d.m_envRadianceTexture, false));
 
-   assert(m_ballIndexBuffer == NULL);
+   assert(m_ballIndexBuffer == nullptr);
    const bool lowDetailBall = (m_ptable->GetDetailLevel() < 10);
    m_ballIndexBuffer = m_pin3d.m_pd3dPrimaryDevice->CreateAndFillIndexBuffer(lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
 
    // VB for normal ball
-   assert(m_ballVertexBuffer == NULL);
+   assert(m_ballVertexBuffer == nullptr);
    m_pin3d.m_pd3dPrimaryDevice->CreateVertexBuffer(lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_ballVertexBuffer);
 
    // load precomputed ball vertices into vertex buffer
@@ -1075,7 +1075,7 @@ void Player::CreateDebugFont()
     if (FAILED(hr))
     {
         ShowError("Unable to create debug font via D3DXCreateFont!");
-        m_pFont = NULL;
+        m_pFont = nullptr;
     }
     if (FAILED(D3DXCreateSprite(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice(), &m_fontSprite)))
         ShowError("D3DXCreateSprite failed!");
@@ -1091,7 +1091,7 @@ void Player::SetDebugOutputPosition(const float x, const float y)
 
     const float angle = ANGTORAD(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set]);
     D3DXMATRIX mat;
-    D3DXMatrixTransformation2D(&mat, NULL, 0.0, NULL, &spriteCenter, angle, &spritePos);
+    D3DXMatrixTransformation2D(&mat, nullptr, 0.0, nullptr, &spriteCenter, angle, &spritePos);
     m_fontSprite->SetTransform(&mat);
 }
 
@@ -1129,7 +1129,7 @@ HRESULT Player::Init()
 
    set_lowest_possible_win_timer_resolution();
 
-   //m_hSongCompletionEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
+   //m_hSongCompletionEvent = CreateEvent( nullptr, TRUE, FALSE, nullptr );
 
    m_ptable->m_progressDialog.SetProgress(10);
    m_ptable->m_progressDialog.SetName("Initializing Visuals...");
@@ -1195,7 +1195,7 @@ HRESULT Player::Init()
    }
 
    if (m_fullScreen)
-      SetWindowPos(NULL, 0, 0, m_width, m_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
+      SetWindowPos(nullptr, 0, 0, m_width, m_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
 
    m_pininput.Init(GetHwnd());
 
@@ -1478,7 +1478,7 @@ HRESULT Player::Init()
          }
       }
 
-      assert(m_ballDebugPoints == NULL);
+      assert(m_ballDebugPoints == nullptr);
       m_pin3d.m_pd3dPrimaryDevice->CreateVertexBuffer((unsigned int)ballDbgVtx.size(), 0, MY_D3DFVF_TEX, &m_ballDebugPoints);
       void *buf;
       m_ballDebugPoints->lock(0, 0, &buf, VertexBuffer::WRITEONLY);
@@ -1487,7 +1487,7 @@ HRESULT Player::Init()
    }
 #endif
 
-   assert(m_ballTrailVertexBuffer == NULL);
+   assert(m_ballTrailVertexBuffer == nullptr);
    m_pin3d.m_pd3dPrimaryDevice->CreateVertexBuffer((MAX_BALL_TRAIL_POS-2)*2+4, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_ballTrailVertexBuffer);
 
    m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
@@ -1587,7 +1587,7 @@ void Player::RenderStaticMirror(const bool onlyBalls)
 {
    // Direct all renders to the temporary mirror buffer (plus the static z-buffer)
    m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture());
-   m_pin3d.m_pd3dPrimaryDevice->Clear(0, NULL, clearType::TARGET, 0, 1.0f, 0L);
+   m_pin3d.m_pd3dPrimaryDevice->Clear(0, nullptr, clearType::TARGET, 0, 1.0f, 0L);
 
    if (!onlyBalls)
    {
@@ -1652,7 +1652,7 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
 {
    // render into temp mirror back buffer 
    m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture());
-   m_pin3d.m_pd3dPrimaryDevice->Clear(0, NULL, clearType::TARGET, 0, 1.0f, 0L);
+   m_pin3d.m_pd3dPrimaryDevice->Clear(0, nullptr, clearType::TARGET, 0, 1.0f, 0L);
 
    D3DMATRIX viewMat;
    m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
@@ -1768,7 +1768,7 @@ void Player::InitStatic()
    memset(pdestStatic, 0, descStatic.Width*descStatic.Height * 3 * sizeof(float));
 
    RenderTarget* offscreenSurface;
-   CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice()->CreateOffscreenPlainSurface(descStatic.Width, descStatic.Height, descStatic.Format, (D3DPOOL)memoryPool::SYSTEM, &offscreenSurface, NULL));
+   CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice()->CreateOffscreenPlainSurface(descStatic.Width, descStatic.Height, descStatic.Format, (D3DPOOL)memoryPool::SYSTEM, &offscreenSurface, nullptr));
 
    // if rendering static/with heavy oversampling, disable the aniso/trilinear filter to get a sharper/more precise result overall!
    if (!m_cameraMode)
@@ -1969,7 +1969,7 @@ void Player::InitStatic()
 
    offscreenSurface->UnlockRect();
 
-   CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice()->UpdateSurface(offscreenSurface, NULL, m_pin3d.m_pddsStatic, NULL));
+   CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice()->UpdateSurface(offscreenSurface, nullptr, m_pin3d.m_pddsStatic, nullptr));
    }
 
    delete [] pdestStatic;
@@ -2001,7 +2001,7 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
 
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pddsAOBackTmpBuffer);
-      m_pin3d.m_pd3dPrimaryDevice->Clear(0, NULL, clearType::TARGET, 0, 1.0f, 0L);
+      m_pin3d.m_pd3dPrimaryDevice->Clear(0, nullptr, clearType::TARGET, 0, 1.0f, 0L);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture4", &m_pin3d.m_aoDitherTexture, true);
@@ -2090,18 +2090,18 @@ void Player::DestroyBall(Ball *pball)
 
    const bool activeball = (m_pactiveball == pball);
    if (activeball)
-      m_pactiveball = NULL;
+      m_pactiveball = nullptr;
 
    const bool debugball = (m_pactiveballDebug == pball);
    if (debugball)
-      m_pactiveballDebug = NULL;
+      m_pactiveballDebug = nullptr;
 
    if (m_pactiveballBC == pball)
-      m_pactiveballBC = NULL;
+      m_pactiveballBC = nullptr;
 
    if (pball->m_pballex)
    {
-      pball->m_pballex->m_pball = NULL;
+      pball->m_pballex->m_pball = nullptr;
       pball->m_pballex->Release();
    }
 
@@ -2672,7 +2672,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
             ) // don't play with frozen balls
          {
             m_vball[i]->m_coll.m_hittime = hittime; // search upto current hittime
-            m_vball[i]->m_coll.m_obj = NULL;
+            m_vball[i]->m_coll.m_obj = nullptr;
          }
 
       if (!m_vball.empty())
@@ -2694,7 +2694,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
          {
 #ifndef USE_EMBREE
             pball->m_coll.m_hittime = hittime;          // search upto current hittime
-            pball->m_coll.m_obj = NULL;
+            pball->m_coll.m_obj = nullptr;
 #endif
             // always check for playfield and top glass
             if (!m_meshAsPlayfield)
@@ -2775,7 +2775,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
             c_collisioncnt++;
 #endif
             pho->Collide(pball->m_coll);                 //!!!!! 3) collision on active ball
-            pball->m_coll.m_obj = NULL;                  // remove trial hit object pointer
+            pball->m_coll.m_obj = nullptr;                  // remove trial hit object pointer
 
             // Collide may have changed the velocity of the ball, 
             // and therefore the bounding box for the next hit cycle
@@ -3049,7 +3049,7 @@ void Player::UpdatePhysics()
       m_changed_vht.clear();
 
       Ball * const old_pactiveball = m_pactiveball;
-      m_pactiveball = NULL; // No ball is the active ball for timers/key events
+      m_pactiveball = nullptr; // No ball is the active ball for timers/key events
 
       if(m_script_period <= 1000*MAX_TIMERS_MSEC_OVERALL) // if overall script time per frame exceeded, skip
       {
@@ -3255,7 +3255,7 @@ void Player::DrawBulbLightBuffer()
 {
    // switch to 'bloom' output buffer to collect all bulb lights
    m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture());
-   m_pin3d.m_pd3dPrimaryDevice->Clear(0, NULL, clearType::TARGET, 0, 1.0f, 0L);
+   m_pin3d.m_pd3dPrimaryDevice->Clear(0, nullptr, clearType::TARGET, 0, 1.0f, 0L);
 
    // check if any bulb specified at all
    bool do_renderstage = false;
@@ -3290,7 +3290,7 @@ void Player::DrawBulbLightBuffer()
       //for (unsigned int blur = 0; blur < 2; ++blur) // uses larger blur kernel instead now (see below)
       {
          {
-            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture0", (D3DTexture*)NULL);
+            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture0", (D3DTexture*)nullptr);
 
             // switch to 'bloom' temporary output buffer for horizontal phase of gaussian blur
             m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetBloomTmpBufferTexture());
@@ -3305,7 +3305,7 @@ void Player::DrawBulbLightBuffer()
             m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
          }
          {
-            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture0", (D3DTexture*)NULL);
+            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture0", (D3DTexture*)nullptr);
 
             // switch to 'bloom' output buffer for vertical phase of gaussian blur
             m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture());
@@ -3518,7 +3518,7 @@ void Player::RenderDynamics()
 
    //
 
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTexture("Texture3", (D3DTexture*)NULL); // need to reset the bulb light texture, as its used as render target for bloom again
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTexture("Texture3", (D3DTexture*)nullptr); // need to reset the bulb light texture, as its used as render target for bloom again
 
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
@@ -3572,7 +3572,7 @@ void Player::Bloom()
    {
       // need to reset content from (optional) bulb light abuse of the buffer
       /*m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
-      m_pin3d.m_pd3dDevice->Clear(0, NULL, clearType::TARGET, 0, 1.0f, 0L);*/
+      m_pin3d.m_pd3dDevice->Clear(0, nullptr, clearType::TARGET, 0, 1.0f, 0L);*/
 
       return;
    }
@@ -3600,7 +3600,7 @@ void Player::Bloom()
       m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
    }
    {
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture0", (D3DTexture*)NULL);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture0", (D3DTexture*)nullptr);
 
       // switch to 'bloom' temporary output buffer for horizontal phase of gaussian blur
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetBloomTmpBufferTexture());
@@ -3615,7 +3615,7 @@ void Player::Bloom()
       m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
    }
    {
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture0", (D3DTexture*)NULL);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture0", (D3DTexture*)nullptr);
 
       // switch to 'bloom' output buffer for vertical phase of gaussian blur
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture());
@@ -3697,7 +3697,7 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
 
          if (SMAA)
          {
-            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("edgesTex2D", NULL)); //!! opt.??
+            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("edgesTex2D", nullptr)); //!! opt.??
 
             if (sharpen)
                m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture());
@@ -3712,7 +3712,7 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
             m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
             m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
 
-            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("blendTex2D", NULL)); //!! opt.?
+            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("blendTex2D", nullptr)); //!! opt.?
          }
       }
    }
@@ -3903,7 +3903,7 @@ void Player::UpdateHUD_IMGUI()
        //rdata2.Span = history;
        ImPlot::SetNextPlotLimitsX(t - history, t, ImGuiCond_Always);
        const int rt_axis = ImPlotAxisFlags_NoTickLabels;
-       if (ImPlot::BeginPlot("##ScrollingFPS", NULL, NULL, ImVec2(-1, 150), ImPlotFlags_None, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
+       if (ImPlot::BeginPlot("##ScrollingFPS", nullptr, nullptr, ImVec2(-1, 150), ImPlotFlags_None, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
            ImPlot::PlotLine("FPS", &sdata2.Data[0].x, &sdata2.Data[0].y, sdata2.Data.size(), sdata2.Offset, 2 * sizeof(float));
            ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
            ImPlot::PlotLine("Smoothed FPS", &sdata1.Data[0].x, &sdata1.Data[0].y, sdata1.Data.size(), sdata1.Offset, 2 * sizeof(float));
@@ -3911,13 +3911,13 @@ void Player::UpdateHUD_IMGUI()
            ImPlot::EndPlot();
        }
        /*ImPlot::SetNextPlotLimitsX(0, history, ImGuiCond_Always);
-       if (ImPlot::BeginPlot("##RollingFPS", NULL, NULL, ImVec2(-1, 150), ImPlotFlags_Default, rt_axis, rt_axis)) {
+       if (ImPlot::BeginPlot("##RollingFPS", nullptr, nullptr, ImVec2(-1, 150), ImPlotFlags_Default, rt_axis, rt_axis)) {
            ImPlot::PlotLine("Average FPS", &rdata1.Data[0].x, &rdata1.Data[0].y, rdata1.Data.size(), 0, 2 * sizeof(float));
            ImPlot::PlotLine("FPS", &rdata2.Data[0].x, &rdata2.Data[0].y, rdata2.Data.size(), 0, 2 * sizeof(float));
            ImPlot::EndPlot();
        }*/
        ImPlot::SetNextPlotLimitsX(t - history, t, ImGuiCond_Always);
-       if (ImPlot::BeginPlot("##ScrollingPhysics", NULL, NULL, ImVec2(-1, 150), ImPlotFlags_None, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
+       if (ImPlot::BeginPlot("##ScrollingPhysics", nullptr, nullptr, ImVec2(-1, 150), ImPlotFlags_None, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
            ImPlot::PlotLine("ms Physics", &sdata4.Data[0].x, &sdata4.Data[0].y, sdata4.Data.size(), sdata4.Offset, 2 * sizeof(float));
            ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
            ImPlot::PlotLine("Smoothed ms Physics", &sdata3.Data[0].x, &sdata3.Data[0].y, sdata3.Data.size(), sdata3.Offset, 2 * sizeof(float));
@@ -3925,7 +3925,7 @@ void Player::UpdateHUD_IMGUI()
            ImPlot::EndPlot();
        }
        ImPlot::SetNextPlotLimitsX(t - history, t, ImGuiCond_Always);
-       if (ImPlot::BeginPlot("##ScrollingScript", NULL, NULL, ImVec2(-1, 150), ImPlotFlags_None, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
+       if (ImPlot::BeginPlot("##ScrollingScript", nullptr, nullptr, ImVec2(-1, 150), ImPlotFlags_None, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
            ImPlot::PlotLine("ms Script", &sdata6.Data[0].x, &sdata6.Data[0].y, sdata6.Data.size(), sdata6.Offset, 2 * sizeof(float));
            ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
            ImPlot::PlotLine("Smoothed ms Script", &sdata5.Data[0].x, &sdata5.Data[0].y, sdata5.Data.size(), sdata5.Offset, 2 * sizeof(float));
@@ -4277,7 +4277,7 @@ void Player::PrepareVideoBuffersNormal()
    Texture * const pin = m_ptable->GetImage(m_ptable->m_imageColorGrade);
    if (pin)
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture4", pin, false);
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool("color_grade", pin != NULL);
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool("color_grade", pin != nullptr);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool("do_dither", !m_ditherOff);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool("do_bloom", (m_ptable->m_bloom_strength > 0.0f && !m_bloomOff));
 
@@ -4321,7 +4321,7 @@ void Player::FlipVideoBuffers(const bool vsync)
    m_pin3d.Flip(vsync);
 
    // switch to texture output buffer again
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture0", (D3DTexture*)NULL);
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture0", (D3DTexture*)nullptr);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pddsBackBuffer);
 
    m_lastFlipTime = usec();
@@ -4429,7 +4429,7 @@ void Player::PrepareVideoBuffersAO()
    Texture * const pin = m_ptable->GetImage(m_ptable->m_imageColorGrade);
    if (pin)
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture4", pin, false);
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool("color_grade", pin != NULL);
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool("color_grade", pin != nullptr);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool("do_dither", !m_ditherOff);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool("do_bloom", (m_ptable->m_bloom_strength > 0.0f && !m_bloomOff));
 
@@ -4715,8 +4715,8 @@ void Player::Render()
 
    if (m_overall_frames < 10)
    {
-      const HWND hVPMWnd = FindWindow("MAME", NULL);
-      if (hVPMWnd != NULL)
+      const HWND hVPMWnd = FindWindow("MAME", nullptr);
+      if (hVPMWnd != nullptr)
       {
          if (::IsWindowVisible(hVPMWnd))
             ::SetWindowPos(hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE)); // in some strange cases the vpinmame window is not on top, so enforce it
@@ -4831,7 +4831,7 @@ void Player::Render()
    m_changed_vht.clear();
 
    Ball * const old_pactiveball = m_pactiveball;
-   m_pactiveball = NULL;  // No ball is the active ball for timers/key events
+   m_pactiveball = nullptr;  // No ball is the active ball for timers/key events
 
    for (size_t i=0;i<m_vht.size();i++)
    {
@@ -4861,7 +4861,7 @@ void Player::Render()
       if (!m_audio->MusicActive())
       {
          delete m_audio;
-         m_audio = NULL;
+         m_audio = nullptr;
          m_ptable->FireVoidEvent(DISPID_GameEvents_MusicDone);
       }
    }
@@ -4924,7 +4924,7 @@ void Player::Render()
 			   //!! like this the render window is scaled and thus implicitly blurred though!
 			   SetWindowLongPtr(GWL_STYLE, windowflags);
 			   SetWindowLongPtr(GWL_EXSTYLE, windowflagsex);
-			   SetWindowPos(NULL, x, m_showWindowedCaption ? (y + captionheight) : (y - captionheight), m_width, m_height + (m_showWindowedCaption ? 0 : captionheight), SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+			   SetWindowPos(nullptr, x, m_showWindowedCaption ? (y + captionheight) : (y - captionheight), m_width, m_height + (m_showWindowedCaption ? 0 : captionheight), SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
 			   ShowWindow(SW_SHOW);
 
 			   // Save position of non-fullscreen player window to registry, and only if it was potentially moved around (i.e. when caption was already visible)
@@ -5030,7 +5030,7 @@ void search_for_nearest(const Ball * const pball, const std::vector<Light*> &lig
    for (unsigned int l = 0; l < MAX_BALL_LIGHT_SOURCES; ++l)
    {
       float min_dist = FLT_MAX;
-      light_nearest[l] = NULL;
+      light_nearest[l] = nullptr;
       for (size_t i = 0; i < lights.size(); ++i)
       {
          bool already_processed = false;
@@ -5073,7 +5073,7 @@ void Player::GetBallAspectRatio(const Ball * const pball, Vertex2D &stretch, con
       rgvIn[t].z = basicBallLo[i].z*pball->m_d.m_radius + zHeight;
    }
    
-   m_pin3d.m_proj.TransformVertices(rgvIn, NULL, basicBallLoNumVertices / 2, rgvOut);
+   m_pin3d.m_proj.TransformVertices(rgvIn, nullptr, basicBallLoNumVertices / 2, rgvOut);
    
    float maxX = -FLT_MAX;
    float minX = FLT_MAX;
@@ -5212,7 +5212,7 @@ void Player::DrawBalls()
 	  }
 
 	  for (unsigned int light_i = 0; light_i < MAX_BALL_LIGHT_SOURCES; ++light_i)
-		  if (light_nearest[light_i] != NULL)
+		  if (light_nearest[light_i] != nullptr)
 		  {
 			  l[light_i + MAX_LIGHT_SOURCES].vPos[0] = light_nearest[light_i]->m_d.m_vCenter.x;
 			  l[light_i + MAX_LIGHT_SOURCES].vPos[1] = light_nearest[light_i]->m_d.m_vCenter.y;
@@ -5237,7 +5237,7 @@ void Player::DrawBalls()
 
       // now for a weird hack: make material more rough, depending on how near the nearest lightsource is, to 'emulate' the area of the bulbs (as VP only features point lights so far)
       float Roughness = 0.8f;
-      if (light_nearest[0] != NULL)
+      if (light_nearest[0] != nullptr)
       {
           const float dist = Vertex3Ds(light_nearest[0]->m_d.m_vCenter.x - pball->m_d.m_pos.x, light_nearest[0]->m_d.m_vCenter.y - pball->m_d.m_pos.y, light_nearest[0]->m_d.m_meshRadius + light_nearest[0]->m_surfaceHeight - pball->m_d.m_pos.z).Length(); //!! z pos
           Roughness = min(max(dist*0.006f, 0.4f), Roughness);
@@ -5530,8 +5530,8 @@ void Player::DoDebugObjectMenu(const int x, const int y)
          vpfe.push_back(pho->m_pfedebug);
          CComVariant var;
          DISPPARAMS dispparams = {
-            NULL,
-            NULL,
+            nullptr,
+            nullptr,
             0,
             0
          };
@@ -5539,7 +5539,7 @@ void Player::DoDebugObjectMenu(const int x, const int y)
             0x80010000, IID_NULL,
             LOCALE_USER_DEFAULT,
             DISPATCH_PROPERTYGET,
-            &dispparams, &var, NULL, NULL);
+            &dispparams, &var, nullptr, nullptr);
 
          const HMENU submenu = CreatePopupMenu();
          vsubmenu.push_back(submenu);
@@ -5575,7 +5575,7 @@ void Player::DoDebugObjectMenu(const int x, const int y)
       }
       else
       {
-         vvdispid.push_back(NULL); // Put a spacer in so we can keep track of indexes
+         vvdispid.push_back(nullptr); // Put a spacer in so we can keep track of indexes
       }
    }
 
@@ -5584,7 +5584,7 @@ void Player::DoDebugObjectMenu(const int x, const int y)
    pt.y = y;
    ClientToScreen(pt);
 
-   const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD | TPM_RIGHTBUTTON, pt.x, pt.y, GetHwnd(), NULL);
+   const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD | TPM_RIGHTBUTTON, pt.x, pt.y, GetHwnd(), nullptr);
 
    if (icmd != 0 && !vsubmenu.empty())
    {
@@ -5600,7 +5600,7 @@ void Player::DoDebugObjectMenu(const int x, const int y)
          const int dispid = (*vvdispid[highword])[lowword];
          m_pactiveball = m_pactiveballDebug;
          pfe->FireGroupEvent(dispid);
-         m_pactiveball = NULL;
+         m_pactiveball = nullptr;
       }
    }
 
@@ -5649,7 +5649,7 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     case WM_KEYDOWN:
         m_drawCursor = false;
-        SetCursor(NULL);
+        SetCursor(nullptr);
 
         break;
 
@@ -5685,7 +5685,7 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             m_pause = false;
 
             m_gameWindowActive = true;
-            SetCursor(NULL);
+            SetCursor(nullptr);
             m_noTimeCorrect = true;
         }
         break;
@@ -5739,7 +5739,7 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_ACTIVATE:
         if (wParam != WA_INACTIVE)
-            SetCursor(NULL);
+            SetCursor(nullptr);
         {
             if (wParam != WA_INACTIVE)
             {
@@ -5767,11 +5767,11 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_SETCURSOR:
         if (LOWORD(lParam) == HTCLIENT && !m_drawCursor)
         {
-            SetCursor(NULL);
+            SetCursor(nullptr);
         }
         else
         {
-            SetCursor(LoadCursor(NULL, IDC_ARROW));
+            SetCursor(LoadCursor(nullptr, IDC_ARROW));
         }
         return TRUE;
     }
@@ -5809,7 +5809,7 @@ INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
          GetWindowRect(GetParent(hwndDlg), &rcMain);
          GetWindowRect(hwndDlg, &rcDialog);
 
-         SetWindowPos(hwndDlg, NULL,
+         SetWindowPos(hwndDlg, nullptr,
             (rcMain.right + rcMain.left) / 2 - (rcDialog.right - rcDialog.left) / 2,
             (rcMain.bottom + rcMain.top) / 2 - (rcDialog.bottom - rcDialog.top) / 2,
             0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
@@ -5880,7 +5880,7 @@ float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
          {
             fclose(m_fplaylog);
             m_playback = false;
-            m_fplaylog = NULL;
+            m_fplaylog = nullptr;
             return dtime;
          }
          c++;

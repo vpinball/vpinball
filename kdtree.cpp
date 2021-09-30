@@ -13,7 +13,7 @@ HitKD::HitKD()
    m_num_nodes = 0;
    m_rootNode.m_hitoct = this;
 #ifdef KDTREE_SSE_LEAFTEST
-   l_r_t_b_zl_zh = NULL;
+   l_r_t_b_zl_zh = nullptr;
 #endif
 }
 
@@ -70,7 +70,7 @@ void HitKD::Finalize()
 HitKDNode* HitKD::AllocTwoNodes()
 {
    if ((m_num_nodes + 1) >= m_nodes.size())        // space for two more nodes?
-      return NULL;
+      return nullptr;
    else
    {
       m_num_nodes += 2;
@@ -247,10 +247,10 @@ void HitKDNode::CreateNextLevel(const unsigned int level, unsigned int level_emp
 
    m_children[0].m_hitoct = m_hitoct; //!! meh
    m_children[0].m_items = 0;
-   m_children[0].m_children = NULL;
+   m_children[0].m_children = nullptr;
    m_children[1].m_hitoct = m_hitoct; //!! meh
    m_children[1].m_items = 0;
-   m_children[1].m_children = NULL;
+   m_children[1].m_children = nullptr;
 
    // determine amount of items that cross splitplane, or are passed on to the children
    if (axis == 0)
@@ -301,7 +301,7 @@ void HitKDNode::CreateNextLevel(const unsigned int level, unsigned int level_emp
    if (level_empty > 8) // If 8 levels were all just subdividing the same objects without luck, exit & Free the nodes again (but at least empty space was cut off)
    {
       m_hitoct->m_num_nodes -= 2;
-      m_children = NULL;
+      m_children = nullptr;
       return;
    }
 
@@ -465,7 +465,7 @@ void HitKDNode::HitTestBallSse(const Ball * const pball, CollisionEvent& coll) c
 {
    const HitKDNode* stack[128]; //!! should be enough, but better implement test in construction to not exceed this
    unsigned int stackpos = 0;
-   stack[0] = NULL; // sentinel
+   stack[0] = nullptr; // sentinel
 
    const HitKDNode* __restrict current = this;
 
@@ -608,7 +608,7 @@ void HitKDNode::HitTestBallSse(const Ball * const pball, CollisionEvent& coll) c
       //current = stack[stackpos];
       //if (stackpos > 0)
       //    stackpos--;
-      current = stack[stackpos--]; // above test not needed due to sentinel in stack[0]=NULL
+      current = stack[stackpos--]; // above test not needed due to sentinel in stack[0]=nullptr
 
    } while (current);
 }

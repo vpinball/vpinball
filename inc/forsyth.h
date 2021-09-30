@@ -126,7 +126,7 @@ T* reorderForsyth(const vector<T>& indices,
                   const int nVertices)
 {
 	if (indices.empty() || nVertices == 0)
-		return NULL;
+		return nullptr;
 
 	// The tables need not be inited every time this function
 	// is used. Either call initForsyth from the calling process,
@@ -143,12 +143,12 @@ T* reorderForsyth(const vector<T>& indices,
 		if (cVertex[indices[i]].numActiveTri == MAX_ADJACENCY) {
 			// Unsupported mesh,
 			// vertex shared by too many triangles
-			return NULL;
+			return nullptr;
 		}
 		cVertex[indices[i]].numActiveTri++;
 		if (cVertex[indices[i]].numActiveTri == indices.size()) {
 			// Degenerated mesh
-			return NULL;
+			return nullptr;
 		}
 	}
 
@@ -228,7 +228,7 @@ T* reorderForsyth(const vector<T>& indices,
 				if (!(endpos < VERTEX_CACHE_SIZE+3))
 				{
 					delete [] triangleIndices;
-					return NULL;
+					return nullptr;
 				}
 				for (int j = endpos; j > i; j--) {
 					cache[j] = cache[j-1];
@@ -240,7 +240,7 @@ T* reorderForsyth(const vector<T>& indices,
 						if (cVertex[cache[j]].cacheTag >= VERTEX_CACHE_SIZE + 3)
 						{
 							delete [] triangleIndices;
-							return NULL;
+							return nullptr;
 						}
 					}
 				}

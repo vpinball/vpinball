@@ -139,7 +139,7 @@ public:
 
    bool IsHDR() const
    {
-       if (m_pdsBuffer == NULL)
+       if (m_pdsBuffer == nullptr)
            return false;
        else
            return (m_pdsBuffer->m_format == BaseTexture::RGB_FP);

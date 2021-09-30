@@ -78,15 +78,15 @@ public:
 #define STANDARD_NOSCRIPT_EDITABLE_DECLARES(T, ItemType, ResName, AllowedViews) \
 	_STANDARD_EDITABLE_CONSTANTS(ItemType, ResName, AllowedViews) \
 	_STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(T, ItemType) \
-	virtual EventProxyBase *GetEventProxyBase() {return NULL;} \
-	inline IFireEvents *GetIFireEvents() {return NULL;} \
-	inline IDebugCommands *GetDebugCommands() {return NULL;} \
-	virtual IScriptable *GetScriptable() {return NULL;}
+	virtual EventProxyBase *GetEventProxyBase() {return nullptr;} \
+	inline IFireEvents *GetIFireEvents() {return nullptr;} \
+	inline IDebugCommands *GetDebugCommands() {return nullptr;} \
+	virtual IScriptable *GetScriptable() {return nullptr;}
 
 // used above, do not invoke directly
 #define _STANDARD_DISPATCH_EDITABLE_DECLARES(itemType) \
 	inline IFireEvents *GetIFireEvents() {return (IFireEvents *)this;} \
-	inline IDebugCommands *GetDebugCommands() {return NULL;} \
+	inline IDebugCommands *GetDebugCommands() {return nullptr;} \
 	virtual EventProxyBase *GetEventProxyBase() {return (EventProxyBase *)this;} \
 	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal) \
 		{ \
@@ -120,7 +120,7 @@ public:
 #define _STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(T, ItemType) \
     static T* COMCreate() \
     { \
-        CComObject<T> *obj = NULL; \
+        CComObject<T> *obj = nullptr; \
         if (FAILED(CComObject<T>::CreateInstance(&obj))) \
                 { \
             MessageBox(0, "Failed to create COM object.", "Visual Pinball", MB_ICONEXCLAMATION); \
@@ -214,8 +214,8 @@ public:
 
    void SetDirtyDraw();
 
-   virtual Hitable *GetIHitable() { return NULL; }
-   virtual const Hitable *GetIHitable() const { return NULL; }
+   virtual Hitable *GetIHitable() { return nullptr; }
+   virtual const Hitable *GetIHitable() const { return nullptr; }
 
    virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay) = 0;
    virtual void ClearForOverwrite();

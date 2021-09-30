@@ -5,8 +5,8 @@ bool      DragPoint::m_pointCopied = false;
 
 IHaveDragPoints::IHaveDragPoints()
 {
-    m_propVisuals = NULL;
-    m_propPosition = NULL;
+    m_propVisuals = nullptr;
+    m_propPosition = nullptr;
 }
 
 IHaveDragPoints::~IHaveDragPoints()
@@ -410,7 +410,7 @@ void IHaveDragPoints::LoadPointToken(int id, BiffReader *pbr, int version)
          pdp->AddRef();
          pdp->Init(this, 0.f, 0.f, 0.f, false);
          m_vdpoint.push_back(pdp);
-         BiffReader br(pbr->m_pistream, pdp, NULL, version, pbr->m_hcrypthash, pbr->m_hcryptkey);
+         BiffReader br(pbr->m_pistream, pdp, nullptr, version, pbr->m_hcrypthash, pbr->m_hcryptkey);
          br.Load();
       }
    }

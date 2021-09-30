@@ -7,7 +7,7 @@ HitSur::HitSur(const HDC hdc, const float zoom, const float offx, const float of
    m_hitx = hitx;
    m_hity = hity;
 
-   SetObject(NULL);
+   SetObject(nullptr);
 }
 
 HitSur::~HitSur()
@@ -16,7 +16,7 @@ HitSur::~HitSur()
 
 void HitSur::Line(const float x, const float y, const float x2, const float y2)
 {
-   if (m_pcur == NULL)
+   if (m_pcur == nullptr)
       return;
 
    const int x_1 = SCALEXf(x);
@@ -65,7 +65,7 @@ void HitSur::Line(const float x, const float y, const float x2, const float y2)
 
 void HitSur::Rectangle(const float x, const float y, const float x2, float y2)
 {
-   if (m_pcur == NULL)
+   if (m_pcur == nullptr)
       return;
 
    int ix = SCALEXf(x);
@@ -95,15 +95,13 @@ void HitSur::Rectangle(const float x, const float y, const float x2, float y2)
 
 void HitSur::Rectangle2(const int x, const int y, const int x2, const int y2)
 {
-   if (m_pcur == NULL)
-   {
+   if (m_pcur == nullptr)
       return;
-   }
 }
 
 void HitSur::Ellipse(const float centerx, const float centery, const float radius)
 {
-   if (m_pcur == NULL)
+   if (m_pcur == nullptr)
       return;
 
    const int ix = SCALEXf(centerx);
@@ -122,7 +120,7 @@ void HitSur::Ellipse(const float centerx, const float centery, const float radiu
 
 void HitSur::Ellipse2(const float centerx, const float centery, const int radius)
 {
-   if (m_pcur == NULL)
+   if (m_pcur == nullptr)
       return;
 
    const int ix = SCALEXf(centerx);
@@ -140,7 +138,7 @@ void HitSur::Ellipse2(const float centerx, const float centery, const int radius
 
 void HitSur::Polygon(const Vertex2D * const rgv, const int count)
 {
-   if (m_pcur == NULL)
+   if (m_pcur == nullptr)
       return;
 
    int x1 = SCALEXf(rgv[count - 1].x);
@@ -191,7 +189,7 @@ void HitSur::Polygon(const Vertex2D * const rgv, const int count)
 // copy-pasted from above
 void HitSur::Polygon(const std::vector<RenderVertex> &rgv)
 {
-   if (m_pcur == NULL)
+   if (m_pcur == nullptr)
       return;
 
    int x1 = SCALEXf(rgv[rgv.size() - 1].x);
@@ -247,7 +245,7 @@ void HitSur::PolygonImage(const std::vector<RenderVertex> &rgv, HBITMAP hbm, con
 
 void HitSur::Polyline(const Vertex2D * const rgv, const int count)
 {
-   if (m_pcur == NULL)
+   if (m_pcur == nullptr)
       return;
 
    for (int i = 0; i < count - 1; ++i)
@@ -256,7 +254,7 @@ void HitSur::Polyline(const Vertex2D * const rgv, const int count)
 
 void HitSur::Lines(const Vertex2D * const rgv, const int count)
 {
-   if (m_pcur == NULL)
+   if (m_pcur == nullptr)
       return;
 
    for (int i = 0; i < count * 2; i += 2)

@@ -103,13 +103,13 @@ VPinball::VPinball()
 
    m_mouseCursorPosition.x = 0.0f;
    m_mouseCursorPosition.y = 0.0f;
-   m_pcv = NULL;			// no currently active code window
+   m_pcv = nullptr;			// no currently active code window
 
    m_NextTableID = 1;
 
-   m_ptableActive = NULL;
+   m_ptableActive = nullptr;
 
-   m_workerthread = NULL;	//Workerthread - only for hanging scripts and autosave - will be created later
+   m_workerthread = nullptr;//Workerthread - only for hanging scripts and autosave - will be created later
 
    m_ToolCur = IDC_SELECT;
 
@@ -122,7 +122,7 @@ VPinball::VPinball()
 #else
    m_scintillaDll = LoadLibrary("SciLexerVP.DLL");
 #endif
-   if (m_scintillaDll == NULL)
+   if (m_scintillaDll == nullptr)
    {
       assert(!"Could not load SciLexerVP");
    #ifdef _WIN64
@@ -130,7 +130,7 @@ VPinball::VPinball()
    #else
        m_scintillaDll = LoadLibrary("SciLexer.DLL");
    #endif
-       if (m_scintillaDll == NULL)
+       if (m_scintillaDll == nullptr)
        #ifdef _WIN64
            ShowError("Unable to load SciLexerVP64.DLL or SciLexer64.DLL");
        #else
@@ -162,7 +162,7 @@ VPinball::~VPinball()
 void VPinball::GetMyPath()
 {
    char szPath[MAXSTRING];
-   GetModuleFileName(NULL, szPath, MAXSTRING);
+   GetModuleFileName(nullptr, szPath, MAXSTRING);
 
    char *szEnd = szPath + lstrlen(szPath);
 
@@ -192,8 +192,8 @@ void VPinball::EnsureWorkerThread()
 {
    if (!m_workerthread)
    {
-      g_hWorkerStarted = CreateEvent(NULL, TRUE, FALSE, NULL);
-      m_workerthread = (HANDLE)_beginthreadex(NULL, 0, VPWorkerThreadStart, 0, 0, &m_workerthreadid);
+      g_hWorkerStarted = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+      m_workerthread = (HANDLE)_beginthreadex(nullptr, 0, VPWorkerThreadStart, 0, 0, &m_workerthreadid);
       if (WaitForSingleObject(g_hWorkerStarted, 5000) == WAIT_TIMEOUT)
       {
       }
@@ -206,14 +206,14 @@ void VPinball::EnsureWorkerThread()
 ///<para>Creates Worker-Thread if not present</para>
 ///<para>See Worker::VPWorkerThreadStart for infos</para>
 ///<param name="workid">int for the type of message (COMPLETE_AUTOSAVE | HANG_SNOOP_START | HANG_SNOOP_STOP)</param>
-///<param name="lParam">Second Parameter for message (AutoSavePackage (see worker.h) if COMPLETE_AUTOSAVE, otherwise NULL)</param>
+///<param name="lParam">Second Parameter for message (AutoSavePackage (see worker.h) if COMPLETE_AUTOSAVE, otherwise nullptr)</param>
 ///<returns>Handle to Event that get ack. If event is finished (unsure)</returns>
 ///</summary>
 HANDLE VPinball::PostWorkToWorkerThread(int workid, LPARAM lParam)
 {
    EnsureWorkerThread();										// Check if Workerthread was created once, otherwise create
 
-   HANDLE hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+   HANDLE hEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 
    PostThreadMessage(m_workerthreadid, workid, (WPARAM)hEvent, lParam);
 
@@ -234,7 +234,7 @@ void VPinball::SetAutoSaveMinutes(const int minutes)
 ///<para>Creates Worker-Thread if not present</para>
 ///<para>See Worker::VPWorkerThreadStart for infos</para>
 ///<param name="workid">int for the type of message (COMPLETE_AUTOSAVE | HANG_SNOOP_START | HANG_SNOOP_STOP)</param>
-///<param name="lparam">Second Parameter for message (AutoSavePackage (see worker.h) if COMPLETE_AUTOSAVE, otherwise NULL)</param>
+///<param name="lparam">Second Parameter for message (AutoSavePackage (see worker.h) if COMPLETE_AUTOSAVE, otherwise nullptr)</param>
 ///<returns>Handle to Event that get ack. If event is finished (unsure)</returns>
 ///</summary>
 void VPinball::InitTools()
@@ -326,10 +326,10 @@ void VPinball::SetStatusBarElementInfo(const string& info)
 
 bool VPinball::OpenFileDialog(const string& initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const std::string& windowTitle) //!! use this all over the place and move to some standard header
 {
-   CFileDialog fileDlg(TRUE, defaultExt, initDir.c_str(), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
+   CFileDialog fileDlg(TRUE, defaultExt, initDir.c_str(), nullptr, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
    if (!windowTitle.empty())
       fileDlg.SetTitle(windowTitle.c_str());
-   if (fileDlg.DoModal(*this)==IDOK)
+   if (fileDlg.DoModal(*this) == IDOK)
    {
       int pos = 0;
       while (pos != -1)
@@ -347,7 +347,7 @@ bool VPinball::OpenFileDialog(const string& initDir, std::vector<std::string>& f
 
 bool VPinball::SaveFileDialog(const string& initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const std::string& windowTitle) //!! use this all over the place and move to some standard header
 {
-   CFileDialog fileDlg(FALSE, defaultExt, initDir.c_str(), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
+   CFileDialog fileDlg(FALSE, defaultExt, initDir.c_str(), nullptr, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
    if (!windowTitle.empty())
       fileDlg.SetTitle(windowTitle.c_str());
    if (fileDlg.DoModal(*this) == IDOK)
@@ -379,7 +379,7 @@ CDockProperty *VPinball::GetDefaultPropertiesDocker()
 
 CDockProperty *VPinball::GetPropertiesDocker()
 {
-    if(m_propertyDialog==NULL || !m_dockProperties->IsWindow())
+    if(m_propertyDialog == nullptr || !m_dockProperties->IsWindow())
         return GetDefaultPropertiesDocker();
 
     return m_dockProperties;
@@ -398,7 +398,7 @@ CDockToolbar *VPinball::GetDefaultToolbarDocker()
 
 CDockToolbar *VPinball::GetToolbarDocker()
 {
-    if(m_dockToolbar==NULL || !m_dockToolbar->IsWindow() )
+    if(m_dockToolbar == nullptr || !m_dockToolbar->IsWindow() )
         return GetDefaultToolbarDocker();
     return m_dockToolbar;
 }
@@ -442,7 +442,7 @@ CDockLayers *VPinball::GetDefaultLayersDocker()
 
 CDockLayers *VPinball::GetLayersDocker()
 {
-    if (m_dockLayers == NULL || !m_dockLayers->IsWindow())
+    if (m_dockLayers == nullptr || !m_dockLayers->IsWindow())
         return GetDefaultLayersDocker();
     return m_dockLayers;
 }
@@ -1277,7 +1277,7 @@ bool VPinball::processKeyInputForDialogs(MSG *pmsg)
 static int GetZOrder(HWND hWnd)
 {
     int z = 0;
-    for (HWND h = hWnd; h != NULL; h = GetWindow(h, GW_HWNDPREV)) z++;
+    for (HWND h = hWnd; h != nullptr; h = GetWindow(h, GW_HWNDPREV)) z++;
     return z;
 }
 
@@ -1324,7 +1324,7 @@ void VPinball::MainMsgLoop()
    for (;;)
    {
       MSG msg;
-      if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE))
+      if (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))
       {
          if (msg.message == WM_QUIT)
             break;
@@ -1363,7 +1363,7 @@ STDMETHODIMP VPinball::QueryInterface(REFIID iid, void **ppvObjOut)
    if (!ppvObjOut)
       return E_INVALIDARG;
 
-   *ppvObjOut = NULL;
+   *ppvObjOut = nullptr;
 
    if (*ppvObjOut)
    {
@@ -1417,7 +1417,7 @@ void VPinball::PreCreate(CREATESTRUCT& cs)
 void VPinball::PreRegisterClass(WNDCLASS& wc)
 {
     wc.hIcon = LoadIcon(theInstance, MAKEINTRESOURCE(IDI_VPINBALL));
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wc.style = CS_DBLCLKS;//CS_NOCLOSE | CS_OWNDC;
     wc.lpszClassName = _T("VPinball");
     //wc.lpszMenuName = MAKEINTRESOURCE(IDR_APPMENU);    
@@ -1825,7 +1825,7 @@ int CALLBACK MyCompProcMemValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM 
     char mem1[10], mem1b[10];
     sscanf_s(i == 0 ? buf1 : buf2, "%s %s", mem1b, sizeof(mem1b), mem1, sizeof(mem1));
     char* const fo = strchr(mem1b, ',');
-    if (fo != NULL)
+    if (fo != nullptr)
         *fo = '.';
     value[i] = (float)atof(mem1b);
     if (!_stricmp(mem1, "bytes"))
@@ -1858,7 +1858,7 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
       GetWindowRect(hwndParent, &rcMain);
       GetWindowRect(hwndDlg, &rcDlg);
 
-      SetWindowPos(hwndDlg, NULL,
+      SetWindowPos(hwndDlg, nullptr,
          (rcMain.right + rcMain.left) / 2 - (rcDlg.right - rcDlg.left) / 2,
          (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
          0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
@@ -2036,7 +2036,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          pt->ReImportImage(ppi, ppi->m_szPath);
 
          // Display new image
-         InvalidateRect(GetDlgItem(hwndDlg, IDC_PICTUREPREVIEW), NULL, fTrue);
+         InvalidateRect(GetDlgItem(hwndDlg, IDC_PICTUREPREVIEW), nullptr, fTrue);
          }
          }
          }
@@ -2079,7 +2079,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          pt->ReImportImage(ppi, ofn.lpstrFile);
 
          // Display new image
-         InvalidateRect(GetDlgItem(hwndDlg, IDC_PICTUREPREVIEW), NULL, fTrue);
+         InvalidateRect(GetDlgItem(hwndDlg, IDC_PICTUREPREVIEW), nullptr, fTrue);
          }
          }
          }
@@ -2274,7 +2274,7 @@ void VPinball::AddControlPoint()
                 default:
                     break;
             }
-        }//if (psel != NULL)
+        } //if (psel != nullptr)
     }
 }
 

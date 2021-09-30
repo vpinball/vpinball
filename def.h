@@ -126,22 +126,22 @@ typedef _int64          S64;
 
 #define CCO(x) CComObject<x>
 
-#define SAFE_VECTOR_DELETE(p)   { if(p) { delete [] (p);  (p)=NULL; } }
-#define SAFE_DELETE(p)			{ if(p) { delete (p);     (p)=NULL; } }
+#define SAFE_VECTOR_DELETE(p)   { if(p) { delete [] (p);  (p)=nullptr; } }
+#define SAFE_DELETE(p)          { if(p) { delete (p);     (p)=nullptr; } }
 
 inline void ref_count_trigger(const ULONG r, const char *file, const int line) // helper for debugging
 {
 #ifdef DEBUG_REFCOUNT_TRIGGER
    char msg[128];
    sprintf_s(msg, 128, "Ref Count: %u at %s:%d", r, file, line);
-   /*g_pvp->*/MessageBox(NULL, msg, "Error", MB_OK | MB_ICONEXCLAMATION);
+   /*g_pvp->*/MessageBox(nullptr, msg, "Error", MB_OK | MB_ICONEXCLAMATION);
 #endif
 }
-#define SAFE_RELEASE(p)			{ if(p) { const ULONG rcc = (p)->Release(); if(rcc != 0) ref_count_trigger(rcc, __FILE__, __LINE__); (p)=NULL; } }
+#define SAFE_RELEASE(p)			{ if(p) { const ULONG rcc = (p)->Release(); if(rcc != 0) ref_count_trigger(rcc, __FILE__, __LINE__); (p)=nullptr; } }
 #define SAFE_RELEASE_NO_SET(p)	{ if(p) { const ULONG rcc = (p)->Release(); if(rcc != 0) ref_count_trigger(rcc, __FILE__, __LINE__); } }
 #define SAFE_RELEASE_NO_CHECK_NO_SET(p)	{ const ULONG rcc = (p)->Release(); if(rcc != 0) ref_count_trigger(rcc, __FILE__, __LINE__); }
-#define SAFE_RELEASE_NO_RCC(p)	{ if(p) { (p)->Release(); (p)=NULL; } } // use for releasing things like surfaces gotten from GetSurfaceLevel (that seem to "share" the refcount with the underlying texture)
-#define FORCE_RELEASE(p)		{ if(p) { ULONG rcc = 1; while(rcc!=0) {rcc = (p)->Release();} (p)=NULL; } } // release all references until it is 0
+#define SAFE_RELEASE_NO_RCC(p)	{ if(p) { (p)->Release(); (p)=nullptr; } } // use for releasing things like surfaces gotten from GetSurfaceLevel (that seem to "share" the refcount with the underlying texture)
+#define FORCE_RELEASE(p)		{ if(p) { ULONG rcc = 1; while(rcc!=0) {rcc = (p)->Release();} (p)=nullptr; } } // release all references until it is 0
 
 #define hrNotImplemented ResultFromScode(E_NOTIMPL)
 
@@ -152,7 +152,7 @@ enum SaveDirtyState
    eSaveDirty
 };
 
-#define MY_D3DFVF_TEX					0
+#define MY_D3DFVF_TEX                   0
 #define MY_D3DFVF_NOTEX2_VERTEX         1
 #define MY_D3DTRANSFORMED_NOTEX2_VERTEX 2 //!! delete
 

@@ -13,7 +13,7 @@ void KickerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->size(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemKicker))
+        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemKicker))
             continue;
         Kicker * const kicker = (Kicker *)m_pvsel->ElementAt(i);
 
@@ -37,7 +37,7 @@ void KickerPhysicsProperty::UpdateProperties(const int dispid)
 {
     for (int i = 0; i < m_pvsel->size(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemKicker))
+        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemKicker))
             continue;
         Kicker * const kicker = (Kicker *)m_pvsel->ElementAt(i);
         switch (dispid)

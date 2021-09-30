@@ -15,17 +15,17 @@ LZWWriter::~LZWWriter()
 
 HRESULT LZWWriter::WriteSz(const char *sz, int cbytes)
 {
-   return m_pistream->Write(sz, cbytes, NULL);
+   return m_pistream->Write(sz, cbytes, nullptr);
 }
 
 HRESULT LZWWriter::WriteByte(char ch)
 {
-   return m_pistream->Write(&ch, 1, NULL);
+   return m_pistream->Write(&ch, 1, nullptr);
 }
 
 HRESULT LZWWriter::WriteWord(short word)
 {
-   return m_pistream->Write(&word, 2, NULL);
+   return m_pistream->Write(&word, 2, nullptr);
 }
 
 int LZWWriter::bNextPixel()

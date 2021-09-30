@@ -26,19 +26,19 @@ HitTarget::HitTarget()
    m_d.m_depthBias = 0.0f;
    m_d.m_reflectionEnabled = true;
 
-   m_propPhysics = NULL;
-   m_propPosition = NULL;
-   m_propVisual = NULL;
+   m_propPhysics = nullptr;
+   m_propPosition = nullptr;
+   m_propVisual = nullptr;
    m_d.m_overwritePhysics = true;
-   m_vertices = NULL;
-   m_indices = NULL;
+   m_vertices = nullptr;
+   m_indices = nullptr;
    m_numIndices = 0;
    m_numVertices = 0;
    m_moveAnimation = false;
    m_moveDown = true;
    m_moveAnimationOffset = 0.0f;
    m_hitEvent = false;
-   m_ptable = NULL;
+   m_ptable = nullptr;
    m_timeStamp = 0;
 }
 
@@ -137,7 +137,7 @@ HRESULT HitTarget::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    SetDefaults(false);
    m_hitEvent = false;
 
-   InitVBA(fTrue, 0, NULL);
+   InitVBA(fTrue, 0, nullptr);
 
    UpdateStatusBarInfo();
 
@@ -505,7 +505,7 @@ void HitTarget::TransformVertices()
 void HitTarget::ExportMesh(ObjLoader& loader)
 {
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
 
    SetMeshType(m_d.m_targetType);
 
@@ -1018,7 +1018,7 @@ STDMETHODIMP HitTarget::get_Image(BSTR *pVal)
 STDMETHODIMP HitTarget::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -1053,7 +1053,7 @@ STDMETHODIMP HitTarget::get_Material(BSTR *pVal)
 STDMETHODIMP HitTarget::put_Material(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
    m_d.m_szMaterial = buf;
 
    return S_OK;
@@ -1445,7 +1445,7 @@ STDMETHODIMP HitTarget::get_PhysicsMaterial(BSTR *pVal)
 STDMETHODIMP HitTarget::put_PhysicsMaterial(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
    m_d.m_szPhysicsMaterial = buf;
 
    return S_OK;

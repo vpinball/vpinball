@@ -310,12 +310,12 @@ return atan2f((slope2-slope1),(1.0f+slope1*slope2));
 // a clockwise polygon in a left-handed coordinate system, or for a counterclockwise polygon in
 // a right-handed coordinate system.
 template <class VtxType, class IdxType>
-void SetNormal(VtxType * const rgv, const IdxType * const rgi, const int count, void * prgvApply = NULL, const IdxType * rgiApply = NULL, int applycount = 0)
+void SetNormal(VtxType * const rgv, const IdxType * const rgi, const int count, void * prgvApply = nullptr, const IdxType * rgiApply = nullptr, int applycount = 0)
 {
    // If apply-to array is null, just apply the resulting normal to incoming array
    VtxType * rgvApply = prgvApply ? (VtxType*)prgvApply : rgv;
 
-   if (rgiApply == NULL)
+   if (rgiApply == nullptr)
       rgiApply = rgi;
 
    if (applycount == 0)

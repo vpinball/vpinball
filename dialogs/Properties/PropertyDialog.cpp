@@ -400,10 +400,10 @@ void PropertyDialog::DeleteAllTabs()
 {
     BasePropertyDialog::m_disableEvents = true;
     for (int i = 0; i < PROPERTY_TABS; i++)
-        if (m_tabs[i] != NULL)
+        if (m_tabs[i] != nullptr)
         {
             m_tab.RemoveTabPage(m_tab.GetTabIndex(m_tabs[i]));
-            m_tabs[i] = NULL;
+            m_tabs[i] = nullptr;
         }
     m_previousType = (ItemTypeEnum)0;
     m_backglassView = false;
@@ -491,7 +491,7 @@ void PropertyDialog::UpdateCollectionComboBox(const PinTable *const ptable, cons
         for (int i = 0; i < ptable->m_vcollection.size(); i++)
         {
             char szT[sizeof(ptable->m_vcollection[i].m_wzName)/sizeof(ptable->m_vcollection[i].m_wzName[0])];
-            WideCharToMultiByteNull(CP_ACP, 0, ptable->m_vcollection[i].m_wzName, -1, szT, sizeof(szT), NULL, NULL);
+            WideCharToMultiByteNull(CP_ACP, 0, ptable->m_vcollection[i].m_wzName, -1, szT, sizeof(szT), nullptr, nullptr);
             combo.AddString(szT);
         }
     }
@@ -527,10 +527,10 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
         BasePropertyDialog::m_disableEvents = true;
         m_curTabIndex = m_tab.GetCurSel();
         for (int i = 0; i < PROPERTY_TABS; i++)
-            if (m_tabs[i] != NULL)
+            if (m_tabs[i] != nullptr)
             {
                 m_tab.RemoveTabPage(m_tab.GetTabIndex(m_tabs[i]));
-                m_tabs[i] = NULL;
+                m_tabs[i] = nullptr;
             }
 
         for (int i = 0; i < pvsel.size(); i++)
@@ -565,14 +565,14 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
         char collection[64] = {0};
         char name[64];
         const WCHAR * const wzName = psel->GetPTable()->GetCollectionNameByElement(psel);
-        if (wzName != NULL)
+        if (wzName != nullptr)
         {
-            WideCharToMultiByteNull(CP_ACP, 0, wzName, -1, collection, 64, NULL, NULL);
+            WideCharToMultiByteNull(CP_ACP, 0, wzName, -1, collection, 64, nullptr, nullptr);
         }
         
         CComBSTR bstr;
         psel->GetTypeName(&bstr);
-        WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, name, 64, NULL, NULL);
+        WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, name, 64, nullptr, nullptr);
         sprintf_s(header, "%s(%d)", name, pvsel.size());
 
         if (collection[0] != 0)
@@ -707,7 +707,7 @@ BOOL PropertyDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case CBN_SELCHANGE:
         case BN_CLICKED:
         {
-            if (m_tabs[0] && m_tabs[0]->m_pvsel->ElementAt(0) != NULL)
+            if (m_tabs[0] && m_tabs[0]->m_pvsel->ElementAt(0) != nullptr)
             {
                 m_tabs[0]->m_pvsel->ElementAt(0)->GetIEditable()->SetName(string(m_nameEdit.GetWindowText()));
                 m_nameEdit.SetWindowText(m_tabs[0]->m_pvsel->ElementAt(0)->GetIEditable()->GetName()); // set it again in case it was truncated
@@ -1125,7 +1125,7 @@ INT_PTR TimerProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void BasePropertyDialog::UpdateBaseProperties(ISelect *psel, BaseProperty *property, const int dispid)
 {
-    if (!property || psel==NULL)
+    if (!property || psel==nullptr)
         return;
 
     switch (dispid)

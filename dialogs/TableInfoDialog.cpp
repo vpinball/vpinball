@@ -22,7 +22,7 @@ BOOL TableInfoDialog::OnInitDialog()
    ::GetWindowRect(hwndParent, &rcMain);
    rcDlg = GetWindowRect();
 
-   SetWindowPos( NULL,
+   SetWindowPos( nullptr,
       (rcMain.right + rcMain.left) / 2 - (rcDlg.right - rcDlg.left) / 2,
       (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
       0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/ * | SWP_NOMOVE* /);

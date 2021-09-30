@@ -44,16 +44,16 @@ BOOL DebuggerDialog::OnInitDialog()
     const CRect rcMain = GetParent().GetWindowRect();
     const CRect rcDialog = GetWindowRect();
 
-    SetWindowPos(NULL, (rcMain.right + rcMain.left) / 2 - (rcDialog.right - rcDialog.left) / 2,
-                       (rcMain.bottom + rcMain.top) / 2 - (rcDialog.bottom - rcDialog.top) / 2,
-                       0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
+    SetWindowPos(nullptr, (rcMain.right + rcMain.left) / 2 - (rcDialog.right - rcDialog.left) / 2,
+                          (rcMain.bottom + rcMain.top) / 2 - (rcDialog.bottom - rcDialog.top) / 2,
+                          0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
 
-    HANDLE hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_PLAY), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+    HANDLE hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_PLAY), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
     m_playButton.SetIcon((HICON)hIcon);
 
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_PAUSE), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_PAUSE), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
     m_pauseButton.SetIcon((HICON)hIcon);
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_STEP), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_STEP), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
     m_stepButton.SetIcon((HICON)hIcon);
 
     SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
@@ -65,7 +65,7 @@ BOOL DebuggerDialog::OnInitDialog()
 
     g_pplayer->m_hwndDebugOutput = CreateWindowEx(0, "Scintilla", "",
                                                 WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN | WS_BORDER,
-                                                rcEditSize.left, rcEditSize.top, rcEditSize.right - rcEditSize.left, rcEditSize.bottom - rcEditSize.top, GetHwnd(), NULL, g_pvp->theInstance, 0);
+                                                rcEditSize.left, rcEditSize.top, rcEditSize.right - rcEditSize.left, rcEditSize.bottom - rcEditSize.top, GetHwnd(), nullptr, g_pvp->theInstance, 0);
 
     SendMessage(g_pplayer->m_hwndDebugOutput, SCI_STYLESETSIZE, 32, 10);
     SendMessage(g_pplayer->m_hwndDebugOutput, SCI_STYLESETFONT, 32, (LPARAM)"Courier");
@@ -286,7 +286,7 @@ INT_PTR DebuggerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_SIZE:
         {
             const CRect rc = m_notesEdit.GetClientRect();
-            ::SetWindowPos(g_pplayer->m_hwndDebugOutput, NULL,
+            ::SetWindowPos(g_pplayer->m_hwndDebugOutput, nullptr,
                 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
         }
     }
@@ -379,7 +379,7 @@ BOOL DbgLightDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_DBG_LIGHT_OFF_CHECK:
         {
             Light* const plight = GetLight();
-            if (plight != NULL)
+            if (plight != nullptr)
             {
                 plight->put_State(LightStateOff);
                 SetCheckButtonState(plight);
@@ -390,7 +390,7 @@ BOOL DbgLightDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_DBG_LIGHT_BLINKING_CHECK:
         {
             Light* const plight = GetLight();
-            if (plight != NULL)
+            if (plight != nullptr)
             {
                 plight->put_State(LightStateBlinking);
                 SetCheckButtonState(plight);
@@ -439,7 +439,7 @@ BOOL DbgLightDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 case CBN_SELCHANGE:
                 {
                     Light* const plight = GetLight();
-                    if (plight != NULL)
+                    if (plight != nullptr)
                     {
                         string value;
                         float v;

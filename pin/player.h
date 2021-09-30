@@ -146,7 +146,7 @@ public:
       }
 
       // if not, fallback to cheating the driver
-      m_buffers.resize(numFrames, NULL);
+      m_buffers.resize(numFrames, nullptr);
       m_curIdx = 0;
    }
 

@@ -15,7 +15,7 @@ int SoundDialog::m_columnSortOrder;
 
 SoundDialog::SoundDialog() : CDialog( IDD_SOUNDDIALOG )
 {
-    hSoundList = NULL;
+    hSoundList = nullptr;
     m_columnSortOrder = 1;
 }
 
@@ -39,7 +39,7 @@ void SoundDialog::OnClose()
 
 long GetSystemDPI()
 {
-	const CClientDC clientDC(NULL);
+	const CClientDC clientDC(nullptr);
 	const SIZE ret = { clientDC.GetDeviceCaps(LOGPIXELSX), clientDC.GetDeviceCaps(LOGPIXELSY) };
 	return ret.cx;
 }
@@ -133,7 +133,7 @@ INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
                 case LVN_ENDLABELEDIT:
                 {
                     NMLVDISPINFO *const pinfo = (NMLVDISPINFO *)lParam;
-                    if (pinfo->item.pszText == NULL || pinfo->item.pszText[0] == '\0')
+                    if (pinfo->item.pszText == nullptr || pinfo->item.pszText[0] == '\0')
                         return FALSE;
                     ListView_SetItemText( hSoundList, pinfo->item.iItem, 0, pinfo->item.pszText );
                     LVITEM lvitem;
@@ -296,7 +296,7 @@ void SoundDialog::ReImport()
                 PinSound * const pps = (PinSound *)lvitem.lParam;
 
                 const HANDLE hFile = CreateFile( pps->m_szPath.c_str(), GENERIC_READ, FILE_SHARE_READ,
-                                                 NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+                                                 nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr );
 
                 if (hFile != INVALID_HANDLE_VALUE)
                 {
@@ -591,7 +591,7 @@ void SoundDialog::LoadPosition()
     const int x = LoadValueIntWithDefault("Editor", "SoundMngPosX", 0);
     const int y = LoadValueIntWithDefault("Editor", "SoundMngPosY", 0);
 
-    SetWindowPos( NULL, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
+    SetWindowPos( nullptr, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
 }
 
 void SoundDialog::SavePosition()

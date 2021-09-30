@@ -7,17 +7,17 @@
 
 Bumper::Bumper()
 {
-   m_pbumperhitcircle = NULL;
-   m_baseVertexBuffer = NULL;
-   m_baseIndexBuffer = NULL;
-   m_ringVertexBuffer = NULL;
-   m_ringIndexBuffer = NULL;
-   m_capVertexBuffer = NULL;
-   m_capIndexBuffer = NULL;
-   m_socketIndexBuffer = NULL;
-   m_socketVertexBuffer = NULL;
+   m_pbumperhitcircle = nullptr;
+   m_baseVertexBuffer = nullptr;
+   m_baseIndexBuffer = nullptr;
+   m_ringVertexBuffer = nullptr;
+   m_ringIndexBuffer = nullptr;
+   m_capVertexBuffer = nullptr;
+   m_capIndexBuffer = nullptr;
+   m_socketIndexBuffer = nullptr;
+   m_socketVertexBuffer = nullptr;
    m_ringAnimate = false;
-   m_propVisual = NULL;
+   m_propVisual = nullptr;
    m_d.m_ringDropOffset = 0.0f;
    m_ringDown = false;
    m_updateSkirt = false;
@@ -83,7 +83,7 @@ HRESULT Bumper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
 
-   return InitVBA(fTrue, 0, NULL);
+   return InitVBA(fTrue, 0, nullptr);
 }
 
 void Bumper::SetDefaults(bool fromMouseClick)
@@ -190,7 +190,7 @@ void Bumper::UIRenderPass2(Sur * const psur)
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetFillColor(-1);
    psur->SetObject(this);
-   psur->SetObject(NULL);
+   psur->SetObject(nullptr);
    const float radangle = ANGTORAD(m_d.m_orientation - 90.f);
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
@@ -216,7 +216,7 @@ void Bumper::RenderBlueprint(Sur *psur, const bool solid)
    psur->SetFillColor(solid ? BLUEPRINT_SOLID_COLOR : -1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetObject(this);
-   psur->SetObject(NULL);
+   psur->SetObject(nullptr);
    const float radangle = ANGTORAD(m_d.m_orientation - 90.f);
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
@@ -275,7 +275,7 @@ void Bumper::EndPlay()
 {
    IEditable::EndPlay();
 
-   m_pbumperhitcircle = NULL;
+   m_pbumperhitcircle = nullptr;
 
    if (m_baseVertexBuffer)
    {
@@ -580,7 +580,7 @@ void Bumper::RenderDynamic()
 void Bumper::ExportMesh(ObjLoader& loader)
 {
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
 
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
@@ -1107,7 +1107,7 @@ STDMETHODIMP Bumper::get_CapMaterial(BSTR *pVal)
 STDMETHODIMP Bumper::put_CapMaterial(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
    m_d.m_szCapMaterial = buf;
 
    return S_OK;
@@ -1125,7 +1125,7 @@ STDMETHODIMP Bumper::get_RingMaterial(BSTR *pVal)
 STDMETHODIMP Bumper::put_RingMaterial(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
    m_d.m_szRingMaterial = buf;
 
    return S_OK;
@@ -1143,7 +1143,7 @@ STDMETHODIMP Bumper::get_BaseMaterial(BSTR *pVal)
 STDMETHODIMP Bumper::put_BaseMaterial(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
    m_d.m_szBaseMaterial = buf;
 
    return S_OK;
@@ -1161,7 +1161,7 @@ STDMETHODIMP Bumper::get_SkirtMaterial(BSTR *pVal)
 STDMETHODIMP Bumper::put_SkirtMaterial(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
    m_d.m_szSkirtMaterial = buf;
 
    return S_OK;
@@ -1208,7 +1208,7 @@ STDMETHODIMP Bumper::get_Surface(BSTR *pVal)
 STDMETHODIMP Bumper::put_Surface(BSTR newVal)
 {
    char buf[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, nullptr, nullptr);
    m_d.m_szSurface = buf;
 
    return S_OK;

@@ -139,7 +139,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                NMLVDISPINFO * const pinfo = (NMLVDISPINFO *)lParam;
                const HWND hSoundlist = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-               if (pinfo->item.pszText == NULL || pinfo->item.pszText[0] == '\0')
+               if (pinfo->item.pszText == nullptr || pinfo->item.pszText[0] == '\0')
                {
                   return FALSE;
                }
@@ -150,7 +150,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                lvitem.iSubItem = 0;
                ListView_GetItem(hSoundlist, &lvitem);
                Texture * const ppi = (Texture *)lvitem.lParam;
-               if (ppi != NULL)
+               if (ppi != nullptr)
                {
                   ppi->m_szName = pinfo->item.pszText;
                   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
@@ -177,14 +177,14 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   lvitem.iSubItem = 0;
                   ListView_GetItem(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), &lvitem);
                   Texture * const ppi = (Texture *)lvitem.lParam;
-                  if (ppi != NULL)
+                  if (ppi != nullptr)
                   {
                      char textBuf[256];
                      sprintf_s(textBuf, "%i", (int)ppi->m_alphaTestValue);
                      SetDlgItemText(IDC_ALPHA_MASK_EDIT, textBuf);
                   }
                }
-               ::InvalidateRect(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), NULL, fTrue);
+               ::InvalidateRect(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), nullptr, fTrue);
             }
          }
          break;
@@ -201,7 +201,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             lvitem.iSubItem = 0;
             ListView_GetItem(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), &lvitem);
             Texture * const ppi = (Texture *)lvitem.lParam;
-            if (ppi != NULL)
+            if (ppi != nullptr)
             {
                const float v = sz2f(GetDlgItemText(IDC_ALPHA_MASK_EDIT).c_str());
                if (ppi->m_alphaTestValue != v)
@@ -237,7 +237,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             lvitem.iSubItem = 0;
             ListView_GetItem(hSoundList, &lvitem);
             Texture * const ppi = (Texture *)lvitem.lParam;
-            if (ppi != NULL)
+            if (ppi != nullptr)
             {
                RECT rcClient;
                ::GetWindowRect(pdis->hwndItem, &rcClient);
@@ -283,7 +283,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             RECT rcText = rcClient;
 
-            //ExtTextOut(pdis->hDC, 0, 20, 0, NULL, "Image\nPreview", 13, NULL);
+            //ExtTextOut(pdis->hDC, 0, 20, 0, nullptr, "Image\nPreview", 13, nullptr);
             const LocalString ls(IDS_IMAGE_PREVIEW);
             const int len = lstrlen(ls.m_szbuffer);
             DrawText(pdis->hDC, ls.m_szbuffer/*"Image\n\nPreview"*/, len, &rcText, DT_CALCRECT);
@@ -322,7 +322,7 @@ void ImageDialog::UpdateImages()
             lvitem.iSubItem = 0;
             ListView_GetItem(hSoundList, &lvitem);
             Texture * const ppi = (Texture *)lvitem.lParam;
-            if (ppi != NULL)
+            if (ppi != nullptr)
             {
                 const float v = sz2f(GetDlgItemText(IDC_ALPHA_MASK_EDIT).c_str());
                 if (ppi->m_alphaTestValue != v)
@@ -435,7 +435,7 @@ void ImageDialog::Export()
          lvitem.iSubItem = 0;
          ListView_GetItem(hSoundList, &lvitem);
          Texture * ppi = (Texture*)lvitem.lParam;
-         if (ppi != NULL)
+         if (ppi != nullptr)
          {
             OPENFILENAME ofn;
             ZeroMemory(&ofn, sizeof(OPENFILENAME));
@@ -509,7 +509,7 @@ void ImageDialog::Export()
             if (hr != S_OK)
                g_initDir = "c:\\Visual Pinball\\Tables\\";
 
-            ofn.lpstrInitialDir = (hr == S_OK) ? g_initDir.c_str() : NULL;
+            ofn.lpstrInitialDir = (hr == S_OK) ? g_initDir.c_str() : nullptr;
             //ofn.lpstrTitle = "SAVE AS";
             ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
@@ -535,7 +535,7 @@ void ImageDialog::Export()
                   memcpy(pathName, ofn.lpstrFile, begin);
                pathName[begin] = 0;
 
-               while (sel != -1 && ppi != NULL)
+               while (sel != -1 && ppi != nullptr)
                {
                   if (selectedItemsCount>1)
                   {
@@ -601,7 +601,7 @@ void ImageDialog::DeleteImage()
             lvitem.iSubItem = 0;
             ListView_GetItem(hSoundList, &lvitem);
             Texture * const ppi = (Texture*)lvitem.lParam;
-            if (ppi != NULL)
+            if (ppi != nullptr)
             {
                m_doNotChange = true; // do not trigger LVN_ITEMCHANGING or LVN_ITEMCHANGED code!
                ListView_DeleteItem(hSoundList, sel);
@@ -642,10 +642,10 @@ void ImageDialog::Reimport()
             lvitem.iSubItem = 0;
             ListView_GetItem(hSoundList, &lvitem);
             Texture * const ppi = (Texture*)lvitem.lParam;
-            if (ppi != NULL)
+            if (ppi != nullptr)
             {
                const HANDLE hFile = CreateFile(ppi->m_szPath.c_str(), GENERIC_READ, FILE_SHARE_READ,
-                                               NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+                                               nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
                if (hFile != INVALID_HANDLE_VALUE)
                {
@@ -662,7 +662,7 @@ void ImageDialog::Reimport()
          }
       }
       // Display new image
-      ::InvalidateRect(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), NULL, fTrue);
+      ::InvalidateRect(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), nullptr, fTrue);
    }
    SetFocus();
 }
@@ -681,9 +681,9 @@ void ImageDialog::UpdateAll()
       lvitem.iSubItem = 0;
       ListView_GetItem(hSoundList, &lvitem);
       Texture * const ppi = (Texture*)lvitem.lParam;
-      if (ppi != NULL)
+      if (ppi != nullptr)
       {
-         const HANDLE hFile = CreateFile(ppi->m_szPath.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+         const HANDLE hFile = CreateFile(ppi->m_szPath.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
          if (hFile != INVALID_HANDLE_VALUE)
          {
             CloseHandle(hFile);
@@ -695,7 +695,7 @@ void ImageDialog::UpdateAll()
             errorOccurred = true;
       }
       // Display new image
-      ::InvalidateRect(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), NULL, fTrue);
+      ::InvalidateRect(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), nullptr, fTrue);
    }
 
    if (errorOccurred)
@@ -728,7 +728,7 @@ void ImageDialog::ReimportFrom()
             lvitem.iSubItem = 0;
             ListView_GetItem(hSoundList, &lvitem);
             Texture * const ppi = (Texture*)lvitem.lParam;
-            if (ppi != NULL)
+            if (ppi != nullptr)
             {
                const size_t index = szFileName[0].find_last_of('\\');
                if (index != std::string::npos)
@@ -740,7 +740,7 @@ void ImageDialog::ReimportFrom()
                pt->SetNonUndoableDirty(eSaveDirty);
 
                // Display new image
-               ::InvalidateRect(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), NULL, fTrue);
+               ::InvalidateRect(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), nullptr, fTrue);
             }
          }
       }
@@ -756,7 +756,7 @@ void ImageDialog::LoadPosition()
 
     const int w = LoadValueIntWithDefault("Editor", "ImageMngWidth", 1000);
     const int h = LoadValueIntWithDefault("Editor", "ImageMngHeight", 800);
-    SetWindowPos(NULL, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
+    SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
 void ImageDialog::SavePosition()

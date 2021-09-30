@@ -2,8 +2,8 @@
 
 Textbox::Textbox()
 {
-   m_pIFont = NULL;
-   m_texture = NULL;
+   m_pIFont = nullptr;
+   m_texture = nullptr;
 }
 
 Textbox::~Textbox()
@@ -25,7 +25,7 @@ HRESULT Textbox::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    SetDefaults(fromMouseClick);
 
-   return InitVBA(fTrue, 0, NULL);//ApcProjectItem.Define(ptable->ApcProject, GetDispatch(), axTypeHostProjectItem/*axTypeHostClass*/, L"Textbox", NULL);
+   return InitVBA(fTrue, 0, nullptr);//ApcProjectItem.Define(ptable->ApcProject, GetDispatch(), axTypeHostProjectItem/*axTypeHostClass*/, L"Textbox", nullptr);
 }
 
 void Textbox::SetDefaults(bool fromMouseClick)
@@ -126,7 +126,7 @@ void Textbox::WriteRegDefaults()
    SaveValueFloat("DefaultProps\\TextBox", "FontSize", fTmp);
    const size_t charCnt = wcslen(fd.lpstrName) + 1;
    char * const strTmp = new char[2 * charCnt];
-   WideCharToMultiByteNull(CP_ACP, 0, fd.lpstrName, -1, strTmp, (int)(2 * charCnt), NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, fd.lpstrName, -1, strTmp, (int)(2 * charCnt), nullptr, nullptr);
    SaveValue("DefaultProps\\TextBox", "FontName", strTmp);
    delete[] strTmp;
    const int weight = fd.sWeight;
@@ -148,10 +148,10 @@ char * Textbox::GetFontName()
         /*HRESULT hr =*/ m_pIFont->get_Name(&bstr);
 
         static char fontName[LF_FACESIZE];
-        WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, fontName, LF_FACESIZE, NULL, NULL);
+        WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, fontName, LF_FACESIZE, nullptr, nullptr);
         return fontName;
     }
-    return NULL;
+    return nullptr;
 }
 
 HFONT Textbox::GetFont()
@@ -166,7 +166,7 @@ HFONT Textbox::GetFont()
     CComBSTR bstr;
     HRESULT hr = m_pIFont->get_Name(&bstr);
 
-    WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, lf.lfFaceName, LF_FACESIZE, NULL, NULL);
+    WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, lf.lfFaceName, LF_FACESIZE, nullptr, nullptr);
 
     BOOL bl;
     hr = m_pIFont->get_Bold(&bl);
@@ -210,7 +210,7 @@ void Textbox::UIRenderPass2(Sur * const psur)
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetFillColor(-1);
    psur->SetObject(this);
-   psur->SetObject(NULL);
+   psur->SetObject(nullptr);
 
    psur->Rectangle(m_d.m_v1.x, m_d.m_v1.y, m_d.m_v2.x, m_d.m_v2.y);
 }
@@ -243,7 +243,7 @@ void Textbox::EndPlay()
    if (m_texture)
    {
       delete m_texture;
-      m_texture = NULL;
+      m_texture = nullptr;
 
       m_pIFontPlay->Release();
    }
@@ -255,7 +255,7 @@ void Textbox::RenderDynamic()
 {
    TRACE_FUNCTION();
 
-   const bool dmd = (m_d.m_isDMD || StrStrI(m_d.m_sztext.c_str(), "DMD") != NULL); //!! second part is VP10.0 legacy
+   const bool dmd = (m_d.m_isDMD || StrStrI(m_d.m_sztext.c_str(), "DMD") != nullptr); //!! second part is VP10.0 legacy
 
    if (!m_d.m_visible || (dmd && !g_pplayer->m_texdmd))
       return;
@@ -343,10 +343,10 @@ void Textbox::PreRenderText()
    bmi.bmiHeader.biSizeImage = 0;
 
    void *bits;
-   const HBITMAP hbm = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, &bits, NULL, 0);
+   const HBITMAP hbm = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0);
    assert(hbm);
 
-   const HDC hdc = CreateCompatibleDC(NULL);
+   const HDC hdc = CreateCompatibleDC(nullptr);
    const HBITMAP oldBmp = (HBITMAP)SelectObject(hdc, hbm);
 
    const HBRUSH hbrush = CreateSolidBrush(m_d.m_backcolor);
@@ -479,7 +479,7 @@ STDMETHODIMP Textbox::get_Text(BSTR *pVal)
 STDMETHODIMP Textbox::put_Text(BSTR newVal)
 {
    char buf[MAXSTRING];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXSTRING, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXSTRING, nullptr, nullptr);
    m_d.m_sztext = buf;
    if (g_pplayer)
       PreRenderText();
@@ -576,7 +576,7 @@ bool Textbox::LoadToken(const int id, BiffReader * const pbr)
 
 HRESULT Textbox::InitPostLoad()
 {
-   m_texture = NULL;
+   m_texture = nullptr;
 
    return S_OK;
 }

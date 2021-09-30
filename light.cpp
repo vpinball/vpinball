@@ -5,17 +5,17 @@
 Light::Light() : m_lightcenter(this)
 {
    m_menuid = IDR_SURFACEMENU;
-   m_customMoverVBuffer = NULL;
-   m_customMoverIBuffer = NULL;
-   m_bulbLightIndexBuffer = NULL;
-   m_bulbLightVBuffer = NULL;
-   m_bulbSocketIndexBuffer = NULL;
-   m_bulbSocketVBuffer = NULL;
+   m_customMoverVBuffer = nullptr;
+   m_customMoverIBuffer = nullptr;
+   m_bulbLightIndexBuffer = nullptr;
+   m_bulbLightVBuffer = nullptr;
+   m_bulbSocketIndexBuffer = nullptr;
+   m_bulbSocketVBuffer = nullptr;
    m_d.m_depthBias = 0.0f;
    m_d.m_shape = ShapeCustom;
    m_d.m_visible = true;
    m_roundLight = false;
-   m_propVisual = NULL;
+   m_propVisual = nullptr;
    m_updateBulbLightHeight = false;
 }
 
@@ -68,7 +68,7 @@ HRESULT Light::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_inPlayState = m_d.m_state;
    m_d.m_visible = true;
 
-   return InitVBA(fTrue, 0, NULL);
+   return InitVBA(fTrue, 0, nullptr);
 }
 
 void Light::SetDefaults(bool fromMouseClick)
@@ -217,7 +217,7 @@ void Light::RenderOutline(Sur * const psur)
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
    psur->SetFillColor(-1);
    psur->SetObject(this);
-   psur->SetObject(NULL);
+   psur->SetObject(nullptr);
 
    switch (m_d.m_shape)
    {
@@ -418,7 +418,7 @@ void Light::RenderDynamic()
    if (!m_d.m_visible || m_ptable->m_reflectionEnabled)
       return;
 
-   if (m_customMoverVBuffer == NULL) // in case of degenerate light
+   if (m_customMoverVBuffer == nullptr) // in case of degenerate light
       return;
 
    if (m_backglass && !GetPTable()->GetDecalsEnabled())
@@ -462,13 +462,13 @@ void Light::RenderDynamic()
       }
    }
 
-   Texture *offTexel = NULL;
+   Texture *offTexel = nullptr;
 
    // early out all lights with no contribution
    const vec4 lightColor2_falloff_power = convertColor(m_d.m_color2, m_d.m_falloff_power);
    vec4 lightColor_intensity = convertColor(m_d.m_color);
    if (m_d.m_BulbLight ||
-      (!m_d.m_BulbLight && (m_surfaceTexture == (offTexel = m_ptable->GetImage(m_d.m_szImage))) && (offTexel != NULL) && !m_backglass && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
+      (!m_d.m_BulbLight && (m_surfaceTexture == (offTexel = m_ptable->GetImage(m_d.m_szImage))) && (offTexel != nullptr) && !m_backglass && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
    {
       if (m_d.m_currentIntensity == 0.f)
          return;
@@ -515,7 +515,7 @@ void Light::RenderDynamic()
       pd3dDevice->classicLightShader->SetLightImageBackglassMode(m_d.m_imageMode, m_backglass);
       pd3dDevice->classicLightShader->SetMaterial(m_surfaceMaterial);
 
-      if (offTexel != NULL)
+      if (offTexel != nullptr)
       {
          pd3dDevice->classicLightShader->SetBool("hdrTexture0", offTexel->IsHDR());
          pd3dDevice->classicLightShader->SetTechnique(m_surfaceMaterial->m_bIsMetal ? "light_with_texture_isMetal" : "light_with_texture_isNotMetal");
@@ -598,7 +598,7 @@ void Light::RenderDynamic()
    else
       pd3dDevice->lightShader->End();
 
-   if (!m_d.m_BulbLight && offTexel != NULL /*&& m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl*/ && !m_backglass) // See above: // TOTAN and Flintstones inserts break if alpha blending is disabled here.
+   if (!m_d.m_BulbLight && offTexel != nullptr /*&& m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl*/ && !m_backglass) // See above: // TOTAN and Flintstones inserts break if alpha blending is disabled here.
    {
       pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
       pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::SRC_ALPHA);
@@ -658,7 +658,7 @@ void Light::PrepareMoversCustom()
    if (vtri.empty())
    {
       char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-      WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
+      WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
       char textBuffer[MAX_PATH];
       _snprintf_s(textBuffer, MAX_PATH-1, "%s has an invalid shape! It can not be rendered!", name);
       ShowError(textBuffer);
@@ -699,7 +699,7 @@ void Light::PrepareMoversCustom()
          buf[t].z = height + 0.1f;
 
          // Check if we are using a custom texture.
-         if (pin != NULL)
+         if (pin != nullptr)
          {
             buf[t].tu = pv0->x * inv_tablewidth;
             buf[t].tv = pv0->y * inv_tableheight;
@@ -1232,7 +1232,7 @@ STDMETHODIMP Light::get_BlinkPattern(BSTR *pVal)
 STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
 {
    char sz[NUM_RGB_BLINK_PATTERN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, sz, NUM_RGB_BLINK_PATTERN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, sz, NUM_RGB_BLINK_PATTERN, nullptr, nullptr);
    m_rgblinkpattern = sz;
 
    if (m_rgblinkpattern.empty())
@@ -1340,7 +1340,7 @@ STDMETHODIMP Light::get_Surface(BSTR *pVal)
 STDMETHODIMP Light::put_Surface(BSTR newVal)
 {
    char buf[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, nullptr, nullptr);
    m_d.m_szSurface = buf;
 
    return S_OK;
@@ -1359,7 +1359,7 @@ STDMETHODIMP Light::get_Image(BSTR *pVal)
 STDMETHODIMP Light::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
    m_d.m_szImage = szImage;
 
    return S_OK;

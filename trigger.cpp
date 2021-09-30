@@ -8,7 +8,7 @@
 
 Trigger::Trigger()
 {
-   m_ptriggerhitcircle = NULL;
+   m_ptriggerhitcircle = nullptr;
 
    m_hitEvent = false;
    m_unhitEvent = false;
@@ -18,11 +18,11 @@ Trigger::Trigger()
    m_vertexBuffer_animHeightOffset = -FLT_MAX;
 
    m_hitEnabled = true;
-   m_vertexBuffer = NULL;
-   m_triggerIndexBuffer = NULL;
-   m_triggerVertices = NULL;
+   m_vertexBuffer = nullptr;
+   m_triggerIndexBuffer = nullptr;
+   m_triggerVertices = nullptr;
    m_menuid = IDR_SURFACEMENU;
-   m_propVisual = NULL;
+   m_propVisual = nullptr;
 }
 
 Trigger::~Trigger()
@@ -174,7 +174,7 @@ HRESULT Trigger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    if (m_vdpoint.empty())
       InitShape(x, y);
 
-   return InitVBA(fTrue, 0, NULL);
+   return InitVBA(fTrue, 0, nullptr);
 }
 
 void Trigger::SetDefaults(bool fromMouseClick)
@@ -234,7 +234,7 @@ void Trigger::UIRenderPass2(Sur * const psur)
       std::vector<RenderVertex> vvertex;
       GetRgVertex(vvertex);
 
-      psur->SetObject(NULL);
+      psur->SetObject(nullptr);
       psur->SetBorderColor(RGB(0, 180, 0), false, 1);
 
       psur->Polygon(vvertex);
@@ -270,7 +270,7 @@ void Trigger::UIRenderPass2(Sur * const psur)
    }
    else
    {
-      psur->SetObject(NULL);
+      psur->SetObject(nullptr);
       psur->SetBorderColor(RGB(0, 180, 0), false, 1);
 
       psur->Line(m_d.m_vCenter.x - m_d.m_radius, m_d.m_vCenter.y, m_d.m_vCenter.x + m_d.m_radius, m_d.m_vCenter.y);
@@ -499,7 +499,7 @@ void Trigger::EndPlay()
       delete[] m_triggerVertices;
       m_triggerVertices = 0;
    }
-   m_ptriggerhitcircle = NULL;
+   m_ptriggerhitcircle = nullptr;
 }
 
 void Trigger::TriggerAnimationHit()
@@ -635,7 +635,7 @@ void Trigger::ExportMesh(ObjLoader& loader)
       return;
 
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
    GenerateMesh();
    loader.WriteObjectName(name);
    loader.WriteVertexInfo(m_triggerVertices, m_numVertices);
@@ -1212,7 +1212,7 @@ STDMETHODIMP Trigger::get_Surface(BSTR *pVal)
 STDMETHODIMP Trigger::put_Surface(BSTR newVal)
 {
    char buf[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, nullptr, nullptr);
    m_d.m_szSurface = buf;
 
    return S_OK;
@@ -1373,7 +1373,7 @@ STDMETHODIMP Trigger::get_Material(BSTR *pVal)
 STDMETHODIMP Trigger::put_Material(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
    m_d.m_szMaterial = buf;
 
    return S_OK;

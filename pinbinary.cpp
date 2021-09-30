@@ -2,7 +2,7 @@
 
 PinBinary::PinBinary()
 {
-   m_pdata = NULL;
+   m_pdata = nullptr;
    m_cdata = 0;
 }
 
@@ -18,7 +18,7 @@ bool PinBinary::ReadFromFile(const string& szFileName)
 {
    const HANDLE hFile = CreateFile(szFileName.c_str(),
       GENERIC_READ, FILE_SHARE_READ,
-      NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+      nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
    if (hFile == INVALID_HANDLE_VALUE)
    {
@@ -32,12 +32,12 @@ bool PinBinary::ReadFromFile(const string& szFileName)
       delete[] m_pdata;
    }
 
-   m_cdata = GetFileSize(hFile, NULL);
+   m_cdata = GetFileSize(hFile, nullptr);
 
    m_pdata = new char[m_cdata];
 
    DWORD read;
-   /*BOOL foo =*/ ReadFile(hFile, m_pdata, m_cdata, &read, NULL);
+   /*BOOL foo =*/ ReadFile(hFile, m_pdata, m_cdata, &read, nullptr);
 
    /*foo =*/ CloseHandle(hFile);
 
@@ -51,7 +51,7 @@ bool PinBinary::WriteToFile(const string& szfilename)
 {
    const HANDLE hFile = CreateFile(szfilename.c_str(),
       GENERIC_WRITE, FILE_SHARE_READ,
-      NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+      nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 
    if (hFile == INVALID_HANDLE_VALUE)
    {
@@ -61,7 +61,7 @@ bool PinBinary::WriteToFile(const string& szfilename)
    }
 
    DWORD write;
-   /*int foo =*/ WriteFile(hFile, m_pdata, m_cdata, &write, NULL);
+   /*int foo =*/ WriteFile(hFile, m_pdata, m_cdata, &write, nullptr);
 
    /*foo =*/ GetLastError();
 
@@ -121,7 +121,7 @@ int CALLBACK EnumFontFamExProc(
 
 void PinFont::Register()
 {
-   const HDC hdcScreen = GetDC(NULL);
+   const HDC hdcScreen = GetDC(nullptr);
 
    LOGFONT lf;
    lf.lfCharSet = DEFAULT_CHARSET;
@@ -130,10 +130,10 @@ void PinFont::Register()
 
    EnumFontFamiliesEx(hdcScreen, &lf, (FONTENUMPROC)EnumFontFamExProc, (size_t)this, 0);
 
-   ReleaseDC(NULL, hdcScreen);
+   ReleaseDC(nullptr, hdcScreen);
 
    char szPath[MAXSTRING];
-   GetModuleFileName(NULL, szPath, MAXSTRING);
+   GetModuleFileName(nullptr, szPath, MAXSTRING);
 
    char *szEnd = szPath + lstrlen(szPath);
 

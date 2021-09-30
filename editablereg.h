@@ -79,7 +79,7 @@ private:
       {
          ShowError("Editable type not found.");
          assert(false);
-         return NULL;
+         return nullptr;
       }
       else
       {

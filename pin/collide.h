@@ -102,7 +102,7 @@ struct CollisionEvent
 class HitObject
 {
 public:
-   HitObject() : m_pfedebug(NULL), m_obj(NULL), m_threshold(0.f),
+   HitObject() : m_pfedebug(nullptr), m_obj(nullptr), m_threshold(0.f),
       m_elasticity(0.3f), m_elasticityFalloff(0.0f), m_friction(0.3f), m_scatter(0.0f),
       m_ObjType(eNull), m_enabled(true), m_fe(false), m_e(0) {}
    virtual ~HitObject() {}
@@ -113,7 +113,7 @@ public:
    virtual void Contact(CollisionEvent& coll, const float dtime); // apply contact forces for the given time interval. Ball, Spinner and Gate do nothing here, Flipper has a specialized handling
    virtual void CalcHitBBox() = 0;
 
-   virtual MoverObject *GetMoverObject() { return NULL; }
+   virtual MoverObject *GetMoverObject() { return nullptr; }
 
    void SetFriction(const float friction)  { m_friction = friction; }
    void FireHitEvent(Ball * const pball);

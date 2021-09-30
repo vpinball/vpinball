@@ -46,17 +46,17 @@ int CodeViewDispatch::SortAgainst(const CodeViewDispatch * const pcvd) const
 int CodeViewDispatch::SortAgainstValue(const std::wstring& pv) const
 {
    char szName1[MAXSTRING];
-   WideCharToMultiByteNull(CP_ACP, 0, pv.c_str(), -1, szName1, MAXSTRING, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, pv.c_str(), -1, szName1, MAXSTRING, nullptr, nullptr);
    CharLowerBuff(szName1, lstrlen(szName1));
    char szName2[MAXSTRING];
-   WideCharToMultiByteNull(CP_ACP, 0, m_wName.c_str(), -1, szName2, MAXSTRING, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, m_wName.c_str(), -1, szName2, MAXSTRING, nullptr, nullptr);
    CharLowerBuff(szName2, lstrlen(szName2));
    return lstrcmp(szName1, szName2); //WideStrCmp((WCHAR *)pv, m_wzName);
 }
 
 CodeViewer::CodeViewer()
 {
-   m_haccel = NULL;
+   m_haccel = nullptr;
 }
 
 void CodeViewer::Init(IScriptableHost *psh)
@@ -67,16 +67,16 @@ void CodeViewer::Init(IScriptableHost *psh)
 
    m_psh = psh;
 
-   m_hwndMain = NULL;
-   m_hwndFind = NULL;
-   m_hwndStatus = NULL;
+   m_hwndMain = nullptr;
+   m_hwndFind = nullptr;
+   m_hwndStatus = nullptr;
 
    szFindString[0] = '\0';
    szReplaceString[0] = '\0';
 
    g_FindMsgString = RegisterWindowMessage(FINDMSGSTRING);
 
-   m_pScript = NULL;
+   m_pScript = nullptr;
 
    m_visible = false;
    m_minimized = false;
@@ -100,7 +100,7 @@ void CodeViewer::Init(IScriptableHost *psh)
 CodeViewer::~CodeViewer()
 {
    if (g_pvp && g_pvp->m_pcv == this)
-      g_pvp->m_pcv = NULL;
+      g_pvp->m_pcv = nullptr;
 
    Destroy();
 
@@ -240,7 +240,7 @@ HRESULT CodeViewer::AddTemporaryItem(const BSTR bstr, IDispatch * const pdisp)
    pcvd->m_pdisp = pdisp;
    pcvd->m_pdisp->QueryInterface(IID_IUnknown, (void **)&pcvd->m_punk);
    pcvd->m_punk->Release();
-   pcvd->m_piscript = NULL;
+   pcvd->m_piscript = nullptr;
    pcvd->m_global = false;
 
    if (m_vcvd.GetSortedIndex(pcvd) != -1 || m_vcvdTemp.GetSortedIndex(pcvd) != -1)
@@ -284,7 +284,7 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
 
    // Add item to dropdown
    char szT[MAXNAMEBUFFER * 2]; // Names can only be 32 characters (plus terminator)
-   WideCharToMultiByteNull(CP_ACP, 0, pcvd->m_wName.c_str(), -1, szT, sizeof(szT), NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, pcvd->m_wName.c_str(), -1, szT, sizeof(szT), nullptr, nullptr);
    const size_t index = SendMessage(m_hwndItemList, CB_ADDSTRING, 0, (size_t)szT);
    SendMessage(m_hwndItemList, CB_SETITEMDATA, index, (size_t)piscript);
    //AndyS - WIP insert new item into autocomplete list??
@@ -309,7 +309,7 @@ void CodeViewer::RemoveItem(IScriptable * const piscript)
 
    // Remove item from dropdown
    char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
-   WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szT, MAXNAMEBUFFER*2, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szT, MAXNAMEBUFFER*2, nullptr, nullptr);
    const size_t index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    ::SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
 
@@ -322,7 +322,7 @@ void CodeViewer::SelectItem(IScriptable * const piscript)
    piscript->get_Name(&bstr);
 
    char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
-   WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szT, MAXNAMEBUFFER*2, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szT, MAXNAMEBUFFER*2, nullptr, nullptr);
 
    const size_t index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    if(index!=-1)
@@ -357,11 +357,11 @@ HRESULT CodeViewer::ReplaceName(IScriptable * const piscript, const WCHAR * cons
 
    // Remove old name from dropdown and replace it with the new
    char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
-   WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szT, MAXNAMEBUFFER*2, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szT, MAXNAMEBUFFER*2, nullptr, nullptr);
    size_t index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    ::SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
 
-   WideCharToMultiByteNull(CP_ACP, 0, wzNew, -1, szT, MAXNAMEBUFFER*2, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, wzNew, -1, szT, MAXNAMEBUFFER*2, nullptr, nullptr);
    index = ::SendMessage(m_hwndItemList, CB_ADDSTRING, 0, (size_t)szT);
    ::SendMessage(m_hwndItemList, CB_SETITEMDATA, index, (size_t)piscript);
 
@@ -457,7 +457,7 @@ void CodeViewer::SetVisible(const bool visible)
    if (m_hwndFind && !visible)
    {
       DestroyWindow(m_hwndFind);
-      m_hwndFind = NULL;
+      m_hwndFind = nullptr;
    }
 
    if (IsIconic())
@@ -581,35 +581,35 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
    /////////////////// Item / Event Lists //!! ALL THIS STUFF IS NOT RES/DPI INDEPENDENT! also see WM_SIZE handler
 
    m_hwndItemText = CreateWindowEx(0, "Static", "ObjectsText",
-      WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 5, 0, 330, 30, m_hwndMain, NULL, g_pvp->theInstance, 0);
+      WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 5, 0, 330, 30, m_hwndMain, nullptr, g_pvp->theInstance, 0);
    ::SetWindowText(m_hwndItemText, "Table component:");
    ::SendMessage(m_hwndItemText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    m_hwndItemList = CreateWindowEx(0, "ComboBox", "Objects",
       WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL,
-      5, 30+2, 330, 400, m_hwndMain, NULL, g_pvp->theInstance, 0);
+      5, 30+2, 330, 400, m_hwndMain, nullptr, g_pvp->theInstance, 0);
    ::SetWindowLongPtr(m_hwndItemList, GWL_ID, IDC_ITEMLIST);
    ::SendMessage(m_hwndItemList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    m_hwndEventText = CreateWindowEx(0, "Static", "EventsText",
-      WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 360 + 5, 0, 330, 30, m_hwndMain, NULL, g_pvp->theInstance, 0);
+      WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 360 + 5, 0, 330, 30, m_hwndMain, nullptr, g_pvp->theInstance, 0);
    ::SetWindowText(m_hwndEventText, "Create Sub from component:");
    ::SendMessage(m_hwndEventText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    m_hwndEventList = CreateWindowEx(0, "ComboBox", "Events",
       WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL,
-      360 + 5, 30+2, 330, 400, m_hwndMain, NULL, g_pvp->theInstance, 0);
+      360 + 5, 30+2, 330, 400, m_hwndMain, nullptr, g_pvp->theInstance, 0);
    ::SetWindowLongPtr(m_hwndEventList, GWL_ID, IDC_EVENTLIST);
    ::SendMessage(m_hwndEventList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    m_hwndFunctionText = CreateWindowEx(0, "Static", "FunctionsText",
-      WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 730 + 5, 0, 330, 30, m_hwndMain, NULL, g_pvp->theInstance, 0);
+      WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 730 + 5, 0, 330, 30, m_hwndMain, nullptr, g_pvp->theInstance, 0);
    ::SetWindowText(m_hwndFunctionText, "Go to Sub/Function:");
    ::SendMessage(m_hwndFunctionText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    m_hwndFunctionList = CreateWindowEx(0, "ComboBox", "Functions",
       WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL,
-      730 + 5, 30+2, 330, 400, m_hwndMain, NULL, g_pvp->theInstance, 0);
+      730 + 5, 30+2, 330, 400, m_hwndMain, nullptr, g_pvp->theInstance, 0);
    ::SetWindowLongPtr(m_hwndFunctionList, GWL_ID, IDC_FUNCTIONLIST);
    ::SendMessage(m_hwndFunctionList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
@@ -624,7 +624,7 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 
    m_hwndLastErrorTextArea = CreateWindowEx(0, "Edit", "",
       WS_CHILD | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE,
-      0, 0, 0, 0, m_hwndMain, NULL, g_pvp->theInstance, 0);
+      0, 0, 0, 0, m_hwndMain, nullptr, g_pvp->theInstance, 0);
    SendMessage(m_hwndLastErrorTextArea, EM_SETREADONLY, TRUE, 0);
    ::SendMessage(m_hwndLastErrorTextArea, WM_SETFONT, (size_t)GetStockObject(ANSI_FIXED_FONT), 0);
    
@@ -632,7 +632,7 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 
    m_hwndScintilla = CreateWindowEx(0, "Scintilla", "",
       WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN,
-      0, 30+2 +40, 0, 0, m_hwndMain, NULL, g_pvp->theInstance, 0);
+      0, 30+2 +40, 0, 0, m_hwndMain, nullptr, g_pvp->theInstance, 0);
 
 	//if still using old dll load VB lexer instead
 	//use SCI_SETLEXERLANGUAGE as SCI_GETLEXER doesn't return the correct value with SCI_SETLEXER
@@ -956,13 +956,13 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 		m_suppressErrorDialogs = scriptErrorDialog.WasSuppressErrorsRequested();
 		g_pvp->EnableWindow(TRUE);
 
-		if (pt != NULL)
+		if (pt != nullptr)
 			::SetFocus(m_hwndScintilla);
 	}
 
 	g_pvp->EnableWindow(TRUE);
 
-	if (pt != NULL)
+	if (pt != nullptr)
 		::SetFocus(m_hwndScintilla);
 
 	return S_OK;
@@ -1183,7 +1183,7 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 		m_suppressErrorDialogs = scriptErrorDialog.WasSuppressErrorsRequested();
 		g_pvp->EnableWindow(TRUE);
 
-		if (pt != NULL)
+		if (pt != nullptr)
 			::SetFocus(m_hwndScintilla);
 	}
 
@@ -1250,7 +1250,7 @@ void CodeViewer::EvaluateScriptStatement(const char * const szScript)
 
    MultiByteToWideCharNull(CP_ACP, 0, szScript, -1, wzScript, scriptlen + 1);
 
-   m_pScriptParse->ParseScriptText(wzScript, L"Debug", 0, 0, CONTEXTCOOKIE_DEBUG, 0, 0, NULL, &exception);
+   m_pScriptParse->ParseScriptText(wzScript, L"Debug", 0, 0, CONTEXTCOOKIE_DEBUG, 0, 0, nullptr, &exception);
 
    delete[] wzScript;
 }
@@ -1267,22 +1267,22 @@ void CodeViewer::AddToDebugOutput(const char * const szText)
 
 void CodeViewer::ShowFindDialog()
 {
-   if (m_hwndFind == NULL)
+   if (m_hwndFind == nullptr)
    {
       m_wordUnderCaret.lpstrText = szFindString;
       GetWordUnderCaret();
 
       m_findreplacestruct.lStructSize = sizeof(FINDREPLACE);
       m_findreplacestruct.hwndOwner = m_hwndMain;
-      m_findreplacestruct.hInstance = NULL;
+      m_findreplacestruct.hInstance = nullptr;
       m_findreplacestruct.Flags = FR_DOWN | FR_HIDEWHOLEWORD;
       m_findreplacestruct.lpstrFindWhat = szFindString;
-      m_findreplacestruct.lpstrReplaceWith = NULL;
+      m_findreplacestruct.lpstrReplaceWith = nullptr;
       m_findreplacestruct.wFindWhatLen = MAX_FIND_LENGTH-1;
       m_findreplacestruct.wReplaceWithLen = 0;
       m_findreplacestruct.lCustData = 0;
-      m_findreplacestruct.lpfnHook = NULL;
-      m_findreplacestruct.lpTemplateName = NULL;
+      m_findreplacestruct.lpfnHook = nullptr;
+      m_findreplacestruct.lpTemplateName = nullptr;
 
       m_hwndFind = FindText(&m_findreplacestruct);
    }
@@ -1290,22 +1290,22 @@ void CodeViewer::ShowFindDialog()
 
 void CodeViewer::ShowFindReplaceDialog()
 {
-   if (m_hwndFind == NULL)
+   if (m_hwndFind == nullptr)
    {
       m_wordUnderCaret.lpstrText = szFindString;
       GetWordUnderCaret();
 
       m_findreplacestruct.lStructSize = sizeof(FINDREPLACE);
       m_findreplacestruct.hwndOwner = m_hwndMain;
-      m_findreplacestruct.hInstance = NULL;
+      m_findreplacestruct.hInstance = nullptr;
       m_findreplacestruct.Flags = FR_DOWN | FR_HIDEWHOLEWORD;
       m_findreplacestruct.lpstrFindWhat = szFindString;
       m_findreplacestruct.lpstrReplaceWith = szReplaceString;
       m_findreplacestruct.wFindWhatLen = MAX_FIND_LENGTH-1;
       m_findreplacestruct.wReplaceWithLen = MAX_FIND_LENGTH-1;
       m_findreplacestruct.lCustData = 0;
-      m_findreplacestruct.lpfnHook = NULL;
-      m_findreplacestruct.lpTemplateName = NULL;
+      m_findreplacestruct.lpfnHook = nullptr;
+      m_findreplacestruct.lpTemplateName = nullptr;
 
       m_hwndFind = ReplaceText(&m_findreplacestruct);
    }
@@ -1686,7 +1686,7 @@ void CodeViewer::GetParamsFromEvent(const UINT iEvent, char * const szParams)
                for (unsigned int l = 1; l < cnames; ++l)
                {
                   char szT[512];
-                  WideCharToMultiByteNull(CP_ACP, 0, rgstr[l], -1, szT, 512, NULL, NULL);
+                  WideCharToMultiByteNull(CP_ACP, 0, rgstr[l], -1, szT, 512, nullptr, nullptr);
                   if (l > 1)
                   {
                      lstrcat(szParams, ", ");
@@ -1765,7 +1765,7 @@ void CodeViewer::FindCodeFromEvent()
 
       const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETLINE, line, (LPARAM)szLine);
       MultiByteToWideCharNull(CP_ACP, 0, szLine, -1, wzText, MAX_LINE_LENGTH);
-      m_pScriptDebug->GetScriptTextAttributes(wzText, (ULONG)cchar, NULL, 0, wzFormat);
+      m_pScriptDebug->GetScriptTextAttributes(wzText, (ULONG)cchar, nullptr, 0, wzFormat);
 
       const size_t inamechar = posFind - beginchar - 1;
 
@@ -1962,7 +1962,7 @@ void CodeViewer::AddControlToOkayedList(const CONFIRMSAFETY *pcs)
 bool CodeViewer::FControlMarkedSafe(const CONFIRMSAFETY *pcs)
 {
    bool safe = false;
-   IObjectSafety *pios = NULL;
+   IObjectSafety *pios = nullptr;
 
    if (FAILED(pcs->pUnk->QueryInterface(IID_IObjectSafety, (void **)&pios)))
       goto LError;
@@ -1999,7 +1999,7 @@ bool CodeViewer::FUserManuallyOkaysControl(const CONFIRMSAFETY *pcs)
 
    const int len = lstrlenW(wzT) + 1; // include null termination
    char * const szName = new char[len];
-   WideCharToMultiByteNull(CP_ACP, 0, wzT, -1, szName, len, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, wzT, -1, szName, len, nullptr, nullptr);
 
    const LocalString ls1(IDS_UNSECURECONTROL1);
    const LocalString ls2(IDS_UNSECURECONTROL2);
@@ -2345,8 +2345,8 @@ void CodeViewer::PreRegisterClass(WNDCLASS& wc)
     wc.hInstance = g_pvp->theInstance;
     wc.hIcon = LoadIcon(g_pvp->theInstance, MAKEINTRESOURCE(IDI_SCRIPT));
     wc.lpszClassName = "CVFrame";
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.lpszMenuName = MAKEINTRESOURCE(IDR_SCRIPTMENU);//NULL;
+    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wc.lpszMenuName = MAKEINTRESOURCE(IDR_SCRIPTMENU);//nullptr;
     wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
 }
 
@@ -2800,7 +2800,7 @@ void CodeViewer::ParseVPCore()
 		szLoadDir = "c:\\Visual Pinball\\Tables\\"; // default table path
 	searchPaths.push_back(szLoadDir + "core.vbs");
 
-	FILE* fCore = NULL;
+	FILE* fCore = nullptr;
 	for(size_t i = 0; i < searchPaths.size(); ++i)
 		if ((fopen_s(&fCore, searchPaths[i].c_str(), "r") == 0) && fCore)
 			break;
@@ -3015,7 +3015,7 @@ LRESULT CodeViewer::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       FINDREPLACE * const pfr = (FINDREPLACE *)lParam;
       if (pfr->Flags & FR_DIALOGTERM)
       {
-         pcv->m_hwndFind = NULL;
+         pcv->m_hwndFind = nullptr;
          const size_t selstart = SendMessage(pcv->m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
          const size_t selend = SendMessage(pcv->m_hwndScintilla, SCI_GETSELECTIONEND, 0, 0);
          ::SetFocus(pcv->m_hwndScintilla);
@@ -3035,8 +3035,8 @@ LRESULT CodeViewer::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          if (LOWORD(wParam) != WA_INACTIVE)
          {
             g_pvp->m_pcv = pcv;
-         	pcv->m_stopErrorDisplay = true; ///stop Error reporting WIP
-         	pcv->ParseForFunction();
+            pcv->m_stopErrorDisplay = true; ///stop Error reporting WIP
+            pcv->ParseForFunction();
          }
          break;
       }
@@ -3047,11 +3047,11 @@ LRESULT CodeViewer::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       }
       case WM_SYSCOMMAND:
       {
-	      if (wParam == SC_MINIMIZE && g_pvp != NULL)
-		      pcv->m_minimized = true;
+         if (wParam == SC_MINIMIZE && g_pvp != nullptr)
+              pcv->m_minimized = true;
 
-         if (wParam == SC_RESTORE && g_pvp != NULL)
-		      pcv->m_minimized = false;
+         if (wParam == SC_RESTORE && g_pvp != nullptr)
+              pcv->m_minimized = false;
          break;
       }
       case WM_SIZE:
@@ -3206,7 +3206,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
       RECT rcMain;
       GetWindowRect(hwndParent, &rcMain);
       GetWindowRect(hwndDlg, &rcDlg);
-      SetWindowPos(hwndDlg, NULL,
+      SetWindowPos(hwndDlg, nullptr,
          (rcMain.right + rcMain.left) / 2 - (rcDlg.right - rcDlg.left) / 2,
          (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
          0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
@@ -3436,14 +3436,14 @@ void CodeViewer::ResizeScintillaAndLastError()
 	const int statheight = rcStatus.bottom - rcStatus.top;
 
 	const int scintillaHeight = rc.bottom - rc.top - statheight - (30 + 2 + 40) - (m_lastErrorWidgetVisible ? LAST_ERROR_WIDGET_HEIGHT : 0);
-	::SetWindowPos(pcv->m_hwndScintilla, NULL,
+	::SetWindowPos(pcv->m_hwndScintilla, nullptr,
 		0, 0,
 		rc.right - rc.left, scintillaHeight,
 		SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
 	if (m_lastErrorWidgetVisible)
 	{
-		::SetWindowPos(pcv->m_hwndLastErrorTextArea, NULL,
+		::SetWindowPos(pcv->m_hwndLastErrorTextArea, nullptr,
 			0, (30 + 2 + 40) + scintillaHeight,
 			rc.right - rc.left, LAST_ERROR_WIDGET_HEIGHT,
 			SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
@@ -3708,7 +3708,7 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
 
    char * const szT = new char[len + 1];
 
-   WideCharToMultiByteNull(CP_ACP, 0, wzT, -1, szT, len + 1, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, wzT, -1, szT, len + 1, nullptr, nullptr);
 
    m_pcv->AddToDebugOutput(szT);
 

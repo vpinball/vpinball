@@ -21,7 +21,7 @@ HitRectSur::HitRectSur(const HDC hdc, const float zoom, const float offx, const 
       m_rcRect.top = temp;
    }
 
-   SetObject(NULL);
+   SetObject(nullptr);
 }
 
 HitRectSur::~HitRectSur()

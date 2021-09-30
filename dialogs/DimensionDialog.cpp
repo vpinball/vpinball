@@ -77,7 +77,7 @@ BOOL DimensionDialog::OnInitDialog()
    lvc.pszText = TEXT("Height");
    ListView_InsertColumn(listHwnd, 2, &lvc);
 
-   if (listHwnd != NULL)
+   if (listHwnd != nullptr)
       ListView_DeleteAllItems(listHwnd);
    lv.mask = LVIF_TEXT;
    for (int i = 0; i < DIM_TABLE_SIZE; i++)
@@ -211,7 +211,7 @@ BOOL DimensionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       case IDC_APPLY_TO_TABLE:
       {
          CComObject<PinTable> * const pt = g_pvp->GetActiveTable();
-         if (pt == NULL)
+         if (pt == nullptr)
          {
             ShowError("No table loaded!");
             break;

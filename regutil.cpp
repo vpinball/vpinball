@@ -44,7 +44,7 @@ HRESULT LoadValue(const std::string &szKey, const std::string &szValue, float &p
       return E_FAIL;
 
    char* const fo = strchr(szbuffer, ',');
-   if (fo != NULL)
+   if (fo != nullptr)
       *fo = '.';
 
    if (szbuffer[0] == '-')
@@ -92,7 +92,7 @@ static HRESULT LoadValue(const std::string &szKey, const std::string &szValue, D
    {
       type = REG_NONE;
 
-      RetVal = RegQueryValueEx(hk, szValue.c_str(), NULL, &type, (BYTE *)pvalue, &size);
+      RetVal = RegQueryValueEx(hk, szValue.c_str(), nullptr, &type, (BYTE *)pvalue, &size);
 
       RegCloseKey(hk);
    }
@@ -133,8 +133,8 @@ static HRESULT SaveValue(const std::string &szKey, const std::string &szValue, c
 
    HKEY hk;
    //RetVal = RegOpenKeyEx(HKEY_CURRENT_USER, szPath, 0, KEY_ALL_ACCESS, &hk);
-   DWORD RetVal = RegCreateKeyEx(HKEY_CURRENT_USER, szPath, 0, NULL,
-      REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &hk, NULL);
+   DWORD RetVal = RegCreateKeyEx(HKEY_CURRENT_USER, szPath, 0, nullptr,
+      REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, nullptr, &hk, nullptr);
 
    if (RetVal == ERROR_SUCCESS)
    {

@@ -9,7 +9,7 @@ public:
 
    void FireVoidEvent(const int dispid)
    {
-      DISPPARAMS dispparams = { NULL, NULL, 0, 0 };
+      DISPPARAMS dispparams = { nullptr, nullptr, 0, 0 };
 
       FireDispID(dispid, &dispparams);
    }
@@ -17,7 +17,7 @@ public:
    void FireVoidEventParm(const int dispid, const float parm)
    {
       CComVariant rgvar[1] = { CComVariant(parm) };
-      DISPPARAMS dispparams = { rgvar, NULL, 1, 0 };
+      DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
 
       FireDispID(dispid, &dispparams);
    }
@@ -25,7 +25,7 @@ public:
    void FireVoidEventParm(const int dispid, const int parm)
    {
       CComVariant rgvar[1] = { CComVariant(parm) };
-      DISPPARAMS dispparams = { rgvar, NULL, 1, 0 };
+      DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
 
       FireDispID(dispid, &dispparams);
    }
@@ -33,7 +33,7 @@ public:
    /*void FireVoidEventParm(const int dispid, const unsigned int parm)
    {
       CComVariant rgvar[1] = { CComVariant(parm) };
-      DISPPARAMS dispparams  = { rgvar, NULL, 1, 0 };
+      DISPPARAMS dispparams  = { rgvar, nullptr, 1, 0 };
 
       FireDispID(dispid, &dispparams);
    }*/
@@ -41,7 +41,7 @@ public:
    /*void FireVoidEventParm(const int dispid, const char* parm)
    {
       CComVariant rgvar[1] = { CComVariant(parm) };
-      DISPPARAMS dispparams = { rgvar, NULL, 1, 0 };
+      DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
 
       FireDispID(dispid, &dispparams);
    }*/
@@ -62,10 +62,10 @@ public:
       {
          Collection * const pcollection = pT->m_vEventCollection[i];
 
-         if (pcollection!=NULL)
+         if (pcollection!=nullptr)
          {
             CComVariant rgvar[1] = { CComVariant((long)pT->m_viEventCollection[i]) };
-            DISPPARAMS dispparams = { rgvar, NULL, 1, 0 };
+            DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
 
             pcollection->FireDispID(dispid, &dispparams);
          }
@@ -82,10 +82,10 @@ public:
       IUnknown** pp = IConnectionPointImpl<T, psrcid, CComDynamicUnkArray>::m_vec.begin();
       while (pp < IConnectionPointImpl<T, psrcid, CComDynamicUnkArray>::m_vec.end())
       {
-         if (*pp != NULL)
+         if (*pp != nullptr)
          {
             IDispatch* const pDispatch = reinterpret_cast<IDispatch*>(*pp);
-            pDispatch->Invoke(dispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, NULL, NULL, NULL);
+            pDispatch->Invoke(dispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
          }
          ++pp;
       }

@@ -17,8 +17,8 @@ HRESULT Timer::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    SetDefaults(fromMouseClick);
 
-   return InitVBA(fTrue, 0, NULL);//ApcProjectItem.Define(ptable->ApcProject, GetDispatch(),
-   //axTypeHostProjectItem/*axTypeHostClass*/, L"Timer", NULL);
+   return InitVBA(fTrue, 0, nullptr);//ApcProjectItem.Define(ptable->ApcProject, GetDispatch(),
+   //axTypeHostProjectItem/*axTypeHostClass*/, L"Timer", nullptr);
 }
 
 void Timer::SetDefaults(bool fromMouseClick)
@@ -105,7 +105,7 @@ void Timer::GetTimers(vector<HitTimer*> &pvht)
 
 void Timer::GetHitShapes(vector<HitObject*> &pvho)
 {
-   m_phittimer = NULL;
+   m_phittimer = nullptr;
 }
 
 void Timer::GetHitShapesDebug(vector<HitObject*> &pvho)

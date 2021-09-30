@@ -29,12 +29,12 @@ unsigned int WINAPI VPWorkerThreadStart(void *param)
 {
    MSG msg;
 
-   PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE); // Create message queue for this thread
+   PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE); // Create message queue for this thread
    SetEvent(g_hWorkerStarted); // Tell the world we have a message queue to talk to
 
    for (;;)
    {
-      GetMessage(&msg, NULL, 0, 0);
+      GetMessage(&msg, nullptr, 0, 0);
 
       switch (msg.message)
       {
@@ -48,16 +48,16 @@ unsigned int WINAPI VPWorkerThreadStart(void *param)
       case HANG_SNOOP_START:
       {
          lasthangsnoopvalue = -1;
-         hangsnooptimerid = SetTimer(NULL, 0, 1000, (TIMERPROC)HangSnoopProc);
+         hangsnooptimerid = SetTimer(nullptr, 0, 1000, (TIMERPROC)HangSnoopProc);
          const HANDLE hEvent = (HANDLE)msg.wParam;
          CloseHandle(hEvent);
-         //HangSnoopProc(NULL, 0, 0, 0);
+         //HangSnoopProc(nullptr, 0, 0, 0);
       }
       break;
 
       case HANG_SNOOP_STOP:
       {
-         KillTimer(NULL, hangsnooptimerid);
+         KillTimer(nullptr, hangsnooptimerid);
          const HANDLE hEvent = (HANDLE)msg.wParam;
          CloseHandle(hEvent);
       }
@@ -94,7 +94,7 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
    if (SUCCEEDED(hr = StgCreateStorageEx(wzT.c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
       STGFMT_DOCFILE, 0, &stg, 0, IID_IStorage, (void**)&pstgDisk)))
    {
-      pstgroot->CopyTo(0, NULL, NULL, pstgDisk);
+      pstgroot->CopyTo(0, nullptr, nullptr, pstgDisk);
       hr = pstgDisk->Commit(STGC_DEFAULT);
       pstgDisk->Release();
    }

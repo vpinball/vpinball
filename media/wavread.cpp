@@ -18,9 +18,9 @@ static HRESULT ReadMMIO(HMMIO hmmioIn, MMCKINFO* pckInRIFF, WAVEFORMATEX** ppwfx
    MMCKINFO        ckIn;           // chunk info. for general use.
    PCMWAVEFORMAT   pcmWaveFormat;  // Temp PCM structure to load in.
 
-   *ppwfxInfo = NULL;
+   *ppwfxInfo = nullptr;
 
-   if ((0 != mmioDescend(hmmioIn, pckInRIFF, NULL, 0)))
+   if ((0 != mmioDescend(hmmioIn, pckInRIFF, nullptr, 0)))
       return E_FAIL;
 
    if ((pckInRIFF->ckid != FOURCC_RIFF) ||
@@ -46,7 +46,7 @@ static HRESULT ReadMMIO(HMMIO hmmioIn, MMCKINFO* pckInRIFF, WAVEFORMATEX** ppwfx
    // word, and thats how many extra bytes to allocate.
    if (pcmWaveFormat.wf.wFormatTag == WAVE_FORMAT_PCM)
    {
-      /*if (NULL == (*/ *ppwfxInfo = (WAVEFORMATEX*)new CHAR[sizeof(WAVEFORMATEX)]; //))
+      /*if (nullptr == (*/ *ppwfxInfo = (WAVEFORMATEX*)new CHAR[sizeof(WAVEFORMATEX)]; //))
       //   return E_FAIL;
 
       // Copy the bytes from the pcm structure to the waveformatex structure
@@ -60,7 +60,7 @@ static HRESULT ReadMMIO(HMMIO hmmioIn, MMCKINFO* pckInRIFF, WAVEFORMATEX** ppwfx
       if (mmioRead(hmmioIn, (CHAR*)&cbExtraBytes, sizeof(WORD)) != sizeof(WORD))
          return E_FAIL;
 
-      /*if (NULL == (*/ *ppwfxInfo = (WAVEFORMATEX*)new CHAR[sizeof(WAVEFORMATEX) + cbExtraBytes]; //))
+      /*if (nullptr == (*/ *ppwfxInfo = (WAVEFORMATEX*)new CHAR[sizeof(WAVEFORMATEX) + cbExtraBytes]; //))
          //return E_FAIL;
 
       // Copy the bytes from the pcm structure to the waveformatex structure
@@ -72,7 +72,7 @@ static HRESULT ReadMMIO(HMMIO hmmioIn, MMCKINFO* pckInRIFF, WAVEFORMATEX** ppwfx
          cbExtraBytes) != cbExtraBytes)
       {
          delete[] *ppwfxInfo;
-         *ppwfxInfo = NULL;
+         *ppwfxInfo = nullptr;
          return E_FAIL;
       }
    }
@@ -81,7 +81,7 @@ static HRESULT ReadMMIO(HMMIO hmmioIn, MMCKINFO* pckInRIFF, WAVEFORMATEX** ppwfx
    if (0 != mmioAscend(hmmioIn, &ckIn, 0))
    {
       delete[] *ppwfxInfo;
-      *ppwfxInfo = NULL;
+      *ppwfxInfo = nullptr;
       return E_FAIL;
    }
 
@@ -100,7 +100,7 @@ static HRESULT WaveOpenFile(const string& strFileName, HMMIO* phmmioIn, WAVEFORM
    HRESULT hr;
    HMMIO   hmmioIn;
 
-   if (NULL == (hmmioIn = mmioOpen((LPSTR)strFileName.c_str(), NULL, MMIO_ALLOCBUF | MMIO_READ)))
+   if (nullptr == (hmmioIn = mmioOpen((LPSTR)strFileName.c_str(), nullptr, MMIO_ALLOCBUF | MMIO_READ)))
       return E_FAIL;
 
    if (FAILED(hr = ReadMMIO(hmmioIn, pckInRIFF, ppwfxInfo)))
@@ -193,7 +193,7 @@ static HRESULT WaveReadFile(HMMIO hmmioIn, UINT cbRead, BYTE* pbDest,
 //-----------------------------------------------------------------------------
 CWaveSoundRead::CWaveSoundRead()
 {
-   m_pwfx = NULL;
+   m_pwfx = nullptr;
 }
 
 //-----------------------------------------------------------------------------

@@ -5,7 +5,7 @@
 DrawingOrderDialog::DrawingOrderDialog(bool select) : CDialog(IDD_DRAWING_ORDER)
 {
    m_drawingOrderSelect = select;
-   hOrderList = NULL;
+   hOrderList = nullptr;
 }
 
 DrawingOrderDialog::~DrawingOrderDialog()
@@ -37,7 +37,7 @@ BOOL DrawingOrderDialog::OnInitDialog()
    lvc.pszText = TEXT("Type");
    ListView_InsertColumn(hOrderList, 2, &lvc);
 
-   if (hOrderList != NULL)
+   if (hOrderList != nullptr)
       ListView_DeleteAllItems(hOrderList);
    lv.mask = LVIF_TEXT;
 
@@ -162,12 +162,12 @@ BOOL DrawingOrderDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    {
       case IDC_DRAWING_ORDER_UP:
       {
-         UpdateDrawingOrder(NULL, true);
+         UpdateDrawingOrder(nullptr, true);
          break;
       }
       case IDC_DRAWING_ORDER_DOWN:
       {
-         UpdateDrawingOrder(NULL, false);
+         UpdateDrawingOrder(nullptr, false);
          break;
       }
       default:

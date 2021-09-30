@@ -10,7 +10,7 @@ public:
    {
       m_bumperanim_hitEvent = true;
       m_bumperanim_ringAnimOffset = 0.0f;
-      m_pbumper = NULL;
+      m_pbumper = nullptr;
    }
 
    virtual void Collide(const CollisionEvent& coll);
@@ -43,7 +43,7 @@ public:
       m_doHitEvent = false;
       m_force = 0.f;
       m_EventTimeReset = 0;
-      m_psurface = NULL;
+      m_psurface = nullptr;
    }
 
    virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
@@ -215,7 +215,7 @@ class TriggerHitCircle : public HitCircle
 public:
    TriggerHitCircle(const Vertex2D& c, const float r, const float zlow, const float zhigh) : HitCircle(c, r, zlow, zhigh)
    {
-      m_ptrigger = NULL;
+      m_ptrigger = nullptr;
    }
 
    virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;

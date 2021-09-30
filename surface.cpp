@@ -13,7 +13,7 @@ Surface::Surface()
    m_slingshotVBuffer = 0;
    m_VBuffer = 0;
    m_IBuffer = 0;
-   m_propPhysics = NULL;
+   m_propPhysics = nullptr;
    m_d.m_overwritePhysics = true;
 }
 
@@ -76,7 +76,7 @@ HRESULT Surface::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    SetDefaults(fromMouseClick);
 
-   return InitVBA(fTrue, 0, NULL);
+   return InitVBA(fTrue, 0, nullptr);
 }
 
 void Surface::WriteRegDefaults()
@@ -192,7 +192,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    m_d.m_sideVisible = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "SideVisible", true) : true;
    m_d.m_collidable = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Collidable", true) : true;
 
-   return InitVBA(fTrue, 0, NULL);
+   return InitVBA(fTrue, 0, nullptr);
 }
 #endif
 
@@ -267,7 +267,7 @@ void Surface::UIRenderPass2(Sur * const psur)
    psur->SetFillColor(-1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetObject(this); // For selected formatting
-   psur->SetObject(NULL);
+   psur->SetObject(nullptr);
 
    {
       std::vector<RenderVertex> vvertex; //!! check/reuse from prerender
@@ -308,7 +308,7 @@ void Surface::UIRenderPass2(Sur * const psur)
 
       if (pdp->m_slingshot)
       {
-         psur->SetObject(NULL);
+         psur->SetObject(nullptr);
          const CComObject<DragPoint> * const pdp2 = m_vdpoint[(i < m_vdpoint.size() - 1) ? (i + 1) : 0];
          psur->SetLineColor(RGB(0, 0, 0), false, 3);
 
@@ -326,7 +326,7 @@ void Surface::RenderBlueprint(Sur *psur, const bool solid)
       psur->SetFillColor(-1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetObject(this); // For selected formatting
-   psur->SetObject(NULL);
+   psur->SetObject(nullptr);
 
    std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
@@ -373,7 +373,7 @@ void Surface::CurvesToShapes(vector<HitObject*> &pvho)
 
    const int count = (int)vvertex.size();
    Vertex3Ds * const rgv3Dt = new Vertex3Ds[count];
-   Vertex3Ds * const rgv3Db = m_d.m_isBottomSolid ? new Vertex3Ds[count] : NULL;
+   Vertex3Ds * const rgv3Db = m_d.m_isBottomSolid ? new Vertex3Ds[count] : nullptr;
 
    const float bottom = m_d.m_heightbottom + m_ptable->m_tableheight;
    const float top = m_d.m_heighttop + m_ptable->m_tableheight;
@@ -574,7 +574,7 @@ void Surface::GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Ver
 {
    std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
-   float *rgtexcoord = NULL;
+   float *rgtexcoord = nullptr;
 
    Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
    if (pinSide)
@@ -694,7 +694,7 @@ void Surface::GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Ver
 
       // not necessary to reorder
       /*WORD* const tmp = reorderForsyth(sideIndices, numVertices * 4);
-      if (tmp != NULL)
+      if (tmp != nullptr)
       {
       memcpy(sideIndices.data(), tmp, sideIndices.size()*sizeof(WORD));
       delete[] tmp;
@@ -787,7 +787,7 @@ void Surface::ExportMesh(ObjLoader& loader)
    m_d.m_heighttop = oldTopHeight;
 
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
    if (!topBuf.empty() && m_d.m_topBottomVisible && !m_d.m_sideVisible)
    {
       loader.WriteObjectName(name);
@@ -882,7 +882,7 @@ void Surface::PrepareWallsAtHeight()
 
 static constexpr WORD rgiSlingshot[24] = { 0, 4, 3, 0, 1, 4, 1, 2, 5, 1, 5, 4, 4, 8, 5, 4, 7, 8, 3, 7, 4, 3, 6, 7 };
 
-static IndexBuffer* slingIBuffer = NULL;        // this is constant so we only have one global instance
+static IndexBuffer* slingIBuffer = nullptr;        // this is constant so we only have one global instance
 
 void Surface::PrepareSlingshots()
 {
@@ -1501,7 +1501,7 @@ STDMETHODIMP Surface::get_Image(BSTR *pVal)
 STDMETHODIMP Surface::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -1525,7 +1525,7 @@ STDMETHODIMP Surface::get_SideMaterial(BSTR *pVal)
 STDMETHODIMP Surface::put_SideMaterial(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
    m_d.m_szSideMaterial = buf;
 
    return S_OK;
@@ -1543,7 +1543,7 @@ STDMETHODIMP Surface::get_SlingshotMaterial(BSTR *pVal)
 STDMETHODIMP Surface::put_SlingshotMaterial(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
    m_d.m_szSlingShotMaterial = buf;
 
    return S_OK;
@@ -1603,7 +1603,7 @@ STDMETHODIMP Surface::get_TopMaterial(BSTR *pVal)
 STDMETHODIMP Surface::put_TopMaterial(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
    m_d.m_szTopMaterial = buf;
 
    return S_OK;
@@ -1621,7 +1621,7 @@ STDMETHODIMP Surface::get_PhysicsMaterial(BSTR *pVal)
 STDMETHODIMP Surface::put_PhysicsMaterial(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
    m_d.m_szPhysicsMaterial = buf;
 
    return S_OK;
@@ -1824,7 +1824,7 @@ STDMETHODIMP Surface::get_SideImage(BSTR *pVal)
 STDMETHODIMP Surface::put_SideImage(BSTR newVal)
 {
    char szSideImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szSideImage, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szSideImage, MAXTOKEN, nullptr, nullptr);
    const Texture * const tex = m_ptable->GetImage(szSideImage);
    if (tex && tex->IsHDR())
    {

@@ -9,7 +9,7 @@
 using namespace rapidxml;
 
 constexpr unsigned int num_physicsoptions = 8;
-static char * physicsoptions[num_physicsoptions] ={ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+static char * physicsoptions[num_physicsoptions] ={ nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 static unsigned int physicsselection = 0;
 
 
@@ -27,7 +27,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
         if (physicsoptions[i])
         {
             delete[] physicsoptions[i];
-            physicsoptions[i] = NULL;
+            physicsoptions[i] = nullptr;
         }
         const int* sd = (int *)SendMessage(hwndList, LB_GETITEMDATA, i, 0);
         delete sd;
@@ -388,7 +388,7 @@ void PhysicsOptionsDialog::OnDestroy()
         if (physicsoptions[i])
         {
             delete[] physicsoptions[i];
-            physicsoptions[i] = NULL;
+            physicsoptions[i] = nullptr;
         }
         const int* sd = (int *)::SendMessage(hwndList, LB_GETITEMDATA, i, 0);
         delete sd;

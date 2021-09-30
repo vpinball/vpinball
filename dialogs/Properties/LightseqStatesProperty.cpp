@@ -14,7 +14,7 @@ void LightseqStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->size(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemLightSeq))
+        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemLightSeq))
             continue;
         LightSeq *const lightseq = (LightSeq *)m_pvsel->ElementAt(i);
 
@@ -28,7 +28,7 @@ void LightseqStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == DISPID_Collection || dispid == -1)
         {
             char szT[MAXSTRING];
-            WideCharToMultiByteNull(CP_ACP, 0, lightseq->m_d.m_wzCollection.c_str(), -1, szT, sizeof(szT), NULL, NULL);
+            WideCharToMultiByteNull(CP_ACP, 0, lightseq->m_d.m_wzCollection.c_str(), -1, szT, sizeof(szT), nullptr, nullptr);
 
             PropertyDialog::UpdateCollectionComboBox(lightseq->GetPTable(), m_collectionCombo, szT);
         }
@@ -42,7 +42,7 @@ void LightseqStatesProperty::UpdateProperties(const int dispid)
 {
     for (int i = 0; i < m_pvsel->size(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemLightSeq))
+        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemLightSeq))
             continue;
         LightSeq *const lightseq = (LightSeq *)m_pvsel->ElementAt(i);
         switch (dispid)

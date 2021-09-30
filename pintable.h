@@ -450,7 +450,7 @@ public:
    // Transform editor window coordinates to table coordinates
    Vertex2D TransformPoint(int x, int y) const;
 
-   void ClearMultiSel(ISelect *newSel = NULL);
+   void ClearMultiSel(ISelect *newSel = nullptr);
    bool MultiSelIsEmpty();
    ISelect *GetSelectedItem() const { return m_vmultisel.ElementAt(0); }
    void AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick);
@@ -485,7 +485,7 @@ public:
    virtual IDispatch *GetDispatch() { return (IDispatch *)this; }
    virtual const IDispatch *GetDispatch() const { return (const IDispatch *)this; }
    virtual IFireEvents *GetIFireEvents() { return (IFireEvents *)this; }
-   virtual IDebugCommands *GetDebugCommands() { return NULL; }
+   virtual IDebugCommands *GetDebugCommands() { return nullptr; }
 
    void SetZoom(float zoom);
    void SetMyScrollInfo();
@@ -1000,8 +1000,8 @@ public:
    virtual IDispatch *GetDispatch() { return (IDispatch *)this; }
    virtual const IDispatch *GetDispatch() const { return (const IDispatch *)this; }
 
-   virtual ISelect *GetISelect() { return NULL; }
-   virtual const ISelect *GetISelect() const { return NULL; }
+   virtual ISelect *GetISelect() { return nullptr; }
+   virtual const ISelect *GetISelect() const { return nullptr; }
 
    BEGIN_COM_MAP(ScriptGlobalTable)
       COM_INTERFACE_ENTRY(ITableGlobal)

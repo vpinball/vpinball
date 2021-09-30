@@ -156,9 +156,9 @@ public:
    KickerHitCircle(const Vertex2D& c, const float r, const float zlow, const float zhigh)
       : HitCircle(c,r,zlow,zhigh)
    {
-      m_pball = NULL;
-      m_lastCapturedBall = NULL;
-      m_pkicker = NULL;
+      m_pball = nullptr;
+      m_lastCapturedBall = nullptr;
+      m_pkicker = nullptr;
    }
 
    virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;

@@ -6,7 +6,7 @@
 
 EditorOptionsDialog::EditorOptionsDialog() : CDialog(IDD_EDITOR_OPTIONS)
 {
-    m_toolTip = NULL;
+    m_toolTip = nullptr;
 }
 
 void EditorOptionsDialog::OnClose()
@@ -29,7 +29,7 @@ BOOL EditorOptionsDialog::OnInitDialog()
 {
     m_toolTip = new CToolTip();
 
-    const HWND toolTipHwnd = ::CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), NULL, g_pvp->theInstance, NULL);
+    const HWND toolTipHwnd = ::CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), NULL, g_pvp->theInstance, nullptr);
     if (toolTipHwnd)
     {
         SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);

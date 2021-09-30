@@ -125,7 +125,7 @@ bool RawReadFromFile(const char * const szfilename, int *const psize, char **psz
 {
    const HANDLE hFile = CreateFile(szfilename,
       GENERIC_READ, FILE_SHARE_READ,
-      NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+      nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
    if (hFile == INVALID_HANDLE_VALUE)
    {
@@ -133,12 +133,12 @@ bool RawReadFromFile(const char * const szfilename, int *const psize, char **psz
       return false;
    }
 
-   *psize = GetFileSize(hFile, NULL);
+   *psize = GetFileSize(hFile, nullptr);
 
    *pszout = new char[*psize + 2];
 
    DWORD read;
-   /*BOOL foo =*/ ReadFile(hFile, *pszout, *psize, &read, NULL);
+   /*BOOL foo =*/ ReadFile(hFile, *pszout, *psize, &read, nullptr);
 
    (*pszout)[*psize] = '\0';
    (*pszout)[*psize + 1] = '\0'; // In case this is a unicode file, end it with a null character properly
@@ -564,7 +564,7 @@ HRESULT BiffReader::Load()
 
 FastIStorage::FastIStorage()
 {
-   m_wzName = NULL;
+   m_wzName = nullptr;
    m_cref = 0;
 }
 
@@ -656,7 +656,7 @@ long __stdcall FastIStorage::CopyTo(unsigned long, const struct _GUID *, WCHAR *
       FastIStorage * const pstgCur = m_vstg[i];
       if (SUCCEEDED(hr = pstgNew->CreateStorage(pstgCur->m_wzName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstgT)))
       {
-         pstgCur->CopyTo(0, NULL, NULL, pstgT);
+         pstgCur->CopyTo(0, nullptr, nullptr, pstgT);
          pstgT->Release();
       }
    }
@@ -667,7 +667,7 @@ long __stdcall FastIStorage::CopyTo(unsigned long, const struct _GUID *, WCHAR *
       if (SUCCEEDED(hr = pstgNew->CreateStream(pstmCur->m_wzName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmT)))
       {
          ULONG writ;
-         //pstmCur->CopyTo(0,NULL,NULL,pstmT);
+         //pstmCur->CopyTo(0, nullptr, nullptr, pstmT);
          pstmT->Write(pstmCur->m_rg, pstmCur->m_cSize, &writ);
          pstmT->Release();
       }
@@ -733,9 +733,9 @@ FastIStream::FastIStream()
    m_cMax = 0;
    m_cSeek = 0;
    m_cSize = 0;
-   m_rg = NULL;
+   m_rg = nullptr;
 
-   m_wzName = NULL;
+   m_wzName = nullptr;
 }
 
 FastIStream::~FastIStream()
@@ -789,7 +789,7 @@ long __stdcall FastIStream::Read(void *pv, const unsigned long count, unsigned l
    memcpy(pv, m_rg + m_cSeek, count);
    m_cSeek += count;
 
-   if (foo != NULL)
+   if (foo != nullptr)
       *foo = count;
 
    return S_OK;
@@ -805,7 +805,7 @@ long __stdcall FastIStream::Write(const void *pv, const unsigned long count, uns
 
    m_cSize = max(m_cSize, m_cSeek);
 
-   if (foo != NULL)
+   if (foo != nullptr)
       *foo = count;
 
    return S_OK;
