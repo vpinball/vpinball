@@ -2,7 +2,7 @@
 '
 'Note: This VBS file is now obsolete as of VBS V3.18.  It is included in the VBS pack only for
 '      backwards compatability with any existing tables that might be using it.
-'      You should now use either Atari1.vbs (for Generation 1 Atari Tables)
+'      You should now use either Atari1(b).vbs (for Generation 1 Atari Tables)
 '      or Atari2.vbs for Generation 2 Atari tables.
 
 Option Explicit
@@ -25,15 +25,14 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 16
 ' Cabinet switches
-Const swSelfTest       =  0
-Const swStartButton    =  2
-Const swCoin1          =  3
-Const swCoin2          =  4
-Const swCPUDiag        =  7
-Const swTilt           = 48
-
-Const swLRFlip         = 81
-Const swLLFlip         = 83
+Const swSelfTest     =  0
+Const swStartButton  =  2
+Const swCoin1        =  3
+Const swCoin2        =  4
+Const swCPUDiag      =  7
+Const swTilt         = 48
+Const swLRFlip       = 81
+Const swLLFlip       = 83
 
 ' Help Window
 vpmSystemHelp = "Atari keys:" & vbNewLine &_

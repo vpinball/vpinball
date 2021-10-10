@@ -24,15 +24,14 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 16
 ' Cabinet switches
-Const swSelfTest       =  0
-Const swStartButton    =  2
-Const swCoin1          =  3
-Const swCoin2          =  4
-Const swCPUDiag        =  7
-Const swTilt           = 48
-
-Const swLRFlip         = 81
-Const swLLFlip         = 83
+Const swSelfTest     =  0
+Const swStartButton  =  2
+Const swCoin1        =  3
+Const swCoin2        =  4
+Const swCPUDiag      =  7
+Const swTilt         = 48
+Const swLRFlip       = 81
+Const swLLFlip       = 83
 
 ' Help Window
 vpmSystemHelp = "Atari keys:" & vbNewLine &_

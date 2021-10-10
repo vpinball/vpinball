@@ -4,6 +4,7 @@ New in 3.58 (Update by mfuegemann, DJRobX, toxie, wiesshund)
   VPinball versions prior 10.7 will use a constant size of 950x2100 for positional reference
   If some objects are not properly initialized, or Walls are used as Drop Targets, the old center sound will be played
 - Add PullbackandRetract to cvpmImpulseP
+- Added Atari1b.vbs
 - Added joctronic.vbs
 - Added s8_StillCrazy.vbs (System 8/Still Crazy)
 - Added inder_atleta.vbs
