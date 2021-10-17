@@ -12,6 +12,7 @@ FEATURES:
    o toolbar, properties and layers are now dockable windows without the need to restart VP
    o add context menu item to assign selected elements to the current selected layer.
 - to reset the position of the dockable windows in the editor, open Preference -> "Editor/UI Options..." and click on "Reset Window Possitons"
+
 - when exporting/importing a POV file, the custom user settings per table are now also exported/imported
 - when importing a primitive mesh, there is now a new option that prevents internal reordering/optimization of the data
 

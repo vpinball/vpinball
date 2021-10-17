@@ -192,47 +192,42 @@ HRESULT DeleteValue(const std::string &szKey, const std::string &szValue)
       RegCloseKey(hk);
    }
    else {
-      return ERROR_SUCCESS; // It is a success if you want to delete something that doesn't exist.
+      return S_OK; // It is a success if you want to delete something that doesn't exist.
    }
 
    return (RetVal == ERROR_SUCCESS) ? S_OK : E_FAIL;
 }
-BOOL RegDelnodeRecurse(HKEY hKeyRoot, LPTSTR lpSubKey)
-{
-   LPTSTR lpEnd;
-   LONG lResult;
-   DWORD dwSize;
-   TCHAR szName[MAX_PATH];
-   HKEY hKey;
-   FILETIME ftWrite;
 
+static HRESULT RegDelnodeRecurse(const HKEY hKeyRoot, char lpSubKey[MAX_PATH * 2])
+{
    // First, see if we can delete the key without having
    // to recurse.
 
-   lResult = RegDeleteKey(hKeyRoot, lpSubKey);
+   LONG lResult = RegDeleteKey(hKeyRoot, lpSubKey);
 
    if (lResult == ERROR_SUCCESS)
-      return TRUE;
+      return S_OK;
 
+   HKEY hKey;
    lResult = RegOpenKeyEx(hKeyRoot, lpSubKey, 0, KEY_READ, &hKey);
 
    if (lResult != ERROR_SUCCESS)
    {
       if (lResult == ERROR_FILE_NOT_FOUND)
       {
-         printf("Key not found.\n");
-         return TRUE;
+         ShowError("Key not found.");
+         return S_OK;
       }
       else
       {
-         printf("Error opening key.\n");
-         return FALSE;
+         ShowError("Error opening key.");
+         return E_FAIL;
       }
    }
 
    // Check for an ending slash and add one if it is missing.
 
-   lpEnd = lpSubKey + lstrlen(lpSubKey);
+   LPTSTR lpEnd = lpSubKey + lstrlen(lpSubKey);
 
    if (*(lpEnd - 1) != TEXT('\\'))
    {
@@ -243,14 +238,15 @@ BOOL RegDelnodeRecurse(HKEY hKeyRoot, LPTSTR lpSubKey)
 
    // Enumerate the keys
 
-   dwSize = MAX_PATH;
+   DWORD dwSize = MAX_PATH;
+   TCHAR szName[MAX_PATH];
+   FILETIME ftWrite;
    lResult = RegEnumKeyEx(hKey, 0, szName, &dwSize, NULL, NULL, NULL, &ftWrite);
 
    if (lResult == ERROR_SUCCESS)
    {
       do
       {
-
          *lpEnd = TEXT('\0');
          strcat_s(lpSubKey, MAX_PATH * 2, szName);
 
@@ -276,15 +272,13 @@ BOOL RegDelnodeRecurse(HKEY hKeyRoot, LPTSTR lpSubKey)
    lResult = RegDeleteKey(hKeyRoot, lpSubKey);
 
    if (lResult == ERROR_SUCCESS)
-      return TRUE;
-
-   return FALSE;
+      return S_OK;
+   else
+      return E_FAIL;
 }
 
 HRESULT DeleteSubKey(const std::string &szKey)
 {
-   char szDelKey[MAX_PATH * 2];
-
    char szPath[MAXSTRING];
    if (szKey == "Controller")
       lstrcpy(szPath, VP_REGKEY_GENERAL);
@@ -292,8 +286,10 @@ HRESULT DeleteSubKey(const std::string &szKey)
       lstrcpy(szPath, VP_REGKEY);
    lstrcat(szPath, szKey.c_str());
 
+   char szDelKey[MAX_PATH * 2];
    strcpy_s(szDelKey, MAX_PATH * 2, szPath);
-   return RegDelnodeRecurse(HKEY_CURRENT_USER, szDelKey) == ERROR_SUCCESS;
+
+   return RegDelnodeRecurse(HKEY_CURRENT_USER, szDelKey);
 }
 
 #endif

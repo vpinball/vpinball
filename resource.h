@@ -1159,7 +1159,6 @@
 #define IDC_COMBO_INPUT_API             875
 #define IDC_COMBO_RUMBLE                876
 #define IDC_LABEL_RUMBLE                877
-#define IDC_BUTTON3                     878
 #define IDC_RESET_WINDOW_POS            878
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
