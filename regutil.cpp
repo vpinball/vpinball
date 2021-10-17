@@ -197,4 +197,103 @@ HRESULT DeleteValue(const std::string &szKey, const std::string &szValue)
 
    return (RetVal == ERROR_SUCCESS) ? S_OK : E_FAIL;
 }
+BOOL RegDelnodeRecurse(HKEY hKeyRoot, LPTSTR lpSubKey)
+{
+   LPTSTR lpEnd;
+   LONG lResult;
+   DWORD dwSize;
+   TCHAR szName[MAX_PATH];
+   HKEY hKey;
+   FILETIME ftWrite;
+
+   // First, see if we can delete the key without having
+   // to recurse.
+
+   lResult = RegDeleteKey(hKeyRoot, lpSubKey);
+
+   if (lResult == ERROR_SUCCESS)
+      return TRUE;
+
+   lResult = RegOpenKeyEx(hKeyRoot, lpSubKey, 0, KEY_READ, &hKey);
+
+   if (lResult != ERROR_SUCCESS)
+   {
+      if (lResult == ERROR_FILE_NOT_FOUND)
+      {
+         printf("Key not found.\n");
+         return TRUE;
+      }
+      else
+      {
+         printf("Error opening key.\n");
+         return FALSE;
+      }
+   }
+
+   // Check for an ending slash and add one if it is missing.
+
+   lpEnd = lpSubKey + lstrlen(lpSubKey);
+
+   if (*(lpEnd - 1) != TEXT('\\'))
+   {
+      *lpEnd = TEXT('\\');
+      lpEnd++;
+      *lpEnd = TEXT('\0');
+   }
+
+   // Enumerate the keys
+
+   dwSize = MAX_PATH;
+   lResult = RegEnumKeyEx(hKey, 0, szName, &dwSize, NULL, NULL, NULL, &ftWrite);
+
+   if (lResult == ERROR_SUCCESS)
+   {
+      do
+      {
+
+         *lpEnd = TEXT('\0');
+         strcat_s(lpSubKey, MAX_PATH * 2, szName);
+
+         if (!RegDelnodeRecurse(hKeyRoot, lpSubKey))
+         {
+            break;
+         }
+
+         dwSize = MAX_PATH;
+
+         lResult = RegEnumKeyEx(hKey, 0, szName, &dwSize, NULL, NULL, NULL, &ftWrite);
+
+      } while (lResult == ERROR_SUCCESS);
+   }
+
+   lpEnd--;
+   *lpEnd = TEXT('\0');
+
+   RegCloseKey(hKey);
+
+   // Try again to delete the key.
+
+   lResult = RegDeleteKey(hKeyRoot, lpSubKey);
+
+   if (lResult == ERROR_SUCCESS)
+      return TRUE;
+
+   return FALSE;
+}
+
+HRESULT DeleteSubKey(const std::string &szKey)
+{
+   char szDelKey[MAX_PATH * 2];
+
+   char szPath[MAXSTRING];
+   if (szKey == "Controller")
+      lstrcpy(szPath, VP_REGKEY_GENERAL);
+   else
+      lstrcpy(szPath, VP_REGKEY);
+   lstrcat(szPath, szKey.c_str());
+
+   strcpy_s(szDelKey, MAX_PATH * 2, szPath);
+   return RegDelnodeRecurse(HKEY_CURRENT_USER, szDelKey) == ERROR_SUCCESS;
+}
+
 #endif

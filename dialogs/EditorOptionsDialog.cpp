@@ -217,6 +217,11 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
           return TRUE;
        }
+       case IDC_RESET_WINDOW_POS:
+       {
+          g_pvp->ResetAllDockers();
+          return TRUE;
+       }
     }
 
     return FALSE;

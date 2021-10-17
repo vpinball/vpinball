@@ -20,3 +20,4 @@ HRESULT SaveValueInt(const std::string &szKey, const std::string &szValue, const
 HRESULT SaveValueBool(const std::string &szKey, const std::string &szValue, const bool val);
 
 HRESULT DeleteValue(const std::string &szKey, const std::string &szValue);
+HRESULT DeleteSubKey(const std::string &szKey);

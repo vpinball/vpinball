@@ -403,6 +403,16 @@ CDockToolbar *VPinball::GetToolbarDocker()
     return m_dockToolbar;
 }
 
+void VPinball::ResetAllDockers() 
+{ 
+    const bool createNotes = m_dockNotes!=nullptr;
+    CloseAllDockers();
+    DeleteSubKey("Editor\\Dock Windows");
+    CreateDocker();
+    if (createNotes)
+       GetDefaultNotesDocker();
+}
+
 CDockNotes* VPinball::GetDefaultNotesDocker()
 {
    constexpr int dockStyle = DS_CLIENTEDGE;

@@ -169,6 +169,8 @@ public:
    CDockToolbar *GetToolbarDocker();
    CDockNotes* GetNotesDocker();
    CDockLayers* GetLayersDocker();
+   void ResetAllDockers();
+
    void DestroyNotesDocker()
    {
       m_notesDialog = nullptr;
@@ -293,5 +295,6 @@ private:
 
    FILE *m_profile_file;
 };
+
 
 #endif // !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)
