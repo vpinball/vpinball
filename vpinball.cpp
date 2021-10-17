@@ -459,15 +459,16 @@ CDockLayers *VPinball::GetLayersDocker()
 
 void VPinball::CreateDocker()
 {
-    if (!LoadDockRegistrySettings(DOCKER_REGISTRY_KEY))
-    {
-        GetPropertiesDocker();
-        GetToolbarDocker();
-        GetLayersDocker();
-    }
-    m_dockProperties->GetContainer()->SetHideSingleTab(TRUE);
-    m_dockLayers->GetContainer()->SetHideSingleTab(TRUE);
-    m_dockToolbar->GetContainer()->SetHideSingleTab(TRUE);
+   if (m_open_minimized || !LoadDockRegistrySettings(DOCKER_REGISTRY_KEY))
+   {
+      GetPropertiesDocker();
+      GetToolbarDocker();
+      GetLayersDocker();
+   }
+   m_dockProperties->GetContainer()->SetHideSingleTab(TRUE);
+   m_dockLayers->GetContainer()->SetHideSingleTab(TRUE);
+   m_dockToolbar->GetContainer()->SetHideSingleTab(TRUE);
+
 }
 
 void VPinball::SetPosCur(float x, float y)
