@@ -47,8 +47,8 @@ private:
    void CreateNextLevel(const FRect3D& bounds, const unsigned int level, unsigned int level_empty);
    void HitTestBallSse(const Ball * const pball, CollisionEvent& coll) const;
 
-   void* __restrict m_unique; // everything below/including this node shares the same original primitive/hittarget object (just for early outs if not collidable)
-
+   IFireEvents* __restrict m_unique; // everything below/including this node shares the same original primitive/hittarget object (just for early outs if not collidable),
+                                     // so this is actually cast then to a Primitive* or HitTarget*
    HitQuadtree * __restrict m_children; // always 4 entries
    Vertex3Ds m_vcenter;
 

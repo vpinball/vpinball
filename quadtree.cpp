@@ -144,7 +144,6 @@ void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int leve
    std::vector<HitObject*> vRemain; // hit objects which did not go to a quadrant
 
    m_unique = (m_vho[0]->m_e != 0) ? m_vho[0]->m_obj : nullptr;
-   m_ObjType = m_vho[0]->m_ObjType;
 
    // sort items into appropriate child nodes
    for (size_t i = 0; i < m_vho.size(); i++)
@@ -174,6 +173,8 @@ void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int leve
       else
          vRemain.push_back(pho);
    }
+
+   m_ObjType = (m_unique != nullptr) ? m_vho[0]->m_ObjType : eNull;
 
    m_vho.swap(vRemain);
 
