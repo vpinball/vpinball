@@ -54,7 +54,7 @@ private:
 
    // helper arrays for SSE boundary checks
    void InitSseArrays();
-   float* __restrict lefts_rights_tops_bottoms_zlows_zhighs;
+   float* __restrict lefts_rights_tops_bottoms_zlows_zhighs; // 4xSIMD rearranged BBox data, layout: 4xleft,4xright,4xtop,4xbottom,4xzlow,4xzhigh, 4xleft... ... ... the last entries are potentially filled with 'invalid' boxes for alignment/padding
 
    bool m_leaf;
    eObjType m_ObjType; // only used if m_unique != nullptr, to identify which object type this is

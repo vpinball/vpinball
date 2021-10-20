@@ -223,32 +223,75 @@ void HitQuadtree::InitSseArrays()
    if (lefts_rights_tops_bottoms_zlows_zhighs == nullptr && padded > 0)
    {
       lefts_rights_tops_bottoms_zlows_zhighs = (float*)_aligned_malloc(padded * (6 * sizeof(float)), 16);
-      float* const __restrict lefts = lefts_rights_tops_bottoms_zlows_zhighs;
-      float* const __restrict rights = lefts_rights_tops_bottoms_zlows_zhighs + padded;
-      float* const __restrict tops = lefts_rights_tops_bottoms_zlows_zhighs + (padded+padded);
-      float* const __restrict bottoms = lefts_rights_tops_bottoms_zlows_zhighs + (padded+padded+padded);
-      float* const __restrict zlows = lefts_rights_tops_bottoms_zlows_zhighs + (padded+padded+padded+padded);
-      float* const __restrict zhighs = lefts_rights_tops_bottoms_zlows_zhighs + (padded+padded+padded+padded+padded);
 
-      for (size_t j = 0; j < m_vho.size(); j++)
+      // fill array in chunks of 4xSIMD data: 4xleft,4xright,4xtop,4xbottom,4xzlow,4xzhigh, 4xleft ... ... ...
+
+      const unsigned int end = (unsigned int)m_vho.size() & 0xFFFFFFFCu;
+      for (unsigned int j = 0,j2 = 0; j < end; j+=4,j2+=24)
       {
-         const FRect3D r = m_vho[j]->m_hitBBox;
-         lefts[j] = r.left;
-         rights[j] = r.right;
-         tops[j] = r.top;
-         bottoms[j] = r.bottom;
-         zlows[j] = r.zlow;
-         zhighs[j] = r.zhigh;
+         const FRect3D& r0 = m_vho[j  ]->m_hitBBox;
+         const FRect3D& r1 = m_vho[j+1]->m_hitBBox;
+         const FRect3D& r2 = m_vho[j+2]->m_hitBBox;
+         const FRect3D& r3 = m_vho[j+3]->m_hitBBox;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2   ] = r0.left; 
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+ 1] = r1.left;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+ 2] = r2.left;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+ 3] = r3.left; 
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+ 4] = r0.right;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+ 5] = r1.right;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+ 6] = r2.right;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+ 7] = r3.right;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+ 8] = r0.top;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+ 9] = r1.top;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+10] = r2.top;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+11] = r3.top;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+12] = r0.bottom;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+13] = r1.bottom;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+14] = r2.bottom;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+15] = r3.bottom;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+16] = r0.zlow;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+17] = r1.zlow;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+18] = r2.zlow;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+19] = r3.zlow;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+20] = r0.zhigh;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+21] = r1.zhigh;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+22] = r2.zhigh;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+23] = r3.zhigh;
       }
 
-      for (size_t j = m_vho.size(); j < padded; j++)
+      // fill the remainder of the array with the remaining data and invalid BBoxes for padding
+
+      if (end != m_vho.size())
       {
-         lefts[j] = FLT_MAX;
-         rights[j] = -FLT_MAX;
-         tops[j] = FLT_MAX;
-         bottoms[j] = -FLT_MAX;
-         zlows[j] = FLT_MAX;
-         zhighs[j] = -FLT_MAX;
+         const FRect3D& r0 = m_vho[end]->m_hitBBox;
+         const FRect3D r1 = end + 1 < m_vho.size() ? m_vho[end + 1]->m_hitBBox : FRect3D(FLT_MAX, -FLT_MAX, FLT_MAX, -FLT_MAX, FLT_MAX, -FLT_MAX);
+         const FRect3D r2 = end + 2 < m_vho.size() ? m_vho[end + 2]->m_hitBBox : FRect3D(FLT_MAX, -FLT_MAX, FLT_MAX, -FLT_MAX, FLT_MAX, -FLT_MAX);
+         const FRect3D r3 = FRect3D(FLT_MAX, -FLT_MAX, FLT_MAX, -FLT_MAX, FLT_MAX, -FLT_MAX);
+         const unsigned int j2 = end * 6;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2   ] = r0.left; 
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+ 1] = r1.left;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+ 2] = r2.left;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+ 3] = r3.left; 
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+ 4] = r0.right;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+ 5] = r1.right;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+ 6] = r2.right;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+ 7] = r3.right;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+ 8] = r0.top;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+ 9] = r1.top;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+10] = r2.top;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+11] = r3.top;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+12] = r0.bottom;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+13] = r1.bottom;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+14] = r2.bottom;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+15] = r3.bottom;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+16] = r0.zlow;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+17] = r1.zlow;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+18] = r2.zlow;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+19] = r3.zlow;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+20] = r0.zhigh;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+21] = r1.zhigh;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+22] = r2.zhigh;
+         lefts_rights_tops_bottoms_zlows_zhighs[j2+23] = r3.zhigh;
       }
    }
 }
@@ -364,53 +407,49 @@ void HitQuadtree::HitTestBallSse(const Ball * const pball, CollisionEvent& coll)
          {
             const size_t size = (current->m_vho.size() + 3) / 4;
 
-            const __m128* const __restrict pL  = (__m128*)current->lefts_rights_tops_bottoms_zlows_zhighs;
-            const __m128* const __restrict pR  = (__m128*)current->lefts_rights_tops_bottoms_zlows_zhighs + size;
-            const __m128* const __restrict pT  = (__m128*)current->lefts_rights_tops_bottoms_zlows_zhighs + (size+size);
-            const __m128* const __restrict pB  = (__m128*)current->lefts_rights_tops_bottoms_zlows_zhighs + (size+size+size);
-            const __m128* const __restrict pZl = (__m128*)current->lefts_rights_tops_bottoms_zlows_zhighs + (size+size+size+size);
-            const __m128* const __restrict pZh = (__m128*)current->lefts_rights_tops_bottoms_zlows_zhighs + (size+size+size+size+size);
+            const __m128* const __restrict p = (__m128*)current->lefts_rights_tops_bottoms_zlows_zhighs;
 
             // loop implements 4 collision checks at once
             // (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow)
             const size_t start = traversal_order ? 0 : (size - 1);
+            const size_t dt2 = dt*6;
             const size_t end = traversal_order ? size : -1;
-            for (size_t i = start; i != end; i += dt)
+            for (size_t i = start, i2 = start*6; i != end; i += dt, i2 += dt2)
             {
 #ifdef DEBUGPHYSICS
                g_pplayer->c_tested++; //!! +=4? or is this more fair?
 #endif
                // comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
                // bits set, there is a bounding box collision
-               __m128 cmp = _mm_cmpge_ps(bright, pL[i]);
+               __m128 cmp = _mm_cmpge_ps(bright, p[i2]); // right vs left
                int mask = _mm_movemask_ps(cmp);
                if (mask == 0) continue;
 
-               cmp = _mm_cmple_ps(bleft, pR[i]);
+               cmp = _mm_cmple_ps(bleft, p[i2+1]); // left vs right
                mask &= _mm_movemask_ps(cmp);
                if (mask == 0) continue;
 
-               cmp = _mm_cmpge_ps(bbottom, pT[i]);
+               cmp = _mm_cmpge_ps(bbottom, p[i2+2]); // bottom vs top
                mask &= _mm_movemask_ps(cmp);
                if (mask == 0) continue;
 
-               cmp = _mm_cmple_ps(btop, pB[i]);
+               cmp = _mm_cmple_ps(btop, p[i2+3]); // top vs bottom
                mask &= _mm_movemask_ps(cmp);
                if (mask == 0) continue;
 
-               cmp = _mm_cmpge_ps(bzhigh, pZl[i]);
+               cmp = _mm_cmpge_ps(bzhigh, p[i2+4]); // zhigh vs zlow
                mask &= _mm_movemask_ps(cmp);
                if (mask == 0) continue;
 
-               cmp = _mm_cmple_ps(bzlow, pZh[i]);
+               cmp = _mm_cmple_ps(bzlow, p[i2+5]); // zlow vs zhigh
                mask &= _mm_movemask_ps(cmp);
                if (mask == 0) continue;
 
 			   // test actual sphere against box(es)
 			   const __m128 zero = _mm_setzero_ps();
-			   __m128 ex = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pL[i],  posx), zero), _mm_max_ps(_mm_sub_ps(posx, pR[i] ), zero));
-			   __m128 ey = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pT[i],  posy), zero), _mm_max_ps(_mm_sub_ps(posy, pB[i] ), zero));
-			   __m128 ez = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pZl[i], posz), zero), _mm_max_ps(_mm_sub_ps(posz, pZh[i]), zero));
+			   __m128 ex = _mm_add_ps(_mm_max_ps(_mm_sub_ps(p[i2  ]/*left*/, posx), zero), _mm_max_ps(_mm_sub_ps(posx, p[i2+1]/*right */), zero));
+			   __m128 ey = _mm_add_ps(_mm_max_ps(_mm_sub_ps(p[i2+2]/*top */, posy), zero), _mm_max_ps(_mm_sub_ps(posy, p[i2+3]/*bottom*/), zero));
+			   __m128 ez = _mm_add_ps(_mm_max_ps(_mm_sub_ps(p[i2+4]/*zlow*/, posz), zero), _mm_max_ps(_mm_sub_ps(posz, p[i2+5]/*zhigh */), zero));
 			   ex = _mm_mul_ps(ex, ex);
 			   ey = _mm_mul_ps(ey, ey);
 			   ez = _mm_mul_ps(ez, ez);
