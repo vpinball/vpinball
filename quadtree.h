@@ -2,6 +2,8 @@
 
 #include "collide.h"
 
+//#define DISABLE_ZTEST // z values of the BBox of (objects within) a node can be constant over some traversal levels (as its a quadtree and not an octree!), so we could also just ignore z tests overall. This can lead to performance benefits on some tables ("flat" ones) and performance penalties on others (e.g. when a ball moves under detailed meshes)
+
 //#define USE_EMBREE //!! experimental, but working, collision detection replacement for our quad and kd-tree //!! picking in debug mode so far not implemented though
 #ifdef USE_EMBREE
  #include "inc\embree3\rtcore.h"
@@ -25,7 +27,7 @@ public:
    ~HitQuadtree();
 
    void AddElement(HitObject *pho) { m_vho.push_back(pho); }
-   void Initialize(const FRect3D& bounds);
+   void Initialize(const FRect& bounds); // FRect3D for an octree
 
 #ifdef USE_EMBREE
    void FillFromVector(vector<HitObject*>& vho);
@@ -44,13 +46,13 @@ private:
    void Initialize();
 
 #ifndef USE_EMBREE
-   void CreateNextLevel(const FRect3D& bounds, const unsigned int level, unsigned int level_empty);
+   void CreateNextLevel(const FRect& bounds, const unsigned int level, unsigned int level_empty); // FRect3D for an octree
    void HitTestBallSse(const Ball * const pball, CollisionEvent& coll) const;
 
    IFireEvents* __restrict m_unique; // everything below/including this node shares the same original primitive/hittarget object (just for early outs if not collidable),
                                      // so this is actually cast then to a Primitive* or HitTarget*
    HitQuadtree * __restrict m_children; // always 4 entries
-   Vertex3Ds m_vcenter;
+   Vertex2D m_vcenter; // should be Vertex3Ds for a real octree
 
    // helper arrays for SSE boundary checks
    void InitSseArrays();

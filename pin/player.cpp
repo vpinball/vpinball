@@ -821,7 +821,8 @@ void Player::InitDebugHitStructure()
       m_debugoctree.AddElement(m_vdebugho[i]);
    }
 
-   m_debugoctree.Initialize(m_ptable->GetBoundingBox());
+   const FRect3D bbox = m_ptable->GetBoundingBox();
+   m_debugoctree.Initialize(FRect(bbox.left,bbox.right,bbox.top,bbox.bottom));
 }
 
 Vertex3Ds g_viewDir;
@@ -1363,8 +1364,8 @@ HRESULT Player::Init()
          m_vmover.push_back(pmo);
    }
 
-   FRect3D tableBounds = m_ptable->GetBoundingBox();
-   m_hitoctree.Initialize(tableBounds);
+   const FRect3D tableBounds = m_ptable->GetBoundingBox();
+   m_hitoctree.Initialize(FRect(tableBounds.left,tableBounds.right,tableBounds.top,tableBounds.bottom));
 #if !defined(NDEBUG) && defined(PRINT_DEBUG_COLLISION_TREE)
    m_hitoctree.DumpTree(0);
 #endif
