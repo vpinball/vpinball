@@ -49,7 +49,7 @@ private:
 
    void* __restrict m_unique; // everything below/including this node shares the same original primitive/hittarget object (just for early outs if not collidable)
 
-   HitQuadtree * __restrict m_children[4];
+   HitQuadtree * __restrict m_children; // always 4 entries
    Vertex3Ds m_vcenter;
 
    // helper arrays for SSE boundary checks
@@ -57,7 +57,7 @@ private:
    float* __restrict lefts_rights_tops_bottoms_zlows_zhighs;
 
    bool m_leaf;
-   unsigned char m_ObjType; // only used if m_unique != nullptr, to identify which object this is (eObjType)
+   eObjType m_ObjType; // only used if m_unique != nullptr, to identify which object type this is
 #else
    std::vector<HitObject*> *m_pvho;
 
@@ -81,10 +81,10 @@ public:
       OutputDebugString(indent);
       if (!m_leaf)
       {
-         m_children[0]->DumpTree(indentLevel + 1);
-         m_children[1]->DumpTree(indentLevel + 1);
-         m_children[2]->DumpTree(indentLevel + 1);
-         m_children[3]->DumpTree(indentLevel + 1);
+         m_children[0].DumpTree(indentLevel + 1);
+         m_children[1].DumpTree(indentLevel + 1);
+         m_children[2].DumpTree(indentLevel + 1);
+         m_children[3].DumpTree(indentLevel + 1);
       }
 #endif
    }
