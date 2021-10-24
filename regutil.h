@@ -1,5 +1,10 @@
 #pragma once
 
+void SaveXMLregistry(const std::string &path);
+void InitXMLregistry(const std::string &path);
+void ClearXMLregistry(); // clears self-allocated strings
+
+
 HRESULT LoadValue(const std::string &szKey, const std::string &zValue, std::string &buffer);
 HRESULT LoadValue(const std::string &szKey, const std::string &szValue, void* const szbuffer, const DWORD size);
 

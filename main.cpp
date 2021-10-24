@@ -242,6 +242,8 @@ public:
       GetSystemInfo(&sysinfo);
       m_vpinball.m_logicalNumberOfProcessors = sysinfo.dwNumberOfProcessors; //!! this ignores processor groups, so if at some point we need extreme multi threading, implement this in addition!
 
+      InitXMLregistry(m_vpinball.m_szMyPath);
+
 #if _WIN32_WINNT >= 0x0400 & defined(_ATL_FREE_THREADED)
       const HRESULT hRes = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 #else
@@ -537,6 +539,9 @@ public:
 
          _Module.RevokeClassObjects();
          Sleep(THREADS_PAUSE); //wait for any threads to finish
+
+         SaveXMLregistry(m_vpinball.m_szMyPath);
+         ClearXMLregistry();
       }
       return 0;
    }
