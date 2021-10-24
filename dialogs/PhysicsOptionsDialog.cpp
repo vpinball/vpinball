@@ -354,6 +354,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             const string sn(GetItemText(1110));
             xml_node<>*settingName = xmlDoc.allocate_node(node_element, "name", sn.c_str());
             root->append_node(settingName);
+
             root->append_node(table);
             root->append_node(flipper);
             xmlDoc.append_node(root);

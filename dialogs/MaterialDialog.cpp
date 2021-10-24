@@ -1,13 +1,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "MaterialDialog.h"
-#include "vpversion.h"
-#include <rapidxml.hpp>
-#include <rapidxml_print.hpp>
 #include <fstream>
-#include <sstream>
-
-using namespace rapidxml;
 
 typedef struct _tagSORTDATA
 {

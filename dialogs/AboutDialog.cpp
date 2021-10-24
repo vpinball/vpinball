@@ -3,7 +3,6 @@
 #include "vpversion.h"
 #include "git_version.h"
 #include <fstream>
-#include <sstream>
 
 AboutDialog::AboutDialog() : CDialog(IDD_ABOUT)
 {
