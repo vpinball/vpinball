@@ -212,7 +212,7 @@ static FRect3D ExtendBoundsAtExtreme(const FRect3D& aabb, const Vertex2D& c, con
 
 void HitFlipper::CalcHitBBox()
 {
-#if 0 // old, simple version:
+#if 1 // old, simple version:
    // Allow roundoff
    m_hitBBox.left   = m_flipperMover.m_hitcircleBase.center.x - (m_flipperMover.m_flipperradius + m_flipperMover.m_endradius + 0.1f);
    m_hitBBox.right  = m_flipperMover.m_hitcircleBase.center.x + (m_flipperMover.m_flipperradius + m_flipperMover.m_endradius + 0.1f);
@@ -220,7 +220,7 @@ void HitFlipper::CalcHitBBox()
    m_hitBBox.bottom = m_flipperMover.m_hitcircleBase.center.y + (m_flipperMover.m_flipperradius + m_flipperMover.m_endradius + 0.1f);
    m_hitBBox.zlow   = m_flipperMover.m_hitcircleBase.m_hitBBox.zlow;
    m_hitBBox.zhigh  = m_flipperMover.m_hitcircleBase.m_hitBBox.zhigh;
-#else
+#else // new, more precise one, BUT does not handle flippers that get their angles changed during runtime
    // compute bounds. we look at the flipper angles to compute the smallest possible bounds.
    const Vertex2D c = m_flipperMover.m_hitcircleBase.center;
    const float r2 = m_flipperMover.m_endradius + 0.1f;
