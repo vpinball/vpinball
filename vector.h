@@ -19,7 +19,7 @@ public:
    {
       const auto i = std::find(m_rg.begin(), m_rg.end(), pvItem);
       if (i != m_rg.end())
-         return i - m_rg.begin();
+         return (int)(i - m_rg.begin());
       else
          return -1;
    }

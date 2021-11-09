@@ -1029,7 +1029,7 @@ void KeysConfigDialog::OnOK()
     selected = ::SendMessage(GetDlgItem(IDC_DOF_FORCEDISABLE).GetHwnd(), BM_GETCHECK, 0, 0);
     SaveValueBool("Controller", "ForceDisableB2S", selected != 0);
 
-    size_t inputApi = SendMessage(GetDlgItem(IDC_COMBO_INPUT_API).GetHwnd(), CB_GETCURSEL, 0, 0);
+    int inputApi = (int)SendMessage(GetDlgItem(IDC_COMBO_INPUT_API).GetHwnd(), CB_GETCURSEL, 0, 0);
 #ifndef ENABLE_XINPUT
     if (inputApi >= 1) inputApi++;
 #endif
@@ -1044,7 +1044,7 @@ void KeysConfigDialog::OnOK()
 #endif
     SaveValueInt("Player", "InputApi", inputApi);
 
-    const size_t rumble = SendMessage(GetDlgItem(IDC_COMBO_RUMBLE).GetHwnd(), CB_GETCURSEL, 0, 0);
+    const int rumble = (int)SendMessage(GetDlgItem(IDC_COMBO_RUMBLE).GetHwnd(), CB_GETCURSEL, 0, 0);
     SaveValueInt("Player", "RumbleMode", rumble);
 
     CDialog::OnOK();
