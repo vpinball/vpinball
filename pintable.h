@@ -992,7 +992,7 @@ public:
       VARIANT *base, VARIANT *glossy, VARIANT *clearcoat, VARIANT *isMetal, VARIANT *opacityActive,
       VARIANT *elasticity, VARIANT *elasticityFalloff, VARIANT *friction, VARIANT *scatterAngle);
    STDMETHOD(UpdateMaterialPhysics)(BSTR pVal, float elasticity, float elasticityFalloff, float friction, float scatterAngle);
-   STDMETHOD(GetMaterialPhysics)(BSTR pVal, float *elasticity, float *elasticityFalloff, float *friction, float *scatterAngle);
+   STDMETHOD(GetMaterialPhysics)(BSTR pVal, VARIANT *elasticity, VARIANT *elasticityFalloff, VARIANT *friction, VARIANT *scatterAngle);
    STDMETHOD(MaterialColor)(BSTR pVal, OLE_COLOR newVal);
 
    void Init(VPinball *vpinball, PinTable *pt);

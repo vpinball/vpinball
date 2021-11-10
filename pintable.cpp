@@ -467,14 +467,11 @@ STDMETHODIMP ScriptGlobalTable::AddObject(BSTR Name, IDispatch *pdisp)
 
 STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIANT Value)
 {
-   IStorage* pstgRoot;
-   IStorage* pstgTable;
-   IStream* pstmValue;
-
    HRESULT hr;
 
    const std::wstring wzPath = m_vpinball->m_wzMyPath + L"User\\VPReg.stg";
 
+   IStorage *pstgRoot;
    if (FAILED(hr = StgOpenStorage(wzPath.c_str(), nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgRoot)))
    {
       // Registry file does not exist - create it
@@ -489,6 +486,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
       }
    }
 
+   IStorage *pstgTable;
    if (FAILED(hr = pstgRoot->OpenStorage(TableName, nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgTable)))
    {
       // Table file does not exist
@@ -499,6 +497,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
       }
    }
 
+   IStream *pstmValue;
    if (FAILED(hr = pstgTable->CreateStream(ValueName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmValue)))
    {
       pstgTable->Release();
@@ -526,11 +525,11 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
 
 STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIANT *Value)
 {
-   IStorage* pstgRoot;
    HRESULT hr;
 
    const std::wstring wzPath = m_vpinball->m_wzMyPath + L"User\\VPReg.stg";
 
+   IStorage *pstgRoot;
    if (FAILED(hr = StgOpenStorage(wzPath.c_str(), nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgRoot)))
    {
       SetVarBstr(Value, SysAllocString(L""));
@@ -757,7 +756,7 @@ STDMETHODIMP ScriptGlobalTable::UpdateMaterialPhysics(BSTR pVal, float elasticit
       return E_FAIL;
 }
 
-STDMETHODIMP ScriptGlobalTable::GetMaterialPhysics(BSTR pVal, float *elasticity, float *elasticityFalloff, float *friction, float *scatterAngle)
+STDMETHODIMP ScriptGlobalTable::GetMaterialPhysics(BSTR pVal, VARIANT *elasticity, VARIANT *elasticityFalloff, VARIANT *friction, VARIANT *scatterAngle)
 {
    if (!g_pplayer)
       return E_POINTER;
@@ -768,10 +767,10 @@ STDMETHODIMP ScriptGlobalTable::GetMaterialPhysics(BSTR pVal, float *elasticity,
    const Material * const pMat = m_pt->GetMaterial(Name);
    if (pMat != &m_vpinball->m_dummyMaterial)
    {
-      *elasticity = pMat->m_fElasticity;
-      *elasticityFalloff = pMat->m_fElasticityFalloff;
-      *friction = pMat->m_fFriction;
-      *scatterAngle = pMat->m_fScatterAngle;
+      CComVariant(pMat->m_fElasticity).Detach(elasticity);
+      CComVariant(pMat->m_fElasticityFalloff).Detach(elasticityFalloff);
+      CComVariant(pMat->m_fFriction).Detach(friction);
+      CComVariant(pMat->m_fScatterAngle).Detach(scatterAngle);
 
       return S_OK;
    }
