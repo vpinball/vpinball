@@ -699,9 +699,9 @@ STDMETHODIMP ScriptGlobalTable::UpdateMaterial(BSTR pVal, float wrapLighting, fl
       return E_FAIL;
 }
 
-STDMETHODIMP ScriptGlobalTable::GetMaterial(BSTR pVal, float *wrapLighting, float *roughness, float *glossyImageLerp, float *thickness, float *edge, float *edgeAlpha, float *opacity,
-   OLE_COLOR *base, OLE_COLOR *glossy, OLE_COLOR *clearcoat, VARIANT_BOOL *isMetal, VARIANT_BOOL *opacityActive,
-   float *elasticity, float *elasticityFalloff, float *friction, float *scatterAngle)
+STDMETHODIMP ScriptGlobalTable::GetMaterial(BSTR pVal, VARIANT *wrapLighting, VARIANT *roughness, VARIANT *glossyImageLerp, VARIANT *thickness, VARIANT *edge, VARIANT *edgeAlpha, VARIANT *opacity,
+   VARIANT *base, VARIANT *glossy, VARIANT *clearcoat, VARIANT *isMetal, VARIANT *opacityActive,
+   VARIANT *elasticity, VARIANT *elasticityFalloff, VARIANT *friction, VARIANT *scatterAngle)
 {
    if (!g_pplayer)
       return E_POINTER;
@@ -712,22 +712,22 @@ STDMETHODIMP ScriptGlobalTable::GetMaterial(BSTR pVal, float *wrapLighting, floa
    const Material * const pMat = m_pt->GetMaterial(Name);
    if (pMat != &m_vpinball->m_dummyMaterial)
    {
-      *wrapLighting = pMat->m_fWrapLighting;
-      *roughness = pMat->m_fRoughness;
-      *glossyImageLerp = pMat->m_fGlossyImageLerp;
-      *thickness = pMat->m_fThickness;
-      *edge = pMat->m_fEdge;
-      *edgeAlpha = pMat->m_fEdgeAlpha;
-      *opacity = pMat->m_fOpacity;
-      *base = pMat->m_cBase;
-      *glossy = pMat->m_cGlossy;
-      *clearcoat = pMat->m_cClearcoat;
-      *isMetal = FTOVB(pMat->m_bIsMetal);
-      *opacityActive = FTOVB(pMat->m_bOpacityActive);
-      *elasticity = pMat->m_fElasticity;
-      *elasticityFalloff = pMat->m_fElasticityFalloff;
-      *friction = pMat->m_fFriction;
-      *scatterAngle = pMat->m_fScatterAngle;
+      CComVariant(pMat->m_fWrapLighting).Detach(wrapLighting);
+      CComVariant(pMat->m_fRoughness).Detach(roughness);
+      CComVariant(pMat->m_fGlossyImageLerp).Detach(glossyImageLerp);
+      CComVariant(pMat->m_fThickness).Detach(thickness);
+      CComVariant(pMat->m_fEdge).Detach(edge);
+      CComVariant(pMat->m_fEdgeAlpha).Detach(edgeAlpha);
+      CComVariant(pMat->m_fOpacity).Detach(opacity);
+      CComVariant(pMat->m_cBase).Detach(base);
+      CComVariant(pMat->m_cGlossy).Detach(glossy);
+      CComVariant(pMat->m_cClearcoat).Detach(clearcoat);
+      CComVariant(pMat->m_bIsMetal).Detach(isMetal);
+      CComVariant(pMat->m_bOpacityActive).Detach(opacityActive);
+      CComVariant(pMat->m_fElasticity).Detach(elasticity);
+      CComVariant(pMat->m_fElasticityFalloff).Detach(elasticityFalloff);
+      CComVariant(pMat->m_fFriction).Detach(friction);
+      CComVariant(pMat->m_fScatterAngle).Detach(scatterAngle);
 
       return S_OK;
    }
