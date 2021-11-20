@@ -621,14 +621,25 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
           mode.ScanLineOrdering = D3DSCANLINEORDERING_PROGRESSIVE;
       }
 
-      CHECKD3D(m_pD3DEx->CreateDeviceEx(
+      hr = m_pD3DEx->CreateDeviceEx(
          m_adapter,
          devtype,
          m_windowHwnd,
          flags /*| D3DCREATE_PUREDEVICE*/,
          &params,
          m_fullscreen ? &mode : nullptr,
-         &m_pD3DDeviceEx));
+         &m_pD3DDeviceEx);
+      if (FAILED(hr))
+      {
+         if (m_fullscreen)
+         {
+            const int result = GetSystemMetrics(SM_REMOTESESSION);
+            const bool isRemoteSession = (result != 0);
+            if (isRemoteSession)
+               ShowError("Try disabling exclusive Fullscreen Mode for Remote Desktop Connections");
+         }
+         ReportFatalError(hr, __FILE__, __LINE__);
+      }
 
       m_pD3DDeviceEx->QueryInterface(__uuidof(IDirect3DDevice9), reinterpret_cast<void**>(&m_pD3DDevice));
 
