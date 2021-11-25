@@ -36,6 +36,8 @@ FEATURES:
 
 - add WEBP to list of supported image formats
 
+- add various anaglyph (e.g. red/cyan) 3D stereo glasses modes to the video preferences
+
 - optimize table loading/pre-processing time
   to reduce the amount of parallel CPU threads running, use the new command line parameter "-LessCPUthreads"
 - optimize loading of JPG images in the table

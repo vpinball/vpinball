@@ -678,6 +678,15 @@ technique stereo
    }
 }
 
+technique stereo_anaglyph
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+      PixelShader  = compile ps_3_0 ps_main_stereo_anaglyph();
+   }
+}
+
 technique NFAA
 {
 	pass P0
