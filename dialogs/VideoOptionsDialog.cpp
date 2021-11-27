@@ -102,6 +102,12 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    constexpr float stereo3DZPD = 0.5f;
    sprintf_s(tmp, 256, "%f", stereo3DZPD);
    SetDlgItemTextA(IDC_3D_STEREO_ZPD, tmp);
+   constexpr float stereo3DContrast = 1.0f;
+   sprintf_s(tmp, 256, "%f", stereo3DContrast);
+   SetDlgItemTextA(IDC_3D_STEREO_CONTRAST, tmp);
+   constexpr float stereo3DDeSaturation = 0.0f;
+   sprintf_s(tmp, 256, "%f", stereo3DDeSaturation);
+   SetDlgItemTextA(IDC_3D_STEREO_DESATURATION, tmp);
    SendMessage(GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    }
 
@@ -374,6 +380,13 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Deghosted Red/Cyan");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Deghosted Green/Magenta");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Blue/Amber");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Cyan/Red");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Magenta/Green");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Dubois Cyan/Red");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Dubois Magenta/Green");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Deghosted Cyan/Red");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Deghosted Magenta/Green");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Amber/Blue");
    SendMessage(hwnd, CB_SETCURSEL, stereo3D, 0);
 
    const bool stereo3DY = LoadValueBoolWithDefault("Player", "Stereo3DYAxis", false);
@@ -390,6 +403,14 @@ BOOL VideoOptionsDialog::OnInitDialog()
    const float stereo3DZPD = LoadValueFloatWithDefault("Player", "Stereo3DZPD", 0.5f);
    sprintf_s(tmp, 256, "%f", stereo3DZPD);
    SetDlgItemTextA(IDC_3D_STEREO_ZPD, tmp);
+
+   const float stereo3DContrast = LoadValueFloatWithDefault("Player", "Stereo3DContrast", 1.0f);
+   sprintf_s(tmp, 256, "%f", stereo3DContrast);
+   SetDlgItemTextA(IDC_3D_STEREO_CONTRAST, tmp);
+
+   const float stereo3DDesaturation = LoadValueFloatWithDefault("Player", "Stereo3DDesaturation", 0.0f);
+   sprintf_s(tmp, 256, "%f", stereo3DDesaturation);
+   SetDlgItemTextA(IDC_3D_STEREO_DESATURATION, tmp);
 
    const bool disableDWM = LoadValueBoolWithDefault("Player", "DisableDWM", false);
    SendMessage(GetDlgItem(IDC_DISABLE_DWM).GetHwnd(), BM_SETCHECK, disableDWM ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -829,6 +850,12 @@ void VideoOptionsDialog::OnOK()
 
    tmpStr = GetDlgItemTextA(IDC_3D_STEREO_ZPD);
    SaveValue("Player", "Stereo3DZPD", tmpStr);
+
+   tmpStr = GetDlgItemTextA(IDC_3D_STEREO_CONTRAST);
+   SaveValue("Player", "Stereo3DContrast", tmpStr);
+
+   tmpStr = GetDlgItemTextA(IDC_3D_STEREO_DESATURATION);
+   SaveValue("Player", "Stereo3DDesaturation", tmpStr);
 
    const bool disableDWM = (SendMessage(GetDlgItem(IDC_DISABLE_DWM).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValueBool("Player", "DisableDWM", disableDWM);

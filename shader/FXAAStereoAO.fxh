@@ -1,3 +1,6 @@
+const float2 Anaglyph_DeSaturation__Contrast; // Anaglyph (de)saturation to preprocess/remove color from the anaglyph image: 1 = Black & White, 0 = normal color
+
+
 //!! add reflection direction occlusion, so that that will be used for blocking reflection/envmap?
 //!! opt.?
 
@@ -226,35 +229,32 @@ float4 ps_main_ao(const in VS_OUTPUT_2D IN) : COLOR
 
 float3 anaglyph(const float3 L, const float3 R)
 {
-	const float Saturation = 1.0; // Anaglyph (de)saturation to preprocess/remove color from the anaglyph image: 0 = Black & White, 1 = normal color
-
-	const float Contrast = 1.0;
-	const float c = (Contrast*0.5)+0.5;
+	const float c = saturate(Anaglyph_DeSaturation__Contrast.y*0.5 + 0.5);
 
 	float DeGhost = 0.06;
 
-	const float3 LMA = lerp(dot(L,float3(0.299, 0.587, 0.114)), L, Saturation);
-	const float3 RMA = lerp(dot(R,float3(0.299, 0.587, 0.114)), R, Saturation);
+	const float3 LMA = lerp(L, dot(L,float3(0.299, 0.587, 0.114)), Anaglyph_DeSaturation__Contrast.x);
+	const float3 RMA = lerp(R, dot(R,float3(0.299, 0.587, 0.114)), Anaglyph_DeSaturation__Contrast.x);
 
-	[branch] if (ms_zpd_ya_td.w == 4.0) // Anaglyph 3D Red/Cyan
-		return float3(LMA.r,RMA.g,RMA.b);
-	[branch] if (ms_zpd_ya_td.w == 5.0) // Anaglyph 3D Green/Magenta
-		return float3(RMA.r,LMA.g,RMA.b);
-	[branch] if (ms_zpd_ya_td.w == 6.0) // Anaglyph 3D Dubois Red/Cyan
+	[branch] if (ms_zpd_ya_td.w == 4.0 || ms_zpd_ya_td.w == 11.0) // Anaglyph 3D Red/Cyan
+		return pow(float3(LMA.r,RMA.g,RMA.b), Anaglyph_DeSaturation__Contrast.y); //!! Contrast is meh here
+	[branch] if (ms_zpd_ya_td.w == 5.0 || ms_zpd_ya_td.w == 12.0) // Anaglyph 3D Green/Magenta
+		return pow(float3(RMA.r,LMA.g,RMA.b), Anaglyph_DeSaturation__Contrast.y); //!! Contrast is meh here
+	[branch] if (ms_zpd_ya_td.w == 6.0 || ms_zpd_ya_td.w == 13.0) // Anaglyph 3D Dubois Red/Cyan
 	{
-		const float r = saturate( dot(LMA,float3( 0.437,  0.449,  0.164)) + dot(RMA,float3(-0.011, -0.032, -0.007)) );
-		const float g = saturate( dot(LMA,float3(-0.062, -0.062, -0.024)) + dot(RMA,float3( 0.377,  0.761,  0.009)) );
-		const float b = saturate( dot(LMA,float3(-0.048, -0.050, -0.017)) + dot(RMA,float3(-0.026, -0.093,  1.234)) );
-		return float3(r,g,b);
+		const float r = dot(LMA,float3( 0.437,  0.449,  0.164)) + dot(RMA,float3(-0.011, -0.032, -0.007));
+		const float g = dot(LMA,float3(-0.062, -0.062, -0.024)) + dot(RMA,float3( 0.377,  0.761,  0.009));
+		const float b = dot(LMA,float3(-0.048, -0.050, -0.017)) + dot(RMA,float3(-0.026, -0.093,  1.234));
+		return saturate(pow(float3(r,g,b), Anaglyph_DeSaturation__Contrast.y)); //!! Contrast is meh here
 	}
-	[branch] if (ms_zpd_ya_td.w == 7.0) // Anaglyph 3D Dubois Green/Magenta
+	[branch] if (ms_zpd_ya_td.w == 7.0 || ms_zpd_ya_td.w == 14.0) // Anaglyph 3D Dubois Green/Magenta
 	{
-		const float r = saturate( dot(LMA,float3(-0.062, -0.158, -0.039)) + dot(RMA,float3( 0.529,  0.705, 0.024)) );
-		const float g = saturate( dot(LMA,float3( 0.284,  0.668,  0.143)) + dot(RMA,float3(-0.016, -0.015, 0.065)) );
-		const float b = saturate( dot(LMA,float3(-0.015, -0.027,  0.021)) + dot(RMA,float3( 0.009,  0.075, 0.937)) );
-		return float3(r,g,b);
+		const float r = dot(LMA,float3(-0.062, -0.158, -0.039)) + dot(RMA,float3( 0.529,  0.705, 0.024));
+		const float g = dot(LMA,float3( 0.284,  0.668,  0.143)) + dot(RMA,float3(-0.016, -0.015, 0.065));
+		const float b = dot(LMA,float3(-0.015, -0.027,  0.021)) + dot(RMA,float3( 0.009,  0.075, 0.937));
+		return saturate(pow(float3(r,g,b), Anaglyph_DeSaturation__Contrast.y)); //!! Contrast is meh here
 	}
-	[branch] if (ms_zpd_ya_td.w == 8.0) // Anaglyph 3D Deghosted Red/Cyan Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
+	[branch] if (ms_zpd_ya_td.w == 8.0 || ms_zpd_ya_td.w == 15.0) // Anaglyph 3D Deghosted Red/Cyan Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
 	{
 		const float LOne = c*0.45;
 		const float ROne = c;
@@ -271,10 +271,9 @@ float3 anaglyph(const float3 L, const float3 R)
 		color.r = r + r* DeGhost        + g*(DeGhost* -0.5) + b*(DeGhost*-0.5);
 		color.g = g + r*(DeGhost*-0.25) + g*(DeGhost*  0.5) + b*(DeGhost*-0.25);
 		color.b = b + r*(DeGhost*-0.25) + g*(DeGhost*-0.25) + b*(DeGhost* 0.5);
-		//!! saturate?
-		return color;
+		return saturate(color);
 	}
-	[branch] if (ms_zpd_ya_td.w == 9.0) // Anaglyph 3D Deghosted Green/Magenta Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
+	[branch] if (ms_zpd_ya_td.w == 9.0 || ms_zpd_ya_td.w == 16.0) // Anaglyph 3D Deghosted Green/Magenta Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
 	{
 		const float LOne = c*0.45;
 		const float ROne = c*0.8;
@@ -291,10 +290,9 @@ float3 anaglyph(const float3 L, const float3 R)
 		color.r = r + r*(DeGhost* 0.5)  + g*(DeGhost*-0.25) + b*(DeGhost*-0.25);
 		color.g = g + r*(DeGhost*-0.5)  + g*(DeGhost* 0.25) + b*(DeGhost*-0.5);
 		color.b = b + r*(DeGhost*-0.25) + g*(DeGhost*-0.25) + b*(DeGhost*0.5);
-		//!! saturate?
-		return color;
+		return saturate(color);
 	}
-	[branch] if (ms_zpd_ya_td.w == 10.0) // Anaglyph 3D Blue/Amber Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
+	[branch] if (ms_zpd_ya_td.w == 10.0 || ms_zpd_ya_td.w == 17.0) // Anaglyph 3D Blue/Amber Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
 	{
 		const float LOne = c*0.45;
 		const float ROne = c;
@@ -371,7 +369,7 @@ float4 ps_main_stereo_anaglyph(const in VS_OUTPUT_2D IN) : COLOR
 		rparallax = -rparallax;
 	const float3 rcol = tex2Dlod(texSampler5, float4(u + (yaxis ? float2(0.0,rparallax) : float2(rparallax,0.0)), 0.,0.)).xyz;
 
-	return float4(anaglyph(lcol,rcol), 1.0);
+	return float4(anaglyph((ms_zpd_ya_td.w > 10.0) ? rcol : lcol,(ms_zpd_ya_td.w > 10.0) ? lcol : rcol), 1.0); // > 10.0 means: flip the color trafo?
 }
 
 // NFAA

@@ -183,6 +183,8 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_stereo3D = LoadValueIntWithDefault("Player", "Stereo3D", 0);
    m_stereo3Denabled = LoadValueBoolWithDefault("Player", "Stereo3DEnabled", (m_stereo3D != 0));
    m_stereo3DY = LoadValueBoolWithDefault("Player", "Stereo3DYAxis", false);
+   m_global3DContrast = LoadValueFloatWithDefault("Player", "Stereo3DContrast", 1.0f);
+   m_global3DDesaturation = LoadValueFloatWithDefault("Player", "Stereo3DDesaturation", 0.f);
    m_scaleFX_DMD = LoadValueBoolWithDefault("Player", "ScaleFXDMD", false);
    m_disableDWM = LoadValueBoolWithDefault("Player", "DisableDWM", false);
    m_useNvidiaApi = LoadValueBoolWithDefault("Player", "UseNVidiaAPI", false);
@@ -3650,6 +3652,12 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
 
       const vec4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), (float)m_height, m_ptable->Get3DOffset());
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("w_h_height", &w_h_height);
+
+      if (m_stereo3D > 3)
+      {
+         const vec4 a_ds__c(m_global3DDesaturation, m_global3DContrast, 0.f,0.f);
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("Anaglyph_DeSaturation__Contrast", &a_ds__c);
+      }
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique((m_stereo3D <= 3) ? "stereo" : "stereo_anaglyph");
 
