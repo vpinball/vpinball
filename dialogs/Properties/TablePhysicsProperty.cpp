@@ -41,7 +41,7 @@ void TablePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetFloatTextbox(m_defaultScatterEdit, table->m_defaultScatter);
     if (dispid == IDC_NUDGE_TIME_EDIT || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_nudgeTimeEdit, table->m_nudgeTime);
-    if (dispid == IDC_PHYSICS_MAC_LOOPS_EDIT || dispid == -1)
+    if (dispid == IDC_PHYSICS_MAX_LOOPS_EDIT || dispid == -1)
         PropertyDialog::SetIntTextbox(m_physicsLoopEdit, table->m_PhysicsMaxLoops);
     if (dispid == IDC_MECH_PLUNGER_ADJ_EDIT || dispid == -1)
         PropertyDialog::SetIntTextbox(m_mechPlungerAdjEdit, table->m_plungerNormalize);
@@ -90,7 +90,7 @@ void TablePhysicsProperty::UpdateProperties(const int dispid)
         case IDC_NUDGE_TIME_EDIT:
             CHECK_UPDATE_ITEM(table->m_nudgeTime, PropertyDialog::GetFloatTextbox(m_nudgeTimeEdit), table);
             break;
-        case IDC_PHYSICS_MAC_LOOPS_EDIT:
+        case IDC_PHYSICS_MAX_LOOPS_EDIT:
             CHECK_UPDATE_ITEM(table->m_PhysicsMaxLoops, PropertyDialog::GetIntTextbox(m_physicsLoopEdit), table);
             break;
         case IDC_MECH_PLUNGER_ADJ_EDIT:
@@ -136,7 +136,7 @@ BOOL TablePhysicsProperty::OnInitDialog()
     m_playfieldScatterEdit.AttachItem(IDC_PLAYFIELD_SCATTER_EDIT);
     m_defaultScatterEdit.AttachItem(IDC_DEFAULT_SCATTER_EDIT);
     m_nudgeTimeEdit.AttachItem(IDC_NUDGE_TIME_EDIT);
-    m_physicsLoopEdit.AttachItem(IDC_PHYSICS_MAC_LOOPS_EDIT);
+    m_physicsLoopEdit.AttachItem(IDC_PHYSICS_MAX_LOOPS_EDIT);
     m_mechPlungerAdjEdit.AttachItem(IDC_MECH_PLUNGER_ADJ_EDIT);
     m_tableWidthEdit.AttachItem(IDC_TABLE_WIDTH_EDIT);
     m_tableHeightEdit.AttachItem(IDC_TABLE_HEIGHT_EDIT);
