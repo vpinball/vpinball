@@ -237,22 +237,22 @@ float3 anaglyph(const float3 L, const float3 R)
 	const float3 RMA = lerp(R, dot(R,float3(0.299, 0.587, 0.114)), Anaglyph_DeSaturation__Contrast.x);
 
 	[branch] if (ms_zpd_ya_td.w == 4.0 || ms_zpd_ya_td.w == 11.0) // Anaglyph 3D Red/Cyan
-		return pow(float3(LMA.r,RMA.g,RMA.b), Anaglyph_DeSaturation__Contrast.y); //!! Contrast is meh here
+		return pow(float3(LMA.r,RMA.g,RMA.b), 1./Anaglyph_DeSaturation__Contrast.y); //!! Contrast is meh here
 	[branch] if (ms_zpd_ya_td.w == 5.0 || ms_zpd_ya_td.w == 12.0) // Anaglyph 3D Green/Magenta
-		return pow(float3(RMA.r,LMA.g,RMA.b), Anaglyph_DeSaturation__Contrast.y); //!! Contrast is meh here
+		return pow(float3(RMA.r,LMA.g,RMA.b), 1./Anaglyph_DeSaturation__Contrast.y); //!! Contrast is meh here
 	[branch] if (ms_zpd_ya_td.w == 6.0 || ms_zpd_ya_td.w == 13.0) // Anaglyph 3D Dubois Red/Cyan
 	{
 		const float r = dot(LMA,float3( 0.437,  0.449,  0.164)) + dot(RMA,float3(-0.011, -0.032, -0.007));
 		const float g = dot(LMA,float3(-0.062, -0.062, -0.024)) + dot(RMA,float3( 0.377,  0.761,  0.009));
 		const float b = dot(LMA,float3(-0.048, -0.050, -0.017)) + dot(RMA,float3(-0.026, -0.093,  1.234));
-		return saturate(pow(float3(r,g,b), Anaglyph_DeSaturation__Contrast.y)); //!! Contrast is meh here
+		return saturate(pow(float3(r,g,b), 1./Anaglyph_DeSaturation__Contrast.y)); //!! Contrast is meh here
 	}
 	[branch] if (ms_zpd_ya_td.w == 7.0 || ms_zpd_ya_td.w == 14.0) // Anaglyph 3D Dubois Green/Magenta
 	{
 		const float r = dot(LMA,float3(-0.062, -0.158, -0.039)) + dot(RMA,float3( 0.529,  0.705, 0.024));
 		const float g = dot(LMA,float3( 0.284,  0.668,  0.143)) + dot(RMA,float3(-0.016, -0.015, 0.065));
 		const float b = dot(LMA,float3(-0.015, -0.027,  0.021)) + dot(RMA,float3( 0.009,  0.075, 0.937));
-		return saturate(pow(float3(r,g,b), Anaglyph_DeSaturation__Contrast.y)); //!! Contrast is meh here
+		return saturate(pow(float3(r,g,b), 1./Anaglyph_DeSaturation__Contrast.y)); //!! Contrast is meh here
 	}
 	[branch] if (ms_zpd_ya_td.w == 8.0 || ms_zpd_ya_td.w == 15.0) // Anaglyph 3D Deghosted Red/Cyan Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
 	{
