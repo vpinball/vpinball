@@ -24,7 +24,7 @@
 #include <atlbase.h>
 //#include <atlhost.h>
 #include <atlctl.h>
-//#include <assert.h>
+//#include <cassert>
 
 //#include <commctrl.h>
 

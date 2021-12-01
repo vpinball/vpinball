@@ -9,14 +9,13 @@
 
 #include "stdafx.h"
 
-#include <stdio.h>  
-#include <math.h>
-#include <stdlib.h>
-#include <assert.h>
+#include <cstdio>
+#include <cmath>
+#include <cstdlib>
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
-#include <assert.h>
+#include <cassert>
 
 #include "progmesh.h"
 

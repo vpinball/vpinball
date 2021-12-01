@@ -1,7 +1,7 @@
 #pragma once
 
-#include <assert.h>
-#include <math.h>
+#include <cassert>
+#include <cmath>
 #include "vector.h"
 
 
