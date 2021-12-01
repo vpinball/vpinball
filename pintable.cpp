@@ -824,13 +824,13 @@ STDMETHODIMP ScriptGlobalTable::put_DMDHeight(int pVal)
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) //!! use 64bit instead of 8bit to reduce overhead??
+STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!! use 64bit instead of 8bit to reduce overhead??
 {
    SAFEARRAY *psa = pVal.parray;
 
    if (psa && g_pplayer && g_pplayer->m_dmd.x > 0 && g_pplayer->m_dmd.y > 0)
    {
-      const LONG size = g_pplayer->m_dmd.x*g_pplayer->m_dmd.y;
+      const int size = g_pplayer->m_dmd.x*g_pplayer->m_dmd.y;
       if (!g_pplayer->m_texdmd
 #ifdef DMD_UPSCALE
           || (g_pplayer->m_texdmd->width()*g_pplayer->m_texdmd->height() != size*(3*3)))
@@ -853,14 +853,11 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) //!! use 64bit inste
 
       DWORD* const data = (DWORD*)g_pplayer->m_texdmd->data(); //!! assumes tex data to be always 32bit
 
-      VARIANT DMDState;
-      DMDState.vt = VT_UI1;
-
-      for (LONG ofs = 0; ofs < size; ++ofs)
-      {
-         SafeArrayGetElement(psa, &ofs, &DMDState);
-         data[ofs] = DMDState.cVal; // store raw values (0..100), let shader do the rest
-      }
+      VARIANT *p;
+      SafeArrayAccessData(psa,(void**)&p);
+      for (int ofs = 0; ofs < size; ++ofs)
+         data[ofs] = p[ofs].cVal; // store raw values (0..100), let shader do the rest
+      SafeArrayUnaccessData(psa);
 
       if (g_pplayer->m_scaleFX_DMD)
          upscale(data, g_pplayer->m_dmd, true);
@@ -871,13 +868,13 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) //!! use 64bit inste
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! use 64bit instead of 32bit to reduce overhead??
+STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as input //!! use 64bit instead of 32bit to reduce overhead??
 {
 	SAFEARRAY *psa = pVal.parray;
 
 	if (psa && g_pplayer && g_pplayer->m_dmd.x > 0 && g_pplayer->m_dmd.y > 0)
 	{
-		const LONG size = g_pplayer->m_dmd.x*g_pplayer->m_dmd.y;
+		const int size = g_pplayer->m_dmd.x*g_pplayer->m_dmd.y;
 		if (!g_pplayer->m_texdmd
 #ifdef DMD_UPSCALE
             || (g_pplayer->m_texdmd->width()*g_pplayer->m_texdmd->height() != size*(3*3)))
@@ -900,14 +897,11 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! use 64bi
 
 		DWORD* const data = (DWORD*)g_pplayer->m_texdmd->data(); //!! assumes tex data to be always 32bit
 
-		VARIANT DMDState;
-		DMDState.vt = VT_UI4;
-
-		for (LONG ofs = 0; ofs < size; ++ofs)
-		{
-			SafeArrayGetElement(psa, &ofs, &DMDState);
-			data[ofs] = DMDState.uintVal | 0xFF000000u; // store RGB values and let shader do the rest (set alpha to let shader know that this is RGB and not just brightness)
-		}
+		VARIANT *p;
+		SafeArrayAccessData(psa, (void **)&p);
+		for (int ofs = 0; ofs < size; ++ofs)
+			data[ofs] = p[ofs].uintVal | 0xFF000000u; // store RGB values and let shader do the rest (set alpha to let shader know that this is RGB and not just brightness)
+		SafeArrayUnaccessData(psa);
 
 		if (g_pplayer->m_scaleFX_DMD)
 			upscale(data, g_pplayer->m_dmd, false);
