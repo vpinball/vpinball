@@ -13,6 +13,9 @@
 #include "inc\ThreadPool.h"
 #include "inc\scalefx.h"
 
+#include "inc\serial.h"
+static serial Serial;
+
 using namespace rapidxml;
 
 #define HASHLENGTH 16
@@ -1016,6 +1019,98 @@ STDMETHODIMP ScriptGlobalTable::get_VersionRevision(int *pVal)
 {
 	*pVal = VP_VERSION_REV;
 	return S_OK;
+}
+
+// Serial/RS232 stuff
+
+STDMETHODIMP ScriptGlobalTable::OpenSerial(BSTR device)
+{
+   char szDevice[MAX_PATH];
+   WideCharToMultiByteNull(CP_ACP, 0, device, -1, szDevice, MAX_PATH, nullptr, nullptr);
+
+   return Serial.open(szDevice) ? S_OK : E_FAIL;
+}
+
+STDMETHODIMP ScriptGlobalTable::CloseSerial()
+{
+   Serial.close();
+   return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::FlushSerial()
+{
+   Serial.flush();
+   return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::SetupSerial(int baud, int bits, int parity, int stopbit, VARIANT_BOOL rts, VARIANT_BOOL dtr)
+{
+   Serial.setup(serial::get_baud(baud),serial::get_bits(bits),parity == 0 ? SERIAL_PARITY_NONE : (parity == 1 ? SERIAL_PARITY_EVEN : SERIAL_PARITY_ODD),serial::get_stopbit(stopbit));
+   Serial.set_rts(VBTOb(rts));
+   Serial.set_dtr(VBTOb(dtr));
+
+   return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::ReadSerial(int size, VARIANT *pVal)
+{
+   SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, size);
+
+   VARIANT *pData;
+   SafeArrayAccessData(psa, (void **)&pData);
+   vector<char> data(size,0);
+   Serial.read(data);
+   for (int i = 0; i < size; ++i)
+   {
+      pData[i].vt = VT_UI1;
+      pData[i].cVal = data[i];
+   }
+   SafeArrayUnaccessData(psa);
+
+   pVal->vt = VT_ARRAY | VT_VARIANT;
+   pVal->parray = psa;
+
+   return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::WriteSerial(VARIANT pVal)
+{
+   SAFEARRAY *psa = pVal.parray;
+   SAFEARRAYBOUND *psafearraybound = &((psa->rgsabound)[0]);
+   const LONG size = (LONG)psafearraybound->cElements;
+
+   vector<char> data(size);
+
+   VARIANT state;
+   state.vt = VT_UI1;
+
+   for (LONG ofs = 0; ofs < size; ++ofs)
+   {
+      SafeArrayGetElement(psa, &ofs, &state);
+      data[ofs] = state.cVal;
+   }
+
+   Serial.write(data);
+   return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::GetSerialDevices(VARIANT *pVal)
+{
+   static vector<string> availablePorts;
+   serial::list_ports(availablePorts);
+
+   SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, (ULONG)availablePorts.size());
+   CComVariant varDevice;
+   for (LONG i = 0; i < (LONG)availablePorts.size(); ++i)
+   {
+      varDevice = availablePorts[i].c_str();
+      SafeArrayPutElement(psa, &i, &varDevice);
+   }
+
+   pVal->vt = VT_ARRAY | VT_VARIANT;
+   pVal->parray = psa;
+
+   return S_OK;
 }
 
 #pragma endregion

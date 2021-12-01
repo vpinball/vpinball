@@ -985,6 +985,14 @@ public:
    STDMETHOD(get_VersionMinor)(/*[out, retval]*/ int *pVal);
    STDMETHOD(get_VersionRevision)(/*[out, retval]*/ int *pVal);
 
+   STDMETHOD(GetSerialDevices)(VARIANT *pVal);
+   STDMETHOD(OpenSerial)(/*[in]*/ BSTR device);
+   STDMETHOD(CloseSerial)();
+   STDMETHOD(FlushSerial)();
+   STDMETHOD(SetupSerial)(int baud, int bits, int parity, int stopbit, VARIANT_BOOL rts, VARIANT_BOOL dtr);
+   STDMETHOD(ReadSerial)(int size, VARIANT *pVal);
+   STDMETHOD(WriteSerial)(VARIANT pVal);
+
    STDMETHOD(UpdateMaterial)(BSTR pVal, float wrapLighting, float roughness, float glossyImageLerp, float thickness, float edge, float edgeAlpha, float opacity,
       OLE_COLOR base, OLE_COLOR glossy, OLE_COLOR clearcoat, VARIANT_BOOL isMetal, VARIANT_BOOL opacityActive,
       float elasticity, float elasticityFalloff, float friction, float scatterAngle);

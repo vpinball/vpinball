@@ -762,6 +762,14 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propget, id(40), helpstring("property VersionRevision")] HRESULT VersionRevision([out, retval] int *pVal);
                 [propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] int *pVal);
 
+                [id(249), helpstring("method GetSerialDevices")] HRESULT GetSerialDevices([out, retval] VARIANT *pVal);
+                [id(250), helpstring("method OpenSerial")] HRESULT OpenSerial([in] BSTR device);
+                [id(251), helpstring("method CloseSerial")] HRESULT CloseSerial();
+                [id(252), helpstring("method FlushSerial")] HRESULT FlushSerial();
+                [id(253), helpstring("method SetupSerial")] HRESULT SetupSerial([in] int baud, [in] int bits, [in] int parity, [in] int stopbit, [in] VARIANT_BOOL rts, [in] VARIANT_BOOL dtr);
+                [id(254), helpstring("method ReadSerial")] HRESULT ReadSerial([in] int size, [out] VARIANT *pVal);
+                [id(255), helpstring("method WriteSerial")] HRESULT WriteSerial([in] VARIANT pVal);
+
                 [id(230), helpstring("method UpdateMaterial")] HRESULT UpdateMaterial([in] BSTR pVal, [in] float wrapLighting, [in] float roughness, [in] float glossyImageLerp, [in] float thickness, [in] float edge, [in] float edgeAlpha, [in] float opacity,
                     [in] OLE_COLOR base, [in] OLE_COLOR glossy, [in] OLE_COLOR clearcoat, [in] VARIANT_BOOL isMetal, [in] VARIANT_BOOL opacityActive,
                     [in] float elasticity, [in] float elasticityFalloff, [in] float friction, [in] float scatterAngle);

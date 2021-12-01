@@ -224,6 +224,8 @@ add_executable(vpinball WIN32
    imgui/implot/implot_internal.h
    inc/gpuprofiler.cpp
    inc/gpuprofiler.h
+   inc/serial.cpp
+   inc/serial.h
    inc/bass.h
    inc/forsyth.h
    inc/freeimage.h

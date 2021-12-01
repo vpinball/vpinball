@@ -9,6 +9,7 @@ As for coding light sequences for original tables, please check this helper app:
 
 Changelog:
 10.7:
+- add GetSerialDevices,OpenSerial,CloseSerial,FlushSerial,SetupSerial,ReadSerial,WriteSerial to the globals
 - add GetInPlayState,GetInPlayStateBool to the light element
 - add VideoCapWidth,VideoCapHeight,VideoCapUpdate to the flasher element
 - document missing x,y,z to the target element
@@ -173,6 +174,14 @@ GetMaterial(string, float wrapLighting, float roughness, float glossyImageLerp, 
 UpdateMaterialPhysics(string, float elasticity, float elasticityFalloff, float friction, float scatterAngle) - update only the physics parameters of a material (same input ranges as used in the material editor)
 GetMaterialPhysics(string, float elasticity, float elasticityFalloff, float friction, float scatterAngle) - get only the physics parameters of a material
 MaterialColor(string,OLE_COLOR) - change only the base color of a material
+
+GetSerialDevices(strings) - returns all serial communication port names
+OpenSerial(string) - open serial communication for port 'name'
+CloseSerial - close serial communication
+FlushSerial - flush
+SetupSerial(int baud, int bits, int parity, int stopbit, VARIANT_BOOL rts, VARIANT_BOOL dtr) - setup the parameters of the serial communication
+ReadSerial(int size, VARIANT pVal) - read size bytes
+WriteSerial(VARIANT pVal) - write bytes
 
 LoadValue(string,string,VARIANT) - load a value for tablename,valuename,value
 SaveValue(string,string,VARIANT) - save a value for tablename,valuename,value
