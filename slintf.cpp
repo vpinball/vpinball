@@ -5,7 +5,7 @@
 #define NOMINMAX
 #include <windows.h>
 #include <conio.h>
-#include <stdio.h>
+#include <cstdio>
 #include <io.h>
 #include <FCNTL.H>
 

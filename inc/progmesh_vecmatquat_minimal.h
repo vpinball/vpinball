@@ -15,7 +15,7 @@
 #define VECMATQUAT_H
 #define VECMATQUAT_MINIMAL_H
 
-#include <math.h>
+#include <cmath>
 
 class float3 {
 public:

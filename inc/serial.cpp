@@ -168,7 +168,7 @@ void serial::close()
 	SetCommState(fd, &oldtio);
 	CloseHandle(fd);
 
-	fd = nullptr;
+	fd = INVALID_HANDLE_VALUE;
 	configured = false;
 }
 
@@ -309,6 +309,8 @@ const char* serial::get_setup_str()
 
 serial_err serial::set_rts(bool enable)
 {
+   assert((fd != INVALID_HANDLE_VALUE) && configured);
+
    newtio.fRtsControl = enable ? RTS_CONTROL_ENABLE : RTS_CONTROL_DISABLE;
 
    flush();
@@ -317,6 +319,8 @@ serial_err serial::set_rts(bool enable)
 
 serial_err serial::set_dtr(bool enable)
 {
+   assert((fd != INVALID_HANDLE_VALUE) && configured);
+
    newtio.fDtrControl = enable ? DTR_CONTROL_ENABLE : DTR_CONTROL_DISABLE;
 
    flush();
