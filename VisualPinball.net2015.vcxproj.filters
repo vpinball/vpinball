@@ -286,6 +286,9 @@
     <ClCompile Include="dialogs\ScriptErrorDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="inc\serial.cpp">
+      <Filter>inc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -642,7 +645,7 @@
     </None>
     <None Include="res\lightSeqTable.vpx">
       <Filter>res</Filter>
-    </None>    
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inc">
@@ -1459,6 +1462,9 @@
     </ClInclude>
     <ClInclude Include="inc\win32xx\include\wxx_printdialogex.h">
       <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\serial.h">
+      <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
