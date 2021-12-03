@@ -3638,7 +3638,7 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
 {
    if (stereo) // stereo implicitly disables FXAA/SMAA/etc
    {
-      if(sharpen && (m_stereo3D == 1 || m_stereo3D == 3)) // don't sharpen in interlaced stereo or anaglyph!
+      if(sharpen && (m_stereo3D == 1 || m_stereo3D == 4)) // don't sharpen in interlaced stereo or anaglyph!
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture());
       else
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
@@ -3647,19 +3647,19 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
 
       const vec4 ms_zpd_ya_td(m_ptable->GetMaxSeparation(), m_ptable->GetZPD(), m_stereo3DY ? 1.0f : 0.0f,
-          (m_stereo3D <= 3) ? ((m_stereo3D == 3) ? 2.0f : (m_stereo3D == 1) ? 1.0f : 0.0f) : (float)m_stereo3D);
+          (m_stereo3D <= 4) ? ((m_stereo3D == 4) ? 2.0f : (m_stereo3D == 1) ? 1.0f : ((m_stereo3D == 2) ? 0.0f : 0.5f)) : (float)m_stereo3D);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("ms_zpd_ya_td", &ms_zpd_ya_td);
 
       const vec4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), (float)m_height, m_ptable->Get3DOffset());
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("w_h_height", &w_h_height);
 
-      if (m_stereo3D > 3)
+      if (m_stereo3D > 4)
       {
          const vec4 a_ds__c(m_global3DDesaturation, m_global3DContrast, 0.f,0.f);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("Anaglyph_DeSaturation__Contrast", &a_ds__c);
       }
 
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique((m_stereo3D <= 3) ? "stereo" : "stereo_anaglyph");
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique((m_stereo3D <= 4) ? "stereo" : "stereo_anaglyph");
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin(0);
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
@@ -3730,7 +3730,7 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
    //
 
    if (sharpen
-       && (!stereo || (m_stereo3D == 1 || m_stereo3D == 3))) // don't sharpen in interlaced stereo or anaglyph!
+       && (!stereo || (m_stereo3D == 1 || m_stereo3D == 4))) // don't sharpen in interlaced stereo or anaglyph!
    {
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
 

@@ -404,7 +404,7 @@ public:
 
    bool m_stereo3Denabled;
    bool m_stereo3DY;
-   int m_stereo3D; // 0=off, 1=top/down, 2=interlaced/LG, 3=sidebyside, else anaglyph: 4=Red/Cyan, 5=Green/Magenta, 6=Dubois Red/Cyan, 7=Dubois Green/Magenta, 8=Deghosted Red/Cyan, 9=Deghosted Green/Magenta, 10=Blue/Amber
+   int m_stereo3D; // 0=off, 1=top/down, 2=interlaced/LG, 3=interlaced/LG (flipped), 4=sidebyside, else anaglyph: 5=Red/Cyan, 6=Green/Magenta, 7=Dubois Red/Cyan, 8=Dubois Green/Magenta, 9=Deghosted Red/Cyan, 10=Deghosted Green/Magenta, 11=Blue/Amber
    float m_global3DContrast;
    float m_global3DDesaturation;
 

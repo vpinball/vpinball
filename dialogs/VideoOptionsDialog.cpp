@@ -372,6 +372,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Disabled");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"TB (Top / Bottom)");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Interlaced (e.g. LG TVs)");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Flipped Interlaced (e.g. LG TVs)");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"SBS (Side by Side)");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Red/Cyan");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Green/Magenta");

@@ -56,13 +56,13 @@ serial_baud serial::get_baud(const unsigned int _baud) {
 
 unsigned int serial::get_baud_int(const serial_baud _baud) {
 	switch(_baud) {
-		case SERIAL_BAUD_1200  : 
-		case SERIAL_BAUD_2400  : 
-		case SERIAL_BAUD_4800  : 
-		case SERIAL_BAUD_9600  : 
-		case SERIAL_BAUD_19200 : 
-		case SERIAL_BAUD_38400 : 
-		case SERIAL_BAUD_57600 : 
+		case SERIAL_BAUD_1200  :
+		case SERIAL_BAUD_2400  :
+		case SERIAL_BAUD_4800  :
+		case SERIAL_BAUD_9600  :
+		case SERIAL_BAUD_19200 :
+		case SERIAL_BAUD_38400 :
+		case SERIAL_BAUD_57600 :
 		case SERIAL_BAUD_115200: return (unsigned int)_baud; break;
 		case SERIAL_BAUD_INVALID:
 		default:                 return 0; break;
@@ -71,9 +71,9 @@ unsigned int serial::get_baud_int(const serial_baud _baud) {
 
 serial_bits serial::get_bits(const unsigned int _bits) {
 	switch(_bits) {
-		case 5: 
-		case 6: 
-		case 7: 
+		case 5:
+		case 6:
+		case 7:
 		case 8:  return (serial_bits)_bits; break;
 		default: return SERIAL_BITS_8; break;
 	}
@@ -91,8 +91,8 @@ unsigned int serial::get_bits_int(const serial_bits _bits) {
 
 serial_parity serial::get_parity(const char _parity) {
 	switch(_parity) {
-		case 'N': 
-		case 'E': 
+		case 'N':
+		case 'E':
 		case 'O': return (serial_parity)_parity; break;
 		default:  return SERIAL_PARITY_NONE; break;
 	}
@@ -100,8 +100,8 @@ serial_parity serial::get_parity(const char _parity) {
 
 char serial::get_parity_str(const serial_parity _parity) {
 	switch(_parity) {
-		case SERIAL_PARITY_NONE: 
-		case SERIAL_PARITY_EVEN: 
+		case SERIAL_PARITY_NONE:
+		case SERIAL_PARITY_EVEN:
 		case SERIAL_PARITY_ODD : return (char)_parity; break;
 		default:                 return ' '; break;
 	}
@@ -181,10 +181,10 @@ void serial::flush()
 }
 
 serial_err serial::setup(
-			  const serial_baud _baud, 
-			  const serial_bits _bits, 
-			  const serial_parity _parity, 
-			  const serial_stopbit _stopbit) 
+			  const serial_baud _baud,
+			  const serial_bits _bits,
+			  const serial_parity _parity,
+			  const serial_stopbit _stopbit)
 {
 	assert(fd != INVALID_HANDLE_VALUE);
 
@@ -202,22 +202,22 @@ serial_err serial::setup(
 	}
 
 	switch(_bits) {
-		case SERIAL_BITS_5: 
-		case SERIAL_BITS_6: 
-		case SERIAL_BITS_7: 
+		case SERIAL_BITS_5:
+		case SERIAL_BITS_6:
+		case SERIAL_BITS_7:
 		case SERIAL_BITS_8: newtio.ByteSize = (BYTE)_bits; break;
 		default:            return SERIAL_ERR_INVALID_BITS; break;
 	}
 
 	switch(_parity) {
-		case SERIAL_PARITY_NONE: newtio.Parity = NOPARITY;   break;
+		case SERIAL_PARITY_NONE: newtio.Parity = NOPARITY; break;
 		case SERIAL_PARITY_EVEN: newtio.Parity = EVENPARITY; break;
-		case SERIAL_PARITY_ODD : newtio.Parity = ODDPARITY;  break;
+		case SERIAL_PARITY_ODD : newtio.Parity = ODDPARITY; break;
 		default:                 return SERIAL_ERR_INVALID_PARITY; break;
 	}
 
 	switch(_stopbit) {
-		case SERIAL_STOPBIT_1: newtio.StopBits = ONESTOPBIT;	break;
+		case SERIAL_STOPBIT_1: newtio.StopBits = ONESTOPBIT; break;
 		case SERIAL_STOPBIT_2: newtio.StopBits = TWOSTOPBITS; break;
 		default:               return SERIAL_ERR_INVALID_STOPBIT; break;
 	}

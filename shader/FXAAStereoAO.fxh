@@ -236,25 +236,25 @@ float3 anaglyph(const float3 L, const float3 R)
 	const float3 LMA = lerp(L, dot(L,float3(0.299, 0.587, 0.114)), Anaglyph_DeSaturation__Contrast.x);
 	const float3 RMA = lerp(R, dot(R,float3(0.299, 0.587, 0.114)), Anaglyph_DeSaturation__Contrast.x);
 
-	[branch] if (ms_zpd_ya_td.w == 4.0 || ms_zpd_ya_td.w == 11.0) // Anaglyph 3D Red/Cyan
+	[branch] if (ms_zpd_ya_td.w == 5.0 || ms_zpd_ya_td.w == 12.0) // Anaglyph 3D Red/Cyan
 		return pow(float3(LMA.r,RMA.g,RMA.b), 1./Anaglyph_DeSaturation__Contrast.y); //!! Contrast is meh here
-	[branch] if (ms_zpd_ya_td.w == 5.0 || ms_zpd_ya_td.w == 12.0) // Anaglyph 3D Green/Magenta
+	[branch] if (ms_zpd_ya_td.w == 6.0 || ms_zpd_ya_td.w == 13.0) // Anaglyph 3D Green/Magenta
 		return pow(float3(RMA.r,LMA.g,RMA.b), 1./Anaglyph_DeSaturation__Contrast.y); //!! Contrast is meh here
-	[branch] if (ms_zpd_ya_td.w == 6.0 || ms_zpd_ya_td.w == 13.0) // Anaglyph 3D Dubois Red/Cyan
+	[branch] if (ms_zpd_ya_td.w == 7.0 || ms_zpd_ya_td.w == 14.0) // Anaglyph 3D Dubois Red/Cyan
 	{
 		const float r = dot(LMA,float3( 0.437,  0.449,  0.164)) + dot(RMA,float3(-0.011, -0.032, -0.007));
 		const float g = dot(LMA,float3(-0.062, -0.062, -0.024)) + dot(RMA,float3( 0.377,  0.761,  0.009));
 		const float b = dot(LMA,float3(-0.048, -0.050, -0.017)) + dot(RMA,float3(-0.026, -0.093,  1.234));
 		return saturate(pow(float3(r,g,b), 1./Anaglyph_DeSaturation__Contrast.y)); //!! Contrast is meh here
 	}
-	[branch] if (ms_zpd_ya_td.w == 7.0 || ms_zpd_ya_td.w == 14.0) // Anaglyph 3D Dubois Green/Magenta
+	[branch] if (ms_zpd_ya_td.w == 8.0 || ms_zpd_ya_td.w == 15.0) // Anaglyph 3D Dubois Green/Magenta
 	{
 		const float r = dot(LMA,float3(-0.062, -0.158, -0.039)) + dot(RMA,float3( 0.529,  0.705, 0.024));
 		const float g = dot(LMA,float3( 0.284,  0.668,  0.143)) + dot(RMA,float3(-0.016, -0.015, 0.065));
 		const float b = dot(LMA,float3(-0.015, -0.027,  0.021)) + dot(RMA,float3( 0.009,  0.075, 0.937));
 		return saturate(pow(float3(r,g,b), 1./Anaglyph_DeSaturation__Contrast.y)); //!! Contrast is meh here
 	}
-	[branch] if (ms_zpd_ya_td.w == 8.0 || ms_zpd_ya_td.w == 15.0) // Anaglyph 3D Deghosted Red/Cyan Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
+	[branch] if (ms_zpd_ya_td.w == 9.0 || ms_zpd_ya_td.w == 16.0) // Anaglyph 3D Deghosted Red/Cyan Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
 	{
 		const float LOne = c*0.45;
 		const float ROne = c;
@@ -273,7 +273,7 @@ float3 anaglyph(const float3 L, const float3 R)
 		color.b = b + r*(DeGhost*-0.25) + g*(DeGhost*-0.25) + b*(DeGhost* 0.5);
 		return saturate(color);
 	}
-	[branch] if (ms_zpd_ya_td.w == 9.0 || ms_zpd_ya_td.w == 16.0) // Anaglyph 3D Deghosted Green/Magenta Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
+	[branch] if (ms_zpd_ya_td.w == 10.0 || ms_zpd_ya_td.w == 17.0) // Anaglyph 3D Deghosted Green/Magenta Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
 	{
 		const float LOne = c*0.45;
 		const float ROne = c*0.8;
@@ -292,7 +292,7 @@ float3 anaglyph(const float3 L, const float3 R)
 		color.b = b + r*(DeGhost*-0.25) + g*(DeGhost*-0.25) + b*(DeGhost*0.5);
 		return saturate(color);
 	}
-	[branch] if (ms_zpd_ya_td.w == 10.0 || ms_zpd_ya_td.w == 17.0) // Anaglyph 3D Blue/Amber Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
+	[branch] if (ms_zpd_ya_td.w == 11.0 || ms_zpd_ya_td.w == 18.0) // Anaglyph 3D Blue/Amber Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
 	{
 		const float LOne = c*0.45;
 		const float ROne = c;
@@ -325,7 +325,9 @@ float4 ps_main_stereo(const in VS_OUTPUT_2D IN) : COLOR
 	const bool topdown = (ms_zpd_ya_td.w == 1.0); //!! uniform
 	const bool sidebyside = (ms_zpd_ya_td.w == 2.0); //!! uniform
 	const int y = w_h_height.z*u.y;
-	const bool l = sidebyside ? (u.x < 0.5) : topdown ? (u.y < 0.5) : ((y+1)/2 == y/2); //last check actually means (y&1) //!! %2 //!! float diff = frac(dot(tex,(screen_size / 2.0))+0.25); if(diff < 0.5)... //returns 0.25 and 0.75
+	bool l = sidebyside ? (u.x < 0.5) : topdown ? (u.y < 0.5) : ((y+1)/2 == y/2); //last check actually means (y&1) //!! %2 //!! float diff = frac(dot(tex,(screen_size / 2.0))+0.25); if(diff < 0.5)... //returns 0.25 and 0.75
+	if(ms_zpd_ya_td.w == 0.5)
+		l = !l;
 	if(topdown) { u.y *= 2.0; if(!l) u.y -= 1.0; }  //!! !topdown: (u.y+w_h_height.y) ?
 	else if(sidebyside) { u.x *= 2.0; if(!l) u.x -= 1.0; }
 	const float su = l ? MaxSeparation : -MaxSeparation;
@@ -369,7 +371,7 @@ float4 ps_main_stereo_anaglyph(const in VS_OUTPUT_2D IN) : COLOR
 		rparallax = -rparallax;
 	const float3 rcol = tex2Dlod(texSampler5, float4(u + (yaxis ? float2(0.0,rparallax) : float2(rparallax,0.0)), 0.,0.)).xyz;
 
-	return float4(anaglyph((ms_zpd_ya_td.w > 10.0) ? rcol : lcol,(ms_zpd_ya_td.w > 10.0) ? lcol : rcol), 1.0); // > 10.0 means: flip the color trafo?
+	return float4(anaglyph((ms_zpd_ya_td.w > 11.0) ? rcol : lcol,(ms_zpd_ya_td.w > 11.0) ? lcol : rcol), 1.0); // > 10.0 means: flip the color trafo?
 }
 
 // NFAA
