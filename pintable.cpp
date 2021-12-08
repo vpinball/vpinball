@@ -3464,7 +3464,33 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             assert(m_vimage.empty());
             m_vimage.resize(ctextures); // due to multithreaded loading do pre-allocation
             {
-               ThreadPool pool(g_pvp->m_logicalNumberOfProcessors); //!! Note that this dramatically increases the amount of temporary memory needed, especially if Max Texture Dimension is set (as then all the additional conversion/rescale mem is also needed 'in parallel')
+               //!! Note that this dramatically increases the amount of temporary memory needed, especially if Max Texture Dimension is set (as then all the additional conversion/rescale mem is also needed 'in parallel')
+               std::size_t threadsToUse = g_pvp->m_logicalNumberOfProcessors;
+               if (isOnWine())
+               {
+                  // There seems to be an issue somewhere (not sure if it's in Wine or Visual Pinball) that causes a
+                  // crash while loading textures multithreaded on Wine.
+                  // 
+                  // As a workaround, we force texture loading to use 1 thread for now.
+                  // 
+                  // Relevant bits of backtrace as of commit cf271af186ae96fe1960e16b88dc3f94b14f8e20
+                  // ================================================================================
+                  //  0 EntryPoint+0x1fff9f7bd in ole32
+                  //  1 EntryPoint+0x1fffa18fa in ole32
+                  //  2 EntryPoint+0x1fff98d1a in ole32
+                  //  3 BiffReader::ReadBytes+0x3d [vpinball\Media\fileio.cpp:321] in vpinballx
+                  //  4 BiffReader::GetInt+0x5b [vpinball\Media\fileio.cpp:344] in vpinballx
+                  //  5 BiffReader::Load+0xc0 [vpinball\Media\fileio.cpp:442] in vpinballx
+                  //  6 PinBinary::LoadFromStream+0x73 [vpinball\pinbinary.cpp:101] in vpinballx
+                  //  7 Texture::LoadToken+0x553 [vpinball\Texture.cpp:358] in vpinballx
+                  //  8 BiffReader::Load+0xf0 [vpinball\Media\fileio.cpp:446] in vpinballx
+                  //  9 Texture::LoadFromStream+0x7d [vpinball\Texture.cpp:273] in vpinballx
+                  // 10 PinTable::LoadImageFromStream+0xbb [vpinball\pintable.cpp:7877] in vpinballx
+
+                  threadsToUse = 1;
+               }
+
+               ThreadPool pool(threadsToUse);
 
                for (int i = 0; i < ctextures; i++)
                {
