@@ -226,7 +226,7 @@ void TableInfoDialog::OnOK()
    pt->m_szAuthor = m_authorEdit.GetWindowText();
    pt->m_szVersion = m_versionEdit.GetWindowText();
    pt->m_szReleaseDate = m_releaseEdit.GetWindowText();
-   pt->m_szAuthorEMail = m_authorEdit.GetWindowText();
+   pt->m_szAuthorEMail = m_emailEdit.GetWindowText();
    pt->m_szWebSite = m_websiteEdit.GetWindowText();
    pt->m_szBlurb = m_blurbEdit.GetWindowText();
    pt->m_szDescription = m_descriptionEdit.GetWindowText();
