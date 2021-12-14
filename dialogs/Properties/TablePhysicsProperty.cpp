@@ -85,7 +85,7 @@ void TablePhysicsProperty::UpdateProperties(const int dispid)
             CHECK_UPDATE_ITEM(table->m_scatter, PropertyDialog::GetFloatTextbox(m_playfieldScatterEdit), table);
             break;
         case IDC_DEFAULT_SCATTER_EDIT:
-            CHECK_UPDATE_ITEM(table->m_scatter, PropertyDialog::GetFloatTextbox(m_defaultScatterEdit), table);
+            CHECK_UPDATE_ITEM(table->m_defaultScatter, PropertyDialog::GetFloatTextbox(m_defaultScatterEdit), table);
             break;
         case IDC_NUDGE_TIME_EDIT:
             CHECK_UPDATE_ITEM(table->m_nudgeTime, PropertyDialog::GetFloatTextbox(m_nudgeTimeEdit), table);
