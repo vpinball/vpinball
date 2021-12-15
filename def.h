@@ -450,3 +450,8 @@ inline int MultiByteToWideCharNull(
 
 
 char* replace(const char* const original, const char* const pattern, const char* const replacement);
+
+/**
+ * @brief Detect whether the program is running on the Wine compatibility layer
+ */
+bool IsOnWine();

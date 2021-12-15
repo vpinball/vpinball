@@ -91,7 +91,7 @@ public:
    HRESULT GetVector3(Vertex3Ds& vec);
    HRESULT GetVector3Padded(Vertex3Ds& vec);
 
-   HRESULT ReadBytes(void *pv, const unsigned long count, unsigned long *foo);
+   HRESULT ReadBytes(void * const pv, const unsigned long count, unsigned long * const foo);
 
    HRESULT Load();
 

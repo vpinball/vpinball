@@ -204,3 +204,20 @@ char* replace(const char* const original, const char* const pattern, const char*
     return returned;
   }
 }
+
+// Helper function for IsOnWine
+//
+// This exists such that we only check if we're on wine once, and assign the result of this function to a static const var
+static bool IsOnWineInternal()
+{
+   // See https://www.winehq.org/pipermail/wine-devel/2008-September/069387.html
+   const HMODULE ntdllHandle = GetModuleHandleW(L"ntdll.dll");
+   assert(ntdllHandle != nullptr && "Could not GetModuleHandleW(L\"ntdll.dll\")");
+   return GetProcAddress(ntdllHandle, "wine_get_version") != nullptr;
+}
+
+bool IsOnWine()
+{
+   static const bool result = IsOnWineInternal();
+   return result;
+}

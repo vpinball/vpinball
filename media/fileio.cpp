@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+#include <mutex>
+static std::mutex mtx; //!! only used for Wine multithreading bug workaround
+
 bool Exists(const string& filePath)
 {
 	//This will get the file attributes bitlist of the file
@@ -355,9 +358,14 @@ BiffReader::BiffReader(IStream *pistream, ILoadable *piloadable, void *ppassdata
    m_hcryptkey = hcryptkey;
 }
 
-HRESULT BiffReader::ReadBytes(void *pv, const unsigned long count, unsigned long *foo)
+HRESULT BiffReader::ReadBytes(void * const pv, const unsigned long count, unsigned long * const foo)
 {
+   const bool iow = IsOnWine();
+   if (iow)
+      mtx.lock();
    const HRESULT hr = m_pistream->Read(pv, count, foo);
+   if (iow)
+      mtx.unlock();
 
    if (m_hcrypthash)
       CryptHashData(m_hcrypthash, (BYTE *)pv, count, 0);
@@ -370,7 +378,13 @@ HRESULT BiffReader::GetIntNoHash(int &value)
    m_bytesinrecordremaining -= sizeof(int);
 
    ULONG read = 0;
-   return m_pistream->Read(&value, sizeof(int), &read);
+   const bool iow = IsOnWine();
+   if (iow)
+      mtx.lock();
+   const HRESULT hr = m_pistream->Read(&value, sizeof(int), &read);
+   if (iow)
+      mtx.unlock();
+   return hr;
 }
 
 HRESULT BiffReader::GetInt(void * const value)
