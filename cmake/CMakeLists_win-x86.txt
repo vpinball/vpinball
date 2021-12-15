@@ -550,7 +550,7 @@ target_link_libraries(vpinball
 )
 
 target_link_options(vpinball PUBLIC
-   $<$<CONFIG:RELEASE>:/SAFESEH:NO>
+   /SAFESEH:NO
    $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
    $<$<CONFIG:RELEASE>:/OPT:REF>
    $<$<CONFIG:RELEASE>:/OPT:ICF>
