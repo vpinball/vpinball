@@ -36,7 +36,9 @@ FEATURES:
 
 - add WEBP to list of supported image formats
 
-- add various anaglyph (e.g. red/cyan) 3D stereo glasses modes to the video preferences
+- add various anaglyph (e.g. red/cyan) 3D stereo glasses modes to the video preferences, also an additional left<->right flipped interlaced mode
+  - as with all 3D stereo modes, please note that turning off "Reflect Elements on Playfield", Ball motion trails and Ball shadows (if the table implements these) can help the perceived image quality
+  - also the same/known 'F10' key to turn on/off the 3D stereo rendering during gameplay works
 
 - optimize table loading/pre-processing time
   to reduce the amount of parallel CPU threads running, use the new command line parameter "-LessCPUthreads"
