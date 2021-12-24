@@ -72,8 +72,7 @@ void * operator new( unsigned int cb )
 
    GetThreadContext(hThread, &stCtx);
 
-   STACKFRAME stFrame;
-   ZeroMemory(&stFrame, sizeof(STACKFRAME));
+   STACKFRAME stFrame = {};
    stFrame.AddrPC.Offset = stCtx.Eip;
    stFrame.AddrPC.Mode = AddrModeFlat; 
    stFrame.AddrStack.Offset = stCtx.Esp; 

@@ -101,7 +101,6 @@ public:
    UINT64 m_lastclick_ballcontrol_usec;
 
    int e_JoyCnt;
-   int uShockDevice;	// only one uShock device
    int uShockType;
 
    int mouseX;

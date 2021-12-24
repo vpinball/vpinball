@@ -20,8 +20,7 @@ extern "C" int __cdecl _purecall(void)
 {
    ShowError("Pure Virtual Function Call");
 
-   CONTEXT Context;
-   ZeroMemory(&Context, sizeof(CONTEXT));
+   CONTEXT Context = {};
 #ifdef _WIN64
    RtlCaptureContext(&Context);
 #else
@@ -37,8 +36,7 @@ extern "C" int __cdecl _purecall(void)
    }
 #endif
 
-   char callStack[2048];
-   ZeroMemory(callStack, sizeof(callStack));
+   char callStack[2048] = {};
    rde::StackTrace::GetCallStack(&Context, true, callStack, sizeof(callStack) - 1);
 
    ShowError(callStack);

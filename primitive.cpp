@@ -1979,8 +1979,7 @@ bool Primitive::BrowseFor3DMeshFile()
    szFileName[0] = '\0';
    string szInitialDir;
 
-   OPENFILENAME ofn;
-   ZeroMemory(&ofn, sizeof(OPENFILENAME));
+   OPENFILENAME ofn = {};
    ofn.lStructSize = sizeof(OPENFILENAME);
    ofn.hInstance = m_vpinball->theInstance;
    ofn.hwndOwner = m_vpinball->m_hwnd;

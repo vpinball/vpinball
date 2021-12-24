@@ -54,7 +54,6 @@ PinInput::PinInput()
    for (int k = 0; k < PININ_JOYMXCNT; ++k)
       m_pJoystick[k] = nullptr;
 
-   uShockDevice = -1;	// only one uShock device
    uShockType = 0;
 
    m_plunger_axis = 3;
@@ -280,36 +279,20 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
    if (hr == S_OK)
    {
       if (!WzSzStrCmp(dstr.wsz, "PinballWizard"))
-      {
-         ppinput->uShockDevice = ppinput->e_JoyCnt; // remember uShock
          ppinput->uShockType = USHOCKTYPE_PBWIZARD; // set type 1 = PinballWizard
-      }
       else if (!WzSzStrCmp(dstr.wsz, "UltraCade Pinball"))
-      {
-         ppinput->uShockDevice = ppinput->e_JoyCnt;  // remember uShock
          ppinput->uShockType = USHOCKTYPE_ULTRACADE; // set type 2 = UltraCade Pinball
-      }
       else if (!WzSzStrCmp(dstr.wsz, "Microsoft SideWinder Freestyle Pro (USB)"))
-      {
-         ppinput->uShockDevice = ppinput->e_JoyCnt;   // remember uShock
          ppinput->uShockType = USHOCKTYPE_SIDEWINDER; // set type 3 = Microsoft SideWinder Freestyle Pro
-      }
       else if (!WzSzStrCmp(dstr.wsz, "VirtuaPin Controller"))
-      {
-         ppinput->uShockDevice = ppinput->e_JoyCnt;  // remember uShock
          ppinput->uShockType = USHOCKTYPE_VIRTUAPIN; // set type 4 = VirtuaPin Controller
-      }
       else if (!WzSzStrCmp(dstr.wsz, "Pinscape Controller"))
       {
-         ppinput->uShockDevice = ppinput->e_JoyCnt; // remember uShock
          ppinput->uShockType = USHOCKTYPE_GENERIC;  // set type = Generic
          ppinput->m_linearPlunger = true;           // use linear plunger calibration
       }
       else
-      {
-         ppinput->uShockDevice = ppinput->e_JoyCnt; // remember uShock
          ppinput->uShockType = USHOCKTYPE_GENERIC;  // Generic Gamepad
-      }
    }
    hr = ppinput->m_pJoystick[ppinput->e_JoyCnt]->SetDataFormat(&c_dfDIJoystick);
 
@@ -586,8 +569,7 @@ void PinInput::handleInputXI(DIDEVICEOBJECTDATA *didod)
       {XINPUT_GAMEPAD_DPAD_UP, DIJOFS_BUTTON12},
       {XINPUT_GAMEPAD_DPAD_DOWN, DIJOFS_BUTTON13},
       {0, 0} };
-   XINPUT_STATE state;
-   ZeroMemory(&state, sizeof(XINPUT_STATE));
+   XINPUT_STATE state = {};
    if (m_inputDeviceXI == -1 || XInputGetState(m_inputDeviceXI, &state) != ERROR_SUCCESS) {
       m_inputDeviceXI = -1;
       for (DWORD i = 0; i < XUSER_MAX_COUNT; i++)
@@ -603,8 +585,7 @@ void PinInput::handleInputXI(DIDEVICEOBJECTDATA *didod)
       DWORD now = timeGetTime();
       if (m_rumbleOffTime <= now || m_rumbleOffTime - now > 65535) {
          m_rumbleRunning = false;
-         XINPUT_VIBRATION vibration;
-         ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
+         XINPUT_VIBRATION vibration = {};
          XInputSetState(m_inputDeviceXI, &vibration);
       }
    }
@@ -621,42 +602,42 @@ void PinInput::handleInputXI(DIDEVICEOBJECTDATA *didod)
    }
    if (m_inputDeviceXIstate.Gamepad.bLeftTrigger != state.Gamepad.bLeftTrigger) {
       didod[j].dwOfs = DIJOFS_Z;
-      const int value = state.Gamepad.bLeftTrigger * 512;
+      const int value = (int)state.Gamepad.bLeftTrigger * 512;
       didod[j].dwData = (DWORD)(value);
       PushQueue(&didod[j], APP_JOYSTICK(0));
       j++;
    }
    if (m_inputDeviceXIstate.Gamepad.bRightTrigger != state.Gamepad.bRightTrigger) {
       didod[j].dwOfs = DIJOFS_RZ;
-      const int value = state.Gamepad.bRightTrigger * 512;
+      const int value = (int)state.Gamepad.bRightTrigger * 512;
       didod[j].dwData = (DWORD)(value);
       PushQueue(&didod[j], APP_JOYSTICK(0));
       j++;
    }
    if (m_inputDeviceXIstate.Gamepad.sThumbLX != state.Gamepad.sThumbLX) {
       didod[j].dwOfs = DIJOFS_X;
-      const int value = state.Gamepad.sThumbLX * -2;
+      const int value = (int)state.Gamepad.sThumbLX * -2;
       didod[j].dwData = (DWORD)(value);
       PushQueue(&didod[j], APP_JOYSTICK(0));
       j++;
    }
    if (m_inputDeviceXIstate.Gamepad.sThumbLY != state.Gamepad.sThumbLY) {
       didod[j].dwOfs = DIJOFS_Y;
-      const int value = state.Gamepad.sThumbLY * -2;
+      const int value = (int)state.Gamepad.sThumbLY * -2;
       didod[j].dwData = (DWORD)(value);
       PushQueue(&didod[j], APP_JOYSTICK(0));
       j++;
    }
    if (m_inputDeviceXIstate.Gamepad.sThumbRX != state.Gamepad.sThumbRX) {
       didod[j].dwOfs = DIJOFS_RX;
-      const int value = state.Gamepad.sThumbRX * -2;
+      const int value = (int)state.Gamepad.sThumbRX * -2;
       didod[j].dwData = (DWORD)(value);
       PushQueue(&didod[j], APP_JOYSTICK(0));
       j++;
    }
    if (m_inputDeviceXIstate.Gamepad.sThumbRY != state.Gamepad.sThumbRY) {
       didod[j].dwOfs = DIJOFS_RY;
-      const int value = state.Gamepad.sThumbRY * -2;
+      const int value = (int)state.Gamepad.sThumbRY * -2;
       didod[j].dwData = (DWORD)(value);
       PushQueue(&didod[j], APP_JOYSTICK(0));
       j++;
@@ -752,8 +733,7 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
       if (m_inputDeviceXI >= 0) {
          m_rumbleOffTime = ms_duration + timeGetTime();
          m_rumbleRunning = true;
-         XINPUT_VIBRATION vibration;
-         ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
+         XINPUT_VIBRATION vibration = {};
          // On both PS4 and X360:
          // The left motor is the low - frequency rumble motor. (explosions, etc)
          // The right motor is the high - frequency rumble motor. (subtle stuff)
@@ -839,8 +819,7 @@ void PinInput::Init(const HWND hwnd)
    SystemParametersInfo(SPI_GETSTICKYKEYS, sizeof(STICKYKEYS), &m_StartupStickyKeys, 0);
 
    // turn it all OFF
-   STICKYKEYS newStickyKeys;
-   ZeroMemory(&newStickyKeys, sizeof(STICKYKEYS));
+   STICKYKEYS newStickyKeys = {};
    newStickyKeys.cbSize = sizeof(STICKYKEYS);
    newStickyKeys.dwFlags = 0;
    SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &newStickyKeys, SPIF_SENDCHANGE);
@@ -848,7 +827,6 @@ void PinInput::Init(const HWND hwnd)
    for (int i = 0; i < 4; i++)
       m_keyPressedState[i] = false;
    m_nextKeyPressedTime = 0;
-   uShockDevice = -1;
    uShockType = 0;
 
    m_inputApi = LoadValueIntWithDefault("Player", "InputApi", 0);
@@ -1614,7 +1592,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
             deadu -= m_deadz;
 
         switch (input->dwOfs)	// Axis, Sliders and POV
-        {	// with selectable axes added to menu, giving prioity in this order... X Axis (the Left/Right Axis), Y Axis
+        {	// with selectable axes added to menu, giving priority in this order... X Axis (the Left/Right Axis), Y Axis
             case DIJOFS_X:
             {
                 if (g_pplayer) //joyk  rotLeftManual
@@ -1635,7 +1613,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                         if ((uShockType == USHOCKTYPE_SIDEWINDER) && (m_lr_axis != 0))
                             g_pplayer->NudgeX(!m_lr_axis_reverse ? deadu : -deadu, joyk);
                         if ((m_lr_axis == 1) && (uShockType == USHOCKTYPE_GENERIC))
-                            // giving L/R Axis priority over U/D Axis incase both are assigned to same axis
+                            // giving L/R Axis priority over U/D Axis in case both are assigned to same axis
                             g_pplayer->NudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
                         else if ((m_ud_axis == 1) && (uShockType == USHOCKTYPE_GENERIC))
                             g_pplayer->NudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);

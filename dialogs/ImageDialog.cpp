@@ -437,8 +437,7 @@ void ImageDialog::Export()
          Texture * ppi = (Texture*)lvitem.lParam;
          if (ppi != nullptr)
          {
-            OPENFILENAME ofn;
-            ZeroMemory(&ofn, sizeof(OPENFILENAME));
+            OPENFILENAME ofn = {};
             ofn.lStructSize = sizeof(OPENFILENAME);
             ofn.hInstance = g_pvp->theInstance;
             ofn.hwndOwner = g_pvp->GetHwnd();

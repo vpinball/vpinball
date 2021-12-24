@@ -674,8 +674,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          char szFileName[MAXSTRING];
          szFileName[0] = '\0';
 
-         OPENFILENAME ofn;
-         ZeroMemory(&ofn, sizeof(OPENFILENAME));
+         OPENFILENAME ofn = {};
          ofn.lStructSize = sizeof(OPENFILENAME);
          ofn.hInstance = g_pvp->theInstance;
          ofn.hwndOwner = g_pvp->GetHwnd();
@@ -697,8 +696,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          char szFileName[MAXSTRING];
          szFileName[0] = '\0';
 
-         OPENFILENAME ofn;
-         ZeroMemory(&ofn, sizeof(OPENFILENAME));
+         OPENFILENAME ofn = {};
          ofn.lStructSize = sizeof(OPENFILENAME);
          ofn.hInstance = g_pvp->theInstance;
          ofn.hwndOwner = g_pvp->GetHwnd();

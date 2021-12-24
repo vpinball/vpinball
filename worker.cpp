@@ -11,8 +11,7 @@ VOID CALLBACK HangSnoopProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime
    if (!g_pplayer->m_pause && newvalue == lasthangsnoopvalue && !g_pplayer->m_ModalRefCount)
    {
       // Nothing happened since the last time - we are probably hung
-      EXCEPINFO eiInterrupt;
-      ZeroMemory(&eiInterrupt, sizeof(eiInterrupt));
+      EXCEPINFO eiInterrupt = {};
       const LocalString ls(IDS_HANG);
       const WCHAR * const wzError = MakeWide(ls.m_szbuffer);
       eiInterrupt.bstrDescription = SysAllocString(wzError);

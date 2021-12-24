@@ -75,8 +75,7 @@ void LayersListDialog::DeleteLayer()
    m_layerTreeView.SetActiveLayer(fillLayerName);
    for (const HTREEITEM item : allSubItems)
    {
-      TVITEM tvItem;
-      ZeroMemory(&tvItem, sizeof(tvItem));
+      TVITEM tvItem = {};
       tvItem.mask = TVIF_PARAM | TVIF_HANDLE;
       tvItem.hItem = item;
       if (m_layerTreeView.GetItem(tvItem))
@@ -359,16 +358,14 @@ LayerTreeView::LayerTreeView()
 
 HTREEITEM LayerTreeView::AddItem(HTREEITEM hParent, LPCTSTR text, IEditable* const pedit, int image)
 {
-   TVITEM tvi;
-   ZeroMemory(&tvi, sizeof(TVITEM));
+   TVITEM tvi = {};
    tvi.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
    tvi.iImage = image;
    tvi.iSelectedImage = image;
    tvi.pszText = const_cast<LPTSTR>(text);
    tvi.lParam = (LPARAM)pedit;
 
-   TVINSERTSTRUCT tvis;
-   ZeroMemory(&tvis, sizeof(TVINSERTSTRUCT));
+   TVINSERTSTRUCT tvis = {};
    tvis.hParent = hParent;
    tvis.item = tvi;
 
@@ -414,8 +411,7 @@ HTREEITEM LayerTreeView::GetLayerByElement(const IEditable* const pedit)
       while (subItem)
       {
          char text[MAX_PATH];
-         TVITEM tvItem;
-         ZeroMemory(&tvItem, sizeof(tvItem));
+         TVITEM tvItem = {};
          tvItem.mask = TVIF_PARAM | TVIF_TEXT;
          tvItem.cchTextMax = MAX_PATH;
          tvItem.pszText = text;
@@ -471,8 +467,7 @@ HTREEITEM LayerTreeView::GetItemByElement(const IEditable* const pedit)
       while (subItem)
       {
          char text[MAX_PATH];
-         TVITEM tvItem;
-         ZeroMemory(&tvItem, sizeof(tvItem));
+         TVITEM tvItem = {};
          tvItem.mask = TVIF_PARAM | TVIF_TEXT;
          tvItem.cchTextMax = MAX_PATH;
          tvItem.pszText = text;
@@ -558,13 +553,11 @@ bool LayerTreeView::IsItemChecked(HTREEITEM hItem) const
 
 void LayerTreeView::SetAllItemStates(const bool checked)
 {
-   TVITEM tvItem;
-   std::vector<HTREEITEM> children;
-
-   ZeroMemory(&tvItem, sizeof(tvItem));
+   TVITEM tvItem = {};
    tvItem.mask = TVIF_PARAM;
 
    HTREEITEM item = GetChild(hRootItem);
+   std::vector<HTREEITEM> children;
    while (item)
    {
       children.push_back(item);
@@ -733,8 +726,7 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
          for (auto dragItem : m_DragItems)
          {
-            TVITEM tvItem;
-            ZeroMemory(&tvItem, sizeof(tvItem));
+            TVITEM tvItem = {};
             tvItem.mask = TVIF_PARAM | TVIF_CHILDREN;
             tvItem.hItem = dragItem->m_hDragItem;
             if (GetItem(tvItem))
@@ -856,8 +848,7 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
          SetAllItemStates(IsItemChecked(hRootItem));
       else
       {
-         TVITEM tvItem;
-         ZeroMemory(&tvItem, sizeof(tvItem));
+         TVITEM tvItem = {};
          tvItem.mask = TVIF_PARAM | TVIF_CHILDREN;
          tvItem.hItem = ht.hItem;
          if (GetItem(tvItem))
@@ -920,8 +911,7 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
 
    m_activeTable->ClearMultiSel();
 
-   TVITEM tvItem;
-   ZeroMemory(&tvItem, sizeof(tvItem));
+   TVITEM tvItem = {};
    tvItem.mask = TVIF_PARAM | TVIF_CHILDREN;
    tvItem.hItem = ht.hItem;
    if (GetItem(tvItem))
@@ -965,8 +955,7 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
 
 LRESULT LayerTreeView::OnTVNSelChanged(LPNMTREEVIEW pNMTV)
 {
-   TVITEM tvItem;
-   ZeroMemory(&tvItem, sizeof(tvItem));
+   TVITEM tvItem = {};
    tvItem.mask = TVIF_CHILDREN | TVIF_HANDLE | TVIF_PARAM;
    tvItem.hItem = pNMTV->itemNew.hItem;
    if (GetItem(tvItem))

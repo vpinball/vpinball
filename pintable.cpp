@@ -2203,8 +2203,7 @@ HRESULT PinTable::Save(const bool saveAs)
    if (saveAs)
    {
       //need to get a file name
-      OPENFILENAME ofn;
-      ZeroMemory(&ofn, sizeof(OPENFILENAME));
+      OPENFILENAME ofn = {};
       ofn.lStructSize = sizeof(OPENFILENAME);
       ofn.hInstance = m_vpinball->theInstance;
       ofn.hwndOwner = m_vpinball->GetHwnd();
@@ -3986,15 +3985,13 @@ bool PinTable::ExportSound(PinSound * const pps, const char * const szfilename)
 
    // standard/old .wav export pipeline:
 
-   MMIOINFO mmio;
-   ZeroMemory(&mmio, sizeof(mmio));
+   MMIOINFO mmio = {};
 
    const HMMIO hmmio = mmioOpen((LPSTR)szfilename, &mmio, MMIO_ALLOCBUF | MMIO_CREATE | MMIO_EXCLUSIVE | MMIO_READWRITE);
 
    if (hmmio != nullptr)
    {
-      MMCKINFO pck;
-      ZeroMemory(&pck, sizeof(pck));
+      MMCKINFO pck = {};
 
       pck.ckid = mmioStringToFOURCC("RIFF", MMIO_TOUPPER);
       pck.cksize = pps->m_cdata + 36;
@@ -4380,8 +4377,7 @@ void PinTable::SetMyScrollInfo()
    rgv[0] = phs.ScreenToSurface(rc.left, rc.top);
    rgv[1] = phs.ScreenToSurface(rc.right, rc.bottom);
 
-   SCROLLINFO si;
-   ZeroMemory(&si, sizeof(SCROLLINFO));
+   SCROLLINFO si = {};
    si.cbSize = sizeof(SCROLLINFO);
    si.fMask = SIF_PAGE | SIF_POS | SIF_RANGE;
    si.nMin = (int)min(frect.left, rgv[0].x);
@@ -4935,8 +4931,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         case WM_HSCROLL:
         {
-            SCROLLINFO si;
-            ZeroMemory(&si, sizeof(SCROLLINFO));
+            SCROLLINFO si = {};
             si.cbSize = sizeof(SCROLLINFO);
             si.fMask = SIF_ALL;
             GetScrollInfo(SB_HORZ, si);
@@ -4967,8 +4962,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         case WM_VSCROLL:
         {
-            SCROLLINFO si;
-            ZeroMemory(&si, sizeof(SCROLLINFO));
+            SCROLLINFO si = {};
             si.cbSize = sizeof(SCROLLINFO);
             si.fMask = SIF_ALL;
             GetScrollInfo(SB_VERT, si);
@@ -5144,8 +5138,7 @@ void PinTable::ExportBlueprint()
    //if (saveAs)
    //{
       //need to get a file name
-      OPENFILENAME ofn;
-      ZeroMemory(&ofn, sizeof(OPENFILENAME));
+      OPENFILENAME ofn = {};
       ofn.lStructSize = sizeof(OPENFILENAME);
       ofn.hInstance = m_vpinball->theInstance;
       ofn.hwndOwner = m_vpinball->GetHwnd();
@@ -5201,8 +5194,7 @@ void PinTable::ExportBlueprint()
       CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, nullptr);
    const int bmlinebuffer = totallinebytes - (bmwidth * 3);
 
-   BITMAPFILEHEADER bmfh;
-   ZeroMemory(&bmfh, sizeof(bmfh));
+   BITMAPFILEHEADER bmfh = {};
    bmfh.bfType = 'M' << 8 | 'B';
    bmfh.bfSize = sizeof(bmfh) + sizeof(BITMAPINFOHEADER) + totallinebytes*bmheight;
    bmfh.bfOffBits = (DWORD)sizeof(bmfh) + (DWORD)sizeof(BITMAPINFOHEADER);
@@ -5210,8 +5202,7 @@ void PinTable::ExportBlueprint()
    DWORD foo;
    WriteFile(hfile, &bmfh, sizeof(bmfh), &foo, nullptr);
 #endif
-   BITMAPINFO bmi;
-   ZeroMemory(&bmi, sizeof(bmi));
+   BITMAPINFO bmi = {};
    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
    bmi.bmiHeader.biWidth = bmwidth;
    bmi.bmiHeader.biHeight = bmheight;
@@ -5334,8 +5325,7 @@ void PinTable::ExportTableMesh()
    const size_t idx = m_szFileName.find_last_of('.');
    if (idx != string::npos && idx < MAXSTRING)
        szObjFileName[idx] = '\0';
-   OPENFILENAME ofn;
-   ZeroMemory(&ofn, sizeof(OPENFILENAME));
+   OPENFILENAME ofn = {};
    ofn.lStructSize = sizeof(OPENFILENAME);
    ofn.hInstance = m_vpinball->theInstance;
    ofn.hwndOwner = m_vpinball->GetHwnd();
@@ -5557,8 +5547,7 @@ void PinTable::ExportBackdropPOV(const string& filename)
 	string povFileName;
 	if (filename.empty())
 	{
-		OPENFILENAME ofn;
-		ZeroMemory(&ofn, sizeof(OPENFILENAME));
+		OPENFILENAME ofn = {};
 		ofn.lStructSize = sizeof(OPENFILENAME);
 		ofn.hInstance = m_vpinball->theInstance;
 		ofn.hwndOwner = m_vpinball->GetHwnd();
@@ -9487,8 +9476,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    if (idx != string::npos && idx < MAXSTRING)
       szFileName[idx] = '\0';
 
-   OPENFILENAME ofn;
-   ZeroMemory(&ofn, sizeof(OPENFILENAME));
+   OPENFILENAME ofn = {};
    ofn.lStructSize = sizeof(OPENFILENAME);
    ofn.hInstance = m_vpinball->theInstance;
    ofn.hwndOwner = m_vpinball->GetHwnd();

@@ -374,8 +374,7 @@ void SoundDialog::Export()
             ListView_GetItem( hSoundList, &lvitem );
             PinSound *pps = (PinSound *)lvitem.lParam;
 
-            OPENFILENAME ofn;
-            ZeroMemory( &ofn, sizeof( OPENFILENAME ) );
+            OPENFILENAME ofn = {};
             ofn.lStructSize = sizeof( OPENFILENAME );
             ofn.hInstance = g_pvp->theInstance;
             ofn.hwndOwner = g_pvp->GetHwnd();

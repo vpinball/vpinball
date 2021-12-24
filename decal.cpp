@@ -338,8 +338,7 @@ void Decal::PreRenderText()
    else if (m_d.m_color == RGB(0, 0, 0))
       m_d.m_color = RGB(0, 0, 1);
 
-   BITMAPINFO bmi;
-   ZeroMemory(&bmi, sizeof(bmi));
+   BITMAPINFO bmi = {};
    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
    bmi.bmiHeader.biWidth = m_textImg->width();
    bmi.bmiHeader.biHeight = -m_textImg->height();
@@ -772,9 +771,7 @@ void Decal::EnsureSize()
 
 HFONT Decal::GetFont()
 {
-   LOGFONT lf;
-   ZeroMemory(&lf, sizeof(lf));
-
+   LOGFONT lf = {};
    lf.lfHeight = -72;
    lf.lfCharSet = DEFAULT_CHARSET;
    lf.lfQuality = NONANTIALIASED_QUALITY;

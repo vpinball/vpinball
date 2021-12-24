@@ -319,8 +319,7 @@ int getDisplayList(std::vector<DisplayConfig>& displays)
    std::map<std::string, DisplayConfig> displayMap;
    // Get the resolution of all enabled displays.
    EnumDisplayMonitors(nullptr, nullptr, MonitorEnumList, reinterpret_cast<LPARAM>(&displayMap));
-   DISPLAY_DEVICE DispDev;
-   ZeroMemory(&DispDev, sizeof(DispDev));
+   DISPLAY_DEVICE DispDev = {};
    DispDev.cb = sizeof(DispDev);
    IDirect3D9* pD3D = Direct3DCreate9(D3D_SDK_VERSION);
    if (pD3D == nullptr)

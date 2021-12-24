@@ -156,9 +156,7 @@ char * Textbox::GetFontName()
 
 HFONT Textbox::GetFont()
 {
-    LOGFONT lf;
-    ZeroMemory(&lf, sizeof(lf));
-
+    LOGFONT lf = {};
     lf.lfHeight = -72;
     lf.lfCharSet = DEFAULT_CHARSET;
     lf.lfQuality = NONANTIALIASED_QUALITY;
@@ -332,8 +330,7 @@ void Textbox::PreRenderText()
    const int width = rect.right - rect.left;
    const int height = rect.bottom - rect.top;
 
-   BITMAPINFO bmi;
-   ZeroMemory(&bmi, sizeof(bmi));
+   BITMAPINFO bmi = {};
    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
    bmi.bmiHeader.biWidth = width;
    bmi.bmiHeader.biHeight = -height;

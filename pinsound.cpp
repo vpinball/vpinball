@@ -160,8 +160,7 @@ HRESULT PinSound::ReInitialize()
    const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
 
    WAVEFORMATEX wfx = m_wfx;  // Use a copy as we might be modifying it
-   DSBUFFERDESC dsbd;
-   ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
+   DSBUFFERDESC dsbd = {};
    dsbd.dwSize = sizeof(DSBUFFERDESC);
    dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | ((SoundMode3D != SNDCFG_SND3D2CH) ? DSBCAPS_CTRL3D : DSBCAPS_CTRLPAN);
    dsbd.dwBufferBytes = m_cdata;
@@ -408,8 +407,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
 
    // Get the primary buffer 
-   DSBUFFERDESC dsbd;
-   ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
+   DSBUFFERDESC dsbd = {};
    dsbd.dwSize = sizeof(DSBUFFERDESC);
    dsbd.dwFlags = DSBCAPS_PRIMARYBUFFER;
    if (!IsBackglass && (SoundMode3D != SNDCFG_SND3D2CH))
@@ -427,8 +425,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    }
 
    // Set primary buffer format to 44kHz and 16-bit output.
-   WAVEFORMATEX wfx;
-   ZeroMemory(&wfx, sizeof(WAVEFORMATEX));
+   WAVEFORMATEX wfx = {};
    wfx.wFormatTag = WAVE_FORMAT_PCM;
    wfx.nChannels = (!IsBackglass && (SoundMode3D != SNDCFG_SND3D2CH)) ?  1 : 2;
    wfx.nSamplesPerSec = 44100;
@@ -489,8 +486,7 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 	   // Set up the direct sound buffer, and only request the flags needed
 	   // since each requires some overhead and limits if the buffer can
 	   // be hardware accelerated
-	   DSBUFFERDESC dsbd;
-	   ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
+	   DSBUFFERDESC dsbd = {};
 	   dsbd.dwSize = sizeof(DSBUFFERDESC);
 	   dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | DSBCAPS_CTRLPAN;
 	   if (SoundMode3D != SNDCFG_SND3D2CH)

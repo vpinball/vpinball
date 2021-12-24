@@ -887,8 +887,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	pscripterror->GetSourcePosition(&dwCookie, &nLine, &nChar);
 	BSTR bstr = 0;
 	pscripterror->GetSourceLineText(&bstr);
-	EXCEPINFO exception;
-	ZeroMemory(&exception, sizeof(exception));
+	EXCEPINFO exception = {};
 	pscripterror->GetExceptionInfo(&exception);
 	nLine++;
 	if (dwCookie == CONTEXTCOOKIE_DEBUG)
@@ -1051,8 +1050,7 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	pscripterror->GetSourcePosition(&dwCookie, &nLine, &nChar);
 	BSTR bstr = 0;
 	pscripterror->GetSourceLineText(&bstr);
-	EXCEPINFO exception;
-	ZeroMemory(&exception, sizeof(exception));
+	EXCEPINFO exception = {};
 	pscripterror->GetExceptionInfo(&exception);
 	nLine++;
 	if (dwCookie == CONTEXTCOOKIE_DEBUG)
@@ -1202,8 +1200,7 @@ void CodeViewer::Compile(const bool message)
       SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
       MultiByteToWideCharNull(CP_UTF8, 0, szText, -1, wzText, (int)cchar+1);
 
-      EXCEPINFO exception;
-      ZeroMemory(&exception, sizeof(exception));
+      EXCEPINFO exception = {};
       m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
 
       /*const HRESULT hr =*/ m_pScript->AddTypeLib(LIBID_VPinballLib, 1, 0, 0);
@@ -1242,8 +1239,7 @@ void CodeViewer::Start()
 
 void CodeViewer::EvaluateScriptStatement(const char * const szScript)
 {
-   EXCEPINFO exception;
-   ZeroMemory(&exception, sizeof(exception));
+   EXCEPINFO exception = {};
 
    const int scriptlen = lstrlen(szScript);
    WCHAR * const wzScript = new WCHAR[scriptlen + 1];

@@ -18,7 +18,7 @@
 
 #define DOCKER_REGISTRY_KEY     "Visual Pinball\\VP10\\Editor"
 
-#define	RECENT_FIRST_MENU_IDM   5000           // ID of the first recent file list filename
+#define RECENT_FIRST_MENU_IDM   5000           // ID of the first recent file list filename
 #define OPEN_MDI_TABLE_IDM      IDW_FIRSTCHILD // ID of the first open table
 #define LAST_MDI_TABLE_IDM      IDW_CHILD9
 
@@ -1229,8 +1229,7 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
 
          // set the IDM of this menu item
          // set up the menu info block
-         MENUITEMINFO menuInfo;
-         ZeroMemory(&menuInfo, sizeof(menuInfo));
+         MENUITEMINFO menuInfo = {};
          menuInfo.cbSize = GetSizeofMenuItemInfo();
          menuInfo.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE;
          menuInfo.fType = MFT_STRING;
@@ -1242,8 +1241,7 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
       }
 
       // add a separator onto the end
-      MENUITEMINFO menuInfo;
-      ZeroMemory(&menuInfo, sizeof(menuInfo));
+      MENUITEMINFO menuInfo = {};
       menuInfo.cbSize = GetSizeofMenuItemInfo();
       menuInfo.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE;
       menuInfo.fType = MFT_SEPARATOR;
@@ -1560,8 +1558,7 @@ void VPinball::OnInitialUpdate()
 
     if (hrleft == S_OK && hrtop == S_OK && hrright == S_OK && hrbottom == S_OK)
     {
-        WINDOWPLACEMENT winpl;
-        ZeroMemory(&winpl, sizeof(WINDOWPLACEMENT));
+        WINDOWPLACEMENT winpl = {};
         winpl.length = sizeof(WINDOWPLACEMENT);
 
         GetWindowPlacement(winpl);
@@ -2065,8 +2062,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          {
          szFileName[0] = '\0';
 
-         OPENFILENAME ofn;
-         ZeroMemory(&ofn, sizeof(OPENFILENAME));
+         OPENFILENAME ofn = {};
          ofn.lStructSize = sizeof(OPENFILENAME);
          ofn.hInstance = g_pvp->theInstance;
          ofn.hwndOwner = g_pvp->m_hwnd;

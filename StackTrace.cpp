@@ -198,8 +198,7 @@ int StackTrace::GetSymbolInfo(Address address, char* symbol, int maxSymbolLen)
 
 	const DWORD64 address64 = (DWORD64)address;
 	// Module name
-	IMAGEHLP_MODULE64 moduleInfo;
-	ZeroMemory(&moduleInfo, sizeof(moduleInfo));
+	IMAGEHLP_MODULE64 moduleInfo = {};
 	moduleInfo.SizeOfStruct = sizeof(moduleInfo);
 	const HANDLE hCurrentProcess = GetCurrentProcess();
 	if (SymGetModuleInfo64(hCurrentProcess, address64, &moduleInfo))
@@ -235,8 +234,7 @@ int StackTrace::GetSymbolInfo(Address address, char* symbol, int maxSymbolLen)
 
 	// File + line
 	DWORD displacementLine;
-	IMAGEHLP_LINE64 lineInfo;
-	ZeroMemory(&lineInfo, sizeof(lineInfo));
+	IMAGEHLP_LINE64 lineInfo = {};
 	lineInfo.SizeOfStruct = sizeof(lineInfo);
 	if (SymGetLineFromAddr64(hCurrentProcess, address64, &displacementLine, &lineInfo))
 	{
