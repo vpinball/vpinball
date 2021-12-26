@@ -1,6 +1,6 @@
 Option Explicit
 
-Const VPinMAMEDriverVer = 3.58
+Const VPinMAMEDriverVer = 3.59
 
 '======================
 ' VPinMAME driver core

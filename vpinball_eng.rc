@@ -288,7 +288,7 @@ BEGIN
     CTEXT           "This application uses Visual Basic Scripting Edition by Microsoft",IDC_STATIC,23,318,119,17
     CONTROL         IDC_RIGHTFLIPPERBUTTON,IDC_STATIC,"Static",SS_BITMAP | SS_CENTERIMAGE,7,7,218,49
     LTEXT           "A Randy Davis and Visual Pinball team Production",IDC_STATIC,7,65,161,8
-    LTEXT           "Version 10.7.0 Final",IDC_ABOUT_VERSION,7,75,200,10
+    LTEXT           "Version 10.7.1 Beta",IDC_ABOUT_VERSION,7,75,200,10
     GROUPBOX        "Credits",IDC_STATIC,7,91,216,116
     LTEXT           "Original VP8/VP9 Team",IDC_STATIC,68,99,88,9
     LTEXT           "Randy Davis",IDC_STATIC,13,110,59,9
@@ -311,7 +311,7 @@ BEGIN
     LTEXT           "DJRobX",IDC_STATIC,48,172,32,8
     CTEXT           "Mukuste",IDC_STATIC,82,172,42,9
     LTEXT           "Brandrew",IDC_STATIC,150,172,42,9
-    CTEXT           "Copyright (C) 2000-2021 Randy Davis and the\nVisual Pinball team. All rights reserved (see license.txt)",IDC_STATIC,1,293,167,25
+    CTEXT           "Copyright (C) 2000-2022 Randy Davis and the\nVisual Pinball team. All rights reserved (see license.txt)",IDC_STATIC,1,293,167,25
     LTEXT           "Translator's Name - Translation",IDC_TRANSNAME,171,65,52,9,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,0,328,32,8,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "VP10 Active Development",IDC_STATIC,65,183,102,9
@@ -2734,8 +2734,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 10,7,0,0
- PRODUCTVERSION 10,7,0,0
+ FILEVERSION 10,7,1,0
+ PRODUCTVERSION 10,7,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2750,13 +2750,13 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "FileDescription", "Visual Pinball 10.7.0"
-            VALUE "FileVersion", "10, 7, 0, 0"
+            VALUE "FileDescription", "Visual Pinball 10.7.1"
+            VALUE "FileVersion", "10, 7, 1, 0"
             VALUE "InternalName", "Visual Pinball"
-            VALUE "LegalCopyright", "Copyright 2000-2021"
+            VALUE "LegalCopyright", "Copyright 2000-2022"
             VALUE "OriginalFilename", "VPinballX.exe"
             VALUE "ProductName", "Visual Pinball"
-            VALUE "ProductVersion", "10, 7, 0, 0"
+            VALUE "ProductVersion", "10, 7, 1, 0"
         END
     END
     BLOCK "VarFileInfo"

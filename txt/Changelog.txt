@@ -1,3 +1,13 @@
+VP 10.7.1 Changelog
+------------------------
+
+FEATURES:
+
+FIXES:
+
+- update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
+- DirectX 8 port for input handling (currently disabled)
+
 VP 10.7.0 Changelog
 ------------------------
 
@@ -179,9 +189,6 @@ FIXES:
 - see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
 
 - add Clang (via Visual Studio 2019) support, still has a linking prob with 32bit though
-
-- update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
-- DirectX 8 port for input handling (currently disabled)
 
 VP 10.6.2 Changelog
 ------------------------

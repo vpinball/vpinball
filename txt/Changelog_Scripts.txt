@@ -1,3 +1,5 @@
+New in 3.59 (Update by )
+
 New in 3.58 (Update by mfuegemann, DJRobX, toxie, wiesshund)
 - Add possibility to selectively disable B2S by setting new variable "B2SOff=True" (after ExecuteGlobal GetTextFile("controller.vbs"), but before LoadXXX)
 - Added directional (pan/fade) sound to DropTargets, Kickers, Trough, BallStacks, Locks, Diverters
