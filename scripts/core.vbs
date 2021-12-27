@@ -126,7 +126,7 @@ Class cvpmDictionary
 	End Property
 
 	Public Property Set Key(aKey)
-		' This function is (and always has been) a no-op.  Previous definition
+		' This function is (and always has been) a no-op. Previous definition
 		' just looked up aKey in the keys list, and if found, set the key to itself.
 	End Property
 
@@ -522,7 +522,7 @@ Class cvpmTrough
 			If mSlot(ii) Then ' Ball in this slot.
 				canMove = False
 
-				' Can this ball move?  (Slot 0 = no)
+				' Can this ball move? (Slot 0 = no)
 				If ii = 0 Then
 					' Slot 0 never moves (except when ejected)
 					canMove = False
@@ -1618,8 +1618,8 @@ Class cvpmMech
 	End Sub
 
 	Public Property Get Position : Position = Controller.GetMech(mMechNo) : End Property
-	Public Property Get Speed	 : Speed = Controller.GetMech(-mMechNo)	  : End Property
-	Public Property Let Callback(aCallBack) : Set mCallback = aCallBack : End Property
+	Public Property Get Speed	 : Speed = Controller.GetMech(-mMechNo)   : End Property
+	Public Property Let Callback(aCallBack) : Set mCallback = aCallBack   : End Property
 
 	Public Sub Update
 		Dim currPos, speed
@@ -2122,9 +2122,9 @@ Sub NoUpperRightFlipper() : vpmFlips.FlipperSolNumber(3) = 0 : End Sub
 
 Function NullFunction(a) : End Function
 
-vpmtimer.addtimer 40, "vpmFlips.Init'" 'this might be a dumb idea but it would replace the requirement for vpminit me
+vpmtimer.addtimer 40, "vpmFlips.Init'" 'this might be a dumb idea but it would replace the requirement for vpminit me 'this is done now in general to call this after 40ms
 
-Class cvpmFlips2   'test fastflips switches to rom control after 100ms or so delay
+Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 	Public Name, Delay, TiltObjects, Sol, DebugOn
 	Public LagCompensation 'flag for solenoid jitter (may not be a problem anymore) set private
 
@@ -2141,7 +2141,6 @@ Class cvpmFlips2   'test fastflips switches to rom control after 100ms or so del
 	Public FlipAt(3)		'Flip Time in gametime	'private
 	Public RomControlDelay	'Delay after flipping that Rom Controlled Flips are accepted (default 100ms)
 
-
 	Private Sub Class_Initialize()
 		dim idx :for idx = 0 to 3 :FlipperSub(idx) = "NullFunction" : OnOff=True: ButtonState(idx)=0:SolState(idx)=0: Next
 		Delay=0: FlippersEnabled=0: DebugOn=0 : LagCompensation=0 : Sol=0 : TiltObjects=1
@@ -2149,7 +2148,7 @@ Class cvpmFlips2   'test fastflips switches to rom control after 100ms or so del
 		FlipperSolNumber(0)=sLLFlipper :FlipperSolNumber(1)=sLRFlipper :FlipperSolNumber(2)=sULFlipper : FlipperSolNumber(3)=sURFlipper
 	End Sub
 
-	Sub Init()	'called by a timer, but previously was called by vpminit sub
+	Sub Init()	'called by a timer, but previously was called by vpmInit sub
 		On Error Resume Next 'If there's no usesolenoids variable present, exit
 			call eval(UseSolenoids) : if err then exit Sub
 		On Error Goto 0
@@ -2228,7 +2227,7 @@ Class cvpmFlips2   'test fastflips switches to rom control after 100ms or so del
 	Public Property Let Flip(aIdx, ByVal aEnabled) 'Key Flip: Indexed base flip... may keep may not
 		aEnabled = abs(aEnabled) 'True / False is not region safe with execute. Convert to 1 or 0 instead.
 		ButtonState(aIDX) = aEnabled 'track flipper button states: the game-on sol flips immediately if the button is held down
-		'debug.print "Key Flip " & aIdx &" @ " & gametime  & " FF ON: " & OnOff & " Circuit On? " & FlippersEnabled
+		'debug.print "Key Flip " & aIdx &" @ " & gametime & " FF ON: " & OnOff & " Circuit On? " & FlippersEnabled
 		If OnOff and FlippersEnabled or DebugOn then
 			execute FlipperSub(aIdx) & " " & aEnabled
 			FlipAt(aIDX) = GameTime
@@ -2525,7 +2524,7 @@ Private Sub vpmBuildEvent(aObj, aEvent, aTask)
 End Sub
 
 Private Function vpmIsCollection(aObj)
-	vpmIsCollection =  TypeName(aObj) = "Collection" Or TypeName(aObj) = "ICollection"
+	vpmIsCollection = TypeName(aObj) = "Collection" Or TypeName(aObj) = "ICollection"
 End Function
 Private Function vpmIsArray(aObj)
 	vpmIsArray = IsArray(aObj) Or vpmIsCollection(aObj)
@@ -2581,7 +2580,7 @@ End Sub
 Function vpmMoveBall(aBall, aFromKick, aToKick)
 	With aToKick.CreateBall
 		If TypeName(aBall) = "IBall" Then
-			.Color = aBall.Color   : .Image = aBall.Image
+			.Color = aBall.Color : .Image = aBall.Image
 			If vpmVPVer >= 6000 Then
 				.FrontDecal = aBall.FrontDecal : .BackDecal = aBall.BackDecal
 '				.UserValue = aBall.UserValue
