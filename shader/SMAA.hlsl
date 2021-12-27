@@ -714,6 +714,7 @@ float2 SMAALumaEdgeDetectionPS(float2 texcoord,
     float2 edges = step(threshold, delta.xy);
 
     // Then discard if there is no edge:
+    SMAA_BRANCH
     if (dot(edges, float2(1.0, 1.0)) == 0.0)
 #ifdef SMAA_USE_STENCIL
         discard;
@@ -780,6 +781,7 @@ float2 SMAAColorEdgeDetectionPS(float2 texcoord,
     float2 edges = step(threshold, delta.xy);
 
     // Then discard if there is no edge:
+    SMAA_BRANCH
     if (dot(edges, float2(1.0, 1.0)) == 0.0)
 #ifdef SMAA_USE_STENCIL
         discard;
@@ -938,6 +940,7 @@ float2 SMAACalculateDiagWeights(SMAATexture2D(edgesTex), SMAATexture2D(areaTex),
     // Search for the line ends:
     float4 d;
     float2 end;
+    SMAA_BRANCH
     if (e.r > 0.0) {
         d.xz = SMAASearchDiag1(SMAATexturePass2D(edgesTex), texcoord, float2(-1.0,  1.0), end);
         d.x += float(end.y > 0.9);
@@ -974,6 +977,7 @@ float2 SMAACalculateDiagWeights(SMAATexture2D(edgesTex), SMAATexture2D(areaTex),
 
     // Search for the line ends:
     d.xz = SMAASearchDiag2(SMAATexturePass2D(edgesTex), texcoord, float2(-1.0, -1.0), end);
+    SMAA_BRANCH
     if (SMAASampleLevelZeroOffset(edgesTex, texcoord, int2(1, 0)).r > 0.0) {
         d.yw = SMAASearchDiag2(SMAATexturePass2D(edgesTex), texcoord, float2(1.0, 1.0), end);
         d.y += float(end.y > 0.9);
