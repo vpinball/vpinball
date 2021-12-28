@@ -160,6 +160,11 @@ HRESULT PinSound::ReInitialize()
    const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
 
    WAVEFORMATEX wfx = m_wfx;  // Use a copy as we might be modifying it
+   // Remark from MSDN: "If wFormatTag = WAVE_FORMAT_PCM or wFormatTag = WAVE_FORMAT_IEEE_FLOAT, set cbSize to zero"
+   // Otherwise some tables crash in dsound when using certain WAVE_FORMAT_IEEE_FLOAT samples
+   if ((wfx.wFormatTag == WAVE_FORMAT_PCM) || (wfx.wFormatTag == WAVE_FORMAT_IEEE_FLOAT))
+	   wfx.cbSize = 0;
+
    DSBUFFERDESC dsbd = {};
    dsbd.dwSize = sizeof(DSBUFFERDESC);
    dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | ((SoundMode3D != SNDCFG_SND3D2CH) ? DSBCAPS_CTRL3D : DSBCAPS_CTRLPAN);
