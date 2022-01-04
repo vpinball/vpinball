@@ -15,16 +15,12 @@ UserData::UserData(const int LineNo, const string &Desc, const string &Name, con
 	eTyping = TypeIn;
 }
 
-UserData::~UserData()
-{
-}
-
 /*	FindUD - Now a human Search!
 0  =Found & UDiterOut set to point at UD in list.
 -1 =Not Found 
 1  =Not Found
 -2 =Zero Length string or error*/
-int UserData::FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::iterator& UDiterOut, int &Pos)
+int FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::iterator& UDiterOut, int &Pos)
 {
 	RemovePadding(strIn);
 	if (strIn.empty() || (!ListIn) || ListIn->empty()) return -2;
@@ -71,7 +67,7 @@ int UserData::FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::
 
 //Finds the closest UD from CurrentLine in ListIn
 //On entry CurrentIdx must be set to the UD in the line
-int UserData::FindClosestUD(const vector<UserData>* ListIn, const int CurrentLine, const int CurrentIdx)
+int FindClosestUD(const vector<UserData>* ListIn, const int CurrentLine, const int CurrentIdx)
 {
 	const string strSearchData = lowerCase(ListIn->at(CurrentIdx).m_keyName);
 	const size_t SearchWidth = strSearchData.size();
@@ -112,7 +108,7 @@ int UserData::FindClosestUD(const vector<UserData>* ListIn, const int CurrentLin
 	return ClosestPos;
 }
 
-int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<UserData>::iterator &UDiterOut, int &PosOut)
+int FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<UserData>::iterator &UDiterOut, int &PosOut)
 {
 	int result = -2;
 	if (ListIn && !ListIn->empty() && !strIn.empty())// Sanity chq.
@@ -148,7 +144,7 @@ int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<
 }
 
 //Returns current Index of strIn in ListIn based on m_uniqueKey, or -1 if not found
-int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
+int UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 {
 	if ((!ListIn) || ListIn->empty() || strIn.empty()) return -1;
 	const unsigned int ListSize = (int)ListIn->size();
@@ -177,14 +173,11 @@ int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 		iJumpDelta >>= 1;
 	} 
 	///TODO: neads to consider children?
-	if (result == 0)
-		return iCurPos;
-	else
-		return -1;
+   return (result == 0) ? iCurPos : -1;
 }
 
 //Returns current Index of strIn in ListIn based on m_keyName, or -1 if not found
-int UserData::UDIndex(vector<UserData>* ListIn, const string &strIn)
+int UDIndex(vector<UserData>* ListIn, const string &strIn)
 {
 	if ((!ListIn) || ListIn->empty() || strIn.empty()) return -1;
 	const unsigned int ListSize = (int)ListIn->size();
@@ -213,13 +206,11 @@ int UserData::UDIndex(vector<UserData>* ListIn, const string &strIn)
 		iJumpDelta >>= 1;
 	} 
 	///TODO: neads to consider children?
-	if (result == 0)
-		return iCurPos;
-	else
-		return -1;
+	return (result == 0) ? iCurPos : -1;
 }
+
 //Needs speeding up.
-UserData UserData::GetUDfromUniqueKey(const vector<UserData>* ListIn, const string &UniKey)
+UserData GetUDfromUniqueKey(const vector<UserData>* ListIn, const string &UniKey)
 {
 	UserData RetVal;
 	RetVal.eTyping = eUnknown;
@@ -235,8 +226,9 @@ UserData UserData::GetUDfromUniqueKey(const vector<UserData>* ListIn, const stri
 	}
 	return RetVal;
 }
+
 //TODO: Needs speeding up.
-size_t UserData::GetUDPointerfromUniqueKey(const vector<UserData>* ListIn, const string &UniKey)
+size_t GetUDPointerfromUniqueKey(const vector<UserData>* ListIn, const string &UniKey)
 {
 	size_t i = 0;
 	const size_t ListSize = ListIn->size();
@@ -253,7 +245,7 @@ size_t UserData::GetUDPointerfromUniqueKey(const vector<UserData>* ListIn, const
 
 //Assumes case insensitive sorted list
 //Returns index or insertion point (-1 == error)
-size_t UserData::FindOrInsertUD(vector<UserData>* ListIn, const UserData &udIn)
+size_t FindOrInsertUD(vector<UserData>* ListIn, const UserData &udIn)
 {
 	if (ListIn->empty())	//First in
 	{
@@ -303,7 +295,7 @@ size_t UserData::FindOrInsertUD(vector<UserData>* ListIn, const UserData &udIn)
 	return -1;
 }
 
-bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn, const string &strIn)
+bool FindOrInsertStringIntoAutolist(vector<string>* ListIn, const string &strIn)
 {
 	//First in the list
 	if (ListIn->empty())
@@ -369,21 +361,13 @@ bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn, const stri
 }
 
 ////////////////Preferences
-CVPrefrence::CVPrefrence()
-{
-   m_rgb = 0;
-   m_highlight = false;
-   m_sciKeywordID = 0;
-   memset(&m_logFont, 0, sizeof(LOGFONT));
-}
-
-CVPrefrence* CVPrefrence::FillCVPreference(
-		const string& szCtrlNameIn, const COLORREF crTextColor,
+CVPreference::CVPreference(
+		const COLORREF crTextColor,
 		const bool bDisplay, const string& szRegistryName,
 		const int szScintillaKeyword, const int IDC_ChkBox,
 		const int IDC_ColorBut, const int IDC_Font)
 {
-   szControlName = szCtrlNameIn;
+   memset(&m_logFont, 0, sizeof(LOGFONT));
    m_rgb = crTextColor;
    m_highlight = bDisplay;
    szRegName = szRegistryName;
@@ -391,20 +375,19 @@ CVPrefrence* CVPrefrence::FillCVPreference(
    IDC_ChkBox_code = IDC_ChkBox;
    IDC_ColorBut_code = IDC_ColorBut;
    IDC_Font_code = IDC_Font;
-   return (CVPrefrence *)this;
 }
 
-void CVPrefrence::SetCheckBox(const HWND hwndDlg)
+void CVPreference::SetCheckBox(const HWND hwndDlg)
 {
 	SNDMSG(GetDlgItem(hwndDlg, IDC_ChkBox_code), BM_SETCHECK, m_highlight ? BST_CHECKED : BST_UNCHECKED, 0L);
 }
 
-void CVPrefrence::ReadCheckBox(const HWND hwndDlg)
+void CVPreference::ReadCheckBox(const HWND hwndDlg)
 {
 	m_highlight = !!IsDlgButtonChecked(hwndDlg, IDC_ChkBox_code);
 }
 
-void CVPrefrence::GetPrefsFromReg()
+void CVPreference::GetPrefsFromReg()
 {
 	m_highlight = LoadValueBoolWithDefault("CVEdit", szRegName, m_highlight);
 	m_rgb = LoadValueIntWithDefault("CVEdit", szRegName+"_color", m_rgb);
@@ -421,7 +404,7 @@ void CVPrefrence::GetPrefsFromReg()
 	m_logFont.lfStrikeOut = LoadValueIntWithDefault("CVEdit", szRegName+"_FontStrike", m_logFont.lfStrikeOut);
 }
 
-void CVPrefrence::SetPrefsToReg()
+void CVPreference::SetPrefsToReg()
 {
 	SaveValueBool("CVEdit", szRegName, m_highlight);
 	SaveValueInt("CVEdit", szRegName+"_color", m_rgb);
@@ -433,7 +416,7 @@ void CVPrefrence::SetPrefsToReg()
 	SaveValueInt("CVEdit", szRegName+"_FontStrike", m_logFont.lfStrikeOut);
 }
 
-void CVPrefrence::SetDefaultFont(const HWND hwndDlg)
+void CVPreference::SetDefaultFont(const HWND hwndDlg)
 {
 	LOGFONT* const plfont = &m_logFont;
 	memset(plfont, 0, sizeof(LOGFONT));
@@ -445,14 +428,14 @@ void CVPrefrence::SetDefaultFont(const HWND hwndDlg)
 	GetHeightFromPointSize(hwndDlg);
 }
 
-int CVPrefrence::GetHeightFromPointSize(const HWND hwndDlg)
+int CVPreference::GetHeightFromPointSize(const HWND hwndDlg)
 {
 	const CClientDC clientDC(hwndDlg);
 	const int Height = -MulDiv(m_pointSize, clientDC.GetDeviceCaps(LOGPIXELSY), 72);
 	return Height;
 }
 
-void CVPrefrence::ApplyPreferences(const HWND hwndScin, const CVPrefrence* DefaultPref)
+void CVPreference::ApplyPreferences(const HWND hwndScin, const CVPreference* DefaultPref)
 {
 	const int id = m_sciKeywordID;
 	const bool HL = m_highlight;
@@ -465,7 +448,7 @@ void CVPrefrence::ApplyPreferences(const HWND hwndScin, const CVPrefrence* Defau
 	// There is no strike through in Scintilla (yet!)
 }
 
-CVPrefrence::~CVPrefrence()
+CVPreference::~CVPreference()
 {
 	//everything should be automatically destroyed.
 }

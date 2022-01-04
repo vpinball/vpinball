@@ -536,38 +536,30 @@ void CodeViewer::InitPreferences()
 	memset(m_prefCols, 0, sizeof(m_prefCols));
 
 	m_bgColor = RGB(255,255,255);
-	m_lPrefsList  = new vector<CVPrefrence*>();
+	m_lPrefsList  = new vector<CVPreference*>();
 
-	m_prefEverythingElse = new CVPrefrence();
-	m_prefEverythingElse->FillCVPreference("EverythingElse", RGB(0,0,0), true, "EverythingElse",  STYLE_DEFAULT, 0 , IDC_CVP_BUT_COL_EVERYTHINGELSE, IDC_CVP_BUT_FONT_EVERYTHINGELSE);
+	m_prefEverythingElse = new CVPreference(RGB(0,0,0), true, "EverythingElse",  STYLE_DEFAULT, 0 , IDC_CVP_BUT_COL_EVERYTHINGELSE, IDC_CVP_BUT_FONT_EVERYTHINGELSE);
 	m_lPrefsList->push_back(m_prefEverythingElse);
-	prefDefault = new CVPrefrence();
-	prefDefault->FillCVPreference("Default", RGB(0,0,0), true, "Default", SCE_B_DEFAULT, 0 , 0, 0);
+	prefDefault = new CVPreference(RGB(0,0,0), true, "Default", SCE_B_DEFAULT, 0 , 0, 0);
 	m_lPrefsList->push_back(prefDefault);
-	prefVBS = new CVPrefrence();
-	prefVBS->FillCVPreference("VBS", RGB(0,0,160), true, "ShowVBS", SCE_B_KEYWORD, IDC_CVP_CHECKBOX_VBS, IDC_CVP_BUT_COL_VBS, IDC_CVP_BUT_FONT_VBS);
+	prefVBS = new CVPreference(RGB(0,0,160), true, "ShowVBS", SCE_B_KEYWORD, IDC_CVP_CHECKBOX_VBS, IDC_CVP_BUT_COL_VBS, IDC_CVP_BUT_FONT_VBS);
 	m_lPrefsList->push_back(prefVBS);
-	prefComps = new CVPrefrence();
-	prefComps->FillCVPreference("Components", RGB(120,120,0), true, "ShowComponents", SCE_B_KEYWORD3, IDC_CVP_CHKB_COMP, IDC_CVP_BUT_COL_COMPS, IDC_CVP_BUT_FONT_COMPS);
+	prefComps = new CVPreference(RGB(120,120,0), true, "ShowComponents", SCE_B_KEYWORD3, IDC_CVP_CHKB_COMP, IDC_CVP_BUT_COL_COMPS, IDC_CVP_BUT_FONT_COMPS);
 	m_lPrefsList->push_back(prefComps);
-	prefSubs = new CVPrefrence();
-	prefSubs->FillCVPreference("Subs", RGB(120,0,120), true, "ShowSubs", SCE_B_KEYWORD2, IDC_CVP_CHKB_SUBS, IDC_CVP_BUT_COL_SUBS, IDC_CVP_BUT_FONT_SUBS);
+	prefSubs = new CVPreference(RGB(120,0,120), true, "ShowSubs", SCE_B_KEYWORD2, IDC_CVP_CHKB_SUBS, IDC_CVP_BUT_COL_SUBS, IDC_CVP_BUT_FONT_SUBS);
 	m_lPrefsList->push_back(prefSubs);
-	prefComments = new CVPrefrence();
-	prefComments->FillCVPreference("Remarks", RGB(0,120,0), true, "ShowRemarks", SCE_B_COMMENT, IDC_CVP_CHKB_COMMENTS, IDC_CVP_BUT_COL_COMMENTS, IDC_CVP_BUT_FONT_COMMENTS);
+	prefComments = new CVPreference(RGB(0,120,0), true, "ShowRemarks", SCE_B_COMMENT, IDC_CVP_CHKB_COMMENTS, IDC_CVP_BUT_COL_COMMENTS, IDC_CVP_BUT_FONT_COMMENTS);
 	m_lPrefsList->push_back(prefComments);
-	prefLiterals = new CVPrefrence();
-	prefLiterals->FillCVPreference("Literals", RGB(0,120,160), true, "ShowLiterals", SCE_B_STRING, IDC_CVP_CHKB_LITERALS, IDC_CVP_BUT_COL_LITERALS, IDC_CVP_BUT_FONT_LITERALS);
+	prefLiterals = new CVPreference(RGB(0,120,160), true, "ShowLiterals", SCE_B_STRING, IDC_CVP_CHKB_LITERALS, IDC_CVP_BUT_COL_LITERALS, IDC_CVP_BUT_FONT_LITERALS);
 	m_lPrefsList->push_back(prefLiterals);
-	prefVPcore = new CVPrefrence();
-	prefVPcore->FillCVPreference("VPcore", RGB(200,50,60), true, "ShowVPcore", SCE_B_KEYWORD4, IDC_CVP_CHKB_VPCORE, IDC_CVP_BUT_COL_VPCORE, IDC_CVP_BUT_FONT_VPCORE);
+	prefVPcore = new CVPreference(RGB(200,50,60), true, "ShowVPcore", SCE_B_KEYWORD4, IDC_CVP_CHKB_VPCORE, IDC_CVP_BUT_COL_VPCORE, IDC_CVP_BUT_FONT_VPCORE);
 	m_lPrefsList->push_back(prefVPcore);
 	for (size_t i = 0; i < m_lPrefsList->size(); ++i)
 	{
-		CVPrefrence* const Pref = m_lPrefsList->at(i);
+		CVPreference* const Pref = m_lPrefsList->at(i);
 		Pref->SetDefaultFont(m_hwndMain);
 	}
-	// load prefs from registery
+	// load prefs from registry
 	UpdatePrefsfromReg();
 }
 
@@ -681,8 +673,8 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 	{
 		//make m_vbsKeyWords in order.
 		m_vbsKeyWords += lowerCase(i->m_keyName);
-		m_vbsKeyWords += " ";
-		//Then capitalise first letter
+		m_vbsKeyWords += ' ';
+		//Then capitalize first letter
 		WordChar = i->m_keyName.at(0);
 		if (WordChar >= 'a' && WordChar <= 'z') WordChar -= ('a' - 'A');
 		i->m_keyName.at(0) = WordChar;
@@ -2053,11 +2045,11 @@ void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
 		//if no contruct (no children) exit
 		if (m_currentMembers->empty()) return;
 		//autocomp string  = members of construct
-		m_autoCompMembersString = "";
+		m_autoCompMembersString.clear();
 		for (vector<UserData>::iterator i = m_currentMembers->begin(); i != m_currentMembers->end(); ++i)
 		{
-			m_autoCompMembersString.append(i->m_keyName);
-			m_autoCompMembersString.append(" ");
+			m_autoCompMembersString += i->m_keyName;
+			m_autoCompMembersString += ' ';
 		}
 		//display
 		const char * McStr = m_autoCompMembersString.c_str();
@@ -2415,7 +2407,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 		if (ParentLevel == 0)// its a root
 		{
 			ud.m_uniqueKey = lowerCase(ud.m_keyName) + "\0";
-			ud.m_uniqueParent = "";
+			ud.m_uniqueParent.clear();
 			const size_t iCurParent = FindOrInsertUD(ListIn, ud);
 			//if (iCurParent == -1)
 			//{
@@ -2739,8 +2731,8 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 	{
 		if (FindOrInsertStringIntoAutolist(m_autoCompList,i->m_keyName))
 		{
-			strVPcoreWords.append(i->m_keyName);
-			strVPcoreWords.append(" ");
+			strVPcoreWords += i->m_keyName;
+			strVPcoreWords += ' ';
 		}
 	}
 	string strCompOut;
@@ -2748,8 +2740,8 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 	{
 		if (FindOrInsertStringIntoAutolist(m_autoCompList,i->m_keyName))
 		{
-			strCompOut.append(i->m_keyName);
-			strCompOut.append(" ");
+			strCompOut += i->m_keyName;
+			strCompOut += ' ';
 		}
 	}
 	string sSubFunOut;
@@ -2757,15 +2749,15 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 	{
 		if (FindOrInsertStringIntoAutolist(m_autoCompList,i->m_keyName))
 		{
-			sSubFunOut.append(i->m_keyName);
-			sSubFunOut.append(" ");
+			sSubFunOut += i->m_keyName;
+			sSubFunOut += ' ';
 		}
 	}
-	m_autoCompString = "";
+	m_autoCompString.clear();
 	for (vector<string>::iterator i = m_autoCompList->begin(); i != m_autoCompList->end();++i)
 	{
 		m_autoCompString.append(i->data());
-		m_autoCompString += " ";
+		m_autoCompString += ' ';
 	}
 	//Send the collected func/subs to scintilla for highlighting - always lowercase as VBS is case insensitive.
 	//TODO: Need to comune with scintilla closer (COM pointers??)
@@ -2977,7 +2969,7 @@ BOOL CodeViewer::ParseSelChangeEvent(const int id, SCNotification *pscn)
             vector<UserData>::iterator i;
             int idx;
             string s(ConstructName);
-            /*int Pos =*/ pcv->FindUD(pcv->m_pageConstructsDict, s, i, idx);
+            /*int Pos =*/ FindUD(pcv->m_pageConstructsDict, s, i, idx);
             SendMessage(pcv->m_hwndScintilla, SCI_GOTOLINE, i->m_lineNum, 0);
             SendMessage(pcv->m_hwndScintilla, SCI_GRABFOCUS, 0, 0);
          }
@@ -3125,7 +3117,7 @@ LRESULT CodeViewer::OnNotify(WPARAM wparam, LPARAM lparam)
 
    const HWND hwndRE = pnmh->hwndFrom;
    const int code = pnmh->code;
-   CodeViewer* pcv = GetCodeViewerPtr();
+   CodeViewer* const pcv = GetCodeViewerPtr();
    switch (code)
    {
       case SCN_SAVEPOINTREACHED:
@@ -3285,11 +3277,9 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 					SaveValueBool("CVEdit", "DisplayAutoComplete", pcv->m_displayAutoComplete);
 				}
 				break;
-				//TODO: Implement IDC_CVP_BUT_COL_BACKGROUND
-/*				case IDC_CVP_BUT_COL_BACKGROUND:
+				case IDC_CVP_BUT_COL_BACKGROUND:
 				{
-					CHOOSECOLOR cc;
-					memset(&cc, 0, sizeof(CHOOSECOLOR));
+					CHOOSECOLOR cc = {};
 					cc.lStructSize = sizeof(CHOOSECOLOR);
 					cc.hwndOwner = hwndDlg;
 					cc.rgbResult = pcv->m_bgColor;
@@ -3302,8 +3292,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 						return DefWindowProc(hwndDlg, uMsg, wParam, lParam);
 					}
 				}
-				break;*/
-
+				break;
 				case IDC_CVP_BUT_COL_EVERYTHINGELSE:
 				{
 					CHOOSECOLOR cc = {};
@@ -3344,7 +3333,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 					//EverythingElse=0, default=1, consumed above
 					for (size_t i = 2; i < pcv->m_lPrefsList->size(); ++i)
 					{
-						CVPrefrence* Pref = pcv->m_lPrefsList->at(i);
+						CVPreference* Pref = pcv->m_lPrefsList->at(i);
 						if (Pref->IDC_ChkBox_code == wParamLowWord)// && Pref->IDC_ChkBox_code != 0)
 						{
 							Pref->ReadCheckBox(hwndDlg);

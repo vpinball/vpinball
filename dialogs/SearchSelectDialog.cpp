@@ -265,8 +265,8 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       if (!secondImage.empty())
       {
          if (!firstImage.empty())
-            textBuf.append("--");
-         textBuf.append(secondImage);
+            textBuf += "--";
+         textBuf += secondImage;
       }
       ListView_SetItemText(m_hElementList, idx, 1, "Wall");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
@@ -284,14 +284,14 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       if (!secondImage.empty())
       {
          if (!firstImage.empty())
-            textBuf.append("--");
-         textBuf.append(secondImage);
+            textBuf += "--";
+         textBuf += secondImage;
       }
       if (!thirdImage.empty())
       {
          if (!firstImage.empty() || !secondImage.empty())
-            textBuf.append("--");
-         textBuf.append(thirdImage);
+            textBuf += "--";
+         textBuf += thirdImage;
       }
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
 
@@ -324,8 +324,8 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       if (!secondImage.empty())
       {
          if (!firstImage.empty())
-            textBuf.append("--");
-         textBuf.append(secondImage);
+            textBuf += "--";
+         textBuf += secondImage;
       }
       ListView_SetItemText(m_hElementList, idx, 1, "Flasher");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
@@ -403,20 +403,20 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       if (!secondImage.empty())
       {
          if (!firstImage.empty())
-            textBuf.append("--");
-         textBuf.append(secondImage);
+            textBuf += "--";
+         textBuf += secondImage;
       }
       if (!thirdImage.empty())
       {
          if (!firstImage.empty() || !secondImage.empty())
-            textBuf.append("--");
-         textBuf.append(thirdImage);
+            textBuf += "--";
+         textBuf += thirdImage;
       }
       if (!fourthImage.empty())
       {
          if (!firstImage.empty() || !secondImage.empty() || !thirdImage.empty())
-            textBuf.append("--");
-         textBuf.append(fourthImage);
+            textBuf += "--";
+         textBuf += fourthImage;
       }
       ListView_SetItemText(m_hElementList, idx, 1, "Bumper");
       ListView_SetItemText(m_hElementList, idx, 3, "");
@@ -442,8 +442,8 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       if (!secondImage.empty())
       {
          if (!firstImage.empty())
-            textBuf.append("--");
-         textBuf.append(secondImage);
+            textBuf += "--";
+         textBuf += secondImage;
       }
       ListView_SetItemText(m_hElementList, idx, 4, "");
 

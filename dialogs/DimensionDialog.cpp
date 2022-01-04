@@ -62,10 +62,9 @@ DimensionDialog::DimensionDialog() : CDialog(IDD_DIMENSION_CALCULATOR)
 BOOL DimensionDialog::OnInitDialog()
 {
    const HWND listHwnd = GetDlgItem(IDC_TABLE_DIM_LIST).GetHwnd();
-   LVCOLUMN lvc;
    LVITEM lv;
    ListView_SetExtendedListViewStyle(listHwnd, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
-   memset(&lvc, 0, sizeof(LVCOLUMN));
+   LVCOLUMN lvc = {};
    lvc.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
    lvc.cx = 150;
    lvc.pszText = TEXT("Manufacturer");

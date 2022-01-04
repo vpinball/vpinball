@@ -21,11 +21,10 @@ BOOL DrawingOrderDialog::OnInitDialog()
 {
    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
    hOrderList = GetDlgItem(IDC_DRAWING_ORDER_LIST).GetHwnd();
-   LVCOLUMN lvc;
    LVITEM lv;
 
    ListView_SetExtendedListViewStyle(hOrderList, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
-   memset(&lvc, 0, sizeof(LVCOLUMN));
+   LVCOLUMN lvc = {};
    lvc.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
    lvc.cx = 200;
    lvc.pszText = TEXT("Name");

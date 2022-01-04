@@ -97,9 +97,7 @@ class CodeViewer :
     public IActiveScriptSiteDebug,
 	public IActiveScriptSiteWindow,
 	public IInternetHostSecurityManager,
-	public IServiceProvider,
-	public UserData,
-	public CVPrefrence
+	public IServiceProvider
 {
 public:
    CodeViewer();
@@ -276,8 +274,8 @@ public:
 
    COLORREF m_prefCols[16];
    COLORREF m_bgColor;
-   CVPrefrence *m_prefEverythingElse;
-   vector<CVPrefrence*> *m_lPrefsList;
+   CVPreference *m_prefEverythingElse;
+   vector<CVPreference*> *m_lPrefsList;
 
    int m_displayAutoCompleteLength;
 
@@ -392,13 +390,13 @@ private:
    string m_VBvalidChars;
 
    // CodeViewer Preferences
-   CVPrefrence *prefDefault;
-   CVPrefrence *prefVBS;
-   CVPrefrence *prefComps;
-   CVPrefrence *prefSubs;
-   CVPrefrence *prefComments;
-   CVPrefrence *prefLiterals;
-   CVPrefrence *prefVPcore;
+   CVPreference *prefDefault;
+   CVPreference *prefVBS;
+   CVPreference *prefComps;
+   CVPreference *prefSubs;
+   CVPreference *prefComments;
+   CVPreference *prefLiterals;
+   CVPreference *prefVPcore;
    //bool ParentTreeInvalid;
    //TODO: int TabStop;
 

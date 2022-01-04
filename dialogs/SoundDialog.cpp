@@ -62,11 +62,10 @@ BOOL SoundDialog::OnInitDialog()
 
     LoadPosition();
 
-    LVCOLUMN lvcol;
     m_columnSortOrder = 1;
 
     ListView_SetExtendedListViewStyle( hSoundList, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES );
-    memset(&lvcol, 0, sizeof(LVCOLUMN));
+    LVCOLUMN lvcol = {};
     lvcol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT; 
     const LocalString ls( IDS_NAME );
     lvcol.pszText = (LPSTR)ls.m_szbuffer; // = "Name";

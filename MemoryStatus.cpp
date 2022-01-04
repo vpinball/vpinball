@@ -17,11 +17,10 @@ MemoryStatus::MemoryStatus()
 
 MemoryStatus MemoryStatus::GetCurrent()
 {
-	MemoryStatus status;
-	memset(&status, 0, sizeof(MemoryStatus));
+	MemoryStatus status = {};
 
 	MEMORY_BASIC_INFORMATION info;
-	unsigned char* address(0);
+	unsigned char* address(nullptr);
 	SIZE_T bytesInfo = ::VirtualQuery(address, &info, sizeof(info));
 	while (bytesInfo != 0)
 	{
