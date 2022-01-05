@@ -274,6 +274,7 @@ public:
 
    COLORREF m_prefCols[16];
    COLORREF m_bgColor;
+   COLORREF m_bgSelColor;
    CVPreference *m_prefEverythingElse;
    vector<CVPreference*> *m_lPrefsList;
 

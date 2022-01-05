@@ -436,7 +436,7 @@ STDMETHODIMP CodeViewer::CleanUpScriptEngine()
       m_pScript->Release();
       m_pScriptParse->Release();
       m_pScriptDebug->Release();
-	  if (m_pProcessDebugManager != nullptr) m_pProcessDebugManager->Release();
+      if (m_pProcessDebugManager != nullptr) m_pProcessDebugManager->Release();
    }
    return S_OK;
 }
@@ -510,6 +510,7 @@ void CodeViewer::SetCaption(const string& szCaption)
 void CodeViewer::UpdatePrefsfromReg()
 {
 	m_bgColor = LoadValueIntWithDefault("CVEdit", "BackGroundColor", RGB(255,255,255));
+	m_bgSelColor = LoadValueIntWithDefault("CVEdit", "BackGroundSelectionColor", RGB(192,192,192));
 	m_displayAutoComplete = LoadValueBoolWithDefault("CVEdit", "DisplayAutoComplete", true);
 	m_displayAutoCompleteLength = LoadValueIntWithDefault("CVEdit", "DisplayAutoCompleteAfter", 1);
 	m_dwellDisplay = LoadValueBoolWithDefault("CVEdit", "DwellDisplay", true);
@@ -522,6 +523,7 @@ void CodeViewer::UpdatePrefsfromReg()
 void CodeViewer::UpdateRegWithPrefs()
 {
 	SaveValueInt("CVEdit", "BackGroundColor", m_bgColor);
+	SaveValueInt("CVEdit", "BackGroundSelectionColor", m_bgSelColor);
 	SaveValueBool("CVEdit","DisplayAutoComplete", m_displayAutoComplete);
 	SaveValueInt("CVEdit","DisplayAutoCompleteAfter", m_displayAutoCompleteLength);
 	SaveValueBool("CVEdit","DwellDisplay", m_dwellDisplay);
@@ -536,7 +538,8 @@ void CodeViewer::InitPreferences()
 	memset(m_prefCols, 0, sizeof(m_prefCols));
 
 	m_bgColor = RGB(255,255,255);
-	m_lPrefsList  = new vector<CVPreference*>();
+	m_bgSelColor = RGB(192,192,192);
+	m_lPrefsList = new vector<CVPreference*>();
 
 	m_prefEverythingElse = new CVPreference(RGB(0,0,0), true, "EverythingElse",  STYLE_DEFAULT, 0 , IDC_CVP_BUT_COL_EVERYTHINGELSE, IDC_CVP_BUT_FONT_EVERYTHINGELSE);
 	m_lPrefsList->push_back(m_prefEverythingElse);
@@ -3207,6 +3210,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				pcv->m_lPrefsList->at(i)->SetCheckBox(hwndDlg);
 			}
 			pcv->m_bgColor = LoadValueIntWithDefault("CVEdit", "BackGroundColor", RGB(255,255,255));
+			pcv->m_bgSelColor = LoadValueIntWithDefault("CVEdit", "BackGroundSelectionColor", RGB(192,192,192));
 			pcv->UpdateScinFromPrefs();
 			SNDMSG(GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE), BM_SETCHECK, pcv->m_displayAutoComplete ? BST_CHECKED : BST_UNCHECKED, 0L);
 			SNDMSG(GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_DISPLAYDWELL), BM_SETCHECK, pcv->m_dwellDisplay ? BST_CHECKED : BST_UNCHECKED, 0L);
@@ -3288,6 +3292,22 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 					if (ChooseColor(&cc))
 					{
 						pcv->m_bgColor = cc.rgbResult;
+						pcv->UpdateScinFromPrefs();
+						return DefWindowProc(hwndDlg, uMsg, wParam, lParam);
+					}
+				}
+				break;
+				case IDC_CVP_BUT_COL_BACKGROUND_SEL:
+				{
+					CHOOSECOLOR cc = {};
+					cc.lStructSize = sizeof(CHOOSECOLOR);
+					cc.hwndOwner = hwndDlg;
+					cc.rgbResult = pcv->m_bgSelColor;
+					cc.lpCustColors = pcv->m_prefCols;
+					cc.Flags = CC_ANYCOLOR | CC_FULLOPEN | CC_RGBINIT;
+					if (ChooseColor(&cc))
+					{
+						pcv->m_bgSelColor = cc.rgbResult;
 						pcv->UpdateScinFromPrefs();
 						return DefWindowProc(hwndDlg, uMsg, wParam, lParam);
 					}
@@ -3396,6 +3416,7 @@ void CodeViewer::UpdateScinFromPrefs()
 {
 	SendMessage(m_hwndScintilla, SCI_SETMOUSEDWELLTIME, m_dwellDisplayTime, 0);
 	SendMessage(m_hwndScintilla, SCI_STYLESETBACK, m_prefEverythingElse->m_sciKeywordID, m_bgColor);
+	SendMessage(m_hwndScintilla, SCI_SETSELBACK, m_prefEverythingElse->m_sciKeywordID, m_bgSelColor);
 	m_prefEverythingElse->ApplyPreferences(m_hwndScintilla, m_prefEverythingElse);//Update internally
 	SendMessage(m_hwndScintilla,SCI_STYLECLEARALL,0,0);
 	SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDEROPEN, m_prefEverythingElse->m_rgb);

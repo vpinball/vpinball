@@ -3,10 +3,16 @@ VP 10.7.1 Changelog
 
 FEATURES:
 
+- expose background and selection color in the script editor preferences
+
 FIXES:
 
 - update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
 - DirectX 8 port for input handling (currently disabled)
+
+- see Changelog_Scripts.txt for the respective core script changes (version 3.59)
+- see CommandReference.txt for the changelog of all the scripting properties/interface changes
+- see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
 
 VP 10.7.0 Changelog
 ------------------------

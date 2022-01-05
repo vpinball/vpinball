@@ -31,8 +31,8 @@ int FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::iterator& 
 	if (KeyResult == 0) return 0;
 
 	//Now see if it's in the Name list
-	//Jumpdelta should be intalised to the maximum count of an individual key name
-	//But for the momment the biggest is 64 x's in AMH
+	//Jumpdelta should be initialized to the maximum count of an individual key name
+	//But for the moment the biggest is 64 x's in AMH
 	int iNewPos = Pos + KeyResult; //Start Very close to the result of key search
 	if (iNewPos < 0) iNewPos = 0;
 	//Find the start of other instances of strIn by crawling up list
