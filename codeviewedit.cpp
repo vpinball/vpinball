@@ -15,12 +15,14 @@ UserData::UserData(const int LineNo, const string &Desc, const string &Name, con
 	eTyping = TypeIn;
 }
 
+int FindUDbyKey(vector<UserData>* const ListIn, const string& strIn, vector<UserData>::iterator& UDiterOut, int& PosOut);
+
 /*	FindUD - Now a human Search!
 0  =Found & UDiterOut set to point at UD in list.
 -1 =Not Found 
 1  =Not Found
 -2 =Zero Length string or error*/
-int FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::iterator& UDiterOut, int &Pos)
+int FindUD(vector<UserData>* const ListIn, string &strIn, vector<UserData>::iterator& UDiterOut, int &Pos)
 {
 	RemovePadding(strIn);
 	if (strIn.empty() || (!ListIn) || ListIn->empty()) return -2;
@@ -67,7 +69,7 @@ int FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::iterator& 
 
 //Finds the closest UD from CurrentLine in ListIn
 //On entry CurrentIdx must be set to the UD in the line
-int FindClosestUD(const vector<UserData>* ListIn, const int CurrentLine, const int CurrentIdx)
+int FindClosestUD(const vector<UserData>* const ListIn, const int CurrentLine, const int CurrentIdx)
 {
 	const string strSearchData = lowerCase(ListIn->at(CurrentIdx).m_keyName);
 	const size_t SearchWidth = strSearchData.size();
@@ -108,12 +110,12 @@ int FindClosestUD(const vector<UserData>* ListIn, const int CurrentLine, const i
 	return ClosestPos;
 }
 
-int FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<UserData>::iterator &UDiterOut, int &PosOut)
+static int FindUDbyKey(vector<UserData>* const ListIn, const string &strIn, vector<UserData>::iterator &UDiterOut, int &PosOut)
 {
 	int result = -2;
 	if (ListIn && !ListIn->empty() && !strIn.empty())// Sanity chq.
 	{
-		const unsigned int ListSize = (int)ListIn->size();
+		const int ListSize = (int)ListIn->size();
 		int iNewPos = 1u << 30;
 		while ((!(iNewPos & ListSize)) && (iNewPos > 1))
 		{
@@ -122,7 +124,7 @@ int FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<UserData>:
 		int iJumpDelta = ((iNewPos) >> 1);
 		--iNewPos;//Zero Base
 		const string strSearchData = lowerCase(strIn);
-		UINT32 iCurPos;
+		int iCurPos;
 		while (true)
 		{
 			iCurPos = iNewPos;
@@ -144,11 +146,11 @@ int FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<UserData>:
 }
 
 //Returns current Index of strIn in ListIn based on m_uniqueKey, or -1 if not found
-int UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
+int UDKeyIndex(vector<UserData>* const ListIn, const string &strIn)
 {
 	if ((!ListIn) || ListIn->empty() || strIn.empty()) return -1;
-	const unsigned int ListSize = (int)ListIn->size();
-	UINT32 iNewPos = 1u << 30;
+	const int ListSize = (int)ListIn->size();
+	int iNewPos = 1u << 30;
 	while ((!(iNewPos & ListSize)) && (iNewPos > 1))
 	{
 		iNewPos >>= 1;
@@ -156,7 +158,7 @@ int UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 	int iJumpDelta = ((iNewPos) >> 1);
 	--iNewPos;//Zero Base
 	const string strSearchData = lowerCase(strIn);
-	UINT32 iCurPos;
+	int iCurPos;
 	int result;
 	while (true)
 	{
@@ -171,17 +173,17 @@ int UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 		if (result < 0) { iNewPos = iCurPos - iJumpDelta; }
 		else  { iNewPos = iCurPos + iJumpDelta; }
 		iJumpDelta >>= 1;
-	} 
+	}
 	///TODO: neads to consider children?
-   return (result == 0) ? iCurPos : -1;
+	return (result == 0) ? iCurPos : -1;
 }
 
 //Returns current Index of strIn in ListIn based on m_keyName, or -1 if not found
-int UDIndex(vector<UserData>* ListIn, const string &strIn)
+int UDIndex(vector<UserData>* const ListIn, const string &strIn)
 {
 	if ((!ListIn) || ListIn->empty() || strIn.empty()) return -1;
-	const unsigned int ListSize = (int)ListIn->size();
-	UINT32 iNewPos = 1u << 30;
+	const int ListSize = (int)ListIn->size();
+	int iNewPos = 1u << 30;
 	while ((!(iNewPos & ListSize)) && (iNewPos > 1))
 	{
 		iNewPos >>= 1;
@@ -189,7 +191,7 @@ int UDIndex(vector<UserData>* ListIn, const string &strIn)
 	int iJumpDelta = ((iNewPos) >> 1);
 	--iNewPos;//Zero Base
 	const string strSearchData = lowerCase(strIn);
-	UINT32 iCurPos;
+	int iCurPos;
 	int result;
 	while (true)
 	{
@@ -204,13 +206,13 @@ int UDIndex(vector<UserData>* ListIn, const string &strIn)
 		if (result < 0) { iNewPos = iCurPos - iJumpDelta; }
 		else  { iNewPos = iCurPos + iJumpDelta; }
 		iJumpDelta >>= 1;
-	} 
+	}
 	///TODO: neads to consider children?
 	return (result == 0) ? iCurPos : -1;
 }
 
 //Needs speeding up.
-UserData GetUDfromUniqueKey(const vector<UserData>* ListIn, const string &UniKey)
+UserData GetUDfromUniqueKey(const vector<UserData>* const ListIn, const string &UniKey)
 {
 	UserData RetVal;
 	RetVal.eTyping = eUnknown;
@@ -228,7 +230,7 @@ UserData GetUDfromUniqueKey(const vector<UserData>* ListIn, const string &UniKey
 }
 
 //TODO: Needs speeding up.
-size_t GetUDPointerfromUniqueKey(const vector<UserData>* ListIn, const string &UniKey)
+size_t GetUDPointerfromUniqueKey(const vector<UserData>* const ListIn, const string &UniKey)
 {
 	size_t i = 0;
 	const size_t ListSize = ListIn->size();
@@ -245,7 +247,7 @@ size_t GetUDPointerfromUniqueKey(const vector<UserData>* ListIn, const string &U
 
 //Assumes case insensitive sorted list
 //Returns index or insertion point (-1 == error)
-size_t FindOrInsertUD(vector<UserData>* ListIn, const UserData &udIn)
+size_t FindOrInsertUD(vector<UserData>* const ListIn, const UserData &udIn)
 {
 	if (ListIn->empty())	//First in
 	{
@@ -295,7 +297,7 @@ size_t FindOrInsertUD(vector<UserData>* ListIn, const UserData &udIn)
 	return -1;
 }
 
-bool FindOrInsertStringIntoAutolist(vector<string>* ListIn, const string &strIn)
+bool FindOrInsertStringIntoAutolist(vector<string>* const ListIn, const string &strIn)
 {
 	//First in the list
 	if (ListIn->empty())
@@ -367,14 +369,14 @@ CVPreference::CVPreference(
 		const int szScintillaKeyword, const int IDC_ChkBox,
 		const int IDC_ColorBut, const int IDC_Font)
 {
-   memset(&m_logFont, 0, sizeof(LOGFONT));
-   m_rgb = crTextColor;
-   m_highlight = bDisplay;
-   szRegName = szRegistryName;
-   m_sciKeywordID = szScintillaKeyword;
-   IDC_ChkBox_code = IDC_ChkBox;
-   IDC_ColorBut_code = IDC_ColorBut;
-   IDC_Font_code = IDC_Font;
+	memset(&m_logFont, 0, sizeof(LOGFONT));
+	m_rgb = crTextColor;
+	m_highlight = bDisplay;
+	szRegName = szRegistryName;
+	m_sciKeywordID = szScintillaKeyword;
+	IDC_ChkBox_code = IDC_ChkBox;
+	IDC_ColorBut_code = IDC_ColorBut;
+	IDC_Font_code = IDC_Font;
 }
 
 void CVPreference::SetCheckBox(const HWND hwndDlg)
