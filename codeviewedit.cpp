@@ -110,45 +110,8 @@ int FindClosestUD(const vector<UserData>* const ListIn, const int CurrentLine, c
 	return ClosestPos;
 }
 
-static int FindUDbyKey(vector<UserData>* const ListIn, const string &strIn, vector<UserData>::iterator &UDiterOut, int &PosOut)
+static int UDKeyIndexHelper(const vector<UserData>* const ListIn, const string &strIn, int& curPosOut)
 {
-	int result = -2;
-	if (ListIn && !ListIn->empty() && !strIn.empty())// Sanity chq.
-	{
-		const int ListSize = (int)ListIn->size();
-		int iNewPos = 1u << 30;
-		while ((!(iNewPos & ListSize)) && (iNewPos > 1))
-		{
-			iNewPos >>= 1;
-		}
-		int iJumpDelta = ((iNewPos) >> 1);
-		--iNewPos;//Zero Base
-		const string strSearchData = lowerCase(strIn);
-		int iCurPos;
-		while (true)
-		{
-			iCurPos = iNewPos;
-			if (iCurPos >= ListSize) { result = -1; }
-			else
-			{
-				const string strTableData = lowerCase(ListIn->at(iCurPos).m_uniqueKey);
-				result = strSearchData.compare(strTableData);
-			}
-			if (iJumpDelta == 0 || result == 0) break;
-			if (result < 0) { iNewPos = iCurPos - iJumpDelta; }
-			else  { iNewPos = iCurPos + iJumpDelta; }
-			iJumpDelta >>= 1;
-		} 
-		UDiterOut = ListIn->begin() + iCurPos;
-		PosOut = iCurPos;
-	}
-	return result;
-}
-
-//Returns current Index of strIn in ListIn based on m_uniqueKey, or -1 if not found
-int UDKeyIndex(vector<UserData>* const ListIn, const string &strIn)
-{
-	if ((!ListIn) || ListIn->empty() || strIn.empty()) return -1;
 	const int ListSize = (int)ListIn->size();
 	int iNewPos = 1u << 30;
 	while ((!(iNewPos & ListSize)) && (iNewPos > 1))
@@ -158,22 +121,46 @@ int UDKeyIndex(vector<UserData>* const ListIn, const string &strIn)
 	int iJumpDelta = ((iNewPos) >> 1);
 	--iNewPos;//Zero Base
 	const string strSearchData = lowerCase(strIn);
-	int iCurPos;
 	int result;
 	while (true)
 	{
-		iCurPos = iNewPos;
-		if (iCurPos >= ListSize) { result = -1; }
+		curPosOut = iNewPos;
+		if (curPosOut >= ListSize) { result = -1; }
 		else
 		{
-			const string strTableData = lowerCase(ListIn->at(iCurPos).m_uniqueKey);
+			const string strTableData = lowerCase(ListIn->at(curPosOut).m_uniqueKey);
 			result = strSearchData.compare(strTableData);
 		}
 		if (iJumpDelta == 0 || result == 0) break;
-		if (result < 0) { iNewPos = iCurPos - iJumpDelta; }
-		else  { iNewPos = iCurPos + iJumpDelta; }
+		if (result < 0) { iNewPos = curPosOut - iJumpDelta; }
+		else  { iNewPos = curPosOut + iJumpDelta; }
 		iJumpDelta >>= 1;
 	}
+	return result;
+}
+
+static int FindUDbyKey(vector<UserData>* const ListIn, const string &strIn, vector<UserData>::iterator &UDiterOut, int &PosOut)
+{
+	int result = -2;
+	if (ListIn && !ListIn->empty() && !strIn.empty())// Sanity chq.
+	{
+		int iCurPos;
+		result = UDKeyIndexHelper(ListIn, strIn, iCurPos);
+
+		UDiterOut = ListIn->begin() + iCurPos;
+		PosOut = iCurPos;
+	}
+	return result;
+}
+
+//Returns current Index of strIn in ListIn based on m_uniqueKey, or -1 if not found
+int UDKeyIndex(const vector<UserData>* const ListIn, const string &strIn)
+{
+	if ((!ListIn) || ListIn->empty() || strIn.empty()) return -1;
+
+	int iCurPos;
+	const int result = UDKeyIndexHelper(ListIn, strIn, iCurPos);
+
 	///TODO: neads to consider children?
 	return (result == 0) ? iCurPos : -1;
 }
@@ -254,7 +241,7 @@ size_t FindOrInsertUD(vector<UserData>* const ListIn, const UserData &udIn)
 		ListIn->push_back(udIn);
 		return 0;
 	}
-	vector<UserData>::iterator iterFound  = ListIn->begin();
+	vector<UserData>::iterator iterFound = ListIn->begin();
 	int Pos = 0;
 	const int KeyFound = FindUDbyKey(ListIn, udIn.m_uniqueKey, iterFound, Pos);
 	if (KeyFound == 0)

@@ -28,7 +28,7 @@ bool FindOrInsertStringIntoAutolist(vector<string>* const ListIn, const string& 
 size_t FindOrInsertUD(vector<UserData>* const ListIn, const UserData& udIn);
 int FindUD(vector<UserData>* const ListIn, string& strIn, vector<UserData>::iterator& UDiterOut, int& Pos);
 int FindClosestUD(const vector<UserData>* const ListIn, const int CurrentLine, const int CurrentIdx);
-int UDKeyIndex(vector<UserData>* const ListIn, const string& strIn);
+int UDKeyIndex(const vector<UserData>* const ListIn, const string& strIn);
 int UDIndex(vector<UserData>* const ListIn, const string& strIn);
 UserData GetUDfromUniqueKey(const vector<UserData>* const ListIn, const string& UniKey);
 size_t GetUDPointerfromUniqueKey(const vector<UserData>* const ListIn, const string& UniKey);
