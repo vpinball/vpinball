@@ -18,9 +18,9 @@ UserData::UserData(const int LineNo, const string &Desc, const string &Name, con
 int FindUDbyKey(vector<UserData>* const ListIn, const string& strIn, vector<UserData>::iterator& UDiterOut, int& PosOut);
 
 /*	FindUD - Now a human Search!
-0  =Found & UDiterOut set to point at UD in list.
+ 0 =Found & UDiterOut set to point at UD in list.
 -1 =Not Found 
-1  =Not Found
+ 1 =Not Found
 -2 =Zero Length string or error*/
 int FindUD(vector<UserData>* const ListIn, string &strIn, vector<UserData>::iterator& UDiterOut, int &Pos)
 {
@@ -286,7 +286,7 @@ bool FindOrInsertStringIntoAutolist(vector<string>* const ListIn, const string &
 		if (iJumpDelta == 0 || result == 0) break;
 		iNewPos = (result < 0) ? (iCurPos - iJumpDelta) : (iCurPos + iJumpDelta);
 		iJumpDelta >>= 1;
-	} 
+	}
 	vector<string>::iterator i = ListIn->begin() + iCurPos;
 
 	if (result == 0) return false; // Already in list
@@ -297,7 +297,7 @@ bool FindOrInsertStringIntoAutolist(vector<string>* const ListIn, const string &
 		return true;
 	}
 
-	if (i == (ListIn->end() - 1))//insert Above last element - Special case
+	if (i == (ListIn->end() - 1)) //insert above last element - Special case
 	{
 		ListIn->push_back(strIn);
 		return true;
@@ -310,7 +310,7 @@ bool FindOrInsertStringIntoAutolist(vector<string>* const ListIn, const string &
 		return true;
 	}
 
-	if (i == (ListIn->end() - 1))//insert Above last element - Special case
+	if (i == (ListIn->end() - 1)) //insert above last element - Special case
 	{//insert at end
 		ListIn->push_back(strIn);
 		return true;
@@ -398,16 +398,11 @@ void CVPreference::ApplyPreferences(const HWND hwndScin, const CVPreference* Def
 {
 	const int id = m_sciKeywordID;
 	const bool HL = m_highlight;
-	SendMessage(hwndScin, SCI_STYLESETFORE, id, HL ? (LPARAM)m_rgb : (LPARAM)DefaultPref->m_rgb);
-	SendMessage(hwndScin, SCI_STYLESETFONT, id, HL ? (LPARAM)m_logFont.lfFaceName : (LPARAM)DefaultPref->m_logFont.lfFaceName);
-	SendMessage(hwndScin, SCI_STYLESETSIZE, id, HL ? (LPARAM)m_pointSize : (LPARAM)DefaultPref->m_pointSize);
-	SendMessage(hwndScin, SCI_STYLESETWEIGHT, id, HL ? (LPARAM)m_logFont.lfWeight : (LPARAM)DefaultPref->m_logFont.lfWeight);
-	SendMessage(hwndScin, SCI_STYLESETITALIC, id, HL ? (LPARAM)m_logFont.lfItalic : (LPARAM)DefaultPref->m_logFont.lfItalic);
+	SendMessage(hwndScin, SCI_STYLESETFORE,      id, HL ? (LPARAM)m_rgb : (LPARAM)DefaultPref->m_rgb);
+	SendMessage(hwndScin, SCI_STYLESETFONT,      id, HL ? (LPARAM)m_logFont.lfFaceName : (LPARAM)DefaultPref->m_logFont.lfFaceName);
+	SendMessage(hwndScin, SCI_STYLESETSIZE,      id, HL ? (LPARAM)m_pointSize : (LPARAM)DefaultPref->m_pointSize);
+	SendMessage(hwndScin, SCI_STYLESETWEIGHT,    id, HL ? (LPARAM)m_logFont.lfWeight : (LPARAM)DefaultPref->m_logFont.lfWeight);
+	SendMessage(hwndScin, SCI_STYLESETITALIC,    id, HL ? (LPARAM)m_logFont.lfItalic : (LPARAM)DefaultPref->m_logFont.lfItalic);
 	SendMessage(hwndScin, SCI_STYLESETUNDERLINE, id, HL ? (LPARAM)m_logFont.lfUnderline : (LPARAM)DefaultPref->m_logFont.lfUnderline);
 	// There is no strike through in Scintilla (yet!)
-}
-
-CVPreference::~CVPreference()
-{
-	//everything should be automatically destroyed.
 }

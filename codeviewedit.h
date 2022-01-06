@@ -56,7 +56,7 @@ public:
       const bool bDisplay, const string& szRegistryName,
       const int szScintillaKeyword, const int IDC_ChkBox,
       const int IDC_ColorBut, const int IDC_Font);
-   ~CVPreference();
+   ~CVPreference() {}
 
    void GetPrefsFromReg();
    void SetPrefsToReg();
