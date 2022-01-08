@@ -83,7 +83,7 @@ public:
    bool m_global;
 
    // for VectorSortString
-   int SortAgainst(const CodeViewDispatch * const pcvd/*void *pvoid*/) const;
+   int SortAgainst(const CodeViewDispatch * const pcvd/*void *pvoid*/) const { return SortAgainstValue(pcvd->m_wName); }
    int SortAgainstValue(const std::wstring &pv) const;
 };
 
@@ -94,7 +94,7 @@ class CodeViewer :
 	//public CComCoClass<CodeViewer,&CLSID_DragPoint>,
 	//public CComObjectRootEx<CComSingleThreadModel>,
 	public IActiveScriptSite,
-    public IActiveScriptSiteDebug,
+	public IActiveScriptSiteDebug,
 	public IActiveScriptSiteWindow,
 	public IInternetHostSecurityManager,
 	public IServiceProvider

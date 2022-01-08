@@ -38,11 +38,6 @@ IScriptable::IScriptable()
    m_wzName[0] = 0;
 }
 
-int CodeViewDispatch::SortAgainst(const CodeViewDispatch * const pcvd) const
-{
-   return SortAgainstValue(pcvd->m_wName);
-}
-
 int CodeViewDispatch::SortAgainstValue(const std::wstring& pv) const
 {
    char szName1[MAXSTRING];
@@ -765,14 +760,14 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 
 void CodeViewer::Destroy()
 {
-	if (m_prefEverythingElse) delete m_prefEverythingElse;
-	if (prefDefault) delete prefDefault;
-	if (prefVBS) delete prefVBS;
-	if (prefComps) delete prefComps;
-	if (prefSubs) delete prefSubs;
-	if (prefComments) delete prefComments;
-	if (prefLiterals) delete prefLiterals;
-	if (prefVPcore) delete prefVPcore;
+	delete m_prefEverythingElse;
+	delete prefDefault;
+	delete prefVBS;
+	delete prefComps;
+	delete prefSubs;
+	delete prefComments;
+	delete prefLiterals;
+	delete prefVPcore;
 	if (m_lPrefsList)
 	{
 		m_lPrefsList->clear();
@@ -989,14 +984,10 @@ STDMETHODIMP CodeViewer::GetApplication(
 			return S_OK;
 		}
 		else
-		{
 			return E_FAIL;
-		}
 	}
 	else
-	{
 		return E_NOTIMPL;
-	}
 }
 
 STDMETHODIMP CodeViewer::GetRootApplicationNode(
@@ -1006,13 +997,9 @@ STDMETHODIMP CodeViewer::GetRootApplicationNode(
 	IDebugApplication* app;
 	const HRESULT result = GetApplication(&app);
 	if (SUCCEEDED(result))
-	{
 		return app->GetRootNode(ppdanRoot);
-	}
 	else
-	{
 		return result;
-	}
 }
 
 /**
@@ -1224,7 +1211,6 @@ void CodeViewer::Start()
 {
 	//ShowError("CodeViewer::Start"); //debug logging BDS
 	if (m_pScript)
-
 	{
 		SetLastErrorTextW(L"Starting script\r\n\r\n");
 		m_suppressErrorDialogs = false;
@@ -1959,7 +1945,6 @@ bool CodeViewer::FControlMarkedSafe(const CONFIRMSAFETY *pcs)
       goto LError;
 
    DWORD supported, enabled;
-
    if (FAILED(pios->GetInterfaceSafetyOptions(IID_IDispatch, &supported, &enabled)))
       goto LError;
 
@@ -2320,14 +2305,14 @@ void CodeViewer::PreCreate(CREATESTRUCT& cs)
     const int w = LoadValueIntWithDefault("Editor", "CodeViewPosWidth", 640);
     const int h = LoadValueIntWithDefault("Editor", "CodeViewPosHeight", 490);
 
-	cs.x = x;
-	cs.y = y;
-	cs.cx = w;
-	cs.cy = h;
-	cs.style = WS_POPUP | WS_SIZEBOX | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
-	cs.hInstance = g_pvp->theInstance;
-	cs.lpszClass = "CVFrame";
-	cs.lpszName = "Script";
+    cs.x = x;
+    cs.y = y;
+    cs.cx = w;
+    cs.cy = h;
+    cs.style = WS_POPUP | WS_SIZEBOX | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
+    cs.hInstance = g_pvp->theInstance;
+    cs.lpszClass = "CVFrame";
+    cs.lpszName = "Script";
 }
 
 void CodeViewer::PreRegisterClass(WNDCLASS& wc)
