@@ -183,9 +183,11 @@ typedef void ID3DXEffect;
 #define SHADER_TECHNIQUE_stereo_Int "stereo_Int"
 #define SHADER_TECHNIQUE_stereo_AMD_DEBUG "stereo_AMD_DEBUG"
 
+#ifdef ENABLE_SDL
 typedef char* SHADER_UNIFORM_HANDLE;
 typedef char* SHADER_TECHNIQUE_HANDLE;
 typedef void ID3DXEffect;
+#endif
 #endif
 
 #ifndef ENABLE_SDL
@@ -193,6 +195,7 @@ typedef D3DXHANDLE SHADER_UNIFORM_HANDLE;
 typedef D3DXHANDLE SHADER_TECHNIQUE_HANDLE;
 #endif
 
+#if 0
 class Shader
 {
 public:
@@ -347,3 +350,4 @@ public:
 
 #endif
 };
+#endif

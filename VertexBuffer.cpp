@@ -49,11 +49,11 @@ void VertexBuffer::CreateVertexBuffer(const unsigned int vertexCount, const DWOR
    // NB: We always specify WRITEONLY since MSDN states,
    // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
    // This means we cannot read from vertex buffers, but I don't think we need to.
-   m_fvf = fvf;
    const HRESULT hr = m_pD3DDevice->CreateVertexBuffer(vertexCount * fvfToSize(fvf), D3DUSAGE_WRITEONLY | usage, 0,
       (D3DPOOL)memoryPool::DEFAULT, (IDirect3DVertexBuffer9**)vBuffer, nullptr);
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create vertex buffer!", hr, __FILE__, __LINE__);
+   (*vBuffer)->m_fvf = fvf;
 #endif
 }
 
