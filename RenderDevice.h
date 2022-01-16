@@ -5,6 +5,8 @@
 
 #include "Material.h"
 #include "Texture.h"
+#include "IndexBuffer.h"
+#include "VertexBuffer.h"
 
 #define CHECKD3D(s) { const HRESULT hrTmp = (s); if (FAILED(hrTmp)) ReportFatalError(hrTmp, __FILE__, __LINE__); }
 
