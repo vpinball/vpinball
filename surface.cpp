@@ -1,6 +1,9 @@
 #include "StdAfx.h"
 //#include "forsyth.h"
 #include "objloader.h"
+#include "Shader.h"
+#include "IndexBuffer.h"
+#include "VertexBuffer.h"
 
 Surface::Surface()
 {

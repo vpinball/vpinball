@@ -5,6 +5,7 @@
 #include "meshes/triggerButtonMesh.h"
 #include "meshes/triggerWireDMesh.h"
 #include "meshes/triggerInderMesh.h"
+#include "Shader.h"
 
 Trigger::Trigger()
 {

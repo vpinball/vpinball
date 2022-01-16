@@ -2,6 +2,9 @@
 #include "objloader.h"
 #include "meshes/spinnerBracketMesh.h"
 #include "meshes/spinnerPlateMesh.h"
+#include "Shader.h"
+#include "IndexBuffer.h"
+#include "VertexBuffer.h"
 
 Spinner::Spinner()
 {

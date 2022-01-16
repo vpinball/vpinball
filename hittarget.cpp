@@ -13,6 +13,9 @@
 #include "meshes/hitTargetFatSquareMesh.h"
 #include "meshes/hitTargetT1SlimMesh.h"
 #include "meshes/hitTargetT2SlimMesh.h"
+#include "Shader.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -5,6 +5,9 @@
 #include "meshes/gateLongPlateMesh.h"
 #include "meshes/gatePlateMesh.h"
 #include "meshes/gateWireRectangleMesh.h"
+#include "Shader.h"
+#include "IndexBuffer.h"
+#include "VertexBuffer.h"
 
 Gate::Gate()
 {

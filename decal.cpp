@@ -3,6 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h" 
+#include "Shader.h"
 
 #define AUTOLEADING (tm.tmAscent - tm.tmInternalLeading/4)
 

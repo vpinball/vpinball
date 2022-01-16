@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include "Shader.h"
 
 Plunger::Plunger()
 {

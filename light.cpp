@@ -1,6 +1,9 @@
 #include "StdAfx.h"
 #include "meshes/bulbLightMesh.h"
 #include "meshes/bulbSocketMesh.h"
+#include "Shader.h"
+#include "IndexBuffer.h"
+#include "VertexBuffer.h"
 
 Light::Light() : m_lightcenter(this)
 {

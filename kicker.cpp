@@ -8,6 +8,9 @@
 #include "meshes/kickerWilliams.h"
 #include "meshes/kickerGottlieb.h"
 #include "meshes/kickerT1Mesh.h"
+#include "Shader.h"
+#include "IndexBuffer.h"
+#include "VertexBuffer.h"
 
 Kicker::Kicker()
 {

@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 //#include "forsyth.h"
 #include "objloader.h"
+#include "Shader.h"
 
 Rubber::Rubber()
 {

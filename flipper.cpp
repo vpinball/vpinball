@@ -1,6 +1,9 @@
 #include "StdAfx.h"
 #include "meshes/flipperBase.h"
 #include "objloader.h"
+#include "Shader.h"
+#include "IndexBuffer.h"
+#include "VertexBuffer.h"
 
 static constexpr float vertsTipBottomf[13 * 3] =
 {

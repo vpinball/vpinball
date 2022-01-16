@@ -66,6 +66,8 @@ public:
 #include <algorithm>
 #include <time.h>
 #include "../meshes/ballMesh.h"
+#include "Shader.h"
+#include "typedefs3D.h"
 #include "BallShader.h"
 #include "../math/bluenoise.h"
 #include "../inc/winsdk/legacy_touch.h"
@@ -312,6 +314,9 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
 
 Player::~Player()
 {
+#ifdef ENABLE_SDL
+   //!! TODO Render font
+#else
     if (m_fontSprite)
     {
         m_fontSprite->Release();
@@ -322,6 +327,7 @@ Player::~Player()
         m_pFont->Release();
         m_pFont = nullptr;
     }
+#endif
     if (m_ballImage)
     {
        delete m_ballImage;
@@ -1057,6 +1063,9 @@ void Player::InitBallShader()
 
 void Player::CreateDebugFont()
 {
+#ifdef ENABLE_SDL
+   //!! TODO Init Font for debugging
+#else
     int fontSize = 20;
     if (m_width > 1024 && m_width <= 1920)
         fontSize = 24;
@@ -1084,11 +1093,15 @@ void Player::CreateDebugFont()
         ShowError("D3DXCreateSprite failed!");
 
     SetRect(&m_fontRect, 0, 0, DBG_SPRITE_SIZE, DBG_SPRITE_SIZE);
+#endif
 }
 
 
 void Player::SetDebugOutputPosition(const float x, const float y)
 {
+#ifdef ENABLE_SDL
+    //!! TODO Implement Font for debugging
+#else
     const D3DXVECTOR2 spritePos(x,y);
     const D3DXVECTOR2 spriteCenter(DBG_SPRITE_SIZE/2, DBG_SPRITE_SIZE/2);
 
@@ -1096,10 +1109,14 @@ void Player::SetDebugOutputPosition(const float x, const float y)
     D3DXMATRIX mat;
     D3DXMatrixTransformation2D(&mat, nullptr, 0.0, nullptr, &spriteCenter, angle, &spritePos);
     m_fontSprite->SetTransform(&mat);
+#endif
 }
 
 void Player::DebugPrint(int x, int y, LPCSTR text, bool center /*= false*/)
 {
+#ifdef ENABLE_SDL
+   //!! TODO Implement Font for debugging
+#else
    if(m_pFont)
    {
        int xx = x;
@@ -1124,6 +1141,7 @@ void Player::DebugPrint(int x, int y, LPCSTR text, bool center /*= false*/)
 
       m_fontSprite->End();
    }
+#endif
 }
 
 HRESULT Player::Init()
@@ -1570,8 +1588,8 @@ HRESULT Player::Init()
    // Broadcast a message to notify front-ends that it is 
    // time to reveal the playfield. 
    UINT nMsgID = RegisterWindowMessage(_T("VPTableStart"));
-	::PostMessage(HWND_BROADCAST, nMsgID, NULL, NULL);
- 
+   ::PostMessage(HWND_BROADCAST, nMsgID, NULL, NULL);
+
    return S_OK;
 }
 
@@ -3247,7 +3265,7 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
    pd3dDevice->DMDShader->SetVector("vColor_Intensity", &c);
 
    if (tex)
-       pd3dDevice->DMDShader->SetTexture("Texture0", tex);
+      pd3dDevice->DMDShader->SetTexture("Texture0", tex);
 
    pd3dDevice->DMDShader->Begin(0);
    pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)Verts);
@@ -3344,12 +3362,12 @@ void Player::RenderDynamics()
    unsigned int reflection_path = 0;
    if (!m_cameraMode)
    {
-	   const bool drawBallReflection = ((m_reflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
+      const bool drawBallReflection = ((m_reflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
 
-	   if (!(m_ptable->m_reflectElementsOnPlayfield && m_pf_refl) && drawBallReflection)
-		   reflection_path = 1;
-	   else if (m_ptable->m_reflectElementsOnPlayfield && m_pf_refl)
-		   reflection_path = 2;
+      if (!(m_ptable->m_reflectElementsOnPlayfield && m_pf_refl) && drawBallReflection)
+         reflection_path = 1;
+      else if (m_ptable->m_reflectElementsOnPlayfield && m_pf_refl)
+         reflection_path = 2;
    }
 
    if (reflection_path != 0)
@@ -4469,7 +4487,7 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
    if (m_cameraMode)
-       UpdateCameraModeDisplay();
+      UpdateCameraModeDisplay();
 
 #ifdef USE_IMGUI
    RenderHUD_IMGUI();
@@ -5159,7 +5177,7 @@ void Player::DrawBalls()
       Ball * const pball = m_vball[i];
 
       if(!pball->m_visible)
-          continue;
+         continue;
 
       if (orgDrawReflection && !pball->m_reflectionEnabled)
          drawReflection = false;
@@ -5304,13 +5322,13 @@ void Player::DrawBalls()
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 
       if (m_cabinetMode && !pball->m_decalMode)
-          strncpy_s(m_ballShaderTechnique, "RenderBall_CabMode", sizeof(m_ballShaderTechnique)-1);
+         strncpy_s(m_ballShaderTechnique, "RenderBall_CabMode", sizeof(m_ballShaderTechnique)-1);
       else if (m_cabinetMode && pball->m_decalMode)
-          strncpy_s(m_ballShaderTechnique, "RenderBall_CabMode_DecalMode", sizeof(m_ballShaderTechnique)-1);
+         strncpy_s(m_ballShaderTechnique, "RenderBall_CabMode_DecalMode", sizeof(m_ballShaderTechnique)-1);
       else if (!m_cabinetMode && pball->m_decalMode)
-          strncpy_s(m_ballShaderTechnique, "RenderBall_DecalMode", sizeof(m_ballShaderTechnique)-1);
+         strncpy_s(m_ballShaderTechnique, "RenderBall_DecalMode", sizeof(m_ballShaderTechnique)-1);
       else //if (!m_fCabinetMode && !pball->m_decalMode)
-          strncpy_s(m_ballShaderTechnique, "RenderBall", sizeof(m_ballShaderTechnique)-1);
+         strncpy_s(m_ballShaderTechnique, "RenderBall", sizeof(m_ballShaderTechnique)-1);
 
       m_ballShader->SetTechnique(m_ballShaderTechnique);
 

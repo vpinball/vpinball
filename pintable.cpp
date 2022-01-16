@@ -9,6 +9,7 @@
 #include <rapidxml_print.hpp>
 #include <fstream>
 #include <sstream>
+#include "Shader.h"
 #include "freeimage.h"
 #include "inc\ThreadPool.h"
 #include "inc\scalefx.h"
