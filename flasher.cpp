@@ -1288,46 +1288,46 @@ void Flasher::RenderDynamic()
 
        if ((pinA || m_isVideoCap) && !pinB)
        {
-           flasherMode = 0.f;
-           if (m_isVideoCap)
-               pd3dDevice->flasherShader->SetTexture("Texture0", g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(m_videoCapTex, false));
-           else
-               pd3dDevice->flasherShader->SetTexture("Texture0", pinA, false);
+          flasherMode = 0.f;
+          if (m_isVideoCap)
+             pd3dDevice->flasherShader->SetTexture("Texture0", g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(m_videoCapTex, false));
+          else
+             pd3dDevice->flasherShader->SetTexture("Texture0", pinA, false);
 
-           if (!m_d.m_addBlend)
-               flasherData.x = !m_isVideoCap ? pinA->m_alphaTestValue * (float)(1.0/255.0) : 0.f;
+          if (!m_d.m_addBlend)
+             flasherData.x = !m_isVideoCap ? pinA->m_alphaTestValue * (float)(1.0/255.0) : 0.f;
 
-           //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
+          //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
        }
        else if (!(pinA || m_isVideoCap) && pinB)
        {
-           flasherMode = 0.f;
-           pd3dDevice->flasherShader->SetTexture("Texture0", pinB, false);
+          flasherMode = 0.f;
+          pd3dDevice->flasherShader->SetTexture("Texture0", pinB, false);
 
-           if (!m_d.m_addBlend)
-               flasherData.x = pinB->m_alphaTestValue * (float)(1.0/255.0);
+          if (!m_d.m_addBlend)
+             flasherData.x = pinB->m_alphaTestValue * (float)(1.0/255.0);
 
-           //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
+          //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
        }
        else if ((pinA || m_isVideoCap) && pinB)
        {
-           flasherMode = 1.f;
-           if (m_isVideoCap)
-               pd3dDevice->flasherShader->SetTexture("Texture0", g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(m_videoCapTex, false));
-           else
-               pd3dDevice->flasherShader->SetTexture("Texture0", pinA, false);
-           pd3dDevice->flasherShader->SetTexture("Texture1", pinB, false);
+          flasherMode = 1.f;
+          if (m_isVideoCap)
+             pd3dDevice->flasherShader->SetTexture("Texture0", g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(m_videoCapTex, false));
+          else
+             pd3dDevice->flasherShader->SetTexture("Texture0", pinA, false);
+          pd3dDevice->flasherShader->SetTexture("Texture1", pinB, false);
 
-           if (!m_d.m_addBlend)
-           {
-               flasherData.x = !m_isVideoCap ? pinA->m_alphaTestValue * (float)(1.0/255.0) : 0.f;
-               flasherData.y = pinB->m_alphaTestValue * (float)(1.0/255.0);
-           }
+          if (!m_d.m_addBlend)
+          {
+             flasherData.x = !m_isVideoCap ? pinA->m_alphaTestValue * (float)(1.0/255.0) : 0.f;
+             flasherData.y = pinB->m_alphaTestValue * (float)(1.0/255.0);
+          }
 
-           //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
+          //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
        }
        else
-           flasherMode = 2.f;
+          flasherMode = 2.f;
 
        pd3dDevice->flasherShader->SetFlasherData(flasherData, flasherMode);
 

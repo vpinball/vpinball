@@ -121,73 +121,73 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap, const DWORD env_xres
    //!!! not correct to pre-filter like this, but barely visible in the end, and helps to keep number of samples low (otherwise one would have to use >64k samples instead of 4k!)
    if (isHDR && (env_xres > 64))
    {
-	   const float scale_factor = (float)env_xres*(float)(1.0/64.);
-	   const int xs = (int)(scale_factor*0.5f + 0.5f);
-	   const void* const __restrict envmap2 = malloc(env_xres * env_yres * (isHDR ? 12 : 4));
-	   const void* const __restrict envmap3 = malloc(env_xres * env_yres * (isHDR ? 12 : 4));
-	   const float sigma = (scale_factor - 1.f)*0.25f;
-	   float* const __restrict weights = (float*)malloc((xs*2+1) * 4);
-	   for (int x = 0; x < (xs*2+1); ++x)
-		   weights[x] = (1.f / sqrtf((float)(2.*M_PI)*sigma*sigma))*expf(-(float)((x-xs)*(x-xs))/(2.f*sigma*sigma));
+      const float scale_factor = (float)env_xres*(float)(1.0 / 64.);
+      const int xs = (int)(scale_factor*0.5f + 0.5f);
+      const void* const __restrict envmap2 = malloc(env_xres * env_yres * (isHDR ? 12 : 4));
+      const void* const __restrict envmap3 = malloc(env_xres * env_yres * (isHDR ? 12 : 4));
+      const float sigma = (scale_factor - 1.f)*0.25f;
+      float* const __restrict weights = (float*)malloc((xs * 2 + 1) * 4);
+      for (int x = 0; x < (xs * 2 + 1); ++x)
+         weights[x] = (1.f / sqrtf((float)(2.*M_PI)*sigma*sigma))*expf(-(float)((x - xs)*(x - xs)) / (2.f*sigma*sigma));
 
-	   // x-pass:
+      // x-pass:
 
-	   for (int y = 0; y < (int)env_yres; ++y)
-		   for (int x = 0; x < (int)env_xres; ++x)
-		   {
-			   float sum[3] = { 0.f, 0.f, 0.f };
-			   float sum_w = 0.f;
-			   const int yoffs = y*(env_xres*3);
-				   for (int xt2 = 0; xt2 <= xs*2; ++xt2)
-				   {
-					   int xt = xt2 + (x - xs);
-					   if (xt < 0)
-						   xt += env_xres;
-					   else if (xt >= (int)env_xres)
-						   xt -= env_xres;
-					   const float w = weights[xt2];
-					   const unsigned int offs = xt*3 + yoffs;
-					   sum[0] += ((float*)envmap)[offs    ] * w;
-					   sum[1] += ((float*)envmap)[offs + 1] * w;
-					   sum[2] += ((float*)envmap)[offs + 2] * w;
-					   sum_w += w;
-				   }
+      for (int y = 0; y < (int)env_yres; ++y)
+         for (int x = 0; x < (int)env_xres; ++x)
+         {
+            float sum[3] = { 0.f, 0.f, 0.f };
+            float sum_w = 0.f;
+            const int yoffs = y * (env_xres * 3);
+            for (int xt2 = 0; xt2 <= xs * 2; ++xt2)
+            {
+               int xt = xt2 + (x - xs);
+               if (xt < 0)
+                  xt += env_xres;
+               else if (xt >= (int)env_xres)
+                  xt -= env_xres;
+               const float w = weights[xt2];
+               const unsigned int offs = xt * 3 + yoffs;
+               sum[0] += ((float*)envmap)[offs] * w;
+               sum[1] += ((float*)envmap)[offs + 1] * w;
+               sum[2] += ((float*)envmap)[offs + 2] * w;
+               sum_w += w;
+            }
 
-			   const unsigned int offs = (x + y*env_xres) * 3;
-			   const float inv_sum = 1.0f / sum_w;
-			   ((float*)envmap2)[offs  ] = sum[0] * inv_sum;
-			   ((float*)envmap2)[offs+1] = sum[1] * inv_sum;
-			   ((float*)envmap2)[offs+2] = sum[2] * inv_sum;
-		   }
+            const unsigned int offs = (x + y * env_xres) * 3;
+            const float inv_sum = 1.0f / sum_w;
+            ((float*)envmap2)[offs] = sum[0] * inv_sum;
+            ((float*)envmap2)[offs + 1] = sum[1] * inv_sum;
+            ((float*)envmap2)[offs + 2] = sum[2] * inv_sum;
+         }
 
-	   // y-pass:
+      // y-pass:
 
-	   for (int y = 0; y < (int)env_yres; ++y)
-		   for (int x = 0; x < (int)env_xres; ++x)
-		   {
-			   float sum[3] = { 0.f, 0.f, 0.f };
-			   float sum_w = 0.f;
-			   const int yt_end = min(y + xs, (int)env_yres - 1) - (y - xs);
-			   int offs = x * 3 + max(y - xs, 0)*(env_xres * 3);
-			   for (int yt = max(y - xs, 0) - (y - xs); yt <= yt_end; ++yt, offs += env_xres * 3)
-				   {
-					   const float w = weights[yt];
-					   sum[0] += ((float*)envmap2)[offs    ] * w;
-					   sum[1] += ((float*)envmap2)[offs + 1] * w;
-					   sum[2] += ((float*)envmap2)[offs + 2] * w;
-					   sum_w += w;
-				   }
+      for (int y = 0; y < (int)env_yres; ++y)
+         for (int x = 0; x < (int)env_xres; ++x)
+         {
+            float sum[3] = { 0.f, 0.f, 0.f };
+            float sum_w = 0.f;
+            const int yt_end = min(y + xs, (int)env_yres - 1) - (y - xs);
+            int offs = x * 3 + max(y - xs, 0)*(env_xres * 3);
+            for (int yt = max(y - xs, 0) - (y - xs); yt <= yt_end; ++yt, offs += env_xres * 3)
+            {
+               const float w = weights[yt];
+               sum[0] += ((float*)envmap2)[offs] * w;
+               sum[1] += ((float*)envmap2)[offs + 1] * w;
+               sum[2] += ((float*)envmap2)[offs + 2] * w;
+               sum_w += w;
+            }
 
-			   offs = (x + y*env_xres) * 3;
-			   const float inv_sum = 1.0f / sum_w;
-			   ((float*)envmap3)[offs  ] = sum[0] * inv_sum;
-			   ((float*)envmap3)[offs+1] = sum[1] * inv_sum;
-			   ((float*)envmap3)[offs+2] = sum[2] * inv_sum;
-		   }
+            offs = (x + y * env_xres) * 3;
+            const float inv_sum = 1.0f / sum_w;
+            ((float*)envmap3)[offs] = sum[0] * inv_sum;
+            ((float*)envmap3)[offs + 1] = sum[1] * inv_sum;
+            ((float*)envmap3)[offs + 2] = sum[2] * inv_sum;
+         }
 
-	   envmap = envmap3;
-	   free((void*)envmap2);
-	   free(weights);
+      envmap = envmap3;
+      free((void*)envmap2);
+      free(weights);
    }
 #endif
 
@@ -299,109 +299,109 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap, const DWORD env_xres
    /* ///!!! QA-test above multithreading implementation.
    //!! this is exactly the same code as above, so can be deleted at some point, as it only checks the multithreaded results with a singlethreaded implementation!
    for (unsigned int y = 0; y < rad_env_yres; ++y)
-	   for (unsigned int x = 0; x < rad_env_xres; ++x)
-	   {
-		   // trafo from envmap to normal direction
-		   const float phi = (float)x / (float)rad_env_xres * (float)(2.0*M_PI) + (float)M_PI;
-		   const float theta = (float)y / (float)rad_env_yres * (float)M_PI;
-		   const Vertex3Ds n(sinf(theta) * cosf(phi), sinf(theta) * sinf(phi), cosf(theta));
+      for (unsigned int x = 0; x < rad_env_xres; ++x)
+      {
+         // trafo from envmap to normal direction
+         const float phi = (float)x / (float)rad_env_xres * (float)(2.0*M_PI) + (float)M_PI;
+         const float theta = (float)y / (float)rad_env_yres * (float)M_PI;
+         const Vertex3Ds n(sinf(theta) * cosf(phi), sinf(theta) * sinf(phi), cosf(theta));
 
-		   // draw x samples over hemisphere and collect cosine weighted environment map samples
-		   float sum[3];
-		   sum[0] = sum[1] = sum[2] = 0.0f;
+         // draw x samples over hemisphere and collect cosine weighted environment map samples
+         float sum[3];
+         sum[0] = sum[1] = sum[2] = 0.0f;
 
-		   const unsigned int num_samples = 4096;
-		   for (unsigned int s = 0; s < num_samples; ++s)
-		   {
-			   //!! discard directions pointing below the playfield?? or give them another "average playfield" color??
+         const unsigned int num_samples = 4096;
+         for (unsigned int s = 0; s < num_samples; ++s)
+         {
+            //!! discard directions pointing below the playfield?? or give them another "average playfield" color??
 #define USE_ENVMAP_PRECALC_COSINE
 #ifndef USE_ENVMAP_PRECALC_COSINE
-			//!! as we do not use importance sampling on the environment, just not being smart -could- be better for high frequency environments
-			   Vertex3Ds l = sphere_sample((float)s*(float)(1.0 / num_samples), radical_inverse(s)); // QMC hammersley point set
-			   float NdotL = l.Dot(n);
-			   if (NdotL < 0.0f) // flip if on backside of hemisphere
-			   {
-				   NdotL = -NdotL;
-				   l = -l;
-			   }
+            //!! as we do not use importance sampling on the environment, just not being smart -could- be better for high frequency environments
+            Vertex3Ds l = sphere_sample((float)s*(float)(1.0 / num_samples), radical_inverse(s)); // QMC hammersley point set
+            float NdotL = l.Dot(n);
+            if (NdotL < 0.0f) // flip if on backside of hemisphere
+            {
+               NdotL = -NdotL;
+               l = -l;
+            }
 #else
-			//Vertex3Ds cos_hemisphere_sample(const Vertex3Ds &normal, Vertex2D uv) { float theta = (float)(2.*M_PI) * uv.x; uv.y = 2.f * uv.y - 1.f; Vertex3Ds spherePoint(sqrt(1.f - uv.y * uv.y) * Vertex2D(cosf(theta), sinf(theta)), uv.y); return normalize(normal + spherePoint); }
-			   const Vertex3Ds l = rotate_to_vector_upper(cos_hemisphere_sample((float)s*(float)(1.0 / num_samples), radical_inverse(s)), n); // QMC hammersley point set
+            //Vertex3Ds cos_hemisphere_sample(const Vertex3Ds &normal, Vertex2D uv) { float theta = (float)(2.*M_PI) * uv.x; uv.y = 2.f * uv.y - 1.f; Vertex3Ds spherePoint(sqrt(1.f - uv.y * uv.y) * Vertex2D(cosf(theta), sinf(theta)), uv.y); return normalize(normal + spherePoint); }
+            const Vertex3Ds l = rotate_to_vector_upper(cos_hemisphere_sample((float)s*(float)(1.0 / num_samples), radical_inverse(s)), n); // QMC hammersley point set
 #endif
-			// trafo from light direction to envmap
-			// approximations seem to be good enough!
-			   const float u = atan2_approx_div2PI(l.y, l.x) + 0.5f; //atan2f(l.y, l.x) * (float)(0.5 / M_PI) + 0.5f;
-			   const float v = acos_approx_divPI(l.z); //acosf(l.z) * (float)(1.0 / M_PI);
+            // trafo from light direction to envmap
+            // approximations seem to be good enough!
+            const float u = atan2_approx_div2PI(l.y, l.x) + 0.5f; //atan2f(l.y, l.x) * (float)(0.5 / M_PI) + 0.5f;
+            const float v = acos_approx_divPI(l.z); //acosf(l.z) * (float)(1.0 / M_PI);
 
-			   float r, g, b;
-			   if (isHDR)
-			   {
-				   unsigned int offs = ((int)(u*(float)env_xres) + (int)(v*(float)env_yres)*env_xres) * 3;
-				   if (offs >= env_yres * env_xres * 3)
-					   offs = 0;
-				   r = ((float*)envmap)[offs];
-				   g = ((float*)envmap)[offs + 1];
-				   b = ((float*)envmap)[offs + 2];
-			   }
-			   else
-			   {
-				   unsigned int offs = (int)(u*(float)env_xres) + (int)(v*(float)env_yres)*env_xres;
-				   if (offs >= env_yres * env_xres)
-					   offs = 0;
-				   const DWORD rgb = ((DWORD*)envmap)[offs];
-				   r = invGammaApprox((float)(rgb & 255) * (float)(1.0 / 255.0));
-				   g = invGammaApprox((float)(rgb & 65280) * (float)(1.0 / 65280.0));
-				   b = invGammaApprox((float)(rgb & 16711680) * (float)(1.0 / 16711680.0));
-			   }
+            float r, g, b;
+            if (isHDR)
+            {
+               unsigned int offs = ((int)(u*(float)env_xres) + (int)(v*(float)env_yres)*env_xres) * 3;
+               if (offs >= env_yres * env_xres * 3)
+                  offs = 0;
+               r = ((float*)envmap)[offs];
+               g = ((float*)envmap)[offs + 1];
+               b = ((float*)envmap)[offs + 2];
+            }
+            else
+            {
+               unsigned int offs = (int)(u*(float)env_xres) + (int)(v*(float)env_yres)*env_xres;
+               if (offs >= env_yres * env_xres)
+                  offs = 0;
+               const DWORD rgb = ((DWORD*)envmap)[offs];
+               r = invGammaApprox((float)(rgb & 255) * (float)(1.0 / 255.0));
+               g = invGammaApprox((float)(rgb & 65280) * (float)(1.0 / 65280.0));
+               b = invGammaApprox((float)(rgb & 16711680) * (float)(1.0 / 16711680.0));
+            }
 #ifndef USE_ENVMAP_PRECALC_COSINE
-			   sum[0] += r * NdotL;
-			   sum[1] += g * NdotL;
-			   sum[2] += b * NdotL;
+            sum[0] += r * NdotL;
+            sum[1] += g * NdotL;
+            sum[2] += b * NdotL;
 #else
-			   sum[0] += r;
-			   sum[1] += g;
-			   sum[2] += b;
+            sum[0] += r;
+            sum[1] += g;
+            sum[2] += b;
 #endif
-		   }
+         }
 
-		   // average all samples
+         // average all samples
 #ifndef USE_ENVMAP_PRECALC_COSINE
-		   sum[0] *= (float)(2.0 / num_samples); // pre-divides by PI for final radiance/color lookup in shader
-		   sum[1] *= (float)(2.0 / num_samples);
-		   sum[2] *= (float)(2.0 / num_samples);
+         sum[0] *= (float)(2.0 / num_samples); // pre-divides by PI for final radiance/color lookup in shader
+         sum[1] *= (float)(2.0 / num_samples);
+         sum[2] *= (float)(2.0 / num_samples);
 #else
-		   sum[0] *= (float)(1.0 / num_samples); // pre-divides by PI for final radiance/color lookup in shader
-		   sum[1] *= (float)(1.0 / num_samples);
-		   sum[2] *= (float)(1.0 / num_samples);
+         sum[0] *= (float)(1.0 / num_samples); // pre-divides by PI for final radiance/color lookup in shader
+         sum[1] *= (float)(1.0 / num_samples);
+         sum[2] *= (float)(1.0 / num_samples);
 #endif
-		   if (isHDR)
-		   {
-			   const unsigned int offs = (y*rad_env_xres + x) * 3;
-			   if (((float*)rad_envmap)[offs] != sum[0] ||
-				   ((float*)rad_envmap)[offs + 1] != sum[1] ||
-				   ((float*)rad_envmap)[offs + 2] != sum[2])
-			   {
-				   char tmp[911];
-				   sprintf(tmp, "%d %d %f=%f %f=%f %f=%f ", x, y, ((float*)rad_envmap)[offs], sum[0], ((float*)rad_envmap)[offs + 1], sum[1], ((float*)rad_envmap)[offs + 2], sum[2]);
-				   ::OutputDebugString(tmp);
-			   }
-		   }
-		   else
-		   {
-			   sum[0] = gammaApprox(sum[0]);
-			   sum[1] = gammaApprox(sum[1]);
-			   sum[2] = gammaApprox(sum[2]);
-			   if (
-				   ((DWORD*)rad_envmap)[y*rad_env_xres + x] != ((int)(sum[0] * 255.0f)) | (((int)(sum[1] * 255.0f)) << 8) | (((int)(sum[2] * 255.0f)) << 16))
-				   g_pvp->MessageBox("Not OK", "Not OK", MB_OK);
-		   }
-	   }
+         if (isHDR)
+         {
+            const unsigned int offs = (y*rad_env_xres + x) * 3;
+            if (((float*)rad_envmap)[offs] != sum[0] ||
+                ((float*)rad_envmap)[offs + 1] != sum[1] ||
+                ((float*)rad_envmap)[offs + 2] != sum[2])
+            {
+               char tmp[911];
+               sprintf(tmp, "%d %d %f=%f %f=%f %f=%f ", x, y, ((float*)rad_envmap)[offs], sum[0], ((float*)rad_envmap)[offs + 1], sum[1], ((float*)rad_envmap)[offs + 2], sum[2]);
+               ::OutputDebugString(tmp);
+            }
+         }
+         else
+         {
+            sum[0] = gammaApprox(sum[0]);
+            sum[1] = gammaApprox(sum[1]);
+            sum[2] = gammaApprox(sum[2]);
+            if (
+                ((DWORD*)rad_envmap)[y*rad_env_xres + x] != ((int)(sum[0] * 255.0f)) | (((int)(sum[1] * 255.0f)) << 8) | (((int)(sum[2] * 255.0f)) << 16))
+                g_pvp->MessageBox("Not OK", "Not OK", MB_OK);
+         }
+      }
 
    ///!!! */
 
 #ifdef PREFILTER_ENVMAP_DIFFUSE
    if (isHDR && (env_xres > 64))
-	   free((void*)envmap);
+      free((void*)envmap);
 #endif
 
    g_pvp->ProfileLog("EnvmapPrecalc End");
@@ -417,59 +417,60 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
       if (display == dispConf->display)
          adapter = dispConf->adapter;
 
-    m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->GetHwnd(), m_viewPort.Width, m_viewPort.Height, fullScreen, colordepth, VSync, useAA, stereo3D, FXAA, sharpen, ss_refl, g_pplayer->m_useNvidiaApi, g_pplayer->m_disableDWM, g_pplayer->m_BWrendering);
-    try {
-        m_pd3dPrimaryDevice->CreateDevice(refreshrate, adapter);
-    }
-    catch (...) {
-        return E_FAIL;
-    }
+   m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->GetHwnd(), m_viewPort.Width, m_viewPort.Height, fullScreen, colordepth, VSync, useAA, stereo3D, FXAA, sharpen, ss_refl, g_pplayer->m_useNvidiaApi, g_pplayer->m_disableDWM, g_pplayer->m_BWrendering);
+   try {
+      m_pd3dPrimaryDevice->CreateDevice(refreshrate, adapter);
+   }
+   catch (...) {
+      return E_FAIL;
+   }
 
-    if (!m_pd3dPrimaryDevice->LoadShaders())
-        return E_FAIL;
+   if (!m_pd3dPrimaryDevice->LoadShaders())
+      return E_FAIL;
 
-    const bool forceAniso = LoadValueBoolWithDefault("Player", "ForceAnisotropicFiltering", true);
-    m_pd3dPrimaryDevice->ForceAnisotropicFiltering(forceAniso);
+   const bool forceAniso = LoadValueBoolWithDefault("Player", "ForceAnisotropicFiltering", true);
+   m_pd3dPrimaryDevice->ForceAnisotropicFiltering(forceAniso);
 
-    const bool compressTextures = LoadValueBoolWithDefault("Player", "CompressTextures", false);
-    m_pd3dPrimaryDevice->CompressTextures(compressTextures);
+   const bool compressTextures = LoadValueBoolWithDefault("Player", "CompressTextures", false);
+   m_pd3dPrimaryDevice->CompressTextures(compressTextures);
 
-    m_pd3dPrimaryDevice->SetViewport(&m_viewPort);
+   m_pd3dPrimaryDevice->SetViewport(&m_viewPort);
 
-    m_pd3dPrimaryDevice->GetBackBufferTexture()->GetSurfaceLevel(0, &m_pddsBackBuffer);
+   m_pd3dPrimaryDevice->GetBackBufferTexture()->GetSurfaceLevel(0, &m_pddsBackBuffer);
 
-    m_pddsStatic = m_pd3dPrimaryDevice->DuplicateRenderTarget(m_pddsBackBuffer);
-    if(!m_pddsStatic)
-        return E_FAIL;
+   m_pddsStatic = m_pd3dPrimaryDevice->DuplicateRenderTarget(m_pddsBackBuffer);
+   if(!m_pddsStatic)
+      return E_FAIL;
 
-    m_pddsZBuffer = m_pd3dPrimaryDevice->AttachZBufferTo(m_pddsBackBuffer);
-    m_pddsStaticZ = m_pd3dPrimaryDevice->AttachZBufferTo(m_pddsStatic);
-    if (!m_pddsZBuffer || !m_pddsStaticZ)
-        return E_FAIL;
+   m_pddsZBuffer = m_pd3dPrimaryDevice->AttachZBufferTo(m_pddsBackBuffer);
+   m_pddsStaticZ = m_pd3dPrimaryDevice->AttachZBufferTo(m_pddsStatic);
+   if (!m_pddsZBuffer || !m_pddsStaticZ)
+      return E_FAIL;
 
-    if (m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && (stereo3D || useAO || ss_refl))
-    {
-        m_pdds3DZBuffer = !m_pd3dPrimaryDevice->m_useNvidiaApi ? (D3DTexture*)m_pd3dPrimaryDevice->AttachZBufferTo(m_pddsBackBuffer) : m_pd3dPrimaryDevice->DuplicateDepthTexture((RenderTarget*)m_pddsZBuffer);
+   if (m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && (stereo3D || useAO || ss_refl))
+   {
+      m_pdds3DZBuffer = !m_pd3dPrimaryDevice->m_useNvidiaApi ? (D3DTexture*)m_pd3dPrimaryDevice->AttachZBufferTo(m_pddsBackBuffer) : m_pd3dPrimaryDevice->DuplicateDepthTexture((RenderTarget*)m_pddsZBuffer);
 
-        if (!m_pdds3DZBuffer)
-        {
-            ShowError("Unable to create depth texture!\r\nTry to (un)set \"Alternative Depth Buffer processing\" in the video options!\r\nOr disable Ambient Occlusion, 3D stereo and/or ScreenSpace Reflections!");
-            return E_FAIL;
-        }
-    }
+      if (!m_pdds3DZBuffer)
+      {
+         ShowError("Unable to create depth texture!\r\nTry to (un)set \"Alternative Depth Buffer processing\" in the video options!\r\nOr disable Ambient Occlusion, 3D stereo and/or ScreenSpace Reflections!");
+         return E_FAIL;
+      }
+   }
 
-    if (m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && useAO)
-    {
-        const HRESULT hr1 = m_pd3dPrimaryDevice->GetCoreDevice()->CreateTexture(m_viewPort.Width, m_viewPort.Height, 1, D3DUSAGE_RENDERTARGET, (D3DFORMAT)colorFormat::GREY8, (D3DPOOL)memoryPool::DEFAULT, &m_pddsAOBackTmpBuffer, nullptr);
-        const HRESULT hr2 = m_pd3dPrimaryDevice->GetCoreDevice()->CreateTexture(m_viewPort.Width, m_viewPort.Height, 1, D3DUSAGE_RENDERTARGET, (D3DFORMAT)colorFormat::GREY8, (D3DPOOL)memoryPool::DEFAULT, &m_pddsAOBackBuffer, nullptr);
-        if (FAILED(hr1) || FAILED(hr2) || !m_pddsAOBackBuffer || !m_pddsAOBackTmpBuffer)
-        {
-            ShowError("Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
-            return E_FAIL;
-        }
-    }
 
-    return S_OK;
+   if (m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && useAO)
+   {
+      const HRESULT hr1 = m_pd3dPrimaryDevice->GetCoreDevice()->CreateTexture(m_viewPort.Width, m_viewPort.Height, 1, D3DUSAGE_RENDERTARGET, (D3DFORMAT)colorFormat::GREY8, (D3DPOOL)memoryPool::DEFAULT, &m_pddsAOBackTmpBuffer, nullptr);
+      const HRESULT hr2 = m_pd3dPrimaryDevice->GetCoreDevice()->CreateTexture(m_viewPort.Width, m_viewPort.Height, 1, D3DUSAGE_RENDERTARGET, (D3DFORMAT)colorFormat::GREY8, (D3DPOOL)memoryPool::DEFAULT, &m_pddsAOBackBuffer, nullptr);
+      if (FAILED(hr1) || FAILED(hr2) || !m_pddsAOBackBuffer || !m_pddsAOBackTmpBuffer)
+      {
+         ShowError("Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
+         return E_FAIL;
+      }
+   }
+
+   return S_OK;
 }
 
 HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl)
@@ -483,7 +484,7 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    m_viewPort.MaxZ = 1.0f;
 
    if (FAILED(InitPrimary(fullScreen, colordepth, refreshrate, VSync, useAA, stereo3D, FXAA, sharpen, useAO, ss_refl)))
-       return E_FAIL;
+      return E_FAIL;
 
    m_pd3dSecondaryDevice = m_pd3dPrimaryDevice;
 
@@ -500,7 +501,7 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
 
    const unsigned int envTexHeight = min(envTex->m_pdsBuffer->height(),256) / 8;
    const unsigned int envTexWidth = envTexHeight*2;
-   
+
    m_envRadianceTexture = new BaseTexture(envTexWidth, envTexHeight, envTex->m_pdsBuffer->m_format, false);
 
    EnvmapPrecalc(envTex->m_pdsBuffer->data(), envTex->m_pdsBuffer->width(), envTex->m_pdsBuffer->height(),
@@ -519,7 +520,6 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
 
    return S_OK;
 }
-
 
 // Sets the texture filtering state.
 void Pin3D::SetTextureFilter(RenderDevice * const pd3dDevice, const int TextureNum, const int Mode) const
@@ -554,7 +554,7 @@ void Pin3D::SetSecondaryRenderTarget(RenderTarget* pddsSurface, RenderTarget* pd
 }
 
 void Pin3D::SetRenderTarget(RenderDevice * const pd3dDevice, RenderTarget* pddsSurface, void* pddsZ) const
-{   
+{
    if (!pd3dDevice->m_useNvidiaApi && pd3dDevice->m_INTZ_support)
       SetRenderTarget(pd3dDevice, pddsSurface, (D3DTexture*)pddsZ);
    else
@@ -1035,7 +1035,7 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
    }
 
    if (!g_pplayer->m_meshAsPlayfield)
-   { 
+   {
       assert(m_tableVBuffer != nullptr);
       m_pd3dPrimaryDevice->basicShader->Begin(0);
       m_pd3dPrimaryDevice->DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, m_tableVBuffer, 0, 4);

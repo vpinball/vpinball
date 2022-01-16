@@ -292,7 +292,7 @@ void Decal::PreRenderText()
 
    TEXTMETRIC tm;
    clientDC.GetTextMetrics(tm);
-   
+
    float charheight;
    if (m_d.m_verticalText)
    {
@@ -598,7 +598,7 @@ void Decal::RenderStatic()
 
 void Decal::SetObjectPos()
 {
-    m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
+   m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
 }
 
 void Decal::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
@@ -825,8 +825,8 @@ STDMETHODIMP Decal::put_Image(BSTR newVal)
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
-       ShowError("Cannot use a HDR image (.exr/.hdr) here");
-       return E_FAIL;
+      ShowError("Cannot use a HDR image (.exr/.hdr) here");
+      return E_FAIL;
    }
    m_d.m_szImage = szImage;
 

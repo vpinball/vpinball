@@ -52,7 +52,7 @@ void DispReel::SetDefaults(bool fromMouseClick)
    m_d.m_motorsteps = fromMouseClick ? (int)LoadValueFloatWithDefault("DefaultProps\\EMReel", "MotorSteps", 2.f) : 2;
    m_d.m_digitrange = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "DigitRange", 9) : 9;
    m_d.m_updateinterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "UpdateInterval", 50) : 50;
-   m_d.m_backcolor = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "BackColor", RGB(64,64,64)) : RGB(64,64,64);
+   m_d.m_backcolor = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "BackColor", RGB(64, 64, 64)) : RGB(64, 64, 64);
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "TimerInterval", 100) : 100;
 }
@@ -238,29 +238,29 @@ void DispReel::RenderDynamic()
 
    for (int r = 0; r < m_d.m_reelcount; ++r) //!! optimize by doing all draws in a single one
    {
-       const float u0 = m_digitTexCoords[m_reelInfo[r].currentValue].u_min;
-       const float v0 = m_digitTexCoords[m_reelInfo[r].currentValue].v_min;
-       const float u1 = m_digitTexCoords[m_reelInfo[r].currentValue].u_max;
-       const float v1 = m_digitTexCoords[m_reelInfo[r].currentValue].v_max;
+      const float u0 = m_digitTexCoords[m_reelInfo[r].currentValue].u_min;
+      const float v0 = m_digitTexCoords[m_reelInfo[r].currentValue].v_min;
+      const float u1 = m_digitTexCoords[m_reelInfo[r].currentValue].u_max;
+      const float v1 = m_digitTexCoords[m_reelInfo[r].currentValue].v_max;
 
-       float Verts[4 * 5] =
-       {
-           1.0f, 1.0f, 0.0f, u1, v1,
-           0.0f, 1.0f, 0.0f, u0, v1,
-           1.0f, 0.0f, 0.0f, u1, v0,
-           0.0f, 0.0f, 0.0f, u0, v0
-       };
+      float Verts[4 * 5] =
+      {
+         1.0f, 1.0f, 0.0f, u1, v1,
+         0.0f, 1.0f, 0.0f, u0, v1,
+         1.0f, 0.0f, 0.0f, u1, v0,
+         0.0f, 0.0f, 0.0f, u0, v0
+      };
 
-       for (unsigned int i = 0; i < 4; ++i)
-       {
-           Verts[i * 5] = (Verts[i * 5] * m_renderwidth + x1)*2.0f - 1.0f;
-           Verts[i * 5 + 1] = 1.0f - (Verts[i * 5 + 1] * m_renderheight + y1)*2.0f;
-       }
+      for (unsigned int i = 0; i < 4; ++i)
+      {
+         Verts[i * 5] = (Verts[i * 5] * m_renderwidth + x1)*2.0f - 1.0f;
+         Verts[i * 5 + 1] = 1.0f - (Verts[i * 5 + 1] * m_renderheight + y1)*2.0f;
+      }
 
-       pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)Verts);
+      pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)Verts);
 
-       // move to the next reel
-       x1 += renderspacingx + m_renderwidth;
+      // move to the next reel
+      x1 += renderspacingx + m_renderwidth;
    }
    pd3dDevice->DMDShader->End();
 
@@ -442,7 +442,7 @@ void DispReel::Animate()
 
 void DispReel::SetObjectPos()
 {
-    m_vpinball->SetObjectPosCur(m_d.m_v1.x, m_d.m_v1.y);
+   m_vpinball->SetObjectPosCur(m_d.m_v1.x, m_d.m_v1.y);
 }
 
 void DispReel::MoveOffset(const float dx, const float dy)
@@ -704,8 +704,8 @@ STDMETHODIMP DispReel::put_Image(BSTR newVal)
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
-       ShowError("Cannot use a HDR image (.exr/.hdr) here");
-       return E_FAIL;
+      ShowError("Cannot use a HDR image (.exr/.hdr) here");
+      return E_FAIL;
    }
    m_d.m_szImage = szImage;
 

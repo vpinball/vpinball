@@ -163,7 +163,7 @@ HRESULT PinSound::ReInitialize()
    // Remark from MSDN: "If wFormatTag = WAVE_FORMAT_PCM or wFormatTag = WAVE_FORMAT_IEEE_FLOAT, set cbSize to zero"
    // Otherwise some tables crash in dsound when using certain WAVE_FORMAT_IEEE_FLOAT samples
    if ((wfx.wFormatTag == WAVE_FORMAT_PCM) || (wfx.wFormatTag == WAVE_FORMAT_IEEE_FLOAT))
-	   wfx.cbSize = 0;
+      wfx.cbSize = 0;
 
    DSBUFFERDESC dsbd = {};
    dsbd.dwSize = sizeof(DSBUFFERDESC);

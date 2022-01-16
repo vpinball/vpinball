@@ -1142,14 +1142,14 @@ void Surface::RenderWallsAtHeight(const bool drop)
       // Only render Bottom for Reflections
       if (m_ptable->m_reflectionEnabled)
       {
-          if (mat->m_bOpacityActive || !m_isDynamic)
-              pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
-          else
-              pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CW);
+         if (mat->m_bOpacityActive || !m_isDynamic)
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
+         else
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CW);
 
-          pd3dDevice->basicShader->Begin(0);
-          pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_VBuffer, m_numVertices * 4 + m_numVertices * 2, m_numVertices, m_IBuffer, m_numVertices * 6, m_numPolys * 3);
-          pd3dDevice->basicShader->End();
+         pd3dDevice->basicShader->Begin(0);
+         pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_VBuffer, m_numVertices * 4 + m_numVertices * 2, m_numVertices, m_IBuffer, m_numVertices * 6, m_numPolys * 3);
+         pd3dDevice->basicShader->End();
       }
    }
 
@@ -1161,7 +1161,6 @@ void Surface::RenderWallsAtHeight(const bool drop)
       const vec4 tmp(0.f,0.f, 0.f,0.f);
       pd3dDevice->basicShader->SetDisableLighting(tmp);
    }
-
 }
 
 void Surface::AddPoint(int x, int y, const bool smooth)

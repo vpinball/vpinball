@@ -247,11 +247,11 @@ BOOL VideoOptionsDialog::OnInitDialog()
       AddToolTip("Switches 3D Stereo effect to use the Y Axis.\r\nThis should usually be selected for Cabinets/rotated displays.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_3D_STEREO_Y).GetHwnd());
       if (IsWindows10_1803orAbove())
       {
-          GetDlgItem(IDC_FULLSCREEN).SetWindowText("Force exclusive Fullscreen Mode");
-          AddToolTip("Enforces exclusive Fullscreen Mode.\r\nEnforcing exclusive FS can slightly reduce input lag.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_FULLSCREEN).GetHwnd());
+         GetDlgItem(IDC_FULLSCREEN).SetWindowText("Force exclusive Fullscreen Mode");
+         AddToolTip("Enforces exclusive Fullscreen Mode.\r\nEnforcing exclusive FS can slightly reduce input lag.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_FULLSCREEN).GetHwnd());
       }
       else
-          AddToolTip("Enforces exclusive Fullscreen Mode.\r\nDo not enable if you require to see the VPinMAME or B2S windows for example.\r\nEnforcing exclusive FS can slightly reduce input lag though.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_FULLSCREEN).GetHwnd());
+         AddToolTip("Enforces exclusive Fullscreen Mode.\r\nDo not enable if you require to see the VPinMAME or B2S windows for example.\r\nEnforcing exclusive FS can slightly reduce input lag though.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_FULLSCREEN).GetHwnd());
       AddToolTip("Enforces 10Bit (WCG) rendering.\r\nRequires a corresponding 10Bit output capable graphics card and monitor.\r\nAlso requires to have exclusive fullscreen mode enforced (for now).", hwndDlg, toolTipHwnd, GetDlgItem(IDC_10BIT_VIDEO).GetHwnd());
       AddToolTip("Switches all tables to use the respective Cabinet display setup.\r\nAlso useful if a 270 degree rotated Desktop monitor is used.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_BG_SET).GetHwnd());
       AddToolTip("Enables post-processed Anti-Aliasing.\r\nThis delivers smoother images, at the cost of slight blurring.\r\n'Quality FXAA' and 'Quality SMAA' are recommended and lead to less artifacts,\nbut will harm performance on low-end graphics cards.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_FXAACB).GetHwnd());
@@ -436,7 +436,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
 
    const int depthcur = LoadValueIntWithDefault("Player", "ColorDepth", 32);
    const int refreshrate = LoadValueIntWithDefault("Player", "RefreshRate", 0);
-   
+
    int display;
    hr = LoadValue("Player", "Display", display);
    std::vector<DisplayConfig> displays;
@@ -558,7 +558,7 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          {
             const int xsize = rgwindowsize[i/5];
             
-            int mulx=1, divy=1;
+            int mulx = 1, divy = 1;
             switch (i%5)
             {
                case 0: mulx = 3;  divy = 4;  break;

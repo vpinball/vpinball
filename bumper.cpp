@@ -769,7 +769,7 @@ void Bumper::RenderSetup()
    if (m_d.m_skirtVisible)
    {
       m_skirtTexture.CreateFromResource(IDB_BUMPER_SKIRT);
-       
+
       if (m_socketIndexBuffer)
          m_socketIndexBuffer->release();
       m_socketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperSocketNumIndices, bumperSocketIndices);

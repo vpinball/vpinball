@@ -28,27 +28,27 @@
 
 static bool IsWindowsVistaOr7()
 {
-	OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0 };
-	const DWORDLONG dwlConditionMask = //VerSetConditionMask(
-		VerSetConditionMask(
-			VerSetConditionMask(
-				0, VER_MAJORVERSION, VER_EQUAL),
-			VER_MINORVERSION, VER_EQUAL)/*,
-		VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL)*/;
-	osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_VISTA);
-	osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_VISTA);
-	//osvi.wServicePackMajor = 0;
+   OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0 };
+   const DWORDLONG dwlConditionMask = //VerSetConditionMask(
+      VerSetConditionMask(
+         VerSetConditionMask(
+            0, VER_MAJORVERSION, VER_EQUAL),
+         VER_MINORVERSION, VER_EQUAL)/*,
+      VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL)*/;
+   osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_VISTA);
+   osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_VISTA);
+   //osvi.wServicePackMajor = 0;
 
-	const bool vista = VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
+   const bool vista = VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
 
-	OSVERSIONINFOEXW osvi2 = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0 };
-	osvi2.dwMajorVersion = HIBYTE(_WIN32_WINNT_WIN7);
-	osvi2.dwMinorVersion = LOBYTE(_WIN32_WINNT_WIN7);
-	//osvi2.wServicePackMajor = 0;
+   OSVERSIONINFOEXW osvi2 = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0 };
+   osvi2.dwMajorVersion = HIBYTE(_WIN32_WINNT_WIN7);
+   osvi2.dwMinorVersion = LOBYTE(_WIN32_WINNT_WIN7);
+   //osvi2.wServicePackMajor = 0;
 
-	const bool win7 = VerifyVersionInfoW(&osvi2, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
+   const bool win7 = VerifyVersionInfoW(&osvi2, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
 
-	return vista || win7;
+   return vista || win7;
 }
 
 typedef HRESULT(STDAPICALLTYPE *pRGV)(LPOSVERSIONINFOEXW osi);
@@ -56,24 +56,24 @@ static pRGV mRtlGetVersion = nullptr;
 
 bool IsWindows10_1803orAbove()
 {
-	if (mRtlGetVersion == nullptr)
-		mRtlGetVersion = (pRGV)GetProcAddress(GetModuleHandle(TEXT("ntdll")), "RtlGetVersion"); // apparently the only really reliable solution to get the OS version (as of Win10 1803)
+   if (mRtlGetVersion == nullptr)
+      mRtlGetVersion = (pRGV)GetProcAddress(GetModuleHandle(TEXT("ntdll")), "RtlGetVersion"); // apparently the only really reliable solution to get the OS version (as of Win10 1803)
 
-	if (mRtlGetVersion != nullptr)
-	{
-		OSVERSIONINFOEXW osInfo;
-		osInfo.dwOSVersionInfoSize = sizeof(osInfo);
-		mRtlGetVersion(&osInfo);
+   if (mRtlGetVersion != nullptr)
+   {
+      OSVERSIONINFOEXW osInfo;
+      osInfo.dwOSVersionInfoSize = sizeof(osInfo);
+      mRtlGetVersion(&osInfo);
 
-		if (osInfo.dwMajorVersion > 10)
-			return true;
-		if (osInfo.dwMajorVersion == 10 && osInfo.dwMinorVersion > 0)
-			return true;
-		if (osInfo.dwMajorVersion == 10 && osInfo.dwMinorVersion == 0 && osInfo.dwBuildNumber >= 17134) // which is the more 'common' 1803
-			return true;
-	}
+      if (osInfo.dwMajorVersion > 10)
+         return true;
+      if (osInfo.dwMajorVersion == 10 && osInfo.dwMinorVersion > 0)
+         return true;
+      if (osInfo.dwMajorVersion == 10 && osInfo.dwMinorVersion == 0 && osInfo.dwBuildNumber >= 17134) // which is the more 'common' 1803
+         return true;
+   }
 
-	return false;
+   return false;
 }
 
 constexpr VertexElement VertexTexelElement[] =
@@ -613,11 +613,11 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
       mode.Size = sizeof(D3DDISPLAYMODEEX);
       if (m_fullscreen)
       {
-          mode.Format = params.BackBufferFormat;
-          mode.Width = params.BackBufferWidth;
-          mode.Height = params.BackBufferHeight;
-          mode.RefreshRate = params.FullScreen_RefreshRateInHz;
-          mode.ScanLineOrdering = D3DSCANLINEORDERING_PROGRESSIVE;
+         mode.Format = params.BackBufferFormat;
+         mode.Width = params.BackBufferWidth;
+         mode.Height = params.BackBufferHeight;
+         mode.RefreshRate = params.FullScreen_RefreshRateInHz;
+         mode.ScanLineOrdering = D3DSCANLINEORDERING_PROGRESSIVE;
       }
 
       hr = m_pD3DEx->CreateDeviceEx(
@@ -699,14 +699,14 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 
    if (g_pplayer != nullptr)
    {
-       const bool drawBallReflection = ((g_pplayer->m_reflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
-       if ((g_pplayer->m_ptable->m_reflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
-       {
-           hr = m_pD3DDevice->CreateTexture(m_useAA ? 2 * m_width : m_width, m_useAA ? 2 * m_height : m_height, 1,
-                                            D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pMirrorTmpBufferTexture, nullptr); //!! D3DFMT_A32B32G32R32F?
-           if(FAILED(hr))
-               ReportError("Fatal Error: unable to create reflection map!", hr, __FILE__, __LINE__);
-       }
+      const bool drawBallReflection = ((g_pplayer->m_reflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
+      if ((g_pplayer->m_ptable->m_reflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
+      {
+         hr = m_pD3DDevice->CreateTexture(m_useAA ? 2 * m_width : m_width, m_useAA ? 2 * m_height : m_height, 1,
+                                          D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pMirrorTmpBufferTexture, nullptr); //!! D3DFMT_A32B32G32R32F?
+         if(FAILED(hr))
+            ReportError("Fatal Error: unable to create reflection map!", hr, __FILE__, __LINE__);
+      }
    }
    // alloc bloom tex at 1/4 x 1/4 res (allows for simple HQ downscale of clipped input while saving memory)
    hr = m_pD3DDevice->CreateTexture(m_width / 4, m_height / 4, 1,
@@ -779,42 +779,42 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 
 bool RenderDevice::LoadShaders()
 {
-    bool shaderCompilationOkay = true;
+   bool shaderCompilationOkay = true;
 
-    basicShader = new Shader(this);
-    shaderCompilationOkay = basicShader->Load(g_basicShaderCode, sizeof(g_basicShaderCode)) && shaderCompilationOkay;
+   basicShader = new Shader(this);
+   shaderCompilationOkay = basicShader->Load(g_basicShaderCode, sizeof(g_basicShaderCode)) && shaderCompilationOkay;
 
-    DMDShader = new Shader(this);
-    shaderCompilationOkay = DMDShader->Load(g_dmdShaderCode, sizeof(g_dmdShaderCode)) && shaderCompilationOkay;
+   DMDShader = new Shader(this);
+   shaderCompilationOkay = DMDShader->Load(g_dmdShaderCode, sizeof(g_dmdShaderCode)) && shaderCompilationOkay;
 
-    FBShader = new Shader(this);
-    shaderCompilationOkay = FBShader->Load(g_FBShaderCode, sizeof(g_FBShaderCode)) && shaderCompilationOkay;
+   FBShader = new Shader(this);
+   shaderCompilationOkay = FBShader->Load(g_FBShaderCode, sizeof(g_FBShaderCode)) && shaderCompilationOkay;
 
-    flasherShader = new Shader(this);
-    shaderCompilationOkay = flasherShader->Load(g_flasherShaderCode, sizeof(g_flasherShaderCode)) && shaderCompilationOkay;
+   flasherShader = new Shader(this);
+   shaderCompilationOkay = flasherShader->Load(g_flasherShaderCode, sizeof(g_flasherShaderCode)) && shaderCompilationOkay;
 
-    lightShader = new Shader(this);
-    shaderCompilationOkay = lightShader->Load(g_lightShaderCode, sizeof(g_lightShaderCode)) && shaderCompilationOkay;
+   lightShader = new Shader(this);
+   shaderCompilationOkay = lightShader->Load(g_lightShaderCode, sizeof(g_lightShaderCode)) && shaderCompilationOkay;
 
 #ifdef SEPARATE_CLASSICLIGHTSHADER
-    classicLightShader = new Shader(this);
-    shaderCompilationOkay = classicLightShader->Load(g_classicLightShaderCode, sizeof(g_classicLightShaderCode)) && shaderCompilationOkay;
+   classicLightShader = new Shader(this);
+   shaderCompilationOkay = classicLightShader->Load(g_classicLightShaderCode, sizeof(g_classicLightShaderCode)) && shaderCompilationOkay;
 #endif
 
-    if (!shaderCompilationOkay)
-    {
-        ReportError("Fatal Error: shader compilation failed!", -1, __FILE__, __LINE__);
-        return false;
-    }
+   if (!shaderCompilationOkay)
+   {
+      ReportError("Fatal Error: shader compilation failed!", -1, __FILE__, __LINE__);
+      return false;
+   }
 
-    // Now that shaders are compiled, set static textures for SMAA postprocessing shader
-    if (m_FXAA == Quality_SMAA)
-    {
-        CHECKD3D(FBShader->Core()->SetTexture("areaTex2D", m_SMAAareaTexture));
-        CHECKD3D(FBShader->Core()->SetTexture("searchTex2D", m_SMAAsearchTexture));
-    }
+   // Now that shaders are compiled, set static textures for SMAA postprocessing shader
+   if (m_FXAA == Quality_SMAA)
+   {
+      CHECKD3D(FBShader->Core()->SetTexture("areaTex2D", m_SMAAareaTexture));
+      CHECKD3D(FBShader->Core()->SetTexture("searchTex2D", m_SMAAsearchTexture));
+   }
 
-    return true;
+   return true;
 }
 
 bool RenderDevice::DepthBufferReadBackAvailable()
@@ -952,9 +952,9 @@ RenderDevice::~RenderDevice()
 
    if (g_pplayer)
    {
-       const bool drawBallReflection = ((g_pplayer->m_reflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
-       if ((g_pplayer->m_ptable->m_reflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
-           SAFE_RELEASE(m_pMirrorTmpBufferTexture);
+      const bool drawBallReflection = ((g_pplayer->m_reflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
+      if ((g_pplayer->m_ptable->m_reflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
+         SAFE_RELEASE(m_pMirrorTmpBufferTexture);
    }
    SAFE_RELEASE(m_pBloomBufferTexture);
    SAFE_RELEASE(m_pBloomTmpBufferTexture);
@@ -1022,14 +1022,14 @@ void RenderDevice::EndScene()
 bool RenderDevice::SetMaximumPreRenderedFrames(const DWORD frames)
 {
 #ifdef USE_D3D9EX
-	if (m_pD3DEx && frames > 0 && frames <= 20) // frames can range from 1 to 20, 0 resets to default DX
-	{
-		CHECKD3D(m_pD3DDeviceEx->SetMaximumFrameLatency(frames));
-		return true;
-	}
-	else
+   if (m_pD3DEx && frames > 0 && frames <= 20) // frames can range from 1 to 20, 0 resets to default DX
+   {
+      CHECKD3D(m_pD3DDeviceEx->SetMaximumFrameLatency(frames));
+      return true;
+   }
+   else
 #endif
-	return false;
+   return false;
 }
 
 void RenderDevice::Flip(const bool vsync)
@@ -1151,12 +1151,11 @@ void RenderDevice::CopySurface(D3DTexture* dest, D3DTexture* src)
    const HRESULT hr = m_pD3DDevice->StretchRect(srcTextureSurface, nullptr, destTextureSurface, nullptr, D3DTEXF_NONE);
    if (FAILED(hr))
    {
-       ShowError("Unable to access texture surface!\r\nTry to set \"Alternative Depth Buffer processing\" in the video options!\r\nOr disable Ambient Occlusion and/or 3D stereo!");
+      ShowError("Unable to access texture surface!\r\nTry to set \"Alternative Depth Buffer processing\" in the video options!\r\nOr disable Ambient Occlusion and/or 3D stereo!");
    }
    SAFE_RELEASE_NO_RCC(destTextureSurface);
    SAFE_RELEASE_NO_RCC(srcTextureSurface);
 }
-
 
 void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
 {
@@ -1640,7 +1639,7 @@ void* RenderDevice::AttachZBufferTo(RenderTarget* surf)
 {
    D3DSURFACE_DESC desc;
    surf->GetDesc(&desc);
-   
+
    if (!m_useNvidiaApi && m_INTZ_support)
    {
       D3DTexture* dup;

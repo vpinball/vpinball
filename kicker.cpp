@@ -534,11 +534,11 @@ void Kicker::RenderSetup()
    //
 
    if (m_indexBuffer)
-       m_indexBuffer->release();
+      m_indexBuffer->release();
    m_indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, indices);
 
    if (m_vertexBuffer)
-       m_vertexBuffer->release();
+      m_vertexBuffer->release();
    pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_vertexBuffer);
 
    Vertex3D_NoTex2 *buf;

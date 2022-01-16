@@ -884,19 +884,19 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
 #else
             || (g_pplayer->m_texdmd->width()*g_pplayer->m_texdmd->height() != size))
 #endif
-		{
-			if (g_pplayer->m_texdmd)
-			{
-				g_pplayer->m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTexture("Texture0", (D3DTexture*)nullptr);
-				g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.UnloadTexture(g_pplayer->m_texdmd);
-				delete g_pplayer->m_texdmd;
-			}
+      {
+         if (g_pplayer->m_texdmd)
+         {
+            g_pplayer->m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTexture("Texture0", (D3DTexture*)nullptr);
+            g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.UnloadTexture(g_pplayer->m_texdmd);
+            delete g_pplayer->m_texdmd;
+         }
 #ifdef DMD_UPSCALE
-			g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmd.x*3, g_pplayer->m_dmd.y*3, BaseTexture::RGBA, false);
+         g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmd.x*3, g_pplayer->m_dmd.y*3, BaseTexture::RGBA, false);
 #else
-			g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmd.x, g_pplayer->m_dmd.y, BaseTexture::RGBA, false);
+         g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmd.x, g_pplayer->m_dmd.y, BaseTexture::RGBA, false);
 #endif
-		}
+      }
 
 		DWORD* const data = (DWORD*)g_pplayer->m_texdmd->data(); //!! assumes tex data to be always 32bit
 
