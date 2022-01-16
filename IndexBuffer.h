@@ -1,7 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
-#include "typeDefs3D.h"
+#include "typedefs3D.h"
 
 #ifdef ENABLE_SDL
 
@@ -19,7 +19,6 @@ public:
    void bind();
 
    static void bindNull() { m_curIndexBuffer = nullptr; }
-
    static void CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer **idxBuffer);
 
    static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const unsigned int * indices);
@@ -51,6 +50,7 @@ private:
 
    static IndexBuffer* m_curIndexBuffer; // for caching
    static std::vector<IndexBuffer*> notUploadedBuffers;
+
    void UploadData(bool freeData);
    void addToNotUploadedBuffers(const void* indices = nullptr);
 };
@@ -75,18 +75,22 @@ public:
    void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags);
    void unlock(void);
    void release(void);
+   void bind();
 
-   static void CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer **idxBuffer);
+   static void bindNull() { m_curIndexBuffer = nullptr; }
+   static void setD3DDevice(IDirect3DDevice9* pD3DDevice) { m_pD3DDevice = pD3DDevice; }
+
+   static void CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer** idxBuffer);
 
    static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const unsigned int * indices);
    static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const WORD * indices);
    static IndexBuffer* CreateAndFillIndexBuffer(const std::vector<unsigned int>& indices);
    static IndexBuffer* CreateAndFillIndexBuffer(const std::vector<WORD>& indices);
 
-   static void setD3DDevice(IDirect3DDevice9* pD3DDevice);
-
 private:
    IndexBuffer();      // disable default constructor
+
+   static IndexBuffer* m_curIndexBuffer; // for caching
    static IDirect3DDevice9* m_pD3DDevice;
 };
 

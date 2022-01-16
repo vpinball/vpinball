@@ -2,11 +2,20 @@
 #include "IndexBuffer.h"
 #include "RenderDevice.h"
 
+extern unsigned m_curLockCalls, m_frameLockCalls;
+
 //!! Disabled since it still has some bugs
 #define COMBINE_BUFFERS 0
 
 IndexBuffer* IndexBuffer::m_curIndexBuffer = nullptr;
+
+#ifndef ENABLE_SDL
+IDirect3DDevice9* IndexBuffer::m_pD3DDevice = nullptr;
+#endif
+
+#ifdef ENABLE_SDL
 std::vector<IndexBuffer*> IndexBuffer::notUploadedBuffers;
+#endif
 
 void IndexBuffer::CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer **idxBuffer)
 {
@@ -104,6 +113,7 @@ IndexBuffer* IndexBuffer::CreateAndFillIndexBuffer(const std::vector<unsigned in
 
 void IndexBuffer::lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags)
 {
+   m_curLockCalls++;
 #ifdef ENABLE_SDL
    if (sizeToLock == 0)
       this->sizeToLock = size;
@@ -148,15 +158,6 @@ void IndexBuffer::release(void)
 #endif
 }
 
-#ifndef ENABLE_SDL
-IDirect3DDevice9* IndexBuffer::m_pD3DDevice = nullptr;
-
-void IndexBuffer::setD3DDevice(IDirect3DDevice9* pD3DDevice)
-{
-   m_pD3DDevice = pD3DDevice;
-}
-#endif
-
 void IndexBuffer::bind()
 {
 #ifdef ENABLE_SDL
@@ -168,14 +169,15 @@ void IndexBuffer::bind()
       m_curIndexBuffer = this;
    }
 #else
-   if (m_curIndexBuffer != ib)
+   if (m_curIndexBuffer == nullptr || m_curIndexBuffer != this)
    {
-      CHECKD3D(m_pD3DDevice->SetIndices(ib));
-      m_curIndexBuffer = ib;
+      CHECKD3D(m_pD3DDevice->SetIndices(this));
+      m_curIndexBuffer = this;
    }
 #endif
 }
 
+#ifdef ENABLE_SDL
 void IndexBuffer::UploadData(bool freeData)
 {
    if (isUploaded || !dataBuffer) return;
@@ -261,3 +263,4 @@ void IndexBuffer::UploadBuffers()
    CHECKD3D(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
    notUploadedBuffers.clear();
 }
+#endif

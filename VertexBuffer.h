@@ -1,7 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
-#include "typeDefs3D.h"
+#include "typedefs3D.h"
 
 #ifdef ENABLE_SDL
 
@@ -19,12 +19,12 @@ public:
    void unlock(void);
    void release(void);
    void bind();
-   static void bindNull() { m_curVertexBuffer = nullptr; }
 
+   static void bindNull() { m_curVertexBuffer = nullptr; }
    static void CreateVertexBuffer(const unsigned int vertexCount, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer);
+   static void UploadBuffers();
 
    GLuint getOffset() const { return offset; }
-   static void UploadBuffers();
 
 private:
    GLuint count;
@@ -47,6 +47,7 @@ private:
 
    static VertexBuffer* m_curVertexBuffer; // for caching
    static std::vector<VertexBuffer*> notUploadedBuffers;
+
    void UploadData();
    void addToNotUploadedBuffers();
 };
@@ -67,12 +68,18 @@ public:
    void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags);
    void unlock(void);
    void release(void);
+   void bind();
 
+   static void bindNull() { m_curVertexBuffer = nullptr; }
    static void CreateVertexBuffer(const unsigned int vertexCount, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer);
-   static void setD3DDevice(IDirect3DDevice9* pD3DDevice);
+   static void setD3DDevice(IDirect3DDevice9* pD3DDevice) { m_pD3DDevice = pD3DDevice; }
 
 private:
    VertexBuffer();     // disable default constructor
+
+   DWORD m_fvf;
+
+   static VertexBuffer* m_curVertexBuffer; // for caching
    static IDirect3DDevice9* m_pD3DDevice;
 };
 

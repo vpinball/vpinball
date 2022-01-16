@@ -83,64 +83,6 @@ private:
    typedef std::map<BaseTexture*, TexInfo>::iterator Iter;
 };
 
-class VertexBuffer : public IDirect3DVertexBuffer9
-{
-public:
-   enum LockFlags
-   {
-      WRITEONLY = 0,                        // in DX9, this is specified during VB creation
-      NOOVERWRITE = D3DLOCK_NOOVERWRITE,    // meaning: no recently drawn vertices are overwritten. only works with dynamic VBs.
-      // it's only needed for VBs which are locked several times per frame
-      DISCARDCONTENTS = D3DLOCK_DISCARD     // discard previous contents; only works with dynamic VBs
-   };
-
-   void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags);
-
-   void unlock()
-   {
-      CHECKD3D(this->Unlock());
-   }
-
-   void release()
-   {
-      SAFE_RELEASE_NO_CHECK_NO_SET(this);
-   }
-private:
-   VertexBuffer();     // disable default constructor
-};
-
-
-class IndexBuffer : public IDirect3DIndexBuffer9
-{
-public:
-   enum Format {
-      FMT_INDEX16 = D3DFMT_INDEX16,
-      FMT_INDEX32 = D3DFMT_INDEX32
-   };
-   enum LockFlags
-   {
-      WRITEONLY = 0,                      // in DX9, this is specified during VB creation
-      NOOVERWRITE = D3DLOCK_NOOVERWRITE,  // meaning: no recently drawn vertices are overwritten. only works with dynamic VBs.
-      // it's only needed for VBs which are locked several times per frame
-      DISCARD = D3DLOCK_DISCARD           // discard previous contents; only works with dynamic VBs
-   };
-
-   void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags);
-
-   void unlock()
-   {
-      CHECKD3D(this->Unlock());
-   }
-
-   void release()
-   {
-      SAFE_RELEASE_NO_CHECK_NO_SET(this);
-   }
-
-private:
-   IndexBuffer();      // disable default constructor
-};
-
 class Shader;
 
 class RenderDevice

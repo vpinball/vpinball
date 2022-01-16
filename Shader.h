@@ -236,26 +236,27 @@ public:
    void SetBool(const SHADER_UNIFORM_HANDLE hParameter, const bool b);
    void SetFloatArray(const SHADER_UNIFORM_HANDLE hParameter, const float* pData, const unsigned int count);
 
-   static void SetTransform(const TransformStateType p1, const Matrix3D * p2, const int count);
+   static void SetTransform(const TransformStateType p1, const Matrix3D* p2, const int count);
    static void GetTransform(const TransformStateType p1, Matrix3D* p2, const int count);
    static Shader* getCurrentShader();
 
 private:
    static Shader* m_currentShader;
    static RenderDevice *m_renderDevice;
+   static int shaderCount;
 
    // caches:
    Material currentMaterial;
 
    vec4 currentDisableLighting; // x and y: top and below, z and w unused
 
-   static const DWORD TEXTURESET_STATE_CACHE_SIZE = 5; // current convention: SetTexture gets "TextureX", where X 0..4
+   static constexpr DWORD TEXTURESET_STATE_CACHE_SIZE = 5; // current convention: SetTexture gets "TextureX", where X 0..4
    BaseTexture *currentTexture[TEXTURESET_STATE_CACHE_SIZE];
-   float   currentAlphaTestValue;
-   char    currentTechnique[64];
+   float currentAlphaTestValue;
+   char  currentTechnique[64];
 
-   vec4 currentFlasherColor; // flasher only-data
-   vec4 currentFlasherData;
+   vec4  currentFlasherColor; // flasher only-data
+   vec4  currentFlasherData;
    float currentFlasherMode;
 
    vec4 currentLightColor; // all light only-data
@@ -263,7 +264,6 @@ private:
    vec4 currentLightData;
    unsigned int currentLightImageMode;
    unsigned int currentLightBackglassMode;
-   static int shaderCount;
    int shaderID;
    int currentShader;
 

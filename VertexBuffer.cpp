@@ -3,6 +3,8 @@
 #include "RenderDevice.h"
 #include "Shader.h"
 
+extern unsigned m_curLockCalls, m_frameLockCalls;
+
 //!! Disabled since it still has some bugs
 #define COMBINE_BUFFERS 0
 
@@ -21,8 +23,14 @@ static unsigned int fvfToSize(const DWORD fvf)
 }
 
 VertexBuffer* VertexBuffer::m_curVertexBuffer = nullptr;
-std::vector<VertexBuffer*> VertexBuffer::notUploadedBuffers;
 
+#ifndef ENABLE_SDL
+IDirect3DDevice9* VertexBuffer::m_pD3DDevice = nullptr;
+#endif
+
+#ifdef ENABLE_SDL
+std::vector<VertexBuffer*> VertexBuffer::notUploadedBuffers;
+#endif
 
 void VertexBuffer::CreateVertexBuffer(const unsigned int vertexCount, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer)
 {
@@ -41,6 +49,7 @@ void VertexBuffer::CreateVertexBuffer(const unsigned int vertexCount, const DWOR
    // NB: We always specify WRITEONLY since MSDN states,
    // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
    // This means we cannot read from vertex buffers, but I don't think we need to.
+   m_fvf = fvf;
    const HRESULT hr = m_pD3DDevice->CreateVertexBuffer(vertexCount * fvfToSize(fvf), D3DUSAGE_WRITEONLY | usage, 0,
       (D3DPOOL)memoryPool::DEFAULT, (IDirect3DVertexBuffer9**)vBuffer, nullptr);
    if (FAILED(hr))
@@ -50,6 +59,7 @@ void VertexBuffer::CreateVertexBuffer(const unsigned int vertexCount, const DWOR
 
 void VertexBuffer::lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags)
 {
+   m_curLockCalls++;
 #ifdef ENABLE_SDL
    if (sizeToLock == 0)
       this->sizeToLock = size;
@@ -97,15 +107,6 @@ void VertexBuffer::release()
 #endif
 }
 
-#ifndef ENABLE_SDL
-IDirect3DDevice9* VertexBuffer::m_pD3DDevice= nullptr;
-
-void VertexBuffer::setD3DDevice(IDirect3DDevice9* pD3DDevice)
-{
-   m_pD3DDevice = pD3DDevice;
-}
-#endif
-
 void VertexBuffer::bind()
 {
 #ifdef ENABLE_SDL
@@ -115,7 +116,7 @@ void VertexBuffer::bind()
       else
          UploadData();
    }
-   if (m_curVertexBuffer==nullptr || this->Array != m_curVertexBuffer->Array || this->Buffer != m_curVertexBuffer->Buffer)
+   if (m_curVertexBuffer == nullptr || this->Array != m_curVertexBuffer->Array || this->Buffer != m_curVertexBuffer->Buffer)
    {
       CHECKD3D(glBindVertexArray(this->Array));
       CHECKD3D(glBindBuffer(GL_ARRAY_BUFFER, this->Buffer));
@@ -123,15 +124,16 @@ void VertexBuffer::bind()
    }
    Shader::getCurrentShader()->setAttributeFormat(fvf);
 #else
-   if (m_curVertexBuffer != vb)
+   if (m_curVertexBuffer == nullptr || m_curVertexBuffer != this)
    {
-      const unsigned int vsize = fvfToSize(fvf);
-      CHECKD3D(m_pD3DDevice->SetStreamSource(0, vb, 0, vsize));
-      m_curVertexBuffer = vb;
+      const unsigned int vsize = fvfToSize(m_fvf);
+      CHECKD3D(m_pD3DDevice->SetStreamSource(0, this, 0, vsize));
+      m_curVertexBuffer = this;
    }
 #endif
 }
 
+#ifdef ENABLE_SDL
 void VertexBuffer::UploadData()
 {
    if (Array == 0)
@@ -209,3 +211,4 @@ void VertexBuffer::UploadBuffers()
    CHECKD3D(glBindVertexArray(0));
    notUploadedBuffers.clear();
 }
+#endif

@@ -182,17 +182,7 @@ void ReportError(const char *errorText, const HRESULT hr, const char *file, cons
    exit(-1);
 }
 
-static unsigned m_curLockCalls, m_frameLockCalls; //!! meh
-void VertexBuffer::lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags)
-{
-    m_curLockCalls++;
-    CHECKD3D(this->Lock(offsetToLock, sizeToLock, dataBuffer, flags));
-}
-void IndexBuffer::lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags)
-{
-    m_curLockCalls++;
-    CHECKD3D(this->Lock(offsetToLock, sizeToLock, dataBuffer, flags));
-}
+unsigned m_curLockCalls, m_frameLockCalls;
 unsigned int RenderDevice::Perf_GetNumLockCalls() const { return m_frameLockCalls; }
 
 D3DTexture* TextureManager::LoadTexture(BaseTexture* memtex, const bool linearRGB)
