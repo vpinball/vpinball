@@ -296,6 +296,8 @@ add_executable(vpinball WIN32
    inc/win32xx/include/wxx_webbrowser.h
    inc/win32xx/include/wxx_wincore.h
    inc/win32xx/include/wxx_wincore0.h
+   IndexBuffer.cpp
+   IndexBuffer.h
    math/bbox.h
    math/math.cpp
    math/math.h
@@ -445,6 +447,7 @@ add_executable(vpinball WIN32
    RenderDevice.h
    resource.h
    rubber.h
+   Shader.h
    slintf.cpp
    slintf.h
    spinner.cpp
@@ -470,6 +473,8 @@ add_executable(vpinball WIN32
    vectorsort.h
    main.cpp
    main.h
+   VertexBuffer.cpp
+   VertexBuffer.h
    vpinball.cpp
    vpinball_h.h
    vpversion.h
