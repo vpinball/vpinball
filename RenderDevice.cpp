@@ -15,6 +15,7 @@
 #include "FBShader.h"
 #include "FlasherShader.h"
 #include "LightShader.h"
+#include "Shader.h"
 #ifdef SEPARATE_CLASSICLIGHTSHADER
 #include "ClassicLightShader.h"
 #endif
@@ -800,8 +801,8 @@ bool RenderDevice::LoadShaders()
    // Now that shaders are compiled, set static textures for SMAA postprocessing shader
    if (m_FXAA == Quality_SMAA)
    {
-      CHECKD3D(FBShader->Core()->SetTexture("areaTex2D", m_SMAAareaTexture));
-      CHECKD3D(FBShader->Core()->SetTexture("searchTex2D", m_SMAAsearchTexture));
+      CHECKD3D(FBShader->Core()->SetTexture(SHADER_areaTex2D, m_SMAAareaTexture));
+      CHECKD3D(FBShader->Core()->SetTexture(SHADER_searchTex2D, m_SMAAsearchTexture));
    }
 
    return true;
@@ -843,37 +844,37 @@ void RenderDevice::FreeShader()
 {
    if (basicShader)
    {
-      CHECKD3D(basicShader->Core()->SetTexture("Texture0", nullptr));
-      CHECKD3D(basicShader->Core()->SetTexture("Texture1", nullptr));
-      CHECKD3D(basicShader->Core()->SetTexture("Texture2", nullptr));
-      CHECKD3D(basicShader->Core()->SetTexture("Texture3", nullptr));
-      CHECKD3D(basicShader->Core()->SetTexture("Texture4", nullptr));
+      CHECKD3D(basicShader->Core()->SetTexture(SHADER_Texture0, nullptr));
+      CHECKD3D(basicShader->Core()->SetTexture(SHADER_Texture1, nullptr));
+      CHECKD3D(basicShader->Core()->SetTexture(SHADER_Texture2, nullptr));
+      CHECKD3D(basicShader->Core()->SetTexture(SHADER_Texture3, nullptr));
+      CHECKD3D(basicShader->Core()->SetTexture(SHADER_Texture4, nullptr));
       delete basicShader;
       basicShader = 0;
    }
    if (DMDShader)
    {
-      CHECKD3D(DMDShader->Core()->SetTexture("Texture0", nullptr));
+      CHECKD3D(DMDShader->Core()->SetTexture(SHADER_Texture0, nullptr));
       delete DMDShader;
       DMDShader = 0;
    }
    if (FBShader)
    {
-      CHECKD3D(FBShader->Core()->SetTexture("Texture0", nullptr));
-      CHECKD3D(FBShader->Core()->SetTexture("Texture1", nullptr));
-      CHECKD3D(FBShader->Core()->SetTexture("Texture3", nullptr));
-      CHECKD3D(FBShader->Core()->SetTexture("Texture4", nullptr));
+      CHECKD3D(FBShader->Core()->SetTexture(SHADER_Texture0, nullptr));
+      CHECKD3D(FBShader->Core()->SetTexture(SHADER_Texture1, nullptr));
+      CHECKD3D(FBShader->Core()->SetTexture(SHADER_Texture3, nullptr));
+      CHECKD3D(FBShader->Core()->SetTexture(SHADER_Texture4, nullptr));
 
-      CHECKD3D(FBShader->Core()->SetTexture("areaTex2D", nullptr));
-      CHECKD3D(FBShader->Core()->SetTexture("searchTex2D", nullptr));
+      CHECKD3D(FBShader->Core()->SetTexture(SHADER_areaTex2D, nullptr));
+      CHECKD3D(FBShader->Core()->SetTexture(SHADER_searchTex2D, nullptr));
 
       delete FBShader;
       FBShader = 0;
    }
    if (flasherShader)
    {
-      CHECKD3D(flasherShader->Core()->SetTexture("Texture0", nullptr));
-      CHECKD3D(flasherShader->Core()->SetTexture("Texture1", nullptr));
+      CHECKD3D(flasherShader->Core()->SetTexture(SHADER_Texture0, nullptr));
+      CHECKD3D(flasherShader->Core()->SetTexture(SHADER_Texture1, nullptr));
       delete flasherShader;
       flasherShader = 0;
    }
@@ -885,9 +886,9 @@ void RenderDevice::FreeShader()
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    if (classicLightShader)
    {
-      CHECKD3D(classicLightShader->Core()->SetTexture("Texture0",nullptr));
-      CHECKD3D(classicLightShader->Core()->SetTexture("Texture1",nullptr));
-      CHECKD3D(classicLightShader->Core()->SetTexture("Texture2",nullptr));
+      CHECKD3D(classicLightShader->Core()->SetTexture(SHADER_Texture0, nullptr));
+      CHECKD3D(classicLightShader->Core()->SetTexture(SHADER_Texture1, nullptr));
+      CHECKD3D(classicLightShader->Core()->SetTexture(SHADER_Texture2, nullptr));
       delete classicLightShader;
       classicLightShader=0;
    }
@@ -1254,9 +1255,9 @@ void RenderDevice::CopyDepth(D3DTexture* dest, D3DTexture* src)
 
    SetRenderTarget(dest);
 
-   FBShader->SetTexture("Texture0", src);
-   FBShader->SetFloat("mirrorFactor", 1.f); //!! use separate pass-through shader instead??
-   FBShader->SetTechnique("fb_mirror");
+   FBShader->SetTexture(SHADER_Texture0, src);
+   FBShader->SetFloat(SHADER_mirrorFactor, 1.f); //!! use separate pass-through shader instead??
+   FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
 
    SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE); // paranoia set //!!
    SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
@@ -1936,7 +1937,7 @@ void Shader::SetMaterial(const Material * const mat)
        fThickness != currentMaterial.m_fThickness)
    {
       const vec4 rwem(fRoughness, fWrapLighting, fEdge, fThickness);
-      SetVector("Roughness_WrapL_Edge_Thickness", &rwem);
+      SetVector(SHADER_Roughness_WrapL_Edge_Thickness, &rwem);
       currentMaterial.m_fRoughness = fRoughness;
       currentMaterial.m_fWrapLighting = fWrapLighting;
       currentMaterial.m_fEdge = fEdge;
@@ -1947,7 +1948,7 @@ void Shader::SetMaterial(const Material * const mat)
    if (cBase != currentMaterial.m_cBase || alpha != currentMaterial.m_fOpacity)
    {
       const vec4 cBaseF = convertColor(cBase, alpha);
-      SetVector("cBase_Alpha", &cBaseF);
+      SetVector(SHADER_cBase_Alpha, &cBaseF);
       currentMaterial.m_cBase = cBase;
       currentMaterial.m_fOpacity = alpha;
    }
@@ -1957,7 +1958,7 @@ void Shader::SetMaterial(const Material * const mat)
           fGlossyImageLerp != currentMaterial.m_fGlossyImageLerp)
       {
          const vec4 cGlossyF = convertColor(cGlossy, fGlossyImageLerp);
-         SetVector("cGlossy_ImageLerp", &cGlossyF);
+         SetVector(SHADER_cGlossy_ImageLerp, &cGlossyF);
          currentMaterial.m_cGlossy = cGlossy;
          currentMaterial.m_fGlossyImageLerp = fGlossyImageLerp;
       }
@@ -1966,7 +1967,7 @@ void Shader::SetMaterial(const Material * const mat)
       (bOpacityActive && fEdgeAlpha != currentMaterial.m_fEdgeAlpha))
    {
       const vec4 cClearcoatF = convertColor(cClearcoat, fEdgeAlpha);
-      SetVector("cClearcoat_EdgeAlpha", &cClearcoatF);
+      SetVector(SHADER_cClearcoat_EdgeAlpha, &cClearcoatF);
       currentMaterial.m_cClearcoat = cClearcoat;
       currentMaterial.m_fEdgeAlpha = fEdgeAlpha;
    }

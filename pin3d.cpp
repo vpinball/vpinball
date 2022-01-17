@@ -702,9 +702,9 @@ void Pin3D::InitLights()
    amb_lr.x *= g_pplayer->m_globalEmissionScale;
    amb_lr.y *= g_pplayer->m_globalEmissionScale;
    amb_lr.z *= g_pplayer->m_globalEmissionScale;
-   m_pd3dPrimaryDevice->basicShader->SetVector("cAmbient_LightRange", &amb_lr);
+   m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_cAmbient_LightRange, &amb_lr);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
-   m_pd3dPrimaryDevice->classicLightShader->SetVector("cAmbient_LightRange", &amb_lr);
+   m_pd3dPrimaryDevice->classicLightShader->SetVector(SHADER_cAmbient_LightRange, &amb_lr);
 #endif
 
 }
@@ -1013,12 +1013,12 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
        if (pin)
        {
            SetPrimaryTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
-           m_pd3dPrimaryDevice->basicShader->SetTechnique("basic_depth_only_with_texture");
-           m_pd3dPrimaryDevice->basicShader->SetTexture("Texture0", pin, false);
+           m_pd3dPrimaryDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_basic_depth_only_with_texture);
+           m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_Texture0, pin, false);
            m_pd3dPrimaryDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
        }
        else // No image by that name
-		   m_pd3dPrimaryDevice->basicShader->SetTechnique("basic_depth_only_without_texture");
+           m_pd3dPrimaryDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_basic_depth_only_without_texture);
    }
    else
    {
@@ -1028,7 +1028,7 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
        {
            SetPrimaryTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
            m_pd3dPrimaryDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-           m_pd3dPrimaryDevice->basicShader->SetTexture("Texture0", pin, false);
+           m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_Texture0, pin, false);
            m_pd3dPrimaryDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
        }
        else // No image by that name
@@ -1053,7 +1053,7 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
 
    if (pin)
    {
-      //m_pd3dPrimaryDevice->basicShader->SetTexture("Texture0",(D3DTexture*)nullptr);
+      //m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_Texture0,(D3DTexture*)nullptr);
       //m_pd3dPrimaryDevice->m_texMan.UnloadTexture(pin->m_pdsBuffer); //!! is used by ball reflection later-on
       SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
    }

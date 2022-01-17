@@ -7,6 +7,7 @@
 #include "Texture.h"
 #include "IndexBuffer.h"
 #include "VertexBuffer.h"
+#include "Shader.h"
 
 #define CHECKD3D(s) { const HRESULT hrTmp = (s); if (FAILED(hrTmp)) ReportFatalError(hrTmp, __FILE__, __LINE__); }
 
@@ -411,7 +412,7 @@ public:
       if (currentDisableLighting.x != value.x || currentDisableLighting.y != value.y)
       {
          currentDisableLighting = value;
-         SetVector("fDisableLighting_top_below", &value);
+         SetVector(SHADER_fDisableLighting_top_below, &value);
       }
    }
 
@@ -420,7 +421,7 @@ public:
       if (currentAlphaTestValue != value)
       {
          currentAlphaTestValue = value;
-         SetFloat("alphaTestValue", value);
+         SetFloat(SHADER_alphaTestValue, value);
       }
    }
 
@@ -429,7 +430,7 @@ public:
       if (currentFlasherColor.x != color.x || currentFlasherColor.y != color.y || currentFlasherColor.z != color.z || currentFlasherColor.w != color.w)
       {
          currentFlasherColor = color;
-         SetVector("staticColor_Alpha", &color);
+         SetVector(SHADER_staticColor_Alpha, &color);
       }
    }
 
@@ -438,12 +439,12 @@ public:
       if (currentFlasherData.x != color.x || currentFlasherData.y != color.y || currentFlasherData.z != color.z || currentFlasherData.w != color.w)
       {
          currentFlasherData = color;
-         SetVector("alphaTestValueAB_filterMode_addBlend", &color);
+         SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, &color);
       }
       if (currentFlasherMode != mode)
       {
          currentFlasherMode = mode;
-         SetFloat("flasherMode", mode);
+         SetFloat(SHADER_flasherMode, mode);
       }
    }
 
@@ -452,7 +453,7 @@ public:
       if (currentLightColor.x != color.x || currentLightColor.y != color.y || currentLightColor.z != color.z || currentLightColor.w != color.w)
       {
          currentLightColor = color;
-         SetVector("lightColor_intensity", &color);
+         SetVector(SHADER_lightColor_intensity, &color);
       }
    }
 
@@ -461,7 +462,7 @@ public:
       if (currentLightColor2.x != color.x || currentLightColor2.y != color.y || currentLightColor2.z != color.z || currentLightColor2.w != color.w)
       {
          currentLightColor2 = color;
-         SetVector("lightColor2_falloff_power", &color);
+         SetVector(SHADER_lightColor2_falloff_power, &color);
       }
    }
 
@@ -470,7 +471,7 @@ public:
       if (currentLightData.x != color.x || currentLightData.y != color.y || currentLightData.z != color.z || currentLightData.w != color.w)
       {
          currentLightData = color;
-         SetVector("lightCenter_maxRange", &color);
+         SetVector(SHADER_lightCenter_maxRange, &color);
       }
    }
 
