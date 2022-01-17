@@ -682,6 +682,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="trigger.cpp" />
     <ClCompile Include="variant.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="VertexBuffer.cpp" />
     <ClCompile Include="vpinball.cpp" />
     <ClCompile Include="media\wavread.cpp" />
     <ClCompile Include="wintimer.cpp" />
@@ -689,7 +690,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="audioplayer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="vpinball.idl"/>
+    <Midl Include="vpinball.idl" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1016,6 +1017,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="inc\win32xx\include\wxx_webbrowser.h" />
     <ClInclude Include="inc\win32xx\include\wxx_wincore.h" />
     <ClInclude Include="inc\win32xx\include\wxx_wincore0.h" />
+    <ClInclude Include="IndexBuffer.h" />
     <ClInclude Include="iselect.h" />
     <ClInclude Include="kdtree.h" />
     <ClInclude Include="kicker.h" />
@@ -1091,6 +1093,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="RenderDevice.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="rubber.h" />
+    <ClInclude Include="Shader.h" />
     <ClInclude Include="slintf.h" />
     <ClInclude Include="spinner.h" />
     <ClInclude Include="StackTrace.h" />
@@ -1105,6 +1108,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="variant.h" />
     <ClInclude Include="vector.h" />
     <ClInclude Include="vectorsort.h" />
+    <ClInclude Include="VertexBuffer.h" />
     <ClInclude Include="vpinball_h.h" />
     <ClInclude Include="vpinball.h" />
     <ClInclude Include="vpversion.h" />
