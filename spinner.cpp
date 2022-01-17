@@ -410,7 +410,7 @@ void Spinner::RenderDynamic()
    if (image)
    {
       pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-      pd3dDevice->basicShader->SetTexture("Texture0", image, false);
+      pd3dDevice->basicShader->SetTexture(SHADER_Texture0, image, false);
       pd3dDevice->basicShader->SetAlphaTestValue(image->m_alphaTestValue * (float)(1.0 / 255.0));
    }
    else // No image by that name

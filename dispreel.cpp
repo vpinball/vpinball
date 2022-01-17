@@ -222,12 +222,12 @@ void DispReel::RenderDynamic()
    pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, RenderDevice::Z_GREATER); //!! still necessary?
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
 
-   pd3dDevice->DMDShader->SetTechnique("basic_noDMD");
+   pd3dDevice->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_noDMD);
 
    const vec4 c = convertColor(0xFFFFFFFF, 1.f);
-   pd3dDevice->DMDShader->SetVector("vColor_Intensity", &c);
+   pd3dDevice->DMDShader->SetVector(SHADER_vColor_Intensity, &c);
 
-   pd3dDevice->DMDShader->SetTexture("Texture0", pin, false);
+   pd3dDevice->DMDShader->SetTexture(SHADER_Texture0, pin, false);
 
    pd3dDevice->DMDShader->Begin(0);
 

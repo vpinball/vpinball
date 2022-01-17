@@ -520,9 +520,9 @@ void Light::RenderDynamic()
 
       if (offTexel != nullptr)
       {
-         pd3dDevice->classicLightShader->SetBool("hdrTexture0", offTexel->IsHDR());
+         pd3dDevice->classicLightShader->SetBool(SHADER_hdrTexture0, offTexel->IsHDR());
          pd3dDevice->classicLightShader->SetTechnique(m_surfaceMaterial->m_bIsMetal ? "light_with_texture_isMetal" : "light_with_texture_isNotMetal");
-         pd3dDevice->classicLightShader->SetTexture("Texture0", offTexel, false);
+         pd3dDevice->classicLightShader->SetTexture(SHADER_Texture0, offTexel, false, true);
          // Was: if (m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl && !m_backglass)*/
          // TOTAN and Flintstones inserts break if alpha blending is disabled here.
          // Also see below if changing again
@@ -541,7 +541,7 @@ void Light::RenderDynamic()
       pd3dDevice->lightShader->SetLightData(center_range);
       pd3dDevice->lightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
 
-      pd3dDevice->lightShader->SetTechnique("bulb_light");
+      pd3dDevice->lightShader->SetTechnique(SHADER_TECHNIQUE_bulb_light);
 
       const Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       ppin3d->EnableAlphaBlend(false, false, false);
@@ -555,14 +555,14 @@ void Light::RenderDynamic()
          if (g_pplayer->m_current_renderstage == 1)
             lightColor_intensity.w *= m_d.m_transmissionScale;
          pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
-         pd3dDevice->lightShader->SetFloat("blend_modulate_vs_add", 0.00001f); // additive, but avoid full 0, as it disables the blend
+         pd3dDevice->lightShader->SetFloat(SHADER_blend_modulate_vs_add, 0.00001f); // additive, but avoid full 0, as it disables the blend
 
          pd3dDevice->lightShader->Begin(0);
          pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bulbLightVBuffer, 0, bulbLightNumVertices, m_bulbLightIndexBuffer, 0, bulbLightNumFaces);
          pd3dDevice->lightShader->End();
       }
 
-      pd3dDevice->lightShader->SetFloat("blend_modulate_vs_add", (g_pplayer->m_current_renderstage == 0) ? min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
+      pd3dDevice->lightShader->SetFloat(SHADER_blend_modulate_vs_add, (g_pplayer->m_current_renderstage == 0) ? min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
    }
 
    // (maybe) update, then render light shape

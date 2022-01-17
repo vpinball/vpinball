@@ -721,7 +721,7 @@ void HitTarget::RenderObject()
    if (pin)
    {
       pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-      pd3dDevice->basicShader->SetTexture("Texture0", pin, false);
+      pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pin, false);
       pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 
       //g_pplayer->m_pin3d.SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);

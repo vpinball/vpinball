@@ -541,7 +541,7 @@ void Decal::RenderObject()
    if (m_d.m_decaltype != DecalImage)
    {
       pd3dDevice->basicShader->SetTechnique(!m_backglass ? (mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal") : "bg_decal_with_texture");
-      pd3dDevice->basicShader->SetTexture("Texture0", pd3dDevice->m_texMan.LoadTexture(m_textImg, false));
+      pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pd3dDevice->m_texMan.LoadTexture(m_textImg, false), false);
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
    }
    else
@@ -550,7 +550,7 @@ void Decal::RenderObject()
       if (pin)
       {
          pd3dDevice->basicShader->SetTechnique(!m_backglass ? (mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal") : "bg_decal_with_texture");
-         pd3dDevice->basicShader->SetTexture("Texture0", pin, false);
+         pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pin, false);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
       }
       else
@@ -573,7 +573,7 @@ void Decal::RenderObject()
    {
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
       const vec4 staticColor(1.0f, 1.0f, 1.0f, 1.0f);
-      pd3dDevice->basicShader->SetVector("cBase_Alpha", &staticColor);
+      pd3dDevice->basicShader->SetVector(SHADER_cBase_Alpha, &staticColor);
    }
 
    pd3dDevice->basicShader->Begin(0);

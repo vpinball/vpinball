@@ -580,7 +580,7 @@ void Kicker::RenderDynamic()
       pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "kickerBoolean_isMetal" : "kickerBoolean_isNotMetal");
-      pd3dDevice->basicShader->SetFloat("fKickerScale", m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+      pd3dDevice->basicShader->SetFloat(SHADER_fKickerScale, m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
       pd3dDevice->SetRenderState(RenderDevice::ZFUNC, RenderDevice::Z_ALWAYS);
 
       pd3dDevice->basicShader->Begin(0);
@@ -592,7 +592,7 @@ void Kicker::RenderDynamic()
       if (m_d.m_kickertype != KickerHoleSimple)
       {
          pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-         pd3dDevice->basicShader->SetTexture("Texture0", &m_texture, false);
+         pd3dDevice->basicShader->SetTexture(SHADER_Texture0, &m_texture, false);
       }
       else
          pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");

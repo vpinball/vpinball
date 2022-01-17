@@ -932,7 +932,7 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
       pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    else
    {
-      pd3dDevice->basicShader->SetTexture("Texture0", pin, false);
+      pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pin, false);
       pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
 
       //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
@@ -2197,7 +2197,7 @@ void Ramp::RenderRamp(const Material * const mat)
       if (pin)
       {
          pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-         pd3dDevice->basicShader->SetTexture("Texture0", pin, false);
+         pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pin, false);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 
          //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
