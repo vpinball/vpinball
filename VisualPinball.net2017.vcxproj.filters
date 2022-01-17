@@ -289,6 +289,8 @@
     <ClCompile Include="inc\serial.cpp">
       <Filter>inc</Filter>
     </ClCompile>
+    <ClCompile Include="IndexBuffer.cpp" />
+    <ClCompile Include="VertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -645,7 +647,7 @@
     </None>
     <None Include="res\lightSeqTable.vpx">
       <Filter>res</Filter>
-    </None>    
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inc">
@@ -1462,6 +1464,15 @@
     </ClInclude>
     <ClInclude Include="inc\serial.h">
       <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="IndexBuffer.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexBuffer.h">
+      <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
