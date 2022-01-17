@@ -712,10 +712,7 @@ void HitTarget::RenderObject()
 #endif
 
    if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
-   {
-      const vec4 tmp(m_d.m_disableLightingTop,m_d.m_disableLightingBelow, 0.f,0.f);
-      pd3dDevice->basicShader->SetDisableLighting(tmp);
-   }
+      pd3dDevice->basicShader->SetDisableLighting(vec4(m_d.m_disableLightingTop,m_d.m_disableLightingBelow, 0.f,0.f));
 
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (pin)
@@ -749,10 +746,7 @@ void HitTarget::RenderObject()
    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
    if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
-   {
-      const vec4 tmp(0.f,0.f, 0.f,0.f);
-      pd3dDevice->basicShader->SetDisableLighting(tmp);
-   }
+      pd3dDevice->basicShader->SetDisableLighting(vec4(0.f,0.f, 0.f,0.f));
 }
 
 void HitTarget::UpdateTarget()

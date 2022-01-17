@@ -1070,10 +1070,7 @@ void Surface::RenderWallsAtHeight(const bool drop)
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    if ((m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f) && (m_d.m_sideVisible || m_d.m_topBottomVisible))
-   {
-      const vec4 tmp(m_d.m_disableLightingTop,m_d.m_disableLightingBelow, 0.f,0.f);
-      pd3dDevice->basicShader->SetDisableLighting(tmp);
-   }
+     pd3dDevice->basicShader->SetDisableLighting(vec4(m_d.m_disableLightingTop,m_d.m_disableLightingBelow, 0.f,0.f));
 
    // render side
    if (m_d.m_sideVisible && !drop && (m_numVertices > 0)) // Don't need to render walls if dropped
@@ -1160,10 +1157,7 @@ void Surface::RenderWallsAtHeight(const bool drop)
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!!  not necessary anymore
    //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
    if ((m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f) && (m_d.m_sideVisible || m_d.m_topBottomVisible))
-   {
-      const vec4 tmp(0.f,0.f, 0.f,0.f);
-      pd3dDevice->basicShader->SetDisableLighting(tmp);
-   }
+      pd3dDevice->basicShader->SetDisableLighting(vec4(0.f,0.f, 0.f,0.f));
 }
 
 void Surface::AddPoint(int x, int y, const bool smooth)

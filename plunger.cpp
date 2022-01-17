@@ -216,8 +216,6 @@ void Plunger::SetDefaultPhysics(bool fromMouseClick)
 
 void Plunger::RenderDynamic()
 {
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    TRACE_FUNCTION();
 
    // TODO: get rid of frame stuff
@@ -234,6 +232,9 @@ void Plunger::RenderDynamic()
    const int frame = (frame0 < 0 ? 0 : frame0 >= m_cframes ? m_cframes - 1 : frame0);
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    pd3dDevice->basicShader->SetMaterial(mat);
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
