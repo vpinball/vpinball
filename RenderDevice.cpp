@@ -1569,10 +1569,10 @@ void RenderDevice::SetRenderState(const RenderStates p1, DWORD p2)
 
    if (p1 == CULLMODE && (g_pplayer && (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->m_ptable->m_reflectionEnabled)))
    {
-      if (p2 == RenderDevice::CULL_CCW)
-         p2 = RenderDevice::CULL_CW;
-      else if (p2 == RenderDevice::CULL_CW)
-         p2 = RenderDevice::CULL_CCW;
+      if (p2 == CULL_CCW)
+         p2 = CULL_CW;
+      else if (p2 == CULL_CW)
+         p2 = CULL_CCW;
    }
 
    CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)p1, p2));
@@ -1602,7 +1602,7 @@ void RenderDevice::SetRenderStateCulling(RenderStateValue cull)
       CHECKD3D(glCullFace(GL_FRONT));
    }
 #else
-   CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)RenderStates::CULLMODE, cull));
+   CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)CULLMODE, cull));
 #endif
    m_curStateChanges++;
 }
@@ -1620,13 +1620,14 @@ void RenderDevice::SetRenderStateDepthBias(float bias)
    }
 #else
    bias *= BASEDEPTHBIAS;
-   CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)RenderStates::DEPTHBIAS, *((DWORD*)&bias)));
+   CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)DEPTHBIAS, *((DWORD*)&bias)));
 #endif
+   m_curStateChanges++;
 }
 
 void RenderDevice::SetRenderStateClipPlane0(const bool enabled)
 {
-   if (SetRenderStateCache(CLIPPLANEENABLE, enabled ? 1 : 0)) return;
+   if (SetRenderStateCache(CLIPPLANEENABLE, enabled ? PLANE0 : 0)) return;
 
 #ifdef ENABLE_SDL
    // Basicshader already prepared with proper clipplane so just need to enable/disable it
@@ -1635,8 +1636,9 @@ void RenderDevice::SetRenderStateClipPlane0(const bool enabled)
    else
       CHECKD3D(glDisable(GL_CLIP_DISTANCE0));
 #else
-   CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)RenderStates::CLIPPLANEENABLE, enabled ? PLANE0 : 0));
+   CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)CLIPPLANEENABLE, enabled ? PLANE0 : 0));
 #endif 
+   m_curStateChanges++;
 }
 
 void RenderDevice::SetRenderStateAlphaTestFunction(const DWORD testValue, const RenderStateValue testFunction, const bool enabled)
@@ -1645,11 +1647,11 @@ void RenderDevice::SetRenderStateAlphaTestFunction(const DWORD testValue, const 
    //!! TODO Needs to be done in shader
 #else 
    if (!SetRenderStateCache(ALPHAREF, testValue))
-      CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)RenderStates::ALPHAREF, testValue));
+      CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)ALPHAREF, testValue));
    if (!SetRenderStateCache(ALPHATESTENABLE, enabled ? RS_TRUE : RS_FALSE))
-      CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)RenderStates::ALPHATESTENABLE, enabled ? RS_TRUE : RS_FALSE));
+      CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)ALPHATESTENABLE, enabled ? RS_TRUE : RS_FALSE));
    if (!SetRenderStateCache(ALPHAFUNC, Z_GREATEREQUAL))
-      CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)RenderStates::ALPHAFUNC, Z_GREATEREQUAL));
+      CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)ALPHAFUNC, Z_GREATEREQUAL));
 #endif
 }
 
