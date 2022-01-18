@@ -193,6 +193,7 @@ public:
    void SetRenderTarget(RenderTarget* surf);
    void SetRenderTarget(D3DTexture* tex);
    void SetZBuffer(RenderTarget* surf);
+   void UnSetZBuffer();
 
    void* AttachZBufferTo(RenderTarget* surf);
    void CopySurface(RenderTarget* dest, RenderTarget* src);

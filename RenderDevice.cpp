@@ -1546,11 +1546,24 @@ void RenderDevice::SetRenderTarget(D3DTexture* tex)
 
 void RenderDevice::SetZBuffer(RenderTarget* surf)
 {
+#ifndef ENABLE_SDL
    CHECKD3D(m_pD3DDevice->SetDepthStencilSurface(surf));
+#endif
+}
+
+void RenderDevice::UnSetZBuffer()
+{
+#ifndef ENABLE_SDL
+   CHECKD3D(m_pD3DDevice->SetDepthStencilSurface(nullptr));
+#endif
 }
 
 bool RenderDevice::SetRenderStateCache(const RenderStates p1, DWORD p2)
 {
+#ifdef DEBUG
+   if (p1 >= RENDERSTATE_COUNT)
+      return false;//Throw error or similar?
+#endif
    if (renderStateCache.find(p1) == renderStateCache.end())
    {
       renderStateCache.emplace(std::pair<RenderStates, DWORD>(p1, p2));
@@ -1575,8 +1588,49 @@ void RenderDevice::SetRenderState(const RenderStates p1, DWORD p2)
          p2 = CULL_CCW;
    }
 
+#ifdef ENABLE_SDL
+   switch (p1) {
+      //glEnable and glDisable functions
+   case ALPHABLENDENABLE:
+      CHECKD3D({ if (p2) glEnable(GL_BLEND); else glDisable(GL_BLEND); });
+      break;
+   case ZENABLE:
+      CHECKD3D({ if (p2) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST); });
+      break;
+   case BLENDOP:
+      CHECKD3D(glBlendEquation(p2));
+      break;
+   case SRCBLEND:
+      CHECKD3D(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+      break;
+   case DESTBLEND:
+      CHECKD3D(glBlendFunc(renderStateCache[SRCBLEND], renderStateCache[DESTBLEND]));
+      break;
+   case ZFUNC:
+      CHECKD3D(glDepthFunc(p2));
+      break;
+   case ZWRITEENABLE:
+      CHECKD3D(glDepthMask(p2 ? GL_TRUE : GL_FALSE));
+      break;
+   case COLORWRITEENABLE:
+      CHECKD3D(glColorMask((p2 & 1) ? GL_TRUE : GL_FALSE, (p2 & 2) ? GL_TRUE : GL_FALSE, (p2 & 4) ? GL_TRUE : GL_FALSE, (p2 & 8) ? GL_TRUE : GL_FALSE));
+      break;
+      //Replaced by specific function
+   case DEPTHBIAS:
+   case CULLMODE:
+   case CLIPPLANEENABLE:
+   case ALPHAFUNC:
+   case ALPHATESTENABLE:
+      //No effect or not implented in OpenGL 
+   case LIGHTING:
+   case CLIPPING:
+   case ALPHAREF:
+   default:
+      break;
+   }
+#else
    CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)p1, p2));
-
+#endif
    m_curStateChanges++;
 }
 
@@ -1650,8 +1704,8 @@ void RenderDevice::SetRenderStateAlphaTestFunction(const DWORD testValue, const 
       CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)ALPHAREF, testValue));
    if (!SetRenderStateCache(ALPHATESTENABLE, enabled ? RS_TRUE : RS_FALSE))
       CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)ALPHATESTENABLE, enabled ? RS_TRUE : RS_FALSE));
-   if (!SetRenderStateCache(ALPHAFUNC, Z_GREATEREQUAL))
-      CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)ALPHAFUNC, Z_GREATEREQUAL));
+   if (!SetRenderStateCache(ALPHAFUNC, testFunction))
+      CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)ALPHAFUNC, testFunction));
 #endif
 }
 
