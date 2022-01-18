@@ -455,9 +455,9 @@ void Bumper::RenderDynamic()
    m_d.m_time_msec = g_pplayer->m_time_msec;
    const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
 
-   pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+   pd3dDevice->SetRenderStateDepthBias(0.0f);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+   pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
    if (m_pbumperhitcircle->m_bumperanim_hitEvent)
       g_pplayer->m_pininput.PlayRumble(0.1f, 0.05f, 100);
@@ -553,7 +553,7 @@ void Bumper::RenderDynamic()
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
       pd3dDevice->basicShader->SetTexture(SHADER_Texture0, &m_skirtTexture, false);
       pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
+      pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
       RenderSocket(mat);
    }
 
@@ -563,7 +563,7 @@ void Bumper::RenderDynamic()
       if (mat->m_bOpacityActive)
       {
          pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
+         pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
          RenderBase(mat);
       }
    }
@@ -574,7 +574,7 @@ void Bumper::RenderDynamic()
       if (mat->m_bOpacityActive)
       {
          pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
+         pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
          RenderCap(mat);
       }
    }

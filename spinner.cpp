@@ -402,9 +402,9 @@ void Spinner::RenderDynamic()
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 
-   pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+   pd3dDevice->SetRenderStateDepthBias(0.0f);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+   pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
    Texture * const image = m_ptable->GetImage(m_d.m_szImage);
    if (image)
@@ -422,7 +422,7 @@ void Spinner::RenderDynamic()
 
    //    g_pplayer->UpdateBasicShaderMatrix();
 
-   //    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+   //    pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 }
 
 

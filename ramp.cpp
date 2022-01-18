@@ -923,9 +923,9 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
 
    pd3dDevice->basicShader->SetMaterial(mat);
 
-   pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+   pd3dDevice->SetRenderStateDepthBias(0.0f);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
+   pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
 
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (!pin)
@@ -1012,7 +1012,7 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
       pd3dDevice->basicShader->End();
    }
 
-   //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+   //pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 }
 
 //
@@ -2187,9 +2187,9 @@ void Ramp::RenderRamp(const Material * const mat)
 
       pd3dDevice->basicShader->SetMaterial(mat);
 
-      pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+      pd3dDevice->SetRenderStateDepthBias(0.0f);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE); // as both floor and walls are thinwalled
+      pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE); // as both floor and walls are thinwalled
 
       //Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);

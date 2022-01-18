@@ -1197,8 +1197,8 @@ void Flasher::RenderDynamic()
          m_dynamicVertexBufferRegenerate = false;
        }
 
-       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
+       pd3dDevice->SetRenderStateDepthBias(0.0f);
+       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
 
        pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
        if ((g_pplayer->m_dmdstate == 1) && alphadmd)
@@ -1260,8 +1260,8 @@ void Flasher::RenderDynamic()
           m_dynamicVertexBufferRegenerate = false;
        }
 
-       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
+       pd3dDevice->SetRenderStateDepthBias(0.0f);
+       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
 
        Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
        Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
@@ -1344,7 +1344,7 @@ void Flasher::RenderDynamic()
        pd3dDevice->flasherShader->End();
    }
 
-   //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+   //pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
    //pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD); //!! not necessary anymore
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 }

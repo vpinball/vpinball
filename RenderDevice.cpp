@@ -1281,7 +1281,7 @@ void RenderDevice::CopyDepth(D3DTexture* dest, D3DTexture* src)
    FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
 
    SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE); // paranoia set //!!
-   SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
+   SetRenderStateCulling(RenderDevice::CULL_NONE);
    SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
    SetRenderState(RenderDevice::ZENABLE, FALSE);
 

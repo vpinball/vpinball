@@ -1270,7 +1270,7 @@ void Primitive::RenderObject()
 
       if (m_d.m_backfacesEnabled && mat->m_bOpacityActive)
       {
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+         pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
          pd3dDevice->basicShader->Begin(0);
          if (m_d.m_groupdRendering)
             pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numGroupVertices, m_indexBuffer, 0, m_numGroupIndices);
@@ -1294,7 +1294,7 @@ void Primitive::RenderObject()
       if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
          pd3dDevice->basicShader->SetDisableLighting(vec4(m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f, 0.f));
 
-      //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW); // don't mess with the render states when doing playfield rendering
+      //pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW); // don't mess with the render states when doing playfield rendering
       // set transform
       g_pplayer->UpdateBasicShaderMatrix(m_fullMatrix);
       pd3dDevice->basicShader->Begin(0);

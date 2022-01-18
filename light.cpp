@@ -483,12 +483,12 @@ void Light::RenderDynamic()
    if (!m_backglass)
    {
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
-      constexpr float depthbias = -BASEDEPTHBIAS;
-      pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
+      constexpr float depthbias = -1.0f;
+      pd3dDevice->SetRenderStateDepthBias(depthbias);
    }
    else
    {
-      pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+      pd3dDevice->SetRenderStateDepthBias(0.0f);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    }
 
@@ -615,7 +615,7 @@ void Light::RenderDynamic()
    }*/
 
    //if(m_backglass && (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled))
-   //	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+   //	pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 }
 
 void Light::PrepareMoversCustom()

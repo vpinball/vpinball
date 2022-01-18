@@ -1,6 +1,8 @@
 #pragma once
 
+#ifndef ENABLE_SDL
 typedef struct D3DXVECTOR4 vec4;
+#endif
 
 // 2D vector
 class Vertex2D
