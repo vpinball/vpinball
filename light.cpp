@@ -493,9 +493,9 @@ void Light::RenderDynamic()
    }
 
    if (m_backglass && (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled))
-      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
+      pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
    else
-      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+      pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
    Vertex2D centerHUD;
    centerHUD.x = m_d.m_vCenter.x;

@@ -1222,9 +1222,9 @@ void Primitive::RenderObject()
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       pd3dDevice->basicShader->SetMaterial(mat);
 
-      pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+      pd3dDevice->SetRenderStateDepthBias(0.f);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, m_d.m_backfacesEnabled && mat->m_bOpacityActive ? RenderDevice::CULL_CW : RenderDevice::CULL_CCW);
+      pd3dDevice->SetRenderStateCulling(m_d.m_backfacesEnabled && mat->m_bOpacityActive ? RenderDevice::CULL_CW : RenderDevice::CULL_CCW);
 
       if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
          pd3dDevice->basicShader->SetDisableLighting(vec4(m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f, 0.f));

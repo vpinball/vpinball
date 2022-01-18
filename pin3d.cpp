@@ -602,7 +602,7 @@ void Pin3D::InitRenderState(RenderDevice * const pd3dDevice)
    pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
    pd3dDevice->SetRenderState(RenderDevice::CLIPPING, RenderDevice::RS_FALSE);
-   pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0);
+   pd3dDevice->SetRenderStateClipPlane0(false);
 
    // initialize first texture stage
    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP/*WRAP*/);

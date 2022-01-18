@@ -1229,8 +1229,8 @@ HRESULT Player::Init()
       m_ptable->m_tblMirrorEnabled = true;
    else
       m_ptable->m_tblMirrorEnabled = LoadValueBoolWithDefault("Player", "mirror", false);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
    // if left flipper or shift hold during load, then swap DT/FS view (for quick testing)
    if (m_ptable->m_BG_current_set != 2 &&
@@ -1612,7 +1612,7 @@ void Player::RenderStaticMirror(const bool onlyBalls)
 
    if (!onlyBalls)
    {
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, RenderDevice::PLANE0);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(true);
 
       D3DMATRIX viewMat;
       m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
@@ -1626,8 +1626,8 @@ void Player::RenderStaticMirror(const bool onlyBalls)
       m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
 
       m_ptable->m_reflectionEnabled = true;
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
       UpdateBasicShaderMatrix();
 
@@ -1645,14 +1645,14 @@ void Player::RenderStaticMirror(const bool onlyBalls)
       }
 
       m_pin3d.DisableAlphaBlend();
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateDepthBias(0.f); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
-      //m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+      //m_pin3d.m_pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
       m_ptable->m_reflectionEnabled = false;
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
       // and flip back camera
       viewMat._33 = -viewMat._33;
@@ -1663,7 +1663,7 @@ void Player::RenderStaticMirror(const bool onlyBalls)
       m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
       UpdateBasicShaderMatrix();
 
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0); // disable playfield clipplane again
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(false); // disable playfield clipplane again
    }
 
    m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pddsStatic);
@@ -1858,7 +1858,7 @@ void Player::InitStatic()
 
       // to compensate for this when rendering the static objects, enable clipplane
       SetClipPlanePlayfield(false);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, RenderDevice::PLANE0);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(true);
 
       // now render everything else
       for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
@@ -1891,12 +1891,12 @@ void Player::InitStatic()
       }
 
       m_pin3d.DisableAlphaBlend();
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateDepthBias(0.f); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(false);
       SetClipPlanePlayfield(true);
    }
 
@@ -2017,7 +2017,7 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->BeginScene();
 
       m_pin3d.DisableAlphaBlend();
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
 
@@ -2067,7 +2067,7 @@ void Player::InitStatic()
 
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
       m_pin3d.m_pd3dPrimaryDevice->EndScene();
    }
@@ -3372,16 +3372,16 @@ void Player::RenderDynamics()
 
    if (reflection_path != 0)
    {
-	   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, RenderDevice::PLANE0);
-	   RenderDynamicMirror(reflection_path == 1);
-	   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0); // disable playfield clipplane again
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(true);
+      RenderDynamicMirror(reflection_path == 1);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(false); // disable playfield clipplane again
 
-	   // depth-'remove' mirror objects from holes again for objects that vanish into the table //!! disabled as it will also look stupid and costs too much for this special case
-	   //m_pin3d.m_pd3dDevice->EndScene();
-	   //m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ); // cannot be called inside BeginScene -> EndScene cycle
-	   //m_pin3d.m_pd3dDevice->BeginScene();
+      // depth-'remove' mirror objects from holes again for objects that vanish into the table //!! disabled as it will also look stupid and costs too much for this special case
+      //m_pin3d.m_pd3dDevice->EndScene();
+      //m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ); // cannot be called inside BeginScene -> EndScene cycle
+      //m_pin3d.m_pd3dDevice->BeginScene();
 
-	   RenderMirrorOverlay();
+      RenderMirrorOverlay();
    }
 
    m_pin3d.RenderPlayfieldGraphics(true); // static depth buffer only contained static (&mirror) objects, but no playfield yet -> so render depth only to add this
@@ -4329,7 +4329,7 @@ void Player::PrepareVideoBuffersNormal()
 
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
    if (m_cameraMode)
        UpdateCameraModeDisplay();
@@ -4373,7 +4373,7 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dPrimaryDevice->BeginScene();
 
    m_pin3d.DisableAlphaBlend();
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
 

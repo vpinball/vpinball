@@ -300,7 +300,7 @@ void Textbox::RenderDynamic()
       }
 
    //if (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled)
-   //	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+   //	pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 }
 
 void Textbox::RenderSetup()

@@ -585,7 +585,7 @@ void Decal::RenderObject()
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 
    //if(m_backglass && (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled))
-   //   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+   //   pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 }
 
 void Decal::RenderStatic()

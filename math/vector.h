@@ -1,6 +1,7 @@
 #pragma once
 
 #ifndef ENABLE_SDL
+typedef struct D3DXVECTOR3 vec3;
 typedef struct D3DXVECTOR4 vec4;
 #endif
 
