@@ -66,7 +66,7 @@ typedef void ID3DXEffect;
 #define SHADER_lightColor_intensity "lightColor_intensity"
 #define SHADER_matrixBlock "matrixBlock"
 #define SHADER_fenvEmissionScale_TexWidth "fenvEmissionScale_TexWidth"
-#define SHADER_invTableRes_playfield_height_reflection "invTableRes_playfield_height_reflection"
+#define SHADER_invTableRes_playfield_height_reflection "invTableRes__playfield_height_reflection"
 #define SHADER_lightEmission "lightEmission"
 #define SHADER_lightPos "lightPos"
 #define SHADER_orientation "orientation"

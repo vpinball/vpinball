@@ -4933,37 +4933,37 @@ void Player::Render()
    {
       if (m_closeDown && m_closeDownDelay) // wait for one frame to stop game, to be able to display the additional text (table info, etc)
       {
-		   m_closeDownDelay = false;
+         m_closeDownDelay = false;
 
-		   // add or remove caption, border and buttons (only if in windowed mode)?
-		   const int captionheight = GetSystemMetrics(SM_CYCAPTION);
-		   if (!m_fullScreen && (m_showWindowedCaption || (!m_showWindowedCaption && ((m_screenheight - m_height) >= (captionheight * 2))))) // We have enough room for a frame? //!! *2 ??
-		   {
-			   RECT rect;
-			   ::GetWindowRect(GetHwnd(), &rect);
-			   const int x = rect.left;
-			   const int y = rect.top;
+         // add or remove caption, border and buttons (only if in windowed mode)?
+         const int captionheight = GetSystemMetrics(SM_CYCAPTION);
+         if (!m_fullScreen && (m_showWindowedCaption || (!m_showWindowedCaption && ((m_screenheight - m_height) >= (captionheight * 2))))) // We have enough room for a frame? //!! *2 ??
+         {
+            RECT rect;
+            ::GetWindowRect(GetHwnd(), &rect);
+            const int x = rect.left;
+            const int y = rect.top;
 
-			   // Add/Remove a pretty window border and standard control boxes.
-			   const int windowflags = m_showWindowedCaption ? WS_POPUP : (WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN);
-			   const int windowflagsex = m_showWindowedCaption ? 0 : WS_EX_OVERLAPPEDWINDOW;
+            // Add/Remove a pretty window border and standard control boxes.
+            const int windowflags = m_showWindowedCaption ? WS_POPUP : (WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN);
+            const int windowflagsex = m_showWindowedCaption ? 0 : WS_EX_OVERLAPPEDWINDOW;
 
-			   //!! does not respect borders so far!!! -> remove them or change width/height accordingly ?? otherwise ignore as eventually it will be restored anyway??
-			   //!! like this the render window is scaled and thus implicitly blurred though!
-			   SetWindowLongPtr(GWL_STYLE, windowflags);
-			   SetWindowLongPtr(GWL_EXSTYLE, windowflagsex);
-			   SetWindowPos(nullptr, x, m_showWindowedCaption ? (y + captionheight) : (y - captionheight), m_width, m_height + (m_showWindowedCaption ? 0 : captionheight), SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-			   ShowWindow(SW_SHOW);
+            //!! does not respect borders so far!!! -> remove them or change width/height accordingly ?? otherwise ignore as eventually it will be restored anyway??
+            //!! like this the render window is scaled and thus implicitly blurred though!
+            SetWindowLongPtr(GWL_STYLE, windowflags);
+            SetWindowLongPtr(GWL_EXSTYLE, windowflagsex);
+            SetWindowPos(nullptr, x, m_showWindowedCaption ? (y + captionheight) : (y - captionheight), m_width, m_height + (m_showWindowedCaption ? 0 : captionheight), SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+            ShowWindow(SW_SHOW);
 
-			   // Save position of non-fullscreen player window to registry, and only if it was potentially moved around (i.e. when caption was already visible)
-			   if (m_showWindowedCaption)
-			   {
-				   HRESULT hr = SaveValueInt("Player", "WindowPosX", x);
-				   hr = SaveValueInt("Player", "WindowPosY", y + captionheight);
-			   }
+            // Save position of non-fullscreen player window to registry, and only if it was potentially moved around (i.e. when caption was already visible)
+            if (m_showWindowedCaption)
+            {
+               HRESULT hr = SaveValueInt("Player", "WindowPosX", x);
+               hr = SaveValueInt("Player", "WindowPosY", y + captionheight);
+            }
 
-			   m_showWindowedCaption = !m_showWindowedCaption;
-		   }
+            m_showWindowedCaption = !m_showWindowedCaption;
+         }
       }
       else if (m_closeDown)
       {
@@ -5221,45 +5221,45 @@ void Player::DrawBalls()
       Light* light_nearest[MAX_BALL_LIGHT_SOURCES];
       search_for_nearest(pball, lights, light_nearest);
 
-	  struct CLight
-	  {
-		  float vPos[3];
-		  float vEmission[3];
-	  };
-	  CLight l[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES];
+      struct CLight
+      {
+         float vPos[3];
+         float vEmission[3];
+      };
+      CLight l[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES];
 
-	  vec4 emission = convertColor(m_ptable->m_Light[0].emission);
-	  emission.x *= m_ptable->m_lightEmissionScale*m_globalEmissionScale;
-	  emission.y *= m_ptable->m_lightEmissionScale*m_globalEmissionScale;
-	  emission.z *= m_ptable->m_lightEmissionScale*m_globalEmissionScale;
+      vec4 emission = convertColor(m_ptable->m_Light[0].emission);
+      emission.x *= m_ptable->m_lightEmissionScale*m_globalEmissionScale;
+      emission.y *= m_ptable->m_lightEmissionScale*m_globalEmissionScale;
+      emission.z *= m_ptable->m_lightEmissionScale*m_globalEmissionScale;
 
-	  for (unsigned int i2 = 0; i2 < MAX_LIGHT_SOURCES; ++i2)
-	  {
-		  memcpy(&l[i2].vPos, &m_ptable->m_Light[i2].pos, sizeof(float) * 3);
-		  memcpy(&l[i2].vEmission, &emission, sizeof(float) * 3);
-	  }
+      for (unsigned int i2 = 0; i2 < MAX_LIGHT_SOURCES; ++i2)
+      {
+         memcpy(&l[i2].vPos, &m_ptable->m_Light[i2].pos, sizeof(float) * 3);
+         memcpy(&l[i2].vEmission, &emission, sizeof(float) * 3);
+      }
 
-	  for (unsigned int light_i = 0; light_i < MAX_BALL_LIGHT_SOURCES; ++light_i)
-		  if (light_nearest[light_i] != nullptr)
-		  {
-			  l[light_i + MAX_LIGHT_SOURCES].vPos[0] = light_nearest[light_i]->m_d.m_vCenter.x;
-			  l[light_i + MAX_LIGHT_SOURCES].vPos[1] = light_nearest[light_i]->m_d.m_vCenter.y;
-			  l[light_i + MAX_LIGHT_SOURCES].vPos[2] = light_nearest[light_i]->m_d.m_meshRadius + light_nearest[light_i]->m_surfaceHeight; //!! z pos
-			  const float c = map_bulblight_to_emission(light_nearest[light_i]) * pball->m_bulb_intensity_scale;
-			  const vec4 color = convertColor(light_nearest[light_i]->m_d.m_color);
-			  l[light_i + MAX_LIGHT_SOURCES].vEmission[0] = color.x*c;
-			  l[light_i + MAX_LIGHT_SOURCES].vEmission[1] = color.y*c;
-			  l[light_i + MAX_LIGHT_SOURCES].vEmission[2] = color.z*c;
-		  }
-		  else //!! rather just set the max number of ball lights!?
-		  {
-			  l[light_i + MAX_LIGHT_SOURCES].vPos[0] = -100000.0f;
-			  l[light_i + MAX_LIGHT_SOURCES].vPos[1] = -100000.0f;
-			  l[light_i + MAX_LIGHT_SOURCES].vPos[2] = -100000.0f;
-			  l[light_i + MAX_LIGHT_SOURCES].vEmission[0] = 0.0f;
-			  l[light_i + MAX_LIGHT_SOURCES].vEmission[1] = 0.0f;
-			  l[light_i + MAX_LIGHT_SOURCES].vEmission[2] = 0.0f;
-		  }
+      for (unsigned int light_i = 0; light_i < MAX_BALL_LIGHT_SOURCES; ++light_i)
+         if (light_nearest[light_i] != nullptr)
+         {
+            l[light_i + MAX_LIGHT_SOURCES].vPos[0] = light_nearest[light_i]->m_d.m_vCenter.x;
+            l[light_i + MAX_LIGHT_SOURCES].vPos[1] = light_nearest[light_i]->m_d.m_vCenter.y;
+            l[light_i + MAX_LIGHT_SOURCES].vPos[2] = light_nearest[light_i]->m_d.m_meshRadius + light_nearest[light_i]->m_surfaceHeight; //!! z pos
+            const float c = map_bulblight_to_emission(light_nearest[light_i]) * pball->m_bulb_intensity_scale;
+            const vec4 color = convertColor(light_nearest[light_i]->m_d.m_color);
+            l[light_i + MAX_LIGHT_SOURCES].vEmission[0] = color.x*c;
+            l[light_i + MAX_LIGHT_SOURCES].vEmission[1] = color.y*c;
+            l[light_i + MAX_LIGHT_SOURCES].vEmission[2] = color.z*c;
+         }
+         else //!! rather just set the max number of ball lights!?
+         {
+            l[light_i + MAX_LIGHT_SOURCES].vPos[0] = -100000.0f;
+            l[light_i + MAX_LIGHT_SOURCES].vPos[1] = -100000.0f;
+            l[light_i + MAX_LIGHT_SOURCES].vPos[2] = -100000.0f;
+            l[light_i + MAX_LIGHT_SOURCES].vEmission[0] = 0.0f;
+            l[light_i + MAX_LIGHT_SOURCES].vEmission[1] = 0.0f;
+            l[light_i + MAX_LIGHT_SOURCES].vEmission[2] = 0.0f;
+         }
 
       m_ballShader->SetValue("packedLights", l, sizeof(CLight)*(MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES));
 
