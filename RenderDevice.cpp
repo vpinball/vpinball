@@ -239,7 +239,11 @@ void TextureManager::UnloadAll()
 
 int getNumberOfDisplays()
 {
+#ifdef ENABLE_SDL
+   return SDL_GetNumVideoDisplays();
+#else
    return GetSystemMetrics(SM_CMONITORS);
+#endif
 }
 
 void EnumerateDisplayModes(const int display, std::vector<VideoMode>& modes)
@@ -576,8 +580,12 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 #endif
 
    // Determine if INTZ is supported
+#ifdef ENABLE_SDL
+   m_INTZ_support = false;
+#else
    m_INTZ_support = (m_pD3D->CheckDeviceFormat( m_adapter, devtype, params.BackBufferFormat,
                     D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, ((D3DFORMAT)(MAKEFOURCC('I','N','T','Z'))))) == D3D_OK;
+#endif
 
    // check if requested MSAA is possible
    DWORD MultiSampleQualityLevels;
@@ -988,12 +996,16 @@ RenderDevice::~RenderDevice()
 
 void RenderDevice::BeginScene()
 {
+#ifndef ENABLE_SDL
    CHECKD3D(m_pD3DDevice->BeginScene());
+#endif
 }
 
 void RenderDevice::EndScene()
 {
+#ifndef ENABLE_SDL
    CHECKD3D(m_pD3DDevice->EndScene());
+#endif
 }
 
 /*static void FlushGPUCommandBuffer(IDirect3DDevice9* pd3dDevice)
@@ -1025,6 +1037,15 @@ bool RenderDevice::SetMaximumPreRenderedFrames(const DWORD frames)
 
 void RenderDevice::Flip(const bool vsync)
 {
+#ifdef ENABLE_SDL
+   SDL_GL_SwapWindow(m_sdl_playfieldHwnd);
+#ifdef ENABLE_VR
+   //glFlush(); //!! ??
+   //glFinish();
+#endif
+
+#else
+
    bool dwm = false;
    if (vsync) // xp does neither have d3dex nor dwm, so vsync will always be specified during device set
       dwm = m_dwm_enabled;
@@ -1048,7 +1069,7 @@ void RenderDevice::Flip(const bool vsync)
 
    if (mDwmFlush && vsync && dwm)
       mDwmFlush(); //!! also above present?? (internet sources are not clear about order)
-
+#endif
    // reset performance counters
    m_frameDrawCalls = m_curDrawCalls;
    m_frameStateChanges = m_curStateChanges;
@@ -1198,8 +1219,8 @@ void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
       m_pD3DDevice->SetRenderState(RenderDevice:ZENABLE, RenderDevice::RS_FALSE);
       m_pD3DDevice->SetRenderState(RenderDevice:ZWRITEENABLE, RenderDevice::RS_FALSE);
       m_pD3DDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0);
-      D3DXVECTOR3 vDummyPoint(0.0f, 0.0f, 0.0f);
-      m_pD3DDevice->DrawPrimitiveUP(RenderDevice::POINTLIST, 1, vDummyPoint, sizeof(D3DXVECTOR3));
+      vec3 vDummyPoint(0.0f, 0.0f, 0.0f);
+      m_pD3DDevice->DrawPrimitiveUP(RenderDevice::POINTLIST, 1, vDummyPoint, sizeof(vec3));
       m_pD3DDevice->SetRenderState(RenderDevice:ZWRITEENABLE, RenderDevice::RS_TRUE);
       m_pD3DDevice->SetRenderState(RenderDevice:ZENABLE, RenderDevice::RS_TRUE);
       m_pD3DDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0x0F);
@@ -1557,6 +1578,79 @@ void RenderDevice::SetRenderState(const RenderStates p1, DWORD p2)
    CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)p1, p2));
 
    m_curStateChanges++;
+}
+
+void RenderDevice::SetRenderStateCulling(RenderStateValue cull)
+{
+   if (SetRenderStateCache(CULLMODE, cull)) return;
+
+   if (g_pplayer && (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->m_ptable->m_reflectionEnabled))
+   {
+      if (cull == CULL_CCW)
+         cull = CULL_CW;
+      else if (cull == CULL_CW)
+         cull = CULL_CCW;
+   }
+
+#ifdef ENABLE_SDL
+   if (renderStateCache[RenderStates::CULLMODE] == CULL_NONE && (cull != CULL_NONE)) //!! this differs a bit from VPVR now, recheck!
+      CHECKD3D(glEnable(GL_CULL_FACE));
+   if (cull == CULL_NONE)
+      CHECKD3D(glDisable(GL_CULL_FACE));
+   else {
+      CHECKD3D(glFrontFace(cull));
+      CHECKD3D(glCullFace(GL_FRONT));
+   }
+#else
+   CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)RenderStates::CULLMODE, cull));
+#endif
+   m_curStateChanges++;
+}
+
+void RenderDevice::SetRenderStateDepthBias(float bias)
+{
+   if (SetRenderStateCache(DEPTHBIAS, *((DWORD*)&bias))) return;
+
+#ifdef ENABLE_SDL
+   if (bias == 0.0f)
+      CHECKD3D(glDisable(GL_POLYGON_OFFSET_FILL));
+   else {
+      CHECKD3D(glEnable(GL_POLYGON_OFFSET_FILL));
+      CHECKD3D(glPolygonOffset(0.0f, bias));
+   }
+#else
+   bias *= BASEDEPTHBIAS;
+   CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)RenderStates::DEPTHBIAS, *((DWORD*)&bias)));
+#endif
+}
+
+void RenderDevice::SetRenderStateClipPlane0(const bool enabled)
+{
+   if (SetRenderStateCache(CLIPPLANEENABLE, enabled ? 1 : 0)) return;
+
+#ifdef ENABLE_SDL
+   // Basicshader already prepared with proper clipplane so just need to enable/disable it
+   if (enabled)
+      CHECKD3D(glEnable(GL_CLIP_DISTANCE0));
+   else
+      CHECKD3D(glDisable(GL_CLIP_DISTANCE0));
+#else
+   CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)RenderStates::CLIPPLANEENABLE, enabled ? PLANE0 : 0));
+#endif 
+}
+
+void RenderDevice::SetRenderStateAlphaTestFunction(const DWORD testValue, const RenderStateValue testFunction, const bool enabled)
+{
+#ifdef ENABLE_SDL
+   //!! TODO Needs to be done in shader
+#else 
+   if (!SetRenderStateCache(ALPHAREF, testValue))
+      CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)RenderStates::ALPHAREF, testValue));
+   if (!SetRenderStateCache(ALPHATESTENABLE, enabled ? RS_TRUE : RS_FALSE))
+      CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)RenderStates::ALPHATESTENABLE, enabled ? RS_TRUE : RS_FALSE));
+   if (!SetRenderStateCache(ALPHAFUNC, Z_GREATEREQUAL))
+      CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)RenderStates::ALPHAFUNC, Z_GREATEREQUAL));
+#endif
 }
 
 void RenderDevice::SetTextureAddressMode(const DWORD texUnit, const TextureAddressMode mode)

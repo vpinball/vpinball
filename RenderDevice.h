@@ -212,6 +212,11 @@ public:
 
    void SetRenderState(const RenderStates p1, DWORD p2);
    bool SetRenderStateCache(const RenderStates p1, DWORD p2);
+   void SetRenderStateCulling(RenderStateValue cull);
+   void SetRenderStateDepthBias(float bias);
+   void SetRenderStateClipPlane0(const bool enabled);
+   void SetRenderStateAlphaTestFunction(const DWORD testValue, const RenderStateValue testFunction, const bool enabled);
+
    void SetTextureFilter(const DWORD texUnit, DWORD mode);
    void SetTextureAddressMode(const DWORD texUnit, const TextureAddressMode mode);
    void SetTextureStageState(const DWORD stage, const D3DTEXTURESTAGESTATETYPE type, const DWORD value);
