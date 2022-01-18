@@ -738,7 +738,7 @@ void HitTarget::RenderObject()
    {
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numVertices, indexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numVertices, m_indexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();
    }
 #endif

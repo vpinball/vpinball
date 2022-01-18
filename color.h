@@ -1,5 +1,7 @@
 #pragma once
 
+#include "math/matrix.h"
+
 #ifdef RGB
  #undef RGB
 #endif
@@ -16,12 +18,12 @@ inline D3DCOLOR COLORREF_to_D3DCOLOR(const COLORREF c)
     return b | (g << 8) | (r << 16) | 0xff000000;
 }
 
-inline D3DXVECTOR4 convertColor(const COLORREF c, const float w = 1.0f)
+inline vec4 convertColor(const COLORREF c, const float w = 1.0f)
 {
 	const float r = (float)(c & 255) * (float)(1.0/255.0);
 	const float g = (float)(c & 65280) * (float)(1.0/65280.0);
 	const float b = (float)(c & 16711680) * (float)(1.0/16711680.0);
-	return D3DXVECTOR4(r,g,b,w);
+	return vec4(r,g,b,w);
 }
 
 inline float invGammaApprox(const float c)
