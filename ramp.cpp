@@ -2244,7 +2244,7 @@ void Ramp::RenderRamp(const Material * const mat)
          pd3dDevice->basicShader->End();
       }
 
-      //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
+      //pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE); //!! not necessary anymore
    }
 }
 

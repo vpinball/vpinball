@@ -1204,7 +1204,7 @@ void Flasher::RenderDynamic()
        if ((g_pplayer->m_dmdstate == 1) && alphadmd)
           g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_addBlend);
        else
-          g_pplayer->m_pin3d.DisableAlphaBlend();
+          pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
 
        /*const unsigned int alphamode = 1; //!! make configurable?
        // add
@@ -1346,5 +1346,5 @@ void Flasher::RenderDynamic()
 
    //pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
    //pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD); //!! not necessary anymore
-   //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
+   //pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE); //!! not necessary anymore
 }

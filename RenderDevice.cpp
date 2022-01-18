@@ -2125,5 +2125,5 @@ void Shader::SetMaterial(const Material * const mat)
    if (bOpacityActive /*&& (alpha < 1.0f)*/)
       g_pplayer->m_pin3d.EnableAlphaBlend(false);
    else
-      g_pplayer->m_pin3d.DisableAlphaBlend();
+      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
 }

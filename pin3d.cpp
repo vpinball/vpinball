@@ -593,7 +593,7 @@ void Pin3D::SetSecondaryRenderTarget(RenderTarget* pddsSurface, D3DTexture* pdds
 
 void Pin3D::InitRenderState(RenderDevice * const pd3dDevice)
 {
-   DisableAlphaBlend(); //!! pick device, too
+   pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
 
    pd3dDevice->SetRenderState(RenderDevice::LIGHTING, RenderDevice::RS_FALSE);
 
@@ -648,7 +648,7 @@ void Pin3D::DrawBackground()
       if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled)
          m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
 
-      DisableAlphaBlend();
+      m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
 
       g_pplayer->Spritedraw(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, pin, ptable->m_ImageBackdropNightDay ? sqrtf(g_pplayer->m_globalEmissionScale) : 1.0f, true);
 
@@ -1080,11 +1080,6 @@ void Pin3D::EnableAlphaBlend(const bool additiveBlending, const bool set_dest_bl
       m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DESTBLEND, additiveBlending ? RenderDevice::ONE : RenderDevice::INVSRC_ALPHA);
    if (set_blend_op)
       m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
-}
-
-void Pin3D::DisableAlphaBlend() const
-{
-   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
 }
 
 void Pin3D::Flip(const bool vsync)

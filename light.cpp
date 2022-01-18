@@ -610,7 +610,7 @@ void Light::RenderDynamic()
 
    /*if ( m_d.m_BulbLight ) //!! not necessary anymore
    {
-   ppin3d->DisableAlphaBlend();
+   pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
    pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
    }*/
 

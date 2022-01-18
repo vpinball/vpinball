@@ -283,7 +283,7 @@ void Textbox::RenderDynamic()
 
    if (dmd)
    {
-      g_pplayer->m_pin3d.DisableAlphaBlend();
+      pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
       g_pplayer->DMDdraw(x, y, width, height,
                          m_d.m_fontcolor, m_d.m_intensity_scale); //!! replace??!
    }
@@ -295,7 +295,7 @@ void Textbox::RenderDynamic()
 
          g_pplayer->Spritedraw(x, y, width, height, 0xFFFFFFFF, pd3dDevice->m_texMan.LoadTexture(m_texture, false), m_d.m_intensity_scale);
 
-         //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
+         //pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE); //!! not necessary anymore
          pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, RenderDevice::RS_FALSE);
       }
 

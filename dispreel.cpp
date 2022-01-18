@@ -265,7 +265,7 @@ void DispReel::RenderDynamic()
    }
    pd3dDevice->DMDShader->End();
 
-   //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
+   //pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE); //!! not necessary anymore
    pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, RenderDevice::RS_FALSE);
 
    //if(m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled)

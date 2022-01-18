@@ -138,7 +138,7 @@ void draw_transparent_box( F32 sx, F32 sy, const F32 x, const F32 y, const U32 c
    const DWORD a = (color & 0x000000ff)      ;
    const DWORD col = (a << 24) | (r << 16) | (g << 8) | b;
 
-   g_pplayer->m_pin3d.DisableAlphaBlend();
+   g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
 
    g_pplayer->Spritedraw(y, x,
       sy, sx,
