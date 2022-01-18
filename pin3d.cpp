@@ -29,7 +29,7 @@ Pin3D::~Pin3D()
 {
    m_gpu_profiler.Shutdown();
 
-   m_pd3dPrimaryDevice->SetZBuffer(nullptr);
+   m_pd3dPrimaryDevice->UnSetZBuffer();
    m_pd3dPrimaryDevice->FreeShader();
 
    m_pinballEnvTexture.FreeStuff();
@@ -1069,9 +1069,7 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
 
 void Pin3D::EnableAlphaTestReference(const DWORD alphaRefValue) const
 {
-   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHAREF, alphaRefValue);
-   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, RenderDevice::RS_TRUE);
-   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHAFUNC, RenderDevice::Z_GREATEREQUAL);
+   m_pd3dPrimaryDevice->SetRenderStateAlphaTestFunction(alphaRefValue, RenderDevice::Z_GREATEREQUAL, true);
 }
 
 void Pin3D::EnableAlphaBlend(const bool additiveBlending, const bool set_dest_blend, const bool set_blend_op) const
