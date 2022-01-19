@@ -1,5 +1,6 @@
 #pragma once
 
+#include <typedefs3D.h>
 #include <math/vector.h>
 
 #ifdef ENABLE_SDL
@@ -67,12 +68,6 @@ public:
    vec3 operator+ (const vec3& m) const;
    vec3 operator- (const vec3& m) const;
 };
-
-#else
-
-typedef struct D3DXVECTOR4 vec4;
-typedef struct D3DXVECTOR3 vec3;
-
 #endif
 
 // 3x3 matrix for representing linear transformation of 3D vectors
