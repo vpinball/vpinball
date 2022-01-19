@@ -1,11 +1,21 @@
 #pragma once
 
+#include <typedefs3D.h>
+#include <math/vector.h>
+
 // 3x3 matrix for representing linear transformation of 3D vectors
 class Matrix3
 {
 public:
    Matrix3()
    {
+   }
+
+   Matrix3(const float __11, const float __12, const float __13, const float __21, const float __22, const float __23, const float __31, const float __32, const float __33)
+   {
+      _11 = __11; _12 = __12; _13 = __13;
+      _21 = __21; _22 = __22; _23 = __23;
+      _31 = __31; _32 = __32; _33 = __33;
    }
 
    void scaleX(const float factor)
@@ -28,9 +38,9 @@ public:
 
    void SkewSymmetric(const Vertex3Ds &pv3D)
    {
-      m_d[0][0] = 0; m_d[0][1] = -pv3D.z; m_d[0][2] = pv3D.y;
-      m_d[1][0] = pv3D.z; m_d[1][1] = 0; m_d[1][2] = -pv3D.x;
-      m_d[2][0] = -pv3D.y; m_d[2][1] = pv3D.x; m_d[2][2] = 0;
+      m_d[0][0] = 0.f;     m_d[0][1] = -pv3D.z; m_d[0][2] = pv3D.y;
+      m_d[1][0] = pv3D.z;  m_d[1][1] = 0.f;     m_d[1][2] = -pv3D.x;
+      m_d[2][0] = -pv3D.y; m_d[2][1] = pv3D.x;  m_d[2][2] = 0.f;
    }
 
 //
@@ -42,6 +52,28 @@ public:
       for (int i = 0; i < 3; ++i)
          for (int l = 0; l < 3; ++l)
             m_d[i][l] *= scalar;
+   }
+
+   Matrix3 operator+ (const Matrix3& m) const
+   {
+      return Matrix3(_11 + m._11, _12 + m._12, _13 + m._13,
+                     _21 + m._21, _22 + m._22, _23 + m._23,
+                     _31 + m._31, _32 + m._32, _33 + m._33);
+   }
+
+   Matrix3 operator* (const Matrix3& m) const
+   {
+      return Matrix3(
+         m_d[0][0] * m.m_d[0][0] + m_d[1][0] * m.m_d[0][1] + m_d[2][0] * m.m_d[0][2],
+         m_d[0][0] * m.m_d[1][0] + m_d[1][0] * m.m_d[1][1] + m_d[2][0] * m.m_d[1][2],
+         m_d[0][0] * m.m_d[2][0] + m_d[1][0] * m.m_d[2][1] + m_d[2][0] * m.m_d[2][2],
+         m_d[0][1] * m.m_d[0][0] + m_d[1][1] * m.m_d[0][1] + m_d[2][1] * m.m_d[0][2],
+         m_d[0][1] * m.m_d[1][0] + m_d[1][1] * m.m_d[1][1] + m_d[2][1] * m.m_d[1][2],
+         m_d[0][1] * m.m_d[2][0] + m_d[1][1] * m.m_d[2][1] + m_d[2][1] * m.m_d[2][2],
+         m_d[0][2] * m.m_d[0][0] + m_d[1][2] * m.m_d[0][1] + m_d[2][2] * m.m_d[0][2],
+         m_d[0][2] * m.m_d[1][0] + m_d[1][2] * m.m_d[1][1] + m_d[2][2] * m.m_d[1][2],
+         m_d[0][2] * m.m_d[2][0] + m_d[1][2] * m.m_d[2][1] + m_d[2][2] * m.m_d[2][2]
+      );
    }
 
    template <class VecType>
@@ -176,7 +208,14 @@ public:
       m_d[2][2] = axis.z*axis.z + rcos*(1.0f - axis.z*axis.z);
    }
 
-   float m_d[3][3];
+   union {
+      struct {
+         float _11, _12, _13;
+         float _21, _22, _23;
+         float _31, _32, _33;
+      };
+      float m_d[3][3];
+   };
 };
 
 
@@ -189,6 +228,14 @@ class Matrix3D : public D3DMATRIX
 public:
    Matrix3D() {}
    Matrix3D(const float Scale) { SetScaling(Scale, Scale, Scale); }
+   Matrix3D(
+      const float __11, const float __12, const float __13, const float __14, const float __21, const float __22, const float __23, const float __24, const float __31, const float __32, const float __33, const float __34, const float __41, const float __42, const float __43, const float __44)
+   {
+      _11 = __11; _12 = __12; _13 = __13; _14 = __14;
+      _21 = __21; _22 = __22; _23 = __23; _24 = __24;
+      _31 = __31; _32 = __32; _33 = __33; _34 = __34;
+      _41 = __41; _42 = __42; _43 = __43; _44 = __44;
+   }
 
 //
 // license:GPLv3+
@@ -200,14 +247,18 @@ public:
    {
       Matrix3D matrixT;
       for (int i = 0; i < 4; ++i)
-      {
          for (int l = 0; l < 4; ++l)
-         {
-            matrixT.m[i][l] = (m[0][l] * mult.m[i][0]) + (m[1][l] * mult.m[i][1]) +
-               (m[2][l] * mult.m[i][2]) + (m[3][l] * mult.m[i][3]);
-         }
-      }
+            matrixT.m[i][l] = (m[0][l] * mult.m[i][0]) + (m[1][l] * mult.m[i][1]) + (m[2][l] * mult.m[i][2]) + (m[3][l] * mult.m[i][3]);
       result = matrixT;
+   }
+
+   Matrix3D operator*(const Matrix3D& mult) const
+   {
+      Matrix3D matrixT;
+      for (int i = 0; i < 4; ++i)
+         for (int l = 0; l < 4; ++l)
+            matrixT.m[i][l] = (mult.m[0][l] * m[i][0]) + (mult.m[1][l] * m[i][1]) + (mult.m[2][l] * m[i][2]) + (mult.m[3][l] * m[i][3]);
+      return matrixT;
    }
 
    void SetTranslation(const float tx, const float ty, const float tz)
@@ -258,8 +309,8 @@ public:
    {
       _11 = _22 = _33 = _44 = 1.0f;
       _12 = _13 = _14 = _41 =
-         _21 = _23 = _24 = _42 =
-         _31 = _32 = _34 = _43 = 0.0f;
+      _21 = _23 = _24 = _42 =
+      _31 = _32 = _34 = _43 = 0.0f;
    }
    void Scale(const float x, const float y, const float z)
    {
@@ -367,5 +418,60 @@ public:
          tmp.m[3][i] = m[i][3];
       }
       *this = tmp;
+   }
+
+   Matrix3D operator+(const Matrix3D& m) const
+   {
+      return Matrix3D(_11 + m._11, _12 + m._12, _13 + m._13, _14 + m._14,
+                      _21 + m._21, _22 + m._22, _23 + m._23, _24 + m._24,
+                      _31 + m._31, _32 + m._32, _33 + m._33, _34 + m._34,
+                      _41 + m._41, _42 + m._42, _43 + m._43, _44 + m._44);
+   }
+
+   Matrix3D MatrixLookAtLH(const vec3& eye, const vec3& at, const vec3& up)
+   {
+#ifdef ENABLE_SDL
+      const vec3 zaxis = vec3::normal(at - eye);
+      const vec3 xaxis = vec3::normal(vec3::cross(up, zaxis));
+      const vec3 yaxis = vec3::cross(zaxis, xaxis);
+      const float dotX = vec3::dot(xaxis, eye);
+      const float dotY = vec3::dot(yaxis, eye);
+      const float dotZ = vec3::dot(zaxis, eye);
+#else
+      vec3 xaxis, yaxis, zaxis;
+      const vec3 a_e = at - eye;
+      D3DXVec3Normalize(&zaxis, &a_e);
+      D3DXVec3Cross(&xaxis, &up, &zaxis);
+      D3DXVec3Normalize(&xaxis, &xaxis);
+      D3DXVec3Cross(&yaxis, &zaxis, &zaxis);
+      const float dotX = D3DXVec3Dot(&xaxis, &eye);
+      const float dotY = D3DXVec3Dot(&yaxis, &eye);
+      const float dotZ = D3DXVec3Dot(&zaxis, &eye);
+#endif
+      return Matrix3D(xaxis.x, yaxis.x, zaxis.x, 0.f, xaxis.y, yaxis.y, zaxis.x, 0.f, xaxis.z, yaxis.z, zaxis.z, 0.f, -dotX, -dotY, -dotZ, 1.f);
+   }
+
+   Matrix3D MatrixPerspectiveFovLH(const float fovy, const float aspect, const float zn, const float zf)
+   {
+      const float yScale = 1.0f / tanf(fovy * 0.5f);
+      const float xScale = yScale / aspect;
+      return Matrix3D(xScale, 0.0f, 0.0f, 0.0f, 0.0f, yScale, 0.0f, 0.0f, 0.0f, 0.0f, zf / (zf - zn), 1.0f, 0.0f, 0.0f, -zn * zf / (zf - zn), 0.0f);
+   }
+
+   Matrix3D MatrixPerspectiveOffCenterLH(const float l, const float r, const float b, const float t, const float zn, const float zf)
+   {
+      return Matrix3D(2.0f * zn / (r - l), 0.0f, 0.0f, 0.0f, 0.0f, 2.0f * zn / (t - b), 0.0f, 0.0f, (l + r) / (l - r), (t + b) / (b - t), zf / (zf - zn), 1.0f, 0.0f, 0.0f, -zn * zf / (zf - zn), 0.0f);
+   }
+
+   Matrix3D MatrixRotationYawPitchRoll(const float yaw, const float pitch, const float roll)
+   {
+      const float sr = sinf(roll);
+      const float cr = cosf(roll);
+      const float sp = sinf(pitch);
+      const float cp = cosf(pitch);
+      const float sy = sinf(yaw);
+      const float cy = cosf(yaw);
+      //!! This code should be validated!
+      return Matrix3D(cr * cy, sr, cr * sy, 0.0f, -sr * cp * sy - sp * sy, cr * cp, sr * cp * sy + sp * cy, 0.0f, -sr * sp * cy - cp * sy, -cr * sp, -sr * sp * sy + cp * cy, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
    }
 };
