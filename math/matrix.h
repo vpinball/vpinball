@@ -1,7 +1,79 @@
 #pragma once
 
-#include <typedefs3D.h>
 #include <math/vector.h>
+
+#ifdef ENABLE_SDL
+class Matrix3D;
+
+class D3DXMATRIX {
+public:
+   union {
+      struct {
+         float        _11, _12, _13, _14;
+         float        _21, _22, _23, _24;
+         float        _31, _32, _33, _34;
+         float        _41, _42, _43, _44;
+      };
+      float m[4][4];
+   };
+
+   D3DXMATRIX();
+   D3DXMATRIX(const D3DXMATRIX &input);
+   D3DXMATRIX(const D3DXMATRIX * const input);
+   D3DXMATRIX(const Matrix3D &input);
+};
+
+#define D3DMATRIX D3DXMATRIX
+class vec4 {
+public:
+   union {
+      struct {
+         float        x, y, z, w;
+      };
+      struct {
+         float        r, g, b, a;
+      };
+      float v[4];
+   };
+
+   vec4(const float x, const float y, const float z, const float w);
+   vec4();
+   static vec4 normal(const vec4 &input);
+   static float dot(const vec4 &a, const vec4 &b);
+   vec4 operator+ (const vec4& m) const;
+   vec4 operator- (const vec4& m) const;
+};
+
+typedef vec4 D3DXPLANE;
+
+class vec3 {
+public:
+   union {
+      struct {
+         float        x, y, z;
+      };
+      struct {
+         float        r, g, b;
+      };
+      float v[3];
+   };
+
+   vec3(const float x, const float y, const float z);
+   vec3();
+   static vec3 normal(const vec3 &input);
+   static vec3 cross(const vec3 &a, const vec3 &b);
+   static float dot(const vec3 &a, const vec3 &b);
+   static vec3 TransformCoord(const vec3 &ec, const Matrix3D &mat);
+   vec3 operator+ (const vec3& m) const;
+   vec3 operator- (const vec3& m) const;
+};
+
+#else
+
+typedef struct D3DXVECTOR4 vec4;
+typedef struct D3DXVECTOR3 vec3;
+
+#endif
 
 // 3x3 matrix for representing linear transformation of 3D vectors
 class Matrix3
@@ -87,6 +159,12 @@ public:
 
    template <class VecType>
    Vertex3Ds MulVector(const VecType& v) const
+   {
+      return (*this) * v;
+   }
+
+   template <class VecType>
+   Vertex3Ds MultiplyVector(const VecType& v) const
    {
       return (*this) * v;
    }
