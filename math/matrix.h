@@ -427,8 +427,10 @@ public:
                       _31 + m._31, _32 + m._32, _33 + m._33, _34 + m._34,
                       _41 + m._41, _42 + m._42, _43 + m._43, _44 + m._44);
    }
+   
+   //
 
-   Matrix3D MatrixLookAtLH(const vec3& eye, const vec3& at, const vec3& up)
+   static Matrix3D MatrixLookAtLH(const vec3& eye, const vec3& at, const vec3& up)
    {
 #ifdef ENABLE_SDL
       const vec3 zaxis = vec3::normal(at - eye);
@@ -451,19 +453,19 @@ public:
       return Matrix3D(xaxis.x, yaxis.x, zaxis.x, 0.f, xaxis.y, yaxis.y, zaxis.x, 0.f, xaxis.z, yaxis.z, zaxis.z, 0.f, -dotX, -dotY, -dotZ, 1.f);
    }
 
-   Matrix3D MatrixPerspectiveFovLH(const float fovy, const float aspect, const float zn, const float zf)
+   static Matrix3D MatrixPerspectiveFovLH(const float fovy, const float aspect, const float zn, const float zf)
    {
       const float yScale = 1.0f / tanf(fovy * 0.5f);
       const float xScale = yScale / aspect;
       return Matrix3D(xScale, 0.0f, 0.0f, 0.0f, 0.0f, yScale, 0.0f, 0.0f, 0.0f, 0.0f, zf / (zf - zn), 1.0f, 0.0f, 0.0f, -zn * zf / (zf - zn), 0.0f);
    }
 
-   Matrix3D MatrixPerspectiveOffCenterLH(const float l, const float r, const float b, const float t, const float zn, const float zf)
+   static Matrix3D MatrixPerspectiveOffCenterLH(const float l, const float r, const float b, const float t, const float zn, const float zf)
    {
       return Matrix3D(2.0f * zn / (r - l), 0.0f, 0.0f, 0.0f, 0.0f, 2.0f * zn / (t - b), 0.0f, 0.0f, (l + r) / (l - r), (t + b) / (b - t), zf / (zf - zn), 1.0f, 0.0f, 0.0f, -zn * zf / (zf - zn), 0.0f);
    }
 
-   Matrix3D MatrixRotationYawPitchRoll(const float yaw, const float pitch, const float roll)
+   static Matrix3D MatrixRotationYawPitchRoll(const float yaw, const float pitch, const float roll)
    {
       const float sr = sinf(roll);
       const float cr = cosf(roll);
