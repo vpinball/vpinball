@@ -38,7 +38,7 @@ bool mixer_init(const HWND wnd)
       if (::mixerOpen(&m_hMixer,
          0,
          reinterpret_cast<size_t>(wnd),
-         NULL,
+         nullptr,
          MIXER_OBJECTF_MIXER | CALLBACK_WINDOW)
          != MMSYSERR_NOERROR)
       {

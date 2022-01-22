@@ -563,7 +563,7 @@ static HRESULT RegDelnodeRecurse(const HKEY hKeyRoot, char lpSubKey[MAX_PATH * 2
 
    DWORD dwSize = MAX_PATH;
    TCHAR szName[MAX_PATH];
-   lResult = RegEnumKeyEx(hKey, 0, szName, &dwSize, NULL, NULL, NULL, NULL);
+   lResult = RegEnumKeyEx(hKey, 0, szName, &dwSize, nullptr, nullptr, nullptr, nullptr);
 
    if (lResult == ERROR_SUCCESS)
    {
@@ -576,7 +576,7 @@ static HRESULT RegDelnodeRecurse(const HKEY hKeyRoot, char lpSubKey[MAX_PATH * 2
             break;
 
          dwSize = MAX_PATH;
-         lResult = RegEnumKeyEx(hKey, 0, szName, &dwSize, NULL, NULL, NULL, NULL);
+         lResult = RegEnumKeyEx(hKey, 0, szName, &dwSize, nullptr, nullptr, nullptr, nullptr);
       } while (lResult == ERROR_SUCCESS);
    }
 

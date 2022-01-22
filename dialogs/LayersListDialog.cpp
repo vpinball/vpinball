@@ -181,7 +181,7 @@ void LayersListDialog::AddToolTip(const char* const text, HWND parentHwnd, HWND 
 BOOL LayersListDialog::OnInitDialog()
 {
    const HWND toolTipHwnd = CreateWindowEx(
-      NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_pvp->theInstance, nullptr);
+      nullptr, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_pvp->theInstance, nullptr);
    m_layerFilterEditBox.SetDialog(this);
    m_isCaseSensitive = BST_UNCHECKED;
 

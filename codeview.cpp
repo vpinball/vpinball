@@ -1493,18 +1493,18 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
 
    // if there is a valid key, then decrypt the script text (now in szText)
    //(must be done after the hash is updated)
-   if (hcryptkey != NULL)
+   if (hcryptkey != nullptr)
    {
       // get the size of the data to decrypt
       DWORD cryptlen = cchar*(int)sizeof(char);
 
       // decrypt the script
-      CryptDecrypt(hcryptkey,			// key to use
-         0, 				// not hashing data at the same time
-         TRUE, 				// last block (or only block)
-         0, 				// no flags
-         (BYTE *)szText,	// buffer to decrypt
-         &cryptlen);		// size of data to decrypt
+      CryptDecrypt(hcryptkey, // key to use
+         0,                   // not hashing data at the same time
+         TRUE,                // last block (or only block)
+         0,                   // no flags
+         (BYTE *)szText,      // buffer to decrypt
+         &cryptlen);          // size of data to decrypt
 
       /*const int foo =*/ GetLastError();	// purge any errors
 

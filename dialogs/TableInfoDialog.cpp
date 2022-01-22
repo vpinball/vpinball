@@ -191,7 +191,7 @@ BOOL TableInfoDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
             string szCustomValue;
             VPGetDialogItemText(m_customValueEdit, szCustomValue);
-            pt->AddListItem(m_customListView.GetHwnd(), szCustomName, szCustomValue, NULL);
+            pt->AddListItem(m_customListView.GetHwnd(), szCustomName, szCustomValue, nullptr);
          }
          break;
       }
