@@ -626,7 +626,7 @@ void Flipper::RenderDynamic()
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (pin)
    {
-      pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
+      pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
       pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pin, false);
       pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 
@@ -635,7 +635,7 @@ void Flipper::RenderDynamic()
       //pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
    }
    else
-      pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
+      pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
 
    pd3dDevice->SetRenderStateDepthBias(0.0f);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
@@ -661,9 +661,9 @@ void Flipper::RenderDynamic()
    {
       mat = m_ptable->GetMaterial(m_d.m_szRubberMaterial);
       if (pin)
-        pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
+        pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
       else
-        pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
+        pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
       pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->basicShader->Begin(0);
