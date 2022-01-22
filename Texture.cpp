@@ -254,7 +254,7 @@ Texture::~Texture()
 
 HRESULT Texture::SaveToStream(IStream *pstream, const PinTable *pt)
 {
-   BiffWriter bw(pstream, nullptr);
+   BiffWriter bw(pstream, 0);
 
    bw.WriteString(FID(NAME), m_szName);
    bw.WriteString(FID(PATH), m_szPath);
@@ -287,7 +287,7 @@ HRESULT Texture::SaveToStream(IStream *pstream, const PinTable *pt)
 
 HRESULT Texture::LoadFromStream(IStream *pstream, int version, PinTable *pt)
 {
-   BiffReader br(pstream, this, pt, version, nullptr, nullptr);
+   BiffReader br(pstream, this, pt, version, 0, 0);
 
    br.Load();
 

@@ -506,6 +506,11 @@ public:
       }
    }
 
+   void SetTechniqueMetal(const string& technique, const bool isMetal)
+   {
+      SetTechnique((technique + (isMetal ? "_isMetal" : "_isNotMetal")).c_str());
+   }
+
    void SetMatrix(const D3DXHANDLE hParameter, const D3DXMATRIX* pMatrix)
    {
       /*CHECKD3D(*/m_shader->SetMatrix(hParameter, pMatrix)/*)*/; // leads to invalid calls when setting some of the matrices (as hlsl compiler optimizes some down to less than 4x4)

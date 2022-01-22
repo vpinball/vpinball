@@ -150,7 +150,7 @@ void PinUndo::Undo()
       pie->ClearForOverwrite();
 
       int foo2;
-      pie->InitLoad(pstm, m_ptable, &foo2, CURRENT_FILE_FORMAT_VERSION, nullptr, nullptr);
+      pie->InitLoad(pstm, m_ptable, &foo2, CURRENT_FILE_FORMAT_VERSION, 0, 0);
       pie->InitPostLoad();
       // Stream gets released when undo record is deleted
       //pstm->Release();
@@ -227,7 +227,7 @@ void UndoRecord::MarkForUndo(IEditable * const pie, const bool backupForPlay)
    DWORD write;
    pstm->Write(&pie, sizeof(IEditable *), &write);
 
-   pie->SaveData(pstm, nullptr, true);
+   pie->SaveData(pstm, 0, true);
 
    m_vstm.push_back(pstm);
 }

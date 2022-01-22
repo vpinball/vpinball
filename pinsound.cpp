@@ -134,7 +134,7 @@ HRESULT PinSound::ReInitialize()
 		   (SoundMode3D != SNDCFG_SND3D2CH) ? (BASS_SAMPLE_3D | BASS_SAMPLE_MONO) : 0 /*| BASS_SAMPLE_LOOP*/ //!! mono really needed? doc claims so
 	   );
 
-	   if (m_BASSstream == nullptr)
+	   if (m_BASSstream == 0)
 	   {
 		   const int code = BASS_ErrorGetCode();
 		   string bla2;
@@ -582,7 +582,7 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 		   (SoundMode3D != SNDCFG_SND3D2CH) ? (BASS_SAMPLE_3D | BASS_SAMPLE_MONO) : 0 /*| BASS_SAMPLE_LOOP*/ //!! mono really needed? doc claims so
 	   );
 
-	   if (pps->m_BASSstream == nullptr)
+	   if (pps->m_BASSstream == 0)
 	   {
 		   delete pps;
 

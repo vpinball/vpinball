@@ -13,7 +13,7 @@ int bass_STD_idx = -1;
 
 AudioPlayer::AudioPlayer()
 {
-   m_stream = nullptr;
+   m_stream = 0;
 
 #ifdef DEBUG_NO_SOUND
    return;
@@ -144,10 +144,10 @@ bool AudioPlayer::MusicInit(const string& szFileName, const string& alt_szFileNa
    if (bass_BG_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_BG_idx);
 
    m_stream = BASS_StreamCreateFile(FALSE, szFileName.c_str(), 0, 0, /*BASS_SAMPLE_LOOP*/0); //!! ?
-   if (m_stream == nullptr)
+   if (m_stream == 0)
       m_stream = BASS_StreamCreateFile(FALSE, alt_szFileName.c_str(), 0, 0, /*BASS_SAMPLE_LOOP*/0); //!! ?
 
-   if (m_stream == nullptr)
+   if (m_stream == 0)
    {
       const int code = BASS_ErrorGetCode();
       string bla2;

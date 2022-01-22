@@ -71,7 +71,7 @@ bool PinBinary::WriteToFile(const string& szfilename)
 
 HRESULT PinBinary::SaveToStream(IStream *pstream)
 {
-   BiffWriter bw(pstream, nullptr);
+   BiffWriter bw(pstream, 0);
 
    bw.WriteString(FID(NAME), m_szName);
    bw.WriteString(FID(PATH), m_szPath);
@@ -84,7 +84,7 @@ HRESULT PinBinary::SaveToStream(IStream *pstream)
 
 HRESULT PinBinary::LoadFromStream(IStream *pstream, int version)
 {
-   BiffReader br(pstream, this, nullptr, version, nullptr, nullptr);
+   BiffReader br(pstream, this, nullptr, version, 0, 0);
 
    br.Load();
 
