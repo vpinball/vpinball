@@ -80,7 +80,7 @@ typedef void ID3DXEffect;
 #define SHADER_vColor_Intensity "vColor_Intensity"
 #define SHADER_w_h_height "w_h_height"
 #define SHADER_alphaTestValueAB_filterMode_addBlend "alphaTestValueAB_filterMode_addBlend"
-#define SHADER_amount_blend_modulate_vs_add_hdrTexture01 "amount_blend_modulate_vs_add_hdrTexture01"
+#define SHADER_amount_blend_modulate_vs_add_hdrTexture01 "amount__blend_modulate_vs_add__hdrTexture01"
 #define SHADER_staticColor_Alpha "staticColor_Alpha"
 #define SHADER_width_height_rotated_flipLR "width_height_rotated_flipLR"
 #define SHADER_vRes_Alpha_time "vRes_Alpha_time"
