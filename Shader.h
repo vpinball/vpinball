@@ -98,7 +98,7 @@ typedef void ID3DXEffect;
 #define SHADER_is_metal "is_metal"
 #define SHADER_color_grade "color_grade"
 #define SHADER_do_bloom "do_bloom"
-#define SHADER_lightingOff "lightningOff"
+#define SHADER_lightingOff "lightingOff"
 #define SHADER_objectSpaceNormalMap "objectSpaceNormalMap"
 #define SHADER_do_dither "do_dither"
 
