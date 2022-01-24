@@ -21,7 +21,7 @@ public:
    void bind();
 
    static void bindNull() { m_curVertexBuffer = nullptr; }
-   static void CreateVertexBuffer(const unsigned int vertexCount, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer);
+   static void CreateVertexBuffer(const unsigned int vertexCount, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer, const deviceNumber dN);
    static void UploadBuffers();
 
    GLuint getOffset() const { return offset; }
@@ -68,11 +68,11 @@ public:
    void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags);
    void unlock(void);
    void release(void);
-   void bind();
+   void bind(const deviceNumber dN);
 
    static void bindNull() { m_curVertexBuffer = nullptr; }
-   static void CreateVertexBuffer(const unsigned int vertexCount, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer);
-   static void setD3DDevice(IDirect3DDevice9* pD3DDevice) { m_pD3DDevice = pD3DDevice; }
+   static void CreateVertexBuffer(const unsigned int vertexCount, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer, const deviceNumber dN);
+   static void setD3DDevice(IDirect3DDevice9* primary, IDirect3DDevice9* secondary) { m_pd3dPrimaryDevice = primary; m_pd3dSecondaryDevice = secondary; }
 
 private:
    VertexBuffer();     // disable default constructor
@@ -80,7 +80,8 @@ private:
    DWORD m_fvf;
 
    static VertexBuffer* m_curVertexBuffer; // for caching
-   static IDirect3DDevice9* m_pD3DDevice;
+   static IDirect3DDevice9* m_pd3dPrimaryDevice;
+   static IDirect3DDevice9* m_pd3dSecondaryDevice;
 };
 
 #endif

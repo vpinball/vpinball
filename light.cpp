@@ -669,7 +669,7 @@ void Light::PrepareMoversCustom()
    }
 
    m_customMoverIndexNum = (unsigned int)vtri.size();
-   g_pplayer->m_pin3d.m_pd3dPrimaryDevice->CreateIndexBuffer(m_customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16, &m_customMoverIBuffer);
+   IndexBuffer::CreateIndexBuffer(m_customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16, &m_customMoverIBuffer, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
 
    WORD* bufi;
    m_customMoverIBuffer->lock(0, 0, (void**)&bufi, 0);
@@ -678,7 +678,7 @@ void Light::PrepareMoversCustom()
 
    m_customMoverVertexNum = (unsigned int)m_vvertex.size();
    const DWORD vertexType = (!m_backglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;
-   g_pplayer->m_pin3d.m_pd3dPrimaryDevice->CreateVertexBuffer(m_customMoverVertexNum, 0, vertexType, &m_customMoverVBuffer);
+   VertexBuffer::CreateVertexBuffer(m_customMoverVertexNum, 0, vertexType, &m_customMoverVBuffer, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
 
    Texture* const pin = m_ptable->GetImage(m_d.m_szImage);
 
@@ -739,8 +739,6 @@ void Light::PrepareMoversCustom()
 
 void Light::RenderSetup()
 {
-   RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    m_iblinkframe = 0;
    m_d.m_time_msec = g_pplayer->m_time_msec;
    m_updateBulbLightHeight = false;
@@ -766,11 +764,11 @@ void Light::RenderSetup()
    {
       if (m_bulbLightIndexBuffer)
          m_bulbLightIndexBuffer->release();
-      m_bulbLightIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bulbLightNumFaces, bulbLightIndices);
+      m_bulbLightIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(bulbLightNumFaces, bulbLightIndices, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
 
       if (m_bulbLightVBuffer)
          m_bulbLightVBuffer->release();
-      pd3dDevice->CreateVertexBuffer(bulbLightNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_bulbLightVBuffer);
+      VertexBuffer::CreateVertexBuffer(bulbLightNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_bulbLightVBuffer, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
 
       Vertex3D_NoTex2 *buf;
       m_bulbLightVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
@@ -789,11 +787,11 @@ void Light::RenderSetup()
 
       if (m_bulbSocketIndexBuffer)
          m_bulbSocketIndexBuffer->release();
-      m_bulbSocketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bulbSocketNumFaces, bulbSocketIndices);
+      m_bulbSocketIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(bulbSocketNumFaces, bulbSocketIndices, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
 
       if (m_bulbSocketVBuffer)
          m_bulbSocketVBuffer->release();
-      pd3dDevice->CreateVertexBuffer(bulbSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_bulbSocketVBuffer);
+      VertexBuffer::CreateVertexBuffer(bulbSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_bulbSocketVBuffer, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
 
       m_bulbSocketVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
       for (unsigned int i = 0; i < bulbSocketNumVertices; i++)

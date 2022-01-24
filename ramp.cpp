@@ -1212,11 +1212,9 @@ void Ramp::PrepareHabitrail()
    if (m_dynamicVertexBuffer2)
       m_dynamicVertexBuffer2->release();
 
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
-   pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_dynamicVertexBuffer); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
+   VertexBuffer::CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_dynamicVertexBuffer, PRIMARY_DEVICE); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
    if (m_d.m_type != RampType1Wire)
-      pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_dynamicVertexBuffer2); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
+      VertexBuffer::CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_dynamicVertexBuffer2, PRIMARY_DEVICE); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
 
    // Draw the floor of the ramp.
    Vertex3D_NoTex2 *buf;
@@ -1235,7 +1233,7 @@ void Ramp::PrepareHabitrail()
    if (m_dynamicIndexBuffer)
       m_dynamicIndexBuffer->release();
 
-   m_dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_meshIndices);
+   m_dynamicIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(m_meshIndices, PRIMARY_DEVICE);
 
    delete[] m_vertBuffer;
    delete[] tmpBuf1;
@@ -2470,9 +2468,7 @@ void Ramp::GenerateVertexBuffer()
    if (m_dynamicVertexBuffer)
       m_dynamicVertexBuffer->release();
 
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
-   pd3dDevice->CreateVertexBuffer(m_numVertices * 3, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_dynamicVertexBuffer); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
+   VertexBuffer::CreateVertexBuffer(m_numVertices * 3, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_dynamicVertexBuffer, PRIMARY_DEVICE); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
 
    Vertex3D_NoTex2 *buf;
    m_dynamicVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
@@ -2490,7 +2486,7 @@ void Ramp::GenerateVertexBuffer()
    if (m_dynamicIndexBuffer)
       m_dynamicIndexBuffer->release();
 
-   m_dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_meshIndices);
+   m_dynamicIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(m_meshIndices, PRIMARY_DEVICE);
    delete[] tmpBuffer;
 }
 

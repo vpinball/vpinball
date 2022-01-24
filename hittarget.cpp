@@ -819,17 +819,15 @@ void HitTarget::RenderDynamic()
 
 void HitTarget::RenderSetup()
 {
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    if (m_vertexBuffer)
       m_vertexBuffer->release();
 
    SetMeshType(m_d.m_targetType);
-   pd3dDevice->CreateVertexBuffer((unsigned int)m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_vertexBuffer);
+   VertexBuffer::CreateVertexBuffer((unsigned int)m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_vertexBuffer, PRIMARY_DEVICE);
 
    if (m_indexBuffer)
       m_indexBuffer->release();
-   m_indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, m_indices);
+   m_indexBuffer = IndexBuffer::CreateAndFillIndexBuffer(m_numIndices, m_indices, PRIMARY_DEVICE);
 
    m_transformedVertices.resize(m_numVertices);
 

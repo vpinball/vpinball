@@ -487,7 +487,12 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    if (FAILED(InitPrimary(fullScreen, colordepth, refreshrate, VSync, useAA, stereo3D, FXAA, sharpen, useAO, ss_refl)))
       return E_FAIL;
 
-   m_pd3dSecondaryDevice = m_pd3dPrimaryDevice;
+   m_pd3dSecondaryDevice = m_pd3dPrimaryDevice; //!! for now, there is no secondary device :/
+
+   VertexBuffer::setD3DDevice(m_pd3dPrimaryDevice->GetCoreDevice(), m_pd3dSecondaryDevice->GetCoreDevice());
+   VertexBuffer::bindNull();
+   IndexBuffer::setD3DDevice(m_pd3dPrimaryDevice->GetCoreDevice(), m_pd3dSecondaryDevice->GetCoreDevice());
+   IndexBuffer::bindNull();
 
    // Create the "static" color buffer.  
    // This will hold a pre-rendered image of the table and any non-changing elements (ie ramps, decals, etc).

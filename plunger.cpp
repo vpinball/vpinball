@@ -324,8 +324,6 @@ static const char *nextTipToken(const char* &p)
 
 void Plunger::RenderSetup()
 {
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y) + m_d.m_zAdjust;
    const float stroke = m_d.m_stroke;
    const float beginy = m_d.m_v.y;
@@ -544,7 +542,7 @@ void Plunger::RenderSetup()
 
    if (m_vertexBuffer)
       m_vertexBuffer->release();
-   pd3dDevice->CreateVertexBuffer(m_cframes*m_vtsPerFrame, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_vertexBuffer);
+   VertexBuffer::CreateVertexBuffer(m_cframes*m_vtsPerFrame, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_vertexBuffer, PRIMARY_DEVICE);
 
    Vertex3D_NoTex2 *buf;
    m_vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
@@ -849,7 +847,7 @@ void Plunger::RenderSetup()
    // create the new index buffer
    if (m_indexBuffer)
       m_indexBuffer->release();
-   m_indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(k, indices);
+   m_indexBuffer = IndexBuffer::CreateAndFillIndexBuffer(k, indices, PRIMARY_DEVICE);
 
    // done with the index scratch pad
    delete[] indices;

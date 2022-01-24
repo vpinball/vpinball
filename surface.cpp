@@ -855,9 +855,7 @@ void Surface::PrepareWallsAtHeight()
    std::vector<WORD> sideIndices;
    GenerateMesh(topBottomBuf, sideBuf, topBottomIndices, sideIndices);
 
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
-   pd3dDevice->CreateVertexBuffer(m_numVertices * 4 + (!topBottomBuf.empty() ? m_numVertices * 3 : 0), 0, MY_D3DFVF_NOTEX2_VERTEX, &m_VBuffer);
+   VertexBuffer::CreateVertexBuffer(m_numVertices * 4 + (!topBottomBuf.empty() ? m_numVertices * 3 : 0), 0, MY_D3DFVF_NOTEX2_VERTEX, &m_VBuffer, PRIMARY_DEVICE);
 
    Vertex3D_NoTex2 *verts;
    m_VBuffer->lock(0, 0, (void**)&verts, VertexBuffer::WRITEONLY);
@@ -865,15 +863,12 @@ void Surface::PrepareWallsAtHeight()
 
    if (!topBottomBuf.empty())
       //if (m_d.m_visible) // Visible could still be set later if rendered dynamically
-      {
          memcpy(verts+m_numVertices * 4, topBottomBuf.data(), sizeof(Vertex3D_NoTex2)*m_numVertices * 3);
-      }
-
    m_VBuffer->unlock();
 
    //
 
-   pd3dDevice->CreateIndexBuffer((unsigned int)topBottomIndices.size() + (unsigned int)sideIndices.size(), 0, IndexBuffer::FMT_INDEX16, &m_IBuffer);
+   IndexBuffer::CreateIndexBuffer((unsigned int)topBottomIndices.size() + (unsigned int)sideIndices.size(), 0, IndexBuffer::FMT_INDEX16, &m_IBuffer, PRIMARY_DEVICE);
 
    WORD* buf;
    m_IBuffer->lock(0, 0, (void**)&buf, 0);
@@ -932,9 +927,7 @@ void Surface::PrepareSlingshots()
    if (m_slingshotVBuffer)
       m_slingshotVBuffer->release();
 
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
-   pd3dDevice->CreateVertexBuffer((unsigned int)m_vlinesling.size() * 9, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_slingshotVBuffer);
+   VertexBuffer::CreateVertexBuffer((unsigned int)m_vlinesling.size() * 9, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_slingshotVBuffer, PRIMARY_DEVICE);
 
    Vertex3D_NoTex2 *buf;
    m_slingshotVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
@@ -944,7 +937,7 @@ void Surface::PrepareSlingshots()
    delete[] rgv3D;
 
    if (!slingIBuffer)
-      slingIBuffer = pd3dDevice->CreateAndFillIndexBuffer(24, rgiSlingshot);
+      slingIBuffer = IndexBuffer::CreateAndFillIndexBuffer(24, rgiSlingshot, PRIMARY_DEVICE);
 }
 
 void Surface::RenderSetup()

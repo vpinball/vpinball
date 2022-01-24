@@ -744,6 +744,8 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    if (video10bit && (m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA))
       ShowError("SMAA or DLAA post-processing AA should not be combined with 10Bit-output rendering (will result in visible artifacts)!");
 
+   //
+
    // create default vertex declarations for shaders
    CreateVertexDeclaration(VertexTexelElement, &m_pVertexTexelDeclaration);
    CreateVertexDeclaration(VertexNormalTexelElement, &m_pVertexNormalTexelDeclaration);
@@ -1814,7 +1816,8 @@ void RenderDevice::DrawPrimitive(const RenderDevice::PrimitiveTypes type, const 
    if (FAILED(hr))
       ReportError("Fatal Error: DrawPrimitiveUP failed!", hr, __FILE__, __LINE__);
 
-   m_curVertexBuffer = 0;      // DrawPrimitiveUP sets the VB to nullptr
+   m_curVertexBuffer = nullptr; // DrawPrimitiveUP sets the VB to nullptr
+   VertexBuffer::bindNull();    // DrawPrimitiveUP sets the VB to nullptr
 
    m_curDrawCalls++;
 }

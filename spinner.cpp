@@ -431,18 +431,16 @@ void Spinner::RenderSetup()
    if (!m_d.m_visible)
       return;
 
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    m_posZ = height + m_d.m_height;
 
    if (m_bracketIndexBuffer)
       m_bracketIndexBuffer->release();
-   m_bracketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(spinnerBracketNumFaces, spinnerBracketIndices);
+   m_bracketIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(spinnerBracketNumFaces, spinnerBracketIndices, PRIMARY_DEVICE);
 
    if (m_bracketVertexBuffer)
       m_bracketVertexBuffer->release();
-   pd3dDevice->CreateVertexBuffer(spinnerBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_bracketVertexBuffer);
+   VertexBuffer::CreateVertexBuffer(spinnerBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_bracketVertexBuffer, PRIMARY_DEVICE);
 
    m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
 
@@ -469,11 +467,11 @@ void Spinner::RenderSetup()
 
    if (m_plateIndexBuffer)
       m_plateIndexBuffer->release();
-   m_plateIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(spinnerPlateNumFaces, spinnerPlateIndices);
+   m_plateIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(spinnerPlateNumFaces, spinnerPlateIndices, PRIMARY_DEVICE);
 
    if (m_plateVertexBuffer)
       m_plateVertexBuffer->release();
-   pd3dDevice->CreateVertexBuffer(spinnerPlateNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_plateVertexBuffer);
+   VertexBuffer::CreateVertexBuffer(spinnerPlateNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_plateVertexBuffer, PRIMARY_DEVICE);
 
    m_vertexBuffer_spinneranimangle = -FLT_MAX;
    UpdatePlate(nullptr);

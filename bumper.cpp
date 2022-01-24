@@ -745,8 +745,6 @@ void Bumper::GenerateCapMesh(Vertex3D_NoTex2 *buf)
 
 void Bumper::RenderSetup()
 {
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    m_d.m_time_msec = g_pplayer->m_time_msec;
 
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
@@ -757,11 +755,11 @@ void Bumper::RenderSetup()
       m_baseTexture.CreateFromResource(IDB_BUMPER_BASE);
       if (m_baseIndexBuffer)
          m_baseIndexBuffer->release();
-      m_baseIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperBaseNumIndices, bumperBaseIndices);
+      m_baseIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(bumperBaseNumIndices, bumperBaseIndices, PRIMARY_DEVICE);
 
       if (m_baseVertexBuffer)
          m_baseVertexBuffer->release();
-      pd3dDevice->CreateVertexBuffer(bumperBaseNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_baseVertexBuffer);
+      VertexBuffer::CreateVertexBuffer(bumperBaseNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_baseVertexBuffer, PRIMARY_DEVICE);
 
       Vertex3D_NoTex2 *buf;
       m_baseVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
@@ -775,11 +773,11 @@ void Bumper::RenderSetup()
 
       if (m_socketIndexBuffer)
          m_socketIndexBuffer->release();
-      m_socketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperSocketNumIndices, bumperSocketIndices);
+      m_socketIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(bumperSocketNumIndices, bumperSocketIndices, PRIMARY_DEVICE);
 
       if (m_socketVertexBuffer)
          m_socketVertexBuffer->release();
-      pd3dDevice->CreateVertexBuffer(bumperSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_socketVertexBuffer);
+      VertexBuffer::CreateVertexBuffer(bumperSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_socketVertexBuffer, PRIMARY_DEVICE);
 
       Vertex3D_NoTex2 *buf;
       m_socketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
@@ -793,11 +791,11 @@ void Bumper::RenderSetup()
 
       if (m_ringIndexBuffer)
          m_ringIndexBuffer->release();
-      m_ringIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperRingNumIndices, bumperRingIndices);
+      m_ringIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(bumperRingNumIndices, bumperRingIndices, PRIMARY_DEVICE);
 
       if (m_ringVertexBuffer)
          m_ringVertexBuffer->release();
-      pd3dDevice->CreateVertexBuffer(bumperRingNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_ringVertexBuffer);
+      VertexBuffer::CreateVertexBuffer(bumperRingNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_ringVertexBuffer, PRIMARY_DEVICE);
 
       m_ringVertices = new Vertex3D_NoTex2[bumperRingNumVertices];
       GenerateRingMesh(m_ringVertices);
@@ -814,11 +812,11 @@ void Bumper::RenderSetup()
 
       if (m_capIndexBuffer)
          m_capIndexBuffer->release();
-      m_capIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperCapNumIndices, bumperCapIndices);
+      m_capIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(bumperCapNumIndices, bumperCapIndices, PRIMARY_DEVICE);
 
       if (m_capVertexBuffer)
          m_capVertexBuffer->release();
-      pd3dDevice->CreateVertexBuffer(bumperCapNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_capVertexBuffer);
+      VertexBuffer::CreateVertexBuffer(bumperCapNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_capVertexBuffer, PRIMARY_DEVICE);
 
       Vertex3D_NoTex2 *buf;
       m_capVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);

@@ -366,11 +366,9 @@ void Flasher::RenderSetup()
       return;
    }
 
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    if (m_dynamicIndexBuffer)
       m_dynamicIndexBuffer->release();
-   pd3dDevice->CreateIndexBuffer(m_numPolys * 3, 0, IndexBuffer::FMT_INDEX16, &m_dynamicIndexBuffer);
+   IndexBuffer::CreateIndexBuffer(m_numPolys * 3, 0, IndexBuffer::FMT_INDEX16, &m_dynamicIndexBuffer, PRIMARY_DEVICE);
    NumVideoBytes += (int)(m_numPolys * 3 * sizeof(WORD));
 
    WORD* bufi;
@@ -380,7 +378,7 @@ void Flasher::RenderSetup()
 
    if (m_dynamicVertexBuffer)
       m_dynamicVertexBuffer->release();
-   pd3dDevice->CreateVertexBuffer(m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_TEX, &m_dynamicVertexBuffer);
+   VertexBuffer::CreateVertexBuffer(m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_TEX, &m_dynamicVertexBuffer, PRIMARY_DEVICE);
    NumVideoBytes += (int)(m_numVertices*sizeof(Vertex3D_TexelOnly));
 
    if (m_vertices)

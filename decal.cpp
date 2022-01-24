@@ -434,8 +434,6 @@ void Decal::RenderSetup()
 {
    PreRenderText();
 
-   RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    float leading, descent; // For fonts
@@ -460,7 +458,7 @@ void Decal::RenderSetup()
    if (vertexBuffer)
       vertexBuffer->release();
    const DWORD vertexType = m_backglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX;
-   pd3dDevice->CreateVertexBuffer(4, 0, vertexType, &vertexBuffer);
+   VertexBuffer::CreateVertexBuffer(4, 0, vertexType, &vertexBuffer, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
 
    Vertex3D_NoTex2 *vertices;
    vertexBuffer->lock(0, 0, (void**)&vertices, VertexBuffer::WRITEONLY);

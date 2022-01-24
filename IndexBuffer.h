@@ -19,7 +19,7 @@ public:
    void bind();
 
    static void bindNull() { m_curIndexBuffer = nullptr; }
-   static void CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer **idxBuffer);
+   static void CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer **idxBuffer, const deviceNumber dN);
 
    static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const unsigned int * indices);
    static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const WORD * indices);
@@ -75,23 +75,24 @@ public:
    void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags);
    void unlock(void);
    void release(void);
-   void bind();
+   void bind(const deviceNumber dN);
 
    static void bindNull() { m_curIndexBuffer = nullptr; }
-   static void setD3DDevice(IDirect3DDevice9* pD3DDevice) { m_pD3DDevice = pD3DDevice; }
+   static void setD3DDevice(IDirect3DDevice9* primary, IDirect3DDevice9* secondary) { m_pd3dPrimaryDevice = primary; m_pd3dSecondaryDevice = secondary; }
 
-   static void CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer** idxBuffer);
+   static void CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer** idxBuffer, const deviceNumber dN);
 
-   static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const unsigned int * indices);
-   static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const WORD * indices);
-   static IndexBuffer* CreateAndFillIndexBuffer(const std::vector<unsigned int>& indices);
-   static IndexBuffer* CreateAndFillIndexBuffer(const std::vector<WORD>& indices);
+   static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const unsigned int* indices, const deviceNumber dN);
+   static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const WORD* indices, const deviceNumber dN);
+   static IndexBuffer* CreateAndFillIndexBuffer(const std::vector<unsigned int>& indices, const deviceNumber dN);
+   static IndexBuffer* CreateAndFillIndexBuffer(const std::vector<WORD>& indices, const deviceNumber dN);
 
 private:
    IndexBuffer();      // disable default constructor
 
    static IndexBuffer* m_curIndexBuffer; // for caching
-   static IDirect3DDevice9* m_pD3DDevice;
+   static IDirect3DDevice9* m_pd3dPrimaryDevice;
+   static IDirect3DDevice9* m_pd3dSecondaryDevice;
 };
 
 #endif
