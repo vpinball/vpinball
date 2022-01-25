@@ -229,6 +229,7 @@ public:
    void SetLightImageBackglassMode(const bool imageMode, const bool backglassMode);
 
    void SetTechnique(const SHADER_TECHNIQUE_HANDLE technique);
+   void SetTechniqueMetal(const SHADER_TECHNIQUE_HANDLE technique, const bool isMetal);
 
    void SetMatrix(const SHADER_UNIFORM_HANDLE hParameter, const Matrix3D* pMatrix);
    void SetUniformBlock(const SHADER_UNIFORM_HANDLE hParameter, const float* pMatrix, const int size);
@@ -274,8 +275,8 @@ private:
    const char* m_shaderCodeName = nullptr; // Only valid while loading
 
    void LOG(int level, const char* fileNameRoot, const string& message);
-   bool parseFile(const char* fileNameRoot, const char* fileName, int level, const std::map<string, string>& values, const string& parentMode);
-   string analyzeFunction(const char* shaderCodeName, const string& technique, const string& functionName, std::map<string, string>& values);
+   bool parseFile(const char* fileNameRoot, const char* fileName, int level, std::map<string, string>& values, const string& parentMode);
+   string analyzeFunction(const char* shaderCodeName, const string& technique, const string& functionName, const std::map<string, string>& values);
    bool compileGLShader(const char* fileNameRoot, const string& shaderCodeName, const string& vertex, const string& geometry, const string& fragment);
 
    struct attributeLoc {

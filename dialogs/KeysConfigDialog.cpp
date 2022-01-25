@@ -265,6 +265,17 @@ KeysConfigDialog::KeysConfigDialog() : CDialog(IDD_KEYS)
 {
 }
 
+void KeysConfigDialog::AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
+{
+   TOOLINFO toolInfo = { 0 };
+   toolInfo.cbSize = sizeof(toolInfo);
+   toolInfo.hwnd = parentHwnd;
+   toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+   toolInfo.uId = (UINT_PTR)controlHwnd;
+   toolInfo.lpszText = text;
+   SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+}
+
 BOOL KeysConfigDialog::OnInitDialog()
 {
     bool on = LoadValueBoolWithDefault("Player", "PBWDefaultLayout", false);

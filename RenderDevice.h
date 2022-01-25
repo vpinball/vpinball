@@ -44,14 +44,25 @@ int getDisplayList(std::vector<DisplayConfig>& displays);
 int getPrimaryDisplay();
 
 enum TransformStateType {
+#ifdef ENABLE_SDL
+   TRANSFORMSTATE_WORLD = 0,
+   TRANSFORMSTATE_VIEW = 1,
+   TRANSFORMSTATE_PROJECTION = 2
+#else
    TRANSFORMSTATE_WORLD = D3DTS_WORLD,
    TRANSFORMSTATE_VIEW = D3DTS_VIEW,
    TRANSFORMSTATE_PROJECTION = D3DTS_PROJECTION
+#endif
 };
 
 enum UsageFlags {
+#ifdef ENABLE_SDL
+   USAGE_STATIC = GL_STATIC_DRAW,
+   USAGE_DYNAMIC = GL_DYNAMIC_DRAW
+#else
    USAGE_STATIC = D3DUSAGE_WRITEONLY,    // to be used for vertex/index buffers which are uploaded once and never touched again
    USAGE_DYNAMIC = D3DUSAGE_DYNAMIC      // to be used for vertex/index buffers which are locked every frame/very often
+#endif
 };
 
 class RenderDevice;
@@ -301,6 +312,7 @@ private:
    D3DTexture* m_SMAAsearchTexture;
    D3DTexture* m_SMAAareaTexture;
 
+#ifndef ENABLE_SDL
 #ifdef USE_D3D9EX
    IDirect3D9Ex* m_pD3DEx;
 
@@ -309,6 +321,7 @@ private:
    IDirect3D9* m_pD3D;
 
    IDirect3DDevice9* m_pD3DDevice;
+#endif
 
    IDirect3DSurface9* m_pBackBuffer;
 

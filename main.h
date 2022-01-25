@@ -3,21 +3,32 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 
+#ifdef ENABLE_SDL
+ #include <d3d11_1.h>
+ #include <dxgi1_2.h>
+ #pragma comment(lib,"d3d11.lib")
+ #pragma comment(lib,"dxgi.lib")
+#endif
+
 #include <windows.h>
 #include <MMSystem.h>
 
-#ifdef USE_DINPUT8
-#define DIRECTINPUT_VERSION 0x0800
-#else
-#define DIRECTINPUT_VERSION 0x0700
+#ifndef ENABLE_SDL
+ #ifdef _DEBUG
+  #define D3D_DEBUG_INFO
+ #endif
+ #include "minid3d9.h"
+
+ #ifdef USE_DINPUT8
+  #define DIRECTINPUT_VERSION 0x0800
+ #else
+  #define DIRECTINPUT_VERSION 0x0700
+ #endif
+ #include <dinput.h>
 #endif
-#include <dinput.h>
+
 #include <dsound.h>
 
-#ifdef _DEBUG
-#define D3D_DEBUG_INFO
-#endif
-#include "minid3d9.h"
 
 //#include <richedit.h>
 //#include <atlcom.h>

@@ -9,13 +9,14 @@
 #endif
 
 #include "RenderDevice.h"
+#include "Shader.h"
+#ifndef ENABLE_SDL
 #include "Material.h"
 #include "BasicShader.h"
 #include "DMDShader.h"
 #include "FBShader.h"
 #include "FlasherShader.h"
 #include "LightShader.h"
-#include "Shader.h"
 #ifdef SEPARATE_CLASSICLIGHTSHADER
 #include "ClassicLightShader.h"
 #endif
@@ -26,6 +27,7 @@
  #pragma comment(lib, "legacy_stdio_definitions.lib") //dxerr.lib needs this
 #endif
 #pragma comment(lib, "dxerr.lib")       // TODO: put into build system
+#endif
 
 static bool IsWindowsVistaOr7()
 {
@@ -166,21 +168,45 @@ static UINT ComputePrimitiveCount(const RenderDevice::PrimitiveTypes type, const
    }
 }
 
+#ifdef ENABLE_SDL
+static const char* glErrorToString(const int error) {
+   switch (error) {
+   case GL_INVALID_ENUM: return "GL_INVALID_ENUM";
+   case GL_INVALID_VALUE: return "GL_INVALID_VALUE";
+   case GL_INVALID_OPERATION: return "GL_INVALID_OPERATION";
+   case GL_STACK_OVERFLOW: return "GL_STACK_OVERFLOW";
+   case GL_STACK_UNDERFLOW: return "GL_STACK_UNDERFLOW";
+   case GL_OUT_OF_MEMORY: return "GL_OUT_OF_MEMORY";
+   case GL_INVALID_FRAMEBUFFER_OPERATION: return "GL_INVALID_FRAMEBUFFER_OPERATION";
+   default: return "unknown";
+   }
+}
+#endif
 
 void ReportFatalError(const HRESULT hr, const char *file, const int line)
 {
    char msg[1024];
+#ifdef ENABLE_SDL
+   sprintf_s(msg, 1024, "GL Fatal Error 0x%0002X %s in %s:%d", hr, glErrorToString(hr), file, line);
+   ShowError(msg);
+#else
    sprintf_s(msg, 1024, "Fatal error %s (0x%x: %s) at %s:%d", DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
    ShowError(msg);
    exit(-1);
+#endif
 }
 
 void ReportError(const char *errorText, const HRESULT hr, const char *file, const int line)
 {
    char msg[1024];
+#ifdef ENABLE_SDL
+   sprintf_s(msg, 1024, "GL Error 0x%0002X %s in %s:%d", hr, glErrorToString(hr), file, line);
+   ShowError(msg);
+#else
    sprintf_s(msg, 1024, "%s %s (0x%x: %s) at %s:%d", errorText, DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
    ShowError(msg);
    exit(-1);
+#endif
 }
 
 unsigned m_curLockCalls, m_frameLockCalls;
@@ -302,7 +328,11 @@ BOOL CALLBACK MonitorEnumList(__in  HMONITOR hMonitor, __in  HDC hdcMonitor, __i
    config.height = info.rcMonitor.bottom - info.rcMonitor.top;
    config.isPrimary = (config.top == 0) && (config.left == 0);
    config.display = (int)data->size(); // This number does neither map to the number form display settings nor something else.
+#ifdef ENABLE_SDL
+   config.adapter = config.display;
+#else
    config.adapter = -1;
+#endif
    memcpy(config.DeviceName, info.szDevice, CCHDEVICENAME); // Internal display name e.g. "\\\\.\\DISPLAY1"
    data->insert(std::pair<std::string, DisplayConfig>(config.DeviceName, config));
    return TRUE;
@@ -316,6 +346,8 @@ int getDisplayList(std::vector<DisplayConfig>& displays)
    EnumDisplayMonitors(nullptr, nullptr, MonitorEnumList, reinterpret_cast<LPARAM>(&displayMap));
    DISPLAY_DEVICE DispDev = {};
    DispDev.cb = sizeof(DispDev);
+
+#ifndef ENABLE_SDL
    IDirect3D9* pD3D = Direct3DCreate9(D3D_SDK_VERSION);
    if (pD3D == nullptr)
    {
@@ -334,6 +366,8 @@ int getDisplayList(std::vector<DisplayConfig>& displays)
       }
    }
    SAFE_RELEASE(pD3D);
+#endif
+
    // Apply the same numbering as windows
    int i = 0;
    for (std::map<std::string, DisplayConfig>::iterator display = displayMap.begin(); display != displayMap.end(); ++display)
@@ -584,7 +618,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    m_INTZ_support = false;
 #else
    m_INTZ_support = (m_pD3D->CheckDeviceFormat( m_adapter, devtype, params.BackBufferFormat,
-                    D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, ((D3DFORMAT)(MAKEFOURCC('I','N','T','Z'))))) == D3D_OK;
+                     D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, ((D3DFORMAT)(MAKEFOURCC('I','N','T','Z'))))) == D3D_OK;
 #endif
 
    // check if requested MSAA is possible
@@ -680,16 +714,14 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    const D3DFORMAT render_format = (D3DFORMAT)((m_BWrendering == 1) ? colorFormat::RG16F : ((m_BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGBA16F));
 
    // alloc float buffer for rendering (optionally 2x2 res for manual super sampling)
-   hr = m_pD3DDevice->CreateTexture(m_useAA ? 2 * m_width : m_width, m_useAA ? 2 * m_height : m_height, 1,
-      D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pOffscreenBackBufferTexture, nullptr); //!! D3DFMT_A32B32G32R32F?
+   hr = m_pD3DDevice->CreateTexture(m_useAA ? 2 * m_width : m_width, m_useAA ? 2 * m_height : m_height, 1, D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pOffscreenBackBufferTexture, nullptr); //!! D3DFMT_A32B32G32R32F?
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create render buffer!", hr, __FILE__, __LINE__);
 
    // alloc buffer for screen space fake reflection rendering (optionally 2x2 res for manual super sampling)
    if (m_ssRefl)
    {
-      hr = m_pD3DDevice->CreateTexture(m_useAA ? 2 * m_width : m_width, m_useAA ? 2 * m_height : m_height, 1,
-         D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pReflectionBufferTexture, nullptr); //!! D3DFMT_A32B32G32R32F?
+      hr = m_pD3DDevice->CreateTexture(m_useAA ? 2 * m_width : m_width, m_useAA ? 2 * m_height : m_height, 1, D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pReflectionBufferTexture, nullptr); //!! D3DFMT_A32B32G32R32F?
       if (FAILED(hr))
          ReportError("Fatal Error: unable to create reflection buffer!", hr, __FILE__, __LINE__);
    }
@@ -701,29 +733,25 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
       const bool drawBallReflection = ((g_pplayer->m_reflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
       if ((g_pplayer->m_ptable->m_reflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
       {
-         hr = m_pD3DDevice->CreateTexture(m_useAA ? 2 * m_width : m_width, m_useAA ? 2 * m_height : m_height, 1,
-                                          D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pMirrorTmpBufferTexture, nullptr); //!! D3DFMT_A32B32G32R32F?
-         if(FAILED(hr))
+         hr = m_pD3DDevice->CreateTexture(m_useAA ? 2 * m_width : m_width, m_useAA ? 2 * m_height : m_height, 1, D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pMirrorTmpBufferTexture, nullptr); //!! D3DFMT_A32B32G32R32F?
+         if (FAILED(hr))
             ReportError("Fatal Error: unable to create reflection map!", hr, __FILE__, __LINE__);
       }
    }
    // alloc bloom tex at 1/4 x 1/4 res (allows for simple HQ downscale of clipped input while saving memory)
-   hr = m_pD3DDevice->CreateTexture(m_width / 4, m_height / 4, 1,
-      D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pBloomBufferTexture, nullptr); //!! 8bit enough?
+   hr = m_pD3DDevice->CreateTexture(m_width / 4, m_height / 4, 1, D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pBloomBufferTexture, nullptr); //!! 8bit enough?
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create bloom buffer!", hr, __FILE__, __LINE__);
 
    // temporary buffer for gaussian blur
-   hr = m_pD3DDevice->CreateTexture(m_width / 4, m_height / 4, 1,
-      D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pBloomTmpBufferTexture, nullptr); //!! 8bit are enough! //!! but used also for bulb light transmission hack now!
+   hr = m_pD3DDevice->CreateTexture(m_width / 4, m_height / 4, 1, D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pBloomTmpBufferTexture, nullptr); //!! 8bit are enough! //!! but used also for bulb light transmission hack now!
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create blur buffer!", hr, __FILE__, __LINE__);
 
    // alloc temporary buffer for stereo3D/post-processing AA/sharpen
    if (m_stereo3D || (m_FXAA > 0) || m_sharpen)
    {
-      hr = m_pD3DDevice->CreateTexture(m_width, m_height, 1,
-         D3DUSAGE_RENDERTARGET, (D3DFORMAT)(video10bit ? colorFormat::RGBA10 : colorFormat::RGBA8), (D3DPOOL)memoryPool::DEFAULT, &m_pOffscreenBackBufferTmpTexture, nullptr);
+      hr = m_pD3DDevice->CreateTexture(m_width, m_height, 1, D3DUSAGE_RENDERTARGET, (D3DFORMAT)(video10bit ? colorFormat::RGBA10 : colorFormat::RGBA8), (D3DPOOL)memoryPool::DEFAULT, &m_pOffscreenBackBufferTmpTexture, nullptr);
       if (FAILED(hr))
          ReportError("Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!", hr, __FILE__, __LINE__);
    }
@@ -733,8 +761,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    // alloc one more temporary buffer for SMAA
    if (m_FXAA == Quality_SMAA)
    {
-      hr = m_pD3DDevice->CreateTexture(m_width, m_height, 1,
-         D3DUSAGE_RENDERTARGET, (D3DFORMAT)(video10bit ? colorFormat::RGBA10 : colorFormat::RGBA8), (D3DPOOL)memoryPool::DEFAULT, &m_pOffscreenBackBufferTmpTexture2, nullptr);
+      hr = m_pD3DDevice->CreateTexture(m_width, m_height, 1, D3DUSAGE_RENDERTARGET, (D3DFORMAT)(video10bit ? colorFormat::RGBA10 : colorFormat::RGBA8), (D3DPOOL)memoryPool::DEFAULT, &m_pOffscreenBackBufferTmpTexture2, nullptr);
       if (FAILED(hr))
          ReportError("Fatal Error: unable to create SMAA buffer!", hr, __FILE__, __LINE__);
    }
@@ -1034,7 +1061,7 @@ bool RenderDevice::SetMaximumPreRenderedFrames(const DWORD frames)
    }
    else
 #endif
-   return false;
+      return false;
 }
 
 void RenderDevice::Flip(const bool vsync)
@@ -1560,7 +1587,7 @@ void RenderDevice::UnSetZBuffer()
 #endif
 }
 
-bool RenderDevice::SetRenderStateCache(const RenderStates p1, DWORD p2)
+inline bool RenderDevice::SetRenderStateCache(const RenderStates p1, DWORD p2)
 {
 #ifdef DEBUG
    if (p1 >= RENDERSTATE_COUNT)
@@ -1668,8 +1695,9 @@ void RenderDevice::SetRenderStateDepthBias(float bias)
    if (SetRenderStateCache(DEPTHBIAS, *((DWORD*)&bias))) return;
 
 #ifdef ENABLE_SDL
-   if (bias == 0.0f)
+   if (bias == 0.0f) {
       CHECKD3D(glDisable(GL_POLYGON_OFFSET_FILL));
+   }
    else {
       CHECKD3D(glEnable(GL_POLYGON_OFFSET_FILL));
       CHECKD3D(glPolygonOffset(0.0f, bias));
@@ -1687,8 +1715,9 @@ void RenderDevice::SetRenderStateClipPlane0(const bool enabled)
 
 #ifdef ENABLE_SDL
    // Basicshader already prepared with proper clipplane so just need to enable/disable it
-   if (enabled)
+   if (enabled) {
       CHECKD3D(glEnable(GL_CLIP_DISTANCE0));
+   }
    else
       CHECKD3D(glDisable(GL_CLIP_DISTANCE0));
 #else

@@ -68,7 +68,9 @@ public:
 #include "../meshes/ballMesh.h"
 #include "Shader.h"
 #include "typedefs3D.h"
-#include "BallShader.h"
+#ifndef ENABLE_SDL
+ #include "BallShader.h"
+#endif
 #include "../math/bluenoise.h"
 #include "../inc/winsdk/legacy_touch.h"
 
@@ -558,6 +560,7 @@ void Player::Shutdown()
 
    SAFE_RELEASE(m_ballVertexBuffer);
    SAFE_RELEASE(m_ballIndexBuffer);
+#ifndef ENABLE_SDL
    if (m_ballShader)
    {
       CHECKD3D(m_ballShader->Core()->SetTexture(SHADER_Texture0, nullptr));
@@ -567,6 +570,7 @@ void Player::Shutdown()
       delete m_ballShader;
       m_ballShader = 0;
    }
+#endif
 #ifdef DEBUG_BALL_SPIN
    SAFE_RELEASE(m_ballDebugPoints);
 #endif
@@ -910,12 +914,12 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix("matWorldView", &matWorldView);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
-   //m_pin3d.m_pd3dDevice->basicShader->SetMatrix("matWorld", &matWorld);
+   //m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix("matWorld", &matWorld);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix("matView", &matView);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix("matWorldView", &matWorldView);
    m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
-   //m_pin3d.m_pd3dDevice->classicLightShader->SetMatrix("matWorld", &matWorld);
+   //m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix("matWorld", &matWorld);
    m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix("matView", &matView);
 #endif
 
@@ -924,18 +928,18 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    //D3DXMATRIX matViewInvInvTrans;
    //memcpy(matViewInvInvTrans.m, temp.m, 4 * 4 * sizeof(float));
 
-   //m_pin3d.m_pd3dDevice->basicShader->SetMatrix("matViewInverseInverseTranspose", &matViewInvInvTrans);
+   //m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix("matViewInverseInverseTranspose", &matViewInvInvTrans);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
-   //m_pin3d.m_pd3dDevice->classicLightShader->SetMatrix("matViewInverseInverseTranspose", &matViewInvInvTrans);
+   //m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix("matViewInverseInverseTranspose", &matViewInvInvTrans);
 #endif
 }
 
 void Player::InitShader()
 {
    /*D3DMATRIX worldMat,viewMat,projMat;
-   m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_WORLD, &worldMat );
-   m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
-   m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_PROJECTION, &projMat);
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_WORLD, &worldMat );
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_PROJECTION, &projMat);
 
    D3DXMATRIX matProj(projMat);
    D3DXMATRIX matView(viewMat);
@@ -944,9 +948,9 @@ void Player::InitShader()
 
    UpdateBasicShaderMatrix();
    //vec4 cam( worldViewProj._41, worldViewProj._42, worldViewProj._43, 1 );
-   //m_pin3d.m_pd3dDevice->basicShader->SetVector("camera", &cam);
+   //m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector("camera", &cam);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
-   //m_pin3d.m_pd3dDevice->classicLightShader->SetVector("camera", &cam);
+   //m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetVector("camera", &cam);
 #endif
 
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetBool(SHADER_hdrEnvTextures, (m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.m_builtinEnvTexture)->IsHDR());
@@ -955,7 +959,7 @@ void Player::InitShader()
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetBool(SHADER_hdrEnvTextures, (m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.m_builtinEnvTexture)->IsHDR());
    m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetTexture(SHADER_Texture1, m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.m_builtinEnvTexture);
-   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetTexture(SHADER_Texture2, m_pd3dDevice->m_texMan.LoadTexture(m_envRadianceTexture));
+   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetTexture(SHADER_Texture2, m_pd3dPrimaryDevice->m_texMan.LoadTexture(m_envRadianceTexture));
 #endif
    const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
@@ -1042,11 +1046,11 @@ void Player::InitBallShader()
 
    assert(m_ballIndexBuffer == nullptr);
    const bool lowDetailBall = (m_ptable->GetDetailLevel() < 10);
-   m_ballIndexBuffer = m_pin3d.m_pd3dPrimaryDevice->CreateAndFillIndexBuffer(lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
+   m_ballIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices, PRIMARY_DEVICE);
 
    // VB for normal ball
    assert(m_ballVertexBuffer == nullptr);
-   m_pin3d.m_pd3dPrimaryDevice->CreateVertexBuffer(lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_ballVertexBuffer);
+   VertexBuffer::CreateVertexBuffer(lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_ballVertexBuffer, PRIMARY_DEVICE);
 
    // load precomputed ball vertices into vertex buffer
    Vertex3D_NoTex2 *buf;
@@ -1215,8 +1219,61 @@ HRESULT Player::Init()
       return hr;
    }
 
+#ifdef ENABLE_SDL
+   // SDL Window appears after InitPin3D, set window default position and flags
+
+   int x = 0;
+   int y = 0;
+
+   int display = LoadValueIntWithDefault((m_stereo3D == STEREO_VR) ? "PlayerVR" : "Player", "Display", -1);
+   display = (display < getNumberOfDisplays()) ? display : -1;
+
+   getDisplaySetupByID(display, x, y, m_screenwidth, m_screenheight);
+   if (m_fullScreen)
+      SetWindowPos(nullptr, x, y, m_screenwidth, m_screenheight, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
+   else
+   {
+      m_refreshrate = 0; // The default
+
+      // constrain window to screen
+      if (m_width > m_screenwidth)
+      {
+         m_width = m_screenwidth;
+         m_height = m_width * 9 / 16;
+      }
+
+      if (m_height > m_screenheight)
+      {
+         m_height = m_screenheight;
+         m_width = m_height * 16 / 9;
+      }
+      int xPos = x + (m_screenwidth - m_width) / 2;
+      int yPos = y + (m_screenheight - m_height) / 2;
+
+      // is this a non-fullscreen window? -> get previously saved window position
+      if ((m_height != m_screenheight) || (m_width != m_screenwidth))
+      {
+         const int xTemp = LoadValueIntWithDefault((m_stereo3D == STEREO_VR) ? "PlayerVR" : "Player", "WindowPosX", xPos); //!! does this handle multi-display correctly like this?
+         const int yTemp = LoadValueIntWithDefault((m_stereo3D == STEREO_VR) ? "PlayerVR" : "Player", "WindowPosY", yPos);
+         if (xTemp >= x && (xTemp + m_width < x + m_screenwidth) && yTemp >= y && (yTemp + m_height < y + m_screenheight)) {//Absolute Window position is on screen
+            xPos = xTemp;
+            yPos = yTemp;
+         }
+         else if (xTemp >= 0 && xTemp < (m_screenwidth- m_width) && yTemp >=0 && yTemp < (m_screenheight- m_height)) {//Relative window Position is on screen
+            xPos = x+xTemp;
+            yPos = y+yTemp;
+         }
+         m_showWindowedCaption = false;
+         const int windowflags = WS_POPUP;
+         SetWindowLong(GetHwnd(), GWL_STYLE, windowflags);
+         SetWindowPos(HWND_TOP, xPos, yPos, m_width, m_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+         ShowWindow(SW_SHOWNORMAL);
+      }
+   }
+#else
    if (m_fullScreen)
       SetWindowPos(nullptr, 0, 0, m_width, m_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
+#endif
 
    m_pininput.Init(GetHwnd());
 
@@ -1229,6 +1286,7 @@ HRESULT Player::Init()
       m_ptable->m_tblMirrorEnabled = true;
    else
       m_ptable->m_tblMirrorEnabled = LoadValueBoolWithDefault("Player", "mirror", false);
+
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
@@ -1500,7 +1558,7 @@ HRESULT Player::Init()
       }
 
       assert(m_ballDebugPoints == nullptr);
-      m_pin3d.m_pd3dPrimaryDevice->CreateVertexBuffer((unsigned int)ballDbgVtx.size(), 0, MY_D3DFVF_TEX, &m_ballDebugPoints);
+      VertexBuffer::CreateVertexBuffer((unsigned int)ballDbgVtx.size(), 0, MY_D3DFVF_TEX, &m_ballDebugPoints, PRIMARY_DEVICE);
       void *buf;
       m_ballDebugPoints->lock(0, 0, &buf, VertexBuffer::WRITEONLY);
       memcpy(buf, ballDbgVtx.data(), ballDbgVtx.size() * sizeof(ballDbgVtx[0]));
@@ -1509,7 +1567,7 @@ HRESULT Player::Init()
 #endif
 
    assert(m_ballTrailVertexBuffer == nullptr);
-   m_pin3d.m_pd3dPrimaryDevice->CreateVertexBuffer((MAX_BALL_TRAIL_POS-2)*2+4, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_ballTrailVertexBuffer);
+   VertexBuffer::CreateVertexBuffer((MAX_BALL_TRAIL_POS-2)*2+4, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_ballTrailVertexBuffer, PRIMARY_DEVICE);
 
    m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
 
@@ -1691,7 +1749,7 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
    if (!onlyBalls)
-      UpdateBasicShaderMatrix();
+      UpdateBasicShaderMatrix(); //!! Camera seems skewed when rendering the flipped elements in VR, something with the matrix? Looks fine in 2D.
 
    UpdateBallShaderMatrix();
 
@@ -3372,6 +3430,7 @@ void Player::RenderDynamics()
 
    if (reflection_path != 0)
    {
+      // Create the playfield reflection
       m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(true);
       RenderDynamicMirror(reflection_path == 1);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(false); // disable playfield clipplane again
@@ -5165,8 +5224,8 @@ void Player::DrawBalls()
    //     if (reflectionOnly && !drawReflection)
    //        return;
 
-   //m_pin3d.m_pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
-   //m_pin3d.m_pd3dDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
+   //m_pin3d.m_pd3dPrimaryDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
+   //m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
 
    const Material * const playfield_mat = m_ptable->GetMaterial(m_ptable->m_playfieldMaterial);
    const vec4 playfield_cBaseF = convertColor(playfield_mat->m_cBase);
@@ -5176,7 +5235,7 @@ void Player::DrawBalls()
    {
       Ball * const pball = m_vball[i];
 
-      if(!pball->m_visible)
+      if (!pball->m_visible)
          continue;
 
       if (orgDrawReflection && !pball->m_reflectionEnabled)
@@ -5207,7 +5266,7 @@ void Player::DrawBalls()
                      *playfield_avg_diffuse //!! hack: multiply average diffuse from playfield onto strength, as only diffuse lighting is used for reflection
                      *0.5f                  //!! additional magic correction factor due to everything being wrong in the earlier reflection/lighting implementation
                      );
-      m_ballShader->SetVector("invTableRes__playfield_height_reflection", &phr);
+      m_ballShader->SetVector(SHADER_invTableRes_playfield_height_reflection, &phr);
 
       if ((zheight > maxz) || (pball->m_d.m_pos.z < minz))
       {
