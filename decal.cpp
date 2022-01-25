@@ -542,7 +542,7 @@ void Decal::RenderObject()
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
       else
          pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
-      pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pd3dDevice->m_texMan.LoadTexture(m_textImg, false));
+      pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pd3dDevice->m_texMan.LoadTexture(m_textImg, false), false);
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
    }
    else
