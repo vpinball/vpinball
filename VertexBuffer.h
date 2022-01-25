@@ -18,7 +18,7 @@ public:
    void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags);
    void unlock(void);
    void release(void);
-   void bind();
+   void bind(const deviceNumber dN);
 
    static void bindNull() { m_curVertexBuffer = nullptr; }
    static void CreateVertexBuffer(const unsigned int vertexCount, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer, const deviceNumber dN);

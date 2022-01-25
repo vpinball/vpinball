@@ -16,15 +16,15 @@ public:
    void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags);
    void unlock(void);
    void release(void);
-   void bind();
+   void bind(const deviceNumber dN);
 
    static void bindNull() { m_curIndexBuffer = nullptr; }
    static void CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer **idxBuffer, const deviceNumber dN);
 
-   static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const unsigned int * indices);
-   static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const WORD * indices);
-   static IndexBuffer* CreateAndFillIndexBuffer(const std::vector<unsigned int>& indices);
-   static IndexBuffer* CreateAndFillIndexBuffer(const std::vector<WORD>& indices);
+   static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const unsigned int * indices, const deviceNumber dN);
+   static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const WORD * indices, const deviceNumber dN);
+   static IndexBuffer* CreateAndFillIndexBuffer(const std::vector<unsigned int>& indices, const deviceNumber dN);
+   static IndexBuffer* CreateAndFillIndexBuffer(const std::vector<WORD>& indices, const deviceNumber dN);
 
    static void UploadBuffers();
 
