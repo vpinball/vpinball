@@ -2038,7 +2038,7 @@ void Shader::Unload()
    SAFE_RELEASE(m_shader);
 }
 
-void Shader::SetTexture(const D3DXHANDLE texelName, Texture *texel, const bool linearRGB)
+void Shader::SetTexture(const SHADER_UNIFORM_HANDLE texelName, Texture *texel, const bool linearRGB)
 {
    const unsigned int idx = texelName[strlen(texelName) - 1] - '0'; // current convention: SetTexture gets "TextureX", where X 0..4
    assert(idx < TEXTURESET_STATE_CACHE_SIZE);
@@ -2062,7 +2062,7 @@ void Shader::SetTexture(const D3DXHANDLE texelName, Texture *texel, const bool l
    }
 }
 
-void Shader::SetTexture(const D3DXHANDLE texelName, D3DTexture *texel)
+void Shader::SetTexture(const SHADER_UNIFORM_HANDLE texelName, D3DTexture *texel)
 {
    const unsigned int idx = texelName[strlen(texelName) - 1] - '0'; // current convention: SetTexture gets "TextureX", where X 0..4
    assert(idx < TEXTURESET_STATE_CACHE_SIZE);
@@ -2070,6 +2070,19 @@ void Shader::SetTexture(const D3DXHANDLE texelName, D3DTexture *texel)
    currentTexture[idx] = nullptr; // direct set of device tex invalidates the cache
 
    CHECKD3D(m_shader->SetTexture(texelName, texel));
+
+   m_renderDevice->m_curTextureChanges++;
+}
+
+void Shader::SetTextureNull(const SHADER_UNIFORM_HANDLE texelName)
+{
+   const unsigned int idx = texelName[strlen(texelName) - 1] - '0'; // current convention: SetTexture gets "TextureX", where X 0..4
+   const bool cache = (idx < TEXTURESET_STATE_CACHE_SIZE);
+
+   if (cache)
+      currentTexture[idx] = nullptr; // direct set of device tex invalidates the cache
+
+   CHECKD3D(m_shader->SetTexture(texelName, nullptr));
 
    m_renderDevice->m_curTextureChanges++;
 }

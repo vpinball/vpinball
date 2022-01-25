@@ -424,8 +424,9 @@ public:
       CHECKD3D(m_shader->End());
    }
 
-   void SetTexture(const D3DXHANDLE texelName, Texture *texel, const bool linearRGB);
-   void SetTexture(const D3DXHANDLE texelName, D3DTexture *texel);
+   void SetTexture(const SHADER_UNIFORM_HANDLE texelName, Texture *texel, const bool linearRGB);
+   void SetTexture(const SHADER_UNIFORM_HANDLE texelName, D3DTexture *texel);
+   void SetTextureNull(const SHADER_UNIFORM_HANDLE texelName);
    void SetMaterial(const Material * const mat);
 
    void SetDisableLighting(const vec4& value) // sets the two top and below lighting flags, z and w unused
