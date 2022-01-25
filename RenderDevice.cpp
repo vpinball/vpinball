@@ -2038,7 +2038,7 @@ void Shader::Unload()
    SAFE_RELEASE(m_shader);
 }
 
-void Shader::SetTexture(const SHADER_UNIFORM_HANDLE texelName, Texture *texel, const bool linearRGB)
+void Shader::SetTexture(const SHADER_UNIFORM_HANDLE texelName, Texture *texel, const bool linearRGB, const bool clamptoedge)
 {
    const unsigned int idx = texelName[strlen(texelName) - 1] - '0'; // current convention: SetTexture gets "TextureX", where X 0..4
    assert(idx < TEXTURESET_STATE_CACHE_SIZE);
@@ -2062,7 +2062,7 @@ void Shader::SetTexture(const SHADER_UNIFORM_HANDLE texelName, Texture *texel, c
    }
 }
 
-void Shader::SetTexture(const SHADER_UNIFORM_HANDLE texelName, D3DTexture *texel)
+void Shader::SetTexture(const SHADER_UNIFORM_HANDLE texelName, D3DTexture *texel, const bool linearRGB)
 {
    const unsigned int idx = texelName[strlen(texelName) - 1] - '0'; // current convention: SetTexture gets "TextureX", where X 0..4
    assert(idx < TEXTURESET_STATE_CACHE_SIZE);

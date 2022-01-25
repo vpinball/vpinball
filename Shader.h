@@ -205,7 +205,6 @@ typedef D3DXHANDLE SHADER_UNIFORM_HANDLE;
 typedef D3DXHANDLE SHADER_TECHNIQUE_HANDLE;
 #endif
 
-#if 0
 class Shader
 {
 public:
@@ -219,58 +218,178 @@ public:
 #endif
    void Unload();
 
-   void Begin(const unsigned int pass);
-   void End();
+   ID3DXEffect *Core() const
+   {
+      return m_shader;
+   }
 
-   void SetTexture(const SHADER_UNIFORM_HANDLE texelName, Texture *texel, const bool linearRGB, const bool clamptoedge = false);
-   void SetTexture(const SHADER_UNIFORM_HANDLE texelName, D3DTexture *texel, const bool linearRGB);
-   void SetTextureDepth(const SHADER_UNIFORM_HANDLE texelName, D3DTexture *texel);
+   void Begin(const unsigned int pass)
+   {
+      unsigned int cPasses;
+      CHECKD3D(m_shader->Begin(&cPasses, 0));
+      CHECKD3D(m_shader->BeginPass(pass));
+   }
+
+   void End()
+   {
+      CHECKD3D(m_shader->EndPass());
+      CHECKD3D(m_shader->End());
+   }
+
+   void SetTexture(const SHADER_UNIFORM_HANDLE texelName, Texture *texel, const bool linearRGB, const bool clamptoedge = false); //!! clamptoedge unused
+   void SetTexture(const SHADER_UNIFORM_HANDLE texelName, D3DTexture *texel, const bool linearRGB = false); //!! linearRGB unused
    void SetTextureNull(const SHADER_UNIFORM_HANDLE texelName);
    void SetMaterial(const Material * const mat);
 
-   void SetDisableLighting(const float value); // only set top
-   void SetDisableLighting(const vec4& value); // set top and below
-   void SetAlphaTestValue(const float value);
-   void SetFlasherColorAlpha(const vec4& color);
-   void SetFlasherData(const vec4& color, const float mode);
-   void SetLightColorIntensity(const vec4& color);
-   void SetLightColor2FalloffPower(const vec4& color);
-   void SetLightData(const vec4& color);
-   void SetLightImageBackglassMode(const bool imageMode, const bool backglassMode);
+   void SetDisableLighting(const vec4& value) // sets the two top and below lighting flags, z and w unused
+   {
+      if (currentDisableLighting.x != value.x || currentDisableLighting.y != value.y)
+      {
+         currentDisableLighting = value;
+         SetVector(SHADER_fDisableLighting_top_below, &value);
+      }
+   }
 
-   void SetTechnique(const SHADER_TECHNIQUE_HANDLE technique);
-   void SetTechniqueMetal(const SHADER_TECHNIQUE_HANDLE technique, const bool isMetal);
+   void SetAlphaTestValue(const float value)
+   {
+      if (currentAlphaTestValue != value)
+      {
+         currentAlphaTestValue = value;
+         SetFloat(SHADER_alphaTestValue, value);
+      }
+   }
 
-   void SetMatrix(const SHADER_UNIFORM_HANDLE hParameter, const Matrix3D* pMatrix);
-   void SetUniformBlock(const SHADER_UNIFORM_HANDLE hParameter, const float* pMatrix, const int size);
-   void SetVector(const SHADER_UNIFORM_HANDLE hParameter, const vec4* pVector);
-   void SetVector(const SHADER_UNIFORM_HANDLE hParameter, const float x, const float y, const float z, const float w);
-   void SetFloat(const SHADER_UNIFORM_HANDLE hParameter, const float f);
-   void SetInt(const SHADER_UNIFORM_HANDLE hParameter, const int i);
-   void SetBool(const SHADER_UNIFORM_HANDLE hParameter, const bool b);
-   void SetFloatArray(const SHADER_UNIFORM_HANDLE hParameter, const float* pData, const unsigned int count);
+   void SetFlasherColorAlpha(const vec4& color)
+   {
+      if (currentFlasherColor.x != color.x || currentFlasherColor.y != color.y || currentFlasherColor.z != color.z || currentFlasherColor.w != color.w)
+      {
+         currentFlasherColor = color;
+         SetVector(SHADER_staticColor_Alpha, &color);
+      }
+   }
 
-   static void SetTransform(const TransformStateType p1, const Matrix3D* p2, const int count);
-   static void GetTransform(const TransformStateType p1, Matrix3D* p2, const int count);
-   static Shader* getCurrentShader();
+   void SetFlasherData(const vec4& color, const float mode)
+   {
+      if (currentFlasherData.x != color.x || currentFlasherData.y != color.y || currentFlasherData.z != color.z || currentFlasherData.w != color.w)
+      {
+         currentFlasherData = color;
+         SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, &color);
+      }
+      if (currentFlasherMode != mode)
+      {
+         currentFlasherMode = mode;
+         SetFloat(SHADER_flasherMode, mode);
+      }
+   }
+
+   void SetLightColorIntensity(const vec4& color)
+   {
+      if (currentLightColor.x != color.x || currentLightColor.y != color.y || currentLightColor.z != color.z || currentLightColor.w != color.w)
+      {
+         currentLightColor = color;
+         SetVector(SHADER_lightColor_intensity, &color);
+      }
+   }
+
+   void SetLightColor2FalloffPower(const vec4& color)
+   {
+      if (currentLightColor2.x != color.x || currentLightColor2.y != color.y || currentLightColor2.z != color.z || currentLightColor2.w != color.w)
+      {
+         currentLightColor2 = color;
+         SetVector(SHADER_lightColor2_falloff_power, &color);
+      }
+   }
+
+   void SetLightData(const vec4& color)
+   {
+      if (currentLightData.x != color.x || currentLightData.y != color.y || currentLightData.z != color.z || currentLightData.w != color.w)
+      {
+         currentLightData = color;
+         SetVector(SHADER_lightCenter_maxRange, &color);
+      }
+   }
+
+   void SetLightImageBackglassMode(const bool imageMode, const bool backglassMode)
+   {
+      if (currentLightImageMode != (unsigned int)imageMode || currentLightBackglassMode != (unsigned int)backglassMode)
+      {
+         currentLightImageMode = (unsigned int)imageMode;
+         currentLightBackglassMode = (unsigned int)backglassMode;
+         SetBool("lightingOff", imageMode || backglassMode); // at the moment can be combined into a single bool due to what the shader actually does in the end
+      }
+   }
+
+   //
+
+   void SetTechnique(const SHADER_TECHNIQUE_HANDLE technique)
+   {
+      if (strcmp(currentTechnique, technique) /*|| (m_renderDevice->m_curShader != this)*/)
+      {
+         strncpy_s(currentTechnique, technique, sizeof(currentTechnique)-1);
+         //m_renderDevice->m_curShader = this;
+         CHECKD3D(m_shader->SetTechnique(technique));
+         m_renderDevice->m_curTechniqueChanges++;
+      }
+   }
+
+   void SetTechniqueMetal(const string& technique, const bool isMetal)
+   {
+      SetTechnique((technique + (isMetal ? "_isMetal" : "_isNotMetal")).c_str());
+   }
+
+   void SetMatrix(const SHADER_UNIFORM_HANDLE hParameter, const D3DXMATRIX* pMatrix)
+   {
+      /*CHECKD3D(*/m_shader->SetMatrix(hParameter, pMatrix)/*)*/; // leads to invalid calls when setting some of the matrices (as hlsl compiler optimizes some down to less than 4x4)
+      m_renderDevice->m_curParameterChanges++;
+   }
+
+   void SetVector(const SHADER_UNIFORM_HANDLE hParameter, const vec4* pVector)
+   {
+      CHECKD3D(m_shader->SetVector(hParameter, pVector));
+      m_renderDevice->m_curParameterChanges++;
+   }
+
+   void SetFloat(const SHADER_UNIFORM_HANDLE hParameter, const float f)
+   {
+      CHECKD3D(m_shader->SetFloat(hParameter, f));
+      m_renderDevice->m_curParameterChanges++;
+   }
+
+   void SetInt(const SHADER_UNIFORM_HANDLE hParameter, const int i)
+   {
+      CHECKD3D(m_shader->SetInt(hParameter, i));
+      m_renderDevice->m_curParameterChanges++;
+   }
+
+   void SetBool(const SHADER_UNIFORM_HANDLE hParameter, const bool b)
+   {
+      CHECKD3D(m_shader->SetBool(hParameter, b));
+      m_renderDevice->m_curParameterChanges++;
+   }
+
+   void SetValue(const SHADER_UNIFORM_HANDLE hParameter, const void* pData, const unsigned int Bytes)
+   {
+      CHECKD3D(m_shader->SetValue(hParameter, pData, Bytes));
+      m_renderDevice->m_curParameterChanges++;
+   }
 
 private:
-   static Shader* m_currentShader;
-   static RenderDevice *m_renderDevice;
-   static int shaderCount;
+   ID3DXEffect* m_shader;
+   RenderDevice *m_renderDevice;
 
    // caches:
+
    Material currentMaterial;
 
    vec4 currentDisableLighting; // x and y: top and below, z and w unused
 
    static constexpr DWORD TEXTURESET_STATE_CACHE_SIZE = 5; // current convention: SetTexture gets "TextureX", where X 0..4
    BaseTexture *currentTexture[TEXTURESET_STATE_CACHE_SIZE];
-   float currentAlphaTestValue;
-   char  currentTechnique[64];
+   float   currentAlphaTestValue;
+   char    currentTechnique[64];
 
-   vec4  currentFlasherColor; // flasher only-data
-   vec4  currentFlasherData;
+   vec4 currentFlasherColor; // all flasher only-data
+   vec4 currentFlasherData;
    float currentFlasherMode;
 
    vec4 currentLightColor; // all light only-data
@@ -278,87 +397,4 @@ private:
    vec4 currentLightData;
    unsigned int currentLightImageMode;
    unsigned int currentLightBackglassMode;
-
-#ifdef ENABLE_SDL
-   const char* m_shaderCodeName = nullptr; // Only valid while loading
-
-#if DEBUG_LEVEL_LOG > 0
-   void LOG(const int level, const char* fileNameRoot, const string& message);
-#endif
-   bool parseFile(const char* fileNameRoot, const char* fileName, int level, std::map<string, string>& values, const string& parentMode);
-   string analyzeFunction(const char* shaderCodeName, const string& technique, const string& functionName, const std::map<string, string>& values);
-   bool compileGLShader(const char* fileNameRoot, const string& shaderCodeName, const string& vertex, const string& geometry, const string& fragment);
-
-   struct attributeLoc {
-      GLenum type;
-      int location;
-      int size;
-   };
-   struct uniformLoc {
-      GLenum type;
-      int location;
-      int size;
-      GLuint blockBuffer;
-   };
-   struct floatP {
-      size_t len;
-      float* data;
-   };
-
-#ifdef TWEAK_GL_SHADER
-   struct glShader {
-      int program;
-      attributeLoc attributeLocation[SHADER_ATTRIBUTE_COUNT];
-      uniformLoc uniformLocation[SHADER_UNIFORM_COUNT];
-   };
-   glShader shaderList[SHADER_TECHNIQUE_COUNT];
-   float uniformFloat[SHADER_UNIFORM_COUNT];
-   floatP uniformFloatP[SHADER_UNIFORM_COUNT];
-   int uniformInt[SHADER_UNIFORM_COUNT];
-   int uniformTex[SHADER_UNIFORM_COUNT];
-   shaderTechniques technique;
-   shaderUniforms getUniformByName(const string& name);
-   shaderAttributes getAttributeByName(const string& name);
-   shaderTechniques getTechniqueByName(const string& name);
-
-#else
-
-   struct glShader {
-      int program;
-      std::map<string, attributeLoc> *attributeLocation;
-      std::map<string, uniformLoc> *uniformLocation;
-   };
-   std::map<string, glShader> shaderList;
-   std::map<string, float> uniformFloat;
-   std::map<string, floatP> uniformFloatP;
-   std::map<string, int> uniformInt;
-   std::map<string, int> uniformTex;
-   char technique[256];
-#endif
-
-   static Matrix3D mWorld, mView, mProj[2];
-   static int lastShaderProgram;
-   static D3DTexture* noTexture;
-   static D3DTexture* noTextureMSAA;
-   static float* zeroData;
-   static int nextTextureSlot;
-   static int* textureSlotList;
-   static std::map<int, int> slotTextureList;
-   static int maxSlots;
-
-   glShader* m_currentTechnique;
-
-public:
-   void setAttributeFormat(const DWORD fvf);
-
-   static void setTextureDirty(const int TextureID);
-   static std::string shaderPath;
-   static std::string Defines;
-
-#else
-
-   ID3DXEffect * m_shader;
-
-#endif
 };
-#endif
