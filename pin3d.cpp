@@ -979,7 +979,7 @@ void Pin3D::InitPlayfieldGraphics()
    if (piEdit == nullptr)
    {
       assert(m_tableVBuffer == nullptr);
-      m_pd3dPrimaryDevice->CreateVertexBuffer(4, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_tableVBuffer);
+      VertexBuffer::CreateVertexBuffer(4, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_tableVBuffer, PRIMARY_DEVICE);
 
       Vertex3D_NoTex2 *buffer;
       m_tableVBuffer->lock(0, 0, (void**)&buffer, VertexBuffer::WRITEONLY);
@@ -1060,7 +1060,7 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
 
    if (pin)
    {
-      //m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_Texture0,(D3DTexture*)nullptr);
+      //m_pd3dPrimaryDevice->basicShader->SetTextureNull(SHADER_Texture0);
       //m_pd3dPrimaryDevice->m_texMan.UnloadTexture(pin->m_pdsBuffer); //!! is used by ball reflection later-on
       SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
    }
