@@ -1,15 +1,25 @@
 #pragma once
 
-#ifdef ENABLE_SDL
-#include <map>
-#include <string>
+#ifdef _DEBUG
+//Writes all compile/parse errors/warnings to a file. (0=never, 1=only errors, 2=warnings, 3=info)
+#define DEBUG_LEVEL_LOG 1
+//Writes all shaders that are compiled to separate files (e.g. ShaderName_Technique_Pass.vs and .fs) (0=never, 1=only if compile failed, 2=always)
+#define WRITE_SHADER_FILES 1
+#else 
+#define DEBUG_LEVEL_LOG 0
+#define WRITE_SHADER_FILES 1
+#endif
 
 // Attempt to speed up STL which is very CPU costly, maybe we should look into using EASTL instead? http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2271.html https://github.com/electronicarts/EASTL
 #define _SECURE_SCL 0
 #define _HAS_ITERATOR_DEBUGGING 0
+
+#ifdef ENABLE_SDL
+#include <map>
+#include <string>
 #endif
 
-#ifdef TWEAK_GL_SHADER
+#if defined(ENABLE_SDL) && defined(TWEAK_GL_SHADER)
 //!! Todo tweak Enums for uniforms and techniques to reuse same numbers in different shaders/techniques. Reduces the array sizes, but might be hard to debug.
 enum shaderUniforms {
    //Floats
@@ -268,13 +278,13 @@ private:
    vec4 currentLightData;
    unsigned int currentLightImageMode;
    unsigned int currentLightBackglassMode;
-   int shaderID;
-   int currentShader;
 
 #ifdef ENABLE_SDL
    const char* m_shaderCodeName = nullptr; // Only valid while loading
 
-   void LOG(int level, const char* fileNameRoot, const string& message);
+#if DEBUG_LEVEL_LOG > 0
+   void LOG(const int level, const char* fileNameRoot, const string& message);
+#endif
    bool parseFile(const char* fileNameRoot, const char* fileName, int level, std::map<string, string>& values, const string& parentMode);
    string analyzeFunction(const char* shaderCodeName, const string& technique, const string& functionName, const std::map<string, string>& values);
    bool compileGLShader(const char* fileNameRoot, const string& shaderCodeName, const string& vertex, const string& geometry, const string& fragment);
