@@ -1015,7 +1015,7 @@ void Flasher::ResetVideoCap()
     m_isVideoCap = false;
     if (m_videoCapTex)
     {
-      //  g_pplayer->m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetTexture(SHADER_Texture0, (D3DTexture*)nullptr); //!! ??
+      //  g_pplayer->m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetTextureNull(SHADER_Texture0); //!! ??
         g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.UnloadTexture(m_videoCapTex);
         delete m_videoCapTex;
         m_videoCapTex = nullptr;

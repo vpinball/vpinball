@@ -4408,7 +4408,7 @@ void Player::FlipVideoBuffers(const bool vsync)
    m_pin3d.Flip(vsync);
 
    // switch to texture output buffer again
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture0, (D3DTexture*)nullptr);
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_Texture0);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(m_pin3d.m_pddsBackBuffer);
 
    m_lastFlipTime = usec();

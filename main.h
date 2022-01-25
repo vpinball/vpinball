@@ -14,17 +14,17 @@
 #include <MMSystem.h>
 
 #ifndef ENABLE_SDL
- #ifdef _DEBUG
-  #define D3D_DEBUG_INFO
- #endif
- #include "minid3d9.h"
-
  #ifdef USE_DINPUT8
   #define DIRECTINPUT_VERSION 0x0800
  #else
   #define DIRECTINPUT_VERSION 0x0700
  #endif
  #include <dinput.h>
+
+ #ifdef _DEBUG
+  #define D3D_DEBUG_INFO
+ #endif
+ #include "minid3d9.h"
 #endif
 
 #include <dsound.h>
