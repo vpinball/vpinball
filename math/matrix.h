@@ -16,6 +16,7 @@ public:
          float        _41, _42, _43, _44;
       };
       float m[4][4];
+//      __m128 m128[4]; // could use potentially faster loads/stores if enforcing this alignment
    };
 
    D3DXMATRIX();
@@ -319,18 +320,48 @@ public:
    void Multiply(const Matrix3D &mult, Matrix3D &result) const
    {
       Matrix3D matrixT;
+#if defined(_M_IX86) || defined(_M_X64) // could replace the loadu/storeu's if alignment would be stricter
+      for (int i = 0; i < 16; i += 4) {
+         // unroll first step of the loop
+         __m128 a = _mm_loadu_ps(&_11);
+         __m128 b = _mm_set1_ps((&mult._11)[i]);
+         __m128 r = _mm_mul_ps(a, b);
+         for (int j = 1; j < 4; j++) {
+            a = _mm_loadu_ps((&_11)+j * 4);
+            b = _mm_set1_ps((&mult._11)[i + j]);
+            r = _mm_add_ps(_mm_mul_ps(a, b), r);
+         }
+         _mm_storeu_ps((&matrixT._11)+i, r);
+      }
+#else
       for (int i = 0; i < 4; ++i)
          for (int l = 0; l < 4; ++l)
             matrixT.m[i][l] = (m[0][l] * mult.m[i][0]) + (m[1][l] * mult.m[i][1]) + (m[2][l] * mult.m[i][2]) + (m[3][l] * mult.m[i][3]);
+#endif
       result = matrixT;
    }
 
    Matrix3D operator*(const Matrix3D& mult) const
    {
       Matrix3D matrixT;
+#if defined(_M_IX86) || defined(_M_X64) // could replace the loadu/storeu's if alignment would be stricter
+      for (int i = 0; i < 16; i += 4) {
+         // unroll first step of the loop
+         __m128 a = _mm_loadu_ps(&mult._11);
+         __m128 b = _mm_set1_ps((&_11)[i]);
+         __m128 r = _mm_mul_ps(a, b);
+         for (int j = 1; j < 4; j++) {
+            a = _mm_loadu_ps((&mult._11)+j * 4);
+            b = _mm_set1_ps((&_11)[i + j]);
+            r = _mm_add_ps(_mm_mul_ps(a, b), r);
+         }
+         _mm_storeu_ps((&matrixT._11)+i, r);
+      }
+#else
       for (int i = 0; i < 4; ++i)
          for (int l = 0; l < 4; ++l)
             matrixT.m[i][l] = (mult.m[0][l] * m[i][0]) + (mult.m[1][l] * m[i][1]) + (mult.m[2][l] * m[i][2]) + (mult.m[3][l] * m[i][3]);
+#endif
       return matrixT;
    }
 
