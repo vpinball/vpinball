@@ -462,6 +462,8 @@ add_executable(vpinball WIN32
    textbox.h
    Texture.cpp
    Texture.h
+   TextureManager.cpp
+   TextureManager.h
    timer.cpp
    timer.h
    trace.h

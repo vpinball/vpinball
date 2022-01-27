@@ -498,6 +498,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="surface.cpp" />
     <ClCompile Include="textbox.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="trigger.cpp" />
     <ClCompile Include="variant.cpp" />
@@ -912,6 +913,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="surface.h" />
     <ClInclude Include="textbox.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="TextureManager.h" />
     <ClInclude Include="timer.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="trigger.h" />

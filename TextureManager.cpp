@@ -3,7 +3,7 @@
 #include "TextureManager.h"
 #include "RenderDevice.h"
 #include "Texture.h"
-#include "typeDefs3D.h"
+#include "typedefs3D.h"
 
 D3DTexture* TextureManager::LoadTexture(BaseTexture* memtex, const bool linearRGB, const bool clamptoedge)
 {
