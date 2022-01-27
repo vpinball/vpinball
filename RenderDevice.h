@@ -7,6 +7,7 @@
 #include "Texture.h"
 #include "IndexBuffer.h"
 #include "VertexBuffer.h"
+#include "TextureManager.h"
 
 #define CHECKD3D(s) { const HRESULT hrTmp = (s); if (FAILED(hrTmp)) ReportFatalError(hrTmp, __FILE__, __LINE__); }
 
@@ -62,38 +63,6 @@ enum UsageFlags {
    USAGE_STATIC = D3DUSAGE_WRITEONLY,    // to be used for vertex/index buffers which are uploaded once and never touched again
    USAGE_DYNAMIC = D3DUSAGE_DYNAMIC      // to be used for vertex/index buffers which are locked every frame/very often
 #endif
-};
-
-class RenderDevice;
-
-class TextureManager
-{
-public:
-   TextureManager(RenderDevice& rd) : m_rd(rd)
-   { }
-
-   ~TextureManager()
-   {
-      UnloadAll();
-   }
-
-   D3DTexture* LoadTexture(BaseTexture* memtex, const bool linearRGB, const bool clamptoedge = false);
-   void SetDirty(BaseTexture* memtex);
-   void UnloadTexture(BaseTexture* memtex);
-   void UnloadAll();
-
-private:
-   struct TexInfo
-   {
-      D3DTexture* d3dtex;
-      int texWidth;
-      int texHeight;
-      bool dirty;
-   };
-
-   RenderDevice& m_rd;
-   std::map<BaseTexture*, TexInfo> m_map;
-   typedef std::map<BaseTexture*, TexInfo>::iterator Iter;
 };
 
 class Shader;

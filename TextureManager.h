@@ -4,11 +4,12 @@
 
 #include "Texture.h"
 #include "stdafx.h"
-#include "typeDefs3D.h"
+#include "typedefs3D.h"
 
 class RenderDevice;
 
-class TextureManager {
+class TextureManager
+{
 public:
    TextureManager(RenderDevice& rd) : m_rd(rd)
    { }
