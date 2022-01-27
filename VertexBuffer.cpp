@@ -125,7 +125,7 @@ void VertexBuffer::bind(const deviceNumber dN)
    }
    Shader::getCurrentShader()->setAttributeFormat(fvf);
 #else
-   if (m_curVertexBuffer == nullptr || m_curVertexBuffer != this)
+   if (/*m_curVertexBuffer == nullptr ||*/ m_curVertexBuffer != this)
    {
       const unsigned int vsize = fvfToSize(m_fvf);
       CHECKD3D((dN == PRIMARY_DEVICE ? m_pd3dPrimaryDevice : m_pd3dSecondaryDevice)->SetStreamSource(0, this, 0, vsize));

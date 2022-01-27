@@ -1808,7 +1808,7 @@ void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
    m_quadDynVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::DISCARDCONTENTS);
    memcpy(bufvb,vertices,4*sizeof(Vertex3D_TexelOnly));
    m_quadDynVertexBuffer->unlock();
-   DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP,MY_D3DFVF_TEX,m_quadDynVertexBuffer,0,4);*/
+   DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP,MY_D3DFVF_TEX,m_quadDynVertexBuffer,0,4,true);*/
 
    DrawPrimitive(RenderDevice::TRIANGLESTRIP,MY_D3DFVF_TEX,vertices,4); // having a VB and lock/copying stuff each time is slower :/
 }
@@ -1824,28 +1824,26 @@ void RenderDevice::DrawFullscreenTexturedQuad()
    };   
    DrawTexturedQuad((Vertex3D_TexelOnly*)verts);*/
 
-   DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP,MY_D3DFVF_TEX,m_quadVertexBuffer,0,4);
+   DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP,MY_D3DFVF_TEX,m_quadVertexBuffer,0,4,false);
 }
 
-void RenderDevice::DrawPrimitiveVB(const RenderDevice::PrimitiveTypes type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount)
+void RenderDevice::DrawPrimitiveVB(const PrimitiveTypes type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, const bool stereo)
 {
-   HRESULT hr;
+   const unsigned int np = ComputePrimitiveCount(type, vertexCount);
+   m_stats_drawn_triangles += np;
+
+   vb->bind(PRIMARY_DEVICE); //!! SECONDARY_DEVICE, too!
+#ifdef ENABLE_SDL
+   //CHECKD3D(glDrawArraysInstanced(type, vb->getOffset() + startVertex, vertexCount, m_stereo3D != STEREO_OFF ? 2 : 1)); // Do instancing in geometry shader instead
+   CHECKD3D(glDrawArrays(type, vb->getOffset() + startVertex, vertexCount));
+#else
    VertexDeclaration * declaration = fvfToDecl(fvf);
    SetVertexDeclaration(declaration);
 
-   if (m_curVertexBuffer != vb)
-   {
-      const unsigned int vsize = fvfToSize(fvf);
-      CHECKD3D(m_pD3DDevice->SetStreamSource(0, vb, 0, vsize));
-      m_curVertexBuffer = vb;
-   }
-
-   const unsigned int np = ComputePrimitiveCount(type, vertexCount);
-   m_stats_drawn_triangles += np;
-   hr = m_pD3DDevice->DrawPrimitive((D3DPRIMITIVETYPE)type, startVertex, np);
+   const HRESULT hr = m_pD3DDevice->DrawPrimitive((D3DPRIMITIVETYPE)type, startVertex, np);
    if (FAILED(hr))
       ReportError("Fatal Error: DrawPrimitive failed!", hr, __FILE__, __LINE__);
-
+#endif
    m_curDrawCalls++;
 }
 
