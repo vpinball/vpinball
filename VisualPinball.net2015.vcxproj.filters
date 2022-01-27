@@ -291,6 +291,7 @@
     </ClCompile>
     <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
+    <ClCompile Include="TextureManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1475,6 +1476,9 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="VertexBuffer.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureManager.h">
       <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>
