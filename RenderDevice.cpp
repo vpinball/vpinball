@@ -1783,7 +1783,7 @@ void* RenderDevice::AttachZBufferTo(RenderTarget* surf)
    }
 }
 
-void RenderDevice::DrawPrimitive(const RenderDevice::PrimitiveTypes type, const DWORD fvf, const void* vertices, const DWORD vertexCount)
+void RenderDevice::DrawPrimitive(const PrimitiveTypes type, const DWORD fvf, const void* vertices, const DWORD vertexCount)
 {
    HRESULT hr;
    VertexDeclaration * declaration = fvfToDecl(fvf);
@@ -1847,7 +1847,7 @@ void RenderDevice::DrawPrimitiveVB(const PrimitiveTypes type, const DWORD fvf, V
    m_curDrawCalls++;
 }
 
-void RenderDevice::DrawIndexedPrimitiveVB(const RenderDevice::PrimitiveTypes type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount)
+void RenderDevice::DrawIndexedPrimitiveVB(const PrimitiveTypes type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount)
 {
    VertexDeclaration * declaration = fvfToDecl(fvf);
    SetVertexDeclaration(declaration);
