@@ -11,6 +11,8 @@ FIXES:
 
 - fix crashes in Direct Sound when using certain WAVE_FORMAT_IEEE_FLOAT .wav samples
 
+- do not poll XInput gamedevice/joypad/stick if its disconnected, otherwise noticable overhead
+
 - update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
 - DirectX 8 port for input handling (currently disabled)
 
