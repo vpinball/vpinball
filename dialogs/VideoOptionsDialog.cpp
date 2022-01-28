@@ -39,6 +39,7 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    SendMessage(GetDlgItem(IDC_TexUnlimited).GetHwnd(), BM_SETCHECK, profile != 1 ? BST_CHECKED : BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_GLOBAL_REFLECTION_CHECK).GetHwnd(), BM_SETCHECK, profile != 1 ? BST_CHECKED : BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd(), BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendMessage(GetDlgItem(IDC_GLOBAL_DISABLE_LIGHTING_BALLS).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    SetDlgItemInt(IDC_ADAPTIVE_VSYNC, 0, FALSE);
    SetDlgItemInt(IDC_MAX_PRE_FRAMES, 0, FALSE);
 
@@ -228,6 +229,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    if (toolTipHwnd)
    {
       SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
+      AddToolTip("Disable lighting and reflection effects on balls, e.g. to help the visually handicapped.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_GLOBAL_DISABLE_LIGHTING_BALLS).GetHwnd());
       AddToolTip("Activate this if you get the corresponding error message on table start, or if you experience rendering problems.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd());
       AddToolTip("Forces the bloom filter to be always off. Only for very low-end graphics cards.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_BLOOM_OFF).GetHwnd());
       AddToolTip("This saves memory on your graphics card but harms quality of the textures.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_TEX_COMPRESS).GetHwnd());
@@ -276,6 +278,9 @@ BOOL VideoOptionsDialog::OnInitDialog()
 
    const bool trail = LoadValueBoolWithDefault("Player", "BallTrail", true);
    SendMessage(GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd(), BM_SETCHECK, trail ? BST_CHECKED : BST_UNCHECKED, 0);
+
+   const bool disableLighting = LoadValueBoolWithDefault("Player", "DisableLightingForBalls", false);
+   SendMessage(GetDlgItem(IDC_GLOBAL_DISABLE_LIGHTING_BALLS).GetHwnd(), BM_SETCHECK, disableLighting ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const int vsync = LoadValueIntWithDefault("Player", "AdaptiveVSync", 0);
    SetDlgItemInt(IDC_ADAPTIVE_VSYNC, vsync, FALSE);
@@ -763,6 +768,9 @@ void VideoOptionsDialog::OnOK()
 
    const bool trail = (SendMessage(GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValueBool("Player", "BallTrail", trail);
+
+   const bool disableLighting = (SendMessage(GetDlgItem(IDC_GLOBAL_DISABLE_LIGHTING_BALLS).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
+   SaveValueBool("Player", "DisableLightingForBalls", disableLighting);
 
    const int vsync = GetDlgItemInt(IDC_ADAPTIVE_VSYNC, nothing, TRUE);
    SaveValueInt("Player", "AdaptiveVSync", vsync);

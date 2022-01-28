@@ -178,6 +178,7 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_FXAA = LoadValueIntWithDefault("Player", "FXAA", Standard_FXAA);
    m_sharpen = LoadValueIntWithDefault("Player", "Sharpen", 0);
    m_trailForBalls = LoadValueBoolWithDefault("Player", "BallTrail", true);
+   m_disableLightingForBalls = LoadValueBoolWithDefault("Player", "DisableLightingForBalls", false);
    m_reflectionForBalls = LoadValueBoolWithDefault("Player", "BallReflection", true);
    m_AA = LoadValueBoolWithDefault("Player", "USEAA", false);
    m_dynamicAO = LoadValueBoolWithDefault("Player", "DynamicAO", false);
@@ -5356,6 +5357,8 @@ void Player::DrawBalls()
       temp.Multiply(m3D_full, m3D_full);
       memcpy(m.m, m3D_full.m, 4 * 4 * sizeof(float));
       m_ballShader->SetMatrix(SHADER_orientation, &m);
+
+      m_ballShader->SetBool(SHADER_disableLighting, m_disableLightingForBalls);
 
       if (!pball->m_pinballEnv)
       {

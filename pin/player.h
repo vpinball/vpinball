@@ -434,6 +434,7 @@ public:
 
    bool m_reflectionForBalls;
    bool m_trailForBalls;
+   bool m_disableLightingForBalls;
 
    bool m_throwBalls;
    bool m_ballControl;

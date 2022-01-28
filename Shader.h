@@ -41,6 +41,7 @@ enum shaderAttributes {
    SHADER_ATTRIBUTE_COUNT, SHADER_ATTRIBUTE_INVALID
 };
 
+//!! add SHADER_disableLighting
 enum shaderTechniques {
    SHADER_TECHNIQUE_RenderBall, SHADER_TECHNIQUE_RenderBall_DecalMode, SHADER_TECHNIQUE_RenderBall_CabMode, SHADER_TECHNIQUE_RenderBall_CabMode_DecalMode, SHADER_TECHNIQUE_RenderBallTrail,
    SHADER_TECHNIQUE_basic_without_texture, SHADER_TECHNIQUE_basic_with_texture, SHADER_TECHNIQUE_basic_depth_only_without_texture, SHADER_TECHNIQUE_basic_depth_only_with_texture, SHADER_TECHNIQUE_bg_decal_without_texture,
@@ -102,6 +103,7 @@ typedef void ID3DXEffect;
 #define SHADER_ignoreStereo "ignoreStereo"
 #define SHADER_SRGBTexture "SRGBTexture"
 #define SHADER_hdrTexture0 "hdrTexture0"
+#define SHADER_disableLighting "disableLighting"
 #define SHADER_lightSources "lightSources"
 #define SHADER_doNormalMapping "doNormalMapping"
 #define SHADER_hdrEnvTextures "hdrEnvTextures"

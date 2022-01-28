@@ -5,6 +5,8 @@ FEATURES:
 
 - expose background and selection color in the script editor preferences
 
+- add disable lighting option for balls (and their trails) to the video preferences (e.g. to help the visually handicapped)
+
 FIXES:
 
 - update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
