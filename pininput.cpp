@@ -570,17 +570,20 @@ void PinInput::handleInputXI(DIDEVICEOBJECTDATA *didod)
       {XINPUT_GAMEPAD_DPAD_DOWN, DIJOFS_BUTTON13},
       {0, 0} };
    XINPUT_STATE state = {};
-   if (m_inputDeviceXI == -1 || XInputGetState(m_inputDeviceXI, &state) != ERROR_SUCCESS) {
+   unsigned int xie = ERROR_DEVICE_NOT_CONNECTED;
+   if (m_inputDeviceXI != -2 && (m_inputDeviceXI == -1 || (xie = XInputGetState(m_inputDeviceXI, &state)) != ERROR_SUCCESS)) {
       m_inputDeviceXI = -1;
       for (DWORD i = 0; i < XUSER_MAX_COUNT; i++)
       {
          ZeroMemory(&state, sizeof(XINPUT_STATE));
-         if (XInputGetState(i, &state) == ERROR_SUCCESS) {
+         if ((xie = XInputGetState(i, &state)) == ERROR_SUCCESS) {
             m_inputDeviceXI = i;
             break;
          }
       }
    }
+   if (xie == ERROR_DEVICE_NOT_CONNECTED) // XInputGetState can cause quite some overhead, especially if no devices connected! Thus disable the polling if nothing connected
+      m_inputDeviceXI = -2;
    if (m_rumbleRunning && m_inputDeviceXI >= 0) {
       DWORD now = timeGetTime();
       if (m_rumbleOffTime <= now || m_rumbleOffTime - now > 65535) {
