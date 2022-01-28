@@ -9,6 +9,8 @@ FEATURES:
 
 FIXES:
 
+- fix crashes in Direct Sound when using certain WAVE_FORMAT_IEEE_FLOAT .wav samples
+
 - update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
 - DirectX 8 port for input handling (currently disabled)
 
