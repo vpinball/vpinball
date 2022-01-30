@@ -152,7 +152,6 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                Texture * const ppi = (Texture *)lvitem.lParam;
                if (ppi != nullptr)
                {
-                  std::string oldName = ppi->m_szName;
                   ppi->m_szName = pinfo->item.pszText;
                   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                   if (pt)
