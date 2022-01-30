@@ -152,10 +152,14 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                Texture * const ppi = (Texture *)lvitem.lParam;
                if (ppi != nullptr)
                {
+                  std::string oldName = ppi->m_szName;
                   ppi->m_szName = pinfo->item.pszText;
                   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                   if (pt)
+                  {
                      pt->SetNonUndoableDirty(eSaveDirty);
+                     pt->UpdatePropertyImageList();
+                  }
                }
                return TRUE;
          }
@@ -415,6 +419,7 @@ void ImageDialog::Import()
          hr = SaveValue("RecentDir", "ImageDir", szFileName[0].substr(0, index));
 
       pt->SetNonUndoableDirty(eSaveDirty);
+      pt->UpdatePropertyImageList();
       SetFocus();
    }
 }
@@ -737,7 +742,7 @@ void ImageDialog::ReimportFrom()
                pt->ReImportImage(ppi, szFileName[0]);
                ListView_SetItemText(hSoundList, sel, 1, (LPSTR)ppi->m_szPath.c_str());
                pt->SetNonUndoableDirty(eSaveDirty);
-
+               pt->UpdatePropertyImageList();
                // Display new image
                ::InvalidateRect(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), nullptr, fTrue);
             }
