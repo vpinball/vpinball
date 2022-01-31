@@ -11,6 +11,10 @@ FIXES:
 
 - fix crashes in Direct Sound when using certain WAVE_FORMAT_IEEE_FLOAT .wav samples
 
+- fix showing property dialog if multiple elements were selected
+
+- on import/rename an image in the image manager also update the comboboxes to select the new image for selected elements
+
 - do not poll XInput gamedevice/joypad/stick if its disconnected, otherwise noticable overhead
 
 - update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
