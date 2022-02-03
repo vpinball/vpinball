@@ -2924,7 +2924,11 @@ Sub NVOffset(version) ' version 2 for dB2S compatibility
 	Set check = CreateObject("Scripting.FileSystemObject")
 	Set nvcheck = CreateObject("WScript.Shell")
 	nvpath = nvcheck.RegRead("HKCU\Software\Freeware\Visual PinMame\globals\nvram_directory") & "\"
-	rom = controller.gamename
+	If Controller.Version >= 03050000 Then
+		rom = controller.ROMName
+	Else
+		rom = controller.GameName
+	End If
 	For v=1 to 32 'check up to 32 possible versions using same rom, it's overkill, but could be changed to a lower number (requested for 32 NFL variations)
 		If check.FileExists(nvpath & rom & " v" & v & ".txt") Then vv=v : exit For : End If
 		vv=0
@@ -2950,7 +2954,7 @@ Sub VPMVol
 	VolPM = Controller.Games(controller.GameName).Settings.Value("volume")
 	VolPMNew = InputBox ("Enter desired VPinMAME Volume Level (-32 to 0)","VPinMAME Volume",VolPM)
 	If VolPMNew = "" Then Exit Sub
-	If VolPMNew <=0 and VolPMNew >= -32 Then
+	If VolPMNew <= 0 and VolPMNew >= -32 Then
 		Controller.Games(controller.GameName).Settings.Value("volume")= round(VolPMNew)
 		msgbox "The Visual PinMAME Global Volume is now set to " & round(VolPMNew) & "db." & VbNewLine & VbNewLine & "Please reset Visual PinMAME (F3) to apply."
 	Else
