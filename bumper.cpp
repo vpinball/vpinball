@@ -34,46 +34,46 @@ Bumper::~Bumper()
    if (m_baseVertexBuffer)
    {
       m_baseVertexBuffer->release();
-      m_baseVertexBuffer = 0;
+      m_baseVertexBuffer = nullptr;
    }
    if (m_baseIndexBuffer)
    {
       m_baseIndexBuffer->release();
-      m_baseIndexBuffer = 0;
+      m_baseIndexBuffer = nullptr;
    }
    if (m_ringVertexBuffer)
    {
       m_ringVertexBuffer->release();
-      m_ringVertexBuffer = 0;
+      m_ringVertexBuffer = nullptr;
    }
    if (m_ringIndexBuffer)
    {
       m_ringIndexBuffer->release();
-      m_ringIndexBuffer = 0;
+      m_ringIndexBuffer = nullptr;
       m_ringTexture.FreeStuff();
       delete[] m_ringVertices;
-      m_ringVertices = 0;
+      m_ringVertices = nullptr;
    }
    if (m_capIndexBuffer)
    {
       m_capIndexBuffer->release();
-      m_capIndexBuffer = 0;
+      m_capIndexBuffer = nullptr;
       m_capTexture.FreeStuff();
    }
    if (m_capVertexBuffer)
    {
       m_capVertexBuffer->release();
-      m_capVertexBuffer = 0;
+      m_capVertexBuffer = nullptr;
    }
    if (m_socketIndexBuffer)
    {
       m_socketIndexBuffer->release();
-      m_socketIndexBuffer = 0;
+      m_socketIndexBuffer = nullptr;
    }
    if (m_socketVertexBuffer)
    {
       m_socketVertexBuffer->release();
-      m_socketVertexBuffer = 0;
+      m_socketVertexBuffer = nullptr;
    }
 }
 
@@ -283,46 +283,46 @@ void Bumper::EndPlay()
    if (m_baseVertexBuffer)
    {
       m_baseVertexBuffer->release();
-      m_baseVertexBuffer = 0;
+      m_baseVertexBuffer = nullptr;
    }
    if (m_baseIndexBuffer)
    {
       m_baseIndexBuffer->release();
-      m_baseIndexBuffer = 0;
+      m_baseIndexBuffer = nullptr;
    }
    if (m_ringVertexBuffer)
    {
       m_ringVertexBuffer->release();
-      m_ringVertexBuffer = 0;
+      m_ringVertexBuffer = nullptr;
    }
    if (m_ringIndexBuffer)
    {
       m_ringIndexBuffer->release();
-      m_ringIndexBuffer = 0;
+      m_ringIndexBuffer = nullptr;
       m_ringTexture.FreeStuff();
       delete[] m_ringVertices;
-      m_ringVertices = 0;
+      m_ringVertices = nullptr;
    }
    if (m_capIndexBuffer)
    {
       m_capIndexBuffer->release();
-      m_capIndexBuffer = 0;
+      m_capIndexBuffer = nullptr;
       m_capTexture.FreeStuff();
    }
    if (m_capVertexBuffer)
    {
       m_capVertexBuffer->release();
-      m_capVertexBuffer = 0;
+      m_capVertexBuffer = nullptr;
    }
    if (m_socketIndexBuffer)
    {
       m_socketIndexBuffer->release();
-      m_socketIndexBuffer = 0;
+      m_socketIndexBuffer = nullptr;
    }
    if (m_socketVertexBuffer)
    {
       m_socketVertexBuffer->release();
-      m_socketVertexBuffer = 0;
+      m_socketVertexBuffer = nullptr;
    }
 }
 
