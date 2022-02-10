@@ -111,9 +111,9 @@ public:
       virtual ItemTypeEnum HitableGetItemType() const { return eItemFlipper; }
       virtual void WriteRegDefaults();
 
-      //DECLARE_NOT_AGGREGATABLE(Flipper) 
-      // Remove the comment from the line above if you don't want your object to 
-      // support aggregation. 
+      //DECLARE_NOT_AGGREGATABLE(Flipper)
+      // Remove the comment from the line above if you don't want your object to
+      // support aggregation.
 
       DECLARE_REGISTRY_RESOURCEID(IDR_FLIPPER)
       // ISupportsErrorInfo
@@ -161,7 +161,7 @@ public:
           else
               m_d.m_return = clamp(value, 0.0f, 1.0f);
       }
-      float     GetReturn(void) const 
+      float     GetReturn() const
       {
           return m_d.m_return;
       }

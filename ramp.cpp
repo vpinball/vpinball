@@ -25,14 +25,9 @@ Ramp::Ramp()
 
 Ramp::~Ramp()
 {
-   if (m_dynamicVertexBuffer)
-      m_dynamicVertexBuffer->release();
-
-   if (m_dynamicVertexBuffer2)
-      m_dynamicVertexBuffer2->release();
-
-   if (m_dynamicIndexBuffer)
-      m_dynamicIndexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_dynamicVertexBuffer);
+   SAFE_BUFFER_RELEASE(m_dynamicVertexBuffer2);
+   SAFE_BUFFER_RELEASE(m_dynamicIndexBuffer);
 
    if (m_rgheightInit)
       delete[] m_rgheightInit;
@@ -876,19 +871,11 @@ void Ramp::EndPlay()
    m_vhoCollidable.clear();
 
    if (m_dynamicVertexBuffer) {
-      m_dynamicVertexBuffer->release();
-      m_dynamicVertexBuffer = 0;
+      SAFE_BUFFER_RELEASE(m_dynamicVertexBuffer);
       m_dynamicVertexBufferRegenerate = true;
    }
-
-   if (m_dynamicIndexBuffer) {
-      m_dynamicIndexBuffer->release();
-      m_dynamicIndexBuffer = 0;
-   }
-   if (m_dynamicVertexBuffer2) {
-      m_dynamicVertexBuffer2->release();
-      m_dynamicVertexBuffer2 = 0;
-   }
+   SAFE_BUFFER_RELEASE(m_dynamicIndexBuffer);
+   SAFE_BUFFER_RELEASE(m_dynamicVertexBuffer2);
 }
 
 float Ramp::GetDepth(const Vertex3Ds& viewDir) const
@@ -1207,10 +1194,8 @@ void Ramp::PrepareHabitrail()
    Vertex3D_NoTex2 *tmpBuf2 = nullptr;
    GenerateWireMesh(&tmpBuf1, &tmpBuf2);
 
-   if (m_dynamicVertexBuffer)
-      m_dynamicVertexBuffer->release();
-   if (m_dynamicVertexBuffer2)
-      m_dynamicVertexBuffer2->release();
+   SAFE_BUFFER_RELEASE(m_dynamicVertexBuffer);
+   SAFE_BUFFER_RELEASE(m_dynamicVertexBuffer2);
 
    VertexBuffer::CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_dynamicVertexBuffer, PRIMARY_DEVICE); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
    if (m_d.m_type != RampType1Wire)
@@ -1230,9 +1215,7 @@ void Ramp::PrepareHabitrail()
       m_dynamicVertexBuffer2->unlock();
    }
 
-   if (m_dynamicIndexBuffer)
-      m_dynamicIndexBuffer->release();
-
+   SAFE_BUFFER_RELEASE(m_dynamicIndexBuffer);
    m_dynamicIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(m_meshIndices, PRIMARY_DEVICE);
 
    delete[] m_vertBuffer;
@@ -2465,9 +2448,7 @@ void Ramp::GenerateVertexBuffer()
    Vertex3D_NoTex2 *tmpBuffer = nullptr;
    GenerateRampMesh(&tmpBuffer);
 
-   if (m_dynamicVertexBuffer)
-      m_dynamicVertexBuffer->release();
-
+   SAFE_BUFFER_RELEASE(m_dynamicVertexBuffer);
    VertexBuffer::CreateVertexBuffer(m_numVertices * 3, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_dynamicVertexBuffer, PRIMARY_DEVICE); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
 
    Vertex3D_NoTex2 *buf;
@@ -2483,9 +2464,7 @@ void Ramp::GenerateVertexBuffer()
    delete[] tmp;
    }*/
 
-   if (m_dynamicIndexBuffer)
-      m_dynamicIndexBuffer->release();
-
+   SAFE_BUFFER_RELEASE(m_dynamicIndexBuffer);
    m_dynamicIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(m_meshIndices, PRIMARY_DEVICE);
    delete[] tmpBuffer;
 }

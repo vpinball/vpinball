@@ -10,7 +10,7 @@
 Decal::Decal()
 {
    m_pIFont = nullptr;
-   vertexBuffer = nullptr;
+   m_vertexBuffer = nullptr;
    m_textImg = nullptr;
    m_ptable = nullptr;
    m_leading = 0.0f;
@@ -24,11 +24,7 @@ Decal::~Decal()
    m_pIFont->Release();
    if (m_textImg)
       delete m_textImg;
-   if (vertexBuffer)
-   {
-      vertexBuffer->release();
-      vertexBuffer = 0;
-   }
+   SAFE_BUFFER_RELEASE(m_vertexBuffer);
 }
 
 HRESULT Decal::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -408,14 +404,10 @@ void Decal::EndPlay()
    if (m_textImg)
    {
       delete m_textImg;
-      m_textImg = 0;
+      m_textImg = nullptr;
    }
 
-   if (vertexBuffer)
-   {
-      vertexBuffer->release();
-      vertexBuffer = 0;
-   }
+   SAFE_BUFFER_RELEASE(m_vertexBuffer);
 
    IEditable::EndPlay();
 }
@@ -455,13 +447,12 @@ void Decal::RenderSetup()
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
 
-   if (vertexBuffer)
-      vertexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_vertexBuffer);
    const DWORD vertexType = m_backglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX;
-   VertexBuffer::CreateVertexBuffer(4, 0, vertexType, &vertexBuffer, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
+   VertexBuffer::CreateVertexBuffer(4, 0, vertexType, &m_vertexBuffer, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
 
    Vertex3D_NoTex2 *vertices;
-   vertexBuffer->lock(0, 0, (void**)&vertices, VertexBuffer::WRITEONLY);
+   m_vertexBuffer->lock(0, 0, (void**)&vertices, VertexBuffer::WRITEONLY);
 
    vertices[0].x = m_d.m_vCenter.x + sn*(halfheight + leading) - cs*halfwidth;
    vertices[0].y = m_d.m_vCenter.y - cs*(halfheight + leading) - sn*halfwidth;
@@ -508,7 +499,7 @@ void Decal::RenderSetup()
    vertices[3].tu = 0;
    vertices[3].tv = 1.0f;
 
-   vertexBuffer->unlock();
+   m_vertexBuffer->unlock();
 }
 
 float Decal::GetDepth(const Vertex3Ds& viewDir) const
@@ -586,7 +577,7 @@ void Decal::RenderObject()
    }
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawPrimitiveVB(RenderDevice::TRIANGLEFAN, m_backglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, 4, true);
+   pd3dDevice->DrawPrimitiveVB(RenderDevice::TRIANGLEFAN, m_backglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, 4, true);
    pd3dDevice->basicShader->End();
 
    // Set the render state.

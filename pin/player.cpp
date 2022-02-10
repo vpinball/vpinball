@@ -559,8 +559,8 @@ void Player::Shutdown()
 
    m_pininput.UnInit();
 
-   SAFE_RELEASE(m_ballVertexBuffer);
-   SAFE_RELEASE(m_ballIndexBuffer);
+   SAFE_BUFFER_RELEASE(m_ballVertexBuffer);
+   SAFE_BUFFER_RELEASE(m_ballIndexBuffer);
 #ifndef ENABLE_SDL
    if (m_ballShader)
    {
@@ -569,13 +569,13 @@ void Player::Shutdown()
       CHECKD3D(m_ballShader->Core()->SetTexture(SHADER_Texture2, nullptr));
       CHECKD3D(m_ballShader->Core()->SetTexture(SHADER_Texture3, nullptr));
       delete m_ballShader;
-      m_ballShader = 0;
+      m_ballShader = nullptr;
    }
 #endif
 #ifdef DEBUG_BALL_SPIN
-   SAFE_RELEASE(m_ballDebugPoints);
+   SAFE_BUFFER_RELEASE(m_ballDebugPoints);
 #endif
-   SAFE_RELEASE(m_ballTrailVertexBuffer);
+   SAFE_BUFFER_RELEASE(m_ballTrailVertexBuffer);
    if (m_ballImage)
    {
        delete m_ballImage;
@@ -1864,7 +1864,7 @@ void Player::InitStatic()
    // NOTE: iter == 0 MUST ALWAYS PRODUCE an offset of 0,0!
    for (int iter = m_cameraMode ? 0 : (STATIC_PRERENDER_ITERATIONS-1); iter >= 0; --iter) // just do one iteration if in dynamic camera/light/material tweaking mode
    {
-   m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles = 0;
+   RenderDevice::m_stats_drawn_triangles = 0;
 
    float u1 = xyLDBNbnot[iter*2  ];  //      (float)iter*(float)(1.0                                /STATIC_PRERENDER_ITERATIONS);
    float u2 = xyLDBNbnot[iter*2+1];  //fmodf((float)iter*(float)(STATIC_PRERENDER_ITERATIONS_KOROBOV/STATIC_PRERENDER_ITERATIONS), 1.f);
@@ -2001,7 +2001,7 @@ void Player::InitStatic()
 
    offscreenSurface->UnlockRect();
    }
-   stats_drawn_static_triangles = m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles;
+   stats_drawn_static_triangles = RenderDevice::m_stats_drawn_triangles;
    }
 
    // if rendering static/with heavy oversampling, re-enable the aniso/trilinear filter now for the normal rendering
@@ -3858,7 +3858,7 @@ void Player::UpdateHUD_IMGUI()
    if (ImGui::Button("Toggle Profiling"))
       profiling = !profiling;
 
-   ImGui::Text("FPS: %.1f (%.1f avg)  Display %s Objects(%uk/%uk Triangles)", m_fps + 0.01f, fpsAvg + 0.01f, RenderStaticOnly() ? "only static" : "all", (m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000);
+   ImGui::Text("FPS: %.1f (%.1f avg)  Display %s Objects(%uk/%uk Triangles)", m_fps + 0.01f, fpsAvg + 0.01f, RenderStaticOnly() ? "only static" : "all", (RenderDevice::m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000);
    ImGui::Text("DayNight %u%%", quantizeUnsignedPercent(m_globalEmissionScale));
 
    const U32 period = m_lastFrameDuration;
@@ -4071,7 +4071,7 @@ void Player::UpdateHUD()
 		//DebugPrint(0, 230, szFoo); //!!?
 
 		// Draw the framerate.
-		sprintf_s(szFoo, "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %u%%", m_fps+0.01f, fpsAvg+0.01f, RenderStaticOnly() ? "only static" : "all", (m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, quantizeUnsignedPercent(m_globalEmissionScale));
+		sprintf_s(szFoo, "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %u%%", m_fps+0.01f, fpsAvg+0.01f, RenderStaticOnly() ? "only static" : "all", (RenderDevice::m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, quantizeUnsignedPercent(m_globalEmissionScale));
 		DebugPrint(0, 10, szFoo);
 
 		const U32 period = m_lastFrameDuration;
@@ -4836,7 +4836,7 @@ void Player::Render()
 
    m_LastKnownGoodCounter++;
 
-   m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles = 0;
+   RenderDevice::m_stats_drawn_triangles = 0;
 
    // copy static buffers to back buffer and z buffer
    m_pin3d.m_pd3dPrimaryDevice->CopySurface(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsStatic);

@@ -24,36 +24,12 @@ Light::Light() : m_lightcenter(this)
 
 Light::~Light()
 {
-   if (m_customMoverVBuffer)
-   {
-      m_customMoverVBuffer->release();
-      m_customMoverVBuffer = 0;
-   }
-   if (m_customMoverIBuffer)
-   {
-      m_customMoverIBuffer->release();
-      m_customMoverIBuffer = 0;
-   }
-   if (m_bulbLightIndexBuffer)
-   {
-      m_bulbLightIndexBuffer->release();
-      m_bulbLightIndexBuffer = 0;
-   }
-   if (m_bulbLightVBuffer)
-   {
-      m_bulbLightVBuffer->release();
-      m_bulbLightVBuffer = 0;
-   }
-   if (m_bulbSocketIndexBuffer)
-   {
-      m_bulbSocketIndexBuffer->release();
-      m_bulbSocketIndexBuffer = 0;
-   }
-   if (m_bulbSocketVBuffer)
-   {
-      m_bulbSocketVBuffer->release();
-      m_bulbSocketVBuffer = 0;
-   }
+   SAFE_BUFFER_RELEASE(m_customMoverVBuffer);
+   SAFE_BUFFER_RELEASE(m_customMoverIBuffer);
+   SAFE_BUFFER_RELEASE(m_bulbLightIndexBuffer);
+   SAFE_BUFFER_RELEASE(m_bulbLightVBuffer);
+   SAFE_BUFFER_RELEASE(m_bulbSocketIndexBuffer);
+   SAFE_BUFFER_RELEASE(m_bulbSocketVBuffer);
 }
 
 HRESULT Light::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -314,36 +290,12 @@ void Light::GetHitShapesDebug(vector<HitObject*> &pvho)
 
 void Light::FreeBuffers()
 {
-   if (m_customMoverVBuffer)
-   {
-      m_customMoverVBuffer->release();
-      m_customMoverVBuffer = 0;
-   }
-   if (m_customMoverIBuffer)
-   {
-      m_customMoverIBuffer->release();
-      m_customMoverIBuffer = 0;
-   }
-   if (m_bulbLightIndexBuffer)
-   {
-      m_bulbLightIndexBuffer->release();
-      m_bulbLightIndexBuffer = 0;
-   }
-   if (m_bulbLightVBuffer)
-   {
-      m_bulbLightVBuffer->release();
-      m_bulbLightVBuffer = 0;
-   }
-   if (m_bulbSocketIndexBuffer)
-   {
-      m_bulbSocketIndexBuffer->release();
-      m_bulbSocketIndexBuffer = 0;
-   }
-   if (m_bulbSocketVBuffer)
-   {
-      m_bulbSocketVBuffer->release();
-      m_bulbSocketVBuffer = 0;
-   }
+   SAFE_BUFFER_RELEASE(m_customMoverVBuffer);
+   SAFE_BUFFER_RELEASE(m_customMoverIBuffer);
+   SAFE_BUFFER_RELEASE(m_bulbLightIndexBuffer);
+   SAFE_BUFFER_RELEASE(m_bulbLightVBuffer);
+   SAFE_BUFFER_RELEASE(m_bulbSocketIndexBuffer);
+   SAFE_BUFFER_RELEASE(m_bulbSocketVBuffer);
 }
 
 void Light::EndPlay()
@@ -653,10 +605,8 @@ void Light::PrepareMoversCustom()
       m_surfaceHeight = height;
    }
 
-   if (m_customMoverIBuffer)
-      m_customMoverIBuffer->release();
-   if (m_customMoverVBuffer)
-      m_customMoverVBuffer->release();
+   SAFE_BUFFER_RELEASE(m_customMoverIBuffer);
+   SAFE_BUFFER_RELEASE(m_customMoverVBuffer);
 
    if (vtri.empty())
    {
@@ -762,12 +712,10 @@ void Light::RenderSetup()
 
    if (m_d.m_BulbLight && m_d.m_showBulbMesh)
    {
-      if (m_bulbLightIndexBuffer)
-         m_bulbLightIndexBuffer->release();
+      SAFE_BUFFER_RELEASE(m_bulbLightIndexBuffer);
       m_bulbLightIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(bulbLightNumFaces, bulbLightIndices, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
 
-      if (m_bulbLightVBuffer)
-         m_bulbLightVBuffer->release();
+      SAFE_BUFFER_RELEASE(m_bulbLightVBuffer);
       VertexBuffer::CreateVertexBuffer(bulbLightNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_bulbLightVBuffer, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
 
       Vertex3D_NoTex2 *buf;
@@ -785,12 +733,10 @@ void Light::RenderSetup()
       }
       m_bulbLightVBuffer->unlock();
 
-      if (m_bulbSocketIndexBuffer)
-         m_bulbSocketIndexBuffer->release();
+      SAFE_BUFFER_RELEASE(m_bulbSocketIndexBuffer);
       m_bulbSocketIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(bulbSocketNumFaces, bulbSocketIndices, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
 
-      if (m_bulbSocketVBuffer)
-         m_bulbSocketVBuffer->release();
+      SAFE_BUFFER_RELEASE(m_bulbSocketVBuffer);
       VertexBuffer::CreateVertexBuffer(bulbSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_bulbSocketVBuffer, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
 
       m_bulbSocketVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);

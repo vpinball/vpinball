@@ -16,9 +16,9 @@ public:
    };
 
    void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags);
-   void unlock(void);
-   void release(void);
-   void bind(const deviceNumber dN);
+   void unlock();
+   void release();
+   void bind();
 
    static void bindNull() { m_curVertexBuffer = nullptr; }
    static void CreateVertexBuffer(const unsigned int vertexCount, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer, const deviceNumber dN);
@@ -54,7 +54,7 @@ private:
 
 #else
 
-class VertexBuffer : public IDirect3DVertexBuffer9
+class VertexBuffer
 {
 public:
    enum LockFlags
@@ -66,20 +66,25 @@ public:
    };
 
    void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags);
-   void unlock(void);
-   void release(void);
-   void bind(const deviceNumber dN);
+   void unlock();
+   void release();
+   void bind();
 
    static void bindNull() { m_curVertexBuffer = nullptr; }
-   static void CreateVertexBuffer(const unsigned int vertexCount, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer, const deviceNumber dN);
    static void setD3DDevice(IDirect3DDevice9* primary, IDirect3DDevice9* secondary) { m_pd3dPrimaryDevice = primary; m_pd3dSecondaryDevice = secondary; }
 
-private:
-   VertexBuffer();     // disable default constructor
-
-   DWORD m_fvf;
+   static void CreateVertexBuffer(const unsigned int vertexCount, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer, const deviceNumber dN);
 
    static VertexBuffer* m_curVertexBuffer; // for caching
+
+   IDirect3DVertexBuffer9* m_vb = nullptr;
+
+private:
+   //VertexBuffer();     // disable default constructor
+
+   DWORD m_fvf;
+   deviceNumber m_dN;
+
    static IDirect3DDevice9* m_pd3dPrimaryDevice;
    static IDirect3DDevice9* m_pd3dSecondaryDevice;
 };

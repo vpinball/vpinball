@@ -162,9 +162,9 @@ void Mesh::UploadToVB(VertexBuffer * vb, const float frame)
 
 Primitive::Primitive()
 {
-   m_vertexBuffer = 0;
+   m_vertexBuffer = nullptr;
    m_vertexBufferRegenerate = true;
-   m_indexBuffer = 0;
+   m_indexBuffer = nullptr;
    m_d.m_use3DMesh = false;
    m_d.m_staticRendering = false;
    m_d.m_edgeFactorUI = 0.25f;
@@ -190,10 +190,8 @@ Primitive::Primitive()
 Primitive::~Primitive()
 {
    WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression
-   if (m_vertexBuffer)
-      m_vertexBuffer->release();
-   if (m_indexBuffer)
-      m_indexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_vertexBuffer);
+   SAFE_BUFFER_RELEASE(m_indexBuffer);
 }
 
 void Primitive::CreateRenderGroup(const Collection * const collection)
@@ -273,13 +271,10 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
          prims[i]->m_d.m_skipRendering = false;
    }
 
-   if (m_vertexBuffer)
-      m_vertexBuffer->release();
-
+   SAFE_BUFFER_RELEASE(m_vertexBuffer);
    VertexBuffer::CreateVertexBuffer(m_numGroupVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_vertexBuffer, PRIMARY_DEVICE);
 
-   if (m_indexBuffer)
-      m_indexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_indexBuffer);
    m_indexBuffer = IndexBuffer::CreateAndFillIndexBuffer(indices, PRIMARY_DEVICE);
 
    unsigned int ofs = 0;
@@ -635,15 +630,10 @@ void Primitive::EndPlay()
 
    if (m_vertexBuffer)
    {
-      m_vertexBuffer->release();
-      m_vertexBuffer = 0;
+      SAFE_BUFFER_RELEASE(m_vertexBuffer);
       m_vertexBufferRegenerate = true;
    }
-   if (m_indexBuffer)
-   {
-      m_indexBuffer->release();
-      m_indexBuffer = 0;
-   }
+   SAFE_BUFFER_RELEASE(m_indexBuffer);
    m_d.m_skipRendering = false;
    m_d.m_groupdRendering = false;
 
@@ -1336,13 +1326,10 @@ void Primitive::RenderSetup()
 
    m_currentFrame = -1.f;
 
-   if (m_vertexBuffer)
-      m_vertexBuffer->release();
-
+   SAFE_BUFFER_RELEASE(m_vertexBuffer);
    VertexBuffer::CreateVertexBuffer((unsigned int)m_mesh.NumVertices(), 0, MY_D3DFVF_NOTEX2_VERTEX, &m_vertexBuffer, PRIMARY_DEVICE);
 
-   if (m_indexBuffer)
-      m_indexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_indexBuffer);
    m_indexBuffer = IndexBuffer::CreateAndFillIndexBuffer(m_mesh.m_indices, PRIMARY_DEVICE);
 }
 
@@ -1826,11 +1813,8 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             }
             prim->m_mesh.Clear();
             prim->m_d.m_use3DMesh = false;
-            if (prim->m_vertexBuffer)
-            {
-               prim->m_vertexBuffer->release();
-               prim->m_vertexBuffer = 0;
-            }
+            SAFE_BUFFER_RELEASE(prim->m_vertexBuffer);
+
             constexpr bool flipTV = false;
             const bool convertToLeftHanded = IsDlgButtonChecked(hwndDlg, IDC_CONVERT_COORD_CHECK) == BST_CHECKED;
             const bool importAbsolutePosition = IsDlgButtonChecked(hwndDlg, IDC_ABS_POSITION_RADIO) == BST_CHECKED;
@@ -1998,11 +1982,8 @@ bool Primitive::BrowseFor3DMeshFile()
 
    m_mesh.Clear();
    m_d.m_use3DMesh = false;
-   if (vertexBuffer)
-   {
-      vertexBuffer->release();
-      vertexBuffer = 0;
-   }
+   SAFE_BUFFER_RELEASE(vertexBuffer);
+
    bool flipTV = false;
    bool convertToLeftHanded = false;
    int ans = m_vpinball->MessageBox("Do you want to mirror the object?", "Convert coordinate system?", MB_YESNO | MB_DEFBUTTON2);

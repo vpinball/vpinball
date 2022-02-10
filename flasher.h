@@ -115,7 +115,7 @@ public:
 
    virtual void WriteRegDefaults();
 
-   long GetAlpha(void) const
+   long GetAlpha() const
    {
       return m_d.m_alpha;
    }
@@ -123,7 +123,7 @@ public:
    {
       m_d.m_alpha = max(value,(long)0);
    }
-   long GetFilterAmount(void) const
+   long GetFilterAmount() const
    {
       return m_d.m_filterAmount;
    }

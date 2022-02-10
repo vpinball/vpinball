@@ -204,13 +204,14 @@ public:
    void SetTextureStageState(const DWORD stage, const D3DTEXTURESTAGESTATETYPE type, const DWORD value);
    void SetSamplerState(const DWORD Sampler, const D3DSAMPLERSTATETYPE Type, const DWORD Value);
 
-   void CreateVertexBuffer(const unsigned int numVerts, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer);
-   void CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer **idxBuffer);
+   //!! Remove:
+   //void CreateVertexBuffer(const unsigned int numVerts, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer);
+   //void CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer **idxBuffer);
 
-   IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const unsigned int * indices);
-   IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const WORD * indices);
-   IndexBuffer* CreateAndFillIndexBuffer(const std::vector<unsigned int>& indices);
-   IndexBuffer* CreateAndFillIndexBuffer(const std::vector<WORD>& indices);
+   //IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const unsigned int * indices);
+   //IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const WORD * indices);
+   //IndexBuffer* CreateAndFillIndexBuffer(const std::vector<unsigned int>& indices);
+   //IndexBuffer* CreateAndFillIndexBuffer(const std::vector<WORD>& indices);
 
    void DrawTexturedQuad(const Vertex3D_TexelOnly* vertices);
    void DrawFullscreenTexturedQuad();
@@ -312,12 +313,7 @@ private:
    DWORD textureStateCache[TEXTURE_SAMPLERS][TEXTURE_STATE_CACHE_SIZE];     // dto.
    DWORD textureSamplerCache[TEXTURE_SAMPLERS][TEXTURE_SAMPLER_CACHE_SIZE]; // dto.
 
-   VertexBuffer* m_curVertexBuffer;       // for caching
-   IndexBuffer* m_curIndexBuffer;         // dto.
-   VertexDeclaration *currentDeclaration; // dto.
-
-   VertexBuffer *m_quadVertexBuffer;      // internal vb for rendering quads
-   //VertexBuffer *m_quadDynVertexBuffer;   // internal vb for rendering dynamic quads
+   VertexDeclaration *currentDeclaration; // for caching
 
    DWORD m_maxaniso;
    bool m_mag_aniso;
@@ -331,8 +327,11 @@ private:
    bool m_dwm_enabled;
 
 public:
-   bool m_useNvidiaApi;
+   static bool m_useNvidiaApi;
    static bool m_INTZ_support;
+
+   static VertexBuffer* m_quadVertexBuffer;      // internal vb for rendering quads //!! only on primary device for now!
+   //static VertexBuffer *m_quadDynVertexBuffer; // internal vb for rendering dynamic quads //!!
 
    // performance counters
    unsigned int m_curDrawCalls, m_frameDrawCalls;
@@ -357,7 +356,7 @@ public:
 
    TextureManager m_texMan;
 
-   unsigned int m_stats_drawn_triangles;
+   static unsigned int m_stats_drawn_triangles;
 
    static VertexDeclaration* m_pVertexTexelDeclaration;
    static VertexDeclaration* m_pVertexNormalTexelDeclaration;

@@ -91,10 +91,8 @@ Flipper::Flipper()
 
 Flipper::~Flipper()
 {
-   if (m_vertexBuffer)
-      m_vertexBuffer->release();
-   if (m_indexBuffer)
-      m_indexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_vertexBuffer);
+   SAFE_BUFFER_RELEASE(m_indexBuffer);
 }
 
 HRESULT Flipper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -297,19 +295,9 @@ void Flipper::GetHitShapesDebug(vector<HitObject*> &pvho)
 void Flipper::EndPlay()
 {
    if (m_phitflipper) // Failed player case
-   {
       m_phitflipper = nullptr;
-   }
-   if (m_vertexBuffer)
-   {
-      m_vertexBuffer->release();
-      m_vertexBuffer = nullptr;
-   }
-   if (m_indexBuffer)
-   {
-      m_indexBuffer->release();
-      m_indexBuffer = nullptr;
-   }
+   SAFE_BUFFER_RELEASE(m_vertexBuffer);
+   SAFE_BUFFER_RELEASE(m_indexBuffer);
 
    IEditable::EndPlay();
 }
@@ -872,12 +860,10 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 
 void Flipper::RenderSetup()
 {
-   if (m_indexBuffer)
-      m_indexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_indexBuffer);
    m_indexBuffer = IndexBuffer::CreateAndFillIndexBuffer(flipperBaseNumIndices, flipperBaseIndices, PRIMARY_DEVICE);
 
-   if (m_vertexBuffer)
-      m_vertexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_vertexBuffer);
    VertexBuffer::CreateVertexBuffer(flipperBaseVertices * 2, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_vertexBuffer, PRIMARY_DEVICE);
 
    Vertex3D_NoTex2 *buf;

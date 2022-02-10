@@ -35,13 +35,12 @@ std::vector<VertexBuffer*> VertexBuffer::notUploadedBuffers;
 
 void VertexBuffer::CreateVertexBuffer(const unsigned int vertexCount, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer, const deviceNumber dN)
 {
-#ifdef ENABLE_SDL
    VertexBuffer* const vb = new VertexBuffer();
+#ifdef ENABLE_SDL
    vb->count = vertexCount;
    vb->sizePerVertex = fvfToSize(fvf);
    vb->usage = usage ? usage : USAGE_STATIC;
    vb->fvf = fvf;
-   *vBuffer = vb;
    vb->isUploaded = false;
    vb->size = vb->sizePerVertex * vb->count;
    vb->Array = 0;
@@ -51,11 +50,13 @@ void VertexBuffer::CreateVertexBuffer(const unsigned int vertexCount, const DWOR
    // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
    // This means we cannot read from vertex buffers, but I don't think we need to.
    const HRESULT hr = (dN == PRIMARY_DEVICE ? m_pd3dPrimaryDevice : m_pd3dSecondaryDevice)->CreateVertexBuffer(vertexCount * fvfToSize(fvf), USAGE_STATIC | usage, 0,
-      (D3DPOOL)memoryPool::DEFAULT, (IDirect3DVertexBuffer9**)vBuffer, nullptr);
+      (D3DPOOL)memoryPool::DEFAULT, &vb->m_vb, nullptr);
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create vertex buffer!", hr, __FILE__, __LINE__);
-   (*vBuffer)->m_fvf = fvf;
+   vb->m_fvf = fvf;
+   vb->m_dN = dN;
 #endif
+   *vBuffer = vb;
 }
 
 void VertexBuffer::lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags)
@@ -77,7 +78,7 @@ void VertexBuffer::lock(const unsigned int offsetToLock, const unsigned int size
       this->sizeToLock = 0;
    }
 #else
-   CHECKD3D(this->Lock(offsetToLock, sizeToLock, dataBuffer, flags));
+   CHECKD3D(m_vb->Lock(offsetToLock, sizeToLock, dataBuffer, flags));
 #endif
 }
 
@@ -88,7 +89,7 @@ void VertexBuffer::unlock()
       return;
    addToNotUploadedBuffers();
 #else
-   CHECKD3D(this->Unlock());
+   CHECKD3D(m_vb->Unlock());
 #endif
 }
 
@@ -104,11 +105,11 @@ void VertexBuffer::release()
       size = 0;
    }
 #else
-   SAFE_RELEASE_NO_CHECK_NO_SET(this);
+   SAFE_RELEASE(m_vb);
 #endif
 }
 
-void VertexBuffer::bind(const deviceNumber dN)
+void VertexBuffer::bind()
 {
 #ifdef ENABLE_SDL
    if (!isUploaded) {
@@ -128,7 +129,7 @@ void VertexBuffer::bind(const deviceNumber dN)
    if (/*m_curVertexBuffer == nullptr ||*/ m_curVertexBuffer != this)
    {
       const unsigned int vsize = fvfToSize(m_fvf);
-      CHECKD3D((dN == PRIMARY_DEVICE ? m_pd3dPrimaryDevice : m_pd3dSecondaryDevice)->SetStreamSource(0, this, 0, vsize));
+      CHECKD3D((m_dN == PRIMARY_DEVICE ? m_pd3dPrimaryDevice : m_pd3dSecondaryDevice)->SetStreamSource(0, m_vb, 0, vsize));
       m_curVertexBuffer = this;
    }
 #endif

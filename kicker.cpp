@@ -27,27 +27,11 @@ Kicker::Kicker()
 
 Kicker::~Kicker()
 {
-   if (m_vertexBuffer)
-   {
-      m_vertexBuffer->release();
-      m_vertexBuffer = 0;
-   }
-   if (m_indexBuffer)
-   {
-      m_indexBuffer->release();
-      m_indexBuffer = 0;
-   }
+   SAFE_BUFFER_RELEASE(m_vertexBuffer);
+   SAFE_BUFFER_RELEASE(m_indexBuffer);
 
-   if (m_plateVertexBuffer)
-   {
-      m_plateVertexBuffer->release();
-      m_plateVertexBuffer = 0;
-   }
-   if (m_plateIndexBuffer)
-   {
-      m_plateIndexBuffer->release();
-      m_plateIndexBuffer = 0;
-   }
+   SAFE_BUFFER_RELEASE(m_plateVertexBuffer);
+   SAFE_BUFFER_RELEASE(m_plateIndexBuffer);
 }
 
 void Kicker::UpdateStatusBarInfo()
@@ -229,27 +213,11 @@ void Kicker::GetHitShapesDebug(vector<HitObject*> &pvho)
 void Kicker::EndPlay()
 {
    m_phitkickercircle = nullptr;
-   if (m_vertexBuffer)
-   {
-      m_vertexBuffer->release();
-      m_vertexBuffer = 0;
-   }
-   if (m_indexBuffer)
-   {
-      m_indexBuffer->release();
-      m_indexBuffer = 0;
-   }
+   SAFE_BUFFER_RELEASE(m_vertexBuffer);
+   SAFE_BUFFER_RELEASE(m_indexBuffer);
 
-   if (m_plateVertexBuffer)
-   {
-      m_plateVertexBuffer->release();
-      m_plateVertexBuffer = 0;
-   }
-   if (m_plateIndexBuffer)
-   {
-      m_plateIndexBuffer->release();
-      m_plateIndexBuffer = 0;
-   }
+   SAFE_BUFFER_RELEASE(m_plateVertexBuffer);
+   SAFE_BUFFER_RELEASE(m_plateIndexBuffer);
 
    m_hitMesh.clear();
 
@@ -443,12 +411,10 @@ void Kicker::RenderSetup()
          buf[i].tv = 0.0f;
       }
 
-      if (m_plateIndexBuffer)
-         m_plateIndexBuffer->release();
+      SAFE_BUFFER_RELEASE(m_plateIndexBuffer);
       m_plateIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(kickerPlateNumIndices, kickerPlateIndices, PRIMARY_DEVICE);
 
-      if (m_plateVertexBuffer)
-         m_plateVertexBuffer->release();
+      SAFE_BUFFER_RELEASE(m_plateVertexBuffer);
       VertexBuffer::CreateVertexBuffer(kickerPlateNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_plateVertexBuffer, PRIMARY_DEVICE);
 
       Vertex3D_NoTex2 *bufvb;
@@ -534,12 +500,10 @@ void Kicker::RenderSetup()
 
    //
 
-   if (m_indexBuffer)
-      m_indexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_indexBuffer);
    m_indexBuffer = IndexBuffer::CreateAndFillIndexBuffer(m_numIndices, indices, PRIMARY_DEVICE);
 
-   if (m_vertexBuffer)
-      m_vertexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_vertexBuffer);
    VertexBuffer::CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_vertexBuffer, PRIMARY_DEVICE);
 
    Vertex3D_NoTex2 *buf;

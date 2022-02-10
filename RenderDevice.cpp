@@ -90,13 +90,13 @@ VertexDeclaration* RenderDevice::m_pVertexTexelDeclaration = nullptr;
 constexpr VertexElement VertexNormalTexelElement[] =
 {
    { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
-   { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },  // normal
+   { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0 },  // normal
    { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
    D3DDECL_END()
 };
 VertexDeclaration* RenderDevice::m_pVertexNormalTexelDeclaration = nullptr;
 
-/*const VertexElement VertexNormalTexelTexelElement[] =
+/*constexpr VertexElement VertexNormalTexelTexelElement[] =
 {
    { 0, 0  * sizeof(float),D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
    { 0, 3  * sizeof(float),D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0 },  // normal
@@ -127,7 +127,7 @@ static unsigned int fvfToSize(const DWORD fvf)
    case MY_D3DFVF_TEX:
       return sizeof(Vertex3D_TexelOnly);
    default:
-      assert(0 && "Unknown FVF type in fvfToSize");
+      assert(!"Unknown FVF type in fvfToSize");
       return 0;
    }
 }
@@ -143,7 +143,7 @@ static VertexDeclaration* fvfToDecl(const DWORD fvf)
    case MY_D3DFVF_TEX:
       return RenderDevice::m_pVertexTexelDeclaration;
    default:
-      assert(0 && "Unknown FVF type in fvfToDecl");
+      assert(!"Unknown FVF type in fvfToDecl");
       return nullptr;
    }
 }
@@ -370,6 +370,9 @@ int getPrimaryDisplay()
 static bool NVAPIinit = false; //!! meh
 
 bool RenderDevice::m_INTZ_support = false;
+bool RenderDevice::m_useNvidiaApi = false;
+VertexBuffer* RenderDevice::m_quadVertexBuffer = nullptr;
+unsigned int RenderDevice::m_stats_drawn_triangles = 0;
 
 #ifdef USE_D3D9EX
  typedef HRESULT(WINAPI *pD3DC9Ex)(UINT SDKVersion, IDirect3D9Ex**);
@@ -388,8 +391,10 @@ static pDEC mDwmEnableComposition = nullptr;
 RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
     : m_windowHwnd(hwnd), m_width(width), m_height(height), m_fullscreen(fullscreen), 
       m_colorDepth(colordepth), m_vsync(VSync), m_useAA(useAA), m_stereo3D(stereo3D),
-      m_ssRefl(ss_refl), m_disableDwm(disable_dwm), m_sharpen(sharpen), m_FXAA(FXAA), m_BWrendering(BWrendering), m_useNvidiaApi(useNvidiaApi), m_texMan(*this)
+      m_ssRefl(ss_refl), m_disableDwm(disable_dwm), m_sharpen(sharpen), m_FXAA(FXAA), m_BWrendering(BWrendering), m_texMan(*this)
 {
+    m_useNvidiaApi = useNvidiaApi;
+
     m_stats_drawn_triangles = 0;
 
     mDwmIsCompositionEnabled = (pDICE)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmIsCompositionEnabled"); //!! remove as soon as win xp support dropped and use static link
@@ -414,8 +419,6 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
         m_dwm_enabled = false;
     }
 
-    m_curIndexBuffer = 0;
-    m_curVertexBuffer = 0;
     currentDeclaration = nullptr;
     //m_curShader = nullptr;
 
@@ -730,23 +733,6 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    //CreateVertexDeclaration( VertexNormalTexelTexelElement, &m_pVertexNormalTexelTexelDeclaration );
    CreateVertexDeclaration(VertexTrafoTexelElement, &m_pVertexTrafoTexelDeclaration);
 
-   m_quadVertexBuffer = nullptr;
-   CreateVertexBuffer(4, 0, MY_D3DFVF_TEX, &m_quadVertexBuffer);
-   Vertex3D_TexelOnly* bufvb;
-   m_quadVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::WRITEONLY);
-   static constexpr float verts[4 * 5] =
-   {
-      1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-      -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-      1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
-      -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
-   };
-   memcpy(bufvb,verts,4*sizeof(Vertex3D_TexelOnly));
-   m_quadVertexBuffer->unlock();
-
-   //m_quadDynVertexBuffer = nullptr;
-   //CreateVertexBuffer(4, USAGE_DYNAMIC, MY_D3DFVF_TEX, &m_quadDynVertexBuffer);
-
    if(m_FXAA == Quality_SMAA)
        UploadAndSetSMAATextures();
    else
@@ -885,12 +871,6 @@ void RenderDevice::FreeShader()
 
 RenderDevice::~RenderDevice()
 {
-   if (m_quadVertexBuffer)
-      m_quadVertexBuffer->release();
-   m_quadVertexBuffer = nullptr;
-
-   //m_quadDynVertexBuffer->release();
-
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
    if (srcr_cache != nullptr)
       CHECKNVAPI(NvAPI_D3D9_UnregisterResource(srcr_cache)); //!! meh
@@ -1697,7 +1677,8 @@ void RenderDevice::SetTextureAddressMode(const DWORD texUnit, const TextureAddre
    SetSamplerState(texUnit, D3DSAMP_ADDRESSV, mode);
 }
 
-void RenderDevice::CreateVertexBuffer(const unsigned int vertexCount, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer)
+//!! Remove this:
+/*void RenderDevice::CreateVertexBuffer(const unsigned int vertexCount, const DWORD usage, const DWORD fvf, VertexBuffer** vBuffer)
 {
    // NB: We always specify WRITEONLY since MSDN states,
    // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
@@ -1755,7 +1736,7 @@ IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(const std::vector<WORD>& ind
 IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(const std::vector<unsigned int>& indices)
 {
    return CreateAndFillIndexBuffer((unsigned int)indices.size(), indices.data());
-}
+}*/
 
 
 void* RenderDevice::AttachZBufferTo(RenderTarget* surf)
@@ -1796,7 +1777,6 @@ void RenderDevice::DrawPrimitive(const PrimitiveTypes type, const DWORD fvf, con
    if (FAILED(hr))
       ReportError("Fatal Error: DrawPrimitiveUP failed!", hr, __FILE__, __LINE__);
 
-   m_curVertexBuffer = nullptr; // DrawPrimitiveUP sets the VB to nullptr
    VertexBuffer::bindNull();    // DrawPrimitiveUP sets the VB to nullptr
 
    m_curDrawCalls++;
@@ -1832,7 +1812,7 @@ void RenderDevice::DrawPrimitiveVB(const PrimitiveTypes type, const DWORD fvf, V
    const unsigned int np = ComputePrimitiveCount(type, vertexCount);
    m_stats_drawn_triangles += np;
 
-   vb->bind(PRIMARY_DEVICE); //!! SECONDARY_DEVICE, too!
+   vb->bind();
 #ifdef ENABLE_SDL
    //CHECKD3D(glDrawArraysInstanced(type, vb->getOffset() + startVertex, vertexCount, m_stereo3D != STEREO_OFF ? 2 : 1)); // Do instancing in geometry shader instead
    CHECKD3D(glDrawArrays(type, vb->getOffset() + startVertex, vertexCount));
@@ -1849,21 +1829,24 @@ void RenderDevice::DrawPrimitiveVB(const PrimitiveTypes type, const DWORD fvf, V
 
 void RenderDevice::DrawIndexedPrimitiveVB(const PrimitiveTypes type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount)
 {
+   if (vb == nullptr || ib == nullptr) //!! happens for primitives that are grouped on player init render call?!?
+      return;
+
    VertexDeclaration * declaration = fvfToDecl(fvf);
    SetVertexDeclaration(declaration);
 
    // bind the vertex and index buffers
-   if (m_curVertexBuffer != vb)
+   if (VertexBuffer::m_curVertexBuffer != vb)
    {
       const unsigned int vsize = fvfToSize(fvf);
-      CHECKD3D(m_pD3DDevice->SetStreamSource(0, vb, 0, vsize));
-      m_curVertexBuffer = vb;
+      CHECKD3D(m_pD3DDevice->SetStreamSource(0, vb->m_vb, 0, vsize));
+      VertexBuffer::m_curVertexBuffer = vb;
    }
 
-   if (m_curIndexBuffer != ib)
+   if (IndexBuffer::m_curIndexBuffer != ib)
    {
-      CHECKD3D(m_pD3DDevice->SetIndices(ib));
-      m_curIndexBuffer = ib;
+      CHECKD3D(m_pD3DDevice->SetIndices(ib->m_ib));
+      IndexBuffer::m_curIndexBuffer = ib;
    }
 
    // render

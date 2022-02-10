@@ -844,10 +844,8 @@ void Surface::ExportMesh(ObjLoader& loader)
 
 void Surface::PrepareWallsAtHeight()
 {
-   if (m_IBuffer)
-      m_IBuffer->release();
-   if (m_VBuffer)
-      m_VBuffer->release();
+   SAFE_BUFFER_RELEASE(m_IBuffer);
+   SAFE_BUFFER_RELEASE(m_VBuffer);
 
    std::vector<Vertex3D_NoTex2> topBottomBuf;
    std::vector<Vertex3D_NoTex2> sideBuf;
@@ -924,9 +922,7 @@ void Surface::PrepareSlingshots()
       ComputeNormals(rgv3D + offset, 9, rgiSlingshot, 24);
    }
 
-   if (m_slingshotVBuffer)
-      m_slingshotVBuffer->release();
-
+   SAFE_BUFFER_RELEASE(m_slingshotVBuffer);
    VertexBuffer::CreateVertexBuffer((unsigned int)m_vlinesling.size() * 9, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_slingshotVBuffer, PRIMARY_DEVICE);
 
    Vertex3D_NoTex2 *buf;
@@ -970,26 +966,10 @@ void Surface::RenderSetup()
 
 void Surface::FreeBuffers()
 {
-   if (m_slingshotVBuffer)
-   {
-      m_slingshotVBuffer->release();
-      m_slingshotVBuffer = 0;
-   }
-   if (m_VBuffer)
-   {
-      m_VBuffer->release();
-      m_VBuffer = 0;
-   }
-   if (m_IBuffer)
-   {
-      m_IBuffer->release();
-      m_IBuffer = 0;
-   }
-   if (slingIBuffer)    // NB: global instance
-   {
-      slingIBuffer->release();
-      slingIBuffer = 0;
-   }
+   SAFE_BUFFER_RELEASE(m_slingshotVBuffer);
+   SAFE_BUFFER_RELEASE(m_VBuffer);
+   SAFE_BUFFER_RELEASE(m_IBuffer);
+   SAFE_BUFFER_RELEASE(slingIBuffer); // NB: global instance
 }
 
 void Surface::RenderStatic()

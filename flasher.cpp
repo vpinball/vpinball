@@ -25,18 +25,12 @@ Flasher::Flasher()
 
 Flasher::~Flasher()
 {
-   if (m_dynamicVertexBuffer) {
-      m_dynamicVertexBuffer->release();
-      m_dynamicVertexBuffer = 0;
-   }
-   if (m_dynamicIndexBuffer) {
-      m_dynamicIndexBuffer->release();
-      m_dynamicIndexBuffer = 0;
-   }
+   SAFE_BUFFER_RELEASE(m_dynamicVertexBuffer);
+   SAFE_BUFFER_RELEASE(m_dynamicIndexBuffer);
    if (m_vertices)
    {
       delete[] m_vertices;
-      m_vertices = 0;
+      m_vertices = nullptr;
    }
 }
 
@@ -285,19 +279,14 @@ void Flasher::EndPlay()
 
    if (m_dynamicVertexBuffer)
    {
-      m_dynamicVertexBuffer->release();
-      m_dynamicVertexBuffer = 0;
+      SAFE_BUFFER_RELEASE(m_dynamicVertexBuffer);
       m_dynamicVertexBufferRegenerate = true;
    }
-   if (m_dynamicIndexBuffer)
-   {
-      m_dynamicIndexBuffer->release();
-      m_dynamicIndexBuffer = 0;
-   }
+   SAFE_BUFFER_RELEASE(m_dynamicIndexBuffer);
    if (m_vertices)
    {
       delete[] m_vertices;
-      m_vertices = 0;
+      m_vertices = nullptr;
    }
 }
 
@@ -366,8 +355,7 @@ void Flasher::RenderSetup()
       return;
    }
 
-   if (m_dynamicIndexBuffer)
-      m_dynamicIndexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_dynamicIndexBuffer);
    IndexBuffer::CreateIndexBuffer(m_numPolys * 3, 0, IndexBuffer::FMT_INDEX16, &m_dynamicIndexBuffer, PRIMARY_DEVICE);
    NumVideoBytes += (int)(m_numPolys * 3 * sizeof(WORD));
 
@@ -376,8 +364,7 @@ void Flasher::RenderSetup()
    memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
    m_dynamicIndexBuffer->unlock();
 
-   if (m_dynamicVertexBuffer)
-      m_dynamicVertexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_dynamicVertexBuffer);
    VertexBuffer::CreateVertexBuffer(m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_TEX, &m_dynamicVertexBuffer, PRIMARY_DEVICE);
    NumVideoBytes += (int)(m_numVertices*sizeof(Vertex3D_TexelOnly));
 

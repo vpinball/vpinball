@@ -28,20 +28,12 @@ Trigger::Trigger()
 
 Trigger::~Trigger()
 {
-   if (m_vertexBuffer)
-   {
-      m_vertexBuffer->release();
-      m_vertexBuffer = 0;
-   }
-   if (m_triggerIndexBuffer)
-   {
-      m_triggerIndexBuffer->release();
-      m_triggerIndexBuffer = 0;
-   }
+   SAFE_BUFFER_RELEASE(m_vertexBuffer);
+   SAFE_BUFFER_RELEASE(m_triggerIndexBuffer);
    if (m_triggerVertices)
    {
       delete[] m_triggerVertices;
-      m_triggerVertices = 0;
+      m_triggerVertices = nullptr;
    }
 }
 
@@ -485,20 +477,12 @@ void Trigger::EndPlay()
 {
    IEditable::EndPlay();
 
-   if (m_vertexBuffer)
-   {
-      m_vertexBuffer->release();
-      m_vertexBuffer = 0;
-   }
-   if (m_triggerIndexBuffer)
-   {
-      m_triggerIndexBuffer->release();
-      m_triggerIndexBuffer = 0;
-   }
+   SAFE_BUFFER_RELEASE(m_vertexBuffer);
+   SAFE_BUFFER_RELEASE(m_triggerIndexBuffer);
    if (m_triggerVertices)
    {
       delete[] m_triggerVertices;
-      m_triggerVertices = 0;
+      m_triggerVertices = nullptr;
    }
    m_ptriggerhitcircle = nullptr;
 }
@@ -861,11 +845,9 @@ void Trigger::RenderSetup()
    }
    }
 
-   if (m_triggerIndexBuffer)
-      m_triggerIndexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_triggerIndexBuffer);
    m_triggerIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(m_numIndices, indices, PRIMARY_DEVICE);
-   if (m_vertexBuffer)
-      m_vertexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_vertexBuffer);
    VertexBuffer::CreateVertexBuffer(m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_vertexBuffer, PRIMARY_DEVICE);
    NumVideoBytes += m_numVertices*(int)sizeof(Vertex3D_NoTex2);
 

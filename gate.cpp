@@ -69,26 +69,10 @@ void Gate::SetGateType(GateType type)
 
 Gate::~Gate()
 {
-   if (m_bracketVertexBuffer)
-   {
-      m_bracketVertexBuffer->release();
-      m_bracketVertexBuffer = nullptr;
-   }
-   if (m_bracketIndexBuffer)
-   {
-      m_bracketIndexBuffer->release();
-      m_bracketIndexBuffer = nullptr;
-   }
-   if (m_wireIndexBuffer)
-   {
-      m_wireIndexBuffer->release();
-      m_wireIndexBuffer = nullptr;
-   }
-   if (m_wireVertexBuffer)
-   {
-      m_wireVertexBuffer->release();
-      m_wireVertexBuffer = nullptr;
-   }
+   SAFE_BUFFER_RELEASE(m_bracketVertexBuffer);
+   SAFE_BUFFER_RELEASE(m_bracketIndexBuffer);
+   SAFE_BUFFER_RELEASE(m_wireIndexBuffer);
+   SAFE_BUFFER_RELEASE(m_wireVertexBuffer);
 }
 
 void Gate::UpdateStatusBarInfo()
@@ -391,25 +375,12 @@ void Gate::EndPlay()
    m_phitgate = nullptr;
    m_plineseg = nullptr;
 
-   if (m_bracketVertexBuffer)
-   {
-      m_bracketVertexBuffer->release();
-      m_bracketVertexBuffer = nullptr;
-   }
-   if (m_bracketIndexBuffer)
-   {
-      m_bracketIndexBuffer->release();
-      m_bracketIndexBuffer = nullptr;
-   }
-   if (m_wireIndexBuffer)
-   {
-      m_wireIndexBuffer->release();
-      m_wireIndexBuffer = nullptr;
-   }
+   SAFE_BUFFER_RELEASE(m_bracketVertexBuffer);
+   SAFE_BUFFER_RELEASE(m_bracketIndexBuffer);
+   SAFE_BUFFER_RELEASE(m_wireIndexBuffer);
    if (m_wireVertexBuffer)
    {
-      m_wireVertexBuffer->release();
-      m_wireVertexBuffer = nullptr;
+      SAFE_BUFFER_RELEASE(m_wireVertexBuffer);
       m_vertexbuffer_angle = FLT_MAX;
    }
 }
@@ -578,12 +549,10 @@ void Gate::GenerateWireMesh(Vertex3D_NoTex2 *buf)
 
 void Gate::RenderSetup()
 {
-   if (m_bracketIndexBuffer)
-      m_bracketIndexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_bracketIndexBuffer);
    m_bracketIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(gateBracketNumIndices, gateBracketIndices, PRIMARY_DEVICE);
 
-   if (m_bracketVertexBuffer)
-      m_bracketVertexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_bracketVertexBuffer);
    VertexBuffer::CreateVertexBuffer(gateBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_bracketVertexBuffer, PRIMARY_DEVICE);
 
    SetGateType(m_d.m_type);
@@ -595,12 +564,10 @@ void Gate::RenderSetup()
    GenerateBracketMesh(buf);
    m_bracketVertexBuffer->unlock();
 
-   if (m_wireIndexBuffer)
-      m_wireIndexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_wireIndexBuffer);
    m_wireIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(m_numIndices, m_indices, PRIMARY_DEVICE);
 
-   if (m_wireVertexBuffer)
-      m_wireVertexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_wireVertexBuffer);
    VertexBuffer::CreateVertexBuffer(m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_wireVertexBuffer, PRIMARY_DEVICE);
 
    m_wireVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);

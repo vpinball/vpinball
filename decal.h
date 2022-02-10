@@ -100,7 +100,7 @@ private:
    float m_leading, m_descent;
 
    float m_realwidth, m_realheight;
-   VertexBuffer *vertexBuffer;
+   VertexBuffer *m_vertexBuffer;
 };
 
 #endif // !defined(AFX_DECAL_H__447B3CE2_C9EA_4ED1_AA3D_A8328F6DFD48__INCLUDED_)

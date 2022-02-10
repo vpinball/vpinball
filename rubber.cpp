@@ -23,11 +23,8 @@ Rubber::Rubber()
 
 Rubber::~Rubber()
 {
-   if (m_dynamicVertexBuffer)
-      m_dynamicVertexBuffer->release();
-
-   if (m_dynamicIndexBuffer)
-      m_dynamicIndexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_dynamicVertexBuffer);
+   SAFE_BUFFER_RELEASE(m_dynamicIndexBuffer);
 }
 
 void Rubber::UpdateStatusBarInfo()
@@ -672,15 +669,10 @@ void Rubber::EndPlay()
    m_vhoCollidable.clear();
 
    if (m_dynamicVertexBuffer) {
-      m_dynamicVertexBuffer->release();
-      m_dynamicVertexBuffer = 0;
+      SAFE_BUFFER_RELEASE(m_dynamicVertexBuffer);
       m_dynamicVertexBufferRegenerate = true;
    }
-
-   if (m_dynamicIndexBuffer) {
-      m_dynamicIndexBuffer->release();
-      m_dynamicIndexBuffer = 0;
-   }
+   SAFE_BUFFER_RELEASE(m_dynamicIndexBuffer);
 }
 
 float Rubber::GetDepth(const Vertex3Ds& viewDir) const
@@ -1461,8 +1453,7 @@ void Rubber::GenerateVertexBuffer()
 
    GenerateMesh();
 
-   if (m_dynamicVertexBuffer)
-      m_dynamicVertexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_dynamicVertexBuffer);
    VertexBuffer::CreateVertexBuffer(m_numVertices, m_d.m_staticRendering ? 0 : USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_dynamicVertexBuffer, PRIMARY_DEVICE);
 
    Vertex3D_NoTex2 *buf;
@@ -1470,9 +1461,7 @@ void Rubber::GenerateVertexBuffer()
    memcpy(buf, m_vertices.data(), sizeof(Vertex3D_NoTex2)*m_numVertices);
    m_dynamicVertexBuffer->unlock();
 
-   if (m_dynamicIndexBuffer)
-      m_dynamicIndexBuffer->release();
-
+   SAFE_BUFFER_RELEASE(m_dynamicIndexBuffer);
    m_dynamicIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(m_ringIndices, PRIMARY_DEVICE);
 }
 

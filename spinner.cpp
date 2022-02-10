@@ -18,26 +18,10 @@ Spinner::Spinner()
 
 Spinner::~Spinner()
 {
-   if (m_bracketVertexBuffer)
-   {
-      m_bracketVertexBuffer->release();
-      m_bracketVertexBuffer = 0;
-   }
-   if (m_bracketIndexBuffer)
-   {
-      m_bracketIndexBuffer->release();
-      m_bracketIndexBuffer = 0;
-   }
-   if (m_plateVertexBuffer)
-   {
-      m_plateVertexBuffer->release();
-      m_plateVertexBuffer = 0;
-   }
-   if (m_plateIndexBuffer)
-   {
-      m_plateIndexBuffer->release();
-      m_plateIndexBuffer = 0;
-   }
+   SAFE_BUFFER_RELEASE(m_bracketVertexBuffer);
+   SAFE_BUFFER_RELEASE(m_bracketIndexBuffer);
+   SAFE_BUFFER_RELEASE(m_plateVertexBuffer);
+   SAFE_BUFFER_RELEASE(m_plateIndexBuffer);
 }
 
 void Spinner::UpdateStatusBarInfo()
@@ -258,26 +242,10 @@ void Spinner::EndPlay()
    IEditable::EndPlay();
    m_phitspinner = nullptr;
 
-   if (m_bracketVertexBuffer)
-   {
-      m_bracketVertexBuffer->release();
-      m_bracketVertexBuffer = 0;
-   }
-   if (m_bracketIndexBuffer)
-   {
-      m_bracketIndexBuffer->release();
-      m_bracketIndexBuffer = 0;
-   }
-   if (m_plateVertexBuffer)
-   {
-      m_plateVertexBuffer->release();
-      m_plateVertexBuffer = 0;
-   }
-   if (m_plateIndexBuffer)
-   {
-      m_plateIndexBuffer->release();
-      m_plateIndexBuffer = 0;
-   }
+   SAFE_BUFFER_RELEASE(m_bracketVertexBuffer);
+   SAFE_BUFFER_RELEASE(m_bracketIndexBuffer);
+   SAFE_BUFFER_RELEASE(m_plateVertexBuffer);
+   SAFE_BUFFER_RELEASE(m_plateIndexBuffer);
 }
 
 void Spinner::ExportMesh(ObjLoader& loader)
@@ -434,12 +402,10 @@ void Spinner::RenderSetup()
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    m_posZ = height + m_d.m_height;
 
-   if (m_bracketIndexBuffer)
-      m_bracketIndexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_bracketIndexBuffer);
    m_bracketIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(spinnerBracketNumFaces, spinnerBracketIndices, PRIMARY_DEVICE);
 
-   if (m_bracketVertexBuffer)
-      m_bracketVertexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_bracketVertexBuffer);
    VertexBuffer::CreateVertexBuffer(spinnerBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_bracketVertexBuffer, PRIMARY_DEVICE);
 
    m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
@@ -465,12 +431,10 @@ void Spinner::RenderSetup()
    }
    m_bracketVertexBuffer->unlock();
 
-   if (m_plateIndexBuffer)
-      m_plateIndexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_plateIndexBuffer);
    m_plateIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(spinnerPlateNumFaces, spinnerPlateIndices, PRIMARY_DEVICE);
 
-   if (m_plateVertexBuffer)
-      m_plateVertexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_plateVertexBuffer);
    VertexBuffer::CreateVertexBuffer(spinnerPlateNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_plateVertexBuffer, PRIMARY_DEVICE);
 
    m_vertexBuffer_spinneranimangle = -FLT_MAX;

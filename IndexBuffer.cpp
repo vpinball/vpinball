@@ -20,13 +20,12 @@ std::vector<IndexBuffer*> IndexBuffer::notUploadedBuffers;
 
 void IndexBuffer::CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer **idxBuffer, const deviceNumber dN)
 {
-#ifdef ENABLE_SDL
    IndexBuffer* const ib = new IndexBuffer();
+#ifdef ENABLE_SDL
    ib->count = numIndices;
    ib->indexFormat = format;
    ib->size = numIndices * (ib->indexFormat == FMT_INDEX16 ? 2 : 4);
    ib->usage = usage ? usage : GL_STATIC_DRAW;
-   *idxBuffer = ib;
    ib->isUploaded = false;
    ib->dataBuffer = nullptr;
 #else
@@ -34,10 +33,12 @@ void IndexBuffer::CreateIndexBuffer(const unsigned int numIndices, const DWORD u
    // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
    const unsigned idxSize = (format == IndexBuffer::FMT_INDEX16) ? 2 : 4;
    const HRESULT hr = (dN == PRIMARY_DEVICE ? m_pd3dPrimaryDevice : m_pd3dSecondaryDevice)->CreateIndexBuffer(idxSize * numIndices, usage | USAGE_STATIC, (D3DFORMAT)format,
-      (D3DPOOL)memoryPool::DEFAULT, (IDirect3DIndexBuffer9**)idxBuffer, nullptr);
+      (D3DPOOL)memoryPool::DEFAULT, &ib->m_ib, nullptr);
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create index buffer!", hr, __FILE__, __LINE__);
+   ib->m_dN = dN;
 #endif
+   *idxBuffer = ib;
 }
 
 IndexBuffer* IndexBuffer::CreateAndFillIndexBuffer(const unsigned int numIndices, const WORD *indices, const deviceNumber dN)
@@ -132,7 +133,7 @@ void IndexBuffer::lock(const unsigned int offsetToLock, const unsigned int sizeT
       this->sizeToLock = 0;
    }
 #else
-   CHECKD3D(this->Lock(offsetToLock, sizeToLock, dataBuffer, flags));
+   CHECKD3D(m_ib->Lock(offsetToLock, sizeToLock, dataBuffer, flags));
 #endif
 }
 
@@ -144,22 +145,22 @@ void IndexBuffer::unlock()
    else
       addToNotUploadedBuffers();
 #else
-   CHECKD3D(this->Unlock());
+   CHECKD3D(m_ib->Unlock());
 #endif
 }
 
-void IndexBuffer::release(void)
+void IndexBuffer::release()
 {
 #ifdef ENABLE_SDL
    if (!sharedBuffer)
       CHECKD3D(glDeleteBuffers(1, &this->Buffer));
    this->Buffer = 0;
 #else
-   SAFE_RELEASE_NO_CHECK_NO_SET(this);
+   SAFE_RELEASE(m_ib);
 #endif
 }
 
-void IndexBuffer::bind(const deviceNumber dN)
+void IndexBuffer::bind()
 {
 #ifdef ENABLE_SDL
    if (!isUploaded)
@@ -170,9 +171,9 @@ void IndexBuffer::bind(const deviceNumber dN)
       m_curIndexBuffer = this;
    }
 #else
-   if (m_curIndexBuffer == nullptr || m_curIndexBuffer != this)
+   if (/*m_curIndexBuffer == nullptr ||*/ m_curIndexBuffer != this)
    {
-      CHECKD3D((dN == PRIMARY_DEVICE ? m_pd3dPrimaryDevice : m_pd3dSecondaryDevice)->SetIndices(this));
+      CHECKD3D((m_dN == PRIMARY_DEVICE ? m_pd3dPrimaryDevice : m_pd3dSecondaryDevice)->SetIndices(m_ib));
       m_curIndexBuffer = this;
    }
 #endif

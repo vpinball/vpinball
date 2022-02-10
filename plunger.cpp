@@ -10,16 +10,8 @@ Plunger::Plunger()
 
 Plunger::~Plunger()
 {
-   if (m_vertexBuffer)
-   {
-      m_vertexBuffer->release();
-      m_vertexBuffer = nullptr;
-   }
-   if (m_indexBuffer)
-   {
-      m_indexBuffer->release();
-      m_indexBuffer = nullptr;
-   }
+   SAFE_BUFFER_RELEASE(m_vertexBuffer);
+   SAFE_BUFFER_RELEASE(m_indexBuffer);
 }
 
 HRESULT Plunger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -172,16 +164,8 @@ void Plunger::EndPlay()
    m_phitplunger = nullptr;       // possible memory leak here?
 
    IEditable::EndPlay();
-   if (m_vertexBuffer)
-   {
-      m_vertexBuffer->release();
-      m_vertexBuffer = nullptr;
-   }
-   if (m_indexBuffer)
-   {
-      m_indexBuffer->release();
-      m_indexBuffer = nullptr;
-   }
+   SAFE_BUFFER_RELEASE(m_vertexBuffer);
+   SAFE_BUFFER_RELEASE(m_indexBuffer);
 }
 
 void Plunger::SetObjectPos()
@@ -540,8 +524,7 @@ void Plunger::RenderSetup()
    // figure the relative spring gauge, in terms of the overall width
    const float springGaugeRel = springGauge / m_d.m_width;
 
-   if (m_vertexBuffer)
-      m_vertexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_vertexBuffer);
    VertexBuffer::CreateVertexBuffer(m_cframes*m_vtsPerFrame, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_vertexBuffer, PRIMARY_DEVICE);
 
    Vertex3D_NoTex2 *buf;
@@ -845,8 +828,7 @@ void Plunger::RenderSetup()
    }
 
    // create the new index buffer
-   if (m_indexBuffer)
-      m_indexBuffer->release();
+   SAFE_BUFFER_RELEASE(m_indexBuffer);
    m_indexBuffer = IndexBuffer::CreateAndFillIndexBuffer(k, indices, PRIMARY_DEVICE);
 
    // done with the index scratch pad
