@@ -587,7 +587,9 @@ void Player::Shutdown()
        m_decalImage = nullptr;
    }
 
+#ifndef ENABLE_SDL
    m_limiter.Shutdown();
+#endif
 
    for (size_t i = 0; i < m_vhitables.size(); ++i)
       m_vhitables[i]->EndPlay();
@@ -3498,7 +3500,10 @@ void Player::RenderDynamics()
 
       if (ProfilingMode() == 1)
          m_pin3d.m_gpu_profiler.Timestamp(GTS_NonTransparent);
+
+#ifndef ENABLE_SDL
       m_limiter.Execute(m_pin3d.m_pd3dPrimaryDevice); //!! move below other draw calls??
+#endif
 
       DrawBulbLightBuffer();
 
@@ -3522,7 +3527,9 @@ void Player::RenderDynamics()
    }
    else // special profiling path by doing separate items, will not be accurate, both perf and rendering wise, but better than nothing
    {
+#ifndef ENABLE_SDL
       m_limiter.Execute(m_pin3d.m_pd3dPrimaryDevice); //!! move below other draw calls??
+#endif
 
       DrawBulbLightBuffer();
 
