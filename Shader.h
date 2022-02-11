@@ -30,7 +30,7 @@ enum shaderUniforms {
    SHADER_fDisableLighting_top_below, SHADER_backBoxSize, SHADER_quadOffsetScale, SHADER_quadOffsetScaleTex, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_alphaTestValueAB_filterMode_addBlend,
    SHADER_amount_blend_modulate_vs_add_hdrTexture01, SHADER_staticColor_Alpha, SHADER_width_height_rotated_flipLR, SHADER_vRes_Alpha_time, SHADER_mirrorFactor, SHADER_SSR_bumpHeight_fresnelRefl_scale_FS, SHADER_AO_scale_timeblur,
    //Integer and Bool
-   SHADER_ignoreStereo, SHADER_SRGBTexture, SHADER_hdrTexture0, SHADER_lightSources, SHADER_doNormalMapping, SHADER_hdrEnvTextures, SHADER_is_metal, SHADER_color_grade, SHADER_do_bloom, SHADER_lightingOff, SHADER_objectSpaceNormalMap, SHADER_do_dither,
+   SHADER_ignoreStereo, SHADER_SRGBTexture, SHADER_hdrTexture0, SHADER_disableLighting, SHADER_lightSources, SHADER_doNormalMapping, SHADER_hdrEnvTextures, SHADER_is_metal, SHADER_color_grade, SHADER_do_bloom, SHADER_lightingOff, SHADER_objectSpaceNormalMap, SHADER_do_dither,
    //Textures
    SHADER_Texture0, SHADER_Texture1, SHADER_Texture2, SHADER_Texture3, SHADER_Texture4, SHADER_edgesTex2D, SHADER_blendTex2D, SHADER_areaTex2D, SHADER_searchTex2D,
    SHADER_UNIFORM_COUNT, SHADER_UNIFORM_INVALID
@@ -41,7 +41,6 @@ enum shaderAttributes {
    SHADER_ATTRIBUTE_COUNT, SHADER_ATTRIBUTE_INVALID
 };
 
-//!! add SHADER_disableLighting
 enum shaderTechniques {
    SHADER_TECHNIQUE_RenderBall, SHADER_TECHNIQUE_RenderBall_DecalMode, SHADER_TECHNIQUE_RenderBall_CabMode, SHADER_TECHNIQUE_RenderBall_CabMode_DecalMode, SHADER_TECHNIQUE_RenderBallTrail,
    SHADER_TECHNIQUE_basic_without_texture, SHADER_TECHNIQUE_basic_with_texture, SHADER_TECHNIQUE_basic_depth_only_without_texture, SHADER_TECHNIQUE_basic_depth_only_with_texture, SHADER_TECHNIQUE_bg_decal_without_texture,
