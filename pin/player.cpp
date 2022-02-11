@@ -3,7 +3,11 @@
 //#define USE_IMGUI
 #ifdef USE_IMGUI
  #include "imgui/imgui.h"
- #include "imgui/imgui_impl_dx9.h"
+ #ifdef ENABLE_SDL
+  #include "imgui/imgui_impl_opengl3.h"
+ #else
+  #include "imgui/imgui_impl_dx9.h"
+ #endif
  #include "imgui/imgui_impl_win32.h"
  #include "imgui/implot/implot.h"
 
@@ -548,7 +552,11 @@ void Player::OnInitialUpdate()
 void Player::Shutdown()
 {
 #ifdef USE_IMGUI
+ #ifdef ENABLE_SDL
+   ImGui_ImplOpenGL3_Shutdown();
+ #else
    ImGui_ImplDX9_Shutdown();
+ #endif
    ImGui_ImplWin32_Shutdown();
    ImPlot::DestroyContext();
    ImGui::DestroyContext();
@@ -1313,7 +1321,11 @@ HRESULT Player::Init()
    ImGuiIO& io = ImGui::GetIO();
    io.IniFilename = nullptr;  //don't use an ini file for configuration
    ImGui_ImplWin32_Init(GetHwnd());
+ #ifdef ENABLE_SDL
+   ImGui_ImplOpenGL3_Init();
+ #else
    ImGui_ImplDX9_Init(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
+ #endif
 #endif
 
    const float minSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMinSlope : m_ptable->m_angletiltMin);
@@ -1643,7 +1655,8 @@ HRESULT Player::Init()
 
    // 0 means disable limiting of draw-ahead queue
    m_limiter.Init(m_pin3d.m_pd3dPrimaryDevice, m_maxPrerenderedFrames);
-
+   //VertexBuffer::UploadBuffers();
+   //IndexBuffer::UploadBuffers();
    Render(); //!! why here already? potentially not all initialized yet??
 
    // Broadcast a message to notify front-ends that it is 
@@ -3846,7 +3859,11 @@ void Player::UpdateHUD_IMGUI()
    if (!ShowStats() || m_cameraMode || m_closeDown)
       return;
 
+#ifdef ENABLE_SDL
+   ImGui_ImplOpenGL3_NewFrame();
+#else
    ImGui_ImplDX9_NewFrame();
+#endif
    ImGui_ImplWin32_NewFrame();
    ImGui::NewFrame();
    ImGui::SetNextWindowSize(ShowFPSonly() ? ImVec2(200, 50) : ImVec2(600, 350), ImGuiCond_FirstUseEver);
@@ -3916,7 +3933,11 @@ void Player::UpdateHUD_IMGUI()
                float(1e-3 * (double)m_script_total / (double)m_count), float(1e-3 * m_script_max), float((double)m_script_total * 100.0 / (double)m_total), float(1e-3 * m_script_max_total));
 
    // performance counters
+#ifdef ENABLE_SDL
+   ImGui::Text("Draw calls: %u", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumDrawCalls());
+#else
    ImGui::Text("Draw calls: %u (%u Locks)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumDrawCalls(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumLockCalls());
+#endif
    ImGui::Text("State changes: %u", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumStateChanges());
    ImGui::Text("Texture changes: %u (%u Uploads)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureUploads());
    ImGui::Text("Shader/Parameter changes: %u / %u (%u Material ID changes)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTechniqueChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumParameterChanges(), material_flips);
@@ -3996,31 +4017,40 @@ void Player::UpdateHUD_IMGUI()
        ImGui::SliderFloat("History", &history, 1, 10, "%.1f s");
        //rdata1.Span = history;
        //rdata2.Span = history;
-       ImPlot::SetNextPlotLimitsX(t - history, t, ImGuiCond_Always);
-       const int rt_axis = ImPlotAxisFlags_NoTickLabels;
-       if (ImPlot::BeginPlot("##ScrollingFPS", nullptr, nullptr, ImVec2(-1, 150), ImPlotFlags_None, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
+       constexpr int rt_axis = ImPlotAxisFlags_NoTickLabels;
+       if (ImPlot::BeginPlot("##ScrollingFPS", ImVec2(-1, 150), ImPlotFlags_None)) {
+           ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
+           ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis | ImPlotAxisFlags_LockMin);
+           ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
            ImPlot::PlotLine("FPS", &sdata2.Data[0].x, &sdata2.Data[0].y, sdata2.Data.size(), sdata2.Offset, 2 * sizeof(float));
            ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
            ImPlot::PlotLine("Smoothed FPS", &sdata1.Data[0].x, &sdata1.Data[0].y, sdata1.Data.size(), sdata1.Offset, 2 * sizeof(float));
            ImPlot::PopStyleColor();
            ImPlot::EndPlot();
        }
-       /*ImPlot::SetNextPlotLimitsX(0, history, ImGuiCond_Always);
-       if (ImPlot::BeginPlot("##RollingFPS", nullptr, nullptr, ImVec2(-1, 150), ImPlotFlags_Default, rt_axis, rt_axis)) {
+       /*
+       if (ImPlot::BeginPlot("##RollingFPS", ImVec2(-1, 150), ImPlotFlags_Default)) {
+           ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
+           ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis);
+           ImPlot::SetupAxis(ImAxis_X1, 0, history, ImGuiCond_Always);
            ImPlot::PlotLine("Average FPS", &rdata1.Data[0].x, &rdata1.Data[0].y, rdata1.Data.size(), 0, 2 * sizeof(float));
            ImPlot::PlotLine("FPS", &rdata2.Data[0].x, &rdata2.Data[0].y, rdata2.Data.size(), 0, 2 * sizeof(float));
            ImPlot::EndPlot();
        }*/
-       ImPlot::SetNextPlotLimitsX(t - history, t, ImGuiCond_Always);
-       if (ImPlot::BeginPlot("##ScrollingPhysics", nullptr, nullptr, ImVec2(-1, 150), ImPlotFlags_None, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
+       if (ImPlot::BeginPlot("##ScrollingPhysics", ImVec2(-1, 150), ImPlotFlags_None)) {
+           ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
+           ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis | ImPlotAxisFlags_LockMin);
+           ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
            ImPlot::PlotLine("ms Physics", &sdata4.Data[0].x, &sdata4.Data[0].y, sdata4.Data.size(), sdata4.Offset, 2 * sizeof(float));
            ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
            ImPlot::PlotLine("Smoothed ms Physics", &sdata3.Data[0].x, &sdata3.Data[0].y, sdata3.Data.size(), sdata3.Offset, 2 * sizeof(float));
            ImPlot::PopStyleColor();
            ImPlot::EndPlot();
        }
-       ImPlot::SetNextPlotLimitsX(t - history, t, ImGuiCond_Always);
-       if (ImPlot::BeginPlot("##ScrollingScript", nullptr, nullptr, ImVec2(-1, 150), ImPlotFlags_None, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
+       if (ImPlot::BeginPlot("##ScrollingScript",ImVec2(-1, 150), ImPlotFlags_None)) {
+           ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
+           ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis | ImPlotAxisFlags_LockMin);
+           ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
            ImPlot::PlotLine("ms Script", &sdata6.Data[0].x, &sdata6.Data[0].y, sdata6.Data.size(), sdata6.Offset, 2 * sizeof(float));
            ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
            ImPlot::PlotLine("Smoothed ms Script", &sdata5.Data[0].x, &sdata5.Data[0].y, sdata5.Data.size(), sdata5.Offset, 2 * sizeof(float));
@@ -4038,7 +4068,11 @@ void Player::RenderHUD_IMGUI()
       return;
 
    ImGui::Render();
+#ifdef ENABLE_SDL
+   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#else
    ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+#endif
 }
 
 #else
