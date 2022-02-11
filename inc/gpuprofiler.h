@@ -91,10 +91,15 @@ public:
 	CGpuProfiler();
 	~CGpuProfiler();
 
+#ifdef ENABLE_SDL
+	bool Init(void* const pDevice); // optional init, otherwise (first) BeginFrame will do it lazily
+	void BeginFrame(void* const pDevice);
+#else
 	bool Init(IDirect3DDevice9 * const pDevice); // optional init, otherwise (first) BeginFrame will do it lazily
+	void BeginFrame(IDirect3DDevice9 * const pDevice);
+#endif
 	void Shutdown();
 
-	void BeginFrame(IDirect3DDevice9 * const pDevice);
 	void Timestamp(const GTS gts);
 	void EndFrame();
 
@@ -111,11 +116,12 @@ protected:
 
 	int m_iFrameQuery;							// Which of the two sets of queries are we currently issuing?
 	int m_iFrameCollect;						// Which of the two did we last collect?
+#ifndef ENABLE_SDL
 	IDirect3DQuery9 * m_apQueryTsDisjoint[2];	// "Timestamp disjoint" query; records whether timestamps are valid
 	IDirect3DQuery9 * m_apQueryTs[GTS_Max][2];	// Individual timestamp queries for each relevant point in the frame
 	IDirect3DQuery9 * m_frequencyQuery;
-
-	bool m_apQueryTs_triggered[GTS_Max][2];     // Check which queries actually were triggered in the frame
+#endif
+	bool m_apQueryTs_triggered[GTS_Max][2];		// Check which queries actually were triggered in the frame
 
 	double m_adT[GTS_Max];						// Last frame's timings (each relative to previous GTS)
 	double m_adTAvg[GTS_Max];					// Timings averaged over 0.5 second

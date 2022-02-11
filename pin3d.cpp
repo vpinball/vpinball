@@ -492,9 +492,11 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
 
    //
 
+#ifndef ENABLE_SDL
    VertexBuffer::setD3DDevice(m_pd3dPrimaryDevice->GetCoreDevice(), m_pd3dSecondaryDevice->GetCoreDevice());
-   VertexBuffer::bindNull();
    IndexBuffer::setD3DDevice(m_pd3dPrimaryDevice->GetCoreDevice(), m_pd3dSecondaryDevice->GetCoreDevice());
+#endif
+   VertexBuffer::bindNull();
    IndexBuffer::bindNull();
 
    if (RenderDevice::m_quadVertexBuffer == nullptr)
@@ -765,6 +767,24 @@ Matrix3D ComputeLaybackTransform(const float layback)
    return matTrans;
 }
 
+void Pin3D::UpdateMatrices()
+{
+#ifdef ENABLE_VR
+   if (m_stereo3D == STEREO_VR) {
+      m_pd3dPrimaryDevice->SetTransformVR();
+      Shader::GetTransform(TRANSFORMSTATE_PROJECTION, m_proj.m_matProj, 2);
+      Shader::GetTransform(TRANSFORMSTATE_VIEW, &m_proj.m_matView, 1);
+   } else
+#endif
+   {
+      m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_PROJECTION, &m_proj.m_matProj);
+      m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &m_proj.m_matView);
+   }
+   m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_WORLD, &m_proj.m_matWorld);
+
+   m_proj.CacheTransform();
+}
+
 void Pin3D::InitLayoutFS()
 {
    TRACE_FUNCTION();
@@ -794,15 +814,18 @@ void Pin3D::InitLayoutFS()
    vec3 at(0.0f, yof, 1.0f);
    const vec3 up(0.0f, -1.0f, 0.0f);
 
-   D3DXMATRIX rotationMat;
-   D3DXMatrixRotationYawPitchRoll(&rotationMat, inclination, 0, rotation);
-   D3DXVec3TransformCoord(&eye, &eye, &rotationMat);
-   D3DXVec3TransformCoord(&at, &at, &rotationMat);
+   const Matrix3D rotationMat = Matrix3D::MatrixRotationYawPitchRoll(inclination, 0.0f, rotation);
+#ifdef ENABLE_SDL
+   eye = vec3::TransformCoord(eye, rotationMat);
+   at = vec3::TransformCoord(at, rotationMat);
+#else
+   D3DXVec3TransformCoord(&eye, &eye, (const D3DXMATRIX*)&rotationMat);
+   D3DXVec3TransformCoord(&at, &at, (const D3DXMATRIX*)&rotationMat);
+#endif
    //D3DXVec3TransformCoord(&up, &up, &rotationMat);
    //at=eye+at;
 
-   D3DXMATRIX mView;
-   D3DXMatrixLookAtLH(&mView, &eye, &at, &up);
+   const Matrix3D mView = Matrix3D::MatrixLookAtLH(eye, at, up);
    memcpy(m_proj.m_matView.m, mView.m, sizeof(float) * 4 * 4);
    m_proj.ScaleView(g_pplayer->m_ptable->m_BG_scalex[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_scaley[g_pplayer->m_ptable->m_BG_current_set], 1.0f);
    m_proj.RotateView(0, 0, rotation);
@@ -811,11 +834,11 @@ void Pin3D::InitLayoutFS()
    m_proj.m_matWorld._43 = -g_pplayer->m_ptable->m_glassheight;
    // recompute near and far plane (workaround for VP9 FitCameraToVertices bugs)
    m_proj.ComputeNearFarPlane(vvertex3D);
-   D3DXMATRIX proj;
-   //D3DXMatrixPerspectiveFovLH(&proj, ANGTORAD(FOV), aspect, m_proj.m_rznear, m_proj.m_rzfar);
-   //D3DXMatrixPerspectiveFovLH(&proj, (float)(M_PI / 4.0), aspect, m_proj.m_rznear, m_proj.m_rzfar);
+   Matrix3D proj;
+   //proj = Matrix3D::MatrixPerspectiveFovLH(ANGTORAD(FOV), aspect, m_proj.m_rznear, m_proj.m_rzfar);
+   //proj = Matrix3D::MatrixPerspectiveFovLH((float)(M_PI / 4.0), aspect, m_proj.m_rznear, m_proj.m_rzfar);
 
-   D3DXMatrixIdentity(&proj);
+   proj.SetIdentity();
    constexpr float monitorPixel = 1.0f;// 25.4f * 23.3f / sqrt(1920.0f*1920.0f + 1080.0f*1080.0f);
    const float viewRight = monitorPixel*(float)m_viewPort.Width *0.5f;
    const float viewTop = monitorPixel*(float)m_viewPort.Height *0.5f;
@@ -836,17 +859,25 @@ void Pin3D::InitLayoutFS()
    top *= z_near_to_z_screen;
    bottom *= z_near_to_z_screen;
 
-   D3DXMatrixPerspectiveOffCenterLH(&proj, left, right, bottom, top, m_proj.m_rznear, m_proj.m_rzfar);
-
-   memcpy(m_proj.m_matProj.m, proj.m, sizeof(float) * 4 * 4);
+   //Create Projection Matrix - For Realtime Headtracking this matrix should be updated every frame. VR has its own V and P matrices.
+#ifdef ENABLE_SDL
+   if (m_stereo3D != STEREO_OFF) {
+      constexpr float stereoOffset = 0.03f; //!!
+      proj = Matrix3D::MatrixPerspectiveOffCenterLH(left - stereoOffset, right - stereoOffset, bottom, top, m_proj.m_rznear, m_proj.m_rzfar);
+      memcpy(m_proj.m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
+      proj = Matrix3D::MatrixPerspectiveOffCenterLH(left + stereoOffset, right + stereoOffset, bottom, top, m_proj.m_rznear, m_proj.m_rzfar);
+      memcpy(m_proj.m_matProj[1].m, proj.m, sizeof(float) * 4 * 4);
+   }
+   else
+#endif
+   {
+      proj = Matrix3D::MatrixPerspectiveOffCenterLH(left, right, bottom, top, m_proj.m_rznear, m_proj.m_rzfar);
+      memcpy(m_proj.m_matProj.m, proj.m, sizeof(float) * 4 * 4);
+   }
 
    //m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
 
-   m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_PROJECTION, &m_proj.m_matProj);
-   m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &m_proj.m_matView);
-   m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_WORLD, &m_proj.m_matWorld);
-
-   m_proj.CacheTransform();
+   UpdateMatrices();
 
    // Compute view vector
    /*Matrix3D temp, viewRot;
@@ -967,8 +998,7 @@ void Pin3D::InitLayout(const bool FSS_mode, const float xpixoff, const float ypi
    m_proj.ComputeNearFarPlane(vvertex3D);
    if (fabsf(inclination) < 0.0075f) //!! magic threshold, otherwise kicker holes are missing for inclination ~0
       m_proj.m_rzfar += 10.f;
-   D3DXMATRIX proj;
-   D3DXMatrixPerspectiveFovLH(&proj, ANGTORAD(FOV), aspect, m_proj.m_rznear, m_proj.m_rzfar);
+   Matrix3D proj = Matrix3D::MatrixPerspectiveFovLH(ANGTORAD(FOV), aspect, m_proj.m_rznear, m_proj.m_rzfar);
    memcpy(m_proj.m_matProj.m, proj.m, sizeof(float) * 4 * 4);
    // in-pixel offset for manual oversampling
    if (xpixoff != 0.f || ypixoff != 0.f)
@@ -979,12 +1009,7 @@ void Pin3D::InitLayout(const bool FSS_mode, const float xpixoff, const float ypi
    }
 
    //m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
-
-   m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_PROJECTION, &m_proj.m_matProj);
-   m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &m_proj.m_matView);
-   m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_WORLD, &m_proj.m_matWorld);
-
-   m_proj.CacheTransform();
+   UpdateMatrices();
 
    // Compute view vector
    /*Matrix3D temp, viewRot;

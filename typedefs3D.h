@@ -1,8 +1,7 @@
 #pragma once
 
 #ifdef ENABLE_SDL
- #include <GL/glew.h>
- //#include <glad/glad.h>
+ #include <glad/glad.h>
  #include <sdl2/SDL_opengl.h>
  #include <sdl2/SDL.h>
  #include <sdl2/SDL_ttf.h>
@@ -21,6 +20,9 @@ enum deviceNumber {
 };
 
 #ifdef ENABLE_SDL
+
+#define MAX_DEVICE_IDENTIFIER_STRING 512
+#define D3DADAPTER_DEFAULT 0
 
 enum colorFormat {
    GREY = GL_RED,

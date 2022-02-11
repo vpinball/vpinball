@@ -884,7 +884,7 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    {
       // *2.0f because every element is calculated that the lowest edge is around z=0 + table height so to get a correct
       // reflection the translation must be 1x table height + 1x table height to center around table height or 0
-      matObject._43 -= m_ptable->m_tableheight*2.0f; 
+      matObject._43 -= m_ptable->m_tableheight*2.0f;
    }
 
    D3DXMATRIX matWorldView = matObject * matWorld * matView;
@@ -3615,14 +3615,14 @@ void Player::RenderDynamics()
 
 void Player::SetClipPlanePlayfield(const bool clip_orientation)
 {
-	Matrix3D mT = m_pin3d.m_proj.m_matrixTotal; // = world * view * proj
-	mT.Invert();
-	mT.Transpose();
-	const D3DXMATRIX m(mT);
-	D3DXPLANE clipSpacePlane;
-	const D3DXPLANE plane(0.0f, 0.0f, clip_orientation ? -1.0f : 1.0f, clip_orientation ? m_ptable->m_tableheight : -m_ptable->m_tableheight);
-	D3DXPlaneTransform(&clipSpacePlane, &plane, &m);
-	m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice()->SetClipPlane(0, clipSpacePlane);
+   Matrix3D mT = m_pin3d.m_proj.m_matrixTotal; // = world * view * proj
+   mT.Invert();
+   mT.Transpose();
+   const D3DXMATRIX m(mT);
+   D3DXPLANE clipSpacePlane;
+   const D3DXPLANE plane(0.0f, 0.0f, clip_orientation ? -1.0f : 1.0f, clip_orientation ? m_ptable->m_tableheight : -m_ptable->m_tableheight);
+   D3DXPlaneTransform(&clipSpacePlane, &plane, &m);
+   m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice()->SetClipPlane(0, clipSpacePlane);
 }
 
 void Player::SSRefl()

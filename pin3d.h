@@ -83,6 +83,7 @@ public:
    const Matrix3D& GetViewTransform() const    { return m_proj.m_matView; }
    void InitPlayfieldGraphics();
    void InitLights();
+   void UpdateMatrices();
 
 private:
    void InitRenderState(RenderDevice * const pd3dDevice);

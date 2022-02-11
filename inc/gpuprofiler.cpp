@@ -12,8 +12,19 @@
  #define DebugPrintf(x, ...)
 #endif
 
+#ifdef ENABLE_SDL //!! Implement for GL
+CGpuProfiler::CGpuProfiler() {}
+CGpuProfiler::~CGpuProfiler() {}
+bool CGpuProfiler::Init(void* const pDevice) { return true; }
+void CGpuProfiler::ResetCounters() {}
+void CGpuProfiler::Shutdown() {}
+void CGpuProfiler::BeginFrame(void* const pDevice) {}
+void CGpuProfiler::Timestamp(GTS gts) {}
+void CGpuProfiler::EndFrame() {}
+void CGpuProfiler::WaitForDataAndUpdate() {}
+#else
 CGpuProfiler::CGpuProfiler ()
-:   m_init(false),
+:	m_init(false),
 	m_iFrameQuery(0),
 	m_iFrameCollect(-1),
 	m_frequencyQuery(nullptr),
@@ -281,3 +292,4 @@ void CGpuProfiler::WaitForDataAndUpdate ()
 		m_tBeginAvg = t;
 	}
 }
+#endif //ENABLE_SDL
