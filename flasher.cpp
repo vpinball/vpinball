@@ -360,7 +360,7 @@ void Flasher::RenderSetup()
    NumVideoBytes += (int)(m_numPolys * 3 * sizeof(WORD));
 
    WORD* bufi;
-   m_dynamicIndexBuffer->lock(0, 0, (void**)&bufi, 0);
+   m_dynamicIndexBuffer->lock(0, 0, (void**)&bufi, IndexBuffer::WRITEONLY);
    memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
    m_dynamicIndexBuffer->unlock();
 

@@ -869,7 +869,7 @@ void Surface::PrepareWallsAtHeight()
    IndexBuffer::CreateIndexBuffer((unsigned int)topBottomIndices.size() + (unsigned int)sideIndices.size(), 0, IndexBuffer::FMT_INDEX16, &m_IBuffer, PRIMARY_DEVICE);
 
    WORD* buf;
-   m_IBuffer->lock(0, 0, (void**)&buf, 0);
+   m_IBuffer->lock(0, 0, (void**)&buf, IndexBuffer::WRITEONLY);
    memcpy(buf, sideIndices.data(), sideIndices.size() * sizeof(WORD));
    if (!topBottomIndices.empty())
       memcpy(buf + sideIndices.size(), topBottomIndices.data(), topBottomIndices.size() * sizeof(WORD));

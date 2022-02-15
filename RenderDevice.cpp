@@ -1708,7 +1708,7 @@ IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(const unsigned int numIndice
    CreateIndexBuffer(numIndices, 0, IndexBuffer::FMT_INDEX16, &ib);
 
    void* buf;
-   ib->lock(0, 0, &buf, 0);
+   ib->lock(0, 0, &buf, IndexBuffer::WRITEONLY);
    memcpy(buf, indices, numIndices * sizeof(indices[0]));
    ib->unlock();
 
@@ -1721,7 +1721,7 @@ IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(const unsigned int numIndice
    CreateIndexBuffer(numIndices, 0, IndexBuffer::FMT_INDEX32, &ib);
 
    void* buf;
-   ib->lock(0, 0, &buf, 0);
+   ib->lock(0, 0, &buf, IndexBuffer::WRITEONLY);
    memcpy(buf, indices, numIndices * sizeof(indices[0]));
    ib->unlock();
 

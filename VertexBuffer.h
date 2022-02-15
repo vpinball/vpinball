@@ -8,7 +8,7 @@
 class VertexBuffer
 {
 public:
-   enum LockFlags
+   enum LockFlags //!! not handled
    {
       WRITEONLY,
       NOOVERWRITE,

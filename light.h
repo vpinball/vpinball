@@ -98,6 +98,7 @@ public:
    virtual void ClearForOverwrite();
 
    void PrepareMoversCustom();
+   void UpdateCustomMoverVBuffer();
 
    virtual void EditMenu(CMenu &menu);
    virtual void DoCommand(int icmd, int x, int y);
@@ -200,6 +201,7 @@ private:
    std::vector<RenderVertex> m_vvertex;
 
    float m_initSurfaceHeight;
+   float m_maxDist;
    bool  m_updateBulbLightHeight;
 
    bool  m_roundLight; // pre-VPX compatibility

@@ -13,6 +13,13 @@ public:
       FMT_INDEX32 = 32
    };
 
+   enum LockFlags //!! not handled
+   {
+      WRITEONLY,
+      NOOVERWRITE,
+      DISCARDCONTENTS
+   };
+
    void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags);
    void unlock();
    void release();

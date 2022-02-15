@@ -173,7 +173,7 @@ public:
       // idea: locking a static vertex buffer stalls the pipeline if that VB is still
       // in the GPU render queue. In effect, this lets the GPU catch up.
       Vertex3D_NoTex2* buf;
-      m_buffers[m_curIdx]->lock(0, 0, (void**)&buf, 0);
+      m_buffers[m_curIdx]->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
       memset(buf, 0, 3 * sizeof(buf[0]));
       buf[0].z = buf[1].z = buf[2].z = 1e5f;      // single triangle, degenerates to point far off screen
       m_buffers[m_curIdx]->unlock();

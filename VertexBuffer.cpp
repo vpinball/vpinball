@@ -67,8 +67,9 @@ void VertexBuffer::lock(const unsigned int offsetToLock, const unsigned int size
       this->sizeToLock = size;
    else
       this->sizeToLock = sizeToLock;
+
    if (offsetToLock < size) {
-      *dataBuffer = malloc(this->sizeToLock);
+      *dataBuffer = malloc(this->sizeToLock); //!! does not init the buffer from the VBuffer data if flags is set accordingly (i.e. WRITEONLY, or better: create a new flag like 'PARTIALUPDATE'?)
       this->dataBuffer = *dataBuffer;
       this->offsetToLock = offsetToLock;
    }

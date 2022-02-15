@@ -65,7 +65,7 @@ IndexBuffer* IndexBuffer::CreateAndFillIndexBuffer(const unsigned int numIndices
    CreateIndexBuffer(numIndices, 0, IndexBuffer::FMT_INDEX16, &ib, dN);
 
    void* buf;
-   ib->lock(0, 0, &buf, 0);
+   ib->lock(0, 0, &buf, WRITEONLY);
    memcpy(buf, indices, numIndices * sizeof(indices[0]));
    ib->unlock();
 #endif
@@ -96,7 +96,7 @@ IndexBuffer* IndexBuffer::CreateAndFillIndexBuffer(const unsigned int numIndices
    CreateIndexBuffer(numIndices, 0, IndexBuffer::FMT_INDEX32, &ib, dN);
 
    void* buf;
-   ib->lock(0, 0, &buf, 0);
+   ib->lock(0, 0, &buf, WRITEONLY);
    memcpy(buf, indices, numIndices * sizeof(indices[0]));
    ib->unlock();
 #endif
@@ -123,7 +123,7 @@ void IndexBuffer::lock(const unsigned int offsetToLock, const unsigned int sizeT
       this->sizeToLock = sizeToLock;
 
    if (offsetToLock < size) {
-      *dataBuffer = malloc(this->sizeToLock);
+      *dataBuffer = malloc(this->sizeToLock); //!! does not init the buffer from the IBuffer data if flags is set accordingly (i.e. WRITEONLY, or better: create a new flag like 'PARTIALUPDATE'?)
       this->dataBuffer = *dataBuffer;
       this->offsetToLock = offsetToLock;
    }
