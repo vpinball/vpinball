@@ -572,7 +572,7 @@ void Light::PrepareMoversCustom()
    if (m_vvertex.empty())
       return;
 
-   m_maxdist = 0.f;
+   m_maxDist = 0.f;
    std::vector<WORD> vtri;
 
    {
@@ -585,8 +585,8 @@ void Light::PrepareMoversCustom()
          const float dx = m_vvertex[i].x - m_d.m_vCenter.x;
          const float dy = m_vvertex[i].y - m_d.m_vCenter.y;
          const float dist = dx*dx + dy*dy;
-         if (dist > m_maxdist)
-            m_maxdist = dist;
+         if (dist > m_maxDist)
+            m_maxDist = dist;
       }
 
       PolygonToTriangles(m_vvertex, vpoly, vtri, true);
