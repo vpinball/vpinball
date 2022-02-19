@@ -20,14 +20,23 @@
 #ifdef SEPARATE_CLASSICLIGHTSHADER
 #include "ClassicLightShader.h"
 #endif
+#endif
 
+// SMAA:
+#include "shader/AreaTex.h"
+#include "shader/SearchTex.h"
+
+#ifndef ENABLE_SDL
 #pragma comment(lib, "d3d9.lib")        // TODO: put into build system
 #pragma comment(lib, "d3dx9.lib")       // TODO: put into build system
 #if _MSC_VER >= 1900
  #pragma comment(lib, "legacy_stdio_definitions.lib") //dxerr.lib needs this
 #endif
 #pragma comment(lib, "dxerr.lib")       // TODO: put into build system
-#endif
+
+static RenderTarget *srcr_cache = nullptr; //!! meh, for nvidia depth read only
+static D3DTexture *srct_cache = nullptr;
+static D3DTexture* dest_cache = nullptr;
 
 static bool IsWindowsVistaOr7()
 {
@@ -53,6 +62,7 @@ static bool IsWindowsVistaOr7()
 
    return vista || win7;
 }
+#endif
 
 typedef HRESULT(STDAPICALLTYPE *pRGV)(LPOSVERSIONINFOEXW osi);
 static pRGV mRtlGetVersion = nullptr;
@@ -79,6 +89,59 @@ bool IsWindows10_1803orAbove()
    return false;
 }
 
+#ifdef ENABLE_SDL
+//my definition for SDL    GLint size;    GLenum type;    GLboolean normalized;    GLsizei stride;
+//D3D definition   WORD Stream;    WORD Offset;    BYTE Type;    BYTE Method;    BYTE Usage;    BYTE UsageIndex;
+constexpr VertexElement VertexTexelElement[] =
+{
+   { 3, GL_FLOAT, GL_FALSE, 0, "POSITION0" },
+   { 2, GL_FLOAT, GL_FALSE, 0, "TEXCOORD0" },
+   { 0, 0, 0, 0, nullptr}
+   /*   { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
+      { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
+      D3DDECL_END()*/
+};
+VertexDeclaration* RenderDevice::m_pVertexTexelDeclaration = (VertexDeclaration*)&VertexTexelElement;
+
+constexpr VertexElement VertexNormalTexelElement[] =
+{
+   { 3, GL_FLOAT, GL_FALSE, 0, "POSITION0" },
+   { 3, GL_FLOAT, GL_FALSE, 0, "NORMAL0" },
+   { 2, GL_FLOAT, GL_FALSE, 0, "TEXCOORD0" },
+   { 0, 0, 0, 0, nullptr}
+/*
+      { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
+      { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },  // normal
+      { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
+      D3DDECL_END()*/
+};
+VertexDeclaration* RenderDevice::m_pVertexNormalTexelDeclaration = (VertexDeclaration*)&VertexNormalTexelElement;
+
+/*constexpr VertexElement VertexNormalTexelTexelElement[] =
+{
+   { 0, 0  * sizeof(float),D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
+   { 0, 3  * sizeof(float),D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0 },  // normal
+   { 0, 6  * sizeof(float),D3DDECLTYPE_FLOAT2,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
+   { 0, 8  * sizeof(float),D3DDECLTYPE_FLOAT2,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },  // tex1
+   D3DDECL_END()
+};
+
+VertexDeclaration* RenderDevice::m_pVertexNormalTexelTexelDeclaration = nullptr;*/
+
+constexpr VertexElement VertexTrafoTexelElement[] =
+{
+   { 4, GL_FLOAT, GL_FALSE, 0, "POSITION0" },
+   { 2, GL_FLOAT, GL_FALSE, 0, nullptr },//legacy?
+   { 2, GL_FLOAT, GL_FALSE, 0, "TEXCOORD0" },
+   { 0, 0, 0, 0, nullptr }
+
+   /*   { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITIONT, 0 }, // transformed pos
+   { 0, 4 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD,  1 }, // (mostly, except for classic lights) unused, there to be able to share same code as VertexNormalTexelElement
+   { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 }, // tex0
+   D3DDECL_END()*/
+};
+VertexDeclaration* RenderDevice::m_pVertexTrafoTexelDeclaration = (VertexDeclaration*)&VertexTrafoTexelElement;
+#else
 constexpr VertexElement VertexTexelElement[] =
 {
    { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
@@ -147,6 +210,7 @@ static VertexDeclaration* fvfToDecl(const DWORD fvf)
       return nullptr;
    }
 }
+#endif
 
 static UINT ComputePrimitiveCount(const RenderDevice::PrimitiveTypes type, const int vertexCount)
 {
@@ -212,6 +276,20 @@ void ReportError(const char *errorText, const HRESULT hr, const char *file, cons
 unsigned m_curLockCalls, m_frameLockCalls;
 unsigned int RenderDevice::Perf_GetNumLockCalls() const { return m_frameLockCalls; }
 
+#ifdef ENABLE_SDL
+void checkGLErrors(const char *file, const int line) {
+   GLenum err;
+   unsigned int count = 0;
+   while ((err = glGetError()) != GL_NO_ERROR) {
+      count++;
+      ReportFatalError(err, file, line);
+   }
+   /*if (count>0) {
+      exit(-1);
+   }*/
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////
 
 int getNumberOfDisplays()
@@ -227,6 +305,45 @@ void EnumerateDisplayModes(const int display, std::vector<VideoMode>& modes)
 {
    modes.clear();
 
+#ifdef ENABLE_SDL
+   const int amount = SDL_GetNumDisplayModes(display);
+   for (int mode = 0; mode < amount; ++mode) {
+      SDL_DisplayMode myMode;
+      SDL_GetDisplayMode(display, mode, &myMode);
+      VideoMode vmode = {};
+      vmode.width = myMode.w;
+      vmode.height = myMode.h;
+      switch (myMode.format) {
+      case SDL_PIXELFORMAT_RGB24:
+      case SDL_PIXELFORMAT_BGR24:
+      case SDL_PIXELFORMAT_RGB888:
+      case SDL_PIXELFORMAT_RGBX8888:
+      case SDL_PIXELFORMAT_BGR888:
+      case SDL_PIXELFORMAT_BGRX8888:
+      case SDL_PIXELFORMAT_ARGB8888:
+      case SDL_PIXELFORMAT_RGBA8888:
+      case SDL_PIXELFORMAT_ABGR8888:
+      case SDL_PIXELFORMAT_BGRA8888:
+         vmode.depth = 32;
+         break;
+      case SDL_PIXELFORMAT_RGB565:
+      case SDL_PIXELFORMAT_BGR565:
+      case SDL_PIXELFORMAT_ABGR1555:
+      case SDL_PIXELFORMAT_BGRA5551:
+      case SDL_PIXELFORMAT_ARGB1555:
+      case SDL_PIXELFORMAT_RGBA5551:
+         vmode.depth = 16;
+         break;
+      case SDL_PIXELFORMAT_ARGB2101010:
+         vmode.depth = 30;
+         break;
+      default:
+         vmode.depth = 0;
+      }
+      vmode.refreshrate = myMode.refresh_rate;
+      modes.push_back(vmode);
+   }
+#else
    std::vector<DisplayConfig> displays;
    getDisplayList(displays);
    if (display >= (int)displays.size())
@@ -264,15 +381,16 @@ void EnumerateDisplayModes(const int display, std::vector<VideoMode>& modes)
    }
 
    SAFE_RELEASE(d3d);
+#endif
 }
 
 BOOL CALLBACK MonitorEnumList(__in  HMONITOR hMonitor, __in  HDC hdcMonitor, __in  LPRECT lprcMonitor, __in  LPARAM dwData)
 {
    std::map<std::string,DisplayConfig>* data = reinterpret_cast<std::map<std::string,DisplayConfig>*>(dwData);
-   DisplayConfig config;
    MONITORINFOEX info;
    info.cbSize = sizeof(MONITORINFOEX);
    GetMonitorInfo(hMonitor, &info);
+   DisplayConfig config = {};
    config.top = info.rcMonitor.top;
    config.left = info.rcMonitor.left;
    config.width = info.rcMonitor.right - info.rcMonitor.left;
@@ -295,8 +413,6 @@ int getDisplayList(std::vector<DisplayConfig>& displays)
    std::map<std::string, DisplayConfig> displayMap;
    // Get the resolution of all enabled displays.
    EnumDisplayMonitors(nullptr, nullptr, MonitorEnumList, reinterpret_cast<LPARAM>(&displayMap));
-   DISPLAY_DEVICE DispDev = {};
-   DispDev.cb = sizeof(DispDev);
 
 #ifndef ENABLE_SDL
    IDirect3D9* pD3D = Direct3DCreate9(D3D_SDK_VERSION);
@@ -325,6 +441,13 @@ int getDisplayList(std::vector<DisplayConfig>& displays)
    {
       if (display->second.adapter >= 0) {
          display->second.display = i;
+#ifdef ENABLE_SDL
+         const char* name = SDL_GetDisplayName(display->second.adapter);
+         if(name != nullptr)
+            strncpy_s(display->second.GPU_Name, name, sizeof(display->second.GPU_Name) - 1);
+         else
+            display->second.GPU_Name[0] = '\0'; //!!
+#endif
          displays.push_back(display->second);
       }
       i++;
@@ -356,23 +479,23 @@ int getPrimaryDisplay()
 {
    std::vector<DisplayConfig> displays;
    getDisplayList(displays);
-   for (std::vector<DisplayConfig>::iterator displayConf = displays.begin(); displayConf != displays.end(); ++displayConf) {
-      if (displayConf->isPrimary) {
+   for (std::vector<DisplayConfig>::iterator displayConf = displays.begin(); displayConf != displays.end(); ++displayConf)
+      if (displayConf->isPrimary)
          return displayConf->adapter;
-      }
-   }
    return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
 
+VertexBuffer* RenderDevice::m_quadVertexBuffer = nullptr;
+unsigned int RenderDevice::m_stats_drawn_triangles = 0;
+
+#ifndef ENABLE_SDL
 #define CHECKNVAPI(s) { NvAPI_Status hr = (s); if (hr != NVAPI_OK) { NvAPI_ShortString ss; NvAPI_GetErrorMessage(hr,ss); g_pvp->MessageBox(ss, "NVAPI", MB_OK | MB_ICONEXCLAMATION); } }
 static bool NVAPIinit = false; //!! meh
 
 bool RenderDevice::m_INTZ_support = false;
 bool RenderDevice::m_useNvidiaApi = false;
-VertexBuffer* RenderDevice::m_quadVertexBuffer = nullptr;
-unsigned int RenderDevice::m_stats_drawn_triangles = 0;
 
 #ifdef USE_D3D9EX
  typedef HRESULT(WINAPI *pD3DC9Ex)(UINT SDKVersion, IDirect3D9Ex**);
@@ -387,6 +510,7 @@ typedef HRESULT(STDAPICALLTYPE *pDF)();
 static pDF mDwmFlush = nullptr;
 typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
 static pDEC mDwmEnableComposition = nullptr;
+#endif
 
 RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
     : m_windowHwnd(hwnd), m_width(width), m_height(height), m_fullscreen(fullscreen), 
@@ -809,10 +933,6 @@ static void CheckForD3DLeak(IDirect3DDevice9* d3d)
 }
 #endif
 
-
-static RenderTarget *srcr_cache = nullptr; //!! meh, for nvidia depth read only
-static D3DTexture *srct_cache = nullptr;
-static D3DTexture* dest_cache = nullptr;
 
 void RenderDevice::FreeShader()
 {
@@ -1355,8 +1475,6 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* const surf, int* const pTex
    return tex;
 }
 
-#include "shader/AreaTex.h"
-#include "shader/SearchTex.h"
 void RenderDevice::UploadAndSetSMAATextures()
 {
    {
@@ -1404,14 +1522,30 @@ void RenderDevice::UploadAndSetSMAATextures()
 
 void RenderDevice::UpdateTexture(D3DTexture* const tex, BaseTexture* const surf, const bool linearRGB)
 {
+#ifdef ENABLE_SDL
+   tex->format = (surf->m_format == BaseTexture::RGB_FP) ? RGB32F : RGBA;
+   const GLuint col_type = ((tex->format == RGBA32F) || (tex->format == RGBA16F) || (tex->format == RGB32F) || (tex->format == RGB16F)) ? GL_FLOAT : GL_UNSIGNED_BYTE;
+   const GLuint col_format = (tex->format == GREY) ? GL_RED : (tex->format == GREY_ALPHA) ? GL_RG : ((tex->format == RGB) || (tex->format == RGB5) || (tex->format == RGB10) || (tex->format == RGB16F) || (tex->format == RGB32F)) ? GL_BGR : GL_BGRA;
+   glBindTexture(GL_TEXTURE_2D, tex->texture);
+   CHECKD3D(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, surf->width(), surf->height(), col_format, col_type, surf->data()));
+   //CHECKD3D(glTexImage2D(GL_TEXTURE_2D, 0, tex->format, surf->width(), surf->height(), 0, col_format, col_type, surf->data())); // Use TexStorage instead
+   CHECKD3D(glGenerateMipmap(GL_TEXTURE_2D)); // Generate mip-maps
+   glBindTexture(GL_TEXTURE_2D, 0);
+#else
    IDirect3DTexture9* sysTex = CreateSystemTexture(surf, linearRGB);
    m_curTextureUpdates++;
    CHECKD3D(m_pD3DDevice->UpdateTexture(sysTex, tex));
    SAFE_RELEASE(sysTex);
+#endif
 }
 
 void RenderDevice::SetSamplerState(const DWORD Sampler, const D3DSAMPLERSTATETYPE Type, const DWORD Value)
 {
+#ifdef ENABLE_SDL //!! ??
+/*   CHECKD3D(glSamplerParameteri(Sampler, GL_TEXTURE_MIN_FILTER, minFilter ? (mipFilter ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR) : GL_NEAREST));
+   CHECKD3D(glSamplerParameteri(Sampler, GL_TEXTURE_MAG_FILTER, magFilter ? (mipFilter ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR) : GL_NEAREST));
+   m_curStateChanges += 2;*/
+#else
    const bool invalid_set = ((unsigned int)Type >= TEXTURE_SAMPLER_CACHE_SIZE || Sampler >= TEXTURE_SAMPLERS);
    if (invalid_set || textureSamplerCache[Sampler][Type] != Value)
    {
@@ -1421,6 +1555,7 @@ void RenderDevice::SetSamplerState(const DWORD Sampler, const D3DSAMPLERSTATETYP
 
       m_curStateChanges++;
    }
+#endif
 }
 
 void RenderDevice::SetTextureFilter(const DWORD texUnit, DWORD mode)
@@ -1581,10 +1716,11 @@ void RenderDevice::SetRenderState(const RenderStates p1, DWORD p2)
    case CLIPPLANEENABLE:
    case ALPHAFUNC:
    case ALPHATESTENABLE:
-      //No effect or not implented in OpenGL 
+      //No effect or not implemented in OpenGL 
    case LIGHTING:
    case CLIPPING:
    case ALPHAREF:
+   case SRGBWRITEENABLE:
    default:
       break;
    }
@@ -1741,6 +1877,7 @@ IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(const std::vector<unsigned i
 
 void* RenderDevice::AttachZBufferTo(RenderTarget* surf)
 {
+#ifndef ENABLE_SDL
    D3DSURFACE_DESC desc;
    surf->GetDesc(&desc);
 
@@ -1762,17 +1899,21 @@ void* RenderDevice::AttachZBufferTo(RenderTarget* surf)
 
       return pZBuf;
    }
+#else
+   return nullptr;
+#endif
 }
 
 void RenderDevice::DrawPrimitive(const PrimitiveTypes type, const DWORD fvf, const void* vertices, const DWORD vertexCount)
 {
-   HRESULT hr;
+#ifndef ENABLE_SDL
+   const unsigned int np = ComputePrimitiveCount(type, vertexCount);
+   m_stats_drawn_triangles += np;
+
    VertexDeclaration * declaration = fvfToDecl(fvf);
    SetVertexDeclaration(declaration);
 
-   const unsigned int np = ComputePrimitiveCount(type, vertexCount);
-   m_stats_drawn_triangles += np;
-   hr = m_pD3DDevice->DrawPrimitiveUP((D3DPRIMITIVETYPE)type, np, vertices, fvfToSize(fvf));
+   HRESULT hr = m_pD3DDevice->DrawPrimitiveUP((D3DPRIMITIVETYPE)type, np, vertices, fvfToSize(fvf));
 
    if (FAILED(hr))
       ReportError("Fatal Error: DrawPrimitiveUP failed!", hr, __FILE__, __LINE__);
@@ -1780,6 +1921,7 @@ void RenderDevice::DrawPrimitive(const PrimitiveTypes type, const DWORD fvf, con
    VertexBuffer::bindNull();    // DrawPrimitiveUP sets the VB to nullptr
 
    m_curDrawCalls++;
+#endif
 }
 
 void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
@@ -1832,6 +1974,14 @@ void RenderDevice::DrawIndexedPrimitiveVB(const PrimitiveTypes type, const DWORD
    if (vb == nullptr || ib == nullptr) //!! happens for primitives that are grouped on player init render call?!?
       return;
 
+   const unsigned int np = ComputePrimitiveCount(type, indexCount);
+   m_stats_drawn_triangles += np;
+
+#ifdef ENABLE_SDL
+   const int offset = ib->getOffset() + (ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? 2 : 4) * startIndex;
+   //CHECKD3D(glDrawElementsInstancedBaseVertex(type, indexCount, ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)offset, m_stereo3D != STEREO_OFF ? 2 : 1, vb->getOffset() + startVertex)); // Do instancing in geometry shader instead
+   CHECKD3D(glDrawElementsBaseVertex(type, indexCount, ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)offset, vb->getOffset() + startVertex));
+#else
    VertexDeclaration * declaration = fvfToDecl(fvf);
    SetVertexDeclaration(declaration);
 
@@ -1850,10 +2000,8 @@ void RenderDevice::DrawIndexedPrimitiveVB(const PrimitiveTypes type, const DWORD
    }
 
    // render
-   const unsigned int np = ComputePrimitiveCount(type, indexCount);
-   m_stats_drawn_triangles += np;
    CHECKD3D(m_pD3DDevice->DrawIndexedPrimitive((D3DPRIMITIVETYPE)type, startVertex, 0, vertexCount, startIndex, np));
-
+#endif
    m_curDrawCalls++;
 }
 

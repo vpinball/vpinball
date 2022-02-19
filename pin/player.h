@@ -334,7 +334,13 @@ public:
    void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture* const tex, const float intensity, const bool backdrop=false);
    void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, D3DTexture* const tex, const float intensity, const bool backdrop=false);
 
+#ifdef ENABLE_SDL
+   SDL_Window *m_sdl_playfieldHwnd;
+   SDL_Window *m_sdl_backdropHwnd;
+#else
    Shader      *m_ballShader;
+#endif
+
    IndexBuffer *m_ballIndexBuffer;
    VertexBuffer *m_ballVertexBuffer;
    VertexBuffer *m_ballTrailVertexBuffer;
@@ -655,7 +661,11 @@ public:
    DebuggerDialog m_debuggerDialog;
 
 private:
+#ifdef ENABLE_SDL
+   TTF_Font *m_pFont;
+#else
    ID3DXFont *m_pFont;
    LPD3DXSPRITE m_fontSprite;
    RECT     m_fontRect;
+#endif
 };

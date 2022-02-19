@@ -2,6 +2,10 @@
 #include "RenderDevice.h"
 #include "Shader.h"
 #include "inc\ThreadPool.h"
+#ifdef ENABLE_BAM
+#include "BAM\BAM_ViewPortSetup.h"
+#include "BAM\BAM_Tracker.h"
+#endif
 
 int NumVideoBytes = 0;
 
@@ -49,6 +53,7 @@ Pin3D::~Pin3D()
 
    SAFE_RELEASE(m_pddsAOBackBuffer);
    SAFE_RELEASE(m_pddsAOBackTmpBuffer);
+#ifndef ENABLE_SDL
    if (!m_pd3dPrimaryDevice->m_useNvidiaApi && m_pd3dPrimaryDevice->m_INTZ_support)
    {
       SAFE_RELEASE_NO_SET((D3DTexture*)m_pddsStaticZ);
@@ -60,9 +65,12 @@ Pin3D::~Pin3D()
       SAFE_RELEASE_NO_SET((RenderTarget*)m_pddsZBuffer);
    }
    m_pddsStaticZ = nullptr;
+   SAFE_RELEASE(m_pddsStatic);
+#else
+   assert(m_pddsZBuffer == nullptr);
+#endif
    m_pddsZBuffer = nullptr;
    SAFE_RELEASE(m_pdds3DZBuffer);
-   SAFE_RELEASE(m_pddsStatic);
    SAFE_RELEASE_NO_RCC(m_pddsBackBuffer);
 
    SAFE_BUFFER_RELEASE(RenderDevice::m_quadVertexBuffer);
@@ -438,6 +446,9 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
 
    m_pd3dPrimaryDevice->SetViewport(&m_viewPort);
 
+#ifdef ENABLE_SDL
+   m_pddsBackBuffer = m_pd3dPrimaryDevice->GetBackBufferTexture();
+#else
    m_pd3dPrimaryDevice->GetBackBufferTexture()->GetSurfaceLevel(0, &m_pddsBackBuffer);
 
    m_pddsStatic = m_pd3dPrimaryDevice->DuplicateRenderTarget(m_pddsBackBuffer);
@@ -459,6 +470,7 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
          return E_FAIL;
       }
    }
+#endif
 
 
    if (m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && useAO)
@@ -569,6 +581,24 @@ void Pin3D::SetSecondaryTextureFilter(const int TextureNum, const int Mode) cons
    SetTextureFilter(m_pd3dSecondaryDevice, TextureNum, Mode);
 }
 
+#ifdef ENABLE_SDL
+void Pin3D::SetRenderTarget(RenderDevice * const pd3dDevice, RenderTarget* pddsSurface, void* unused) const
+{
+   pd3dDevice->SetRenderTarget(pddsSurface);
+}
+
+void Pin3D::SetPrimaryRenderTarget(RenderTarget* pddsSurface, void* unused) const
+{
+   SetRenderTarget(m_pd3dPrimaryDevice, pddsSurface, unused);
+}
+
+void Pin3D::SetSecondaryRenderTarget(RenderTarget* pddsSurface, void* unused) const
+{
+   SetRenderTarget(m_pd3dSecondaryDevice, pddsSurface, unused);
+}
+
+#else
+
 void Pin3D::SetRenderTarget(RenderDevice * const pd3dDevice, RenderTarget* pddsSurface, RenderTarget* pddsZ) const
 {
    pd3dDevice->SetRenderTarget(pddsSurface);
@@ -621,6 +651,7 @@ void Pin3D::SetSecondaryRenderTarget(RenderTarget* pddsSurface, D3DTexture* pdds
 {
    SetRenderTarget(m_pd3dSecondaryDevice, pddsSurface, pddsZ);
 }
+#endif
 
 void Pin3D::InitRenderState(RenderDevice * const pd3dDevice)
 {

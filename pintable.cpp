@@ -3074,8 +3074,8 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
       WCHAR * const wzName = new WCHAR[len + 1];
       MultiByteToWideCharNull(CP_ACP, 0, m_vCustomInfoTag[i].c_str(), -1, wzName, len + 1);
 
-	  char *szValue;
-	  ReadInfoValue(pstg, wzName, &szValue, hcrypthash);
+      char *szValue = nullptr;
+      ReadInfoValue(pstg, wzName, &szValue, hcrypthash);
       m_vCustomInfoContent.push_back(szValue);
 
       delete[] szValue;

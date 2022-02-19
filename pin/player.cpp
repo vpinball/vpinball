@@ -914,6 +914,18 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    D3DXMATRIX matWorldViewInvTrans;
    memcpy(matWorldViewInvTrans.m, temp.m, 4 * 4 * sizeof(float));
 
+#ifdef ENABLE_SDL
+   m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorldViewProj[0].m[0][0], eyes * 16);
+   m_pin3d.m_pd3dPrimaryDevice->lightShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorldViewProj[0].m[0][0], eyes * 16);
+   m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorldViewProj[0].m[0][0], eyes * 16);
+
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matView.m[0][0], (eyes + 3) * 16);
+#ifdef SEPARATE_CLASSICLIGHTSHADER
+   m_pin3d.m_pd3dPrimaryDevice->lightShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorldViewProj[0].m[0][0], (eyes + 3) * 16);
+#endif
+
+#else
+
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix("matWorldViewProj", &matWorldViewProj);
    m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetMatrix("matWorldViewProj", &matWorldViewProj);
    m_pin3d.m_pd3dPrimaryDevice->lightShader->SetMatrix("matWorldViewProj", &matWorldViewProj);
@@ -942,6 +954,7 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    //m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix("matViewInverseInverseTranspose", &matViewInvInvTrans);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    //m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix("matViewInverseInverseTranspose", &matViewInvInvTrans);
+#endif
 #endif
 }
 
@@ -1012,6 +1025,9 @@ void Player::UpdateBallShaderMatrix()
    //D3DXMATRIX matWorldViewInvTrans;
    //memcpy(matWorldViewInvTrans.m, temp.m, 4 * 4 * sizeof(float));
 
+#ifdef ENABLE_SDL
+   m_pin3d.m_pd3dPrimaryDevice->ballShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matView.m[0][0], (eyes + 3) * 16);
+#else
    m_ballShader->SetMatrix("matWorldViewProj", &matWorldViewProj);
    m_ballShader->SetMatrix("matWorldView", &matWorldView);
    m_ballShader->SetMatrix("matWorldViewInverse", &matWorldViewInv);
@@ -1024,6 +1040,7 @@ void Player::UpdateBallShaderMatrix()
    //memcpy(matViewInvInvTrans.m, temp.m, 4 * 4 * sizeof(float));
 
    //m_ballShader->SetMatrix("matViewInverseInverseTranspose", &matViewInvInvTrans);
+#endif
 }
 
 void Player::InitBallShader()
@@ -3248,6 +3265,7 @@ void Player::UpdatePhysics()
 
 void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwidth, const float DMDheight, const COLORREF DMDcolor, const float intensity)
 {
+#ifndef ENABLE_SDL
    if (m_texdmd)
    {
       float DMDVerts[4 * 5] =
@@ -3282,6 +3300,7 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
       m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)DMDVerts);
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->End();
    }
+#endif
 }
 
 void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture * const tex, const float intensity, const bool backdrop)
@@ -4879,9 +4898,11 @@ void Player::Render()
 
    RenderDevice::m_stats_drawn_triangles = 0;
 
+#ifndef ENABLE_SDL
    // copy static buffers to back buffer and z buffer
    m_pin3d.m_pd3dPrimaryDevice->CopySurface(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsStatic);
    m_pin3d.m_pd3dPrimaryDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ); // cannot be called inside BeginScene -> EndScene cycle
+#endif
 
    // Physics/Timer updates, done at the last moment, especially to handle key input (VP<->VPM rountrip) and animation triggers
    //if ( !cameraMode )

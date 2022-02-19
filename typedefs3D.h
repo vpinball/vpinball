@@ -40,7 +40,9 @@ enum colorFormat {
    RGBA = GL_RGBA8,
    RGBA8 = GL_RGBA8,
    RGBA10 = GL_RGB10_A2,
-   DXT5 = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
+   DXT5 = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
+   BC7 = GL_COMPRESSED_RGBA_BPTC_UNORM
+   //!! BC6H for floats?
 };
 
 enum textureUsage {
@@ -59,7 +61,7 @@ struct RenderTarget {
    textureUsage usage;
    GLuint texture = 0, zTexture = 0, framebuffer = 0, zBuffer = 0;
    GLuint width = 0, height = 0;
-   GLint slot = -1;//Current slot for caching
+   //GLint slot = -1;//Current slot for caching
    int stereo = 0;
 };
 

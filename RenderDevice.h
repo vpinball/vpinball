@@ -9,10 +9,23 @@
 #include "VertexBuffer.h"
 #include "TextureManager.h"
 
-#define CHECKD3D(s) { const HRESULT hrTmp = (s); if (FAILED(hrTmp)) ReportFatalError(hrTmp, __FILE__, __LINE__); }
+#ifdef ENABLE_VR
+#include <openvr.h>
+#endif
 
 void ReportFatalError(const HRESULT hr, const char *file, const int line);
 void ReportError(const char *errorText, const HRESULT hr, const char *file, const int line);
+
+#if 1//def _DEBUG
+#ifdef ENABLE_SDL
+void checkGLErrors(const char *file, const int line);
+#define CHECKD3D(s) { s; checkGLErrors(__FILE__, __LINE__); }
+#else //ENABLE_SDL
+#define CHECKD3D(s) { const HRESULT hrTmp = (s); if (FAILED(hrTmp)) ReportFatalError(hrTmp, __FILE__, __LINE__); }
+#endif
+#else //_DEBUG
+#define CHECKD3D(s) { s; }
+#endif
 
 bool IsWindows10_1803orAbove();
 
@@ -70,6 +83,89 @@ class Shader;
 class RenderDevice
 {
 public:
+
+#ifdef ENABLE_SDL
+   enum RenderStates
+   {
+      ALPHABLENDENABLE,
+      ZENABLE,
+      DEPTHBIAS,
+      ALPHATESTENABLE,
+      ALPHAREF,
+      ALPHAFUNC,
+      BLENDOP,
+      CLIPPING,
+      CLIPPLANEENABLE,
+      CULLMODE,
+      DESTBLEND,
+      LIGHTING,
+      SRCBLEND,
+      SRGBWRITEENABLE,
+      ZFUNC,
+      ZWRITEENABLE,
+      COLORWRITEENABLE,
+      RENDERSTATE_COUNT,
+      RENDERSTATE_INVALID
+   };
+
+   enum RenderStateValue
+   {
+      //Booleans
+      RS_FALSE = 0,
+      RS_TRUE = 1,
+      //Culling
+      CULL_NONE = 0,
+      CULL_CW = GL_CW,
+      CULL_CCW = GL_CCW,
+      //Depth functions
+      Z_ALWAYS = GL_ALWAYS,
+      Z_LESS = GL_LESS,
+      Z_LESSEQUAL = GL_LEQUAL,
+      Z_GREATER = GL_GREATER,
+      Z_GREATEREQUAL = GL_GEQUAL,
+      //Blending ops
+      BLENDOP_MAX = GL_MAX,
+      BLENDOP_ADD = GL_FUNC_ADD,
+      BLENDOP_SUB = GL_FUNC_SUBTRACT,
+      BLENDOP_REVSUBTRACT = GL_FUNC_REVERSE_SUBTRACT,
+      //Blending values
+      ZERO = GL_ZERO,
+      ONE = GL_ONE,
+      SRC_ALPHA = GL_SRC_ALPHA,
+      DST_ALPHA = GL_DST_ALPHA,
+      SRC_COLOR = GL_SRC_COLOR,
+      DST_COLOR = GL_DST_COLOR,
+      INVSRC_ALPHA = GL_ONE_MINUS_SRC_ALPHA,
+      INVSRC_COLOR = GL_ONE_MINUS_SRC_COLOR,
+      //Clipping planes
+      PLANE0 = 1,
+
+      UNDEFINED
+   };
+
+   enum SamplerStateValues {
+      NONE = 0,
+      POINT = 0,
+      LINEAR = 1,
+      TEX_WRAP = GL_REPEAT,
+      TEX_CLAMP = GL_CLAMP_TO_EDGE,
+      TEX_MIRROR = GL_MIRRORED_REPEAT
+   };
+
+   enum PrimitiveTypes {
+      TRIANGLEFAN = GL_TRIANGLE_FAN,
+      TRIANGLESTRIP = GL_TRIANGLE_STRIP,
+      TRIANGLELIST = GL_TRIANGLES,
+      POINTLIST = GL_POINTS,
+      LINELIST = GL_LINES,
+      LINESTRIP = GL_LINE_STRIP
+};
+
+   SDL_Window *m_sdl_playfieldHwnd;
+   SDL_GLContext  m_sdl_context;
+
+#else
+
    enum RenderStates
    {
       ALPHABLENDENABLE = D3DRS_ALPHABLENDENABLE,
@@ -141,6 +237,7 @@ public:
       LINELIST = D3DPT_LINELIST,
       LINESTRIP = D3DPT_LINESTRIP
    };
+#endif
 
 
    RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering);
@@ -159,6 +256,10 @@ public:
    D3DTexture* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture; }
    D3DTexture* GetBackBufferTmpTexture() const { return m_pOffscreenBackBufferTmpTexture; }   // stereo/FXAA only
    D3DTexture* GetBackBufferTmpTexture2() const { return m_pOffscreenBackBufferTmpTexture2; } // SMAA only
+#ifdef ENABLE_SDL
+   D3DTexture* GetNonMSAABlitTexture(int m_MSAASamples) const { return m_MSAASamples == 1 ? m_pOffscreenBackBufferTexture : m_pOffscreenNonMSAABlitTexture; }
+   D3DTexture* GetOffscreenVR(int eye) const { return eye == 0 ? m_pOffscreenVRLeft : m_pOffscreenVRRight;}
+#endif
    D3DTexture* GetMirrorTmpBufferTexture() const { return m_pMirrorTmpBufferTexture; }
    D3DTexture* GetReflectionBufferTexture() const { return m_pReflectionBufferTexture; }
    RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; }
@@ -171,13 +272,24 @@ public:
    D3DTexture* DuplicateTextureSingleChannel(RenderTarget* src);
    D3DTexture* DuplicateDepthTexture(RenderTarget* src);
 
+#ifdef ENABLE_SDL
+   static bool isVRinstalled();
+   static bool isVRturnedOn();
+   static void turnVROff();
+#endif
+
+#ifndef ENABLE_SDL
    void SetRenderTarget(RenderTarget* surf);
    void SetRenderTarget(D3DTexture* tex);
+#endif
    void SetZBuffer(RenderTarget* surf);
    void UnSetZBuffer();
 
    void* AttachZBufferTo(RenderTarget* surf);
    void CopySurface(RenderTarget* dest, RenderTarget* src);
+#ifdef ENABLE_SDL
+   void CopyDepth(RenderTarget* dest, RenderTarget* src);
+#else
    void CopySurface(D3DTexture* dest, RenderTarget* src);
    void CopySurface(RenderTarget* dest, D3DTexture* src);
    void CopySurface(D3DTexture* dest, D3DTexture* src);
@@ -185,11 +297,14 @@ public:
    void CopyDepth(D3DTexture* dest, RenderTarget* src);
    void CopyDepth(D3DTexture* dest, D3DTexture* src);
    void CopyDepth(D3DTexture* dest, void* src);
+#endif
 
    bool DepthBufferReadBackAvailable();
 
+#ifndef ENABLE_SDL
    D3DTexture* CreateSystemTexture(BaseTexture* const surf, const bool linearRGB);
    D3DTexture* UploadTexture(BaseTexture* const surf, int* const pTexWidth, int* const pTexHeight, const bool linearRGB, const bool clamptoedge = false);
+#endif
    void UpdateTexture(D3DTexture* const tex, BaseTexture* const surf, const bool linearRGB);
 
    void SetRenderState(const RenderStates p1, DWORD p2);
@@ -201,7 +316,9 @@ public:
 
    void SetTextureFilter(const DWORD texUnit, DWORD mode);
    void SetTextureAddressMode(const DWORD texUnit, const TextureAddressMode mode);
+#ifndef ENABLE_SDL
    void SetTextureStageState(const DWORD stage, const D3DTEXTURESTAGESTATETYPE type, const DWORD value);
+#endif
    void SetSamplerState(const DWORD Sampler, const D3DSAMPLERSTATETYPE Type, const DWORD Value);
 
    //!! Remove:
@@ -227,6 +344,21 @@ public:
 
    void ForceAnisotropicFiltering(const bool enable) { m_force_aniso = enable; }
    void CompressTextures(const bool enable) { m_compress_textures = enable; }
+
+   //VR stuff
+#ifdef ENABLE_VR
+   void SetTransformVR();
+   void UpdateVRPosition();
+   void tableUp();
+   void tableDown();
+   void recenterTable();
+   void recenterRoom();
+
+   float m_slope, m_orientation, m_tablex, m_tabley, m_tablez, m_roomOrientation, m_roomx, m_roomy;
+
+   void updateTableMatrix();
+   vr::TrackedDevicePose_t hmdPosition;
+#endif
 
    // performance counters
    unsigned int Perf_GetNumDrawCalls() const      { return m_frameDrawCalls; }
@@ -297,6 +429,11 @@ private:
    D3DTexture* m_pOffscreenBackBufferTexture;
    D3DTexture* m_pOffscreenBackBufferTmpTexture; // stereo/FXAA only
    D3DTexture* m_pOffscreenBackBufferTmpTexture2;// SMAA only
+#ifdef ENABLE_SDL
+   D3DTexture* m_pOffscreenNonMSAABlitTexture;
+   D3DTexture* m_pOffscreenVRLeft;
+   D3DTexture* m_pOffscreenVRRight;
+#endif
 
    D3DTexture* m_pBloomBufferTexture;
    D3DTexture* m_pBloomTmpBufferTexture;
@@ -315,8 +452,13 @@ private:
 
    VertexDeclaration *currentDeclaration; // for caching
 
+#ifdef ENABLE_SDL
+   GLfloat m_maxaniso;
+   int m_GLversion;
+#else
    DWORD m_maxaniso;
    bool m_mag_aniso;
+#endif
 
    bool m_autogen_mipmap;
    //bool m_RESZ_support;
@@ -326,9 +468,22 @@ private:
    bool m_dwm_was_enabled;
    bool m_dwm_enabled;
 
+   //VR/Stereo Stuff
+#ifdef ENABLE_VR
+   static vr::IVRSystem *m_pHMD;
+   Matrix3D m_matProj[2];
+   Matrix3D m_matView;
+   Matrix3D m_tableWorld;
+   Matrix3D m_roomWorld;
+   vr::TrackedDevicePose_t *m_rTrackedDevicePose;
+   float m_scale;
+#endif
+
 public:
+#ifndef ENABLE_SDL
    static bool m_useNvidiaApi;
    static bool m_INTZ_support;
+#endif
 
    static VertexBuffer* m_quadVertexBuffer;      // internal vb for rendering quads //!! only on primary device for now!
    //static VertexBuffer *m_quadDynVertexBuffer; // internal vb for rendering dynamic quads //!!
