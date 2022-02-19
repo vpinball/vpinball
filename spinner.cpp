@@ -9,10 +9,10 @@
 Spinner::Spinner()
 {
    m_phitspinner = nullptr;
-   m_bracketVertexBuffer = 0;
-   m_bracketIndexBuffer = 0;
-   m_plateVertexBuffer = 0;
-   m_plateIndexBuffer = 0;
+   m_bracketVertexBuffer = nullptr;
+   m_bracketIndexBuffer = nullptr;
+   m_plateVertexBuffer = nullptr;
+   m_plateIndexBuffer = nullptr;
    m_vertexBuffer_spinneranimangle = -FLT_MAX;
 }
 

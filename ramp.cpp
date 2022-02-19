@@ -8,9 +8,9 @@ Ramp::Ramp()
    m_menuid = IDR_SURFACEMENU;
    m_d.m_collidable = true;
    m_d.m_visible = true;
-   m_dynamicVertexBuffer = 0;
-   m_dynamicIndexBuffer = 0;
-   m_dynamicVertexBuffer2 = 0;
+   m_dynamicVertexBuffer = nullptr;
+   m_dynamicIndexBuffer = nullptr;
+   m_dynamicVertexBuffer2 = nullptr;
    m_dynamicVertexBufferRegenerate = true;
    m_d.m_depthBias = 0.0f;
    m_d.m_wireDiameter = 6.0f;

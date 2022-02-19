@@ -9,8 +9,8 @@ Rubber::Rubber()
    m_d.m_collidable = true;
    m_d.m_visible = true;
    m_d.m_hitEvent = false;
-   m_dynamicVertexBuffer = 0;
-   m_dynamicIndexBuffer = 0;
+   m_dynamicVertexBuffer = nullptr;
+   m_dynamicIndexBuffer = nullptr;
    m_dynamicVertexBufferRegenerate = true;
    m_propPhysics = nullptr;
    m_propPosition = nullptr;
