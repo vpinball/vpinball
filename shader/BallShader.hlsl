@@ -62,7 +62,7 @@ const bool     hdrEnvTextures;
 
 #include "Material.fxh"
 
-const float4   invTableRes__playfield_height_reflection;
+const float4   invTableRes_playfield_height_reflection;
 
 //const float    reflection_ball_playfield;
 
@@ -282,13 +282,13 @@ float4 psBall( const in vout IN, uniform bool cabMode, uniform bool decalMode ) 
     float3 playfieldColor;
     [branch] if(/*(reflection_ball_playfield > 0.0) &&*/ (NdotR > 0.0))
     {
-       const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,invTableRes__playfield_height_reflection.z), matWorldView);
+       const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,invTableRes_playfield_height_reflection.z), matWorldView);
        const float t = dot(playfield_normal, IN.worldPos_t0y.xyz - playfield_p0) / NdotR;
        const float3 playfield_hit = IN.worldPos_t0y.xyz - t*r;
 
-       const float2 uv = mul_w1(playfield_hit, matWorldViewInverse).xy * invTableRes__playfield_height_reflection.xy;
+       const float2 uv = mul_w1(playfield_hit, matWorldViewInverse).xy * invTableRes_playfield_height_reflection.xy;
        playfieldColor = (t < 0.) ? float3(0.,0.,0.) // happens for example when inside kicker
-                                 : InvGamma(tex2Dlod(texSampler1, float4(uv, 0., 0.)).xyz)*invTableRes__playfield_height_reflection.w; //!! rather use screen space sample from previous frame??
+                                 : InvGamma(tex2Dlod(texSampler1, float4(uv, 0., 0.)).xyz)*invTableRes_playfield_height_reflection.w; //!! rather use screen space sample from previous frame??
 
        //!! hack to get some lighting on reflection sample, but only diffuse, the rest is not setup correctly anyhow
        playfieldColor = PFlightLoop(playfield_hit, playfield_normal, playfieldColor);

@@ -3772,8 +3772,8 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
 
       if (m_stereo3D > 4)
       {
-         const vec4 a_ds__c(m_global3DDesaturation, m_global3DContrast, 0.f,0.f);
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("Anaglyph_DeSaturation__Contrast", &a_ds__c);
+         const vec4 a_ds_c(m_global3DDesaturation, m_global3DContrast, 0.f,0.f);
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("Anaglyph_DeSaturation_Contrast", &a_ds_c);
       }
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique((m_stereo3D <= 4) ? "stereo" : "stereo_anaglyph");

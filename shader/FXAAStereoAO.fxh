@@ -1,4 +1,4 @@
-const float2 Anaglyph_DeSaturation__Contrast; // Anaglyph (de)saturation to preprocess/remove color from the anaglyph image: 1 = Black & White, 0 = normal color
+const float2 Anaglyph_DeSaturation_Contrast; // Anaglyph (de)saturation to preprocess/remove color from the anaglyph image: 1 = Black & White, 0 = normal color
 
 
 //!! add reflection direction occlusion, so that that will be used for blocking reflection/envmap?
@@ -229,30 +229,30 @@ float4 ps_main_ao(const in VS_OUTPUT_2D IN) : COLOR
 
 float3 anaglyph(const float3 L, const float3 R)
 {
-	const float c = saturate(Anaglyph_DeSaturation__Contrast.y*0.5 + 0.5);
+	const float c = saturate(Anaglyph_DeSaturation_Contrast.y*0.5 + 0.5);
 
 	float DeGhost = 0.06;
 
-	const float3 LMA = lerp(L, dot(L,float3(0.299, 0.587, 0.114)), Anaglyph_DeSaturation__Contrast.x);
-	const float3 RMA = lerp(R, dot(R,float3(0.299, 0.587, 0.114)), Anaglyph_DeSaturation__Contrast.x);
+	const float3 LMA = lerp(L, dot(L,float3(0.299, 0.587, 0.114)), Anaglyph_DeSaturation_Contrast.x);
+	const float3 RMA = lerp(R, dot(R,float3(0.299, 0.587, 0.114)), Anaglyph_DeSaturation_Contrast.x);
 
 	[branch] if (ms_zpd_ya_td.w == 5.0 || ms_zpd_ya_td.w == 12.0) // Anaglyph 3D Red/Cyan
-		return pow(float3(LMA.r,RMA.g,RMA.b), 1./Anaglyph_DeSaturation__Contrast.y); //!! Contrast is meh here
+		return pow(float3(LMA.r,RMA.g,RMA.b), 1./Anaglyph_DeSaturation_Contrast.y); //!! Contrast is meh here
 	[branch] if (ms_zpd_ya_td.w == 6.0 || ms_zpd_ya_td.w == 13.0) // Anaglyph 3D Green/Magenta
-		return pow(float3(RMA.r,LMA.g,RMA.b), 1./Anaglyph_DeSaturation__Contrast.y); //!! Contrast is meh here
+		return pow(float3(RMA.r,LMA.g,RMA.b), 1./Anaglyph_DeSaturation_Contrast.y); //!! Contrast is meh here
 	[branch] if (ms_zpd_ya_td.w == 7.0 || ms_zpd_ya_td.w == 14.0) // Anaglyph 3D Dubois Red/Cyan
 	{
 		const float r = dot(LMA,float3( 0.437,  0.449,  0.164)) + dot(RMA,float3(-0.011, -0.032, -0.007));
 		const float g = dot(LMA,float3(-0.062, -0.062, -0.024)) + dot(RMA,float3( 0.377,  0.761,  0.009));
 		const float b = dot(LMA,float3(-0.048, -0.050, -0.017)) + dot(RMA,float3(-0.026, -0.093,  1.234));
-		return saturate(pow(float3(r,g,b), 1./Anaglyph_DeSaturation__Contrast.y)); //!! Contrast is meh here
+		return saturate(pow(float3(r,g,b), 1./Anaglyph_DeSaturation_Contrast.y)); //!! Contrast is meh here
 	}
 	[branch] if (ms_zpd_ya_td.w == 8.0 || ms_zpd_ya_td.w == 15.0) // Anaglyph 3D Dubois Green/Magenta
 	{
 		const float r = dot(LMA,float3(-0.062, -0.158, -0.039)) + dot(RMA,float3( 0.529,  0.705, 0.024));
 		const float g = dot(LMA,float3( 0.284,  0.668,  0.143)) + dot(RMA,float3(-0.016, -0.015, 0.065));
 		const float b = dot(LMA,float3(-0.015, -0.027,  0.021)) + dot(RMA,float3( 0.009,  0.075, 0.937));
-		return saturate(pow(float3(r,g,b), 1./Anaglyph_DeSaturation__Contrast.y)); //!! Contrast is meh here
+		return saturate(pow(float3(r,g,b), 1./Anaglyph_DeSaturation_Contrast.y)); //!! Contrast is meh here
 	}
 	[branch] if (ms_zpd_ya_td.w == 9.0 || ms_zpd_ya_td.w == 16.0) // Anaglyph 3D Deghosted Red/Cyan Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
 	{
