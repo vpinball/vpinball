@@ -249,12 +249,12 @@ static const char* glErrorToString(const int error) {
 
 void ReportFatalError(const HRESULT hr, const char *file, const int line)
 {
-   char msg[1024];
+   char msg[2048+128];
 #ifdef ENABLE_SDL
-   sprintf_s(msg, 1024, "GL Fatal Error 0x%0002X %s in %s:%d", hr, glErrorToString(hr), file, line);
+   sprintf_s(msg, "GL Fatal Error 0x%0002X %s in %s:%d", hr, glErrorToString(hr), file, line);
    ShowError(msg);
 #else
-   sprintf_s(msg, 1024, "Fatal error %s (0x%x: %s) at %s:%d", DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
+   sprintf_s(msg, "Fatal error %s (0x%x: %s) at %s:%d", DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
    ShowError(msg);
    exit(-1);
 #endif
@@ -262,12 +262,12 @@ void ReportFatalError(const HRESULT hr, const char *file, const int line)
 
 void ReportError(const char *errorText, const HRESULT hr, const char *file, const int line)
 {
-   char msg[1024];
+   char msg[2048+128];
 #ifdef ENABLE_SDL
-   sprintf_s(msg, 1024, "GL Error 0x%0002X %s in %s:%d", hr, glErrorToString(hr), file, line);
+   sprintf_s(msg, "GL Error 0x%0002X %s in %s:%d\n%s", hr, glErrorToString(hr), file, line, errorText);
    ShowError(msg);
 #else
-   sprintf_s(msg, 1024, "%s %s (0x%x: %s) at %s:%d", errorText, DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
+   sprintf_s(msg, "%s %s (0x%x: %s) at %s:%d", errorText, DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
    ShowError(msg);
    exit(-1);
 #endif
@@ -276,7 +276,7 @@ void ReportError(const char *errorText, const HRESULT hr, const char *file, cons
 unsigned m_curLockCalls, m_frameLockCalls;
 unsigned int RenderDevice::Perf_GetNumLockCalls() const { return m_frameLockCalls; }
 
-#ifdef ENABLE_SDL
+#if 0//def ENABLE_SDL //not used anymore
 void checkGLErrors(const char *file, const int line) {
    GLenum err;
    unsigned int count = 0;
@@ -287,6 +287,117 @@ void checkGLErrors(const char *file, const int line) {
    /*if (count>0) {
       exit(-1);
    }*/
+}
+#endif
+
+// Callback function for printing debug statements
+#if defined(ENABLE_SDL) && defined(_DEBUG)
+void APIENTRY GLDebugMessageCallback(GLenum source, GLenum type, GLuint id,
+                                     GLenum severity, GLsizei length,
+                                     const GLchar *msg, const void *data)
+{
+    char* _source;
+    switch (source) {
+        case GL_DEBUG_SOURCE_API:
+        _source = "API";
+        break;
+
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+        _source = "WINDOW SYSTEM";
+        break;
+
+        case GL_DEBUG_SOURCE_SHADER_COMPILER:
+        _source = "SHADER COMPILER";
+        break;
+
+        case GL_DEBUG_SOURCE_THIRD_PARTY:
+        _source = "THIRD PARTY";
+        break;
+
+        case GL_DEBUG_SOURCE_APPLICATION:
+        _source = "APPLICATION";
+        break;
+
+        case GL_DEBUG_SOURCE_OTHER:
+        _source = "UNKNOWN";
+        break;
+
+        default:
+        _source = "UNHANDLED";
+        break;
+    }
+
+    char* _type;
+    switch (type) {
+        case GL_DEBUG_TYPE_ERROR:
+        _type = "ERROR";
+        break;
+
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+        _type = "DEPRECATED BEHAVIOR";
+        break;
+
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+        _type = "UNDEFINED BEHAVIOR";
+        break;
+
+        case GL_DEBUG_TYPE_PORTABILITY:
+        _type = "PORTABILITY";
+        break;
+
+        case GL_DEBUG_TYPE_PERFORMANCE:
+        _type = "PERFORMANCE";
+        break;
+
+        case GL_DEBUG_TYPE_OTHER:
+        _type = "OTHER";
+        break;
+
+        case GL_DEBUG_TYPE_MARKER:
+        _type = "MARKER";
+        break;
+
+        case GL_DEBUG_TYPE_PUSH_GROUP:
+        _type = "GL_DEBUG_TYPE_PUSH_GROUP";
+        break;
+
+        case GL_DEBUG_TYPE_POP_GROUP:
+        _type = "GL_DEBUG_TYPE_POP_GROUP";
+        break;
+
+    	default:
+        _type = "UNHANDLED";
+        break;
+    }
+
+    char* _severity;
+    switch (severity) {
+        case GL_DEBUG_SEVERITY_HIGH:
+        _severity = "HIGH";
+        break;
+
+        case GL_DEBUG_SEVERITY_MEDIUM:
+        _severity = "MEDIUM";
+        break;
+
+        case GL_DEBUG_SEVERITY_LOW:
+        _severity = "LOW";
+        break;
+
+        case GL_DEBUG_SEVERITY_NOTIFICATION:
+        _severity = "NOTIFICATION";
+        break;
+
+        default:
+        _severity = "UNHANDLED";
+        break;
+    }
+
+    //if(severity != GL_DEBUG_SEVERITY_NOTIFICATION)
+    fprintf(stderr,"%d: %s of %s severity, raised from %s: %s\n", id, _type, _severity, _source, msg);
+
+    if (type == GL_DEBUG_TYPE_ERROR || type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR || severity == GL_DEBUG_SEVERITY_HIGH)
+        ShowError(msg);
 }
 #endif
 
@@ -1210,6 +1321,32 @@ D3DTexture* RenderDevice::DuplicateDepthTexture(RenderTarget* src)
    return dup;
 }
 
+#ifdef ENABLE_SDL
+
+void RenderDevice::CopyDepth(RenderTarget* dest, RenderTarget* src) {
+   //!! Not required for GL.
+}
+
+D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf, int *pTexWidth, int *pTexHeight, const bool linearRGB, const bool clamptoedge)
+{
+   D3DTexture *tex = CreateTexture(surf->width(), surf->height(), 0, STATIC, surf->m_format == BaseTexture::RGB_FP ? RGB32F : RGBA, surf->m_data.data(), 0, clamptoedge);
+
+   if (pTexWidth) *pTexWidth = surf->width();
+   if (pTexHeight) *pTexHeight = surf->height();
+   return tex;
+}
+
+void RenderDevice::UploadAndSetSMAATextures()
+{
+   m_SMAAsearchTexture = CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 0, STATIC, GREY, (void*)&searchTexBytes[0], 0);
+   m_SMAAareaTexture = CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 0, STATIC, GREY_ALPHA, (void*)&areaTexBytes[0], 0);
+
+   FBShader->SetTexture(SHADER_areaTex2D, m_SMAAareaTexture, true);
+   FBShader->SetTexture(SHADER_searchTex2D, m_SMAAsearchTexture, true);
+}
+
+#else
+
 void RenderDevice::CopySurface(D3DTexture* dest, RenderTarget* src)
 {
    IDirect3DSurface9 *textureSurface;
@@ -1519,6 +1656,7 @@ void RenderDevice::UploadAndSetSMAATextures()
    SAFE_RELEASE(sysTex);
    }
 }
+#endif
 
 void RenderDevice::UpdateTexture(D3DTexture* const tex, BaseTexture* const surf, const bool linearRGB)
 {
@@ -1527,9 +1665,9 @@ void RenderDevice::UpdateTexture(D3DTexture* const tex, BaseTexture* const surf,
    const GLuint col_type = ((tex->format == RGBA32F) || (tex->format == RGBA16F) || (tex->format == RGB32F) || (tex->format == RGB16F)) ? GL_FLOAT : GL_UNSIGNED_BYTE;
    const GLuint col_format = (tex->format == GREY) ? GL_RED : (tex->format == GREY_ALPHA) ? GL_RG : ((tex->format == RGB) || (tex->format == RGB5) || (tex->format == RGB10) || (tex->format == RGB16F) || (tex->format == RGB32F)) ? GL_BGR : GL_BGRA;
    glBindTexture(GL_TEXTURE_2D, tex->texture);
-   CHECKD3D(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, surf->width(), surf->height(), col_format, col_type, surf->data()));
-   //CHECKD3D(glTexImage2D(GL_TEXTURE_2D, 0, tex->format, surf->width(), surf->height(), 0, col_format, col_type, surf->data())); // Use TexStorage instead
-   CHECKD3D(glGenerateMipmap(GL_TEXTURE_2D)); // Generate mip-maps
+   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, surf->width(), surf->height(), col_format, col_type, surf->data());
+   //glTexImage2D(GL_TEXTURE_2D, 0, tex->format, surf->width(), surf->height(), 0, col_format, col_type, surf->data()); // Use TexStorage instead
+   glGenerateMipmap(GL_TEXTURE_2D); // Generate mip-maps
    glBindTexture(GL_TEXTURE_2D, 0);
 #else
    IDirect3DTexture9* sysTex = CreateSystemTexture(surf, linearRGB);
@@ -1542,8 +1680,8 @@ void RenderDevice::UpdateTexture(D3DTexture* const tex, BaseTexture* const surf,
 void RenderDevice::SetSamplerState(const DWORD Sampler, const D3DSAMPLERSTATETYPE Type, const DWORD Value)
 {
 #ifdef ENABLE_SDL //!! ??
-/*   CHECKD3D(glSamplerParameteri(Sampler, GL_TEXTURE_MIN_FILTER, minFilter ? (mipFilter ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR) : GL_NEAREST));
-   CHECKD3D(glSamplerParameteri(Sampler, GL_TEXTURE_MAG_FILTER, magFilter ? (mipFilter ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR) : GL_NEAREST));
+/*   glSamplerParameteri(Sampler, GL_TEXTURE_MIN_FILTER, minFilter ? (mipFilter ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR) : GL_NEAREST);
+   glSamplerParameteri(Sampler, GL_TEXTURE_MAG_FILTER, magFilter ? (mipFilter ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR) : GL_NEAREST);
    m_curStateChanges += 2;*/
 #else
    const bool invalid_set = ((unsigned int)Type >= TEXTURE_SAMPLER_CACHE_SIZE || Sampler >= TEXTURE_SAMPLERS);
@@ -1687,28 +1825,28 @@ void RenderDevice::SetRenderState(const RenderStates p1, DWORD p2)
    switch (p1) {
       //glEnable and glDisable functions
    case ALPHABLENDENABLE:
-      CHECKD3D({ if (p2) glEnable(GL_BLEND); else glDisable(GL_BLEND); });
+      if (p2) glEnable(GL_BLEND); else glDisable(GL_BLEND);
       break;
    case ZENABLE:
-      CHECKD3D({ if (p2) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST); });
+      if (p2) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
       break;
    case BLENDOP:
-      CHECKD3D(glBlendEquation(p2));
+      glBlendEquation(p2);
       break;
    case SRCBLEND:
-      CHECKD3D(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       break;
    case DESTBLEND:
-      CHECKD3D(glBlendFunc(renderStateCache[SRCBLEND], renderStateCache[DESTBLEND]));
+      glBlendFunc(renderStateCache[SRCBLEND], renderStateCache[DESTBLEND]);
       break;
    case ZFUNC:
-      CHECKD3D(glDepthFunc(p2));
+      glDepthFunc(p2);
       break;
    case ZWRITEENABLE:
-      CHECKD3D(glDepthMask(p2 ? GL_TRUE : GL_FALSE));
+      glDepthMask(p2 ? GL_TRUE : GL_FALSE);
       break;
    case COLORWRITEENABLE:
-      CHECKD3D(glColorMask((p2 & 1) ? GL_TRUE : GL_FALSE, (p2 & 2) ? GL_TRUE : GL_FALSE, (p2 & 4) ? GL_TRUE : GL_FALSE, (p2 & 8) ? GL_TRUE : GL_FALSE));
+      glColorMask((p2 & 1) ? GL_TRUE : GL_FALSE, (p2 & 2) ? GL_TRUE : GL_FALSE, (p2 & 4) ? GL_TRUE : GL_FALSE, (p2 & 8) ? GL_TRUE : GL_FALSE);
       break;
       //Replaced by specific function
    case DEPTHBIAS:
@@ -1744,15 +1882,15 @@ void RenderDevice::SetRenderStateCulling(RenderStateValue cull)
 
 #ifdef ENABLE_SDL
    if (renderStateCache[RenderStates::CULLMODE] == CULL_NONE && (cull != CULL_NONE)) //!! this differs a bit from VPVR now, recheck!
-      CHECKD3D(glEnable(GL_CULL_FACE));
+      glEnable(GL_CULL_FACE);
    if (cull == CULL_NONE)
-      CHECKD3D(glDisable(GL_CULL_FACE));
+      glDisable(GL_CULL_FACE);
    else {
-      CHECKD3D(glFrontFace(cull));
-      CHECKD3D(glCullFace(GL_FRONT));
+      glFrontFace(cull);
+      glCullFace(GL_FRONT);
    }
 #else
-   CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)CULLMODE, cull));
+   m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)CULLMODE, cull);
 #endif
    m_curStateChanges++;
 }
@@ -1762,12 +1900,11 @@ void RenderDevice::SetRenderStateDepthBias(float bias)
    if (SetRenderStateCache(DEPTHBIAS, *((DWORD*)&bias))) return;
 
 #ifdef ENABLE_SDL
-   if (bias == 0.0f) {
-      CHECKD3D(glDisable(GL_POLYGON_OFFSET_FILL));
-   }
+   if (bias == 0.0f)
+      glDisable(GL_POLYGON_OFFSET_FILL);
    else {
-      CHECKD3D(glEnable(GL_POLYGON_OFFSET_FILL));
-      CHECKD3D(glPolygonOffset(0.0f, bias));
+      glEnable(GL_POLYGON_OFFSET_FILL);
+      glPolygonOffset(0.0f, bias);
    }
 #else
    bias *= BASEDEPTHBIAS;
@@ -1782,11 +1919,10 @@ void RenderDevice::SetRenderStateClipPlane0(const bool enabled)
 
 #ifdef ENABLE_SDL
    // Basicshader already prepared with proper clipplane so just need to enable/disable it
-   if (enabled) {
-      CHECKD3D(glEnable(GL_CLIP_DISTANCE0));
-   }
+   if (enabled)
+      glEnable(GL_CLIP_DISTANCE0);
    else
-      CHECKD3D(glDisable(GL_CLIP_DISTANCE0));
+      glDisable(GL_CLIP_DISTANCE0);
 #else
    CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)CLIPPLANEENABLE, enabled ? PLANE0 : 0));
 #endif 
@@ -1956,8 +2092,8 @@ void RenderDevice::DrawPrimitiveVB(const PrimitiveTypes type, const DWORD fvf, V
 
    vb->bind();
 #ifdef ENABLE_SDL
-   //CHECKD3D(glDrawArraysInstanced(type, vb->getOffset() + startVertex, vertexCount, m_stereo3D != STEREO_OFF ? 2 : 1)); // Do instancing in geometry shader instead
-   CHECKD3D(glDrawArrays(type, vb->getOffset() + startVertex, vertexCount));
+   //glDrawArraysInstanced(type, vb->getOffset() + startVertex, vertexCount, m_stereo3D != STEREO_OFF ? 2 : 1); // Do instancing in geometry shader instead
+   glDrawArrays(type, vb->getOffset() + startVertex, vertexCount);
 #else
    VertexDeclaration * declaration = fvfToDecl(fvf);
    SetVertexDeclaration(declaration);
@@ -1979,8 +2115,8 @@ void RenderDevice::DrawIndexedPrimitiveVB(const PrimitiveTypes type, const DWORD
 
 #ifdef ENABLE_SDL
    const int offset = ib->getOffset() + (ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? 2 : 4) * startIndex;
-   //CHECKD3D(glDrawElementsInstancedBaseVertex(type, indexCount, ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)offset, m_stereo3D != STEREO_OFF ? 2 : 1, vb->getOffset() + startVertex)); // Do instancing in geometry shader instead
-   CHECKD3D(glDrawElementsBaseVertex(type, indexCount, ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)offset, vb->getOffset() + startVertex));
+   //glDrawElementsInstancedBaseVertex(type, indexCount, ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)offset, m_stereo3D != STEREO_OFF ? 2 : 1, vb->getOffset() + startVertex); // Do instancing in geometry shader instead
+   glDrawElementsBaseVertex(type, indexCount, ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)offset, vb->getOffset() + startVertex);
 #else
    VertexDeclaration * declaration = fvfToDecl(fvf);
    SetVertexDeclaration(declaration);

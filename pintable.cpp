@@ -2078,7 +2078,21 @@ void PinTable::Play(const bool cameraMode)
       CREATESTRUCT cs = {};
       PreRegisterClass(wc);
       g_pplayer->PreCreate(cs);
-      g_pplayer->PreInit();
+      if (g_pplayer->PreInit() != S_OK)
+      {
+          delete g_pplayer;
+          g_pplayer = nullptr;
+
+          RestoreBackup();
+          g_keepUndoRecords = true;
+          m_pcv->EndSession();
+
+          m_progressDialog.Destroy();
+
+          g_pvp->m_table_played_via_SelectTableOnStart = false;
+
+          return;
+      }
       g_pplayer->Attach(g_pplayer->m_pin3d.m_pd3dPrimaryDevice ? g_pplayer->m_pin3d.m_pd3dPrimaryDevice->getHwnd() : 0);
 #else
       g_pplayer->Create();
@@ -2098,6 +2112,8 @@ void PinTable::Play(const bool cameraMode)
       RestoreBackup();
       g_keepUndoRecords = true;
       m_pcv->EndSession();
+
+      m_progressDialog.Destroy();
 
       g_pvp->m_table_played_via_SelectTableOnStart = false;
    }
