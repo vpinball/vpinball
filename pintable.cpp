@@ -1983,6 +1983,17 @@ void PinTable::SetDirtyDraw()
    InvalidateRect(false);
 }
 
+void PinTable::HandleLoadFailure()
+{
+   RestoreBackup();
+   g_keepUndoRecords = true;
+   m_pcv->EndSession();
+
+   m_progressDialog.Destroy();
+
+   g_pvp->m_table_played_via_SelectTableOnStart = false;
+}
+
 // also creates Player instance
 void PinTable::Play(const bool cameraMode)
 {
@@ -2040,32 +2051,32 @@ void PinTable::Play(const bool cameraMode)
       float fOverrideContactScatterAngle;
       if (m_overridePhysics)
       {
-          char tmp[256];
+         char tmp[256];
 
-          sprintf_s(tmp, 256, "TablePhysicsGravityConstant%d", m_overridePhysics - 1);
-          m_fOverrideGravityConstant = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_GRAVITY);
-          m_fOverrideGravityConstant *= GRAVITYCONST;
+         sprintf_s(tmp, 256, "TablePhysicsGravityConstant%d", m_overridePhysics - 1);
+         m_fOverrideGravityConstant = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_GRAVITY);
+         m_fOverrideGravityConstant *= GRAVITYCONST;
 
-          sprintf_s(tmp, 256, "TablePhysicsContactFriction%d", m_overridePhysics - 1);
-          m_fOverrideContactFriction = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_CONTACTFRICTION);
+         sprintf_s(tmp, 256, "TablePhysicsContactFriction%d", m_overridePhysics - 1);
+         m_fOverrideContactFriction = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_CONTACTFRICTION);
 
-          sprintf_s(tmp, 256, "TablePhysicsElasticity%d", m_overridePhysics - 1);
-          m_fOverrideElasticity = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_ELASTICITY);
+         sprintf_s(tmp, 256, "TablePhysicsElasticity%d", m_overridePhysics - 1);
+         m_fOverrideElasticity = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_ELASTICITY);
 
-          sprintf_s(tmp, 256, "TablePhysicsElasticityFalloff%d", m_overridePhysics - 1);
-          m_fOverrideElasticityFalloff = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_ELASTICITY_FALLOFF);
+         sprintf_s(tmp, 256, "TablePhysicsElasticityFalloff%d", m_overridePhysics - 1);
+         m_fOverrideElasticityFalloff = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_ELASTICITY_FALLOFF);
 
-          sprintf_s(tmp, 256, "TablePhysicsScatterAngle%d", m_overridePhysics - 1);
-          m_fOverrideScatterAngle = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_PFSCATTERANGLE);
+         sprintf_s(tmp, 256, "TablePhysicsScatterAngle%d", m_overridePhysics - 1);
+         m_fOverrideScatterAngle = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_PFSCATTERANGLE);
 
-          sprintf_s(tmp, 256, "TablePhysicsContactScatterAngle%d", m_overridePhysics - 1);
-          fOverrideContactScatterAngle = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_SCATTERANGLE);
+         sprintf_s(tmp, 256, "TablePhysicsContactScatterAngle%d", m_overridePhysics - 1);
+         fOverrideContactScatterAngle = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_SCATTERANGLE);
 
-          sprintf_s(tmp, 256, "TablePhysicsMinSlope%d", m_overridePhysics - 1);
-          m_fOverrideMinSlope = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_MIN_SLOPE);
+         sprintf_s(tmp, 256, "TablePhysicsMinSlope%d", m_overridePhysics - 1);
+         m_fOverrideMinSlope = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_MIN_SLOPE);
 
-          sprintf_s(tmp, 256, "TablePhysicsMaxSlope%d", m_overridePhysics - 1);
-          m_fOverrideMaxSlope = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_MAX_SLOPE);
+         sprintf_s(tmp, 256, "TablePhysicsMaxSlope%d", m_overridePhysics - 1);
+         m_fOverrideMaxSlope = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_MAX_SLOPE);
       }
 
       c_hardScatter = ANGTORAD(m_overridePhysics ? fOverrideContactScatterAngle : m_defaultScatter);
@@ -2080,18 +2091,11 @@ void PinTable::Play(const bool cameraMode)
       g_pplayer->PreCreate(cs);
       if (g_pplayer->PreInit() != S_OK)
       {
-          delete g_pplayer;
-          g_pplayer = nullptr;
+         delete g_pplayer;
+         g_pplayer = nullptr;
 
-          RestoreBackup();
-          g_keepUndoRecords = true;
-          m_pcv->EndSession();
-
-          m_progressDialog.Destroy();
-
-          g_pvp->m_table_played_via_SelectTableOnStart = false;
-
-          return;
+         HandleLoadFailure();
+         return;
       }
       g_pplayer->Attach(g_pplayer->m_pin3d.m_pd3dPrimaryDevice ? g_pplayer->m_pin3d.m_pd3dPrimaryDevice->getHwnd() : 0);
 #else
@@ -2108,15 +2112,7 @@ void PinTable::Play(const bool cameraMode)
       m_vpinball->ToggleToolbar();
    }
    else
-   {
-      RestoreBackup();
-      g_keepUndoRecords = true;
-      m_pcv->EndSession();
-
-      m_progressDialog.Destroy();
-
-      g_pvp->m_table_played_via_SelectTableOnStart = false;
-   }
+      HandleLoadFailure();
 }
 
 // called before Player instance gets deleted

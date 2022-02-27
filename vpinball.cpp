@@ -1336,9 +1336,18 @@ void VPinball::MainMsgLoop()
          if (msg.message == WM_QUIT)
             break;
 
-         const bool consumed = ApcHost_OnTranslateMessage(&msg);
-         if (!consumed)
-            DispatchMessage(&msg);
+         try {
+            const bool consumed = ApcHost_OnTranslateMessage(&msg);
+            if (!consumed)
+               DispatchMessage(&msg);
+         }
+         catch (...) // something failed on load/init
+         {
+            delete g_pplayer;
+            g_pplayer = nullptr;
+
+            g_pvp->m_ptableActive->HandleLoadFailure();
+         }
       }
       else
       {

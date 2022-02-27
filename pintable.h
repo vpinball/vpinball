@@ -354,6 +354,8 @@ public:
    //void FireVoidEvent(int dispid);
    void FireKeyEvent(int dispid, int keycode);
 
+   void HandleLoadFailure();
+
    // also creates Player instance
    void Play(const bool cameraMode);
    // called before Player instance gets deleted
