@@ -38,12 +38,12 @@ private:
    // CPU memory management
    unsigned int offsetToLock;
    unsigned int sizeToLock;
-   void *dataBuffer;
+   void *dataBuffer = nullptr;
 
    //GPU memory management
-   GLuint Buffer;
-   GLuint Array;
-   GLuint offset;//unused ATM, but if we want to group multiple IndexBuffers later in one buffer we might need it
+   GLuint Buffer = 0;
+   GLuint Array = 0;
+   GLuint offset = 0;//unused ATM, but if we want to group multiple IndexBuffers later in one buffer we might need it
 
    static VertexBuffer* m_curVertexBuffer; // for caching
    static std::vector<VertexBuffer*> notUploadedBuffers;

@@ -152,9 +152,11 @@ void IndexBuffer::unlock()
 void IndexBuffer::release()
 {
 #ifdef ENABLE_SDL
-   if (!sharedBuffer)
-      CHECKD3D(glDeleteBuffers(1, &this->Buffer));
-   this->Buffer = 0;
+   if (!sharedBuffer && (Buffer != 0))
+   {
+      glDeleteBuffers(1, &Buffer);
+      Buffer = 0;
+   }
 #else
    SAFE_RELEASE(m_ib);
 #endif
@@ -165,9 +167,9 @@ void IndexBuffer::bind()
 #ifdef ENABLE_SDL
    if (!isUploaded)
       IndexBuffer::UploadBuffers();//Should never happen...
-   if (m_curIndexBuffer == nullptr || this->Buffer != m_curIndexBuffer->Buffer)
+   if (m_curIndexBuffer == nullptr || Buffer != m_curIndexBuffer->Buffer)
    {
-      CHECKD3D(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->Buffer));
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffer);
       m_curIndexBuffer = this;
    }
 #else
@@ -187,15 +189,15 @@ void IndexBuffer::UploadData(bool freeData)
    if (Buffer == 0) {
       sharedBuffer = false;
       sizeToLock = size;
-      CHECKD3D(glGenBuffers(1, &(Buffer)));
-      CHECKD3D(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffer));
-      CHECKD3D(glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, usage));
+      glGenBuffers(1, &Buffer);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffer);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, usage);
       offset = 0;
    }
    else
-      CHECKD3D(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffer));
-   CHECKD3D(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset + offsetToLock, min(sizeToLock, size - offsetToLock), dataBuffer));
-   CHECKD3D(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffer);
+   glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset + offsetToLock, min(sizeToLock, size - offsetToLock), dataBuffer);
+   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
    if (freeData)
       free(dataBuffer);
    dataBuffer = nullptr;
@@ -229,14 +231,14 @@ void IndexBuffer::UploadBuffers()
    GLuint Buffer16;
    GLuint Buffer32;
    glGenBuffers(1, &Buffer16);
-   CHECKD3D(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffer16));
+   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffer16);
    glGenBuffers(1, &Buffer32);
-   CHECKD3D(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffer32));
+   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffer32);
    //Find out how much data needs to be uploaded
-   for (auto it = notUploadedBuffers.begin(); it != notUploadedBuffers.end(); it++) {
+   for (auto it = notUploadedBuffers.begin(); it != notUploadedBuffers.end(); ++it) {
       if (!(*it)->isUploaded && (*it)->usage == GL_STATIC_DRAW) {
          if ((*it)->Buffer>0 && !(*it)->sharedBuffer)
-            CHECKD3D(glDeleteBuffers(1, &(*it)->Buffer));
+            glDeleteBuffers(1, &(*it)->Buffer);
          if ((*it)->indexFormat == FMT_INDEX16) {
             (*it)->offset = size16;
             size16 += (*it)->size;
@@ -252,17 +254,17 @@ void IndexBuffer::UploadBuffers()
    }
    //Allocate BufferData on GPU
    if (size16 > 0) {
-      CHECKD3D(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffer16));
-      CHECKD3D(glBufferData(GL_ELEMENT_ARRAY_BUFFER, size16, nullptr, GL_STATIC_DRAW));
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffer16);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, size16, nullptr, GL_STATIC_DRAW);
    }
    if (size32 > 0) {
-      CHECKD3D(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffer32));
-      CHECKD3D(glBufferData(GL_ELEMENT_ARRAY_BUFFER, size32, nullptr, GL_STATIC_DRAW));
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffer32);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, size32, nullptr, GL_STATIC_DRAW);
    }
    //Upload all Buffers
-   for (auto it = notUploadedBuffers.begin(); it != notUploadedBuffers.end(); it++)
+   for (auto it = notUploadedBuffers.begin(); it != notUploadedBuffers.end(); ++it)
       (*it)->UploadData(true);
-   CHECKD3D(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
    notUploadedBuffers.clear();
 }
 #endif

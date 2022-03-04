@@ -49,10 +49,10 @@ private:
    // CPU memory management
    unsigned int offsetToLock;
    unsigned int sizeToLock;
-   void *dataBuffer;
+   void *dataBuffer = nullptr;
 
    //GPU memory management
-   GLuint Buffer;
+   GLuint Buffer = 0;
    Format indexFormat;
 
    static IndexBuffer* m_curIndexBuffer; // for caching

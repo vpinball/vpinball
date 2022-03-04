@@ -97,9 +97,11 @@ void VertexBuffer::unlock()
 void VertexBuffer::release()
 {
 #ifdef ENABLE_SDL
-   if (!sharedBuffer && Buffer != 0) {
-      CHECKD3D(glDeleteBuffers(1, &Buffer));
+   if (!sharedBuffer && (Buffer != 0)) {
+      glDeleteBuffers(1, &Buffer);
+      glDeleteVertexArrays(1, &Array);
       Buffer = 0;
+      Array = 0;
       sizePerVertex = 0;
       offset = 0;
       count = 0;
@@ -119,10 +121,10 @@ void VertexBuffer::bind()
       else
          UploadData();
    }
-   if (m_curVertexBuffer == nullptr || this->Array != m_curVertexBuffer->Array || this->Buffer != m_curVertexBuffer->Buffer)
+   if (m_curVertexBuffer == nullptr || Array != m_curVertexBuffer->Array || Buffer != m_curVertexBuffer->Buffer)
    {
-      CHECKD3D(glBindVertexArray(this->Array));
-      CHECKD3D(glBindBuffer(GL_ARRAY_BUFFER, this->Buffer));
+      glBindVertexArray(Array);
+      glBindBuffer(GL_ARRAY_BUFFER, Buffer);
       m_curVertexBuffer = this;
    }
    Shader::getCurrentShader()->setAttributeFormat(fvf);
@@ -141,18 +143,18 @@ void VertexBuffer::UploadData()
 {
    if (Array == 0)
       glGenVertexArrays(1, &Array);
-   CHECKD3D(glBindVertexArray(this->Array));
+   glBindVertexArray(Array);
    if (Buffer == 0) {
       glGenBuffers(1, &Buffer);
-      CHECKD3D(glBindBuffer(GL_ARRAY_BUFFER, this->Buffer));
+      glBindBuffer(GL_ARRAY_BUFFER, Buffer);
       glBufferData(GL_ARRAY_BUFFER, size, nullptr, usage);
    }
    else
-      CHECKD3D(glBindBuffer(GL_ARRAY_BUFFER, this->Buffer));
+      glBindBuffer(GL_ARRAY_BUFFER, Buffer);
    if (size - offsetToLock > 0)
-      CHECKD3D(glBufferSubData(GL_ARRAY_BUFFER, offset * fvfToSize(fvf) + offsetToLock, min(sizeToLock, size - offsetToLock), dataBuffer));
-   CHECKD3D(glBindBuffer(GL_ARRAY_BUFFER, 0));
-   CHECKD3D(glBindVertexArray(0));
+      glBufferSubData(GL_ARRAY_BUFFER, offset * fvfToSize(fvf) + offsetToLock, min(sizeToLock, size - offsetToLock), dataBuffer);
+   glBindBuffer(GL_ARRAY_BUFFER, 0);
+   glBindVertexArray(0);
    isUploaded = true;
    free(dataBuffer);
    dataBuffer = nullptr;
@@ -199,19 +201,19 @@ void VertexBuffer::UploadBuffers()
    }
    //Allocate BufferData on GPU
    if (countNT > 0) {
-      CHECKD3D(glBindBuffer(GL_ARRAY_BUFFER, BufferNT));
-      CHECKD3D(glBindVertexArray(ArrayNT));
-      CHECKD3D(glBufferData(GL_ARRAY_BUFFER, countNT * fvfToSize(MY_D3DFVF_NOTEX2_VERTEX), nullptr, GL_STATIC_DRAW));
+      glBindBuffer(GL_ARRAY_BUFFER, BufferNT);
+      glBindVertexArray(ArrayNT);
+      glBufferData(GL_ARRAY_BUFFER, countNT * fvfToSize(MY_D3DFVF_NOTEX2_VERTEX), nullptr, GL_STATIC_DRAW);
    }
    if (countT > 0) {
-      CHECKD3D(glBindBuffer(GL_ARRAY_BUFFER, BufferT));
-      CHECKD3D(glBindVertexArray(ArrayT));
-      CHECKD3D(glBufferData(GL_ARRAY_BUFFER, countT * fvfToSize(MY_D3DFVF_TEX), nullptr, GL_STATIC_DRAW));
+      glBindBuffer(GL_ARRAY_BUFFER, BufferT);
+      glBindVertexArray(ArrayT);
+      glBufferData(GL_ARRAY_BUFFER, countT * fvfToSize(MY_D3DFVF_TEX), nullptr, GL_STATIC_DRAW);
    }
    for (auto it = notUploadedBuffers.begin(); it != notUploadedBuffers.end(); it++)
       (*it)->UploadData();
-   CHECKD3D(glBindBuffer(GL_ARRAY_BUFFER, 0));
-   CHECKD3D(glBindVertexArray(0));
+   glBindBuffer(GL_ARRAY_BUFFER, 0);
+   glBindVertexArray(0);
    notUploadedBuffers.clear();
 }
 #endif
