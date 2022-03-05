@@ -110,7 +110,7 @@ namespace Win32xx
     // Defines the maximum size for TCHAR strings
     enum Constants
     {
-        MAX_MENU_STRING = 80,
+        MAX_MENU_STRING = 255,
         MAX_STRING_SIZE = 255
     };
 
