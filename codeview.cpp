@@ -2098,7 +2098,7 @@ bool CodeViewer::ShowTooltip(const SCNotification *pSCN)
 		RemovePadding(DwellWord);
 		RemoveNonVBSChars(DwellWord);
 		if (DwellWord.empty()) return false;
-		// Serarch for VBS reserved words
+		// Search for VBS reserved words
 		// ToDo: Should be able get some MS help for better descriptions
 		vector<UserData>::iterator i;
 		int idx = 0;

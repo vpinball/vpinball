@@ -47,7 +47,7 @@ public:
    int IDC_Font_code;
 
 private:
-   string szRegName;
+   string m_szRegName;
    bool m_highlight;
 
 public:
