@@ -1997,9 +1997,10 @@ HRESULT STDMETHODCALLTYPE CodeViewer::QueryService(
    return hr;
 }
 
-void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
+void CodeViewer::ShowAutoComplete(const SCNotification *pSCN)
 {
 	if (!pSCN) return;
+
 	const char KeyPressed = pSCN->ch;
 	if (KeyPressed != '.')
 	{
@@ -2021,9 +2022,11 @@ void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
 		m_currentConstruct.chrg.cpMax = (Sci_PositionCR)SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, ConstructPos, TRUE);
 		if ((m_currentConstruct.chrg.cpMax - m_currentConstruct.chrg.cpMin) > MAX_FIND_LENGTH) return;
 		SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)&m_currentConstruct);
+
 		//Check Core dict first
 		m_currentConstruct.lpstrText = ConstructTextBuff;
 		GetMembers(m_VPcoreDict, m_currentConstruct.lpstrText);
+
 		//Check Table Script
 		if (m_currentMembers->empty())
 		{
@@ -2032,6 +2035,7 @@ void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
 		}
 		//if no contruct (no children) exit
 		if (m_currentMembers->empty()) return;
+
 		//autocomp string  = members of construct
 		m_autoCompMembersString.clear();
 		for (vector<UserData>::iterator i = m_currentMembers->begin(); i != m_currentMembers->end(); ++i)
@@ -2053,24 +2057,23 @@ void CodeViewer::GetMembers(vector<UserData>* ListIn, const string &strIn)
 	{
 		const UserData udParent = ListIn->at(idx);
 		const size_t NumberOfMembers = udParent.m_children.size();
-		size_t i = 0;
-		while (i < NumberOfMembers)
+		for (size_t i = 0; i < NumberOfMembers; ++i)
 		{
-			UserData UD = GetUDfromUniqueKey(ListIn, udParent.m_children[i]);
+			const UserData UD = GetUDfromUniqueKey(ListIn, udParent.m_children[i]);
 			FindOrInsertUD(m_currentMembers, UD);
-			++i;
 		}
 	}
 }
 
-bool CodeViewer::ShowTooltip(const SCNotification *pSCN)
+// if tooltip then show tooltip, otherwise jump to function/sub/variable definition
+bool CodeViewer::ShowTooltipOrGoToDefinition(const SCNotification *pSCN, const bool tooltip)
 {
 	//get word under pointer
-	const Sci_Position dwellpos = pSCN->position;
+	const Sci_Position dwellpos = pSCN ? pSCN->position : SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
 	const LRESULT wordstart = SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, dwellpos, TRUE);
 	const LRESULT wordfinish = SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, dwellpos, TRUE);
-	char Mess[MAX_LINE_LENGTH*4] = {}; int MessLen = 0;
 	const int CurrentLineNo = (int)SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, dwellpos, 0);
+
 	//return if in a comment
 	char text[MAX_LINE_LENGTH] = {};
 	SendMessage(m_hwndScintilla, SCI_GETLINE, CurrentLineNo, (LPARAM)text);
@@ -2086,6 +2089,8 @@ bool CodeViewer::ShowTooltip(const SCNotification *pSCN)
 	}
 
 	// is it a valid 'word'
+	string Mess;
+	const UserData *gotoDefinition = nullptr;
 	if ((SendMessage(m_hwndScintilla, SCI_ISRANGEWORD, wordstart, wordfinish)) && ((wordfinish - wordstart) < 255))
 	{
 		//Retrieve the word
@@ -2098,13 +2103,14 @@ bool CodeViewer::ShowTooltip(const SCNotification *pSCN)
 		RemovePadding(DwellWord);
 		RemoveNonVBSChars(DwellWord);
 		if (DwellWord.empty()) return false;
+
 		// Search for VBS reserved words
-		// ToDo: Should be able get some MS help for better descriptions
+		// ToDo: Should be able to get some MS help for better descriptions
 		vector<UserData>::iterator i;
 		int idx = 0;
 		if (FindUD(m_VBwordsDict, DwellWord, i, idx) == 0)
 		{
-			MessLen = sprintf_s(Mess, "VBS:%s", i->m_keyName.c_str());
+			Mess = "VBS: " + i->m_keyName;
 		}
 		else //if (MessLen == 0)
 		{
@@ -2117,40 +2123,41 @@ bool CodeViewer::ShowTooltip(const SCNotification *pSCN)
 			{
 				idx = FindClosestUD(m_pageConstructsDict, CurrentLineNo, idx);
 				const UserData* const Word = &m_pageConstructsDict->at(idx);
-				string ptemp = Word->m_description;
-				ptemp += " (Line:" + std::to_string((long long)Word->m_lineNum + 1) + ")";
+				Mess = Word->m_description;
+				Mess += " (Line: " + std::to_string(Word->m_lineNum + 1) + ")";
 				if ((Word->m_comment.length() > 1) && m_dwellHelp)
-				{
-					ptemp += "\n" +  m_pageConstructsDict->at(idx).m_comment;
-				}
-				MessLen = sprintf_s(Mess, "%s", ptemp.c_str());
+					Mess += '\n' + m_pageConstructsDict->at(idx).m_comment;
+				gotoDefinition = Word;
 			}
 			//Search VP core
 			else if (FindUD(m_VPcoreDict, DwellWord, i, idx) == 0)
 			{
 				idx = FindClosestUD(m_VPcoreDict, CurrentLineNo, idx);
-				string ptemp = m_VPcoreDict->at(idx).m_description;
+				Mess = m_VPcoreDict->at(idx).m_description;
 				if ((m_VPcoreDict->at(idx).m_comment.length() > 1) && m_dwellHelp)
-				{
-					ptemp += "\n" +  m_VPcoreDict->at(idx).m_comment;
-				}
-				MessLen = sprintf_s(Mess, "%s", ptemp.c_str());
+					Mess += '\n' + m_VPcoreDict->at(idx).m_comment;
 			}
 			else if (FindUD(m_componentsDict, DwellWord, i, idx) == 0)
-			{
-				MessLen = sprintf_s(Mess, "Component: %s", szDwellWord);
-			}
+				Mess = string("Component: ") + szDwellWord;
 		}
 #ifdef _DEBUG
-		if (MessLen == 0)
+		if (Mess.empty())
 		{
-			MessLen = sprintf_s(Mess, "Test:%s", szDwellWord);
+			Mess = string("Test: ") + szDwellWord;
 		}
 #endif
 	}
-	if (MessLen > 0)
+	if (!Mess.empty())
 	{
-		SendMessage(m_hwndScintilla,SCI_CALLTIPSHOW,dwellpos, (LPARAM)Mess);
+		if (tooltip)
+			SendMessage(m_hwndScintilla,SCI_CALLTIPSHOW,dwellpos, (LPARAM)Mess.c_str());
+		else if (gotoDefinition)
+		{
+			SendMessage(m_hwndScintilla, SCI_GOTOLINE, gotoDefinition->m_lineNum, 0);
+			SendMessage(m_hwndScintilla, SCI_GRABFOCUS, 0, 0);
+		}
+		else
+			return false;
 		return true;
 	}
 	return false;
@@ -2834,7 +2841,7 @@ CodeViewer* CodeViewer::GetCodeViewerPtr()
    return (CodeViewer *)GetWindowLongPtr(GWLP_USERDATA);
 }
 
-BOOL CodeViewer::ParseClickEvents(const int id)
+BOOL CodeViewer::ParseClickEvents(const int id, const SCNotification *pSCN)
 {
    CodeViewer* const pcv = GetCodeViewerPtr();
    switch (id)
@@ -2845,11 +2852,11 @@ BOOL CodeViewer::ParseClickEvents(const int id)
          pcv->EndSession();
          return TRUE;
       }
-	  case ID_SCRIPT_TOGGLE_LAST_ERROR_VISIBILITY:
-	  {
-		  SetLastErrorVisibility(!m_lastErrorWidgetVisible);
-		  return TRUE;
-	  }
+      case ID_SCRIPT_TOGGLE_LAST_ERROR_VISIBILITY:
+      {
+         SetLastErrorVisibility(!m_lastErrorWidgetVisible);
+         return TRUE;
+      }
       case ID_SCRIPT_PREFERENCES:
       {
          DialogBox(g_pvp->theInstance, MAKEINTRESOURCE(IDD_CODEVIEW_PREFS), GetHwnd(), CVPrefProc);
@@ -2900,11 +2907,16 @@ BOOL CodeViewer::ParseClickEvents(const int id)
          RemoveComment(pcv->m_hwndScintilla);
          return TRUE;
       }
+      case ID_GO_TO_DEFINITION:
+      {
+         ShowTooltipOrGoToDefinition(pSCN,false);
+         return TRUE;
+      }
    }
    return FALSE;
 }
 
-BOOL CodeViewer::ParseSelChangeEvent(const int id, SCNotification *pscn)
+BOOL CodeViewer::ParseSelChangeEvent(const int id, const SCNotification *pSCN)
 {
    CodeViewer* const pcv = GetCodeViewerPtr();
    switch (id)
@@ -2973,9 +2985,14 @@ BOOL CodeViewer::ParseSelChangeEvent(const int id, SCNotification *pscn)
          RemoveComment(pcv->m_hwndScintilla);
          return TRUE;
       }
+      case ID_GO_TO_DEFINITION:
+      {
+         ShowTooltipOrGoToDefinition(pSCN, false);
+         return TRUE;
+      }
       case ID_SHOWAUTOCOMPLETE:
       {
-         pcv->ShowAutoComplete(pscn);
+         pcv->ShowAutoComplete(pSCN);
          return TRUE;
       }
    }//switch (id)
@@ -3050,7 +3067,6 @@ BOOL CodeViewer::OnCommand(WPARAM wparam, LPARAM lparam)
    UNREFERENCED_PARAMETER(lparam);
 
    CodeViewer* const pcv = GetCodeViewerPtr();
-   SCNotification* const pscn = (SCNotification*)lparam;
 
    const int code = HIWORD(wparam);
    const int id = LOWORD(wparam);
@@ -3085,13 +3101,13 @@ BOOL CodeViewer::OnCommand(WPARAM wparam, LPARAM lparam)
       }
       case CBN_SELCHANGE: // Or accelerator
       {
-         if(ParseSelChangeEvent(id, pscn))
-            return TRUE;
-         break;
+         const SCNotification *const pscn = (SCNotification *)lparam;
+         return ParseSelChangeEvent(id, pscn) ? TRUE : FALSE;
       }
       case BN_CLICKED:
       {
-         return ParseClickEvents(id);
+         const SCNotification *const pscn = (SCNotification *)lparam;
+         return ParseClickEvents(id, pscn);
       }
 
    }
@@ -3101,7 +3117,7 @@ BOOL CodeViewer::OnCommand(WPARAM wparam, LPARAM lparam)
 LRESULT CodeViewer::OnNotify(WPARAM wparam, LPARAM lparam)
 {
    const NMHDR* const pnmh = (LPNMHDR)lparam;
-   SCNotification* const pscn = (SCNotification*)lparam;
+   const SCNotification* const pscn = (SCNotification*)lparam;
 
    const HWND hwndRE = pnmh->hwndFrom;
    const int code = pnmh->code;
@@ -3120,7 +3136,7 @@ LRESULT CodeViewer::OnNotify(WPARAM wparam, LPARAM lparam)
       case SCN_DWELLSTART:
       {
          if (pcv->m_dwellDisplay)
-            pcv->m_toolTipActive = pcv->ShowTooltip(pscn);
+            pcv->m_toolTipActive = pcv->ShowTooltipOrGoToDefinition(pscn, true);
          break;
       }
       case SCN_DWELLEND:
@@ -3141,11 +3157,11 @@ LRESULT CodeViewer::OnNotify(WPARAM wparam, LPARAM lparam)
       }
       case SCN_UPDATEUI:
       {
-         char szT[256];
          const size_t pos = ::SendMessage(hwndRE, SCI_GETCURRENTPOS, 0, 0);
          const size_t line = ::SendMessage(hwndRE, SCI_LINEFROMPOSITION, pos, 0) + 1;
          const size_t column = ::SendMessage(hwndRE, SCI_GETCOLUMN, pos, 0);
 
+         char szT[256];
          sprintf_s(szT, "Line %u, Col %u", (U32)line, (U32)column);
          ::SendMessage(pcv->m_hwndStatus, SB_SETTEXT, 0 | 0, (size_t)szT);
          break;
@@ -3698,11 +3714,8 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
    const int len = lstrlenW(wzT);
 
    char * const szT = new char[len + 1];
-
    WideCharToMultiByteNull(CP_ACP, 0, wzT, -1, szT, len + 1, nullptr, nullptr);
-
    m_pcv->AddToDebugOutput(szT);
-
    delete[] szT;
 
    return S_OK;

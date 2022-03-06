@@ -7,6 +7,8 @@ FEATURES:
 
 - add disable lighting option for balls (and their trails) to the video preferences (e.g. to help the visually handicapped)
 
+- add 'Go To Definition' to the script editor (via F12 key), which allows to jump to the function/sub/variable definition from the current cursor pos/selection
+
 FIXES:
 
 - fix crashes in Direct Sound when using certain WAVE_FORMAT_IEEE_FLOAT .wav samples

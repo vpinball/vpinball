@@ -245,8 +245,8 @@ public:
    void LoadFromFile(const string& filename);
    void SetCaption(const string& szCaption);
 
-   bool ShowTooltip(const SCNotification *Scn);
-   void ShowAutoComplete(SCNotification *pSCN);
+   bool ShowTooltipOrGoToDefinition(const SCNotification *pSCN, const bool tooltip);
+   void ShowAutoComplete(const SCNotification *pSCN);
 
    void UpdateRegWithPrefs();
    void UpdatePrefsfromReg();
@@ -328,8 +328,8 @@ protected:
 
 private:
    CodeViewer* GetCodeViewerPtr();
-   BOOL ParseClickEvents(const int id);
-   BOOL ParseSelChangeEvent(const int id, SCNotification *pscn);
+   BOOL ParseClickEvents(const int id, const SCNotification *pSCN);
+   BOOL ParseSelChangeEvent(const int id, const SCNotification *pSCN);
 
    bool ParseOKLineLength(const size_t LineLen);
    void ParseDelimtByColon(string &result, string &wholeline);

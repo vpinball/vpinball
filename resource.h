@@ -1315,6 +1315,7 @@
 #define ID_ADD_COMMENT                  32883
 #define ID_EDIT_UNCOMMENT               32886
 #define ID_REMOVE_COMMENT               32888
+#define ID_GO_TO_DEFINITION             32889
 #define ID_INSERT_FLASHER               32890
 #define ID_TABLE_DIMENSIONMANAGER       32894
 #define ID_VIEW_SOLID                   32895
