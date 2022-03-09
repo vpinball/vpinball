@@ -11,6 +11,11 @@ FEATURES:
 
 FIXES:
 
+- update line number for script subs/functions when updating the function list
+  (i.e. so that jumping to these works properly again after changing other script code)
+
+- fix old VPX regression leading to wrong parent links for some of the script data (leading to all kinds of other side effects when parsing the script code)
+
 - fix crashes in Direct Sound when using certain WAVE_FORMAT_IEEE_FLOAT .wav samples
 
 - fix showing property dialog if multiple elements were selected
