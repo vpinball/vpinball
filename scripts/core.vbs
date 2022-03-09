@@ -77,7 +77,7 @@ Function CheckScript(file) 'Checks Tables and Scripts directories for specified 
 	On Error Goto 0
 End Function
 
-Function LoadScript(file) 'Checks Tables and Scripts directories for specified vbs file, and if it exitst, will load it.
+Function LoadScript(file) 'Checks Tables and Scripts directories for specified vbs file, and if it exists, will load it.
 	LoadScript = False
 	On Error Resume Next
 	If CheckScript(file) Then ExecuteGlobal GetTextFile(file):LoadScript = True
