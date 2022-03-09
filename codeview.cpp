@@ -189,13 +189,13 @@ static uint32_t validate_utf8(uint32_t *const state, const char * const str, con
 //
 //
 
-static void GetRange(const HWND m_hwndScintilla, const size_t start, const size_t end, char * const text)
+static void GetRange(const HWND hwndScintilla, const size_t start, const size_t end, char * const text)
 {
    Sci_TextRange tr;
    tr.chrg.cpMin = (Sci_PositionCR)start;
    tr.chrg.cpMax = (Sci_PositionCR)end;
    tr.lpstrText = text;
-   SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
+   SendMessage(hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 }
 
 void CodeViewer::GetWordUnderCaret()
@@ -638,7 +638,7 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 	m_validChars = szValidChars;
 	m_VBvalidChars = string("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
 	m_stopErrorDisplay = false;
-	// Create new list of user functions & Collections- filled in ParseForFunction(), first called in LoadFromStrem()
+	// Create new list of user functions & Collections- filled in ParseForFunction(), first called in LoadFromStream()
 	m_autoCompList = new vector<string>();
 	m_componentsDict = new vector<UserData>();
 	m_pageConstructsDict = new vector<UserData>();
@@ -2032,9 +2032,9 @@ void CodeViewer::ShowAutoComplete(const SCNotification *pSCN)
 		{
 			m_currentConstruct.lpstrText = ConstructTextBuff;
 			GetMembers(m_pageConstructsDict, m_currentConstruct.lpstrText);
+			//if no construct (no children) exit
+			if (m_currentMembers->empty()) return;
 		}
-		//if no contruct (no children) exit
-		if (m_currentMembers->empty()) return;
 
 		//autocomp string  = members of construct
 		m_autoCompMembersString.clear();
@@ -2350,11 +2350,11 @@ bool CodeViewer::ParseOKLineLength(const size_t LineLen)
 
 
 static int ParentLevel = 0;
+static string CurrentParentKey;
 
 //false is a fail/syntax error
 bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const string &UCline, const string &line, const int Lineno)
 {
-	string CurrentParentKey;
 	const size_t endIdx = SureFind(UCline,"END"); 
 	const size_t exitIdx = SureFind(UCline,"EXIT"); 
 	RemoveNonVBSChars(ud.m_keyName);
@@ -2363,7 +2363,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 	{
 		if (ud.eTyping == eDim || ud.eTyping == eConst)
 		{
-			ud.m_uniqueKey = lowerCase(ud.m_keyName) + CurrentParentKey + "\0";
+			ud.m_uniqueKey = lowerCase(ud.m_keyName) + CurrentParentKey;
 			ud.m_uniqueParent = CurrentParentKey;
 			FindOrInsertUD(ListIn, ud);
 			size_t iCurParent = GetUDPointerfromUniqueKey(ListIn, CurrentParentKey);
@@ -2382,10 +2382,10 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 				RemoveByVal(crWord);
 				RemovePadding(crWord);
 				RemoveNonVBSChars(crWord);
-				if (crWord.size() <= MAX_FIND_LENGTH && crWord.size() > 0) 
+				if (crWord.size() <= MAX_FIND_LENGTH && !crWord.empty()) 
 				{
 					ud.m_keyName = crWord;
-					ud.m_uniqueKey = lowerCase(ud.m_keyName) + CurrentParentKey + "\0";
+					ud.m_uniqueKey = lowerCase(ud.m_keyName) + CurrentParentKey;
 					ud.m_uniqueParent = CurrentParentKey;
 					FindOrInsertUD(ListIn, ud);
 					if (!CurrentParentKey.empty() && (iCurParent < ListIn->size()))
@@ -2401,7 +2401,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 		//Its something new and structural and therefore we are now a parent
 		if (ParentLevel == 0)// its a root
 		{
-			ud.m_uniqueKey = lowerCase(ud.m_keyName) + "\0";
+			ud.m_uniqueKey = lowerCase(ud.m_keyName);
 			ud.m_uniqueParent.clear();
 			const size_t iCurParent = FindOrInsertUD(ListIn, ud);
 			//if (iCurParent == -1)
@@ -2422,11 +2422,11 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 				RemoveByVal(crWord);
 				RemovePadding(crWord);
 				RemoveNonVBSChars(crWord);
-				if (crWord.size() <= MAX_FIND_LENGTH && crWord.size() > 0)
+				if (crWord.size() <= MAX_FIND_LENGTH && !crWord.empty())
 				{
 					ud.m_keyName = crWord;
 					ud.eTyping = eDim;
-					ud.m_uniqueKey = lowerCase(ud.m_keyName) + CurrentParentKey + "\0";
+					ud.m_uniqueKey = lowerCase(ud.m_keyName) + CurrentParentKey;
 					ud.m_uniqueParent = CurrentParentKey;
 					FindOrInsertUD(ListIn, ud);
 					if (!CurrentParentKey.empty())
@@ -2440,14 +2440,15 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 		}
 		else 
 		{
+			ud.m_uniqueKey = lowerCase(ud.m_keyName) + CurrentParentKey;
 			ud.m_uniqueParent = CurrentParentKey;
-			ud.m_uniqueKey = lowerCase(ud.m_keyName) + CurrentParentKey + "\0";
 			FindOrInsertUD(ListIn, ud);
-			int iUDIndx = UDKeyIndex(ListIn, CurrentParentKey);
+			const int iUDIndx = UDKeyIndex(ListIn, CurrentParentKey);
 			if (iUDIndx == -1)
 			{
 				//ParentTreeInvalid = true;
 				ParentLevel = 0;
+				CurrentParentKey.clear();
 				if (!m_stopErrorDisplay)
 				{
 					m_stopErrorDisplay = true;
@@ -2471,6 +2472,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 			{
 				//ParentTreeInvalid = true;
 				ParentLevel = 0;
+				CurrentParentKey.clear();
 				if (!m_stopErrorDisplay)
 				{
 					m_stopErrorDisplay = true;
@@ -2488,11 +2490,11 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 					int iCurParent = UDKeyIndex(ListIn, CurrentParentKey);
 					if (iCurParent != -1)
 					{
-						UserData *CurrentParentUD = (&ListIn->at(iCurParent));
-						int iGrandParent = UDKeyIndex(ListIn, CurrentParentUD->m_uniqueParent);
+						UserData *CurrentParentUD = &(ListIn->at(iCurParent));
+						const int iGrandParent = UDKeyIndex(ListIn, CurrentParentUD->m_uniqueParent);
 						if (iGrandParent != -1)
 						{
-							UserData *CurrentGrandParentUD = (&ListIn->at(iGrandParent));
+							UserData *CurrentGrandParentUD = &(ListIn->at(iGrandParent));
 							CurrentParentKey = CurrentGrandParentUD->m_uniqueKey; 
 						}
 						else
@@ -2510,6 +2512,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 				else
 				{	//Error - end without start
 					ParentLevel = 0;
+					CurrentParentKey.clear();
 					return true;
 				}
 			}//if (ParentLevel == -1)
@@ -2626,7 +2629,7 @@ void CodeViewer::ReadLineToParseBrain(string wholeline, const int linecount, vec
 			size_t idx = string::npos;
 			ParseFindConstruct(idx, UCline, UD.eTyping, SearchLength);
 			if (idx == string::npos) continue;
-			if (idx != string::npos) // Found something something structrual
+			if (idx != string::npos) // Found something something structural
 			{
 				const size_t doubleQuoteIdx = line.find('\"');
 				if ((doubleQuoteIdx != string::npos) && (doubleQuoteIdx < idx)) continue; // in a string literal
@@ -2635,7 +2638,7 @@ void CodeViewer::ReadLineToParseBrain(string wholeline, const int linecount, vec
 				UD.m_keyName = sSubName;
 				//UserData ud(linecount, line, sSubName, Type);
 				if (!ParseStructureName(ListIn, UD, UCline, line, linecount))
-				{/*A critical brain error occured */}
+				{/*A critical brain error occurred */}
 			}// if ( idx != string::npos)
 		}// while (wholeline.length > 1) 
 }
@@ -2679,9 +2682,12 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 {
 	const int scriptLines = (int)SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
 	SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
+
 	ParentLevel = 0; //root
+	CurrentParentKey.clear();
 	//ParentTreeInvalid = false;
-	for (int linecount = 0; linecount < scriptLines; ++linecount) 
+
+	for (int linecount = 0; linecount < scriptLines; ++linecount)
 	{
 		// Read line
 		const size_t lineLength = SendMessage(m_hwndScintilla, SCI_LINELENGTH, linecount, 0);
@@ -2794,9 +2800,10 @@ void CodeViewer::ParseVPCore()
 		return;
 	}
 
-	//initalise Parent child
+	//initialize Parent child
 ///////////////////////
 	ParentLevel = 0; //root
+	CurrentParentKey.clear();
 	m_stopErrorDisplay = true;/// WIP BRANDREW (was set to false)
 	//ParentTreeInvalid = false;
 	int linecount = 0;

@@ -15,20 +15,22 @@ UserData::UserData(const int LineNo, const string &Desc, const string &Name, con
 	eTyping = TypeIn;
 }
 
-int FindUDbyKey(vector<UserData>* const ListIn, const string& strIn, vector<UserData>::iterator& UDiterOut, int& PosOut);
+int FindUDbyKey(const vector<UserData>* const ListIn, const string& strIn, int& PosOut);
 
 /*	FindUD - Now a human Search!
  0 =Found & UDiterOut set to point at UD in list.
 -1 =Not Found 
  1 =Not Found
 -2 =Zero Length string or error*/
-int FindUD(vector<UserData>* const ListIn, string &strIn, vector<UserData>::iterator& UDiterOut, int &Pos)
+int FindUD(const vector<UserData>* const ListIn, string &strIn, vector<UserData>::const_iterator& UDiterOut, int &Pos)
 {
 	RemovePadding(strIn);
 	if (strIn.empty() || (!ListIn) || ListIn->empty()) return -2;
 
 	Pos = -1;
-	const int KeyResult = FindUDbyKey(ListIn, strIn, UDiterOut, Pos);
+	const int KeyResult = FindUDbyKey(ListIn, strIn, Pos);
+	if (Pos != -1)
+		UDiterOut = ListIn->begin() + Pos;
 	//If it's a top level construct it will have no parents and therefore have a unique key.
 	if (KeyResult == 0) return 0;
 
@@ -119,14 +121,10 @@ static int UDKeyIndexHelper(const vector<UserData>* const ListIn, const string &
 	return result;
 }
 
-static int FindUDbyKey(vector<UserData>* const ListIn, const string &strIn, vector<UserData>::iterator &UDiterOut, int &PosOut)
+static int FindUDbyKey(const vector<UserData>* const ListIn, const string &strIn, int &PosOut)
 {
 	if (ListIn && !ListIn->empty() && !strIn.empty()) // Sanity check
-	{
-		const int result = UDKeyIndexHelper<true>(ListIn, strIn, PosOut);
-		UDiterOut = ListIn->begin() + PosOut;
-		return result;
-	}
+		return UDKeyIndexHelper<true>(ListIn, strIn, PosOut);
 	else
 		return -2;
 }
@@ -194,12 +192,12 @@ size_t FindOrInsertUD(vector<UserData>* const ListIn, const UserData &udIn)
 		ListIn->push_back(udIn);
 		return 0;
 	}
-	vector<UserData>::iterator iterFound = ListIn->begin();
 	int Pos = 0;
-	const int KeyFound = FindUDbyKey(ListIn, udIn.m_uniqueKey, iterFound, Pos);
+	const int KeyFound = FindUDbyKey(ListIn, udIn.m_uniqueKey, Pos);
 	if (KeyFound == 0)
 	{
-		//Same name, different parents.
+		//Same name, different parents?
+		vector<UserData>::const_iterator iterFound = ListIn->begin() + Pos;
 		const int ParentResult = udIn.m_uniqueParent.compare(iterFound->m_uniqueParent);
 		if (ParentResult == -1)
 			ListIn->insert(iterFound, udIn);
@@ -209,23 +207,27 @@ size_t FindOrInsertUD(vector<UserData>* const ListIn, const UserData &udIn)
 			++Pos;
 			ListIn->insert(iterFound, udIn);
 		}
+		else
+		{
+			// assign again, as e.g. line of func/sub/var could have changed by other updates
+			ListIn->at(Pos) = udIn;
+		}
 		return Pos;
 	}
 
 	if (KeyFound == -1) //insert before, somewhere in the middle
 	{
-		ListIn->insert(iterFound, udIn);
+		ListIn->insert(ListIn->begin() + Pos, udIn);
 		return Pos;
 	}
 	else
 		if (KeyFound == 1) //insert above last element - Special case 
 		{
-			++iterFound;
-			ListIn->insert(iterFound, udIn);
-			return ++Pos;
+			ListIn->insert(ListIn->begin() + (Pos+1), udIn);
+			return Pos+1;
 		}
-		else if (iterFound == (ListIn->end() - 1))
-		{//insert at end
+		else if ((ListIn->begin() + Pos) == (ListIn->end() - 1))
+		{ //insert at end
 			ListIn->push_back(udIn);
 			return ListIn->size() - 1;//Zero Base
 		}
@@ -260,9 +262,10 @@ bool FindOrInsertStringIntoAutolist(vector<string>* const ListIn, const string &
 		iNewPos = (result < 0) ? (iCurPos - iJumpDelta) : (iCurPos + iJumpDelta);
 		iJumpDelta >>= 1;
 	}
-	vector<string>::iterator i = ListIn->begin() + iCurPos;
 
 	if (result == 0) return false; // Already in list
+
+	vector<string>::iterator i = ListIn->begin() + iCurPos;
 
 	if (result == -1) //insert before, somewhere in the middle
 	{
