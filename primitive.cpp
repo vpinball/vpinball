@@ -1131,7 +1131,7 @@ void Primitive::UpdateStatusBarInfo()
        m_vpinball->SetStatusBarUnitInfo(tbuf, false);
    }
    else
-       m_vpinball->SetStatusBarUnitInfo("", false);
+       m_vpinball->SetStatusBarUnitInfo(string(), false);
 
 }
 

@@ -87,7 +87,7 @@ public:
    bool AddLayer(const string& name, IEditable* piedit);
    void DeleteLayer();
    void ClearList();
-   void UpdateLayerList(const std::string& name = "");
+   void UpdateLayerList(const std::string& name = string());
    void UpdateElement(IEditable* const pedit);
    void DeleteElement(IEditable* const pedit);
    string GetCurrentSelectedLayerName() const;

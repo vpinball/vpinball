@@ -339,5 +339,5 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 
 void ISelect::UpdateStatusBarInfo()
 {
-    m_vpinball->SetStatusBarUnitInfo("", false);
+    m_vpinball->SetStatusBarUnitInfo(string(), false);
 }

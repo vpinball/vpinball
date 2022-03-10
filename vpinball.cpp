@@ -339,7 +339,7 @@ bool VPinball::OpenFileDialog(const string& initDir, std::vector<std::string>& f
    }
    else
    {
-      filename.push_back("");
+      filename.push_back(string());
 
       return false;
    }
@@ -360,7 +360,7 @@ bool VPinball::SaveFileDialog(const string& initDir, std::vector<std::string>& f
    }
    else
    {
-      filename.push_back("");
+      filename.push_back(string());
 
       return false;
    }

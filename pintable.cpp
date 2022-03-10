@@ -1321,7 +1321,7 @@ void PinTable::FVerifySaveToClose()
       for (size_t i = 0; i < m_vAsyncHandles.size(); i++)
          CloseHandle(m_vAsyncHandles[i]);
 
-      m_vpinball->SetActionCur("");
+      m_vpinball->SetActionCur(string());
    }
 }
 
@@ -2216,7 +2216,7 @@ void PinTable::AutoSave()
    }
    else
    {
-      m_vpinball->SetActionCur("");
+      m_vpinball->SetActionCur(string());
    }
 
    m_vpinball->SetCursorCur(nullptr, IDC_ARROW);
@@ -2332,7 +2332,7 @@ HRESULT PinTable::Save(const bool saveAs)
       pstgRoot->Commit(STGC_DEFAULT);
       pstgRoot->Release();
 
-      m_vpinball->SetActionCur("");
+      m_vpinball->SetActionCur(string());
       m_vpinball->SetCursorCur(nullptr, IDC_ARROW);
 
       m_undo.SetCleanPoint(eSaveClean);
@@ -3651,7 +3651,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
    pstgRoot->Release();
 
-   m_vpinball->SetActionCur("");
+   m_vpinball->SetActionCur(string());
 
    m_vpinball->GetLayersListDialog()->ClearList();
    // copy all elements into their layers
@@ -3666,16 +3666,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
          if (psel->m_oldLayerIndex == i)
          {
              m_layer[i].push_back(piedit);
-             if (psel->m_layerName == "")
-             {
-                 const string name = "Layer_" + std::to_string(i+1);
-                 psel->m_layerName = name;
-                 m_vpinball->GetLayersListDialog()->AddLayer(name, piedit);
-             }
-             else
-             {
-                 m_vpinball->GetLayersListDialog()->AddLayer(psel->m_layerName, piedit);
-             }
+             if (psel->m_layerName.empty())
+                 psel->m_layerName = "Layer_" + std::to_string(i+1);
+             m_vpinball->GetLayersListDialog()->AddLayer(psel->m_layerName, piedit);
          }
       }
    }
