@@ -10,7 +10,7 @@ enum WordType { eUnknown, eClass, eSub, eFunction, ePropGet, ePropLet, ePropSet,
 class UserData
 {
 public:
-   string m_uniqueKey;
+   string m_uniqueKey;        // always lower case
    int m_lineNum;             // Line No. Declaration
    string m_keyName;          // Name
    WordType eTyping;

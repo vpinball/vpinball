@@ -190,8 +190,9 @@ static uint32_t validate_utf8(uint32_t *const state, const char * const str, con
 //
 //
 
+// strSearchData has to be lower case
 template<bool uniqueKey> // otherwise keyName
-static int UDKeyIndexHelper(const vector<UserData>& ListIn, const string &strIn, int& curPosOut)
+static int UDKeyIndexHelper(const vector<UserData>& ListIn, const string &strSearchData, int& curPosOut)
 {
 	const int ListSize = (int)ListIn.size();
 	curPosOut = 1u << 30;
@@ -199,10 +200,9 @@ static int UDKeyIndexHelper(const vector<UserData>& ListIn, const string &strIn,
 		curPosOut >>= 1;
 	int iJumpDelta = curPosOut >> 1;
 	--curPosOut; //Zero Base
-	const string strSearchData = lowerCase(strIn);
 	while (true)
 	{
-		const int result = (curPosOut >= ListSize) ? -1 : strSearchData.compare(lowerCase(uniqueKey ? ListIn[curPosOut].m_uniqueKey : ListIn[curPosOut].m_keyName));
+		const int result = (curPosOut >= ListSize) ? -1 : strSearchData.compare(uniqueKey ? ListIn[curPosOut].m_uniqueKey : lowerCase(ListIn[curPosOut].m_keyName));
 		if (iJumpDelta == 0 || result == 0) return result;
 		curPosOut = (result < 0) ? (curPosOut - iJumpDelta) : (curPosOut + iJumpDelta);
 		iJumpDelta >>= 1;
@@ -217,46 +217,40 @@ static int UDKeyIndex(const vector<UserData>& ListIn, const string &strIn)
 	if (strIn.empty() || ListIn.empty()) return -1;
 
 	int iCurPos;
-	const int result = UDKeyIndexHelper<uniqueKey>(ListIn, strIn, iCurPos);
+	const int result = UDKeyIndexHelper<uniqueKey>(ListIn, lowerCase(strIn), iCurPos);
 
 	///TODO: needs to consider children?
 	return (result == 0) ? iCurPos : -1;
 }
 
 /*	FindUD - Now a human Search!
- 0 =Found & UDiterOut set to point at UD in list.
+ 0 =Found set to point at UD in list.
 -1 =Not Found 
  1 =Not Found
--2 =Zero Length string or error*/
-static int FindUD(const vector<UserData>& ListIn, string &strIn, vector<UserData>::const_iterator& UDiterOut, int &Pos)
+-2 =Zero Length string or error
+strSearchData has to be lower case */
+static int FindUD(const vector<UserData> &ListIn, const string &strSearchData, int &Pos)
 {
-	RemovePadding(strIn);
-	if (strIn.empty() || ListIn.empty()) return -2;
+	if (strSearchData.empty() || ListIn.empty()) return -2;
 
 	Pos = -1;
-	const int KeyResult = UDKeyIndexHelper<true>(ListIn, strIn, Pos);
+	const int KeyResult = UDKeyIndexHelper<true>(ListIn, strSearchData, Pos);
 
 	//If it's a top level construct it will have no parents and therefore have a unique key.
-	if (KeyResult == 0)
-	{
-		if (Pos != -1)
-			UDiterOut = ListIn.begin() + Pos;
-		return 0;
-	}
+	if (KeyResult == 0) return 0;
 
 	//Now see if it's in the Name list
 	//Jumpdelta should be initialized to the maximum count of an individual key name
 	//But for the moment the biggest is 64 x's in AMH
 	Pos += KeyResult; //Start very close to the result of key search
 	if (Pos < 0) Pos = 0;
-	//Find the start of other instances of strIn by crawling up list
+	//Find the start of other instances of strSearchData by crawling up list
 	//Usually (but not always) UDKeyIndexHelper<true> returns top of the list so its fast
-	const string strSearchData = lowerCase(strIn);
 	const size_t SearchWidth = strSearchData.size();
 	do
 	{
 		--Pos;
-	} while (Pos >= 0 && strSearchData.compare(lowerCase(ListIn[Pos].m_uniqueKey).substr(0, SearchWidth)) == 0);
+	} while (Pos >= 0 && strSearchData.compare(ListIn[Pos].m_uniqueKey.substr(0, SearchWidth)) == 0);
 	++Pos;
 	// now walk down list of Keynames looking for what we want.
 	int result;
@@ -270,7 +264,6 @@ static int FindUD(const vector<UserData>& ListIn, string &strIn, vector<UserData
 		result = strSearchData.compare(lowerCase(ListIn[Pos].m_keyName).substr(0, SearchWidth));
 	} while (result == 0); //EO SubList
 
-	UDiterOut = ListIn.begin() + Pos;
 	return result;
 }
 
@@ -361,7 +354,7 @@ static int FindClosestUD(const vector<UserData>& ListIn, const int CurrentLine, 
 	do
 	{
 		--iNewPos;
-	} while (iNewPos >= 0 && strSearchData.compare(lowerCase(ListIn[iNewPos].m_uniqueKey).substr(0, SearchWidth)) == 0);
+	} while (iNewPos >= 0 && strSearchData.compare(ListIn[iNewPos].m_uniqueKey.substr(0, SearchWidth)) == 0);
 	++iNewPos;
 	//Now at top of list
 	//find nearest definition above current line
@@ -404,16 +397,12 @@ static bool FindOrInsertStringIntoAutolist(vector<string>& ListIn, const string 
 	while (true)
 	{
 		iCurPos = iNewPos;
-		if (iCurPos >= ListSize)
-			result = -1;
-		else
-			result = strSearchData.compare(lowerCase(ListIn[iCurPos]));
-		if (iJumpDelta == 0 || result == 0) break;
+		result = (iCurPos >= ListSize) ? - 1 : strSearchData.compare(lowerCase(ListIn[iCurPos]));
+		if (result == 0) return false; // Already in list
+		if (iJumpDelta == 0) break;
 		iNewPos = (result < 0) ? (iCurPos - iJumpDelta) : (iCurPos + iJumpDelta);
 		iJumpDelta >>= 1;
 	}
-
-	if (result == 0) return false; // Already in list
 
 	const vector<string>::iterator i = ListIn.begin() + iCurPos;
 
@@ -456,7 +445,7 @@ void CodeViewer::GetWordUnderCaret()
    const LRESULT CurPos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0 );
    m_wordUnderCaret.chrg.cpMin = (Sci_PositionCR)SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, CurPos, TRUE);
    m_wordUnderCaret.chrg.cpMax = (Sci_PositionCR)SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, CurPos, TRUE);
-   if (( m_wordUnderCaret.chrg.cpMax - m_wordUnderCaret.chrg.cpMin) > MAX_FIND_LENGTH) return;
+   if ((m_wordUnderCaret.chrg.cpMax - m_wordUnderCaret.chrg.cpMin) > MAX_FIND_LENGTH) return;
 
    SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)&m_wordUnderCaret);
 }
@@ -910,8 +899,7 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 			WordChar = vbsReservedWords[intWordFinish];
 		}
 		UserData VBWord;
-		VBWord.m_keyName = szWord;
-		VBWord.m_uniqueKey = VBWord.m_keyName;
+		VBWord.m_uniqueKey = VBWord.m_keyName = szWord;
 		FindOrInsertUD(m_VBwordsDict, VBWord);
 	}
 	m_vbsKeyWords.clear();// For colouring scintilla
@@ -2254,7 +2242,6 @@ void CodeViewer::ShowAutoComplete(const SCNotification *pSCN)
 		//Check Table Script
 		if (m_currentMembers.empty())
 		{
-			m_currentConstruct.lpstrText = ConstructTextBuff;
 			GetMembers(m_pageConstructsDict, m_currentConstruct.lpstrText);
 			//if no construct (no children) exit
 			if (m_currentMembers.empty()) return;
@@ -2327,11 +2314,11 @@ bool CodeViewer::ShowTooltipOrGoToDefinition(const SCNotification *pSCN, const b
 
 		// Search for VBS reserved words
 		// ToDo: Should be able to get some MS help for better descriptions
-		vector<UserData>::iterator i;
-		int idx = 0;
-		if (FindUD(m_VBwordsDict, DwellWord, i, idx) == 0)
+		int idx;
+		RemovePadding(DwellWord);
+		if (FindUD(m_VBwordsDict, DwellWord, idx) == 0)
 		{
-			Mess = "VBS: " + i->m_keyName;
+			Mess = "VBS: " + m_VBwordsDict[idx].m_keyName;
 		}
 		else //if (MessLen == 0)
 		{
@@ -2340,7 +2327,7 @@ bool CodeViewer::ShowTooltipOrGoToDefinition(const SCNotification *pSCN, const b
 			if (m_pageConstructsDict.empty()) ParseForFunction();
 
 			//search subs/funcs
-			if (FindUD(m_pageConstructsDict, DwellWord, i, idx) == 0)
+			if (FindUD(m_pageConstructsDict, DwellWord, idx) == 0)
 			{
 				idx = FindClosestUD(m_pageConstructsDict, CurrentLineNo, idx);
 				const UserData* const Word = &m_pageConstructsDict[idx];
@@ -2351,14 +2338,14 @@ bool CodeViewer::ShowTooltipOrGoToDefinition(const SCNotification *pSCN, const b
 				gotoDefinition = Word;
 			}
 			//Search VP core
-			else if (FindUD(m_VPcoreDict, DwellWord, i, idx) == 0)
+			else if (FindUD(m_VPcoreDict, DwellWord, idx) == 0)
 			{
 				idx = FindClosestUD(m_VPcoreDict, CurrentLineNo, idx);
 				Mess = m_VPcoreDict[idx].m_description;
 				if ((m_VPcoreDict[idx].m_comment.length() > 1) && m_dwellHelp)
 					Mess += '\n' + m_VPcoreDict[idx].m_comment;
 			}
-			else if (FindUD(m_componentsDict, DwellWord, i, idx) == 0)
+			else if (FindUD(m_componentsDict, DwellWord, idx) == 0)
 				Mess = string("Component: ") + szDwellWord;
 		}
 #ifdef _DEBUG
@@ -2571,7 +2558,7 @@ bool CodeViewer::ParseOKLineLength(const size_t LineLen)
 
 
 static int ParentLevel = 0;
-static string CurrentParentKey;
+static string CurrentParentKey; // always lower case
 
 //false is a fail/syntax error
 bool CodeViewer::ParseStructureName(vector<UserData>& ListIn, UserData ud, const string &UCline, const string &line, const int Lineno)
@@ -2921,7 +2908,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		}
 	}
 	//Collect Objects/Components from the menu. (cheat!)
-	size_t CBCount = SendMessage(m_hwndItemList, CB_GETCOUNT, 0, 0)-1;//Zero Based
+	size_t CBCount = SendMessage(m_hwndItemList, CB_GETCOUNT, 0, 0)-1; //Zero Based
 	while ((SSIZE_T)CBCount >= 0)
 	{
 		char c_str1[256] = {};
@@ -2930,7 +2917,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		{
 			UserData ud;
 			ud.m_keyName = c_str1;
-			ud.m_uniqueKey = ud.m_keyName;
+			ud.m_uniqueKey = lowerCase(ud.m_keyName);
 			FindOrInsertUD(m_componentsDict,ud);
 		}
 		CBCount--;
@@ -2971,7 +2958,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 	m_autoCompString.clear();
 	for (vector<string>::iterator i = m_autoCompList.begin(); i != m_autoCompList.end();++i)
 	{
-		m_autoCompString.append(i->data());
+		m_autoCompString += *i;
 		m_autoCompString += ' ';
 	}
 	//Send the collected func/subs to scintilla for highlighting - always as lowercase as VBS is case insensitive.
@@ -3187,12 +3174,15 @@ BOOL CodeViewer::ParseSelChangeEvent(const int id, const SCNotification *pSCN)
          {
             char ConstructName[MAX_FIND_LENGTH] = {};
             /*size_t index =*/ SendMessage(pcv->m_hwndFunctionList, CB_GETLBTEXT, Listindex, (LPARAM)ConstructName);
-            vector<UserData>::iterator i;
             int idx;
             string s(ConstructName);
-            /*int Pos =*/ FindUD(pcv->m_pageConstructsDict, s, i, idx);
-            SendMessage(pcv->m_hwndScintilla, SCI_GOTOLINE, i->m_lineNum, 0);
-            SendMessage(pcv->m_hwndScintilla, SCI_GRABFOCUS, 0, 0);
+            RemovePadding(s);
+            FindUD(pcv->m_pageConstructsDict, lowerCase(s), idx);
+            if (idx != -1)
+            {
+               SendMessage(pcv->m_hwndScintilla, SCI_GOTOLINE, pcv->m_pageConstructsDict[idx].m_lineNum, 0);
+               SendMessage(pcv->m_hwndScintilla, SCI_GRABFOCUS, 0, 0);
+            }
          }
          return TRUE;
       }
@@ -3301,7 +3291,8 @@ BOOL CodeViewer::OnCommand(WPARAM wparam, LPARAM lparam)
       }
       case SCEN_CHANGE:
       {
-         // TODO: Line Parse Brain here?
+         //also see SCN_MODIFIED handling which does more finegrained updating calls
+
          if (pcv->m_errorLineNumber != -1)
             pcv->UncolorError();
          if (!pcv->m_ignoreDirty && (pcv->m_sdsDirty < eSaveDirty))
@@ -3402,6 +3393,12 @@ LRESULT CodeViewer::OnNotify(WPARAM wparam, LPARAM lparam)
       {
          if (pscn->margin == 1)
             pcv->MarginClick(pscn->position, pscn->modifiers);
+         break;
+      }
+      case SCN_MODIFIED:
+      {
+         if (pscn->linesAdded != 0) // line(s) of text deleted or added? -> update all (i.e. especially to update line numbers then)
+            pcv->ParseForFunction(); //!! too slow for large script tables?!
          break;
       }
    }

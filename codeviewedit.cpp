@@ -21,15 +21,15 @@ CVPreference::CVPreference(
 		const bool bDisplay, const string& szRegistryName,
 		const int szScintillaKeyword, const int IDC_ChkBox,
 		const int IDC_ColorBut, const int IDC_Font)
+   : m_rgb(crTextColor),
+     m_sciKeywordID(szScintillaKeyword),
+     IDC_ChkBox_code(IDC_ChkBox),
+     IDC_ColorBut_code(IDC_ColorBut),
+     IDC_Font_code(IDC_Font),
+     m_szRegName(szRegistryName),
+     m_highlight(bDisplay)
 {
 	memset(&m_logFont, 0, sizeof(LOGFONT));
-	m_rgb = crTextColor;
-	m_highlight = bDisplay;
-	m_szRegName = szRegistryName;
-	m_sciKeywordID = szScintillaKeyword;
-	IDC_ChkBox_code = IDC_ChkBox;
-	IDC_ColorBut_code = IDC_ColorBut;
-	IDC_Font_code = IDC_Font;
 }
 
 void CVPreference::SetCheckBox(const HWND hwndDlg)
