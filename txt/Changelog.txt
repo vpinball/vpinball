@@ -16,6 +16,7 @@ FIXES:
 - remove subs/functions from the function list when these are deleted during editing
 - fix old VPX regression leading to wrong parent links for some of the script data (leading to all kinds of other side effects when parsing the script code)
 - update internal script representation continuously while typing (please notify us if this makes working in the script editor too slow for a specific table!)
+- implement simple duplicate test for subs/functions, and output these when script is brought into focus as a tooltip
 
 - fix crashes in Direct Sound when using certain WAVE_FORMAT_IEEE_FLOAT .wav samples
 
