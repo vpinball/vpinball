@@ -50,8 +50,9 @@ int CodeViewDispatch::SortAgainstValue(const std::wstring& pv) const
 }
 
 CodeViewer::CodeViewer()
+   : m_haccel(nullptr),
+     m_VBvalidChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")
 {
-   m_haccel = nullptr;
 }
 
 void CodeViewer::Init(IScriptableHost *psh)
@@ -636,18 +637,13 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 	char szValidChars[256] = {};
 	::SendMessage(m_hwndScintilla, SCI_GETWORDCHARS, 0, (LPARAM)szValidChars);
 	m_validChars = szValidChars;
-	m_VBvalidChars = string("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
 	m_stopErrorDisplay = false;
+
 	// Create new list of user functions & Collections- filled in ParseForFunction(), first called in LoadFromStream()
-	m_autoCompList = new vector<string>();
-	m_componentsDict = new vector<UserData>();
-	m_pageConstructsDict = new vector<UserData>();
-	m_VPcoreDict = new vector<UserData>();
-	m_currentMembers = new vector<UserData>();
 	m_wordUnderCaret.lpstrText = CaretTextBuff;
 	m_currentConstruct.lpstrText = ConstructTextBuff;
+
 	// parse vb reserved words for auto complete.
-	m_VBwordsDict = new vector<UserData>;
 	int intWordFinish = -1; //skip space
 	char WordChar = vbsReservedWords[0];
 	while (WordChar != 0) //Just make sure with chars, we reached EOL
@@ -667,7 +663,7 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 		FindOrInsertUD(m_VBwordsDict, VBWord);
 	}
 	m_vbsKeyWords.clear();// For colouring scintilla
-	for (vector<UserData>::iterator i = m_VBwordsDict->begin();i != m_VBwordsDict->end(); ++i)
+	for (vector<UserData>::iterator i = m_VBwordsDict.begin(); i != m_VBwordsDict.end(); ++i)
 	{
 		//make m_vbsKeyWords in order.
 		m_vbsKeyWords += lowerCase(i->m_keyName);
@@ -773,36 +769,12 @@ void CodeViewer::Destroy()
 		m_lPrefsList->clear();
 		delete m_lPrefsList;
 	}
-	if (m_autoCompList)
-	{
-		m_autoCompList->clear();
-		delete m_autoCompList;
-	}
-	if (m_componentsDict)
-	{
-		m_componentsDict->clear();
-		delete m_componentsDict;
-	}
-	if (m_pageConstructsDict)
-	{
-		m_pageConstructsDict->clear();
-		delete m_pageConstructsDict;
-	}
-	if (m_VBwordsDict)
-	{
-		m_VBwordsDict->clear();
-		delete m_VBwordsDict;
-	}
-	if (m_currentMembers)
-	{
-		m_currentMembers->clear();
-		delete m_currentMembers;
-	}
-	if (m_VPcoreDict)
-	{
-		m_VPcoreDict->clear();
-		delete m_VPcoreDict;
-	}
+	m_autoCompList.clear();
+	m_componentsDict.clear();
+	m_pageConstructsDict.clear();
+	m_VBwordsDict.clear();
+	m_currentMembers.clear();
+	m_VPcoreDict.clear();
 
 	if (m_hwndFind) DestroyWindow(m_hwndFind);
 
@@ -2028,17 +2000,17 @@ void CodeViewer::ShowAutoComplete(const SCNotification *pSCN)
 		GetMembers(m_VPcoreDict, m_currentConstruct.lpstrText);
 
 		//Check Table Script
-		if (m_currentMembers->empty())
+		if (m_currentMembers.empty())
 		{
 			m_currentConstruct.lpstrText = ConstructTextBuff;
 			GetMembers(m_pageConstructsDict, m_currentConstruct.lpstrText);
 			//if no construct (no children) exit
-			if (m_currentMembers->empty()) return;
+			if (m_currentMembers.empty()) return;
 		}
 
 		//autocomp string  = members of construct
 		m_autoCompMembersString.clear();
-		for (vector<UserData>::iterator i = m_currentMembers->begin(); i != m_currentMembers->end(); ++i)
+		for (vector<UserData>::iterator i = m_currentMembers.begin(); i != m_currentMembers.end(); ++i)
 		{
 			m_autoCompMembersString += i->m_keyName;
 			m_autoCompMembersString += ' ';
@@ -2049,13 +2021,27 @@ void CodeViewer::ShowAutoComplete(const SCNotification *pSCN)
 	}
 }
 
-void CodeViewer::GetMembers(vector<UserData>* ListIn, const string &strIn)
+//true:  Returns current Index of strIn in ListIn based on m_uniqueKey, or -1 if not found
+//false: Returns current Index of strIn in ListIn based on m_keyName,   or -1 if not found
+template <bool uniqueKey> // otherwise keyName
+int UDKeyIndex(const vector<UserData>& ListIn, const string &strIn)
 {
-	m_currentMembers->clear();
-	const int idx = UDIndex(ListIn, strIn);
+	if (ListIn.empty() || strIn.empty()) return -1;
+
+	int iCurPos;
+	const int result = UDKeyIndexHelper<uniqueKey>(ListIn, strIn, iCurPos);
+
+	///TODO: needs to consider children?
+	return (result == 0) ? iCurPos : -1;
+}
+
+void CodeViewer::GetMembers(vector<UserData>& ListIn, const string &strIn)
+{
+	m_currentMembers.clear();
+	const int idx = UDKeyIndex<false>(ListIn, strIn);
 	if (idx != -1)
 	{
-		const UserData udParent = ListIn->at(idx);
+		const UserData udParent = ListIn[idx];
 		const size_t NumberOfMembers = udParent.m_children.size();
 		for (size_t i = 0; i < NumberOfMembers; ++i)
 		{
@@ -2116,26 +2102,26 @@ bool CodeViewer::ShowTooltipOrGoToDefinition(const SCNotification *pSCN, const b
 		{
 			//Has function list been filled?
 			m_stopErrorDisplay = true;
-			if (m_pageConstructsDict->empty()) ParseForFunction();
+			if (m_pageConstructsDict.empty()) ParseForFunction();
 
 			//search subs/funcs
 			if (FindUD(m_pageConstructsDict, DwellWord, i, idx) == 0)
 			{
 				idx = FindClosestUD(m_pageConstructsDict, CurrentLineNo, idx);
-				const UserData* const Word = &m_pageConstructsDict->at(idx);
+				const UserData* const Word = &m_pageConstructsDict[idx];
 				Mess = Word->m_description;
 				Mess += " (Line: " + std::to_string(Word->m_lineNum + 1) + ")";
 				if ((Word->m_comment.length() > 1) && m_dwellHelp)
-					Mess += '\n' + m_pageConstructsDict->at(idx).m_comment;
+					Mess += '\n' + m_pageConstructsDict[idx].m_comment;
 				gotoDefinition = Word;
 			}
 			//Search VP core
 			else if (FindUD(m_VPcoreDict, DwellWord, i, idx) == 0)
 			{
 				idx = FindClosestUD(m_VPcoreDict, CurrentLineNo, idx);
-				Mess = m_VPcoreDict->at(idx).m_description;
-				if ((m_VPcoreDict->at(idx).m_comment.length() > 1) && m_dwellHelp)
-					Mess += '\n' + m_VPcoreDict->at(idx).m_comment;
+				Mess = m_VPcoreDict[idx].m_description;
+				if ((m_VPcoreDict[idx].m_comment.length() > 1) && m_dwellHelp)
+					Mess += '\n' + m_VPcoreDict[idx].m_comment;
 			}
 			else if (FindUD(m_componentsDict, DwellWord, i, idx) == 0)
 				Mess = string("Component: ") + szDwellWord;
@@ -2353,7 +2339,7 @@ static int ParentLevel = 0;
 static string CurrentParentKey;
 
 //false is a fail/syntax error
-bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const string &UCline, const string &line, const int Lineno)
+bool CodeViewer::ParseStructureName(vector<UserData>& ListIn, UserData ud, const string &UCline, const string &line, const int Lineno)
 {
 	const size_t endIdx = SureFind(UCline,"END"); 
 	const size_t exitIdx = SureFind(UCline,"EXIT"); 
@@ -2367,9 +2353,9 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 			ud.m_uniqueParent = CurrentParentKey;
 			FindOrInsertUD(ListIn, ud);
 			size_t iCurParent = GetUDPointerfromUniqueKey(ListIn, CurrentParentKey);
-			if (!CurrentParentKey.empty() && !ud.m_uniqueKey.empty() && (iCurParent < ListIn->size()))
+			if (!CurrentParentKey.empty() && !ud.m_uniqueKey.empty() && (iCurParent < ListIn.size()))
 			{
-				ListIn->at(iCurParent).m_children.push_back(ud.m_uniqueKey);//add child to parent
+				ListIn[iCurParent].m_children.push_back(ud.m_uniqueKey);//add child to parent
 			}
 			string RemainingLine = line;
 			size_t CommPos = UCline.find_first_of(',');
@@ -2388,10 +2374,10 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 					ud.m_uniqueKey = lowerCase(ud.m_keyName) + CurrentParentKey;
 					ud.m_uniqueParent = CurrentParentKey;
 					FindOrInsertUD(ListIn, ud);
-					if (!CurrentParentKey.empty() && (iCurParent < ListIn->size()))
+					if (!CurrentParentKey.empty() && !ud.m_uniqueKey.empty() && (iCurParent < ListIn.size()))
 					{
-						ListIn->at(iCurParent).m_children.push_back(ud.m_uniqueKey);//add child to parent
-					}	
+						ListIn[iCurParent].m_children.push_back(ud.m_uniqueKey);//add child to parent
+					}
 				}
 				RemainingLine = RemainingLine.substr(CommPos+1, string::npos);
 				CommPos = RemainingLine.find_first_of(',');
@@ -2429,9 +2415,9 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 					ud.m_uniqueKey = lowerCase(ud.m_keyName) + CurrentParentKey;
 					ud.m_uniqueParent = CurrentParentKey;
 					FindOrInsertUD(ListIn, ud);
-					if (!CurrentParentKey.empty())
+					if (!CurrentParentKey.empty() && !ud.m_uniqueKey.empty() && (iCurParent < ListIn.size()))
 					{
-						ListIn->at(iCurParent).m_children.push_back(ud.m_uniqueKey);//add child to parent
+						ListIn[iCurParent].m_children.push_back(ud.m_uniqueKey);//add child to parent
 					}	
 				}
 				RemainingLine = RemainingLine.substr(CommPos+1, string::npos);
@@ -2443,7 +2429,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 			ud.m_uniqueKey = lowerCase(ud.m_keyName) + CurrentParentKey;
 			ud.m_uniqueParent = CurrentParentKey;
 			FindOrInsertUD(ListIn, ud);
-			const int iUDIndx = UDKeyIndex(ListIn, CurrentParentKey);
+			const int iUDIndx = UDKeyIndex<true>(ListIn, CurrentParentKey);
 			if (iUDIndx == -1)
 			{
 				//ParentTreeInvalid = true;
@@ -2458,8 +2444,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 				}
 				return true;
 			}
-			UserData *iCurParent = &(ListIn->at(iUDIndx));
-			iCurParent->m_children.push_back(ud.m_uniqueKey);//add child to parent
+			ListIn[iUDIndx].m_children.push_back(ud.m_uniqueKey);//add child to parent
 			CurrentParentKey = ud.m_uniqueKey;
 			++ParentLevel;
 		}
@@ -2487,21 +2472,15 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 			{ 
 				if (ParentLevel > 0)
 				{//finished with child ===== END =====
-					int iCurParent = UDKeyIndex(ListIn, CurrentParentKey);
+					const int iCurParent = UDKeyIndex<true>(ListIn, CurrentParentKey);
 					if (iCurParent != -1)
 					{
-						UserData *CurrentParentUD = &(ListIn->at(iCurParent));
-						const int iGrandParent = UDKeyIndex(ListIn, CurrentParentUD->m_uniqueParent);
+						const int iGrandParent = UDKeyIndex<true>(ListIn, ListIn[iCurParent].m_uniqueParent);
 						if (iGrandParent != -1)
-						{
-							UserData *CurrentGrandParentUD = &(ListIn->at(iGrandParent));
-							CurrentParentKey = CurrentGrandParentUD->m_uniqueKey; 
-						}
+							CurrentParentKey = ListIn[iGrandParent].m_uniqueKey; 
 						else
-						{
 							CurrentParentKey.clear();
-						}
-						ParentLevel--;
+						--ParentLevel;
 						return false;
 					}
 					/// error - end without start
@@ -2611,7 +2590,7 @@ void CodeViewer::ParseFindConstruct(size_t &Pos, const string &UCLineIn, WordTyp
 	Pos = string::npos;
 }
 
-void CodeViewer::ReadLineToParseBrain(string wholeline, const int linecount, vector<UserData> *ListIn)
+void CodeViewer::ReadLineToParseBrain(string wholeline, const int linecount, vector<UserData>& ListIn)
 {
 		string CommentTmp = ParseRemoveVBSLineComments(wholeline);
 		RemovePadding(CommentTmp);
@@ -2698,7 +2677,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 			ReadLineToParseBrain(text, linecount, m_pageConstructsDict);
 	}
 	//Propergate subs&funcs in menu in order
-	for (vector<UserData>::iterator i = m_pageConstructsDict->begin(); i != m_pageConstructsDict->end(); ++i) 
+	for (vector<UserData>::iterator i = m_pageConstructsDict.begin(); i != m_pageConstructsDict.end(); ++i) 
 	{
 		if (i->eTyping < eDim)
 		{
@@ -2722,13 +2701,13 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		CBCount--;
 	}
 	//Now merge the lot for Auto complete...
-	m_autoCompList->clear();
-	for (vector<UserData>::iterator i = m_VBwordsDict->begin(); i != m_VBwordsDict->end(); ++i)
+	m_autoCompList.clear();
+	for (vector<UserData>::iterator i = m_VBwordsDict.begin(); i != m_VBwordsDict.end(); ++i)
 	{
 		FindOrInsertStringIntoAutolist(m_autoCompList,i->m_keyName);
 	}
 	string strVPcoreWords;
-	for (vector<UserData>::iterator i = m_VPcoreDict->begin(); i != m_VPcoreDict->end(); ++i)
+	for (vector<UserData>::iterator i = m_VPcoreDict.begin(); i != m_VPcoreDict.end(); ++i)
 	{
 		if (FindOrInsertStringIntoAutolist(m_autoCompList,i->m_keyName))
 		{
@@ -2737,7 +2716,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		}
 	}
 	string strCompOut;
-	for (vector<UserData>::iterator i = m_componentsDict->begin(); i != m_componentsDict->end(); ++i)
+	for (vector<UserData>::iterator i = m_componentsDict.begin(); i != m_componentsDict.end(); ++i)
 	{
 		if (FindOrInsertStringIntoAutolist(m_autoCompList,i->m_keyName))
 		{
@@ -2746,7 +2725,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		}
 	}
 	string sSubFunOut;
-	for (vector<UserData>::iterator i = m_pageConstructsDict->begin(); i != m_pageConstructsDict->end(); ++i)
+	for (vector<UserData>::iterator i = m_pageConstructsDict.begin(); i != m_pageConstructsDict.end(); ++i)
 	{
 		if (FindOrInsertStringIntoAutolist(m_autoCompList,i->m_keyName))
 		{
@@ -2755,7 +2734,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		}
 	}
 	m_autoCompString.clear();
-	for (vector<string>::iterator i = m_autoCompList->begin(); i != m_autoCompList->end();++i)
+	for (vector<string>::iterator i = m_autoCompList.begin(); i != m_autoCompList.end();++i)
 	{
 		m_autoCompString.append(i->data());
 		m_autoCompString += ' ';

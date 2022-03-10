@@ -296,7 +296,7 @@ public:
    bool m_dwellDisplay;
    int m_dwellDisplayTime;
 
-   vector<UserData> *m_pageConstructsDict;
+   vector<UserData> m_pageConstructsDict;
    Sci_TextRange m_wordUnderCaret;
 
    CComObject<DebuggerModule> *m_pdm; // Object to expose to script for global functions
@@ -334,7 +334,7 @@ private:
    bool ParseOKLineLength(const size_t LineLen);
    void ParseDelimtByColon(string &result, string &wholeline);
    void ParseFindConstruct(size_t &Pos, const string &UCLine, WordType &Type, int &ConstructSize);
-   bool ParseStructureName(vector<UserData> *ListIn, UserData ud, const string &UCline, const string &line, const int Lineno);
+   bool ParseStructureName(vector<UserData>& ListIn, UserData ud, const string &UCline, const string &line, const int Lineno);
    
    size_t SureFind(const string &LineIn, const string &ToFind);
    void RemoveByVal(string &line); 
@@ -346,9 +346,9 @@ private:
 
    void ParseVPCore();
    
-   void ReadLineToParseBrain(string wholeline, const int linecount, vector<UserData> *ListIn);
+   void ReadLineToParseBrain(string wholeline, const int linecount, vector<UserData>& ListIn);
 
-   void GetMembers(vector<UserData>* ListIn, const string &StrIn);
+   void GetMembers(vector<UserData>& ListIn, const string &StrIn);
 
    void InitPreferences();
 
@@ -388,7 +388,7 @@ private:
    VectorSortString<CodeViewDispatch*> m_vcvdTemp; // Objects added through script
 
    string m_validChars;
-   string m_VBvalidChars;
+   const string m_VBvalidChars;
 
    // CodeViewer Preferences
    CVPreference *prefDefault;
@@ -403,12 +403,12 @@ private:
 
    // keyword lists
    string m_vbsKeyWords;
-   vector<string> *m_autoCompList;
+   vector<string> m_autoCompList;
    // Dictionaries
-   vector<UserData> *m_VBwordsDict;
-   vector<UserData> *m_componentsDict;
-   vector<UserData> *m_VPcoreDict;
-   vector<UserData> *m_currentMembers;
+   vector<UserData> m_VBwordsDict;
+   vector<UserData> m_componentsDict;
+   vector<UserData> m_VPcoreDict;
+   vector<UserData> m_currentMembers;
    string m_autoCompString;
    string m_autoCompMembersString;
    Sci_TextRange m_currentConstruct;
@@ -512,6 +512,32 @@ private:
    Collection *m_pcol;
    int m_index;
 };
+
+//
+
+template<bool uniqueKey> // otherwise keyName
+int UDKeyIndexHelper(const vector<UserData>& ListIn, const string &strIn, int& curPosOut)
+{
+	const int ListSize = (int)ListIn.size();
+	curPosOut = 1u << 30;
+	while (!(curPosOut & ListSize) && (curPosOut > 1))
+		curPosOut >>= 1;
+	int iJumpDelta = curPosOut >> 1;
+	--curPosOut; //Zero Base
+	const string strSearchData = lowerCase(strIn);
+	int result;
+	while (true)
+	{
+		if (curPosOut >= ListSize)
+			result = -1;
+		else
+			result = strSearchData.compare(lowerCase(uniqueKey ? ListIn[curPosOut].m_uniqueKey : ListIn[curPosOut].m_keyName));
+		if (iJumpDelta == 0 || result == 0) break;
+		curPosOut = (result < 0) ? (curPosOut - iJumpDelta) : (curPosOut + iJumpDelta);
+		iJumpDelta >>= 1;
+	}
+	return result;
+}
 
 // general string helpers:
 

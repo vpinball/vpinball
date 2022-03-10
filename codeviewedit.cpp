@@ -2,42 +2,46 @@
 #include "codeviewedit.h"
 
 UserData::UserData()
+   : m_lineNum(0),
+     eTyping(eUnknown)
 {
-	m_lineNum = 0;
-	eTyping = eUnknown;
 }
 
 UserData::UserData(const int LineNo, const string &Desc, const string &Name, const WordType TypeIn)
+   : m_lineNum(LineNo),
+     m_keyName(Name),
+     eTyping(TypeIn),
+     m_description(Desc)
 {
-	m_lineNum = LineNo;
-	m_description = Desc;
-	m_keyName = Name;
-	eTyping = TypeIn;
 }
 
-int FindUDbyKey(const vector<UserData>* const ListIn, const string& strIn, int& PosOut);
+int FindUDbyKey(const vector<UserData>& ListIn, const string& strIn, int& PosOut);
 
 /*	FindUD - Now a human Search!
  0 =Found & UDiterOut set to point at UD in list.
 -1 =Not Found 
  1 =Not Found
 -2 =Zero Length string or error*/
-int FindUD(const vector<UserData>* const ListIn, string &strIn, vector<UserData>::const_iterator& UDiterOut, int &Pos)
+int FindUD(const vector<UserData>& ListIn, string &strIn, vector<UserData>::const_iterator& UDiterOut, int &Pos)
 {
 	RemovePadding(strIn);
-	if (strIn.empty() || (!ListIn) || ListIn->empty()) return -2;
+	if (strIn.empty() || ListIn.empty()) return -2;
 
 	Pos = -1;
 	const int KeyResult = FindUDbyKey(ListIn, strIn, Pos);
-	if (Pos != -1)
-		UDiterOut = ListIn->begin() + Pos;
+
 	//If it's a top level construct it will have no parents and therefore have a unique key.
-	if (KeyResult == 0) return 0;
+	if (KeyResult == 0)
+	{
+		if (Pos != -1)
+			UDiterOut = ListIn.begin() + Pos;
+		return 0;
+	}
 
 	//Now see if it's in the Name list
 	//Jumpdelta should be initialized to the maximum count of an individual key name
 	//But for the moment the biggest is 64 x's in AMH
-	Pos += KeyResult; //Start Very close to the result of key search
+	Pos += KeyResult; //Start very close to the result of key search
 	if (Pos < 0) Pos = 0;
 	//Find the start of other instances of strIn by crawling up list
 	//Usually (but not always) FindUDbyKey returns top of the list so its fast
@@ -46,35 +50,36 @@ int FindUD(const vector<UserData>* const ListIn, string &strIn, vector<UserData>
 	do
 	{
 		--Pos;
-	} while (Pos >= 0 && strSearchData.compare(lowerCase(ListIn->at(Pos).m_uniqueKey).substr(0, SearchWidth)) == 0);
+	} while (Pos >= 0 && strSearchData.compare(lowerCase(ListIn[Pos].m_uniqueKey).substr(0, SearchWidth)) == 0);
 	++Pos;
 	// now walk down list of Keynames looking for what we want.
 	int result;
 	do 
 	{
-		result = strSearchData.compare(lowerCase(ListIn->at(Pos).m_keyName)); 
+		result = strSearchData.compare(lowerCase(ListIn[Pos].m_keyName)); 
 		if (result == 0) break; //Found
 		++Pos;
-		if (Pos == (int)ListIn->size()) break;
+		if (Pos == (int)ListIn.size()) break;
 
-		result = strSearchData.compare(lowerCase(ListIn->at(Pos).m_keyName).substr(0, SearchWidth));
+		result = strSearchData.compare(lowerCase(ListIn[Pos].m_keyName).substr(0, SearchWidth));
 	} while (result == 0); //EO SubList
-	UDiterOut = ListIn->begin() + Pos;
+
+	UDiterOut = ListIn.begin() + Pos;
 	return result;
 }
 
 //Finds the closest UD from CurrentLine in ListIn
 //On entry CurrentIdx must be set to the UD in the line
-int FindClosestUD(const vector<UserData>* const ListIn, const int CurrentLine, const int CurrentIdx)
+int FindClosestUD(const vector<UserData>& ListIn, const int CurrentLine, const int CurrentIdx)
 {
-	const string strSearchData = lowerCase(ListIn->at(CurrentIdx).m_keyName);
+	const string strSearchData = lowerCase(ListIn[CurrentIdx].m_keyName);
 	const size_t SearchWidth = strSearchData.size();
 	//Find the start of other instances of strIn by crawling up list
 	int iNewPos = CurrentIdx;
 	do
 	{
 		--iNewPos;
-	} while (iNewPos >= 0 && strSearchData.compare(lowerCase(ListIn->at(iNewPos).m_uniqueKey).substr(0, SearchWidth)) == 0);
+	} while (iNewPos >= 0 && strSearchData.compare(lowerCase(ListIn[iNewPos].m_uniqueKey).substr(0, SearchWidth)) == 0);
 	++iNewPos;
 	//Now at top of list
 	//find nearest definition above current line
@@ -83,113 +88,61 @@ int FindClosestUD(const vector<UserData>* const ListIn, const int CurrentLine, c
 	int Delta = -(INT_MAX - 1);
 	do
 	{
-		const int NewLineNum = ListIn->at(iNewPos).m_lineNum;
+		const int NewLineNum = ListIn[iNewPos].m_lineNum;
 		const int NewDelta = NewLineNum - CurrentLine;
-		if (NewDelta >= Delta && NewLineNum <= CurrentLine && lowerCase(ListIn->at(iNewPos).m_keyName).compare(strSearchData) == 0)
+		if (NewDelta >= Delta && NewLineNum <= CurrentLine && lowerCase(ListIn[iNewPos].m_keyName).compare(strSearchData) == 0)
 		{
 			Delta = NewDelta;
 			//ClosestLineNum = NewLineNum;
 			ClosestPos = iNewPos;
 		}
 		++iNewPos;
-	} while (iNewPos != (int)ListIn->size() && strSearchData.compare(lowerCase(ListIn->at(iNewPos).m_keyName).substr(0, SearchWidth)) == 0);
+	} while (iNewPos != (int)ListIn.size() && strSearchData.compare(lowerCase(ListIn[iNewPos].m_keyName).substr(0, SearchWidth)) == 0);
 	//--iNewPos;
 	return ClosestPos;
 }
 
-template<bool uniqueKey> // otherwise keyName
-static int UDKeyIndexHelper(const vector<UserData>* const ListIn, const string &strIn, int& curPosOut)
+static int FindUDbyKey(const vector<UserData>& ListIn, const string &strIn, int &PosOut)
 {
-	const int ListSize = (int)ListIn->size();
-	curPosOut = 1u << 30;
-	while (!(curPosOut & ListSize) && (curPosOut > 1))
-		curPosOut >>= 1;
-	int iJumpDelta = curPosOut >> 1;
-	--curPosOut; //Zero Base
-	const string strSearchData = lowerCase(strIn);
-	int result;
-	while (true)
-	{
-		if (curPosOut >= ListSize)
-			result = -1;
-		else
-			result = strSearchData.compare(lowerCase(uniqueKey ? ListIn->at(curPosOut).m_uniqueKey : ListIn->at(curPosOut).m_keyName));
-		if (iJumpDelta == 0 || result == 0) break;
-		curPosOut = (result < 0) ? (curPosOut - iJumpDelta) : (curPosOut + iJumpDelta);
-		iJumpDelta >>= 1;
-	}
-	return result;
-}
-
-static int FindUDbyKey(const vector<UserData>* const ListIn, const string &strIn, int &PosOut)
-{
-	if (ListIn && !ListIn->empty() && !strIn.empty()) // Sanity check
+	if (!ListIn.empty() && !strIn.empty()) // Sanity check
 		return UDKeyIndexHelper<true>(ListIn, strIn, PosOut);
 	else
 		return -2;
 }
 
-//Returns current Index of strIn in ListIn based on m_uniqueKey, or -1 if not found
-int UDKeyIndex(const vector<UserData>* const ListIn, const string &strIn)
-{
-	if (!ListIn || ListIn->empty() || strIn.empty()) return -1;
-
-	int iCurPos;
-	const int result = UDKeyIndexHelper<true>(ListIn, strIn, iCurPos);
-
-	///TODO: needs to consider children?
-	return (result == 0) ? iCurPos : -1;
-}
-
-//Returns current Index of strIn in ListIn based on m_keyName, or -1 if not found
-int UDIndex(const vector<UserData>* const ListIn, const string &strIn)
-{
-	if ((!ListIn) || ListIn->empty() || strIn.empty()) return -1;
-
-	int iCurPos;
-	const int result = UDKeyIndexHelper<false>(ListIn, strIn, iCurPos);
-
-	///TODO: needs to consider children?
-	return (result == 0) ? iCurPos : -1;
-}
-
 //Needs speeding up.
-UserData GetUDfromUniqueKey(const vector<UserData>* const ListIn, const string &UniKey)
+UserData GetUDfromUniqueKey(const vector<UserData>& ListIn, const string &UniKey)
 {
 	UserData RetVal;
 	RetVal.eTyping = eUnknown;
-	size_t i = 0;
-	const size_t ListSize = ListIn->size();
-	while ((RetVal.eTyping == eUnknown) && (i < ListSize))
-	{
-		if (UniKey == ListIn->at(i).m_uniqueKey)
-			RetVal = ListIn->at(i);
-		++i;
-	}
+	const size_t ListSize = ListIn.size();
+	for (size_t i = 0; i < ListSize; ++i)
+		if (UniKey == ListIn[i].m_uniqueKey)
+		{
+			RetVal = ListIn[i];
+			if (RetVal.eTyping != eUnknown)
+				return RetVal;
+		}
 	return RetVal;
 }
 
 //TODO: Needs speeding up.
-size_t GetUDPointerfromUniqueKey(const vector<UserData>* const ListIn, const string &UniKey)
+size_t GetUDPointerfromUniqueKey(const vector<UserData>& ListIn, const string &UniKey)
 {
-	size_t i = 0;
-	const size_t ListSize = ListIn->size();
-	while (i < ListSize)
-	{
-		if (UniKey == ListIn->at(i).m_uniqueKey)
+	const size_t ListSize = ListIn.size();
+	for (size_t i = 0; i < ListSize; ++i)
+		if (UniKey == ListIn[i].m_uniqueKey)
 			return i;
-		++i;
-	}
 	return -1;
 }
 
 //Assumes case insensitive sorted list
 //Returns index or insertion point (-1 == error)
-size_t FindOrInsertUD(vector<UserData>* const ListIn, const UserData &udIn)
+size_t FindOrInsertUD(vector<UserData>& ListIn, const UserData &udIn)
 {
-	if (ListIn->empty())	//First in
+	if (ListIn.empty())	//First in
 	{
-		ListIn->push_back(udIn);
+		ListIn.push_back(udIn);
 		return 0;
 	}
 	int Pos = 0;
@@ -197,52 +150,50 @@ size_t FindOrInsertUD(vector<UserData>* const ListIn, const UserData &udIn)
 	if (KeyFound == 0)
 	{
 		//Same name, different parents?
-		vector<UserData>::const_iterator iterFound = ListIn->begin() + Pos;
+		const vector<UserData>::const_iterator iterFound = ListIn.begin() + Pos;
 		const int ParentResult = udIn.m_uniqueParent.compare(iterFound->m_uniqueParent);
 		if (ParentResult == -1)
-			ListIn->insert(iterFound, udIn);
+			ListIn.insert(iterFound, udIn);
 		else if (ParentResult == 1)
 		{
-			++iterFound;
+			ListIn.insert(iterFound+1, udIn);
 			++Pos;
-			ListIn->insert(iterFound, udIn);
 		}
 		else
 		{
 			// assign again, as e.g. line of func/sub/var could have changed by other updates
-			ListIn->at(Pos) = udIn;
+			ListIn[Pos] = udIn;
 		}
 		return Pos;
 	}
 
 	if (KeyFound == -1) //insert before, somewhere in the middle
 	{
-		ListIn->insert(ListIn->begin() + Pos, udIn);
+		ListIn.insert(ListIn.begin() + Pos, udIn);
 		return Pos;
 	}
-	else
-		if (KeyFound == 1) //insert above last element - Special case 
-		{
-			ListIn->insert(ListIn->begin() + (Pos+1), udIn);
-			return Pos+1;
-		}
-		else if ((ListIn->begin() + Pos) == (ListIn->end() - 1))
-		{ //insert at end
-			ListIn->push_back(udIn);
-			return ListIn->size() - 1;//Zero Base
-		}
+	else if (KeyFound == 1) //insert above last element - Special case 
+	{
+		ListIn.insert(ListIn.begin() + (Pos+1), udIn);
+		return Pos+1;
+	}
+	else if ((ListIn.begin() + Pos) == (ListIn.end() - 1))
+	{ //insert at end
+		ListIn.push_back(udIn);
+		return ListIn.size() - 1; //Zero Base
+	}
 	return -1;
 }
 
-bool FindOrInsertStringIntoAutolist(vector<string>* const ListIn, const string &strIn)
+bool FindOrInsertStringIntoAutolist(vector<string>& ListIn, const string &strIn)
 {
 	//First in the list
-	if (ListIn->empty())
+	if (ListIn.empty())
 	{
-		ListIn->push_back(strIn);
+		ListIn.push_back(strIn);
 		return true;
 	}
-	const unsigned int ListSize = (unsigned int)ListIn->size();
+	const unsigned int ListSize = (unsigned int)ListIn.size();
 	UINT32 iNewPos = 1u << 31;
 	while (!(iNewPos & ListSize) && (iNewPos > 1))
 		iNewPos >>= 1;
@@ -257,7 +208,7 @@ bool FindOrInsertStringIntoAutolist(vector<string>* const ListIn, const string &
 		if (iCurPos >= ListSize)
 			result = -1;
 		else
-			result = strSearchData.compare(lowerCase(ListIn->at(iCurPos)));
+			result = strSearchData.compare(lowerCase(ListIn[iCurPos]));
 		if (iJumpDelta == 0 || result == 0) break;
 		iNewPos = (result < 0) ? (iCurPos - iJumpDelta) : (iCurPos + iJumpDelta);
 		iJumpDelta >>= 1;
@@ -265,24 +216,23 @@ bool FindOrInsertStringIntoAutolist(vector<string>* const ListIn, const string &
 
 	if (result == 0) return false; // Already in list
 
-	vector<string>::iterator i = ListIn->begin() + iCurPos;
+	const vector<string>::iterator i = ListIn.begin() + iCurPos;
 
 	if (result == -1) //insert before, somewhere in the middle
 	{
-		ListIn->insert(i, strIn);
+		ListIn.insert(i, strIn);
 		return true;
 	}
 
-	if (i == (ListIn->end() - 1)) //insert above last element - Special case
+	if (i == (ListIn.end() - 1)) //insert above last element - Special case
 	{
-		ListIn->push_back(strIn);
+		ListIn.push_back(strIn);
 		return true;
 	}
 
 	if (result == 1)
 	{
-		++i;
-		ListIn->insert(i, strIn);
+		ListIn.insert(i+1, strIn);
 		return true;
 	}
 
