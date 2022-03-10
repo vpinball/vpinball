@@ -24,14 +24,6 @@ public:
    ~UserData() {}
 };
 
-bool FindOrInsertStringIntoAutolist(vector<string>& ListIn, const string& strIn);
-size_t FindOrInsertUD(vector<UserData>& ListIn, const UserData& udIn);
-int FindUD(const vector<UserData>& ListIn, string& strIn, vector<UserData>::const_iterator& UDiterOut, int& Pos);
-int FindClosestUD(const vector<UserData>& ListIn, const int CurrentLine, const int CurrentIdx);
-UserData GetUDfromUniqueKey(const vector<UserData>& ListIn, const string& UniKey);
-size_t GetUDPointerfromUniqueKey(const vector<UserData>& ListIn, const string& UniKey);
-
-
 // CodeViewer Preferences
 class CVPreference
 {

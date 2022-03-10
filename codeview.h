@@ -513,50 +513,22 @@ private:
    int m_index;
 };
 
-//
-
-template<bool uniqueKey> // otherwise keyName
-int UDKeyIndexHelper(const vector<UserData>& ListIn, const string &strIn, int& curPosOut)
-{
-	const int ListSize = (int)ListIn.size();
-	curPosOut = 1u << 30;
-	while (!(curPosOut & ListSize) && (curPosOut > 1))
-		curPosOut >>= 1;
-	int iJumpDelta = curPosOut >> 1;
-	--curPosOut; //Zero Base
-	const string strSearchData = lowerCase(strIn);
-	int result;
-	while (true)
-	{
-		if (curPosOut >= ListSize)
-			result = -1;
-		else
-			result = strSearchData.compare(lowerCase(uniqueKey ? ListIn[curPosOut].m_uniqueKey : ListIn[curPosOut].m_keyName));
-		if (iJumpDelta == 0 || result == 0) break;
-		curPosOut = (result < 0) ? (curPosOut - iJumpDelta) : (curPosOut + iJumpDelta);
-		iJumpDelta >>= 1;
-	}
-	return result;
-}
-
 // general string helpers:
 
-inline bool IsWhitespace(const char ch)
+__forceinline bool IsWhitespace(const char ch)
 {
    return (ch == ' ' || ch == 9/*tab*/);
 }
 
-inline string upperCase(string input)
+__forceinline string upperCase(string input)
 {
-   for (string::iterator it = input.begin(); it != input.end(); ++it)
-      *it = toupper(*it);
+   std::transform(input.begin(), input.end(), input.begin(), ::toupper);
    return input;
 }
 
-inline string lowerCase(string input)
+__forceinline string lowerCase(string input)
 {
-   for (string::iterator it = input.begin(); it != input.end(); ++it)
-      *it = tolower(*it);
+   std::transform(input.begin(), input.end(), input.begin(), ::tolower);
    return input;
 }
 
@@ -586,8 +558,8 @@ inline void RemovePadding(string &line)
 
 inline string ParseRemoveVBSLineComments(string &Line)
 {
-    const size_t commentIdx = Line.find("'");
-    if (commentIdx == string::npos) return "";
+    const size_t commentIdx = Line.find('\'');
+    if (commentIdx == string::npos) return string();
     string RetVal = Line.substr(commentIdx + 1, string::npos);
     RemovePadding(RetVal);
     if (commentIdx > 0)

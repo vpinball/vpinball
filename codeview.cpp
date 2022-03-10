@@ -190,6 +190,271 @@ static uint32_t validate_utf8(uint32_t *const state, const char * const str, con
 //
 //
 
+template<bool uniqueKey> // otherwise keyName
+static int UDKeyIndexHelper(const vector<UserData>& ListIn, const string &strIn, int& curPosOut)
+{
+	const int ListSize = (int)ListIn.size();
+	curPosOut = 1u << 30;
+	while (!(curPosOut & ListSize) && (curPosOut > 1))
+		curPosOut >>= 1;
+	int iJumpDelta = curPosOut >> 1;
+	--curPosOut; //Zero Base
+	const string strSearchData = lowerCase(strIn);
+	while (true)
+	{
+		const int result = (curPosOut >= ListSize) ? -1 : strSearchData.compare(lowerCase(uniqueKey ? ListIn[curPosOut].m_uniqueKey : ListIn[curPosOut].m_keyName));
+		if (iJumpDelta == 0 || result == 0) return result;
+		curPosOut = (result < 0) ? (curPosOut - iJumpDelta) : (curPosOut + iJumpDelta);
+		iJumpDelta >>= 1;
+	}
+}
+
+//true:  Returns current Index of strIn in ListIn based on m_uniqueKey, or -1 if not found
+//false: Returns current Index of strIn in ListIn based on m_keyName,   or -1 if not found
+template <bool uniqueKey> // otherwise keyName
+static int UDKeyIndex(const vector<UserData>& ListIn, const string &strIn)
+{
+	if (strIn.empty() || ListIn.empty()) return -1;
+
+	int iCurPos;
+	const int result = UDKeyIndexHelper<uniqueKey>(ListIn, strIn, iCurPos);
+
+	///TODO: needs to consider children?
+	return (result == 0) ? iCurPos : -1;
+}
+
+/*	FindUD - Now a human Search!
+ 0 =Found & UDiterOut set to point at UD in list.
+-1 =Not Found 
+ 1 =Not Found
+-2 =Zero Length string or error*/
+static int FindUD(const vector<UserData>& ListIn, string &strIn, vector<UserData>::const_iterator& UDiterOut, int &Pos)
+{
+	RemovePadding(strIn);
+	if (strIn.empty() || ListIn.empty()) return -2;
+
+	Pos = -1;
+	const int KeyResult = UDKeyIndexHelper<true>(ListIn, strIn, Pos);
+
+	//If it's a top level construct it will have no parents and therefore have a unique key.
+	if (KeyResult == 0)
+	{
+		if (Pos != -1)
+			UDiterOut = ListIn.begin() + Pos;
+		return 0;
+	}
+
+	//Now see if it's in the Name list
+	//Jumpdelta should be initialized to the maximum count of an individual key name
+	//But for the moment the biggest is 64 x's in AMH
+	Pos += KeyResult; //Start very close to the result of key search
+	if (Pos < 0) Pos = 0;
+	//Find the start of other instances of strIn by crawling up list
+	//Usually (but not always) UDKeyIndexHelper<true> returns top of the list so its fast
+	const string strSearchData = lowerCase(strIn);
+	const size_t SearchWidth = strSearchData.size();
+	do
+	{
+		--Pos;
+	} while (Pos >= 0 && strSearchData.compare(lowerCase(ListIn[Pos].m_uniqueKey).substr(0, SearchWidth)) == 0);
+	++Pos;
+	// now walk down list of Keynames looking for what we want.
+	int result;
+	do 
+	{
+		result = strSearchData.compare(lowerCase(ListIn[Pos].m_keyName)); 
+		if (result == 0) break; //Found
+		++Pos;
+		if (Pos == (int)ListIn.size()) break;
+
+		result = strSearchData.compare(lowerCase(ListIn[Pos].m_keyName).substr(0, SearchWidth));
+	} while (result == 0); //EO SubList
+
+	UDiterOut = ListIn.begin() + Pos;
+	return result;
+}
+
+//Assumes case insensitive sorted list
+//Returns index or insertion point (-1 == error)
+static size_t FindOrInsertUD(vector<UserData>& ListIn, const UserData &udIn)
+{
+	if (ListIn.empty())	//First in
+	{
+		ListIn.push_back(udIn);
+		return 0;
+	}
+
+	int Pos = 0;
+	const int KeyFound = udIn.m_uniqueKey.empty() ? -2 : UDKeyIndexHelper<true>(ListIn, udIn.m_uniqueKey, Pos);
+	if (KeyFound == 0)
+	{
+		//Same name, different parents?
+		const vector<UserData>::const_iterator iterFound = ListIn.begin() + Pos;
+		const int ParentResult = udIn.m_uniqueParent.compare(iterFound->m_uniqueParent);
+		if (ParentResult == -1)
+			ListIn.insert(iterFound, udIn);
+		else if (ParentResult == 1)
+		{
+			ListIn.insert(iterFound+1, udIn);
+			++Pos;
+		}
+		else
+		{
+			// detect duplicate subs/functions (at least rudimentary)
+			if (g_pvp && g_pvp->m_pcv &&
+				 warn_on_dupes &&
+			    (udIn.eTyping == eSub || udIn.eTyping == eFunction) &&
+			    (iterFound->m_lineNum != udIn.m_lineNum) && (iterFound->m_lineNum != udIn.m_lineNum+1) && (iterFound->m_lineNum+1 != udIn.m_lineNum))
+			{
+			//!! or print this where the function is??
+			const Sci_Position dwellpos = SendMessage(g_pvp->m_pcv->m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
+			SendMessage(g_pvp->m_pcv->m_hwndScintilla, SCI_CALLTIPSHOW, dwellpos,
+				(LPARAM)("Duplicate Definitions: " + iterFound->m_description + " (Line: " + std::to_string(iterFound->m_lineNum) + ") AND " + udIn.m_description + " (Line: " + std::to_string(udIn.m_lineNum) + ")").c_str());
+			warn_on_dupes = false;
+			}
+
+			// assign again, as e.g. line of func/sub/var could have changed by other updates
+			ListIn[Pos] = udIn;
+		}
+		return Pos;
+	}
+
+	if (KeyFound == -1) //insert before, somewhere in the middle
+	{
+		ListIn.insert(ListIn.begin() + Pos, udIn);
+		return Pos;
+	}
+	else if (KeyFound == 1) //insert above last element - Special case 
+	{
+		ListIn.insert(ListIn.begin() + (Pos+1), udIn);
+		return Pos+1;
+	}
+	else if ((ListIn.begin() + Pos) == (ListIn.end() - 1))
+	{ //insert at end
+		ListIn.push_back(udIn);
+		return ListIn.size() - 1; //Zero Base
+	}
+	return -1;
+}
+
+//Needs speeding up.
+static UserData GetUDfromUniqueKey(const vector<UserData>& ListIn, const string &UniKey)
+{
+	UserData RetVal;
+	RetVal.eTyping = eUnknown;
+	const size_t ListSize = ListIn.size();
+	for (size_t i = 0; i < ListSize; ++i)
+		if (UniKey == ListIn[i].m_uniqueKey)
+		{
+			RetVal = ListIn[i];
+			if (RetVal.eTyping != eUnknown)
+				return RetVal;
+		}
+	return RetVal;
+}
+
+//TODO: Needs speeding up.
+static size_t GetUDIdxfromUniqueKey(const vector<UserData>& ListIn, const string &UniKey)
+{
+	const size_t ListSize = ListIn.size();
+	for (size_t i = 0; i < ListSize; ++i)
+		if (UniKey == ListIn[i].m_uniqueKey)
+			return i;
+	return -1;
+}
+
+//Finds the closest UD from CurrentLine in ListIn
+//On entry CurrentIdx must be set to the UD in the line
+static int FindClosestUD(const vector<UserData>& ListIn, const int CurrentLine, const int CurrentIdx)
+{
+	const string strSearchData = lowerCase(ListIn[CurrentIdx].m_keyName);
+	const size_t SearchWidth = strSearchData.size();
+	//Find the start of other instances of strIn by crawling up list
+	int iNewPos = CurrentIdx;
+	do
+	{
+		--iNewPos;
+	} while (iNewPos >= 0 && strSearchData.compare(lowerCase(ListIn[iNewPos].m_uniqueKey).substr(0, SearchWidth)) == 0);
+	++iNewPos;
+	//Now at top of list
+	//find nearest definition above current line
+	//int ClosestLineNum = 0;
+	int ClosestPos = CurrentIdx;
+	int Delta = INT_MIN;
+	do
+	{
+		const int NewLineNum = ListIn[iNewPos].m_lineNum;
+		const int NewDelta = NewLineNum - CurrentLine;
+		if (NewDelta >= Delta && NewLineNum <= CurrentLine && lowerCase(ListIn[iNewPos].m_keyName).compare(strSearchData) == 0)
+		{
+			Delta = NewDelta;
+			//ClosestLineNum = NewLineNum;
+			ClosestPos = iNewPos;
+		}
+		++iNewPos;
+	} while (iNewPos != (int)ListIn.size() && strSearchData.compare(lowerCase(ListIn[iNewPos].m_keyName).substr(0, SearchWidth)) == 0);
+	//--iNewPos;
+	return ClosestPos;
+}
+
+static bool FindOrInsertStringIntoAutolist(vector<string>& ListIn, const string &strIn)
+{
+	//First in the list
+	if (ListIn.empty())
+	{
+		ListIn.push_back(strIn);
+		return true;
+	}
+	const unsigned int ListSize = (unsigned int)ListIn.size();
+	UINT32 iNewPos = 1u << 31;
+	while (!(iNewPos & ListSize) && (iNewPos > 1))
+		iNewPos >>= 1;
+	int iJumpDelta = iNewPos >> 1;
+	--iNewPos;//Zero Base
+	const string strSearchData = lowerCase(strIn);
+	UINT32 iCurPos;
+	int result;
+	while (true)
+	{
+		iCurPos = iNewPos;
+		if (iCurPos >= ListSize)
+			result = -1;
+		else
+			result = strSearchData.compare(lowerCase(ListIn[iCurPos]));
+		if (iJumpDelta == 0 || result == 0) break;
+		iNewPos = (result < 0) ? (iCurPos - iJumpDelta) : (iCurPos + iJumpDelta);
+		iJumpDelta >>= 1;
+	}
+
+	if (result == 0) return false; // Already in list
+
+	const vector<string>::iterator i = ListIn.begin() + iCurPos;
+
+	if (result == -1) //insert before, somewhere in the middle
+	{
+		ListIn.insert(i, strIn);
+		return true;
+	}
+
+	if (i == (ListIn.end() - 1)) //insert above last element - Special case
+	{
+		ListIn.push_back(strIn);
+		return true;
+	}
+
+	if (result == 1)
+	{
+		ListIn.insert(i+1, strIn);
+		return true;
+	}
+
+	return false; //Oh pop poop, never should hit here.
+}
+
+//
+//
+//
+
 static void GetRange(const HWND hwndScintilla, const size_t start, const size_t end, char * const text)
 {
    Sci_TextRange tr;
@@ -2021,20 +2286,6 @@ void CodeViewer::ShowAutoComplete(const SCNotification *pSCN)
 	}
 }
 
-//true:  Returns current Index of strIn in ListIn based on m_uniqueKey, or -1 if not found
-//false: Returns current Index of strIn in ListIn based on m_keyName,   or -1 if not found
-template <bool uniqueKey> // otherwise keyName
-int UDKeyIndex(const vector<UserData>& ListIn, const string &strIn)
-{
-	if (ListIn.empty() || strIn.empty()) return -1;
-
-	int iCurPos;
-	const int result = UDKeyIndexHelper<uniqueKey>(ListIn, strIn, iCurPos);
-
-	///TODO: needs to consider children?
-	return (result == 0) ? iCurPos : -1;
-}
-
 void CodeViewer::GetMembers(vector<UserData>& ListIn, const string &strIn)
 {
 	m_currentMembers.clear();
@@ -2044,10 +2295,7 @@ void CodeViewer::GetMembers(vector<UserData>& ListIn, const string &strIn)
 		const UserData udParent = ListIn[idx];
 		const size_t NumberOfMembers = udParent.m_children.size();
 		for (size_t i = 0; i < NumberOfMembers; ++i)
-		{
-			const UserData UD = GetUDfromUniqueKey(ListIn, udParent.m_children[i]);
-			FindOrInsertUD(m_currentMembers, UD);
-		}
+			FindOrInsertUD(m_currentMembers, GetUDfromUniqueKey(ListIn, udParent.m_children[i]));
 	}
 }
 
@@ -2352,7 +2600,7 @@ bool CodeViewer::ParseStructureName(vector<UserData>& ListIn, UserData ud, const
 			ud.m_uniqueKey = lowerCase(ud.m_keyName) + CurrentParentKey;
 			ud.m_uniqueParent = CurrentParentKey;
 			FindOrInsertUD(ListIn, ud);
-			size_t iCurParent = GetUDPointerfromUniqueKey(ListIn, CurrentParentKey);
+			const size_t iCurParent = GetUDIdxfromUniqueKey(ListIn, CurrentParentKey);
 			if (!CurrentParentKey.empty() && !ud.m_uniqueKey.empty() && (iCurParent < ListIn.size()))
 			{
 				ListIn[iCurParent].m_children.push_back(ud.m_uniqueKey);//add child to parent
@@ -2739,13 +2987,13 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		m_autoCompString.append(i->data());
 		m_autoCompString += ' ';
 	}
-	//Send the collected func/subs to scintilla for highlighting - always lowercase as VBS is case insensitive.
+	//Send the collected func/subs to scintilla for highlighting - always as lowercase as VBS is case insensitive.
 	//TODO: Need to comune with scintilla closer (COM pointers??)
-	sSubFunOut = lowerCase(sSubFunOut);
+	std::transform(sSubFunOut.begin(), sSubFunOut.end(), sSubFunOut.begin(), ::tolower);
 	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 1, (LPARAM)sSubFunOut.c_str());
-	strCompOut = lowerCase(strCompOut);
+	std::transform(strCompOut.begin(), strCompOut.end(), strCompOut.begin(), ::tolower);
 	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 2, (LPARAM)strCompOut.c_str());
-	strVPcoreWords = lowerCase(strVPcoreWords);
+	std::transform(strVPcoreWords.begin(), strVPcoreWords.end(), strVPcoreWords.begin(), ::tolower);
 	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 3, (LPARAM)strVPcoreWords.c_str());
 }
 
