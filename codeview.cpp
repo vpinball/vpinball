@@ -300,19 +300,6 @@ static size_t FindOrInsertUD(vector<UserData>& ListIn, const UserData &udIn)
 		}
 		else
 		{
-			// detect duplicate subs/functions (at least rudimentary)
-			if (g_pvp && g_pvp->m_pcv &&
-				 warn_on_dupes &&
-			    (udIn.eTyping == eSub || udIn.eTyping == eFunction) &&
-			    (iterFound->m_lineNum != udIn.m_lineNum) && (iterFound->m_lineNum != udIn.m_lineNum+1) && (iterFound->m_lineNum+1 != udIn.m_lineNum))
-			{
-			//!! or print this where the function is??
-			const Sci_Position dwellpos = SendMessage(g_pvp->m_pcv->m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
-			SendMessage(g_pvp->m_pcv->m_hwndScintilla, SCI_CALLTIPSHOW, dwellpos,
-				(LPARAM)("Duplicate Definitions: " + iterFound->m_description + " (Line: " + std::to_string(iterFound->m_lineNum) + ") AND " + udIn.m_description + " (Line: " + std::to_string(udIn.m_lineNum) + ")").c_str());
-			warn_on_dupes = false;
-			}
-
 			// assign again, as e.g. line of func/sub/var could have changed by other updates
 			ListIn[Pos] = udIn;
 		}
