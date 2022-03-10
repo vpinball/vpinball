@@ -16,6 +16,8 @@ FIXES:
 
 - fix old VPX regression leading to wrong parent links for some of the script data (leading to all kinds of other side effects when parsing the script code)
 
+- update internal script representation continuously while typing (please notify us if this makes working in the script editor too slow for a specific table!)
+
 - fix crashes in Direct Sound when using certain WAVE_FORMAT_IEEE_FLOAT .wav samples
 
 - fix showing property dialog if multiple elements were selected
