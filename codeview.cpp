@@ -2260,7 +2260,7 @@ void CodeViewer::ShowAutoComplete(const SCNotification *pSCN)
 	}
 }
 
-void CodeViewer::GetMembers(vector<UserData>& ListIn, const string &strIn)
+void CodeViewer::GetMembers(const vector<UserData>& ListIn, const string &strIn)
 {
 	m_currentMembers.clear();
 	const int idx = UDKeyIndex<false>(ListIn, strIn);
@@ -2303,11 +2303,8 @@ bool CodeViewer::ShowTooltipOrGoToDefinition(const SCNotification *pSCN, const b
 	{
 		//Retrieve the word
 		char szDwellWord[256] = {};
-		char szLCDwellWord[256] = {};
 		GetRange(m_hwndScintilla, wordstart, wordfinish, szDwellWord);
-		strncpy_s(szLCDwellWord, szDwellWord, sizeof(szLCDwellWord)-1);
-		szLower(szLCDwellWord);
-		string DwellWord = szLCDwellWord;
+		string DwellWord = lowerCase(szDwellWord);
 		RemovePadding(DwellWord);
 		RemoveNonVBSChars(DwellWord);
 		if (DwellWord.empty()) return false;
@@ -2332,7 +2329,7 @@ bool CodeViewer::ShowTooltipOrGoToDefinition(const SCNotification *pSCN, const b
 				idx = FindClosestUD(m_pageConstructsDict, CurrentLineNo, idx);
 				const UserData* const Word = &m_pageConstructsDict[idx];
 				Mess = Word->m_description;
-				Mess += " (Line: " + std::to_string(Word->m_lineNum + 1) + ")";
+				Mess += " (Line: " + std::to_string(Word->m_lineNum + 1) + ')';
 				if ((Word->m_comment.length() > 1) && m_dwellHelp)
 					Mess += '\n' + m_pageConstructsDict[idx].m_comment;
 				gotoDefinition = Word;
@@ -2887,6 +2884,8 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 	CurrentParentKey.clear();
 	//ParentTreeInvalid = false;
 
+	m_pageConstructsDict.clear(); //!! it's actually not needed to clear this list, BUT there is no mechanism (it seems) to delete non-existant subs/functions/etc from it, so rather redo it completely
+
 	for (int linecount = 0; linecount < scriptLines; ++linecount)
 	{
 		// Read line
@@ -2899,6 +2898,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 	}
 	SendMessage(m_hwndFunctionList, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
 	SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
+
 	//Propergate subs&funcs in menu in order
 	for (vector<UserData>::iterator i = m_pageConstructsDict.begin(); i != m_pageConstructsDict.end(); ++i) 
 	{
@@ -2909,6 +2909,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		}
 	}
 	SendMessage(m_hwndFunctionList, WM_SETREDRAW, TRUE, 0);
+
 	//Collect Objects/Components from the menu. (cheat!)
 	size_t CBCount = SendMessage(m_hwndItemList, CB_GETCOUNT, 0, 0)-1; //Zero Based
 	while ((SSIZE_T)CBCount >= 0)
@@ -2924,6 +2925,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		}
 		CBCount--;
 	}
+
 	//Now merge the lot for Auto complete...
 	m_autoCompList.clear();
 	for (vector<UserData>::iterator i = m_VBwordsDict.begin(); i != m_VBwordsDict.end(); ++i)

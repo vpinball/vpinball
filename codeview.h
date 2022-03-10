@@ -348,7 +348,7 @@ private:
    
    void ReadLineToParseBrain(string wholeline, const int linecount, vector<UserData>& ListIn);
 
-   void GetMembers(vector<UserData>& ListIn, const string &StrIn);
+   void GetMembers(const vector<UserData>& ListIn, const string &StrIn);
 
    void InitPreferences();
 

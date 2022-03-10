@@ -13,9 +13,8 @@ FIXES:
 
 - update line number for script subs/functions when updating the function list
   (i.e. so that jumping to these works properly again after changing other script code)
-
+- remove subs/functions from the function list when these are deleted during editing
 - fix old VPX regression leading to wrong parent links for some of the script data (leading to all kinds of other side effects when parsing the script code)
-
 - update internal script representation continuously while typing (please notify us if this makes working in the script editor too slow for a specific table!)
 
 - fix crashes in Direct Sound when using certain WAVE_FORMAT_IEEE_FLOAT .wav samples
@@ -24,7 +23,7 @@ FIXES:
 
 - on import/rename an image in the image manager also update the comboboxes to select the new image for selected elements
 
-- do not poll XInput gamedevice/joypad/stick if its disconnected, otherwise noticable overhead
+- do not poll XInput gamedevice/joypad/stick if its disconnected, otherwise there was a noticable overhead/slowdown
 
 - update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
 - DirectX 8 port for input handling (currently disabled)
