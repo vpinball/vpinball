@@ -1904,7 +1904,7 @@ void CodeViewer::GetParamsFromEvent(const UINT iEvent, char * const szParams)
    }
 }
 
-void AddEventToList(const char * const sz, const int index, const int dispid, const LPARAM lparam)
+static void AddEventToList(const char * const sz, const int index, const int dispid, const LPARAM lparam)
 {
    const HWND hwnd = (HWND)lparam;
    const size_t listindex = SendMessage(hwnd, CB_ADDSTRING, 0, (size_t)sz);
@@ -2882,7 +2882,6 @@ void CodeViewer::RemoveNonVBSChars(string &line)
 void CodeViewer::ParseForFunction() // Subs & Collections WIP 
 {
 	const int scriptLines = (int)SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
-	SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
 
 	ParentLevel = 0; //root
 	CurrentParentKey.clear();
@@ -2898,6 +2897,8 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		if (text[0] != '\0')
 			ReadLineToParseBrain(text, linecount, m_pageConstructsDict);
 	}
+	SendMessage(m_hwndFunctionList, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+	SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
 	//Propergate subs&funcs in menu in order
 	for (vector<UserData>::iterator i = m_pageConstructsDict.begin(); i != m_pageConstructsDict.end(); ++i) 
 	{
@@ -2907,6 +2908,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 			SendMessage(m_hwndFunctionList, CB_ADDSTRING, 0, (LPARAM)c_str1);
 		}
 	}
+	SendMessage(m_hwndFunctionList, WM_SETREDRAW, TRUE, 0);
 	//Collect Objects/Components from the menu. (cheat!)
 	size_t CBCount = SendMessage(m_hwndItemList, CB_GETCOUNT, 0, 0)-1; //Zero Based
 	while ((SSIZE_T)CBCount >= 0)

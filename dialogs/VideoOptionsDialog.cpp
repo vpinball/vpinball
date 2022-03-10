@@ -137,6 +137,7 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
 void VideoOptionsDialog::FillVideoModesList(const std::vector<VideoMode>& modes, const VideoMode* curSelMode)
 {
    const HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
+   SendMessage(hwndList, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
    SendMessage(hwndList, LB_INITSTORAGE, modes.size(), modes.size() * 128); // *128 is artificial
 
@@ -219,6 +220,7 @@ void VideoOptionsDialog::FillVideoModesList(const std::vector<VideoMode>& modes,
       }
    }
    SendMessage(hwndList, LB_SETCURSEL, bestMatch, 0);
+   SendMessage(hwndList, WM_SETREDRAW, TRUE, 0);
 }
 
 
@@ -374,6 +376,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
 
    const int stereo3D = LoadValueIntWithDefault("Player", "Stereo3D", 0);
    hwnd = GetDlgItem(IDC_3D_STEREO).GetHwnd();
+   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Disabled");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"TB (Top / Bottom)");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Interlaced (e.g. LG TVs)");
@@ -394,6 +397,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Deghosted Magenta/Green");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Amber/Blue");
    SendMessage(hwnd, CB_SETCURSEL, stereo3D, 0);
+   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    const bool stereo3DY = LoadValueBoolWithDefault("Player", "Stereo3DYAxis", false);
    SendMessage(GetDlgItem(IDC_3D_STEREO_Y).GetHwnd(), BM_SETCHECK, stereo3DY ? BST_CHECKED : BST_UNCHECKED, 0);

@@ -32,8 +32,9 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
         const int* sd = (int *)SendMessage(hwndList, LB_GETITEMDATA, i, 0);
         delete sd;
     }
-    SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
 
+    SendMessage(hwndList, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+    SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
     for (unsigned int i = 0; i < num_physicsoptions; i++)
     {
         physicsoptions[i] = new char[256];
@@ -48,6 +49,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
         SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)sd);
     }
     SendMessage(hwndList, LB_SETCURSEL, physicsselection, 0);
+    SendMessage(hwndList, WM_SETREDRAW, TRUE, 0);
 
     char tmp[256];
 
