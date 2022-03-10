@@ -7,7 +7,6 @@
 #include "codeviewedit.h"
 #include "ScriptErrorDialog.h"
 #include "inc\scintilla.h"
-#include "inc\scilexer.h"
 
 #define MAX_FIND_LENGTH 81
 #define MAX_LINE_LENGTH 2048
@@ -398,7 +397,10 @@ private:
    CVPreference *prefComments;
    CVPreference *prefLiterals;
    CVPreference *prefVPcore;
-   //bool ParentTreeInvalid;
+
+   int m_parentLevel = 0;
+   string m_currentParentKey; // always lower case
+   //bool m_parentTreeInvalid;
    //TODO: int TabStop;
 
    // keyword lists

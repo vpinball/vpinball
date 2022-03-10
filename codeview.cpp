@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include "inc\scilexer.h"
+
 #include <initguid.h>
 #include <DbgProp.h>
 //#include <Windowsx.h>
@@ -267,11 +269,13 @@ static int FindUD(const vector<UserData> &ListIn, const string &strSearchData, i
 	return result;
 }
 
+static bool warn_on_dupes = false;
+
 //Assumes case insensitive sorted list
 //Returns index or insertion point (-1 == error)
 static size_t FindOrInsertUD(vector<UserData>& ListIn, const UserData &udIn)
 {
-	if (ListIn.empty())	//First in
+	if (ListIn.empty()) // First in
 	{
 		ListIn.push_back(udIn);
 		return 0;
@@ -293,7 +297,19 @@ static size_t FindOrInsertUD(vector<UserData>& ListIn, const UserData &udIn)
 		}
 		else
 		{
-			// assign again, as e.g. line of func/sub/var could have changed by other updates
+			// detect/warn about duplicate subs/functions (at least rudimentary)
+			if (g_pvp && g_pvp->m_pcv &&
+			    warn_on_dupes &&
+			    (udIn.eTyping == eSub || udIn.eTyping == eFunction) && // only check subs and functions
+			    (iterFound->m_lineNum != udIn.m_lineNum)) // use this simple check as dupe test: are the keys on different lines?
+			{
+				const Sci_Position dwellpos = SendMessage(g_pvp->m_pcv->m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
+				SendMessage(g_pvp->m_pcv->m_hwndScintilla, SCI_CALLTIPSHOW, dwellpos,
+				           (LPARAM)("Duplicate Definition found: " + iterFound->m_description + " (Line: " + std::to_string(iterFound->m_lineNum) + ")\n                            " + udIn.m_description + " (Line: " + std::to_string(udIn.m_lineNum) + ')').c_str());
+				warn_on_dupes = false;
+			}
+
+			// assign again, as e.g. line of func/sub/var could have been changed by other updates
 			ListIn[Pos] = udIn;
 		}
 		return Pos;
@@ -377,6 +393,7 @@ static int FindClosestUD(const vector<UserData>& ListIn, const int CurrentLine, 
 	return ClosestPos;
 }
 
+// returns true if inserted, false if already in list
 static bool FindOrInsertStringIntoAutolist(vector<string>& ListIn, const string &strIn)
 {
 	//First in the list
@@ -390,7 +407,7 @@ static bool FindOrInsertStringIntoAutolist(vector<string>& ListIn, const string 
 	while (!(iNewPos & ListSize) && (iNewPos > 1))
 		iNewPos >>= 1;
 	int iJumpDelta = iNewPos >> 1;
-	--iNewPos;//Zero Base
+	--iNewPos; //Zero Base
 	const string strSearchData = lowerCase(strIn);
 	UINT32 iCurPos;
 	int result;
@@ -2553,10 +2570,6 @@ bool CodeViewer::ParseOKLineLength(const size_t LineLen)
 	return true;
 }
 
-
-static int ParentLevel = 0;
-static string CurrentParentKey; // always lower case
-
 //false is a fail/syntax error
 bool CodeViewer::ParseStructureName(vector<UserData>& ListIn, UserData ud, const string &UCline, const string &line, const int Lineno)
 {
@@ -2568,11 +2581,11 @@ bool CodeViewer::ParseStructureName(vector<UserData>& ListIn, UserData ud, const
 	{
 		if (ud.eTyping == eDim || ud.eTyping == eConst)
 		{
-			ud.m_uniqueKey = lowerCase(ud.m_keyName) + CurrentParentKey;
-			ud.m_uniqueParent = CurrentParentKey;
+			ud.m_uniqueKey = lowerCase(ud.m_keyName) + m_currentParentKey;
+			ud.m_uniqueParent = m_currentParentKey;
 			FindOrInsertUD(ListIn, ud);
-			const size_t iCurParent = GetUDIdxfromUniqueKey(ListIn, CurrentParentKey);
-			if (!CurrentParentKey.empty() && !ud.m_uniqueKey.empty() && (iCurParent < ListIn.size()))
+			const size_t iCurParent = GetUDIdxfromUniqueKey(ListIn, m_currentParentKey);
+			if (!m_currentParentKey.empty() && !ud.m_uniqueKey.empty() && (iCurParent < ListIn.size()))
 			{
 				ListIn[iCurParent].m_children.push_back(ud.m_uniqueKey);//add child to parent
 			}
@@ -2590,10 +2603,10 @@ bool CodeViewer::ParseStructureName(vector<UserData>& ListIn, UserData ud, const
 				if (crWord.size() <= MAX_FIND_LENGTH && !crWord.empty()) 
 				{
 					ud.m_keyName = crWord;
-					ud.m_uniqueKey = lowerCase(ud.m_keyName) + CurrentParentKey;
-					ud.m_uniqueParent = CurrentParentKey;
+					ud.m_uniqueKey = lowerCase(ud.m_keyName) + m_currentParentKey;
+					ud.m_uniqueParent = m_currentParentKey;
 					FindOrInsertUD(ListIn, ud);
-					if (!CurrentParentKey.empty() && !ud.m_uniqueKey.empty() && (iCurParent < ListIn.size()))
+					if (!m_currentParentKey.empty() && !ud.m_uniqueKey.empty() && (iCurParent < ListIn.size()))
 					{
 						ListIn[iCurParent].m_children.push_back(ud.m_uniqueKey);//add child to parent
 					}
@@ -2604,7 +2617,7 @@ bool CodeViewer::ParseStructureName(vector<UserData>& ListIn, UserData ud, const
 			return false;
 		}
 		//Its something new and structural and therefore we are now a parent
-		if (ParentLevel == 0)// its a root
+		if (m_parentLevel == 0) // its a root
 		{
 			ud.m_uniqueKey = lowerCase(ud.m_keyName);
 			ud.m_uniqueParent.clear();
@@ -2613,8 +2626,8 @@ bool CodeViewer::ParseStructureName(vector<UserData>& ListIn, UserData ud, const
 			//{
 			//	ShowError("Parent == -1");
 			//}
-			CurrentParentKey = ud.m_uniqueKey;
-			++ParentLevel;
+			m_currentParentKey = ud.m_uniqueKey;
+			++m_parentLevel;
 			// get construct autodims
 			string RemainingLine = line;
 			size_t CommPos = UCline.find_first_of('(');
@@ -2631,13 +2644,13 @@ bool CodeViewer::ParseStructureName(vector<UserData>& ListIn, UserData ud, const
 				{
 					ud.m_keyName = crWord;
 					ud.eTyping = eDim;
-					ud.m_uniqueKey = lowerCase(ud.m_keyName) + CurrentParentKey;
-					ud.m_uniqueParent = CurrentParentKey;
+					ud.m_uniqueKey = lowerCase(ud.m_keyName) + m_currentParentKey;
+					ud.m_uniqueParent = m_currentParentKey;
 					FindOrInsertUD(ListIn, ud);
-					if (!CurrentParentKey.empty() && !ud.m_uniqueKey.empty() && (iCurParent < ListIn.size()))
+					if (!m_currentParentKey.empty() && !ud.m_uniqueKey.empty() && (iCurParent < ListIn.size()))
 					{
 						ListIn[iCurParent].m_children.push_back(ud.m_uniqueKey);//add child to parent
-					}	
+					}
 				}
 				RemainingLine = RemainingLine.substr(CommPos+1, string::npos);
 				CommPos = RemainingLine.find_first_of(',');
@@ -2645,15 +2658,15 @@ bool CodeViewer::ParseStructureName(vector<UserData>& ListIn, UserData ud, const
 		}
 		else 
 		{
-			ud.m_uniqueKey = lowerCase(ud.m_keyName) + CurrentParentKey;
-			ud.m_uniqueParent = CurrentParentKey;
+			ud.m_uniqueKey = lowerCase(ud.m_keyName) + m_currentParentKey;
+			ud.m_uniqueParent = m_currentParentKey;
 			FindOrInsertUD(ListIn, ud);
-			const int iUDIndx = UDKeyIndex<true>(ListIn, CurrentParentKey);
+			const int iUDIndx = UDKeyIndex<true>(ListIn, m_currentParentKey);
 			if (iUDIndx == -1)
 			{
-				//ParentTreeInvalid = true;
-				ParentLevel = 0;
-				CurrentParentKey.clear();
+				//m_parentTreeInvalid = true;
+				m_parentLevel = 0;
+				m_currentParentKey.clear();
 				if (!m_stopErrorDisplay)
 				{
 					m_stopErrorDisplay = true;
@@ -2664,19 +2677,19 @@ bool CodeViewer::ParseStructureName(vector<UserData>& ListIn, UserData ud, const
 				return true;
 			}
 			ListIn[iUDIndx].m_children.push_back(ud.m_uniqueKey);//add child to parent
-			CurrentParentKey = ud.m_uniqueKey;
-			++ParentLevel;
+			m_currentParentKey = ud.m_uniqueKey;
+			++m_parentLevel;
 		}
 	}
 	else
 	{
 		if (endIdx != string::npos)
 		{
-			if (ParentLevel == -1)
+			if (m_parentLevel == -1)
 			{
-				//ParentTreeInvalid = true;
-				ParentLevel = 0;
-				CurrentParentKey.clear();
+				//m_parentTreeInvalid = true;
+				m_parentLevel = 0;
+				m_currentParentKey.clear();
 				if (!m_stopErrorDisplay)
 				{
 					m_stopErrorDisplay = true;
@@ -2689,31 +2702,31 @@ bool CodeViewer::ParseStructureName(vector<UserData>& ListIn, UserData ud, const
 			}
 			else
 			{ 
-				if (ParentLevel > 0)
+				if (m_parentLevel > 0)
 				{//finished with child ===== END =====
-					const int iCurParent = UDKeyIndex<true>(ListIn, CurrentParentKey);
+					const int iCurParent = UDKeyIndex<true>(ListIn, m_currentParentKey);
 					if (iCurParent != -1)
 					{
 						const int iGrandParent = UDKeyIndex<true>(ListIn, ListIn[iCurParent].m_uniqueParent);
 						if (iGrandParent != -1)
-							CurrentParentKey = ListIn[iGrandParent].m_uniqueKey; 
+							m_currentParentKey = ListIn[iGrandParent].m_uniqueKey; 
 						else
-							CurrentParentKey.clear();
-						--ParentLevel;
+							m_currentParentKey.clear();
+						--m_parentLevel;
 						return false;
 					}
 					/// error - end without start
-					CurrentParentKey.clear();
-					ParentLevel--;
+					m_currentParentKey.clear();
+					--m_parentLevel;
 					return true;
 				}
 				else
 				{	//Error - end without start
-					ParentLevel = 0;
-					CurrentParentKey.clear();
+					m_parentLevel = 0;
+					m_currentParentKey.clear();
 					return true;
 				}
-			}//if (ParentLevel == -1)
+			}//if (m_parentLevel == -1)
 		}//if (endIdx != string::npos)
 	}
 	return false;
@@ -2880,9 +2893,9 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 {
 	const int scriptLines = (int)SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
 
-	ParentLevel = 0; //root
-	CurrentParentKey.clear();
-	//ParentTreeInvalid = false;
+	m_parentLevel = 0; //root
+	m_currentParentKey.clear();
+	//m_parentTreeInvalid = false;
 
 	m_pageConstructsDict.clear(); //!! it's actually not needed to clear this list, BUT there is no mechanism (it seems) to delete non-existant subs/functions/etc from it, so rather redo it completely
 
@@ -2916,10 +2929,11 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 	{
 		char c_str1[256] = {};
 		SendMessage(m_hwndItemList, CB_GETLBTEXT, CBCount, (LPARAM)c_str1);
-		if (strnlen_s(c_str1, sizeof(c_str1)) > 1)
+		const string str1(c_str1);
+		if (str1.length() > 1)
 		{
 			UserData ud;
-			ud.m_keyName = c_str1;
+			ud.m_keyName = str1;
 			ud.m_uniqueKey = lowerCase(ud.m_keyName);
 			FindOrInsertUD(m_componentsDict,ud);
 		}
@@ -2965,6 +2979,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		m_autoCompString += *i;
 		m_autoCompString += ' ';
 	}
+
 	//Send the collected func/subs to scintilla for highlighting - always as lowercase as VBS is case insensitive.
 	//TODO: Need to comune with scintilla closer (COM pointers??)
 	std::transform(sSubFunOut.begin(), sSubFunOut.end(), sSubFunOut.begin(), ::tolower);
@@ -3007,10 +3022,10 @@ void CodeViewer::ParseVPCore()
 
 	//initialize Parent child
 ///////////////////////
-	ParentLevel = 0; //root
-	CurrentParentKey.clear();
+	m_parentLevel = 0; //root
+	m_currentParentKey.clear();
 	m_stopErrorDisplay = true;/// WIP BRANDREW (was set to false)
-	//ParentTreeInvalid = false;
+	//m_parentTreeInvalid = false;
 	int linecount = 0;
 	while (!feof(fCore))
 	{
@@ -3244,6 +3259,7 @@ LRESULT CodeViewer::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          {
             g_pvp->m_pcv = pcv;
             pcv->m_stopErrorDisplay = true; ///stop Error reporting WIP
+            warn_on_dupes = true;
             pcv->ParseForFunction();
          }
          break;
@@ -3290,6 +3306,7 @@ BOOL CodeViewer::OnCommand(WPARAM wparam, LPARAM lparam)
    {
       case SCEN_SETFOCUS:
       {
+         warn_on_dupes = true;
          pcv->ParseForFunction();
          return TRUE;
       }
@@ -3325,7 +3342,6 @@ BOOL CodeViewer::OnCommand(WPARAM wparam, LPARAM lparam)
          const SCNotification *const pscn = (SCNotification *)lparam;
          return ParseClickEvents(id, pscn);
       }
-
    }
    return FALSE;
 }
