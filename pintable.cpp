@@ -4553,9 +4553,9 @@ void PinTable::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISe
     const LocalString ls16(IDS_TO_COLLECTION);
     mainMenu.AppendMenu(MF_POPUP | MF_STRING, (size_t)colSubMenu.GetHandle(), ls16.m_szbuffer);
 
-    const int maxItems = min(m_vcollection.size() - 1, 32);
+    const int maxItems = m_vcollection.size() - 1;
 
-    // run through all collections and list up to 32 of them in the context menu
+    // run through all collections and list them in the context menu
     // the actual processing is done in ISelect::DoCommand() 
     for (int i = maxItems; i >= 0; i--)
     {
@@ -4564,8 +4564,10 @@ void PinTable::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISe
         char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
         WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szT, MAXNAMEBUFFER*2, nullptr, nullptr);
 
-        colSubMenu.AppendMenu(MF_POPUP, 0x40000 + i, szT);
-        colSubMenu.CheckMenuItem(0x40000 + i, MF_UNCHECKED);
+        UINT flags = MF_POPUP | MF_UNCHECKED;
+        if ((maxItems-i) % 32 == 0) // add new column each 32 entries
+           flags |= MF_MENUBREAK;
+        colSubMenu.AppendMenu(flags, 0x40000 + i, szT);
     }
     if (m_vmultisel.size() == 1)
     {
@@ -4789,7 +4791,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
 
 void PinTable::UpdateCollection(const int index)
 {
-   if (index < m_vcollection.size() && index < 32)
+   if (index < m_vcollection.size())
    {
       if (!m_vmultisel.empty())
       {
