@@ -9,7 +9,7 @@ FEATURES:
 
 - add 'Go To Definition' to the script editor (via F12 key), which allows to jump to the function/sub/variable definition from the current cursor pos/selection
 
-- add more columns to the search/select dialog (Collection, Collidable, Visible, Timer enabled, Depth Bias, Static Rendering, Reflections enabled)
+- add more columns to the search/select dialog (Physics Material, Collection, Collidable, Visible, Timer enabled, Depth Bias, Static Rendering, Reflections enabled)
 
 FIXES:
 
