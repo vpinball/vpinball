@@ -129,6 +129,8 @@ public:
        m_d.m_slingshotforce = value * 10.0f;
    }
 
+   bool     StaticRendering() const { return (!m_d.m_droppable && !m_isDynamic); }
+
    SurfaceData m_d;
    bool m_disabled;
 

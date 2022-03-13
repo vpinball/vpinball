@@ -464,6 +464,7 @@ void Rubber::GetCentralCurve(std::vector<RenderVertex> &vv, const float _accurac
       IHaveDragPoints::GetRgVertex(vv, true, accuracy);
 }
 
+#if 0
 float Rubber::GetSurfaceHeight(float x, float y) const
 {
    std::vector<RenderVertex> vvertex;
@@ -507,6 +508,7 @@ float Rubber::GetSurfaceHeight(float x, float y) const
 
     return zheight*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 }
+#endif
 
 //
 // end of license:GPLv3+, back to 'old MAME'-like

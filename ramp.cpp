@@ -1251,7 +1251,7 @@ void Ramp::RenderStatic()
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
-   // dont render transparent ramps into static buffer, these are done per frame later-on
+   // don't render transparent ramps into static buffer, these are done per frame later-on
    if (mat->m_bOpacityActive)
       return;
 

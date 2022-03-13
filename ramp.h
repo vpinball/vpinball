@@ -83,8 +83,6 @@ public:
 
    virtual void ClearForOverwrite();
 
-   float GetSurfaceHeight(float x, float y) const;
-
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
 
@@ -103,7 +101,6 @@ public:
 
    virtual void GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D);
 
-   void AssignHeightToControlPoint(const RenderVertex3D &v, const float height);
    virtual bool IsTransparent() const;
    virtual float GetDepth(const Vertex3Ds& viewDir) const;
    virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
@@ -115,6 +112,9 @@ public:
    virtual void UpdateStatusBarInfo();
 
    virtual void WriteRegDefaults();
+
+   float GetSurfaceHeight(float x, float y) const;
+   bool isHabitrail() const;
 
    RampData m_d;
 
@@ -141,8 +141,6 @@ private:
 
    PropertyPane *m_propPhysics;
 
-   bool isHabitrail() const;
-
    // Get an approximation of the curve described by the control points of this ramp.
    template <typename T>
    void GetCentralCurve(std::vector<T> &vv, const float _accuracy = -1.f) const
@@ -168,7 +166,10 @@ private:
 
    Vertex2D *GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **const pMiddlePoints, const float _accuracy, const bool inc_width);
    void PrepareHabitrail();
-   void AddJoint(vector<HitObject*> &pvho, const Vertex3Ds& v1, const Vertex3Ds& v2);
+
+   void AssignHeightToControlPoint(const RenderVertex3D &v, const float height);
+
+   void AddJoint(vector<HitObject *> &pvho, const Vertex3Ds &v1, const Vertex3Ds &v2);
    void AddJoint2D(vector<HitObject*> &pvho, const Vertex2D& p, const float zlow, const float zhigh);
    void CheckJoint(vector<HitObject*> &pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2);
 

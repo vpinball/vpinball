@@ -73,8 +73,6 @@ public:
 
    virtual void ClearForOverwrite();
 
-   float GetSurfaceHeight(float x, float y) const;
-
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
 
@@ -103,6 +101,10 @@ public:
 
    virtual void WriteRegDefaults();
    virtual void UpdateStatusBarInfo();
+
+#if 0
+   float GetSurfaceHeight(float x, float y) const;
+#endif
 
    RubberData m_d;
 

@@ -549,7 +549,7 @@ void Surface::RenderDynamic()
 
    RenderSlingshots();
 
-   if (m_d.m_droppable || m_isDynamic)
+   if (!StaticRendering())
    {
       if (!m_isDropped)
       {
@@ -978,7 +978,7 @@ void Surface::RenderStatic()
       return;
 
    RenderSlingshots();
-   if (!m_d.m_droppable && !m_isDynamic)
+   if (StaticRendering())
       RenderWallsAtHeight(false);
 }
 
