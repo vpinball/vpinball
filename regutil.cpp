@@ -150,7 +150,7 @@ void InitXMLregistry(const std::string &path)
       xmlDoc.append_node(dcl);
    }
    else
-      xmlDoc.parse<parse_declaration_node | parse_comment_nodes | parse_normalize_whitespace>(&xmlContent[0]);
+      xmlDoc.parse<parse_declaration_node | parse_comment_nodes | parse_normalize_whitespace>((char*)xmlContent.c_str());
 
    controller = xmlDoc.first_node("Controller");
    if (!controller)

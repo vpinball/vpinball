@@ -212,7 +212,7 @@ HRESULT BiffWriter::WriteString(const int id, const std::string &szvalue)
 {
    ULONG writ = 0;
    HRESULT hr;
-   const int len = (int)szvalue.size();
+   const int len = (int)szvalue.length();
 
    if (FAILED(hr = WriteRecordSize((int)sizeof(int) * 2 + len)))
       return hr;
@@ -411,7 +411,7 @@ HRESULT BiffReader::GetString(char *const szvalue, const DWORD szvalue_maxlength
 
    if (FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
    {
-      szvalue[0] = 0;
+      szvalue[0] = '\0';
       return hr;
    }
 
@@ -419,7 +419,7 @@ HRESULT BiffReader::GetString(char *const szvalue, const DWORD szvalue_maxlength
 
    char *tmp = new char[len+1];
    hr = ReadBytes(tmp, len, &read);
-   tmp[len] = 0;
+   tmp[len] = '\0';
    strncpy_s(szvalue, szvalue_maxlength, tmp, len);
    delete[] tmp;
    return hr;
@@ -455,7 +455,7 @@ HRESULT BiffReader::GetWideString(WCHAR *wzvalue, const DWORD wzvalue_maxlength)
 
    if (FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
    {
-      wzvalue[0] = 0;
+      wzvalue[0] = L'\0';
       return hr;
    }
 
@@ -463,7 +463,7 @@ HRESULT BiffReader::GetWideString(WCHAR *wzvalue, const DWORD wzvalue_maxlength)
 
    WCHAR * tmp = new WCHAR[len/sizeof(WCHAR)+1];
    hr = ReadBytes(tmp, len, &read);
-   tmp[len/sizeof(WCHAR)] = 0;
+   tmp[len/sizeof(WCHAR)] = L'\0';
    WideStrNCopy(tmp, wzvalue, wzvalue_maxlength);
    delete[] tmp;
    return hr;

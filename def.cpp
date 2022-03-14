@@ -106,7 +106,7 @@ LocalString::LocalString(const int resid)
    if (resid > 0)
       /*const int cchar =*/ LoadString(g_pvp->theInstance, resid, m_szbuffer, sizeof(m_szbuffer));
    else
-      m_szbuffer[0] = 0;
+      m_szbuffer[0] = '\0';
 }
 
 LocalStringW::LocalStringW(const int resid)
@@ -114,7 +114,7 @@ LocalStringW::LocalStringW(const int resid)
    if (resid > 0)
       LoadStringW(g_pvp->theInstance, resid, m_szbuffer, sizeof(m_szbuffer)/sizeof(WCHAR));
    else
-      m_szbuffer[0] = 0;
+      m_szbuffer[0] = L'\0';
 }
 
 WCHAR *MakeWide(const string& sz)

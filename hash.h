@@ -6,7 +6,8 @@ inline size_t StringHash(const std::string& str)
    //MessageBox(0, str, 0, 0);
    unsigned int hash = 5381;
 
-   for (size_t i = 0; i < str.length(); ++i)
+   const size_t l = str.length();
+   for (size_t i = 0; i < l; ++i)
       hash = ((hash << 5) + hash) + tolower(str[i]); /* hash * 33 + str[i] */
 
    return hash;

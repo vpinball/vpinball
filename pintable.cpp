@@ -5409,8 +5409,7 @@ void PinTable::ImportBackdropPOV(const string& filename)
         buffer << myFile.rdbuf();
         myFile.close();
 
-        std::string content(buffer.str());
-        xmlDoc.parse<0>(&content[0]);
+        xmlDoc.parse<0>((char*)buffer.str().c_str());
 
         xml_node<> *root = xmlDoc.first_node("POV");
         if(!root)
@@ -9252,8 +9251,7 @@ void PinTable::ImportVPP(const string& filename)
       buffer << myFile.rdbuf();
       myFile.close();
 
-      std::string content(buffer.str());
-      xmlDoc.parse<0>(&content[0]);
+      xmlDoc.parse<0>((char*)buffer.str().c_str());
       xml_node<> *root = xmlDoc.first_node("physics");
       xml_node<> *physTab = root->first_node("table");
       xml_node<> *physFlip = root->first_node("flipper");

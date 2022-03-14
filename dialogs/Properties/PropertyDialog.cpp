@@ -577,7 +577,7 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
         WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, name, 64, nullptr, nullptr);
         sprintf_s(header, "%s(%d)", name, pvsel.size());
 
-        if (collection[0] != 0)
+        if (collection[0] != '\0')
             sprintf_s(header, "%s [%s](%d)", collection, name, pvsel.size());
         else
             sprintf_s(header, "%s(%d)", name, pvsel.size());

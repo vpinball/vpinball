@@ -422,8 +422,7 @@ bool PhysicsOptionsDialog::LoadSetting()
         buffer << myFile.rdbuf();
         myFile.close();
 
-        std::string content(buffer.str());
-        xmlDoc.parse<0>(&content[0]);
+        xmlDoc.parse<0>((char*)buffer.str().c_str());
         const xml_node<> *root = xmlDoc.first_node("physics");
         const xml_node<> *table = root->first_node("table");
         const xml_node<> *flipper = root->first_node("flipper");

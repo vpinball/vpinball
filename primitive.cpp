@@ -1806,7 +1806,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             char szFileName[MAXSTRING] = { 0 };
 
             GetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, szFileName, MAXSTRING);
-            if (szFileName[0] == 0)
+            if (szFileName[0] == '\0')
             {
                ShowError("No .obj file selected!");
                break;
