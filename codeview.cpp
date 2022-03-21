@@ -37,7 +37,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 IScriptable::IScriptable()
 {
-   m_wzName[0] = 0;
+   m_wzName[0] = '\0';
 }
 
 int CodeViewDispatch::SortAgainstValue(const std::wstring& pv) const
@@ -911,7 +911,7 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 		WordChar = vbsReservedWords[intWordFinish];
 		while (WordChar != 0 && WordChar != ' ')
 		{
-			szWord.push_back(WordChar);
+			szWord += WordChar;
 			intWordFinish++;
 			WordChar = vbsReservedWords[intWordFinish];
 		}
@@ -1319,8 +1319,6 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 			stackFrames[i].pdsf->GetDescriptionString(TRUE, &frameDesc);
 
 			// Fetch local variables and args
-			std::wstringstream stackVariablesStream;
-
 			IDebugProperty *debugProp;
 			stackFrames[i].pdsf->GetDebugProperty(&debugProp);
 
@@ -1336,9 +1334,10 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 			ULONG numInfos;
 			propInfoEnum->Next(128, infos, &numInfos);
 
+			std::wstringstream stackVariablesStream;
 			for (ULONG i2 = 0; i2 < numInfos; i2++)
 			{
-				stackVariablesStream << infos[i2].m_bstrFullName << L"=" << infos[i2].m_bstrValue;
+				stackVariablesStream << infos[i2].m_bstrFullName << L'=' << infos[i2].m_bstrValue;
 				// Add a comma if this isn't the last item in the list
 				if (i2 != numInfos - 1) stackVariablesStream << L", ";
 			}
@@ -1354,7 +1353,7 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 			{
 				errorStream << L" (";
 				errorStream << stackVariablesStream.str();
-				errorStream << L")";
+				errorStream << L')';
 			}
 
 			errorStream << L"\r\n";
@@ -1464,7 +1463,7 @@ void CodeViewer::EvaluateScriptStatement(const char * const szScript)
 void CodeViewer::AddToDebugOutput(const char * const szText)
 {
    SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ADDTEXT, lstrlen(szText), (LPARAM)szText);
-   SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ADDTEXT, lstrlen("\n"), (LPARAM)"\n");
+   SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ADDTEXT, 1, (LPARAM)"\n");
 
    const size_t pos = SendMessage(g_pplayer->m_hwndDebugOutput, SCI_GETCURRENTPOS, 0, 0);
    const size_t line = SendMessage(g_pplayer->m_hwndDebugOutput, SCI_LINEFROMPOSITION, pos, 0);
@@ -2487,7 +2486,7 @@ static void RemoveComment(const HWND m_hwndScintilla)
    {
       const size_t lineStart = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, i, 0);
       const size_t lineEnd = SendMessage(m_hwndScintilla, SCI_GETLINEENDPOSITION, i, 0);
-      if (lineEnd - lineStart < (MAX_LINE_LENGTH -1) )
+      if (lineEnd - lineStart < (MAX_LINE_LENGTH-1) )
       {
          char buf[MAX_LINE_LENGTH];
          GetRange(m_hwndScintilla, lineStart, lineEnd, buf);
@@ -2844,9 +2843,8 @@ void CodeViewer::ReadLineToParseBrain(string wholeline, const int linecount, vec
 			{
 				const size_t doubleQuoteIdx = line.find('\"');
 				if ((doubleQuoteIdx != string::npos) && (doubleQuoteIdx < idx)) continue; // in a string literal
-				const string sSubName = ExtractWordOperand(line, (idx + SearchLength));
 				UD.m_description = line;
-				UD.m_keyName = sSubName;
+				UD.m_keyName = ExtractWordOperand(line, (idx + SearchLength)); // sSubName
 				//UserData ud(linecount, line, sSubName, Type);
 				if (!ParseStructureName(ListIn, UD, UCline, line, linecount))
 				{/*A critical brain error occurred */}
@@ -2857,8 +2855,7 @@ void CodeViewer::ReadLineToParseBrain(string wholeline, const int linecount, vec
 void CodeViewer::RemoveByVal(string &line)
 {
 	const size_t LL = line.length();
-	const string SearchLine = lowerCase(line);
-	size_t Pos = SureFind(SearchLine, "byval");
+	size_t Pos = SureFind(lowerCase(line), "byval");
 	if (Pos != string::npos)
 	{
 		Pos += 5;

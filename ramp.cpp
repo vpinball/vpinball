@@ -1517,7 +1517,6 @@ STDMETHODIMP Ramp::put_HeightBottom(float newVal)
    {
       m_d.m_heightbottom = newVal;
       m_dynamicVertexBufferRegenerate = true;
-
    }
 
    return S_OK;
@@ -1536,7 +1535,6 @@ STDMETHODIMP Ramp::put_HeightTop(float newVal)
    {
       m_d.m_heighttop = newVal;
       m_dynamicVertexBufferRegenerate = true;
-
    }
 
    return S_OK;
@@ -1889,11 +1887,7 @@ STDMETHODIMP Ramp::get_DepthBias(float *pVal)
 
 STDMETHODIMP Ramp::put_DepthBias(float newVal)
 {
-   if (m_d.m_depthBias != newVal)
-   {
-      m_d.m_depthBias = newVal;
-      m_dynamicVertexBufferRegenerate = true;
-   }
+   m_d.m_depthBias = newVal;
 
    return S_OK;
 }

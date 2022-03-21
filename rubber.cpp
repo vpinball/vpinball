@@ -1241,7 +1241,7 @@ void Rubber::RenderObject()
    }
 
    if (m_dynamicVertexBufferRegenerate)
-       UpdateRubber(true, m_d.m_height);
+      UpdateRubber(true, m_d.m_height);
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
