@@ -359,6 +359,7 @@ void Light::RenderBulbMesh()
    mat.m_cClearcoat = 0xFFFFFF;
    pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat.m_bIsMetal);
    pd3dDevice->basicShader->SetMaterial(&mat);
+   pd3dDevice->basicShader->SetFlasherColorAlpha(vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bulbLightVBuffer, 0, bulbLightNumVertices, m_bulbLightIndexBuffer, 0, bulbLightNumFaces);
@@ -1501,6 +1502,13 @@ STDMETHODIMP Light::GetInPlayStateBool(VARIANT_BOOL* pVal)
 
     *pVal = FTOVB(isOn);
     return S_OK;
+}
+
+STDMETHODIMP Light::GetInPlayIntensity(float *pVal)
+{
+   *pVal = m_d.m_currentIntensity;
+
+   return S_OK;
 }
 
 void Light::setLightState(const LightState newVal)

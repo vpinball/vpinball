@@ -540,6 +540,7 @@ void Kicker::RenderDynamic()
 
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       pd3dDevice->basicShader->SetMaterial(mat);
+      pd3dDevice->basicShader->SetFlasherColorAlpha(vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_kickerBoolean, mat->m_bIsMetal);
       pd3dDevice->basicShader->SetFloat(SHADER_fKickerScale, m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);

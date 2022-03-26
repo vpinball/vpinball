@@ -1110,6 +1110,7 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
    else
    {
        m_pd3dPrimaryDevice->basicShader->SetMaterial(mat);
+       m_pd3dPrimaryDevice->basicShader->SetFlasherColorAlpha(vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
        if (pin)
        {

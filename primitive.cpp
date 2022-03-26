@@ -367,6 +367,10 @@ void Primitive::SetDefaults(bool fromMouseClick)
 
    SetDefaultPhysics(fromMouseClick);
 
+   m_d.m_alpha = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Opacity", 100.0) : 100.0;
+   m_d.m_addBlend = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "AddBlend", false) : false;
+   m_d.m_color = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "Color", RGB(255, 255, 255)) : RGB(255, 255, 255);
+
    m_d.m_edgeFactorUI = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "EdgeFactorUI", 0.25f) : 0.25f;
    m_d.m_collision_reductionFactor = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "CollisionReductionFactor", 0.f) : 0.f;
 
@@ -413,6 +417,10 @@ void Primitive::WriteRegDefaults()
    SaveValueFloat(strKeyName, "ElasticityFalloff", m_d.m_elasticityFalloff);
    SaveValueFloat(strKeyName, "Friction", m_d.m_friction);
    SaveValueFloat(strKeyName, "Scatter", m_d.m_scatter);
+
+   SaveValueBool(strKeyName, "AddBlend", m_d.m_addBlend);
+   SaveValueFloat(strKeyName, "Alpha", m_d.m_alpha);
+   SaveValueInt(strKeyName, "Color", m_d.m_color);
 
    SaveValueFloat(strKeyName, "EdgeFactorUI", m_d.m_edgeFactorUI);
    SaveValueFloat(strKeyName, "CollisionReductionFactor", m_d.m_collision_reductionFactor);
@@ -1249,6 +1257,20 @@ void Primitive::RenderObject()
       // set transform
       g_pplayer->UpdateBasicShaderMatrix(m_fullMatrix);
 
+      // setup for additive blending
+      if (m_d.m_addBlend)
+      {
+         g_pplayer->m_pin3d.EnableAlphaBlend(true);
+         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
+         const vec4 color = convertColor(m_d.m_color, (float)m_d.m_alpha / 100.0f);
+         pd3dDevice->basicShader->SetFlasherColorAlpha(vec4(color.x * color.w, color.y * color.w, color.z * color.w, color.w));
+      }
+      else
+      {
+         const vec4 color = convertColor(m_d.m_color, (float)m_d.m_alpha / 100.0f);
+         pd3dDevice->basicShader->SetFlasherColorAlpha(color);
+      }
+
       // draw the mesh
       pd3dDevice->basicShader->Begin(0);
       if (m_d.m_groupdRendering)
@@ -1519,6 +1541,9 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool bac
       }
    }
    bw.WriteFloat(FID(PIDB), m_d.m_depthBias);
+   bw.WriteBool(FID(ADDB), m_d.m_addBlend);
+   bw.WriteFloat(FID(FALP), m_d.m_alpha);
+   bw.WriteInt(FID(COLR), m_d.m_color);
 
    ISelect::SaveData(pstm, hcrypthash);
 
@@ -1746,6 +1771,8 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
 #endif
    case FID(PIDB): pbr->GetFloat(m_d.m_depthBias); break;
    case FID(OSNM): pbr->GetBool(m_d.m_objectSpaceNormalMap); break;
+   case FID(ADDB): pbr->GetBool(m_d.m_addBlend); break;
+   case FID(FALP): pbr->GetFloat(m_d.m_alpha); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
    return true;
@@ -2510,6 +2537,46 @@ STDMETHODIMP Primitive::put_ObjRotZ(float newVal)
 {
    m_d.m_aRotAndTra[8] = newVal;
 
+   return S_OK;
+}
+
+
+STDMETHODIMP Primitive::get_Opacity(float *pVal)
+{
+   *pVal = m_d.m_alpha;
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_Opacity(float newVal)
+{
+   SetAlpha(newVal);
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::get_Color(OLE_COLOR *pVal)
+{
+   *pVal = m_d.m_color;
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_Color(OLE_COLOR newVal)
+{
+   m_d.m_color = newVal;
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::get_AddBlend(VARIANT_BOOL *pVal)
+{
+   *pVal = FTOVB(m_d.m_addBlend);
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_AddBlend(VARIANT_BOOL newVal)
+{
+   m_d.m_addBlend = VBTOb(newVal);
    return S_OK;
 }
 

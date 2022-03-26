@@ -610,6 +610,7 @@ void Flipper::RenderDynamic()
 
    const Material * mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
+   pd3dDevice->basicShader->SetFlasherColorAlpha(vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (pin)
