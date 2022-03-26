@@ -244,13 +244,13 @@ float Ball::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) 
          //zero time for rigid fast bodies
          || (bnd <= (float)(-PHYS_TOUCH)))
          hittime = 0;                      // slow moving but embedded
-      else
-         hittime = bnd
+      else {
 #ifdef NEW_PHYSICS
-          / -bnv;
+         hittime = bnd / -bnv;
 #else
-          *(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f; // don't compete for fast zero time events
+         hittime = bnd * (float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f; // don't compete for fast zero time events
 #endif
+      }
 
 #ifdef BALL_CONTACTS
       if (fabsf(bnv) <= C_CONTACTVEL)

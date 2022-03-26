@@ -106,8 +106,10 @@ int StackTrace::GetCallStack(void* vcontext, Address* callStack, int maxDepth,
 #ifndef _WIN64
 	uintptr_t* ebpReg;
 	uintptr_t espReg;
+	// clang-format off
 	__asm mov [ebpReg], ebp
 	__asm mov [espReg], esp
+	// clang-format on
 #else
 	uintptr_t ebpReg[2];
 	uintptr_t espReg;
