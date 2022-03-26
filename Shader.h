@@ -269,6 +269,11 @@ public:
       }
    }
 
+   vec4 GetCurrentFlasherColorAlpha()
+   {
+      return currentFlasherColor;
+   }
+
    void SetFlasherData(const vec4& color, const float mode)
    {
       if (currentFlasherData.x != color.x || currentFlasherData.y != color.y || currentFlasherData.z != color.z || currentFlasherData.w != color.w)

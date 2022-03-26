@@ -1014,6 +1014,9 @@ bool RenderDevice::LoadShaders()
       CHECKD3D(FBShader->Core()->SetTexture(SHADER_searchTex2D, m_SMAAsearchTexture));
    }
 
+   // Initialize uniform to default value
+   basicShader->SetFlasherColorAlpha(vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
    return true;
 }
 

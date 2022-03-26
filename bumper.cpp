@@ -301,7 +301,6 @@ void Bumper::RenderBase(const Material * const baseMaterial)
    pd3dDevice->basicShader->SetTexture(SHADER_Texture0, &m_baseTexture, false);
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
-   pd3dDevice->basicShader->SetFlasherColorAlpha(vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_baseVertexBuffer, 0, bumperBaseNumVertices, m_baseIndexBuffer, 0, bumperBaseNumIndices);
@@ -316,7 +315,6 @@ void Bumper::RenderSocket(const Material * const socketMaterial)
    pd3dDevice->basicShader->SetTexture(SHADER_Texture0, &m_skirtTexture, false);
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
-   pd3dDevice->basicShader->SetFlasherColorAlpha(vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_socketVertexBuffer, 0, bumperSocketNumVertices, m_socketIndexBuffer, 0, bumperSocketNumIndices);
@@ -331,7 +329,6 @@ void Bumper::RenderCap(const Material * const capMaterial)
    pd3dDevice->basicShader->SetTexture(SHADER_Texture0, &m_capTexture, false);
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
-   pd3dDevice->basicShader->SetFlasherColorAlpha(vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_capVertexBuffer, 0, bumperCapNumVertices, m_capIndexBuffer, 0, bumperCapNumIndices);
@@ -469,7 +466,6 @@ void Bumper::RenderDynamic()
       pd3dDevice->basicShader->SetTexture(SHADER_Texture0, &m_ringTexture, false);
       pd3dDevice->basicShader->SetMaterial(&ringMaterial);
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
-      pd3dDevice->basicShader->SetFlasherColorAlpha(vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
       // render ring
       pd3dDevice->basicShader->Begin(0);

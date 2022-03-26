@@ -909,7 +909,6 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    pd3dDevice->basicShader->SetMaterial(mat);
-   pd3dDevice->basicShader->SetFlasherColorAlpha(vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
    pd3dDevice->SetRenderStateDepthBias(0.0f);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
@@ -2162,7 +2161,6 @@ void Ramp::RenderRamp(const Material * const mat)
          GenerateVertexBuffer();
 
       pd3dDevice->basicShader->SetMaterial(mat);
-      pd3dDevice->basicShader->SetFlasherColorAlpha(vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
       pd3dDevice->SetRenderStateDepthBias(0.0f);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);

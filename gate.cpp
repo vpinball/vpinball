@@ -433,7 +433,6 @@ void Gate::RenderObject()
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
-   pd3dDevice->basicShader->SetFlasherColorAlpha(vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
    const Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    ppin3d->EnableAlphaBlend(false);

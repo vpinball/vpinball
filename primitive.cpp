@@ -419,7 +419,7 @@ void Primitive::WriteRegDefaults()
    SaveValueFloat(strKeyName, "Scatter", m_d.m_scatter);
 
    SaveValueBool(strKeyName, "AddBlend", m_d.m_addBlend);
-   SaveValueFloat(strKeyName, "Alpha", m_d.m_alpha);
+   SaveValueFloat(strKeyName, "Opacity", m_d.m_alpha);
    SaveValueInt(strKeyName, "Color", m_d.m_color);
 
    SaveValueFloat(strKeyName, "EdgeFactorUI", m_d.m_edgeFactorUI);
@@ -1258,6 +1258,7 @@ void Primitive::RenderObject()
       g_pplayer->UpdateBasicShaderMatrix(m_fullMatrix);
 
       // setup for additive blending
+      vec4 previousFlasherColorAlpha = pd3dDevice->basicShader->GetCurrentFlasherColorAlpha();
       if (m_d.m_addBlend)
       {
          g_pplayer->m_pin3d.EnableAlphaBlend(true);
@@ -1289,6 +1290,8 @@ void Primitive::RenderObject()
             pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), m_indexBuffer, 0, (DWORD)m_mesh.NumIndices());
          pd3dDevice->basicShader->End();
       }
+
+      pd3dDevice->basicShader->SetFlasherColorAlpha(previousFlasherColorAlpha);
 
       // reset transform
       g_pplayer->UpdateBasicShaderMatrix();
@@ -1773,6 +1776,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    case FID(OSNM): pbr->GetBool(m_d.m_objectSpaceNormalMap); break;
    case FID(ADDB): pbr->GetBool(m_d.m_addBlend); break;
    case FID(FALP): pbr->GetFloat(m_d.m_alpha); break;
+   case FID(COLR): pbr->GetInt(m_d.m_color); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
    return true;
