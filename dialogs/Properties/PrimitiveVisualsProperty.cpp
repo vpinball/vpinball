@@ -96,7 +96,7 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
                 PropertyDialog::EndUndo(prim);
                 break;
             case IDC_ALPHA_EDIT:
-                CHECK_UPDATE_VALUE_SETTER(prim->SetAlpha, prim->GetAlpha, PropertyDialog::GetIntTextbox, m_opacityAmountEdit, prim);
+                CHECK_UPDATE_VALUE_SETTER(prim->SetAlpha, prim->GetAlpha, PropertyDialog::GetFloatTextbox, m_opacityAmountEdit, prim);
                 break;
             case IDC_DEPTH_BIAS:
                 CHECK_UPDATE_ITEM(prim->m_d.m_depthBias, PropertyDialog::GetFloatTextbox(m_depthBiasEdit), prim);

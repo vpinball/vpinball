@@ -28,11 +28,11 @@ private:
     HWND        m_hStaticRenderingCheck;
     HWND        m_hRenderBackfacingCheck;
     HWND        m_hDrawTexturesInsideCheck;
-    HWND m_hAdditiveBlendCheck;
-    EditBox m_opacityAmountEdit;
+    HWND        m_hAdditiveBlendCheck;
+    EditBox     m_opacityAmountEdit;
     CColorDialog m_colorDialog;
     ColorButton m_colorButton;
-    EditBox m_disableLightingEdit;
+    EditBox     m_disableLightingEdit;
     EditBox     m_disableLightFromBelowEdit;
     EditBox     m_legacySidesEdit;
     EditBox     m_edgeFactorUIEdit;
