@@ -1503,6 +1503,13 @@ STDMETHODIMP Light::GetInPlayStateBool(VARIANT_BOOL* pVal)
     return S_OK;
 }
 
+STDMETHODIMP Light::GetInPlayIntensity(float *pVal)
+{
+   *pVal = m_d.m_currentIntensity;
+
+   return S_OK;
+}
+
 void Light::setLightState(const LightState newVal)
 {
    if (!m_lockedByLS)

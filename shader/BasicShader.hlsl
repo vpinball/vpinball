@@ -80,6 +80,7 @@ const float4 cGlossy_ImageLerp;
 //!! Gemstones are 0.05-0.17
 //!! Metals have high specular reflectance: 0.5-1.0
 
+const float4 staticColor_Alpha;
 const float alphaTestValue;
 
 struct VS_OUTPUT 
@@ -225,7 +226,7 @@ float4 ps_main(const in VS_NOTEX_OUTPUT IN, uniform bool is_metal) : COLOR
          result.xyz += lerp(sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.worldPos_t1x.w,-0.5*IN.normal_t1y.w)+0.5, 0.,0.)).xyz*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
-   return result;
+   return result * staticColor_Alpha;
 }
 
 float4 ps_main_texture(const in VS_OUTPUT IN, uniform bool is_metal, uniform bool doNormalMapping) : COLOR
@@ -262,7 +263,7 @@ float4 ps_main_texture(const in VS_OUTPUT IN, uniform bool is_metal, uniform boo
          result.xyz += lerp(sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.tex01.z,-0.5*IN.tex01.w)+0.5, 0., 0.)).xyz*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
-   return result;
+   return result * staticColor_Alpha;
 }
 
 float4 ps_main_depth_only_without_texture(const in VS_DEPTH_ONLY_NOTEX_OUTPUT IN) : COLOR

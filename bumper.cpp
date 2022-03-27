@@ -466,6 +466,7 @@ void Bumper::RenderDynamic()
       pd3dDevice->basicShader->SetTexture(SHADER_Texture0, &m_ringTexture, false);
       pd3dDevice->basicShader->SetMaterial(&ringMaterial);
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
+
       // render ring
       pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_ringVertexBuffer, 0, bumperRingNumVertices, m_ringIndexBuffer, 0, bumperRingNumIndices);

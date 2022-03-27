@@ -11,6 +11,8 @@ FEATURES:
 
 - add more columns to the search/select dialog (Physics Material, Collection, Collidable, Visible, Timer enabled, Depth Bias, Static Rendering, Reflections enabled)
 
+- add additive blending to primitives (same as flashers)
+
 FIXES:
 
 - update line number for script subs/functions when updating the function list

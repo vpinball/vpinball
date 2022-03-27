@@ -12,6 +12,7 @@ PrimitiveVisualsProperty::PrimitiveVisualsProperty(const VectorProtected<ISelect
     m_imageCombo.SetDialog(this);
     m_normalMapCombo.SetDialog(this);
     m_materialCombo.SetDialog(this);
+    m_opacityAmountEdit.SetDialog(this);
 }
 
 void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -22,6 +23,8 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         Primitive *const prim = (Primitive*)m_pvsel->ElementAt(i);
 
+        if (dispid == IDC_ADDBLEND || dispid == -1)
+           PropertyDialog::SetCheckboxState(m_hAdditiveBlendCheck, prim->m_d.m_addBlend);
         if (dispid == IDC_DISPLAY_TEXTURE_CHECKBOX || dispid == -1)
             PropertyDialog::SetCheckboxState(m_hDisplayImageCheck, prim->m_d.m_displayTexture);
         if (dispid == IDC_DRAW_TEXTURES_SIDES_CHECK || dispid == -1)
@@ -32,6 +35,8 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             PropertyDialog::SetCheckboxState(m_hRenderBackfacingCheck, prim->m_d.m_backfacesEnabled);
         if (dispid == IDC_STATIC_RENDERING_CHECK || dispid == -1)
             PropertyDialog::SetCheckboxState(m_hStaticRenderingCheck, prim->m_d.m_staticRendering);
+        if (dispid == IDC_ALPHA_EDIT || dispid == -1)
+           PropertyDialog::SetFloatTextbox(m_opacityAmountEdit, prim->m_d.m_alpha);
         if (dispid == IDC_DEPTH_BIAS || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_depthBiasEdit, prim->m_d.m_depthBias);
         if (dispid == IDC_BLEND_DISABLE_LIGHTING || dispid == -1)
@@ -44,6 +49,8 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             PropertyDialog::SetFloatTextbox(m_edgeFactorUIEdit, prim->m_d.m_edgeFactorUI);
         if (dispid == DISPID_Image2 || dispid == -1)
             PropertyDialog::UpdateTextureComboBox(prim->GetPTable()->GetImageList(), m_normalMapCombo, prim->m_d.m_szNormalMap);
+        if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
+           m_colorButton.SetColor(prim->m_d.m_color);
 
         UpdateBaseVisuals(prim, &prim->m_d, dispid);
         //only show the first element on multi-select
@@ -60,7 +67,10 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
         Primitive *const prim = (Primitive *)m_pvsel->ElementAt(i);
         switch (dispid)
         {
-            case IDC_DISPLAY_TEXTURE_CHECKBOX:
+        case IDC_ADDBLEND:
+                CHECK_UPDATE_ITEM(prim->m_d.m_addBlend, PropertyDialog::GetCheckboxState(m_hAdditiveBlendCheck), prim);
+                break;
+        case IDC_DISPLAY_TEXTURE_CHECKBOX:
                 CHECK_UPDATE_ITEM(prim->m_d.m_displayTexture, PropertyDialog::GetCheckboxState(m_hDisplayImageCheck), prim);
                 break;
             case IDC_OBJECT_SPACE_NORMALMAP:
@@ -85,6 +95,9 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
                 prim->ExportMeshDialog();
                 PropertyDialog::EndUndo(prim);
                 break;
+            case IDC_ALPHA_EDIT:
+                CHECK_UPDATE_VALUE_SETTER(prim->SetAlpha, prim->GetAlpha, PropertyDialog::GetIntTextbox, m_opacityAmountEdit, prim);
+                break;
             case IDC_DEPTH_BIAS:
                 CHECK_UPDATE_ITEM(prim->m_d.m_depthBias, PropertyDialog::GetFloatTextbox(m_depthBiasEdit), prim);
                 break;
@@ -103,6 +116,24 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
             case DISPID_Image2:
                 CHECK_UPDATE_COMBO_TEXT_STRING(prim->m_d.m_szNormalMap, m_normalMapCombo, prim);
                 break;
+            case IDC_COLOR_BUTTON1:
+            {
+               CComObject<PinTable> *const ptable = g_pvp->GetActiveTable();
+               if (ptable == nullptr)
+                  break;
+               CHOOSECOLOR cc = m_colorDialog.GetParameters();
+               cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+               m_colorDialog.SetParameters(cc);
+               m_colorDialog.SetColor(prim->m_d.m_color);
+               m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
+               if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
+               {
+                  prim->m_d.m_color = m_colorDialog.GetColor();
+                  m_colorButton.SetColor(prim->m_d.m_color);
+                  memcpy(ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(ptable->m_rgcolorcustom));
+               }
+               break;
+            }
             default:
                 UpdateBaseProperties(prim, &prim->m_d, dispid);
                 break;
@@ -123,16 +154,19 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     m_hDrawTexturesInsideCheck = ::GetDlgItem(GetHwnd(), IDC_DRAW_TEXTURES_SIDES_CHECK);
     AttachItem(IDC_LOAD_MESH_BUTTON, m_importMeshButton);
     AttachItem(IDC_EXPORT_MESH_BUTTON, m_exportMeshButton);
+    m_hAdditiveBlendCheck = ::GetDlgItem(GetHwnd(), IDC_ADDBLEND);
     m_imageCombo.AttachItem(DISPID_Image);
     m_baseImageCombo = &m_imageCombo;
     m_normalMapCombo.AttachItem(DISPID_Image2);
     m_materialCombo.AttachItem(IDC_MATERIAL_COMBO);
     m_baseMaterialCombo = &m_materialCombo;
+    m_opacityAmountEdit.AttachItem(IDC_ALPHA_EDIT);
     m_depthBiasEdit.AttachItem(IDC_DEPTH_BIAS);
     m_disableLightingEdit.AttachItem(IDC_BLEND_DISABLE_LIGHTING);
     m_disableLightFromBelowEdit.AttachItem(IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW);
     m_legacySidesEdit.AttachItem(IDC_PRIMITIVE_LEGACY_SIDES_EDIT);
     m_edgeFactorUIEdit.AttachItem(IDC_EDGE_FACTOR_UI);
+    AttachItem(IDC_COLOR_BUTTON1, m_colorButton);
     UpdateVisuals();
 
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
@@ -156,11 +190,14 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_imageCombo, topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_normalMapCombo, topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_materialCombo, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hAdditiveBlendCheck, topleft, 0);
+    m_resizer.AddChild(m_opacityAmountEdit, topright, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_depthBiasEdit, topright, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_disableLightingEdit, topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_disableLightFromBelowEdit, topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_legacySidesEdit, topleft, 0);
     m_resizer.AddChild(m_edgeFactorUIEdit, topright, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_colorButton, topleft, 0);
 
     return TRUE;
 }
@@ -168,5 +205,18 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
 INT_PTR PrimitiveVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    m_resizer.HandleMessage(uMsg, wParam, lParam);
+   switch (uMsg)
+   {
+   case WM_DRAWITEM:
+   {
+      const LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
+      const UINT nID = static_cast<UINT>(wParam);
+      if (nID == IDC_COLOR_BUTTON1)
+      {
+         m_colorButton.DrawItem(lpDrawItemStruct);
+      }
+      return TRUE;
+   }
+   }
    return DialogProcDefault(uMsg, wParam, lParam);
 }
