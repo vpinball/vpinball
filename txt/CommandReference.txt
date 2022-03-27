@@ -10,6 +10,7 @@ As for coding light sequences for original tables, please check this helper app:
 Changelog:
 10.7.1:
 - add GetInPlayIntensity to the light element
+- add Opacity,Color,AddBlend to the primitive element
 
 10.7:
 - add GetSerialDevices,OpenSerial,CloseSerial,FlushSerial,SetupSerial,ReadSerial,WriteSerial to the globals
@@ -685,7 +686,7 @@ BlendDisableLighting(float) - 0..1, same as DisableLighting, but can blend betwe
 BlendDisableLightingFromBelow(float) - 0..1, similar to DisableLighting, but will block light coming from below (e.g. from light elements)
 BackfacesEnabled(bool) - default=false, if enabled will also show/render the backfacing triangles (if a transparent material is used)
 UserValue(any) - can store any user defined value for re-use later-on
-Opacity(int) - lets you define the blend amount 0..100% (you can use values >100% though to for example enhance the strength of primitives in additive alpha blending mode)
+Opacity(float) - lets you define the blend amount 0..100% (you can use values >100% though to for example enhance the strength of primitives in additive alpha blending mode)
 Color - defines the color of the element in the editor. If you don't want to colorize the image set the color to blank white (RGB 255,255,255)
 AddBlend(bool) - use additive alpha blending instead of classical alpha blending (also disable depth buffer writing)
 
