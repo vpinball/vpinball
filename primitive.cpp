@@ -1263,12 +1263,12 @@ void Primitive::RenderObject()
       {
          g_pplayer->m_pin3d.EnableAlphaBlend(true);
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
-         const vec4 color = convertColor(m_d.m_color, (float)m_d.m_alpha / 100.0f);
+         const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
          pd3dDevice->basicShader->SetFlasherColorAlpha(vec4(color.x * color.w, color.y * color.w, color.z * color.w, color.w));
       }
       else
       {
-         const vec4 color = convertColor(m_d.m_color, (float)m_d.m_alpha / 100.0f);
+         const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
          pd3dDevice->basicShader->SetFlasherColorAlpha(color);
       }
 
