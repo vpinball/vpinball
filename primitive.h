@@ -273,7 +273,7 @@ public:
    virtual void ExportMeshDialog();
 
    float GetAlpha(void) const { return m_d.m_alpha; }
-   void SetAlpha(const float value) { m_d.m_alpha = max(value, (float)0); }
+   void SetAlpha(const float value) { m_d.m_alpha = max(value, 0.f); }
 
    virtual bool IsTransparent() const;
    virtual float GetDepth(const Vertex3Ds& viewDir) const;

@@ -367,7 +367,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
 
    SetDefaultPhysics(fromMouseClick);
 
-   m_d.m_alpha = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Opacity", 100.0) : 100.0;
+   m_d.m_alpha = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Opacity", 100.0f) : 100.0f;
    m_d.m_addBlend = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "AddBlend", false) : false;
    m_d.m_color = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "Color", RGB(255, 255, 255)) : RGB(255, 255, 255);
 
