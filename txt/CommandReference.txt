@@ -11,6 +11,7 @@ Changelog:
 10.7.1:
 - add GetInPlayIntensity to the light element
 - add Opacity,Color,AddBlend to the primitive element
+- add RenderingMode to the globals
 
 10.7:
 - add GetSerialDevices,OpenSerial,CloseSerial,FlushSerial,SetupSerial,ReadSerial,WriteSerial to the globals
@@ -136,6 +137,8 @@ DMDColoredPixels(VARIANT) - set array of (long-)values (0..255,0..255,0..255), s
                                      DMDWidth = 2
                                      DMDHeight = 2
                                      DMDColoredPixels = myDMDdata
+
+*RenderingMode - returns the rendering mode: 0 = Normal 2D, 1 = Stereo 3D, 2 = VR
 
 Methods
 -------

@@ -2365,8 +2365,8 @@ void VPinball::OpenNewTable(size_t tableId)
       return;
    }
 
-   PinTableMDI *mdiTable = new PinTableMDI(this);
-   CComObject<PinTable>* ppt = mdiTable->GetTable();
+   PinTableMDI * const mdiTable = new PinTableMDI(this);
+   CComObject<PinTable>* const ppt = mdiTable->GetTable();
    m_vtable.push_back(ppt);
    ppt->InitBuiltinTable(tableId);
    ppt->InitTablePostLoad();

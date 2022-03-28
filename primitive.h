@@ -272,7 +272,7 @@ public:
    virtual bool LoadMeshDialog();
    virtual void ExportMeshDialog();
 
-   float GetAlpha(void) const { return m_d.m_alpha; }
+   float GetAlpha() const { return m_d.m_alpha; }
    void SetAlpha(const float value) { m_d.m_alpha = max(value, 0.f); }
 
    virtual bool IsTransparent() const;

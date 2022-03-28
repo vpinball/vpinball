@@ -172,8 +172,8 @@ typedef [uuid(5E83616D-C764-4071-8C17-AB2A73D1B7A9)]
                 {
                 GateWireW = 1,
                 GateWireRectangle = 2,
-				GatePlate = 3,
-				GateLongPlate = 4,
+                GatePlate = 3,
+                GateLongPlate = 4,
                 }
                 GateType;
 
@@ -198,14 +198,14 @@ typedef [uuid(0FEABC0C-56A4-414e-B76D-4C2CECF17A96)]
         enum SequencerState
                 {
                 // zero is reserved as VBS will give 0 if a unknown enum is given
-                SeqUpOn                                         = 1,
-                SeqUpOff                                        = 2,
-                SeqDownOn                                       = 3,
-                SeqDownOff                                      = 4,
-                SeqRightOn                                      = 5,
-                SeqRightOff                                     = 6,
-                SeqLeftOn                                       = 7,
-                SeqLeftOff                                      = 8,
+                SeqUpOn                                 = 1,
+                SeqUpOff                                = 2,
+                SeqDownOn                               = 3,
+                SeqDownOff                              = 4,
+                SeqRightOn                              = 5,
+                SeqRightOff                             = 6,
+                SeqLeftOn                               = 7,
+                SeqLeftOff                              = 8,
                 SeqDiagUpRightOn                        = 9,
                 SeqDiagUpRightOff                       = 10,
                 SeqDiagUpLeftOn                         = 11,
@@ -215,7 +215,7 @@ typedef [uuid(0FEABC0C-56A4-414e-B76D-4C2CECF17A96)]
                 SeqDiagDownLeftOn                       = 15,
                 SeqDiagDownLeftOff                      = 16,
                 SeqMiddleOutHorizOn                     = 17,
-                SeqMiddleOutHorizOff            = 18,
+                SeqMiddleOutHorizOff                    = 18,
                 SeqMiddleInHorizOn                      = 19,
                 SeqMiddleInHorizOff                     = 20,
                 SeqMiddleOutVertOn                      = 21,
@@ -255,29 +255,29 @@ typedef [uuid(0FEABC0C-56A4-414e-B76D-4C2CECF17A96)]
                 SeqWiperLeftOn                          = 55,
                 SeqWiperLeftOff                         = 56,
                 SeqFanLeftUpOn                          = 57,
-                SeqFanLeftUpOff             = 58,
-                SeqFanLeftDownOn            = 59,
-                SeqFanLeftDownOff           = 60,
-                SeqFanRightUpOn             = 61,
-                SeqFanRightUpOff            = 62,
-                SeqFanRightDownOn           = 63,
-                SeqFanRightDownOff          = 64,
-                SeqArcBottomLeftUpOn            = 65,
-                SeqArcBottomLeftUpOff           = 66,
-                SeqArcBottomLeftDownOn          = 67,
-                SeqArcBottomLeftDownOff         = 68,
-                SeqArcBottomRightUpOn           = 69,
-                SeqArcBottomRightUpOff          = 70,
-                SeqArcBottomRightDownOn         = 71,
-                SeqArcBottomRightDownOff        = 72,
+                SeqFanLeftUpOff                         = 58,
+                SeqFanLeftDownOn                        = 59,
+                SeqFanLeftDownOff                       = 60,
+                SeqFanRightUpOn                         = 61,
+                SeqFanRightUpOff                        = 62,
+                SeqFanRightDownOn                       = 63,
+                SeqFanRightDownOff                      = 64,
+                SeqArcBottomLeftUpOn                    = 65,
+                SeqArcBottomLeftUpOff                   = 66,
+                SeqArcBottomLeftDownOn                  = 67,
+                SeqArcBottomLeftDownOff                 = 68,
+                SeqArcBottomRightUpOn                   = 69,
+                SeqArcBottomRightUpOff                  = 70,
+                SeqArcBottomRightDownOn                 = 71,
+                SeqArcBottomRightDownOff                = 72,
                 SeqArcTopLeftUpOn                       = 73,
                 SeqArcTopLeftUpOff                      = 74,
                 SeqArcTopLeftDownOn                     = 75,
-                SeqArcTopLeftDownOff            = 76,
+                SeqArcTopLeftDownOff                    = 76,
                 SeqArcTopRightUpOn                      = 77,
                 SeqArcTopRightUpOff                     = 78,
-                SeqArcTopRightDownOn            = 79,
-                SeqArcTopRightDownOff           = 80,
+                SeqArcTopRightDownOn                    = 79,
+                SeqArcTopRightDownOff                   = 80,
                 SeqScrewRightOn                         = 81,
                 SeqScrewRightOff                        = 82,
                 SeqScrewLeftOn                          = 83,
@@ -287,10 +287,10 @@ typedef [uuid(0FEABC0C-56A4-414e-B76D-4C2CECF17A96)]
                 SeqLastDynamic                          = 85,
 
                 // fixed effects
-                SeqAllOff                                       = 1000,
-                SeqAllOn                                        = 1001,
-                SeqBlinking                                     = 1002,
-                SeqRandom                                       = 1003,
+                SeqAllOff                               = 1000,
+                SeqAllOn                                = 1001,
+                SeqBlinking                             = 1002,
+                SeqRandom                               = 1003,
                 }
                 SequencerState;
 
@@ -522,7 +522,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(103), helpstring("property Xlatey")] HRESULT Xlatey([in] float newVal);
                 [propget, id(110), helpstring("property Xlatez")] HRESULT Xlatez([out, retval] float *pVal);
                 [propput, id(110), helpstring("property Xlatez")] HRESULT Xlatez([in] float newVal);
-                
+
                 [propget, id(1100), helpstring("property Gravity")] HRESULT Gravity([out, retval] float *pVal);
                 [propput, id(1100), helpstring("property Gravity")] HRESULT Gravity([in] float newVal);
                 [propget, id(1101), helpstring("property Friction")] HRESULT Friction([out, retval] float *pVal);
@@ -770,6 +770,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [id(254), helpstring("method ReadSerial")] HRESULT ReadSerial([in] int size, [out] VARIANT *pVal);
                 [id(255), helpstring("method WriteSerial")] HRESULT WriteSerial([in] VARIANT pVal);
 
+                [propget, id(218), helpstring("property RenderingMode")] HRESULT RenderingMode([out, retval] int *pVal);
+
                 [id(230), helpstring("method UpdateMaterial")] HRESULT UpdateMaterial([in] BSTR pVal, [in] float wrapLighting, [in] float roughness, [in] float glossyImageLerp, [in] float thickness, [in] float edge, [in] float edgeAlpha, [in] float opacity,
                     [in] OLE_COLOR base, [in] OLE_COLOR glossy, [in] OLE_COLOR clearcoat, [in] VARIANT_BOOL isMetal, [in] VARIANT_BOOL opacityActive,
                     [in] float elasticity, [in] float elasticityFalloff, [in] float friction, [in] float scatterAngle);
@@ -852,10 +854,10 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(340), helpstring("property TopMaterial")] HRESULT TopMaterial([in] BSTR newVal);
                 [propget, id(11), helpstring("property CanDrop")] HRESULT CanDrop([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(11), helpstring("property CanDrop")] HRESULT CanDrop([in] VARIANT_BOOL newVal);
-                
+
                 [propget, id(111), helpstring("property Collidable")] HRESULT Collidable([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(111), helpstring("property Collidable")] HRESULT Collidable([in] VARIANT_BOOL newVal);
-                
+
                 [propget, id(12), helpstring("property IsDropped")] HRESULT IsDropped([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(12), helpstring("property IsDropped")] HRESULT IsDropped([in] VARIANT_BOOL newVal);
                 [propget, id(13), helpstring("property DisplayTexture")] HRESULT DisplayTexture([out, retval] VARIANT_BOOL *pVal);
@@ -1714,7 +1716,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(110), helpstring("property Elasticity")] HRESULT Elasticity([in] float newVal);
                 [propget, id(112), helpstring("property ElasticityFalloff")] HRESULT ElasticityFalloff([out, retval] float *pVal);
                 [propput, id(112), helpstring("property ElasticityFalloff")] HRESULT ElasticityFalloff([in] float newVal);
-                
+
                 [propget, id(111), helpstring("property Collidable")] HRESULT Collidable([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(111), helpstring("property Collidable")] HRESULT Collidable([in] VARIANT_BOOL newVal);
                 [propget, id(395), helpstring("property IsToy")] HRESULT IsToy([out, retval] VARIANT_BOOL *pVal);
@@ -1744,7 +1746,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(556), helpstring("property AddBlend")] HRESULT AddBlend([in] VARIANT_BOOL newVal);
                 [propget, id(557), helpstring("property Color")] HRESULT Color([out, retval] OLE_COLOR *pVal);
                 [propput, id(557), helpstring("property Color")] HRESULT Color([in] OLE_COLOR newVal);
-				
+
                 [propget, id(397), helpstring("property DepthBias")] HRESULT DepthBias([out, retval] float *pVal);
                 [propput, id(397), helpstring("property DepthBias")] HRESULT DepthBias([in] float newVal);
 
@@ -1921,7 +1923,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(DISPID_Surface), helpstring("property Surface")] HRESULT Surface([in] BSTR newVal);
                 [propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
                 [propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
-                
+
                 [propget, id(2144), helpstring("property CloseAngle")] HRESULT CloseAngle([out, retval] float *pVal);
                 [propput, id(2144), helpstring("property CloseAngle")] HRESULT CloseAngle([in] float newVal);
                 [propget, id(2145), helpstring("property OpenAngle")] HRESULT OpenAngle([out, retval] float *pVal);
@@ -1941,7 +1943,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(431), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([in] VARIANT_BOOL newVal);
                 [propget, id(9), helpstring("property DrawStyle")] HRESULT DrawStyle([out, retval] GateType *pVal);
                 [propput, id(9), helpstring("property DrawStyle")] HRESULT DrawStyle([in] GateType newVal);
-
         };
 
         [
@@ -2106,7 +2107,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 
                 [propget, id(431), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(431), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([in] VARIANT_BOOL newVal);
-                
+
                 [propget, id(734), helpstring("property PhysicsMaterial")] HRESULT PhysicsMaterial([out, retval] BSTR *pVal);
                 [propput, id(734), helpstring("property PhysicsMaterial")] HRESULT PhysicsMaterial([in] BSTR newVal);
                 [propget, id(432), helpstring("property OverwritePhysics")] HRESULT OverwritePhysics([out, retval] VARIANT_BOOL *pVal);
@@ -2219,7 +2220,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(110), helpstring("property Elasticity")] HRESULT Elasticity([in] float newVal);
                 [propget, id(120), helpstring("property ElasticityFalloff")] HRESULT ElasticityFalloff([out, retval] float *pVal);
                 [propput, id(120), helpstring("property ElasticityFalloff")] HRESULT ElasticityFalloff([in] float newVal);
-                
+
                 [propget, id(111), helpstring("property Collidable")] HRESULT Collidable([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(111), helpstring("property Collidable")] HRESULT Collidable([in] VARIANT_BOOL newVal);
 
@@ -2251,10 +2252,9 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(734), helpstring("property PhysicsMaterial")] HRESULT PhysicsMaterial([in] BSTR newVal);
                 [propget, id(432), helpstring("property OverwritePhysics")] HRESULT OverwritePhysics([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(432), helpstring("property OverwritePhysics")] HRESULT OverwritePhysics([in] VARIANT_BOOL newVal);
-             
         };
-   
-   
+
+
         //////////////////////////////////////////
         // Ball
         //////////////////////////////////////////
@@ -2614,7 +2614,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [default, source]  dispinterface IRampEvents;
         };
 
-   [
+        [
                 uuid(847B5F6C-65DC-4b3a-A721-B8F931C23133),
                 helpstring("Flasher Class")
         ]

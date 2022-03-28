@@ -969,6 +969,8 @@ public:
    STDMETHOD(ReadSerial)(int size, VARIANT *pVal);
    STDMETHOD(WriteSerial)(VARIANT pVal);
 
+   STDMETHOD(get_RenderingMode)(/*[out, retval]*/ int *pVal);
+
    STDMETHOD(UpdateMaterial)
    (BSTR pVal, float wrapLighting, float roughness, float glossyImageLerp, float thickness, float edge, float edgeAlpha, float opacity, OLE_COLOR base, OLE_COLOR glossy, OLE_COLOR clearcoat,
       VARIANT_BOOL isMetal, VARIANT_BOOL opacityActive, float elasticity, float elasticityFalloff, float friction, float scatterAngle);
