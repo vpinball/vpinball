@@ -24,7 +24,7 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         Primitive *const prim = (Primitive*)m_pvsel->ElementAt(i);
 
         if (dispid == IDC_ADDBLEND || dispid == -1)
-           PropertyDialog::SetCheckboxState(m_hAdditiveBlendCheck, prim->m_d.m_addBlend);
+            PropertyDialog::SetCheckboxState(m_hAdditiveBlendCheck, prim->m_d.m_addBlend);
         if (dispid == IDC_DISPLAY_TEXTURE_CHECKBOX || dispid == -1)
             PropertyDialog::SetCheckboxState(m_hDisplayImageCheck, prim->m_d.m_displayTexture);
         if (dispid == IDC_DRAW_TEXTURES_SIDES_CHECK || dispid == -1)
@@ -36,7 +36,7 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == IDC_STATIC_RENDERING_CHECK || dispid == -1)
             PropertyDialog::SetCheckboxState(m_hStaticRenderingCheck, prim->m_d.m_staticRendering);
         if (dispid == IDC_ALPHA_EDIT || dispid == -1)
-           PropertyDialog::SetFloatTextbox(m_opacityAmountEdit, prim->m_d.m_alpha);
+            PropertyDialog::SetFloatTextbox(m_opacityAmountEdit, prim->m_d.m_alpha);
         if (dispid == IDC_DEPTH_BIAS || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_depthBiasEdit, prim->m_d.m_depthBias);
         if (dispid == IDC_BLEND_DISABLE_LIGHTING || dispid == -1)
@@ -50,7 +50,7 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == DISPID_Image2 || dispid == -1)
             PropertyDialog::UpdateTextureComboBox(prim->GetPTable()->GetImageList(), m_normalMapCombo, prim->m_d.m_szNormalMap);
         if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
-           m_colorButton.SetColor(prim->m_d.m_color);
+            m_colorButton.SetColor(prim->m_d.m_color);
 
         UpdateBaseVisuals(prim, &prim->m_d, dispid);
         //only show the first element on multi-select
@@ -67,10 +67,10 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
         Primitive *const prim = (Primitive *)m_pvsel->ElementAt(i);
         switch (dispid)
         {
-        case IDC_ADDBLEND:
+            case IDC_ADDBLEND:
                 CHECK_UPDATE_ITEM(prim->m_d.m_addBlend, PropertyDialog::GetCheckboxState(m_hAdditiveBlendCheck), prim);
                 break;
-        case IDC_DISPLAY_TEXTURE_CHECKBOX:
+            case IDC_DISPLAY_TEXTURE_CHECKBOX:
                 CHECK_UPDATE_ITEM(prim->m_d.m_displayTexture, PropertyDialog::GetCheckboxState(m_hDisplayImageCheck), prim);
                 break;
             case IDC_OBJECT_SPACE_NORMALMAP:
@@ -118,21 +118,21 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case IDC_COLOR_BUTTON1:
             {
-               CComObject<PinTable> *const ptable = g_pvp->GetActiveTable();
-               if (ptable == nullptr)
-                  break;
-               CHOOSECOLOR cc = m_colorDialog.GetParameters();
-               cc.Flags = CC_FULLOPEN | CC_RGBINIT;
-               m_colorDialog.SetParameters(cc);
-               m_colorDialog.SetColor(prim->m_d.m_color);
-               m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
-               if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
-               {
-                  prim->m_d.m_color = m_colorDialog.GetColor();
-                  m_colorButton.SetColor(prim->m_d.m_color);
-                  memcpy(ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(ptable->m_rgcolorcustom));
-               }
-               break;
+                CComObject<PinTable>* const ptable = g_pvp->GetActiveTable();
+                if (ptable == nullptr)
+                    break;
+                CHOOSECOLOR cc = m_colorDialog.GetParameters();
+                cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+                m_colorDialog.SetParameters(cc);
+                m_colorDialog.SetColor(prim->m_d.m_color);
+                m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
+                if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
+                {
+                    prim->m_d.m_color = m_colorDialog.GetColor();
+                    m_colorButton.SetColor(prim->m_d.m_color);
+                    memcpy(ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(ptable->m_rgcolorcustom));
+                }
+                break;
             }
             default:
                 UpdateBaseProperties(prim, &prim->m_d, dispid);
