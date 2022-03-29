@@ -22,29 +22,26 @@
 class TempBuffer
 {
 public:
-   TempBuffer(const ULONG cb)
-   {
-      m_alloc = (cb > 256);
-      if (m_alloc)
-         m_pbBuf = new char[cb];
-      else
-         m_pbBuf = m_szBufT;
-   }
-   ~TempBuffer()
-   {
-      if (m_pbBuf && m_alloc) delete[] m_pbBuf;
-   }
-   char *GetBuffer() const
-   {
-      return m_pbBuf;
-   }
+  TempBuffer(const ULONG cb)
+  {
+    m_alloc = (cb > 256);
+    if (m_alloc)
+      m_pbBuf = new char[cb];
+    else
+      m_pbBuf = m_szBufT;
+  }
+  ~TempBuffer()
+  {
+    if (m_pbBuf && m_alloc)
+      delete[] m_pbBuf;
+  }
+  char* GetBuffer() const { return m_pbBuf; }
 
 private:
-   char *m_pbBuf;
-   char  m_szBufT[256];  // We'll use this temp buffer for small cases.
-   bool  m_alloc;
+  char* m_pbBuf;
+  char m_szBufT[256]; // We'll use this temp buffer for small cases.
+  bool m_alloc;
 };
-
 
 //---------------------------------------------------------------------------
 // String helpers.
@@ -69,25 +66,29 @@ private:
 
 #if _MSC_VER != 1900 // otherwise internal compiler error
 #define MAKE_WIDEPTR_FROMANSI(ptrname, pszAnsi) \
-    const char * const __psz##ptrname = pszAnsi?pszAnsi:""; \
-    const long __l##ptrname = lstrlen(__psz##ptrname) + 1; \
-    TempBuffer __TempBuffer##ptrname(__l##ptrname * (long)sizeof(WCHAR)); \
-    MultiByteToWideCharNull(CP_ACP, 0, __psz##ptrname, -1, (LPWSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname); \
-    const LPWSTR ptrname = (LPWSTR)__TempBuffer##ptrname.GetBuffer()
+  const char* const __psz##ptrname = pszAnsi ? pszAnsi : ""; \
+  const long __l##ptrname = lstrlen(__psz##ptrname) + 1; \
+  TempBuffer __TempBuffer##ptrname(__l##ptrname*(long)sizeof(WCHAR)); \
+  MultiByteToWideCharNull(CP_ACP, 0, __psz##ptrname, -1, \
+                          (LPWSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname); \
+  const LPWSTR ptrname = (LPWSTR)__TempBuffer##ptrname.GetBuffer()
 #else
 #define MAKE_WIDEPTR_FROMANSI(ptrname, pszAnsi) \
-    const char * __psz##ptrname = pszAnsi?pszAnsi:""; \
-    const long __l##ptrname = lstrlen(__psz##ptrname) + 1; \
-    TempBuffer __TempBuffer##ptrname(__l##ptrname * (long)sizeof(WCHAR)); \
-    MultiByteToWideCharNull(CP_ACP, 0, __psz##ptrname, -1, (LPWSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname); \
-    const LPWSTR ptrname = (LPWSTR)__TempBuffer##ptrname.GetBuffer()
+  const char* __psz##ptrname = pszAnsi ? pszAnsi : ""; \
+  const long __l##ptrname = lstrlen(__psz##ptrname) + 1; \
+  TempBuffer __TempBuffer##ptrname(__l##ptrname*(long)sizeof(WCHAR)); \
+  MultiByteToWideCharNull(CP_ACP, 0, __psz##ptrname, -1, \
+                          (LPWSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname); \
+  const LPWSTR ptrname = (LPWSTR)__TempBuffer##ptrname.GetBuffer()
 #endif
 
 #define MAKE_ANSIPTR_FROMWIDE(ptrname, pwszUnicode) \
-    const WCHAR * const __pwsz##ptrname = pwszUnicode?pwszUnicode:L""; \
-    const long __l##ptrname = lstrlenW(__pwsz##ptrname) + 1; \
-    TempBuffer __TempBuffer##ptrname(__l##ptrname * (long)sizeof(char)); \
-    WideCharToMultiByteNull(CP_ACP, 0, __pwsz##ptrname, -1, (LPSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname, nullptr, nullptr); \
-    const LPSTR ptrname = (LPSTR)__TempBuffer##ptrname.GetBuffer()
+  const WCHAR* const __pwsz##ptrname = pwszUnicode ? pwszUnicode : L""; \
+  const long __l##ptrname = lstrlenW(__pwsz##ptrname) + 1; \
+  TempBuffer __TempBuffer##ptrname(__l##ptrname*(long)sizeof(char)); \
+  WideCharToMultiByteNull(CP_ACP, 0, __pwsz##ptrname, -1, \
+                          (LPSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname, nullptr, \
+                          nullptr); \
+  const LPSTR ptrname = (LPSTR)__TempBuffer##ptrname.GetBuffer()
 
 //--- EOF -------------------------------------------------------------------

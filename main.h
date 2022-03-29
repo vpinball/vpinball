@@ -4,31 +4,30 @@
 #define NOMINMAX
 
 #ifdef ENABLE_SDL
- #include <d3d11_1.h>
- #include <dxgi1_2.h>
- #pragma comment(lib,"d3d11.lib")
- #pragma comment(lib,"dxgi.lib")
+#include <d3d11_1.h>
+#include <dxgi1_2.h>
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "dxgi.lib")
 #endif
 
 #include <windows.h>
 #include <MMSystem.h>
 
 #ifndef ENABLE_SDL
- #ifdef USE_DINPUT8
-  #define DIRECTINPUT_VERSION 0x0800
- #else
-  #define DIRECTINPUT_VERSION 0x0700
- #endif
- #include <dinput.h>
+#ifdef USE_DINPUT8
+#define DIRECTINPUT_VERSION 0x0800
+#else
+#define DIRECTINPUT_VERSION 0x0700
+#endif
+#include <dinput.h>
 
- #ifdef _DEBUG
-  #define D3D_DEBUG_INFO
- #endif
- #include "minid3d9.h"
+#ifdef _DEBUG
+#define D3D_DEBUG_INFO
+#endif
+#include "minid3d9.h"
 #endif
 
 #include <dsound.h>
-
 
 //#include <richedit.h>
 //#include <atlcom.h>
@@ -48,7 +47,7 @@
 
 #include <intrin.h>
 #if defined(_M_IX86) || defined(_M_X64)
- #include <xmmintrin.h>
+#include <xmmintrin.h>
 #endif
 
 #include <vector>
@@ -61,9 +60,9 @@ using std::vector;
 
 #include <dlgs.h>
 #include <cderr.h>
-#include <wxx_appcore.h>		// Add CCriticalSection, CObject, CWinThread, CWinApp
+#include <wxx_appcore.h> // Add CCriticalSection, CObject, CWinThread, CWinApp
 //#include <wxx_archive.h>		// Add CArchive
-#include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
+#include <wxx_commondlg.h> // Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog
 #include <wxx_scrollview.h>
 //#include <wxx_controls.h>		// Add CAnimation, CComboBox, CComboBoxEx, CDateTime, CHeader, CHotKey, CIPAddress, CProgressBar, CSpinButton, CScrollBar, CSlider, CToolTip
 //#include <wxx_cstring.h>		// Add CString, CStringA, CStringW
@@ -76,14 +75,14 @@ using std::vector;
 //#include <wxx_frame.h>			// Add CFrame
 //#include <wxx_gdi.h>			// Add CDC, CGDIObject, CBitmap, CBrush, CFont, CPalatte, CPen, CRgn
 //#include <wxx_imagelist.h>		// Add CImageList
-#include <wxx_listview.h>		// Add CListView
+#include <wxx_listview.h> // Add CListView
 //#include <wxx_mdi.h>			// Add CMDIChild, CMDIFrame, CDockMDIFrame
 //#include <wxx_printdialogs.h>	// Add CPageSetupDialog, CPrintSetupDialog
 //#include <wxx_propertysheet.h>	// Add CPropertyPage, CPropertySheet
 //#include <wxx_rebar.h>			// Add CRebar
 //#include <wxx_regkey.h>			// Add CRegKey
 //#include <wxx_ribbon.h>		// Add CRibbon, CRibbonFrame
-#include <wxx_richedit.h>		// Add CRichEdit
+#include <wxx_richedit.h> // Add CRichEdit
 //#include <wxx_shared_ptr.h>		// Add Shared_Ptr
 //#include <wxx_socket.h>			// Add CSocket
 //#include <wxx_statusbar.h>		// Add CStatusBar
@@ -92,7 +91,7 @@ using std::vector;
 //#include <wxx_taskdialog.h>	// Add CTaskDialog
 //#include <wxx_time.h>			// Add CTime
 //#include <wxx_toolbar.h>		// Add CToolBar
-#include <wxx_treeview.h>		// Add CTreeView
+#include <wxx_treeview.h> // Add CTreeView
 //#include <wxx_webbrowser.h>		// Add CAXWindow, CWebBrowser
 #include <wxx_wincore.h>
 
@@ -198,33 +197,33 @@ using std::vector;
 #include "slintf.h"
 #include "trace.h"
 
-inline void ShowError(const char * const sz)
+inline void ShowError(const char* const sz)
 {
-   if(g_pvp)
-      g_pvp->MessageBox(sz, "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
-   else
-      MessageBox(nullptr, sz, "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
+  if (g_pvp)
+    g_pvp->MessageBox(sz, "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
+  else
+    MessageBox(nullptr, sz, "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
 }
 
 inline void ShowError(const string& sz)
 {
-   if(g_pvp)
-      g_pvp->MessageBox(sz.c_str(), "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
-   else
-      MessageBox(nullptr, sz.c_str(), "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
+  if (g_pvp)
+    g_pvp->MessageBox(sz.c_str(), "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
+  else
+    MessageBox(nullptr, sz.c_str(), "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
 }
 
 #include "editablereg.h"
 
 __forceinline float getBGxmult()
 {
-   const bool useAA = (g_pplayer->m_AA && (g_pplayer->m_ptable->m_useAA == -1)) || (g_pplayer->m_ptable->m_useAA == 1);
-   return (float)g_pplayer->m_width * (float)(1.0 / EDITOR_BG_WIDTH)
-      * (useAA ? 2.0f : 1.0f);
+  const bool useAA = (g_pplayer->m_AA && (g_pplayer->m_ptable->m_useAA == -1)) ||
+                     (g_pplayer->m_ptable->m_useAA == 1);
+  return (float)g_pplayer->m_width * (float)(1.0 / EDITOR_BG_WIDTH) * (useAA ? 2.0f : 1.0f);
 }
 
 __forceinline float getBGymult()
 {
-   return getBGxmult() /
-      (((float)g_pplayer->m_screenwidth / (float)g_pplayer->m_screenheight) / (float)((double)EDITOR_BG_WIDTH / EDITOR_BG_HEIGHT));
+  return getBGxmult() / (((float)g_pplayer->m_screenwidth / (float)g_pplayer->m_screenheight) /
+                         (float)((double)EDITOR_BG_WIDTH / EDITOR_BG_HEIGHT));
 }

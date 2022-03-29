@@ -13,51 +13,52 @@ class PinTable;
 class UndoRecord
 {
 public:
-   UndoRecord();
-   virtual ~UndoRecord();
+  UndoRecord();
+  virtual ~UndoRecord();
 
-   void MarkForUndo(IEditable *const pie, const bool backupForPlay);
-   void MarkForCreate(IEditable *const pie);
-   void MarkForDelete(IEditable *const pie);
+  void MarkForUndo(IEditable* const pie, const bool backupForPlay);
+  void MarkForCreate(IEditable* const pie);
+  void MarkForDelete(IEditable* const pie);
 
-   vector<FastIStream*> m_vstm;
-   vector<IEditable*> m_vieCreate;
-   vector<IEditable*> m_vieDelete;
+  vector<FastIStream*> m_vstm;
+  vector<IEditable*> m_vieCreate;
+  vector<IEditable*> m_vieDelete;
 
 private:
-   vector<IEditable*> m_vieMark;
+  vector<IEditable*> m_vieMark;
 };
 
 class PinUndo
 {
 public:
-   PinUndo();
-   virtual ~PinUndo();
+  PinUndo();
+  virtual ~PinUndo();
 
-   void MarkBeginPlay() { m_startToPlay = true; }
-   void MarkEndPlay() { m_startToPlay = false; }
+  void MarkBeginPlay() { m_startToPlay = true; }
+  void MarkEndPlay() { m_startToPlay = false; }
 
-   void BeginUndo();
-   void MarkForUndo(IEditable * const pie, const bool backupForPlay = false);
-   void MarkForCreate(IEditable *const pie);
-   void MarkForDelete(IEditable *const pie);
-   void EndUndo();
-   void Undo();
+  void BeginUndo();
+  void MarkForUndo(IEditable* const pie, const bool backupForPlay = false);
+  void MarkForCreate(IEditable* const pie);
+  void MarkForDelete(IEditable* const pie);
+  void EndUndo();
+  void Undo();
 
-   void SetCleanPoint(const SaveDirtyState sds);
+  void SetCleanPoint(const SaveDirtyState sds);
 
-   PinTable *m_ptable;
+  PinTable* m_ptable;
 
 private:
-   vector<UndoRecord*> m_vur;
+  vector<UndoRecord*> m_vur;
 
-   int m_cUndoLayer;
+  int m_cUndoLayer;
 
-   SaveDirtyState m_sdsDirty; // Dirty flag for saving on close
+  SaveDirtyState m_sdsDirty; // Dirty flag for saving on close
 
-   size_t m_cleanpoint; // Undo record at which table is in a non-dirty state.  When negative, clean state can not be reached
+  size_t
+      m_cleanpoint; // Undo record at which table is in a non-dirty state.  When negative, clean state can not be reached
 
-   bool m_startToPlay; // Are we starting to play (=undo history is due to table backup)?
+  bool m_startToPlay; // Are we starting to play (=undo history is due to table backup)?
 };
 
 #endif // !defined(AFX_PINUNDO_H__F1136F22_51FB_4AC8_B7FC_89A5E148DD7B__INCLUDED_)

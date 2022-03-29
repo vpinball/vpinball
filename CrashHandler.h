@@ -10,7 +10,7 @@ void Init();
 void SetCrashReportFileName(const char* name);
 // crash.dmp by default
 void SetMiniDumpFileName(const char* name);
-}
-}
+} // namespace CrashHandler
+} // namespace rde
 
 #endif

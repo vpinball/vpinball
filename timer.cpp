@@ -8,113 +8,116 @@ Timer::~Timer()
 {
 }
 
-HRESULT Timer::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
+HRESULT Timer::Init(PinTable* ptable, float x, float y, bool fromMouseClick)
 {
-   m_ptable = ptable;
+  m_ptable = ptable;
 
-   m_d.m_v.x = x;
-   m_d.m_v.y = y;
+  m_d.m_v.x = x;
+  m_d.m_v.y = y;
 
-   SetDefaults(fromMouseClick);
+  SetDefaults(fromMouseClick);
 
-   return InitVBA(fTrue, 0, nullptr);//ApcProjectItem.Define(ptable->ApcProject, GetDispatch(),
-   //axTypeHostProjectItem/*axTypeHostClass*/, L"Timer", nullptr);
+  return InitVBA(fTrue, 0, nullptr); //ApcProjectItem.Define(ptable->ApcProject, GetDispatch(),
+  //axTypeHostProjectItem/*axTypeHostClass*/, L"Timer", nullptr);
 }
 
 void Timer::SetDefaults(bool fromMouseClick)
 {
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Timer", "TimerEnabled", true) : true;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Timer", "TimerInterval", 100) : 100;
+  m_d.m_tdr.m_TimerEnabled =
+      fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Timer", "TimerEnabled", true) : true;
+  m_d.m_tdr.m_TimerInterval =
+      fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Timer", "TimerInterval", 100) : 100;
 }
 
 void Timer::WriteRegDefaults()
 {
-   SaveValueBool("DefaultProps\\Timer", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
-   SaveValueInt("DefaultProps\\Timer", "TimerInterval", m_d.m_tdr.m_TimerInterval);
+  SaveValueBool("DefaultProps\\Timer", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
+  SaveValueInt("DefaultProps\\Timer", "TimerInterval", m_d.m_tdr.m_TimerInterval);
 }
 
 void Timer::SetObjectPos()
 {
-    m_vpinball->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
+  m_vpinball->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
 }
 
 void Timer::MoveOffset(const float dx, const float dy)
 {
-   m_d.m_v.x += dx;
-   m_d.m_v.y += dy;
+  m_d.m_v.x += dx;
+  m_d.m_v.y += dy;
 }
 
 Vertex2D Timer::GetCenter() const
 {
-   return m_d.m_v;
+  return m_d.m_v;
 }
 
 void Timer::PutCenter(const Vertex2D& pv)
 {
-   m_d.m_v = pv;
+  m_d.m_v = pv;
 }
 
-void Timer::UIRenderPass1(Sur * const psur)
+void Timer::UIRenderPass1(Sur* const psur)
 {
 }
 
-void Timer::UIRenderPass2(Sur * const psur)
+void Timer::UIRenderPass2(Sur* const psur)
 {
-   psur->SetFillColor(-1);//RGB(192,192,192));
-   psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-   psur->SetLineColor(RGB(0, 0, 0), false, 0);
+  psur->SetFillColor(-1); //RGB(192,192,192));
+  psur->SetBorderColor(RGB(0, 0, 0), false, 0);
+  psur->SetLineColor(RGB(0, 0, 0), false, 0);
 
-   psur->SetObject(this);
+  psur->SetObject(this);
 
-   psur->Ellipse(m_d.m_v.x, m_d.m_v.y, 18);
+  psur->Ellipse(m_d.m_v.x, m_d.m_v.y, 18);
 
-   psur->Ellipse(m_d.m_v.x, m_d.m_v.y, 15);
+  psur->Ellipse(m_d.m_v.x, m_d.m_v.y, 15);
 
-   for (int i = 0; i < 12; i++)
-   {
-      const float angle = (float)(M_PI*2.0 / 12.0)*(float)i;
-      const float sn = sinf(angle);
-      const float cs = cosf(angle);
-      psur->Line(m_d.m_v.x + sn*9.0f, m_d.m_v.y - cs*9.0f, m_d.m_v.x + sn * 15.0f, m_d.m_v.y - cs*15.0f);
-   }
+  for (int i = 0; i < 12; i++)
+  {
+    const float angle = (float)(M_PI * 2.0 / 12.0) * (float)i;
+    const float sn = sinf(angle);
+    const float cs = cosf(angle);
+    psur->Line(m_d.m_v.x + sn * 9.0f, m_d.m_v.y - cs * 9.0f, m_d.m_v.x + sn * 15.0f,
+               m_d.m_v.y - cs * 15.0f);
+  }
 
-   //angle = ((PI*2)/24) * 3;
-   psur->Line(m_d.m_v.x, m_d.m_v.y, m_d.m_v.x + 10.5f, m_d.m_v.y - 7.5f);
-
+  //angle = ((PI*2)/24) * 3;
+  psur->Line(m_d.m_v.x, m_d.m_v.y, m_d.m_v.x + 10.5f, m_d.m_v.y - 7.5f);
 }
 
-void Timer::RenderBlueprint(Sur *psur, const bool solid)
+void Timer::RenderBlueprint(Sur* psur, const bool solid)
 {
 }
 
-void Timer::GetTimers(vector<HitTimer*> &pvht)
+void Timer::GetTimers(vector<HitTimer*>& pvht)
 {
-   IEditable::BeginPlay();
+  IEditable::BeginPlay();
 
-   HitTimer * const pht = new HitTimer();
-   pht->m_interval = m_d.m_tdr.m_TimerInterval >= 0 ? max(m_d.m_tdr.m_TimerInterval, MAX_TIMER_MSEC_INTERVAL) : -1;
-   pht->m_nextfire = pht->m_interval;
+  HitTimer* const pht = new HitTimer();
+  pht->m_interval =
+      m_d.m_tdr.m_TimerInterval >= 0 ? max(m_d.m_tdr.m_TimerInterval, MAX_TIMER_MSEC_INTERVAL) : -1;
+  pht->m_nextfire = pht->m_interval;
 
-   pht->m_pfe = (IFireEvents *)this;
+  pht->m_pfe = (IFireEvents*)this;
 
-   m_phittimer = pht;
+  m_phittimer = pht;
 
-   if (m_d.m_tdr.m_TimerEnabled)
-      pvht.push_back(pht);
+  if (m_d.m_tdr.m_TimerEnabled)
+    pvht.push_back(pht);
 }
 
-void Timer::GetHitShapes(vector<HitObject*> &pvho)
+void Timer::GetHitShapes(vector<HitObject*>& pvho)
 {
-   m_phittimer = nullptr;
+  m_phittimer = nullptr;
 }
 
-void Timer::GetHitShapesDebug(vector<HitObject*> &pvho)
+void Timer::GetHitShapesDebug(vector<HitObject*>& pvho)
 {
 }
 
 void Timer::EndPlay()
 {
-   IEditable::EndPlay();
+  IEditable::EndPlay();
 }
 
 void Timer::RenderDynamic()
@@ -123,7 +126,6 @@ void Timer::RenderDynamic()
 
 void Timer::RenderSetup()
 {
-
 }
 
 void Timer::RenderStatic()
@@ -132,135 +134,156 @@ void Timer::RenderStatic()
 
 STDMETHODIMP Timer::InterfaceSupportsErrorInfo(REFIID riid)
 {
-   static const IID* arr[] =
-   {
+  static const IID* arr[] = {
       &IID_ITimer,
-   };
+  };
 
-   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
-   {
-      if (InlineIsEqualGUID(*arr[i], riid))
-         return S_OK;
-   }
-   return S_FALSE;
+  for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
+  {
+    if (InlineIsEqualGUID(*arr[i], riid))
+      return S_OK;
+  }
+  return S_FALSE;
 }
 
-STDMETHODIMP Timer::get_Enabled(VARIANT_BOOL *pVal)
+STDMETHODIMP Timer::get_Enabled(VARIANT_BOOL* pVal)
 {
-   *pVal = FTOVB(m_d.m_tdr.m_TimerEnabled);
+  *pVal = FTOVB(m_d.m_tdr.m_TimerEnabled);
 
-   return S_OK;
+  return S_OK;
 }
 
 STDMETHODIMP Timer::put_Enabled(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+  STARTUNDO
 
-   const bool val = VBTOb(newVal);
+  const bool val = VBTOb(newVal);
 
-   if (val != m_d.m_tdr.m_TimerEnabled && m_phittimer)
-   {
-       // to avoid problems with timers dis/enabling themselves, store all the changes in a list
-       bool found = false;
-       for (size_t i = 0; i < g_pplayer->m_changed_vht.size(); ++i)
-           if (g_pplayer->m_changed_vht[i].m_timer == m_phittimer)
-           {
-               g_pplayer->m_changed_vht[i].m_enabled = val;
-               found = true;
-               break;
-           }
+  if (val != m_d.m_tdr.m_TimerEnabled && m_phittimer)
+  {
+    // to avoid problems with timers dis/enabling themselves, store all the changes in a list
+    bool found = false;
+    for (size_t i = 0; i < g_pplayer->m_changed_vht.size(); ++i)
+      if (g_pplayer->m_changed_vht[i].m_timer == m_phittimer)
+      {
+        g_pplayer->m_changed_vht[i].m_enabled = val;
+        found = true;
+        break;
+      }
 
-       if (!found)
-       {
-         TimerOnOff too;
-         too.m_enabled = val;
-         too.m_timer = m_phittimer;
-         g_pplayer->m_changed_vht.push_back(too);
-       }
+    if (!found)
+    {
+      TimerOnOff too;
+      too.m_enabled = val;
+      too.m_timer = m_phittimer;
+      g_pplayer->m_changed_vht.push_back(too);
+    }
 
-       if (val)
-           m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
-       else
-           m_phittimer->m_nextfire = 0xFFFFFFFF; // fakes the disabling of the timer, until it will be catched by the cleanup via m_changed_vht
-   }
+    if (val)
+      m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
+    else
+      m_phittimer->m_nextfire =
+          0xFFFFFFFF; // fakes the disabling of the timer, until it will be catched by the cleanup via m_changed_vht
+  }
 
-   m_d.m_tdr.m_TimerEnabled = val;
+  m_d.m_tdr.m_TimerEnabled = val;
 
-   STOPUNDO
+  STOPUNDO
 
-   return S_OK;
+  return S_OK;
 }
 
-STDMETHODIMP Timer::get_Interval(long *pVal)
+STDMETHODIMP Timer::get_Interval(long* pVal)
 {
-   *pVal = m_d.m_tdr.m_TimerInterval;
+  *pVal = m_d.m_tdr.m_TimerInterval;
 
-   return S_OK;
+  return S_OK;
 }
 
 STDMETHODIMP Timer::put_Interval(long newVal)
 {
-   STARTUNDO
+  STARTUNDO
 
-   m_d.m_tdr.m_TimerInterval = newVal;
+  m_d.m_tdr.m_TimerInterval = newVal;
 
-   if (m_phittimer)
-   {
-      m_phittimer->m_interval = m_d.m_tdr.m_TimerInterval >= 0 ? max(m_d.m_tdr.m_TimerInterval, MAX_TIMER_MSEC_INTERVAL) : -1;
-      m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
-   }
+  if (m_phittimer)
+  {
+    m_phittimer->m_interval = m_d.m_tdr.m_TimerInterval >= 0
+                                  ? max(m_d.m_tdr.m_TimerInterval, MAX_TIMER_MSEC_INTERVAL)
+                                  : -1;
+    m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
+  }
 
-   STOPUNDO
+  STOPUNDO
 
-   return S_OK;
+  return S_OK;
 }
 
-HRESULT Timer::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
+HRESULT Timer::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
 {
-   BiffWriter bw(pstm, hcrypthash);
+  BiffWriter bw(pstm, hcrypthash);
 
-   bw.WriteVector2(FID(VCEN), m_d.m_v);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteWideString(FID(NAME), m_wzName);
+  bw.WriteVector2(FID(VCEN), m_d.m_v);
+  bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+  bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+  bw.WriteWideString(FID(NAME), m_wzName);
 
-   bw.WriteBool(FID(BGLS), m_backglass);
+  bw.WriteBool(FID(BGLS), m_backglass);
 
-   ISelect::SaveData(pstm, hcrypthash);
+  ISelect::SaveData(pstm, hcrypthash);
 
-   bw.WriteTag(FID(ENDB));
+  bw.WriteTag(FID(ENDB));
 
-   return S_OK;
+  return S_OK;
 }
 
-HRESULT Timer::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Timer::InitLoad(IStream* pstm,
+                        PinTable* ptable,
+                        int* pid,
+                        int version,
+                        HCRYPTHASH hcrypthash,
+                        HCRYPTKEY hcryptkey)
 {
-   SetDefaults(false);
+  SetDefaults(false);
 
-   BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
+  BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 
-   m_ptable = ptable;
+  m_ptable = ptable;
 
-   br.Load();
-   return S_OK;
+  br.Load();
+  return S_OK;
 }
 
-bool Timer::LoadToken(const int id, BiffReader * const pbr)
+bool Timer::LoadToken(const int id, BiffReader* const pbr)
 {
-   switch(id)
-   {
-   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
-   case FID(VCEN): pbr->GetVector2(m_d.m_v); break;
-   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
-   case FID(BGLS): pbr->GetBool(m_backglass); break;
-   default: ISelect::LoadToken(id, pbr); break;
-   }
-   return true;
+  switch (id)
+  {
+    case FID(PIID):
+      pbr->GetInt((int*)pbr->m_pdata);
+      break;
+    case FID(VCEN):
+      pbr->GetVector2(m_d.m_v);
+      break;
+    case FID(TMON):
+      pbr->GetBool(m_d.m_tdr.m_TimerEnabled);
+      break;
+    case FID(TMIN):
+      pbr->GetInt(m_d.m_tdr.m_TimerInterval);
+      break;
+    case FID(NAME):
+      pbr->GetWideString(m_wzName, sizeof(m_wzName) / sizeof(m_wzName[0]));
+      break;
+    case FID(BGLS):
+      pbr->GetBool(m_backglass);
+      break;
+    default:
+      ISelect::LoadToken(id, pbr);
+      break;
+  }
+  return true;
 }
 
 HRESULT Timer::InitPostLoad()
 {
-   return S_OK;
+  return S_OK;
 }

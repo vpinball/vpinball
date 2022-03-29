@@ -4,17 +4,17 @@
 class AboutDialog : public CDialog
 {
 public:
-   AboutDialog();
-   virtual ~AboutDialog();
+  AboutDialog();
+  virtual ~AboutDialog();
 
 protected:
-   virtual void OnDestroy();
-   virtual BOOL OnInitDialog();
-   virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-   virtual void OnOK();
+  virtual void OnDestroy();
+  virtual BOOL OnInitDialog();
+  virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+  virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+  virtual void OnOK();
 
-   string m_urlString;
+  string m_urlString;
 };
 
 #endif

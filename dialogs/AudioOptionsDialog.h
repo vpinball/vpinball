@@ -4,14 +4,14 @@
 class AudioOptionsDialog : public CDialog
 {
 public:
-   AudioOptionsDialog();
+  AudioOptionsDialog();
 
 protected:
-   virtual BOOL OnInitDialog();
-   virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-   virtual void OnOK();
-   virtual void OnClose();
+  virtual BOOL OnInitDialog();
+  virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+  virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+  virtual void OnOK();
+  virtual void OnClose();
 };
 
 #endif // !H_AUDIO_OPTIONS_DIALOG

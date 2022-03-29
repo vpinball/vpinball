@@ -1,41 +1,39 @@
 #ifndef H_TABLE_PHYSICS_PROPERTY
 #define H_TABLE_PHYSICS_PROPERTY
 
-class TablePhysicsProperty: public BasePropertyDialog
+class TablePhysicsProperty : public BasePropertyDialog
 {
 public:
-    TablePhysicsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~TablePhysicsProperty()
-    {
-    }
+  TablePhysicsProperty(const VectorProtected<ISelect>* pvsel);
+  virtual ~TablePhysicsProperty() {}
 
-    void UpdateVisuals(const int dispid=-1);
-    void UpdateProperties(const int dispid);
+  void UpdateVisuals(const int dispid = -1);
+  void UpdateProperties(const int dispid);
 
 protected:
-    virtual BOOL OnInitDialog();
-    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+  virtual BOOL OnInitDialog();
+  virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+  virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
-    CButton m_importSetButton;
-    CButton m_exportSetButton;
-    HWND    m_hFilterMechanicalPlungerCheck;
-    EditBox m_gravityConstantEdit;
-    EditBox m_playfieldFrictionEdit;
-    EditBox m_playfieldElasticityEdit;
-    EditBox m_playfieldElasticityFalloffEdit;
-    EditBox m_playfieldScatterEdit;
-    EditBox m_defaultScatterEdit;
-    EditBox m_nudgeTimeEdit;
-    EditBox m_physicsLoopEdit;
-    EditBox m_mechPlungerAdjEdit;
-    EditBox m_tableWidthEdit;
-    EditBox m_tableHeightEdit;
-    EditBox m_topGlassHeightEdit;
-    EditBox m_tableFieldHeightEdit;
-    EditBox m_minSlopeEdit;
-    EditBox m_maxSlopeEdit;
+  CButton m_importSetButton;
+  CButton m_exportSetButton;
+  HWND m_hFilterMechanicalPlungerCheck;
+  EditBox m_gravityConstantEdit;
+  EditBox m_playfieldFrictionEdit;
+  EditBox m_playfieldElasticityEdit;
+  EditBox m_playfieldElasticityFalloffEdit;
+  EditBox m_playfieldScatterEdit;
+  EditBox m_defaultScatterEdit;
+  EditBox m_nudgeTimeEdit;
+  EditBox m_physicsLoopEdit;
+  EditBox m_mechPlungerAdjEdit;
+  EditBox m_tableWidthEdit;
+  EditBox m_tableHeightEdit;
+  EditBox m_topGlassHeightEdit;
+  EditBox m_tableFieldHeightEdit;
+  EditBox m_minSlopeEdit;
+  EditBox m_maxSlopeEdit;
 };
 
 #endif // !H_TABLE_PHYSICS_PROPERTY

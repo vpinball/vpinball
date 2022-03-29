@@ -4,31 +4,31 @@
 class SearchSelectDialog : public CDialog
 {
 public:
-   SearchSelectDialog();
-   void Update();
+  SearchSelectDialog();
+  void Update();
 
 protected:
-   virtual void OnClose();
-   virtual BOOL OnInitDialog();
-   virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-   virtual void OnOK();
-   virtual void OnCancel();
+  virtual void OnClose();
+  virtual BOOL OnInitDialog();
+  virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+  virtual void OnOK();
+  virtual void OnCancel();
 
 private:
-   bool IsValidString(const std::string &name);
-   void AddSearchItemToList(IEditable * const piedit, int idx);
+  bool IsValidString(const std::string& name);
+  void AddSearchItemToList(IEditable* const piedit, int idx);
 
-   void LoadPosition();
-   void SavePosition();
-   void SelectElement();
-   void SortItems(const int columnNumber);
+  void LoadPosition();
+  void SavePosition();
+  void SelectElement();
+  void SortItems(const int columnNumber);
 
-   HWND m_hElementList;
-   CResizer m_resizer;
-   CCO(PinTable) *m_curTable;
-   static int m_lastSortColumn;
-   static bool m_columnSortOrder;
-   static bool m_switchSortOrder;
+  HWND m_hElementList;
+  CResizer m_resizer;
+  CCO(PinTable) * m_curTable;
+  static int m_lastSortColumn;
+  static bool m_columnSortOrder;
+  static bool m_switchSortOrder;
 };
 
 #endif // !H_SEARCH_SELECT_DIALOG

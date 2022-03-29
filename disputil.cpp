@@ -1,76 +1,77 @@
 #include "stdafx.h"
 #include "disputil.h"
 
-void EnumEventsFromDispatch(IDispatch *pdisp, EventListCallback Callback, LPARAM lparam)
+void EnumEventsFromDispatch(IDispatch* pdisp, EventListCallback Callback, LPARAM lparam)
 {
-   IProvideClassInfo* pClassInfo;
-   pdisp->QueryInterface(IID_IProvideClassInfo, (void **)&pClassInfo);
+  IProvideClassInfo* pClassInfo;
+  pdisp->QueryInterface(IID_IProvideClassInfo, (void**)&pClassInfo);
 
-   if (pClassInfo)
-   {
-      ITypeInfo *pti;
+  if (pClassInfo)
+  {
+    ITypeInfo* pti;
 
-      pClassInfo->GetClassInfo(&pti);
+    pClassInfo->GetClassInfo(&pti);
 
-      if (!pti) return;
+    if (!pti)
+      return;
 
-      TYPEATTR *pta;
+    TYPEATTR* pta;
 
-      pti->GetTypeAttr(&pta);
+    pti->GetTypeAttr(&pta);
 
-      for (int i = 0; i < pta->cImplTypes; i++)
+    for (int i = 0; i < pta->cImplTypes; i++)
+    {
+      HREFTYPE href;
+      ITypeInfo* ptiChild;
+      TYPEATTR* ptaChild;
+
+      int impltype;
+      pti->GetImplTypeFlags(i, &impltype);
+
+      if (impltype & IMPLTYPEFLAG_FSOURCE)
       {
-         HREFTYPE href;
-         ITypeInfo *ptiChild;
-         TYPEATTR *ptaChild;
+        pti->GetRefTypeOfImplType(i, &href);
+        pti->GetRefTypeInfo(href, &ptiChild);
 
-         int impltype;
-         pti->GetImplTypeFlags(i, &impltype);
+        ptiChild->GetTypeAttr(&ptaChild);
 
-         if (impltype & IMPLTYPEFLAG_FSOURCE)
-         {
-            pti->GetRefTypeOfImplType(i, &href);
-            pti->GetRefTypeInfo(href, &ptiChild);
+        for (int l = 0; l < ptaChild->cFuncs; l++)
+        {
+          FUNCDESC* pfd;
+          ptiChild->GetFuncDesc(l, &pfd);
 
-            ptiChild->GetTypeAttr(&ptaChild);
+          // Get Name
+          {
+            BSTR* rgstr = (BSTR*)CoTaskMemAlloc(6 * sizeof(BSTR*));
 
-            for (int l = 0; l < ptaChild->cFuncs; l++)
+            unsigned int cnames;
+            /*const HRESULT hr =*/ptiChild->GetNames(pfd->memid, rgstr, 6, &cnames);
+
+            // Add enum string to combo control
+            char szT[512];
+            WideCharToMultiByteNull(CP_ACP, 0, rgstr[0], -1, szT, 512, nullptr, nullptr);
+            (*Callback)(szT, l, pfd->memid, lparam);
+
+            for (unsigned int i2 = 0; i2 < cnames; i2++)
             {
-               FUNCDESC *pfd;
-               ptiChild->GetFuncDesc(l, &pfd);
-
-               // Get Name
-               {
-                  BSTR *rgstr = (BSTR *)CoTaskMemAlloc(6 * sizeof(BSTR *));
-
-                  unsigned int cnames;
-                  /*const HRESULT hr =*/ ptiChild->GetNames(pfd->memid, rgstr, 6, &cnames);
-
-                  // Add enum string to combo control
-                  char szT[512];
-                  WideCharToMultiByteNull(CP_ACP, 0, rgstr[0], -1, szT, 512, nullptr, nullptr);
-                  (*Callback)(szT, l, pfd->memid, lparam);
-
-                  for (unsigned int i2 = 0; i2 < cnames; i2++)
-                  {
-                     SysFreeString(rgstr[i2]);
-                  }
-
-                  CoTaskMemFree(rgstr);
-               }
-
-               ptiChild->ReleaseFuncDesc(pfd);
+              SysFreeString(rgstr[i2]);
             }
 
-            ptiChild->ReleaseTypeAttr(ptaChild);
+            CoTaskMemFree(rgstr);
+          }
 
-            ptiChild->Release();
-         }
+          ptiChild->ReleaseFuncDesc(pfd);
+        }
+
+        ptiChild->ReleaseTypeAttr(ptaChild);
+
+        ptiChild->Release();
       }
+    }
 
-      pti->ReleaseTypeAttr(pta);
+    pti->ReleaseTypeAttr(pta);
 
-      pti->Release();
-      pClassInfo->Release();
-   }
+    pti->Release();
+    pClassInfo->Release();
+  }
 }

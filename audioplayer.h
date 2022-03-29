@@ -5,20 +5,20 @@
 class AudioPlayer
 {
 public:
-   AudioPlayer();
-   ~AudioPlayer();
+  AudioPlayer();
+  ~AudioPlayer();
 
-   bool MusicInit(const string& szFileName, const string& alt_szFileName, const float volume);
+  bool MusicInit(const string& szFileName, const string& alt_szFileName, const float volume);
 
-   bool MusicActive();
+  bool MusicActive();
 
-   //void MusicEnd();
+  //void MusicEnd();
 
-   void MusicPause();
-   void MusicUnpause();
+  void MusicPause();
+  void MusicUnpause();
 
-   void MusicVolume(const float volume);
+  void MusicVolume(const float volume);
 
 private:
-   HSTREAM m_stream;
+  HSTREAM m_stream;
 };

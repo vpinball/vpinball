@@ -3,26 +3,26 @@
 
 #pragma once
 
+#define PHYSICS_STEPTIME 1000 // usecs to go between each physics update
 
-#define PHYSICS_STEPTIME    1000         // usecs to go between each physics update
+#define PHYSICS_STEPTIME_S (PHYSICS_STEPTIME * 1e-6) // step time in seconds
 
-#define PHYSICS_STEPTIME_S  (PHYSICS_STEPTIME * 1e-6)     // step time in seconds
+#define DEFAULT_STEPTIME 10000 // default physics rate: 1000Hz
+#define DEFAULT_STEPTIME_S 0.01 // default physics rate: 1000Hz
 
-#define DEFAULT_STEPTIME      10000      // default physics rate: 1000Hz
-#define DEFAULT_STEPTIME_S    0.01       // default physics rate: 1000Hz
+#define PHYS_FACTOR (PHYSICS_STEPTIME_S / DEFAULT_STEPTIME_S)
 
-#define PHYS_FACTOR         (PHYSICS_STEPTIME_S / DEFAULT_STEPTIME_S)
-
-#define DEFAULT_TABLE_GRAVITY           0.97f
-#define DEFAULT_TABLE_CONTACTFRICTION   0.075f
-#define DEFAULT_TABLE_SCATTERANGLE      0.5f
-#define DEFAULT_TABLE_ELASTICITY        0.25f
+#define DEFAULT_TABLE_GRAVITY 0.97f
+#define DEFAULT_TABLE_CONTACTFRICTION 0.075f
+#define DEFAULT_TABLE_SCATTERANGLE 0.5f
+#define DEFAULT_TABLE_ELASTICITY 0.25f
 #define DEFAULT_TABLE_ELASTICITY_FALLOFF 0.f
-#define DEFAULT_TABLE_PFSCATTERANGLE    0.f
-#define DEFAULT_TABLE_MIN_SLOPE         6.0f
-#define DEFAULT_TABLE_MAX_SLOPE         6.0f
+#define DEFAULT_TABLE_PFSCATTERANGLE 0.f
+#define DEFAULT_TABLE_MIN_SLOPE 6.0f
+#define DEFAULT_TABLE_MAX_SLOPE 6.0f
 
-#define HIT_SHAPE_DETAIL_LEVEL          7.0f // static detail level to approximate ramps and rubbers for the physics/collision code
+#define HIT_SHAPE_DETAIL_LEVEL \
+  7.0f // static detail level to approximate ramps and rubbers for the physics/collision code
 
 //#define PRINT_DEBUG_COLLISION_TREE     // print collision acceleration structure info (will slow down debugging startup time if enabled)
 
@@ -54,7 +54,7 @@
  * Scale way up to VPu for export: (1*800)/17
  */
 
-#define GRAVITYCONST    1.81751f
+#define GRAVITYCONST 1.81751f
 
 // Collisions:
 //
@@ -66,7 +66,8 @@
 // Physical Skin ... postive contact layer. Any contact (collision) in this layer reports zero time.
 // layer is used to calculate contact effects ... beyond this and objects pass through each other
 // Default 25.0
-#define PHYS_SKIN 25.0 //!! seems like this mimics the radius of the ball -> replace with radius where possible?
+#define PHYS_SKIN \
+  25.0 //!! seems like this mimics the radius of the ball -> replace with radius where possible?
 // Layer outside object which increases it's size for contact measurements. Used to determine clearances.
 // Setting this value during testing to 0.1 will insure clearance. After testing set the value to 0.005
 // Default 0.01
@@ -81,32 +82,35 @@
 
 // low velocity stabilization ... if embedding occurs add some velocity
 #ifdef NEW_PHYSICS
- #define C_EMBEDVELLIMIT 5.f // can be undefd
+#define C_EMBEDVELLIMIT 5.f // can be undefd
 #endif
 
 // old workarounds, not needed anymore?!
 #ifndef NEW_PHYSICS
- #define C_EMBEDSHOT_PLANE // push pos up if ball embedded in plane
- #define C_EMBEDDED 0.0f // can be undefd
- #define C_EMBEDSHOT 0.05f
- // Contact displacement corrections, hard ridgid contacts i.e. steel on hard plastic or hard wood
- #define C_DISP_GAIN 0.9875f // can be undefd
- #ifdef C_DISP_GAIN
-  #define C_DISP_LIMIT 5.0f
- #endif
- // Have special cases for balls that are determined static? (C_DYNAMIC is kind of a counter for detection) -> does not work stable enough anymore nowadays
- //#define C_DYNAMIC 2
- // choose only one of these two heuristics:
- #define C_BALL_SPIN_HACK // original ball spin reduction code, based on automatic detection/heuristic of resting balls
- //#define C_BALL_SPIN_HACK2 0.1 // dampens ball spin on collision contacts and at the same time very slow moving balls (smaller = less damp)
+#define C_EMBEDSHOT_PLANE // push pos up if ball embedded in plane
+#define C_EMBEDDED 0.0f // can be undefd
+#define C_EMBEDSHOT 0.05f
+// Contact displacement corrections, hard ridgid contacts i.e. steel on hard plastic or hard wood
+#define C_DISP_GAIN 0.9875f // can be undefd
+#ifdef C_DISP_GAIN
+#define C_DISP_LIMIT 5.0f
+#endif
+// Have special cases for balls that are determined static? (C_DYNAMIC is kind of a counter for detection) -> does not work stable enough anymore nowadays
+//#define C_DYNAMIC 2
+// choose only one of these two heuristics:
+#define C_BALL_SPIN_HACK // original ball spin reduction code, based on automatic detection/heuristic of resting balls
+//#define C_BALL_SPIN_HACK2 0.1 // dampens ball spin on collision contacts and at the same time very slow moving balls (smaller = less damp)
 #endif
 
 //trigger/kicker boundary crossing hysterisis, also slow/static ball<->ball and to some extent general ball<->object interactions
-#define STATICTIME 0.02f // smallest time/intersection difference allowed in the simulation, if amount of all intersections found within that smaller timeframe is > STATICCNTS
-#define STATICCNTS 10     // 0=always clamp to the minimum STATICTIME difference, no exceptions, will/should lead to more penetration!
+#define STATICTIME \
+  0.02f // smallest time/intersection difference allowed in the simulation, if amount of all intersections found within that smaller timeframe is > STATICCNTS
+#define STATICCNTS \
+  10 // 0=always clamp to the minimum STATICTIME difference, no exceptions, will/should lead to more penetration!
 
 //Flippers:
-#define C_INTERATIONS 20 // Precision level and cycles for interative calculations // acceptable contact time ... near zero time
+#define C_INTERATIONS \
+  20 // Precision level and cycles for interative calculations // acceptable contact time ... near zero time
 
 //Plumb:
-#define	VELOCITY_EPSILON 0.05f	// The threshold for zero velocity.
+#define VELOCITY_EPSILON 0.05f // The threshold for zero velocity.

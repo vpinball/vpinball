@@ -4,12 +4,12 @@
 class DimensionDialog : public CDialog
 {
 public:
-   DimensionDialog();
+  DimensionDialog();
 
 protected:
-   virtual BOOL OnInitDialog();
-   virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+  virtual BOOL OnInitDialog();
+  virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+  virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 };
 
 #endif

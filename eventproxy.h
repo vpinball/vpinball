@@ -5,32 +5,32 @@ class Ball;
 class EventProxyBase
 {
 public:
-   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) = 0;
+  virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS* const pdispparams) = 0;
 
-   void FireVoidEvent(const int dispid)
-   {
-      DISPPARAMS dispparams = { nullptr, nullptr, 0, 0 };
+  void FireVoidEvent(const int dispid)
+  {
+    DISPPARAMS dispparams = {nullptr, nullptr, 0, 0};
 
-      FireDispID(dispid, &dispparams);
-   }
+    FireDispID(dispid, &dispparams);
+  }
 
-   void FireVoidEventParm(const int dispid, const float parm)
-   {
-      CComVariant rgvar[1] = { CComVariant(parm) };
-      DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
+  void FireVoidEventParm(const int dispid, const float parm)
+  {
+    CComVariant rgvar[1] = {CComVariant(parm)};
+    DISPPARAMS dispparams = {rgvar, nullptr, 1, 0};
 
-      FireDispID(dispid, &dispparams);
-   }
+    FireDispID(dispid, &dispparams);
+  }
 
-   void FireVoidEventParm(const int dispid, const int parm)
-   {
-      CComVariant rgvar[1] = { CComVariant(parm) };
-      DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
+  void FireVoidEventParm(const int dispid, const int parm)
+  {
+    CComVariant rgvar[1] = {CComVariant(parm)};
+    DISPPARAMS dispparams = {rgvar, nullptr, 1, 0};
 
-      FireDispID(dispid, &dispparams);
-   }
+    FireDispID(dispid, &dispparams);
+  }
 
-   /*void FireVoidEventParm(const int dispid, const unsigned int parm)
+  /*void FireVoidEventParm(const int dispid, const unsigned int parm)
    {
       CComVariant rgvar[1] = { CComVariant(parm) };
       DISPPARAMS dispparams  = { rgvar, nullptr, 1, 0 };
@@ -38,7 +38,7 @@ public:
       FireDispID(dispid, &dispparams);
    }*/
 
-   /*void FireVoidEventParm(const int dispid, const char* parm)
+  /*void FireVoidEventParm(const int dispid, const char* parm)
    {
       CComVariant rgvar[1] = { CComVariant(parm) };
       DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
@@ -47,50 +47,52 @@ public:
    }*/
 };
 
-template <class T, const IID* psrcid>
-class EventProxy : public EventProxyBase, public IConnectionPointImpl<T, psrcid, CComDynamicUnkArray>
+template<class T, const IID* psrcid>
+class EventProxy : public EventProxyBase,
+                   public IConnectionPointImpl<T, psrcid, CComDynamicUnkArray>
 {
 public:
-   EventProxy() {}
+  EventProxy() {}
 
-   virtual ~EventProxy() {}
+  virtual ~EventProxy() {}
 
-   void FireVoidGroupEvent(const int dispid)
-   {
-      T* const pT = (T*)this;
-      for (size_t i = 0; i < pT->m_vEventCollection.size(); ++i)
+  void FireVoidGroupEvent(const int dispid)
+  {
+    T* const pT = (T*)this;
+    for (size_t i = 0; i < pT->m_vEventCollection.size(); ++i)
+    {
+      Collection* const pcollection = pT->m_vEventCollection[i];
+
+      if (pcollection != nullptr)
       {
-         Collection * const pcollection = pT->m_vEventCollection[i];
+        CComVariant rgvar[1] = {CComVariant((long)pT->m_viEventCollection[i])};
+        DISPPARAMS dispparams = {rgvar, nullptr, 1, 0};
 
-         if (pcollection!=nullptr)
-         {
-            CComVariant rgvar[1] = { CComVariant((long)pT->m_viEventCollection[i]) };
-            DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
-
-            pcollection->FireDispID(dispid, &dispparams);
-         }
+        pcollection->FireDispID(dispid, &dispparams);
       }
+    }
 
-      if (pT->m_singleEvents)
-         FireVoidEvent(dispid);
-   }
+    if (pT->m_singleEvents)
+      FireVoidEvent(dispid);
+  }
 
-   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
-   {
-      T* const pT = (T*)this;
-      pT->Lock();
-      IUnknown** pp = IConnectionPointImpl<T, psrcid, CComDynamicUnkArray>::m_vec.begin();
-      while (pp < IConnectionPointImpl<T, psrcid, CComDynamicUnkArray>::m_vec.end())
+  virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS* const pdispparams)
+  {
+    T* const pT = (T*)this;
+    pT->Lock();
+    IUnknown** pp = IConnectionPointImpl<T, psrcid, CComDynamicUnkArray>::m_vec.begin();
+    while (pp < IConnectionPointImpl<T, psrcid, CComDynamicUnkArray>::m_vec.end())
+    {
+      if (*pp != nullptr)
       {
-         if (*pp != nullptr)
-         {
-            IDispatch* const pDispatch = reinterpret_cast<IDispatch*>(*pp);
-            pDispatch->Invoke(dispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
-         }
-         ++pp;
+        IDispatch* const pDispatch = reinterpret_cast<IDispatch*>(*pp);
+        pDispatch->Invoke(dispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams,
+                          nullptr, nullptr, nullptr);
       }
-      pT->Unlock();
+      ++pp;
+    }
+    pT->Unlock();
 
-      return S_OK;
-   }
+    return S_OK;
+  }
 };

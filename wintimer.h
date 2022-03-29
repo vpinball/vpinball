@@ -15,6 +15,14 @@ unsigned long long usec();
 void uSleep(const unsigned long long u);
 void uOverSleep(const unsigned long long u);
 
-double TheoreticRadiation(const unsigned int day, const unsigned int month, const unsigned int year, const double rlat);
+double TheoreticRadiation(const unsigned int day,
+                          const unsigned int month,
+                          const unsigned int year,
+                          const double rlat);
 double MaxTheoreticRadiation(const unsigned int year, const double rlat);
-double SunsetSunriseLocalTime(const unsigned int day, const unsigned int month, const unsigned int year, const double rlong, const double rlat, const bool sunrise);
+double SunsetSunriseLocalTime(const unsigned int day,
+                              const unsigned int month,
+                              const unsigned int year,
+                              const double rlong,
+                              const double rlat,
+                              const bool sunrise);

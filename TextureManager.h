@@ -11,29 +11,27 @@ class RenderDevice;
 class TextureManager
 {
 public:
-   TextureManager(RenderDevice& rd) : m_rd(rd)
-   { }
+  TextureManager(RenderDevice& rd) : m_rd(rd) {}
 
-   ~TextureManager()
-   {
-      UnloadAll();
-   }
+  ~TextureManager() { UnloadAll(); }
 
-   D3DTexture* LoadTexture(BaseTexture* memtex, const bool linearRGB, const bool clamptoedge = false);
-   void SetDirty(BaseTexture* memtex);
-   void UnloadTexture(BaseTexture* memtex);
-   void UnloadAll();
+  D3DTexture* LoadTexture(BaseTexture* memtex,
+                          const bool linearRGB,
+                          const bool clamptoedge = false);
+  void SetDirty(BaseTexture* memtex);
+  void UnloadTexture(BaseTexture* memtex);
+  void UnloadAll();
 
 private:
-   struct TexInfo
-   {
-      D3DTexture* d3dtex;
-      int texWidth;
-      int texHeight;
-      bool dirty;
-   };
+  struct TexInfo
+  {
+    D3DTexture* d3dtex;
+    int texWidth;
+    int texHeight;
+    bool dirty;
+  };
 
-   RenderDevice& m_rd;
-   std::map<BaseTexture*, TexInfo> m_map;
-   typedef std::map<BaseTexture*, TexInfo>::iterator Iter;
+  RenderDevice& m_rd;
+  std::map<BaseTexture*, TexInfo> m_map;
+  typedef std::map<BaseTexture*, TexInfo>::iterator Iter;
 };

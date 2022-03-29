@@ -31,270 +31,278 @@ class PinTableMDI;
 class VPinball : public CMDIDockFrame
 {
 public:
-    enum TIMER_IDS
-    {
-        TIMER_ID_AUTOSAVE = 12345,
-        TIMER_ID_CLOSE_TABLE = 12346
-    };
+  enum TIMER_IDS
+  {
+    TIMER_ID_AUTOSAVE = 12345,
+    TIMER_ID_CLOSE_TABLE = 12346
+  };
 
-    enum CopyPasteModes
-    {
-        COPY = 0,
-        PASTE = 1,
-        PASTE_AT = 2
-    };
-    
-   VPinball();
-   virtual ~VPinball();
-   void Quit();
+  enum CopyPasteModes
+  {
+    COPY = 0,
+    PASTE = 1,
+    PASTE_AT = 2
+  };
 
-   void ShowSubDialog(CDialog& dlg, const bool show);
+  VPinball();
+  virtual ~VPinball();
+  void Quit();
+
+  void ShowSubDialog(CDialog& dlg, const bool show);
 
 private:
-   void ShowSearchSelect();
-   void SetDefaultPhysics();
-   void SetViewSolidOutline(size_t viewId);
-   void ShowGridView();
-   void ShowBackdropView();
-   void AddControlPoint();
-   void AddSmoothControlPoint();
-   void SaveTable(const bool saveAs);
-   void OpenNewTable(size_t tableId);
-   void ProcessDeleteElement();
-   void OpenRecentFile(const size_t menuId);
-   void CopyPasteElement(const CopyPasteModes mode);
-   void InitTools();
-   void InitRegValues();
-   bool CanClose();
-   void GetMyPath();
-   void UpdateRecentFileList(const string& szfilename);
+  void ShowSearchSelect();
+  void SetDefaultPhysics();
+  void SetViewSolidOutline(size_t viewId);
+  void ShowGridView();
+  void ShowBackdropView();
+  void AddControlPoint();
+  void AddSmoothControlPoint();
+  void SaveTable(const bool saveAs);
+  void OpenNewTable(size_t tableId);
+  void ProcessDeleteElement();
+  void OpenRecentFile(const size_t menuId);
+  void CopyPasteElement(const CopyPasteModes mode);
+  void InitTools();
+  void InitRegValues();
+  bool CanClose();
+  void GetMyPath();
+  void UpdateRecentFileList(const string& szfilename);
 
-   bool ApcHost_OnTranslateMessage(MSG* pmsg);
-   bool processKeyInputForDialogs(MSG *pmsg);
-
+  bool ApcHost_OnTranslateMessage(MSG* pmsg);
+  bool processKeyInputForDialogs(MSG* pmsg);
 
 public:
-   void AddMDITable(PinTableMDI* mdiTable);
-   CMenu GetMainMenu(int id);
-   void CloseAllDialogs();
-   void ToggleScriptEditor();
-   void ToggleBackglassView();
-   bool ParseCommand(const size_t code, const bool notify);
-   void ReInitSound();
+  void AddMDITable(PinTableMDI* mdiTable);
+  CMenu GetMainMenu(int id);
+  void CloseAllDialogs();
+  void ToggleScriptEditor();
+  void ToggleBackglassView();
+  bool ParseCommand(const size_t code, const bool notify);
+  void ReInitSound();
 
-   CComObject<PinTable> *GetActiveTable();
-   bool LoadFile(const bool updateEditor);
-   void LoadFileName(const string& szFileName, const bool updateEditor);
-   void SetClipboard(vector<IStream*> * const pvstm);
+  CComObject<PinTable>* GetActiveTable();
+  bool LoadFile(const bool updateEditor);
+  void LoadFileName(const string& szFileName, const bool updateEditor);
+  void SetClipboard(vector<IStream*>* const pvstm);
 
-   void DoPlay(const bool _cameraMode);
+  void DoPlay(const bool _cameraMode);
 
-   void SetPosCur(float x, float y);
-   void SetObjectPosCur(float x, float y);
-   void ClearObjectPosCur();
-   float ConvertToUnit(const float value) const;
-   void SetPropSel(VectorProtected<ISelect> &pvsel);
+  void SetPosCur(float x, float y);
+  void SetObjectPosCur(float x, float y);
+  void ClearObjectPosCur();
+  float ConvertToUnit(const float value) const;
+  void SetPropSel(VectorProtected<ISelect>& pvsel);
 
-   void SetActionCur(const string& szaction);
-   void SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName);
+  void SetActionCur(const string& szaction);
+  void SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName);
 
-   void ProfileLog(const string& msg);
+  void ProfileLog(const string& msg);
 
-   STDMETHOD(QueryInterface)(REFIID riid, void** ppvObj);
-   STDMETHOD_(ULONG, AddRef)();
-   STDMETHOD_(ULONG, Release)();
+  STDMETHOD(QueryInterface)(REFIID riid, void** ppvObj);
+  STDMETHOD_(ULONG, AddRef)();
+  STDMETHOD_(ULONG, Release)();
 
-   STDMETHOD(PlaySound)(BSTR bstr);
+  STDMETHOD(PlaySound)(BSTR bstr);
 
-   STDMETHOD(FireKnocker)(int Count);
-   STDMETHOD(QuitPlayer)(int CloseType);
+  STDMETHOD(FireKnocker)(int Count);
+  STDMETHOD(QuitPlayer)(int CloseType);
 
-   void MainMsgLoop();
+  void MainMsgLoop();
 
-   void CloseTable(const PinTable * const ppt);
+  void CloseTable(const PinTable* const ppt);
 
-   void ToggleToolbar();
-   void SetEnableMenuItems();
+  void ToggleToolbar();
+  void SetEnableMenuItems();
 
-   void EnsureWorkerThread();
-   HANDLE PostWorkToWorkerThread(int workid, LPARAM lParam);
+  void EnsureWorkerThread();
+  HANDLE PostWorkToWorkerThread(int workid, LPARAM lParam);
 
-   void SetAutoSaveMinutes(const int minutes);
-   void ShowDrawingOrderDialog(bool select);
+  void SetAutoSaveMinutes(const int minutes);
+  void ShowDrawingOrderDialog(bool select);
 
-   void SetStatusBarElementInfo(const string& info);
-   void SetStatusBarUnitInfo(const string& info, const bool isUnit) // inlined, in the hope that string conversions will be skipped in case of early out in here
-   {
+  void SetStatusBarElementInfo(const string& info);
+  void SetStatusBarUnitInfo(
+      const string& info,
+      const bool
+          isUnit) // inlined, in the hope that string conversions will be skipped in case of early out in here
+  {
     if (g_pplayer)
-        return;
+      return;
 
     string textBuf;
 
     if (!info.empty())
     {
-       textBuf = info;
-       if(isUnit)
-       {
-           switch(m_convertToUnit)
-           {
-               case 0:
-               {
-                   textBuf += " (inch)";
-                   break;
-               }
-               case 1:
-               {
-                   textBuf += " (mm)";
-                   break;
-               }
-               case 2:
-               {
-                   textBuf += " (VPUnits)";
-                   break;
-               }
-               default:
-                   assert(!"wrong unit");
-               break;
-           }
-       }
+      textBuf = info;
+      if (isUnit)
+      {
+        switch (m_convertToUnit)
+        {
+          case 0:
+          {
+            textBuf += " (inch)";
+            break;
+          }
+          case 1:
+          {
+            textBuf += " (mm)";
+            break;
+          }
+          case 2:
+          {
+            textBuf += " (VPUnits)";
+            break;
+          }
+          default:
+            assert(!"wrong unit");
+            break;
+        }
+      }
     }
 
     SendMessage(m_hwndStatusBar, SB_SETTEXT, 5 | 0, (size_t)textBuf.c_str());
-   }
+  }
 
-   bool OpenFileDialog(const string& initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const std::string& windowTitle = string());
-   bool SaveFileDialog(const string& initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const std::string& windowTitle = string());
+  bool OpenFileDialog(const string& initDir,
+                      std::vector<std::string>& filename,
+                      const char* const fileFilter,
+                      const char* const defaultExt,
+                      const DWORD flags,
+                      const std::string& windowTitle = string());
+  bool SaveFileDialog(const string& initDir,
+                      std::vector<std::string>& filename,
+                      const char* const fileFilter,
+                      const char* const defaultExt,
+                      const DWORD flags,
+                      const std::string& windowTitle = string());
 
-   CDockProperty* GetPropertiesDocker();
-   CDockToolbar *GetToolbarDocker();
-   CDockNotes* GetNotesDocker();
-   CDockLayers* GetLayersDocker();
-   void ResetAllDockers();
+  CDockProperty* GetPropertiesDocker();
+  CDockToolbar* GetToolbarDocker();
+  CDockNotes* GetNotesDocker();
+  CDockLayers* GetLayersDocker();
+  void ResetAllDockers();
 
-   void DestroyNotesDocker()
-   {
-      m_notesDialog = nullptr;
-      m_dockNotes = nullptr;
-   }
-   void CreateDocker();
-   LayersListDialog *GetLayersListDialog()
-   {
-       return m_layersListDialog;
-   }
-   bool IsClosing() const { return m_closing; }
+  void DestroyNotesDocker()
+  {
+    m_notesDialog = nullptr;
+    m_dockNotes = nullptr;
+  }
+  void CreateDocker();
+  LayersListDialog* GetLayersListDialog() { return m_layersListDialog; }
+  bool IsClosing() const { return m_closing; }
 
-   ULONG m_cref;
+  ULONG m_cref;
 
-   HINSTANCE theInstance;
+  HINSTANCE theInstance;
 
-   vector< CComObject<PinTable>* > m_vtable;
-   CComObject<PinTable> *m_ptableActive;
+  vector<CComObject<PinTable>*> m_vtable;
+  CComObject<PinTable>* m_ptableActive;
 
-//    HWND m_hwndToolbarMain;
-   HWND m_hwndStatusBar;
+  //    HWND m_hwndToolbarMain;
+  HWND m_hwndStatusBar;
 
-   int m_palettescroll;
+  int m_palettescroll;
 
-   //SmartBrowser m_sb;
+  //SmartBrowser m_sb;
 
-   vector<IStream*> m_vstmclipboard;
+  vector<IStream*> m_vstmclipboard;
 
-   AudioMusicPlayer m_ps;
+  AudioMusicPlayer m_ps;
 
-   int m_ToolCur; // Palette button currently pressed
+  int m_ToolCur; // Palette button currently pressed
 
-   int m_NextTableID; // counter to create next unique table name
+  int m_NextTableID; // counter to create next unique table name
 
-   CodeViewer *m_pcv; // Currently active code window
+  CodeViewer* m_pcv; // Currently active code window
 
-   bool m_backglassView; // Whether viewing the playfield or screen layout
+  bool m_backglassView; // Whether viewing the playfield or screen layout
 
-   bool m_alwaysDrawDragPoints;
-   bool m_alwaysDrawLightCenters;
-   int m_gridSize;
-   int m_convertToUnit; //0=Inches, 1=Millimeters, 2=VPUnits
+  bool m_alwaysDrawDragPoints;
+  bool m_alwaysDrawLightCenters;
+  int m_gridSize;
+  int m_convertToUnit; //0=Inches, 1=Millimeters, 2=VPUnits
 
-   int m_securitylevel;
+  int m_securitylevel;
 
-   string m_szMyPath;
-   std::wstring m_wzMyPath;
-   string m_currentTablePath;
+  string m_szMyPath;
+  std::wstring m_wzMyPath;
+  string m_currentTablePath;
 
-   int m_autosaveTime;
+  int m_autosaveTime;
 
-   Material m_dummyMaterial;
-   COLORREF m_elemSelectColor;
-   COLORREF m_elemSelectLockedColor;
-   COLORREF m_backgroundColor;
-   COLORREF m_fillColor;
-   Vertex2D m_mouseCursorPosition;
+  Material m_dummyMaterial;
+  COLORREF m_elemSelectColor;
+  COLORREF m_elemSelectLockedColor;
+  COLORREF m_backgroundColor;
+  COLORREF m_fillColor;
+  Vertex2D m_mouseCursorPosition;
 
-   // command line parameters
-   int m_disEnableTrueFullscreen;
-   bool m_open_minimized;
-   bool m_disable_pause_menu;
-   bool m_povEdit; // table should be run in camera mode to change the POV (and then export that on exit), nothing else
-   bool m_primaryDisplay; // force use of pixel(0,0) monitor
-   bool m_table_played_via_command_line;
-   volatile bool m_table_played_via_SelectTableOnStart;
-   int m_logicalNumberOfProcessors;
-   WCHAR *m_customParameters[MAX_CUSTOM_PARAM_INDEX];
+  // command line parameters
+  int m_disEnableTrueFullscreen;
+  bool m_open_minimized;
+  bool m_disable_pause_menu;
+  bool
+      m_povEdit; // table should be run in camera mode to change the POV (and then export that on exit), nothing else
+  bool m_primaryDisplay; // force use of pixel(0,0) monitor
+  bool m_table_played_via_command_line;
+  volatile bool m_table_played_via_SelectTableOnStart;
+  int m_logicalNumberOfProcessors;
+  WCHAR* m_customParameters[MAX_CUSTOM_PARAM_INDEX];
 
-   HBITMAP m_hbmInPlayMode;
+  HBITMAP m_hbmInPlayMode;
 
 protected:
-   virtual void PreCreate(CREATESTRUCT& cs);
-   virtual void PreRegisterClass(WNDCLASS& wc);
-   virtual void OnClose();
-   virtual void OnDestroy();
-   virtual int  OnCreate(CREATESTRUCT& cs);
-   virtual LRESULT OnPaint(UINT msg, WPARAM wparam, LPARAM lparam);
-   virtual void OnInitialUpdate();
-   virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam);
-   virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-   virtual LRESULT OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam);
-   virtual LRESULT OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam);
-   virtual CDocker *NewDockerFromID(int id);
+  virtual void PreCreate(CREATESTRUCT& cs);
+  virtual void PreRegisterClass(WNDCLASS& wc);
+  virtual void OnClose();
+  virtual void OnDestroy();
+  virtual int OnCreate(CREATESTRUCT& cs);
+  virtual LRESULT OnPaint(UINT msg, WPARAM wparam, LPARAM lparam);
+  virtual void OnInitialUpdate();
+  virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam);
+  virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+  virtual LRESULT OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam);
+  virtual LRESULT OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam);
+  virtual CDocker* NewDockerFromID(int id);
 
 private:
+  CDockProperty* GetDefaultPropertiesDocker();
+  CDockLayers* GetDefaultLayersDocker();
+  CDockToolbar* GetDefaultToolbarDocker();
+  CDockNotes* GetDefaultNotesDocker();
 
-   CDockProperty *GetDefaultPropertiesDocker();
-   CDockLayers *GetDefaultLayersDocker();
-   CDockToolbar* GetDefaultToolbarDocker();
-   CDockNotes* GetDefaultNotesDocker();
+  volatile bool m_unloadingTable;
+  CMenu m_mainMenu;
+  std::vector<std::string> m_recentTableList;
 
-   volatile bool m_unloadingTable;
-   CMenu m_mainMenu;
-   std::vector<std::string> m_recentTableList;
+  HANDLE m_workerthread;
+  unsigned int m_workerthreadid;
+  bool m_closing;
+  HMODULE m_scintillaDll;
 
-   HANDLE  m_workerthread;
-   unsigned int m_workerthreadid;
-   bool    m_closing;
-   HMODULE m_scintillaDll;
+  ImageDialog m_imageMngDlg;
+  SoundDialog m_soundMngDlg;
+  AudioOptionsDialog m_audioOptDialog;
+  VideoOptionsDialog m_videoOptDialog;
+  EditorOptionsDialog m_editorOptDialog;
+  CollectionManagerDialog m_collectionMngDlg;
+  PhysicsOptionsDialog m_physicsOptDialog;
+  TableInfoDialog m_tableInfoDialog;
+  DimensionDialog m_dimensionDialog;
+  MaterialDialog m_materialDialog;
+  AboutDialog m_aboutDialog;
 
-   ImageDialog m_imageMngDlg;
-   SoundDialog m_soundMngDlg;
-   AudioOptionsDialog m_audioOptDialog;
-   VideoOptionsDialog m_videoOptDialog;
-   EditorOptionsDialog m_editorOptDialog;
-   CollectionManagerDialog m_collectionMngDlg;
-   PhysicsOptionsDialog m_physicsOptDialog;
-   TableInfoDialog m_tableInfoDialog;
-   DimensionDialog m_dimensionDialog;
-   MaterialDialog m_materialDialog;
-   AboutDialog m_aboutDialog;
+  ToolbarDialog* m_toolbarDialog = nullptr;
+  PropertyDialog* m_propertyDialog = nullptr;
+  CDockToolbar* m_dockToolbar = nullptr;
+  CDockProperty* m_dockProperties = nullptr;
+  LayersListDialog* m_layersListDialog = nullptr;
+  CDockLayers* m_dockLayers = nullptr;
+  NotesDialog* m_notesDialog = nullptr;
+  CDockNotes* m_dockNotes = nullptr;
 
-   ToolbarDialog *m_toolbarDialog = nullptr;
-   PropertyDialog *m_propertyDialog = nullptr;
-   CDockToolbar *m_dockToolbar = nullptr;
-   CDockProperty *m_dockProperties = nullptr;
-   LayersListDialog *m_layersListDialog = nullptr;
-   CDockLayers *m_dockLayers = nullptr;
-   NotesDialog *m_notesDialog = nullptr;
-   CDockNotes* m_dockNotes = nullptr;
-
-   FILE *m_profile_file;
+  FILE* m_profile_file;
 };
-
 
 #endif // !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)

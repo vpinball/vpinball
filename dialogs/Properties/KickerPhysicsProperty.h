@@ -1,28 +1,26 @@
 #ifndef H_KICKER_PHYSICS_PROPERTY
 #define H_KICKER_PHYSICS_PROPERTY
 
-class KickerPhysicsProperty: public BasePropertyDialog
+class KickerPhysicsProperty : public BasePropertyDialog
 {
 public:
-    KickerPhysicsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~KickerPhysicsProperty()
-    {
-    }
+  KickerPhysicsProperty(const VectorProtected<ISelect>* pvsel);
+  virtual ~KickerPhysicsProperty() {}
 
-    void UpdateVisuals(const int dispid=-1);
-    void UpdateProperties(const int dispid);
+  void UpdateVisuals(const int dispid = -1);
+  void UpdateProperties(const int dispid);
 
 protected:
-    virtual BOOL OnInitDialog();
-    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+  virtual BOOL OnInitDialog();
+  virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
-    HWND    m_hEnableCheck;
-    HWND    m_hFallThroughCheck;
-    HWND    m_hLegacyCheck;
-    EditBox m_scatterAngleEdit;
-    EditBox m_hitAccuracyEdit;
-    EditBox m_hitHeightEdit;
+  HWND m_hEnableCheck;
+  HWND m_hFallThroughCheck;
+  HWND m_hLegacyCheck;
+  EditBox m_scatterAngleEdit;
+  EditBox m_hitAccuracyEdit;
+  EditBox m_hitHeightEdit;
 };
 
 #endif // !H_KICKER_PHYSICS_PROPERTY

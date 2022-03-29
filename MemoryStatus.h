@@ -5,15 +5,15 @@ namespace rde
 {
 struct MemoryStatus
 {
-	MemoryStatus();
+  MemoryStatus();
 
-	static MemoryStatus GetCurrent();
+  static MemoryStatus GetCurrent();
 
-	size_t	totalFree;
-	size_t	largestFree;
-	size_t	totalReserved;
-	size_t	totalCommited;
+  size_t totalFree;
+  size_t largestFree;
+  size_t totalReserved;
+  size_t totalCommited;
 };
-}
+} // namespace rde
 
 #endif

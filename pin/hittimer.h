@@ -3,7 +3,7 @@
 class HitTimer
 {
 public:
-   IFireEvents *m_pfe;
-   unsigned int m_nextfire;
-   int m_interval;
+  IFireEvents* m_pfe;
+  unsigned int m_nextfire;
+  int m_interval;
 };

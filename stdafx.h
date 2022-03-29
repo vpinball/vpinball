@@ -27,11 +27,11 @@
 //#define DEBUG_XXX // helps to detect out-of-bounds access, needs to link dbghelp.lib then
 //#define SLINTF    // enable debug console output
 
-#define EDITOR_BG_WIDTH    1000
-#define EDITOR_BG_HEIGHT   750
+#define EDITOR_BG_WIDTH 1000
+#define EDITOR_BG_HEIGHT 750
 
-#define MAIN_WINDOW_WIDTH  1280
-#define MAIN_WINDOW_HEIGHT (720-50)
+#define MAIN_WINDOW_WIDTH 1280
+#define MAIN_WINDOW_HEIGHT (720 - 50)
 
 #define BASEDEPTHBIAS 5e-5f
 
@@ -41,36 +41,39 @@
 
 //
 
-#define NUM_BG_SETS        3  // different backdrop settings: DT,FS,FSS
-#define BG_DESKTOP         0
-#define BG_FULLSCREEN      1
-#define BG_FSS             2
+#define NUM_BG_SETS 3 // different backdrop settings: DT,FS,FSS
+#define BG_DESKTOP 0
+#define BG_FULLSCREEN 1
+#define BG_FSS 2
 
 #define MAX_BALL_TRAIL_POS 10 // fake/artistic ball motion trail
 
-#define MAX_REELS          32
+#define MAX_REELS 32
 
-#define LIGHTSEQGRIDSCALE  20
-#define	LIGHTSEQGRIDWIDTH  EDITOR_BG_WIDTH/LIGHTSEQGRIDSCALE
-#define	LIGHTSEQGRIDHEIGHT (2*EDITOR_BG_WIDTH)/LIGHTSEQGRIDSCALE
+#define LIGHTSEQGRIDSCALE 20
+#define LIGHTSEQGRIDWIDTH EDITOR_BG_WIDTH / LIGHTSEQGRIDSCALE
+#define LIGHTSEQGRIDHEIGHT (2 * EDITOR_BG_WIDTH) / LIGHTSEQGRIDSCALE
 
-#define LIGHTSEQQUEUESIZE  100
+#define LIGHTSEQQUEUESIZE 100
 
-#define MAX_LIGHT_SOURCES  2
-#define MAX_BALL_LIGHT_SOURCES  8
+#define MAX_LIGHT_SOURCES 2
+#define MAX_BALL_LIGHT_SOURCES 8
 
 //
 
-#define ADAPT_VSYNC_FACTOR 0.95 // safety factor where vsync is turned off (f.e. drops below 60fps * 0.95 = 57fps)
+#define ADAPT_VSYNC_FACTOR \
+  0.95 // safety factor where vsync is turned off (f.e. drops below 60fps * 0.95 = 57fps)
 
-#define ACCURATETIMERS          // if undefd, timers will only be triggered as often as frames are rendered (e.g. they can fall behind)
-#define MAX_TIMER_MSEC_INTERVAL 1 // amount of msecs to wait (at least) until same timer can be triggered again (e.g. they can fall behind, if set to > 1, as update cycle is 1000Hz)
-#define MAX_TIMERS_MSEC_OVERALL 5 // amount of msecs that all timers combined can take per frame (e.g. they can fall behind, if set to < somelargevalue)
+#define ACCURATETIMERS // if undefd, timers will only be triggered as often as frames are rendered (e.g. they can fall behind)
+#define MAX_TIMER_MSEC_INTERVAL \
+  1 // amount of msecs to wait (at least) until same timer can be triggered again (e.g. they can fall behind, if set to > 1, as update cycle is 1000Hz)
+#define MAX_TIMERS_MSEC_OVERALL \
+  5 // amount of msecs that all timers combined can take per frame (e.g. they can fall behind, if set to < somelargevalue)
 
-#define STEPPING                // enable Physics stepping
+#define STEPPING // enable Physics stepping
 
 #if defined(_DEBUG) && defined(STEPPING)
- #define MOUSEPAUSE
+#define MOUSEPAUSE
 #endif
 
 //#define PLAYBACK              // bitrotted, also how to record the playback to c:\badlog.txt ?? via LOG ??
@@ -80,27 +83,27 @@
 
 //#define DEBUGPHYSICS          // enables detailed physics/collision handling output for the 'F11' stats/debug texts
 
-#define DEBUG_BALL_SPIN         // enables dots glued to balls if in 'F11' mode
+#define DEBUG_BALL_SPIN // enables dots glued to balls if in 'F11' mode
 
 //
 
 #define LAST_OPENED_TABLE_COUNT 8
 
-#define MAX_CUSTOM_PARAM_INDEX  10
+#define MAX_CUSTOM_PARAM_INDEX 10
 
-#define MAX_OPEN_TABLES         9
+#define MAX_OPEN_TABLES 9
 
-#define AUTOSAVE_DEFAULT_TIME   10
+#define AUTOSAVE_DEFAULT_TIME 10
 
-#define DEFAULT_SECURITY_LEVEL  0
+#define DEFAULT_SECURITY_LEVEL 0
 
 //VR Support
 
 #define STEREO_OFF 0
-#define STEREO_TB  1
+#define STEREO_TB 1
 #define STEREO_INT 2
 #define STEREO_SBS 3
-#define STEREO_VR  4
+#define STEREO_VR 4
 
 #ifdef ENABLE_SDL
 //No VR support with DX9 possible, only with DX11 and OpenGL
@@ -121,26 +124,24 @@
 
 #ifndef _WIN32_WINNT
 #if defined(_WIN64) && defined(CRASH_HANDLER)
- #define _WIN32_WINNT 0x0501
+#define _WIN32_WINNT 0x0501
 #else
- #define _WIN32_WINNT 0x0500
+#define _WIN32_WINNT 0x0500
 #endif
 #endif
 
 #define _ATL_APARTMENT_THREADED
 
-
 //#include <vld.h>
 #ifdef _CRTDBG_MAP_ALLOC
- #include <crtdbg.h>
+#include <crtdbg.h>
 #endif
 
-#if(_WIN32_WINNT < 0x0500) // for Win32++ and old compilers
- #define WM_MENURBUTTONUP                0x0122
- #define WM_UNINITMENUPOPUP              0x0125
+#if (_WIN32_WINNT < 0x0500) // for Win32++ and old compilers
+#define WM_MENURBUTTONUP 0x0122
+#define WM_UNINITMENUPOPUP 0x0125
 #endif
 #include "main.h"
-
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
