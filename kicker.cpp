@@ -77,14 +77,18 @@ void Kicker::SetDefaults(bool fromMouseClick)
 
   const HRESULT hr = LoadValue("DefaultProps\\Kicker", "Surface", m_d.m_szSurface);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_szSurface.clear();
+  }
 
   m_d.m_kickertype = fromMouseClick ? (KickerType)LoadValueIntWithDefault("DefaultProps\\Kicker",
                                                                           "KickerType", KickerHole)
                                     : KickerHole;
   //legacy handling:
   if (m_d.m_kickertype > KickerCup2)
+  {
     m_d.m_kickertype = KickerInvisible;
+  }
 
   m_d.m_fallThrough = fromMouseClick
                           ? LoadValueBoolWithDefault("DefaultProps\\Kicker", "FallThrough", false)
@@ -173,7 +177,9 @@ void Kicker::GetTimers(vector<HitTimer*>& pvht)
   m_phittimer = pht;
 
   if (m_d.m_tdr.m_TimerEnabled)
+  {
     pvht.push_back(pht);
+  }
 }
 
 //
@@ -253,7 +259,9 @@ void Kicker::RenderStatic()
 void Kicker::ExportMesh(ObjLoader& loader)
 {
   if (m_d.m_kickertype == KickerInvisible)
+  {
     return;
+  }
 
   char name[sizeof(m_wzName) / sizeof(m_wzName[0])];
   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
@@ -402,7 +410,9 @@ void Kicker::GenerateMesh(Vertex3D_NoTex2* const buf)
 void Kicker::RenderSetup()
 {
   if (m_d.m_kickertype == KickerInvisible)
+  {
     return;
+  }
 
   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) *
                  m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
@@ -420,11 +430,17 @@ void Kicker::RenderSetup()
     float rad = m_d.m_radius;
 
     if (m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb)
+    {
       rad = m_d.m_radius * 0.88f;
+    }
     else if (m_d.m_kickertype == KickerCup2)
+    {
       rad = m_d.m_radius * 0.87f;
+    }
     else if (m_d.m_kickertype != KickerCup && m_d.m_kickertype != KickerWilliams)
+    {
       rad = m_d.m_radius * 0.82f;
+    }
 
     for (unsigned int i = 0; i < kickerPlateNumVertices; i++)
     {
@@ -558,7 +574,9 @@ void Kicker::RenderDynamic()
   RenderDevice* const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
   if (m_ptable->m_reflectionEnabled)
+  {
     return;
+  }
 
   if (m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole ||
       m_d.m_kickertype == KickerHoleSimple || m_d.m_kickertype == KickerWilliams ||
@@ -567,9 +585,13 @@ void Kicker::RenderDynamic()
     pd3dDevice->SetRenderStateDepthBias(0.0f);
     pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
     if (m_d.m_kickertype != KickerHoleSimple)
+    {
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+    }
     else
+    {
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+    }
 
     const Material* const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
@@ -594,8 +616,10 @@ void Kicker::RenderDynamic()
       pd3dDevice->basicShader->SetTexture(SHADER_Texture0, &m_texture, false);
     }
     else
+    {
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture,
                                                  mat->m_bIsMetal);
+    }
 
     g_pplayer->m_pin3d.EnableAlphaBlend(false);
     pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
@@ -715,7 +739,9 @@ bool Kicker::LoadToken(const int id, BiffReader* const pbr)
       pbr->GetInt(&m_d.m_kickertype);
       //legacy handling:
       if (m_d.m_kickertype > KickerCup2)
+      {
         m_d.m_kickertype = KickerInvisible;
+      }
       break;
     }
     case FID(SURF):
@@ -752,7 +778,9 @@ STDMETHODIMP Kicker::InterfaceSupportsErrorInfo(REFIID riid)
   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
   {
     if (InlineIsEqualGUID(*arr[i], riid))
+    {
       return S_OK;
+    }
   }
   return S_FALSE;
 }
@@ -837,7 +865,9 @@ STDMETHODIMP Kicker::DestroyBall(int* pVal)
   }
 
   if (pVal)
+  {
     *pVal = cnt;
+  }
 
   return S_OK;
 }
@@ -864,9 +894,10 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
     }
     float anglerad = ANGTORAD(angle); // yaw angle, zero is along -Y axis
 
-    if (fabsf(inclination) >
-        (float)(M_PI / 2.0)) // radians or degrees?  if greater PI/2 assume degrees
+    if (fabsf(inclination) > (float)(M_PI / 2.0))
+    { // radians or degrees?  if greater PI/2 assume degrees
       inclination *= (float)(M_PI / 180.0); // convert to radians
+    }
 
     float scatterAngle =
         (m_d.m_scatter < 0.0f) ? c_hardScatter : ANGTORAD(m_d.m_scatter); // if < 0 use global value
@@ -882,7 +913,9 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 
     const float speedz = sinf(inclination) * speed;
     if (speedz > 0.0f)
+    {
       speed *= cosf(inclination);
+    }
 
     m_phitkickercircle->m_pball->m_angularmomentum.SetZero();
     m_phitkickercircle->m_pball->m_coll.m_hitdistance = 0.0f;
@@ -987,7 +1020,9 @@ STDMETHODIMP Kicker::put_Enabled(VARIANT_BOOL newVal)
   STARTUNDO
   m_d.m_enabled = VBTOb(newVal);
   if (m_phitkickercircle)
+  {
     m_phitkickercircle->m_enabled = m_d.m_enabled;
+  }
   STOPUNDO
 
   return S_OK;
@@ -1117,7 +1152,9 @@ STDMETHODIMP Kicker::put_DrawStyle(KickerType newVal)
   m_d.m_kickertype = newVal;
   //legacy handling:
   if (m_d.m_kickertype > KickerCup2)
+  {
     m_d.m_kickertype = KickerInvisible;
+  }
   STOPUNDO
 
   return S_OK;
@@ -1294,7 +1331,9 @@ void KickerHitCircle::DoCollide(Ball* const pball,
                                 const bool newBall)
 {
   if (m_pball)
+  {
     return; // a previous ball already in kicker
+  }
 
   const int i =
       FindIndexOf(*(pball->m_d.m_vpVolObjs), m_obj); // check if kicker in ball's volume set
@@ -1302,7 +1341,9 @@ void KickerHitCircle::DoCollide(Ball* const pball,
   if (newBall || ((!hitbit) == (i < 0))) // New or (Hit && !Vol || UnHit && Vol)
   {
     if (m_pkicker->m_d.m_legacyMode || newBall)
+    {
       pball->m_d.m_pos += STATICTIME * pball->m_d.m_vel; // move ball slightly forward
+    }
 
     if (i < 0) // entering Kickers volume
     {
@@ -1323,7 +1364,9 @@ void KickerHitCircle::DoCollide(Ball* const pball,
         // this hack seems to work only if the kicker is on the playfield, a kicker attached to a wall has still problems
         // because the friction calculation for a wall is also different
         if (pball->m_d.m_vel.LengthSquared() < (float)(0.2 * 0.2))
+        {
           pball->m_d.m_vel = pball->m_oldVel;
+        }
 
         pball->m_oldVel = pball->m_d.m_vel;
       }
@@ -1337,13 +1380,17 @@ void KickerHitCircle::DoCollide(Ball* const pball,
           m_pball = pball;
           m_lastCapturedBall = pball;
           if (pball == g_pplayer->m_pactiveballBC)
+          {
             g_pplayer->m_pactiveballBC = nullptr;
+          }
         }
 
         // Don't fire the hit event if the ball was just created
         // Fire the event before changing ball attributes, so scripters can get a useful ball state
         if (!newBall)
+        {
           m_pkicker->FireGroupEvent(DISPID_HitEvents_Hit);
+        }
 
         if (pball->m_d.m_frozen ||
             m_pkicker->m_d.m_fallThrough) // script may have unfrozen the ball
@@ -1361,12 +1408,18 @@ void KickerHitCircle::DoCollide(Ball* const pball,
           pball->m_dynamic = 0;
 #endif
           if (m_pkicker->m_d.m_fallThrough)
+          {
             pball->m_d.m_pos.z = m_hitBBox.zlow - pball->m_d.m_radius - 5.0f;
+          }
           else
+          {
             pball->m_d.m_pos.z = m_hitBBox.zlow + pball->m_d.m_radius /**pball->m_radius/radius*/;
+          }
         }
         else
+        {
           m_pball = nullptr; // make sure
+        }
       }
     }
     else // exiting kickers volume

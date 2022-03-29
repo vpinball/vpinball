@@ -100,7 +100,9 @@ VPinball::VPinball()
   m_table_played_via_SelectTableOnStart = false;
   m_logicalNumberOfProcessors = -1;
   for (unsigned int i = 0; i < MAX_CUSTOM_PARAM_INDEX; ++i)
+  {
     m_customParameters[i] = nullptr;
+  }
 
   m_mouseCursorPosition.x = 0.0f;
   m_mouseCursorPosition.y = 0.0f;
@@ -153,7 +155,9 @@ VPinball::~VPinball()
   FreeLibrary(m_scintillaDll);
 
   if (m_profile_file)
+  {
     fclose(m_profile_file);
+  }
 }
 
 ///<summary>
@@ -172,7 +176,9 @@ void VPinball::GetMyPath()
   while (szEnd > szPath)
   {
     if (*szEnd == '\\')
+    {
       break;
+    }
     szEnd--;
   }
 
@@ -268,7 +274,9 @@ void VPinball::InitRegValues()
     SetAutoSaveMinutes(m_autosaveTime);
   }
   else
+  {
     m_autosaveTime = -1;
+  }
 
   m_securitylevel = LoadValueIntWithDefault("Player", "SecurityLevel", DEFAULT_SECURITY_LEVEL);
 
@@ -280,7 +288,9 @@ void VPinball::InitRegValues()
   m_fillColor = LoadValueIntWithDefault("Editor", "FillColor", 0x00B1CFB3);
 
   if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)
+  {
     m_securitylevel = eSecurityNoControls;
+  }
 
   m_recentTableList.clear();
   // get the list of the last n loaded tables
@@ -288,9 +298,13 @@ void VPinball::InitRegValues()
   {
     string szTableName;
     if (LoadValue("RecentDir", "TableFileName" + std::to_string(i), szTableName) == S_OK)
+    {
       m_recentTableList.push_back(szTableName);
+    }
     else
+    {
       break;
+    }
   }
 
   m_convertToUnit = LoadValueIntWithDefault("Editor", "Units", 0);
@@ -304,12 +318,18 @@ void VPinball::AddMDITable(PinTableMDI* mdiTable)
 void VPinball::SetClipboard(vector<IStream*>* const pvstm)
 {
   for (size_t i = 0; i < m_vstmclipboard.size(); i++)
+  {
     m_vstmclipboard[i]->Release();
+  }
   m_vstmclipboard.clear();
 
   if (pvstm)
+  {
     for (size_t i = 0; i < pvstm->size(); i++)
+    {
       m_vstmclipboard.push_back((*pvstm)[i]);
+    }
+  }
 }
 
 void VPinball::SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName)
@@ -341,12 +361,16 @@ bool VPinball::OpenFileDialog(
                       OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags,
                       fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy
   if (!windowTitle.empty())
+  {
     fileDlg.SetTitle(windowTitle.c_str());
+  }
   if (fileDlg.DoModal(*this) == IDOK)
   {
     int pos = 0;
     while (pos != -1)
+    {
       filename.emplace_back(fileDlg.GetNextPathName(pos));
+    }
 
     return true;
   }
@@ -371,12 +395,16 @@ bool VPinball::SaveFileDialog(
                       OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags,
                       fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy
   if (!windowTitle.empty())
+  {
     fileDlg.SetTitle(windowTitle.c_str());
+  }
   if (fileDlg.DoModal(*this) == IDOK)
   {
     int pos = 0;
     while (pos != -1)
+    {
       filename.emplace_back(fileDlg.GetNextPathName(pos));
+    }
 
     return true;
   }
@@ -403,7 +431,9 @@ CDockProperty* VPinball::GetDefaultPropertiesDocker()
 CDockProperty* VPinball::GetPropertiesDocker()
 {
   if (m_propertyDialog == nullptr || !m_dockProperties->IsWindow())
+  {
     return GetDefaultPropertiesDocker();
+  }
 
   return m_dockProperties;
 }
@@ -422,7 +452,9 @@ CDockToolbar* VPinball::GetDefaultToolbarDocker()
 CDockToolbar* VPinball::GetToolbarDocker()
 {
   if (m_dockToolbar == nullptr || !m_dockToolbar->IsWindow())
+  {
     return GetDefaultToolbarDocker();
+  }
   return m_dockToolbar;
 }
 
@@ -433,7 +465,9 @@ void VPinball::ResetAllDockers()
   DeleteSubKey("Editor\\Dock Windows");
   CreateDocker();
   if (createNotes)
+  {
     GetDefaultNotesDocker();
+  }
 }
 
 CDockNotes* VPinball::GetDefaultNotesDocker()
@@ -477,7 +511,9 @@ CDockLayers* VPinball::GetDefaultLayersDocker()
 CDockLayers* VPinball::GetLayersDocker()
 {
   if (m_dockLayers == nullptr || !m_dockLayers->IsWindow())
+  {
     return GetDefaultLayersDocker();
+  }
   return m_dockLayers;
 }
 
@@ -552,10 +588,14 @@ float VPinball::ConvertToUnit(const float value) const
 void VPinball::SetPropSel(VectorProtected<ISelect>& pvsel)
 {
   if (m_propertyDialog && m_propertyDialog->IsWindow())
+  {
     m_propertyDialog->UpdateTabs(pvsel);
+  }
   CComObject<PinTable>* const pt = GetActiveTable();
   if (pt)
+  {
     pt->SetFocus();
+  }
 }
 
 CMenu VPinball::GetMainMenu(int id)
@@ -594,7 +634,9 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
     const CMenu mainMenu = GetMenu();
     // mark selected table as checked, all others as unchecked
     for (unsigned int i = OPEN_MDI_TABLE_IDM; i <= LAST_MDI_TABLE_IDM; ++i)
+    {
       mainMenu.CheckMenuItem(i, MF_BYCOMMAND | ((i == code) ? MF_CHECKED : MF_UNCHECKED));
+    }
   }
 
   switch (code)
@@ -644,7 +686,9 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
     {
       CComObject<PinTable>* const ptCur = GetActiveTable();
       if (ptCur)
+      {
         ptCur->LockElements();
+      }
       return true;
     }
     case ID_EDIT_DRAWINGORDER_HIT:
@@ -731,7 +775,9 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
     {
       CComObject<PinTable>* const ptCur = GetActiveTable();
       if (ptCur)
+      {
         CloseTable(ptCur);
+      }
       return true;
     }
     case IDC_COPY:
@@ -753,35 +799,45 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
     {
       CComObject<PinTable>* const ptCur = GetActiveTable();
       if (ptCur)
+      {
         ptCur->Undo();
+      }
       return true;
     }
     case ID_FILE_EXPORT_BLUEPRINT:
     {
       CComObject<PinTable>* const ptCur = GetActiveTable();
       if (ptCur)
+      {
         ptCur->ExportBlueprint();
+      }
       return true;
     }
     case ID_EXPORT_TABLEMESH:
     {
       CComObject<PinTable>* const ptCur = GetActiveTable();
       if (ptCur)
+      {
         ptCur->ExportTableMesh();
+      }
       return true;
     }
     case ID_IMPORT_BACKDROPPOV:
     {
       CComObject<PinTable>* const ptCur = GetActiveTable();
       if (ptCur)
+      {
         ptCur->ImportBackdropPOV(string());
+      }
       return true;
     }
     case ID_EXPORT_BACKDROPPOV:
     {
       CComObject<PinTable>* const ptCur = GetActiveTable();
       if (ptCur)
+      {
         ptCur->ExportBackdropPOV(string());
+      }
       return true;
     }
     case ID_FILE_EXIT:
@@ -807,7 +863,9 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
       // force a screen refresh (it an active table is loaded)
       CComObject<PinTable>* const ptCur = GetActiveTable();
       if (ptCur)
+      {
         ptCur->SetDirtyDraw();
+      }
       return true;
     }
     case ID_EDIT_VIDEOOPTIONS:
@@ -819,7 +877,9 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
     {
       CComObject<PinTable>* const ptCur = GetActiveTable();
       if (ptCur)
+      {
         m_tableInfoDialog.DoModal(GetHwnd());
+      }
       return true;
     }
     case IDM_IMAGE_EDITOR:
@@ -827,7 +887,9 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
     {
       CComObject<PinTable>* const ptCur = GetActiveTable();
       if (ptCur)
+      {
         ShowSubDialog(m_imageMngDlg, true);
+      }
       return true;
     }
     case IDM_SOUND_EDITOR:
@@ -835,7 +897,9 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
     {
       CComObject<PinTable>* const ptCur = GetActiveTable();
       if (ptCur)
+      {
         ShowSubDialog(m_soundMngDlg, true);
+      }
       return true;
     }
     case IDM_MATERIAL_EDITOR:
@@ -843,23 +907,31 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
     {
       CComObject<PinTable>* const ptCur = GetActiveTable();
       if (ptCur)
+      {
         ShowSubDialog(m_materialDialog, true);
+      }
       return true;
     }
     case ID_TABLE_NOTES:
     {
       if (GetNotesDocker() == nullptr || !GetNotesDocker()->IsWindow())
+      {
         GetDefaultNotesDocker();
+      }
       else
+      {
         GetNotesDocker()->ShowWindow();
+      }
       return true;
     }
     case ID_TABLE_FONTMANAGER:
     {
       CComObject<PinTable>* const ptCur = GetActiveTable();
       if (ptCur)
+      {
         /*const DWORD foo =*/DialogBoxParam(theInstance, MAKEINTRESOURCE(IDD_FONTDIALOG), GetHwnd(),
                                             FontManagerProc, (size_t)ptCur);
+      }
       return true;
     }
     case ID_TABLE_DIMENSIONMANAGER:
@@ -872,7 +944,9 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
     {
       CComObject<PinTable>* const ptCur = GetActiveTable();
       if (ptCur)
+      {
         ShowSubDialog(m_collectionMngDlg, true);
+      }
       return true;
     }
     case ID_PREFERENCES_SECURITYOPTIONS:
@@ -921,21 +995,27 @@ void VPinball::ReInitSound()
   {
     const PinTable* const ptT = m_vtable[i];
     for (size_t j = 0; j < ptT->m_vsound.size(); j++)
+    {
       ptT->m_vsound[j]->UnInitialize();
+    }
   }
   m_ps.ReInitPinDirectSound(GetHwnd());
   for (size_t i = 0; i < m_vtable.size(); i++)
   {
     const PinTable* const ptT = m_vtable[i];
     for (size_t j = 0; j < ptT->m_vsound.size(); j++)
+    {
       ptT->m_vsound[j]->ReInitialize();
+    }
   }
 }
 
 void VPinball::ToggleToolbar()
 {
   if (m_toolbarDialog)
+  {
     m_toolbarDialog->EnableButtons();
+  }
 }
 
 void VPinball::DoPlay(const bool _cameraMode)
@@ -945,7 +1025,9 @@ void VPinball::DoPlay(const bool _cameraMode)
   NumVideoBytes = 0;
   CComObject<PinTable>* const ptCur = GetActiveTable();
   if (ptCur)
+  {
     ptCur->Play(_cameraMode);
+  }
 }
 
 bool VPinball::LoadFile(const bool updateEditor)
@@ -955,7 +1037,9 @@ bool VPinball::LoadFile(const bool updateEditor)
 
   HRESULT hr = LoadValue("RecentDir", "LoadDir", szInitialDir);
   if (hr != S_OK)
+  {
     szInitialDir = "c:\\Visual Pinball\\Tables\\";
+  }
 
   if (!OpenFileDialog(
           szInitialDir, szFileName,
@@ -963,11 +1047,15 @@ bool VPinball::LoadFile(const bool updateEditor)
           0,
           !updateEditor ? string("Select a Table to Play or press Cancel to enter Editor-Mode")
                         : string()))
+  {
     return false;
+  }
 
   const size_t index = szFileName[0].find_last_of('\\');
   if (index != std::string::npos)
+  {
     hr = SaveValue("RecentDir", "LoadDir", szFileName[0].substr(0, index));
+  }
 
   LoadFileName(szFileName[0], updateEditor);
 
@@ -983,7 +1071,9 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
   }
 
   if (firstRun)
+  {
     OnInitialUpdate();
+  }
 
   PathFromFilename(szFileName, m_currentTablePath);
   CloseAllDialogs();
@@ -1013,35 +1103,47 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
 
     // auto-import POV settings, if it exists...
     string szFileNameAuto = m_currentTablePath + ppt->m_szTitle + ".pov";
-    if (Exists(szFileNameAuto)) // We check if there is a matching table pov settings file first
+    if (Exists(szFileNameAuto))
+    { // We check if there is a matching table pov settings file first
       ppt->ImportBackdropPOV(szFileNameAuto);
+    }
     else // Otherwise, we seek for autopov settings
     {
       szFileNameAuto = m_currentTablePath + "autopov.pov";
       if (Exists(szFileNameAuto))
+      {
         ppt->ImportBackdropPOV(szFileNameAuto);
+      }
     }
 
     // auto-import VBS table script, if it exists...
     szFileNameAuto = m_currentTablePath + ppt->m_szTitle + ".vbs";
-    if (Exists(szFileNameAuto)) // We check if there is a matching table vbs first
+    if (Exists(szFileNameAuto))
+    { // We check if there is a matching table vbs first
       ppt->m_pcv->LoadFromFile(szFileNameAuto);
+    }
     else // Otherwise we seek in the Scripts folder
     {
       szFileNameAuto = m_szMyPath + "Scripts\\" + ppt->m_szTitle + ".vbs";
       if (Exists(szFileNameAuto))
+      {
         ppt->m_pcv->LoadFromFile(szFileNameAuto);
+      }
     }
 
     // auto-import VPP settings, if it exists...
     szFileNameAuto = m_currentTablePath + ppt->m_szTitle + ".vpp";
-    if (Exists(szFileNameAuto)) // We check if there is a matching table vpp settings file first
+    if (Exists(szFileNameAuto))
+    { // We check if there is a matching table vpp settings file first
       ppt->ImportVPP(szFileNameAuto);
+    }
     else // Otherwise, we seek for autovpp settings
     {
       szFileNameAuto = m_currentTablePath + "autovpp.vpp";
       if (Exists(szFileNameAuto))
+      {
         ppt->ImportVPP(szFileNameAuto);
+      }
     }
 
     // get the load path from the filename
@@ -1061,7 +1163,9 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
       GetLayersListDialog()->ExpandLayers();
       ToggleToolbar();
       if (m_dockNotes != nullptr)
+      {
         m_dockNotes->Enable();
+      }
 
       SetFocus();
     }
@@ -1074,7 +1178,9 @@ CComObject<PinTable>* VPinball::GetActiveTable()
 {
   PinTableMDI* const mdiTable = (PinTableMDI*)GetActiveMDIChild();
   if (mdiTable && !m_unloadingTable)
+  {
     return (CComObject<PinTable>*)mdiTable->GetTable();
+  }
   return nullptr;
 }
 
@@ -1083,7 +1189,9 @@ bool VPinball::CanClose()
   while (m_vtable.size())
   {
     if (!m_vtable[0]->GetMDITable()->CanClose())
+    {
       return false;
+    }
 
     CloseTable(m_vtable[0]);
   }
@@ -1102,9 +1210,13 @@ void VPinball::CloseTable(const PinTable* const ppt)
   {
     ToggleToolbar();
     if (m_propertyDialog && m_propertyDialog->IsWindow())
+    {
       m_propertyDialog->DeleteAllTabs();
+    }
     if (m_notesDialog && m_notesDialog->IsWindow())
+    {
       m_notesDialog->Disable();
+    }
   }
 }
 
@@ -1220,8 +1332,10 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
 
     for (const std::string& tableName : m_recentTableList)
     {
-      if (tableName != newList[0]) // does this file name aready exist in the list?
+      if (tableName != newList[0])
+      { // does this file name aready exist in the list?
         newList.push_back(tableName);
+      }
     }
 
     m_recentTableList.clear();
@@ -1238,7 +1352,9 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
       SaveValue("RecentDir", szRegName, tableName);
 
       if (++i == LAST_OPENED_TABLE_COUNT)
+      {
         break;
+      }
     }
   }
 
@@ -1251,7 +1367,9 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
 
     // delete all the recent file IDM's and the separator from this menu
     for (UINT i = RECENT_FIRST_MENU_IDM; i <= RECENT_FIRST_MENU_IDM + (UINT)old_count; i++)
+    {
       menuFile.DeleteMenu(i, MF_BYCOMMAND);
+    }
 
     // get the number of entries in the file menu
     // insert the items before the EXIT menu (assuming it is the last entry)
@@ -1303,25 +1421,43 @@ bool VPinball::processKeyInputForDialogs(MSG* pmsg)
   {
     //const int keyPressed = LOWORD(pmsg->wParam);
     if (m_materialDialog.IsWindow())
+    {
       consumed = !!m_materialDialog.IsDialogMessage(*pmsg);
+    }
     if (!consumed && m_imageMngDlg.IsWindow())
+    {
       consumed = !!m_imageMngDlg.IsDialogMessage(*pmsg);
+    }
     if (!consumed && m_soundMngDlg.IsWindow())
+    {
       consumed = !!m_soundMngDlg.IsDialogMessage(*pmsg);
+    }
     if (!consumed && m_collectionMngDlg.IsWindow())
+    {
       consumed = !!m_collectionMngDlg.IsDialogMessage(*pmsg);
+    }
     if (!consumed && m_dimensionDialog.IsWindow())
+    {
       consumed = !!m_dimensionDialog.IsDialogMessage(*pmsg);
+    }
 
     const HWND activeHwnd = ::GetFocus();
     if (!consumed && m_toolbarDialog && (activeHwnd == m_toolbarDialog->GetHwnd()))
+    {
       consumed = m_toolbarDialog->PreTranslateMessage(pmsg);
+    }
     if (!consumed && m_propertyDialog)
+    {
       consumed = m_propertyDialog->PreTranslateMessage(pmsg);
+    }
     if (!consumed && m_layersListDialog)
+    {
       consumed = m_layersListDialog->PreTranslateMessage(pmsg);
+    }
     if (!consumed && m_notesDialog && activeHwnd == m_notesDialog->GetHwnd())
+    {
       consumed = m_notesDialog->PreTranslateMessage(pmsg);
+    }
   }
   return consumed;
 }
@@ -1330,7 +1466,9 @@ static int GetZOrder(HWND hWnd)
 {
   int z = 0;
   for (HWND h = hWnd; h != nullptr; h = GetWindow(h, GW_HWNDPREV))
+  {
     z++;
+  }
   return z;
 }
 
@@ -1346,18 +1484,26 @@ bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
       consumed = m_pcv->PreTranslateMessage(pmsg);
 
       if (m_pcv->m_hwndFind && ::IsDialogMessage(m_pcv->m_hwndFind, pmsg))
+      {
         consumed = true;
+      }
     }
 
     if (!consumed)
+    {
       // check/process events for other dialogs (material/sound/image manager, toolbar, properties)
       consumed = processKeyInputForDialogs(pmsg);
+    }
 
     if (!consumed)
+    {
       consumed = !!TranslateAccelerator(GetHwnd(), g_haccel, pmsg);
+    }
 
     if (!consumed)
+    {
       TranslateMessage(pmsg);
+    }
   }
   else
   {
@@ -1365,7 +1511,9 @@ bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
     if (g_pplayer->m_debugMode)
     {
       if (g_pplayer->m_debuggerDialog.IsWindow())
+      {
         consumed = !!g_pplayer->m_debuggerDialog.IsSubDialogMessage(*pmsg);
+      }
     }
   }
 
@@ -1380,13 +1528,17 @@ void VPinball::MainMsgLoop()
     if (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))
     {
       if (msg.message == WM_QUIT)
+      {
         break;
+      }
 
       try
       {
         const bool consumed = ApcHost_OnTranslateMessage(&msg);
         if (!consumed)
+        {
           DispatchMessage(&msg);
+        }
       }
       catch (...) // something failed on load/init
       {
@@ -1399,7 +1551,9 @@ void VPinball::MainMsgLoop()
     else
     {
       if (g_pplayer && !g_pplayer->m_pause)
+      {
         g_pplayer->Render(); // always render on idle
+      }
       else
       {
         // if player has been closed in the meantime, check if we should display the file open dialog again to select/play the next table
@@ -1408,11 +1562,15 @@ void VPinball::MainMsgLoop()
           // first close the current table
           CComObject<PinTable>* const pt = GetActiveTable();
           if (pt)
+          {
             CloseTable(pt);
+          }
           // then select the new one, and if one was selected, play it
           m_table_played_via_SelectTableOnStart = LoadFile(false);
           if (m_table_played_via_SelectTableOnStart)
+          {
             DoPlay(false);
+          }
         }
 
         WaitMessage(); // otherwise wait for input
@@ -1424,7 +1582,9 @@ void VPinball::MainMsgLoop()
 STDMETHODIMP VPinball::QueryInterface(REFIID iid, void** ppvObjOut)
 {
   if (!ppvObjOut)
+  {
     return E_INVALIDARG;
+  }
 
   *ppvObjOut = nullptr;
 
@@ -1490,11 +1650,17 @@ void VPinball::OnClose()
   m_closing = true;
 
   if (ptable)
+  {
     while (ptable->m_savingActive)
+    {
       Sleep(THREADS_PAUSE);
+    }
+  }
 
   if (g_pplayer)
+  {
     g_pplayer->SendMessage(WM_CLOSE, 0, 0);
+  }
 
   const bool canClose = CanClose();
   if (canClose)
@@ -1530,7 +1696,9 @@ void VPinball::ShowSubDialog(CDialog& dlg, const bool show)
     dlg.ShowWindow(show ? SW_SHOWNORMAL : SW_HIDE);
   }
   else
+  {
     dlg.SetForegroundWindow();
+  }
 }
 
 int VPinball::OnCreate(CREATESTRUCT& cs)
@@ -1573,7 +1741,9 @@ LRESULT VPinball::OnPaint(UINT msg, WPARAM wparam, LPARAM lparam)
 void VPinball::OnInitialUpdate()
 {
   if (!firstRun)
+  {
     return;
+  }
 
   wintimer_init(); // calibrate the timer routines
 
@@ -1620,11 +1790,17 @@ void VPinball::OnInitialUpdate()
     winpl.rcNormalPosition.bottom = bottom;
 
     if (m_open_minimized)
+    {
       winpl.showCmd |= SW_MINIMIZE;
+    }
     else if (hrmax == S_OK && maximized)
+    {
       winpl.showCmd |= SW_MAXIMIZE;
+    }
     else
+    {
       winpl.showCmd |= SW_SHOWNORMAL;
+    }
 
     SetWindowPlacement(winpl);
   }
@@ -1657,7 +1833,9 @@ BOOL VPinball::OnCommand(WPARAM wparam, LPARAM lparam)
   {
     const auto mdiTable = GetActiveMDIChild();
     if (mdiTable)
+    {
       mdiTable->SendMessage(WM_COMMAND, wparam, lparam);
+    }
     return FALSE;
   }
   return TRUE;
@@ -1672,10 +1850,14 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       if (wParam == VK_ESCAPE)
       {
         if (m_ToolCur != IDC_SELECT)
+        {
           m_ToolCur = IDC_SELECT;
+        }
         CComObject<PinTable>* const ptCur = GetActiveTable();
         if (ptCur)
+        {
           ptCur->SetMouseCursor();
+        }
       }
       return FinalWindowProc(uMsg, wParam, lParam);
     }
@@ -1683,7 +1865,9 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
       CComObject<PinTable>* const ptCur = GetActiveTable();
       if (!ptCur)
+      {
         break;
+      }
 
       switch (wParam)
       {
@@ -1721,9 +1905,13 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 LRESULT VPinball::OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam)
 {
   if (m_dockLayers != nullptr)
+  {
     m_dockLayers->GetContainLayers()->GetLayersDialog()->UpdateLayerList();
+  }
   if (m_dockNotes != nullptr)
+  {
     m_dockNotes->Refresh();
+  }
   return CMDIFrameT::OnMDIActivated(msg, wparam, lparam);
 }
 
@@ -1784,7 +1972,9 @@ Win32xx::CDocker* VPinball::NewDockerFromID(int id)
 STDMETHODIMP VPinball::PlaySound(BSTR bstr)
 {
   if (g_pplayer)
+  {
     g_pplayer->m_ptable->PlaySound(bstr, 0, 1.f, 0.f, 0.f, 0, VARIANT_FALSE, VARIANT_TRUE, 0.f);
+  }
 
   return S_OK;
 }
@@ -1792,7 +1982,9 @@ STDMETHODIMP VPinball::PlaySound(BSTR bstr)
 STDMETHODIMP VPinball::FireKnocker(int Count)
 {
   if (g_pplayer)
+  {
     g_pplayer->m_ptable->FireKnocker(Count);
+  }
 
   return S_OK;
 }
@@ -1800,7 +1992,9 @@ STDMETHODIMP VPinball::FireKnocker(int Count)
 STDMETHODIMP VPinball::QuitPlayer(int CloseType)
 {
   if (g_pplayer)
+  {
     g_pplayer->m_ptable->QuitPlayer(CloseType);
+  }
 
   return S_OK;
 }
@@ -1813,7 +2007,9 @@ void VPinball::Quit()
     g_pplayer->m_closeType = 1;
   }
   else
+  {
     PostMessage(WM_CLOSE, 0, 0);
+  }
 }
 
 int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)
@@ -1834,11 +2030,17 @@ int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOpti
 
   ListView_GetItemText(lpsd->hwndList, nItem2, lpsd->subItemIndex, buf2, sizeof(buf2));
   if (nItem2 == -1 || nItem1 == -1)
+  {
     return 0;
+  }
   if (lpsd->sortUpDown == 1)
+  {
     return (_stricmp(buf1, buf2));
+  }
   else
+  {
     return (_stricmp(buf1, buf2) * -1);
+  }
 }
 
 int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)
@@ -1862,9 +2064,13 @@ int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM 
   sscanf_s(buf2, "%i", &value2);
 
   if (lpsd->sortUpDown == 1)
+  {
     return (value1 - value2);
+  }
   else
+  {
     return (value2 - value1);
+  }
 }
 
 int CALLBACK MyCompProcMemValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)
@@ -1890,22 +2096,36 @@ int CALLBACK MyCompProcMemValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM 
     sscanf_s(i == 0 ? buf1 : buf2, "%s %s", mem1b, sizeof(mem1b), mem1, sizeof(mem1));
     char* const fo = strchr(mem1b, ',');
     if (fo != nullptr)
+    {
       *fo = '.';
+    }
     value[i] = (float)atof(mem1b);
     if (!_stricmp(mem1, "bytes"))
+    {
       ;
+    }
     else if (!_stricmp(mem1, "KB"))
+    {
       value[i] *= (float)1024;
+    }
     else if (!_stricmp(mem1, "MB"))
+    {
       value[i] *= (float)(1024 * 1024);
+    }
     else if (!_stricmp(mem1, "GB"))
+    {
       value[i] *= (float)(1024 * 1024 * 1024);
+    }
   }
 
   if (lpsd->sortUpDown == 1)
+  {
     return (int)(value[0] - value[1]);
+  }
   else
+  {
     return (int)(value[1] - value[0]);
+  }
 }
 
 static constexpr int rgDlgIDFromSecurityLevel[] = {IDC_ACTIVEX0, IDC_ACTIVEX1, IDC_ACTIVEX2,
@@ -1930,7 +2150,9 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
 
       int security = LoadValueIntWithDefault("Player", "SecurityLevel", DEFAULT_SECURITY_LEVEL);
       if (security < 0 || security > 4)
+      {
         security = 0;
+      }
 
       const int buttonid = rgDlgIDFromSecurityLevel[security];
 
@@ -1958,7 +2180,9 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                 const size_t checked = SendMessage(GetDlgItem(hwndDlg, rgDlgIDFromSecurityLevel[i]),
                                                    BM_GETCHECK, 0, 0);
                 if (checked == BST_CHECKED)
+                {
                   SaveValueInt("Player", "SecurityLevel", i);
+                }
               }
 
               const bool hangdetect =
@@ -2040,14 +2264,18 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
               const HRESULT hr = LoadValue("RecentDir", "FontDir", szInitialDir);
               if (hr != S_OK)
+              {
                 szInitialDir = "c:\\Visual Pinball\\Tables\\";
+              }
 
               if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Font Files (*.ttf)\0*.ttf\0",
                                         "ttf", 0))
               {
                 const size_t index = szFileName[0].find_last_of('\\');
                 if (index != std::string::npos)
+                {
                   SaveValue("RecentDir", "FontDir", szFileName[0].substr(0, index));
+                }
 
                 pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), szFileName[0]);
               }
@@ -2173,27 +2401,49 @@ void VPinball::ShowDrawingOrderDialog(bool select)
 void VPinball::CloseAllDialogs()
 {
   if (m_imageMngDlg.IsWindow())
+  {
     m_imageMngDlg.Destroy();
+  }
   if (m_soundMngDlg.IsWindow())
+  {
     m_soundMngDlg.Destroy();
+  }
   if (m_audioOptDialog.IsWindow())
+  {
     m_audioOptDialog.Destroy();
+  }
   if (m_editorOptDialog.IsWindow())
+  {
     m_editorOptDialog.Destroy();
+  }
   if (m_videoOptDialog.IsWindow())
+  {
     m_videoOptDialog.Destroy();
+  }
   if (m_collectionMngDlg.IsWindow())
+  {
     m_collectionMngDlg.Destroy();
+  }
   if (m_physicsOptDialog.IsWindow())
+  {
     m_physicsOptDialog.Destroy();
+  }
   if (m_tableInfoDialog.IsWindow())
+  {
     m_tableInfoDialog.Destroy();
+  }
   if (m_dimensionDialog.IsWindow())
+  {
     m_dimensionDialog.Destroy();
+  }
   if (m_materialDialog.IsWindow())
+  {
     m_materialDialog.Destroy();
+  }
   if (m_aboutDialog.IsWindow())
+  {
     m_aboutDialog.Destroy();
+  }
 }
 
 void VPinball::ToggleBackglassView()
@@ -2210,8 +2460,10 @@ void VPinball::ToggleBackglassView()
 
   CComObject<PinTable>* const ptCur = GetActiveTable();
   if (ptCur)
+  {
     // Set selection to something in the new view (unless hiding table elements)
     ptCur->AddMultiSel((ISelect*)ptCur, false, true, false);
+  }
 
   ToggleToolbar();
 }
@@ -2263,7 +2515,9 @@ void VPinball::SetDefaultPhysics()
     {
       ptCur->BeginUndo();
       for (int i = 0; i < ptCur->m_vmultisel.size(); i++)
+      {
         ptCur->m_vmultisel[i].SetDefaultPhysics(true);
+      }
       ptCur->EndUndo();
     }
   }
@@ -2311,7 +2565,9 @@ void VPinball::AddControlPoint()
 {
   CComObject<PinTable>* const ptCur = GetActiveTable();
   if (ptCur == nullptr)
+  {
     return;
+  }
 
   if (!ptCur->m_vmultisel.empty())
   {
@@ -2356,7 +2612,9 @@ void VPinball::AddSmoothControlPoint()
 {
   CComObject<PinTable>* const ptCur = GetActiveTable();
   if (ptCur == nullptr)
+  {
     return;
+  }
 
   if (!ptCur->m_vmultisel.empty())
   {
@@ -2404,12 +2662,18 @@ void VPinball::SaveTable(const bool saveAs)
   {
     HRESULT hr;
     if (saveAs)
+    {
       hr = ptCur->SaveAs();
+    }
     else
+    {
       hr = ptCur->TableSave();
+    }
 
     if (hr == S_OK)
+    {
       UpdateRecentFileList(ptCur->m_szFileName);
+    }
   }
 }
 
@@ -2433,7 +2697,9 @@ void VPinball::OpenNewTable(size_t tableId)
   GetLayersListDialog()->ExpandLayers();
   ToggleToolbar();
   if (m_dockNotes != nullptr)
+  {
     m_dockNotes->Enable();
+  }
 
   SetFocus();
 }
@@ -2442,7 +2708,9 @@ void VPinball::ProcessDeleteElement()
 {
   CComObject<PinTable>* const ptCur = GetActiveTable();
   if (ptCur)
+  {
     ptCur->OnDelete();
+  }
 }
 
 void VPinball::OpenRecentFile(const size_t menuId)

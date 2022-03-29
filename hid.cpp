@@ -138,7 +138,9 @@ void hid_init()
     HidP_GetCaps(HidParsedData, &Capabilities);
 
     if (HidParsedData)
+    {
       HidD_FreePreparsedData(HidParsedData); //make sure not null, otherwise crash
+    }
 
     HANDLE sReportEvent = CreateEvent(nullptr, 1, 0, nullptr);
 
@@ -230,7 +232,9 @@ void hid_update(const U32 cur_time_msec)
           sKnockStamp = 0;
         }
         else
+        {
           sKnockStamp = cur_time_msec;
+        }
       }
       else
       {

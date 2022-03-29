@@ -92,16 +92,24 @@ public:
   virtual unsigned long long GetMaterialID() const
   {
     if (!m_d.m_baseVisible && m_d.m_capVisible)
+    {
       return m_ptable->GetMaterial(m_d.m_szCapMaterial)->hash();
+    }
     else
+    {
       return 64 - 3; //!! some constant number
+    }
   }
   virtual unsigned long long GetImageID() const
   {
     if (!m_d.m_baseVisible && m_d.m_capVisible)
+    {
       return (unsigned long long)&m_capTexture; //!! meh
+    }
     else
+    {
       return 0;
+    }
   }
 
   virtual ItemTypeEnum HitableGetItemType() const { return eItemBumper; }

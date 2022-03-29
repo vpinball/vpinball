@@ -24,45 +24,79 @@ void BumperVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemBumper))
+    {
       continue;
+    }
     Bumper* const bumper = (Bumper*)m_pvsel->ElementAt(i);
     if (dispid == IDC_MATERIAL_COMBO || dispid == -1)
+    {
       PropertyDialog::UpdateMaterialComboBox(bumper->GetPTable()->GetMaterialList(),
                                              m_capMaterialCombo, bumper->m_d.m_szCapMaterial);
+    }
     if (dispid == IDC_MATERIAL_COMBO2 || dispid == -1)
+    {
       PropertyDialog::UpdateMaterialComboBox(bumper->GetPTable()->GetMaterialList(),
                                              m_bumpBaseMaterialCombo, bumper->m_d.m_szBaseMaterial);
+    }
     if (dispid == IDC_MATERIAL_COMBO3 || dispid == -1)
+    {
       PropertyDialog::UpdateMaterialComboBox(bumper->GetPTable()->GetMaterialList(),
                                              m_skirtMaterialCombo, bumper->m_d.m_szSkirtMaterial);
+    }
     if (dispid == IDC_MATERIAL_COMBO4 || dispid == -1)
+    {
       PropertyDialog::UpdateMaterialComboBox(bumper->GetPTable()->GetMaterialList(),
                                              m_ringMaterialCombo, bumper->m_d.m_szRingMaterial);
+    }
     if (dispid == IDC_BUMPER_RADIUS_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_radiusEdit, bumper->m_d.m_radius);
+    }
     if (dispid == IDC_BUMPER_HEIGHT_SCALE_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_heightScaleEdit, bumper->m_d.m_heightScale);
+    }
     if (dispid == IDC_ORIENTATION_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_orientationEdit, bumper->m_d.m_orientation);
+    }
     if (dispid == IDC_RINGSPEED_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_ringSpeedEdit, bumper->m_d.m_ringSpeed);
+    }
     if (dispid == IDC_RINGDROPOFFSET_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_ringDropOffsetEdit, bumper->m_d.m_ringDropOffset);
+    }
     if (dispid == IDC_CAP_VISIBLE_CHECK || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hCapVisibleCheck, bumper->m_d.m_capVisible);
+    }
     if (dispid == IDC_BASE_VISIBLE_CHECK || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hBaseVisibleCheck, bumper->m_d.m_baseVisible);
+    }
     if (dispid == IDC_RING_VISIBLE || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hRingVisibleCheck, bumper->m_d.m_ringVisible);
+    }
     if (dispid == IDC_SKIRT_VISIBLE || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hSkirtVisibleCheck, bumper->m_d.m_skirtVisible);
+    }
     if (dispid == 902 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_posXEdit, bumper->m_d.m_vCenter.x);
+    }
     if (dispid == 903 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_posYEdit, bumper->m_d.m_vCenter.y);
+    }
     if (dispid == IDC_SURFACE_COMBO || dispid == -1)
+    {
       PropertyDialog::UpdateSurfaceComboBox(bumper->GetPTable(), m_surfaceCombo,
                                             bumper->m_d.m_szSurface);
+    }
     UpdateBaseVisuals(bumper, &bumper->m_d, dispid);
     //only show the first element on multi-select
     break;
@@ -74,7 +108,9 @@ void BumperVisualsProperty::UpdateProperties(const int dispid)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemBumper))
+    {
       continue;
+    }
     Bumper* const bumper = (Bumper*)m_pvsel->ElementAt(i);
     switch (dispid)
     {

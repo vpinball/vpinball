@@ -24,9 +24,13 @@ void WriteProcessName(FILE* f)
   GetModuleFileName(hModule, buffer, MAX_PATH);
   const char* lastSeparatorPos = strrchr(buffer, '\\');
   if (lastSeparatorPos != 0)
+  {
     fprintf(f, "%s", lastSeparatorPos + 1); // +1 -> skip over separator
+  }
   else
+  {
     fprintf(f, "%s", buffer);
+  }
 }
 
 typedef HRESULT(STDAPICALLTYPE* pRGV)(LPOSVERSIONINFOEXW osi);
@@ -35,9 +39,11 @@ static pRGV mRtlGetVersion = nullptr;
 void WriteSystemInfo(FILE* f)
 {
   if (mRtlGetVersion == nullptr)
+  {
     mRtlGetVersion = (pRGV)GetProcAddress(
         GetModuleHandle(TEXT("ntdll")),
         "RtlGetVersion"); // apparently the only really reliable solution to get the OS version (as of Win10 1803)
+  }
 
   DWORD major, minor, build;
   BYTE product;
@@ -74,39 +80,59 @@ void WriteSystemInfo(FILE* f)
   else if (major == 6 && minor == 2)
   {
     if (product != VER_NT_WORKSTATION)
+    {
       fprintf(
           f,
           "Windows Server 2012 (or above)\n"); //!! as otherwise the manifest should be adapted to target 8.1 or 10
+    }
     else
+    {
       fprintf(
           f,
           "Windows 8 (or above)\n"); //!! as otherwise the manifest should be adapted to target 8.1 or 10
+    }
   }
   else if (major == 6 && minor == 1)
   {
     if (product != VER_NT_WORKSTATION)
+    {
       fprintf(f, "Windows Server 2008 R2\n");
+    }
     else
+    {
       fprintf(f, "Windows 7\n");
+    }
   }
   else if (major == 6 && minor == 0)
   {
     if (product != VER_NT_WORKSTATION)
+    {
       fprintf(f, "Windows Server 2008\n");
+    }
     else
+    {
       fprintf(f, "Windows Vista\n");
+    }
   }
   else if (major == 5)
   {
     if (minor == 2)
+    {
       fprintf(f, "Windows Server 2003\n");
+    }
     else if (minor == 1)
+    {
       fprintf(f, "Windows XP\n");
+    }
     else if (minor == 0)
+    {
       fprintf(f, "Windows 2000\n");
+    }
   }
   else
+  {
     fprintf(f, "Unknown Windows version - %lu.%lu (%lu)\n", major, minor, build);
+  }
 }
 
 void WriteProcessorInfo(FILE* f)
@@ -226,7 +252,9 @@ void WriteBlackBoxMessages(FILE* f)
 {
   const int numMessages = rde::BlackBox::GetNumMessages();
   if (numMessages <= 0)
+  {
     return;
+  }
 
   fprintf(f, "BlackBox messages\n=================\n");
   for (int i = 0; i < numMessages; ++i)
@@ -252,7 +280,9 @@ void WriteMemoryStatus(FILE* f, const rde::MemoryStatus& status)
 void WriteRegisters(FILE* f, const EXCEPTION_POINTERS* exceptionPtrs)
 {
   if (IsBadReadPtr(exceptionPtrs, sizeof(EXCEPTION_POINTERS)))
+  {
     return;
+  }
 
   const CONTEXT* ctx = exceptionPtrs->ContextRecord;
   fprintf(f, "Registers\n=========\n");
@@ -292,7 +322,9 @@ LONG __stdcall MyExceptionFilter(EXCEPTION_POINTERS* exceptionPtrs)
 
   // Ignore multiple calls.
   if (s_inFilter != 0)
+  {
     return EXCEPTION_CONTINUE_EXECUTION;
+  }
   s_inFilter = 1;
 
   // Cannot really do much in case of stack overflow, it'll probably bomb soon

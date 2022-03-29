@@ -39,51 +39,91 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemFlasher))
+    {
       continue;
+    }
     Flasher* const flash = (Flasher*)m_pvsel->ElementAt(i);
 
     if (dispid == IDC_DMD || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hUseDMDCheck, flash->m_d.m_isDMD);
+    }
     if (dispid == IDC_DISPLAY_IMAGE_CHECK || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hDisplayInEditorCheck, flash->m_d.m_displayTexture);
+    }
     if (dispid == IDC_ADDBLEND || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hAdditiveBlendCheck, flash->m_d.m_addBlend);
+    }
     if (dispid == IDC_VISIBLE_CHECK || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hVisibleCheck, flash->m_d.m_isVisible);
+    }
     if (dispid == 5 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_posXEdit, flash->m_d.m_vCenter.x);
+    }
     if (dispid == 6 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_posYEdit, flash->m_d.m_vCenter.y);
+    }
     if (dispid == IDC_HEIGHT_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_heightEdit, flash->m_d.m_height);
+    }
     if (dispid == 9 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_rotXEdit, flash->m_d.m_rotX);
+    }
     if (dispid == 2 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_rotYEdit, flash->m_d.m_rotY);
+    }
     if (dispid == 1 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_rotZEdit, flash->m_d.m_rotZ);
+    }
     if (dispid == IDC_FILTERAMOUNT_EDIT || dispid == -1)
+    {
       PropertyDialog::SetIntTextbox(m_filterAmountEdit, flash->m_d.m_filterAmount);
+    }
     if (dispid == IDC_ALPHA_EDIT || dispid == -1)
+    {
       PropertyDialog::SetIntTextbox(m_opacityAmountEdit, flash->m_d.m_alpha);
+    }
     if (dispid == IDC_DEPTH_BIAS || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_depthBiasEdit, flash->m_d.m_depthBias);
+    }
     if (dispid == IDC_MODULATE_VS_ADD || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_modulateEdit, flash->m_d.m_modulate_vs_add);
+    }
     if (dispid == DISPID_Image || dispid == -1)
+    {
       PropertyDialog::UpdateTextureComboBox(flash->GetPTable()->GetImageList(), m_imageACombo,
                                             flash->m_d.m_szImageA);
+    }
     if (dispid == DISPID_Image2 || dispid == -1)
+    {
       PropertyDialog::UpdateTextureComboBox(flash->GetPTable()->GetImageList(), m_imageBCombo,
                                             flash->m_d.m_szImageB);
+    }
     if (dispid == IDC_FLASHER_MODE_COMBO || dispid == -1)
+    {
       PropertyDialog::UpdateComboBox(m_imageAlignList, m_modeCombo,
                                      m_imageAlignList[(int)flash->m_d.m_imagealignment]);
+    }
     if (dispid == IDC_EFFECT_COMBO || dispid == -1)
+    {
       PropertyDialog::UpdateComboBox(m_filterList, m_filterCombo,
                                      m_filterList[flash->m_d.m_filter]);
+    }
     if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
+    {
       m_colorButton.SetColor(flash->m_d.m_color);
+    }
     //only show the first element on multi-select
     break;
   }
@@ -95,7 +135,9 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemFlasher))
+    {
       continue;
+    }
     Flasher* const flash = (Flasher*)m_pvsel->ElementAt(i);
     switch (dispid)
     {
@@ -191,7 +233,9 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
       {
         CComObject<PinTable>* const ptable = g_pvp->GetActiveTable();
         if (ptable == nullptr)
+        {
           break;
+        }
         CHOOSECOLOR cc = m_colorDialog.GetParameters();
         cc.Flags = CC_FULLOPEN | CC_RGBINIT;
         m_colorDialog.SetParameters(cc);

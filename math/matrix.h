@@ -139,8 +139,12 @@ public:
   void MulScalar(const float scalar)
   {
     for (int i = 0; i < 3; ++i)
+    {
       for (int l = 0; l < 3; ++l)
+      {
         m_d[i][l] *= scalar;
+      }
+    }
   }
 
   Matrix3 operator+(const Matrix3& m) const
@@ -195,9 +199,13 @@ public:
   {
     Matrix3 matans;
     for (int i = 0; i < 3; ++i)
+    {
       for (int l = 0; l < 3; ++l)
+      {
         matans.m_d[i][l] = pmat1.m_d[i][0] * pmat2.m_d[0][l] + pmat1.m_d[i][1] * pmat2.m_d[1][l] +
                            pmat1.m_d[i][2] * pmat2.m_d[2][l];
+      }
+    }
     *this = matans;
   }
 
@@ -205,18 +213,26 @@ public:
   {
     Matrix3 matans;
     for (int i = 0; i < 3; ++i)
+    {
       for (int l = 0; l < 3; ++l)
+      {
         matans.m_d[i][l] = (pmat1.m_d[i][0] * pmat2.m_d[0][l] + pmat1.m_d[i][1] * pmat2.m_d[1][l] +
                             pmat1.m_d[i][2] * pmat2.m_d[2][l]) *
                            scalar;
+      }
+    }
     *this = matans;
   }
 
   void AddMatrix(const Matrix3& pmat)
   {
     for (int i = 0; i < 3; ++i)
+    {
       for (int l = 0; l < 3; ++l)
+      {
         m_d[i][l] += pmat.m_d[i][l];
+      }
+    }
   }
 
   void OrthoNormalize()
@@ -383,9 +399,13 @@ public:
     }
 #else
     for (int i = 0; i < 4; ++i)
+    {
       for (int l = 0; l < 4; ++l)
+      {
         matrixT.m[i][l] = (m[0][l] * mult.m[i][0]) + (m[1][l] * mult.m[i][1]) +
                           (m[2][l] * mult.m[i][2]) + (m[3][l] * mult.m[i][3]);
+      }
+    }
 #endif
     result = matrixT;
   }
@@ -411,9 +431,13 @@ public:
     }
 #else
     for (int i = 0; i < 4; ++i)
+    {
       for (int l = 0; l < 4; ++l)
+      {
         matrixT.m[i][l] = (mult.m[0][l] * m[i][0]) + (mult.m[1][l] * m[i][1]) +
                           (mult.m[2][l] * m[i][2]) + (mult.m[3][l] * m[i][3]);
+      }
+    }
 #endif
     return matrixT;
   }

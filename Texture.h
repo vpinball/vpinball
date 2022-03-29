@@ -58,6 +58,7 @@ public:
       const float* const __restrict src = (float*)m_data.data();
       unsigned int o = 0;
       for (int j = 0; j < m_height; ++j)
+      {
         for (int i = 0; i < m_width; ++i, ++o)
         {
           const float r = src[o * 3];
@@ -70,17 +71,21 @@ public:
           ((DWORD*)bits)[o] = (int)clamp(b * n, 0.f, 255.f) | ((int)clamp(g * n, 0.f, 255.f) << 8) |
                               ((int)clamp(r * n, 0.f, 255.f) << 16) | (255u << 24);
         }
+      }
     }
     else
     {
       if (!m_has_alpha)
+      {
         memcpy(bits, m_data.data(), m_height * pitch());
+      }
       else if (
           GetWinVersion() >=
           2600) // For everything newer than Windows XP: use the alpha in the bitmap, thus RGB needs to be premultiplied with alpha, due to how AlphaBlend() works
       {
         unsigned int o = 0;
         for (int j = 0; j < m_height; ++j)
+        {
           for (int i = 0; i < m_width; ++i, ++o)
           {
             const unsigned int src = ((DWORD*)m_data.data())[o];
@@ -98,13 +103,17 @@ public:
                                   (((((src >> 16) & 0xFF) * alpha) >> 8) << 16) | (alpha << 24);
             }
             else
+            {
               ((DWORD*)bits)[o] = src;
+            }
           }
+        }
       }
       else // adds a checkerboard pattern where alpha is set to output bits
       {
         unsigned int o = 0;
         for (int j = 0; j < m_height; ++j)
+        {
           for (int i = 0; i < m_width; ++i, ++o)
           {
             const unsigned int src = ((DWORD*)m_data.data())[o];
@@ -117,8 +126,11 @@ public:
                                   (((((src >> 16) & 0xFF) * alpha + c) >> 8) << 16) | (alpha << 24);
             }
             else
+            {
               ((DWORD*)bits)[o] = src;
+            }
           }
+        }
       }
     }
   }
@@ -152,9 +164,13 @@ public:
   bool IsHDR() const
   {
     if (m_pdsBuffer == nullptr)
+    {
       return false;
+    }
     else
+    {
       return (m_pdsBuffer->m_format == BaseTexture::RGB_FP);
+    }
   }
 
   void SetSizeFrom(const BaseTexture* const tex)
@@ -181,7 +197,7 @@ public:
   BaseTexture* m_pdsBuffer;
 
   HBITMAP
-      m_hbmGDIVersion; // HBitmap at screen depth and converted/visualized alpha so GDI draws it fast
+  m_hbmGDIVersion; // HBitmap at screen depth and converted/visualized alpha so GDI draws it fast
   PinBinary*
       m_ppb; // if this image should be saved as a binary stream, otherwise just LZW compressed from the live bitmap
 

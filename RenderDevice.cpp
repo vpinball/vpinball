@@ -73,9 +73,11 @@ static pRGV mRtlGetVersion = nullptr;
 bool IsWindows10_1803orAbove()
 {
   if (mRtlGetVersion == nullptr)
+  {
     mRtlGetVersion = (pRGV)GetProcAddress(
         GetModuleHandle(TEXT("ntdll")),
         "RtlGetVersion"); // apparently the only really reliable solution to get the OS version (as of Win10 1803)
+  }
 
   if (mRtlGetVersion != nullptr)
   {
@@ -84,12 +86,17 @@ bool IsWindows10_1803orAbove()
     mRtlGetVersion(&osInfo);
 
     if (osInfo.dwMajorVersion > 10)
+    {
       return true;
+    }
     if (osInfo.dwMajorVersion == 10 && osInfo.dwMinorVersion > 0)
+    {
       return true;
-    if (osInfo.dwMajorVersion == 10 && osInfo.dwMinorVersion == 0 &&
-        osInfo.dwBuildNumber >= 17134) // which is the more 'common' 1803
+    }
+    if (osInfo.dwMajorVersion == 10 && osInfo.dwMinorVersion == 0 && osInfo.dwBuildNumber >= 17134)
+    { // which is the more 'common' 1803
       return true;
+    }
   }
 
   return false;
@@ -430,7 +437,9 @@ void APIENTRY GLDebugMessageCallback(GLenum source,
 
   if (type == GL_DEBUG_TYPE_ERROR || type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR ||
       severity == GL_DEBUG_SEVERITY_HIGH)
+  {
     ShowError(msg);
+  }
 }
 #endif
 
@@ -493,7 +502,9 @@ void EnumerateDisplayModes(const int display, std::vector<VideoMode>& modes)
   std::vector<DisplayConfig> displays;
   getDisplayList(displays);
   if (display >= (int)displays.size())
+  {
     return;
+  }
   const int adapter = displays[display].adapter;
 
   IDirect3D9* d3d = Direct3DCreate9(D3D_SDK_VERSION);
@@ -602,9 +613,13 @@ int getDisplayList(std::vector<DisplayConfig>& displays)
 #ifdef ENABLE_SDL
       const char* name = SDL_GetDisplayName(display->second.adapter);
       if (name != nullptr)
+      {
         strncpy_s(display->second.GPU_Name, name, sizeof(display->second.GPU_Name) - 1);
+      }
       else
+      {
         display->second.GPU_Name[0] = '\0'; //!!
+      }
 #endif
       displays.push_back(display->second);
     }
@@ -642,8 +657,12 @@ int getPrimaryDisplay()
   getDisplayList(displays);
   for (std::vector<DisplayConfig>::iterator displayConf = displays.begin();
        displayConf != displays.end(); ++displayConf)
+  {
     if (displayConf->isPrimary)
+    {
       return displayConf->adapter;
+    }
+  }
   return 0;
 }
 
@@ -821,7 +840,9 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
 
   if (((caps.TextureCaps & D3DPTEXTURECAPS_NONPOW2CONDITIONAL) != 0) ||
       ((caps.TextureCaps & D3DPTEXTURECAPS_POW2) != 0))
+  {
     ShowError("D3D device does only support power of 2 textures");
+  }
 
   //if (caps.NumSimultaneousRTs < 2)
   //   ShowError("D3D device doesn't support multiple render targets!");
@@ -853,7 +874,9 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
 
   // limit vsync rate to actual refresh rate, otherwise special handling in renderloop
   if (m_vsync > refreshrate)
+  {
     m_vsync = 0;
+  }
 
   D3DPRESENT_PARAMETERS params;
   params.BackBufferWidth = m_width;
@@ -888,30 +911,38 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
                                          D3DUSAGE_QUERY_SRGBREAD, D3DRTYPE_TEXTURE,
                                          (D3DFORMAT)colorFormat::RGBA32F);
   if (SUCCEEDED(hr))
+  {
     ShowError("D3D device does support D3DFMT_A32B32G32R32F SRGBTexture reads (which leads to "
               "wrong tex colors)");
+  }
   // now the same for our LDR/8bit texture format the other way round
   hr = m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat,
                                  D3DUSAGE_QUERY_SRGBREAD, D3DRTYPE_TEXTURE,
                                  (D3DFORMAT)colorFormat::RGBA8);
   if (!SUCCEEDED(hr))
+  {
     ShowError("D3D device does not support D3DFMT_A8R8G8B8 SRGBTexture reads (which leads to wrong "
               "tex colors)");
+  }
 
   // check if auto generation of mipmaps can be used, otherwise will be done via d3dx
   m_autogen_mipmap = (caps.Caps2 & D3DCAPS2_CANAUTOGENMIPMAP) != 0;
   if (m_autogen_mipmap)
+  {
     m_autogen_mipmap = (m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat,
                                                   textureUsage::AUTOMIPMAP, D3DRTYPE_TEXTURE,
                                                   (D3DFORMAT)colorFormat::RGBA8) == D3D_OK);
+  }
 
-    //m_autogen_mipmap = false; //!! could be done to support correct sRGB/gamma correct generation of mipmaps which is not possible with auto gen mipmap in DX9! at the moment disabled, as the sRGB software path is super slow for similar mipmap filter quality
+  //m_autogen_mipmap = false; //!! could be done to support correct sRGB/gamma correct generation of mipmaps which is not possible with auto gen mipmap in DX9! at the moment disabled, as the sRGB software path is super slow for similar mipmap filter quality
 
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
   if (!NVAPIinit)
   {
     if (NvAPI_Initialize() == NVAPI_OK)
+    {
       NVAPIinit = true;
+    }
   }
 #endif
 
@@ -935,7 +966,9 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
     params.MultiSampleQuality = 0;
   }
   else
+  {
     params.MultiSampleQuality = min(params.MultiSampleQuality, MultiSampleQualityLevels);
+  }
 
   const bool softwareVP = LoadValueBoolWithDefault("Player", "SoftwareVertexProcessing", false);
   const DWORD flags =
@@ -967,7 +1000,9 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
         const int result = GetSystemMetrics(SM_REMOTESESSION);
         const bool isRemoteSession = (result != 0);
         if (isRemoteSession)
+        {
           ShowError("Try disabling exclusive Fullscreen Mode for Remote Desktop Connections");
+        }
       }
       ReportFatalError(hr, __FILE__, __LINE__);
     }
@@ -988,13 +1023,17 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
                               &params, &m_pD3DDevice);
 
     if (FAILED(hr))
+    {
       ReportError("Fatal Error: unable to create D3D device!", hr, __FILE__, __LINE__);
+    }
 
     // Get the display mode so that we can report back the actual refresh rate.
     D3DDISPLAYMODE mode;
     hr = m_pD3DDevice->GetDisplayMode(m_adapter, &mode);
     if (FAILED(hr))
+    {
       ReportError("Fatal Error: unable to get supported video mode list!", hr, __FILE__, __LINE__);
+    }
 
     refreshrate = mode.RefreshRate;
   }
@@ -1005,7 +1044,9 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
   // Retrieve a reference to the back buffer.
   hr = m_pD3DDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_pBackBuffer);
   if (FAILED(hr))
+  {
     ReportError("Fatal Error: unable to create back buffer!", hr, __FILE__, __LINE__);
+  }
 
   const D3DFORMAT render_format =
       (D3DFORMAT)((m_BWrendering == 1)
@@ -1018,7 +1059,9 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
       render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pOffscreenBackBufferTexture,
       nullptr); //!! D3DFMT_A32B32G32R32F?
   if (FAILED(hr))
+  {
     ReportError("Fatal Error: unable to create render buffer!", hr, __FILE__, __LINE__);
+  }
 
   // alloc buffer for screen space fake reflection rendering (optionally 2x2 res for manual super sampling)
   if (m_ssRefl)
@@ -1028,10 +1071,14 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
         D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT,
         &m_pReflectionBufferTexture, nullptr); //!! D3DFMT_A32B32G32R32F?
     if (FAILED(hr))
+    {
       ReportError("Fatal Error: unable to create reflection buffer!", hr, __FILE__, __LINE__);
+    }
   }
   else
+  {
     m_pReflectionBufferTexture = nullptr;
+  }
 
   if (g_pplayer != nullptr)
   {
@@ -1046,7 +1093,9 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
           D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT,
           &m_pMirrorTmpBufferTexture, nullptr); //!! D3DFMT_A32B32G32R32F?
       if (FAILED(hr))
+      {
         ReportError("Fatal Error: unable to create reflection map!", hr, __FILE__, __LINE__);
+      }
     }
   }
   // alloc bloom tex at 1/4 x 1/4 res (allows for simple HQ downscale of clipped input while saving memory)
@@ -1054,7 +1103,9 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
                                    render_format, (D3DPOOL)memoryPool::DEFAULT,
                                    &m_pBloomBufferTexture, nullptr); //!! 8bit enough?
   if (FAILED(hr))
+  {
     ReportError("Fatal Error: unable to create bloom buffer!", hr, __FILE__, __LINE__);
+  }
 
   // temporary buffer for gaussian blur
   hr = m_pD3DDevice->CreateTexture(
@@ -1062,7 +1113,9 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
       (D3DPOOL)memoryPool::DEFAULT, &m_pBloomTmpBufferTexture,
       nullptr); //!! 8bit are enough! //!! but used also for bulb light transmission hack now!
   if (FAILED(hr))
+  {
     ReportError("Fatal Error: unable to create blur buffer!", hr, __FILE__, __LINE__);
+  }
 
   // alloc temporary buffer for stereo3D/post-processing AA/sharpen
   if (m_stereo3D || (m_FXAA > 0) || m_sharpen)
@@ -1072,11 +1125,15 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
         (D3DFORMAT)(video10bit ? colorFormat::RGBA10 : colorFormat::RGBA8),
         (D3DPOOL)memoryPool::DEFAULT, &m_pOffscreenBackBufferTmpTexture, nullptr);
     if (FAILED(hr))
+    {
       ReportError("Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!", hr,
                   __FILE__, __LINE__);
+    }
   }
   else
+  {
     m_pOffscreenBackBufferTmpTexture = nullptr;
+  }
 
   // alloc one more temporary buffer for SMAA
   if (m_FXAA == Quality_SMAA)
@@ -1086,14 +1143,20 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
         (D3DFORMAT)(video10bit ? colorFormat::RGBA10 : colorFormat::RGBA8),
         (D3DPOOL)memoryPool::DEFAULT, &m_pOffscreenBackBufferTmpTexture2, nullptr);
     if (FAILED(hr))
+    {
       ReportError("Fatal Error: unable to create SMAA buffer!", hr, __FILE__, __LINE__);
+    }
   }
   else
+  {
     m_pOffscreenBackBufferTmpTexture2 = nullptr;
+  }
 
   if (video10bit && (m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA))
+  {
     ShowError("SMAA or DLAA post-processing AA should not be combined with 10Bit-output rendering "
               "(will result in visible artifacts)!");
+  }
 
   //
 
@@ -1104,7 +1167,9 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
   CreateVertexDeclaration(VertexTrafoTexelElement, &m_pVertexTrafoTexelDeclaration);
 
   if (m_FXAA == Quality_SMAA)
+  {
     UploadAndSetSMAATextures();
+  }
   else
   {
     m_SMAAareaTexture = 0;
@@ -1165,7 +1230,9 @@ bool RenderDevice::LoadShaders()
 bool RenderDevice::DepthBufferReadBackAvailable()
 {
   if (m_INTZ_support && !m_useNvidiaApi)
+  {
     return true;
+  }
   // fall back to NVIDIAs NVAPI, only handle DepthBuffer ReadBack if API was initialized
   return NVAPIinit;
 }
@@ -1249,16 +1316,24 @@ RenderDevice::~RenderDevice()
 {
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
   if (srcr_cache != nullptr)
+  {
     CHECKNVAPI(NvAPI_D3D9_UnregisterResource(srcr_cache)); //!! meh
+  }
   srcr_cache = nullptr;
   if (srct_cache != nullptr)
+  {
     CHECKNVAPI(NvAPI_D3D9_UnregisterResource(srct_cache)); //!! meh
+  }
   srct_cache = nullptr;
   if (dest_cache != nullptr)
+  {
     CHECKNVAPI(NvAPI_D3D9_UnregisterResource(dest_cache)); //!! meh
+  }
   dest_cache = nullptr;
-  if (NVAPIinit) //!! meh
+  if (NVAPIinit)
+  { //!! meh
     CHECKNVAPI(NvAPI_Unload());
+  }
   NVAPIinit = false;
 #endif
 
@@ -1292,7 +1367,9 @@ RenderDevice::~RenderDevice()
                                      (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
     if ((g_pplayer->m_ptable->m_reflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) ||
         drawBallReflection)
+    {
       SAFE_RELEASE(m_pMirrorTmpBufferTexture);
+    }
   }
   SAFE_RELEASE(m_pBloomBufferTexture);
   SAFE_RELEASE(m_pBloomTmpBufferTexture);
@@ -1332,7 +1409,9 @@ RenderDevice::~RenderDevice()
   _fpreset();
 
   if (m_dwm_was_enabled)
+  {
     mDwmEnableComposition(DWM_EC_ENABLECOMPOSITION);
+  }
 }
 
 void RenderDevice::BeginScene()
@@ -1389,8 +1468,10 @@ void RenderDevice::Flip(const bool vsync)
 #else
 
   bool dwm = false;
-  if (vsync) // xp does neither have d3dex nor dwm, so vsync will always be specified during device set
+  if (vsync)
+  { // xp does neither have d3dex nor dwm, so vsync will always be specified during device set
     dwm = m_dwm_enabled;
+  }
 
 #ifdef USE_D3D9EX
   if (m_pD3DEx && vsync && !dwm)
@@ -1413,7 +1494,9 @@ void RenderDevice::Flip(const bool vsync)
       nullptr)); //!! could use D3DPRESENT_DONOTWAIT and do some physics work meanwhile??
 
   if (mDwmFlush && vsync && dwm)
+  {
     mDwmFlush(); //!! also above present?? (internet sources are not clear about order)
+  }
 #endif
   // reset performance counters
   m_frameDrawCalls = m_curDrawCalls;
@@ -1498,9 +1581,13 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf,
                                   surf->m_data.data(), 0, clamptoedge);
 
   if (pTexWidth)
+  {
     *pTexWidth = surf->width();
+  }
   if (pTexHeight)
+  {
     *pTexHeight = surf->height();
+  }
   return tex;
 }
 
@@ -1536,9 +1623,13 @@ void RenderDevice::CopySurface(RenderTarget* dest, D3DTexture* src)
 void RenderDevice::CopySurface(void* dest, void* src)
 {
   if (!m_useNvidiaApi && m_INTZ_support)
+  {
     CopySurface((D3DTexture*)dest, (D3DTexture*)src);
+  }
   else
+  {
     CopySurface((RenderTarget*)dest, (RenderTarget*)src);
+  }
 }
 
 void RenderDevice::CopySurface(D3DTexture* dest, D3DTexture* src)
@@ -1567,14 +1658,18 @@ void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
     if (src != srcr_cache)
     {
       if (srcr_cache != nullptr)
+      {
         CHECKNVAPI(NvAPI_D3D9_UnregisterResource(srcr_cache)); //!! meh
+      }
       CHECKNVAPI(NvAPI_D3D9_RegisterResource(src)); //!! meh
       srcr_cache = src;
     }
     if (dest != dest_cache)
     {
       if (dest_cache != nullptr)
+      {
         CHECKNVAPI(NvAPI_D3D9_UnregisterResource(dest_cache)); //!! meh
+      }
       CHECKNVAPI(NvAPI_D3D9_RegisterResource(dest)); //!! meh
       dest_cache = dest;
     }
@@ -1635,23 +1730,29 @@ void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
 void RenderDevice::CopyDepth(D3DTexture* dest, D3DTexture* src)
 {
   if (!m_useNvidiaApi)
+  {
     CopySurface(
         dest,
         src); // if INTZ used as texture format this (usually) works, although not really specified somewhere
+  }
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
   else if (NVAPIinit)
   {
     if (src != srct_cache)
     {
       if (srct_cache != nullptr)
+      {
         CHECKNVAPI(NvAPI_D3D9_UnregisterResource(srct_cache)); //!! meh
+      }
       CHECKNVAPI(NvAPI_D3D9_RegisterResource(src)); //!! meh
       srct_cache = src;
     }
     if (dest != dest_cache)
     {
       if (dest_cache != nullptr)
+      {
         CHECKNVAPI(NvAPI_D3D9_UnregisterResource(dest_cache)); //!! meh
+      }
       CHECKNVAPI(NvAPI_D3D9_RegisterResource(dest)); //!! meh
       dest_cache = dest;
     }
@@ -1691,9 +1792,13 @@ void RenderDevice::CopyDepth(D3DTexture* dest, D3DTexture* src)
 void RenderDevice::CopyDepth(D3DTexture* dest, void* src)
 {
   if (!m_useNvidiaApi && m_INTZ_support)
+  {
     CopyDepth(dest, (D3DTexture*)src);
+  }
   else
+  {
     CopyDepth(dest, (RenderTarget*)src);
+  }
 }
 
 D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const bool linearRGB)
@@ -1757,11 +1862,13 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const boo
   }
 
   if (!(texformat != colorFormat::DXT5 && m_autogen_mipmap))
+  {
     // normal maps or float textures are already in linear space!
     CHECKD3D(D3DXFilterTexture(sysTex, nullptr, D3DX_DEFAULT,
                                (texformat == colorFormat::RGBA32F || linearRGB)
                                    ? D3DX_FILTER_TRIANGLE
                                    : (D3DX_FILTER_TRIANGLE | D3DX_FILTER_SRGB)));
+  }
 
   return sysTex;
 }
@@ -1776,9 +1883,13 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* const surf,
   const int texheight = surf->height();
 
   if (pTexWidth)
+  {
     *pTexWidth = texwidth;
+  }
   if (pTexHeight)
+  {
     *pTexHeight = texheight;
+  }
 
   const BaseTexture::Format basetexformat = surf->m_format;
 
@@ -1797,17 +1908,23 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* const surf,
       (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? textureUsage::AUTOMIPMAP : 0,
       (D3DFORMAT)texformat, (D3DPOOL)memoryPool::DEFAULT, &tex, nullptr);
   if (FAILED(hr))
+  {
     ReportError("Fatal Error: out of VRAM!", hr, __FILE__, __LINE__);
+  }
 
   m_curTextureUpdates++;
   hr = m_pD3DDevice->UpdateTexture(sysTex, tex);
   if (FAILED(hr))
+  {
     ReportError("Fatal Error: uploading texture failed!", hr, __FILE__, __LINE__);
+  }
 
   SAFE_RELEASE(sysTex);
 
   if (texformat != colorFormat::DXT5 && m_autogen_mipmap)
+  {
     tex->GenerateMipSubLevels(); // tell driver that now is a good time to generate mipmaps
+  }
 
   return tex;
 }
@@ -1820,12 +1937,16 @@ void RenderDevice::UploadAndSetSMAATextures()
                                              (D3DFORMAT)colorFormat::GREY8,
                                              (D3DPOOL)memoryPool::SYSTEM, &sysTex, nullptr);
     if (FAILED(hr))
+    {
       ReportError("Fatal Error: unable to create texture!", hr, __FILE__, __LINE__);
+    }
     hr = m_pD3DDevice->CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 0, 0,
                                      (D3DFORMAT)colorFormat::GREY8, (D3DPOOL)memoryPool::DEFAULT,
                                      &m_SMAAsearchTexture, nullptr);
     if (FAILED(hr))
+    {
       ReportError("Fatal Error: out of VRAM!", hr, __FILE__, __LINE__);
+    }
 
     //!! use D3DXLoadSurfaceFromMemory
     D3DLOCKED_RECT locked;
@@ -1845,12 +1966,16 @@ void RenderDevice::UploadAndSetSMAATextures()
                                              (D3DFORMAT)colorFormat::GREYA8,
                                              (D3DPOOL)memoryPool::SYSTEM, &sysTex, nullptr);
     if (FAILED(hr))
+    {
       ReportError("Fatal Error: unable to create texture!", hr, __FILE__, __LINE__);
+    }
     hr = m_pD3DDevice->CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 0, 0,
                                      (D3DFORMAT)colorFormat::GREYA8, (D3DPOOL)memoryPool::DEFAULT,
                                      &m_SMAAareaTexture, nullptr);
     if (FAILED(hr))
+    {
       ReportError("Fatal Error: out of VRAM!", hr, __FILE__, __LINE__);
+    }
 
     //!! use D3DXLoadSurfaceFromMemory
     D3DLOCKED_RECT locked;
@@ -1912,7 +2037,9 @@ void RenderDevice::SetSamplerState(const DWORD Sampler,
   {
     CHECKD3D(m_pD3DDevice->SetSamplerState(Sampler, Type, Value));
     if (!invalid_set)
+    {
       textureSamplerCache[Sampler][Type] = Value;
+    }
 
     m_curStateChanges++;
   }
@@ -1923,10 +2050,13 @@ void RenderDevice::SetTextureFilter(const DWORD texUnit, DWORD mode)
 {
   // user can override the standard/faster-on-low-end trilinear by aniso filtering
   if ((mode == TEXTURE_MODE_TRILINEAR) && m_force_aniso)
+  {
     mode = TEXTURE_MODE_ANISOTROPIC;
+  }
 
   // if in static rendering mode, use the oversampling there to do the texture 'filtering' (i.e. more sharp and crisp than aniso)
   if (mode == TEXTURE_MODE_ANISOTROPIC || mode == TEXTURE_MODE_TRILINEAR)
+  {
     if (g_pplayer->m_isRenderingStatic)
     {
       SetSamplerState(texUnit, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
@@ -1934,6 +2064,7 @@ void RenderDevice::SetTextureFilter(const DWORD texUnit, DWORD mode)
       SetSamplerState(texUnit, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
       return;
     }
+  }
 
   //
 
@@ -2021,7 +2152,9 @@ inline bool RenderDevice::SetRenderStateCache(const RenderStates p1, DWORD p2)
 {
 #ifdef DEBUG
   if (p1 >= RENDERSTATE_COUNT)
+  {
     return false; //Throw error or similar?
+  }
 #endif
   if (renderStateCache.find(p1) == renderStateCache.end())
   {
@@ -2039,15 +2172,21 @@ inline bool RenderDevice::SetRenderStateCache(const RenderStates p1, DWORD p2)
 void RenderDevice::SetRenderState(const RenderStates p1, DWORD p2)
 {
   if (SetRenderStateCache(p1, p2))
+  {
     return;
+  }
 
   if (p1 == CULLMODE && (g_pplayer && (g_pplayer->m_ptable->m_tblMirrorEnabled ^
                                        g_pplayer->m_ptable->m_reflectionEnabled)))
   {
     if (p2 == CULL_CCW)
+    {
       p2 = CULL_CW;
+    }
     else if (p2 == CULL_CW)
+    {
       p2 = CULL_CCW;
+    }
   }
 
 #ifdef ENABLE_SDL
@@ -2056,15 +2195,23 @@ void RenderDevice::SetRenderState(const RenderStates p1, DWORD p2)
       //glEnable and glDisable functions
     case ALPHABLENDENABLE:
       if (p2)
+      {
         glEnable(GL_BLEND);
+      }
       else
+      {
         glDisable(GL_BLEND);
+      }
       break;
     case ZENABLE:
       if (p2)
+      {
         glEnable(GL_DEPTH_TEST);
+      }
       else
+      {
         glDisable(GL_DEPTH_TEST);
+      }
       break;
     case BLENDOP:
       glBlendEquation(p2);
@@ -2108,23 +2255,32 @@ void RenderDevice::SetRenderState(const RenderStates p1, DWORD p2)
 void RenderDevice::SetRenderStateCulling(RenderStateValue cull)
 {
   if (SetRenderStateCache(CULLMODE, cull))
+  {
     return;
+  }
 
   if (g_pplayer &&
       (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->m_ptable->m_reflectionEnabled))
   {
     if (cull == CULL_CCW)
+    {
       cull = CULL_CW;
+    }
     else if (cull == CULL_CW)
+    {
       cull = CULL_CCW;
+    }
   }
 
 #ifdef ENABLE_SDL
-  if (renderStateCache[RenderStates::CULLMODE] == CULL_NONE &&
-      (cull != CULL_NONE)) //!! this differs a bit from VPVR now, recheck!
+  if (renderStateCache[RenderStates::CULLMODE] == CULL_NONE && (cull != CULL_NONE))
+  { //!! this differs a bit from VPVR now, recheck!
     glEnable(GL_CULL_FACE);
+  }
   if (cull == CULL_NONE)
+  {
     glDisable(GL_CULL_FACE);
+  }
   else
   {
     glFrontFace(cull);
@@ -2139,11 +2295,15 @@ void RenderDevice::SetRenderStateCulling(RenderStateValue cull)
 void RenderDevice::SetRenderStateDepthBias(float bias)
 {
   if (SetRenderStateCache(DEPTHBIAS, *((DWORD*)&bias)))
+  {
     return;
+  }
 
 #ifdef ENABLE_SDL
   if (bias == 0.0f)
+  {
     glDisable(GL_POLYGON_OFFSET_FILL);
+  }
   else
   {
     glEnable(GL_POLYGON_OFFSET_FILL);
@@ -2159,14 +2319,20 @@ void RenderDevice::SetRenderStateDepthBias(float bias)
 void RenderDevice::SetRenderStateClipPlane0(const bool enabled)
 {
   if (SetRenderStateCache(CLIPPLANEENABLE, enabled ? PLANE0 : 0))
+  {
     return;
+  }
 
 #ifdef ENABLE_SDL
   // Basicshader already prepared with proper clipplane so just need to enable/disable it
   if (enabled)
+  {
     glEnable(GL_CLIP_DISTANCE0);
+  }
   else
+  {
     glDisable(GL_CLIP_DISTANCE0);
+  }
 #else
   CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)CLIPPLANEENABLE, enabled ? PLANE0 : 0));
 #endif
@@ -2181,12 +2347,18 @@ void RenderDevice::SetRenderStateAlphaTestFunction(const DWORD testValue,
   //!! TODO Needs to be done in shader
 #else
   if (!SetRenderStateCache(ALPHAREF, testValue))
+  {
     CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)ALPHAREF, testValue));
+  }
   if (!SetRenderStateCache(ALPHATESTENABLE, enabled ? RS_TRUE : RS_FALSE))
+  {
     CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)ALPHATESTENABLE,
                                           enabled ? RS_TRUE : RS_FALSE));
+  }
   if (!SetRenderStateCache(ALPHAFUNC, testFunction))
+  {
     CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)ALPHAFUNC, testFunction));
+  }
 #endif
 }
 
@@ -2280,7 +2452,9 @@ void* RenderDevice::AttachZBufferTo(RenderTarget* surf)
         desc.Width, desc.Height, D3DFMT_D16 /*D3DFMT_D24X8*/, //!!
         desc.MultiSampleType, desc.MultiSampleQuality, FALSE, &pZBuf, nullptr);
     if (FAILED(hr))
+    {
       ReportError("Fatal Error: unable to create depth buffer!", hr, __FILE__, __LINE__);
+    }
 
     return pZBuf;
   }
@@ -2304,7 +2478,9 @@ void RenderDevice::DrawPrimitive(const PrimitiveTypes type,
   HRESULT hr = m_pD3DDevice->DrawPrimitiveUP((D3DPRIMITIVETYPE)type, np, vertices, fvfToSize(fvf));
 
   if (FAILED(hr))
+  {
     ReportError("Fatal Error: DrawPrimitiveUP failed!", hr, __FILE__, __LINE__);
+  }
 
   VertexBuffer::bindNull(); // DrawPrimitiveUP sets the VB to nullptr
 
@@ -2358,7 +2534,9 @@ void RenderDevice::DrawPrimitiveVB(const PrimitiveTypes type,
 
   const HRESULT hr = m_pD3DDevice->DrawPrimitive((D3DPRIMITIVETYPE)type, startVertex, np);
   if (FAILED(hr))
+  {
     ReportError("Fatal Error: DrawPrimitive failed!", hr, __FILE__, __LINE__);
+  }
 #endif
   m_curDrawCalls++;
 }
@@ -2372,9 +2550,10 @@ void RenderDevice::DrawIndexedPrimitiveVB(const PrimitiveTypes type,
                                           const DWORD startIndex,
                                           const DWORD indexCount)
 {
-  if (vb == nullptr ||
-      ib == nullptr) //!! happens for primitives that are grouped on player init render call?!?
+  if (vb == nullptr || ib == nullptr)
+  { //!! happens for primitives that are grouped on player init render call?!?
     return;
+  }
 
   const unsigned int np = ComputePrimitiveCount(type, indexCount);
   m_stats_drawn_triangles += np;
@@ -2467,7 +2646,9 @@ Shader::Shader(RenderDevice* renderDevice)
   m_renderDevice = renderDevice;
   m_shader = 0;
   for (unsigned int i = 0; i < TEXTURESET_STATE_CACHE_SIZE; ++i)
+  {
     currentTexture[i] = 0;
+  }
   currentFlasherMode = -FLT_MAX;
   currentAlphaTestValue = -FLT_MAX;
   currentDisableLighting = currentFlasherData = currentFlasherColor = currentLightColor =
@@ -2531,7 +2712,9 @@ bool Shader::Load(const BYTE* shaderCodeName, UINT codeSize)
       g_pvp->MessageBox((const char*)pCompileErrors, "Compile Error", MB_OK | MB_ICONEXCLAMATION);
     }
     else
+    {
       g_pvp->MessageBox("Unknown Error", "Compile Error", MB_OK | MB_ICONEXCLAMATION);
+    }
 
     return false;
   }
@@ -2595,7 +2778,9 @@ void Shader::SetTextureNull(const SHADER_UNIFORM_HANDLE texelName)
   const bool cache = (idx < TEXTURESET_STATE_CACHE_SIZE);
 
   if (cache)
+  {
     currentTexture[idx] = nullptr; // direct set of device tex invalidates the cache
+  }
 
   CHECKD3D(m_shader->SetTexture(texelName, nullptr));
 
@@ -2662,7 +2847,8 @@ void Shader::SetMaterial(const Material* const mat)
     currentMaterial.m_fOpacity = alpha;
   }
 
-  if (!bIsMetal) // Metal has no glossy
+  if (!bIsMetal)
+  { // Metal has no glossy
     if (cGlossy != currentMaterial.m_cGlossy ||
         fGlossyImageLerp != currentMaterial.m_fGlossyImageLerp)
     {
@@ -2671,6 +2857,7 @@ void Shader::SetMaterial(const Material* const mat)
       currentMaterial.m_cGlossy = cGlossy;
       currentMaterial.m_fGlossyImageLerp = fGlossyImageLerp;
     }
+  }
 
   if (cClearcoat != currentMaterial.m_cClearcoat ||
       (bOpacityActive && fEdgeAlpha != currentMaterial.m_fEdgeAlpha))
@@ -2682,8 +2869,12 @@ void Shader::SetMaterial(const Material* const mat)
   }
 
   if (bOpacityActive /*&& (alpha < 1.0f)*/)
+  {
     g_pplayer->m_pin3d.EnableAlphaBlend(false);
+  }
   else
+  {
     g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE,
                                                            RenderDevice::RS_FALSE);
+  }
 }

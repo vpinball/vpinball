@@ -15,7 +15,9 @@ LRESULT LayersListDialog::OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam
 {
   // Set window focus. The docker will now report this as active.
   if (!IsChild(::GetFocus()))
+  {
     SetFocus();
+  }
 
   return FinalWindowProc(msg, wparam, lparam);
 }
@@ -35,13 +37,19 @@ bool LayersListDialog::AddLayer(const string& name, IEditable* piedit)
       success = m_layerTreeView.AddLayer(name);
     }
     else
+    {
       m_layerTreeView.SetActiveLayer(name);
+    }
   }
   if (piedit != nullptr)
+  {
     success = m_layerTreeView.AddElement(piedit->GetName(), piedit);
+  }
 
   if (success)
+  {
     m_layerTreeView.InvalidateRect();
+  }
   return success;
 }
 
@@ -54,7 +62,9 @@ void LayersListDialog::DeleteLayer()
   }
 
   if (m_activeTable == nullptr)
+  {
     return;
+  }
 
   const HTREEITEM layerToDelete = m_layerTreeView.GetCurrentLayerItem();
   const std::vector<HTREEITEM> allSubItems = m_layerTreeView.GetSubItems(layerToDelete);
@@ -64,7 +74,9 @@ void LayersListDialog::DeleteLayer()
     const int ans = MessageBox("Are you sure you want to delete the complete layer?",
                                "Confirm delete", MB_YESNO | MB_DEFBUTTON2);
     if (ans != IDYES)
+    {
       return;
+    }
   }
 
   HTREEITEM hFillLayer = m_layerTreeView.GetChild(m_layerTreeView.GetRootItem());
@@ -86,13 +98,17 @@ void LayersListDialog::DeleteLayer()
       {
         ISelect* const psel = pedit->GetISelect();
         if (psel != nullptr)
+        {
           psel->m_layerName = fillLayerName;
+        }
         m_layerTreeView.AddElement(pedit->GetName(), pedit);
       }
     }
   }
   for (const HTREEITEM item : allSubItems)
+  {
     m_layerTreeView.DeleteItem(item);
+  }
   m_layerTreeView.DeleteItem(layerToDelete);
 }
 
@@ -104,13 +120,17 @@ void LayersListDialog::ClearList()
 void LayersListDialog::UpdateLayerList(const std::string& name)
 {
   if (m_activeTable == nullptr)
+  {
     return;
+  }
 
   ClearList();
   const bool checkName = name.empty() ? false : true;
   std::string sName = name;
-  if (checkName) //transform the name to lower
+  if (checkName)
+  { //transform the name to lower
     std::transform(sName.begin(), sName.end(), sName.begin(), tolower);
+  }
 
   for (size_t t = 0; t < m_activeTable->m_vedit.size(); t++)
   {
@@ -118,37 +138,51 @@ void LayersListDialog::UpdateLayerList(const std::string& name)
     if (psel != nullptr)
     {
       if (!checkName)
+      {
         AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
+      }
       else if (!GetCaseSensitiveFilter())
       {
         //filter obj name and filter to lower
         std::string objName = std::string(m_activeTable->m_vedit[t]->GetName());
         std::transform(objName.begin(), objName.end(), objName.begin(), tolower);
         if (std::string(objName).find(sName) != std::string::npos)
+        {
           AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
+        }
       }
       else
       {
         //filter std
         if (std::string(m_activeTable->m_vedit[t]->GetName()).find(name) != std::string::npos)
+        {
           AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
+        }
       }
     }
   }
   if (!name.empty())
+  {
     ExpandAll();
+  }
   else
+  {
     ExpandLayers();
+  }
 }
 
 void LayersListDialog::UpdateElement(IEditable* const pedit)
 {
   if (pedit == nullptr)
+  {
     return;
+  }
 
   const HTREEITEM item = m_layerTreeView.GetItemByElement(pedit);
   if (item == nullptr)
+  {
     return;
+  }
 
   m_layerTreeView.SetItemText(item, pedit->GetName());
 }
@@ -156,17 +190,25 @@ void LayersListDialog::UpdateElement(IEditable* const pedit)
 void LayersListDialog::DeleteElement(IEditable* const pedit)
 {
   if (pedit == nullptr)
+  {
     return;
+  }
 
   const HTREEITEM parent = m_layerTreeView.GetLayerByElement(pedit);
   const HTREEITEM item = m_layerTreeView.GetItemByElement(pedit);
   if (item == nullptr || parent == nullptr)
+  {
     return;
+  }
   m_layerTreeView.DeleteItem(item);
   if (m_layerTreeView.GetSubItemsCount(parent) == 0)
+  {
     m_layerTreeView.DeleteItem(parent);
+  }
   if (m_layerTreeView.GetLayerCount() == 1)
+  {
     m_layerTreeView.SetActiveLayer(m_layerTreeView.GetLayerName(m_layerTreeView.GetFirstLayer()));
+  }
 }
 
 string LayersListDialog::GetCurrentSelectedLayerName() const
@@ -258,7 +300,9 @@ INT_PTR LayersListDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
 BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
   if (m_activeTable == nullptr)
+  {
     return FALSE;
+  }
 
   UNREFERENCED_PARAMETER(lParam);
   const int id = LOWORD(wParam);
@@ -318,7 +362,9 @@ void LayersListDialog::OnAssignButton()
   }
 
   if (m_activeTable == nullptr || m_activeTable->MultiSelIsEmpty())
+  {
     return;
+  }
 
   for (int t = 0; t < m_activeTable->m_vmultisel.size(); t++)
   {
@@ -334,7 +380,9 @@ void LayersListDialog::OnAssignButton()
 bool LayersListDialog::PreTranslateMessage(MSG* msg)
 {
   if (!IsWindow())
+  {
     return false;
+  }
 
   // only pre-translate mouse and keyboard input events
   if (((msg->message >= WM_KEYFIRST && msg->message <= WM_KEYLAST) ||
@@ -343,14 +391,16 @@ bool LayersListDialog::PreTranslateMessage(MSG* msg)
     const int keyPressed = LOWORD(msg->wParam);
     // only pass F1-F12 to the main VPinball class to open subdialogs from everywhere
     if (((keyPressed >= VK_F3 && keyPressed <= VK_F12) || (keyPressed == VK_ESCAPE)) &&
-        TranslateAccelerator(
-            g_pvp->GetHwnd(), m_accel,
-            msg)) //!! VK_ESCAPE is a workaround, otherwise there is a hickup when changing a layername and pressing this
+        TranslateAccelerator(g_pvp->GetHwnd(), m_accel, msg))
+    { //!! VK_ESCAPE is a workaround, otherwise there is a hickup when changing a layername and pressing this
       return true;
+    }
   }
 
   if (m_layerTreeView.PreTranslateMessage(msg))
+  {
     return true;
+  }
 
   return !!IsDialogMessage(*msg);
 }
@@ -415,7 +465,9 @@ bool LayerTreeView::ContainsLayer(const string& name) const
   {
     const string itemName(GetItemText(item));
     if (itemName == name)
+    {
       return true;
+    }
     item = GetNextItem(item, TVGN_NEXT);
   }
   return false;
@@ -449,7 +501,9 @@ HTREEITEM LayerTreeView::GetLayerByElement(const IEditable* const pedit)
       if (GetItem(tvItem))
       {
         if (pedit == (IEditable*)tvItem.lParam)
+        {
           return child;
+        }
       }
       subItem = GetNextItem(subItem, TVGN_NEXT);
     }
@@ -465,7 +519,9 @@ HTREEITEM LayerTreeView::GetLayerByItem(HTREEITEM hChildItem)
   {
     children.push_back(item);
     if (hChildItem == item)
+    {
       return item;
+    }
     item = GetNextItem(item, TVGN_NEXT);
   }
   for (const HTREEITEM child : children)
@@ -474,7 +530,9 @@ HTREEITEM LayerTreeView::GetLayerByItem(HTREEITEM hChildItem)
     while (subItem)
     {
       if (hChildItem == subItem)
+      {
         return child;
+      }
       subItem = GetNextItem(subItem, TVGN_NEXT);
     }
   }
@@ -505,7 +563,9 @@ HTREEITEM LayerTreeView::GetItemByElement(const IEditable* const pedit)
       if (GetItem(tvItem))
       {
         if (pedit == (IEditable*)tvItem.lParam)
+        {
           return subItem;
+        }
       }
       subItem = GetNextItem(subItem, TVGN_NEXT);
     }
@@ -607,7 +667,9 @@ void LayerTreeView::SetAllItemStates(const bool checked)
         {
           ISelect* const psel = pedit->GetISelect();
           if (psel != nullptr)
+          {
             psel->m_isVisible = checked;
+          }
         }
       }
 
@@ -675,10 +737,14 @@ void LayerTreeView::SetActiveLayer(const string& name)
 bool LayerTreeView::PreTranslateMessage(MSG* msg)
 {
   if (!IsWindow())
+  {
     return false;
+  }
 
   if (msg->hwnd != GetHwnd())
+  {
     return false;
+  }
 
   const int keyPressed = LOWORD(msg->wParam);
   if (keyPressed != VK_F2)
@@ -687,7 +753,9 @@ bool LayerTreeView::PreTranslateMessage(MSG* msg)
     if (((msg->message >= WM_KEYFIRST && msg->message <= WM_KEYLAST) ||
          (msg->message >= WM_MOUSEFIRST && msg->message <= WM_MOUSELAST)) &&
         TranslateAccelerator(GetHwnd(), m_accel, msg))
+    {
       return true;
+    }
   }
 
   return !!IsDialogMessage(*msg);
@@ -744,8 +812,10 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
         tvht.pt.x = Pos.x - 20; // the highlight items should be as the same points as the drag
         tvht.pt.y = Pos.y - 20; //
         const HTREEITEM hitTarget = HitTest(tvht);
-        if (hitTarget) // if there is a hit
+        if (hitTarget)
+        { // if there is a hit
           SelectDropTarget(hitTarget);
+        }
 
         ImageList_DragShowNolock(TRUE);
       }
@@ -774,7 +844,9 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
               ISelect* const psel = pedit->GetISelect();
               const HTREEITEM hLayerItem = GetLayerByItem(hSelectedDrop);
               if (psel != nullptr)
+              {
                 psel->m_layerName = GetLayerName(hLayerItem);
+              }
               const HTREEITEM oldItem = GetItemByElement(pedit);
               DeleteItem(oldItem);
               AddElementToLayer(hLayerItem, pedit->GetName(), pedit);
@@ -782,7 +854,9 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
               if (subItem.empty())
               {
                 if (dragItem->m_hDragLayer == hCurrentLayerItem)
+                {
                   hCurrentLayerItem = hLayerItem;
+                }
 
                 DeleteItem(dragItem->m_hDragLayer);
               }
@@ -804,7 +878,9 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
 {
   if (m_activeTable == nullptr)
+  {
     return FALSE;
+  }
 
   const LPNMHDR lpnmh = (LPNMHDR)lparam;
 
@@ -846,7 +922,9 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
       tvItem.mask = TVIF_CHILDREN | TVIF_PARAM;
       tvItem.hItem = pinfo->item.hItem;
       if (!GetItem(tvItem))
+      {
         return FALSE;
+      }
 
       if (tvItem.cChildren == 1) //!! <= ?
       {
@@ -857,14 +935,18 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
         {
           ISelect* const psel = m_activeTable->m_vedit[t]->GetISelect();
           if (psel != nullptr && psel->m_layerName == oldName)
+          {
             psel->m_layerName = newName;
+          }
         }
       }
       else
       {
         IEditable* const pedit = (IEditable*)tvItem.lParam;
         if (pedit)
+        {
           pedit->SetName(pinfo->item.pszText);
+        }
       }
       return TRUE;
     }
@@ -885,7 +967,9 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
   if (ht.flags & TVHT_ONITEMSTATEICON)
   {
     if (ht.hItem == hRootItem)
+    {
       SetAllItemStates(IsItemChecked(hRootItem));
+    }
     else
     {
       TVITEM tvItem = {};
@@ -907,7 +991,9 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
               {
                 ISelect* const psel = pedit->GetISelect();
                 if (psel != nullptr)
+                {
                   psel->m_isVisible = checked;
+                }
               }
             }
 
@@ -922,7 +1008,9 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
           {
             ISelect* const psel = pedit->GetISelect();
             if (psel != nullptr)
+            {
               psel->m_isVisible = IsItemChecked(tvItem.hItem);
+            }
           }
         }
       }
@@ -947,7 +1035,9 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
   HitTest(ht);
 
   if (m_activeTable == nullptr)
+  {
     return TRUE;
+  }
 
   m_activeTable->ClearMultiSel();
 
@@ -969,7 +1059,9 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
           {
             ISelect* const psel = pedit->GetISelect();
             if (psel != nullptr)
+            {
               m_activeTable->AddMultiSel(psel, true, false, false);
+            }
           }
         }
 
@@ -983,7 +1075,9 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
       {
         ISelect* const psel = pedit->GetISelect();
         if (psel != nullptr)
+        {
           m_activeTable->AddMultiSel(psel, false, false, false);
+        }
         m_activeTable->RefreshProperties();
       }
     }
@@ -1003,7 +1097,9 @@ LRESULT LayerTreeView::OnTVNSelChanged(LPNMTREEVIEW pNMTV)
     if (tvItem.hItem != hRootItem)
     {
       if (GetSubItemsCount(tvItem.hItem) > 0)
+      {
         hCurrentLayerItem = tvItem.hItem;
+      }
       else
       {
         hCurrentElementItem = tvItem.hItem;
@@ -1043,7 +1139,9 @@ LRESULT FilterEditBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       if ((wparam == VK_RETURN) || (wparam == VK_TAB))
       {
         if (m_layerDialog)
+        {
           m_layerDialog->UpdateLayerList(string(GetWindowText()));
+        }
         return FALSE;
       }
   }
@@ -1061,7 +1159,9 @@ BOOL FilterEditBox::OnCommand(WPARAM wParam, LPARAM lParam)
     case CBN_KILLFOCUS:
     {
       if (m_layerDialog)
+      {
         m_layerDialog->UpdateLayerList(string(GetWindowText()));
+      }
       return TRUE;
     }
   }

@@ -30,7 +30,9 @@ void LightSeq::SetDefaults(bool fromMouseClick)
   string tmp;
   const HRESULT hr = LoadValue("DefaultProps\\LightSequence", "Collection", tmp);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_wzCollection.clear();
+  }
   else
   {
     WCHAR wtmp[MAXSTRING];
@@ -185,7 +187,9 @@ void LightSeq::GetTimers(vector<HitTimer*>& pvht)
   m_phittimer = pht;
 
   if (m_d.m_tdr.m_TimerEnabled)
+  {
     pvht.push_back(pht);
+  }
 }
 
 void LightSeq::GetHitShapes(vector<HitObject*>& pvho)
@@ -252,7 +256,9 @@ void LightSeq::RenderSetup()
 
   // if the collection wasn't found or there are no collections available then bomb out
   if (m_pcollection == nullptr)
+  {
     return;
+  }
 
   // get the grid demensions (from the table size)
   const float tablewidth = m_ptable->m_right - m_ptable->m_left;
@@ -379,7 +385,9 @@ void LightSeq::Animate()
           // move the tail to the next position
           ++m_queue.Tail;
           if (m_queue.Tail >= LIGHTSEQQUEUESIZE)
+          {
             m_queue.Tail = 0;
+          }
 
           // not playing at the moment
           m_playInProgress = false;
@@ -419,7 +427,9 @@ STDMETHODIMP LightSeq::InterfaceSupportsErrorInfo(REFIID riid)
   for (int i = 0; i < sizeof(arr) / sizeof(arr[0]); ++i)
   {
     if (InlineIsEqualGUID(*arr[i], riid))
+    {
       return S_OK;
+    }
   }
   return S_FALSE;
 }
@@ -534,7 +544,9 @@ STDMETHODIMP LightSeq::get_CenterX(float* pVal)
 STDMETHODIMP LightSeq::put_CenterX(float newVal)
 {
   if ((newVal < 0.f) || (newVal >= (float)EDITOR_BG_WIDTH))
+  {
     return E_FAIL;
+  }
 
   SetX(newVal);
 
@@ -551,7 +563,9 @@ STDMETHODIMP LightSeq::get_CenterY(float* pVal)
 STDMETHODIMP LightSeq::put_CenterY(float newVal)
 {
   if ((newVal < 0.f) || (newVal >= (float)(2 * EDITOR_BG_WIDTH)))
+  {
     return E_FAIL;
+  }
 
   SetY(newVal);
 
@@ -578,13 +592,19 @@ STDMETHODIMP LightSeq::Play(SequencerState Animation, long TailLength, long Repe
 
   // sanity check the parameters
   if (TailLength < 0)
+  {
     TailLength = 0;
+  }
 
   if (Repeat <= 0)
+  {
     Repeat = 1;
+  }
 
   if (Pause < 0)
+  {
     Pause = 0;
+  }
 
   // 'all lights on' and 'all lights off' are directly processed and not put into the queue
   if (Animation == SeqAllOn)
@@ -1533,7 +1553,9 @@ bool LightSeq::ProcessTracer(_tracer* const pTracer, const LightState State)
 
   // if this tracer isn't valid or there is no collection, then exit with a finished return code
   if (pTracer->type == eSeqNull || m_pcollection == nullptr)
+  {
     return true;
+  }
 
   if (pTracer->delay == 0)
   {
@@ -1699,10 +1721,14 @@ bool LightSeq::ProcessTracer(_tracer* const pTracer, const LightState State)
           pTracer->angle += pTracer->stepAngle;
           // process any wrap around
           if (pTracer->angle >= 360.0f)
+          {
             pTracer->angle -= 360.0f;
+          }
 
           if (pTracer->angle < 0.f)
+          {
             pTracer->angle += 360.0f;
+          }
         }
         break;
       }
@@ -1726,14 +1752,18 @@ void LightSeq::SetAllLightsToState(const LightState State)
   {
     const int size = m_pcollection->m_visel.size();
     for (int i = 0; i < size; ++i)
+    {
       SetElementToState(i, State);
+    }
   }
 }
 
 void LightSeq::SetElementToState(const int index, const LightState State)
 {
   if (m_pcollection->m_visel.empty())
+  {
     return;
+  }
 
   const ItemTypeEnum type = m_pcollection->m_visel[index].GetIEditable()->GetItemType();
   if (type == eItemLight)
@@ -1771,7 +1801,9 @@ bool LightSeq::VerifyAndSetGridElement(const int x, const int y, const LightStat
     return true;
   }
   else
+  {
     return false;
+  }
 }
 
 LightState LightSeq::GetElementState(const int index) const
@@ -1780,7 +1812,9 @@ LightState LightSeq::GetElementState(const int index) const
   LightState rc = LightStateOff;
 
   if (m_pcollection->m_visel.empty())
+  {
     return rc;
+  }
 
   const ItemTypeEnum type = m_pcollection->m_visel[index].GetIEditable()->GetItemType();
   if (type == eItemLight)

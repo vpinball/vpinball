@@ -101,7 +101,9 @@ void Flipper::SetDefaults(bool fromMouseClick)
 
   const HRESULT hr = LoadValue(regKey, "Surface", m_d.m_szSurface);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_szSurface.clear();
+  }
 
   m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Height", 50.f) : 50.f;
   m_d.m_rubberthickness =
@@ -163,7 +165,9 @@ void Flipper::GetTimers(vector<HitTimer*>& pvht)
   m_phittimer = pht;
 
   if (m_d.m_tdr.m_TimerEnabled)
+  {
     pvht.push_back(pht);
+  }
 }
 
 void Flipper::UpdatePhysicsSettings()
@@ -177,52 +181,72 @@ void Flipper::UpdatePhysicsSettings()
     sprintf_s(tmp, 256, "FlipperPhysicsMass%d", idx);
     m_d.m_OverrideMass = LoadValueFloatWithDefault("Player", tmp, 1.f);
     if (m_d.m_OverrideMass < 0.0f)
+    {
       m_d.m_OverrideMass = m_d.m_mass;
+    }
 
     sprintf_s(tmp, 256, "FlipperPhysicsStrength%d", idx);
     m_d.m_OverrideStrength = LoadValueFloatWithDefault("Player", tmp, 2200.f);
     if (m_d.m_OverrideStrength < 0.0f)
+    {
       m_d.m_OverrideStrength = m_d.m_strength;
+    }
 
     sprintf_s(tmp, 256, "FlipperPhysicsElasticity%d", idx);
     m_d.m_OverrideElasticity = LoadValueFloatWithDefault("Player", tmp, 0.8f);
     if (m_d.m_OverrideElasticity < 0.0f)
+    {
       m_d.m_OverrideElasticity = m_d.m_elasticity;
+    }
 
     sprintf_s(tmp, 256, "FlipperPhysicsScatter%d", idx);
     m_d.m_OverrideScatterAngle = LoadValueFloatWithDefault("Player", tmp, 0.f);
     if (m_d.m_OverrideScatterAngle < 0.0f)
+    {
       m_d.m_OverrideScatterAngle = m_d.m_scatter;
+    }
 
     sprintf_s(tmp, 256, "FlipperPhysicsReturnStrength%d", idx);
     m_d.m_OverrideReturnStrength = LoadValueFloatWithDefault("Player", tmp, 0.058f);
     if (m_d.m_OverrideReturnStrength < 0.0f)
+    {
       m_d.m_OverrideReturnStrength = m_d.m_return;
+    }
 
     sprintf_s(tmp, 256, "FlipperPhysicsElasticityFalloff%d", idx);
     m_d.m_OverrideElasticityFalloff = LoadValueFloatWithDefault("Player", tmp, 0.43f);
     if (m_d.m_OverrideElasticityFalloff < 0.0f)
+    {
       m_d.m_OverrideElasticityFalloff = m_d.m_elasticityFalloff;
+    }
 
     sprintf_s(tmp, 256, "FlipperPhysicsFriction%d", idx);
     m_d.m_OverrideFriction = LoadValueFloatWithDefault("Player", tmp, 0.6f);
     if (m_d.m_OverrideFriction < 0.0f)
+    {
       m_d.m_OverrideFriction = m_d.m_friction;
+    }
 
     sprintf_s(tmp, 256, "FlipperPhysicsCoilRampUp%d", idx);
     m_d.m_OverrideCoilRampUp = LoadValueFloatWithDefault("Player", tmp, 3.f);
     if (m_d.m_OverrideCoilRampUp < 0.0f)
+    {
       m_d.m_OverrideCoilRampUp = m_d.m_rampUp;
+    }
 
     sprintf_s(tmp, 256, "FlipperPhysicsEOSTorque%d", idx);
     m_d.m_OverrideTorqueDamping = LoadValueFloatWithDefault("Player", tmp, 0.75f);
     if (m_d.m_OverrideTorqueDamping < 0.0f)
+    {
       m_d.m_OverrideTorqueDamping = m_d.m_torqueDamping;
+    }
 
     sprintf_s(tmp, 256, "FlipperPhysicsEOSTorqueAngle%d", idx);
     m_d.m_OverrideTorqueDampingAngle = LoadValueFloatWithDefault("Player", tmp, 6.f);
     if (m_d.m_OverrideTorqueDampingAngle < 0.0f)
+    {
       m_d.m_OverrideTorqueDampingAngle = m_d.m_torqueDampingAngle;
+    }
   }
 }
 
@@ -242,7 +266,9 @@ void Flipper::GetHitShapes(vector<HitObject*>& pvho)
     m_d.m_FlipperRadius = max(m_d.m_FlipperRadius, m_d.m_BaseRadius - m_d.m_EndRadius + 0.05f);
   }
   else
+  {
     m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
+  }
 
   HitFlipper* const phf =
       new HitFlipper(m_d.m_Center, max(m_d.m_BaseRadius, 0.01f), max(m_d.m_EndRadius, 0.01f),
@@ -269,7 +295,9 @@ void Flipper::GetHitShapesDebug(vector<HitObject*>& pvho)
     m_d.m_FlipperRadius = max(m_d.m_FlipperRadius, m_d.m_BaseRadius - m_d.m_EndRadius + 0.05f);
   }
   else
+  {
     m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
+  }
 
   Hit3DPoly* const pcircle = new Hit3DPoly(m_d.m_Center.x, m_d.m_Center.y, height + m_d.m_height,
                                            m_d.m_FlipperRadius + m_d.m_EndRadius, 32);
@@ -278,8 +306,10 @@ void Flipper::GetHitShapesDebug(vector<HitObject*>& pvho)
 
 void Flipper::EndPlay()
 {
-  if (m_phitflipper) // Failed player case
+  if (m_phitflipper)
+  { // Failed player case
     m_phitflipper = nullptr;
+  }
   SAFE_BUFFER_RELEASE(m_vertexBuffer);
   SAFE_BUFFER_RELEASE(m_indexBuffer);
 
@@ -421,11 +451,15 @@ void Flipper::UIRenderPass2(Sur* const psur)
   rgv[1].y = m_d.m_Center.y - cosf(anglerad2) * (m_d.m_FlipperRadius + m_d.m_EndRadius);
 
   if (m_d.m_EndAngle < m_d.m_StartAngle)
+  {
     psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius + m_d.m_EndRadius, rgv[0].x,
               rgv[0].y, rgv[1].x, rgv[1].y);
+  }
   else
+  {
     psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius + m_d.m_EndRadius, rgv[1].x,
               rgv[1].y, rgv[0].x, rgv[0].y);
+  }
 
   if (m_d.m_FlipperRadiusMin > 0.f && m_d.m_FlipperRadiusMax > m_d.m_FlipperRadiusMin)
   {
@@ -434,7 +468,9 @@ void Flipper::UIRenderPass2(Sur* const psur)
     m_d.m_FlipperRadius = max(m_d.m_FlipperRadius, m_d.m_BaseRadius - m_d.m_EndRadius + 0.05f);
   }
   else
+  {
     return;
+  }
 
   if (m_d.m_FlipperRadius != m_d.m_FlipperRadiusMax)
   {
@@ -469,11 +505,15 @@ void Flipper::UIRenderPass2(Sur* const psur)
     rgv[1].y = m_d.m_Center.y - cosf(anglerad2) * (m_d.m_FlipperRadius + m_d.m_EndRadius);
 
     if (m_d.m_EndAngle < m_d.m_StartAngle)
+    {
       psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius + m_d.m_EndRadius, rgv[0].x,
                 rgv[0].y, rgv[1].x, rgv[1].y);
+    }
     else
+    {
       psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius + m_d.m_EndRadius, rgv[1].x,
                 rgv[1].y, rgv[0].x, rgv[0].y);
+    }
 
     m_d.m_FlipperRadius =
         m_d.m_FlipperRadiusMax -
@@ -511,11 +551,15 @@ void Flipper::UIRenderPass2(Sur* const psur)
     rgv[1].y = m_d.m_Center.y - cosf(anglerad2) * (m_d.m_FlipperRadius + m_d.m_EndRadius);
 
     if (m_d.m_EndAngle < m_d.m_StartAngle)
+    {
       psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius + m_d.m_EndRadius, rgv[0].x,
                 rgv[0].y, rgv[1].x, rgv[1].y);
+    }
     else
+    {
       psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius + m_d.m_EndRadius, rgv[1].x,
                 rgv[1].y, rgv[0].x, rgv[0].y);
+    }
   }
 
   m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
@@ -561,7 +605,9 @@ void Flipper::SetDefaultPhysics(bool fromMouseClick)
   float fTmp;
   HRESULT hr = LoadValue(regKey, "Mass", fTmp);
   if (hr != S_OK)
+  {
     hr = LoadValue(regKey, "Speed", fTmp); // previously Mass was called Speed, deprecated!
+  }
   m_d.m_mass = (hr == S_OK) && fromMouseClick ? fTmp : 1.0f;
 
   m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Elasticity", 0.8f) : 0.8f;
@@ -582,7 +628,9 @@ STDMETHODIMP Flipper::InterfaceSupportsErrorInfo(REFIID riid)
   for (int i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
   {
     if (InlineIsEqualGUID(*arr[i], riid))
+    {
       return S_OK;
+    }
   }
   return S_FALSE;
 }
@@ -617,12 +665,18 @@ void Flipper::RenderDynamic()
   TRACE_FUNCTION();
 
   if (m_phitflipper && !m_phitflipper->m_flipperMover.m_visible)
+  {
     return;
+  }
   if (m_phitflipper == nullptr && !m_d.m_visible)
+  {
     return;
+  }
 
   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+  {
     return;
+  }
 
   const Material* mat = m_ptable->GetMaterial(m_d.m_szMaterial);
   pd3dDevice->basicShader->SetMaterial(mat);
@@ -640,8 +694,10 @@ void Flipper::RenderDynamic()
     //pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
   }
   else
+  {
     pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture,
                                                mat->m_bIsMetal);
+  }
 
   pd3dDevice->SetRenderStateDepthBias(0.0f);
   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
@@ -669,11 +725,15 @@ void Flipper::RenderDynamic()
   {
     mat = m_ptable->GetMaterial(m_d.m_szRubberMaterial);
     if (pin)
+    {
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture,
                                                  mat->m_bIsMetal);
+    }
     else
+    {
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture,
                                                  mat->m_bIsMetal);
+    }
     pd3dDevice->basicShader->SetMaterial(mat);
 
     pd3dDevice->basicShader->Begin(0);
@@ -777,16 +837,24 @@ static void ApplyFix(Vertex3D_NoTex2& vert,
   if (midAngle < 0.0)
   {
     if (vAngle > 0.0f)
+    {
       vAngle -= (float)(M_PI * 2.0);
+    }
     if (nAngle > 0.0f)
+    {
       nAngle -= (float)(M_PI * 2.0);
+    }
   }
   else
   {
     if (vAngle < 0.0f)
+    {
       vAngle += (float)(M_PI * 2.0);
+    }
     if (nAngle < 0.0f)
+    {
       nAngle += (float)(M_PI * 2.0);
+    }
   }
 
   nAngle -= (vAngle - midAngle) * fixAngleScale * sgn(midAngle);
@@ -813,7 +881,7 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2* buf)
   const float fixAngle = asinf(sinAngle);
   const float fixAngleScale =
       fixAngle * (float)(1. / (M_PI * 0.5)); // scale (in relation to 90 deg.)
-      // fixAngleScale = 0.0; // note: if you force fixAngleScale = 0.0 then all will look as old/buggy version
+  // fixAngleScale = 0.0; // note: if you force fixAngleScale = 0.0 then all will look as old/buggy version
   const float baseRadius = m_d.m_BaseRadius - m_d.m_rubberthickness;
   const float endRadius = m_d.m_EndRadius - m_d.m_rubberthickness;
   vector<Vertex3D_NoTex2> temp(flipperBaseVertices);
@@ -826,20 +894,28 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2* buf)
     {
       if (temp[i].x == vertsBaseBottom[t].x && temp[i].y == vertsBaseBottom[t].y &&
           temp[i].z == vertsBaseBottom[t].z)
+      {
         ApplyFix(temp[i], Vertex2D(vertsBaseBottom[6].x, vertsBaseBottom[0].y),
                  (float)(-M_PI * 0.5), baseRadius, Vertex2D(0.f, 0.f), fixAngleScale);
+      }
       if (temp[i].x == vertsTipBottom[t].x && temp[i].y == vertsTipBottom[t].y &&
           temp[i].z == vertsTipBottom[t].z)
+      {
         ApplyFix(temp[i], Vertex2D(vertsTipBottom[6].x, vertsTipBottom[0].y), (float)(M_PI * 0.5),
                  endRadius, Vertex2D(0.f, m_d.m_FlipperRadius), fixAngleScale);
+      }
       if (temp[i].x == vertsBaseTop[t].x && temp[i].y == vertsBaseTop[t].y &&
           temp[i].z == vertsBaseTop[t].z)
+      {
         ApplyFix(temp[i], Vertex2D(vertsBaseBottom[6].x, vertsBaseBottom[0].y),
                  (float)(-M_PI * 0.5), baseRadius, Vertex2D(0.f, 0.f), fixAngleScale);
+      }
       if (temp[i].x == vertsTipTop[t].x && temp[i].y == vertsTipTop[t].y &&
           temp[i].z == vertsTipTop[t].z)
+      {
         ApplyFix(temp[i], Vertex2D(vertsTipBottom[6].x, vertsTipBottom[0].y), (float)(M_PI * 0.5),
                  endRadius, Vertex2D(0.f, m_d.m_FlipperRadius), fixAngleScale);
+      }
     }
   }
   for (unsigned int i = 0; i < flipperBaseVertices; i++)
@@ -868,24 +944,32 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2* buf)
       {
         if (temp[i].x == vertsBaseBottom[t].x && temp[i].y == vertsBaseBottom[t].y &&
             temp[i].z == vertsBaseBottom[t].z)
+        {
           ApplyFix(temp[i], Vertex2D(vertsBaseBottom[6].x, vertsBaseBottom[0].y),
                    (float)(-M_PI * 0.5), baseRadius + m_d.m_rubberthickness, Vertex2D(0.f, 0.f),
                    fixAngleScale);
+        }
         if (temp[i].x == vertsTipBottom[t].x && temp[i].y == vertsTipBottom[t].y &&
             temp[i].z == vertsTipBottom[t].z)
+        {
           ApplyFix(temp[i], Vertex2D(vertsTipBottom[6].x, vertsTipBottom[0].y), (float)(M_PI * 0.5),
                    endRadius + m_d.m_rubberthickness, Vertex2D(0.f, m_d.m_FlipperRadius),
                    fixAngleScale);
+        }
         if (temp[i].x == vertsBaseTop[t].x && temp[i].y == vertsBaseTop[t].y &&
             temp[i].z == vertsBaseTop[t].z)
+        {
           ApplyFix(temp[i], Vertex2D(vertsBaseBottom[6].x, vertsBaseBottom[0].y),
                    (float)(-M_PI * 0.5), baseRadius + m_d.m_rubberthickness, Vertex2D(0.f, 0.f),
                    fixAngleScale);
+        }
         if (temp[i].x == vertsTipTop[t].x && temp[i].y == vertsTipTop[t].y &&
             temp[i].z == vertsTipTop[t].z)
+        {
           ApplyFix(temp[i], Vertex2D(vertsTipBottom[6].x, vertsTipBottom[0].y), (float)(M_PI * 0.5),
                    endRadius + m_d.m_rubberthickness, Vertex2D(0.f, m_d.m_FlipperRadius),
                    fixAngleScale);
+        }
       }
     }
 
@@ -1041,7 +1125,9 @@ bool Flipper::LoadToken(const int id, BiffReader* const pbr)
       pbr->GetInt(m_d.m_tdr.m_TimerInterval);
       //m_d.m_tdr.m_TimerInterval = INT(m_d.m_tdr.m_TimerInterval);
       if (m_d.m_tdr.m_TimerInterval < 1)
+      {
         m_d.m_tdr.m_TimerInterval = 100;
+      }
       break;
     }
     case FID(SURF):
@@ -1138,13 +1224,21 @@ bool Flipper::LoadToken(const int id, BiffReader* const pbr)
 HRESULT Flipper::InitPostLoad()
 {
   if (m_d.m_height > 1000.0f)
+  {
     m_d.m_height = 50.0f;
+  }
   if (m_d.m_rubberheight > 1000.f)
+  {
     m_d.m_rubberheight = 8.f;
+  }
   if (m_d.m_rubberthickness > 0.f && m_d.m_height > 16.0f && m_d.m_rubberwidth == 0.f)
+  {
     m_d.m_rubberwidth = m_d.m_height - 16.0f;
+  }
   if (m_d.m_rubberwidth > 1000.f)
+  {
     m_d.m_rubberwidth = m_d.m_height - 16.0f;
+  }
 
   return S_OK;
 }
@@ -1205,10 +1299,14 @@ STDMETHODIMP Flipper::put_EOSTorque(float newVal)
   {
     if (!(m_d.m_OverridePhysics ||
           (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
+    {
       m_d.m_torqueDamping = newVal;
+    }
   }
   else
+  {
     m_d.m_torqueDamping = newVal;
+  }
 
   return S_OK;
 }
@@ -1229,10 +1327,14 @@ STDMETHODIMP Flipper::put_EOSTorqueAngle(float newVal)
   {
     if (!(m_d.m_OverridePhysics ||
           (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
+    {
       m_d.m_torqueDampingAngle = newVal;
+    }
   }
   else
+  {
     m_d.m_torqueDampingAngle = newVal;
+  }
 
   return S_OK;
 }
@@ -1240,9 +1342,13 @@ STDMETHODIMP Flipper::put_EOSTorqueAngle(float newVal)
 STDMETHODIMP Flipper::get_StartAngle(float* pVal)
 {
   if (m_phitflipper)
+  {
     *pVal = RADTOANG(m_phitflipper->m_flipperMover.m_angleStart);
+  }
   else
+  {
     *pVal = m_d.m_StartAngle;
+  }
 
   return S_OK;
 }
@@ -1250,9 +1356,13 @@ STDMETHODIMP Flipper::get_StartAngle(float* pVal)
 STDMETHODIMP Flipper::put_StartAngle(float newVal)
 {
   if (m_phitflipper)
+  {
     m_phitflipper->m_flipperMover.SetStartAngle(ANGTORAD(newVal));
+  }
   else
+  {
     m_d.m_StartAngle = newVal;
+  }
 
   return S_OK;
 }
@@ -1260,9 +1370,13 @@ STDMETHODIMP Flipper::put_StartAngle(float newVal)
 STDMETHODIMP Flipper::get_EndAngle(float* pVal)
 {
   if (m_phitflipper)
+  {
     *pVal = RADTOANG(m_phitflipper->m_flipperMover.m_angleEnd);
+  }
   else
+  {
     *pVal = m_d.m_EndAngle;
+  }
 
   return S_OK;
 }
@@ -1270,9 +1384,13 @@ STDMETHODIMP Flipper::get_EndAngle(float* pVal)
 STDMETHODIMP Flipper::put_EndAngle(float newVal)
 {
   if (m_phitflipper)
+  {
     m_phitflipper->m_flipperMover.SetEndAngle(ANGTORAD(newVal));
+  }
   else
+  {
     m_d.m_EndAngle = newVal;
+  }
 
   return S_OK;
 }
@@ -1285,7 +1403,9 @@ STDMETHODIMP Flipper::get_CurrentAngle(float* pVal)
     return S_OK;
   }
   else
+  {
     return E_FAIL;
+  }
 }
 
 STDMETHODIMP Flipper::get_X(float* pVal)
@@ -1355,9 +1475,13 @@ STDMETHODIMP Flipper::put_Material(BSTR newVal)
 STDMETHODIMP Flipper::get_Mass(float* pVal)
 {
   if (m_phitflipper)
+  {
     *pVal = m_phitflipper->m_flipperMover.GetMass();
+  }
   else
+  {
     *pVal = m_d.m_mass;
+  }
 
   return S_OK;
 }
@@ -1368,10 +1492,14 @@ STDMETHODIMP Flipper::put_Mass(float newVal)
   {
     if (!(m_d.m_OverridePhysics ||
           (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
+    {
       m_phitflipper->m_flipperMover.SetMass(newVal);
+    }
   }
   else
+  {
     m_d.m_mass = newVal;
+  }
 
   return S_OK;
 }
@@ -1443,9 +1571,13 @@ STDMETHODIMP Flipper::put_RubberThickness(float newVal)
 STDMETHODIMP Flipper::put_RubberHeight(float newVal)
 {
   if (newVal < 0.f)
+  {
     newVal = 0.f;
+  }
   else if (newVal > 1000.f)
+  {
     newVal = 50.f; //!! legacy, deprecated
+  }
 
   m_d.m_rubberheight = newVal;
   return S_OK;
@@ -1460,9 +1592,13 @@ STDMETHODIMP Flipper::put_RubberWidth(float newVal)
 STDMETHODIMP Flipper::get_Strength(float* pVal)
 {
   if (m_phitflipper)
+  {
     *pVal = m_phitflipper->m_flipperMover.GetStrength();
+  }
   else
+  {
     *pVal = m_d.m_strength;
+  }
 
   return S_OK;
 }
@@ -1473,10 +1609,14 @@ STDMETHODIMP Flipper::put_Strength(float newVal)
   {
     if (!(m_d.m_OverridePhysics ||
           (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
+    {
       m_d.m_strength = newVal;
+    }
   }
   else
+  {
     m_d.m_strength = newVal;
+  }
 
   return S_OK;
 }
@@ -1495,7 +1635,9 @@ STDMETHODIMP Flipper::put_Visible(VARIANT_BOOL newVal)
     m_phitflipper->m_flipperMover.m_visible = VBTOb(newVal); //m_d.m_visible
   }
   else
+  {
     m_d.m_visible = VBTOb(newVal);
+  }
 
   return S_OK;
 }
@@ -1514,7 +1656,9 @@ STDMETHODIMP Flipper::put_Enabled(VARIANT_BOOL newVal)
     m_phitflipper->m_flipperMover.m_enabled = VBTOb(newVal); //m_d.m_visible
   }
   else
+  {
     m_d.m_enabled = VBTOb(newVal);
+  }
 
   return S_OK;
 }
@@ -1532,10 +1676,14 @@ STDMETHODIMP Flipper::put_Elasticity(float newVal)
   {
     if (!(m_d.m_OverridePhysics ||
           (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
+    {
       m_phitflipper->m_elasticity = newVal;
+    }
   }
   else
+  {
     m_d.m_elasticity = newVal;
+  }
 
   return S_OK;
 }
@@ -1553,10 +1701,14 @@ STDMETHODIMP Flipper::put_Scatter(float newVal)
   {
     if (!(m_d.m_OverridePhysics ||
           (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
+    {
       m_phitflipper->m_scatter = ANGTORAD(newVal);
+    }
   }
   else
+  {
     m_d.m_scatter = newVal;
+  }
 
   return S_OK;
 }
@@ -1585,9 +1737,13 @@ STDMETHODIMP Flipper::get_Friction(float* pVal)
 STDMETHODIMP Flipper::put_Friction(float newVal)
 {
   if (m_phitflipper)
+  {
     m_phitflipper->SetFriction(newVal);
+  }
   else
+  {
     m_d.m_friction = newVal;
+  }
 
   return S_OK;
 }
@@ -1621,9 +1777,13 @@ STDMETHODIMP Flipper::put_Height(float newVal)
 STDMETHODIMP Flipper::get_Return(float* pVal)
 {
   if (m_phitflipper)
+  {
     *pVal = m_phitflipper->m_flipperMover.GetReturnRatio();
+  }
   else
+  {
     *pVal = m_d.m_return;
+  }
 
   return S_OK;
 }

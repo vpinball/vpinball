@@ -84,7 +84,9 @@ public:
       }
 
       if (jumpnode == 0)
+      {
         break;
+      }
 
       if (strcmp == 1)
       {

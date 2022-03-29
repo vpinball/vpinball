@@ -59,7 +59,9 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
 {
   FILE* f;
   if ((fopen_s(&f, filename.c_str(), "r") != 0) || !f)
+  {
     return false;
+  }
 
   m_tmpVerts.clear();
   m_tmpTexel.clear();
@@ -93,7 +95,9 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
       Vertex3Ds tmp;
       fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
       if (convertToLeftHanded)
+      {
         tmp.z = -tmp.z;
+      }
       m_tmpVerts.push_back(tmp);
     }
     else if (strcmp(lineHeader, "vt") == 0)
@@ -101,7 +105,9 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
       Vertex2D tmp;
       fscanf_s(f, "%f %f", &tmp.x, &tmp.y);
       if (flipTv || convertToLeftHanded)
+      {
         tmp.y = 1.f - tmp.y;
+      }
       m_tmpTexel.push_back(tmp);
     }
     else if (strcmp(lineHeader, "vn") == 0)
@@ -109,7 +115,9 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
       Vertex3Ds tmp;
       fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
       if (convertToLeftHanded)
+      {
         tmp.z = -tmp.z;
+      }
       m_tmpNorms.push_back(tmp);
     }
     else if (strcmp(lineHeader, "f") == 0)
@@ -156,7 +164,9 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
       }
 
       if (convertToLeftHanded)
+      {
         std::reverse(faceVerts.begin(), faceVerts.end());
+      }
 
       // triangulate the face (assumes convex face)
       MyPoly tmpFace;
@@ -211,7 +221,9 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
       m_indices.push_back((unsigned int)(m_verts.size() - 1));
     }
     else
+    {
       m_indices.push_back(idx->second);
+    }
 
     tmp.x = m_tmpVerts[m_tmpFaces[i].vi1].x;
     tmp.y = m_tmpVerts[m_tmpFaces[i].vi1].y;
@@ -231,7 +243,9 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
       m_indices.push_back((unsigned int)(m_verts.size() - 1));
     }
     else
+    {
       m_indices.push_back(idx->second);
+    }
 
     tmp.x = m_tmpVerts[m_tmpFaces[i].vi2].x;
     tmp.y = m_tmpVerts[m_tmpFaces[i].vi2].y;
@@ -251,7 +265,9 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
       m_indices.push_back((unsigned int)(m_verts.size() - 1));
     }
     else
+    {
       m_indices.push_back(idx->second);
+    }
   }
   // not used yet
   //   NormalizeNormals();
@@ -382,11 +398,15 @@ bool ObjLoader::ExportStart(const string& filename)
   char nameOnly[MAX_PATH] = {0};
   memcpy(nameOnly, matName + i, len - i);
   if ((fopen_s(&m_matFile, matName, "wt") != 0) || !m_matFile)
+  {
     return false;
+  }
   fprintf_s(m_matFile, "# Visual Pinball table mat file\n");
 
   if ((fopen_s(&m_fHandle, filename.c_str(), "wt") != 0) || !m_fHandle)
+  {
     return false;
+  }
   m_faceIndexOffset = 0;
   fprintf_s(m_fHandle, "# Visual Pinball table OBJ file\n");
   fprintf_s(m_fHandle, "mtllib %s\n", nameOnly);
@@ -404,9 +424,13 @@ void ObjLoader::WriteVertexInfo(const Vertex3D_NoTex2* verts, unsigned int numVe
     float tu = verts[i].tu;
     float tv = 1.f - verts[i].tv;
     if (tu != tu)
+    {
       tu = 0.0f;
+    }
     if (tv != tv)
+    {
       tv = 0.0f;
+    }
     fprintf_s(m_fHandle, "vt %f %f\n", tu, tv);
   }
   for (unsigned i = 0; i < numVerts; i++)
@@ -415,11 +439,17 @@ void ObjLoader::WriteVertexInfo(const Vertex3D_NoTex2* verts, unsigned int numVe
     float ny = verts[i].ny;
     float nz = verts[i].nz;
     if (nx != nx)
+    {
       nx = 0.0f;
+    }
     if (ny != ny)
+    {
       ny = 0.0f;
+    }
     if (nz != nz)
+    {
       nz = 0.0f;
+    }
     fprintf_s(m_fHandle, "vn %f %f %f\n", nx, ny, -nz);
   }
 }
@@ -465,7 +495,9 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
 {
   FILE* f;
   if ((fopen_s(&f, filename.c_str(), "r") != 0) || !f)
+  {
     return false;
+  }
 
   while (true)
   {
@@ -494,9 +526,13 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
       mat->m_fRoughness = 0.5f + (tmp / 2000.0f);
 
       if (mat->m_fRoughness > 1.0f)
+      {
         mat->m_fRoughness = 1.0f;
+      }
       if (mat->m_fRoughness < 0.01f)
+      {
         mat->m_fRoughness = 0.01f;
+      }
     }
     else if (strcmp(lineHeader, "Ka") == 0)
     {
@@ -531,7 +567,9 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
       float tmp;
       fscanf_s(f, "%f\n", &tmp);
       if (tmp > 1.0f)
+      {
         tmp = 1.0f;
+      }
       mat->m_fOpacity = tmp;
       break;
     }

@@ -50,7 +50,9 @@ void CVPreference::GetPrefsFromReg()
       [LF_FACESIZE]; // to save the default font name, in case the corresponding registry entry is empty
   strncpy_s(bakupFaceName, m_logFont.lfFaceName, sizeof(bakupFaceName) - 1);
   if (LoadValue("CVEdit", m_szRegName + "_Font", m_logFont.lfFaceName, LF_FACESIZE) != S_OK)
+  {
     strncpy_s(m_logFont.lfFaceName, bakupFaceName, sizeof(m_logFont.lfFaceName) - 1);
+  }
 
   m_logFont.lfWeight =
       LoadValueIntWithDefault("CVEdit", m_szRegName + "_FontWeight", m_logFont.lfWeight);
@@ -80,7 +82,9 @@ void CVPreference::SetDefaultFont(const HWND hwndDlg)
   memset(plfont, 0, sizeof(LOGFONT));
   HFONT hFont = (HFONT)GetStockObject(ANSI_FIXED_FONT);
   if (hFont == nullptr)
+  {
     hFont = (HFONT)GetStockObject(SYSTEM_FONT);
+  }
   GetObject(hFont, sizeof(LOGFONT), plfont);
   m_pointSize = 10;
   GetHeightFromPointSize(hwndDlg);

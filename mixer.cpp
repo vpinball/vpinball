@@ -24,7 +24,9 @@ bool mixer_init(const HWND wnd)
   nmixers = ::mixerGetNumDevs();
 
   if (!nmixers)
+  {
     return false;
+  }
 
   m_hMixer = nullptr;
   //ZeroMemory(&sMxCaps, sizeof(MIXERCAPS));
@@ -92,7 +94,9 @@ void mixer_shutdown()
 void mixer_get_volume()
 {
   if (!m_hMixer || !nmixers)
+  {
     return;
+  }
 
   MIXERCONTROLDETAILS_UNSIGNED mxcdVolume;
   MIXERCONTROLDETAILS mxcd;
@@ -110,48 +114,72 @@ void mixer_get_volume()
   }
 
   if (m_dwMaximum > m_dwMinimum)
+  {
     gMixerVolume =
         sqrtf((F32)(mxcdVolume.dwValue - m_dwMinimum) / (F32)(m_dwMaximum - m_dwMinimum));
+  }
 
   if (g_pplayer->m_ptable->m_tblVolmod != 0.0f)
+  {
     gMixerVolume /= g_pplayer->m_ptable->m_tblVolmod;
+  }
   else
+  {
     gMixerVolume = 0.01f; // mute is impossible
+  }
 }
 
 void mixer_update()
 {
   if (!nmixers || !m_hMixer)
+  {
     return;
+  }
 
   constexpr F32 delta = (F32)(1.0 / 500.0);
 
   float vol;
   if (gMixerKeyDown)
+  {
     vol = gMixerVolume - delta;
+  }
   else if (gMixerKeyUp)
+  {
     vol = gMixerVolume + delta;
+  }
   else
+  {
     return;
+  }
 
   if (vol < 0.01f)
+  {
     vol = 0.01f; //hardcap minimum
+  }
   if (vol > 1.0f)
+  {
     vol = 1.0f; //hardcap maximum
+  }
 
   gMixerVolumeStamp = g_pplayer->m_time_msec;
 
   if (vol == gMixerVolume)
+  {
     return;
+  }
 
   gMixerVolume = vol;
 
   F32 modded_volume = gMixerVolume * g_pplayer->m_ptable->m_tblVolmod;
 
   if (modded_volume < 0.01f)
+  {
     modded_volume = 0.01f; //hardcap minimum
+  }
   if (modded_volume > 1.0f)
+  {
     modded_volume = 1.0f; //hardcap maximum
+  }
 
   const DWORD dwVal = (DWORD)((F32)m_dwMinimum +
                               (modded_volume * modded_volume) * (F32)(m_dwMaximum - m_dwMinimum));
@@ -175,11 +203,15 @@ void mixer_update()
 void mixer_draw()
 {
   if (!gMixerVolumeStamp)
+  {
     return;
+  }
 
   F32 fade = 1.0f - (F32)(g_pplayer->m_time_msec - gMixerVolumeStamp) * 0.001f;
   if (fade > 1.0f)
+  {
     fade = 1.0f;
+  }
   if (fade <= 0.0f)
   {
     gMixerVolumeStamp = 0;
@@ -191,7 +223,9 @@ void mixer_draw()
       0.f;
 
   if (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->m_ptable->m_reflectionEnabled)
+  {
     g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+  }
 
   g_pplayer->m_pin3d.EnableAlphaBlend(true);
 
@@ -217,11 +251,17 @@ void mixer_draw()
       size[1] = volume_adjustment_bar_big_size[1];
 
       if (vol < 0.75f)
+      {
         color = volume_adjustment_color[0];
+      }
       else if (vol < 0.90f)
+      {
         color = volume_adjustment_color[1];
+      }
       else
+      {
         color = volume_adjustment_color[2];
+      }
     }
 
     // Set the position.
@@ -243,5 +283,7 @@ void mixer_draw()
   }
 
   if (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->m_ptable->m_reflectionEnabled)
+  {
     g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+  }
 }

@@ -31,7 +31,9 @@ HRESULT LZWWriter::WriteWord(short word)
 int LZWWriter::bNextPixel()
 {
   if (m_iPixelCur == m_pitch * m_height)
+  {
     return GIFEOF;
+  }
 
   const int ch = *(((unsigned char*)m_bits) + m_iPixelCur);
   ++m_iPixelCur;
@@ -81,7 +83,9 @@ HRESULT LZWWriter::CompressBits(int init_bits)
 
   hshift = 0;
   for (int fcode = HSIZE; fcode < 65536; fcode *= 2)
+  {
     ++hshift;
+  }
   hshift = 8 - hshift; // set hash code range bound
 
   hsize_reg = HSIZE;
@@ -101,17 +105,25 @@ HRESULT LZWWriter::CompressBits(int init_bits)
         ent = m_codetab[i];
         goto nextbyte;
       }
-      if (i == 0) /* secondary hash (after G. Knott) */
+      if (i == 0)
+      { /* secondary hash (after G. Knott) */
         disp = 1;
+      }
       else
+      {
         disp = HSIZE - i;
+      }
       while (true)
       {
         i -= disp;
         if (i < 0)
+        {
           i += HSIZE;
+        }
         if (m_codetab[i] == 0)
+        {
           goto processbyte; /* hit empty slot */
+        }
         if (m_htab[i] == fcode)
         {
           ent = m_codetab[i];
@@ -130,7 +142,9 @@ HRESULT LZWWriter::CompressBits(int init_bits)
       m_htab[i] = fcode;
     }
     else
+    {
       ClearBlock();
+    }
 
   nextbyte:
 
@@ -148,9 +162,13 @@ HRESULT LZWWriter::Output(int code)
   m_cur_accum &= m_masks[m_cur_bits];
 
   if (m_cur_bits > 0)
+  {
     m_cur_accum |= (code << m_cur_bits);
+  }
   else
+  {
     m_cur_accum = code;
+  }
 
   m_cur_bits += m_nbits;
 
@@ -174,9 +192,13 @@ HRESULT LZWWriter::Output(int code)
     {
       ++m_nbits;
       if (m_nbits == MAXBITS)
+      {
         m_maxcode = MAXMAXCODE;
+      }
       else
+      {
         m_maxcode = Maxcode(m_nbits);
+      }
     }
   }
 
@@ -215,7 +237,9 @@ HRESULT LZWWriter::CharOut(char c)
 {
   m_accum[m_a_count++] = c;
   if (m_a_count >= 254)
+  {
     FlushChar();
+  }
 
   return S_OK;
 }

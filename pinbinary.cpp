@@ -143,7 +143,9 @@ void PinFont::Register()
   while (szEnd > szPath)
   {
     if (*szEnd == '\\')
+    {
       break;
+    }
 
     szEnd--;
   }

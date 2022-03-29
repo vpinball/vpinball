@@ -18,39 +18,61 @@ void TableVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
 {
   CComObject<PinTable>* const table = g_pvp->GetActiveTable();
   if (table == nullptr)
+  {
     return;
+  }
 
   if (dispid == DISPID_Image || dispid == -1)
+  {
     PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_imageCombo, table->m_image);
+  }
   if (dispid == IDC_MATERIAL_COMBO || dispid == -1)
+  {
     PropertyDialog::UpdateMaterialComboBox(table->GetMaterialList(), m_materialCombo,
                                            table->m_playfieldMaterial);
+  }
   if (dispid == IDC_REFLECT_ELEMENTS_CHECK || dispid == -1)
+  {
     PropertyDialog::SetCheckboxState(m_hReflectElementsCheck, table->m_reflectElementsOnPlayfield);
+  }
   if (dispid == IDC_REFLECTION_PLAYFIELD || dispid == -1)
+  {
     PropertyDialog::SetIntTextbox(m_reflectionStrengthEdit,
                                   table->GetPlayfieldReflectionStrength());
+  }
   if (dispid == 1505 || dispid == -1)
+  {
     PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_ballImageCombo,
                                           table->m_ballImage);
+  }
   if (dispid == IDC_BALL_DECAL_MODE || dispid == -1)
+  {
     PropertyDialog::SetCheckboxState(m_hLogoModeCheck, table->m_BallDecalMode);
+  }
   if (dispid == 1508 || dispid == -1)
+  {
     PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_ballDecalCombo,
                                           table->m_ballImageDecal);
+  }
   if (dispid == IDC_BALLPLAYFIELD_REFLECTION || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_ballReflectPlayfieldEdit,
                                     table->m_ballPlayfieldReflectionStrength);
+  }
   if (dispid == IDC_BULBINTENSITYSCALE || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_ballDefaultBulbIntensScaleEdit,
                                     table->m_defaultBulbIntensityScaleOnBall);
+  }
 }
 
 void TableVisualsProperty::UpdateProperties(const int dispid)
 {
   CComObject<PinTable>* const table = g_pvp->GetActiveTable();
   if (table == nullptr)
+  {
     return;
+  }
 
   switch (dispid)
   {

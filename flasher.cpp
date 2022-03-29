@@ -116,11 +116,15 @@ void Flasher::SetDefaults(bool fromMouseClick)
 
   HRESULT hr = LoadValue("DefaultProps\\Flasher", "ImageA", m_d.m_szImageA);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_szImageA.clear();
+  }
 
   hr = LoadValue("DefaultProps\\Flasher", "ImageB", m_d.m_szImageB);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_szImageB.clear();
+  }
 
   m_d.m_alpha =
       fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Flasher", "Opacity", 100) : 100;
@@ -175,7 +179,9 @@ void Flasher::WriteRegDefaults()
 void Flasher::UIRenderPass1(Sur* const psur)
 {
   if (m_vdpoint.empty())
+  {
     InitShape();
+  }
 
   psur->SetFillColor(m_ptable->RenderSolid() ? m_vpinball->m_fillColor : -1);
   psur->SetObject(this);
@@ -197,24 +203,36 @@ void Flasher::UIRenderPass1(Sur* const psur)
       for (size_t i = 0; i < vvertex.size(); i++)
       {
         if (vvertex[i].x < _minx)
+        {
           _minx = vvertex[i].x;
+        }
         if (vvertex[i].x > _maxx)
+        {
           _maxx = vvertex[i].x;
+        }
         if (vvertex[i].y < _miny)
+        {
           _miny = vvertex[i].y;
+        }
         if (vvertex[i].y > _maxy)
+        {
           _maxy = vvertex[i].y;
+        }
       }
 
       if (ppi->m_hbmGDIVersion)
+      {
         psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, _minx, _miny, _minx + (_maxx - _minx),
                            _miny + (_maxy - _miny), ppi->m_width, ppi->m_height);
+      }
     }
     else
     {
       if (ppi->m_hbmGDIVersion)
+      {
         psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top,
                            m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
+      }
       else
       {
         // Do nothing for now to indicate to user that there is a problem
@@ -222,7 +240,9 @@ void Flasher::UIRenderPass1(Sur* const psur)
     }
   }
   else
+  {
     psur->Polygon(vvertex);
+  }
 }
 
 void Flasher::UIRenderPass2(Sur* const psur)
@@ -256,6 +276,7 @@ void Flasher::UIRenderPass2(Sur* const psur)
   }
 
   if (drawDragpoints)
+  {
     for (size_t i = 0; i < m_vdpoint.size(); i++)
     {
       CComObject<DragPoint>* const pdp = m_vdpoint[i];
@@ -265,6 +286,7 @@ void Flasher::UIRenderPass2(Sur* const psur)
 
       psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
     }
+  }
 }
 
 void Flasher::RenderBlueprint(Sur* psur, const bool solid)
@@ -284,7 +306,9 @@ void Flasher::GetTimers(vector<HitTimer*>& pvht)
   m_phittimer = pht;
 
   if (m_d.m_tdr.m_TimerEnabled)
+  {
     pvht.push_back(pht);
+  }
 }
 
 void Flasher::GetHitShapes(vector<HitObject*>& pvho)
@@ -370,7 +394,9 @@ void Flasher::RenderSetup()
   {
     std::vector<unsigned int> vpoly(m_numVertices);
     for (unsigned int i = 0; i < m_numVertices; i++)
+    {
       vpoly[i] = i;
+    }
 
     PolygonToTriangles(vvertex, vpoly, vtri, false);
   }
@@ -398,7 +424,9 @@ void Flasher::RenderSetup()
   NumVideoBytes += (int)(m_numVertices * sizeof(Vertex3D_TexelOnly));
 
   if (m_vertices)
+  {
     delete[] m_vertices;
+  }
   m_vertices = new Vertex3D_TexelOnly[m_numVertices];
 
   m_minx = FLT_MAX;
@@ -415,13 +443,21 @@ void Flasher::RenderSetup()
     m_vertices[i].z = 0;
 
     if (pv0->x > m_maxx)
+    {
       m_maxx = pv0->x;
+    }
     if (pv0->x < m_minx)
+    {
       m_minx = pv0->x;
+    }
     if (pv0->y > m_maxy)
+    {
       m_maxy = pv0->y;
+    }
     if (pv0->y < m_miny)
+    {
       m_miny = pv0->y;
+    }
   }
 
   const float inv_width = 1.0f / (m_maxx - m_minx);
@@ -541,8 +577,12 @@ void Flasher::DoCommand(int icmd, int x, int y)
       // Go through vertices (including iSeg itself) counting control points until iSeg
       int icp = 0;
       for (int i = 0; i < (iSeg + 1); i++)
+      {
         if (vvertex[i].controlPoint)
+        {
           icp++;
+        }
+      }
 
       CComObject<DragPoint>* pdp;
       CComObject<DragPoint>::CreateInstance(&pdp);
@@ -591,7 +631,9 @@ HRESULT Flasher::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool backu
 
   HRESULT hr;
   if (FAILED(hr = SavePointData(pstm, hcrypthash)))
+  {
     return hr;
+  }
 
   bw.WriteTag(FID(ENDB));
 
@@ -669,7 +711,9 @@ bool Flasher::LoadToken(const int id, BiffReader* const pbr)
       pbr->GetInt(iTmp);
       //if (iTmp>100) iTmp=100;
       if (iTmp < 0)
+      {
         iTmp = 0;
+      }
       m_d.m_alpha = iTmp;
       break;
     }
@@ -723,8 +767,12 @@ STDMETHODIMP Flasher::InterfaceSupportsErrorInfo(REFIID riid)
   static const IID* arr[] = {&IID_IFlasher};
 
   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
+  {
     if (InlineIsEqualGUID(*arr[i], riid))
+    {
       return S_OK;
+    }
+  }
 
   return S_FALSE;
 }
@@ -933,15 +981,25 @@ STDMETHODIMP Flasher::put_Filter(BSTR newVal)
   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_szFilter, MAXNAMEBUFFER, nullptr, nullptr);
 
   if (strcmp(m_szFilter, "Additive") == 0 && m_d.m_filter != Filter_Additive)
+  {
     m_d.m_filter = Filter_Additive;
+  }
   else if (strcmp(m_szFilter, "Multiply") == 0 && m_d.m_filter != Filter_Multiply)
+  {
     m_d.m_filter = Filter_Multiply;
+  }
   else if (strcmp(m_szFilter, "Overlay") == 0 && m_d.m_filter != Filter_Overlay)
+  {
     m_d.m_filter = Filter_Overlay;
+  }
   else if (strcmp(m_szFilter, "Screen") == 0 && m_d.m_filter != Filter_Screen)
+  {
     m_d.m_filter = Filter_Screen;
+  }
   else if (strcmp(m_szFilter, "None") == 0 && m_d.m_filter != Filter_None)
+  {
     m_d.m_filter = Filter_None;
+  }
 
   return S_OK;
 }
@@ -1049,7 +1107,9 @@ STDMETHODIMP Flasher::put_DMD(VARIANT_BOOL newVal)
 STDMETHODIMP Flasher::put_VideoCapWidth(long cWidth)
 {
   if (m_videoCapWidth != cWidth)
+  {
     ResetVideoCap(); //resets capture
+  }
   m_videoCapWidth = cWidth;
 
   return S_OK;
@@ -1058,7 +1118,9 @@ STDMETHODIMP Flasher::put_VideoCapWidth(long cWidth)
 STDMETHODIMP Flasher::put_VideoCapHeight(long cHeight)
 {
   if (m_videoCapHeight != cHeight)
+  {
     ResetVideoCap(); //resets capture
+  }
   m_videoCapHeight = cHeight;
 
   return S_OK;
@@ -1080,7 +1142,9 @@ void Flasher::ResetVideoCap()
 STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
 {
   if (m_videoCapWidth == 0 || m_videoCapHeight == 0)
+  {
     return S_FALSE; //safety.  VideoCapWidth/Height needs to be set prior to this call
+  }
 
   char szWinTitle[MAXNAMEBUFFER];
   WideCharToMultiByteNull(CP_ACP, 0, cWinTitle, -1, szWinTitle, MAXNAMEBUFFER, nullptr, nullptr);
@@ -1096,7 +1160,9 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
   { // VideoCap has not started because no sourcewin found
     m_videoCapHwnd = ::FindWindow(0, szWinTitle);
     if (m_videoCapHwnd == nullptr)
+    {
       return S_FALSE;
+    }
 
     //source videocap found.  lets start!
     GetClientRect(m_videoCapHwnd, &m_videoSourceRect);
@@ -1160,8 +1226,10 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
     DWORD* const __restrict data = (DWORD*)m_videoCapTex->data();
 
     //copy bitmap pixels to texture
-    for (int i = 0; i < (pWidth * pHeight); i++) //!! SSE opt.?
+    for (int i = 0; i < (pWidth * pHeight); i++)
+    { //!! SSE opt.?
       data[i] = pCurrPixel[i] | 0xFF000000u;
+    }
 
     GlobalUnlock(hDIB);
     GlobalFree(hDIB);
@@ -1220,23 +1288,32 @@ void Flasher::RenderDynamic()
   if (m_lockedByLS)
   {
     if (!m_inPlayState)
+    {
       return;
+    }
   }
   //Don't render if invisible (or DMD connection not set)
   else if (!m_d.m_isVisible || m_dynamicVertexBuffer == nullptr || m_ptable->m_reflectionEnabled ||
            (m_d.m_isDMD && !g_pplayer->m_texdmd))
+  {
     return;
+  }
 
   const vec4 color = convertColor(m_d.m_color, (float)m_d.m_alpha * m_d.m_intensity_scale / 100.0f);
   if (color.w == 0.f)
+  {
     return;
+  }
 
   if (color.x == 0.f && color.y == 0.f && color.z == 0.f)
+  {
     return;
+  }
 
-  if (m_d.m_isDMD && (g_pplayer->m_dmdstate ==
-                      0)) // don't draw any DMD, but this case should not happen in the first place
+  if (m_d.m_isDMD && (g_pplayer->m_dmdstate == 0))
+  { // don't draw any DMD, but this case should not happen in the first place
     return;
+  }
 
   const bool alphadmd = (m_d.m_modulate_vs_add < 1.f);
 
@@ -1254,9 +1331,13 @@ void Flasher::RenderDynamic()
 
     pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
     if ((g_pplayer->m_dmdstate == 1) && alphadmd)
+    {
       g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_addBlend);
+    }
     else
+    {
       pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
+    }
 
     /*const unsigned int alphamode = 1; //!! make configurable?
        // add
@@ -1331,16 +1412,26 @@ void Flasher::RenderDynamic()
 
     bool hdrTex0;
     if (pinA && !pinB)
+    {
       hdrTex0 = pinA->IsHDR();
+    }
     else if (!pinA && pinB)
+    {
       hdrTex0 = pinB->IsHDR();
+    }
     else if (pinA && pinB)
+    {
       hdrTex0 = pinA->IsHDR();
+    }
     else
+    {
       hdrTex0 = false;
+    }
 
     if (m_isVideoCap)
+    {
       hdrTex0 = false;
+    }
 
     const vec4 ab(
         (float)m_d.m_filterAmount / 100.0f,
@@ -1359,14 +1450,20 @@ void Flasher::RenderDynamic()
     {
       flasherMode = 0.f;
       if (m_isVideoCap)
+      {
         pd3dDevice->flasherShader->SetTexture(
             SHADER_Texture0,
             g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(m_videoCapTex, false));
+      }
       else
+      {
         pd3dDevice->flasherShader->SetTexture(SHADER_Texture0, pinA, false, true);
+      }
 
       if (!m_d.m_addBlend)
+      {
         flasherData.x = !m_isVideoCap ? pinA->m_alphaTestValue * (float)(1.0 / 255.0) : 0.f;
+      }
 
       //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
     }
@@ -1376,7 +1473,9 @@ void Flasher::RenderDynamic()
       pd3dDevice->flasherShader->SetTexture(SHADER_Texture0, pinB, false, true);
 
       if (!m_d.m_addBlend)
+      {
         flasherData.x = pinB->m_alphaTestValue * (float)(1.0 / 255.0);
+      }
 
       //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
     }
@@ -1384,11 +1483,15 @@ void Flasher::RenderDynamic()
     {
       flasherMode = 1.f;
       if (m_isVideoCap)
+      {
         pd3dDevice->flasherShader->SetTexture(
             SHADER_Texture0,
             g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(m_videoCapTex, false));
+      }
       else
+      {
         pd3dDevice->flasherShader->SetTexture(SHADER_Texture0, pinA, false, true);
+      }
       pd3dDevice->flasherShader->SetTexture(SHADER_Texture1, pinB, false, true);
 
       if (!m_d.m_addBlend)
@@ -1400,7 +1503,9 @@ void Flasher::RenderDynamic()
       //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
     }
     else
+    {
       flasherMode = 2.f;
+    }
 
     pd3dDevice->flasherShader->SetFlasherData(flasherData, flasherMode);
 

@@ -17,7 +17,9 @@ struct DSAudioDevice
   ~DSAudioDevice()
   {
     if (guid)
+    {
       delete guid;
+    }
   }
 };
 
@@ -104,7 +106,9 @@ public:
   {
     const size_t pos = m_szPath.find_last_of('.');
     if (pos == string::npos)
+    {
       return true;
+    }
     return (_stricmp(m_szPath.substr(pos + 1).c_str(), "wav") == 0);
   }
 #else
@@ -112,7 +116,9 @@ public:
   {
     const size_t pos = m_szPath.find_last_of('.');
     if (pos == string::npos)
+    {
       return true;
+    }
     return (_stricmp(m_szPath.substr(pos + 1).c_str(), "wav") == 0);
   }
   bool IsWav2() const
@@ -183,7 +189,9 @@ public:
   ~AudioMusicPlayer()
   {
     if (m_pbackglassds != &m_pds)
+    {
       delete m_pbackglassds;
+    }
   }
 
   void InitPinDirectSound(const HWND hwnd)
@@ -210,7 +218,9 @@ public:
   void ReInitPinDirectSound(const HWND hwnd)
   {
     if (m_pbackglassds != &m_pds)
+    {
       delete m_pbackglassds;
+    }
 
     InitPinDirectSound(hwnd);
   }
@@ -236,7 +246,9 @@ public:
   void StopCopiedWavs()
   {
     for (size_t i = 0; i < m_copiedwav.size(); i++)
+    {
       m_copiedwav[i]->m_pDSBuffer->Stop();
+    }
   }
 
   void StopAndClearCopiedWavs()
@@ -265,7 +277,9 @@ public:
         delete ppsc;
       }
       else
+      {
         i++;
+      }
     }
   }
 
@@ -306,13 +320,17 @@ public:
     }
 
     if (ppsc == nullptr)
+    {
       ppsc = new PinDirectSoundWavCopy(pps);
+    }
 
     if (ppsc->m_pDSBuffer)
     {
       ppsc->PlayInternal(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
       if (!foundsame)
+      {
         m_copiedwav.push_back(ppsc);
+      }
     }
     else // Couldn't or didn't want to create a copy - just play the original
     {

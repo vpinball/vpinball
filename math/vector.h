@@ -77,7 +77,9 @@ public:
   void NormalizeSafe()
   {
     if (!IsZero())
+    {
       Normalize();
+    }
   }
 
   bool IsZero() const { return fabsf(x) <= FLT_MIN && fabsf(y) <= FLT_MIN; }
@@ -164,7 +166,9 @@ public:
   void NormalizeSafe()
   {
     if (!IsZero())
+    {
       Normalize();
+    }
   }
 
   float Dot(const Vertex3Ds& pv) const { return x * pv.x + y * pv.y + z * pv.z; }
@@ -279,7 +283,9 @@ inline Vertex3Ds rotate_to_vector_upper(const Vertex3Ds& vec, const Vertex3Ds& n
                      vec.y * normal.z - vec.x * hzx + vec.z * (normal.y + h * normal.x * normal.x));
   }
   else
+  {
     return -vec;
+  }
 }
 
 // rotate vec from world space (y-up, full sphere) to local space (defined f.e. by the normal of a surface and its implicit/orthogonal tangents),
@@ -308,7 +314,9 @@ inline Vertex3Ds rotate_to_vector_full(const Vertex3Ds& vec, const Vertex3Ds& no
                      vec.y * normal.z - vec.x * hzx + vec.z * (normal.y + h * xx));
   }
   else
+  {
     return (normal.y < 0.0f) ? -vec : vec;
+  }
 }
 
 class Vertex4D

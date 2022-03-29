@@ -15,7 +15,9 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
   int maxTexDim =
       LoadValueIntWithDefault("Player", "MaxTexDimension", 0); // default: Don't resize textures
   if (maxTexDim <= 0)
+  {
     maxTexDim = 65536;
+  }
 
   const int pictureWidth = FreeImage_GetWidth(dib);
   const int pictureHeight = FreeImage_GetHeight(dib);
@@ -43,9 +45,13 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
        * The following code tries to maintain the aspect ratio while resizing.
        */
       if (pictureWidth - newWidth > pictureHeight - newHeight)
+      {
         newHeight = min(pictureHeight * newWidth / pictureWidth, maxTexDim);
+      }
       else
+      {
         newWidth = min(pictureWidth * newHeight / pictureHeight, maxTexDim);
+      }
       dibResized = FreeImage_Rescale(
           dib, newWidth, newHeight,
           FILTER_BILINEAR); //!! use a better filter in case scale ratio is pretty high?
@@ -63,7 +69,9 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
     {
       maxTexDim /= 2;
       while ((maxTexDim > pictureHeight) && (maxTexDim > pictureWidth))
+      {
         maxTexDim /= 2;
+      }
 
       continue;
     }
@@ -76,19 +84,25 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
     // already in correct format?
     if (((img_type == FIT_BITMAP) && (FreeImage_GetBPP(dibResized) == 32)) ||
         (img_type == FIT_RGBF))
+    {
       dibConv = dibResized;
+    }
     else
     {
       dibConv = rgbf ? FreeImage_ConvertToRGBF(dibResized) : FreeImage_ConvertTo32Bits(dibResized);
-      if (dibResized != dib) // did we allocate a rescaled copy?
+      if (dibResized != dib)
+      { // did we allocate a rescaled copy?
         FreeImage_Unload(dibResized);
+      }
 
       // failed to get mem?
       if (!dibConv)
       {
         maxTexDim /= 2;
         while ((maxTexDim > pictureHeight) && (maxTexDim > pictureWidth))
+        {
           maxTexDim /= 2;
+        }
 
         continue;
       }
@@ -105,16 +119,24 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
     catch (...)
     {
       if (tex)
+      {
         delete tex;
+      }
 
-      if (dibConv != dibResized) // did we allocate a copy from conversion?
+      if (dibConv != dibResized)
+      { // did we allocate a copy from conversion?
         FreeImage_Unload(dibConv);
-      else if (dibResized != dib) // did we allocate a rescaled copy?
+      }
+      else if (dibResized != dib)
+      { // did we allocate a rescaled copy?
         FreeImage_Unload(dibResized);
+      }
 
       maxTexDim /= 2;
       while ((maxTexDim > pictureHeight) && (maxTexDim > pictureWidth))
+      {
         maxTexDim /= 2;
+      }
     }
   }
 
@@ -129,12 +151,18 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
 
   // flip upside down //!! meh, could this be done somewhere else to avoid additional overhead?
   for (int y = 0; y < height; ++y)
+  {
     memcpy(pdst + (height - y - 1) * pitchdst, psrc + y * pitchsrc, pitch);
+  }
 
-  if (dibConv != dibResized) // did we allocate a copy from conversion?
+  if (dibConv != dibResized)
+  { // did we allocate a copy from conversion?
     FreeImage_Unload(dibConv);
-  else if (dibResized != dib) // did we allocate a rescaled copy?
+  }
+  else if (dibResized != dib)
+  { // did we allocate a rescaled copy?
     FreeImage_Unload(dibResized);
+  }
   FreeImage_Unload(dib);
 
   return tex;
@@ -143,7 +171,9 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
 BaseTexture* BaseTexture::CreateFromFile(const string& szfile)
 {
   if (szfile.empty())
+  {
     return nullptr;
+  }
 
   FREE_IMAGE_FORMAT fif;
 
@@ -161,7 +191,9 @@ BaseTexture* BaseTexture::CreateFromFile(const string& szfile)
     // ok, let's load the file
     FIBITMAP* const dib = FreeImage_Load(fif, szfile.c_str(), 0);
     if (!dib)
+    {
       return nullptr;
+    }
 
     BaseTexture* const mySurface = BaseTexture::CreateFromFreeImage(dib);
 
@@ -171,7 +203,9 @@ BaseTexture* BaseTexture::CreateFromFile(const string& szfile)
     return mySurface;
   }
   else
+  {
     return nullptr;
+  }
 }
 
 BaseTexture* BaseTexture::CreateFromData(const void* data, const size_t size)
@@ -179,7 +213,9 @@ BaseTexture* BaseTexture::CreateFromData(const void* data, const size_t size)
   // check the file signature and deduce its format
   FIMEMORY* const dataHandle = FreeImage_OpenMemory((BYTE*)data, (DWORD)size);
   if (!dataHandle)
+  {
     return nullptr;
+  }
   const FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(dataHandle, (int)size);
 
   // check that the plugin has reading capabilities ...
@@ -189,7 +225,9 @@ BaseTexture* BaseTexture::CreateFromData(const void* data, const size_t size)
     FIBITMAP* const dib = FreeImage_LoadFromMemory(fif, dataHandle, 0);
     FreeImage_CloseMemory(dataHandle);
     if (!dib)
+    {
       return nullptr;
+    }
 
     BaseTexture* const mySurface = BaseTexture::CreateFromFreeImage(dib);
 
@@ -212,7 +250,9 @@ static FIBITMAP* HBitmapToFreeImage(HBITMAP hbmp)
   GetObject(hbmp, sizeof(BITMAP), &bm);
   FIBITMAP* dib = FreeImage_Allocate(bm.bmWidth, bm.bmHeight, bm.bmBitsPixel);
   if (!dib)
+  {
     return nullptr;
+  }
   // The GetDIBits function clears the biClrUsed and biClrImportant BITMAPINFO members (dont't know why)
   // So we save these infos below. This is needed for palettized images only.
   const int nColors = FreeImage_GetColorsUsed(dib);
@@ -230,7 +270,9 @@ BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbm)
 {
   FIBITMAP* const dib = HBitmapToFreeImage(hbm);
   if (!dib)
+  {
     return nullptr;
+  }
   BaseTexture* const pdds = BaseTexture::CreateFromFreeImage(dib);
   return pdds;
 }
@@ -286,7 +328,9 @@ HRESULT Texture::SaveToStream(IStream* pstream, const PinTable* pt)
       m_ppb->SaveToStream(pstream);
     }
     else
+    {
       bw.WriteInt(FID(LINK), 1);
+    }
   }
   bw.WriteFloat(FID(ALTV), m_alphaTestValue);
   bw.WriteTag(FID(ENDB));
@@ -306,7 +350,9 @@ HRESULT Texture::LoadFromStream(IStream* pstream, int version, PinTable* pt)
 bool Texture::LoadFromMemory(BYTE* const data, const DWORD size)
 {
   if (m_pdsBuffer)
+  {
     FreeStuff();
+  }
 
   const int maxTexDim =
       LoadValueIntWithDefault("Player", "MaxTexDimension", 0); // default: Don't resize textures
@@ -329,7 +375,9 @@ bool Texture::LoadFromMemory(BYTE* const data, const DWORD size)
       catch (...)
       {
         if (tex)
+        {
           delete tex;
+        }
 
         goto freeimage_fallback;
       }
@@ -340,11 +388,13 @@ bool Texture::LoadFromMemory(BYTE* const data, const DWORD size)
       assert(tex->pitch() == x * 4);
       unsigned int o = 0;
       for (int yo = 0; yo < y; ++yo)
+      {
         for (int xo = 0; xo < x; ++xo, ++o)
         {
           const DWORD src = psrc[o];
           pdst[o] = (src & 0xFF00FF00u) | _rotl(src & 0x00FF00FFu, 16);
         }
+      }
 
       stbi_image_free(stbi_data);
 
@@ -362,12 +412,16 @@ freeimage_fallback:
 
   FIMEMORY* const hmem = FreeImage_OpenMemory(data, size);
   if (!hmem)
+  {
     return false;
+  }
   const FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(hmem, 0);
   FIBITMAP* const dib = FreeImage_LoadFromMemory(fif, hmem, 0);
   FreeImage_CloseMemory(hmem);
   if (!dib)
+  {
     return false;
+  }
 
   m_pdsBuffer = BaseTexture::CreateFromFreeImage(dib);
   SetSizeFrom(m_pdsBuffer);
@@ -397,7 +451,9 @@ bool Texture::LoadToken(const int id, BiffReader* const pbr)
     case FID(BITS):
     {
       if (m_pdsBuffer)
+      {
         FreeStuff();
+      }
 
       m_pdsBuffer = new BaseTexture(m_width, m_height, BaseTexture::RGBA, true);
       SetSizeFrom(m_pdsBuffer);
@@ -438,7 +494,9 @@ bool Texture::LoadToken(const int id, BiffReader* const pbr)
         {
           unsigned int o = i * lpitch + 3;
           for (int l = 0; l < m_width; l++, o += 4)
+          {
             pch[o] = 0xff;
+          }
         }
       }
 
@@ -474,7 +532,9 @@ void Texture::FreeStuff()
   if (m_hbmGDIVersion)
   {
     if (m_hbmGDIVersion != g_pvp->m_hbmInPlayMode)
+    {
       DeleteObject(m_hbmGDIVersion);
+    }
     m_hbmGDIVersion = nullptr;
   }
   if (m_ppb)
@@ -487,7 +547,9 @@ void Texture::FreeStuff()
 void Texture::CreateGDIVersion()
 {
   if (m_hbmGDIVersion)
+  {
     return;
+  }
 
   if (g_pvp->m_table_played_via_command_line ||
       g_pvp
@@ -524,7 +586,9 @@ void Texture::CreateGDIVersion()
                 needs_conversion ? tmp : m_pdsBuffer->data(), &bmi, DIB_RGB_COLORS, SRCCOPY);
 
   if (needs_conversion)
+  {
     delete[] tmp;
+  }
 
   SelectObject(hdcNew, hbmOld);
   DeleteDC(hdcNew);
@@ -550,10 +614,14 @@ void Texture::CreateFromResource(const int id)
                                          0, LR_CREATEDIBSECTION);
 
   if (m_pdsBuffer)
+  {
     FreeStuff();
+  }
 
   if (hbm == nullptr)
+  {
     return;
+  }
 
   m_pdsBuffer = CreateFromHBitmap(hbm);
 }

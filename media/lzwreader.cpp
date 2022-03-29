@@ -118,14 +118,18 @@ int LZWReader::get_next_code()
           */
       pbytes = byte_buff;
       if ((navail_bytes = get_byte()) < 0)
+      {
         return (navail_bytes);
+      }
       else if (navail_bytes)
       {
         for (int i = 0; i < navail_bytes; ++i)
         {
           int x;
           if ((x = get_byte()) < 0)
+          {
             return (x);
+          }
           byte_buff[i] = (BYTE)x;
         }
       }
@@ -145,14 +149,18 @@ int LZWReader::get_next_code()
           */
       pbytes = byte_buff;
       if ((navail_bytes = get_byte()) < 0)
+      {
         return (navail_bytes);
+      }
       else if (navail_bytes)
       {
         for (int i = 0; i < navail_bytes; ++i)
         {
           int x;
           if ((x = get_byte()) < 0)
+          {
             return (x);
+          }
           byte_buff[i] = (BYTE)x;
         }
       }
@@ -256,13 +264,17 @@ short LZWReader::Decoder()
           * (Another unlikely, but possible case...)
           */
       while ((c = get_next_code()) == clear)
+      {
         ;
+      }
 
       /* If we get an ending code immediately after a clear code
           * (Yet another unlikely case), then break out of the loop.
           */
       if (c == ending)
+      {
         break;
+      }
 
       /* Finally, if the code is beyond the range of already set codes,
           * (This one had better NOT happen...  I have no idea what will
@@ -270,7 +282,9 @@ short LZWReader::Decoder()
           * to color zero.
           */
       if (c >= slot)
+      {
         c = 0;
+      }
 
       oc = fc = c;
 
@@ -280,7 +294,9 @@ short LZWReader::Decoder()
           * routine...
           */
       if (bufptr)
+      {
         *bufptr++ = (BYTE)c;
+      }
 
       if (--bufcnt == 0)
       {
@@ -308,7 +324,9 @@ short LZWReader::Decoder()
       {
 #ifdef _DEBUG
         if (code > slot)
+        {
           ++bad_code_count;
+        }
 #endif
         code = oc;
         *sp++ = (BYTE)fc;
@@ -339,11 +357,13 @@ short LZWReader::Decoder()
         oc = c;
       }
       if (slot >= top_slot)
+      {
         if (curr_size < 12)
         {
           top_slot <<= 1;
           ++curr_size;
         }
+      }
 
       /* Now that we've pushed the decoded string (in reverse order)
           * onto the stack, lets pop it off and put it into our decode

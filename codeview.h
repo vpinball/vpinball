@@ -538,7 +538,9 @@ inline void RemovePadding(string& line)
   if (Pos > 0)
   {
     if ((SSIZE_T)(LL - Pos) < 1)
+    {
       return;
+    }
     line = line.substr(Pos, (LL - Pos));
   }
 
@@ -546,7 +548,9 @@ inline void RemovePadding(string& line)
   if (Pos != string::npos)
   {
     if (Pos < 1)
+    {
       return;
+    }
     line = line.erase(Pos + 1);
   }
 }
@@ -555,7 +559,9 @@ inline string ParseRemoveVBSLineComments(string& Line)
 {
   const size_t commentIdx = Line.find('\'');
   if (commentIdx == string::npos)
+  {
     return string();
+  }
   string RetVal = Line.substr(commentIdx + 1, string::npos);
   RemovePadding(RetVal);
   if (commentIdx > 0)
@@ -572,7 +578,9 @@ inline void szLower(char* pC)
   while (*pC)
   {
     if (*pC >= 'A' && *pC <= 'Z')
+    {
       *pC += ('a' - 'A');
+    }
     pC++;
   }
 }
@@ -582,7 +590,9 @@ inline void szUpper(char* pC)
   while (*pC)
   {
     if (*pC >= 'a' && *pC <= 'z')
+    {
       *pC -= ('a' - 'A');
+    }
     pC++;
   }
 }

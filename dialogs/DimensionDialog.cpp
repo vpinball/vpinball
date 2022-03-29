@@ -81,7 +81,9 @@ BOOL DimensionDialog::OnInitDialog()
   ListView_InsertColumn(listHwnd, 2, &lvc);
 
   if (listHwnd != nullptr)
+  {
     ListView_DeleteAllItems(listHwnd);
+  }
   lv.mask = LVIF_TEXT;
   for (int i = 0; i < DIM_TABLE_SIZE; i++)
   {
@@ -113,7 +115,9 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
           NMLISTVIEW* const plistview = (LPNMLISTVIEW)lParam;
           const int idx = plistview->iItem;
           if (idx >= DIM_TABLE_SIZE || idx < 0)
+          {
             break;
+          }
 
           const int width = (int)(dimTable[idx].width * 47.0f + 0.5f);
           const int height = (int)(dimTable[idx].height * 47.0f + 0.5f);
@@ -153,7 +157,9 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             const CString textStr(GetDlgItemText(IDC_SIZE_WIDTH));
             ret = sscanf_s(textStr.c_str(), "%f", &sizeWidth);
             if (ret != 1 || sizeWidth < 0.0f)
+            {
               sizeWidth = 0;
+            }
             const int width = (int)(sizeWidth * 47.0f + 0.5f);
             char textBuf[MAXNAMEBUFFER];
             sprintf_s(textBuf, "%i", width);
@@ -165,7 +171,9 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             const CString textStr(GetDlgItemText(IDC_SIZE_HEIGHT));
             ret = sscanf_s(textStr.c_str(), "%f", &sizeHeight);
             if (ret != 1 || sizeHeight < 0.0f)
+            {
               sizeHeight = 0;
+            }
             const int height = (int)(sizeHeight * 47.0f + 0.5f);
             char textBuf[MAXNAMEBUFFER];
             sprintf_s(textBuf, "%i", height);
@@ -177,7 +185,9 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             const CString textStr(GetDlgItemText(IDC_VP_WIDTH));
             ret = sscanf_s(textStr.c_str(), "%i", &vpWidth);
             if (ret != 1 || vpWidth < 0)
+            {
               vpWidth = 0;
+            }
             const float width = (float)vpWidth / 47.0f;
             char textBuf[MAXNAMEBUFFER];
             sprintf_s(textBuf, "%.3f", width);
@@ -189,7 +199,9 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             const CString textStr(GetDlgItemText(IDC_VP_HEIGHT));
             ret = sscanf_s(textStr.c_str(), "%i", &vpHeight);
             if (ret != 1 || vpHeight < 0)
+            {
               vpHeight = 0;
+            }
             const float height = (float)vpHeight / 47.0f;
             char textBuf[MAXNAMEBUFFER];
             sprintf_s(textBuf, "%.03f", height);
@@ -227,12 +239,16 @@ BOOL DimensionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       textStr = GetDlgItemText(IDC_VP_WIDTH);
       ret = sscanf_s(textStr.c_str(), "%i", &vpWidth);
       if (ret != 1 || vpWidth < 0)
+      {
         vpWidth = 0;
+      }
 
       textStr = GetDlgItemText(IDC_VP_HEIGHT);
       ret = sscanf_s(textStr.c_str(), "%i", &vpHeight);
       if (ret != 1 || vpHeight < 0)
+      {
         vpHeight = 0;
+      }
       pt->put_Width((float)vpWidth);
       pt->put_Height((float)vpHeight);
       break;

@@ -36,18 +36,24 @@ void Matrix3D::Invert()
     {
       const float c = m[j][k] * d;
       for (int i = 0; i < 4; ++i)
+      {
         m[j][i] -= m[k][i] * c;
+      }
       m[j][k] = c;
     }
     for (int j = k + 1; j < 4; ++j)
     {
       const float c = m[j][k] * d;
       for (int i = 0; i < 4; ++i)
+      {
         m[j][i] -= m[k][i] * c;
+      }
       m[j][k] = c;
     }
     for (int i = 0; i < 4; ++i)
+    {
       m[k][i] = -m[k][i] * d;
+    }
     m[k][k] = d;
   }
 
@@ -168,8 +174,12 @@ Vertex3Ds RotateAround(const Vertex3Ds& pvAxis, const Vertex2D& pvPoint, const f
 D3DXMATRIX::D3DXMATRIX()
 {
   for (size_t i = 0; i < 4; ++i)
+  {
     for (size_t j = 0; j < 4; ++j)
+    {
       m[i][j] = (i == j) ? 1.0f : 0.0f;
+    }
+  }
 }
 
 D3DXMATRIX::D3DXMATRIX(const D3DXMATRIX& input)
@@ -208,7 +218,9 @@ vec4 vec4::normal(const vec4& input)
 {
   float len = input.x * input.x + input.y * input.y + input.z * input.z + input.w * input.w;
   if (len <= 1.e-10f)
+  {
     return vec4(0.0f, 0.0f, 0.0f, 0.0f);
+  }
   len = 1.0f / sqrtf(len);
   return vec4(input.x * len, input.y * len, input.z * len, input.w * len);
 }
@@ -245,7 +257,9 @@ vec3 vec3::normal(const vec3& input)
 {
   float len = input.x * input.x + input.y * input.y + input.z * input.z;
   if (len <= 1.e-10f)
+  {
     return vec3(0.0f, 0.0f, 0.0f);
+  }
   len = 1.0f / sqrtf(len);
   return vec3(input.x * len, input.y * len, input.z * len);
 }
@@ -264,7 +278,9 @@ vec3 vec3::TransformCoord(const vec3& vec, const Matrix3D& mat)
 {
   float w = (vec.x * mat._14 + vec.y * mat._24 + vec.z * mat._34 + mat._44);
   if (w <= 1.e-10f)
+  {
     return vec3(0.0f, 0.0f, 0.0f);
+  }
   w = 1.0f / w;
   return vec3(w * (vec.x * mat._11 + vec.y * mat._21 + vec.z * mat._31 + mat._41),
               w * (vec.x * mat._12 + vec.y * mat._22 + vec.z * mat._32 + mat._42),

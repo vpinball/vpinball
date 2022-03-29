@@ -27,9 +27,11 @@ void set_lowest_possible_win_timer_resolution()
   // this gives the system much finer timeslices (usually 1-2ms)
   win_timer_result = timeGetDevCaps(&win_timer_caps, sizeof(win_timer_caps));
   if (win_timer_result == TIMERR_NOERROR)
+  {
     timeBeginPeriod(win_timer_caps.wPeriodMin);
+  }
 
-    // Then try the even finer sliced (usually 0.5ms) low level variant
+  // Then try the even finer sliced (usually 0.5ms) low level variant
 #ifdef USE_LOWLEVEL_PRECISION_SETTING
   hNtDll = LoadLibrary("NtDll.dll");
   if (hNtDll)
@@ -41,14 +43,18 @@ void set_lowest_possible_win_timer_resolution()
     {
       ULONG min_period, tmp;
       NtQueryTimerResolution(&tmp, &min_period, &win_timer_old_period);
-      if (min_period <
-          4500) // just to not screw around too much with the time (i.e. potential timer improvements in future HW/OSs), limit timer period to 0.45ms (picked 0.45 here instead of 0.5 as apparently some current setups can feature values just slightly below 0.5, so just leave them at this native rate then)
+      if (min_period < 4500)
+      { // just to not screw around too much with the time (i.e. potential timer improvements in future HW/OSs), limit timer period to 0.45ms (picked 0.45 here instead of 0.5 as apparently some current setups can feature values just slightly below 0.5, so just leave them at this native rate then)
         min_period = 5000;
-      if (min_period <
-          10000) // only set this if smaller 1ms, cause otherwise timeBeginPeriod already did the job
+      }
+      if (min_period < 10000)
+      { // only set this if smaller 1ms, cause otherwise timeBeginPeriod already did the job
         NtSetTimerResolution(min_period, TRUE, &tmp);
+      }
       else
+      {
         win_timer_old_period = -1;
+      }
     }
   }
 #endif
@@ -96,7 +102,9 @@ void wintimer_init()
 unsigned long long usec()
 {
   if (sTimerInit == 0)
+  {
     return 0;
+  }
 
   LARGE_INTEGER TimerNow;
   QueryPerformanceCounter(&TimerNow);
@@ -110,7 +118,9 @@ unsigned long long usec()
 U32 msec()
 {
   if (sTimerInit == 0)
+  {
     return 0;
+  }
 
   LARGE_INTEGER TimerNow;
   QueryPerformanceCounter(&TimerNow);
@@ -124,7 +134,9 @@ U32 msec()
 void uSleep(const unsigned long long u)
 {
   if (sTimerInit == 0)
+  {
     return;
+  }
 
   LARGE_INTEGER TimerNow;
   QueryPerformanceCounter(&TimerNow);
@@ -135,9 +147,13 @@ void uSleep(const unsigned long long u)
   while (TimerNow.QuadPart < TimerEnd.QuadPart)
   {
     if ((TimerEnd.QuadPart - TimerNow.QuadPart) > TwoMSTimerTicks)
+    {
       Sleep(1); // really pause thread for 1-2ms (depending on OS)
+    }
     else
+    {
       YieldProcessor(); // was: "SwitchToThread() let other threads on same core run" //!! could also try Sleep(0) or directly use _mm_pause() instead of YieldProcessor() here
+    }
 
     QueryPerformanceCounter(&TimerNow);
   }
@@ -149,7 +165,9 @@ void uSleep(const unsigned long long u)
 void uOverSleep(const unsigned long long u)
 {
   if (sTimerInit == 0)
+  {
     return;
+  }
 
   LARGE_INTEGER TimerNow;
   QueryPerformanceCounter(&TimerNow);
@@ -196,9 +214,13 @@ double AngleOfDay(const unsigned int day, const unsigned int month, const unsign
 
   unsigned int numOfDays = 0;
   for (unsigned int i = 1; i < month; i++)
+  {
     numOfDays += daysPerMonths[i - 1];
+  }
   if ((month > 2) && leapYear)
+  {
     numOfDays++;
+  }
   numOfDays += day;
 
   return ((2. * M_PI) * (numOfDays - 1)) / totalDaysInYear;
@@ -302,12 +324,16 @@ double MaxTheoreticRadiation(const unsigned int year, const double rlat) // radi
 {
   double maxTR = 0.;
   for (unsigned int month = 0; month < 12; ++month)
+  {
     for (unsigned int day = 0; day < daysPerMonths[month]; ++day)
     {
       const double TR = TheoreticRadiation(day, month, year, rlat);
       if (TR > maxTR)
+      {
         maxTR = TR;
+      }
     }
+  }
   return maxTR;
 }
 

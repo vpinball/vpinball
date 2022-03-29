@@ -41,7 +41,9 @@ void IndexBuffer::CreateIndexBuffer(const unsigned int numIndices,
           ->CreateIndexBuffer(idxSize * numIndices, usage | USAGE_STATIC, (D3DFORMAT)format,
                               (D3DPOOL)memoryPool::DEFAULT, &ib->m_ib, nullptr);
   if (FAILED(hr))
+  {
     ReportError("Fatal Error: unable to create index buffer!", hr, __FILE__, __LINE__);
+  }
   ib->m_dN = dN;
 #endif
   *idxBuffer = ib;
@@ -137,9 +139,13 @@ void IndexBuffer::lock(const unsigned int offsetToLock,
   m_curLockCalls++;
 #ifdef ENABLE_SDL
   if (sizeToLock == 0)
+  {
     this->sizeToLock = size;
+  }
   else
+  {
     this->sizeToLock = sizeToLock;
+  }
 
   if (offsetToLock < size)
   {
@@ -163,9 +169,13 @@ void IndexBuffer::unlock()
 {
 #ifdef ENABLE_SDL
   if (COMBINE_BUFFERS == 0 || usage != GL_STATIC_DRAW || Buffer > 0)
+  {
     UploadData(true);
+  }
   else
+  {
     addToNotUploadedBuffers();
+  }
 #else
   CHECKD3D(m_ib->Unlock());
 #endif
@@ -188,7 +198,9 @@ void IndexBuffer::bind()
 {
 #ifdef ENABLE_SDL
   if (!isUploaded)
+  {
     IndexBuffer::UploadBuffers(); //Should never happen...
+  }
   if (m_curIndexBuffer == nullptr || Buffer != m_curIndexBuffer->Buffer)
   {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffer);
@@ -208,7 +220,9 @@ void IndexBuffer::bind()
 void IndexBuffer::UploadData(bool freeData)
 {
   if (isUploaded || !dataBuffer)
+  {
     return;
+  }
 
   if (Buffer == 0)
   {
@@ -220,12 +234,16 @@ void IndexBuffer::UploadData(bool freeData)
     offset = 0;
   }
   else
+  {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffer);
+  }
   glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset + offsetToLock,
                   min(sizeToLock, size - offsetToLock), dataBuffer);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   if (freeData)
+  {
     free(dataBuffer);
+  }
   dataBuffer = nullptr;
   isUploaded = true;
 }
@@ -234,7 +252,9 @@ void IndexBuffer::addToNotUploadedBuffers(const void* indices)
 {
   if (std::find(notUploadedBuffers.begin(), notUploadedBuffers.end(), this) ==
       notUploadedBuffers.end())
+  {
     notUploadedBuffers.push_back(this);
+  }
   else if (indices)
   {
     //merge dataBuffer and indices...
@@ -243,7 +263,9 @@ void IndexBuffer::addToNotUploadedBuffers(const void* indices)
   if (indices && indices != dataBuffer)
   {
     if (dataBuffer)
+    {
       free(dataBuffer);
+    }
     dataBuffer = malloc(size);
     memcpy(dataBuffer, indices, size);
   }
@@ -254,7 +276,9 @@ void IndexBuffer::addToNotUploadedBuffers(const void* indices)
 void IndexBuffer::UploadBuffers()
 {
   if (notUploadedBuffers.size() == 0)
+  {
     return;
+  }
 
   int size16 = 0;
   int size32 = 0;
@@ -270,7 +294,9 @@ void IndexBuffer::UploadBuffers()
     if (!(*it)->isUploaded && (*it)->usage == GL_STATIC_DRAW)
     {
       if ((*it)->Buffer > 0 && !(*it)->sharedBuffer)
+      {
         glDeleteBuffers(1, &(*it)->Buffer);
+      }
       if ((*it)->indexFormat == FMT_INDEX16)
       {
         (*it)->offset = size16;
@@ -299,7 +325,9 @@ void IndexBuffer::UploadBuffers()
   }
   //Upload all Buffers
   for (auto it = notUploadedBuffers.begin(); it != notUploadedBuffers.end(); ++it)
+  {
     (*it)->UploadData(true);
+  }
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   notUploadedBuffers.clear();
 }

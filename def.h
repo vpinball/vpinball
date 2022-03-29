@@ -60,22 +60,34 @@ template<typename T>
 __forceinline T clamp(const T x, const T min, const T max)
 {
   if (x < min)
+  {
     return min;
+  }
   else if (x > max)
+  {
     return max;
+  }
   else
+  {
     return x;
+  }
 }
 
 template<typename T>
 __forceinline T saturate(const T x)
 {
   if (x < T(0))
+  {
     return T(0);
+  }
   else if (x > T(1))
+  {
     return T(1);
+  }
   else
+  {
     return x;
+  }
 }
 
 template<typename T>
@@ -89,7 +101,9 @@ inline void RemoveFromVectorSingle(std::vector<T>& v, const T& val)
 {
   typename std::vector<T>::const_iterator it = std::find(v.begin(), v.end(), val);
   if (it != v.end())
+  {
     v.erase(it);
+  }
 }
 
 template<typename T>
@@ -97,9 +111,13 @@ inline int FindIndexOf(const std::vector<T>& v, const T& val)
 {
   typename std::vector<T>::const_iterator it = std::find(v.begin(), v.end(), val);
   if (it != v.end())
+  {
     return (int)(it - v.begin());
+  }
   else
+  {
     return -1;
+  }
 }
 
 #define fTrue 1
@@ -454,8 +472,12 @@ float radical_inverse(unsigned int a)
 __forceinline float sobol(unsigned int i, unsigned int scramble = 0)
 {
   for (unsigned int v = 1u << 31; (i != 0); i >>= 1, v ^= v >> 1)
+  {
     if (i & 1)
+    {
       scramble ^= v;
+    }
+  }
 
   return (float)scramble * 0.00000000023283064365386962890625f; // /2^32
 }
@@ -468,7 +490,9 @@ inline void RemoveSpaces(char* const source)
   {
     *i = *j++;
     if (!isspace(*i))
+    {
       i++;
+    }
   }
   *i = '\0';
 }
@@ -523,7 +547,9 @@ inline int WideCharToMultiByteNull(const UINT CodePage,
   const int res = WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr, cchWideChar, lpMultiByteStr,
                                       cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
   if (cbMultiByte > 0 && lpMultiByteStr)
+  {
     lpMultiByteStr[cbMultiByte - 1] = '\0';
+  }
   return res;
 }
 
@@ -539,7 +565,9 @@ inline int MultiByteToWideCharNull(const UINT CodePage,
   const int res = MultiByteToWideChar(CodePage, dwFlags, lpMultiByteStr, cbMultiByte, lpWideCharStr,
                                       cchWideChar);
   if (cchWideChar > 0 && lpWideCharStr)
+  {
     lpWideCharStr[cchWideChar - 1] = L'\0';
+  }
   return res;
 }
 

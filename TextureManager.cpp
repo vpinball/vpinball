@@ -16,7 +16,9 @@ D3DTexture* TextureManager::LoadTexture(BaseTexture* memtex,
     texinfo.d3dtex =
         m_rd.UploadTexture(memtex, &texinfo.texWidth, &texinfo.texHeight, linearRGB, clamptoedge);
     if (!texinfo.d3dtex)
+    {
       return 0;
+    }
     texinfo.dirty = false;
     m_map[memtex] = texinfo;
     return texinfo.d3dtex;
@@ -36,7 +38,9 @@ void TextureManager::SetDirty(BaseTexture* memtex)
 {
   const Iter it = m_map.find(memtex);
   if (it != m_map.end())
+  {
     it->second.dirty = true;
+  }
 }
 
 void TextureManager::UnloadTexture(BaseTexture* memtex)
@@ -52,7 +56,9 @@ void TextureManager::UnloadTexture(BaseTexture* memtex)
 void TextureManager::UnloadAll()
 {
   for (Iter it = m_map.begin(); it != m_map.end(); ++it)
+  {
     SAFE_RELEASE(it->second.d3dtex);
+  }
 
   m_map.clear();
 }

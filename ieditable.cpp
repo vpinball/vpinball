@@ -28,7 +28,9 @@ void IEditable::Delete()
   MarkForDelete();
 
   if (GetScriptable())
+  {
     GetPTable()->m_pcv->RemoveItem(GetScriptable());
+  }
 
   for (size_t i = 0; i < m_vCollection.size(); i++)
   {
@@ -41,7 +43,9 @@ void IEditable::Uncreate()
 {
   RemoveFromVectorSingle(GetPTable()->m_vedit, (IEditable*)this);
   if (GetScriptable())
+  {
     GetPTable()->m_pcv->RemoveItem(GetScriptable());
+  }
 }
 
 HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL* pte)
@@ -55,12 +59,14 @@ HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL* pte)
     // to avoid problems with timers dis/enabling themselves, store all the changes in a list
     bool found = false;
     for (size_t i = 0; i < g_pplayer->m_changed_vht.size(); ++i)
+    {
       if (g_pplayer->m_changed_vht[i].m_timer == m_phittimer)
       {
         g_pplayer->m_changed_vht[i].m_enabled = !!val;
         found = true;
         break;
       }
+    }
 
     if (!found)
     {
@@ -71,10 +77,14 @@ HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL* pte)
     }
 
     if (val)
+    {
       m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
+    }
     else
+    {
       m_phittimer->m_nextfire =
           0xFFFFFFFF; // fakes the disabling of the timer, until it will be catched by the cleanup via m_changed_vht
+    }
   }
 
   *pte = val;
@@ -135,7 +145,9 @@ void IEditable::BeginPlay()
       m_viEventCollection.push_back(m_viCollection[i]);
     }
     if (pcol->m_stopSingleEvents)
+    {
       m_singleEvents = false;
+    }
   }
 }
 
@@ -190,11 +202,15 @@ char* IEditable::GetName()
 {
   WCHAR* elemName = nullptr;
   if (GetItemType() == eItemDecal)
+  {
     return "Decal";
+  }
 
   IScriptable* const pscript = GetScriptable();
   if (pscript)
+  {
     elemName = pscript->m_wzName;
+  }
 
   if (elemName)
   {
@@ -208,12 +224,18 @@ char* IEditable::GetName()
 void IEditable::SetName(const std::string& name)
 {
   if (name.empty())
+  {
     return;
+  }
   if (GetItemType() == eItemDecal)
+  {
     return;
+  }
   PinTable* const pt = GetPTable();
   if (pt == nullptr)
+  {
     return;
+  }
 
   WCHAR newName[sizeof(GetScriptable()->m_wzName) / sizeof(GetScriptable()->m_wzName[0])];
   const WCHAR* namePtr = newName;
@@ -239,11 +261,15 @@ void IEditable::SetName(const std::string& name)
 void IEditable::InitScript()
 {
   if (!GetScriptable())
+  {
     return;
+  }
 
   if (GetScriptable()->m_wzName[0] == '\0')
+  {
     // Just in case something screws up - not good having a null script name
     swprintf_s(GetScriptable()->m_wzName, L"%d", (long)this);
+  }
 
   GetPTable()->m_pcv->AddItem(GetScriptable(), false);
 }

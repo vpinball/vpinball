@@ -86,11 +86,17 @@ public:
 
     // check for repeated control points
     if (dt1 < 1e-4f)
+    {
       dt1 = 1.0f;
+    }
     if (dt0 < 1e-4f)
+    {
       dt0 = dt1;
+    }
     if (dt2 < 1e-4f)
+    {
       dt2 = dt1;
+    }
 
     InitNonuniformCatmullCoeffs(v0.x, v1.x, v2.x, v3.x, dt0, dt1, dt2, cx0, cx1, cx2, cx3);
     InitNonuniformCatmullCoeffs(v0.y, v1.y, v2.y, v3.y, dt0, dt1, dt2, cy0, cy1, cy2, cy3);
@@ -127,11 +133,17 @@ public:
 
     // check for repeated control points
     if (dt1 < 1e-4f)
+    {
       dt1 = 1.0f;
+    }
     if (dt0 < 1e-4f)
+    {
       dt0 = dt1;
+    }
     if (dt2 < 1e-4f)
+    {
       dt2 = dt1;
+    }
 
     InitNonuniformCatmullCoeffs(v0.x, v1.x, v2.x, v3.x, dt0, dt1, dt2, cx0, cx1, cx2, cx3);
     InitNonuniformCatmullCoeffs(v0.y, v1.y, v2.y, v3.y, dt0, dt1, dt2, cy0, cy1, cy2, cy3);
@@ -258,26 +270,36 @@ inline bool FLinesIntersect(const Vertex2D* const Start1,
 
   const float d123 = (x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1);
 
-  if (d123 == 0.0f) // p3 lies on the same line as p1 and p2
+  if (d123 == 0.0f)
+  { // p3 lies on the same line as p1 and p2
     return (x3 >= min(x1, x2) && x3 <= max(x2, x1));
+  }
 
   const float d124 = (x2 - x1) * (y4 - y1) - (x4 - x1) * (y2 - y1);
 
-  if (d124 == 0.0f) // p4 lies on the same line as p1 and p2
+  if (d124 == 0.0f)
+  { // p4 lies on the same line as p1 and p2
     return (x4 >= min(x1, x2) && x4 <= max(x2, x1));
+  }
 
   if (d123 * d124 >= 0.0f)
+  {
     return false;
+  }
 
   const float d341 = (x3 - x1) * (y4 - y1) - (x4 - x1) * (y3 - y1);
 
-  if (d341 == 0.0f) // p1 lies on the same line as p3 and p4
+  if (d341 == 0.0f)
+  { // p1 lies on the same line as p3 and p4
     return (x1 >= min(x3, x4) && x1 <= max(x3, x4));
+  }
 
   const float d342 = d123 - d124 + d341;
 
-  if (d342 == 0.0f) // p1 lies on the same line as p3 and p4
+  if (d342 == 0.0f)
+  { // p1 lies on the same line as p3 and p4
     return (x2 >= min(x3, x4) && x2 <= max(x3, x4));
+  }
 
   return (d341 * d342 < 0.0f);
 }
@@ -306,7 +328,9 @@ inline bool AdvancePoint(const RenderVertexCont& rgv,
       ((GetDot(pvPre, pv1, pv2) > 0) &&
        (GetDot(pvPre, pv1, pv3) < 0)) || // convex angle, make sure new angle is smaller than it
       ((GetDot(pv2, pv3, pvPost) > 0) && (GetDot(pv1, pv3, pvPost) < 0)))
+  {
     return false;
+  }
 
   // Now make sure the interior segment of this triangle (line ac) does not
   // intersect the polygon anywhere
@@ -329,7 +353,9 @@ inline bool AdvancePoint(const RenderVertexCont& rgv,
         (pvCross1->x >= minx || pvCross2->x >= minx) &&
         (pvCross1->x <= maxx || pvCross2->y <= maxx) &&
         FLinesIntersect(pv1, pv3, pvCross1, pvCross2))
+    {
       return false;
+    }
   }
 
   return true;
@@ -378,10 +404,14 @@ void SetNormal(VtxType* const rgv,
   VtxType* rgvApply = prgvApply ? (VtxType*)prgvApply : rgv;
 
   if (rgiApply == nullptr)
+  {
     rgiApply = rgi;
+  }
 
   if (applycount == 0)
+  {
     applycount = count;
+  }
 
   Vertex3Ds vnormal(0.0f, 0.0f, 0.0f);
 
@@ -445,7 +475,9 @@ inline void ClosestPointOnPolygon(
 
   int cloop = count;
   if (!closed)
+  {
     --cloop; // Don't check segment running from the end point to the beginning point
+  }
 
   // Go through line segment, calculate distance from point to the line
   // then pick the shortest distance
@@ -517,10 +549,16 @@ inline size_t FindCornerVertex(const RenderVertexCont& vertices)
     const RenderVertex vert = vertices[i];
     const float y = vert.y;
     if (y > minY)
+    {
       continue;
+    }
     if (y == minY)
+    {
       if (vert.x >= minXAtMinY)
+      {
         continue;
+      }
+    }
 
     // Minimum so far.
     minVertex = i;
@@ -549,7 +587,9 @@ inline WindingOrder DetermineWindingOrder(const RenderVertexCont& vertices)
   // skip last.
   const RenderVertex lastV = vertices[nVerts - 1];
   if (lastV.x == vertices[0].x && lastV.y == vertices[0].y)
+  {
     nVerts--;
+  }
   const size_t iMinVertex = FindCornerVertex(vertices);
   // Orientation matrix:
   //     [ 1  xa  ya ]
@@ -585,7 +625,9 @@ void PolygonToTriangles(const RenderVertexCont& rgv,
 
   // check if the polygon is in right orientation, otherwise flip it over
   if (support_both_winding_orders && (DetermineWindingOrder(rgv) == Clockwise))
+  {
     std::reverse(pvpoly.begin(), pvpoly.end());
+  }
 
   for (size_t l = 0; l < tricount; ++l)
   //while (pvpoly->Size() > 2)

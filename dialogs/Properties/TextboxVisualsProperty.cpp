@@ -21,7 +21,9 @@ TextboxVisualsProperty::TextboxVisualsProperty(const VectorProtected<ISelect>* p
 TextboxVisualsProperty::~TextboxVisualsProperty()
 {
   if (m_font)
+  {
     delete m_font;
+  }
 }
 
 void TextboxVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
@@ -30,32 +32,56 @@ void TextboxVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemTextbox))
+    {
       continue;
+    }
     Textbox* const text = (Textbox*)m_pvsel->ElementAt(i);
 
     if (dispid == IDC_TEXTBOX_TRANSP_CHECK || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hTransparentCheck, text->m_d.m_transparent);
+    }
     if (dispid == IDC_USE_SCRIPT_DMD_CHECK || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hUseScriptDMDCheck, text->m_d.m_isDMD);
+    }
     if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
+    {
       m_backgroundColorButton.SetColor(text->m_d.m_backcolor);
+    }
     if (dispid == IDC_COLOR_BUTTON2 || dispid == -1)
+    {
       m_textColorButton.SetColor(text->m_d.m_fontcolor);
+    }
     if (dispid == 60000 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_posXEdit, text->m_d.m_v1.x);
+    }
     if (dispid == 60001 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_posYEdit, text->m_d.m_v1.y);
+    }
     if (dispid == 60002 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_widthEdit, text->m_d.m_v2.x - text->m_d.m_v1.x);
+    }
     if (dispid == 60003 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_heightEdit, text->m_d.m_v2.y - text->m_d.m_v1.y);
+    }
     if (dispid == IDC_TEXTBOX_ALIGN_COMBO || dispid == -1)
+    {
       PropertyDialog::UpdateComboBox(m_alignList, m_alignmentCombo,
                                      m_alignList[text->m_d.m_talign]);
+    }
     if (dispid == IDC_TEXT_INTENSITY || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_textIntensityEdit, text->m_d.m_intensity_scale);
+    }
     if (dispid == IDC_TEXTBOX_TEXT_EDIT || dispid == -1)
+    {
       m_textEdit.SetWindowText(text->m_d.m_sztext.c_str());
+    }
 
     if (dispid == IDC_FONT_DIALOG_BUTTON || dispid == -1)
     {
@@ -76,7 +102,9 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemTextbox))
+    {
       continue;
+    }
     Textbox* const text = (Textbox*)m_pvsel->ElementAt(i);
     switch (dispid)
     {
@@ -145,7 +173,9 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
       {
         CComObject<PinTable>* const ptable = g_pvp->GetActiveTable();
         if (ptable == nullptr)
+        {
           break;
+        }
         CHOOSECOLOR cc = m_colorDialog.GetParameters();
         cc.Flags = CC_FULLOPEN | CC_RGBINIT;
         m_colorDialog.SetParameters(cc);
@@ -162,7 +192,9 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
       {
         CComObject<PinTable>* const ptable = g_pvp->GetActiveTable();
         if (ptable == nullptr)
+        {
           break;
+        }
         CHOOSECOLOR cc = m_colorDialog.GetParameters();
         cc.Flags = CC_FULLOPEN | CC_RGBINIT;
         m_colorDialog.SetParameters(cc);

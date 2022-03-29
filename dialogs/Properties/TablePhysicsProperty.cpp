@@ -26,47 +26,83 @@ void TablePhysicsProperty::UpdateVisuals(const int dispid /*=-1*/)
 {
   CComObject<PinTable>* const table = g_pvp->GetActiveTable();
   if (table == nullptr)
+  {
     return;
+  }
 
   if (dispid == IDC_GRAVITY_EDIT || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_gravityConstantEdit, table->GetGravity());
+  }
   if (dispid == IDC_PLAYFIELD_FRICTION_EDIT || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_playfieldFrictionEdit, table->m_friction);
+  }
   if (dispid == IDC_PLAYFIELD_ELASTICITY_EDIT || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_playfieldElasticityEdit, table->m_elasticity);
+  }
   if (dispid == IDC_PLAYFIELD_FALLOFF_EDIT || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_playfieldElasticityFalloffEdit, table->m_elasticityFalloff);
+  }
   if (dispid == IDC_PLAYFIELD_SCATTER_EDIT || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_playfieldScatterEdit, table->m_scatter);
+  }
   if (dispid == IDC_DEFAULT_SCATTER_EDIT || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_defaultScatterEdit, table->m_defaultScatter);
+  }
   if (dispid == IDC_NUDGE_TIME_EDIT || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_nudgeTimeEdit, table->m_nudgeTime);
+  }
   if (dispid == IDC_PHYSICS_MAX_LOOPS_EDIT || dispid == -1)
+  {
     PropertyDialog::SetIntTextbox(m_physicsLoopEdit, table->m_PhysicsMaxLoops);
+  }
   if (dispid == IDC_MECH_PLUNGER_ADJ_EDIT || dispid == -1)
+  {
     PropertyDialog::SetIntTextbox(m_mechPlungerAdjEdit, table->m_plungerNormalize);
+  }
   if (dispid == IDC_FILTER_MECH_PLUNGER_CHECK || dispid == -1)
+  {
     PropertyDialog::SetCheckboxState(m_hFilterMechanicalPlungerCheck, table->m_plungerFilter);
+  }
   if (dispid == IDC_TABLE_WIDTH_EDIT || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_tableWidthEdit, table->GetTableWidth());
+  }
   if (dispid == IDC_TABLE_HEIGHT_EDIT || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_tableHeightEdit, table->GetHeight());
+  }
   if (dispid == IDC_TABLE_GLASS_HEIGHT_EDIT || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_topGlassHeightEdit, table->m_glassheight);
+  }
   if (dispid == IDC_TABLE_FIELD_HEIGHT_EDIT || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_tableFieldHeightEdit, table->m_tableheight);
+  }
   if (dispid == IDC_MIN_DIFFICULTY_EDIT || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_minSlopeEdit, table->m_angletiltMin);
+  }
   if (dispid == IDC_MAX_DIFFICULTY_EDIT || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_maxSlopeEdit, table->m_angletiltMax);
+  }
 }
 
 void TablePhysicsProperty::UpdateProperties(const int dispid)
 {
   CComObject<PinTable>* const table = g_pvp->GetActiveTable();
   if (table == nullptr)
+  {
     return;
+  }
 
   switch (dispid)
   {

@@ -30,7 +30,9 @@ Ramp::~Ramp()
   SAFE_BUFFER_RELEASE(m_dynamicIndexBuffer);
 
   if (m_rgheightInit)
+  {
     delete[] m_rgheightInit;
+  }
 }
 
 void Ramp::UpdateStatusBarInfo()
@@ -106,7 +108,9 @@ void Ramp::SetDefaults(bool fromMouseClick)
 
   const HRESULT hr = LoadValue(strKeyName, "Image", m_d.m_szImage);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_szImage.clear();
+  }
 
   m_d.m_imagealignment =
       fromMouseClick
@@ -223,9 +227,13 @@ void Ramp::UIRenderPass2(Sur* const psur)
   else
   {
     for (int i = 0; i < cvertex; i++)
+    {
       if (pfCross[i])
+      {
         psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex * 2 - i - 1].x,
                    rgvLocal[cvertex * 2 - i - 1].y);
+      }
+    }
   }
 
   delete[] rgvLocal;
@@ -295,9 +303,13 @@ void Ramp::RenderBlueprint(Sur* psur, const bool solid)
   }
 
   for (int i = 0; i < cvertex; i++)
+  {
     if (pfCross[i])
+    {
       psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex * 2 - i - 1].x,
                  rgvLocal[cvertex * 2 - i - 1].y);
+    }
+  }
 
   delete[] rgvLocal;
   delete[] pfCross;
@@ -360,7 +372,9 @@ void Ramp::AssignHeightToControlPoint(const RenderVertex3D& v, const float heigh
   for (size_t i = 0; i < m_vdpoint.size(); i++)
   {
     if (m_vdpoint[i]->m_v.x == v.x && m_vdpoint[i]->m_v.y == v.y)
+    {
       m_vdpoint[i]->m_calcHeight = height;
+    }
   }
 }
 
@@ -440,7 +454,9 @@ Vertex2D* Ramp::GetRampVertex(int& pcvertex,
     const RenderVertex3D& vmiddle = vvertex[i];
 
     if (ppfCross)
+    {
       (*ppfCross)[i] = vmiddle.controlPoint;
+    }
 
     Vertex2D vnormal;
     {
@@ -532,7 +548,9 @@ Vertex2D* Ramp::GetRampVertex(int& pcvertex,
     {
       widthcur = m_d.m_wireDistanceX;
       if (inc_width)
+      {
         widthcur += 20.0f;
+      }
     }
     else if (m_d.m_type == RampType1Wire)
     {
@@ -562,7 +580,9 @@ float Ramp::GetSurfaceHeight(float x, float y) const
   ClosestPointOnPolygon(vvertex, Vertex2D(x, y), vOut, iSeg, false);
 
   if (iSeg == -1)
+  {
     return 0.0f; // Object is not on ramp path
+  }
 
   // Go through vertices (including iSeg itself) counting control points until iSeg
   float totallength = 0.f;
@@ -575,7 +595,9 @@ float Ramp::GetSurfaceHeight(float x, float y) const
     const float dy = vvertex[i2].y - vvertex[i2 - 1].y;
     const float len = sqrtf(dx * dx + dy * dy);
     if (i2 <= iSeg)
+    {
       startlength += len;
+    }
 
     totallength += len;
   }
@@ -609,7 +631,9 @@ void Ramp::GetTimers(vector<HitTimer*>& pvht)
   m_phittimer = pht;
 
   if (m_d.m_tdr.m_TimerEnabled)
+  {
     pvht.push_back(pht);
+  }
 }
 
 // Ported at: VisualPinball.Engine/VPT/Ramp/RampHitGenerator.cs
@@ -675,9 +699,13 @@ void Ramp::GetHitShapes(vector<HitObject*>& pvho)
 
       // add joints at start and end of right wall
       if (i == 0)
+      {
         AddJoint2D(pvho, pv2, rgheight1[0], rgheight1[0] + wallheightright);
+      }
       if (i == cvertex - 2)
+      {
         AddJoint2D(pvho, pv3, rgheight1[cvertex - 1], rgheight1[cvertex - 1] + wallheightright);
+      }
     }
   }
 
@@ -696,9 +724,13 @@ void Ramp::GetHitShapes(vector<HitObject*>& pvho)
 
       // add joints at start and end of left wall
       if (i == 0)
+      {
         AddJoint2D(pvho, pv2, rgheight1[cvertex - 1], rgheight1[cvertex - 1] + wallheightleft);
+      }
       if (i == cvertex - 2)
+      {
         AddJoint2D(pvho, pv3, rgheight1[0], rgheight1[0] + wallheightleft);
+      }
     }
   }
 
@@ -731,7 +763,9 @@ void Ramp::GetHitShapes(vector<HitObject*>& pvho)
 
         // add joint for starting edge of ramp
         if (i == 0)
+        {
           AddJoint(pvho, rgv3D[0], rgv3D[1]);
+        }
 
         // add joint for left edge
         AddJoint(pvho, rgv3D[0], rgv3D[2]);
@@ -845,7 +879,9 @@ void Ramp::CheckJoint(vector<HitObject*>& pvho,
   {
     const Vertex3Ds vjointnormal = CrossProduct(ph3d1->m_normal, ph3d2->m_normal);
     if (vjointnormal.LengthSquared() < 1e-8f)
+    {
       return; // coplanar triangles need no joints
+    }
   }
 
   // By convention of the calling function, points 1 [0] and 2 [1] of the second polygon will
@@ -891,7 +927,9 @@ void Ramp::AddWallLineSeg(vector<HitObject*>& pvho,
     SetupHitObject(pvho, plineseg);
 
     if (pv3_exists)
+    {
       AddJoint2D(pvho, pv1, height1, height2 + wallheight);
+    }
   }
 }
 
@@ -976,8 +1014,10 @@ void Ramp::RenderStaticHabitrail(const Material* const mat)
 
   Texture* const pin = m_ptable->GetImage(m_d.m_szImage);
   if (!pin)
+  {
     pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture,
                                                mat->m_bIsMetal);
+  }
   else
   {
     pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pin, false);
@@ -1176,10 +1216,14 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2** meshBuf1, Vertex3D_NoTex2** meshBu
   // as solid ramps are rendered into the static buffer, always use maximum precision
   const Material* const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
   if (!mat->m_bOpacityActive)
+  {
     accuracy = (int)(10.f * 1.3f); // see above
+  }
 
   if (m_rgheightInit)
+  {
     delete[] m_rgheightInit;
+  }
 
   int splinePoints;
   const Vertex2D* const rgvLocal =
@@ -1192,11 +1236,15 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2** meshBuf1, Vertex3D_NoTex2** meshBu
   m_numIndices = 6 * m_numVertices; //m_numVertices*2+2;
 
   if (*meshBuf1 == nullptr)
+  {
     *meshBuf1 = new Vertex3D_NoTex2[m_numVertices];
+  }
 
   Vertex2D* tmpPoints = new Vertex2D[splinePoints];
   for (int i = 0; i < splinePoints; i++)
+  {
     tmpPoints[i] = rgvLocal[splinePoints * 2 - i - 1];
+  }
 
   m_vertBuffer = new Vertex3D_NoTex2[m_numVertices];
   m_vertBuffer2 = nullptr;
@@ -1206,7 +1254,9 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2** meshBuf1, Vertex3D_NoTex2** meshBu
   {
     m_vertBuffer2 = new Vertex3D_NoTex2[m_numVertices];
     if (*meshBuf2 == nullptr)
+    {
       *meshBuf2 = new Vertex3D_NoTex2[m_numVertices];
+    }
   }
 
   Vertex3D_NoTex2* buf1 = *meshBuf1;
@@ -1217,7 +1267,9 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2** meshBuf1, Vertex3D_NoTex2** meshBu
     CreateWire(numRings, numSegments, tmpPoints, m_vertBuffer2);
   }
   else
+  {
     CreateWire(numRings, numSegments, middlePoints, m_vertBuffer);
+  }
 
   // calculate faces
   for (int i = 0; i < numRings - 1; i++)
@@ -1228,25 +1280,37 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2** meshBuf1, Vertex3D_NoTex2** meshBu
       quad[0] = i * numSegments + j;
 
       if (j != numSegments - 1)
+      {
         quad[1] = i * numSegments + j + 1;
+      }
       else
+      {
         quad[1] = i * numSegments;
+      }
 
       if (i != numRings - 1)
       {
         quad[2] = (i + 1) * numSegments + j;
         if (j != numSegments - 1)
+        {
           quad[3] = (i + 1) * numSegments + j + 1;
+        }
         else
+        {
           quad[3] = (i + 1) * numSegments;
+        }
       }
       else
       {
         quad[2] = j;
         if (j != numSegments - 1)
+        {
           quad[3] = j + 1;
+        }
         else
+        {
           quad[3] = 0;
+        }
       }
 
       const unsigned int offs = (i * numSegments + j) * 6;
@@ -1276,7 +1340,9 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2** meshBuf1, Vertex3D_NoTex2** meshBu
 
   delete[] rgvLocal;
   if (middlePoints)
+  {
     delete[] middlePoints;
+  }
   delete[] tmpPoints;
 }
 
@@ -1298,9 +1364,11 @@ void Ramp::PrepareHabitrail()
       m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_dynamicVertexBuffer,
       PRIMARY_DEVICE); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
   if (m_d.m_type != RampType1Wire)
+  {
     VertexBuffer::CreateVertexBuffer(
         m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_dynamicVertexBuffer2,
         PRIMARY_DEVICE); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
+  }
 
   // Draw the floor of the ramp.
   Vertex3D_NoTex2* buf;
@@ -1335,9 +1403,13 @@ void Ramp::RenderSetup()
   if (m_d.m_visible)
   {
     if (isHabitrail())
+    {
       PrepareHabitrail();
+    }
     else
+    {
       GenerateVertexBuffer();
+    }
   }
 }
 
@@ -1345,16 +1417,22 @@ void Ramp::RenderStatic()
 {
   // return if not Visible
   if (!m_d.m_visible)
+  {
     return;
+  }
 
   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+  {
     return;
+  }
 
   const Material* const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
   // don't render transparent ramps into static buffer, these are done per frame later-on
   if (mat->m_bOpacityActive)
+  {
     return;
+  }
 
   /* TODO: This is a misnomer right now, but clamp fixes some visual glitches (single-pixel lines)
     * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
@@ -1364,9 +1442,13 @@ void Ramp::RenderStatic()
   //    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
 
   if (isHabitrail())
+  {
     RenderStaticHabitrail(mat);
+  }
   else
+  {
     RenderRamp(mat);
+  }
 }
 
 void Ramp::SetObjectPos()
@@ -1430,7 +1512,9 @@ HRESULT Ramp::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool backupFo
   bw.WriteTag(FID(PNTS));
   HRESULT hr;
   if (FAILED(hr = SavePointData(pstm, hcrypthash)))
+  {
     return hr;
+  }
 
   bw.WriteTag(FID(ENDB));
 
@@ -1581,8 +1665,12 @@ void Ramp::AddPoint(int x, int y, const bool smooth)
   // Go through vertices (including iSeg itself) counting control points until iSeg
   int icp = 0;
   for (int i = 0; i < (iSeg + 1); i++)
+  {
     if (vvertex[i].controlPoint)
+    {
       icp++;
+    }
+  }
 
   //if (icp == 0) // need to add point after the last point
   //icp = m_vdpoint.size();
@@ -1671,8 +1759,12 @@ STDMETHODIMP Ramp::InterfaceSupportsErrorInfo(REFIID riid)
   static const IID* arr[] = {&IID_IRamp};
 
   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
+  {
     if (InlineIsEqualGUID(*arr[i], riid))
+    {
       return S_OK;
+    }
+  }
 
   return S_FALSE;
 }
@@ -1983,12 +2075,18 @@ STDMETHODIMP Ramp::put_Collidable(VARIANT_BOOL newVal)
 {
   const bool val = VBTOb(newVal);
   if (!g_pplayer)
+  {
     m_d.m_collidable = val;
+  }
   else
   {
     if (!m_vhoCollidable.empty() && m_vhoCollidable[0]->m_enabled != val)
-      for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
+    {
+      for (size_t i = 0; i < m_vhoCollidable.size(); i++)
+      { //!! costly
         m_vhoCollidable[i]->m_enabled = val; //copy to hit checking on entities composing the object
+      }
+    }
   }
 
   return S_OK;
@@ -2153,7 +2251,9 @@ void Ramp::ExportMesh(ObjLoader& loader)
       const int listLength = (m_rampVertex - 1) * 6;
       unsigned int numVers = m_numVertices * 3;
       if (m_d.m_rightwallheightvisible == 0.0f && m_d.m_leftwallheightvisible == 0.0f)
+      {
         numVers = m_numVertices;
+      }
       loader.WriteVertexInfo(rampMesh, numVers);
       loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
       loader.UseTexture(m_d.m_szMaterial);
@@ -2204,7 +2304,9 @@ void Ramp::ExportMesh(ObjLoader& loader)
         memcpy(tmp, tmpBuf1, sizeof(Vertex3D_NoTex2) * m_numVertices);
         memcpy(&tmp[m_numVertices], tmpBuf2, sizeof(Vertex3D_NoTex2) * m_numVertices);
         for (int i = 0; i < m_numVertices * 2; i++)
+        {
           tmp[i].z += 3.0f;
+        }
         loader.WriteVertexInfo(tmp, m_numVertices * 2);
         delete[] tmp;
         loader.WriteFaceInfo(m_meshIndices);
@@ -2212,7 +2314,9 @@ void Ramp::ExportMesh(ObjLoader& loader)
         loader.UseTexture(m_d.m_szMaterial);
         WORD* const idx = new WORD[m_meshIndices.size()];
         for (size_t i = 0; i < m_meshIndices.size(); i++)
+        {
           idx[i] = m_meshIndices[i] + m_numVertices;
+        }
         loader.WriteFaceInfoList(idx, (unsigned int)m_meshIndices.size());
         loader.UpdateFaceOffset(m_numVertices * 2);
         delete[] idx;
@@ -2225,10 +2329,14 @@ void Ramp::ExportMesh(ObjLoader& loader)
         memcpy(&tmp[m_numVertices * 2], tmpBuf1, sizeof(Vertex3D_NoTex2) * m_numVertices);
         memcpy(&tmp[m_numVertices * 3], tmpBuf2, sizeof(Vertex3D_NoTex2) * m_numVertices);
         for (int i = 0; i < m_numVertices * 2; i++)
+        {
           tmp[i].z += m_d.m_wireDistanceY * 0.5f;
+        }
 
         for (int i = m_numVertices * 2; i < m_numVertices * 4; i++)
+        {
           tmp[i].z += 3.0f;
+        }
         loader.WriteVertexInfo(tmp, m_numVertices * 4);
         delete[] tmp;
         loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
@@ -2236,13 +2344,19 @@ void Ramp::ExportMesh(ObjLoader& loader)
         loader.WriteFaceInfo(m_meshIndices);
         WORD* const idx = new WORD[m_meshIndices.size()];
         for (size_t i = 0; i < m_meshIndices.size(); i++)
+        {
           idx[i] = m_meshIndices[i] + m_numVertices;
+        }
         loader.WriteFaceInfoList(idx, (unsigned int)m_meshIndices.size());
         for (size_t i = 0; i < m_meshIndices.size(); i++)
+        {
           idx[i] = m_meshIndices[i] + m_numVertices * 2;
+        }
         loader.WriteFaceInfoList(idx, (unsigned int)m_meshIndices.size());
         for (size_t i = 0; i < m_meshIndices.size(); i++)
+        {
           idx[i] = m_meshIndices[i] + m_numVertices * 3;
+        }
         loader.WriteFaceInfoList(idx, (unsigned int)m_meshIndices.size());
         loader.UpdateFaceOffset(m_numVertices * 4);
         delete[] idx;
@@ -2254,10 +2368,14 @@ void Ramp::ExportMesh(ObjLoader& loader)
         memcpy(&tmp[m_numVertices], tmpBuf1, sizeof(Vertex3D_NoTex2) * m_numVertices);
         memcpy(&tmp[m_numVertices * 2], tmpBuf2, sizeof(Vertex3D_NoTex2) * m_numVertices);
         for (int i = 0; i < m_numVertices; i++)
+        {
           tmp[i].z += m_d.m_wireDistanceY * 0.5f;
+        }
 
         for (int i = m_numVertices; i < m_numVertices * 3; i++)
+        {
           tmp[i].z += 3.0f;
+        }
         loader.WriteVertexInfo(tmp, m_numVertices * 3);
         delete[] tmp;
         loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
@@ -2265,10 +2383,14 @@ void Ramp::ExportMesh(ObjLoader& loader)
         loader.WriteFaceInfo(m_meshIndices);
         WORD* const idx = new WORD[m_meshIndices.size()];
         for (size_t i = 0; i < m_meshIndices.size(); i++)
+        {
           idx[i] = m_meshIndices[i] + m_numVertices;
+        }
         loader.WriteFaceInfoList(idx, (unsigned int)m_meshIndices.size());
         for (size_t i = 0; i < m_meshIndices.size(); i++)
+        {
           idx[i] = m_meshIndices[i] + m_numVertices * 2;
+        }
         loader.WriteFaceInfoList(idx, (unsigned int)m_meshIndices.size());
         loader.UpdateFaceOffset(m_numVertices * 3);
         delete[] idx;
@@ -2280,10 +2402,14 @@ void Ramp::ExportMesh(ObjLoader& loader)
         memcpy(&tmp[m_numVertices], tmpBuf1, sizeof(Vertex3D_NoTex2) * m_numVertices);
         memcpy(&tmp[m_numVertices * 2], tmpBuf2, sizeof(Vertex3D_NoTex2) * m_numVertices);
         for (int i = 0; i < m_numVertices; i++)
+        {
           tmp[i].z += m_d.m_wireDistanceY * 0.5f;
+        }
 
         for (int i = m_numVertices; i < m_numVertices * 3; i++)
+        {
           tmp[i].z += 3.0f;
+        }
         loader.WriteVertexInfo(tmp, m_numVertices * 3);
         delete[] tmp;
         loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
@@ -2291,10 +2417,14 @@ void Ramp::ExportMesh(ObjLoader& loader)
         loader.WriteFaceInfo(m_meshIndices);
         WORD* const idx = new WORD[m_meshIndices.size()];
         for (size_t i = 0; i < m_meshIndices.size(); i++)
+        {
           idx[i] = m_meshIndices[i] + m_numVertices;
+        }
         loader.WriteFaceInfoList(idx, (unsigned int)m_meshIndices.size());
         for (size_t i = 0; i < m_meshIndices.size(); i++)
+        {
           idx[i] = m_meshIndices[i] + m_numVertices * 2;
+        }
         loader.WriteFaceInfoList(idx, (unsigned int)m_meshIndices.size());
         loader.UpdateFaceOffset(m_numVertices * 3);
         delete[] idx;
@@ -2302,7 +2432,9 @@ void Ramp::ExportMesh(ObjLoader& loader)
 
       delete[] tmpBuf1;
       if (m_d.m_type != RampType1Wire)
+      {
         delete[] tmpBuf2;
+      }
     }
   }
 }
@@ -2310,7 +2442,9 @@ void Ramp::ExportMesh(ObjLoader& loader)
 void Ramp::RenderRamp(const Material* const mat)
 {
   if (!mat)
+  {
     return;
+  }
 
   if (m_d.m_widthbottom == 0.0f && m_d.m_widthtop == 0.0f)
   {
@@ -2322,14 +2456,20 @@ void Ramp::RenderRamp(const Material* const mat)
 
   // see the comment in RenderStatic() above
   if (m_d.m_imagealignment == ImageModeWrap)
+  {
     pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
+  }
 
   if (isHabitrail())
+  {
     RenderStaticHabitrail(mat);
+  }
   else
   {
     if (!m_dynamicVertexBuffer || m_dynamicVertexBufferRegenerate)
+    {
       GenerateVertexBuffer();
+    }
 
     pd3dDevice->basicShader->SetMaterial(mat);
 
@@ -2351,8 +2491,10 @@ void Ramp::RenderRamp(const Material* const mat)
       //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
     }
     else
+    {
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture,
                                                  mat->m_bIsMetal);
+    }
 
     //ppin3d->EnableAlphaBlend( false ); //!! not necessary anymore
 
@@ -2384,23 +2526,28 @@ void Ramp::RenderRamp(const Material* const mat)
           pd3dDevice->basicShader->Begin(0);
         }
 
-        if (m_d.m_rightwallheightvisible != 0.f &&
-            m_d.m_leftwallheightvisible != 0.f) //only render left & right side if the height is >0
+        if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f)
+        { //only render left & right side if the height is >0
           pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX,
                                              m_dynamicVertexBuffer, m_numVertices,
                                              m_numVertices * 2, m_dynamicIndexBuffer, 0,
                                              (m_rampVertex - 1) * 6 * 2);
+        }
         else
         {
-          if (m_d.m_rightwallheightvisible != 0.f) //only render right side if the height is >0
+          if (m_d.m_rightwallheightvisible != 0.f)
+          { //only render right side if the height is >0
             pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX,
                                                m_dynamicVertexBuffer, m_numVertices, m_numVertices,
                                                m_dynamicIndexBuffer, 0, (m_rampVertex - 1) * 6);
+          }
 
-          if (m_d.m_leftwallheightvisible != 0.f) //only render left side if the height is >0
+          if (m_d.m_leftwallheightvisible != 0.f)
+          { //only render left side if the height is >0
             pd3dDevice->DrawIndexedPrimitiveVB(
                 RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_dynamicVertexBuffer,
                 m_numVertices * 2, m_numVertices, m_dynamicIndexBuffer, 0, (m_rampVertex - 1) * 6);
+          }
         }
       }
 
@@ -2421,9 +2568,13 @@ void Ramp::RenderDynamic()
   const Material* const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
   // don't render if invisible or not a transparent ramp
   if (!m_d.m_visible || (!mat->m_bOpacityActive))
+  {
     return;
+  }
   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+  {
     return;
+  }
 
   RenderRamp(mat);
 }
@@ -2496,7 +2647,9 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2** meshBuf)
     }
 
     if (i == m_rampVertex - 1)
+    {
       break;
+    }
 
     //floor
     unsigned int offs = i * 6;
@@ -2622,7 +2775,9 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2** meshBuf)
   delete[] rgvLocal;
   delete[] rgheight;
   if (rgratio)
+  {
     delete[] rgratio;
+  }
 }
 
 //

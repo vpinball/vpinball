@@ -41,7 +41,9 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     char tmp[256];
     sprintf_s(tmp, 256, "PhysicsSetName%u", i);
     if (LoadValue("Player", tmp, physicsoptions[i], 256) != S_OK)
+    {
       sprintf_s(physicsoptions[i], 256, "Set %u", i + 1);
+    }
     sprintf_s(tmp, 256, "%u: %s", i + 1, physicsoptions[i]);
     const size_t index = SendMessage(hwndList, LB_ADDSTRING, 0, (size_t)tmp);
     int* const sd = new int;
@@ -188,7 +190,9 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         int result = g_pvp->MessageBox("Save", "Save current physics set?",
                                        MB_YESNOCANCEL | MB_ICONQUESTION);
         if (result == IDYES)
+        {
           SaveCurrentPhysicsSetting();
+        }
 
         if (result != IDCANCEL)
         {
@@ -196,7 +200,9 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
           SendMessage(WM_INITDIALOG, 0, 0); // reinit all boxes
         }
         else
+        {
           ::SendMessage(hwndList, LB_SETCURSEL, physicsselection, 0);
+        }
       }
       break;
     }
@@ -206,7 +212,9 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
     case 1111:
     {
       if (LoadSetting() == false)
+      {
         break;
+      }
 
       SetDlgItemText(1100, CString(loadValues.gravityConstant));
       SetDlgItemText(1101, CString(loadValues.contactFriction));
@@ -261,13 +269,17 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       string szInitialDir;
       const HRESULT hr = LoadValue("RecentDir", "PhysicsDir", szInitialDir);
       if (hr != S_OK)
+      {
         szInitialDir = "c:\\Visual Pinball\\Tables\\";
+      }
 
       ofn.lpstrInitialDir = szInitialDir.c_str();
 
       const int ret = GetSaveFileName(&ofn);
       if (ret == 0)
+      {
         break;
+      }
 
       const string szFilename(ofn.lpstrFile);
       const size_t index = szFilename.find_last_of('\\');
@@ -423,15 +435,21 @@ bool PhysicsOptionsDialog::LoadSetting()
 
   HRESULT hr = LoadValue("RecentDir", "PhysicsDir", szInitialDir);
   if (hr != S_OK)
+  {
     szInitialDir = "c:\\Visual Pinball\\Tables\\";
+  }
 
   if (!g_pvp->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0",
                              "vpp", 0))
+  {
     return false;
+  }
 
   const size_t index = szFileName[0].find_last_of('\\');
   if (index != std::string::npos)
+  {
     hr = SaveValue("RecentDir", "PhysicsDir", szFileName[0].substr(0, index));
+  }
 
   xml_document<> xmlDoc;
   try
@@ -460,14 +478,22 @@ bool PhysicsOptionsDialog::LoadSetting()
               sizeof(loadValues.defaultElementScatter) - 1);
     const xml_node<char>* tmp = table->first_node("playfieldminslope");
     if (tmp)
+    {
       strncpy_s(loadValues.minSlope, tmp->value(), sizeof(loadValues.minSlope) - 1);
+    }
     else
+    {
       sprintf_s(loadValues.minSlope, "%f", DEFAULT_TABLE_MIN_SLOPE);
+    }
     tmp = table->first_node("playfieldmaxslope");
     if (tmp)
+    {
       strncpy_s(loadValues.maxSlope, tmp->value(), sizeof(loadValues.maxSlope) - 1);
+    }
     else
+    {
       sprintf_s(loadValues.maxSlope, "%f", DEFAULT_TABLE_MAX_SLOPE);
+    }
     strncpy_s(loadValues.speed, flipper->first_node("speed")->value(),
               sizeof(loadValues.speed) - 1);
     strncpy_s(loadValues.strength, flipper->first_node("strength")->value(),

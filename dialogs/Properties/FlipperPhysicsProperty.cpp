@@ -34,25 +34,43 @@ void FlipperPhysicsProperty::UpdateVisuals(const int dispid /*=-1*/)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemFlipper))
+    {
       continue;
+    }
     Flipper* const flipper = (Flipper*)m_pvsel->ElementAt(i);
     if (dispid == DISPID_Flipper_Speed || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_massEdit, flipper->m_d.m_mass);
+    }
     if (dispid == 19 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_strengthEdit, flipper->m_d.m_strength);
+    }
     if (dispid == 28 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_elasticityFalloffEdit, flipper->GetElastacityFalloff());
+    }
     if (dispid == 23 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_returnStrengthEdit, flipper->m_d.m_return);
+    }
     if (dispid == 27 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_coilUpRampEdit, flipper->GetRampUp());
+    }
     if (dispid == 113 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_eosTorqueEdit, flipper->m_d.m_torqueDamping);
+    }
     if (dispid == 189 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_eosTorqueAngleEdit, flipper->m_d.m_torqueDampingAngle);
+    }
     if (dispid == 1044 || dispid == -1)
+    {
       PropertyDialog::UpdateComboBox(m_physicSetList, m_overwriteSettingsCombo,
                                      m_physicSetList[flipper->m_d.m_OverridePhysics]);
+    }
     UpdateBaseVisuals(flipper, &flipper->m_d, dispid);
     //only show the first element on multi-select
     break;
@@ -65,7 +83,9 @@ void FlipperPhysicsProperty::UpdateProperties(const int dispid)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemFlipper))
+    {
       continue;
+    }
     Flipper* const flipper = (Flipper*)m_pvsel->ElementAt(i);
     switch (dispid)
     {

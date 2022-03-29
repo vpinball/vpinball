@@ -110,7 +110,9 @@ void BlackBox::AddMessage(const char* msg)
   // @note	Potential race on application start, not very dangerous and
   //			rather unlikely.
   if (!s_messages)
+  {
     s_messages.Reset(new BlackBoxEntry[kMaxMessages]);
+  }
 
   long top;
   while (true)
@@ -118,9 +120,13 @@ void BlackBox::AddMessage(const char* msg)
     top = s_topMessageIndex;
     const long newTop = (top + 1) & (kMaxMessages - 1);
     if (newTop < top)
+    {
       s_overflow = 1;
+    }
     if (Interlocked::CompareAndSwap(&s_topMessageIndex, top, newTop) == top)
+    {
       break;
+    }
   }
   ::AddMessageInternal(msg, top);
 }

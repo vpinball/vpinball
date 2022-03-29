@@ -22,6 +22,8 @@ BSTR BstrFromVariant(VARIANT* pvar, LCID lcid)
       return V_BSTR(&var);
     }
     else
+    {
       return nullptr;
+    }
   }
 }

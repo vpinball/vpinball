@@ -12,7 +12,9 @@ IHaveDragPoints::IHaveDragPoints()
 IHaveDragPoints::~IHaveDragPoints()
 {
   for (size_t i = 0; i < m_vdpoint.size(); i++)
+  {
     m_vdpoint[i]->Release();
+  }
 }
 
 Vertex2D IHaveDragPoints::GetPointCenter() const
@@ -241,7 +243,9 @@ void IHaveDragPoints::TranslatePoints(const Vertex2D& pvOffset)
 void IHaveDragPoints::ReverseOrder()
 {
   if (m_vdpoint.empty())
+  {
     return;
+  }
 
   // Reverse order of points (switches winding, reverses inside/outside)
   std::reverse(m_vdpoint.begin(), m_vdpoint.end());
@@ -325,7 +329,9 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex>& vv, floa
     const float deltacoord = endtexcoord - starttexcoord;
 
     if (endrenderpoint <= startrenderpoint)
+    {
       endrenderpoint += cpoints;
+    }
 
     float totallength = 0.0f;
     for (int l = startrenderpoint; l < endrenderpoint; ++l)
@@ -350,7 +356,9 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex>& vv, floa
       const float dy = pv1->y - pv2->y;
       const float length = sqrtf(dx * dx + dy * dy);
       if (totallength == 0.0f)
+      {
         totallength = 1.0f;
+      }
       const float texcoord = partiallength / totallength;
 
       (*ppcoords)[l % cpoints] = (texcoord * deltacoord) + starttexcoord;
@@ -568,7 +576,9 @@ STDMETHODIMP DragPoint::InterfaceSupportsErrorInfo(REFIID riid)
   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
   {
     if (InlineIsEqualGUID(*arr[i], riid))
+    {
       return S_OK;
+    }
   }
   return S_FALSE;
 }
@@ -611,7 +621,9 @@ void DragPoint::Copy()
 void DragPoint::Paste()
 {
   if (m_pointCopied)
+  {
     m_v = m_copyPoint;
+  }
 }
 
 STDMETHODIMP DragPoint::get_X(float* pVal)
@@ -846,7 +858,9 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
               if (rotateApplyCount > 0)
               {
                 for (int i = 0; i < rotateApplyCount; i++)
+                {
                   psel->GetPTable()->Undo();
+                }
                 psel->GetPTable()->SetDirtyDraw();
               }
               EndDialog(hwndDlg, FALSE);
@@ -1023,7 +1037,9 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
               if (scaleApplyCount > 0)
               {
                 for (int i = 0; i < scaleApplyCount; i++)
+                {
                   psel->GetPTable()->Undo();
+                }
                 psel->GetPTable()->SetDirtyDraw();
               }
               EndDialog(hwndDlg, FALSE);
@@ -1123,7 +1139,9 @@ INT_PTR CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
               if (translateApplyCount > 0)
               {
                 for (int i = 0; i < translateApplyCount; i++)
+                {
                   psel->GetPTable()->Undo();
+                }
                 psel->GetPTable()->SetDirtyDraw();
               }
               EndDialog(hwndDlg, FALSE);

@@ -171,7 +171,9 @@ void HitTarget::SetDefaults(bool fromMouseClick)
 
   const HRESULT hr = LoadValue(strKeyName, "Image", m_d.m_szImage);
   if ((hr != S_OK) && fromMouseClick)
+  {
     m_d.m_szImage.clear();
+  }
 
   m_d.m_targetType = fromMouseClick ? (TargetType)LoadValueIntWithDefault(strKeyName, "TargetType",
                                                                           DropTargetSimple)
@@ -180,11 +182,15 @@ void HitTarget::SetDefaults(bool fromMouseClick)
       fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HitThreshold", 2.0f) : 2.0f;
   if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple ||
       m_d.m_targetType == DropTargetFlatSimple)
+  {
     m_d.m_dropSpeed =
         fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "DropSpeed", 0.5f) : 0.5f;
+  }
   else
+  {
     m_d.m_dropSpeed =
         fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "DropSpeed", 0.2f) : 0.2f;
+  }
 
   SetDefaultPhysics(fromMouseClick);
 
@@ -296,16 +302,22 @@ void HitTarget::GetHitShapes(vector<HitObject*>& pvho)
 
     // add collision vertices
     for (unsigned i = 0; i < m_numVertices; ++i)
+    {
       SetupHitObject(pvho, new HitPoint(m_hitUIVertices[i]), m_d.m_legacy);
+    }
 
     if (!m_d.m_legacy)
     {
       Vertex3Ds rgv3D[num_dropTargetHitPlaneVertices];
       float hitShapeOffset = 0.18f;
       if (m_d.m_targetType == DropTargetBeveled)
+      {
         hitShapeOffset = 0.25f;
+      }
       if (m_d.m_targetType == DropTargetFlatSimple)
+      {
         hitShapeOffset = 0.13f;
+      }
 
       // now create a special hit shape with hit event enabled to prevent a hit event when hit from behind
       for (unsigned i = 0; i < num_dropTargetHitPlaneVertices; i++)
@@ -342,7 +354,9 @@ void HitTarget::GetHitShapes(vector<HitObject*>& pvho)
 
       // add collision vertices
       for (unsigned i = 0; i < num_dropTargetHitPlaneVertices; ++i)
+      {
         SetupHitObject(pvho, new HitPoint(rgv3D[i]), true);
+      }
     }
   }
   else
@@ -369,7 +383,9 @@ void HitTarget::GetHitShapes(vector<HitObject*>& pvho)
 
     // add collision vertices
     for (unsigned i = 0; i < m_numVertices; ++i)
+    {
       SetupHitObject(pvho, new HitPoint(m_hitUIVertices[i]), true);
+    }
   }
 }
 
@@ -550,7 +566,9 @@ void HitTarget::UIRenderPass2(Sur* const psur)
   }
 
   if (m_selectstate == eNotSelected)
+  {
     return;
+  }
 
   const float radangle = ANGTORAD(m_d.m_rotZ - 180.0f);
   constexpr float halflength = 50.0f;
@@ -625,7 +643,9 @@ void HitTarget::UpdateAnimation()
       float step = m_d.m_dropSpeed * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
       const float limit = DROP_TARGET_LIMIT * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
       if (m_moveDown)
+      {
         step = -step;
+      }
       else if ((m_d.m_time_msec - m_timeStamp) < (unsigned int)m_d.m_raiseDelay)
       {
         step = 0.0f;
@@ -641,7 +661,9 @@ void HitTarget::UpdateAnimation()
           m_moveAnimation = false;
           m_timeStamp = 0;
           if (m_d.m_hitEvent)
+          {
             FireGroupEvent(DISPID_TargetEvents_Dropped);
+          }
         }
       }
       else
@@ -652,7 +674,9 @@ void HitTarget::UpdateAnimation()
           m_moveAnimation = false;
           m_d.m_isDropped = false;
           if (m_d.m_hitEvent)
+          {
             FireGroupEvent(DISPID_TargetEvents_Raised);
+          }
         }
       }
       UpdateTarget();
@@ -665,7 +689,9 @@ void HitTarget::UpdateAnimation()
       float step = m_d.m_dropSpeed * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
       const float limit = 13.0f * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
       if (!m_moveDown)
+      {
         step = -step;
+      }
       m_moveAnimationOffset += step * diff_time_msec;
       if (m_moveDown)
       {
@@ -711,8 +737,10 @@ void HitTarget::RenderObject()
 #endif
 
   if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
+  {
     pd3dDevice->basicShader->SetDisableLighting(
         vec4(m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f, 0.f));
+  }
 
   Texture* const pin = m_ptable->GetImage(m_d.m_szImage);
   if (pin)
@@ -727,8 +755,10 @@ void HitTarget::RenderObject()
     pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
   }
   else
+  {
     pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture,
                                                mat->m_bIsMetal);
+  }
 
   // draw the mesh
   pd3dDevice->basicShader->Begin(0);
@@ -752,7 +782,9 @@ void HitTarget::RenderObject()
   pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
   //pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE); //!! not necessary anymore
   if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
+  {
     pd3dDevice->basicShader->SetDisableLighting(vec4(0.f, 0.f, 0.f, 0.f));
+  }
 }
 
 void HitTarget::UpdateTarget()
@@ -818,9 +850,13 @@ void HitTarget::RenderDynamic()
   TRACE_FUNCTION();
 
   if (!m_d.m_visible)
+  {
     return;
+  }
   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+  {
     return;
+  }
 
   RenderObject();
 }
@@ -1330,12 +1366,18 @@ STDMETHODIMP HitTarget::put_Collidable(VARIANT_BOOL newVal)
 {
   const bool val = VBTOb(newVal);
   if (!g_pplayer)
+  {
     m_d.m_collidable = val;
+  }
   else
   {
     if (!m_vhoCollidable.empty() && m_vhoCollidable[0]->m_enabled != val)
-      for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
+    {
+      for (size_t i = 0; i < m_vhoCollidable.size(); i++)
+      { //!! costly
         m_vhoCollidable[i]->m_enabled = val; //copy to hit checking on entities composing the object
+      }
+    }
   }
 
   return S_OK;
@@ -1465,7 +1507,9 @@ STDMETHODIMP HitTarget::put_IsDropped(VARIANT_BOOL newVal)
     }
   }
   else
+  {
     m_d.m_isDropped = val;
+  }
 
   return S_OK;
 }
@@ -1550,7 +1594,9 @@ void HitTarget::GetTimers(vector<HitTimer*>& pvht)
   m_phittimer = pht;
 
   if (m_d.m_tdr.m_TimerEnabled)
+  {
     pvht.push_back(pht);
+  }
 }
 
 STDMETHODIMP HitTarget::get_RaiseDelay(long* pVal)

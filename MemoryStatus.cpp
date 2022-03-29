@@ -24,14 +24,20 @@ MemoryStatus MemoryStatus::GetCurrent()
     {
       status.totalFree += info.RegionSize;
       if (info.RegionSize > status.largestFree)
+      {
         status.largestFree = info.RegionSize;
+      }
     }
     else
     {
       if (info.State & MEM_RESERVE)
+      {
         status.totalReserved += info.RegionSize;
+      }
       if (info.State & MEM_COMMIT)
+      {
         status.totalCommited += info.RegionSize;
+      }
     }
     address += info.RegionSize;
     memset(&info, 0, sizeof(info));

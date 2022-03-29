@@ -16,14 +16,22 @@ void DispreelStateProperty::UpdateVisuals(const int dispid /*=-1*/)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemDispReel))
+    {
       continue;
+    }
     DispReel* const reel = (DispReel*)m_pvsel->ElementAt(i);
     if (dispid == IDC_MOTOR_STEPS_EDIT || dispid == -1)
+    {
       PropertyDialog::SetIntTextbox(m_motorStepsEdit, reel->GetMotorSteps());
+    }
     if (dispid == IDC_UPDATE_INTERVAL_EDIT || dispid == -1)
+    {
       PropertyDialog::SetIntTextbox(m_updateIntervalEdit, reel->GetUpdateInterval());
+    }
     if (dispid == DISPID_Sound || dispid == -1)
+    {
       PropertyDialog::UpdateSoundComboBox(reel->GetPTable(), m_soundCombo, reel->m_d.m_szSound);
+    }
     //only show the first element on multi-select
     break;
   }
@@ -35,7 +43,9 @@ void DispreelStateProperty::UpdateProperties(const int dispid)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemDispReel))
+    {
       continue;
+    }
     DispReel* const reel = (DispReel*)m_pvsel->ElementAt(i);
     switch (dispid)
     {

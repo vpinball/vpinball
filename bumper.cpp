@@ -83,7 +83,9 @@ void Bumper::SetDefaults(bool fromMouseClick)
 
   const HRESULT hr = LoadValue("DefaultProps\\Bumper", "Surface", m_d.m_szSurface);
   if (hr != S_OK || !fromMouseClick)
+  {
     m_d.m_szSurface.clear();
+  }
 
   m_d.m_tdr.m_TimerEnabled =
       fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Bumper", "TimerEnabled", false)
@@ -139,7 +141,9 @@ STDMETHODIMP Bumper::InterfaceSupportsErrorInfo(REFIID riid)
   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
   {
     if (InlineIsEqualGUID(*arr[i], riid))
+    {
       return S_OK;
+    }
   }
   return S_FALSE;
 }
@@ -166,7 +170,9 @@ void Bumper::UIRenderPass1(Sur* const psur)
     psur->SetFillColor(mat->m_cBase);
   }
   else
+  {
     psur->SetFillColor(-1);
+  }
 
   psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius * 1.5f);
   if (m_ptable->m_renderSolid)
@@ -175,7 +181,9 @@ void Bumper::UIRenderPass1(Sur* const psur)
     psur->SetFillColor(mat->m_cBase);
   }
   else
+  {
     psur->SetFillColor(-1);
+  }
 
   psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
 }
@@ -239,7 +247,9 @@ void Bumper::GetTimers(vector<HitTimer*>& pvht)
   m_phittimer = pht;
 
   if (m_d.m_tdr.m_TimerEnabled)
+  {
     pvht.push_back(pht);
+  }
 }
 
 void Bumper::GetHitShapes(vector<HitObject*>& pvho)
@@ -377,15 +387,21 @@ void Bumper::UpdateSkirt(const bool doCalculation)
     const float hity = m_pbumperhitcircle->m_bumperanim_hitBallPosition.y;
     float dy = fabsf(hity - m_d.m_vCenter.y);
     if (dy == 0.0f)
+    {
       dy = 0.000001f;
+    }
     const float dx = fabsf(hitx - m_d.m_vCenter.x);
     const float skirtA = atanf(dx / dy);
     rotx = cosf(skirtA) * SKIRT_TILT;
     roty = sinf(skirtA) * SKIRT_TILT;
     if (m_d.m_vCenter.y < hity)
+    {
       rotx = -rotx;
+    }
     if (m_d.m_vCenter.x > hitx)
+    {
       roty = -roty;
+    }
   }
 
   Matrix3D tempMatrix, rMatrix;
@@ -427,7 +443,9 @@ void Bumper::RenderDynamic()
   TRACE_FUNCTION();
 
   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+  {
     return;
+  }
 
   const U32 old_time_msec =
       (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
@@ -439,7 +457,9 @@ void Bumper::RenderDynamic()
   pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
   if (m_pbumperhitcircle->m_bumperanim_hitEvent)
+  {
     g_pplayer->m_pininput.PlayRumble(0.1f, 0.05f, 100);
+  }
 
   const int state = m_pbumperhitcircle->m_bumperanim_hitEvent ? 1 : 0; // 0 = not hit, 1 = hit
   m_pbumperhitcircle->m_bumperanim_hitEvent = false;
@@ -460,7 +480,9 @@ void Bumper::RenderDynamic()
     {
       float step = m_d.m_ringSpeed * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
       if (m_ringDown)
+      {
         step = -step;
+      }
       const float old_bumperanim_ringAnimOffset = m_pbumperhitcircle->m_bumperanim_ringAnimOffset;
       m_pbumperhitcircle->m_bumperanim_ringAnimOffset += step * diff_time_msec;
       if (m_ringDown)
@@ -481,7 +503,9 @@ void Bumper::RenderDynamic()
       }
       if (m_ringVertexBuffer &&
           (old_bumperanim_ringAnimOffset != m_pbumperhitcircle->m_bumperanim_ringAnimOffset))
+      {
         UpdateRing();
+      }
     }
 
     Material ringMaterial;
@@ -826,7 +850,9 @@ void Bumper::RenderStatic()
   const RenderDevice* const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+  {
     return;
+  }
 
   if (m_d.m_baseVisible)
   {
@@ -1291,7 +1317,9 @@ STDMETHODIMP Bumper::put_Collidable(VARIANT_BOOL newVal)
 {
   m_d.m_collidable = VBTOb(newVal);
   if (m_pbumperhitcircle)
+  {
     m_pbumperhitcircle->m_enabled = m_d.m_collidable;
+  }
 
   return S_OK;
 }
@@ -1379,7 +1407,9 @@ STDMETHODIMP Bumper::put_EnableSkirtAnimation(VARIANT_BOOL newVal)
   if (m_enableSkirtAnimation != val)
   {
     if (!val)
+    {
       m_updateSkirt = true;
+    }
     m_enableSkirtAnimation = val;
   }
 
@@ -1389,7 +1419,9 @@ STDMETHODIMP Bumper::put_EnableSkirtAnimation(VARIANT_BOOL newVal)
 STDMETHODIMP Bumper::PlayHit()
 {
   if (m_pbumperhitcircle)
+  {
     m_pbumperhitcircle->m_bumperanim_hitEvent = true;
+  }
 
   return S_OK;
 }

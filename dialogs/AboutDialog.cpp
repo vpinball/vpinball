@@ -37,7 +37,9 @@ INT_PTR AboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       {
         std::ifstream file(g_pvp->m_szMyPath + "Changelog.txt");
         if (!file.is_open())
+        {
           file = std::ifstream(g_pvp->m_szMyPath + "Doc\\Changelog.txt");
+        }
         std::string line;
         std::string text;
         while (std::getline(file, line))
@@ -79,7 +81,9 @@ BOOL AboutDialog::OnCommand(WPARAM wParam, LPARAM lParam)
     case IDC_TRANSSITE:
     {
       if (LOWORD(wParam) == IDC_WEBSITE)
+      {
         /*const HRESULT hr =*/OpenURL("http://www.vpforums.org");
+      }
       else
       {
         const LPCTSTR szSite = GetDlgItem(IDC_TRANSWEBSITE).GetWindowText();

@@ -55,7 +55,9 @@ void ISelect::OnRButtonUp(int x, int y)
 void ISelect::OnMouseMove(int x, int y)
 {
   if ((x == m_ptLast.x) && (y == m_ptLast.y))
+  {
     return;
+  }
 
   if (m_dragging &&
       !GetIEditable()->GetISelect()->m_locked) // For drag points, follow the lock of the parent

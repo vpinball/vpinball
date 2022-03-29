@@ -28,30 +28,52 @@ void GateVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemGate))
+    {
       continue;
+    }
     Gate* const gate = (Gate*)m_pvsel->ElementAt(i);
     if (dispid == 9 || dispid == -1)
+    {
       PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo,
                                      m_typeList[(int)gate->m_d.m_type - 1]);
+    }
     if (dispid == IDC_SURFACE_COMBO || dispid == -1)
+    {
       PropertyDialog::UpdateSurfaceComboBox(gate->GetPTable(), m_surfaceCombo,
                                             gate->m_d.m_szSurface);
+    }
     if (dispid == 5 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_xposEdit, gate->m_d.m_vCenter.x);
+    }
     if (dispid == 6 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_yposEdit, gate->m_d.m_vCenter.y);
+    }
     if (dispid == DISPID_Gate_Length || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_lengthEdit, gate->m_d.m_length);
+    }
     if (dispid == DISPID_Gate_Height1 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_heightEdit, gate->m_d.m_height);
+    }
     if (dispid == DISPID_Gate_Rotation || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_rotationEdit, gate->m_d.m_rotation);
+    }
     if (dispid == 2145 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_openAngleEdit, gate->GetOpenAngle());
+    }
     if (dispid == 2144 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_closeAngleEdit, gate->GetCloseAngle());
+    }
     if (dispid == 15 || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 15), gate->m_d.m_showBracket);
+    }
     UpdateBaseVisuals(gate, &gate->m_d, dispid);
     //only show the first element on multi-select
     break;
@@ -63,7 +85,9 @@ void GateVisualsProperty::UpdateProperties(const int dispid)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemGate))
+    {
       continue;
+    }
     Gate* const gate = (Gate*)m_pvsel->ElementAt(i);
     switch (dispid)
     {

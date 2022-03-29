@@ -185,7 +185,9 @@ void VideoOptionsDialog::FillVideoModesList(const std::vector<VideoMode>& modes,
     double aspect = (double)modes[i].width / (double)modes[i].height;
     const bool portrait = (aspect < 1.);
     if (portrait)
+    {
       aspect = 1. / aspect;
+    }
     double factor = aspect * 3.0;
     int fx, fy;
     if (factor > 4.0)
@@ -227,31 +229,49 @@ void VideoOptionsDialog::FillVideoModesList(const std::vector<VideoMode>& modes,
       fy = 3;
     }
 
-    if (modes[i].depth) // i.e. is this windowed or not
+    if (modes[i].depth)
+    { // i.e. is this windowed or not
       sprintf_s(szT, "%d x %d (%dHz %d:%d)", modes[i].width, modes[i].height,
                 /*modes[i].depth,*/ modes[i].refreshrate, portrait ? fy : fx, portrait ? fx : fy);
+    }
     else
+    {
       sprintf_s(szT, "%d x %d (%d:%d %s)", modes[i].width, modes[i].height /*,modes[i].depth*/,
                 portrait ? fy : fx, portrait ? fx : fy, portrait ? "Portrait" : "Landscape");
+    }
 
     SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
     if (curSelMode)
     {
       int matchingPoints = 0;
       if (modes[i].width == curSelMode->width)
+      {
         matchingPoints += 100;
+      }
       if (modes[i].height == curSelMode->height)
+      {
         matchingPoints += 100;
+      }
       if (modes[i].depth == curSelMode->depth)
+      {
         matchingPoints += 50;
+      }
       if (modes[i].refreshrate == curSelMode->refreshrate)
+      {
         matchingPoints += 10;
+      }
       if (modes[i].width == screenwidth)
+      {
         matchingPoints += 3;
+      }
       if (modes[i].height == screenheight)
+      {
         matchingPoints += 3;
+      }
       if (modes[i].refreshrate == DEFAULT_PLAYER_FS_REFRESHRATE)
+      {
         matchingPoints += 1;
+      }
       if (matchingPoints > bestMatchingPoints)
       {
         bestMatch = (int)i;
@@ -334,10 +354,12 @@ BOOL VideoOptionsDialog::OnInitDialog()
                  hwndDlg, toolTipHwnd, GetDlgItem(IDC_FULLSCREEN).GetHwnd());
     }
     else
+    {
       AddToolTip("Enforces exclusive Fullscreen Mode.\r\nDo not enable if you require to see the "
                  "VPinMAME or B2S windows for example.\r\nEnforcing exclusive FS can slightly "
                  "reduce input lag though.",
                  hwndDlg, toolTipHwnd, GetDlgItem(IDC_FULLSCREEN).GetHwnd());
+    }
     AddToolTip(
         "Enforces 10Bit (WCG) rendering.\r\nRequires a corresponding 10Bit output capable graphics "
         "card and monitor.\r\nAlso requires to have exclusive fullscreen mode enforced (for now).",
@@ -452,11 +474,15 @@ BOOL VideoOptionsDialog::OnInitDialog()
   string imageName;
   HRESULT hr = LoadValue("Player", "BallImage", imageName);
   if (hr != S_OK)
+  {
     imageName.clear();
+  }
   SetDlgItemText(IDC_BALL_IMAGE_EDIT, imageName.c_str());
   hr = LoadValue("Player", "DecalImage", imageName);
   if (hr != S_OK)
+  {
     imageName.clear();
+  }
   SetDlgItemText(IDC_BALL_DECAL_EDIT, imageName.c_str());
   if (overwiteBallImage == 0)
   {
@@ -578,7 +604,9 @@ BOOL VideoOptionsDialog::OnInitDialog()
   std::vector<DisplayConfig> displays;
   getDisplayList(displays);
   if ((hr != S_OK) || ((int)displays.size() <= display))
+  {
     display = -1;
+  }
 
   hwnd = GetDlgItem(IDC_DISPLAY_ID).GetHwnd();
   SendMessage(hwnd, CB_RESETCONTENT, 0, 0);
@@ -587,7 +615,9 @@ BOOL VideoOptionsDialog::OnInitDialog()
        ++dispConf)
   {
     if (display == -1 && dispConf->isPrimary)
+    {
       display = dispConf->display;
+    }
     char displayName[256];
     sprintf_s(displayName, "Display %d%s %dx%d %s", dispConf->display + 1,
               (dispConf->isPrimary) ? "*" : "", dispConf->width, dispConf->height,
@@ -690,6 +720,7 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
           1920, 2048, 2160, 2560, 2560, 3440, 2560, 2560, 2560, 3840, 3840};
 
       for (unsigned int i = 0; i < num_portrait_modes; ++i)
+      {
         if ((portrait_modes_width[i] <= screenwidth) &&
             (portrait_modes_height[i] <= screenheight) &&
             ((portrait_modes_width[i] != screenwidth) ||
@@ -703,10 +734,15 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
           mode.refreshrate = 0;
 
           if (heightcur > widthcur)
+          {
             if ((portrait_modes_width[i] == widthcur) && (portrait_modes_height[i] == heightcur))
+            {
               indx = allVideoModes.size();
+            }
+          }
           allVideoModes.push_back(mode);
         }
+      }
 
       // add landscape play modes
       static constexpr int rgwindowsize[] = {640,  720,  800,  912,  1024, 1152,  1280, 1360, 1366,
@@ -749,7 +785,9 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
              (ysize != screenheight))) // windowed fullscreen is added to the end separately
         {
           if ((xsize == widthcur) && (ysize == heightcur))
+          {
             indx = allVideoModes.size();
+          }
 
           VideoMode mode;
           mode.width = xsize;
@@ -774,7 +812,9 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       sprintf_s(szT, "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
       SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
       if (indx == -1 || (mode.width == widthcur && mode.height == heightcur))
+      {
         indx = allVideoModes.size();
+      }
       allVideoModes.push_back(mode);
 
       SendMessage(hwndList, LB_SETCURSEL, (indx != -1) ? indx : 0, 0);
@@ -801,7 +841,9 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       FillVideoModesList(allVideoModes, &curSelMode);
 
       if (SendMessage(hwndList, LB_GETCURSEL, 0, 0) == -1)
+      {
         SendMessage(hwndList, LB_SETCURSEL, 0, 0);
+      }
       break;
     }
   }
@@ -865,7 +907,9 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
       const int ret = GetOpenFileName(&ofn);
       if (!ret)
+      {
         break;
+      }
       SetDlgItemText(IDC_BALL_IMAGE_EDIT, szFileName);
 
       break;
@@ -889,7 +933,9 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
       const int ret = GetOpenFileName(&ofn);
       if (!ret)
+      {
         break;
+      }
       SetDlgItemText(IDC_BALL_DECAL_EDIT, szFileName);
 
       break;
@@ -934,11 +980,17 @@ void VideoOptionsDialog::OnOK()
   //const HWND maxTexDimUnlimited = GetDlgItem(hwndDlg, IDC_TexUnlimited);
   int maxTexDim = 0;
   if (SendMessage(GetDlgItem(IDC_Tex3072).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED)
+  {
     maxTexDim = 3072;
+  }
   if (SendMessage(GetDlgItem(IDC_Tex1024).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED)
+  {
     maxTexDim = 1024;
+  }
   if (SendMessage(GetDlgItem(IDC_Tex2048).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED)
+  {
     maxTexDim = 2048;
+  }
   SaveValueInt("Player", "MaxTexDimension", maxTexDim);
 
   const bool reflection =
@@ -977,12 +1029,16 @@ void VideoOptionsDialog::OnOK()
 
   size_t fxaa = SendMessage(GetDlgItem(IDC_FXAACB).GetHwnd(), CB_GETCURSEL, 0, 0);
   if (fxaa == LB_ERR)
+  {
     fxaa = Standard_FXAA;
+  }
   SaveValueInt("Player", "FXAA", (int)fxaa);
 
   size_t sharpen = SendMessage(GetDlgItem(IDC_SHARPENCB).GetHwnd(), CB_GETCURSEL, 0, 0);
   if (sharpen == LB_ERR)
+  {
     sharpen = 0;
+  }
   SaveValueInt("Player", "Sharpen", (int)sharpen);
 
   const bool scaleFX_DMD =
@@ -1016,7 +1072,9 @@ void VideoOptionsDialog::OnOK()
 
   size_t stereo3D = SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_GETCURSEL, 0, 0);
   if (stereo3D == LB_ERR)
+  {
     stereo3D = 0;
+  }
   SaveValueInt("Player", "Stereo3D", (int)stereo3D);
   SaveValueInt("Player", "Stereo3DEnabled", (int)stereo3D);
 
@@ -1069,9 +1127,13 @@ void VideoOptionsDialog::OnOK()
   //HWND hwndBallStretchNo = GetDlgItem(hwndDlg, IDC_StretchNo);
   int ballStretchMode = 0;
   if (SendMessage(GetDlgItem(IDC_StretchYes).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED)
+  {
     ballStretchMode = 1;
+  }
   if (SendMessage(GetDlgItem(IDC_StretchMonitor).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED)
+  {
     ballStretchMode = 2;
+  }
   SaveValueInt("Player", "BallStretchMode", ballStretchMode);
 
   // get selected Monitors
@@ -1091,7 +1153,9 @@ void VideoOptionsDialog::OnOK()
     SaveValue("Player", "DecalImage", tmpStr);
   }
   else
+  {
     SaveValueBool("Player", "OverwriteBallImage", false);
+  }
 
   CDialog::OnOK();
 }

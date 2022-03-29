@@ -167,7 +167,9 @@ public:
   void SetX(const float value)
   {
     if ((value < 0.f) || (value >= (float)EDITOR_BG_WIDTH))
+    {
       return;
+    }
 
     m_d.m_vCenter.x = value;
     // set the center point of the grid for effects which start from the center
@@ -178,7 +180,9 @@ public:
   void SetY(const float value)
   {
     if ((value < 0.f) || (value >= (float)(2 * EDITOR_BG_WIDTH)))
+    {
       return;
+    }
 
     m_d.m_vCenter.y = value;
     // set the center point of the grid for effects which start from the center

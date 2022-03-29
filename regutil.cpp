@@ -27,7 +27,9 @@ static void InitXMLnodeFromRegistry(xml_node<>* const node, const std::string& s
   HKEY hk;
   LONG res = RegOpenKeyEx(HKEY_CURRENT_USER, szPath.c_str(), 0, KEY_READ, &hk);
   if (res != ERROR_SUCCESS)
+  {
     return;
+  }
 
   for (DWORD Index = 0;; ++Index)
   {
@@ -35,34 +37,47 @@ static void InitXMLnodeFromRegistry(xml_node<>* const node, const std::string& s
     TCHAR szName[MAX_PATH];
     res = RegEnumValue(hk, Index, szName, &dwSize, nullptr, nullptr, nullptr, nullptr);
     if (res != ERROR_SUCCESS)
+    {
       break;
+    }
 
     if (dwSize == 0 || szName[0] == '\0')
+    {
       continue;
+    }
     // detect whitespace and skip, as no whitespace allowed in XML tags
     bool whitespace = false;
     unsigned int i = 0;
     while (szName[i])
+    {
       if (isspace(szName[i]))
       {
         whitespace = true;
         break;
       }
       else
+      {
         ++i;
+      }
+    }
     if (whitespace)
+    {
       continue;
+    }
 
     dwSize = MAXSTRING;
     BYTE pvalue[MAXSTRING];
     DWORD type = REG_NONE;
     res = RegQueryValueEx(hk, szName, nullptr, &type, pvalue, &dwSize);
     if (res != ERROR_SUCCESS)
+    {
       continue;
+    }
 
-    if (strcmp((char*)pvalue, "Dock Windows") ==
-        0) // should not happen, as a folder, not value.. BUT also should save these somehow and restore for Win32++, or not ?
+    if (strcmp((char*)pvalue, "Dock Windows") == 0)
+    { // should not happen, as a folder, not value.. BUT also should save these somehow and restore for Win32++, or not ?
       continue;
+    }
 
     //
 
@@ -161,8 +176,10 @@ void InitXMLregistry(const std::string& path)
     xmlDoc.append_node(dcl);
   }
   else
+  {
     xmlDoc.parse<parse_declaration_node | parse_comment_nodes | parse_normalize_whitespace>(
         (char*)xmlContent.c_str());
+  }
 
   controller = xmlDoc.first_node("Controller");
   if (!controller)
@@ -236,8 +253,11 @@ void InitXMLregistry(const std::string& path)
     }
 
     if (node->first_node() == nullptr)
+    {
       InitXMLnodeFromRegistry(node, regpath); // does not exist in XML yet? -> load from registry
+    }
     else
+    {
       for (
           xml_node<>* child = node->first_node(); child;
           child =
@@ -250,6 +270,7 @@ void InitXMLregistry(const std::string& path)
         strcpy_s(copy, len, value);
         child->value(copy);
       }
+    }
   }
 }
 #else
@@ -283,9 +304,10 @@ HRESULT LoadValue(const std::string& szKey,
                   void* const szbuffer,
                   const DWORD size)
 {
-  if (size >
-      0) // clear string in case of reg value being set, but being null string which results in szbuffer being kept as-is
+  if (size > 0)
+  { // clear string in case of reg value being set, but being null string which results in szbuffer being kept as-is
     ((char*)szbuffer)[0] = '\0';
+  }
 
   DWORD type = REG_SZ;
   const HRESULT hr = LoadValue(szKey, szValue, type, szbuffer, size);
@@ -300,25 +322,35 @@ HRESULT LoadValue(const std::string& szKey, const std::string& szValue, float& p
   const HRESULT hr = LoadValue(szKey, szValue, type, szbuffer, 16);
 
   if (type != REG_SZ)
+  {
     return E_FAIL;
+  }
 
   const int len = lstrlen(szbuffer);
   if (len == 0)
+  {
     return E_FAIL;
+  }
 
   char* const fo = strchr(szbuffer, ',');
   if (fo != nullptr)
+  {
     *fo = '.';
+  }
 
   if (szbuffer[0] == '-')
   {
     if (len < 2)
+    {
       return E_FAIL;
+    }
     pfloat = (float)atof(&szbuffer[1]);
     pfloat = -pfloat;
   }
   else
+  {
     pfloat = (float)atof(szbuffer);
+  }
 
   return hr;
 }
@@ -351,15 +383,25 @@ static HRESULT LoadValue(
 #ifdef ENABLE_INI
   xml_node<>* node;
   if (szKey == "Player")
+  {
     node = player;
+  }
   else if (szKey == "Controller")
+  {
     node = controller;
+  }
   else if (szKey == "Editor")
+  {
     node = editor;
+  }
   else if (szKey == "RecentDir")
+  {
     node = recentdir;
+  }
   else if (szKey == "Version")
+  {
     node = version;
+  }
   else
   {
     assert(!"Bad RegKey");
@@ -445,20 +487,32 @@ static HRESULT SaveValue(const std::string& szKey,
                          const DWORD size)
 {
   if (szValue.empty() || size == 0)
+  {
     return E_FAIL;
+  }
 
 #ifdef ENABLE_INI
   xml_node<>* node;
   if (szKey == "Player")
+  {
     node = player;
+  }
   else if (szKey == "Controller")
+  {
     node = controller;
+  }
   else if (szKey == "Editor")
+  {
     node = editor;
+  }
   else if (szKey == "RecentDir")
+  {
     node = recentdir;
+  }
   else if (szKey == "Version")
+  {
     node = version;
+  }
   else
   {
     assert(!"Bad RegKey");
@@ -467,8 +521,12 @@ static HRESULT SaveValue(const std::string& szKey,
 
   // detect whitespace and skip, as no whitespace allowed in XML tags
   for (unsigned int i = 0; i < szValue.length(); ++i)
+  {
     if (isspace(szValue[i]))
+    {
       return E_FAIL;
+    }
+  }
 
   char* copy;
   if (type == REG_SZ)
@@ -564,7 +622,9 @@ HRESULT DeleteValue(const std::string& szKey, const std::string& szValue)
     RegCloseKey(hk);
   }
   else
+  {
     return S_OK; // It is a success if you want to delete something that doesn't exist.
+  }
 
   return (RetVal == ERROR_SUCCESS) ? S_OK : E_FAIL;
 }
@@ -577,7 +637,9 @@ static HRESULT RegDelnodeRecurse(const HKEY hKeyRoot, char lpSubKey[MAX_PATH * 2
   LONG lResult = RegDeleteKey(hKeyRoot, lpSubKey);
 
   if (lResult == ERROR_SUCCESS)
+  {
     return S_OK;
+  }
 
   HKEY hKey;
   lResult = RegOpenKeyEx(hKeyRoot, lpSubKey, 0, KEY_READ, &hKey);
@@ -621,7 +683,9 @@ static HRESULT RegDelnodeRecurse(const HKEY hKeyRoot, char lpSubKey[MAX_PATH * 2
       strcat_s(lpSubKey, MAX_PATH * 2, szName);
 
       if (!RegDelnodeRecurse(hKeyRoot, lpSubKey))
+      {
         break;
+      }
 
       dwSize = MAX_PATH;
       lResult = RegEnumKeyEx(hKey, 0, szName, &dwSize, nullptr, nullptr, nullptr, nullptr);

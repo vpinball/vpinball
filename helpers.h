@@ -26,14 +26,20 @@ public:
   {
     m_alloc = (cb > 256);
     if (m_alloc)
+    {
       m_pbBuf = new char[cb];
+    }
     else
+    {
       m_pbBuf = m_szBufT;
+    }
   }
   ~TempBuffer()
   {
     if (m_pbBuf && m_alloc)
+    {
       delete[] m_pbBuf;
+    }
   }
   char* GetBuffer() const { return m_pbBuf; }
 

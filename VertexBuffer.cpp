@@ -57,7 +57,9 @@ void VertexBuffer::CreateVertexBuffer(const unsigned int vertexCount,
                          ->CreateVertexBuffer(vertexCount * fvfToSize(fvf), USAGE_STATIC | usage, 0,
                                               (D3DPOOL)memoryPool::DEFAULT, &vb->m_vb, nullptr);
   if (FAILED(hr))
+  {
     ReportError("Fatal Error: unable to create vertex buffer!", hr, __FILE__, __LINE__);
+  }
   vb->m_fvf = fvf;
   vb->m_dN = dN;
 #endif
@@ -72,9 +74,13 @@ void VertexBuffer::lock(const unsigned int offsetToLock,
   m_curLockCalls++;
 #ifdef ENABLE_SDL
   if (sizeToLock == 0)
+  {
     this->sizeToLock = size;
+  }
   else
+  {
     this->sizeToLock = sizeToLock;
+  }
 
   if (offsetToLock < size)
   {
@@ -98,7 +104,9 @@ void VertexBuffer::unlock()
 {
 #ifdef ENABLE_SDL
   if (!dataBuffer)
+  {
     return;
+  }
   addToNotUploadedBuffers();
 #else
   CHECKD3D(m_vb->Unlock());
@@ -130,9 +138,13 @@ void VertexBuffer::bind()
   if (!isUploaded)
   {
     if (sharedBuffer)
+    {
       UploadBuffers();
+    }
     else
+    {
       UploadData();
+    }
   }
   if (m_curVertexBuffer == nullptr || Array != m_curVertexBuffer->Array ||
       Buffer != m_curVertexBuffer->Buffer)
@@ -157,7 +169,9 @@ void VertexBuffer::bind()
 void VertexBuffer::UploadData()
 {
   if (Array == 0)
+  {
     glGenVertexArrays(1, &Array);
+  }
   glBindVertexArray(Array);
   if (Buffer == 0)
   {
@@ -166,10 +180,14 @@ void VertexBuffer::UploadData()
     glBufferData(GL_ARRAY_BUFFER, size, nullptr, usage);
   }
   else
+  {
     glBindBuffer(GL_ARRAY_BUFFER, Buffer);
+  }
   if (size - offsetToLock > 0)
+  {
     glBufferSubData(GL_ARRAY_BUFFER, offset * fvfToSize(fvf) + offsetToLock,
                     min(sizeToLock, size - offsetToLock), dataBuffer);
+  }
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
   isUploaded = true;
@@ -180,16 +198,22 @@ void VertexBuffer::UploadData()
 void VertexBuffer::addToNotUploadedBuffers()
 {
   if (COMBINE_BUFFERS == 0 || usage != USAGE_STATIC)
+  {
     UploadData();
+  }
   else if (std::find(notUploadedBuffers.begin(), notUploadedBuffers.end(), this) ==
            notUploadedBuffers.end())
+  {
     notUploadedBuffers.push_back(this);
+  }
 }
 
 void VertexBuffer::UploadBuffers()
 {
   if (notUploadedBuffers.size() == 0)
+  {
     return;
+  }
 
   int countNT = 0;
   int countT = 0;
@@ -237,7 +261,9 @@ void VertexBuffer::UploadBuffers()
     glBufferData(GL_ARRAY_BUFFER, countT * fvfToSize(MY_D3DFVF_TEX), nullptr, GL_STATIC_DRAW);
   }
   for (auto it = notUploadedBuffers.begin(); it != notUploadedBuffers.end(); it++)
+  {
     (*it)->UploadData();
+  }
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
   notUploadedBuffers.clear();

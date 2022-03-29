@@ -218,11 +218,15 @@ void Surface::SetDefaults(bool fromMouseClick)
 
   HRESULT hr = LoadValue(strKeyName, "TopImage", m_d.m_szImage);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_szImage.clear();
+  }
 
   hr = LoadValue(strKeyName, "SideImage", m_d.m_szSideImage);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_szSideImage.clear();
+  }
 
   m_d.m_droppable =
       fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Droppable", false) : false;
@@ -274,15 +278,19 @@ void Surface::UIRenderPass1(Sur* const psur)
   {
     ppi->CreateGDIVersion();
     if (ppi->m_hbmGDIVersion)
+    {
       psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top,
                          m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
+    }
     else
     {
       // Do nothing for now to indicate to user that there is a problem
     }
   }
   else
+  {
     psur->Polygon(vvertex);
+  }
 }
 
 void Surface::UIRenderPass2(Sur* const psur)
@@ -319,7 +327,9 @@ void Surface::UIRenderPass2(Sur* const psur)
   {
     CComObject<DragPoint>* const pdp = m_vdpoint[i];
     if (!(drawDragpoints || pdp->m_slingshot))
+    {
       continue;
+    }
     psur->SetFillColor(-1);
     psur->SetBorderColor(pdp->m_dragging ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
 
@@ -344,9 +354,13 @@ void Surface::RenderBlueprint(Sur* psur, const bool solid)
 {
   // Don't render dragpoints for blueprint
   if (solid)
+  {
     psur->SetFillColor(BLUEPRINT_SOLID_COLOR);
+  }
   else
+  {
     psur->SetFillColor(-1);
+  }
   psur->SetBorderColor(RGB(0, 0, 0), false, 0);
   psur->SetObject(this); // For selected formatting
   psur->SetObject(nullptr);
@@ -370,7 +384,9 @@ void Surface::GetTimers(vector<HitTimer*>& pvht)
   m_phittimer = pht;
 
   if (m_d.m_tdr.m_TimerEnabled)
+  {
     pvht.push_back(pht);
+  }
 }
 
 void Surface::GetHitShapes(vector<HitObject*>& pvho)
@@ -467,7 +483,9 @@ void Surface::SetupHitObject(vector<HitObject*>& pvho, HitObject* const obj)
   pvho.push_back(obj);
   m_vhoCollidable.push_back(obj); //remember hit components of wall
   if (m_d.m_droppable)
+  {
     m_vhoDrop.push_back(obj);
+  }
 }
 
 //
@@ -506,9 +524,11 @@ void Surface::AddLine(vector<HitObject*>& pvho, const RenderVertex& pv1, const R
   }
 
   if (m_d.m_heightbottom != 0.f)
+  {
     // add lower edge as a line
     SetupHitObject(pvho,
                    new HitLine3D(Vertex3Ds(pv1.x, pv1.y, bottom), Vertex3Ds(pv2.x, pv2.y, bottom)));
+  }
 
   // add upper edge as a line
   SetupHitObject(pvho, new HitLine3D(Vertex3Ds(pv1.x, pv1.y, top), Vertex3Ds(pv2.x, pv2.y, top)));
@@ -518,7 +538,9 @@ void Surface::AddLine(vector<HitObject*>& pvho, const RenderVertex& pv1, const R
 
   // add upper and lower end points of line
   if (m_d.m_heightbottom != 0.f)
+  {
     SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1.x, pv1.y, bottom)));
+  }
   SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1.x, pv1.y, top)));
 }
 
@@ -566,7 +588,9 @@ void Surface::RenderDynamic()
   TRACE_FUNCTION();
 
   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+  {
     return;
+  }
 
   RenderSlingshots();
 
@@ -605,7 +629,9 @@ void Surface::GenerateMesh(std::vector<Vertex3D_NoTex2>& topBuf,
 
   Texture* const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
   if (pinSide)
+  {
     GetTextureCoords(vvertex, &rgtexcoord);
+  }
 
   m_numVertices = (unsigned int)vvertex.size();
   Vertex2D* const rgnormal = new Vertex2D[m_numVertices];
@@ -745,7 +771,9 @@ void Surface::GenerateMesh(std::vector<Vertex3D_NoTex2>& topBuf,
     {
       std::vector<unsigned int> vpoly(m_numVertices);
       for (unsigned int i = 0; i < m_numVertices; i++)
+      {
         vpoly[i] = i;
+      }
 
       PolygonToTriangles(vvertex, vpoly, topBottomIndices, false);
     }
@@ -858,7 +886,9 @@ void Surface::ExportMesh(ObjLoader& loader)
     WORD* const idx = new WORD[topBottomIndices.size() + sideIndices.size()];
     memcpy(idx, sideIndices.data(), sideIndices.size() * sizeof(WORD));
     for (size_t i = 0; i < topBottomIndices.size(); i++)
+    {
       idx[sideIndices.size() + i] = topBottomIndices[i] + m_numVertices * 4;
+    }
     loader.WriteFaceInfoList(idx, (unsigned int)(topBottomIndices.size() + sideIndices.size()));
     loader.UpdateFaceOffset(m_numVertices * 5);
     delete[] idx;
@@ -895,9 +925,11 @@ void Surface::PrepareWallsAtHeight()
   memcpy(verts, sideBuf.data(), sizeof(Vertex3D_NoTex2) * m_numVertices * 4);
 
   if (!topBottomBuf.empty())
+  {
     //if (m_d.m_visible) // Visible could still be set later if rendered dynamically
     memcpy(verts + m_numVertices * 4, topBottomBuf.data(),
            sizeof(Vertex3D_NoTex2) * m_numVertices * 3);
+  }
   m_VBuffer->unlock();
 
   //
@@ -910,8 +942,10 @@ void Surface::PrepareWallsAtHeight()
   m_IBuffer->lock(0, 0, (void**)&buf, IndexBuffer::WRITEONLY);
   memcpy(buf, sideIndices.data(), sideIndices.size() * sizeof(WORD));
   if (!topBottomIndices.empty())
+  {
     memcpy(buf + sideIndices.size(), topBottomIndices.data(),
            topBottomIndices.size() * sizeof(WORD));
+  }
   m_IBuffer->unlock();
 }
 
@@ -976,7 +1010,9 @@ void Surface::PrepareSlingshots()
   delete[] rgv3D;
 
   if (!slingIBuffer)
+  {
     slingIBuffer = IndexBuffer::CreateAndFillIndexBuffer(24, rgiSlingshot, PRIMARY_DEVICE);
+  }
 }
 
 void Surface::RenderSetup()
@@ -987,18 +1023,24 @@ void Surface::RenderSetup()
   m_d.m_heightbottom *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
   m_d.m_heighttop *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
   if (!m_vlinesling.empty())
+  {
     PrepareSlingshots();
+  }
 
   m_isDynamic = false;
   if (m_d.m_sideVisible)
   {
     if (m_ptable->GetMaterial(m_d.m_szSideMaterial)->m_bOpacityActive)
+    {
       m_isDynamic = true;
+    }
   }
   if (m_d.m_topBottomVisible)
   {
     if (m_ptable->GetMaterial(m_d.m_szTopMaterial)->m_bOpacityActive)
+    {
       m_isDynamic = true;
+    }
   }
 
   // create all vertices for dropped and non-dropped surface
@@ -1018,17 +1060,23 @@ void Surface::FreeBuffers()
 void Surface::RenderStatic()
 {
   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+  {
     return;
+  }
 
   RenderSlingshots();
   if (StaticRendering())
+  {
     RenderWallsAtHeight(false);
+  }
 }
 
 void Surface::RenderSlingshots()
 {
   if (!m_d.m_sideVisible || m_vlinesling.empty())
+  {
     return;
+  }
 
   bool nothing_to_draw = true;
   for (size_t i = 0; i < m_vlinesling.size(); i++)
@@ -1042,7 +1090,9 @@ void Surface::RenderSlingshots()
   }
 
   if (nothing_to_draw)
+  {
     return;
+  }
 
   RenderDevice* const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
@@ -1060,11 +1110,15 @@ void Surface::RenderSlingshots()
   {
     LineSegSlingshot* const plinesling = m_vlinesling[i];
     if (!plinesling->m_slingshotanim.m_iframe && !plinesling->m_doHitEvent)
+    {
       continue;
+    }
     else if (plinesling->m_doHitEvent)
     {
       if (plinesling->m_EventTimeReset == 0)
+      {
         plinesling->m_EventTimeReset = g_pplayer->m_time_msec + 100;
+      }
       else if (plinesling->m_EventTimeReset < g_pplayer->m_time_msec)
       {
         plinesling->m_doHitEvent = false;
@@ -1083,14 +1137,18 @@ void Surface::RenderSlingshots()
 void Surface::RenderWallsAtHeight(const bool drop)
 {
   if (m_ptable->m_reflectionEnabled && (/*m_d.m_heightbottom < 0.0f ||*/ m_d.m_heighttop < 0.0f))
+  {
     return;
+  }
 
   RenderDevice* const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
   if ((m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f) &&
       (m_d.m_sideVisible || m_d.m_topBottomVisible))
+  {
     pd3dDevice->basicShader->SetDisableLighting(
         vec4(m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f, 0.f));
+  }
 
   // render side
   if (m_d.m_sideVisible && !drop && (m_numVertices > 0)) // Don't need to render walls if dropped
@@ -1102,13 +1160,19 @@ void Surface::RenderWallsAtHeight(const bool drop)
     pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 
     if (mat->m_bOpacityActive || !m_isDynamic)
+    {
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+    }
     else
     {
       if (m_d.m_topBottomVisible && m_isDynamic)
+      {
         pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+      }
       else
+      {
         pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+      }
     }
     Texture* const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
     if (pinSide)
@@ -1121,8 +1185,10 @@ void Surface::RenderWallsAtHeight(const bool drop)
       //g_pplayer->m_pin3d.SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
     }
     else
+    {
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture,
                                                  mat->m_bIsMetal);
+    }
 
     // combine drawcalls into one (hopefully faster)
     pd3dDevice->basicShader->Begin(0);
@@ -1142,9 +1208,13 @@ void Surface::RenderWallsAtHeight(const bool drop)
     pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 
     if (mat->m_bOpacityActive || !m_isDynamic)
+    {
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+    }
     else
+    {
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+    }
 
     Texture* const pin = m_ptable->GetImage(m_d.m_szImage);
     if (pin)
@@ -1157,8 +1227,10 @@ void Surface::RenderWallsAtHeight(const bool drop)
       //g_pplayer->m_pin3d.SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
     }
     else
+    {
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture,
                                                  mat->m_bIsMetal);
+    }
 
     // Top
     pd3dDevice->basicShader->Begin(0);
@@ -1171,9 +1243,13 @@ void Surface::RenderWallsAtHeight(const bool drop)
     if (m_ptable->m_reflectionEnabled)
     {
       if (mat->m_bOpacityActive || !m_isDynamic)
+      {
         pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+      }
       else
+      {
         pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CW);
+      }
 
       pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX,
@@ -1189,7 +1265,9 @@ void Surface::RenderWallsAtHeight(const bool drop)
   //pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
   if ((m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f) &&
       (m_d.m_sideVisible || m_d.m_topBottomVisible))
+  {
     pd3dDevice->basicShader->SetDisableLighting(vec4(0.f, 0.f, 0.f, 0.f));
+  }
 }
 
 void Surface::AddPoint(int x, int y, const bool smooth)
@@ -1208,8 +1286,12 @@ void Surface::AddPoint(int x, int y, const bool smooth)
   // Go through vertices (including iSeg itself) counting control points until iSeg
   int icp = 0;
   for (int i = 0; i < (iSeg + 1); i++)
+  {
     if (vvertex[i].controlPoint)
+    {
       icp++;
+    }
+  }
 
   CComObject<DragPoint>* pdp;
   CComObject<DragPoint>::CreateInstance(&pdp);
@@ -1330,7 +1412,9 @@ HRESULT Surface::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool backu
   bw.WriteTag(FID(PNTS));
   HRESULT hr;
   if (FAILED(hr = SavePointData(pstm, hcrypthash)))
+  {
     return hr;
+  }
 
   bw.WriteTag(FID(ENDB));
 
@@ -1794,7 +1878,9 @@ STDMETHODIMP Surface::put_IsBottomSolid(VARIANT_BOOL newVal)
 STDMETHODIMP Surface::get_IsDropped(VARIANT_BOOL* pVal)
 {
   if (!g_pplayer)
+  {
     return E_FAIL;
+  }
 
   *pVal = FTOVB(m_isDropped);
 
@@ -1804,7 +1890,9 @@ STDMETHODIMP Surface::get_IsDropped(VARIANT_BOOL* pVal)
 STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
 {
   if (!g_pplayer || !m_d.m_droppable)
+  {
     return E_FAIL;
+  }
 
   const bool val = VBTOb(newVal);
 
@@ -1814,8 +1902,12 @@ STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
 
     const bool b = !m_isDropped && m_d.m_collidable;
     if (!m_vhoDrop.empty() && m_vhoDrop[0]->m_enabled != b)
-      for (size_t i = 0; i < m_vhoDrop.size(); i++) //!! costly
+    {
+      for (size_t i = 0; i < m_vhoDrop.size(); i++)
+      { //!! costly
         m_vhoDrop[i]->m_enabled = b; //disable hit on entities composing the object
+      }
+    }
   }
 
   return S_OK;
@@ -1984,13 +2076,19 @@ STDMETHODIMP Surface::put_Collidable(VARIANT_BOOL newVal)
   const bool fNewVal = VBTOb(newVal);
 
   if (!g_pplayer)
+  {
     m_d.m_collidable = fNewVal;
+  }
   else
   {
     const bool b = m_d.m_droppable ? (fNewVal && !m_isDropped) : fNewVal;
     if (!m_vhoCollidable.empty() && m_vhoCollidable[0]->m_enabled != b)
-      for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
+    {
+      for (size_t i = 0; i < m_vhoCollidable.size(); i++)
+      { //!! costly
         m_vhoCollidable[i]->m_enabled = b; //copy to hit checking on entities composing the object
+      }
+    }
   }
 
   return S_OK;
@@ -2088,7 +2186,9 @@ STDMETHODIMP Surface::PlaySlingshotHit()
   {
     LineSegSlingshot* const plinesling = m_vlinesling[i];
     if (plinesling)
+    {
       plinesling->m_doHitEvent = true;
+    }
   }
   return S_OK;
 }

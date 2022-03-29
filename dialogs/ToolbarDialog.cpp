@@ -15,7 +15,9 @@ LRESULT ToolbarDialog::OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam)
 {
   // Set window focus. The docker will now report this as active.
   if (!IsChild(::GetFocus()))
+  {
     SetFocus();
+  }
 
   return FinalWindowProc(msg, wparam, lparam);
 }
@@ -238,7 +240,9 @@ INT_PTR ToolbarDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
 void ToolbarDialog::EnableButtons()
 {
   if (!IsWindow())
+  {
     return;
+  }
   CComObject<PinTable>* const ptCur = g_pvp->GetActiveTable();
   if (ptCur == nullptr && !g_pplayer)
   {
@@ -334,7 +338,9 @@ void ToolbarDialog::EnableButtons()
 bool ToolbarDialog::PreTranslateMessage(MSG* msg)
 {
   if (!IsWindow())
+  {
     return false;
+  }
 
   // only pre-translate mouse and keyboard input events
   if (((msg->message >= WM_KEYFIRST && msg->message <= WM_KEYLAST) ||
@@ -344,7 +350,9 @@ bool ToolbarDialog::PreTranslateMessage(MSG* msg)
     // only pass F1-F12 to the main VPinball class to open subdialogs from everywhere
     if (keyPressed >= VK_F1 && keyPressed <= VK_F12 &&
         TranslateAccelerator(g_pvp->GetHwnd(), g_haccel, msg))
+    {
       return true;
+    }
   }
 
   return !!IsDialogMessage(*msg);
@@ -396,7 +404,9 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case BN_CLICKED:
         {
           if (SendDlgItemMessage(id, BM_GETCHECK, 0, 0) == BST_UNCHECKED)
+          {
             SendDlgItemMessage(id, BM_SETCHECK, BST_CHECKED, 0);
+          }
 
           return TRUE;
         }

@@ -311,8 +311,12 @@ static constexpr unsigned char VK_TO_DIK[VK_TO_DIK_SIZE][2] = {
 inline unsigned int get_vk(const unsigned int dik)
 {
   for (unsigned int i = 0; i < VK_TO_DIK_SIZE; ++i)
+  {
     if (VK_TO_DIK[i][1] == dik)
+    {
       return VK_TO_DIK[i][0];
+    }
+  }
 
   return ~0u;
 }
@@ -320,8 +324,12 @@ inline unsigned int get_vk(const unsigned int dik)
 inline unsigned int get_dik(const unsigned int vk)
 {
   for (unsigned int i = 0; i < VK_TO_DIK_SIZE; ++i)
+  {
     if (VK_TO_DIK[i][0] == vk)
+    {
       return VK_TO_DIK[i][1];
+    }
+  }
 
   return ~0u;
 }

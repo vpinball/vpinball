@@ -200,17 +200,25 @@ using std::vector;
 inline void ShowError(const char* const sz)
 {
   if (g_pvp)
+  {
     g_pvp->MessageBox(sz, "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
+  }
   else
+  {
     MessageBox(nullptr, sz, "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
+  }
 }
 
 inline void ShowError(const string& sz)
 {
   if (g_pvp)
+  {
     g_pvp->MessageBox(sz.c_str(), "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
+  }
   else
+  {
     MessageBox(nullptr, sz.c_str(), "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
+  }
 }
 
 #include "editablereg.h"

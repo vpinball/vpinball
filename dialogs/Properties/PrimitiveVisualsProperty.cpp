@@ -22,39 +22,69 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemPrimitive))
+    {
       continue;
+    }
     Primitive* const prim = (Primitive*)m_pvsel->ElementAt(i);
 
     if (dispid == IDC_ADDBLEND || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hAdditiveBlendCheck, prim->m_d.m_addBlend);
+    }
     if (dispid == IDC_DISPLAY_TEXTURE_CHECKBOX || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hDisplayImageCheck, prim->m_d.m_displayTexture);
+    }
     if (dispid == IDC_DRAW_TEXTURES_SIDES_CHECK || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hDrawTexturesInsideCheck, prim->m_d.m_drawTexturesInside);
+    }
     if (dispid == IDC_OBJECT_SPACE_NORMALMAP || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hObjectSpaceCheck, prim->m_d.m_objectSpaceNormalMap);
+    }
     if (dispid == IDC_PRIMITIVE_ENABLE_BACKFACES || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hRenderBackfacingCheck, prim->m_d.m_backfacesEnabled);
+    }
     if (dispid == IDC_STATIC_RENDERING_CHECK || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hStaticRenderingCheck, prim->m_d.m_staticRendering);
+    }
     if (dispid == IDC_ALPHA_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_opacityAmountEdit, prim->m_d.m_alpha);
+    }
     if (dispid == IDC_DEPTH_BIAS || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_depthBiasEdit, prim->m_d.m_depthBias);
+    }
     if (dispid == IDC_BLEND_DISABLE_LIGHTING || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_disableLightingEdit, prim->m_d.m_disableLightingTop);
+    }
     if (dispid == IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_disableLightFromBelowEdit,
                                       prim->m_d.m_disableLightingBelow);
+    }
     if (dispid == IDC_PRIMITIVE_LEGACY_SIDES_EDIT || dispid == -1)
+    {
       PropertyDialog::SetIntTextbox(m_legacySidesEdit, prim->m_d.m_Sides);
+    }
     if (dispid == IDC_EDGE_FACTOR_UI || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_edgeFactorUIEdit, prim->m_d.m_edgeFactorUI);
+    }
     if (dispid == DISPID_Image2 || dispid == -1)
+    {
       PropertyDialog::UpdateTextureComboBox(prim->GetPTable()->GetImageList(), m_normalMapCombo,
                                             prim->m_d.m_szNormalMap);
+    }
     if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
+    {
       m_colorButton.SetColor(prim->m_d.m_color);
+    }
 
     UpdateBaseVisuals(prim, &prim->m_d, dispid);
     //only show the first element on multi-select
@@ -68,7 +98,9 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemPrimitive))
+    {
       continue;
+    }
     Primitive* const prim = (Primitive*)m_pvsel->ElementAt(i);
     switch (dispid)
     {
@@ -137,7 +169,9 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
       {
         CComObject<PinTable>* const ptable = g_pvp->GetActiveTable();
         if (ptable == nullptr)
+        {
           break;
+        }
         CHOOSECOLOR cc = m_colorDialog.GetParameters();
         cc.Flags = CC_FULLOPEN | CC_RGBINIT;
         m_colorDialog.SetParameters(cc);

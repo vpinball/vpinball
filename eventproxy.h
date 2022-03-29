@@ -73,7 +73,9 @@ public:
     }
 
     if (pT->m_singleEvents)
+    {
       FireVoidEvent(dispid);
+    }
   }
 
   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS* const pdispparams)

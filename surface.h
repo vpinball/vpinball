@@ -105,18 +105,26 @@ public:
   {
     unsigned long long h = 0;
     if (m_d.m_sideVisible)
+    {
       h = m_ptable->GetMaterial(m_d.m_szSideMaterial)->hash();
+    }
     if (m_d.m_topBottomVisible)
+    {
       h = m_ptable->GetMaterial(m_d.m_szTopMaterial)->hash();
+    }
     return h;
   }
   virtual unsigned long long GetImageID() const
   {
     Texture* tex = nullptr;
     if (m_d.m_sideVisible)
+    {
       tex = m_ptable->GetImage(m_d.m_szSideImage);
+    }
     if (m_d.m_topBottomVisible)
+    {
       tex = m_ptable->GetImage(m_d.m_szImage);
+    }
     return (unsigned long long)tex;
   }
   virtual ItemTypeEnum HitableGetItemType() const { return eItemSurface; }

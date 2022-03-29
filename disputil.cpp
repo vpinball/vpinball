@@ -13,7 +13,9 @@ void EnumEventsFromDispatch(IDispatch* pdisp, EventListCallback Callback, LPARAM
     pClassInfo->GetClassInfo(&pti);
 
     if (!pti)
+    {
       return;
+    }
 
     TYPEATTR* pta;
 

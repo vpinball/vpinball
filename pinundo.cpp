@@ -12,13 +12,17 @@ PinUndo::PinUndo()
 PinUndo::~PinUndo()
 {
   for (size_t i = 0; i < m_vur.size(); ++i)
+  {
     delete m_vur[i];
+  }
 }
 
 void PinUndo::SetCleanPoint(const SaveDirtyState sds)
 {
   if (sds == eSaveClean)
+  {
     m_cleanpoint = m_vur.size();
+  }
   m_sdsDirty = sds;
   m_ptable->SetDirty(sds);
 }
@@ -26,7 +30,9 @@ void PinUndo::SetCleanPoint(const SaveDirtyState sds)
 void PinUndo::BeginUndo()
 {
   if (g_pplayer)
+  {
     return;
+  }
 
   m_cUndoLayer++;
 
@@ -48,7 +54,9 @@ void PinUndo::BeginUndo()
 void PinUndo::MarkForUndo(IEditable* const pie, const bool backupForPlay)
 {
   if (g_pplayer)
+  {
     return;
+  }
 
   if (m_vur.empty())
   {
@@ -124,13 +132,17 @@ void PinUndo::Undo()
     const LocalString ls(IDS_UNDOPASTSAVE);
     const int result = m_ptable->ShowMessageBox(ls.m_szbuffer);
     if (result != IDYES)
+    {
       return;
+    }
   }
 
   UndoRecord* const pur = m_vur[m_vur.size() - 1];
 
   for (size_t i = 0; i < pur->m_vieDelete.size(); i++)
+  {
     m_ptable->Undelete(pur->m_vieDelete[i]);
+  }
 
   pur->m_vieDelete.clear(); // Don't want these released when this record gets deleted
 
@@ -157,7 +169,9 @@ void PinUndo::Undo()
   }
 
   for (size_t i = 0; i < pur->m_vieCreate.size(); i++)
+  {
     m_ptable->Uncreate(pur->m_vieCreate[i]);
+  }
 
   RemoveFromVectorSingle(m_vur, pur);
   delete pur;
@@ -183,7 +197,9 @@ void PinUndo::Undo()
 void PinUndo::EndUndo()
 {
   if (g_pplayer)
+  {
     return;
+  }
 
   _ASSERTE(m_cUndoLayer > 0);
   if (m_cUndoLayer > 0)
@@ -194,8 +210,10 @@ void PinUndo::EndUndo()
   if (m_cUndoLayer == 0 && (m_sdsDirty < eSaveDirty))
   {
     m_sdsDirty = eSaveDirty;
-    if (!m_startToPlay) // undo history only due to backup? -> do not flag table as dirty
+    if (!m_startToPlay)
+    { // undo history only due to backup? -> do not flag table as dirty
       m_ptable->SetDirty(eSaveDirty);
+    }
   }
 }
 
@@ -206,19 +224,27 @@ UndoRecord::UndoRecord()
 UndoRecord::~UndoRecord()
 {
   for (size_t i = 0; i < m_vstm.size(); i++)
+  {
     m_vstm[i]->Release();
+  }
 
   for (size_t i = 0; i < m_vieDelete.size(); i++)
+  {
     m_vieDelete[i]->Release();
+  }
 }
 
 void UndoRecord::MarkForUndo(IEditable* const pie, const bool backupForPlay)
 {
-  if (FindIndexOf(m_vieMark, pie) != -1) // Been marked already
+  if (FindIndexOf(m_vieMark, pie) != -1)
+  { // Been marked already
     return;
+  }
 
-  if (FindIndexOf(m_vieCreate, pie) != -1) // Just created, so undo will delete it anyway
+  if (FindIndexOf(m_vieCreate, pie) != -1)
+  { // Just created, so undo will delete it anyway
     return;
+  }
 
   m_vieMark.push_back(pie);
 

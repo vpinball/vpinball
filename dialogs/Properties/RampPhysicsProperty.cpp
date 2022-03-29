@@ -19,13 +19,19 @@ void RampPhysicsProperty::UpdateVisuals(const int dispid /*=-1*/)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemRamp))
+    {
       continue;
+    }
     Ramp* const ramp = (Ramp*)m_pvsel->ElementAt(i);
 
     if (dispid == 10 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_leftWallEdit, ramp->m_d.m_leftwallheight);
+    }
     if (dispid == 11 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_rightWallEdit, ramp->m_d.m_rightwallheight);
+    }
 
     if (dispid == IDC_COLLIDABLE_CHECK || dispid == -1)
     {
@@ -51,7 +57,9 @@ void RampPhysicsProperty::UpdateProperties(const int dispid)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemRamp))
+    {
       continue;
+    }
     Ramp* const ramp = (Ramp*)m_pvsel->ElementAt(i);
     switch (dispid)
     {

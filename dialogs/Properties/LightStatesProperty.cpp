@@ -18,15 +18,23 @@ void LightStatesProperty::UpdateVisuals(const int dispid /*=-1*/)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemLight))
+    {
       continue;
+    }
     const Light* const light = (Light*)m_pvsel->ElementAt(i);
     if (dispid == DISPID_Light_State || dispid == -1)
+    {
       PropertyDialog::UpdateComboBox(m_stateList, m_stateCombo,
                                      m_stateList[(int)light->getLightState()]);
+    }
     if (dispid == IDC_BLINK_PATTERN_EDIT || dispid == -1)
+    {
       m_blinkPatternEdit.SetWindowText(light->m_rgblinkpattern.c_str());
+    }
     if (dispid == DISPID_Light_BlinkInterval || dispid == -1)
+    {
       PropertyDialog::SetIntTextbox(m_blinkIntervalEdit, light->m_blinkinterval);
+    }
     //only show the first element on multi-select
     break;
   }
@@ -37,7 +45,9 @@ void LightStatesProperty::UpdateProperties(const int dispid)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemLight))
+    {
       continue;
+    }
     Light* const light = (Light*)m_pvsel->ElementAt(i);
     switch (dispid)
     {

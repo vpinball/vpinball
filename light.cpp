@@ -81,11 +81,15 @@ void Light::SetDefaults(bool fromMouseClick)
 
   HRESULT hr = LoadValue("DefaultProps\\Light", "OffImage", m_d.m_szImage);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_szImage.clear();
+  }
 
   hr = LoadValue("DefaultProps\\Light", "BlinkPattern", m_rgblinkpattern);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_rgblinkpattern = "10";
+  }
 
   m_blinkinterval =
       fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Light", "BlinkInterval", 125) : 125;
@@ -101,7 +105,9 @@ void Light::SetDefaults(bool fromMouseClick)
 
   hr = LoadValue("DefaultProps\\Light", "Surface", m_d.m_szSurface);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_szSurface.clear();
+  }
 
   m_d.m_fadeSpeedUp =
       fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Light", "FadeSpeedUp", 0.2f) : 0.2f;
@@ -281,7 +287,9 @@ void Light::GetTimers(vector<HitTimer*>& pvht)
   m_phittimer = pht;
 
   if (m_d.m_tdr.m_TimerEnabled)
+  {
     pvht.push_back(pht);
+  }
 }
 
 void Light::GetHitShapes(vector<HitObject*>& pvho)
@@ -421,16 +429,24 @@ void Light::RenderDynamic()
   TRACE_FUNCTION();
 
   if (!m_d.m_visible || m_ptable->m_reflectionEnabled)
+  {
     return;
+  }
 
-  if (m_customMoverVBuffer == nullptr) // in case of degenerate light
+  if (m_customMoverVBuffer == nullptr)
+  { // in case of degenerate light
     return;
+  }
 
   if (m_backglass && !GetPTable()->GetDecalsEnabled())
+  {
     return;
+  }
 
   if (m_d.m_BulbLight && m_d.m_showBulbMesh && !m_d.m_staticBulbMesh)
+  {
     RenderBulbMesh();
+  }
 
   const U32 old_time_msec =
       (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
@@ -442,10 +458,14 @@ void Light::RenderDynamic()
     m_inPlayState = (LightState)m_finalState;
     m_duration = 0;
     if (m_inPlayState == LightStateBlinking)
+    {
       RestartBlinker(g_pplayer->m_time_msec);
+    }
   }
   if (m_inPlayState == LightStateBlinking)
+  {
     UpdateBlinker(g_pplayer->m_time_msec);
+  }
 
   const bool isOn = (m_inPlayState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1')
                                                           : (m_inPlayState != LightStateOff);
@@ -456,7 +476,9 @@ void Light::RenderDynamic()
     {
       m_d.m_currentIntensity += m_d.m_fadeSpeedUp * diff_time_msec;
       if (m_d.m_currentIntensity > m_d.m_intensity * m_d.m_intensity_scale)
+      {
         m_d.m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale;
+      }
     }
   }
   else
@@ -465,7 +487,9 @@ void Light::RenderDynamic()
     {
       m_d.m_currentIntensity -= m_d.m_fadeSpeedDown * diff_time_msec;
       if (m_d.m_currentIntensity < 0.0f)
+      {
         m_d.m_currentIntensity = 0.0f;
+      }
     }
   }
 
@@ -480,11 +504,15 @@ void Light::RenderDynamic()
        !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
   {
     if (m_d.m_currentIntensity == 0.f)
+    {
       return;
+    }
     if (lightColor_intensity.x == 0.f && lightColor_intensity.y == 0.f &&
         lightColor_intensity.z == 0.f && lightColor2_falloff_power.x == 0.f &&
         lightColor2_falloff_power.y == 0.f && lightColor2_falloff_power.z == 0.f)
+    {
       return;
+    }
   }
 
   if (!m_backglass)
@@ -500,9 +528,13 @@ void Light::RenderDynamic()
   }
 
   if (m_backglass && (m_ptable->m_tblMirrorEnabled ^ m_ptable->m_reflectionEnabled))
+  {
     pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+  }
   else
+  {
     pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+  }
 
   Vertex2D centerHUD;
   centerHUD.x = m_d.m_vCenter.x;
@@ -543,8 +575,10 @@ void Light::RenderDynamic()
       }
     }
     else
+    {
       pd3dDevice->classicLightShader->SetTechniqueMetal(SHADER_TECHNIQUE_light_without_texture,
                                                         m_surfaceMaterial->m_bIsMetal);
+    }
   }
   else
   {
@@ -566,7 +600,9 @@ void Light::RenderDynamic()
     {
       lightColor_intensity.w = m_d.m_currentIntensity * 0.02f; //!! make configurable?
       if (g_pplayer->m_current_renderstage == 1)
+      {
         lightColor_intensity.w *= m_d.m_transmissionScale;
+      }
       pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
       pd3dDevice->lightShader->SetFloat(
           SHADER_blend_modulate_vs_add,
@@ -590,7 +626,9 @@ void Light::RenderDynamic()
   if (m_updateBulbLightHeight)
   {
     if (m_d.m_BulbLight && !m_backglass)
+    {
       UpdateCustomMoverVBuffer();
+    }
 
     m_updateBulbLightHeight = false;
   }
@@ -604,7 +642,9 @@ void Light::RenderDynamic()
   else
   {
     if (g_pplayer->m_current_renderstage == 1)
+    {
       lightColor_intensity.w *= m_d.m_transmissionScale;
+    }
     pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
     pd3dDevice->lightShader->Begin(0);
   }
@@ -616,9 +656,13 @@ void Light::RenderDynamic()
                                      m_customMoverIBuffer, 0, m_customMoverIndexNum);
 
   if (!m_d.m_BulbLight)
+  {
     pd3dDevice->classicLightShader->End();
+  }
   else
+  {
     pd3dDevice->lightShader->End();
+  }
 
   if (!m_d.m_BulbLight &&
       offTexel != nullptr /*&& m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl*/ &&
@@ -644,7 +688,9 @@ void Light::PrepareMoversCustom()
   GetRgVertex(m_vvertex);
 
   if (m_vvertex.empty())
+  {
     return;
+  }
 
   m_maxDist = 0.f;
   std::vector<WORD> vtri;
@@ -660,7 +706,9 @@ void Light::PrepareMoversCustom()
       const float dy = m_vvertex[i].y - m_d.m_vCenter.y;
       const float dist = dx * dx + dy * dy;
       if (dist > m_maxDist)
+      {
         m_maxDist = dist;
+      }
     }
 
     PolygonToTriangles(m_vvertex, vpoly, vtri, true);
@@ -785,16 +833,24 @@ void Light::RenderSetup()
   m_surfaceHeight = m_initSurfaceHeight;
 
   if (m_inPlayState == LightStateBlinking)
+  {
     RestartBlinker(g_pplayer->m_time_msec);
+  }
   else if (m_duration > 0 && m_inPlayState == LightStateOn)
+  {
     m_timerDurationEndTime = g_pplayer->m_time_msec + m_duration;
+  }
 
   const bool isOn = (m_inPlayState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1')
                                                           : (m_inPlayState != LightStateOff);
   if (isOn)
+  {
     m_d.m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale;
+  }
   else
+  {
     m_d.m_currentIntensity = 0.0f;
+  }
 
   if (m_d.m_BulbLight && m_d.m_showBulbMesh)
   {
@@ -856,7 +912,9 @@ void Light::RenderSetup()
 void Light::RenderStatic()
 {
   if (m_d.m_BulbLight && m_d.m_showBulbMesh && m_d.m_staticBulbMesh)
+  {
     RenderBulbMesh();
+  }
 }
 
 void Light::SetObjectPos()
@@ -916,7 +974,9 @@ HRESULT Light::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool backupF
   //bw.WriteTag(FID(PNTS));
   HRESULT hr;
   if (FAILED(hr = SavePointData(pstm, hcrypthash)))
+  {
     return hr;
+  }
 
   bw.WriteTag(FID(ENDB));
 
@@ -1108,8 +1168,12 @@ void Light::AddPoint(int x, int y, const bool smooth)
   // Go through vertices (including iSeg itself) counting control points until iSeg
   int icp = 0;
   for (int i = 0; i < (iSeg + 1); i++)
+  {
     if (vvertex[i].controlPoint)
+    {
       icp++;
+    }
+  }
 
   //if (icp == 0) // need to add point after the last point
   //icp = m_vdpoint.size();
@@ -1169,7 +1233,9 @@ STDMETHODIMP Light::InterfaceSupportsErrorInfo(REFIID riid)
   for (int i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
   {
     if (InlineIsEqualGUID(*arr[i], riid))
+    {
       return S_OK;
+    }
   }
   return S_FALSE;
 }
@@ -1184,7 +1250,9 @@ STDMETHODIMP Light::get_Falloff(float* pVal)
 STDMETHODIMP Light::put_Falloff(float newVal)
 {
   if (newVal < 0.f)
+  {
     return E_FAIL;
+  }
 
   m_d.m_falloff = newVal;
 
@@ -1208,17 +1276,23 @@ STDMETHODIMP Light::put_FalloffPower(float newVal)
 STDMETHODIMP Light::get_State(LightState* pVal)
 {
   if (g_pplayer && !m_lockedByLS)
+  {
     *pVal = m_inPlayState;
+  }
   else
+  {
     *pVal =
         m_d.m_state; //the LS needs the old m_d.m_state and not the current one, m_fLockedByLS is true if under the light is under control of the LS
+  }
   return S_OK;
 }
 
 STDMETHODIMP Light::put_State(LightState newVal)
 {
   if (!m_lockedByLS)
+  {
     setInPlayState(newVal);
+  }
 
   m_d.m_state = newVal;
   return S_OK;
@@ -1350,10 +1424,14 @@ STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
   m_rgblinkpattern = sz;
 
   if (m_rgblinkpattern.empty())
+  {
     m_rgblinkpattern = "0"; // "10" ?
+  }
 
   if (g_pplayer)
+  {
     RestartBlinker(g_pplayer->m_time_msec);
+  }
 
   return S_OK;
 }
@@ -1369,7 +1447,9 @@ STDMETHODIMP Light::put_BlinkInterval(long newVal)
 {
   m_blinkinterval = newVal;
   if (g_pplayer)
+  {
     m_timenextblink = g_pplayer->m_time_msec + m_blinkinterval;
+  }
 
   return S_OK;
 }
@@ -1405,7 +1485,9 @@ STDMETHODIMP Light::put_Intensity(float newVal)
   const bool isOn = (m_inPlayState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1')
                                                           : (m_inPlayState != LightStateOff);
   if (isOn)
+  {
     m_d.m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale;
+  }
 
   return S_OK;
 }
@@ -1437,7 +1519,9 @@ STDMETHODIMP Light::put_IntensityScale(float newVal)
   const bool isOn = (m_inPlayState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1')
                                                           : (m_inPlayState != LightStateOff);
   if (isOn)
+  {
     m_d.m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale;
+  }
 
   return S_OK;
 }
@@ -1651,7 +1735,9 @@ void Light::setInPlayState(const LightState newVal)
         m_iblinkframe = 0; // reset pattern
       }
       if (m_duration > 0)
+      {
         m_duration = 0; // disable duration if a state was set this way
+      }
     }
   }
 }
@@ -1681,7 +1767,9 @@ STDMETHODIMP Light::GetInPlayIntensity(float* pVal)
 void Light::setLightState(const LightState newVal)
 {
   if (!m_lockedByLS)
+  {
     setInPlayState(newVal);
+  }
 
   m_d.m_state = newVal;
 }

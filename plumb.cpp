@@ -48,7 +48,9 @@ void plumb_update(const U32 curr_time_msec,
   // Ignore large time slices... forces will get crazy!
   // Besides, we're probably loading/unloading.
   if (dt > 0.1f || dt <= 0.0f)
+  {
     return;
+  }
 
   F32& x = gPlumb.x;
   F32& y = gPlumb.y;
@@ -85,15 +87,25 @@ void plumb_update(const U32 curr_time_msec,
   // Update player for diagnostic/table script visibility.  Only update if input value is larger than what's there.
   // When the table script reads the values, they will reset to 0.
   if (TiltPerc > g_pplayer->m_ptable->m_tblNudgeReadTilt)
+  {
     g_pplayer->m_ptable->m_tblNudgeReadTilt = TiltPerc;
+  }
   if (fabsf(getx) > fabsf(g_pplayer->m_ptable->m_tblNudgeRead.x))
+  {
     g_pplayer->m_ptable->m_tblNudgeRead.x = getx;
+  }
   if (fabsf(gety) > fabsf(g_pplayer->m_ptable->m_tblNudgeRead.y))
+  {
     g_pplayer->m_ptable->m_tblNudgeRead.y = gety;
+  }
   if (fabsf(x) > fabsf(g_pplayer->m_ptable->m_tblNudgePlumb.x))
+  {
     g_pplayer->m_ptable->m_tblNudgePlumb.x = x;
+  }
   if (fabsf(y) > fabsf(g_pplayer->m_ptable->m_tblNudgePlumb.y))
+  {
     g_pplayer->m_ptable->m_tblNudgePlumb.y = y;
+  }
 
   // Dampen the velocity.
   vx -= 2.50f * (vx * dt);

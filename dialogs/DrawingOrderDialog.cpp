@@ -37,7 +37,9 @@ BOOL DrawingOrderDialog::OnInitDialog()
   ListView_InsertColumn(hOrderList, 2, &lvc);
 
   if (hOrderList != nullptr)
+  {
     ListView_DeleteAllItems(hOrderList);
+  }
   lv.mask = LVIF_TEXT;
 
   // create a selection in the same drawing order as the selected elements are stored in the main vector
@@ -45,11 +47,15 @@ BOOL DrawingOrderDialog::OnInitDialog()
   if (m_drawingOrderSelect)
   {
     for (SSIZE_T i = pt->m_vedit.size() - 1; i >= 0; i--)
+    {
       for (int t = 0; t < pt->m_vmultisel.size(); t++)
       {
         if (pt->m_vmultisel.ElementAt(t) == pt->m_vedit[i]->GetISelect())
+        {
           selection.push_back(pt->m_vmultisel.ElementAt(t));
+        }
       }
+    }
   }
   for (size_t i = 0; i < (m_drawingOrderSelect ? selection.size() : pt->m_allHitElements.size());
        i++)
@@ -190,7 +196,9 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable* ptr, bool up)
   lv.mask = LVIF_TEXT;
   int idx = ListView_GetNextItem(hOrderList, -1, LVNI_FOCUSED);
   if (idx == -1)
+  {
     return;
+  }
 
   if (up)
   {
@@ -276,9 +284,13 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable* ptr, bool up)
         pt->m_vmultisel.erase(idx);
 
         if (idx + 1 >= pt->m_vmultisel.size())
+        {
           pt->m_vmultisel.push_back(psel);
+        }
         else
+        {
           pt->m_vmultisel.insert(psel, idx + 1);
+        }
 
         for (int i = pt->m_vmultisel.size() - 1; i >= 0; i--)
         {
@@ -316,9 +328,13 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable* ptr, bool up)
         pt->m_allHitElements.erase(pt->m_allHitElements.begin() + idx);
 
         if (idx + 1 >= (int)pt->m_allHitElements.size())
+        {
           pt->m_allHitElements.push_back(psel);
+        }
         else
+        {
           pt->m_allHitElements.insert(pt->m_allHitElements.begin() + (idx + 1), psel);
+        }
 
         for (SSIZE_T i = pt->m_allHitElements.size() - 1; i >= 0; i--)
         {

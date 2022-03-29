@@ -22,31 +22,55 @@ void DispreelVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemDispReel))
+    {
       continue;
+    }
     DispReel* const reel = (DispReel*)m_pvsel->ElementAt(i);
 
     if (dispid == IDC_BACK_TRANSP_CHECK || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hBackgroundTransparentCheck, reel->m_d.m_transparent);
+    }
     if (dispid == IDC_USE_IMAGE_GRID_CHECK || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hUseImageGridCheck, reel->m_d.m_useImageGrid);
+    }
     if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
+    {
       m_colorButton.SetColor(reel->m_d.m_backcolor);
+    }
     if (dispid == IDC_SINGLE_DIGIT_RANGE_EDIT || dispid == -1)
+    {
       PropertyDialog::SetIntTextbox(m_singleDigitRangeEdit, reel->GetRange());
+    }
     if (dispid == IDC_IMAGES_PER_ROW_EDIT || dispid == -1)
+    {
       PropertyDialog::SetIntTextbox(m_imagePerRowEdit, reel->GetImagesPerGridRow());
+    }
     if (dispid == 9 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_posXEdit, reel->GetX());
+    }
     if (dispid == 10 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_posYEdit, reel->GetY());
+    }
     if (dispid == IDC_REELS_EDIT || dispid == -1)
+    {
       PropertyDialog::SetIntTextbox(m_reelsEdit, reel->GetReels());
+    }
     if (dispid == IDC_REEL_WIDTH_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_reelWidthEdit, reel->GetWidth());
+    }
     if (dispid == IDC_REEL_HEIGHT_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_reelHeightEdit, reel->GetHeight());
+    }
     if (dispid == IDC_REEL_SPACING_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_reelSpacingEdit, reel->GetSpacing());
+    }
     UpdateBaseVisuals(reel, &reel->m_d);
     //only show the first element on multi-select
     break;
@@ -59,7 +83,9 @@ void DispreelVisualsProperty::UpdateProperties(const int dispid)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemDispReel))
+    {
       continue;
+    }
     DispReel* const reel = (DispReel*)m_pvsel->ElementAt(i);
     switch (dispid)
     {
@@ -107,7 +133,9 @@ void DispreelVisualsProperty::UpdateProperties(const int dispid)
       {
         CComObject<PinTable>* const ptable = g_pvp->GetActiveTable();
         if (ptable == nullptr)
+        {
           break;
+        }
         CHOOSECOLOR cc = m_colorDialog.GetParameters();
         cc.Flags = CC_FULLOPEN | CC_RGBINIT;
         m_colorDialog.SetParameters(cc);

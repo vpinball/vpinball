@@ -18,44 +18,72 @@ void BackglassVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
 {
   CComObject<PinTable>* const table = g_pvp->GetActiveTable();
   if (table == nullptr)
+  {
     return;
+  }
 
   if (dispid == IDC_BG_NIGHT_DAY || dispid == -1)
+  {
     PropertyDialog::SetCheckboxState(m_hApplyNightDayCheck, table->m_ImageBackdropNightDay);
+  }
   if (dispid == DISPID_Image2 || dispid == -1)
+  {
     PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_dtImageCombo,
                                           table->m_BG_image[0]);
+  }
   if (dispid == DISPID_Image6 || dispid == -1)
+  {
     PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_fsImageCombo,
                                           table->m_BG_image[1]);
+  }
   if (dispid == DISPID_Image8 || dispid == -1)
+  {
     PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_fssImageCombo,
                                           table->m_BG_image[2]);
+  }
   if (dispid == 1509 || dispid == -1)
+  {
     PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_colorGradingCombo,
                                           table->m_imageColorGrade);
+  }
   if (dispid == IDC_ENABLE_DECAL_CHECK || dispid == -1)
+  {
     PropertyDialog::SetCheckboxState(m_hEnableDecal, table->m_renderDecals);
+  }
   if (dispid == IDC_ENABLE_EMREEL_CHECK || dispid == -1)
+  {
     PropertyDialog::SetCheckboxState(m_hEnableEMReelCheck, table->m_renderEMReels);
+  }
   if (dispid == IDC_GLOBAL_3DSTEREO || dispid == -1)
+  {
     PropertyDialog::SetCheckboxState(m_hOverwriteGlobalStereoSettingsCheck,
                                      table->m_overwriteGlobalStereo3D);
+  }
   if (dispid == IDC_3D_STEREO_OFFSET_EDIT || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_3dStereoOffsetEdit, table->Get3DOffset());
+  }
   if (dispid == IDC_3D_STEREO_SEPARATION_EDIT || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_3dStereoSeparationEdit, table->GetMaxSeparation());
+  }
   if (dispid == IDC_3D_STEREO_ZPD_EDIT || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_3dSteroZPDEdit, table->GetZPD());
+  }
   if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
+  {
     m_colorButton1.SetColor(table->m_colorbackdrop);
+  }
 }
 
 void BackglassVisualsProperty::UpdateProperties(const int dispid)
 {
   CComObject<PinTable>* const table = g_pvp->GetActiveTable();
   if (table == nullptr)
+  {
     return;
+  }
 
   switch (dispid)
   {

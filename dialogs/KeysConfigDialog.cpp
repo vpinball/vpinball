@@ -253,10 +253,14 @@ WNDPROC g_ButtonProc;
 LRESULT CALLBACK MyKeyButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
   if (uMsg == WM_GETDLGCODE)
+  {
     // Eat all acceleratable messges
     return (DLGC_WANTARROWS | DLGC_WANTTAB | DLGC_WANTALLKEYS | DLGC_WANTCHARS);
+  }
   else
+  {
     return CallWindowProc(g_ButtonProc, hwnd, uMsg, wParam, lParam);
+  }
 }
 
 KeysConfigDialog::KeysConfigDialog() : CDialog(IDD_KEYS)
@@ -489,7 +493,9 @@ BOOL KeysConfigDialog::OnInitDialog()
     }
 
     if (hr != S_OK)
+    {
       selected = 0; // assume no assignment as standard
+    }
 
     const HWND hwnd = GetDlgItem(item).GetHwnd();
     ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
@@ -640,40 +646,52 @@ BOOL KeysConfigDialog::OnInitDialog()
   ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
   for (unsigned int i = 0; i < eCKeys; ++i)
+  {
     if (regkey_idc[i] != -1)
     {
       const HRESULT hr = LoadValue("Player", regkey_string[i], key);
       if (hr != S_OK || key > 0xdd)
+      {
         key = regkey_defdik[i];
+      }
       const HWND hwndControl = GetDlgItem(regkey_idc[i]);
       ::SetWindowText(hwndControl, rgszKeyName[key]);
       ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
     }
+  }
 
   HRESULT hr = LoadValue("Player", "JoyCustom1Key", key);
   if (hr != S_OK || key > 0xdd)
+  {
     key = DIK_UP;
+  }
   HWND hwndControl = GetDlgItem(IDC_JOYCUSTOM1);
   ::SetWindowText(hwndControl, rgszKeyName[key]);
   ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
   hr = LoadValue("Player", "JoyCustom2Key", key);
   if (hr != S_OK || key > 0xdd)
+  {
     key = DIK_DOWN;
+  }
   hwndControl = GetDlgItem(IDC_JOYCUSTOM2);
   ::SetWindowText(hwndControl, rgszKeyName[key]);
   ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
   hr = LoadValue("Player", "JoyCustom3Key", key);
   if (hr != S_OK || key > 0xdd)
+  {
     key = DIK_LEFT;
+  }
   hwndControl = GetDlgItem(IDC_JOYCUSTOM3);
   ::SetWindowText(hwndControl, rgszKeyName[key]);
   ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
   hr = LoadValue("Player", "JoyCustom4Key", key);
   if (hr != S_OK || key > 0xdd)
+  {
     key = DIK_RIGHT;
+  }
   hwndControl = GetDlgItem(IDC_JOYCUSTOM4);
   ::SetWindowText(hwndControl, rgszKeyName[key]);
   ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
@@ -790,36 +808,52 @@ BOOL KeysConfigDialog::OnInitDialog()
   inputApiCount++;
 #else
   if (inputApi == 1)
+  {
     inputApiIndex = 0;
+  }
   if (inputApi > 1)
+  {
     inputApiIndex--;
+  }
 #endif
 #ifdef ENABLE_SDL_INPUT
   ::SendMessage(hwndInputApi, CB_ADDSTRING, 0, (LPARAM) "SDL"); //2
   inputApiCount++;
 #else
   if (inputApi == 2)
+  {
     inputApiIndex = 0;
+  }
   if (inputApi > 2)
+  {
     inputApiIndex--;
+  }
 #endif
 #ifdef ENABLE_IGAMECONTROLLER
   ::SendMessage(hwndInputApi, CB_ADDSTRING, 0, (LPARAM) "IGameController"); //3
   inputApiCount++;
 #else
   if (inputApi == 3)
+  {
     inputApiIndex = 0;
+  }
   if (inputApi > 3)
+  {
     inputApiIndex--;
+  }
 #endif
 #ifdef ENABLE_VRCONTROLLER
   ::SendMessage(hwndInputApi, CB_ADDSTRING, 0, (LPARAM) "VR Controller"); //4
   inputApiCount++;
 #else
   if (inputApi == 4)
+  {
     inputApiIndex = 0;
+  }
   if (inputApi > 4)
+  {
     inputApiIndex--;
+  }
 #endif
   ::SendMessage(hwndInputApi, CB_SETCURSEL, inputApiIndex, 0);
 
@@ -853,7 +887,9 @@ INT_PTR KeysConfigDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
           int key_esc;
           const HRESULT hr = LoadValue("Player", "EscapeKey", key_esc);
           if (hr != S_OK || key_esc > 0xdd)
+          {
             key_esc = DIK_ESCAPE;
+          }
 
           if (key == key_esc)
           {
@@ -1145,7 +1181,9 @@ void KeysConfigDialog::OnOK()
   }
   SaveValueInt("Player", "TiltSensValue", newvalue);
   if (tscb)
+  {
     SaveValueInt("Player", "TiltSensitivity", newvalue);
+  }
   else
   {
     HKEY hkey;
@@ -1155,11 +1193,13 @@ void KeysConfigDialog::OnOK()
   }
 
   for (unsigned int i = 0; i < eCKeys; ++i)
+  {
     if (regkey_idc[i] != -1)
     {
       const size_t key = ::GetWindowLongPtr(GetDlgItem(regkey_idc[i]).GetHwnd(), GWLP_USERDATA);
       SaveValueInt("Player", regkey_string[i], (int)key);
     }
+  }
 
   SetValue(IDC_JOYCUSTOM1, "Player", "JoyCustom1Key");
   SetValue(IDC_JOYCUSTOM2, "Player", "JoyCustom2Key");
@@ -1197,19 +1237,27 @@ void KeysConfigDialog::OnOK()
   int inputApi = (int)SendMessage(GetDlgItem(IDC_COMBO_INPUT_API).GetHwnd(), CB_GETCURSEL, 0, 0);
 #ifndef ENABLE_XINPUT
   if (inputApi >= 1)
+  {
     inputApi++;
+  }
 #endif
 #ifndef ENABLE_SDL_INPUT
   if (inputApi >= 2)
+  {
     inputApi++;
+  }
 #endif
 #ifndef ENABLE_IGAMECONTROLLER
   if (inputApi >= 3)
+  {
     inputApi++;
+  }
 #endif
 #ifndef ENABLE_VRCONTROLLER
   if (inputApi >= 4)
+  {
     inputApi++;
+  }
 #endif
   SaveValueInt("Player", "InputApi", inputApi);
 
@@ -1240,7 +1288,9 @@ void KeysConfigDialog::SetValue(int nID, const char* const regKey, const char* c
 {
   size_t selected = ::SendMessage(GetDlgItem(nID).GetHwnd(), CB_GETCURSEL, 0, 0);
   if (selected == LB_ERR)
+  {
     selected = 2; // assume both as standard
+  }
   SaveValueInt(regKey, regValue, (int)selected);
 }
 

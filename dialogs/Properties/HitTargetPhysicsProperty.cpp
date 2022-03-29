@@ -19,20 +19,32 @@ void HitTargetPhysicsProperty::UpdateVisuals(const int dispid /*=-1*/)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemHitTarget))
+    {
       continue;
+    }
     HitTarget* const target = (HitTarget*)m_pvsel->ElementAt(i);
 
     if (dispid == IDC_TARGET_ISDROPPED_CHECK || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hIsDroppedCheck, target->m_d.m_isDropped);
+    }
     if (dispid == IDC_TARGET_LEGACY_MODE_CHECK || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hLegacyModeCheck, target->m_d.m_legacy);
+    }
     if (dispid == 112 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_elasticityFalloffEdit, target->m_d.m_elasticityFalloff);
+    }
     UpdateBaseVisuals(target, &target->m_d, dispid);
     if (dispid == IDC_COLLIDABLE_CHECK || dispid == -1)
+    {
       m_elasticityFalloffEdit.EnableWindow(target->m_d.m_collidable);
+    }
     if (target->m_d.m_collidable)
+    {
       m_elasticityFalloffEdit.EnableWindow(target->m_d.m_overwritePhysics);
+    }
 
     //only show the first element on multi-select
     break;
@@ -45,7 +57,9 @@ void HitTargetPhysicsProperty::UpdateProperties(const int dispid)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemHitTarget))
+    {
       continue;
+    }
     HitTarget* const target = (HitTarget*)m_pvsel->ElementAt(i);
     switch (dispid)
     {

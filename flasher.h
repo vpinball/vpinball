@@ -108,9 +108,13 @@ public:
     Texture* const pinB = m_ptable->GetImage(m_d.m_szImageB);
     Texture* tex = nullptr;
     if (pinA && !pinB)
+    {
       tex = pinA;
+    }
     else if (!pinA && pinB)
+    {
       tex = pinB;
+    }
     return (unsigned long long)tex;
   }
   virtual bool IsDMD() const { return m_d.m_isDMD; }

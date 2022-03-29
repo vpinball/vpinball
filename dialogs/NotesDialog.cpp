@@ -55,7 +55,9 @@ INT_PTR NotesDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 bool NotesDialog::PreTranslateMessage(MSG* msg)
 {
   if (!IsWindow())
+  {
     return false;
+  }
 
   return !!IsDialogMessage(*msg);
 }
@@ -73,7 +75,9 @@ void NotesDialog::UpdateText()
 {
   CCO(PinTable)* const pt = g_pvp->GetActiveTable();
   if (pt != nullptr)
+  {
     pt->SetNotesText(GetText());
+  }
 }
 
 CContainNotes::CContainNotes()

@@ -5,10 +5,7 @@
 class BallMoverObject : public MoverObject
 {
 public:
-  virtual bool AddToList() const
-  {
-    return false;
-  } // We add ourselves to the mover list.
+  virtual bool AddToList() const { return false; } // We add ourselves to the mover list.
   // If we allow the table to do that, we might get added twice, if we get created in the player Init code
   virtual void UpdateDisplacements(const float dtime);
   virtual void UpdateVelocities();

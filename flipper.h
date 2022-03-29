@@ -103,9 +103,13 @@ public:
     const unsigned long long m1 = m_ptable->GetMaterial(m_d.m_szMaterial)->hash();
     const unsigned long long m2 = m_ptable->GetMaterial(m_d.m_szRubberMaterial)->hash();
     if (m1 == m2 || (m_d.m_rubberthickness <= 0.f))
+    {
       return m1;
+    }
     else
+    {
       return 0;
+    }
   }
   virtual unsigned long long GetImageID() const
   {
@@ -132,7 +136,9 @@ public:
     {
       if (!(m_d.m_OverridePhysics ||
             (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
+      {
         m_phitflipper->m_elasticityFalloff = newVal;
+      }
     }
     else
     {
@@ -152,7 +158,9 @@ public:
     {
       if (!(m_d.m_OverridePhysics ||
             (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
+      {
         m_d.m_rampUp = value;
+      }
     }
     else
     {
@@ -165,10 +173,14 @@ public:
     {
       if (!(m_d.m_OverridePhysics ||
             (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
+      {
         m_d.m_return = clamp(value, 0.0f, 1.0f);
+      }
     }
     else
+    {
       m_d.m_return = clamp(value, 0.0f, 1.0f);
+    }
   }
   float GetReturn() const { return m_d.m_return; }
 

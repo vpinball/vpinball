@@ -40,12 +40,18 @@ void** GetNextStackFrame(void** prevSP)
 {
   void** newSP = (void**)(*prevSP);
   if (newSP == prevSP)
+  {
     return 0;
+  }
   // Difference between stack pointers has to be sane.
   if (newSP > prevSP && ((uintptr_t)newSP - (uintptr_t)prevSP) > 1000000)
+  {
     return 0;
+  }
   if ((uintptr_t)newSP & (sizeof(void*) - 1))
+  {
     return 0;
+  }
 
   return newSP;
 }
@@ -80,7 +86,9 @@ int StackTrace::GetCallStack(Address* callStack, int maxDepth, int entriesToSkip
   typedef void(WINAPI * pRtlCaptureContext)(PCONTEXT);
   static pRtlCaptureContext RtlCaptureContext = nullptr;
   if (RtlCaptureContext == nullptr)
+  {
     RtlCaptureContext = (pRtlCaptureContext)GetProcAddress(hKernel32Dll, "RtlCaptureContext");
+  }
   CONTEXT context;
   if (RtlCaptureContext)
   {
@@ -104,8 +112,8 @@ int StackTrace::GetCallStack(void* vcontext, Address* callStack, int maxDepth, i
   uintptr_t* ebpReg;
   uintptr_t espReg;
   // clang-format off
-	__asm mov [ebpReg], ebp
-	__asm mov [espReg], esp
+  __asm mov [ebpReg], ebp
+  __asm mov [espReg], esp
   // clang-format on
 #else
   uintptr_t ebpReg[2];
@@ -146,9 +154,13 @@ int StackTrace::GetCallStack(void* vcontext, Address* callStack, int maxDepth, i
          stackFrame.AddrFrame.Offset != 0 && numEntries < maxDepth)
   {
     if (entriesToSkip > 0)
+    {
       --entriesToSkip;
+    }
     else
+    {
       callStack[numEntries++] = reinterpret_cast<Address>(stackFrame.AddrPC.Offset);
+    }
   }
   return numEntries;
 }
@@ -173,9 +185,13 @@ int StackTrace::GetCallStack_Fast(Address* callStack, int maxDepth, int entriesT
   while (sp && numEntries < maxDepth)
   {
     if (entriesToSkip > 0)
+    {
       --entriesToSkip;
+    }
     else
+    {
       callStack[numEntries++] = sp[1];
+    }
 
     sp = ::GetNextStackFrame(sp);
   }
@@ -185,14 +201,18 @@ int StackTrace::GetCallStack_Fast(Address* callStack, int maxDepth, int entriesT
 int StackTrace::GetSymbolInfo(Address address, char* symbol, int maxSymbolLen)
 {
   if (!InitSymbols())
+  {
     return 0;
+  }
 
   // Start with address.
   int charsAdded = _snprintf_s(symbol, maxSymbolLen, _TRUNCATE, "%p ", address);
   symbol += charsAdded;
   maxSymbolLen -= charsAdded;
   if (maxSymbolLen < 0)
+  {
     return charsAdded;
+  }
 
   const DWORD64 address64 = (DWORD64)address;
   // Module name
@@ -210,7 +230,9 @@ int StackTrace::GetSymbolInfo(Address address, char* symbol, int maxSymbolLen)
     maxSymbolLen -= moduleLen;
   }
   if (maxSymbolLen <= 0)
+  {
     return charsAdded;
+  }
 
   // Symbol name
   ULONG64 symbolBuffer[(sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(TCHAR) + sizeof(ULONG64) - 1) /
@@ -228,7 +250,9 @@ int StackTrace::GetSymbolInfo(Address address, char* symbol, int maxSymbolLen)
     charsAdded += symbolChars;
   }
   if (maxSymbolLen <= 0)
+  {
     return charsAdded;
+  }
 
   // File + line
   DWORD displacementLine;
@@ -260,7 +284,9 @@ void StackTrace::GetCallStack(void* vcontext, bool includeArguments, char* symbo
 {
   const PCONTEXT context = (PCONTEXT)vcontext;
   if (context == 0)
+  {
     return;
+  }
 
   InitSymbols();
 

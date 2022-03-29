@@ -53,11 +53,15 @@ LRESULT EditBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       if (wparam == VK_RETURN)
       {
         if (m_basePropertyDialog)
+        {
           m_basePropertyDialog->UpdateProperties(m_id);
+        }
         return 0;
       }
       if (wparam == VK_ESCAPE)
+      {
         return 1;
+      }
     }
   }
   return WndProcDefault(msg, wparam, lparam);
@@ -72,7 +76,9 @@ LRESULT ComboBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       if (wparam == VK_RETURN)
       {
         if (m_basePropertyDialog)
+        {
           m_basePropertyDialog->UpdateProperties(m_id);
+        }
         ShowDropDown(FALSE);
         return 0;
       }
@@ -95,7 +101,9 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
 {
   ISelect* const psel = pvsel.ElementAt(0);
   if (psel == nullptr)
+  {
     return;
+  }
 
   int activePage = m_tab.m_activePage;
   m_backglassView = g_pvp->m_backglassView;
@@ -111,9 +119,13 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
         m_tabs[1] = static_cast<BasePropertyDialog*>(
             m_tab.AddTabPage(new BackglassCameraProperty(&pvsel), _T("Camera")));
         if (m_tab.m_activeTabText == CString("Visuals"))
+        {
           activePage = 0;
+        }
         else if (m_tab.m_activeTabText == CString("Camera"))
+        {
           activePage = 1;
+        }
       }
       else
       {
@@ -127,13 +139,21 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
         m_tabs[3] = static_cast<BasePropertyDialog*>(
             m_tab.AddTabPage(new TableLightsProperty(&pvsel), _T("Lights")));
         if (m_tab.m_activeTabText == CString("User"))
+        {
           activePage = 0;
+        }
         else if (m_tab.m_activeTabText == CString("Visuals"))
+        {
           activePage = 1;
+        }
         else if (m_tab.m_activeTabText == CString("Physics"))
+        {
           activePage = 2;
+        }
         else if (m_tab.m_activeTabText == CString("Lights"))
+        {
           activePage = 3;
+        }
       }
       break;
     }
@@ -147,11 +167,17 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
       m_tabs[2] = static_cast<BasePropertyDialog*>(
           m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
       if (m_tab.m_activeTabText == CString("Visuals"))
+      {
         activePage = 0;
+      }
       else if (m_tab.m_activeTabText == CString("Physics"))
+      {
         activePage = 1;
+      }
       else if (m_tab.m_activeTabText == CString("Timer"))
+      {
         activePage = 2;
+      }
       break;
     }
     case eItemGate:
@@ -164,11 +190,17 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
       m_tabs[2] = static_cast<BasePropertyDialog*>(
           m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
       if (m_tab.m_activeTabText == CString("Visuals"))
+      {
         activePage = 0;
+      }
       else if (m_tab.m_activeTabText == CString("Physics"))
+      {
         activePage = 1;
+      }
       else if (m_tab.m_activeTabText == CString("Timer"))
+      {
         activePage = 2;
+      }
       break;
     }
     case eItemRamp:
@@ -181,11 +213,17 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
       m_tabs[2] = static_cast<BasePropertyDialog*>(
           m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
       if (m_tab.m_activeTabText == CString("Visuals"))
+      {
         activePage = 0;
+      }
       else if (m_tab.m_activeTabText == CString("Physics"))
+      {
         activePage = 1;
+      }
       else if (m_tab.m_activeTabText == CString("Timer"))
+      {
         activePage = 2;
+      }
       break;
     }
     case eItemFlipper:
@@ -198,11 +236,17 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
       m_tabs[2] = static_cast<BasePropertyDialog*>(
           m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
       if (m_tab.m_activeTabText == CString("Visuals"))
+      {
         activePage = 0;
+      }
       else if (m_tab.m_activeTabText == CString("Physics"))
+      {
         activePage = 1;
+      }
       else if (m_tab.m_activeTabText == CString("Timer"))
+      {
         activePage = 2;
+      }
       break;
     }
     case eItemPlunger:
@@ -215,11 +259,17 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
       m_tabs[2] = static_cast<BasePropertyDialog*>(
           m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
       if (m_tab.m_activeTabText == CString("Visuals"))
+      {
         activePage = 0;
+      }
       else if (m_tab.m_activeTabText == CString("Physics"))
+      {
         activePage = 1;
+      }
       else if (m_tab.m_activeTabText == CString("Timer"))
+      {
         activePage = 2;
+      }
       break;
     }
     case eItemBumper:
@@ -232,11 +282,17 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
       m_tabs[2] = static_cast<BasePropertyDialog*>(
           m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
       if (m_tab.m_activeTabText == CString("Visuals"))
+      {
         activePage = 0;
+      }
       else if (m_tab.m_activeTabText == CString("Physics"))
+      {
         activePage = 1;
+      }
       else if (m_tab.m_activeTabText == CString("Timer"))
+      {
         activePage = 2;
+      }
       break;
     }
     case eItemSpinner:
@@ -249,11 +305,17 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
       m_tabs[2] = static_cast<BasePropertyDialog*>(
           m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
       if (m_tab.m_activeTabText == CString("Visuals"))
+      {
         activePage = 0;
+      }
       else if (m_tab.m_activeTabText == CString("Physics"))
+      {
         activePage = 1;
+      }
       else if (m_tab.m_activeTabText == CString("Timer"))
+      {
         activePage = 2;
+      }
       break;
     }
     case eItemTimer:
@@ -274,11 +336,17 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
       m_tabs[2] = static_cast<BasePropertyDialog*>(
           m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
       if (m_tab.m_activeTabText == CString("Visuals"))
+      {
         activePage = 0;
+      }
       else if (m_tab.m_activeTabText == CString("Physics"))
+      {
         activePage = 1;
+      }
       else if (m_tab.m_activeTabText == CString("Timer"))
+      {
         activePage = 2;
+      }
       break;
     }
     case eItemLight:
@@ -291,11 +359,17 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
       m_tabs[2] = static_cast<BasePropertyDialog*>(
           m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
       if (m_tab.m_activeTabText == CString("Visuals"))
+      {
         activePage = 0;
+      }
       else if (m_tab.m_activeTabText == CString("States"))
+      {
         activePage = 1;
+      }
       else if (m_tab.m_activeTabText == CString("Timer"))
+      {
         activePage = 2;
+      }
       break;
     }
     case eItemKicker:
@@ -308,11 +382,17 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
       m_tabs[2] = static_cast<BasePropertyDialog*>(
           m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
       if (m_tab.m_activeTabText == CString("Visuals"))
+      {
         activePage = 0;
+      }
       else if (m_tab.m_activeTabText == CString("Physics"))
+      {
         activePage = 1;
+      }
       else if (m_tab.m_activeTabText == CString("Timer"))
+      {
         activePage = 2;
+      }
       break;
     }
     case eItemHitTarget:
@@ -325,11 +405,17 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
       m_tabs[2] = static_cast<BasePropertyDialog*>(
           m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
       if (m_tab.m_activeTabText == CString("Visuals"))
+      {
         activePage = 0;
+      }
       else if (m_tab.m_activeTabText == CString("Physics"))
+      {
         activePage = 1;
+      }
       else if (m_tab.m_activeTabText == CString("Timer"))
+      {
         activePage = 2;
+      }
       break;
     }
     case eItemDecal:
@@ -338,11 +424,17 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
       m_tabs[0] = static_cast<BasePropertyDialog*>(
           m_tab.AddTabPage(new DecalVisualsProperty(&pvsel), _T("Visuals")));
       if (m_tab.m_activeTabText == CString("Visuals"))
+      {
         activePage = 0;
+      }
       else if (m_tab.m_activeTabText == CString("Physics"))
+      {
         activePage = 1;
+      }
       else if (m_tab.m_activeTabText == CString("Timer"))
+      {
         activePage = 2;
+      }
       break;
     }
     case eItemTextbox:
@@ -353,9 +445,13 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
       m_tabs[1] = static_cast<BasePropertyDialog*>(
           m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
       if (m_tab.m_activeTabText == CString("Visuals"))
+      {
         activePage = 0;
+      }
       else if (m_tab.m_activeTabText == CString("Timer"))
+      {
         activePage = 1;
+      }
       break;
     }
     case eItemDispReel:
@@ -368,11 +464,17 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
       m_tabs[2] = static_cast<BasePropertyDialog*>(
           m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
       if (m_tab.m_activeTabText == CString("Visuals"))
+      {
         activePage = 0;
+      }
       else if (m_tab.m_activeTabText == CString("States"))
+      {
         activePage = 1;
+      }
       else if (m_tab.m_activeTabText == CString("Timer"))
+      {
         activePage = 2;
+      }
       break;
     }
     case eItemLightSeq:
@@ -383,9 +485,13 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
       m_tabs[1] = static_cast<BasePropertyDialog*>(
           m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
       if (m_tab.m_activeTabText == CString("States"))
+      {
         activePage = 0;
+      }
       else if (m_tab.m_activeTabText == CString("Timer"))
+      {
         activePage = 1;
+      }
       break;
     }
     case eItemPrimitive:
@@ -398,11 +504,17 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
       m_tabs[2] = static_cast<BasePropertyDialog*>(
           m_tab.AddTabPage(new PrimitivePhysicsProperty(&pvsel), _T("Physics")));
       if (m_tab.m_activeTabText == CString("Visuals"))
+      {
         activePage = 0;
+      }
       else if (m_tab.m_activeTabText == CString("Position"))
+      {
         activePage = 1;
+      }
       else if (m_tab.m_activeTabText == CString("Physics"))
+      {
         activePage = 2;
+      }
       break;
     }
     case eItemFlasher:
@@ -413,9 +525,13 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
       m_tabs[1] = static_cast<BasePropertyDialog*>(
           m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
       if (m_tab.m_activeTabText == CString("Visuals"))
+      {
         activePage = 0;
+      }
       else if (m_tab.m_activeTabText == CString("Timer"))
+      {
         activePage = 1;
+      }
       break;
     }
     case eItemRubber:
@@ -428,11 +544,17 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
       m_tabs[2] = static_cast<BasePropertyDialog*>(
           m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
       if (m_tab.m_activeTabText == CString("Visuals"))
+      {
         activePage = 0;
+      }
       else if (m_tab.m_activeTabText == CString("Physics"))
+      {
         activePage = 1;
+      }
       else if (m_tab.m_activeTabText == CString("Timer"))
+      {
         activePage = 2;
+      }
       break;
     }
     case eItemDragPoint:
@@ -441,14 +563,20 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>& pvsel)
       const DragPoint* const dpoint = (DragPoint*)psel;
       const ItemTypeEnum itemType = dpoint->m_pihdp->GetIEditable()->GetItemType();
       if (itemType == eItemRamp)
+      {
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(
             new DragpointVisualsProperty(IDD_PROPPOINT_VISUALSWHEIGHT, &pvsel), _T("Visuals")));
+      }
       else if (itemType == eItemLight || itemType == eItemTrigger)
+      {
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(
             new DragpointVisualsProperty(IDD_PROPPOINT_VISUALS, &pvsel), _T("Visuals")));
+      }
       else
+      {
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(
             new DragpointVisualsProperty(IDD_PROPPOINT_VISUALSWTEX, &pvsel), _T("Visuals")));
+      }
       activePage = 0;
       break;
     }
@@ -463,11 +591,13 @@ void PropertyDialog::DeleteAllTabs()
 {
   BasePropertyDialog::m_disableEvents = true;
   for (int i = 0; i < PROPERTY_TABS; i++)
+  {
     if (m_tabs[i] != nullptr)
     {
       m_tab.RemoveTabPage(m_tab.GetTabIndex(m_tabs[i]));
       m_tabs[i] = nullptr;
     }
+  }
   m_previousType = (ItemTypeEnum)0;
   m_backglassView = false;
 }
@@ -479,15 +609,19 @@ void PropertyDialog::UpdateTextureComboBox(const vector<Texture*>& contentList,
   bool texelFound = false;
   for (const auto texel : contentList)
   {
-    if (strncmp(texel->m_szName.c_str(), selectName.c_str(), MAXTOKEN) == 0) //!! _stricmp?
+    if (strncmp(texel->m_szName.c_str(), selectName.c_str(), MAXTOKEN) == 0)
+    { //!! _stricmp?
       texelFound = true;
+    }
   }
   if (combo.FindStringExact(1, selectName.c_str()) == CB_ERR || !texelFound)
   {
     combo.ResetContent();
     combo.AddString(_T("<None>"));
     for (size_t i = 0; i < contentList.size(); i++)
+    {
       combo.AddString(contentList[i]->m_szName.c_str());
+    }
   }
   combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
@@ -500,14 +634,18 @@ void PropertyDialog::UpdateMaterialComboBox(const vector<Material*>& contentList
   for (const auto mat : contentList)
   {
     if (mat->m_szName == selectName)
+    {
       matFound = true;
+    }
   }
   if (combo.FindStringExact(1, selectName.c_str()) == CB_ERR || !matFound)
   {
     combo.ResetContent();
     combo.AddString(_T("<None>"));
     for (size_t i = 0; i < contentList.size(); i++)
+    {
       combo.AddString(contentList[i]->m_szName.c_str());
+    }
   }
   combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
@@ -535,7 +673,9 @@ void PropertyDialog::UpdateSurfaceComboBox(const PinTable* const ptable,
     combo.ResetContent();
     combo.AddString(_T("<None>"));
     for (size_t i = 0; i < contentList.size(); i++)
+    {
       combo.AddString(contentList[i].c_str());
+    }
   }
   combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
@@ -549,7 +689,9 @@ void PropertyDialog::UpdateSoundComboBox(const PinTable* const ptable,
     combo.ResetContent();
     combo.AddString(_T("<None>"));
     for (size_t i = 0; i < ptable->m_vsound.size(); i++)
+    {
       combo.AddString(ptable->m_vsound[i]->m_szName.c_str());
+    }
   }
   combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
@@ -582,13 +724,17 @@ void PropertyDialog::UpdateComboBox(const vector<string>& contentList,
   for (auto str : contentList)
   {
     if (str == selectName)
+    {
       strFound = true;
+    }
   }
   if (combo.FindStringExact(1, selectName.c_str()) == CB_ERR || !strFound)
   {
     combo.ResetContent();
     for (size_t i = 0; i < contentList.size(); i++)
+    {
       combo.AddString(contentList[i].c_str());
+    }
   }
   combo.SetCurSel(combo.FindStringExact(0, selectName.c_str()));
 }
@@ -597,7 +743,9 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect>& pvsel)
 {
   ISelect* const psel = pvsel.ElementAt(0);
   if (psel == nullptr)
+  {
     return;
+  }
 
   ShowWindow(SW_HIDE);
   if (m_previousType != psel->GetItemType() || m_backglassView != g_pvp->m_backglassView ||
@@ -606,11 +754,13 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect>& pvsel)
     BasePropertyDialog::m_disableEvents = true;
     m_curTabIndex = m_tab.GetCurSel();
     for (int i = 0; i < PROPERTY_TABS; i++)
+    {
       if (m_tabs[i] != nullptr)
       {
         m_tab.RemoveTabPage(m_tab.GetTabIndex(m_tabs[i]));
         m_tabs[i] = nullptr;
       }
+    }
 
     for (int i = 0; i < pvsel.size(); i++)
     {
@@ -655,9 +805,13 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect>& pvsel)
     sprintf_s(header, "%s(%d)", name, pvsel.size());
 
     if (collection[0] != '\0')
+    {
       sprintf_s(header, "%s [%s](%d)", collection, name, pvsel.size());
+    }
     else
+    {
       sprintf_s(header, "%s(%d)", name, pvsel.size());
+    }
 
     m_nameEdit.SetWindowText(header);
     m_nameEdit.SetReadOnly();
@@ -671,7 +825,9 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect>& pvsel)
   for (int i = 0; i < PROPERTY_TABS; i++)
   {
     if (m_tabs[i])
+    {
       m_tabs[i]->UpdateVisuals(-1);
+    }
   }
   BasePropertyDialog::m_disableEvents = false;
   ShowWindow();
@@ -680,7 +836,9 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect>& pvsel)
 bool PropertyDialog::PreTranslateMessage(MSG* msg)
 {
   if (!IsWindow())
+  {
     return false;
+  }
 
   // only pre-translate mouse and keyboard input events
   if (((msg->message >= WM_KEYFIRST && msg->message <= WM_KEYLAST) ||
@@ -691,7 +849,9 @@ bool PropertyDialog::PreTranslateMessage(MSG* msg)
     //!! also grab VK_ESCAPE here to avoid weird results when pressing ESC in textboxes (property gets stuck then)
     if ((keyPressed >= VK_F1 && keyPressed <= VK_F12) &&
         TranslateAccelerator(g_pvp->GetHwnd(), m_accel, msg))
+    {
       return true;
+    }
   }
 
   return !!IsSubDialogMessage(*msg);
@@ -734,7 +894,9 @@ BOOL PropertyDialog::IsSubDialogMessage(MSG& msg) const
     if (m_tabs[i] != nullptr)
     {
       if (msg.message == WM_KEYDOWN && msg.wParam == VK_RETURN)
+      {
         return TRUE; //disable enter key for any input otherwise the app would crash!?
+      }
       if (msg.message == WM_KEYDOWN && msg.wParam == VK_DELETE)
       {
         const CString className = GetFocus().GetClassName();
@@ -749,14 +911,18 @@ BOOL PropertyDialog::IsSubDialogMessage(MSG& msg) const
         const CString className = GetFocus().GetClassName();
         // filter ESC-key otherwise the VPX will enter an endless event loop!?
         if (className == "Edit" || className == "msctls_trackbar32" || className == "Button")
+        {
           return TRUE;
+        }
       }
       else
       {
         const BOOL ret = m_tabs[i]->IsDialogMessage(msg);
 
         if (ret == TRUE)
+        {
           return TRUE;
+        }
       }
     }
   }
@@ -768,7 +934,9 @@ LRESULT PropertyDialog::OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam)
 {
   // Set window focus. The docker will now report this as active.
   if (!IsChild(::GetFocus()))
+  {
     SetFocus();
+  }
 
   return FinalWindowProc(msg, wparam, lparam);
 }
@@ -816,7 +984,9 @@ void TimerProperty::UpdateProperties(const int dispid)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if (m_pvsel->ElementAt(i) == nullptr)
+    {
       continue;
+    }
     switch (m_pvsel->ElementAt(i)->GetItemType())
     {
       case eItemSurface:
@@ -1018,7 +1188,9 @@ void TimerProperty::UpdateVisuals(const int dispid /*=-1*/)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if (m_pvsel->ElementAt(i) == nullptr)
+    {
       continue;
+    }
     switch (m_pvsel->ElementAt(i)->GetItemType())
     {
       case eItemSurface:
@@ -1245,7 +1417,9 @@ void BasePropertyDialog::UpdateBaseProperties(ISelect* psel,
                                               const int dispid)
 {
   if (!property || psel == nullptr)
+  {
     return;
+  }
 
   switch (dispid)
   {
@@ -1301,67 +1475,119 @@ void BasePropertyDialog::UpdateBaseProperties(ISelect* psel,
 void BasePropertyDialog::UpdateBaseVisuals(ISelect* psel, BaseProperty* property, const int dispid)
 {
   if (!property)
+  {
     return;
+  }
 
   if (m_baseHitThresholdEdit && (dispid == IDC_HIT_THRESHOLD_EDIT || dispid == -1))
+  {
     PropertyDialog::SetFloatTextbox(*m_baseHitThresholdEdit, property->m_threshold);
+  }
   if (m_baseElasticityEdit && (dispid == IDC_ELASTICITY_EDIT || dispid == -1))
+  {
     PropertyDialog::SetFloatTextbox(*m_baseElasticityEdit, property->m_elasticity);
+  }
   if (m_baseFrictionEdit && (dispid == IDC_FRICTION_EDIT || dispid == -1))
+  {
     PropertyDialog::SetFloatTextbox(*m_baseFrictionEdit, property->m_friction);
+  }
   if (m_baseScatterAngleEdit && (dispid == IDC_SCATTER_ANGLE_EDIT || dispid == -1))
+  {
     PropertyDialog::SetFloatTextbox(*m_baseScatterAngleEdit, property->m_scatter);
+  }
   if (m_hHitEventCheck && (dispid == IDC_HAS_HITEVENT_CHECK || dispid == -1))
+  {
     PropertyDialog::SetCheckboxState(m_hHitEventCheck, property->m_hitEvent);
+  }
   if (m_hCollidableCheck && (dispid == IDC_COLLIDABLE_CHECK || dispid == -1))
+  {
     PropertyDialog::SetCheckboxState(m_hCollidableCheck, property->m_collidable);
+  }
   if (m_hReflectionEnabledCheck && (dispid == IDC_REFLECT_ENABLED_CHECK || dispid == -1))
+  {
     PropertyDialog::SetCheckboxState(m_hReflectionEnabledCheck, property->m_reflectionEnabled);
+  }
   if (m_hVisibleCheck && (dispid == IDC_VISIBLE_CHECK || dispid == -1))
+  {
     PropertyDialog::SetCheckboxState(m_hVisibleCheck, property->m_visible);
+  }
   if (m_basePhysicsMaterialCombo && (dispid == IDC_MATERIAL_COMBO4 || dispid == -1))
+  {
     PropertyDialog::UpdateMaterialComboBox(psel->GetPTable()->GetMaterialList(),
                                            *m_basePhysicsMaterialCombo,
                                            property->m_szPhysicsMaterial);
+  }
   if (m_hOverwritePhysicsCheck && (dispid == IDC_OVERWRITE_MATERIAL_SETTINGS || dispid == -1))
+  {
     PropertyDialog::SetCheckboxState(m_hOverwritePhysicsCheck, property->m_overwritePhysics);
+  }
   if (m_baseMaterialCombo && (dispid == IDC_MATERIAL_COMBO || dispid == -1))
+  {
     PropertyDialog::UpdateMaterialComboBox(psel->GetPTable()->GetMaterialList(),
                                            *m_baseMaterialCombo, property->m_szMaterial);
+  }
   if (m_baseImageCombo && (dispid == DISPID_Image || dispid == -1))
+  {
     PropertyDialog::UpdateTextureComboBox(psel->GetPTable()->GetImageList(), *m_baseImageCombo,
                                           property->m_szImage);
+  }
 
   if (m_hCollidableCheck)
   {
     if (m_hHitEventCheck)
+    {
       ::EnableWindow(m_hHitEventCheck, property->m_collidable);
+    }
     if (m_hOverwritePhysicsCheck)
+    {
       ::EnableWindow(m_hOverwritePhysicsCheck, property->m_collidable);
+    }
     if (m_baseHitThresholdEdit)
+    {
       m_baseHitThresholdEdit->EnableWindow(property->m_collidable);
+    }
     if (m_basePhysicsMaterialCombo)
+    {
       m_basePhysicsMaterialCombo->EnableWindow(property->m_collidable);
+    }
     if (m_baseElasticityEdit)
+    {
       m_baseElasticityEdit->EnableWindow(property->m_collidable);
+    }
     if (m_baseFrictionEdit)
+    {
       m_baseFrictionEdit->EnableWindow(property->m_collidable);
+    }
     if (m_baseScatterAngleEdit)
+    {
       m_baseScatterAngleEdit->EnableWindow(property->m_collidable);
+    }
   }
   if (m_hHitEventCheck && property->m_collidable)
+  {
     if (m_baseHitThresholdEdit)
+    {
       m_baseHitThresholdEdit->EnableWindow(property->m_hitEvent);
+    }
+  }
   if (m_hOverwritePhysicsCheck && property->m_collidable)
   {
     if (m_basePhysicsMaterialCombo)
+    {
       m_basePhysicsMaterialCombo->EnableWindow(!property->m_overwritePhysics);
+    }
     if (m_baseElasticityEdit)
+    {
       m_baseElasticityEdit->EnableWindow(property->m_overwritePhysics);
+    }
     if (m_baseFrictionEdit)
+    {
       m_baseFrictionEdit->EnableWindow(property->m_overwritePhysics);
+    }
     if (m_baseScatterAngleEdit)
+    {
       m_baseScatterAngleEdit->EnableWindow(property->m_overwritePhysics);
+    }
   }
 }
 

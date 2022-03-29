@@ -128,7 +128,9 @@ public:
           isUnit) // inlined, in the hope that string conversions will be skipped in case of early out in here
   {
     if (g_pplayer)
+    {
       return;
+    }
 
     string textBuf;
 

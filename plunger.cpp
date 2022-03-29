@@ -49,7 +49,9 @@ void Plunger::SetDefaults(bool fromMouseClick)
 
   HRESULT hr = LoadValue("DefaultProps\\Plunger", "Image", m_d.m_szImage);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_szImage.clear();
+  }
 
   m_d.m_animFrames =
       fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Plunger", "AnimFrames", 1) : 1;
@@ -61,7 +63,9 @@ void Plunger::SetDefaults(bool fromMouseClick)
 
   hr = LoadValue("DefaultProps\\Plunger", "Surface", m_d.m_szSurface);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_szSurface.clear();
+  }
 
   m_d.m_mechPlunger = fromMouseClick
                           ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "MechPlunger", false)
@@ -74,9 +78,11 @@ void Plunger::SetDefaults(bool fromMouseClick)
 
   hr = LoadValue("DefaultProps\\Plunger", "CustomTipShape", m_d.m_szTipShape, MAXTIPSHAPE);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     strncpy_s(m_d.m_szTipShape,
               "0 .34; 2 .6; 3 .64; 5 .7; 7 .84; 8 .88; 9 .9; 11 .92; 14 .92; 39 .84",
               sizeof(m_d.m_szTipShape) - 1);
+  }
 
   m_d.m_rodDiam = fromMouseClick
                       ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "CustomRodDiam", 0.60f)
@@ -194,7 +200,9 @@ void Plunger::GetTimers(vector<HitTimer*>& pvht)
   m_phittimer = pht;
 
   if (m_d.m_tdr.m_TimerEnabled)
+  {
     pvht.push_back(pht);
+  }
 }
 
 void Plunger::EndPlay()
@@ -254,10 +262,14 @@ void Plunger::RenderDynamic()
 
   // TODO: get rid of frame stuff
   if (!m_d.m_visible)
+  {
     return;
+  }
 
   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+  {
     return;
+  }
 
   _ASSERTE(m_phitplunger);
 
@@ -286,8 +298,10 @@ void Plunger::RenderDynamic()
     pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
   }
   else
+  {
     pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture,
                                                mat->m_bIsMetal);
+  }
 
   pd3dDevice->basicShader->Begin(0);
   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX,
@@ -334,18 +348,24 @@ static const char* nextTipToken(const char*& p)
 {
   // skip whitespace
   for (; isspace(*p); ++p)
+  {
     ;
+  }
 
   // this is the start of the token, which will be our return value
   const char* tok = p;
 
   // skip ahead to the next delimiter
   for (; *p != ';' && *p != ',' && !isspace(*p) && *p != '\0'; ++p)
+  {
     ;
+  }
 
   // skip whitespace at/after the delimiter
   for (; isspace(*p); ++p)
+  {
     ;
+  }
 
   // return the start of the token
   return tok;
@@ -381,7 +401,9 @@ void Plunger::RenderSetup()
   // note the number of cells in the source image
   int srcCells = m_d.m_animFrames;
   if (srcCells < 1)
+  {
     srcCells = 1;
+  }
 
   // figure the width in relative units (0..1) of each cell
   const float cellWid = 1.0f / float(srcCells);
@@ -418,7 +440,9 @@ void Plunger::RenderSetup()
         for (const char* p = m_d.m_szTipShape; *p != '\0'; ++p)
         {
           if (*p == ';')
+          {
             ++nTip, ++nn;
+          }
         }
 
         // allocate the descriptor and the coordinate array
@@ -443,16 +467,22 @@ void Plunger::RenderSetup()
 
           // each entry has to have a higher y value than the last
           if (c->y < tiplen)
+          {
             c->y = tiplen;
+          }
 
           // update the tip length so far
           tiplen = c->y;
 
           // skip to the next entry after the ';' delimiter
           for (; *p != ';' && *p != '\0'; ++p)
+          {
             ;
+          }
           if (*p == ';')
+          {
             ++p;
+          }
         }
 
         // Figure the normals and the texture coordinates
@@ -569,7 +599,9 @@ void Plunger::RenderSetup()
     if (m_d.m_type == PlungerTypeCustom)
     {
       if ((springIndices = (4 * springVts) - 12) < 0)
+      {
         springIndices = 0;
+      }
     }
 
     // the total number of indices is simply the sum of the
@@ -611,7 +643,9 @@ void Plunger::RenderSetup()
         // Go down the long axis, adding a vertex for each point
         // in the descriptor list at the current lathe angle.
         if (tu > 1.0f)
+        {
           tu -= 1.0f;
+        }
         const float angle = ((float)(M_PI * 2.0) / (float)circlePoints) * (float)l;
         const float sn = sinf(angle);
         const float cs = cosf(angle);
@@ -696,7 +730,9 @@ void Plunger::RenderSetup()
       // order to simplify the texture mapping calculations.
       int cellIdx = srcCells - 1 - int(((float)i * float(srcCells) / float(m_cframes)) + 0.5f);
       if (cellIdx < 0)
+      {
         cellIdx = 0;
+      }
 
       // Figure the texture coordinates.
       //
@@ -772,9 +808,13 @@ void Plunger::RenderSetup()
       for (float theta = (float)M_PI, y = y0; n != 0; --n, theta += dtheta, y += dy)
       {
         if (n == nMain)
+        {
           dy = dyMain;
+        }
         if (theta >= float(M_PI * 2.0))
+        {
           theta -= float(M_PI * 2.0);
+        }
         const float sn = sinf(theta);
         const float cs = cosf(theta);
 
@@ -943,7 +983,9 @@ STDMETHODIMP Plunger::InterfaceSupportsErrorInfo(REFIID riid)
   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
   {
     if (InlineIsEqualGUID(*arr[i], riid))
+    {
       return S_OK;
+    }
   }
   return S_FALSE;
 }
@@ -1135,9 +1177,13 @@ STDMETHODIMP Plunger::PullBack()
   if (m_phitplunger)
   {
     if (g_pplayer->m_pininput.m_plunger_retract)
+    {
       m_phitplunger->m_plungerMover.PullBackandRetract(m_d.m_speedPull);
+    }
     else
+    {
       m_phitplunger->m_plungerMover.PullBack(m_d.m_speedPull);
+    }
   }
 
   return S_OK;
@@ -1147,7 +1193,9 @@ STDMETHODIMP Plunger::PullBackandRetract()
 {
   // initiate a pull; the speed is set by our pull speed property
   if (m_phitplunger)
+  {
     m_phitplunger->m_plungerMover.PullBackandRetract(m_d.m_speedPull);
+  }
 
   return S_OK;
 }
@@ -1202,7 +1250,9 @@ STDMETHODIMP Plunger::Position(float* pVal) // 0..25
       // axis, the physical plunger could report a negative value that goes beyond
       // the minimum on the virtual plunger.  Force it into range.
       if (tmp < 0.0f)
+      {
         tmp = 0.0f;
+      }
     }
     else
     {
@@ -1672,7 +1722,9 @@ STDMETHODIMP Plunger::get_Stroke(float* pVal)
 STDMETHODIMP Plunger::put_Stroke(float newVal)
 {
   if (newVal < 16.5f)
+  {
     newVal = 16.5f;
+  }
   m_d.m_stroke = newVal;
 
   return S_OK;

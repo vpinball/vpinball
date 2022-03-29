@@ -18,13 +18,19 @@ void RubberPhysicsProperty::UpdateVisuals(const int dispid /*=-1*/)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemRubber))
+    {
       continue;
+    }
     Rubber* const rubber = (Rubber*)m_pvsel->ElementAt(i);
 
     if (dispid == 120 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_elasticityFallOffEdit, rubber->m_d.m_elasticityFalloff);
+    }
     if (dispid == IDC_HIT_HEIGHT_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_hitHeightEdit, rubber->m_d.m_hitHeight);
+    }
 
     UpdateBaseVisuals(rubber, &rubber->m_d, dispid);
 
@@ -32,7 +38,9 @@ void RubberPhysicsProperty::UpdateVisuals(const int dispid /*=-1*/)
     {
       m_elasticityFallOffEdit.EnableWindow(rubber->m_d.m_collidable);
       if (rubber->m_d.m_collidable)
+      {
         m_elasticityFallOffEdit.EnableWindow(rubber->m_d.m_overwritePhysics);
+      }
     }
     //only show the first element on multi-select
     break;
@@ -44,7 +52,9 @@ void RubberPhysicsProperty::UpdateProperties(const int dispid)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemRubber))
+    {
       continue;
+    }
     Rubber* const rubber = (Rubber*)m_pvsel->ElementAt(i);
     switch (dispid)
     {

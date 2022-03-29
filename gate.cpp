@@ -127,7 +127,9 @@ void Gate::SetDefaults(bool fromMouseClick)
 
   const HRESULT hr = LoadValue("DefaultProps\\Gate", "Surface", m_d.m_szSurface);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_szSurface.clear();
+  }
 
   SetDefaultPhysics(fromMouseClick);
 
@@ -172,17 +174,27 @@ void Gate::SetOpenAngle(const float angle)
   if (g_pplayer)
   {
     if (newVal > m_d.m_angleMax)
+    {
       newVal = m_d.m_angleMax;
+    }
     else if (newVal < m_d.m_angleMin)
+    {
       newVal = m_d.m_angleMin;
+    }
 
-    if (m_phitgate->m_gateMover.m_angleMin < newVal) // min is smaller
+    if (m_phitgate->m_gateMover.m_angleMin < newVal)
+    { // min is smaller
       m_phitgate->m_gateMover.m_angleMax = newVal; // then set new maximum
+    }
     else
+    {
       m_phitgate->m_gateMover.m_angleMin = newVal; // else set new min
+    }
   }
   else
+  {
     m_d.m_angleMax = newVal;
+  }
 }
 
 float Gate::GetCloseAngle() const
@@ -196,17 +208,27 @@ void Gate::SetCloseAngle(const float angle)
   if (g_pplayer)
   {
     if (newVal > m_d.m_angleMax)
+    {
       newVal = m_d.m_angleMax;
+    }
     else if (newVal < m_d.m_angleMin)
+    {
       newVal = m_d.m_angleMin;
+    }
 
-    if (m_phitgate->m_gateMover.m_angleMax > newVal) // max is bigger
+    if (m_phitgate->m_gateMover.m_angleMax > newVal)
+    { // max is bigger
       m_phitgate->m_gateMover.m_angleMin = newVal; // then set new minumum
+    }
     else
+    {
       m_phitgate->m_gateMover.m_angleMax = newVal; // else set new max
+    }
   }
   else
+  {
     m_d.m_angleMin = newVal;
+  }
 }
 
 void Gate::UIRenderPass1(Sur* const psur)
@@ -326,7 +348,9 @@ void Gate::GetTimers(vector<HitTimer*>& pvht)
   m_phittimer = pht;
 
   if (m_d.m_tdr.m_TimerEnabled)
+  {
     pvht.push_back(pht);
+  }
 }
 
 //
@@ -415,7 +439,9 @@ void Gate::EndPlay()
 void Gate::UpdateWire()
 {
   if (m_phitgate->m_gateMover.m_angle == m_vertexbuffer_angle)
+  {
     return;
+  }
 
   m_vertexbuffer_angle = m_phitgate->m_gateMover.m_angle;
 
@@ -478,9 +504,11 @@ void Gate::RenderObject()
 
   // render bracket
   if (m_d.m_showBracket)
+  {
     pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX,
                                        m_bracketVertexBuffer, 0, gateBracketNumVertices,
                                        m_bracketIndexBuffer, 0, gateBracketNumIndices);
+  }
   // render wire
   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX,
                                      m_wireVertexBuffer, 0, m_numVertices, m_wireIndexBuffer, 0,
@@ -494,10 +522,14 @@ void Gate::RenderDynamic()
   TRACE_FUNCTION();
 
   if (!m_phitgate->m_gateMover.m_visible)
+  {
     return;
+  }
 
   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+  {
     return;
+  }
 
   RenderObject();
 }
@@ -704,10 +736,10 @@ bool Gate::LoadToken(const int id, BiffReader* const pbr)
     case FID(GATY):
     {
       pbr->GetInt(&m_d.m_type);
-      if (m_d.m_type < GateWireW ||
-          m_d.m_type >
-              GateLongPlate) // for tables that were saved in the phase where m_type could've been undefined
+      if (m_d.m_type < GateWireW || m_d.m_type > GateLongPlate)
+      { // for tables that were saved in the phase where m_type could've been undefined
         m_d.m_type = GateWireW;
+      }
       break;
     }
     case FID(VCEN):
@@ -791,7 +823,9 @@ STDMETHODIMP Gate::InterfaceSupportsErrorInfo(REFIID riid)
   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
   {
     if (InlineIsEqualGUID(*arr[i], riid))
+    {
       return S_OK;
+    }
   }
   return S_FALSE;
 }
@@ -921,19 +955,27 @@ STDMETHODIMP Gate::put_Open(VARIANT_BOOL newVal)
     {
       m_phitgate->m_enabled = false;
       if (!m_d.m_twoWay)
+      {
         m_plineseg->m_enabled = false;
+      }
 
       if (m_phitgate->m_gateMover.m_angle < m_phitgate->m_gateMover.m_angleMax)
+      {
         m_phitgate->m_gateMover.m_anglespeed = 0.2f;
+      }
     }
     else
     {
       m_phitgate->m_enabled = m_d.m_collidable;
       if (!m_d.m_twoWay)
+      {
         m_plineseg->m_enabled = m_d.m_collidable;
+      }
 
       if (m_phitgate->m_gateMover.m_angle > m_phitgate->m_gateMover.m_angleMin)
+      {
         m_phitgate->m_gateMover.m_anglespeed = -0.2f;
+      }
     }
   }
 
@@ -1018,18 +1060,24 @@ STDMETHODIMP Gate::put_Collidable(VARIANT_BOOL newVal)
   {
     m_phitgate->m_enabled = VBTOb(newVal);
     if (!m_d.m_twoWay)
+    {
       m_plineseg->m_enabled = VBTOb(newVal);
+    }
     m_phitgate->m_gateMover.m_angleMax = m_d.m_angleMax;
     m_phitgate->m_gateMover.m_angleMin = m_d.m_angleMin;
 
     if (m_phitgate->m_enabled)
+    {
       m_phitgate->m_gateMover.m_angleMin = 0;
+    }
   }
   else
   {
     m_d.m_collidable = VBTOb(newVal);
     if (m_d.m_collidable)
+    {
       m_d.m_angleMin = 0;
+    }
   }
 
   return S_OK;
@@ -1047,28 +1095,42 @@ STDMETHODIMP Gate::Move(int dir,
     m_phitgate->m_gateMover.m_open = true; // move always turns off natural swing
     m_phitgate->m_enabled = false; // and collidable off
     if (!m_d.m_twoWay)
+    {
       m_plineseg->m_enabled = false;
+    }
 
     if (speed <= 0.0f)
+    {
       speed = 0.2f; //default gate angle speed
+    }
     else
+    {
       speed *= (float)(M_PI / 180.0); // convert to radians
+    }
 
     if (!dir || angle != 0) // if no direction or non-zero angle
     {
       angle *= (float)(M_PI / 180.0); // convert to radians
 
       if (angle < m_d.m_angleMin)
+      {
         angle = m_d.m_angleMin;
+      }
       else if (angle > m_d.m_angleMax)
+      {
         angle = m_d.m_angleMax;
+      }
 
       const float da = angle - m_phitgate->m_gateMover.m_angle; //calc true direction
 
       if (da > 1.0e-5f)
+      {
         dir = +1;
+      }
       else if (da < -1.0e-5f)
+      {
         dir = -1;
+      }
       else
       {
         dir = 0; // do nothing
@@ -1085,14 +1147,18 @@ STDMETHODIMP Gate::Move(int dir,
       m_phitgate->m_gateMover.m_angleMax = angle;
 
       if (m_phitgate->m_gateMover.m_angle < m_phitgate->m_gateMover.m_angleMax)
+      {
         m_phitgate->m_gateMover.m_anglespeed = speed;
+      }
     }
     else if (dir < 0)
     {
       m_phitgate->m_gateMover.m_angleMin = angle;
 
       if (m_phitgate->m_gateMover.m_angle > m_phitgate->m_gateMover.m_angleMin)
+      {
         m_phitgate->m_gateMover.m_anglespeed = -speed;
+      }
     }
   }
 
@@ -1111,9 +1177,13 @@ STDMETHODIMP Gate::put_Friction(float newVal)
   newVal = clamp(newVal, 0.f, 1.f);
 
   if (g_pplayer)
+  {
     m_phitgate->m_gateMover.m_friction = newVal;
+  }
   else
+  {
     m_d.m_friction = newVal;
+  }
 
   return S_OK;
 }
@@ -1130,9 +1200,13 @@ STDMETHODIMP Gate::put_Damping(float newVal)
 {
   const float tmp = clamp(newVal, 0.0f, 1.0f);
   if (g_pplayer)
+  {
     m_phitgate->m_gateMover.m_damping = powf(tmp, (float)PHYS_FACTOR); //0.996f;
+  }
   else
+  {
     m_d.m_damping = tmp;
+  }
 
   return S_OK;
 }
@@ -1149,9 +1223,13 @@ STDMETHODIMP Gate::put_GravityFactor(float newVal)
   const float tmp = clamp(newVal, 0.0f, 100.0f);
 
   if (g_pplayer)
+  {
     m_phitgate->m_gateMover.m_gravityfactor = tmp;
+  }
   else
+  {
     m_d.m_gravityfactor = tmp;
+  }
 
   return S_OK;
 }
@@ -1166,9 +1244,13 @@ STDMETHODIMP Gate::get_Visible(VARIANT_BOOL* pVal)
 STDMETHODIMP Gate::put_Visible(VARIANT_BOOL newVal)
 {
   if (g_pplayer)
+  {
     m_phitgate->m_gateMover.m_visible = VBTOb(newVal);
+  }
   else
+  {
     m_d.m_visible = VBTOb(newVal);
+  }
 
   return S_OK;
 }
@@ -1183,9 +1265,13 @@ STDMETHODIMP Gate::get_TwoWay(VARIANT_BOOL* pVal)
 STDMETHODIMP Gate::put_TwoWay(VARIANT_BOOL newVal)
 {
   if (g_pplayer)
+  {
     m_phitgate->m_twoWay = VBTOb(newVal);
+  }
   else
+  {
     m_d.m_twoWay = VBTOb(newVal);
+  }
 
   return S_OK;
 }
@@ -1212,7 +1298,9 @@ STDMETHODIMP Gate::get_CurrentAngle(float* pVal)
     return S_OK;
   }
   else
+  {
     return E_FAIL;
+  }
 }
 
 STDMETHODIMP Gate::get_DrawStyle(GateType* pVal)

@@ -40,7 +40,9 @@ Trigger::~Trigger()
 void Trigger::UpdateStatusBarInfo()
 {
   if (g_pplayer)
+  {
     return;
+  }
 
   if (m_d.m_shape != TriggerNone)
   {
@@ -120,7 +122,9 @@ void Trigger::InitShape(float x, float y)
   constexpr float lengthY = 30.0f;
   UpdateStatusBarInfo();
   for (size_t i = 0; i < m_vdpoint.size(); i++)
+  {
     m_vdpoint[i]->Release();
+  }
   m_vdpoint.clear();
 
   // First time shape has been set to custom - set up some points
@@ -164,7 +168,9 @@ HRESULT Trigger::Init(PinTable* ptable, float x, float y, bool fromMouseClick)
 
   SetDefaults(fromMouseClick);
   if (m_vdpoint.empty())
+  {
     InitShape(x, y);
+  }
 
   return InitVBA(fTrue, 0, nullptr);
 }
@@ -199,7 +205,9 @@ void Trigger::SetDefaults(bool fromMouseClick)
 
   const HRESULT hr = LoadValue("DefaultProps\\Trigger", "Surface", m_d.m_szSurface);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_szSurface.clear();
+  }
 
   m_d.m_animSpeed =
       fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\trigger", "AnimSpeed", 1.f) : 1.f;
@@ -211,7 +219,9 @@ void Trigger::SetDefaults(bool fromMouseClick)
 void Trigger::UIRenderPass1(Sur* const psur)
 {
   if (m_vdpoint.empty())
+  {
     InitShape(m_d.m_vCenter.x, m_d.m_vCenter.y);
+  }
 
   psur->SetBorderColor(-1, false, 0);
   psur->SetObject(this);
@@ -321,9 +331,13 @@ void Trigger::UIRenderPass2(Sur* const psur)
 void Trigger::RenderBlueprint(Sur* psur, const bool solid)
 {
   if (solid)
+  {
     psur->SetFillColor(BLUEPRINT_SOLID_COLOR);
+  }
   else
+  {
     psur->SetFillColor(-1);
+  }
   psur->SetBorderColor(RGB(0, 0, 0), false, 0);
   psur->SetObject(this);
 
@@ -343,7 +357,9 @@ void Trigger::GetTimers(vector<HitTimer*>& pvht)
   m_phittimer = pht;
 
   if (m_d.m_tdr.m_TimerEnabled)
+  {
     pvht.push_back(pht);
+  }
 }
 
 //
@@ -372,7 +388,9 @@ void Trigger::GetHitShapes(vector<HitObject*>& pvho)
     pvho.push_back(m_ptriggerhitcircle);
   }
   else
+  {
     CurvesToShapes(pvho);
+  }
 }
 
 //
@@ -542,13 +560,21 @@ void Trigger::UpdateAnimation()
 
   float animLimit = (m_d.m_shape == TriggerStar) ? m_d.m_radius * (float)(1.0 / 5.0) : 32.0f;
   if (m_d.m_shape == TriggerButton)
+  {
     animLimit = m_d.m_radius * (float)(1.0 / 10.0);
+  }
   else if (m_d.m_shape == TriggerWireC)
+  {
     animLimit = 60.0f;
+  }
   else if (m_d.m_shape == TriggerWireD)
+  {
     animLimit = 25.0f;
+  }
   else if (m_d.m_shape == TriggerInder)
+  {
     animLimit = 25.0f;
+  }
 
   const float limit = animLimit * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
@@ -574,7 +600,9 @@ void Trigger::UpdateAnimation()
     float step =
         diff_time_msec * m_d.m_animSpeed * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
     if (m_moveDown)
+    {
       step = -step;
+    }
     m_animHeightOffset += step;
 
     if (m_moveDown)
@@ -625,9 +653,13 @@ void Trigger::UpdateAnimation()
 void Trigger::RenderDynamic()
 {
   if (!m_d.m_visible || m_d.m_shape == TriggerNone)
+  {
     return;
+  }
   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+  {
     return;
+  }
 
   UpdateAnimation();
 
@@ -642,7 +674,9 @@ void Trigger::RenderDynamic()
   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
   if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC ||
       m_d.m_shape == TriggerWireD || m_d.m_shape == TriggerInder)
+  {
     pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+  }
 
   pd3dDevice->basicShader->Begin(0);
   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX,
@@ -654,7 +688,9 @@ void Trigger::RenderDynamic()
 void Trigger::ExportMesh(ObjLoader& loader)
 {
   if (!m_d.m_visible || m_d.m_shape == TriggerNone)
+  {
     return;
+  }
 
   char name[sizeof(m_wzName) / sizeof(m_wzName[0])];
   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
@@ -719,7 +755,9 @@ void Trigger::GenerateMesh()
   const Vertex3D_NoTex2* verts;
   float zoffset = (m_d.m_shape == TriggerButton) ? 5.0f : 0.0f;
   if (m_d.m_shape == TriggerWireC)
+  {
     zoffset = -19.0f;
+  }
 
   switch (m_d.m_shape)
   {
@@ -768,7 +806,9 @@ void Trigger::GenerateMesh()
   }
 
   if (m_triggerVertices)
+  {
     delete[] m_triggerVertices;
+  }
   m_triggerVertices = new Vertex3D_NoTex2[m_numVertices];
 
   Matrix3D fullMatrix;
@@ -787,7 +827,9 @@ void Trigger::GenerateMesh()
     tempMatrix.Multiply(fullMatrix, fullMatrix);
   }
   else
+  {
     fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+  }
 
   for (int i = 0; i < m_numVertices; i++)
   {
@@ -844,7 +886,9 @@ void Trigger::RenderSetup()
   m_vertexBuffer_animHeightOffset = -FLT_MAX;
 
   if (!m_d.m_visible || m_d.m_shape == TriggerNone)
+  {
     return;
+  }
 
   const Pin3D* const ppin3d = &g_pplayer->m_pin3d;
   const WORD* indices;
@@ -990,8 +1034,12 @@ void Trigger::DoCommand(int icmd, int x, int y)
       // Go through vertices (including iSeg itself) counting control points until iSeg
       int icp = 0;
       for (int i = 0; i < (iSeg + 1); i++)
+      {
         if (vvertex[i].controlPoint)
+        {
           icp++;
+        }
+      }
 
       //if (icp == 0) // need to add point after the last point
       //icp = m_vdpoint.size();
@@ -1016,19 +1064,25 @@ void Trigger::DoCommand(int icmd, int x, int y)
 void Trigger::FlipY(const Vertex2D& pvCenter)
 {
   if (m_d.m_shape == TriggerNone)
+  {
     IHaveDragPoints::FlipPointY(pvCenter);
+  }
 }
 
 void Trigger::FlipX(const Vertex2D& pvCenter)
 {
   if (m_d.m_shape == TriggerNone)
+  {
     IHaveDragPoints::FlipPointX(pvCenter);
+  }
 }
 
 void Trigger::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
   if (m_d.m_shape == TriggerNone)
+  {
     IHaveDragPoints::RotatePoints(ang, pvCenter, useElementCenter);
+  }
   else
   {
     STARTUNDOSELECT
@@ -1044,7 +1098,9 @@ void Trigger::Scale(const float scalex,
                     const bool useElementCenter)
 {
   if (m_d.m_shape == TriggerNone)
+  {
     IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
+  }
   else
   {
     STARTUNDOSELECT
@@ -1058,7 +1114,9 @@ void Trigger::Scale(const float scalex,
 void Trigger::Translate(const Vertex2D& pvOffset)
 {
   if (m_d.m_shape == TriggerNone)
+  {
     IHaveDragPoints::TranslatePoints(pvOffset);
+  }
   else
   {
     STARTUNDOSELECT
@@ -1093,7 +1151,9 @@ HRESULT Trigger::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool backu
 
   HRESULT hr;
   if (FAILED(hr = SavePointData(pstm, hcrypthash)))
+  {
     return hr;
+  }
 
   bw.WriteTag(FID(ENDB));
 
@@ -1224,7 +1284,9 @@ STDMETHODIMP Trigger::InterfaceSupportsErrorInfo(REFIID riid)
   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
   {
     if (InlineIsEqualGUID(*arr[i], riid))
+    {
       return S_OK;
+    }
   }
   return S_FALSE;
 }
@@ -1304,7 +1366,9 @@ STDMETHODIMP Trigger::put_Enabled(VARIANT_BOOL newVal)
     m_hitEnabled = VBTOb(newVal);
 
     if (m_ptriggerhitcircle)
+    {
       m_ptriggerhitcircle->m_enabled = m_hitEnabled;
+    }
   }
   else
   {
@@ -1377,7 +1441,9 @@ STDMETHODIMP Trigger::DestroyBall(int* pVal)
   }
 
   if (pVal)
+  {
     *pVal = cnt;
+  }
 
   return S_OK;
 }

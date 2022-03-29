@@ -150,7 +150,9 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       {
         int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
         if (sel == -1)
+        {
           break;
+        }
 
         LVITEM lvitem;
         lvitem.mask = LVIF_PARAM;
@@ -192,7 +194,9 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       {
         int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
         if (sel == -1)
+        {
           break;
+        }
 
         LVITEM lvitem;
         lvitem.mask = LVIF_PARAM;
@@ -234,7 +238,9 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       {
         int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
         if (sel == -1)
+        {
           break;
+        }
 
         LVITEM lvitem;
         lvitem.mask = LVIF_PARAM;
@@ -273,7 +279,9 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       {
         int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
         if (sel == -1)
+        {
           break;
+        }
 
         while (sel != -1)
         {
@@ -309,7 +317,9 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
       const HRESULT hr = LoadValue("RecentDir", "MaterialDir", szInitialDir);
       if (hr != S_OK)
+      {
         szInitialDir = "c:\\Visual Pinball\\Tables\\";
+      }
 
       if (g_pvp->OpenFileDialog(szInitialDir, szFilename, "Material Files (.mat)\0*.mat\0", "mat",
                                 0))
@@ -353,7 +363,9 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
         const size_t index = szFilename[0].find_last_of('\\');
         if (index != std::string::npos)
+        {
           SaveValue("RecentDir", "MaterialDir", szFilename[0].substr(0, index));
+        }
 
         pt->SetNonUndoableDirty(eSaveDirty);
       }
@@ -376,7 +388,9 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
         const int selCount = ListView_GetSelectedCount(m_hMaterialList);
         if (sel == -1)
+        {
           break;
+        }
 
         char szFileName[MAXSTRING];
         strncpy_s(szFileName, "Materials.mat", sizeof(szFileName) - 1);
@@ -393,7 +407,9 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         string szInitialDir;
         const HRESULT hr = LoadValue("RecentDir", "MaterialDir", szInitialDir);
         if (hr != S_OK)
+        {
           szInitialDir = "c:\\Visual Pinball\\Tables\\";
+        }
 
         ofn.lpstrInitialDir = szInitialDir.c_str();
         ofn.lpstrTitle = "Export materials";
@@ -485,7 +501,9 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
           if (newCount > 0 && selectedCount == 0)
           {
             if (firstSelectedItemIdx >= newCount)
+            {
               firstSelectedItemIdx = 0;
+            }
             // The previous selection is now deleted, so look again from the top of the list
             ListView_SetItemState(m_hMaterialList, firstSelectedItemIdx,
                                   LVIS_FOCUSED | LVIS_SELECTED, 0x00F);
@@ -520,9 +538,13 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
           const int columnNumber = lpnmListView->iSubItem;
           if (m_columnSortOrder == 1)
+          {
             m_columnSortOrder = 0;
+          }
           else
+          {
             m_columnSortOrder = 1;
+          }
           SortData.hwndList = m_hMaterialList;
           SortData.subItemIndex = columnNumber;
           SortData.sortUpDown = m_columnSortOrder;
@@ -576,7 +598,9 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case LVN_ITEMCHANGING:
         {
           if (m_deletingItem)
+          {
             break;
+          }
 
           const int count = ListView_GetSelectedCount(m_hMaterialList);
           if (count > 1)
@@ -627,7 +651,9 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
           const int count = ListView_GetSelectedCount(m_hMaterialList);
 
           if (m_deletingItem)
+          {
             break;
+          }
           if (count > 1)
           {
             EnableAllMaterialDialogItems(FALSE);
@@ -648,56 +674,82 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             float fv;
             fv = saturate(getItemText(IDC_DIFFUSE_EDIT));
             if (pmat->m_fWrapLighting != fv)
+            {
               pt->SetNonUndoableDirty(eSaveDirty);
+            }
             pmat->m_fWrapLighting = fv;
             fv = saturate(getItemText(IDC_GLOSSY_EDIT));
             if (pmat->m_fRoughness != fv)
+            {
               pt->SetNonUndoableDirty(eSaveDirty);
+            }
             pmat->m_fRoughness = fv;
             fv = saturate(getItemText(IDC_GLOSSY_IMGLERP_EDIT));
             if (pmat->m_fGlossyImageLerp != fv)
+            {
               pt->SetNonUndoableDirty(eSaveDirty);
+            }
             pmat->m_fGlossyImageLerp = fv;
             fv = saturate(getItemText(IDC_THICKNESS_EDIT));
             if (pmat->m_fThickness != fv)
+            {
               pt->SetNonUndoableDirty(eSaveDirty);
+            }
             pmat->m_fThickness = fv;
             fv = saturate(getItemText(IDC_SPECULAR_EDIT));
             if (pmat->m_fEdge != fv)
+            {
               pt->SetNonUndoableDirty(eSaveDirty);
+            }
             pmat->m_fEdge = fv;
             fv = saturate(getItemText(IDC_OPACITY_EDIT));
             if (pmat->m_fOpacity != fv)
+            {
               pt->SetNonUndoableDirty(eSaveDirty);
+            }
             pmat->m_fOpacity = fv;
             size_t checked = SendDlgItemMessage(IDC_DIFFUSE_CHECK, BM_GETCHECK, 0, 0);
             if (pmat->m_bIsMetal != (checked == 1))
+            {
               pt->SetNonUndoableDirty(eSaveDirty);
+            }
             pmat->m_bIsMetal = (checked == 1);
             checked = SendDlgItemMessage(IDC_OPACITY_CHECK, BM_GETCHECK, 0, 0);
             if (pmat->m_bOpacityActive != (checked == 1))
+            {
               pt->SetNonUndoableDirty(eSaveDirty);
+            }
             pmat->m_bOpacityActive = (checked == 1);
             fv = saturate(getItemText(IDC_EDGEALPHA_EDIT));
             if (pmat->m_fEdgeAlpha != fv)
+            {
               pt->SetNonUndoableDirty(eSaveDirty);
+            }
             pmat->m_fEdgeAlpha = fv;
 
             fv = getItemText(IDC_MAT_ELASTICITY);
             if (pmat->m_fElasticity != fv)
+            {
               pt->SetNonUndoableDirty(eSaveDirty);
+            }
             pmat->m_fElasticity = fv;
             fv = getItemText(IDC_MAT_ELASTICITY_FALLOFF);
             if (pmat->m_fElasticityFalloff != fv)
+            {
               pt->SetNonUndoableDirty(eSaveDirty);
+            }
             pmat->m_fElasticityFalloff = fv;
             fv = getItemText(IDC_MAT_FRICTION);
             if (pmat->m_fFriction != fv)
+            {
               pt->SetNonUndoableDirty(eSaveDirty);
+            }
             pmat->m_fFriction = fv;
             fv = getItemText(IDC_MAT_SCATTER_ANGLE);
             if (pmat->m_fScatterAngle != fv)
+            {
               pt->SetNonUndoableDirty(eSaveDirty);
+            }
             pmat->m_fScatterAngle = fv;
           }
           else if ((plistview->uOldState & LVIS_SELECTED) == 0)
@@ -784,67 +836,93 @@ void MaterialDialog::OnOK()
       float fv;
       fv = getItemText(IDC_DIFFUSE_EDIT);
       if (pmat->m_fWrapLighting != fv)
+      {
         pt->SetNonUndoableDirty(eSaveDirty);
+      }
       pmat->m_fWrapLighting = fv;
 
       fv = getItemText(IDC_GLOSSY_EDIT);
       if (pmat->m_fRoughness != fv)
+      {
         pt->SetNonUndoableDirty(eSaveDirty);
+      }
       pmat->m_fRoughness = fv;
 
       fv = getItemText(IDC_GLOSSY_IMGLERP_EDIT);
       if (pmat->m_fGlossyImageLerp != fv)
+      {
         pt->SetNonUndoableDirty(eSaveDirty);
+      }
       pmat->m_fGlossyImageLerp = fv;
 
       fv = getItemText(IDC_THICKNESS_EDIT);
       if (pmat->m_fThickness != fv)
+      {
         pt->SetNonUndoableDirty(eSaveDirty);
+      }
       pmat->m_fThickness = fv;
 
       fv = getItemText(IDC_SPECULAR_EDIT);
       if (pmat->m_fEdge != fv)
+      {
         pt->SetNonUndoableDirty(eSaveDirty);
+      }
       pmat->m_fEdge = fv;
 
       fv = getItemText(IDC_OPACITY_EDIT);
       if (pmat->m_fOpacity != fv)
+      {
         pt->SetNonUndoableDirty(eSaveDirty);
+      }
       pmat->m_fOpacity = fv;
 
       size_t checked = SendDlgItemMessage(IDC_DIFFUSE_CHECK, BM_GETCHECK, 0, 0);
       if (pmat->m_bIsMetal != (checked == 1))
+      {
         pt->SetNonUndoableDirty(eSaveDirty);
+      }
       pmat->m_bIsMetal = (checked == 1);
 
       checked = SendDlgItemMessage(IDC_OPACITY_CHECK, BM_GETCHECK, 0, 0);
       if (pmat->m_bOpacityActive != (checked == 1))
+      {
         pt->SetNonUndoableDirty(eSaveDirty);
+      }
       pmat->m_bOpacityActive = (checked == 1);
 
       fv = getItemText(IDC_EDGEALPHA_EDIT);
       if (pmat->m_fEdgeAlpha != fv)
+      {
         pt->SetNonUndoableDirty(eSaveDirty);
+      }
       pmat->m_fEdgeAlpha = fv;
 
       fv = getItemText(IDC_MAT_ELASTICITY);
       if (pmat->m_fElasticity != fv)
+      {
         pt->SetNonUndoableDirty(eSaveDirty);
+      }
       pmat->m_fElasticity = fv;
 
       fv = getItemText(IDC_MAT_ELASTICITY_FALLOFF);
       if (pmat->m_fElasticityFalloff != fv)
+      {
         pt->SetNonUndoableDirty(eSaveDirty);
+      }
       pmat->m_fElasticityFalloff = fv;
 
       fv = getItemText(IDC_MAT_FRICTION);
       if (pmat->m_fFriction != fv)
+      {
         pt->SetNonUndoableDirty(eSaveDirty);
+      }
       pmat->m_fFriction = fv;
 
       fv = getItemText(IDC_MAT_SCATTER_ANGLE);
       if (pmat->m_fScatterAngle != fv)
+      {
         pt->SetNonUndoableDirty(eSaveDirty);
+      }
       pmat->m_fScatterAngle = fv;
 
       // The previous selection is now deleted, so look again from the top of the list

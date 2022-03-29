@@ -20,7 +20,9 @@ void PrimitivePhysicsProperty::UpdateVisuals(const int dispid /*=-1*/)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemPrimitive))
+    {
       continue;
+    }
     Primitive* const prim = (Primitive*)m_pvsel->ElementAt(i);
 
     if (dispid == IDC_PRIMITIVE_IS_TOY || dispid == -1)
@@ -39,9 +41,13 @@ void PrimitivePhysicsProperty::UpdateVisuals(const int dispid /*=-1*/)
       m_elasticityFalloffEdit.EnableWindow(prim->m_d.m_collidable);
     }
     if (dispid == IDC_ELASTICITY_FALLOFF_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_elasticityFalloffEdit, prim->m_d.m_elasticityFalloff);
+    }
     if (dispid == IDC_COLLISION_REDUCTION_FACTOR || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_reducePolyEdit, prim->m_d.m_collision_reductionFactor);
+    }
 
     UpdateBaseVisuals(prim, &prim->m_d, dispid);
     //only show the first element on multi-select
@@ -55,7 +61,9 @@ void PrimitivePhysicsProperty::UpdateProperties(const int dispid)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemPrimitive))
+    {
       continue;
+    }
     Primitive* const prim = (Primitive*)m_pvsel->ElementAt(i);
     switch (dispid)
     {

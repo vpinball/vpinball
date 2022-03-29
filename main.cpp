@@ -86,7 +86,9 @@ void* operator new(const size_t size_req)
 {
   void* const ptr = _aligned_malloc(size_req, 16);
   if (!ptr)
+  {
     throw std::bad_alloc{};
+  }
   return ptr;
 }
 void operator delete(void* address)
@@ -245,7 +247,9 @@ public:
     SetDisplayAutoRotationPreferences = (pSDARP)GetProcAddress(GetModuleHandle(TEXT("user32.dll")),
                                                                "SetDisplayAutoRotationPreferences");
     if (SetDisplayAutoRotationPreferences)
+    {
       SetDisplayAutoRotationPreferences(ORIENTATION_PREFERENCE_LANDSCAPE);
+    }
 #else
     SetDisplayAutoRotationPreferences(ORIENTATION_PREFERENCE_LANDSCAPE);
 #endif
@@ -316,10 +320,12 @@ public:
 
       if (lstrcmpi(szArglist[i], _T("-LessCPUthreads")) == 0 ||
           lstrcmpi(szArglist[i], _T("/LessCPUthreads")) == 0)
+      {
         m_vpinball.m_logicalNumberOfProcessors =
             max(min(m_vpinball.m_logicalNumberOfProcessors, 2),
                 m_vpinball.m_logicalNumberOfProcessors /
                     4); // only use 1/4th the threads, but at least 2 (if there are 2)
+      }
 
       //
 
@@ -329,7 +335,9 @@ public:
         _Module.UpdateRegistryFromResource(IDR_VPINBALL, FALSE);
         const HRESULT ret = _Module.UnregisterServer(TRUE);
         if (ret != S_OK)
+        {
           ShowError("Unregister VP functions failed");
+        }
         run = false;
         break;
       }
@@ -339,7 +347,9 @@ public:
         _Module.UpdateRegistryFromResource(IDR_VPINBALL, TRUE);
         const HRESULT ret = _Module.RegisterServer(TRUE);
         if (ret != S_OK)
+        {
           ShowError("Register VP functions failed");
+        }
         run = false;
         break;
       }
@@ -401,7 +411,9 @@ public:
       const bool ext_minimized = (lstrcmpi(szArglist[i], _T("-ExtMinimized")) == 0 ||
                                   lstrcmpi(szArglist[i], _T("/ExtMinimized")) == 0);
       if (ext_minimized)
+      {
         m_vpinball.m_open_minimized = true;
+      }
 
       const bool editfile =
           (lstrcmpi(szArglist[i], _T("-Edit")) == 0 || lstrcmpi(szArglist[i], _T("/Edit")) == 0);
@@ -411,12 +423,16 @@ public:
       const bool primaryDisplay = (lstrcmpi(szArglist[i], _T("-Primary")) == 0 ||
                                    lstrcmpi(szArglist[i], _T("/Primary")) == 0);
       if (primaryDisplay)
+      {
         m_vpinball.m_primaryDisplay = true;
+      }
 
       const bool povEdit = (lstrcmpi(szArglist[i], _T("-PovEdit")) == 0 ||
                             lstrcmpi(szArglist[i], _T("/PovEdit")) == 0);
       if (povEdit)
+      {
         m_vpinball.m_povEdit = true;
+      }
 
       const bool extractpov =
           (lstrcmpi(szArglist[i], _T("-Pov")) == 0 || lstrcmpi(szArglist[i], _T("/Pov")) == 0);
@@ -432,13 +448,19 @@ public:
 
         // Remove leading - or /
         if ((szArglist[i + 1][0] == '-') || (szArglist[i + 1][0] == '/'))
+        {
           szTableFileName = szArglist[i + 1] + 1;
+        }
         else
+        {
           szTableFileName = szArglist[i + 1];
+        }
 
         // Remove " "
         if (szTableFileName[0] == '"')
+        {
           szTableFileName = szTableFileName.substr(1, szTableFileName.size() - 1);
+        }
 
         // Add current path
         if (szTableFileName[1] != ':')
@@ -459,9 +481,13 @@ public:
         ++i; // two params processed
 
         if (extractpov || extractscript)
+        {
           break;
+        }
         else
+        {
           continue;
+        }
       }
     }
 
@@ -482,14 +508,18 @@ public:
           // if failed, register only for current user
           hr = RegisterTypeLibForUser(ptl, wszFileName, nullptr);
           if (!SUCCEEDED(hr))
+          {
             m_vpinball.MessageBox(
                 "Could not register type library. Try running Visual Pinball as administrator.",
                 "Error", MB_ICONWARNING);
+          }
         }
         ptl->Release();
       }
       else
+      {
         m_vpinball.MessageBox("Could not load type library.", "Error", MB_ICONSTOP);
+      }
     }
 
     InitVPX();
@@ -560,14 +590,18 @@ public:
       {
         string szScriptFilename = szTableFileName;
         if (ReplaceExtensionFromFilename(szScriptFilename, "vbs"))
+        {
           m_vpinball.m_ptableActive->m_pcv->SaveToFile(szScriptFilename);
+        }
         m_vpinball.Quit();
       }
       if (extractPov && loadFileResult)
       {
         string szPOVFilename = szTableFileName;
         if (ReplaceExtensionFromFilename(szPOVFilename, "pov"))
+        {
           m_vpinball.m_ptableActive->ExportBackdropPOV(szPOVFilename);
+        }
         m_vpinball.Quit();
       }
     }
@@ -578,7 +612,9 @@ public:
     if (run)
     {
       if (play && loadFileResult)
+      {
         m_vpinball.DoPlay(m_vpinball.m_povEdit);
+      }
 
       // VBA APC handles message loop (bastards)
       m_vpinball.MainMsgLoop();

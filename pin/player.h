@@ -116,23 +116,31 @@ public:
   void Shutdown()
   {
     for (size_t i = 0; i < m_buffers.size(); ++i)
+    {
       SAFE_BUFFER_RELEASE(m_buffers[i]);
+    }
   }
 
   void Execute(RenderDevice* const pd3dDevice)
   {
     if (m_buffers.empty())
+    {
       return;
+    }
 
     if (m_buffers[m_curIdx])
+    {
       pd3dDevice->DrawPrimitiveVB(RenderDevice::TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,
                                   m_buffers[m_curIdx], 0, 3, true);
+    }
 
     m_curIdx = (m_curIdx + 1) % m_buffers.size();
 
     if (!m_buffers[m_curIdx])
+    {
       VertexBuffer::CreateVertexBuffer(1024, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_buffers[m_curIdx],
                                        PRIMARY_DEVICE);
+    }
 
     // idea: locking a static vertex buffer stalls the pipeline if that VB is still
     // in the GPU render queue. In effect, this lets the GPU catch up.

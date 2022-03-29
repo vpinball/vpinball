@@ -19,36 +19,60 @@ void TableLightsProperty::UpdateVisuals(const int dispid /*=-1*/)
 {
   CComObject<PinTable>* const table = g_pvp->GetActiveTable();
   if (table == nullptr)
+  {
     return;
+  }
 
   if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
+  {
     m_colorButton1.SetColor(table->m_lightAmbient);
+  }
   if (dispid == IDC_COLOR_BUTTON2 || dispid == -1)
+  {
     m_colorButton2.SetColor(table->m_Light[0].emission);
+  }
   if (dispid == IDC_LIGHTEMISSIONSCALE || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_lightEmissionScaleEdit, table->m_lightEmissionScale);
+  }
   if (dispid == IDC_LIGHTHEIGHT || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_lightHeightEdit, table->m_lightHeight);
+  }
   if (dispid == IDC_LIGHTRANGE || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_lightRangeEdit, table->m_lightRange);
+  }
   if (dispid == DISPID_Image7 || dispid == -1)
+  {
     PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_envEmissionImageCombo,
                                           table->m_envImage);
+  }
   if (dispid == IDC_ENVEMISSIONSCALE || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_envEmissionScaleEdit, table->m_envEmissionScale);
+  }
   if (dispid == IDC_AOSCALE || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_ambientOcclusionScaleEdit, table->m_AOScale);
+  }
   if (dispid == IDC_BLOOM_STRENGTH || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_bloomStrengthEdit, table->m_bloom_strength);
+  }
   if (dispid == IDC_SSR_STRENGTH || dispid == -1)
+  {
     PropertyDialog::SetFloatTextbox(m_screenSpaceReflEdit, table->m_SSRScale);
+  }
 }
 
 void TableLightsProperty::UpdateProperties(const int dispid)
 {
   CComObject<PinTable>* const table = g_pvp->GetActiveTable();
   if (table == nullptr)
+  {
     return;
+  }
 
   switch (dispid)
   {
@@ -56,7 +80,9 @@ void TableLightsProperty::UpdateProperties(const int dispid)
     {
       CComObject<PinTable>* const ptable = g_pvp->GetActiveTable();
       if (ptable == nullptr)
+      {
         break;
+      }
       CHOOSECOLOR cc = m_colorDialog.GetParameters();
       cc.Flags = CC_FULLOPEN | CC_RGBINIT;
       m_colorDialog.SetParameters(cc);
@@ -75,7 +101,9 @@ void TableLightsProperty::UpdateProperties(const int dispid)
     {
       CComObject<PinTable>* const ptable = g_pvp->GetActiveTable();
       if (ptable == nullptr)
+      {
         break;
+      }
       CHOOSECOLOR cc = m_colorDialog.GetParameters();
       cc.Flags = CC_FULLOPEN | CC_RGBINIT;
       m_colorDialog.SetParameters(cc);

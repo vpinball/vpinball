@@ -31,31 +31,53 @@ void TriggerVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemTrigger))
+    {
       continue;
+    }
     Trigger* const trigger = (Trigger*)m_pvsel->ElementAt(i);
 
     if (dispid == 1503 || dispid == -1)
+    {
       PropertyDialog::UpdateComboBox(m_shapeList, m_shapeCombo,
                                      m_shapeList[(int)trigger->m_d.m_shape]);
+    }
     if (dispid == 902 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_posXEdit, trigger->m_d.m_vCenter.x);
+    }
     if (dispid == 903 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_posYEdit, trigger->m_d.m_vCenter.y);
+    }
     if (dispid == IDC_VISIBLE_CHECK || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hVisibleCheck, trigger->m_d.m_visible);
+    }
     if (dispid == IDC_REFLECT_ENABLED_CHECK || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hReflectionEnabledCheck, trigger->m_d.m_reflectionEnabled);
+    }
     if (dispid == IDC_STAR_THICKNESS_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_wireThicknessEdit, trigger->m_d.m_wireThickness);
+    }
     if (dispid == IDC_STAR_RADIUS_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_starRadiusEdit, trigger->m_d.m_radius);
+    }
     if (dispid == IDC_ROTATION_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_rotationEdit, trigger->m_d.m_rotation);
+    }
     if (dispid == IDC_RINGSPEED_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_animationSpeedEdit, trigger->m_d.m_animSpeed);
+    }
     if (dispid == IDC_SURFACE_COMBO || dispid == -1)
+    {
       PropertyDialog::UpdateSurfaceComboBox(trigger->GetPTable(), m_surfaceCombo,
                                             trigger->m_d.m_szSurface);
+    }
 
     UpdateBaseVisuals(trigger, &trigger->m_d, dispid);
     trigger->UpdateStatusBarInfo();
@@ -70,7 +92,9 @@ void TriggerVisualsProperty::UpdateProperties(const int dispid)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemTrigger))
+    {
       continue;
+    }
     Trigger* const trigger = (Trigger*)m_pvsel->ElementAt(i);
     switch (dispid)
     {

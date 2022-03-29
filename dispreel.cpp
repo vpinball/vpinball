@@ -36,11 +36,15 @@ void DispReel::SetDefaults(bool fromMouseClick)
   HRESULT hr;
   hr = LoadValue("DefaultProps\\Ramp", "Image", m_d.m_szImage);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_szImage.clear();
+  }
 
   hr = LoadValue("DefaultProps\\Ramp", "Sound", m_d.m_szSound);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_szSound.clear();
+  }
 
   m_d.m_useImageGrid = fromMouseClick
                            ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "UseImageGrid", false)
@@ -107,7 +111,9 @@ STDMETHODIMP DispReel::InterfaceSupportsErrorInfo(REFIID riid)
   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); ++i)
   {
     if (InlineIsEqualGUID(*arr[i], riid))
+    {
       return S_OK;
+    }
   }
   return S_FALSE;
 }
@@ -152,7 +158,9 @@ void DispReel::UIRenderPass1(Sur* const psur)
 void DispReel::UIRenderPass2(Sur* const psur)
 {
   if (!GetPTable()->GetEMReelsEnabled())
+  {
     return;
+  }
 
   psur->SetBorderColor(RGB(0, 0, 0), false, 0);
   psur->SetFillColor(-1);
@@ -197,7 +205,9 @@ void DispReel::GetTimers(vector<HitTimer*>& pvht)
   m_phittimer = pht;
 
   if (m_d.m_tdr.m_TimerEnabled)
+  {
     pvht.push_back(pht);
+  }
 }
 
 void DispReel::GetHitShapes(vector<HitObject*>& pvho)
@@ -221,22 +231,30 @@ void DispReel::RenderDynamic()
   TRACE_FUNCTION();
 
   if (!m_d.m_visible || !GetPTable()->GetEMReelsEnabled())
+  {
     return;
+  }
 
   // get a pointer to the image specified in the object
   Texture* const pin =
       m_ptable->GetImage(m_d.m_szImage); // pointer to image information from the image manager
 
   if (!pin)
+  {
     return;
+  }
 
   RenderDevice* const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice
                                                : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
   if (m_ptable->m_tblMirrorEnabled ^ m_ptable->m_reflectionEnabled)
+  {
     pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+  }
   else
+  {
     pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+  }
 
   pd3dDevice->SetRenderStateDepthBias(0.0f);
   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
@@ -311,7 +329,9 @@ void DispReel::RenderSetup()
       m_ptable->GetImage(m_d.m_szImage); // pointer to image information from the image manager
 
   if (!pin)
+  {
     return;
+  }
 
   int GridCols, GridRows;
 
@@ -323,10 +343,14 @@ void DispReel::RenderSetup()
     {
       GridRows = (m_d.m_digitrange + 1) / GridCols;
       if ((GridRows * GridCols) < (m_d.m_digitrange + 1))
+      {
         ++GridRows;
+      }
     }
     else
+    {
       GridRows = 1;
+    }
   }
   else
   {
@@ -343,7 +367,9 @@ void DispReel::RenderSetup()
     m_reeldigitheight = (float)pin->m_height / (float)GridRows;
   }
   else
+  {
     ShowError("DispReel: GridCols/GridRows are zero!");
+  }
 
   const float ratiox = m_reeldigitwidth / (float)pin->m_width;
   const float ratioy = m_reeldigitheight / (float)pin->m_height;
@@ -439,7 +465,9 @@ void DispReel::Animate()
               m_reelInfo[i].currentValue += AdjustValue;
               // if not the first reel then decrement the next reel by 1
               if (i != 0)
+              {
                 m_reelInfo[i - 1].motorPulses--;
+              }
             }
           }
           else
@@ -452,7 +480,9 @@ void DispReel::Animate()
               // if not the first reel then increment the next reel
               // along by 1 (just like a car odometer)
               if (i != 0)
+              {
                 m_reelInfo[i - 1].motorPulses++;
+              }
             }
           }
         }
@@ -844,7 +874,9 @@ STDMETHODIMP DispReel::put_UpdateInterval(long newVal)
 {
   SetUpdateInterval((int)newVal);
   if (g_pplayer)
+  {
     m_timeNextUpdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
+  }
 
   return S_OK;
 }
@@ -910,9 +942,13 @@ STDMETHODIMP DispReel::AddValue(long Value)
     val /= valbase;
 
     if (bNegative)
+    {
       m_reelInfo[i].motorPulses -= digitValue;
+    }
     else
+    {
       m_reelInfo[i].motorPulses += digitValue;
+    }
 
     // move to next reel
     i--;
@@ -989,7 +1025,9 @@ STDMETHODIMP DispReel::SpinReel(long ReelNumber, long PulseCount)
     return S_OK;
   }
   else
+  {
     return E_FAIL;
+  }
 }
 
 float DispReel::getBoxWidth() const

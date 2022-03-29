@@ -66,7 +66,9 @@ BOOL TableInfoDialog::OnInitDialog()
   {
     const Texture* const pin = pt->m_vimage[i];
     if (pin->m_ppb)
+    {
       m_screenshotCombo.AddString(pin->m_szName.c_str());
+    }
   }
 
   m_screenshotCombo.SelectString(0, pt->m_szScreenShot.c_str());
@@ -187,7 +189,9 @@ BOOL TableInfoDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         const int found = m_customListView.FindItem(lvfi, -1);
 
         if (found != -1)
+        {
           m_customListView.DeleteItem(found);
+        }
 
         string szCustomValue;
         VPGetDialogItemText(m_customValueEdit, szCustomValue);
@@ -237,9 +241,13 @@ void TableInfoDialog::OnOK()
 
   const LocalString ls(IDS_NONE);
   if (!lstrcmp(sshot.c_str(), ls.m_szbuffer))
+  {
     pt->m_szScreenShot.clear();
+  }
   else
+  {
     pt->m_szScreenShot = sshot.c_str();
+  }
 
   // Clear old custom values, read back new ones
   pt->m_vCustomInfoTag.clear();

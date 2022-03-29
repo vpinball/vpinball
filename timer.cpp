@@ -103,7 +103,9 @@ void Timer::GetTimers(vector<HitTimer*>& pvht)
   m_phittimer = pht;
 
   if (m_d.m_tdr.m_TimerEnabled)
+  {
     pvht.push_back(pht);
+  }
 }
 
 void Timer::GetHitShapes(vector<HitObject*>& pvho)
@@ -141,7 +143,9 @@ STDMETHODIMP Timer::InterfaceSupportsErrorInfo(REFIID riid)
   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
   {
     if (InlineIsEqualGUID(*arr[i], riid))
+    {
       return S_OK;
+    }
   }
   return S_FALSE;
 }
@@ -164,12 +168,14 @@ STDMETHODIMP Timer::put_Enabled(VARIANT_BOOL newVal)
     // to avoid problems with timers dis/enabling themselves, store all the changes in a list
     bool found = false;
     for (size_t i = 0; i < g_pplayer->m_changed_vht.size(); ++i)
+    {
       if (g_pplayer->m_changed_vht[i].m_timer == m_phittimer)
       {
         g_pplayer->m_changed_vht[i].m_enabled = val;
         found = true;
         break;
       }
+    }
 
     if (!found)
     {
@@ -180,10 +186,14 @@ STDMETHODIMP Timer::put_Enabled(VARIANT_BOOL newVal)
     }
 
     if (val)
+    {
       m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
+    }
     else
+    {
       m_phittimer->m_nextfire =
           0xFFFFFFFF; // fakes the disabling of the timer, until it will be catched by the cleanup via m_changed_vht
+    }
   }
 
   m_d.m_tdr.m_TimerEnabled = val;

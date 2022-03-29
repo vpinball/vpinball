@@ -65,9 +65,13 @@ void PaintSur::Rectangle2(const int x, const int y, const int x2, const int y2)
   SelectObject(m_hdc, m_hpnOutline);
 
   if (m_nullBorder)
+  {
     ::Rectangle(m_hdc, x, y, x2 + 1, y2 + 1);
+  }
   else
+  {
     ::Rectangle(m_hdc, x, y, x2, y2);
+  }
 }
 
 void PaintSur::Ellipse(float centerx, float centery, float radius)

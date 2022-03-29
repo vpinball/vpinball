@@ -15,19 +15,31 @@ void KickerPhysicsProperty::UpdateVisuals(const int dispid /*=-1*/)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemKicker))
+    {
       continue;
+    }
     Kicker* const kicker = (Kicker*)m_pvsel->ElementAt(i);
 
     if (dispid == DISPID_Enabled || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hEnableCheck, kicker->m_d.m_enabled);
+    }
     if (dispid == IDC_FALL_THROUGH_HOLE || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hFallThroughCheck, kicker->m_d.m_fallThrough);
+    }
     if (dispid == IDC_LEGACYMODE || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hLegacyCheck, kicker->m_d.m_legacyMode);
+    }
     if (dispid == IDC_KICKER_HIT_HEIGHT_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_hitHeightEdit, kicker->m_d.m_hit_height);
+    }
     if (dispid == IDC_HIT_ACC_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_hitAccuracyEdit, kicker->m_d.m_hitAccuracy);
+    }
     UpdateBaseVisuals(kicker, &kicker->m_d, dispid);
     //only show the first element on multi-select
     break;
@@ -39,7 +51,9 @@ void KickerPhysicsProperty::UpdateProperties(const int dispid)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemKicker))
+    {
       continue;
+    }
     Kicker* const kicker = (Kicker*)m_pvsel->ElementAt(i);
     switch (dispid)
     {

@@ -78,7 +78,9 @@ void Rubber::SetDefaults(bool fromMouseClick)
 
   const HRESULT hr = LoadValue(strKeyName, "Image", m_d.m_szImage);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_szImage.clear();
+  }
 
   m_d.m_hitEvent = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "HitEvent", false) : false;
 
@@ -160,16 +162,22 @@ void Rubber::DrawRubberMesh(Sur* const psur)
     }
   }
   if (!drawVertices.empty())
+  {
     psur->Lines(drawVertices.data(), (int)(drawVertices.size() / 2));
+  }
 }
 
 void Rubber::UIRenderPass1(Sur* const psur)
 {
   psur->SetLineColor(RGB(0, 0, 0), false, 0);
   if (m_ptable->RenderSolid())
+  {
     psur->SetFillColor(RGB(192, 192, 192));
+  }
   else
+  {
     psur->SetFillColor(-1);
+  }
   psur->SetBorderColor(-1, false, 0);
   psur->SetObject(this);
 
@@ -206,9 +214,13 @@ void Rubber::UIRenderPass2(Sur* const psur)
 
     psur->Polygon(rgvLocal, cvertex * 2);
     for (int i = 0; i < cvertex; i++)
+    {
       if (pfCross[i])
+      {
         psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex * 2 - i - 1].x,
                    rgvLocal[cvertex * 2 - i - 1].y);
+      }
+    }
 
     delete[] rgvLocal;
     delete[] pfCross;
@@ -271,9 +283,13 @@ void Rubber::RenderBlueprint(Sur* psur, const bool solid)
 
     psur->Polygon(rgvLocal, cvertex * 2);
     for (int i = 0; i < cvertex; i++)
+    {
       if (pfCross[i])
+      {
         psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex * 2 - i - 1].x,
                    rgvLocal[cvertex * 2 - i - 1].y);
+      }
+    }
 
     delete[] rgvLocal;
     delete[] pfCross;
@@ -375,7 +391,9 @@ Vertex2D* Rubber::GetSplineVertex(int& pcvertex,
     const RenderVertex& vmiddle = vvertex[i];
 
     if (ppfCross)
+    {
       (*ppfCross)[i] = vmiddle.controlPoint;
+    }
 
     Vertex2D vnormal;
     {
@@ -442,7 +460,9 @@ Vertex2D* Rubber::GetSplineVertex(int& pcvertex,
     const float widthcur = (float)m_d.m_thickness;
 
     if (pMiddlePoints)
+    {
       (*pMiddlePoints)[i] = vmiddle;
+    }
 
     rgvLocal[i] = vmiddle + (widthcur * 0.5f) * vnormal;
     rgvLocal[(cvertex + 1) * 2 - i - 1] = vmiddle - (widthcur * 0.5f) * vnormal;
@@ -476,13 +496,19 @@ void Rubber::GetCentralCurve(std::vector<RenderVertex>& vv, const float _accurac
 
   // as solid rubbers are rendered into the static buffer, always use maximum precision
   if (_accuracy != -1.f)
+  {
     accuracy = _accuracy; // used for hit shape calculation, always!
+  }
   else
   {
     if (m_d.m_staticRendering)
+    {
       accuracy = 10.f;
+    }
     else
+    {
       accuracy = (float)m_ptable->GetDetailLevel();
+    }
 
     accuracy =
         4.0f *
@@ -559,7 +585,9 @@ void Rubber::GetTimers(vector<HitTimer*>& pvht)
   m_phittimer = pht;
 
   if (m_d.m_tdr.m_TimerEnabled)
+  {
     pvht.push_back(pht);
+  }
 }
 
 //
@@ -673,13 +701,19 @@ void Rubber::AddPoint(int x, int y, const bool smooth)
   // Go through vertices (including iSeg itself) counting control points until iSeg
   int icp = 0;
   for (int i = 0; i < (iSeg + 1); i++)
+  {
     if (vvertex[i].controlPoint)
+    {
       icp++;
+    }
+  }
 
   // ClosestPointOnPolygon() couldn't find a point -> don't try to add a new point
   // because that would lead to strange behavior
   if (iSeg == -1)
+  {
     return;
+  }
 
   //if (icp == 0) // need to add point after the last point
   //icp = m_vdpoint.size();
@@ -732,7 +766,9 @@ void Rubber::RenderStatic()
   if (m_d.m_staticRendering)
   {
     if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+    {
       return;
+    }
 
     RenderObject();
   }
@@ -792,7 +828,9 @@ HRESULT Rubber::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool backup
   bw.WriteTag(FID(PNTS));
   HRESULT hr;
   if (FAILED(hr = SavePointData(pstm, hcrypthash)))
+  {
     return hr;
+  }
 
   bw.WriteTag(FID(ENDB));
 
@@ -978,8 +1016,12 @@ STDMETHODIMP Rubber::InterfaceSupportsErrorInfo(REFIID riid)
   static const IID* arr[] = {&IID_IRamp};
 
   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
+  {
     if (InlineIsEqualGUID(*arr[i], riid))
+    {
       return S_OK;
+    }
+  }
 
   return S_FALSE;
 }
@@ -1161,12 +1203,18 @@ STDMETHODIMP Rubber::put_Collidable(VARIANT_BOOL newVal)
 {
   const bool val = VBTOb(newVal);
   if (!g_pplayer)
+  {
     m_d.m_collidable = val;
+  }
   else
   {
     if (!m_vhoCollidable.empty() && m_vhoCollidable[0]->m_enabled != val)
-      for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
+    {
+      for (size_t i = 0; i < m_vhoCollidable.size(); i++)
+      { //!! costly
         m_vhoCollidable[i]->m_enabled = val; //copy to hit checking on entities composing the object
+      }
+    }
   }
 
   return S_OK;
@@ -1182,7 +1230,9 @@ STDMETHODIMP Rubber::get_Visible(VARIANT_BOOL* pVal) //temporary value of object
 STDMETHODIMP Rubber::put_Visible(VARIANT_BOOL newVal)
 {
   if (g_pplayer && m_d.m_staticRendering)
+  {
     ShowError("Rubber is static! Visible property not supported!");
+  }
   m_d.m_visible = VBTOb(newVal);
 
   return S_OK;
@@ -1322,7 +1372,9 @@ void Rubber::RenderObject()
 
   // don't render if invisible or not a transparent ramp
   if (!m_d.m_visible)
+  {
     return;
+  }
 
   if (m_d.m_thickness == 0)
   {
@@ -1331,7 +1383,9 @@ void Rubber::RenderObject()
   }
 
   if (m_dynamicVertexBufferRegenerate)
+  {
     UpdateRubber(true, m_d.m_height);
+  }
 
   RenderDevice* const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
@@ -1351,8 +1405,10 @@ void Rubber::RenderObject()
     pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
   }
   else
+  {
     pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture,
                                                mat->m_bIsMetal);
+  }
 
   pd3dDevice->basicShader->Begin(0);
   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX,
@@ -1369,7 +1425,9 @@ void Rubber::RenderDynamic()
   if (!m_d.m_staticRendering)
   {
     if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+    {
       return;
+    }
 
     RenderObject();
   }
@@ -1406,18 +1464,28 @@ void Rubber::GenerateMesh(
 {
   int accuracy;
   if (m_ptable->GetDetailLevel() < 5)
+  {
     accuracy = 6;
+  }
   else if (m_ptable->GetDetailLevel() >= 5 && m_ptable->GetDetailLevel() < 8)
+  {
     accuracy = 8;
+  }
   else
+  {
     accuracy = (int)((float)m_ptable->GetDetailLevel() * 1.3f); // see also below
+  }
 
   // as solid rubbers are rendered into the static buffer, always use maximum precision
   if (m_d.m_staticRendering)
+  {
     accuracy = (int)(10.f * 1.3f); // see also above
+  }
 
-  if (_accuracy != -1) // hit shapes and UI display have the same, static, precision
+  if (_accuracy != -1)
+  { // hit shapes and UI display have the same, static, precision
     accuracy = _accuracy;
+  }
 
   Vertex2D* middlePoints = 0;
   int splinePoints;
@@ -1494,25 +1562,37 @@ void Rubber::GenerateMesh(
       quad[0] = i * numSegments + j;
 
       if (j != numSegments - 1)
+      {
         quad[1] = i * numSegments + j + 1;
+      }
       else
+      {
         quad[1] = i * numSegments;
+      }
 
       if (i != numRings - 1)
       {
         quad[2] = (i + 1) * numSegments + j;
         if (j != numSegments - 1)
+        {
           quad[3] = (i + 1) * numSegments + j + 1;
+        }
         else
+        {
           quad[3] = (i + 1) * numSegments;
+        }
       }
       else
       {
         quad[2] = j;
         if (j != numSegments - 1)
+        {
           quad[3] = j + 1;
+        }
         else
+        {
           quad[3] = 0;
+        }
       }
       m_ringIndices[(i * numSegments + j) * 6] = quad[0];
       m_ringIndices[(i * numSegments + j) * 6 + 1] = quad[1];
@@ -1534,17 +1614,29 @@ void Rubber::GenerateMesh(
   for (int i = 0; i < m_numVertices; i++)
   {
     if (maxx < m_vertices[i].x)
+    {
       maxx = m_vertices[i].x;
+    }
     if (minx > m_vertices[i].x)
+    {
       minx = m_vertices[i].x;
+    }
     if (maxy < m_vertices[i].y)
+    {
       maxy = m_vertices[i].y;
+    }
     if (miny > m_vertices[i].y)
+    {
       miny = m_vertices[i].y;
+    }
     if (maxz < m_vertices[i].z)
+    {
       maxz = m_vertices[i].z;
+    }
     if (minz > m_vertices[i].z)
+    {
       minz = m_vertices[i].z;
+    }
   }
   m_middlePoint.x = (maxx + minx) * 0.5f;
   m_middlePoint.y = (maxy + miny) * 0.5f;
@@ -1597,21 +1689,29 @@ void Rubber::UpdateRubber(const bool updateVB, const float height)
   fullMatrix.Multiply(tempMat, vertMatrix);
   tempMat.SetScaling(1.f, 1.f, m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
   tempMat.Multiply(vertMatrix, vertMatrix);
-  if (height == m_d.m_hitHeight) // do not z-scale the hit mesh
+  if (height == m_d.m_hitHeight)
+  { // do not z-scale the hit mesh
     tempMat.SetTranslation(m_middlePoint.x, m_middlePoint.y, height + m_ptable->m_tableheight);
+  }
   else
+  {
     tempMat.SetTranslation(m_middlePoint.x, m_middlePoint.y,
                            height * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] +
                                m_ptable->m_tableheight);
+  }
   tempMat.Multiply(vertMatrix, vertMatrix);
 
   Vertex3D_NoTex2* buf;
   if (updateVB)
+  {
     m_dynamicVertexBuffer->lock(0, 0, (void**)&buf,
                                 m_d.m_staticRendering ? VertexBuffer::WRITEONLY
                                                       : VertexBuffer::DISCARDCONTENTS);
+  }
   else
+  {
     buf = m_vertices.data();
+  }
 
   for (int i = 0; i < m_numVertices; i++)
   {

@@ -467,7 +467,9 @@ STDMETHODIMP BallEx::DestroyBall(int* pVal)
   }
 
   if (pVal)
+  {
     *pVal = cnt;
+  }
 
   return S_OK;
 }

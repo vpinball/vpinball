@@ -39,35 +39,63 @@ void HitTargetVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemHitTarget))
+    {
       continue;
+    }
     HitTarget* const target = (HitTarget*)m_pvsel->ElementAt(i);
     if (dispid == IDC_HIT_TARGET_TYPE || dispid == -1)
+    {
       PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo,
                                      m_typeList[target->m_d.m_targetType - 1]);
+    }
     if (dispid == IDC_TARGET_MOVE_SPEED_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_dropSpeedEdit, target->m_d.m_dropSpeed);
+    }
     if (dispid == IDC_TARGET_RAISE_DELAY_EDIT || dispid == -1)
+    {
       PropertyDialog::SetIntTextbox(m_raiseDelayEdit, target->m_d.m_raiseDelay);
+    }
     if (dispid == IDC_DEPTH_BIAS || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_depthBiasEdit, target->m_d.m_depthBias);
+    }
     if (dispid == IDC_BLEND_DISABLE_LIGHTING || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_disableLightingEdit, target->m_d.m_disableLightingTop);
+    }
     if (dispid == IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_disableLightBelowEdit, target->m_d.m_disableLightingBelow);
+    }
     if (dispid == DISPID_POSITION_X || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_posXEdit, target->m_d.m_vPosition.x);
+    }
     if (dispid == DISPID_POSITION_Y || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_posYEdit, target->m_d.m_vPosition.y);
+    }
     if (dispid == DISPID_POSITION_Z || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_posZEdit, target->m_d.m_vPosition.z);
+    }
     if (dispid == DISPID_SIZE_X || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_scaleXEdit, target->m_d.m_vSize.x);
+    }
     if (dispid == DISPID_SIZE_Y || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_scaleYEdit, target->m_d.m_vSize.y);
+    }
     if (dispid == DISPID_SIZE_Z || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_scaleZEdit, target->m_d.m_vSize.z);
+    }
     if (dispid == DISPID_ROT_Z || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_orientationEdit, target->m_d.m_rotZ);
+    }
 
     UpdateBaseVisuals(target, &target->m_d, dispid);
     //only show the first element on multi-select
@@ -81,7 +109,9 @@ void HitTargetVisualsProperty::UpdateProperties(const int dispid)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemHitTarget))
+    {
       continue;
+    }
     HitTarget* const target = (HitTarget*)m_pvsel->ElementAt(i);
     switch (dispid)
     {

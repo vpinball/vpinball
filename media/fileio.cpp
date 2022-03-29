@@ -10,7 +10,9 @@ bool Exists(const string& filePath)
 
   //If an error occurred it will equal to INVALID_FILE_ATTRIBUTES
   if (fileAtt == INVALID_FILE_ATTRIBUTES)
+  {
     return false;
+  }
 
   //If the path referers to a directory it should also not exists.
   return ((fileAtt & FILE_ATTRIBUTE_DIRECTORY) == 0);
@@ -31,9 +33,13 @@ void ExtensionFromFilename(const string& szfilename, string& szextension)
   }
 
   if (begin <= 0)
+  {
     szextension.clear();
+  }
   else
+  {
     szextension = szfilename.c_str() + begin;
+  }
 }
 
 void TitleFromFilename(const string& szfilename, string& sztitle)
@@ -54,11 +60,15 @@ void TitleFromFilename(const string& szfilename, string& sztitle)
   for (end = len; end >= 0; end--)
   {
     if (szfilename[end] == '.')
+    {
       break;
+    }
   }
 
   if (end == 0)
+  {
     end = len - 1;
+  }
 
   const char* szT = szfilename.c_str() + begin;
   int count = end - begin;
@@ -78,11 +88,15 @@ void PathFromFilename(const string& szfilename, string& szpath)
   for (end = len; end >= 0; end--)
   {
     if (szfilename[end] == '\\' || szfilename[end] == '/')
+    {
       break;
+    }
   }
 
   if (end == 0)
+  {
     end = len - 1;
+  }
 
   // copy from the start of the string to the end (or last '\')
   const char* szT = szfilename.c_str();
@@ -103,11 +117,15 @@ void TitleAndPathFromFilename(const char* const szfilename, char* szpath)
   for (end = len; end >= 0; end--)
   {
     if (szfilename[end] == '.')
+    {
       break;
+    }
   }
 
   if (end == 0)
+  {
     end = len;
+  }
 
   // copy from the start of the string to the end (or last '\')
   const char* szT = szfilename;
@@ -130,7 +148,9 @@ bool ReplaceExtensionFromFilename(string& szfilename, const string& newextension
     return true;
   }
   else
+  {
     return false;
+  }
 }
 
 bool RawReadFromFile(const char* const szfilename, int* const psize, char** pszout)
@@ -169,7 +189,9 @@ BiffWriter::BiffWriter(IStream* pistream, const HCRYPTHASH hcrypthash)
 HRESULT BiffWriter::WriteBytes(const void* pv, const unsigned long count, unsigned long* foo)
 {
   if (m_hcrypthash)
+  {
     CryptHashData(m_hcrypthash, (BYTE*)pv, count, 0);
+  }
 
   return m_pistream->Write(pv, count, foo);
 }
@@ -187,10 +209,14 @@ HRESULT BiffWriter::WriteInt(const int id, const int value)
   HRESULT hr;
 
   if (FAILED(hr = WriteRecordSize(sizeof(int) * 2)))
+  {
     return hr;
+  }
 
   if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
+  {
     return hr;
+  }
 
   hr = WriteBytes(&value, sizeof(int), &writ);
 
@@ -204,13 +230,19 @@ HRESULT BiffWriter::WriteString(const int id, const char* const szvalue)
   const int len = lstrlen(szvalue);
 
   if (FAILED(hr = WriteRecordSize((int)sizeof(int) * 2 + len)))
+  {
     return hr;
+  }
 
   if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
+  {
     return hr;
+  }
 
   if (FAILED(hr = WriteBytes(&len, sizeof(int), &writ)))
+  {
     return hr;
+  }
 
   hr = WriteBytes(szvalue, len, &writ);
 
@@ -224,13 +256,19 @@ HRESULT BiffWriter::WriteString(const int id, const std::string& szvalue)
   const int len = (int)szvalue.length();
 
   if (FAILED(hr = WriteRecordSize((int)sizeof(int) * 2 + len)))
+  {
     return hr;
+  }
 
   if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
+  {
     return hr;
+  }
 
   if (FAILED(hr = WriteBytes(&len, sizeof(int), &writ)))
+  {
     return hr;
+  }
 
   hr = WriteBytes(szvalue.data(), len, &writ);
 
@@ -244,13 +282,19 @@ HRESULT BiffWriter::WriteWideString(const int id, const WCHAR* const wzvalue)
   const int len = lstrlenW(wzvalue) * (int)sizeof(WCHAR);
 
   if (FAILED(hr = WriteRecordSize((int)sizeof(int) * 2 + len)))
+  {
     return hr;
+  }
 
   if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
+  {
     return hr;
+  }
 
   if (FAILED(hr = WriteBytes(&len, sizeof(int), &writ)))
+  {
     return hr;
+  }
 
   hr = WriteBytes(wzvalue, len, &writ);
 
@@ -264,13 +308,19 @@ HRESULT BiffWriter::WriteWideString(const int id, const std::basic_string<WCHAR>
   const int len = (int)wzvalue.length() * (int)sizeof(WCHAR);
 
   if (FAILED(hr = WriteRecordSize((int)sizeof(int) * 2 + len)))
+  {
     return hr;
+  }
 
   if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
+  {
     return hr;
+  }
 
   if (FAILED(hr = WriteBytes(&len, sizeof(int), &writ)))
+  {
     return hr;
+  }
 
   hr = WriteBytes(wzvalue.data(), len, &writ);
 
@@ -283,10 +333,14 @@ HRESULT BiffWriter::WriteBool(const int id, const BOOL value)
   HRESULT hr;
 
   if (FAILED(hr = WriteRecordSize(sizeof(int) * 2)))
+  {
     return hr;
+  }
 
   if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
+  {
     return hr;
+  }
 
   hr = WriteBytes(&value, sizeof(BOOL), &writ);
 
@@ -299,10 +353,14 @@ HRESULT BiffWriter::WriteFloat(const int id, const float value)
   HRESULT hr;
 
   if (FAILED(hr = WriteRecordSize(sizeof(int) + sizeof(float))))
+  {
     return hr;
+  }
 
   if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
+  {
     return hr;
+  }
 
   hr = WriteBytes(&value, sizeof(float), &writ);
 
@@ -315,10 +373,14 @@ HRESULT BiffWriter::WriteStruct(const int id, const void* const pvalue, const in
   HRESULT hr;
 
   if (FAILED(hr = WriteRecordSize((int)sizeof(int) + size)))
+  {
     return hr;
+  }
 
   if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
+  {
     return hr;
+  }
 
   hr = WriteBytes(pvalue, size, &writ);
 
@@ -347,7 +409,9 @@ HRESULT BiffWriter::WriteTag(const int id)
   HRESULT hr;
 
   if (FAILED(hr = WriteRecordSize(sizeof(int))))
+  {
     return hr;
+  }
 
   hr = WriteBytes(&id, sizeof(int), &writ);
 
@@ -376,13 +440,19 @@ HRESULT BiffReader::ReadBytes(void* const pv, const unsigned long count, unsigne
 {
   const bool iow = IsOnWine();
   if (iow)
+  {
     mtx.lock();
+  }
   const HRESULT hr = m_pistream->Read(pv, count, foo);
   if (iow)
+  {
     mtx.unlock();
+  }
 
   if (m_hcrypthash)
+  {
     CryptHashData(m_hcrypthash, (BYTE*)pv, count, 0);
+  }
 
   return hr;
 }
@@ -394,10 +464,14 @@ HRESULT BiffReader::GetIntNoHash(int& value)
   ULONG read = 0;
   const bool iow = IsOnWine();
   if (iow)
+  {
     mtx.lock();
+  }
   const HRESULT hr = m_pistream->Read(&value, sizeof(int), &read);
   if (iow)
+  {
     mtx.unlock();
+  }
   return hr;
 }
 
@@ -569,10 +643,14 @@ HRESULT BiffReader::Load()
 
     bool cont = false;
     if (hr == S_OK)
+    {
       cont = m_piloadable->LoadToken(tag, this);
+    }
 
     if (!cont)
+    {
       return E_FAIL;
+    }
 
     if (m_version > 30)
     {
@@ -599,10 +677,14 @@ FastIStorage::FastIStorage()
 FastIStorage::~FastIStorage()
 {
   for (size_t i = 0; i < m_vstg.size(); i++)
+  {
     m_vstg[i]->Release();
+  }
 
   for (size_t i = 0; i < m_vstm.size(); i++)
+  {
     m_vstm[i]->Release();
+  }
 
   SAFE_VECTOR_DELETE(m_wzName);
 }
@@ -801,9 +883,13 @@ void FastIStream::SetSize(const unsigned int i)
     void* m_rgNew;
 
     if (m_rg)
+    {
       m_rgNew = realloc((void*)m_rg, i);
+    }
     else
+    {
       m_rgNew = malloc(i);
+    }
 
     m_rg = (char*)m_rgNew;
     m_cMax = i;
@@ -840,7 +926,9 @@ long __stdcall FastIStream::Read(void* pv, const unsigned long count, unsigned l
   m_cSeek += count;
 
   if (foo != nullptr)
+  {
     *foo = count;
+  }
 
   return S_OK;
 }
@@ -848,7 +936,9 @@ long __stdcall FastIStream::Read(void* pv, const unsigned long count, unsigned l
 long __stdcall FastIStream::Write(const void* pv, const unsigned long count, unsigned long* foo)
 {
   if ((m_cSeek + count) > m_cMax)
+  {
     SetSize(max(m_cSeek * 2, m_cSeek + count));
+  }
 
   memcpy(m_rg + m_cSeek, pv, count);
   m_cSeek += count;
@@ -856,7 +946,9 @@ long __stdcall FastIStream::Write(const void* pv, const unsigned long count, uns
   m_cSize = max(m_cSize, m_cSeek);
 
   if (foo != nullptr)
+  {
     *foo = count;
+  }
 
   return S_OK;
 }
@@ -877,7 +969,9 @@ long __stdcall FastIStream::Seek(union _LARGE_INTEGER li,
   }
 
   if (puiOut)
+  {
     puiOut->QuadPart = m_cSeek;
+  }
 
   return S_OK;
 }

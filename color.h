@@ -29,7 +29,7 @@ inline vec4 convertColor(const COLORREF c, const float w = 1.0f)
 inline float invGammaApprox(const float c)
 {
   return c * (c * (c * 0.305306011f + 0.682171111f) + 0.012522878f);
-      /*pow(color,2.2f);*/ // pow does still matter on current CPUs
+  /*pow(color,2.2f);*/ // pow does still matter on current CPUs
 }
 
 inline float gammaApprox(const float c)
@@ -38,5 +38,5 @@ inline float gammaApprox(const float c)
   const float t1 = sqrtf(t0);
   const float t2 = sqrtf(t1);
   return 0.662002687f * t0 + 0.684122060f * t1 - 0.323583601f * t2 - 0.0225411470f * c;
-      /*pow(color,(float)(1.0/2.2));*/ // pow does still matter on current CPUs
+  /*pow(color,(float)(1.0/2.2));*/ // pow does still matter on current CPUs
 }

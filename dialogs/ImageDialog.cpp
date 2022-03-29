@@ -100,7 +100,9 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
       CCO(PinTable)* const pt = g_pvp->GetActiveTable();
       if (pt)
+      {
         pt->ListImages(hListView);
+      }
 
       char textBuf[16];
       strncpy_s(textBuf, "128", sizeof(textBuf) - 1);
@@ -120,16 +122,24 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
           const int columnNumber = lpnmListView->iSubItem;
           if (m_columnSortOrder == 1)
+          {
             m_columnSortOrder = 0;
+          }
           else
+          {
             m_columnSortOrder = 1;
+          }
           SortData.hwndList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
           SortData.subItemIndex = columnNumber;
           SortData.sortUpDown = m_columnSortOrder;
           if (columnNumber == 4)
+          {
             ListView_SortItems(SortData.hwndList, MyCompProcMemValues, &SortData);
+          }
           else
+          {
             ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
+          }
         }
       }
 
@@ -167,7 +177,9 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case LVN_ITEMCHANGING:
         {
           if (m_doNotChange)
+          {
             break;
+          }
           NMLISTVIEW* const plistview = (LPNMLISTVIEW)lParam;
           if ((plistview->uNewState & LVIS_SELECTED) != (plistview->uOldState & LVIS_SELECTED))
           {
@@ -195,7 +207,9 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case LVN_ITEMCHANGED:
         {
           if (m_doNotChange)
+          {
             break;
+          }
           NMLISTVIEW* const plistview = (LPNMLISTVIEW)lParam;
           const int sel = plistview->iItem;
           LVITEM lvitem;
@@ -414,7 +428,9 @@ void ImageDialog::Import()
 
   HRESULT hr = LoadValue("RecentDir", "ImageDir", szInitialDir);
   if (hr != S_OK)
+  {
     szInitialDir = "c:\\Visual Pinball\\Tables\\";
+  }
 
   if (g_pvp->OpenFileDialog(szInitialDir, szFileName,
                             "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files "
@@ -426,11 +442,15 @@ void ImageDialog::Import()
     const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
 
     for (const std::string& file : szFileName)
+    {
       pt->ImportImage(hSoundList, file);
+    }
 
     const size_t index = szFileName[0].find_last_of('\\');
     if (index != std::string::npos)
+    {
       hr = SaveValue("RecentDir", "ImageDir", szFileName[0].substr(0, index));
+    }
 
     pt->SetNonUndoableDirty(eSaveDirty);
     pt->UpdatePropertyImageList();
@@ -505,34 +525,60 @@ void ImageDialog::Export()
             "(.psd)\0*.psd;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0WEBP "
             "(.webp)\0*.webp;\0EXR (.exr)\0*.exr;\0HDR (.hdr)\0*.hdr\0";
         if (!_stricmp(ofn.lpstrDefExt, "png"))
+        {
           ofn.nFilterIndex = 1;
+        }
         else if (!_stricmp(ofn.lpstrDefExt, "bmp"))
+        {
           ofn.nFilterIndex = 2;
+        }
         else if (!_stricmp(ofn.lpstrDefExt, "jpg") || !_stricmp(ofn.lpstrDefExt, "jpeg"))
+        {
           ofn.nFilterIndex = 3;
+        }
         else if (!_stricmp(ofn.lpstrDefExt, "iff"))
+        {
           ofn.nFilterIndex = 4;
+        }
         else if (!_stricmp(ofn.lpstrDefExt, "pcx"))
+        {
           ofn.nFilterIndex = 5;
+        }
         else if (!_stricmp(ofn.lpstrDefExt, "pict"))
+        {
           ofn.nFilterIndex = 6;
+        }
         else if (!_stricmp(ofn.lpstrDefExt, "psd"))
+        {
           ofn.nFilterIndex = 7;
+        }
         else if (!_stricmp(ofn.lpstrDefExt, "tga"))
+        {
           ofn.nFilterIndex = 8;
+        }
         else if (!_stricmp(ofn.lpstrDefExt, "tif") || !_stricmp(ofn.lpstrDefExt, "tiff"))
+        {
           ofn.nFilterIndex = 9;
+        }
         else if (!_stricmp(ofn.lpstrDefExt, "webp"))
+        {
           ofn.nFilterIndex = 10;
+        }
         else if (!_stricmp(ofn.lpstrDefExt, "exr"))
+        {
           ofn.nFilterIndex = 11;
+        }
         else if (!_stricmp(ofn.lpstrDefExt, "hdr"))
+        {
           ofn.nFilterIndex = 12;
+        }
 
         string g_initDir;
         const HRESULT hr = LoadValue("RecentDir", "ImageDir", g_initDir);
         if (hr != S_OK)
+        {
           g_initDir = "c:\\Visual Pinball\\Tables\\";
+        }
 
         ofn.lpstrInitialDir = (hr == S_OK) ? g_initDir.c_str() : nullptr;
         //ofn.lpstrTitle = "SAVE AS";
@@ -553,11 +599,15 @@ void ImageDialog::Export()
           }
 
           if (begin >= MAXSTRING)
+          {
             begin = MAXSTRING - 1;
+          }
 
           char pathName[MAXSTRING];
           if (begin > 0)
+          {
             memcpy(pathName, ofn.lpstrFile, begin);
+          }
           pathName[begin] = 0;
 
           while (sel != -1 && ppi != nullptr)
@@ -589,10 +639,10 @@ void ImageDialog::Export()
             }
 
             CCO(PinTable)* const pt = g_pvp->GetActiveTable();
-            if (!pt->ExportImage(
-                    ppi,
-                    g_filename)) //!! this will always export the image in its original format, no matter what was actually selected by the user
+            if (!pt->ExportImage(ppi, g_filename))
+            { //!! this will always export the image in its original format, no matter what was actually selected by the user
               ShowError("Could not export Image");
+            }
             sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED);
             lvitem.iItem = sel;
             lvitem.iSubItem = 0;
@@ -645,8 +695,10 @@ void ImageDialog::DeleteImage()
         }
       }
       if (lastsel != -1)
+      {
         ListView_SetItemState(hSoundList, lastsel, LVNI_SELECTED | LVNI_FOCUSED,
                               LVNI_SELECTED | LVNI_FOCUSED);
+      }
       pt->SetNonUndoableDirty(eSaveDirty);
     }
   }
@@ -688,7 +740,9 @@ void ImageDialog::Reimport()
             pt->SetNonUndoableDirty(eSaveDirty);
           }
           else
+          {
             MessageBox(ppi->m_szPath.c_str(), "FILE NOT FOUND!", MB_OK);
+          }
 
           sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED);
         }
@@ -726,14 +780,18 @@ void ImageDialog::UpdateAll()
         pt->SetNonUndoableDirty(eSaveDirty);
       }
       else
+      {
         errorOccurred = true;
+      }
     }
     // Display new image
     ::InvalidateRect(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), nullptr, fTrue);
   }
 
   if (errorOccurred)
+  {
     MessageBox("Not all images were updated!", "  FILES NOT FOUND!  ", MB_OK);
+  }
 }
 
 void ImageDialog::ReimportFrom()
@@ -754,7 +812,9 @@ void ImageDialog::ReimportFrom()
 
       const HRESULT hr = LoadValue("RecentDir", "ImageDir", szInitialDir);
       if (hr != S_OK)
+      {
         szInitialDir = "c:\\Visual Pinball\\Tables\\";
+      }
 
       if (g_pvp->OpenFileDialog(szInitialDir, szFileName,
                                 "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files "
@@ -772,7 +832,9 @@ void ImageDialog::ReimportFrom()
         {
           const size_t index = szFileName[0].find_last_of('\\');
           if (index != std::string::npos)
+          {
             SaveValue("RecentDir", "ImageDir", szFileName[0].substr(0, index));
+          }
 
           CCO(PinTable)* const pt = g_pvp->GetActiveTable();
           pt->ReImportImage(ppi, szFileName[0]);

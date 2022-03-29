@@ -17,13 +17,17 @@ BOOL DebuggerDialog::IsSubDialogMessage(MSG& msg) const
   {
     const BOOL consumed = m_lightDialog.IsDialogMessage(msg);
     if (consumed)
+    {
       return TRUE;
+    }
   }
   if (m_materialDialog.IsWindow())
   {
     const BOOL consumed = m_materialDialog.IsDialogMessage(msg);
     if (consumed)
+    {
       return TRUE;
+    }
   }
   return IsDialogMessage(msg);
 }
@@ -329,7 +333,9 @@ BOOL DbgLightDialog::OnInitDialog()
   }
   std::sort(lightNames.begin(), lightNames.end());
   for (size_t i = 0; i < lightNames.size(); i++)
+  {
     m_lightsCombo.AddString(lightNames[i].c_str());
+  }
 
   GetParent().ShowWindow(SW_HIDE);
 
@@ -537,7 +543,9 @@ Light* DbgLightDialog::GetLight()
   m_lightsCombo.GetLBText(idx_row, strText);
   IEditable* const pedit = g_pplayer->m_ptable->GetElementByName(strText);
   if (pedit != nullptr)
+  {
     return (Light*)pedit;
+  }
 
   return nullptr;
 }
@@ -583,7 +591,9 @@ BOOL DbgMaterialDialog::OnInitDialog()
   }
   std::sort(matNames.begin(), matNames.end());
   for (size_t i = 0; i < matNames.size(); i++)
+  {
     m_materialsCombo.AddString(matNames[i].c_str());
+  }
 
   m_materialsCombo.SetCurSel(0);
   SendMessage(WM_COMMAND, MAKEWPARAM(IDC_DBG_MATERIALCOMBO, CBN_SELCHANGE), 0);

@@ -17,15 +17,23 @@ void LightseqStatesProperty::UpdateVisuals(const int dispid /*=-1*/)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemLightSeq))
+    {
       continue;
+    }
     LightSeq* const lightseq = (LightSeq*)m_pvsel->ElementAt(i);
 
     if (dispid == 9 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_posXEdit, lightseq->GetX());
+    }
     if (dispid == 10 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_posYEdit, lightseq->GetY());
+    }
     if (dispid == IDC_LIGHTSEQ_UPDATE_INTERVAL_EDIT || dispid == -1)
+    {
       PropertyDialog::SetIntTextbox(m_updateIntervalEdit, lightseq->GetUpdateInterval());
+    }
 
     if (dispid == DISPID_Collection || dispid == -1)
     {
@@ -47,7 +55,9 @@ void LightseqStatesProperty::UpdateProperties(const int dispid)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemLightSeq))
+    {
       continue;
+    }
     LightSeq* const lightseq = (LightSeq*)m_pvsel->ElementAt(i);
     switch (dispid)
     {

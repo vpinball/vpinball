@@ -37,35 +37,63 @@ void RampVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemRamp))
+    {
       continue;
+    }
     Ramp* const ramp = (Ramp*)m_pvsel->ElementAt(i);
     if (dispid == 6 || dispid == -1)
+    {
       PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)ramp->m_d.m_type]);
+    }
     if (dispid == 8 || dispid == -1)
+    {
       PropertyDialog::UpdateComboBox(m_imageModeList, m_modeCombo,
                                      m_imageModeList[(int)ramp->m_d.m_imagealignment]);
+    }
     if (dispid == IDC_DEPTH_BIAS || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_depthBiasEdit, ramp->m_d.m_depthBias);
+    }
     if (dispid == 2 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_topHeightEdit, ramp->m_d.m_heighttop);
+    }
     if (dispid == 1 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_bottomHeightEdit, ramp->m_d.m_heightbottom);
+    }
     if (dispid == 4 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_topWidthEdit, ramp->m_d.m_widthtop);
+    }
     if (dispid == 3 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_bottomWidthEdit, ramp->m_d.m_widthbottom);
+    }
     if (dispid == 108 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_leftWallEdit, ramp->m_d.m_leftwallheightvisible);
+    }
     if (dispid == 109 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_rightWallEdit, ramp->m_d.m_rightwallheightvisible);
+    }
     if (dispid == IDC_WIRE_DIAMETER || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_diameterEdit, ramp->m_d.m_wireDiameter);
+    }
     if (dispid == IDC_WIRE_DISTX || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_distanceXEdit, ramp->m_d.m_wireDistanceX);
+    }
     if (dispid == IDC_WIRE_DISTY || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_distanceYEdit, ramp->m_d.m_wireDistanceY);
+    }
     if (dispid == 9 || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 9), ramp->m_d.m_imageWalls);
+    }
 
     UpdateBaseVisuals(ramp, &ramp->m_d, dispid);
     //only show the first element on multi-select
@@ -78,7 +106,9 @@ void RampVisualsProperty::UpdateProperties(const int dispid)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemRamp))
+    {
       continue;
+    }
     Ramp* const ramp = (Ramp*)m_pvsel->ElementAt(i);
     switch (dispid)
     {

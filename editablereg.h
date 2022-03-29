@@ -48,7 +48,9 @@ public:
     for (it = m_map.begin(); it != m_map.end(); ++it)
     {
       if (it->second.toolID == toolID)
+      {
         return it->second.type;
+      }
     }
     return eItemInvalid;
   }

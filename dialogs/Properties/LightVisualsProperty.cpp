@@ -26,50 +26,92 @@ void LightVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemLight))
+    {
       continue;
+    }
     Light* const light = (Light*)m_pvsel->ElementAt(i);
 
     if (dispid == 1 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_falloffEdit, light->m_d.m_falloff);
+    }
     if (dispid == IDC_LIGHT_FALLOFF_POWER || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_falloffPowerEdit, light->m_d.m_falloff_power);
+    }
     if (dispid == 12 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_intensityEdit, light->m_d.m_intensity);
+    }
     if (dispid == IDC_FADE_SPEED_UP || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_fadeSpeedUpEdit, light->m_d.m_fadeSpeedUp);
+    }
     if (dispid == IDC_FADE_SPEED_DOWN || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_fadeSpeedDownEdit, light->m_d.m_fadeSpeedDown);
+    }
     if (dispid == IDC_IMAGE_MODE || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hPassThroughCheck, light->m_d.m_imageMode);
+    }
     if (dispid == IDC_LIGHT_TYPE_CHECKBOX || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hEnableCheck, light->m_d.m_BulbLight);
+    }
     if (dispid == IDC_SHOW_BULB_MESH || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hShowMeshCheck, light->m_d.m_showBulbMesh);
+    }
     if (dispid == IDC_STATIC_BULB_MESH || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hStaticMeshCheck, light->m_d.m_staticBulbMesh);
+    }
     if (dispid == IDC_REFLECT_ON_BALLS || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hRelectOnBalls, light->m_d.m_showReflectionOnBall);
+    }
     if (dispid == IDC_DEPTH_BIAS || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_depthBiasEdit, light->m_d.m_depthBias);
+    }
     if (dispid == IDC_HALO_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_haloHeightEdit, light->m_d.m_bulbHaloHeight);
+    }
     if (dispid == IDC_SCALE_BULB_MESH || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_scaleMeshEdit, light->m_d.m_meshRadius);
+    }
     if (dispid == IDC_BULB_MODULATE_VS_ADD || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_modulateEdit, light->m_d.m_modulate_vs_add);
+    }
     if (dispid == IDC_TRANSMISSION_SCALE || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_transmitEdit, light->m_d.m_transmissionScale);
+    }
     if (dispid == 902 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_posXEdit, light->m_d.m_vCenter.x);
+    }
     if (dispid == 903 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_posYEdit, light->m_d.m_vCenter.y);
+    }
     if (dispid == IDC_SURFACE_COMBO || dispid == -1)
+    {
       PropertyDialog::UpdateSurfaceComboBox(light->GetPTable(), m_surfaceCombo,
                                             light->m_d.m_szSurface);
+    }
     if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
+    {
       m_colorButton1.SetColor(light->m_d.m_color);
+    }
     if (dispid == IDC_COLOR_BUTTON2 || dispid == -1)
+    {
       m_colorButton2.SetColor(light->m_d.m_color2);
+    }
 
     UpdateBaseVisuals(light, &light->m_d, dispid);
     //only show the first element on multi-select
@@ -82,7 +124,9 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemLight))
+    {
       continue;
+    }
     Light* const light = (Light*)m_pvsel->ElementAt(i);
 
     switch (dispid)
@@ -162,7 +206,9 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
       {
         CComObject<PinTable>* const ptable = g_pvp->GetActiveTable();
         if (ptable == nullptr)
+        {
           break;
+        }
         if (i == 0)
         {
           CHOOSECOLOR cc = m_colorDialog.GetParameters();
@@ -191,7 +237,9 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
       {
         CComObject<PinTable>* const ptable = g_pvp->GetActiveTable();
         if (ptable == nullptr)
+        {
           break;
+        }
         if (i == 0)
         {
           CHOOSECOLOR cc = m_colorDialog.GetParameters();

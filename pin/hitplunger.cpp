@@ -130,7 +130,9 @@ void PlungerMoverObject::UpdateDisplacements(const float dtime)
 
   // apply the travel limit
   if (m_pos < m_travelLimit)
+  {
     m_pos = m_travelLimit;
+  }
 
   // if we're in firing mode and we've crossed the bounce position, reverse course
   const float relPos = (m_pos - m_frameEnd) / m_frameLen;
@@ -152,7 +154,9 @@ void PlungerMoverObject::UpdateDisplacements(const float dtime)
 
   // apply the travel limit (again)
   if (m_pos < m_travelLimit)
+  {
     m_pos = m_travelLimit;
+  }
 
   // limit motion to the valid range
   if (dtime != 0.0f)
@@ -170,7 +174,9 @@ void PlungerMoverObject::UpdateDisplacements(const float dtime)
 
     // apply the travel limit (yet again)
     if (m_pos < m_travelLimit)
+    {
       m_pos = m_travelLimit;
+    }
   }
 
   // the travel limit applies to one displacement update only - reset it
@@ -233,7 +239,9 @@ void PlungerMoverObject::Fire(float startPos)
 
   // make sure the starting point is behind the park position
   if (startPos < m_restPos)
+  {
     startPos = m_restPos;
+  }
 
   // move immediately to the starting position
   m_pos = m_frameEnd + (startPos * m_frameLen);
@@ -505,7 +513,9 @@ void PlungerMoverObject::UpdateVelocities()
     {
       apex = m_mech1;
       if (m_mech2 > apex)
+      {
         apex = m_mech2;
+      }
     }
 
     // trigger a release from the apex position
@@ -736,14 +746,18 @@ float HitPlunger::HitTest(const BallS& ball, const float dtime, CollisionEvent& 
     // non-zero time to the next collision with the plunger.  We'll
     // then catch up again and push it along a little further.
     if (m_plungerMover.m_travelLimit < m_plungerMover.m_pos)
+    {
       (const_cast<HitPlunger*>(this))->m_plungerMover.m_travelLimit = m_plungerMover.m_pos; // HACK
+    }
 
     // If the distance is negative, it means the objects are
     // overlapping.  Make certain that we give the ball enough
     // of an impulse to get it not to overlap.
     if (coll.m_hitdistance <= 0.0f && coll.m_hitvel.y == deltay &&
         fabsf(deltay) < fabsf(coll.m_hitdistance))
+    {
       coll.m_hitvel.y = -fabsf(coll.m_hitdistance);
+    }
 
     // return the collision time delta
     return hittime;
@@ -765,12 +779,18 @@ void HitPlunger::Collide(const CollisionEvent& coll)
   if (dot >= -C_LOWNORMVEL) // nearly receding ... make sure of conditions
   { // otherwise if clearly approaching .. process the collision
     if (dot > C_LOWNORMVEL)
+    {
       return; // is this velocity clearly receding (i.e must > a minimum)
+    }
 #ifdef C_EMBEDDED
     if (coll.m_hitdistance < -C_EMBEDDED)
+    {
       dot = -C_EMBEDSHOT; // has ball become embedded???, give it a kick
+    }
     else
+    {
       return;
+    }
 #endif
   }
   g_pplayer->m_pactiveballBC = pball; // Ball control most recently collided with plunger

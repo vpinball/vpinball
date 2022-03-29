@@ -16,16 +16,24 @@ void GatePhysicsProperty::UpdateVisuals(const int dispid /*=-1*/)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemGate))
+    {
       continue;
+    }
     Gate* const gate = (Gate*)m_pvsel->ElementAt(i);
 
     if (dispid == 13 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_dampingEdit, gate->m_d.m_damping);
+    }
     if (dispid == 17 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_gravityFactorEdit, gate->m_d.m_gravityfactor);
+    }
     if (dispid == IDC_TWO_WAY_CHECK || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_TWO_WAY_CHECK),
                                        gate->m_d.m_twoWay);
+    }
     UpdateBaseVisuals(gate, &gate->m_d, dispid);
     //only show the first element on multi-select
     break;
@@ -37,7 +45,9 @@ void GatePhysicsProperty::UpdateProperties(const int dispid)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemGate))
+    {
       continue;
+    }
     Gate* const gate = (Gate*)m_pvsel->ElementAt(i);
     switch (dispid)
     {

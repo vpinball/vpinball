@@ -20,41 +20,61 @@ void DragpointVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemDragPoint))
+    {
       continue;
+    }
     const DragPoint* const dpoint = (DragPoint*)m_pvsel->ElementAt(i);
 
     PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 3), dpoint->m_smooth);
     if (prev != nullptr)
     {
       if (prev->m_v.x != dpoint->m_v.x && (dispid == 1 || dispid == -1))
+      {
         m_posXEdit.SetWindowText(nullptr);
+      }
       if (prev->m_v.y != dpoint->m_v.y && (dispid == 2 || dispid == -1))
+      {
         m_posYEdit.SetWindowText(nullptr);
+      }
     }
     else
     {
       if (dispid == 1 || dispid == -1)
+      {
         PropertyDialog::SetFloatTextbox(m_posXEdit, dpoint->m_v.x);
+      }
       if (dispid == 2 || dispid == -1)
+      {
         PropertyDialog::SetFloatTextbox(m_posYEdit, dpoint->m_v.y);
+      }
     }
     if (m_id == IDD_PROPPOINT_VISUALSWHEIGHT)
     {
       if (dispid == IDC_CALC_HEIGHT_EDIT || dispid == -1)
+      {
         PropertyDialog::SetFloatTextbox(m_realHeightEdit, dpoint->m_calcHeight);
+      }
       if (dispid == 6 || dispid == -1)
+      {
         PropertyDialog::SetFloatTextbox(m_heightOffsetEdit, dpoint->m_v.z);
+      }
     }
     if (m_id == IDD_PROPPOINT_VISUALSWTEX)
     {
       if (dispid == 4 || dispid == -1)
+      {
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 4), dpoint->m_autoTexture);
+      }
       if (dispid == 5 || dispid == -1)
       {
         if (prev != nullptr && prev->m_texturecoord != dpoint->m_texturecoord)
+        {
           m_textureCoordEdit.SetWindowText(nullptr);
+        }
         else
+        {
           PropertyDialog::SetFloatTextbox(m_textureCoordEdit, dpoint->m_texturecoord);
+        }
       }
     }
     prev = dpoint;
@@ -67,7 +87,9 @@ void DragpointVisualsProperty::UpdateProperties(const int dispid)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemDragPoint))
+    {
       continue;
+    }
     DragPoint* const dpoint = (DragPoint*)m_pvsel->ElementAt(i);
 
     switch (dispid)
@@ -104,7 +126,9 @@ void DragpointVisualsProperty::UpdateProperties(const int dispid)
 BOOL DragpointVisualsProperty::OnInitDialog()
 {
   if (m_id == IDD_PROPPOINT_VISUALSWTEX)
+  {
     m_textureCoordEdit.AttachItem(5);
+  }
   m_posXEdit.AttachItem(1);
   m_posYEdit.AttachItem(2);
 
@@ -200,7 +224,9 @@ BOOL DragpointVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
         {
           if ((m_pvsel->ElementAt(i) == nullptr) ||
               (m_pvsel->ElementAt(i)->GetItemType() != eItemDragPoint))
+          {
             continue;
+          }
           DragPoint* const dpoint = (DragPoint*)m_pvsel->ElementAt(i);
           dpoint->DoCommand(ID_POINTMENU_SMOOTH, 0, 0);
         }

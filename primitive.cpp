@@ -17,7 +17,9 @@ void Mesh::Clear()
   m_vertices.clear();
   m_indices.clear();
   for (size_t i = 0; i < m_animationFrames.size(); i++)
+  {
     m_animationFrames[i].m_frameVerts.clear();
+  }
   m_animationFrames.clear();
   middlePoint.x = 0.0f;
   middlePoint.y = 0.0f;
@@ -96,17 +98,29 @@ bool Mesh::LoadWavefrontObj(const string& fname, const bool flipTV, const bool c
     for (size_t i = 0; i < m_vertices.size(); i++)
     {
       if (m_vertices[i].x > maxX)
+      {
         maxX = m_vertices[i].x;
+      }
       if (m_vertices[i].x < minX)
+      {
         minX = m_vertices[i].x;
+      }
       if (m_vertices[i].y > maxY)
+      {
         maxY = m_vertices[i].y;
+      }
       if (m_vertices[i].y < minY)
+      {
         minY = m_vertices[i].y;
+      }
       if (m_vertices[i].z > maxZ)
+      {
         maxZ = m_vertices[i].z;
+      }
       if (m_vertices[i].z < minZ)
+      {
         minZ = m_vertices[i].z;
+      }
     }
     middlePoint.x = (maxX + minX) * 0.5f;
     middlePoint.y = (maxY + minY) * 0.5f;
@@ -115,7 +129,9 @@ bool Mesh::LoadWavefrontObj(const string& fname, const bool flipTV, const bool c
     return true;
   }
   else
+  {
     return false;
+  }
 }
 
 void Mesh::SaveWavefrontObj(const string& fname, const string& description)
@@ -127,7 +143,9 @@ void Mesh::SaveWavefrontObj(const string& fname, const string& description)
 void Mesh::UploadToVB(VertexBuffer* vb, const float frame)
 {
   if (!vb)
+  {
     return;
+  }
 
   if (frame >= 0.f)
   {
@@ -150,6 +168,7 @@ void Mesh::UploadToVB(VertexBuffer* vb, const float frame)
       }
     }
     else
+    {
       for (size_t i = 0; i < m_vertices.size(); i++)
       {
         const VertData& v = m_animationFrames[iFrame].m_frameVerts[i];
@@ -160,6 +179,7 @@ void Mesh::UploadToVB(VertexBuffer* vb, const float frame)
         m_vertices[i].ny = v.ny;
         m_vertices[i].nz = v.nz;
       }
+    }
   }
 
   Vertex3D_NoTex2* buf;
@@ -207,7 +227,9 @@ Primitive::~Primitive()
 void Primitive::CreateRenderGroup(const Collection* const collection)
 {
   if (!collection->m_groupElements)
+  {
     return;
+  }
 
   size_t overall_size = 0;
   vector<Primitive*> prims;
@@ -216,18 +238,24 @@ void Primitive::CreateRenderGroup(const Collection* const collection)
   {
     const ISelect* const pisel = collection->m_visel.ElementAt(i);
     if (pisel->GetItemType() != eItemPrimitive)
+    {
       continue;
+    }
 
     Primitive* const prim = (Primitive*)pisel;
     // only support dynamic mesh primitives for now
     if (!prim->m_d.m_use3DMesh || prim->m_d.m_staticRendering)
+    {
       continue;
+    }
 
     prims.push_back(prim);
   }
 
   if (prims.size() <= 1)
+  {
     return;
+  }
 
   // The first primitive in the group is the base primitive
   // this element gets rendered by rendering all other group primitives
@@ -252,14 +280,18 @@ void Primitive::CreateRenderGroup(const Collection* const collection)
   // all primitives in the collection don't share the same texture and material
   // don't group them and render them as usual
   if (overall_size == prims[0]->m_mesh.NumIndices())
+  {
     return;
+  }
 
   prims[0]->m_d.m_groupdRendering = true;
   vector<unsigned int> indices(overall_size);
 
   // copy with a loop because memcpy seems to do some strange things with the indices
   for (size_t k = 0; k < prims[0]->m_mesh.NumIndices(); k++)
+  {
     indices[k] = prims[0]->m_mesh.m_indices[k];
+  }
 
   renderedPrims.push_back(prims[0]);
   for (size_t i = 1; i < prims.size(); i++)
@@ -270,7 +302,9 @@ void Primitive::CreateRenderGroup(const Collection* const collection)
     {
       const Mesh& m = prims[i]->m_mesh;
       for (size_t k = 0; k < m.NumIndices(); k++)
+      {
         indices[m_numGroupIndices + k] = m_numGroupVertices + m.m_indices[k];
+      }
 
       m_numGroupVertices += (int)m.NumVertices();
       m_numGroupIndices += (int)m.NumIndices();
@@ -278,7 +312,9 @@ void Primitive::CreateRenderGroup(const Collection* const collection)
       renderedPrims.push_back(prims[i]);
     }
     else
+    {
       prims[i]->m_d.m_skipRendering = false;
+    }
   }
 
   SAFE_BUFFER_RELEASE(m_vertexBuffer);
@@ -339,7 +375,9 @@ void Primitive::SetDefaults(bool fromMouseClick)
   // sides
   m_d.m_Sides = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "Sides", 4) : 4;
   if (m_d.m_Sides > Max_Primitive_Sides)
+  {
     m_d.m_Sides = Max_Primitive_Sides;
+  }
 
   // colors
   m_d.m_SideColor = fromMouseClick
@@ -384,11 +422,15 @@ void Primitive::SetDefaults(bool fromMouseClick)
 
   HRESULT hr = LoadValue(strKeyName, "Image", m_d.m_szImage);
   if ((hr != S_OK) && fromMouseClick)
+  {
     m_d.m_szImage.clear();
+  }
 
   hr = LoadValue(strKeyName, "NormalMap", m_d.m_szNormalMap);
   if ((hr != S_OK) && fromMouseClick)
+  {
     m_d.m_szNormalMap.clear();
+  }
 
   m_d.m_threshold =
       fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HitThreshold", 2.0f) : 2.0f;
@@ -494,7 +536,9 @@ void Primitive::GetHitShapes(vector<HitObject*>& pvho)
 
   // playfield can't be a toy
   if (m_d.m_toy && !m_d.m_useAsPlayfield)
+  {
     return;
+  }
 
   RecalculateMatrices();
   TransformVertices(); //!! could also only do this for the optional reduced variant!
@@ -530,10 +574,14 @@ void Primitive::GetHitShapes(vector<HitObject*>& pvho)
         t.v[1] = m_mesh.m_indices[i + 1];
         t.v[2] = m_mesh.m_indices[i + 2];
         if (t.v[0] != t.v[1] && t.v[1] != t.v[2] && t.v[2] != t.v[0])
+        {
           prog_indices[i2++] = t;
+        }
       }
       if (i2 < prog_indices.size())
+      {
         prog_indices.resize(i2);
+      }
     }
     std::vector<unsigned int> prog_map;
     std::vector<unsigned int> prog_perm;
@@ -579,8 +627,10 @@ void Primitive::GetHitShapes(vector<HitObject*>& pvho)
 
     // add collision vertices
     for (size_t i = 0; i < prog_vertices.size(); ++i)
+    {
       SetupHitObject(pvho,
                      new HitPoint(prog_vertices[i].x, prog_vertices[i].y, prog_vertices[i].z));
+    }
   }
 
   //
@@ -612,7 +662,9 @@ void Primitive::GetHitShapes(vector<HitObject*>& pvho)
 
     // add collision vertices
     for (size_t i = 0; i < m_mesh.NumVertices(); ++i)
+    {
       SetupHitObject(pvho, new HitPoint(m_vertices[i]));
+    }
   }
 }
 
@@ -849,7 +901,9 @@ void Primitive::UIRenderPass2(Sur* const psur)
       }
 
       if (!drawVertices.empty())
+      {
         psur->Lines(&drawVertices[0], (int)(drawVertices.size() / 2));
+      }
     }
   }
 
@@ -986,7 +1040,9 @@ void Primitive::RenderBlueprint(Sur* psur, const bool solid)
     }
 
     if (!drawVertices.empty())
+    {
       psur->Lines(&drawVertices[0], (int)(drawVertices.size() / 2));
+    }
   }
 }
 
@@ -998,7 +1054,9 @@ void Primitive::RenderBlueprint(Sur* psur, const bool solid)
 void Primitive::CalculateBuiltinOriginal()
 {
   if (m_d.m_use3DMesh)
+  {
     return;
+  }
 
   // this recalculates the Original Vertices -> should be only called, when sides are altered.
   const float outerRadius = -0.5f / (cosf((float)M_PI / (float)m_d.m_Sides));
@@ -1062,13 +1120,21 @@ void Primitive::CalculateBuiltinOriginal()
 
     // calculate bounds for X and Y
     if (topVert->x < minX)
+    {
       minX = topVert->x;
+    }
     if (topVert->x > maxX)
+    {
       maxX = topVert->x;
+    }
     if (topVert->y < minY)
+    {
       minY = topVert->y;
+    }
     if (topVert->y > maxY)
+    {
       maxY = topVert->y;
+    }
   }
 
   // these have to be replaced for image mapping
@@ -1205,7 +1271,9 @@ void Primitive::UpdateStatusBarInfo()
     m_vpinball->SetStatusBarUnitInfo(tbuf, false);
   }
   else
+  {
     m_vpinball->SetStatusBarUnitInfo(string(), false);
+  }
 }
 
 void Primitive::ExportMesh(ObjLoader& loader)
@@ -1259,7 +1327,9 @@ void Primitive::RenderObject()
         if (m_currentFrame >= (float)m_mesh.m_animationFrames.size())
         {
           if (m_endless)
+          {
             m_currentFrame = 0.0f;
+          }
           else
           {
             m_currentFrame = (float)(m_mesh.m_animationFrames.size() - 1);
@@ -1268,14 +1338,20 @@ void Primitive::RenderObject()
           }
         }
         if (m_speed == 0.f)
+        {
           m_vertexBufferRegenerate = false;
+        }
       }
       else
+      {
         m_vertexBufferRegenerate = false;
+      }
     }
   }
   else
+  {
     m_fullMatrix.SetIdentity();
+  }
 
   RenderDevice* const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
@@ -1291,8 +1367,10 @@ void Primitive::RenderObject()
                                           : RenderDevice::CULL_CCW);
 
     if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
+    {
       pd3dDevice->basicShader->SetDisableLighting(
           vec4(m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f, 0.f));
+    }
 
     Texture* const pin = m_ptable->GetImage(m_d.m_szImage);
     Texture* const nMap = m_ptable->GetImage(m_d.m_szNormalMap);
@@ -1323,8 +1401,10 @@ void Primitive::RenderObject()
       pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
     }
     else
+    {
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture,
                                                  mat->m_bIsMetal);
+    }
 
     // set transform
     g_pplayer->UpdateBasicShaderMatrix(m_fullMatrix);
@@ -1348,13 +1428,17 @@ void Primitive::RenderObject()
     // draw the mesh
     pd3dDevice->basicShader->Begin(0);
     if (m_d.m_groupdRendering)
+    {
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX,
                                          m_vertexBuffer, 0, m_numGroupVertices, m_indexBuffer, 0,
                                          m_numGroupIndices);
+    }
     else
+    {
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX,
                                          m_vertexBuffer, 0, (DWORD)m_mesh.NumVertices(),
                                          m_indexBuffer, 0, (DWORD)m_mesh.NumIndices());
+    }
     pd3dDevice->basicShader->End();
 
     if (m_d.m_backfacesEnabled && mat->m_bOpacityActive)
@@ -1362,13 +1446,17 @@ void Primitive::RenderObject()
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
       pd3dDevice->basicShader->Begin(0);
       if (m_d.m_groupdRendering)
+      {
         pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX,
                                            m_vertexBuffer, 0, m_numGroupVertices, m_indexBuffer, 0,
                                            m_numGroupIndices);
+      }
       else
+      {
         pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX,
                                            m_vertexBuffer, 0, (DWORD)m_mesh.NumVertices(),
                                            m_indexBuffer, 0, (DWORD)m_mesh.NumIndices());
+      }
       pd3dDevice->basicShader->End();
     }
 
@@ -1380,15 +1468,19 @@ void Primitive::RenderObject()
     pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
     //pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE); //!! not necessary anymore
     if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
+    {
       pd3dDevice->basicShader->SetDisableLighting(vec4(0.f, 0.f, 0.f, 0.f));
+    }
   }
   else // m_d.m_useAsPlayfield == true:
   {
     // shader is already fully configured in the playfield rendering case when we arrive here, so we only setup some special primitive params
 
     if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
+    {
       pd3dDevice->basicShader->SetDisableLighting(
           vec4(m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f, 0.f));
+    }
 
     //pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW); // don't mess with the render states when doing playfield rendering
     // set transform
@@ -1402,7 +1494,9 @@ void Primitive::RenderObject()
     g_pplayer->UpdateBasicShaderMatrix();
 
     if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
+    {
       pd3dDevice->basicShader->SetDisableLighting(vec4(0.f, 0.f, 0.f, 0.f));
+    }
   }
 }
 
@@ -1412,19 +1506,27 @@ void Primitive::RenderDynamic()
   TRACE_FUNCTION();
 
   if (m_d.m_staticRendering)
+  {
     return; //don't render static
+  }
   if (m_lockedByLS)
   {
     //don't render in LS when state off
     if (!m_inPlayState)
+    {
       return;
+    }
   }
   else
   {
     if (!m_d.m_visible || m_d.m_skipRendering)
+    {
       return;
+    }
     if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+    {
       return;
+    }
   }
 
   RenderObject();
@@ -1433,7 +1535,9 @@ void Primitive::RenderDynamic()
 void Primitive::RenderSetup()
 {
   if (m_d.m_groupdRendering || m_d.m_skipRendering)
+  {
     return;
+  }
 
   m_currentFrame = -1.f;
 
@@ -1448,18 +1552,26 @@ void Primitive::RenderSetup()
 void Primitive::RenderStatic()
 {
   if (!m_d.m_staticRendering)
+  {
     return; //don't render dynamic
+  }
   if (m_lockedByLS)
   {
     if (!m_inPlayState)
+    {
       return; //don't render in LS when state off
+    }
   }
   else
   {
     if (!m_d.m_visible)
+    {
       return;
+    }
     if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+    {
       return;
+    }
   }
 
   RenderObject();
@@ -1570,7 +1682,9 @@ HRESULT Primitive::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool bac
       mz_uint8* c = (mz_uint8*)malloc(clen);
       if (compress2(c, &clen, (const unsigned char*)m_mesh.m_vertices.data(), slen,
                     MZ_BEST_COMPRESSION) != Z_OK)
+      {
         ShowError("Could not compress primitive vertex data");
+      }
       bw.WriteInt(FID(M3CY), (int)clen);
       bw.WriteStruct(FID(M3CX), c, clen);
       free(c);
@@ -1592,7 +1706,9 @@ HRESULT Primitive::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool bac
       mz_uint8* c = (mz_uint8*)malloc(clen);
       if (compress2(c, &clen, (const unsigned char*)m_mesh.m_indices.data(), slen,
                     MZ_BEST_COMPRESSION) != Z_OK)
+      {
         ShowError("Could not compress primitive index data");
+      }
       bw.WriteInt(FID(M3CJ), (int)clen);
       bw.WriteStruct(FID(M3CI), c, clen);
       free(c);
@@ -1602,7 +1718,9 @@ HRESULT Primitive::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool bac
     {
       std::vector<WORD> tmp(m_mesh.NumIndices());
       for (size_t i = 0; i < m_mesh.NumIndices(); ++i)
+      {
         tmp[i] = m_mesh.m_indices[i];
+      }
 #ifndef COMPRESS_MESHES
       bw.WriteStruct(FID(M3DI), tmp.data(), (int)(sizeof(WORD) * m_mesh.NumIndices()));
 #else
@@ -1613,7 +1731,9 @@ HRESULT Primitive::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool bac
       mz_ulong clen = compressBound(slen);
       mz_uint8* c = (mz_uint8*)malloc(clen);
       if (compress2(c, &clen, (const unsigned char*)tmp.data(), slen, MZ_BEST_COMPRESSION) != Z_OK)
+      {
         ShowError("Could not compress primitive index data");
+      }
       bw.WriteInt(FID(M3CJ), (int)clen);
       bw.WriteStruct(FID(M3CI), c, clen);
       free(c);
@@ -1630,7 +1750,9 @@ HRESULT Primitive::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool bac
         if (compress2(c, &clen,
                       (const unsigned char*)m_mesh.m_animationFrames[i].m_frameVerts.data(), slen,
                       MZ_BEST_COMPRESSION) != Z_OK)
+        {
           ShowError("Could not compress primitive animation vertex data");
+        }
         bw.WriteInt(FID(M3AY), (int)clen);
         bw.WriteStruct(FID(M3AX), c, clen);
         free(c);
@@ -1817,7 +1939,9 @@ bool Primitive::LoadToken(const int id, BiffReader* const pbr)
       if (!m_mesh.m_animationFrames.empty())
       {
         for (size_t i = 0; i < m_mesh.m_animationFrames.size(); i++)
+        {
           m_mesh.m_animationFrames[i].m_frameVerts.clear();
+        }
         m_mesh.m_animationFrames.clear();
       }
       break;
@@ -1869,7 +1993,9 @@ bool Primitive::LoadToken(const int id, BiffReader* const pbr)
       mz_uint8* c = (mz_uint8*)malloc(m_compressedVertices);
       pbr->GetStruct(c, m_compressedVertices);
       if (g_pPrimitiveDecompressThreadPool == nullptr)
+      {
         g_pPrimitiveDecompressThreadPool = new ThreadPool(g_pvp->m_logicalNumberOfProcessors);
+      }
 
       g_pPrimitiveDecompressThreadPool->enqueue(
           [uclen, c, this]
@@ -1895,13 +2021,17 @@ bool Primitive::LoadToken(const int id, BiffReader* const pbr)
     {
       m_mesh.m_indices.resize(m_numIndices);
       if (m_numVertices > 65535)
+      {
         pbr->GetStruct(m_mesh.m_indices.data(), (int)sizeof(unsigned int) * m_numIndices);
+      }
       else
       {
         std::vector<WORD> tmp(m_numIndices);
         pbr->GetStruct(tmp.data(), (int)sizeof(WORD) * m_numIndices);
         for (int i = 0; i < m_numIndices; ++i)
+        {
           m_mesh.m_indices[i] = tmp[i];
+        }
       }
       break;
     }
@@ -1920,7 +2050,9 @@ bool Primitive::LoadToken(const int id, BiffReader* const pbr)
         mz_uint8* c = (mz_uint8*)malloc(m_compressedIndices);
         pbr->GetStruct(c, m_compressedIndices);
         if (g_pPrimitiveDecompressThreadPool == nullptr)
+        {
           g_pPrimitiveDecompressThreadPool = new ThreadPool(g_pvp->m_logicalNumberOfProcessors);
+        }
 
         g_pPrimitiveDecompressThreadPool->enqueue(
             [uclen, c, this]
@@ -1946,7 +2078,9 @@ bool Primitive::LoadToken(const int id, BiffReader* const pbr)
         mz_uint8* c = (mz_uint8*)malloc(m_compressedIndices);
         pbr->GetStruct(c, m_compressedIndices);
         if (g_pPrimitiveDecompressThreadPool == nullptr)
+        {
           g_pPrimitiveDecompressThreadPool = new ThreadPool(g_pvp->m_logicalNumberOfProcessors);
+        }
 
         g_pPrimitiveDecompressThreadPool->enqueue(
             [uclen, c, this]
@@ -1965,7 +2099,9 @@ bool Primitive::LoadToken(const int id, BiffReader* const pbr)
               }
               free(c);
               for (int i = 0; i < m_numIndices; ++i)
+              {
                 m_mesh.m_indices[i] = tmp[i];
+              }
             });
       }
       break;
@@ -2080,13 +2216,17 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                   {
                     CComObject<PinTable>* const pActiveTable = g_pvp->GetActiveTable();
                     if (pActiveTable)
+                    {
                       pActiveTable->AddMaterial(mat);
+                    }
 
                     prim->m_d.m_szMaterial = mat->m_szName;
                   }
                 }
                 else
+                {
                   ShowError("Could not load material file.");
+                }
               }
               if (prim->m_mesh.LoadWavefrontObj(szFileName, flipTV, convertToLeftHanded))
               {
@@ -2146,13 +2286,17 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                 EndDialog(hwndDlg, TRUE);
               }
               else
+              {
                 ShowError("Unable to open file!");
+              }
               break;
             }
             case IDC_BROWSE_BUTTON:
             {
               if (prim == nullptr)
+              {
                 break;
+              }
 
               SetForegroundWindow(hwndDlg);
 
@@ -2161,7 +2305,9 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
 
               HRESULT hr = LoadValue("RecentDir", "ImportDir", szInitialDir);
               if (hr != S_OK)
+              {
                 szInitialDir = "c:\\Visual Pinball\\Tables\\";
+              }
 
               if (g_pvp->OpenFileDialog(szInitialDir, szFileName,
                                         "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0))
@@ -2217,13 +2363,17 @@ bool Primitive::BrowseFor3DMeshFile()
 
   const HRESULT hr = LoadValue("RecentDir", "ImportDir", szInitialDir);
   if (hr != S_OK)
+  {
     szInitialDir = "c:\\Visual Pinball\\Tables\\";
+  }
 
   ofn.lpstrInitialDir = szInitialDir.c_str();
 
   const int ret = GetOpenFileName(&ofn);
   if (ret == 0)
+  {
     return false;
+  }
 
   string filename(ofn.lpstrFile);
   size_t index = filename.find_last_of('\\');
@@ -2358,7 +2508,9 @@ void Primitive::ExportMeshDialog()
   string szInitialDir;
   HRESULT hr = LoadValue("RecentDir", "ImportDir", szInitialDir);
   if (hr != S_OK)
+  {
     szInitialDir = "c:\\Visual Pinball\\Tables\\";
+  }
 
   std::vector<std::string> szFileName;
 
@@ -2381,7 +2533,9 @@ void Primitive::ExportMeshDialog()
 bool Primitive::IsTransparent() const
 {
   if (m_d.m_skipRendering)
+  {
     return false;
+  }
 
   return m_ptable->GetMaterial(m_d.m_szMaterial)->m_bOpacityActive;
 }
@@ -2401,7 +2555,9 @@ STDMETHODIMP Primitive::get_Sides(int* pVal)
 STDMETHODIMP Primitive::put_Sides(int newVal)
 {
   if (newVal > Max_Primitive_Sides)
+  {
     newVal = Max_Primitive_Sides;
+  }
 
   if (m_d.m_Sides != newVal)
   {
@@ -2947,12 +3103,18 @@ STDMETHODIMP Primitive::put_Collidable(VARIANT_BOOL newVal)
 {
   const bool val = VBTOb(newVal);
   if (!g_pplayer)
+  {
     m_d.m_collidable = val;
+  }
   else
   {
     if (!m_vhoCollidable.empty() && m_vhoCollidable[0]->m_enabled != val)
-      for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
+    {
+      for (size_t i = 0; i < m_vhoCollidable.size(); i++)
+      { //!! costly
         m_vhoCollidable[i]->m_enabled = val; //copy to hit-testing on entities composing the object
+      }
+    }
   }
 
   return S_OK;
@@ -3112,11 +3274,15 @@ STDMETHODIMP Primitive::PlayAnim(float startFrame, float speed)
   if (!m_mesh.m_animationFrames.empty())
   {
     if ((size_t)startFrame >= m_mesh.m_animationFrames.size())
+    {
       startFrame = 0.0f;
+    }
     //if (startFrame < 0.0f)
     //   startFrame = -startFrame;
     if (speed < 0.0f)
+    {
       speed = -speed;
+    }
 
     m_vertexBufferRegenerate =
         (m_currentFrame != startFrame) || (m_speed != speed) || !m_doAnimation || m_endless;
@@ -3135,7 +3301,9 @@ STDMETHODIMP Primitive::PlayAnimEndless(float speed)
   if (!m_mesh.m_animationFrames.empty())
   {
     if (speed < 0.0f)
+    {
       speed = -speed;
+    }
 
     m_vertexBufferRegenerate =
         (m_currentFrame != 0.f) || (m_speed != speed) || !m_doAnimation || !m_endless;
@@ -3162,7 +3330,9 @@ STDMETHODIMP Primitive::ContinueAnim(float speed)
   if (m_currentFrame > 0.0f)
   {
     if (speed < 0.0f)
+    {
       speed = -speed;
+    }
 
     m_vertexBufferRegenerate = (m_speed != speed) || !m_doAnimation;
 
@@ -3178,7 +3348,9 @@ STDMETHODIMP Primitive::ShowFrame(float frame)
   if (!m_mesh.m_animationFrames.empty() && frame >= 0.f)
   {
     if ((size_t)frame >= m_mesh.m_animationFrames.size())
+    {
       frame = (float)(m_mesh.m_animationFrames.size() - 1);
+    }
 
     m_vertexBufferRegenerate = (m_currentFrame != frame) || m_doAnimation;
 

@@ -46,7 +46,9 @@ public:
           //EN_KILLFOCUS is called multiple times with different HWND handles.
           //Early out if the handle for this event isn't matching the handle of the last changed edit box
           if (m_lastChangedEdit != (HWND)lParam)
+          {
             break;
+          }
         }
         case CBN_SELCHANGE:
         case BN_CLICKED:
@@ -331,8 +333,12 @@ public:
     combo.GetLBText(combo.GetCurSel(), buf);
     const string s(buf);
     for (size_t i = 0; i < contentList.size(); i++)
+    {
       if (contentList[i] == s)
+      {
         return (int)i;
+      }
+    }
     return -1;
   }
 

@@ -9,9 +9,13 @@ public:
   ~ObjLoader()
   {
     if (m_fHandle != nullptr)
+    {
       fclose(m_fHandle);
+    }
     if (m_matFile != nullptr)
+    {
       fclose(m_matFile);
+    }
     m_verts.clear();
     m_indices.clear();
   }

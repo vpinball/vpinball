@@ -113,7 +113,9 @@ int file_exists(const char* filename)
 {
   FILE* file;
   if (fopen_s(&file, filename, "r") != 0 || !file)
+  {
     return 0;
+  }
   else
   {
     fclose(file);
@@ -127,9 +129,13 @@ void slintf(const char* str, ...)
   static int noconsole;
 
   if (!sbConsole)
+  {
     return;
+  }
   if (noconsole)
+  {
     return;
+  }
   if (!initted)
   {
     initted = 1;
@@ -144,7 +150,9 @@ void slintf(const char* str, ...)
 #define MAX_SCREEN_BUFFER_SIZE 8192
   char buffer[MAX_SCREEN_BUFFER_SIZE];
   if (!str || !str[0])
+  {
     return;
+  }
 
   va_list ap;
 

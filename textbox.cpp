@@ -83,7 +83,9 @@ void Textbox::SetDefaults(bool fromMouseClick)
     HRESULT hr;
     hr = LoadValue("DefaultProps\\TextBox", "FontName", tmp);
     if (hr != S_OK)
+    {
       fd.lpstrName = L"Arial";
+    }
     else
     {
       const int len = (int)tmp.length() + 1;
@@ -102,12 +104,16 @@ void Textbox::SetDefaults(bool fromMouseClick)
 
     hr = LoadValue("DefaultProps\\TextBox", "Text", m_d.m_sztext);
     if (hr != S_OK)
+    {
       m_d.m_sztext.clear();
+    }
   }
 
   OleCreateFontIndirect(&fd, IID_IFont, (void**)&m_pIFont);
   if (free_lpstrName)
+  {
     free(fd.lpstrName);
+  }
 }
 
 void Textbox::WriteRegDefaults()
@@ -196,7 +202,9 @@ STDMETHODIMP Textbox::InterfaceSupportsErrorInfo(REFIID riid)
   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
   {
     if (InlineIsEqualGUID(*arr[i], riid))
+    {
       return S_OK;
+    }
   }
   return S_FALSE;
 }
@@ -233,7 +241,9 @@ void Textbox::GetTimers(vector<HitTimer*>& pvht)
   m_phittimer = pht;
 
   if (m_d.m_tdr.m_TimerEnabled)
+  {
     pvht.push_back(pht);
+  }
 }
 
 void Textbox::GetHitShapes(vector<HitObject*>& pvho)
@@ -265,15 +275,21 @@ void Textbox::RenderDynamic()
                                        nullptr); //!! second part is VP10.0 legacy
 
   if (!m_d.m_visible || (dmd && !g_pplayer->m_texdmd))
+  {
     return;
+  }
 
   RenderDevice* const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice
                                                : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
   if (m_ptable->m_tblMirrorEnabled ^ m_ptable->m_reflectionEnabled)
+  {
     pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+  }
   else
+  {
     pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+  }
 
   pd3dDevice->SetRenderStateDepthBias(0.0f);
   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
@@ -399,7 +415,9 @@ void Textbox::PreRenderText()
   GdiFlush(); // make sure everything is drawn
 
   if (!m_texture)
+  {
     m_texture = new BaseTexture(width, height, BaseTexture::RGBA, m_d.m_transparent);
+  }
 
   // Set alpha for pixels that match transparent color (if transparent enabled), otherwise set to opaque
   D3DCOLOR* __restrict bitsd = (D3DCOLOR*)bits;
@@ -410,9 +428,13 @@ void Textbox::PreRenderText()
     {
       const D3DCOLOR src = *bitsd;
       if (m_d.m_transparent && ((src & 0xFFFFFFu) == m_d.m_backcolor))
+      {
         *dest = 0x00000000; // set to black & alpha full transparent
+      }
       else
+      {
         *dest = src | 0xFF000000u;
+      }
     }
     dest += m_texture->pitch() / 4 - m_texture->width();
   }
@@ -490,7 +512,9 @@ STDMETHODIMP Textbox::put_Text(BSTR newVal)
   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXSTRING, nullptr, nullptr);
   m_d.m_sztext = buf;
   if (g_pplayer)
+  {
     PreRenderText();
+  }
 
   return S_OK;
 }

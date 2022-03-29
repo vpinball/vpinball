@@ -74,7 +74,9 @@ void SearchSelectDialog::Update()
   index = ListView_InsertColumn(m_hElementList, 12, &lvc);
 
   if (m_hElementList != nullptr)
+  {
     ListView_DeleteAllItems(m_hElementList);
+  }
 
   int idx = 0;
   for (int i = 0; i < m_curTable->m_vcollection.size(); i++)
@@ -163,7 +165,9 @@ void SearchSelectDialog::SelectElement()
         {
           ISelect* const pisel = pcol->m_visel.ElementAt(0);
           if (pisel)
+          {
             m_curTable->AddMultiSel(pisel, false, true, false);
+          }
         }
       }
       else
@@ -171,7 +175,9 @@ void SearchSelectDialog::SelectElement()
         IScriptable* const pscript = (IScriptable*)lv.lParam;
         ISelect* const pisel = pscript->GetISelect();
         if (pisel)
+        {
           m_curTable->AddMultiSel(pisel, true, true, false);
+        }
       }
     }
   }
@@ -180,7 +186,9 @@ void SearchSelectDialog::SelectElement()
 void SearchSelectDialog::SortItems(const int columnNumber)
 {
   if (m_switchSortOrder)
+  {
     m_columnSortOrder = !m_columnSortOrder;
+  }
 
   SortData.hwndList = m_hElementList;
   SortData.subItemIndex = m_switchSortOrder ? columnNumber : m_lastSortColumn;
@@ -264,7 +272,9 @@ void SearchSelectDialog::AddSearchItemToList(IEditable* const piedit, int idx)
 
   const IScriptable* const piscript = piedit->GetScriptable();
   if (piscript)
+  {
     layerBuf = piscript->GetISelect()->m_layerName;
+  }
 
   ListView_SetItemText(m_hElementList, idx, 2, (LPSTR)layerBuf.c_str());
 
@@ -278,14 +288,20 @@ void SearchSelectDialog::AddSearchItemToList(IEditable* const piedit, int idx)
     {
       const Surface* const sur = (Surface*)piedit;
       if (IsValidString(sur->m_d.m_szImage))
+      {
         firstImage = sur->m_d.m_szImage;
+      }
       textBuf = firstImage;
       if (IsValidString(sur->m_d.m_szSideImage))
+      {
         secondImage = sur->m_d.m_szSideImage;
+      }
       if (!secondImage.empty())
       {
         if (!firstImage.empty())
+        {
           textBuf += "--";
+        }
         textBuf += secondImage;
       }
       ListView_SetItemText(m_hElementList, idx, 1, "Wall");
@@ -293,31 +309,43 @@ void SearchSelectDialog::AddSearchItemToList(IEditable* const piedit, int idx)
 
       firstImage.clear();
       if (IsValidString(sur->m_d.m_szTopMaterial))
+      {
         firstImage = sur->m_d.m_szTopMaterial;
+      }
       textBuf = firstImage;
       secondImage.clear();
       if (IsValidString(sur->m_d.m_szSideMaterial))
+      {
         secondImage = sur->m_d.m_szSideMaterial;
+      }
       std::string thirdImage;
       if (IsValidString(sur->m_d.m_szSlingShotMaterial))
+      {
         thirdImage = sur->m_d.m_szSlingShotMaterial;
+      }
       if (!secondImage.empty())
       {
         if (!firstImage.empty())
+        {
           textBuf += "--";
+        }
         textBuf += secondImage;
       }
       if (!thirdImage.empty())
       {
         if (!firstImage.empty() || !secondImage.empty())
+        {
           textBuf += "--";
+        }
         textBuf += thirdImage;
       }
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
 
       textBuf.clear();
       if (IsValidString(sur->m_d.m_szPhysicsMaterial))
+      {
         textBuf = sur->m_d.m_szPhysicsMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
 
       ListView_SetItemText(m_hElementList, idx, 6, "N/A"); //!!
@@ -337,18 +365,24 @@ void SearchSelectDialog::AddSearchItemToList(IEditable* const piedit, int idx)
     {
       const Ramp* const ramp = (Ramp*)piedit;
       if (IsValidString(ramp->m_d.m_szImage))
+      {
         textBuf = ramp->m_d.m_szImage;
+      }
       ListView_SetItemText(m_hElementList, idx, 1, "Ramp");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
 
       textBuf.clear();
       if (IsValidString(ramp->m_d.m_szMaterial))
+      {
         textBuf = ramp->m_d.m_szMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
 
       textBuf.clear();
       if (IsValidString(ramp->m_d.m_szPhysicsMaterial))
+      {
         textBuf = ramp->m_d.m_szPhysicsMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
 
       ListView_SetItemText(m_hElementList, idx, 6, "N/A"); //!!
@@ -374,14 +408,20 @@ void SearchSelectDialog::AddSearchItemToList(IEditable* const piedit, int idx)
     {
       const Flasher* const flasher = (Flasher*)piedit;
       if (IsValidString(flasher->m_d.m_szImageA))
+      {
         firstImage = flasher->m_d.m_szImageA;
+      }
       if (IsValidString(flasher->m_d.m_szImageB))
+      {
         secondImage = flasher->m_d.m_szImageB;
+      }
       textBuf = firstImage;
       if (!secondImage.empty())
       {
         if (!firstImage.empty())
+        {
           textBuf += "--";
+        }
         textBuf += secondImage;
       }
       ListView_SetItemText(m_hElementList, idx, 1, "Flasher");
@@ -409,18 +449,24 @@ void SearchSelectDialog::AddSearchItemToList(IEditable* const piedit, int idx)
     {
       const Rubber* const rubber = (Rubber*)piedit;
       if (IsValidString(rubber->m_d.m_szImage))
+      {
         textBuf = rubber->m_d.m_szImage;
+      }
       ListView_SetItemText(m_hElementList, idx, 1, "Rubber");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
 
       textBuf.clear();
       if (IsValidString(rubber->m_d.m_szMaterial))
+      {
         textBuf = rubber->m_d.m_szMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
 
       textBuf.clear();
       if (IsValidString(rubber->m_d.m_szPhysicsMaterial))
+      {
         textBuf = rubber->m_d.m_szPhysicsMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
 
       ListView_SetItemText(m_hElementList, idx, 6, "N/A"); //!!
@@ -441,18 +487,24 @@ void SearchSelectDialog::AddSearchItemToList(IEditable* const piedit, int idx)
     {
       const Spinner* const spinner = (Spinner*)piedit;
       if (IsValidString(spinner->m_d.m_szImage))
+      {
         textBuf = spinner->m_d.m_szImage;
+      }
       ListView_SetItemText(m_hElementList, idx, 1, "Spinner");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
 
       textBuf.clear();
       if (IsValidString(spinner->m_d.m_szMaterial))
+      {
         textBuf = spinner->m_d.m_szMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
 
       textBuf.clear();
       if (IsValidString(spinner->m_d.m_szPhysicsMaterial))
+      {
         textBuf = spinner->m_d.m_szPhysicsMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
 
       ListView_SetItemText(m_hElementList, idx, 6, "N/A"); //!!
@@ -476,12 +528,16 @@ void SearchSelectDialog::AddSearchItemToList(IEditable* const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 3, "");
 
       if (IsValidString(kicker->m_d.m_szMaterial))
+      {
         textBuf = kicker->m_d.m_szMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
 
       textBuf.clear();
       if (IsValidString(kicker->m_d.m_szPhysicsMaterial))
+      {
         textBuf = kicker->m_d.m_szPhysicsMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
 
       ListView_SetItemText(m_hElementList, idx, 6, "N/A"); //!!
@@ -502,7 +558,9 @@ void SearchSelectDialog::AddSearchItemToList(IEditable* const piedit, int idx)
     {
       const Light* const light = (Light*)piedit;
       if (IsValidString(light->m_d.m_szImage))
+      {
         textBuf = light->m_d.m_szImage;
+      }
       ListView_SetItemText(m_hElementList, idx, 1, "Light");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
       ListView_SetItemText(m_hElementList, idx, 4, "");
@@ -527,32 +585,46 @@ void SearchSelectDialog::AddSearchItemToList(IEditable* const piedit, int idx)
     {
       const Bumper* const bumper = (Bumper*)piedit;
       if (IsValidString(bumper->m_d.m_szBaseMaterial))
+      {
         firstImage = bumper->m_d.m_szBaseMaterial;
+      }
       textBuf = firstImage;
       if (IsValidString(bumper->m_d.m_szCapMaterial))
+      {
         secondImage = bumper->m_d.m_szCapMaterial;
+      }
       std::string thirdImage;
       if (IsValidString(bumper->m_d.m_szSkirtMaterial))
+      {
         thirdImage = bumper->m_d.m_szSkirtMaterial;
+      }
       std::string fourthImage;
       if (IsValidString(bumper->m_d.m_szRingMaterial))
+      {
         fourthImage = bumper->m_d.m_szRingMaterial;
+      }
       if (!secondImage.empty())
       {
         if (!firstImage.empty())
+        {
           textBuf += "--";
+        }
         textBuf += secondImage;
       }
       if (!thirdImage.empty())
       {
         if (!firstImage.empty() || !secondImage.empty())
+        {
           textBuf += "--";
+        }
         textBuf += thirdImage;
       }
       if (!fourthImage.empty())
       {
         if (!firstImage.empty() || !secondImage.empty() || !thirdImage.empty())
+        {
           textBuf += "--";
+        }
         textBuf += fourthImage;
       }
       ListView_SetItemText(m_hElementList, idx, 1, "Bumper");
@@ -561,7 +633,9 @@ void SearchSelectDialog::AddSearchItemToList(IEditable* const piedit, int idx)
 
       textBuf.clear();
       if (IsValidString(bumper->m_d.m_szPhysicsMaterial))
+      {
         textBuf = bumper->m_d.m_szPhysicsMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
 
       ListView_SetItemText(m_hElementList, idx, 6, "N/A"); //!!
@@ -582,26 +656,36 @@ void SearchSelectDialog::AddSearchItemToList(IEditable* const piedit, int idx)
     {
       const Flipper* const flipper = (Flipper*)piedit;
       if (IsValidString(flipper->m_d.m_szImage))
+      {
         textBuf = flipper->m_d.m_szImage;
+      }
       ListView_SetItemText(m_hElementList, idx, 1, "Flipper");
       ListView_SetItemText(m_hElementList, idx, 3, "");
 
       if (IsValidString(flipper->m_d.m_szMaterial))
+      {
         firstImage = flipper->m_d.m_szMaterial;
+      }
       textBuf = firstImage;
       if (IsValidString(flipper->m_d.m_szRubberMaterial))
+      {
         secondImage = flipper->m_d.m_szRubberMaterial;
+      }
       if (!secondImage.empty())
       {
         if (!firstImage.empty())
+        {
           textBuf += "--";
+        }
         textBuf += secondImage;
       }
       ListView_SetItemText(m_hElementList, idx, 4, "");
 
       textBuf.clear();
       if (IsValidString(flipper->m_d.m_szPhysicsMaterial))
+      {
         textBuf = flipper->m_d.m_szPhysicsMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
 
       ListView_SetItemText(m_hElementList, idx, 6, "N/A"); //!!
@@ -625,12 +709,16 @@ void SearchSelectDialog::AddSearchItemToList(IEditable* const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 3, "");
 
       if (IsValidString(gate->m_d.m_szMaterial))
+      {
         textBuf = gate->m_d.m_szMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
 
       textBuf.clear();
       if (IsValidString(gate->m_d.m_szPhysicsMaterial))
+      {
         textBuf = gate->m_d.m_szPhysicsMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
 
       ListView_SetItemText(m_hElementList, idx, 6, "N/A"); //!!
@@ -654,12 +742,16 @@ void SearchSelectDialog::AddSearchItemToList(IEditable* const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 3, "");
 
       if (IsValidString(trigger->m_d.m_szMaterial))
+      {
         textBuf = trigger->m_d.m_szMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
 
       textBuf.clear();
       if (IsValidString(trigger->m_d.m_szPhysicsMaterial))
+      {
         textBuf = trigger->m_d.m_szPhysicsMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
 
       ListView_SetItemText(m_hElementList, idx, 6, "N/A"); //!!
@@ -696,18 +788,24 @@ void SearchSelectDialog::AddSearchItemToList(IEditable* const piedit, int idx)
     {
       const Plunger* const plunger = (Plunger*)piedit;
       if (IsValidString(plunger->m_d.m_szImage))
+      {
         textBuf = plunger->m_d.m_szImage;
+      }
       ListView_SetItemText(m_hElementList, idx, 1, "Plunger");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
 
       textBuf.clear();
       if (IsValidString(plunger->m_d.m_szMaterial))
+      {
         textBuf = plunger->m_d.m_szMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
 
       textBuf.clear();
       if (IsValidString(plunger->m_d.m_szPhysicsMaterial))
+      {
         textBuf = plunger->m_d.m_szPhysicsMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
 
       ListView_SetItemText(m_hElementList, idx, 6, "N/A"); //!!
@@ -728,7 +826,9 @@ void SearchSelectDialog::AddSearchItemToList(IEditable* const piedit, int idx)
     {
       const DispReel* const dispReel = (DispReel*)piedit;
       if (IsValidString(dispReel->m_d.m_szImage))
+      {
         textBuf = dispReel->m_d.m_szImage;
+      }
 
       ListView_SetItemText(m_hElementList, idx, 1, "EMReel");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
@@ -740,18 +840,24 @@ void SearchSelectDialog::AddSearchItemToList(IEditable* const piedit, int idx)
     {
       const Primitive* const primitive = (Primitive*)piedit;
       if (IsValidString(primitive->m_d.m_szImage))
+      {
         textBuf = primitive->m_d.m_szImage;
+      }
       ListView_SetItemText(m_hElementList, idx, 1, "Primitive");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
 
       textBuf.clear();
       if (IsValidString(primitive->m_d.m_szMaterial))
+      {
         textBuf = primitive->m_d.m_szMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
 
       textBuf.clear();
       if (IsValidString(primitive->m_d.m_szPhysicsMaterial))
+      {
         textBuf = primitive->m_d.m_szPhysicsMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
 
       ListView_SetItemText(m_hElementList, idx, 6, "N/A"); //!!
@@ -777,18 +883,24 @@ void SearchSelectDialog::AddSearchItemToList(IEditable* const piedit, int idx)
     {
       const HitTarget* const hitTarget = (HitTarget*)piedit;
       if (IsValidString(hitTarget->m_d.m_szImage))
+      {
         textBuf = hitTarget->m_d.m_szImage;
+      }
       ListView_SetItemText(m_hElementList, idx, 1, "Target");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
 
       textBuf.clear();
       if (IsValidString(hitTarget->m_d.m_szMaterial))
+      {
         textBuf = hitTarget->m_d.m_szMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
 
       textBuf.clear();
       if (IsValidString(hitTarget->m_d.m_szPhysicsMaterial))
+      {
         textBuf = hitTarget->m_d.m_szPhysicsMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
 
       ListView_SetItemText(m_hElementList, idx, 6, "N/A"); //!!
@@ -811,18 +923,24 @@ void SearchSelectDialog::AddSearchItemToList(IEditable* const piedit, int idx)
     {
       const Decal* const decal = (Decal*)piedit;
       if (IsValidString(decal->m_d.m_szImage))
+      {
         textBuf = decal->m_d.m_szImage;
+      }
       ListView_SetItemText(m_hElementList, idx, 1, "Decal");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
 
       textBuf.clear();
       if (IsValidString(decal->m_d.m_szMaterial))
+      {
         textBuf = decal->m_d.m_szMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
 
       textBuf.clear();
       if (IsValidString(decal->m_d.m_szPhysicsMaterial))
+      {
         textBuf = decal->m_d.m_szPhysicsMaterial;
+      }
       ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
 
       break;

@@ -18,7 +18,9 @@ float sz2f(const string& sz)
     VariantClear(&var);
   }
   else
+  {
     result = 0.0f; //!! use inf or NaN instead?
+  }
 
   delete[] wzT;
 
@@ -38,7 +40,9 @@ void f2sz(const float f, string& sz)
     VariantClear(&var);
   }
   else
+  {
     sz = "0.0"; //!! must this be somehow localized, i.e. . vs ,
+  }
 }
 
 void WideStrNCopy(const WCHAR* wzin, WCHAR* wzout, const DWORD wzoutMaxLen)
@@ -69,25 +73,37 @@ int WideStrCmp(const WCHAR* wz1, const WCHAR* wz2)
     if (*wz1 != *wz2)
     {
       if (*wz1 > *wz2)
+      {
         return 1; // If *wz2 == 0, then wz1 will return as higher, which is correct
+      }
       else if (*wz1 < *wz2)
+      {
         return -1;
+      }
     }
     wz1++;
     wz2++;
   }
   if (*wz2 != L'\0')
+  {
     return -1; // wz2 is longer - and therefore higher
+  }
   return 0;
 }
 
 int WzSzStrCmp(const WCHAR* wz1, const char* sz2)
 {
   while (*wz1 != L'\0')
+  {
     if (*wz1++ != *sz2++)
+    {
       return 1;
+    }
+  }
   if (*sz2 != L'\0')
+  {
     return 1;
+  }
   return 0;
 }
 
@@ -98,28 +114,40 @@ int WzSzStrNCmp(const WCHAR* wz1, const char* sz2, const DWORD maxComparisonLen)
   while (*wz1 != L'\0' && i < maxComparisonLen)
   {
     if (*wz1++ != *sz2++)
+    {
       return 1;
+    }
     i++;
   }
   if (*sz2 != L'\0')
+  {
     return 1;
+  }
   return 0;
 }
 
 LocalString::LocalString(const int resid)
 {
   if (resid > 0)
+  {
     /*const int cchar =*/LoadString(g_pvp->theInstance, resid, m_szbuffer, sizeof(m_szbuffer));
+  }
   else
+  {
     m_szbuffer[0] = '\0';
+  }
 }
 
 LocalStringW::LocalStringW(const int resid)
 {
   if (resid > 0)
+  {
     LoadStringW(g_pvp->theInstance, resid, m_szbuffer, sizeof(m_szbuffer) / sizeof(WCHAR));
+  }
   else
+  {
     m_szbuffer[0] = L'\0';
+  }
 }
 
 WCHAR* MakeWide(const string& sz)
@@ -181,7 +209,9 @@ char* replace(const char* const original, const char* const pattern, const char*
 
   // find how many times the pattern occurs in the original string
   for (const char* oriptr = original; (patloc = strstr(oriptr, pattern)); oriptr = patloc + patlen)
+  {
     patcnt++;
+  }
 
   {
     // allocate memory for the new string

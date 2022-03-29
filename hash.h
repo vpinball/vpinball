@@ -8,7 +8,9 @@ inline size_t StringHash(const std::string& str)
 
   const size_t l = str.length();
   for (size_t i = 0; i < l; ++i)
+  {
     hash = ((hash << 5) + hash) + tolower(str[i]); /* hash * 33 + str[i] */
+  }
 
   return hash;
 }
@@ -20,7 +22,9 @@ size_t FloatHash(const float a[T])
   const unsigned char* in = reinterpret_cast<const unsigned char*>(a);
   unsigned int ret = 2654435761u;
   for (size_t i = 0; i < (T * sizeof(float)); ++i)
+  {
     ret = (ret * 2654435761u) ^ *in++;
+  }
 
   return ret;
 }

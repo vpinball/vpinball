@@ -77,7 +77,9 @@ Pin3D::~Pin3D()
   //SAFE_BUFFER_RELEASE(RenderDevice::m_quadDynVertexBuffer);
 
   if (m_pd3dPrimaryDevice != m_pd3dSecondaryDevice)
+  {
     delete m_pd3dSecondaryDevice;
+  }
   delete m_pd3dPrimaryDevice;
   m_pd3dPrimaryDevice = nullptr;
   m_pd3dSecondaryDevice = nullptr;
@@ -150,12 +152,15 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap,
     const float sigma = (scale_factor - 1.f) * 0.25f;
     float* const __restrict weights = (float*)malloc((xs * 2 + 1) * 4);
     for (int x = 0; x < (xs * 2 + 1); ++x)
+    {
       weights[x] = (1.f / sqrtf((float)(2. * M_PI) * sigma * sigma)) *
                    expf(-(float)((x - xs) * (x - xs)) / (2.f * sigma * sigma));
+    }
 
     // x-pass:
 
     for (int y = 0; y < (int)env_yres; ++y)
+    {
       for (int x = 0; x < (int)env_xres; ++x)
       {
         float sum[3] = {0.f, 0.f, 0.f};
@@ -165,9 +170,13 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap,
         {
           int xt = xt2 + (x - xs);
           if (xt < 0)
+          {
             xt += env_xres;
+          }
           else if (xt >= (int)env_xres)
+          {
             xt -= env_xres;
+          }
           const float w = weights[xt2];
           const unsigned int offs = xt * 3 + yoffs;
           sum[0] += ((float*)envmap)[offs] * w;
@@ -182,10 +191,12 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap,
         ((float*)envmap2)[offs + 1] = sum[1] * inv_sum;
         ((float*)envmap2)[offs + 2] = sum[2] * inv_sum;
       }
+    }
 
     // y-pass:
 
     for (int y = 0; y < (int)env_yres; ++y)
+    {
       for (int x = 0; x < (int)env_xres; ++x)
       {
         float sum[3] = {0.f, 0.f, 0.f};
@@ -207,6 +218,7 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap,
         ((float*)envmap3)[offs + 1] = sum[1] * inv_sum;
         ((float*)envmap3)[offs + 2] = sum[2] * inv_sum;
       }
+    }
 
     envmap = envmap3;
     free((void*)envmap2);
@@ -439,7 +451,9 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap,
 
 #ifdef PREFILTER_ENVMAP_DIFFUSE
   if (isHDR && (env_xres > 64))
+  {
     free((void*)envmap);
+  }
 #endif
 
   g_pvp->ProfileLog("EnvmapPrecalc End");
@@ -462,8 +476,12 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen,
   int adapter = 0;
   for (std::vector<DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end();
        ++dispConf)
+  {
     if (display == dispConf->display)
+    {
       adapter = dispConf->adapter;
+    }
+  }
 
   m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->GetHwnd(), m_viewPort.Width, m_viewPort.Height,
                                          fullScreen, colordepth, VSync, useAA, stereo3D, FXAA,
@@ -479,7 +497,9 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen,
   }
 
   if (!m_pd3dPrimaryDevice->LoadShaders())
+  {
     return E_FAIL;
+  }
 
   const bool forceAniso = LoadValueBoolWithDefault("Player", "ForceAnisotropicFiltering", true);
   m_pd3dPrimaryDevice->ForceAnisotropicFiltering(forceAniso);
@@ -496,12 +516,16 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen,
 
   m_pddsStatic = m_pd3dPrimaryDevice->DuplicateRenderTarget(m_pddsBackBuffer);
   if (!m_pddsStatic)
+  {
     return E_FAIL;
+  }
 
   m_pddsZBuffer = m_pd3dPrimaryDevice->AttachZBufferTo(m_pddsBackBuffer);
   m_pddsStaticZ = m_pd3dPrimaryDevice->AttachZBufferTo(m_pddsStatic);
   if (!m_pddsZBuffer || !m_pddsStaticZ)
+  {
     return E_FAIL;
+  }
 
   if (m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && (stereo3D || useAO || ss_refl))
   {
@@ -563,7 +587,9 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen,
 
   if (FAILED(InitPrimary(fullScreen, colordepth, refreshrate, VSync, useAA, stereo3D, FXAA, sharpen,
                          useAO, ss_refl)))
+  {
     return E_FAIL;
+  }
 
   m_pd3dSecondaryDevice = m_pd3dPrimaryDevice; //!! for now, there is no secondary device :/
 
@@ -692,9 +718,13 @@ void Pin3D::SetRenderTarget(RenderDevice* const pd3dDevice,
                             void* pddsZ) const
 {
   if (!pd3dDevice->m_useNvidiaApi && pd3dDevice->m_INTZ_support)
+  {
     SetRenderTarget(pd3dDevice, pddsSurface, (D3DTexture*)pddsZ);
+  }
   else
+  {
     SetRenderTarget(pd3dDevice, pddsSurface, (RenderTarget*)pddsZ);
+  }
 }
 
 void Pin3D::SetPrimaryRenderTarget(RenderTarget* pddsSurface, void* pddsZ) const
@@ -784,7 +814,9 @@ void Pin3D::DrawBackground()
     m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
 
     if (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->m_ptable->m_reflectionEnabled)
+    {
       m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+    }
 
     m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
 
@@ -793,7 +825,9 @@ void Pin3D::DrawBackground()
         ptable->m_ImageBackdropNightDay ? sqrtf(g_pplayer->m_globalEmissionScale) : 1.0f, true);
 
     if (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->m_ptable->m_reflectionEnabled)
+    {
       m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+    }
 
     m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
     m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
@@ -910,7 +944,9 @@ void Pin3D::InitLayoutFS()
 
   std::vector<Vertex3Ds> vvertex3D;
   for (size_t i = 0; i < g_pplayer->m_ptable->m_vedit.size(); ++i)
+  {
     g_pplayer->m_ptable->m_vedit[i]->GetBoundingVertices(vvertex3D);
+  }
 
   m_proj.m_rcviewport.left = 0;
   m_proj.m_rcviewport.top = 0;
@@ -1030,7 +1066,9 @@ void Pin3D::InitLayout(const bool FSS_mode, const float xpixoff, const float ypi
 
   std::vector<Vertex3Ds> vvertex3D;
   for (size_t i = 0; i < g_pplayer->m_ptable->m_vedit.size(); ++i)
+  {
     g_pplayer->m_ptable->m_vedit[i]->GetBoundingVertices(vvertex3D);
+  }
 
   m_proj.m_rcviewport.left = 0;
   m_proj.m_rcviewport.top = 0;
@@ -1064,15 +1102,25 @@ void Pin3D::InitLayout(const bool FSS_mode, const float xpixoff, const float ypi
       //inc += 0.1f;       // 0.05-best, 0.1-good, 0.2-bad > (0.2 terrible original)
       //camy -= 30.0f;     // 70.0f original // 100
       if (aspect > 1.6f)
+      {
         camz -= 1170.0f; // 700
+      }
       else if (aspect > 1.5f)
+      {
         camz -= 1070.0f; // 650
+      }
       else if (aspect > 1.4f)
+      {
         camz -= 900.0f; // 580
+      }
       else if (aspect > 1.3f)
+      {
         camz -= 820.0f; // 500 // 600
+      }
       else
+      {
         camz -= 800.0f; // 480
+      }
     }
     else
     {
@@ -1125,9 +1173,11 @@ void Pin3D::InitLayout(const bool FSS_mode, const float xpixoff, const float ypi
                        g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set] -
                            m_proj.m_vertexcamera.y + camy,
                        -m_proj.m_vertexcamera.z + camz);
-  if (g_pplayer->m_cameraMode && (g_pplayer->m_ptable->m_BG_current_set == 0 ||
-                                  g_pplayer->m_ptable->m_BG_current_set == 2)) // DT & FSS
+  if (g_pplayer->m_cameraMode &&
+      (g_pplayer->m_ptable->m_BG_current_set == 0 || g_pplayer->m_ptable->m_BG_current_set == 2))
+  { // DT & FSS
     m_proj.RotateView(inclination, 0, rotation);
+  }
   else
   {
     m_proj.RotateView(0, 0, rotation);
@@ -1138,9 +1188,10 @@ void Pin3D::InitLayout(const bool FSS_mode, const float xpixoff, const float ypi
 
   // recompute near and far plane (workaround for VP9 FitCameraToVertices bugs)
   m_proj.ComputeNearFarPlane(vvertex3D);
-  if (fabsf(inclination) <
-      0.0075f) //!! magic threshold, otherwise kicker holes are missing for inclination ~0
+  if (fabsf(inclination) < 0.0075f)
+  { //!! magic threshold, otherwise kicker holes are missing for inclination ~0
     m_proj.m_rzfar += 10.f;
+  }
   Matrix3D proj =
       Matrix3D::MatrixPerspectiveFovLH(ANGTORAD(FOV), aspect, m_proj.m_rznear, m_proj.m_rzfar);
   memcpy(m_proj.m_matProj.m, proj.m, sizeof(float) * 4 * 4);
@@ -1181,6 +1232,7 @@ void Pin3D::InitPlayfieldGraphics()
 
     unsigned int offs = 0;
     for (unsigned int y = 0; y <= 1; ++y)
+    {
       for (unsigned int x = 0; x <= 1; ++x, ++offs)
       {
         buffer[offs].x = (x & 1) ? g_pplayer->m_ptable->m_right : g_pplayer->m_ptable->m_left;
@@ -1194,11 +1246,14 @@ void Pin3D::InitPlayfieldGraphics()
         buffer[offs].ny = 0.f;
         buffer[offs].nz = 1.f;
       }
+    }
 
     m_tableVBuffer->unlock();
   }
   else
+  {
     g_pplayer->m_meshAsPlayfield = true;
+  }
 }
 
 void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
@@ -1226,9 +1281,11 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
       m_pd3dPrimaryDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue *
                                                           (float)(1.0 / 255.0));
     }
-    else // No image by that name
+    else
+    { // No image by that name
       m_pd3dPrimaryDevice->basicShader->SetTechnique(
           SHADER_TECHNIQUE_basic_depth_only_without_texture);
+    }
   }
   else
   {
@@ -1243,9 +1300,11 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
       m_pd3dPrimaryDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue *
                                                           (float)(1.0 / 255.0));
     }
-    else // No image by that name
+    else
+    { // No image by that name
       m_pd3dPrimaryDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture,
                                                           mat->m_bIsMetal);
+    }
   }
 
   if (!g_pplayer->m_meshAsPlayfield)
@@ -1273,8 +1332,10 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
   }
 
   if (depth_only)
+  {
     m_pd3dPrimaryDevice->SetRenderState(RenderDevice::COLORWRITEENABLE,
                                         0x0000000Fu); // reenable color writes with default value
+  }
 
   // Apparently, releasing the vertex buffer here immediately can cause rendering glitches in
   // later rendering steps, so we keep it around for now.
@@ -1293,10 +1354,14 @@ void Pin3D::EnableAlphaBlend(const bool additiveBlending,
   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::SRC_ALPHA);
   if (set_dest_blend)
+  {
     m_pd3dPrimaryDevice->SetRenderState(
         RenderDevice::DESTBLEND, additiveBlending ? RenderDevice::ONE : RenderDevice::INVSRC_ALPHA);
+  }
   if (set_blend_op)
+  {
     m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
+  }
 }
 
 void Pin3D::Flip(const bool vsync)
@@ -1512,7 +1577,9 @@ void PinProjection::ComputeNearFarPlane(const std::vector<Vertex3Ds>& verts)
 
   // beware the div-0 problem
   if (m_rznear < 0.001f)
+  {
     m_rznear = 0.001f;
+  }
   //m_rznear *= 0.89f; //!! magic, influences also stereo3D code
   m_rzfar *= 1.01f;
 }
@@ -1717,6 +1784,8 @@ void Pin3D::UpdateBAMHeadTracking()
 {
   // If BAM tracker is not running, we will not do anything.
   if (BAM.IsBAMTrackerPresent())
+  {
     CreateProjectionAndViewMatrix(&m_proj.m_matProj[0]._11, &m_proj.m_matView._11);
+  }
 }
 #endif

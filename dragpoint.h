@@ -84,11 +84,15 @@ protected:
 
       int iprev = (pdp1->m_smooth ? i - 1 : i);
       if (iprev < 0)
+      {
         iprev = (loop ? cpoint - 1 : 0);
+      }
 
       int inext = (pdp2->m_smooth ? i + 2 : i + 1);
       if (inext >= cpoint)
+      {
         inext = (loop ? inext - cpoint : cpoint - 1);
+      }
 
       const CComObject<DragPoint>* const pdp0 = m_vdpoint[iprev];
       const CComObject<DragPoint>* const pdp3 = m_vdpoint[inext];

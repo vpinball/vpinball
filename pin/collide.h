@@ -60,9 +60,13 @@ public:
 inline float ElasticityWithFalloff(const float elasticity, const float falloff, const float vel)
 {
   if (falloff > 0.f)
+  {
     return elasticity / (1.0f + falloff * fabsf(vel) * (float)(1.0 / 18.53));
+  }
   else
+  {
     return elasticity;
+  }
 }
 
 // Ported at: VisualPinball.Engine/Physics/CollisionEvent.cs

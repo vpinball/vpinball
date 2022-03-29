@@ -10,7 +10,9 @@ bool SolveQuadraticEq(const float a, const float b, const float c, float& sol1, 
   float discr = b * b - 4.0f * a * c;
 
   if (discr < 0.f)
+  {
     return false;
+  }
 
   discr = sqrtf(discr);
 

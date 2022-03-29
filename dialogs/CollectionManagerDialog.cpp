@@ -71,7 +71,9 @@ void CollectionManagerDialog::EditCollection()
 
     CollectionDialog* colDlg = new CollectionDialog(cds);
     if (colDlg->DoModal() >= 0)
+    {
       pt->SetNonUndoableDirty(eSaveDirty);
+    }
 
     char szT[sizeof(pcol->m_wzName) / sizeof(pcol->m_wzName[0])];
     WideCharToMultiByteNull(CP_ACP, 0, pcol->m_wzName, -1, szT, sizeof(szT), nullptr, nullptr);
@@ -95,16 +97,24 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
         {
           const int columnNumber = lpnmListView->iSubItem;
           if (m_columnSortOrder == 1)
+          {
             m_columnSortOrder = 0;
+          }
           else
+          {
             m_columnSortOrder = 1;
+          }
           SortData.hwndList = hListHwnd;
           SortData.subItemIndex = columnNumber;
           SortData.sortUpDown = m_columnSortOrder;
           if (columnNumber == 0)
+          {
             ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
+          }
           else
+          {
             ListView_SortItems(SortData.hwndList, MyCompProcIntValues, &SortData);
+          }
           const int count = ListView_GetItemCount(hListHwnd);
           for (int i = 0; i < count; i++)
           {
@@ -124,7 +134,9 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
       {
         NMLVDISPINFO* pinfo = (NMLVDISPINFO*)lParam;
         if (pinfo->item.pszText == nullptr || pinfo->item.pszText[0] == '\0')
+        {
           return FALSE;
+        }
         LVITEM lvitem;
         lvitem.mask = LVIF_PARAM;
         lvitem.iItem = pinfo->item.iItem;
@@ -363,8 +375,12 @@ BOOL CollectionDialog::OnInitDialog()
     // Only process objects not in this collection
     int l;
     for (l = 0; l < pcol->m_visel.size(); l++)
+    {
       if (pisel == pcol->m_visel.ElementAt(l))
+      {
         break;
+      }
+    }
 
     if ((l == pcol->m_visel.size()) && piscript)
     //if (!piedit->m_pcollection)
@@ -413,7 +429,9 @@ BOOL CollectionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         size_t oldindex = rgsel[i];
 
         if (oldindex > newindex)
+        {
           oldindex++; // old item will be one lower when we try to delete it
+        }
 
         const size_t index = ::SendMessage(hwndList, LB_INSERTSTRING, newindex, (LPARAM)szT);
         ::SendMessage(hwndList, LB_SETITEMDATA, index, data);
@@ -453,7 +471,9 @@ BOOL CollectionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       // Remove the old strings after everything else, to avoid messing up indices
       // Remove things in reverse order, so we don't get messed up inside this loop
       for (size_t i = 0; i < count; i++)
+      {
         ::SendMessage(hwndOut, LB_DELETESTRING, rgsel[count - i - 1], 0);
+      }
 
       delete[] rgsel;
     }

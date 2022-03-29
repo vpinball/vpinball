@@ -19,23 +19,39 @@ void RubberVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemRubber))
+    {
       continue;
+    }
     Rubber* const rubber = (Rubber*)m_pvsel->ElementAt(i);
 
     if (dispid == IDC_STATIC_RENDERING_CHECK || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hStaticRenderingCheck, rubber->m_d.m_staticRendering);
+    }
     if (dispid == IDC_SHOW_IN_EDITOR_CHECK || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hShowInEditorCheck, rubber->m_d.m_showInEditor);
+    }
     if (dispid == IDC_RUBBER_HEIGHT_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_heightEdit, rubber->m_d.m_height);
+    }
     if (dispid == IDC_RUBBER_THICKNESS_EDIT || dispid == -1)
+    {
       PropertyDialog::SetIntTextbox(m_thicknessEdit, rubber->m_d.m_thickness);
+    }
     if (dispid == IDC_RUBBER_ROTX_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_rotXEdit, rubber->m_d.m_rotX);
+    }
     if (dispid == IDC_RUBBER_ROTY_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_rotYEdit, rubber->m_d.m_rotY);
+    }
     if (dispid == IDC_RUBBER_ROTZ_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_rotZEdit, rubber->m_d.m_rotZ);
+    }
 
     UpdateBaseVisuals(rubber, &rubber->m_d, dispid);
     //only show the first element on multi-select
@@ -48,7 +64,9 @@ void RubberVisualsProperty::UpdateProperties(const int dispid)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemRubber))
+    {
       continue;
+    }
     Rubber* const rubber = (Rubber*)m_pvsel->ElementAt(i);
 
     switch (dispid)

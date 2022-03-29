@@ -33,7 +33,9 @@ void SoundDialog::OnClose()
   SavePosition();
   CCO(PinTable)* const pt = g_pvp->GetActiveTable();
   if (pt)
+  {
     pt->StopAllSounds();
+  }
   CDialog::OnClose();
 }
 
@@ -94,7 +96,9 @@ BOOL SoundDialog::OnInitDialog()
   ListView_InsertColumn(hSoundList, 5, &lvcol);
 
   if (pt)
+  {
     pt->ListSounds(hSoundList);
+  }
 
   ListView_SetItemState(hSoundList, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
   GotoDlgCtrl(hSoundList);
@@ -118,9 +122,13 @@ INT_PTR SoundDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
           const int columnNumber = lpnmListView->iSubItem;
           if (m_columnSortOrder == 1)
+          {
             m_columnSortOrder = 0;
+          }
           else
+          {
             m_columnSortOrder = 1;
+          }
           SortData.hwndList = hSoundList;
           SortData.subItemIndex = columnNumber;
           SortData.sortUpDown = m_columnSortOrder;
@@ -133,7 +141,9 @@ INT_PTR SoundDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
           NMLVDISPINFO* const pinfo = (NMLVDISPINFO*)lParam;
           if (pinfo->item.pszText == nullptr || pinfo->item.pszText[0] == '\0')
+          {
             return FALSE;
+          }
           ListView_SetItemText(hSoundList, pinfo->item.iItem, 0, pinfo->item.pszText);
           LVITEM lvitem;
           lvitem.mask = LVIF_PARAM;
@@ -143,7 +153,9 @@ INT_PTR SoundDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
           PinSound* const pps = (PinSound*)lvitem.lParam;
           pps->m_szName = pinfo->item.pszText;
           if (pt)
+          {
             pt->SetNonUndoableDirty(eSaveDirty);
+          }
           return TRUE;
         }
         break;
@@ -157,7 +169,9 @@ INT_PTR SoundDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
           ::EnableWindow(GetDlgItem(IDC_PLAY).GetHwnd(), enable);
           ::EnableWindow(GetDlgItem(IDC_STOP).GetHwnd(), fFalse);
           if (pt)
+          {
             pt->StopAllSounds();
+          }
         }
         break;
       }
@@ -268,14 +282,18 @@ void SoundDialog::Import()
   CCO(PinTable)* const pt = g_pvp->GetActiveTable();
 
   if (pt == nullptr)
+  {
     return;
+  }
 
   std::vector<std::string> szFileName;
   string szInitialDir;
 
   HRESULT hr = LoadValue("RecentDir", "SoundDir", szInitialDir);
   if (hr != S_OK)
+  {
     szInitialDir = "c:\\Visual Pinball\\Tables\\";
+  }
 
   if (g_pvp->OpenFileDialog(szInitialDir, szFileName,
                             "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3",
@@ -283,10 +301,14 @@ void SoundDialog::Import()
   {
     const size_t index = szFileName[0].find_last_of('\\');
     if (index != std::string::npos)
+    {
       hr = SaveValue("RecentDir", "SoundDir", szFileName[0].substr(0, index));
+    }
 
     for (const std::string& file : szFileName)
+    {
       pt->ImportSound(hSoundList, file);
+    }
 
     pt->SetNonUndoableDirty(eSaveDirty);
   }
@@ -326,7 +348,9 @@ void SoundDialog::ReImport()
           pt->SetNonUndoableDirty(eSaveDirty);
         }
         else
+        {
           MessageBox(pps->m_szPath.c_str(), "FILE NOT FOUND!", MB_OK);
+        }
 
         sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED);
       }
@@ -353,7 +377,9 @@ void SoundDialog::ReImportFrom()
 
       HRESULT hr = LoadValue("RecentDir", "SoundDir", szInitialDir);
       if (hr != S_OK)
+      {
         szInitialDir = "c:\\Visual Pinball\\Tables\\";
+      }
 
       if (g_pvp->OpenFileDialog(szInitialDir, szFileName,
                                 "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", 0))
@@ -370,7 +396,9 @@ void SoundDialog::ReImportFrom()
 
         const size_t index = szFileName[0].find_last_of('\\');
         if (index != std::string::npos)
+        {
           hr = SaveValue("RecentDir", "SoundDir", szFileName[0].substr(0, index));
+        }
 
         pt->SetNonUndoableDirty(eSaveDirty);
       }
@@ -435,7 +463,9 @@ void SoundDialog::Export()
       string initDir;
       const HRESULT hr = LoadValue("RecentDir", "SoundDir", initDir);
       if (hr != S_OK)
+      {
         initDir = "c:\\Visual Pinball\\Tables\\";
+      }
 
       ofn.lpstrInitialDir = initDir.c_str();
       //ofn.lpstrTitle = "SAVE AS";
@@ -454,11 +484,15 @@ void SoundDialog::Export()
         }
 
         if (begin >= MAXSTRING)
+        {
           begin = MAXSTRING - 1;
+        }
 
         char pathName[MAXSTRING];
         if (begin > 0)
+        {
           memcpy(pathName, ofn.lpstrFile, begin);
+        }
         pathName[begin] = 0;
 
         while (sel != -1)
@@ -733,7 +767,9 @@ void SoundPositionDialog::ReadTextValue(int item, int& oValue)
   float fval;
   const int ret = sscanf_s(textStr.c_str(), "%f", &fval);
   if (ret == 1 && fval >= -1.0f && fval <= 1.0f)
+  {
     oValue = quantizeSignedPercent(fval);
+  }
 }
 
 void SoundPositionDialog::SetTextValues()

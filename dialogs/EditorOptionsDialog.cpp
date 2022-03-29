@@ -326,12 +326,18 @@ void EditorOptionsDialog::OnOK()
 
   // Go through and reset the autosave time on all the tables
   if (autosave)
+  {
     g_pvp->SetAutoSaveMinutes(autosavetime);
+  }
   else
+  {
     g_pvp->m_autosaveTime = -1;
+  }
 
   for (size_t i = 0; i < g_pvp->m_vtable.size(); i++)
+  {
     g_pvp->m_vtable[i]->BeginAutoSaveCounter();
+  }
 
   SaveValueInt("Editor", "DefaultMaterialColor", g_pvp->m_dummyMaterial.m_cBase);
   SaveValueInt("Editor", "ElementSelectColor", g_pvp->m_elemSelectColor);
@@ -347,7 +353,9 @@ void EditorOptionsDialog::OnOK()
 
   size_t units = SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
   if (units == LB_ERR)
+  {
     units = 0;
+  }
   SaveValueInt("Editor", "Units", (int)units);
 
   CDialog::OnOK();

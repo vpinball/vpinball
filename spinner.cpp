@@ -47,20 +47,30 @@ void Spinner::SetAngleMax(const float angle)
     if (m_d.m_angleMin != m_d.m_angleMax) // allow only if in limited angle mode
     {
       if (newVal > m_d.m_angleMax)
+      {
         newVal = m_d.m_angleMax;
+      }
       else if (newVal < m_d.m_angleMin)
+      {
         newVal = m_d.m_angleMin;
+      }
 
       newVal = ANGTORAD(newVal);
 
-      if (m_phitspinner->m_spinnerMover.m_angleMin < newVal) // Min is smaller???
+      if (m_phitspinner->m_spinnerMover.m_angleMin < newVal)
+      { // Min is smaller???
         m_phitspinner->m_spinnerMover.m_angleMax = newVal; // yes set new max
+      }
       else
+      {
         m_phitspinner->m_spinnerMover.m_angleMin = newVal; // no set new minumum
+      }
     }
   }
   else
+  {
     m_d.m_angleMax = newVal;
+  }
 }
 
 float Spinner::GetAngleMin() const
@@ -77,20 +87,30 @@ void Spinner::SetAngleMin(const float angle)
     if (m_d.m_angleMin != m_d.m_angleMax) // allow only if in limited angle mode
     {
       if (newVal > m_d.m_angleMax)
+      {
         newVal = m_d.m_angleMax;
+      }
       else if (newVal < m_d.m_angleMin)
+      {
         newVal = m_d.m_angleMin;
+      }
 
       newVal = ANGTORAD(newVal);
 
-      if (m_phitspinner->m_spinnerMover.m_angleMax > newVal) // max is bigger
+      if (m_phitspinner->m_spinnerMover.m_angleMax > newVal)
+      { // max is bigger
         m_phitspinner->m_spinnerMover.m_angleMin = newVal; // then set new minumum
+      }
       else
+      {
         m_phitspinner->m_spinnerMover.m_angleMax = newVal; // else set new max
+      }
     }
   }
   else
+  {
     m_d.m_angleMin = newVal;
+  }
 }
 
 HRESULT Spinner::Init(PinTable* ptable, float x, float y, bool fromMouseClick)
@@ -159,11 +179,15 @@ void Spinner::SetDefaults(bool fromMouseClick)
 
   HRESULT hr = LoadValue("DefaultProps\\Spinner", "Image", m_d.m_szImage);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_szImage.clear();
+  }
 
   hr = LoadValue("DefaultProps\\Spinner", "Surface", m_d.m_szSurface);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_szSurface.clear();
+  }
 }
 
 void Spinner::UIRenderPass1(Sur* const psur)
@@ -192,9 +216,13 @@ void Spinner::UIRenderPass2(Sur* const psur)
              m_d.m_vCenter.x - cs * halflength, m_d.m_vCenter.y - sn * halflength);
 
   if (sn == 0.0f)
+  {
     sn = 1.0f;
+  }
   if (cs == 0.0f)
+  {
     cs = 1.0f;
+  }
   psur->Rectangle(
       m_d.m_vCenter.x - cs * halflength * 0.65f, m_d.m_vCenter.y - sn * halflength * 0.65f,
       m_d.m_vCenter.x + cs * halflength * 0.65f, m_d.m_vCenter.y + sn * halflength * 0.65f);
@@ -213,7 +241,9 @@ void Spinner::GetTimers(vector<HitTimer*>& pvht)
   m_phittimer = pht;
 
   if (m_d.m_tdr.m_TimerEnabled)
+  {
     pvht.push_back(pht);
+  }
 }
 
 //
@@ -346,7 +376,9 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2* const vertBuffer)
 {
   // early out in case still same rotation
   if (m_phitspinner->m_spinnerMover.m_angle == m_vertexBuffer_spinneranimangle)
+  {
     return;
+  }
 
   m_vertexBuffer_spinneranimangle = m_phitspinner->m_spinnerMover.m_angle;
 
@@ -361,9 +393,13 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2* const vertBuffer)
 
   Vertex3D_NoTex2* buf;
   if (vertBuffer == nullptr)
+  {
     m_plateVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+  }
   else
+  {
     buf = vertBuffer;
+  }
 
   for (int i = 0; i < spinnerPlateNumVertices; i++)
   {
@@ -383,7 +419,9 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2* const vertBuffer)
     buf[i].tv = spinnerPlate[i].tv;
   }
   if (vertBuffer == nullptr)
+  {
     m_plateVertexBuffer->unlock();
+  }
 }
 
 void Spinner::RenderDynamic()
@@ -393,10 +431,14 @@ void Spinner::RenderDynamic()
   TRACE_FUNCTION();
 
   if (!m_phitspinner->m_spinnerMover.m_visible || !m_d.m_visible)
+  {
     return;
+  }
 
   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+  {
     return;
+  }
 
   UpdatePlate(nullptr);
 
@@ -415,9 +457,11 @@ void Spinner::RenderDynamic()
     pd3dDevice->basicShader->SetTexture(SHADER_Texture0, image, false);
     pd3dDevice->basicShader->SetAlphaTestValue(image->m_alphaTestValue * (float)(1.0 / 255.0));
   }
-  else // No image by that name
+  else
+  { // No image by that name
     pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture,
                                                mat->m_bIsMetal);
+  }
 
   pd3dDevice->basicShader->Begin(0);
   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX,
@@ -433,7 +477,9 @@ void Spinner::RenderDynamic()
 void Spinner::RenderSetup()
 {
   if (!m_d.m_visible)
+  {
     return;
+  }
 
   const float height =
       m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) *
@@ -486,10 +532,14 @@ void Spinner::RenderSetup()
 void Spinner::RenderStatic()
 {
   if (!m_d.m_showBracket || !m_d.m_visible)
+  {
     return;
+  }
 
   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+  {
     return;
+  }
 
   RenderDevice* const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
   const Pin3D* const ppin3d = &g_pplayer->m_pin3d;
@@ -670,7 +720,9 @@ STDMETHODIMP Spinner::InterfaceSupportsErrorInfo(REFIID riid)
   for (int i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
   {
     if (InlineIsEqualGUID(*arr[i], riid))
+    {
       return S_OK;
+    }
   }
   return S_FALSE;
 }
@@ -727,9 +779,13 @@ STDMETHODIMP Spinner::put_Damping(float newVal)
 {
   const float tmp = clamp(newVal, 0.0f, 1.0f);
   if (g_pplayer)
+  {
     m_phitspinner->m_spinnerMover.m_damping = powf(tmp, (float)PHYS_FACTOR);
+  }
   else
+  {
     m_d.m_damping = tmp;
+  }
 
   return S_OK;
 }
@@ -844,8 +900,10 @@ STDMETHODIMP Spinner::get_AngleMax(float* pVal)
 
 STDMETHODIMP Spinner::put_AngleMax(float newVal)
 {
-  if (g_pplayer && (m_d.m_angleMin == m_d.m_angleMax)) // allow only if in limited angle mode
+  if (g_pplayer && (m_d.m_angleMin == m_d.m_angleMax))
+  { // allow only if in limited angle mode
     return S_FAIL;
+  }
 
   SetAngleMax(newVal);
 
@@ -862,8 +920,10 @@ STDMETHODIMP Spinner::get_AngleMin(float* pVal)
 
 STDMETHODIMP Spinner::put_AngleMin(float newVal)
 {
-  if (g_pplayer && (m_d.m_angleMin != m_d.m_angleMax)) // allow only if in limited angle mode
+  if (g_pplayer && (m_d.m_angleMin != m_d.m_angleMax))
+  { // allow only if in limited angle mode
     return S_FAIL;
+  }
 
   SetAngleMin(newVal);
 
@@ -881,9 +941,13 @@ STDMETHODIMP Spinner::get_Elasticity(float* pVal)
 STDMETHODIMP Spinner::put_Elasticity(float newVal)
 {
   if (g_pplayer)
+  {
     m_phitspinner->m_spinnerMover.m_elasticity = newVal; //player active value
+  }
   else
+  {
     m_d.m_elasticity = newVal;
+  }
 
   return S_OK;
 }
@@ -898,9 +962,13 @@ STDMETHODIMP Spinner::get_Visible(VARIANT_BOOL* pVal)
 STDMETHODIMP Spinner::put_Visible(VARIANT_BOOL newVal)
 {
   if (g_pplayer)
+  {
     m_phitspinner->m_spinnerMover.m_visible = VBTOb(newVal); // && m_d.m_visible;
+  }
   else
+  {
     m_d.m_visible = VBTOb(newVal);
+  }
 
   return S_OK;
 }
@@ -927,5 +995,7 @@ STDMETHODIMP Spinner::get_CurrentAngle(float* pVal)
     return S_OK;
   }
   else
+  {
     return E_FAIL;
+  }
 }

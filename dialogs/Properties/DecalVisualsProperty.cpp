@@ -27,7 +27,9 @@ DecalVisualsProperty::DecalVisualsProperty(const VectorProtected<ISelect>* pvsel
 DecalVisualsProperty::~DecalVisualsProperty()
 {
   if (m_font)
+  {
     delete m_font;
+  }
 }
 
 void DecalVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
@@ -35,34 +37,58 @@ void DecalVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDecal))
+    {
       continue;
+    }
     Decal* const decal = (Decal*)m_pvsel->ElementAt(i);
 
     if (dispid == IDC_FONT_TYPE_COMBO || dispid == -1)
+    {
       PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[decal->m_d.m_decaltype]);
+    }
     if (dispid == DISPID_Decal_SizingType || dispid == -1)
+    {
       PropertyDialog::UpdateComboBox(m_sizingList, m_sizingCombo,
                                      m_sizingList[decal->m_d.m_sizingtype]);
+    }
     if (dispid == IDC_DECAL_TEXT_EDIT || dispid == -1)
+    {
       m_textEdit.SetWindowText(decal->m_d.m_sztext.c_str());
+    }
     if (dispid == IDC_DECAL_VERTICAL_TEXT_CHECK || dispid == -1)
+    {
       PropertyDialog::SetCheckboxState(m_hVerticalTextCheck, decal->m_d.m_verticalText);
+    }
     if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
+    {
       m_fontColorButton.SetColor(decal->m_d.m_color);
+    }
 
     if (dispid == 5 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_posXEdit, decal->m_d.m_vCenter.x);
+    }
     if (dispid == 6 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_posYEdit, decal->m_d.m_vCenter.y);
+    }
     if (dispid == 3 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_widthEdit, decal->m_d.m_width);
+    }
     if (dispid == 4 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_heigthEdit, decal->m_d.m_height);
+    }
     if (dispid == 1 || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_rotationEdit, decal->m_d.m_rotation);
+    }
     if (dispid == IDC_SURFACE_COMBO || dispid == -1)
+    {
       PropertyDialog::UpdateSurfaceComboBox(decal->GetPTable(), m_surfaceCombo,
                                             decal->m_d.m_szSurface);
+    }
 
     if (decal->m_pIFont)
     {
@@ -81,7 +107,9 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDecal))
+    {
       continue;
+    }
     Decal* const decal = (Decal*)m_pvsel->ElementAt(i);
     switch (dispid)
     {
@@ -109,7 +137,9 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
       {
         CComObject<PinTable>* const ptable = g_pvp->GetActiveTable();
         if (ptable == nullptr)
+        {
           break;
+        }
         CHOOSECOLOR cc = m_colorDialog.GetParameters();
         cc.Flags = CC_FULLOPEN | CC_RGBINIT;
         m_colorDialog.SetParameters(cc);

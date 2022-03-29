@@ -23,7 +23,9 @@ Decal::~Decal()
 {
   m_pIFont->Release();
   if (m_textImg)
+  {
     delete m_textImg;
+  }
   SAFE_BUFFER_RELEASE(m_vertexBuffer);
 }
 
@@ -54,11 +56,15 @@ void Decal::SetDefaults(bool fromMouseClick)
 
   HRESULT hr = LoadValue("DefaultProps\\Decal", "Image", m_d.m_szImage);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_szImage.clear();
+  }
 
   hr = LoadValue("DefaultProps\\Decal", "Surface", m_d.m_szSurface);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_szSurface.clear();
+  }
 
   m_d.m_decaltype = fromMouseClick ? (enum DecalType)LoadValueIntWithDefault(
                                          "DefaultProps\\Decal", "DecalType", (int)DecalImage)
@@ -66,7 +72,9 @@ void Decal::SetDefaults(bool fromMouseClick)
 
   hr = LoadValue("DefaultProps\\Decal", "Text", m_d.m_sztext);
   if ((hr != S_OK) || !fromMouseClick)
+  {
     m_d.m_sztext.clear();
+  }
 
   m_d.m_sizingtype = fromMouseClick ? (enum SizingType)LoadValueIntWithDefault(
                                           "DefaultProps\\Decal", "Sizing", (int)ManualSize)
@@ -90,7 +98,9 @@ void Decal::SetDefaults(bool fromMouseClick)
     char tmp[MAXSTRING];
     hr = LoadValue("DefaultProps\\Decal", "FontName", tmp, MAXSTRING);
     if ((hr != S_OK) || !fromMouseClick)
+    {
       fd.lpstrName = L"Arial Black";
+    }
     else
     {
       const int len = lstrlen(tmp) + 1;
@@ -296,7 +306,9 @@ void Decal::GetTextSize(int* const px, int* const py)
 void Decal::PreRenderText()
 {
   if (m_d.m_decaltype != DecalText)
+  {
     return;
+  }
 
   RECT rcOut = {0};
   const int len = (int)m_d.m_sztext.length();
@@ -353,9 +365,13 @@ void Decal::PreRenderText()
   m_textImg = new BaseTexture(rcOut.right, rcOut.bottom, BaseTexture::RGBA, false);
 
   if (m_d.m_color == RGB(255, 255, 255))
+  {
     m_d.m_color = RGB(254, 255, 255); //m_pinimage.SetTransparentColor(RGB(0,0,0));
+  }
   else if (m_d.m_color == RGB(0, 0, 0))
+  {
     m_d.m_color = RGB(0, 0, 1);
+  }
 
   BITMAPINFO bmi = {};
   bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -396,8 +412,10 @@ void Decal::PreRenderText()
     }
   }
   else
+  {
     dc.DrawText(m_d.m_sztext.c_str(), len, rcOut,
                 alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
+  }
 
   // Copy and set to opaque
   D3DCOLOR* __restrict bitsd = (D3DCOLOR*)bits;
@@ -405,7 +423,9 @@ void Decal::PreRenderText()
   for (int i = 0; i < m_textImg->height(); i++)
   {
     for (int l = 0; l < m_textImg->width(); l++, dest++, bitsd++)
+    {
       *dest = *bitsd | 0xFF000000u;
+    }
     dest += m_textImg->pitch() / 4 - m_textImg->width();
   }
 
@@ -441,7 +461,9 @@ void Decal::RenderDynamic()
   const Material* const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
   if (!m_backglass //!! should just check if material has opacity enabled, but this is crucial for HV setup performance like-is
       && mat->m_bOpacityActive)
+  {
     RenderObject();
+  }
 }
 
 static constexpr WORD rgi0123[4] = {0, 1, 2, 3};
@@ -496,7 +518,9 @@ void Decal::RenderSetup()
   if (!m_backglass)
   {
     for (int i = 0; i < 4; i++)
+    {
       vertices[i].z = height + 0.2f;
+    }
 
     SetNormal(vertices, rgi0123, 4);
   }
@@ -543,15 +567,21 @@ float Decal::GetDepth(const Vertex3Ds& viewDir) const
 void Decal::RenderObject()
 {
   if (m_backglass && !GetPTable()->GetDecalsEnabled())
+  {
     return;
+  }
 
   RenderDevice* const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice
                                                : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
   if (m_backglass && (m_ptable->m_tblMirrorEnabled ^ m_ptable->m_reflectionEnabled))
+  {
     pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+  }
   else
+  {
     pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+  }
 
   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 
@@ -563,10 +593,14 @@ void Decal::RenderObject()
   if (m_d.m_decaltype != DecalImage)
   {
     if (!m_backglass)
+    {
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture,
                                                  mat->m_bIsMetal);
+    }
     else
+    {
       pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
+    }
     pd3dDevice->basicShader->SetTexture(SHADER_Texture0,
                                         pd3dDevice->m_texMan.LoadTexture(m_textImg, false), false);
     pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
@@ -577,20 +611,28 @@ void Decal::RenderObject()
     if (pin)
     {
       if (!m_backglass)
+      {
         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture,
                                                    mat->m_bIsMetal);
+      }
       else
+      {
         pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
+      }
       pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pin, false);
       pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
     }
     else
     {
       if (!m_backglass)
+      {
         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture,
                                                    mat->m_bIsMetal);
+      }
       else
+      {
         pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_without_texture);
+      }
     }
   }
 
@@ -634,7 +676,9 @@ void Decal::RenderStatic()
 
   if (m_backglass //!! should just check if material has no opacity enabled, but this is crucial for HV setup performance like-is
       || !mat->m_bOpacityActive)
+  {
     RenderObject();
+  }
 }
 
 void Decal::SetObjectPos()
@@ -806,7 +850,9 @@ void Decal::EnsureSize()
     double rh = (double)cy.Lo * (1.0 / 2545.0);
 
     if (m_d.m_verticalText)
+    {
       rh *= m_d.m_sztext.length();
+    }
 
     m_realheight = (float)rh;
     m_realwidth = (float)(rh * sizex / sizey);
@@ -820,7 +866,9 @@ void Decal::EnsureSize()
       Texture* const pin = m_ptable->GetImage(m_d.m_szImage);
       m_realwidth = m_realheight;
       if (pin)
+      {
         m_realwidth *= (float)((double)pin->m_width / (double)pin->m_height);
+      }
     }
     else
     {

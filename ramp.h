@@ -156,14 +156,20 @@ private:
 
     // as solid ramps are rendered into the static buffer, always use maximum precision
     if (_accuracy != -1.f)
+    {
       accuracy = _accuracy; // used for hit shape calculation, always!
+    }
     else
     {
       const Material* const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       if (!mat->m_bOpacityActive)
+      {
         accuracy = 10.f;
+      }
       else
+      {
         accuracy = (float)m_ptable->GetDetailLevel();
+      }
     }
 
     accuracy =

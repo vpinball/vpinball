@@ -15,11 +15,15 @@ void SpinnerPhysicsProperty::UpdateVisuals(const int dispid /*=-1*/)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemSpinner))
+    {
       continue;
+    }
     Spinner* const spinner = (Spinner*)m_pvsel->ElementAt(i);
 
     if (dispid == IDC_DAMPING_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_dampingEdit, spinner->m_d.m_damping);
+    }
 
     UpdateBaseVisuals(spinner, &spinner->m_d, dispid);
     //only show the first element on multi-select
@@ -33,7 +37,9 @@ void SpinnerPhysicsProperty::UpdateProperties(const int dispid)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) ||
         (m_pvsel->ElementAt(i)->GetItemType() != eItemSpinner))
+    {
       continue;
+    }
     Spinner* const spinner = (Spinner*)m_pvsel->ElementAt(i);
 
     switch (dispid)

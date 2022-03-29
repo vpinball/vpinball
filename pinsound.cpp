@@ -168,7 +168,9 @@ PinSound::~PinSound()
   UnInitialize();
 
   if (m_pdata)
+  {
     delete[] m_pdata;
+  }
 }
 
 void PinSound::UnInitialize()
@@ -192,9 +194,13 @@ void PinSound::UnInitialize()
 class PinDirectSound* PinSound::GetPinDirectSound()
 {
   if (m_pPinDirectSound)
+  {
     return m_pPinDirectSound;
+  }
   else
+  {
     return g_pvp->m_ps.GetPinDirectSound(m_outputTarget);
+  }
 }
 
 HRESULT PinSound::ReInitialize()
@@ -249,7 +255,9 @@ HRESULT PinSound::ReInitialize()
   // Remark from MSDN: "If wFormatTag = WAVE_FORMAT_PCM or wFormatTag = WAVE_FORMAT_IEEE_FLOAT, set cbSize to zero"
   // Otherwise some tables crash in dsound when using certain WAVE_FORMAT_IEEE_FLOAT samples
   if ((wfx.wFormatTag == WAVE_FORMAT_PCM) || (wfx.wFormatTag == WAVE_FORMAT_IEEE_FLOAT))
+  {
     wfx.cbSize = 0;
+  }
 
   DSBUFFERDESC dsbd = {};
   dsbd.dwSize = sizeof(DSBUFFERDESC);
@@ -312,12 +320,16 @@ HRESULT PinSound::ReInitialize()
     for (DWORD i = 0; i < dsbd.dwBufferBytes; i += wfx.nBlockAlign)
     {
       for (unsigned int j = 0; j < bps; j++)
+      {
         *d++ = *s++;
+      }
 
       s -= bps;
 
       for (unsigned int j = 0; j < bps; j++)
+      {
         *d++ = *s++;
+      }
     }
   }
   else
@@ -329,7 +341,9 @@ HRESULT PinSound::ReInitialize()
   m_pDSBuffer->Unlock(pbData, m_cdata, nullptr, 0);
 
   if (SoundMode3D != SNDCFG_SND3D2CH)
+  {
     Get3DBuffer();
+  }
 
   return S_OK;
 }
@@ -338,7 +352,9 @@ void PinSound::SetDevice()
 {
   const int bass_idx = (m_outputTarget == SNDOUT_BACKGLASS) ? bass_BG_idx : bass_STD_idx;
   if (bass_idx != -1 && bass_STD_idx != bass_BG_idx)
+  {
     BASS_SetDevice(bass_idx);
+  }
 }
 
 void PinSound::Play(const float volume,
@@ -350,7 +366,9 @@ void PinSound::Play(const float volume,
                     const bool restart)
 {
   if (IsWav())
+  {
     PlayInternal(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
+  }
   else if (m_BASSstream)
   {
     SetDevice();
@@ -435,16 +453,22 @@ void PinSound::Play(const float volume,
     BASS_ChannelPlay(m_BASSstream, restart ? fTrue : fFalse);
 
     if (flags & DSBPLAY_LOOPING)
+    {
       BASS_ChannelFlags(m_BASSstream, BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
+    }
     else
+    {
       BASS_ChannelFlags(m_BASSstream, 0, BASS_SAMPLE_LOOP);
+    }
   }
 }
 
 void PinSound::Stop()
 {
   if (IsWav())
+  {
     StopInternal();
+  }
   else if (m_BASSstream)
   {
     SetDevice();
@@ -462,7 +486,9 @@ BOOL CALLBACK DSEnumCallBack(LPGUID guid, LPCSTR desc, LPCSTR mod, LPVOID list)
 {
   DSAudioDevice* ad = new DSAudioDevice;
   if (guid == nullptr)
+  {
     ad->guid = nullptr;
+  }
   else
   {
     ad->guid = new GUID;
@@ -488,7 +514,9 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
   {
     const HRESULT hr = LoadValue("Player", IsBackglass ? "SoundDeviceBG" : "SoundDevice", DSidx);
     if ((hr != S_OK) || ((size_t)DSidx >= DSads.size()))
+    {
       DSidx = 0; // The default primary sound device
+    }
   }
 
   // Create IDirectSound using the selected sound device
@@ -503,7 +531,9 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
 
   // free audio devices list
   for (size_t i = 0; i < DSads.size(); i++)
+  {
     delete DSads[i];
+  }
 
   // Set coop level to DSSCL_PRIORITY
   if (FAILED(hr = m_pDS->SetCooperativeLevel(hwnd, DSSCL_PRIORITY)))
@@ -522,7 +552,9 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
   dsbd.dwSize = sizeof(DSBUFFERDESC);
   dsbd.dwFlags = DSBCAPS_PRIMARYBUFFER;
   if (!IsBackglass && (SoundMode3D != SNDCFG_SND3D2CH))
+  {
     dsbd.dwFlags |= DSBCAPS_CTRL3D;
+  }
   dsbd.dwBufferBytes = 0;
   dsbd.lpwfxFormat = nullptr;
 
@@ -602,7 +634,9 @@ PinSound* AudioMusicPlayer::LoadFile(const string& strFileName)
     dsbd.dwSize = sizeof(DSBUFFERDESC);
     dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | DSBCAPS_CTRLPAN;
     if (SoundMode3D != SNDCFG_SND3D2CH)
+    {
       dsbd.dwFlags |= DSBCAPS_CTRL3D;
+    }
     dsbd.dwBufferBytes = pWaveSoundRead->m_ckIn.cksize;
     dsbd.lpwfxFormat = pWaveSoundRead->m_pwfx;
     memcpy(&pps->m_wfx, pWaveSoundRead->m_pwfx, sizeof(pps->m_wfx));
@@ -619,7 +653,9 @@ PinSound* AudioMusicPlayer::LoadFile(const string& strFileName)
       return nullptr;
     }
     if (SoundMode3D != SNDCFG_SND3D2CH)
+    {
       pps->Get3DBuffer();
+    }
 
     // Remember how big the buffer is
     pps->m_cdata = dsbd.dwBufferBytes;
@@ -715,7 +751,9 @@ float PinDirectSound::PanTo3D(float input)
 {
   // DirectSound's position command does weird things at exactly 0.
   if (fabsf(input) < 0.0001f)
+  {
     input = (input < 0.0f) ? -0.0001f : 0.0001f;
+  }
   if (input < 0.0f)
   {
     return -powf(-max(input, -1.0f), (float)(1.0 / 10.0)) * 3.0f;
@@ -741,11 +779,17 @@ float PinDirectSound::PanSSF(float pan)
   // Clip the pan input range to -1.0 to 1.0
 
   if (pan < -1.0f)
+  {
     x = -1.0f;
+  }
   else if (pan > 1.0f)
+  {
     x = 1.0f;
+  }
   else
+  {
     x = pan;
+  }
 
   // Rescale pan range from an exponential [-1,0] and [0,1] to a linear [-1.0, 1.0]
   // Do not avoid values close to zero like PanTo3D() does as that
@@ -774,9 +818,13 @@ float PinDirectSound::PanSSF(float pan)
   // The compiler will optimize away the excess math.
 
   if (x >= 0.0f)
+  {
     x = ((x - 0.0f) / (3.0f - 0.0f)) * (3.0f - 2.0f) + 2.0f;
+  }
   else
+  {
     x = ((x - -3.0f) / (0.0f - -3.0f)) * (-2.0f - -3.0f) + -2.0f;
+  }
 
   // Clip the pan output range to 3.0 to -3.0
   //
@@ -784,9 +832,13 @@ float PinDirectSound::PanSSF(float pan)
   // change or there is a rounding issue.
 
   if (x > 3.0f)
+  {
     x = 3.0f;
+  }
   else if (x < -3.0f)
+  {
     x = -3.0f;
+  }
 
   // If the final value is sufficiently close to zero it causes sound to come from
   // all speakers and lose it's positional effect. We scale well away from zero
@@ -800,7 +852,9 @@ float PinDirectSound::PanSSF(float pan)
   //          The current formula won't produce values in this weird range.
 
   if (fabsf(x) < 0.1f)
+  {
     x = (x < 0.0f) ? -0.1f : 0.1f;
+  }
 
   return x;
 }
@@ -818,11 +872,17 @@ float PinDirectSound::FadeSSF(float front_rear_fade)
   // Clip the fade input range to -1.0 to 1.0
 
   if (front_rear_fade < -1.0f)
+  {
     z = -1.0f;
+  }
   else if (front_rear_fade > 1.0f)
+  {
     z = 1.0f;
+  }
   else
+  {
     z = front_rear_fade;
+  }
 
   // Rescale fade range from an exponential [0,-1] and [0,1] to a linear [-1.0, 1.0]
   // Do not avoid values close to zero like PanTo3D() does at this point as that
@@ -857,7 +917,9 @@ float PinDirectSound::FadeSSF(float front_rear_fade)
   // as well.
 
   if (z > -1.0f)
+  {
     z = z / 10.0f;
+  }
 
   // Clip the fade output range to 0.0 to -3.0
   //
@@ -866,9 +928,13 @@ float PinDirectSound::FadeSSF(float front_rear_fade)
   // than zero can bleed to the backbox speakers.
 
   if (z > 0.0f)
+  {
     z = 0.0f;
+  }
   else if (z < -3.0f)
+  {
     z = -3.0f;
+  }
 
   // If the final value is sufficiently close to zero it causes sound to come from
   // all speakers on some systems and lose it's positional effect. We do use 0.0
@@ -882,7 +948,9 @@ float PinDirectSound::FadeSSF(float front_rear_fade)
   //          of audio to the rear channels but that is perfectly ok.
 
   if (fabsf(z) < 0.0001f)
+  {
     z = -0.0001f;
+  }
 
   return z;
 }
@@ -898,7 +966,9 @@ PinDirectSoundWavCopy::PinDirectSoundWavCopy(class PinSound* const pOriginal)
     pOriginal->GetPinDirectSound()->m_pDS->DuplicateSoundBuffer(pOriginal->m_pDSBuffer,
                                                                 &m_pDSBuffer);
     if (m_pDSBuffer && pOriginal->m_pDS3DBuffer != nullptr)
+    {
       Get3DBuffer();
+    }
   }
 }
 
@@ -964,16 +1034,22 @@ void PinDirectSoundWavCopy::PlayInternal(const float volume,
     case SNDCFG_SND3D2CH:
     default:
       if (pan != 0.f)
+      {
         m_pDSBuffer->SetPan((LONG)(pan * DSBPAN_RIGHT));
+      }
       break;
   }
 
   DWORD status;
   m_pDSBuffer->GetStatus(&status);
   if (!(status & DSBSTATUS_PLAYING))
+  {
     m_pDSBuffer->Play(0, 0, flags);
+  }
   else if (restart)
+  {
     m_pDSBuffer->SetCurrentPosition(0);
+  }
 }
 
 HRESULT PinDirectSoundWavCopy::Get3DBuffer()
@@ -986,6 +1062,8 @@ HRESULT PinDirectSoundWavCopy::Get3DBuffer()
     ShowError(bla);
   }
   else
+  {
     m_pDS3DBuffer->SetMinDistance(5.0f, DS3D_IMMEDIATE);
+  }
   return hr;
 }

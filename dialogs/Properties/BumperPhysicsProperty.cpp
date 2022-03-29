@@ -15,12 +15,18 @@ void BumperPhysicsProperty::UpdateVisuals(const int dispid /*=-1*/)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemBumper))
+    {
       continue;
+    }
     Bumper* const bumper = (Bumper*)m_pvsel->ElementAt(i);
     if (dispid == IDC_FORCE_EDIT || dispid == -1)
+    {
       PropertyDialog::SetFloatTextbox(m_forceEdit, bumper->m_d.m_force);
+    }
     if (dispid == IDC_COLLIDABLE_CHECK || dispid == -1)
+    {
       m_forceEdit.EnableWindow(bumper->m_d.m_collidable);
+    }
     UpdateBaseVisuals(bumper, &bumper->m_d);
     //only show the first element on multi-select
     break;
@@ -32,7 +38,9 @@ void BumperPhysicsProperty::UpdateProperties(const int dispid)
   for (int i = 0; i < m_pvsel->size(); i++)
   {
     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemBumper))
+    {
       continue;
+    }
     Bumper* const bumper = (Bumper*)m_pvsel->ElementAt(i);
     switch (dispid)
     {
