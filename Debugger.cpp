@@ -5,7 +5,7 @@
 #include <string>
 
 #define RECOMPUTEBUTTONCHECK WM_USER+100
-#define RESIZE_FROM_EXPAND WM_USER+101
+#define RESIZE_FROM_EXPAND   WM_USER+101
 
 DebuggerDialog::DebuggerDialog() : CDialog(IDD_DEBUGGER)
 {
@@ -208,7 +208,7 @@ LRESULT DebuggerDialog::OnNotify(WPARAM wparam, LPARAM lparam)
         case SCN_CHARADDED:
         {
             const SCNotification* const pscnmh = (SCNotification*)lparam;
-            if (pscnmh->ch == '\n')
+            if (pscnmh->ch == '\n') // execute code
             {
                 SendMessage(pnmh->hwndFrom, SCI_DELETEBACK, 0, 0);
 
@@ -230,7 +230,7 @@ LRESULT DebuggerDialog::OnNotify(WPARAM wparam, LPARAM lparam)
                 {
                     // need to add a new line to the end
                     SendMessage(pnmh->hwndFrom, SCI_DOCUMENTEND, 0, 0);
-                    SendMessage(pnmh->hwndFrom, SCI_ADDTEXT, lstrlen("\n"), (LPARAM)"\n");
+                    SendMessage(pnmh->hwndFrom, SCI_ADDTEXT, 1, (LPARAM)"\n");
                 }
                 else
                 {

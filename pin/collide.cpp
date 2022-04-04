@@ -90,7 +90,7 @@ float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent
 #else
             hittime = bnd * (float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	        // don't compete for fast zero time events
 #endif
-	 }
+         }
       }
       else if (fabsf(bnv) > C_LOWNORMVEL)                   // not velocity low ????
          hittime = bnd / -bnv;                              // rate ok for safe divide 

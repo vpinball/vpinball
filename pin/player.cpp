@@ -4295,7 +4295,7 @@ void Player::UpdateHUD()
 	if (m_closeDown) // print table name,author,version and blurb and description in pause mode
 	{
 		char szFoo[256];
-		szFoo[0] = 0;
+		szFoo[0] = '\0';
 
 		int line = 0;
 

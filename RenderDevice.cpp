@@ -2177,9 +2177,9 @@ Shader::Shader(RenderDevice *renderDevice) : currentMaterial(-FLT_MAX, -FLT_MAX,
                                                              0xCCCCCCCC, 0xCCCCCCCC, 0xCCCCCCCC, false, false, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX)
 {
    m_renderDevice = renderDevice;
-   m_shader = 0;
+   m_shader = nullptr;
    for (unsigned int i = 0; i < TEXTURESET_STATE_CACHE_SIZE; ++i)
-      currentTexture[i] = 0;
+      currentTexture[i] = nullptr;
    currentFlasherMode = -FLT_MAX;
    currentAlphaTestValue = -FLT_MAX;
    currentDisableLighting =
@@ -2190,7 +2190,7 @@ Shader::Shader(RenderDevice *renderDevice) : currentMaterial(-FLT_MAX, -FLT_MAX,
    currentLightData = vec4(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
    currentLightImageMode = ~0u;
    currentLightBackglassMode = ~0u;
-   currentTechnique[0] = 0;
+   currentTechnique[0] = '\0';
 }
 
 Shader::~Shader()

@@ -1448,13 +1448,11 @@ void CodeViewer::Start()
 
 void CodeViewer::EvaluateScriptStatement(const char * const szScript)
 {
-   EXCEPINFO exception = {};
-
    const int scriptlen = lstrlen(szScript);
    WCHAR * const wzScript = new WCHAR[scriptlen + 1];
-
    MultiByteToWideCharNull(CP_ACP, 0, szScript, -1, wzScript, scriptlen + 1);
 
+   EXCEPINFO exception = {};
    m_pScriptParse->ParseScriptText(wzScript, L"Debug", 0, 0, CONTEXTCOOKIE_DEBUG, 0, 0, nullptr, &exception);
 
    delete[] wzScript;
