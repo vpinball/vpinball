@@ -68,6 +68,7 @@ sampler2D texSamplerN : TEXUNIT4 = sampler_state // normal map texture
     //ADDRESSV  = Wrap;
 };
 
+const bool hdrBaseTexture;
 const bool hdrEnvTextures;
 const bool objectSpaceNormalMap;
 
@@ -234,6 +235,9 @@ float4 ps_main_texture(const in VS_OUTPUT IN, uniform bool is_metal, uniform boo
    float4 pixel = tex2D(texSampler0, IN.tex01.xy);
 
    clip(pixel.a <= alphaTestValue ? - 1 : 1); // stop the pixel shader if alpha test should reject pixel
+
+   [branch] if (hdrBaseTexture)
+       pixel.xyz = InvGamma(pixel.xyz);
 
    pixel.a *= cBase_Alpha.a;
    const float3 t = /*InvGamma*/(pixel.xyz); // uses automatic sRGB trafo instead in sampler!

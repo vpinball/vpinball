@@ -1233,6 +1233,7 @@ void Primitive::RenderObject()
       {
          pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_normal_isMetal" : "basic_with_texture_normal_isNotMetal");
          pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pin, false);
+         pd3dDevice->basicShader->SetBool(SHADER_hdrBaseTexture, pin->IsHDR());
          pd3dDevice->basicShader->SetTexture(SHADER_Texture4, nMap, true);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
          pd3dDevice->basicShader->SetBool(SHADER_objectSpaceNormalMap, m_d.m_objectSpaceNormalMap);
@@ -1245,6 +1246,7 @@ void Primitive::RenderObject()
       {
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
          pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pin, false);
+         pd3dDevice->basicShader->SetBool(SHADER_hdrBaseTexture, pin->IsHDR());
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 
          //g_pplayer->m_pin3d.SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
@@ -1272,6 +1274,8 @@ void Primitive::RenderObject()
          pd3dDevice->basicShader->SetFlasherColorAlpha(color);
       }
 
+      pd3dDevice->basicShader->SetBool(SHADER_hdrBaseTexture, false);
+
       // draw the mesh
       pd3dDevice->basicShader->Begin(0);
       if (m_d.m_groupdRendering)
@@ -1291,6 +1295,7 @@ void Primitive::RenderObject()
          pd3dDevice->basicShader->End();
       }
 
+      pd3dDevice->basicShader->SetBool(SHADER_hdrBaseTexture, false);
       pd3dDevice->basicShader->SetFlasherColorAlpha(previousFlasherColorAlpha);
 
       // reset transform
@@ -2063,11 +2068,6 @@ STDMETHODIMP Primitive::put_Image(BSTR newVal)
    char szImage[MAXTOKEN];
    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
    const Texture * const tex = m_ptable->GetImage(szImage);
-   if (tex && tex->IsHDR())
-   {
-       ShowError("Cannot use a HDR image (.exr/.hdr) here");
-       return E_FAIL;
-   }
 
    m_d.m_szImage = szImage;
 
