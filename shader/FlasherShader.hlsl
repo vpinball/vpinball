@@ -1,18 +1,17 @@
 #include "Helpers.fxh"
 
-#define Filter_None	    0.
-#define Filter_Additive	1.
-#define Filter_Overlay	2.
-#define Filter_Multiply	3.
+#define Filter_None     0.
+#define Filter_Additive 1.
+#define Filter_Overlay  2.
+#define Filter_Multiply 3.
 #define Filter_Screen   4.
 
 // transformation matrices
 const float4x4 matWorldViewProj : WORLDVIEWPROJ;
 
 const float4 staticColor_Alpha;
-const float4 alphaTestValueAB_filterMode_addBlend; // last one is bool
-const float2 amount_blend_modulate_vs_add;
-const float  flasherMode;
+const float4 alphaTestValueAB_filterMode_addBlend;     // last one is bool
+const float3 amount_blend_modulate_vs_add_flasherMode; // last one is integer
 
 texture Texture0; // base texture
 texture Texture1; // second image
@@ -61,12 +60,12 @@ float4 ps_main_noLight(const in VS_OUTPUT_2D IN) : COLOR
    float4 pixel1,pixel2;
    bool stop = false;
 
-   [branch] if (flasherMode < 2.) // Mode 0 & 1
+   [branch] if (amount_blend_modulate_vs_add_flasherMode.z < 2.) // Mode 0 & 1
    {
       pixel1 = tex2D(texSampler0, IN.tex0);
       stop = (pixel1.a <= alphaTestValueAB_filterMode_addBlend.x);
    }
-   [branch] if (flasherMode == 1.)
+   [branch] if (amount_blend_modulate_vs_add_flasherMode.z == 1.)
    {
       pixel2 = tex2D(texSampler1, IN.tex0);
       stop = (stop || pixel2.a <= alphaTestValueAB_filterMode_addBlend.y);
@@ -76,17 +75,17 @@ float4 ps_main_noLight(const in VS_OUTPUT_2D IN) : COLOR
 
    float4 result = staticColor_Alpha; // Mode 2 wires this through
 
-   if (flasherMode == 0.) // Mode 0 mods it by Texture
+   if (amount_blend_modulate_vs_add_flasherMode.z == 0.) // Mode 0 mods it by Texture
       result *= pixel1;
 
-   [branch] if (flasherMode == 1.) // Mode 1 allows blends between Tex 1 & 2, and then mods the staticColor with it
+   [branch] if (amount_blend_modulate_vs_add_flasherMode.z == 1.) // Mode 1 allows blends between Tex 1 & 2, and then mods the staticColor with it
    {
       [branch] if (alphaTestValueAB_filterMode_addBlend.z == Filter_Overlay)
          result *= OverlayHDR(pixel1,pixel2); // could be HDR
       if (alphaTestValueAB_filterMode_addBlend.z == Filter_Multiply)
-         result *= Multiply(pixel1,pixel2, amount_blend_modulate_vs_add.x);
+         result *= Multiply(pixel1,pixel2, amount_blend_modulate_vs_add_flasherMode.x);
       if (alphaTestValueAB_filterMode_addBlend.z == Filter_Additive)
-         result *= Additive(pixel1,pixel2, amount_blend_modulate_vs_add.x);
+         result *= Additive(pixel1,pixel2, amount_blend_modulate_vs_add_flasherMode.x);
       if (alphaTestValueAB_filterMode_addBlend.z == Filter_Screen)
          result *= ScreenHDR(pixel1,pixel2); // could be HDR
    }
@@ -94,8 +93,8 @@ float4 ps_main_noLight(const in VS_OUTPUT_2D IN) : COLOR
    if (alphaTestValueAB_filterMode_addBlend.w == 0.)
       return result;
    else
-      return float4(result.xyz*(-amount_blend_modulate_vs_add.y*result.a), // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
-                    1.0/amount_blend_modulate_vs_add.y - 1.0);
+      return float4(result.xyz*(-amount_blend_modulate_vs_add_flasherMode.y*result.a), // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
+                    1.0/amount_blend_modulate_vs_add_flasherMode.y - 1.0);
 }
 
 //

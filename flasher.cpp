@@ -1123,15 +1123,15 @@ void Flasher::RenderDynamic()
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    TRACE_FUNCTION();
-   
+
    //Don't render if LightSequence in play and state is off
    if (m_lockedByLS) 
    {
-       if (!m_inPlayState) return;
+      if (!m_inPlayState) return;
    }
    //Don't render if invisible (or DMD connection not set)
    else if (!m_d.m_isVisible || m_dynamicVertexBuffer == nullptr || m_ptable->m_reflectionEnabled || (m_d.m_isDMD && !g_pplayer->m_texdmd))
-       return;
+      return;
 
    const vec4 color = convertColor(m_d.m_color, (float)m_d.m_alpha*m_d.m_intensity_scale / 100.0f);
    if (color.w == 0.f)
@@ -1151,8 +1151,8 @@ void Flasher::RenderDynamic()
    {
        if (m_dynamicVertexBufferRegenerate)
        {
-         UpdateMesh();
-         m_dynamicVertexBufferRegenerate = false;
+          UpdateMesh();
+          m_dynamicVertexBufferRegenerate = false;
        }
 
        pd3dDevice->SetRenderStateDepthBias(0.0f);
@@ -1224,16 +1224,12 @@ void Flasher::RenderDynamic()
        Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
        Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
 
-       const vec4 ab((float)m_d.m_filterAmount / 100.0f, min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f), // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
-           0.f,0.f);
-       pd3dDevice->flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add, &ab);
-
        pd3dDevice->flasherShader->SetFlasherColorAlpha(color);
 
        vec4 flasherData(-1.f, -1.f, (float)m_d.m_filter, m_d.m_addBlend ? 1.f : 0.f);
-       float flasherMode;
        pd3dDevice->flasherShader->SetTechnique(SHADER_TECHNIQUE_basic_noLight);
 
+       float flasherMode;
        if ((pinA || m_isVideoCap) && !pinB)
        {
           flasherMode = 0.f;
@@ -1277,7 +1273,9 @@ void Flasher::RenderDynamic()
        else
           flasherMode = 2.f;
 
-       pd3dDevice->flasherShader->SetFlasherData(flasherData, flasherMode);
+       const vec4 flasherData2((float)m_d.m_filterAmount / 100.0f, min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f), // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
+          flasherMode, 0.f);
+       pd3dDevice->flasherShader->SetFlasherData(flasherData, flasherData2);
 
        pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
        g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_addBlend, false, false);

@@ -23,12 +23,12 @@
 //!! Todo tweak Enums for uniforms and techniques to reuse same numbers in different shaders/techniques. Reduces the array sizes, but might be hard to debug.
 enum shaderUniforms {
    //Floats
-   SHADER_blend_modulate_vs_add, SHADER_alphaTestValue, SHADER_flasherMode, SHADER_eye, SHADER_fKickerScale,
+   SHADER_blend_modulate_vs_add, SHADER_alphaTestValue, SHADER_eye, SHADER_fKickerScale,
    //Vectors and Float Arrays
    SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_lightCenter_maxRange, SHADER_lightColor2_falloff_power, SHADER_lightColor_intensity, SHADER_matrixBlock, SHADER_fenvEmissionScale_TexWidth,
    SHADER_invTableRes_playfield_height_reflection, SHADER_lightEmission, SHADER_lightPos, SHADER_orientation, SHADER_cAmbient_LightRange, SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp,
    SHADER_fDisableLighting_top_below, SHADER_backBoxSize, SHADER_quadOffsetScale, SHADER_quadOffsetScaleTex, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_alphaTestValueAB_filterMode_addBlend,
-   SHADER_amount_blend_modulate_vs_add, SHADER_staticColor_Alpha, SHADER_width_height_rotated_flipLR, SHADER_vRes_Alpha_time, SHADER_mirrorFactor, SHADER_SSR_bumpHeight_fresnelRefl_scale_FS, SHADER_AO_scale_timeblur,
+   SHADER_amount_blend_modulate_vs_add_flasherMode, SHADER_staticColor_Alpha, SHADER_width_height_rotated_flipLR, SHADER_vRes_Alpha_time, SHADER_mirrorFactor, SHADER_SSR_bumpHeight_fresnelRefl_scale_FS, SHADER_AO_scale_timeblur,
    //Integer and Bool
    SHADER_ignoreStereo, SHADER_disableLighting, SHADER_lightSources, SHADER_doNormalMapping, SHADER_hdrEnvTextures, SHADER_is_metal, SHADER_color_grade, SHADER_do_bloom, SHADER_lightingOff, SHADER_objectSpaceNormalMap, SHADER_do_dither,
    //Textures
@@ -64,7 +64,6 @@ typedef void ID3DXEffect;
 //Float
 #define SHADER_blend_modulate_vs_add "blend_modulate_vs_add"
 #define SHADER_alphaTestValue "alphaTestValue"
-#define SHADER_flasherMode "flasherMode"
 #define SHADER_eye "eye"
 #define SHADER_fKickerScale "fKickerScale"
 
@@ -90,7 +89,7 @@ typedef void ID3DXEffect;
 #define SHADER_vColor_Intensity "vColor_Intensity"
 #define SHADER_w_h_height "w_h_height"
 #define SHADER_alphaTestValueAB_filterMode_addBlend "alphaTestValueAB_filterMode_addBlend"
-#define SHADER_amount_blend_modulate_vs_add "amount_blend_modulate_vs_add"
+#define SHADER_amount_blend_modulate_vs_add_flasherMode "amount_blend_modulate_vs_add_flasherMode"
 #define SHADER_staticColor_Alpha "staticColor_Alpha"
 #define SHADER_width_height_rotated_flipLR "width_height_rotated_flipLR"
 #define SHADER_vRes_Alpha_time "vRes_Alpha_time"
@@ -272,17 +271,17 @@ public:
       return currentFlasherColor;
    }
 
-   void SetFlasherData(const vec4& color, const float mode)
+   void SetFlasherData(const vec4& c1, const vec4& c2)
    {
-      if (currentFlasherData.x != color.x || currentFlasherData.y != color.y || currentFlasherData.z != color.z || currentFlasherData.w != color.w)
+      if (currentFlasherData.x != c1.x || currentFlasherData.y != c1.y || currentFlasherData.z != c1.z || currentFlasherData.w != c1.w)
       {
-         currentFlasherData = color;
-         SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, &color);
+         currentFlasherData = c1;
+         SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, &c1);
       }
-      if (currentFlasherMode != mode)
+      if (currentFlasherData2.x != c2.x || currentFlasherData2.y != c2.y || currentFlasherData2.z != c2.z || currentFlasherData2.w != c2.w)
       {
-         currentFlasherMode = mode;
-         SetFloat(SHADER_flasherMode, mode);
+         currentFlasherData2 = c2;
+         SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, &c2);
       }
    }
 
@@ -394,7 +393,7 @@ private:
 
    vec4 currentFlasherColor; // all flasher only-data
    vec4 currentFlasherData;
-   float currentFlasherMode;
+   vec4 currentFlasherData2; // w unused
 
    vec4 currentLightColor; // all light only-data
    vec4 currentLightColor2;

@@ -2180,10 +2180,10 @@ Shader::Shader(RenderDevice *renderDevice) : currentMaterial(-FLT_MAX, -FLT_MAX,
    m_shader = nullptr;
    for (unsigned int i = 0; i < TEXTURESET_STATE_CACHE_SIZE; ++i)
       currentTexture[i] = nullptr;
-   currentFlasherMode = -FLT_MAX;
    currentAlphaTestValue = -FLT_MAX;
    currentDisableLighting =
    currentFlasherData =
+   currentFlasherData2 =
    currentFlasherColor =
    currentLightColor =
    currentLightColor2 =
