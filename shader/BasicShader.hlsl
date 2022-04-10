@@ -236,7 +236,10 @@ float4 ps_main_texture(const in VS_OUTPUT IN, uniform bool is_metal, uniform boo
    clip(pixel.a <= alphaTestValue ? - 1 : 1); // stop the pixel shader if alpha test should reject pixel
 
    pixel.a *= cBase_Alpha.a;
-   const float3 t = /*InvGamma*/(pixel.xyz); // uses automatic sRGB trafo instead in sampler!
+   if (fDisableLighting_top_below.x < 1.0) // if there is lighting applied, make sure to clamp the values (as it could be coming from a HDR tex)
+      pixel.xyz = saturate(pixel.xyz);
+
+   const float3 t = /*InvGamma*/(pixel.xyz); // uses automatic sRGB trafo instead in sampler! also by now e.g. primitives allow for HDR textures for lightmaps
 
    const float3 diffuse  = t*cBase_Alpha.xyz;
    const float3 glossy   = is_metal ? diffuse : (t*cGlossy_ImageLerp.w + (1.0-cGlossy_ImageLerp.w))*cGlossy_ImageLerp.xyz*0.08; //!! use AO for glossy? specular?
