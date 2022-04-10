@@ -2063,11 +2063,6 @@ STDMETHODIMP Primitive::put_Image(BSTR newVal)
    char szImage[MAXTOKEN];
    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
    const Texture * const tex = m_ptable->GetImage(szImage);
-   if (tex && tex->IsHDR())
-   {
-       ShowError("Cannot use a HDR image (.exr/.hdr) here");
-       return E_FAIL;
-   }
 
    m_d.m_szImage = szImage;
 
