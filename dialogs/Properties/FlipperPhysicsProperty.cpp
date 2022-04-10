@@ -39,7 +39,7 @@ void FlipperPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == 19 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_strengthEdit, flipper->m_d.m_strength);
         if (dispid == 28 || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_elasticityFalloffEdit, flipper->GetElastacityFalloff());
+            PropertyDialog::SetFloatTextbox(m_elasticityFalloffEdit, flipper->GetElasticityFalloff());
         if (dispid == 23 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_returnStrengthEdit, flipper->m_d.m_return);
         if (dispid == 27 || dispid == -1)
@@ -75,7 +75,7 @@ void FlipperPhysicsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_VALUE_SETTER(flipper->SetRampUp, flipper->GetRampUp, PropertyDialog::GetFloatTextbox, m_coilUpRampEdit, flipper);
                 break;
             case 28:
-                CHECK_UPDATE_VALUE_SETTER(flipper->SetElastacityFalloff, flipper->GetElastacityFalloff, PropertyDialog::GetFloatTextbox, m_elasticityFalloffEdit, flipper);
+                CHECK_UPDATE_VALUE_SETTER(flipper->SetElasticityFalloff, flipper->GetElasticityFalloff, PropertyDialog::GetFloatTextbox, m_elasticityFalloffEdit, flipper);
                 break;
             case 113:
                 CHECK_UPDATE_ITEM(flipper->m_d.m_torqueDamping, PropertyDialog::GetFloatTextbox(m_eosTorqueEdit), flipper);

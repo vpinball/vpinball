@@ -119,11 +119,11 @@ public:
       // ISupportsErrorInfo
       STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-      float     GetElastacityFalloff() const
+      float GetElasticityFalloff() const
       {
           return m_phitflipper ? m_phitflipper->m_elasticityFalloff : m_d.m_elasticityFalloff;
       }
-      void      SetElastacityFalloff(const float newVal)
+      void SetElasticityFalloff(const float newVal)
       {
           if (m_phitflipper)
           {
@@ -135,11 +135,12 @@ public:
               m_d.m_elasticityFalloff = newVal;
           }
       }
-      float     GetRampUp() const
+
+      float GetRampUp() const
       {
           return (m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)) ? m_d.m_OverrideCoilRampUp : m_d.m_rampUp;
       }
-      void      SetRampUp(const float value)
+      void SetRampUp(const float value)
       {
           if (m_phitflipper)
           {
@@ -151,7 +152,9 @@ public:
               m_d.m_rampUp = value;
           }
       }
-      void      SetReturn(const float value)
+
+      float GetReturn() const { return m_d.m_return; }
+      void SetReturn(const float value)
       {
           if (m_phitflipper)
           {
@@ -161,13 +164,9 @@ public:
           else
               m_d.m_return = clamp(value, 0.0f, 1.0f);
       }
-      float     GetReturn() const
-      {
-          return m_d.m_return;
-      }
 
-      float     GetFlipperRadiusMin() const { return m_d.m_FlipperRadiusMin; }
-      void      SetFlipperRadiusMin(const float value)
+      float GetFlipperRadiusMin() const { return m_d.m_FlipperRadiusMin; }
+      void SetFlipperRadiusMin(const float value)
       {
           m_d.m_FlipperRadiusMin = max(value,0.0f);
       }

@@ -1428,7 +1428,7 @@ STDMETHODIMP Flipper::get_ElasticityFalloff(float *pVal)
 
 STDMETHODIMP Flipper::put_ElasticityFalloff(float newVal)
 {
-   SetElastacityFalloff(newVal);
+   SetElasticityFalloff(newVal);
 
    return S_OK;
 }
