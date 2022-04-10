@@ -66,8 +66,6 @@ const float4 lightColor2_falloff_power;
 const float4 lightCenter_maxRange;
 const bool lightingOff;
 
-const bool hdrTexture0;
-
 struct VS_LIGHT_OUTPUT
 {
    float4 pos           : POSITION;
@@ -100,7 +98,7 @@ float4 PS_LightWithTexel(const in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : C
 {
     float4 pixel = tex2D(texSampler0, IN.tex0);
     //if (!hdrTexture0)
-    //    pixel.xyz = InvGamma(pixel.xyz); // done when reading the texture
+    //    pixel.xyz = InvGamma(pixel.xyz); // nowadays done when reading the texture
 
     float4 color;
     // no lighting if HUD vertices or passthrough mode

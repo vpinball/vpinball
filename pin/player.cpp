@@ -5424,15 +5424,9 @@ void Player::DrawBalls()
       m_ballShader->SetBool(SHADER_disableLighting, m_disableLightingForBalls);
 
       if (!pball->m_pinballEnv)
-      {
-         m_ballShader->SetBool(SHADER_hdrTexture0, m_pin3d.m_pinballEnvTexture.IsHDR()); // should always be false, as read from (LDR-Bitmap-)Resources
          m_ballShader->SetTexture(SHADER_Texture0, &m_pin3d.m_pinballEnvTexture, false);
-      }
       else
-      {
-         m_ballShader->SetBool(SHADER_hdrTexture0, pball->m_pinballEnv->IsHDR());
          m_ballShader->SetTexture(SHADER_Texture0, pball->m_pinballEnv, false);
-      }
 
       if (pball->m_pinballDecal)
          m_ballShader->SetTexture(SHADER_Texture3, pball->m_pinballDecal, false);

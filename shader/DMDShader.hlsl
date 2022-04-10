@@ -9,25 +9,26 @@ texture Texture0;
 
 sampler2D texSampler0 : TEXUNIT0 = sampler_state // DMD
 {
-	Texture	  = (Texture0);
+    Texture	  = (Texture0);
     MIPFILTER = NONE;
     MAGFILTER = POINT;
     MINFILTER = POINT;
     // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-	ADDRESSU  = MIRROR;
-	ADDRESSV  = MIRROR;
+    ADDRESSU  = MIRROR;
+    ADDRESSV  = MIRROR;
+    SRGBTexture = false; //!! 0..100 false, but RGB true ???
 };
 
 sampler2D texSampler1 : TEXUNIT0 = sampler_state // Sprite
 {
-	Texture	  = (Texture0);
+    Texture	  = (Texture0);
     MIPFILTER = LINEAR;
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
     // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-	ADDRESSU  = MIRROR;
-	ADDRESSV  = MIRROR;
-	SRGBTexture = true;
+    ADDRESSU  = MIRROR;
+    ADDRESSV  = MIRROR;
+    SRGBTexture = true;
 };
 
 //

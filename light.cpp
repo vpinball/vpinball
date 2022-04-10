@@ -473,7 +473,6 @@ void Light::RenderDynamic()
 
       if (offTexel != nullptr)
       {
-         pd3dDevice->classicLightShader->SetBool(SHADER_hdrTexture0, offTexel->IsHDR());
          pd3dDevice->classicLightShader->SetTechniqueMetal(SHADER_TECHNIQUE_light_with_texture, m_surfaceMaterial->m_bIsMetal);
          pd3dDevice->classicLightShader->SetTexture(SHADER_Texture0, offTexel, false);
          // Was: if (m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl && !m_backglass)*/

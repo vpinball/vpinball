@@ -20,22 +20,23 @@ texture  Texture3; // decal
 
 sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
 {
-	Texture	  = (Texture0);
+    Texture	  = (Texture0);
     //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic
     //MAGFILTER = LINEAR;
     //MINFILTER = LINEAR;
-	//ADDRESSU  = Wrap; //!! ?
-	//ADDRESSV  = Wrap;
+    //ADDRESSU  = Wrap; //!! ?
+    //ADDRESSV  = Wrap;
+    SRGBTexture = true;
 };
 
 sampler2D texSampler1 : TEXUNIT1 = sampler_state // playfield (should actually be environment if specular and glossy needed/enabled in lightloop!)
 {
-	Texture	  = (Texture1);
+    Texture	  = (Texture1);
     MIPFILTER = LINEAR; //!! ?
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
-	ADDRESSU  = Wrap;
-	ADDRESSV  = Wrap;
+    ADDRESSU  = Wrap;
+    ADDRESSV  = Wrap;
 };
 
 sampler2D texSampler2 : TEXUNIT2 = sampler_state // diffuse environment contribution/radiance
@@ -68,7 +69,6 @@ const float4   invTableRes_playfield_height_reflection;
 
 const float4x3 orientation;
 
-const bool     hdrTexture0;
 const bool     disableLighting;
 
 //------------------------------------
@@ -253,8 +253,6 @@ float4 psBall( const in vout IN, uniform bool cabMode, uniform bool decalMode ) 
 
     const float2 uv0 = cabMode ? float2(r.y*-m + 0.5, r.x*-m + 0.5) : float2(r.x*-m + 0.5, r.y*m + 0.5);
     float3 ballImageColor = tex2Dlod(texSampler0, float4(uv0, 0., lod)).xyz;
-    if (!hdrTexture0)
-        ballImageColor = InvGamma(ballImageColor);
 
     const float4 decalColorT = tex2D(texSampler7, float2(IN.normal_t0x.w,IN.worldPos_t0y.w));
     float3 decalColor = InvGamma(decalColorT.xyz);
@@ -319,8 +317,6 @@ float4 psBallReflection( const in voutReflection IN ) : COLOR
 {
    const float2 envTex = cabMode ? float2(IN.r.y*0.5f + 0.5f, -IN.r.x*0.5f + 0.5f) : float2(IN.r.x*0.5f + 0.5f, IN.r.y*0.5f + 0.5f);
    float3 ballImageColor = tex2D(texSampler0, envTex).xyz;
-   if (!hdrTexture0)
-      ballImageColor = InvGamma(ballImageColor);
    ballImageColor = (cBase_Alpha.xyz*(0.075*0.25) + ballImageColor)*fenvEmissionScale_TexWidth.x; //!! just add the ballcolor in, this is a whacky reflection anyhow
    float alpha = saturate((IN.tex0.y - position_radius.y) / position_radius.w);
    alpha = (alpha*alpha)*(alpha*alpha)*reflection_ball_playfield;
@@ -330,9 +326,7 @@ float4 psBallReflection( const in voutReflection IN ) : COLOR
 
 float4 psBallTrail( in voutTrail IN ) : COLOR
 {
-   float3 ballImageColor = tex2D(texSampler0, IN.tex0_alpha.xy).xyz;
-   if (!hdrTexture0)
-      ballImageColor = InvGamma(ballImageColor);
+   const float3 ballImageColor = tex2D(texSampler0, IN.tex0_alpha.xy).xyz;
    if (disableLighting)
       return float4(ballImageColor, IN.tex0_alpha.z);
    else

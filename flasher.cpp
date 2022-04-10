@@ -1224,22 +1224,9 @@ void Flasher::RenderDynamic()
        Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
        Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
 
-       bool hdrTex0;
-       if (pinA && !pinB)
-           hdrTex0 = pinA->IsHDR();
-       else if (!pinA && pinB)
-           hdrTex0 = pinB->IsHDR();
-       else if (pinA && pinB)
-           hdrTex0 = pinA->IsHDR();
-       else
-           hdrTex0 = false;
-
-       if (m_isVideoCap)
-           hdrTex0 = false;
-
        const vec4 ab((float)m_d.m_filterAmount / 100.0f, min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f), // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
-           hdrTex0 ? 1.f : 0.f, ((pinA || m_isVideoCap) && pinB && pinB->IsHDR()) ? 1.f : 0.f);
-       pd3dDevice->flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_hdrTexture01, &ab);
+           0.f,0.f);
+       pd3dDevice->flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add, &ab);
 
        pd3dDevice->flasherShader->SetFlasherColorAlpha(color);
 
