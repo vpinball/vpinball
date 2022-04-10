@@ -12,6 +12,7 @@ FEATURES:
 - add more columns to the search/select dialog (Physics Material, Collection, Collidable, Visible, Timer enabled, Depth Bias, Static Rendering, Reflections enabled)
 
 - add additive blending to primitives (same as flashers)
+- support HDR textures on primitives (same as flashers), full high dynamic range is only available if lighting disabled though (otherwise clamped to 0..1)
 
 FIXES:
 
