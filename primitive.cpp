@@ -453,8 +453,7 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
 
    //
 
-   // playfield can't be a toy
-   if (m_d.m_toy && !m_d.m_useAsPlayfield)
+   if (m_d.m_toy)
       return;
 
    RecalculateMatrices();
@@ -595,33 +594,29 @@ void Primitive::AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigne
 void Primitive::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
 {
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
-   if (!m_d.m_useAsPlayfield)
+   if (m_d.m_useAsPlayfield)
    {
-       if (mat != nullptr && !m_d.m_overwritePhysics)
-       {
-           obj->m_elasticity = mat->m_fElasticity;
-           obj->m_elasticityFalloff = mat->m_fElasticityFalloff;
-           obj->SetFriction(mat->m_fFriction);
-           obj->m_scatter = ANGTORAD(mat->m_fScatterAngle);
-       }
-       else
-       {
-           obj->m_elasticity = m_d.m_elasticity;
-           obj->m_elasticityFalloff = m_d.m_elasticityFalloff;
-           obj->SetFriction(m_d.m_friction);
-           obj->m_scatter = ANGTORAD(m_d.m_scatter);
-       }
-
-       obj->m_enabled = m_d.m_collidable;
+      obj->m_elasticity = m_ptable->m_elasticity;
+      obj->m_elasticityFalloff = m_ptable->m_elasticityFalloff;
+      obj->SetFriction(m_ptable->m_friction);
+      obj->m_scatter = ANGTORAD(m_ptable->m_scatter);
+   }
+   else if (mat != nullptr && !m_d.m_overwritePhysics)
+   {
+       obj->m_elasticity = mat->m_fElasticity;
+       obj->m_elasticityFalloff = mat->m_fElasticityFalloff;
+       obj->SetFriction(mat->m_fFriction);
+       obj->m_scatter = ANGTORAD(mat->m_fScatterAngle);
    }
    else
    {
-       obj->m_elasticity = m_ptable->m_elasticity;
-       obj->m_elasticityFalloff = m_ptable->m_elasticityFalloff;
-       obj->SetFriction(m_ptable->m_friction);
-       obj->m_scatter = ANGTORAD(m_ptable->m_scatter);
-       obj->m_enabled = true;
+       obj->m_elasticity = m_d.m_elasticity;
+       obj->m_elasticityFalloff = m_d.m_elasticityFalloff;
+       obj->SetFriction(m_d.m_friction);
+       obj->m_scatter = ANGTORAD(m_d.m_scatter);
    }
+
+   obj->m_enabled = m_d.m_collidable;
    obj->m_threshold = m_d.m_threshold;
    obj->m_ObjType = ePrimitive;
    obj->m_obj = (IFireEvents *)this;
