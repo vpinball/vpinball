@@ -13,7 +13,7 @@ FEATURES:
 
 - add additive blending to primitives (same as flashers)
 - support HDR textures on primitives (same as flashers), full high dynamic range is only available if lighting disabled though (otherwise clamped to 0..1)
-- allows playfield_mesh to be not collidable (or a toy). In this case another collidable object must be included for the playfield to avoid ball falling indefinitely.
+- allow playfield mesh to optionally be not collidable (or a toy). In that case another collidable object must be added as the playfield. This allows to use different meshes for the physics and the visuals.
 
 FIXES:
 

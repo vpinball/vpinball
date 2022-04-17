@@ -3641,7 +3641,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             for (size_t i = 0; i < m_materials.size(); ++i)
                m_materials[i]->m_fThickness = 0.05f;
 
-         if (loadfileversion < 1072) // playfield_mesh were always collidable until 10.72
+         if (loadfileversion < 1072) // playfield meshes were always forced as collidable until 10.7.1
             for (size_t i = 0; i < m_vedit.size(); ++i)
                if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && strcmp(m_vedit[i]->GetName(), "playfield_mesh") == 0)
                {

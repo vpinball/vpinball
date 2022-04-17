@@ -1056,7 +1056,7 @@ void Pin3D::InitLayout(const bool FSS_mode, const float xpixoff, const float ypi
 void Pin3D::InitPlayfieldGraphics()
 {
    const IEditable * const piEdit = g_pplayer->m_ptable->GetElementByName("playfield_mesh");
-   if (piEdit == nullptr)
+   if (piEdit == nullptr || piEdit->GetItemType() != ItemTypeEnum::eItemPrimitive)
    {
       assert(m_tableVBuffer == nullptr);
       VertexBuffer::CreateVertexBuffer(4, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_tableVBuffer, PRIMARY_DEVICE);
@@ -1131,7 +1131,14 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
    }
    else
    {
-      const IEditable * const piEdit = g_pplayer->m_ptable->GetElementByName("playfield_mesh");
+      const IEditable* piEdit = nullptr;
+      for (size_t i = 0; i < g_pplayer->m_ptable->m_vedit.size(); ++i)
+         if (g_pplayer->m_ptable->m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && strcmp(g_pplayer->m_ptable->m_vedit[i]->GetName(), "playfield_mesh") == 0)
+         {
+            if (piEdit == nullptr || ((Primitive*)piEdit)->m_d.m_toy || !((Primitive*)piEdit)->m_d.m_collidable) // either the first playfield mesh OR a toy/not-collidable (i.e. only used for visuals)?
+               piEdit = g_pplayer->m_ptable->m_vedit[i];
+         }
+
       Primitive * const pPrim = (Primitive *)piEdit;
       pPrim->m_d.m_visible = true;  // temporary enable the otherwise invisible playfield
       pPrim->RenderObject();

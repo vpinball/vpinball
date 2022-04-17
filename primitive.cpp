@@ -637,6 +637,7 @@ void Primitive::EndPlay()
       m_vertexBufferRegenerate = true;
    }
    SAFE_BUFFER_RELEASE(m_indexBuffer);
+
    m_d.m_skipRendering = false;
    m_d.m_groupdRendering = false;
 
