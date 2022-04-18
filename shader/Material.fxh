@@ -108,9 +108,7 @@ float3 DoEnvmapDiffuse(const float3 N, const float3 diffuse)
 		0.5 + atan2_approx_div2PI(N.y, N.x),
 		acos_approx_divPI(N.z));
 
-   float3 env = tex2Dlod(texSampler2, float4(uv, 0.,0.)).xyz;
-   if (!hdrEnvTextures)
-       env = InvGamma(env);
+   const float3 env = tex2Dlod(texSampler2, float4(uv, 0.,0.)).xyz;
    return diffuse * env*fenvEmissionScale_TexWidth.x;
 }
 
@@ -119,9 +117,7 @@ float3 DoEnvmapDiffuse(const float3 N, const float3 diffuse)
 float3 DoEnvmapGlossy(const float3 N, const float3 V, const float2 Ruv, const float3 glossy, const float glossyPower)
 {
    const float mip = min(log2(fenvEmissionScale_TexWidth.y * sqrt(3.0)) - 0.5*log2(glossyPower + 1.0), log2(fenvEmissionScale_TexWidth.y)-1.); //!! do diffuse lookup instead of this limit/min, if too low?? and blend?
-   float3 env = tex2Dlod(texSampler1, float4(Ruv, 0., mip)).xyz;
-   if (!hdrEnvTextures)
-       env = InvGamma(env);
+   const float3 env = tex2Dlod(texSampler1, float4(Ruv, 0., mip)).xyz;
    return glossy * env*fenvEmissionScale_TexWidth.x;
 }
 
@@ -129,9 +125,7 @@ float3 DoEnvmapGlossy(const float3 N, const float3 V, const float2 Ruv, const fl
 float3 DoEnvmap2ndLayer(const float3 color1stLayer, const float3 pos, const float3 N, const float3 V, const float NdotV, const float2 Ruv, const float3 specular)
 {
    const float3 w = FresnelSchlick(specular, NdotV, Roughness_WrapL_Edge_Thickness.z); //!! ?
-   float3 env = tex2Dlod(texSampler1, float4(Ruv, 0., 0.)).xyz;
-   if (!hdrEnvTextures)
-       env = InvGamma(env);
+   const float3 env = tex2Dlod(texSampler1, float4(Ruv, 0., 0.)).xyz;
    return lerp(color1stLayer, env*fenvEmissionScale_TexWidth.x, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular
 }
 

@@ -9,7 +9,7 @@ texture Texture0;
 
 sampler2D texSampler0 : TEXUNIT0 = sampler_state // DMD
 {
-    Texture	  = (Texture0);
+    Texture   = (Texture0);
     MIPFILTER = NONE;
     MAGFILTER = POINT;
     MINFILTER = POINT;
@@ -21,7 +21,7 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state // DMD
 
 sampler2D texSampler1 : TEXUNIT0 = sampler_state // Sprite
 {
-    Texture	  = (Texture0);
+    Texture   = (Texture0);
     MIPFILTER = LINEAR;
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
@@ -39,7 +39,7 @@ struct VS_OUTPUT
 { 
    float4 pos  : POSITION;
    float2 tex0 : TEXCOORD0;
-}; 
+};
 
 VS_OUTPUT vs_main (const in float4 vPosition : POSITION0,
                    const in float2 tc        : TEXCOORD0)
@@ -48,7 +48,7 @@ VS_OUTPUT vs_main (const in float4 vPosition : POSITION0,
 
    Out.pos = float4(vPosition.xy, 0.0,1.0);
    Out.tex0 = tc;
-   
+
    return Out;
 }
 
@@ -58,12 +58,12 @@ const float4x4 matWorldViewProj : WORLDVIEWPROJ;
 VS_OUTPUT vs_simple_world(const in float4 vPosition : POSITION0,
                           const in float2 tc : TEXCOORD0)
 {
-    VS_OUTPUT Out;
+   VS_OUTPUT Out;
 
-    Out.pos = mul(vPosition, matWorldViewProj);
-    Out.tex0 = tc;
+   Out.pos = mul(vPosition, matWorldViewProj);
+   Out.tex0 = tc;
 
-    return Out;
+   return Out;
 }
 
 //

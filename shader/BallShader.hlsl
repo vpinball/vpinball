@@ -20,7 +20,7 @@ texture  Texture3; // decal
 
 sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
 {
-    Texture	  = (Texture0);
+    Texture   = (Texture0);
     //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic
     //MAGFILTER = LINEAR;
     //MINFILTER = LINEAR;
@@ -31,35 +31,36 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
 
 sampler2D texSampler1 : TEXUNIT1 = sampler_state // playfield (should actually be environment if specular and glossy needed/enabled in lightloop!)
 {
-    Texture	  = (Texture1);
+    Texture   = (Texture1);
     MIPFILTER = LINEAR; //!! ?
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
     ADDRESSU  = Wrap;
     ADDRESSV  = Wrap;
+    SRGBTexture = true;
 };
 
 sampler2D texSampler2 : TEXUNIT2 = sampler_state // diffuse environment contribution/radiance
 {
-	Texture	  = (Texture2);
+    Texture   = (Texture2);
     MIPFILTER = NONE;
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
-	ADDRESSU  = Wrap;
-	ADDRESSV  = Clamp;
+    ADDRESSU  = Wrap;
+    ADDRESSV  = Clamp;
+    SRGBTexture = true;
 };
 
 sampler2D texSampler7 : TEXUNIT3 = sampler_state // ball decal
 {
-	Texture	  = (Texture3);
+    Texture   = (Texture3);
     MIPFILTER = LINEAR;
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
-	ADDRESSU  = Wrap;
-	ADDRESSV  = Wrap;
+    ADDRESSU  = Wrap;
+    ADDRESSV  = Wrap;
+    SRGBTexture = true;
 };
-
-const bool     hdrEnvTextures;
 
 #include "Material.fxh"
 
@@ -255,7 +256,7 @@ float4 psBall( const in vout IN, uniform bool cabMode, uniform bool decalMode ) 
     float3 ballImageColor = tex2Dlod(texSampler0, float4(uv0, 0., lod)).xyz;
 
     const float4 decalColorT = tex2D(texSampler7, float2(IN.normal_t0x.w,IN.worldPos_t0y.w));
-    float3 decalColor = InvGamma(decalColorT.xyz);
+    float3 decalColor = decalColorT.xyz;
     if (!decalMode)
     {
        // decal texture is an alpha scratch texture and must be added to the ball texture
@@ -286,7 +287,7 @@ float4 psBall( const in vout IN, uniform bool cabMode, uniform bool decalMode ) 
 
        const float2 uv = mul_w1(playfield_hit, matWorldViewInverse).xy * invTableRes_playfield_height_reflection.xy;
        playfieldColor = (t < 0.) ? float3(0.,0.,0.) // happens for example when inside kicker
-                                 : InvGamma(tex2Dlod(texSampler1, float4(uv, 0., 0.)).xyz)*invTableRes_playfield_height_reflection.w; //!! rather use screen space sample from previous frame??
+                                 : tex2Dlod(texSampler1, float4(uv, 0., 0.)).xyz * invTableRes_playfield_height_reflection.w; //!! rather use screen space sample from previous frame??
 
        //!! hack to get some lighting on reflection sample, but only diffuse, the rest is not setup correctly anyhow
        playfieldColor = PFlightLoop(playfield_hit, playfield_normal, playfieldColor);

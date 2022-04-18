@@ -18,33 +18,35 @@ texture Texture2; // envmap radiance
  
 sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
 {
-	Texture	  = (Texture0);
+    Texture   = (Texture0);
     //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic
     //MAGFILTER = LINEAR;
     //MINFILTER = LINEAR;
-	//ADDRESSU  = Wrap; //!! ?
-	//ADDRESSV  = Wrap;
-	SRGBTexture = true;
+    //ADDRESSU  = Wrap; //!! ?
+    //ADDRESSV  = Wrap;
+    SRGBTexture = true;
 };
 
 sampler2D texSampler1 : TEXUNIT1 = sampler_state // environment
 {
-	Texture	  = (Texture1);
+    Texture   = (Texture1);
     MIPFILTER = LINEAR; //!! ?
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
-	ADDRESSU  = Wrap;
-	ADDRESSV  = Clamp;
+    ADDRESSU  = Wrap;
+    ADDRESSV  = Clamp;
+    SRGBTexture = true;
 };
 
 sampler2D texSampler2 : TEXUNIT2 = sampler_state // diffuse environment contribution/radiance
 {
-	Texture	  = (Texture2);
+    Texture   = (Texture2);
     MIPFILTER = NONE;
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
-	ADDRESSU  = Wrap;
-	ADDRESSV  = Clamp;
+    ADDRESSU  = Wrap;
+    ADDRESSV  = Clamp;
+    SRGBTexture = true;
 };
 
 #include "Material.fxh"
@@ -57,8 +59,6 @@ const float3 cClearcoat_EdgeAlpha; // actually doesn't feature edge-alpha
 //!! Metals have high specular reflectance:  0.5-1.0
 
 //const float  alphaTestValue;
-
-const bool hdrEnvTextures;
 #endif
 
 const float4 lightColor_intensity;

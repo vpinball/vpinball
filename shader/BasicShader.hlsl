@@ -19,7 +19,7 @@ texture Texture4; // normal map
 
 sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
 {
-    Texture	  = (Texture0);
+    Texture   = (Texture0);
     //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic
     //MAGFILTER = LINEAR;
     //MINFILTER = LINEAR;
@@ -30,27 +30,29 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
 
 sampler2D texSampler1 : TEXUNIT1 = sampler_state // environment
 {
-    Texture	  = (Texture1);
+    Texture   = (Texture1);
     MIPFILTER = LINEAR; //!! ?
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
     ADDRESSU  = Wrap;
     ADDRESSV  = Clamp;
+    SRGBTexture = true;
 };
 
 sampler2D texSampler2 : TEXUNIT2 = sampler_state // diffuse environment contribution/radiance
 {
-    Texture	  = (Texture2);
+    Texture   = (Texture2);
     MIPFILTER = NONE;
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
     ADDRESSU  = Wrap;
     ADDRESSV  = Clamp;
+    SRGBTexture = true;
 };
 
 sampler2D texSamplerBL : TEXUNIT3 = sampler_state // bulb light/transmission buffer texture
 {
-    Texture	  = (Texture3);
+    Texture   = (Texture3);
     MIPFILTER = NONE; //!! ??
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
@@ -68,7 +70,6 @@ sampler2D texSamplerN : TEXUNIT4 = sampler_state // normal map texture
     //ADDRESSV  = Wrap;
 };
 
-const bool hdrEnvTextures;
 const bool objectSpaceNormalMap;
 
 #include "Material.fxh"
