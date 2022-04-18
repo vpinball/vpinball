@@ -1335,6 +1335,14 @@ void Primitive::RenderDynamic()
            return;
        if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
            return;
+       if (m_d.m_addBlend)
+       {
+          const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
+          if (color.w == 0.f)
+             return;
+          if (color.x == 0.f && color.y == 0.f && color.z == 0.f)
+             return;
+       }
    }
 
    RenderObject();

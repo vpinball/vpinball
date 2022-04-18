@@ -136,7 +136,7 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
    const float glossyMax = max(glossy.x,max(glossy.y,glossy.z));
    const float specularMax = max(specular.x,max(specular.y,specular.z)); //!! not needed as 2nd layer only so far
    const float sum = diffuseMax + glossyMax /*+ specularMax*/;
-   if (sum > 1.0)
+   if (sum > 1.0 && fDisableLighting_top_below.x < 1.0)
    {
       const float invsum = 1.0/sum;
       diffuse  *= invsum;
