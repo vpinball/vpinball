@@ -371,18 +371,6 @@ void Light::RenderDynamic()
 
    TRACE_FUNCTION();
 
-   if (!m_d.m_visible || m_ptable->m_reflectionEnabled)
-      return;
-
-   if (m_customMoverVBuffer == nullptr) // in case of degenerate light
-      return;
-
-   if (m_backglass && !GetPTable()->GetDecalsEnabled())
-      return;
-
-   if (m_d.m_BulbLight && m_d.m_showBulbMesh && !m_d.m_staticBulbMesh)
-      RenderBulbMesh();
-
    const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
    m_d.m_time_msec = g_pplayer->m_time_msec;
    const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
@@ -417,6 +405,18 @@ void Light::RenderDynamic()
             m_d.m_currentIntensity = 0.0f;
       }
    }
+
+   if (!m_d.m_visible || m_ptable->m_reflectionEnabled)
+      return;
+
+   if (m_customMoverVBuffer == nullptr) // in case of degenerate light
+      return;
+
+   if (m_backglass && !GetPTable()->GetDecalsEnabled())
+      return;
+
+   if (m_d.m_BulbLight && m_d.m_showBulbMesh && !m_d.m_staticBulbMesh)
+      RenderBulbMesh();
 
    Texture *offTexel = nullptr;
 
