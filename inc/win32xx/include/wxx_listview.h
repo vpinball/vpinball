@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -59,7 +59,7 @@ namespace Win32xx
         virtual void PreCreate(CREATESTRUCT& cs);
         virtual void PreRegisterClass(WNDCLASS& wc);
 
-        // Attributes
+        // Accessors and mutators
         CSize   ApproximateViewRect(CSize sz = CSize(-1, -1), int count = -1) const;
         COLORREF GetBkColor( ) const;
         BOOL    GetBkImage( LVBKIMAGE& image ) const;
@@ -139,7 +139,7 @@ namespace Win32xx
         int     HitTest( LVHITTESTINFO& hitTestInfo ) const;
         int     HitTest( CPoint pt, UINT* flags = NULL ) const;
         int     InsertColumn( int col, const LVCOLUMN& colInfo ) const;
-        int     InsertColumn( int col, LPCTSTR pColumnHeading, int format = LVCFMT_LEFT,
+        int     InsertColumn( int col, LPCTSTR columnHeading, int format = LVCFMT_LEFT,
                             int width = -1, int subItem = -1 ) const;
         int     InsertItem( const LVITEM& itemInfo ) const;
         int     InsertItem( int item, LPCTSTR text ) const;
@@ -886,7 +886,7 @@ namespace Win32xx
     //  LVCFMT_LEFT               Text is left-aligned.
     //  LVCFMT_RIGHT              Text is right-aligned.
     // Refer to ListView_InsertColumn in the Windows API documentation for more information.
-    inline int CListView::InsertColumn( int col, LPCTSTR pColumnHeading, int format /*= LVCFMT_LEFT*/,
+    inline int CListView::InsertColumn( int col, LPCTSTR columnHeading, int format /*= LVCFMT_LEFT*/,
                         int width /*= -1*/, int subItem /*= -1*/ ) const
     {
         assert(IsWindow());
@@ -906,7 +906,7 @@ namespace Win32xx
         }
 
         lvc.iOrder = col;
-        lvc.pszText = const_cast<LPTSTR>(pColumnHeading);
+        lvc.pszText = const_cast<LPTSTR>(columnHeading);
         lvc.fmt = format;
         lvc.iSubItem = subItem;
         return ListView_InsertColumn( *this, col, &lvc );

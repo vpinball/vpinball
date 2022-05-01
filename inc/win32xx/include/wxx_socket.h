@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -126,8 +126,9 @@
 #ifndef _WIN32XX_SOCKET_H_
 #define _WIN32XX_SOCKET_H_
 
-// include exception handling, TRACE etc.
+// CSocket requires features from the Win32++ framework.
 #include "wxx_wincore.h"
+#include "wxx_thread.h"
 #include "wxx_mutex.h"
 
 // Work around a bugs in older versions of Visual Studio
@@ -138,11 +139,10 @@
 
 #include <WS2tcpip.h>
 
-#define THREAD_TIMEOUT 100
-
 
 namespace Win32xx
 {
+    const int THREAD_TIMEOUT = 100;
 
     typedef int  WINAPI GETADDRINFO(LPCSTR, LPCSTR, const struct addrinfo*, struct addrinfo**);
     typedef void WINAPI FREEADDRINFO(struct addrinfo*);
@@ -184,7 +184,7 @@ namespace Win32xx
         virtual void StartEvents();
         virtual void StopEvents();
 
-        // Attributes
+        // Accessors and mutators
         virtual int  GetPeerName(struct sockaddr* name, int* namelen) const;
         virtual int  GetSockName(struct sockaddr* name, int* namelen) const;
         SOCKET& GetSocket() { return m_socket; }
@@ -212,7 +212,7 @@ namespace Win32xx
 
         SOCKET m_socket;
         HMODULE m_ws2_32;
-        ThreadPtr m_threadPtr;              // Smart pointer to the worker thread for the events
+        WorkThreadPtr m_threadPtr;          // Smart pointer to the worker thread for the events
         CEvent m_stopRequest;               // A manual reset event to signal the event thread should stop
 
         GETADDRINFO* m_pfnGetAddrInfo;      // pointer for the getaddrinfo function
@@ -237,15 +237,10 @@ namespace Win32xx
         if (m_ws2_32 == 0)
             throw CNotSupportedException(GetApp()->MsgSocWS2Dll());
 
-#ifdef _WIN32_WCE
-        m_pfnGetAddrInfo = reinterpret_cast<GETADDRINFO*>( GetProcAddress(m_ws2_32, L"getaddrinfo") );
-        m_pfnFreeAddrInfo = reinterpret_cast<FREEADDRINFO*>( GetProcAddress(m_ws2_32, L"freeaddrinfo") );
-#else
         m_pfnGetAddrInfo = reinterpret_cast<GETADDRINFO*>( GetProcAddress(m_ws2_32, "getaddrinfo") );
         m_pfnFreeAddrInfo = reinterpret_cast<FREEADDRINFO*>( GetProcAddress(m_ws2_32, "freeaddrinfo") );
-#endif
 
-        ThreadPtr threadPtr(new CWinThread(EventThread, this));
+        WorkThreadPtr threadPtr(new CWorkThread(EventThread, this));
         m_threadPtr = threadPtr;
     }
 
@@ -596,8 +591,7 @@ namespace Win32xx
 
         FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS |
                       FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_MAX_WIDTH_MASK,
-                      NULL, errorCode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                      reinterpret_cast<LPTSTR>(&message), 1024, NULL);
+                      NULL, errorCode, 0, reinterpret_cast<LPTSTR>(&message), 1024, NULL);
 
         if (message)
         {

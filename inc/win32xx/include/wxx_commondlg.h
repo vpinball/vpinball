@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -70,15 +70,12 @@
 
 namespace Win32xx
 {
-
-#ifndef _WIN32_WCE
     // registered message used by common dialogs
     const UINT UWM_HELPMSGSTRING = ::RegisterWindowMessage(HELPMSGSTRING);      // Used by common dialogs. Sent when the user clicks the Help button.
     const UINT UWM_FILEOKSTRING  = ::RegisterWindowMessage(FILEOKSTRING);       // Used by common dialogs. Sent when the user specifies a file name and clicks the OK button.
     const UINT UWM_LBSELCHSTRING = ::RegisterWindowMessage(LBSELCHSTRING);      // Used by the File common dialog. Sent when the selection changes in any of the list boxes or combo boxes.
     const UINT UWM_SHAREVISTRING = ::RegisterWindowMessage(SHAREVISTRING);      // Used by the File common dialog. Sent if a sharing violation occurs for the selected file when the user clicks the OK button.
     const UINT UWM_FINDMSGSTRING = ::RegisterWindowMessage(FINDMSGSTRING);      // Used by the Find/Replace common dialog. Sent when the user clicks the Find Next, Replace, or Replace All button, or closes the dialog box.
-#endif
 
 
     //////////////////////////////////////////////////////////
@@ -90,6 +87,7 @@ namespace Win32xx
         virtual ~CCommonDialog(){}
 
     protected:
+        virtual BOOL    IsModal() const { return TRUE; }
         virtual void    OnCancel()  {}  // a required to override
         virtual void    OnHelpButton();
         virtual BOOL    OnInitDialog();
@@ -114,10 +112,10 @@ namespace Win32xx
         virtual ~CColorDialog(){}
 
         virtual INT_PTR DoModal(HWND owner = 0);
-        COLORREF  GetColor() const              { return m_ofn.rgbResult;}
-        COLORREF* GetCustomColors()             { return m_customColors;}
-        const CHOOSECOLOR& GetParameters() const { return m_ofn; }
-        void    SetColor(COLORREF clr)          { m_ofn.rgbResult = clr;}
+        COLORREF  GetColor() const               { return m_cc.rgbResult;}
+        COLORREF* GetCustomColors()              { return m_customColors;}
+        const CHOOSECOLOR& GetParameters() const { return m_cc; }
+        void    SetColor(COLORREF clr)           { m_cc.rgbResult = clr;}
         void    SetCustomColors(const COLORREF* pColors = NULL);
         void    SetParameters(const CHOOSECOLOR& cc);
 
@@ -131,7 +129,7 @@ namespace Win32xx
         CColorDialog(const CColorDialog&);              // Disable copy construction
         CColorDialog& operator = (const CColorDialog&); // Disable assignment operator
 
-        CHOOSECOLOR     m_ofn;                   // ChooseColor parameters
+        CHOOSECOLOR     m_cc;                    // ChooseColor parameters
         COLORREF        m_customColors[16];      // Custom colors array
     };
 
@@ -145,11 +143,11 @@ namespace Win32xx
 
         // Constructor/destructor
         CFileDialog (BOOL isOpenFileDialog = TRUE,
-                LPCTSTR pDefExt = NULL,
-                LPCTSTR pInitFileDir = NULL,
-                LPCTSTR pFileName = NULL,
+                LPCTSTR defExt = NULL,
+                LPCTSTR initFileDir = NULL,
+                LPCTSTR fileName = NULL,
                 DWORD   flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-                LPCTSTR pFilter   = NULL );
+                LPCTSTR filter   = NULL );
 
         virtual ~CFileDialog()  {}
 
@@ -166,11 +164,11 @@ namespace Win32xx
 
         // methods for setting parameters before DoModal()
         BOOL    IsOpenFileDialog()  const           { return m_isOpenFileDialog; }
-        void    SetDefExt(LPCTSTR pExt);
-        void    SetFileName(LPCTSTR pFileName);
-        void    SetFilter(LPCTSTR pFilter);
+        void    SetDefExt(LPCTSTR ext);
+        void    SetFileName(LPCTSTR fileName);
+        void    SetFilter(LPCTSTR filter);
         void    SetParameters(const OPENFILENAME& ofn);
-        void    SetTitle(LPCTSTR pTitle);
+        void    SetTitle(LPCTSTR title);
 
         // Enumerating multiple file selections
         CString GetNextPathName(int& pos) const;
@@ -183,7 +181,7 @@ namespace Win32xx
         virtual void    OnInitDone();
         virtual void    OnLBSelChangedNotify(UINT boxID, UINT curSel, UINT code);
         virtual LRESULT OnNotify(WPARAM, LPARAM);
-        virtual LRESULT OnShareViolation(LPCTSTR pPathName);
+        virtual LRESULT OnShareViolation(LPCTSTR pathName);
         virtual void    OnTypeChange();
 
         // Not intended to be overridden
@@ -213,8 +211,8 @@ namespace Win32xx
 
         virtual HWND Create(HWND parent = 0);
         virtual BOOL Create(BOOL isFindDialogOnly,
-                        LPCTSTR pFindWhat,
-                        LPCTSTR pReplaceWith = NULL,
+                        LPCTSTR findWhat,
+                        LPCTSTR replaceWith = NULL,
                         DWORD   flags = FR_DOWN,
                         HWND    parent = 0);
 
@@ -347,8 +345,9 @@ namespace Win32xx
             {
                 pTLSData->pWnd = NULL;
 
-                // Attach the HWND to the CommonDialog object
-                pCommonDlg->Attach(wnd);
+                // Store the window pointer in the HWND map.
+                pCommonDlg->m_wnd = wnd;
+                pCommonDlg->AddToMap();
             }
         }
 
@@ -374,20 +373,20 @@ namespace Win32xx
     inline CColorDialog::CColorDialog(COLORREF initColor /* = 0 */, DWORD flags /* = 0 */)
     {
         // set the parameters in the CHOOSECOLOR struct
-        ZeroMemory(&m_ofn,  sizeof(m_ofn));
-        m_ofn.rgbResult = initColor;
-        m_ofn.Flags = flags;
+        ZeroMemory(&m_cc,  sizeof(m_cc));
+        m_cc.rgbResult = initColor;
+        m_cc.Flags = flags;
 
         // Set all custom colors to white
         for (int i = 0; i <= 15; ++i)
             m_customColors[i] = RGB(255,255,255);
 
         // Enable the hook proc for the help button
-        if (m_ofn.Flags & CC_SHOWHELP)
-            m_ofn.Flags |= CC_ENABLEHOOK;
+        if (m_cc.Flags & CC_SHOWHELP)
+            m_cc.Flags |= CC_ENABLEHOOK;
 
         // Set the CHOOSECOLOR struct parameters to safe values
-        SetParameters(m_ofn);
+        SetParameters(m_cc);
     }
 
     // Dialog procedure for the Color dialog. Override this function to
@@ -436,16 +435,16 @@ namespace Win32xx
     {
         assert(!IsWindow());    // Only one window per CWnd instance allowed
 
-        // Ensure this thread has the TLS index set
-        TLSData* pTLSData = GetApp()->SetTlsData();
+        // Retrieve this thread's TLS data
+        TLSData* pTLSData = GetApp()->GetTlsData();
 
         // Create the modal dialog
         pTLSData->pWnd = this;
 
-        m_ofn.hwndOwner = owner;
+        m_cc.hwndOwner = owner;
 
         // invoke the control and save the result on success
-        BOOL isValid = ::ChooseColor(&m_ofn);
+        BOOL isValid = ::ChooseColor(&m_cc);
 
         m_wnd = 0;
 
@@ -463,14 +462,14 @@ namespace Win32xx
         OnOK();
 
         // Prepare the CWnd for reuse.
-        Destroy();
+        Cleanup();
 
         return IDOK;
     }
 
     // The pColors parameter is a pointer to an array of 16 COLORREF.
-    // If the pCustomColors is NULL, all custom colors are set to white,
-    // otherwise they are set to the colors specified in the pCustomColors array.
+    // If the pColors is NULL, all custom colors are set to white,
+    // otherwise they are set to the colors specified in the pColors array.
     inline void CColorDialog::SetCustomColors(const COLORREF* pColors /* = NULL */)
     {
         for (UINT i = 0; i < 16; i++)
@@ -484,15 +483,15 @@ namespace Win32xx
     // The parameters are set to sensible values.
     inline void CColorDialog::SetParameters(const CHOOSECOLOR& cc)
     {
-        m_ofn.lStructSize    = sizeof(m_ofn);
-        m_ofn.hwndOwner      = 0;            // Set this in DoModal
-        m_ofn.hInstance      = cc.hInstance;
-        m_ofn.rgbResult      = cc.rgbResult;
-        m_ofn.lpCustColors   = m_customColors;
-        m_ofn.Flags          = cc.Flags;
-        m_ofn.lCustData      = cc.lCustData;
-        m_ofn.lpfnHook       = reinterpret_cast<LPCCHOOKPROC>(CDHookProc);
-        m_ofn.lpTemplateName = cc.lpTemplateName;
+        m_cc.lStructSize    = sizeof(m_cc);
+        m_cc.hwndOwner      = 0;            // Set this in DoModal
+        m_cc.hInstance      = cc.hInstance;
+        m_cc.rgbResult      = cc.rgbResult;
+        m_cc.lpCustColors   = m_customColors;
+        m_cc.Flags          = cc.Flags;
+        m_cc.lCustData      = cc.lCustData;
+        m_cc.lpfnHook       = reinterpret_cast<LPCCHOOKPROC>(CDHookProc);
+        m_cc.lpTemplateName = cc.lpTemplateName;
     }
 
 
@@ -507,11 +506,11 @@ namespace Win32xx
     // separated by '\0' or '|' chars. Refer to the description of the OPENFILENAME
     // struct in the Windows API documentation.
     inline CFileDialog::CFileDialog(BOOL isOpenFileDialog  /* = TRUE */,
-        LPCTSTR pDefExt /* = NULL */,
-        LPCTSTR pInitFileDir /* = NULL */,
-        LPCTSTR pFileName /* = NULL */,
+        LPCTSTR defExt /* = NULL */,
+        LPCTSTR initFileDir /* = NULL */,
+        LPCTSTR fileName /* = NULL */,
         DWORD   flags /* = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT */,
-        LPCTSTR pFilter /* = NULL */)
+        LPCTSTR filter /* = NULL */)
     {
         // set open/saveas toggle
         m_isOpenFileDialog = isOpenFileDialog;
@@ -520,10 +519,10 @@ namespace Win32xx
         ZeroMemory(&m_ofn, sizeof(m_ofn));
 
         // fill in the OPENFILENAME struct
-        m_ofn.lpstrFile     = const_cast<LPTSTR>(pFileName);
-        m_ofn.lpstrFilter   = pFilter;
-        m_ofn.lpstrInitialDir = const_cast<LPTSTR>(pInitFileDir);
-        m_ofn.lpstrDefExt   = pDefExt;
+        m_ofn.lpstrFile     = const_cast<LPTSTR>(fileName);
+        m_ofn.lpstrFilter   = filter;
+        m_ofn.lpstrInitialDir = const_cast<LPTSTR>(initFileDir);
+        m_ofn.lpstrDefExt   = defExt;
         m_ofn.Flags         = flags;
 
         // Enable the hook proc for the help button
@@ -627,6 +626,7 @@ namespace Win32xx
 
     // Display either a FileOpen or FileSave dialog, and allow the user to
     // select various options. An exception is thrown if the dialog isn't created.
+    //
     // If the OFN_ALLOWMULTISELECT flag is used, the size of the buffer required
     // to hold the file names can be quite large. An exception is thrown if the
     // buffer size specified by m_OFN.nMaxFile turns out to be too small.
@@ -635,8 +635,8 @@ namespace Win32xx
     {
         assert(!IsWindow());    // Only one window per CWnd instance allowed
 
-        // Ensure this thread has the TLS index set
-        TLSData* pTLSData = GetApp()->SetTlsData();
+        // Retrieve this thread's TLS data
+        TLSData* pTLSData = GetApp()->GetTlsData();
 
         // Create the modal dialog
         pTLSData->pWnd = this;
@@ -666,12 +666,12 @@ namespace Win32xx
         OnOK();
 
         // Prepare the CWnd for reuse.
-        Destroy();
+        Cleanup();
 
         return IDOK;
     }
 
-    // Return the name of the file that was entered in the DoModal() operation.
+    // Returns the name of the file that was entered in the DoModal() operation.
     // This name consists of only the file title and extension. If the
     // OFN_ALLOWMULTISELECT flag is specified, only the first file path selected
     // will be returned. If so, GetNextPathName can be used to retrieve subsequent
@@ -687,7 +687,7 @@ namespace Win32xx
         return fileName;
     }
 
-    // Return the file name's extension entered during the DoModal() operation.
+    // Returns the file name's extension entered during the DoModal() operation.
     // If the OFN_ALLOWMULTISELECT option set, only the extension on the first
     // file path selected will be returned.
     inline CString CFileDialog::GetFileExt() const
@@ -701,7 +701,7 @@ namespace Win32xx
         return fileExt;
     }
 
-    // Return the title of the file entered in the DoModal() operation. The
+    // Returns the title of the file entered in the DoModal() operation. The
     // title consists of the full path name with directory path and extension
     // removed.
     inline CString CFileDialog::GetFileTitle() const
@@ -714,7 +714,7 @@ namespace Win32xx
         return fileTitle;
     }
 
-    // Return the next file path name from a group of files selected. The
+    // Returns the next file path name from a group of files selected. The
     // OFN_ALLOWMULTISELECT flag allows multiple files to be selected. Use pos = 0
     // to retrieve the first file. The pos parameter is updated to point to the
     // next file name. The pos parameter is set to -1 when the last file is retrieved.
@@ -783,7 +783,7 @@ namespace Win32xx
         return pathName + _T('\\') + fileName;
     }
 
-    // Return the path name of the folder or directory of files retrieved
+    // Returns the path name of the folder or directory of files retrieved
     // from the dialog. The final character of the name includes the
     // directory separation character.
     inline CString CFileDialog::GetFolderPath() const
@@ -904,7 +904,7 @@ namespace Win32xx
     // Normally, this function is not needed because the framework provides
     // default checking of share violations and displays a message box if a
     // share violation occurs. The path of the file on which the share
-    // violation occurred is pPathName. To disable share violation checking,
+    // violation occurred is pathName. To disable share violation checking,
     // use the bitwise OR operator to combine the flag OFN_SHAREAWARE with
     // m_OFN.Flags.
 
@@ -915,8 +915,10 @@ namespace Win32xx
     //                    The application is responsible for displaying a warning message.
     // OFN_SHAREWARN    - Reject the file name and displays a warning message
     //                    (the same result as if there were no hook procedure).
-    inline LRESULT CFileDialog::OnShareViolation(LPCTSTR)
+    inline LRESULT CFileDialog::OnShareViolation(LPCTSTR pathName)
     {
+        UNREFERENCED_PARAMETER(pathName);
+
         return OFN_SHAREWARN; // default:
     }
 
@@ -929,13 +931,13 @@ namespace Win32xx
     {
     }
 
-    // Set the default extension of the dialog box to pExt.
+    // Set the default extension of the dialog box to ext.
     // Only the first three characters are sent to the dialog.
-    inline void CFileDialog::SetDefExt(LPCTSTR pExt)
+    inline void CFileDialog::SetDefExt(LPCTSTR ext)
     {
-        if (pExt)
+        if (ext)
         {
-            m_defExt = pExt;
+            m_defExt = ext;
             m_ofn.lpstrDefExt = m_defExt.c_str();
         }
         else
@@ -945,13 +947,13 @@ namespace Win32xx
         }
     }
 
-    // Set the initial file name in the dialog box to pFileName.
-    inline void CFileDialog::SetFileName(LPCTSTR pFileName)
+    // Set the initial file name in the dialog box to fileName.
+    inline void CFileDialog::SetFileName(LPCTSTR fileName)
     {
         // setup initial file name
-        if (pFileName)
+        if (fileName)
         {
-            m_fileName = pFileName;
+            m_fileName = fileName;
             m_ofn.lpstrFile = const_cast<LPTSTR>(m_fileName.c_str());
         }
         else
@@ -966,15 +968,15 @@ namespace Win32xx
     // The string must be either double terminated, or use '|' instead of '\0'
     // For Example: _T("Text Files (*.txt)\0*.txt\0All Files (*.*)\0*.*\0")
     //          or: _T("Text Files (*.txt)|*.txt|All Files (*.*)|*.*|")
-    inline void CFileDialog::SetFilter(LPCTSTR pFilter)
+    inline void CFileDialog::SetFilter(LPCTSTR filter)
     {
         // Clear any existing filter
         m_ofn.lpstrFilter = NULL;
 
         // convert any '|' characters in pFilter to NULL characters
-        if (pFilter)
+        if (filter)
         {
-            CString str = pFilter;
+            CString str = filter;
             if (str.Find(_T('|')) >= 0)
             {
                 str.Replace(_T('|'), _T('\0'));
@@ -988,9 +990,9 @@ namespace Win32xx
                 while (i < MAX_PATH)
                 {
                     // Search for double termination
-                    if (pFilter[i] == _T('\0') && pFilter[i + 1] == _T('\0'))
+                    if (filter[i] == _T('\0') && filter[i + 1] == _T('\0'))
                     {
-                        m_filter.Assign(pFilter, i+1);
+                        m_filter.Assign(filter, i+1);
                         m_ofn.lpstrFilter = m_filter.c_str();
                         break;
                     }
@@ -1043,12 +1045,11 @@ namespace Win32xx
     }
 
     // Sets the title of the fileopen or filesave dialog.
-    inline void CFileDialog::SetTitle(LPCTSTR pTitle)
-
+    inline void CFileDialog::SetTitle(LPCTSTR title)
     {
-        if (pTitle)
+        if (title)
         {
-            m_title = pTitle;
+            m_title = title;
             m_ofn.lpstrTitle = m_title.c_str();
         }
         else
@@ -1079,20 +1080,20 @@ namespace Win32xx
         return *this;
     }
 
-    // Create and display either a Find or FindReplace dialog box. pFindWhat
-    // is the search string, and pReplaceWith is the replace string.
+    // Create and display either a Find or FindReplace dialog box. findWhat
+    // is the search string, and replaceWith is the replace string.
     // Set flags to a combination of one or more flags the dialog box.
     // Set parent to the handle of the dialog box’s parent or owner window.
     // An exception is thrown if the window isn't created.
-    inline BOOL CFindReplaceDialog::Create(BOOL isFindDialogOnly, LPCTSTR pFindWhat,
-            LPCTSTR pReplaceWith, DWORD flags, HWND parent /* = 0*/)
+    inline BOOL CFindReplaceDialog::Create(BOOL isFindDialogOnly, LPCTSTR findWhat,
+            LPCTSTR replaceWith, DWORD flags, HWND parent /* = 0*/)
     {
         assert(!IsWindow());    // Only one window per CWnd instance allowed
 
         m_isFindDialogOnly = isFindDialogOnly;
 
-        // Ensure this thread has the TLS index set
-        TLSData* pTLSData = GetApp()->SetTlsData();
+        // Retrieve this thread's TLS data
+        TLSData* pTLSData = GetApp()->GetTlsData();
         pTLSData->pWnd = this;
 
         // Initialize the FINDREPLACE struct values
@@ -1101,12 +1102,12 @@ namespace Win32xx
         m_fr.hwndOwner = parent;
 
         m_fr.lpstrFindWhat = m_findWhat.GetBuffer(m_fr.wFindWhatLen);
-        if (pFindWhat)
-            StrCopy(m_fr.lpstrFindWhat, pFindWhat, m_fr.wFindWhatLen);
+        if (findWhat)
+            StrCopy(m_fr.lpstrFindWhat, findWhat, m_fr.wFindWhatLen);
 
         m_fr.lpstrReplaceWith = m_replaceWith.GetBuffer(m_fr.wReplaceWithLen);
-        if (pReplaceWith)
-            StrCopy(m_fr.lpstrReplaceWith, pReplaceWith, m_fr.wReplaceWithLen);
+        if (replaceWith)
+            StrCopy(m_fr.lpstrReplaceWith, replaceWith, m_fr.wReplaceWithLen);
 
         // Display the dialog box
         HWND wnd;
@@ -1432,8 +1433,8 @@ namespace Win32xx
     {
         assert(!IsWindow());    // Only one window per CWnd instance allowed
 
-        // Ensure this thread has the TLS index set
-        TLSData* pTLSData = GetApp()->SetTlsData();
+        // Retrieve this thread's TLS data
+        TLSData* pTLSData = GetApp()->GetTlsData();
 
         // Create the modal dialog
         pTLSData->pWnd = this;
@@ -1461,7 +1462,7 @@ namespace Win32xx
         }
 
         OnOK();
-        Destroy();
+        Cleanup();
 
         return IDOK;
     }
@@ -1521,7 +1522,7 @@ namespace Win32xx
         // number of pixels per inch along the screen height.
         int pxpi = dc.GetDeviceCaps(LOGPIXELSY);
 
-        // point size is (pixel height) * 72 / pxpi, so in 1/10ths size is
+        // 72 points/inch, 10 decipoints/point.
         int charsize = -MulDiv(m_logFont.lfHeight, 720, pxpi);
         return charsize;
     }

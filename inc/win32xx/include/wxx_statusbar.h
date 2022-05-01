@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -57,7 +57,7 @@ namespace Win32xx
         virtual BOOL OnEraseBkgnd(CDC& dc);
         virtual void PreCreate(CREATESTRUCT& cs);
 
-        // Attributes
+        // Accessors and mutators
         int GetParts() const;
         CRect GetPartRect(int part) const;
         CString GetPartText(int part) const;

@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -57,11 +57,12 @@ namespace Win32xx
     struct MenuTheme
     {
         BOOL UseThemes;         // TRUE if themes are used
-        COLORREF clrHot1;       // Color 1 for top menu. Color of selected menu item
-        COLORREF clrHot2;       // Color 2 for top menu. Color of checkbox
-        COLORREF clrPressed1;   // Color 1 for pressed top menu and side bar
-        COLORREF clrPressed2;   // Color 2 for pressed top menu and side bar
+        COLORREF clrHot1;       // Color 1 for menu bar. Color of selected menu item
+        COLORREF clrHot2;       // Color 2 for menu bar. Color of checkbox background
+        COLORREF clrPressed1;   // Color 1 for pressed menu bar and side bar
+        COLORREF clrPressed2;   // Color 2 for pressed menu bar and side bar
         COLORREF clrOutline;    // Color for border outline
+        COLORREF clrText;       // Color for the menu bar text
     };
 
 
@@ -101,9 +102,6 @@ namespace Win32xx
         COLORREF clrPressed2;   // Color 2 for pressed button
         COLORREF clrOutline;    // Color for border outline
     };
-
-
-  #ifndef _WIN32_WCE        // for Win32/64 operating systems, not WinCE
 
     // Returns TRUE if Aero themes are being used.
     inline BOOL IsAeroThemed()
@@ -163,9 +161,6 @@ namespace Win32xx
 
         return isXPThemed;
     }
-
-  #endif // #ifndef _WIN32_WCE
-
 
 } // namespace Win32xx
 

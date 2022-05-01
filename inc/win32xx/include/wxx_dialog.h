@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -92,8 +92,9 @@ namespace Win32xx
     {
 
     public:
-        CDialog(UINT resID);
-        CDialog(LPCTSTR pResName);
+        CDialog();
+        CDialog(UINT resourceID);
+        CDialog(LPCTSTR resourceName);
         CDialog(LPCDLGTEMPLATE pDlgTemplate);
         virtual ~CDialog();
 
@@ -104,8 +105,13 @@ namespace Win32xx
         virtual HWND DoModeless(HWND parent = 0);
 
         // State functions
-        BOOL IsModal() const { return m_isModal; }
+        virtual BOOL IsModal() const { return m_isModal; }
         BOOL IsIndirect() const { return (NULL != m_pDlgTemplate); }
+
+        // Mutators that assign the dialog resource
+        void SetDialogFromID(UINT resourceID);
+        void SetDialogResource(LPCTSTR resourceName);
+        void SetDialogTemplate(LPCDLGTEMPLATE pDlgTemplate);
 
         // Wrappers for Windows API functions
         DWORD GetDefID() const;
@@ -130,22 +136,18 @@ namespace Win32xx
 
     private:
         using CWnd::WndProc;                  // Make WndProc private
+        using CWnd::WndProcDefault;           // Make WndProcDefault private
         CDialog(const CDialog&);              // Disable copy construction
         CDialog& operator = (const CDialog&); // Disable assignment operator
 
         static INT_PTR CALLBACK StaticDialogProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam);
-
-#ifndef _WIN32_WCE
         static LRESULT CALLBACK StaticMsgHook(int code, WPARAM wparam, LPARAM lparam);
-#endif
 
         BOOL m_isModal;                  // a flag for modal dialogs
-        LPCTSTR m_pResName;              // the resource name for the dialog
+        LPCTSTR m_resourceName;          // the resource name for the dialog
         LPCDLGTEMPLATE m_pDlgTemplate;   // the dialog template for indirect dialogs
     };
 
-
-#ifndef _WIN32_WCE
 
     //////////////////////////////////////
     // Declaration of the CResizer class
@@ -160,11 +162,8 @@ namespace Win32xx
     //
 
     // Resize Dialog Styles
-#define RD_STRETCH_WIDTH        0x0001  // The item has a variable width
-#define RD_STRETCH_HEIGHT       0x0002  // The item has a variable height
-
-    // Resize Dialog alignments
-    enum Alignment {topleft, topright, bottomleft, bottomright, center, leftcenter, rightcenter, topcenter, bottomcenter };
+    const int RD_STRETCH_WIDTH  = 0x0001;  // The item has a variable width
+    const int RD_STRETCH_HEIGHT = 0x0002;  // The item has a variable height
 
 
     ////////////////////////////////////////////////////////////////
@@ -174,6 +173,9 @@ namespace Win32xx
     class CResizer
     {
     public:
+
+        enum Alignment { topleft, topright, bottomleft, bottomright, center, leftcenter, rightcenter, topcenter, bottomcenter };
+
         CResizer() : m_parent(0), m_xScrollPos(0), m_yScrollPos(0) {}
         virtual ~CResizer() {}
 
@@ -216,8 +218,6 @@ namespace Win32xx
         int m_yScrollPos;
     };
 
-#endif
-
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -229,19 +229,30 @@ namespace Win32xx
     // Definitions for the CDialog class
     //
 
-    inline CDialog::CDialog(LPCTSTR pResName) : m_isModal(FALSE),
-                        m_pResName(pResName), m_pDlgTemplate(NULL)
+    
+    // Default constructor. Use SetDialogTemplate, SetDialogResource or 
+    // SetDialogResourceFromID to specify the dialog if this constructor
+    // is used.
+    inline CDialog::CDialog() : m_isModal(FALSE),
+        m_resourceName(NULL), m_pDlgTemplate(NULL)
     {
     }
 
-    inline CDialog::CDialog(UINT resID) : m_isModal(FALSE),
-                        m_pResName(MAKEINTRESOURCE (resID)), m_pDlgTemplate(NULL)
+    // Constructor that specifies the dialog's resource
+    inline CDialog::CDialog(LPCTSTR resourceName) : m_isModal(FALSE),
+                        m_resourceName(resourceName), m_pDlgTemplate(NULL)
+    {
+    }
+
+    // Constructor that specifies the dialog's resource ID
+    inline CDialog::CDialog(UINT resourceID) : m_isModal(FALSE),
+                        m_resourceName(MAKEINTRESOURCE (resourceID)), m_pDlgTemplate(NULL)
     {
     }
 
     // Constructor for indirect dialogs, created from a dialog box template in memory.
     inline CDialog::CDialog(LPCDLGTEMPLATE pDlgTemplate) : m_isModal(FALSE),
-                        m_pResName(NULL), m_pDlgTemplate(pDlgTemplate)
+                        m_resourceName(NULL), m_pDlgTemplate(pDlgTemplate)
     {
     }
 
@@ -349,11 +360,11 @@ namespace Win32xx
             {
                 // Do notification reflection if message came from a child window.
                 // Restricting OnNotifyReflect to child windows avoids double handling.
-                LPNMHDR pNmhdr = reinterpret_cast<LPNMHDR>(lparam);
-                assert(pNmhdr);
-                if (pNmhdr)
+                LPNMHDR pHeader = reinterpret_cast<LPNMHDR>(lparam);
+                assert(pHeader);
+                if (pHeader != 0)
                 {
-                    HWND from = pNmhdr->hwndFrom;
+                    HWND from = pHeader->hwndFrom;
                     CWnd* pFrom = GetApp()->GetCWndFromMap(from);
 
                     if (pFrom != NULL)
@@ -435,49 +446,44 @@ namespace Win32xx
     inline INT_PTR CDialog::DoModal(HWND parent /* = 0 */)
     {
         assert(!IsWindow());        // Only one window per CWnd instance allowed
-        assert(m_pDlgTemplate || m_pResName);  // Dialog layout must be defined.
+        assert(m_pDlgTemplate || m_resourceName);  // Dialog layout must be defined.
 
         INT_PTR result = 0;
         m_isModal=TRUE;
         m_wnd = 0;
 
-        // Ensure this thread has the TLS index set
-        TLSData* pTLSData = GetApp()->SetTlsData();
+        // Retrieve this thread's TLS data
+        TLSData* pTLSData = GetApp()->GetTlsData();
 
-    #ifndef _WIN32_WCE
         if (0 == pTLSData->msgHook )
         {
             pTLSData->msgHook = ::SetWindowsHookEx(WH_MSGFILTER, (HOOKPROC)StaticMsgHook, 0, ::GetCurrentThreadId());
         }
         InterlockedIncrement(&pTLSData->dlgHooks);
-    #endif
 
         HINSTANCE instance = GetApp()->GetInstanceHandle();
         pTLSData->pWnd = this;
 
         // Create a modal dialog
-        if (IsIndirect() && m_pDlgTemplate != NULL)
+        if (m_pDlgTemplate != 0)
             result = ::DialogBoxIndirect(instance, m_pDlgTemplate, parent, (DLGPROC)CDialog::StaticDialogProc);
         else
         {
-            if (::FindResource(GetApp()->GetResourceHandle(), m_pResName, RT_DIALOG))
+            if (::FindResource(GetApp()->GetResourceHandle(), m_resourceName, RT_DIALOG))
                 instance = GetApp()->GetResourceHandle();
-            result = ::DialogBox(instance, m_pResName, parent, (DLGPROC)CDialog::StaticDialogProc);
+            result = ::DialogBox(instance, m_resourceName, parent, (DLGPROC)CDialog::StaticDialogProc);
         }
 
         // Tidy up
         pTLSData->pWnd = NULL;
-        m_wnd = 0;
+        Cleanup();
 
-    #ifndef _WIN32_WCE
         InterlockedDecrement(&pTLSData->dlgHooks);
         if (pTLSData->dlgHooks == 0)
         {
             ::UnhookWindowsHookEx(pTLSData->msgHook);
             pTLSData->msgHook = 0;
         }
-
-    #endif
 
         // Throw an exception if the dialog creation fails
         if (result == -1)
@@ -492,13 +498,13 @@ namespace Win32xx
     // Refer to CreateDialog and CreateDialogIndirect in the Windows API documentation for more information.
     inline HWND CDialog::DoModeless(HWND parent /* = 0 */)
     {
-        assert(m_pDlgTemplate || m_pResName);  // Dialog layout must be defined.
+        assert(m_pDlgTemplate || m_resourceName);  // Dialog layout must be defined.
 
         m_isModal=FALSE;
         m_wnd = 0;
 
-        // Ensure this thread has the TLS index set
-        TLSData* pTLSData = GetApp()->SetTlsData();
+        // Retrieve this thread's TLS data
+        TLSData* pTLSData = GetApp()->GetTlsData();
 
         // Store the CWnd pointer in Thread Local Storage
         pTLSData->pWnd = this;
@@ -507,14 +513,14 @@ namespace Win32xx
         HWND wnd;
 
         // Create the modeless dialog
-        if (IsIndirect() && m_pDlgTemplate != NULL)
+        if (m_pDlgTemplate != 0)
             wnd = ::CreateDialogIndirect(instance, m_pDlgTemplate, parent, (DLGPROC)CDialog::StaticDialogProc);
         else
         {
-            if (::FindResource(GetApp()->GetResourceHandle(), m_pResName, RT_DIALOG))
+            if (::FindResource(GetApp()->GetResourceHandle(), m_resourceName, RT_DIALOG))
                 instance = GetApp()->GetResourceHandle();
 
-            wnd = ::CreateDialog(instance, m_pResName, parent, (DLGPROC)CDialog::StaticDialogProc);
+            wnd = ::CreateDialog(instance, m_resourceName, parent, (DLGPROC)CDialog::StaticDialogProc);
         }
 
         // Tidy up
@@ -652,6 +658,24 @@ namespace Win32xx
         SendMessage(DM_SETDEFID, (WPARAM)id, 0);
     }
 
+    // Sets the dialog from the specified dialog resource ID.
+    inline void CDialog::SetDialogFromID(UINT resourceID)
+    {
+        m_resourceName = MAKEINTRESOURCE(resourceID);
+    }
+    
+    // Sets the dialog from the specified dialog resource.
+    inline void CDialog::SetDialogResource(LPCTSTR resourceName)
+    {
+        m_resourceName = resourceName;
+    }
+
+    // Sets the dialog from the specified dialog template.
+    inline void CDialog::SetDialogTemplate(LPCDLGTEMPLATE pDlgTemplate)
+    {
+        m_pDlgTemplate = pDlgTemplate;
+    }
+
     // This callback function passes messages to DialogProc
     inline INT_PTR CALLBACK CDialog::StaticDialogProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     {
@@ -670,7 +694,7 @@ namespace Win32xx
                 {
                     pTLSData->pWnd = NULL;
 
-                    // Store the Window pointer into the HWND map
+                    // Store the window pointer in the HWND map.
                     pDialog->m_wnd = wnd;
                     pDialog->AddToMap();
                 }
@@ -688,9 +712,6 @@ namespace Win32xx
         return pDialog->DialogProc(msg, wparam, lparam);
 
     } // INT_PTR CALLBACK CDialog::StaticDialogProc(...)
-
-
-#ifndef _WIN32_WCE
 
     // Used by modal dialogs for idle processing and PreTranslateMessage.
     inline LRESULT CALLBACK CDialog::StaticMsgHook(int code, WPARAM wparam, LPARAM lparam)
@@ -745,11 +766,7 @@ namespace Win32xx
 
         return ::CallNextHookEx(pTLSData->msgHook, code, wparam, lparam);
     }
-#endif
 
-
-
-#ifndef _WIN32_WCE
 
     /////////////////////////////////////
     // Definitions for the CResizer class
@@ -1114,8 +1131,6 @@ namespace Win32xx
         // Reposition all the child windows simultaneously.
         VERIFY(::EndDeferWindowPos(hdwp));
     }
-
-#endif // #ifndef _WIN32_WCE
 
 } // namespace Win32xx
 

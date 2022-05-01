@@ -26,9 +26,10 @@ Win32++ supports the following compilers and development environments:
 * Microsoft Visual Studio 2013
 * Microsoft Visual Studio 2015
 * Microsoft Visual Studio 2019
+* Microsoft Visual Studio 2022
 * MinGW compiler
 * MinGW x64 compiler
-* Clang compiler provided with Visual Studio Community 2019.
+* Clang compiler provided with Visual Studio Community 2019 and above.
 
 Win32++ supports the following operating systems
 * Windows 95
@@ -36,17 +37,19 @@ Win32++ supports the following operating systems
 * Windows ME
 * Windows NT 4
 * Windows 2000
-* Windows XP    (32bit and 64bit)
-* Windows 2003 Server (32bit and 64bit)
-* Windows Vista (32bit and 64bit)
-* Windows 2008 Server (32bit and 64bit)
-* Windows 7 (32 bit and 64 bit)
-* Windows 8 (32 bit and 64 bit)
-* Windows 8.1 (32 bit and 64 bit)
+* Windows XP
+* Windows 2003
+* Windows Vista
+* Windows 2008
+* Windows 7
+* Windows 8
+* Windows 8.1
 * Windows 2012 Server
 * Windows 10
 * Windows Server 2016
-* Windows CE from WCE400 (Windows mobile 2003) to WCE600 (Windows mobile 6)
+* Windows Server 2019
+* Windows 11
+* Windows Server 2022
 
 
 Features
@@ -138,7 +141,6 @@ The sample applications include:
  * ToolBarDemo - Demonstrates how to customize a toolbar.
  * Tray - Demonstrates how to "minimize" an application to the system tray.
  * WinPlot - Plots a function specified by the user.
- * WinCE samples - A small collection of samples for Windows CE
 
 Getting Started
 ---------------

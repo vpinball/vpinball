@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -77,7 +77,7 @@ namespace Win32xx
     {
     public:
         CEvent(BOOL isInitiallySignaled = FALSE, BOOL isManualReset = FALSE,
-            LPCTSTR pName = NULL, LPSECURITY_ATTRIBUTES pAttributes = NULL);
+            LPCTSTR name = NULL, LPSECURITY_ATTRIBUTES attributes = NULL);
 
         HANDLE GetHandle() const { return m_event; }
         operator HANDLE() const  { return m_event; }
@@ -101,7 +101,7 @@ namespace Win32xx
     class CMutex
     {
     public:
-        CMutex(BOOL isInitiallySignaled = FALSE, LPCTSTR pName = FALSE,
+        CMutex(BOOL isInitiallySignaled = FALSE, LPCTSTR name = NULL,
             LPSECURITY_ATTRIBUTES pAttributes = NULL);
 
         HANDLE GetHandle() const { return m_mutex; }
@@ -123,8 +123,8 @@ namespace Win32xx
     class CSemaphore
     {
     public:
-        CSemaphore(LONG initialCount, LONG maxCount, LPCTSTR pName,
-            LPSECURITY_ATTRIBUTES pAttributes);
+        CSemaphore(LONG initialCount, LONG maxCount, LPCTSTR name,
+            LPSECURITY_ATTRIBUTES attributes);
 
         HANDLE GetHandle() const { return m_semaphore; }
         operator HANDLE() const  { return m_semaphore; }
@@ -146,16 +146,16 @@ namespace Win32xx
     //  isInitiallySignaled - TRUE the initial state of the created event is signalled, FALSE otherwise
     //  isManualReset  - TRUE requires the use of the ResetEvent function to set the event state to non-signalled.
     //                 - FALSE the event is automatically reset to non-signalled after a single waiting thread has been released.
-    //  pName          - pointer to a null terminated string specifying the event's name. Can be NULL.
-    //                 - If pName matches an existing event, the existing handle is retrieved.
-    //  pAttributes    - Pointer to a SECURITY_ATTRIBUTES structure that determines whether the returned
-    //                   handle can be inherited by child processes. If lpEventAttributes is NULL, the
+    //  name           - pointer to a null terminated string specifying the event's name. Can be NULL.
+    //                 - If name matches an existing event, the existing handle is retrieved.
+    //  attributes     - Pointer to a SECURITY_ATTRIBUTES structure that determines whether the returned
+    //                   handle can be inherited by child processes. If attributes is NULL, the
     //                   handle cannot be inherited.
-    inline CEvent::CEvent(BOOL isInitiallySignaled, BOOL isManualReset, LPCTSTR pstrName,
-                    LPSECURITY_ATTRIBUTES pAttributes)
+    inline CEvent::CEvent(BOOL isInitiallySignaled, BOOL isManualReset, LPCTSTR name,
+                    LPSECURITY_ATTRIBUTES attributes)
     : m_event(0)
     {
-        m_event = ::CreateEvent(pAttributes, isManualReset, isInitiallySignaled, pstrName);
+        m_event = ::CreateEvent(attributes, isManualReset, isInitiallySignaled, name);
         if (m_event == 0)
             throw CResourceException(GetApp()->MsgMtxEvent());
     }
@@ -179,16 +179,16 @@ namespace Win32xx
     // Creates a named or unnamed mutex.
     // Parameters:
     //  isInitiallySignaled - TRUE the initial state of the created mutex is signalled, FALSE otherwise
-    //  pName          - pointer to a null terminated string specifying the mutex's name. Can be NULL.
-    //                 - If pName matches an existing mutex, the existing handle is retrieved.
-    //  pAttributes    - Pointer to a SECURITY_ATTRIBUTES structure that determines whether the returned
-    //                   handle can be inherited by child processes. If lpEventAttributes is NULL, the
+    //  name           - pointer to a null terminated string specifying the mutex's name. Can be NULL.
+    //                 - If name matches an existing mutex, the existing handle is retrieved.
+    //  attributes     - Pointer to a SECURITY_ATTRIBUTES structure that determines whether the returned
+    //                   handle can be inherited by child processes. If attributes is NULL, the
     //                   handle cannot be inherited.
-    inline CMutex::CMutex(BOOL isInitiallySignaled, LPCTSTR pName,
-                            LPSECURITY_ATTRIBUTES pAttributes)
+    inline CMutex::CMutex(BOOL isInitiallySignaled, LPCTSTR name,
+                            LPSECURITY_ATTRIBUTES attributes)
     : m_mutex(0)
     {
-        m_mutex = ::CreateMutex(pAttributes, isInitiallySignaled, pName);
+        m_mutex = ::CreateMutex(attributes, isInitiallySignaled, name);
         if (m_mutex == 0)
             throw CResourceException(GetApp()->MsgMtxMutex());
     }
@@ -202,17 +202,17 @@ namespace Win32xx
     //  initialCount   - Initial count for the semaphore object. This value must be greater than or equal
     //                   to zero and less than or equal to lMaximumCount.
     //  maxCount       - Maximum count for the semaphore object. This value must be greater than zero.
-    //  pAttributes    - Pointer to a SECURITY_ATTRIBUTES structure that determines whether the returned
-    //                   handle can be inherited by child processes. If lpEventAttributes is NULL, the
+    //  attributes     - Pointer to a SECURITY_ATTRIBUTES structure that determines whether the returned
+    //                   handle can be inherited by child processes. If attributes is NULL, the
     //                   handle cannot be inherited.
-    inline CSemaphore::CSemaphore(LONG initialCount, LONG maxCount, LPCTSTR pName,
-                            LPSECURITY_ATTRIBUTES pAttributes)
+    inline CSemaphore::CSemaphore(LONG initialCount, LONG maxCount, LPCTSTR name,
+                            LPSECURITY_ATTRIBUTES attributes)
     : m_semaphore(0)
     {
         assert(maxCount > 0);
         assert(initialCount <= maxCount);
 
-        m_semaphore = ::CreateSemaphore(pAttributes, initialCount, maxCount, pName);
+        m_semaphore = ::CreateSemaphore(attributes, initialCount, maxCount, name);
         if (m_semaphore == 0)
             throw CResourceException(GetApp()->MsgMtxSemaphore());
     }

@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -75,7 +75,7 @@ namespace Win32xx
     class CPropertyPage : public CDialog
     {
     public:
-        CPropertyPage (UINT templateID, LPCTSTR pTitle = NULL);
+        CPropertyPage (UINT templateID, LPCTSTR title = NULL);
         virtual ~CPropertyPage() {}
         virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual BOOL OnApply();
@@ -99,7 +99,7 @@ namespace Win32xx
         BOOL IsButtonEnabled(int button) const;
         LRESULT QuerySiblings(WPARAM wparam, LPARAM lparam) const;
         void SetModified(BOOL isChanged) const;
-        void SetTitle(LPCTSTR pTitle);
+        void SetTitle(LPCTSTR title);
         void SetWizardButtons(DWORD flags) const;
 
     private:
@@ -123,7 +123,7 @@ namespace Win32xx
     {
     public:
         CPropertySheet(UINT captionID, HWND parent = 0);
-        CPropertySheet(LPCTSTR pCaption = NULL, HWND parent = 0);
+        CPropertySheet(LPCTSTR caption = NULL, HWND parent = 0);
         virtual ~CPropertySheet() {}
 
         // Operations
@@ -139,7 +139,7 @@ namespace Win32xx
         BOOL IsModeless() const;
         BOOL IsWizard() const;
 
-        //Attributes
+        // Accessors and mutators
         CPropertyPage* GetActivePage() const;
         int GetPageCount() const;
         int GetPageIndex(CPropertyPage* pPage) const;
@@ -147,7 +147,7 @@ namespace Win32xx
         BOOL SetActivePage(int page);
         BOOL SetActivePage(CPropertyPage* pPage);
         void SetIcon(UINT iconID);
-        void SetTitle(LPCTSTR pTitle);
+        void SetTitle(LPCTSTR title);
         void SetWizardMode(BOOL isWizard);
 
     protected:
@@ -178,10 +178,10 @@ namespace Win32xx
     // Definitions for the CPropertyPage class
     //
 
-    inline CPropertyPage::CPropertyPage(UINT templateID, LPCTSTR pTitle /* = 0*/) : CDialog(static_cast<UINT>(0))
+    inline CPropertyPage::CPropertyPage(UINT templateID, LPCTSTR title /* = 0*/) : CDialog(static_cast<UINT>(0))
     {
         ZeroMemory(&m_psp, sizeof(m_psp));
-        SetTitle(pTitle);
+        SetTitle(title);
 
         m_psp.dwSize        = sizeof(m_psp);
         m_psp.dwFlags       |= PSP_USECALLBACK;
@@ -427,11 +427,11 @@ namespace Win32xx
     }
 
     // Sets the title of the property page.
-    inline void CPropertyPage::SetTitle(LPCTSTR pTitle)
+    inline void CPropertyPage::SetTitle(LPCTSTR title)
     {
-        if (pTitle)
+        if (title)
         {
-            m_title = pTitle;
+            m_title = title;
             m_psp.dwFlags |= PSP_USETITLE;
         }
         else
@@ -464,9 +464,9 @@ namespace Win32xx
             TLSData* pTLSData = GetApp()->GetTlsData();
             if (pTLSData == NULL)
             {
-                // Got a message for a window thats not in the map.
+                // Thread Local Storage data isn't assigned.
                 // We should never get here.
-                TRACE("*** Warning in CPropertyPage::StaticPropSheetPageProc: HWND not in window map ***\n");
+                TRACE("*** Warning in CPropertyPage::StaticPropSheetPageProc: TLS data isn't assigned ***\n");
                 return 0;
             }
 
@@ -518,14 +518,10 @@ namespace Win32xx
         ZeroMemory(&m_psh, sizeof(m_psh));
         SetTitle(LoadString(captionID));
 
-#ifdef _WIN32_WCE
-        m_PSH.dwSize = sizeof(PROPSHEETHEADER);
-#else
         if (GetComCtlVersion() >= 471)
             m_psh.dwSize = sizeof(PROPSHEETHEADER);
         else
             m_psh.dwSize = PROPSHEETHEADER_V1_SIZE;
-#endif
 
         m_psh.dwFlags          = PSH_PROPSHEETPAGE | PSH_USECALLBACK;
         m_psh.hwndParent       = parent;
@@ -533,19 +529,15 @@ namespace Win32xx
         m_psh.pfnCallback      = (PFNPROPSHEETCALLBACK)CPropertySheet::Callback;
     }
 
-    inline CPropertySheet::CPropertySheet(LPCTSTR pCaption /*= NULL*/, HWND parent /* = 0*/)
+    inline CPropertySheet::CPropertySheet(LPCTSTR caption /*= NULL*/, HWND parent /* = 0*/)
     {
         ZeroMemory(&m_psh, sizeof (m_psh));
-        SetTitle(pCaption);
+        SetTitle(caption);
 
-#ifdef _WIN32_WCE
-        m_PSH.dwSize = PROPSHEETHEADER_V1_SIZE;
-#else
         if (GetComCtlVersion() >= 471)
             m_psh.dwSize = sizeof(PROPSHEETHEADER);
         else
             m_psh.dwSize = PROPSHEETHEADER_V1_SIZE;
-#endif
 
         m_psh.dwFlags          = PSH_PROPSHEETPAGE | PSH_USECALLBACK;
         m_psh.hwndParent       = parent;
@@ -588,13 +580,13 @@ namespace Win32xx
         m_psh.ppsp = pPSPArray;
     }
 
-    // Override this function to filter mouse and keyboard messages prior to
-    // being passed to the DialogProc.
+    // Perform initial processing of the property sheet messages.
     inline void CALLBACK CPropertySheet::Callback(HWND wnd, UINT msg, LPARAM lparam)
     {
         switch(msg)
         {
-        // Called before the dialog is created, wnd = 0, lparam points to dialog resource.
+        // Called before the property sheet is created.
+        // wnd = 0, and lparam points to dialog resource.
         case PSCB_PRECREATE:
             {
                 LPDLGTEMPLATE  lpTemplate = (LPDLGTEMPLATE)lparam;
@@ -606,7 +598,7 @@ namespace Win32xx
             }
             break;
 
-        // Called after the dialog is created.
+        // Called when the property sheet is created.
         case PSCB_INITIALIZED:
             {
                 // Retrieve pointer to CWnd object from Thread Local Storage.
@@ -615,10 +607,19 @@ namespace Win32xx
                 if (!pTLSData) return;
 
                 CPropertySheet* w = static_cast<CPropertySheet*>(pTLSData->pWnd);
-                assert(w);
 
                 if (w != 0)
+                {
+                    // Subclass the property sheet, so that messages are forwarded
+                    // to CWnd::StaticWindowProc for handling in WndProc.
                     w->Attach(wnd);
+                }
+                else
+                {
+                    // Thread Local Storage data isn't assigned.
+                    // We should never get here.
+                    TRACE("*** Warning in CPropertySheet::Callback: TLS data isn't assigned. ***\n");
+                }
             }
             break;
         }
@@ -659,8 +660,8 @@ namespace Win32xx
         INT_PTR ipResult = 0;
         m_wnd = 0;
 
-        // Ensure this thread has the TLS index set.
-        TLSData* pTLSData = GetApp()->SetTlsData();
+        // Retrieve this thread's TLS data
+        TLSData* pTLSData = GetApp()->GetTlsData();
 
         // Store the 'this' pointer in Thread Local Storage.
         pTLSData->pWnd = this;
@@ -714,6 +715,7 @@ namespace Win32xx
         int nResult = static_cast<int>(CreatePropertySheet(&m_psh));
 
         m_allPages.clear();
+        Cleanup();
 
         return nResult;
     }
@@ -787,11 +789,10 @@ namespace Win32xx
 
             if (::IsWindow(ok) && ::IsWindowVisible(ok) && ::IsWindowEnabled(ok))
             {
-                ::SetFocus(ok);
                 FinalWindowProc(DM_SETDEFID, IDOK, 0);
 
                 ::SendMessage(cancel, BM_SETSTYLE, BS_PUSHBUTTON, TRUE);
-                return 0;
+                return TRUE;
             }
         }
 
@@ -859,10 +860,10 @@ namespace Win32xx
     }
 
     // Sets the property sheet's title.
-    inline void CPropertySheet::SetTitle(LPCTSTR pTitle)
+    inline void CPropertySheet::SetTitle(LPCTSTR title)
     {
-        if (pTitle)
-            m_title = pTitle;
+        if (title)
+            m_title = title;
         else
             m_title.Empty();
 

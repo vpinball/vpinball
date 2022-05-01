@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -269,8 +269,8 @@ namespace Win32xx
         m_tc.cRadioButtons = static_cast<UINT>(radioButtons.size());
         m_tc.hwndParent = parent;
 
-        // Ensure this thread has the TLS index set.
-        TLSData* pTLSData = GetApp()->SetTlsData();
+        // Retrieve this thread's TLS data
+        TLSData* pTLSData = GetApp()->GetTlsData();
 
         // Store the CWnd pointer in thread local storage.
         pTLSData->pWnd = this;
@@ -291,7 +291,7 @@ namespace Win32xx
             ::FreeLibrary(comCtl);
         }
         pTLSData->pWnd = NULL;
-        m_wnd = 0;
+        Cleanup();
 
         if (result != S_OK)
         {
@@ -474,9 +474,9 @@ namespace Win32xx
 
     // Sets the task dialog's primary content.
     // Refer to TDM_SET_ELEMENT_TEXT in the Windows API documentation for more information.
-    inline void CTaskDialog::SetContent(LPCWSTR pContent)
+    inline void CTaskDialog::SetContent(LPCWSTR content)
     {
-        m_content = FillString(pContent);
+        m_content = FillString(content);
         m_tc.pszContent = m_content;
 
         if (IsWindow())
@@ -693,7 +693,7 @@ namespace Win32xx
 
         if (t == 0)
         {
-            // Got a message for a window thats not in the map.
+            // Got a message for a window that's not in the map.
             // We should never get here.
             TRACE("*** Warning in CTaskDialog::StaticTaskDialogProc: HWND not in window map ***\n");
             return 0;

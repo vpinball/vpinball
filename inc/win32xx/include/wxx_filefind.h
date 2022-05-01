@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -87,7 +87,7 @@ namespace Win32xx
             CFileFind();
             virtual ~CFileFind();
 
-            virtual BOOL        FindFirstFile(LPCTSTR pFileSearch = NULL);
+            virtual BOOL        FindFirstFile(LPCTSTR fileSearch = NULL);
             virtual BOOL        FindNextFile();
             virtual FILETIME    GetCreationTime() const;
             virtual DWORD       GetFileAttributes() const;
@@ -156,22 +156,22 @@ namespace Win32xx
     }
 
     //  Searches a directory for a file or subdirectory with a name that matches
-    //  the pFileSearch. pFileSearch can contain a valid directory or path, and a
+    //  the fileSearch. The fileSearch can contain a valid directory or path, and a
     //  file name that can contain the '?' and '*' wildcard characters.
     //  A name of "*.*" is used if no name is specified.
     //  Returns TRUE if a matching file was found, FALSE otherwise.
     //  Refer to FindFirstFile in the Windows API documentation for more information.
-    inline BOOL CFileFind::FindFirstFile(LPCTSTR pFileSearch /* = NULL */)
+    inline BOOL CFileFind::FindFirstFile(LPCTSTR fileSearch /* = NULL */)
     {
         // Reset the this to default
         Close();
 
         // Default the name to all files in the current directory
-        if (pFileSearch == NULL)
-            pFileSearch = _T("*.*");
+        if (fileSearch == NULL)
+            fileSearch = _T("*.*");
 
         // Search for the first file matching the name
-        m_fileFind = ::FindFirstFile(pFileSearch, &m_findData);
+        m_fileFind = ::FindFirstFile(fileSearch, &m_findData);
 
         if (m_fileFind == INVALID_HANDLE_VALUE)
         {
@@ -180,7 +180,7 @@ namespace Win32xx
         }
 
         // extract the directory part of the name (if any)
-        CString str = pFileSearch;
+        CString str = fileSearch;
         int delimiter = str.ReverseFind(_T('\\'));
         if (delimiter >= 0)
         {

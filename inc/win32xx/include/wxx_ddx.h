@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -71,8 +71,6 @@
 #include <iomanip>
 #include "wxx_wincore0.h"
 #include "wxx_exception.h"
-
-#ifndef _WIN32_WCE
 
 
 namespace Win32xx
@@ -282,10 +280,11 @@ namespace Win32xx
             if ((nMin != zero && nMin > val) ||
                 (nMax != zero && nMax < val))
             {
-                  // retrieve the control ID
+                // retrieve the control ID
                 int id = static_cast<int>(::GetWindowLongPtr(m_lastControl, GWLP_ID));
-                CString str = CString(_T("Warning: Date-Time data is out of range "))
-                                + _T("in control ID ") + id + _T(" \n");
+                CString str;
+                str << _T("Warning: Date-Time data is out of range ")
+                        << _T("in control ID ") << id << _T(" \n");
                 TRACE(str);
 
                 return;
@@ -386,8 +385,9 @@ namespace Win32xx
                 (nMax != zero && nMax < val))
             {
                 int id = static_cast<int>(::GetWindowLongPtr(m_lastControl, GWLP_ID));
-                CString str = CString(_T("Warning: Calendar data is out of range "))
-                            + _T("in control ID ") + id + _T(" \n");
+                CString str;
+                str << _T("Warning: Calendar data is out of range ")
+                        << _T("in control ID ") << id << _T(" \n");
                 TRACE(str);
                 return;     // continue on
             }
@@ -423,10 +423,11 @@ namespace Win32xx
             if (min > value || max < value)
             {
     #ifdef _DEBUG
-                  // just leave a trace if writing to the control
+                // just leave a trace if writing to the control
                 int id = static_cast<int>(::GetWindowLongPtr(m_lastControl, GWLP_ID));
-                CString str = CString(_T("Warning: slider position is outside given "))
-                            + _T("limits in the control with ID ") + id + _T(" \n");
+                CString str;
+                str << _T("Warning: slider position is outside given ")
+                        << _T("limits in the control with ID ") << id << _T(" \n");
                 TRACE(str);
     #endif
                 return;     // don't stop now
@@ -457,8 +458,9 @@ namespace Win32xx
         {
             // just leave a debugging trace if writing to a control
             int id = static_cast<int>(::GetWindowLongPtr(m_lastControl, GWLP_ID));
-            CString str = CString(_T("Warning: value is outside limits in control with ID "))
-                           + id + _T(" \n");
+            CString str;
+            str << _T("Warning: value is outside limits in control with ID ")
+                    << id << _T(" \n");
             TRACE(str);
             return;     // don't stop
         }
@@ -614,8 +616,9 @@ namespace Win32xx
         {
             if (value < 0 || value > 2)
             {
-                CString str = CString(_T("Warning: dialog data checkbox value "))
-                                + value + _T(" out of range.\n");
+                CString str;
+                str << _T("Warning: dialog data checkbox value ")
+                        << value << _T(" out of range.\n");
                 TRACE(str);
                 value = 0;  // set default to off
             }
@@ -1207,8 +1210,6 @@ namespace Win32xx
     }
 
 }   // namespace Win32xx
-
-#endif // _WIN32_WCE
 
 #endif // _WIN32XX_DDX_H_
 

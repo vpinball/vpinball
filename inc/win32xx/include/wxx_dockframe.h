@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -80,14 +80,14 @@ namespace Win32xx
 
     protected:
         virtual LRESULT OnActivate(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual int OnCreate(CREATESTRUCT& cs);
-        virtual void OnDestroy();
+        virtual int     OnCreate(CREATESTRUCT& cs);
+        virtual void    OnDestroy();
         virtual LRESULT OnDockActivated(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnDockDestroyed(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnNotify(WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnSysColorChange(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual void RecalcViewLayout();
+        virtual void    RecalcViewLayout();
         virtual LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
 
     private:
@@ -106,14 +106,15 @@ namespace Win32xx
         CMDIDockFrame();
         virtual ~CMDIDockFrame() {}
 
-        virtual CWnd& GetMDIClient() const      { return m_dockMDIClient; }
-        virtual CDocker::CDockClient& GetDockClient() const { return m_dockMDIClient; }
+        virtual CWnd& GetMDIClient() const { return *m_pDockMDIClient; }
+        void SetDockClient(CMDIClient<CDocker::CDockClient>& dockClient) { m_pDockMDIClient = &dockClient; }
 
     protected:
         virtual int OnCreate(CREATESTRUCT& cs);
 
     private:
-        mutable CMDIClient<CDocker::CDockClient> m_dockMDIClient;   // MDIClient for docking
+        CMDIClient<CDocker::CDockClient> m_dockMDIClient;   // MDIClient for docking
+        CMDIClient<CDocker::CDockClient>* m_pDockMDIClient;
     };
 
 }
@@ -221,6 +222,9 @@ namespace Win32xx
     inline CMDIDockFrame::CMDIDockFrame()
     {
         // The view window for a CMDIDockFrame is the MDI Client
+        CDocker::SetDockClient(m_dockMDIClient);
+        SetDockClient(m_dockMDIClient);
+
         SetView(GetMDIClient());
         GetDockClient().SetDocker(this);
     }

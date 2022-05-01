@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -168,9 +168,9 @@ namespace Win32xx
         operator time_t() const { return m_time; }
 
         // CString conversion
-        CString     Format(LPCTSTR pFormat) const;
+        CString     Format(LPCTSTR format) const;
         CString     Format(UINT formatID) const;
-        CString     FormatGmt(LPCTSTR pFormat) const;
+        CString     FormatGmt(LPCTSTR format) const;
         CString     FormatGmt(UINT formatID) const;
 
         // Static methods
@@ -226,7 +226,7 @@ namespace Win32xx
         operator timespan_t() const { return m_timespan; }
 
         // CString conversion
-        CString     Format(LPCTSTR pFormat) const;
+        CString     Format(LPCTSTR format) const;
         CString     Format(UINT formatID) const;
 
         // Global friends
@@ -725,14 +725,14 @@ namespace Win32xx
         return m_time >= time.m_time;
     }
 
-    // Returns a CString that contains formatted time. The pFormat parameter
+    // Returns a CString that contains formatted time. The format parameter
     // is a formatting string similar to the printf formatting string.
     // The valid format directives are
     //   %D - number of days
     //   %H - hour (0-23)
     //   %M - minute (0-59)
     //   %S - seconds (0-59)
-    inline CString CTime::Format(LPCTSTR pFormat) const
+    inline CString CTime::Format(LPCTSTR format) const
     {
         const size_t  maxTimeBufferSize = 128;
         TCHAR szBuffer[maxTimeBufferSize];
@@ -745,7 +745,7 @@ namespace Win32xx
         ::localtime_s(ptm, &m_time);
 #endif
 
-        if (ptm == NULL || !::_tcsftime(szBuffer, maxTimeBufferSize, pFormat, ptm))
+        if (ptm == NULL || !::_tcsftime(szBuffer, maxTimeBufferSize, format, ptm))
             szBuffer[0] = '\0';
         return CString(szBuffer);
     }
@@ -764,13 +764,13 @@ namespace Win32xx
         return Format(strFormat);
     }
 
-    // Returns a CString that contains formatted time as a UTC time. The pFormat
+    // Returns a CString that contains formatted time as a UTC time. The format
     // parameter is a formatting string similar to the printf formatting string.
-    inline CString CTime::FormatGmt(LPCTSTR pFormat) const
+    inline CString CTime::FormatGmt(LPCTSTR format) const
     {
         const size_t  maxTimeBufferSize = 128;
         TCHAR szBuffer[maxTimeBufferSize];
-        CString fmt0 = pFormat;
+        CString fmt0 = format;
         while (fmt0.Replace(_T("%Z"), _T("Coordinated Universal Time")))
             ;
         while (fmt0.Replace(_T("%z"), _T("UTC")))
@@ -1025,14 +1025,14 @@ namespace Win32xx
     }
 
     // Returns a rendering of *this CTimeSpan object in CString form using the
-    // pFormat as the template. The valid format directives are
+    // format as the template. The valid format directives are
     //   %D - number of days
     //   %H - hour (0-23)
     //   %M - minute (0-59)
     //   %S - seconds (0-59)
-    inline CString CTimeSpan::Format(LPCTSTR pFormat) const
+    inline CString CTimeSpan::Format(LPCTSTR format) const
     {
-        CString fmt0 = pFormat;
+        CString fmt0 = format;
         CString insert;
 
         while (fmt0.Find(_T("%D")) != -1)  // number of days

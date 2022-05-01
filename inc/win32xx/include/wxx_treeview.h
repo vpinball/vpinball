@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -62,7 +62,7 @@ namespace Win32xx
         virtual ~CTreeView() {}
         virtual void PreRegisterClass(WNDCLASS& wc);
 
-        // Attributes
+        // Accessors and mutators
         COLORREF GetBkColor() const;
         HTREEITEM GetChild(HTREEITEM item) const;
         UINT    GetCount() const;
@@ -276,7 +276,9 @@ namespace Win32xx
     inline BOOL CTreeView::GetItemRect(HTREEITEM item, RECT& rc, BOOL isTextOnly) const
     {
         assert(IsWindow());
-        return TreeView_GetItemRect( *this, item, &rc, isTextOnly );
+
+        *reinterpret_cast<HTREEITEM*>(&rc) = item;
+        return (BOOL)SendMessage(TVM_GETITEMRECT, (WPARAM)isTextOnly, (LPARAM)&rc);
     }
 
     // Retrieves the text for a tree-view item.

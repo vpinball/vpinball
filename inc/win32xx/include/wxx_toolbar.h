@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -65,7 +65,7 @@ namespace Win32xx
         // Wrappers for Win32 API functions
         BOOL  AddButtons(UINT buttonCount, LPTBBUTTON pButtonInfoArray) const;
         int   AddString(UINT stringID) const;
-        int   AddStrings(LPCTSTR pStrings) const;
+        int   AddStrings(LPCTSTR strings) const;
         void  Autosize() const;
         void  CheckButton(int buttonID, BOOL isChecked) const;
         int   CommandToIndex(int buttonID) const;
@@ -285,10 +285,10 @@ namespace Win32xx
     // Adds a new string or strings to the list of strings available for a ToolBar control.
     // Strings in the buffer must be separated by a null character. The last string must have two null terminators.
     // Refer to TB_ADDSTRING in the Windows API documentation for more information.
-    inline int CToolBar::AddStrings(LPCTSTR pStrings) const
+    inline int CToolBar::AddStrings(LPCTSTR strings) const
     {
         assert(IsWindow());
-        return (int)SendMessage(TB_ADDSTRING, 0, (LPARAM)pStrings);
+        return (int)SendMessage(TB_ADDSTRING, 0, (LPARAM)strings);
     }
 
     // Causes a ToolBar to be resized.
@@ -611,8 +611,9 @@ namespace Win32xx
     // Refer to TB_HITTEST in the Windows API documentation for more information.
     inline int CToolBar::HitTest() const
     {
-        // We do our own hit test since TB_HITTEST is a bit buggy,
-        // and also doesn't work at all on earliest versions of Win95.
+        // We do our own hit test since TB_HITTEST on some older operating
+        // systems is a bit buggy, and it is not provided on the earliest
+        // versions of Win95.
 
         assert(IsWindow());
         CPoint pos = GetCursorPos();

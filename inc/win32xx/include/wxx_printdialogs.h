@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -417,6 +417,7 @@ namespace Win32xx
     }
 
     // Returns the device context of the default or currently chosen printer.
+    // Throws on failure.
     inline CDC CPrintDialog::GetPrinterDC() const
     {
         CThreadLock lock(GetApp()->m_printLock);
@@ -430,10 +431,13 @@ namespace Win32xx
                 GetPortName(), GetDevMode());
         }
 
+        if (dc.GetHDC() == 0)
+            throw CResourceException(GetApp()->MsgPrintFound());
+
         return dc;
     }
 
-    // Dialog procedure for the Font dialog. Override this function
+    // Dialog procedure for the Print dialog. Override this function
     // to customize the message handling.
     inline INT_PTR CPrintDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
     {
@@ -501,8 +505,9 @@ namespace Win32xx
         m_pd.hDevNames = GetApp()->m_devNames;
         m_pd.hwndOwner = owner;
 
-        // Ensure this thread has the TLS index set
-        TLSData* pTLSData = GetApp()->SetTlsData();
+        // Retrieve this thread's TLS data
+        TLSData* pTLSData = GetApp()->GetTlsData();
+
         // Create the modal dialog
         pTLSData->pWnd = this;
 
@@ -536,7 +541,7 @@ namespace Win32xx
         m_pd.hDevNames = 0;
 
         // Prepare the CWnd for reuse.
-        Destroy();
+        Cleanup();
 
         return ok;
     }
@@ -837,8 +842,8 @@ namespace Win32xx
         m_psd.hDevNames = GetApp()->m_devNames;
         m_psd.hwndOwner = owner;
 
-        // Ensure this thread has the TLS index set
-        TLSData* pTLSData = GetApp()->SetTlsData();
+        // Retrieve this thread's TLS data
+        TLSData* pTLSData = GetApp()->GetTlsData();
 
         // Create the modal dialog
         pTLSData->pWnd = this;
@@ -870,7 +875,7 @@ namespace Win32xx
         m_psd.hDevNames = 0;
 
         // Prepare the CWnd for reuse.
-        Destroy();
+        Cleanup();
 
         return ok;
     }

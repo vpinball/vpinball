@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -81,6 +81,22 @@
 
 namespace Win32xx
 {
+/*
+    103 DIALOGEX 0, 0, 309, 178
+    STYLE DS_SHELLFONT | WS_CHILD | WS_CLIPCHILDREN
+    EXSTYLE WS_EX_CLIENTEDGE
+    CAPTION ""
+    FONT 8, "MS Shell Dlg", 400, 0
+    {
+       CONTROL "", 96, BUTTON, BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 246, 2, 50, 14
+       CONTROL "", 92, BUTTON, BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 4, 2, 50, 14
+       CONTROL "", 93, BUTTON, BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 55, 2, 50, 14
+       CONTROL "", 94, BUTTON, BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 125, 2, 50, 14
+       CONTROL "", 95, BUTTON, BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 176, 2, 50, 14
+       CONTROL "", 97, "PreviewPane", WS_CHILD | WS_VISIBLE | WS_TABSTOP, 0, 18, 309, 159
+    }
+*/
+
     // template of the PrintPreview dialog (used in place of a resource script).
     static unsigned char previewTemplate[] =
     {
@@ -340,7 +356,7 @@ namespace Win32xx
         //  Additional messages to be handled go here
         //  }
 
-            // Pass unhandled messages on to parent DialogProc
+        // Pass unhandled messages on to parent DialogProc
         return DialogProcDefault(msg, wparam, lparam);
     }
 
@@ -390,12 +406,12 @@ namespace Win32xx
 
         // Support dialog resizing
         m_resizer.Initialize(*this, CRect(0, 0, 100, 120));
-        m_resizer.AddChild(m_buttonPrint, topleft, 0);
-        m_resizer.AddChild(m_buttonSetup, topleft, 0);
-        m_resizer.AddChild(m_buttonPrev, topleft, 0);
-        m_resizer.AddChild(m_buttonNext, topleft, 0);
-        m_resizer.AddChild(m_buttonClose, topleft, 0);
-        m_resizer.AddChild(m_previewPane, topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+        m_resizer.AddChild(m_buttonPrint, CResizer::topleft, 0);
+        m_resizer.AddChild(m_buttonSetup, CResizer::topleft, 0);
+        m_resizer.AddChild(m_buttonPrev, CResizer::topleft, 0);
+        m_resizer.AddChild(m_buttonNext, CResizer::topleft, 0);
+        m_resizer.AddChild(m_buttonClose, CResizer::topleft, 0);
+        m_resizer.AddChild(m_previewPane, CResizer::topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
 
         return TRUE;
     }
@@ -421,20 +437,20 @@ namespace Win32xx
     }
 
     // Called when the Print button is pressed.
-    // Sends the UWM_PRINTNOW message to the owner window.
+    // Sends the UWM_PREVIEWPRINT message to the owner window.
     template <typename T>
     inline BOOL CPrintPreview<T>::OnPrintButton()
     {
-        ::SendMessage(m_ownerWindow, UWM_PRINTNOW, 0, 0);
+        ::SendMessage(m_ownerWindow, UWM_PREVIEWPRINT, 0, 0);
         return TRUE;
     }
 
     // Called in response to the Print Setup button.
-    // Sends a UWM_PRINTSETUP message to the owner.
+    // Sends a UWM_PREVIEWSETUP message to the owner.
     template <typename T>
     inline BOOL CPrintPreview<T>::OnPrintSetup()
     {
-        ::SendMessage(m_ownerWindow, UWM_PRINTSETUP, 0, 0);
+        ::SendMessage(m_ownerWindow, UWM_PREVIEWSETUP, 0, 0);
         return TRUE;
     }
 
@@ -462,8 +478,6 @@ namespace Win32xx
         // Get the device context of the default or currently chosen printer
         CPrintDialog printDlg;
         CDC printerDC = printDlg.GetPrinterDC();
-        if (printerDC.GetHDC() == 0)
-            throw CResourceException(GetApp()->MsgPrintFound());
 
         // Create a memory DC for the printer.
         // Note: we use the printer's DC here to render text accurately.

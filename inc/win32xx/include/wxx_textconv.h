@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -122,6 +122,7 @@ namespace Win32xx
         ~CAtoW();
         operator LPCWSTR() { return m_str? &m_wideArray[0] : NULL; }
         operator LPOLESTR() { return m_str? (LPOLESTR)&m_wideArray[0] : (LPOLESTR)NULL; }
+        LPCWSTR c_str() { return m_str ? &m_wideArray[0] : NULL; }
 
     private:
         CAtoW(const CAtoW&);
@@ -136,6 +137,7 @@ namespace Win32xx
         CWtoA(LPCWSTR str, UINT codePage = CP_ACP, int charCount = -1);
         ~CWtoA();
         operator LPCSTR() { return m_str? &m_ansiArray[0] : NULL; }
+        LPCSTR c_str() { return m_str ? &m_ansiArray[0] : NULL; }
 
     private:
         CWtoA(const CWtoA&);
@@ -148,14 +150,15 @@ namespace Win32xx
     {
     public:
         CWtoW(LPCWSTR pWStr, UINT codePage = CP_ACP, int charCount = -1);
-        operator LPCWSTR() { return m_pWStr; }
-        operator LPOLESTR() { return (LPOLESTR)m_pWStr; }
+        operator LPCWSTR() { return m_str; }
+        operator LPOLESTR() { return (LPOLESTR)m_str; }
+        LPCWSTR c_str() { return m_str; }
 
     private:
         CWtoW(const CWtoW&);
         CWtoW& operator= (const CWtoW&);
 
-        LPCWSTR m_pWStr;
+        LPCWSTR m_str;
     };
 
     class CAtoA
@@ -163,6 +166,7 @@ namespace Win32xx
     public:
         CAtoA(LPCSTR str, UINT codePage = CP_ACP, int charCount = -1);
         operator LPCSTR() { return m_str; }
+        LPCSTR c_str() { return m_str; }
 
     private:
         CAtoA(const CAtoA&);
@@ -209,7 +213,7 @@ namespace Win32xx
         if (str)
         {
             // Resize the vector and assign null WCHAR to each element.
-            int charBytes = (charCount == -1) ? -1 : 2 * charCount;
+            int charBytes = (charCount == -1) ? -1 : sizeof(CHAR) * charCount;
             int length = MultiByteToWideChar(codePage, 0, str, charBytes, NULL, 0) + 1;
             m_wideArray.assign(length, L'\0');
 
@@ -233,7 +237,8 @@ namespace Win32xx
     inline CWtoA::CWtoA(LPCWSTR str, UINT codePage /*= CP_ACP*/, int charCount /*= -1*/) : m_str(str)
     {
         // Resize the vector and assign null char to each element
-        int length = WideCharToMultiByte(codePage, 0, str, charCount, NULL, 0, NULL, NULL) + 1;
+        int charBytes = (charCount == -1) ? -1 : sizeof(WCHAR) * charCount;
+        int length = WideCharToMultiByte(codePage, 0, str, charBytes, NULL, 0, NULL, NULL) + 1;
         m_ansiArray.assign(length, '\0');
 
         // Fill our vector with the converted char array
@@ -246,7 +251,7 @@ namespace Win32xx
         std::fill(m_ansiArray.begin(), m_ansiArray.end(), '\0');
     }
 
-    inline CWtoW::CWtoW(LPCWSTR pWStr, UINT /*codePage = CP_ACP*/, int /*charCount = -1*/) : m_pWStr(pWStr)
+    inline CWtoW::CWtoW(LPCWSTR str, UINT /*codePage = CP_ACP*/, int /*charCount = -1*/) : m_str(str)
     {
     }
 

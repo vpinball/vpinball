@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -155,19 +155,19 @@ namespace Win32xx
         CMDIFrameT();
         virtual ~CMDIFrameT() {}
 
-        // Overridable virtual functions
+        // Override these functions as required.
         virtual CMDIChild* AddMDIChild(CMDIChild* pMDIChild);
         virtual HWND Create(HWND parent = 0);
-        virtual CMDIChild* GetActiveMDIChild() const;
-        virtual CMenu GetActiveMenu() const;
-        virtual CWnd& GetMDIClient() const { return m_mdiClient; }
-        virtual BOOL IsMDIChildMaxed() const;
+        virtual CWnd& GetMDIClient() const { return *m_pMdiClient; }
         virtual BOOL IsMDIFrame() const { return TRUE; }
         virtual void RemoveMDIChild(HWND wnd);
         virtual BOOL RemoveAllMDIChildren();
 
         // These functions aren't virtual. Don't override these.
+        CMDIChild* GetActiveMDIChild() const;
+        CMenu GetActiveMenu() const;
         const std::vector<MDIChildPtr>& GetAllMDIChildren() const { return m_mdiChildren; }
+        BOOL IsMDIChildMaxed() const;
         void MDICascade(int nType = 0) const;
         void MDIIconArrange() const;
         void MDIMaximize() const;
@@ -176,6 +176,7 @@ namespace Win32xx
         void MDIRestore() const;
         void MDITile(int nType = 0) const;
         void SetActiveMDIChild(CMDIChild* pChild);
+        void SetMDIClient(CMDIClient<CWnd>& mdiClient) { m_pMdiClient = &mdiClient; }
 
     protected:
         // Overridable virtual functions
@@ -202,7 +203,8 @@ namespace Win32xx
         void AppendMDIMenu(CMenu menuWindow);
 
         std::vector<MDIChildPtr> m_mdiChildren;
-        mutable CMDIClient<CWnd> m_mdiClient;
+        CMDIClient<CWnd> m_mdiClient;
+        CMDIClient<CWnd>* m_pMdiClient;
     };
 
 
@@ -233,6 +235,7 @@ namespace Win32xx
     template <class T>
     inline CMDIFrameT<T>::CMDIFrameT()
     {
+        SetMDIClient(m_mdiClient);
     }
 
     // Create the MDI frame.
@@ -299,10 +302,10 @@ namespace Win32xx
                 {
                     CString strMenuItem ( (*v)->GetWindowText() );
 
-                    if (strMenuItem.GetLength() > MAX_MENU_STRING -10)
+                    if (strMenuItem.GetLength() > WXX_MAX_STRING_SIZE -10)
                     {
                         // Truncate the string if its too long
-                        strMenuItem.Delete(strMenuItem.GetLength() - MAX_MENU_STRING +10);
+                        strMenuItem.Delete(strMenuItem.GetLength() - WXX_MAX_STRING_SIZE -10);
                         strMenuItem += _T(" ...");
                     }
 
@@ -475,14 +478,14 @@ namespace Win32xx
         {
         case IDW_VIEW_STATUSBAR:
             {
-                BOOL isVisible = T::GetStatusBar().IsWindow() && T::GetStatusBar().IsWindowVisible();
+                bool isVisible = T::GetStatusBar().IsWindow() && T::GetStatusBar().IsWindowVisible();
                 activeMenu.CheckMenuItem(id, isVisible ? MF_CHECKED : MF_UNCHECKED);
             }
             break;
 
         case IDW_VIEW_TOOLBAR:
             {
-                BOOL isVisible = T::GetToolBar().IsWindow() && T::GetToolBar().IsWindowVisible();
+                bool isVisible = T::GetToolBar().IsWindow() && T::GetToolBar().IsWindowVisible();
                 activeMenu.EnableMenuItem(id, T::IsUsingToolBar() ? MF_ENABLED : MF_DISABLED);
                 activeMenu.CheckMenuItem(id, isVisible ? MF_CHECKED : MF_UNCHECKED);
             }
@@ -560,7 +563,7 @@ namespace Win32xx
         return FinalWindowProc(msg, wparam, lparam);
     }
 
-    // Used to translate window messages before they are dispatched to they are handled in
+    // Used to translate window messages before they are dispatched to 
     // the message loop.
     template <class T>
     inline BOOL CMDIFrameT<T>::PreTranslateMessage(MSG& msg)

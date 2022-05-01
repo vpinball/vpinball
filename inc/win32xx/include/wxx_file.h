@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -62,12 +62,14 @@ namespace Win32xx
             shareDenyNone =     0x0040, // No sharing restrictions.
             modeRead =          0x0100, // Requests read access only.
             modeWrite =         0x0200, // Requests write access only.
-            modeReadWrite =     0x0300  // Requests read and write access.
+            modeReadWrite =     0x0300, // Requests read and write access.
+            modeNone =          0x0400  // Requests neither read nor write access.
         };
 
         CFile();
         CFile(HANDLE file);
-        CFile(LPCTSTR pFileName, UINT openFlags);
+        CFile(LPCTSTR fileName, UINT openFlags);
+        CFile(LPCTSTR fileName, UINT openFlags, DWORD attributes);
         virtual ~CFile();
         operator HANDLE() const;
 
@@ -78,25 +80,24 @@ namespace Win32xx
         CString GetFileNameExt() const;
         CString GetFileNameWOExt() const;
         const CString& GetFilePath() const;
+#ifndef WIN32_LEAN_AND_MEAN
         CString GetFileTitle() const;
+#endif
         HANDLE GetHandle() const;
         ULONGLONG GetLength() const;
         ULONGLONG GetPosition() const;
-        void Open(LPCTSTR pFileName, UINT openFlags);
-        UINT Read(void* pBuf, UINT count);
-        void Remove(LPCTSTR pFileName);
-        void Rename(LPCTSTR pOldName, LPCTSTR pNewName);
+        void LockRange(ULONGLONG pos, ULONGLONG count);
+        void Open(LPCTSTR fileName, UINT openFlags, DWORD attributes = FILE_ATTRIBUTE_NORMAL);
+        UINT Read(void* buffer, UINT count);
+        void Remove(LPCTSTR fileName);
+        void Rename(LPCTSTR oldName, LPCTSTR newName);
         ULONGLONG Seek(LONGLONG seekTo, UINT method);
         void SeekToBegin();
         ULONGLONG SeekToEnd();
+        void SetFilePath(LPCTSTR fileName);
         void SetLength(ULONGLONG length);
-        void Write(const void* pBuf, UINT count);
-
-#ifndef _WIN32_WCE
-        void LockRange(ULONGLONG pos, ULONGLONG count);
-        void SetFilePath(LPCTSTR pFileName);
         void UnlockRange(ULONGLONG pos, ULONGLONG count);
-#endif
+        void Write(const void* buffer, UINT count);
 
     private:
         CFile(const CFile&);                // Disable copy construction
@@ -129,14 +130,29 @@ namespace Win32xx
     //  modeRead        Requests read access only.
     //  modeWrite       Requests write access only.
     //  modeReadWrite   Requests read and write access.
+    //  modeNone        Requests neither read nor write access.
     //  shareExclusive  Denies read and write access to all others.
     //  shareDenyWrite  Denies write access to all others.
     //  shareDenyRead   Denies read access to all others.
     //  shareDenyNone   No sharing restrictions.
-    inline CFile::CFile(LPCTSTR pFileName, UINT openFlags) : m_file(INVALID_HANDLE_VALUE)
+    // Refer to CreateFile in the Windows API documentation for more information.
+    inline CFile::CFile(LPCTSTR fileName, UINT openFlags) : m_file(INVALID_HANDLE_VALUE)
     {
-        assert(pFileName);
-        Open(pFileName, openFlags);  // Throws CFileException on failure.
+        assert(fileName);
+        Open(fileName, openFlags);  // Throws CFileException on failure.
+    }
+
+    // Possible attribute values:
+    //   FILE_ATTRIBUTE_ARCHIVE, FILE_ATTRIBUTE_ENCRYPTED, FILE_ATTRIBUTE_HIDDEN, FILE_ATTRIBUTE_NORMAL,
+    //   FILE_ATTRIBUTE_NOT_CONTENT_INDEXED, FILE_ATTRIBUTE_OFFLINE, FILE_ATTRIBUTE_READONLY, FILE_ATTRIBUTE_SYSTEM,
+    //   FILE_ATTRIBUTE_TEMPORARY, FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_DELETE_ON_CLOSE, FILE_FLAG_NO_BUFFERING,
+    //   FILE_FLAG_OPEN_NO_RECALL, FILE_FLAG_OPEN_REPARSE_POINT, FILE_FLAG_OVERLAPPED, FILE_FLAG_POSIX_SEMANTICS,
+    //   FILE_FLAG_RANDOM_ACCESS, FILE_FLAG_SEQUENTIAL_SCAN, FILE_FLAG_WRITE_THROUGH.
+    // Refer to CreateFile in the Windows API documentation for more information.
+    inline CFile::CFile(LPCTSTR fileName, UINT openFlags, DWORD attributes) : m_file(INVALID_HANDLE_VALUE)
+    {
+        assert(fileName);
+        Open(fileName, openFlags, attributes);  // Throws CFileException on failure.
     }
 
     inline CFile::~CFile()
@@ -207,7 +223,8 @@ namespace Win32xx
     {
         CString extension;
         int dot = m_fileName.ReverseFind(_T('.'));
-        extension = m_fileName.Mid(dot+1, lstrlen(m_fileName));
+        if (dot >= 0)
+            extension = m_fileName.Mid(dot+1);
 
         return extension;
     }
@@ -215,9 +232,10 @@ namespace Win32xx
     // Returns the filename of the file associated with this object, not including the directory, without its extension.
     inline CString CFile::GetFileNameWOExt() const
     {
-        CString fileNameWOExt;
+        CString fileNameWOExt = m_fileName;
         int dot = m_fileName.ReverseFind(_T('.'));
-        fileNameWOExt = m_fileName.Left(dot);
+        if (dot >= 0)
+            fileNameWOExt = m_fileName.Left(dot);
 
         return fileNameWOExt;
     }
@@ -228,6 +246,7 @@ namespace Win32xx
         return m_filePath;
     }
 
+#ifndef WIN32_LEAN_AND_MEAN
     // Returns the string that the system would use to display the file name to
     // the user. The string might or might not contain the filename's extension
     // depending on user settings.
@@ -244,6 +263,7 @@ namespace Win32xx
 
         return fileTitle;
     }
+#endif
 
     // Returns the length of the file in bytes.
     // Refer to SetFilePointer in the Windows API documentation for more information.
@@ -274,8 +294,6 @@ namespace Win32xx
         return result;
     }
 
-#ifndef _WIN32_WCE
-
     // Locks a range of bytes in and open file.
     // Refer to LockFile in the Windows API documentation for more information.
     inline void CFile::LockRange(ULONGLONG pos, ULONGLONG count)
@@ -291,10 +309,8 @@ namespace Win32xx
             throw CFileException(GetFilePath(), GetApp()->MsgFileLock());
     }
 
-#endif
-
     // Prepares a file to be written to or read from.
-    // Possible nOpenFlag values: CREATE_NEW, CREATE_ALWAYS, OPEN_EXISTING, OPEN_ALWAYS, TRUNCATE_EXISTING
+    // Possible openFlag values: CREATE_NEW, CREATE_ALWAYS, OPEN_EXISTING, OPEN_ALWAYS, TRUNCATE_EXISTING
     // Default value: OPEN_EXISTING | modeReadWrite
     // The following modes are also supported:
     //  modeCreate      Creates a new file. Truncates an existing file to length 0.
@@ -302,12 +318,19 @@ namespace Win32xx
     //  modeRead        Requests read access only.
     //  modeWrite       Requests write access only.
     //  modeReadWrite   Requests read and write access.
+    //  modeNone        Requests neither read nor write access.
     //  shareExclusive  Denies read and write access to all others.
     //  shareDenyWrite  Denies write access to all others.
     //  shareDenyRead   Denies read access to all others.
     //  shareDenyNone   No sharing restrictions.
+    // Possible attribute values:
+    //   FILE_ATTRIBUTE_ARCHIVE, FILE_ATTRIBUTE_ENCRYPTED, FILE_ATTRIBUTE_HIDDEN, FILE_ATTRIBUTE_NORMAL,
+    //   FILE_ATTRIBUTE_NOT_CONTENT_INDEXED, FILE_ATTRIBUTE_OFFLINE, FILE_ATTRIBUTE_READONLY, FILE_ATTRIBUTE_SYSTEM,
+    //   FILE_ATTRIBUTE_TEMPORARY, FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_DELETE_ON_CLOSE, FILE_FLAG_NO_BUFFERING,
+    //   FILE_FLAG_OPEN_NO_RECALL, FILE_FLAG_OPEN_REPARSE_POINT, FILE_FLAG_OVERLAPPED, FILE_FLAG_POSIX_SEMANTICS,
+    //   FILE_FLAG_RANDOM_ACCESS, FILE_FLAG_SEQUENTIAL_SCAN, FILE_FLAG_WRITE_THROUGH.
     // Refer to CreateFile in the Windows API documentation for more information.
-    inline void CFile::Open(LPCTSTR pFileName, UINT openFlags)
+    inline void CFile::Open(LPCTSTR fileName, UINT openFlags, DWORD attributes)
     {
         if (m_file != INVALID_HANDLE_VALUE)
             Close();
@@ -315,6 +338,8 @@ namespace Win32xx
         DWORD access = 0;
         switch (openFlags & 0xF00)
         {
+        case modeNone:
+            access = 0; break;
         case modeRead:
             access = GENERIC_READ;    break;
         case modeWrite:
@@ -339,34 +364,32 @@ namespace Win32xx
         if (create & OPEN_ALWAYS) openFlags = OPEN_ALWAYS;
         if (create == 0) create = OPEN_EXISTING;
 
-        m_file = ::CreateFile(pFileName, access, share, NULL, create, FILE_ATTRIBUTE_NORMAL, 0);
+        m_file = ::CreateFile(fileName, access, share, NULL, create, attributes, 0);
 
         if (INVALID_HANDLE_VALUE == m_file)
         {
-            throw CFileException(pFileName, GetApp()->MsgFileOpen());
+            throw CFileException(fileName, GetApp()->MsgFileOpen());
         }
 
-#ifndef _WIN32_WCE
         if (m_file != INVALID_HANDLE_VALUE)
         {
-            SetFilePath(pFileName);
+            SetFilePath(fileName);
         }
-#endif
 
     }
 
     // Reads from the file, storing the contents in the specified buffer.
     // Refer to ReadFile in the Windows API documentation for more information.
-    inline UINT CFile::Read(void* pBuf, UINT count)
+    inline UINT CFile::Read(void* buffer, UINT count)
     {
         assert(m_file != INVALID_HANDLE_VALUE);
 
         if (count == 0) return 0;
 
-        assert(pBuf);
+        assert(buffer);
         DWORD read = 0;
 
-        if (!::ReadFile(m_file, pBuf, count, &read, NULL))
+        if (!::ReadFile(m_file, buffer, count, &read, NULL))
             throw CFileException(GetFilePath(), GetApp()->MsgFileRead());
 
         return read;
@@ -374,18 +397,18 @@ namespace Win32xx
 
     // Renames the specified file.
     // Refer to MoveFile in the Windows API documentation for more information.
-    inline void CFile::Rename(LPCTSTR pOldName, LPCTSTR pNewName)
+    inline void CFile::Rename(LPCTSTR oldName, LPCTSTR newName)
     {
-        if (!::MoveFile(pOldName, pNewName))
-            throw CFileException(pOldName, GetApp()->MsgFileRename());
+        if (!::MoveFile(oldName, newName))
+            throw CFileException(oldName, GetApp()->MsgFileRename());
     }
 
     // Deletes the specified file.
     // Refer to DeleteFile in the Windows API documentation for more information.
-    inline void CFile::Remove(LPCTSTR pFileName)
+    inline void CFile::Remove(LPCTSTR fileName)
     {
-        if (!::DeleteFile(pFileName))
-            throw CFileException(pFileName, GetApp()->MsgFileRemove());
+        if (!::DeleteFile(fileName))
+            throw CFileException(fileName, GetApp()->MsgFileRemove());
     }
 
     // Positions the current file pointer.
@@ -421,19 +444,17 @@ namespace Win32xx
         return Seek(0, FILE_END);
     }
 
-#ifndef _WIN32_WCE
-
     // Assigns the specified full file path to this object.
     // Call this function if the file path is not supplied when the CFile is constructed.
     // Note: this function does not open or create the specified file.
-    inline void CFile::SetFilePath(LPCTSTR pFileName)
+    inline void CFile::SetFilePath(LPCTSTR fileName)
     {
         LPTSTR pShortFileName = NULL;
 
-        int buffSize = ::GetFullPathName(pFileName, 0, 0, 0);
+        int buffSize = ::GetFullPathName(fileName, 0, 0, 0);
         if (buffSize > 0)
         {
-            ::GetFullPathName(pFileName, buffSize, m_filePath.GetBuffer(buffSize), &pShortFileName);
+            ::GetFullPathName(fileName, buffSize, m_filePath.GetBuffer(buffSize), &pShortFileName);
 
             if (pShortFileName != NULL)
                 m_fileName = pShortFileName;
@@ -443,9 +464,6 @@ namespace Win32xx
             m_filePath.ReleaseBuffer();
         }
     }
-
-#endif
-
 
     // Changes the length of the file to the specified value.
     // Refer to SetEndOfFile in the Windows API documentation for more information.
@@ -457,8 +475,6 @@ namespace Win32xx
         if (!::SetEndOfFile(m_file))
             throw CFileException(GetFilePath(), GetApp()->MsgFileLength());
     }
-
-#ifndef _WIN32_WCE
 
     // Unlocks a range of bytes in an open file.
     // Refer to UnlockFile in the Windows API documentation for more information.
@@ -475,26 +491,22 @@ namespace Win32xx
             throw CFileException(GetFilePath(), GetApp()->MsgFileUnlock());
     }
 
-#endif
-
-
     // Writes the specified buffer to the file.
     // Refer to WriteFile in the Windows API documentation for more information.
-    inline void CFile::Write(const void* pBuf, UINT count)
+    inline void CFile::Write(const void* buffer, UINT count)
     {
         assert(m_file != INVALID_HANDLE_VALUE);
 
         if (count == 0) return;
 
-        assert(pBuf);
+        assert(buffer);
         DWORD written = 0;
-        if (!::WriteFile(m_file, pBuf, count, &written, NULL))
+        if (!::WriteFile(m_file, buffer, count, &written, NULL))
             throw CFileException(GetFilePath(), GetApp()->MsgFileWrite());
 
         if (written != count)
             throw CFileException(GetFilePath(), GetApp()->MsgFileWrite());
     }
-
 
 }   // namespace Win32xx
 

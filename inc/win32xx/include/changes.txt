@@ -1,3 +1,209 @@
+Version 9.0
+===========
+
+Changes affecting compatibility with previous versions:
+-------------------------------------------------------
+* Worker threads now use CWorkThread instead of CWinThread.
+  Note: Window threads continue to use CWinThread as before.
+* The CResizer alignment enum is defined within CResizer. When used, they are
+  now prefixed with "CResizer::", for example CResizer::bottomright.
+* The CString constructor no longer accepts an int or double argument.
+  The operator << can now be used for this instead.
+* The following CFrameT functions are no longer virtual: GetMenuBar;
+  GetReBar; GetStatusBar; and GetToolBar. 
+  To change the menubar, rebar, statusbar and toolbar, use the following:
+  SetMenuBar; SetReBar; SetStatusBar; and SetToolBar.
+
+Bug fixes:
+- Fixed a GDI resource leak in CFont::CreatePointFontIndirect.
+- Fixed a C++20 compliance issue in CRibbonFrameT.
+- Fixed several issues in CString.
+
+New Features and Enhancements
+-----------------------------
+* Added CMesssagePump. CWinApp now inherits from CMessagePump instead of 
+  CWinThread.
+
+* Updated thread support. Thread classes now use the CThreadT class template.
+  Threads that support windows continue to use CWinThread. Worker threads now
+  use CWorkThread. 
+  CWinThread inherits from CThreadT<CMessagePump>.
+  CWorkThread inherits from CThreadT<CObject>.
+
+* Updated CString.
+  - CString's int and double constructors have been replaced with ToCString.
+    The ToCString function accepts all types supported by std::stringstream.
+  - The operator+ and operator+= overloads for int and double have been 
+    replaced with the operator<< overload. The operator<< overload accepts 
+    all types supported by std::stringstream.
+
+    Coding example:
+    int i = 3;
+    UINT u = 8;
+    CString str = ToCString(u);
+    str << "Some text " << u << " " << i << 'c' << 'h';
+
+* All unscoped enums have been replaced with scoped enums to avoid potential
+  name clashes. The Alignment enum used by CResizer no longer has global scope.
+  It is now used as follows:
+    m_resizer.AddChild(m_checkA, CResizer::bottomright, 0);
+    m_resizer.AddChild(m_checkB, CResizer::bottomright, 0);
+    m_resizer.AddChild(m_checkC, CResizer::bottomright, 0);
+    m_resizer.AddChild(m_richEdit1, CResizer::topright, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_richEdit2, CResizer::bottomleft, RD_STRETCH_WIDTH| RD_STRETCH_HEIGHT);	
+
+* Updated CFrameT
+  Frames provide their own rebar, menubar, toolbar and statusbar controls
+  which are used by default. Alternative controls that have been customised can
+  be used instead. These controls can be specified by using one of the
+  following functions: SetMenuBar, SetReBar, SetStatusBar, or SetToolBar.
+  Refer to the StatusBar sample for a demonstration of how to use a customised
+  status bar control with a frame.
+
+* Added wxx_setup.h to the Win32++ library. This file defines the set of macros
+  and includes the C, C++, and windows header files required by Win32++. The
+  wxx_cstring.h file now includes wxx_setup.h, allowing CString to be used
+  independently from the rest of the library.
+
+* The values for WINVER and related macros now default to values suitable for 
+  Windows 10 and Windows 11. Different values can be specified before including
+  wincore.h if required. These values can be specified in stdafx.h by including
+  targetver.h as shown in the samples. Visual Studio 6 will require WINVER to
+  be set to values appropriate for Win95 or Win98.
+
+* Updated CFile.
+  Additional flags and attributes can be specified when files are created or 
+  opened. CFile's constructor and Open functions now support an additional
+  attributes parameter which allows the flags and attributes to be specified.
+
+* Updated CDialog
+  Added a default constructor. Use either the SetDialogTemplate, 
+  SetDialogResource or SetDialogFromID functions to specify the dialog if the
+  default constructor is used.
+
+* Updated the MenuTheme struct.
+  A clrText member has been added to the MenuTheme struc to define the color of
+  menubar text. This is now used to set the menubar text color to white for the
+  BLACK theme in the themes sample.
+
+* Added the project files for Microsoft Visual Studio Community 2022 to the 
+  samples. These are configured to use C++20.
+
+* Added the DialogTemplate sample.
+  This sample demonstrates how to search for the resources embedded in a
+  windows executable or dll file. The user can select a dialog from the list
+  of dialogs found in the file. The dialog template of the selected dialog is
+  displayed in a rich edit view as an unsigned char array in a manner that can
+  be saved to a header file. The program then creates the dialog from the 
+  displayed dialog template and displays it.
+
+* Added the PrintDialogEx sample.
+  This sample upgrades the Notepad sample. Where the Notepad sample used
+  CPrintDialog to display the print dialog, this sample uses CPrintDialogEx
+  to display the print dialog. This sample supports printing individual
+  pages, as well as multiple page ranges. It also supports printing multiple
+  copies, with or without collating. A footer displaying the page number is
+  added to the bottom of the printed page.
+
+* Added the Titlebar sample.
+  This sample demonstrates how to customize the title bar of a window. It sets
+  the title bar's color and draws the minimize, maximize and close buttons.
+  The sample uses CMenuBar to display a menu in the title bar.
+
+* Added the TitlebarFrame sample.
+  This sample demonstrates how to use a customized title bar with a frame.
+  It demonstrates the frame in two modes: mini-frame and full-frame.
+
+* Support for WinCE has been removed.
+  Version 8.9.1 is the most recent version of Win32++ that supports WinCE.
+
+
+Changes in Detail
+-----------------
+Moved the Alignment enum used by CResizer from global scope to CResizer.
+
+Added wxx_criticalsection.h  Win32++ library file
+Added wxx_hglobal.h          Win32++ library file
+Added wxx_messagepump.h      Win32++ library file
+Added wxx_setup.h            Win32++ library file
+Added wxx_thread.h           Win32++ library file
+
+Added PrintDialogEx          sample
+Added Titlebar               sample
+Added TitlebarFrame          sample
+
+Added CMessagePump           class
+Added CThreadT               class template
+Added CWorkThread            class, inherits from CThreadT<CObject>
+Modified CWinApp             inherits from CMessagePump
+Modified CWinThread          inherits from CThreadT<CMessagePump>
+
+Added MenuTheme::clrText     member variable
+
+Moved CWinThread::GetAcceleratorTable   to CMessagePump::GetAcceleratorTable
+Moved CWinThread::GetAcceleratorsWindow to CMessagePump::GetAcceleratorsWindow
+Moved CWinThread::InitInstance          to CMessagePump::InitInstance
+Moved CWinThread::MessageLoop           to CMessagePump::MessageLoop
+Moved CWinThread::OnIdle                to CMessagePump::OnIdle
+Moved CWinThread::PreTranslateMessage   to CMessagePump::PreTranslateMessage
+Moved CWinThread::Run                   to CMessagePump::Run
+Moved CWinThread::SetAccelerators       to CMessagePump::SetAccelerators
+
+Renamed UWM_PRINTNOW    to UWM_PREVIEWPRINT
+Renamed UWM_PRINTSETUP  to UWM_PREVIEWSETUP
+Renamed MAX_STRING_SIZE to WXX_MAX_STRING_SIZE
+
+Added template <class V>   CStringA ToCStringA(V)              global function template
+Added template <class V>   CStringW ToCStringW(V)              global function template
+Added template <class V>   CString  ToCString(V)               global function template
+Added template <class V>   CString& operator << (CString&, V)  global function template
+
+Added CAtoA::c_str                                             member function
+Added CAtoW::c_str                                             member function
+Added CDialog::Dialog                                          constructor
+Added CDialog::SetDialogFromID                                 member function
+Added CDialog::SetDialogResource                               member function
+Added CDialog::SetDialogTemplate                               member function
+Added CFrameT::SetMenuBar                                      member function
+Added CFrameT::SetReBar                                        member function
+Added CFrameT::SetStatusBar                                    member function
+Added CFrameT::SetStatusParts                                  member function
+Added CFrameT::SetToolBar                                      member function
+Added CRegKey::QueryBoolValue                                  member function
+Added CRegKey::SetBoolValue                                    member function
+Added CTab::SetListDialog                                      member function
+Added CWtoA::c_str                                             member function
+Added CWtoW::c_str                                             member function
+
+Modified CFrameT::GetMenuBar        no longer virtual          member function
+Modified CFrameT::GetReBar          no longer virtual          member function
+Modified CFrameT::GetStatusBar      no longer virtual          member function
+Modified CFrameT::SetToolBar        no longer virtual          member function
+
+Removed CDocker::IsDragAutoResize                              member function
+Removed CDocker::SetDragAutoResize                             member function
+Removed CRegKey::SetKeyValue                                   member function
+Removed CString(int)                                           constructor
+Removed CString(double)                                        constructor
+Removed CString operator + (const CString&, int)               global operator overload
+Removed CString operator + (const CString&, double)            global operator overload
+Removed CString operator + (int, const CString&)               global operator overload
+Removed CString operator + (double, const CString&)            global operator overload
+Removed CString& operator += (int)                             global operator overload
+Removed CString& operator += (double)                          global operator overload
+Removed CString& operator << (CString&, const TCHAR*)          global operator overload
+Removed CString& operator << (CString&, TCHAR)                 global operator overload
+Removed CString& operator << (CString&, int)                   global operator overload
+Removed CString& operator << (CString&, double)                global operator overload
+
+Removed WXX_MAX_MENU_STRING                                    global constant
+
+Updated CFile::CFile        added attributes parameter         constructor
+Updated CFile::Open         added attributes parameter         member function
+
+Removed support for WinCE.
+
+
 Version 8.9.1
 =============
 
@@ -48,6 +254,7 @@ New Features and Enhancements
 
 Changes in Detail
 -----------------
+Added ListView                      sample
 Added CPrintDialogEx                class
 Added CBitmap::CopyImage            member function
 Added CBitmap::GetSize              member function
@@ -551,7 +758,6 @@ Added UWM_GETCDIALOG                                 message
 
 Added Direct2D                                       sample
 Added FilePrintPreview                               sample
-Added StatusBarEx                                    sample
 
 Modified CFile::Rename          now throws an exception on failure
 Modified CFile::Remove          now throws an exception on failure

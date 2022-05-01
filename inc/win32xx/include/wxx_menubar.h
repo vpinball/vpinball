@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -761,7 +761,8 @@ namespace Win32xx
     // Process the menubar's notifications.
     inline LRESULT CMenuBar::OnNotifyReflect(WPARAM, LPARAM lparam)
     {
-        switch (((LPNMHDR)lparam)->code)
+        LPNMHDR pHeader = reinterpret_cast<LPNMHDR>(lparam);
+        switch (pHeader->code)
         {
         case TBN_DROPDOWN:      return OnTBNDropDown((LPNMTOOLBAR) lparam);
         case TBN_HOTITEMCHANGE: return OnTBNHotItemChange((LPNMTBHOTITEM) lparam);
@@ -1090,9 +1091,9 @@ namespace Win32xx
             SendMessage(TB_ADDBUTTONS, (WPARAM)1, (LPARAM)&tbb);
 
             // Add the menu title to the string table.
-            std::vector<TCHAR> menuName( MAX_MENU_STRING+1, _T('\0') );
+            std::vector<TCHAR> menuName(WXX_MAX_STRING_SIZE +1, _T('\0') );
             TCHAR* pMenuName = &menuName[0];
-            GetMenuString(menu, i, pMenuName, MAX_MENU_STRING, MF_BYPOSITION);
+            GetMenuString(menu, i, pMenuName, WXX_MAX_STRING_SIZE, MF_BYPOSITION);
             SetButtonText(i + maxedOffset, pMenuName);
         }
     }
@@ -1201,6 +1202,7 @@ namespace Win32xx
 
         // Messages defined by Win32++
         case UWM_POPUPMENU:         return OnPopupMenu();
+        case UWM_GETCMENUBAR:       return reinterpret_cast<LRESULT>(this);
 
         } // switch (msg)
 

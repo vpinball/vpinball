@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -76,13 +76,7 @@
 //          behave like a POD. Other compilers (such as the MinGW compiler) specifically
 //          prohibit the use of non POD types for functions with variable argument lists.
 //
-// 4) This class provides only limited support for the Multi-Byte Character Set (MBCS).
-//    MBCS strings can be searched using Find, FindOneOf, and ReverseFind by character.
-//    Searches of MBCS strings stop at the first embedded null. Editing the contents of
-//    MBCS strings is not supported. The MBCS character set should be considered deprecated.
-//    Unicode (UTF-16) should be used instead where possible.
-//
-// 5) This class provides a few additional functions:
+// 4) This class provides a few additional functions:
 //       c_str          Returns a const TCHAR string. This is an alternative for casting to LPCTSTR.
 //       GetErrorString Assigns CString to the error string for the specified System Error Code
 //                      (from ::GetLastError() for example).
@@ -90,29 +84,18 @@
 //                      reference can be used to modify the string directly.
 
 
-
 #ifndef _WIN32XX_CSTRING_H_
 #define _WIN32XX_CSTRING_H_
 
 
-#include <cassert>
-#include <tchar.h>
-#include <stdio.h>
-#include <string>
-#include <algorithm>
-#include <Windows.h>
+// The wxx_setup.h file defines the set of macros and includes the C, C++,
+// and windows header files required by Win32++.
+#include "wxx_setup.h"
 #include "wxx_textconv.h"
 
 
 namespace Win32xx
 {
-
-    // Defines the maximum size for TCHAR strings
-    enum Constants
-    {
-        MAX_MENU_STRING = 255,
-        MAX_STRING_SIZE = 255
-    };
 
     /////////////////////////////////////////////////
     // CStringT is a class template used to implement
@@ -126,22 +109,14 @@ namespace Win32xx
         friend CStringT<CHAR> operator + (const CStringT<CHAR>& string1, const CStringT<CHAR>& string2);
         friend CStringT<CHAR> operator + (const CStringT<CHAR>& string1, const CHAR* text);
         friend CStringT<CHAR> operator + (const CStringT<CHAR>& string1, CHAR ch);
-        friend CStringT<CHAR> operator + (const CStringT<CHAR>& string1, int val);
-        friend CStringT<CHAR> operator + (const CStringT<CHAR>& string1, double val);
         friend CStringT<CHAR> operator + (const CHAR* text, const CStringT<CHAR>& string1);
         friend CStringT<CHAR> operator + (CHAR ch, const CStringT<CHAR>& string1);
-        friend CStringT<CHAR> operator + (int val, const CStringT<CHAR>& string1);
-        friend CStringT<CHAR> operator + (double val, const CStringT<CHAR>& string1);
 
         friend CStringT<WCHAR> operator + (const CStringT<WCHAR>& string1, const CStringT<WCHAR>& string2);
         friend CStringT<WCHAR> operator + (const CStringT<WCHAR>& string1, const WCHAR* text);
         friend CStringT<WCHAR> operator + (const CStringT<WCHAR>& string1, WCHAR ch);
-        friend CStringT<WCHAR> operator + (const CStringT<WCHAR>& string1, int val);
-        friend CStringT<WCHAR> operator + (const CStringT<WCHAR>& string1, double val);
         friend CStringT<WCHAR> operator + (const WCHAR* text, const CStringT<WCHAR>& string1);
         friend CStringT<WCHAR> operator + (WCHAR ch, const CStringT<WCHAR>& string1);
-        friend CStringT<WCHAR> operator + (int val, const CStringT<WCHAR>& string1);
-        friend CStringT<WCHAR> operator + (double val, const CStringT<WCHAR>& string1);
 
         // These global functions don't need to be friends
     //  bool operator < (const CStringT<T>& string1, const CStringT<T>& string2);
@@ -160,14 +135,10 @@ namespace Win32xx
         CStringT(const T * text);
         CStringT(T ch, int length = 1);
         CStringT(const T * text, int length);
-        CStringT(int val);
-        CStringT(double val);
 
         CStringT& operator = (const CStringT& str);
         CStringT& operator = (const T ch);
         CStringT& operator = (const T* text);
-        CStringT& operator = (int val);
-        CStringT& operator = (double val);
 
         bool     operator == (const T* text) const;
         bool     operator == (const CStringT& str) const;
@@ -179,17 +150,15 @@ namespace Win32xx
         CStringT& operator += (const CStringT& str);
         CStringT& operator += (const T* text);
         CStringT& operator += (const T ch);
-        CStringT& operator += (int val);
-        CStringT& operator += (double val);
 
-        // Attributes
+        // Accessors
         const T* c_str() const          { return m_str.c_str(); }                   // alternative for casting to const T*
         virtual  std::basic_string<T> GetString() const { return m_str; }           // returns copy of the std::basic_string<T>
         int      GetLength() const  { return static_cast<int>(m_str.length()); }    // returns the length in characters
 
         // Operations
         BSTR     AllocSysString() const;
-        void     AppendFormat(const T* pFormat,...);
+        void     AppendFormat(const T* format,...);
         void     AppendFormat(UINT formatID, ...);
         void     Assign(const T* text, int count);
         int      Collate(const T* text) const;
@@ -207,6 +176,7 @@ namespace Win32xx
         void     FormatMessageV(const T* format, va_list args);
         T        GetAt(int index) const;
         T*       GetBuffer(int minBufLength);
+        bool     GetEnvironmentVariable(const T* var);
         void     GetErrorString(DWORD error);
         void     GetWindowText(HWND wnd);
         void     Empty();
@@ -241,10 +211,6 @@ namespace Win32xx
         void     TrimRight(const T* targets);
         void     Truncate(int newLength);
 
-#ifndef _WIN32_WCE
-        bool     GetEnvironmentVariable(const T* var);
-#endif
-
     protected:
         std::basic_string<T> m_str;
         std::vector<T> m_buf;
@@ -270,23 +236,17 @@ namespace Win32xx
         friend CString operator + (const CString& string1, const CHAR* text);
         friend CString operator + (const CString& string1, CHAR ch);
         friend CString operator + (const CString& string1, WCHAR ch);
-        friend CString operator + (const CString& string1, int val);
-        friend CString operator + (const CString& string1, double val);
         friend CString operator + (const TCHAR* text, const CString& string1);
         friend CString operator + (CHAR ch, const CString& string1);
         friend CString operator + (WCHAR ch, const CString& string1);
-        friend CString operator + (int val, const CString& string1);
-        friend CString operator + (double val, const CString& string1);
 
     public:
         CString() {}
-        CString(const CString& str)             : CStringT<TCHAR>(str) {}
+        CString(const CString& str)            : CStringT<TCHAR>(str) {}
         CString(LPCSTR text)                   : CStringT<TCHAR>(AtoT(text)) {}
         CString(LPCWSTR text)                  : CStringT<TCHAR>(WtoT(text))    {}
         CString(LPCSTR text, int length)       : CStringT<TCHAR>(AtoT(text, CP_ACP, length), length) {}
         CString(LPCWSTR text, int length)      : CStringT<TCHAR>(WtoT(text, CP_ACP, length), length) {}
-        CString(int val)                        : CStringT<TCHAR>(val) {}
-        CString(double val)                     : CStringT<TCHAR>(val) {}
 
         CString(char ch, int length = 1)
         {
@@ -382,22 +342,6 @@ namespace Win32xx
             return *this;
         }
 
-        CString& operator += (int val)
-        {
-            CString str;
-            str.Format(_T("%d"), val);
-            m_str.append(str);
-            return *this;
-        }
-
-        CString& operator += (double val)
-        {
-            CString str;
-            str.Format(_T("%g"), val);
-            m_str.append(str);
-            return *this;
-        }
-
         CString Left(int count) const
         {
             CString str;
@@ -423,6 +367,27 @@ namespace Win32xx
         {
             CString str;
             str = CStringT<TCHAR>::Right(count);
+            return str;
+        }
+
+        CString SpanExcluding(LPCTSTR text) const
+        {
+            CString str;
+            str = CStringT<TCHAR>::SpanExcluding(text);
+            return str;
+        }
+
+        CString SpanIncluding(LPCTSTR text) const
+        {
+            CString str;
+            str = CStringT<TCHAR>::SpanIncluding(text);
+            return str;
+        }
+
+        CString Tokenize(LPCTSTR tokens, int& start) const
+        {
+            CString str;
+            str = CStringT<TCHAR>::Tokenize(tokens, start);
             return str;
         }
 
@@ -464,6 +429,7 @@ namespace Win32xx
     template <class T>
     inline CStringT<T>::CStringT(const T* text)
     {
+        assert(text != NULL);
         m_str.assign(text);
     }
 
@@ -483,20 +449,6 @@ namespace Win32xx
     {
         memcpy(GetBuffer(length), text, length*sizeof(T));
         ReleaseBuffer(length);
-    }
-
-    // Constructor. Assigns from an integer value.
-    template <class T>
-    inline CStringT<T>::CStringT(int val)
-    {
-        Format(_T("%d"), val);
-    }
-
-    // Constructor. Assigns from a double value.
-    template <class T>
-    inline CStringT<T>::CStringT(double val)
-    {
-        Format(_T("%g"), val);
     }
 
     // Assign from a const CStringT<T>.
@@ -522,46 +474,6 @@ namespace Win32xx
     inline CStringT<T>& CStringT<T>::operator = (const T* text)
     {
         m_str.assign(text);
-        return *this;
-    }
-
-    // Assign from an int converted to CHAR array.
-    template <>
-    inline CStringT<CHAR>& CStringT<CHAR>::operator = (int val)
-    {
-        CStringT str;
-        str.Format("%d", val);
-        m_str.assign(str.m_str);
-        return *this;
-    }
-
-    // Assign from an int converted to a WCHAR array.
-    template <>
-    inline CStringT<WCHAR>& CStringT<WCHAR>::operator = (int val)
-    {
-        CStringT str;
-        str.Format(L"%d", val);
-        m_str.assign(str.m_str);
-        return *this;
-    }
-
-    // Assign from a double converted to a CHAR array.
-    template <>
-    inline CStringT<CHAR>& CStringT<CHAR>::operator = (double val)
-    {
-        CStringT str;
-        str.Format("%g", val);
-        m_str.assign(str.m_str);
-        return *this;
-    }
-
-    // Assign from a double converted to a WCHAR array.
-    template <>
-    inline CStringT<WCHAR>& CStringT<WCHAR>::operator = (double val)
-    {
-        CStringT str;
-        str.Format(L"%g", val);
-        m_str.assign(str.m_str);
         return *this;
     }
 
@@ -648,46 +560,6 @@ namespace Win32xx
         return *this;
     }
 
-    // Addition assignment. Appends an int converted to a CHAR character array.
-    template <>
-    inline CStringT<CHAR>& CStringT<CHAR>::operator += (int val)
-    {
-        CStringT str;
-        str.Format("%d", val);
-        m_str.append(str);
-        return *this;
-    }
-
-    // Addition assignment. Appends an int converted to a WCHAR character array.
-    template <>
-    inline CStringT<WCHAR>& CStringT<WCHAR>::operator += (int val)
-    {
-        CStringT str;
-        str.Format(L"%d", val);
-        m_str.append(str);
-        return *this;
-    }
-
-    // Addition assignment. Appends a double converted to a CHAR character array.
-    template <>
-    inline CStringT<CHAR>& CStringT<CHAR>::operator += (double val)
-    {
-        CStringT str;
-        str.Format("%g", val);
-        m_str.append(str);
-        return *this;
-    }
-
-    // Addition assignment. Appends a double converted to a WCHAR character array.
-    template <>
-    inline CStringT<WCHAR>& CStringT<WCHAR>::operator += (double val)
-    {
-        CStringT str;
-        str.Format(L"%g", val);
-        m_str.append(str);
-        return *this;
-    }
-
     // Allocates a BSTR from the CStringT content.
     // Note: Ensure the returned BSTR is freed later with SysFreeString to avoid a memory leak.
     template <>
@@ -714,13 +586,13 @@ namespace Win32xx
 
     // Appends formatted data to an the CStringT content.
     template <class T>
-    inline void CStringT<T>::AppendFormat(const T* pFormat,...)
+    inline void CStringT<T>::AppendFormat(const T* format,...)
     {
         CStringT str;
 
         va_list args;
-        va_start(args, pFormat);
-        str.FormatV(pFormat, args);
+        va_start(args, format);
+        str.FormatV(format, args);
         va_end(args);
 
         m_str.append(str);
@@ -842,55 +714,34 @@ namespace Win32xx
     }
 
     // Finds a character in the string.
-    // Note: MBCS strings are only searched up to the first embedded null.
     template <class T>
     inline int CStringT<T>::Find(T ch, int index /* = 0 */) const
     {
         assert(index >= 0);
 
-#ifdef _MBCS
-        LPCSTR str = (LPCSTR)m_str.c_str();
-        LPCSTR subStr = strchr(str + index, ch);
-        return (subStr == NULL) ? -1 : static_cast<int>(subStr - str);
-#else
         size_t s = m_str.find(ch, index);
         return static_cast<int>(s);
-#endif
     }
 
     // Finds a substring within the string.
-    // Note: MBCS strings are only searched up to the first embedded null.
     template <class T>
     inline int CStringT<T>::Find(const T* text, int index /* = 0 */) const
     {
         assert(text != 0);
         assert(index >= 0);
 
-#ifdef _MBCS
-        LPCTSTR str = m_str.c_str();
-        LPCTSTR subStr = _tcsstr(str + index, text);
-        return (subStr == NULL) ? -1 : static_cast<int>(subStr - str);
-#else
         size_t s = m_str.find(text, index);
         return static_cast<int>(s);
-#endif
     }
 
     // Finds the first matching character from a set.
-    // Note: MBCS strings are only searched up to the first embedded null.
     template <class T>
     inline int CStringT<T>::FindOneOf(const T* text) const
     {
         assert(text != 0);
 
-#ifdef _MBCS
-        LPCTSTR str = m_str.c_str();
-        LPCTSTR subStr = _tcspbrk(str, text);
-        return (subStr == NULL) ? -1 : static_cast<int>(subStr - str);
-#else
         size_t s = m_str.find_first_of(text);
         return static_cast<int>(s);
-#endif
     }
 
     // Formats the string as sprintf does.
@@ -920,14 +771,14 @@ namespace Win32xx
             {
                 buffer.assign( size_t(length)+1, 0 );
 
-#if !defined (_MSC_VER) ||  ( _MSC_VER < 1400 ) || defined (_WIN32_WCE)
-                result = _vsnprintf(&buffer[0], length, format, args);
+#if !defined (_MSC_VER) ||  ( _MSC_VER < 1400 )
+                result = _vsnprintf(&buffer.front(), length, format, args);
 #else
-                result = _vsnprintf_s(&buffer[0], length, size_t(length)-1, format, args);
+                result = _vsnprintf_s(&buffer.front(), length, size_t(length)-1, format, args);
 #endif
                 length *= 2;
             }
-            m_str.assign(&buffer[0]);
+            m_str.assign(&buffer.front());
         }
     }
 
@@ -947,14 +798,14 @@ namespace Win32xx
             while (-1 == result)
             {
                 buffer.assign( size_t(length)+1, 0 );
-#if !defined (_MSC_VER) ||  ( _MSC_VER < 1400 ) || defined (_WIN32_WCE)
-                result = _vsnwprintf(&buffer[0], length, format, args);
+#if !defined (_MSC_VER) ||  ( _MSC_VER < 1400 )
+                result = _vsnwprintf(&buffer.front(), length, format, args);
 #else
-                result = _vsnwprintf_s(&buffer[0], length, size_t(length)-1, format, args);
+                result = _vsnwprintf_s(&buffer.front(), length, size_t(length)-1, format, args);
 #endif
                 length *= 2;
             }
-            m_str.assign(&buffer[0]);
+            m_str.assign(&buffer.front());
         }
     }
 
@@ -1033,7 +884,7 @@ namespace Win32xx
         m_buf.assign(size_t(minBufLength) + 1, ch);
         typename std::basic_string<T>::iterator it_end;
 
-        if (m_str.length() >= (size_t)minBufLength)
+        if (m_str.length() >= static_cast<size_t>(minBufLength))
         {
             it_end = m_str.begin();
             std::advance(it_end, minBufLength);
@@ -1043,10 +894,8 @@ namespace Win32xx
 
         std::copy(m_str.begin(), it_end, m_buf.begin());
 
-        return &m_buf[0];
+        return &m_buf.front();
     }
-
-#ifndef _WIN32_WCE
 
     // Sets the string to the value of the specified environment variable.
     template <>
@@ -1059,8 +908,8 @@ namespace Win32xx
         if (length > 0)
         {
             std::vector<CHAR> buffer(size_t(length) +1, 0 );
-            ::GetEnvironmentVariableA(var, &buffer[0], DWORD(length));
-            m_str = &buffer[0];
+            ::GetEnvironmentVariableA(var, &buffer.front(), DWORD(length));
+            m_str = &buffer.front();
         }
 
         return (length != 0);
@@ -1077,15 +926,12 @@ namespace Win32xx
         if (length > 0)
         {
             std::vector<WCHAR> buffer(size_t(length) +1, 0 );
-            ::GetEnvironmentVariableW(var, &buffer[0], DWORD(length));
-            m_str = &buffer[0];
+            ::GetEnvironmentVariableW(var, &buffer.front(), DWORD(length));
+            m_str = &buffer.front();
         }
 
         return (length != 0);
     }
-
-#endif // _WIN32_WCE
-
 
     // Retrieves the a window's text.
     template <>
@@ -1096,8 +942,8 @@ namespace Win32xx
         if (length > 0)
         {
             std::vector<CHAR> buffer(size_t(length) +1, 0 );
-            ::GetWindowTextA(wnd, &buffer[0], length +1);
-            m_str = &buffer[0];
+            ::GetWindowTextA(wnd, &buffer.front(), length +1);
+            m_str = &buffer.front();
         }
     }
 
@@ -1110,8 +956,8 @@ namespace Win32xx
         if (length > 0)
         {
             std::vector<WCHAR> buffer(size_t(length) +1, 0 );
-            ::GetWindowTextW(wnd, &buffer[0], length +1);
-            m_str = &buffer[0];
+            ::GetWindowTextW(wnd, &buffer.front(), length +1);
+            m_str = &buffer.front();
         }
     }
 
@@ -1122,7 +968,7 @@ namespace Win32xx
         Empty();
         CHAR* temp = 0;
         DWORD flags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
-        ::FormatMessageA(flags, NULL, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPSTR>(&temp), 1, NULL);
+        ::FormatMessageA(flags, NULL, error, 0, reinterpret_cast<LPSTR>(&temp), 1, NULL);
         m_str.assign(temp);
         ::LocalFree(temp);
     }
@@ -1134,7 +980,7 @@ namespace Win32xx
         Empty();
         WCHAR* temp = 0;
         DWORD flags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
-        ::FormatMessageW(flags, NULL, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&temp, 1, NULL);
+        ::FormatMessageW(flags, NULL, error, 0, reinterpret_cast<LPWSTR>(&temp), 1, NULL);
         m_str.assign(temp);
         ::LocalFree(temp);
     }
@@ -1171,7 +1017,8 @@ namespace Win32xx
         return m_str.empty();
     }
 
-    // Extracts the left part of a string.
+    // Retrieves the left part of a string. The count parameter specifies the
+    // number of characters.
     template <class T>
     inline CStringT<T> CStringT<T>::Left(int count) const
     {
@@ -1220,14 +1067,17 @@ namespace Win32xx
         std::transform(m_str.begin(), m_str.end(), m_str.begin(), ::towupper);
     }
 
-    // Extracts the middle part of a string.
+    // Retrieves the middle part of a string.
+    // The first parameter specifies the zero based index of the first character.
     template <class T>
     inline CStringT<T> CStringT<T>::Mid(int first) const
     {
         return Mid(first, GetLength());
     }
 
-    // Extracts the middle part of a string.
+    // Retrieves the middle part of a string.
+    // The first parameter specifies the zero based index of the first character.
+    // The count parameter specifies the number of characters.
     template <class T>
     inline CStringT<T> CStringT<T>::Mid(int first, int count) const
     {
@@ -1250,7 +1100,7 @@ namespace Win32xx
 
         if (-1 == newLength)
         {
-            newLength = lstrlenT(&m_buf[0]);
+            newLength = lstrlenT(&m_buf.front());
         }
 
         assert(m_buf.size() > 0);
@@ -1276,11 +1126,15 @@ namespace Win32xx
         int count = 0;
         size_t pos = 0;
         size_t len = lstrlenT(text);
-        while ((pos = m_str.find(text, pos)) != std::string::npos)
+        if (len > 0)
         {
-            m_str.erase(pos, len);
-            ++count;
+            while ((pos = m_str.find(text, pos)) != std::string::npos)
+            {
+                m_str.erase(pos, len);
+                ++count;
+            }
         }
+
         return count;
     }
 
@@ -1314,37 +1168,27 @@ namespace Win32xx
         size_t pos = 0;
         size_t lenOld = lstrlenT(oldText);
         size_t lenNew = lstrlenT(newText);
-        while ((pos = m_str.find(oldText, pos)) != std::string::npos)
+        if (lenOld > 0 && lenNew > 0)
         {
-            m_str.replace(pos, lenOld, newText);
-            pos += lenNew;
-            ++count;
+            while ((pos = m_str.find(oldText, pos)) != std::string::npos)
+            {
+                m_str.replace(pos, lenOld, newText);
+                pos += lenNew;
+                ++count;
+            }
         }
         return count;
     }
 
     // Search for a character within the string, starting from the end.
-    // Note: MBCS strings are only searched up to the first embedded null.
     template <class T>
     inline int CStringT<T>::ReverseFind(T ch, int end /* -1 */) const
     {
-#ifdef _MBCS
-        std::basic_string<T> string = m_str;
-        if (end != -1 && end < lstrlenT(m_str.c_str()))
-            string[end] = static_cast<T>(0);
-
-        LPCTSTR str = string.c_str();
-        LPCTSTR subStr = _tcsrchr(str, ch);
-        return (subStr == NULL) ? -1 : static_cast<int>(subStr - str);
-#else
         size_t found = m_str.rfind(ch, end);
         return static_cast<int>(found);
-#endif
-
     }
 
     // Search for a substring within the string, starting from the end.
-    // Note: MBCS strings should reverse find by character.
     template <class T>
     inline int CStringT<T>::ReverseFind(const T* text, int end /* = -1 */) const
     {
@@ -1357,7 +1201,8 @@ namespace Win32xx
             return static_cast<int>(m_str.rfind(text, end));
     }
 
-    // Extracts the right part of a string.
+    // Retrieves count characters from the right part of the string.
+    // The count parameter specifies the number of characters.
     template <class T>
     inline CStringT<T> CStringT<T>::Right(int count) const
     {
@@ -1576,6 +1421,34 @@ namespace Win32xx
         }
     }
 
+    /////////////////////////////
+    // Global ToCString functions
+    //
+
+    template <class V>
+    CStringA ToCStringA(V value)
+    {
+        std::basic_stringstream<CHAR> streamA;
+        streamA << value;
+        return CStringA(streamA.str().c_str());
+    }
+
+    template <class V>
+    CStringW ToCStringW(V value)
+    {
+        std::basic_stringstream<WCHAR> streamW;
+        streamW << value;
+        return CStringW(streamW.str().c_str());
+    }
+
+    template <class V>
+    CString ToCString(V value)
+    {
+        tStringStream streamT;
+        streamT << value;
+        return CString(streamT.str().c_str());
+    }
+
 
     //////////////////////////////////////
     // CStringT global operator functions
@@ -1630,38 +1503,6 @@ namespace Win32xx
     }
 
     // Addition operator.
-    inline CStringT<CHAR> operator + (const CStringT<CHAR>& string1, int val)
-    {
-        CStringT<CHAR> str;
-        str.Format("%s%a", string1.c_str(), val);
-        return str;
-    }
-
-    // Addition operator.
-    inline CStringT<WCHAR> operator + (const CStringT<WCHAR>& string1, int val)
-    {
-        CStringT<WCHAR> str;
-        str.Format(L"%s%d", string1.c_str(), val);
-        return str;
-    }
-
-    // Addition operator.
-    inline CStringT<CHAR> operator + (const CStringT<CHAR>& string1, double val)
-    {
-        CStringT<CHAR> str;
-        str.Format("%s%g", string1.c_str(), val);
-        return str;
-    }
-
-    // Addition operator.
-    inline CStringT<WCHAR> operator + (const CStringT<WCHAR>& string1, double val)
-    {
-        CStringT<WCHAR> str;
-        str.Format(L"%s%g", string1.c_str(), val);
-        return str;
-    }
-
-    // Addition operator.
     inline CStringT<CHAR> operator + (const CHAR* text, const CStringT<CHAR>& string1)
     {
         CStringT<CHAR> str(text);
@@ -1690,38 +1531,6 @@ namespace Win32xx
     {
         CStringT<WCHAR> str(ch);
         str.m_str.append(string1);
-        return str;
-    }
-
-    // Addition operator.
-    inline CStringT<CHAR> operator + (int val, const CStringT<CHAR>& string1)
-    {
-        CStringT<CHAR> str;
-        str.Format("%d%s", val, string1.c_str());
-        return str;
-    }
-
-    // Addition operator.
-    inline CStringT<WCHAR> operator + (int val, const CStringT<WCHAR>& string1)
-    {
-        CStringT<WCHAR> str;
-        str.Format(L"%d%s", val, string1.c_str());
-        return str;
-    }
-
-    // Addition operator.
-    inline CStringT<CHAR> operator + (double val, const CStringT<CHAR>& string1)
-    {
-        CStringT<CHAR> str;
-        str.Format("%g%s", val, string1.c_str());
-        return str;
-    }
-
-    // Addition operator.
-    inline CStringT<WCHAR> operator + (double val, const CStringT<WCHAR>& string1)
-    {
-        CStringT<WCHAR> str;
-        str.Format(L"%g%s", val, string1.c_str());
         return str;
     }
 
@@ -1781,44 +1590,32 @@ namespace Win32xx
         return (string1.Compare(text) >= 0); // boolean expression
     }
 
-    // Appends the specified text to the string.
-    template <class T>
-    inline CStringT<T>& operator << (CStringT<T>& str, CStringT<T>& text)
+    template <class V>
+    inline CStringT<CHAR>& operator << (CStringT<CHAR>& str, V value)
     {
-        str += text;
+        str += ToCStringA(value);
         return str;
     }
 
-    // Appends the specified text to the string.
-    template <class T>
-    inline CStringT<T>& operator << (CStringT<T>& str, const T* text)
+    template <>  // Explicit specialization
+    inline CStringT<CHAR>& operator << (CStringT<CHAR>& str, CStringT<CHAR>& value)
     {
-        str += text;
+        str += value;
         return str;
     }
 
-    // Appends the specified character to the string.
-    template <class T>
-    inline CStringT<T>& operator << (CStringT<T>& str, const T ch)
+    template <class V>
+    inline CStringT<WCHAR>& operator << (CStringT<WCHAR>& str, V value)
     {
-        str += ch;
+        str += ToCStringW(value);
         return str;
     }
 
-    // Appends the specified integer to the string.
-    template <class T>
-    inline CStringT<T>& operator << (CStringT<T>& str, int val)
+    template <>  // Explicit specialization
+    inline CStringT<WCHAR>& operator << (CStringT<WCHAR>& str, CStringT<WCHAR> value)
     {
-        str += val;
-        return str;
-    }
-
-    // Appends the specified double to the string.
-    template <class T>
-    inline CStringT<T>& operator << (CStringT<T>& str, double val)
-    {
-        str += val;
-        return str;
+       str += value;
+       return str;
     }
 
 
@@ -1862,20 +1659,6 @@ namespace Win32xx
         return str;
     }
 
-    inline CString operator + (const CString& string1, int val)
-    {
-        CString str;
-        str.Format(_T("%s%d"), string1.c_str(), val);
-        return str;
-    }
-
-    inline CString operator + (const CString& string1, double val)
-    {
-        CString str;
-        str.Format(_T("%s%g"), string1.c_str(), val);
-        return str;
-    }
-
     inline CString operator + (const TCHAR* text, const CString& string1)
     {
         CString str(text);
@@ -1899,20 +1682,6 @@ namespace Win32xx
         return str;
     }
 
-    inline CString operator + (int val, const CString& string1)
-    {
-        CString str;
-        str.Format(_T("%d%s"), val, string1.c_str());
-        return str;
-    }
-
-    inline CString operator + (double val, const CString& string1)
-    {
-        CString str;
-        str.Format(_T("%g%s"), val, string1.c_str());
-        return str;
-    }
-
     // Appends the specified string to the string.
     inline CString& operator << (CString& str, const CString& str2)
     {
@@ -1920,48 +1689,40 @@ namespace Win32xx
         return str;
     }
 
+    template <class V>
+    inline CString& operator << (CString& str, V value)
+    {
+        str += ToCString(value);
+        return str;
+    }
+
     // Appends the specified text to the string.
-    inline CString& operator<<(CString& str, const LPCSTR text)
+    inline CString& operator << (CString& str, LPCSTR text)
     {
         str += text;
         return str;
     }
 
     // Appends the specified text to the string.
-    inline CString& operator<<(CString& str, const LPCWSTR text)
+    inline CString& operator << (CString& str, LPCWSTR text)
     {
         str += text;
         return str;
     }
 
     // Appends the specified character to the string.
-    inline CString& operator << (CString& str, const char ch)
+    inline CString& operator << (CString& str, char ch)
     {
         str += ch;
         return str;
     }
 
     // Appends the specified character to the string.
-    inline CString& operator << (CString& str, const WCHAR ch)
+    inline CString& operator << (CString& str, WCHAR ch)
     {
         str += ch;
         return str;
     }
-
-    // Appends the specified integer to the string.
-    inline CString& operator << (CString& str, int val)
-    {
-        str += val;
-        return str;
-    }
-
-    // Appends the specified double to the string.
-    inline CString& operator << (CString& str, double val)
-    {
-        str += val;
-        return str;
-    }
-
 
 }   // namespace Win32xx
 

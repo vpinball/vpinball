@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -81,12 +81,10 @@ namespace Win32xx
         // Initialization
         BOOL Create(int cx, int cy, UINT flags, int initial, int grow);
         BOOL Create(UINT bitmapID, int cx, int grow, COLORREF mask);
-        BOOL Create(LPCTSTR pBitmapID, int cx, int grow, COLORREF mask);
+        BOOL Create(LPCTSTR resourceName, int cx, int grow, COLORREF mask);
         BOOL Create(HIMAGELIST images);
-
-#ifndef _WIN32_WCE
         BOOL CreateDisabledImageList(HIMAGELIST normalImages);
-#endif
+
 
         // Operations
         int Add(HBITMAP bitmap, HBITMAP mask) const;
@@ -113,7 +111,7 @@ namespace Win32xx
         int Replace(int image, HICON icon) const;
         BOOL Write(LPSTREAM pStream) const;
 
-        // Attributes
+        // Accessors and mutators
         COLORREF GetBkColor() const;
         HIMAGELIST GetDragImage(POINT* pPoint, POINT* pHotspot) const;
         HIMAGELIST GetHandle() const;
@@ -259,6 +257,7 @@ namespace Win32xx
     inline void CImageList::Attach(HIMAGELIST images)
     {
         assert(m_pData);
+        CThreadLock mapLock(GetApp()->m_wndLock);
 
         if (images != m_pData->images)
         {
@@ -346,8 +345,8 @@ namespace Win32xx
     {
         assert(m_pData);
 
-        LPCTSTR pBitmapName = MAKEINTRESOURCE (bitmapID);
-        return Create(pBitmapName, cx, grow, mask);
+        LPCTSTR bitmapName = MAKEINTRESOURCE (bitmapID);
+        return Create(bitmapName, cx, grow, mask);
     }
 
     // Creates a new image list.
@@ -357,11 +356,11 @@ namespace Win32xx
     // crMask   The color used to generate a mask. Each pixel of this color in the specified bitmap is changed to black,
     //          and the corresponding bit in the mask is set to 1. If this parameter is the CLR_NONE value, no mask is generated.
     // Refer to ImageList_LoadBitmap in the Windows API documentation for more information.
-    inline BOOL CImageList::Create(LPCTSTR pResourceName, int cx, int grow, COLORREF mask)
+    inline BOOL CImageList::Create(LPCTSTR resourceName, int cx, int grow, COLORREF mask)
     {
         assert(m_pData);
 
-        HIMAGELIST images = ImageList_LoadBitmap(GetApp()->GetResourceHandle(), pResourceName, cx, grow, mask);
+        HIMAGELIST images = ImageList_LoadBitmap(GetApp()->GetResourceHandle(), resourceName, cx, grow, mask);
         if (images == 0)
             throw CResourceException(GetApp()->MsgImageList());
 
@@ -645,6 +644,7 @@ namespace Win32xx
     inline void CImageList::Release()
     {
         assert(m_pData);
+        CThreadLock mapLock(GetApp()->m_wndLock);
 
         if (InterlockedDecrement(&m_pData->count) == 0)
         {
@@ -662,9 +662,6 @@ namespace Win32xx
             m_pData = 0;
         }
     }
-
-
-#ifndef _WIN32_WCE
 
     // Creates a gray scale image list from the specified color image list.
     inline BOOL CImageList::CreateDisabledImageList(HIMAGELIST normalImages)
@@ -713,8 +710,6 @@ namespace Win32xx
 
         return ( m_pData->images != 0 );
     }
-
-#endif
 
 }   // namespace Win32xx
 

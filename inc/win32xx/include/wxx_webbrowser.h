@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -52,10 +52,10 @@
   #pragma warning ( pop )
 #endif // _MSC_VER
 
-#if defined (_MSC_VER) && (_MSC_VER >= 1400)   // >= VS2005
+#if defined (_MSC_VER) && (_MSC_VER >= 1920)   // >= VS2019
 #pragma warning ( push )
 #pragma warning ( disable : 26812 )            // enum type is unscoped.
-#endif // (_MSC_VER) && (_MSC_VER >= 1400)
+#endif // (_MSC_VER) && (_MSC_VER >= 1920)
 
 
 namespace Win32xx
@@ -81,7 +81,7 @@ namespace Win32xx
         virtual STDMETHODIMP SetVisible(BOOL isVisible);
 
         // IDispatch Methods
-        virtual STDMETHODIMP GetIDsOfNames(REFIID riid, OLECHAR** pNames,
+        virtual STDMETHODIMP GetIDsOfNames(REFIID riid, OLECHAR** names,
                                 unsigned int namesCount, LCID lcid, DISPID* pID);
         virtual STDMETHODIMP GetTypeInfo(unsigned int itinfo, LCID lcid, ITypeInfo** pptinfo);
         virtual STDMETHODIMP GetTypeInfoCount(unsigned int* pctinfo);
@@ -160,7 +160,7 @@ namespace Win32xx
         CWebBrowser();
         virtual ~CWebBrowser();
 
-        //Attributes
+        // Accessors
         virtual CAXHost* GetAXHost() { return &m_axHost; }
 
         LPDISPATCH GetApplication() const;
@@ -175,7 +175,7 @@ namespace Win32xx
         CString GetLocationURL() const;
         BOOL    GetOffline() const;
         LPDISPATCH GetParent() const;
-        VARIANT GetProperty(LPCTSTR pProperty) const;
+        VARIANT GetProperty(LPCTSTR propertyName) const;
         READYSTATE GetReadyState() const;
         BOOL    GetRegisterAsBrowser() const;
         BOOL    GetTheaterMode() const;
@@ -201,16 +201,16 @@ namespace Win32xx
         HRESULT GoForward();
         HRESULT GoHome();
         HRESULT GoSearch();
-        HRESULT Navigate(LPCTSTR pURL, DWORD flags = 0, LPCTSTR pTargetFrameName = NULL,
-                        LPCTSTR pHeaders = NULL, LPVOID pPostData = NULL, DWORD postDataLen = 0);
-        HRESULT Navigate2(LPITEMIDLIST pIDL, DWORD flags = 0, LPCTSTR pTargetFrameName = NULL);
-        HRESULT Navigate2(LPCTSTR pURL, DWORD flags = 0, LPCTSTR pTargetFrameName = NULL,
-                         LPCTSTR pHeaders = NULL, LPVOID pPostData = NULL, DWORD postDataLen = 0);
-        HRESULT PutProperty(LPCTSTR pPropertyName, const VARIANT& value);
-        HRESULT PutProperty(LPCTSTR pPropertyName, double value);
-        HRESULT PutProperty(LPCTSTR pPropertyName, long value);
-        HRESULT PutProperty(LPCTSTR pPropertyName, LPCTSTR pValue);
-        HRESULT PutProperty(LPCTSTR pPropertyName, short value);
+        HRESULT Navigate(LPCTSTR URL, DWORD flags = 0, LPCTSTR targetFrameName = NULL,
+                        LPCTSTR headers = NULL, LPVOID pPostData = NULL, DWORD postDataLen = 0);
+        HRESULT Navigate2(LPITEMIDLIST pIDL, DWORD flags = 0, LPCTSTR targetFrameName = NULL);
+        HRESULT Navigate2(LPCTSTR URL, DWORD flags = 0, LPCTSTR targetFrameName = NULL,
+                         LPCTSTR headers = NULL, LPVOID pPostData = NULL, DWORD postDataLen = 0);
+        HRESULT PutProperty(LPCTSTR propertyName, const VARIANT& value);
+        HRESULT PutProperty(LPCTSTR propertyName, double value);
+        HRESULT PutProperty(LPCTSTR propertyName, long value);
+        HRESULT PutProperty(LPCTSTR propertyName, LPCTSTR value);
+        HRESULT PutProperty(LPCTSTR propertyName, short value);
         HRESULT Refresh();
         HRESULT Refresh2(int evel);
         HRESULT Stop();
@@ -244,15 +244,12 @@ namespace Win32xx
 
     inline CAXHost::CAXHost() : m_hwnd(NULL), m_pUnk(NULL)
     {
-        VERIFY(SUCCEEDED(OleInitialize(NULL)));
     }
 
     inline CAXHost::~CAXHost()
     {
         if (m_pUnk)
             m_pUnk->Release();
-
-        OleUninitialize();
     }
 
     // Activates the hosted control, along with any of its UI tools.
@@ -1078,10 +1075,10 @@ namespace Win32xx
     }
 
     // Gets the value associated with the specified property name.
-    inline VARIANT CWebBrowser::GetProperty( LPCTSTR pProperty ) const
+    inline VARIANT CWebBrowser::GetProperty( LPCTSTR propertyName ) const
     {
         VARIANT v;
-        GetIWebBrowser2()->GetProperty( TtoBSTR(pProperty), &v );
+        GetIWebBrowser2()->GetProperty( TtoBSTR(propertyName), &v );
         return v;
     }
 
@@ -1110,8 +1107,8 @@ namespace Win32xx
     }
 
     // Navigates to a resource identified by a URL or to a file identified by a full path.
-    inline HRESULT CWebBrowser::Navigate(LPCTSTR pURL,   DWORD flags /*= 0*/, LPCTSTR pTargetFrameName /*= NULL*/,
-                    LPCTSTR pHeaders /*= NULL*/, LPVOID pPostData /*= NULL*/,   DWORD postDataLen /*= 0*/)
+    inline HRESULT CWebBrowser::Navigate(LPCTSTR URL,   DWORD flags /*= 0*/, LPCTSTR targetFrameName /*= NULL*/,
+                    LPCTSTR headers /*= NULL*/, LPVOID pPostData /*= NULL*/,   DWORD postDataLen /*= 0*/)
     {
         VARIANT flagsVariant;
         flagsVariant.vt = VT_I4;
@@ -1119,7 +1116,7 @@ namespace Win32xx
 
         VARIANT targetVariant;
         targetVariant.vt = VT_BSTR;
-        targetVariant.bstrVal = SysAllocString(TtoW(pTargetFrameName));
+        targetVariant.bstrVal = SysAllocString(TtoW(targetFrameName));
 
         SAFEARRAY* psa = SafeArrayCreateVector(VT_UI1, 0, postDataLen);
         CopyMemory(psa->pvData, pPostData, postDataLen);
@@ -1129,8 +1126,8 @@ namespace Win32xx
 
         VARIANT headersVariant;
         headersVariant.vt = VT_BSTR;
-        headersVariant.bstrVal = SysAllocString(TtoW(pHeaders));
-        BSTR url = SysAllocString(TtoW(pURL));
+        headersVariant.bstrVal = SysAllocString(TtoW(headers));
+        BSTR url = SysAllocString(TtoW(URL));
         HRESULT hr = E_FAIL;
         if (url)
             hr = GetIWebBrowser2()->Navigate(url, &flagsVariant, &targetVariant, &dataVariant, &headersVariant);
@@ -1144,7 +1141,7 @@ namespace Win32xx
     }
 
     // Navigates the browser to a location specified by a pointer to an item identifier list (PIDL) for an entity in the Microsoft Windows Shell namespace.
-    inline HRESULT CWebBrowser::Navigate2(LPITEMIDLIST pIDL, DWORD flags /*= 0*/, LPCTSTR pTargetFrameName /*= NULL*/)
+    inline HRESULT CWebBrowser::Navigate2(LPITEMIDLIST pIDL, DWORD flags /*= 0*/, LPCTSTR targetFrameName /*= NULL*/)
     {
         UINT cb = GetPidlLength(pIDL);
         LPSAFEARRAY pSA = SafeArrayCreateVector(VT_UI1, 0, cb);
@@ -1159,7 +1156,7 @@ namespace Win32xx
 
         VARIANT targetVariant;
         targetVariant.vt = VT_BSTR;
-        targetVariant.bstrVal = SysAllocString(TtoW(pTargetFrameName));
+        targetVariant.bstrVal = SysAllocString(TtoW(targetFrameName));
 
         HRESULT hr = GetIWebBrowser2()->Navigate2(&pidlVariant, &flagsVariant, &targetVariant, 0, 0);
 
@@ -1171,12 +1168,12 @@ namespace Win32xx
     }
 
     // Navigates the browser to a location that is expressed as a URL.
-    inline HRESULT CWebBrowser::Navigate2(LPCTSTR pURL, DWORD flags /*= 0*/, LPCTSTR pTargetFrameName /*= NULL*/,
-                     LPCTSTR pHeaders /*= NULL*/,   LPVOID pPostData /*= NULL*/, DWORD postDataLen /*= 0*/)
+    inline HRESULT CWebBrowser::Navigate2(LPCTSTR URL, DWORD flags /*= 0*/, LPCTSTR targetFrameName /*= NULL*/,
+                     LPCTSTR headers /*= NULL*/,   LPVOID pPostData /*= NULL*/, DWORD postDataLen /*= 0*/)
     {
         VARIANT urlVariant;
         urlVariant.vt = VT_BSTR;
-        urlVariant.bstrVal = SysAllocString(TtoW(pURL));
+        urlVariant.bstrVal = SysAllocString(TtoW(URL));
 
         VARIANT flagsVariant;
         flagsVariant.vt = VT_I4;
@@ -1184,7 +1181,7 @@ namespace Win32xx
 
         VARIANT TargetVariant;
         TargetVariant.vt = VT_BSTR;
-        TargetVariant.bstrVal = SysAllocString(TtoW(pTargetFrameName));
+        TargetVariant.bstrVal = SysAllocString(TtoW(targetFrameName));
 
         // Store the pidl in a SafeArray, and assign the SafeArray to a VARIANT
         SAFEARRAY* psa = SafeArrayCreateVector(VT_UI1, 0, postDataLen);
@@ -1195,7 +1192,7 @@ namespace Win32xx
 
         VARIANT headersVariant;
         headersVariant.vt = VT_BSTR;
-        headersVariant.bstrVal = SysAllocString(TtoW(pHeaders));
+        headersVariant.bstrVal = SysAllocString(TtoW(headers));
 
         HRESULT hr = GetIWebBrowser2()->Navigate2(&urlVariant, &flagsVariant, &TargetVariant, &dataVariant, &headersVariant);
 
@@ -1209,51 +1206,51 @@ namespace Win32xx
     }
 
     // Sets the value of a property associated with the object.
-    inline HRESULT CWebBrowser::PutProperty(LPCTSTR pPropertyName, const VARIANT& value)
+    inline HRESULT CWebBrowser::PutProperty(LPCTSTR propertyName, const VARIANT& value)
     {
-        return GetIWebBrowser2()->PutProperty(TtoBSTR(pPropertyName), value);
+        return GetIWebBrowser2()->PutProperty(TtoBSTR(propertyName), value);
     }
 
     // Sets the value of a property associated with the object.
-    inline HRESULT CWebBrowser::PutProperty(LPCTSTR pPropertyName, double value)
+    inline HRESULT CWebBrowser::PutProperty(LPCTSTR propertyName, double value)
     {
         VARIANT v;
         v.vt = VT_I4;
         v.dblVal = value;
-        HRESULT hr = GetIWebBrowser2()->PutProperty(TtoBSTR(pPropertyName), v);
+        HRESULT hr = GetIWebBrowser2()->PutProperty(TtoBSTR(propertyName), v);
         VariantClear(&v);
         return hr;
     }
 
     // Sets the value of a property associated with the object.
-    inline HRESULT CWebBrowser::PutProperty(LPCTSTR pPropertyName, long value)
+    inline HRESULT CWebBrowser::PutProperty(LPCTSTR propertyName, long value)
     {
         VARIANT v;
         v.vt = VT_I4;
         v.lVal= value;
-        HRESULT hr = GetIWebBrowser2()->PutProperty(TtoBSTR(pPropertyName), v);
+        HRESULT hr = GetIWebBrowser2()->PutProperty(TtoBSTR(propertyName), v);
         VariantClear(&v);
         return hr;
     }
 
     // Sets the value of a property associated with the object.
-    inline HRESULT CWebBrowser::PutProperty(LPCTSTR pPropertyName, LPCTSTR pValue)
+    inline HRESULT CWebBrowser::PutProperty(LPCTSTR propertyName, LPCTSTR value)
     {
         VARIANT v;
         v.vt = VT_BSTR;
-        v.bstrVal= SysAllocString(TtoW(pValue));
-        HRESULT hr = GetIWebBrowser2()->PutProperty(TtoBSTR(pPropertyName), v);
+        v.bstrVal= SysAllocString(TtoW(value));
+        HRESULT hr = GetIWebBrowser2()->PutProperty(TtoBSTR(propertyName), v);
         VariantClear(&v);
         return hr;
     }
 
     // Sets the value of a property associated with the object.
-    inline HRESULT CWebBrowser::PutProperty(LPCTSTR pPropertyName, short value)
+    inline HRESULT CWebBrowser::PutProperty(LPCTSTR propertyName, short value)
     {
         VARIANT v;
         v.vt = VT_I4;
         v.iVal = value;
-        HRESULT hr = GetIWebBrowser2()->PutProperty(TtoBSTR(pPropertyName), v);
+        HRESULT hr = GetIWebBrowser2()->PutProperty(TtoBSTR(propertyName), v);
         VariantClear(&v);
         return hr;
     }
@@ -1284,9 +1281,9 @@ namespace Win32xx
 
 }
 
-#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+#if defined (_MSC_VER) && (_MSC_VER >= 1920)
 #pragma warning ( pop )
-#endif // (_MSC_VER) && (_MSC_VER >= 1400)
+#endif // (_MSC_VER) && (_MSC_VER >= 1920)
 
 #endif  // _WIN32XX_WEBBROWSER_H_
 

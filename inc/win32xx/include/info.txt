@@ -7,7 +7,7 @@ Extension | Description
 cbp       | A project file used by CodeBlocks
 dsp       | A project file used by Visual Studio 6
 dsw       | A project file used by Visual Studio 6
-sln       | A project file used by Visual Studio 2003, VS2005 or VS2008
+sln       | A project file used by Visual Studio 2003 and above
 vcproj    | A project file used by Visual Studio 2003, VS2005 or VS2008
 vcxproj   | A project file used by Visual Studio 2010 and above
 filters   | An additional project file used by Visual Studio 2010 and above
@@ -38,23 +38,25 @@ Win32++ supports the following:
 * Visual Studio 6
 * Visual Studio.net 2003
 * Visual C++ Toolkit 2003
-* Visual Studio.net 2005
-* Visual Studio.net 2005 Express
-* Visual Studio.net 2008
-* Visual Studio.net 2008 Express
-* Visual Studio.net 2010
-* Visual Studio.net 2010 Express
-* Visual Studio.net 2012
-* Visual Studio.net 2012 Express
-* Visual Studio.net 2013
-* Visual Studio.net 2013 Express
-* Visual Studio.net 2013 Community
-* Visual Studio.net 2015
-* Visual Studio.net 2015 Community
-* Visual Studio.net 2017
-* Visual Studio.net 2017 Community
-* Visual Studio.net 2019
-* Visual Studio.net 2019 Community
+* Visual Studio 2005
+* Visual Studio 2005 Express
+* Visual Studio 2008
+* Visual Studio 2008 Express
+* Visual Studio 2010
+* Visual Studio 2010 Express
+* Visual Studio 2012
+* Visual Studio 2012 Express
+* Visual Studio 2013
+* Visual Studio 2013 Express
+* Visual Studio 2013 Community
+* Visual Studio 2015
+* Visual Studio 2015 Community
+* Visual Studio 2017
+* Visual Studio 2017 Community
+* Visual Studio 2019
+* Visual Studio 2019 Community
+* Visual Studio 2022
+* Visual Studio 2022 Community
 
 CodeBlocks is an IDE. The project files are configured for the following
 compilers:
@@ -84,6 +86,7 @@ The programs compiled with Win32++ can run on the following operating systems:
 * Windows 8.1 x 64
 * Windows 10
 * Windows 10 x 64
+* Windows 11 x 64
 * Windows Server 2003
 * Windows Server 2003 x64
 * Windows Server 2008
@@ -91,9 +94,9 @@ The programs compiled with Win32++ can run on the following operating systems:
 * Windows Server 2012
 * Windows Server 2016
 * Windows Server 2019
-* Windows CE
+* Windows Server 2022
 
-Note: Programs compiled with Visual Studio.net 2008 and Visual Studio.net 2008
+Note: Programs compiled with Visual Studio 2008 and Visual Studio 2008
 Express will not run on Win32 operating systems earlier than Windows 2000.
 
 Win32++ is Unicode compliant and can therefore be used to develop Unicode

@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -107,7 +107,7 @@ namespace Win32xx
         // Operations
         INT_PTR DoModal(HWND owner /* = 0 */);
         int GetCopies() const;
-        CDevMode GetCurrentDevMode() const;
+        CDevMode GetCurrentDevMode();
         CStringW GetCurrentPortName() const;
         CStringW GetCurrentPrinterName() const;
         BOOL GetDefaults();
@@ -149,6 +149,7 @@ namespace Win32xx
         CPrintDialogEx& operator = (const CPrintDialogEx&); // Disable assignment operator
         PRINTDLGEX m_pdex;
         IPrintDialogServices* m_pServices;
+        CHGlobal m_currentModeBuffer;
     };
 
     // Constructor for CPrintDialogEx class. The flags parameter specifies the
@@ -250,7 +251,7 @@ namespace Win32xx
         m_pdex.hDevNames = 0;
 
         // Prepare this CWnd for reuse.
-        Destroy();
+        Cleanup();
 
         return m_pdex.dwResultAction;
     }
@@ -266,19 +267,19 @@ namespace Win32xx
 
     // Fill a DEVMODE structure with information about the currently
     // selected printer, while the print dialog is displayed.
-    inline CDevMode CPrintDialogEx::GetCurrentDevMode() const
+    inline CDevMode CPrintDialogEx::GetCurrentDevMode()
     {
         if (m_pServices != 0)
         {
-            CHGlobal modeBufferTest;
-            modeBufferTest.Alloc(sizeof(DEVMODE));
+            // Retrieve the size of the current DevMode.
             UINT size = 0;
-            CDevMode devModeTest(modeBufferTest);
-            m_pServices->GetCurrentDevMode(devModeTest, &size);
+            DEVMODE tempMode;
+            ZeroMemory(&tempMode, sizeof(tempMode));
+            m_pServices->GetCurrentDevMode(&tempMode, &size);
 
-            CHGlobal modeBuffer;
-            modeBuffer.Alloc(size);
-            CDevMode devMode(modeBuffer);
+            // Retrieve the current DevMode.
+            m_currentModeBuffer.Alloc(size);
+            CDevMode devMode(m_currentModeBuffer);
             m_pServices->GetCurrentDevMode(devMode, &size);
             return devMode;
         }
@@ -435,6 +436,7 @@ namespace Win32xx
     }
 
     // Returns the device context of the default or currently chosen printer.
+    // Throws on failure.
     inline CDC CPrintDialogEx::GetPrinterDC() const
     {
         CThreadLock lock(GetApp()->m_printLock);
@@ -447,6 +449,9 @@ namespace Win32xx
             dc.CreateDC(GetDriverName(), GetDeviceName(),
                 GetPortName(), GetDevMode());
         }
+
+        if (dc.GetHDC() == 0)
+            throw CResourceException(GetApp()->MsgPrintFound());
 
         return dc;
     }

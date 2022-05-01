@@ -1,12 +1,12 @@
-// Win32++   Version 8.9.1
-// Release Date: 10th September 2021
+// Win32++   Version 9.0
+// Release Date: 30th April 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2021  David Nash
+// Copyright (c) 2005-2022  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -160,7 +160,7 @@ namespace Win32xx
         int  GetImageIndex() const           { return m_imageIndex; }
         int  GetFlags() const                { return m_flags; }
         void EnableOK(BOOL enable = TRUE);
-        void SetExpanded(LPCWSTR pPath);
+        void SetExpanded(LPCWSTR path);
         void SetExpanded(LPITEMIDLIST pItemIDList);
         void SetFlags(UINT flags) { m_flags = flags; }
         void SetOKText(LPCWSTR text);
@@ -213,8 +213,6 @@ namespace Win32xx
         //  BIF_NEWDIALOGSTYLE    - Provides a resizable dialog without an edit box.
         //  BIF_NONEWFOLDERBUTTON - Do not include the New Folder button in the browse dialog box.
         m_flags = BIF_RETURNONLYFSDIRS |BIF_NEWDIALOGSTYLE | BIF_NONEWFOLDERBUTTON;
-        HRESULT hr;
-        VERIFY(SUCCEEDED(hr = ::CoInitialize(NULL)));
     }
 
     inline CFolderDialog::~CFolderDialog()
@@ -223,8 +221,6 @@ namespace Win32xx
         std::vector<LPITEMIDLIST>::iterator it;
         for (it = m_fullPidl.begin(); it != m_fullPidl.end(); ++it)
             CoTaskMemFree(*it);
-
-        ::CoUninitialize();
     }
 
     // The callback function used used to send messages to and process messages
@@ -235,7 +231,10 @@ namespace Win32xx
         int result = 0;
 
         if (pThis->GetHwnd() == 0)
-            pThis->Attach(wnd);
+        {
+            pThis->m_wnd = wnd;
+            pThis->AddToMap();
+        }
 
         switch (msg)
         {
@@ -282,7 +281,7 @@ namespace Win32xx
         }
 
         // Prepare the CWnd for reuse.
-        Destroy();
+        Cleanup();
 
         return result;
     }
@@ -346,9 +345,9 @@ namespace Win32xx
 
     // Specifies the path of a folder to expand in the Browse dialog box.
     // Refer to BFFM_SETEXPANDED in the Windows API documentation for more information.
-    inline void CFolderDialog::SetExpanded(LPCWSTR pPath)
+    inline void CFolderDialog::SetExpanded(LPCWSTR path)
     {
-        SendMessage(BFFM_SETEXPANDED, (WPARAM)TRUE, (LPARAM)pPath);
+        SendMessage(BFFM_SETEXPANDED, (WPARAM)TRUE, (LPARAM)path);
     }
 
     // Specifies the path of a folder to expand in the Browse dialog box.
@@ -380,9 +379,9 @@ namespace Win32xx
 
     // Specifies the path of a folder to select.
     // Refer to BFFM_SETSELECTION in the Windows API documentation for more information.
-    inline void CFolderDialog::SetSelection(LPCTSTR pPath)
+    inline void CFolderDialog::SetSelection(LPCTSTR path)
     {
-        SendMessage(BFFM_SETSELECTION, TRUE, (LPARAM)pPath);
+        SendMessage(BFFM_SETSELECTION, TRUE, (LPARAM)path);
     }
 
     // Sets the status text.
@@ -394,10 +393,10 @@ namespace Win32xx
     }
 
     // Sets the title of the browse for folder dialog.
-    inline void CFolderDialog::SetTitle(LPCTSTR pTitle)
+    inline void CFolderDialog::SetTitle(LPCTSTR title)
     {
-        if (pTitle)
-            m_title = pTitle;
+        if (title)
+            m_title = title;
         else
             m_title.Empty();
 
