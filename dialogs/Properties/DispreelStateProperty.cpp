@@ -60,12 +60,12 @@ BOOL DispreelStateProperty::OnInitDialog()
     UpdateVisuals();
 
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), topleft, 0);
-    m_resizer.AddChild(m_motorStepsEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_updateIntervalEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_soundCombo, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
+    m_resizer.AddChild(m_motorStepsEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_updateIntervalEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_soundCombo, CResizer::topleft, RD_STRETCH_WIDTH);
 
     return TRUE;
 }

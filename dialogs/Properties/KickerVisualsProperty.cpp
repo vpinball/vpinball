@@ -98,22 +98,23 @@ BOOL KickerVisualsProperty::OnInitDialog()
     m_posYEdit.AttachItem(903);
     m_surfaceCombo.AttachItem(IDC_SURFACE_COMBO);
     UpdateVisuals();
+
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), topleft, 0);
-    m_resizer.AddChild(m_materialCombo, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_displayCombo, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_radiusEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_orientationEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_posXEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_posYEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_surfaceCombo, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, 0);
+    m_resizer.AddChild(m_materialCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_displayCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_radiusEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_orientationEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posXEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posYEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_surfaceCombo, CResizer::topleft, RD_STRETCH_WIDTH);
 
     return TRUE;
 }

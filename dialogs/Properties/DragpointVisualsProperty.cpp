@@ -115,36 +115,36 @@ BOOL DragpointVisualsProperty::OnInitDialog()
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
     if (m_id == IDD_PROPPOINT_VISUALSWTEX)
     {
-       m_resizer.AddChild(GetDlgItem(IDC_STATIC2), topleft, RD_STRETCH_WIDTH);
-       m_resizer.AddChild(GetDlgItem(IDC_STATIC1), topleft, 0);
-       m_resizer.AddChild(GetDlgItem(IDC_STATIC3), topleft, 0);
-       m_resizer.AddChild(GetDlgItem(IDC_STATIC4), topleft, 0);
-       m_resizer.AddChild(m_textureCoordEdit, topleft, RD_STRETCH_WIDTH);
-       m_resizer.AddChild(GetDlgItem(4), topleft, 0);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, RD_STRETCH_WIDTH);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC4), CResizer::topleft, 0);
+       m_resizer.AddChild(m_textureCoordEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+       m_resizer.AddChild(GetDlgItem(4), CResizer::topleft, 0);
     }
     else if(m_id==IDD_PROPPOINT_VISUALSWHEIGHT)
     {
-       m_resizer.AddChild(GetDlgItem(IDC_STATIC2), topleft, RD_STRETCH_WIDTH);
-       m_resizer.AddChild(GetDlgItem(IDC_STATIC1), topleft, 0);
-       m_resizer.AddChild(GetDlgItem(IDC_STATIC3), topleft, 0);
-       m_resizer.AddChild(GetDlgItem(IDC_STATIC4), topleft, 0);
-       m_resizer.AddChild(GetDlgItem(IDC_STATIC5), topleft, 0);
-       m_resizer.AddChild(GetDlgItem(IDC_STATIC6), topleft, 0);
-       m_resizer.AddChild(m_heightOffsetEdit, topleft, RD_STRETCH_WIDTH);
-       m_resizer.AddChild(m_realHeightEdit, topleft, RD_STRETCH_WIDTH);
-       m_resizer.AddChild(GetDlgItem(4), topleft, 0);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, RD_STRETCH_WIDTH);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC4), CResizer::topleft, 0);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topleft, 0);
+       m_resizer.AddChild(m_heightOffsetEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+       m_resizer.AddChild(m_realHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+       m_resizer.AddChild(GetDlgItem(4), CResizer::topleft, 0);
     }
     else
     {
-       m_resizer.AddChild(GetDlgItem(IDC_STATIC1), topleft, RD_STRETCH_WIDTH);
-       m_resizer.AddChild(GetDlgItem(IDC_STATIC2), topleft, 0);
-       m_resizer.AddChild(GetDlgItem(IDC_STATIC3), topleft, 0);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, RD_STRETCH_WIDTH);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
+       m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
     }
-    m_resizer.AddChild(GetDlgItem(3), topleft, 0);
-    m_resizer.AddChild(m_posXEdit, topleft, 0);
-    m_resizer.AddChild(m_posYEdit, topleft, 0);
-    m_resizer.AddChild(m_copyButton, topleft, 0);
-    m_resizer.AddChild(m_pasteButton, topleft, 0);
+    m_resizer.AddChild(GetDlgItem(3), CResizer::topleft, 0);
+    m_resizer.AddChild(m_posXEdit, CResizer::topleft, 0);
+    m_resizer.AddChild(m_posYEdit, CResizer::topleft, 0);
+    m_resizer.AddChild(m_copyButton, CResizer::topleft, 0);
+    m_resizer.AddChild(m_pasteButton, CResizer::topleft, 0);
 
     return TRUE;
 }

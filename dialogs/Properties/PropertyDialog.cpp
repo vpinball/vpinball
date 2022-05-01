@@ -628,10 +628,11 @@ BOOL PropertyDialog::OnInitDialog()
 
     //set minimize size of the resizer at which scrollbars are shown when going under width=200 and height=610
     m_resizer.Initialize(*this, CRect(0, 0, 200, 610)); 
-    m_resizer.AddChild(m_elementTypeName, topcenter, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_nameEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_multipleElementsStatic, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_tab, topcenter, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_elementTypeName, CResizer::topcenter, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_nameEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_multipleElementsStatic, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_tab, CResizer::topcenter, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
+
     return TRUE;
 }
 
@@ -1087,12 +1088,14 @@ BOOL TimerProperty::OnInitDialog()
     m_timerIntervalEdit.AttachItem(901);
     m_userValueEdit.AttachItem(1504);
     UpdateVisuals();
+
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), topleft, 0);
-    m_resizer.AddChild(m_timerIntervalEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_userValueEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(GetDlgItem(900), topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
+    m_resizer.AddChild(m_timerIntervalEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_userValueEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(900), CResizer::topleft, 0);
+
     return TRUE;
 }
 

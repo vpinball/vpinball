@@ -130,31 +130,32 @@ BOOL WallVisualsProperty::OnInitDialog()
 
     UpdateVisuals();
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), topleft, 0);
-    m_resizer.AddChild(m_topImageCombo, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_sideImageCombo, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_topMaterialCombo, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_sideMaterialCombo, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_slingshotMaterialCombo, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_disableLightingEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_disableLightFromBelowEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_topHeightEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_bottomHeightEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hReflectionEnabledCheck, topleft, 0);
-    m_resizer.AddChild(m_hDisplayInEditor, topleft, 0);
-    m_resizer.AddChild(m_hTopImageVisible, topleft, 0);
-    m_resizer.AddChild(m_hSideImageVisible, topleft, 0);
-    m_resizer.AddChild(m_hAnimateSlingshot, topleft, 0);
-    m_resizer.AddChild(m_hFlipbook, topleft, 0);
-    m_resizer.AddChild(m_bottomHeightEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), CResizer::topleft, 0);
+    m_resizer.AddChild(m_topImageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_sideImageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_topMaterialCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_sideMaterialCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_slingshotMaterialCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_disableLightingEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_disableLightFromBelowEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_topHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_bottomHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hReflectionEnabledCheck, CResizer::topleft, 0);
+    m_resizer.AddChild(m_hDisplayInEditor, CResizer::topleft, 0);
+    m_resizer.AddChild(m_hTopImageVisible, CResizer::topleft, 0);
+    m_resizer.AddChild(m_hSideImageVisible, CResizer::topleft, 0);
+    m_resizer.AddChild(m_hAnimateSlingshot, CResizer::topleft, 0);
+    m_resizer.AddChild(m_hFlipbook, CResizer::topleft, 0);
+    m_resizer.AddChild(m_bottomHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+
     return TRUE;
 }
 

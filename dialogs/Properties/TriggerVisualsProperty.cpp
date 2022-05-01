@@ -120,27 +120,27 @@ BOOL TriggerVisualsProperty::OnInitDialog()
     UpdateVisuals();
 
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), topleft, 0);
-    m_resizer.AddChild(m_materialCombo, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_surfaceCombo, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_shapeCombo, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hVisibleCheck, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hReflectionEnabledCheck, topleft, 0);
-    m_resizer.AddChild(m_posXEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_posYEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_wireThicknessEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_starRadiusEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_rotationEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_animationSpeedEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), CResizer::topleft, 0);
+    m_resizer.AddChild(m_materialCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_surfaceCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_shapeCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hVisibleCheck, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hReflectionEnabledCheck, CResizer::topleft, 0);
+    m_resizer.AddChild(m_posXEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_posYEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_wireThicknessEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_starRadiusEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_rotationEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_animationSpeedEdit, CResizer::topleft, RD_STRETCH_WIDTH);
 
     return TRUE;
 }

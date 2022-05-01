@@ -82,21 +82,21 @@ BOOL RubberPhysicsProperty::OnInitDialog()
     UpdateVisuals();
 
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), topleft, 0);
-    m_resizer.AddChild(m_physicsMaterialCombo, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hOverwritePhysicsCheck, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hCollidableCheck, topleft, 0);
-    m_resizer.AddChild(m_hHitEventCheck, topleft, 0);
-    m_resizer.AddChild(m_elasticityEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_elasticityFallOffEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_frictionEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_scatterAngleEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hitHeightEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topleft, 0);
+    m_resizer.AddChild(m_physicsMaterialCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hOverwritePhysicsCheck, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hCollidableCheck, CResizer::topleft, 0);
+    m_resizer.AddChild(m_hHitEventCheck, CResizer::topleft, 0);
+    m_resizer.AddChild(m_elasticityEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_elasticityFallOffEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_frictionEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_scatterAngleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hitHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
 
     return TRUE;
 }

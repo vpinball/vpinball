@@ -25,7 +25,7 @@ BOOL NotesDialog::OnInitDialog()
 {
    m_resizer.Initialize(*this, CRect(0, 0, 400 , 300));
    AttachItem(IDC_NOTES_EDIT, m_notesEdit);
-   m_resizer.AddChild(m_notesEdit.GetHwnd(), topright, RD_STRETCH_HEIGHT|RD_STRETCH_WIDTH);
+   m_resizer.AddChild(m_notesEdit.GetHwnd(), CResizer::topright, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
 
    SetText();
    return TRUE;

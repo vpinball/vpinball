@@ -126,9 +126,9 @@ BOOL SearchSelectDialog::OnInitDialog()
    m_switchSortOrder = false;
 
    m_resizer.Initialize(*this, CRect(0, 0, 650, 400));
-   m_resizer.AddChild(GetDlgItem(IDC_ELEMENT_LIST).GetHwnd(), topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-   m_resizer.AddChild(GetDlgItem(IDOK).GetHwnd(), bottomleft, 0);
-   m_resizer.AddChild(GetDlgItem(IDCANCEL).GetHwnd(), bottomleft, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_ELEMENT_LIST).GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+   m_resizer.AddChild(GetDlgItem(IDOK).GetHwnd(), CResizer::bottomleft, 0);
+   m_resizer.AddChild(GetDlgItem(IDCANCEL).GetHwnd(), CResizer::bottomleft, 0);
    Update();
    SortItems(0);
    LoadPosition();
@@ -136,6 +136,7 @@ BOOL SearchSelectDialog::OnInitDialog()
    ListView_SetItemState(m_hElementList, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
    ListView_EnsureVisible(m_hElementList, 0, false);
    GotoDlgCtrl(m_hElementList);
+
    return FALSE;
 }
 

@@ -54,19 +54,19 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       {
          const HWND hListView = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
          m_resizer.Initialize(*this, CRect(0, 0, 720, 450));
-         m_resizer.AddChild(hListView, topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-         m_resizer.AddChild(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), topright, 0);
-         m_resizer.AddChild(GetDlgItem(IDC_IMPORT).GetHwnd(), topright, 0);
-         m_resizer.AddChild(GetDlgItem(IDC_REIMPORT).GetHwnd(), topright, 0);
-         m_resizer.AddChild(GetDlgItem(IDC_REIMPORTFROM).GetHwnd(), topright, 0);
-         m_resizer.AddChild(GetDlgItem(IDC_UPDATE_ALL_BUTTON).GetHwnd(), topright, 0);
-         m_resizer.AddChild(GetDlgItem(IDC_DELETE_IMAGE).GetHwnd(), topright, 0);
-         m_resizer.AddChild(GetDlgItem(IDC_RENAME).GetHwnd(), topright, 0);
-         m_resizer.AddChild(GetDlgItem(IDC_EXPORT).GetHwnd(), topright, 0);
-         m_resizer.AddChild(GetDlgItem(IDC_OK).GetHwnd(), topright, 0);
-         m_resizer.AddChild(GetDlgItem(IDC_ALPHA_MASK_EDIT).GetHwnd(), topright, 0);
-         m_resizer.AddChild(GetDlgItem(IDC_STATIC_ALPHA).GetHwnd(), topright, 0);
-         m_resizer.AddChild(GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd(), topright, 0);
+         m_resizer.AddChild(hListView, CResizer::topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+         m_resizer.AddChild(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), CResizer::topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_IMPORT).GetHwnd(), CResizer::topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_REIMPORT).GetHwnd(), CResizer::topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_REIMPORTFROM).GetHwnd(), CResizer::topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_UPDATE_ALL_BUTTON).GetHwnd(), CResizer::topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_DELETE_IMAGE).GetHwnd(), CResizer::topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_RENAME).GetHwnd(), CResizer::topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_EXPORT).GetHwnd(), CResizer::topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_OK).GetHwnd(), CResizer::topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_ALPHA_MASK_EDIT).GetHwnd(), CResizer::topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_STATIC_ALPHA).GetHwnd(), CResizer::topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd(), CResizer::topright, 0);
 
          LoadPosition();
 

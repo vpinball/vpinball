@@ -85,10 +85,10 @@ BOOL DebuggerDialog::OnInitDialog()
 
     m_resizer.Initialize(*this, rcDialog);
     AttachItem(IDC_EDITSIZE, m_notesEdit);
-    m_resizer.AddChild(m_notesEdit.GetHwnd(), bottomright, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
-    m_resizer.AddChild(g_pplayer->m_hwndDebugOutput, bottomright, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(GetDlgItem(IDC_GUIDE1).GetHwnd(), topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_GUIDE2).GetHwnd(), bottomright, 0);
+    m_resizer.AddChild(m_notesEdit.GetHwnd(), CResizer::bottomright, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
+    m_resizer.AddChild(g_pplayer->m_hwndDebugOutput, CResizer::bottomright, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_GUIDE1).GetHwnd(), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_GUIDE2).GetHwnd(), CResizer::bottomright, 0);
     return TRUE;
 }
 
