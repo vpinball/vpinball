@@ -11,16 +11,20 @@ public:
    virtual HTREEITEM       AddItem(HTREEITEM hParent, LPCTSTR text, IEditable* const pedit, int image);
    bool                    AddLayer(const string& name);
    bool                    AddElement(const string& name, IEditable* const pedit);
+   bool                    AddElementToLayer(const HTREEITEM hLayerItem, const string& name, IEditable* const pedit);
    bool                    ContainsLayer(const string& name) const;
    std::string             GetCurrentLayerName() const;
    HTREEITEM               GetLayerByElement(const IEditable* const pedit);
    HTREEITEM               GetLayerByItem(HTREEITEM hChildItem);
    HTREEITEM               GetItemByElement(const IEditable* const pedit);
+   HTREEITEM               GetCurrentElement() const { return hCurrentElementItem; }
    int                     GetItemCount() const;
    int                     GetLayerCount() const;
+   std::vector<HTREEITEM>  GetAllLayerItems() const;
    std::vector<HTREEITEM>  GetSubItems(HTREEITEM hParent);
    int                     GetSubItemsCount(HTREEITEM hParent) const;
    bool                    IsItemChecked(HTREEITEM hItem) const;
+   void                    SetItemCheck(HTREEITEM item, bool checked);
    void                    SetAllItemStates(const bool checked);
    void                    DeleteAll();
    void                    ExpandAll();
@@ -34,6 +38,9 @@ public:
    std::string             GetLayerName(HTREEITEM item) { return string(GetItemText(item)); }
    bool                    PreTranslateMessage(MSG* msg);
    void                    SetActiveTable(PinTable* ptable) { m_activeTable = ptable; }
+   std::vector<std::string> GetAllLayerNames();
+
+
 protected:
    virtual void OnAttach();
    virtual void PreCreate(CREATESTRUCT& cs);
@@ -45,7 +52,6 @@ protected:
    virtual LRESULT OnTVNSelChanged(LPNMTREEVIEW pNMTV);
 
 private:
-   bool AddElementToLayer(const HTREEITEM hLayerItem, const string& name, IEditable* const pedit);
 
    HTREEITEM   hRootItem;
    HTREEITEM   hCurrentLayerItem;
@@ -93,8 +99,11 @@ public:
    string GetCurrentSelectedLayerName() const;
    void AddToolTip(const char* const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd);
    void OnAssignButton();
+   void AssignToLayerByIndex(size_t index);
    bool PreTranslateMessage(MSG* msg);
    void SetActiveTable(PinTable* ptable) { m_activeTable = ptable; m_layerTreeView.SetActiveTable(ptable); }
+   std::vector<std::string> GetAllLayerNames();
+
    void ExpandAll()
    {
       m_layerTreeView.ExpandAll();

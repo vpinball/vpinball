@@ -2,6 +2,7 @@ VP 10.7.1 Changelog
 ------------------------
 
 FEATURES:
+- add "Assign to Layer" context menu again by showing the first 20 layers.
 
 - expose background and selection color in the script editor preferences
 
@@ -15,7 +16,9 @@ FEATURES:
 - support HDR textures on primitives (same as flashers), full high dynamic range is only available if lighting disabled though (otherwise clamped to 0..1)
 - allow playfield mesh to optionally be not collidable (or a toy). In that case another collidable object must be added as the playfield. This allows to use different meshes for the physics and the visuals.
 
+
 FIXES:
+- assigning an element to a hidden layer the element will also set to hidden.
 
 - update line number for script subs/functions when updating the function list
   (i.e. so that jumping to these works properly again after changing other script code)

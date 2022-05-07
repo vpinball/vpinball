@@ -435,6 +435,7 @@ public:
    void OnLeftButtonUp(int x, int y);
    void OnRightButtonDown(int x, int y);
    void FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISelect *psel);
+   void FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, ISelect *psel);
    void OnRightButtonUp(int x, int y);
    void DoMouseMove(int x, int y);
    void OnLeftDoubleClick(int x, int y);

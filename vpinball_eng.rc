@@ -3791,7 +3791,8 @@ STRINGTABLE
 BEGIN
     IDS_IMAGE_RAW_SIZE      "Raw Size"
     IDS_SIZE                "Size"
-    IDS_ASSIGN_TO_LAYER     "&Assign to selected layer"
+    IDS_ASSIGN_TO_CURRENT_LAYER "&Assign to selected layer"
+    IDS_ASSIGN_TO_LAYER2    "&Assign to layer"
     IDS_DRAWING_ORDER_SELECT "D&rawing Order (Select)"
 END
 

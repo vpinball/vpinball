@@ -125,6 +125,11 @@ void ISelect::DoCommand(int icmd, int x, int y)
       const int i = icmd & 0x000000FF;
       currentTable->UpdateCollection(i);
    }
+   if ((icmd >= ID_ASSIGN_TO_LAYER1) && (icmd < ID_ASSIGN_TO_LAYER20))
+   {
+      /*add to layer*/
+      m_vpinball->GetLayersListDialog()->AssignToLayerByIndex(icmd - ID_ASSIGN_TO_LAYER1);
+   }
    switch (icmd)
    {
    case ID_EDIT_DRAWINGORDER_HIT:
@@ -133,7 +138,7 @@ void ISelect::DoCommand(int icmd, int x, int y)
    case ID_EDIT_DRAWINGORDER_SELECT:
        m_vpinball->ShowDrawingOrderDialog(true);
       break;
-   case ID_ASSIGN_TO_LAYER:
+   case ID_ASSIGN_TO_CURRENT_LAYER:
    {
        m_vpinball->GetLayersListDialog()->OnAssignButton();
        break;

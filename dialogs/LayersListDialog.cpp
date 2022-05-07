@@ -102,6 +102,21 @@ void LayersListDialog::UpdateLayerList(const std::string& name)
    if (m_activeTable == nullptr)
       return;
 
+   std::vector<HTREEITEM> visItemList;
+   HTREEITEM item = m_layerTreeView.GetNextVisible(m_layerTreeView.GetRootItem());
+   while (item)
+   {
+      TVITEM itemInfo;
+      itemInfo.hItem = item;
+      itemInfo.mask = TVIF_STATE;
+      if (m_layerTreeView.GetItem(itemInfo))
+      {
+         if ((itemInfo.state & TVIS_EXPANDED) == TVIS_EXPANDED)
+            visItemList.push_back(item);
+      }
+      item = m_layerTreeView.GetNextVisible(item);
+   }
+
    ClearList();
    const bool checkName = name.empty() ? false : true;
    std::string sName = name;
@@ -134,7 +149,13 @@ void LayersListDialog::UpdateLayerList(const std::string& name)
    if (!name.empty())
       ExpandAll();
    else
+   {
       ExpandLayers();
+      for (const auto& item : visItemList)
+      {
+         m_layerTreeView.Expand(item, TVE_EXPAND);
+      }
+   }
 }
 
 void LayersListDialog::UpdateElement(IEditable* const pedit)
@@ -299,6 +320,8 @@ void LayersListDialog::OnAssignButton()
    if (m_activeTable == nullptr || m_activeTable->MultiSelIsEmpty())
       return;
 
+   const bool layerIsVisible = !m_layerTreeView.IsItemChecked(m_layerTreeView.GetCurrentLayerItem());
+   bool visibilityChanged = false;
    for (int t = 0; t < m_activeTable->m_vmultisel.size(); t++)
    {
       ISelect* const psel = m_activeTable->m_vmultisel.ElementAt(t);
@@ -307,6 +330,65 @@ void LayersListDialog::OnAssignButton()
       const HTREEITEM oldItem = m_layerTreeView.GetItemByElement(pedit);
       m_layerTreeView.AddElement(pedit->GetName(), pedit);
       m_layerTreeView.DeleteItem(oldItem);
+      if (psel->m_isVisible && !layerIsVisible)
+      {
+         psel->m_isVisible = false;
+         m_layerTreeView.SetItemCheck(m_layerTreeView.GetCurrentElement(), false);
+         visibilityChanged = true;
+      }
+      else if (!psel->m_isVisible && layerIsVisible)
+      {
+         psel->m_isVisible = true;
+         m_layerTreeView.SetItemCheck(m_layerTreeView.GetCurrentElement(), true);
+         visibilityChanged = true;
+      }
+   }
+   if (visibilityChanged)
+   {
+      m_layerTreeView.SetItemCheck(m_layerTreeView.GetCurrentLayerItem(), layerIsVisible);
+      m_activeTable->SetDirtyDraw();
+   }
+}
+
+void LayersListDialog::AssignToLayerByIndex(size_t index)
+{
+   if (m_activeTable == nullptr || m_activeTable->MultiSelIsEmpty())
+      return;
+   const std::vector<std::string> layerList = GetAllLayerNames();
+
+   if (index >= layerList.size())
+      return;
+
+   std::vector<HTREEITEM> children = m_layerTreeView.GetAllLayerItems();
+   const bool layerIsVisible = !m_layerTreeView.IsItemChecked(children[index]);
+   bool visibilityChanged = false;
+   for (int t = 0; t < m_activeTable->m_vmultisel.size(); t++)
+   {
+      ISelect* const psel = m_activeTable->m_vmultisel.ElementAt(t);
+      IEditable* const pedit = psel->GetIEditable();
+      psel->m_layerName = layerList[index];
+      
+      const HTREEITEM oldItem = m_layerTreeView.GetItemByElement(pedit);
+      m_layerTreeView.AddElementToLayer(children[index], pedit->GetName(), pedit);
+      m_layerTreeView.DeleteItem(oldItem);
+
+      if (psel->m_isVisible && !layerIsVisible)
+      {
+         psel->m_isVisible = false;
+         m_layerTreeView.SetItemCheck(m_layerTreeView.GetCurrentElement(), false);
+         visibilityChanged = true;
+      }
+      else if (!psel->m_isVisible && layerIsVisible)
+      {
+         psel->m_isVisible = true;
+         m_layerTreeView.SetItemCheck(m_layerTreeView.GetCurrentElement(), true);
+         visibilityChanged = true;
+      }
+   }
+   if (visibilityChanged) 
+   {
+      m_layerTreeView.SetItemCheck(children[index], layerIsVisible);
+      m_activeTable->SetDirtyDraw();
    }
 }
 
@@ -329,6 +411,11 @@ bool LayersListDialog::PreTranslateMessage(MSG* msg)
       return true;
 
    return !!IsDialogMessage(*msg);
+}
+
+std::vector<std::string> LayersListDialog::GetAllLayerNames() 
+{ 
+    return m_layerTreeView.GetAllLayerNames();
 }
 
 CContainLayers::CContainLayers()
@@ -398,14 +485,7 @@ string LayerTreeView::GetCurrentLayerName() const { return string(GetItemText(hC
 
 HTREEITEM LayerTreeView::GetLayerByElement(const IEditable* const pedit)
 {
-   std::vector<HTREEITEM> children;
-   HTREEITEM item = GetChild(hRootItem);
-   while (item)
-   {
-      children.push_back(item);
-      item = GetNextItem(item, TVGN_NEXT);
-   }
-   for (const HTREEITEM child : children)
+   for (const HTREEITEM child : GetAllLayerItems())
    {
       HTREEITEM subItem = GetChild(child);
       while (subItem)
@@ -429,17 +509,11 @@ HTREEITEM LayerTreeView::GetLayerByElement(const IEditable* const pedit)
 
 HTREEITEM LayerTreeView::GetLayerByItem(HTREEITEM hChildItem)
 {
-   std::vector<HTREEITEM> children;
-   HTREEITEM item = GetChild(hRootItem);
-   while (item)
+   for (const HTREEITEM child : GetAllLayerItems())
    {
-      children.push_back(item);
-      if (hChildItem == item)
-         return item;
-      item = GetNextItem(item, TVGN_NEXT);
-   }
-   for (const HTREEITEM child : children)
-   {
+      if (hChildItem = child)
+         return child;
+
       HTREEITEM subItem = GetChild(child);
       while (subItem)
       {
@@ -454,13 +528,8 @@ HTREEITEM LayerTreeView::GetLayerByItem(HTREEITEM hChildItem)
 
 HTREEITEM LayerTreeView::GetItemByElement(const IEditable* const pedit)
 {
-   std::vector<HTREEITEM> children;
-   HTREEITEM item = GetChild(hRootItem);
-   while (item)
-   {
-      children.push_back(item);
-      item = GetNextItem(item, TVGN_NEXT);
-   }
+   std::vector<HTREEITEM> children = GetAllLayerItems();
+
    for (const HTREEITEM child : children)
    {
       HTREEITEM subItem = GetChild(child);
@@ -485,13 +554,8 @@ HTREEITEM LayerTreeView::GetItemByElement(const IEditable* const pedit)
 
 int LayerTreeView::GetItemCount() const
 {
-   std::vector<HTREEITEM> children;
-   HTREEITEM item = GetChild(hRootItem);
-   while (item)
-   {
-      children.push_back(item);
-      item = GetNextItem(item, TVGN_NEXT);
-   }
+   std::vector<HTREEITEM> children = GetAllLayerItems();
+
    int count = (int)children.size();
    for (const HTREEITEM child : children)
    {
@@ -515,6 +579,18 @@ int LayerTreeView::GetLayerCount() const
       item = GetNextItem(item, TVGN_NEXT);
    }
    return count;
+}
+
+std::vector<HTREEITEM> LayerTreeView::GetAllLayerItems() const 
+{
+   std::vector<HTREEITEM> children;
+   HTREEITEM item = GetChild(hRootItem);
+   while (item)
+   {
+      children.push_back(item);
+      item = GetNextItem(item, TVGN_NEXT);
+   }
+   return children;
 }
 
 std::vector<HTREEITEM> LayerTreeView::GetSubItems(HTREEITEM hParent)
@@ -551,21 +627,28 @@ bool LayerTreeView::IsItemChecked(HTREEITEM hItem) const
    return ((tvItem.state >> 12) - 1) == 0;
 }
 
+void LayerTreeView::SetItemCheck(HTREEITEM item, bool checked) 
+{ 
+    if (checked)
+    {
+        TreeView_SetCheckState(GetHwnd(), item, 1);
+    }
+    else
+    {
+        TreeView_SetCheckState(GetHwnd(), item, 0);
+    }
+}
+
 void LayerTreeView::SetAllItemStates(const bool checked)
 {
    TVITEM tvItem = {};
    tvItem.mask = TVIF_PARAM;
 
    HTREEITEM item = GetChild(hRootItem);
-   std::vector<HTREEITEM> children;
-   while (item)
-   {
-      children.push_back(item);
-      TreeView_SetCheckState(GetHwnd(), item, checked);
-      item = GetNextItem(item, TVGN_NEXT);
-   }
+   std::vector<HTREEITEM> children = GetAllLayerItems();
    for (const HTREEITEM child : children)
    {
+      TreeView_SetCheckState(GetHwnd(), item, checked);
       HTREEITEM subItem = GetChild(child);
       while (subItem)
       {
@@ -656,6 +739,24 @@ bool LayerTreeView::PreTranslateMessage(MSG* msg)
    }
 
    return !!IsDialogMessage(*msg);
+}
+
+std::vector<std::string> LayerTreeView::GetAllLayerNames()
+{
+   std::vector<std::string> layerList;
+   std::vector<HTREEITEM> children;
+   HTREEITEM item = GetChild(hRootItem);
+   while (item)
+   {
+      children.push_back(item);
+      item = GetNextItem(item, TVGN_NEXT);
+   }
+   for (auto& layer : children) 
+   { 
+       std::string name = GetItemText(layer);
+      layerList.push_back(name);
+   }
+   return layerList;
 }
 
 void LayerTreeView::OnAttach()
@@ -980,15 +1081,9 @@ bool LayerTreeView::AddElementToLayer(const HTREEITEM hLayerItem, const string& 
    ISelect* const psel = pedit->GetISelect();
    if (psel != nullptr)
    {
-      if (!psel->m_isVisible)
-      {
-         TreeView_SetCheckState(GetHwnd(), hCurrentElementItem, 0);
-      }
-      else
-      {
-         TreeView_SetCheckState(GetHwnd(), hCurrentElementItem, 1);
-         TreeView_SetCheckState(GetHwnd(), hLayerItem, 1);
-      }
+      SetItemCheck(hCurrentElementItem, psel->m_isVisible);
+      if (psel->m_isVisible)
+         SetItemCheck(hLayerItem, true);
    }
    return hCurrentElementItem != nullptr;
 }

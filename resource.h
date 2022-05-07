@@ -116,7 +116,7 @@
 #define IDS_FLIPPER_DESC                107
 #define IDC_KICKER_ORIENTATION_EDIT     107
 #define IDC_TABLE_SCALEZ                108
-#define ID_ASSIGN_TO_LAYER              108
+#define ID_ASSIGN_TO_CURRENT_LAYER      108
 #define IDR_FLIPPER                     108
 #define IDC_SHOW_BRACKET_CHECK          108
 #define IDC_SELECT                      109
@@ -280,6 +280,9 @@
 #define IDS_STRING193                   193
 #define IDS_SIZE                        193
 #define IDS_ASSIGN_TO_LAYER             197
+#define IDS_ASSIGN_TO_CURRNT_LAYER      197
+#define IDS_ASSIGN_TO_CURRENT_LAYER     197
+#define IDS_ASSIGN_TO_LAYER2            198
 #define IDS_DRAWING_ORDER_SELECT        200
 #define IDW_MAIN                        201
 #define IDC_SOUNDLIST                   201
@@ -1293,18 +1296,7 @@
 #define ID_LAYER_TOGGLEALL              32860
 #define ID_LAYER_MERGEALL               32861
 #define ID_WALLMENU_ASSIGNTO            32862
-#define ID_ASSIGNTO_LAYER1              32863
-#define ID_ASSIGNTO_LAYER2              32864
-#define ID_ASSIGNTO_LAYER3              32865
-#define ID_ASSIGNTO_LAYER4              32866
-#define ID_ASSIGNTO_LAYER5              32867
-#define ID_ASSIGNTO_LAYER6              32868
-#define ID_ASSIGNTO_LAYER7              32869
-#define ID_ASSIGNTO_LAYER8              32870
-#define ID_ASSIGNTO_LAYER9              32871
-#define ID_ASSIGNTO_LAYER10             32872
 #define ID_ASSIGNTO_MERGETOLAYER1       32873
-#define ID_ASSIGNTO_LAYER11             32874
 #define ID_EDIT_SEARCH                  32875
 #define ID_SELECT_ELEMENT               32876
 #define ID_WALLMENU_SELECTALL           32877
@@ -1338,7 +1330,27 @@
 #define ID_ADD_SMOOTH_CTRL_POINT        33004
 #define ID_TABLE_STOP_PLAY              33005
 #define ID_TABLE_PLAYER_STOPPED         33006
-#define DZVALUE                         65535
+#define ID_ASSIGN_TO_LAYER1             41000
+#define ID_ASSIGN_TO_LAYER2				41001
+#define ID_ASSIGN_TO_LAYER3				41002
+#define ID_ASSIGN_TO_LAYER4				41003
+#define ID_ASSIGN_TO_LAYER5				41004
+#define ID_ASSIGN_TO_LAYER6				41005
+#define ID_ASSIGN_TO_LAYER7				41006
+#define ID_ASSIGN_TO_LAYER8				41007
+#define ID_ASSIGN_TO_LAYER9				41008
+#define ID_ASSIGN_TO_LAYER10			41009
+#define ID_ASSIGN_TO_LAYER11			41010
+#define ID_ASSIGN_TO_LAYER12			41011
+#define ID_ASSIGN_TO_LAYER13			41012
+#define ID_ASSIGN_TO_LAYER14			41013
+#define ID_ASSIGN_TO_LAYER15			41014
+#define ID_ASSIGN_TO_LAYER16			41015
+#define ID_ASSIGN_TO_LAYER17			41016
+#define ID_ASSIGN_TO_LAYER18			41017
+#define ID_ASSIGN_TO_LAYER19			41018
+#define ID_ASSIGN_TO_LAYER20			41019
+#define DZVALUE 65535
 #define DZName                          65535
 
 // Next default values for new objects
