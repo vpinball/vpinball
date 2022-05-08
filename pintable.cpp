@@ -4619,7 +4619,7 @@ void PinTable::FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, ISelec
    {
       layerSubMenu.AppendMenu(MF_STRING, ID_ASSIGN_TO_LAYER1 + i, name.c_str());
       i++;
-      if (i == 20)
+      if (i == NUM_ASSIGN_LAYERS)
         break;
    }
 }
@@ -4788,7 +4788,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
       return;
    }
 
-   if ((icmd >= ID_ASSIGN_TO_LAYER1) && (icmd <= ID_ASSIGN_TO_LAYER20))
+   if ((icmd >= ID_ASSIGN_TO_LAYER1) && (icmd <= ID_ASSIGN_TO_LAYER1+NUM_ASSIGN_LAYERS-1))
    {
       /*add to layer*/
       m_vpinball->GetLayersListDialog()->AssignToLayerByIndex(icmd - ID_ASSIGN_TO_LAYER1);

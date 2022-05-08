@@ -125,7 +125,7 @@ void ISelect::DoCommand(int icmd, int x, int y)
       const int i = icmd & 0x000000FF;
       currentTable->UpdateCollection(i);
    }
-   if ((icmd >= ID_ASSIGN_TO_LAYER1) && (icmd < ID_ASSIGN_TO_LAYER20))
+   if ((icmd >= ID_ASSIGN_TO_LAYER1) && (icmd <= ID_ASSIGN_TO_LAYER1+NUM_ASSIGN_LAYERS-1))
    {
       /*add to layer*/
       m_vpinball->GetLayersListDialog()->AssignToLayerByIndex(icmd - ID_ASSIGN_TO_LAYER1);

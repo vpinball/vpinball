@@ -753,7 +753,7 @@ std::vector<std::string> LayerTreeView::GetAllLayerNames()
    }
    for (auto& layer : children) 
    { 
-       std::string name = GetItemText(layer);
+      std::string name = GetItemText(layer);
       layerList.push_back(name);
    }
    return layerList;

@@ -18,7 +18,7 @@ FEATURES:
 
 
 FIXES:
-- assigning an element to a hidden layer the element will also set to hidden.
+- assigning an element to a hidden layer, the element will also be set to hidden.
 
 - update line number for script subs/functions when updating the function list
   (i.e. so that jumping to these works properly again after changing other script code)
