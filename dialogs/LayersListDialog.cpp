@@ -648,7 +648,7 @@ void LayerTreeView::SetAllItemStates(const bool checked)
    std::vector<HTREEITEM> children = GetAllLayerItems();
    for (const HTREEITEM child : children)
    {
-      TreeView_SetCheckState(GetHwnd(), item, checked);
+      TreeView_SetCheckState(GetHwnd(), child, checked);
       HTREEITEM subItem = GetChild(child);
       while (subItem)
       {
