@@ -1,4 +1,4 @@
-'Last Updated in VBS v3.36
+'Last Updated in VBS v3.59
 
 Option Explicit
 LoadCore
@@ -19,9 +19,9 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 5
 ' Cabinet switches
-Const swCoin1        = 50
-Const swCoin2        = 51
-Const swCoin3        = 51
+Const swCoin1        = 51
+Const swCoin2        = 50
+Const swCoin3        = 50
 Const swTilt         = 53
 Const swStartButton  = 54
 Const swSelfTest     = 57

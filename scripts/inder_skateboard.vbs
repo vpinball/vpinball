@@ -1,5 +1,5 @@
 'Last Updated in VBS v3.59
-'Similar to inder.vbs except for swCoin2-4
+'Similar to inder.vbs except for some cabinet switches and the coin switch handling
 
 Option Explicit
 LoadCore
@@ -18,26 +18,24 @@ End Sub
 ' Inder Data
 '-------------------------
 ' Flipper Solenoid
-Const GameOnSolenoid = 5
+Const GameOnSolenoid = 9
 ' Cabinet switches
-Const swCoin1        = 51
-Const swCoin2        = 50
-Const swCoin3        = 50
-Const swCoin4        = 50
-Const swTilt         = 53
-Const swStartButton  = 54
-Const swSelfTest     = 57
-Const swCPUDiag      = 56
-Const swSoundDiag    = 55
-Const swLRFlip       = 151
-Const swLLFlip       = 153
+Const swCoin1          = 52
+Const swCoin2          = 51
+Const swCoin3          = 50
+Const swTilt           = 56
+Const swStartButton    = 53
+'Const swSelfTest       = 57
+'Const swCPUDiag        = 56
+'Const swSoundDiag      = 55
+Const swLRFlip         = 151
+Const swLLFlip         = 153
 
 ' Help Window
 vpmSystemHelp = "Inder MPUx00 keys:" & vbNewLine &_
   vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1"   & vbNewLine &_
   vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2"   & vbNewLine &_
   vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin4) & vbTab & "Insert Coin #4"   & vbNewLine &_
   vpmKeyName(keySelfTest)    & vbTab & "Test function"    & vbNewLine &_
   vpmKeyName(keyCPUDiag)     & vbTab & "Bookkeep function"& vbNewLine &_
   vpmKeyName(keySoundDiag)   & vbTab & "Reset audits"
@@ -51,7 +49,7 @@ Private Sub InderShowDips
 			.AddForm 150, 245, "DIP switches"
 			.AddFrame  0,0, 60, "", 0,_
 			  Array("DIP  1",&H00000001,"DIP  2",&H00000002,"DIP  3",&H00000004,"DIP  4",&H00000008,_
-			        "DIP  5",&H00000010,"DIP  6",&H00000020,"DIP  7",&H00000040,"DIP  8",32768,_
+			        "DIP  5",&H00000010,"DIP  6",&H00000020,"DIP  7",&H00000040,"DIP  8",&H00000080,_
 			        "DIP  9",&H00000100,"DIP 10",&H00000200,"DIP 11",&H00000400,"DIP 12",&H00000800,_
 			        "DIP 13",&H00001000,"DIP 14",&H00002000,"DIP 15",&H00004000,"DIP 16",&H00008000)
 			.AddFrame 80,0, 60, "", 0,_
@@ -67,6 +65,24 @@ Set vpmShowDips = GetRef("InderShowDips")
 Private vpmDips
 
 ' Keyboard handlers
+
+Sub ResetCoin
+	With Controller
+		.Switch(swCoin1) = True
+		.Switch(swCoin2) = True
+		.Switch(swCoin3) = True
+		vpmTimer.AddTimer 750, "WaitCoin '"
+	End With
+End Sub
+
+Sub WaitCoin
+	With Controller
+		.Switch(swCoin1) = False
+		.Switch(swCoin2) = False
+		.Switch(swCoin3) = False
+	End With
+End Sub
+
 Function vpmKeyDown(ByVal keycode)
 	On Error Resume Next
 	vpmKeyDown = True ' Assume we handle the key
@@ -76,10 +92,12 @@ Function vpmKeyDown(ByVal keycode)
 			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False :  vpmFlips.FlipR True : if keycode = keyStagedFlipperR then vpmFlips.FlipUR True
 			Case keyStagedFlipperL vpmFlips.FlipUL True
 			Case keyStagedFlipperR vpmFlips.FlipUR True
-			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
-			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
-			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
-			Case keyInsertCoin4  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin4'" : Playsound SCoin
+			'Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
+			'Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
+			'Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
+			Case keyInsertCoin1  .Switch(swCoin1) = True : Playsound SCoin : vpmTimer.AddTimer 750, "WaitCoin '"
+			Case keyInsertCoin2  .Switch(swCoin2) = True : Playsound SCoin : vpmTimer.AddTimer 750, "WaitCoin '"
+			Case keyInsertCoin3  .Switch(swCoin3) = True : Playsound SCoin : vpmTimer.AddTimer 750, "WaitCoin '"
 			Case StartGameKey    .Switch(swStartButton) = True
 			Case keySelfTest     .Switch(swSelfTest)    = True
 			Case keyCPUDiag      .Switch(swCPUDiag)     = True
@@ -104,6 +122,9 @@ Function vpmKeyUp(ByVal keycode)
 			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False :  vpmFlips.FlipR False : if keycode = keyStagedFlipperR then vpmFlips.FlipUR False
 			Case keyStagedFlipperL vpmFlips.FlipUL False
 			Case keyStagedFlipperR vpmFlips.FlipUR False
+			'Case keyInsertCoin1  .Switch(swCoin1) = False
+			'Case keyInsertCoin2  .Switch(swCoin2) = False
+			'Case keyInsertCoin3  .Switch(swCoin3) = False
 			Case StartGameKey    .Switch(swStartButton) = False
 			Case keySelfTest     .Switch(swSelfTest)    = False
 			Case keyCPUDiag      .Switch(swCPUDiag)     = False
@@ -111,7 +132,7 @@ Function vpmKeyUp(ByVal keycode)
 			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyAddBall      .Pause = True : vpmAddBall  : .Pause = False
-			Case keyReset        .Stop : .Run : vpmTimer.Reset
+			Case keyReset        .Stop : .Run : vpmTimer.Reset: ResetCoin
 			Case keyFrame        .LockDisplay = Not .LockDisplay
 			Case keyDoubleSize   .DoubleSize  = Not .DoubleSize
 			Case keyShowDips     If IsObject(vpmShowDips) Then .Pause = True : vpmShowDips : .Pause = False

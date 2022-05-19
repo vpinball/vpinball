@@ -1,4 +1,4 @@
-'Last Updated in VBS v3.54
+'Last Updated in VBS v3.59
 'Similar to inder.vbs except for some cabinet switches and the coin switch handling
 
 Option Explicit
@@ -20,9 +20,9 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 9
 ' Cabinet switches
-Const swCoin1        = 50
+Const swCoin1        = 52
 Const swCoin2        = 51
-Const swCoin3        = 52
+Const swCoin3        = 50
 Const swTilt         = 56
 Const swStartButton  = 53
 'Const swSelfTest     = 57
