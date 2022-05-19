@@ -1,5 +1,7 @@
-New in 3.59 (Update by toxie)
+New in 3.59 (Update by toxie, JP)
 - NVOffset now uses the internal ROMName (needs VPM 3.5)
+- Change coin key mappings for Inder games
+- Added inder_skateboard.vbs
 
 New in 3.58 (Update by mfuegemann, DJRobX, toxie, wiesshund)
 - Add possibility to selectively disable B2S by setting new variable "B2SOff=True" (after ExecuteGlobal GetTextFile("controller.vbs"), but before LoadXXX)
