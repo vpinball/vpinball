@@ -185,7 +185,7 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
    return argv;
 }
 
-std::map<ItemTypeEnum, EditableInfo> EditableRegistry::m_map;
+robin_hood::unordered_map<ItemTypeEnum, EditableInfo> EditableRegistry::m_map;
 
 class VPApp : public CWinApp
 {

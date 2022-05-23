@@ -1,6 +1,6 @@
 #pragma once
 
-#include <map>
+#include <inc/robin_hood.h>
 
 #include "Texture.h"
 #include "stdafx.h"
@@ -34,6 +34,6 @@ private:
    };
 
    RenderDevice& m_rd;
-   std::map<BaseTexture*, TexInfo> m_map;
-   typedef std::map<BaseTexture*, TexInfo>::iterator Iter;
+   robin_hood::unordered_map<BaseTexture*, TexInfo> m_map;
+   typedef robin_hood::unordered_map<BaseTexture*, TexInfo>::iterator Iter;
 };

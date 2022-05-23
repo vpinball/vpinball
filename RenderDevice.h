@@ -1,6 +1,6 @@
 #pragma once
 
-#include <map>
+#include <inc/robin_hood.h>
 #include "typedefs3D.h"
 
 #include "Material.h"
@@ -446,7 +446,7 @@ private:
    static constexpr DWORD TEXTURE_STATE_CACHE_SIZE = 256;
    static constexpr DWORD TEXTURE_SAMPLER_CACHE_SIZE = 14;
 
-   std::map<RenderStates, DWORD> renderStateCache;                          // for caching
+   robin_hood::unordered_map<RenderStates, DWORD> renderStateCache;         // for caching
    DWORD textureStateCache[TEXTURE_SAMPLERS][TEXTURE_STATE_CACHE_SIZE];     // dto.
    DWORD textureSamplerCache[TEXTURE_SAMPLERS][TEXTURE_SAMPLER_CACHE_SIZE]; // dto.
 

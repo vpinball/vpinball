@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include <map>
+
 #include <DxErr.h>
 
 //#include "Dwmapi.h" // use when we get rid of XP at some point, get rid of the manual dll loads in here then
@@ -1800,12 +1802,13 @@ inline bool RenderDevice::SetRenderStateCache(const RenderStates p1, DWORD p2)
    if (p1 >= RENDERSTATE_COUNT)
       return false;//Throw error or similar?
 #endif
-   if (renderStateCache.find(p1) == renderStateCache.end())
+   const robin_hood::unordered_map<RenderStates, DWORD>::const_iterator it = renderStateCache.find(p1);
+   if (it == renderStateCache.end())
    {
       renderStateCache.emplace(std::pair<RenderStates, DWORD>(p1, p2));
       return false;
    }
-   else if (renderStateCache[p1] != p2) {
+   else if (it->second != p2) {
       renderStateCache[p1] = p2;
       return false;
    }

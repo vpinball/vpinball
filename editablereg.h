@@ -1,6 +1,6 @@
 #pragma once
 
-#include <map>
+#include <inc/robin_hood.h>
 
 typedef IEditable*(*CreateFuncType)();
 typedef IEditable*(*CreateAndInitFuncType)(PinTable *pt, float x, float y);
@@ -50,8 +50,7 @@ public:
 
    static ItemTypeEnum TypeFromToolID(int toolID)
    {
-      std::map<ItemTypeEnum, EditableInfo>::iterator it;
-      for (it = m_map.begin(); it != m_map.end(); ++it)
+      for (robin_hood::unordered_map<ItemTypeEnum, EditableInfo>::const_iterator it = m_map.begin(); it != m_map.end(); ++it)
       {
          if (it->second.toolID == toolID)
             return it->second.type;
@@ -70,11 +69,11 @@ public:
    }
 
 private:
-   static std::map<ItemTypeEnum, EditableInfo> m_map;
+   static robin_hood::unordered_map<ItemTypeEnum, EditableInfo> m_map;
 
    static EditableInfo* FindOrFail(ItemTypeEnum type)
    {
-      const std::map<ItemTypeEnum, EditableInfo>::iterator it = m_map.find(type);
+      const robin_hood::unordered_map<ItemTypeEnum, EditableInfo>::iterator it = m_map.find(type);
       if (it == m_map.end())
       {
          ShowError("Editable type not found.");

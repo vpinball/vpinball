@@ -18,6 +18,7 @@ FEATURES:
 
 
 FIXES:
+- fix an issue when hiding all layers
 - assigning an element to a hidden layer, the element will also be set to hidden.
 
 - update line number for script subs/functions when updating the function list
