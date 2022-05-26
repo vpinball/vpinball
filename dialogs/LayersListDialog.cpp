@@ -511,7 +511,7 @@ HTREEITEM LayerTreeView::GetLayerByItem(HTREEITEM hChildItem)
 {
    for (const HTREEITEM child : GetAllLayerItems())
    {
-      if (hChildItem = child)
+      if (hChildItem == child)
          return child;
 
       HTREEITEM subItem = GetChild(child);
@@ -824,6 +824,8 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
          HTREEITEM hSelectedDrop = GetDropHiLightItem();
          SelectItem(hSelectedDrop);
          SelectDropTarget(nullptr);
+
+         std::vector<HTREEITEM> layers = GetAllLayerItems();
 
          for (auto dragItem : m_DragItems)
          {
