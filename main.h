@@ -39,7 +39,7 @@
 
 //#include <commctrl.h>
 
-//#include "stdio.h"
+//#include <cstdio>
 //#include "wchar.h"
 
 #include <OLEAUTO.h>

@@ -62,3 +62,18 @@ struct Vertex3D_NoTex2IdxComparator
       return memcmp(a.first, b.first, sizeof(Vertex3D_NoTex2)) == 0;
    }
 };
+
+namespace robin_hood {
+template<>
+struct hash<robin_hood::pair<unsigned, unsigned>> {
+   size_t operator()(robin_hood::pair<unsigned, unsigned> const& p) const noexcept {
+      return hash<unsigned long long>{}((unsigned long long)p.first | (((unsigned long long)p.second) << 32));
+   }
+};
+template<>
+struct hash<robin_hood::pair<int, int>> {
+   size_t operator()(robin_hood::pair<int, int> const& p) const noexcept {
+      return hash<unsigned long long>{}((unsigned long long)(unsigned int)p.first | (((unsigned long long)(unsigned int)p.second) << 32));
+   }
+};
+}

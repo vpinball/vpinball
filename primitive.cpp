@@ -505,7 +505,7 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
 
       //
 
-      std::set< std::pair<unsigned, unsigned> > addedEdges;
+      robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> addedEdges;
 
       // add collision triangles and edges
       for (size_t i = 0; i < prog_new_indices.size(); ++i)
@@ -539,7 +539,7 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
 
    else
    {
-      std::set< std::pair<unsigned, unsigned> > addedEdges;
+      robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> addedEdges;
 
       // add collision triangles and edges
       for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
@@ -575,12 +575,12 @@ void Primitive::GetHitShapesDebug(vector<HitObject*> &pvho)
 // Ported at: VisualPinball.Engine/Math/EdgeSet.cs
 //
 
-void Primitive::AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj)
+void Primitive::AddHitEdge(vector<HitObject*> &pvho, robin_hood::unordered_set< robin_hood::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj)
 {
    // create pair uniquely identifying the edge (i,j)
-   const std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
+   const robin_hood::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
 
-   if (addedEdges.count(p) == 0)   // edge not yet added?
+   if (addedEdges.count(p) == 0)   // edge not yet added? //!! !contains
    {
       addedEdges.insert(p);
       SetupHitObject(pvho, new HitLine3D(vi, vj));
