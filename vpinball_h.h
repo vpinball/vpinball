@@ -237,6 +237,8 @@ public:
    bool m_primaryDisplay; // force use of pixel(0,0) monitor
    bool m_table_played_via_command_line;
    volatile bool m_table_played_via_SelectTableOnStart;
+   bool bgles; // override global emission scale by fgles below?
+   float fgles;
    int m_logicalNumberOfProcessors;
    WCHAR *m_customParameters[MAX_CUSTOM_PARAM_INDEX];
 

@@ -196,6 +196,8 @@ private:
    bool file;
    bool loadFileResult;
    bool extractScript;
+   bool bgles;
+   float fgles;
    string szTableFileName;
    VPinball m_vpinball;
 
@@ -272,13 +274,16 @@ public:
       int nArgs;
       LPSTR *szArglist = CommandLineToArgvA(GetCommandLine(), &nArgs);
 
+      fgles = 0.f;
+      bgles = false;
+
       for (int i = 0; i < nArgs; ++i)
       {
          if (lstrcmpi(szArglist[i], _T("-h")) == 0 || lstrcmpi(szArglist[i], _T("/h")) == 0
             || lstrcmpi(szArglist[i], _T("-Help")) == 0 || lstrcmpi(szArglist[i], _T("/Help")) == 0
             || lstrcmpi(szArglist[i], _T("-?")) == 0 || lstrcmpi(szArglist[i], _T("/?")) == 0)
          {
-            m_vpinball.MessageBox("-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n-Minimized  Start VP in the 'invisible' minimized window mode\n-ExtMinimized  Start VP in the 'invisible' minimized window mode, but with enabled Pause Menu\n-Primary  Force VP to render on the Primary/Pixel(0,0) Monitor\n\n-LessCPUthreads  Limit the amount of parallel execution\n\n-Edit [filename]  Load file into VP\n-Play [filename]  Load and play file\n-PovEdit [filename]  Load and run file in camera mode, then export new pov on exit\n-Pov [filename]  Load, export pov and close\n-ExtractVBS [filename]  Load, export table script and close\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)",
+            m_vpinball.MessageBox("-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n-Minimized  Start VP in the 'invisible' minimized window mode\n-ExtMinimized  Start VP in the 'invisible' minimized window mode, but with enabled Pause Menu\n-Primary  Force VP to render on the Primary/Pixel(0,0) Monitor\n\n-GLES [value]  Override global emission scale setting by value\n\n-LessCPUthreads  Limit the amount of parallel execution\n\n-Edit [filename]  Load file into VP\n-Play [filename]  Load and play file\n-PovEdit [filename]  Load and run file in camera mode, then export new pov on exit\n-Pov [filename]  Load, export pov and close\n-ExtractVBS [filename]  Load, export table script and close\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)",
                  "Visual Pinball Usage", MB_OK);
             //run = false;
             exit(0);
@@ -367,6 +372,8 @@ public:
          const bool editfile = (lstrcmpi(szArglist[i], _T("-Edit")) == 0 || lstrcmpi(szArglist[i], _T("/Edit")) == 0);
          const bool playfile = (lstrcmpi(szArglist[i], _T("-Play")) == 0 || lstrcmpi(szArglist[i], _T("/Play")) == 0);
 
+         const bool gles = (lstrcmpi(szArglist[i], _T("-GLES")) == 0 || lstrcmpi(szArglist[i], _T("/GLES")) == 0);
+
          const bool primaryDisplay = (lstrcmpi(szArglist[i], _T("-Primary")) == 0 || lstrcmpi(szArglist[i], _T("/Primary")) == 0);
          if (primaryDisplay)
              m_vpinball.m_primaryDisplay = true;
@@ -377,6 +384,21 @@ public:
 
          const bool extractpov = (lstrcmpi(szArglist[i], _T("-Pov")) == 0 || lstrcmpi(szArglist[i], _T("/Pov")) == 0);
          const bool extractscript = (lstrcmpi(szArglist[i], _T("-ExtractVBS")) == 0 || lstrcmpi(szArglist[i], _T("/ExtractVBS")) == 0);
+
+         if (gles && (i + 1 < nArgs))
+         {
+             char *lpszStr;
+             if ((szArglist[i + 1][0] == '-') || (szArglist[i + 1][0] == '/'))
+                 lpszStr = szArglist[i + 1] + 1;
+             else
+                 lpszStr = szArglist[i + 1];
+
+            fgles = atof(lpszStr);
+            if ((fgles >= 0.115f) & (fgles <= 0.925f))
+                bgles = true;
+            else
+                fgles = 0.0f;
+         }
 
          if ((editfile || playfile || povEdit || extractpov || extractscript) && (i + 1 < nArgs))
          {
@@ -491,6 +513,9 @@ public:
        m_vpinball.AddRef();
        g_pvp = &m_vpinball;
        m_vpinball.Create(nullptr);
+       m_vpinball.bgles = bgles;
+       m_vpinball.fgles = fgles;
+
        g_haccel = LoadAccelerators(m_vpinball.theInstance, MAKEINTRESOURCE(IDR_VPACCEL));
 
        if (file)
