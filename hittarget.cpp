@@ -382,11 +382,8 @@ void HitTarget::AddHitEdge(vector<HitObject*> &pvho, robin_hood::unordered_set< 
    // create pair uniquely identifying the edge (i,j)
    const robin_hood::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
 
-   if (addedEdges.count(p) == 0)   // edge not yet added? //!! !contains
-   {
-      addedEdges.insert(p);
+   if (addedEdges.insert(p).second) // edge not yet added?
       SetupHitObject(pvho, new HitLine3D(vi, vj), setHitObject);
-   }
 }
 
 // Ported at: VisualPinball.Engine/Physics/HitObject.cs

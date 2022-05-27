@@ -576,9 +576,8 @@ void Rubber::AddHitEdge(vector<HitObject*> &pvho, robin_hood::unordered_set< rob
    // create pair uniquely identifying the edge (i,j)
    const robin_hood::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
 
-   if (addedEdges.count(p) == 0)   // edge not yet added? //!! !contains
+   if (addedEdges.insert(p).second) // edge not yet added?
    {
-      addedEdges.insert(p);
       const Vertex3Ds v1(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
       const Vertex3Ds v2(m_vertices[j].x, m_vertices[j].y, m_vertices[j].z);
       SetupHitObject(pvho, new HitLine3D(v1, v2));
