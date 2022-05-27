@@ -16,6 +16,8 @@ FEATURES:
 - support HDR textures on primitives (same as flashers), full high dynamic range is only available if lighting disabled though (otherwise clamped to 0..1)
 - allow playfield mesh to optionally be not collidable (or a toy). In that case another collidable object must be added as the playfield. This allows to use different meshes for the physics and the visuals.
 
+- add new command line parameter "-GLES [value]" which overrides the global emission scale (day/night setting)
+
 
 FIXES:
 - fix an issue when hiding all layers

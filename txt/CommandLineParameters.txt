@@ -9,6 +9,8 @@
 -ExtMinimized           Start VP in the 'invisible' minimized window mode, but with enabled Pause Menu
 -Primary                Force VP to render on the Primary/Pixel(0,0) Monitor
 
+-GLES [value]           Overrides the global emission scale (day/night setting)
+
 -LessCPUthreads         Limit the amount of parallel execution
 
 -Edit [filename]        Load file into VP
