@@ -811,11 +811,11 @@ long __stdcall FastIStream::Read(void *pv, const unsigned long count, unsigned l
 
 long __stdcall FastIStream::Write(const void *pv, const unsigned long count, unsigned long *foo)
 {
-   if ((m_cSeek + count) > m_cMax)
-      SetSize(max(m_cSeek * 2, m_cSeek + count));
+   if ((m_cSeek + (unsigned int)count) > m_cMax)
+      SetSize(max(m_cSeek * 2, m_cSeek + (unsigned int)count));
 
    memcpy(m_rg + m_cSeek, pv, count);
-   m_cSeek += count;
+   m_cSeek += (unsigned int)count;
 
    m_cSize = max(m_cSize, m_cSeek);
 
