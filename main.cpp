@@ -260,6 +260,8 @@ public:
       run = true;
       loadFileResult = true;
       extractScript = false;
+      fgles = 0.f;
+      bgles = false;
 
       szTableFileName.clear();
 
@@ -273,9 +275,6 @@ public:
 
       int nArgs;
       LPSTR *szArglist = CommandLineToArgvA(GetCommandLine(), &nArgs);
-
-      fgles = 0.f;
-      bgles = false;
 
       for (int i = 0; i < nArgs; ++i)
       {
@@ -385,6 +384,7 @@ public:
          const bool extractpov = (lstrcmpi(szArglist[i], _T("-Pov")) == 0 || lstrcmpi(szArglist[i], _T("/Pov")) == 0);
          const bool extractscript = (lstrcmpi(szArglist[i], _T("-ExtractVBS")) == 0 || lstrcmpi(szArglist[i], _T("/ExtractVBS")) == 0);
 
+         // global emission scale parameter handling
          if (gles && (i + 1 < nArgs))
          {
              char *lpszStr;
@@ -393,13 +393,11 @@ public:
              else
                  lpszStr = szArglist[i + 1];
 
-            fgles = (float)atof(lpszStr);
-            if ((fgles >= 0.115f) & (fgles <= 0.925f))
-                bgles = true;
-            else
-                fgles = 0.0f; //!! ??
+            fgles = clamp((float)atof(lpszStr), 0.115f, 0.925f);
+            bgles = true;
          }
 
+         // table name handling
          if ((editfile || playfile || povEdit || extractpov || extractscript) && (i + 1 < nArgs))
          {
             file = true;
