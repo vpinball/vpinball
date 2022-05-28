@@ -7,54 +7,38 @@
 #undef max
 #endif
 
-__forceinline float min(const float x, const float y)
+template <typename T>
+__forceinline T min(const T x, const T y)
 {
    return x < y ? x : y;
 }
-__forceinline float max(const float x, const float y)
+template <typename T>
+__forceinline T max(const T x, const T y)
 {
    return x < y ? y : x;
 }
-__forceinline double min(const double x, const double y)
+#if 0 // a bit slower nowadays
+template <>
+__forceinline float min<float>(const float x, const float y)
 {
-   return x < y ? x : y;
+   return _mm_cvtss_f32(_mm_min_ss(_mm_set_ss(x),_mm_set_ss(y)));
 }
-__forceinline double max(const double x, const double y)
+template <>
+__forceinline float max<float>(const float x, const float y)
 {
-   return x < y ? y : x;
+   return _mm_cvtss_f32(_mm_max_ss(_mm_set_ss(x),_mm_set_ss(y)));
 }
-__forceinline int min(const int x, const int y)
+template <>
+__forceinline double min<double>(const double x, const double y)
 {
-   return x < y ? x : y;
+   return _mm_cvtsd_f64(_mm_min_sd(_mm_set_sd(x),_mm_set_sd(y)));
 }
-__forceinline int max(const int x, const int y)
+template <>
+__forceinline double max<double>(const double x, const double y)
 {
-   return x < y ? y : x;
+   return _mm_cvtsd_f64(_mm_max_sd(_mm_set_sd(x),_mm_set_sd(y)));
 }
-__forceinline long max(const long x, const long y)
-{
-   return x < y ? y : x;
-}
-__forceinline unsigned int min(const unsigned int x, const unsigned int y)
-{
-   return x < y ? x : y;
-}
-__forceinline unsigned int min(const DWORD x, const DWORD y)
-{
-   return x < y ? x : y;
-}
-__forceinline unsigned int max(const unsigned int x, const unsigned int y)
-{
-   return x < y ? y : x;
-}
-__forceinline unsigned long long min(const unsigned long long x, const unsigned long long y)
-{
-   return x < y ? x : y;
-}
-__forceinline unsigned long long max(const unsigned long long x, const unsigned long long y)
-{
-   return x < y ? y : x;
-}
+#endif
 
 template <typename T>
 __forceinline T clamp(const T x, const T min, const T max)
