@@ -16,8 +16,9 @@
 
 #ifdef ENABLE_SDL
 #include <map>
-#include <string>
 #endif
+
+#include <string>
 
 #if defined(ENABLE_SDL) && defined(TWEAK_GL_SHADER)
 //!! Todo tweak Enums for uniforms and techniques to reuse same numbers in different shaders/techniques. Reduces the array sizes, but might be hard to debug.

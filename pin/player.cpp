@@ -1197,7 +1197,7 @@ HRESULT Player::Init()
    //
    const bool dynamicDayNight = LoadValueBoolWithDefault("Player", "DynamicDayNight", false);
 
-   if(dynamicDayNight && !m_ptable->m_overwriteGlobalDayNight)
+   if(dynamicDayNight && !m_ptable->m_overwriteGlobalDayNight && !g_pvp->m_bgles)
    {
        time_t hour_machine;
        time(&hour_machine);
@@ -1223,7 +1223,7 @@ HRESULT Player::Init()
        m_globalEmissionScale = clamp(factor, 0.15f, 1.f); //!! configurable clamp?
    }
    else
-       m_globalEmissionScale = m_ptable->m_globalEmissionScale;
+       m_globalEmissionScale = g_pvp->m_bgles ? g_pvp->m_fgles : m_ptable->m_globalEmissionScale;
 
    //
 

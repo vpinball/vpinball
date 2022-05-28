@@ -3881,7 +3881,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(LZRA): pbr->GetFloat(m_lightRange); break;
    case FID(LIES): pbr->GetFloat(m_lightEmissionScale); break;
    case FID(ENES): pbr->GetFloat(m_envEmissionScale); break;
-   case FID(GLES): pbr->GetFloat(m_globalEmissionScale); if (g_pvp->bgles) m_globalEmissionScale = g_pvp->fgles; break;
+   case FID(GLES): pbr->GetFloat(m_globalEmissionScale); break;
    case FID(AOSC): pbr->GetFloat(m_AOScale); break;
    case FID(SSSC): pbr->GetFloat(m_SSRScale); break;
    case FID(BREF): pbr->GetInt(m_useReflectionForBalls); break;
