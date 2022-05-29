@@ -1334,7 +1334,7 @@ void RenderDevice::CopyDepth(RenderTarget* dest, RenderTarget* src) {
 
 D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf, int *pTexWidth, int *pTexHeight, const bool linearRGB, const bool clamptoedge)
 {
-   D3DTexture *tex = CreateTexture(surf->width(), surf->height(), 0, STATIC, surf->m_format == BaseTexture::RGB_FP ? RGB32F : RGBA, surf->m_data.data(), 0, clamptoedge);
+   D3DTexture *tex = CreateTexture(surf->width(), surf->height(), 0, STATIC, surf->m_format == BaseTexture::RGB_FP ? RGB16F : RGBA, surf->m_data.data(), 0, clamptoedge);
 
    if (pTexWidth) *pTexWidth = surf->width();
    if (pTexHeight) *pTexHeight = surf->height();
@@ -1526,13 +1526,35 @@ void RenderDevice::CopyDepth(D3DTexture* dest, void* src)
       CopyDepth(dest, (RenderTarget*)src);
 }
 
+typedef unsigned short ushort;
+typedef unsigned int uint;
+
+uint as_uint(const float x) { return *(uint*)&x; }
+float as_float(const uint x) { return *(float*)&x; }
+
+float half_to_float(const ushort x)
+{ // IEEE-754 16-bit floating-point format (without infinity): 1-5-10, exp-15, +-131008.0, +-6.1035156E-5, +-5.9604645E-8, 3.311 digits
+   const uint e = (x & 0x7C00) >> 10; // exponent
+   const uint m = (x & 0x03FF) << 13; // mantissa
+   const uint v = as_uint((float)m) >> 23; // evil log2 bit hack to count leading zeros in denormalized format
+   return as_float((x & 0x8000) << 16 | (e != 0) * ((e + 112) << 23 | m) | ((e == 0) & (m != 0)) * ((v - 37) << 23 | ((m << (150 - v)) & 0x007FE000))); // sign : normalized : denormalized
+}
+ushort float_to_half(const float x)
+{ // IEEE-754 16-bit floating-point format (without infinity): 1-5-10, exp-15, +-131008.0, +-6.1035156E-5, +-5.9604645E-8, 3.311 digits
+   const uint b = as_uint(x) + 0x00001000; // round-to-nearest-even: add last bit after truncated mantissa
+   const uint e = (b & 0x7F800000) >> 23; // exponent
+   const uint m = b & 0x007FFFFF; // mantissa; in line below: 0x007FF000 = 0x00800000-0x00001000 = decimal indicator flag - initial rounding
+   return (b & 0x80000000) >> 16 | (e > 112) * ((((e - 112) << 10) & 0x7C00) | m >> 13) | ((e < 113) & (e > 101)) * ((((0x007FF000 + m) >> (125 - e)) + 1) >> 1)
+      | (e > 143) * 0x7FFF; // sign : normalized : denormalized : saturate
+}
+
 D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const bool linearRGB)
 {
    const int texwidth = surf->width();
    const int texheight = surf->height();
    const BaseTexture::Format basetexformat = surf->m_format;
 
-   const colorFormat texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (texwidth > 256) && (texheight > 256) && (basetexformat != BaseTexture::RGB_FP)) ? colorFormat::DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? colorFormat::RGBA32F : colorFormat::RGBA8);
+   const colorFormat texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (texwidth > 256) && (texheight > 256) && (basetexformat != BaseTexture::RGB_FP)) ? colorFormat::DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? colorFormat::RGBA16F : colorFormat::RGBA8);
 
    IDirect3DTexture9 *sysTex;
    HRESULT hr;
@@ -1543,7 +1565,7 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const boo
    }
 
    // copy data into system memory texture
-   if (texformat == colorFormat::RGBA32F)
+   if (texformat == colorFormat::RGBA16F)
    {
       D3DLOCKED_RECT locked;
       CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
@@ -1553,14 +1575,14 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const boo
       //for (int y = 0; y < texheight; ++y)
       //   memcpy(pdest + y*locked.Pitch, surf->data() + y*surf->pitch(), 4 * texwidth);
 
-      float * const __restrict pdest = (float*)locked.pBits;
+      ushort* const __restrict pdest = (ushort*)locked.pBits;
       const float * const __restrict psrc = (float*)(surf->data());
       for (int i = 0; i < texwidth*texheight; ++i)
       {
-         pdest[i * 4    ] = psrc[i * 3    ];
-         pdest[i * 4 + 1] = psrc[i * 3 + 1];
-         pdest[i * 4 + 2] = psrc[i * 3 + 2];
-         pdest[i * 4 + 3] = 1.f;
+         pdest[i * 4] = float_to_half(psrc[i * 3]);
+         pdest[i * 4 + 1] = float_to_half(psrc[i * 3 + 1]);
+         pdest[i * 4 + 2] = float_to_half(psrc[i * 3 + 2]);
+         pdest[i * 4 + 3] = float_to_half(1.f);
       }
 
       CHECKD3D(sysTex->UnlockRect(0));
@@ -1580,7 +1602,7 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const boo
 
    if (!(texformat != colorFormat::DXT5 && m_autogen_mipmap))
       // normal maps or float textures are already in linear space!
-      CHECKD3D(D3DXFilterTexture(sysTex, nullptr, D3DX_DEFAULT, (texformat == colorFormat::RGBA32F || linearRGB) ? D3DX_FILTER_TRIANGLE : (D3DX_FILTER_TRIANGLE | D3DX_FILTER_SRGB)));
+      CHECKD3D(D3DXFilterTexture(sysTex, nullptr, D3DX_DEFAULT, (texformat == colorFormat::RGBA16F || linearRGB) ? D3DX_FILTER_TRIANGLE : (D3DX_FILTER_TRIANGLE | D3DX_FILTER_SRGB)));
 
    return sysTex;
 }
@@ -1597,7 +1619,7 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* const surf, int* const pTex
 
    D3DTexture *sysTex = CreateSystemTexture(surf, linearRGB);
 
-   const colorFormat texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (texwidth > 256) && (texheight > 256) && (basetexformat != BaseTexture::RGB_FP)) ? colorFormat::DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? colorFormat::RGBA32F : colorFormat::RGBA8);
+   const colorFormat texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (texwidth > 256) && (texheight > 256) && (basetexformat != BaseTexture::RGB_FP)) ? colorFormat::DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? colorFormat::RGBA16F : colorFormat::RGBA8);
 
    D3DTexture *tex;
    HRESULT hr = m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? 0 : sysTex->GetLevelCount(), (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? textureUsage::AUTOMIPMAP : 0, (D3DFORMAT)texformat, (D3DPOOL)memoryPool::DEFAULT, &tex, nullptr);
@@ -1666,7 +1688,7 @@ void RenderDevice::UploadAndSetSMAATextures()
 void RenderDevice::UpdateTexture(D3DTexture* const tex, BaseTexture* const surf, const bool linearRGB)
 {
 #ifdef ENABLE_SDL
-   tex->format = (surf->m_format == BaseTexture::RGB_FP) ? RGB32F : RGBA;
+   tex->format = (surf->m_format == BaseTexture::RGB_FP) ? RGB16F : RGBA;
    const GLuint col_type = ((tex->format == RGBA32F) || (tex->format == RGBA16F) || (tex->format == RGB32F) || (tex->format == RGB16F)) ? GL_FLOAT : GL_UNSIGNED_BYTE;
    const GLuint col_format = (tex->format == GREY) ? GL_RED : (tex->format == GREY_ALPHA) ? GL_RG : ((tex->format == RGB) || (tex->format == RGB5) || (tex->format == RGB10) || (tex->format == RGB16F) || (tex->format == RGB32F)) ? GL_BGR : GL_BGRA;
    glBindTexture(GL_TEXTURE_2D, tex->texture);
