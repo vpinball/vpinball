@@ -99,16 +99,16 @@ public:
    END_CONNECTION_POINT_MAP()
 
    void RenderOutline(Sur * const psur);
-   virtual void MoveOffset(const float dx, const float dy);
-   virtual void SetObjectPos();
+   virtual void MoveOffset(const float dx, const float dy) override;
+   virtual void SetObjectPos() override;
    // Multi-object manipulation
-   virtual Vertex2D GetCenter() const;
-   virtual void PutCenter(const Vertex2D& pv);
+   virtual Vertex2D GetCenter() const override;
+   virtual void PutCenter(const Vertex2D& pv) override;
 
-   virtual void RenderBlueprint(Sur *psur, const bool solid);
-   virtual ItemTypeEnum HitableGetItemType() const { return eItemLightSeq; }
+   virtual void RenderBlueprint(Sur *psur, const bool solid) override;
+   virtual ItemTypeEnum HitableGetItemType() const override { return eItemLightSeq; }
 
-   virtual void WriteRegDefaults();
+   virtual void WriteRegDefaults() override;
 
    STANDARD_EDITABLE_DECLARES(LightSeq, eItemLightSeq, LIGHTSEQ, 3)
 
@@ -186,7 +186,7 @@ public:
    class LightSeqAnimObject : public AnimObject
    {
    public:
-      virtual void Animate() { m_pLightSeq->Animate(); } // this function is called every frame to animate the object/light sequence
+      virtual void Animate() override { m_pLightSeq->Animate(); } // this function is called every frame to animate the object/light sequence
 
       LightSeq *m_pLightSeq;
    } m_lightseqanim;

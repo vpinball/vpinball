@@ -30,7 +30,7 @@ private:
    HRESULT CharOut(char c);
    HRESULT FlushChar();
 
-   inline int Maxcode(const int n_bits) const
+   static __forceinline int Maxcode(const int n_bits)
    {
        return (1 << n_bits) - 1;
    }
@@ -59,8 +59,6 @@ private:
    int m_a_count;
 
    unsigned char m_accum[256];
-
-   int m_colortable[256];
 
    static int m_masks[17];
 

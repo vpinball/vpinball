@@ -17,7 +17,7 @@ public:
    HRESULT LoadFromStream(IStream *pstream, int version);
 
    // ILoadable callback
-   virtual bool LoadToken(const int id, BiffReader * const pbr);
+   virtual bool LoadToken(const int id, BiffReader * const pbr) override;
 
    string m_szName;
    string m_szPath;

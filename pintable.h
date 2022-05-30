@@ -50,11 +50,11 @@ public:
    bool CanClose() const;
 
 protected:
-   virtual void PreCreate(CREATESTRUCT &cs);
-   virtual int OnCreate(CREATESTRUCT &cs);
-   virtual void OnClose();
-   virtual LRESULT OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam);
-   virtual BOOL OnEraseBkgnd(CDC &dc);
+   virtual void PreCreate(CREATESTRUCT &cs) override;
+   virtual int OnCreate(CREATESTRUCT &cs) override;
+   virtual void OnClose() override;
+   virtual LRESULT OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam) override;
+   virtual BOOL OnEraseBkgnd(CDC &dc) override;
 
 private:
    CComObject<PinTable> *m_table;
@@ -395,37 +395,37 @@ public:
    void SetCollectionName(Collection *pcol, const char *szName, HWND hwndList, int index);
 
    void DoContextMenu(int x, int y, const int menuid, ISelect *psel);
-   virtual void DoCommand(int icmd, int x, int y);
+   virtual void DoCommand(int icmd, int x, int y) override;
    bool FMutilSelLocked();
 
-   virtual void SelectItem(IScriptable *piscript);
-   virtual void DoCodeViewCommand(int command);
-   virtual void SetDirtyScript(SaveDirtyState sds);
-   virtual void ExportMesh(ObjLoader &loader);
+   virtual void SelectItem(IScriptable *piscript) override;
+   virtual void DoCodeViewCommand(int command) override;
+   virtual void SetDirtyScript(SaveDirtyState sds) override;
+   virtual void ExportMesh(ObjLoader &loader) override;
 
    // Multi-object manipulation
-   virtual Vertex2D GetCenter() const;
-   virtual void PutCenter(const Vertex2D &pv);
-   virtual void FlipY(const Vertex2D &pvCenter);
-   virtual void FlipX(const Vertex2D &pvCenter);
-   virtual void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter);
-   virtual void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter);
-   virtual void Translate(const Vertex2D &pvOffset);
+   virtual Vertex2D GetCenter() const override;
+   virtual void PutCenter(const Vertex2D &pv) override;
+   virtual void FlipY(const Vertex2D &pvCenter) override;
+   virtual void FlipX(const Vertex2D &pvCenter) override;
+   virtual void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) override;
+   virtual void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) override;
+   virtual void Translate(const Vertex2D &pvOffset) override;
 
    // IEditable (mostly bogus for now)
-   virtual void UIRenderPass1(Sur *const psur);
-   virtual ItemTypeEnum GetItemType() const { return eItemTable; }
-   virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
-   virtual HRESULT InitPostLoad();
-   virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *const wzName);
-   virtual ISelect *GetISelect() { return (ISelect *)this; }
-   virtual const ISelect *GetISelect() const { return (const ISelect *)this; }
-   virtual void SetDefaults(bool fromMouseClick);
-   virtual IScriptable *GetScriptable() { return (IScriptable *)this; }
-   virtual void SetDefaultPhysics(bool fromMouseClick);
+   virtual void UIRenderPass1(Sur *const psur) override;
+   virtual ItemTypeEnum GetItemType() const override { return eItemTable; }
+   virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) override;
+   virtual HRESULT InitPostLoad() override;
+   virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *const wzName) override;
+   virtual ISelect *GetISelect() override { return (ISelect *)this; }
+   virtual const ISelect *GetISelect() const override { return (const ISelect *)this; }
+   virtual void SetDefaults(bool fromMouseClick) override;
+   virtual IScriptable *GetScriptable() override { return (IScriptable *)this; }
+   virtual void SetDefaultPhysics(bool fromMouseClick) override;
 
-   virtual PinTable *GetPTable() { return this; }
-   virtual const PinTable *GetPTable() const { return this; }
+   virtual PinTable *GetPTable() override { return this; }
+   virtual const PinTable *GetPTable() const override { return this; }
    const char *GetElementName(IEditable *pedit) const;
 
    IEditable *GetElementByName(const char *const name);
@@ -463,23 +463,23 @@ public:
    HRESULT SaveCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash);
    HRESULT WriteInfoValue(IStorage *pstg, const WCHAR *const wzName, const string &szValue, HCRYPTHASH hcrypthash);
    HRESULT ReadInfoValue(IStorage *pstg, const WCHAR *const wzName, char **pszValue, HCRYPTHASH hcrypthash);
-   HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay);
+   HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay) override;
    HRESULT LoadGameFromFilename(const string &szFileName);
    HRESULT LoadGameFromStorage(IStorage *pstgRoot);
    HRESULT LoadInfo(IStorage *pstg, HCRYPTHASH hcrypthash, int version);
    HRESULT LoadCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version);
    HRESULT LoadData(IStream *pstm, int &csubobj, int &csounds, int &ctextures, int &cfonts, int &ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
    void ReadAccelerometerCalibration();
-   virtual IEditable *GetIEditable() { return (IEditable *)this; }
-   virtual const IEditable *GetIEditable() const { return (const IEditable *)this; }
+   virtual IEditable *GetIEditable() override { return (IEditable *)this; }
+   virtual const IEditable *GetIEditable() const override { return (const IEditable *)this; }
    virtual void Delete() { } // Can't delete table itself
    virtual void Uncreate() { }
-   virtual bool LoadToken(const int id, BiffReader *const pbr);
+   virtual bool LoadToken(const int id, BiffReader *const pbr) override;
 
    virtual IDispatch *GetPrimary() { return this->GetDispatch(); }
-   virtual IDispatch *GetDispatch() { return (IDispatch *)this; }
-   virtual const IDispatch *GetDispatch() const { return (const IDispatch *)this; }
-   virtual IFireEvents *GetIFireEvents() { return (IFireEvents *)this; }
+   virtual IDispatch *GetDispatch() override { return (IDispatch *)this; }
+   virtual const IDispatch *GetDispatch() const override { return (const IDispatch *)this; }
+   virtual IFireEvents *GetIFireEvents() override { return (IFireEvents *)this; }
    virtual IDebugCommands *GetDebugCommands() { return nullptr; }
 
    void SetZoom(float zoom);
@@ -503,9 +503,9 @@ public:
    STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut, IEditable *piedit);
    STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut, IEditable *piedit);
 
-   virtual void OnLButtonDown(int x, int y);
-   virtual void OnLButtonUp(int x, int y);
-   virtual void OnMouseMove(int x, int y);
+   virtual void OnLButtonDown(int x, int y) override;
+   virtual void OnLButtonUp(int x, int y) override;
+   virtual void OnMouseMove(int x, int y) override;
    void OnMouseMove(const short x, const short y);
 
    void SetDefaultView();
@@ -824,10 +824,10 @@ public:
    int m_tilt_trigger_time;
 #endif
 
-   virtual void OnInitialUpdate();
-   virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-   virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam);
-   virtual BOOL OnEraseBkgnd(CDC &dc);
+   virtual void OnInitialUpdate() override;
+   virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+   virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam) override;
+   virtual BOOL OnEraseBkgnd(CDC &dc) override;
 
    void SetMouseCursor();
    void OnLeftButtonDown(const short x, const short y);
@@ -984,11 +984,11 @@ public:
 
    void Init(VPinball *vpinball, PinTable *pt);
 
-   virtual IDispatch *GetDispatch() { return (IDispatch *)this; }
-   virtual const IDispatch *GetDispatch() const { return (const IDispatch *)this; }
+   virtual IDispatch *GetDispatch() override { return (IDispatch *)this; }
+   virtual const IDispatch *GetDispatch() const override { return (const IDispatch *)this; }
 
-   virtual ISelect *GetISelect() { return nullptr; }
-   virtual const ISelect *GetISelect() const { return nullptr; }
+   virtual ISelect *GetISelect() override { return nullptr; }
+   virtual const ISelect *GetISelect() const override { return nullptr; }
 
    BEGIN_COM_MAP(ScriptGlobalTable)
    COM_INTERFACE_ENTRY(ITableGlobal)

@@ -79,39 +79,39 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   virtual void RenderBlueprint(Sur *psur, const bool solid);
+   virtual void RenderBlueprint(Sur *psur, const bool solid) override;
 
-   virtual void ClearForOverwrite();
+   virtual void ClearForOverwrite() override;
 
-   virtual void MoveOffset(const float dx, const float dy);
-   virtual void SetObjectPos();
+   virtual void MoveOffset(const float dx, const float dy) override;
+   virtual void SetObjectPos() override;
 
-   virtual void DoCommand(int icmd, int x, int y);
+   virtual void DoCommand(int icmd, int x, int y) override;
 
-   virtual int GetMinimumPoints() const { return 2; }
+   virtual int GetMinimumPoints() const override { return 2; }
 
-   virtual void FlipY(const Vertex2D& pvCenter);
-   virtual void FlipX(const Vertex2D& pvCenter);
-   virtual void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
-   virtual void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter);
-   virtual void Translate(const Vertex2D &pvOffset);
+   virtual void FlipY(const Vertex2D& pvCenter) override;
+   virtual void FlipX(const Vertex2D& pvCenter) override;
+   virtual void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) override;
+   virtual void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) override;
+   virtual void Translate(const Vertex2D &pvOffset) override;
 
-   virtual Vertex2D GetCenter() const { return GetPointCenter(); }
-   virtual void PutCenter(const Vertex2D& pv) { PutPointCenter(pv); }
+   virtual Vertex2D GetCenter() const override { return GetPointCenter(); }
+   virtual void PutCenter(const Vertex2D &pv) override { PutPointCenter(pv); }
 
-   virtual void GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D);
+   virtual void GetBoundingVertices(std::vector<Vertex3Ds> &pvvertex3D) override;
 
-   virtual bool IsTransparent() const;
-   virtual float GetDepth(const Vertex3Ds& viewDir) const;
-   virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-   virtual unsigned long long GetImageID() const { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
-   virtual ItemTypeEnum HitableGetItemType() const { return eItemRamp; }
-   virtual void SetDefaultPhysics(bool fromMouseClick);
-   virtual void ExportMesh(ObjLoader& loader);
-   virtual void AddPoint(int x, int y, const bool smooth);
-   virtual void UpdateStatusBarInfo();
+   virtual bool IsTransparent() const override;
+   virtual float GetDepth(const Vertex3Ds &viewDir) const override;
+   virtual unsigned long long GetMaterialID() const override { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+   virtual unsigned long long GetImageID() const override { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
+   virtual ItemTypeEnum HitableGetItemType() const override { return eItemRamp; }
+   virtual void SetDefaultPhysics(bool fromMouseClick) override;
+   virtual void ExportMesh(ObjLoader &loader) override;
+   virtual void AddPoint(int x, int y, const bool smooth) override;
+   virtual void UpdateStatusBarInfo() override;
 
-   virtual void WriteRegDefaults();
+   virtual void WriteRegDefaults() override;
 
    float GetSurfaceHeight(float x, float y) const;
    bool isHabitrail() const;

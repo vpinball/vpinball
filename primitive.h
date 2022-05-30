@@ -258,33 +258,33 @@ public:
 
    DECLARE_REGISTRY_RESOURCEID(IDR_PRIMITIVE)
 
-   virtual void MoveOffset(const float dx, const float dy);
-   virtual void SetObjectPos();
+   virtual void MoveOffset(const float dx, const float dy) override;
+   virtual void SetObjectPos() override;
    // Multi-object manipulation
-   virtual Vertex2D GetCenter() const;
-   virtual void PutCenter(const Vertex2D& pv);
+   virtual Vertex2D GetCenter() const override;
+   virtual void PutCenter(const Vertex2D &pv) override;
 
    //STDMETHOD(get_Name)(BSTR *pVal) {return E_FAIL;}
 
    //virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName);
    virtual void WriteRegDefaults();
 
-   virtual bool LoadMeshDialog();
-   virtual void ExportMeshDialog();
+   virtual bool LoadMeshDialog() override;
+   virtual void ExportMeshDialog() override;
 
    float GetAlpha() const { return m_d.m_alpha; }
    void SetAlpha(const float value) { m_d.m_alpha = max(value, 0.f); }
 
-   virtual bool IsTransparent() const;
-   virtual float GetDepth(const Vertex3Ds& viewDir) const;
-   virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-   virtual unsigned long long GetImageID() const { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
-   virtual ItemTypeEnum HitableGetItemType() const { return eItemPrimitive; }
+   virtual bool IsTransparent() const override;
+   virtual float GetDepth(const Vertex3Ds &viewDir) const override;
+   virtual unsigned long long GetMaterialID() const override { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+   virtual unsigned long long GetImageID() const override { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
+   virtual ItemTypeEnum HitableGetItemType() const override { return eItemPrimitive; }
 
-   virtual void SetDefaultPhysics(bool fromMouseClick);
-   virtual void ExportMesh(ObjLoader& loader);
-   virtual void RenderBlueprint(Sur *psur, const bool solid);
-   virtual void UpdateStatusBarInfo();
+   virtual void SetDefaultPhysics(bool fromMouseClick) override;
+   virtual void ExportMesh(ObjLoader &loader) override;
+   virtual void RenderBlueprint(Sur *psur, const bool solid) override;
+   virtual void UpdateStatusBarInfo() override;
 
    void CreateRenderGroup(const Collection * const collection);
    void RecalculateMatrices();

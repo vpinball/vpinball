@@ -7,7 +7,7 @@ F32 nudge_get_sensitivity();
 
 void plumb_update(const U32 curr_time_msec, const float getx, const float gety);
 
-// This function is detructive .. it will return 1 once per tilt event
+// This function is destructive .. it will return 1 once per tilt event
 int  plumb_tilted();
 
 void plumb_draw();

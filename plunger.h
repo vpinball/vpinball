@@ -138,15 +138,15 @@ public:
 
    STANDARD_EDITABLE_DECLARES(Plunger, eItemPlunger, PLUNGER, 1)
 
-   virtual void MoveOffset(const float dx, const float dy);
-   virtual void SetObjectPos();
+   virtual void MoveOffset(const float dx, const float dy) override;
+   virtual void SetObjectPos() override;
    // Multi-object manipulation
-   virtual Vertex2D GetCenter() const;
-   virtual void PutCenter(const Vertex2D& pv);
-   virtual void SetDefaultPhysics(bool fromMouseClick);
-   virtual ItemTypeEnum HitableGetItemType() const { return eItemPlunger; }
+   virtual Vertex2D GetCenter() const override;
+   virtual void PutCenter(const Vertex2D &pv) override;
+   virtual void SetDefaultPhysics(bool fromMouseClick) override;
+   virtual ItemTypeEnum HitableGetItemType() const override { return eItemPlunger; }
 
-   virtual void WriteRegDefaults();
+   virtual void WriteRegDefaults() override;
 
    DECLARE_REGISTRY_RESOURCEID(IDR_PLUNGER)
    // ISupportsErrorInfo
