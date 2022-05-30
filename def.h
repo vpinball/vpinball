@@ -41,25 +41,15 @@ __forceinline double max<double>(const double x, const double y)
 #endif
 
 template <typename T>
-__forceinline T clamp(const T x, const T min, const T max)
+__forceinline T clamp(const T x, const T mn, const T mx)
 {
-   if (x < min)
-      return min;
-   else if (x > max)
-      return max;
-   else
-      return x;
+   return max(min(x,mx),mn);
 }
 
 template <typename T>
 __forceinline T saturate(const T x)
 {
-   if (x < T(0))
-      return T(0);
-   else if (x > T(1))
-      return T(1);
-   else
-      return x;
+   return max(min(x,T(1)),T(0));
 }
 
 template <typename T>
