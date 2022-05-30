@@ -42,6 +42,8 @@ FIXES:
 
 - do not poll XInput gamedevice/joypad/stick if its disconnected, otherwise there was a noticable overhead/slowdown
 
+- optimize floating point texture video memory usage/bandwidth (e.g. flasher/primitive and environment textures)
+
 - update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
 - DirectX 8 port for input handling (currently disabled)
 
