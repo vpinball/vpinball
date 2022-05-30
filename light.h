@@ -85,7 +85,7 @@ public:
 
    STANDARD_EDITABLE_DECLARES(Light, eItemLight, LIGHT, 3)
 
-      DECLARE_REGISTRY_RESOURCEID(IDR_LIGHT)
+   DECLARE_REGISTRY_RESOURCEID(IDR_LIGHT)
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 

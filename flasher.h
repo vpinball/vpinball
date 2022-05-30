@@ -87,19 +87,19 @@ public:
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
 
-   virtual int GetMinimumPoints() const { return 2; }
+   virtual int GetMinimumPoints() const override { return 2; }
 
-   virtual Vertex2D GetCenter() const { return m_d.m_vCenter; }
-   virtual void PutCenter(const Vertex2D& pv) { m_d.m_vCenter = pv; }
+   virtual Vertex2D GetCenter() const override { return m_d.m_vCenter; }
+   virtual void PutCenter(const Vertex2D& pv) override { m_d.m_vCenter = pv; }
    virtual void DoCommand(int icmd, int x, int y);
 
-   virtual bool IsTransparent() const { return !m_d.m_isDMD; }
-   virtual float GetDepth(const Vertex3Ds& viewDir) const
+   virtual bool IsTransparent() const override { return !m_d.m_isDMD; }
+   virtual float GetDepth(const Vertex3Ds& viewDir) const override
    {
       return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_d.m_height;
    }
-   virtual unsigned long long GetMaterialID() const { return 64-1; } //!! some constant number
-   virtual unsigned long long GetImageID() const
+   virtual unsigned long long GetMaterialID() const override { return 64-1; } //!! some constant number
+   virtual unsigned long long GetImageID() const override
    {
       Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
       Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
@@ -110,8 +110,8 @@ public:
          tex = pinB;
       return (unsigned long long)tex;
    }
-   virtual bool IsDMD() const { return m_d.m_isDMD; }
-   virtual ItemTypeEnum HitableGetItemType() const { return eItemFlasher; }
+   virtual bool IsDMD() const override { return m_d.m_isDMD; }
+   virtual ItemTypeEnum HitableGetItemType() const override { return eItemFlasher; }
 
    virtual void WriteRegDefaults();
 

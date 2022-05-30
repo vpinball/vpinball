@@ -75,7 +75,7 @@ public:
          FireVoidEvent(dispid);
    }
 
-   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
+   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override
    {
       T* const pT = (T*)this;
       pT->Lock();

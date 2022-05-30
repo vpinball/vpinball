@@ -68,7 +68,7 @@ public:
    virtual ~Hit3DPoly();
 
    virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
-   virtual int GetType() const { return e3DPoly; }
+   virtual int GetType() const override { return e3DPoly; }
    virtual void Collide(const CollisionEvent& coll);
    virtual void CalcHitBBox();
 
@@ -89,7 +89,7 @@ public:
    virtual ~HitTriangle() {}
 
    virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
-   virtual int GetType() const { return eTriangle; }
+   virtual int GetType() const override { return eTriangle; }
    virtual void Collide(const CollisionEvent& coll);
    virtual void CalcHitBBox();
 
@@ -110,9 +110,9 @@ public:
    }
 
    virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
-   virtual int GetType() const { return ePlane; }
+   virtual int GetType() const override { return ePlane; }
    virtual void Collide(const CollisionEvent& coll);
-   virtual void CalcHitBBox() {}  //!! TODO: this is needed if we want to put it in the quadtree, but then again impossible as infinite area
+   virtual void CalcHitBBox() override {}  //!! TODO: this is needed if we want to put it in the quadtree, but then again impossible as infinite area
 
 private:
    Vertex3Ds m_normal;
@@ -145,12 +145,12 @@ public:
    HitSpinner(Spinner * const pspinner, const float height);
 
    virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
-   virtual int GetType() const { return eSpinner; }
+   virtual int GetType() const override { return eSpinner; }
    virtual void Collide(const CollisionEvent& coll);
-   virtual void Contact(CollisionEvent& coll, const float dtime) { }
+   virtual void Contact(CollisionEvent& coll, const float dtime) override { }
    virtual void CalcHitBBox();
 
-   virtual MoverObject *GetMoverObject() { return &m_spinnerMover; }
+   virtual MoverObject *GetMoverObject() override { return &m_spinnerMover; }
 
    LineSeg m_lineseg[2];
 
@@ -163,7 +163,7 @@ public:
    virtual void UpdateDisplacements(const float dtime);
    virtual void UpdateVelocities();
 
-   virtual bool AddToList() const { return true; }
+   virtual bool AddToList() const override { return true; }
 
    Gate *m_pgate;
 
@@ -174,8 +174,8 @@ public:
    float m_damping;
    float m_gravityfactor;
    bool m_visible;
-   bool m_open;       // True if the table logic is opening the gate, not just the ball passing through
-   bool m_forcedMove; // True if the table logic is opening/closing the gate
+   bool m_open;         // True if the table logic is opening the gate, not just the ball passing through
+   bool m_forcedMove;   // True if the table logic is opening/closing the gate
    bool m_hitDirection; // For the direction of the little bounce-back
 };
 
@@ -185,12 +185,12 @@ public:
    HitGate(Gate * const pgate, const float height);
 
    virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
-   virtual int GetType() const { return eGate; }
+   virtual int GetType() const override { return eGate; }
    virtual void Collide(const CollisionEvent& coll);
-   virtual void Contact(CollisionEvent& coll, const float dtime) { }
+   virtual void Contact(CollisionEvent& coll, const float dtime) override { }
    virtual void CalcHitBBox();
 
-   virtual MoverObject *GetMoverObject() { return &m_gateMover; }
+   virtual MoverObject *GetMoverObject() override { return &m_gateMover; }
 
    GateMoverObject m_gateMover;
    bool m_twoWay;
@@ -233,9 +233,9 @@ public:
    HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2);
 
    virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
-   virtual int GetType() const { return e3DLine; }
+   virtual int GetType() const override { return e3DLine; }
    virtual void Collide(const CollisionEvent& coll);
-   virtual void CalcHitBBox() { } // already done in constructor
+   virtual void CalcHitBBox() override { } // already done in constructor
 
 private:
    Matrix3 m_matrix;

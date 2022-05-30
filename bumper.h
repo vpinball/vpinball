@@ -89,14 +89,14 @@ public:
    virtual void ExportMesh(ObjLoader& loader);
    virtual void RenderBlueprint(Sur *psur, const bool solid);
 
-   virtual unsigned long long GetMaterialID() const
+   virtual unsigned long long GetMaterialID() const override
    {
       if (!m_d.m_baseVisible && m_d.m_capVisible)
          return m_ptable->GetMaterial(m_d.m_szCapMaterial)->hash();
       else
          return 64-3; //!! some constant number
    }
-   virtual unsigned long long GetImageID() const
+   virtual unsigned long long GetImageID() const override
    {
       if (!m_d.m_baseVisible && m_d.m_capVisible)
          return (unsigned long long)&m_capTexture; //!! meh
@@ -104,12 +104,12 @@ public:
          return 0;
    }
    
-   virtual ItemTypeEnum HitableGetItemType() const { return eItemBumper; }
-   
+   virtual ItemTypeEnum HitableGetItemType() const override { return eItemBumper; }
+
    virtual void WriteRegDefaults();
-   
+
    BumperData m_d;
-   
+
    BumperHitCircle *m_pbumperhitcircle;
 
 private:

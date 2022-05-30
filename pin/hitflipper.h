@@ -11,7 +11,7 @@ public:
    virtual void UpdateDisplacements(const float dtime);
    virtual void UpdateVelocities();
 
-   virtual bool AddToList() const { return true; }
+   virtual bool AddToList() const override { return true; }
 
    void SetSolenoidState(const bool s);
    float GetStrokeRatio() const;
@@ -73,15 +73,15 @@ class HitFlipper : public HitObject
 {
 public:
    HitFlipper(const Vertex2D& center, const float baser, const float endr, const float flipr, const float angleStart, const float angleEnd,
-      const float zlow, const float zhigh, Flipper* const pflipper);
+              const float zlow, const float zhigh, Flipper* const pflipper);
    ~HitFlipper() { /*m_pflipper->m_phitflipper = nullptr;*/ }
 
    virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
-   virtual int GetType() const { return eFlipper; }
+   virtual int GetType() const override { return eFlipper; }
    virtual void Collide(const CollisionEvent& coll);
    virtual void Contact(CollisionEvent& coll, const float dtime);
    virtual void CalcHitBBox();
-   virtual MoverObject *GetMoverObject() { return &m_flipperMover; }
+   virtual MoverObject *GetMoverObject() override { return &m_flipperMover; }
 
    void UpdatePhysicsFromFlipper();
 

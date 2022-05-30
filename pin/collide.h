@@ -178,7 +178,7 @@ public:
    }
 
    virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
-   virtual int GetType() const { return eCircle; }
+   virtual int GetType() const override { return eCircle; }
    virtual void Collide(const CollisionEvent& coll);
    virtual void CalcHitBBox();
 
@@ -197,7 +197,7 @@ public:
    HitLineZ(const Vertex2D& xy, const float zlow, const float zhigh) : m_xy(xy), m_zlow(zlow), m_zhigh(zhigh) {}
 
    virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
-   virtual int GetType() const { return eJoint; }
+   virtual int GetType() const override { return eJoint; }
    virtual void Collide(const CollisionEvent& coll);
    virtual void CalcHitBBox();
 
@@ -214,7 +214,7 @@ public:
    HitPoint(const float x, const float y, const float z) : m_p(Vertex3Ds(x,y,z)) {}
 
    virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
-   virtual int GetType() const { return ePoint; }
+   virtual int GetType() const override { return ePoint; }
    virtual void Collide(const CollisionEvent& coll);
    virtual void CalcHitBBox();
 

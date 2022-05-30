@@ -98,7 +98,7 @@ public:
       virtual void SetDefaultPhysics(bool fromMouseClick);
       virtual void ExportMesh(ObjLoader& loader);
 
-      virtual unsigned long long GetMaterialID() const
+      virtual unsigned long long GetMaterialID() const override
       {
 		  const unsigned long long m1 = m_ptable->GetMaterial(m_d.m_szMaterial)->hash();
 		  const unsigned long long m2 = m_ptable->GetMaterial(m_d.m_szRubberMaterial)->hash();
@@ -107,8 +107,8 @@ public:
 		  else
 			  return 0;
       }
-      virtual unsigned long long GetImageID() const { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
-      virtual ItemTypeEnum HitableGetItemType() const { return eItemFlipper; }
+      virtual unsigned long long GetImageID() const override { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
+      virtual ItemTypeEnum HitableGetItemType() const override { return eItemFlipper; }
       virtual void WriteRegDefaults();
 
       //DECLARE_NOT_AGGREGATABLE(Flipper)

@@ -122,6 +122,8 @@ enum colorFormat {
    RGB5 = D3DFMT_R5G6B5,
    RGB8 = D3DFMT_X8R8G8B8,
    //RGB10 = D3DFMT_A2R10G10B10,
+   //RGB16F = would be more appropriate for our use cases, but does not exist in DX9 :/
+   //RGB32F = would be more appropriate for our use cases, but does not exist in DX9 :/
    RGBA16F = D3DFMT_A16B16G16R16F,
    RGBA32F = D3DFMT_A32B32G32R32F,
    RGBA8 = D3DFMT_A8R8G8B8,

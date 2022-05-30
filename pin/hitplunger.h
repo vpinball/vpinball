@@ -252,10 +252,10 @@ public:
    ~HitPlunger() {}
 
    virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
-   virtual int GetType() const { return ePlunger; }
+   virtual int GetType() const override { return ePlunger; }
    virtual void Collide(const CollisionEvent& coll);
    virtual void CalcHitBBox();
-   virtual MoverObject *GetMoverObject() { return &m_plungerMover; }
+   virtual MoverObject *GetMoverObject() override { return &m_plungerMover; }
 
    PlungerMoverObject m_plungerMover;
 

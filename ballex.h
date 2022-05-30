@@ -80,10 +80,10 @@ public:
    STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
 
-   virtual void FireGroupEvent(const int dispid) {}
-   virtual IDispatch *GetDispatch() { return ((IDispatch *) this); }
-   virtual const IDispatch *GetDispatch() const { return ((const IDispatch *) this); }
-   virtual IDebugCommands *GetDebugCommands() { return (IDebugCommands *) this; }
+   virtual void FireGroupEvent(const int dispid) override {}
+   virtual IDispatch *GetDispatch() override { return ((IDispatch *) this); }
+   virtual const IDispatch *GetDispatch() const override { return ((const IDispatch *) this); }
+   virtual IDebugCommands *GetDebugCommands() override { return (IDebugCommands *) this; }
 
    // IDebugCommands
    virtual void GetDebugCommands(std::vector<int> & pvids, std::vector<int> & pvcommandid);

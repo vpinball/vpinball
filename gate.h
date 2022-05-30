@@ -85,8 +85,8 @@ public:
    virtual void RenderBlueprint(Sur *psur, const bool solid);
    virtual void ExportMesh(ObjLoader& loader);
 
-   virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-   virtual ItemTypeEnum HitableGetItemType() const { return eItemGate; }
+   virtual unsigned long long GetMaterialID() const override { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+   virtual ItemTypeEnum HitableGetItemType() const override { return eItemGate; }
    virtual void UpdateStatusBarInfo();
 
    virtual void WriteRegDefaults();

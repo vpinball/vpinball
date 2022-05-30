@@ -76,7 +76,7 @@ public:
    virtual Vertex2D GetCenter() const;
    virtual void PutCenter(const Vertex2D& pv);
 
-   virtual ItemTypeEnum HitableGetItemType() const { return eItemDispReel; }
+   virtual ItemTypeEnum HitableGetItemType() const override { return eItemDispReel; }
 
    virtual void WriteRegDefaults();
 
@@ -150,7 +150,7 @@ public:
    class DispReelAnimObject : public AnimObject
    {
    public:
-      virtual void Animate() { m_pDispReel->Animate(); } // this function is called every frame to animate the object/reels animation
+      virtual void Animate() override { m_pDispReel->Animate(); } // this function is called every frame to animate the object/reels animation
 
       DispReel *m_pDispReel;
    } m_dispreelanim;

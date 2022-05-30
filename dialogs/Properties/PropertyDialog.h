@@ -25,7 +25,7 @@ public:
     }
     virtual void UpdateProperties(const int dispid) = 0;
     virtual void UpdateVisuals(const int dispid=-1) = 0;
-    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam)
+    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam) override
     {
         UNREFERENCED_PARAMETER(lParam);
         const int dispID = LOWORD(wParam);
@@ -61,7 +61,7 @@ public:
     void UpdateBaseVisuals(ISelect *psel, BaseProperty *property, const int dispid = -1);
 
     const VectorProtected<ISelect>* m_pvsel;
-    static bool               m_disableEvents;
+    static bool m_disableEvents;
 protected:
     virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam);
 

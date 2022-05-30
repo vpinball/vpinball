@@ -140,7 +140,7 @@ public:
    virtual void OnLButtonUp(int x, int y);
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
-   virtual ItemTypeEnum GetItemType() const { return eItemDragPoint; }
+   virtual ItemTypeEnum GetItemType() const override { return eItemDragPoint; }
 
    // Multi-object manipulation
    virtual Vertex2D GetCenter() const;
@@ -150,14 +150,14 @@ public:
    virtual void DoCommand(int icmd, int x, int y);
    virtual void SetSelectFormat(Sur *psur);
    virtual void SetMultiSelectFormat(Sur *psur);
-   virtual PinTable *GetPTable() { return m_pihdp->GetIEditable()->GetPTable(); }
-   virtual const PinTable *GetPTable() const { return m_pihdp->GetIEditable()->GetPTable(); }
-   virtual IEditable *GetIEditable() { return m_pihdp->GetIEditable(); }
-   virtual const IEditable *GetIEditable() const { return m_pihdp->GetIEditable(); }
-   virtual IDispatch *GetDispatch() { return (IDispatch *)this; }
-   virtual const IDispatch *GetDispatch() const { return (const IDispatch *)this; }
+   virtual PinTable *GetPTable() override { return m_pihdp->GetIEditable()->GetPTable(); }
+   virtual const PinTable *GetPTable() const override { return m_pihdp->GetIEditable()->GetPTable(); }
+   virtual IEditable *GetIEditable() override { return m_pihdp->GetIEditable(); }
+   virtual const IEditable *GetIEditable() const override { return m_pihdp->GetIEditable(); }
+   virtual IDispatch *GetDispatch() override { return (IDispatch *)this; }
+   virtual const IDispatch *GetDispatch() const override { return (const IDispatch *)this; }
 
-   virtual int GetSelectLevel() const { return 2; } // So dragpoints won't be band-selected with the main objects
+   virtual int GetSelectLevel() const override { return 2; } // So dragpoints won't be band-selected with the main objects
 
    void Copy();
    void Paste();

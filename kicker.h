@@ -80,8 +80,8 @@ public:
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual void ExportMesh(ObjLoader& loader);
 
-   virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-   virtual ItemTypeEnum HitableGetItemType() const { return eItemKicker; }
+   virtual unsigned long long GetMaterialID() const override { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+   virtual ItemTypeEnum HitableGetItemType() const override { return eItemKicker; }
    virtual void UpdateStatusBarInfo();
 
    virtual void WriteRegDefaults();
@@ -162,8 +162,8 @@ public:
    }
 
    virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
-   virtual int GetType() const { return eTrigger; }
-   virtual void Collide(const CollisionEvent& coll)  { DoCollide(coll.m_ball, coll.m_hitnormal, coll.m_hitflag, false); }
+   virtual int GetType() const override { return eTrigger; }
+   virtual void Collide(const CollisionEvent& coll) override { DoCollide(coll.m_ball, coll.m_hitnormal, coll.m_hitflag, false); }
 
    void DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& hitnormal) const;
    void DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, const bool hitflag, const bool newBall);
