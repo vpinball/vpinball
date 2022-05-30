@@ -1625,7 +1625,7 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* const surf, int* const pTex
    const BaseTexture::Format basetexformat = surf->m_format;
 
    colorFormat texformat;
-   D3DTexture *const sysTex = CreateSystemTexture(surf, linearRGB, texformat);
+   D3DTexture *sysTex = CreateSystemTexture(surf, linearRGB, texformat);
 
    D3DTexture *tex;
    HRESULT hr = m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? 0 : sysTex->GetLevelCount(), (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? textureUsage::AUTOMIPMAP : 0, (D3DFORMAT)texformat, (D3DPOOL)memoryPool::DEFAULT, &tex, nullptr);
@@ -1704,7 +1704,7 @@ void RenderDevice::UpdateTexture(D3DTexture* const tex, BaseTexture* const surf,
    glBindTexture(GL_TEXTURE_2D, 0);
 #else
    colorFormat texformat;
-   IDirect3DTexture9* const sysTex = CreateSystemTexture(surf, linearRGB, texformat);
+   IDirect3DTexture9* sysTex = CreateSystemTexture(surf, linearRGB, texformat);
    m_curTextureUpdates++;
    CHECKD3D(m_pD3DDevice->UpdateTexture(sysTex, tex));
    SAFE_RELEASE(sysTex);
