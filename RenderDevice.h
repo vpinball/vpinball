@@ -302,7 +302,7 @@ public:
    bool DepthBufferReadBackAvailable();
 
 #ifndef ENABLE_SDL
-   D3DTexture* CreateSystemTexture(BaseTexture* const surf, const bool linearRGB);
+   D3DTexture* CreateSystemTexture(BaseTexture* const surf, const bool linearRGB, colorFormat &texformat);
    D3DTexture* UploadTexture(BaseTexture* const surf, int* const pTexWidth, int* const pTexHeight, const bool linearRGB, const bool clamptoedge = false);
 #endif
    void UpdateTexture(D3DTexture* const tex, BaseTexture* const surf, const bool linearRGB);

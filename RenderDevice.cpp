@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include <map>
+#include "math/math.h"
 
 #include <DxErr.h>
 
@@ -1334,7 +1335,7 @@ void RenderDevice::CopyDepth(RenderTarget* dest, RenderTarget* src) {
 
 D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf, int *pTexWidth, int *pTexHeight, const bool linearRGB, const bool clamptoedge)
 {
-   D3DTexture *tex = CreateTexture(surf->width(), surf->height(), 0, STATIC, surf->m_format == BaseTexture::RGB_FP ? RGB32F : RGBA, surf->m_data.data(), 0, clamptoedge);
+   D3DTexture *tex = CreateTexture(surf->width(), surf->height(), 0, STATIC, surf->m_format == BaseTexture::RGB_FP ? RGB32F : RGBA, surf->m_data.data(), 0, clamptoedge); //!! RGB16F?
 
    if (pTexWidth) *pTexWidth = surf->width();
    if (pTexHeight) *pTexHeight = surf->height();
@@ -1526,13 +1527,23 @@ void RenderDevice::CopyDepth(D3DTexture* dest, void* src)
       CopyDepth(dest, (RenderTarget*)src);
 }
 
-D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const bool linearRGB)
+D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const bool linearRGB, colorFormat &texformat)
 {
    const int texwidth = surf->width();
    const int texheight = surf->height();
    const BaseTexture::Format basetexformat = surf->m_format;
 
-   const colorFormat texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (texwidth > 256) && (texheight > 256) && (basetexformat != BaseTexture::RGB_FP)) ? colorFormat::DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? colorFormat::RGBA32F : colorFormat::RGBA8);
+   colorFormat fpformat = colorFormat::RGBA32F;
+   if (basetexformat == BaseTexture::RGB_FP)
+   {
+      const float* const __restrict psrc = (float*)(surf->data());
+      float maxval = psrc[0];
+      for (int i = 1; i < texwidth * texheight * 3; ++i)
+         maxval = max(maxval,psrc[i]);
+      fpformat = (maxval <= 65504.f) ? colorFormat::RGBA16F : colorFormat::RGBA32F;
+   }
+
+   texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (texwidth > 256) && (texheight > 256) && (basetexformat != BaseTexture::RGB_FP)) ? colorFormat::DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? fpformat : colorFormat::RGBA8);
 
    IDirect3DTexture9 *sysTex;
    HRESULT hr;
@@ -1565,6 +1576,24 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const boo
 
       CHECKD3D(sysTex->UnlockRect(0));
    }
+   else if (texformat == colorFormat::RGBA16F)
+   {
+      D3DLOCKED_RECT locked;
+      CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
+
+      unsigned short* const __restrict pdest = (unsigned short*)locked.pBits;
+      const float * const __restrict psrc = (float*)(surf->data());
+      const float one16 = float2half(1.f);
+      for (int i = 0; i < texwidth*texheight; ++i)
+      {
+         pdest[i * 4    ] = float2half(psrc[i * 3    ]);
+         pdest[i * 4 + 1] = float2half(psrc[i * 3 + 1]);
+         pdest[i * 4 + 2] = float2half(psrc[i * 3 + 2]);
+         pdest[i * 4 + 3] = one16;
+      }
+
+      CHECKD3D(sysTex->UnlockRect(0));
+   }
    else
    {
       IDirect3DSurface9* sysSurf;
@@ -1580,7 +1609,7 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const boo
 
    if (!(texformat != colorFormat::DXT5 && m_autogen_mipmap))
       // normal maps or float textures are already in linear space!
-      CHECKD3D(D3DXFilterTexture(sysTex, nullptr, D3DX_DEFAULT, (texformat == colorFormat::RGBA32F || linearRGB) ? D3DX_FILTER_TRIANGLE : (D3DX_FILTER_TRIANGLE | D3DX_FILTER_SRGB)));
+      CHECKD3D(D3DXFilterTexture(sysTex, nullptr, D3DX_DEFAULT, (texformat == colorFormat::RGBA16F || texformat == colorFormat::RGBA32F || linearRGB) ? D3DX_FILTER_TRIANGLE : (D3DX_FILTER_TRIANGLE | D3DX_FILTER_SRGB)));
 
    return sysTex;
 }
@@ -1595,9 +1624,8 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* const surf, int* const pTex
 
    const BaseTexture::Format basetexformat = surf->m_format;
 
-   D3DTexture *sysTex = CreateSystemTexture(surf, linearRGB);
-
-   const colorFormat texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (texwidth > 256) && (texheight > 256) && (basetexformat != BaseTexture::RGB_FP)) ? colorFormat::DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? colorFormat::RGBA32F : colorFormat::RGBA8);
+   colorFormat texformat;
+   D3DTexture *const sysTex = CreateSystemTexture(surf, linearRGB, texformat);
 
    D3DTexture *tex;
    HRESULT hr = m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? 0 : sysTex->GetLevelCount(), (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? textureUsage::AUTOMIPMAP : 0, (D3DFORMAT)texformat, (D3DPOOL)memoryPool::DEFAULT, &tex, nullptr);
@@ -1666,7 +1694,7 @@ void RenderDevice::UploadAndSetSMAATextures()
 void RenderDevice::UpdateTexture(D3DTexture* const tex, BaseTexture* const surf, const bool linearRGB)
 {
 #ifdef ENABLE_SDL
-   tex->format = (surf->m_format == BaseTexture::RGB_FP) ? RGB32F : RGBA;
+   tex->format = (surf->m_format == BaseTexture::RGB_FP) ? RGB32F : RGBA; //!! RGB16F?
    const GLuint col_type = ((tex->format == RGBA32F) || (tex->format == RGBA16F) || (tex->format == RGB32F) || (tex->format == RGB16F)) ? GL_FLOAT : GL_UNSIGNED_BYTE;
    const GLuint col_format = (tex->format == GREY) ? GL_RED : (tex->format == GREY_ALPHA) ? GL_RG : ((tex->format == RGB) || (tex->format == RGB5) || (tex->format == RGB10) || (tex->format == RGB16F) || (tex->format == RGB32F)) ? GL_BGR : GL_BGRA;
    glBindTexture(GL_TEXTURE_2D, tex->texture);
@@ -1675,7 +1703,8 @@ void RenderDevice::UpdateTexture(D3DTexture* const tex, BaseTexture* const surf,
    glGenerateMipmap(GL_TEXTURE_2D); // Generate mip-maps
    glBindTexture(GL_TEXTURE_2D, 0);
 #else
-   IDirect3DTexture9* sysTex = CreateSystemTexture(surf, linearRGB);
+   colorFormat texformat;
+   IDirect3DTexture9* const sysTex = CreateSystemTexture(surf, linearRGB, texformat);
    m_curTextureUpdates++;
    CHECKD3D(m_pD3DDevice->UpdateTexture(sysTex, tex));
    SAFE_RELEASE(sysTex);
