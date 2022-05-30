@@ -1583,7 +1583,7 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const boo
 
       unsigned short* const __restrict pdest = (unsigned short*)locked.pBits;
       const float * const __restrict psrc = (float*)(surf->data());
-      const float one16 = float2half(1.f);
+      const unsigned short one16 = float2half(1.f);
       for (int i = 0; i < texwidth*texheight; ++i)
       {
          pdest[i * 4    ] = float2half(psrc[i * 3    ]);
