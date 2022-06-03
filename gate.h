@@ -75,21 +75,21 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   virtual void MoveOffset(const float dx, const float dy);
-   virtual void SetObjectPos();
+   virtual void MoveOffset(const float dx, const float dy) override;
+   virtual void SetObjectPos() override;
    // Multi-object manipulation
-   virtual Vertex2D GetCenter() const;
-   virtual void PutCenter(const Vertex2D& pv);
-   virtual void SetDefaultPhysics(bool fromMouseClick);
+   virtual Vertex2D GetCenter() const override;
+   virtual void PutCenter(const Vertex2D &pv) override;
+   virtual void SetDefaultPhysics(bool fromMouseClick) override;
 
-   virtual void RenderBlueprint(Sur *psur, const bool solid);
-   virtual void ExportMesh(ObjLoader& loader);
+   virtual void RenderBlueprint(Sur *psur, const bool solid) override;
+   virtual void ExportMesh(ObjLoader &loader) override;
 
    virtual unsigned long long GetMaterialID() const override { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
    virtual ItemTypeEnum HitableGetItemType() const override { return eItemGate; }
-   virtual void UpdateStatusBarInfo();
+   virtual void UpdateStatusBarInfo() override;
 
-   virtual void WriteRegDefaults();
+   virtual void WriteRegDefaults() override;
 
    float GetOpenAngle() const;
    void SetOpenAngle(const float angle);

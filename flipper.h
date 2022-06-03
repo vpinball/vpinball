@@ -90,13 +90,13 @@ public:
          CONNECTION_POINT_ENTRY(DIID_IFlipperEvents)
       END_CONNECTION_POINT_MAP()
 
-      virtual void MoveOffset(const float dx, const float dy);
-      virtual void SetObjectPos();
+      virtual void MoveOffset(const float dx, const float dy) override;
+      virtual void SetObjectPos() override;
       // Multi-object manipulation
-      virtual Vertex2D GetCenter() const;
-      virtual void PutCenter(const Vertex2D& pv);
-      virtual void SetDefaultPhysics(bool fromMouseClick);
-      virtual void ExportMesh(ObjLoader& loader);
+      virtual Vertex2D GetCenter() const override;
+      virtual void PutCenter(const Vertex2D &pv) override;
+      virtual void SetDefaultPhysics(bool fromMouseClick) override;
+      virtual void ExportMesh(ObjLoader &loader) override;
 
       virtual unsigned long long GetMaterialID() const override
       {

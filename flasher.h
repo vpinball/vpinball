@@ -75,23 +75,23 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   virtual void ClearForOverwrite();
+   virtual void ClearForOverwrite() override;
 
-   virtual void RenderBlueprint(Sur *psur, const bool solid);
+   virtual void RenderBlueprint(Sur *psur, const bool solid) override;
 
-   virtual void FlipY(const Vertex2D& pvCenter);
-   virtual void FlipX(const Vertex2D& pvCenter);
-   virtual void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
-   virtual void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter);
-   virtual void Translate(const Vertex2D &pvOffset);
-   virtual void MoveOffset(const float dx, const float dy);
-   virtual void SetObjectPos();
+   virtual void FlipY(const Vertex2D& pvCenter) override;
+   virtual void FlipX(const Vertex2D& pvCenter) override;
+   virtual void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) override;
+   virtual void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) override;
+   virtual void Translate(const Vertex2D &pvOffset) override;
+   virtual void MoveOffset(const float dx, const float dy) override;
+   virtual void SetObjectPos() override;
 
    virtual int GetMinimumPoints() const override { return 2; }
 
    virtual Vertex2D GetCenter() const override { return m_d.m_vCenter; }
    virtual void PutCenter(const Vertex2D& pv) override { m_d.m_vCenter = pv; }
-   virtual void DoCommand(int icmd, int x, int y);
+   virtual void DoCommand(int icmd, int x, int y) override;
 
    virtual bool IsTransparent() const override { return !m_d.m_isDMD; }
    virtual float GetDepth(const Vertex3Ds& viewDir) const override
@@ -113,7 +113,7 @@ public:
    virtual bool IsDMD() const override { return m_d.m_isDMD; }
    virtual ItemTypeEnum HitableGetItemType() const override { return eItemFlasher; }
 
-   virtual void WriteRegDefaults();
+   virtual void WriteRegDefaults() override;
 
    long GetAlpha() const
    {

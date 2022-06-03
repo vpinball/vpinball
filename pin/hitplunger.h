@@ -12,10 +12,10 @@ public:
       m_retractWaitLoop = 0;
    }
 
-   virtual void UpdateDisplacements(const float dtime);
-   virtual void UpdateVelocities();
+   virtual void UpdateDisplacements(const float dtime) override;
+   virtual void UpdateVelocities() override;
 
-   virtual bool AddToList() const { return true; }
+   virtual bool AddToList() const override { return true; }
 
    void SetObjects(const float len);
 
@@ -137,7 +137,7 @@ public:
    // at the start of the release and allow the rod to move freely
    // at this speed until it strikes the ball.
    //
-   // Durina a Fire event, the simulated plunger is completely
+   // During a Fire event, the simulated plunger is completely
    // disconnected from the mechanical plunger and moves under its
    // own power.  In principle, if we have a mechanical plunger,
    // we *should* be able to track the actual physical motion of
@@ -251,10 +251,10 @@ public:
       Plunger * const pPlunger);
    ~HitPlunger() {}
 
-   virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
+   virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
    virtual int GetType() const override { return ePlunger; }
-   virtual void Collide(const CollisionEvent& coll);
-   virtual void CalcHitBBox();
+   virtual void Collide(const CollisionEvent& coll) override;
+   virtual void CalcHitBBox() override;
    virtual MoverObject *GetMoverObject() override { return &m_plungerMover; }
 
    PlungerMoverObject m_plungerMover;

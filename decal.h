@@ -69,19 +69,19 @@ public:
    STANDARD_NOSCRIPT_EDITABLE_DECLARES(Decal, eItemDecal, DECAL, VIEW_PLAYFIELD | VIEW_BACKGLASS)
 
    virtual void MoveOffset(const float dx, const float dy) override { m_d.m_vCenter.x += dx; m_d.m_vCenter.y += dy; }
-   virtual void SetObjectPos();
+   virtual void SetObjectPos() override;
    // Multi-object manipulation
    virtual Vertex2D GetCenter() const override { return m_d.m_vCenter; }
    virtual void PutCenter(const Vertex2D& pv) override { m_d.m_vCenter = pv; }
-   virtual float GetDepth(const Vertex3Ds& viewDir) const;
+   virtual float GetDepth(const Vertex3Ds &viewDir) const override;
    virtual bool IsTransparent() const override { return !m_backglass; }
-   virtual void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
+   virtual void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) override;
 
    STDMETHOD(get_Name)(BSTR *pVal) override { return E_FAIL; }
    char *GetFontName();
    HFONT GetFont();
 
-   virtual void WriteRegDefaults();
+   virtual void WriteRegDefaults() override;
 
    virtual ItemTypeEnum HitableGetItemType() const override { return eItemDecal; }
 

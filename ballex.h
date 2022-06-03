@@ -86,8 +86,8 @@ public:
    virtual IDebugCommands *GetDebugCommands() override { return (IDebugCommands *) this; }
 
    // IDebugCommands
-   virtual void GetDebugCommands(std::vector<int> & pvids, std::vector<int> & pvcommandid);
-   virtual void RunDebugCommand(int id);
+   virtual void GetDebugCommands(std::vector<int> &pvids, std::vector<int> &pvcommandid) override;
+   virtual void RunDebugCommand(int id) override;
 
    Ball *m_pball;
 private:

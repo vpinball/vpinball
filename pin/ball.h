@@ -8,8 +8,8 @@ class BallMoverObject : public MoverObject
 public:
    virtual bool AddToList() const override { return false; } // We add ourselves to the mover list.  
                                                              // If we allow the table to do that, we might get added twice, if we get created in the player Init code
-   virtual void UpdateDisplacements(const float dtime);
-   virtual void UpdateVelocities();
+   virtual void UpdateDisplacements(const float dtime) override;
+   virtual void UpdateVelocities() override;
 
    Ball *m_pball;
 };
@@ -36,11 +36,11 @@ public:
    void UpdateVelocities();
 
    // From HitObject
-   virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
+   virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
    virtual int GetType() const override { return eBall; }
-   virtual void Collide(const CollisionEvent& coll);
+   virtual void Collide(const CollisionEvent& coll) override;
    virtual void Contact(CollisionEvent& coll, const float dtime) override { }
-   virtual void CalcHitBBox();
+   virtual void CalcHitBBox() override;
 
    float HitRadiusSqr() const { return sqrf((m_hitBBox.right - m_hitBBox.left)*0.5f); } // this returns the extended (by m_vel + magic) squared radius, as needed to be used in the collision detection
    void Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const float elastFalloff, const float friction, float scatter_angle);

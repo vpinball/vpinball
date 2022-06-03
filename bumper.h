@@ -78,16 +78,16 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
    
-   virtual void MoveOffset(const float dx, const float dy);
-   virtual void SetObjectPos();
+   virtual void MoveOffset(const float dx, const float dy) override;
+   virtual void SetObjectPos() override;
    
    // Multi-object manipulation
-   virtual Vertex2D GetCenter() const;
-   virtual void PutCenter(const Vertex2D& pv);
+   virtual Vertex2D GetCenter() const override;
+   virtual void PutCenter(const Vertex2D &pv) override;
 
-   virtual void SetDefaultPhysics(bool fromMouseClick);
-   virtual void ExportMesh(ObjLoader& loader);
-   virtual void RenderBlueprint(Sur *psur, const bool solid);
+   virtual void SetDefaultPhysics(bool fromMouseClick) override;
+   virtual void ExportMesh(ObjLoader &loader) override;
+   virtual void RenderBlueprint(Sur *psur, const bool solid) override;
 
    virtual unsigned long long GetMaterialID() const override
    {
@@ -106,7 +106,7 @@ public:
    
    virtual ItemTypeEnum HitableGetItemType() const override { return eItemBumper; }
 
-   virtual void WriteRegDefaults();
+   virtual void WriteRegDefaults() override;
 
    BumperData m_d;
 
