@@ -170,7 +170,7 @@ void VertexBuffer::addToNotUploadedBuffers()
 
 void VertexBuffer::UploadBuffers()
 {
-   if (notUploadedBuffers.size() == 0) return;
+   if (notUploadedBuffers.empty()) return;
 
    int countNT = 0;
    int countT = 0;
@@ -182,7 +182,7 @@ void VertexBuffer::UploadBuffers()
    glGenVertexArrays(1, &ArrayT);
    glGenBuffers(1, &BufferNT);
    glGenBuffers(1, &BufferT);
-   for (auto it = notUploadedBuffers.begin(); it != notUploadedBuffers.end(); it++) {
+   for (auto it = notUploadedBuffers.begin(); it != notUploadedBuffers.end(); ++it) {
       if (!(*it)->isUploaded && (*it)->usage == GL_STATIC_DRAW) {
          if ((*it)->fvf == MY_D3DFVF_TEX) {
             (*it)->offset = countT;
@@ -210,7 +210,7 @@ void VertexBuffer::UploadBuffers()
       glBindVertexArray(ArrayT);
       glBufferData(GL_ARRAY_BUFFER, countT * fvfToSize(MY_D3DFVF_TEX), nullptr, GL_STATIC_DRAW);
    }
-   for (auto it = notUploadedBuffers.begin(); it != notUploadedBuffers.end(); it++)
+   for (auto it = notUploadedBuffers.begin(); it != notUploadedBuffers.end(); ++it)
       (*it)->UploadData();
    glBindBuffer(GL_ARRAY_BUFFER, 0);
    glBindVertexArray(0);

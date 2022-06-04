@@ -224,7 +224,7 @@ void IndexBuffer::addToNotUploadedBuffers(const void* indices)
 
 void IndexBuffer::UploadBuffers()
 {
-   if (notUploadedBuffers.size() == 0) return;
+   if (notUploadedBuffers.empty()) return;
 
    int size16 = 0;
    int size32 = 0;

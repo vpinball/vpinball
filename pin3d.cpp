@@ -1482,8 +1482,6 @@ void CreateProjectionAndViewMatrix(float * const __restrict P, float * const __r
    float DisplaySize;
    float DisplayNativeWidth;
    float DisplayNativeHeight;
-   float AboveScreen;
-   float InsideScreen;
 
    // Data from head tracking
    float ViewerPositionX, ViewerPositionY, ViewerPositionZ;
@@ -1504,8 +1502,8 @@ void CreateProjectionAndViewMatrix(float * const __restrict P, float * const __r
    DisplaySize = (float)(sqrt(w*w + h * h) / 25.4); // [mm] -> [inchs]
 
                                                     // constant params for this project
-   AboveScreen = 200.0; // 0.2m
-   InsideScreen = 2000.0; // 2.0m
+   constexpr float AboveScreen = 200.0f; // 0.2m
+   constexpr float InsideScreen = 2000.0f; // 2.0m
 
    // Data build projection matrix
    BuildProjectionMatrix(P,

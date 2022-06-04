@@ -16,8 +16,8 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
    if (maxTexDim <= 0)
       maxTexDim = 65536;
 
-   const int pictureWidth = FreeImage_GetWidth(dib);
-   const int pictureHeight = FreeImage_GetHeight(dib);
+   const unsigned int pictureWidth  = FreeImage_GetWidth(dib);
+   const unsigned int pictureHeight = FreeImage_GetHeight(dib);
 
    FIBITMAP* dibResized = dib;
    FIBITMAP* dibConv = dib;
@@ -34,24 +34,24 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
       return nullptr;
    }
 
-   if ((pictureHeight > maxTexDim) || (pictureWidth > maxTexDim))
+   if ((pictureHeight > (unsigned int)maxTexDim) || (pictureWidth > (unsigned int)maxTexDim))
    {
-      int newWidth = max(min(pictureWidth, maxTexDim), MIN_TEXTURE_SIZE);
-      int newHeight = max(min(pictureHeight, maxTexDim), MIN_TEXTURE_SIZE);
+      unsigned int newWidth  = max(min(pictureWidth,  (unsigned int)maxTexDim), MIN_TEXTURE_SIZE);
+      unsigned int newHeight = max(min(pictureHeight, (unsigned int)maxTexDim), MIN_TEXTURE_SIZE);
       /*
        * The following code tries to maintain the aspect ratio while resizing.
        */
       if (pictureWidth - newWidth > pictureHeight - newHeight)
-          newHeight = min(pictureHeight * newWidth / pictureWidth, maxTexDim);
+          newHeight = min(pictureHeight * newWidth / pictureWidth,  (unsigned int)maxTexDim);
       else
-          newWidth = min(pictureWidth * newHeight / pictureHeight, maxTexDim);
+          newWidth  = min(pictureWidth * newHeight / pictureHeight, (unsigned int)maxTexDim);
       dibResized = FreeImage_Rescale(dib, newWidth, newHeight, FILTER_BILINEAR); //!! use a better filter in case scale ratio is pretty high?
    }
    else if (pictureWidth < MIN_TEXTURE_SIZE || pictureHeight < MIN_TEXTURE_SIZE)
    {
       // some drivers seem to choke on small (1x1) textures, so be safe by scaling them up
-      const int newWidth = max(pictureWidth, MIN_TEXTURE_SIZE);
-      const int newHeight = max(pictureHeight, MIN_TEXTURE_SIZE);
+      const unsigned int newWidth  = max(pictureWidth,  MIN_TEXTURE_SIZE);
+      const unsigned int newHeight = max(pictureHeight, MIN_TEXTURE_SIZE);
       dibResized = FreeImage_Rescale(dib, newWidth, newHeight, FILTER_BOX);
    }
 
@@ -59,7 +59,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
    if (!dibResized)
    {
       maxTexDim /= 2;
-      while ((maxTexDim > pictureHeight) && (maxTexDim > pictureWidth))
+      while (((unsigned int)maxTexDim > pictureHeight) && ((unsigned int)maxTexDim > pictureWidth))
           maxTexDim /= 2;
 
       continue;
@@ -81,7 +81,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
       if (!dibConv)
       {
          maxTexDim /= 2;
-         while ((maxTexDim > pictureHeight) && (maxTexDim > pictureWidth))
+         while (((unsigned int)maxTexDim > pictureHeight) && ((unsigned int)maxTexDim > pictureWidth))
             maxTexDim /= 2;
 
          continue;
@@ -106,7 +106,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
          FreeImage_Unload(dibResized);
 
       maxTexDim /= 2;
-      while ((maxTexDim > pictureHeight) && (maxTexDim > pictureWidth))
+      while (((unsigned int)maxTexDim > pictureHeight) && ((unsigned int)maxTexDim > pictureWidth))
          maxTexDim /= 2;
    }
    }

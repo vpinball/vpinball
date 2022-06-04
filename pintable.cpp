@@ -2175,7 +2175,6 @@ HRESULT PinTable::ApcProject_Save()
    return Save(m_szFileName.empty());
 }
 
-
 void PinTable::BeginAutoSaveCounter()
 {
    if (m_vpinball->m_autosaveTime > 0)

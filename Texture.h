@@ -1,6 +1,6 @@
 #pragma once
 
-#define MIN_TEXTURE_SIZE 8
+#define MIN_TEXTURE_SIZE 8u
 
 struct FIBITMAP;
 
@@ -28,8 +28,8 @@ public:
    BYTE* data()        { return m_data.data(); }
 
 private:
-   int m_width;
-   int m_height;
+   unsigned int m_width;
+   unsigned int m_height;
 
 public:
    std::vector<BYTE> m_data;
