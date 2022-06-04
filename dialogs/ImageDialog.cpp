@@ -73,33 +73,44 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          ListView_SetExtendedListViewStyle(hListView, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
          LVCOLUMN lvcol;
-         lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
+         lvcol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
          const LocalString ls(IDS_NAME);
          lvcol.pszText = (LPSTR)ls.m_szbuffer; // = "Name";
-         lvcol.cx = 100;
+         lvcol.cx = 150;
+         lvcol.fmt = LVCFMT_LEFT;
          ListView_InsertColumn(hListView, 0, &lvcol);
 
          const LocalString ls2(IDS_IMPORTPATH);
          lvcol.pszText = (LPSTR)ls2.m_szbuffer; // = "Import Path";
          lvcol.cx = 200;
+         lvcol.fmt = LVCFMT_LEFT;
          ListView_InsertColumn(hListView, 1, &lvcol);
 
          const LocalString ls3(IDS_IMAGESIZE);
          lvcol.pszText = (LPSTR)ls3.m_szbuffer; // = "Image Size";
          lvcol.cx = 100;
+         lvcol.fmt = LVCFMT_CENTER;
          ListView_InsertColumn(hListView, 2, &lvcol);
 
          const LocalString ls4(IDS_USED_IN_TABLE);
          lvcol.pszText = (LPSTR)ls4.m_szbuffer; // = "In use";
          lvcol.cx = 45;
+         lvcol.fmt = LVCFMT_CENTER;
          ListView_InsertColumn(hListView, 3, &lvcol);
 
          const LocalString ls5(IDS_IMAGE_RAW_SIZE);
          lvcol.pszText = (LPSTR)ls5.m_szbuffer; // = "Raw Size";
          lvcol.cx = 60;
+         lvcol.fmt = LVCFMT_RIGHT;
          ListView_InsertColumn(hListView, 4, &lvcol);
 
-         CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+         const LocalString ls6(IDS_IMAGE_RAW_SIZE);
+         lvcol.pszText = (LPSTR)ls6.m_szbuffer; // = "Format";
+         lvcol.cx = 70;
+         lvcol.fmt = LVCFMT_CENTER;
+         ListView_InsertColumn(hListView, 5, &lvcol);
+
+         CCO(PinTable) *const pt = g_pvp->GetActiveTable();
          if (pt)
             pt->ListImages(hListView);
 

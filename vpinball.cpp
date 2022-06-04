@@ -1824,43 +1824,15 @@ int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM 
 
 int CALLBACK MyCompProcMemValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)
 {
-   LVFINDINFO lvf;
    const SORTDATA * const lpsd = (SORTDATA *)lSortOption;
-
-   lvf.flags = LVFI_PARAM;
-   lvf.lParam = lSortParam1;
-   const int nItem1 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
-
-   lvf.lParam = lSortParam2;
-   const int nItem2 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
-
-   char buf1[20], buf2[20];
-   ListView_GetItemText(lpsd->hwndList, nItem1, lpsd->subItemIndex, buf1, sizeof(buf1));
-   ListView_GetItemText(lpsd->hwndList, nItem2, lpsd->subItemIndex, buf2, sizeof(buf2));
-
-   float value[2];
-   for (int i = 0; i < 2; ++i)
-   {
-      char mem1[10], mem1b[10];
-      sscanf_s(i == 0 ? buf1 : buf2, "%s %s", mem1b, sizeof(mem1b), mem1, sizeof(mem1));
-      char* const fo = strchr(mem1b, ',');
-      if (fo != nullptr)
-         *fo = '.';
-      value[i] = (float)atof(mem1b);
-      if (!_stricmp(mem1, "bytes"))
-         ;
-      else if (!_stricmp(mem1, "KB"))
-         value[i] *= (float)1024;
-      else if (!_stricmp(mem1, "MB"))
-         value[i] *= (float)(1024*1024);
-      else if (!_stricmp(mem1, "GB"))
-         value[i] *= (float)(1024*1024*1024);
-   }
-
+   Texture *t1 = (Texture *)lSortParam1;
+   Texture *t2 = (Texture *)lSortParam2;
+   int t1_size = t1->m_pdsBuffer == nullptr ? 0 : t1->m_pdsBuffer->height() * t1->m_pdsBuffer->pitch();
+   int t2_size = t2->m_pdsBuffer == nullptr ? 0 : t2->m_pdsBuffer->height() * t2->m_pdsBuffer->pitch();
    if (lpsd->sortUpDown == 1)
-      return (int)(value[0] - value[1]);
+      return (int)(t1_size - t2_size);
    else
-      return (int)(value[1] - value[0]);
+      return (int)(t2_size - t1_size);
 }
 
 static constexpr int rgDlgIDFromSecurityLevel[] = { IDC_ACTIVEX0, IDC_ACTIVEX1, IDC_ACTIVEX2, IDC_ACTIVEX3, IDC_ACTIVEX4 };
@@ -2420,7 +2392,8 @@ void VPinball::CopyPasteElement(const CopyPasteModes mode)
          ptCur->Paste(true, ptCursor.x, ptCursor.y);
          break;
       }
-      default: break;
+      default:
+         break;
       }
    }
 }
