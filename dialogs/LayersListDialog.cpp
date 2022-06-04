@@ -24,19 +24,10 @@ bool LayersListDialog::AddLayer(const string& name, IEditable* piedit)
 {
    bool success = false;
 
-   if (m_layerTreeView.GetItemCount() == 0)
-   {
+    if (!m_layerTreeView.ContainsLayer(name))
       success = m_layerTreeView.AddLayer(name);
-   }
    else
-   {
-      if (!m_layerTreeView.ContainsLayer(name))
-      {
-         success = m_layerTreeView.AddLayer(name);
-      }
-      else
-         m_layerTreeView.SetActiveLayer(name);
-   }
+      m_layerTreeView.SetActiveLayer(name);
    if (piedit != nullptr)
       success = m_layerTreeView.AddElement(piedit->GetName(), piedit);
 
