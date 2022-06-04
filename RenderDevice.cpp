@@ -1529,8 +1529,8 @@ void RenderDevice::CopyDepth(D3DTexture* dest, void* src)
 
 D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const bool linearRGB, colorFormat &texformat)
 {
-   const int texwidth = surf->width();
-   const int texheight = surf->height();
+   const unsigned int texwidth  = surf->width();
+   const unsigned int texheight = surf->height();
    const BaseTexture::Format basetexformat = surf->m_format;
 
    colorFormat fpformat = colorFormat::RGBA32F;
@@ -1538,7 +1538,7 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const boo
    {
       const float* const __restrict psrc = (float*)(surf->data());
       float maxval = psrc[0];
-      for (int i = 1; i < texwidth * texheight * 3; ++i)
+      for (unsigned int i = 1; i < texwidth * texheight * 3; ++i)
          maxval = max(maxval,psrc[i]);
       fpformat = (maxval <= 65504.f) ? colorFormat::RGBA16F : colorFormat::RGBA32F;
    }
@@ -1566,7 +1566,7 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const boo
 
       float * const __restrict pdest = (float*)locked.pBits;
       const float * const __restrict psrc = (float*)(surf->data());
-      for (int i = 0; i < texwidth*texheight; ++i)
+      for (unsigned int i = 0; i < texwidth*texheight; ++i)
       {
          pdest[i * 4    ] = psrc[i * 3    ];
          pdest[i * 4 + 1] = psrc[i * 3 + 1];
@@ -1584,7 +1584,7 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const boo
       unsigned short* const __restrict pdest = (unsigned short*)locked.pBits;
       const float * const __restrict psrc = (float*)(surf->data());
       const unsigned short one16 = float2half(1.f);
-      for (int i = 0; i < texwidth*texheight; ++i)
+      for (unsigned int i = 0; i < texwidth*texheight; ++i)
       {
          pdest[i * 4    ] = float2half(psrc[i * 3    ]);
          pdest[i * 4 + 1] = float2half(psrc[i * 3 + 1]);
@@ -1616,8 +1616,8 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const boo
 
 D3DTexture* RenderDevice::UploadTexture(BaseTexture* const surf, int* const pTexWidth, int* const pTexHeight, const bool linearRGB, const bool clamptoedge)
 {
-   const int texwidth = surf->width();
-   const int texheight = surf->height();
+   const unsigned int texwidth  = surf->width();
+   const unsigned int texheight = surf->height();
 
    if (pTexWidth) *pTexWidth = texwidth;
    if (pTexHeight) *pTexHeight = texheight;

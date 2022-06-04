@@ -116,12 +116,12 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
 
    const BYTE* const __restrict psrc = FreeImage_GetBits(dibConv);
    BYTE* const __restrict pdst = tex->data();
-   const int pitchdst = tex->pitch(), pitchsrc = FreeImage_GetPitch(dibConv);
-   const int height = tex->height();
-   const int pitch = MIN(pitchsrc,pitchdst);
+   const unsigned int pitchdst = tex->pitch(), pitchsrc = FreeImage_GetPitch(dibConv);
+   const unsigned int height = tex->height();
+   const unsigned int pitch = MIN(pitchsrc,pitchdst);
 
    // flip upside down //!! meh, could this be done somewhere else to avoid additional overhead?
-   for (int y = 0; y < height; ++y)
+   for (unsigned int y = 0; y < height; ++y)
       memcpy(pdst + (height - y - 1)*pitchdst, psrc + y*pitchsrc, pitch);
 
    if (dibConv != dibResized) // did we allocate a copy from conversion?
@@ -384,16 +384,16 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
       LZWReader lzwreader(pbr->m_pistream, (int *)m_pdsBuffer->data(), m_width * 4, m_height, m_pdsBuffer->pitch());
       lzwreader.Decoder();
 
-      const int lpitch = m_pdsBuffer->pitch();
+      const unsigned int lpitch = m_pdsBuffer->pitch();
 
       // Assume our 32 bit color structure
       // Find out if all alpha values are zero
       BYTE * const __restrict pch = (BYTE *)m_pdsBuffer->data();
       bool allAlphaZero = true;
-      for (int i = 0; i < m_height; i++)
+      for (unsigned int i = 0; i < m_height; i++)
       {
          unsigned int o = i*lpitch + 3;
-         for (int l = 0; l < m_width; l++,o+=4)
+         for (unsigned int l = 0; l < m_width; l++,o+=4)
          {
             if (pch[o] != 0)
             {
@@ -411,10 +411,10 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
       if (allAlphaZero)
       {
          m_pdsBuffer->m_has_alpha = false;
-         for (int i = 0; i < m_height; i++)
+         for (unsigned int i = 0; i < m_height; i++)
          {
             unsigned int o = i*lpitch + 3;
-            for (int l = 0; l < m_width; l++,o+=4)
+            for (unsigned int l = 0; l < m_width; l++,o+=4)
                pch[o] = 0xff;
          }
       }
@@ -480,7 +480,7 @@ void Texture::CreateGDIVersion()
    BITMAPINFO bmi = {};
    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
    bmi.bmiHeader.biWidth = m_width;
-   bmi.bmiHeader.biHeight = -m_height;
+   bmi.bmiHeader.biHeight = -(LONG)m_height;
    bmi.bmiHeader.biPlanes = 1;
    bmi.bmiHeader.biBitCount = 32;
    bmi.bmiHeader.biCompression = BI_RGB;

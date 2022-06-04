@@ -1832,10 +1832,10 @@ int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM 
 int CALLBACK MyCompProcMemValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)
 {
    const SORTDATA * const lpsd = (SORTDATA *)lSortOption;
-   Texture *t1 = (Texture *)lSortParam1;
-   Texture *t2 = (Texture *)lSortParam2;
-   int t1_size = t1->m_pdsBuffer == nullptr ? 0 : t1->m_pdsBuffer->height() * t1->m_pdsBuffer->pitch();
-   int t2_size = t2->m_pdsBuffer == nullptr ? 0 : t2->m_pdsBuffer->height() * t2->m_pdsBuffer->pitch();
+   const Texture * const t1 = (Texture *)lSortParam1;
+   const Texture * const t2 = (Texture *)lSortParam2;
+   const unsigned int t1_size = t1->m_pdsBuffer == nullptr ? 0 : t1->m_pdsBuffer->height() * t1->m_pdsBuffer->pitch();
+   const unsigned int t2_size = t2->m_pdsBuffer == nullptr ? 0 : t2->m_pdsBuffer->height() * t2->m_pdsBuffer->pitch();
    if (lpsd->sortUpDown == 1)
       return (int)(t1_size - t2_size);
    else

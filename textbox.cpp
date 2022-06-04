@@ -393,9 +393,9 @@ void Textbox::PreRenderText()
    // Set alpha for pixels that match transparent color (if transparent enabled), otherwise set to opaque
    D3DCOLOR* __restrict bitsd = (D3DCOLOR*)bits;
    D3DCOLOR* __restrict dest = (D3DCOLOR*)m_texture->data();
-   for (int i = 0; i < m_texture->height(); i++)
+   for (unsigned int i = 0; i < m_texture->height(); i++)
    {
-      for (int l = 0; l < m_texture->width(); l++, dest++, bitsd++)
+      for (unsigned int l = 0; l < m_texture->width(); l++, dest++, bitsd++)
       {
          const D3DCOLOR src = *bitsd;
          if (m_d.m_transparent && ((src & 0xFFFFFFu) == m_d.m_backcolor))

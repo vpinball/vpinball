@@ -259,10 +259,10 @@ public:
    Player(const bool cameraMode, PinTable * const ptable);
    virtual ~Player();
 
-   virtual void PreRegisterClass(WNDCLASS& wc);
-   virtual void PreCreate(CREATESTRUCT& cs);
-   virtual void OnInitialUpdate();
-   virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+   virtual void PreRegisterClass(WNDCLASS& wc) override;
+   virtual void PreCreate(CREATESTRUCT& cs) override;
+   virtual void OnInitialUpdate() override;
+   virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 private:
    void RenderStaticMirror(const bool onlyBalls);

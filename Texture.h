@@ -18,14 +18,14 @@ public:
       : m_width(0), m_height(0), m_realWidth(0), m_realHeight(0), m_format(RGBA), m_has_alpha(false)
    { }
 
-   BaseTexture(const int w, const int h, const Format format, const bool has_alpha)
+   BaseTexture(const unsigned int w, const unsigned int h, const Format format, const bool has_alpha)
       : m_width(w), m_height(h), m_data((format == RGBA ? 4 : 3*4) * (w*h)), m_realWidth(w), m_realHeight(h), m_format(format), m_has_alpha(has_alpha)
    { }
 
-   int width() const   { return m_width; }
-   int height() const  { return m_height; }
-   int pitch() const   { return (m_format == RGBA ? 4 : 3*4) * m_width; } // pitch in bytes
-   BYTE* data()        { return m_data.data(); }
+   unsigned int width() const  { return m_width; }
+   unsigned int height() const { return m_height; }
+   unsigned int pitch() const  { return (m_format == RGBA ? 4 : 3*4) * m_width; } // pitch in bytes
+   BYTE* data()                { return m_data.data(); }
 
 private:
    unsigned int m_width;
@@ -33,7 +33,7 @@ private:
 
 public:
    std::vector<BYTE> m_data;
-   int m_realWidth, m_realHeight;
+   unsigned int m_realWidth, m_realHeight;
    Format m_format;
    bool m_has_alpha;
 
@@ -45,8 +45,8 @@ public:
      {
         const float * const __restrict src = (float*)m_data.data();
         unsigned int o = 0;
-        for (int j = 0; j < m_height; ++j)
-			  for (int i = 0; i < m_width; ++i, ++o)
+        for (unsigned int j = 0; j < m_height; ++j)
+			  for (unsigned int i = 0; i < m_width; ++i, ++o)
 			  {
 				  const float r = src[o * 3];
 				  const float g = src[o * 3 + 1];
@@ -67,8 +67,8 @@ public:
 		  if (GetWinVersion() >= 2600) // For everything newer than Windows XP: use the alpha in the bitmap, thus RGB needs to be premultiplied with alpha, due to how AlphaBlend() works
 		  {
 			  unsigned int o = 0;
-			  for (int j = 0; j < m_height; ++j)
-				  for (int i = 0; i < m_width; ++i, ++o)
+			  for (unsigned int j = 0; j < m_height; ++j)
+				  for (unsigned int i = 0; i < m_width; ++i, ++o)
 				  {
 					  const unsigned int src = ((DWORD*)m_data.data())[o];
 					  const unsigned int alpha = src>>24;
@@ -91,8 +91,8 @@ public:
 		  else // adds a checkerboard pattern where alpha is set to output bits
 		  {
 			  unsigned int o = 0;
-			  for (int j = 0; j < m_height; ++j)
-				  for (int i = 0; i < m_width; ++i, ++o)
+			  for (unsigned int j = 0; j < m_height; ++j)
+				  for (unsigned int i = 0; i < m_width; ++i, ++o)
 				  {
 					  const unsigned int src = ((DWORD*)m_data.data())[o];
 					  const unsigned int alpha = src>>24;
@@ -164,8 +164,8 @@ public:
 
    // width and height of texture can be different than width and height
    // of m_pdsBuffer, since the surface can be limited to smaller sizes by the user
-   int m_width, m_height;
-   int m_realWidth, m_realHeight;
+   unsigned int m_width, m_height;
+   unsigned int m_realWidth, m_realHeight;
    float m_alphaTestValue;
    BaseTexture* m_pdsBuffer;
 
