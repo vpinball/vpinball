@@ -3795,7 +3795,12 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
       const vec4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), (float)m_width, depth_available ? 1.f : 0.f);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &w_h_height);
 
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SMAA ? SHADER_TECHNIQUE_SMAA_ColorEdgeDetection : (DLAA ? SHADER_TECHNIQUE_DLAA_edge : (NFAA ? SHADER_TECHNIQUE_NFAA : (FXAA3 ? SHADER_TECHNIQUE_FXAA3 : (FXAA2 ? SHADER_TECHNIQUE_FXAA2 : SHADER_TECHNIQUE_FXAA1)))));
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SMAA ? SHADER_TECHNIQUE_SMAA_ColorEdgeDetection :
+                                                         (DLAA ? SHADER_TECHNIQUE_DLAA_edge :
+                                                         (NFAA ? SHADER_TECHNIQUE_NFAA :
+                                                         (FXAA3 ? SHADER_TECHNIQUE_FXAA3 :
+                                                         (FXAA2 ? SHADER_TECHNIQUE_FXAA2 :
+                                                                  SHADER_TECHNIQUE_FXAA1)))));
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin(0);
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
@@ -4533,6 +4538,7 @@ void Player::PrepareVideoBuffersAO()
    const vec4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height),
       radical_inverse(m_overall_frames%2048)*(float)(1. / 8.0),
       /*sobol*/radical_inverse<3>(m_overall_frames%2048)*(float)(1. / 8.0)); // jitter within (64/8)x(64/8) neighborhood of 64x64 tex, good compromise between blotches and noise
+
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &w_h_height);
    const vec4 ao_s_tb(m_ptable->m_AOScale, 0.4f, 0.f,0.f); //!! 0.4f: fake global option in video pref? or time dependent? //!! commonly used is 0.1, but would require to clear history for moving stuff
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_AO_scale_timeblur, &ao_s_tb);
