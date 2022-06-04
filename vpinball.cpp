@@ -789,6 +789,13 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
       m_videoOptDialog.DoModal(GetHwnd());
       return true;
    }
+#ifdef ENABLE_SDL
+   case ID_EDIT_VROPTIONS:
+   {
+      m_vrOptDialog.DoModal(GetHwnd());
+      return true;
+   }
+#endif
    case ID_TABLE_TABLEINFO:
    {
       CComObject<PinTable> * const ptCur = GetActiveTable();
@@ -2115,6 +2122,10 @@ void VPinball::CloseAllDialogs()
       m_materialDialog.Destroy();
    if (m_aboutDialog.IsWindow())
       m_aboutDialog.Destroy();
+#ifdef ENABLE_SDL
+   if (m_vrOptDialog.IsWindow())
+      m_vrOptDialog.Destroy();
+#endif
 }
 
 void VPinball::ToggleBackglassView()

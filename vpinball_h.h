@@ -24,6 +24,9 @@
 #include "LayersListDialog.h"
 #include "NotesDialog.h"
 #include "Properties/PropertyDialog.h"
+#ifdef ENABLE_SDL
+#include "VROptionsDialog.h"
+#endif
 
 class PinTable;
 class PinTableMDI;
@@ -285,6 +288,9 @@ private:
    DimensionDialog m_dimensionDialog;
    MaterialDialog m_materialDialog;
    AboutDialog m_aboutDialog;
+#ifdef ENABLE_SDL
+   VROptionsDialog m_vrOptDialog;
+#endif
 
    ToolbarDialog *m_toolbarDialog = nullptr;
    PropertyDialog *m_propertyDialog = nullptr;
