@@ -11,6 +11,7 @@ FEATURES:
 - add 'Go To Definition' to the script editor (via F12 key), which allows to jump to the function/sub/variable definition from the current cursor pos/selection
 
 - add more columns to the search/select dialog (Physics Material, Collection, Collidable, Visible, Timer enabled, Depth Bias, Static Rendering, Reflections enabled)
+- fix mem size ordering (culture neutral) and add image format column to the image dialog
 
 - add additive blending to primitives (same as flashers)
 - support HDR textures on primitives (same as flashers), full high dynamic range is only available if lighting disabled though (otherwise clamped to 0..1)
@@ -20,6 +21,7 @@ FEATURES:
 
 
 FIXES:
+- improve very slow layer operations (open/close table, filter/unfilter)
 - fix an issue when hiding all layers
 - assigning an element to a hidden layer, the element will also be set to hidden.
 
