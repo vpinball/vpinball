@@ -149,6 +149,7 @@
 #define IDC_AUTO_PLUNGER_CHECK          116
 #define ID_INSERT_PLUNGER               117
 #define IDC_PLUNGER_TEXT                117
+#define IDS_FORMAT                      117
 #define IDS_TEXTBOX_DESC                118
 #define IDC_STARTGAME                   118
 #define IDC_MOMENTUM_XFER_EDIT          118

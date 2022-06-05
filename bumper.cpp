@@ -31,24 +31,7 @@ Bumper::Bumper()
 
 Bumper::~Bumper()
 {
-   SAFE_BUFFER_RELEASE(m_baseVertexBuffer);
-   SAFE_BUFFER_RELEASE(m_baseIndexBuffer);
-   SAFE_BUFFER_RELEASE(m_ringVertexBuffer);
-   if (m_ringIndexBuffer)
-   {
-      SAFE_BUFFER_RELEASE(m_ringIndexBuffer);
-      m_ringTexture.FreeStuff();
-      delete[] m_ringVertices;
-      m_ringVertices = nullptr;
-   }
-   if (m_capIndexBuffer)
-   {
-      SAFE_BUFFER_RELEASE(m_capIndexBuffer);
-      m_capTexture.FreeStuff();
-   }
-   SAFE_BUFFER_RELEASE(m_capVertexBuffer);
-   SAFE_BUFFER_RELEASE(m_socketIndexBuffer);
-   SAFE_BUFFER_RELEASE(m_socketVertexBuffer);
+   EndPlay();
 }
 
 HRESULT Bumper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -254,12 +237,16 @@ void Bumper::EndPlay()
 
    m_pbumperhitcircle = nullptr;
 
-   SAFE_BUFFER_RELEASE(m_baseVertexBuffer);
-   SAFE_BUFFER_RELEASE(m_baseIndexBuffer);
-   SAFE_BUFFER_RELEASE(m_ringVertexBuffer);
+   if (m_baseIndexBuffer)
+   {
+       SAFE_BUFFER_RELEASE(m_baseIndexBuffer);
+       SAFE_BUFFER_RELEASE(m_baseVertexBuffer);
+       m_baseTexture.FreeStuff();
+   }
    if (m_ringIndexBuffer)
    {
       SAFE_BUFFER_RELEASE(m_ringIndexBuffer);
+      SAFE_BUFFER_RELEASE(m_ringVertexBuffer);
       m_ringTexture.FreeStuff();
       delete[] m_ringVertices;
       m_ringVertices = nullptr;
@@ -267,11 +254,15 @@ void Bumper::EndPlay()
    if (m_capIndexBuffer)
    {
       SAFE_BUFFER_RELEASE(m_capIndexBuffer);
+      SAFE_BUFFER_RELEASE(m_capVertexBuffer);
       m_capTexture.FreeStuff();
    }
-   SAFE_BUFFER_RELEASE(m_capVertexBuffer);
-   SAFE_BUFFER_RELEASE(m_socketIndexBuffer);
-   SAFE_BUFFER_RELEASE(m_socketVertexBuffer);
+   if (m_socketIndexBuffer)
+   {
+       SAFE_BUFFER_RELEASE(m_socketIndexBuffer);
+       SAFE_BUFFER_RELEASE(m_socketVertexBuffer);
+       m_skirtTexture.FreeStuff();
+   }
 }
 
 void Bumper::UpdateRing()

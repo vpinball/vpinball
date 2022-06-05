@@ -3757,6 +3757,7 @@ BEGIN
     IDS_TIMER_DESC          "Timer Class"
     IDS_PLUNGER_DESC        "Plunger Class"
     IDS_TB_PLUNGER          "Plunger"
+    IDS_FORMAT              "Format"
     IDS_TEXTBOX_DESC        "Textbox Class"
     IDS_TB_TEXTBOX          "TextBox"
     IDS_DISPREEL_DESC       "DispReel Class"

@@ -104,7 +104,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          lvcol.fmt = LVCFMT_RIGHT;
          ListView_InsertColumn(hListView, 4, &lvcol);
 
-         const LocalString ls6(IDS_IMAGE_RAW_SIZE);
+         const LocalString ls6(IDS_FORMAT);
          lvcol.pszText = (LPSTR)ls6.m_szbuffer; // = "Format";
          lvcol.cx = 70;
          lvcol.fmt = LVCFMT_CENTER;

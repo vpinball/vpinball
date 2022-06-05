@@ -3518,7 +3518,26 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   cloadeditems++;
                }
             }
-            // due to multithreaded loading and pre-allocation, check if some images could not be loaded and erase them
+            // due to multithreaded loading and pre-allocation, check if some images could not be loaded, and perform a retry since more memory is available now
+            for (size_t i = 0; i < m_vimage.size(); ++i)
+                if (!m_vimage[i] || m_vimage[i]->m_pdsBuffer == nullptr)
+                {
+                    const string szStmName = "Image" + std::to_string(i);
+                    MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
+
+                    IStream* pstmItem;
+                    HRESULT hr;
+                    if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
+                    {
+                        hr = LoadImageFromStream(pstmItem, i, loadfileversion);
+                        if (SUCCEEDED(hr))
+                        {
+                            pstmItem->Release();
+                            pstmItem = nullptr;
+                        }
+                    }
+                }
+            // check if some images could not be loaded and erase them
             for (size_t i = 0; i < m_vimage.size(); ++i)
                 if (!m_vimage[i] || m_vimage[i]->m_pdsBuffer == nullptr)
                 {
