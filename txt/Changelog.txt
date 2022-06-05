@@ -19,7 +19,6 @@ FEATURES:
 
 - add new command line parameter "-GLES [value]" which overrides the global emission scale (day/night setting, value range: 0.115..0.925)
 
-
 FIXES:
 - improve very slow layer operations (open/close table, filter/unfilter)
 - fix an issue when hiding all layers
@@ -35,6 +34,10 @@ FIXES:
 - fix animation/fading of lights when not visible/when only visible through reflections 
 
 - fix crashes in Direct Sound when using certain WAVE_FORMAT_IEEE_FLOAT .wav samples
+
+- fix missing image(s) due to main memory limit when using multithreaded loading
+
+- fix bumper texture memory leak
 
 - fix showing property dialog if multiple elements were selected
 
