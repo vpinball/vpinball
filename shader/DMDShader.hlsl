@@ -76,9 +76,9 @@ float4 ps_main_DMD_no(const in VS_OUTPUT IN) : COLOR
    const float4 rgba = tex2Dlod(texSampler0, float4(IN.tex0, 0.,0.));
    float3 color = vColor_Intensity.xyz * vColor_Intensity.w; //!! create function that resembles LUT from VPM?
    if(rgba.a != 0.0)
-      color *= rgba.bgr;
+      color *= rgba.rgb;
    else
-      color *= rgba.b * (255.9 / 100.);
+      color *= rgba.r * (255.9 / 100.);
 
    return float4(InvToneMap(InvGamma(color)), vRes_Alpha_time.z); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
 }
@@ -145,9 +145,9 @@ float4 ps_main_DMD(const in VS_OUTPUT IN) : COLOR
       const float d = smoothstep(0., 1., 1.0 - sqr(dist.x*dist.x + dist.y*dist.y));
 
       if (rgba.a != 0.0)
-         color2 += rgba.bgr * d;
+         color2 += rgba.rgb * d;
       else
-         color2 += rgba.b * (255.9 / 100.) * d;
+         color2 += rgba.r * (255.9 / 100.) * d;
    }
    color2 *= vColor_Intensity.xyz * (vColor_Intensity.w/samples); //!! create function that resembles LUT from VPM?
 
@@ -158,7 +158,7 @@ float4 ps_main_DMD(const in VS_OUTPUT IN) : COLOR
       //collect glow from neighbors
    }*/
 
-   //if (rgba.b > 200.0)
+   //if (rgba.r > 200.0)
    //   return float4(InvToneMap(InvGamma(min(color2,float3(1.5,1.5,1.5))/*+colorg*/)), 0.5);
    //else
    return float4(InvToneMap(InvGamma(color2/*+colorg*/)), vRes_Alpha_time.z); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?

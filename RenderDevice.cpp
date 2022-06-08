@@ -1361,19 +1361,38 @@ void RenderDevice::CopyDepth(RenderTarget* dest, RenderTarget* src) {
    //!! Not required for GL.
 }
 
-D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf, int *pTexWidth, int *pTexHeight, const bool linearRGB, const bool clamptoedge)
+D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf, int* pTexWidth, int* pTexHeight, const TextureFilter filter, const bool clampU, const bool clampV, const bool force_linear_rgb)
 {
-   D3DTexture *tex = CreateTexture(surf->width(), surf->height(), 0, STATIC, surf->m_format == BaseTexture::RGB_FP ? RGB32F : RGBA, surf->m_data.data(), 0, clamptoedge); //!! RGB16F?
-
-   if (pTexWidth) *pTexWidth = surf->width();
-   if (pTexHeight) *pTexHeight = surf->height();
+   colorFormat format;
+   if (surf->m_format == BaseTexture::SRGBA)
+      format = colorFormat::SRGBA;
+   else if (surf->m_format == BaseTexture::RGBA)
+      format = colorFormat::RGBA;
+   else if (surf->m_format == BaseTexture::SRGB)
+      format = colorFormat::SRGB;
+   else if (surf->m_format == BaseTexture::RGB)
+      format = colorFormat::RGB;
+   else if (surf->m_format == BaseTexture::RGB_FP16)
+      format = colorFormat::RGB16F;
+   else if (surf->m_format == BaseTexture::RGB_FP32)
+      format = colorFormat::RGB32F;
+   if (force_linear_rgb)
+      if (format == colorFormat::SRGB)
+         format = colorFormat::RGB;
+      else if (format == colorFormat::SRGBA)
+         format = colorFormat::RGBA;
+   D3DTexture* tex = CreateTexture(surf->width(), surf->height(), 0, STATIC, format, surf->data(), 0, filter, clampU, clampV);
+   if (pTexWidth)
+      *pTexWidth = surf->width();
+   if (pTexHeight)
+      *pTexHeight = surf->height();
    return tex;
 }
 
 void RenderDevice::UploadAndSetSMAATextures()
 {
-   m_SMAAsearchTexture = CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 0, STATIC, GREY, (void*)&searchTexBytes[0], 0);
-   m_SMAAareaTexture = CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 0, STATIC, GREY_ALPHA, (void*)&areaTexBytes[0], 0);
+   m_SMAAsearchTexture = CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 0, STATIC, GREY, (void*)&searchTexBytes[0], 0, TextureFilter::TEXTURE_MODE_BILINEAR, false, false);
+   m_SMAAareaTexture = CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 0, STATIC, GREY_ALPHA, (void*)&areaTexBytes[0], 0, TextureFilter::TEXTURE_MODE_BILINEAR, false, false);
 
    FBShader->SetTexture(SHADER_areaTex2D, m_SMAAareaTexture, true);
    FBShader->SetTexture(SHADER_searchTex2D, m_SMAAsearchTexture, true);
@@ -1555,23 +1574,26 @@ void RenderDevice::CopyDepth(D3DTexture* dest, void* src)
       CopyDepth(dest, (RenderTarget*)src);
 }
 
-D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const bool linearRGB, colorFormat &texformat)
+D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const bool force_linear_rgb, colorFormat& texformat)
 {
    const unsigned int texwidth  = surf->width();
    const unsigned int texheight = surf->height();
    const BaseTexture::Format basetexformat = surf->m_format;
 
-   colorFormat fpformat = colorFormat::RGBA32F;
-   if (basetexformat == BaseTexture::RGB_FP)
+   if (basetexformat == BaseTexture::RGB_FP16)
    {
-      const float* const __restrict psrc = (float*)(surf->data());
-      float maxval = psrc[0];
-      for (unsigned int i = 1; i < texwidth * texheight * 3; ++i)
-         maxval = max(maxval,psrc[i]);
-      fpformat = (maxval <= 65504.f) ? colorFormat::RGBA16F : colorFormat::RGBA32F;
+      texformat = colorFormat::RGBA16F;
    }
-
-   texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (texwidth > 256) && (texheight > 256) && (basetexformat != BaseTexture::RGB_FP)) ? colorFormat::DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? fpformat : colorFormat::RGBA8);
+   else if (basetexformat == BaseTexture::RGB_FP32)
+   {
+      texformat = colorFormat::RGBA32F;
+   }
+   else
+   {
+      texformat = colorFormat::RGBA8;
+      if (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (texwidth > 256) && (texheight > 256))
+         texformat = colorFormat::DXT5;
+   }
 
    IDirect3DTexture9 *sysTex;
    HRESULT hr;
@@ -1582,21 +1604,16 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const boo
    }
 
    // copy data into system memory texture
-   if (texformat == colorFormat::RGBA32F)
+   if (basetexformat == BaseTexture::RGB_FP32 && texformat == colorFormat::RGBA32F)
    {
       D3DLOCKED_RECT locked;
       CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
-
-      // old RGBA copy code, just for reference:
-      //BYTE *pdest = (BYTE*)locked.pBits;
-      //for (int y = 0; y < texheight; ++y)
-      //   memcpy(pdest + y*locked.Pitch, surf->data() + y*surf->pitch(), 4 * texwidth);
 
       float * const __restrict pdest = (float*)locked.pBits;
       const float * const __restrict psrc = (float*)(surf->data());
       for (unsigned int i = 0; i < texwidth*texheight; ++i)
       {
-         pdest[i * 4    ] = psrc[i * 3    ];
+         pdest[i * 4 + 0] = psrc[i * 3 + 0];
          pdest[i * 4 + 1] = psrc[i * 3 + 1];
          pdest[i * 4 + 2] = psrc[i * 3 + 2];
          pdest[i * 4 + 3] = 1.f;
@@ -1604,27 +1621,58 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const boo
 
       CHECKD3D(sysTex->UnlockRect(0));
    }
-   else if (texformat == colorFormat::RGBA16F)
+   else if (basetexformat == BaseTexture::RGB_FP16 && texformat == colorFormat::RGBA16F)
    {
       D3DLOCKED_RECT locked;
       CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
 
       unsigned short* const __restrict pdest = (unsigned short*)locked.pBits;
-      const float * const __restrict psrc = (float*)(surf->data());
+      const unsigned short* const __restrict psrc = (unsigned short*)(surf->data());
       const unsigned short one16 = float2half(1.f);
       for (unsigned int i = 0; i < texwidth*texheight; ++i)
       {
-         pdest[i * 4    ] = float2half(psrc[i * 3    ]);
-         pdest[i * 4 + 1] = float2half(psrc[i * 3 + 1]);
-         pdest[i * 4 + 2] = float2half(psrc[i * 3 + 2]);
+         pdest[i * 4 + 0] = psrc[i * 3 + 0];
+         pdest[i * 4 + 1] = psrc[i * 3 + 1];
+         pdest[i * 4 + 2] = psrc[i * 3 + 2];
          pdest[i * 4 + 3] = one16;
       }
 
       CHECKD3D(sysTex->UnlockRect(0));
    }
-   else
+   else if ((basetexformat == BaseTexture::RGB || basetexformat == BaseTexture::SRGB) && texformat == colorFormat::RGBA8)
    {
-      IDirect3DSurface9* sysSurf;
+      D3DLOCKED_RECT locked;
+      CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
+
+      BYTE* const __restrict pdest = (BYTE*)locked.pBits;
+      const BYTE* const __restrict psrc = (BYTE*)(surf->data());
+      for (unsigned int i = 0; i < texwidth * texheight; ++i)
+      {
+         pdest[i * 4 + 0] = psrc[i * 3 + 2];
+         pdest[i * 4 + 1] = psrc[i * 3 + 1];
+         pdest[i * 4 + 2] = psrc[i * 3 + 0];
+         pdest[i * 4 + 3] = 255u;
+      }
+
+      CHECKD3D(sysTex->UnlockRect(0));
+   }
+   else if ((basetexformat == BaseTexture::RGBA || basetexformat == BaseTexture::SRGBA) && texformat == colorFormat::RGBA8)
+   {
+      D3DLOCKED_RECT locked;
+      CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
+
+      BYTE* const __restrict pdest = (BYTE*)locked.pBits;
+      const BYTE* const __restrict psrc = (BYTE*)(surf->data());
+      for (unsigned int i = 0; i < texwidth * texheight; ++i)
+      {
+         pdest[i * 4 + 0] = psrc[i * 4 + 2];
+         pdest[i * 4 + 1] = psrc[i * 4 + 1];
+         pdest[i * 4 + 2] = psrc[i * 4 + 0];
+         pdest[i * 4 + 3] = psrc[i * 4 + 3];
+      }
+
+      CHECKD3D(sysTex->UnlockRect(0));
+      /* IDirect3DSurface9* sysSurf;
       CHECKD3D(sysTex->GetSurfaceLevel(0, &sysSurf));
       RECT sysRect;
       sysRect.top = 0;
@@ -1632,17 +1680,18 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const boo
       sysRect.right = texwidth;
       sysRect.bottom = texheight;
       CHECKD3D(D3DXLoadSurfaceFromMemory(sysSurf, nullptr, nullptr, surf->data(), (D3DFORMAT)colorFormat::RGBA8, surf->pitch(), nullptr, &sysRect, D3DX_FILTER_NONE, 0));
-      SAFE_RELEASE_NO_RCC(sysSurf);
+      SAFE_RELEASE_NO_RCC(sysSurf);*/
    }
 
    if (!(texformat != colorFormat::DXT5 && m_autogen_mipmap))
       // normal maps or float textures are already in linear space!
-      CHECKD3D(D3DXFilterTexture(sysTex, nullptr, D3DX_DEFAULT, (texformat == colorFormat::RGBA16F || texformat == colorFormat::RGBA32F || linearRGB) ? D3DX_FILTER_TRIANGLE : (D3DX_FILTER_TRIANGLE | D3DX_FILTER_SRGB)));
+      CHECKD3D(D3DXFilterTexture(sysTex, nullptr, D3DX_DEFAULT,
+         (texformat == colorFormat::RGBA16F || texformat == colorFormat::RGBA32F || force_linear_rgb) ? D3DX_FILTER_TRIANGLE : (D3DX_FILTER_TRIANGLE | D3DX_FILTER_SRGB)));
 
    return sysTex;
 }
 
-D3DTexture* RenderDevice::UploadTexture(BaseTexture* const surf, int* const pTexWidth, int* const pTexHeight, const bool linearRGB, const bool clamptoedge)
+D3DTexture* RenderDevice::UploadTexture(BaseTexture* const surf, int* const pTexWidth, int* const pTexHeight, const TextureFilter filter, const bool clampU, const bool clampV, const bool force_linear_rgb)
 {
    const unsigned int texwidth  = surf->width();
    const unsigned int texheight = surf->height();
@@ -1653,10 +1702,13 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* const surf, int* const pTex
    const BaseTexture::Format basetexformat = surf->m_format;
 
    colorFormat texformat;
-   D3DTexture *sysTex = CreateSystemTexture(surf, linearRGB, texformat);
+   D3DTexture* sysTex = CreateSystemTexture(surf, force_linear_rgb, texformat);
 
    D3DTexture *tex;
-   HRESULT hr = m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? 0 : sysTex->GetLevelCount(), (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? textureUsage::AUTOMIPMAP : 0, (D3DFORMAT)texformat, (D3DPOOL)memoryPool::DEFAULT, &tex, nullptr);
+   HRESULT hr = m_pD3DDevice->CreateTexture(texwidth, texheight, 
+      (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? 0 : sysTex->GetLevelCount(), 
+      (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? textureUsage::AUTOMIPMAP : 0, 
+      (D3DFORMAT)texformat, (D3DPOOL)memoryPool::DEFAULT, &tex, nullptr);
    if (FAILED(hr))
       ReportError("Fatal Error: out of VRAM!", hr, __FILE__, __LINE__);
 
@@ -1719,20 +1771,40 @@ void RenderDevice::UploadAndSetSMAATextures()
 }
 #endif
 
-void RenderDevice::UpdateTexture(D3DTexture* const tex, BaseTexture* const surf, const bool linearRGB)
+void RenderDevice::UpdateTexture(D3DTexture* const tex, BaseTexture* const surf, const bool force_linear_rgb)
 {
 #ifdef ENABLE_SDL
-   tex->format = (surf->m_format == BaseTexture::RGB_FP) ? RGB32F : RGBA; //!! RGB16F?
-   const GLuint col_type = ((tex->format == RGBA32F) || (tex->format == RGBA16F) || (tex->format == RGB32F) || (tex->format == RGB16F)) ? GL_FLOAT : GL_UNSIGNED_BYTE;
-   const GLuint col_format = (tex->format == GREY) ? GL_RED : (tex->format == GREY_ALPHA) ? GL_RG : ((tex->format == RGB) || (tex->format == RGB5) || (tex->format == RGB10) || (tex->format == RGB16F) || (tex->format == RGB32F)) ? GL_BGR : GL_BGRA;
+   if (surf->m_format == BaseTexture::RGBA)
+      tex->format = colorFormat::RGBA;
+   else if (surf->m_format == BaseTexture::SRGBA)
+      tex->format = colorFormat::SRGBA;
+   else if (surf->m_format == BaseTexture::RGB)
+      tex->format = colorFormat::RGB;
+   else if (surf->m_format == BaseTexture::SRGB)
+      tex->format = colorFormat::SRGB;
+   else if (surf->m_format == BaseTexture::RGB_FP16)
+      tex->format = colorFormat::RGB16F;
+   else if (surf->m_format == BaseTexture::RGB_FP32)
+      tex->format = colorFormat::RGB32F;
+   if (force_linear_rgb)
+      if (tex->format == colorFormat::SRGB)
+         tex->format = colorFormat::RGB;
+      else if (tex->format == colorFormat::SRGBA)
+         tex->format = colorFormat::RGBA;
+   colorFormat Format = tex->format;
+   const GLuint col_type = ((Format == RGBA32F) || (Format == RGB32F)) ? GL_FLOAT : ((Format == RGBA16F) || (Format == RGB16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
+   const GLuint col_format = ((Format == GREY) || (Format == RED16F))                                                                                                       ? GL_RED
+      : ((Format == GREY_ALPHA) || (Format == RG16F))                                                                                                                       ? GL_RG
+      : ((Format == RGB) || (Format == RGB8) || (Format == SRGB) || (Format == SRGB8) || (Format == RGB5) || (Format == RGB10) || (Format == RGB16F) || (Format == RGB32F)) ? GL_RGB
+                                                                                                                                                                            : GL_RGBA;
    glBindTexture(GL_TEXTURE_2D, tex->texture);
+   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, surf->width(), surf->height(), col_format, col_type, surf->data());
-   //glTexImage2D(GL_TEXTURE_2D, 0, tex->format, surf->width(), surf->height(), 0, col_format, col_type, surf->data()); // Use TexStorage instead
    glGenerateMipmap(GL_TEXTURE_2D); // Generate mip-maps
    glBindTexture(GL_TEXTURE_2D, 0);
 #else
    colorFormat texformat;
-   IDirect3DTexture9* sysTex = CreateSystemTexture(surf, linearRGB, texformat);
+   IDirect3DTexture9* sysTex = CreateSystemTexture(surf, force_linear_rgb, texformat);
    m_curTextureUpdates++;
    CHECKD3D(m_pD3DDevice->UpdateTexture(sysTex, tex));
    SAFE_RELEASE(sysTex);
@@ -2317,7 +2389,7 @@ void Shader::Unload()
    SAFE_RELEASE(m_shader);
 }
 
-void Shader::SetTexture(const SHADER_UNIFORM_HANDLE texelName, Texture *texel, const bool linearRGB, const bool clamptoedge)
+void Shader::SetTexture(const SHADER_UNIFORM_HANDLE texelName, Texture* texel, const TextureFilter filter, const bool clampU, const bool clampV, const bool force_linear_rgb)
 {
    const unsigned int idx = texelName[strlen(texelName) - 1] - '0'; // current convention: SetTexture gets "TextureX", where X 0..4
    assert(idx < TEXTURESET_STATE_CACHE_SIZE);
@@ -2335,13 +2407,13 @@ void Shader::SetTexture(const SHADER_UNIFORM_HANDLE texelName, Texture *texel, c
    if (texel->m_pdsBuffer != currentTexture[idx])
    {
       currentTexture[idx] = texel->m_pdsBuffer;
-      CHECKD3D(m_shader->SetTexture(texelName, m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBuffer, linearRGB)));
+      CHECKD3D(m_shader->SetTexture(texelName, m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBuffer, filter, clampU, clampV, force_linear_rgb)));
 
       m_renderDevice->m_curTextureChanges++;
    }
 }
 
-void Shader::SetTexture(const SHADER_UNIFORM_HANDLE texelName, D3DTexture *texel, const bool linearRGB)
+void Shader::SetTexture(const SHADER_UNIFORM_HANDLE texelName, D3DTexture* texel)
 {
    const unsigned int idx = texelName[strlen(texelName) - 1] - '0'; // current convention: SetTexture gets "TextureX", where X 0..4
    assert(idx < TEXTURESET_STATE_CACHE_SIZE);

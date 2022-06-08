@@ -227,7 +227,7 @@ void DispReel::RenderDynamic()
    const vec4 c = convertColor(0xFFFFFFFF, 1.f);
    pd3dDevice->DMDShader->SetVector(SHADER_vColor_Intensity, &c);
 
-   pd3dDevice->DMDShader->SetTexture(SHADER_Texture0, pin, false);
+   pd3dDevice->DMDShader->SetTexture(SHADER_Texture0, pin, TextureFilter::TEXTURE_MODE_TRILINEAR, false, false, false);
 
    pd3dDevice->DMDShader->Begin(0);
 

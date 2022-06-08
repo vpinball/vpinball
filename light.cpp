@@ -474,7 +474,7 @@ void Light::RenderDynamic()
       if (offTexel != nullptr)
       {
          pd3dDevice->classicLightShader->SetTechniqueMetal(SHADER_TECHNIQUE_light_with_texture, m_surfaceMaterial->m_bIsMetal);
-         pd3dDevice->classicLightShader->SetTexture(SHADER_Texture0, offTexel, false);
+         pd3dDevice->classicLightShader->SetTexture(SHADER_Texture0, offTexel, TextureFilter::TEXTURE_MODE_TRILINEAR, true, true, false);
          // Was: if (m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl && !m_backglass)*/
          // TOTAN and Flintstones inserts break if alpha blending is disabled here.
          // Also see below if changing again

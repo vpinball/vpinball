@@ -849,9 +849,9 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
             delete g_pplayer->m_texdmd;
          }
 #ifdef DMD_UPSCALE
-         g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmd.x*3, g_pplayer->m_dmd.y*3, BaseTexture::RGBA, false);
+         g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmd.x*3, g_pplayer->m_dmd.y*3, BaseTexture::RGBA);
 #else
-         g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmd.x, g_pplayer->m_dmd.y, BaseTexture::RGBA, false);
+         g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmd.x, g_pplayer->m_dmd.y, BaseTexture::RGBA);
 #endif
       }
 
@@ -893,9 +893,9 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
             delete g_pplayer->m_texdmd;
          }
 #ifdef DMD_UPSCALE
-         g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmd.x*3, g_pplayer->m_dmd.y*3, BaseTexture::RGBA, false);
+         g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmd.x*3, g_pplayer->m_dmd.y*3, BaseTexture::RGBA);
 #else
-         g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmd.x, g_pplayer->m_dmd.y, BaseTexture::RGBA, false);
+         g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmd.x, g_pplayer->m_dmd.y, BaseTexture::RGBA);
 #endif
       }
 
@@ -3508,7 +3508,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                      HRESULT hr;
                      if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                      {
-                        hr = LoadImageFromStream(pstmItem, i, loadfileversion);
+                        hr = LoadImageFromStream(pstmItem, i, loadfileversion, false);
                         if (FAILED(hr))
                            return;
                         pstmItem->Release();
@@ -3529,7 +3529,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                     HRESULT hr;
                     if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                     {
-                        hr = LoadImageFromStream(pstmItem, i, loadfileversion);
+                        hr = LoadImageFromStream(pstmItem, i, loadfileversion, true);
                         if (SUCCEEDED(hr))
                         {
                             pstmItem->Release();
@@ -4698,7 +4698,7 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
       newMenu.AppendMenu(MF_STRING, ID_SETASDEFAULT, ls3.m_szbuffer);
 
       newMenu.AppendMenu(MF_SEPARATOR, ~0u, "");
-      
+
       FillLayerContextMenu(newMenu, layerSubMenu, psel);
       const LocalString lsLayer(IDS_ASSIGN_TO_CURRENT_LAYER);
       newMenu.AppendMenu(MF_STRING, ID_ASSIGN_TO_CURRENT_LAYER, lsLayer.m_szbuffer);
@@ -6834,7 +6834,13 @@ bool PinTable::ExportImage(const Texture * const ppi, const char * const szfilen
       delete[] sinfo;
       CloseHandle(hFile);
 #else
-      FIBITMAP * dib = FreeImage_Allocate(ppi->m_width, ppi->m_height, 32);
+      if (ppi->m_pdsBuffer->m_format == BaseTexture::RGB_FP16 || ppi->m_pdsBuffer->m_format == BaseTexture::RGB_FP32)
+      {
+          assert(!"float format export");
+          return false; // Unsupported but this should not happens since all HDR image are imported and have a m_ppb field
+      }
+
+      FIBITMAP *dib = FreeImage_Allocate(ppi->m_width, ppi->m_height, ppi->m_pdsBuffer->has_alpha() ? 32 : 24);
       BYTE * const psrc = FreeImage_GetBits(dib);
 
       const unsigned int pitch = ppi->m_pdsBuffer->pitch();
@@ -6843,7 +6849,7 @@ bool PinTable::ExportImage(const Texture * const ppi, const char * const szfilen
       for (unsigned int i = 0; i < ppi->m_height; i++)
       {
          const BYTE * const pch = (spch -= pitch); // start on previous previous line
-         memcpy(psrc + i*(ppi->m_width*4), pch, ppi->m_width*4);
+         memcpy(psrc + i * pitch, pch, pitch);
       }
 
       if (!FreeImage_Save(FreeImage_GetFIFFromFilename(szfilename), dib, szfilename, PNG_Z_BEST_COMPRESSION | JPEG_QUALITYGOOD | BMP_SAVE_RLE))
@@ -6920,16 +6926,48 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
    lvitem.pszText = (LPSTR)ppi->m_szName.c_str();
    lvitem.lParam = (size_t)ppi;
 
-   _snprintf_s(sizeString, MAXTOKEN-1, "%ix%i", ppi->m_realWidth, ppi->m_realHeight);
+   if (ppi->m_realWidth == ppi->m_width && ppi->m_realHeight == ppi->m_height)
+      _snprintf_s(sizeString, MAXTOKEN - 1, "%ix%i", ppi->m_realWidth, ppi->m_realHeight);
+   else
+      _snprintf_s(sizeString, MAXTOKEN - 1, "%ix%i downsized to %ix%i", ppi->m_realWidth, ppi->m_realHeight, ppi->m_width, ppi->m_height);
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
    ListView_SetItemText(hwndListView, index, 1, (LPSTR)ppi->m_szPath.c_str());
    ListView_SetItemText(hwndListView, index, 2, sizeString);
    ListView_SetItemText(hwndListView, index, 3, usedStringNo);
 
-   char * const sizeConv = StrFormatByteSize64(ppi->m_pdsBuffer->m_data.size(), sizeString, MAXTOKEN);
-
+   char *const sizeConv = StrFormatByteSize64(ppi->m_pdsBuffer->height() * ppi->m_pdsBuffer->pitch(), sizeString, MAXTOKEN);
    ListView_SetItemText(hwndListView, index, 4, sizeConv);
+
+   if (ppi->m_pdsBuffer == nullptr)
+   {
+      ListView_SetItemText(hwndListView, index, 5, "-");
+   }
+   else if (ppi->m_pdsBuffer->m_format == BaseTexture::SRGB)
+   {
+      ListView_SetItemText(hwndListView, index, 5, "sRGB");
+   }
+   else if (ppi->m_pdsBuffer->m_format == BaseTexture::SRGBA)
+   {
+      ListView_SetItemText(hwndListView, index, 5, "sRGBA");
+   }
+   else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGB)
+   {
+      ListView_SetItemText(hwndListView, index, 5, "RGB");
+   }
+   else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGBA)
+   {
+      ListView_SetItemText(hwndListView, index, 5, "RGBA");
+   }
+   else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGB_FP16)
+   {
+      ListView_SetItemText(hwndListView, index, 5, "RGB 16F");
+   }
+   else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGB_FP32)
+   {
+      ListView_SetItemText(hwndListView, index, 5, "RGB 32F");
+   }
+
    if ((_stricmp(m_image.c_str(), ppi->m_szName.c_str()) == 0)
     || (_stricmp(m_ballImage.c_str(), ppi->m_szName.c_str()) == 0) 
     || (_stricmp(m_ballImageDecal.c_str(), ppi->m_szName.c_str()) == 0)
@@ -7457,7 +7495,7 @@ int PinTable::AddListItem(HWND hwndListView, const string& szName, const string&
    return index;
 }
 
-HRESULT PinTable::LoadImageFromStream(IStream *pstm, unsigned int idx, int version)
+HRESULT PinTable::LoadImageFromStream(IStream *pstm, unsigned int idx, int version, bool resize_on_low_mem)
 {
    if (version < 100) // Tech Beta 3 and below
    {
@@ -7468,7 +7506,7 @@ HRESULT PinTable::LoadImageFromStream(IStream *pstm, unsigned int idx, int versi
    {
       Texture * const ppi = new Texture();
 
-      if (ppi->LoadFromStream(pstm, version, this) == S_OK)
+      if (ppi->LoadFromStream(pstm, version, this, resize_on_low_mem) == S_OK)
          m_vimage[idx] = ppi;
       else
          delete ppi;

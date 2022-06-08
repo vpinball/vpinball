@@ -375,7 +375,7 @@ public:
    void ListImages(HWND hwndListView);
    int AddListImage(HWND hwndListView, Texture *const ppi);
    void RemoveImage(Texture *const ppi);
-   HRESULT LoadImageFromStream(IStream *pstm, unsigned int idx, int version);
+   HRESULT LoadImageFromStream(IStream *pstm, unsigned int idx, int version, bool resize_on_low_mem);
    Texture *GetImage(const std::string &szName) const;
    bool GetImageLink(const Texture *const ppi) const;
    PinBinary *GetImageLinkBinary(const int id);
