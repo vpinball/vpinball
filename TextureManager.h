@@ -7,6 +7,7 @@
 #include "typedefs3D.h"
 
 class RenderDevice;
+enum TextureFilter;
 
 class TextureManager
 {
@@ -19,7 +20,7 @@ public:
       UnloadAll();
    }
 
-   D3DTexture* LoadTexture(BaseTexture* memtex, const bool linearRGB, const bool clamptoedge = false);
+   D3DTexture* LoadTexture(BaseTexture* memtex, const TextureFilter filter, const bool clampU, const bool clampV, const bool force_linear_rgb);
    void SetDirty(BaseTexture* memtex);
    void UnloadTexture(BaseTexture* memtex);
    void UnloadAll();

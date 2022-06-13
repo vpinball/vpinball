@@ -234,8 +234,8 @@ public:
       CHECKD3D(m_shader->End());
    }
 
-   void SetTexture(const SHADER_UNIFORM_HANDLE texelName, Texture *texel, const bool linearRGB, const bool clamptoedge = false); //!! clamptoedge unused
-   void SetTexture(const SHADER_UNIFORM_HANDLE texelName, D3DTexture *texel, const bool linearRGB = false); //!! linearRGB unused
+   void SetTexture(const SHADER_UNIFORM_HANDLE texelName, Texture *texel, const TextureFilter filter, const bool clampU, const bool clampV, const bool force_linear_rgb); //!! clampU/clampV/filter unimplemented
+   void SetTexture(const SHADER_UNIFORM_HANDLE texelName, D3DTexture* texel);
    void SetTextureNull(const SHADER_UNIFORM_HANDLE texelName);
    void SetMaterial(const Material * const mat);
 

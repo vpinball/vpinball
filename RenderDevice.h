@@ -302,10 +302,10 @@ public:
    bool DepthBufferReadBackAvailable();
 
 #ifndef ENABLE_SDL
-   D3DTexture* CreateSystemTexture(BaseTexture* const surf, const bool linearRGB, colorFormat &texformat);
-   D3DTexture* UploadTexture(BaseTexture* const surf, int* const pTexWidth, int* const pTexHeight, const bool linearRGB, const bool clamptoedge = false);
+   D3DTexture* CreateSystemTexture(BaseTexture* const surf, const bool force_linear_rgb, colorFormat& texformat);
+   D3DTexture* UploadTexture(BaseTexture* const surf, int* const pTexWidth, int* const pTexHeight, const TextureFilter filter, const bool clampU, const bool clampV, const bool force_linear_rgb);
 #endif
-   void UpdateTexture(D3DTexture* const tex, BaseTexture* const surf, const bool linearRGB);
+   void UpdateTexture(D3DTexture* const tex, BaseTexture* const surf, const bool force_linear_rgb);
 
    void SetRenderState(const RenderStates p1, DWORD p2);
    bool SetRenderStateCache(const RenderStates p1, DWORD p2);
