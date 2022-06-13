@@ -6849,7 +6849,7 @@ bool PinTable::ExportImage(const Texture * const ppi, const char * const szfilen
       for (unsigned int i = 0; i < ppi->m_height; i++)
       {
          const BYTE * const pch = (spch -= pitch); // start on previous previous line
-         memcpy(psrc + i * pitch, pch, pitch);
+         memcpy(psrc + i * (ppi->m_width*(ppi->m_pdsBuffer->has_alpha() ? 4:3)), pch, ppi->m_width*(ppi->m_pdsBuffer->has_alpha() ? 4:3));
       }
 
       if (!FreeImage_Save(FreeImage_GetFIFFromFilename(szfilename), dib, szfilename, PNG_Z_BEST_COMPRESSION | JPEG_QUALITYGOOD | BMP_SAVE_RLE))
@@ -6967,6 +6967,8 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
    {
       ListView_SetItemText(hwndListView, index, 5, "RGB 32F");
    }
+   else
+      assert(!"unknown format");
 
    if ((_stricmp(m_image.c_str(), ppi->m_szName.c_str()) == 0)
     || (_stricmp(m_ballImage.c_str(), ppi->m_szName.c_str()) == 0) 

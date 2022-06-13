@@ -8,7 +8,7 @@ extern int NumVideoBytes;
 
 enum TextureFilter
 {
-   TEXTURE_MODE_NONE,			// No mipmapping
+   TEXTURE_MODE_NONE,			// No filtering at all, single texel returned.
    TEXTURE_MODE_POINT,			// Point sampled (aka nearest mipmap) texture filtering.
    TEXTURE_MODE_BILINEAR,		// Bilinar texture filtering. 
    TEXTURE_MODE_TRILINEAR,		// Trilinar texture filtering. 

@@ -473,7 +473,7 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
          FreeStuff();
 
       // BMP stored as a 32-bit SBGRA picture
-      BYTE* tmp = new BYTE[m_width * m_height * 4];
+      BYTE* const __restrict tmp = new BYTE[m_width * m_height * 4];
       LZWReader lzwreader(pbr->m_pistream, (int *)tmp, m_width * 4, m_height, m_width * 4);
       lzwreader.Decoder();
 
@@ -482,10 +482,13 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
       for (unsigned int i = 0; i < m_height && !has_alpha; i++)
       {
          unsigned int o = i * m_width * 4 + 3;
-         for (unsigned int l = 0; l < m_width && !has_alpha; l++,o+=4)
+         for (unsigned int l = 0; l < m_width; l++,o+=4)
          {
             if (tmp[o] != 0 && tmp[o] != 255)
+            {
                has_alpha = true;
+               break;
+            }
          }
       }
 
@@ -574,7 +577,7 @@ void Texture::CreateGDIVersion()
    bmi.bmiHeader.biCompression = BI_RGB;
    bmi.bmiHeader.biSizeImage = 0;
 
-   BYTE* tmp = new BYTE[m_width * m_height * 4];
+   BYTE* const __restrict tmp = new BYTE[m_width * m_height * 4];
    if (m_pdsBuffer->m_format == BaseTexture::RGB_FP32) // Tonemap for 8bpc-Display
    {
       const float* const __restrict src = (float*)m_pdsBuffer->data();

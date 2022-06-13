@@ -1376,12 +1376,16 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf, int* pTexWidth, int* 
       format = colorFormat::RGB16F;
    else if (surf->m_format == BaseTexture::RGB_FP32)
       format = colorFormat::RGB32F;
+   else
+      assert(!"unknown format");
    if (force_linear_rgb)
+   {
       if (format == colorFormat::SRGB)
          format = colorFormat::RGB;
       else if (format == colorFormat::SRGBA)
          format = colorFormat::RGBA;
-   D3DTexture* tex = CreateTexture(surf->width(), surf->height(), 0, STATIC, format, surf->data(), 0, filter, clampU, clampV);
+   }
+   D3DTexture* const tex = CreateTexture(surf->width(), surf->height(), 0, STATIC, format, surf->data(), 0, filter, clampU, clampV);
    if (pTexWidth)
       *pTexWidth = surf->width();
    if (pTexHeight)
@@ -1786,12 +1790,16 @@ void RenderDevice::UpdateTexture(D3DTexture* const tex, BaseTexture* const surf,
       tex->format = colorFormat::RGB16F;
    else if (surf->m_format == BaseTexture::RGB_FP32)
       tex->format = colorFormat::RGB32F;
+   else
+      assert(!"unknown format");
    if (force_linear_rgb)
+   {
       if (tex->format == colorFormat::SRGB)
          tex->format = colorFormat::RGB;
       else if (tex->format == colorFormat::SRGBA)
          tex->format = colorFormat::RGBA;
-   colorFormat Format = tex->format;
+   }
+   const colorFormat Format = tex->format;
    const GLuint col_type = ((Format == RGBA32F) || (Format == RGB32F)) ? GL_FLOAT : ((Format == RGBA16F) || (Format == RGB16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
    const GLuint col_format = ((Format == GREY) || (Format == RED16F))                                                                                                       ? GL_RED
       : ((Format == GREY_ALPHA) || (Format == RG16F))                                                                                                                       ? GL_RG
