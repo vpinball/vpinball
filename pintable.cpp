@@ -3400,7 +3400,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             if (loadfileversion > CURRENT_FILE_FORMAT_VERSION)
             {
                char errorMsg[MAX_PATH] = { 0 };
-               sprintf_s(errorMsg, "This table was saved with version %i.%02i and is newer than the supported version %i.%02i! You might get problems loading/playing it!", loadfileversion / 100, loadfileversion % 100, CURRENT_FILE_FORMAT_VERSION / 100, CURRENT_FILE_FORMAT_VERSION % 100);
+               sprintf_s(errorMsg, "This table was saved with file version %i.%02i and is newer than the supported file version %i.%02i!\nYou might get problems loading/playing it, so please update to the latest VPX at https://github.com/vpinball/vpinball/releases!", loadfileversion / 100, loadfileversion % 100, CURRENT_FILE_FORMAT_VERSION / 100, CURRENT_FILE_FORMAT_VERSION % 100);
                ShowError(errorMsg);
                /*
                               pstgRoot->Release();
