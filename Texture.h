@@ -28,6 +28,8 @@ public:
    BYTE* data()                { return m_data.data(); }
    bool has_alpha() const      { return m_format == RGBA || m_format == SRGBA; }
 
+   BaseTexture *ToBGRA();
+
 private:
    unsigned int m_width, m_height;
    std::vector<BYTE> m_data;
