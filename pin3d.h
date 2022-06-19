@@ -60,22 +60,6 @@ public:
 
    void Flip(const bool vsync);
 
-#ifdef ENABLE_SDL
-   void SetRenderTarget(RenderDevice * const pd3dDevice, RenderTarget* pddsSurface, void* unused) const;
-   void SetPrimaryRenderTarget(RenderTarget* pddsSurface, void* unused) const;
-   void SetSecondaryRenderTarget(RenderTarget* pddsSurface, void* unused) const;
-#else
-   void SetRenderTarget(RenderDevice * const pd3dDevice, RenderTarget* pddsSurface, RenderTarget* pddsZ) const;
-   void SetRenderTarget(RenderDevice * const pd3dDevice, RenderTarget* pddsSurface, D3DTexture* pddsZ) const;
-   void SetRenderTarget(RenderDevice * const pd3dDevice, RenderTarget* pddsSurface, void* pddsZ) const;
-   void SetPrimaryRenderTarget(RenderTarget* pddsSurface, RenderTarget* pddsZ) const;
-   void SetPrimaryRenderTarget(RenderTarget* pddsSurface, D3DTexture* pddsZ) const;
-   void SetPrimaryRenderTarget(RenderTarget* pddsSurface, void* pddsZ) const;
-   void SetSecondaryRenderTarget(RenderTarget* pddsSurface, RenderTarget* pddsZ) const;
-   void SetSecondaryRenderTarget(RenderTarget* pddsSurface, void* pddsZ) const;
-   void SetSecondaryRenderTarget(RenderTarget* pddsSurface, D3DTexture* pddsZ) const;
-#endif
-
    void SetTextureFilter(RenderDevice * const pd3dDevice, const int TextureNum, const int Mode) const;
    void SetPrimaryTextureFilter(const int TextureNum, const int Mode) const;
    void SetSecondaryTextureFilter(const int TextureNum, const int Mode) const;
@@ -104,19 +88,13 @@ public:
 
    RenderDevice* m_pd3dPrimaryDevice;
    RenderDevice* m_pd3dSecondaryDevice;
+
+   RenderTarget* m_pddsAOBackBuffer;
+   RenderTarget* m_pddsAOBackTmpBuffer;
+
    RenderTarget* m_pddsBackBuffer;
 
-   D3DTexture* m_pddsAOBackBuffer;
-   D3DTexture* m_pddsAOBackTmpBuffer;
-
-   D3DTexture* m_pdds3DZBuffer;
-
-   void* m_pddsZBuffer; // D3DTexture* or RenderTarget*, depending on HW support
-
-#ifndef ENABLE_SDL
    RenderTarget* m_pddsStatic;
-   void* m_pddsStaticZ; // D3DTexture* or RenderTarget*, depending on HW support
-#endif
 
    Texture m_pinballEnvTexture; // loaded from Resources
    Texture m_builtinEnvTexture; // loaded from Resources
