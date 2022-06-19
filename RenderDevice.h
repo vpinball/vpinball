@@ -5,12 +5,18 @@
 
 #include "Material.h"
 #include "Texture.h"
+#include "Sampler.h"
+#include "RenderTarget.h"
 #include "IndexBuffer.h"
 #include "VertexBuffer.h"
 #include "TextureManager.h"
 
 #ifdef ENABLE_VR
 #include <openvr.h>
+#endif
+
+#ifndef ENABLE_SDL
+#define CHECKNVAPI(s) { NvAPI_Status hr = (s); if (hr != NVAPI_OK) { NvAPI_ShortString ss; NvAPI_GetErrorMessage(hr,ss); g_pvp->MessageBox(ss, "NVAPI", MB_OK | MB_ICONEXCLAMATION); } }
 #endif
 
 void ReportFatalError(const HRESULT hr, const char *file, const int line);
@@ -159,7 +165,7 @@ public:
       POINTLIST = GL_POINTS,
       LINELIST = GL_LINES,
       LINESTRIP = GL_LINE_STRIP
-};
+   };
 
    SDL_Window *m_sdl_playfieldHwnd;
    SDL_GLContext  m_sdl_context;
@@ -222,7 +228,6 @@ public:
       UNDEFINED
    };
 
-
    enum TextureAddressMode {
       TEX_WRAP = D3DTADDRESS_WRAP,
       TEX_CLAMP = D3DTADDRESS_CLAMP,
@@ -253,24 +258,19 @@ public:
 
    bool SetMaximumPreRenderedFrames(const DWORD frames);
 
-   D3DTexture* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture; }
-   D3DTexture* GetBackBufferTmpTexture() const { return m_pOffscreenBackBufferTmpTexture; }   // stereo/FXAA only
-   D3DTexture* GetBackBufferTmpTexture2() const { return m_pOffscreenBackBufferTmpTexture2; } // SMAA only
+   RenderTarget* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture; }
+   RenderTarget* GetBackBufferTmpTexture() const { return m_pOffscreenBackBufferTmpTexture; } // stereo/FXAA only
+   RenderTarget* GetBackBufferTmpTexture2() const { return m_pOffscreenBackBufferTmpTexture2; } // SMAA only
 #ifdef ENABLE_SDL
-   D3DTexture* GetNonMSAABlitTexture(int m_MSAASamples) const { return m_MSAASamples == 1 ? m_pOffscreenBackBufferTexture : m_pOffscreenNonMSAABlitTexture; }
-   D3DTexture* GetOffscreenVR(int eye) const { return eye == 0 ? m_pOffscreenVRLeft : m_pOffscreenVRRight;}
+   Sampler* GetNonMSAABlitTexture(int m_MSAASamples) const { return m_MSAASamples == 1 ? m_pOffscreenBackBufferTexture->GetColorSampler() : m_pOffscreenNonMSAABlitTexture; }
+   RenderTarget* GetOffscreenVR(int eye) const { return eye == 0 ? m_pOffscreenVRLeft : m_pOffscreenVRRight; }
 #endif
-   D3DTexture* GetMirrorTmpBufferTexture() const { return m_pMirrorTmpBufferTexture; }
-   D3DTexture* GetReflectionBufferTexture() const { return m_pReflectionBufferTexture; }
-   RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; }
+   RenderTarget* GetMirrorTmpBufferTexture() const { return m_pMirrorTmpBufferTexture; }
+   RenderTarget* GetReflectionBufferTexture() const { return m_pReflectionBufferTexture; }
+   RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; } // The screen render target
 
-   D3DTexture* GetBloomBufferTexture() const { return m_pBloomBufferTexture; }
-   D3DTexture* GetBloomTmpBufferTexture() const { return m_pBloomTmpBufferTexture; }
-
-   RenderTarget* DuplicateRenderTarget(RenderTarget* src);
-   D3DTexture* DuplicateTexture(RenderTarget* src);
-   D3DTexture* DuplicateTextureSingleChannel(RenderTarget* src);
-   D3DTexture* DuplicateDepthTexture(RenderTarget* src);
+   RenderTarget* GetBloomBufferTexture() const { return m_pBloomBufferTexture; }
+   RenderTarget* GetBloomTmpBufferTexture() const { return m_pBloomTmpBufferTexture; }
 
 #ifdef ENABLE_SDL
    static bool isVRinstalled();
@@ -278,34 +278,7 @@ public:
    static void turnVROff();
 #endif
 
-#ifndef ENABLE_SDL
-   void SetRenderTarget(RenderTarget* surf);
-   void SetRenderTarget(D3DTexture* tex);
-#endif
-   void SetZBuffer(RenderTarget* surf);
-   void UnSetZBuffer();
-
-   void* AttachZBufferTo(RenderTarget* surf);
-   void CopySurface(RenderTarget* dest, RenderTarget* src);
-#ifdef ENABLE_SDL
-   void CopyDepth(RenderTarget* dest, RenderTarget* src);
-#else
-   void CopySurface(D3DTexture* dest, RenderTarget* src);
-   void CopySurface(RenderTarget* dest, D3DTexture* src);
-   void CopySurface(D3DTexture* dest, D3DTexture* src);
-   void CopySurface(void* dest, void* src);
-   void CopyDepth(D3DTexture* dest, RenderTarget* src);
-   void CopyDepth(D3DTexture* dest, D3DTexture* src);
-   void CopyDepth(D3DTexture* dest, void* src);
-#endif
-
    bool DepthBufferReadBackAvailable();
-
-#ifndef ENABLE_SDL
-   D3DTexture* CreateSystemTexture(BaseTexture* const surf, const bool force_linear_rgb, colorFormat& texformat);
-   D3DTexture* UploadTexture(BaseTexture* const surf, int* const pTexWidth, int* const pTexHeight, const TextureFilter filter, const bool clampU, const bool clampV, const bool force_linear_rgb);
-#endif
-   void UpdateTexture(D3DTexture* const tex, BaseTexture* const surf, const bool force_linear_rgb);
 
    void SetRenderState(const RenderStates p1, DWORD p2);
    bool SetRenderStateCache(const RenderStates p1, DWORD p2);
@@ -320,15 +293,6 @@ public:
    void SetTextureStageState(const DWORD stage, const D3DTEXTURESTAGESTATETYPE type, const DWORD value);
 #endif
    void SetSamplerState(const DWORD Sampler, const D3DSAMPLERSTATETYPE Type, const DWORD Value);
-
-   //!! Remove:
-   //void CreateVertexBuffer(const unsigned int numVerts, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer);
-   //void CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer **idxBuffer);
-
-   //IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const unsigned int * indices);
-   //IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const WORD * indices);
-   //IndexBuffer* CreateAndFillIndexBuffer(const std::vector<unsigned int>& indices);
-   //IndexBuffer* CreateAndFillIndexBuffer(const std::vector<WORD>& indices);
 
    void DrawTexturedQuad(const Vertex3D_TexelOnly* vertices);
    void DrawFullscreenTexturedQuad();
@@ -410,8 +374,8 @@ private:
    void DrawPrimitive(const PrimitiveTypes type, const DWORD fvf, const void* vertices, const DWORD vertexCount);
 
    void UploadAndSetSMAATextures();
-   D3DTexture* m_SMAAsearchTexture;
-   D3DTexture* m_SMAAareaTexture;
+   Sampler* m_SMAAsearchTexture;
+   Sampler* m_SMAAareaTexture;
 
 #ifndef ENABLE_SDL
 #ifdef USE_D3D9EX
@@ -424,21 +388,22 @@ private:
    IDirect3DDevice9* m_pD3DDevice;
 #endif
 
-   IDirect3DSurface9* m_pBackBuffer;
+   RenderTarget* m_pBackBuffer;
 
-   D3DTexture* m_pOffscreenBackBufferTexture;
-   D3DTexture* m_pOffscreenBackBufferTmpTexture; // stereo/FXAA only
-   D3DTexture* m_pOffscreenBackBufferTmpTexture2;// SMAA only
+   //If stereo is enabled the right eye is the right/bottom part with 4px in between
+   RenderTarget* m_pOffscreenBackBufferTexture;
+   RenderTarget* m_pOffscreenBackBufferTmpTexture; // stereo/FXAA only
+   RenderTarget* m_pOffscreenBackBufferTmpTexture2; // SMAA only
 #ifdef ENABLE_SDL
-   D3DTexture* m_pOffscreenNonMSAABlitTexture;
-   D3DTexture* m_pOffscreenVRLeft;
-   D3DTexture* m_pOffscreenVRRight;
+   Sampler* m_pOffscreenNonMSAABlitTexture;
+   RenderTarget* m_pOffscreenVRLeft;
+   RenderTarget* m_pOffscreenVRRight;
 #endif
 
-   D3DTexture* m_pBloomBufferTexture;
-   D3DTexture* m_pBloomTmpBufferTexture;
-   D3DTexture* m_pMirrorTmpBufferTexture;
-   D3DTexture* m_pReflectionBufferTexture;
+   RenderTarget* m_pBloomBufferTexture;
+   RenderTarget* m_pBloomTmpBufferTexture;
+   RenderTarget* m_pMirrorTmpBufferTexture;
+   RenderTarget* m_pReflectionBufferTexture;
 
    UINT m_adapter;      // index of the display adapter to use
 
@@ -460,11 +425,13 @@ private:
    bool m_mag_aniso;
 #endif
 
+public:
    bool m_autogen_mipmap;
    //bool m_RESZ_support;
    bool m_force_aniso;
    bool m_compress_textures;
 
+private:
    bool m_dwm_was_enabled;
    bool m_dwm_enabled;
 
@@ -481,8 +448,9 @@ private:
 
 public:
 #ifndef ENABLE_SDL
-   static bool m_useNvidiaApi;
-   static bool m_INTZ_support;
+   bool m_useNvidiaApi;
+   bool m_INTZ_support;
+   bool NVAPIinit;
 #endif
 
    static VertexBuffer* m_quadVertexBuffer;      // internal vb for rendering quads //!! only on primary device for now!
