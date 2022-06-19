@@ -1,18 +1,10 @@
-'JP's Arcade Physics v3.0
-
-Option Explicit
-Randomize
-
-Const BallSize = 50
-Const BallMass = 1.7
-
-
-
-
-
+'JP's VPX7 Physics
+'Only 2 changes are needed for the physics: the flippers and the rolling sound which will limit the ball speed.
+'Incluced also my latest LUT routine with an increase in the GI light intensity as the table go darker. 
+'Included also my versions of the PlaySoundAt and PlaySoundAtBall which include volume and pitch changes to the sounds according to the ball speed.
 
 '*******************
-' Flipper Subs v3.0
+'  Flipper Subs
 '*******************
 
 SolCallback(sLRFlipper) = "SolRFlipper"
@@ -50,9 +42,9 @@ End Sub
 
 
 
-'************************************
-' Diverse Collection Hit Sounds v3.0
-'************************************
+'*********************************
+' Diverse Collection Hit Sounds
+'*********************************
 
 Sub aMetals_Hit(idx):PlaySoundAtBall "fx_MetalHit":End Sub
 Sub aMetalWires_Hit(idx):PlaySoundAtBall "fx_MetalWire":End Sub
@@ -113,23 +105,29 @@ Function AudioFade(ball) 'only on VPX 10.4 and newer
     End If
 End Function
 
-Sub PlaySoundAt(soundname, tableobj) 'play sound at X and Y position of a fast object, like bumpers, flippers and other solenoids
+Sub PlaySoundAt(soundname, tableobj) 'play sound at X and Y position of an object, mostly bumpers, flippers and other fast objects
     PlaySound soundname, 0, 1, Pan(tableobj), 0.1, 0, 0, 0, AudioFade(tableobj)
 End Sub
 
 Sub PlaySoundAtBall(soundname) ' play a sound at the ball position, like rubbers, targets, metals, plastics
-    PlaySound soundname, 0, Vol(ActiveBall), pan(ActiveBall), 0.4, 0, 0, 0, AudioFade(ActiveBall)
+    PlaySound soundname, 0, Vol(ActiveBall), pan(ActiveBall), 0.2, Pitch(ActiveBall) * 10, 0, 0, AudioFade(ActiveBall)
 End Sub
 
+Function RndNbr(n) 'returns a random number between 1 and n
+    Randomize timer
+    RndNbr = Int((n * Rnd) + 1)
+End Function
 
 
 
 
 
-'***********************************************
-'   JP's VP10 Rolling Sounds + Ballshadow v3.0
+
+'****************************************************
+'   JP's VPX7 Rolling Sounds + Ballshadow
 '   uses a collection of shadows, aBallShadow
-'***********************************************
+'   limits the ball speed using the maxvel constant
+'****************************************************
 
 Const tnob = 19   'total number of balls, 20 balls, from 0 to 19
 Const lob = 0     'number of locked balls
@@ -201,13 +199,9 @@ Sub RollingUpdate()
     Next
 End Sub
 
-
-
-
-
-'**********************
-' Ball Collision Sound
-'**********************
+'*****************************
+' Ball 2 Ball Collision Sound
+'*****************************
 
 Sub OnBallBallCollision(ball1, ball2, velocity)
     PlaySound("fx_collide"), 0, Csng(velocity) ^2 / 2000, Pan(ball1), 0, Pitch(ball1), 0, 0, AudioFade(ball1)
@@ -215,3 +209,45 @@ End Sub
 
 
 
+'*********
+'   LUT
+'*********
+
+Dim bLutActive, LUTImage
+Sub LoadLUT
+    bLutActive = False
+    x = LoadValue(cGameName, "LUTImage")
+    If(x <> "")Then LUTImage = x Else LUTImage = 0
+    UpdateLUT
+End Sub
+
+Sub SaveLUT
+    SaveValue cGameName, "LUTImage", LUTImage
+End Sub
+
+Sub NextLUT:LUTImage = (LUTImage + 1)MOD 10:UpdateLUT:SaveLUT:End Sub
+
+Sub UpdateLUT
+    Select Case LutImage
+        Case 0:table1.ColorGradeImage = "LUT0":GiIntensity = 1:ChangeGIIntensity 1
+        Case 1:table1.ColorGradeImage = "LUT1":GiIntensity = 1.1:ChangeGIIntensity 1
+        Case 2:table1.ColorGradeImage = "LUT2":GiIntensity = 1.2:ChangeGIIntensity 1
+        Case 3:table1.ColorGradeImage = "LUT3":GiIntensity = 1.3:ChangeGIIntensity 1
+        Case 4:table1.ColorGradeImage = "LUT4":GiIntensity = 1.4:ChangeGIIntensity 1
+        Case 5:table1.ColorGradeImage = "LUT5":GiIntensity = 1.5:ChangeGIIntensity 1
+        Case 6:table1.ColorGradeImage = "LUT6":GiIntensity = 1.6:ChangeGIIntensity 1
+        Case 7:table1.ColorGradeImage = "LUT7":GiIntensity = 1.7:ChangeGIIntensity 1
+        Case 8:table1.ColorGradeImage = "LUT8":GiIntensity = 1.8:ChangeGIIntensity 1
+        Case 9:table1.ColorGradeImage = "LUT9":GiIntensity = 1.9:ChangeGIIntensity 1
+    End Select
+End Sub
+
+Dim GiIntensity
+GiIntensity = 1               'used for the LUT changing to increase the GI lights when the table is darker
+
+Sub ChangeGIIntensity(factor) 'changes the intensity scale
+    Dim bulb
+    For each bulb in aGILights
+        bulb.IntensityScale = GiIntensity * factor
+    Next
+End Sub
