@@ -19,6 +19,8 @@ FEATURES:
 
 - add new command line parameter "-GLES [value]" which overrides the global emission scale (day/night setting, value range: 0.115..0.925)
 
+- add new JP Physics recommendations (table, pdf, materials, script)
+
 FIXES:
 - improve very slow layer operations (open/close table, filter/unfilter)
 - fix an issue when hiding all layers
