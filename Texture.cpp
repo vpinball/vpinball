@@ -321,6 +321,110 @@ BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbm, bool with_alpha)
    return pdds;
 }
 
+BaseTexture* BaseTexture::ToBGRA()
+{
+   BaseTexture* tex = new BaseTexture(m_width, m_height, RGBA);
+   tex->m_realWidth = m_realWidth;
+   tex->m_realHeight = m_realHeight;
+   BYTE* const __restrict tmp = tex->data();
+
+   if (m_format == BaseTexture::RGB_FP32) // Tonemap for 8bpc-Display
+   {
+      const float* const __restrict src = (float*)data();
+      unsigned int o = 0;
+      for (unsigned int j = 0; j < height(); ++j)
+         for (unsigned int i = 0; i < width(); ++i, ++o)
+         {
+            const float r = src[o * 3 + 0];
+            const float g = src[o * 3 + 1];
+            const float b = src[o * 3 + 2];
+            const float l = r * 0.176204f + g * 0.812985f + b * 0.0108109f;
+            const float n = (l * (float)(255. * 0.25) + 255.0f) / (l + 1.0f); // simple tonemap and scale by 255, overflow is handled by clamp below
+            tmp[o * 4 + 0] = (int)clamp(b * n, 0.f, 255.f);
+            tmp[o * 4 + 1] = (int)clamp(g * n, 0.f, 255.f);
+            tmp[o * 4 + 2] = (int)clamp(r * n, 0.f, 255.f);
+            tmp[o * 4 + 3] = 255;
+         }
+   }
+   else if (m_format == BaseTexture::RGB_FP16) // Tonemap for 8bpc-Display
+   {
+      const unsigned short* const __restrict src = (unsigned short*)data();
+      unsigned int o = 0;
+      for (unsigned int j = 0; j < height(); ++j)
+         for (unsigned int i = 0; i < width(); ++i, ++o)
+         {
+            const float r = half2float(src[o * 3 + 0]);
+            const float g = half2float(src[o * 3 + 1]);
+            const float b = half2float(src[o * 3 + 2]);
+            const float l = r * 0.176204f + g * 0.812985f + b * 0.0108109f;
+            const float n = (l * (float)(255. * 0.25) + 255.0f) / (l + 1.0f); // simple tonemap and scale by 255, overflow is handled by clamp below
+            tmp[o * 4 + 0] = (int)clamp(b * n, 0.f, 255.f);
+            tmp[o * 4 + 1] = (int)clamp(g * n, 0.f, 255.f);
+            tmp[o * 4 + 2] = (int)clamp(r * n, 0.f, 255.f);
+            tmp[o * 4 + 3] = 255;
+         }
+   }
+   else if (m_format == BaseTexture::RGB || m_format == BaseTexture::SRGB)
+   {
+      const BYTE* const __restrict src = data();
+      unsigned int o = 0;
+      for (unsigned int j = 0; j < height(); ++j)
+         for (unsigned int i = 0; i < width(); ++i, ++o)
+         {
+            tmp[o * 4 + 0] = src[o * 3 + 2]; // B
+            tmp[o * 4 + 1] = src[o * 3 + 1]; // G
+            tmp[o * 4 + 2] = src[o * 3 + 0]; // R
+            tmp[o * 4 + 3] = 255; // A
+         }
+   }
+   else if (m_format == BaseTexture::RGBA || m_format == BaseTexture::SRGBA)
+   {
+      const BYTE* const __restrict psrc = data();
+      unsigned int o = 0;
+      const bool isWinXP = GetWinVersion() < 2600;
+      for (unsigned int j = 0; j < height(); ++j)
+      {
+         for (unsigned int i = 0; i < width(); ++i, ++o)
+         {
+            int r = psrc[o * 4 + 0];
+            int g = psrc[o * 4 + 1];
+            int b = psrc[o * 4 + 2];
+            const int alpha = psrc[o * 4 + 3];
+            if (!isWinXP) // For everything newer than Windows XP: use the alpha in the bitmap, thus RGB needs to be premultiplied with alpha, due to how AlphaBlend() works
+            {
+               if (alpha == 0) // adds a checkerboard where completely transparent (for the image manager display)
+               {
+                  r = g = b = ((((i >> 4) ^ (j >> 4)) & 1) << 7) + 127;
+               }
+               else if (alpha != 255) // premultiply alpha for win32 AlphaBlend()
+               {
+                  r = r * alpha >> 8;
+                  g = g * alpha >> 8;
+                  b = b * alpha >> 8;
+               }
+            }
+            else
+            {
+               if (alpha != 255)
+               {
+                  const unsigned int c = (((((i >> 4) ^ (j >> 4)) & 1) << 7) + 127) * (255 - alpha);
+                  r = (r * alpha + c) >> 8;
+                  g = (g * alpha + c) >> 8;
+                  b = (b * alpha + c) >> 8;
+               }
+            }
+            tmp[o * 4 + 0] = b;
+            tmp[o * 4 + 1] = g;
+            tmp[o * 4 + 2] = r;
+            tmp[o * 4 + 3] = alpha;
+         }
+      }
+   }
+   else
+      assert(!"unknown format");
+   
+   return tex;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -363,9 +467,11 @@ HRESULT Texture::SaveToStream(IStream *pstream, const PinTable *pt)
    {
       bw.WriteTag(FID(BITS));
 
-      // 32-bit picture
-      LZWWriter lzwwriter(pstream, (int *)m_pdsBuffer->data(), m_width * 4, m_height, m_pdsBuffer->pitch());
+      // 32-bit picture BGRA
+      BaseTexture* bgra = m_pdsBuffer->ToBGRA();
+      LZWWriter lzwwriter(pstream, (int*)bgra->data(), m_width * 4, m_height, bgra->pitch());
       lzwwriter.CompressBits(8 + 1);
+      delete bgra;
    }
    else // JPEG (or other binary format)
    {
@@ -577,108 +683,13 @@ void Texture::CreateGDIVersion()
    bmi.bmiHeader.biCompression = BI_RGB;
    bmi.bmiHeader.biSizeImage = 0;
 
-   BYTE* const __restrict tmp = new BYTE[m_width * m_height * 4];
-   if (m_pdsBuffer->m_format == BaseTexture::RGB_FP32) // Tonemap for 8bpc-Display
-   {
-      const float* const __restrict src = (float*)m_pdsBuffer->data();
-      unsigned int o = 0;
-      for (unsigned int j = 0; j < m_pdsBuffer->height(); ++j)
-         for (unsigned int i = 0; i < m_pdsBuffer->width(); ++i, ++o)
-         {
-            const float r = src[o * 3 + 0];
-            const float g = src[o * 3 + 1];
-            const float b = src[o * 3 + 2];
-            const float l = r * 0.176204f + g * 0.812985f + b * 0.0108109f;
-            const float n = (l * (float)(255. * 0.25) + 255.0f) / (l + 1.0f); // simple tonemap and scale by 255, overflow is handled by clamp below
-            tmp[o * 4 + 0] = (int)clamp(b * n, 0.f, 255.f);
-            tmp[o * 4 + 1] = (int)clamp(g * n, 0.f, 255.f);
-            tmp[o * 4 + 2] = (int)clamp(r * n, 0.f, 255.f);
-            tmp[o * 4 + 3] = 255;
-         }
-   }
-   else if (m_pdsBuffer->m_format == BaseTexture::RGB_FP16) // Tonemap for 8bpc-Display
-   {
-      const unsigned short* const __restrict src = (unsigned short*)m_pdsBuffer->data();
-      unsigned int o = 0;
-      for (unsigned int j = 0; j < m_pdsBuffer->height(); ++j)
-         for (unsigned int i = 0; i < m_pdsBuffer->width(); ++i, ++o)
-         {
-            const float r = half2float(src[o * 3 + 0]);
-            const float g = half2float(src[o * 3 + 1]);
-            const float b = half2float(src[o * 3 + 2]);
-            const float l = r * 0.176204f + g * 0.812985f + b * 0.0108109f;
-            const float n = (l * (float)(255. * 0.25) + 255.0f) / (l + 1.0f); // simple tonemap and scale by 255, overflow is handled by clamp below
-            tmp[o * 4 + 0] = (int)clamp(b * n, 0.f, 255.f);
-            tmp[o * 4 + 1] = (int)clamp(g * n, 0.f, 255.f);
-            tmp[o * 4 + 2] = (int)clamp(r * n, 0.f, 255.f);
-            tmp[o * 4 + 3] = 255;
-         }
-   }
-   else if (m_pdsBuffer->m_format == BaseTexture::RGB || m_pdsBuffer->m_format == BaseTexture::SRGB)
-   {
-      const BYTE* const __restrict src = m_pdsBuffer->data();
-      unsigned int o = 0;
-      for (unsigned int j = 0; j < m_pdsBuffer->height(); ++j)
-         for (unsigned int i = 0; i < m_pdsBuffer->width(); ++i, ++o)
-         {
-            tmp[o * 4 + 0] = src[o * 3 + 2]; // B
-            tmp[o * 4 + 1] = src[o * 3 + 1]; // G
-            tmp[o * 4 + 2] = src[o * 3 + 0]; // R
-            tmp[o * 4 + 3] = 255; // A
-         }
-   }
-   else if (m_pdsBuffer->m_format == BaseTexture::RGBA || m_pdsBuffer->m_format == BaseTexture::SRGBA)
-   {
-      const BYTE* const __restrict psrc = m_pdsBuffer->data();
-      unsigned int o = 0;
-      const bool isWinXP = GetWinVersion() < 2600;
-      for (unsigned int j = 0; j < m_pdsBuffer->height(); ++j)
-      {
-         for (unsigned int i = 0; i < m_pdsBuffer->width(); ++i, ++o)
-         {
-            int r = psrc[o * 4 + 0];
-            int g = psrc[o * 4 + 1];
-            int b = psrc[o * 4 + 2];
-            const int alpha = psrc[o * 4 + 3];
-            if (!isWinXP) // For everything newer than Windows XP: use the alpha in the bitmap, thus RGB needs to be premultiplied with alpha, due to how AlphaBlend() works
-            {
-               if (alpha == 0) // adds a checkerboard where completely transparent (for the image manager display)
-               {
-                  r = g = b = ((((i >> 4) ^ (j >> 4)) & 1) << 7) + 127;
-               }
-               else if (alpha != 255) // premultiply alpha for win32 AlphaBlend()
-               {
-                  r = r * alpha >> 8;
-                  g = g * alpha >> 8;
-                  b = b * alpha >> 8;
-               }
-            }
-            else
-            {
-               if (alpha != 255)
-               {
-                  const unsigned int c = (((((i >> 4) ^ (j >> 4)) & 1) << 7) + 127) * (255 - alpha);
-                  r = (r * alpha + c) >> 8;
-                  g = (g * alpha + c) >> 8;
-                  b = (b * alpha + c) >> 8;
-               }
-            }
-            tmp[o * 4 + 0] = b;
-            tmp[o * 4 + 1] = g;
-            tmp[o * 4 + 2] = r;
-            tmp[o * 4 + 3] = alpha;
-         }
-      }
-   }
-   else
-      assert(!"unknown format");
-
+   BaseTexture* bgr32bits = m_pdsBuffer->ToBGRA();
    SetStretchBltMode(hdcNew, COLORONCOLOR);
    StretchDIBits(hdcNew,
       0, 0, m_width, m_height,
       0, 0, m_width, m_height,
-      tmp, &bmi, DIB_RGB_COLORS, SRCCOPY);
-   delete[] tmp;
+      bgr32bits->data(), &bmi, DIB_RGB_COLORS, SRCCOPY);
+   delete bgr32bits;
 
    SelectObject(hdcNew, hbmOld);
    DeleteDC(hdcNew);
