@@ -169,15 +169,25 @@ RenderTarget::~RenderTarget()
 {
 #ifdef ENABLE_SDL
 #else
-   if (!m_is_back_buffer) SAFE_RELEASE(m_color_surface);
-   SAFE_RELEASE(m_color_tex);
-   if (m_use_alternate_depth && m_depth_surface != nullptr)
+   // Texture share its refcount with surface, it must be decremented, but it won't be 0 until surface is also released
+   SAFE_RELEASE_NO_RCC(m_color_tex);
+   SAFE_RELEASE(m_color_surface);
+   if (m_has_depth)
    {
-      CHECKNVAPI(NvAPI_D3D9_UnregisterResource(m_depth_surface));
-      CHECKNVAPI(NvAPI_D3D9_UnregisterResource(m_depth_tex));
+      if (m_use_alternate_depth)
+      { 
+         CHECKNVAPI(NvAPI_D3D9_UnregisterResource(m_depth_surface));
+         CHECKNVAPI(NvAPI_D3D9_UnregisterResource(m_depth_tex));
+         SAFE_RELEASE(m_depth_tex);
+         SAFE_RELEASE(m_depth_surface);
+      }
+      else
+      {
+         // Texture share its refcount with surface, it must be decremented, but it won't be 0 until surface is also released
+         SAFE_RELEASE_NO_RCC(m_depth_tex);
+         SAFE_RELEASE(m_depth_surface);
+      }
    }
-   SAFE_RELEASE(m_depth_surface);
-   SAFE_RELEASE(m_depth_tex);
 #endif
    delete m_color_sampler;
    delete m_depth_sampler;
