@@ -5,9 +5,11 @@
 Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_linear_rgb)
 {
    m_rd = rd;
+   m_dirty = false;
+   m_isMSAA = false;
+   m_ownTexture = true;
    m_width = surf->width();
    m_height = surf->height();
-   m_dirty = false;
 #ifdef ENABLE_SDL
    colorFormat format;
    if (surf->m_format == BaseTexture::SRGBA)
@@ -62,27 +64,29 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
 Sampler::Sampler(RenderDevice* rd, GLuint glTexture, bool ownTexture, bool isMSAA, bool force_linear_rgb)
 {
    m_rd = rd;
+   m_dirty = false;
+   m_isMSAA = isMSAA;
    m_ownTexture = ownTexture;
    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &m_width);
    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &m_height);
    int internal_format;
    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
    m_isLinear = !((internal_format == SRGB) && (internal_format == SRGBA) && (internal_format == SDXT5) && (internal_format == SBC7)) || force_linear_rgb;
-   m_isMSAA = isMSAA;
    m_texture = glTexture;
 }
 #else
 Sampler::Sampler(RenderDevice* rd, IDirect3DTexture9* dx9Texture, bool ownTexture, bool force_linear_rgb)
 {
    m_rd = rd;
+   m_dirty = false;
+   m_isMSAA = false;
+   m_ownTexture = ownTexture;
    D3DSURFACE_DESC desc;
    dx9Texture->GetLevelDesc(0, &desc);
-   m_ownTexture = ownTexture;
-   m_texture = dx9Texture;
    m_width = desc.Width;
    m_height = desc.Height;
-   m_dirty = false;
    m_isLinear = desc.Format == D3DFMT_A16B16G16R16F || desc.Format == D3DFMT_A32B32G32R32F || force_linear_rgb;
+   m_texture = dx9Texture;
 }
 #endif
 
