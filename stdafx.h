@@ -98,12 +98,6 @@
 
 //VR Support
 
-#define STEREO_OFF 0
-#define STEREO_TB  1
-#define STEREO_INT 2
-#define STEREO_SBS 3
-#define STEREO_VR  4
-
 #ifdef ENABLE_SDL
 //No VR support with DX9 possible, only with DX11 and OpenGL
 #define ENABLE_VR

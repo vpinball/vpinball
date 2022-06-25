@@ -616,7 +616,7 @@ typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
 static pDEC mDwmEnableComposition = nullptr;
 #endif
 
-RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
+RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const bool useAA, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
     : m_windowHwnd(hwnd), m_width(width), m_height(height), m_fullscreen(fullscreen), 
       m_colorDepth(colordepth), m_vsync(VSync), m_useAA(useAA), m_stereo3D(stereo3D),
       m_ssRefl(ss_refl), m_disableDwm(disable_dwm), m_sharpen(sharpen), m_FXAA(FXAA), m_BWrendering(BWrendering), m_texMan(*this)
@@ -917,7 +917,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    m_pBloomTmpBufferTexture = new RenderTarget(this, m_width / 4, m_height / 4, render_format, false, false, m_stereo3D, "Fatal Error: unable to create blur buffer!");
 
    // alloc temporary buffer for stereo3D/post-processing AA/sharpen
-   if ((m_stereo3D) || (m_FXAA > 0) || m_sharpen)
+   if ((m_stereo3D != STEREO_OFF) || (m_FXAA > 0) || m_sharpen)
       m_pOffscreenBackBufferTmpTexture = new RenderTarget(this, m_width, m_height, video10bit ? colorFormat::RGBA10 : colorFormat::RGBA8, false, false, m_stereo3D,
          "Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!");
    else
