@@ -15,6 +15,30 @@ enum TextureFilter
    TEXTURE_MODE_ANISOTROPIC		// Anisotropic texture filtering. 
 };
 
+enum StereoMode
+{
+   STEREO_OFF = 0, // Disabled
+   STEREO_TB = 1, // TB (Top / Bottom)
+   STEREO_INT = 2, // Interlaced (e.g. LG TVs)
+   STEREO_FLIPPED_INT = 3, // Flipped Interlaced (e.g. LG TVs)
+   STEREO_SBS = 4, // SBS (Side by Side)
+   STEREO_ANAGLYPH_RC = 5, // Anaglyph Red/Cyan
+   STEREO_ANAGLYPH_GM = 6, // Anaglyph Green/Magenta
+   STEREO_ANAGLYPH_DUBOIS_RC = 7, // Anaglyph Dubois Red/Cyan
+   STEREO_ANAGLYPH_DUBOIS_GM = 8, // Anaglyph Dubois Green/Magenta
+   STEREO_ANAGLYPH_DEGHOSTED_RC = 9, // Anaglyph Deghosted Red/Cyan
+   STEREO_ANAGLYPH_DEGHOSTED_GM = 10, // Anaglyph Deghosted Green/Magenta
+   STEREO_ANAGLYPH_BA = 11, // Anaglyph Blue/Amber
+   STEREO_ANAGLYPH_CR = 12, // Anaglyph Cyan/Red
+   STEREO_ANAGLYPH_MR, // Anaglyph Magenta/Green
+   STEREO_ANAGLYPH_DUBOIS_CR = 14, // Anaglyph Dubois Cyan/Red
+   STEREO_ANAGLYPH_DUBOIS_MG = 15, // Anaglyph Dubois Magenta/Green
+   STEREO_ANAGLYPH_DEGHOSTED_CR = 16, // Anaglyph Deghosted Cyan/Red
+   STEREO_ANAGLYPH_DEGHOSTED_MG = 17, // Anaglyph Deghosted Magenta/Green
+   STEREO_ANAGLYPH_AB = 18, // Anaglyph Amber/Blue
+   STEREO_VR = 19, // Hardware VR set (not supported by DX9)
+};
+
 class PinProjection
 {
 public:
@@ -48,7 +72,7 @@ public:
    Pin3D();
    ~Pin3D();
 
-   HRESULT InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl);
+   HRESULT InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl);
 
    void InitLayoutFS();
    void InitLayout(const bool FSS_mode, const float xpixoff = 0.f, const float ypixoff = 0.f);
@@ -80,7 +104,7 @@ private:
    void InitRenderState(RenderDevice * const pd3dDevice);
    void InitPrimaryRenderState();
    void InitSecondaryRenderState();
-   HRESULT InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl);
+   HRESULT InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl);
 
    // Data members
 public:

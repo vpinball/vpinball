@@ -443,7 +443,7 @@ BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xre
    return radTex;
 }
 
-HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl)
+HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl)
 {
    const int display = g_pvp->m_primaryDisplay ? 0 : LoadValueIntWithDefault("Player", "Display", 0);
    std::vector<DisplayConfig> displays;
@@ -496,7 +496,7 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
    return S_OK;
 }
 
-HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl)
+HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl)
 {
    // set the viewport for the newly created device
    m_viewPort.X = 0;

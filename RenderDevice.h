@@ -84,6 +84,8 @@ enum UsageFlags {
 #endif
 };
 
+enum StereoMode;
+
 class Shader;
 
 class RenderDevice
@@ -245,7 +247,7 @@ public:
 #endif
 
 
-   RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering);
+   RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const bool useAA, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering);
    ~RenderDevice();
    void CreateDevice(int &refreshrate, UINT adapterIndex = D3DADAPTER_DEFAULT);
    bool LoadShaders();
@@ -363,7 +365,7 @@ public:
    int          m_colorDepth;
    int          m_vsync;
    bool         m_useAA;
-   bool         m_stereo3D;
+   StereoMode   m_stereo3D;
    bool         m_ssRefl;
    bool         m_disableDwm;
    bool         m_sharpen;

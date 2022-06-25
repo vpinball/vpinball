@@ -189,8 +189,8 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_disableAO = LoadValueBoolWithDefault("Player", "DisableAO", false);
    m_ss_refl = LoadValueBoolWithDefault("Player", "SSRefl", false);
    m_pf_refl = LoadValueBoolWithDefault("Player", "PFRefl", true);
-   m_stereo3D = LoadValueIntWithDefault("Player", "Stereo3D", 0);
-   m_stereo3Denabled = LoadValueBoolWithDefault("Player", "Stereo3DEnabled", (m_stereo3D != 0));
+   m_stereo3D = (StereoMode) LoadValueIntWithDefault("Player", "Stereo3D", STEREO_OFF);
+   m_stereo3Denabled = LoadValueBoolWithDefault("Player", "Stereo3DEnabled", (m_stereo3D != STEREO_OFF));
    m_stereo3DY = LoadValueBoolWithDefault("Player", "Stereo3DYAxis", false);
    m_global3DContrast = LoadValueFloatWithDefault("Player", "Stereo3DContrast", 1.0f);
    m_global3DDesaturation = LoadValueFloatWithDefault("Player", "Stereo3DDesaturation", 0.f);
@@ -1237,7 +1237,7 @@ HRESULT Player::Init()
 
    // colordepth & refreshrate are only defined if fullscreen is true.
    const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_width, m_height, colordepth,
-                                        m_refreshrate, vsync, useAA, !!m_stereo3D, FXAA, !!m_sharpen, !m_disableAO, ss_refl);
+                                        m_refreshrate, vsync, useAA, m_stereo3D, FXAA, !!m_sharpen, !m_disableAO, ss_refl);
 
    if (hr != S_OK)
    {
@@ -3757,7 +3757,7 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
 {
    if (stereo) // stereo implicitly disables FXAA/SMAA/etc
    {
-      if(sharpen && (m_stereo3D == 1 || m_stereo3D == 4)) // don't sharpen in interlaced stereo or anaglyph!
+      if (sharpen && (m_stereo3D == STEREO_TB || m_stereo3D == STEREO_SBS)) // don't sharpen in interlaced stereo or anaglyph!
          m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->Activate(true);
       else
          m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->Activate(true);
@@ -3765,20 +3765,21 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture0, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture()->GetColorSampler());
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture3, m_pin3d.m_pddsBackBuffer->GetDepthSampler());
 
+      const bool is_anaglyph = m_stereo3D >= STEREO_ANAGLYPH_RC && m_stereo3D <= STEREO_ANAGLYPH_AB;
       const vec4 ms_zpd_ya_td(m_ptable->GetMaxSeparation(), m_ptable->GetZPD(), m_stereo3DY ? 1.0f : 0.0f,
-          (m_stereo3D <= 4) ? ((m_stereo3D == 4) ? 2.0f : (m_stereo3D == 1) ? 1.0f : ((m_stereo3D == 2) ? 0.0f : 0.5f)) : (float)m_stereo3D);
+          is_anaglyph ? (float)m_stereo3D : ((m_stereo3D == STEREO_SBS) ? 2.0f : (m_stereo3D == STEREO_TB) ? 1.0f : ((m_stereo3D == STEREO_INT) ? 0.0f : 0.5f)));
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("ms_zpd_ya_td", &ms_zpd_ya_td);
 
       const vec4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), (float)m_height, m_ptable->Get3DOffset());
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &w_h_height);
 
-      if (m_stereo3D > 4)
+      if (is_anaglyph)
       {
          const vec4 a_ds_c(m_global3DDesaturation, m_global3DContrast, 0.f,0.f);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("Anaglyph_DeSaturation_Contrast", &a_ds_c);
       }
 
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique((m_stereo3D <= 4) ? "stereo" : "stereo_anaglyph");
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(is_anaglyph ? "stereo_anaglyph" : "stereo");
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin(0);
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
