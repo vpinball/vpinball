@@ -149,7 +149,7 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
          if (FAILED(hr))
             ReportError("Fatal Error: unable to create depth buffer!", hr, __FILE__, __LINE__);
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
-         if (NVAPIinit)
+         if (m_rd->NVAPIinit)
          {
             CHECKNVAPI(NvAPI_D3D9_RegisterResource(m_depth_surface));
             CHECKNVAPI(NvAPI_D3D9_RegisterResource(m_depth_tex));
@@ -184,7 +184,7 @@ RenderTarget::~RenderTarget()
       if (m_use_alternate_depth)
       {
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
-         if (NVAPIinit)
+         if (m_rd->NVAPIinit)
          {
             CHECKNVAPI(NvAPI_D3D9_UnregisterResource(m_depth_surface));
             CHECKNVAPI(NvAPI_D3D9_UnregisterResource(m_depth_tex));
