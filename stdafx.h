@@ -1,7 +1,6 @@
 #pragma once
 
 //#define DISABLE_FORCE_NVIDIA_OPTIMUS // do not enable NVIDIA Optimus cards (on Laptops, etc) by default
-//#define NVAPI_DEPTH_READ // forces NVAPI to do copydepth (as officially unspecified in DX9)
 
 //#define DISABLE_FORCE_AMD_HIGHPERF // do not enable AMD high performance device (on Laptops, etc) by default
 

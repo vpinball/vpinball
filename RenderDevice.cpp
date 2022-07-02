@@ -790,11 +790,8 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    //m_autogen_mipmap = false; //!! could be done to support correct sRGB/gamma correct generation of mipmaps which is not possible with auto gen mipmap in DX9! at the moment disabled, as the sRGB software path is super slow for similar mipmap filter quality
 
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
-   if (!NVAPIinit)
-   {
-      if (NvAPI_Initialize() == NVAPI_OK)
-         NVAPIinit = true;
-   }
+   if (!NVAPIinit && NvAPI_Initialize() == NVAPI_OK)
+      NVAPIinit = true;
 #endif
 
    // Determine if INTZ is supported

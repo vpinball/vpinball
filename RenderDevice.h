@@ -364,8 +364,8 @@ public:
    bool         m_fullscreen;
    int          m_colorDepth;
    int          m_vsync;
-   bool         m_useAA;
    StereoMode   m_stereo3D;
+   bool         m_useAA;
    bool         m_ssRefl;
    bool         m_disableDwm;
    bool         m_sharpen;

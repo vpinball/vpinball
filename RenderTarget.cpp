@@ -129,6 +129,7 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
    m_depth_sampler = with_depth ? new Sampler(m_rd, m_depth_tex, false, use_MSAA, true) : nullptr;
 
 #else
+
    HRESULT hr = m_rd->GetCoreDevice()->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, (D3DFORMAT)format, (D3DPOOL)memoryPool::DEFAULT, &m_color_tex, nullptr);
    if (FAILED(hr))
       ReportError(failureMessage, hr, __FILE__, __LINE__);
@@ -147,8 +148,13 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
             desc.MultiSampleType, desc.MultiSampleQuality, FALSE, &m_depth_surface, nullptr);
          if (FAILED(hr))
             ReportError("Fatal Error: unable to create depth buffer!", hr, __FILE__, __LINE__);
-         CHECKNVAPI(NvAPI_D3D9_RegisterResource(m_depth_surface));
-         CHECKNVAPI(NvAPI_D3D9_RegisterResource(m_depth_tex));
+#ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
+         if (NVAPIinit)
+         {
+            CHECKNVAPI(NvAPI_D3D9_RegisterResource(m_depth_surface));
+            CHECKNVAPI(NvAPI_D3D9_RegisterResource(m_depth_tex));
+         }
+#endif
       }
       else
       {
@@ -168,6 +174,7 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
 RenderTarget::~RenderTarget()
 {
 #ifdef ENABLE_SDL
+
 #else
    // Texture share its refcount with surface, it must be decremented, but it won't be 0 until surface is also released
    SAFE_RELEASE_NO_RCC(m_color_tex);
@@ -175,9 +182,14 @@ RenderTarget::~RenderTarget()
    if (m_has_depth)
    {
       if (m_use_alternate_depth)
-      { 
-         CHECKNVAPI(NvAPI_D3D9_UnregisterResource(m_depth_surface));
-         CHECKNVAPI(NvAPI_D3D9_UnregisterResource(m_depth_tex));
+      {
+#ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
+         if (NVAPIinit)
+         {
+            CHECKNVAPI(NvAPI_D3D9_UnregisterResource(m_depth_surface));
+            CHECKNVAPI(NvAPI_D3D9_UnregisterResource(m_depth_tex));
+         }
+#endif
          SAFE_RELEASE(m_depth_tex);
          SAFE_RELEASE(m_depth_surface);
       }
@@ -259,9 +271,9 @@ void RenderTarget::Activate(bool ignoreStereo)
             glViewport(0, 0, m_width,
                m_height / 2); // Set default viewport width/height values of all viewports before we define the array or we get undefined behaviour in shader (flickering viewports).
             viewPorts[2] = viewPorts[6] = (float)m_width;
-            viewPorts[3] = viewPorts[7] = (float)m_height / 2.0f;
+            viewPorts[3] = viewPorts[7] = (float)(m_height * 0.5);
             viewPorts[4] = 0.0f;
-            viewPorts[5] = (float)m_height / 2.0f;
+            viewPorts[5] = (float)(m_height * 0.5);
             glViewportArrayv(0, 2, viewPorts);
             m_rd->lightShader->SetBool(SHADER_ignoreStereo, false);
             break;
@@ -269,9 +281,9 @@ void RenderTarget::Activate(bool ignoreStereo)
          case STEREO_VR:
             glViewport(0, 0, m_width / 2,
                m_height); // Set default viewport width/height values of all viewports before we define the array or we get undefined behaviour in shader (flickering viewports).
-            viewPorts[2] = viewPorts[6] = (float)m_width / 2.0f;
+            viewPorts[2] = viewPorts[6] = (float)(m_width * 0.5);
             viewPorts[3] = viewPorts[7] = (float)m_height;
-            viewPorts[4] = (float)m_width / 2.0f;
+            viewPorts[4] = (float)(m_width * 0.5);
             viewPorts[5] = 0.0f;
             glViewportArrayv(0, 2, viewPorts);
             m_rd->lightShader->SetBool(SHADER_ignoreStereo, false);
