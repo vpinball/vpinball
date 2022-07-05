@@ -28,7 +28,7 @@ public:
    BYTE* data()                { return m_data.data(); }
    bool has_alpha() const      { return m_format == RGBA || m_format == SRGBA; }
 
-   BaseTexture *ToBGRA();
+   BaseTexture *ToBGRA(); // swap R and B channels, also tonemaps floating point buffers during conversion and adds an opaque alpha channel (if format with missing alpha)
 
 private:
    unsigned int m_width, m_height;
@@ -103,3 +103,45 @@ public:
 private:
    HBITMAP m_oldHBM;        // this is to cache the result of SelectObject()
 };
+
+template<bool opaque>
+inline void copy_bgra_rgba(unsigned int* const __restrict dst, const unsigned int* const __restrict src, const size_t size)
+{
+    size_t o = 0;
+
+#if defined(_M_IX86) || defined(_M_X64)
+    // align output writes
+    for (; ((reinterpret_cast<size_t>(dst+o) & 15) != 0) && o < size; ++o)
+    {
+       const unsigned int rgba = src[o];
+       unsigned int tmp = (_rotl(rgba, 16) & 0x00FF00FFu) | (rgba & 0xFF00FF00u);
+       if (opaque)
+          tmp |= 0xFF000000u;
+       dst[o] = tmp;
+    }
+
+    const __m128i brMask  = _mm_set1_epi32(0x00FF00FFu);
+    const __m128i alphaFF = _mm_set1_epi32(0xFF000000u);
+    for (; o+3 < size; o+=4)
+    {
+       const __m128i srco = _mm_loadu_si128(reinterpret_cast<const __m128i*>(src+o));
+       __m128i ga = _mm_andnot_si128(brMask, srco);    // mask g and a
+       if (opaque)
+          ga = _mm_or_si128(ga, alphaFF);
+       const __m128i br = _mm_and_si128(brMask, srco); // mask b and r
+       // swap b and r, then or g and a back again
+       const __m128i rb = _mm_shufflehi_epi16(_mm_shufflelo_epi16(br, _MM_SHUFFLE(2, 3, 0, 1)), _MM_SHUFFLE(2, 3, 0, 1));
+       _mm_store_si128(reinterpret_cast<__m128i*>(dst+o), _mm_or_si128(ga, rb));
+    }
+    // leftover writes below
+#endif
+
+    for (; o < size; ++o)
+    {
+       const unsigned int rgba = src[o];
+       unsigned int tmp = (_rotl(rgba, 16) & 0x00FF00FFu) | (rgba & 0xFF00FF00u);
+       if (opaque)
+          tmp |= 0xFF000000u;
+       dst[o] = tmp;
+    }
+}

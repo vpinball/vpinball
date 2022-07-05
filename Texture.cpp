@@ -206,6 +206,11 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       {
          const BYTE* __restrict pixel = (BYTE*)bits;
          const unsigned int offs = (tex->m_height - y - 1) * (tex->m_width*stride);
+#if (FI_RGBA_RED == 2) && (FI_RGBA_GREEN == 1) && (FI_RGBA_BLUE == 0) && (FI_RGBA_ALPHA == 3)
+         if (has_alpha)
+            copy_bgra_rgba<false>((unsigned int*)(pdst+offs),(const unsigned int*)pixel,tex->m_width);
+         else
+#endif
          for (unsigned int o = offs; o < tex->m_width*stride+offs; o+=stride)
          {
             pdst[o + 0] = pixel[FI_RGBA_RED];
@@ -422,7 +427,7 @@ BaseTexture* BaseTexture::ToBGRA()
    }
    else
       assert(!"unknown format");
-   
+
    return tex;
 }
 
