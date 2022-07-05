@@ -1064,16 +1064,8 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
         // that's pointed to by lpbitmap.
         GetDIBits(hdcWindow, hbmScreen, 0, (UINT)bmpScreen.bmHeight, lpbitmap, (BITMAPINFO*)&bi, DIB_RGB_COLORS);
 
-        const DWORD* const __restrict pCurrPixel = (DWORD*)lpbitmap;
-        DWORD* const __restrict data = (DWORD*)m_videoCapTex->data();
-
         // copy bitmap pixels to texture, reversing BGR to RGB and adding an opaque alpha channel
-        // A common SSE2 optimized path for BGRA/ARGB conversion could be added (see Angle implementation for example: https://codereview.appspot.com/4465052/patch/12001/9002)
-        for (int i = 0; i < (pWidth * pHeight); i++)
-        {
-           unsigned int rgba = pCurrPixel[i];
-           data[i] = (_rotl(rgba, 16) & 0x00ff00ff) | (rgba & 0xff00ff00) | 0xFF000000u;
-        }
+        copy_bgra_rgba<true>((unsigned int*)(m_videoCapTex->data()), (const unsigned int*)lpbitmap, pWidth * pHeight);
 
         GlobalUnlock(hDIB);
         GlobalFree(hDIB);
@@ -1208,7 +1200,8 @@ void Flasher::RenderDynamic()
 #endif
        pd3dDevice->DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
 
-       pd3dDevice->DMDShader->SetTexture(SHADER_Texture0, g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(g_pplayer->m_texdmd, TextureFilter::TEXTURE_MODE_NONE, true, true, false));
+       if (g_pplayer->m_texdmd != nullptr)
+          pd3dDevice->DMDShader->SetTexture(SHADER_Texture0, g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(g_pplayer->m_texdmd, TextureFilter::TEXTURE_MODE_NONE, true, true, false));
 
        pd3dDevice->DMDShader->Begin(0);
        pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_TEX, m_dynamicVertexBuffer, 0, m_numVertices, m_dynamicIndexBuffer, 0, m_numPolys * 3);
