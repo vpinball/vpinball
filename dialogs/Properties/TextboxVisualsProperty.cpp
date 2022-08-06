@@ -59,6 +59,8 @@ void TextboxVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             if (text->m_pIFont)
             {
                 m_fontDialogButton.SetWindowText(text->GetFontName());
+                if (!m_font)
+                  delete m_font;
                 m_font = new CFont(text->GetFont());
             }
         }
@@ -198,8 +200,15 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
                     text->m_pIFont->Release();
                     // create the new one
                     OleCreateFontIndirect(&fd, IID_IFont, (void **)&text->m_pIFont);
+                    text->m_d.m_fontsize = (-font.lfHeight * 72) / GetDeviceCaps(g_pvp->GetDC(), LOGPIXELSY);
+                    CY size;
+                    size.int64 = (LONGLONG)(text->m_d.m_fontsize * 10000.0f);
+                    text->m_pIFont->put_Size(size);
                     free(fd.lpstrName);
                     text->m_d.m_fontcolor = m_fontDialog.GetColor();
+                    if (m_font)
+                       delete m_font;
+                    m_font = new CFont(text->GetFont());
                 }
                 break;
             }

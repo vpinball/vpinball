@@ -69,8 +69,8 @@ void Textbox::SetDefaults(bool fromMouseClick)
       m_d.m_transparent = LoadValueBoolWithDefault("DefaultProps\\TextBox", "Transparent", false);
       m_d.m_isDMD = LoadValueBoolWithDefault("DefaultProps\\TextBox", "DMD", false);
 
-      const float fontSize = LoadValueFloatWithDefault("DefaultProps\\TextBox", "FontSize", 14.25f);
-      fd.cySize.int64 = (LONGLONG)(fontSize * 10000.0f);
+      m_d.m_fontsize = LoadValueFloatWithDefault("DefaultProps\\TextBox", "FontSize", 14.25f);
+      fd.cySize.int64 = (LONGLONG)(m_d.m_fontsize * 10000.0f);
 
       string tmp;
       HRESULT hr;
@@ -157,7 +157,7 @@ char * Textbox::GetFontName()
 HFONT Textbox::GetFont()
 {
     LOGFONT lf = {};
-    lf.lfHeight = -72;
+    lf.lfHeight = -MulDiv((int)m_d.m_fontsize, GetDeviceCaps(g_pvp->GetDC(), LOGPIXELSY), 72);
     lf.lfCharSet = DEFAULT_CHARSET;
     lf.lfQuality = NONANTIALIASED_QUALITY;
 
