@@ -50,11 +50,11 @@ class DebuggerModule :
 
    void Init(CodeViewer * const pcv);
 
-   virtual IDispatch *GetDispatch() override { return (IDispatch *)this; }
-   virtual const IDispatch *GetDispatch() const override { return (const IDispatch *)this; }
+   IDispatch *GetDispatch() final { return (IDispatch *)this; }
+   const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }
 
-   virtual ISelect *GetISelect() override { return nullptr; }
-   virtual const ISelect *GetISelect() const override { return nullptr; }
+   ISelect *GetISelect() final { return nullptr; }
+   const ISelect *GetISelect() const final { return nullptr; }
 
    STDMETHOD(get_Name)(BSTR *pVal);
 
@@ -331,10 +331,10 @@ private:
    BOOL ParseSelChangeEvent(const int id, const SCNotification *pSCN);
 
    bool ParseOKLineLength(const size_t LineLen);
-   void ParseDelimtByColon(string &result, string &wholeline);
+   string ParseDelimtByColon(string &wholeline);
    void ParseFindConstruct(size_t &Pos, const string &UCLine, WordType &Type, int &ConstructSize);
    bool ParseStructureName(vector<UserData>& ListIn, UserData ud, const string &UCline, const string &line, const int Lineno);
-   
+
    size_t SureFind(const string &LineIn, const string &ToFind);
    void RemoveByVal(string &line); 
    void RemoveNonVBSChars(string &line);
@@ -457,16 +457,16 @@ public:
 
    // IScriptable
    STDMETHOD(get_Name)(BSTR *pVal);
-   virtual IDispatch *GetDispatch() override { return (IDispatch *)this; }
-   virtual const IDispatch *GetDispatch() const override { return (const IDispatch *)this; }
+   IDispatch *GetDispatch() final { return (IDispatch *)this; }
+   const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }
 
-   virtual ISelect *GetISelect() override { return nullptr; }
-   virtual const ISelect *GetISelect() const override { return nullptr; }
+   ISelect *GetISelect() final { return nullptr; }
+   const ISelect *GetISelect() const final { return nullptr; }
 
    //ILoadable
-   virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay);
-   virtual HRESULT LoadData(IStream *pstm, PinTable *ppt, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
-   virtual bool LoadToken(const int id, BiffReader * const pbr) override;
+   HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay);
+   HRESULT LoadData(IStream *pstm, PinTable *ppt, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
+   bool LoadToken(const int id, BiffReader * const pbr) final;
 
    STDMETHOD(get_Count)(long __RPC_FAR *plCount);
    STDMETHOD(get_Item)(long index, IDispatch __RPC_FAR * __RPC_FAR *ppidisp);

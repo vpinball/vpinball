@@ -258,33 +258,33 @@ public:
 
    DECLARE_REGISTRY_RESOURCEID(IDR_PRIMITIVE)
 
-   virtual void MoveOffset(const float dx, const float dy) override;
-   virtual void SetObjectPos() override;
+   void MoveOffset(const float dx, const float dy) final;
+   void SetObjectPos() final;
    // Multi-object manipulation
-   virtual Vertex2D GetCenter() const override;
-   virtual void PutCenter(const Vertex2D &pv) override;
+   Vertex2D GetCenter() const final;
+   void PutCenter(const Vertex2D &pv) final;
 
-   //STDMETHOD(get_Name)(BSTR *pVal) {return E_FAIL;}
+   //STDMETHOD(get_Name)(BSTR *pVal) final {return E_FAIL;}
 
    //virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName);
-   virtual void WriteRegDefaults();
+   void WriteRegDefaults() final;
 
-   virtual bool LoadMeshDialog() override;
-   virtual void ExportMeshDialog() override;
+   bool LoadMeshDialog() final;
+   void ExportMeshDialog() final;
 
    float GetAlpha() const { return m_d.m_alpha; }
    void SetAlpha(const float value) { m_d.m_alpha = max(value, 0.f); }
 
-   virtual bool IsTransparent() const override;
-   virtual float GetDepth(const Vertex3Ds &viewDir) const override;
-   virtual unsigned long long GetMaterialID() const override { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-   virtual unsigned long long GetImageID() const override { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
-   virtual ItemTypeEnum HitableGetItemType() const override { return eItemPrimitive; }
+   bool IsTransparent() const final;
+   float GetDepth(const Vertex3Ds &viewDir) const final;
+   unsigned long long GetMaterialID() const final { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+   unsigned long long GetImageID() const final { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
+   ItemTypeEnum HitableGetItemType() const final { return eItemPrimitive; }
 
-   virtual void SetDefaultPhysics(bool fromMouseClick) override;
-   virtual void ExportMesh(ObjLoader &loader) override;
-   virtual void RenderBlueprint(Sur *psur, const bool solid) override;
-   virtual void UpdateStatusBarInfo() override;
+   void SetDefaultPhysics(bool fromMouseClick) final;
+   void ExportMesh(ObjLoader &loader) final;
+   void RenderBlueprint(Sur *psur, const bool solid) final;
+   void UpdateStatusBarInfo() final;
 
    void CreateRenderGroup(const Collection * const collection);
    void RecalculateMatrices();

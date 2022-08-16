@@ -70,21 +70,21 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   virtual void MoveOffset(const float dx, const float dy);
-   virtual void SetObjectPos();
+   void MoveOffset(const float dx, const float dy) final;
+   void SetObjectPos() final;
    // Multi-object manipulation
-   virtual Vertex2D GetCenter() const;
-   virtual void PutCenter(const Vertex2D& pv);
+   Vertex2D GetCenter() const final;
+   void PutCenter(const Vertex2D& pv) final;
 
-   virtual void PreRenderStatic(RenderDevice* pd3dDevice);
-   virtual void SetDefaultPhysics(bool fromMouseClick);
-   virtual void ExportMesh(ObjLoader& loader);
+   void PreRenderStatic(RenderDevice* pd3dDevice) final;
+   void SetDefaultPhysics(bool fromMouseClick) final;
+   void ExportMesh(ObjLoader& loader) final;
 
-   virtual unsigned long long GetMaterialID() const override { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-   virtual ItemTypeEnum HitableGetItemType() const override { return eItemKicker; }
-   virtual void UpdateStatusBarInfo();
+   unsigned long long GetMaterialID() const final { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+   ItemTypeEnum HitableGetItemType() const final { return eItemKicker; }
+   void UpdateStatusBarInfo() final;
 
-   virtual void WriteRegDefaults();
+   void WriteRegDefaults() final;
 
    KickerData m_d;
 
@@ -161,9 +161,9 @@ public:
       m_pkicker = nullptr;
    }
 
-   virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
-   virtual int GetType() const override { return eTrigger; }
-   virtual void Collide(const CollisionEvent& coll) override { DoCollide(coll.m_ball, coll.m_hitnormal, coll.m_hitflag, false); }
+   float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const final;
+   int GetType() const final { return eTrigger; }
+   void Collide(const CollisionEvent& coll) final { DoCollide(coll.m_ball, coll.m_hitnormal, coll.m_hitflag, false); }
 
    void DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& hitnormal) const;
    void DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, const bool hitflag, const bool newBall);

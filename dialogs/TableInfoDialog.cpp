@@ -203,7 +203,7 @@ BOOL TableInfoDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       }
       case IDC_GOWEBSITE:
       {
-         OpenURL(string(m_websiteEdit.GetWindowText()));
+         OpenURL(m_websiteEdit.GetWindowText().c_str());
          break;
       }
       case IDC_SENDMAIL:

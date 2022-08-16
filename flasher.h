@@ -75,31 +75,31 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   virtual void ClearForOverwrite() override;
+   void ClearForOverwrite() final;
 
-   virtual void RenderBlueprint(Sur *psur, const bool solid) override;
+   void RenderBlueprint(Sur *psur, const bool solid) final;
 
-   virtual void FlipY(const Vertex2D& pvCenter) override;
-   virtual void FlipX(const Vertex2D& pvCenter) override;
-   virtual void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) override;
-   virtual void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) override;
-   virtual void Translate(const Vertex2D &pvOffset) override;
-   virtual void MoveOffset(const float dx, const float dy) override;
-   virtual void SetObjectPos() override;
+   void FlipY(const Vertex2D& pvCenter) final;
+   void FlipX(const Vertex2D& pvCenter) final;
+   void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) final;
+   void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) final;
+   void Translate(const Vertex2D &pvOffset) final;
+   void MoveOffset(const float dx, const float dy) final;
+   void SetObjectPos() final;
 
-   virtual int GetMinimumPoints() const override { return 2; }
+   int GetMinimumPoints() const final { return 2; }
 
-   virtual Vertex2D GetCenter() const override { return m_d.m_vCenter; }
-   virtual void PutCenter(const Vertex2D& pv) override { m_d.m_vCenter = pv; }
-   virtual void DoCommand(int icmd, int x, int y) override;
+   Vertex2D GetCenter() const final { return m_d.m_vCenter; }
+   void PutCenter(const Vertex2D& pv) final { m_d.m_vCenter = pv; }
+   void DoCommand(int icmd, int x, int y) final;
 
-   virtual bool IsTransparent() const override { return !m_d.m_isDMD; }
-   virtual float GetDepth(const Vertex3Ds& viewDir) const override
+   bool IsTransparent() const final { return !m_d.m_isDMD; }
+   float GetDepth(const Vertex3Ds& viewDir) const final
    {
       return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_d.m_height;
    }
-   virtual unsigned long long GetMaterialID() const override { return 64-1; } //!! some constant number
-   virtual unsigned long long GetImageID() const override
+   unsigned long long GetMaterialID() const final { return 64-1; } //!! some constant number
+   unsigned long long GetImageID() const final
    {
       Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
       Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
@@ -110,10 +110,10 @@ public:
          tex = pinB;
       return (unsigned long long)tex;
    }
-   virtual bool IsDMD() const override { return m_d.m_isDMD; }
-   virtual ItemTypeEnum HitableGetItemType() const override { return eItemFlasher; }
+   bool IsDMD() const final { return m_d.m_isDMD; }
+   ItemTypeEnum HitableGetItemType() const final { return eItemFlasher; }
 
-   virtual void WriteRegDefaults() override;
+   void WriteRegDefaults() final;
 
    long GetAlpha() const
    {

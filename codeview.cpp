@@ -700,12 +700,12 @@ void CodeViewer::SetVisible(const bool visible)
    if (!visible && !m_minimized)
    {
       const CRect rc = GetWindowRect();
-      SaveValueInt("Editor", "CodeViewPosX", rc.left);
-      SaveValueInt("Editor", "CodeViewPosY", rc.top);
+      SaveValueInt("Editor"s, "CodeViewPosX"s, rc.left);
+      SaveValueInt("Editor"s, "CodeViewPosY"s, rc.top);
       const int w = rc.right - rc.left;
-      SaveValueInt("Editor", "CodeViewPosWidth", w);
+      SaveValueInt("Editor"s, "CodeViewPosWidth"s, w);
       const int h = rc.bottom - rc.top;
-      SaveValueInt("Editor", "CodeViewPosHeight", h);
+      SaveValueInt("Editor"s, "CodeViewPosHeight"s, h);
    }
 
    if (m_hwndFind && !visible)
@@ -729,10 +729,10 @@ void CodeViewer::SetVisible(const bool visible)
    {
 	   if (!m_visible)
 	   {
-		   const int x = LoadValueIntWithDefault("Editor", "CodeViewPosX", 0);
-		   const int y = LoadValueIntWithDefault("Editor", "CodeViewPosY", 0);
-		   const int w = LoadValueIntWithDefault("Editor", "CodeViewPosWidth", 640);
-		   const int h = LoadValueIntWithDefault("Editor", "CodeViewPosHeight", 490);
+		   const int x = LoadValueIntWithDefault("Editor"s, "CodeViewPosX"s, 0);
+		   const int y = LoadValueIntWithDefault("Editor"s, "CodeViewPosY"s, 0);
+		   const int w = LoadValueIntWithDefault("Editor"s, "CodeViewPosWidth"s, 640);
+		   const int h = LoadValueIntWithDefault("Editor"s, "CodeViewPosHeight"s, 490);
 		   SetWindowPos(HWND_TOP, x, y, w, h, SWP_NOMOVE | SWP_NOSIZE);
 	   }
 	   SetForegroundWindow();
@@ -763,26 +763,26 @@ void CodeViewer::SetCaption(const string& szCaption)
 
 void CodeViewer::UpdatePrefsfromReg()
 {
-	m_bgColor = LoadValueIntWithDefault("CVEdit", "BackGroundColor", RGB(255,255,255));
-	m_bgSelColor = LoadValueIntWithDefault("CVEdit", "BackGroundSelectionColor", RGB(192,192,192));
-	m_displayAutoComplete = LoadValueBoolWithDefault("CVEdit", "DisplayAutoComplete", true);
-	m_displayAutoCompleteLength = LoadValueIntWithDefault("CVEdit", "DisplayAutoCompleteAfter", 1);
-	m_dwellDisplay = LoadValueBoolWithDefault("CVEdit", "DwellDisplay", true);
-	m_dwellHelp = LoadValueBoolWithDefault("CVEdit", "DwellHelp", true);
-	m_dwellDisplayTime = LoadValueIntWithDefault("CVEdit", "DwellDisplayTime", 700);
+	m_bgColor = LoadValueIntWithDefault("CVEdit"s, "BackGroundColor"s, RGB(255,255,255));
+	m_bgSelColor = LoadValueIntWithDefault("CVEdit"s, "BackGroundSelectionColor"s, RGB(192,192,192));
+	m_displayAutoComplete = LoadValueBoolWithDefault("CVEdit"s, "DisplayAutoComplete"s, true);
+	m_displayAutoCompleteLength = LoadValueIntWithDefault("CVEdit"s, "DisplayAutoCompleteAfter"s, 1);
+	m_dwellDisplay = LoadValueBoolWithDefault("CVEdit"s, "DwellDisplay"s, true);
+	m_dwellHelp = LoadValueBoolWithDefault("CVEdit"s, "DwellHelp"s, true);
+	m_dwellDisplayTime = LoadValueIntWithDefault("CVEdit"s, "DwellDisplayTime"s, 700);
 	for (size_t i = 0; i < m_lPrefsList->size(); ++i)
 		m_lPrefsList->at(i)->GetPrefsFromReg();
 }
 
 void CodeViewer::UpdateRegWithPrefs()
 {
-	SaveValueInt("CVEdit", "BackGroundColor", m_bgColor);
-	SaveValueInt("CVEdit", "BackGroundSelectionColor", m_bgSelColor);
-	SaveValueBool("CVEdit","DisplayAutoComplete", m_displayAutoComplete);
-	SaveValueInt("CVEdit","DisplayAutoCompleteAfter", m_displayAutoCompleteLength);
-	SaveValueBool("CVEdit","DwellDisplay", m_dwellDisplay);
-	SaveValueBool("CVEdit","DwellHelp", m_dwellHelp);
-	SaveValueInt("CVEdit","DwellDisplayTime", m_dwellDisplayTime);
+	SaveValueInt("CVEdit"s, "BackGroundColor"s, m_bgColor);
+	SaveValueInt("CVEdit"s, "BackGroundSelectionColor"s, m_bgSelColor);
+	SaveValueBool("CVEdit"s,"DisplayAutoComplete"s, m_displayAutoComplete);
+	SaveValueInt("CVEdit"s,"DisplayAutoCompleteAfter"s, m_displayAutoCompleteLength);
+	SaveValueBool("CVEdit"s,"DwellDisplay"s, m_dwellDisplay);
+	SaveValueBool("CVEdit"s,"DwellHelp"s, m_dwellHelp);
+	SaveValueInt("CVEdit"s,"DwellDisplayTime"s, m_dwellDisplayTime);
 	for (size_t i = 0; i < m_lPrefsList->size(); i++)
 		m_lPrefsList->at(i)->SetPrefsToReg();
 }
@@ -2301,8 +2301,7 @@ bool CodeViewer::ShowTooltipOrGoToDefinition(const SCNotification *pSCN, const b
 	SendMessage(m_hwndScintilla, SCI_GETLINE, CurrentLineNo, (LPARAM)text);
 	if (text[0] != '\0')
 	{
-		const string strText(text);
-		const size_t t = strText.find_first_of('\'', 0);
+		const size_t t = string(text).find_first_of('\'', 0);
 		if (t != string::npos)
 		{
 			const LRESULT linestart = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, CurrentLineNo, 0);
@@ -2488,8 +2487,7 @@ static void RemoveComment(const HWND m_hwndScintilla)
       {
          char buf[MAX_LINE_LENGTH];
          GetRange(m_hwndScintilla, lineStart, lineEnd, buf);
-         const string line(buf);
-         const size_t idx = line.find_first_of('\'');
+         const size_t idx = string(buf).find_first_of('\'');
          if (idx == 0)
          {
             SendMessage(m_hwndScintilla, SCI_SETSEL, lineStart, lineStart + 1);
@@ -2526,10 +2524,10 @@ size_t CodeViewer::SureFind(const string &LineIn, const string &ToFind)
 
 void CodeViewer::PreCreate(CREATESTRUCT& cs)
 {
-    const int x = LoadValueIntWithDefault("Editor", "CodeViewPosX", 0);
-    const int y = LoadValueIntWithDefault("Editor", "CodeViewPosY", 0);
-    const int w = LoadValueIntWithDefault("Editor", "CodeViewPosWidth", 640);
-    const int h = LoadValueIntWithDefault("Editor", "CodeViewPosHeight", 490);
+    const int x = LoadValueIntWithDefault("Editor"s, "CodeViewPosX"s, 0);
+    const int y = LoadValueIntWithDefault("Editor"s, "CodeViewPosY"s, 0);
+    const int w = LoadValueIntWithDefault("Editor"s, "CodeViewPosWidth"s, 640);
+    const int h = LoadValueIntWithDefault("Editor"s, "CodeViewPosHeight"s, 490);
 
     cs.x = x;
     cs.y = y;
@@ -2729,22 +2727,22 @@ bool CodeViewer::ParseStructureName(vector<UserData>& ListIn, UserData ud, const
 	return false;
 }
 
-void CodeViewer::ParseDelimtByColon(string &result, string &wholeline)
+string CodeViewer::ParseDelimtByColon(string &wholeline)
 {
-	result = wholeline;
-	const size_t idx = result.find(':'); 
-	if (idx == string::npos)
+	string result;
+	const size_t idx = wholeline.find(':'); 
+	if (idx == string::npos || idx == 0)
 	{
+		result = wholeline; 
 		wholeline.clear();
-		return;
 	}
-	if (idx > 0)
+	else
 	{
 		result = wholeline.substr(0, idx);
-		wholeline = wholeline.substr(idx + 1, (wholeline.length()) - (result.length()));
-		return;
+		wholeline = wholeline.substr(idx + 1, wholeline.length() - result.length());
 	}
-	wholeline.clear();
+
+	return result;
 }
 
 void CodeViewer::ParseFindConstruct(size_t &Pos, const string &UCLineIn, WordType &Type, int &ConstructSize)
@@ -2825,8 +2823,7 @@ void CodeViewer::ReadLineToParseBrain(string wholeline, const int linecount, vec
 		RemovePadding(CommentTmp);
 		while (wholeline.length() > 1)
 		{
-			string line;
-			ParseDelimtByColon(line, wholeline);
+			string line = ParseDelimtByColon(wholeline);
 			RemovePadding(line);
 			const string UCline = upperCase(line);
 			UserData UD;
@@ -2999,7 +2996,7 @@ void CodeViewer::ParseVPCore()
 	searchPaths.push_back("c:\\Visual Pinball\\Scripts\\core.vbs"); // default script path
 
 	string szLoadDir;
-	const HRESULT hr = LoadValue("RecentDir", "LoadDir", szLoadDir); // last known load dir path
+	const HRESULT hr = LoadValue("RecentDir"s, "LoadDir"s, szLoadDir); // last known load dir path
 	if (hr != S_OK)
 		szLoadDir = "c:\\Visual Pinball\\Tables\\"; // default table path
 	searchPaths.push_back(szLoadDir + "core.vbs");
@@ -3443,8 +3440,8 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				pcv->m_lPrefsList->at(i)->GetPrefsFromReg();
 				pcv->m_lPrefsList->at(i)->SetCheckBox(hwndDlg);
 			}
-			pcv->m_bgColor = LoadValueIntWithDefault("CVEdit", "BackGroundColor", RGB(255,255,255));
-			pcv->m_bgSelColor = LoadValueIntWithDefault("CVEdit", "BackGroundSelectionColor", RGB(192,192,192));
+			pcv->m_bgColor = LoadValueIntWithDefault("CVEdit"s, "BackGroundColor"s, RGB(255,255,255));
+			pcv->m_bgSelColor = LoadValueIntWithDefault("CVEdit"s, "BackGroundSelectionColor"s, RGB(192,192,192));
 			pcv->UpdateScinFromPrefs();
 			SNDMSG(GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE), BM_SETCHECK, pcv->m_displayAutoComplete ? BST_CHECKED : BST_UNCHECKED, 0L);
 			SNDMSG(GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_DISPLAYDWELL), BM_SETCHECK, pcv->m_dwellDisplay ? BST_CHECKED : BST_UNCHECKED, 0L);
@@ -3500,19 +3497,19 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				case IDC_CVP_CHKBOX_DISPLAYDWELL:
 				{
 					pcv->m_dwellDisplay = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_DISPLAYDWELL);
-					SaveValueBool("CVEdit", "DwellDisplay", pcv->m_dwellDisplay);
+					SaveValueBool("CVEdit"s, "DwellDisplay"s, pcv->m_dwellDisplay);
 				}
 				break;
 				case IDC_CVP_CHKBOX_HELPWITHDWELL:
 				{
 					pcv->m_dwellHelp = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_HELPWITHDWELL);
-					SaveValueBool("CVEdit", "DwellHelp", pcv->m_dwellHelp);
+					SaveValueBool("CVEdit"s, "DwellHelp"s, pcv->m_dwellHelp);
 				}
 				break;
 				case IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE:
 				{
 					pcv->m_displayAutoComplete = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE);
-					SaveValueBool("CVEdit", "DisplayAutoComplete", pcv->m_displayAutoComplete);
+					SaveValueBool("CVEdit"s, "DisplayAutoComplete"s, pcv->m_displayAutoComplete);
 				}
 				break;
 				case IDC_CVP_BUT_COL_BACKGROUND:
@@ -3713,11 +3710,11 @@ void CodeViewer::AppendLastErrorTextW(const std::wstring& text)
 	const int requiredLength = ::GetWindowTextLength(m_hwndLastErrorTextArea) + lstrlenW(text.c_str()) + 1;
 	wchar_t* buf = new wchar_t[requiredLength];
 
-    // Get existing text from edit control and put into buffer
-    ::GetWindowTextW(m_hwndLastErrorTextArea, buf, requiredLength);
+	// Get existing text from edit control and put into buffer
+	::GetWindowTextW(m_hwndLastErrorTextArea, buf, requiredLength);
 
-    // Append the new text to the buffer
-    wcscat_s(buf, requiredLength, text.c_str());
+	// Append the new text to the buffer
+	wcscat_s(buf, requiredLength, text.c_str());
 
 	::SetWindowTextW(m_hwndLastErrorTextArea, buf);
 
@@ -3732,7 +3729,7 @@ Collection::Collection()
    m_fireEvents = false;
    m_stopSingleEvents = false;
 
-   m_groupElements = LoadValueBoolWithDefault("Editor", "GroupElementsInCollection", true);
+   m_groupElements = LoadValueBoolWithDefault("Editor"s, "GroupElementsInCollection"s, true);
 }
 
 STDMETHODIMP Collection::get_Name(BSTR *pVal)

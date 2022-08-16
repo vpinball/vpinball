@@ -79,39 +79,39 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   virtual void RenderBlueprint(Sur *psur, const bool solid) override;
+   void RenderBlueprint(Sur *psur, const bool solid) final;
 
-   virtual void ClearForOverwrite() override;
+   void ClearForOverwrite() final;
 
-   virtual void MoveOffset(const float dx, const float dy) override;
-   virtual void SetObjectPos() override;
+   void MoveOffset(const float dx, const float dy) final;
+   void SetObjectPos() final;
 
-   virtual void DoCommand(int icmd, int x, int y) override;
+   void DoCommand(int icmd, int x, int y) final;
 
-   virtual int GetMinimumPoints() const override { return 2; }
+   int GetMinimumPoints() const final { return 2; }
 
-   virtual void FlipY(const Vertex2D& pvCenter) override;
-   virtual void FlipX(const Vertex2D& pvCenter) override;
-   virtual void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) override;
-   virtual void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) override;
-   virtual void Translate(const Vertex2D &pvOffset) override;
+   void FlipY(const Vertex2D& pvCenter) final;
+   void FlipX(const Vertex2D& pvCenter) final;
+   void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) final;
+   void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) final;
+   void Translate(const Vertex2D &pvOffset) final;
 
-   virtual Vertex2D GetCenter() const override { return GetPointCenter(); }
-   virtual void PutCenter(const Vertex2D &pv) override { PutPointCenter(pv); }
+   Vertex2D GetCenter() const final { return GetPointCenter(); }
+   void PutCenter(const Vertex2D &pv) final { PutPointCenter(pv); }
 
-   virtual void GetBoundingVertices(std::vector<Vertex3Ds> &pvvertex3D) override;
+   void GetBoundingVertices(std::vector<Vertex3Ds> &pvvertex3D) final;
 
-   virtual bool IsTransparent() const override;
-   virtual float GetDepth(const Vertex3Ds &viewDir) const override;
-   virtual unsigned long long GetMaterialID() const override { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-   virtual unsigned long long GetImageID() const override { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
-   virtual ItemTypeEnum HitableGetItemType() const override { return eItemRamp; }
-   virtual void SetDefaultPhysics(bool fromMouseClick) override;
-   virtual void ExportMesh(ObjLoader &loader) override;
-   virtual void AddPoint(int x, int y, const bool smooth) override;
-   virtual void UpdateStatusBarInfo() override;
+   bool IsTransparent() const final;
+   float GetDepth(const Vertex3Ds &viewDir) const final;
+   unsigned long long GetMaterialID() const final { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+   unsigned long long GetImageID() const final { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
+   ItemTypeEnum HitableGetItemType() const final { return eItemRamp; }
+   void SetDefaultPhysics(bool fromMouseClick) final;
+   void ExportMesh(ObjLoader &loader) final;
+   void AddPoint(int x, int y, const bool smooth) final;
+   void UpdateStatusBarInfo() final;
 
-   virtual void WriteRegDefaults() override;
+   void WriteRegDefaults() final;
 
    float GetSurfaceHeight(float x, float y) const;
    bool isHabitrail() const;
@@ -119,7 +119,6 @@ public:
    RampData m_d;
 
 private:
-
    PinTable *m_ptable;
 
    int m_rampVertex;

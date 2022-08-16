@@ -90,15 +90,15 @@ public:
          CONNECTION_POINT_ENTRY(DIID_IFlipperEvents)
       END_CONNECTION_POINT_MAP()
 
-      virtual void MoveOffset(const float dx, const float dy) override;
-      virtual void SetObjectPos() override;
+      void MoveOffset(const float dx, const float dy) final;
+      void SetObjectPos() final;
       // Multi-object manipulation
-      virtual Vertex2D GetCenter() const override;
-      virtual void PutCenter(const Vertex2D &pv) override;
-      virtual void SetDefaultPhysics(bool fromMouseClick) override;
-      virtual void ExportMesh(ObjLoader &loader) override;
+      Vertex2D GetCenter() const final;
+      void PutCenter(const Vertex2D &pv) final;
+      void SetDefaultPhysics(bool fromMouseClick) final;
+      void ExportMesh(ObjLoader &loader) final;
 
-      virtual unsigned long long GetMaterialID() const override
+      unsigned long long GetMaterialID() const final
       {
 		  const unsigned long long m1 = m_ptable->GetMaterial(m_d.m_szMaterial)->hash();
 		  const unsigned long long m2 = m_ptable->GetMaterial(m_d.m_szRubberMaterial)->hash();
@@ -107,9 +107,9 @@ public:
 		  else
 			  return 0;
       }
-      virtual unsigned long long GetImageID() const override { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
-      virtual ItemTypeEnum HitableGetItemType() const override { return eItemFlipper; }
-      virtual void WriteRegDefaults();
+      unsigned long long GetImageID() const final { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
+      ItemTypeEnum HitableGetItemType() const final { return eItemFlipper; }
+      void WriteRegDefaults() final;
 
       //DECLARE_NOT_AGGREGATABLE(Flipper)
       // Remove the comment from the line above if you don't want your object to

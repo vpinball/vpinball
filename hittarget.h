@@ -159,16 +159,16 @@ public:
    //STDMETHOD(get_Name)(BSTR *pVal) {return E_FAIL;}
 
    //virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName);
-   virtual void WriteRegDefaults();
+   void WriteRegDefaults() final;
 
-   virtual bool IsTransparent() const;
-   virtual float GetDepth(const Vertex3Ds& viewDir) const;
-   virtual unsigned long long GetMaterialID() const override { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-   virtual unsigned long long GetImageID() const override { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
-   virtual ItemTypeEnum HitableGetItemType() const override { return eItemHitTarget; }
+   bool IsTransparent() const final;
+   float GetDepth(const Vertex3Ds& viewDir) const final;
+   unsigned long long GetMaterialID() const final { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+   unsigned long long GetImageID() const final { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
+   ItemTypeEnum HitableGetItemType() const final { return eItemHitTarget; }
 
-   virtual void SetDefaultPhysics(bool fromMouseClick);
-   virtual void ExportMesh(ObjLoader& loader);
+   void SetDefaultPhysics(bool fromMouseClick) final;
+   void ExportMesh(ObjLoader& loader) final;
 
    void GenerateMesh(std::vector<Vertex3D_NoTex2> &buf);
    void TransformVertices();
