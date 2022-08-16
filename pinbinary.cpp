@@ -42,7 +42,7 @@ bool PinBinary::ReadFromFile(const string& szFileName)
    /*foo =*/ CloseHandle(hFile);
 
    m_szPath = szFileName;
-   TitleFromFilename(szFileName, m_szName);
+   m_szName = TitleFromFilename(szFileName);
 
    return true;
 }

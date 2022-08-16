@@ -123,7 +123,7 @@ HRESULT PinSound::ReInitialize()
 
    if(!IsWav())
    {
-	   const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
+	   const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player"s, "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
 	   SetDevice();
 	   m_BASSstream = BASS_StreamCreateFile(
@@ -139,8 +139,7 @@ HRESULT PinSound::ReInitialize()
 		   const int code = BASS_ErrorGetCode();
 		   string bla2;
 		   BASS_ErrorMapCode(code, bla2);
-		   const string bla = "BASS music/sound library cannot create stream \"" + m_szPath + "\" (error " + std::to_string(code) + ": " + bla2 + ")";
-		   g_pvp->MessageBox(bla.c_str(), "Error", MB_ICONERROR);
+		   g_pvp->MessageBox(("BASS music/sound library cannot create stream \"" + m_szPath + "\" (error " + std::to_string(code) + ": " + bla2 + ')').c_str(), "Error", MB_ICONERROR);
 		   return E_FAIL;
 	   }
 
@@ -157,7 +156,7 @@ HRESULT PinSound::ReInitialize()
       return E_FAIL;
    }
 
-   const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
+   const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player"s, "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
    WAVEFORMATEX wfx = m_wfx;  // Use a copy as we might be modifying it
    // Remark from MSDN: "If wFormatTag = WAVE_FORMAT_PCM or wFormatTag = WAVE_FORMAT_IEEE_FLOAT, set cbSize to zero"
@@ -278,7 +277,7 @@ void PinSound::Play(const float volume, const float randompitch, const int pitch
          BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, (float)(freq + pitch));
       }
 
-      const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
+      const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player"s, "Sound3D"s, (int)SNDCFG_SND3D2CH);
       switch (SoundMode3D)
       {
       case SNDCFG_SND3DALLREAR:
@@ -381,7 +380,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    int DSidx = 0;
    if (!FAILED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
    {
-      const HRESULT hr = LoadValue("Player", IsBackglass ? "SoundDeviceBG" : "SoundDevice", DSidx);
+      const HRESULT hr = LoadValue("Player"s, IsBackglass ? "SoundDeviceBG"s : "SoundDevice"s, DSidx);
       if ((hr != S_OK) || ((size_t)DSidx >= DSads.size()))
          DSidx = 0; // The default primary sound device
    }
@@ -409,7 +408,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
       return;// hr;
    }
 
-   const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
+   const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault("Player"s, "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
    // Get the primary buffer 
    DSBUFFERDESC dsbd = {};
@@ -470,7 +469,7 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
    PinSound * const pps = new PinSound();
 
    pps->m_szPath = strFileName;
-   TitleFromFilename(strFileName, pps->m_szName);
+   pps->m_szName = TitleFromFilename(strFileName);
 
    if (pps->IsWav()) // only use old direct sound code and wav reader if playing wav's
    {
@@ -486,7 +485,7 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 		   return nullptr;
 	   }
 
-	   const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
+	   const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault("Player"s, "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
 	   // Set up the direct sound buffer, and only request the flags needed
 	   // since each requires some overhead and limits if the buffer can
@@ -571,7 +570,7 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 	   fread_s(pps->m_pdata, pps->m_cdata, 1, pps->m_cdata, f);
 	   fclose(f);
 
-	   const SoundConfigTypes SoundMode3D = (pps->m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
+	   const SoundConfigTypes SoundMode3D = (pps->m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player"s, "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
 	   pps->SetDevice();
 	   pps->m_BASSstream = BASS_StreamCreateFile(
@@ -589,8 +588,7 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 		   const int code = BASS_ErrorGetCode();
 		   string bla2;
 		   BASS_ErrorMapCode(code, bla2);
-		   const string bla = "BASS music/sound library cannot load \"" + strFileName + "\" (error " + std::to_string(code) + ": " + bla2 + ")";
-		   g_pvp->MessageBox(bla.c_str(), "Error", MB_ICONERROR);
+		   g_pvp->MessageBox(("BASS music/sound library cannot load \"" + strFileName + "\" (error " + std::to_string(code) + ": " + bla2 + ')').c_str(), "Error", MB_ICONERROR);
 		   return nullptr;
 	   }
    }
@@ -817,7 +815,7 @@ void PinDirectSoundWavCopy::PlayInternal(const float volume, const float randomp
 		}
 	}
 
-	const SoundConfigTypes SoundMode3D = (m_ppsOriginal->m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
+	const SoundConfigTypes SoundMode3D = (m_ppsOriginal->m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player"s, "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
 	switch (SoundMode3D)
 	{

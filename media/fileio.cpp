@@ -16,7 +16,7 @@ bool Exists(const string& filePath)
 	return ((fileAtt & FILE_ATTRIBUTE_DIRECTORY) == 0);
 }
 
-void ExtensionFromFilename(const string& szfilename, string& szextension)
+string ExtensionFromFilename(const string& szfilename)
 {
    const int len = (int)szfilename.length();
 
@@ -31,12 +31,12 @@ void ExtensionFromFilename(const string& szfilename, string& szextension)
    }
 
    if (begin <= 0)
-      szextension.clear();
+      return string();
    else
-      szextension = szfilename.c_str()+begin;
+      return szfilename.c_str()+begin;
 }
 
-void TitleFromFilename(const string& szfilename, string& sztitle)
+string TitleFromFilename(const string& szfilename)
 {
    const int len = (int)szfilename.length();
 
@@ -63,11 +63,12 @@ void TitleFromFilename(const string& szfilename, string& sztitle)
    const char *szT = szfilename.c_str()+begin;
    int count = end - begin;
 
-   sztitle.clear();
+   string sztitle;
    while (count--) { sztitle.push_back(*szT++); }
+   return sztitle;
 }
 
-void PathFromFilename(const string& szfilename, string& szpath)
+string PathFromFilename(const string &szfilename)
 {
    const int len = (int)szfilename.length();
    // find the last '\' in the filename
@@ -85,11 +86,12 @@ void PathFromFilename(const string& szfilename, string& szpath)
    const char * szT = szfilename.c_str();
    int count = end + 1;
 
-   szpath.clear();
+   string szpath;
    while (count--) { szpath.push_back(*szT++); }
+   return szpath;
 }
 
-void TitleAndPathFromFilename(const char * const szfilename, char *szpath)
+string TitleAndPathFromFilename(const char * const szfilename)
 {
    const int len = lstrlen(szfilename);
    // find the last '.' in the filename
@@ -107,8 +109,9 @@ void TitleAndPathFromFilename(const char * const szfilename, char *szpath)
    const char *szT = szfilename;
    int count = end;
 
-   while (count-- > 0) { *szpath++ = *szT++; }
-   *szpath = '\0';
+   string szpath;
+   while (count-- > 0) { szpath.push_back(*szT++); }
+   return szpath;
 }
 
 bool ReplaceExtensionFromFilename(string& szfilename, const string& newextension)

@@ -266,7 +266,7 @@ public:
       szTableFileName.clear();
 
       // Start VP with file dialog open and then also playing that one?
-      const bool stos = LoadValueBoolWithDefault("Editor", "SelectTableOnStart", true);
+      const bool stos = LoadValueBoolWithDefault("Editor"s, "SelectTableOnStart"s, true);
       if (stos)
       {
          file = true;
@@ -424,8 +424,7 @@ public:
             else
                // Or set from table path
                if (play) {
-                  string dir;
-                  PathFromFilename(szTableFileName, dir);
+                  const string dir = PathFromFilename(szTableFileName);
                   SetCurrentDirectory(dir.c_str());
                }
 
@@ -526,20 +525,20 @@ public:
            else
            {
                loadFileResult = m_vpinball.LoadFile(!play);
-               m_vpinball.m_table_played_via_SelectTableOnStart = LoadValueBoolWithDefault("Editor", "SelectTableOnPlayerClose", true) ? loadFileResult : false;
+               m_vpinball.m_table_played_via_SelectTableOnStart = LoadValueBoolWithDefault("Editor"s, "SelectTableOnPlayerClose"s, true) ? loadFileResult : false;
            }
 
            if (extractScript && loadFileResult)
            {
                string szScriptFilename = szTableFileName;
-               if(ReplaceExtensionFromFilename(szScriptFilename, "vbs"))
+               if(ReplaceExtensionFromFilename(szScriptFilename, "vbs"s))
                    m_vpinball.m_ptableActive->m_pcv->SaveToFile(szScriptFilename);
                m_vpinball.Quit();
            }
            if (extractPov && loadFileResult)
            {
                string szPOVFilename = szTableFileName;
-               if (ReplaceExtensionFromFilename(szPOVFilename, "pov"))
+               if (ReplaceExtensionFromFilename(szPOVFilename, "pov"s))
                    m_vpinball.m_ptableActive->ExportBackdropPOV(szPOVFilename);
                m_vpinball.Quit();
            }

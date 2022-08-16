@@ -401,7 +401,7 @@ __forceinline float millimetersToVPUnits(const float value)
 }
 
 float sz2f(const string& sz);
-void f2sz(const float f, string& sz);
+string f2sz(const float f);
 
 void WideStrNCopy(const WCHAR *wzin, WCHAR *wzout, const DWORD wzoutMaxLen);
 int WideStrCmp(const WCHAR *wz1, const WCHAR *wz2);

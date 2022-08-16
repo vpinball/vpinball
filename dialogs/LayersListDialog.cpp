@@ -292,7 +292,7 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_LAYER_FILTER_CASE_BUTTON:
       SetCaseSensitiveFilter(!GetCaseSensitiveFilter());
       Button_SetCheck(m_layerFilterCaseButton, GetCaseSensitiveFilter() ? BST_CHECKED : BST_UNCHECKED);
-      UpdateLayerList(string(GetWindowText()));
+      UpdateLayerList(GetWindowText().c_str());
       return TRUE;
    default: break;
    }
@@ -1089,7 +1089,7 @@ LRESULT FilterEditBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       if ((wparam == VK_RETURN) || (wparam == VK_TAB))
       {
          if (m_layerDialog)
-            m_layerDialog->UpdateLayerList(string(GetWindowText()));
+            m_layerDialog->UpdateLayerList(GetWindowText().c_str());
          return FALSE;
       }
    }
@@ -1107,7 +1107,7 @@ BOOL FilterEditBox::OnCommand(WPARAM wParam, LPARAM lParam)
    case CBN_KILLFOCUS:
    {
       if (m_layerDialog)
-         m_layerDialog->UpdateLayerList(string(GetWindowText()));
+         m_layerDialog->UpdateLayerList(GetWindowText().c_str());
       return TRUE;
    }
    }

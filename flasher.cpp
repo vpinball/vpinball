@@ -97,57 +97,63 @@ HRESULT Flasher::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Flasher::SetDefaults(bool fromMouseClick)
 {
-   m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Flasher", "Height", 50.f) : 50.f;
-   m_d.m_rotX = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Flasher", "RotX", 0.f) : 0.f;
-   m_d.m_rotY = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Flasher", "RotY", 0.f) : 0.f;
-   m_d.m_rotZ = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Flasher", "RotZ", 0.f) : 0.f;
-   m_d.m_color = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Flasher", "Color", RGB(50,200,50)) : RGB(50,200,50);
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "TimerEnabled", false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Flasher", "TimerInterval", 100) : 100;
+#define regKey "DefaultProps\\Flasher"s
 
-   HRESULT hr = LoadValue("DefaultProps\\Flasher", "ImageA", m_d.m_szImageA);
+   m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Height"s, 50.f) : 50.f;
+   m_d.m_rotX = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RotX"s, 0.f) : 0.f;
+   m_d.m_rotY = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RotY"s, 0.f) : 0.f;
+   m_d.m_rotZ = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RotZ"s, 0.f) : 0.f;
+   m_d.m_color = fromMouseClick ? LoadValueIntWithDefault(regKey, "Color"s, RGB(50,200,50)) : RGB(50,200,50);
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "TimerInterval"s, 100) : 100;
+
+   HRESULT hr = LoadValue(regKey, "ImageA"s, m_d.m_szImageA);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImageA.clear();
 
-   hr = LoadValue("DefaultProps\\Flasher", "ImageB", m_d.m_szImageB);
+   hr = LoadValue(regKey, "ImageB"s, m_d.m_szImageB);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImageB.clear();
 
-   m_d.m_alpha = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Flasher", "Opacity", 100) : 100;
+   m_d.m_alpha = fromMouseClick ? LoadValueIntWithDefault(regKey, "Opacity"s, 100) : 100;
 
    m_d.m_intensity_scale = 1.0f;
 
-   m_d.m_modulate_vs_add = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Flasher", "ModulateVsAdd", 0.9f) : 0.9f;
-   m_d.m_filterAmount = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Flasher", "FilterAmount", 100) : 100;
-   m_d.m_isVisible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "Visible", true) : true;
+   m_d.m_modulate_vs_add = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ModulateVsAdd"s, 0.9f) : 0.9f;
+   m_d.m_filterAmount = fromMouseClick ? LoadValueIntWithDefault(regKey, "FilterAmount"s, 100) : 100;
+   m_d.m_isVisible = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Visible"s, true) : true;
    m_inPlayState = m_d.m_isVisible;
-   m_d.m_addBlend = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "AddBlend", false) : false;
-   m_d.m_isDMD = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "DMD", false) : false;
-   m_d.m_displayTexture = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "DisplayTexture", false) : false;
-   m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)LoadValueIntWithDefault("DefaultProps\\Flasher", "ImageMode", ImageModeWrap) : ImageModeWrap;
-   m_d.m_filter = fromMouseClick ? (Filters)LoadValueIntWithDefault("DefaultProps\\Flasher", "Filter", Filter_Overlay) : Filter_Overlay;
+   m_d.m_addBlend = fromMouseClick ? LoadValueBoolWithDefault(regKey, "AddBlend"s, false) : false;
+   m_d.m_isDMD = fromMouseClick ? LoadValueBoolWithDefault(regKey, "DMD"s, false) : false;
+   m_d.m_displayTexture = fromMouseClick ? LoadValueBoolWithDefault(regKey, "DisplayTexture"s, false) : false;
+   m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)LoadValueIntWithDefault(regKey, "ImageMode"s, ImageModeWrap) : ImageModeWrap;
+   m_d.m_filter = fromMouseClick ? (Filters)LoadValueIntWithDefault(regKey, "Filter"s, Filter_Overlay) : Filter_Overlay;
+#undef regKey
 }
 
 void Flasher::WriteRegDefaults()
 {
-   SaveValueFloat("DefaultProps\\Flasher", "Height", m_d.m_height);
-   SaveValueFloat("DefaultProps\\Flasher", "RotX", m_d.m_rotX);
-   SaveValueFloat("DefaultProps\\Flasher", "RotY", m_d.m_rotY);
-   SaveValueFloat("DefaultProps\\Flasher", "RotZ", m_d.m_rotZ);
-   SaveValueInt("DefaultProps\\Flasher", "Color", m_d.m_color);
-   SaveValueBool("DefaultProps\\Flasher", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
-   SaveValueInt("DefaultProps\\Flasher", "TimerInterval", m_d.m_tdr.m_TimerInterval);
-   SaveValue("DefaultProps\\Flasher", "ImageA", m_d.m_szImageA);
-   SaveValue("DefaultProps\\Flasher", "ImageB", m_d.m_szImageB);
-   SaveValueInt("DefaultProps\\Flasher", "Alpha", m_d.m_alpha);
-   SaveValueFloat("DefaultProps\\Flasher", "ModulateVsAdd", m_d.m_modulate_vs_add);
-   SaveValueBool("DefaultProps\\Flasher", "Visible", m_d.m_isVisible);
-   SaveValueBool("DefaultProps\\Flasher", "DisplayTexture", m_d.m_displayTexture);
-   SaveValueBool("DefaultProps\\Flasher", "AddBlend", m_d.m_addBlend);
-   SaveValueBool("DefaultProps\\Flasher", "DMD", m_d.m_isDMD);
-   SaveValueInt("DefaultProps\\Flasher", "ImageMode", m_d.m_imagealignment);
-   SaveValueInt("DefaultProps\\Flasher", "Filter", m_d.m_filter);
-   SaveValueInt("DefaultProps\\Flasher", "FilterAmount", m_d.m_filterAmount);
+#define regKey "DefaultProps\\Flasher"s
+
+   SaveValueFloat(regKey, "Height"s, m_d.m_height);
+   SaveValueFloat(regKey, "RotX"s, m_d.m_rotX);
+   SaveValueFloat(regKey, "RotY"s, m_d.m_rotY);
+   SaveValueFloat(regKey, "RotZ"s, m_d.m_rotZ);
+   SaveValueInt(regKey, "Color"s, m_d.m_color);
+   SaveValueBool(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   SaveValueInt(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   SaveValue(regKey, "ImageA"s, m_d.m_szImageA);
+   SaveValue(regKey, "ImageB"s, m_d.m_szImageB);
+   SaveValueInt(regKey, "Alpha"s, m_d.m_alpha);
+   SaveValueFloat(regKey, "ModulateVsAdd"s, m_d.m_modulate_vs_add);
+   SaveValueBool(regKey, "Visible"s, m_d.m_isVisible);
+   SaveValueBool(regKey, "DisplayTexture"s, m_d.m_displayTexture);
+   SaveValueBool(regKey, "AddBlend"s, m_d.m_addBlend);
+   SaveValueBool(regKey, "DMD"s, m_d.m_isDMD);
+   SaveValueInt(regKey, "ImageMode"s, m_d.m_imagealignment);
+   SaveValueInt(regKey, "Filter"s, m_d.m_filter);
+   SaveValueInt(regKey, "FilterAmount"s, m_d.m_filterAmount);
+#undef regKey
 }
 
 void Flasher::UIRenderPass1(Sur * const psur)

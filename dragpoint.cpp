@@ -709,14 +709,10 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
       SendDlgItemMessage(hwndDlg, IDC_CHECK_ROTATE_CENTER, BM_SETCHECK, BST_CHECKED, 0);
 
-      string szT;
-      f2sz(angle, szT);
-      SetDlgItemText(hwndDlg, IDC_ROTATEBY, szT.c_str());
+      SetDlgItemText(hwndDlg, IDC_ROTATEBY, f2sz(angle).c_str());
       const Vertex2D v = psel->GetCenter();
-      f2sz(v.x, szT);
-      SetDlgItemText(hwndDlg, IDC_CENTERX, szT.c_str());
-      f2sz(v.y, szT);
-      SetDlgItemText(hwndDlg, IDC_CENTERY, szT.c_str());
+      SetDlgItemText(hwndDlg, IDC_CENTERX, f2sz(v.x).c_str());
+      SetDlgItemText(hwndDlg, IDC_CENTERY, f2sz(v.y).c_str());
    }
    return TRUE;
    break;
@@ -735,21 +731,16 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
          {
             case BN_CLICKED:
             {
-               string szT;
                if (!(SendDlgItemMessage(hwndDlg, IDC_CHECK_ROTATE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED))
                {
-                  f2sz(g_pvp->m_mouseCursorPosition.x, szT);
-                  SetDlgItemText(hwndDlg, IDC_CENTERX, szT.c_str());
-                  f2sz(g_pvp->m_mouseCursorPosition.y, szT);
-                  SetDlgItemText(hwndDlg, IDC_CENTERY, szT.c_str());
+                  SetDlgItemText(hwndDlg, IDC_CENTERX, f2sz(g_pvp->m_mouseCursorPosition.x).c_str());
+                  SetDlgItemText(hwndDlg, IDC_CENTERY, f2sz(g_pvp->m_mouseCursorPosition.y).c_str());
                }
                else
                {
                   const Vertex2D v = psel->GetCenter();
-                  f2sz(v.x, szT);
-                  SetDlgItemText(hwndDlg, IDC_CENTERX, szT.c_str());
-                  f2sz(v.y, szT);
-                  SetDlgItemText(hwndDlg, IDC_CENTERY, szT.c_str());
+                  SetDlgItemText(hwndDlg, IDC_CENTERX, f2sz(v.x).c_str());
+                  SetDlgItemText(hwndDlg, IDC_CENTERY, f2sz(v.y).c_str());
                }
                break;
             }
@@ -847,19 +838,14 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
       Vertex2D v = psel->GetScale();
 
-      string szT;
-      f2sz(v.x, szT);
-      SetDlgItemText(hwndDlg, IDC_SCALEFACTOR, szT.c_str());
-      f2sz(v.y, szT);
-      SetDlgItemText(hwndDlg, IDC_SCALEY, szT.c_str());
+      SetDlgItemText(hwndDlg, IDC_SCALEFACTOR, f2sz(v.x).c_str());
+      SetDlgItemText(hwndDlg, IDC_SCALEY, f2sz(v.y).c_str());
       v = psel->GetCenter();
 
       SendDlgItemMessage(hwndDlg, IDC_CHECK_SCALE_CENTER, BM_SETCHECK, BST_CHECKED, 0);
 
-      f2sz(v.x, szT);
-      SetDlgItemText(hwndDlg, IDC_CENTERX, szT.c_str());
-      f2sz(v.y, szT);
-      SetDlgItemText(hwndDlg, IDC_CENTERY, szT.c_str());
+      SetDlgItemText(hwndDlg, IDC_CENTERX, f2sz(v.x).c_str());
+      SetDlgItemText(hwndDlg, IDC_CENTERY, f2sz(v.y).c_str());
 
       SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_SETCHECK, TRUE, 0);
 
@@ -883,21 +869,16 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
             {
             case BN_CLICKED:
             {
-               string szT;
                if (!(SendDlgItemMessage(hwndDlg, IDC_CHECK_SCALE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED))
                {
-                  f2sz(g_pvp->m_mouseCursorPosition.x, szT);
-                  SetDlgItemText(hwndDlg, IDC_CENTERX, szT.c_str());
-                  f2sz(g_pvp->m_mouseCursorPosition.y, szT);
-                  SetDlgItemText(hwndDlg, IDC_CENTERY, szT.c_str());
+                  SetDlgItemText(hwndDlg, IDC_CENTERX, f2sz(g_pvp->m_mouseCursorPosition.x).c_str());
+                  SetDlgItemText(hwndDlg, IDC_CENTERY, f2sz(g_pvp->m_mouseCursorPosition.y).c_str());
                }
                else
                {
                   const Vertex2D v = psel->GetCenter();
-                  f2sz(v.x, szT);
-                  SetDlgItemText(hwndDlg, IDC_CENTERX, szT.c_str());
-                  f2sz(v.y, szT);
-                  SetDlgItemText(hwndDlg, IDC_CENTERY, szT.c_str());
+                  SetDlgItemText(hwndDlg, IDC_CENTERX, f2sz(v.x).c_str());
+                  SetDlgItemText(hwndDlg, IDC_CENTERY, f2sz(v.y).c_str());
                }
                break;
             }
@@ -1026,11 +1007,8 @@ INT_PTR CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
 
       SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
-      string szT;
-      f2sz(0, szT);
-      SetDlgItemText(hwndDlg, IDC_OFFSETX, szT.c_str());
-      f2sz(0, szT);
-      SetDlgItemText(hwndDlg, IDC_OFFSETY, szT.c_str());
+      SetDlgItemText(hwndDlg, IDC_OFFSETX, f2sz(0.f).c_str());
+      SetDlgItemText(hwndDlg, IDC_OFFSETY, f2sz(0.f).c_str());
    }
    return TRUE;
    break;

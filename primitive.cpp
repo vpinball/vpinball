@@ -317,123 +317,125 @@ HRESULT Primitive::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Primitive::SetDefaults(bool fromMouseClick)
 {
-   static constexpr char strKeyName[] = "DefaultProps\\Primitive";
+#define strKeyName "DefaultProps\\Primitive"s
 
    m_d.m_useAsPlayfield = false;
    m_d.m_use3DMesh = false;
 
    m_d.m_meshFileName.clear();
    // sides
-   m_d.m_Sides = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "Sides", 4) : 4;
+   m_d.m_Sides = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "Sides"s, 4) : 4;
    if (m_d.m_Sides > Max_Primitive_Sides)
       m_d.m_Sides = Max_Primitive_Sides;
 
    // colors
-   m_d.m_SideColor = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "SideColor", RGB(150, 150, 150)) : RGB(150, 150, 150);
+   m_d.m_SideColor = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "SideColor"s, RGB(150, 150, 150)) : RGB(150, 150, 150);
 
-   m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Visible", true) : true;
+   m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Visible"s, true) : true;
    m_inPlayState = m_d.m_visible;
-   m_d.m_staticRendering = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "StaticRendering", true) : true;
-   m_d.m_drawTexturesInside = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "DrawTexturesInside", false) : false;
+   m_d.m_staticRendering = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "StaticRendering"s, true) : true;
+   m_d.m_drawTexturesInside = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "DrawTexturesInside"s, false) : false;
 
    // Position (X and Y is already set by the click of the user)
-   m_d.m_vPosition.z = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Position_Z", 0.0f) : 0.0f;
+   m_d.m_vPosition.z = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Position_Z"s, 0.0f) : 0.0f;
 
    // Size
-   m_d.m_vSize.x = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Size_X", 100.0f) : 100.0f;
-   m_d.m_vSize.y = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Size_Y", 100.0f) : 100.0f;
-   m_d.m_vSize.z = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Size_Z", 100.0f) : 100.0f;
+   m_d.m_vSize.x = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Size_X"s, 100.0f) : 100.0f;
+   m_d.m_vSize.y = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Size_Y"s, 100.0f) : 100.0f;
+   m_d.m_vSize.z = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Size_Z"s, 100.0f) : 100.0f;
 
    // Rotation and Transposition
-   m_d.m_aRotAndTra[0] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra0", 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[1] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra1", 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[2] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra2", 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[3] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra3", 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[4] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra4", 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[5] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra5", 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[6] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra6", 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[7] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra7", 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[8] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra8", 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[0] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra0"s, 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[1] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra1"s, 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[2] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra2"s, 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[3] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra3"s, 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[4] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra4"s, 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[5] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra5"s, 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[6] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra6"s, 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[7] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra7"s, 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[8] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra8"s, 0.0f) : 0.0f;
 
-   HRESULT hr = LoadValue(strKeyName, "Image", m_d.m_szImage);
+   HRESULT hr = LoadValue(strKeyName, "Image"s, m_d.m_szImage);
    if ((hr != S_OK) && fromMouseClick)
       m_d.m_szImage.clear();
 
-   hr = LoadValue(strKeyName, "NormalMap", m_d.m_szNormalMap);
+   hr = LoadValue(strKeyName, "NormalMap"s, m_d.m_szNormalMap);
    if ((hr != S_OK) && fromMouseClick)
        m_d.m_szNormalMap.clear();
 
-   m_d.m_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HitThreshold", 2.0f) : 2.0f;
+   m_d.m_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HitThreshold"s, 2.0f) : 2.0f;
 
    SetDefaultPhysics(fromMouseClick);
 
-   m_d.m_alpha = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Opacity", 100.0f) : 100.0f;
-   m_d.m_addBlend = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "AddBlend", false) : false;
-   m_d.m_color = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "Color", RGB(255, 255, 255)) : RGB(255, 255, 255);
+   m_d.m_alpha = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Opacity"s, 100.0f) : 100.0f;
+   m_d.m_addBlend = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "AddBlend"s, false) : false;
+   m_d.m_color = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "Color"s, RGB(255, 255, 255)) : RGB(255, 255, 255);
 
-   m_d.m_edgeFactorUI = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "EdgeFactorUI", 0.25f) : 0.25f;
-   m_d.m_collision_reductionFactor = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "CollisionReductionFactor", 0.f) : 0.f;
+   m_d.m_edgeFactorUI = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "EdgeFactorUI"s, 0.25f) : 0.25f;
+   m_d.m_collision_reductionFactor = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "CollisionReductionFactor"s, 0.f) : 0.f;
 
-   m_d.m_collidable = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Collidable", true) : true;
-   m_d.m_toy = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "IsToy", false) : false;
-   m_d.m_disableLightingTop = dequantizeUnsigned<8>(fromMouseClick ? LoadValueIntWithDefault(strKeyName, "DisableLighting", 0) : 0); // stored as uchar for backward compatibility
-   m_d.m_disableLightingBelow = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "DisableLightingBelow", 0.f) : 0.f;
-   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ReflectionEnabled", true) : true;
-   m_d.m_backfacesEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "BackfacesEnabled", false) : false;
-   m_d.m_displayTexture = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "DisplayTexture", false) : false;
-   m_d.m_objectSpaceNormalMap = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ObjectSpaceNormalMap", false) : false;
+   m_d.m_collidable = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Collidable"s, true) : true;
+   m_d.m_toy = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "IsToy"s, false) : false;
+   m_d.m_disableLightingTop = dequantizeUnsigned<8>(fromMouseClick ? LoadValueIntWithDefault(strKeyName, "DisableLighting"s, 0) : 0); // stored as uchar for backward compatibility
+   m_d.m_disableLightingBelow = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "DisableLightingBelow"s, 0.f) : 0.f;
+   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
+   m_d.m_backfacesEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "BackfacesEnabled"s, false) : false;
+   m_d.m_displayTexture = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "DisplayTexture"s, false) : false;
+   m_d.m_objectSpaceNormalMap = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ObjectSpaceNormalMap"s, false) : false;
+#undef strKeyName
 }
 
 void Primitive::WriteRegDefaults()
 {
-   static constexpr char strKeyName[] = "DefaultProps\\Primitive";
+#define strKeyName "DefaultProps\\Primitive"s
 
-   SaveValueInt(strKeyName, "SideColor", m_d.m_SideColor);
-   SaveValueBool(strKeyName, "Visible", m_d.m_visible);
-   SaveValueBool(strKeyName, "StaticRendering", m_d.m_staticRendering);
-   SaveValueBool(strKeyName, "DrawTexturesInside", m_d.m_drawTexturesInside);
+   SaveValueInt(strKeyName, "SideColor"s, m_d.m_SideColor);
+   SaveValueBool(strKeyName, "Visible"s, m_d.m_visible);
+   SaveValueBool(strKeyName, "StaticRendering"s, m_d.m_staticRendering);
+   SaveValueBool(strKeyName, "DrawTexturesInside"s, m_d.m_drawTexturesInside);
 
-   SaveValueFloat(strKeyName, "Position_Z", m_d.m_vPosition.z);
+   SaveValueFloat(strKeyName, "Position_Z"s, m_d.m_vPosition.z);
 
-   SaveValueFloat(strKeyName, "Size_X", m_d.m_vSize.x);
-   SaveValueFloat(strKeyName, "Size_Y", m_d.m_vSize.y);
-   SaveValueFloat(strKeyName, "Size_Z", m_d.m_vSize.z);
+   SaveValueFloat(strKeyName, "Size_X"s, m_d.m_vSize.x);
+   SaveValueFloat(strKeyName, "Size_Y"s, m_d.m_vSize.y);
+   SaveValueFloat(strKeyName, "Size_Z"s, m_d.m_vSize.z);
 
-   SaveValueFloat(strKeyName, "RotAndTra0", m_d.m_aRotAndTra[0]);
-   SaveValueFloat(strKeyName, "RotAndTra1", m_d.m_aRotAndTra[1]);
-   SaveValueFloat(strKeyName, "RotAndTra2", m_d.m_aRotAndTra[2]);
-   SaveValueFloat(strKeyName, "RotAndTra3", m_d.m_aRotAndTra[3]);
-   SaveValueFloat(strKeyName, "RotAndTra4", m_d.m_aRotAndTra[4]);
-   SaveValueFloat(strKeyName, "RotAndTra5", m_d.m_aRotAndTra[5]);
-   SaveValueFloat(strKeyName, "RotAndTra6", m_d.m_aRotAndTra[6]);
-   SaveValueFloat(strKeyName, "RotAndTra7", m_d.m_aRotAndTra[7]);
-   SaveValueFloat(strKeyName, "RotAndTra8", m_d.m_aRotAndTra[8]);
+   SaveValueFloat(strKeyName, "RotAndTra0"s, m_d.m_aRotAndTra[0]);
+   SaveValueFloat(strKeyName, "RotAndTra1"s, m_d.m_aRotAndTra[1]);
+   SaveValueFloat(strKeyName, "RotAndTra2"s, m_d.m_aRotAndTra[2]);
+   SaveValueFloat(strKeyName, "RotAndTra3"s, m_d.m_aRotAndTra[3]);
+   SaveValueFloat(strKeyName, "RotAndTra4"s, m_d.m_aRotAndTra[4]);
+   SaveValueFloat(strKeyName, "RotAndTra5"s, m_d.m_aRotAndTra[5]);
+   SaveValueFloat(strKeyName, "RotAndTra6"s, m_d.m_aRotAndTra[6]);
+   SaveValueFloat(strKeyName, "RotAndTra7"s, m_d.m_aRotAndTra[7]);
+   SaveValueFloat(strKeyName, "RotAndTra8"s, m_d.m_aRotAndTra[8]);
 
-   SaveValue(strKeyName, "Image", m_d.m_szImage);
-   SaveValue(strKeyName, "NormalMap", m_d.m_szNormalMap);
-   SaveValueBool(strKeyName, "HitEvent", m_d.m_hitEvent);
-   SaveValueFloat(strKeyName, "HitThreshold", m_d.m_threshold);
-   SaveValueFloat(strKeyName, "Elasticity", m_d.m_elasticity);
-   SaveValueFloat(strKeyName, "ElasticityFalloff", m_d.m_elasticityFalloff);
-   SaveValueFloat(strKeyName, "Friction", m_d.m_friction);
-   SaveValueFloat(strKeyName, "Scatter", m_d.m_scatter);
+   SaveValue(strKeyName, "Image"s, m_d.m_szImage);
+   SaveValue(strKeyName, "NormalMap"s, m_d.m_szNormalMap);
+   SaveValueBool(strKeyName, "HitEvent"s, m_d.m_hitEvent);
+   SaveValueFloat(strKeyName, "HitThreshold"s, m_d.m_threshold);
+   SaveValueFloat(strKeyName, "Elasticity"s, m_d.m_elasticity);
+   SaveValueFloat(strKeyName, "ElasticityFalloff"s, m_d.m_elasticityFalloff);
+   SaveValueFloat(strKeyName, "Friction"s, m_d.m_friction);
+   SaveValueFloat(strKeyName, "Scatter"s, m_d.m_scatter);
 
-   SaveValueBool(strKeyName, "AddBlend", m_d.m_addBlend);
-   SaveValueFloat(strKeyName, "Opacity", m_d.m_alpha);
-   SaveValueInt(strKeyName, "Color", m_d.m_color);
+   SaveValueBool(strKeyName, "AddBlend"s, m_d.m_addBlend);
+   SaveValueFloat(strKeyName, "Opacity"s, m_d.m_alpha);
+   SaveValueInt(strKeyName, "Color"s, m_d.m_color);
 
-   SaveValueFloat(strKeyName, "EdgeFactorUI", m_d.m_edgeFactorUI);
-   SaveValueFloat(strKeyName, "CollisionReductionFactor", m_d.m_collision_reductionFactor);
+   SaveValueFloat(strKeyName, "EdgeFactorUI"s, m_d.m_edgeFactorUI);
+   SaveValueFloat(strKeyName, "CollisionReductionFactor"s, m_d.m_collision_reductionFactor);
 
-   SaveValueBool(strKeyName, "Collidable", m_d.m_collidable);
-   SaveValueBool(strKeyName, "IsToy", m_d.m_toy);
+   SaveValueBool(strKeyName, "Collidable"s, m_d.m_collidable);
+   SaveValueBool(strKeyName, "IsToy"s, m_d.m_toy);
    const int tmp = quantizeUnsigned<8>(clamp(m_d.m_disableLightingTop, 0.f, 1.f));
-   SaveValueInt(strKeyName, "DisableLighting", (tmp == 1) ? 0 : tmp); // backwards compatible saving
-   SaveValueFloat(strKeyName, "DisableLightingBelow", m_d.m_disableLightingBelow);
-   SaveValueBool(strKeyName, "ReflectionEnabled", m_d.m_reflectionEnabled);
-   SaveValueBool(strKeyName, "BackfacesEnabled", m_d.m_backfacesEnabled);
-   SaveValueBool(strKeyName, "DisplayTexture", m_d.m_displayTexture);
-   SaveValueBool(strKeyName, "ObjectSpaceNormalMap", m_d.m_objectSpaceNormalMap);
+   SaveValueInt(strKeyName, "DisableLighting"s, (tmp == 1) ? 0 : tmp); // backwards compatible saving
+   SaveValueFloat(strKeyName, "DisableLightingBelow"s, m_d.m_disableLightingBelow);
+   SaveValueBool(strKeyName, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+   SaveValueBool(strKeyName, "BackfacesEnabled"s, m_d.m_backfacesEnabled);
+   SaveValueBool(strKeyName, "DisplayTexture"s, m_d.m_displayTexture);
+   SaveValueBool(strKeyName, "ObjectSpaceNormalMap"s, m_d.m_objectSpaceNormalMap);
+#undef strKeyName
 }
 
 void Primitive::GetTimers(vector<HitTimer*> &pvht)
@@ -1857,7 +1859,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             if (importMaterial)
             {
                string szMatName = szFileName;
-               if (ReplaceExtensionFromFilename(szMatName, "mtl"))
+               if (ReplaceExtensionFromFilename(szMatName, "mtl"s))
                {
                   Material * const mat = new Material();
                   ObjLoader loader;
@@ -1939,7 +1941,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             std::vector<std::string> szFileName;
             string szInitialDir;
 
-            HRESULT hr = LoadValue("RecentDir", "ImportDir", szInitialDir);
+            HRESULT hr = LoadValue("RecentDir"s, "ImportDir"s, szInitialDir);
             if (hr != S_OK)
                szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -1950,7 +1952,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                size_t index = szFileName[0].find_last_of('\\');
                if (index != std::string::npos)
                {
-                  hr = SaveValue("RecentDir", "ImportDir", szFileName[0].substr(0, index));
+                  hr = SaveValue("RecentDir"s, "ImportDir"s, szFileName[0].substr(0, index));
                   index++;
                   prim->m_d.m_meshFileName = szFileName[0].substr(index, szFileName[0].length() - index);
                }
@@ -1992,7 +1994,7 @@ bool Primitive::BrowseFor3DMeshFile()
    ofn.lpstrDefExt = "obj";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-   const HRESULT hr = LoadValue("RecentDir", "ImportDir", szInitialDir);
+   const HRESULT hr = LoadValue("RecentDir"s, "ImportDir"s, szInitialDir);
    if (hr != S_OK)
        szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -2007,7 +2009,7 @@ bool Primitive::BrowseFor3DMeshFile()
    if (index != std::string::npos)
    {
       const std::string newInitDir(szFilename.substr(0, index));
-      SaveValue("RecentDir", "ImportDir", newInitDir);
+      SaveValue("RecentDir"s, "ImportDir"s, newInitDir);
       index++;
       m_d.m_meshFileName = filename.substr(index, filename.length() - index);
    }
@@ -2126,7 +2128,7 @@ bool Primitive::LoadMeshDialog()
 void Primitive::ExportMeshDialog()
 {
    string szInitialDir;
-   HRESULT hr = LoadValue("RecentDir", "ImportDir", szInitialDir);
+   HRESULT hr = LoadValue("RecentDir"s, "ImportDir"s, szInitialDir);
    if (hr != S_OK)
        szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -2138,12 +2140,12 @@ void Primitive::ExportMeshDialog()
       if (index != std::string::npos)
       {
          const std::string newInitDir(szFileName[0].substr(0, index));
-         hr = SaveValue("RecentDir", "ImportDir", newInitDir);
+         hr = SaveValue("RecentDir"s, "ImportDir"s, newInitDir);
       }
 
       char name[sizeof(m_wzName) / sizeof(m_wzName[0])];
       WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
-      m_mesh.SaveWavefrontObj(szFileName[0], m_d.m_use3DMesh ? name : "Primitive");
+      m_mesh.SaveWavefrontObj(szFileName[0], m_d.m_use3DMesh ? string(name) : "Primitive"s);
    }
 
 }
@@ -2957,11 +2959,12 @@ STDMETHODIMP Primitive::ShowFrame(float frame)
 
 void Primitive::SetDefaultPhysics(bool fromMouseClick)
 {
-   static constexpr char strKeyName[] = "DefaultProps\\Primitive";
-   m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Elasticity", 0.3f) : 0.3f;
-   m_d.m_elasticityFalloff = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "ElasticityFalloff", 0.5f) : 0.5f;
-   m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Friction", 0.3f) : 0.3f;
-   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Scatter", 0) : 0;
+#define strKeyName "DefaultProps\\Primitive"s
+   m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Elasticity"s, 0.3f) : 0.3f;
+   m_d.m_elasticityFalloff = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "ElasticityFalloff"s, 0.5f) : 0.5f;
+   m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Friction"s, 0.3f) : 0.3f;
+   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Scatter"s, 0) : 0;
+#undef strKeyName
 }
 
 STDMETHODIMP Primitive::get_DepthBias(float *pVal)

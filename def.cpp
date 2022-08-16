@@ -26,7 +26,7 @@ float sz2f(const string& sz)
    return result;
 }
 
-void f2sz(const float f, string& sz)
+string f2sz(const float f)
 {
    CComVariant var = f;
 
@@ -35,11 +35,11 @@ void f2sz(const float f, string& sz)
       const WCHAR * const wzT = V_BSTR(&var);
       char tmp[256];
       WideCharToMultiByteNull(CP_ACP, 0, wzT, -1, tmp, 256, nullptr, nullptr);
-      sz = tmp;
       VariantClear(&var);
+      return tmp;
    }
    else
-      sz = "0.0"; //!! must this be somehow localized, i.e. . vs ,
+      return "0.0"s; //!! must this be somehow localized, i.e. . vs ,
 }
 
 void WideStrNCopy(const WCHAR *wzin, WCHAR *wzout, const DWORD wzoutMaxLen)

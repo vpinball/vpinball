@@ -101,7 +101,7 @@ void Pin3D::TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, cons
 
 BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
 {
-   g_pvp->ProfileLog("EnvmapPrecalc Start");
+   g_pvp->ProfileLog("EnvmapPrecalc Start"s);
    const void* __restrict envmap = envTex->m_pdsBuffer->data();
    const unsigned int env_xres = envTex->m_pdsBuffer->width();
    const unsigned int env_yres = envTex->m_pdsBuffer->height();
@@ -438,14 +438,14 @@ BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xre
       free((void*)envmap);
 #endif
 
-   g_pvp->ProfileLog("EnvmapPrecalc End");
+   g_pvp->ProfileLog("EnvmapPrecalc End"s);
 
    return radTex;
 }
 
 HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl)
 {
-   const int display = g_pvp->m_primaryDisplay ? 0 : LoadValueIntWithDefault("Player", "Display", 0);
+   const int display = g_pvp->m_primaryDisplay ? 0 : LoadValueIntWithDefault("Player"s, "Display"s, 0);
    std::vector<DisplayConfig> displays;
    getDisplayList(displays);
    int adapter = 0;
@@ -464,10 +464,10 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
    if (!m_pd3dPrimaryDevice->LoadShaders())
       return E_FAIL;
 
-   const bool forceAniso = LoadValueBoolWithDefault("Player", "ForceAnisotropicFiltering", true);
+   const bool forceAniso = LoadValueBoolWithDefault("Player"s, "ForceAnisotropicFiltering"s, true);
    m_pd3dPrimaryDevice->ForceAnisotropicFiltering(forceAniso);
 
-   const bool compressTextures = LoadValueBoolWithDefault("Player", "CompressTextures", false);
+   const bool compressTextures = LoadValueBoolWithDefault("Player"s, "CompressTextures"s, false);
    m_pd3dPrimaryDevice->CompressTextures(compressTextures);
 
    m_pd3dPrimaryDevice->SetViewport(&m_viewPort);
