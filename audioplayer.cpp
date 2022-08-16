@@ -29,9 +29,9 @@ AudioPlayer::AudioPlayer()
 
       //
 
-      const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
-      const int DS_STD_idx = LoadValueIntWithDefault("Player", "SoundDevice",   -1);
-      const int DS_BG_idx  = LoadValueIntWithDefault("Player", "SoundDeviceBG", -1);
+      const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault("Player"s, "Sound3D"s, (int)SNDCFG_SND3D2CH);
+      const int DS_STD_idx = LoadValueIntWithDefault("Player"s, "SoundDevice"s,   -1);
+      const int DS_BG_idx  = LoadValueIntWithDefault("Player"s, "SoundDeviceBG"s, -1);
       bass_STD_idx = -1;
       bass_BG_idx  = -1;
 
@@ -80,8 +80,7 @@ AudioPlayer::AudioPlayer()
          const int code = BASS_ErrorGetCode();
          string bla2;
          BASS_ErrorMapCode(code, bla2);
-         const string bla = "BASS music/sound library initialization error " + std::to_string(code) + ": " + bla2;
-         g_pvp->MessageBox(bla.c_str(), "Error", MB_ICONERROR);
+         g_pvp->MessageBox(("BASS music/sound library initialization error " + std::to_string(code) + ": " + bla2).c_str(), "Error", MB_ICONERROR);
       }
       if (/*SoundMode3D == SNDCFG_SND3D2CH &&*/ bass_STD_idx == bass_BG_idx) // skip 2nd device if it's the same and 3D is disabled //!!! for now try to just use one even if 3D! and then adapt channel settings if sample is a backglass sample
          break;
@@ -152,8 +151,7 @@ bool AudioPlayer::MusicInit(const string& szFileName, const string& alt_szFileNa
       const int code = BASS_ErrorGetCode();
       string bla2;
       BASS_ErrorMapCode(code, bla2);
-      const string bla = "BASS music/sound library cannot load \"" + szFileName + "\" (error " + std::to_string(code) + ": " + bla2 + ")";
-      g_pvp->MessageBox(bla.c_str(), "Error", MB_ICONERROR);
+      g_pvp->MessageBox(("BASS music/sound library cannot load \"" + szFileName + "\" (error " + std::to_string(code) + ": " + bla2 + ')').c_str(), "Error", MB_ICONERROR);
       return false;
    }
 

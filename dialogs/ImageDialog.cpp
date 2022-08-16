@@ -412,7 +412,7 @@ void ImageDialog::Import()
    std::vector<std::string> szFileName;
    string szInitialDir;
 
-   HRESULT hr = LoadValue("RecentDir", "ImageDir", szInitialDir);
+   HRESULT hr = LoadValue("RecentDir"s, "ImageDir"s, szInitialDir);
    if (hr != S_OK)
       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -426,7 +426,7 @@ void ImageDialog::Import()
 
       const size_t index = szFileName[0].find_last_of('\\');
       if (index != std::string::npos)
-         hr = SaveValue("RecentDir", "ImageDir", szFileName[0].substr(0, index));
+         hr = SaveValue("RecentDir"s, "ImageDir"s, szFileName[0].substr(0, index));
 
       pt->SetNonUndoableDirty(eSaveDirty);
       pt->UpdatePropertyImageList();
@@ -584,7 +584,7 @@ void ImageDialog::Export()
                   ppi = (Texture*)lvitem.lParam;
                }
 
-               SaveValue("RecentDir", "ImageDir", pathName);
+               SaveValue("RecentDir"s, "ImageDir"s, pathName);
             } // finished all selected items
          }
       }
@@ -730,7 +730,7 @@ void ImageDialog::ReimportFrom()
          std::vector<std::string> szFileName;
          string szInitialDir;
 
-         const HRESULT hr = LoadValue("RecentDir", "ImageDir", szInitialDir);
+         const HRESULT hr = LoadValue("RecentDir"s, "ImageDir"s, szInitialDir);
          if (hr != S_OK)
             szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -746,7 +746,7 @@ void ImageDialog::ReimportFrom()
             {
                const size_t index = szFileName[0].find_last_of('\\');
                if (index != std::string::npos)
-                  SaveValue("RecentDir", "ImageDir", szFileName[0].substr(0, index));
+                  SaveValue("RecentDir"s, "ImageDir"s, szFileName[0].substr(0, index));
 
                CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                pt->ReImportImage(ppi, szFileName[0]);
@@ -765,11 +765,11 @@ void ImageDialog::ReimportFrom()
 
 void ImageDialog::LoadPosition()
 {
-    const int x = LoadValueIntWithDefault( "Editor", "ImageMngPosX", 0 );
-    const int y = LoadValueIntWithDefault( "Editor", "ImageMngPosY", 0 );
+    const int x = LoadValueIntWithDefault( "Editor"s, "ImageMngPosX"s, 0 );
+    const int y = LoadValueIntWithDefault( "Editor"s, "ImageMngPosY"s, 0 );
 
-    const int w = LoadValueIntWithDefault("Editor", "ImageMngWidth", 1000);
-    const int h = LoadValueIntWithDefault("Editor", "ImageMngHeight", 800);
+    const int w = LoadValueIntWithDefault("Editor"s, "ImageMngWidth"s, 1000);
+    const int h = LoadValueIntWithDefault("Editor"s, "ImageMngHeight"s, 800);
     SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
@@ -777,10 +777,10 @@ void ImageDialog::SavePosition()
 {
     const CRect rect = GetWindowRect();
 
-    SaveValueInt("Editor", "ImageMngPosX", rect.left);
-    SaveValueInt("Editor", "ImageMngPosY", rect.top);
+    SaveValueInt("Editor"s, "ImageMngPosX"s, rect.left);
+    SaveValueInt("Editor"s, "ImageMngPosY"s, rect.top);
     const int w = rect.right - rect.left;
-    SaveValueInt("Editor", "ImageMngWidth", w);
+    SaveValueInt("Editor"s, "ImageMngWidth"s, w);
     const int h = rect.bottom - rect.top;
-    SaveValueInt("Editor", "ImageMngHeight", h);
+    SaveValueInt("Editor"s, "ImageMngHeight"s, h);
 }

@@ -137,54 +137,54 @@ PinInput::~PinInput()
 
 void PinInput::LoadSettings()
 {
-   m_lr_axis = LoadValueIntWithDefault("Player", "LRAxis", m_lr_axis);
-   m_ud_axis = LoadValueIntWithDefault("Player", "UDAxis", m_ud_axis);
-   m_lr_axis_reverse = LoadValueBoolWithDefault("Player", "LRAxisFlip", m_lr_axis_reverse);
-   m_ud_axis_reverse = LoadValueBoolWithDefault("Player", "UDAxisFlip", m_ud_axis_reverse);
-   m_plunger_axis = LoadValueIntWithDefault("Player", "PlungerAxis", m_plunger_axis);
-   m_plunger_reverse = LoadValueBoolWithDefault("Player", "ReversePlungerAxis", m_plunger_reverse);
-   m_plunger_retract = LoadValueBoolWithDefault("Player", "PlungerRetract", m_plunger_retract);
-   m_override_default_buttons = LoadValueBoolWithDefault("Player", "PBWDefaultLayout", m_override_default_buttons);
-   m_disable_esc = LoadValueBoolWithDefault("Player", "DisableESC", m_disable_esc);
-   m_joylflipkey = LoadValueIntWithDefault("Player", "JoyLFlipKey", m_joylflipkey);
-   m_joyrflipkey = LoadValueIntWithDefault("Player", "JoyRFlipKey", m_joyrflipkey);
-   m_joyplungerkey = LoadValueIntWithDefault("Player", "JoyPlungerKey", m_joyplungerkey);
-   m_joyaddcreditkey = LoadValueIntWithDefault("Player", "JoyAddCreditKey", m_joyaddcreditkey);
-   m_joyaddcreditkey2 = LoadValueIntWithDefault("Player", "JoyAddCredit2Key", m_joyaddcreditkey2);
-   m_joylmagnasave = LoadValueIntWithDefault("Player", "JoyLMagnaSave", m_joylmagnasave);
-   m_joyrmagnasave = LoadValueIntWithDefault("Player", "JoyRMagnaSave", m_joyrmagnasave);
-   m_joystartgamekey = LoadValueIntWithDefault("Player", "JoyStartGameKey", m_joystartgamekey);
-   m_joyframecount = LoadValueIntWithDefault("Player", "JoyFrameCount", m_joyframecount);
-   m_joyexitgamekey = LoadValueIntWithDefault("Player", "JoyExitGameKey", m_joyexitgamekey);
-   m_joyvolumeup = LoadValueIntWithDefault("Player", "JoyVolumeUp", m_joyvolumeup);
-   m_joyvolumedown = LoadValueIntWithDefault("Player", "JoyVolumeDown", m_joyvolumedown);
-   m_joylefttilt = LoadValueIntWithDefault("Player", "JoyLTiltKey", m_joylefttilt);
-   m_joycentertilt = LoadValueIntWithDefault("Player", "JoyCTiltKey", m_joycentertilt);
-   m_joyrighttilt = LoadValueIntWithDefault("Player", "JoyRTiltKey", m_joyrighttilt);
-   m_joypmbuyin = LoadValueIntWithDefault("Player", "JoyPMBuyIn", m_joypmbuyin);
-   m_joypmcoin3 = LoadValueIntWithDefault("Player", "JoyPMCoin3", m_joypmcoin3);
-   m_joypmcoin4 = LoadValueIntWithDefault("Player", "JoyPMCoin4", m_joypmcoin4);
-   m_joypmcoindoor = LoadValueIntWithDefault("Player", "JoyPMCoinDoor", m_joypmcoindoor);
-   m_joypmcancel = LoadValueIntWithDefault("Player", "JoyPMCancel", m_joypmcancel);
-   m_joypmdown = LoadValueIntWithDefault("Player", "JoyPMDown", m_joypmdown);
-   m_joypmup = LoadValueIntWithDefault("Player", "JoyPMUp", m_joypmup);
-   m_joypmenter = LoadValueIntWithDefault("Player", "JoyPMEnter", m_joypmenter);
-   m_joycustom1 = LoadValueIntWithDefault("Player", "JoyCustom1", m_joycustom1);
-   m_joycustom1key = LoadValueIntWithDefault("Player", "JoyCustom1Key", m_joycustom1key);
-   m_joycustom2 = LoadValueIntWithDefault("Player", "JoyCustom2", m_joycustom2);
-   m_joycustom2key = LoadValueIntWithDefault("Player", "JoyCustom2Key", m_joycustom2key);
-   m_joycustom3 = LoadValueIntWithDefault("Player", "JoyCustom3", m_joycustom3);
-   m_joycustom3key = LoadValueIntWithDefault("Player", "JoyCustom3Key", m_joycustom3key);
-   m_joycustom4 = LoadValueIntWithDefault("Player", "JoyCustom4", m_joycustom4);
-   m_joycustom4key = LoadValueIntWithDefault("Player", "JoyCustom4Key", m_joycustom4key);
-   m_joymechtilt = LoadValueIntWithDefault("Player", "JoyMechTiltKey", m_joymechtilt);
-   m_joydebugballs = LoadValueIntWithDefault("Player", "JoyDebugKey", m_joydebugballs);
-   m_joydebugger = LoadValueIntWithDefault("Player", "JoyDebuggerKey", m_joydebugger);
-   m_joylockbar = LoadValueIntWithDefault("Player", "JoyLockbarKey", m_joylockbar);
-   m_enableMouseInPlayer = LoadValueBoolWithDefault("Player", "EnableMouseInPlayer", m_enableMouseInPlayer);
-   m_enableCameraModeFlyAround = LoadValueBoolWithDefault("Player", "EnableCameraModeFlyAround", m_enableCameraModeFlyAround);
-   m_enable_nudge_filter = LoadValueBoolWithDefault("Player", "EnableNudgeFilter", m_enable_nudge_filter);
-   m_deadz = LoadValueIntWithDefault("Player", "DeadZone", 0);
+   m_lr_axis = LoadValueIntWithDefault("Player"s, "LRAxis"s, m_lr_axis);
+   m_ud_axis = LoadValueIntWithDefault("Player"s, "UDAxis"s, m_ud_axis);
+   m_lr_axis_reverse = LoadValueBoolWithDefault("Player"s, "LRAxisFlip"s, m_lr_axis_reverse);
+   m_ud_axis_reverse = LoadValueBoolWithDefault("Player"s, "UDAxisFlip"s, m_ud_axis_reverse);
+   m_plunger_axis = LoadValueIntWithDefault("Player"s, "PlungerAxis"s, m_plunger_axis);
+   m_plunger_reverse = LoadValueBoolWithDefault("Player"s, "ReversePlungerAxis"s, m_plunger_reverse);
+   m_plunger_retract = LoadValueBoolWithDefault("Player"s, "PlungerRetract"s, m_plunger_retract);
+   m_override_default_buttons = LoadValueBoolWithDefault("Player"s, "PBWDefaultLayout"s, m_override_default_buttons);
+   m_disable_esc = LoadValueBoolWithDefault("Player"s, "DisableESC"s, m_disable_esc);
+   m_joylflipkey = LoadValueIntWithDefault("Player"s, "JoyLFlipKey"s, m_joylflipkey);
+   m_joyrflipkey = LoadValueIntWithDefault("Player"s, "JoyRFlipKey"s, m_joyrflipkey);
+   m_joyplungerkey = LoadValueIntWithDefault("Player"s, "JoyPlungerKey"s, m_joyplungerkey);
+   m_joyaddcreditkey = LoadValueIntWithDefault("Player"s, "JoyAddCreditKey"s, m_joyaddcreditkey);
+   m_joyaddcreditkey2 = LoadValueIntWithDefault("Player"s, "JoyAddCredit2Key"s, m_joyaddcreditkey2);
+   m_joylmagnasave = LoadValueIntWithDefault("Player"s, "JoyLMagnaSave"s, m_joylmagnasave);
+   m_joyrmagnasave = LoadValueIntWithDefault("Player"s, "JoyRMagnaSave"s, m_joyrmagnasave);
+   m_joystartgamekey = LoadValueIntWithDefault("Player"s, "JoyStartGameKey"s, m_joystartgamekey);
+   m_joyframecount = LoadValueIntWithDefault("Player"s, "JoyFrameCount"s, m_joyframecount);
+   m_joyexitgamekey = LoadValueIntWithDefault("Player"s, "JoyExitGameKey"s, m_joyexitgamekey);
+   m_joyvolumeup = LoadValueIntWithDefault("Player"s, "JoyVolumeUp"s, m_joyvolumeup);
+   m_joyvolumedown = LoadValueIntWithDefault("Player"s, "JoyVolumeDown"s, m_joyvolumedown);
+   m_joylefttilt = LoadValueIntWithDefault("Player"s, "JoyLTiltKey"s, m_joylefttilt);
+   m_joycentertilt = LoadValueIntWithDefault("Player"s, "JoyCTiltKey"s, m_joycentertilt);
+   m_joyrighttilt = LoadValueIntWithDefault("Player"s, "JoyRTiltKey"s, m_joyrighttilt);
+   m_joypmbuyin = LoadValueIntWithDefault("Player"s, "JoyPMBuyIn"s, m_joypmbuyin);
+   m_joypmcoin3 = LoadValueIntWithDefault("Player"s, "JoyPMCoin3"s, m_joypmcoin3);
+   m_joypmcoin4 = LoadValueIntWithDefault("Player"s, "JoyPMCoin4"s, m_joypmcoin4);
+   m_joypmcoindoor = LoadValueIntWithDefault("Player"s, "JoyPMCoinDoor"s, m_joypmcoindoor);
+   m_joypmcancel = LoadValueIntWithDefault("Player"s, "JoyPMCancel"s, m_joypmcancel);
+   m_joypmdown = LoadValueIntWithDefault("Player"s, "JoyPMDown"s, m_joypmdown);
+   m_joypmup = LoadValueIntWithDefault("Player"s, "JoyPMUp"s, m_joypmup);
+   m_joypmenter = LoadValueIntWithDefault("Player"s, "JoyPMEnter"s, m_joypmenter);
+   m_joycustom1 = LoadValueIntWithDefault("Player"s, "JoyCustom1"s, m_joycustom1);
+   m_joycustom1key = LoadValueIntWithDefault("Player"s, "JoyCustom1Key"s, m_joycustom1key);
+   m_joycustom2 = LoadValueIntWithDefault("Player"s, "JoyCustom2"s, m_joycustom2);
+   m_joycustom2key = LoadValueIntWithDefault("Player"s, "JoyCustom2Key"s, m_joycustom2key);
+   m_joycustom3 = LoadValueIntWithDefault("Player"s, "JoyCustom3"s, m_joycustom3);
+   m_joycustom3key = LoadValueIntWithDefault("Player"s, "JoyCustom3Key"s, m_joycustom3key);
+   m_joycustom4 = LoadValueIntWithDefault("Player"s, "JoyCustom4"s, m_joycustom4);
+   m_joycustom4key = LoadValueIntWithDefault("Player"s, "JoyCustom4Key"s, m_joycustom4key);
+   m_joymechtilt = LoadValueIntWithDefault("Player"s, "JoyMechTiltKey"s, m_joymechtilt);
+   m_joydebugballs = LoadValueIntWithDefault("Player"s, "JoyDebugKey"s, m_joydebugballs);
+   m_joydebugger = LoadValueIntWithDefault("Player"s, "JoyDebuggerKey"s, m_joydebugger);
+   m_joylockbar = LoadValueIntWithDefault("Player"s, "JoyLockbarKey"s, m_joylockbar);
+   m_enableMouseInPlayer = LoadValueBoolWithDefault("Player"s, "EnableMouseInPlayer"s, m_enableMouseInPlayer);
+   m_enableCameraModeFlyAround = LoadValueBoolWithDefault("Player"s, "EnableCameraModeFlyAround"s, m_enableCameraModeFlyAround);
+   m_enable_nudge_filter = LoadValueBoolWithDefault("Player"s, "EnableNudgeFilter"s, m_enable_nudge_filter);
+   m_deadz = LoadValueIntWithDefault("Player"s, "DeadZone"s, 0);
    m_deadz = m_deadz*JOYRANGEMX / 100;
 }
 
@@ -832,7 +832,7 @@ void PinInput::Init(const HWND hwnd)
    m_nextKeyPressedTime = 0;
    uShockType = 0;
 
-   m_inputApi = LoadValueIntWithDefault("Player", "InputApi", 0);
+   m_inputApi = LoadValueIntWithDefault("Player"s, "InputApi"s, 0);
 
    switch (m_inputApi) {
    case 1: //xInput
@@ -872,7 +872,7 @@ void PinInput::Init(const HWND hwnd)
       break;
    }
 
-   m_rumbleMode = (m_inputApi > 0) ? LoadValueIntWithDefault("Player", "RumbleMode", 3) : 0;
+   m_rumbleMode = (m_inputApi > 0) ? LoadValueIntWithDefault("Player"s, "RumbleMode"s, 3) : 0;
 
    if (m_inputApi == 0) {
 #ifdef USE_DINPUT8
@@ -1015,7 +1015,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          else
          {
             string szPOVFilename = g_pplayer->m_ptable->m_szFileName;
-            if (ReplaceExtensionFromFilename(szPOVFilename, "pov"))
+            if (ReplaceExtensionFromFilename(szPOVFilename, "pov"s))
                g_pplayer->m_ptable->ExportBackdropPOV(szPOVFilename);
             g_pvp->Quit();
          }
@@ -1929,7 +1929,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
             if ((input->dwData & 0x80) != 0)
             {
                g_pplayer->m_stereo3Denabled = !g_pplayer->m_stereo3Denabled;
-               SaveValueBool("Player", "Stereo3DEnabled", g_pplayer->m_stereo3Denabled);
+               SaveValueBool("Player"s, "Stereo3DEnabled"s, g_pplayer->m_stereo3Denabled);
             }
          }
          else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDBGBalls])

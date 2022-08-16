@@ -13,7 +13,7 @@ BOOL AudioOptionsDialog::OnInitDialog()
 {
    const HWND hwndMusicSlider = GetDlgItem(IDC_MUSIC_SLIDER).GetHwnd();
    const HWND hwndSoundSlider = GetDlgItem(IDC_SOUND_SLIDER).GetHwnd();
-   bool fsound = LoadValueBoolWithDefault("Player", "PlayMusic", true);
+   bool fsound = LoadValueBoolWithDefault("Player"s, "PlayMusic"s, true);
 
    SendMessage(GetDlgItem(IDC_PLAY_MUSIC).GetHwnd(), BM_SETCHECK, fsound ? BST_CHECKED : BST_UNCHECKED, 0);
    if (!fsound)
@@ -22,7 +22,7 @@ BOOL AudioOptionsDialog::OnInitDialog()
       ::EnableWindow(GetDlgItem(IDC_STATIC_MUSIC).GetHwnd(), FALSE);
    }
 
-   fsound = LoadValueBoolWithDefault("Player", "PlaySound", true);
+   fsound = LoadValueBoolWithDefault("Player"s, "PlaySound"s, true);
 
    SendMessage(GetDlgItem(IDC_PLAY_SOUND).GetHwnd(), BM_SETCHECK, fsound ? BST_CHECKED : BST_UNCHECKED, 0);
    if (!fsound)
@@ -31,7 +31,7 @@ BOOL AudioOptionsDialog::OnInitDialog()
       ::EnableWindow(GetDlgItem(IDC_STATIC_SOUND).GetHwnd(), FALSE);
    }
 
-   int fmusic = LoadValueIntWithDefault("Player", "Sound3D", 0);
+   int fmusic = LoadValueIntWithDefault("Player"s, "Sound3D"s, 0);
 
    switch (fmusic)
    {
@@ -55,7 +55,7 @@ BOOL AudioOptionsDialog::OnInitDialog()
 	   break;
    }
 
-   fmusic = LoadValueIntWithDefault("Player", "MusicVolume", 100);
+   fmusic = LoadValueIntWithDefault("Player"s, "MusicVolume"s, 100);
    ::SendMessage(hwndMusicSlider, TBM_SETRANGE, fTrue, MAKELONG(0, 100));
    ::SendMessage(hwndMusicSlider, TBM_SETTICFREQ, 10, 0);
    ::SendMessage(hwndMusicSlider, TBM_SETLINESIZE, 0, 1);
@@ -63,7 +63,7 @@ BOOL AudioOptionsDialog::OnInitDialog()
    ::SendMessage(hwndMusicSlider, TBM_SETTHUMBLENGTH, 10, 0);
    ::SendMessage(hwndMusicSlider, TBM_SETPOS, TRUE, fmusic);
 
-   fmusic = LoadValueIntWithDefault("Player", "SoundVolume", 100);
+   fmusic = LoadValueIntWithDefault("Player"s, "SoundVolume"s, 100);
    ::SendMessage(hwndSoundSlider, TBM_SETRANGE, fTrue, MAKELONG(0, 100));
    ::SendMessage(hwndSoundSlider, TBM_SETTICFREQ, 10, 0);
    ::SendMessage(hwndSoundSlider, TBM_SETLINESIZE, 0, 1);
@@ -71,8 +71,8 @@ BOOL AudioOptionsDialog::OnInitDialog()
    ::SendMessage(hwndSoundSlider, TBM_SETTHUMBLENGTH, 10, 0);
    ::SendMessage(hwndSoundSlider, TBM_SETPOS, TRUE, fmusic);
 
-   const int sd = LoadValueIntWithDefault("Player", "SoundDevice", 0);
-   const int sdbg = LoadValueIntWithDefault("Player", "SoundDeviceBG", 0);
+   const int sd = LoadValueIntWithDefault("Player"s, "SoundDevice"s, 0);
+   const int sdbg = LoadValueIntWithDefault("Player"s, "SoundDeviceBG"s, 0);
    SendMessage(GET_SOUNDDEVICES, sd, sdbg);
 
    return TRUE;
@@ -147,10 +147,10 @@ void AudioOptionsDialog::OnOK()
    size_t checked;
 
    checked = SendMessage(GetDlgItem(IDC_PLAY_MUSIC).GetHwnd(), BM_GETCHECK, 0, 0);
-   SaveValueBool("Player", "PlayMusic", (checked == BST_CHECKED));
+   SaveValueBool("Player"s, "PlayMusic"s, (checked == BST_CHECKED));
 
    checked = SendMessage(GetDlgItem(IDC_PLAY_SOUND).GetHwnd(), BM_GETCHECK, 0, 0);
-   SaveValueBool("Player", "PlaySound", (checked == BST_CHECKED));
+   SaveValueBool("Player"s, "PlaySound"s, (checked == BST_CHECKED));
 
    int fmusic = SNDCFG_SND3D2CH;
    checked = SendMessage(GetDlgItem(IDC_RADIO_SND3DALLREAR).GetHwnd(), BM_GETCHECK, 0, 0);
@@ -178,22 +178,22 @@ void AudioOptionsDialog::OnOK()
    {
 	   fmusic = SNDCFG_SND3DSSF;
    }
-   SaveValueInt("Player", "Sound3D", fmusic);
+   SaveValueInt("Player"s, "Sound3D"s, fmusic);
 
    size_t volume = SendMessage(GetDlgItem(IDC_MUSIC_SLIDER).GetHwnd(), TBM_GETPOS, 0, 0);
-   SaveValueInt("Player", "MusicVolume", (int)volume);
+   SaveValueInt("Player"s, "MusicVolume"s, (int)volume);
 
    volume = SendMessage(GetDlgItem(IDC_SOUND_SLIDER).GetHwnd(), TBM_GETPOS, 0, 0);
-   SaveValueInt("Player", "SoundVolume", (int)volume);
+   SaveValueInt("Player"s, "SoundVolume"s, (int)volume);
 
    HWND hwndSoundList = GetDlgItem(IDC_SoundList).GetHwnd();
    size_t soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
    size_t sd = SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
-   SaveValueInt("Player", "SoundDevice", (int)sd);
+   SaveValueInt("Player"s, "SoundDevice"s, (int)sd);
    hwndSoundList = GetDlgItem(IDC_SoundListBG).GetHwnd();
    soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
    sd = SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
-   SaveValueInt("Player", "SoundDeviceBG", (int)sd);
+   SaveValueInt("Player"s, "SoundDeviceBG"s, (int)sd);
    g_pvp->ReInitSound();
 
    CDialog::OnOK();

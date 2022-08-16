@@ -255,7 +255,7 @@ void SoundDialog::Import()
    std::vector<std::string> szFileName;
    string szInitialDir;
 
-   HRESULT hr = LoadValue( "RecentDir", "SoundDir", szInitialDir);
+   HRESULT hr = LoadValue( "RecentDir"s, "SoundDir"s, szInitialDir);
    if (hr != S_OK)
       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -263,7 +263,7 @@ void SoundDialog::Import()
    {
       const size_t index = szFileName[0].find_last_of('\\');
       if (index != std::string::npos)
-         hr = SaveValue("RecentDir", "SoundDir", szFileName[0].substr(0, index));
+         hr = SaveValue("RecentDir"s, "SoundDir"s, szFileName[0].substr(0, index));
 
       for (const std::string &file : szFileName)
          pt->ImportSound(hSoundList, file);
@@ -346,7 +346,7 @@ void SoundDialog::ReImportFrom()
 
                 const size_t index = szFileName[0].find_last_of('\\');
                 if (index != std::string::npos)
-                   hr = SaveValue("RecentDir", "SoundDir", szFileName[0].substr(0, index));
+                   hr = SaveValue("RecentDir"s, "SoundDir"s, szFileName[0].substr(0, index));
 
                 pt->SetNonUndoableDirty( eSaveDirty );
             }
@@ -406,7 +406,7 @@ void SoundDialog::Export()
             ofn.lpstrDefExt = "mp3";
 
             string initDir;
-            const HRESULT hr = LoadValue("RecentDir", "SoundDir", initDir);
+            const HRESULT hr = LoadValue("RecentDir"s, "SoundDir"s, initDir);
             if (hr != S_OK)
                initDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -467,7 +467,7 @@ void SoundDialog::Export()
                     pps = (PinSound *)lvitem.lParam;
                 }
 
-                SaveValue( "RecentDir", "SoundDir", pathName);
+                SaveValue("RecentDir"s, "SoundDir"s, pathName);
             }
         }
     }
@@ -586,8 +586,8 @@ void SoundDialog::DeleteSound()
 
 void SoundDialog::LoadPosition()
 {
-    const int x = LoadValueIntWithDefault("Editor", "SoundMngPosX", 0);
-    const int y = LoadValueIntWithDefault("Editor", "SoundMngPosY", 0);
+    const int x = LoadValueIntWithDefault("Editor"s, "SoundMngPosX"s, 0);
+    const int y = LoadValueIntWithDefault("Editor"s, "SoundMngPosY"s, 0);
 
     SetWindowPos( nullptr, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
 }
@@ -595,8 +595,8 @@ void SoundDialog::LoadPosition()
 void SoundDialog::SavePosition()
 {
     const CRect rect = GetWindowRect();
-    SaveValueInt( "Editor", "SoundMngPosX", rect.left);
-    SaveValueInt( "Editor", "SoundMngPosY", rect.top);
+    SaveValueInt( "Editor"s, "SoundMngPosX"s, rect.left);
+    SaveValueInt( "Editor"s, "SoundMngPosY"s, rect.top);
 }
 
 

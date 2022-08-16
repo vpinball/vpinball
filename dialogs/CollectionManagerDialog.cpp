@@ -297,8 +297,8 @@ void CollectionManagerDialog::OnCancel()
 
 void CollectionManagerDialog::LoadPosition()
 {
-    const int x = LoadValueIntWithDefault("Editor", "CollectionMngPosX", 0);
-    const int y = LoadValueIntWithDefault("Editor", "CollectionMngPosY", 0);
+    const int x = LoadValueIntWithDefault("Editor"s, "CollectionMngPosX"s, 0);
+    const int y = LoadValueIntWithDefault("Editor"s, "CollectionMngPosY"s, 0);
 
     SetWindowPos(nullptr, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 }
@@ -306,8 +306,8 @@ void CollectionManagerDialog::LoadPosition()
 void CollectionManagerDialog::SavePosition()
 {
     const CRect rect = GetWindowRect();
-    SaveValueInt("Editor", "CollectionMngPosX", rect.left);
-    SaveValueInt("Editor", "CollectionMngPosY", rect.top);
+    SaveValueInt("Editor"s, "CollectionMngPosX"s, rect.left);
+    SaveValueInt("Editor"s, "CollectionMngPosY"s, rect.top);
 }
 
 //######################################## Collection Dialog ########################################

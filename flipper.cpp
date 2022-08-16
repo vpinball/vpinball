@@ -111,69 +111,71 @@ HRESULT Flipper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Flipper::SetDefaults(bool fromMouseClick)
 {
-   static constexpr char regKey[] = "DefaultProps\\Flipper";
+#define regKey "DefaultProps\\Flipper"s
 
    SetDefaultPhysics(fromMouseClick);
 
-   m_d.m_StartAngle = fromMouseClick ? LoadValueFloatWithDefault(regKey, "StartAngle", 121.f) : 121.f;
-   m_d.m_EndAngle = fromMouseClick ? LoadValueFloatWithDefault(regKey, "EndAngle", 70.f) : 70.f;
-   m_d.m_BaseRadius = fromMouseClick ? LoadValueFloatWithDefault(regKey, "BaseRadius", 21.5f) : 21.5f; // 15
-   m_d.m_EndRadius = fromMouseClick ? LoadValueFloatWithDefault(regKey, "EndRadius", 13.f) : 13.f; // 6
-   m_d.m_FlipperRadiusMax = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Length", 130.f) : 130.f; // 80
-   m_d.m_FlipperRadiusMin = fromMouseClick ? LoadValueFloatWithDefault(regKey, "MaxDifLength", 0.f) : 0.f;
+   m_d.m_StartAngle = fromMouseClick ? LoadValueFloatWithDefault(regKey, "StartAngle"s, 121.f) : 121.f;
+   m_d.m_EndAngle = fromMouseClick ? LoadValueFloatWithDefault(regKey, "EndAngle"s, 70.f) : 70.f;
+   m_d.m_BaseRadius = fromMouseClick ? LoadValueFloatWithDefault(regKey, "BaseRadius"s, 21.5f) : 21.5f; // 15
+   m_d.m_EndRadius = fromMouseClick ? LoadValueFloatWithDefault(regKey, "EndRadius"s, 13.f) : 13.f; // 6
+   m_d.m_FlipperRadiusMax = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Length"s, 130.f) : 130.f; // 80
+   m_d.m_FlipperRadiusMin = fromMouseClick ? LoadValueFloatWithDefault(regKey, "MaxDifLength"s, 0.f) : 0.f;
 
    m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled", false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "TimerInterval", 100) : 100;
-   m_d.m_color = fromMouseClick ? LoadValueIntWithDefault(regKey, "Color", RGB(255,255,255)) : RGB(255,255,255);
-   m_d.m_rubbercolor = fromMouseClick ? LoadValueIntWithDefault(regKey, "RubberColor", RGB(128,50,50)) : RGB(128,50,50);
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "TimerInterval"s, 100) : 100;
+   m_d.m_color = fromMouseClick ? LoadValueIntWithDefault(regKey, "Color"s, RGB(255,255,255)) : RGB(255,255,255);
+   m_d.m_rubbercolor = fromMouseClick ? LoadValueIntWithDefault(regKey, "RubberColor"s, RGB(128,50,50)) : RGB(128,50,50);
 
-   const HRESULT hr = LoadValue(regKey, "Surface", m_d.m_szSurface);
+   const HRESULT hr = LoadValue(regKey, "Surface"s, m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface.clear();
 
-   m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Height", 50.f) : 50.f;
-   m_d.m_rubberthickness = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RubberThickness", 7.f) : 7.f;
-   m_d.m_rubberheight = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RubberHeight", 19.f) : 19.f;
-   m_d.m_rubberwidth = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RubberWidth", 24.f) : 24.f;
-   m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Visible", true) : true;
-   m_d.m_enabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Enabled", true) : true;
-   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ReflectionEnabled", true) : true;
+   m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Height"s, 50.f) : 50.f;
+   m_d.m_rubberthickness = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RubberThickness"s, 7.f) : 7.f;
+   m_d.m_rubberheight = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RubberHeight"s, 19.f) : 19.f;
+   m_d.m_rubberwidth = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RubberWidth"s, 24.f) : 24.f;
+   m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Visible"s, true) : true;
+   m_d.m_enabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Enabled"s, true) : true;
+   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ReflectionEnabled"s, true) : true;
+#undef regKey
 }
 
 void Flipper::WriteRegDefaults()
 {
-   static constexpr char regKey[] = "DefaultProps\\Flipper";
+#define regKey "DefaultProps\\Flipper"s
 
-   SaveValueFloat(regKey, "Scatter", m_d.m_scatter);
-   SaveValueFloat(regKey, "Strength", m_d.m_strength);
-   SaveValueFloat(regKey, "EOSTorque", m_d.m_torqueDamping);
-   SaveValueFloat(regKey, "EOSTorqueAngle", m_d.m_torqueDampingAngle);
-   SaveValueFloat(regKey, "StartAngle", m_d.m_StartAngle);
-   SaveValueFloat(regKey, "EndAngle", m_d.m_EndAngle);
-   SaveValueFloat(regKey, "BaseRadius", m_d.m_BaseRadius);
-   SaveValueFloat(regKey, "EndRadius", m_d.m_EndRadius);
-   SaveValueFloat(regKey, "MaxDifLength", m_d.m_FlipperRadiusMin);
-   SaveValueFloat(regKey, "ReturnStrength", m_d.m_return);
-   SaveValueFloat(regKey, "Length", m_d.m_FlipperRadiusMax);
-   SaveValueFloat(regKey, "Mass", m_d.m_mass);
-   SaveValueFloat(regKey, "Elasticity", m_d.m_elasticity);
-   SaveValueFloat(regKey, "ElasticityFalloff", m_d.m_elasticityFalloff);
-   SaveValueFloat(regKey, "Friction", m_d.m_friction);
-   SaveValueFloat(regKey, "RampUp", m_d.m_rampUp);
-   SaveValueBool(regKey, "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
-   SaveValueInt(regKey, "TimerInterval", m_d.m_tdr.m_TimerInterval);
-   SaveValueInt(regKey, "Color", m_d.m_color);
-   SaveValueInt(regKey, "RubberColor", m_d.m_rubbercolor);
-   SaveValue(regKey, "Surface", m_d.m_szSurface);
-   SaveValueFloat(regKey, "Height", m_d.m_height);
-   SaveValueFloat(regKey, "RubberThickness", m_d.m_rubberthickness);
-   SaveValueFloat(regKey, "RubberHeight", m_d.m_rubberheight);
-   SaveValueFloat(regKey, "RubberWidth", m_d.m_rubberwidth);
-   SaveValueBool(regKey, "Visible", m_d.m_visible);
-   SaveValueBool(regKey, "Enabled", m_d.m_enabled);
-   SaveValueBool(regKey, "ReflectionEnabled", m_d.m_reflectionEnabled);
+   SaveValueFloat(regKey, "Scatter"s, m_d.m_scatter);
+   SaveValueFloat(regKey, "Strength"s, m_d.m_strength);
+   SaveValueFloat(regKey, "EOSTorque"s, m_d.m_torqueDamping);
+   SaveValueFloat(regKey, "EOSTorqueAngle"s, m_d.m_torqueDampingAngle);
+   SaveValueFloat(regKey, "StartAngle"s, m_d.m_StartAngle);
+   SaveValueFloat(regKey, "EndAngle"s, m_d.m_EndAngle);
+   SaveValueFloat(regKey, "BaseRadius"s, m_d.m_BaseRadius);
+   SaveValueFloat(regKey, "EndRadius"s, m_d.m_EndRadius);
+   SaveValueFloat(regKey, "MaxDifLength"s, m_d.m_FlipperRadiusMin);
+   SaveValueFloat(regKey, "ReturnStrength"s, m_d.m_return);
+   SaveValueFloat(regKey, "Length"s, m_d.m_FlipperRadiusMax);
+   SaveValueFloat(regKey, "Mass"s, m_d.m_mass);
+   SaveValueFloat(regKey, "Elasticity"s, m_d.m_elasticity);
+   SaveValueFloat(regKey, "ElasticityFalloff"s, m_d.m_elasticityFalloff);
+   SaveValueFloat(regKey, "Friction"s, m_d.m_friction);
+   SaveValueFloat(regKey, "RampUp"s, m_d.m_rampUp);
+   SaveValueBool(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   SaveValueInt(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   SaveValueInt(regKey, "Color"s, m_d.m_color);
+   SaveValueInt(regKey, "RubberColor"s, m_d.m_rubbercolor);
+   SaveValue(regKey, "Surface"s, m_d.m_szSurface);
+   SaveValueFloat(regKey, "Height"s, m_d.m_height);
+   SaveValueFloat(regKey, "RubberThickness"s, m_d.m_rubberthickness);
+   SaveValueFloat(regKey, "RubberHeight"s, m_d.m_rubberheight);
+   SaveValueFloat(regKey, "RubberWidth"s, m_d.m_rubberwidth);
+   SaveValueBool(regKey, "Visible"s, m_d.m_visible);
+   SaveValueBool(regKey, "Enabled"s, m_d.m_enabled);
+   SaveValueBool(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+#undef regKey
 }
 
 
@@ -531,16 +533,16 @@ void Flipper::PutCenter(const Vertex2D& pv)
 
 void Flipper::SetDefaultPhysics(bool fromMouseClick)
 {
-   static constexpr char regKey[] = "DefaultProps\\Flipper";
+#define regKey "DefaultProps\\Flipper"s
 
-   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Scatter", 0.f) : 0.f;
-   m_d.m_strength = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Strength", 2200.f) : 2200.f;
-   m_d.m_torqueDamping = fromMouseClick ? LoadValueFloatWithDefault(regKey, "EOSTorque", 0.75f) : 0.75f;
-   m_d.m_torqueDampingAngle = fromMouseClick ? LoadValueFloatWithDefault(regKey, "EOSTorqueAngle", 6.f) : 6.f;
+   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Scatter"s, 0.f) : 0.f;
+   m_d.m_strength = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Strength"s, 2200.f) : 2200.f;
+   m_d.m_torqueDamping = fromMouseClick ? LoadValueFloatWithDefault(regKey, "EOSTorque"s, 0.75f) : 0.75f;
+   m_d.m_torqueDampingAngle = fromMouseClick ? LoadValueFloatWithDefault(regKey, "EOSTorqueAngle"s, 6.f) : 6.f;
 
    //m_d.m_angleEOS = 0;
 
-   m_d.m_return = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ReturnStrength", 0.058f) : 0.058f;
+   m_d.m_return = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ReturnStrength"s, 0.058f) : 0.058f;
 
    float fTmp;
    HRESULT hr = LoadValue(regKey, "Mass", fTmp);
@@ -548,12 +550,13 @@ void Flipper::SetDefaultPhysics(bool fromMouseClick)
       hr = LoadValue(regKey, "Speed", fTmp); // previously Mass was called Speed, deprecated!
    m_d.m_mass = (hr == S_OK) && fromMouseClick ? fTmp : 1.0f;
 
-   m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Elasticity", 0.8f) : 0.8f;
-   m_d.m_elasticityFalloff = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ElasticityFalloff", 0.43f) : 0.43f;
-   m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Friction", 0.6f) : 0.6f;
-   m_d.m_rampUp = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RampUp", 3.0f) : 3.0f;
+   m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Elasticity"s, 0.8f) : 0.8f;
+   m_d.m_elasticityFalloff = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ElasticityFalloff"s, 0.43f) : 0.43f;
+   m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Friction"s, 0.6f) : 0.6f;
+   m_d.m_rampUp = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RampUp"s, 3.0f) : 3.0f;
 
    m_d.m_OverridePhysics = 0;
+#undef regKey
 }
 
 STDMETHODIMP Flipper::InterfaceSupportsErrorInfo(REFIID riid)

@@ -278,70 +278,70 @@ void KeysConfigDialog::AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd,
 
 BOOL KeysConfigDialog::OnInitDialog()
 {
-    bool on = LoadValueBoolWithDefault("Player", "PBWDefaultLayout", false);
+    bool on = LoadValueBoolWithDefault("Player"s, "PBWDefaultLayout"s, false);
     ::SendMessage(GetDlgItem(IDC_DefaultLayout).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault("Player", "DisableESC", false);
+    on = LoadValueBoolWithDefault("Player"s, "DisableESC"s, false);
     ::SendMessage(GetDlgItem(IDC_DisableESC_CB).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault("Player", "PBWRotationCB", false);
+    on = LoadValueBoolWithDefault("Player"s, "PBWRotationCB"s, false);
     ::SendMessage(GetDlgItem(IDC_CBGLOBALROTATION).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    int key = LoadValueIntWithDefault("Player", "PBWRotationValue", 0);
+    int key = LoadValueIntWithDefault("Player"s, "PBWRotationValue"s, 0);
     SetDlgItemInt( IDC_GLOBALROTATION, key, FALSE);
 
-    on = LoadValueBoolWithDefault("Player", "TiltSensCB", false);
+    on = LoadValueBoolWithDefault("Player"s, "TiltSensCB"s, false);
     ::SendMessage(GetDlgItem(IDC_CBGLOBALTILT).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    key = LoadValueIntWithDefault("Player", "TiltSensValue", 400);
+    key = LoadValueIntWithDefault("Player"s, "TiltSensValue"s, 400);
     SetDlgItemInt( IDC_GLOBALTILT, key, FALSE);
 
-    key = LoadValueIntWithDefault("Player", "DeadZone", 0);
+    key = LoadValueIntWithDefault("Player"s, "DeadZone"s, 0);
     SetDlgItemInt( IDC_DEADZONEAMT, key, FALSE);
 
-    on = LoadValueBoolWithDefault("Player", "PBWEnabled", false);
+    on = LoadValueBoolWithDefault("Player"s, "PBWEnabled"s, false);
     ::SendMessage(GetDlgItem(IDC_GLOBALACCEL).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault("Player", "PBWNormalMount", false);
+    on = LoadValueBoolWithDefault("Player"s, "PBWNormalMount"s, false);
     ::SendMessage(GetDlgItem(IDC_GLOBALNMOUNT).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault("Player", "ReversePlungerAxis", false);
+    on = LoadValueBoolWithDefault("Player"s, "ReversePlungerAxis"s, false);
     ::SendMessage(GetDlgItem(IDC_ReversePlunger).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault("Player", "PlungerRetract", false);
+    on = LoadValueBoolWithDefault("Player"s, "PlungerRetract"s, false);
     ::SendMessage(GetDlgItem(IDC_PLUNGERRETRACT).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault("Player", "LRAxisFlip", false);
+    on = LoadValueBoolWithDefault("Player"s, "LRAxisFlip"s, false);
     ::SendMessage(GetDlgItem(IDC_LRAXISFLIP).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault("Player", "UDAxisFlip", false);
+    on = LoadValueBoolWithDefault("Player"s, "UDAxisFlip"s, false);
     ::SendMessage(GetDlgItem(IDC_UDAXISFLIP).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    key = LoadValueIntWithDefault("Player", "PBWAccelGainX", 150);
+    key = LoadValueIntWithDefault("Player"s, "PBWAccelGainX"s, 150);
     SetDlgItemInt( IDC_LRAXISGAIN, key, FALSE);
 
-    key = LoadValueIntWithDefault("Player", "PBWAccelGainY", 150);
+    key = LoadValueIntWithDefault("Player"s, "PBWAccelGainY"s, 150);
     SetDlgItemInt( IDC_UDAXISGAIN, key, FALSE);
 
-    key = LoadValueIntWithDefault("Player", "PBWAccelMaxX", 100);
+    key = LoadValueIntWithDefault("Player"s, "PBWAccelMaxX"s, 100);
     SetDlgItemInt( IDC_XMAX_EDIT, key, FALSE);
 
-    key = LoadValueIntWithDefault("Player", "PBWAccelMaxY", 100);
+    key = LoadValueIntWithDefault("Player"s, "PBWAccelMaxY"s, 100);
     SetDlgItemInt( IDC_YMAX_EDIT, key, FALSE);
 
-    on = LoadValueBoolWithDefault("Player", "EnableMouseInPlayer", true);
+    on = LoadValueBoolWithDefault("Player"s, "EnableMouseInPlayer"s, true);
     ::SendMessage(GetDlgItem(IDC_ENABLE_MOUSE_PLAYER).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault("Player", "EnableCameraModeFlyAround", false);
+    on = LoadValueBoolWithDefault("Player"s, "EnableCameraModeFlyAround"s, false);
     ::SendMessage(GetDlgItem(IDC_ENABLE_CAMERA_FLY_AROUND).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault("Player", "EnableNudgeFilter", false);
+    on = LoadValueBoolWithDefault("Player"s, "EnableNudgeFilter"s, false);
     ::SendMessage(GetDlgItem(IDC_ENABLE_NUDGE_FILTER).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault("Player", "EnableLegacyNudge", false);
+    on = LoadValueBoolWithDefault("Player"s, "EnableLegacyNudge"s, false);
     ::SendMessage(GetDlgItem(IDC_ENABLE_LEGACY_NUDGE).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const float legacyNudgeStrength = LoadValueFloatWithDefault("Player", "LegacyNudgeStrength", 1.f);
+    const float legacyNudgeStrength = LoadValueFloatWithDefault("Player"s, "LegacyNudgeStrength"s, 1.f);
     SetDlgItemInt(IDC_LEGACY_NUDGE_STRENGTH, quantizeUnsignedPercent(legacyNudgeStrength), FALSE);
 
     for (unsigned int i = 0; i <= 30; ++i)
@@ -350,37 +350,37 @@ BOOL KeysConfigDialog::OnInitDialog()
         int item,selected;
         switch (i)
         {
-            case 0: hr = LoadValue("Player", "JoyLFlipKey", selected); item = IDC_JOYLFLIPCOMBO; break;
-            case 1: hr = LoadValue("Player", "JoyRFlipKey", selected); item = IDC_JOYRFLIPCOMBO; break;
-            case 2: hr = LoadValue("Player", "JoyPlungerKey", selected); item = IDC_JOYPLUNGERCOMBO; break;
-            case 3: hr = LoadValue("Player", "JoyAddCreditKey", selected); item = IDC_JOYADDCREDITCOMBO; break;
-            case 4: hr = LoadValue("Player", "JoyAddCredit2Key", selected); item = IDC_JOYADDCREDIT2COMBO; break;
-            case 5: hr = LoadValue("Player", "JoyLMagnaSave", selected); item = IDC_JOYLMAGNACOMBO; break;
-            case 6: hr = LoadValue("Player", "JoyRMagnaSave", selected); item = IDC_JOYRMAGNACOMBO; break;
-            case 7: hr = LoadValue("Player", "JoyStartGameKey", selected); item = IDC_JOYSTARTCOMBO; break;
-            case 8: hr = LoadValue("Player", "JoyExitGameKey", selected); item = IDC_JOYEXITCOMBO; break;
-            case 9: hr = LoadValue("Player", "JoyFrameCount", selected); item = IDC_JOYFPSCOMBO; break;
-            case 10:hr = LoadValue("Player", "JoyVolumeUp", selected); item = IDC_JOYVOLUPCOMBO; break;
-            case 11:hr = LoadValue("Player", "JoyVolumeDown", selected); item = IDC_JOYVOLDNCOMBO; break;
-            case 12:hr = LoadValue("Player", "JoyLTiltKey", selected); item = IDC_JOYLTILTCOMBO; break;
-            case 13:hr = LoadValue("Player", "JoyCTiltKey", selected); item = IDC_JOYCTILTCOMBO; break;
-            case 14:hr = LoadValue("Player", "JoyRTiltKey", selected); item = IDC_JOYRTILTCOMBO; break;
-            case 15:hr = LoadValue("Player", "JoyMechTiltKey", selected); item = IDC_JOYMECHTILTCOMBO; break;
-            case 16:hr = LoadValue("Player", "JoyDebugKey", selected); item = IDC_JOYDEBUGCOMBO; break;
-            case 17:hr = LoadValue("Player", "JoyDebuggerKey", selected); item = IDC_JOYDEBUGGERCOMBO; break;
-            case 18:hr = LoadValue("Player", "JoyCustom1", selected); item = IDC_JOYCUSTOM1COMBO; break;
-            case 19:hr = LoadValue("Player", "JoyCustom2", selected); item = IDC_JOYCUSTOM2COMBO; break;
-            case 20:hr = LoadValue("Player", "JoyCustom3", selected); item = IDC_JOYCUSTOM3COMBO; break;
-            case 21:hr = LoadValue("Player", "JoyCustom4", selected); item = IDC_JOYCUSTOM4COMBO; break;
-            case 22:hr = LoadValue("Player", "JoyPMBuyIn", selected); item = IDC_JOYPMBUYIN; break;
-            case 23:hr = LoadValue("Player", "JoyPMCoin3", selected); item = IDC_JOYPMCOIN3; break;
-            case 24:hr = LoadValue("Player", "JoyPMCoin4", selected); item = IDC_JOYPMCOIN4; break;
-            case 25:hr = LoadValue("Player", "JoyPMCoinDoor", selected); item = IDC_JOYPMCOINDOOR; break;
-            case 26:hr = LoadValue("Player", "JoyPMCancel", selected); item = IDC_JOYPMCANCEL; break;
-            case 27:hr = LoadValue("Player", "JoyPMDown", selected); item = IDC_JOYPMDOWN; break;
-            case 28:hr = LoadValue("Player", "JoyPMUp", selected); item = IDC_JOYPMUP; break;
-            case 29:hr = LoadValue("Player", "JoyPMEnter", selected); item = IDC_JOYPMENTER; break;
-            case 30:hr = LoadValue("Player", "JoyLockbarKey", selected); item = IDC_JOYLOCKBARCOMBO; break;
+            case 0: hr = LoadValue("Player"s, "JoyLFlipKey"s, selected); item = IDC_JOYLFLIPCOMBO; break;
+            case 1: hr = LoadValue("Player"s, "JoyRFlipKey"s, selected); item = IDC_JOYRFLIPCOMBO; break;
+            case 2: hr = LoadValue("Player"s, "JoyPlungerKey"s, selected); item = IDC_JOYPLUNGERCOMBO; break;
+            case 3: hr = LoadValue("Player"s, "JoyAddCreditKey"s, selected); item = IDC_JOYADDCREDITCOMBO; break;
+            case 4: hr = LoadValue("Player"s, "JoyAddCredit2Key"s, selected); item = IDC_JOYADDCREDIT2COMBO; break;
+            case 5: hr = LoadValue("Player"s, "JoyLMagnaSave"s, selected); item = IDC_JOYLMAGNACOMBO; break;
+            case 6: hr = LoadValue("Player"s, "JoyRMagnaSave"s, selected); item = IDC_JOYRMAGNACOMBO; break;
+            case 7: hr = LoadValue("Player"s, "JoyStartGameKey"s, selected); item = IDC_JOYSTARTCOMBO; break;
+            case 8: hr = LoadValue("Player"s, "JoyExitGameKey"s, selected); item = IDC_JOYEXITCOMBO; break;
+            case 9: hr = LoadValue("Player"s, "JoyFrameCount"s, selected); item = IDC_JOYFPSCOMBO; break;
+            case 10:hr = LoadValue("Player"s, "JoyVolumeUp"s, selected); item = IDC_JOYVOLUPCOMBO; break;
+            case 11:hr = LoadValue("Player"s, "JoyVolumeDown"s, selected); item = IDC_JOYVOLDNCOMBO; break;
+            case 12:hr = LoadValue("Player"s, "JoyLTiltKey"s, selected); item = IDC_JOYLTILTCOMBO; break;
+            case 13:hr = LoadValue("Player"s, "JoyCTiltKey"s, selected); item = IDC_JOYCTILTCOMBO; break;
+            case 14:hr = LoadValue("Player"s, "JoyRTiltKey"s, selected); item = IDC_JOYRTILTCOMBO; break;
+            case 15:hr = LoadValue("Player"s, "JoyMechTiltKey"s, selected); item = IDC_JOYMECHTILTCOMBO; break;
+            case 16:hr = LoadValue("Player"s, "JoyDebugKey"s, selected); item = IDC_JOYDEBUGCOMBO; break;
+            case 17:hr = LoadValue("Player"s, "JoyDebuggerKey"s, selected); item = IDC_JOYDEBUGGERCOMBO; break;
+            case 18:hr = LoadValue("Player"s, "JoyCustom1"s, selected); item = IDC_JOYCUSTOM1COMBO; break;
+            case 19:hr = LoadValue("Player"s, "JoyCustom2"s, selected); item = IDC_JOYCUSTOM2COMBO; break;
+            case 20:hr = LoadValue("Player"s, "JoyCustom3"s, selected); item = IDC_JOYCUSTOM3COMBO; break;
+            case 21:hr = LoadValue("Player"s, "JoyCustom4"s, selected); item = IDC_JOYCUSTOM4COMBO; break;
+            case 22:hr = LoadValue("Player"s, "JoyPMBuyIn"s, selected); item = IDC_JOYPMBUYIN; break;
+            case 23:hr = LoadValue("Player"s, "JoyPMCoin3"s, selected); item = IDC_JOYPMCOIN3; break;
+            case 24:hr = LoadValue("Player"s, "JoyPMCoin4"s, selected); item = IDC_JOYPMCOIN4; break;
+            case 25:hr = LoadValue("Player"s, "JoyPMCoinDoor"s, selected); item = IDC_JOYPMCOINDOOR; break;
+            case 26:hr = LoadValue("Player"s, "JoyPMCancel"s, selected); item = IDC_JOYPMCANCEL; break;
+            case 27:hr = LoadValue("Player"s, "JoyPMDown"s, selected); item = IDC_JOYPMDOWN; break;
+            case 28:hr = LoadValue("Player"s, "JoyPMUp"s, selected); item = IDC_JOYPMUP; break;
+            case 29:hr = LoadValue("Player"s, "JoyPMEnter"s, selected); item = IDC_JOYPMENTER; break;
+            case 30:hr = LoadValue("Player"s, "JoyLockbarKey"s, selected); item = IDC_JOYLOCKBARCOMBO; break;
         }
 
         if (hr != S_OK)
@@ -425,66 +425,66 @@ BOOL KeysConfigDialog::OnInitDialog()
 
     //
 
-    on = LoadValueBoolWithDefault("Controller", "ForceDisableB2S", false);
+    on = LoadValueBoolWithDefault("Controller"s, "ForceDisableB2S"s, false);
     ::SendMessage(GetDlgItem(IDC_DOF_FORCEDISABLE).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    int selected = LoadValueIntWithDefault("Controller", "DOFContactors", 2); // assume both as standard
+    int selected = LoadValueIntWithDefault("Controller"s, "DOFContactors"s, 2); // assume both as standard
     HWND hwnd = GetDlgItem(IDC_DOF_CONTACTORS).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    selected = LoadValueIntWithDefault("Controller", "DOFKnocker", 2); // assume both as standard
+    selected = LoadValueIntWithDefault("Controller"s, "DOFKnocker"s, 2); // assume both as standard
     hwnd = GetDlgItem(IDC_DOF_KNOCKER).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    selected = LoadValueIntWithDefault("Controller", "DOFChimes", 2); // assume both as standard
+    selected = LoadValueIntWithDefault("Controller"s, "DOFChimes"s, 2); // assume both as standard
     hwnd = GetDlgItem(IDC_DOF_CHIMES).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    selected = LoadValueIntWithDefault("Controller", "DOFBell", 2); // assume both as standard
+    selected = LoadValueIntWithDefault("Controller"s, "DOFBell"s, 2); // assume both as standard
     hwnd = GetDlgItem(IDC_DOF_BELL).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    selected = LoadValueIntWithDefault("Controller", "DOFGear", 2); // assume both as standard
+    selected = LoadValueIntWithDefault("Controller"s, "DOFGear"s, 2); // assume both as standard
     hwnd = GetDlgItem(IDC_DOF_GEAR).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    selected = LoadValueIntWithDefault("Controller", "DOFShaker", 2); // assume both as standard
+    selected = LoadValueIntWithDefault("Controller"s, "DOFShaker"s, 2); // assume both as standard
     hwnd = GetDlgItem(IDC_DOF_SHAKER).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    selected = LoadValueIntWithDefault("Controller", "DOFFlippers", 2); // assume both as standard
+    selected = LoadValueIntWithDefault("Controller"s, "DOFFlippers"s, 2); // assume both as standard
     hwnd = GetDlgItem(IDC_DOF_FLIPPERS).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    selected = LoadValueIntWithDefault("Controller", "DOFTargets", 2); // assume both as standard
+    selected = LoadValueIntWithDefault("Controller"s, "DOFTargets"s, 2); // assume both as standard
     hwnd = GetDlgItem(IDC_DOF_TARGETS).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    selected = LoadValueIntWithDefault("Controller", "DOFDropTargets", 2); // assume both as standard
+    selected = LoadValueIntWithDefault("Controller"s, "DOFDropTargets"s, 2); // assume both as standard
     hwnd = GetDlgItem(IDC_DOF_DROPTARGETS).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
@@ -493,7 +493,7 @@ BOOL KeysConfigDialog::OnInitDialog()
 
     //
 
-    selected = LoadValueIntWithDefault("Player", "PlungerAxis", 3); // assume Z Axis as standard
+    selected = LoadValueIntWithDefault("Player"s, "PlungerAxis"s, 3); // assume Z Axis as standard
     hwnd = GetDlgItem(IDC_PLUNGERAXIS).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(disabled)");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"X Axis");
@@ -506,7 +506,7 @@ BOOL KeysConfigDialog::OnInitDialog()
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    selected = LoadValueIntWithDefault("Player", "LRAxis", 1); // assume X Axis as standard
+    selected = LoadValueIntWithDefault("Player"s, "LRAxis"s, 1); // assume X Axis as standard
     hwnd = GetDlgItem(IDC_LRAXISCOMBO).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(disabled)");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"X Axis");
@@ -519,7 +519,7 @@ BOOL KeysConfigDialog::OnInitDialog()
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    selected = LoadValueIntWithDefault("Player", "UDAxis", 2); // assume Y Axis as standard
+    selected = LoadValueIntWithDefault("Player"s, "UDAxis"s, 2); // assume Y Axis as standard
     hwnd = GetDlgItem(IDC_UDAXISCOMBO).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(disabled)");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"X Axis");
@@ -534,7 +534,7 @@ BOOL KeysConfigDialog::OnInitDialog()
 
     for (unsigned int i = 0; i < eCKeys; ++i) if (regkey_idc[i] != -1)
     {
-        const HRESULT hr = LoadValue("Player", regkey_string[i], key);
+        const HRESULT hr = LoadValue("Player"s, regkey_string[i], key);
         if (hr != S_OK || key > 0xdd)
             key = regkey_defdik[i];
         const HWND hwndControl = GetDlgItem(regkey_idc[i]);
@@ -542,28 +542,28 @@ BOOL KeysConfigDialog::OnInitDialog()
         ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
     }
 
-    HRESULT hr = LoadValue("Player", "JoyCustom1Key", key);
+    HRESULT hr = LoadValue("Player"s, "JoyCustom1Key"s, key);
     if (hr != S_OK || key > 0xdd)
         key = DIK_UP;
     HWND hwndControl = GetDlgItem(IDC_JOYCUSTOM1);
     ::SetWindowText(hwndControl, rgszKeyName[key]);
     ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
-    hr = LoadValue("Player", "JoyCustom2Key", key);
+    hr = LoadValue("Player"s, "JoyCustom2Key"s, key);
     if (hr != S_OK || key > 0xdd)
         key = DIK_DOWN;
     hwndControl = GetDlgItem(IDC_JOYCUSTOM2);
     ::SetWindowText(hwndControl, rgszKeyName[key]);
     ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
-    hr = LoadValue("Player", "JoyCustom3Key", key);
+    hr = LoadValue("Player"s, "JoyCustom3Key"s, key);
     if (hr != S_OK || key > 0xdd)
         key = DIK_LEFT;
     hwndControl = GetDlgItem(IDC_JOYCUSTOM3);
     ::SetWindowText(hwndControl, rgszKeyName[key]);
     ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
-    hr = LoadValue("Player", "JoyCustom4Key", key);
+    hr = LoadValue("Player"s, "JoyCustom4Key"s, key);
     if (hr != S_OK || key > 0xdd)
         key = DIK_RIGHT;
     hwndControl = GetDlgItem(IDC_JOYCUSTOM4);
@@ -671,7 +671,7 @@ BOOL KeysConfigDialog::OnInitDialog()
     ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
     ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
-    int inputApi = LoadValueIntWithDefault("Player", "InputApi", 0);
+    int inputApi = LoadValueIntWithDefault("Player"s, "InputApi"s, 0);
     int inputApiIndex = inputApi;
     const HWND hwndInputApi = GetDlgItem(IDC_COMBO_INPUT_API).GetHwnd();
 
@@ -709,7 +709,7 @@ BOOL KeysConfigDialog::OnInitDialog()
 
     GetDlgItem(IDC_COMBO_RUMBLE).EnableWindow(inputApiCount > 1);
 
-    const int rumbleMode = LoadValueIntWithDefault("Player", "RumbleMode", 3);
+    const int rumbleMode = LoadValueIntWithDefault("Player"s, "RumbleMode"s, 3);
     const HWND hwndRumble = GetDlgItem(IDC_COMBO_RUMBLE).GetHwnd();
     ::SendMessage(hwndRumble, CB_ADDSTRING, 0, (LPARAM)"Off");
     ::SendMessage(hwndRumble, CB_ADDSTRING, 0, (LPARAM)"Table only (N/A yet)"); //!! not supported yet
@@ -733,7 +733,7 @@ INT_PTR KeysConfigDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (key < 0xDD)	// Key mapping
                 {
                     int key_esc;
-                    const HRESULT hr = LoadValue("Player", "EscapeKey", key_esc);
+                    const HRESULT hr = LoadValue("Player"s, "EscapeKey"s, key_esc);
                     if (hr != S_OK || key_esc > 0xdd)
                         key_esc = DIK_ESCAPE;
 
@@ -936,66 +936,66 @@ void KeysConfigDialog::OnOK()
 
     newvalue = GetDlgItemInt(IDC_LRAXISGAIN, nothing, TRUE);
     if (newvalue < 0) { newvalue = 0; }
-    SaveValueInt("Player", "PBWAccelGainX", newvalue);
+    SaveValueInt("Player"s, "PBWAccelGainX"s, newvalue);
 
     newvalue = GetDlgItemInt(IDC_UDAXISGAIN, nothing, TRUE);
     if (newvalue < 0) { newvalue = 0; }
-    SaveValueInt("Player", "PBWAccelGainY", newvalue);
+    SaveValueInt("Player"s, "PBWAccelGainY"s, newvalue);
 
     newvalue = GetDlgItemInt(IDC_DEADZONEAMT, nothing, TRUE);
     if (newvalue < 0) { newvalue = 0; }
     if (newvalue > 100) { newvalue = 100; }
-    SaveValueInt("Player", "DeadZone", newvalue);
+    SaveValueInt("Player"s, "DeadZone"s, newvalue);
 
     newvalue = GetDlgItemInt(IDC_XMAX_EDIT, nothing, TRUE);
     if (newvalue < 0) { newvalue = 0; }
     if (newvalue > 100) { newvalue = 100; }
-    SaveValueInt("Player", "PBWAccelMaxX", newvalue);
+    SaveValueInt("Player"s, "PBWAccelMaxX"s, newvalue);
 
     newvalue = GetDlgItemInt(IDC_YMAX_EDIT, nothing, TRUE);
     if (newvalue < 0) { newvalue = 0; }
     if (newvalue > 100) { newvalue = 100; }
-    SaveValueInt("Player", "PBWAccelMaxY", newvalue);
+    SaveValueInt("Player"s, "PBWAccelMaxY"s, newvalue);
 
     selected = ::SendMessage(GetDlgItem(IDC_DefaultLayout).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool("Player", "PBWDefaultLayout", selected != 0);
+    SaveValueBool("Player"s, "PBWDefaultLayout"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_DisableESC_CB).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool("Player", "DisableESC", selected != 0);
+    SaveValueBool("Player"s, "DisableESC"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_LRAXISFLIP).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool("Player", "LRAxisFlip", selected != 0);
+    SaveValueBool("Player"s, "LRAxisFlip"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_UDAXISFLIP).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool("Player", "UDAxisFlip", selected != 0);
+    SaveValueBool("Player"s, "UDAxisFlip"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_ReversePlunger).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool("Player", "ReversePlungerAxis", selected != 0);
+    SaveValueBool("Player"s, "ReversePlungerAxis"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_PLUNGERRETRACT).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool("Player", "PlungerRetract", selected != 0);
+    SaveValueBool("Player"s, "PlungerRetract"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_GLOBALACCEL).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool("Player", "PBWEnabled", selected != 0);
+    SaveValueBool("Player"s, "PBWEnabled"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_GLOBALNMOUNT).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool("Player", "PBWNormalMount", selected != 0);
+    SaveValueBool("Player"s, "PBWNormalMount"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_CBGLOBALROTATION).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool("Player", "PBWRotationCB", selected != 0);
+    SaveValueBool("Player"s, "PBWRotationCB"s, selected != 0);
 
     newvalue = GetDlgItemInt(IDC_GLOBALROTATION, nothing, TRUE);
-    SaveValueInt("Player", "PBWRotationValue", newvalue);
+    SaveValueInt("Player"s, "PBWRotationValue"s, newvalue);
 
     const bool tscb = (::SendMessage(GetDlgItem(IDC_CBGLOBALTILT).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
-    SaveValueBool("Player", "TiltSensCB", tscb);
+    SaveValueBool("Player"s, "TiltSensCB"s, tscb);
 
     newvalue = GetDlgItemInt(IDC_GLOBALTILT, nothing, TRUE);
     if (newvalue < 0) { newvalue = 0; }
     if (newvalue > 1000) { newvalue = 1000; }
-    SaveValueInt("Player", "TiltSensValue", newvalue);
+    SaveValueInt("Player"s, "TiltSensValue"s, newvalue);
     if (tscb)
-        SaveValueInt("Player", "TiltSensitivity", newvalue);
+        SaveValueInt("Player"s, "TiltSensitivity"s, newvalue);
     else
     {
         HKEY hkey;
@@ -1005,9 +1005,9 @@ void KeysConfigDialog::OnOK()
     }
 
     for (unsigned int i = 0; i < eCKeys; ++i) if (regkey_idc[i] != -1)
-    {        
+    {
         const size_t key = ::GetWindowLongPtr(GetDlgItem(regkey_idc[i]).GetHwnd(), GWLP_USERDATA);
-        SaveValueInt("Player", regkey_string[i], (int)key);
+        SaveValueInt("Player"s, regkey_string[i], (int)key);
     }
 
     SetValue(IDC_JOYCUSTOM1, "Player", "JoyCustom1Key");
@@ -1025,22 +1025,22 @@ void KeysConfigDialog::OnOK()
     SetValue(IDC_DOF_DROPTARGETS, "Controller", "DOFDropTargets");
 
     selected = ::SendMessage(GetDlgItem(IDC_ENABLE_NUDGE_FILTER).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool("Player", "EnableNudgeFilter", selected != 0);
+    SaveValueBool("Player"s, "EnableNudgeFilter"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_ENABLE_LEGACY_NUDGE).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool("Player", "EnableLegacyNudge", selected != 0);
+    SaveValueBool("Player"s, "EnableLegacyNudge"s, selected != 0);
 
     newvalue = GetDlgItemInt(IDC_LEGACY_NUDGE_STRENGTH, nothing, TRUE);
-    SaveValueFloat("Player", "LegacyNudgeStrength", dequantizeUnsignedPercent((unsigned int)newvalue));
+    SaveValueFloat("Player"s, "LegacyNudgeStrength"s, dequantizeUnsignedPercent((unsigned int)newvalue));
 
     selected = ::SendMessage(GetDlgItem(IDC_ENABLE_MOUSE_PLAYER).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool("Player", "EnableMouseInPlayer", selected != 0);
+    SaveValueBool("Player"s, "EnableMouseInPlayer"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_ENABLE_CAMERA_FLY_AROUND).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool("Player", "EnableCameraModeFlyAround", selected != 0);
+    SaveValueBool("Player"s, "EnableCameraModeFlyAround"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_DOF_FORCEDISABLE).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool("Controller", "ForceDisableB2S", selected != 0);
+    SaveValueBool("Controller"s, "ForceDisableB2S"s, selected != 0);
 
     int inputApi = (int)SendMessage(GetDlgItem(IDC_COMBO_INPUT_API).GetHwnd(), CB_GETCURSEL, 0, 0);
 #ifndef ENABLE_XINPUT
@@ -1055,10 +1055,10 @@ void KeysConfigDialog::OnOK()
 #ifndef ENABLE_VRCONTROLLER
     if (inputApi >= 4) inputApi++;
 #endif
-    SaveValueInt("Player", "InputApi", inputApi);
+    SaveValueInt("Player"s, "InputApi"s, inputApi);
 
     const int rumble = (int)SendMessage(GetDlgItem(IDC_COMBO_RUMBLE).GetHwnd(), CB_GETCURSEL, 0, 0);
-    SaveValueInt("Player", "RumbleMode", rumble);
+    SaveValueInt("Player"s, "RumbleMode"s, rumble);
 
     CDialog::OnOK();
 }
