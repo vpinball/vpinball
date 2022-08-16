@@ -23,10 +23,12 @@ HRESULT LightSeq::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void LightSeq::SetDefaults(bool fromMouseClick)
 {
-   m_d.m_updateinterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\LightSequence", "UpdateInterval", 25) : 25;
+#define regKey "DefaultProps\\LightSequence"s
+
+   m_d.m_updateinterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "UpdateInterval"s, 25) : 25;
 
    string tmp;
-   const HRESULT hr = LoadValue("DefaultProps\\LightSequence", "Collection", tmp);
+   const HRESULT hr = LoadValue(regKey, "Collection"s, tmp);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_wzCollection.clear();
    else
@@ -36,22 +38,26 @@ void LightSeq::SetDefaults(bool fromMouseClick)
       m_d.m_wzCollection = wtmp;
    }
 
-   m_d.m_vCenter.x = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\LightSequence", "CenterX", EDITOR_BG_WIDTH / 2) : (EDITOR_BG_WIDTH / 2);
-   m_d.m_vCenter.y = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\LightSequence", "CenterY", (2 * EDITOR_BG_WIDTH) / 2) : ((2 * EDITOR_BG_WIDTH) / 2);
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\LightSequence", "TimerEnabled", false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\LightSequence", "TimerInterval", 100) : 100;
+   m_d.m_vCenter.x = fromMouseClick ? LoadValueFloatWithDefault(regKey, "CenterX"s, EDITOR_BG_WIDTH / 2) : (EDITOR_BG_WIDTH / 2);
+   m_d.m_vCenter.y = fromMouseClick ? LoadValueFloatWithDefault(regKey, "CenterY"s, (2 * EDITOR_BG_WIDTH) / 2) : ((2 * EDITOR_BG_WIDTH) / 2);
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "TimerInterval"s, 100) : 100;
+#undef regKey
 }
 
 void LightSeq::WriteRegDefaults()
 {
+#define regKey "DefaultProps\\LightSequence"s
+
    char strTmp[MAXSTRING];
    WideCharToMultiByteNull(CP_ACP, 0, m_d.m_wzCollection.c_str(), -1, strTmp, MAXSTRING, nullptr, nullptr);
-   SaveValueInt("DefaultProps\\LightSequence", "UpdateInterval", m_d.m_updateinterval);
-   SaveValue("DefaultProps\\LightSequence", "Collection", strTmp);
-   SaveValueFloat("DefaultProps\\LightSequence", "CenterX", m_d.m_vCenter.x);
-   SaveValueFloat("DefaultProps\\LightSequence", "CenterY", m_d.m_vCenter.y);
-   SaveValueBool("DefaultProps\\LightSequence", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
-   SaveValueInt("DefaultProps\\LightSequence", "TimerInterval", m_d.m_tdr.m_TimerInterval);
+   SaveValueInt(regKey, "UpdateInterval"s, m_d.m_updateinterval);
+   SaveValue(regKey, "Collection"s, strTmp);
+   SaveValueFloat(regKey, "CenterX"s, m_d.m_vCenter.x);
+   SaveValueFloat(regKey, "CenterY"s, m_d.m_vCenter.y);
+   SaveValueBool(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   SaveValueInt(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+#undef regKey
 }
 
 void LightSeq::SetObjectPos()

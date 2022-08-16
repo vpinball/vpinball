@@ -44,8 +44,8 @@ HRESULT Surface::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_ptable = ptable;
    m_isWall = true;
 
-   const float width  = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Wall", "Width",  50.f) : 50.f;
-   const float length = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Wall", "Length", 50.f) : 50.f;
+   const float width  = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Wall"s, "Width"s,  50.f) : 50.f;
+   const float length = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Wall"s, "Length"s, 50.f) : 50.f;
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -84,46 +84,48 @@ HRESULT Surface::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Surface::WriteRegDefaults()
 {
-   const char * strKeyName = m_isWall ? "DefaultProps\\Wall" : "DefaultProps\\Target";
+#define strKeyName (m_isWall ? "DefaultProps\\Wall"s : "DefaultProps\\Target"s)
 
-   SaveValueBool(strKeyName, "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
-   SaveValueInt(strKeyName, "TimerInterval", m_d.m_tdr.m_TimerInterval);
-   SaveValueBool(strKeyName, "HitEvent", m_d.m_hitEvent);
-   SaveValueFloat(strKeyName, "HitThreshold", m_d.m_threshold);
-   SaveValueFloat(strKeyName, "SlingshotThreshold", m_d.m_slingshot_threshold);
-   SaveValue(strKeyName, "TopImage", m_d.m_szImage);
-   SaveValue(strKeyName, "SideImage", m_d.m_szSideImage);
-   SaveValueBool(strKeyName, "Droppable", m_d.m_droppable);
-   SaveValueBool(strKeyName, "Flipbook", m_d.m_flipbook);
-   SaveValueBool(strKeyName, "IsBottomSolid", m_d.m_isBottomSolid);
-   SaveValueFloat(strKeyName, "HeightBottom", m_d.m_heightbottom);
-   SaveValueFloat(strKeyName, "HeightTop", m_d.m_heighttop);
-   SaveValueBool(strKeyName, "DisplayTexture", m_d.m_displayTexture);
-   SaveValueFloat(strKeyName, "SlingshotForce", m_d.m_slingshotforce);
-   SaveValueBool(strKeyName, "SlingshotAnimation", m_d.m_slingshotAnimation);
-   SaveValueFloat(strKeyName, "Elasticity", m_d.m_elasticity);
-   SaveValueFloat(strKeyName, "ElasticityFallOff", m_d.m_elasticityFalloff);
-   SaveValueFloat(strKeyName, "Friction", m_d.m_friction);
-   SaveValueFloat(strKeyName, "Scatter", m_d.m_scatter);
-   SaveValueBool(strKeyName, "Visible", m_d.m_topBottomVisible);
-   SaveValueBool(strKeyName, "SideVisible", m_d.m_sideVisible);
-   SaveValueBool(strKeyName, "Collidable", m_d.m_collidable);
+   SaveValueBool(strKeyName, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   SaveValueInt(strKeyName, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   SaveValueBool(strKeyName, "HitEvent"s, m_d.m_hitEvent);
+   SaveValueFloat(strKeyName, "HitThreshold"s, m_d.m_threshold);
+   SaveValueFloat(strKeyName, "SlingshotThreshold"s, m_d.m_slingshot_threshold);
+   SaveValue(strKeyName, "TopImage"s, m_d.m_szImage);
+   SaveValue(strKeyName, "SideImage"s, m_d.m_szSideImage);
+   SaveValueBool(strKeyName, "Droppable"s, m_d.m_droppable);
+   SaveValueBool(strKeyName, "Flipbook"s, m_d.m_flipbook);
+   SaveValueBool(strKeyName, "IsBottomSolid"s, m_d.m_isBottomSolid);
+   SaveValueFloat(strKeyName, "HeightBottom"s, m_d.m_heightbottom);
+   SaveValueFloat(strKeyName, "HeightTop"s, m_d.m_heighttop);
+   SaveValueBool(strKeyName, "DisplayTexture"s, m_d.m_displayTexture);
+   SaveValueFloat(strKeyName, "SlingshotForce"s, m_d.m_slingshotforce);
+   SaveValueBool(strKeyName, "SlingshotAnimation"s, m_d.m_slingshotAnimation);
+   SaveValueFloat(strKeyName, "Elasticity"s, m_d.m_elasticity);
+   SaveValueFloat(strKeyName, "ElasticityFallOff"s, m_d.m_elasticityFalloff);
+   SaveValueFloat(strKeyName, "Friction"s, m_d.m_friction);
+   SaveValueFloat(strKeyName, "Scatter"s, m_d.m_scatter);
+   SaveValueBool(strKeyName, "Visible"s, m_d.m_topBottomVisible);
+   SaveValueBool(strKeyName, "SideVisible"s, m_d.m_sideVisible);
+   SaveValueBool(strKeyName, "Collidable"s, m_d.m_collidable);
    const int tmp = quantizeUnsigned<8>(clamp(m_d.m_disableLightingTop, 0.f, 1.f));
-   SaveValueInt(strKeyName, "DisableLighting", (tmp == 1) ? 0 : tmp); // backwards compatible saving
-   SaveValueFloat(strKeyName, "DisableLightingBelow", m_d.m_disableLightingBelow);
-   SaveValueBool(strKeyName, "ReflectionEnabled", m_d.m_reflectionEnabled);
+   SaveValueInt(strKeyName, "DisableLighting"s, (tmp == 1) ? 0 : tmp); // backwards compatible saving
+   SaveValueFloat(strKeyName, "DisableLightingBelow"s, m_d.m_disableLightingBelow);
+   SaveValueBool(strKeyName, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+
+#undef strKeyName
 }
 
 #if 0
 HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float y, bool fromMouseClick)
 {
-   static const char strKeyName[] = "DefaultProps\\Target";
+#define strKeyName "DefaultProps\\Target"s
 
    m_ptable = ptable;
    m_isWall = false;
 
-   const float width = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Width", 30.f) : 30.f;
-   const float length = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Length", 6.f) : 6.f;
+   const float width = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Width"s, 30.f) : 30.f;
+   const float length = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Length"s, 6.f) : 6.f;
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -161,39 +163,39 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    //SetDefaults();
    //Set seperate defaults for targets (SetDefaults sets the Wall defaults)
 
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "TimerEnabled", false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "TimerInterval", 100) : 100;
-   m_d.m_hitEvent = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "HitEvent", true) : true;
-   m_d.m_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HitThreshold", 2.0f) : 2.0f;
-   m_d.m_slingshot_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "SlingshotThreshold", 0.0f) : 0.0f;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "TimerInterval"s, 100) : 100;
+   m_d.m_hitEvent = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "HitEvent"s, true) : true;
+   m_d.m_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HitThreshold"s, 2.0f) : 2.0f;
+   m_d.m_slingshot_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "SlingshotThreshold"s, 0.0f) : 0.0f;
    m_d.m_inner = true; //!! Deprecated, do not use anymore
 
-   HRESULT hr = LoadValue(strKeyName, "TopImage", m_d.m_szImage);
+   HRESULT hr = LoadValue(strKeyName, "TopImage"s, m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
 
-   hr = LoadValue(strKeyName, "SideImage", m_d.m_szSideImage);
+   hr = LoadValue(strKeyName, "SideImage"s, m_d.m_szSideImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSideImage.clear();
 
-   m_d.m_droppable = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Droppable", false) : false;
-   m_d.m_flipbook = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Flipbook", false) : false;
-   m_d.m_isBottomSolid = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "IsBottomSolid", true) : false;
+   m_d.m_droppable = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Droppable"s, false) : false;
+   m_d.m_flipbook = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Flipbook"s, false) : false;
+   m_d.m_isBottomSolid = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "IsBottomSolid"s, true) : false;
 
-   m_d.m_heightbottom = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HeightBottom", 0.0f) : 0.0f;
-   m_d.m_heighttop = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HeightTop", 50.0f) : 50.0f;
+   m_d.m_heightbottom = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HeightBottom"s, 0.0f) : 0.0f;
+   m_d.m_heighttop = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HeightTop"s, 50.0f) : 50.0f;
 
-   m_d.m_displayTexture = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "DisplayTexture", false) : false;
-   m_d.m_slingshotforce = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "SlingshotForce", 80.0f) : 80.0f;
-   m_d.m_slingshotAnimation = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "SlingshotAnimation", true) : true;
+   m_d.m_displayTexture = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "DisplayTexture"s, false) : false;
+   m_d.m_slingshotforce = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "SlingshotForce"s, 80.0f) : 80.0f;
+   m_d.m_slingshotAnimation = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "SlingshotAnimation"s, true) : true;
 
-   m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Elasticity", 0.3f) : 0.3f;
-   m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Friction", 0.3f) : 0.3f;
-   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Scatter", 0) : 0;
+   m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Elasticity"s, 0.3f) : 0.3f;
+   m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Friction"s, 0.3f) : 0.3f;
+   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Scatter"s, 0) : 0;
 
-   m_d.m_topBottomVisible = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Visible", true) : true;
-   m_d.m_sideVisible = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "SideVisible", true) : true;
-   m_d.m_collidable = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Collidable", true) : true;
+   m_d.m_topBottomVisible = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Visible"s, true) : true;
+   m_d.m_sideVisible = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "SideVisible"s, true) : true;
+   m_d.m_collidable = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Collidable"s, true) : true;
 
    return InitVBA(fTrue, 0, nullptr);
 }
@@ -201,42 +203,43 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 
 void Surface::SetDefaults(bool fromMouseClick)
 {
-   static constexpr char strKeyName[] = "DefaultProps\\Wall";
+#define strKeyName "DefaultProps\\Wall"s
 
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "TimerEnabled", false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "TimerInterval", 100) : 100;
-   m_d.m_hitEvent = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "HitEvent", false) : false;
-   m_d.m_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HitThreshold", 2.0f) : 2.0f;
-   m_d.m_slingshot_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "SlingshotThreshold", 0.0f) : 0.0f;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "TimerInterval"s, 100) : 100;
+   m_d.m_hitEvent = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "HitEvent"s, false) : false;
+   m_d.m_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HitThreshold"s, 2.0f) : 2.0f;
+   m_d.m_slingshot_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "SlingshotThreshold"s, 0.0f) : 0.0f;
    m_d.m_inner = true; //!! Deprecated, do not use anymore
 
-   HRESULT hr = LoadValue(strKeyName, "TopImage", m_d.m_szImage);
+   HRESULT hr = LoadValue(strKeyName, "TopImage"s, m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
 
-   hr = LoadValue(strKeyName, "SideImage", m_d.m_szSideImage);
+   hr = LoadValue(strKeyName, "SideImage"s, m_d.m_szSideImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSideImage.clear();
 
-   m_d.m_droppable = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Droppable", false) : false;
-   m_d.m_flipbook = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Flipbook", false) : false;
-   m_d.m_isBottomSolid = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "IsBottomSolid", true) : false;
+   m_d.m_droppable = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Droppable"s, false) : false;
+   m_d.m_flipbook = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Flipbook"s, false) : false;
+   m_d.m_isBottomSolid = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "IsBottomSolid"s, true) : false;
 
-   m_d.m_heightbottom = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HeightBottom", 0.0f) : 0.0f;
-   m_d.m_heighttop = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HeightTop", 50.0f) : 50.0f;
+   m_d.m_heightbottom = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HeightBottom"s, 0.0f) : 0.0f;
+   m_d.m_heighttop = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HeightTop"s, 50.0f) : 50.0f;
 
-   m_d.m_displayTexture = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "DisplayTexture", false) : false;
-   m_d.m_slingshotforce = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "SlingshotForce", 80.0f) : 80.0f;
-   m_d.m_slingshotAnimation = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "SlingshotAnimation", true) : true;
+   m_d.m_displayTexture = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "DisplayTexture"s, false) : false;
+   m_d.m_slingshotforce = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "SlingshotForce"s, 80.0f) : 80.0f;
+   m_d.m_slingshotAnimation = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "SlingshotAnimation"s, true) : true;
 
    SetDefaultPhysics(fromMouseClick);
 
-   m_d.m_topBottomVisible = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Visible", true) : true;
-   m_d.m_sideVisible = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "SideVisible", true) : true;
-   m_d.m_collidable = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Collidable", true) : true;
-   m_d.m_disableLightingTop = dequantizeUnsigned<8>(fromMouseClick ? LoadValueIntWithDefault(strKeyName, "DisableLighting", 0) : 0); // stored as uchar for backward compatibility
-   m_d.m_disableLightingBelow = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "DisableLightingBelow", 0.f) : 0.f;
-   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ReflectionEnabled", true) : true;
+   m_d.m_topBottomVisible = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Visible"s, true) : true;
+   m_d.m_sideVisible = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "SideVisible"s, true) : true;
+   m_d.m_collidable = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Collidable"s, true) : true;
+   m_d.m_disableLightingTop = dequantizeUnsigned<8>(fromMouseClick ? LoadValueIntWithDefault(strKeyName, "DisableLighting"s, 0) : 0); // stored as uchar for backward compatibility
+   m_d.m_disableLightingBelow = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "DisableLightingBelow"s, 0.f) : 0.f;
+   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
+#undef strKeyName
 }
 
 
@@ -1957,9 +1960,10 @@ STDMETHODIMP Surface::PlaySlingshotHit()
 
 void Surface::SetDefaultPhysics(bool fromMouseClick)
 {
-   static constexpr char strKeyName[] = "DefaultProps\\Wall";
-   m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Elasticity", 0.3f) : 0.3f;
-   m_d.m_elasticityFalloff = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "ElasticityFallOff", 0.0f) : 0.0f;
-   m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Friction", 0.3f) : 0.3f;
-   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Scatter", 0) : 0;
+#define strKeyName "DefaultProps\\Wall"s
+   m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Elasticity"s, 0.3f) : 0.3f;
+   m_d.m_elasticityFalloff = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "ElasticityFallOff"s, 0.0f) : 0.0f;
+   m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Friction"s, 0.3f) : 0.3f;
+   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Scatter"s, 0) : 0;
+#undef strKeyName
 }
