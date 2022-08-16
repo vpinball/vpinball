@@ -29,53 +29,58 @@ HRESULT DispReel::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 //
 void DispReel::SetDefaults(bool fromMouseClick)
 {
+#define regKey "DefaultProps\\EMReel"s
+
    // object is only available on the backglass
    m_backglass = true;
 
    // set all the Data defaults
    HRESULT hr;
-   hr = LoadValue("DefaultProps\\Ramp", "Image", m_d.m_szImage);
+   hr = LoadValue(regKey, "Image"s, m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
 
-   hr = LoadValue("DefaultProps\\Ramp", "Sound", m_d.m_szSound);
+   hr = LoadValue(regKey, "Sound"s, m_d.m_szSound);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSound.clear();
 
-   m_d.m_useImageGrid = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "UseImageGrid", false) : false;
-   m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "Visible", true) : true;
-   m_d.m_imagesPerGridRow = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "ImagesPerRow", 1) : 1;
-   m_d.m_transparent = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "Transparent", false) : false;
-   m_d.m_reelcount = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "ReelCount", 5) : 5;
-   m_d.m_width = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\EMReel", "Width", 30.0f) : 30.0f;
-   m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\EMReel", "Height", 40.0f) : 40.0f;
-   m_d.m_reelspacing = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\EMReel", "ReelSpacing", 4.0f) : 4.0f;
-   m_d.m_motorsteps = fromMouseClick ? (int)LoadValueFloatWithDefault("DefaultProps\\EMReel", "MotorSteps", 2.f) : 2;
-   m_d.m_digitrange = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "DigitRange", 9) : 9;
-   m_d.m_updateinterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "UpdateInterval", 50) : 50;
-   m_d.m_backcolor = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "BackColor", RGB(64, 64, 64)) : RGB(64, 64, 64);
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "TimerEnabled", false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "TimerInterval", 100) : 100;
+   m_d.m_useImageGrid = fromMouseClick ? LoadValueBoolWithDefault(regKey, "UseImageGrid"s, false) : false;
+   m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Visible"s, true) : true;
+   m_d.m_imagesPerGridRow = fromMouseClick ? LoadValueIntWithDefault(regKey, "ImagesPerRow"s, 1) : 1;
+   m_d.m_transparent = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Transparent"s, false) : false;
+   m_d.m_reelcount = fromMouseClick ? LoadValueIntWithDefault(regKey, "ReelCount"s, 5) : 5;
+   m_d.m_width = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Width"s, 30.0f) : 30.0f;
+   m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Height"s, 40.0f) : 40.0f;
+   m_d.m_reelspacing = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ReelSpacing"s, 4.0f) : 4.0f;
+   m_d.m_motorsteps = fromMouseClick ? (int)LoadValueFloatWithDefault(regKey, "MotorSteps"s, 2.f) : 2;
+   m_d.m_digitrange = fromMouseClick ? LoadValueIntWithDefault(regKey, "DigitRange"s, 9) : 9;
+   m_d.m_updateinterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "UpdateInterval"s, 50) : 50;
+   m_d.m_backcolor = fromMouseClick ? LoadValueIntWithDefault(regKey, "BackColor"s, RGB(64, 64, 64)) : RGB(64, 64, 64);
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "TimerInterval"s, 100) : 100;
+#undef regKey
 }
 
 void DispReel::WriteRegDefaults()
 {
-   SaveValue("DefaultProps\\EMReel", "Image", m_d.m_szImage);
-   SaveValue("DefaultProps\\EMReel", "Sound", m_d.m_szSound);
-   SaveValueBool("DefaultProps\\Decal", "UseImageGrid", m_d.m_useImageGrid);
-   SaveValueBool("DefaultProps\\Decal", "Visible", m_d.m_visible);
-   SaveValueInt("DefaultProps\\Decal", "ImagesPerRow", m_d.m_imagesPerGridRow);
-   SaveValueBool("DefaultProps\\Decal", "Transparent", m_d.m_transparent);
-   SaveValueInt("DefaultProps\\Decal", "ReelCount", m_d.m_reelcount);
-   SaveValueFloat("DefaultProps\\EMReel", "Width", m_d.m_width);
-   SaveValueFloat("DefaultProps\\EMReel", "Height", m_d.m_height);
-   SaveValueFloat("DefaultProps\\EMReel", "ReelSpacing", m_d.m_reelspacing);
-   SaveValueFloat("DefaultProps\\EMReel", "MotorSteps", (float)m_d.m_motorsteps);
-   SaveValueInt("DefaultProps\\Decal", "DigitRange", m_d.m_digitrange);
-   SaveValueInt("DefaultProps\\Decal", "UpdateInterval", m_d.m_updateinterval);
-   SaveValueInt("DefaultProps\\EMReel", "BackColor", m_d.m_backcolor);
-   SaveValueBool("DefaultProps\\EMReel", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
-   SaveValueInt("DefaultProps\\EMReel", "TimerInterval", m_d.m_tdr.m_TimerInterval);
+#define regKey "DefaultProps\\EMReel"s
+   SaveValue(regKey, "Image"s, m_d.m_szImage);
+   SaveValue(regKey, "Sound"s, m_d.m_szSound);
+   SaveValueBool(regKey, "UseImageGrid"s, m_d.m_useImageGrid);
+   SaveValueBool(regKey, "Visible"s, m_d.m_visible);
+   SaveValueInt(regKey, "ImagesPerRow"s, m_d.m_imagesPerGridRow);
+   SaveValueBool(regKey, "Transparent"s, m_d.m_transparent);
+   SaveValueInt(regKey, "ReelCount"s, m_d.m_reelcount);
+   SaveValueFloat(regKey, "Width"s, m_d.m_width);
+   SaveValueFloat(regKey, "Height"s, m_d.m_height);
+   SaveValueFloat(regKey, "ReelSpacing"s, m_d.m_reelspacing);
+   SaveValueFloat(regKey, "MotorSteps"s, (float)m_d.m_motorsteps);
+   SaveValueInt(regKey, "DigitRange"s, m_d.m_digitrange);
+   SaveValueInt(regKey, "UpdateInterval"s, m_d.m_updateinterval);
+   SaveValueInt(regKey, "BackColor"s, m_d.m_backcolor);
+   SaveValueBool(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   SaveValueInt(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+#undef regKey
 }
 
 STDMETHODIMP DispReel::InterfaceSupportsErrorInfo(REFIID riid)
