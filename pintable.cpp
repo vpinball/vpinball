@@ -211,7 +211,7 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
       char szT[512];
       WideCharToMultiByteNull(CP_ACP, 0, str, -1, szT, 512, nullptr, nullptr);
 
-      if (!g_pplayer->m_audio->MusicInit(m_vpinball->m_szMyPath + "Music\\" + szT, string("C:\\Visual Pinball\\Music\\") + szT, MusicVolume))
+      if (!g_pplayer->m_audio->MusicInit(m_vpinball->m_szMyPath + "Music\\" + szT, "C:\\Visual Pinball\\Music\\"s + szT, MusicVolume))
       {
          delete g_pplayer->m_audio;
          g_pplayer->m_audio = nullptr;
@@ -423,11 +423,11 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
       success = GetTextFileFromDirectory(szFileName, "Tables\\", pContents);
    // if that also fails, try the standard installation path
    if (!success)
-      success = GetTextFileFromDirectory((string("C:\\Visual Pinball\\User\\")+szFileName).c_str(), nullptr, pContents);
+      success = GetTextFileFromDirectory(("C:\\Visual Pinball\\User\\"s + szFileName).c_str(), nullptr, pContents);
    if (!success)
-      success = GetTextFileFromDirectory((string("C:\\Visual Pinball\\Scripts\\")+szFileName).c_str(), nullptr, pContents);
+      success = GetTextFileFromDirectory(("C:\\Visual Pinball\\Scripts\\"s + szFileName).c_str(), nullptr, pContents);
    if (!success)
-      success = GetTextFileFromDirectory((string("C:\\Visual Pinball\\Tables\\")+szFileName).c_str(), nullptr, pContents);
+      success = GetTextFileFromDirectory(("C:\\Visual Pinball\\Tables\\"s + szFileName).c_str(), nullptr, pContents);
 
    return success ? S_OK : E_FAIL;
 }
@@ -6682,7 +6682,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    {
       if (szName[0] && m_pcv && g_pplayer && g_pplayer->m_hwndDebugOutput)
       {
-         const std::string logmsg = std::string("Request to play \"") + szName + "\", but sound not found.";
+         const std::string logmsg = "Request to play \""s + szName + "\", but sound not found.";
          m_pcv->AddToDebugOutput(logmsg.c_str());
       }
       return S_OK;

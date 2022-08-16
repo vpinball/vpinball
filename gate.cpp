@@ -474,7 +474,7 @@ void Gate::ExportMesh(ObjLoader& loader)
 
    if (m_d.m_showBracket)
    {
-      const string subName = name + string("Bracket");
+      const string subName = name + "Bracket"s;
       loader.WriteObjectName(subName);
       Vertex3D_NoTex2* const buf = new Vertex3D_NoTex2[gateBracketNumVertices];
       GenerateBracketMesh(buf);
@@ -489,7 +489,7 @@ void Gate::ExportMesh(ObjLoader& loader)
 
    SetGateType(m_d.m_type);
 
-   const string subName = name + string("Wire");
+   const string subName = name + "Wire"s;
    loader.WriteObjectName(subName);
    Vertex3D_NoTex2* const buf = new Vertex3D_NoTex2[m_numVertices];
    GenerateWireMesh(buf);

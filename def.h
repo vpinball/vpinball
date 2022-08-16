@@ -1,5 +1,7 @@
 #pragma once
 
+using namespace std::string_literals;
+
 #ifdef min
 #undef min
 #endif

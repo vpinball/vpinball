@@ -695,7 +695,7 @@ void Flipper::ExportMesh(ObjLoader& loader)
    }
    }
 
-   string subObjName = name + string("Base");
+   string subObjName = name + "Base"s;
    loader.WriteObjectName(subObjName);
    loader.WriteVertexInfo(flipper, flipperBaseVertices);
    const Material * mat = m_ptable->GetMaterial(m_d.m_szMaterial);
@@ -721,7 +721,7 @@ void Flipper::ExportMesh(ObjLoader& loader)
          buf[i].nz = vert.z;
       }
 
-      subObjName = name + string("Rubber");
+      subObjName = name + "Rubber"s;
       loader.WriteObjectName(subObjName);
       loader.WriteVertexInfo(&flipper[flipperBaseVertices], flipperBaseVertices);
       mat = m_ptable->GetMaterial(m_d.m_szRubberMaterial);

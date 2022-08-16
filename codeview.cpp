@@ -2357,12 +2357,12 @@ bool CodeViewer::ShowTooltipOrGoToDefinition(const SCNotification *pSCN, const b
 					Mess += '\n' + m_VPcoreDict[idx].m_comment;
 			}
 			else if (FindUD(m_componentsDict, DwellWord, idx) == 0)
-				Mess = string("Component: ") + szDwellWord;
+				Mess = "Component: "s + szDwellWord;
 		}
 #ifdef _DEBUG
 		if (Mess.empty())
 		{
-			Mess = string("Test: ") + szDwellWord;
+			Mess = "Test: "s + szDwellWord;
 		}
 #endif
 	}

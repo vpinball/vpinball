@@ -262,7 +262,7 @@ void Spinner::ExportMesh(ObjLoader& loader)
 
    if (m_d.m_showBracket)
    {
-      const string subObjName = name + string("Bracket");
+      const string subObjName = name + "Bracket"s;
       loader.WriteObjectName(subObjName);
 
       m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
@@ -301,7 +301,7 @@ void Spinner::ExportMesh(ObjLoader& loader)
    m_vertexBuffer_spinneranimangle = -FLT_MAX;
    UpdatePlate(transformedVertices.data());
 
-   const string subObjName = name + string("Plate");
+   const string subObjName = name + "Plate"s;
    loader.WriteObjectName(subObjName);
    loader.WriteVertexInfo(transformedVertices.data(), spinnerPlateNumVertices);
    loader.WriteFaceInfoList(spinnerPlateIndices, spinnerPlateNumFaces);

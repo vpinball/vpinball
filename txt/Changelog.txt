@@ -33,6 +33,8 @@ FIXES:
 - update internal script representation continuously while typing (please notify us if this makes working in the script editor too slow for a specific table!)
 - implement simple duplicate test for subs/functions, and output these when script is brought into focus as a tooltip
 
+- fix (ignored) font size handling
+
 - fix animation/fading of lights when not visible/when only visible through reflections 
 
 - fix crashes in Direct Sound when using certain WAVE_FORMAT_IEEE_FLOAT .wav samples

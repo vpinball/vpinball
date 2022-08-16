@@ -21,7 +21,9 @@ public:
    void ExportEnd()
    {
       fclose(m_fHandle);
+      m_fHandle = nullptr;
       fclose(m_matFile);
+      m_matFile = nullptr;
    }
    void UpdateFaceOffset(unsigned int numVertices)
    {
@@ -35,7 +37,7 @@ public:
    void WriteFaceInfo(const std::vector<WORD>& faces);
    void WriteFaceInfoLong(const std::vector<unsigned int>& faces);
    void WriteFaceInfoList(const WORD* faces, const unsigned int numIndices);
-   void UseTexture(const string& texelName)
+   void UseTexture(const string& texelName) const
    {
       fprintf_s(m_fHandle, "usemtl %s\n", texelName.c_str());
    }

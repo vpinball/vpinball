@@ -530,7 +530,7 @@ void Bumper::ExportMesh(ObjLoader& loader)
 
    if (m_d.m_baseVisible)
    {
-      const string subObjName = name + string("Base");
+      const string subObjName = name + "Base"s;
       loader.WriteObjectName(subObjName);
 
       Vertex3D_NoTex2* base = new Vertex3D_NoTex2[bumperBaseNumVertices];
@@ -545,7 +545,7 @@ void Bumper::ExportMesh(ObjLoader& loader)
    }
    if (m_d.m_ringVisible)
    {
-      const string subObjName = name + string("Ring");
+      const string subObjName = name + "Ring"s;
       loader.WriteObjectName(subObjName);
 
       Vertex3D_NoTex2* const ring = new Vertex3D_NoTex2[bumperRingNumVertices];
@@ -557,7 +557,7 @@ void Bumper::ExportMesh(ObjLoader& loader)
    }
    if (m_d.m_skirtVisible)
    {
-      const string subObjName = name + string("Skirt");
+      const string subObjName = name + "Skirt"s;
       loader.WriteObjectName(subObjName);
 
       Vertex3D_NoTex2* const socket = new Vertex3D_NoTex2[bumperSocketNumVertices];
@@ -572,7 +572,7 @@ void Bumper::ExportMesh(ObjLoader& loader)
    }
    if (m_d.m_capVisible)
    {
-      const string subObjName = name + string("Cap");
+      const string subObjName = name + "Cap"s;
       loader.WriteObjectName(subObjName);
 
       Vertex3D_NoTex2* const cap = new Vertex3D_NoTex2[bumperCapNumVertices];

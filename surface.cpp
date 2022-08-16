@@ -804,8 +804,8 @@ void Surface::ExportMesh(ObjLoader& loader)
       }
       else
       {
-         loader.WriteMaterial("none", string(), mat);
-         loader.UseTexture("none");
+         loader.WriteMaterial("none"s, string(), mat);
+         loader.UseTexture("none"s);
       }
       loader.WriteFaceInfo(topBottomIndices);
       loader.UpdateFaceOffset(m_numVertices);

@@ -150,7 +150,7 @@ void PinFont::Register()
    static int tempFontNumber = -1;
    tempFontNumber++;
 
-   m_szTempFile = szPath + string("VPTemp") + std::to_string(tempFontNumber) + ".ttf";
+   m_szTempFile = szPath + "VPTemp"s + std::to_string(tempFontNumber) + ".ttf";
    WriteToFile(m_szTempFile);
 
    /*const int fonts =*/ AddFontResource(m_szTempFile.c_str());

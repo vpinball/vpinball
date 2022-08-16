@@ -936,7 +936,7 @@ bool VPinball::LoadFile(const bool updateEditor)
    if (hr != S_OK)
       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-   if (!OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0, !updateEditor ? string("Select a Table to Play or press Cancel to enter Editor-Mode") : string()))
+   if (!OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0, !updateEditor ? "Select a Table to Play or press Cancel to enter Editor-Mode"s : string()))
       return false;
 
    const size_t index = szFileName[0].find_last_of('\\');
