@@ -70,38 +70,38 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   virtual void RenderBlueprint(Sur *psur, const bool solid);
+   void RenderBlueprint(Sur *psur, const bool solid) final;
 
-   virtual void ClearForOverwrite();
+   void ClearForOverwrite() final;
 
-   virtual void MoveOffset(const float dx, const float dy);
-   virtual void SetObjectPos();
+   void MoveOffset(const float dx, const float dy) final;
+   void SetObjectPos() final;
 
-   virtual void DoCommand(int icmd, int x, int y);
+   void DoCommand(int icmd, int x, int y) final;
 
-   virtual int GetMinimumPoints() const { return 2; }
+   int GetMinimumPoints() const final { return 2; }
 
-   virtual void FlipY(const Vertex2D& pvCenter);
-   virtual void FlipX(const Vertex2D& pvCenter);
-   virtual void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
-   virtual void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter);
-   virtual void Translate(const Vertex2D &pvOffset);
-   virtual void AddPoint(int x, int y, const bool smooth);
+   void FlipY(const Vertex2D& pvCenter) final;
+   void FlipX(const Vertex2D& pvCenter) final;
+   void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter) final;
+   void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter) final;
+   void Translate(const Vertex2D &pvOffset) final;
+   void AddPoint(int x, int y, const bool smooth) final;
 
-   virtual Vertex2D GetCenter() const { return GetPointCenter(); }
-   virtual void PutCenter(const Vertex2D& pv) { PutPointCenter(pv); }
+   Vertex2D GetCenter() const final { return GetPointCenter(); }
+   void PutCenter(const Vertex2D& pv) final { PutPointCenter(pv); }
 
-   virtual void GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D);
+   void GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D) final;
 
-   virtual float GetDepth(const Vertex3Ds& viewDir) const;
-   virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-   virtual unsigned long long GetImageID() const { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
-   virtual ItemTypeEnum HitableGetItemType() const { return eItemRubber; }
-   virtual void SetDefaultPhysics(bool fromMouseClick);
-   virtual void ExportMesh(ObjLoader& loader);
+   float GetDepth(const Vertex3Ds& viewDir) const final;
+   unsigned long long GetMaterialID() const final { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+   unsigned long long GetImageID() const final { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
+   ItemTypeEnum HitableGetItemType() const final { return eItemRubber; }
+   void SetDefaultPhysics(bool fromMouseClick) final;
+   void ExportMesh(ObjLoader& loader) final;
 
-   virtual void WriteRegDefaults();
-   virtual void UpdateStatusBarInfo();
+   void WriteRegDefaults() final;
+   void UpdateStatusBarInfo() final;
 
 #if 0
    float GetSurfaceHeight(float x, float y) const;

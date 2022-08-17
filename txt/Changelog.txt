@@ -45,6 +45,8 @@ FIXES:
 
 - fix showing property dialog if multiple elements were selected
 
+- fix registry defaults load/save for EM-Reels
+
 - remove 32 entry limitation for collections in context menu
 
 - on import/rename an image in the image manager also update the comboboxes to select the new image for selected elements

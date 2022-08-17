@@ -53,7 +53,7 @@ int CodeViewDispatch::SortAgainstValue(const std::wstring& pv) const
 
 CodeViewer::CodeViewer()
    : m_haccel(nullptr),
-     m_VBvalidChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")
+     m_VBvalidChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"s)
 {
 }
 
@@ -2993,7 +2993,7 @@ void CodeViewer::ParseVPCore()
 
 	searchPaths.push_back(g_pvp->m_currentTablePath + "core.vbs"); // table path
 
-	searchPaths.push_back("c:\\Visual Pinball\\Scripts\\core.vbs"); // default script path
+	searchPaths.push_back("c:\\Visual Pinball\\Scripts\\core.vbs"s); // default script path
 
 	string szLoadDir;
 	const HRESULT hr = LoadValue("RecentDir"s, "LoadDir"s, szLoadDir); // last known load dir path
@@ -3276,7 +3276,7 @@ LRESULT CodeViewer::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          {
             ::SendMessage(pcv->m_hwndStatus, WM_SIZE, wParam, lParam);
 
-			ResizeScintillaAndLastError();
+            ResizeScintillaAndLastError();
          }
          break;
       }

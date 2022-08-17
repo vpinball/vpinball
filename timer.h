@@ -44,7 +44,7 @@ class Timer :
 {
 public:
    Timer();
-   ~Timer();
+   virtual ~Timer();
 
    //HRESULT Init(PinTable *ptable, float x, float y);
 
@@ -61,24 +61,24 @@ public:
       CONNECTION_POINT_ENTRY(DIID_ITimerEvents)
    END_CONNECTION_POINT_MAP()
 
-   virtual void MoveOffset(const float dx, const float dy);
-   virtual void SetObjectPos();
+   void MoveOffset(const float dx, const float dy) final;
+   void SetObjectPos() final;
    // Multi-object manipulation
-   virtual Vertex2D GetCenter() const;
-   virtual void PutCenter(const Vertex2D& pv);
+   Vertex2D GetCenter() const final;
+   void PutCenter(const Vertex2D& pv) final;
 
-   virtual void RenderBlueprint(Sur *psur, const bool solid);
-   virtual ItemTypeEnum HitableGetItemType() const { return eItemTimer; }
+   void RenderBlueprint(Sur *psur, const bool solid) final;
+   ItemTypeEnum HitableGetItemType() const final { return eItemTimer; }
 
-   virtual void WriteRegDefaults();
+   void WriteRegDefaults() final;
 
    STANDARD_EDITABLE_DECLARES(Timer, eItemTimer, TIMER, 3)
 
-      //DECLARE_NOT_AGGREGATABLE(Timer)
-      // Remove the comment from the line above if you don't want your object to
-      // support aggregation.
+   //DECLARE_NOT_AGGREGATABLE(Timer)
+   // Remove the comment from the line above if you don't want your object to
+   // support aggregation.
 
-      DECLARE_REGISTRY_RESOURCEID(IDR_TIMER)
+   DECLARE_REGISTRY_RESOURCEID(IDR_TIMER)
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 

@@ -317,13 +317,13 @@ public:
    vector<char> original_table_script; // if yes, then this one stores the original table script
 
 protected:
-    virtual void PreCreate(CREATESTRUCT& cs);
-    virtual void PreRegisterClass(WNDCLASS& wc);
-    virtual int  OnCreate(CREATESTRUCT& cs);
-    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-    virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam);
-    virtual LRESULT OnNotify(WPARAM wparam, LPARAM lparam);
-    virtual void Destroy();
+   void PreCreate(CREATESTRUCT& cs) final;
+   void PreRegisterClass(WNDCLASS& wc) final;
+   int  OnCreate(CREATESTRUCT& cs) final;
+   LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) final;
+   BOOL OnCommand(WPARAM wparam, LPARAM lparam) final;
+   LRESULT OnNotify(WPARAM wparam, LPARAM lparam) final;
+   void Destroy() final;
 
 private:
    CodeViewer* GetCodeViewerPtr();

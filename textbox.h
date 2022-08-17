@@ -62,37 +62,37 @@ public:
 
    STANDARD_EDITABLE_DECLARES(Textbox, eItemTextbox, TEXTBOX, 2)
 
-   virtual void MoveOffset(const float dx, const float dy);
-   virtual void SetObjectPos();
+   void MoveOffset(const float dx, const float dy) final;
+   void SetObjectPos() final;
    // Multi-object manipulation
-   virtual Vertex2D GetCenter() const { return m_d.m_v1; }
-   virtual void PutCenter(const Vertex2D& pv);
-   virtual ItemTypeEnum HitableGetItemType() const { return eItemTextbox; }
+   Vertex2D GetCenter() const final { return m_d.m_v1; }
+   void PutCenter(const Vertex2D& pv) final;
+   ItemTypeEnum HitableGetItemType() const final { return eItemTextbox; }
+
+   void WriteRegDefaults() final;
 
    DECLARE_REGISTRY_RESOURCEID(IDR_TEXTBOX)
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   virtual void WriteRegDefaults();
    char *GetFontName();
    HFONT GetFont();
 
    IFont *m_pIFont;
 
    TextboxData m_d;
+
 private:
    void PreRenderText();
 
    PinTable *m_ptable;
 
-
    BaseTexture *m_texture;
-
 
    IFont *m_pIFontPlay; // Our font, scaled to match play window resolution
 
-   // ITextbox
 public:
+   // ITextbox
    STDMETHOD(get_IsTransparent)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_IsTransparent)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_DMD)(/*[out, retval]*/ VARIANT_BOOL *pVal);

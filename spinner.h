@@ -68,20 +68,20 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   virtual void MoveOffset(const float dx, const float dy);
-   virtual void SetObjectPos();
+   void MoveOffset(const float dx, const float dy) final;
+   void SetObjectPos() final;
    // Multi-object manipulation
-   virtual Vertex2D GetCenter() const;
-   virtual void PutCenter(const Vertex2D& pv);
-   virtual void SetDefaultPhysics(bool fromMouseClick);
+   Vertex2D GetCenter() const final;
+   void PutCenter(const Vertex2D& pv) final;
+   void SetDefaultPhysics(bool fromMouseClick) final;
 
-   virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-   virtual unsigned long long GetImageID() const { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
-   virtual ItemTypeEnum HitableGetItemType() const { return eItemSpinner; }
-   virtual void ExportMesh(ObjLoader& loader);
+   unsigned long long GetMaterialID() const final { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+   unsigned long long GetImageID() const final { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
+   ItemTypeEnum HitableGetItemType() const final { return eItemSpinner; }
+   void ExportMesh(ObjLoader& loader) final;
 
-   virtual void WriteRegDefaults();
-   virtual void UpdateStatusBarInfo();
+   void WriteRegDefaults() final;
+   void UpdateStatusBarInfo() final;
 
    float GetAngleMax() const;
    void  SetAngleMax(const float angle);

@@ -74,30 +74,29 @@ public:
    END_CONNECTION_POINT_MAP()
 
    // IEditable
-   virtual void WriteRegDefaults();
-   virtual void RenderBlueprint(Sur *psur, const bool solid);
+   void WriteRegDefaults() final;
+   void RenderBlueprint(Sur *psur, const bool solid) final;
 
-   virtual void GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D);
-   virtual void ClearForOverwrite();
+   void GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D) final;
+   void ClearForOverwrite() final;
    // end IEditable
 
    // ISelect
-   virtual void FlipY(const Vertex2D& pvCenter);
-   virtual void FlipX(const Vertex2D& pvCenter);
-   virtual void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
-   virtual void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter);
-   virtual void Translate(const Vertex2D &pvOffset);
-   virtual void MoveOffset(const float dx, const float dy);
+   void FlipY(const Vertex2D& pvCenter) final;
+   void FlipX(const Vertex2D& pvCenter) final;
+   void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter) final;
+   void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter) final;
+   void Translate(const Vertex2D &pvOffset) final;
+   void MoveOffset(const float dx, const float dy) final;
 
-   virtual Vertex2D GetCenter() const { return GetPointCenter(); }
-   virtual void PutCenter(const Vertex2D& pv) { PutPointCenter(pv); }
+   Vertex2D GetCenter() const final { return GetPointCenter(); }
+   void PutCenter(const Vertex2D& pv) final { PutPointCenter(pv); }
 
-   virtual void DoCommand(int icmd, int x, int y);
-
+   void DoCommand(int icmd, int x, int y) final;
    // end ISelect
 
-   virtual float GetDepth(const Vertex3Ds& viewDir) const { return viewDir.z * m_d.m_heighttop; }
-   virtual unsigned long long GetMaterialID() const
+   float GetDepth(const Vertex3Ds& viewDir) const final { return viewDir.z * m_d.m_heighttop; }
+   unsigned long long GetMaterialID() const final
    {
       unsigned long long h = 0;
       if (m_d.m_sideVisible)
@@ -106,7 +105,7 @@ public:
          h = m_ptable->GetMaterial(m_d.m_szTopMaterial)->hash();
       return h;
    }
-   virtual unsigned long long GetImageID() const
+   unsigned long long GetImageID() const final
    {
       Texture* tex = nullptr;
       if (m_d.m_sideVisible)
@@ -115,13 +114,12 @@ public:
          tex = m_ptable->GetImage(m_d.m_szImage);
       return (unsigned long long)tex;
    }
-   virtual ItemTypeEnum HitableGetItemType() const { return eItemSurface; }
-   virtual bool IsTransparent() const;
-   virtual void SetDefaultPhysics(bool fromMouseClick);
-   virtual void ExportMesh(ObjLoader& loader);
-   virtual void AddPoint(int x, int y, const bool smooth);
-   virtual void UpdateStatusBarInfo();
-
+   ItemTypeEnum HitableGetItemType() const final { return eItemSurface; }
+   bool IsTransparent() const final;
+   void SetDefaultPhysics(bool fromMouseClick) final;
+   void ExportMesh(ObjLoader& loader) final;
+   void AddPoint(int x, int y, const bool smooth) final;
+   void UpdateStatusBarInfo() final;
 
    float    GetSlingshotStrength() const { return m_d.m_slingshotforce * (float)(1.0/10.0); }
    void     SetSlingshotStrength(const float value)

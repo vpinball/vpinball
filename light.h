@@ -89,49 +89,52 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   void RenderOutline(Sur * const psur);
-   virtual void RenderBlueprint(Sur *psur, const bool solid);
+   void RenderBlueprint(Sur *psur, const bool solid) final;
 
-   virtual void MoveOffset(const float dx, const float dy);
-   virtual void SetObjectPos();
+   void MoveOffset(const float dx, const float dy) final;
+   void SetObjectPos() final;
 
-   virtual void ClearForOverwrite();
+   void ClearForOverwrite() final;
+
+   void EditMenu(CMenu &menu) final;
+   void DoCommand(int icmd, int x, int y) final;
+
+   void FlipY(const Vertex2D& pvCenter) final;
+   void FlipX(const Vertex2D& pvCenter) final;
+   void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter) final;
+   void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter) final;
+   void Translate(const Vertex2D &pvOffset) final;
+
+   // DragPoints
+   Vertex2D GetCenter() const final { return GetPointCenter(); }
+   void PutCenter(const Vertex2D& pv) final { PutPointCenter(pv); }
+   Vertex2D GetPointCenter() const final;
+   void PutPointCenter(const Vertex2D& pv) final;
+
+   bool IsTransparent() const final { return m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive); }
+   bool RenderToLightBuffer() const final { return m_d.m_BulbLight && (m_d.m_transmissionScale > 0.f) && !m_backglass; }
+   float GetDepth(const Vertex3Ds& viewDir) const final;
+   unsigned long long GetMaterialID() const final { return m_surfaceMaterial ? m_surfaceMaterial->hash() : 64 - 2; } //!! 2 = some constant number
+   unsigned long long GetImageID() const final { return (m_d.m_BulbLight ? 0 : (unsigned long long)(m_ptable->GetImage(m_d.m_szImage))); }
+   ItemTypeEnum HitableGetItemType() const final { return eItemLight; }
+   void AddPoint(int x, int y, const bool smooth) final;
+
+   void WriteRegDefaults() final;
+
+   STDMETHOD(GetInPlayState)(/*[out, retval]*/ LightState* pVal);
+   STDMETHOD(GetInPlayStateBool)(/*[out, retval]*/ VARIANT_BOOL* pVal);
+   STDMETHOD(GetInPlayIntensity)(/*[out, retval]*/ float *pVal);
 
    void PrepareMoversCustom();
    void UpdateCustomMoverVBuffer();
-
-   virtual void EditMenu(CMenu &menu);
-   virtual void DoCommand(int icmd, int x, int y);
-
-   virtual void FlipY(const Vertex2D& pvCenter);
-   virtual void FlipX(const Vertex2D& pvCenter);
-   virtual void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
-   virtual void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter);
-   virtual void Translate(const Vertex2D &pvOffset);
-
-   // DragPoints
-   virtual Vertex2D GetCenter() const { return GetPointCenter(); }
-   virtual void PutCenter(const Vertex2D& pv) { PutPointCenter(pv); }
-   virtual Vertex2D GetPointCenter() const;
-   virtual void PutPointCenter(const Vertex2D& pv);
-
-   virtual bool IsTransparent() const { return m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive); }
-   virtual bool RenderToLightBuffer() const { return m_d.m_BulbLight && (m_d.m_transmissionScale > 0.f) && !m_backglass; }
-   virtual float GetDepth(const Vertex3Ds& viewDir) const;
-   virtual unsigned long long GetMaterialID() const { return m_surfaceMaterial ? m_surfaceMaterial->hash() : 64 - 2; } //!! 2 = some constant number
-   virtual unsigned long long GetImageID() const { return (m_d.m_BulbLight ? 0 : (unsigned long long)(m_ptable->GetImage(m_d.m_szImage))); }
-   virtual ItemTypeEnum HitableGetItemType() const { return eItemLight; }
-   virtual void AddPoint(int x, int y, const bool smooth);
-
-   virtual void WriteRegDefaults();
 
    void FreeBuffers();
 
    void InitShape();
    void setInPlayState(const LightState newVal);
-   STDMETHOD(GetInPlayState)(/*[out, retval]*/ LightState* pVal);
-   STDMETHOD(GetInPlayStateBool)(/*[out, retval]*/ VARIANT_BOOL* pVal);
-   STDMETHOD(GetInPlayIntensity)(/*[out, retval]*/ float *pVal);
+
+   void RenderOutline(Sur *const psur);
+
    void setLightState(const LightState newVal);
    LightState getLightState() const;
    void RenderBulbMesh();
@@ -150,32 +153,33 @@ private:
    {
    public:
       LightCenter(Light *plight) : m_plight(plight) { }
-      virtual HRESULT GetTypeName(BSTR *pVal) { return m_plight->GetTypeName(pVal); }
-      virtual IDispatch *GetDispatch() { return m_plight->GetDispatch(); }
-      virtual const IDispatch *GetDispatch() const { return m_plight->GetDispatch(); }
 
-      virtual void Delete() { m_plight->Delete(); }
-      virtual void Uncreate() { m_plight->Uncreate(); }
+      HRESULT GetTypeName(BSTR *pVal) final { return m_plight->GetTypeName(pVal); }
+      IDispatch *GetDispatch() final { return m_plight->GetDispatch(); }
+      const IDispatch *GetDispatch() const final { return m_plight->GetDispatch(); }
 
-      virtual int GetSelectLevel() const { return (m_plight->m_d.m_shape == ShapeCircle) ? 1 : 2; } // Don't select light bulb twice if we have drag points
+      void Delete() final { m_plight->Delete(); }
+      void Uncreate() final { m_plight->Uncreate(); }
 
-      virtual IEditable *GetIEditable() { return (IEditable *)m_plight; }
-      virtual const IEditable *GetIEditable() const { return (const IEditable *)m_plight; }
+      int GetSelectLevel() const final { return (m_plight->m_d.m_shape == ShapeCircle) ? 1 : 2; } // Don't select light bulb twice if we have drag points
 
-      virtual PinTable *GetPTable() { return m_plight->GetPTable(); }
-      virtual const PinTable *GetPTable() const { return m_plight->GetPTable(); }
+      IEditable *GetIEditable() final { return (IEditable *)m_plight; }
+      const IEditable *GetIEditable() const final { return (const IEditable *)m_plight; }
 
-      virtual bool LoadToken(const int id, BiffReader * const pbr) { return true; }
+      PinTable *GetPTable() final { return m_plight->GetPTable(); }
+      const PinTable *GetPTable() const final { return m_plight->GetPTable(); }
 
-      virtual Vertex2D GetCenter() const { return m_plight->m_d.m_vCenter; }
-      virtual void PutCenter(const Vertex2D& pv) { m_plight->m_d.m_vCenter = pv; }
+      bool LoadToken(const int id, BiffReader * const pbr) final { return true; }
 
-      virtual void MoveOffset(const float dx, const float dy) {
+      Vertex2D GetCenter() const final { return m_plight->m_d.m_vCenter; }
+      void PutCenter(const Vertex2D& pv) final { m_plight->m_d.m_vCenter = pv; }
+
+      void MoveOffset(const float dx, const float dy) final {
           m_plight->m_d.m_vCenter.x += dx;
           m_plight->m_d.m_vCenter.y += dy;
       }
 
-      virtual ItemTypeEnum GetItemType() const { return eItemLightCenter; }
+      ItemTypeEnum GetItemType() const final { return eItemLightCenter; }
 
    private:
       Light *m_plight;
