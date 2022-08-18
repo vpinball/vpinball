@@ -7,7 +7,7 @@
 
 #include "resource.h"       // main symbols
 
-class BumperData : public BaseProperty
+class BumperData final : public BaseProperty
 {
 public:
    Vertex2D m_vCenter;

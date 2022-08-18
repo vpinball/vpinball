@@ -8,7 +8,7 @@
 #include "resource.h"
 #include <inc/robin_hood.h>
 
-class Mesh
+class Mesh final
 {
 public:
    Vertex3Ds middlePoint;
@@ -48,7 +48,7 @@ public:
 //  ObjRotY = 7
 //  ObjRotZ = 8
 
-class PrimitiveData : public BaseProperty
+class PrimitiveData final : public BaseProperty
 {
 public:
    int m_Sides;

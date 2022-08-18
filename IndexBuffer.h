@@ -5,7 +5,7 @@
 
 #ifdef ENABLE_SDL
 
-class IndexBuffer
+class IndexBuffer final
 {
 public:
    enum Format {
@@ -64,7 +64,7 @@ private:
 
 #else
 
-class IndexBuffer
+class IndexBuffer final
 {
 public:
    enum Format {

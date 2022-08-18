@@ -138,7 +138,7 @@ private:
 //            VisualPinball.Engine/VPT/Mesh.cs
 //            VisualPinball.Engine/Math/DragPoint.cs
 
-class RenderVertex3D : public Vertex3Ds
+class RenderVertex3D final : public Vertex3Ds
 {
 public:
    void set(const Vertex3Ds &v) { x = v.x; y = v.y; z = v.z; }
@@ -151,7 +151,7 @@ public:
    bool padd; // Useless padding to align to 4bytes, should enhance access speeds
 };
 
-class RenderVertex : public Vertex2D
+class RenderVertex final : public Vertex2D
 {
 public:
    void set(const Vertex3Ds &v) { x = v.x; y = v.y; }

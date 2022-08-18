@@ -3,7 +3,7 @@
 
 #include "resource.h"       // main symbols
 
-class SurfaceData : public BaseProperty
+class SurfaceData final : public BaseProperty
 {
 public:
    Vertex2D m_Center;

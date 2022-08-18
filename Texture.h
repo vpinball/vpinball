@@ -5,7 +5,7 @@
 struct FIBITMAP;
 
 // texture stored in main memory in 24/32bit RGB/RGBA uchar format or 48/96bit RGB float
-class BaseTexture
+class BaseTexture final
 {
 public:
    enum Format
@@ -44,7 +44,7 @@ public:
    static BaseTexture *CreateFromData(const void *data, const size_t size);
 };
 
-class Texture : public ILoadable
+class Texture final : public ILoadable
 {
 public:
    Texture();

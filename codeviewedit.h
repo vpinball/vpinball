@@ -7,7 +7,7 @@
 
 enum WordType { eUnknown, eClass, eSub, eFunction, ePropGet, ePropLet, ePropSet, eDim, eConst };
 
-class UserData
+class UserData final
 {
 public:
    string m_uniqueKey;        // always lower case

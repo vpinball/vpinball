@@ -361,7 +361,7 @@ inline Vertex3Ds rotate_to_vector_full(const Vertex3Ds &vec, const Vertex3Ds &no
       return (normal.y < 0.0f) ? -vec : vec;
 }
 
-class Vertex4D
+class Vertex4D final
 {
 public:
     float x, y, z, w;
@@ -370,7 +370,7 @@ public:
     Vertex4D(const float _x, const float _y, const float _z, const float _w) : x(_x), y(_y), z(_z), w(_w) {}
 };
 
-class bool4
+class bool4 final
 {
 public:
     union
@@ -385,7 +385,7 @@ public:
     bool4(const bool _x, const bool _y, const bool _z, const bool _w) : x(_x), y(_y), z(_z), w(_w) {}
 };
 
-class bool2
+class bool2 final
 {
 public:
     bool x, y;
@@ -394,7 +394,7 @@ public:
     bool2(const bool _x, const bool _y) : x(_x), y(_y) {}
 };
 
-class int2
+class int2 final
 {
 public:
     int x, y;
@@ -403,7 +403,7 @@ public:
     int2(const int _x, const int _y) : x(_x), y(_y) {}
 };
 
-class short2
+class short2 final
 {
 public:
     short x, y;

@@ -203,7 +203,7 @@ typedef D3DXHANDLE SHADER_UNIFORM_HANDLE;
 typedef D3DXHANDLE SHADER_TECHNIQUE_HANDLE;
 #endif
 
-class Shader
+class Shader final
 {
 public:
    Shader(RenderDevice *renderDevice);

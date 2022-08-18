@@ -7,7 +7,7 @@
 
 #include "resource.h"       // main symbols
 
-class SpinnerData : public BaseProperty
+class SpinnerData final : public BaseProperty
 {
 public:
    Vertex2D m_vCenter;

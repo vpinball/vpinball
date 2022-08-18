@@ -17,7 +17,7 @@ public:
    bool m_TimerEnabled;
 };
 
-class TimerData
+class TimerData final
 {
 public:
    TimerDataRoot m_tdr;

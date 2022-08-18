@@ -7,7 +7,7 @@
 
 #include "resource.h"       // main symbols
 
-class FlasherData
+class FlasherData final
 {
 public:
    Vertex2D m_vCenter;

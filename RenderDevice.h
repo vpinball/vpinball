@@ -88,7 +88,7 @@ enum StereoMode;
 
 class Shader;
 
-class RenderDevice
+class RenderDevice final
 {
 public:
 

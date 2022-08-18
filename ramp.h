@@ -7,7 +7,7 @@
 
 #include "resource.h"       // main symbols
 
-class RampData : public BaseProperty
+class RampData final : public BaseProperty
 {
 public:
    TimerDataRoot m_tdr;

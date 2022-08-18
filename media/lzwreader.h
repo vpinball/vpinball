@@ -4,7 +4,7 @@
 
 #define FILE_BUF_SIZE 4096
 
-class LZWReader
+class LZWReader final
 {
 public:
    LZWReader(IStream *pstm, int *bits, int width, int height, int pitch);

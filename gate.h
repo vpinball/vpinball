@@ -10,7 +10,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // Gate
 
-class GateData : public BaseProperty
+class GateData final : public BaseProperty
 {
 public:
    Vertex2D m_vCenter;

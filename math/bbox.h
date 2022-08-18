@@ -1,6 +1,6 @@
 #pragma once
 
-class FRect3D
+class FRect3D final
 {
 public:
    float left, right, top, bottom, zlow, zhigh;
@@ -31,7 +31,7 @@ public:
    }
 };
 
-class FRect
+class FRect final
 {
 public:
    float left, top, right, bottom;

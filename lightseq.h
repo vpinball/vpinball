@@ -10,7 +10,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // LightSeq
 
-class LightSeqData
+class LightSeqData final
 {
 public:
    Vertex2D      m_v;
@@ -184,7 +184,7 @@ public:
 
    void     Animate();
 
-   class LightSeqAnimObject : public AnimObject
+   class LightSeqAnimObject final : public AnimObject
    {
    public:
       void Animate() final { m_pLightSeq->Animate(); } // this function is called every frame to animate the object/light sequence

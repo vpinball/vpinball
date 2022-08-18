@@ -10,7 +10,7 @@
 
 #define NUM_RGB_BLINK_PATTERN 33 //!! remove
 
-class LightData : public BaseProperty
+class LightData final : public BaseProperty
 {
 public:
    Vertex2D m_vCenter;
@@ -149,7 +149,7 @@ public:
 
 private:
 
-   class LightCenter : public ISelect
+   class LightCenter final : public ISelect
    {
    public:
       LightCenter(Light *plight) : m_plight(plight) { }

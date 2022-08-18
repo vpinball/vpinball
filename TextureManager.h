@@ -10,7 +10,7 @@
 class RenderDevice;
 enum TextureFilter;
 
-class TextureManager
+class TextureManager final
 {
 public:
    TextureManager(RenderDevice& rd) : m_rd(rd)

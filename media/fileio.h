@@ -17,7 +17,7 @@ public:
    virtual bool LoadToken(const int id, BiffReader * const pbr) = 0;
 };
 
-class BiffWriter
+class BiffWriter final
 {
 public:
    BiffWriter(IStream *pistream, const HCRYPTHASH hcrypthash);
@@ -44,7 +44,7 @@ public:
    HCRYPTHASH m_hcrypthash;
 };
 
-class BiffReader
+class BiffReader final
 {
 public:
    BiffReader(IStream *pistream, ILoadable *piloadable, void *ppassdata, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey);

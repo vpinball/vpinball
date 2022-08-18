@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // Flipper     // main symbols
 
-class FlipperData : public BaseProperty
+class FlipperData final : public BaseProperty
 {
 public:
    float m_BaseRadius;

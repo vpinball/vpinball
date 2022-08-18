@@ -3,7 +3,7 @@
 #include "typedefs3D.h"
 class RenderDevice;
 
-class RenderTarget
+class RenderTarget final
 {
 public:
    RenderTarget(RenderDevice* rd); // Default output render target
@@ -24,16 +24,16 @@ public:
 #endif
 
 private:
-   bool m_is_back_buffer;
    int m_width;
    int m_height;
    colorFormat m_format;
-   bool m_has_depth;
-   bool m_use_mSAA;
    int m_stereo;
    RenderDevice* m_rd;
    Sampler* m_color_sampler;
    Sampler* m_depth_sampler;
+   bool m_is_back_buffer;
+   bool m_has_depth;
+   bool m_use_mSAA;
 
 #ifdef ENABLE_SDL
    GLuint m_framebuffer;

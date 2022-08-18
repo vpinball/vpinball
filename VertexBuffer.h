@@ -5,7 +5,7 @@
 
 #ifdef ENABLE_SDL
 
-class VertexBuffer
+class VertexBuffer final
 {
 public:
    enum LockFlags //!! not handled
@@ -54,7 +54,7 @@ private:
 
 #else
 
-class VertexBuffer
+class VertexBuffer final
 {
 public:
    enum LockFlags

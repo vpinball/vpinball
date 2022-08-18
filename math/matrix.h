@@ -4,9 +4,9 @@
 #include <math/vector.h>
 
 #ifdef ENABLE_SDL
-class Matrix3D;
+class Matrix3D final;
 
-class D3DXMATRIX {
+class D3DXMATRIX final {
 public:
    union {
       struct {
@@ -27,7 +27,7 @@ public:
 };
 
 #define D3DMATRIX D3DXMATRIX
-class vec4 {
+class vec4 final {
 public:
    union {
       struct {
@@ -49,7 +49,7 @@ public:
 
 typedef vec4 D3DXPLANE;
 
-class vec3 {
+class vec3 final {
 public:
    union {
       struct {
@@ -73,7 +73,7 @@ public:
 #endif
 
 // 3x3 matrix for representing linear transformation of 3D vectors
-class Matrix3
+class Matrix3 final
 {
 public:
    Matrix3()
@@ -298,7 +298,7 @@ public:
 
 
 // 4x4 matrix for representing affine transformations of 3D vectors
-class Matrix3D : public D3DMATRIX
+class Matrix3D final : public D3DMATRIX
 {
 public:
    Matrix3D() {}

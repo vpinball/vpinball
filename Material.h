@@ -32,7 +32,7 @@ struct SavePhysicsMaterial
 
 #define MATERIAL_VERSION 1 // for im/export
 
-class Material
+class Material final
 {
 public:
 

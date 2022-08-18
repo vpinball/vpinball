@@ -2,7 +2,7 @@
 
 #include "inc\bass.h"
 
-class AudioPlayer
+class AudioPlayer final
 {
 public:
    AudioPlayer();

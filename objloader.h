@@ -2,7 +2,7 @@
 
 #include <unordered_set>
 
-class ObjLoader
+class ObjLoader final
 {
 public:
 

@@ -8,7 +8,7 @@
 #include "resource.h"       // main symbols
 #include <inc/robin_hood.h>
 
-class RubberData : public BaseProperty
+class RubberData final : public BaseProperty
 {
 public:
    TimerDataRoot m_tdr;

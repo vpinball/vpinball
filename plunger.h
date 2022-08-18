@@ -9,7 +9,7 @@
 
 constexpr int MAXTIPSHAPE = 256;
 
-class PlungerData : public BaseProperty
+class PlungerData final : public BaseProperty
 {
 public:
    COLORREF m_color;

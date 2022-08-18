@@ -11,7 +11,7 @@
 // DispReel
 
 // add data in this class is persisted with the table
-class DispReelData : public BaseProperty
+class DispReelData final : public BaseProperty
 {
 public:
    Vertex2D    m_v1, m_v2;          // position on map (top right corner)
@@ -147,7 +147,7 @@ public:
 
    void    Animate();
 
-   class DispReelAnimObject : public AnimObject
+   class DispReelAnimObject final : public AnimObject
    {
    public:
       void Animate() final { m_pDispReel->Animate(); } // this function is called every frame to animate the object/reels animation

@@ -19,7 +19,7 @@
 // nested scope in which you created this buffer.  People should not use this
 // class directly; use the macro(s) below.
 //---------------------------------------------------------------------------
-class TempBuffer
+class TempBuffer final
 {
 public:
    TempBuffer(const ULONG cb)

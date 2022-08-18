@@ -7,7 +7,7 @@
 
 #include "resource.h"
 
-class TriggerData : public BaseProperty
+class TriggerData final : public BaseProperty
 {
 public:
    Vertex2D m_vCenter;

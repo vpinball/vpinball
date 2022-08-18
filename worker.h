@@ -10,7 +10,7 @@ extern HANDLE g_hWorkerStarted;
 
 class FastIStorage;
 
-class AutoSavePackage
+class AutoSavePackage final
 {
 public:
    FastIStorage *pstg;

@@ -7,7 +7,7 @@
 
 #include "resource.h"       // main symbols
 
-class KickerData : public BaseProperty
+class KickerData final : public BaseProperty
 {
 public:
    Vertex2D m_vCenter;

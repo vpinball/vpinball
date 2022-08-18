@@ -17,7 +17,7 @@
 // Name: class CWaveSoundRead
 // Desc: A class to read in sound data from a Wave file
 //-----------------------------------------------------------------------------
-class CWaveSoundRead
+class CWaveSoundRead final
 {
 public:
    WAVEFORMATEX* m_pwfx;        // Pointer to WAVEFORMATEX structure

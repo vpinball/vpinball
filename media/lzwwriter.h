@@ -1,6 +1,6 @@
 #pragma once
 
-class LZWWriter
+class LZWWriter final
 {
 public:
    enum {

@@ -9,7 +9,7 @@
  #include "inc\embree3\rtcore.h"
 #endif
 
-class HitQuadtree
+class HitQuadtree final
 {
 public:
    HitQuadtree()

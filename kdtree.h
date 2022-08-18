@@ -9,7 +9,7 @@
 
 class HitKD;
 
-class HitKDNode
+class HitKDNode final
 {
 private:
    void Reset() { m_children = nullptr; m_hitoct = nullptr; m_start = 0; m_items = 0; }
@@ -34,7 +34,7 @@ private:
    friend class HitKD;
 };
 
-class HitKD
+class HitKD final
 {
 public:
    HitKD();
