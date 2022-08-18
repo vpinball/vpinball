@@ -337,12 +337,12 @@ public:
 
    void FreeShader();
 
-   inline void CreateVertexDeclaration(const VertexElement * const element, VertexDeclaration ** declaration)
+   void CreateVertexDeclaration(const VertexElement * const element, VertexDeclaration ** declaration)
    {
       CHECKD3D(m_pD3DDevice->CreateVertexDeclaration(element, declaration));
    }
 
-   inline void SetVertexDeclaration(VertexDeclaration * declaration)
+   void SetVertexDeclaration(VertexDeclaration * declaration)
    {
       if (declaration != currentDeclaration)
       {
@@ -353,7 +353,7 @@ public:
       }
    }
 
-   inline IDirect3DDevice9* GetCoreDevice() const
+   IDirect3DDevice9* GetCoreDevice() const
    {
       return m_pD3DDevice;
    }
