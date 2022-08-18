@@ -4,7 +4,7 @@
 #include <math/vector.h>
 
 #ifdef ENABLE_SDL
-class Matrix3D final;
+class Matrix3D;
 
 class D3DXMATRIX final {
 public:
