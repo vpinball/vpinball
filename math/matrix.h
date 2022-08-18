@@ -6,7 +6,7 @@
 #ifdef ENABLE_SDL
 class Matrix3D;
 
-class D3DXMATRIX final {
+class D3DXMATRIX {
 public:
    union {
       struct {
