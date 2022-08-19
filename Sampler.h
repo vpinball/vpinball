@@ -31,7 +31,7 @@ public:
    Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_linear_rgb);
 #ifdef ENABLE_SDL
    Sampler(RenderDevice* rd, GLuint glTexture, bool ownTexture, bool isMSAA, bool force_linear_rgb);
-   GLuint GetCoreTexture() { return m_texture; }
+   GLuint GetCoreTexture() const { return m_texture; }
 #else
    Sampler(RenderDevice* rd, IDirect3DTexture9* dx9Texture, bool ownTexture, bool force_linear_rgb);
    IDirect3DTexture9* GetCoreTexture() { return m_texture;  }
@@ -39,21 +39,21 @@ public:
    ~Sampler();
 
    void UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb);
-   bool IsLinear() { return m_isLinear; }
-   bool IsMSAA() { return m_isMSAA; }
-   int GetWidth() { return m_width; }
-   int GetHeight() { return m_height; }
+   bool IsLinear() const { return m_isLinear; }
+   bool IsMSAA() const { return m_isMSAA; }
+   int GetWidth() const { return m_width; }
+   int GetHeight() const { return m_height; }
 
 public:
    bool m_dirty;
 
 private:
    bool m_ownTexture;
+   bool m_isLinear;
+   bool m_isMSAA;
    RenderDevice* m_rd;
    int m_width;
    int m_height;
-   bool m_isLinear;
-   bool m_isMSAA;
 #ifdef ENABLE_SDL
    GLuint m_texture = 0;
    GLuint CreateTexture(UINT Width, UINT Height, UINT Levels, colorFormat Format, void* data, int stereo);

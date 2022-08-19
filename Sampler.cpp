@@ -248,8 +248,7 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
    }
 
    IDirect3DTexture9* sysTex;
-   HRESULT hr;
-   hr = m_rd->GetCoreDevice()->CreateTexture(
+   HRESULT hr = m_rd->GetCoreDevice()->CreateTexture(
       texwidth, texheight, (texformat != colorFormat::DXT5 && m_rd->m_autogen_mipmap) ? 1 : 0, 0, (D3DFORMAT)texformat, (D3DPOOL)memoryPool::SYSTEM, &sysTex, nullptr);
    if (FAILED(hr))
    {
