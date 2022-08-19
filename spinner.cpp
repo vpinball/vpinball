@@ -27,7 +27,7 @@ Spinner::~Spinner()
 void Spinner::UpdateStatusBarInfo()
 {
    char tbuf[128];
-   sprintf_s(tbuf, "Length: %.3f | Height: %.3f", m_vpinball->ConvertToUnit(m_d.m_length), m_vpinball->ConvertToUnit(m_d.m_height));
+   sprintf_s(tbuf, sizeof(tbuf), "Length: %.3f | Height: %.3f", m_vpinball->ConvertToUnit(m_d.m_length), m_vpinball->ConvertToUnit(m_d.m_height));
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
 

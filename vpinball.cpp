@@ -474,7 +474,7 @@ void VPinball::SetPosCur(float x, float y)
 {
    // display position 1st column in VP units
    char szT[256];
-   sprintf_s(szT, "%.4f, %.4f", x, y);
+   sprintf_s(szT, sizeof(szT), "%.4f, %.4f", x, y);
    SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 0, (size_t)szT);
 
    // display converted position in separate status
@@ -483,10 +483,10 @@ void VPinball::SetPosCur(float x, float y)
        switch (m_convertToUnit)
        {
            case 0:
-               sprintf_s(szT, "%.2f, %.2f %s", ConvertToUnit(x), ConvertToUnit(y), " (inch)");
+               sprintf_s(szT, sizeof(szT), "%.2f, %.2f %s", ConvertToUnit(x), ConvertToUnit(y), " (inch)");
                break;
            case 1:
-               sprintf_s(szT, "%.2f, %.2f %s", ConvertToUnit(x), ConvertToUnit(y), " (mm)");
+               sprintf_s(szT, sizeof(szT), "%.2f, %.2f %s", ConvertToUnit(x), ConvertToUnit(y), " (mm)");
                break;
            default:
                assert(!"wrong unit");
@@ -502,7 +502,7 @@ void VPinball::SetPosCur(float x, float y)
 void VPinball::SetObjectPosCur(float x, float y)
 {
    char szT[256];
-   sprintf_s(szT, "%.4f, %.4f", x, y);
+   sprintf_s(szT, sizeof(szT), "%.4f, %.4f", x, y);
    SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (size_t)szT);
 }
 
@@ -1199,7 +1199,7 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
          char szRegName[MAX_PATH];
 
          // write entry to the registry
-         sprintf_s(szRegName, "TableFileName%d", i);
+         sprintf_s(szRegName, sizeof(szRegName), "TableFileName%d", i);
          SaveValue("RecentDir"s, szRegName, tableName);
 
          if (++i == LAST_OPENED_TABLE_COUNT)

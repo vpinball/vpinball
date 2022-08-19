@@ -549,7 +549,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   int suffix = 1;
                   do
                   {
-                     sprintf_s(textBuf, "%s%i", pinfo->item.pszText, suffix);
+                     sprintf_s(textBuf, sizeof(textBuf), "%s%i", pinfo->item.pszText, suffix);
                      suffix++;
                   } while (!pt->IsMaterialNameUnique(textBuf));
                   pmat->m_szName = textBuf;

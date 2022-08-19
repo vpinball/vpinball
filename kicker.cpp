@@ -37,7 +37,7 @@ Kicker::~Kicker()
 void Kicker::UpdateStatusBarInfo()
 {
    char tbuf[128];
-   sprintf_s(tbuf, "Radius: %.3f", m_vpinball->ConvertToUnit(m_d.m_radius));
+   sprintf_s(tbuf, sizeof(tbuf), "Radius: %.3f", m_vpinball->ConvertToUnit(m_d.m_radius));
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
 

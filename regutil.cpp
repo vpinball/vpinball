@@ -488,7 +488,7 @@ HRESULT SaveValueInt(const string &szKey, const string &szValue, const int val)
 HRESULT SaveValueFloat(const string &szKey, const string &szValue, const float val)
 {
    char buf[16];
-   sprintf_s(buf, 16, "%f", val);
+   sprintf_s(buf, sizeof(buf), "%f", val);
    return SaveValue(szKey, szValue, REG_SZ, buf, lstrlen(buf));
 }
 

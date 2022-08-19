@@ -24,7 +24,7 @@ static std::mutex mtx;
     { const RTCError rc = rtcGetDeviceError(dev); \
     switch (rc) { \
         case RTC_ERROR_NONE: break; \
-        default: { char error[256]; sprintf_s(error, "%u %s %d",rc,__FILE__,__LINE__); ShowError(error); break; }; \
+        default: { char error[256]; sprintf_s(error, sizeof(error), "%u %s %d",rc,__FILE__,__LINE__); ShowError(error); break; }; \
     }}
 
 void EmbreeBoundsFunc(const struct RTCBoundsFunctionArguments* const args)

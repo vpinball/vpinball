@@ -116,7 +116,7 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
                        ListView_GetItem(hListHwnd, &lvitem);
                        const Collection * const pcol = (Collection *)lvitem.lParam;
                        char buf[16] = { 0 };
-                       sprintf_s(buf, "%i", pcol->m_visel.size());
+                       sprintf_s(buf, sizeof(buf), "%i", pcol->m_visel.size());
                        ListView_SetItemText(hListHwnd, i, 1, buf);
                     }
                 }
@@ -209,7 +209,7 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 ListView_SetItemText(hListHwnd, idx - 1, 0, szT);
 
                 char buf[16] = { 0 };
-                sprintf_s(buf, "%i", pcol->m_visel.size());
+                sprintf_s(buf, sizeof(buf), "%i", pcol->m_visel.size());
                 ListView_SetItemText(hListHwnd, idx - 1, 1, buf);
 
                 ListView_SetItemState(hListHwnd, -1, 0, LVIS_SELECTED);
@@ -240,7 +240,7 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 ListView_SetItemText(hListHwnd, idx + 1, 0, szT);
 
                 char buf[16] = { 0 };
-                sprintf_s(buf, "%i", pcol->m_visel.size());
+                sprintf_s(buf, sizeof(buf), "%i", pcol->m_visel.size());
                 ListView_SetItemText(hListHwnd, idx + 1, 1, buf);
 
                 ListView_SetItemState(hListHwnd, -1, 0, LVIS_SELECTED);

@@ -83,7 +83,7 @@ void CodeViewer::Init(IScriptableHost *psh)
    if (res != S_OK)
    {
       char bla[128];
-      sprintf_s(bla, "Cannot initialize Script Engine 0x%X", res);
+      sprintf_s(bla, sizeof(bla), "Cannot initialize Script Engine 0x%X", res);
       ShowError(bla);
    }
 
@@ -2554,9 +2554,9 @@ bool CodeViewer::ParseOKLineLength(const size_t LineLen)
 	if (LineLen > MAX_LINE_LENGTH)
 	{
 		char szText[128];
-		sprintf_s(szText, "The current maximum script line length is %d", MAX_LINE_LENGTH);
+		sprintf_s(szText, sizeof(szText), "The current maximum script line length is %d", MAX_LINE_LENGTH);
 		char szCaption[128];
-		sprintf_s(szCaption, "Line too long on line %d", (int)LineLen);
+		sprintf_s(szCaption, sizeof(szCaption), "Line too long on line %d", (int)LineLen);
 		MessageBox(szText,szCaption, MB_OK);
 		return false;
 	}
@@ -2665,7 +2665,7 @@ bool CodeViewer::ParseStructureName(vector<UserData>& ListIn, UserData ud, const
 				{
 					m_stopErrorDisplay = true;
 					char szCaption[256] = {};
-					sprintf_s(szCaption,"Parse error on line:%d", Lineno);
+					sprintf_s(szCaption, sizeof(szCaption), "Parse error on line:%d", Lineno);
 					MessageBox("Construct not closed", szCaption, MB_OK);
 				}
 				return true;
@@ -2688,7 +2688,7 @@ bool CodeViewer::ParseStructureName(vector<UserData>& ListIn, UserData ud, const
 				{
 					m_stopErrorDisplay = true;
 					char szCaption[256] = {};
-					sprintf_s(szCaption,"Parse error on line:%d", Lineno);
+					sprintf_s(szCaption, sizeof(szCaption), "Parse error on line:%d", Lineno);
 					MessageBox("Construct not opened", szCaption, MB_OK);
 				}
 
@@ -3385,7 +3385,7 @@ LRESULT CodeViewer::OnNotify(WPARAM wparam, LPARAM lparam)
          const size_t column = ::SendMessage(hwndRE, SCI_GETCOLUMN, pos, 0);
 
          char szT[256];
-         sprintf_s(szT, "Line %u, Col %u", (U32)line, (U32)column);
+         sprintf_s(szT, sizeof(szT), "Line %u, Col %u", (U32)line, (U32)column);
          ::SendMessage(pcv->m_hwndStatus, SB_SETTEXT, 0 | 0, (size_t)szT);
          break;
       }
@@ -3447,10 +3447,10 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 			SNDMSG(GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_HELPWITHDWELL), BM_SETCHECK, pcv->m_dwellHelp ? BST_CHECKED : BST_UNCHECKED, 0L);
 
 			char foo[65];
-			sprintf_s(foo,"%i", pcv->m_displayAutoCompleteLength);
+			sprintf_s(foo, sizeof(foo), "%i", pcv->m_displayAutoCompleteLength);
 			SetDlgItemText(hwndDlg, IDC_CVP_EDIT_AUTOCHARS, foo);
 		
-			sprintf_s(foo,"%i", pcv->m_dwellDisplayTime);
+			sprintf_s(foo, sizeof(foo), "%i", pcv->m_dwellDisplayTime);
 			SetDlgItemText(hwndDlg, IDC_CVP_EDIT_MOUSEDWELL, foo);
 		}
 

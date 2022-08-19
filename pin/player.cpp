@@ -1241,9 +1241,9 @@ HRESULT Player::Init()
 
    if (hr != S_OK)
    {
-      char szfoo[64];
-      sprintf_s(szfoo, "InitPin3D Error code: %x", hr);
-      ShowError(szfoo);
+      char szFoo[64];
+      sprintf_s(szFoo, sizeof(szFoo), "InitPin3D Error code: %x", hr);
+      ShowError(szFoo);
       return hr;
    }
 
@@ -1418,7 +1418,7 @@ HRESULT Player::Init()
             pe->GetScriptable()->get_Name(&bstr);
             char * bstr2 = MakeChar(bstr);
             CHAR wzDst[256];
-            sprintf_s(wzDst, "Initializing Object-Physics %s...", bstr2);
+            sprintf_s(wzDst, sizeof(wzDst), "Initializing Object-Physics %s...", bstr2);
             delete [] bstr2;
             m_ptable->m_progressDialog.SetName(wzDst);
          }
@@ -4002,17 +4002,17 @@ void Player::UpdateHUD_IMGUI()
       {
          for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
          {
-            sprintf_s(szFoo, "   %s: %.2f ms (%4.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
+            sprintf_s(szFoo, sizeof(szFoo), "   %s: %.2f ms (%4.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
             DebugPrint(0, 320 + gts * 20, szFoo);
          }
-         sprintf_s(szFoo, " Frame time: %.2f ms", float(1000.0 * (dTDrawTotal + m_pin3d.m_gpu_profiler.DtAvg(GTS_EndFrame))));
+         sprintf_s(szFoo, sizeof(szFoo), " Frame time: %.2f ms", float(1000.0 * (dTDrawTotal + m_pin3d.m_gpu_profiler.DtAvg(GTS_EndFrame))));
          DebugPrint(0, 320 + GTS_EndFrame * 20, szFoo);
       }
       else
       {
          for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
          {
-            sprintf_s(szFoo, " %s: %.2f ms (%4.1f%%)", GTS_name_item[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
+            sprintf_s(szFoo, sizeof(szFoo), " %s: %.2f ms (%4.1f%%)", GTS_name_item[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
             DebugPrint(0, 300 + gts * 20, szFoo);
          }
       }
@@ -4128,18 +4128,18 @@ void Player::UpdateHUD()
 		const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
 		if (ShowFPSonly())
 		{
-			sprintf_s(szFoo, "FPS: %.1f (%.1f avg)", m_fps + 0.01f, fpsAvg + 0.01f);
+			sprintf_s(szFoo, sizeof(szFoo), "FPS: %.1f (%.1f avg)", m_fps + 0.01f, fpsAvg + 0.01f);
 			DebugPrint(0, 10, szFoo);
 		}
 		else
 		{
 		// Draw the amount of video memory used.
 		//!! Disabled until we can compute this correctly.
-		//sprintf_s(szFoo, " Used Graphics Memory: %.2f MB ", (float)NumVideoBytes / (float)(1024 * 1024));
+		//sprintf_s(szFoo, sizeof(szFoo), " Used Graphics Memory: %.2f MB ", (float)NumVideoBytes / (float)(1024 * 1024));
 		//DebugPrint(0, 230, szFoo); //!!?
 
 		// Draw the framerate.
-		sprintf_s(szFoo, "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %u%%", m_fps+0.01f, fpsAvg+0.01f, RenderStaticOnly() ? "only static" : "all", (RenderDevice::m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, quantizeUnsignedPercent(m_globalEmissionScale));
+		sprintf_s(szFoo, sizeof(szFoo), "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %u%%", m_fps+0.01f, fpsAvg+0.01f, RenderStaticOnly() ? "only static" : "all", (RenderDevice::m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, quantizeUnsignedPercent(m_globalEmissionScale));
 		DebugPrint(0, 10, szFoo);
 
 		const U32 period = m_lastFrameDuration;
@@ -4181,31 +4181,31 @@ void Player::UpdateHUD()
 			m_count++;
 		}
 
-		sprintf_s(szFoo, "Overall: %.1f ms (%.1f (%.1f) avg %.1f max)",
+		sprintf_s(szFoo, sizeof(szFoo), "Overall: %.1f ms (%.1f (%.1f) avg %.1f max)",
 			float(1e-3*period), float(1e-3 * (double)m_total / (double)m_count), float(1e-3*m_max), float(1e-3*m_max_total));
 		DebugPrint(0, 30, szFoo);
-		sprintf_s(szFoo, "%4.1f%% Physics: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
+		sprintf_s(szFoo, sizeof(szFoo), "%4.1f%% Physics: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
 			float((m_phys_period-m_script_period)*100.0 / period), float(1e-3*(m_phys_period-m_script_period)),
 			float(1e-3 * (double)m_phys_total / (double)m_count), float(1e-3*m_phys_max), float((double)m_phys_total*100.0 / (double)m_total), float(1e-3*m_phys_max_total));
 		DebugPrint(0, 50, szFoo);
-		sprintf_s(szFoo, "%4.1f%% Scripts: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
+		sprintf_s(szFoo, sizeof(szFoo), "%4.1f%% Scripts: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
 			float(m_script_period*100.0 / period), float(1e-3*m_script_period),
 			float(1e-3 * (double)m_script_total / (double)m_count), float(1e-3*m_script_max), float((double)m_script_total*100.0 / (double)m_total), float(1e-3*m_script_max_total));
 		DebugPrint(0, 70, szFoo);
 
 		// performance counters
-		sprintf_s(szFoo, "Draw calls: %u (%u Locks)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumDrawCalls(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumLockCalls());
+		sprintf_s(szFoo, sizeof(szFoo), "Draw calls: %u (%u Locks)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumDrawCalls(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumLockCalls());
 		DebugPrint(0, 95, szFoo);
-		sprintf_s(szFoo, "State changes: %u", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumStateChanges());
+		sprintf_s(szFoo, sizeof(szFoo), "State changes: %u", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumStateChanges());
 		DebugPrint(0, 115, szFoo);
-		sprintf_s(szFoo, "Texture changes: %u (%u Uploads)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureUploads());
+		sprintf_s(szFoo, sizeof(szFoo), "Texture changes: %u (%u Uploads)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureUploads());
 		DebugPrint(0, 135, szFoo);
-		sprintf_s(szFoo, "Shader/Parameter changes: %u / %u (%u Material ID changes)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTechniqueChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumParameterChanges(), material_flips);
+		sprintf_s(szFoo, sizeof(szFoo), "Shader/Parameter changes: %u / %u (%u Material ID changes)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTechniqueChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumParameterChanges(), material_flips);
 		DebugPrint(0, 155, szFoo);
-		sprintf_s(szFoo, "Objects: %u Transparent, %u Solid", (unsigned int)m_vHitTrans.size(), (unsigned int)m_vHitNonTrans.size());
+		sprintf_s(szFoo, sizeof(szFoo), "Objects: %u Transparent, %u Solid", (unsigned int)m_vHitTrans.size(), (unsigned int)m_vHitNonTrans.size());
 		DebugPrint(0, 175, szFoo);
 
-		sprintf_s(szFoo, "Physics: %u iterations per frame (%u avg %u max)    Ball Velocity / Ang.Vel.: %.1f %.1f",
+		sprintf_s(szFoo, sizeof(szFoo), "Physics: %u iterations per frame (%u avg %u max)    Ball Velocity / Ang.Vel.: %.1f %.1f",
 			m_phys_iterations,
 			(U32)(m_phys_total_iterations / m_count),
 			m_phys_max_iterations,
@@ -4214,20 +4214,20 @@ void Player::UpdateHUD()
 
 #ifdef DEBUGPHYSICS
 #ifdef C_DYNAMIC
-		sprintf_s(szFoo, "Hits:%5u Collide:%5u Ctacs:%5u Static:%5u Embed:%5u TimeSearch:%5u",
+		sprintf_s(szFoo, sizeof(szFoo), "Hits:%5u Collide:%5u Ctacs:%5u Static:%5u Embed:%5u TimeSearch:%5u",
 			c_hitcnts, c_collisioncnt, c_contactcnt, c_staticcnt, c_embedcnts, c_timesearch);
 #else
-		sprintf_s(szFoo, "Hits:%5u Collide:%5u Ctacs:%5u Embed:%5u TimeSearch:%5u",
+		sprintf_s(szFoo, sizeof(szFoo), "Hits:%5u Collide:%5u Ctacs:%5u Embed:%5u TimeSearch:%5u",
 			c_hitcnts, c_collisioncnt, c_contactcnt, c_embedcnts, c_timesearch);
 #endif
 		DebugPrint(0, 220, szFoo);
 
-		sprintf_s(szFoo, "kDObjects: %5u kD:%5u QuadObjects: %5u Quadtree:%5u Traversed:%5u Tested:%5u DeepTested:%5u",
+		sprintf_s(szFoo, sizeof(szFoo), "kDObjects: %5u kD:%5u QuadObjects: %5u Quadtree:%5u Traversed:%5u Tested:%5u DeepTested:%5u",
 			c_kDObjects, c_kDNextlevels, c_quadObjects, c_quadNextlevels, c_traversed, c_tested, c_deepTested);
 		DebugPrint(0, 240, szFoo);
 #endif
 
-		sprintf_s(szFoo, "Left Flipper keypress to rotate: %.1f ms (%d f) to eos: %.1f ms (%d f)",
+		sprintf_s(szFoo, sizeof(szFoo), "Left Flipper keypress to rotate: %.1f ms (%d f) to eos: %.1f ms (%d f)",
 			(INT64)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) / 1000.,
 			(int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame),
 			(INT64)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) / 1000.,
@@ -4251,21 +4251,21 @@ void Player::UpdateHUD()
 		char szFoo[256];
 		if (ProfilingMode() == 1)
 		{
-			sprintf_s(szFoo, " Draw time: %.2f ms", float(1000.0 * dTDrawTotal));
+			sprintf_s(szFoo, sizeof(szFoo), " Draw time: %.2f ms", float(1000.0 * dTDrawTotal));
 			DebugPrint(0, 320, szFoo);
 			for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
 			{
-				sprintf_s(szFoo, "   %s: %.2f ms (%4.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts)/dTDrawTotal));
+				sprintf_s(szFoo, sizeof(szFoo), "   %s: %.2f ms (%4.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts)/dTDrawTotal));
 				DebugPrint(0, 320 + gts * 20, szFoo);
 			}
-			sprintf_s(szFoo, " Frame time: %.2f ms", float(1000.0 * (dTDrawTotal + m_pin3d.m_gpu_profiler.DtAvg(GTS_EndFrame))));
+			sprintf_s(szFoo, sizeof(szFoo), " Frame time: %.2f ms", float(1000.0 * (dTDrawTotal + m_pin3d.m_gpu_profiler.DtAvg(GTS_EndFrame))));
 			DebugPrint(0, 320 + GTS_EndFrame * 20, szFoo);
 		}
 		else
 		{
 			for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
 			{
-				sprintf_s(szFoo, " %s: %.2f ms (%4.1f%%)", GTS_name_item[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts)/dTDrawTotal));
+				sprintf_s(szFoo, sizeof(szFoo), " %s: %.2f ms (%4.1f%%)", GTS_name_item[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts)/dTDrawTotal));
 				DebugPrint(0, 300 + gts * 20, szFoo);
 			}
 		}
@@ -4323,7 +4323,7 @@ void Player::UpdateHUD()
 		}
 
 		char buffer[256];
-		sprintf_s(buffer, " (%s Revision %u)", !m_ptable->m_szDateSaved.empty() ? m_ptable->m_szDateSaved.c_str() : "N.A.", m_ptable->m_numTimesSaved);
+		sprintf_s(buffer, sizeof(buffer), " (%s Revision %u)", !m_ptable->m_szDateSaved.empty() ? m_ptable->m_szDateSaved.c_str() : "N.A.", m_ptable->m_numTimesSaved);
 		strncat_s(szFoo, buffer, sizeof(szFoo)-strnlen_s(szFoo, sizeof(szFoo))-1);
 
 		if (strnlen_s(szFoo,sizeof(szFoo)) > 0)
@@ -4762,83 +4762,83 @@ void Player::UpdateCameraModeDisplay()
    {
    case 0:
    {
-      sprintf_s(szFoo, "Inclination: %.3f", m_ptable->m_BG_inclination[m_ptable->m_BG_current_set]);
+      sprintf_s(szFoo, sizeof(szFoo), "Inclination: %.3f", m_ptable->m_BG_inclination[m_ptable->m_BG_current_set]);
       break;
    }
    case 1:
    {
-      sprintf_s(szFoo, "Field Of View: %.3f", m_ptable->m_BG_FOV[m_ptable->m_BG_current_set]);
+      sprintf_s(szFoo, sizeof(szFoo), "Field Of View: %.3f", m_ptable->m_BG_FOV[m_ptable->m_BG_current_set]);
       break;
    }
    case 2:
    {
-      sprintf_s(szFoo, "Layback: %.3f", m_ptable->m_BG_layback[m_ptable->m_BG_current_set]);
+      sprintf_s(szFoo, sizeof(szFoo), "Layback: %.3f", m_ptable->m_BG_layback[m_ptable->m_BG_current_set]);
       break;
    }
    case 3:
    {
-      sprintf_s(szFoo, "X/Y Scale: %.3f / %.3f", m_ptable->m_BG_scalex[m_ptable->m_BG_current_set], m_ptable->m_BG_scaley[m_ptable->m_BG_current_set]);
+      sprintf_s(szFoo, sizeof(szFoo), "X/Y Scale: %.3f / %.3f", m_ptable->m_BG_scalex[m_ptable->m_BG_current_set], m_ptable->m_BG_scaley[m_ptable->m_BG_current_set]);
       break;
    }
    case 4:
    {
-      sprintf_s(szFoo, "X Scale: %.3f", m_ptable->m_BG_scalex[m_ptable->m_BG_current_set]);
+      sprintf_s(szFoo, sizeof(szFoo), "X Scale: %.3f", m_ptable->m_BG_scalex[m_ptable->m_BG_current_set]);
       break;
    }
    case 5:
    {
-      sprintf_s(szFoo, "Y Scale: %.3f", m_ptable->m_BG_scaley[m_ptable->m_BG_current_set]);
+      sprintf_s(szFoo, sizeof(szFoo), "Y Scale: %.3f", m_ptable->m_BG_scaley[m_ptable->m_BG_current_set]);
       break;
    }
    case 6:
    {
-      sprintf_s(szFoo, "Z Scale: %.3f", m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+      sprintf_s(szFoo, sizeof(szFoo), "Z Scale: %.3f", m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
       break;
    }
    case 7:
    {
-      sprintf_s(szFoo, "X Offset: %.3f", m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set]);
+      sprintf_s(szFoo, sizeof(szFoo), "X Offset: %.3f", m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set]);
       break;
    }
    case 8:
    {
-      sprintf_s(szFoo, "Y Offset: %.3f", m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set]);
+      sprintf_s(szFoo, sizeof(szFoo), "Y Offset: %.3f", m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set]);
       break;
    }
    case 9:
    {
-      sprintf_s(szFoo, "Z Offset: %.3f", m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set]);
+      sprintf_s(szFoo, sizeof(szFoo), "Z Offset: %.3f", m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set]);
       break;
    }
    case 10:
    {
-      sprintf_s(szFoo, "Light Emission Scale: %.3f", m_ptable->m_lightEmissionScale);
+      sprintf_s(szFoo, sizeof(szFoo), "Light Emission Scale: %.3f", m_ptable->m_lightEmissionScale);
       break;
    }
    case 11:
    {
-      sprintf_s(szFoo, "Light Range: %.3f", m_ptable->m_lightRange);
+      sprintf_s(szFoo, sizeof(szFoo), "Light Range: %.3f", m_ptable->m_lightRange);
       break;
    }
    case 12:
    {
-      sprintf_s(szFoo, "Light Height: %.3f", m_ptable->m_lightHeight);
+      sprintf_s(szFoo, sizeof(szFoo), "Light Height: %.3f", m_ptable->m_lightHeight);
       break;
    }
    case 13:
    {
-      sprintf_s(szFoo, "Environment Emission: %.3f", m_ptable->m_envEmissionScale);
+      sprintf_s(szFoo, sizeof(szFoo), "Environment Emission: %.3f", m_ptable->m_envEmissionScale);
       break;
    }
    default:
    {
-      sprintf_s(szFoo, "N/A");
+      sprintf_s(szFoo, sizeof(szFoo), "N/A");
       break;
    }
    }
    DebugPrint(0, 150, szFoo);
    m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
-   sprintf_s(szFoo, "Camera at X: %.2f Y: %.2f Z: %.2f,  Rotation: %.2f", -m_pin3d.m_proj.m_matView._41, (m_ptable->m_BG_current_set == 0 || m_ptable->m_BG_current_set == 2) ? m_pin3d.m_proj.m_matView._42 : -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43, g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set]); // DT & FSS
+   sprintf_s(szFoo, sizeof(szFoo), "Camera at X: %.2f Y: %.2f Z: %.2f,  Rotation: %.2f", -m_pin3d.m_proj.m_matView._41, (m_ptable->m_BG_current_set == 0 || m_ptable->m_BG_current_set == 2) ? m_pin3d.m_proj.m_matView._42 : -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43, g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set]); // DT & FSS
    DebugPrint(0, 130, szFoo);
    DebugPrint(0, 190, "Navigate around with the Arrow Keys and Left Alt Key (if enabled in the Key settings)");
    if(g_pvp->m_povEdit)

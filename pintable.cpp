@@ -2058,29 +2058,29 @@ void PinTable::Play(const bool cameraMode)
       {
          char tmp[256];
 
-         sprintf_s(tmp, 256, "TablePhysicsGravityConstant%d", m_overridePhysics - 1);
+         sprintf_s(tmp, sizeof(tmp), "TablePhysicsGravityConstant%d", m_overridePhysics - 1);
          m_fOverrideGravityConstant = LoadValueFloatWithDefault("Player"s, tmp, DEFAULT_TABLE_GRAVITY);
          m_fOverrideGravityConstant *= GRAVITYCONST;
 
-         sprintf_s(tmp, 256, "TablePhysicsContactFriction%d", m_overridePhysics - 1);
+         sprintf_s(tmp, sizeof(tmp), "TablePhysicsContactFriction%d", m_overridePhysics - 1);
          m_fOverrideContactFriction = LoadValueFloatWithDefault("Player"s, tmp, DEFAULT_TABLE_CONTACTFRICTION);
 
-         sprintf_s(tmp, 256, "TablePhysicsElasticity%d", m_overridePhysics - 1);
+         sprintf_s(tmp, sizeof(tmp), "TablePhysicsElasticity%d", m_overridePhysics - 1);
          m_fOverrideElasticity = LoadValueFloatWithDefault("Player"s, tmp, DEFAULT_TABLE_ELASTICITY);
 
-         sprintf_s(tmp, 256, "TablePhysicsElasticityFalloff%d", m_overridePhysics - 1);
+         sprintf_s(tmp, sizeof(tmp), "TablePhysicsElasticityFalloff%d", m_overridePhysics - 1);
          m_fOverrideElasticityFalloff = LoadValueFloatWithDefault("Player"s, tmp, DEFAULT_TABLE_ELASTICITY_FALLOFF);
 
-         sprintf_s(tmp, 256, "TablePhysicsScatterAngle%d", m_overridePhysics - 1);
+         sprintf_s(tmp, sizeof(tmp), "TablePhysicsScatterAngle%d", m_overridePhysics - 1);
          m_fOverrideScatterAngle = LoadValueFloatWithDefault("Player"s, tmp, DEFAULT_TABLE_PFSCATTERANGLE);
 
-         sprintf_s(tmp, 256, "TablePhysicsContactScatterAngle%d", m_overridePhysics - 1);
+         sprintf_s(tmp, sizeof(tmp), "TablePhysicsContactScatterAngle%d", m_overridePhysics - 1);
          fOverrideContactScatterAngle = LoadValueFloatWithDefault("Player"s, tmp, DEFAULT_TABLE_SCATTERANGLE);
 
-         sprintf_s(tmp, 256, "TablePhysicsMinSlope%d", m_overridePhysics - 1);
+         sprintf_s(tmp, sizeof(tmp), "TablePhysicsMinSlope%d", m_overridePhysics - 1);
          m_fOverrideMinSlope = LoadValueFloatWithDefault("Player"s, tmp, DEFAULT_TABLE_MIN_SLOPE);
 
-         sprintf_s(tmp, 256, "TablePhysicsMaxSlope%d", m_overridePhysics - 1);
+         sprintf_s(tmp, sizeof(tmp), "TablePhysicsMaxSlope%d", m_overridePhysics - 1);
          m_fOverrideMaxSlope = LoadValueFloatWithDefault("Player"s, tmp, DEFAULT_TABLE_MAX_SLOPE);
       }
 
@@ -3317,7 +3317,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
    if (FAILED(hr = StgOpenStorage(wszCodeFile, nullptr, STGM_TRANSACTED | STGM_READ, nullptr, 0, &pstgRoot)))
    {
       char msg[MAXSTRING+32];
-      sprintf_s(msg, "Error 0x%X loading \"%s\"", hr, m_szFileName.c_str());
+      sprintf_s(msg, sizeof(msg), "Error 0x%X loading \"%s\"", hr, m_szFileName.c_str());
       m_vpinball->MessageBox(msg, "Load Error", 0);
       return hr;
    }
@@ -3399,7 +3399,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             if (loadfileversion > CURRENT_FILE_FORMAT_VERSION)
             {
                char errorMsg[MAX_PATH] = { 0 };
-               sprintf_s(errorMsg, "This table was saved with file version %i.%02i and is newer than the supported file version %i.%02i!\nYou might get problems loading/playing it, so please update to the latest VPX at https://github.com/vpinball/vpinball/releases!", loadfileversion / 100, loadfileversion % 100, CURRENT_FILE_FORMAT_VERSION / 100, CURRENT_FILE_FORMAT_VERSION % 100);
+               sprintf_s(errorMsg, sizeof(errorMsg), "This table was saved with file version %i.%02i and is newer than the supported file version %i.%02i!\nYou might get problems loading/playing it, so please update to the latest VPX at https://github.com/vpinball/vpinball/releases!", loadfileversion / 100, loadfileversion % 100, CURRENT_FILE_FORMAT_VERSION / 100, CURRENT_FILE_FORMAT_VERSION % 100);
                ShowError(errorMsg);
                /*
                               pstgRoot->Release();
@@ -4163,11 +4163,11 @@ int PinTable::AddListSound(HWND hwndListView, PinSound * const pps)
 	   break;
    }
    char textBuf[40];
-   sprintf_s(textBuf, "%.03f", dequantizeSignedPercent(pps->m_balance));
+   sprintf_s(textBuf, sizeof(textBuf), "%.03f", dequantizeSignedPercent(pps->m_balance));
    ListView_SetItemText(hwndListView, index, 3, textBuf);
-   sprintf_s(textBuf, "%.03f", dequantizeSignedPercent(pps->m_fade));
+   sprintf_s(textBuf, sizeof(textBuf), "%.03f", dequantizeSignedPercent(pps->m_fade));
    ListView_SetItemText(hwndListView, index, 4, textBuf);
-   sprintf_s(textBuf, "%.03f", dequantizeSignedPercent(pps->m_volume));
+   sprintf_s(textBuf, sizeof(textBuf), "%.03f", dequantizeSignedPercent(pps->m_volume));
    ListView_SetItemText(hwndListView, index, 5, textBuf);
 
    return index;
@@ -4284,7 +4284,7 @@ int PinTable::AddListCollection(HWND hwndListView, CComObject<Collection> *pcol)
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
    char buf[16] = { 0 };
-   sprintf_s(buf, "%i", pcol->m_visel.size());
+   sprintf_s(buf, sizeof(buf), "%i", pcol->m_visel.size());
    ListView_SetItemText(hwndListView, index, 1, buf);
    return index;
 }
@@ -5666,102 +5666,102 @@ void PinTable::ExportBackdropPOV(const string& filename)
         xml_node<>*root = xmlDoc.allocate_node(node_element, "POV");
 
         xml_node<>*desktop = xmlDoc.allocate_node(node_element, "desktop");
-        sprintf_s(strBuf, "%f", m_BG_inclination[BG_DESKTOP]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_inclination[BG_DESKTOP]);
         xml_node<>*dtIncl = xmlDoc.allocate_node(node_element, "inclination", strBuf);
         desktop->append_node(dtIncl);
-        sprintf_s(strBuf, "%f", m_BG_FOV[BG_DESKTOP]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_FOV[BG_DESKTOP]);
         xml_node<>*dtFov = xmlDoc.allocate_node(node_element, "fov", strBuf);
         desktop->append_node(dtFov);
-        sprintf_s(strBuf, "%f", m_BG_layback[BG_DESKTOP]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_layback[BG_DESKTOP]);
         xml_node<>*dtLayback = xmlDoc.allocate_node(node_element, "layback", strBuf);
         desktop->append_node(dtLayback);
-        sprintf_s(strBuf, "%f", m_BG_rotation[BG_DESKTOP]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_rotation[BG_DESKTOP]);
         xml_node<>*dtRotation = xmlDoc.allocate_node(node_element, "rotation", strBuf);
         desktop->append_node(dtRotation);
-        sprintf_s(strBuf, "%f", m_BG_scalex[BG_DESKTOP]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_scalex[BG_DESKTOP]);
         xml_node<>*dtScalex = xmlDoc.allocate_node(node_element, "xscale", strBuf);
         desktop->append_node(dtScalex);
-        sprintf_s(strBuf, "%f", m_BG_scaley[BG_DESKTOP]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_scaley[BG_DESKTOP]);
         xml_node<>*dtScaley = xmlDoc.allocate_node(node_element, "yscale", strBuf);
         desktop->append_node(dtScaley);
-        sprintf_s(strBuf, "%f", m_BG_scalez[BG_DESKTOP]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_scalez[BG_DESKTOP]);
         xml_node<>*dtScalez = xmlDoc.allocate_node(node_element, "zscale", strBuf);
         desktop->append_node(dtScalez);
-        sprintf_s(strBuf, "%f", m_BG_xlatex[BG_DESKTOP]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_xlatex[BG_DESKTOP]);
         xml_node<>*dtOffsetx = xmlDoc.allocate_node(node_element, "xoffset", strBuf);
         desktop->append_node(dtOffsetx);
-        sprintf_s(strBuf, "%f", m_BG_xlatey[BG_DESKTOP]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_xlatey[BG_DESKTOP]);
         xml_node<>*dtOffsety = xmlDoc.allocate_node(node_element, "yoffset", strBuf);
         desktop->append_node(dtOffsety);
-        sprintf_s(strBuf, "%f", m_BG_xlatez[BG_DESKTOP]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_xlatez[BG_DESKTOP]);
         xml_node<>*dtOffsetz = xmlDoc.allocate_node(node_element, "zoffset", strBuf);
         desktop->append_node(dtOffsetz);
 
         root->append_node(desktop);
 
         xml_node<>*fullscreen = xmlDoc.allocate_node(node_element, "fullscreen");
-        sprintf_s(strBuf, "%f", m_BG_inclination[BG_FULLSCREEN]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_inclination[BG_FULLSCREEN]);
         xml_node<>*fsIncl = xmlDoc.allocate_node(node_element, "inclination", strBuf);
         fullscreen->append_node(fsIncl);
-        sprintf_s(strBuf, "%f", m_BG_FOV[BG_FULLSCREEN]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_FOV[BG_FULLSCREEN]);
         xml_node<>*fsFov = xmlDoc.allocate_node(node_element, "fov", strBuf);
         fullscreen->append_node(fsFov);
-        sprintf_s(strBuf, "%f", m_BG_layback[BG_FULLSCREEN]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_layback[BG_FULLSCREEN]);
         xml_node<>*fsLayback = xmlDoc.allocate_node(node_element, "layback", strBuf);
         fullscreen->append_node(fsLayback);
-        sprintf_s(strBuf, "%f", m_BG_rotation[BG_FULLSCREEN]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_rotation[BG_FULLSCREEN]);
         xml_node<>*fsRotation = xmlDoc.allocate_node(node_element, "rotation", strBuf);
         fullscreen->append_node(fsRotation);
-        sprintf_s(strBuf, "%f", m_BG_scalex[BG_FULLSCREEN]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_scalex[BG_FULLSCREEN]);
         xml_node<>*fsScalex = xmlDoc.allocate_node(node_element, "xscale", strBuf);
         fullscreen->append_node(fsScalex);
-        sprintf_s(strBuf, "%f", m_BG_scaley[BG_FULLSCREEN]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_scaley[BG_FULLSCREEN]);
         xml_node<>*fsScaley = xmlDoc.allocate_node(node_element, "yscale", strBuf);
         fullscreen->append_node(fsScaley);
-        sprintf_s(strBuf, "%f", m_BG_scalez[BG_FULLSCREEN]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_scalez[BG_FULLSCREEN]);
         xml_node<>*fsScalez = xmlDoc.allocate_node(node_element, "zscale", strBuf);
         fullscreen->append_node(fsScalez);
-        sprintf_s(strBuf, "%f", m_BG_xlatex[BG_FULLSCREEN]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_xlatex[BG_FULLSCREEN]);
         xml_node<>*fsOffsetx = xmlDoc.allocate_node(node_element, "xoffset", strBuf);
         fullscreen->append_node(fsOffsetx);
-        sprintf_s(strBuf, "%f", m_BG_xlatey[BG_FULLSCREEN]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_xlatey[BG_FULLSCREEN]);
         xml_node<>*fsOffsety = xmlDoc.allocate_node(node_element, "yoffset", strBuf);
         fullscreen->append_node(fsOffsety);
-        sprintf_s(strBuf, "%f", m_BG_xlatez[BG_FULLSCREEN]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_xlatez[BG_FULLSCREEN]);
         xml_node<>*fsOffsetz = xmlDoc.allocate_node(node_element, "zoffset", strBuf);
         fullscreen->append_node(fsOffsetz);
 
         root->append_node(fullscreen);
 
         xml_node<>*fullsinglescreen = xmlDoc.allocate_node(node_element, "fullsinglescreen");
-        sprintf_s(strBuf, "%f", m_BG_inclination[BG_FSS]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_inclination[BG_FSS]);
         xml_node<>*fssIncl = xmlDoc.allocate_node(node_element, "inclination", strBuf);
         fullsinglescreen->append_node(fssIncl);
-        sprintf_s(strBuf, "%f", m_BG_FOV[BG_FSS]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_FOV[BG_FSS]);
         xml_node<>*fssFov = xmlDoc.allocate_node(node_element, "fov", strBuf);
         fullsinglescreen->append_node(fssFov);
-        sprintf_s(strBuf, "%f", m_BG_layback[BG_FSS]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_layback[BG_FSS]);
         xml_node<>*fssLayback = xmlDoc.allocate_node(node_element, "layback", strBuf);
         fullsinglescreen->append_node(fssLayback);
-        sprintf_s(strBuf, "%f", m_BG_rotation[BG_FSS]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_rotation[BG_FSS]);
         xml_node<>*fssRotation = xmlDoc.allocate_node(node_element, "rotation", strBuf);
         fullsinglescreen->append_node(fssRotation);
-        sprintf_s(strBuf, "%f", m_BG_scalex[BG_FSS]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_scalex[BG_FSS]);
         xml_node<>*fssScalex = xmlDoc.allocate_node(node_element, "xscale", strBuf);
         fullsinglescreen->append_node(fssScalex);
-        sprintf_s(strBuf, "%f", m_BG_scaley[BG_FSS]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_scaley[BG_FSS]);
         xml_node<>*fssScaley = xmlDoc.allocate_node(node_element, "yscale", strBuf);
         fullsinglescreen->append_node(fssScaley);
-        sprintf_s(strBuf, "%f", m_BG_scalez[BG_FSS]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_scalez[BG_FSS]);
         xml_node<>*fssScalez = xmlDoc.allocate_node(node_element, "zscale", strBuf);
         fullsinglescreen->append_node(fssScalez);
-        sprintf_s(strBuf, "%f", m_BG_xlatex[BG_FSS]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_xlatex[BG_FSS]);
         xml_node<>*fssOffsetx = xmlDoc.allocate_node(node_element, "xoffset", strBuf);
         fullsinglescreen->append_node(fssOffsetx);
-        sprintf_s(strBuf, "%f", m_BG_xlatey[BG_FSS]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_xlatey[BG_FSS]);
         xml_node<>*fssOffsety = xmlDoc.allocate_node(node_element, "yoffset", strBuf);
         fullsinglescreen->append_node(fssOffsety);
-        sprintf_s(strBuf, "%f", m_BG_xlatez[BG_FSS]);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_xlatez[BG_FSS]);
         xml_node<>*fssOffsetz = xmlDoc.allocate_node(node_element, "zoffset", strBuf);
         fullsinglescreen->append_node(fssOffsetz);
 
@@ -5786,14 +5786,14 @@ void PinTable::ExportBackdropPOV(const string& filename)
         custom->append_node(userReflectBall);
         xml_node<> *userTrailBalls = xmlDoc.allocate_node(node_element, "BallTrail", std::to_string(m_useTrailForBalls).c_str());
         custom->append_node(userTrailBalls);
-        sprintf_s(strBuf, "%f", m_ballTrailStrength);
+        sprintf_s(strBuf, sizeof(strBuf), "%f", m_ballTrailStrength);
         xml_node<> *userTrailStrength = xmlDoc.allocate_node(node_element, "BallTrailStrength", strBuf);
         custom->append_node(userTrailStrength);
         xml_node<> *userOverwriteDayNight = xmlDoc.allocate_node(node_element, "OverwriteNightDay", std::to_string(m_overwriteGlobalDayNight).c_str());
         custom->append_node(userOverwriteDayNight);
         xml_node<> *userDayNight = xmlDoc.allocate_node(node_element, "NightDayLevel", std::to_string(GetGlobalEmissionScale()).c_str());
         custom->append_node(userDayNight);
-        sprintf_s(strBuf, "%f", GetGlobalDifficulty());
+        sprintf_s(strBuf, sizeof(strBuf), "%f", GetGlobalDifficulty());
         xml_node<>* userDifficutly = xmlDoc.allocate_node(node_element, "GameplayDifficulty", strBuf);
         custom->append_node(userDifficutly);
         xml_node<> *userPhysics = xmlDoc.allocate_node(node_element, "PhysicsSet", std::to_string(m_overridePhysics).c_str());
@@ -7100,7 +7100,7 @@ void PinTable::AddMaterial(Material * const pmat)
       char textBuf[MAXNAMEBUFFER];
       do
       {
-         sprintf_s(textBuf, "%s%i", pmat->m_szName.c_str(), suffix);
+         sprintf_s(textBuf, sizeof(textBuf), "%s%i", pmat->m_szName.c_str(), suffix);
          suffix++;
       } while (!IsMaterialNameUnique(textBuf));
       pmat->m_szName = textBuf;
@@ -9590,84 +9590,84 @@ STDMETHODIMP PinTable::ExportPhysics()
    char fspeed[16], fstrength[16], felasticity[16], fscatter[16], ftorquedamping[16], ftorquedampingangle[16], freturn[16], felasticityFalloff[16], fFriction[16], fRampup[16];
 
    flipper->get_Mass(&val); // was speed
-   sprintf_s(fspeed, "%f", val);
+   sprintf_s(fspeed, sizeof(fspeed), "%f", val);
    xml_node<>*flipSpeed = xmlDoc.allocate_node(node_element, "speed", fspeed);
    physFlip->append_node(flipSpeed);
 
    flipper->get_Strength(&val);
-   sprintf_s(fstrength, "%f", val);
+   sprintf_s(fstrength, sizeof(fstrength), "%f", val);
    xml_node<>*flipPhysStrength = xmlDoc.allocate_node(node_element, "strength", fstrength);
    physFlip->append_node(flipPhysStrength);
 
    flipper->get_Elasticity(&val);
-   sprintf_s(felasticity, "%f", val);
+   sprintf_s(felasticity, sizeof(felasticity), "%f", val);
    xml_node<>*flipElasticity = xmlDoc.allocate_node(node_element, "elasticity", felasticity);
    physFlip->append_node(flipElasticity);
 
    flipper->get_Scatter(&val); // was scatter angle
-   sprintf_s(fscatter, "%f", val);
+   sprintf_s(fscatter, sizeof(fscatter), "%f", val);
    xml_node<>*flipScatter = xmlDoc.allocate_node(node_element, "scatter", fscatter);
    physFlip->append_node(flipScatter);
 
    flipper->get_EOSTorque(&val);
-   sprintf_s(ftorquedamping, "%f", val);
+   sprintf_s(ftorquedamping, sizeof(ftorquedamping), "%f", val);
    xml_node<>*flipTorqueDamping = xmlDoc.allocate_node(node_element, "eosTorque", ftorquedamping);
    physFlip->append_node(flipTorqueDamping);
 
    flipper->get_EOSTorqueAngle(&val);
-   sprintf_s(ftorquedampingangle, "%f", val);
+   sprintf_s(ftorquedampingangle, sizeof(ftorquedampingangle), "%f", val);
    xml_node<>*flipTorqueDampingAngle = xmlDoc.allocate_node(node_element, "eosTorqueAngle", ftorquedampingangle);
    physFlip->append_node(flipTorqueDampingAngle);
 
    flipper->get_Return(&val);
-   sprintf_s(freturn, "%f", val);
+   sprintf_s(freturn, sizeof(freturn), "%f", val);
    xml_node<>*flipReturnStrength = xmlDoc.allocate_node(node_element, "returnStrength", freturn);
    physFlip->append_node(flipReturnStrength);
 
    flipper->get_ElasticityFalloff(&val);
-   sprintf_s(felasticityFalloff, "%f", val);
+   sprintf_s(felasticityFalloff, sizeof(felasticityFalloff), "%f", val);
    xml_node<>*flipElasticityFalloff = xmlDoc.allocate_node(node_element, "elasticityFalloff", felasticityFalloff);
    physFlip->append_node(flipElasticityFalloff);
 
    flipper->get_Friction(&val);
-   sprintf_s(fFriction, "%f", val);
+   sprintf_s(fFriction, sizeof(fFriction), "%f", val);
    xml_node<>*flipfriction = xmlDoc.allocate_node(node_element, "friction", fFriction);
    physFlip->append_node(flipfriction);
 
    flipper->get_RampUp(&val);
-   sprintf_s(fRampup, "%f", val);
+   sprintf_s(fRampup, sizeof(fRampup), "%f", val);
    xml_node<>*flipCoilRampUp = xmlDoc.allocate_node(node_element, "coilRampUp", fRampup);
    physFlip->append_node(flipCoilRampUp);
 
    char tgravity[16], tFriction[16], tDefaultScatter[16], telasticity[16], telasticityFallOff[16], tcontactScatter[16];
 
    get_Gravity(&val);
-   sprintf_s(tgravity, "%f", val);
+   sprintf_s(tgravity, sizeof(tgravity), "%f", val);
    xml_node<>*tabGravityConst = xmlDoc.allocate_node(node_element, "gravityConstant", tgravity);
    physTab->append_node(tabGravityConst);
 
    get_Friction(&val);
-   sprintf_s(tFriction, "%f", val);
+   sprintf_s(tFriction, sizeof(tFriction), "%f", val);
    xml_node<>*tabContactFriction = xmlDoc.allocate_node(node_element, "contactFriction", tFriction);
    physTab->append_node(tabContactFriction);
 
    get_Elasticity(&val);
-   sprintf_s(telasticity, "%f", val);
+   sprintf_s(telasticity, sizeof(telasticity), "%f", val);
    xml_node<>*tabElasticity = xmlDoc.allocate_node(node_element, "elasticity", telasticity);
    physTab->append_node(tabElasticity);
 
    get_ElasticityFalloff(&val);
-   sprintf_s(telasticityFallOff, "%f", val);
+   sprintf_s(telasticityFallOff, sizeof(telasticityFallOff), "%f", val);
    xml_node<>*tabElasticityFalloff = xmlDoc.allocate_node(node_element, "elasticityFalloff", telasticityFallOff);
    physTab->append_node(tabElasticityFalloff);
 
    get_DefaultScatter(&val);
-   sprintf_s(tDefaultScatter, "%f", val);
+   sprintf_s(tDefaultScatter, sizeof(tDefaultScatter), "%f", val);
    xml_node<>*tabScatterAngle = xmlDoc.allocate_node(node_element, "defaultElementScatter", tDefaultScatter);
    physTab->append_node(tabScatterAngle);
 
    get_Scatter(&val);
-   sprintf_s(tcontactScatter, "%f", val);
+   sprintf_s(tcontactScatter, sizeof(tcontactScatter), "%f", val);
    xml_node<>*tabContactScatterAngle = xmlDoc.allocate_node(node_element, "playfieldScatter", tcontactScatter);
    physTab->append_node(tabContactScatterAngle);
 

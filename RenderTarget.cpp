@@ -120,7 +120,7 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
       case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: errorCode = "GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS"; break;
       default: errorCode = "unknown"; break;
       }
-      sprintf_s(msg, 256, "glCheckFramebufferStatus returned 0x%0002X %s", glCheckFramebufferStatus(m_framebuffer), errorCode);
+      sprintf_s(msg, sizeof(msg), "glCheckFramebufferStatus returned 0x%0002X %s", glCheckFramebufferStatus(m_framebuffer), errorCode);
       ShowError(msg);
       exit(-1);
    }

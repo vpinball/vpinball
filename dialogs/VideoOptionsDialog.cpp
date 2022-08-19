@@ -47,19 +47,19 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    {
    constexpr float ballAspecRatioOffsetX = 0.0f;
    char tmp[256];
-   sprintf_s(tmp, 256, "%f", ballAspecRatioOffsetX);
+   sprintf_s(tmp, sizeof(tmp), "%f", ballAspecRatioOffsetX);
    SetDlgItemTextA(IDC_CORRECTION_X, tmp);
    constexpr float ballAspecRatioOffsetY = 0.0f;
-   sprintf_s(tmp, 256, "%f", ballAspecRatioOffsetY);
+   sprintf_s(tmp, sizeof(tmp), "%f", ballAspecRatioOffsetY);
    SetDlgItemTextA(IDC_CORRECTION_Y, tmp);
    constexpr float latitude = 52.52f;
-   sprintf_s(tmp, 256, "%f", latitude);
+   sprintf_s(tmp, sizeof(tmp), "%f", latitude);
    SetDlgItemTextA(IDC_DN_LATITUDE, tmp);
    constexpr float longitude = 13.37f;
-   sprintf_s(tmp, 256, "%f", longitude);
+   sprintf_s(tmp, sizeof(tmp), "%f", longitude);
    SetDlgItemTextA(IDC_DN_LONGITUDE, tmp);
    constexpr float nudgeStrength = 2e-2f;
-   sprintf_s(tmp, 256, "%f", nudgeStrength);
+   sprintf_s(tmp, sizeof(tmp), "%f", nudgeStrength);
    SetDlgItemTextA(IDC_NUDGE_STRENGTH, tmp);
    }
 
@@ -95,19 +95,19 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    SendMessage(GetDlgItem(IDC_3D_STEREO_Y).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    constexpr float stereo3DOfs = 0.0f;
    char tmp[256];
-   sprintf_s(tmp, 256, "%f", stereo3DOfs);
+   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DOfs);
    SetDlgItemTextA(IDC_3D_STEREO_OFS, tmp);
    constexpr float stereo3DMS = 0.03f;
-   sprintf_s(tmp, 256, "%f", stereo3DMS);
+   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DMS);
    SetDlgItemTextA(IDC_3D_STEREO_MS, tmp);
    constexpr float stereo3DZPD = 0.5f;
-   sprintf_s(tmp, 256, "%f", stereo3DZPD);
+   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DZPD);
    SetDlgItemTextA(IDC_3D_STEREO_ZPD, tmp);
    constexpr float stereo3DContrast = 1.0f;
-   sprintf_s(tmp, 256, "%f", stereo3DContrast);
+   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DContrast);
    SetDlgItemTextA(IDC_3D_STEREO_CONTRAST, tmp);
    constexpr float stereo3DDeSaturation = 0.0f;
-   sprintf_s(tmp, 256, "%f", stereo3DDeSaturation);
+   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DDeSaturation);
    SetDlgItemTextA(IDC_3D_STEREO_DESATURATION, tmp);
    SendMessage(GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    }
@@ -199,9 +199,9 @@ void VideoOptionsDialog::FillVideoModesList(const vector<VideoMode>& modes, cons
       }
 
       if (modes[i].depth) // i.e. is this windowed or not
-         sprintf_s(szT, "%d x %d (%dHz %d:%d)", modes[i].width, modes[i].height, /*modes[i].depth,*/ modes[i].refreshrate, portrait ? fy : fx, portrait ? fx : fy);
+         sprintf_s(szT, sizeof(szT), "%d x %d (%dHz %d:%d)", modes[i].width, modes[i].height, /*modes[i].depth,*/ modes[i].refreshrate, portrait ? fy : fx, portrait ? fx : fy);
       else
-         sprintf_s(szT, "%d x %d (%d:%d %s)", modes[i].width, modes[i].height /*,modes[i].depth*/, portrait ? fy : fx, portrait ? fx : fy, portrait ? "Portrait" : "Landscape");
+         sprintf_s(szT, sizeof(szT), "%d x %d (%d:%d %s)", modes[i].width, modes[i].height /*,modes[i].depth*/, portrait ? fy : fx, portrait ? fx : fy, portrait ? "Portrait" : "Landscape");
 
       SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
       if (curSelMode) {
@@ -293,23 +293,23 @@ BOOL VideoOptionsDialog::OnInitDialog()
    char tmp[256];
 
    const float ballAspecRatioOffsetX = LoadValueFloatWithDefault("Player"s, "BallCorrectionX"s, 0.f);
-   sprintf_s(tmp, 256, "%f", ballAspecRatioOffsetX);
+   sprintf_s(tmp, sizeof(tmp), "%f", ballAspecRatioOffsetX);
    SetDlgItemTextA(IDC_CORRECTION_X, tmp);
 
    const float ballAspecRatioOffsetY = LoadValueFloatWithDefault("Player"s, "BallCorrectionY"s, 0.f);
-   sprintf_s(tmp, 256, "%f", ballAspecRatioOffsetY);
+   sprintf_s(tmp, sizeof(tmp), "%f", ballAspecRatioOffsetY);
    SetDlgItemTextA(IDC_CORRECTION_Y, tmp);
 
    const float latitude = LoadValueFloatWithDefault("Player"s, "Latitude"s, 52.52f);
-   sprintf_s(tmp, 256, "%f", latitude);
+   sprintf_s(tmp, sizeof(tmp), "%f", latitude);
    SetDlgItemTextA(IDC_DN_LATITUDE, tmp);
 
    const float longitude = LoadValueFloatWithDefault("Player"s, "Longitude"s, 13.37f);
-   sprintf_s(tmp, 256, "%f", longitude);
+   sprintf_s(tmp, sizeof(tmp), "%f", longitude);
    SetDlgItemTextA(IDC_DN_LONGITUDE, tmp);
 
    const float nudgeStrength = LoadValueFloatWithDefault("Player"s, "NudgeStrength"s, 2e-2f);
-   sprintf_s(tmp, 256, "%f", nudgeStrength);
+   sprintf_s(tmp, sizeof(tmp), "%f", nudgeStrength);
    SetDlgItemTextA(IDC_NUDGE_STRENGTH, tmp);
 
    const int useAA = LoadValueIntWithDefault("Player"s, "USEAA"s, 0);
@@ -403,23 +403,23 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(GetDlgItem(IDC_3D_STEREO_Y).GetHwnd(), BM_SETCHECK, stereo3DY ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const float stereo3DOfs = LoadValueFloatWithDefault("Player"s, "Stereo3DOffset"s, 0.f);
-   sprintf_s(tmp, 256, "%f", stereo3DOfs);
+   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DOfs);
    SetDlgItemTextA(IDC_3D_STEREO_OFS, tmp);
 
    const float stereo3DMS = LoadValueFloatWithDefault("Player"s, "Stereo3DMaxSeparation"s, 0.03f);
-   sprintf_s(tmp, 256, "%f", stereo3DMS);
+   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DMS);
    SetDlgItemTextA(IDC_3D_STEREO_MS, tmp);
 
    const float stereo3DZPD = LoadValueFloatWithDefault("Player"s, "Stereo3DZPD"s, 0.5f);
-   sprintf_s(tmp, 256, "%f", stereo3DZPD);
+   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DZPD);
    SetDlgItemTextA(IDC_3D_STEREO_ZPD, tmp);
 
    const float stereo3DContrast = LoadValueFloatWithDefault("Player"s, "Stereo3DContrast"s, 1.0f);
-   sprintf_s(tmp, 256, "%f", stereo3DContrast);
+   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DContrast);
    SetDlgItemTextA(IDC_3D_STEREO_CONTRAST, tmp);
 
    const float stereo3DDesaturation = LoadValueFloatWithDefault("Player"s, "Stereo3DDesaturation"s, 0.0f);
-   sprintf_s(tmp, 256, "%f", stereo3DDesaturation);
+   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DDesaturation);
    SetDlgItemTextA(IDC_3D_STEREO_DESATURATION, tmp);
 
    const bool disableDWM = LoadValueBoolWithDefault("Player"s, "DisableDWM"s, false);
@@ -461,7 +461,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
       if (display == -1 && dispConf->isPrimary)
          display = dispConf->display;
       char displayName[256];
-      sprintf_s(displayName, "Display %d%s %dx%d %s", dispConf->display + 1, (dispConf->isPrimary) ? "*" : "", dispConf->width, dispConf->height, dispConf->GPU_Name);
+      sprintf_s(displayName, sizeof(displayName), "Display %d%s %dx%d %s", dispConf->display + 1, (dispConf->isPrimary) ? "*" : "", dispConf->width, dispConf->height, dispConf->GPU_Name);
       SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)displayName);
    }
    SendMessage(hwnd, CB_SETCURSEL, display, 0);
@@ -605,7 +605,7 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          mode.refreshrate = 0;
 
          char szT[128];
-         sprintf_s(szT, "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
+         sprintf_s(szT, sizeof(szT), "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
          SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
          if (indx == -1 || (mode.width == widthcur && mode.height == heightcur))
             indx = allVideoModes.size();

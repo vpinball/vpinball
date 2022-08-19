@@ -5,9 +5,9 @@
 #define FLUSH_DATA /*0*/ D3DGETDATA_FLUSH // latter should be a bit less accurate but leading to less failures when getting the data
 #define GET_DATA_RETRIES 10
 
-#define ErrorPrintf(x, ...) { char sz[256]; sprintf_s(sz,x,__VA_ARGS__); ShowError(sz); }
+#define ErrorPrintf(x, ...) { char sz[256]; sprintf_s(sz,sizeof(sz),x,__VA_ARGS__); ShowError(sz); }
 #ifdef _DEBUG
- #define DebugPrintf(x, ...) { char sz[256]; sprintf_s(sz,x,__VA_ARGS__); ShowError(sz); }
+ #define DebugPrintf(x, ...) { char sz[256]; sprintf_s(sz,sizeof(sz),x,__VA_ARGS__); ShowError(sz); }
 #else
  #define DebugPrintf(x, ...)
 #endif

@@ -194,7 +194,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   if (ppi != nullptr)
                   {
                      char textBuf[256];
-                     sprintf_s(textBuf, "%i", (int)ppi->m_alphaTestValue);
+                     sprintf_s(textBuf, sizeof(textBuf), "%i", (int)ppi->m_alphaTestValue);
                      SetDlgItemText(IDC_ALPHA_MASK_EDIT, textBuf);
                   }
                }

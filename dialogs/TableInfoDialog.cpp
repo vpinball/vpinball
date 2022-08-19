@@ -54,7 +54,7 @@ BOOL TableInfoDialog::OnInitDialog()
    m_rulesEdits.SetWindowText(pt->m_szRules.c_str());
 
    char buffer[256];
-   sprintf_s(buffer, "%s Revision %u", !pt->m_szDateSaved.empty() ? pt->m_szDateSaved.c_str() : "N.A.", pt->m_numTimesSaved);
+   sprintf_s(buffer, sizeof(buffer), "%s Revision %u", !pt->m_szDateSaved.empty() ? pt->m_szDateSaved.c_str() : "N.A.", pt->m_numTimesSaved);
    m_dateSavedEdit.SetWindowText(buffer);
 
    // Init list of images

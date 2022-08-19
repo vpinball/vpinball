@@ -30,7 +30,7 @@ Rubber::~Rubber()
 void Rubber::UpdateStatusBarInfo()
 {
    char tbuf[128];
-   sprintf_s(tbuf, "Height: %.3f | Thickness: %.3f", m_vpinball->ConvertToUnit(m_d.m_height), m_vpinball->ConvertToUnit((float)m_d.m_thickness));
+   sprintf_s(tbuf, sizeof(tbuf), "Height: %.3f | Thickness: %.3f", m_vpinball->ConvertToUnit(m_d.m_height), m_vpinball->ConvertToUnit((float)m_d.m_thickness));
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
 

@@ -1670,7 +1670,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
       if (error != Z_OK)
       {
          char err[128];
-         sprintf_s(err, "Could not uncompress primitive animation vertex data, error %d", error);
+         sprintf_s(err, sizeof(err), "Could not uncompress primitive animation vertex data, error %d", error);
          ShowError(err);
       }
       free(c);
@@ -1696,7 +1696,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
 		  if (error != Z_OK)
 		  {
 			  char err[128];
-			  sprintf_s(err, "Could not uncompress primitive vertex data, error %d", error);
+			  sprintf_s(err, sizeof(err), "Could not uncompress primitive vertex data, error %d", error);
 			  ShowError(err);
 		  }
 		  free(c);
@@ -1740,7 +1740,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
 			 if (error != Z_OK)
 			 {
 				 char err[128];
-				 sprintf_s(err, "Could not uncompress (large) primitive index data, error %d", error);
+				 sprintf_s(err, sizeof(err), "Could not uncompress (large) primitive index data, error %d", error);
 				 ShowError(err);
 			 }
 			 free(c);
@@ -1764,7 +1764,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
             if (error != Z_OK)
             {
                char err[128];
-               sprintf_s(err, "Could not uncompress (small) primitive index data, error %d", error);
+               sprintf_s(err, sizeof(err), "Could not uncompress (small) primitive index data, error %d", error);
                ShowError(err);
             }
             free(c);

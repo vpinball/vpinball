@@ -109,7 +109,7 @@ inline void ref_count_trigger(const ULONG r, const char *file, const int line) /
 {
 #ifdef DEBUG_REFCOUNT_TRIGGER
    char msg[128];
-   sprintf_s(msg, 128, "Ref Count: %u at %s:%d", r, file, line);
+   sprintf_s(msg, sizeof(msg), "Ref Count: %u at %s:%d", r, file, line);
    /*g_pvp->*/MessageBox(nullptr, msg, "Error", MB_OK | MB_ICONEXCLAMATION);
 #endif
 }
