@@ -18,7 +18,7 @@ public:
    float m_damping;
    float m_angleMax;
    float m_angleMin;
-   std::string m_szSurface;
+   string m_szSurface;
    bool m_showBracket;
 };
 

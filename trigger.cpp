@@ -206,7 +206,7 @@ void Trigger::UIRenderPass1(Sur * const psur)
    {
       psur->SetFillColor(m_ptable->RenderSolid() ? RGB(200, 220, 200) : -1);
 
-      std::vector<RenderVertex> vvertex;
+      vector<RenderVertex> vvertex;
       GetRgVertex(vvertex);
 
       psur->Polygon(vvertex);
@@ -226,7 +226,7 @@ void Trigger::UIRenderPass2(Sur * const psur)
 
    if (m_d.m_shape != TriggerStar && m_d.m_shape != TriggerButton)
    {
-      std::vector<RenderVertex> vvertex;
+      vector<RenderVertex> vvertex;
       GetRgVertex(vvertex);
 
       psur->SetObject(nullptr);
@@ -282,7 +282,7 @@ void Trigger::UIRenderPass2(Sur * const psur)
       if (m_numIndices > 0)
       {
          const size_t numPts = m_numIndices / 3 + 1;
-         std::vector<Vertex2D> drawVertices(numPts);
+         vector<Vertex2D> drawVertices(numPts);
 
          const Vertex3Ds& A = m_vertices[m_faceIndices[0]];
          drawVertices[0] = Vertex2D(A.x, A.y);
@@ -381,7 +381,7 @@ void Trigger::GetHitShapesDebug(vector<HitObject*> &pvho)
    case TriggerWireD:
    case TriggerInder:
    {
-      std::vector<RenderVertex> vvertex;
+      vector<RenderVertex> vvertex;
       GetRgVertex(vvertex);
 
       const int cvertex = (int)vvertex.size();
@@ -413,7 +413,7 @@ void Trigger::GetHitShapesDebug(vector<HitObject*> &pvho)
 void Trigger::CurvesToShapes(vector<HitObject*> &pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   std::vector<RenderVertex> vvertex;
+   vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
 
    const int count = (int)vvertex.size();
@@ -936,7 +936,7 @@ void Trigger::DoCommand(int icmd, int x, int y)
 
       const Vertex2D v = m_ptable->TransformPoint(x, y);
 
-      std::vector<RenderVertex> vvertex;
+      vector<RenderVertex> vvertex;
       GetRgVertex(vvertex);
 
       int iSeg;

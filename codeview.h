@@ -75,7 +75,7 @@ public:
    CodeViewDispatch() {}
    ~CodeViewDispatch() {}
 
-   std::wstring m_wName;
+   wstring m_wName;
    IUnknown *m_punk;
    IDispatch *m_pdisp;
    IScriptable *m_piscript;
@@ -83,7 +83,7 @@ public:
 
    // for VectorSortString
    int SortAgainst(const CodeViewDispatch * const pcvd/*void *pvoid*/) const { return SortAgainstValue(pcvd->m_wName); }
-   int SortAgainstValue(const std::wstring &pv) const;
+   int SortAgainstValue(const wstring &pv) const;
 };
 
 class CodeViewer :
@@ -366,7 +366,7 @@ private:
     */
    void SetLastErrorVisibility(bool show);
    void SetLastErrorTextW(const LPCWSTR text);
-   void AppendLastErrorTextW(const std::wstring& text);
+   void AppendLastErrorTextW(const wstring& text);
 
    IActiveScriptParse* m_pScriptParse;
    IActiveScriptDebug* m_pScriptDebug;

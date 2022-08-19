@@ -15,7 +15,7 @@ protected:
    virtual void OnCancel();
 
 private:
-   bool IsValidString(const std::string &name);
+   bool IsValidString(const string &name);
    void AddSearchItemToList(IEditable * const piedit, int idx);
 
    void LoadPosition();

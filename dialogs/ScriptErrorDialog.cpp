@@ -1,7 +1,7 @@
 #include "ScriptErrorDialog.h"
 #include "stdafx.h"
 
-ScriptErrorDialog::ScriptErrorDialog(const std::wstring &message) :
+ScriptErrorDialog::ScriptErrorDialog(const wstring &message) :
 	CDialog(IDD_SCRIPT_ERROR),
 	initMessage(message)
 {}

@@ -19,10 +19,10 @@ static xml_node<> *editor = nullptr;
 static xml_node<>* player = nullptr;
 static xml_node<>* recentdir = nullptr;
 static xml_node<>* version = nullptr;
-static std::string xmlContent;
+static string xmlContent;
 
 // if ini does not exist yet, loop over reg values of each subkey and fill all in
-static void InitXMLnodeFromRegistry(xml_node<> *const node, const std::string &szPath)
+static void InitXMLnodeFromRegistry(xml_node<> *const node, const string &szPath)
 {
    HKEY hk;
    LONG res = RegOpenKeyEx(HKEY_CURRENT_USER, szPath.c_str(), 0, KEY_READ, &hk);
@@ -103,7 +103,7 @@ static void InitXMLnodeFromRegistry(xml_node<> *const node, const std::string &s
    RegCloseKey(hk);
 }
 
-void SaveXMLregistry(const std::string &path)
+void SaveXMLregistry(const string &path)
 {
    std::ofstream myFile(path + "VPinballX.ini");
    myFile << xmlDoc;
@@ -131,7 +131,7 @@ void ClearXMLregistry()
    }
 }
 
-void InitXMLregistry(const std::string &path)
+void InitXMLregistry(const string &path)
 {
    std::stringstream buffer;
    std::ifstream myFile(path + "VPinballX.ini");
@@ -198,7 +198,7 @@ void InitXMLregistry(const std::string &path)
    for (unsigned int i = 0; i < 5; ++i)
    {
       xml_node<> *node;
-      std::string regpath(i == 0 ? VP_REGKEY_GENERAL : VP_REGKEY);
+      string regpath(i == 0 ? VP_REGKEY_GENERAL : VP_REGKEY);
       switch (i)
       {
       case 0: node = controller; regpath += "Controller"; break;
@@ -222,14 +222,14 @@ void InitXMLregistry(const std::string &path)
    }
 }
 #else
-void InitXMLregistry(const std::string &path) {}
-void SaveXMLregistry(const std::string &path) {}
+void InitXMLregistry(const string &path) {}
+void SaveXMLregistry(const string &path) {}
 void ClearXMLregistry() {}
 #endif
 
-static HRESULT LoadValue(const std::string &szKey, const std::string &szValue, DWORD &type, void *pvalue, DWORD size);
+static HRESULT LoadValue(const string &szKey, const string &szValue, DWORD &type, void *pvalue, DWORD size);
 
-HRESULT LoadValue(const std::string& szKey, const std::string& szValue, std::string& buffer)
+HRESULT LoadValue(const string& szKey, const string& szValue, string& buffer)
 {
    DWORD type = REG_SZ;
    char szbuffer[MAXSTRING];
@@ -240,7 +240,7 @@ HRESULT LoadValue(const std::string& szKey, const std::string& szValue, std::str
    return (type != REG_SZ) ? E_FAIL : hr;
 }
 
-HRESULT LoadValue(const std::string& szKey, const std::string& szValue, void* const szbuffer, const DWORD size)
+HRESULT LoadValue(const string& szKey, const string& szValue, void* const szbuffer, const DWORD size)
 {
    if (size > 0) // clear string in case of reg value being set, but being null string which results in szbuffer being kept as-is
       ((char*)szbuffer)[0] = '\0';
@@ -251,7 +251,7 @@ HRESULT LoadValue(const std::string& szKey, const std::string& szValue, void* co
    return (type != REG_SZ) ? E_FAIL : hr;
 }
 
-HRESULT LoadValue(const std::string &szKey, const std::string &szValue, float &pfloat)
+HRESULT LoadValue(const string &szKey, const string &szValue, float &pfloat)
 {
    DWORD type = REG_SZ;
    char szbuffer[16];
@@ -281,7 +281,7 @@ HRESULT LoadValue(const std::string &szKey, const std::string &szValue, float &p
    return hr;
 }
 
-HRESULT LoadValue(const std::string &szKey, const std::string &szValue, int &pint)
+HRESULT LoadValue(const string &szKey, const string &szValue, int &pint)
 {
    DWORD type = REG_DWORD;
    const HRESULT hr = LoadValue(szKey, szValue, type, (void *)&pint, 4);
@@ -289,7 +289,7 @@ HRESULT LoadValue(const std::string &szKey, const std::string &szValue, int &pin
    return (type != REG_DWORD) ? E_FAIL : hr;
 }
 
-HRESULT LoadValue(const std::string &szKey, const std::string &szValue, unsigned int &pint)
+HRESULT LoadValue(const string &szKey, const string &szValue, unsigned int &pint)
 {
    DWORD type = REG_DWORD;
    const HRESULT hr = LoadValue(szKey, szValue, type, (void *)&pint, 4);
@@ -297,7 +297,7 @@ HRESULT LoadValue(const std::string &szKey, const std::string &szValue, unsigned
    return (type != REG_DWORD) ? E_FAIL : hr;
 }
 
-static HRESULT LoadValue(const std::string &szKey, const std::string &szValue, DWORD &type, void *pvalue, DWORD size)
+static HRESULT LoadValue(const string &szKey, const string &szValue, DWORD &type, void *pvalue, DWORD size)
 {
    if (size == 0)
    {
@@ -353,7 +353,7 @@ static HRESULT LoadValue(const std::string &szKey, const std::string &szValue, D
       return E_FAIL;
    }
 #else
-   std::string szPath(szKey == "Controller" ? VP_REGKEY_GENERAL : VP_REGKEY);
+   string szPath(szKey == "Controller" ? VP_REGKEY_GENERAL : VP_REGKEY);
    szPath += szKey;
 
    type = REG_NONE;
@@ -373,28 +373,28 @@ static HRESULT LoadValue(const std::string &szKey, const std::string &szValue, D
 }
 
 
-int LoadValueIntWithDefault(const std::string &szKey, const std::string &szValue, const int def)
+int LoadValueIntWithDefault(const string &szKey, const string &szValue, const int def)
 {
    int val;
    const HRESULT hr = LoadValue(szKey, szValue, val);
    return SUCCEEDED(hr) ? val : def;
 }
 
-float LoadValueFloatWithDefault(const std::string &szKey, const std::string &szValue, const float def)
+float LoadValueFloatWithDefault(const string &szKey, const string &szValue, const float def)
 {
    float val;
    const HRESULT hr = LoadValue(szKey, szValue, val);
    return SUCCEEDED(hr) ? val : def;
 }
 
-bool LoadValueBoolWithDefault(const std::string &szKey, const std::string &szValue, const bool def)
+bool LoadValueBoolWithDefault(const string &szKey, const string &szValue, const bool def)
 {
    return !!LoadValueIntWithDefault(szKey, szValue, def);
 }
 
 //
 
-static HRESULT SaveValue(const std::string &szKey, const std::string &szValue, const DWORD type, const void *pvalue, const DWORD size)
+static HRESULT SaveValue(const string &szKey, const string &szValue, const DWORD type, const void *pvalue, const DWORD size)
 {
    if (szValue.empty() || size == 0)
       return E_FAIL;
@@ -474,35 +474,35 @@ static HRESULT SaveValue(const std::string &szKey, const std::string &szValue, c
    return (RetVal == ERROR_SUCCESS) ? S_OK : E_FAIL;
 }
 
-HRESULT SaveValueBool(const std::string &szKey, const std::string &szValue, const bool val)
+HRESULT SaveValueBool(const string &szKey, const string &szValue, const bool val)
 {
    const DWORD dwval = val ? 1 : 0;
    return SaveValue(szKey, szValue, REG_DWORD, &dwval, sizeof(DWORD));
 }
 
-HRESULT SaveValueInt(const std::string &szKey, const std::string &szValue, const int val)
+HRESULT SaveValueInt(const string &szKey, const string &szValue, const int val)
 {
    return SaveValue(szKey, szValue, REG_DWORD, &val, sizeof(DWORD));
 }
 
-HRESULT SaveValueFloat(const std::string &szKey, const std::string &szValue, const float val)
+HRESULT SaveValueFloat(const string &szKey, const string &szValue, const float val)
 {
    char buf[16];
    sprintf_s(buf, 16, "%f", val);
    return SaveValue(szKey, szValue, REG_SZ, buf, lstrlen(buf));
 }
 
-HRESULT SaveValue(const std::string &szKey, const std::string &szValue, const char *val)
+HRESULT SaveValue(const string &szKey, const string &szValue, const char *val)
 {
    return SaveValue(szKey, szValue, REG_SZ, val, lstrlen(val));
 }
 
-HRESULT SaveValue(const std::string &szKey, const std::string &szValue, const string& val)
+HRESULT SaveValue(const string &szKey, const string &szValue, const string& val)
 {
    return SaveValue(szKey, szValue, REG_SZ, val.c_str(), (DWORD)val.length());
 }
 
-HRESULT DeleteValue(const std::string &szKey, const std::string &szValue)
+HRESULT DeleteValue(const string &szKey, const string &szValue)
 {
    string szPath(szKey == "Controller" ? VP_REGKEY_GENERAL : VP_REGKEY);
    szPath += szKey;
@@ -592,7 +592,7 @@ static HRESULT RegDelnodeRecurse(const HKEY hKeyRoot, char lpSubKey[MAX_PATH * 2
    return (lResult == ERROR_SUCCESS) ? S_OK : E_FAIL;
 }
 
-HRESULT DeleteSubKey(const std::string &szKey)
+HRESULT DeleteSubKey(const string &szKey)
 {
    string szPath(szKey == "Controller" ? VP_REGKEY_GENERAL : VP_REGKEY);
    szPath += szKey;

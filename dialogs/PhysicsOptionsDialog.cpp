@@ -263,9 +263,9 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
             const string szFilename(ofn.lpstrFile);
             const size_t index = szFilename.find_last_of('\\');
-            if (index != std::string::npos)
+            if (index != string::npos)
             {
-                const std::string newInitDir(szFilename.substr(0, index));
+                const string newInitDir(szFilename.substr(0, index));
                 SaveValue("RecentDir"s, "PhysicsDir"s, newInitDir);
             }
 
@@ -400,18 +400,17 @@ void PhysicsOptionsDialog::OnDestroy()
 
 bool PhysicsOptionsDialog::LoadSetting()
 {
-    std::vector<std::string> szFileName;
     string szInitialDir;
-
     HRESULT hr = LoadValue("RecentDir"s, "PhysicsDir"s, szInitialDir);
     if (hr != S_OK)
         szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
+    vector<string> szFileName;
     if (!g_pvp->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
         return false;
 
     const size_t index = szFileName[0].find_last_of('\\');
-    if (index != std::string::npos)
+    if (index != string::npos)
         hr = SaveValue("RecentDir"s, "PhysicsDir"s, szFileName[0].substr(0, index));
 
     xml_document<> xmlDoc;

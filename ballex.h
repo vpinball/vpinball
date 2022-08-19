@@ -86,7 +86,7 @@ public:
    IDebugCommands *GetDebugCommands() final { return (IDebugCommands *) this; }
 
    // IDebugCommands
-   void GetDebugCommands(std::vector<int> &pvids, std::vector<int> &pvcommandid) final;
+   void GetDebugCommands(vector<int> &pvids, vector<int> &pvcommandid) final;
    void RunDebugCommand(int id) final;
 
    Ball *m_pball;

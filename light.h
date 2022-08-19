@@ -32,7 +32,7 @@ public:
    Shape m_shape;
    //float m_borderwidth;
    //COLORREF m_bordercolor;
-   std::string m_szSurface;
+   string m_szSurface;
 
    float m_depthBias; // for determining depth sorting
    float m_bulbHaloHeight;
@@ -203,7 +203,7 @@ private:
    IndexBuffer  *m_bulbSocketIndexBuffer;
    PropertyPane *m_propVisual;
 
-   std::vector<RenderVertex> m_vvertex;
+   vector<RenderVertex> m_vvertex;
 
    float m_initSurfaceHeight;
    float m_maxDist;

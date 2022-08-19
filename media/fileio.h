@@ -24,7 +24,7 @@ public:
 
    HRESULT WriteInt(const int id, const int value);
    HRESULT WriteString(const int id, const char * const szvalue);
-   HRESULT WriteString(const int id, const std::string& szvalue);
+   HRESULT WriteString(const int id, const string& szvalue);
 
    HRESULT WriteWideString(const int id, const WCHAR * const wzvalue);
    HRESULT WriteWideString(const int id, const std::basic_string<WCHAR>& wzvalue);
@@ -74,7 +74,7 @@ public:
       return hr;
    }
    HRESULT GetString(char * const szvalue, const DWORD szvalue_maxlength);
-   HRESULT GetString(std::string& szvalue);
+   HRESULT GetString(string& szvalue);
    HRESULT GetWideString(WCHAR* wzvalue, const DWORD wzvalue_maxlength);
    HRESULT GetWideString(std::basic_string<WCHAR>& wzvalue);
    HRESULT GetFloat(float &value);

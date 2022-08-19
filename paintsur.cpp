@@ -5,7 +5,7 @@
 
 #define MAX_SUR_PT_CACHE 1000
 static POINT m_ptCache[MAX_SUR_PT_CACHE * 2];
-static const std::vector<DWORD> m_ptCache_idx(MAX_SUR_PT_CACHE * 2, 2);
+static const vector<DWORD> m_ptCache_idx(MAX_SUR_PT_CACHE * 2, 2);
 
 PaintSur::PaintSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, ISelect * const psel)
    : Sur(hdc, zoom, offx, offy, width, height)
@@ -90,7 +90,7 @@ void PaintSur::Ellipse2(const float centerx, const float centery, const int radi
 
 void PaintSur::Polygon(const Vertex2D * const rgv, const int count)
 {
-   std::vector<POINT> rgpt(count);
+   vector<POINT> rgpt(count);
 
    for (int i = 0; i < count; i++)
    {
@@ -105,9 +105,9 @@ void PaintSur::Polygon(const Vertex2D * const rgv, const int count)
 }
 
 // copy-pasted from above
-void PaintSur::Polygon(const std::vector<RenderVertex> &rgv)
+void PaintSur::Polygon(const vector<RenderVertex> &rgv)
 {
-   std::vector<POINT> rgpt(rgv.size());
+   vector<POINT> rgpt(rgv.size());
 
    for (size_t i = 0; i < rgv.size(); i++)
    {
@@ -131,7 +131,7 @@ void PaintSur::Polygon(const std::vector<RenderVertex> &rgv)
    }
 }
 
-void PaintSur::PolygonImage(const std::vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
+void PaintSur::PolygonImage(const vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
 {
    const int ix = SCALEXf(left);
    const int iy = SCALEYf(top);
@@ -142,7 +142,7 @@ void PaintSur::PolygonImage(const std::vector<RenderVertex> &rgv, HBITMAP hbm, c
    const HDC hdcNew = dc.CreateCompatibleDC(m_hdc);
    const HBITMAP hbmOld = dc.SelectObject(hbm);
 
-   std::vector<POINT> rgpt(rgv.size());
+   vector<POINT> rgpt(rgv.size());
    for (size_t i = 0; i < rgv.size(); i++)
    {
       rgpt[i].x = SCALEXf(rgv[i].x);
@@ -210,7 +210,7 @@ void PaintSur::Lines(const Vertex2D * const rgv, const int count)
     * call freezes the system shortly, so we batch them into groups of MAX_SUR_PT_CACHE.
     */
    //m_ptCache.resize(min(count,MAX_SUR_PT_CACHE)*2);
-   //std::vector<DWORD> m_ptCache_idx(min(count,MAX_SUR_PT_CACHE),2);
+   //vector<DWORD> m_ptCache_idx(min(count,MAX_SUR_PT_CACHE),2);
 
    for (int i = 0; i < count; i += MAX_SUR_PT_CACHE)
    {

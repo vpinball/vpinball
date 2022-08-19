@@ -19,12 +19,12 @@ public:
    };
    struct FrameData
    {
-      std::vector<VertData> m_frameVerts;
+      vector<VertData> m_frameVerts;
    };
 
-   std::vector<FrameData> m_animationFrames;
-   std::vector<Vertex3D_NoTex2> m_vertices;
-   std::vector<unsigned int> m_indices;
+   vector<FrameData> m_animationFrames;
+   vector<Vertex3D_NoTex2> m_vertices;
+   vector<unsigned int> m_indices;
 
    Mesh() { middlePoint.x = 0.0f; middlePoint.y = 0.0f; middlePoint.z = 0.0f; }
    void Clear();
@@ -332,7 +332,7 @@ private:
    PropertyPane *m_propPosition;
    PropertyPane *m_propPhysics;
 
-   std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
+   vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
    //!! outdated(?) information (along with the variable decls) for the old builtin primitive code, kept for reference:
 
@@ -376,8 +376,8 @@ private:
    // = nothing...
 
    // Vertices for editor display & hit shape
-   std::vector<Vertex3Ds> m_vertices;
-   std::vector<float> m_normals; // only z component actually
+   vector<Vertex3Ds> m_vertices;
+   vector<float> m_normals; // only z component actually
 
    VertexBuffer *m_vertexBuffer;
    IndexBuffer *m_indexBuffer;

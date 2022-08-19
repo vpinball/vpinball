@@ -211,7 +211,7 @@ HRESULT BiffWriter::WriteString(const int id, const char * const szvalue)
    return hr;
 }
 
-HRESULT BiffWriter::WriteString(const int id, const std::string &szvalue)
+HRESULT BiffWriter::WriteString(const int id, const string &szvalue)
 {
    ULONG writ = 0;
    HRESULT hr;
@@ -428,7 +428,7 @@ HRESULT BiffReader::GetString(char *const szvalue, const DWORD szvalue_maxlength
    return hr;
 }
 
-HRESULT BiffReader::GetString(std::string &szvalue)
+HRESULT BiffReader::GetString(string &szvalue)
 {
    ULONG read = 0;
    HRESULT hr;

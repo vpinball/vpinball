@@ -13,7 +13,7 @@ public:
    Vertex2D m_vCenter;
    float m_radius;
    TimerDataRoot m_tdr;
-   std::string m_szSurface;
+   string m_szSurface;
    TriggerShape m_shape;
    float m_rotation;
    float m_scaleX;
@@ -123,7 +123,7 @@ private:
 
    VertexBuffer *m_vertexBuffer;
    IndexBuffer *m_triggerIndexBuffer;
-   std::vector<Vertex3Ds> m_vertices;
+   vector<Vertex3Ds> m_vertices;
    const WORD *m_faceIndices;
    Vertex3D_NoTex2 *m_triggerVertices;
 

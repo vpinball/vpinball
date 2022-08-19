@@ -205,7 +205,7 @@ char *IEditable::GetName()
     return nullptr;
 }
 
-void IEditable::SetName(const std::string& name)
+void IEditable::SetName(const string& name)
 {
     if (name.empty())
         return;

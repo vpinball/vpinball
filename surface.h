@@ -9,10 +9,10 @@ public:
    Vertex2D m_Center;
    TimerDataRoot m_tdr;
    float m_slingshot_threshold;	// speed at which ball needs to trigger slingshot 
-   std::string m_szSideImage;
-   std::string m_szTopMaterial;
-   std::string m_szSideMaterial;
-   std::string m_szSlingShotMaterial;
+   string m_szSideImage;
+   string m_szTopMaterial;
+   string m_szSideMaterial;
+   string m_szSlingShotMaterial;
    float m_heightbottom;
    float m_heighttop;
    float m_slingshotforce;
@@ -77,7 +77,7 @@ public:
    void WriteRegDefaults() final;
    void RenderBlueprint(Sur *psur, const bool solid) final;
 
-   void GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D) final;
+   void GetBoundingVertices(vector<Vertex3Ds>& pvvertex3D) final;
    void ClearForOverwrite() final;
    // end IEditable
 
@@ -141,17 +141,17 @@ private:
    void RenderWallsAtHeight(const bool drop);
    void PrepareWallsAtHeight();
    void PrepareSlingshots();
-   void GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Vertex3D_NoTex2> &sideBuf, std::vector<WORD> &topBottomIndices, std::vector<WORD> &sideIndices);
+   void GenerateMesh(vector<Vertex3D_NoTex2> &topBuf, vector<Vertex3D_NoTex2> &sideBuf, vector<WORD> &topBottomIndices, vector<WORD> &sideIndices);
 
    void FreeBuffers();
 
 
    PinTable *m_ptable;
 
-   std::vector<LineSegSlingshot*> m_vlinesling;
+   vector<LineSegSlingshot*> m_vlinesling;
 
-   std::vector<HitObject*> m_vhoDrop; // Objects to disable when dropped
-   std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
+   vector<HitObject*> m_vhoDrop; // Objects to disable when dropped
+   vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
    unsigned int m_numVertices, m_numPolys;
 

@@ -434,7 +434,7 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
 
 STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
 {
-   const std::wstring wzPath = m_vpinball->m_wzMyPath + L"User\\";
+   const wstring wzPath = m_vpinball->m_wzMyPath + L"User\\";
    *pVal = SysAllocString(wzPath.c_str());
 
    return S_OK;
@@ -473,7 +473,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
 {
    HRESULT hr;
 
-   const std::wstring wzPath = m_vpinball->m_wzMyPath + L"User\\VPReg.stg";
+   const wstring wzPath = m_vpinball->m_wzMyPath + L"User\\VPReg.stg";
 
    IStorage *pstgRoot;
    if (FAILED(hr = StgOpenStorage(wzPath.c_str(), nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgRoot)))
@@ -481,7 +481,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
       // Registry file does not exist - create it
       if (FAILED(hr = StgCreateDocfile(wzPath.c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, &pstgRoot)))
       {
-         const std::wstring wzMkPath = m_vpinball->m_wzMyPath + L"User";
+         const wstring wzMkPath = m_vpinball->m_wzMyPath + L"User";
          if (_wmkdir(wzMkPath.c_str()) != 0)
             return hr;
 
@@ -531,7 +531,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
 {
    HRESULT hr;
 
-   const std::wstring wzPath = m_vpinball->m_wzMyPath + L"User\\VPReg.stg";
+   const wstring wzPath = m_vpinball->m_wzMyPath + L"User\\VPReg.stg";
 
    IStorage *pstgRoot;
    if (FAILED(hr = StgOpenStorage(wzPath.c_str(), nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgRoot)))
@@ -1436,13 +1436,13 @@ POINT PinTable::GetScreenPoint() const
 }
 
 #define CLEAN_MATERIAL(pEditMaterial) \
-{robin_hood::unordered_map<std::string, Material*, StringHashFunctor, StringComparator>::const_iterator \
+{robin_hood::unordered_map<string, Material*, StringHashFunctor, StringComparator>::const_iterator \
    it = m_materialMap.find(pEditMaterial); \
 if (it == m_materialMap.end()) \
    pEditMaterial.clear();}
 
 #define CLEAN_IMAGE(pEditImage) \
-{robin_hood::unordered_map<std::string, Texture*, StringHashFunctor, StringComparator>::const_iterator \
+{robin_hood::unordered_map<string, Texture*, StringHashFunctor, StringComparator>::const_iterator \
    it = m_textureMap.find(pEditImage); \
 if (it == m_textureMap.end()) \
    pEditImage.clear();}
@@ -1845,7 +1845,7 @@ void PinTable::Render3DProjection(Sur * const psur)
    const float inclination = ANGTORAD(m_BG_inclination[m_BG_current_set]);
    const float FOV = (m_BG_FOV[m_BG_current_set] < 1.0f) ? 1.0f : m_BG_FOV[m_BG_current_set]; // Can't have a real zero FOV, but this will look almost the same
 
-   std::vector<Vertex3Ds> vvertex3D;
+   vector<Vertex3Ds> vvertex3D;
    for(auto &ptr : m_vedit)
       ptr->GetBoundingVertices(vvertex3D);
 
@@ -2256,7 +2256,7 @@ HRESULT PinTable::Save(const bool saveAs)
       string szInitialDir;
       // First, use dir of current table
       const size_t index = m_szFileName.find_last_of('\\');
-      if (index != std::string::npos)
+      if (index != string::npos)
          szInitialDir = m_szFileName.substr(0, index);
       // Or try with the standard last-used dir
       else
@@ -3891,7 +3891,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(IMCG): pbr->GetString(m_imageColorGrade); break;
    case FID(EIMG): pbr->GetString(m_envImage); break;
    case FID(PLMA): pbr->GetString(m_playfieldMaterial); break;
-   case FID(NOTX): {std::string txt;  pbr->GetString(txt); m_notesText = CString(txt.c_str()); break; }
+   case FID(NOTX): {string txt;  pbr->GetString(txt); m_notesText = CString(txt.c_str()); break; }
    case FID(LZAM): pbr->GetInt(m_lightAmbient); break;
    case FID(LZDI): pbr->GetInt(m_Light[0].emission); break;
    case FID(LZHI): pbr->GetFloat(m_lightHeight); break;
@@ -4630,7 +4630,7 @@ void PinTable::FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, ISelec
 {
    const LocalString ls16(IDS_ASSIGN_TO_LAYER2);
    mainMenu.AppendMenu(MF_POPUP | MF_STRING, (size_t)layerSubMenu.GetHandle(), ls16.m_szbuffer);
-   std::vector<std::string> layerNames = g_pvp->GetLayersListDialog()->GetAllLayerNames();
+   vector<string> layerNames = g_pvp->GetLayersListDialog()->GetAllLayerNames();
    int i = 0;
    for (const auto &name : layerNames)
    {
@@ -5421,7 +5421,7 @@ void PinTable::ExportTableMesh()
    // user canceled
    if (ret == 0)
       return;// S_FALSE;
-   const std::string filename = std::string(szObjFileName);
+   const string filename = string(szObjFileName);
 
    ObjLoader loader;
    loader.ExportStart(filename);
@@ -5438,7 +5438,7 @@ void PinTable::ExportTableMesh()
 
 void PinTable::ImportBackdropPOV(const string& filename)
 {
-    std::vector<std::string> szFileName;
+    vector<string> szFileName;
     bool oldFormatLoaded = false;
 
     if (filename.empty())
@@ -5452,7 +5452,7 @@ void PinTable::ImportBackdropPOV(const string& filename)
           return;
 
        const size_t index = szFileName[0].find_last_of('\\');
-       if (index != std::string::npos)
+       if (index != string::npos)
            hr = SaveValue("RecentDir"s, "POVDir"s, szFileName[0].substr(0, index));
     }
     else
@@ -5768,56 +5768,41 @@ void PinTable::ExportBackdropPOV(const string& filename)
         root->append_node(fullsinglescreen);
 
         xml_node<>* custom = xmlDoc.allocate_node(node_element, "customsettings");
-        const std::string cuaa = std::to_string(m_useAA);
-        xml_node<>* userSSAA = xmlDoc.allocate_node(node_element, "SSAA", cuaa.c_str());
+        xml_node<> *userSSAA = xmlDoc.allocate_node(node_element, "SSAA", std::to_string(m_useAA).c_str());
         custom->append_node(userSSAA);
-        const std::string cufxaa = std::to_string(m_useFXAA);
-        xml_node<>* userFXAA = xmlDoc.allocate_node(node_element, "postprocAA", cufxaa.c_str());
+        xml_node<> *userFXAA = xmlDoc.allocate_node(node_element, "postprocAA", std::to_string(m_useFXAA).c_str());
         custom->append_node(userFXAA);
-        const std::string cuao = std::to_string(m_useAO);
-        xml_node<>* userAO = xmlDoc.allocate_node(node_element, "ingameAO", cuao.c_str());
+        xml_node<> *userAO = xmlDoc.allocate_node(node_element, "ingameAO", std::to_string(m_useAO).c_str());
         custom->append_node(userAO);
-        const std::string cussr = std::to_string(m_useSSR);
-        xml_node<>* userSSR = xmlDoc.allocate_node(node_element, "ScSpReflect", cussr.c_str());
+        xml_node<> *userSSR = xmlDoc.allocate_node(node_element, "ScSpReflect", std::to_string(m_useSSR).c_str());
         custom->append_node(userSSR);
-        const std::string cfps = std::to_string(m_TableAdaptiveVSync);
-        xml_node<>* userFpsLimit = xmlDoc.allocate_node(node_element, "FPSLimiter", cfps.c_str());
+        xml_node<> *userFpsLimit = xmlDoc.allocate_node(node_element, "FPSLimiter", std::to_string(m_TableAdaptiveVSync).c_str());
         custom->append_node(userFpsLimit);
-        const std::string codl = std::to_string(m_overwriteGlobalDetailLevel);
-        xml_node<>* userOverwriteDetail = xmlDoc.allocate_node(node_element, "OverwriteDetailsLevel", codl.c_str());
+        xml_node<> *userOverwriteDetail = xmlDoc.allocate_node(node_element, "OverwriteDetailsLevel", std::to_string(m_overwriteGlobalDetailLevel).c_str());
         custom->append_node(userOverwriteDetail);
-        const std::string cudl = std::to_string(m_userDetailLevel);
-        xml_node<>* userDetail = xmlDoc.allocate_node(node_element, "DetailsLevel", cudl.c_str());
+        xml_node<> *userDetail = xmlDoc.allocate_node(node_element, "DetailsLevel", std::to_string(m_userDetailLevel).c_str());
         custom->append_node(userDetail);
-        const std::string curb = std::to_string(m_useReflectionForBalls);
-        xml_node<>* userReflectBall = xmlDoc.allocate_node(node_element, "BallReflection", curb.c_str());
+        xml_node<> *userReflectBall = xmlDoc.allocate_node(node_element, "BallReflection", std::to_string(m_useReflectionForBalls).c_str());
         custom->append_node(userReflectBall);
-        const std::string cutb = std::to_string(m_useTrailForBalls);
-        xml_node<>* userTrailBalls = xmlDoc.allocate_node(node_element, "BallTrail", cutb.c_str());
+        xml_node<> *userTrailBalls = xmlDoc.allocate_node(node_element, "BallTrail", std::to_string(m_useTrailForBalls).c_str());
         custom->append_node(userTrailBalls);
         sprintf_s(strBuf, "%f", m_ballTrailStrength);
         xml_node<> *userTrailStrength = xmlDoc.allocate_node(node_element, "BallTrailStrength", strBuf);
         custom->append_node(userTrailStrength);
-        const std::string codn = std::to_string(m_overwriteGlobalDayNight);
-        xml_node<>* userOverwriteDayNight = xmlDoc.allocate_node(node_element, "OverwriteNightDay", codn.c_str());
+        xml_node<> *userOverwriteDayNight = xmlDoc.allocate_node(node_element, "OverwriteNightDay", std::to_string(m_overwriteGlobalDayNight).c_str());
         custom->append_node(userOverwriteDayNight);
-        const std::string cndl = std::to_string(GetGlobalEmissionScale());
-        xml_node<>* userDayNight = xmlDoc.allocate_node(node_element, "NightDayLevel", cndl.c_str());
+        xml_node<> *userDayNight = xmlDoc.allocate_node(node_element, "NightDayLevel", std::to_string(GetGlobalEmissionScale()).c_str());
         custom->append_node(userDayNight);
         sprintf_s(strBuf, "%f", GetGlobalDifficulty());
         xml_node<>* userDifficutly = xmlDoc.allocate_node(node_element, "GameplayDifficulty", strBuf);
         custom->append_node(userDifficutly);
-        const std::string cop = std::to_string(m_overridePhysics);
-        xml_node<>* userPhysics = xmlDoc.allocate_node(node_element, "PhysicsSet", cop.c_str());
+        xml_node<> *userPhysics = xmlDoc.allocate_node(node_element, "PhysicsSet", std::to_string(m_overridePhysics).c_str());
         custom->append_node(userPhysics);
-        const std::string copf = std::to_string(m_overridePhysicsFlipper);
-        xml_node<>* userFlipperPhysics = xmlDoc.allocate_node(node_element, "IncludeFlipperPhysics", copf.c_str());
+        xml_node<> *userFlipperPhysics = xmlDoc.allocate_node(node_element, "IncludeFlipperPhysics", std::to_string(m_overridePhysicsFlipper).c_str());
         custom->append_node(userFlipperPhysics);
-        const std::string cusv = std::to_string(GetTableSoundVolume());
-        xml_node<>* userSoundVol = xmlDoc.allocate_node(node_element, "SoundVolume", cusv.c_str()); 
+        xml_node<> *userSoundVol = xmlDoc.allocate_node(node_element, "SoundVolume", std::to_string(GetTableSoundVolume()).c_str()); 
         custom->append_node(userSoundVol);
-        const std::string cumv = std::to_string(GetTableMusicVolume());
-        xml_node<>* userMusicVol = xmlDoc.allocate_node(node_element, "MusicVolume", cumv.c_str());
+        xml_node<> *userMusicVol = xmlDoc.allocate_node(node_element, "MusicVolume", std::to_string(GetTableMusicVolume()).c_str());
         custom->append_node(userMusicVol);
 
         root->append_node(custom);
@@ -6649,7 +6634,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    {
       if (szName[0] && m_pcv && g_pplayer && g_pplayer->m_hwndDebugOutput)
       {
-         const std::string logmsg = "Request to play \""s + szName + "\", but sound not found.";
+         const string logmsg = "Request to play \""s + szName + "\", but sound not found.";
          m_pcv->AddToDebugOutput(logmsg.c_str());
       }
       return S_OK;
@@ -6670,7 +6655,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
 }
 
 
-Texture* PinTable::GetImage(const std::string &szName) const
+Texture* PinTable::GetImage(const string &szName) const
 {
    if (szName.empty())
       return nullptr;
@@ -6678,7 +6663,7 @@ Texture* PinTable::GetImage(const std::string &szName) const
    // during playback, we use the hashtable for lookup
    if (!m_textureMap.empty())
    {
-      const robin_hood::unordered_map<std::string, Texture*, StringHashFunctor, StringComparator>::const_iterator
+      const robin_hood::unordered_map<string, Texture*, StringHashFunctor, StringComparator>::const_iterator
          it = m_textureMap.find(szName);
       if (it != m_textureMap.end())
          return it->second;
@@ -7071,7 +7056,7 @@ void PinTable::ListMaterials(HWND hwndListView)
       AddListMaterial(hwndListView, m_materials[i]);
 }
 
-bool PinTable::IsMaterialNameUnique(const std::string &name) const
+bool PinTable::IsMaterialNameUnique(const string &name) const
 {
    for (size_t i = 0; i < m_materials.size(); i++)
       if(m_materials[i]->m_szName==name)
@@ -7081,7 +7066,7 @@ bool PinTable::IsMaterialNameUnique(const std::string &name) const
 }
 
 
-Material* PinTable::GetMaterial(const std::string &szName) const
+Material* PinTable::GetMaterial(const string &szName) const
 {
    if (szName.empty())
       return &m_vpinball->m_dummyMaterial;
@@ -7089,7 +7074,7 @@ Material* PinTable::GetMaterial(const std::string &szName) const
    // during playback, we use the hashtable for lookup
    if (!m_materialMap.empty())
    {
-      const robin_hood::unordered_map<std::string, Material*, StringHashFunctor, StringComparator>::const_iterator
+      const robin_hood::unordered_map<string, Material*, StringHashFunctor, StringComparator>::const_iterator
          it = m_materialMap.find(szName);
       if (it != m_materialMap.end())
          return it->second;
@@ -9286,18 +9271,17 @@ STDMETHODIMP PinTable::put_OverridePhysicsFlippers(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::ImportPhysics()
 {
-   std::vector<std::string> szFileName;
    string szInitialDir;
-
    HRESULT hr = LoadValue("RecentDir"s, "PhysicsDir"s, szInitialDir);
    if (hr != S_OK)
       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
+   vector<string> szFileName;
    if (!m_vpinball->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
        return S_OK;
 
    const size_t index = szFileName[0].find_last_of('\\');
-   if (index != std::string::npos)
+   if (index != string::npos)
        hr = SaveValue("RecentDir"s, "PhysicsDir"s, szFileName[0].substr(0, index));
 
    ImportVPP(szFileName[0]);
@@ -9585,9 +9569,9 @@ STDMETHODIMP PinTable::ExportPhysics()
 
    const string szFilename(ofn.lpstrFile);
    const size_t index = szFilename.find_last_of('\\');
-   if (index != std::string::npos)
+   if (index != string::npos)
    {
-       const std::string newInitDir(szFilename.substr(0, index));
+       const string newInitDir(szFilename.substr(0, index));
        SaveValue("RecentDir"s, "PhysicsDir"s, newInitDir);
    }
 

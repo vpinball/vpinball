@@ -99,7 +99,7 @@ public:
    Vertex2D GetCenter() const final { return GetPointCenter(); }
    void PutCenter(const Vertex2D &pv) final { PutPointCenter(pv); }
 
-   void GetBoundingVertices(std::vector<Vertex3Ds> &pvvertex3D) final;
+   void GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D) final;
 
    bool IsTransparent() const final;
    float GetDepth(const Vertex3Ds &viewDir) const final;
@@ -129,9 +129,9 @@ private:
    int m_numIndices;
    Vertex3D_NoTex2* m_vertBuffer;
    Vertex3D_NoTex2* m_vertBuffer2;
-   std::vector<WORD> m_meshIndices;
+   vector<WORD> m_meshIndices;
 
-   std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
+   vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
    VertexBuffer *m_dynamicVertexBuffer;
    IndexBuffer *m_dynamicIndexBuffer;
@@ -142,7 +142,7 @@ private:
 
    // Get an approximation of the curve described by the control points of this ramp.
    template <typename T>
-   void GetCentralCurve(std::vector<T> &vv, const float _accuracy = -1.f) const
+   void GetCentralCurve(vector<T> &vv, const float _accuracy = -1.f) const
    {
       float accuracy;
 

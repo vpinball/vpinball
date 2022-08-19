@@ -25,7 +25,7 @@ public:
    int m_animFrames;
    TimerDataRoot m_tdr;
    float m_parkPosition;
-   std::string m_szSurface;
+   string m_szSurface;
    float m_scatterVelocity;
    float m_momentumXfer;
    char m_szTipShape[MAXTIPSHAPE];

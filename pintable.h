@@ -67,10 +67,10 @@ public:
    ProgressDialog();
    void SetProgress(const int value) { m_progressBar.SetPos(value); }
 
-   void SetName(const std::string &text) { m_progressName.SetWindowText(text.c_str()); }
+   void SetName(const string &text) { m_progressName.SetWindowText(text.c_str()); }
 
 protected:
-   virtual BOOL OnInitDialog();
+   BOOL OnInitDialog() final;
 
 private:
    CProgressBar m_progressBar;
@@ -376,7 +376,7 @@ public:
    int AddListImage(HWND hwndListView, Texture *const ppi);
    void RemoveImage(Texture *const ppi);
    HRESULT LoadImageFromStream(IStream *pstm, unsigned int idx, int version, bool resize_on_low_mem);
-   Texture *GetImage(const std::string &szName) const;
+   Texture *GetImage(const string &szName) const;
    bool GetImageLink(const Texture *const ppi) const;
    PinBinary *GetImageLinkBinary(const int id);
 
@@ -572,10 +572,10 @@ public:
    void AddDbgMaterial(const Material *const pmat);
    void UpdateDbgMaterial();
 
-   bool IsMaterialNameUnique(const std::string &name) const;
-   Material *GetMaterial(const std::string &name) const;
-   Material *GetSurfaceMaterial(const std::string &name) const;
-   Texture *GetSurfaceImage(const std::string &name) const;
+   bool IsMaterialNameUnique(const string &name) const;
+   Material *GetMaterial(const string &name) const;
+   Material *GetSurfaceMaterial(const string &name) const;
+   Texture *GetSurfaceImage(const string &name) const;
 
    bool GetCollectionIndex(const ISelect *const element, int &collectionIndex, int &elementIndex);
 
@@ -878,8 +878,8 @@ public:
 private:
    PinTableMDI *m_mdiTable;
    CString m_notesText;
-   robin_hood::unordered_map<std::string, Texture *, StringHashFunctor, StringComparator> m_textureMap; // hash table to speed up texture lookup by name
-   robin_hood::unordered_map<std::string, Material *, StringHashFunctor, StringComparator> m_materialMap; // hash table to speed up material lookup by name
+   robin_hood::unordered_map<string, Texture *, StringHashFunctor, StringComparator> m_textureMap; // hash table to speed up texture lookup by name
+   robin_hood::unordered_map<string, Material *, StringHashFunctor, StringComparator> m_materialMap; // hash table to speed up material lookup by name
    bool m_moving;
 };
 

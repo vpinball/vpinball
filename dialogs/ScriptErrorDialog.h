@@ -10,7 +10,7 @@
 class ScriptErrorDialog : public CDialog
 {
 public:
-	ScriptErrorDialog(const std::wstring &message);
+	ScriptErrorDialog(const wstring &message);
 
 	virtual BOOL OnInitDialog() override;
 	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
@@ -35,7 +35,7 @@ private:
 	/**
 	 * The error message shown on the dialog when it is created
 	 */
-	std::wstring initMessage;
+	wstring initMessage;
 
 	/**
 	 * Set after either continue or stop are pressed

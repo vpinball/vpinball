@@ -23,11 +23,11 @@ public:
    Vertex2D m_Center;
    TimerDataRoot m_tdr;
 
-   std::string m_szSurface;
+   string m_szSurface;
    COLORREF m_color;
 
    COLORREF m_rubbercolor;
-   std::string  m_szRubberMaterial;
+   string m_szRubberMaterial;
    float m_rubberthickness;
    float m_rubberheight;
    float m_rubberwidth;

@@ -1,28 +1,28 @@
 #pragma once
 
-void SaveXMLregistry(const std::string &path);
-void InitXMLregistry(const std::string &path);
+void SaveXMLregistry(const string &path);
+void InitXMLregistry(const string &path);
 void ClearXMLregistry(); // clears self-allocated strings
 
 
-HRESULT LoadValue(const std::string &szKey, const std::string &zValue, std::string &buffer);
-HRESULT LoadValue(const std::string &szKey, const std::string &szValue, void* const szbuffer, const DWORD size);
+HRESULT LoadValue(const string &szKey, const string &zValue, string &buffer);
+HRESULT LoadValue(const string &szKey, const string &szValue, void* const szbuffer, const DWORD size);
 
-HRESULT LoadValue(const std::string &szKey, const std::string &szValue, float &pfloat);
-float   LoadValueFloatWithDefault(const std::string &szKey, const std::string &szValue, const float def); 
+HRESULT LoadValue(const string &szKey, const string &szValue, float &pfloat);
+float   LoadValueFloatWithDefault(const string &szKey, const string &szValue, const float def); 
 
-HRESULT LoadValue(const std::string &szKey, const std::string &szValue, int &pint);
-HRESULT LoadValue(const std::string &szKey, const std::string &szValue, unsigned int &pint);
-int     LoadValueIntWithDefault(const std::string &szKey, const std::string &szValue, const int def);
+HRESULT LoadValue(const string &szKey, const string &szValue, int &pint);
+HRESULT LoadValue(const string &szKey, const string &szValue, unsigned int &pint);
+int     LoadValueIntWithDefault(const string &szKey, const string &szValue, const int def);
 
-bool    LoadValueBoolWithDefault(const std::string &szKey, const std::string &szValue, const bool def);
+bool    LoadValueBoolWithDefault(const string &szKey, const string &szValue, const bool def);
 
 
-HRESULT SaveValue(const std::string &szKey, const std::string &szValue, const char *val);
-HRESULT SaveValue(const std::string &szKey, const std::string &szValue, const std::string &val);
-HRESULT SaveValueFloat(const std::string &szKey, const std::string &szValue, const float val);
-HRESULT SaveValueInt(const std::string &szKey, const std::string &szValue, const int val);
-HRESULT SaveValueBool(const std::string &szKey, const std::string &szValue, const bool val);
+HRESULT SaveValue(const string &szKey, const string &szValue, const char *val);
+HRESULT SaveValue(const string &szKey, const string &szValue, const string &val);
+HRESULT SaveValueFloat(const string &szKey, const string &szValue, const float val);
+HRESULT SaveValueInt(const string &szKey, const string &szValue, const int val);
+HRESULT SaveValueBool(const string &szKey, const string &szValue, const bool val);
 
-HRESULT DeleteValue(const std::string &szKey, const std::string &szValue);
-HRESULT DeleteSubKey(const std::string &szKey);
+HRESULT DeleteValue(const string &szKey, const string &szValue);
+HRESULT DeleteSubKey(const string &szKey);

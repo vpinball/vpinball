@@ -236,7 +236,7 @@ inline bool FLinesIntersect(const Vertex2D * const Start1, const Vertex2D * cons
 
 // RenderVertexCont = vector<> of RenderVertex (at the moment)
 template <class RenderVertexCont>
-inline bool AdvancePoint(const RenderVertexCont& rgv, const std::vector<unsigned int>& pvpoly, const unsigned int a, const unsigned int b, const unsigned int c, const int pre, const int post)
+inline bool AdvancePoint(const RenderVertexCont& rgv, const vector<unsigned int>& pvpoly, const unsigned int a, const unsigned int b, const unsigned int c, const int pre, const int post)
 {
    const RenderVertex * const pv1 = &rgv[a];
    const RenderVertex * const pv2 = &rgv[b];
@@ -504,7 +504,7 @@ inline WindingOrder DetermineWindingOrder(const RenderVertexCont& vertices)
 //
 
 template <class RenderVertexCont, class Idx>
-void PolygonToTriangles(const RenderVertexCont& rgv, std::vector<unsigned int>& pvpoly, std::vector<Idx>& pvtri, const bool support_both_winding_orders)
+void PolygonToTriangles(const RenderVertexCont& rgv, vector<unsigned int>& pvpoly, vector<Idx>& pvtri, const bool support_both_winding_orders)
 {
    // There should be this many convex triangles.
    // If not, the polygon is self-intersecting
@@ -585,7 +585,7 @@ void ComputeNormals(Vertex3D_NoTex2* const vertices, const unsigned int numVerti
 }
 
 template <typename T>
-void ComputeNormals(std::vector<Vertex3D_NoTex2>& vertices, const std::vector<T>& indices)
+void ComputeNormals(vector<Vertex3D_NoTex2>& vertices, const vector<T>& indices)
 {
    ComputeNormals(vertices.data(), (unsigned int)vertices.size(), indices.data(), (unsigned int)indices.size());
 }

@@ -259,10 +259,10 @@ void IHaveDragPoints::ReverseOrder()
 // Ported at: VisualPinball.Engine/Math/DragPoint.cs
 //
 
-void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, float **ppcoords)
+void IHaveDragPoints::GetTextureCoords(const vector<RenderVertex> & vv, float **ppcoords)
 {
-   std::vector<int> vitexpoints;
-   std::vector<int> virenderpoints;
+   vector<int> vitexpoints;
+   vector<int> virenderpoints;
    bool noCoords = false;
 
    const int cpoints = (int)vv.size();

@@ -30,8 +30,8 @@ public:
 
    static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const unsigned int * indices, const deviceNumber dN);
    static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const WORD * indices, const deviceNumber dN);
-   static IndexBuffer* CreateAndFillIndexBuffer(const std::vector<unsigned int>& indices, const deviceNumber dN);
-   static IndexBuffer* CreateAndFillIndexBuffer(const std::vector<WORD>& indices, const deviceNumber dN);
+   static IndexBuffer* CreateAndFillIndexBuffer(const vector<unsigned int>& indices, const deviceNumber dN);
+   static IndexBuffer* CreateAndFillIndexBuffer(const vector<WORD>& indices, const deviceNumber dN);
 
    static void UploadBuffers();
 
@@ -56,7 +56,7 @@ private:
    Format indexFormat;
 
    static IndexBuffer* m_curIndexBuffer; // for caching
-   static std::vector<IndexBuffer*> notUploadedBuffers;
+   static vector<IndexBuffer*> notUploadedBuffers;
 
    void UploadData(bool freeData);
    void addToNotUploadedBuffers(const void* indices = nullptr);
@@ -91,8 +91,8 @@ public:
 
    static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const unsigned int* indices, const deviceNumber dN);
    static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const WORD* indices, const deviceNumber dN);
-   static IndexBuffer* CreateAndFillIndexBuffer(const std::vector<unsigned int>& indices, const deviceNumber dN);
-   static IndexBuffer* CreateAndFillIndexBuffer(const std::vector<WORD>& indices, const deviceNumber dN);
+   static IndexBuffer* CreateAndFillIndexBuffer(const vector<unsigned int>& indices, const deviceNumber dN);
+   static IndexBuffer* CreateAndFillIndexBuffer(const vector<WORD>& indices, const deviceNumber dN);
 
    static IndexBuffer* m_curIndexBuffer; // for caching
 

@@ -13,8 +13,8 @@ public:
    virtual void Ellipse(const float centerx, const float centery, const float radius);
    virtual void Ellipse2(const float centerx, const float centery, const int radius);
    virtual void Polygon(const Vertex2D * const rgv, const int count);
-   virtual void Polygon(const std::vector<RenderVertex> &rgv);
-   virtual void PolygonImage(const std::vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight);
+   virtual void Polygon(const vector<RenderVertex> &rgv);
+   virtual void PolygonImage(const vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight);
 
    virtual void Polyline(const Vertex2D * const rgv, const int count);
    virtual void Lines(const Vertex2D * const rgv, const int count);

@@ -40,7 +40,7 @@ IScriptable::IScriptable()
    m_wzName[0] = '\0';
 }
 
-int CodeViewDispatch::SortAgainstValue(const std::wstring& pv) const
+int CodeViewDispatch::SortAgainstValue(const wstring& pv) const
 {
    char szName1[MAXSTRING];
    WideCharToMultiByteNull(CP_ACP, 0, pv.c_str(), -1, szName1, MAXSTRING, nullptr, nullptr);
@@ -1141,7 +1141,6 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 
 	// Error log content
 	std::wstringstream errorStream;
-
 	if (isRuntimeError)
 		errorStream << L"Runtime error\r\n";
 	else
@@ -1159,7 +1158,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 
 	g_pvp->EnableWindow(FALSE);
 
-	const std::wstring errorStr = errorStream.str();
+	const wstring errorStr{errorStream.str()};
 
 	// Show the error in the last error log
 	AppendLastErrorTextW(errorStr);
@@ -1372,7 +1371,7 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	SysFreeString(exception.bstrDescription);
 	SysFreeString(exception.bstrHelpFile);
 
-	const std::wstring errorStr = errorStream.str();
+	const wstring errorStr{errorStream.str()};
 
 	// Show the error in the last error log
 	AppendLastErrorTextW(errorStr);
@@ -2988,7 +2987,7 @@ void CodeViewer::ParseVPCore()
 	searchPaths.push_back(g_pvp->m_szMyPath + "Scripts\\core.vbs"); // executable path
 
 	const size_t index = g_pvp->m_szMyPath.substr(0, g_pvp->m_szMyPath.length()-1).find_last_of('\\');
-	if (index != std::string::npos)
+	if (index != string::npos)
 		searchPaths.push_back(g_pvp->m_szMyPath.substr(0, index+1) + "Scripts\\core.vbs"); // executable minus one dir (i.e. minus Release or Debug)
 
 	searchPaths.push_back(g_pvp->m_currentTablePath + "core.vbs"); // table path
@@ -3705,7 +3704,7 @@ void CodeViewer::SetLastErrorTextW(const LPCWSTR text)
 	SendMessage(m_hwndLastErrorTextArea, EM_LINESCROLL, 0, 9999);
 }
 
-void CodeViewer::AppendLastErrorTextW(const std::wstring& text)
+void CodeViewer::AppendLastErrorTextW(const wstring& text)
 {
 	const int requiredLength = ::GetWindowTextLength(m_hwndLastErrorTextArea) + lstrlenW(text.c_str()) + 1;
 	wchar_t* buf = new wchar_t[requiredLength];

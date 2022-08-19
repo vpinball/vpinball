@@ -13,15 +13,15 @@ public:
    bool                    AddElement(const string& name, IEditable* const pedit);
    bool                    AddElementToLayer(const HTREEITEM hLayerItem, const string& name, IEditable* const pedit);
    bool                    ContainsLayer(const string& name) const;
-   std::string             GetCurrentLayerName() const;
+   string                  GetCurrentLayerName() const;
    HTREEITEM               GetLayerByElement(const IEditable* const pedit);
    HTREEITEM               GetLayerByItem(HTREEITEM hChildItem);
    HTREEITEM               GetItemByElement(const IEditable* const pedit);
    HTREEITEM               GetCurrentElement() const { return hCurrentElementItem; }
    int                     GetItemCount() const;
    int                     GetLayerCount() const;
-   std::vector<HTREEITEM>  GetAllLayerItems() const;
-   std::vector<HTREEITEM>  GetSubItems(HTREEITEM hParent);
+   vector<HTREEITEM>       GetAllLayerItems() const;
+   vector<HTREEITEM>       GetSubItems(HTREEITEM hParent);
    int                     GetSubItemsCount(HTREEITEM hParent) const;
    bool                    IsItemChecked(HTREEITEM hItem) const;
    void                    SetItemCheck(HTREEITEM item, bool checked);
@@ -35,10 +35,10 @@ public:
    HTREEITEM               GetRootItem() { return hRootItem; }
    HTREEITEM               GetCurrentLayerItem() { return hCurrentLayerItem; }
    HTREEITEM               GetFirstLayer() { return GetChild(hRootItem); }
-   std::string             GetLayerName(HTREEITEM item) { return string(GetItemText(item)); }
+   string                  GetLayerName(HTREEITEM item) { return string{GetItemText(item)}; }
    bool                    PreTranslateMessage(MSG* msg);
    void                    SetActiveTable(PinTable* ptable) { m_activeTable = ptable; }
-   std::vector<std::string> GetAllLayerNames();
+   vector<string>          GetAllLayerNames();
 
 
 protected:
@@ -65,7 +65,7 @@ private:
       HTREEITEM   m_hDragItem;
       HTREEITEM   m_hDragLayer;
    };
-   std::vector<std::shared_ptr<DragItem>> m_DragItems;
+   vector<std::shared_ptr<DragItem>> m_DragItems;
 };
 
 class LayersListDialog;
@@ -93,7 +93,7 @@ public:
    bool AddLayer(const string& name, IEditable* piedit);
    void DeleteLayer();
    void ClearList();
-   void UpdateLayerList(const std::string& name = string());
+   void UpdateLayerList(const string& name = string());
    void UpdateElement(IEditable* const pedit);
    void DeleteElement(IEditable* const pedit);
    string GetCurrentSelectedLayerName() const;
@@ -102,7 +102,7 @@ public:
    void AssignToLayerByIndex(size_t index);
    bool PreTranslateMessage(MSG* msg);
    void SetActiveTable(PinTable* ptable) { m_activeTable = ptable; m_layerTreeView.SetActiveTable(ptable); }
-   std::vector<std::string> GetAllLayerNames();
+   vector<string> GetAllLayerNames();
 
    void ExpandAll()
    {

@@ -133,7 +133,7 @@ T* reorderForsyth(const vector<T>& indices,
 	// or just replace the score tables with precalculated values.
 	initForsyth();
 
-	std::vector<VertexData> cVertex(nVertices);
+	vector<VertexData> cVertex(nVertices);
 	for (int i = 0; i < nVertices; ++i)
 		cVertex[i].numActiveTri = 0;
 
@@ -154,9 +154,9 @@ T* reorderForsyth(const vector<T>& indices,
 
 	const int nTriangles = (int)(indices.size()/3);
 
-	std::vector<bool> triangleAdded(nTriangles,false);
-	std::vector<ScoreType> triangleScore(nTriangles,0);
-	std::vector<T> outTriangles(nTriangles);
+	vector<bool> triangleAdded(nTriangles,false);
+	vector<ScoreType> triangleScore(nTriangles,0);
+	vector<T> outTriangles(nTriangles);
 	T* const triangleIndices = new T[indices.size()];
 	memset(triangleIndices, 0, sizeof(T)*indices.size());
 

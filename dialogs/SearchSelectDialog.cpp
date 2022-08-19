@@ -247,9 +247,9 @@ void SearchSelectDialog::OnCancel()
    CDialog::OnCancel();
 }
 
-bool SearchSelectDialog::IsValidString(const std::string &name)
+bool SearchSelectDialog::IsValidString(const string &name)
 {
-   return (!name.empty() && name.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ._-") == std::string::npos);
+   return (!name.empty() && name.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ._-") == string::npos);
 }
 
 void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
@@ -295,7 +295,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       secondImage.clear();
       if (IsValidString(sur->m_d.m_szSideMaterial))
          secondImage = sur->m_d.m_szSideMaterial;
-      std::string thirdImage;
+      string thirdImage;
       if (IsValidString(sur->m_d.m_szSlingShotMaterial))
           thirdImage = sur->m_d.m_szSlingShotMaterial;
       if (!secondImage.empty())
@@ -490,10 +490,10 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       textBuf = firstImage;
       if (IsValidString(bumper->m_d.m_szCapMaterial))
          secondImage = bumper->m_d.m_szCapMaterial;
-      std::string thirdImage;
+      string thirdImage;
       if (IsValidString(bumper->m_d.m_szSkirtMaterial))
          thirdImage = bumper->m_d.m_szSkirtMaterial;
-      std::string fourthImage;
+      string fourthImage;
       if (IsValidString(bumper->m_d.m_szRingMaterial))
           fourthImage = bumper->m_d.m_szRingMaterial;
       if (!secondImage.empty())

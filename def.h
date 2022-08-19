@@ -55,23 +55,23 @@ __forceinline T saturate(const T x)
 }
 
 template <typename T>
-inline void RemoveFromVector(std::vector<T>& v, const T& val)
+inline void RemoveFromVector(vector<T>& v, const T& val)
 {
    v.erase(std::remove(v.begin(), v.end(), val), v.end());
 }
 
 template <typename T>
-inline void RemoveFromVectorSingle(std::vector<T>& v, const T& val)
+inline void RemoveFromVectorSingle(vector<T>& v, const T& val)
 {
-   typename std::vector<T>::const_iterator it = std::find(v.begin(), v.end(), val);
+   typename vector<T>::const_iterator it = std::find(v.begin(), v.end(), val);
    if (it != v.end())
       v.erase(it);
 }
 
 template <typename T>
-inline int FindIndexOf(const std::vector<T>& v, const T& val)
+inline int FindIndexOf(const vector<T>& v, const T& val)
 {
-   typename std::vector<T>::const_iterator it = std::find(v.begin(), v.end(), val);
+   typename vector<T>::const_iterator it = std::find(v.begin(), v.end(), val);
    if (it != v.end())
       return (int)(it - v.begin());
    else

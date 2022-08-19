@@ -21,13 +21,13 @@
 
 namespace ProgMesh {
 
-template<class T> int   Contains(const std::vector<T> & c, const T & t){ return (int)std::count(begin(c), end(c), t); }
-template<class T> int   IndexOf(const std::vector<T> & c, const T & v) { return (int)(std::find(begin(c), end(c), v) - begin(c)); }
-//template<class T> T &   Add(std::vector<T> & c, T t)                   { c.push_back(t); return c.back(); }
-template<class T> T     Pop(std::vector<T> & c)                        { const T val = std::move(c.back()); c.pop_back(); return val; }
-template<class T> void  AddUnique(std::vector<T> & c, T t)             { if (!Contains(c, t)) c.push_back(t); }
-//template<class T> void  Remove(std::vector<T> & c, T t)                { const std::vector<T>::const_iterator it = std::find(begin(c), end(c), t); assert(it != end(c)); c.erase(it); assert(!Contains(c, t)); }
-template<class T> void  RemoveFillWithBack(std::vector<T> & c, T t)    { const int idxof = IndexOf(c, t); const T val = Pop(c); if (idxof == c.size()) return; c[idxof] = val; assert(!Contains(c, t)); }
+template<class T> int   Contains(const vector<T> & c, const T & t) { return (int)std::count(begin(c), end(c), t); }
+template<class T> int   IndexOf(const vector<T> & c, const T & v)  { return (int)(std::find(begin(c), end(c), v) - begin(c)); }
+//template<class T> T &   Add(vector<T> & c, T t)                    { c.push_back(t); return c.back(); }
+template<class T> T     Pop(vector<T> & c)                         { const T val = std::move(c.back()); c.pop_back(); return val; }
+template<class T> void  AddUnique(vector<T> & c, T t)              { if (!Contains(c, t)) c.push_back(t); }
+//template<class T> void  Remove(vector<T> & c, T t)                 { const vector<T>::const_iterator it = std::find(begin(c), end(c), t); assert(it != end(c)); c.erase(it); assert(!Contains(c, t)); }
+template<class T> void  RemoveFillWithBack(vector<T> & c, T t)     { const int idxof = IndexOf(c, t); const T val = Pop(c); if (idxof == c.size()) return; c[idxof] = val; assert(!Contains(c, t)); }
 
 
 /*
@@ -55,8 +55,8 @@ class Vertex {
 public:
 	float3          position; // location of point in euclidean space
 	unsigned int    id;       // place of vertex in original Array
-	std::vector<Vertex *>   neighbor; // adjacent vertices
-	std::vector<Triangle *> face;     // adjacent triangles
+	vector<Vertex *>   neighbor; // adjacent vertices
+	vector<Triangle *> face;     // adjacent triangles
 	float           objdist;  // cached cost of collapsing edge
 	Vertex *        collapse; // candidate vertex for collapse
 
@@ -66,8 +66,8 @@ public:
 };
 
 
-static std::vector<Vertex *>   vertices;
-static std::vector<Triangle *> triangles;
+static vector<Vertex *>   vertices;
+static vector<Triangle *> triangles;
 
 
 __forceinline Triangle::Triangle(Vertex * const v0, Vertex * const v1, Vertex * const v2)
@@ -199,7 +199,7 @@ __forceinline float ComputeEdgeCollapseCost(const Vertex * const u, const Vertex
 	// therefore never added code to detect this case.
 
 	// find the "sides" triangles that are on the edge uv
-	std::vector<Triangle *> sides;
+	vector<Triangle *> sides;
 	sides.reserve(u->face.size());
 	for (size_t i = 0; i < u->face.size(); i++)
 		if (u->face[i]->HasVertex(v))
@@ -267,7 +267,7 @@ __forceinline void Collapse(Vertex * const u, Vertex * const v)
 		delete u;
 		return;
 	}
-	std::vector<Vertex *> tmp(u->neighbor.size());
+	vector<Vertex *> tmp(u->neighbor.size());
 	// make tmp a Array of all the neighbors of u
 	for (size_t i = 0; i < tmp.size(); i++)
 		tmp[i] = u->neighbor[i];
@@ -293,13 +293,13 @@ __forceinline void Collapse(Vertex * const u, Vertex * const v)
 		ComputeEdgeCostAtVertex(tmp[i]);
 }
 
-__forceinline void AddVertex(const std::vector<float3> &vert)
+__forceinline void AddVertex(const vector<float3> &vert)
 {
 	for (size_t i = 0; i < vert.size(); i++)
 		Vertex *v = new Vertex(vert[i], i); //!! braindead design, actually fills up "vertices"
 }
 
-__forceinline void AddFaces(const std::vector<tridata> &tri)
+__forceinline void AddFaces(const vector<tridata> &tri)
 {
 	for (size_t i = 0; i < tri.size(); i++)
 		Triangle *t = new Triangle(vertices[tri[i].v[0]], //!! braindead design, actually fills up "triangles"
@@ -322,8 +322,8 @@ __forceinline Vertex *MinimumCostEdge()
 	return mn;
 }
 
-void ProgressiveMesh(const std::vector<float3> &vert, const std::vector<tridata> &tri,
-					 std::vector<unsigned int> &map, std::vector<unsigned int> &permutation)
+void ProgressiveMesh(const vector<float3> &vert, const vector<tridata> &tri,
+                     vector<unsigned int> &map, vector<unsigned int> &permutation)
 {
 	if (vert.empty() || tri.empty())
 		return;
@@ -394,14 +394,14 @@ void ProgressiveMesh(const std::vector<float3> &vert, const std::vector<tridata>
 //   progressive mesh polygon reduction algorithm by the time
 //   it had gotten down to 5 vertices.
 //   No need to draw a one dimensional polygon. :-)
-__forceinline unsigned int MapVertex(unsigned int a, const unsigned int mx, const std::vector<unsigned int> &map)
+__forceinline unsigned int MapVertex(unsigned int a, const unsigned int mx, const vector<unsigned int> &map)
 {
 	while (a >= mx)
 		a = map[a];
 	return a;
 }
 
-void ReMapIndices(const unsigned int num_vertices, const std::vector<tridata> &tri, std::vector<tridata> &new_tri, const std::vector<unsigned int> &map)
+void ReMapIndices(const unsigned int num_vertices, const vector<tridata> &tri, vector<tridata> &new_tri, const vector<unsigned int> &map)
 {
 	assert(new_tri.empty());
 	assert(!map.empty());

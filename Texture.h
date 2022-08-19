@@ -32,7 +32,7 @@ public:
 
 private:
    unsigned int m_width, m_height;
-   std::vector<BYTE> m_data;
+   vector<BYTE> m_data;
 
 public:
    unsigned int m_realWidth, m_realHeight;

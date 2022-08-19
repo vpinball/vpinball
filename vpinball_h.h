@@ -165,8 +165,8 @@ public:
     SendMessage(m_hwndStatusBar, SB_SETTEXT, 5 | 0, (size_t)textBuf.c_str());
    }
 
-   bool OpenFileDialog(const string& initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const std::string& windowTitle = string());
-   bool SaveFileDialog(const string& initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const std::string& windowTitle = string());
+   bool OpenFileDialog(const string& initDir, vector<string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const string& windowTitle = string());
+   bool SaveFileDialog(const string& initDir, vector<string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const string& windowTitle = string());
 
    CDockProperty* GetPropertiesDocker();
    CDockToolbar *GetToolbarDocker();
@@ -220,7 +220,7 @@ public:
    int m_securitylevel;
 
    string m_szMyPath;
-   std::wstring m_wzMyPath;
+   wstring m_wzMyPath;
    string m_currentTablePath;
 
    int m_autosaveTime;
@@ -270,7 +270,7 @@ private:
 
    volatile bool m_unloadingTable;
    CMenu m_mainMenu;
-   std::vector<std::string> m_recentTableList;
+   vector<string> m_recentTableList;
 
    HANDLE  m_workerthread;
    unsigned int m_workerthreadid;

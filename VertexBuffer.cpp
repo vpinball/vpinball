@@ -30,7 +30,7 @@ IDirect3DDevice9* VertexBuffer::m_pd3dSecondaryDevice = nullptr; // is set befor
 #endif
 
 #ifdef ENABLE_SDL
-std::vector<VertexBuffer*> VertexBuffer::notUploadedBuffers;
+vector<VertexBuffer*> VertexBuffer::notUploadedBuffers;
 #endif
 
 void VertexBuffer::CreateVertexBuffer(const unsigned int vertexCount, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer, const deviceNumber dN)

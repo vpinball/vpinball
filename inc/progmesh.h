@@ -28,16 +28,16 @@ struct tridata {
 	unsigned int v[3];
 };
 
-void ProgressiveMesh(const std::vector<float3> &vert, const std::vector<tridata> &tri,
-                     std::vector<unsigned int> &map, std::vector<unsigned int> &permutation);
+void ProgressiveMesh(const vector<float3> &vert, const vector<tridata> &tri,
+                     vector<unsigned int> &map, vector<unsigned int> &permutation);
 
 template<typename T>
-void PermuteVertices(const std::vector<unsigned int> &permutation, std::vector<T> &vert, std::vector<tridata> &tri)
+void PermuteVertices(const vector<unsigned int> &permutation, vector<T> &vert, vector<tridata> &tri)
 {
 	assert(permutation.size() == vert.size());
 
 	// rearrange the vertex Array 
-	std::vector<T> temp_Array(vert.size());
+	vector<T> temp_Array(vert.size());
 	for (size_t i = 0; i<vert.size(); i++)
 		temp_Array[i] = vert[i];
 	for (size_t i = 0; i<vert.size(); i++)
@@ -49,7 +49,7 @@ void PermuteVertices(const std::vector<unsigned int> &permutation, std::vector<T
 			tri[i].v[j] = permutation[tri[i].v[j]];
 }
 
-void ReMapIndices(const unsigned int num_vertices, const std::vector<tridata> &tri, std::vector<tridata> &new_tri, const std::vector<unsigned int> &map);
+void ReMapIndices(const unsigned int num_vertices, const vector<tridata> &tri, vector<tridata> &new_tri, const vector<unsigned int> &map);
 
 }
 

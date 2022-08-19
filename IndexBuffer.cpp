@@ -15,7 +15,7 @@ IDirect3DDevice9* IndexBuffer::m_pd3dSecondaryDevice = nullptr; // is set before
 #endif
 
 #ifdef ENABLE_SDL
-std::vector<IndexBuffer*> IndexBuffer::notUploadedBuffers;
+vector<IndexBuffer*> IndexBuffer::notUploadedBuffers;
 #endif
 
 void IndexBuffer::CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer **idxBuffer, const deviceNumber dN)
@@ -103,12 +103,12 @@ IndexBuffer* IndexBuffer::CreateAndFillIndexBuffer(const unsigned int numIndices
    return ib;
 }
 
-IndexBuffer* IndexBuffer::CreateAndFillIndexBuffer(const std::vector<WORD>& indices, const deviceNumber dN)
+IndexBuffer* IndexBuffer::CreateAndFillIndexBuffer(const vector<WORD>& indices, const deviceNumber dN)
 {
    return CreateAndFillIndexBuffer((unsigned int)indices.size(), indices.data(), dN);
 }
 
-IndexBuffer* IndexBuffer::CreateAndFillIndexBuffer(const std::vector<unsigned int>& indices, const deviceNumber dN)
+IndexBuffer* IndexBuffer::CreateAndFillIndexBuffer(const vector<unsigned int>& indices, const deviceNumber dN)
 {
    return CreateAndFillIndexBuffer((unsigned int)indices.size(), indices.data(), dN);
 }

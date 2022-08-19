@@ -1,7 +1,7 @@
 #pragma once
 
 // this is the djb2 string hash algorithm, str is converted to lower case
-inline size_t StringHash(const std::string& str)
+inline size_t StringHash(const string& str)
 {
    //MessageBox(0, str, 0, 0);
    unsigned int hash = 5381;
@@ -27,7 +27,7 @@ size_t FloatHash(const float a[T])
 
 struct StringHashFunctor
 {
-   size_t operator()(const std::string& str) const
+   size_t operator()(const string& str) const
    {
       // use case-insensitive hash because user can enter the names in lower case from the script
       return StringHash(str);
@@ -36,7 +36,7 @@ struct StringHashFunctor
 
 struct StringComparator
 {
-   bool operator()(const std::string& str1, const std::string& str2) const
+   bool operator()(const string& str1, const string& str2) const
    {
       // use case-insensitive compare because user can enter the names in lower case from the script
       return lstrcmpi(str1.c_str(), str2.c_str()) == 0;

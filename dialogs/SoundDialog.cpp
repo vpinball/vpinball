@@ -252,20 +252,19 @@ void SoundDialog::Import()
    if (pt == nullptr)
       return;
 
-   std::vector<std::string> szFileName;
    string szInitialDir;
-
    HRESULT hr = LoadValue( "RecentDir"s, "SoundDir"s, szInitialDir);
    if (hr != S_OK)
       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
+   vector<string> szFileName;
    if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
    {
       const size_t index = szFileName[0].find_last_of('\\');
-      if (index != std::string::npos)
+      if (index != string::npos)
          hr = SaveValue("RecentDir"s, "SoundDir"s, szFileName[0].substr(0, index));
 
-      for (const std::string &file : szFileName)
+      for (const string &file : szFileName)
          pt->ImportSound(hSoundList, file);
 
       pt->SetNonUndoableDirty(eSaveDirty);
@@ -326,12 +325,11 @@ void SoundDialog::ReImportFrom()
         if (ans == IDYES)
         {
             string szInitialDir;
-            std::vector<std::string> szFileName;
-
             HRESULT hr = LoadValue("RecentDir", "SoundDir", szInitialDir);
             if (hr != S_OK)
                 szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
+            vector<string> szFileName;
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", 0))
             {
                 LVITEM lvitem;
@@ -345,7 +343,7 @@ void SoundDialog::ReImportFrom()
                 ListView_SetItemText( hSoundList, sel, 1, (LPSTR)szFileName[0].c_str() );
 
                 const size_t index = szFileName[0].find_last_of('\\');
-                if (index != std::string::npos)
+                if (index != string::npos)
                    hr = SaveValue("RecentDir"s, "SoundDir"s, szFileName[0].substr(0, index));
 
                 pt->SetNonUndoableDirty( eSaveDirty );

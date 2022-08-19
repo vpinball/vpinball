@@ -20,7 +20,7 @@ public:
    TimerDataRoot m_tdr;
    float m_damping;
    float m_gravityfactor;
-   std::string m_szSurface;
+   string m_szSurface;
    float m_angleMin;
    float m_angleMax;
    GateType m_type;

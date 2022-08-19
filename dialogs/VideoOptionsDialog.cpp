@@ -134,7 +134,7 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    }
 }
 
-void VideoOptionsDialog::FillVideoModesList(const std::vector<VideoMode>& modes, const VideoMode* curSelMode)
+void VideoOptionsDialog::FillVideoModesList(const vector<VideoMode>& modes, const VideoMode* curSelMode)
 {
    const HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
    SendMessage(hwndList, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
@@ -448,7 +448,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
 
    int display;
    hr = LoadValue("Player"s, "Display"s, display);
-   std::vector<DisplayConfig> displays;
+   vector<DisplayConfig> displays;
    getDisplayList(displays);
    if ((hr != S_OK) || ((int)displays.size() <= display))
       display = -1;
@@ -456,7 +456,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    hwnd = GetDlgItem(IDC_DISPLAY_ID).GetHwnd();
    SendMessage(hwnd, CB_RESETCONTENT, 0, 0);
 
-   for (std::vector<DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end(); ++dispConf)
+   for (vector<DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end(); ++dispConf)
    {
       if (display == -1 && dispConf->isPrimary)
          display = dispConf->display;

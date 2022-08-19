@@ -79,7 +79,7 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 
    FastIStorage * const pstgroot = pasp->pstg;
 
-   const std::wstring wzT = g_pvp->m_wzMyPath + L"AutoSave" + std::to_wstring(pasp->tableindex) + L".vpx";
+   const wstring wzT = g_pvp->m_wzMyPath + L"AutoSave" + std::to_wstring(pasp->tableindex) + L".vpx";
 
    //MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName);
 

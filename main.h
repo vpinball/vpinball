@@ -57,6 +57,7 @@
 #include <commdlg.h>
 
 using std::string;
+using std::wstring;
 using std::vector;
 
 #include <dlgs.h>

@@ -75,7 +75,7 @@ private:
 
    void InitSseArrays();
 
-   std::vector<unsigned int> m_org_idx;
+   vector<unsigned int> m_org_idx;
 
    HitKDNode m_rootNode;
 
@@ -90,12 +90,12 @@ private:
    HitKDNode* AllocTwoNodes();
 
    vector<HitObject*> *m_org_vho;
-   std::vector<unsigned int> tmp;
+   vector<unsigned int> tmp;
 #ifdef KDTREE_SSE_LEAFTEST
    float * __restrict l_r_t_b_zl_zh;
 #endif
 
-   std::vector< HitKDNode > m_nodes;
+   vector< HitKDNode > m_nodes;
    unsigned m_num_nodes;
 
    friend class HitKDNode;

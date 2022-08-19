@@ -38,7 +38,7 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
    string sname = name + "*.obj";
    WIN32_FIND_DATA data;
    const HANDLE h = FindFirstFile(sname.c_str(), &data);
-   std::vector<string> allFiles;
+   vector<string> allFiles;
    int frameCounter = 0;
    if (h != INVALID_HANDLE_VALUE)
    {
@@ -55,7 +55,7 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
       ObjLoader loader;
       if (loader.Load(sname, flipTV, convertToLeftHanded))
       {
-         std::vector<Vertex3D_NoTex2> verts = loader.GetVertices();
+         vector<Vertex3D_NoTex2> verts = loader.GetVertices();
          for (size_t t = 0; t < verts.size(); t++)
          {
             VertData vd;
@@ -472,14 +472,14 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
 
    if (reduced_vertices < m_vertices.size())
    {
-      std::vector<ProgMesh::float3> prog_vertices(m_vertices.size());
+      vector<ProgMesh::float3> prog_vertices(m_vertices.size());
       for (size_t i = 0; i < m_vertices.size(); ++i) //!! opt. use original data directly!
       {
          prog_vertices[i].x = m_vertices[i].x;
          prog_vertices[i].y = m_vertices[i].y;
          prog_vertices[i].z = m_vertices[i].z;
       }
-      std::vector<ProgMesh::tridata> prog_indices(m_mesh.NumIndices() / 3);
+      vector<ProgMesh::tridata> prog_indices(m_mesh.NumIndices() / 3);
       {
       size_t i2 = 0;
       for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
@@ -494,13 +494,13 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
       if (i2 < prog_indices.size())
          prog_indices.resize(i2);
       }
-      std::vector<unsigned int> prog_map;
-      std::vector<unsigned int> prog_perm;
+      vector<unsigned int> prog_map;
+      vector<unsigned int> prog_perm;
       ProgMesh::ProgressiveMesh(prog_vertices, prog_indices, prog_map, prog_perm);
       ProgMesh::PermuteVertices(prog_perm, prog_vertices, prog_indices);
       prog_perm.clear();
 
-      std::vector<ProgMesh::tridata> prog_new_indices;
+      vector<ProgMesh::tridata> prog_new_indices;
       ProgMesh::ReMapIndices(reduced_vertices, prog_indices, prog_new_indices, prog_map);
       prog_indices.clear();
       prog_map.clear();
@@ -743,7 +743,7 @@ void Primitive::UIRenderPass2(Sur * const psur)
             if (m_mesh.NumIndices() > 0)
             {
                const size_t numPts = m_mesh.NumIndices() / 3 + 1;
-               std::vector<Vertex2D> drawVertices(numPts);
+               vector<Vertex2D> drawVertices(numPts);
 
                const Vertex3Ds& A = m_vertices[m_mesh.m_indices[0]];
                drawVertices[0] = Vertex2D(A.x, A.y);
@@ -761,7 +761,7 @@ void Primitive::UIRenderPass2(Sur * const psur)
       }
       else
       {
-         std::vector<Vertex2D> drawVertices;
+         vector<Vertex2D> drawVertices;
          for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
          {
             const Vertex3Ds * const A = &m_vertices[m_mesh.m_indices[i]];
@@ -805,7 +805,7 @@ void Primitive::UIRenderPass2(Sur * const psur)
          ppi->CreateGDIVersion();
          if (ppi->m_hbmGDIVersion)
          {
-            std::vector<RenderVertex> vvertex;
+            vector<RenderVertex> vvertex;
             for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
             {
                const Vertex3Ds * const A = &m_vertices[m_mesh.m_indices[i]];
@@ -874,7 +874,7 @@ void Primitive::RenderBlueprint(Sur *psur, const bool solid)
          if (m_mesh.NumIndices() > 0)
          {
             const size_t numPts = m_mesh.NumIndices() / 3 + 1;
-            std::vector<Vertex2D> drawVertices(numPts);
+            vector<Vertex2D> drawVertices(numPts);
 
             const Vertex3Ds& A = m_vertices[m_mesh.m_indices[0]];
             drawVertices[0] = Vertex2D(A.x, A.y);
@@ -892,7 +892,7 @@ void Primitive::RenderBlueprint(Sur *psur, const bool solid)
    }
    else
    {
-      std::vector<Vertex2D> drawVertices;
+      vector<Vertex2D> drawVertices;
       for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
       {
          const Vertex3Ds * const A = &m_vertices[m_mesh.m_indices[i]];
@@ -1510,7 +1510,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool bac
       }
       else
       {
-         std::vector<WORD> tmp(m_mesh.NumIndices());
+         vector<WORD> tmp(m_mesh.NumIndices());
          for (size_t i = 0; i < m_mesh.NumIndices(); ++i)
             tmp[i] = m_mesh.m_indices[i];
 #ifndef COMPRESS_MESHES
@@ -1712,7 +1712,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
          pbr->GetStruct(m_mesh.m_indices.data(), (int)sizeof(unsigned int)*m_numIndices);
       else
       {
-         std::vector<WORD> tmp(m_numIndices);
+         vector<WORD> tmp(m_numIndices);
          pbr->GetStruct(tmp.data(), (int)sizeof(WORD)*m_numIndices);
          for (int i = 0; i < m_numIndices; ++i)
             m_mesh.m_indices[i] = tmp[i];
@@ -1757,7 +1757,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
             g_pPrimitiveDecompressThreadPool = new ThreadPool(g_pvp->m_logicalNumberOfProcessors);
 
          g_pPrimitiveDecompressThreadPool->enqueue([uclen, c, this] {
-            std::vector<WORD> tmp(m_numIndices);
+            vector<WORD> tmp(m_numIndices);
 
             mz_ulong uclen2 = uclen;
             const int error = uncompress((unsigned char *)tmp.data(), &uclen2, c, m_compressedIndices);
@@ -1938,19 +1938,18 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
 
             SetForegroundWindow(hwndDlg);
 
-            std::vector<std::string> szFileName;
             string szInitialDir;
-
             HRESULT hr = LoadValue("RecentDir"s, "ImportDir"s, szInitialDir);
             if (hr != S_OK)
                szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
+            vector<string> szFileName;
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0))
             {
                SetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, szFileName[0].c_str());
 
                size_t index = szFileName[0].find_last_of('\\');
-               if (index != std::string::npos)
+               if (index != string::npos)
                {
                   hr = SaveValue("RecentDir"s, "ImportDir"s, szFileName[0].substr(0, index));
                   index++;
@@ -2006,9 +2005,9 @@ bool Primitive::BrowseFor3DMeshFile()
 
    string filename(ofn.lpstrFile);
    size_t index = filename.find_last_of('\\');
-   if (index != std::string::npos)
+   if (index != string::npos)
    {
-      const std::string newInitDir(szFilename.substr(0, index));
+      const string newInitDir(szFilename.substr(0, index));
       SaveValue("RecentDir"s, "ImportDir"s, newInitDir);
       index++;
       m_d.m_meshFileName = filename.substr(index, filename.length() - index);
@@ -2132,14 +2131,13 @@ void Primitive::ExportMeshDialog()
    if (hr != S_OK)
        szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-   std::vector<std::string> szFileName;
-   
+   vector<string> szFileName;
    if (m_vpinball->SaveFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY))
    {
       const size_t index = szFileName[0].find_last_of('\\');
-      if (index != std::string::npos)
+      if (index != string::npos)
       {
-         const std::string newInitDir(szFileName[0].substr(0, index));
+         const string newInitDir(szFileName[0].substr(0, index));
          hr = SaveValue("RecentDir"s, "ImportDir"s, newInitDir);
       }
 

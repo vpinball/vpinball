@@ -3,7 +3,7 @@
 template<class T> class VectorProtected  // keeps only -pointers- of elements and does -not- free them afterwards! AND with a critical section for some operations (see end of file)
 {
 private:
-   std::vector<void*> m_rg; // Data buffer
+   vector<void*> m_rg; // Data buffer
    CRITICAL_SECTION m_CriticalSection;
 
 public:

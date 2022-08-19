@@ -166,7 +166,7 @@ void Flasher::UIRenderPass1(Sur * const psur)
    // Don't want border color to be over-ridden when selected - that will be drawn later
    psur->SetBorderColor(-1, false, 0);
 
-   std::vector<RenderVertex> vvertex;
+   vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
    Texture *ppi;
    if (m_ptable->RenderSolid() && m_d.m_displayTexture && (ppi = m_ptable->GetImage(m_d.m_szImageA)))
@@ -211,7 +211,7 @@ void Flasher::UIRenderPass2(Sur * const psur)
    psur->SetObject(nullptr);
 
    {
-      std::vector<RenderVertex> vvertex; //!! check/reuse from UIRenderPass1
+      vector<RenderVertex> vvertex; //!! check/reuse from UIRenderPass1
       GetRgVertex(vvertex);
       psur->Polygon(vvertex);
    }
@@ -333,7 +333,7 @@ void Flasher::UpdateMesh()
 
 void Flasher::RenderSetup()
 {
-   std::vector<RenderVertex> vvertex;
+   vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
 
    m_numVertices = (unsigned int)vvertex.size();
@@ -344,10 +344,10 @@ void Flasher::RenderSetup()
        return;
    }
 
-   std::vector<WORD> vtri;
+   vector<WORD> vtri;
    
    {
-   std::vector<unsigned int> vpoly(m_numVertices);
+   vector<unsigned int> vpoly(m_numVertices);
    for (unsigned int i = 0; i < m_numVertices; i++)
       vpoly[i] = i;
 
@@ -501,7 +501,7 @@ void Flasher::DoCommand(int icmd, int x, int y)
       STARTUNDO
       const Vertex2D v = m_ptable->TransformPoint(x, y);
 
-      std::vector<RenderVertex> vvertex;
+      vector<RenderVertex> vvertex;
       GetRgVertex(vvertex);
 
       Vertex2D vOut;

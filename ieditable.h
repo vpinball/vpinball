@@ -229,7 +229,7 @@ public:
    virtual IFireEvents *GetIFireEvents() = 0;
    virtual ItemTypeEnum GetItemType() const = 0;
 
-   virtual void GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D) {}
+   virtual void GetBoundingVertices(vector<Vertex3Ds>& pvvertex3D) {}
    virtual void WriteRegDefaults() {}
 
    void BeginUndo();
@@ -238,7 +238,7 @@ public:
    void MarkForDelete();
    void Undelete();
    char *GetName();
-   void SetName(const std::string& name);
+   void SetName(const string& name);
    void Delete();
    void Uncreate();
 

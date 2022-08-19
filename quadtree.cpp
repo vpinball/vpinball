@@ -29,7 +29,7 @@ static std::mutex mtx;
 
 void EmbreeBoundsFunc(const struct RTCBoundsFunctionArguments* const args)
 {
-    const HitObject * const ho = (*((const std::vector<HitObject*> *)args->geometryUserPtr))[args->primID];
+    const HitObject * const ho = (*((const vector<HitObject*> *)args->geometryUserPtr))[args->primID];
 
     args->bounds_o->lower_x = ho->m_hitBBox.left;
     args->bounds_o->lower_y = ho->m_hitBBox.top;
@@ -141,7 +141,7 @@ void HitQuadtree::CreateNextLevel(const FRect& bounds, const unsigned int level,
 
    m_children = new HitQuadtree[4];
 
-   std::vector<HitObject*> vRemain; // hit objects which did not go to a quadrant
+   vector<HitObject*> vRemain; // hit objects which did not go to a quadrant
 
    m_unique = (m_vho[0]->m_e != 0) ? m_vho[0]->m_obj : nullptr;
 
@@ -590,7 +590,7 @@ void HitQuadtree::HitTestXRay(const Ball * const pball, vector<HitObject*> &pvho
 #ifdef USE_EMBREE
 void EmbreeBoundsFuncBalls(const struct RTCBoundsFunctionArguments* const args)
 {
-    const Ball* const ball = (*((const std::vector<Ball*>*)args->geometryUserPtr))[args->primID];
+    const Ball* const ball = (*((const vector<Ball*>*)args->geometryUserPtr))[args->primID];
 
     args->bounds_o->lower_x = ball->m_hitBBox.left;
     args->bounds_o->lower_y = ball->m_hitBBox.top;
@@ -602,8 +602,8 @@ void EmbreeBoundsFuncBalls(const struct RTCBoundsFunctionArguments* const args)
 
 struct VPCollisions
 {
-    const std::vector<HitObject*> *vho;
-    const std::vector<Ball*> *ball;
+    const vector<HitObject*> *vho;
+    const vector<Ball*> *ball;
 };
 
 
@@ -639,7 +639,7 @@ void EmbreeCollideBalls(void* const userPtr, RTCCollision* const collisions, con
    }
 }
 
-void HitQuadtree::HitTestBall(std::vector<Ball*> ball) const
+void HitQuadtree::HitTestBall(vector<Ball*> ball) const
 {
    RTCScene scene = rtcNewScene(m_embree_device);
    rtcSetSceneBuildQuality(scene, RTC_BUILD_QUALITY_HIGH);

@@ -409,7 +409,7 @@ void PropertyDialog::DeleteAllTabs()
     m_backglassView = false;
 }
 
-void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList, const CComboBox &combo, const std::string &selectName)
+void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList, const CComboBox &combo, const string &selectName)
 {
     bool texelFound = false;
     for (const auto texel : contentList)
@@ -427,7 +427,7 @@ void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList,
     combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
 
-void PropertyDialog::UpdateMaterialComboBox(const vector<Material *>& contentList, const CComboBox &combo, const std::string &selectName)
+void PropertyDialog::UpdateMaterialComboBox(const vector<Material *>& contentList, const CComboBox &combo, const string &selectName)
 {
     bool matFound = false;
     for (const auto mat : contentList)

@@ -13,7 +13,7 @@ public:
    Vertex2D m_vCenter;
    float m_radius;
    TimerDataRoot m_tdr;
-   std::string m_szSurface;
+   string m_szSurface;
    KickerType m_kickertype;
    float m_hitAccuracy; //kicker hit grabbing object height ... default ballsize*0.7
    float m_orientation;
@@ -88,7 +88,7 @@ public:
 
    KickerData m_d;
 
-   std::vector<Vertex3Ds> m_hitMesh;
+   vector<Vertex3Ds> m_hitMesh;
 
 private:
    void GenerateMesh(Vertex3D_NoTex2 *const buf);

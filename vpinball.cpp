@@ -324,7 +324,7 @@ void VPinball::SetStatusBarElementInfo(const string& info)
    SendMessage(m_hwndStatusBar, SB_SETTEXT, 4 | 0, (size_t)info.c_str());
 }
 
-bool VPinball::OpenFileDialog(const string& initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const std::string& windowTitle) //!! use this all over the place and move to some standard header
+bool VPinball::OpenFileDialog(const string& initDir, vector<string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const string& windowTitle) //!! use this all over the place and move to some standard header
 {
    CFileDialog fileDlg(TRUE, defaultExt, initDir.c_str(), nullptr, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
    if (!windowTitle.empty())
@@ -345,7 +345,7 @@ bool VPinball::OpenFileDialog(const string& initDir, std::vector<std::string>& f
    }
 }
 
-bool VPinball::SaveFileDialog(const string& initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const std::string& windowTitle) //!! use this all over the place and move to some standard header
+bool VPinball::SaveFileDialog(const string& initDir, vector<string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const string& windowTitle) //!! use this all over the place and move to some standard header
 {
    CFileDialog fileDlg(FALSE, defaultExt, initDir.c_str(), nullptr, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
    if (!windowTitle.empty())
@@ -929,18 +929,18 @@ void VPinball::DoPlay(const bool _cameraMode)
 
 bool VPinball::LoadFile(const bool updateEditor)
 {
-   std::vector<std::string> szFileName;
    string szInitialDir;
-
    HRESULT hr = LoadValue("RecentDir"s, "LoadDir"s, szInitialDir);
    if (hr != S_OK)
       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
-   if (!OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0, !updateEditor ? "Select a Table to Play or press Cancel to enter Editor-Mode"s : string()))
+   vector<string> szFileName;
+   if (!OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0,
+          !updateEditor ? "Select a Table to Play or press Cancel to enter Editor-Mode"s : string()))
       return false;
 
    const size_t index = szFileName[0].find_last_of('\\');
-   if (index != std::string::npos)
+   if (index != string::npos)
       hr = SaveValue("RecentDir"s, "LoadDir"s, szFileName[0].substr(0, index));
 
    LoadFileName(szFileName[0], updateEditor);
@@ -1071,7 +1071,7 @@ void VPinball::CloseTable(const PinTable * const ppt)
    ppt->GetMDITable()->SendMessage(WM_SYSCOMMAND, SC_CLOSE, 0);
    m_unloadingTable = false;
 
-   const std::vector<MDIChildPtr> allChildren = GetAllMDIChildren();
+   const vector<MDIChildPtr> allChildren = GetAllMDIChildren();
    if (allChildren.empty())
    {
       ToggleToolbar();
@@ -1180,10 +1180,10 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
    // if the loaded file name is a valid one then add it to the top of the list
    if (!szfilename.empty())
    {
-      std::vector<std::string> newList;
+      vector<string> newList;
       newList.push_back(szfilename);
 
-      for (const std::string &tableName : m_recentTableList)
+      for (const string &tableName : m_recentTableList)
       {
          if (tableName != newList[0]) // does this file name aready exist in the list?
             newList.push_back(tableName);
@@ -1192,7 +1192,7 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
       m_recentTableList.clear();
 
       int i = 0;
-      for (const std::string &tableName : newList)
+      for (const string &tableName : newList)
       {
          m_recentTableList.push_back(tableName);
 
@@ -1965,17 +1965,16 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
          case IDC_IMPORT:
          {
-            std::vector<std::string> szFileName;
             string szInitialDir;
-
             const HRESULT hr = LoadValue("RecentDir"s, "FontDir"s, szInitialDir);
             if (hr != S_OK)
                szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
+            vector<string> szFileName;
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0))
             {
                const size_t index = szFileName[0].find_last_of('\\');
-               if (index != std::string::npos)
+               if (index != string::npos)
                   SaveValue("RecentDir"s, "FontDir"s, szFileName[0].substr(0, index));
 
                pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), szFileName[0]);

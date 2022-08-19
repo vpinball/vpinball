@@ -46,7 +46,7 @@ private:
    GLuint offset = 0;//unused ATM, but if we want to group multiple IndexBuffers later in one buffer we might need it
 
    static VertexBuffer* m_curVertexBuffer; // for caching
-   static std::vector<VertexBuffer*> notUploadedBuffers;
+   static vector<VertexBuffer*> notUploadedBuffers;
 
    void UploadData();
    void addToNotUploadedBuffers();

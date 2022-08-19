@@ -184,7 +184,7 @@ private:
       float u_min, u_max;
       float v_min, v_max;
    };
-   std::vector<TexCoordRect> m_digitTexCoords;
+   vector<TexCoordRect> m_digitTexCoords;
 
    // IDispReel
 public:

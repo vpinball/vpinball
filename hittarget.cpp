@@ -434,7 +434,7 @@ void HitTarget::EndPlay()
 // Calculation
 //////////////////////////////
 
-void HitTarget::GenerateMesh(std::vector<Vertex3D_NoTex2> &buf)
+void HitTarget::GenerateMesh(vector<Vertex3D_NoTex2> &buf)
 {
    SetMeshType(m_d.m_targetType);
 

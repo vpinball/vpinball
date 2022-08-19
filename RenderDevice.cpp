@@ -411,7 +411,7 @@ int getNumberOfDisplays()
 #endif
 }
 
-void EnumerateDisplayModes(const int display, std::vector<VideoMode>& modes)
+void EnumerateDisplayModes(const int display, vector<VideoMode>& modes)
 {
    modes.clear();
 
@@ -454,7 +454,7 @@ void EnumerateDisplayModes(const int display, std::vector<VideoMode>& modes)
       modes.push_back(vmode);
    }
 #else
-   std::vector<DisplayConfig> displays;
+   vector<DisplayConfig> displays;
    getDisplayList(displays);
    if (display >= (int)displays.size())
       return;
@@ -496,7 +496,7 @@ void EnumerateDisplayModes(const int display, std::vector<VideoMode>& modes)
 
 BOOL CALLBACK MonitorEnumList(__in  HMONITOR hMonitor, __in  HDC hdcMonitor, __in  LPRECT lprcMonitor, __in  LPARAM dwData)
 {
-   std::map<std::string,DisplayConfig>* data = reinterpret_cast<std::map<std::string,DisplayConfig>*>(dwData);
+   std::map<string,DisplayConfig>* data = reinterpret_cast<std::map<string,DisplayConfig>*>(dwData);
    MONITORINFOEX info;
    info.cbSize = sizeof(MONITORINFOEX);
    GetMonitorInfo(hMonitor, &info);
@@ -513,14 +513,14 @@ BOOL CALLBACK MonitorEnumList(__in  HMONITOR hMonitor, __in  HDC hdcMonitor, __i
    config.adapter = -1;
 #endif
    memcpy(config.DeviceName, info.szDevice, CCHDEVICENAME); // Internal display name e.g. "\\\\.\\DISPLAY1"
-   data->insert(std::pair<std::string, DisplayConfig>(config.DeviceName, config));
+   data->insert(std::pair<string, DisplayConfig>(config.DeviceName, config));
    return TRUE;
 }
 
-int getDisplayList(std::vector<DisplayConfig>& displays)
+int getDisplayList(vector<DisplayConfig>& displays)
 {
    displays.clear();
-   std::map<std::string, DisplayConfig> displayMap;
+   std::map<string, DisplayConfig> displayMap;
    // Get the resolution of all enabled displays.
    EnumDisplayMonitors(nullptr, nullptr, MonitorEnumList, reinterpret_cast<LPARAM>(&displayMap));
 
@@ -536,7 +536,7 @@ int getDisplayList(std::vector<DisplayConfig>& displays)
    for (int i = 0;i < adapterCount;++i) {
       D3DADAPTER_IDENTIFIER9 adapter;
       pD3D->GetAdapterIdentifier(i, 0, &adapter);
-      std::map<std::string, DisplayConfig>::iterator display = displayMap.find(adapter.DeviceName);
+      std::map<string, DisplayConfig>::iterator display = displayMap.find(adapter.DeviceName);
       if (display != displayMap.end()) {
          display->second.adapter = i;
          strncpy_s(display->second.GPU_Name, adapter.Description, sizeof(display->second.GPU_Name)-1);
@@ -547,7 +547,7 @@ int getDisplayList(std::vector<DisplayConfig>& displays)
 
    // Apply the same numbering as windows
    int i = 0;
-   for (std::map<std::string, DisplayConfig>::iterator display = displayMap.begin(); display != displayMap.end(); ++display)
+   for (std::map<string, DisplayConfig>::iterator display = displayMap.begin(); display != displayMap.end(); ++display)
    {
       if (display->second.adapter >= 0) {
          display->second.display = i;
@@ -567,9 +567,9 @@ int getDisplayList(std::vector<DisplayConfig>& displays)
 
 bool getDisplaySetupByID(const int display, int &x, int &y, int &width, int &height)
 {
-   std::vector<DisplayConfig> displays;
+   vector<DisplayConfig> displays;
    getDisplayList(displays);
-   for (std::vector<DisplayConfig>::iterator displayConf = displays.begin(); displayConf != displays.end(); ++displayConf) {
+   for (vector<DisplayConfig>::iterator displayConf = displays.begin(); displayConf != displays.end(); ++displayConf) {
       if ((display == -1 && displayConf->isPrimary) || display == displayConf->display) {
          x = displayConf->left;
          y = displayConf->top;
@@ -587,9 +587,9 @@ bool getDisplaySetupByID(const int display, int &x, int &y, int &width, int &hei
 
 int getPrimaryDisplay()
 {
-   std::vector<DisplayConfig> displays;
+   vector<DisplayConfig> displays;
    getDisplayList(displays);
-   for (std::vector<DisplayConfig>::iterator displayConf = displays.begin(); displayConf != displays.end(); ++displayConf)
+   for (vector<DisplayConfig>::iterator displayConf = displays.begin(); displayConf != displays.end(); ++displayConf)
       if (displayConf->isPrimary)
          return displayConf->adapter;
    return 0;

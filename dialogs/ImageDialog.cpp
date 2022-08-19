@@ -409,7 +409,7 @@ void ImageDialog::OnCancel()
 
 void ImageDialog::Import()
 {
-   std::vector<std::string> szFileName;
+   vector<string> szFileName;
    string szInitialDir;
 
    HRESULT hr = LoadValue("RecentDir"s, "ImageDir"s, szInitialDir);
@@ -421,11 +421,11 @@ void ImageDialog::Import()
       CCO(PinTable) * const pt = g_pvp->GetActiveTable();
       const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
 
-      for (const std::string &file : szFileName)
+      for (const string &file : szFileName)
          pt->ImportImage(hSoundList, file);
 
       const size_t index = szFileName[0].find_last_of('\\');
-      if (index != std::string::npos)
+      if (index != string::npos)
          hr = SaveValue("RecentDir"s, "ImageDir"s, szFileName[0].substr(0, index));
 
       pt->SetNonUndoableDirty(eSaveDirty);
@@ -727,7 +727,7 @@ void ImageDialog::ReimportFrom()
       const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to replace this image with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
       if (ans == IDYES)
       {
-         std::vector<std::string> szFileName;
+         vector<string> szFileName;
          string szInitialDir;
 
          const HRESULT hr = LoadValue("RecentDir"s, "ImageDir"s, szInitialDir);
@@ -745,7 +745,7 @@ void ImageDialog::ReimportFrom()
             if (ppi != nullptr)
             {
                const size_t index = szFileName[0].find_last_of('\\');
-               if (index != std::string::npos)
+               if (index != string::npos)
                   SaveValue("RecentDir"s, "ImageDir"s, szFileName[0].substr(0, index));
 
                CCO(PinTable) * const pt = g_pvp->GetActiveTable();

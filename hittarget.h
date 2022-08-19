@@ -170,10 +170,10 @@ public:
    void SetDefaultPhysics(bool fromMouseClick) final;
    void ExportMesh(ObjLoader& loader) final;
 
-   void GenerateMesh(std::vector<Vertex3D_NoTex2> &buf);
+   void GenerateMesh(vector<Vertex3D_NoTex2> &buf);
    void TransformVertices();
    void SetMeshType(const TargetType type);
-   void UpdateStatusBarInfo();
+   void UpdateStatusBarInfo() final;
 
    HitTargetData    m_d;
 
@@ -198,14 +198,14 @@ private:
    PropertyPane *m_propPosition;
    PropertyPane *m_propPhysics;
 
-   std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
+   vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
    VertexBuffer *m_vertexBuffer;
    IndexBuffer *m_indexBuffer;
 
    // Vertices for editor display & hit shape
-   std::vector<Vertex3Ds> m_hitUIVertices;
-   std::vector<Vertex3D_NoTex2> m_transformedVertices;
+   vector<Vertex3Ds> m_hitUIVertices;
+   vector<Vertex3D_NoTex2> m_transformedVertices;
    U32   m_timeStamp;
    float m_moveAnimationOffset;
    bool  m_moveAnimation;
