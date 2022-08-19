@@ -13,6 +13,8 @@ HRESULT DispReel::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
    m_ptable = ptable;
 
+   m_dispreelanim.m_pDispReel = this;
+
    SetDefaults(fromMouseClick);
 
    m_d.m_v1.x = x;

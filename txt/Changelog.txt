@@ -2,6 +2,7 @@ VP 10.7.1 Changelog
 ------------------------
 
 FEATURES:
+
 - add "Assign to Layer" context menu again by showing the first 20 layers.
 
 - expose background and selection color in the script editor preferences
@@ -22,6 +23,7 @@ FEATURES:
 - add new JP Physics recommendations (table, pdf, materials, script)
 
 FIXES:
+
 - improve very slow layer operations (open/close table, filter/unfilter)
 - fix an issue when hiding all layers
 - assigning an element to a hidden layer, the element will also be set to hidden.
