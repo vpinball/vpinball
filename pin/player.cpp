@@ -364,7 +364,7 @@ void Player::PreRegisterClass(WNDCLASS& wc)
 
 void Player::PreCreate(CREATESTRUCT& cs)
 {
-    m_fullScreen = LoadValueBoolWithDefault("Player", "FullScreen", IsWindows10_1803orAbove());
+    m_fullScreen = LoadValueBoolWithDefault("Player"s, "FullScreen"s, IsWindows10_1803orAbove());
 
     // command line override
     if (g_pvp->m_disEnableTrueFullscreen == 0)
@@ -372,14 +372,14 @@ void Player::PreCreate(CREATESTRUCT& cs)
     else if (g_pvp->m_disEnableTrueFullscreen == 1)
         m_fullScreen = true;
 
-    int display = LoadValueIntWithDefault("Player", "Display", -1);
+    int display = LoadValueIntWithDefault("Player"s, "Display"s, -1);
     if (display >= getNumberOfDisplays() || g_pvp->m_primaryDisplay)
         display = -1; // force primary monitor
     int x, y;
     getDisplaySetupByID(display, x, y, m_screenwidth, m_screenheight);
 
-    m_width = LoadValueIntWithDefault("Player", "Width", m_fullScreen ? -1 : DEFAULT_PLAYER_WIDTH);
-    m_height = LoadValueIntWithDefault("Player", "Height", m_width * 9 / 16);
+    m_width = LoadValueIntWithDefault("Player"s, "Width"s, m_fullScreen ? -1 : DEFAULT_PLAYER_WIDTH);
+    m_height = LoadValueIntWithDefault("Player"s, "Height"s, m_width * 9 / 16);
     if (m_width <= 0)
     {
         m_width = m_screenwidth;
@@ -392,7 +392,7 @@ void Player::PreCreate(CREATESTRUCT& cs)
         y = 0;
         m_screenwidth = m_width;
         m_screenheight = m_height;
-        m_refreshrate = LoadValueIntWithDefault("Player", "RefreshRate", 0);
+        m_refreshrate = LoadValueIntWithDefault("Player"s, "RefreshRate"s, 0);
     }
     else
     {
@@ -417,8 +417,8 @@ void Player::PreCreate(CREATESTRUCT& cs)
         // is this a non-fullscreen window? -> get previously saved window position
         if ((m_height != m_screenheight) || (m_width != m_screenwidth))
         {
-            const int xn = LoadValueIntWithDefault("Player", "WindowPosX", x); //!! does this handle multi-display correctly like this?
-            const int yn = LoadValueIntWithDefault("Player", "WindowPosY", y);
+            const int xn = LoadValueIntWithDefault("Player"s, "WindowPosX"s, x); //!! does this handle multi-display correctly like this?
+            const int yn = LoadValueIntWithDefault("Player"s, "WindowPosY"s, y);
 
             RECT r;
             r.left = xn;
@@ -820,7 +820,7 @@ void Player::InitKeys()
    for(unsigned int i = 0; i < eCKeys; ++i)
    {
       int key;
-      const HRESULT hr = LoadValue("Player", regkey_string[i], key);
+      const HRESULT hr = LoadValue("Player"s, regkey_string[i], key);
       if (hr != S_OK || key > 0xdd)
           key = regkey_defdik[i];
       m_rgKeys[i] = (EnumAssignKeys)key;
@@ -2239,7 +2239,7 @@ void Player::CalcBallAspectRatio()
    const int ballStretchMode = LoadValueIntWithDefault("Player"s, "BallStretchMode"s, 0);
 
    // Monitors: 4:3, 16:9, 16:10, 21:10, 21:9
-   //const int ballStretchMonitor = LoadValueIntWithDefault("Player", "BallStretchMonitor", 1); // assume 16:9
+   //const int ballStretchMonitor = LoadValueIntWithDefault("Player"s, "BallStretchMonitor"s, 1); // assume 16:9
    const float ballAspecRatioOffsetX = LoadValueFloatWithDefault("Player"s, "BallCorrectionX"s, 0.f);
    const float ballAspecRatioOffsetY = LoadValueFloatWithDefault("Player"s, "BallCorrectionY"s, 0.f);
 

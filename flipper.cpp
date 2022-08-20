@@ -199,55 +199,44 @@ void Flipper::UpdatePhysicsSettings()
    if (m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics))
    {
       const int idx = m_d.m_OverridePhysics ? (m_d.m_OverridePhysics-1) : (m_ptable->m_overridePhysics-1);
-      char tmp[256];
 
-      sprintf_s(tmp, sizeof(tmp), "FlipperPhysicsMass%d", idx);
-      m_d.m_OverrideMass = LoadValueFloatWithDefault("Player", tmp, 1.f);
+      m_d.m_OverrideMass = LoadValueFloatWithDefault("Player"s, "FlipperPhysicsMass"+std::to_string(idx), 1.f);
       if (m_d.m_OverrideMass < 0.0f)
          m_d.m_OverrideMass = m_d.m_mass;
 
-      sprintf_s(tmp, sizeof(tmp), "FlipperPhysicsStrength%d", idx);
-      m_d.m_OverrideStrength = LoadValueFloatWithDefault("Player", tmp, 2200.f);
+      m_d.m_OverrideStrength = LoadValueFloatWithDefault("Player"s, "FlipperPhysicsStrength"+std::to_string(idx), 2200.f);
       if (m_d.m_OverrideStrength < 0.0f)
          m_d.m_OverrideStrength = m_d.m_strength;
 
-      sprintf_s(tmp, sizeof(tmp), "FlipperPhysicsElasticity%d", idx);
-      m_d.m_OverrideElasticity = LoadValueFloatWithDefault("Player", tmp, 0.8f);
+      m_d.m_OverrideElasticity = LoadValueFloatWithDefault("Player"s, "FlipperPhysicsElasticity"+std::to_string(idx), 0.8f);
       if (m_d.m_OverrideElasticity < 0.0f)
          m_d.m_OverrideElasticity = m_d.m_elasticity;
 
-      sprintf_s(tmp, sizeof(tmp), "FlipperPhysicsScatter%d", idx);
-      m_d.m_OverrideScatterAngle = LoadValueFloatWithDefault("Player", tmp, 0.f);
+      m_d.m_OverrideScatterAngle = LoadValueFloatWithDefault("Player"s, "FlipperPhysicsScatter"+std::to_string(idx), 0.f);
       if (m_d.m_OverrideScatterAngle < 0.0f)
          m_d.m_OverrideScatterAngle = m_d.m_scatter;
 
-      sprintf_s(tmp, sizeof(tmp), "FlipperPhysicsReturnStrength%d", idx);
-      m_d.m_OverrideReturnStrength = LoadValueFloatWithDefault("Player", tmp, 0.058f);
+      m_d.m_OverrideReturnStrength = LoadValueFloatWithDefault("Player"s, "FlipperPhysicsReturnStrength"+std::to_string(idx), 0.058f);
       if (m_d.m_OverrideReturnStrength < 0.0f)
          m_d.m_OverrideReturnStrength = m_d.m_return;
 
-      sprintf_s(tmp, sizeof(tmp), "FlipperPhysicsElasticityFalloff%d", idx);
-      m_d.m_OverrideElasticityFalloff = LoadValueFloatWithDefault("Player", tmp, 0.43f);
+      m_d.m_OverrideElasticityFalloff = LoadValueFloatWithDefault("Player"s, "FlipperPhysicsElasticityFalloff"+std::to_string(idx), 0.43f);
       if (m_d.m_OverrideElasticityFalloff < 0.0f)
          m_d.m_OverrideElasticityFalloff = m_d.m_elasticityFalloff;
 
-      sprintf_s(tmp, sizeof(tmp), "FlipperPhysicsFriction%d", idx);
-      m_d.m_OverrideFriction = LoadValueFloatWithDefault("Player", tmp, 0.6f);
+      m_d.m_OverrideFriction = LoadValueFloatWithDefault("Player"s, "FlipperPhysicsFriction"+std::to_string(idx), 0.6f);
       if (m_d.m_OverrideFriction < 0.0f)
          m_d.m_OverrideFriction = m_d.m_friction;
 
-      sprintf_s(tmp, sizeof(tmp), "FlipperPhysicsCoilRampUp%d", idx);
-      m_d.m_OverrideCoilRampUp = LoadValueFloatWithDefault("Player", tmp, 3.f);
+      m_d.m_OverrideCoilRampUp = LoadValueFloatWithDefault("Player"s, "FlipperPhysicsCoilRampUp"+std::to_string(idx), 3.f);
       if (m_d.m_OverrideCoilRampUp < 0.0f)
          m_d.m_OverrideCoilRampUp = m_d.m_rampUp;
 
-      sprintf_s(tmp, sizeof(tmp), "FlipperPhysicsEOSTorque%d", idx);
-      m_d.m_OverrideTorqueDamping = LoadValueFloatWithDefault("Player", tmp, 0.75f);
+      m_d.m_OverrideTorqueDamping = LoadValueFloatWithDefault("Player"s, "FlipperPhysicsEOSTorque"+std::to_string(idx), 0.75f);
       if (m_d.m_OverrideTorqueDamping < 0.0f)
          m_d.m_OverrideTorqueDamping = m_d.m_torqueDamping;
 
-      sprintf_s(tmp, sizeof(tmp), "FlipperPhysicsEOSTorqueAngle%d", idx);
-      m_d.m_OverrideTorqueDampingAngle = LoadValueFloatWithDefault("Player", tmp, 6.f);
+      m_d.m_OverrideTorqueDampingAngle = LoadValueFloatWithDefault("Player"s, "FlipperPhysicsEOSTorqueAngle"+std::to_string(idx), 6.f);
       if (m_d.m_OverrideTorqueDampingAngle < 0.0f)
          m_d.m_OverrideTorqueDampingAngle = m_d.m_torqueDampingAngle;
    }

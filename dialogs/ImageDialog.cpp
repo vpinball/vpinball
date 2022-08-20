@@ -192,11 +192,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   ListView_GetItem(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), &lvitem);
                   Texture * const ppi = (Texture *)lvitem.lParam;
                   if (ppi != nullptr)
-                  {
-                     char textBuf[256];
-                     sprintf_s(textBuf, sizeof(textBuf), "%i", (int)ppi->m_alphaTestValue);
-                     SetDlgItemText(IDC_ALPHA_MASK_EDIT, textBuf);
-                  }
+                     SetDlgItemText(IDC_ALPHA_MASK_EDIT, std::to_string((int)ppi->m_alphaTestValue).c_str());
                }
                ::InvalidateRect(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), nullptr, fTrue);
             }

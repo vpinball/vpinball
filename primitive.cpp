@@ -1668,11 +1668,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
       pbr->GetStruct(c, m_compressedAnimationVertices);
       const int error = uncompress((unsigned char *)frameData.m_frameVerts.data(), &uclen, c, m_compressedAnimationVertices);
       if (error != Z_OK)
-      {
-         char err[128];
-         sprintf_s(err, sizeof(err), "Could not uncompress primitive animation vertex data, error %d", error);
-         ShowError(err);
-      }
+         ShowError("Could not uncompress primitive animation vertex data, error "+std::to_string(error));
       free(c);
       m_mesh.m_animationFrames.push_back(frameData);
       break;
@@ -1694,11 +1690,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
 		  mz_ulong uclen2 = uclen;
 		  const int error = uncompress((unsigned char *)m_mesh.m_vertices.data(), &uclen2, c, m_compressedVertices);
 		  if (error != Z_OK)
-		  {
-			  char err[128];
-			  sprintf_s(err, sizeof(err), "Could not uncompress primitive vertex data, error %d", error);
-			  ShowError(err);
-		  }
+			  ShowError("Could not uncompress primitive vertex data, error "+std::to_string(error));
 		  free(c);
 	  });
       break;
@@ -1738,11 +1730,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
 			 mz_ulong uclen2 = uclen;
 			 const int error = uncompress((unsigned char *)m_mesh.m_indices.data(), &uclen2, c, m_compressedIndices);
 			 if (error != Z_OK)
-			 {
-				 char err[128];
-				 sprintf_s(err, sizeof(err), "Could not uncompress (large) primitive index data, error %d", error);
-				 ShowError(err);
-			 }
+				 ShowError("Could not uncompress (large) primitive index data, error "+std::to_string(error));
 			 free(c);
 		 });
       }
@@ -1762,11 +1750,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
             mz_ulong uclen2 = uclen;
             const int error = uncompress((unsigned char *)tmp.data(), &uclen2, c, m_compressedIndices);
             if (error != Z_OK)
-            {
-               char err[128];
-               sprintf_s(err, sizeof(err), "Could not uncompress (small) primitive index data, error %d", error);
-               ShowError(err);
-            }
+               ShowError("Could not uncompress (small) primitive index data, error "+std::to_string(error));
             free(c);
             for (int i = 0; i < m_numIndices; ++i)
                m_mesh.m_indices[i] = tmp[i];

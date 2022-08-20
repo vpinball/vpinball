@@ -665,8 +665,8 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       }
       case IDC_RESET_WINDOW:
       {
-         (void)DeleteValue("Player", "WindowPosX");
-         (void)DeleteValue("Player", "WindowPosY");
+         (void)DeleteValue("Player"s, "WindowPosX"s);
+         (void)DeleteValue("Player"s, "WindowPosY"s);
          break;
       }
       case IDC_OVERWRITE_BALL_IMAGE_CHECK:

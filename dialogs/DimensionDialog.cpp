@@ -113,23 +113,16 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                const int width = (int)(dimTable[idx].width*47.0f + 0.5f);
                const int height = (int)(dimTable[idx].height*47.0f + 0.5f);
+               SetDlgItemText(IDC_VP_WIDTH, std::to_string(width).c_str());
+               SetDlgItemText(IDC_VP_HEIGHT, std::to_string(height).c_str());
                char textBuf[MAXNAMEBUFFER];
-               sprintf_s(textBuf, sizeof(textBuf), "%i", width);
-               CString textStr(textBuf);
-               SetDlgItemText(IDC_VP_WIDTH, textStr);
-               sprintf_s(textBuf, sizeof(textBuf), "%i", height);
-               textStr = CString(textBuf);
-               SetDlgItemText(IDC_VP_HEIGHT, textStr);
                sprintf_s(textBuf, sizeof(textBuf), "%.03f", dimTable[idx].width);
-               textStr = CString(textBuf);
-               SetDlgItemText(IDC_SIZE_WIDTH, textStr);
+               SetDlgItemText(IDC_SIZE_WIDTH, textBuf);
                sprintf_s(textBuf, sizeof(textBuf), "%.03f", dimTable[idx].height);
-               textStr = CString(textBuf);
-               SetDlgItemText(IDC_SIZE_HEIGHT, textStr);
+               SetDlgItemText(IDC_SIZE_HEIGHT, textBuf);
                float ratio = (float)height / width;
                sprintf_s(textBuf, sizeof(textBuf), "%.04f", ratio);
-               textStr = CString(textBuf);
-               SetDlgItemText(IDC_ASPECT_RATIO_EDIT, textStr);
+               SetDlgItemText(IDC_ASPECT_RATIO_EDIT, textBuf);
                break;
             }
          }
@@ -151,10 +144,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   if (ret != 1 || sizeWidth < 0.0f)
                      sizeWidth = 0;
                   const int width = (int)(sizeWidth*47.0f + 0.5f);
-                  char textBuf[MAXNAMEBUFFER];
-                  sprintf_s(textBuf, sizeof(textBuf), "%i", width);
-                  CString textStr2(textBuf);
-                  SetDlgItemText(IDC_VP_WIDTH, textStr2);
+                  SetDlgItemText(IDC_VP_WIDTH, std::to_string(width).c_str());
                }
                if (LOWORD(wParam) == IDC_SIZE_HEIGHT)
                {
@@ -163,10 +153,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   if (ret != 1 || sizeHeight < 0.0f)
                      sizeHeight = 0;
                   const int height = (int)(sizeHeight*47.0f + 0.5f);
-                  char textBuf[MAXNAMEBUFFER];
-                  sprintf_s(textBuf, sizeof(textBuf), "%i", height);
-                  const CString textStr2(textBuf);
-                  SetDlgItemText(IDC_VP_HEIGHT, textStr2);
+                  SetDlgItemText(IDC_VP_HEIGHT, std::to_string(height).c_str());
                }
                if (LOWORD(wParam) == IDC_VP_WIDTH)
                {

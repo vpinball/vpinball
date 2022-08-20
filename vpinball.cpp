@@ -1195,12 +1195,8 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
       for (const string &tableName : newList)
       {
          m_recentTableList.push_back(tableName);
-
-         char szRegName[MAX_PATH];
-
          // write entry to the registry
-         sprintf_s(szRegName, sizeof(szRegName), "TableFileName%d", i);
-         SaveValue("RecentDir"s, szRegName, tableName);
+         SaveValue("RecentDir"s, "TableFileName"+std::to_string(i), tableName);
 
          if (++i == LAST_OPENED_TABLE_COUNT)
             break;
