@@ -405,13 +405,12 @@ void ImageDialog::OnCancel()
 
 void ImageDialog::Import()
 {
-   vector<string> szFileName;
    string szInitialDir;
-
    HRESULT hr = LoadValue("RecentDir"s, "ImageDir"s, szInitialDir);
    if (hr != S_OK)
       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
+   vector<string> szFileName;
    if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0", "png", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
    {
       CCO(PinTable) * const pt = g_pvp->GetActiveTable();
@@ -723,13 +722,12 @@ void ImageDialog::ReimportFrom()
       const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to replace this image with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
       if (ans == IDYES)
       {
-         vector<string> szFileName;
          string szInitialDir;
-
          const HRESULT hr = LoadValue("RecentDir"s, "ImageDir"s, szInitialDir);
          if (hr != S_OK)
             szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
+         vector<string> szFileName;
          if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0","png",0))
          {
             LVITEM lvitem;
