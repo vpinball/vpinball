@@ -1094,7 +1094,7 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
    const int numRings = splinePoints;
    const int numSegments = accuracy;
    m_numVertices = numRings*numSegments;
-   m_numIndices = 6 * m_numVertices; //m_numVertices*2+2;
+   m_numIndices = 6 * ((numRings-1)*numSegments); //m_numVertices*2+2;
 
    if (*meshBuf1 == nullptr)
       *meshBuf1 = new Vertex3D_NoTex2[m_numVertices];
@@ -1114,8 +1114,6 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
          *meshBuf2 = new Vertex3D_NoTex2[m_numVertices];
    }
 
-   Vertex3D_NoTex2 *buf1 = *meshBuf1;
-
    if (m_d.m_type != RampType1Wire)
    {
       CreateWire(numRings, numSegments, rgvLocal, m_vertBuffer);
@@ -1126,24 +1124,21 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
 
    // calculate faces
    for (int i = 0; i < numRings - 1; i++)
-   {
       for (int j = 0; j < numSegments; j++)
       {
          int quad[4];
          quad[0] = i*numSegments + j;
 
+         quad[1] = i*numSegments;
          if (j != numSegments - 1)
-            quad[1] = i*numSegments + j + 1;
-         else
-            quad[1] = i*numSegments;
+            quad[1] += j + 1;
 
          if (i != numRings - 1)
          {
             quad[2] = (i + 1)*numSegments + j;
+            quad[3] = (i + 1)*numSegments;
             if (j != numSegments - 1)
-               quad[3] = (i + 1)*numSegments + j + 1;
-            else
-               quad[3] = (i + 1)*numSegments;
+               quad[3] += j + 1;
          }
          else
          {
@@ -1155,16 +1150,15 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
          }
 
          const unsigned int offs = (i*numSegments + j) * 6;
-         m_meshIndices[offs] = quad[0];
+         m_meshIndices[offs    ] = quad[0];
          m_meshIndices[offs + 1] = quad[1];
          m_meshIndices[offs + 2] = quad[2];
          m_meshIndices[offs + 3] = quad[3];
          m_meshIndices[offs + 4] = quad[2];
          m_meshIndices[offs + 5] = quad[1];
       }
-   }
 
-   memcpy(buf1, m_vertBuffer, sizeof(Vertex3D_NoTex2)*m_numVertices);
+   memcpy(*meshBuf1, m_vertBuffer, sizeof(Vertex3D_NoTex2)*m_numVertices);
 
    if (m_d.m_type != RampType1Wire)
    {
