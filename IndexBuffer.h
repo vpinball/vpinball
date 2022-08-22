@@ -38,6 +38,8 @@ public:
    GLuint getOffset() const { return offset; }
    Format getIndexFormat() const { return indexFormat; }
 
+   static IndexBuffer* m_curIndexBuffer; // for caching
+
 private:
    GLuint count;
    GLuint size;
@@ -55,7 +57,6 @@ private:
    GLuint Buffer = 0;
    Format indexFormat;
 
-   static IndexBuffer* m_curIndexBuffer; // for caching
    static vector<IndexBuffer*> notUploadedBuffers;
 
    void UploadData(bool freeData);

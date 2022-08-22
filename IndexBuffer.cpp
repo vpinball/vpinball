@@ -165,8 +165,11 @@ void IndexBuffer::release()
 void IndexBuffer::bind()
 {
 #ifdef ENABLE_SDL
-   if (!isUploaded)
-      IndexBuffer::UploadBuffers();//Should never happen...
+   if (!isUploaded) //Should never happen...
+   {
+      assert(!"UploadBuffers in IndexBuffer::bind");
+      IndexBuffer::UploadBuffers();
+   }
    if (m_curIndexBuffer == nullptr || Buffer != m_curIndexBuffer->Buffer)
    {
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffer);
