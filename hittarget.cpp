@@ -147,7 +147,7 @@ HRESULT HitTarget::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void HitTarget::SetDefaults(bool fromMouseClick)
 {
-#define strKeyName "DefaultProps\\HitTarget"s
+#define strKeyName regKey[RegName::DefaultPropsHitTarget]
 
    m_d.m_legacy = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "LegacyMode"s, false) : false;
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "TimerEnabled"s, false) : false;
@@ -185,12 +185,13 @@ void HitTarget::SetDefaults(bool fromMouseClick)
    m_d.m_disableLightingBelow = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "DisableLightingBelow"s, 0.f) : 0.f;
    m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
    m_d.m_raiseDelay = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "RaiseDelay"s, 100) : 100;
+
 #undef strKeyName
 }
 
 void HitTarget::WriteRegDefaults()
 {
-#define strKeyName "DefaultProps\\HitTarget"s
+#define strKeyName regKey[RegName::DefaultPropsHitTarget]
 
    SaveValueBool(strKeyName, "LegacyMode"s, m_d.m_legacy);
    SaveValueBool(strKeyName, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
@@ -223,6 +224,7 @@ void HitTarget::WriteRegDefaults()
    SaveValueFloat(strKeyName, "DisableLightingBelow"s, m_d.m_disableLightingBelow);
    SaveValueBool(strKeyName, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
    SaveValueInt(strKeyName, "RaiseDelay"s, m_d.m_raiseDelay);
+
 #undef strKeyName
 }
 
@@ -1316,12 +1318,13 @@ STDMETHODIMP HitTarget::put_ReflectionEnabled(VARIANT_BOOL newVal)
 
 void HitTarget::SetDefaultPhysics(bool fromMouseClick)
 {
-#define strKeyName "DefaultProps\\HitTarget"s
+#define strKeyName regKey[RegName::DefaultPropsHitTarget]
 
    m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Elasticity"s, 0.35f) : 0.35f;
    m_d.m_elasticityFalloff = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "ElasticityFalloff"s, 0.5f) : 0.5f;
    m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Friction"s, 0.2f) : 0.2f;
    m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Scatter"s, 5) : 5;
+
 #undef strKeyName
 }
 

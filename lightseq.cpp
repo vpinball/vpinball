@@ -25,7 +25,7 @@ HRESULT LightSeq::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void LightSeq::SetDefaults(bool fromMouseClick)
 {
-#define regKey "DefaultProps\\LightSequence"s
+#define regKey regKey[RegName::DefaultPropsLightSequence]
 
    m_d.m_updateinterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "UpdateInterval"s, 25) : 25;
 
@@ -44,12 +44,13 @@ void LightSeq::SetDefaults(bool fromMouseClick)
    m_d.m_vCenter.y = fromMouseClick ? LoadValueFloatWithDefault(regKey, "CenterY"s, (2 * EDITOR_BG_WIDTH) / 2) : ((2 * EDITOR_BG_WIDTH) / 2);
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled"s, false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "TimerInterval"s, 100) : 100;
+
 #undef regKey
 }
 
 void LightSeq::WriteRegDefaults()
 {
-#define regKey "DefaultProps\\LightSequence"s
+#define regKey regKey[RegName::DefaultPropsLightSequence]
 
    char strTmp[MAXSTRING];
    WideCharToMultiByteNull(CP_ACP, 0, m_d.m_wzCollection.c_str(), -1, strTmp, MAXSTRING, nullptr, nullptr);
@@ -59,6 +60,7 @@ void LightSeq::WriteRegDefaults()
    SaveValueFloat(regKey, "CenterY"s, m_d.m_vCenter.y);
    SaveValueBool(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
    SaveValueInt(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+
 #undef regKey
 }
 

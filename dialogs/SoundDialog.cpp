@@ -253,7 +253,7 @@ void SoundDialog::Import()
       return;
 
    string szInitialDir;
-   HRESULT hr = LoadValue( "RecentDir"s, "SoundDir"s, szInitialDir);
+   HRESULT hr = LoadValue(regKey[RegName::RecentDir], "SoundDir"s, szInitialDir);
    if (hr != S_OK)
       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -262,7 +262,7 @@ void SoundDialog::Import()
    {
       const size_t index = szFileName[0].find_last_of('\\');
       if (index != string::npos)
-         hr = SaveValue("RecentDir"s, "SoundDir"s, szFileName[0].substr(0, index));
+         hr = SaveValue(regKey[RegName::RecentDir], "SoundDir"s, szFileName[0].substr(0, index));
 
       for (const string &file : szFileName)
          pt->ImportSound(hSoundList, file);
@@ -325,7 +325,7 @@ void SoundDialog::ReImportFrom()
         if (ans == IDYES)
         {
             string szInitialDir;
-            HRESULT hr = LoadValue("RecentDir", "SoundDir", szInitialDir);
+            HRESULT hr = LoadValue(regKey[RegName::RecentDir], "SoundDir"s, szInitialDir);
             if (hr != S_OK)
                 szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -344,7 +344,7 @@ void SoundDialog::ReImportFrom()
 
                 const size_t index = szFileName[0].find_last_of('\\');
                 if (index != string::npos)
-                   hr = SaveValue("RecentDir"s, "SoundDir"s, szFileName[0].substr(0, index));
+                   hr = SaveValue(regKey[RegName::RecentDir], "SoundDir"s, szFileName[0].substr(0, index));
 
                 pt->SetNonUndoableDirty( eSaveDirty );
             }
@@ -404,7 +404,7 @@ void SoundDialog::Export()
             ofn.lpstrDefExt = "mp3";
 
             string initDir;
-            const HRESULT hr = LoadValue("RecentDir"s, "SoundDir"s, initDir);
+            const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "SoundDir"s, initDir);
             if (hr != S_OK)
                initDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -465,7 +465,7 @@ void SoundDialog::Export()
                     pps = (PinSound *)lvitem.lParam;
                 }
 
-                SaveValue("RecentDir"s, "SoundDir"s, pathName);
+                SaveValue(regKey[RegName::RecentDir], "SoundDir"s, pathName);
             }
         }
     }
@@ -584,8 +584,8 @@ void SoundDialog::DeleteSound()
 
 void SoundDialog::LoadPosition()
 {
-    const int x = LoadValueIntWithDefault("Editor"s, "SoundMngPosX"s, 0);
-    const int y = LoadValueIntWithDefault("Editor"s, "SoundMngPosY"s, 0);
+    const int x = LoadValueIntWithDefault(regKey[RegName::Editor], "SoundMngPosX"s, 0);
+    const int y = LoadValueIntWithDefault(regKey[RegName::Editor], "SoundMngPosY"s, 0);
 
     SetWindowPos( nullptr, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
 }
@@ -593,8 +593,8 @@ void SoundDialog::LoadPosition()
 void SoundDialog::SavePosition()
 {
     const CRect rect = GetWindowRect();
-    SaveValueInt( "Editor"s, "SoundMngPosX"s, rect.left);
-    SaveValueInt( "Editor"s, "SoundMngPosY"s, rect.top);
+    SaveValueInt(regKey[RegName::Editor], "SoundMngPosX"s, rect.left);
+    SaveValueInt(regKey[RegName::Editor], "SoundMngPosY"s, rect.top);
 }
 
 
@@ -697,9 +697,8 @@ INT_PTR SoundPositionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void SoundPositionDialog::ReadTextValue(int item, int &oValue)
 {
-	const CString textStr = GetDlgItemText(item);
 	float fval;
-	const int ret = sscanf_s(textStr.c_str(), "%f", &fval);
+	const int ret = sscanf_s(GetDlgItemText(item).c_str(), "%f", &fval);
 	if (ret == 1 && fval >= -1.0f && fval <= 1.0f)
 		oValue = quantizeSignedPercent(fval);
 }

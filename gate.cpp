@@ -98,7 +98,7 @@ HRESULT Gate::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Gate::SetDefaults(bool fromMouseClick)
 {
-#define regKey "DefaultProps\\Gate"s
+#define regKey regKey[RegName::DefaultPropsGate]
 
    m_d.m_length = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Length"s, 100.f) : 100.f;
    m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Height"s, 50.f) : 50.f;
@@ -120,13 +120,14 @@ void Gate::SetDefaults(bool fromMouseClick)
 
    m_d.m_twoWay = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TwoWay"s, true) : true;
    m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ReflectionEnabled"s, true) : true;
+
 #undef regKey
 }
 
 
 void Gate::WriteRegDefaults()
 {
-#define regKey "DefaultProps\\Gate"s
+#define regKey regKey[RegName::DefaultPropsGate]
 
    SaveValueFloat(regKey, "Length"s, m_d.m_length);
    SaveValueFloat(regKey, "Height"s, m_d.m_height);
@@ -146,6 +147,7 @@ void Gate::WriteRegDefaults()
    SaveValueBool(regKey, "TwoWay"s, m_d.m_twoWay);
    SaveValueBool(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
    SaveValueInt(regKey, "GateType"s, m_d.m_type);
+
 #undef regKey
 }
 
@@ -284,13 +286,14 @@ void Gate::UIRenderPass2(Sur * const psur)
 
 void Gate::SetDefaultPhysics(bool fromMouseClick)
 {
-#define regKey "DefaultProps\\Gate"s
+#define regKey regKey[RegName::DefaultPropsGate]
 
    m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Elasticity"s, 0.3f) : 0.3f;
    m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Friction"s, 0.02f) : 0.02f;
    m_d.m_damping = fromMouseClick ? LoadValueFloatWithDefault(regKey, "AntiFriction"s, 0.985f) : 0.985f;
    m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Scatter"s, 0.f) : 0.f;
    m_d.m_gravityfactor = fromMouseClick ? LoadValueFloatWithDefault(regKey, "GravityFactor"s, 0.25f) : 0.25f;
+
 #undef regKey
 }
 

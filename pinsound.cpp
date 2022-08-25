@@ -123,7 +123,7 @@ HRESULT PinSound::ReInitialize()
 
    if(!IsWav())
    {
-	   const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player"s, "Sound3D"s, (int)SNDCFG_SND3D2CH);
+	   const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault(regKey[RegName::Player], "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
 	   SetDevice();
 	   m_BASSstream = BASS_StreamCreateFile(
@@ -156,7 +156,7 @@ HRESULT PinSound::ReInitialize()
       return E_FAIL;
    }
 
-   const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player"s, "Sound3D"s, (int)SNDCFG_SND3D2CH);
+   const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault(regKey[RegName::Player], "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
    WAVEFORMATEX wfx = m_wfx;  // Use a copy as we might be modifying it
    // Remark from MSDN: "If wFormatTag = WAVE_FORMAT_PCM or wFormatTag = WAVE_FORMAT_IEEE_FLOAT, set cbSize to zero"
@@ -277,7 +277,7 @@ void PinSound::Play(const float volume, const float randompitch, const int pitch
          BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, (float)(freq + pitch));
       }
 
-      const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player"s, "Sound3D"s, (int)SNDCFG_SND3D2CH);
+      const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault(regKey[RegName::Player], "Sound3D"s, (int)SNDCFG_SND3D2CH);
       switch (SoundMode3D)
       {
       case SNDCFG_SND3DALLREAR:
@@ -380,7 +380,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    int DSidx = 0;
    if (!FAILED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
    {
-      const HRESULT hr = LoadValue("Player"s, IsBackglass ? "SoundDeviceBG"s : "SoundDevice"s, DSidx);
+      const HRESULT hr = LoadValue(regKey[RegName::Player], IsBackglass ? "SoundDeviceBG"s : "SoundDevice"s, DSidx);
       if ((hr != S_OK) || ((size_t)DSidx >= DSads.size()))
          DSidx = 0; // The default primary sound device
    }
@@ -408,7 +408,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
       return;// hr;
    }
 
-   const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault("Player"s, "Sound3D"s, (int)SNDCFG_SND3D2CH);
+   const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault(regKey[RegName::Player], "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
    // Get the primary buffer 
    DSBUFFERDESC dsbd = {};
@@ -485,7 +485,7 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 		   return nullptr;
 	   }
 
-	   const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault("Player"s, "Sound3D"s, (int)SNDCFG_SND3D2CH);
+	   const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault(regKey[RegName::Player], "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
 	   // Set up the direct sound buffer, and only request the flags needed
 	   // since each requires some overhead and limits if the buffer can
@@ -570,7 +570,7 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 	   fread_s(pps->m_pdata, pps->m_cdata, 1, pps->m_cdata, f);
 	   fclose(f);
 
-	   const SoundConfigTypes SoundMode3D = (pps->m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player"s, "Sound3D"s, (int)SNDCFG_SND3D2CH);
+	   const SoundConfigTypes SoundMode3D = (pps->m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault(regKey[RegName::Player], "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
 	   pps->SetDevice();
 	   pps->m_BASSstream = BASS_StreamCreateFile(
@@ -815,7 +815,7 @@ void PinDirectSoundWavCopy::PlayInternal(const float volume, const float randomp
 		}
 	}
 
-	const SoundConfigTypes SoundMode3D = (m_ppsOriginal->m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player"s, "Sound3D"s, (int)SNDCFG_SND3D2CH);
+	const SoundConfigTypes SoundMode3D = (m_ppsOriginal->m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault(regKey[RegName::Player], "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
 	switch (SoundMode3D)
 	{

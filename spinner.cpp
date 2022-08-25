@@ -103,7 +103,8 @@ HRESULT Spinner::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Spinner::WriteRegDefaults()
 {
-#define regKey "DefaultProps\\Spinner"s
+#define regKey regKey[RegName::DefaultPropsSpinner]
+
    SaveValueFloat(regKey, "Length"s, m_d.m_length);
    SaveValueFloat(regKey, "Rotation"s, m_d.m_rotation);
    SaveValueBool(regKey, "ShowBracket"s, m_d.m_showBracket);
@@ -119,12 +120,14 @@ void Spinner::WriteRegDefaults()
    SaveValue(regKey, "Image"s, m_d.m_szImage);
    SaveValue(regKey, "Surface"s, m_d.m_szSurface);
    SaveValueBool(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+
 #undef regKey
 }
 
 void Spinner::SetDefaults(bool fromMouseClick)
 {
-#define regKey "DefaultProps\\Spinner"s
+#define regKey regKey[RegName::DefaultPropsSpinner]
+
    m_d.m_length = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Length"s, 80.f) : 80.f;
    m_d.m_rotation = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Rotation"s, 0.f) : 0.f;
    m_d.m_showBracket = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ShowBracket"s, true) : true;
@@ -146,6 +149,7 @@ void Spinner::SetDefaults(bool fromMouseClick)
    hr = LoadValue(regKey, "Surface"s, m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface.clear();
+
 #undef regKey
 }
 
@@ -499,8 +503,8 @@ void Spinner::PutCenter(const Vertex2D& pv)
 
 void Spinner::SetDefaultPhysics(bool fromMouseClick)
 {
-   m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Spinner"s, "Elasticity"s, 0.3f) : 0.3f;
-   m_d.m_damping = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Spinner"s, "AntiFriction"s, 0.9879f) : 0.9879f;
+   m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(regKey[RegName::DefaultPropsSpinner], "Elasticity"s, 0.3f) : 0.3f;
+   m_d.m_damping = fromMouseClick ? LoadValueFloatWithDefault(regKey[RegName::DefaultPropsSpinner], "AntiFriction"s, 0.9879f) : 0.9879f;
 }
 
 HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)

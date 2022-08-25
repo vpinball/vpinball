@@ -54,7 +54,7 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    SetDefaults(fromMouseClick);
    m_d.m_visible = true;
 
-   const float length = 0.5f * LoadValueFloatWithDefault("DefaultProps\\Ramp"s, "Length"s, 400.0f);
+   const float length = 0.5f * LoadValueFloatWithDefault(regKey[RegName::DefaultPropsRamp], "Length"s, 400.0f);
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -82,8 +82,8 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Ramp::SetDefaults(bool fromMouseClick)
 {
-#define strKeyName "DefaultProps\\Ramp"s
-   
+#define strKeyName regKey[RegName::DefaultPropsRamp]
+
    m_d.m_heightbottom = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HeightBottom"s, 0.0f) : 0.0f;
    m_d.m_heighttop = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HeightTop"s, 50.0f) : 50.0f;
    m_d.m_widthbottom = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "WidthBottom"s, 75.0f) : 75.0f;
@@ -116,12 +116,13 @@ void Ramp::SetDefaults(bool fromMouseClick)
    m_d.m_wireDiameter = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "WireDiameter"s, 8.0f) : 8.0f;
    m_d.m_wireDistanceX = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "WireDistanceX"s, 38.0f) : 38.0f;
    m_d.m_wireDistanceY = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "WireDistanceY"s, 88.0f) : 88.0f;
+
 #undef strKeyName
 }
 
 void Ramp::WriteRegDefaults()
 {
-#define strKeyName "DefaultProps\\Ramp"s
+#define strKeyName regKey[RegName::DefaultPropsRamp]
 
    SaveValueFloat(strKeyName, "HeightBottom"s, m_d.m_heightbottom);
    SaveValueFloat(strKeyName, "HeightTop"s, m_d.m_heighttop);
@@ -148,6 +149,7 @@ void Ramp::WriteRegDefaults()
    SaveValueFloat(strKeyName, "WireDiameter"s, m_d.m_wireDiameter);
    SaveValueFloat(strKeyName, "WireDistanceX"s, m_d.m_wireDistanceX);
    SaveValueFloat(strKeyName, "WireDistanceY"s, m_d.m_wireDistanceY);
+
 #undef strKeyName
 }
 
@@ -2461,7 +2463,7 @@ void Ramp::GenerateVertexBuffer()
 
 void Ramp::SetDefaultPhysics(bool fromMouseClick)
 {
-#define strKeyName "DefaultProps\\Ramp"s
+#define strKeyName regKey[RegName::DefaultPropsRamp]
 
    m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Elasticity"s, 0.3f) : 0.3f;
    m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Friction"s, 0.3f) : 0.3f;

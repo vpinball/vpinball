@@ -332,26 +332,13 @@ void DbgLightDialog::OnOK()
     Light* const plight = GetLight();
     if (plight != nullptr)
     {
-        float fv = sz2f(GetDlgItemText(IDC_DBG_LIGHT_FALLOFF).c_str());
-        plight->put_Falloff(fv);
-
-        fv = sz2f(GetDlgItemText(IDC_DBG_LIGHT_FALLOFF_POWER).c_str());
-        plight->put_FalloffPower(fv);
-
-        fv = sz2f(GetDlgItemText(IDC_DBG_LIGHT_INTENSITY).c_str());
-        plight->put_Intensity(fv);
-
-        fv = sz2f(GetDlgItemText(IDC_DBG_BULB_MODULATE_VS_ADD).c_str());
-        plight->m_d.m_modulate_vs_add = fv;
-
-        fv = sz2f(GetDlgItemText(IDC_DBG_TRANSMISSION_SCALE).c_str());
-        plight->m_d.m_transmissionScale = fv;
-
-        fv = sz2f(GetDlgItemText(IDC_DBG_LIGHT_FADE_UP_EDIT).c_str());
-        plight->put_FadeSpeedUp(fv);
-
-        fv = sz2f(GetDlgItemText(IDC_DBG_LIGHT_FADE_DOWN_EDIT).c_str());
-        plight->put_FadeSpeedDown(fv);
+        plight->put_Falloff(sz2f(GetDlgItemText(IDC_DBG_LIGHT_FALLOFF).c_str()));
+        plight->put_FalloffPower(sz2f(GetDlgItemText(IDC_DBG_LIGHT_FALLOFF_POWER).c_str()));
+        plight->put_Intensity(sz2f(GetDlgItemText(IDC_DBG_LIGHT_INTENSITY).c_str()));
+        plight->m_d.m_modulate_vs_add = sz2f(GetDlgItemText(IDC_DBG_BULB_MODULATE_VS_ADD).c_str());
+        plight->m_d.m_transmissionScale = sz2f(GetDlgItemText(IDC_DBG_TRANSMISSION_SCALE).c_str());
+        plight->put_FadeSpeedUp(sz2f(GetDlgItemText(IDC_DBG_LIGHT_FADE_UP_EDIT).c_str()));
+        plight->put_FadeSpeedDown(sz2f(GetDlgItemText(IDC_DBG_LIGHT_FADE_DOWN_EDIT).c_str()));
 
         g_pplayer->m_ptable->AddDbgLight(plight);
     }

@@ -44,8 +44,8 @@ HRESULT Surface::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_ptable = ptable;
    m_isWall = true;
 
-   const float width  = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Wall"s, "Width"s,  50.f) : 50.f;
-   const float length = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Wall"s, "Length"s, 50.f) : 50.f;
+   const float width  = fromMouseClick ? LoadValueFloatWithDefault(regKey[RegName::DefaultPropsWall], "Width"s,  50.f) : 50.f;
+   const float length = fromMouseClick ? LoadValueFloatWithDefault(regKey[RegName::DefaultPropsWall], "Length"s, 50.f) : 50.f;
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -84,7 +84,7 @@ HRESULT Surface::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Surface::WriteRegDefaults()
 {
-#define strKeyName (m_isWall ? "DefaultProps\\Wall"s : "DefaultProps\\Target"s)
+#define strKeyName (m_isWall ? regKey[RegName::DefaultPropsWall] : regKey[RegName::DefaultPropsTarget])
 
    SaveValueBool(strKeyName, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
    SaveValueInt(strKeyName, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
@@ -119,7 +119,7 @@ void Surface::WriteRegDefaults()
 #if 0
 HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float y, bool fromMouseClick)
 {
-#define strKeyName "DefaultProps\\Target"s
+#define strKeyName regKey[RegName::DefaultPropsTarget]
 
    m_ptable = ptable;
    m_isWall = false;
@@ -203,7 +203,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 
 void Surface::SetDefaults(bool fromMouseClick)
 {
-#define strKeyName "DefaultProps\\Wall"s
+#define strKeyName regKey[RegName::DefaultPropsWall]
 
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "TimerEnabled"s, false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "TimerInterval"s, 100) : 100;
@@ -239,6 +239,7 @@ void Surface::SetDefaults(bool fromMouseClick)
    m_d.m_disableLightingTop = dequantizeUnsigned<8>(fromMouseClick ? LoadValueIntWithDefault(strKeyName, "DisableLighting"s, 0) : 0); // stored as uchar for backward compatibility
    m_d.m_disableLightingBelow = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "DisableLightingBelow"s, 0.f) : 0.f;
    m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
+
 #undef strKeyName
 }
 
@@ -1960,10 +1961,12 @@ STDMETHODIMP Surface::PlaySlingshotHit()
 
 void Surface::SetDefaultPhysics(bool fromMouseClick)
 {
-#define strKeyName "DefaultProps\\Wall"s
+#define strKeyName regKey[RegName::DefaultPropsWall]
+
    m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Elasticity"s, 0.3f) : 0.3f;
    m_d.m_elasticityFalloff = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "ElasticityFallOff"s, 0.0f) : 0.0f;
    m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Friction"s, 0.3f) : 0.3f;
    m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Scatter"s, 0) : 0;
+
 #undef strKeyName
 }

@@ -139,8 +139,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                int ret = 0;
                if (LOWORD(wParam) == IDC_SIZE_WIDTH)
                {
-                  const CString textStr(GetDlgItemText(IDC_SIZE_WIDTH));
-                  ret = sscanf_s(textStr.c_str(), "%f", &sizeWidth);
+                  ret = sscanf_s(GetDlgItemText(IDC_SIZE_WIDTH).c_str(), "%f", &sizeWidth);
                   if (ret != 1 || sizeWidth < 0.0f)
                      sizeWidth = 0;
                   const int width = (int)(sizeWidth*47.0f + 0.5f);
@@ -148,8 +147,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                }
                if (LOWORD(wParam) == IDC_SIZE_HEIGHT)
                {
-                  const CString textStr(GetDlgItemText(IDC_SIZE_HEIGHT));
-                  ret = sscanf_s(textStr.c_str(), "%f", &sizeHeight);
+                  ret = sscanf_s(GetDlgItemText(IDC_SIZE_HEIGHT).c_str(), "%f", &sizeHeight);
                   if (ret != 1 || sizeHeight < 0.0f)
                      sizeHeight = 0;
                   const int height = (int)(sizeHeight*47.0f + 0.5f);
@@ -157,8 +155,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                }
                if (LOWORD(wParam) == IDC_VP_WIDTH)
                {
-                  const CString textStr(GetDlgItemText(IDC_VP_WIDTH));
-                  ret = sscanf_s(textStr.c_str(), "%i", &vpWidth);
+                  ret = sscanf_s(GetDlgItemText(IDC_VP_WIDTH).c_str(), "%i", &vpWidth);
                   if (ret != 1 || vpWidth < 0)
                      vpWidth = 0;
                   const float width = (float)vpWidth / 47.0f;
@@ -169,8 +166,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                }
                if (LOWORD(wParam) == IDC_VP_HEIGHT)
                {
-                  const CString textStr(GetDlgItemText(IDC_VP_HEIGHT));
-                  ret = sscanf_s(textStr.c_str(), "%i", &vpHeight);
+                  ret = sscanf_s(GetDlgItemText(IDC_VP_HEIGHT).c_str(), "%i", &vpHeight);
                   if (ret != 1 || vpHeight < 0)
                      vpHeight = 0;
                   const float height = (float)vpHeight / 47.0f;
@@ -203,17 +199,14 @@ BOOL DimensionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             break;
          }
 
-         CString textStr;
          int vpWidth, vpHeight;
          int ret;
 
-         textStr = GetDlgItemText(IDC_VP_WIDTH);
-         ret = sscanf_s(textStr.c_str(), "%i", &vpWidth);
+         ret = sscanf_s(GetDlgItemText(IDC_VP_WIDTH).c_str(), "%i", &vpWidth);
          if (ret != 1 || vpWidth < 0)
             vpWidth = 0;
 
-         textStr = GetDlgItemText(IDC_VP_HEIGHT);
-         ret = sscanf_s(textStr.c_str(), "%i", &vpHeight);
+         ret = sscanf_s(GetDlgItemText(IDC_VP_HEIGHT).c_str(), "%i", &vpHeight);
          if (ret != 1 || vpHeight < 0)
             vpHeight = 0;
          pt->put_Width((float)vpWidth);

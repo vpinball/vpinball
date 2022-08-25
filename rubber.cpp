@@ -39,7 +39,7 @@ HRESULT Rubber::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_ptable = ptable;
    m_d.m_visible = true;
 
-   //float length = 0.5f * LoadValueFloatWithDefault("DefaultProps\\Rubber"s, "Length"s, 400.0f);
+   //float length = 0.5f * LoadValueFloatWithDefault(regKey[RegName::DefaultPropsRubber], "Length"s, 400.0f);
 
    for (int i = 8; i > 0; i--)
    {
@@ -65,7 +65,7 @@ HRESULT Rubber::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Rubber::SetDefaults(bool fromMouseClick)
 {
-#define strKeyName "DefaultProps\\Rubber"s
+#define strKeyName regKey[RegName::DefaultPropsRubber]
 
    m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Height"s, 25.0f) : 25.0f;
    m_d.m_thickness = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "Thickness"s, 8) : 8;
@@ -92,12 +92,13 @@ void Rubber::SetDefaults(bool fromMouseClick)
    m_d.m_rotZ = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotZ"s, 0.0f) : 0.0f;
 
    m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
+
 #undef strKeyName
 }
 
 void Rubber::WriteRegDefaults()
 {
-#define strKeyName "DefaultProps\\Rubber"s
+#define strKeyName regKey[RegName::DefaultPropsRubber]
 
    SaveValueFloat(strKeyName, "Height"s, m_d.m_height);
    SaveValueFloat(strKeyName, "HitHeight"s, m_d.m_hitHeight);
@@ -118,6 +119,7 @@ void Rubber::WriteRegDefaults()
    SaveValueFloat(strKeyName, "RotY"s, m_d.m_rotY);
    SaveValueFloat(strKeyName, "RotZ"s, m_d.m_rotZ);
    SaveValueBool(strKeyName, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+
 #undef strKeyName
 }
 
@@ -1518,18 +1520,15 @@ void Rubber::UpdateRubber(const bool updateVB, const float height)
    }
 }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
 void Rubber::SetDefaultPhysics(bool fromMouseClick)
 {
-#define strKeyName "DefaultProps\\Rubber"s
+#define strKeyName regKey[RegName::DefaultPropsRubber]
 
    m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Elasticity"s, 0.8f) : 0.8f;
    m_d.m_elasticityFalloff = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "ElasticityFalloff"s, 0.3f) : 0.3f;
    m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Friction"s, 0.6f) : 0.6f;
    m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Scatter"s, 5) : 5;
    m_d.m_hitHeight = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HitHeight"s, 25.0f) : 25.0f;
+
 #undef strKeyName
 }

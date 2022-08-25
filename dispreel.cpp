@@ -31,7 +31,7 @@ HRESULT DispReel::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 //
 void DispReel::SetDefaults(bool fromMouseClick)
 {
-#define regKey "DefaultProps\\EMReel"s
+#define regKey regKey[RegName::DefaultPropsEMReel]
 
    // object is only available on the backglass
    m_backglass = true;
@@ -60,12 +60,14 @@ void DispReel::SetDefaults(bool fromMouseClick)
    m_d.m_backcolor = fromMouseClick ? LoadValueIntWithDefault(regKey, "BackColor"s, RGB(64, 64, 64)) : RGB(64, 64, 64);
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled"s, false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "TimerInterval"s, 100) : 100;
+
 #undef regKey
 }
 
 void DispReel::WriteRegDefaults()
 {
-#define regKey "DefaultProps\\EMReel"s
+#define regKey regKey[RegName::DefaultPropsEMReel]
+
    SaveValue(regKey, "Image"s, m_d.m_szImage);
    SaveValue(regKey, "Sound"s, m_d.m_szSound);
    SaveValueBool(regKey, "UseImageGrid"s, m_d.m_useImageGrid);
@@ -82,6 +84,7 @@ void DispReel::WriteRegDefaults()
    SaveValueInt(regKey, "BackColor"s, m_d.m_backcolor);
    SaveValueBool(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
    SaveValueInt(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+
 #undef regKey
 }
 

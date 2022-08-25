@@ -406,7 +406,7 @@ void ImageDialog::OnCancel()
 void ImageDialog::Import()
 {
    string szInitialDir;
-   HRESULT hr = LoadValue("RecentDir"s, "ImageDir"s, szInitialDir);
+   HRESULT hr = LoadValue(regKey[RegName::RecentDir], "ImageDir"s, szInitialDir);
    if (hr != S_OK)
       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -421,7 +421,7 @@ void ImageDialog::Import()
 
       const size_t index = szFileName[0].find_last_of('\\');
       if (index != string::npos)
-         hr = SaveValue("RecentDir"s, "ImageDir"s, szFileName[0].substr(0, index));
+         hr = SaveValue(regKey[RegName::RecentDir], "ImageDir"s, szFileName[0].substr(0, index));
 
       pt->SetNonUndoableDirty(eSaveDirty);
       pt->UpdatePropertyImageList();
@@ -514,7 +514,7 @@ void ImageDialog::Export()
                ofn.nFilterIndex = 12;
 
             string g_initDir;
-            const HRESULT hr = LoadValue("RecentDir", "ImageDir", g_initDir);
+            const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "ImageDir"s, g_initDir);
             if (hr != S_OK)
                g_initDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -579,7 +579,7 @@ void ImageDialog::Export()
                   ppi = (Texture*)lvitem.lParam;
                }
 
-               SaveValue("RecentDir"s, "ImageDir"s, pathName);
+               SaveValue(regKey[RegName::RecentDir], "ImageDir"s, pathName);
             } // finished all selected items
          }
       }
@@ -723,7 +723,7 @@ void ImageDialog::ReimportFrom()
       if (ans == IDYES)
       {
          string szInitialDir;
-         const HRESULT hr = LoadValue("RecentDir"s, "ImageDir"s, szInitialDir);
+         const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "ImageDir"s, szInitialDir);
          if (hr != S_OK)
             szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -740,7 +740,7 @@ void ImageDialog::ReimportFrom()
             {
                const size_t index = szFileName[0].find_last_of('\\');
                if (index != string::npos)
-                  SaveValue("RecentDir"s, "ImageDir"s, szFileName[0].substr(0, index));
+                  SaveValue(regKey[RegName::RecentDir], "ImageDir"s, szFileName[0].substr(0, index));
 
                CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                pt->ReImportImage(ppi, szFileName[0]);
@@ -759,11 +759,11 @@ void ImageDialog::ReimportFrom()
 
 void ImageDialog::LoadPosition()
 {
-    const int x = LoadValueIntWithDefault( "Editor"s, "ImageMngPosX"s, 0 );
-    const int y = LoadValueIntWithDefault( "Editor"s, "ImageMngPosY"s, 0 );
+    const int x = LoadValueIntWithDefault(regKey[RegName::Editor], "ImageMngPosX"s, 0 );
+    const int y = LoadValueIntWithDefault(regKey[RegName::Editor], "ImageMngPosY"s, 0 );
 
-    const int w = LoadValueIntWithDefault("Editor"s, "ImageMngWidth"s, 1000);
-    const int h = LoadValueIntWithDefault("Editor"s, "ImageMngHeight"s, 800);
+    const int w = LoadValueIntWithDefault(regKey[RegName::Editor], "ImageMngWidth"s, 1000);
+    const int h = LoadValueIntWithDefault(regKey[RegName::Editor], "ImageMngHeight"s, 800);
     SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
@@ -771,10 +771,10 @@ void ImageDialog::SavePosition()
 {
     const CRect rect = GetWindowRect();
 
-    SaveValueInt("Editor"s, "ImageMngPosX"s, rect.left);
-    SaveValueInt("Editor"s, "ImageMngPosY"s, rect.top);
+    SaveValueInt(regKey[RegName::Editor], "ImageMngPosX"s, rect.left);
+    SaveValueInt(regKey[RegName::Editor], "ImageMngPosY"s, rect.top);
     const int w = rect.right - rect.left;
-    SaveValueInt("Editor"s, "ImageMngWidth"s, w);
+    SaveValueInt(regKey[RegName::Editor], "ImageMngWidth"s, w);
     const int h = rect.bottom - rect.top;
-    SaveValueInt("Editor"s, "ImageMngHeight"s, h);
+    SaveValueInt(regKey[RegName::Editor], "ImageMngHeight"s, h);
 }

@@ -266,7 +266,7 @@ public:
       szTableFileName.clear();
 
       // Start VP with file dialog open and then also playing that one?
-      const bool stos = LoadValueBoolWithDefault("Editor"s, "SelectTableOnStart"s, true);
+      const bool stos = LoadValueBoolWithDefault(regKey[RegName::Editor], "SelectTableOnStart"s, true);
       if (stos)
       {
          file = true;
@@ -525,7 +525,7 @@ public:
            else
            {
                loadFileResult = m_vpinball.LoadFile(!play);
-               m_vpinball.m_table_played_via_SelectTableOnStart = LoadValueBoolWithDefault("Editor"s, "SelectTableOnPlayerClose"s, true) ? loadFileResult : false;
+               m_vpinball.m_table_played_via_SelectTableOnStart = LoadValueBoolWithDefault(regKey[RegName::Editor], "SelectTableOnPlayerClose"s, true) ? loadFileResult : false;
            }
 
            if (extractScript && loadFileResult)

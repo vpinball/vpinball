@@ -172,7 +172,8 @@ HRESULT Trigger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Trigger::SetDefaults(bool fromMouseClick)
 {
-#define regKey "DefaultProps\\Trigger"s
+#define regKey regKey[RegName::DefaultPropsTrigger]
+
    m_d.m_radius = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Radius"s, 25.0f) : 25.0f;
    m_d.m_rotation = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Rotation"s, 0.f) : 0.f;
    m_d.m_wireThickness = fromMouseClick ? LoadValueFloatWithDefault(regKey, "WireThickness"s, 0.f) : 0.f;
@@ -191,6 +192,7 @@ void Trigger::SetDefaults(bool fromMouseClick)
 
    m_d.m_animSpeed = fromMouseClick ? LoadValueFloatWithDefault(regKey, "AnimSpeed"s, 1.f) : 1.f;
    m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ReflectionEnabled"s, true) : true;
+
 #undef regKey
 }
 
@@ -1058,7 +1060,8 @@ void Trigger::ClearForOverwrite()
 
 void Trigger::WriteRegDefaults()
 {
-#define regKey "DefaultProps\\Trigger"s
+#define regKey regKey[RegName::DefaultPropsTrigger]
+
    SaveValueBool(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
    SaveValueInt(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
    SaveValueBool(regKey, "Enabled"s, m_d.m_enabled);
@@ -1073,6 +1076,7 @@ void Trigger::WriteRegDefaults()
    SaveValue(regKey, "Surface"s, m_d.m_szSurface);
    SaveValueFloat(regKey, "AnimSpeed"s, m_d.m_animSpeed);
    SaveValueBool(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+
 #undef regKey
 }
 

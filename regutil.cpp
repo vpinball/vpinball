@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 
 #define VP_REGKEY_GENERAL "Software\\Visual Pinball\\"
 #define VP_REGKEY "Software\\Visual Pinball\\VP10\\"
@@ -14,11 +14,7 @@
 using namespace rapidxml;
 
 static xml_document<> xmlDoc;
-static xml_node<> *controller = nullptr;
-static xml_node<> *editor = nullptr;
-static xml_node<>* player = nullptr;
-static xml_node<>* recentdir = nullptr;
-static xml_node<>* version = nullptr;
+static xml_node<> *xmlNode[RegName::Num] = {};
 static string xmlContent;
 
 // if ini does not exist yet, loop over reg values of each subkey and fill all in
@@ -61,6 +57,8 @@ static void InitXMLnodeFromRegistry(xml_node<> *const node, const string &szPath
          continue;
 
       if (strcmp((char*)pvalue, "Dock Windows") == 0) // should not happen, as a folder, not value.. BUT also should save these somehow and restore for Win32++, or not ?
+         continue;
+      if (strcmp((char*)pvalue, "Dock Settings") == 0) // should not happen, as a folder, not value.. BUT also should save these somehow and restore for Win32++, or not ?
          continue;
 
       //
@@ -113,17 +111,9 @@ void SaveXMLregistry(const string &path)
 void ClearXMLregistry()
 {
    // free self allocated strings
-   for (unsigned int i = 0; i < 5; ++i)
+   for (unsigned int i = 0; i < RegName::Num; ++i)
    {
-      xml_node<> *node;
-      switch (i)
-      {
-      case 0: node = controller; break;
-      case 1: node = editor; break;
-      case 2: node = player; break;
-      case 3: node = recentdir; break;
-      case 4: node = version; break;
-      }
+      xml_node<> * const node = xmlNode[i];
       for (xml_node<> *child = node->first_node(); child; child = child->next_sibling())
       {
          delete [] child->value();
@@ -152,11 +142,11 @@ void InitXMLregistry(const string &path)
    else
       xmlDoc.parse<parse_declaration_node | parse_comment_nodes | parse_normalize_whitespace>((char*)xmlContent.c_str());
 
-   controller = xmlDoc.first_node("Controller");
-   if (!controller)
+   xmlNode[RegName::Controller] = xmlDoc.first_node(regKey[RegName::Controller].c_str());
+   if (!xmlNode[RegName::Controller])
    {
-      controller = xmlDoc.allocate_node(node_element, "Controller");
-      xmlDoc.append_node(controller);
+      xmlNode[RegName::Controller] = xmlDoc.allocate_node(node_element, regKey[RegName::Controller].c_str());
+      xmlDoc.append_node(xmlNode[RegName::Controller]);
    }
 
    xml_node<> *root = xmlDoc.first_node("VP10");
@@ -166,47 +156,22 @@ void InitXMLregistry(const string &path)
       xmlDoc.append_node(root);
    }
 
-   editor = root->first_node("Editor");
-   if (!editor)
+   for (unsigned int i = RegName::Controller+1; i < RegName::Num; ++i)
    {
-      editor = xmlDoc.allocate_node(node_element, "Editor");
-      root->append_node(editor);
-   }
-
-   player = root->first_node("Player");
-   if (!player)
-   {
-      player = xmlDoc.allocate_node(node_element, "Player");
-      root->append_node(player);
-   }
-
-   recentdir = root->first_node("RecentDir");
-   if (!recentdir)
-   {
-      recentdir = xmlDoc.allocate_node(node_element, "RecentDir");
-      root->append_node(recentdir);
-   }
-
-   version = root->first_node("Version");
-   if (!version)
-   {
-      version = xmlDoc.allocate_node(node_element, "Version");
-      root->append_node(version);
+      xmlNode[i] = root->first_node(regKey[i].c_str());
+      if (!xmlNode[i])
+      {
+         xmlNode[i] = xmlDoc.allocate_node(node_element, regKey[i].c_str());
+         root->append_node(xmlNode[i]);
+      }
    }
 
    // load or init registry values for each folder
-   for (unsigned int i = 0; i < 5; ++i)
+   for (unsigned int i = 0; i < RegName::Num; ++i)
    {
-      xml_node<> *node;
       string regpath(i == 0 ? VP_REGKEY_GENERAL : VP_REGKEY);
-      switch (i)
-      {
-      case 0: node = controller; regpath += "Controller"; break;
-      case 1: node = editor; regpath += "Editor"; break;
-      case 2: node = player;  regpath += "Player"; break;
-      case 3: node = recentdir;  regpath += "RecentDir"; break;
-      case 4: node = version;  regpath += "Version"; break;
-      }
+      regpath += regKey[i];
+      xml_node<> *node = xmlNode[i];
 
       if (node->first_node() == nullptr)
          InitXMLnodeFromRegistry(node, regpath); // does not exist in XML yet? -> load from registry
@@ -306,18 +271,15 @@ static HRESULT LoadValue(const string &szKey, const string &szValue, DWORD &type
    }
 
 #ifdef ENABLE_INI
-   xml_node<> *node;
-   if (szKey == "Player")
-      node = player;
-   else if (szKey == "Controller")
-      node = controller;
-   else if (szKey == "Editor")
-      node = editor;
-   else if (szKey == "RecentDir")
-      node = recentdir;
-   else if (szKey == "Version")
-      node = version;
-   else
+   xml_node<> *node = nullptr;
+   for (unsigned int i = 0; i < RegName::Num; ++i)
+      if (szKey == regKey[i])
+      {
+         node = xmlNode[i];
+         break;
+      }
+
+   if (node == nullptr)
    {
       assert(!"Bad RegKey");
       return E_FAIL;
@@ -353,7 +315,7 @@ static HRESULT LoadValue(const string &szKey, const string &szValue, DWORD &type
       return E_FAIL;
    }
 #else
-   string szPath(szKey == "Controller" ? VP_REGKEY_GENERAL : VP_REGKEY);
+   string szPath(szKey == regKey[RegName::Controller] ? VP_REGKEY_GENERAL : VP_REGKEY);
    szPath += szKey;
 
    type = REG_NONE;
@@ -400,25 +362,22 @@ static HRESULT SaveValue(const string &szKey, const string &szValue, const DWORD
       return E_FAIL;
 
 #ifdef ENABLE_INI
-   xml_node<> *node;
-   if (szKey == "Player")
-      node = player;
-   else if (szKey == "Controller")
-      node = controller;
-   else if (szKey == "Editor")
-      node = editor;
-   else if (szKey == "RecentDir")
-      node = recentdir;
-   else if (szKey == "Version")
-      node = version;
-   else
+   xml_node<> *node = nullptr;
+   for (unsigned int i = 0; i < RegName::Num; ++i)
+      if (szKey == regKey[i])
+      {
+         node = xmlNode[i];
+         break;
+      }
+
+   if (node == nullptr)
    {
       assert(!"Bad RegKey");
       return E_FAIL;
    }
 
    // detect whitespace and skip, as no whitespace allowed in XML tags
-   for (unsigned int i = 0; i < szValue.length(); ++i)
+   for (size_t i = 0; i < szValue.length(); ++i)
       if (isspace(szValue[i]))
          return E_FAIL;
 
@@ -456,7 +415,7 @@ static HRESULT SaveValue(const string &szKey, const string &szValue, const DWORD
    }
 #endif
 
-   string szPath(szKey == "Controller" ? VP_REGKEY_GENERAL : VP_REGKEY);
+   string szPath(szKey == regKey[RegName::Controller] ? VP_REGKEY_GENERAL : VP_REGKEY);
    szPath += szKey;
 
    HKEY hk;
@@ -504,7 +463,7 @@ HRESULT SaveValue(const string &szKey, const string &szValue, const string& val)
 
 HRESULT DeleteValue(const string &szKey, const string &szValue)
 {
-   string szPath(szKey == "Controller" ? VP_REGKEY_GENERAL : VP_REGKEY);
+   string szPath(szKey == regKey[RegName::Controller] ? VP_REGKEY_GENERAL : VP_REGKEY);
    szPath += szKey;
 
    HKEY hk;
@@ -594,7 +553,7 @@ static HRESULT RegDelnodeRecurse(const HKEY hKeyRoot, char lpSubKey[MAX_PATH * 2
 
 HRESULT DeleteSubKey(const string &szKey)
 {
-   string szPath(szKey == "Controller" ? VP_REGKEY_GENERAL : VP_REGKEY);
+   string szPath(szKey == regKey[RegName::Controller] ? VP_REGKEY_GENERAL : VP_REGKEY);
    szPath += szKey;
 
    char szDelKey[MAX_PATH * 2];

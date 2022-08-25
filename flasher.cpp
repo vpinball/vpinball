@@ -97,7 +97,7 @@ HRESULT Flasher::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Flasher::SetDefaults(bool fromMouseClick)
 {
-#define regKey "DefaultProps\\Flasher"s
+#define regKey regKey[RegName::DefaultPropsFlasher]
 
    m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Height"s, 50.f) : 50.f;
    m_d.m_rotX = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RotX"s, 0.f) : 0.f;
@@ -128,12 +128,13 @@ void Flasher::SetDefaults(bool fromMouseClick)
    m_d.m_displayTexture = fromMouseClick ? LoadValueBoolWithDefault(regKey, "DisplayTexture"s, false) : false;
    m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)LoadValueIntWithDefault(regKey, "ImageMode"s, ImageModeWrap) : ImageModeWrap;
    m_d.m_filter = fromMouseClick ? (Filters)LoadValueIntWithDefault(regKey, "Filter"s, Filter_Overlay) : Filter_Overlay;
+
 #undef regKey
 }
 
 void Flasher::WriteRegDefaults()
 {
-#define regKey "DefaultProps\\Flasher"s
+#define regKey regKey[RegName::DefaultPropsFlasher]
 
    SaveValueFloat(regKey, "Height"s, m_d.m_height);
    SaveValueFloat(regKey, "RotX"s, m_d.m_rotX);
@@ -153,6 +154,7 @@ void Flasher::WriteRegDefaults()
    SaveValueInt(regKey, "ImageMode"s, m_d.m_imagealignment);
    SaveValueInt(regKey, "Filter"s, m_d.m_filter);
    SaveValueInt(regKey, "FilterAmount"s, m_d.m_filterAmount);
+
 #undef regKey
 }
 

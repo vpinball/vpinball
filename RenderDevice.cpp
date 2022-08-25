@@ -727,7 +727,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    //if (caps.NumSimultaneousRTs < 2)
    //   ShowError("D3D device doesn't support multiple render targets!");
 
-   bool video10bit = LoadValueBoolWithDefault("Player"s, "Render10Bit"s, false);
+   bool video10bit = LoadValueBoolWithDefault(regKey[RegName::Player], "Render10Bit"s, false);
 
    if (!m_fullscreen && video10bit)
    {
@@ -815,7 +815,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    else
       params.MultiSampleQuality = min(params.MultiSampleQuality, MultiSampleQualityLevels);
 
-   const bool softwareVP = LoadValueBoolWithDefault("Player"s, "SoftwareVertexProcessing"s, false);
+   const bool softwareVP = LoadValueBoolWithDefault(regKey[RegName::Player], "SoftwareVertexProcessing"s, false);
    const DWORD flags = softwareVP ? D3DCREATE_SOFTWARE_VERTEXPROCESSING : D3DCREATE_HARDWARE_VERTEXPROCESSING;
 
    // Create the D3D device. This optionally goes to the proper fullscreen mode.
@@ -1164,14 +1164,14 @@ RenderDevice::~RenderDevice()
     if (m_pHMD)
     {
         turnVROff();
-        SaveValueFloat("Player"s, "VRSlope"s, m_slope);
-        SaveValueFloat("Player"s, "VROrientation"s, m_orientation);
-        SaveValueFloat("Player"s, "VRTableX"s, m_tablex);
-        SaveValueFloat("Player"s, "VRTableY"s, m_tabley);
-        SaveValueFloat("Player"s, "VRTableZ"s, m_tablez);
-        SaveValueFloat("Player"s, "VRRoomOrientation"s, m_roomOrientation);
-        SaveValueFloat("Player"s, "VRRoomX"s, m_roomx);
-        SaveValueFloat("Player"s, "VRRoomY"s, m_roomy);
+        SaveValueFloat(regKey[RegName::Player], "VRSlope"s, m_slope);
+        SaveValueFloat(regKey[RegName::Player], "VROrientation"s, m_orientation);
+        SaveValueFloat(regKey[RegName::Player], "VRTableX"s, m_tablex);
+        SaveValueFloat(regKey[RegName::Player], "VRTableY"s, m_tabley);
+        SaveValueFloat(regKey[RegName::Player], "VRTableZ"s, m_tablez);
+        SaveValueFloat(regKey[RegName::Player], "VRRoomOrientation"s, m_roomOrientation);
+        SaveValueFloat(regKey[RegName::Player], "VRRoomX"s, m_roomx);
+        SaveValueFloat(regKey[RegName::Player], "VRRoomY"s, m_roomy);
     }
 #endif
 

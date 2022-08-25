@@ -45,7 +45,8 @@ HRESULT Decal::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Decal::SetDefaults(bool fromMouseClick)
 {
-#define regKey "DefaultProps\\Decal"s
+#define regKey regKey[RegName::DefaultPropsDecal]
+
    m_d.m_width = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Width"s, 100.0f) : 100.0f;
    m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Height"s, 100.0f) : 100.0f;
    m_d.m_rotation = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Rotation"s, 0.f) : 0.f;
@@ -97,6 +98,7 @@ void Decal::SetDefaults(bool fromMouseClick)
 
       OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
    }
+
 #undef regKey
 }
 
@@ -116,7 +118,8 @@ char * Decal::GetFontName()
 
 void Decal::WriteRegDefaults()
 {
-#define regKey "DefaultProps\\Decal"s
+#define regKey regKey[RegName::DefaultPropsDecal]
+
    SaveValueFloat(regKey, "Width"s, m_d.m_width);
    SaveValueFloat(regKey, "Height"s, m_d.m_height);
    SaveValueFloat(regKey, "Rotation"s, m_d.m_rotation);
@@ -156,6 +159,7 @@ void Decal::WriteRegDefaults()
       SaveValueInt(regKey, "FontUnderline"s, fd.fUnderline);
       SaveValueInt(regKey, "FontStrikeThrough"s, fd.fStrikethrough);
    }
+
 #undef regKey
 }
 

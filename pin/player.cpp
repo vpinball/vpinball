@@ -229,10 +229,10 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
        }
    }
    
-   m_throwBalls = LoadValueBoolWithDefault("Editor"s, "ThrowBallsAlwaysOn"s, false);
-   m_ballControl = LoadValueBoolWithDefault("Editor"s, "BallControlAlwaysOn"s, false);
-   m_debugBallSize = LoadValueIntWithDefault("Editor"s, "ThrowBallSize"s, 50);
-   m_debugBallMass = LoadValueFloatWithDefault("Editor"s, "ThrowBallMass"s, 1.0f);
+   m_throwBalls = LoadValueBoolWithDefault(regKey[RegName::Editor], "ThrowBallsAlwaysOn"s, false);
+   m_ballControl = LoadValueBoolWithDefault(regKey[RegName::Editor], "BallControlAlwaysOn"s, false);
+   m_debugBallSize = LoadValueIntWithDefault(regKey[RegName::Editor], "ThrowBallSize"s, 50);
+   m_debugBallMass = LoadValueFloatWithDefault(regKey[RegName::Editor], "ThrowBallMass"s, 1.0f);
 
    //m_low_quality_bloom = LoadValueBoolWithDefault("Player"s, "LowQualityBloom"s, false);
 

@@ -34,8 +34,7 @@ void MaterialDialog::EnableAllMaterialDialogItems(const BOOL e)
 
 float MaterialDialog::getItemText(int id)
 {
-   const float fv = sz2f(GetDlgItemText(id).c_str());
-   return fv;
+   return sz2f(GetDlgItemText(id).c_str());
 }
 
 void MaterialDialog::setItemText(int id, float value)
@@ -303,7 +302,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       case IDC_IMPORT:
       {
          string szInitialDir;
-         const HRESULT hr = LoadValue("RecentDir"s, "MaterialDir"s, szInitialDir);
+         const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "MaterialDir"s, szInitialDir);
          if (hr != S_OK)
             szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -344,7 +343,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
             const size_t index = szFilename[0].find_last_of('\\');
             if (index != string::npos)
-               SaveValue("RecentDir"s, "MaterialDir"s, szFilename[0].substr(0, index));
+               SaveValue(regKey[RegName::RecentDir], "MaterialDir"s, szFilename[0].substr(0, index));
 
             pt->SetNonUndoableDirty(eSaveDirty);
          }
@@ -382,7 +381,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             ofn.lpstrDefExt = "mat";
 
             string szInitialDir;
-            const HRESULT hr = LoadValue("RecentDir"s, "MaterialDir"s, szInitialDir);
+            const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "MaterialDir"s, szInitialDir);
             if (hr != S_OK)
                szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -435,7 +434,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                if (index != string::npos)
                {
                    const string newInitDir(szFilename.substr(0, index));
-                   SaveValue("RecentDir"s, "MaterialDir"s, newInitDir);
+                   SaveValue(regKey[RegName::RecentDir], "MaterialDir"s, newInitDir);
                }
             }
          }
@@ -844,11 +843,11 @@ void MaterialDialog::OnClose()
 
 void MaterialDialog::LoadPosition()
 {
-    const int x = LoadValueIntWithDefault("Editor"s, "MaterialMngPosX"s, 0);
-    const int y = LoadValueIntWithDefault("Editor"s, "MaterialMngPosY"s, 0);
+    const int x = LoadValueIntWithDefault(regKey[RegName::Editor], "MaterialMngPosX"s, 0);
+    const int y = LoadValueIntWithDefault(regKey[RegName::Editor], "MaterialMngPosY"s, 0);
 
-    const int w = LoadValueIntWithDefault("Editor"s, "MaterialMngWidth"s, 1000);
-    const int h = LoadValueIntWithDefault("Editor"s, "MaterialMngHeight"s, 800);
+    const int w = LoadValueIntWithDefault(regKey[RegName::Editor], "MaterialMngWidth"s, 1000);
+    const int h = LoadValueIntWithDefault(regKey[RegName::Editor], "MaterialMngHeight"s, 800);
     SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
@@ -856,10 +855,10 @@ void MaterialDialog::SavePosition()
 {
     const CRect rect = GetWindowRect();
 
-    SaveValueInt("Editor"s, "MaterialMngPosX"s, rect.left);
-    SaveValueInt("Editor"s, "MaterialMngPosY"s, rect.top);
+    SaveValueInt(regKey[RegName::Editor], "MaterialMngPosX"s, rect.left);
+    SaveValueInt(regKey[RegName::Editor], "MaterialMngPosY"s, rect.top);
     const int w = rect.right - rect.left;
-    SaveValueInt("Editor"s, "MaterialMngWidth"s, w);
+    SaveValueInt(regKey[RegName::Editor], "MaterialMngWidth"s, w);
     const int h = rect.bottom - rect.top;
-    SaveValueInt("Editor"s, "MaterialMngHeight"s, h);
+    SaveValueInt(regKey[RegName::Editor], "MaterialMngHeight"s, h);
 }

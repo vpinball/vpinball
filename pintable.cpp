@@ -91,17 +91,17 @@ STDMETHODIMP ScriptGlobalTable::NudgeGetCalibration(VARIANT *XMax, VARIANT *YMax
 {
 	int tmp;
 
-	if (SUCCEEDED(::LoadValue("Player"s, "PBWAccelGainX"s, tmp)))
+	if (SUCCEEDED(::LoadValue(regKey[RegName::Player], "PBWAccelGainX"s, tmp)))
 		CComVariant(tmp).Detach(XGain);
-	if (SUCCEEDED(::LoadValue("Player"s, "PBWAccelGainY"s, tmp)))
+	if (SUCCEEDED(::LoadValue(regKey[RegName::Player], "PBWAccelGainY"s, tmp)))
 		CComVariant(tmp).Detach(YGain);
-	if (SUCCEEDED(::LoadValue("Player"s, "PBWAccelMaxX"s, tmp)))
+	if (SUCCEEDED(::LoadValue(regKey[RegName::Player], "PBWAccelMaxX"s, tmp)))
 		CComVariant(tmp).Detach(XMax);
-	if (SUCCEEDED(::LoadValue("Player"s, "PBWAccelMaxY"s, tmp)))
+	if (SUCCEEDED(::LoadValue(regKey[RegName::Player], "PBWAccelMaxY"s, tmp)))
 		CComVariant(tmp).Detach(YMax);
-	if (SUCCEEDED(::LoadValue("player"s, "DeadZone"s, tmp)))
+	if (SUCCEEDED(::LoadValue(regKey[RegName::Player], "DeadZone"s, tmp)))
 		CComVariant(tmp).Detach(DeadZone);
-	if (SUCCEEDED(::LoadValue("Player"s, "TiltSensitivity"s, tmp)))
+	if (SUCCEEDED(::LoadValue(regKey[RegName::Player], "TiltSensitivity"s, tmp)))
 		CComVariant(tmp).Detach(TiltSensitivty);
 
 	return S_OK;
@@ -113,37 +113,37 @@ STDMETHODIMP ScriptGlobalTable::NudgeSetCalibration(int XMax, int YMax, int XGai
 
 	newvalue = XGain;
 	if ((SSIZE_T)newvalue < 0) { newvalue = 0; }
-	SaveValueInt("Player"s, "PBWAccelGainX"s, newvalue);
+	SaveValueInt(regKey[RegName::Player], "PBWAccelGainX"s, newvalue);
 
 	newvalue = YGain;
 	if ((SSIZE_T)newvalue < 0) { newvalue = 0; }
-	SaveValueInt("Player"s, "PBWAccelGainY"s, newvalue);
+	SaveValueInt(regKey[RegName::Player], "PBWAccelGainY"s, newvalue);
 
 	newvalue = DeadZone;
 	if ((SSIZE_T)newvalue < 0) { newvalue = 0; }
 	if (newvalue > 100) { newvalue = 100; }
-	SaveValueInt("Player"s, "DeadZone"s, newvalue);
+	SaveValueInt(regKey[RegName::Player], "DeadZone"s, newvalue);
 
 	newvalue = XMax;
 	if ((SSIZE_T)newvalue < 0) { newvalue = 0; }
 	if (newvalue > 100) { newvalue = 100; }
-	SaveValueInt("Player"s, "PBWAccelMaxX"s, newvalue);
+	SaveValueInt(regKey[RegName::Player], "PBWAccelMaxX"s, newvalue);
 
 	newvalue = YMax;
 	if ((SSIZE_T)newvalue < 0) { newvalue = 0; }
 	if (newvalue > 100) { newvalue = 100; }
-	SaveValueInt("Player"s, "PBWAccelMaxY"s, newvalue);
+	SaveValueInt(regKey[RegName::Player], "PBWAccelMaxY"s, newvalue);
 
-	SaveValueBool("Player"s, "TiltSensCB"s, TiltSensitivity > 0);
+	SaveValueBool(regKey[RegName::Player], "TiltSensCB"s, TiltSensitivity > 0);
 	if (TiltSensitivity > 0)
 	{
 		newvalue = TiltSensitivity;
-		SaveValueInt("Player"s, "TiltSensValue"s, newvalue);
-		SaveValueInt("Player"s, "TiltSensitivity"s, newvalue);
+		SaveValueInt(regKey[RegName::Player], "TiltSensValue"s, newvalue);
+		SaveValueInt(regKey[RegName::Player], "TiltSensitivity"s, newvalue);
 	}
 	else
-		DeleteValue("Player"s, "TiltSensitivity"s);
-	
+		DeleteValue(regKey[RegName::Player], "TiltSensitivity"s);
+
 	m_pt->ReadAccelerometerCalibration();
 
 	return S_OK;
@@ -660,7 +660,7 @@ STDMETHODIMP ScriptGlobalTable::get_ShowFSS(VARIANT_BOOL *pVal)
    if (m_BG_enable_FSS)
       m_BG_current_set = FULL_SINGLE_SCREEN;
    else
-      LoadValue("Player"s, "BGSet"s, m_BG_current_set);
+      LoadValue(regKey[RegName::Player], "BGSet"s, m_BG_current_set);
    STOPUNDO
 
    return S_OK;
@@ -1129,7 +1129,7 @@ STDMETHODIMP ScriptGlobalTable::get_RenderingMode(int *pVal)
 PinTable::PinTable()
 {
    m_savingActive = false;
-   m_renderSolid = LoadValueBoolWithDefault("Editor"s, "RenderSolid"s, true);
+   m_renderSolid = LoadValueBoolWithDefault(regKey[RegName::Editor], "RenderSolid"s, true);
    ClearMultiSel();
 
    m_hbmOffScreen = nullptr;
@@ -1155,7 +1155,7 @@ PinTable::PinTable()
 
    m_plungerNormalize = 100;  //Mech-Plunger component adjustment or weak spring, aging
    m_plungerFilter = false;
-   m_PhysicsMaxLoops = LoadValueIntWithDefault("Player"s, "PhysicsMaxLoops"s, 0xFFFFFFFFu);
+   m_PhysicsMaxLoops = LoadValueIntWithDefault(regKey[RegName::Player], "PhysicsMaxLoops"s, 0xFFFFFFFFu);
 
    m_right = 0.0f;
    m_bottom = 0.0f;
@@ -1163,7 +1163,7 @@ PinTable::PinTable()
    m_glassheight = 210;
    m_tableheight = 0;
 
-   m_BG_current_set = LoadValueIntWithDefault("Player"s, "BGSet"s, BG_DESKTOP);
+   m_BG_current_set = LoadValueIntWithDefault(regKey[RegName::Player], "BGSet"s, BG_DESKTOP);
    m_currentBackglassMode = m_BG_current_set;
 
    m_BG_enable_FSS = false;
@@ -1216,31 +1216,31 @@ PinTable::PinTable()
 
    m_numMaterials = 0;
 
-   nudge_set_sensitivity((float)LoadValueIntWithDefault("Player"s, "NudgeSensitivity"s, 500) * (float)(1.0/1000.0));
+   nudge_set_sensitivity((float)LoadValueIntWithDefault(regKey[RegName::Player], "NudgeSensitivity"s, 500) * (float)(1.0 / 1000.0));
 
-   m_globalDifficulty = dequantizeUnsignedPercent(LoadValueIntWithDefault("Player"s, "GlobalDifficulty"s, 20)); // easy by default
+   m_globalDifficulty = dequantizeUnsignedPercent(LoadValueIntWithDefault(regKey[RegName::Player], "GlobalDifficulty"s, 20)); // easy by default
 
    ReadAccelerometerCalibration();
 
-   m_tblAutoStart = LoadValueIntWithDefault("Player"s, "Autostart"s, 0) * 10;
-   m_tblAutoStartRetry = LoadValueIntWithDefault("Player"s, "AutostartRetry"s, 0) * 10;
-   m_tblAutoStartEnabled = LoadValueBoolWithDefault("Player"s, "asenable"s, false);
-   m_tblVolmod = (float)LoadValueIntWithDefault("Player"s, "Volmod"s, 1000) * (float)(1.0/1000.0);
-   m_tblExitConfirm = LoadValueIntWithDefault("Player"s, "Exitconfirm"s, 120) * 1000 / 60;
+   m_tblAutoStart = LoadValueIntWithDefault(regKey[RegName::Player], "Autostart"s, 0) * 10;
+   m_tblAutoStartRetry = LoadValueIntWithDefault(regKey[RegName::Player], "AutostartRetry"s, 0) * 10;
+   m_tblAutoStartEnabled = LoadValueBoolWithDefault(regKey[RegName::Player], "asenable"s, false);
+   m_tblVolmod = (float)LoadValueIntWithDefault(regKey[RegName::Player], "Volmod"s, 1000) * (float)(1.0 / 1000.0);
+   m_tblExitConfirm = LoadValueIntWithDefault(regKey[RegName::Player], "Exitconfirm"s, 120) * 1000 / 60;
 
-   SaveValue("Version"s, "VPinball"s, VP_VERSION_STRING_DIGITS);
+   SaveValue(regKey[RegName::Version], "VPinball"s, VP_VERSION_STRING_DIGITS);
 
-   m_globalDetailLevel = LoadValueIntWithDefault("Player"s, "AlphaRampAccuracy"s, 10);
+   m_globalDetailLevel = LoadValueIntWithDefault(regKey[RegName::Player], "AlphaRampAccuracy"s, 10);
    m_userDetailLevel = 10;
    m_overwriteGlobalDetailLevel = false;
 
    m_overwriteGlobalDayNight = true;
 
-   m_global3DZPD = LoadValueFloatWithDefault("Player"s, "Stereo3DZPD"s, 0.5f);
+   m_global3DZPD = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DZPD"s, 0.5f);
    m_3DZPD = 0.5f;
-   m_global3DMaxSeparation = LoadValueFloatWithDefault("Player"s, "Stereo3DMaxSeparation"s, 0.03f);
+   m_global3DMaxSeparation = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DMaxSeparation"s, 0.03f);
    m_3DmaxSeparation = 0.03f;
-   m_global3DOffset = LoadValueFloatWithDefault("Player"s, "Stereo3DOffset"s, 0.f);
+   m_global3DOffset = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DOffset"s, 0.f);
    m_3DOffset = 0.0f;
    m_overwriteGlobalStereo3D = false;
 
@@ -1252,33 +1252,33 @@ PinTable::PinTable()
    m_tblNudgePlumb = Vertex2D(0.f,0.f);
 
 #ifdef UNUSED_TILT
-   m_jolt_amount = LoadValueIntWithDefault("Player"s, "JoltAmount"s, 500);
-   m_tilt_amount = LoadValueIntWithDefault("Player"s, "TiltAmount"s, 950);
-   m_jolt_trigger_time = LoadValueIntWithDefault("Player"s, "JoltTriggerTime"s, 1000);
-   m_tilt_trigger_time = LoadValueIntWithDefault("Player"s, "TiltTriggerTime"s, 10000);
+   m_jolt_amount = LoadValueIntWithDefault(regKey[RegName::Player], "JoltAmount"s, 500);
+   m_tilt_amount = LoadValueIntWithDefault(regKey[RegName::Player], "TiltAmount"s, 950);
+   m_jolt_trigger_time = LoadValueIntWithDefault(regKey[RegName::Player], "JoltTriggerTime"s, 1000);
+   m_tilt_trigger_time = LoadValueIntWithDefault(regKey[RegName::Player], "TiltTriggerTime"s, 10000);
 #endif
 }
 
 void PinTable::ReadAccelerometerCalibration()
 {
-	m_tblAccelerometer = LoadValueBoolWithDefault("Player"s, "PBWEnabled"s, true); // true if electronic accelerometer enabled
-	m_tblAccelNormalMount = LoadValueBoolWithDefault("Player"s, "PBWNormalMount"s, true); // true is normal mounting (left hand coordinates)
+   m_tblAccelerometer = LoadValueBoolWithDefault(regKey[RegName::Player], "PBWEnabled"s, true); // true if electronic accelerometer enabled
+   m_tblAccelNormalMount = LoadValueBoolWithDefault(regKey[RegName::Player], "PBWNormalMount"s, true); // true is normal mounting (left hand coordinates)
 
-	m_tblAccelAngle = 0.0f;			// 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
-	const bool accel = LoadValueBoolWithDefault("Player"s, "PBWRotationCB"s, false);
-	if (accel)
-		m_tblAccelAngle = (float)LoadValueIntWithDefault("Player"s, "PBWRotationValue"s, 0);
+   m_tblAccelAngle = 0.0f;			// 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
+   const bool accel = LoadValueBoolWithDefault(regKey[RegName::Player], "PBWRotationCB"s, false);
+   if (accel)
+      m_tblAccelAngle = (float)LoadValueIntWithDefault(regKey[RegName::Player], "PBWRotationValue"s, 0);
 
-	m_tblAccelAmp.x = dequantizeUnsignedPercentNoClamp(LoadValueIntWithDefault("Player"s, "PBWAccelGainX"s, 150));
-	m_tblAccelAmp.y = dequantizeUnsignedPercentNoClamp(LoadValueIntWithDefault("Player"s, "PBWAccelGainY"s, 150));
-	m_tblAccelMax.x = LoadValueIntWithDefault("Player"s, "PBWAccelMaxX"s, 100) * JOYRANGEMX / 100;
-	m_tblAccelMax.y = LoadValueIntWithDefault("Player"s, "PBWAccelMaxY"s, 100) * JOYRANGEMX / 100;
+   m_tblAccelAmp.x = dequantizeUnsignedPercentNoClamp(LoadValueIntWithDefault(regKey[RegName::Player], "PBWAccelGainX"s, 150));
+   m_tblAccelAmp.y = dequantizeUnsignedPercentNoClamp(LoadValueIntWithDefault(regKey[RegName::Player], "PBWAccelGainY"s, 150));
+   m_tblAccelMax.x = LoadValueIntWithDefault(regKey[RegName::Player], "PBWAccelMaxX"s, 100) * JOYRANGEMX / 100;
+   m_tblAccelMax.y = LoadValueIntWithDefault(regKey[RegName::Player], "PBWAccelMaxY"s, 100) * JOYRANGEMX / 100;
 
-	// bug!! If tilt sensitivity is not set, it's supposed to disable analog tilting, see KeysConfigDialog.cpp
-	plumb_set_sensitivity((float)LoadValueIntWithDefault("Player"s, "TiltSensitivity"s, 400) * (float)(1.0/1000.0));
+   //!! bug!! If tilt sensitivity is not set, it's supposed to disable analog tilting, see KeysConfigDialog.cpp
+   plumb_set_sensitivity((float)LoadValueIntWithDefault(regKey[RegName::Player], "TiltSensitivity"s, 400) * (float)(1.0 / 1000.0));
 
-	if (g_pplayer)
-		g_pplayer->m_pininput.LoadSettings();
+   if (g_pplayer)
+      g_pplayer->m_pininput.LoadSettings();
 }
 
 PinTable::~PinTable()
@@ -1857,9 +1857,9 @@ void PinTable::Render3DProjection(Sur * const psur)
    pinproj.m_rcviewport.bottom = EDITOR_BG_HEIGHT;
 
    //const float aspect = 4.0f/3.0f;
-   const bool fullscreen = LoadValueBoolWithDefault("Player"s, "FullScreen"s, IsWindows10_1803orAbove());
-   const int renderWidth = LoadValueIntWithDefault("Player"s, "Width"s, fullscreen ? DEFAULT_PLAYER_FS_WIDTH : DEFAULT_PLAYER_WIDTH);
-   const int renderHeight = LoadValueIntWithDefault("Player"s, "Height"s, renderWidth * 9 / 16);
+   const bool fullscreen = LoadValueBoolWithDefault(regKey[RegName::Player], "FullScreen"s, IsWindows10_1803orAbove());
+   const int renderWidth = LoadValueIntWithDefault(regKey[RegName::Player], "Width"s, fullscreen ? DEFAULT_PLAYER_FS_WIDTH : DEFAULT_PLAYER_WIDTH);
+   const int renderHeight = LoadValueIntWithDefault(regKey[RegName::Player], "Height"s, renderWidth * 9 / 16);
    const float aspect = (float)((double)renderWidth / (double)renderHeight); //(float)(4.0/3.0);
 
    pinproj.FitCameraToVertices(vvertex3D, aspect, rotation, inclination, FOV, m_BG_xlatez[m_BG_current_set], m_BG_layback[m_BG_current_set]);
@@ -2056,15 +2056,15 @@ void PinTable::Play(const bool cameraMode)
       float fOverrideContactScatterAngle;
       if (m_overridePhysics)
       {
-         m_fOverrideGravityConstant = LoadValueFloatWithDefault("Player"s, "TablePhysicsGravityConstant"+std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_GRAVITY);
+         m_fOverrideGravityConstant = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsGravityConstant" + std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_GRAVITY);
          m_fOverrideGravityConstant *= GRAVITYCONST;
-         m_fOverrideContactFriction = LoadValueFloatWithDefault("Player"s, "TablePhysicsContactFriction"+std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_CONTACTFRICTION);
-         m_fOverrideElasticity = LoadValueFloatWithDefault("Player"s, "TablePhysicsElasticity"+std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_ELASTICITY);
-         m_fOverrideElasticityFalloff = LoadValueFloatWithDefault("Player"s, "TablePhysicsElasticityFalloff"+std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_ELASTICITY_FALLOFF);
-         m_fOverrideScatterAngle = LoadValueFloatWithDefault("Player"s, "TablePhysicsScatterAngle"+std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_PFSCATTERANGLE);
-         fOverrideContactScatterAngle = LoadValueFloatWithDefault("Player"s, "TablePhysicsContactScatterAngle"+std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_SCATTERANGLE);
-         m_fOverrideMinSlope = LoadValueFloatWithDefault("Player"s, "TablePhysicsMinSlope"+std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_MIN_SLOPE);
-         m_fOverrideMaxSlope = LoadValueFloatWithDefault("Player"s, "TablePhysicsMaxSlope"+std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_MAX_SLOPE);
+         m_fOverrideContactFriction = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsContactFriction"+std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_CONTACTFRICTION);
+         m_fOverrideElasticity = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsElasticity" + std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_ELASTICITY);
+         m_fOverrideElasticityFalloff = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsElasticityFalloff"+std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_ELASTICITY_FALLOFF);
+         m_fOverrideScatterAngle = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsScatterAngle" + std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_PFSCATTERANGLE);
+         fOverrideContactScatterAngle = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsContactScatterAngle"+std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_SCATTERANGLE);
+         m_fOverrideMinSlope = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsMinSlope" + std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_MIN_SLOPE);
+         m_fOverrideMaxSlope = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsMaxSlope" + std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_MAX_SLOPE);
       }
 
       c_hardScatter = ANGTORAD(m_overridePhysics ? fOverrideContactScatterAngle : m_defaultScatter);
@@ -2244,7 +2244,7 @@ HRESULT PinTable::Save(const bool saveAs)
       // Or try with the standard last-used dir
       else
       {
-         const HRESULT hr = LoadValue("RecentDir"s, "LoadDir"s, szInitialDir);
+         const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "LoadDir"s, szInitialDir);
          if (hr != S_OK)
             szInitialDir = m_vpinball->m_szMyPath + "Tables\\";
       }
@@ -2261,7 +2261,7 @@ HRESULT PinTable::Save(const bool saveAs)
       char szInitialDir[MAXSTRING];
       strncpy_s(szInitialDir, m_szFileName.c_str(), sizeof(szInitialDir)-1);
       szInitialDir[ofn.nFileOffset] = '\0'; // truncate after folder
-      HRESULT hr = SaveValue("RecentDir"s, "LoadDir"s, szInitialDir);
+      HRESULT hr = SaveValue(regKey[RegName::RecentDir], "LoadDir"s, szInitialDir);
 
       {
          MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName.c_str());
@@ -3037,7 +3037,7 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
    SAFE_VECTOR_DELETE(buffer);
 
    // Write the version to the registry.  This will be read later by the front end.
-   SaveValue("Version"s, m_szTableName, m_szVersion);
+   SaveValue(regKey[RegName::Version], m_szTableName, m_szVersion);
 
    HRESULT hr;
    IStream *pstm;
@@ -3826,21 +3826,21 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    {
       int tmp;
       pbr->GetInt(tmp);
-      m_plungerNormalize = LoadValueIntWithDefault("Player"s, "PlungerNormalize"s, tmp);
+      m_plungerNormalize = LoadValueIntWithDefault(regKey[RegName::Player], "PlungerNormalize"s, tmp);
       break;
    }
    case FID(MPDF):
    {
       bool tmp;
       pbr->GetBool(tmp);
-      m_plungerFilter = LoadValueBoolWithDefault("Player"s, "PlungerFilter"s, tmp);
+      m_plungerFilter = LoadValueBoolWithDefault(regKey[RegName::Player], "PlungerFilter"s, tmp);
       break;
    }
    case FID(PHML):
    {
       pbr->GetInt(m_PhysicsMaxLoops);
       if (m_PhysicsMaxLoops == 0xFFFFFFFF)
-         /*const HRESULT hr =*/ LoadValue("Player"s, "PhysicsMaxLoops"s, m_PhysicsMaxLoops);
+         /*const HRESULT hr =*/LoadValue(regKey[RegName::Player], "PhysicsMaxLoops"s, m_PhysicsMaxLoops);
       break;
    }
    case FID(DECL): pbr->GetBool(m_renderDecals); break;
@@ -3923,7 +3923,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    {
       pbr->GetFloat(m_globalDifficulty);
       int tmp;
-      const HRESULT hr = LoadValue("Player"s, "GlobalDifficulty"s, tmp);
+      const HRESULT hr = LoadValue(regKey[RegName::Player], "GlobalDifficulty"s, tmp);
       if (hr == S_OK) m_globalDifficulty = dequantizeUnsignedPercent(tmp);
       break;
    }
@@ -5427,7 +5427,7 @@ void PinTable::ImportBackdropPOV(const string& filename)
     if (filename.empty())
     {
        string szInitialDir;
-       HRESULT hr = LoadValue("RecentDir"s, "POVDir"s, szInitialDir);
+       HRESULT hr = LoadValue(regKey[RegName::RecentDir], "POVDir"s, szInitialDir);
        if (hr != S_OK)
           szInitialDir = "c:\\Visual Pinball\\Tables\\";
    
@@ -5436,7 +5436,7 @@ void PinTable::ImportBackdropPOV(const string& filename)
 
        const size_t index = szFileName[0].find_last_of('\\');
        if (index != string::npos)
-           hr = SaveValue("RecentDir"s, "POVDir"s, szFileName[0].substr(0, index));
+           hr = SaveValue(regKey[RegName::RecentDir], "POVDir"s, szFileName[0].substr(0, index));
     }
     else
        szFileName.push_back(filename);
@@ -8558,7 +8558,7 @@ void PinTable::SetShowFSS(const bool enable)
    if (m_BG_enable_FSS)
       m_BG_current_set = FULL_SINGLE_SCREEN;
    else
-      LoadValue("Player"s, "BGSet"s, m_BG_current_set);
+      LoadValue(regKey[RegName::Player], "BGSet"s, m_BG_current_set);
 }
 
 STDMETHODIMP PinTable::get_ShowFSS(VARIANT_BOOL *pVal)
@@ -8813,7 +8813,7 @@ STDMETHODIMP PinTable::get_PlungerNormalize(int *pVal)
 
 void PinTable::SetPlungerNormalize(const int value)
 {
-   m_plungerNormalize = LoadValueIntWithDefault("Player"s, "PlungerNormalize"s, value);
+   m_plungerNormalize = LoadValueIntWithDefault(regKey[RegName::Player], "PlungerNormalize"s, value);
 }
 
 STDMETHODIMP PinTable::put_PlungerNormalize(int newVal)
@@ -8835,7 +8835,7 @@ STDMETHODIMP PinTable::get_PlungerFilter(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_PlungerFilter(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_plungerFilter = LoadValueBoolWithDefault("Player", "PlungerFilter", VBTOb(newVal));
+   m_plungerFilter = LoadValueBoolWithDefault(regKey[RegName::Player], "PlungerFilter"s, VBTOb(newVal));
    STOPUNDO
 
    return S_OK;
@@ -9255,7 +9255,7 @@ STDMETHODIMP PinTable::put_OverridePhysicsFlippers(VARIANT_BOOL newVal)
 STDMETHODIMP PinTable::ImportPhysics()
 {
    string szInitialDir;
-   HRESULT hr = LoadValue("RecentDir"s, "PhysicsDir"s, szInitialDir);
+   HRESULT hr = LoadValue(regKey[RegName::RecentDir], "PhysicsDir"s, szInitialDir);
    if (hr != S_OK)
       szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -9265,7 +9265,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 
    const size_t index = szFileName[0].find_last_of('\\');
    if (index != string::npos)
-       hr = SaveValue("RecentDir"s, "PhysicsDir"s, szFileName[0].substr(0, index));
+       hr = SaveValue(regKey[RegName::RecentDir], "PhysicsDir"s, szFileName[0].substr(0, index));
 
    ImportVPP(szFileName[0]);
 
@@ -9540,7 +9540,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
    string szInitialDir;
-   const HRESULT hr = LoadValue("RecentDir"s, "PhysicsDir"s, szInitialDir);
+   const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "PhysicsDir"s, szInitialDir);
    if (hr != S_OK)
        szInitialDir = "c:\\Visual Pinball\\Tables\\";
 
@@ -9555,7 +9555,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    if (index != string::npos)
    {
        const string newInitDir(szFilename.substr(0, index));
-       SaveValue("RecentDir"s, "PhysicsDir"s, newInitDir);
+       SaveValue(regKey[RegName::RecentDir], "PhysicsDir"s, newInitDir);
    }
 
    xml_document<> xmlDoc;
@@ -9751,7 +9751,7 @@ float PinTable::GetGlobalDifficulty() const
 void PinTable::SetGlobalDifficulty(const float value)
 {
     int tmp;
-    const HRESULT hr = LoadValue("Player"s, "GlobalDifficulty"s, tmp);
+    const HRESULT hr = LoadValue(regKey[RegName::Player], "GlobalDifficulty"s, tmp);
     if (hr == S_OK)
         m_globalDifficulty = dequantizeUnsignedPercent(tmp);
     else
@@ -9832,14 +9832,14 @@ STDMETHODIMP PinTable::put_AccelerometerAngle(float newVal)
 
 STDMETHODIMP PinTable::get_DeadZone(int *pVal)
 {
-   *pVal = LoadValueIntWithDefault("Player"s, "DeadZone"s, 0);
+   *pVal = LoadValueIntWithDefault(regKey[RegName::Player], "DeadZone"s, 0);
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_DeadZone(int newVal)
 {
-   SaveValueInt("Player"s, "DeadZone"s, clamp(newVal, 0,100));
+   SaveValueInt(regKey[RegName::Player], "DeadZone"s, clamp(newVal, 0,100));
 
    return S_OK;
 }

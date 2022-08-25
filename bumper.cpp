@@ -48,7 +48,8 @@ HRESULT Bumper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Bumper::SetDefaults(bool fromMouseClick)
 {
-#define regKey "DefaultProps\\Bumper"s
+#define regKey regKey[RegName::DefaultPropsBumper]
+
    m_d.m_radius = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Radius"s, 45.f) : 45.f;
 
    SetDefaultPhysics(fromMouseClick);
@@ -74,12 +75,14 @@ void Bumper::SetDefaults(bool fromMouseClick)
 
    m_ringAnimate = false;
    m_d.m_ringDropOffset = 0.0f;
+
 #undef regKey
 }
 
 void Bumper::WriteRegDefaults()
 {
-#define regKey "DefaultProps\\Bumper"s
+#define regKey regKey[RegName::DefaultPropsBumper]
+
    SaveValueFloat(regKey, "Radius"s, m_d.m_radius);
    SaveValueFloat(regKey, "Force"s, m_d.m_force);
    SaveValueFloat(regKey, "Scatter"s, m_d.m_scatter);
@@ -95,6 +98,7 @@ void Bumper::WriteRegDefaults()
    SaveValueBool(regKey, "Collidable"s, m_d.m_collidable);
    SaveValueBool(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
    SaveValue(regKey, "Surface"s, m_d.m_szSurface);
+
 #undef regKey
 }
 
@@ -1283,6 +1287,6 @@ STDMETHODIMP Bumper::PlayHit()
 
 void Bumper::SetDefaultPhysics(bool fromMouseClick)
 {
-   m_d.m_force = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Bumper"s, "Force"s, 15) : 15;
-   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Bumper"s, "Scatter"s, 0) : 0;
+   m_d.m_force   = fromMouseClick ? LoadValueFloatWithDefault(regKey[RegName::DefaultPropsBumper], "Force"s, 15) : 15;
+   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(regKey[RegName::DefaultPropsBumper], "Scatter"s, 0) : 0;
 }

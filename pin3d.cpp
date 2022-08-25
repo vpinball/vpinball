@@ -445,7 +445,7 @@ BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xre
 
 HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl)
 {
-   const int display = g_pvp->m_primaryDisplay ? 0 : LoadValueIntWithDefault("Player"s, "Display"s, 0);
+   const int display = g_pvp->m_primaryDisplay ? 0 : LoadValueIntWithDefault(regKey[RegName::Player], "Display"s, 0);
    vector<DisplayConfig> displays;
    getDisplayList(displays);
    int adapter = 0;
@@ -464,10 +464,10 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
    if (!m_pd3dPrimaryDevice->LoadShaders())
       return E_FAIL;
 
-   const bool forceAniso = LoadValueBoolWithDefault("Player"s, "ForceAnisotropicFiltering"s, true);
+   const bool forceAniso = LoadValueBoolWithDefault(regKey[RegName::Player], "ForceAnisotropicFiltering"s, true);
    m_pd3dPrimaryDevice->ForceAnisotropicFiltering(forceAniso);
 
-   const bool compressTextures = LoadValueBoolWithDefault("Player"s, "CompressTextures"s, false);
+   const bool compressTextures = LoadValueBoolWithDefault(regKey[RegName::Player], "CompressTextures"s, false);
    m_pd3dPrimaryDevice->CompressTextures(compressTextures);
 
    m_pd3dPrimaryDevice->SetViewport(&m_viewPort);

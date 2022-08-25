@@ -15,8 +15,8 @@ HRESULT Textbox::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
    m_ptable = ptable;
 
-   const float width = LoadValueFloatWithDefault("DefaultProps\\TextBox"s, "Width"s, 100.0f);
-   const float height = LoadValueFloatWithDefault("DefaultProps\\TextBox"s, "Height"s, 50.0f);
+   const float width  = LoadValueFloatWithDefault(regKey[RegName::DefaultPropsTextBox], "Width"s, 100.0f);
+   const float height = LoadValueFloatWithDefault(regKey[RegName::DefaultPropsTextBox], "Height"s, 50.0f);
 
    m_d.m_v1.x = x;
    m_d.m_v1.y = y;
@@ -30,7 +30,7 @@ HRESULT Textbox::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Textbox::SetDefaults(bool fromMouseClick)
 {
-#define regKey "DefaultProps\\TextBox"s
+#define regKey regKey[RegName::DefaultPropsTextBox]
 
    //Textbox is always located on backdrop
    m_backglass = true;
@@ -103,11 +103,13 @@ void Textbox::SetDefaults(bool fromMouseClick)
    OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
    if (free_lpstrName)
       free(fd.lpstrName);
+
+#undef regKey
 }
 
 void Textbox::WriteRegDefaults()
 {
-#define regKey "DefaultProps\\TextBox"s
+#define regKey regKey[RegName::DefaultPropsTextBox]
 
    SaveValueInt(regKey, "BackColor"s, m_d.m_backcolor);
    SaveValueInt(regKey, "FontColor"s, m_d.m_fontcolor);
@@ -142,6 +144,7 @@ void Textbox::WriteRegDefaults()
    SaveValueInt(regKey, "FontStrikeThrough"s, fd.fStrikethrough);
 
    SaveValue(regKey, "Text"s, m_d.m_sztext);
+
 #undef regKey
 }
 

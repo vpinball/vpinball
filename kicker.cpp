@@ -55,7 +55,7 @@ HRESULT Kicker::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Kicker::SetDefaults(bool fromMouseClick)
 {
-#define regKey "DefaultProps\\Kicker"s
+#define regKey regKey[RegName::DefaultPropsKicker]
 
    m_d.m_radius = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Radius"s, 25.f) : 25.f;
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled"s, false) : false;
@@ -78,12 +78,13 @@ void Kicker::SetDefaults(bool fromMouseClick)
 
    m_d.m_fallThrough = fromMouseClick ? LoadValueBoolWithDefault(regKey, "FallThrough"s, false) : false;
    m_d.m_legacyMode = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Legacy"s, true) : true;
+
 #undef regKey
 }
 
 void Kicker::WriteRegDefaults()
 {
-#define regKey "DefaultProps\\Kicker"s
+#define regKey regKey[RegName::DefaultPropsKicker]
 
    SaveValueBool(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
    SaveValueInt(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
@@ -97,6 +98,7 @@ void Kicker::WriteRegDefaults()
    SaveValue(regKey, "Surface"s, m_d.m_szSurface);
    SaveValueBool(regKey, "FallThrough"s, m_d.m_fallThrough);
    SaveValueBool(regKey, "Legacy"s, m_d.m_legacyMode);
+
 #undef regKey
 }
 
@@ -525,7 +527,7 @@ void Kicker::PreRenderStatic(RenderDevice* pd3dDevice)
 
 void Kicker::SetDefaultPhysics(bool fromMouseClick)
 {
-   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Kicker"s, "Scatter"s, 0.f) : 0.f;
+   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(regKey[RegName::DefaultPropsKicker], "Scatter"s, 0.f) : 0.f;
 }
 
 void Kicker::RenderDynamic()

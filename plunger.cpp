@@ -27,7 +27,7 @@ HRESULT Plunger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Plunger::SetDefaults(bool fromMouseClick)
 {
-#define regKey "DefaultProps\\Plunger"s
+#define regKey regKey[RegName::DefaultPropsPlunger]
 
    SetDefaultPhysics(fromMouseClick);
 
@@ -69,12 +69,13 @@ void Plunger::SetDefaults(bool fromMouseClick)
    m_d.m_springLoops = fromMouseClick ? LoadValueFloatWithDefault(regKey, "CustomSpringLoops"s, 8.0f) : 8.0f;
    m_d.m_springEndLoops = fromMouseClick ? LoadValueFloatWithDefault(regKey, "CustomSpringEndLoops"s, 2.5f) : 2.5f;
    m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ReflectionEnabled"s, true) : true;
+
 #undef regKey
 }
 
 void Plunger::WriteRegDefaults()
 {
-#define regKey "DefaultProps\\Plunger"s
+#define regKey regKey[RegName::DefaultPropsPlunger]
 
    SaveValueFloat(regKey, "Height"s, m_d.m_height);
    SaveValueFloat(regKey, "Width"s, m_d.m_width);
@@ -106,6 +107,7 @@ void Plunger::WriteRegDefaults()
    SaveValueFloat(regKey, "CustomSpringLoops"s, m_d.m_springLoops);
    SaveValueFloat(regKey, "CustomSpringEndLoops"s, m_d.m_springEndLoops);
    SaveValueBool(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+
 #undef regKey
 }
 
@@ -197,13 +199,14 @@ void Plunger::PutCenter(const Vertex2D& pv)
 
 void Plunger::SetDefaultPhysics(bool fromMouseClick)
 {
-#define regKey "DefaultProps\\Plunger"s
+#define regKey regKey[RegName::DefaultPropsPlunger]
 
    m_d.m_speedFire = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ReleaseSpeed"s, 80.f) : 80.f;
    m_d.m_mechStrength = fromMouseClick ? LoadValueFloatWithDefault(regKey, "MechStrength"s, 85.f) : 85.f;
    m_d.m_parkPosition = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ParkPosition"s, (float)(0.5/3.0)) : (float)(0.5/3.0); // typical mechanical plunger has 3 inch stroke and 0.5 inch rest position //!! 0.01f better for some HW-plungers, but this seems to be rather a firmware/config issue
    m_d.m_scatterVelocity = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ScatterVelocity"s, 0.f) : 0.f;
    m_d.m_momentumXfer = fromMouseClick ? LoadValueFloatWithDefault(regKey, "MomentumXfer"s, 1.f) : 1.f;
+
 #undef regKey
 }
 

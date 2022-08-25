@@ -111,7 +111,7 @@ HRESULT Flipper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Flipper::SetDefaults(bool fromMouseClick)
 {
-#define regKey "DefaultProps\\Flipper"s
+#define regKey regKey[RegName::DefaultPropsFlipper]
 
    SetDefaultPhysics(fromMouseClick);
 
@@ -140,12 +140,13 @@ void Flipper::SetDefaults(bool fromMouseClick)
    m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Visible"s, true) : true;
    m_d.m_enabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Enabled"s, true) : true;
    m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ReflectionEnabled"s, true) : true;
+
 #undef regKey
 }
 
 void Flipper::WriteRegDefaults()
 {
-#define regKey "DefaultProps\\Flipper"s
+#define regKey regKey[RegName::DefaultPropsFlipper]
 
    SaveValueFloat(regKey, "Scatter"s, m_d.m_scatter);
    SaveValueFloat(regKey, "Strength"s, m_d.m_strength);
@@ -175,6 +176,7 @@ void Flipper::WriteRegDefaults()
    SaveValueBool(regKey, "Visible"s, m_d.m_visible);
    SaveValueBool(regKey, "Enabled"s, m_d.m_enabled);
    SaveValueBool(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+
 #undef regKey
 }
 
@@ -200,43 +202,43 @@ void Flipper::UpdatePhysicsSettings()
    {
       const int idx = m_d.m_OverridePhysics ? (m_d.m_OverridePhysics-1) : (m_ptable->m_overridePhysics-1);
 
-      m_d.m_OverrideMass = LoadValueFloatWithDefault("Player"s, "FlipperPhysicsMass"+std::to_string(idx), 1.f);
+      m_d.m_OverrideMass = LoadValueFloatWithDefault(regKey[RegName::Player], "FlipperPhysicsMass" + std::to_string(idx), 1.f);
       if (m_d.m_OverrideMass < 0.0f)
          m_d.m_OverrideMass = m_d.m_mass;
 
-      m_d.m_OverrideStrength = LoadValueFloatWithDefault("Player"s, "FlipperPhysicsStrength"+std::to_string(idx), 2200.f);
+      m_d.m_OverrideStrength = LoadValueFloatWithDefault(regKey[RegName::Player], "FlipperPhysicsStrength" + std::to_string(idx), 2200.f);
       if (m_d.m_OverrideStrength < 0.0f)
          m_d.m_OverrideStrength = m_d.m_strength;
 
-      m_d.m_OverrideElasticity = LoadValueFloatWithDefault("Player"s, "FlipperPhysicsElasticity"+std::to_string(idx), 0.8f);
+      m_d.m_OverrideElasticity = LoadValueFloatWithDefault(regKey[RegName::Player], "FlipperPhysicsElasticity" + std::to_string(idx), 0.8f);
       if (m_d.m_OverrideElasticity < 0.0f)
          m_d.m_OverrideElasticity = m_d.m_elasticity;
 
-      m_d.m_OverrideScatterAngle = LoadValueFloatWithDefault("Player"s, "FlipperPhysicsScatter"+std::to_string(idx), 0.f);
+      m_d.m_OverrideScatterAngle = LoadValueFloatWithDefault(regKey[RegName::Player], "FlipperPhysicsScatter" + std::to_string(idx), 0.f);
       if (m_d.m_OverrideScatterAngle < 0.0f)
          m_d.m_OverrideScatterAngle = m_d.m_scatter;
 
-      m_d.m_OverrideReturnStrength = LoadValueFloatWithDefault("Player"s, "FlipperPhysicsReturnStrength"+std::to_string(idx), 0.058f);
+      m_d.m_OverrideReturnStrength = LoadValueFloatWithDefault(regKey[RegName::Player], "FlipperPhysicsReturnStrength" + std::to_string(idx), 0.058f);
       if (m_d.m_OverrideReturnStrength < 0.0f)
          m_d.m_OverrideReturnStrength = m_d.m_return;
 
-      m_d.m_OverrideElasticityFalloff = LoadValueFloatWithDefault("Player"s, "FlipperPhysicsElasticityFalloff"+std::to_string(idx), 0.43f);
+      m_d.m_OverrideElasticityFalloff = LoadValueFloatWithDefault(regKey[RegName::Player], "FlipperPhysicsElasticityFalloff" + std::to_string(idx), 0.43f);
       if (m_d.m_OverrideElasticityFalloff < 0.0f)
          m_d.m_OverrideElasticityFalloff = m_d.m_elasticityFalloff;
 
-      m_d.m_OverrideFriction = LoadValueFloatWithDefault("Player"s, "FlipperPhysicsFriction"+std::to_string(idx), 0.6f);
+      m_d.m_OverrideFriction = LoadValueFloatWithDefault(regKey[RegName::Player], "FlipperPhysicsFriction" + std::to_string(idx), 0.6f);
       if (m_d.m_OverrideFriction < 0.0f)
          m_d.m_OverrideFriction = m_d.m_friction;
 
-      m_d.m_OverrideCoilRampUp = LoadValueFloatWithDefault("Player"s, "FlipperPhysicsCoilRampUp"+std::to_string(idx), 3.f);
+      m_d.m_OverrideCoilRampUp = LoadValueFloatWithDefault(regKey[RegName::Player], "FlipperPhysicsCoilRampUp" + std::to_string(idx), 3.f);
       if (m_d.m_OverrideCoilRampUp < 0.0f)
          m_d.m_OverrideCoilRampUp = m_d.m_rampUp;
 
-      m_d.m_OverrideTorqueDamping = LoadValueFloatWithDefault("Player"s, "FlipperPhysicsEOSTorque"+std::to_string(idx), 0.75f);
+      m_d.m_OverrideTorqueDamping = LoadValueFloatWithDefault(regKey[RegName::Player], "FlipperPhysicsEOSTorque" + std::to_string(idx), 0.75f);
       if (m_d.m_OverrideTorqueDamping < 0.0f)
          m_d.m_OverrideTorqueDamping = m_d.m_torqueDamping;
 
-      m_d.m_OverrideTorqueDampingAngle = LoadValueFloatWithDefault("Player"s, "FlipperPhysicsEOSTorqueAngle"+std::to_string(idx), 6.f);
+      m_d.m_OverrideTorqueDampingAngle = LoadValueFloatWithDefault(regKey[RegName::Player], "FlipperPhysicsEOSTorqueAngle" + std::to_string(idx), 6.f);
       if (m_d.m_OverrideTorqueDampingAngle < 0.0f)
          m_d.m_OverrideTorqueDampingAngle = m_d.m_torqueDampingAngle;
    }
@@ -522,7 +524,7 @@ void Flipper::PutCenter(const Vertex2D& pv)
 
 void Flipper::SetDefaultPhysics(bool fromMouseClick)
 {
-#define regKey "DefaultProps\\Flipper"s
+#define regKey regKey[RegName::DefaultPropsFlipper]
 
    m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Scatter"s, 0.f) : 0.f;
    m_d.m_strength = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Strength"s, 2200.f) : 2200.f;
@@ -545,6 +547,7 @@ void Flipper::SetDefaultPhysics(bool fromMouseClick)
    m_d.m_rampUp = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RampUp"s, 3.0f) : 3.0f;
 
    m_d.m_OverridePhysics = 0;
+
 #undef regKey
 }
 
