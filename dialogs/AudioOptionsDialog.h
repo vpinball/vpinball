@@ -7,11 +7,11 @@ public:
    AudioOptionsDialog();
 
 protected:
-   virtual BOOL OnInitDialog() override;
-   virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
-   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
-   virtual void OnOK() override;
-   virtual void OnClose() override;
+   BOOL OnInitDialog() final;
+   INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) final;
+   BOOL OnCommand(WPARAM wParam, LPARAM lParam) final;
+   void OnOK() final;
+   void OnClose() final;
 };
 
 #endif // !H_AUDIO_OPTIONS_DIALOG
