@@ -3704,17 +3704,33 @@ STRINGTABLE
 BEGIN
     IDS_PROJNAME            "Visual Pinball"
     IDS_TB_TIMER            "Timer"
-    IDS_DRAGPOINT_DESC      "DragPoint Class"
     IDS_TB_SELECT           "Select"
     IDS_TB_WALL             "Wall"
     IDS_TB_FLIPPER          "Flipper"
     IDS_TB_PLAY             "Play"
-    IDS_FLIPPER_DESC        "Flipper Class"
+    IDS_TB_LIGHTSEQ         "LightSeq"
+    IDS_TB_PRIMITIVE        "Primitive"
+    IDS_TB_PLUNGER          "Plunger"
+    IDS_TB_TEXTBOX          "TextBox"
+    IDS_TB_BUMPER           "Bumper"
+    IDS_TB_DISPREEL         "EMReel"
+    IDS_TB_TRIGGER          "Trigger"
+    IDS_TB_LIGHT            "Light"
+    IDS_TB_KICKER           "Kicker"
+    IDS_TB_TARGET           "Target"
+    IDS_TB_DECAL            "Decal"
+    IDS_TB_PROPERTIES       "Options"
+    IDS_TB_MAGNIFY          "Magnify"
+    IDS_TB_GATE             "Gate"
+    IDS_TB_FLASHER          "Flasher"
+    IDS_TB_SPINNER          "Spinner"
+    IDS_TB_RAMP             "Ramp"
+    IDS_TB_RUBBER           "Rubber"
+    IDS_TB_BACKGLASS        "Backglass/POV"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_TB_LIGHTSEQ         "LightSeq"
     IDS_REPLACEALL          "Replaced"
     IDS_REPLACEALL2         "occurrences in script."
 END
@@ -3725,13 +3741,11 @@ BEGIN
     IDS_LOCK                "&Lock"
     IDS_MISC                "Misc"
     IDS_IMAGESIZE           "Image Size"
-    IDS_LIGHTSEQ_DESC       "LightSequencer Class"
     IDS_COPY_ELEMENT        "Copy\tCtrl+C"
     IDS_VISUALS             "Colors & Formatting"
     IDS_POSITION            "Position"
     IDS_STATE               "State & Physics"
     IDS_PHYSICS             "Physics"
-    IDS_TB_PRIMITIVE        "Primitive"
     IDS_VISUALS2            "Graphics & Camera"
     IDS_POSITION_TRANSLATION "Position & Translation"
     IDS_PASTE_ELEMENT       "Paste\tCtrl+V"
@@ -3754,37 +3768,12 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_TIMER_DESC          "Timer Class"
-    IDS_PLUNGER_DESC        "Plunger Class"
-    IDS_TB_PLUNGER          "Plunger"
     IDS_FORMAT              "Format"
-    IDS_TEXTBOX_DESC        "Textbox Class"
-    IDS_TB_TEXTBOX          "TextBox"
-    IDS_DISPREEL_DESC       "DispReel Class"
-    IDS_BUMPER_DESC         "Bumper Class"
-    IDS_TB_BUMPER           "Bumper"
-    IDS_TB_DISPREEL         "EMReel"
-    IDS_PIEVENTHANDLER_DESC "PIEventHandler Class"
-    IDS_TRIGGER_DESC        "Trigger Class"
-    IDS_TB_TRIGGER          "Trigger"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_LIGHT_DESC          "Light Class"
-    IDS_TB_LIGHT            "Light"
     IDS_DRAWING_ORDER_HIT   "&Drawing Order (Hit)"
-    IDS_KICKER_DESC         "Kicker Class"
-    IDS_TB_KICKER           "Kicker"
-    IDS_TB_TARGET           "Target"
-    IDS_TB_DECAL            "Decal"
-    IDS_TB_PROPERTIES       "Options"
-    IDS_TB_MAGNIFY          "Magnify"
-    IDS_GATE_DESC           "Gate Class"
-    IDS_TB_GATE             "Gate"
-    IDS_TB_FLASHER          "Flasher"
-    IDS_SPINNER_DESC        "Spinner Class"
-    IDS_TB_SPINNER          "Spinner"
     IDS_TO_COLLECTION       "Add/Remove &Collection"
 END
 
@@ -3799,10 +3788,6 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_RAMP_DESC           "Ramp Class"
-    IDS_TB_RAMP             "Ramp"
-    IDS_TB_SCRIPT           "Script"
-    IDS_TB_RUBBER           "Rubber"
     IDS_NAME                "Name"
     IDS_IMPORTPATH          "Import Path"
     IDS_REPLACESOUND        "Are you sure you want to replace the selected sound(s)?"
@@ -3815,19 +3800,14 @@ BEGIN
     IDS_SAVE_CHANGES1       "Table '"
     IDS_SAVE_CHANGES2       "' has changed.  Do you want to save changes before exiting?"
     IDS_DRAWINFRONT         "Draw In &Front"
-END
-
-STRINGTABLE
-BEGIN
     IDS_DRAWINBACK          "Draw In &Back"
     IDS_SAVEERROR           "There was an error saving the file."
-    IDS_TB_BACKGLASS        "Backglass/POV"
     IDS_WRONGFILEVERSION    "This table was saved by a newer version of Visual Pinball. It's possible that it won't work well!"
     IDS_NOPASTEINVIEW       "One or more of the objects on the clipboard can not be placed into the current view."
     IDS_FINDLOOPED          "Passed the end of the file"
     IDS_FINDFAILED          "Cannot find the string '"
-    IDS_SETASDEFAULT        "Set as Default"
     IDS_FINDFAILED2         "'"
+    IDS_SETASDEFAULT        "Set element parameters as new default"
     IDS_CONTROLPOINT        "Control Point"
     IDS_REMOVEMATERIAL      "Are you sure you want to remove the selected material(s)?"
     IDS_CORRUPTFILE         "This file is corrupt and can not be loaded."
@@ -3840,7 +3820,6 @@ END
 STRINGTABLE
 BEGIN
     IDS_EDITOR              "Editor"
-    IDS_DEFAULTBALL         "Ball"
     IDS_NONE                "<None>"
     IDS_VALUE               "Value"
     IDS_MAKEACTIVEBALL      "Make ActiveBall"
@@ -3869,4 +3848,3 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-
