@@ -176,42 +176,42 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_current_renderstage = 0;
    m_dmdstate = 0;
 
-   m_VSync = LoadValueIntWithDefault("Player"s, "AdaptiveVSync"s, 0);
-   m_maxPrerenderedFrames = LoadValueIntWithDefault("Player"s, "MaxPrerenderedFrames"s, 0);
-   m_NudgeShake = LoadValueFloatWithDefault("Player"s, "NudgeStrength"s, 2e-2f);
-   m_FXAA = LoadValueIntWithDefault("Player"s, "FXAA"s, Standard_FXAA);
-   m_sharpen = LoadValueIntWithDefault("Player"s, "Sharpen"s, 0);
-   m_trailForBalls = LoadValueBoolWithDefault("Player"s, "BallTrail"s, true);
-   m_disableLightingForBalls = LoadValueBoolWithDefault("Player"s, "DisableLightingForBalls"s, false);
-   m_reflectionForBalls = LoadValueBoolWithDefault("Player"s, "BallReflection"s, true);
-   m_AA = LoadValueBoolWithDefault("Player"s, "USEAA"s, false);
-   m_dynamicAO = LoadValueBoolWithDefault("Player"s, "DynamicAO"s, false);
-   m_disableAO = LoadValueBoolWithDefault("Player"s, "DisableAO"s, false);
-   m_ss_refl = LoadValueBoolWithDefault("Player"s, "SSRefl"s, false);
-   m_pf_refl = LoadValueBoolWithDefault("Player"s, "PFRefl"s, true);
-   m_stereo3D = (StereoMode) LoadValueIntWithDefault("Player"s, "Stereo3D"s, STEREO_OFF);
-   m_stereo3Denabled = LoadValueBoolWithDefault("Player"s, "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
-   m_stereo3DY = LoadValueBoolWithDefault("Player"s, "Stereo3DYAxis"s, false);
-   m_global3DContrast = LoadValueFloatWithDefault("Player"s, "Stereo3DContrast"s, 1.0f);
-   m_global3DDesaturation = LoadValueFloatWithDefault("Player"s, "Stereo3DDesaturation"s, 0.f);
-   m_scaleFX_DMD = LoadValueBoolWithDefault("Player"s, "ScaleFXDMD"s, false);
-   m_disableDWM = LoadValueBoolWithDefault("Player"s, "DisableDWM"s, false);
-   m_useNvidiaApi = LoadValueBoolWithDefault("Player"s, "UseNVidiaAPI"s, false);
-   m_bloomOff = LoadValueBoolWithDefault("Player"s, "ForceBloomOff"s, false);
-   m_ditherOff = LoadValueBoolWithDefault("Player"s, "Render10Bit"s, false); // if rendering at 10bit output resolution, disable dithering
-   m_BWrendering = LoadValueIntWithDefault("Player"s, "BWRendering"s, 0);
-   m_detectScriptHang = LoadValueBoolWithDefault("Player"s, "DetectHang"s, false);
+   m_VSync = LoadValueIntWithDefault(regKey[RegName::Player], "AdaptiveVSync"s, 0);
+   m_maxPrerenderedFrames = LoadValueIntWithDefault(regKey[RegName::Player], "MaxPrerenderedFrames"s, 0);
+   m_NudgeShake = LoadValueFloatWithDefault(regKey[RegName::Player], "NudgeStrength"s, 2e-2f);
+   m_FXAA = LoadValueIntWithDefault(regKey[RegName::Player], "FXAA"s, Standard_FXAA);
+   m_sharpen = LoadValueIntWithDefault(regKey[RegName::Player], "Sharpen"s, 0);
+   m_trailForBalls = LoadValueBoolWithDefault(regKey[RegName::Player], "BallTrail"s, true);
+   m_disableLightingForBalls = LoadValueBoolWithDefault(regKey[RegName::Player], "DisableLightingForBalls"s, false);
+   m_reflectionForBalls = LoadValueBoolWithDefault(regKey[RegName::Player], "BallReflection"s, true);
+   m_AA = LoadValueBoolWithDefault(regKey[RegName::Player], "USEAA"s, false);
+   m_dynamicAO = LoadValueBoolWithDefault(regKey[RegName::Player], "DynamicAO"s, false);
+   m_disableAO = LoadValueBoolWithDefault(regKey[RegName::Player], "DisableAO"s, false);
+   m_ss_refl = LoadValueBoolWithDefault(regKey[RegName::Player], "SSRefl"s, false);
+   m_pf_refl = LoadValueBoolWithDefault(regKey[RegName::Player], "PFRefl"s, true);
+   m_stereo3D = (StereoMode)LoadValueIntWithDefault(regKey[RegName::Player], "Stereo3D"s, STEREO_OFF);
+   m_stereo3Denabled = LoadValueBoolWithDefault(regKey[RegName::Player], "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
+   m_stereo3DY = LoadValueBoolWithDefault(regKey[RegName::Player], "Stereo3DYAxis"s, false);
+   m_global3DContrast = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DContrast"s, 1.0f);
+   m_global3DDesaturation = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DDesaturation"s, 0.f);
+   m_scaleFX_DMD = LoadValueBoolWithDefault(regKey[RegName::Player], "ScaleFXDMD"s, false);
+   m_disableDWM = LoadValueBoolWithDefault(regKey[RegName::Player], "DisableDWM"s, false);
+   m_useNvidiaApi = LoadValueBoolWithDefault(regKey[RegName::Player], "UseNVidiaAPI"s, false);
+   m_bloomOff = LoadValueBoolWithDefault(regKey[RegName::Player], "ForceBloomOff"s, false);
+   m_ditherOff = LoadValueBoolWithDefault(regKey[RegName::Player], "Render10Bit"s, false); // if rendering at 10bit output resolution, disable dithering
+   m_BWrendering = LoadValueIntWithDefault(regKey[RegName::Player], "BWRendering"s, 0);
+   m_detectScriptHang = LoadValueBoolWithDefault(regKey[RegName::Player], "DetectHang"s, false);
 
    m_ballImage = nullptr;
    m_decalImage = nullptr;
 
-   m_overwriteBallImages = LoadValueBoolWithDefault("Player"s, "OverwriteBallImage"s, false);
-   m_minphyslooptime = min(LoadValueIntWithDefault("Player"s, "MinPhysLoopTime"s, 0), 1000);
+   m_overwriteBallImages = LoadValueBoolWithDefault(regKey[RegName::Player], "OverwriteBallImage"s, false);
+   m_minphyslooptime = min(LoadValueIntWithDefault(regKey[RegName::Player], "MinPhysLoopTime"s, 0), 1000);
 
    if (m_overwriteBallImages)
    {
        string imageName;
-       HRESULT hr = LoadValue("Player"s, "BallImage"s, imageName);
+       HRESULT hr = LoadValue(regKey[RegName::Player], "BallImage"s, imageName);
        if (hr == S_OK)
        {
            BaseTexture * const tex = BaseTexture::CreateFromFile(imageName);
@@ -219,7 +219,7 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
            if (tex != nullptr)
                m_ballImage = new Texture(tex);
        }
-       hr = LoadValue("Player"s, "DecalImage"s, imageName);
+       hr = LoadValue(regKey[RegName::Player], "DecalImage"s, imageName);
        if (hr == S_OK)
        {
            BaseTexture * const tex = BaseTexture::CreateFromFile(imageName);
@@ -234,10 +234,10 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_debugBallSize = LoadValueIntWithDefault(regKey[RegName::Editor], "ThrowBallSize"s, 50);
    m_debugBallMass = LoadValueFloatWithDefault(regKey[RegName::Editor], "ThrowBallMass"s, 1.0f);
 
-   //m_low_quality_bloom = LoadValueBoolWithDefault("Player"s, "LowQualityBloom"s, false);
+   //m_low_quality_bloom = LoadValueBoolWithDefault(regKey[RegName::Player], "LowQualityBloom"s, false);
 
-   const int numberOfTimesToShowTouchMessage = LoadValueIntWithDefault("Player"s, "NumberOfTimesToShowTouchMessage"s, 10);
-   SaveValueInt("Player"s, "NumberOfTimesToShowTouchMessage"s, max(numberOfTimesToShowTouchMessage-1,0));
+   const int numberOfTimesToShowTouchMessage = LoadValueIntWithDefault(regKey[RegName::Player], "NumberOfTimesToShowTouchMessage"s, 10);
+   SaveValueInt(regKey[RegName::Player], "NumberOfTimesToShowTouchMessage"s, max(numberOfTimesToShowTouchMessage - 1, 0));
    m_showTouchMessage = (numberOfTimesToShowTouchMessage != 0);
 
    m_showFPS = 0;
@@ -364,7 +364,7 @@ void Player::PreRegisterClass(WNDCLASS& wc)
 
 void Player::PreCreate(CREATESTRUCT& cs)
 {
-    m_fullScreen = LoadValueBoolWithDefault("Player"s, "FullScreen"s, IsWindows10_1803orAbove());
+    m_fullScreen = LoadValueBoolWithDefault(regKey[RegName::Player], "FullScreen"s, IsWindows10_1803orAbove());
 
     // command line override
     if (g_pvp->m_disEnableTrueFullscreen == 0)
@@ -372,14 +372,14 @@ void Player::PreCreate(CREATESTRUCT& cs)
     else if (g_pvp->m_disEnableTrueFullscreen == 1)
         m_fullScreen = true;
 
-    int display = LoadValueIntWithDefault("Player"s, "Display"s, -1);
+    int display = LoadValueIntWithDefault(regKey[RegName::Player], "Display"s, -1);
     if (display >= getNumberOfDisplays() || g_pvp->m_primaryDisplay)
         display = -1; // force primary monitor
     int x, y;
     getDisplaySetupByID(display, x, y, m_screenwidth, m_screenheight);
 
-    m_width = LoadValueIntWithDefault("Player"s, "Width"s, m_fullScreen ? -1 : DEFAULT_PLAYER_WIDTH);
-    m_height = LoadValueIntWithDefault("Player"s, "Height"s, m_width * 9 / 16);
+    m_width = LoadValueIntWithDefault(regKey[RegName::Player], "Width"s, m_fullScreen ? -1 : DEFAULT_PLAYER_WIDTH);
+    m_height = LoadValueIntWithDefault(regKey[RegName::Player], "Height"s, m_width * 9 / 16);
     if (m_width <= 0)
     {
         m_width = m_screenwidth;
@@ -392,7 +392,7 @@ void Player::PreCreate(CREATESTRUCT& cs)
         y = 0;
         m_screenwidth = m_width;
         m_screenheight = m_height;
-        m_refreshrate = LoadValueIntWithDefault("Player"s, "RefreshRate"s, 0);
+        m_refreshrate = LoadValueIntWithDefault(regKey[RegName::Player], "RefreshRate"s, 0);
     }
     else
     {
@@ -417,8 +417,8 @@ void Player::PreCreate(CREATESTRUCT& cs)
         // is this a non-fullscreen window? -> get previously saved window position
         if ((m_height != m_screenheight) || (m_width != m_screenwidth))
         {
-            const int xn = LoadValueIntWithDefault("Player"s, "WindowPosX"s, x); //!! does this handle multi-display correctly like this?
-            const int yn = LoadValueIntWithDefault("Player"s, "WindowPosY"s, y);
+            const int xn = LoadValueIntWithDefault(regKey[RegName::Player], "WindowPosX"s, x); //!! does this handle multi-display correctly like this?
+            const int yn = LoadValueIntWithDefault(regKey[RegName::Player], "WindowPosY"s, y);
 
             RECT r;
             r.left = xn;
@@ -820,7 +820,7 @@ void Player::InitKeys()
    for(unsigned int i = 0; i < eCKeys; ++i)
    {
       int key;
-      const HRESULT hr = LoadValue("Player"s, regkey_string[i], key);
+      const HRESULT hr = LoadValue(regKey[RegName::Player], regkey_string[i], key);
       if (hr != S_OK || key > 0xdd)
           key = regkey_defdik[i];
       m_rgKeys[i] = (EnumAssignKeys)key;
@@ -1189,13 +1189,13 @@ HRESULT Player::Init()
 
    InitKeys();
 
-   m_PlayMusic = LoadValueBoolWithDefault("Player"s, "PlayMusic"s, true);
-   m_PlaySound = LoadValueBoolWithDefault("Player"s, "PlaySound"s, true);
-   m_MusicVolume = LoadValueIntWithDefault("Player"s, "MusicVolume"s, 100);
-   m_SoundVolume = LoadValueIntWithDefault("Player"s, "SoundVolume"s, 100);
+   m_PlayMusic = LoadValueBoolWithDefault(regKey[RegName::Player], "PlayMusic"s, true);
+   m_PlaySound = LoadValueBoolWithDefault(regKey[RegName::Player], "PlaySound"s, true);
+   m_MusicVolume = LoadValueIntWithDefault(regKey[RegName::Player], "MusicVolume"s, 100);
+   m_SoundVolume = LoadValueIntWithDefault(regKey[RegName::Player], "SoundVolume"s, 100);
 
    //
-   const bool dynamicDayNight = LoadValueBoolWithDefault("Player"s, "DynamicDayNight"s, false);
+   const bool dynamicDayNight = LoadValueBoolWithDefault(regKey[RegName::Player], "DynamicDayNight"s, false);
 
    if(dynamicDayNight && !m_ptable->m_overwriteGlobalDayNight && !g_pvp->m_bgles)
    {
@@ -1204,8 +1204,8 @@ HRESULT Player::Init()
        tm local_hour;
        localtime_s(&local_hour, &hour_machine);
 
-       const float lat = LoadValueFloatWithDefault("Player"s, "Latitude"s, 52.52f);
-       const float lon = LoadValueFloatWithDefault("Player"s, "Longitude"s, 13.37f);
+       const float lat = LoadValueFloatWithDefault(regKey[RegName::Player], "Latitude"s, 52.52f);
+       const float lon = LoadValueFloatWithDefault(regKey[RegName::Player], "Longitude"s, 13.37f);
 
        const double rlat = lat * (M_PI / 180.);
        const double rlong = lon * (M_PI / 180.);
@@ -1233,7 +1233,7 @@ HRESULT Player::Init()
    const unsigned int FXAA = (m_ptable->m_useFXAA == -1) ? m_FXAA : m_ptable->m_useFXAA;
    const bool ss_refl = (m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1);
 
-   const int colordepth = LoadValueIntWithDefault("Player"s, "ColorDepth"s, 32);
+   const int colordepth = LoadValueIntWithDefault(regKey[RegName::Player], "ColorDepth"s, 32);
 
    // colordepth & refreshrate are only defined if fullscreen is true.
    const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_width, m_height, colordepth,
@@ -1253,7 +1253,7 @@ HRESULT Player::Init()
    int x = 0;
    int y = 0;
 
-   int display = LoadValueIntWithDefault((m_stereo3D == STEREO_VR) ? "PlayerVR"s : "Player"s, "Display"s, -1);
+   int display = LoadValueIntWithDefault((m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "Display"s, -1);
    display = (display < getNumberOfDisplays()) ? display : -1;
 
    getDisplaySetupByID(display, x, y, m_screenwidth, m_screenheight);
@@ -1281,8 +1281,8 @@ HRESULT Player::Init()
       // is this a non-fullscreen window? -> get previously saved window position
       if ((m_height != m_screenheight) || (m_width != m_screenwidth))
       {
-         const int xTemp = LoadValueIntWithDefault((m_stereo3D == STEREO_VR) ? "PlayerVR"s : "Player"s, "WindowPosX"s, xPos); //!! does this handle multi-display correctly like this?
-         const int yTemp = LoadValueIntWithDefault((m_stereo3D == STEREO_VR) ? "PlayerVR"s : "Player"s, "WindowPosY"s, yPos);
+         const int xTemp = LoadValueIntWithDefault((m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosX"s, xPos); //!! does this handle multi-display correctly like this?
+         const int yTemp = LoadValueIntWithDefault((m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosY"s, yPos);
          if (xTemp >= x && (xTemp + m_width < x + m_screenwidth) && yTemp >= y && (yTemp + m_height < y + m_screenheight)) {//Absolute Window position is on screen
             xPos = xTemp;
             yPos = yTemp;
@@ -1313,7 +1313,7 @@ HRESULT Player::Init()
       || ((lflip != ~0u) && (rflip != ~0u) && (GetAsyncKeyState(lflip) & 0x8000) && (GetAsyncKeyState(rflip) & 0x8000)))
       m_ptable->m_tblMirrorEnabled = true;
    else
-      m_ptable->m_tblMirrorEnabled = LoadValueBoolWithDefault("Player"s, "mirror"s, false);
+      m_ptable->m_tblMirrorEnabled = LoadValueBoolWithDefault(regKey[RegName::Player], "mirror"s, false);
 
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
@@ -1357,8 +1357,8 @@ HRESULT Player::Init()
 
    m_legacyNudgeTime = 0;
 
-   m_legacyNudge = LoadValueBoolWithDefault("Player"s, "EnableLegacyNudge"s, false);
-   m_legacyNudgeStrength = LoadValueFloatWithDefault("Player"s, "LegacyNudgeStrength"s, 1.f);
+   m_legacyNudge = LoadValueBoolWithDefault(regKey[RegName::Player], "EnableLegacyNudge"s, false);
+   m_legacyNudgeStrength = LoadValueFloatWithDefault(regKey[RegName::Player], "LegacyNudgeStrength"s, 1.f);
 
    m_legacyNudgeBack = Vertex2D(0.f,0.f);
 
@@ -2236,12 +2236,12 @@ void Player::DestroyBall(Ball *pball)
 
 void Player::CalcBallAspectRatio()
 {
-   const int ballStretchMode = LoadValueIntWithDefault("Player"s, "BallStretchMode"s, 0);
+   const int ballStretchMode = LoadValueIntWithDefault(regKey[RegName::Player], "BallStretchMode"s, 0);
 
    // Monitors: 4:3, 16:9, 16:10, 21:10, 21:9
-   //const int ballStretchMonitor = LoadValueIntWithDefault("Player"s, "BallStretchMonitor"s, 1); // assume 16:9
-   const float ballAspecRatioOffsetX = LoadValueFloatWithDefault("Player"s, "BallCorrectionX"s, 0.f);
-   const float ballAspecRatioOffsetY = LoadValueFloatWithDefault("Player"s, "BallCorrectionY"s, 0.f);
+   //const int ballStretchMonitor = LoadValueIntWithDefault(regKey[RegName::Player], "BallStretchMonitor"s, 1); // assume 16:9
+   const float ballAspecRatioOffsetX = LoadValueFloatWithDefault(regKey[RegName::Player], "BallCorrectionX"s, 0.f);
+   const float ballAspecRatioOffsetY = LoadValueFloatWithDefault(regKey[RegName::Player], "BallCorrectionY"s, 0.f);
 
    const float scalebackX = (m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] != 0.0f) ? ((m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] + m_ptable->m_BG_scaley[m_ptable->m_BG_current_set])*0.5f) / m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] : 1.0f;
    const float scalebackY = (m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] != 0.0f) ? ((m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] + m_ptable->m_BG_scaley[m_ptable->m_BG_current_set])*0.5f) / m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] : 1.0f;
@@ -5086,8 +5086,8 @@ void Player::Render()
             // Save position of non-fullscreen player window to registry, and only if it was potentially moved around (i.e. when caption was already visible)
             if (m_showWindowedCaption)
             {
-               HRESULT hr = SaveValueInt("Player"s, "WindowPosX"s, x);
-               hr = SaveValueInt("Player"s, "WindowPosY"s, y + captionheight);
+               HRESULT hr = SaveValueInt(regKey[RegName::Player], "WindowPosX"s, x);
+                       hr = SaveValueInt(regKey[RegName::Player], "WindowPosY"s, y + captionheight);
             }
 
             m_showWindowedCaption = !m_showWindowedCaption;
