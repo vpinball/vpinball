@@ -1273,8 +1273,8 @@ void RenderDevice::Flip(const bool vsync)
 #ifdef ENABLE_SDL
 void RenderDevice::UploadAndSetSMAATextures()
 {
-   m_SMAAsearchTexture = CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 0, STATIC, GREY, (void*)&searchTexBytes[0], 0, TextureFilter::TEXTURE_MODE_BILINEAR, false, false);
-   m_SMAAareaTexture = CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 0, STATIC, GREY_ALPHA, (void*)&areaTexBytes[0], 0, TextureFilter::TEXTURE_MODE_BILINEAR, false, false);
+   m_SMAAsearchTexture = CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 0, STATIC, GREY, (void*)searchTexBytes, 0, TextureFilter::TEXTURE_MODE_BILINEAR, false, false);
+   m_SMAAareaTexture = CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 0, STATIC, GREY_ALPHA, (void*)areaTexBytes, 0, TextureFilter::TEXTURE_MODE_BILINEAR, false, false);
 
    FBShader->SetTexture(SHADER_areaTex2D, m_SMAAareaTexture, true);
    FBShader->SetTexture(SHADER_searchTex2D, m_SMAAsearchTexture, true);
@@ -1524,7 +1524,7 @@ void RenderDevice::SetRenderStateCulling(RenderStateValue cull)
 
 void RenderDevice::SetRenderStateDepthBias(float bias)
 {
-   if (SetRenderStateCache(DEPTHBIAS, *((DWORD*)&bias))) return;
+   if (SetRenderStateCache(DEPTHBIAS, float_as_uint(bias))) return;
 
 #ifdef ENABLE_SDL
    if (bias == 0.0f)
@@ -1535,7 +1535,7 @@ void RenderDevice::SetRenderStateDepthBias(float bias)
    }
 #else
    bias *= BASEDEPTHBIAS;
-   CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)DEPTHBIAS, *((DWORD*)&bias)));
+   CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)DEPTHBIAS, float_as_uint(bias)));
 #endif
    m_curStateChanges++;
 }

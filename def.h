@@ -241,7 +241,9 @@ __forceinline __m128 sseHorizontalAdd(const __m128 &a) // could use dp instructi
 #if __cplusplus >= 202002L
 #include <bit>
 #define float_as_int(x) std::bit_cast<int>(x)
+#define float_as_uint(x) std::bit_cast<unsigned int>(x)
 #define int_as_float(x) std::bit_cast<float>(x)
+#define uint_as_float(x) std::bit_cast<float>(x)
 #else
 __forceinline int float_as_int(const float x)
 {
@@ -253,10 +255,30 @@ __forceinline int float_as_int(const float x)
    return uc.i;
 }
 
+__forceinline unsigned int float_as_uint(const float x)
+{
+   union {
+      float f;
+      unsigned int i;
+   } uc;
+   uc.f = x;
+   return uc.i;
+}
+
 __forceinline float int_as_float(const int i)
 {
    union {
       int i;
+      float f;
+   } iaf;
+   iaf.i = i;
+   return iaf.f;
+}
+
+__forceinline float uint_as_float(const unsigned int i)
+{
+   union {
+      unsigned int i;
       float f;
    } iaf;
    iaf.i = i;

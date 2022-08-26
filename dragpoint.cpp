@@ -325,8 +325,8 @@ void IHaveDragPoints::GetTextureCoords(const vector<RenderVertex> & vv, float **
       float totallength = 0.0f;
       for (int l = startrenderpoint; l < endrenderpoint; ++l)
       {
-         const Vertex2D * const pv1 = (Vertex2D *)&vv[l % cpoints];
-         const Vertex2D * const pv2 = (Vertex2D *)&vv[(l + 1) % cpoints];
+         const Vertex2D * const pv1 = &vv[l % cpoints];
+         const Vertex2D * const pv2 = &vv[(l + 1) % cpoints];
 
          const float dx = pv1->x - pv2->x;
          const float dy = pv1->y - pv2->y;
@@ -338,8 +338,8 @@ void IHaveDragPoints::GetTextureCoords(const vector<RenderVertex> & vv, float **
       float partiallength = 0.0f;
       for (int l = startrenderpoint; l < endrenderpoint; ++l)
       {
-         const Vertex2D * const pv1 = (Vertex2D *)&vv[l % cpoints];
-         const Vertex2D * const pv2 = (Vertex2D *)&vv[(l + 1) % cpoints];
+         const Vertex2D * const pv1 = &vv[l % cpoints];
+         const Vertex2D * const pv2 = &vv[(l + 1) % cpoints];
 
          const float dx = pv1->x - pv2->x;
          const float dy = pv1->y - pv2->y;
