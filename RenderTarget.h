@@ -6,7 +6,7 @@ class RenderDevice;
 class RenderTarget final
 {
 public:
-   RenderTarget(RenderDevice* rd); // Default output render target
+   RenderTarget(RenderDevice* rd, int width = -1, int height = -1); // Default output render target
    RenderTarget(RenderDevice* rd, const int width, const int height, const colorFormat format, bool with_depth, bool use_MSAA, int stereo, char* failureMessage);
    ~RenderTarget();
 
@@ -19,7 +19,12 @@ public:
    RenderTarget* Duplicate();
    void CopyTo(RenderTarget* dest);
 
-#ifndef ENABLE_SDL
+   int GetWidth() { return m_width; }
+   int GetHeight() { return m_height; }
+
+#ifdef ENABLE_SDL
+   GLuint GetCoreFrameBuffer() { return m_framebuffer; }
+#else
    IDirect3DSurface9* GetCoreColorSurface() { return m_color_surface; }
 #endif
 

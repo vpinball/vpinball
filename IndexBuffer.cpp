@@ -200,7 +200,7 @@ void IndexBuffer::UploadData(bool freeData)
    else
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffer);
    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset + offsetToLock, min(sizeToLock, size - offsetToLock), dataBuffer);
-   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+   m_curIndexBuffer = this;
    if (freeData)
       free(dataBuffer);
    dataBuffer = nullptr;
@@ -264,10 +264,11 @@ void IndexBuffer::UploadBuffers()
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffer32);
       glBufferData(GL_ELEMENT_ARRAY_BUFFER, size32, nullptr, GL_STATIC_DRAW);
    }
+   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+   m_curIndexBuffer = nullptr;
    //Upload all Buffers
    for (auto it = notUploadedBuffers.begin(); it != notUploadedBuffers.end(); ++it)
       (*it)->UploadData(true);
-   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
    notUploadedBuffers.clear();
 }
 #endif
