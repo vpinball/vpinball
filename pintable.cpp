@@ -1116,7 +1116,7 @@ STDMETHODIMP ScriptGlobalTable::GetSerialDevices(VARIANT *pVal)
 
 STDMETHODIMP ScriptGlobalTable::get_RenderingMode(int *pVal)
 {
-   *pVal = ((g_pplayer->m_stereo3D != STEREO_OFF) && g_pplayer->m_stereo3Denabled) ? 1 : 0; // 0 = Normal 2D, 1 = Stereo 3D, 2 = VR
+   *pVal = (g_pplayer->m_stereo3D == STEREO_VR) ? 2 : (((g_pplayer->m_stereo3D != 0) && g_pplayer->m_stereo3Denabled) ? 1 : 0); // 0 = Normal 2D, 1 = Stereo 3D, 2 = VR
    return S_OK;
 }
 

@@ -574,6 +574,16 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
    int retval;
    try
    {
+#if defined(ENABLE_SDL) || defined(ENABLE_SDL_INPUT)
+      SDL_Init(0
+#ifdef ENABLE_SDL
+         | SDL_INIT_VIDEO
+#endif
+#ifdef ENABLE_SDL_INPUT
+         | SDL_INIT_JOYSTICK
+#endif
+      );
+#endif
       // Start Win32++
       VPApp theApp(hInstance);
       theApp.InitInstance();
@@ -589,5 +599,8 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 
       retval = -1;
    }
+#if defined(ENABLE_SDL) || defined(ENABLE_SDL_INPUT)
+   SDL_Quit();
+#endif
    return retval;
 }

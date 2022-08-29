@@ -2724,7 +2724,7 @@ string CodeViewer::ParseDelimtByColon(string &wholeline)
 	const size_t idx = wholeline.find(':'); 
 	if (idx == string::npos || idx == 0)
 	{
-		result = wholeline; 
+		result = wholeline;
 		wholeline.clear();
 	}
 	else

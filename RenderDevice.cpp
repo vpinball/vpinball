@@ -1226,7 +1226,7 @@ void RenderDevice::Flip(const bool vsync)
 #ifdef ENABLE_SDL
    SDL_GL_SwapWindow(m_sdl_playfieldHwnd);
 #ifdef ENABLE_VR
-   //glFlush(); //!! ??
+   //glFlush();
    //glFinish();
 #endif
 
@@ -1273,11 +1273,65 @@ void RenderDevice::Flip(const bool vsync)
 #ifdef ENABLE_SDL
 void RenderDevice::UploadAndSetSMAATextures()
 {
-   m_SMAAsearchTexture = CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 0, STATIC, GREY, (void*)searchTexBytes, 0, TextureFilter::TEXTURE_MODE_BILINEAR, false, false);
-   m_SMAAareaTexture = CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 0, STATIC, GREY_ALPHA, (void*)areaTexBytes, 0, TextureFilter::TEXTURE_MODE_BILINEAR, false, false);
+   GLuint glTexture;
+   int num_mips;
 
-   FBShader->SetTexture(SHADER_areaTex2D, m_SMAAareaTexture, true);
-   FBShader->SetTexture(SHADER_searchTex2D, m_SMAAsearchTexture, true);
+   glGenTextures(1, &glTexture);
+   glBindTexture(GL_TEXTURE_2D, glTexture);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_RED);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+   num_mips = (int)std::log2(float(max(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT))) + 1;
+   if (m_GLversion >= 403)
+      glTexStorage2D(GL_TEXTURE_2D, num_mips, RGB8, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT);
+   else
+   { // should never be triggered nowadays
+      GLsizei w = SEARCHTEX_WIDTH;
+      GLsizei h = SEARCHTEX_HEIGHT;
+      for (int i = 0; i < num_mips; i++)
+      {
+         glTexImage2D(GL_TEXTURE_2D, i, RGB8, w, h, 0, GL_RED, GL_UNSIGNED_BYTE, nullptr);
+         w = max(1, (w / 2));
+         h = max(1, (h / 2));
+      }
+   }
+   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, (void*)&searchTexBytes[0]);
+   glGenerateMipmap(GL_TEXTURE_2D); // Generate mip-maps, when using TexStorage will generate same amount as specified in TexStorage, otherwise good idea to limit by GL_TEXTURE_MAX_LEVEL
+   m_SMAAsearchTexture = new Sampler(this, glTexture, true, false, false);
+
+   glGenTextures(1, &glTexture);
+   glBindTexture(GL_TEXTURE_2D, glTexture);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_RED);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_GREEN);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+   num_mips = (int)std::log2(float(max(AREATEX_WIDTH, AREATEX_HEIGHT))) + 1;
+   if (m_GLversion >= 403)
+      glTexStorage2D(GL_TEXTURE_2D, num_mips, RGB8, AREATEX_WIDTH, AREATEX_HEIGHT);
+   else
+   { // should never be triggered nowadays
+      GLsizei w = AREATEX_WIDTH;
+      GLsizei h = AREATEX_HEIGHT;
+      for (int i = 0; i < num_mips; i++)
+      {
+         glTexImage2D(GL_TEXTURE_2D, i, RGB8, w, h, 0, GL_RG, GL_UNSIGNED_BYTE, nullptr);
+         w = max(1, (w / 2));
+         h = max(1, (h / 2));
+      }
+   }
+   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, (void*)&searchTexBytes[0]);
+   glGenerateMipmap(GL_TEXTURE_2D); // Generate mip-maps, when using TexStorage will generate same amount as specified in TexStorage, otherwise good idea to limit by GL_TEXTURE_MAX_LEVEL
 }
 #else
 void RenderDevice::UploadAndSetSMAATextures()
@@ -1508,7 +1562,7 @@ void RenderDevice::SetRenderStateCulling(RenderStateValue cull)
    }
 
 #ifdef ENABLE_SDL
-   if (renderStateCache[RenderStates::CULLMODE] == CULL_NONE && (cull != CULL_NONE)) //!! this differs a bit from VPVR now, recheck!
+   if (renderStateCache[RenderStates::CULLMODE] == CULL_NONE && (cull != CULL_NONE))
       glEnable(GL_CULL_FACE);
    if (cull == CULL_NONE)
       glDisable(GL_CULL_FACE);
@@ -1598,13 +1652,21 @@ void RenderDevice::DrawPrimitive(const PrimitiveTypes type, const DWORD fvf, con
 
 void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
 {
+#ifdef ENABLE_SDL
+   Vertex3D_TexelOnly* bufvb;
+   m_quadDynVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::DISCARDCONTENTS);
+   memcpy(bufvb, vertices, 4 * sizeof(Vertex3D_TexelOnly));
+   m_quadDynVertexBuffer->unlock();
+   DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP, MY_D3DFVF_TEX, m_quadDynVertexBuffer, 0, 4, true);
+#else
    /*Vertex3D_TexelOnly* bufvb;
    m_quadDynVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::DISCARDCONTENTS);
    memcpy(bufvb,vertices,4*sizeof(Vertex3D_TexelOnly));
    m_quadDynVertexBuffer->unlock();
    DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP,MY_D3DFVF_TEX,m_quadDynVertexBuffer,0,4,true);*/
 
-   DrawPrimitive(RenderDevice::TRIANGLESTRIP,MY_D3DFVF_TEX,vertices,4); // having a VB and lock/copying stuff each time is slower :/
+   DrawPrimitive(RenderDevice::TRIANGLESTRIP, MY_D3DFVF_TEX, vertices, 4); // having a VB and lock/copying stuff each time is slower :/
+#endif
 }
 
 void RenderDevice::DrawFullscreenTexturedQuad()

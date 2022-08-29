@@ -25,7 +25,7 @@ enum deviceNumber {
 #define D3DADAPTER_DEFAULT 0
 
 enum colorFormat {
-   GREY = GL_RED,
+   GREY8 = GL_RED,
    RED16F = GL_R16F,
 
    GREY_ALPHA = GL_RG8,
