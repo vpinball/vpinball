@@ -764,10 +764,6 @@ void PinInput::Init(const HWND hwnd)
 {
    m_hwnd = hwnd;
 
-#if defined(ENABLE_SDL_INPUT)
-   SDL_Init(SDL_INIT_JOYSTICK);
-#endif
-
    HRESULT hr;
 #ifdef USE_DINPUT8
    hr = DirectInput8Create(g_pvp->theInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&m_pDI, nullptr);
@@ -900,10 +896,6 @@ void PinInput::UnInit()
 
    //if (!InputControlRun)	//0 == stalled, 1==run,  0 < shutting down, 2==terminated
    //{exit (-1500);}
-
-#if defined(ENABLE_SDL_INPUT)
-   SDL_Quit();
-#endif
 
 #ifdef USE_DINPUT_FOR_KEYBOARD
    if (m_pKeyboard)
