@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 
 VPinball *g_pvp = nullptr;
 Player *g_pplayer = nullptr;

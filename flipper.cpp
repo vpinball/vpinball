@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "meshes/flipperBase.h"
 #include "objloader.h"
 #include "Shader.h"

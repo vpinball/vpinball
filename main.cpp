@@ -1,6 +1,6 @@
 // VPinball.cpp : Implementation of WinMain
 
-#include "StdAfx.h"
+#include "stdafx.h"
 
 #ifdef CRASH_HANDLER
 #include "StackTrace.h"

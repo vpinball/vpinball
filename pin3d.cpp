@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "RenderDevice.h"
 #include "Shader.h"
 #include "inc\ThreadPool.h"

@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 
 BSTR BstrFromVariant(VARIANT *pvar, LCID lcid)
 {

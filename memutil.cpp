@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 
 #ifdef DEBUG_XXX  // remove method in perference to DevPartner
 

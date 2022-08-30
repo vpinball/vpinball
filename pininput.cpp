@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 
 // from dinput.h, modernized to please clang
 #undef DIJOFS_X

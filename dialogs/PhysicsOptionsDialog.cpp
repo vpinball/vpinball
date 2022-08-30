@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "resource.h"
 #include <rapidxml.hpp>
 #include <rapidxml_print.hpp>

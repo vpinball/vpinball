@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "vpversion.h"
 #include "resource.h"
 #include "hash.h"

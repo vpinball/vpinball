@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "objloader.h"
 
 #include "meshes/kickerCupMesh.h"
