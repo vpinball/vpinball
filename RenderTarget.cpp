@@ -244,7 +244,7 @@ void RenderTarget::Activate(bool ignoreStereo)
    static GLfloat viewPorts[] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
    static RenderTarget* currentFrameBuffer = nullptr;
    static int currentStereoMode = -1;
-   if (currentFrameBuffer == this && currentStereoMode == ignoreStereo || m_is_back_buffer ? STEREO_OFF : m_stereo)
+   if (currentFrameBuffer == this && currentStereoMode == (ignoreStereo || m_is_back_buffer ? STEREO_OFF : m_stereo))
       return;
    currentFrameBuffer = this;
    currentStereoMode = ignoreStereo || m_is_back_buffer ? STEREO_OFF : m_stereo;
