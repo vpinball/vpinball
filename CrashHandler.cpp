@@ -121,7 +121,11 @@ namespace
 
    void WriteHeader(FILE* f)
    {
+#ifdef ENABLE_SDL
+      fprintf(f, "Crash report VPX GL rev%i (%s)\n============\n", GIT_REVISION, GIT_SHA);
+#else
       fprintf(f, "Crash report VPX rev%i (%s)\n============\n", GIT_REVISION, GIT_SHA);
+#endif
    }
 
    const char* GetExceptionString(DWORD exc)
