@@ -228,7 +228,7 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
                m_decalImage = new Texture(tex);
        }
    }
-   
+
    m_throwBalls = LoadValueBoolWithDefault(regKey[RegName::Editor], "ThrowBallsAlwaysOn"s, false);
    m_ballControl = LoadValueBoolWithDefault(regKey[RegName::Editor], "BallControlAlwaysOn"s, false);
    m_debugBallSize = LoadValueIntWithDefault(regKey[RegName::Editor], "ThrowBallSize"s, 50);
@@ -4837,7 +4837,6 @@ void Player::UpdateCameraModeDisplay()
    }
    }
    DebugPrint(0, 150, szFoo);
-   m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
    sprintf_s(szFoo, sizeof(szFoo), "Camera at X: %.2f Y: %.2f Z: %.2f,  Rotation: %.2f", -m_pin3d.m_proj.m_matView._41, (m_ptable->m_BG_current_set == 0 || m_ptable->m_BG_current_set == 2) ? m_pin3d.m_proj.m_matView._42 : -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43, g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set]); // DT & FSS
    DebugPrint(0, 130, szFoo);
    DebugPrint(0, 190, "Navigate around with the Arrow Keys and Left Alt Key (if enabled in the Key settings)");
@@ -4923,6 +4922,12 @@ void Player::Render()
 
    if (ProfilingMode() == 1)
       m_pin3d.m_gpu_profiler.BeginFrame(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
+
+   // Update camera point of view
+   if (m_cameraMode)
+   {
+      m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
+   }
 
    if (!RenderStaticOnly())
    {

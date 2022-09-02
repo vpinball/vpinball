@@ -339,9 +339,8 @@ public:
 #ifdef ENABLE_SDL
    SDL_Window  *m_sdl_playfieldHwnd;
    SDL_Window  *m_sdl_backdropHwnd;
-#else
-   Shader      *m_ballShader;
 #endif
+   Shader      *m_ballShader;
 
    IndexBuffer *m_ballIndexBuffer;
    VertexBuffer *m_ballVertexBuffer;
