@@ -979,8 +979,14 @@ bool RenderDevice::LoadShaders()
    // Now that shaders are compiled, set static textures for SMAA postprocessing shader
    if (m_FXAA == Quality_SMAA)
    {
+#ifdef ENABLE_SDL
+      FBShader->SetTexture(SHADER_areaTex2D, m_SMAAareaTexture);
+      FBShader->SetTexture(SHADER_searchTex2D, m_SMAAsearchTexture);
+#else
+      // FIXME Shader rely on texture to be named with a leading texture unit. SetTexture will fail otherwise...
       CHECKD3D(FBShader->Core()->SetTexture(SHADER_areaTex2D, m_SMAAareaTexture->GetCoreTexture()));
       CHECKD3D(FBShader->Core()->SetTexture(SHADER_searchTex2D, m_SMAAsearchTexture->GetCoreTexture()));
+#endif
    }
 
    // Initialize uniform to default value
@@ -1025,27 +1031,28 @@ void RenderDevice::FreeShader()
 {
    if (basicShader)
    {
-      CHECKD3D(basicShader->Core()->SetTexture(SHADER_Texture0, nullptr));
-      CHECKD3D(basicShader->Core()->SetTexture(SHADER_Texture1, nullptr));
-      CHECKD3D(basicShader->Core()->SetTexture(SHADER_Texture2, nullptr));
-      CHECKD3D(basicShader->Core()->SetTexture(SHADER_Texture3, nullptr));
-      CHECKD3D(basicShader->Core()->SetTexture(SHADER_Texture4, nullptr));
+      basicShader->SetTextureNull(SHADER_Texture0);
+      basicShader->SetTextureNull(SHADER_Texture1);
+      basicShader->SetTextureNull(SHADER_Texture2);
+      basicShader->SetTextureNull(SHADER_Texture3);
+      basicShader->SetTextureNull(SHADER_Texture4);
       delete basicShader;
       basicShader = 0;
    }
    if (DMDShader)
    {
-      CHECKD3D(DMDShader->Core()->SetTexture(SHADER_Texture0, nullptr));
+      DMDShader->SetTextureNull(SHADER_Texture0);
       delete DMDShader;
       DMDShader = 0;
    }
    if (FBShader)
    {
-      CHECKD3D(FBShader->Core()->SetTexture(SHADER_Texture0, nullptr));
-      CHECKD3D(FBShader->Core()->SetTexture(SHADER_Texture1, nullptr));
-      CHECKD3D(FBShader->Core()->SetTexture(SHADER_Texture3, nullptr));
-      CHECKD3D(FBShader->Core()->SetTexture(SHADER_Texture4, nullptr));
+      FBShader->SetTextureNull(SHADER_Texture0);
+      FBShader->SetTextureNull(SHADER_Texture1);
+      FBShader->SetTextureNull(SHADER_Texture3);
+      FBShader->SetTextureNull(SHADER_Texture4);
 
+      // FIXME Shader rely on texture to be named with a leading texture unit. SetTextureNull will fail otherwise...
       CHECKD3D(FBShader->Core()->SetTexture(SHADER_areaTex2D, nullptr));
       CHECKD3D(FBShader->Core()->SetTexture(SHADER_searchTex2D, nullptr));
 
@@ -1054,8 +1061,8 @@ void RenderDevice::FreeShader()
    }
    if (flasherShader)
    {
-      CHECKD3D(flasherShader->Core()->SetTexture(SHADER_Texture0, nullptr));
-      CHECKD3D(flasherShader->Core()->SetTexture(SHADER_Texture1, nullptr));
+      flasherShader->SetTextureNull(SHADER_Texture0);
+      flasherShader->SetTextureNull(SHADER_Texture1);
       delete flasherShader;
       flasherShader = 0;
    }
@@ -1067,9 +1074,9 @@ void RenderDevice::FreeShader()
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    if (classicLightShader)
    {
-      CHECKD3D(classicLightShader->Core()->SetTexture(SHADER_Texture0, nullptr));
-      CHECKD3D(classicLightShader->Core()->SetTexture(SHADER_Texture1, nullptr));
-      CHECKD3D(classicLightShader->Core()->SetTexture(SHADER_Texture2, nullptr));
+      classicLightShader->SetTextureNull(SHADER_Texture0);
+      classicLightShader->SetTextureNull(SHADER_Texture1);
+      classicLightShader->SetTextureNull(SHADER_Texture2);
       delete classicLightShader;
       classicLightShader=0;
    }
@@ -1301,7 +1308,7 @@ void RenderDevice::UploadAndSetSMAATextures()
       }
    }
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, (void*)&searchTexBytes[0]);
+   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, (void*)searchTexBytes);
    glGenerateMipmap(GL_TEXTURE_2D); // Generate mip-maps, when using TexStorage will generate same amount as specified in TexStorage, otherwise good idea to limit by GL_TEXTURE_MAX_LEVEL
    m_SMAAsearchTexture = new Sampler(this, glTexture, true, false, false);
 
@@ -1330,8 +1337,9 @@ void RenderDevice::UploadAndSetSMAATextures()
       }
    }
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, (void*)&searchTexBytes[0]);
+   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, (void*)searchTexBytes);
    glGenerateMipmap(GL_TEXTURE_2D); // Generate mip-maps, when using TexStorage will generate same amount as specified in TexStorage, otherwise good idea to limit by GL_TEXTURE_MAX_LEVEL
+   m_SMAAareaTexture = new Sampler(this, glTexture, true, false, false);
 }
 #else
 void RenderDevice::UploadAndSetSMAATextures()
@@ -1630,6 +1638,26 @@ void RenderDevice::SetTextureAddressMode(const DWORD texUnit, const TextureAddre
    SetSamplerState(texUnit, D3DSAMP_ADDRESSV, mode);
 }
 
+void RenderDevice::CreateVertexDeclaration(const VertexElement * const element, VertexDeclaration ** declaration)
+{
+#ifndef ENABLE_SDL
+   CHECKD3D(m_pD3DDevice->CreateVertexDeclaration(element, declaration));
+#endif
+}
+
+void RenderDevice::SetVertexDeclaration(VertexDeclaration * declaration)
+{
+#ifndef ENABLE_SDL
+   if (declaration != currentDeclaration)
+   {
+      CHECKD3D(m_pD3DDevice->SetVertexDeclaration(declaration));
+      currentDeclaration = declaration;
+
+      m_curStateChanges++;
+   }
+#endif
+}
+
 void RenderDevice::DrawPrimitive(const PrimitiveTypes type, const DWORD fvf, const void* vertices, const DWORD vertexCount)
 {
 #ifndef ENABLE_SDL
@@ -1677,7 +1705,7 @@ void RenderDevice::DrawFullscreenTexturedQuad()
       -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
       1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
       -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
-   };   
+   };
    DrawTexturedQuad((Vertex3D_TexelOnly*)verts);*/
 
    DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP,MY_D3DFVF_TEX,m_quadVertexBuffer,0,4,false);
@@ -1710,28 +1738,16 @@ void RenderDevice::DrawIndexedPrimitiveVB(const PrimitiveTypes type, const DWORD
 
    const unsigned int np = ComputePrimitiveCount(type, indexCount);
    m_stats_drawn_triangles += np;
+   vb->bind(); // do not change order, this calls glBindVertexArray in GL, which must come before GL_ELEMENT_ARRAY_BUFFER!
+   ib->bind();
 
 #ifdef ENABLE_SDL
    const int offset = ib->getOffset() + (ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? 2 : 4) * startIndex;
    //glDrawElementsInstancedBaseVertex(type, indexCount, ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)offset, m_stereo3D != STEREO_OFF ? 2 : 1, vb->getOffset() + startVertex); // Do instancing in geometry shader instead
    glDrawElementsBaseVertex(type, indexCount, ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)offset, vb->getOffset() + startVertex);
 #else
-   VertexDeclaration * declaration = fvfToDecl(fvf);
+   VertexDeclaration* declaration = fvfToDecl(fvf);
    SetVertexDeclaration(declaration);
-
-   // bind the vertex and index buffers
-   if (VertexBuffer::m_curVertexBuffer != vb)
-   {
-      const unsigned int vsize = fvfToSize(fvf);
-      CHECKD3D(m_pD3DDevice->SetStreamSource(0, vb->m_vb, 0, vsize));
-      VertexBuffer::m_curVertexBuffer = vb;
-   }
-
-   if (IndexBuffer::m_curIndexBuffer != ib)
-   {
-      CHECKD3D(m_pD3DDevice->SetIndices(ib->m_ib));
-      IndexBuffer::m_curIndexBuffer = ib;
-   }
 
    // render
    CHECKD3D(m_pD3DDevice->DrawIndexedPrimitive((D3DPRIMITIVETYPE)type, startVertex, 0, vertexCount, startIndex, np));
@@ -1749,240 +1765,43 @@ void RenderDevice::GetTransform(const TransformStateType p1, D3DMATRIX* p2)
    CHECKD3D(m_pD3DDevice->GetTransform((D3DTRANSFORMSTATETYPE)p1, p2));
 }
 
-void RenderDevice::Clear(const DWORD numRects, const D3DRECT* rects, const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil)
+void RenderDevice::Clear(const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil)
 {
-   CHECKD3D(m_pD3DDevice->Clear(numRects, rects, flags, color, z, stencil));
+#ifdef ENABLE_SDL
+   static float clear_r=0.f, clear_g = 0.f, clear_b = 0.f, clear_a = 0.f, clear_z=1.f;//Default OpenGL Values
+   static GLint clear_s=0;
+
+   if (clear_s != stencil) { clear_s = stencil;  glClearStencil(stencil); }
+   if (clear_z != z) { clear_z = z;  glClearDepthf(z); }
+   const float r = (float)( color & 0xff) / 255.0f;
+   const float g = (float)((color & 0xff00) >> 8) / 255.0f;
+   const float b = (float)((color & 0xff0000) >> 16) / 255.0f;
+   const float a = (float)((color & 0xff000000) >> 24) / 255.0f;
+   if ((r != clear_r) || (g != clear_g) || (b != clear_b) || (a != clear_a)) { clear_z = z;  glClearColor(r,g,b,a); }
+   glClear(flags);
+#else
+   CHECKD3D(m_pD3DDevice->Clear(0, nullptr, flags, color, z, stencil));
+#endif
 }
+
+#ifdef ENABLE_SDL
+static ViewPort viewPort;
+#endif
 
 void RenderDevice::SetViewport(const ViewPort* p1)
 {
+#ifdef ENABLE_SDL
+   memcpy(&viewPort, p1, sizeof(ViewPort));
+#else
    CHECKD3D(m_pD3DDevice->SetViewport((D3DVIEWPORT9*)p1));
+#endif
 }
 
 void RenderDevice::GetViewport(ViewPort* p1)
 {
+#ifdef ENABLE_SDL
+   memcpy(p1, &viewPort, sizeof(ViewPort));
+#else
    CHECKD3D(m_pD3DDevice->GetViewport((D3DVIEWPORT9*)p1));
-}
-
-//
-//
-//
-
-Shader::Shader(RenderDevice *renderDevice) : currentMaterial(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX,
-                                                             0xCCCCCCCC, 0xCCCCCCCC, 0xCCCCCCCC, false, false, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX)
-{
-   m_renderDevice = renderDevice;
-   m_shader = nullptr;
-   for (unsigned int i = 0; i < TEXTURESET_STATE_CACHE_SIZE; ++i)
-      currentTexture[i] = nullptr;
-   currentAlphaTestValue = -FLT_MAX;
-   currentDisableLighting =
-   currentFlasherData =
-   currentFlasherData2 =
-   currentFlasherColor =
-   currentLightColor =
-   currentLightColor2 =
-   currentLightData = vec4(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-   currentLightImageMode = ~0u;
-   currentLightBackglassMode = ~0u;
-   currentTechnique[0] = '\0';
-}
-
-Shader::~Shader()
-{
-   if (m_shader)
-   {
-      this->Unload();
-   }
-}
-
-// loads an HLSL effect file
-// if fromFile is true the shaderName should point to the full filename (with path) to the .fx file
-// if fromFile is false the shaderName should be the resource name not the IDC_XX_YY value. Search vpinball_eng.rc for ".fx" to see an example
-bool Shader::Load(const BYTE* shaderCodeName, UINT codeSize)
-{
-   LPD3DXBUFFER pBufferErrors;
-   constexpr DWORD dwShaderFlags = 0; //D3DXSHADER_SKIPVALIDATION // these do not have a measurable effect so far (also if used in the offline fxc step): D3DXSHADER_PARTIALPRECISION, D3DXSHADER_PREFER_FLOW_CONTROL/D3DXSHADER_AVOID_FLOW_CONTROL
-   HRESULT hr;
-   /*
-       if(fromFile)
-       {
-       dwShaderFlags = D3DXSHADER_DEBUG|D3DXSHADER_SKIPOPTIMIZATION;
-       hr = D3DXCreateEffectFromFile(m_renderDevice->GetCoreDevice(),		// pDevice
-       shaderName,			// pSrcFile
-       nullptr,				// pDefines
-       nullptr,				// pInclude
-       dwShaderFlags,		// Flags
-       nullptr,				// pPool
-       &m_shader,			// ppEffect
-       &pBufferErrors);		// ppCompilationErrors
-       }
-       else
-       {
-       hr = D3DXCreateEffectFromResource(m_renderDevice->GetCoreDevice(),		// pDevice
-       nullptr,
-       shaderName,			// resource name
-       nullptr,				// pDefines
-       nullptr,				// pInclude
-       dwShaderFlags,		// Flags
-       nullptr,				// pPool
-       &m_shader,			// ppEffect
-       &pBufferErrors);		// ppCompilationErrors
-
-       }
-       */
-   hr = D3DXCreateEffect(m_renderDevice->GetCoreDevice(), shaderCodeName, codeSize, nullptr, nullptr, dwShaderFlags, nullptr, &m_shader, &pBufferErrors);
-   if (FAILED(hr))
-   {
-      if (pBufferErrors)
-      {
-         const LPVOID pCompileErrors = pBufferErrors->GetBufferPointer();
-         g_pvp->MessageBox((const char*)pCompileErrors, "Compile Error", MB_OK | MB_ICONEXCLAMATION);
-      }
-      else
-         g_pvp->MessageBox("Unknown Error", "Compile Error", MB_OK | MB_ICONEXCLAMATION);
-
-      return false;
-   }
-   return true;
-}
-
-void Shader::Unload()
-{
-   SAFE_RELEASE(m_shader);
-}
-
-void Shader::SetTexture(const SHADER_UNIFORM_HANDLE texelName, Texture* texel, const TextureFilter filter, const bool clampU, const bool clampV, const bool force_linear_rgb)
-{
-   const unsigned int idx = texelName[strlen(texelName) - 1] - '0'; // current convention: SetTexture gets "TextureX", where X 0..4
-   assert(idx < TEXTURESET_STATE_CACHE_SIZE);
-
-   if (!texel || !texel->m_pdsBuffer) {
-      currentTexture[idx] = nullptr; // invalidate the cache
-
-      CHECKD3D(m_shader->SetTexture(texelName, nullptr));
-
-      m_renderDevice->m_curTextureChanges++;
-
-      return;
-   }
-
-   if (texel->m_pdsBuffer != currentTexture[idx])
-   {
-      currentTexture[idx] = texel->m_pdsBuffer;
-      CHECKD3D(m_shader->SetTexture(texelName, m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBuffer, filter, clampU, clampV, force_linear_rgb)->GetCoreTexture()));
-
-      m_renderDevice->m_curTextureChanges++;
-   }
-}
-
-void Shader::SetTexture(const SHADER_UNIFORM_HANDLE texelName, Sampler* texel)
-{
-   const unsigned int idx = texelName[strlen(texelName) - 1] - '0'; // current convention: SetTexture gets "TextureX", where X 0..4
-   assert(idx < TEXTURESET_STATE_CACHE_SIZE);
-
-   currentTexture[idx] = nullptr; // direct set of device tex invalidates the cache
-
-   CHECKD3D(m_shader->SetTexture(texelName, texel->GetCoreTexture()));
-
-   m_renderDevice->m_curTextureChanges++;
-}
-
-void Shader::SetTextureNull(const SHADER_UNIFORM_HANDLE texelName)
-{
-   const unsigned int idx = texelName[strlen(texelName) - 1] - '0'; // current convention: SetTexture gets "TextureX", where X 0..4
-   const bool cache = (idx < TEXTURESET_STATE_CACHE_SIZE);
-
-   if (cache)
-      currentTexture[idx] = nullptr; // direct set of device tex invalidates the cache
-
-   CHECKD3D(m_shader->SetTexture(texelName, nullptr));
-
-   m_renderDevice->m_curTextureChanges++;
-}
-
-void Shader::SetMaterial(const Material * const mat)
-{
-   COLORREF cBase, cGlossy, cClearcoat;
-   float fWrapLighting, fRoughness, fGlossyImageLerp, fThickness, fEdge, fEdgeAlpha, fOpacity;
-   bool bIsMetal, bOpacityActive;
-
-   if (mat)
-   {
-      fWrapLighting = mat->m_fWrapLighting;
-      fRoughness = exp2f(10.0f * mat->m_fRoughness + 1.0f); // map from 0..1 to 2..2048
-      fGlossyImageLerp = mat->m_fGlossyImageLerp;
-      fThickness = mat->m_fThickness;
-      fEdge = mat->m_fEdge;
-      fEdgeAlpha = mat->m_fEdgeAlpha;
-      fOpacity = mat->m_fOpacity;
-      cBase = mat->m_cBase;
-      cGlossy = mat->m_cGlossy;
-      cClearcoat = mat->m_cClearcoat;
-      bIsMetal = mat->m_bIsMetal;
-      bOpacityActive = mat->m_bOpacityActive;
-   }
-   else
-   {
-      fWrapLighting = 0.0f;
-      fRoughness = exp2f(10.0f * 0.0f + 1.0f); // map from 0..1 to 2..2048
-      fGlossyImageLerp = 1.0f;
-      fThickness = 0.05f;
-      fEdge = 1.0f;
-      fEdgeAlpha = 1.0f;
-      fOpacity = 1.0f;
-      cBase = g_pvp->m_dummyMaterial.m_cBase;
-      cGlossy = 0;
-      cClearcoat = 0;
-      bIsMetal = false;
-      bOpacityActive = false;
-   }
-
-   // bIsMetal is nowadays handled via a separate technique! (so not in here)
-
-   if (fRoughness != currentMaterial.m_fRoughness ||
-       fEdge != currentMaterial.m_fEdge ||
-       fWrapLighting != currentMaterial.m_fWrapLighting ||
-       fThickness != currentMaterial.m_fThickness)
-   {
-      const vec4 rwem(fRoughness, fWrapLighting, fEdge, fThickness);
-      SetVector(SHADER_Roughness_WrapL_Edge_Thickness, &rwem);
-      currentMaterial.m_fRoughness = fRoughness;
-      currentMaterial.m_fWrapLighting = fWrapLighting;
-      currentMaterial.m_fEdge = fEdge;
-      currentMaterial.m_fThickness = fThickness;
-   }
-
-   const float alpha = bOpacityActive ? fOpacity : 1.0f;
-   if (cBase != currentMaterial.m_cBase || alpha != currentMaterial.m_fOpacity)
-   {
-      const vec4 cBaseF = convertColor(cBase, alpha);
-      SetVector(SHADER_cBase_Alpha, &cBaseF);
-      currentMaterial.m_cBase = cBase;
-      currentMaterial.m_fOpacity = alpha;
-   }
-
-   if (!bIsMetal) // Metal has no glossy
-      if (cGlossy != currentMaterial.m_cGlossy ||
-          fGlossyImageLerp != currentMaterial.m_fGlossyImageLerp)
-      {
-         const vec4 cGlossyF = convertColor(cGlossy, fGlossyImageLerp);
-         SetVector(SHADER_cGlossy_ImageLerp, &cGlossyF);
-         currentMaterial.m_cGlossy = cGlossy;
-         currentMaterial.m_fGlossyImageLerp = fGlossyImageLerp;
-      }
-
-   if (cClearcoat != currentMaterial.m_cClearcoat ||
-      (bOpacityActive && fEdgeAlpha != currentMaterial.m_fEdgeAlpha))
-   {
-      const vec4 cClearcoatF = convertColor(cClearcoat, fEdgeAlpha);
-      SetVector(SHADER_cClearcoat_EdgeAlpha, &cClearcoatF);
-      currentMaterial.m_cClearcoat = cClearcoat;
-      currentMaterial.m_fEdgeAlpha = fEdgeAlpha;
-   }
-
-   if (bOpacityActive /*&& (alpha < 1.0f)*/)
-      g_pplayer->m_pin3d.EnableAlphaBlend(false);
-   else
-      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
+#endif
 }

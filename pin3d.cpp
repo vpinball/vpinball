@@ -498,6 +498,8 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
 
 HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl)
 {
+   m_stereo3D = stereo3D;
+
    // set the viewport for the newly created device
    m_viewPort.X = 0;
    m_viewPort.Y = 0;
@@ -639,7 +641,7 @@ void Pin3D::DrawBackground()
       : nullptr;
    if (pin)
    {
-      m_pd3dPrimaryDevice->Clear(0, nullptr, clearType::ZBUFFER, 0, 1.0f, 0L);
+      m_pd3dPrimaryDevice->Clear(clearType::ZBUFFER, 0, 1.0f, 0L);
 
       m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
       m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
@@ -660,7 +662,7 @@ void Pin3D::DrawBackground()
    else
    {
       const D3DCOLOR d3dcolor = COLORREF_to_D3DCOLOR(ptable->m_colorbackdrop);
-      m_pd3dPrimaryDevice->Clear(0, nullptr, clearType::TARGET | clearType::ZBUFFER, d3dcolor, 1.0f, 0L);
+      m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, d3dcolor, 1.0f, 0L);
    }
 }
 
@@ -861,7 +863,7 @@ void Pin3D::InitLayoutFS()
 // here is where the tables camera / rotation / scale is setup
 // flashers are ignored in the calculation of boundaries to center the
 // table in the view
-void Pin3D::InitLayout(const bool FSS_mode, const float xpixoff, const float ypixoff)
+void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const float xpixoff, const float ypixoff)
 {
    TRACE_FUNCTION();
 
@@ -873,12 +875,14 @@ void Pin3D::InitLayout(const bool FSS_mode, const float xpixoff, const float ypi
    for (size_t i = 0; i < g_pplayer->m_ptable->m_vedit.size(); ++i)
       g_pplayer->m_ptable->m_vedit[i]->GetBoundingVertices(vvertex3D);
 
+   int buf_width = m_stereo3D == STEREO_VR ? m_viewPort.Width / 2 : m_viewPort.Width;
+
    m_proj.m_rcviewport.left = 0;
    m_proj.m_rcviewport.top = 0;
-   m_proj.m_rcviewport.right = m_viewPort.Width;
+   m_proj.m_rcviewport.right = buf_width;
    m_proj.m_rcviewport.bottom = m_viewPort.Height;
 
-   const float aspect = ((float)m_viewPort.Width) / ((float)m_viewPort.Height); //(float)(4.0/3.0);
+   const float aspect = ((float)buf_width) / ((float)m_viewPort.Height); //(float)(4.0/3.0);
 
    // next 4 def values for layout portrait(game vert) in landscape(screen horz)
    // for FSS, force an offset to camy which drops the table down 1/3 of the way.

@@ -10,6 +10,14 @@
 
 constexpr int DBG_SPRITE_SIZE = 1024;
 
+enum VRPreviewMode
+{
+   VRPREVIEW_DISABLED,
+   VRPREVIEW_LEFT,
+   VRPREVIEW_RIGHT,
+   VRPREVIEW_BOTH
+};
+
 // NOTE that the following four definitions need to be in sync in their order!
 enum EnumAssignKeys
 {
@@ -259,6 +267,7 @@ public:
    Player(const bool cameraMode, PinTable * const ptable);
    virtual ~Player();
 
+   void CreateWnd(HWND parent = 0);
    virtual void PreRegisterClass(WNDCLASS& wc) override;
    virtual void PreCreate(CREATESTRUCT& cs) override;
    virtual void OnInitialUpdate() override;

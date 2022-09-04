@@ -11,6 +11,10 @@
  #include "imgui/imgui_impl_win32.h"
  #include "imgui/implot/implot.h"
 
+#ifdef ENABLE_SDL
+#include "sdl2/SDL_syswm.h"
+#endif
+
 // utility structure for realtime plot //!! cleanup
 class ScrollingData {
 private:
@@ -470,6 +474,88 @@ void Player::PreCreate(CREATESTRUCT& cs)
     cs.lpszClass = "VPPlayer"; // leave as-is as e.g. VPM relies on this
 }
 
+void Player::CreateWnd(HWND parent /* = 0 */)
+{
+#ifdef ENABLE_SDL
+   // SDL needs to create the window (as of SDL 2.0.22, SDL_CreateWindowFrom does not support OpenGL contexts) so we create it through SDL and attach it to win32++
+   WNDCLASS wc;
+   ZeroMemory(&wc, sizeof(wc));
+
+   CREATESTRUCT cs;
+   ZeroMemory(&cs, sizeof(cs));
+
+   // Set the WNDCLASS parameters
+   PreRegisterClass(wc);
+   /* TODO use the VPX window class
+   if (wc.lpszClassName)
+   {
+      RegisterClass(wc);
+      cs.lpszClass = wc.lpszClassName;
+   }
+   else
+      cs.lpszClass = _T("Win32++ Window");
+   SDL_RegisterApp(wc.lpszClassName, 0, g_pvp->theInstance); */
+
+   // Set a reasonable default window style.
+   DWORD dwOverlappedStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
+   cs.style = WS_VISIBLE | ((parent) ? WS_CHILD : dwOverlappedStyle);
+
+   // Set a reasonable default window position
+   if (0 == parent)
+   {
+      cs.x = CW_USEDEFAULT;
+      cs.cx = CW_USEDEFAULT;
+      cs.y = CW_USEDEFAULT;
+      cs.cy = CW_USEDEFAULT;
+   }
+
+   // Allow the CREATESTRUCT parameters to be modified.
+   PreCreate(cs);
+
+   DWORD style = cs.style & ~WS_VISIBLE;
+
+   const int colordepth = LoadValueIntWithDefault(regKey[RegName::Player], "ColorDepth"s, 32);
+   bool video10bit = LoadValueBoolWithDefault(regKey[RegName::Player], "Render10Bit"s, false);
+   int channelDepth = video10bit ? 10 : ((colordepth == 16) ? 5 : 8);
+   // FIXME this will fail for 10 bits output
+   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, channelDepth);
+   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, channelDepth);
+   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, channelDepth);
+   SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 0);
+   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+
+   // Multisampling is performed on the offscreen buffers, not the window framebuffer
+   SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+   SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
+
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+   //SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+   // Create the window.
+   m_sdl_playfieldHwnd = SDL_CreateWindow("Visual Pinball Player SDL", cs.x, cs.y, cs.cx, cs.cy, SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | (m_fullScreen ? SDL_WINDOW_FULLSCREEN : 0));
+   SDL_SysWMinfo wmInfo;
+   SDL_VERSION(&wmInfo.version);
+   SDL_GetWindowWMInfo(m_sdl_playfieldHwnd, &wmInfo);
+
+   // Attach it (raise a WM_CREATE which in turns call OnInitialUpdate)
+   Attach(wmInfo.info.win.window);
+
+   const VRPreviewMode vrPreview = (VRPreviewMode)LoadValueIntWithDefault(regKey[RegName::PlayerVR], "VRPreview"s, VRPREVIEW_LEFT);
+   if (cs.style & WS_VISIBLE && ((m_stereo3D != STEREO_VR) || (vrPreview != VRPREVIEW_DISABLED)))
+   {
+      if (cs.style & WS_MAXIMIZE)
+         ShowWindow(SW_MAXIMIZE);
+      else if (cs.style & WS_MINIMIZE)
+         ShowWindow(SW_MINIMIZE);
+      else
+         ShowWindow();
+   }
+#else
+   Create();
+#endif // ENABLE_SDL
+}
+
 void Player::OnInitialUpdate()
 {
     // Check for Touch support
@@ -553,6 +639,10 @@ void Player::OnInitialUpdate()
 
 void Player::Shutdown()
 {
+#ifdef ENABLE_SDL
+   Detach();
+#endif
+
 #ifdef USE_IMGUI
  #ifdef ENABLE_SDL
    ImGui_ImplOpenGL3_Shutdown();
@@ -571,17 +661,15 @@ void Player::Shutdown()
 
    SAFE_BUFFER_RELEASE(m_ballVertexBuffer);
    SAFE_BUFFER_RELEASE(m_ballIndexBuffer);
-#ifndef ENABLE_SDL
    if (m_ballShader)
    {
-      CHECKD3D(m_ballShader->Core()->SetTexture(SHADER_Texture0, nullptr));
-      CHECKD3D(m_ballShader->Core()->SetTexture(SHADER_Texture1, nullptr));
-      CHECKD3D(m_ballShader->Core()->SetTexture(SHADER_Texture2, nullptr));
-      CHECKD3D(m_ballShader->Core()->SetTexture(SHADER_Texture3, nullptr));
+      m_ballShader->SetTextureNull(SHADER_Texture0);
+      m_ballShader->SetTextureNull(SHADER_Texture1);
+      m_ballShader->SetTextureNull(SHADER_Texture2);
+      m_ballShader->SetTextureNull(SHADER_Texture3);
       delete m_ballShader;
       m_ballShader = nullptr;
    }
-#endif
 #ifdef DEBUG_BALL_SPIN
    SAFE_BUFFER_RELEASE(m_ballDebugPoints);
 #endif
@@ -1046,7 +1134,11 @@ void Player::UpdateBallShaderMatrix()
 void Player::InitBallShader()
 {
    m_ballShader = new Shader(m_pin3d.m_pd3dPrimaryDevice);
+ #ifdef ENABLE_SDL
+   m_ballShader->Load("ballShader.glfx", 0);
+ #else
    m_ballShader->Load(g_ballShaderCode, sizeof(g_ballShaderCode));
+ #endif
 
    UpdateBallShaderMatrix();
 
@@ -1247,61 +1339,8 @@ HRESULT Player::Init()
       return hr;
    }
 
-#ifdef ENABLE_SDL
-   // SDL Window appears after InitPin3D, set window default position and flags
-
-   int x = 0;
-   int y = 0;
-
-   int display = LoadValueIntWithDefault((m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "Display"s, -1);
-   display = (display < getNumberOfDisplays()) ? display : -1;
-
-   getDisplaySetupByID(display, x, y, m_screenwidth, m_screenheight);
-   if (m_fullScreen)
-      SetWindowPos(nullptr, x, y, m_screenwidth, m_screenheight, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
-   else
-   {
-      m_refreshrate = 0; // The default
-
-      // constrain window to screen
-      if (m_width > m_screenwidth)
-      {
-         m_width = m_screenwidth;
-         m_height = m_width * 9 / 16;
-      }
-
-      if (m_height > m_screenheight)
-      {
-         m_height = m_screenheight;
-         m_width = m_height * 16 / 9;
-      }
-      int xPos = x + (m_screenwidth - m_width) / 2;
-      int yPos = y + (m_screenheight - m_height) / 2;
-
-      // is this a non-fullscreen window? -> get previously saved window position
-      if ((m_height != m_screenheight) || (m_width != m_screenwidth))
-      {
-         const int xTemp = LoadValueIntWithDefault((m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosX"s, xPos); //!! does this handle multi-display correctly like this?
-         const int yTemp = LoadValueIntWithDefault((m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosY"s, yPos);
-         if (xTemp >= x && (xTemp + m_width < x + m_screenwidth) && yTemp >= y && (yTemp + m_height < y + m_screenheight)) {//Absolute Window position is on screen
-            xPos = xTemp;
-            yPos = yTemp;
-         }
-         else if (xTemp >= 0 && xTemp < (m_screenwidth- m_width) && yTemp >=0 && yTemp < (m_screenheight- m_height)) {//Relative window Position is on screen
-            xPos = x+xTemp;
-            yPos = y+yTemp;
-         }
-         m_showWindowedCaption = false;
-         const int windowflags = WS_POPUP;
-         SetWindowLong(GetHwnd(), GWL_STYLE, windowflags);
-         SetWindowPos(HWND_TOP, xPos, yPos, m_width, m_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-         ShowWindow(SW_SHOWNORMAL);
-      }
-   }
-#else
    if (m_fullScreen)
       SetWindowPos(nullptr, 0, 0, m_width, m_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
-#endif
 
    m_pininput.Init(GetHwnd());
 
@@ -1330,7 +1369,7 @@ HRESULT Player::Init()
    else
        m_toogle_DTFS = false;
 
-   m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
+   m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation());
 #ifdef USE_IMGUI
    IMGUI_CHECKVERSION();
    ImGui::CreateContext();
@@ -1563,7 +1602,7 @@ HRESULT Player::Init()
          }
    }
    // Direct all renders to the back buffer.
-   m_pin3d.m_pddsBackBuffer->Activate(true);
+   m_pin3d.m_pddsBackBuffer->Activate(false);
 
    m_ptable->m_progressDialog.SetProgress(90);
 
@@ -1690,7 +1729,7 @@ HRESULT Player::Init()
 //
 // for the dynamic objects:
 //  1. use the previous mirror depthbuffer
-//  2. switch to a temporary mirror texture and render all dynamic elements into that buffer 
+//  2. switch to a temporary mirror texture and render all dynamic elements into that buffer
 //  3. switch back to normal back buffer
 //  4. render the dynamic mirror texture over the scene
 //  5. render all dynamic objects as normal
@@ -1698,7 +1737,7 @@ void Player::RenderStaticMirror(const bool onlyBalls)
 {
    // Direct all renders to the temporary mirror buffer (plus the static z-buffer)
    m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture()->Activate(true);
-   m_pin3d.m_pd3dPrimaryDevice->Clear(0, nullptr, clearType::TARGET, 0, 1.0f, 0L);
+   m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
    if (!onlyBalls)
    {
@@ -1763,7 +1802,7 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
 {
    // render into temp mirror back buffer 
    m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture()->Activate(true);
-   m_pin3d.m_pd3dPrimaryDevice->Clear(0, nullptr, clearType::TARGET, 0, 1.0f, 0L);
+   m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
    D3DMATRIX viewMat;
    m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
@@ -1908,8 +1947,8 @@ void Player::InitStatic()
    if (iter == 0)
       assert(u1 == 0.5f && u2 == 0.5f);
 
-   // Setup Camera,etc matrices for each iteration. 
-   m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, u1 - 0.5f, u2 - 0.5f);
+   // Setup Camera,etc matrices for each iteration.
+   m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation(), u1 - 0.5f, u2 - 0.5f);
 
    // Now begin rendering of static buffer
    m_pin3d.m_pd3dPrimaryDevice->BeginScene();
@@ -2102,7 +2141,7 @@ void Player::InitStatic()
 
       RenderTarget* tmpDepth = m_pin3d.m_pddsStatic->Duplicate();
       m_pin3d.m_pddsStatic->CopyTo(tmpDepth);
-      
+
       m_pin3d.m_pddsBackBuffer->CopyTo(m_pin3d.m_pddsStatic); // Restore saved Z buffer and render (cannot be called inside BeginScene -> EndScene cycle)
 
       m_pin3d.m_pd3dPrimaryDevice->BeginScene();
@@ -2113,7 +2152,7 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
 
       m_pin3d.m_pddsAOBackTmpBuffer->Activate(false);
-      m_pin3d.m_pd3dPrimaryDevice->Clear(0, nullptr, clearType::TARGET, 0, 1.0f, 0L);
+      m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture3, tmpDepth->GetDepthSampler());
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture4, &m_pin3d.m_aoDitherTexture, TextureFilter::TEXTURE_MODE_NONE, false, false, true);
@@ -3371,7 +3410,7 @@ void Player::DrawBulbLightBuffer()
 {
    // switch to 'bloom' output buffer to collect all bulb lights
    m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture()->Activate(true);
-   m_pin3d.m_pd3dPrimaryDevice->Clear(0, nullptr, clearType::TARGET, 0, 1.0f, 0L);
+   m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
    // check if any bulb specified at all
    bool do_renderstage = false;
@@ -3694,7 +3733,7 @@ void Player::Bloom()
    {
       // need to reset content from (optional) bulb light abuse of the buffer
       /*m_pin3d.m_pd3dDevice->GetBloomBufferTexture()->Activate(false);
-      m_pin3d.m_pd3dDevice->Clear(0, nullptr, clearType::TARGET, 0, 1.0f, 0L);*/
+      m_pin3d.m_pd3dDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);*/
 
       return;
    }
@@ -4924,10 +4963,27 @@ void Player::Render()
       m_pin3d.m_gpu_profiler.BeginFrame(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
 
    // Update camera point of view
+#ifdef ENABLE_VR
+   if (m_stereo3D == STEREO_VR)
+   {
+      if (m_pin3d.m_pd3dPrimaryDevice->IsVRReady())
+         m_pin3d.m_pd3dPrimaryDevice->UpdateVRPosition();
+      else
+         m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation());
+   }
+   else
+#endif
    if (m_cameraMode)
    {
-      m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
+      m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation());
    }
+#ifdef ENABLE_BAM
+   else if ((m_stereo3D != STEREO_VR) && m_headTracking)
+   {
+      // #ravarcade: UpdateBAMHeadTracking will set proj/view matrix to add BAM view and head tracking
+      m_pin3d.UpdateBAMHeadTracking();
+   }
+#endif
 
    if (!RenderStaticOnly())
    {
@@ -5128,6 +5184,9 @@ void Player::Render()
 
          if (option == ID_QUIT)
          {
+#ifdef ENABLE_SDL
+            StopPlayer();
+#endif
             if (g_pvp->m_open_minimized && !g_pvp->m_disable_pause_menu)
                SendMessage(g_pvp->GetHwnd(), WM_COMMAND, ID_FILE_EXIT, NULL);
             m_ptable->SendMessage(WM_COMMAND, ID_TABLE_STOP_PLAY, 0);

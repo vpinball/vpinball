@@ -487,6 +487,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="regutil.cpp" />
     <ClCompile Include="RenderDevice.cpp" />
     <ClCompile Include="Sampler.cpp" />
+    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="slintf.cpp" />
     <ClCompile Include="spinner.cpp" />
     <ClCompile Include="StackTrace.cpp" />
