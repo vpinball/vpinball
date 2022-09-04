@@ -1563,7 +1563,7 @@ HRESULT Player::Init()
          }
    }
    // Direct all renders to the back buffer.
-   m_pin3d.m_pddsBackBuffer->Activate(true);
+   m_pin3d.m_pddsBackBuffer->Activate(false);
 
    m_ptable->m_progressDialog.SetProgress(90);
 
@@ -1698,7 +1698,7 @@ void Player::RenderStaticMirror(const bool onlyBalls)
 {
    // Direct all renders to the temporary mirror buffer (plus the static z-buffer)
    m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture()->Activate(true);
-   m_pin3d.m_pd3dPrimaryDevice->Clear(0, nullptr, clearType::TARGET, 0, 1.0f, 0L);
+   m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
    if (!onlyBalls)
    {
@@ -1763,7 +1763,7 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
 {
    // render into temp mirror back buffer 
    m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture()->Activate(true);
-   m_pin3d.m_pd3dPrimaryDevice->Clear(0, nullptr, clearType::TARGET, 0, 1.0f, 0L);
+   m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
    D3DMATRIX viewMat;
    m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
@@ -1908,7 +1908,7 @@ void Player::InitStatic()
    if (iter == 0)
       assert(u1 == 0.5f && u2 == 0.5f);
 
-   // Setup Camera,etc matrices for each iteration. 
+   // Setup Camera,etc matrices for each iteration.
    m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, u1 - 0.5f, u2 - 0.5f);
 
    // Now begin rendering of static buffer
@@ -2113,7 +2113,7 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
 
       m_pin3d.m_pddsAOBackTmpBuffer->Activate(false);
-      m_pin3d.m_pd3dPrimaryDevice->Clear(0, nullptr, clearType::TARGET, 0, 1.0f, 0L);
+      m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture3, tmpDepth->GetDepthSampler());
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture4, &m_pin3d.m_aoDitherTexture, TextureFilter::TEXTURE_MODE_NONE, false, false, true);
@@ -3371,7 +3371,7 @@ void Player::DrawBulbLightBuffer()
 {
    // switch to 'bloom' output buffer to collect all bulb lights
    m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture()->Activate(true);
-   m_pin3d.m_pd3dPrimaryDevice->Clear(0, nullptr, clearType::TARGET, 0, 1.0f, 0L);
+   m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
    // check if any bulb specified at all
    bool do_renderstage = false;
@@ -3694,7 +3694,7 @@ void Player::Bloom()
    {
       // need to reset content from (optional) bulb light abuse of the buffer
       /*m_pin3d.m_pd3dDevice->GetBloomBufferTexture()->Activate(false);
-      m_pin3d.m_pd3dDevice->Clear(0, nullptr, clearType::TARGET, 0, 1.0f, 0L);*/
+      m_pin3d.m_pd3dDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);*/
 
       return;
    }

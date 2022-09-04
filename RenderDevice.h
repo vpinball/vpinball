@@ -255,7 +255,7 @@ public:
    void BeginScene();
    void EndScene();
 
-   void Clear(const DWORD numRects, const D3DRECT* rects, const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil);
+   void Clear(const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil);
    void Flip(const bool vsync);
 
    bool SetMaximumPreRenderedFrames(const DWORD frames);

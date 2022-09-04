@@ -1749,9 +1749,9 @@ void RenderDevice::GetTransform(const TransformStateType p1, D3DMATRIX* p2)
    CHECKD3D(m_pD3DDevice->GetTransform((D3DTRANSFORMSTATETYPE)p1, p2));
 }
 
-void RenderDevice::Clear(const DWORD numRects, const D3DRECT* rects, const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil)
+void RenderDevice::Clear(const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil)
 {
-   CHECKD3D(m_pD3DDevice->Clear(numRects, rects, flags, color, z, stencil));
+   CHECKD3D(m_pD3DDevice->Clear(0, nullptr, flags, color, z, stencil));
 }
 
 void RenderDevice::SetViewport(const ViewPort* p1)

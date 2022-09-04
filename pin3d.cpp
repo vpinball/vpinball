@@ -639,7 +639,7 @@ void Pin3D::DrawBackground()
       : nullptr;
    if (pin)
    {
-      m_pd3dPrimaryDevice->Clear(0, nullptr, clearType::ZBUFFER, 0, 1.0f, 0L);
+      m_pd3dPrimaryDevice->Clear(clearType::ZBUFFER, 0, 1.0f, 0L);
 
       m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
       m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
@@ -660,7 +660,7 @@ void Pin3D::DrawBackground()
    else
    {
       const D3DCOLOR d3dcolor = COLORREF_to_D3DCOLOR(ptable->m_colorbackdrop);
-      m_pd3dPrimaryDevice->Clear(0, nullptr, clearType::TARGET | clearType::ZBUFFER, d3dcolor, 1.0f, 0L);
+      m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, d3dcolor, 1.0f, 0L);
    }
 }
 
