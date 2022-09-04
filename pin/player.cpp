@@ -571,17 +571,15 @@ void Player::Shutdown()
 
    SAFE_BUFFER_RELEASE(m_ballVertexBuffer);
    SAFE_BUFFER_RELEASE(m_ballIndexBuffer);
-#ifndef ENABLE_SDL
    if (m_ballShader)
    {
-      CHECKD3D(m_ballShader->Core()->SetTexture(SHADER_Texture0, nullptr));
-      CHECKD3D(m_ballShader->Core()->SetTexture(SHADER_Texture1, nullptr));
-      CHECKD3D(m_ballShader->Core()->SetTexture(SHADER_Texture2, nullptr));
-      CHECKD3D(m_ballShader->Core()->SetTexture(SHADER_Texture3, nullptr));
+      m_ballShader->SetTextureNull(SHADER_Texture0);
+      m_ballShader->SetTextureNull(SHADER_Texture1);
+      m_ballShader->SetTextureNull(SHADER_Texture2);
+      m_ballShader->SetTextureNull(SHADER_Texture3);
       delete m_ballShader;
       m_ballShader = nullptr;
    }
-#endif
 #ifdef DEBUG_BALL_SPIN
    SAFE_BUFFER_RELEASE(m_ballDebugPoints);
 #endif

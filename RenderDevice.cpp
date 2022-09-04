@@ -979,8 +979,14 @@ bool RenderDevice::LoadShaders()
    // Now that shaders are compiled, set static textures for SMAA postprocessing shader
    if (m_FXAA == Quality_SMAA)
    {
+#ifdef ENABLE_SDL
+      FBShader->SetTexture(SHADER_areaTex2D, m_SMAAareaTexture);
+      FBShader->SetTexture(SHADER_searchTex2D, m_SMAAsearchTexture);
+#else
+      // FIXME Shader rely on texture to be named with a leading texture unit. SetTexture will fail otherwise...
       CHECKD3D(FBShader->Core()->SetTexture(SHADER_areaTex2D, m_SMAAareaTexture->GetCoreTexture()));
       CHECKD3D(FBShader->Core()->SetTexture(SHADER_searchTex2D, m_SMAAsearchTexture->GetCoreTexture()));
+#endif
    }
 
    // Initialize uniform to default value
@@ -1025,27 +1031,28 @@ void RenderDevice::FreeShader()
 {
    if (basicShader)
    {
-      CHECKD3D(basicShader->Core()->SetTexture(SHADER_Texture0, nullptr));
-      CHECKD3D(basicShader->Core()->SetTexture(SHADER_Texture1, nullptr));
-      CHECKD3D(basicShader->Core()->SetTexture(SHADER_Texture2, nullptr));
-      CHECKD3D(basicShader->Core()->SetTexture(SHADER_Texture3, nullptr));
-      CHECKD3D(basicShader->Core()->SetTexture(SHADER_Texture4, nullptr));
+      basicShader->SetTextureNull(SHADER_Texture0);
+      basicShader->SetTextureNull(SHADER_Texture1);
+      basicShader->SetTextureNull(SHADER_Texture2);
+      basicShader->SetTextureNull(SHADER_Texture3);
+      basicShader->SetTextureNull(SHADER_Texture4);
       delete basicShader;
       basicShader = 0;
    }
    if (DMDShader)
    {
-      CHECKD3D(DMDShader->Core()->SetTexture(SHADER_Texture0, nullptr));
+      DMDShader->SetTextureNull(SHADER_Texture0);
       delete DMDShader;
       DMDShader = 0;
    }
    if (FBShader)
    {
-      CHECKD3D(FBShader->Core()->SetTexture(SHADER_Texture0, nullptr));
-      CHECKD3D(FBShader->Core()->SetTexture(SHADER_Texture1, nullptr));
-      CHECKD3D(FBShader->Core()->SetTexture(SHADER_Texture3, nullptr));
-      CHECKD3D(FBShader->Core()->SetTexture(SHADER_Texture4, nullptr));
+      FBShader->SetTextureNull(SHADER_Texture0);
+      FBShader->SetTextureNull(SHADER_Texture1);
+      FBShader->SetTextureNull(SHADER_Texture3);
+      FBShader->SetTextureNull(SHADER_Texture4);
 
+      // FIXME Shader rely on texture to be named with a leading texture unit. SetTextureNull will fail otherwise...
       CHECKD3D(FBShader->Core()->SetTexture(SHADER_areaTex2D, nullptr));
       CHECKD3D(FBShader->Core()->SetTexture(SHADER_searchTex2D, nullptr));
 
@@ -1054,8 +1061,8 @@ void RenderDevice::FreeShader()
    }
    if (flasherShader)
    {
-      CHECKD3D(flasherShader->Core()->SetTexture(SHADER_Texture0, nullptr));
-      CHECKD3D(flasherShader->Core()->SetTexture(SHADER_Texture1, nullptr));
+      flasherShader->SetTextureNull(SHADER_Texture0);
+      flasherShader->SetTextureNull(SHADER_Texture1);
       delete flasherShader;
       flasherShader = 0;
    }
@@ -1067,9 +1074,9 @@ void RenderDevice::FreeShader()
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    if (classicLightShader)
    {
-      CHECKD3D(classicLightShader->Core()->SetTexture(SHADER_Texture0, nullptr));
-      CHECKD3D(classicLightShader->Core()->SetTexture(SHADER_Texture1, nullptr));
-      CHECKD3D(classicLightShader->Core()->SetTexture(SHADER_Texture2, nullptr));
+      classicLightShader->SetTextureNull(SHADER_Texture0);
+      classicLightShader->SetTextureNull(SHADER_Texture1);
+      classicLightShader->SetTextureNull(SHADER_Texture2);
       delete classicLightShader;
       classicLightShader=0;
    }
