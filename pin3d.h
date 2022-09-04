@@ -75,7 +75,7 @@ public:
    HRESULT InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl);
 
    void InitLayoutFS();
-   void InitLayout(const bool FSS_mode, const float xpixoff = 0.f, const float ypixoff = 0.f);
+   void InitLayout(const bool FSS_mode, const float max_separation, const float xpixoff = 0.f, const float ypixoff = 0.f);
 
    void TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, const WORD * const __restrict rgi, const int count, Vertex2D * const __restrict rgvout) const;
 
@@ -105,6 +105,8 @@ private:
    void InitPrimaryRenderState();
    void InitSecondaryRenderState();
    HRESULT InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl);
+
+   StereoMode m_stereo3D;
 
    // Data members
 public:

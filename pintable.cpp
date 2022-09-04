@@ -2072,24 +2072,7 @@ void PinTable::Play(const bool cameraMode)
       // create Player and init that one
 
       g_pplayer = new Player(cameraMode, this);
-#ifdef ENABLE_SDL
-      WNDCLASS wc = {};
-      CREATESTRUCT cs = {};
-      PreRegisterClass(wc);
-      g_pplayer->PreCreate(cs);
-      if (g_pplayer->PreInit() != S_OK)
-      {
-         delete g_pplayer;
-         g_pplayer = nullptr;
-
-         HandleLoadFailure();
-         return;
-      }
-      g_pplayer->Attach(g_pplayer->m_pin3d.m_pd3dPrimaryDevice ? g_pplayer->m_pin3d.m_pd3dPrimaryDevice->getHwnd() : 0);
-#else
-      g_pplayer->Create();
-#endif
-
+      g_pplayer->CreateWnd();
       const float minSlope = (m_overridePhysics ? m_fOverrideMinSlope : m_angletiltMin);
       const float maxSlope = (m_overridePhysics ? m_fOverrideMaxSlope : m_angletiltMax);
       const float slope = minSlope + (maxSlope - minSlope) * m_globalDifficulty;
