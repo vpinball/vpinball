@@ -456,6 +456,7 @@ add_executable(vpinball WIN32
    rubber.h
    Sampler.cpp
    Sampler.h
+   Shader.cpp
    Shader.h
    slintf.cpp
    slintf.h

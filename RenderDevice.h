@@ -488,5 +488,3 @@ public:
    //static VertexDeclaration* m_pVertexNormalTexelTexelDeclaration;
    static VertexDeclaration* m_pVertexTrafoTexelDeclaration;
 };
-
-#include "Shader.h"
