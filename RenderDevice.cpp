@@ -1301,7 +1301,7 @@ void RenderDevice::UploadAndSetSMAATextures()
       }
    }
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, (void*)&searchTexBytes[0]);
+   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, (void*)searchTexBytes);
    glGenerateMipmap(GL_TEXTURE_2D); // Generate mip-maps, when using TexStorage will generate same amount as specified in TexStorage, otherwise good idea to limit by GL_TEXTURE_MAX_LEVEL
    m_SMAAsearchTexture = new Sampler(this, glTexture, true, false, false);
 
@@ -1330,8 +1330,9 @@ void RenderDevice::UploadAndSetSMAATextures()
       }
    }
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, (void*)&searchTexBytes[0]);
+   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, (void*)searchTexBytes);
    glGenerateMipmap(GL_TEXTURE_2D); // Generate mip-maps, when using TexStorage will generate same amount as specified in TexStorage, otherwise good idea to limit by GL_TEXTURE_MAX_LEVEL
+   m_SMAAareaTexture = new Sampler(this, glTexture, true, false, false);
 }
 #else
 void RenderDevice::UploadAndSetSMAATextures()
@@ -1697,7 +1698,7 @@ void RenderDevice::DrawFullscreenTexturedQuad()
       -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
       1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
       -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
-   };   
+   };
    DrawTexturedQuad((Vertex3D_TexelOnly*)verts);*/
 
    DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP,MY_D3DFVF_TEX,m_quadVertexBuffer,0,4,false);
@@ -1730,28 +1731,16 @@ void RenderDevice::DrawIndexedPrimitiveVB(const PrimitiveTypes type, const DWORD
 
    const unsigned int np = ComputePrimitiveCount(type, indexCount);
    m_stats_drawn_triangles += np;
+   vb->bind(); // do not change order, this calls glBindVertexArray in GL, which must come before GL_ELEMENT_ARRAY_BUFFER!
+   ib->bind();
 
 #ifdef ENABLE_SDL
    const int offset = ib->getOffset() + (ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? 2 : 4) * startIndex;
    //glDrawElementsInstancedBaseVertex(type, indexCount, ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)offset, m_stereo3D != STEREO_OFF ? 2 : 1, vb->getOffset() + startVertex); // Do instancing in geometry shader instead
    glDrawElementsBaseVertex(type, indexCount, ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)offset, vb->getOffset() + startVertex);
 #else
-   VertexDeclaration * declaration = fvfToDecl(fvf);
+   VertexDeclaration* declaration = fvfToDecl(fvf);
    SetVertexDeclaration(declaration);
-
-   // bind the vertex and index buffers
-   if (VertexBuffer::m_curVertexBuffer != vb)
-   {
-      const unsigned int vsize = fvfToSize(fvf);
-      CHECKD3D(m_pD3DDevice->SetStreamSource(0, vb->m_vb, 0, vsize));
-      VertexBuffer::m_curVertexBuffer = vb;
-   }
-
-   if (IndexBuffer::m_curIndexBuffer != ib)
-   {
-      CHECKD3D(m_pD3DDevice->SetIndices(ib->m_ib));
-      IndexBuffer::m_curIndexBuffer = ib;
-   }
 
    // render
    CHECKD3D(m_pD3DDevice->DrawIndexedPrimitive((D3DPRIMITIVETYPE)type, startVertex, 0, vertexCount, startIndex, np));
