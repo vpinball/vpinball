@@ -264,7 +264,7 @@ public:
    RenderTarget* GetBackBufferTmpTexture() const { return m_pOffscreenBackBufferTmpTexture; } // stereo/FXAA only
    RenderTarget* GetBackBufferTmpTexture2() const { return m_pOffscreenBackBufferTmpTexture2; } // SMAA only
 #ifdef ENABLE_SDL
-   Sampler* GetNonMSAABlitTexture(int m_MSAASamples) const { return m_MSAASamples == 1 ? m_pOffscreenBackBufferTexture->GetColorSampler() : m_pOffscreenNonMSAABlitTexture; }
+   RenderTarget* GetNonMSAABlitTexture(int m_MSAASamples) const { return m_MSAASamples == 1 ? m_pOffscreenBackBufferTexture : m_pOffscreenNonMSAABlitTexture; }
    RenderTarget* GetOffscreenVR(int eye) const { return eye == 0 ? m_pOffscreenVRLeft : m_pOffscreenVRRight; }
 #endif
    RenderTarget* GetMirrorTmpBufferTexture() const { return m_pMirrorTmpBufferTexture; }
@@ -313,6 +313,7 @@ public:
 
    //VR stuff
 #ifdef ENABLE_VR
+   bool IsVRReady() const { return m_pHMD != nullptr; }
    void SetTransformVR();
    void UpdateVRPosition();
    void tableUp();
@@ -337,26 +338,25 @@ public:
 
    void FreeShader();
 
-   void CreateVertexDeclaration(const VertexElement * const element, VertexDeclaration ** declaration)
+   void CreateVertexDeclaration(const VertexElement * const element, VertexDeclaration ** declaration);
+   void SetVertexDeclaration(VertexDeclaration * declaration);
+
+#ifdef ENABLE_SDL
+   void* GetCoreDevice() const
    {
-      CHECKD3D(m_pD3DDevice->CreateVertexDeclaration(element, declaration));
+      return nullptr;
    }
 
-   void SetVertexDeclaration(VertexDeclaration * declaration)
+   int getGLVersion() const
    {
-      if (declaration != currentDeclaration)
-      {
-         CHECKD3D(m_pD3DDevice->SetVertexDeclaration(declaration));
-         currentDeclaration = declaration;
-
-         m_curStateChanges++;
-      }
+      return m_GLversion;
    }
-
+#else
    IDirect3DDevice9* GetCoreDevice() const
    {
       return m_pD3DDevice;
    }
+#endif
 
    HWND         m_windowHwnd;
    int          m_width;

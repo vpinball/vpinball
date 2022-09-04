@@ -1630,6 +1630,26 @@ void RenderDevice::SetTextureAddressMode(const DWORD texUnit, const TextureAddre
    SetSamplerState(texUnit, D3DSAMP_ADDRESSV, mode);
 }
 
+void RenderDevice::CreateVertexDeclaration(const VertexElement * const element, VertexDeclaration ** declaration)
+{
+#ifndef ENABLE_SDL
+   CHECKD3D(m_pD3DDevice->CreateVertexDeclaration(element, declaration));
+#endif
+}
+
+void RenderDevice::SetVertexDeclaration(VertexDeclaration * declaration)
+{
+#ifndef ENABLE_SDL
+   if (declaration != currentDeclaration)
+   {
+      CHECKD3D(m_pD3DDevice->SetVertexDeclaration(declaration));
+      currentDeclaration = declaration;
+
+      m_curStateChanges++;
+   }
+#endif
+}
+
 void RenderDevice::DrawPrimitive(const PrimitiveTypes type, const DWORD fvf, const void* vertices, const DWORD vertexCount)
 {
 #ifndef ENABLE_SDL
