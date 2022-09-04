@@ -1948,7 +1948,7 @@ void Player::InitStatic()
       assert(u1 == 0.5f && u2 == 0.5f);
 
    // Setup Camera,etc matrices for each iteration.
-   m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, u1 - 0.5f, u2 - 0.5f);
+   m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation(), u1 - 0.5f, u2 - 0.5f);
 
    // Now begin rendering of static buffer
    m_pin3d.m_pd3dPrimaryDevice->BeginScene();
@@ -4963,10 +4963,27 @@ void Player::Render()
       m_pin3d.m_gpu_profiler.BeginFrame(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
 
    // Update camera point of view
+#ifdef ENABLE_VR
+   if (m_stereo3D == STEREO_VR)
+   {
+      if (m_pin3d.m_pd3dPrimaryDevice->IsVRReady())
+         m_pin3d.m_pd3dPrimaryDevice->UpdateVRPosition();
+      else
+         m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation());
+   }
+   else
+#endif
    if (m_cameraMode)
    {
       m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation());
    }
+#ifdef ENABLE_BAM
+   else if ((m_stereo3D != STEREO_VR) && m_headTracking)
+   {
+      // #ravarcade: UpdateBAMHeadTracking will set proj/view matrix to add BAM view and head tracking
+      m_pin3d.UpdateBAMHeadTracking();
+   }
+#endif
 
    if (!RenderStaticOnly())
    {
