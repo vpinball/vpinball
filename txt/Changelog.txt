@@ -51,6 +51,8 @@ FIXES:
 
 - fix extremely old wire ramp issue (too many triangles created)
 
+- fix Z/depth rendering artefacts in interactive camera/light editing mode (e.g. when launching the table with F6 or the respective menu entry)
+
 - remove 32 entry limitation for collections in context menu
 
 - on import/rename an image in the image manager also update the comboboxes to select the new image for selected elements
