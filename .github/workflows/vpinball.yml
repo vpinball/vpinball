@@ -100,8 +100,8 @@ jobs:
           cp cmake/CMakeLists_${{ matrix.platform}}.txt CMakeLists.txt
           cmake -G "Visual Studio 17 2022" -A ${{ matrix.platform-name }} -B build
           cmake --build build --config ${{ matrix.config }}
-      - name: Compress 
-        if: matrix.config == 'Release'
+#      - name: Compress 
+#        if: matrix.config == 'Release'
 #        run: |
 #          curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/${{ env.UPX_ARTIFACT }}/zip -o upx.zip
 #          7z x upx.zip -oupx
