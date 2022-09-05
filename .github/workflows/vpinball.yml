@@ -4,7 +4,7 @@ on:
 
 env:
   VERSION_START_SHA: ea558e7417f6f06fe567d34f0e33792a141b8e64
-  UPX_ARTIFACT: 345209471
+#  UPX_ARTIFACT: 345209471
 
 defaults:
   run:
@@ -102,11 +102,11 @@ jobs:
           cmake --build build --config ${{ matrix.config }}
       - name: Compress 
         if: matrix.config == 'Release'
-        run: |
-          curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/${{ env.UPX_ARTIFACT }}/zip -o upx.zip
-          7z x upx.zip -oupx
-          rm upx.zip
-          ./upx/upx.exe --best --lzma build/${{ matrix.config }}/VPinballX.exe
+#        run: |
+#          curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/${{ env.UPX_ARTIFACT }}/zip -o upx.zip
+#          7z x upx.zip -oupx
+#          rm upx.zip
+#          ./upx/upx.exe --best --lzma build/${{ matrix.config }}/VPinballX.exe
       - run: |
           mkdir tmp 
           cp build/${{ matrix.config }}/VPinballX.* tmp
