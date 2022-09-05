@@ -24,7 +24,7 @@ INT_PTR AboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       {
          const HWND hwndDlg = GetHwnd();
          char versionString[256];
-         sprintf_s(versionString, sizeof(versionString), "Version %i.%i.%i Beta (Revision %i (%s), %ubit)", VP_VERSION_MAJOR,VP_VERSION_MINOR,VP_VERSION_REV, GIT_REVISION, GIT_SHA,
+         sprintf_s(versionString, sizeof(versionString), "Version %i.%i.%i Final (Revision %i (%s), %ubit)", VP_VERSION_MAJOR,VP_VERSION_MINOR,VP_VERSION_REV, GIT_REVISION, GIT_SHA,
 #ifdef _WIN64
             64u
 #else

@@ -1,4 +1,4 @@
-VP 10.7.1 Changelog
+VP 10.7.2 Changelog
 ------------------------
 
 FEATURES:
@@ -68,6 +68,11 @@ FIXES:
 - see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
 
 - add Visual Studio 2022 support
+
+VP 10.7.1 Changelog
+------------------------
+
+- internal release only
 
 VP 10.7.0 Changelog
 ------------------------

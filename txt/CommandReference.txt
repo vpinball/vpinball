@@ -8,10 +8,13 @@ Also see https://docs.orbitalpin.com/welcome for some more detailed help
 As for coding light sequences for original tables, please check this helper app: https://github.com/horseyhorsey/VpLightSequencing
 
 Changelog:
-10.7.1:
+10.7.2:
 - add GetInPlayIntensity to the light element
 - add Opacity,Color,AddBlend to the primitive element
 - add RenderingMode to the globals
+
+10.7.1:
+- internal release only
 
 10.7:
 - add GetSerialDevices,OpenSerial,CloseSerial,FlushSerial,SetupSerial,ReadSerial,WriteSerial to the globals
