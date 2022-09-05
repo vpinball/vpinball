@@ -41,7 +41,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
         char tmp[256];
         sprintf_s(tmp, sizeof(tmp), "PhysicsSetName%u", i);
         if (LoadValue(regKey[RegName::Player], tmp, physicsoptions[i], 256) != S_OK)
-            sprintf_s(physicsoptions[i], sizeof(physicsoptions[i]), "Set %u", i + 1);
+            sprintf_s(physicsoptions[i], 256, "Set %u", i + 1);
         sprintf_s(tmp, sizeof(tmp), "%u: %s", i + 1, physicsoptions[i]);
         const size_t index = SendMessage(hwndList, LB_ADDSTRING, 0, (size_t)tmp);
         int * const sd = new int;
