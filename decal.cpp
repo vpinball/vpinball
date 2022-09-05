@@ -384,8 +384,8 @@ void Decal::PreRenderText()
       dc.DrawText(m_d.m_sztext.c_str(), len, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
 
    // Copy and set to opaque
-   D3DCOLOR* __restrict bitsd = (D3DCOLOR*)bits;
-   D3DCOLOR* __restrict dest = (D3DCOLOR*)m_textImg->data();
+   const D3DCOLOR* __restrict bitsd = (D3DCOLOR*)bits;
+         D3DCOLOR* __restrict dest = (D3DCOLOR*)m_textImg->data();
    for (unsigned int i = 0; i < m_textImg->height(); i++)
    {
       for (unsigned int l = 0; l < m_textImg->width(); l++, dest++, bitsd++)

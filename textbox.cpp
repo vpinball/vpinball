@@ -399,8 +399,8 @@ void Textbox::PreRenderText()
       m_texture = new BaseTexture(width, height, BaseTexture::RGBA); // This could be optimized to an RGB texture if transparent is not set
 
    // Set alpha for pixels that match transparent color (if transparent enabled), otherwise set to opaque
-   D3DCOLOR* __restrict bitsd = (D3DCOLOR*)bits;
-   D3DCOLOR* __restrict dest = (D3DCOLOR*)m_texture->data();
+   const D3DCOLOR* __restrict bitsd = (D3DCOLOR*)bits;
+         D3DCOLOR* __restrict dest = (D3DCOLOR*)m_texture->data();
    for (unsigned int i = 0; i < m_texture->height(); i++)
    {
       for (unsigned int l = 0; l < m_texture->width(); l++, dest++, bitsd++)
