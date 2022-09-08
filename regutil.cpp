@@ -56,6 +56,7 @@ static void InitXMLnodeFromRegistry(xml_node<> *const node, const string &szPath
       if (res != ERROR_SUCCESS)
          continue;
 
+      // old Win32xx and Win32xx 9+ docker keys
       if (strcmp((char*)pvalue, "Dock Windows") == 0) // should not happen, as a folder, not value.. BUT also should save these somehow and restore for Win32++, or not ?
          continue;
       if (strcmp((char*)pvalue, "Dock Settings") == 0) // should not happen, as a folder, not value.. BUT also should save these somehow and restore for Win32++, or not ?
@@ -487,7 +488,7 @@ static HRESULT RegDelnodeRecurse(const HKEY hKeyRoot, char lpSubKey[MAX_PATH * 2
 
    LONG lResult = RegDeleteKey(hKeyRoot, lpSubKey);
 
-   if (lResult == ERROR_SUCCESS)
+   if (lResult == ERROR_SUCCESS || lResult == ERROR_FILE_NOT_FOUND)
       return S_OK;
 
    HKEY hKey;

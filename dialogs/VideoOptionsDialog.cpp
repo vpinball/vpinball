@@ -106,8 +106,8 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    constexpr float stereo3DContrast = 1.0f;
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DContrast);
    SetDlgItemText(IDC_3D_STEREO_CONTRAST, tmp);
-   constexpr float stereo3DDeSaturation = 0.0f;
-   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DDeSaturation);
+   constexpr float stereo3DDesaturation = 0.0f;
+   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DDesaturation);
    SetDlgItemText(IDC_3D_STEREO_DESATURATION, tmp);
    SendMessage(GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    }

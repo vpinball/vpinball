@@ -407,7 +407,8 @@ void VPinball::ResetAllDockers()
 {
    const bool createNotes = m_dockNotes != nullptr;
    CloseAllDockers();
-   DeleteSubKey("Editor\\Dock Windows");
+   DeleteSubKey("Editor\\Dock Windows"s); // Old Win32xx
+   DeleteSubKey("Editor\\Dock Settings"s);// Win32xx 9+
    CreateDocker();
    if (createNotes)
       GetDefaultNotesDocker();
