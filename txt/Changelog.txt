@@ -62,6 +62,8 @@ FIXES:
 - decrease main memory usage for textures by using smaller texture formats where possible
 - optimize floating point texture video memory usage/bandwidth (e.g. flasher/primitive and environment textures)
 
+- improved full example table (thanks kiwi!)
+
 - update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
 - DirectX 8 port for input handling (currently disabled)
 
