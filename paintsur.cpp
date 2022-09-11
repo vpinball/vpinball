@@ -138,6 +138,8 @@ void PaintSur::PolygonImage(const vector<RenderVertex> &rgv, HBITMAP hbm, const 
    const int ix2 = SCALEXf(right);
    const int iy2 = SCALEYf(bottom);
 
+   try
+   {
    CDC dc;
    const HDC hdcNew = dc.CreateCompatibleDC(m_hdc);
    const HBITMAP hbmOld = dc.SelectObject(hbm);
@@ -175,6 +177,11 @@ void PaintSur::PolygonImage(const vector<RenderVertex> &rgv, HBITMAP hbm, const 
    }
 
    dc.SelectObject(hbmOld);
+   }
+   catch(...)
+   {
+      ShowError("Error in PolygonImage");
+   }
 }
 
 void PaintSur::Polyline(const Vertex2D * const rgv, const int count)

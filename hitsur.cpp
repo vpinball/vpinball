@@ -189,7 +189,7 @@ void HitSur::Polygon(const Vertex2D * const rgv, const int count)
 // copy-pasted from above
 void HitSur::Polygon(const vector<RenderVertex> &rgv)
 {
-   if (m_pcur == nullptr)
+   if (m_pcur == nullptr || rgv.empty())
       return;
 
    int x1 = SCALEXf(rgv[rgv.size() - 1].x);
