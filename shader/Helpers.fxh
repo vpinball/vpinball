@@ -308,7 +308,7 @@ float4 Overlay (const float4 cBase, const float4 cBlend)
 	// using color as influence value
 	cNew = lerp(cBase*cBlend*2.0, 1.0-2.0*(1.0-cBase)*(1.0-cBlend), cNew);
 
-	//cNew.a = 1.0f;
+	//cNew.a = 1.0;
 	return cNew;
 }
 
@@ -322,7 +322,7 @@ float4 OverlayHDR (const float4 cBase, const float4 cBlend)
 
 	// we pick either solution
 	// depending on pixel
-	
+
 	// first is case of < 0.5
 	// second is case for >= 0.5
 
@@ -330,6 +330,6 @@ float4 OverlayHDR (const float4 cBase, const float4 cBlend)
 	// using color as influence value
 	cNew = max(lerp(cBase*cBlend*2.0, 1.0-2.0*(1.0-cBase)*(1.0-cBlend), cNew), float4(0.,0.,0.,0.));
 
-	//cNew.a = 1.0f;
+	//cNew.a = 1.0;
 	return cNew;
 }

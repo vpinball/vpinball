@@ -317,7 +317,7 @@ VS_NOTEX_OUTPUT vs_kicker (const in float4 vPosition : POSITION0,
     VS_NOTEX_OUTPUT Out;
     Out.pos.xyw = mul(vPosition, matWorldViewProj).xyw;
     float4 P2 = vPosition;
-    P2.z -= 30.0f*fKickerScale; //!!
+    P2.z -= 30.0*fKickerScale; //!!
     Out.pos.z = mul(P2, matWorldViewProj).z;
     //if(cBase_Alpha.a < 1.0)
     {

@@ -316,7 +316,7 @@ float4 psBall( const in vout IN, uniform bool cabMode, uniform bool decalMode ) 
 #if 0
 float4 psBallReflection( const in voutReflection IN ) : COLOR
 {
-   const float2 envTex = cabMode ? float2(IN.r.y*0.5f + 0.5f, -IN.r.x*0.5f + 0.5f) : float2(IN.r.x*0.5f + 0.5f, IN.r.y*0.5f + 0.5f);
+   const float2 envTex = cabMode ? float2(IN.r.y*0.5 + 0.5, -IN.r.x*0.5 + 0.5) : float2(IN.r.x*0.5 + 0.5, IN.r.y*0.5 + 0.5);
    float3 ballImageColor = tex2D(texSampler0, envTex).xyz;
    ballImageColor = (cBase_Alpha.xyz*(0.075*0.25) + ballImageColor)*fenvEmissionScale_TexWidth.x; //!! just add the ballcolor in, this is a whacky reflection anyhow
    float alpha = saturate((IN.tex0.y - position_radius.y) / position_radius.w);
