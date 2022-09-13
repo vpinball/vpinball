@@ -1,7 +1,7 @@
 #pragma once
 
 // NB: these are used for file I/O and must not be changed/reordered!
-enum ItemTypeEnum
+enum ItemTypeEnum : unsigned int
 {
    eItemSurface,
    eItemFlipper,

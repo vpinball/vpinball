@@ -49,7 +49,7 @@ class Texture final : public ILoadable
 public:
    Texture();
    Texture(BaseTexture * const base);
-   virtual ~Texture();
+   ~Texture();
 
    // ILoadable callback
    bool LoadToken(const int id, BiffReader * const pbr) final;

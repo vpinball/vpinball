@@ -164,7 +164,7 @@ void HitRectSur::SetObject(ISelect * const psel)
       }
       else
       {
-         const size_t index = FindIndexOf(*m_pvsel, psel);
+         const int index = FindIndexOf(*m_pvsel, psel);
          if (index == -1)
          {
             // Object not in list yet - add it

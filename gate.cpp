@@ -518,7 +518,7 @@ void Gate::GenerateBracketMesh(Vertex3D_NoTex2 *buf)
 {
    Matrix3D fullMatrix;
    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
-   for (int i = 0; i < gateBracketNumVertices; i++)
+   for (unsigned int i = 0; i < gateBracketNumVertices; i++)
    {
       Vertex3Ds vert(gateBracket[i].x, gateBracket[i].y, gateBracket[i].z);
       vert = fullMatrix.MultiplyVector(vert);

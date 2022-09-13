@@ -238,7 +238,7 @@ void PlungerMoverObject::Fire(float startPos)
    // starting distance.  Note that the release motion
    // is upwards, so the speed is negative.
    const float dx = startPos - m_restPos;
-   const float normalize = g_pplayer->m_ptable->m_plungerNormalize / 13.0f / 100.0f;
+   const float normalize = (float)g_pplayer->m_ptable->m_plungerNormalize / 13.0f / 100.0f;
    m_fireSpeed = -m_plunger->m_d.m_speedFire
       * dx * m_frameLen / m_mass
       * normalize;
@@ -562,7 +562,7 @@ void PlungerMoverObject::UpdateVelocities()
       // runs physics frames at roughly 10x the rate of VP 9, so the time
       // per frame is about 1/10 the VP 9 time.
       constexpr float plungerFriction = 0.95f;
-      const float normalize = g_pplayer->m_ptable->m_plungerNormalize / 13.0f / 100.0f;
+      const float normalize = (float)g_pplayer->m_ptable->m_plungerNormalize / 13.0f / 100.0f;
       constexpr float dt = 0.1f;
       m_speed *= plungerFriction;
       m_speed += error * m_frameLen

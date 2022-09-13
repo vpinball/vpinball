@@ -322,7 +322,7 @@ public:
    void InitTablePostLoad();
    void RemoveInvalidReferences();
 
-   virtual HRESULT GetTypeName(BSTR *pVal);
+   HRESULT GetTypeName(BSTR *pVal) override;
 
    void SetCaption(const string &szCaption);
    void SetMouseCapture();
@@ -332,7 +332,7 @@ public:
    HRESULT InitVBA();
    void CloseVBA();
 
-   void UIRenderPass2(Sur *const psur);
+   void UIRenderPass2(Sur *const psur) override;
    void Paint(HDC hdc);
    ISelect *HitTest(const int x, const int y);
    void SetDirtyDraw();
@@ -375,7 +375,7 @@ public:
    void ListImages(HWND hwndListView);
    int AddListImage(HWND hwndListView, Texture *const ppi);
    void RemoveImage(Texture *const ppi);
-   HRESULT LoadImageFromStream(IStream *pstm, unsigned int idx, int version, bool resize_on_low_mem);
+   HRESULT LoadImageFromStream(IStream *pstm, size_t idx, int version, bool resize_on_low_mem);
    Texture *GetImage(const string &szName) const;
    bool GetImageLink(const Texture *const ppi) const;
    PinBinary *GetImageLinkBinary(const int id);

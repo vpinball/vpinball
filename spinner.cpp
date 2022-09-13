@@ -277,7 +277,7 @@ void Spinner::ExportMesh(ObjLoader& loader)
 
       transformedVertices.resize(spinnerBracketNumVertices);
 
-      for (int i = 0; i < spinnerBracketNumVertices; i++)
+      for (unsigned int i = 0; i < spinnerBracketNumVertices; i++)
       {
          Vertex3Ds vert(spinnerBracket[i].x, spinnerBracket[i].y, spinnerBracket[i].z);
          vert = m_fullMatrix.MultiplyVector(vert);
@@ -340,7 +340,7 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
    else
       buf = vertBuffer;
 
-   for (int i = 0; i < spinnerPlateNumVertices; i++)
+   for (unsigned int i = 0; i < spinnerPlateNumVertices; i++)
    {
       Vertex3Ds vert(spinnerPlate[i].x, spinnerPlate[i].y, spinnerPlate[i].z);
       vert = fullMatrix.MultiplyVector(vert);
@@ -420,7 +420,7 @@ void Spinner::RenderSetup()
 
    Vertex3D_NoTex2 *buf;
    m_bracketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-   for (int i = 0; i < spinnerBracketNumVertices; i++)
+   for (unsigned int i = 0; i < spinnerBracketNumVertices; i++)
    {
       Vertex3Ds vert(spinnerBracket[i].x, spinnerBracket[i].y, spinnerBracket[i].z);
       vert = m_fullMatrix.MultiplyVector(vert);
@@ -586,7 +586,7 @@ STDMETHODIMP Spinner::InterfaceSupportsErrorInfo(REFIID riid)
       &IID_ISpinner,
    };
 
-   for (int i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
+   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
    {
       if (InlineIsEqualGUID(*arr[i], riid))
          return S_OK;

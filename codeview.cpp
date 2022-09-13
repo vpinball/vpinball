@@ -578,8 +578,8 @@ void CodeViewer::SelectItem(IScriptable * const piscript)
    char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
    WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szT, MAXNAMEBUFFER*2, nullptr, nullptr);
 
-   const size_t index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
-   if(index!=-1)
+   const LRESULT index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
+   if (index != CB_ERR)
    {
        ::SendMessage(m_hwndItemList, CB_SETCURSEL, index, 0);
 
@@ -1544,7 +1544,7 @@ void CodeViewer::Find(const FINDREPLACE * const pfr)
    SendMessage(m_hwndScintilla, SCI_SETTARGETSTART, startChar, 0);
    SendMessage(m_hwndScintilla, SCI_SETTARGETEND, stopChar, 0);
    SendMessage(m_hwndScintilla, SCI_SETSEARCHFLAGS, scinfindflags, 0);
-   size_t posFind = SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, lstrlen(pfr->lpstrFindWhat), (LPARAM)pfr->lpstrFindWhat);
+   LRESULT posFind = SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, lstrlen(pfr->lpstrFindWhat), (LPARAM)pfr->lpstrFindWhat);
 
    bool wrapped = false;
 
@@ -1953,7 +1953,7 @@ void CodeViewer::FindCodeFromEvent()
    const size_t stopChar = codelen;
    SendMessage(m_hwndScintilla, SCI_TARGETWHOLEDOCUMENT, 0, 0);
    SendMessage(m_hwndScintilla, SCI_SETSEARCHFLAGS, SCFIND_WHOLEWORD, 0);
-   size_t posFind;
+   LRESULT posFind;
    while ((posFind = SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, lstrlen(szItemName), (LPARAM)szItemName)) != -1)
    {
       const size_t line = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, posFind, 0);
@@ -1998,7 +1998,7 @@ void CodeViewer::FindCodeFromEvent()
 
          found = true;
 
-         size_t ichar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line + 1, 0);
+         LRESULT ichar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line + 1, 0);
          if (ichar == -1)
          {
             // The function was declared as the last line of the script - rare but possible
@@ -2424,7 +2424,7 @@ void CodeViewer::MarginClick(const Sci_Position position, const int modifiers)
 
 static void AddComment(const HWND m_hwndScintilla)
 {
-   constexpr char * const comment = "'";
+   constexpr char comment[] = "'";
 
    const size_t startSel = SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
    size_t endSel = SendMessage(m_hwndScintilla, SCI_GETSELECTIONEND, 0, 0);
@@ -2825,7 +2825,7 @@ void CodeViewer::ReadLineToParseBrain(string wholeline, const int linecount, vec
 			size_t idx = string::npos;
 			ParseFindConstruct(idx, UCline, UD.eTyping, SearchLength);
 			if (idx == string::npos) continue;
-			if (idx != string::npos) // Found something something structural
+			else // Found something something structural
 			{
 				const size_t doubleQuoteIdx = line.find('\"');
 				if ((doubleQuoteIdx != string::npos) && (doubleQuoteIdx < idx)) continue; // in a string literal
@@ -3171,7 +3171,7 @@ BOOL CodeViewer::ParseSelChangeEvent(const int id, const SCNotification *pSCN)
       }
       case IDC_FUNCTIONLIST:
       {
-         const size_t Listindex = ::SendMessage(pcv->m_hwndFunctionList, CB_GETCURSEL, 0, 0);
+         const LRESULT Listindex = ::SendMessage(pcv->m_hwndFunctionList, CB_GETCURSEL, 0, 0);
          if (Listindex != -1)
          {
             char ConstructName[MAX_FIND_LENGTH] = {};
@@ -3694,7 +3694,7 @@ void CodeViewer::SetLastErrorTextW(const LPCWSTR text)
 
 void CodeViewer::AppendLastErrorTextW(const wstring& text)
 {
-	const int requiredLength = ::GetWindowTextLength(m_hwndLastErrorTextArea) + lstrlenW(text.c_str()) + 1;
+	const int requiredLength = ::GetWindowTextLength(m_hwndLastErrorTextArea) + (int)text.length() + 1;
 	wchar_t* buf = new wchar_t[requiredLength];
 
 	// Get existing text from edit control and put into buffer

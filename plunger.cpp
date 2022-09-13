@@ -373,10 +373,11 @@ void Plunger::RenderSetup()
       // by semicolons.
       int nTip = 1;
       for (const char *p = m_d.m_szTipShape; *p != '\0'; ++p)
-      {
          if (*p == ';')
-            ++nTip, ++nn;
-      }
+         {
+            ++nTip;
+            ++nn;
+         }
 
       // allocate the descriptor and the coordinate array
       desc = customDesc = new PlungerDesc;

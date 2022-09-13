@@ -76,7 +76,7 @@ void Decal::SetDefaults(bool fromMouseClick)
 
       float fTmp;
       hr = LoadValue(regKey, "FontSize"s, fTmp);
-      fd.cySize.int64 = (hr == S_OK) && fromMouseClick ? (LONGLONG)(fTmp * 10000.0) : 142500;
+      fd.cySize.int64 = (hr == S_OK) && fromMouseClick ? (LONGLONG)(fTmp * 10000.0f) : 142500;
 
       char tmp[MAXSTRING];
       hr = LoadValue(regKey, "FontName"s, tmp, MAXSTRING);
@@ -286,7 +286,7 @@ void Decal::PreRenderText()
    if (m_d.m_decaltype != DecalText)
       return;
 
-   RECT rcOut = { 0 };
+   RECT rcOut = { };
    const int len = (int)m_d.m_sztext.length();
    const HFONT hFont = GetFont();
    int alignment = DT_LEFT;

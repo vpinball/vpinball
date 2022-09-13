@@ -132,7 +132,7 @@ public:
       m_d.m_filterAmount = max(value,(long)0);
    }
 
-   BaseTexture* GetVideoCap(const string& szName);
+   //BaseTexture* GetVideoCap(const string& szName);
 
    void setInPlayState(const bool newVal);
 

@@ -558,7 +558,7 @@ STDMETHODIMP Flipper::InterfaceSupportsErrorInfo(REFIID riid)
       &IID_IFlipper,
    };
 
-   for (int i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
+   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
    {
       if (InlineIsEqualGUID(*arr[i], riid))
          return S_OK;
@@ -674,7 +674,7 @@ void Flipper::ExportMesh(ObjLoader& loader)
 
    {
    Vertex3D_NoTex2 *const buf = flipper;
-   for (int i = 0; i < flipperBaseVertices; i++)
+   for (unsigned int i = 0; i < flipperBaseVertices; i++)
    {
       Vertex3Ds vert(buf[i].x, buf[i].y, buf[i].z);
       vert = matTrafo.MultiplyVector(vert);
@@ -701,7 +701,7 @@ void Flipper::ExportMesh(ObjLoader& loader)
    if (m_d.m_rubberthickness > 0.f)
    {
       Vertex3D_NoTex2 *buf = &flipper[flipperBaseVertices];
-      for (int i = 0; i < flipperBaseVertices; i++)
+      for (unsigned int i = 0; i < flipperBaseVertices; i++)
       {
          Vertex3Ds vert(buf[i].x, buf[i].y, buf[i].z);
          vert = matTrafo.MultiplyVector(vert);
@@ -740,7 +740,7 @@ static void ApplyFix(Vertex3D_NoTex2& vert, const Vertex2D& center, const float 
    float nAngle = atan2f(vert.ny, vert.nx);
    
    // we want to have angles with same sign as midAngle, fix it:
-   if (midAngle < 0.0)
+   if (midAngle < 0.0f)
    {
    	  if (vAngle > 0.0f)
          vAngle -= (float)(M_PI * 2.0);

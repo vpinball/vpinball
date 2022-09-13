@@ -278,7 +278,7 @@ void Bumper::UpdateRing()
    //TODO update Worldmatrix instead.
    Vertex3D_NoTex2 *buf;
    m_ringVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
-   for (int i = 0; i < bumperRingNumVertices; i++)
+   for (unsigned int i = 0; i < bumperRingNumVertices; i++)
    {
       buf[i].x = m_ringVertices[i].x;
       buf[i].y = m_ringVertices[i].y;
@@ -371,7 +371,7 @@ void Bumper::UpdateSkirt(const bool doCalculation)
 
    Vertex3D_NoTex2 *buf;
    m_socketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
-   for (int i = 0; i < bumperSocketNumVertices; i++)
+   for (unsigned int i = 0; i < bumperSocketNumVertices; i++)
    {
       Vertex3Ds vert(bumperSocket[i].x, bumperSocket[i].y, bumperSocket[i].z);
       vert = rMatrix.MultiplyVector(vert);
@@ -603,7 +603,7 @@ void Bumper::ExportMesh(ObjLoader& loader)
 void Bumper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 {
    const float scalexy = m_d.m_radius;
-   for (int i = 0; i < bumperBaseNumVertices; i++)
+   for (unsigned int i = 0; i < bumperBaseNumVertices; i++)
    {
       Vertex3Ds vert(bumperBase[i].x, bumperBase[i].y, bumperBase[i].z);
       vert = m_fullMatrix.MultiplyVector(vert);
@@ -625,7 +625,7 @@ void Bumper::GenerateSocketMesh(Vertex3D_NoTex2 *buf)
 {
    const float scalexy = m_d.m_radius;
 
-   for (int i = 0; i < bumperSocketNumVertices; i++)
+   for (unsigned int i = 0; i < bumperSocketNumVertices; i++)
    {
       Vertex3Ds vert(bumperSocket[i].x, bumperSocket[i].y, bumperSocket[i].z);
       vert = m_fullMatrix.MultiplyVector(vert);
@@ -647,7 +647,7 @@ void Bumper::GenerateRingMesh(Vertex3D_NoTex2 *buf)
 {
    const float scalexy = m_d.m_radius;
 
-   for (int i = 0; i < bumperRingNumVertices; i++)
+   for (unsigned int i = 0; i < bumperRingNumVertices; i++)
    {
       Vertex3Ds vert(bumperRing[i].x, bumperRing[i].y, bumperRing[i].z);
       vert = m_fullMatrix.MultiplyVector(vert);
@@ -669,7 +669,7 @@ void Bumper::GenerateCapMesh(Vertex3D_NoTex2 *buf)
 {
    const float scalexy = m_d.m_radius*2.0f;
 
-   for (int i = 0; i < bumperCapNumVertices; i++)
+   for (unsigned int i = 0; i < bumperCapNumVertices; i++)
    {
       Vertex3Ds vert(bumperCap[i].x, bumperCap[i].y, bumperCap[i].z);
       vert = m_fullMatrix.MultiplyVector(vert);

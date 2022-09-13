@@ -150,7 +150,7 @@ public:
    class DispReelAnimObject final : public AnimObject
    {
    public:
-      void Animate() final { m_pDispReel->Animate(); } // this function is called every frame to animate the object/reels animation
+      void Animate() { m_pDispReel->Animate(); } // this function is called every frame to animate the object/reels animation
 
       DispReel *m_pDispReel;
    } m_dispreelanim;

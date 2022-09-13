@@ -416,7 +416,7 @@ STDMETHODIMP LightSeq::InterfaceSupportsErrorInfo(REFIID riid)
       &IID_ILightSeq,
    };
 
-   for (int i = 0; i < sizeof(arr) / sizeof(arr[0]); ++i)
+   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); ++i)
    {
       if (InlineIsEqualGUID(*arr[i], riid))
          return S_OK;
@@ -1695,13 +1695,13 @@ void LightSeq::SetElementToState(const int index, const LightState State)
    {
        Flasher* const pFlasher = (Flasher*)m_pcollection->m_visel.ElementAt(index);             
        pFlasher->m_lockedByLS = true;
-       pFlasher->setInPlayState(State > Off ? true : false);     
+       pFlasher->setInPlayState(State > LightStateOff ? true : false);     
    }
    else if (type == eItemPrimitive) 
    {
        Primitive* const pPrimitive = (Primitive*)m_pcollection->m_visel.ElementAt(index);
        pPrimitive->m_lockedByLS = true;
-       pPrimitive->setInPlayState(State > Off ? true : false);
+       pPrimitive->setInPlayState(State > LightStateOff ? true : false);
    }
 }
 

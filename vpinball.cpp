@@ -1236,7 +1236,7 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
          menuInfo.fState = MFS_ENABLED;
          menuInfo.wID = RECENT_FIRST_MENU_IDM + (UINT)i;
          menuInfo.dwTypeData = recentMenuname;
-         menuInfo.cch = strlen(recentMenuname);
+         menuInfo.cch = (UINT)strlen(recentMenuname);
 
          menuFile.InsertMenuItem(count, menuInfo, TRUE);
          //or: menuFile.InsertMenu(count, MF_BYPOSITION | MF_ENABLED | MF_STRING, RECENT_FIRST_MENU_IDM + (UINT)i, recentMenuname);
@@ -2215,7 +2215,7 @@ void VPinball::ShowGridView()
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
    {
-      ptCur->put_DisplayGrid(!ptCur->m_grid);
+      ptCur->put_DisplayGrid(FTOVB(!ptCur->m_grid));
       GetMenu().CheckMenuItem(ID_VIEW_GRID, MF_BYCOMMAND | (ptCur->m_grid ? MF_CHECKED : MF_UNCHECKED));
    }
 }
@@ -2225,7 +2225,7 @@ void VPinball::ShowBackdropView()
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
    {
-      ptCur->put_DisplayBackdrop(!ptCur->m_backdrop);
+      ptCur->put_DisplayBackdrop(FTOVB(!ptCur->m_backdrop));
       GetMenu().CheckMenuItem(ID_VIEW_BACKDROP, MF_BYCOMMAND | (ptCur->m_backdrop ? MF_CHECKED : MF_UNCHECKED));
    }
 }

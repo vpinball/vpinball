@@ -441,7 +441,7 @@ STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
 }
 
 #ifdef _WIN64
-STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(size_t *pVal)
+STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(SIZE_T *pVal)
 #else
 STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(long *pVal)
 #endif
@@ -3629,8 +3629,8 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             for (size_t i = 0; i < m_vedit.size(); ++i)
                if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && strcmp(m_vedit[i]->GetName(), "playfield_mesh") == 0)
                {
-                  ((Primitive*)m_vedit[i])->put_IsToy(False);
-                  ((Primitive*)m_vedit[i])->put_Collidable(True);
+                  ((Primitive*)m_vedit[i])->put_IsToy(FTOVB(false));
+                  ((Primitive*)m_vedit[i])->put_Collidable(FTOVB(true));
                }
 
          //////// End Authentication block
@@ -4125,6 +4125,8 @@ int PinTable::AddListSound(HWND hwndListView, PinSound * const pps)
 	   ListView_SetItemText(hwndListView, index, 2, "Backglass");
 	   break;
    default:
+	   assert(false);
+   case SNDOUT_TABLE:
 	   ListView_SetItemText(hwndListView, index, 2, "Table");
 	   break;
    }
@@ -7461,7 +7463,7 @@ int PinTable::AddListItem(HWND hwndListView, const string& szName, const string&
    return index;
 }
 
-HRESULT PinTable::LoadImageFromStream(IStream *pstm, unsigned int idx, int version, bool resize_on_low_mem)
+HRESULT PinTable::LoadImageFromStream(IStream *pstm, size_t idx, int version, bool resize_on_low_mem)
 {
    if (version < 100) // Tech Beta 3 and below
    {
