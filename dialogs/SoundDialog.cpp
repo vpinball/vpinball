@@ -645,7 +645,9 @@ BOOL SoundPositionDialog::OnInitDialog()
 	case SNDOUT_BACKGLASS:
 		::SendMessage(GetDlgItem(IDC_SPT_BACKGLASS).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
 		break;
-	default:  // SNDOUT_TABLE
+	default:
+		assert(false);
+	case SNDOUT_TABLE:
 		::SendMessage(GetDlgItem(IDC_SPT_TABLE).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
 		break;
 	}

@@ -206,8 +206,7 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
                     text->m_pIFont->put_Size(size);
                     free(fd.lpstrName);
                     text->m_d.m_fontcolor = m_fontDialog.GetColor();
-                    if (m_font)
-                       delete m_font;
+                    delete m_font;
                     m_font = new CFont(text->GetFont());
                 }
                 break;

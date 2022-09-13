@@ -63,7 +63,7 @@ public:
     const VectorProtected<ISelect>* m_pvsel;
     static bool m_disableEvents;
 protected:
-    virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam);
+    INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
     EditBox   *m_baseHitThresholdEdit;
     EditBox   *m_baseElasticityEdit;

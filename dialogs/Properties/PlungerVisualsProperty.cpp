@@ -150,7 +150,7 @@ BOOL PlungerVisualsProperty::OnInitDialog()
     m_imageCombo.AttachItem(DISPID_Image);
     m_baseImageCombo = &m_imageCombo;
     m_flatFramesEdit.AttachItem(DISPID_PluFrames);
-    m_widthEdit.AttachItem(DISPID_Width),
+    m_widthEdit.AttachItem(DISPID_Width);
     m_zAdjustmentEdit.AttachItem(DISPID_ZAdjust);
     m_rodDiameterEdit.AttachItem(DISPID_RodDiam);
     m_tipShapeEdit.AttachItem(DISPID_TipShape);

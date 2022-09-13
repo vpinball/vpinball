@@ -1082,7 +1082,7 @@ HWND KeysConfigDialog::GetItemHwnd(int nID)
 
 void KeysConfigDialog::SetValue(int nID, const string& regKey, const string& regValue)
 {
-    size_t selected = ::SendMessage(GetDlgItem(nID).GetHwnd(), CB_GETCURSEL, 0, 0);
+    LRESULT selected = ::SendMessage(GetDlgItem(nID).GetHwnd(), CB_GETCURSEL, 0, 0);
     if (selected == LB_ERR)
         selected = 2; // assume both as standard
     SaveValueInt(regKey, regValue, (int)selected);

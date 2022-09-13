@@ -323,7 +323,7 @@ void EditorOptionsDialog::OnOK()
     checked = (SendDlgItemMessage(IDC_START_VP_FILE_DIALOG2, BM_GETCHECK, 0, 0) == BST_CHECKED);
     SaveValueBool(regKey[RegName::Editor], "SelectTableOnPlayerClose"s, checked);
 
-    size_t units = SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
+    LRESULT units = SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
     if (units == LB_ERR)
         units = 0;
     SaveValueInt(regKey[RegName::Editor], "Units"s, (int)units);
