@@ -411,13 +411,20 @@ void PropertyDialog::DeleteAllTabs()
 
 void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList, const CComboBox &combo, const string &selectName)
 {
-    bool texelFound = false;
-    for (const auto texel : contentList)
+    bool need_reset = combo.GetCount() != contentList.size() + 1; // Not the same number of items
+    need_reset |= combo.FindStringExact(1, selectName.c_str()) == CB_ERR; // Selection is not part of combo
+    if (!need_reset)
     {
-        if (strncmp(texel->m_szName.c_str(), selectName.c_str(), MAXTOKEN) == 0) //!! _stricmp?
-            texelFound = true;
+        bool texelFound = false;
+        for (const auto texel : contentList)
+        {
+            if (strncmp(texel->m_szName.c_str(), selectName.c_str(), MAXTOKEN) == 0) //!! _stricmp?
+                texelFound = true;
+            need_reset |= combo.FindStringExact(1, texel->m_szName.c_str()) == CB_ERR; // Combo does not contain an image from the image list
+        }
+        need_reset |= !texelFound; // Selection is not part of image list
     }
-    if (combo.FindStringExact(1, selectName.c_str()) == CB_ERR || !texelFound)
+    if (need_reset)
     {
         combo.ResetContent();
         combo.AddString(_T("<None>"));
