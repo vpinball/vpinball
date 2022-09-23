@@ -72,22 +72,27 @@ void DragpointVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 1:
-                CHECK_UPDATE_ITEM(dpoint->m_v.x, PropertyDialog::GetFloatTextbox(m_posXEdit), dpoint);
+                if (m_posXEdit.IsWindow() && !m_posXEdit.GetWindowText().IsEmpty())
+                    CHECK_UPDATE_ITEM(dpoint->m_v.x, PropertyDialog::GetFloatTextbox(m_posXEdit), dpoint);
                 break;
             case 2:
-                CHECK_UPDATE_ITEM(dpoint->m_v.y, PropertyDialog::GetFloatTextbox(m_posYEdit), dpoint);
+                if (m_posYEdit.IsWindow() && !m_posYEdit.GetWindowText().IsEmpty())
+                    CHECK_UPDATE_ITEM(dpoint->m_v.y, PropertyDialog::GetFloatTextbox(m_posYEdit), dpoint);
                 break;
             case 4:
                 CHECK_UPDATE_ITEM(dpoint->m_autoTexture, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 4)), dpoint);
                 break;
             case 5:
-                CHECK_UPDATE_ITEM(dpoint->m_texturecoord, PropertyDialog::GetFloatTextbox(m_textureCoordEdit), dpoint);
+                if (m_textureCoordEdit.IsWindow() && !m_textureCoordEdit.GetWindowText().IsEmpty())
+                    CHECK_UPDATE_ITEM(dpoint->m_texturecoord, PropertyDialog::GetFloatTextbox(m_textureCoordEdit), dpoint);
                 break;
             case 6:
-                CHECK_UPDATE_ITEM(dpoint->m_v.z, PropertyDialog::GetFloatTextbox(m_heightOffsetEdit), dpoint);
+                if (m_heightOffsetEdit.IsWindow() && !m_heightOffsetEdit.GetWindowText().IsEmpty())
+                    CHECK_UPDATE_ITEM(dpoint->m_v.z, PropertyDialog::GetFloatTextbox(m_heightOffsetEdit), dpoint);
                 break;
             case IDC_CALC_HEIGHT_EDIT:
-                CHECK_UPDATE_ITEM(dpoint->m_calcHeight, PropertyDialog::GetFloatTextbox(m_realHeightEdit), dpoint);
+                if (m_realHeightEdit.IsWindow() && !m_realHeightEdit.GetWindowText().IsEmpty())
+                    CHECK_UPDATE_ITEM(dpoint->m_calcHeight, PropertyDialog::GetFloatTextbox(m_realHeightEdit), dpoint);
                 break;
             default:
                 break;
