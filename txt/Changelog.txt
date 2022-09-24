@@ -35,6 +35,8 @@ FIXES:
 - update internal script representation continuously while typing (please notify us if this makes working in the script editor too slow for a specific table!)
 - implement simple duplicate test for subs/functions, and output these when script is brought into focus as a tooltip
 
+- update image/texture drop down list after importing/deleting images
+
 - fix (ignored) font size handling
 
 - fix animation/fading of lights when not visible/when only visible through reflections 
@@ -46,6 +48,8 @@ FIXES:
 - fix bumper texture memory leak
 
 - fix showing property dialog if multiple elements were selected
+
+- fix tabbing with multiple selected drag points
 
 - fix registry defaults load/save for EM-Reels
 
