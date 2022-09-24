@@ -1,0 +1,1127 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectName>VPinball</ProjectName>
+    <ProjectGuid>{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}</ProjectGuid>
+    <RootNamespace>VPinball</RootNamespace>
+    <Keyword>AtlProj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.22000.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v141_xp</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <UseOfAtl>Static</UseOfAtl>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <UseOfAtl>Static</UseOfAtl>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v141_xp</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ExecutablePath>C:\Tools\squishcoco\visualstudio;$(DXSDK_DIR)Utilities\Bin\x86;$(ExecutablePath)</ExecutablePath>
+    <TargetName>VPinballX</TargetName>
+    <TargetExt>.exe</TargetExt>
+    <LinkIncremental>false</LinkIncremental>
+    <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ExecutablePath>C:\Tools\squishcoco\visualstudio;$(DXSDK_DIR)Utilities\Bin\x64;$(ExecutablePath)</ExecutablePath>
+    <TargetName>VPinballX</TargetName>
+    <TargetExt>.exe</TargetExt>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ExecutablePath>$(DXSDK_DIR)Utilities\Bin\x86;$(ExecutablePath)</ExecutablePath>
+    <TargetName>VPinballX</TargetName>
+    <TargetExt>.exe</TargetExt>
+    <LinkIncremental>false</LinkIncremental>
+    <GenerateManifest>true</GenerateManifest>
+    <EmbedManifest>true</EmbedManifest>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ExecutablePath>$(DXSDK_DIR)Utilities\Bin\x64;$(ExecutablePath)</ExecutablePath>
+    <TargetName>VPinballX</TargetName>
+    <TargetExt>.exe</TargetExt>
+    <LinkIncremental>false</LinkIncremental>
+    <GenerateManifest>true</GenerateManifest>
+    <EmbedManifest>true</EmbedManifest>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <TypeLibraryName>vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>vpinball.h</HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;shader;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
+      <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <StringPooling>true</StringPooling>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>inc\win32xx\include</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+      <LargeAddressAware>true</LargeAddressAware>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+    <Xdcmake>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </Xdcmake>
+    <PostBuildEvent>
+      <Message>
+      </Message>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <TypeLibraryName>vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>vpinball.h</HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;shader;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;DEBUGPHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
+      <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
+      <BrowseInformation>false</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;.\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBC;LIBCMT;LIBCD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <StackReserveSize>0</StackReserveSize>
+      <StackCommitSize>0</StackCommitSize>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <LargeAddressAware>true</LargeAddressAware>
+    </Link>
+    <Xdcmake>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </Xdcmake>
+    <PostBuildEvent>
+      <Message>Copies exe to production directory.</Message>
+      <Command>%40echo off
+if ".%25VPIN_DIR%25" == "." set VPIN_DIR=C:\UPin\VisualPinball\data\exe
+echo VPIN_DIR="%25VPIN_DIR%25"
+if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
+copy "$(TargetPath)" "%25VPIN_DIR%25"
+</Command>
+    </PostBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <TypeLibraryName>vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>vpinball.h</HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;shader;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <ControlFlowGuard>false</ControlFlowGuard>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>inc\win32xx\include</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalOptions>/SAFESEH:NO
+ %(AdditionalOptions)</AdditionalOptions>
+      <LargeAddressAware>true</LargeAddressAware>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <TypeLibraryName>vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>vpinball.h</HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;shader;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <ControlFlowGuard>false</ControlFlowGuard>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;.\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <AdditionalOptions>/SAFESEH:NO
+ %(AdditionalOptions)</AdditionalOptions>
+      <LargeAddressAware>true</LargeAddressAware>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+    <PostBuildEvent>
+      <Command>%40echo off
+if ".%25VPIN_DIR%25" == "." set VPIN_DIR=C:\UPin\VisualPinball\data\exe
+echo VPIN_DIR="%25VPIN_DIR%25"
+if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
+copy "$(TargetPath)" "%25VPIN_DIR%25"
+</Command>
+    </PostBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="BlackBox.cpp" />
+    <ClCompile Include="codeviewedit.cpp" />
+    <ClCompile Include="CrashHandler.cpp" />
+    <ClCompile Include="Debugger.cpp" />
+    <ClCompile Include="dialogs\AboutDialog.cpp" />
+    <ClCompile Include="dialogs\AudioOptionsDialog.cpp" />
+    <ClCompile Include="dialogs\CollectionManagerDialog.cpp" />
+    <ClCompile Include="dialogs\DimensionDialog.cpp" />
+    <ClCompile Include="dialogs\DrawingOrderDialog.cpp" />
+    <ClCompile Include="dialogs\EditorOptionsDialog.cpp" />
+    <ClCompile Include="dialogs\ImageDialog.cpp" />
+    <ClCompile Include="dialogs\KeysConfigDialog.cpp" />
+    <ClCompile Include="dialogs\LayersListDialog.cpp" />
+    <ClCompile Include="dialogs\MaterialDialog.cpp" />
+    <ClCompile Include="dialogs\NotesDialog.cpp" />
+    <ClCompile Include="dialogs\ScriptErrorDialog.cpp" />
+    <ClCompile Include="dialogs\PhysicsOptionsDialog.cpp" />
+    <ClCompile Include="dialogs\Properties\BackglassCameraProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\BackglassVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\BumperPhysicsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\BumperVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\DecalVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\DispreelStateProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\DispreelVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\DragpointVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\FlasherVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\FlipperPhysicsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\FlipperVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\GatePhysicsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\GateVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\HitTargetPhysicsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\HitTargetVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\KickerPhysicsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\KickerVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\LightseqStatesProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\LightStatesProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\LightVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\PlungerPhysicsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\PlungerVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\PrimitivePhysicsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\PrimitivePositionProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\PrimitiveVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\PropertyDialog.cpp" />
+    <ClCompile Include="dialogs\Properties\RampPhysicsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\RampVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\RubberPhysicsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\RubberVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\SpinnerPhysicsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\SpinnerVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\TableCustomProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\TableLightsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\TablePhysicsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\TableVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\TextboxVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\TriggerPhysicsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\TriggerVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\WallPhysicsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\WallVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\SearchSelectDialog.cpp" />
+    <ClCompile Include="dialogs\SoundDialog.cpp" />
+    <ClCompile Include="dialogs\TableInfoDialog.cpp" />
+    <ClCompile Include="dialogs\ToolbarDialog.cpp" />
+    <ClCompile Include="dialogs\VideoOptionsDialog.cpp" />
+    <ClCompile Include="flasher.cpp" />
+    <ClCompile Include="hittarget.cpp" />
+    <ClCompile Include="imgui\imgui.cpp" />
+    <ClCompile Include="imgui\imgui_draw.cpp" />
+    <ClCompile Include="imgui\imgui_impl_dx9.cpp" />
+    <ClCompile Include="imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="imgui\imgui_tables.cpp" />
+    <ClCompile Include="imgui\imgui_widgets.cpp" />
+    <ClCompile Include="imgui\implot\implot.cpp" />
+    <ClCompile Include="imgui\implot\implot_items.cpp" />
+    <ClCompile Include="inc\gpuprofiler.cpp" />
+    <ClCompile Include="inc\miniz.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="inc\progmesh.cpp" />
+    <ClCompile Include="inc\serial.cpp" />
+    <ClCompile Include="IndexBuffer.cpp" />
+    <ClCompile Include="math\math.cpp" />
+    <ClCompile Include="MemoryStatus.cpp" />
+    <ClCompile Include="rubber.cpp" />
+    <ClCompile Include="hash.cpp" />
+    <ClCompile Include="kdtree.cpp" />
+    <ClCompile Include="math\matrix.cpp" />
+    <ClCompile Include="objloader.cpp" />
+    <ClCompile Include="Pin\ball.cpp" />
+    <ClCompile Include="ballex.cpp" />
+    <ClCompile Include="bumper.cpp" />
+    <ClCompile Include="codeview.cpp" />
+    <ClCompile Include="Pin\collide.cpp" />
+    <ClCompile Include="Pin\collideex.cpp" />
+    <ClCompile Include="decal.cpp" />
+    <ClCompile Include="def.cpp" />
+    <ClCompile Include="dispreel.cpp" />
+    <ClCompile Include="disputil.cpp" />
+    <ClCompile Include="dragpoint.cpp" />
+    <ClCompile Include="eventproxy.cpp" />
+    <ClCompile Include="extern.cpp" />
+    <ClCompile Include="media\fileio.cpp" />
+    <ClCompile Include="flipper.cpp" />
+    <ClCompile Include="gate.cpp" />
+    <ClCompile Include="hid.cpp" />
+    <ClCompile Include="Pin\hitflipper.cpp" />
+    <ClCompile Include="Pin\hitplunger.cpp" />
+    <ClCompile Include="hitrectsur.cpp" />
+    <ClCompile Include="hitsur.cpp" />
+    <ClCompile Include="ieditable.cpp" />
+    <ClCompile Include="iselect.cpp" />
+    <ClCompile Include="kicker.cpp" />
+    <ClCompile Include="light.cpp" />
+    <ClCompile Include="lightseq.cpp" />
+    <ClCompile Include="media\lzwreader.cpp" />
+    <ClCompile Include="media\lzwwriter.cpp" />
+    <ClCompile Include="memutil.cpp" />
+    <ClCompile Include="mesh.cpp" />
+    <ClCompile Include="mixer.cpp" />
+    <ClCompile Include="paintsur.cpp" />
+    <ClCompile Include="pin3d.cpp" />
+    <ClCompile Include="pinbinary.cpp" />
+    <ClCompile Include="pininput.cpp" />
+    <ClCompile Include="pinsound.cpp" />
+    <ClCompile Include="pintable.cpp" />
+    <ClCompile Include="pinundo.cpp" />
+    <ClCompile Include="Pin\player.cpp" />
+    <ClCompile Include="plumb.cpp" />
+    <ClCompile Include="plunger.cpp" />
+    <ClCompile Include="primitive.cpp" />
+    <ClCompile Include="quadtree.cpp" />
+    <ClCompile Include="ramp.cpp" />
+    <ClCompile Include="regutil.cpp" />
+    <ClCompile Include="RenderDevice.cpp" />
+    <ClCompile Include="slintf.cpp" />
+    <ClCompile Include="spinner.cpp" />
+    <ClCompile Include="StackTrace.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="surface.cpp" />
+    <ClCompile Include="textbox.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TextureManager.cpp" />
+    <ClCompile Include="timer.cpp" />
+    <ClCompile Include="trigger.cpp" />
+    <ClCompile Include="variant.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="VertexBuffer.cpp" />
+    <ClCompile Include="vpinball.cpp" />
+    <ClCompile Include="media\wavread.cpp" />
+    <ClCompile Include="wintimer.cpp" />
+    <ClCompile Include="worker.cpp" />
+    <ClCompile Include="audioplayer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="vpinball.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="vpinball.rc">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OUTDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OUTDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OUTDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OUTDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ResourceCompile Include="vpinball_eng.rc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ResourceCompile>
+    <ResourceCompile Include="vpinball_fre.rc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ResourceCompile>
+    <ResourceCompile Include="vpinball_ger.rc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ResourceCompile>
+    <ResourceCompile Include="vpinball_spa.rc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\ball.rgs" />
+    <None Include="res\blankTable.vpx" />
+    <None Include="res\bumper.rgs" />
+    <None Include="res\exampleTable.vpx" />
+    <None Include="res\gate.cur" />
+    <None Include="res\flasher.cur" />
+    <None Include="res\hittarget.rgs" />
+    <None Include="res\lightSeqTable.vpx" />
+    <None Include="res\rubber.cur" />
+    <None Include="res\kicker.cur" />
+    <None Include="res\spinner.cur" />
+    <None Include="res\dispreel.cur" />
+    <None Include="res\SplitH.cur" />
+    <None Include="res\SplitV.cur" />
+    <None Include="res\strippedTable.vpx" />
+    <None Include="res\trigger.cur" />
+    <None Include="res\timer.cur" />
+    <None Include="res\target.cur" />
+    <None Include="res\flipper.cur" />
+    <None Include="res\lightseq.cur" />
+    <None Include="res\textbox.cur" />
+    <None Include="res\primitive.cur" />
+    <None Include="res\ramp.cur" />
+    <None Include="res\decal.cur" />
+    <None Include="res\bumper.cur" />
+    <None Include="res\plunger.cur" />
+    <None Include="res\wall.cur" />
+    <None Include="res\magnify.cur" />
+    <None Include="res\dispreel.rgs" />
+    <None Include="res\dragpoint.rgs" />
+    <None Include="res\flasher.rgs" />
+    <None Include="res\rubber.rgs" />
+    <None Include="res\flipper.rgs" />
+    <None Include="res\gate.rgs" />
+    <None Include="res\kicker.rgs" />
+    <None Include="res\light.rgs" />
+    <None Include="res\lightseq.rgs" />
+    <None Include="res\pieventhandler.rgs" />
+    <None Include="res\plunger.rgs" />
+    <None Include="res\primitive.rgs" />
+    <None Include="res\ramp.rgs" />
+    <None Include="res\spinner.rgs" />
+    <None Include="res\surface.rgs" />
+    <None Include="res\textbox.rgs" />
+    <None Include="res\timer.rgs" />
+    <None Include="res\trigger.rgs" />
+    <None Include="res\vpinball.rgs" />
+    <None Include="res\light.cur" />
+    <None Include="shader\FXAAStereoAO.fxh" />
+    <None Include="shader\Helpers.fxh" />
+    <None Include="shader\Material.fxh" />
+    <None Include="shader\SSR.fxh" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\add.ico" />
+    <Image Include="res\AOdither.bmp" />
+    <Image Include="res\assign.ico" />
+    <Image Include="res\backglass.ico" />
+    <Image Include="res\ball.bmp" />
+    <Image Include="res\bumper.ico" />
+    <Image Include="res\bumperbase.bmp" />
+    <Image Include="res\bumperCap.bmp" />
+    <Image Include="res\bumperring.bmp" />
+    <Image Include="res\bumperskirt.bmp" />
+    <Image Include="res\camera.ico" />
+    <Image Include="res\chevron.bmp" />
+    <Image Include="res\decal.ico" />
+    <Image Include="res\envmap.bmp" />
+    <Image Include="res\expandcolapse.ico" />
+    <Image Include="res\flasher.ico" />
+    <Image Include="res\flipper.ico" />
+    <Image Include="res\gate.ico" />
+    <Image Include="res\kicker.ico" />
+    <Image Include="res\kickerCup.bmp" />
+    <Image Include="res\kickerGottlieb.bmp" />
+    <Image Include="res\kickerHoleWood.bmp" />
+    <Image Include="res\kickerT1.bmp" />
+    <Image Include="res\kickerWilliams.bmp" />
+    <Image Include="res\layerIcons16.bmp" />
+    <Image Include="res\layerIcons32.bmp" />
+    <Image Include="res\layers.ico" />
+    <Image Include="res\light.ico" />
+    <Image Include="res\lightseq.ico" />
+    <Image Include="res\magnify.ico" />
+    <Image Include="res\options.ico" />
+    <Image Include="res\PlayWarning.bmp" />
+    <Image Include="res\plunger.ico" />
+    <Image Include="res\primitive.ico" />
+    <Image Include="res\ramp.ico" />
+    <Image Include="res\reel.ico" />
+    <Image Include="res\remove.ico" />
+    <Image Include="res\rubber.ico" />
+    <Image Include="res\script.ico" />
+    <Image Include="res\SDbottom.bmp" />
+    <Image Include="res\SDcenter.bmp" />
+    <Image Include="res\SDleft.bmp" />
+    <Image Include="res\SDmiddle.bmp" />
+    <Image Include="res\SDright.bmp" />
+    <Image Include="res\SDtop.bmp" />
+    <Image Include="res\select.ico" />
+    <Image Include="res\spinner.ico" />
+    <Image Include="res\target.ico" />
+    <Image Include="res\textbox.ico" />
+    <Image Include="res\timer.ico" />
+    <Image Include="res\toolbar.ico" />
+    <Image Include="res\trigger.ico" />
+    <Image Include="res\vpinball.ico" />
+    <Image Include="res\logo.bmp" />
+    <Image Include="res\step.ico" />
+    <Image Include="res\pause.ico" />
+    <Image Include="res\play.ico" />
+    <Image Include="res\table.ico" />
+    <Image Include="res\toolbar.bmp" />
+    <Image Include="res\wall.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ballex.h" />
+    <ClInclude Include="BlackBox.h" />
+    <ClInclude Include="bumper.h" />
+    <ClInclude Include="codeview.h" />
+    <ClInclude Include="codeviewedit.h" />
+    <ClInclude Include="CrashHandler.h" />
+    <ClInclude Include="Debugger.h" />
+    <ClInclude Include="decal.h" />
+    <ClInclude Include="def.h" />
+    <ClInclude Include="dialogs\AboutDialog.h" />
+    <ClInclude Include="dialogs\AudioOptionsDialog.h" />
+    <ClInclude Include="dialogs\CollectionManagerDialog.h" />
+    <ClInclude Include="dialogs\DimensionDialog.h" />
+    <ClInclude Include="dialogs\DrawingOrderDialog.h" />
+    <ClInclude Include="dialogs\EditorOptionsDialog.h" />
+    <ClInclude Include="dialogs\ImageDialog.h" />
+    <ClInclude Include="dialogs\KeysConfigDialog.h" />
+    <ClInclude Include="dialogs\LayersListDialog.h" />
+    <ClInclude Include="dialogs\MaterialDialog.h" />
+    <ClInclude Include="dialogs\NotesDialog.h" />
+    <ClInclude Include="dialogs\ScriptErrorDialog.h" />
+    <ClInclude Include="dialogs\PhysicsOptionsDialog.h" />
+    <ClInclude Include="dialogs\Properties\BackglassCameraProperty.h" />
+    <ClInclude Include="dialogs\Properties\BackglassVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\BumperPhysicsProperty.h" />
+    <ClInclude Include="dialogs\Properties\BumperVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\DecalVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\DispreelStateProperty.h" />
+    <ClInclude Include="dialogs\Properties\DispreelVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\DragpointVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\FlasherVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\FlipperPhysicsProperty.h" />
+    <ClInclude Include="dialogs\Properties\FlipperVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\GatePhysicsProperty.h" />
+    <ClInclude Include="dialogs\Properties\GateVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\HitTargetPhysicsProperty.h" />
+    <ClInclude Include="dialogs\Properties\HitTargetVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\KickerPhysicsProperty.h" />
+    <ClInclude Include="dialogs\Properties\KickerVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\LightseqStatesProperty.h" />
+    <ClInclude Include="dialogs\Properties\LightStatesProperty.h" />
+    <ClInclude Include="dialogs\Properties\LightVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\PlungerPhysicsProperty.h" />
+    <ClInclude Include="dialogs\Properties\PlungerVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\PrimitivePhysicsProperty.h" />
+    <ClInclude Include="dialogs\Properties\PrimitivePositionProperty.h" />
+    <ClInclude Include="dialogs\Properties\PrimitiveVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\PropertyDialog.h" />
+    <ClInclude Include="dialogs\Properties\RampPhysicsProperty.h" />
+    <ClInclude Include="dialogs\Properties\RampVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\RubberPhysicsProperty.h" />
+    <ClInclude Include="dialogs\Properties\RubberVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\SpinnerPhysicsProperty.h" />
+    <ClInclude Include="dialogs\Properties\SpinnerVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\TableCustomProperty.h" />
+    <ClInclude Include="dialogs\Properties\TableLightsProperty.h" />
+    <ClInclude Include="dialogs\Properties\TablePhysicsProperty.h" />
+    <ClInclude Include="dialogs\Properties\TableVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\TextboxVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\TriggerPhysicsProperty.h" />
+    <ClInclude Include="dialogs\Properties\TriggerVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\WallPhysicsProperty.h" />
+    <ClInclude Include="dialogs\Properties\WallVisualsProperty.h" />
+    <ClInclude Include="dialogs\SearchSelectDialog.h" />
+    <ClInclude Include="dialogs\SoundDialog.h" />
+    <ClInclude Include="dialogs\TableInfoDialog.h" />
+    <ClInclude Include="dialogs\ToolbarDialog.h" />
+    <ClInclude Include="dialogs\VideoOptionsDialog.h" />
+    <ClInclude Include="dispid.h" />
+    <ClInclude Include="dispreel.h" />
+    <ClInclude Include="disputil.h" />
+    <ClInclude Include="dragpoint.h" />
+    <ClInclude Include="editablereg.h" />
+    <ClInclude Include="eventproxy.h" />
+    <ClInclude Include="extern.h" />
+    <ClInclude Include="flasher.h" />
+    <ClInclude Include="flipper.h" />
+    <ClInclude Include="gate.h" />
+    <ClInclude Include="hash.h" />
+    <ClInclude Include="helpers.h" />
+    <ClInclude Include="hid.h" />
+    <ClInclude Include="hitrectsur.h" />
+    <ClInclude Include="hitsur.h" />
+    <ClInclude Include="hittarget.h" />
+    <ClInclude Include="idebug.h" />
+    <ClInclude Include="ieditable.h" />
+    <ClInclude Include="imgui\imconfig.h" />
+    <ClInclude Include="imgui\imgui.h" />
+    <ClInclude Include="imgui\imgui_impl_dx9.h" />
+    <ClInclude Include="imgui\imgui_impl_win32.h" />
+    <ClInclude Include="imgui\imgui_internal.h" />
+    <ClInclude Include="imgui\implot\implot.h" />
+    <ClInclude Include="imgui\implot\implot_internal.h" />
+    <ClInclude Include="inc\bass.h" />
+    <ClInclude Include="inc\forsyth.h" />
+    <ClInclude Include="inc\freeimage.h" />
+    <ClInclude Include="inc\gpuprofiler.h" />
+    <ClInclude Include="inc\hidpi.h" />
+    <ClInclude Include="inc\hidsdi.h" />
+    <ClInclude Include="inc\hidusage.h" />
+    <ClInclude Include="inc\nvapi.h" />
+    <ClInclude Include="inc\nvapi_lite_common.h" />
+    <ClInclude Include="inc\nvapi_lite_d3dext.h" />
+    <ClInclude Include="inc\nvapi_lite_salend.h" />
+    <ClInclude Include="inc\nvapi_lite_salstart.h" />
+    <ClInclude Include="inc\nvapi_lite_sli.h" />
+    <ClInclude Include="inc\nvapi_lite_stereo.h" />
+    <ClInclude Include="inc\nvapi_lite_surround.h" />
+    <ClInclude Include="inc\progmesh.h" />
+    <ClInclude Include="inc\progmesh_vecmatquat_minimal.h" />
+    <ClInclude Include="inc\scilexer.h" />
+    <ClInclude Include="inc\scintilla.h" />
+    <ClInclude Include="inc\Sci_Position.h" />
+    <ClInclude Include="inc\serial.h" />
+    <ClInclude Include="inc\stb_image.h" />
+    <ClInclude Include="inc\ThreadPool.h" />
+    <ClInclude Include="inc\win32xx\include\default_resource.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_appcore.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_appcore0.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_archive.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_commondlg.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_controls.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_cstring.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_ddx.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_dialog.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_dockframe.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_docking.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_exception.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_file.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_filefind.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_folderdialog.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_frame.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_gdi.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_imagelist.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_listview.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_mdi.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_menu.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_menubar.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_metafile.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_mutex.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_preview.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_printdialogex.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_printdialogs.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_propertysheet.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_rebar.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_rect.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_regkey.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_ribbon.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_richedit.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_scrollview.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_shared_ptr.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_socket.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_statusbar.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_stdcontrols.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_tab.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_taskdialog.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_textconv.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_themes.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_time.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_toolbar.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_treeview.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_wceframe.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_wcestddef.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_webbrowser.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_wincore.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_wincore0.h" />
+    <ClInclude Include="IndexBuffer.h" />
+    <ClInclude Include="iselect.h" />
+    <ClInclude Include="kdtree.h" />
+    <ClInclude Include="kicker.h" />
+    <ClInclude Include="light.h" />
+    <ClInclude Include="lightseq.h" />
+    <ClInclude Include="main.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="math\bbox.h" />
+    <ClInclude Include="math\math.h" />
+    <ClInclude Include="math\matrix.h" />
+    <ClInclude Include="math\vector.h" />
+    <ClInclude Include="media\fileio.h" />
+    <ClInclude Include="media\lzwreader.h" />
+    <ClInclude Include="media\lzwwriter.h" />
+    <ClInclude Include="media\wavread.h" />
+    <ClInclude Include="MemoryStatus.h" />
+    <ClInclude Include="memutil.h" />
+    <ClInclude Include="mesh.h" />
+    <ClInclude Include="meshes\ballMesh.h" />
+    <ClInclude Include="meshes\bulbLightMesh.h" />
+    <ClInclude Include="meshes\bulbSocketMesh.h" />
+    <ClInclude Include="meshes\bumperBaseMesh.h" />
+    <ClInclude Include="meshes\bumperCapMesh.h" />
+    <ClInclude Include="meshes\bumperRingMesh.h" />
+    <ClInclude Include="meshes\bumperSocketMesh.h" />
+    <ClInclude Include="meshes\dropTargetT2Mesh.h" />
+    <ClInclude Include="meshes\dropTargetT3Mesh.h" />
+    <ClInclude Include="meshes\dropTargetT4Mesh.h" />
+    <ClInclude Include="meshes\flipperBase.h" />
+    <ClInclude Include="meshes\gateBracketMesh.h" />
+    <ClInclude Include="meshes\gateLongPlateMesh.h" />
+    <ClInclude Include="meshes\gatePlateMesh.h" />
+    <ClInclude Include="meshes\gateWireMesh.h" />
+    <ClInclude Include="meshes\gateWireRectangleMesh.h" />
+    <ClInclude Include="meshes\hitTargetFatRectangleMesh.h" />
+    <ClInclude Include="meshes\hitTargetFatSquareMesh.h" />
+    <ClInclude Include="meshes\hitTargetRectangleMesh.h" />
+    <ClInclude Include="meshes\hitTargetRoundMesh.h" />
+    <ClInclude Include="meshes\hitTargetT1SlimMesh.h" />
+    <ClInclude Include="meshes\hitTargetT2SlimMesh.h" />
+    <ClInclude Include="meshes\kickerCupMesh.h" />
+    <ClInclude Include="meshes\kickerHitMesh.h" />
+    <ClInclude Include="meshes\kickerHoleMesh.h" />
+    <ClInclude Include="meshes\kickerSimpleHoleMesh.h" />
+    <ClInclude Include="meshes\spinnerBracketMesh.h" />
+    <ClInclude Include="meshes\spinnerPlateMesh.h" />
+    <ClInclude Include="meshes\triggerSimpleMesh.h" />
+    <ClInclude Include="meshes\triggerStarMesh.h" />
+    <ClInclude Include="mixer.h" />
+    <ClInclude Include="objloader.h" />
+    <ClInclude Include="paintsur.h" />
+    <ClInclude Include="physconst.h" />
+    <ClInclude Include="pin3d.h" />
+    <ClInclude Include="pinbinary.h" />
+    <ClInclude Include="pininput.h" />
+    <ClInclude Include="pinsound.h" />
+    <ClInclude Include="pintable.h" />
+    <ClInclude Include="pinundo.h" />
+    <ClInclude Include="pin\ball.h" />
+    <ClInclude Include="pin\collide.h" />
+    <ClInclude Include="pin\collideex.h" />
+    <ClInclude Include="pin\hitable.h" />
+    <ClInclude Include="pin\hitflipper.h" />
+    <ClInclude Include="pin\hitplunger.h" />
+    <ClInclude Include="pin\hittimer.h" />
+    <ClInclude Include="pin\player.h" />
+    <ClInclude Include="plumb.h" />
+    <ClInclude Include="plunger.h" />
+    <ClInclude Include="primitive.h" />
+    <ClInclude Include="quadtree.h" />
+    <ClInclude Include="ramp.h" />
+    <ClInclude Include="regutil.h" />
+    <ClInclude Include="RenderDevice.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="rubber.h" />
+    <ClInclude Include="Shader.h" />
+    <ClInclude Include="slintf.h" />
+    <ClInclude Include="spinner.h" />
+    <ClInclude Include="StackTrace.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="sur.h" />
+    <ClInclude Include="surface.h" />
+    <ClInclude Include="textbox.h" />
+    <ClInclude Include="Texture.h" />
+    <ClInclude Include="TextureManager.h" />
+    <ClInclude Include="timer.h" />
+    <ClInclude Include="trace.h" />
+    <ClInclude Include="trigger.h" />
+    <ClInclude Include="variant.h" />
+    <ClInclude Include="vector.h" />
+    <ClInclude Include="vectorsort.h" />
+    <ClInclude Include="VertexBuffer.h" />
+    <ClInclude Include="vpinball_h.h" />
+    <ClInclude Include="vpinball.h" />
+    <ClInclude Include="vpversion.h" />
+    <ClInclude Include="wintimer.h" />
+    <ClInclude Include="worker.h" />
+    <ClInclude Include="audioplayer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="shader\BallShader.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ballShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">2.0</ShaderModel>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </ObjectFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ballShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ObjectFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ballShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">2.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ballShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">2.0</ShaderModel>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="shader\BasicShader.hlsl">
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </ObjectFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">basicShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">2.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">basicShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ObjectFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">basicShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">2.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">basicShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">2.0</ShaderModel>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="shader\DMDShader.hlsl">
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </ObjectFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">dmdShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">2.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ObjectFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">dmdShaderCode</EntryPointName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">dmdShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">2.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">dmdShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">2.0</ShaderModel>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="shader\FBShader.hlsl">
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </ObjectFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">FBShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">2.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ObjectFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">FBShaderCode</EntryPointName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">FBShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">2.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">FBShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">2.0</ShaderModel>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="shader\FlasherShader.hlsl">
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </ObjectFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">flasherShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">2.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ObjectFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">flasherShaderCode</EntryPointName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">flasherShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">2.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">flasherShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">2.0</ShaderModel>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="shader\LightShader.hlsl">
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </ObjectFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">lightShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">2.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ObjectFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">lightShaderCode</EntryPointName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">lightShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">2.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">lightShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">2.0</ShaderModel>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="shader\ClassicLightShader.hlsl">
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </ObjectFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">classicLightShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">2.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ObjectFileOutput>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">true</ExcludedFromBuild>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">classicLightShaderCode</EntryPointName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">classicLightShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">2.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">classicLightShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">2.0</ShaderModel>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
+    </FxCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties DevPartner_IsInstrumented="1" RESOURCE_FILE="vpinball.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>
