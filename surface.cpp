@@ -1009,7 +1009,7 @@ void Surface::RenderSlingshots()
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szSlingShotMaterial);
    pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
-   pd3dDevice->basicShader->SetMaterial(mat);
+   pd3dDevice->basicShader->SetMaterial(mat, false);
 
    pd3dDevice->SetRenderStateDepthBias(0.0f);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
@@ -1053,7 +1053,6 @@ void Surface::RenderWallsAtHeight(const bool drop)
    if (m_d.m_sideVisible && !drop && (m_numVertices > 0)) // Don't need to render walls if dropped
    {
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
-      pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->SetRenderStateDepthBias(0.0f);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
@@ -1075,9 +1074,13 @@ void Surface::RenderWallsAtHeight(const bool drop)
          pd3dDevice->basicShader->SetAlphaTestValue(pinSide->m_alphaTestValue * (float)(1.0 / 255.0));
 
          //g_pplayer->m_pin3d.SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
+         pd3dDevice->basicShader->SetMaterial(mat, pinSide->m_pdsBuffer->has_alpha());
       }
       else
+      {
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
+         pd3dDevice->basicShader->SetMaterial(mat, false);
+      }
 
       // combine drawcalls into one (hopefully faster)
       pd3dDevice->basicShader->Begin();
@@ -1089,7 +1092,6 @@ void Surface::RenderWallsAtHeight(const bool drop)
    if (m_d.m_topBottomVisible && (m_numPolys > 0))
    {
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
-      pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->SetRenderStateDepthBias(0.0f);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
@@ -1107,9 +1109,13 @@ void Surface::RenderWallsAtHeight(const bool drop)
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 
          //g_pplayer->m_pin3d.SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
+         pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
       }
       else
+      {
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
+         pd3dDevice->basicShader->SetMaterial(mat, false);
+      }
 
       // Top
       pd3dDevice->basicShader->Begin();

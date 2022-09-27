@@ -444,7 +444,7 @@ void Gate::RenderObject()
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   pd3dDevice->basicShader->SetMaterial(mat);
+   pd3dDevice->basicShader->SetMaterial(mat, false);
 
    const Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    ppin3d->EnableAlphaBlend(false);

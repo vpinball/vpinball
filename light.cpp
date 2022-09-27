@@ -347,7 +347,7 @@ void Light::RenderBulbMesh()
    RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat.m_bIsMetal);
-   pd3dDevice->basicShader->SetMaterial(&mat);
+   pd3dDevice->basicShader->SetMaterial(&mat, false);
 
    pd3dDevice->basicShader->Begin();
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bulbSocketVBuffer, 0, bulbSocketNumVertices, m_bulbSocketIndexBuffer, 0, bulbSocketNumFaces);
@@ -366,7 +366,7 @@ void Light::RenderBulbMesh()
    mat.m_fThickness = 0.05f;
    mat.m_cClearcoat = 0xFFFFFF;
    pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat.m_bIsMetal);
-   pd3dDevice->basicShader->SetMaterial(&mat);
+   pd3dDevice->basicShader->SetMaterial(&mat, false);
 
    pd3dDevice->basicShader->Begin();
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bulbLightVBuffer, 0, bulbLightNumVertices, m_bulbLightIndexBuffer, 0, bulbLightNumFaces);

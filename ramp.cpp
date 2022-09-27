@@ -912,19 +912,21 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
 {
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
-   pd3dDevice->basicShader->SetMaterial(mat);
-
    pd3dDevice->SetRenderStateDepthBias(0.0f);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
 
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (!pin)
+   {
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
+      pd3dDevice->basicShader->SetMaterial(mat, false);
+   }
    else
    {
       pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pin, TextureFilter::TEXTURE_MODE_TRILINEAR, false, false, false);
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
+      pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
 
       //g_pplayer->m_pin3d.SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
    }
@@ -2134,8 +2136,6 @@ void Ramp::RenderRamp(const Material * const mat)
       if (!m_dynamicVertexBuffer || m_dynamicVertexBufferRegenerate)
          GenerateVertexBuffer();
 
-      pd3dDevice->basicShader->SetMaterial(mat);
-
       pd3dDevice->SetRenderStateDepthBias(0.0f);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE); // as both floor and walls are thinwalled
@@ -2150,9 +2150,13 @@ void Ramp::RenderRamp(const Material * const mat)
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 
          //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
+         pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
       }
       else
+      {
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
+         pd3dDevice->basicShader->SetMaterial(mat, false);
+      }
 
       //ppin3d->EnableAlphaBlend( false ); //!! not necessary anymore
 
