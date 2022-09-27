@@ -423,7 +423,7 @@ void Light::RenderDynamic()
    if (m_backglass && !GetPTable()->GetDecalsEnabled())
       return;
 
-   if (m_d.m_BulbLight && m_d.m_showBulbMesh && !m_d.m_staticBulbMesh)
+   if (m_d.m_BulbLight && m_d.m_showBulbMesh && !m_d.m_staticBulbMesh && g_pplayer->m_current_renderstage == 0)
       RenderBulbMesh();
 
    Texture *offTexel = nullptr;
