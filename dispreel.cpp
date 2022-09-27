@@ -239,7 +239,7 @@ void DispReel::RenderDynamic()
 
    pd3dDevice->DMDShader->SetTexture(SHADER_Texture0, pin, TextureFilter::TEXTURE_MODE_TRILINEAR, false, false, false);
 
-   pd3dDevice->DMDShader->Begin(0);
+   pd3dDevice->DMDShader->Begin();
 
    // set up all the reel positions within the object frame
    const float renderspacingx = max(0.0f, m_d.m_reelspacing / (float)EDITOR_BG_WIDTH);

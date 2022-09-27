@@ -392,7 +392,7 @@ void Spinner::RenderDynamic()
    else // No image by that name
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
 
-   pd3dDevice->basicShader->Begin(0);
+   pd3dDevice->basicShader->Begin();
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_plateVertexBuffer, 0, spinnerPlateNumVertices, m_plateIndexBuffer, 0, spinnerPlateNumFaces);
    pd3dDevice->basicShader->End();
 
@@ -475,7 +475,7 @@ void Spinner::RenderStatic()
    pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat.m_bIsMetal);
    ppin3d->EnableAlphaBlend(false);
 
-   pd3dDevice->basicShader->Begin(0);
+   pd3dDevice->basicShader->Begin();
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bracketVertexBuffer, 0, spinnerBracketNumVertices, m_bracketIndexBuffer, 0, spinnerBracketNumFaces);
    pd3dDevice->basicShader->End();
 }

@@ -1066,7 +1066,7 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
    if (!g_pplayer->m_meshAsPlayfield)
    {
       assert(m_tableVBuffer != nullptr);
-      m_pd3dPrimaryDevice->basicShader->Begin(0);
+      m_pd3dPrimaryDevice->basicShader->Begin();
       m_pd3dPrimaryDevice->DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, m_tableVBuffer, 0, 4, true);
       m_pd3dPrimaryDevice->basicShader->End();
    }

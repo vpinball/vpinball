@@ -635,7 +635,7 @@ void Flipper::RenderDynamic()
       matTrafo.Multiply(matTemp, matTrafo);
    }
    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-   pd3dDevice->basicShader->Begin(0);
+   pd3dDevice->basicShader->Begin();
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, flipperBaseVertices, m_indexBuffer, 0, flipperBaseNumIndices);
    pd3dDevice->basicShader->End();
 
@@ -649,7 +649,7 @@ void Flipper::RenderDynamic()
         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
       pd3dDevice->basicShader->SetMaterial(mat);
 
-      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->basicShader->Begin();
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, flipperBaseVertices, flipperBaseVertices, m_indexBuffer, 0, flipperBaseNumIndices);
       pd3dDevice->basicShader->End();
    }

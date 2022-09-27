@@ -613,7 +613,7 @@ void Trigger::RenderDynamic()
    if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD || m_d.m_shape == TriggerInder)
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
 
-   pd3dDevice->basicShader->Begin(0);
+   pd3dDevice->basicShader->Begin();
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numVertices, m_triggerIndexBuffer, 0, m_numIndices);
    pd3dDevice->basicShader->End();
 }

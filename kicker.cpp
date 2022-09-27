@@ -553,7 +553,7 @@ void Kicker::RenderDynamic()
       pd3dDevice->basicShader->SetFloat(SHADER_fKickerScale, m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
       pd3dDevice->SetRenderState(RenderDevice::ZFUNC, RenderDevice::Z_ALWAYS);
 
-      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->basicShader->Begin();
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_plateVertexBuffer, 0, kickerPlateNumVertices, m_plateIndexBuffer, 0, kickerPlateNumIndices);
       pd3dDevice->basicShader->End();
 
@@ -570,7 +570,7 @@ void Kicker::RenderDynamic()
       g_pplayer->m_pin3d.EnableAlphaBlend(false);
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
 
-      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->basicShader->Begin();
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numVertices, m_indexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();
 

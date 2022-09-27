@@ -1015,7 +1015,7 @@ void Surface::RenderSlingshots()
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
 
-   pd3dDevice->basicShader->Begin(0);
+   pd3dDevice->basicShader->Begin();
    for (size_t i = 0; i < m_vlinesling.size(); i++)
    {
       LineSegSlingshot * const plinesling = m_vlinesling[i];
@@ -1080,7 +1080,7 @@ void Surface::RenderWallsAtHeight(const bool drop)
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
 
       // combine drawcalls into one (hopefully faster)
-      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->basicShader->Begin();
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_VBuffer, 0, m_numVertices * 4, m_IBuffer, 0, m_numVertices * 6);
       pd3dDevice->basicShader->End();
    }
@@ -1112,7 +1112,7 @@ void Surface::RenderWallsAtHeight(const bool drop)
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
 
       // Top
-      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->basicShader->Begin();
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_VBuffer, m_numVertices * 4 + (!drop ? 0 : m_numVertices), m_numVertices, m_IBuffer, m_numVertices * 6, m_numPolys * 3);
       pd3dDevice->basicShader->End();
 
@@ -1124,7 +1124,7 @@ void Surface::RenderWallsAtHeight(const bool drop)
          else
             pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CW);
 
-         pd3dDevice->basicShader->Begin(0);
+         pd3dDevice->basicShader->Begin();
          pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_VBuffer, m_numVertices * 4 + m_numVertices * 2, m_numVertices, m_IBuffer, m_numVertices * 6, m_numPolys * 3);
          pd3dDevice->basicShader->End();
       }

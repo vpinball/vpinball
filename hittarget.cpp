@@ -718,7 +718,7 @@ void HitTarget::RenderObject()
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
 
    // draw the mesh
-   pd3dDevice->basicShader->Begin(0);
+   pd3dDevice->basicShader->Begin();
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numVertices, m_indexBuffer, 0, m_numIndices);
    pd3dDevice->basicShader->End();
 
@@ -726,7 +726,7 @@ void HitTarget::RenderObject()
    if (mat->m_bOpacityActive)
    {
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
-      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->basicShader->Begin();
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numVertices, m_indexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();
    }

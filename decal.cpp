@@ -584,7 +584,7 @@ void Decal::RenderObject()
       pd3dDevice->basicShader->SetVector(SHADER_cBase_Alpha, &staticColor);
    }
 
-   pd3dDevice->basicShader->Begin(0);
+   pd3dDevice->basicShader->Begin();
    pd3dDevice->DrawPrimitiveVB(RenderDevice::TRIANGLEFAN, m_backglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, 4, true);
    pd3dDevice->basicShader->End();
 

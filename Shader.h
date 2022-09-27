@@ -221,11 +221,11 @@ public:
       return m_shader;
    }
 
-   void Begin(const unsigned int pass)
+   void Begin()
    {
       unsigned int cPasses;
       CHECKD3D(m_shader->Begin(&cPasses, 0));
-      CHECKD3D(m_shader->BeginPass(pass));
+      CHECKD3D(m_shader->BeginPass(0));
    }
 
    void End()
