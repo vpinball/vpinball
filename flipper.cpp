@@ -604,7 +604,6 @@ void Flipper::RenderDynamic()
       return;
 
    const Material * mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   pd3dDevice->basicShader->SetMaterial(mat);
 
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (pin)
@@ -616,9 +615,13 @@ void Flipper::RenderDynamic()
       //g_pplayer->m_pin3d.SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
       // accomodate models with UV coords outside of [0,1]
       //pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
+      pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
    }
    else
+   {
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
+      pd3dDevice->basicShader->SetMaterial(mat, false);
+   }
 
    pd3dDevice->SetRenderStateDepthBias(0.0f);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
@@ -635,7 +638,7 @@ void Flipper::RenderDynamic()
       matTrafo.Multiply(matTemp, matTrafo);
    }
    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-   pd3dDevice->basicShader->Begin(0);
+   pd3dDevice->basicShader->Begin();
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, flipperBaseVertices, m_indexBuffer, 0, flipperBaseNumIndices);
    pd3dDevice->basicShader->End();
 
@@ -644,12 +647,17 @@ void Flipper::RenderDynamic()
    {
       mat = m_ptable->GetMaterial(m_d.m_szRubberMaterial);
       if (pin)
-        pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
+      {
+         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
+         pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
+      }
       else
-        pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
-      pd3dDevice->basicShader->SetMaterial(mat);
+      {
+         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
+         pd3dDevice->basicShader->SetMaterial(mat, false);
+      }
 
-      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->basicShader->Begin();
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, flipperBaseVertices, flipperBaseVertices, m_indexBuffer, 0, flipperBaseNumIndices);
       pd3dDevice->basicShader->End();
    }

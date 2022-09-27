@@ -347,9 +347,9 @@ void Light::RenderBulbMesh()
    RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat.m_bIsMetal);
-   pd3dDevice->basicShader->SetMaterial(&mat);
+   pd3dDevice->basicShader->SetMaterial(&mat, false);
 
-   pd3dDevice->basicShader->Begin(0);
+   pd3dDevice->basicShader->Begin();
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bulbSocketVBuffer, 0, bulbSocketNumVertices, m_bulbSocketIndexBuffer, 0, bulbSocketNumFaces);
    pd3dDevice->basicShader->End();
 
@@ -366,9 +366,9 @@ void Light::RenderBulbMesh()
    mat.m_fThickness = 0.05f;
    mat.m_cClearcoat = 0xFFFFFF;
    pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat.m_bIsMetal);
-   pd3dDevice->basicShader->SetMaterial(&mat);
+   pd3dDevice->basicShader->SetMaterial(&mat, false);
 
-   pd3dDevice->basicShader->Begin(0);
+   pd3dDevice->basicShader->Begin();
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bulbLightVBuffer, 0, bulbLightNumVertices, m_bulbLightIndexBuffer, 0, bulbLightNumFaces);
    pd3dDevice->basicShader->End();
 }
@@ -423,7 +423,7 @@ void Light::RenderDynamic()
    if (m_backglass && !GetPTable()->GetDecalsEnabled())
       return;
 
-   if (m_d.m_BulbLight && m_d.m_showBulbMesh && !m_d.m_staticBulbMesh)
+   if (m_d.m_BulbLight && m_d.m_showBulbMesh && !m_d.m_staticBulbMesh && g_pplayer->m_current_renderstage == 0)
       RenderBulbMesh();
 
    Texture *offTexel = nullptr;
@@ -517,7 +517,7 @@ void Light::RenderDynamic()
          pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
          pd3dDevice->lightShader->SetFloat(SHADER_blend_modulate_vs_add, 0.00001f); // additive, but avoid full 0, as it disables the blend
 
-         pd3dDevice->lightShader->Begin(0);
+         pd3dDevice->lightShader->Begin();
          pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bulbLightVBuffer, 0, bulbLightNumVertices, m_bulbLightIndexBuffer, 0, bulbLightNumFaces);
          pd3dDevice->lightShader->End();
       }
@@ -538,14 +538,14 @@ void Light::RenderDynamic()
    if (!m_d.m_BulbLight)
    {
       pd3dDevice->classicLightShader->SetLightColorIntensity(lightColor_intensity);
-      pd3dDevice->classicLightShader->Begin(0);
+      pd3dDevice->classicLightShader->Begin();
    }
    else
    {
       if (g_pplayer->m_current_renderstage == 1)
          lightColor_intensity.w *= m_d.m_transmissionScale;
       pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
-      pd3dDevice->lightShader->Begin(0);
+      pd3dDevice->lightShader->Begin();
    }
 
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, (!m_backglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX, m_customMoverVBuffer, 0, m_customMoverVertexNum, m_customMoverIBuffer, 0, m_customMoverIndexNum);

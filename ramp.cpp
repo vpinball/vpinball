@@ -912,19 +912,21 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
 {
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
-   pd3dDevice->basicShader->SetMaterial(mat);
-
    pd3dDevice->SetRenderStateDepthBias(0.0f);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
 
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (!pin)
+   {
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
+      pd3dDevice->basicShader->SetMaterial(mat, false);
+   }
    else
    {
       pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pin, TextureFilter::TEXTURE_MODE_TRILINEAR, false, false, false);
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
+      pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
 
       //g_pplayer->m_pin3d.SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
    }
@@ -937,7 +939,7 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
          matTrafo.SetIdentity();
          matTrafo._43 = m_d.m_wireDistanceY*0.5f;
          g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-         pd3dDevice->basicShader->Begin(0);
+         pd3dDevice->basicShader->Begin();
          pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_dynamicVertexBuffer, 0, m_numVertices, m_dynamicIndexBuffer, 0, m_numIndices);
          pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_dynamicVertexBuffer2, 0, m_numVertices, m_dynamicIndexBuffer, 0, m_numIndices);
          pd3dDevice->basicShader->End();
@@ -945,7 +947,7 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
       matTrafo.SetIdentity();
       matTrafo._43 = 3.0f;                // raise the wire a bit because the ball runs on a flat ramp physically
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->basicShader->Begin();
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_dynamicVertexBuffer, 0, m_numVertices, m_dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_dynamicVertexBuffer2, 0, m_numVertices, m_dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();
@@ -957,13 +959,13 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
       matTrafo.SetIdentity();
       matTrafo._43 = m_d.m_wireDistanceY*0.5f;
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->basicShader->Begin();
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, (m_d.m_type == RampType3WireRight) ? m_dynamicVertexBuffer : m_dynamicVertexBuffer2, 0, m_numVertices, m_dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();
       matTrafo.SetIdentity();
       matTrafo._43 = 3.0f;                // raise the wire a bit because the ball runs on a flat ramp physically
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->basicShader->Begin();
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_dynamicVertexBuffer, 0, m_numVertices, m_dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_dynamicVertexBuffer2, 0, m_numVertices, m_dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();
@@ -971,7 +973,7 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
    }
    else
    {
-      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->basicShader->Begin();
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_dynamicVertexBuffer, 0, m_numVertices, m_dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();
    }
@@ -2134,8 +2136,6 @@ void Ramp::RenderRamp(const Material * const mat)
       if (!m_dynamicVertexBuffer || m_dynamicVertexBufferRegenerate)
          GenerateVertexBuffer();
 
-      pd3dDevice->basicShader->SetMaterial(mat);
-
       pd3dDevice->SetRenderStateDepthBias(0.0f);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE); // as both floor and walls are thinwalled
@@ -2150,23 +2150,27 @@ void Ramp::RenderRamp(const Material * const mat)
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 
          //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
+         pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
       }
       else
+      {
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
+         pd3dDevice->basicShader->SetMaterial(mat, false);
+      }
 
       //ppin3d->EnableAlphaBlend( false ); //!! not necessary anymore
 
       if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f && (!pin || m_d.m_imageWalls))
       {
          // both walls with image and floor
-         pd3dDevice->basicShader->Begin(0);
+         pd3dDevice->basicShader->Begin();
          pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_dynamicVertexBuffer, 0, m_numVertices * 3, m_dynamicIndexBuffer, 0, (m_rampVertex - 1) * 6 * 3);
          pd3dDevice->basicShader->End();
       }
       else
       {
          // only floor
-         pd3dDevice->basicShader->Begin(0);
+         pd3dDevice->basicShader->Begin();
          pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_dynamicVertexBuffer, 0, m_numVertices, m_dynamicIndexBuffer, 0, (m_rampVertex - 1) * 6);
 
          if (m_d.m_rightwallheightvisible != 0.f || m_d.m_leftwallheightvisible != 0.f)
@@ -2175,7 +2179,7 @@ void Ramp::RenderRamp(const Material * const mat)
             {
                pd3dDevice->basicShader->End();
                pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
-               pd3dDevice->basicShader->Begin(0);
+               pd3dDevice->basicShader->Begin();
             }
 
             if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f) //only render left & right side if the height is >0

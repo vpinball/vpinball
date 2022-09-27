@@ -296,12 +296,12 @@ void Bumper::RenderBase(const Material * const baseMaterial)
 {
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
-   pd3dDevice->basicShader->SetMaterial(baseMaterial);
+   pd3dDevice->basicShader->SetMaterial(baseMaterial, false);
    pd3dDevice->basicShader->SetTexture(SHADER_Texture0, &m_baseTexture, TextureFilter::TEXTURE_MODE_TRILINEAR, false, false, false);
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
-   pd3dDevice->basicShader->Begin(0);
+   pd3dDevice->basicShader->Begin();
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_baseVertexBuffer, 0, bumperBaseNumVertices, m_baseIndexBuffer, 0, bumperBaseNumIndices);
    pd3dDevice->basicShader->End();
 }
@@ -310,12 +310,12 @@ void Bumper::RenderSocket(const Material * const socketMaterial)
 {
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
-   pd3dDevice->basicShader->SetMaterial(socketMaterial);
+   pd3dDevice->basicShader->SetMaterial(socketMaterial, false);
    pd3dDevice->basicShader->SetTexture(SHADER_Texture0, &m_skirtTexture, TextureFilter::TEXTURE_MODE_TRILINEAR, false, false, false);
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
-   pd3dDevice->basicShader->Begin(0);
+   pd3dDevice->basicShader->Begin();
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_socketVertexBuffer, 0, bumperSocketNumVertices, m_socketIndexBuffer, 0, bumperSocketNumIndices);
    pd3dDevice->basicShader->End();
 }
@@ -324,12 +324,12 @@ void Bumper::RenderCap(const Material * const capMaterial)
 {
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
-   pd3dDevice->basicShader->SetMaterial(capMaterial);
+   pd3dDevice->basicShader->SetMaterial(capMaterial, false);
    pd3dDevice->basicShader->SetTexture(SHADER_Texture0, &m_capTexture, TextureFilter::TEXTURE_MODE_TRILINEAR, false, false, false);
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
-   pd3dDevice->basicShader->Begin(0);
+   pd3dDevice->basicShader->Begin();
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_capVertexBuffer, 0, bumperCapNumVertices, m_capIndexBuffer, 0, bumperCapNumIndices);
    pd3dDevice->basicShader->End();
 }
@@ -463,11 +463,11 @@ void Bumper::RenderDynamic()
 
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, ringMaterial.m_bIsMetal);
       pd3dDevice->basicShader->SetTexture(SHADER_Texture0, &m_ringTexture, TextureFilter::TEXTURE_MODE_TRILINEAR, false, false, false);
-      pd3dDevice->basicShader->SetMaterial(&ringMaterial);
+      pd3dDevice->basicShader->SetMaterial(&ringMaterial, false);
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
 
       // render ring
-      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->basicShader->Begin();
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_ringVertexBuffer, 0, bumperRingNumVertices, m_ringIndexBuffer, 0, bumperRingNumIndices);
       pd3dDevice->basicShader->End();
    }

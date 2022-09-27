@@ -596,18 +596,19 @@ void Pin3D::InitRenderState(RenderDevice * const pd3dDevice)
 {
    pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
 
-   pd3dDevice->SetRenderState(RenderDevice::LIGHTING, RenderDevice::RS_FALSE);
-
    pd3dDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::ZFUNC, RenderDevice::Z_LESSEQUAL);
+
    pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
-   pd3dDevice->SetRenderState(RenderDevice::CLIPPING, RenderDevice::RS_FALSE);
    pd3dDevice->SetRenderStateClipPlane0(false);
 
    // initialize first texture stage
    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP/*WRAP*/);
 #ifndef ENABLE_SDL
+   CHECKD3D(pd3dDevice->GetCoreDevice()->SetRenderState(D3DRS_LIGHTING, FALSE));
+   CHECKD3D(pd3dDevice->GetCoreDevice()->SetRenderState(D3DRS_CLIPPING, FALSE));
    pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
    pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
    pd3dDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
@@ -1036,7 +1037,7 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
 
    if (depth_only)
    {
-       m_pd3dPrimaryDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0); //m_pin3d.m_pd3dPrimaryDevice->SetPrimaryRenderTarget(nullptr); // disable color writes
+       m_pd3dPrimaryDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, RenderDevice::RGBMASK_NONE); //m_pin3d.m_pd3dPrimaryDevice->SetPrimaryRenderTarget(nullptr); // disable color writes
        // even with depth-only rendering we have to take care of alpha textures (stencil playfield to see underlying objects)
        if (pin)
        {
@@ -1050,23 +1051,25 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
    }
    else
    {
-       m_pd3dPrimaryDevice->basicShader->SetMaterial(mat);
-
        if (pin)
        {
            SetPrimaryTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
            m_pd3dPrimaryDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
            m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_Texture0, pin, TextureFilter::TEXTURE_MODE_TRILINEAR, true, true, false);
            m_pd3dPrimaryDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
+           m_pd3dPrimaryDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
        }
        else // No image by that name
+       {
            m_pd3dPrimaryDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
+           m_pd3dPrimaryDevice->basicShader->SetMaterial(mat, false);
+       }
    }
 
    if (!g_pplayer->m_meshAsPlayfield)
    {
       assert(m_tableVBuffer != nullptr);
-      m_pd3dPrimaryDevice->basicShader->Begin(0);
+      m_pd3dPrimaryDevice->basicShader->Begin();
       m_pd3dPrimaryDevice->DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, m_tableVBuffer, 0, 4, true);
       m_pd3dPrimaryDevice->basicShader->End();
    }
@@ -1094,7 +1097,7 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
    }
 
    if (depth_only)
-       m_pd3dPrimaryDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0x0000000Fu); // reenable color writes with default value
+       m_pd3dPrimaryDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, RenderDevice::RGBMASK_RGBA); // reenable color writes with default value
 
    // Apparently, releasing the vertex buffer here immediately can cause rendering glitches in
    // later rendering steps, so we keep it around for now.

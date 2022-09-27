@@ -221,11 +221,11 @@ public:
       return m_shader;
    }
 
-   void Begin(const unsigned int pass)
+   void Begin()
    {
       unsigned int cPasses;
       CHECKD3D(m_shader->Begin(&cPasses, 0));
-      CHECKD3D(m_shader->BeginPass(pass));
+      CHECKD3D(m_shader->BeginPass(0));
    }
 
    void End()
@@ -237,7 +237,7 @@ public:
    void SetTexture(const SHADER_UNIFORM_HANDLE texelName, Texture *texel, const TextureFilter filter, const bool clampU, const bool clampV, const bool force_linear_rgb); //!! clampU/clampV/filter unimplemented
    void SetTexture(const SHADER_UNIFORM_HANDLE texelName, Sampler *texel);
    void SetTextureNull(const SHADER_UNIFORM_HANDLE texelName);
-   void SetMaterial(const Material * const mat);
+   void SetMaterial(const Material * const mat, const bool has_alpha = true);
 
    void SetDisableLighting(const vec4& value) // sets the two top and below lighting flags, z and w unused
    {

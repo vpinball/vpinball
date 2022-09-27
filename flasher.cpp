@@ -1211,7 +1211,7 @@ void Flasher::RenderDynamic()
        if (g_pplayer->m_texdmd != nullptr)
           pd3dDevice->DMDShader->SetTexture(SHADER_Texture0, g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(g_pplayer->m_texdmd, TextureFilter::TEXTURE_MODE_NONE, true, true, false));
 
-       pd3dDevice->DMDShader->Begin(0);
+       pd3dDevice->DMDShader->Begin();
        pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_TEX, m_dynamicVertexBuffer, 0, m_numVertices, m_dynamicIndexBuffer, 0, m_numPolys * 3);
        pd3dDevice->DMDShader->End();
    }
@@ -1287,7 +1287,7 @@ void Flasher::RenderDynamic()
        pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_addBlend ? RenderDevice::INVSRC_COLOR : RenderDevice::INVSRC_ALPHA);
        pd3dDevice->SetRenderState(RenderDevice::BLENDOP, m_d.m_addBlend ? RenderDevice::BLENDOP_REVSUBTRACT : RenderDevice::BLENDOP_ADD);
 
-       pd3dDevice->flasherShader->Begin(0);
+       pd3dDevice->flasherShader->Begin();
        pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_TEX, m_dynamicVertexBuffer, 0, m_numVertices, m_dynamicIndexBuffer, 0, m_numPolys * 3);
        pd3dDevice->flasherShader->End();
    }

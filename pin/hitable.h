@@ -8,7 +8,6 @@ public:
    virtual void GetTimers(vector<HitTimer*> &pvht) = 0;
    virtual EventProxyBase *GetEventProxyBase() = 0;
    virtual void EndPlay() = 0;
-   virtual void PreRenderStatic(RenderDevice* pd3dDevice) { } // only used for kickers, due to special playfield cutout
    virtual void RenderStatic() = 0;
    virtual void RenderDynamic() = 0;
    virtual void RenderSetup() = 0;

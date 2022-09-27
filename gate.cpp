@@ -444,7 +444,7 @@ void Gate::RenderObject()
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   pd3dDevice->basicShader->SetMaterial(mat);
+   pd3dDevice->basicShader->SetMaterial(mat, false);
 
    const Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    ppin3d->EnableAlphaBlend(false);
@@ -454,7 +454,7 @@ void Gate::RenderObject()
    pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
    pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
-   pd3dDevice->basicShader->Begin(0);
+   pd3dDevice->basicShader->Begin();
 
    // render bracket
    if (m_d.m_showBracket)
