@@ -1958,13 +1958,6 @@ void Player::InitStatic()
 
    m_pin3d.DrawBackground();
 
-   // perform render setup and give elements a chance to render before the playfield
-   for (size_t i = 0; i < m_vhitables.size(); ++i)
-   {
-      Hitable * const ph = m_vhitables[i];
-      ph->PreRenderStatic(m_pin3d.m_pd3dPrimaryDevice);
-   }
-
    // Initialize one User Clipplane to be the playfield (but not enabled yet)
    SetClipPlanePlayfield(true);
 

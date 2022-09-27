@@ -521,10 +521,6 @@ void Kicker::RenderSetup()
 }
 
 
-void Kicker::PreRenderStatic(RenderDevice* pd3dDevice)
-{
-}
-
 void Kicker::SetDefaultPhysics(bool fromMouseClick)
 {
    m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(regKey[RegName::DefaultPropsKicker], "Scatter"s, 0.f) : 0.f;
