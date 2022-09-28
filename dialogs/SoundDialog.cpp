@@ -77,19 +77,19 @@ BOOL SoundDialog::OnInitDialog()
     lvcol.cx = DPIValue(200);
     ListView_InsertColumn(hSoundList, 1, &lvcol);
 
-    lvcol.pszText = "Output"; //!! use LocalString
+    lvcol.pszText = (LPSTR)"Output"; //!! use LocalString
     lvcol.cx = DPIValue(80);
     ListView_InsertColumn(hSoundList, 2, &lvcol);
 
-    lvcol.pszText = "Pan"; //!! use LocalString
+    lvcol.pszText = (LPSTR)"Pan"; //!! use LocalString
     lvcol.cx = DPIValue(50);
     ListView_InsertColumn(hSoundList, 3, &lvcol);
 
-    lvcol.pszText = "Fade"; //!! use LocalString
+    lvcol.pszText = (LPSTR)"Fade"; //!! use LocalString
     lvcol.cx = DPIValue(50);
     ListView_InsertColumn(hSoundList, 4, &lvcol);
 
-    lvcol.pszText = "Vol"; //!! use LocalString
+    lvcol.pszText = (LPSTR)"Vol"; //!! use LocalString
     lvcol.cx = DPIValue(50);
     ListView_InsertColumn(hSoundList, 5, &lvcol);
 
@@ -493,11 +493,11 @@ void SoundDialog::SoundToBG()
             switch (pps->m_outputTarget)
             {
                case SNDOUT_BACKGLASS:
-                  ListView_SetItemText(hSoundList, sel, 2, "Backglass");
+                  ListView_SetItemText(hSoundList, sel, 2, (LPSTR)"Backglass");
                   break;
                case SNDOUT_TABLE:
                default:
-                  ListView_SetItemText(hSoundList, sel, 2, "Table");
+                  ListView_SetItemText(hSoundList, sel, 2, (LPSTR)"Table");
                   break;
             }
             pt->SetNonUndoableDirty(eSaveDirty);

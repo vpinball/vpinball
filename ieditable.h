@@ -237,7 +237,7 @@ public:
    void MarkForUndo();
    void MarkForDelete();
    void Undelete();
-   char *GetName();
+   const char *GetName();
    void SetName(const string& name);
    void Delete();
    void Uncreate();

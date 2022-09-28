@@ -186,7 +186,7 @@ void IEditable::Undelete()
    }
 }
 
-char *IEditable::GetName()
+const char *IEditable::GetName()
 {
     WCHAR *elemName = nullptr;
     if (GetItemType() == eItemDecal)

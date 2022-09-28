@@ -4122,12 +4122,12 @@ int PinTable::AddListSound(HWND hwndListView, PinSound * const pps)
    switch (pps->m_outputTarget)
    {
    case SNDOUT_BACKGLASS:
-	   ListView_SetItemText(hwndListView, index, 2, "Backglass");
+	   ListView_SetItemText(hwndListView, index, 2, (LPSTR)"Backglass");
 	   break;
    default:
 	   assert(false);
    case SNDOUT_TABLE:
-	   ListView_SetItemText(hwndListView, index, 2, "Table");
+	   ListView_SetItemText(hwndListView, index, 2, (LPSTR)"Table");
 	   break;
    }
    char textBuf[40];
@@ -6882,8 +6882,8 @@ void PinTable::ListImages(HWND hwndListView)
 int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
 {
    char sizeString[MAXTOKEN];
-   constexpr char * const usedStringYes = "X";
-   constexpr char * const usedStringNo = " ";
+   constexpr char usedStringYes[] = "X";
+   constexpr char usedStringNo[] = " ";
 
    LVITEM lvitem;
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
@@ -6900,38 +6900,38 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
 
    ListView_SetItemText(hwndListView, index, 1, (LPSTR)ppi->m_szPath.c_str());
    ListView_SetItemText(hwndListView, index, 2, sizeString);
-   ListView_SetItemText(hwndListView, index, 3, usedStringNo);
+   ListView_SetItemText(hwndListView, index, 3, (LPSTR)usedStringNo);
 
    char *const sizeConv = StrFormatByteSize64(ppi->m_pdsBuffer->height() * ppi->m_pdsBuffer->pitch(), sizeString, MAXTOKEN);
    ListView_SetItemText(hwndListView, index, 4, sizeConv);
 
    if (ppi->m_pdsBuffer == nullptr)
    {
-      ListView_SetItemText(hwndListView, index, 5, "-");
+      ListView_SetItemText(hwndListView, index, 5, (LPSTR)"-");
    }
    else if (ppi->m_pdsBuffer->m_format == BaseTexture::SRGB)
    {
-      ListView_SetItemText(hwndListView, index, 5, "sRGB");
+      ListView_SetItemText(hwndListView, index, 5, (LPSTR)"sRGB");
    }
    else if (ppi->m_pdsBuffer->m_format == BaseTexture::SRGBA)
    {
-      ListView_SetItemText(hwndListView, index, 5, "sRGBA");
+      ListView_SetItemText(hwndListView, index, 5, (LPSTR)"sRGBA");
    }
    else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGB)
    {
-      ListView_SetItemText(hwndListView, index, 5, "RGB");
+      ListView_SetItemText(hwndListView, index, 5, (LPSTR)"RGB");
    }
    else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGBA)
    {
-      ListView_SetItemText(hwndListView, index, 5, "RGBA");
+      ListView_SetItemText(hwndListView, index, 5, (LPSTR)"RGBA");
    }
    else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGB_FP16)
    {
-      ListView_SetItemText(hwndListView, index, 5, "RGB 16F");
+      ListView_SetItemText(hwndListView, index, 5, (LPSTR)"RGB 16F");
    }
    else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGB_FP32)
    {
-      ListView_SetItemText(hwndListView, index, 5, "RGB 32F");
+      ListView_SetItemText(hwndListView, index, 5, (LPSTR)"RGB 32F");
    }
    else
       assert(!"unknown format");
@@ -6945,7 +6945,7 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
     || (_stricmp(m_BG_image[BG_FULLSCREEN].c_str(), ppi->m_szName.c_str()) == 0)
     || (_stricmp(m_imageColorGrade.c_str(), ppi->m_szName.c_str()) == 0))
    {
-       ListView_SetItemText(hwndListView, index, 3, usedStringYes);
+       ListView_SetItemText(hwndListView, index, 3, (LPSTR)usedStringYes);
    }
    else
    {
@@ -7050,7 +7050,7 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
 
            if (inUse)
            {
-               ListView_SetItemText(hwndListView, index, 3, usedStringYes);
+               ListView_SetItemText(hwndListView, index, 3, (LPSTR)usedStringYes);
                break;
            }
        }//for
@@ -7208,8 +7208,8 @@ void PinTable::UpdateDbgMaterial()
 
 int PinTable::AddListMaterial(HWND hwndListView, Material * const pmat)
 {
-   constexpr char * const usedStringYes = "X";
-   constexpr char * const usedStringNo = " ";
+   constexpr char usedStringYes[] = "X";
+   constexpr char usedStringNo[] = " ";
 
    LVITEM lvitem;
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;

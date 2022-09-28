@@ -7,7 +7,7 @@ class RenderTarget final
 {
 public:
    RenderTarget(RenderDevice* rd, int width = -1, int height = -1); // Default output render target
-   RenderTarget(RenderDevice* rd, const int width, const int height, const colorFormat format, bool with_depth, bool use_MSAA, int stereo, char* failureMessage);
+   RenderTarget(RenderDevice* rd, const int width, const int height, const colorFormat format, bool with_depth, bool use_MSAA, int stereo, const char* failureMessage);
    ~RenderTarget();
 
    void Activate(bool ignoreStereo);

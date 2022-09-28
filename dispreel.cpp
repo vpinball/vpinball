@@ -568,7 +568,7 @@ bool DispReel::LoadToken(const int id, BiffReader * const pbr)
       IFont *pIFont;
       FONTDESC fd;
       fd.cbSizeofstruct = sizeof(FONTDESC);
-      fd.lpstrName = L"Times New Roman";
+      fd.lpstrName = (LPOLESTR)(L"Times New Roman");
       fd.cySize.int64 = 260000;
       //fd.cySize.Lo = 0;
       fd.sWeight = FW_BOLD;

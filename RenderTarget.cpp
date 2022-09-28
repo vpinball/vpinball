@@ -39,7 +39,7 @@ RenderTarget::RenderTarget(RenderDevice* rd, int width, int height)
 #endif
 }
 
-RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, const colorFormat format, bool with_depth, bool use_MSAA, int stereo, char* failureMessage)
+RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, const colorFormat format, bool with_depth, bool use_MSAA, int stereo, const char* failureMessage)
 {
    m_is_back_buffer = false;
    m_rd = rd;

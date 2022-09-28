@@ -81,7 +81,7 @@ void Decal::SetDefaults(bool fromMouseClick)
       char tmp[MAXSTRING];
       hr = LoadValue(regKey, "FontName"s, tmp, MAXSTRING);
       if ((hr != S_OK) || !fromMouseClick)
-         fd.lpstrName = L"Arial Black";
+         fd.lpstrName = (LPOLESTR)(L"Arial Black");
       else
       {
          const int len = lstrlen(tmp) + 1;
@@ -687,7 +687,7 @@ bool Decal::LoadToken(const int id, BiffReader * const pbr)
       {
          FONTDESC fd;
          fd.cbSizeofstruct = sizeof(FONTDESC);
-         fd.lpstrName = L"Arial";
+         fd.lpstrName = (LPOLESTR)(L"Arial");
          fd.cySize.int64 = 142500;
          fd.sWeight = FW_NORMAL;
          fd.sCharset = 0;

@@ -53,7 +53,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
       m_d.m_sztext.clear();
 
       fd.cySize.int64 = (LONGLONG)(14.25f * 10000.0f);
-      fd.lpstrName = L"Arial";
+      fd.lpstrName = (LPOLESTR)(L"Arial");
       fd.sWeight = FW_NORMAL;
       fd.sCharset = 0;
       fd.fItalic = 0;
@@ -78,7 +78,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
       HRESULT hr;
       hr = LoadValue(regKey, "FontName"s, tmp);
       if (hr != S_OK)
-         fd.lpstrName = L"Arial";
+         fd.lpstrName = (LPOLESTR)(L"Arial");
       else
       {
          const int len = (int)tmp.length() + 1;
@@ -560,7 +560,7 @@ bool Textbox::LoadToken(const int id, BiffReader * const pbr)
       {
          FONTDESC fd;
          fd.cbSizeofstruct = sizeof(FONTDESC);
-         fd.lpstrName = L"Arial";
+         fd.lpstrName = (LPOLESTR)(L"Arial");
          fd.cySize.int64 = 142500;
          //fd.cySize.Lo = 0;
          fd.sWeight = FW_NORMAL;

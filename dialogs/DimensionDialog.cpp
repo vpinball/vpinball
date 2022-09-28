@@ -67,13 +67,13 @@ BOOL DimensionDialog::OnInitDialog()
    LVCOLUMN lvc = {};
    lvc.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
    lvc.cx = 150;
-   lvc.pszText = TEXT("Manufacturer");
+   lvc.pszText = (LPSTR)TEXT("Manufacturer");
    ListView_InsertColumn(listHwnd, 0, &lvc);
    lvc.cx = 60;
-   lvc.pszText = TEXT("Width");
+   lvc.pszText = (LPSTR)TEXT("Width");
    ListView_InsertColumn(listHwnd, 1, &lvc);
    lvc.cx = 60;
-   lvc.pszText = TEXT("Height");
+   lvc.pszText = (LPSTR)TEXT("Height");
    ListView_InsertColumn(listHwnd, 2, &lvc);
 
    if (listHwnd != nullptr)
