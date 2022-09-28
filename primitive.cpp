@@ -55,7 +55,7 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
       ObjLoader loader;
       if (loader.Load(sname, flipTV, convertToLeftHanded))
       {
-         vector<Vertex3D_NoTex2> verts = loader.GetVertices();
+         const vector<Vertex3D_NoTex2>& verts = loader.GetVertices();
          for (size_t t = 0; t < verts.size(); t++)
          {
             VertData vd;

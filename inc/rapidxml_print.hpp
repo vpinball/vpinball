@@ -112,42 +112,42 @@ namespace rapidxml
 
             // Document
             case node_document:
-                out = print_children(out, node, flags, indent);
+                out = print_children<OutIt,Ch>(out, node, flags, indent);
                 break;
 
             // Element
             case node_element:
-                out = print_element_node(out, node, flags, indent);
+                out = print_element_node<OutIt,Ch>(out, node, flags, indent);
                 break;
             
             // Data
             case node_data:
-                out = print_data_node(out, node, flags, indent);
+                out = print_data_node<OutIt,Ch>(out, node, flags, indent);
                 break;
             
             // CDATA
             case node_cdata:
-                out = print_cdata_node(out, node, flags, indent);
+                out = print_cdata_node<OutIt,Ch>(out, node, flags, indent);
                 break;
 
             // Declaration
             case node_declaration:
-                out = print_declaration_node(out, node, flags, indent);
+                out = print_declaration_node<OutIt,Ch>(out, node, flags, indent);
                 break;
 
             // Comment
             case node_comment:
-                out = print_comment_node(out, node, flags, indent);
+                out = print_comment_node<OutIt,Ch>(out, node, flags, indent);
                 break;
             
             // Doctype
             case node_doctype:
-                out = print_doctype_node(out, node, flags, indent);
+                out = print_doctype_node<OutIt,Ch>(out, node, flags, indent);
                 break;
 
             // Pi
             case node_pi:
-                out = print_pi_node(out, node, flags, indent);
+                out = print_pi_node<OutIt,Ch>(out, node, flags, indent);
                 break;
 
                 // Unknown
@@ -387,7 +387,7 @@ namespace rapidxml
     template<class OutIt, class Ch> 
     inline OutIt print(OutIt out, const xml_node<Ch> &node, int flags = 0)
     {
-        return internal::print_node(out, &node, flags, 0);
+        return internal::print_node<OutIt,Ch>(out, &node, flags, 0);
     }
 
 #ifndef RAPIDXML_NO_STREAMS

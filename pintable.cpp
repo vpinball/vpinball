@@ -7219,10 +7219,10 @@ int PinTable::AddListMaterial(HWND hwndListView, Material * const pmat)
    lvitem.lParam = (size_t)pmat;
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
-   ListView_SetItemText(hwndListView, index, 1, usedStringNo);
+   ListView_SetItemText(hwndListView, index, 1, (LPSTR)usedStringNo);
    if(pmat->m_szName == m_playfieldMaterial)
    {
-      ListView_SetItemText(hwndListView, index, 1, usedStringYes);
+      ListView_SetItemText(hwndListView, index, 1, (LPSTR)usedStringYes);
    }
    else
    {
@@ -7326,7 +7326,7 @@ int PinTable::AddListMaterial(HWND hwndListView, Material * const pmat)
 
          if (inUse)
          {
-            ListView_SetItemText(hwndListView, index, 1, usedStringYes);
+            ListView_SetItemText(hwndListView, index, 1, (LPSTR)usedStringYes);
             break;
          }
       }//for
@@ -7848,7 +7848,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
    case IDC_EFFECT_COMBO:
    {
       const int idx = (dwCookie == -1) ? 0 : dwCookie;
-      constexpr char * const filterNames[5] = { "None", "Additive", "Multiply", "Overlay", "Screen" };
+      static const char * const filterNames[5] = { "None", "Additive", "Multiply", "Overlay", "Screen" };
       const DWORD cwch = lstrlen(filterNames[idx]) + 1;
       wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
 

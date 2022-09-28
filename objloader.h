@@ -44,13 +44,13 @@ public:
    bool LoadMaterial(const string& filename, Material* const mat);
    void WriteMaterial(const string& texelName, const string& texelFilename, const Material* const mat);
 
-   vector<Vertex3D_NoTex2>& GetVertices()
+   const vector<Vertex3D_NoTex2>& GetVertices()
    {
-      return std::move(m_verts);
+      return m_verts;
    }
-   vector<unsigned int>& GetIndices()
+   const vector<unsigned int>& GetIndices()
    {
-      return std::move(m_indices);
+      return m_indices;
    }
 private:
 
