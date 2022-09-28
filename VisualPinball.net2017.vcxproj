@@ -165,8 +165,6 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
-      <AdditionalOptions>
-      </AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -189,8 +187,6 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
-      <AdditionalOptions>
-      </AdditionalOptions>
     </Link>
     <Xdcmake>
       <SuppressStartupBanner>false</SuppressStartupBanner>
@@ -204,10 +200,6 @@
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
-    <Lib>
-      <AdditionalOptions>
-      </AdditionalOptions>
-    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugCoverage|Win32'">
     <Midl>
@@ -613,6 +605,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="math\math.cpp" />
     <ClCompile Include="MemoryStatus.cpp" />
+    <ClCompile Include="RenderTarget.cpp" />
     <ClCompile Include="rubber.cpp" />
     <ClCompile Include="hash.cpp" />
     <ClCompile Include="kdtree.cpp" />
@@ -664,7 +657,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="ramp.cpp" />
     <ClCompile Include="regutil.cpp" />
     <ClCompile Include="RenderDevice.cpp" />
-    <ClCompile Include="RenderTarget.cpp" />
     <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="slintf.cpp" />

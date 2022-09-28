@@ -294,6 +294,7 @@
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="RenderTarget.cpp" />
     <ClCompile Include="Sampler.cpp" />
+    <ClCompile Include="Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">

@@ -1484,8 +1484,12 @@
     <ClInclude Include="TextureManager.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="RenderTarget.h" />
-    <ClInclude Include="Sampler.h" />
+    <ClInclude Include="RenderTarget.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sampler.h">
+      <Filter>headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.hlsl">

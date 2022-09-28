@@ -435,6 +435,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="math\math.cpp" />
     <ClCompile Include="MemoryStatus.cpp" />
+    <ClCompile Include="RenderTarget.cpp" />
     <ClCompile Include="rubber.cpp" />
     <ClCompile Include="hash.cpp" />
     <ClCompile Include="kdtree.cpp" />
@@ -486,7 +487,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="ramp.cpp" />
     <ClCompile Include="regutil.cpp" />
     <ClCompile Include="RenderDevice.cpp" />
-    <ClCompile Include="RenderTarget.cpp" />
     <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="slintf.cpp" />
