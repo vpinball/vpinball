@@ -346,7 +346,7 @@ technique basic_without_texture_isMetal
    } 
 }
 
-technique basic_without_texture_isNotMetal
+technique basic_without_texture
 { 
    pass P0 
    { 
@@ -364,7 +364,7 @@ technique basic_with_texture_isMetal
    } 
 }
 
-technique basic_with_texture_isNotMetal
+technique basic_with_texture
 { 
    pass P0 
    { 
@@ -382,7 +382,7 @@ technique basic_with_texture_normal_isMetal
    }
 }
 
-technique basic_with_texture_normal_isNotMetal
+technique basic_with_texture_normal
 {
    pass P0
    {
@@ -446,7 +446,7 @@ technique kickerBoolean_isMetal
    }
 }
 
-technique kickerBoolean_isNotMetal
+technique kickerBoolean
 { 
    pass P0
    {

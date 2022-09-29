@@ -16,6 +16,91 @@
 #define LOG(a,b,c)
 #endif
 
+#define SHADER_TECHNIQUE(name) #name
+const string Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT]
+{
+   SHADER_TECHNIQUE(RenderBall),
+   SHADER_TECHNIQUE(RenderBall_DecalMode),
+   SHADER_TECHNIQUE(RenderBall_CabMode),
+   SHADER_TECHNIQUE(RenderBall_CabMode_DecalMode),
+   SHADER_TECHNIQUE(RenderBallTrail),
+   SHADER_TECHNIQUE(basic_without_texture),
+   SHADER_TECHNIQUE(basic_with_texture),
+   SHADER_TECHNIQUE(basic_with_texture_normal),
+   SHADER_TECHNIQUE(basic_without_texture_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_normal_isMetal),
+   SHADER_TECHNIQUE(basic_without_texture_n_mirror),
+   SHADER_TECHNIQUE(basic_with_texture_n_mirror),
+   SHADER_TECHNIQUE(basic_depth_only_without_texture),
+   SHADER_TECHNIQUE(basic_depth_only_with_texture),
+   SHADER_TECHNIQUE(bg_decal_without_texture),
+   SHADER_TECHNIQUE(bg_decal_with_texture),
+   SHADER_TECHNIQUE(kickerBoolean),
+   SHADER_TECHNIQUE(kickerBoolean_isMetal),
+   SHADER_TECHNIQUE(light_with_texture),
+   SHADER_TECHNIQUE(light_with_texture_isMetal),
+   SHADER_TECHNIQUE(light_without_texture),
+   SHADER_TECHNIQUE(light_without_texture_isMetal),
+   SHADER_TECHNIQUE(basic_DMD),
+   SHADER_TECHNIQUE(basic_DMD_ext),
+   SHADER_TECHNIQUE(basic_DMD_world),
+   SHADER_TECHNIQUE(basic_DMD_world_ext),
+   SHADER_TECHNIQUE(basic_noDMD),
+   SHADER_TECHNIQUE(basic_noDMD_world),
+   SHADER_TECHNIQUE(basic_noDMD_notex),
+   SHADER_TECHNIQUE(AO),
+   SHADER_TECHNIQUE(NFAA),
+   SHADER_TECHNIQUE(DLAA_edge),
+   SHADER_TECHNIQUE(DLAA),
+   SHADER_TECHNIQUE(FXAA1),
+   SHADER_TECHNIQUE(FXAA2),
+   SHADER_TECHNIQUE(FXAA3),
+   SHADER_TECHNIQUE(fb_tonemap),
+   SHADER_TECHNIQUE(fb_bloom),
+   SHADER_TECHNIQUE(fb_AO),
+   SHADER_TECHNIQUE(fb_tonemap_AO),
+   SHADER_TECHNIQUE(fb_tonemap_AO_static),
+   SHADER_TECHNIQUE(fb_tonemap_no_filterRGB),
+   SHADER_TECHNIQUE(fb_tonemap_no_filterRG),
+   SHADER_TECHNIQUE(fb_tonemap_no_filterR),
+   SHADER_TECHNIQUE(fb_tonemap_AO_no_filter),
+   SHADER_TECHNIQUE(fb_tonemap_AO_no_filter_static),
+   SHADER_TECHNIQUE(fb_bloom_horiz9x9),
+   SHADER_TECHNIQUE(fb_bloom_vert9x9),
+   SHADER_TECHNIQUE(fb_bloom_horiz19x19),
+   SHADER_TECHNIQUE(fb_bloom_vert19x19),
+   SHADER_TECHNIQUE(fb_bloom_horiz19x19h),
+   SHADER_TECHNIQUE(fb_bloom_vert19x19h),
+   SHADER_TECHNIQUE(fb_bloom_horiz39x39),
+   SHADER_TECHNIQUE(fb_bloom_vert39x39),
+   SHADER_TECHNIQUE(fb_mirror),
+   SHADER_TECHNIQUE(fb_CAS),
+   SHADER_TECHNIQUE(fb_BilateralSharp_CAS),
+   SHADER_TECHNIQUE(SSReflection),
+   SHADER_TECHNIQUE(basic_noLight),
+   SHADER_TECHNIQUE(bulb_light),
+   SHADER_TECHNIQUE(SMAA_ColorEdgeDetection),
+   SHADER_TECHNIQUE(SMAA_BlendWeightCalculation),
+   SHADER_TECHNIQUE(SMAA_NeighborhoodBlending),
+   SHADER_TECHNIQUE(stereo),
+   SHADER_TECHNIQUE(stereo_Int),
+   SHADER_TECHNIQUE(stereo_Flipped_Int),
+   SHADER_TECHNIQUE(stereo_Anaglyph),
+   SHADER_TECHNIQUE(stereo_AMD_DEBUG),
+};
+#undef SHADER_TECHNIQUE
+
+ShaderTechniques Shader::getTechniqueByName(const string& name)
+{
+   for (int i = 0; i < SHADER_TECHNIQUE_COUNT; ++i)
+      if (name == shaderTechniqueNames[i])
+         return ShaderTechniques(i);
+
+   // FIXME LOG(1, m_shaderCodeName, string("getTechniqueByName Could not find technique ").append(name).append(" in shaderTechniqueNames."));
+   return SHADER_TECHNIQUE_INVALID;
+}
+
 //
 //
 //
@@ -27,6 +112,7 @@ Shader::Shader(RenderDevice* renderDevice)
    : currentMaterial(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, 0xCCCCCCCC, 0xCCCCCCCC, 0xCCCCCCCC, false, false, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX)
 {
    m_renderDevice = renderDevice;
+   m_technique = SHADER_TECHNIQUE_INVALID;
 #ifdef ENABLE_SDL
    logFile = nullptr;
    memset(m_uniformCache, 0, sizeof(UniformCache) * SHADER_UNIFORM_COUNT * (SHADER_TECHNIQUE_COUNT + 1));
@@ -305,20 +391,34 @@ void Shader::SetTexture(const SHADER_UNIFORM_HANDLE texelName, Sampler* texel)
 
 //
 
-void Shader::SetTechnique(const SHADER_TECHNIQUE_HANDLE technique)
+void Shader::SetTechnique(const ShaderTechniques technique)
 {
-   if (strcmp(currentTechnique, technique) /*|| (m_renderDevice->m_curShader != this)*/)
+   if (m_technique != technique)
    {
-      strncpy_s(currentTechnique, technique, sizeof(currentTechnique)-1);
-      //m_renderDevice->m_curShader = this;
-      CHECKD3D(m_shader->SetTechnique(technique));
+      m_technique = technique;
+      CHECKD3D(m_shader->SetTechnique((D3DXHANDLE)shaderTechniqueNames[technique].c_str()));
       m_renderDevice->m_curTechniqueChanges++;
    }
 }
 
-void Shader::SetTechniqueMetal(const string& technique, const bool isMetal)
+void Shader::SetTechniqueMetal(const ShaderTechniques technique, const bool isMetal)
 {
-   SetTechnique((technique + (isMetal ? "_isMetal" : "_isNotMetal")).c_str());
+   if (isMetal)
+   {
+      switch (technique)
+      {
+      case SHADER_TECHNIQUE_basic_with_texture: SetTechnique(SHADER_TECHNIQUE_basic_with_texture_isMetal); break;
+      case SHADER_TECHNIQUE_basic_without_texture: SetTechnique(SHADER_TECHNIQUE_basic_without_texture_isMetal); break;
+      case SHADER_TECHNIQUE_kickerBoolean: SetTechnique(SHADER_TECHNIQUE_kickerBoolean_isMetal); break;
+      case SHADER_TECHNIQUE_light_with_texture: SetTechnique(SHADER_TECHNIQUE_light_with_texture_isMetal); break;
+      case SHADER_TECHNIQUE_light_without_texture: SetTechnique(SHADER_TECHNIQUE_light_without_texture_isMetal); break;
+      default: assert(false); // Invalid technique: no metal shading variant
+      }
+   }
+   else
+   {
+      SetTechnique(technique);
+   }
 }
 
 void Shader::SetMatrix(const SHADER_UNIFORM_HANDLE hParameter, const D3DXMATRIX* pMatrix)

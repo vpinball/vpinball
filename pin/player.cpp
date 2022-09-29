@@ -3762,7 +3762,7 @@ void Player::Bloom()
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture0, m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture()->GetColorSampler());
       const vec4 fb_inv_resolution_05((float)(4.0 / (double)m_width), (float)(4.0 / (double)m_height), 1.0f, 1.0f);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &fb_inv_resolution_05);
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(/*m_low_quality_bloom ? SHADER_TECHNIQUE_fb_bloom_horiz9x9 :*/ "fb_bloom_horiz39x39");
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(/*m_low_quality_bloom ? SHADER_TECHNIQUE_fb_bloom_horiz9x9 :*/ SHADER_TECHNIQUE_fb_bloom_horiz39x39);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
@@ -3777,7 +3777,7 @@ void Player::Bloom()
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture0, m_pin3d.m_pd3dPrimaryDevice->GetBloomTmpBufferTexture()->GetColorSampler());
       const vec4 fb_inv_resolution_05((float)(4.0 / (double)m_width), (float)(4.0 / (double)m_height), m_ptable->m_bloom_strength, 1.0f);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &fb_inv_resolution_05);
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(/*m_low_quality_bloom ? SHADER_TECHNIQUE_fb_bloom_vert9x9 :*/ "fb_bloom_vert39x39");
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(/*m_low_quality_bloom ? SHADER_TECHNIQUE_fb_bloom_vert9x9 :*/ SHADER_TECHNIQUE_fb_bloom_vert39x39);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
@@ -3811,7 +3811,7 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("Anaglyph_DeSaturation_Contrast", &a_ds_c);
       }
 
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(is_anaglyph ? "stereo_anaglyph" : "stereo");
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(is_anaglyph ? SHADER_TECHNIQUE_stereo_Anaglyph : SHADER_TECHNIQUE_stereo);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
@@ -3902,7 +3902,7 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
       const vec4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), (float)m_width, depth_available ? 1.f : 0.f);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &w_h_height);
 
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique((sharpen == 1) ? "CAS" : "BilateralSharp_CAS");
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique((sharpen == 1) ? SHADER_TECHNIQUE_fb_CAS : SHADER_TECHNIQUE_fb_BilateralSharp_CAS);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
@@ -5505,13 +5505,13 @@ void Player::DrawBalls()
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 
       if (m_cabinetMode && !pball->m_decalMode)
-         strncpy_s(m_ballShaderTechnique, "RenderBall_CabMode", sizeof(m_ballShaderTechnique)-1);
+         m_ballShaderTechnique = SHADER_TECHNIQUE_RenderBall_CabMode;
       else if (m_cabinetMode && pball->m_decalMode)
-         strncpy_s(m_ballShaderTechnique, "RenderBall_CabMode_DecalMode", sizeof(m_ballShaderTechnique)-1);
+         m_ballShaderTechnique = SHADER_TECHNIQUE_RenderBall_CabMode_DecalMode;
       else if (!m_cabinetMode && pball->m_decalMode)
-         strncpy_s(m_ballShaderTechnique, "RenderBall_DecalMode", sizeof(m_ballShaderTechnique)-1);
+         m_ballShaderTechnique = SHADER_TECHNIQUE_RenderBall_DecalMode;
       else //if (!m_fCabinetMode && !pball->m_decalMode)
-         strncpy_s(m_ballShaderTechnique, "RenderBall", sizeof(m_ballShaderTechnique)-1);
+         m_ballShaderTechnique = SHADER_TECHNIQUE_RenderBall;
 
       m_ballShader->SetTechnique(m_ballShaderTechnique);
 
