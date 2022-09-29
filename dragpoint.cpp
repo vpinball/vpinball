@@ -428,19 +428,29 @@ void DragPoint::Init(IHaveDragPoints *pihdp, const float x, const float y, const
    m_calcHeight = 0.0f;
    m_autoTexture = true;
    m_texturecoord = 0.0f;
+
    m_menuid = (pihdp->GetIEditable()->GetItemType() == eItemRubber) ? IDR_POINTMENU_SMOOTH : IDR_POINTMENU;
+}
+
+IEditable *DragPoint::GetIEditable()
+{
+   return M_PIHDP->GetIEditable();
+}
+const IEditable *DragPoint::GetIEditable() const
+{
+   return M_PIHDP->GetIEditable();
 }
 
 void DragPoint::OnLButtonDown(int x, int y)
 {
    ISelect::OnLButtonDown(x, y);
-   m_pihdp->GetIEditable()->SetDirtyDraw();
+   GetIEditable()->SetDirtyDraw();
 }
 
 void DragPoint::OnLButtonUp(int x, int y)
 {
    ISelect::OnLButtonUp(x, y);
-   m_pihdp->GetIEditable()->SetDirtyDraw();
+   GetIEditable()->SetDirtyDraw();
 }
 
 void DragPoint::SetObjectPos()
@@ -474,20 +484,20 @@ void DragPoint::EditMenu(CMenu &menu)
 
 void DragPoint::Delete()
 {
-   if ((int)m_pihdp->m_vdpoint.size() > m_pihdp->GetMinimumPoints()) // Can't allow less points than the user can recover from
+   if ((int)M_PIHDP->m_vdpoint.size() > M_PIHDP->GetMinimumPoints()) // Can't allow less points than the user can recover from
    {
-      m_pihdp->GetIEditable()->BeginUndo();
-      m_pihdp->GetIEditable()->MarkForUndo();
-      RemoveFromVectorSingle(m_pihdp->m_vdpoint, (CComObject<DragPoint> *)this);
-      m_pihdp->GetIEditable()->EndUndo();
-      m_pihdp->GetIEditable()->SetDirtyDraw();
+      GetIEditable()->BeginUndo();
+      GetIEditable()->MarkForUndo();
+      RemoveFromVectorSingle(M_PIHDP->m_vdpoint, (CComObject<DragPoint> *)this);
+      GetIEditable()->EndUndo();
+      GetIEditable()->SetDirtyDraw();
       Release();
    }
 }
 
 void DragPoint::Uncreate()
 {
-   RemoveFromVectorSingle(m_pihdp->m_vdpoint, (CComObject<DragPoint> *)this);
+   RemoveFromVectorSingle(M_PIHDP->m_vdpoint, (CComObject<DragPoint> *)this);
    Release();
 }
 
@@ -498,19 +508,19 @@ void DragPoint::DoCommand(int icmd, int x, int y)
    {
    case ID_POINTMENU_SMOOTH:
    {
-      IEditable * const pedit = m_pihdp->GetIEditable();
+      IEditable * const pedit = GetIEditable();
       pedit->BeginUndo();
       pedit->MarkForUndo();
 
       m_smooth = !m_smooth;
-      const int index2 = (FindIndexOf(m_pihdp->m_vdpoint, (CComObject<DragPoint> *)this) - 1 + (int)m_pihdp->m_vdpoint.size()) % (int)m_pihdp->m_vdpoint.size();
+      const int index2 = (FindIndexOf(M_PIHDP->m_vdpoint, (CComObject<DragPoint> *)this) - 1 + (int)M_PIHDP->m_vdpoint.size()) % (int)M_PIHDP->m_vdpoint.size();
       if (m_smooth && m_slingshot)
       {
          m_slingshot = false;
       }
-      if (m_smooth && m_pihdp->m_vdpoint[index2]->m_slingshot)
+      if (m_smooth && M_PIHDP->m_vdpoint[index2]->m_slingshot)
       {
-         m_pihdp->m_vdpoint[index2]->m_slingshot = false;
+         M_PIHDP->m_vdpoint[index2]->m_slingshot = false;
       }
 
       pedit->EndUndo();
@@ -519,7 +529,7 @@ void DragPoint::DoCommand(int icmd, int x, int y)
    }
    case ID_POINTMENU_SLINGSHOT:
    {
-      IEditable * const pedit = m_pihdp->GetIEditable();
+      IEditable * const pedit = GetIEditable();
       pedit->BeginUndo();
       pedit->MarkForUndo();
 
@@ -527,8 +537,8 @@ void DragPoint::DoCommand(int icmd, int x, int y)
       if (m_slingshot)
       {
          m_smooth = false;
-         const int index2 = (FindIndexOf(m_pihdp->m_vdpoint, (CComObject<DragPoint> *)this) + 1) % m_pihdp->m_vdpoint.size();
-         m_pihdp->m_vdpoint[index2]->m_smooth = false;
+         const int index2 = (FindIndexOf(M_PIHDP->m_vdpoint, (CComObject<DragPoint> *)this) + 1) % M_PIHDP->m_vdpoint.size();
+         M_PIHDP->m_vdpoint[index2]->m_smooth = false;
       }
 
       pedit->EndUndo();

@@ -7,7 +7,102 @@
 
 #include "resource.h"       // main symbols
 
-//class Surface;
+class IHaveDragPoints;
+
+/////////////////////////////////////////////////////////////////////////////
+// DragPoint
+
+class DragPoint :
+   public IDispatchImpl<IControlPoint, &IID_IControlPoint, &LIBID_VPinballLib>,
+   public ISupportErrorInfo,
+   public CComObjectRoot,
+   public CComCoClass<DragPoint, &CLSID_DragPoint>,
+   public ISelect
+{
+public:
+   DragPoint() { }
+
+   void Init(IHaveDragPoints *pihdp, const float x, const float y, const float z, const bool smooth);
+
+   // From ISelect
+   void OnLButtonDown(int x, int y) final;
+   void OnLButtonUp(int x, int y) final;
+   void MoveOffset(const float dx, const float dy) final;
+   void SetObjectPos() final;
+   ItemTypeEnum GetItemType() const final { return eItemDragPoint; }
+
+   // Multi-object manipulation
+   Vertex2D GetCenter() const final;
+   void PutCenter(const Vertex2D &pv) final;
+
+   void EditMenu(CMenu &menu) final;
+   void DoCommand(int icmd, int x, int y) final;
+   void SetSelectFormat(Sur *psur) final;
+   void SetMultiSelectFormat(Sur *psur) final;
+   IEditable *GetIEditable() final;
+   const IEditable *GetIEditable() const final;
+   PinTable *GetPTable() final { return GetIEditable()->GetPTable(); }
+   const PinTable *GetPTable() const final { return GetIEditable()->GetPTable(); }
+   IDispatch *GetDispatch() final { return (IDispatch *)this; }
+   const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }
+
+   int GetSelectLevel() const final { return 2; } // So dragpoints won't be band-selected with the main objects
+
+   void Copy();
+   void Paste();
+
+   BEGIN_COM_MAP(DragPoint)
+      COM_INTERFACE_ENTRY(IDispatch)
+      COM_INTERFACE_ENTRY(IControlPoint)
+      COM_INTERFACE_ENTRY(ISupportErrorInfo)
+   END_COM_MAP()
+   //DECLARE_NOT_AGGREGATABLE(DragPoint)
+   // Remove the comment from the line above if you don't want your object to
+   // support aggregation.
+
+   DECLARE_REGISTRY_RESOURCEID(IDR_DRAG_POINT)
+   // ISupportsErrorInfo
+   STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
+
+   void Delete() final;
+   void Uncreate() final;
+
+   bool LoadToken(const int id, BiffReader *const pbr) final;
+
+   // IControlPoint
+public:
+   STDMETHOD(get_TextureCoordinateU)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_TextureCoordinateU)(/*[in]*/ float newVal);
+   STDMETHOD(get_IsAutoTextureCoordinate)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_IsAutoTextureCoordinate)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_Smooth)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_Smooth)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_X)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_X)(/*[in]*/ float newVal);
+   STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Y)(/*[in]*/ float newVal);
+   STDMETHOD(get_Z)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Z)(/*[in]*/ float newVal);
+   STDMETHOD(get_CalcHeight)(/*[out, retval]*/ float *pVal);
+
+   Vertex3Ds m_v;
+   float m_calcHeight;
+   float m_texturecoord;
+   bool m_smooth;
+   bool m_slingshot;
+   bool m_autoTexture;
+
+private:
+#ifdef _M_X64
+   IHaveDragPoints *m_pihdp;
+   #define M_PIHDP m_pihdp
+#else
+   void *m_pihdp; // actually IHaveDragPoints, but somehow doesn't work on VS/x86, no sane solution found yet, might simply be a compiler bug
+   #define M_PIHDP ((IHaveDragPoints *)m_pihdp)
+#endif
+   static Vertex3Ds m_copyPoint;   // coordinates of a control point to copy
+   static bool      m_pointCopied;
+};
 
 class IHaveDragPoints
 {
@@ -120,91 +215,5 @@ protected:
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-/////////////////////////////////////////////////////////////////////////////
-// DragPoint
-
-class DragPoint :
-   public IDispatchImpl<IControlPoint, &IID_IControlPoint, &LIBID_VPinballLib>,
-   public ISupportErrorInfo,
-   public CComObjectRoot,
-   public CComCoClass<DragPoint, &CLSID_DragPoint>,
-   public ISelect
-{
-public:
-   DragPoint() { }
-
-   void Init(IHaveDragPoints *pihdp, const float x, const float y, const float z, const bool smooth);
-
-   // From ISelect
-   void OnLButtonDown(int x, int y) final;
-   void OnLButtonUp(int x, int y) final;
-   void MoveOffset(const float dx, const float dy) final;
-   void SetObjectPos() final;
-   ItemTypeEnum GetItemType() const final { return eItemDragPoint; }
-
-   // Multi-object manipulation
-   Vertex2D GetCenter() const final;
-   void PutCenter(const Vertex2D &pv) final;
-
-   void EditMenu(CMenu &menu) final;
-   void DoCommand(int icmd, int x, int y) final;
-   void SetSelectFormat(Sur *psur) final;
-   void SetMultiSelectFormat(Sur *psur) final;
-   PinTable *GetPTable() final { return m_pihdp->GetIEditable()->GetPTable(); }
-   const PinTable *GetPTable() const final { return m_pihdp->GetIEditable()->GetPTable(); }
-   IEditable *GetIEditable() final { return m_pihdp->GetIEditable(); }
-   const IEditable *GetIEditable() const final { return m_pihdp->GetIEditable(); }
-   IDispatch *GetDispatch() final { return (IDispatch *)this; }
-   const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }
-
-   int GetSelectLevel() const final { return 2; } // So dragpoints won't be band-selected with the main objects
-
-   void Copy();
-   void Paste();
-
-   BEGIN_COM_MAP(DragPoint)
-      COM_INTERFACE_ENTRY(IDispatch)
-      COM_INTERFACE_ENTRY(IControlPoint)
-      COM_INTERFACE_ENTRY(ISupportErrorInfo)
-   END_COM_MAP()
-   //DECLARE_NOT_AGGREGATABLE(DragPoint)
-   // Remove the comment from the line above if you don't want your object to
-   // support aggregation.
-
-   DECLARE_REGISTRY_RESOURCEID(IDR_DRAG_POINT)
-   // ISupportsErrorInfo
-   STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
-
-   void Delete() final;
-   void Uncreate() final;
-
-   bool LoadToken(const int id, BiffReader *const pbr) final;
-
-   // IControlPoint
-public:
-   STDMETHOD(get_TextureCoordinateU)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_TextureCoordinateU)(/*[in]*/ float newVal);
-   STDMETHOD(get_IsAutoTextureCoordinate)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD(put_IsAutoTextureCoordinate)(/*[in]*/ VARIANT_BOOL newVal);
-   STDMETHOD(get_Smooth)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD(put_Smooth)(/*[in]*/ VARIANT_BOOL newVal);
-   STDMETHOD(get_X)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_X)(/*[in]*/ float newVal);
-   STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_Y)(/*[in]*/ float newVal);
-   STDMETHOD(get_Z)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_Z)(/*[in]*/ float newVal);
-   STDMETHOD(get_CalcHeight)(/*[out, retval]*/ float *pVal);
-
-   Vertex3Ds m_v;
-   float m_calcHeight;
-   float m_texturecoord;
-   IHaveDragPoints *m_pihdp;
-   bool m_smooth;
-   bool m_slingshot;
-   bool m_autoTexture;
-   static Vertex3Ds m_copyPoint;   // coordinates of a control point to copy
-   static bool      m_pointCopied;
-};
 
 #endif // !defined(AFX_DRAGPOINT_H__E0C074C9_5BF2_4F8C_8012_76082BAC2203__INCLUDED_)

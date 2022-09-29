@@ -379,7 +379,7 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
     {
         m_elementTypeName.SetWindowText("Control Point");
         const DragPoint* const dpoint = (DragPoint*)psel;
-        const ItemTypeEnum itemType = dpoint->m_pihdp->GetIEditable()->GetItemType();
+        const ItemTypeEnum itemType = dpoint->GetIEditable()->GetItemType();
         if (itemType == eItemRamp)
             m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new DragpointVisualsProperty(IDD_PROPPOINT_VISUALSWHEIGHT, &pvsel), _T("Visuals")));
         else if (itemType == eItemLight || itemType == eItemTrigger)
