@@ -11,7 +11,6 @@ int NumVideoBytes = 0;
 
 Pin3D::Pin3D()
 {
-   m_pddsBackBuffer = nullptr;
    m_pddsAOBackBuffer = nullptr;
    m_pddsAOBackTmpBuffer = nullptr;
    m_pd3dPrimaryDevice = nullptr;
@@ -472,9 +471,11 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
 
    m_pd3dPrimaryDevice->SetViewport(&m_viewPort);
 
-   m_pddsBackBuffer = m_pd3dPrimaryDevice->GetBackBufferTexture();
-
-   m_pddsStatic = m_pddsBackBuffer->Duplicate();
+   // Static render target is a copy of the main back buffer (without MSAA since static prerender is done with custom antialiasing)
+   if (m_stereo3D != STEREO_VR)
+      m_pddsStatic = m_pd3dPrimaryDevice->GetBackBufferTexture()->Duplicate();
+   else
+      m_pddsStatic = nullptr;
 
    if (m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && useAO)
    {
@@ -567,9 +568,9 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
 
    // Direct all renders to the "static" buffer.
    if (m_pddsStatic)
-      m_pddsStatic->Activate(true);
+      m_pddsStatic->Activate();
    else
-      m_pddsBackBuffer->Activate(true);
+      m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->Activate();
 
    //m_gpu_profiler.Init(m_pd3dDevice->GetCoreDevice()); // done by first BeginFrame() call lazily
 

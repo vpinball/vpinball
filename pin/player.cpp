@@ -1602,7 +1602,7 @@ HRESULT Player::Init()
          }
    }
    // Direct all renders to the back buffer.
-   m_pin3d.m_pddsBackBuffer->Activate(false);
+   m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->Activate();
 
    m_ptable->m_progressDialog.SetProgress(90);
 
@@ -1867,7 +1867,7 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
 
    UpdateBallShaderMatrix();
 
-   m_pin3d.m_pddsBackBuffer->Activate(false);
+   m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->Activate();
 }
 
 void Player::RenderMirrorOverlay()
@@ -2126,7 +2126,7 @@ void Player::InitStatic()
    {
       const bool useAA = (m_AA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
 
-      m_pin3d.m_pddsStatic->CopyTo(m_pin3d.m_pddsBackBuffer); // save Z buffer and render (cannot be called inside BeginScene -> EndScene cycle)
+      m_pin3d.m_pddsStatic->CopyTo(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()); // save Z buffer and render (cannot be called inside BeginScene -> EndScene cycle)
 
       m_pin3d.m_pd3dPrimaryDevice->BeginScene();
       m_pin3d.RenderPlayfieldGraphics(true); // mirror depth buffer only contained static objects, but no playfield yet -> so render depth only to add this
@@ -2135,7 +2135,7 @@ void Player::InitStatic()
       RenderTarget* tmpDepth = m_pin3d.m_pddsStatic->Duplicate();
       m_pin3d.m_pddsStatic->CopyTo(tmpDepth);
 
-      m_pin3d.m_pddsBackBuffer->CopyTo(m_pin3d.m_pddsStatic); // Restore saved Z buffer and render (cannot be called inside BeginScene -> EndScene cycle)
+      m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->CopyTo(m_pin3d.m_pddsStatic); // Restore saved Z buffer and render (cannot be called inside BeginScene -> EndScene cycle)
 
       m_pin3d.m_pd3dPrimaryDevice->BeginScene();
 
@@ -3477,7 +3477,7 @@ void Player::DrawBulbLightBuffer()
    }
 
    // switch back to render buffer
-   m_pin3d.m_pddsBackBuffer->Activate(false);
+   m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->Activate();
 
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_Texture3, m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture()->GetColorSampler());
 }
@@ -3703,7 +3703,7 @@ void Player::SSRefl()
    m_pin3d.m_pd3dPrimaryDevice->GetReflectionBufferTexture()->Activate(true);
 
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture0, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture3, m_pin3d.m_pddsBackBuffer->GetDepthSampler());
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture3, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture4, &m_pin3d.m_aoDitherTexture, TextureFilter::TEXTURE_MODE_NONE, false, false, true); //!!!
 
    const vec4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), 1.0f/*radical_inverse(m_overall_frames%2048)*/, 1.0f);
@@ -3795,7 +3795,7 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
          m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->Activate(true);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture0, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture()->GetColorSampler());
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture3, m_pin3d.m_pddsBackBuffer->GetDepthSampler());
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture3, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
 
       const bool is_anaglyph = m_stereo3D >= STEREO_ANAGLYPH_RC && m_stereo3D <= STEREO_ANAGLYPH_AB;
       const vec4 ms_zpd_ya_td(m_ptable->GetMaxSeparation(), m_ptable->GetZPD(), m_stereo3DY ? 1.0f : 0.0f,
@@ -3825,8 +3825,8 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
          m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->Activate(true);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture0, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture()->GetColorSampler());
-      if (depth_available)
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture3, m_pin3d.m_pddsBackBuffer->GetDepthSampler());
+      if (depth_available) // Depth is always taken from the MSAA resolved render buffer
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture3, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
 
       const vec4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), (float)m_width, depth_available ? 1.f : 0.f);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &w_h_height);
@@ -3897,7 +3897,7 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture0, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
 
       if (depth_available)
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture3, m_pin3d.m_pddsBackBuffer->GetDepthSampler());
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture3, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
 
       const vec4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), (float)m_width, depth_available ? 1.f : 0.f);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &w_h_height);
@@ -4416,8 +4416,11 @@ void Player::PrepareVideoBuffersNormal()
    const bool ss_refl = (((m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1)) && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && m_ptable->m_SSRScale > 0.f);
    const unsigned int sharpen = m_sharpen;
 
+   RenderTarget *renderedRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture();
+   RenderTarget *ouputRT = nullptr;
+
    if (stereo || ss_refl)
-      m_pin3d.m_pddsBackBuffer->UpdateDepthSampler(); // do not put inside BeginScene/EndScene Block
+      renderedRT->UpdateDepthSampler(); // do not put inside BeginScene/EndScene Block
 
    const float shiftedVerts[4 * 5] =
    {
@@ -4510,7 +4513,7 @@ void Player::FlipVideoBuffers(const bool vsync)
 
    // switch to texture output buffer again
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_Texture0);
-   m_pin3d.m_pddsBackBuffer->Activate(true);
+   m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->Activate();
 
    m_lastFlipTime = usec();
 }
@@ -4528,7 +4531,10 @@ void Player::PrepareVideoBuffersAO()
    const bool ss_refl = (((m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1)) && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && m_ptable->m_SSRScale > 0.f);
    const unsigned int sharpen = m_sharpen;
 
-   m_pin3d.m_pddsBackBuffer->UpdateDepthSampler(); // do not put inside BeginScene/EndScene Block
+   RenderTarget *renderedRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture();
+   RenderTarget *ouputRT = nullptr;
+
+   renderedRT->UpdateDepthSampler(); // do not put inside BeginScene/EndScene Block
 
    m_pin3d.m_pd3dPrimaryDevice->BeginScene();
 
@@ -4569,7 +4575,7 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture0, m_pin3d.m_pddsAOBackBuffer->GetColorSampler());
    //m_pin3d.m_pd3dDevice->FBShader->SetTexture(SHADER_Texture1, m_pin3d.m_pd3dDevice->GetBackBufferTmpTexture()); // temporary normals
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture4, &m_pin3d.m_aoDitherTexture, TextureFilter::TEXTURE_MODE_NONE, false, false, true);
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture3, m_pin3d.m_pddsBackBuffer->GetDepthSampler());
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_Texture3, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
 
    const vec4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height),
       radical_inverse(m_overall_frames%2048)*(float)(1. / 8.0),
@@ -4938,8 +4944,8 @@ void Player::Render()
 
    RenderDevice::m_stats_drawn_triangles = 0;
 
-   // copy static buffers to back buffer and z buffer
-   m_pin3d.m_pddsStatic->CopyTo(m_pin3d.m_pddsBackBuffer); // cannot be called inside BeginScene -> EndScene cycle
+   // copy static buffers to back buffer including z buffer
+   m_pin3d.m_pddsStatic->CopyTo(m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture()); // cannot be called inside BeginScene -> EndScene cycle
 
    // Physics/Timer updates, done at the last moment, especially to handle key input (VP<->VPM rountrip) and animation triggers
    //if ( !cameraMode )

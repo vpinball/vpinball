@@ -10,7 +10,7 @@ public:
    RenderTarget(RenderDevice* rd, const int width, const int height, const colorFormat format, bool with_depth, bool use_MSAA, int stereo, const char* failureMessage);
    ~RenderTarget();
 
-   void Activate(bool ignoreStereo);
+   void Activate(bool ignoreStereo = false);
 
    Sampler* GetColorSampler() { return m_color_sampler; }
    void UpdateDepthSampler();

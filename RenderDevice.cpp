@@ -261,7 +261,7 @@ void ReportFatalError(const HRESULT hr, const char *file, const int line)
 
 void ReportError(const char *errorText, const HRESULT hr, const char *file, const int line)
 {
-   char msg[2048+128];
+   char msg[16384];
 #ifdef ENABLE_SDL
    sprintf_s(msg, sizeof(msg), "GL Error 0x%0002X %s in %s:%d\n%s", hr, glErrorToString(hr), file, line, errorText);
    ShowError(msg);
@@ -275,7 +275,7 @@ void ReportError(const char *errorText, const HRESULT hr, const char *file, cons
 unsigned m_curLockCalls, m_frameLockCalls;
 unsigned int RenderDevice::Perf_GetNumLockCalls() const { return m_frameLockCalls; }
 
-#if 0//def ENABLE_SDL //not used anymore
+#ifdef ENABLE_SDL
 void checkGLErrors(const char *file, const int line) {
    GLenum err;
    unsigned int count = 0;
@@ -298,97 +298,97 @@ void APIENTRY GLDebugMessageCallback(GLenum source, GLenum type, GLuint id,
     char* _source;
     switch (source) {
         case GL_DEBUG_SOURCE_API:
-        _source = "API";
+        _source = (LPSTR) "API";
         break;
 
         case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
-        _source = "WINDOW SYSTEM";
+        _source = (LPSTR) "WINDOW SYSTEM";
         break;
 
         case GL_DEBUG_SOURCE_SHADER_COMPILER:
-        _source = "SHADER COMPILER";
+        _source = (LPSTR) "SHADER COMPILER";
         break;
 
         case GL_DEBUG_SOURCE_THIRD_PARTY:
-        _source = "THIRD PARTY";
+        _source = (LPSTR) "THIRD PARTY";
         break;
 
         case GL_DEBUG_SOURCE_APPLICATION:
-        _source = "APPLICATION";
+        _source = (LPSTR) "APPLICATION";
         break;
 
         case GL_DEBUG_SOURCE_OTHER:
-        _source = "UNKNOWN";
+        _source = (LPSTR) "UNKNOWN";
         break;
 
         default:
-        _source = "UNHANDLED";
+        _source = (LPSTR) "UNHANDLED";
         break;
     }
 
     char* _type;
     switch (type) {
         case GL_DEBUG_TYPE_ERROR:
-        _type = "ERROR";
+        _type = (LPSTR) "ERROR";
         break;
 
         case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-        _type = "DEPRECATED BEHAVIOR";
+        _type = (LPSTR) "DEPRECATED BEHAVIOR";
         break;
 
         case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-        _type = "UNDEFINED BEHAVIOR";
+        _type = (LPSTR) "UNDEFINED BEHAVIOR";
         break;
 
         case GL_DEBUG_TYPE_PORTABILITY:
-        _type = "PORTABILITY";
+        _type = (LPSTR) "PORTABILITY";
         break;
 
         case GL_DEBUG_TYPE_PERFORMANCE:
-        _type = "PERFORMANCE";
+        _type = (LPSTR) "PERFORMANCE";
         break;
 
         case GL_DEBUG_TYPE_OTHER:
-        _type = "OTHER";
+        _type = (LPSTR) "OTHER";
         break;
 
         case GL_DEBUG_TYPE_MARKER:
-        _type = "MARKER";
+        _type = (LPSTR) "MARKER";
         break;
 
         case GL_DEBUG_TYPE_PUSH_GROUP:
-        _type = "GL_DEBUG_TYPE_PUSH_GROUP";
+        _type = (LPSTR) "GL_DEBUG_TYPE_PUSH_GROUP";
         break;
 
         case GL_DEBUG_TYPE_POP_GROUP:
-        _type = "GL_DEBUG_TYPE_POP_GROUP";
+        _type = (LPSTR) "GL_DEBUG_TYPE_POP_GROUP";
         break;
 
     	default:
-        _type = "UNHANDLED";
+        _type = (LPSTR) "UNHANDLED";
         break;
     }
 
     char* _severity;
     switch (severity) {
         case GL_DEBUG_SEVERITY_HIGH:
-        _severity = "HIGH";
+        _severity = (LPSTR) "HIGH";
         break;
 
         case GL_DEBUG_SEVERITY_MEDIUM:
-        _severity = "MEDIUM";
+        _severity = (LPSTR) "MEDIUM";
         break;
 
         case GL_DEBUG_SEVERITY_LOW:
-        _severity = "LOW";
+        _severity = (LPSTR) "LOW";
         break;
 
         case GL_DEBUG_SEVERITY_NOTIFICATION:
-        _severity = "NOTIFICATION";
+        _severity = (LPSTR) "NOTIFICATION";
         break;
 
         default:
-        _severity = "UNHANDLED";
+        _severity = (LPSTR) "UNHANDLED";
         break;
     }
 
@@ -667,10 +667,144 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     m_curTextureUpdates = m_frameTextureUpdates = 0;
 
     m_curLockCalls = m_frameLockCalls = 0; //!! meh
+
+    m_pOffscreenMSAABackBufferTexture = nullptr;
+    m_pOffscreenBackBufferTexture = nullptr;
+    m_pOffscreenBackBufferTmpTexture = nullptr;
+    m_pOffscreenBackBufferTmpTexture2 = nullptr;
+    m_pOffscreenVRLeft = nullptr;
+    m_pOffscreenVRRight = nullptr;
+    m_pBloomBufferTexture = nullptr;
+    m_pBloomTmpBufferTexture = nullptr;
+    m_pMirrorTmpBufferTexture = nullptr;
 }
 
 void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 {
+   m_current_renderstate.state = m_renderstate.state = 0;
+   m_current_renderstate.depth_bias = m_renderstate.depth_bias = 0.0f;
+   m_current_renderstate.alpha_ref = m_renderstate.alpha_ref = 0;
+#ifdef ENABLE_SDL
+   ///////////////////////////////////
+   // OpenGL device initialization
+   const int displays = getNumberOfDisplays();
+   if ((int)adapterIndex >= displays)
+      m_adapter = 0;
+   else
+      m_adapter = adapterIndex;
+
+   SDL_DisplayMode mode;
+   if (SDL_GetCurrentDisplayMode(m_adapter, &mode) != 0)
+   {
+      ShowError("Failed to setup SDL output window");
+      exit(-1);
+   }
+   refreshrate = mode.refresh_rate;
+   bool video10bit = mode.format == SDL_PIXELFORMAT_ARGB2101010;
+
+   memset(m_samplerStateCache, 0, 3 * 3 * 5 * sizeof(GLuint));
+
+   m_sdl_playfieldHwnd = g_pplayer->m_sdl_playfieldHwnd;
+   SDL_SysWMinfo wmInfo;
+   SDL_VERSION(&wmInfo.version);
+   SDL_GetWindowWMInfo(m_sdl_playfieldHwnd, &wmInfo);
+   m_windowHwnd = wmInfo.info.win.window;
+
+   m_sdl_context = SDL_GL_CreateContext(m_sdl_playfieldHwnd);
+
+   SDL_GL_MakeCurrent(m_sdl_playfieldHwnd, m_sdl_context);
+
+   if (!gladLoadGLLoader(SDL_GL_GetProcAddress)) {
+      ShowError("Glad failed");
+      exit(-1);
+   }
+
+   int gl_majorVersion = 0;
+   int gl_minorVersion = 0;
+   glGetIntegerv(GL_MAJOR_VERSION, &gl_majorVersion);
+   glGetIntegerv(GL_MINOR_VERSION, &gl_minorVersion);
+
+   if (gl_majorVersion < 3 || (gl_majorVersion == 3 && gl_minorVersion < 2)) {
+      char errorMsg[256];
+      sprintf_s(errorMsg, sizeof(errorMsg), "Your graphics card only supports OpenGL %d.%d, but VPVR requires OpenGL 3.2 or newer.", gl_majorVersion, gl_minorVersion);
+      ShowError(errorMsg);
+      exit(-1);
+   }
+
+   m_GLversion = gl_majorVersion*100 + gl_minorVersion;
+
+   // Enable debugging layer of OpenGL
+#ifdef _DEBUG
+   glEnable(GL_DEBUG_OUTPUT); // on its own is the 'fast' version
+   //glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); // callback is in sync with errors, so a breakpoint can be placed on the callback in order to get a stacktrace for the GL error
+   glDebugMessageCallback(GLDebugMessageCallback, nullptr);
+#endif
+#if 0
+   glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_FALSE); // disable all
+   glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_ERROR, GL_DONT_CARE, 0, nullptr, GL_TRUE); // enable only errors
+#endif
+
+   /* This fails on some situations, just keep the requested size
+   GLint frameBuffer[4];
+   glGetIntegerv(GL_VIEWPORT, frameBuffer);
+   const int fbWidth = frameBuffer[2];
+   const int fbHeight = frameBuffer[3];
+   m_width = fbWidth;
+   m_height = fbHeight;
+   */
+
+   if (m_stereo3D == STEREO_VR)
+   {
+#ifdef ENABLE_VR
+      if (LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "scaleToFixedWidth"s, false))
+      {
+         float width;
+         g_pplayer->m_ptable->get_Width(&width);
+         m_scale = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "scaleAbsolute"s, 55.0f) * 0.01f / width;
+      }
+      else
+         m_scale = 0.000540425f * LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "scaleRelative"s, 1.0f);
+      if (m_scale <= 0.f)
+         m_scale = 0.000540425f; // Scale factor for VPUnits to Meters
+      // Initialize VR, this will also override the render buffer size (m_width, m_height) to account for HMD render size and render the 2 eyes simultaneously
+      InitVR();
+#endif
+   }
+   else if (m_stereo3D >= STEREO_ANAGLYPH_RC && m_stereo3D <= STEREO_ANAGLYPH_AB)
+   {
+      // For anaglyph stereo mode, we need to double the width since the 2 eye images are mixed by colors, each being at the resolution of the output.
+      m_width = m_width * 2;
+   }
+
+   if (m_stereo3D == STEREO_VR || m_vsync > refreshrate)
+      m_vsync = 0;
+   SDL_GL_SetSwapInterval(m_vsync);
+
+   m_maxaniso = 0;
+   glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &m_maxaniso);
+   int max_frag_unit, max_combined_unit;
+   glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_frag_unit);
+   glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_combined_unit);
+   int n_tex_units = min(max_frag_unit, max_combined_unit);
+   for (int i = 0; i < n_tex_units; i++)
+   {
+      SamplerBinding* binding = new SamplerBinding();
+      binding->unit = i;
+      binding->use_rank = i;
+      binding->sampler = nullptr;
+      binding->filter = SF_UNDEFINED;
+      binding->clamp_u = SA_UNDEFINED;
+      binding->clamp_v = SA_UNDEFINED;
+      m_samplerBindings.push_back(binding);
+   }
+   m_autogen_mipmap = true;
+
+   SetRenderState(RenderDevice::ZFUNC, RenderDevice::Z_LESSEQUAL);
+
+#else
+   ///////////////////////////////////
+   // DirectX 9 device initialization
+
 #ifdef USE_D3D9EX
    m_pD3DEx = nullptr;
    m_pD3DDeviceEx = nullptr;
@@ -797,12 +931,8 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 #endif
 
    // Determine if INTZ is supported
-#ifdef ENABLE_SDL
-   m_INTZ_support = false;
-#else
    m_INTZ_support = (m_pD3D->CheckDeviceFormat( m_adapter, devtype, params.BackBufferFormat,
                      D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, ((D3DFORMAT)(MAKEFOURCC('I','N','T','Z'))))) == D3D_OK;
-#endif
 
    // check if requested MSAA is possible
    DWORD MultiSampleQualityLevels;
@@ -888,48 +1018,112 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 
    /*if (m_fullscreen)
        hr = m_pD3DDevice->SetDialogBoxMode(TRUE);*/ // needs D3DPRESENTFLAG_LOCKABLE_BACKBUFFER, but makes rendering slower on some systems :/
+#endif
 
    // Retrieve a reference to the back buffer.
-   m_pBackBuffer = new RenderTarget(this);
+   int back_buffer_width, back_buffer_height;
+#ifdef ENABLE_SDL
+   SDL_GL_GetDrawableSize(m_sdl_playfieldHwnd, &back_buffer_width, &back_buffer_height);
+#else
+   back_buffer_width = m_width;
+   back_buffer_height = m_height;
+#endif
+   m_pBackBuffer = new RenderTarget(this, back_buffer_width, back_buffer_height);
 
+#ifdef ENABLE_SDL
+   const colorFormat render_format = ((m_BWrendering == 1) ? colorFormat::RG16F : ((m_BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGB16F));
+#else
    const colorFormat render_format = ((m_BWrendering == 1) ? colorFormat::RG16F : ((m_BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGBA16F));
-
+#endif
    // alloc float buffer for rendering (optionally 2x2 res for manual super sampling)
-   m_pOffscreenBackBufferTexture = new RenderTarget(this, m_useAA ? 2 * m_width : m_width, m_useAA ? 2 * m_height : m_height, render_format, true, false, m_stereo3D, "Fatal Error: unable to create render buffer!");
+   int m_width_aa = (int)(m_useAA ? 2 * m_width : m_width);
+   int m_height_aa = (int)(m_useAA ? 2 * m_height : m_height);
 
-   // alloc buffer for screen space fake reflection rendering (optionally 2x2 res for manual super sampling)
+   int nMSAASamples = 1; // FIXME g_pplayer->m_MSAASamples;
+#ifdef ENABLE_SDL
+   int maxSamples;
+   glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
+   nMSAASamples = min(maxSamples, nMSAASamples);
+#endif
+   m_pOffscreenMSAABackBufferTexture = new RenderTarget(this, m_width_aa, m_height_aa, render_format, true, nMSAASamples, m_stereo3D, "Fatal Error: unable to create render buffer!");
+
+   // If we are doing MSAA we need a texture with the same dimensions as the Back Buffer to resolve the end result to, can also use it for Post-AA
+   if (nMSAASamples > 1)
+      m_pOffscreenBackBufferTexture = new RenderTarget(this, m_width_aa, m_height_aa, render_format, true, 1, STEREO_OFF, "Fatal Error: unable to create MSAA resolve buffer!");
+   else
+      m_pOffscreenBackBufferTexture = m_pOffscreenMSAABackBufferTexture;
+
+   // alloc buffer for screen space fake reflection rendering
    if (m_ssRefl)
-      m_pReflectionBufferTexture = new RenderTarget(this, m_useAA ? 2 * m_width : m_width, m_useAA ? 2 * m_height : m_height, render_format, false, false, m_stereo3D, "Fatal Error: unable to create reflection buffer!");
+      m_pReflectionBufferTexture = new RenderTarget(this, m_width_aa, m_height_aa, render_format, false, 1, STEREO_OFF, "Fatal Error: unable to create reflection buffer!");
    else
       m_pReflectionBufferTexture = nullptr;
 
+   m_pMirrorTmpBufferTexture = nullptr;
    if (g_pplayer != nullptr)
    {
       const bool drawBallReflection = ((g_pplayer->m_reflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
       if ((g_pplayer->m_ptable->m_reflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
-         m_pMirrorTmpBufferTexture = new RenderTarget(this, m_useAA ? 2 * m_width : m_width, m_useAA ? 2 * m_height : m_height, render_format, false, false, m_stereo3D, "Fatal Error: unable to create reflection map!");
+         m_pMirrorTmpBufferTexture = new RenderTarget(this, m_width_aa, m_height_aa, render_format, true, 1, m_stereo3D, "Fatal Error: unable to create mirror buffer!");
    }
+
    // alloc bloom tex at 1/4 x 1/4 res (allows for simple HQ downscale of clipped input while saving memory)
-   m_pBloomBufferTexture = new RenderTarget(this, m_width / 4, m_height / 4, render_format, false, false, m_stereo3D, "Fatal Error: unable to create bloom buffer!");
+   m_pBloomBufferTexture = new RenderTarget(this, m_width / 4, m_height / 4, render_format, false, 1, STEREO_OFF, "Fatal Error: unable to create bloom buffer!");
 
    // temporary buffer for gaussian blur
-   m_pBloomTmpBufferTexture = new RenderTarget(this, m_width / 4, m_height / 4, render_format, false, false, m_stereo3D, "Fatal Error: unable to create blur buffer!");
+   m_pBloomTmpBufferTexture = new RenderTarget(this, m_width / 4, m_height / 4, render_format, false, 1, STEREO_OFF, "Fatal Error: unable to create blur buffer!");
+
+#ifdef ENABLE_SDL
+   if (m_stereo3D == STEREO_VR) {
+      //AMD Debugging
+      colorFormat renderBufferFormatVR;
+      const int textureModeVR = LoadValueIntWithDefault(regKey[RegName::Player], "textureModeVR"s, 1);
+      switch (textureModeVR) {
+      case 0:
+         renderBufferFormatVR = RGB8;
+         break;
+      case 2:
+         renderBufferFormatVR = RGB16F;
+         break;
+      case 3:
+         renderBufferFormatVR = RGBA16F;
+         break;
+      case 1:
+      default:
+         renderBufferFormatVR = RGBA8;
+         break;
+      }
+      m_pOffscreenVRLeft = new RenderTarget(this, m_width / 2, m_height, renderBufferFormatVR, false, 1, STEREO_OFF, "Fatal Error: unable to create left eye buffer!");
+      m_pOffscreenVRRight = new RenderTarget(this, m_width / 2, m_height, renderBufferFormatVR, false, 1, STEREO_OFF, "Fatal Error: unable to create right eye buffer!");
+   }
+   else
+#endif
+   {
+      m_pOffscreenVRLeft = nullptr;
+      m_pOffscreenVRRight = nullptr;
+   }
+
+   // Buffers for post-processing (postprocess is done at scene resolution, on a LDR render target without MSAA or full scene supersampling)
+#ifdef ENABLE_SDL
+    colorFormat pp_format = video10bit ? colorFormat::RGB10 : colorFormat::RGB8;
+#else
+    colorFormat pp_format = video10bit ? colorFormat::RGBA10 : colorFormat::RGBA8;
+#endif
 
    // alloc temporary buffer for stereo3D/post-processing AA/sharpen
-   if ((m_stereo3D != STEREO_OFF) || (m_FXAA > 0) || m_sharpen)
-      m_pOffscreenBackBufferTmpTexture = new RenderTarget(this, m_width, m_height, video10bit ? colorFormat::RGBA10 : colorFormat::RGBA8, false, false, m_stereo3D,
-         "Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!");
+   if ((m_stereo3D != STEREO_OFF) || (m_FXAA != FXAASettings::Disabled) || m_sharpen)
+      m_pOffscreenBackBufferTmpTexture = new RenderTarget(this, m_width, m_height, pp_format, false, 1, STEREO_OFF, "Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!");
    else
       m_pOffscreenBackBufferTmpTexture = nullptr;
 
-   // alloc one more temporary buffer for SMAA
-   if (m_FXAA == Quality_SMAA)
-      m_pOffscreenBackBufferTmpTexture2 = new RenderTarget(this, m_width, m_height, video10bit ? colorFormat::RGBA10 : colorFormat::RGBA8, false, false, m_stereo3D, "Fatal Error: unable to create SMAA buffer!");
+   // alloc one more temporary buffer for SMAA, DLAA, stereo post processing
+   if ((m_stereo3D != STEREO_OFF) || m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA)
+      m_pOffscreenBackBufferTmpTexture2 = new RenderTarget(this, m_width, m_height, pp_format, false, 1, STEREO_OFF, "Fatal Error: unable to create SMAA buffer!");
    else
       m_pOffscreenBackBufferTmpTexture2 = nullptr;
 
    if (video10bit && (m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA))
-      ShowError("SMAA or DLAA post-processing AA should not be combined with 10Bit-output rendering (will result in visible artifacts)!");
+      ShowError("SMAA or DLAA post-processing AA should not be combined with 10bit-output rendering (will result in visible artifacts)!");
 
    //
 
