@@ -1586,15 +1586,15 @@ void RenderDevice::CopyRenderStates(const bool copyTo, RenderStateCache& state)
 void RenderDevice::ApplyRenderStates()
 {
 #ifdef ENABLE_SDL
-   static const int cull_modes[] = { 0, GL_CW, GL_CCW };
-   static const int functions[] = { GL_ALWAYS, GL_LESS, GL_LEQUAL, GL_GREATER, GL_GEQUAL };
-   static const int blend_modes[] = { GL_MAX, GL_FUNC_ADD, GL_FUNC_REVERSE_SUBTRACT };
-   static const int blend_functions[] = { GL_ZERO, GL_ONE, GL_SRC_ALPHA, GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR };
+   constexpr int cull_modes[] = { 0, GL_CW, GL_CCW };
+   constexpr int functions[] = { GL_ALWAYS, GL_LESS, GL_LEQUAL, GL_GREATER, GL_GEQUAL };
+   constexpr int blend_modes[] = { GL_MAX, GL_FUNC_ADD, GL_FUNC_REVERSE_SUBTRACT };
+   constexpr int blend_functions[] = { GL_ZERO, GL_ONE, GL_SRC_ALPHA, GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR };
 #else
-   static const int cull_modes[] = { D3DCULL_NONE, D3DCULL_CW, D3DCULL_CCW };
-   static const int functions[] = { D3DCMP_ALWAYS, D3DCMP_LESS, D3DCMP_LESSEQUAL, D3DCMP_GREATER, D3DCMP_GREATEREQUAL };
-   static const int blend_modes[] = { D3DBLENDOP_MAX, D3DBLENDOP_ADD, D3DBLENDOP_REVSUBTRACT };
-   static const int blend_functions[] = { D3DBLEND_ZERO, D3DBLEND_ONE, D3DBLEND_SRCALPHA, D3DBLEND_DESTALPHA, D3DBLEND_INVSRCALPHA, D3DBLEND_INVSRCCOLOR };
+   constexpr int cull_modes[] = { D3DCULL_NONE, D3DCULL_CW, D3DCULL_CCW };
+   constexpr int functions[] = { D3DCMP_ALWAYS, D3DCMP_LESS, D3DCMP_LESSEQUAL, D3DCMP_GREATER, D3DCMP_GREATEREQUAL };
+   constexpr int blend_modes[] = { D3DBLENDOP_MAX, D3DBLENDOP_ADD, D3DBLENDOP_REVSUBTRACT };
+   constexpr int blend_functions[] = { D3DBLEND_ZERO, D3DBLEND_ONE, D3DBLEND_SRCALPHA, D3DBLEND_DESTALPHA, D3DBLEND_INVSRCALPHA, D3DBLEND_INVSRCCOLOR };
 #endif
 
    int val;
@@ -1602,7 +1602,7 @@ void RenderDevice::ApplyRenderStates()
    while (renderstate_mask)
    {
       // Iterate over set bits, starting from the least significant ones
-      unsigned next_difference = renderstate_mask & (-renderstate_mask);
+      unsigned next_difference = renderstate_mask & (unsigned)(-(int)renderstate_mask);
       switch (next_difference)
       {
       case RENDER_STATE_MASK_ALPHABLENDENABLE:
@@ -1869,7 +1869,7 @@ void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
 
 void RenderDevice::DrawFullscreenTexturedQuad()
 {
-   /*static const float verts[4 * 5] =
+   /*constexpr float verts[4 * 5] =
    {
       1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
       -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,

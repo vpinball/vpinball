@@ -4,7 +4,7 @@
 // Source: http://stereopsis.com/sree/fpu2006.html
 /*__forceinline int RoundToInt(double val)
 {
-static const double _xs_doublemagic = 6755399441055744.0;   //2^52 * 1.5, uses limited precision to floor
+constexpr double _xs_doublemagic = 6755399441055744.0;   //2^52 * 1.5, uses limited precision to floor
 val = val + _xs_doublemagic;
 return ((int*)&val)[0];
 }*/

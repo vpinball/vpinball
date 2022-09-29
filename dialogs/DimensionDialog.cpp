@@ -12,47 +12,47 @@ struct ManufacturerDimensions
 #define DIM_TABLE_SIZE 40
 static const ManufacturerDimensions dimTable[DIM_TABLE_SIZE] =
 {
-   { "Atari (widebody)", 27.0f, 45.0f },
-   { "Bally EM (standard)", 20.25f, 41.0f },
-   { "Bally (standard)", 20.25f, 42.0f },
-   { "Bally (widebody)", 26.75f, 42.0f }, //!! OPA claims 40.5
-   { "Capcom", 20.25f, 46.0f },
-   { "Data East (up to Hook)", 20.25f, 42.0f }, //!! cyberpez: A KLOV member measured his BTTF for me: "42.5 x 20.25. I expect the extra half inch to be an anomaly on my machine, or I'm measuring at the wrong spot." (speculation: at least Batman, Monday Night Football, King Kong and Phantom of the Opera, are this size too)
-   { "Data East/Sega (standard)", 20.25f, 46.0f }, // verified by Sliderpoint on RaB (speculation: at least TMNT and LW3 are this size, too)
-   { "Data East/Sega (widebody)", 23.25f, 46.0f },
-   { "Game Plan", 20.25f, 42.0f },
-   { "Gottlieb EM (through 76)", 20.25f, 41.0f },
-   { "Gottlieb EM (76-79)", 20.25f, 42.0f },
-   { "Gottlieb System 1 (standard)", 20.25f, 42.0f },
-   { "Gottlieb System 1 (widebody)", 26.75f, 47.0f },
-   { "Gottlieb System 80 (standard)", 20.25f, 42.0f },
-   { "Gottlieb System 80 (widebody)", 23.875f, 47.875f }, // verified on at least two actual machines (via BorgDog)
-   { "Gottlieb System 80 (extrawide)", 26.75f, 46.5f },
-   { "Gottlieb System 3", 20.25f, 46.0f },
-   { "Stern (widebody)", 23.875f, 45.0f },
-   { "Stern (standard)", 20.25f, 42.0f },
-   { "Stern Modern (standard)", 20.25f, 45.0f },
-   { "Williams EM (standard)", 20.25f, 42.0f }, // measured by Bord via a Williams 1965 EM
-   { "Williams System 1-11 (standard)", 20.25f, 42.0f },
-   { "Williams System 1-11 (widebody)", 27.0f, 42.0f },
-   { "WMS WPC (standard)", 20.5f, 46.0f },
-   { "WMS WPC (superpin)", 23.25f, 46.0f },
-   { "WMS Pinball 2000", 20.5f, 43.0f },
-   { "Zaccaria (standard)", 20.25f, 42.0f },
-   { "Black Knight 2000 (1991)", 20.25f, 46.0f }, //!! OPA: 20.2756 x 42.0
-   { "Bride Of Pinbot (1991)", 20.25f, 45.25f }, //!! OPA: 20.2362 x 45.27559
-   { "BSD Dracula (1993)", 20.5f, 45.0f }, //!! chepas claims its 20.5 (by pics/compared to TAF), OPA 20.25
-   { "Doctor Who (1992)", 20.25f, 45.0625f },
-   { "Future Spa (1979)", 26.7717f, 40.55118f },
-   { "Guns N' Roses (1994)", 25.0f, 51.75f },
-   { "Hercules (1979 Atari)", 36.0f, 72.0f },
-   { "Mystery Castle (1993 Alvin G)", 20.25f, 46.0f },
+   { "Atari (widebody)"s, 27.0f, 45.0f },
+   { "Bally EM (standard)"s, 20.25f, 41.0f },
+   { "Bally (standard)"s, 20.25f, 42.0f },
+   { "Bally (widebody)"s, 26.75f, 42.0f }, //!! OPA claims 40.5
+   { "Capcom"s, 20.25f, 46.0f },
+   { "Data East (up to Hook)"s, 20.25f, 42.0f }, //!! cyberpez: A KLOV member measured his BTTF for me: "42.5 x 20.25. I expect the extra half inch to be an anomaly on my machine, or I'm measuring at the wrong spot." (speculation: at least Batman, Monday Night Football, King Kong and Phantom of the Opera, are this size too)
+   { "Data East/Sega (standard)"s, 20.25f, 46.0f }, // verified by Sliderpoint on RaB (speculation: at least TMNT and LW3 are this size, too)
+   { "Data East/Sega (widebody)"s, 23.25f, 46.0f },
+   { "Game Plan"s, 20.25f, 42.0f },
+   { "Gottlieb EM (through 76)"s, 20.25f, 41.0f },
+   { "Gottlieb EM (76-79)"s, 20.25f, 42.0f },
+   { "Gottlieb System 1 (standard)"s, 20.25f, 42.0f },
+   { "Gottlieb System 1 (widebody)"s, 26.75f, 47.0f },
+   { "Gottlieb System 80 (standard)"s, 20.25f, 42.0f },
+   { "Gottlieb System 80 (widebody)"s, 23.875f, 47.875f }, // verified on at least two actual machines (via BorgDog)
+   { "Gottlieb System 80 (extrawide)"s, 26.75f, 46.5f },
+   { "Gottlieb System 3"s, 20.25f, 46.0f },
+   { "Stern (widebody)"s, 23.875f, 45.0f },
+   { "Stern (standard)"s, 20.25f, 42.0f },
+   { "Stern Modern (standard)"s, 20.25f, 45.0f },
+   { "Williams EM (standard)"s, 20.25f, 42.0f }, // measured by Bord via a Williams 1965 EM
+   { "Williams System 1-11 (standard)"s, 20.25f, 42.0f },
+   { "Williams System 1-11 (widebody)"s, 27.0f, 42.0f },
+   { "WMS WPC (standard)"s, 20.5f, 46.0f },
+   { "WMS WPC (superpin)"s, 23.25f, 46.0f },
+   { "WMS Pinball 2000"s, 20.5f, 43.0f },
+   { "Zaccaria (standard)"s, 20.25f, 42.0f },
+   { "Black Knight 2000 (1991)"s, 20.25f, 46.0f }, //!! OPA: 20.2756 x 42.0
+   { "Bride Of Pinbot (1991)"s, 20.25f, 45.25f }, //!! OPA: 20.2362 x 45.27559
+   { "BSD Dracula (1993)"s, 20.5f, 45.0f }, //!! chepas claims its 20.5 (by pics/compared to TAF), OPA 20.25
+   { "Doctor Who (1992)"s, 20.25f, 45.0625f },
+   { "Future Spa (1979)"s, 26.7717f, 40.55118f },
+   { "Guns N' Roses (1994)"s, 25.0f, 51.75f },
+   { "Hercules (1979 Atari)"s, 36.0f, 72.0f },
+   { "Mystery Castle (1993 Alvin G)"s, 20.25f, 46.0f },
    // Playboy does not have standard size, so around 20.25f, 42.0f ???
-   { "Safe Cracker (1996)", 16.5f, 41.5f }, //!! OPA: "propably" 18.35 x 41.5
-   { "Secret Service (1988)", 20.275f, 42.126f }, // measured by Baron Shadow
-   { "Star Trek 25th (1991)", 20.25f, 42.625f }, //!! via cyberpez, with an error of +/- 1/4 of an inch (bracket was in the way), so 42.375-42.875
-   { "Varkon (1982)", 24.0f, 21.0f },
-   { "World Cup Soccer (1994)", 20.25f, 45.75f } //!! OPA: 20.2756 x 45.7874
+   { "Safe Cracker (1996)"s, 16.5f, 41.5f }, //!! OPA: "propably" 18.35 x 41.5
+   { "Secret Service (1988)"s, 20.275f, 42.126f }, // measured by Baron Shadow
+   { "Star Trek 25th (1991)"s, 20.25f, 42.625f }, //!! via cyberpez, with an error of +/- 1/4 of an inch (bracket was in the way), so 42.375-42.875
+   { "Varkon (1982)"s, 24.0f, 21.0f },
+   { "World Cup Soccer (1994)"s, 20.25f, 45.75f } //!! OPA: 20.2756 x 45.7874
 };
 
 DimensionDialog::DimensionDialog() : CDialog(IDD_DIMENSION_CALCULATOR)
