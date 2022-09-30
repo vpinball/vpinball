@@ -912,6 +912,11 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
 {
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
+   /* TODO: This is a misnomer right now, but clamp fixes some visual glitches (single-pixel lines)
+    * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
+    * since the texture coordinates always stay within [0,1] anyway. */
+   SamplerAddressMode sam = m_d.m_imagealignment == ImageModeWrap ? SA_CLAMP : SA_REPEAT;
+
    pd3dDevice->SetRenderStateDepthBias(0.0f);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
@@ -924,7 +929,7 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
    }
    else
    {
-      pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pin, TextureFilter::TEXTURE_MODE_TRILINEAR, false, false, false);
+      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_UNDEFINED, sam, sam);
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
       pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
 
@@ -2145,8 +2150,13 @@ void Ramp::RenderRamp(const Material * const mat)
 
       if (pin)
       {
+         /* TODO: This is a misnomer right now, but clamp fixes some visual glitches (single-pixel lines)
+          * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
+          * since the texture coordinates always stay within [0,1] anyway. */
+         SamplerAddressMode sam = m_d.m_imagealignment == ImageModeWrap ? SA_CLAMP : SA_REPEAT;
+
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
-         pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pin, TextureFilter::TEXTURE_MODE_TRILINEAR, false, false, false);
+         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_UNDEFINED, sam, sam);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 
          //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );

@@ -1228,8 +1228,8 @@ void Primitive::RenderObject()
       if (pin && nMap)
       {
          pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? SHADER_TECHNIQUE_basic_with_texture_normal_isMetal : SHADER_TECHNIQUE_basic_with_texture_normal);
-         pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pin, TextureFilter::TEXTURE_MODE_TRILINEAR, false, false, false);
-         pd3dDevice->basicShader->SetTexture(SHADER_Texture4, nMap, TextureFilter::TEXTURE_MODE_TRILINEAR, false, false, true);
+         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_UNDEFINED, SA_REPEAT, SA_REPEAT);
+         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, SF_UNDEFINED, SA_REPEAT, SA_REPEAT, true);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
          pd3dDevice->basicShader->SetBool(SHADER_objectSpaceNormalMap, m_d.m_objectSpaceNormalMap);
 
@@ -1241,7 +1241,8 @@ void Primitive::RenderObject()
       else if (pin)
       {
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
-         pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pin, TextureFilter::TEXTURE_MODE_TRILINEAR, false, false, false);
+         // accommodate models with UV coords outside of [0,1]
+         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_UNDEFINED, SA_REPEAT, SA_REPEAT);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 
          //g_pplayer->m_pin3d.SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);

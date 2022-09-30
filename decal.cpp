@@ -541,7 +541,7 @@ void Decal::RenderObject()
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
       else
          pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
-      pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pd3dDevice->m_texMan.LoadTexture(m_textImg, TextureFilter::TEXTURE_MODE_TRILINEAR, false, false, false));
+      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, m_textImg);
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
    }
    else
@@ -553,7 +553,8 @@ void Decal::RenderObject()
             pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
          else
             pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
-         pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pin, TextureFilter::TEXTURE_MODE_TRILINEAR, false, false, false);
+         // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
+         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_UNDEFINED, SA_MIRROR, SA_MIRROR);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
       }
       else

@@ -301,7 +301,7 @@ void Textbox::RenderDynamic()
          g_pplayer->m_pin3d.EnableAlphaTestReference(0x80);
          g_pplayer->m_pin3d.EnableAlphaBlend(false);
 
-         g_pplayer->Spritedraw(x, y, width, height, 0xFFFFFFFF, pd3dDevice->m_texMan.LoadTexture(m_texture, TextureFilter::TEXTURE_MODE_TRILINEAR, false, false, false), m_d.m_intensity_scale);
+         g_pplayer->Spritedraw(x, y, width, height, 0xFFFFFFFF, pd3dDevice->m_texMan.LoadTexture(m_texture, SF_TRILINEAR, SA_REPEAT, SA_REPEAT, false), m_d.m_intensity_scale);
 
          //pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE); //!! not necessary anymore
          pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, RenderDevice::RS_FALSE);

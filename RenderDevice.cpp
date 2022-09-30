@@ -1273,26 +1273,26 @@ void RenderDevice::FreeShader()
 {
    if (basicShader)
    {
-      basicShader->SetTextureNull(SHADER_Texture0);
-      basicShader->SetTextureNull(SHADER_Texture1);
-      basicShader->SetTextureNull(SHADER_Texture2);
-      basicShader->SetTextureNull(SHADER_Texture3);
-      basicShader->SetTextureNull(SHADER_Texture4);
+      basicShader->SetTextureNull(SHADER_tex_base_color);
+      basicShader->SetTextureNull(SHADER_tex_env);
+      basicShader->SetTextureNull(SHADER_tex_diffuse_env);
+      basicShader->SetTextureNull(SHADER_tex_base_transmission);
+      basicShader->SetTextureNull(SHADER_tex_base_normalmap);
       delete basicShader;
       basicShader = 0;
    }
    if (DMDShader)
    {
-      DMDShader->SetTextureNull(SHADER_Texture0);
+      DMDShader->SetTextureNull(SHADER_tex_dmd);
       delete DMDShader;
       DMDShader = 0;
    }
    if (FBShader)
    {
-      FBShader->SetTextureNull(SHADER_Texture0);
-      FBShader->SetTextureNull(SHADER_Texture1);
-      FBShader->SetTextureNull(SHADER_Texture3);
-      FBShader->SetTextureNull(SHADER_Texture4);
+      FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
+      FBShader->SetTextureNull(SHADER_tex_bloom);
+      FBShader->SetTextureNull(SHADER_tex_ao);
+      FBShader->SetTextureNull(SHADER_tex_color_lut);
 
       // FIXME Shader rely on texture to be named with a leading texture unit. SetTextureNull will fail otherwise...
       CHECKD3D(FBShader->Core()->SetTexture(SHADER_areaTex2D, nullptr));
@@ -1303,8 +1303,8 @@ void RenderDevice::FreeShader()
    }
    if (flasherShader)
    {
-      flasherShader->SetTextureNull(SHADER_Texture0);
-      flasherShader->SetTextureNull(SHADER_Texture1);
+      flasherShader->SetTextureNull(SHADER_tex_flasher_A);
+      flasherShader->SetTextureNull(SHADER_tex_flasher_B);
       delete flasherShader;
       flasherShader = 0;
    }
