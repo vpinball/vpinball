@@ -972,6 +972,9 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
    m_proj.ComputeNearFarPlane(vvertex3D);
    if (fabsf(inclination) < 0.0075f) //!! magic threshold, otherwise kicker holes are missing for inclination ~0
       m_proj.m_rzfar += 10.f;
+   //!! TODO magic: In stereo, we usually have a room made of primitives, but primitive bounding box are not implemented and are not taken in account. So add some space
+   if (m_stereo3D != STEREO_OFF)
+      m_proj.m_rzfar += 5000.f;
    Matrix3D proj = Matrix3D::MatrixPerspectiveFovLH(ANGTORAD(FOV), aspect, m_proj.m_rznear, m_proj.m_rzfar);
    memcpy(m_proj.m_matProj.m, proj.m, sizeof(float) * 4 * 4);
    // in-pixel offset for manual oversampling
@@ -1317,11 +1320,15 @@ void PinProjection::ComputeNearFarPlane(const vector<Vertex3Ds>& verts)
    slintf("m_rznear: %f\n", m_rznear);
    slintf("m_rzfar : %f\n", m_rzfar);
 
-   // beware the div-0 problem, also avoid near plane below 1 which result in loss of precision and z rendering artefacts
+   //m_rznear *= 0.89f; //!! magic, influences also stereo3D code
+   // Avoid near plane below 1 which result in loss of precision and z rendering artefacts
    if (m_rznear < 1.0f)
       m_rznear = 1.0f;
-   //m_rznear *= 0.89f; //!! magic, influences also stereo3D code
+
    m_rzfar *= 1.01f;
+   // Avoid div-0 problem (div by far - near)
+   if (m_rzfar <= m_rznear)
+      m_rzfar = m_rznear + 1.0f;
 }
 
 void PinProjection::CacheTransform()

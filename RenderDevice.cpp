@@ -1165,26 +1165,51 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 
 bool RenderDevice::LoadShaders()
 {
-   bool shaderCompilationOkay = true;
-
    basicShader = new Shader(this);
-   shaderCompilationOkay = basicShader->Load(g_basicShaderCode, sizeof(g_basicShaderCode)) && shaderCompilationOkay;
-
    DMDShader = new Shader(this);
-   shaderCompilationOkay = DMDShader->Load(g_dmdShaderCode, sizeof(g_dmdShaderCode)) && shaderCompilationOkay;
-
    FBShader = new Shader(this);
-   shaderCompilationOkay = FBShader->Load(g_FBShaderCode, sizeof(g_FBShaderCode)) && shaderCompilationOkay;
-
    flasherShader = new Shader(this);
-   shaderCompilationOkay = flasherShader->Load(g_flasherShaderCode, sizeof(g_flasherShaderCode)) && shaderCompilationOkay;
-
    lightShader = new Shader(this);
-   shaderCompilationOkay = lightShader->Load(g_lightShaderCode, sizeof(g_lightShaderCode)) && shaderCompilationOkay;
 
+   bool shaderCompilationOkay = true;
+#ifdef ENABLE_SDL
+   StereoShader = nullptr;
+   char glShaderPath[MAX_PATH];
+   /*DWORD length =*/ GetModuleFileName(nullptr, glShaderPath, MAX_PATH);
+   if (m_stereo3D == STEREO_OFF) {
+      Shader::Defines = "#define eyes 1\n#define enable_VR 0";
+   } else  if (m_stereo3D == STEREO_VR) {
+      Shader::Defines = "#define eyes 2\n#define enable_VR 1";
+   } else {
+      Shader::Defines = "#define eyes 2\n#define enable_VR 0";
+   }
+   Shader::shaderPath = string(glShaderPath);
+   Shader::shaderPath = Shader::shaderPath.substr(0, Shader::shaderPath.find_last_of("\\/"));
+   Shader::shaderPath.append("\\glshader\\");
+   shaderCompilationOkay = basicShader->Load("BasicShader.glfx", 0) && shaderCompilationOkay;
+   shaderCompilationOkay = DMDShader->Load(m_stereo3D == STEREO_VR ? "DMDShaderVR.glfx" : "DMDShader.glfx", 0) && shaderCompilationOkay;
+   shaderCompilationOkay = FBShader->Load("FBShader.glfx", 0) && shaderCompilationOkay;
+   shaderCompilationOkay = FBShader->Load("SMAA.glfx", 0) && shaderCompilationOkay;
+   shaderCompilationOkay = flasherShader->Load("flasherShader.glfx", 0) && shaderCompilationOkay;
+   shaderCompilationOkay = lightShader->Load("lightShader.glfx", 0) && shaderCompilationOkay;
+   if (m_stereo3D != STEREO_OFF) {
+      StereoShader = new Shader(this);
+      shaderCompilationOkay = StereoShader->Load("StereoShader.glfx", 0) && shaderCompilationOkay;
+   }
+#ifdef SEPARATE_CLASSICLIGHTSHADER
+   classicLightShader = new Shader(this);
+   shaderCompilationOkay = classicLightShader->Load("classicLightShader.glfx", 0) && shaderCompilationOkay;
+#endif
+#else // ENABLE_SDL
+   shaderCompilationOkay = basicShader->Load(g_basicShaderCode, sizeof(g_basicShaderCode)) && shaderCompilationOkay;
+   shaderCompilationOkay = DMDShader->Load(g_dmdShaderCode, sizeof(g_dmdShaderCode)) && shaderCompilationOkay;
+   shaderCompilationOkay = FBShader->Load(g_FBShaderCode, sizeof(g_FBShaderCode)) && shaderCompilationOkay;
+   shaderCompilationOkay = flasherShader->Load(g_flasherShaderCode, sizeof(g_flasherShaderCode)) && shaderCompilationOkay;
+   shaderCompilationOkay = lightShader->Load(g_lightShaderCode, sizeof(g_lightShaderCode)) && shaderCompilationOkay;
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    classicLightShader = new Shader(this);
    shaderCompilationOkay = classicLightShader->Load(g_classicLightShaderCode, sizeof(g_classicLightShaderCode)) && shaderCompilationOkay;
+#endif
 #endif
 
    if (!shaderCompilationOkay)
