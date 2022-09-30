@@ -101,6 +101,128 @@ ShaderTechniques Shader::getTechniqueByName(const string& name)
    return SHADER_TECHNIQUE_INVALID;
 }
 
+#define SHADER_UNIFORM(name) { false, #name, #name, ""s, -1, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED }
+#define SHADER_TEXTURE(name) { true, #name, #name, ""s, -1, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED }
+#define SHADER_SAMPLER(name, legacy_name, texture_ref, default_tex_unit, default_clampu, default_clampv, default_filter) { true, #name, #legacy_name, #texture_ref, default_tex_unit, default_clampu, default_clampv, default_filter }
+Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
+   // -- Floats --
+   SHADER_UNIFORM(RenderBall),
+   SHADER_UNIFORM(blend_modulate_vs_add),
+   SHADER_UNIFORM(alphaTestValue),
+   SHADER_UNIFORM(eye),
+   SHADER_UNIFORM(fKickerScale),
+   // -- Vectors and Float Arrays --
+   SHADER_UNIFORM(Roughness_WrapL_Edge_Thickness),
+   SHADER_UNIFORM(cBase_Alpha),
+   SHADER_UNIFORM(lightCenter_maxRange),
+   SHADER_UNIFORM(lightColor2_falloff_power),
+   SHADER_UNIFORM(lightColor_intensity),
+   SHADER_UNIFORM(matrixBlock),
+   SHADER_UNIFORM(fenvEmissionScale_TexWidth),
+   SHADER_UNIFORM(invTableRes_playfield_height_reflection),
+   SHADER_UNIFORM(lightEmission),
+   SHADER_UNIFORM(lightPos),
+   SHADER_UNIFORM(orientation),
+   SHADER_UNIFORM(cAmbient_LightRange),
+   SHADER_UNIFORM(cClearcoat_EdgeAlpha),
+   SHADER_UNIFORM(cGlossy_ImageLerp),
+   SHADER_UNIFORM(fDisableLighting_top_below),
+   SHADER_UNIFORM(backBoxSize),
+   SHADER_UNIFORM(vColor_Intensity),
+   SHADER_UNIFORM(w_h_height),
+   SHADER_UNIFORM(alphaTestValueAB_filterMode_addBlend),
+   SHADER_UNIFORM(amount_blend_modulate_vs_add_flasherMode),
+   SHADER_UNIFORM(staticColor_Alpha),
+   SHADER_UNIFORM(ms_zpd_ya_td),
+   SHADER_UNIFORM(Anaglyph_DeSaturation_Contrast),
+   SHADER_UNIFORM(vRes_Alpha_time),
+   SHADER_UNIFORM(mirrorFactor),
+   SHADER_UNIFORM(SSR_bumpHeight_fresnelRefl_scale_FS),
+   SHADER_UNIFORM(AO_scale_timeblur),
+   SHADER_UNIFORM(clip_planes),
+   SHADER_UNIFORM(cWidth_Height_MirrorAmount),
+   // -- Integer and Bool --
+   SHADER_UNIFORM(ignoreStereo),
+   SHADER_UNIFORM(disableLighting),
+   SHADER_UNIFORM(lightSources),
+   SHADER_UNIFORM(doNormalMapping),
+   SHADER_UNIFORM(is_metal),
+   SHADER_UNIFORM(color_grade),
+   SHADER_UNIFORM(do_bloom),
+   SHADER_UNIFORM(lightingOff),
+   SHADER_UNIFORM(objectSpaceNormalMap),
+   SHADER_UNIFORM(do_dither),
+   SHADER_UNIFORM(imageBackglassMode),
+   // -- Textures --
+   SHADER_TEXTURE(Texture0),
+   SHADER_TEXTURE(Texture1),
+   SHADER_TEXTURE(Texture2),
+   SHADER_TEXTURE(Texture3),
+   SHADER_TEXTURE(Texture4),
+   SHADER_TEXTURE(edgesTex2D),
+   SHADER_TEXTURE(blendTex2D),
+   SHADER_TEXTURE(areaTex2D),
+   SHADER_TEXTURE(searchTex2D),
+   // -- Samplers (a texture reference with sampling configuration) --
+   // DMD shader
+   SHADER_SAMPLER(tex_dmd, texSampler0, Texture0, 0, SA_MIRROR, SA_MIRROR, SF_NONE), // DMD
+   SHADER_SAMPLER(tex_sprite, texSampler1, Texture0, 0, SA_MIRROR, SA_MIRROR, SF_TRILINEAR), // Sprite
+   // Flasher shader
+   SHADER_SAMPLER(tex_flasher_A, texSampler0, Texture0, 0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
+   SHADER_SAMPLER(tex_flasher_B, texSampler1, Texture1, 1, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // texB
+   // FB shader
+   SHADER_SAMPLER(tex_fb_unfiltered, texSampler4, Texture0, 0, SA_CLAMP, SA_CLAMP, SF_POINT), // Framebuffer (unfiltered)
+   SHADER_SAMPLER(tex_fb_filtered, texSampler5, Texture0, 0, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Framebuffer (filtered)
+   SHADER_SAMPLER(tex_mirror, texSamplerMirror, Texture0, 0, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // base mirror texture
+   SHADER_SAMPLER(tex_bloom, texSamplerBloom, Texture1, 1, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Bloom
+   SHADER_SAMPLER(tex_ao, texSampler3, Texture3, 2, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // AO Result
+   SHADER_SAMPLER(tex_depth, texSamplerDepth, Texture3, 2, SA_CLAMP, SA_CLAMP, SF_NONE), // Depth
+   SHADER_SAMPLER(tex_color_lut, texSampler6, Texture4, 2, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Color grade LUT
+   SHADER_SAMPLER(tex_ao_dither, texSamplerAOdither, Texture4, 3, SA_REPEAT, SA_REPEAT, SF_NONE), // AO dither
+   // Ball shader
+   SHADER_SAMPLER(tex_ball_color, texSampler0, Texture0, 0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
+   SHADER_SAMPLER(tex_ball_playfield, texSampler1, Texture1, 1, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // playfield
+   //SHADER_SAMPLER(tex_diffuse_env, texSampler2, Texture2, 2, SA_REPEAT, SA_CLAMP, SF_BILINEAR), // diffuse environment contribution/radiance [Shared with basic]
+   SHADER_SAMPLER(tex_ball_decal, texSampler7, Texture3, 3, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // ball decal
+   // Basic shader
+   SHADER_SAMPLER(tex_base_color, texSampler0, Texture0, 0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
+   SHADER_SAMPLER(tex_env, texSampler1, Texture1, 1, SA_REPEAT, SA_CLAMP, SF_TRILINEAR), // environment
+   SHADER_SAMPLER(tex_diffuse_env, texSampler2, Texture2, 2, SA_REPEAT, SA_CLAMP, SF_BILINEAR), // diffuse environment contribution/radiance
+   SHADER_SAMPLER(tex_base_transmission, texSamplerBL, Texture3, 3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // bulb light/transmission buffer texture
+   SHADER_SAMPLER(tex_base_normalmap, texSamplerN, Texture4, 4, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // normal map texture
+   // Classic light shader
+   SHADER_SAMPLER(tex_light_color, texSampler0, Texture0, 0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
+   // SHADER_SAMPLER(tex_env, texSampler1, Texture1, 1, SA_REPEAT, SA_CLAMP, SF_TRILINEAR), // environment [Shared with basic]
+   // SHADER_SAMPLER(tex_diffuse_env, texSampler2, Texture2, 2, SA_REPEAT, SA_CLAMP, SF_BILINEAR), // diffuse environment contribution/radiance [Shared with basic]
+   // Stereo shader (VPVR only, combine the 2 rendered eyes into a single one)
+   SHADER_SAMPLER(tex_stereo_fb, texSampler0, Texture0, 0, SA_CLAMP, SA_CLAMP, SF_POINT), // Framebuffer (unfiltered)
+   // SMAA shader
+   SHADER_SAMPLER(colorTex, colorTex, colorTex, 0, SA_CLAMP, SA_CLAMP, SF_TRILINEAR),
+   SHADER_SAMPLER(colorGammaTex, colorGammaTex, colorGammaTex, 1, SA_CLAMP, SA_CLAMP, SF_TRILINEAR),
+   SHADER_SAMPLER(edgesTex, edgesTex, edgesTex2D, 2, SA_CLAMP, SA_CLAMP, SF_TRILINEAR),
+   SHADER_SAMPLER(blendTex, blendTex, blendTex2D, 3, SA_CLAMP, SA_CLAMP, SF_TRILINEAR),
+   SHADER_SAMPLER(areaTex, areaTex, areaTex2D, 4, SA_CLAMP, SA_CLAMP, SF_TRILINEAR),
+   SHADER_SAMPLER(searchTex, searchTex, searchTex2D, 5, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Not that this should have a w address mode set to clamp as well
+};
+#undef SHADER_UNIFORM
+#undef SHADER_TEXTURE
+#undef SHADER_SAMPLER
+
+ShaderUniforms Shader::getUniformByName(const string& name)
+{
+   for (int i = 0; i < SHADER_UNIFORM_COUNT; ++i)
+      if (name == shaderUniformNames[i].name)
+         return (ShaderUniforms)i;
+
+   // FIXME LOG(1, m_shaderCodeName, string("getUniformByName Could not find uniform ").append(name).append(" in shaderUniformNames."));
+   return SHADER_UNIFORM_INVALID;
+}
+
+void Shader::SetDefaultSamplerFilter(const ShaderUniforms sampler, const SamplerFilter sf)
+{
+   Shader::shaderUniformNames[sampler].default_filter = sf;
+}
+
 //
 //
 //
@@ -331,8 +453,9 @@ void Shader::Unload()
    SAFE_RELEASE(m_shader);
 }
 
-void Shader::SetTextureNull(const SHADER_UNIFORM_HANDLE texelName)
+void Shader::SetTextureNull(const ShaderUniforms samplerUniform)
 {
+   auto texelName = shaderUniformNames[samplerUniform].texture_ref.c_str();
    const unsigned int idx = texelName[strlen(texelName) - 1] - '0'; // current convention: SetTexture gets "TextureX", where X 0..4
    const bool cache = (idx < TEXTURESET_STATE_CACHE_SIZE);
 
@@ -344,8 +467,9 @@ void Shader::SetTextureNull(const SHADER_UNIFORM_HANDLE texelName)
    m_renderDevice->m_curTextureChanges++;
 }
 
-void Shader::SetTexture(const SHADER_UNIFORM_HANDLE texelName, Texture* texel, const TextureFilter filter, const bool clampU, const bool clampV, const bool force_linear_rgb)
+void Shader::SetTexture(const ShaderUniforms samplerUniform, Texture* texel, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb)
 {
+   auto texelName = shaderUniformNames[samplerUniform].texture_ref.c_str();
    const unsigned int idx = texelName[strlen(texelName) - 1] - '0'; // current convention: SetTexture gets "TextureX", where X 0..4
    assert(idx < TEXTURESET_STATE_CACHE_SIZE);
 
@@ -369,16 +493,17 @@ void Shader::SetTexture(const SHADER_UNIFORM_HANDLE texelName, Texture* texel, c
    }
 }
 
-void Shader::SetTexture(const SHADER_UNIFORM_HANDLE texelName, BaseTexture* texel, const TextureFilter filter, const bool clampU, const bool clampV, const bool force_linear_rgb)
+void Shader::SetTexture(const ShaderUniforms texelName, BaseTexture* texel, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb)
 {
    if (!texel)
-      SetTexture(texelName, (Sampler*)nullptr);
+      SetTextureNull(texelName);
    else
       SetTexture(texelName, m_renderDevice->m_texMan.LoadTexture(texel, filter, clampU, clampV, force_linear_rgb));
 }
 
-void Shader::SetTexture(const SHADER_UNIFORM_HANDLE texelName, Sampler* texel)
+void Shader::SetTexture(const ShaderUniforms samplerUniform, Sampler* texel)
 {
+   auto texelName = shaderUniformNames[samplerUniform].texture_ref.c_str();
    const unsigned int idx = texelName[strlen(texelName) - 1] - '0'; // current convention: SetTexture gets "TextureX", where X 0..4
    assert(idx < TEXTURESET_STATE_CACHE_SIZE);
 
