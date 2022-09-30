@@ -116,6 +116,23 @@ static constexpr int regkey_idc[eCKeys] = {
    -1
 };
 
+enum InfoMode
+{
+   IF_NONE,
+   IF_FPS,
+   IF_PROFILING,
+   IF_PROFILING_SPLIT_RENDERING,
+   IF_STATIC_ONLY,
+   IF_AO_ONLY
+};
+
+enum ProfilingMode
+{
+   PF_DISABLED,
+   PF_ENABLED,
+   PF_SPLIT_RENDERING,
+};
+
 #ifndef ENABLE_SDL
 // Note: Nowadays the original code seems to be counter-productive, so we use the official
 // pre-rendered frame mechanism instead where possible
@@ -630,21 +647,24 @@ private:
 
    void SetScreenOffset(const float x, const float y);     // set render offset in screen coordinates, e.g., for the nudge shake
 
+   unsigned int m_showFPS;
+
+   void InitFPS();
+   bool ShowFPSonly() const;
+   bool ShowStats() const;
    bool RenderStaticOnly() const;
    bool RenderAOOnly() const;
+   InfoMode GetInfoMode() const;
+   ProfilingMode GetProfilingMode() const;
 
    void InitShader();
    void CalcBallAspectRatio();
    void GetBallAspectRatio(const Ball * const pball, Vertex2D &stretch, const float zHeight);
    //void DrawBallReflection(Ball *pball, const float zheight, const bool lowDetailBall);
-   unsigned int ProfilingMode() const;
 
 public:
    void StopPlayer();
    void ToggleFPS();
-   void InitFPS();
-   bool ShowFPSonly() const;
-   bool ShowStats() const;
 
    void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D(1.0f));
    void UpdateCameraModeDisplay();
@@ -656,8 +676,6 @@ public:
    volatile bool m_pause;
    bool m_step;
 #endif
-
-   unsigned int m_showFPS;
 
    bool m_scaleFX_DMD;
 
