@@ -5,24 +5,26 @@ class RenderDevice;
 
 enum SamplerFilter
 {
-   SF_NONE, // No mipmapping
+   SF_NONE, // No filtering at all. DX: MIPFILTER = NONE; MAGFILTER = POINT; MINFILTER = POINT; / OpenGL Nearest/Nearest
    SF_POINT, // Point sampled (aka nearest mipmap) texture filtering.
-   SF_BILINEAR, // Bilinar texture filtering.
-   SF_TRILINEAR, // Trilinar texture filtering.
-   SF_ANISOTROPIC // Anisotropic texture filtering.
+   SF_BILINEAR, // Bilinar texture filtering (linear min/mag, no mipmapping). DX: MIPFILTER = NONE; MAGFILTER = LINEAR; MINFILTER = LINEAR;
+   SF_TRILINEAR, // Trilinar texture filtering (linear min/mag, with mipmapping). DX: MIPFILTER = LINEAR; MAGFILTER = LINEAR; MINFILTER = LINEAR;
+   SF_ANISOTROPIC, // Anisotropic texture filtering.
+   SF_UNDEFINED, // Used for undefined default values
 };
 
 enum SamplerAddressMode
 {
 #ifdef ENABLE_SDL
-   SA_WRAP = GL_REPEAT,
+   SA_REPEAT = GL_REPEAT,
    SA_CLAMP = GL_CLAMP_TO_EDGE,
-   SA_MIRROR = GL_MIRRORED_REPEAT
+   SA_MIRROR = GL_MIRRORED_REPEAT,
 #else
-   SA_WRAP,
+   SA_REPEAT,
    SA_CLAMP,
-   SA_MIRROR
+   SA_MIRROR,
 #endif
+   SA_UNDEFINED, // Used for undefined default values
 };
 
 class Sampler
