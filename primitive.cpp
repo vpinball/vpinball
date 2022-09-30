@@ -1227,7 +1227,7 @@ void Primitive::RenderObject()
 
       if (pin && nMap)
       {
-         pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_normal_isMetal" : "basic_with_texture_normal_isNotMetal");
+         pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? SHADER_TECHNIQUE_basic_with_texture_normal_isMetal : SHADER_TECHNIQUE_basic_with_texture_normal);
          pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pin, TextureFilter::TEXTURE_MODE_TRILINEAR, false, false, false);
          pd3dDevice->basicShader->SetTexture(SHADER_Texture4, nMap, TextureFilter::TEXTURE_MODE_TRILINEAR, false, false, true);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));

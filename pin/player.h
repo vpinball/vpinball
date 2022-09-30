@@ -3,6 +3,7 @@
 #include "kdtree.h"
 #include "quadtree.h"
 #include "Debugger.h"
+#include "Shader.h"
 
 #define DEFAULT_PLAYER_WIDTH 1024
 #define DEFAULT_PLAYER_FS_WIDTH 1920
@@ -517,7 +518,7 @@ public:
    bool m_meshAsPlayfield;
    bool m_recordContacts;             // flag for DoHitTest()
    vector< CollisionEvent > m_contacts;
-   char m_ballShaderTechnique[MAX_PATH];
+   ShaderTechniques m_ballShaderTechnique;
 
    int2 m_dmd;
    BaseTexture* m_texdmd;

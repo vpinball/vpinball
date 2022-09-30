@@ -7,10 +7,11 @@ class RenderTarget final
 {
 public:
    RenderTarget(RenderDevice* rd, int width = -1, int height = -1); // Default output render target
-   RenderTarget(RenderDevice* rd, const int width, const int height, const colorFormat format, bool with_depth, bool use_MSAA, int stereo, const char* failureMessage);
+   RenderTarget(RenderDevice* rd, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, StereoMode stereo, const char* failureMessage);
    ~RenderTarget();
 
-   void Activate(bool ignoreStereo);
+   void Activate(const bool ignoreStereo = false);
+   static RenderTarget* GetCurrentRenderTarget();
 
    Sampler* GetColorSampler() { return m_color_sampler; }
    void UpdateDepthSampler();
@@ -19,8 +20,13 @@ public:
    RenderTarget* Duplicate();
    void CopyTo(RenderTarget* dest);
 
+   void SetSize(const int w, const int h) { assert(m_is_back_buffer); m_width = w; m_height = h; }
    int GetWidth() const { return m_width; }
    int GetHeight() const { return m_height; }
+   StereoMode GetStereo() const { return m_stereo; }
+   bool IsMSAA() const { return m_nMSAASamples > 1; }
+   bool HasDepth() const { return m_has_depth; }
+   colorFormat GetColorFormat() const { return m_format; }
 
 #ifdef ENABLE_SDL
    GLuint GetCoreFrameBuffer() const { return m_framebuffer; }
@@ -32,13 +38,14 @@ private:
    int m_width;
    int m_height;
    colorFormat m_format;
-   int m_stereo;
+   StereoMode m_stereo;
    RenderDevice* m_rd;
    Sampler* m_color_sampler;
    Sampler* m_depth_sampler;
    bool m_is_back_buffer;
    bool m_has_depth;
-   bool m_use_mSAA;
+   int m_nMSAASamples;
+   static RenderTarget* current_render_target;
 
 #ifdef ENABLE_SDL
    GLuint m_framebuffer;

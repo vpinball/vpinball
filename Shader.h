@@ -14,53 +14,88 @@
 #define _SECURE_SCL 0
 #define _HAS_ITERATOR_DEBUGGING 0
 
-#ifdef ENABLE_SDL
-#include <map>
-#endif
-
 #include <string>
 
-#if defined(ENABLE_SDL) && defined(TWEAK_GL_SHADER)
-//!! Todo tweak Enums for uniforms and techniques to reuse same numbers in different shaders/techniques. Reduces the array sizes, but might be hard to debug.
-enum shaderUniforms {
-   //Floats
-   SHADER_blend_modulate_vs_add, SHADER_alphaTestValue, SHADER_eye, SHADER_fKickerScale,
-   //Vectors and Float Arrays
-   SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_lightCenter_maxRange, SHADER_lightColor2_falloff_power, SHADER_lightColor_intensity, SHADER_matrixBlock, SHADER_fenvEmissionScale_TexWidth,
-   SHADER_invTableRes_playfield_height_reflection, SHADER_lightEmission, SHADER_lightPos, SHADER_orientation, SHADER_cAmbient_LightRange, SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp,
-   SHADER_fDisableLighting_top_below, SHADER_backBoxSize, SHADER_quadOffsetScale, SHADER_quadOffsetScaleTex, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_alphaTestValueAB_filterMode_addBlend,
-   SHADER_amount_blend_modulate_vs_add_flasherMode, SHADER_staticColor_Alpha, SHADER_width_height_rotated_flipLR, SHADER_vRes_Alpha_time, SHADER_mirrorFactor, SHADER_SSR_bumpHeight_fresnelRefl_scale_FS, SHADER_AO_scale_timeblur,
-   //Integer and Bool
-   SHADER_ignoreStereo, SHADER_disableLighting, SHADER_lightSources, SHADER_doNormalMapping, SHADER_is_metal, SHADER_color_grade, SHADER_do_bloom, SHADER_lightingOff, SHADER_objectSpaceNormalMap, SHADER_do_dither,
-   //Textures
-   SHADER_Texture0, SHADER_Texture1, SHADER_Texture2, SHADER_Texture3, SHADER_Texture4, SHADER_edgesTex2D, SHADER_blendTex2D, SHADER_areaTex2D, SHADER_searchTex2D,
-   SHADER_UNIFORM_COUNT, SHADER_UNIFORM_INVALID
+// Declaration of all available techniques (shader program)
+// When changed, this list must also be copied unchanged to Shader.cpp (for its implementation)
+#define SHADER_TECHNIQUE(name) SHADER_TECHNIQUE_##name
+enum ShaderTechniques
+{
+   SHADER_TECHNIQUE(RenderBall),
+   SHADER_TECHNIQUE(RenderBall_DecalMode),
+   SHADER_TECHNIQUE(RenderBall_CabMode),
+   SHADER_TECHNIQUE(RenderBall_CabMode_DecalMode),
+   SHADER_TECHNIQUE(RenderBallTrail),
+   SHADER_TECHNIQUE(basic_without_texture),
+   SHADER_TECHNIQUE(basic_with_texture),
+   SHADER_TECHNIQUE(basic_with_texture_normal),
+   SHADER_TECHNIQUE(basic_without_texture_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_normal_isMetal),
+   SHADER_TECHNIQUE(basic_without_texture_n_mirror),
+   SHADER_TECHNIQUE(basic_with_texture_n_mirror),
+   SHADER_TECHNIQUE(basic_depth_only_without_texture),
+   SHADER_TECHNIQUE(basic_depth_only_with_texture),
+   SHADER_TECHNIQUE(bg_decal_without_texture),
+   SHADER_TECHNIQUE(bg_decal_with_texture),
+   SHADER_TECHNIQUE(kickerBoolean),
+   SHADER_TECHNIQUE(kickerBoolean_isMetal),
+   SHADER_TECHNIQUE(light_with_texture),
+   SHADER_TECHNIQUE(light_with_texture_isMetal),
+   SHADER_TECHNIQUE(light_without_texture),
+   SHADER_TECHNIQUE(light_without_texture_isMetal),
+   SHADER_TECHNIQUE(basic_DMD),
+   SHADER_TECHNIQUE(basic_DMD_ext),
+   SHADER_TECHNIQUE(basic_DMD_world),
+   SHADER_TECHNIQUE(basic_DMD_world_ext),
+   SHADER_TECHNIQUE(basic_noDMD),
+   SHADER_TECHNIQUE(basic_noDMD_world),
+   SHADER_TECHNIQUE(basic_noDMD_notex),
+   SHADER_TECHNIQUE(AO),
+   SHADER_TECHNIQUE(NFAA),
+   SHADER_TECHNIQUE(DLAA_edge),
+   SHADER_TECHNIQUE(DLAA),
+   SHADER_TECHNIQUE(FXAA1),
+   SHADER_TECHNIQUE(FXAA2),
+   SHADER_TECHNIQUE(FXAA3),
+   SHADER_TECHNIQUE(fb_tonemap),
+   SHADER_TECHNIQUE(fb_bloom),
+   SHADER_TECHNIQUE(fb_AO),
+   SHADER_TECHNIQUE(fb_tonemap_AO),
+   SHADER_TECHNIQUE(fb_tonemap_AO_static),
+   SHADER_TECHNIQUE(fb_tonemap_no_filterRGB),
+   SHADER_TECHNIQUE(fb_tonemap_no_filterRG),
+   SHADER_TECHNIQUE(fb_tonemap_no_filterR),
+   SHADER_TECHNIQUE(fb_tonemap_AO_no_filter),
+   SHADER_TECHNIQUE(fb_tonemap_AO_no_filter_static),
+   SHADER_TECHNIQUE(fb_bloom_horiz9x9),
+   SHADER_TECHNIQUE(fb_bloom_vert9x9),
+   SHADER_TECHNIQUE(fb_bloom_horiz19x19),
+   SHADER_TECHNIQUE(fb_bloom_vert19x19),
+   SHADER_TECHNIQUE(fb_bloom_horiz19x19h),
+   SHADER_TECHNIQUE(fb_bloom_vert19x19h),
+   SHADER_TECHNIQUE(fb_bloom_horiz39x39),
+   SHADER_TECHNIQUE(fb_bloom_vert39x39),
+   SHADER_TECHNIQUE(fb_mirror),
+   SHADER_TECHNIQUE(fb_CAS),
+   SHADER_TECHNIQUE(fb_BilateralSharp_CAS),
+   SHADER_TECHNIQUE(SSReflection),
+   SHADER_TECHNIQUE(basic_noLight),
+   SHADER_TECHNIQUE(bulb_light),
+   SHADER_TECHNIQUE(SMAA_ColorEdgeDetection),
+   SHADER_TECHNIQUE(SMAA_BlendWeightCalculation),
+   SHADER_TECHNIQUE(SMAA_NeighborhoodBlending),
+   SHADER_TECHNIQUE(stereo),
+   SHADER_TECHNIQUE(stereo_Int),
+   SHADER_TECHNIQUE(stereo_Flipped_Int),
+   SHADER_TECHNIQUE(stereo_Anaglyph),
+   SHADER_TECHNIQUE(stereo_AMD_DEBUG),
+   SHADER_TECHNIQUE_COUNT,
+   SHADER_TECHNIQUE_INVALID
 };
+#undef SHADER_TECHNIQUE
 
-enum shaderAttributes {
-   SHADER_ATTRIBUTE_POS, SHADER_ATTRIBUTE_NORM, SHADER_ATTRIBUTE_TC, SHADER_ATTRIBUTE_TEX,
-   SHADER_ATTRIBUTE_COUNT, SHADER_ATTRIBUTE_INVALID
-};
-
-enum shaderTechniques {
-   SHADER_TECHNIQUE_RenderBall, SHADER_TECHNIQUE_RenderBall_DecalMode, SHADER_TECHNIQUE_RenderBall_CabMode, SHADER_TECHNIQUE_RenderBall_CabMode_DecalMode, SHADER_TECHNIQUE_RenderBallTrail,
-   SHADER_TECHNIQUE_basic_without_texture, SHADER_TECHNIQUE_basic_with_texture, SHADER_TECHNIQUE_basic_depth_only_without_texture, SHADER_TECHNIQUE_basic_depth_only_with_texture, SHADER_TECHNIQUE_bg_decal_without_texture,
-   SHADER_TECHNIQUE_bg_decal_with_texture, SHADER_TECHNIQUE_kickerBoolean, SHADER_TECHNIQUE_light_with_texture, SHADER_TECHNIQUE_light_without_texture,
-   SHADER_TECHNIQUE_basic_DMD, SHADER_TECHNIQUE_basic_DMD_ext, SHADER_TECHNIQUE_basic_DMD_world, SHADER_TECHNIQUE_basic_DMD_world_ext, SHADER_TECHNIQUE_basic_noDMD, SHADER_TECHNIQUE_basic_noDMD_world, SHADER_TECHNIQUE_basic_noDMD_notex,
-   SHADER_TECHNIQUE_AO, SHADER_TECHNIQUE_NFAA, SHADER_TECHNIQUE_DLAA_edge, SHADER_TECHNIQUE_DLAA, SHADER_TECHNIQUE_FXAA1, SHADER_TECHNIQUE_FXAA2, SHADER_TECHNIQUE_FXAA3, SHADER_TECHNIQUE_fb_tonemap, SHADER_TECHNIQUE_fb_bloom,
-   SHADER_TECHNIQUE_fb_AO, SHADER_TECHNIQUE_fb_tonemap_AO, SHADER_TECHNIQUE_fb_tonemap_AO_static, SHADER_TECHNIQUE_fb_tonemap_no_filterRGB, SHADER_TECHNIQUE_fb_tonemap_no_filterRG, SHADER_TECHNIQUE_fb_tonemap_no_filterR, 
-   SHADER_TECHNIQUE_fb_tonemap_AO_no_filter, SHADER_TECHNIQUE_fb_tonemap_AO_no_filter_static, SHADER_TECHNIQUE_fb_bloom_horiz9x9, SHADER_TECHNIQUE_fb_bloom_vert9x9, SHADER_TECHNIQUE_fb_bloom_horiz19x19, SHADER_TECHNIQUE_fb_bloom_vert19x19,
-   SHADER_TECHNIQUE_fb_bloom_horiz19x19h, SHADER_TECHNIQUE_fb_bloom_vert19x19h, SHADER_TECHNIQUE_SSReflection, SHADER_TECHNIQUE_fb_mirror, SHADER_TECHNIQUE_basic_noLight, SHADER_TECHNIQUE_bulb_light,
-   SHADER_TECHNIQUE_SMAA_ColorEdgeDetection, SHADER_TECHNIQUE_SMAA_BlendWeightCalculation, SHADER_TECHNIQUE_SMAA_NeighborhoodBlending,
-   SHADER_TECHNIQUE_stereo_TB, SHADER_TECHNIQUE_stereo_SBS, SHADER_TECHNIQUE_stereo_Int, SHADER_TECHNIQUE_stereo_AMD_DEBUG,
-   SHADER_TECHNIQUE_COUNT, SHADER_TECHNIQUE_INVALID
-};
-
-typedef shaderUniforms SHADER_UNIFORM_HANDLE;
-typedef shaderTechniques SHADER_TECHNIQUE_HANDLE;
-typedef void ID3DXEffect;
-
-#else
+#ifndef ENABLE_SDL
 
 //Float
 #define SHADER_blend_modulate_vs_add "blend_modulate_vs_add"
@@ -127,80 +162,7 @@ typedef void ID3DXEffect;
 #define SHADER_ATTRIBUTE_TC "tc"
 #define SHADER_ATTRIBUTE_TEX "tex0"
 
-//Shader Techniques
-#define SHADER_TECHNIQUE_RenderBall "RenderBall"
-#define SHADER_TECHNIQUE_RenderBall_DecalMode "RenderBall_DecalMode"
-#define SHADER_TECHNIQUE_RenderBall_CabMode "RenderBall_CabMode"
-#define SHADER_TECHNIQUE_RenderBall_CabMode_DecalMode "RenderBall_CabMode_DecalMode"
-#define SHADER_TECHNIQUE_RenderBallTrail "RenderBallTrail"
-
-#define SHADER_TECHNIQUE_basic_without_texture "basic_without_texture"
-#define SHADER_TECHNIQUE_basic_with_texture "basic_with_texture"
-#define SHADER_TECHNIQUE_basic_depth_only_without_texture "basic_depth_only_without_texture"
-#define SHADER_TECHNIQUE_basic_depth_only_with_texture "basic_depth_only_with_texture"
-#define SHADER_TECHNIQUE_bg_decal_without_texture "bg_decal_without_texture"
-#define SHADER_TECHNIQUE_bg_decal_with_texture "bg_decal_with_texture"
-#define SHADER_TECHNIQUE_kickerBoolean "kickerBoolean"
-#define SHADER_TECHNIQUE_light_with_texture "light_with_texture"
-#define SHADER_TECHNIQUE_light_without_texture "light_without_texture"
-
-#define SHADER_TECHNIQUE_basic_DMD "basic_DMD"
-#define SHADER_TECHNIQUE_basic_DMD_ext "basic_DMD_ext"
-#define SHADER_TECHNIQUE_basic_DMD_world "basic_DMD_world"
-#define SHADER_TECHNIQUE_basic_DMD_world_ext "basic_DMD_world_ext"
-#define SHADER_TECHNIQUE_basic_noDMD "basic_noDMD"
-#define SHADER_TECHNIQUE_basic_noDMD_world "basic_noDMD_world"
-#define SHADER_TECHNIQUE_basic_noDMD_notex "basic_noDMD_notex"
-
-#define SHADER_TECHNIQUE_AO "AO"
-#define SHADER_TECHNIQUE_NFAA "NFAA"
-#define SHADER_TECHNIQUE_DLAA_edge "DLAA_edge"
-#define SHADER_TECHNIQUE_DLAA "DLAA"
-#define SHADER_TECHNIQUE_FXAA1 "FXAA1"
-#define SHADER_TECHNIQUE_FXAA2 "FXAA2"
-#define SHADER_TECHNIQUE_FXAA3 "FXAA3"
-#define SHADER_TECHNIQUE_fb_tonemap "fb_tonemap"
-#define SHADER_TECHNIQUE_fb_bloom "fb_bloom"
-#define SHADER_TECHNIQUE_fb_AO "fb_AO"
-#define SHADER_TECHNIQUE_fb_tonemap_AO "fb_tonemap_AO"
-#define SHADER_TECHNIQUE_fb_tonemap_AO_static "fb_tonemap_AO_static"
-#define SHADER_TECHNIQUE_fb_tonemap_no_filterRGB "fb_tonemap_no_filterRGB"
-#define SHADER_TECHNIQUE_fb_tonemap_no_filterRG "fb_tonemap_no_filterRG"
-#define SHADER_TECHNIQUE_fb_tonemap_no_filterR "fb_tonemap_no_filterR"
-#define SHADER_TECHNIQUE_fb_tonemap_AO_no_filter "fb_tonemap_AO_no_filter"
-#define SHADER_TECHNIQUE_fb_tonemap_AO_no_filter_static "fb_tonemap_AO_no_filter_static"
-#define SHADER_TECHNIQUE_fb_bloom_horiz9x9 "fb_bloom_horiz9x9"
-#define SHADER_TECHNIQUE_fb_bloom_vert9x9 "fb_bloom_vert9x9"
-#define SHADER_TECHNIQUE_fb_bloom_horiz19x19 "fb_bloom_horiz19x19"
-#define SHADER_TECHNIQUE_fb_bloom_vert19x19 "fb_bloom_vert19x19"
-#define SHADER_TECHNIQUE_fb_bloom_horiz19x19h "fb_bloom_horiz19x19h"
-#define SHADER_TECHNIQUE_fb_bloom_vert19x19h "fb_bloom_vert19x19h"
-#define SHADER_TECHNIQUE_SSReflection "SSReflection"
-#define SHADER_TECHNIQUE_fb_mirror "fb_mirror"
-
-#define SHADER_TECHNIQUE_basic_noLight "basic_noLight"
-
-#define SHADER_TECHNIQUE_bulb_light "bulb_light"
-
-#define SHADER_TECHNIQUE_SMAA_ColorEdgeDetection "SMAA_ColorEdgeDetection"
-#define SHADER_TECHNIQUE_SMAA_BlendWeightCalculation "SMAA_BlendWeightCalculation"
-#define SHADER_TECHNIQUE_SMAA_NeighborhoodBlending "SMAA_NeighborhoodBlending"
-
-#define SHADER_TECHNIQUE_stereo_TB "stereo_TB"
-#define SHADER_TECHNIQUE_stereo_SBS "stereo_SBS"
-#define SHADER_TECHNIQUE_stereo_Int "stereo_Int"
-#define SHADER_TECHNIQUE_stereo_AMD_DEBUG "stereo_AMD_DEBUG"
-
-#ifdef ENABLE_SDL
-typedef char* SHADER_UNIFORM_HANDLE;
-typedef char* SHADER_TECHNIQUE_HANDLE;
-typedef void ID3DXEffect;
-#endif
-#endif
-
-#ifndef ENABLE_SDL
 typedef D3DXHANDLE SHADER_UNIFORM_HANDLE;
-typedef D3DXHANDLE SHADER_TECHNIQUE_HANDLE;
 #endif
 
 class Shader final
@@ -213,172 +175,66 @@ public:
    bool Load(const char* shaderCodeName, UINT codeSize);
 #else
    bool Load(const BYTE* shaderCodeName, UINT codeSize);
+   ID3DXEffect *Core() const { return m_shader; }
 #endif
    void Unload();
 
-   ID3DXEffect *Core() const
-   {
-      return m_shader;
-   }
+   void Begin();
+   void End();
 
-   void Begin()
-   {
-      unsigned int cPasses;
-      CHECKD3D(m_shader->Begin(&cPasses, 0));
-      CHECKD3D(m_shader->BeginPass(0));
-   }
-
-   void End()
-   {
-      CHECKD3D(m_shader->EndPass());
-      CHECKD3D(m_shader->End());
-   }
-
+   void SetTexture(const SHADER_UNIFORM_HANDLE texelName, BaseTexture* texel, const TextureFilter filter, const bool clampU, const bool clampV, const bool force_linear_rgb);
    void SetTexture(const SHADER_UNIFORM_HANDLE texelName, Texture *texel, const TextureFilter filter, const bool clampU, const bool clampV, const bool force_linear_rgb); //!! clampU/clampV/filter unimplemented
    void SetTexture(const SHADER_UNIFORM_HANDLE texelName, Sampler *texel);
    void SetTextureNull(const SHADER_UNIFORM_HANDLE texelName);
    void SetMaterial(const Material * const mat, const bool has_alpha = true);
 
-   void SetDisableLighting(const vec4& value) // sets the two top and below lighting flags, z and w unused
-   {
-      if (currentDisableLighting.x != value.x || currentDisableLighting.y != value.y)
-      {
-         currentDisableLighting = value;
-         SetVector(SHADER_fDisableLighting_top_below, &value);
-      }
-   }
-
-   void SetAlphaTestValue(const float value)
-   {
-      if (currentAlphaTestValue != value)
-      {
-         currentAlphaTestValue = value;
-         SetFloat(SHADER_alphaTestValue, value);
-      }
-   }
-
-   void SetFlasherColorAlpha(const vec4& color)
-   {
-      if (currentFlasherColor.x != color.x || currentFlasherColor.y != color.y || currentFlasherColor.z != color.z || currentFlasherColor.w != color.w)
-      {
-         currentFlasherColor = color;
-         SetVector(SHADER_staticColor_Alpha, &color);
-      }
-   }
-
-   vec4 GetCurrentFlasherColorAlpha()
-   {
-      return currentFlasherColor;
-   }
-
-   void SetFlasherData(const vec4& c1, const vec4& c2)
-   {
-      if (currentFlasherData.x != c1.x || currentFlasherData.y != c1.y || currentFlasherData.z != c1.z || currentFlasherData.w != c1.w)
-      {
-         currentFlasherData = c1;
-         SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, &c1);
-      }
-      if (currentFlasherData2.x != c2.x || currentFlasherData2.y != c2.y || currentFlasherData2.z != c2.z || currentFlasherData2.w != c2.w)
-      {
-         currentFlasherData2 = c2;
-         SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, &c2);
-      }
-   }
-
-   void SetLightColorIntensity(const vec4& color)
-   {
-      if (currentLightColor.x != color.x || currentLightColor.y != color.y || currentLightColor.z != color.z || currentLightColor.w != color.w)
-      {
-         currentLightColor = color;
-         SetVector(SHADER_lightColor_intensity, &color);
-      }
-   }
-
-   void SetLightColor2FalloffPower(const vec4& color)
-   {
-      if (currentLightColor2.x != color.x || currentLightColor2.y != color.y || currentLightColor2.z != color.z || currentLightColor2.w != color.w)
-      {
-         currentLightColor2 = color;
-         SetVector(SHADER_lightColor2_falloff_power, &color);
-      }
-   }
-
-   void SetLightData(const vec4& color)
-   {
-      if (currentLightData.x != color.x || currentLightData.y != color.y || currentLightData.z != color.z || currentLightData.w != color.w)
-      {
-         currentLightData = color;
-         SetVector(SHADER_lightCenter_maxRange, &color);
-      }
-   }
-
-   void SetLightImageBackglassMode(const bool imageMode, const bool backglassMode)
-   {
-      if (currentLightImageMode != (unsigned int)imageMode || currentLightBackglassMode != (unsigned int)backglassMode)
-      {
-         currentLightImageMode = (unsigned int)imageMode;
-         currentLightBackglassMode = (unsigned int)backglassMode;
-         SetBool("lightingOff", imageMode || backglassMode); // at the moment can be combined into a single bool due to what the shader actually does in the end
-      }
-   }
+   void SetDisableLighting(const vec4& value); // sets the two top and below lighting flags, z and w unused
+   void SetAlphaTestValue(const float value);
+   void SetFlasherColorAlpha(const vec4& color);
+   vec4 GetCurrentFlasherColorAlpha();
+   void SetFlasherData(const vec4& c1, const vec4& c2);
+   void SetLightColorIntensity(const vec4& color);
+   void SetLightColor2FalloffPower(const vec4& color);
+   void SetLightData(const vec4& color);
+   void SetLightImageBackglassMode(const bool imageMode, const bool backglassMode);
 
    //
 
-   void SetTechnique(const SHADER_TECHNIQUE_HANDLE technique)
+   void SetTechnique(const ShaderTechniques technique);
+   void SetTechniqueMetal(const ShaderTechniques technique, const bool isMetal);
+   ShaderTechniques GetCurrentTechnique() { return m_technique; }
+
+   void SetMatrix(const SHADER_UNIFORM_HANDLE hParameter, const D3DXMATRIX* pMatrix);
+   void SetVector(const SHADER_UNIFORM_HANDLE hParameter, const vec4* pVector);
+   void SetFloat(const SHADER_UNIFORM_HANDLE hParameter, const float f);
+   void SetInt(const SHADER_UNIFORM_HANDLE hParameter, const int i);
+   void SetBool(const SHADER_UNIFORM_HANDLE hParameter, const bool b);
+   void SetValue(const SHADER_UNIFORM_HANDLE hParameter, const void* pData, const unsigned int Bytes);
+
+   static Shader* GetCurrentShader();
+
+#ifdef ENABLE_SDL
+   // state of what is actually bound per technique, and what is expected for the next begin/end
+   struct UniformCache
    {
-      if (strcmp(currentTechnique, technique) /*|| (m_renderDevice->m_curShader != this)*/)
+      size_t count; // number of elements for uniform blocks and float vectors
+      size_t capacity; // size of the datablock
+      float* data; // uniform blocks & large float vectors data block
+      union UniformValue
       {
-         strncpy_s(currentTechnique, technique, sizeof(currentTechnique)-1);
-         //m_renderDevice->m_curShader = this;
-         CHECKD3D(m_shader->SetTechnique(technique));
-         m_renderDevice->m_curTechniqueChanges++;
-      }
-   }
-
-   void SetTechniqueMetal(const string& technique, const bool isMetal)
-   {
-      SetTechnique((technique + (isMetal ? "_isMetal" : "_isNotMetal")).c_str());
-   }
-
-   void SetMatrix(const SHADER_UNIFORM_HANDLE hParameter, const D3DXMATRIX* pMatrix)
-   {
-      /*CHECKD3D(*/m_shader->SetMatrix(hParameter, pMatrix)/*)*/; // leads to invalid calls when setting some of the matrices (as hlsl compiler optimizes some down to less than 4x4)
-      m_renderDevice->m_curParameterChanges++;
-   }
-
-   void SetVector(const SHADER_UNIFORM_HANDLE hParameter, const vec4* pVector)
-   {
-      CHECKD3D(m_shader->SetVector(hParameter, pVector));
-      m_renderDevice->m_curParameterChanges++;
-   }
-
-   void SetFloat(const SHADER_UNIFORM_HANDLE hParameter, const float f)
-   {
-      CHECKD3D(m_shader->SetFloat(hParameter, f));
-      m_renderDevice->m_curParameterChanges++;
-   }
-
-   void SetInt(const SHADER_UNIFORM_HANDLE hParameter, const int i)
-   {
-      CHECKD3D(m_shader->SetInt(hParameter, i));
-      m_renderDevice->m_curParameterChanges++;
-   }
-
-   void SetBool(const SHADER_UNIFORM_HANDLE hParameter, const bool b)
-   {
-      CHECKD3D(m_shader->SetBool(hParameter, b));
-      m_renderDevice->m_curParameterChanges++;
-   }
-
-   void SetValue(const SHADER_UNIFORM_HANDLE hParameter, const void* pData, const unsigned int Bytes)
-   {
-      CHECKD3D(m_shader->SetValue(hParameter, pData, Bytes));
-      m_renderDevice->m_curParameterChanges++;
-   }
+         int i; // integer and boolean
+         float f; // float value
+         float fv[16]; // float vectors and matrices
+         Sampler* sampler; // texture samplers
+      } val;
+   };
+   uint32_t CopyUniformCache(const bool copyTo, const ShaderTechniques technique, UniformCache (&m_uniformCache)[SHADER_UNIFORM_COUNT]);
+#endif
 
 private:
-   ID3DXEffect* m_shader;
    RenderDevice *m_renderDevice;
+   static Shader* current_shader;
+   ShaderTechniques m_technique;
 
    // caches:
 
@@ -388,8 +244,8 @@ private:
 
    static constexpr DWORD TEXTURESET_STATE_CACHE_SIZE = 5; // current convention: SetTexture gets "TextureX", where X 0..4
    BaseTexture *currentTexture[TEXTURESET_STATE_CACHE_SIZE];
-   float   currentAlphaTestValue;
-   char    currentTechnique[64];
+   float currentAlphaTestValue;
+   char  currentTechnique[64];
 
    vec4 currentFlasherColor; // all flasher only-data
    vec4 currentFlasherData;
@@ -400,4 +256,59 @@ private:
    vec4 currentLightData;
    unsigned int currentLightImageMode;
    unsigned int currentLightBackglassMode;
+
+   static const string shaderTechniqueNames[SHADER_TECHNIQUE_COUNT];
+   ShaderTechniques getTechniqueByName(const string& name);
+
+#ifdef ENABLE_SDL
+   string m_shaderCodeName;
+
+   struct attributeLoc
+   {
+      GLenum type;
+      int location;
+      int size;
+   };
+   struct uniformLoc
+   {
+      GLenum type;
+      GLint location;
+      int size;
+      GLuint blockBuffer;
+   };
+   struct ShaderTechnique
+   {
+      int index;
+      string& name;
+      GLuint program;
+      attributeLoc attributeLocation[SHADER_ATTRIBUTE_COUNT];
+      uniformLoc uniformLocation[SHADER_UNIFORM_COUNT];
+   };
+
+   std::ofstream* logFile;
+#if DEBUG_LEVEL_LOG > 0
+   void LOG(const int level, const string& fileNameRoot, const string& message);
+#endif
+   bool parseFile(const string& fileNameRoot, const string& fileName, int level, robin_hood::unordered_map<string, string>& values, const string& parentMode);
+   string analyzeFunction(const char* shaderCodeName, const string& technique, const string& functionName, const robin_hood::unordered_map<string, string>& values);
+   ShaderTechnique* compileGLShader(const ShaderTechniques technique, const string& fileNameRoot, string& shaderCodeName, const string& vertex, const string& geometry, const string& fragment);
+
+   void ApplyUniform(const ShaderUniforms uniformName);
+
+   std::vector<ShaderUniforms> m_uniforms[SHADER_TECHNIQUE_COUNT];
+   bool m_isCacheValid[SHADER_TECHNIQUE_COUNT];
+   UniformCache m_uniformCache[SHADER_TECHNIQUE_COUNT + 1][SHADER_UNIFORM_COUNT];
+   ShaderTechnique* m_techniques[SHADER_TECHNIQUE_COUNT];
+   ShaderTechniques m_technique;
+   static Matrix3D mWorld, mView, mProj[2];
+
+public:
+   void setAttributeFormat(const DWORD fvf);
+
+   static string shaderPath;
+   static string Defines;
+
+#else
+   ID3DXEffect * m_shader;
+#endif
 };

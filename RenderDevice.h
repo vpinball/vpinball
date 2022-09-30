@@ -24,8 +24,8 @@ void ReportError(const char *errorText, const HRESULT hr, const char *file, cons
 
 #if 1//def _DEBUG
 #ifdef ENABLE_SDL
-//void checkGLErrors(const char *file, const int line);
-//#define CHECKD3D(s) { s; } //checkGLErrors(__FILE__, __LINE__); } // by now the callback is used instead
+void checkGLErrors(const char *file, const int line);
+#define CHECKD3D(s) { s; } //checkGLErrors(__FILE__, __LINE__); }
 #else //ENABLE_SDL
 #define CHECKD3D(s) { const HRESULT hrTmp = (s); if (FAILED(hrTmp)) ReportFatalError(hrTmp, __FILE__, __LINE__); }
 #endif
@@ -185,7 +185,6 @@ public:
    };
 #endif
 
-
    RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const bool useAA, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering);
    ~RenderDevice();
    void CreateDevice(int &refreshrate, UINT adapterIndex = D3DADAPTER_DEFAULT);
@@ -199,19 +198,18 @@ public:
 
    bool SetMaximumPreRenderedFrames(const DWORD frames);
 
-   RenderTarget* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture; }
-   RenderTarget* GetBackBufferTmpTexture() const { return m_pOffscreenBackBufferTmpTexture; } // stereo/FXAA only
-   RenderTarget* GetBackBufferTmpTexture2() const { return m_pOffscreenBackBufferTmpTexture2; } // SMAA only
-#ifdef ENABLE_SDL
-   RenderTarget* GetNonMSAABlitTexture(int m_MSAASamples) const { return m_MSAASamples == 1 ? m_pOffscreenBackBufferTexture : m_pOffscreenNonMSAABlitTexture; }
+   RenderTarget* GetMSAABackBufferTexture() const { return m_pOffscreenMSAABackBufferTexture; } // Main render target, may be MSAA enabled and not suited for sampling, also may have stereo output (2 viewports)
+   void ResolveMSAA(); // Resolve MSAA back buffer texture to be sample  from back buffer texture
+   RenderTarget* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture; } // Main render target, with MSAA resolved if any, also may have stereo output (2 viewports)
+   RenderTarget* GetBackBufferTmpTexture() const { return m_pOffscreenBackBufferTmpTexture; } // sharpen, stereo & FXAA
+   RenderTarget* GetBackBufferTmpTexture2() const { return m_pOffscreenBackBufferTmpTexture2; } // sharpen & SMAA
+   RenderTarget* GetPostProcessTexture(RenderTarget* renderedRT) const { return renderedRT == m_pOffscreenBackBufferTmpTexture ? m_pOffscreenBackBufferTmpTexture2 : m_pOffscreenBackBufferTmpTexture; }
    RenderTarget* GetOffscreenVR(int eye) const { return eye == 0 ? m_pOffscreenVRLeft : m_pOffscreenVRRight; }
-#endif
    RenderTarget* GetMirrorTmpBufferTexture() const { return m_pMirrorTmpBufferTexture; }
    RenderTarget* GetReflectionBufferTexture() const { return m_pReflectionBufferTexture; }
-   RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; } // The screen render target
-
    RenderTarget* GetBloomBufferTexture() const { return m_pBloomBufferTexture; }
    RenderTarget* GetBloomTmpBufferTexture() const { return m_pBloomTmpBufferTexture; }
+   RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; } // The screen render target
 
 #ifdef ENABLE_SDL
    static bool isVRinstalled();
@@ -349,16 +347,12 @@ private:
 
    RenderTarget* m_pBackBuffer;
 
-   //If stereo is enabled the right eye is the right/bottom part with 4px in between
+   RenderTarget* m_pOffscreenMSAABackBufferTexture;
    RenderTarget* m_pOffscreenBackBufferTexture;
    RenderTarget* m_pOffscreenBackBufferTmpTexture; // stereo/FXAA only
    RenderTarget* m_pOffscreenBackBufferTmpTexture2; // SMAA only
-#ifdef ENABLE_SDL
-   Sampler* m_pOffscreenNonMSAABlitTexture;
    RenderTarget* m_pOffscreenVRLeft;
    RenderTarget* m_pOffscreenVRRight;
-#endif
-
    RenderTarget* m_pBloomBufferTexture;
    RenderTarget* m_pBloomTmpBufferTexture;
    RenderTarget* m_pMirrorTmpBufferTexture;
