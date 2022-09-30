@@ -121,6 +121,8 @@ INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(cameraMode)
 {
+   m_dynamicMode = m_cameraMode; // We can move the camera => disable static pre-rendering
+
 #if defined(_M_ARM64)
 #pragma message ( "Warning: No CPU float ignore denorm implemented" )
 #else
@@ -1912,7 +1914,7 @@ void Player::InitStatic()
    RenderTarget *accumulationSurface = nullptr;
 
    // if rendering static/with heavy oversampling, disable the aniso/trilinear filter to get a sharper/more precise result overall!
-   if (!m_cameraMode)
+   if (!m_dynamicMode)
    {
       // The code will fail if the static render target is MSAA (the copy operation we are performing are not allowed)
 #ifdef ENABLE_SDL
@@ -1925,10 +1927,10 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(4, TEXTURE_MODE_TRILINEAR);
    }
 
-//#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
+   //#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
    // loop for X times and accumulate/average these renderings on CPU side
    // NOTE: iter == 0 MUST ALWAYS PRODUCE an offset of 0,0!
-   for (int iter = m_cameraMode ? 0 : (STATIC_PRERENDER_ITERATIONS-1); iter >= 0; --iter) // just do one iteration if in dynamic camera/light/material tweaking mode
+   for (int iter = m_dynamicMode ? 0 : (STATIC_PRERENDER_ITERATIONS - 1); iter >= 0; --iter) // just do one iteration if in dynamic camera/light/material tweaking mode
    {
       RenderDevice::m_stats_drawn_triangles = 0;
 
@@ -1957,7 +1959,7 @@ void Player::InitStatic()
       // Initialize one User Clipplane to be the playfield (but not enabled yet)
       SetClipPlanePlayfield(true);
 
-      if (!m_cameraMode)
+      if (!m_dynamicMode)
       {
          const bool drawBallReflection = ((m_reflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
          if (!(m_ptable->m_reflectElementsOnPlayfield /*&& m_pf_refl*/) && drawBallReflection)
@@ -2028,7 +2030,7 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->EndScene();
 
       // Readback static buffer, convert 16bit to 32bit float, and accumulate
-      if (!m_cameraMode)
+      if (!m_dynamicMode)
       {
          // Rendering is done to m_pin3d.m_pddsStatic then accumulated to accumulationSurface
          // We use the framebuffer mirror shader wich copy a weighted version of the bound texture
@@ -2052,9 +2054,9 @@ void Player::InitStatic()
       stats_drawn_static_triangles = RenderDevice::m_stats_drawn_triangles;
    }
 
-   // if rendering static/with heavy oversampling, re-enable the aniso/trilinear filter now for the normal rendering
-   if (!m_cameraMode)
+   if (!m_dynamicMode)
    {
+      // if rendering static/with heavy oversampling, re-enable the aniso/trilinear filter now for the normal rendering
       m_isRenderingStatic = false;
       m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
       m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(4, TEXTURE_MODE_TRILINEAR);
@@ -3451,7 +3453,7 @@ void Player::RenderDynamics()
    TRACE_FUNCTION();
 
    unsigned int reflection_path = 0;
-   if (!m_cameraMode)
+   if (!m_dynamicMode)
    {
       const bool drawBallReflection = ((m_reflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
 
@@ -3478,7 +3480,7 @@ void Player::RenderDynamics()
 
    m_pin3d.RenderPlayfieldGraphics(true); // static depth buffer only contained static (&mirror) objects, but no playfield yet -> so render depth only to add this
 
-   if (m_cameraMode)
+   if (m_dynamicMode)
    {
       m_pin3d.InitLights();
 
@@ -4936,7 +4938,7 @@ void Player::Render()
    }
    else
 #endif
-   if (m_cameraMode)
+   if (m_dynamicMode)
    {
       m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation());
    }

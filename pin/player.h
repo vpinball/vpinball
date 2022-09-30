@@ -357,6 +357,7 @@ public:
    VertexBuffer *m_ballTrailVertexBuffer;
    bool m_antiStretchBall;
 
+   bool m_dynamicMode;
    bool m_cameraMode;
    int m_backdropSettingActive;
    PinTable *m_ptable;
