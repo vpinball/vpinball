@@ -803,14 +803,14 @@ STDMETHODIMP ScriptGlobalTable::MaterialColor(BSTR pVal, OLE_COLOR newVal)
 STDMETHODIMP ScriptGlobalTable::get_WindowWidth(int *pVal)
 {
    if (g_pplayer)
-      *pVal = g_pplayer->m_width;
+      *pVal = g_pplayer->m_wnd_width;
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_WindowHeight(int *pVal)
 {
    if (g_pplayer)
-      *pVal = g_pplayer->m_height;
+      *pVal = g_pplayer->m_wnd_height;
    return S_OK;
 }
 

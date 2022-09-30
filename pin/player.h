@@ -309,7 +309,7 @@ private:
    void DrawBulbLightBuffer();
    void Bloom();
    void SSRefl();
-   void StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, const bool NFAA, const bool FXAA1, const bool FXAA2, const bool FXAA3, const unsigned int sharpen, const bool depth_available);
+   void StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool SMAA, const bool DLAA, const bool NFAA, const bool FXAA1, const bool FXAA2, const bool FXAA3, const unsigned int sharpen, const bool depth_available);
 
    void UpdateHUD_IMGUI();
    void RenderHUD_IMGUI();
@@ -521,7 +521,7 @@ public:
    U32 m_LastPlungerHit;		// The last time the plunger was in contact (at least the vicinity) of the ball.
    float m_curMechPlungerPos;
 
-   int m_width, m_height;
+   int m_wnd_width, m_wnd_height; // Window height (requested size before creation, effective size after) which is not directly linked to the render size
 
    int m_screenwidth, m_screenheight, m_refreshrate;
    bool m_fullScreen;
