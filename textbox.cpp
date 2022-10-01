@@ -100,6 +100,8 @@ void Textbox::SetDefaults(bool fromMouseClick)
          m_d.m_sztext.clear();
    }
 
+   if (m_pIFont)
+      m_pIFont->Release();
    OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
    if (free_lpstrName)
       free(fd.lpstrName);
