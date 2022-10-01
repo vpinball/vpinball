@@ -698,9 +698,9 @@ void Pin3D::InitLights()
       memcpy(&l[i].vPos, &g_pplayer->m_ptable->m_Light[i].pos, sizeof(float) * 3);
       memcpy(&l[i].vEmission, &emission, sizeof(float) * 3);
    }
-   m_pd3dPrimaryDevice->basicShader->SetValue("packedLights", l, sizeof(CLight)*MAX_LIGHT_SOURCES);
+   m_pd3dPrimaryDevice->basicShader->SetValue(SHADER_packedLights, l, sizeof(CLight)*MAX_LIGHT_SOURCES);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
-   m_pd3dPrimaryDevice->classicLightShader->SetValue("packedLights", l, sizeof(CLight)*MAX_LIGHT_SOURCES);
+   m_pd3dPrimaryDevice->classicLightShader->SetValue(SHADER_packedLights, l, sizeof(CLight)*MAX_LIGHT_SOURCES);
 #endif
 
    vec4 amb_lr = convertColor(g_pplayer->m_ptable->m_lightAmbient, g_pplayer->m_ptable->m_lightRange);
