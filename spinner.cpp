@@ -476,7 +476,6 @@ void Spinner::RenderStatic()
    mat.m_fEdgeAlpha = 1.0f;
    pd3dDevice->basicShader->SetMaterial(&mat, false);
    pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat.m_bIsMetal);
-   ppin3d->EnableAlphaBlend(false);
 
    pd3dDevice->basicShader->Begin();
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bracketVertexBuffer, 0, spinnerBracketNumVertices, m_bracketIndexBuffer, 0, spinnerBracketNumFaces);
