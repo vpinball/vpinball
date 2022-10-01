@@ -298,7 +298,6 @@ void Bumper::RenderBase(const Material * const baseMaterial)
 
    pd3dDevice->basicShader->SetMaterial(baseMaterial, false);
    pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, &m_baseTexture);
-   g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
    pd3dDevice->basicShader->Begin();
@@ -312,7 +311,6 @@ void Bumper::RenderSocket(const Material * const socketMaterial)
 
    pd3dDevice->basicShader->SetMaterial(socketMaterial, false);
    pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, &m_skirtTexture);
-   g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
    pd3dDevice->basicShader->Begin();
@@ -326,7 +324,6 @@ void Bumper::RenderCap(const Material * const capMaterial)
 
    pd3dDevice->basicShader->SetMaterial(capMaterial, false);
    pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, &m_capTexture);
-   g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
    pd3dDevice->basicShader->Begin();
