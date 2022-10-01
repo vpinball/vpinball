@@ -14,6 +14,9 @@
 
 #if DEBUG_LEVEL_LOG == 0
 #define LOG(a,b,c)
+#else
+// FIXME implement clean log
+#define LOG(a, b, c)
 #endif
 
 #define SHADER_TECHNIQUE(name) #name
@@ -97,72 +100,68 @@ ShaderTechniques Shader::getTechniqueByName(const string& name)
       if (name == shaderTechniqueNames[i])
          return ShaderTechniques(i);
 
-   // FIXME LOG(1, m_shaderCodeName, string("getTechniqueByName Could not find technique ").append(name).append(" in shaderTechniqueNames."));
+   LOG(1, m_shaderCodeName, string("getTechniqueByName Could not find technique ").append(name).append(" in shaderTechniqueNames."));
    return SHADER_TECHNIQUE_INVALID;
 }
 
-#define SHADER_UNIFORM(name) { false, #name, #name, ""s, -1, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED }
-#define SHADER_TEXTURE(name) { true, #name, #name, ""s, -1, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED }
-#define SHADER_SAMPLER(name, legacy_name, texture_ref, default_tex_unit, default_clampu, default_clampv, default_filter) { true, #name, #legacy_name, #texture_ref, default_tex_unit, default_clampu, default_clampv, default_filter }
+#define SHADER_UNIFORM(type, name) { type, #name, #name, ""s, -1, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED }
+#define SHADER_SAMPLER(name, legacy_name, texture_ref, default_tex_unit, default_clampu, default_clampv, default_filter) { SUT_Sampler, #name, #legacy_name, #texture_ref, default_tex_unit, default_clampu, default_clampv, default_filter }
 Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
+   // -- Matrices --
+   SHADER_UNIFORM(SUT_FloatBlock, matrixBlock), // OpenGL only, matrices as a float block
+   SHADER_UNIFORM(SUT_Float4x4, matWorldViewProj), // DX9 only
+   SHADER_UNIFORM(SUT_Float4x4, matWorldView), // DX9 only
+   SHADER_UNIFORM(SUT_Float4x3, matWorldViewInverse), // DX9 only
+   SHADER_UNIFORM(SUT_Float3x4, matWorldViewInverseTranspose), // DX9 only
+   SHADER_UNIFORM(SUT_Float4x3, matView), // DX9 only
+   SHADER_UNIFORM(SUT_Float4x3, orientation),
    // -- Floats --
-   SHADER_UNIFORM(RenderBall),
-   SHADER_UNIFORM(blend_modulate_vs_add),
-   SHADER_UNIFORM(alphaTestValue),
-   SHADER_UNIFORM(eye),
-   SHADER_UNIFORM(fKickerScale),
+   SHADER_UNIFORM(SUT_Float, RenderBall),
+   SHADER_UNIFORM(SUT_Float, blend_modulate_vs_add),
+   SHADER_UNIFORM(SUT_Float, alphaTestValue),
+   SHADER_UNIFORM(SUT_Float, eye),
+   SHADER_UNIFORM(SUT_Float, fKickerScale),
+   SHADER_UNIFORM(SUT_Float, mirrorFactor),
    // -- Vectors and Float Arrays --
-   SHADER_UNIFORM(Roughness_WrapL_Edge_Thickness),
-   SHADER_UNIFORM(cBase_Alpha),
-   SHADER_UNIFORM(lightCenter_maxRange),
-   SHADER_UNIFORM(lightColor2_falloff_power),
-   SHADER_UNIFORM(lightColor_intensity),
-   SHADER_UNIFORM(matrixBlock),
-   SHADER_UNIFORM(fenvEmissionScale_TexWidth),
-   SHADER_UNIFORM(invTableRes_playfield_height_reflection),
-   SHADER_UNIFORM(lightEmission),
-   SHADER_UNIFORM(lightPos),
-   SHADER_UNIFORM(orientation),
-   SHADER_UNIFORM(cAmbient_LightRange),
-   SHADER_UNIFORM(cClearcoat_EdgeAlpha),
-   SHADER_UNIFORM(cGlossy_ImageLerp),
-   SHADER_UNIFORM(fDisableLighting_top_below),
-   SHADER_UNIFORM(backBoxSize),
-   SHADER_UNIFORM(vColor_Intensity),
-   SHADER_UNIFORM(w_h_height),
-   SHADER_UNIFORM(alphaTestValueAB_filterMode_addBlend),
-   SHADER_UNIFORM(amount_blend_modulate_vs_add_flasherMode),
-   SHADER_UNIFORM(staticColor_Alpha),
-   SHADER_UNIFORM(ms_zpd_ya_td),
-   SHADER_UNIFORM(Anaglyph_DeSaturation_Contrast),
-   SHADER_UNIFORM(vRes_Alpha_time),
-   SHADER_UNIFORM(mirrorFactor),
-   SHADER_UNIFORM(SSR_bumpHeight_fresnelRefl_scale_FS),
-   SHADER_UNIFORM(AO_scale_timeblur),
-   SHADER_UNIFORM(clip_planes),
-   SHADER_UNIFORM(cWidth_Height_MirrorAmount),
+   SHADER_UNIFORM(SUT_Float4, Roughness_WrapL_Edge_Thickness),
+   SHADER_UNIFORM(SUT_Float4, cBase_Alpha),
+   SHADER_UNIFORM(SUT_Float4, lightCenter_maxRange),
+   SHADER_UNIFORM(SUT_Float4, lightColor2_falloff_power),
+   SHADER_UNIFORM(SUT_Float4, lightColor_intensity),
+   SHADER_UNIFORM(SUT_Float2, fenvEmissionScale_TexWidth),
+   SHADER_UNIFORM(SUT_Float4, invTableRes_playfield_height_reflection),
+   SHADER_UNIFORM(SUT_Float4, cAmbient_LightRange),
+   SHADER_UNIFORM(SUT_Float3, cClearcoat_EdgeAlpha),
+   SHADER_UNIFORM(SUT_Float3, cGlossy_ImageLerp),
+   SHADER_UNIFORM(SUT_Float2, fDisableLighting_top_below),
+   SHADER_UNIFORM(SUT_Float4, backBoxSize),
+   SHADER_UNIFORM(SUT_Float4, vColor_Intensity),
+   SHADER_UNIFORM(SUT_Float4, w_h_height),
+   SHADER_UNIFORM(SUT_Float4, alphaTestValueAB_filterMode_addBlend),
+   SHADER_UNIFORM(SUT_Float3, amount_blend_modulate_vs_add_flasherMode),
+   SHADER_UNIFORM(SUT_Float4, staticColor_Alpha),
+   SHADER_UNIFORM(SUT_Float4, ms_zpd_ya_td),
+   SHADER_UNIFORM(SUT_Float2, Anaglyph_DeSaturation_Contrast),
+   SHADER_UNIFORM(SUT_Float4, vRes_Alpha_time),
+   SHADER_UNIFORM(SUT_Float4, SSR_bumpHeight_fresnelRefl_scale_FS),
+   SHADER_UNIFORM(SUT_Float2, AO_scale_timeblur),
+   SHADER_UNIFORM(SUT_Float4, clip_planes), // OpenGL only
+   SHADER_UNIFORM(SUT_Float4, cWidth_Height_MirrorAmount),
+   SHADER_UNIFORM(SUT_Float4, lightEmission),
+   SHADER_UNIFORM(SUT_Float4, lightPos),
+   SHADER_UNIFORM(SUT_Float4v, packedLights), // DX9 only
    // -- Integer and Bool --
-   SHADER_UNIFORM(ignoreStereo),
-   SHADER_UNIFORM(disableLighting),
-   SHADER_UNIFORM(lightSources),
-   SHADER_UNIFORM(doNormalMapping),
-   SHADER_UNIFORM(is_metal),
-   SHADER_UNIFORM(color_grade),
-   SHADER_UNIFORM(do_bloom),
-   SHADER_UNIFORM(lightingOff),
-   SHADER_UNIFORM(objectSpaceNormalMap),
-   SHADER_UNIFORM(do_dither),
-   SHADER_UNIFORM(imageBackglassMode),
-   // -- Textures --
-   SHADER_TEXTURE(Texture0),
-   SHADER_TEXTURE(Texture1),
-   SHADER_TEXTURE(Texture2),
-   SHADER_TEXTURE(Texture3),
-   SHADER_TEXTURE(Texture4),
-   SHADER_TEXTURE(edgesTex2D),
-   SHADER_TEXTURE(blendTex2D),
-   SHADER_TEXTURE(areaTex2D),
-   SHADER_TEXTURE(searchTex2D),
+   SHADER_UNIFORM(SUT_Bool, ignoreStereo),
+   SHADER_UNIFORM(SUT_Bool, disableLighting),
+   SHADER_UNIFORM(SUT_Bool, doNormalMapping),
+   SHADER_UNIFORM(SUT_Bool, is_metal),
+   SHADER_UNIFORM(SUT_Bool, color_grade),
+   SHADER_UNIFORM(SUT_Bool, do_bloom),
+   SHADER_UNIFORM(SUT_Bool, lightingOff),
+   SHADER_UNIFORM(SUT_Bool, objectSpaceNormalMap),
+   SHADER_UNIFORM(SUT_Bool, do_dither),
+   SHADER_UNIFORM(SUT_Bool, imageBackglassMode),
+   SHADER_UNIFORM(SUT_Int, lightSources),
    // -- Samplers (a texture reference with sampling configuration) --
    // DMD shader
    SHADER_SAMPLER(tex_dmd, texSampler0, Texture0, 0, SA_MIRROR, SA_MIRROR, SF_NONE), // DMD
@@ -205,7 +204,6 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_SAMPLER(searchTex, searchTex, searchTex2D, 5, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Not that this should have a w address mode set to clamp as well
 };
 #undef SHADER_UNIFORM
-#undef SHADER_TEXTURE
 #undef SHADER_SAMPLER
 
 ShaderUniforms Shader::getUniformByName(const string& name)
@@ -444,7 +442,7 @@ void Shader::SetLightImageBackglassMode(const bool imageMode, const bool backgla
    {
       currentLightImageMode = (unsigned int)imageMode;
       currentLightBackglassMode = (unsigned int)backglassMode;
-      SetBool("lightingOff", imageMode || backglassMode); // at the moment can be combined into a single bool due to what the shader actually does in the end
+      SetBool(SHADER_lightingOff, imageMode || backglassMode); // at the moment can be combined into a single bool due to what the shader actually does in the end
    }
 }
 
@@ -546,39 +544,33 @@ void Shader::SetTechniqueMetal(const ShaderTechniques technique, const bool isMe
    }
 }
 
-void Shader::SetMatrix(const SHADER_UNIFORM_HANDLE hParameter, const D3DXMATRIX* pMatrix)
+void Shader::SetMatrix(const ShaderUniforms hParameter, const D3DXMATRIX* pMatrix)
 {
-   /*CHECKD3D(*/m_shader->SetMatrix(hParameter, pMatrix)/*)*/; // leads to invalid calls when setting some of the matrices (as hlsl compiler optimizes some down to less than 4x4)
+   /*CHECKD3D(*/m_shader->SetMatrix(shaderUniformNames[hParameter].name.c_str(), pMatrix)/*)*/; // leads to invalid calls when setting some of the matrices (as hlsl compiler optimizes some down to less than 4x4)
    m_renderDevice->m_curParameterChanges++;
 }
 
-void Shader::SetVector(const SHADER_UNIFORM_HANDLE hParameter, const vec4* pVector)
+void Shader::SetVector(const ShaderUniforms hParameter, const vec4* pVector)
 {
-   CHECKD3D(m_shader->SetVector(hParameter, pVector));
+   CHECKD3D(m_shader->SetVector(shaderUniformNames[hParameter].name.c_str(), pVector));
    m_renderDevice->m_curParameterChanges++;
 }
 
-void Shader::SetFloat(const SHADER_UNIFORM_HANDLE hParameter, const float f)
+void Shader::SetFloat(const ShaderUniforms hParameter, const float f)
 {
-   CHECKD3D(m_shader->SetFloat(hParameter, f));
+   CHECKD3D(m_shader->SetFloat(shaderUniformNames[hParameter].name.c_str(), f));
    m_renderDevice->m_curParameterChanges++;
 }
 
-void Shader::SetInt(const SHADER_UNIFORM_HANDLE hParameter, const int i)
+void Shader::SetBool(const ShaderUniforms hParameter, const bool b)
 {
-   CHECKD3D(m_shader->SetInt(hParameter, i));
+   CHECKD3D(m_shader->SetBool(shaderUniformNames[hParameter].name.c_str(), b));
    m_renderDevice->m_curParameterChanges++;
 }
 
-void Shader::SetBool(const SHADER_UNIFORM_HANDLE hParameter, const bool b)
+void Shader::SetValue(const ShaderUniforms hParameter, const void* pData, const unsigned int Bytes)
 {
-   CHECKD3D(m_shader->SetBool(hParameter, b));
-   m_renderDevice->m_curParameterChanges++;
-}
-
-void Shader::SetValue(const SHADER_UNIFORM_HANDLE hParameter, const void* pData, const unsigned int Bytes)
-{
-   CHECKD3D(m_shader->SetValue(hParameter, pData, Bytes));
+   CHECKD3D(m_shader->SetValue(shaderUniformNames[hParameter].name.c_str(), pData, Bytes));
    m_renderDevice->m_curParameterChanges++;
 }
 
