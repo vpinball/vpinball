@@ -11,6 +11,16 @@
 #define STBI_NO_FAILURE_STRINGS
 #include "stb_image.h"
 
+BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Format format)
+   : m_width(w)
+   , m_height(h)
+   , m_data((format == RGBA || format == SRGBA ? 4 : 3) * (format == RGB_FP32 ? 4 : format == RGB_FP16 ? 2 : 1) * w * h)
+   , m_realWidth(w)
+   , m_realHeight(h)
+   , m_format(format)
+{
+}
+
 BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_mem)
 {
    // check if Textures exceed the maximum texture dimension
