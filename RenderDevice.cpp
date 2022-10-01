@@ -1784,10 +1784,8 @@ void RenderDevice::SetRenderStateDepthBias(float bias) { m_renderstate.depth_bia
 void RenderDevice::SetRenderStateAlphaTestFunction(const DWORD testValue, const RenderStateValue testFunction, const bool enabled)
 {
    m_renderstate.alpha_ref = testValue;
-   m_renderstate.state &= RENDER_STATE_CLEAR_MASK_ALPHATESTENABLE;
-   m_renderstate.state |= (enabled ? 1 : 0) << RENDER_STATE_SHIFT_ALPHATESTENABLE;
-   m_renderstate.state &= RENDER_STATE_CLEAR_MASK_ALPHAFUNC;
-   m_renderstate.state |= testFunction << RENDER_STATE_SHIFT_ALPHAFUNC;
+   SetRenderState(ALPHATESTENABLE, enabled ? RS_TRUE : RS_FALSE);
+   SetRenderState(ALPHAFUNC, testFunction);
 }
 
 void RenderDevice::CopyRenderStates(const bool copyTo, RenderStateCache& state)
@@ -1854,7 +1852,7 @@ void RenderDevice::ApplyRenderStates()
 #ifdef ENABLE_SDL
          // FIXME Needs to be done in shader
 #else
-         CHECKD3D(m_pD3DDevice->SetRenderState(D3DRS_ALPHAFUNC, functions[val]));
+         CHECKD3D(m_pD3DDevice->SetRenderState(D3DRS_ALPHATESTENABLE, val ? TRUE : FALSE));
 #endif
          break;
 
