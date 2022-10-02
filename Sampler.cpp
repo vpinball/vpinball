@@ -39,7 +39,7 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
    m_texture = CreateTexture(surf->width(), surf->height(), 0, format, surf->data(), 0);
    m_isLinear = format != colorFormat::SRGB && format != colorFormat::SRGBA;
 #else
-   const BaseTexture::Format basetexformat = surf->m_format;
+   //const BaseTexture::Format basetexformat = surf->m_format;
 
    colorFormat texformat;
    IDirect3DTexture9* sysTex = CreateSystemTexture(surf, force_linear_rgb, texformat);
@@ -282,7 +282,7 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
 
       float* const __restrict pdest = (float*)locked.pBits;
       const float* const __restrict psrc = (float*)(surf->data());
-      for (unsigned int i = 0; i < texwidth * texheight; ++i)
+      for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
       {
          pdest[i * 4 + 0] = psrc[i * 3 + 0];
          pdest[i * 4 + 1] = psrc[i * 3 + 1];
@@ -300,7 +300,7 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
       unsigned short* const __restrict pdest = (unsigned short*)locked.pBits;
       const unsigned short* const __restrict psrc = (unsigned short*)(surf->data());
       const unsigned short one16 = float2half(1.f);
-      for (unsigned int i = 0; i < texwidth * texheight; ++i)
+      for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
       {
          pdest[i * 4 + 0] = psrc[i * 3 + 0];
          pdest[i * 4 + 1] = psrc[i * 3 + 1];
@@ -317,7 +317,7 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
 
       BYTE* const __restrict pdest = (BYTE*)locked.pBits;
       const BYTE* const __restrict psrc = (BYTE*)(surf->data());
-      for (unsigned int i = 0; i < texwidth * texheight; ++i)
+      for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
       {
          pdest[i * 4 + 0] = psrc[i * 3 + 2];
          pdest[i * 4 + 1] = psrc[i * 3 + 1];
@@ -334,7 +334,7 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
 
       BYTE* const __restrict pdest = (BYTE*)locked.pBits;
       const BYTE* const __restrict psrc = (BYTE*)(surf->data());
-      for (unsigned int i = 0; i < texwidth * texheight; ++i)
+      for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
       {
          pdest[i * 4 + 0] = psrc[i * 4 + 2];
          pdest[i * 4 + 1] = psrc[i * 4 + 1];

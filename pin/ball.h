@@ -6,10 +6,10 @@
 class BallMoverObject : public MoverObject
 {
 public:
-   virtual bool AddToList() const override { return false; } // We add ourselves to the mover list.  
-                                                             // If we allow the table to do that, we might get added twice, if we get created in the player Init code
-   virtual void UpdateDisplacements(const float dtime) override;
-   virtual void UpdateVelocities() override;
+   bool AddToList() const override { return false; } // We add ourselves to the mover list.  
+                                                     // If we allow the table to do that, we might get added twice, if we get created in the player Init code
+   void UpdateDisplacements(const float dtime) override;
+   void UpdateVelocities() override;
 
    Ball *m_pball;
 };
