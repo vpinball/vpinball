@@ -10,6 +10,7 @@ class BaseTexture final
 public:
    enum Format
    { // RGB/RGBA formats must be ordered R, G, B (and eventually A)
+      BW,			// Linear BW image, 1 byte per texel
       RGB,			// Linear RGB without alpha channel, 1 byte per channel
       RGBA,			// Linear RGB with alpha channel, 1 byte per channel
       SRGB,			// sRGB without alpha channel, 1 byte per channel
@@ -22,7 +23,7 @@ public:
 
    unsigned int width() const  { return m_width; }
    unsigned int height() const { return m_height; }
-   unsigned int pitch() const  { return (has_alpha() ? 4 : 3) * (m_format == RGB_FP32 ? 4 : m_format == RGB_FP16 ? 2 : 1) * m_width; } // pitch in bytes
+   unsigned int pitch() const  { return (m_format == BW ? 1 : (has_alpha() ? 4 : 3)) * (m_format == RGB_FP32 ? 4 : m_format == RGB_FP16 ? 2 : 1) * m_width; } // pitch in bytes
    BYTE* data()                { return m_data.data(); }
    bool has_alpha() const      { return m_format == RGBA || m_format == SRGBA; }
 
