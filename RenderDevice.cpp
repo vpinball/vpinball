@@ -1340,12 +1340,6 @@ RenderDevice::~RenderDevice()
    //m_quadDynVertexBuffer->release();
 
 #ifndef ENABLE_SDL
-#ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
-   if (NVAPIinit) //!! meh
-      CHECKNVAPI(NvAPI_Unload());
-   NVAPIinit = false;
-#endif
-
    //
    m_pD3DDevice->SetStreamSource(0, nullptr, 0, 0);
    m_pD3DDevice->SetIndices(nullptr);
@@ -1396,6 +1390,11 @@ RenderDevice::~RenderDevice()
    SAFE_RELEASE(m_pD3DDevice);
 #else
    FORCE_RELEASE(m_pD3DDevice); //!! why is this necessary for some setups? is the refcount still off for some settings?
+#endif
+#ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
+   if (NVAPIinit) //!! meh
+      CHECKNVAPI(NvAPI_Unload());
+   NVAPIinit = false;
 #endif
 #ifdef USE_D3D9EX
    SAFE_RELEASE_NO_RCC(m_pD3DEx);
