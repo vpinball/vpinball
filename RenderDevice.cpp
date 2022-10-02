@@ -1804,6 +1804,43 @@ void RenderDevice::CopyRenderStates(const bool copyTo, RenderStateCache& state)
    }
 }
 
+string RenderDevice::GetRenderStateLog() const
+{
+   auto blend = (m_renderstate.state & RENDER_STATE_MASK_ALPHABLENDENABLE) != 0;
+   auto z_test = (m_renderstate.state & RENDER_STATE_MASK_ZENABLE) != 0;
+   auto alpha_test = (m_renderstate.state & RENDER_STATE_MASK_ALPHATESTENABLE) != 0;
+   auto alpha_func = (m_renderstate.state & RENDER_STATE_MASK_ALPHAFUNC) >> RENDER_STATE_SHIFT_ALPHAFUNC;
+   auto blend_op = (m_renderstate.state & RENDER_STATE_MASK_BLENDOP) >> RENDER_STATE_SHIFT_BLENDOP;
+   auto clip_plane = (m_renderstate.state & RENDER_STATE_MASK_CLIPPLANEENABLE) != 0;
+   auto cull_mode = (m_renderstate.state & RENDER_STATE_MASK_CULLMODE) >> RENDER_STATE_SHIFT_CULLMODE;
+   auto blend_dest = (m_renderstate.state & RENDER_STATE_MASK_DESTBLEND) >> RENDER_STATE_SHIFT_DESTBLEND;
+   auto blend_src = (m_renderstate.state & RENDER_STATE_MASK_SRCBLEND) >> RENDER_STATE_SHIFT_SRCBLEND;
+   auto z_func = (m_renderstate.state & RENDER_STATE_MASK_ZFUNC) >> RENDER_STATE_SHIFT_ZFUNC;
+   auto z_write = (m_renderstate.state & RENDER_STATE_MASK_ZWRITEENABLE) != 0;
+   auto color_write = (m_renderstate.state & RENDER_STATE_MASK_COLORWRITEENABLE) >> RENDER_STATE_SHIFT_COLORWRITEENABLE;
+   string cull_modes[] = { " ___ "s, " CW  "s, " CCW "s };
+   string functions[] = { " __ ", " <  ", " <= ", " >  ", " >= " };
+   string blend_modes[] = { " M ", " A ", " R " };
+   string blend_functions[] = { "  0  ", "  1  ", " SA  ", " DA  ", " RSA ", " RSC " };
+   string s = "Blend: {";
+   s.append(blend ? " B " : " _ ");
+   s.append(blend_modes[blend_op]);
+   s.append(blend_functions[blend_dest]);
+   s.append(blend_functions[blend_src]);
+   s.append("} Depth: {");
+   s.append(z_test ? " Z " : " _ ");
+   s.append(functions[z_func]);
+   s.append(z_write ? " ZW " : " __ ");
+   s.append("} Alpha: {");
+   s.append(alpha_test ? " A " : " _ ");
+   s.append(functions[alpha_func]);
+   s.append("} Clip:");
+   s.append(clip_plane ? " C " : " _ ");
+   s.append("Cull:");
+   s.append(cull_modes[cull_mode]);
+   return s;
+}
+
 void RenderDevice::ApplyRenderStates()
 {
 #ifdef ENABLE_SDL
