@@ -336,6 +336,23 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
 
       CHECKD3D(sysTex->UnlockRect(0));
    }
+   else if ((basetexformat == BaseTexture::BW) && texformat == colorFormat::RGBA8)
+   {
+      D3DLOCKED_RECT locked;
+      CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
+
+      BYTE* const __restrict pdest = (BYTE*)locked.pBits;
+      const BYTE* const __restrict psrc = (BYTE*)(surf->data());
+      for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
+      {
+         pdest[i * 4 + 0] = psrc[i];
+         pdest[i * 4 + 1] = psrc[i];
+         pdest[i * 4 + 2] = psrc[i];
+         pdest[i * 4 + 3] = 255u;
+      }
+
+      CHECKD3D(sysTex->UnlockRect(0));
+   }
    else if ((basetexformat == BaseTexture::RGB || basetexformat == BaseTexture::SRGB) && texformat == colorFormat::RGBA8)
    {
       D3DLOCKED_RECT locked;
