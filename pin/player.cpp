@@ -182,31 +182,70 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_current_renderstage = 0;
    m_dmdstate = 0;
 
-   m_VSync = LoadValueIntWithDefault(regKey[RegName::Player], "AdaptiveVSync"s, 0);
-   m_maxPrerenderedFrames = LoadValueIntWithDefault(regKey[RegName::Player], "MaxPrerenderedFrames"s, 0);
-   m_NudgeShake = LoadValueFloatWithDefault(regKey[RegName::Player], "NudgeStrength"s, 2e-2f);
-   m_FXAA = LoadValueIntWithDefault(regKey[RegName::Player], "FXAA"s, Standard_FXAA);
-   m_sharpen = LoadValueIntWithDefault(regKey[RegName::Player], "Sharpen"s, 0);
+#ifdef ENABLE_SDL
+   const int vrDetectionMode = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "AskToTurnOn"s, 0);
+   bool useVR = vrDetectionMode == 2 /* VR Disabled */  ? false : RenderDevice::isVRinstalled();
+   if (useVR && (vrDetectionMode == 1 /* VR Autodetect => ask to turn on and adapt accordingly */) && !RenderDevice::isVRturnedOn())
+      useVR = MessageBox("VR headset detected but SteamVR is not running.\n\nTurn VR on?", "VR Headset Detected", MB_YESNO) == IDYES;
+#else
+   bool useVR = false;
+#endif
    m_trailForBalls = LoadValueBoolWithDefault(regKey[RegName::Player], "BallTrail"s, true);
    m_disableLightingForBalls = LoadValueBoolWithDefault(regKey[RegName::Player], "DisableLightingForBalls"s, false);
-   m_reflectionForBalls = LoadValueBoolWithDefault(regKey[RegName::Player], "BallReflection"s, true);
-   m_AA = LoadValueBoolWithDefault(regKey[RegName::Player], "USEAA"s, false);
-   m_dynamicAO = LoadValueBoolWithDefault(regKey[RegName::Player], "DynamicAO"s, false);
-   m_disableAO = LoadValueBoolWithDefault(regKey[RegName::Player], "DisableAO"s, false);
-   m_ss_refl = LoadValueBoolWithDefault(regKey[RegName::Player], "SSRefl"s, false);
-   m_pf_refl = LoadValueBoolWithDefault(regKey[RegName::Player], "PFRefl"s, true);
    m_stereo3D = (StereoMode)LoadValueIntWithDefault(regKey[RegName::Player], "Stereo3D"s, STEREO_OFF);
    m_stereo3Denabled = LoadValueBoolWithDefault(regKey[RegName::Player], "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
    m_stereo3DY = LoadValueBoolWithDefault(regKey[RegName::Player], "Stereo3DYAxis"s, false);
    m_global3DContrast = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DContrast"s, 1.0f);
    m_global3DDesaturation = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DDesaturation"s, 0.f);
-   m_scaleFX_DMD = LoadValueBoolWithDefault(regKey[RegName::Player], "ScaleFXDMD"s, false);
    m_disableDWM = LoadValueBoolWithDefault(regKey[RegName::Player], "DisableDWM"s, false);
    m_useNvidiaApi = LoadValueBoolWithDefault(regKey[RegName::Player], "UseNVidiaAPI"s, false);
-   m_bloomOff = LoadValueBoolWithDefault(regKey[RegName::Player], "ForceBloomOff"s, false);
    m_ditherOff = LoadValueBoolWithDefault(regKey[RegName::Player], "Render10Bit"s, false); // if rendering at 10bit output resolution, disable dithering
    m_BWrendering = LoadValueIntWithDefault(regKey[RegName::Player], "BWRendering"s, 0);
    m_detectScriptHang = LoadValueBoolWithDefault(regKey[RegName::Player], "DetectHang"s, false);
+
+   if (useVR)
+   {
+      m_stereo3D = STEREO_VR;
+      m_dynamicMode = true; // VR mode => camera will be dynamic, disable static pre-rendering
+      m_maxPrerenderedFrames = 0;
+      m_NudgeShake = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "NudgeStrength"s, 2e-2f);
+      m_sharpen = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "Sharpen"s, 0);
+      m_FXAA = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "FXAA"s, Disabled);
+      m_MSAASamples = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "MSAASamples"s, 1);
+      m_AAfactor = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "AAFactor"s, LoadValueBoolWithDefault(regKey[RegName::Player], "USEAAs", false) ? 2.0f : 1.0f);
+      m_dynamicAO = LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "DynamicAO"s, false);
+      m_disableAO = LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "DisableAO"s, false);
+      m_ss_refl = LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "SSRefl"s, false);
+      m_pf_refl = LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "PFRefl"s, true);
+      m_scaleFX_DMD = LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "ScaleFXDMD"s, false);
+      m_bloomOff = LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "ForceBloomOff"s, false);
+      m_VSync = 0; //Disable VSync for VR
+      m_reflectionForBalls = LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "BallReflection"s, true);
+   }
+   else
+   {
+      m_stereo3D = (StereoMode)LoadValueIntWithDefault(regKey[RegName::Player], "Stereo3D"s, STEREO_OFF);
+      m_maxPrerenderedFrames = LoadValueIntWithDefault(regKey[RegName::Player], "MaxPrerenderedFrames"s, 0);
+      m_NudgeShake = LoadValueFloatWithDefault(regKey[RegName::Player], "NudgeStrength"s, 2e-2f);
+      m_sharpen = LoadValueIntWithDefault(regKey[RegName::Player], "Sharpen"s, 0);
+      m_FXAA = LoadValueIntWithDefault(regKey[RegName::Player], "FXAA"s, Disabled);
+      m_MSAASamples = LoadValueIntWithDefault(regKey[RegName::Player], "MSAASamples"s, 1);
+#ifdef ENABLE_SDL
+      m_AAfactor = LoadValueFloatWithDefault(regKey[RegName::Player], "AAFactor"s, LoadValueBoolWithDefault(regKey[RegName::Player], "USEAAs", false) ? 2.0f : 1.0f);
+#else
+      m_AAfactor = LoadValueBoolWithDefault(regKey[RegName::Player], "USEAAs", false) ? 2.0f : 1.0f;
+#endif
+      m_dynamicAO = LoadValueBoolWithDefault(regKey[RegName::Player], "DynamicAO"s, false);
+      m_disableAO = LoadValueBoolWithDefault(regKey[RegName::Player], "DisableAO"s, false);
+      m_ss_refl = LoadValueBoolWithDefault(regKey[RegName::Player], "SSRefl"s, false);
+      m_pf_refl = LoadValueBoolWithDefault(regKey[RegName::Player], "PFRefl"s, true);
+      m_stereo3Denabled = LoadValueBoolWithDefault(regKey[RegName::Player], "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
+      m_stereo3DY = LoadValueBoolWithDefault(regKey[RegName::Player], "Stereo3DYAxis"s, false);
+      m_scaleFX_DMD = LoadValueBoolWithDefault(regKey[RegName::Player], "ScaleFXDMD"s, false);
+      m_bloomOff = LoadValueBoolWithDefault(regKey[RegName::Player], "ForceBloomOff"s, false);
+      m_VSync = LoadValueIntWithDefault(regKey[RegName::Player], "AdaptiveVSync"s, 0);
+      m_reflectionForBalls = LoadValueBoolWithDefault(regKey[RegName::Player], "BallReflection"s, true);
+   }
 
    m_ballImage = nullptr;
    m_decalImage = nullptr;
@@ -1350,7 +1389,7 @@ HRESULT Player::Init()
 
    const int vsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
 
-   const bool useAA = (m_AA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
+   const float AAfactor = ((m_ptable->m_useAA == -1) || (m_ptable->m_useAA == 1)) ? m_AAfactor : 1.0f;
    const unsigned int FXAA = (m_ptable->m_useFXAA == -1) ? m_FXAA : m_ptable->m_useFXAA;
    const bool ss_refl = (m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1);
 
@@ -1359,7 +1398,7 @@ HRESULT Player::Init()
    // colordepth & refreshrate are only defined if fullscreen is true.
    // width and height may be modified during initialization (for example for VR, they are adapted to the headset resolution)
    const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_wnd_width, m_wnd_height, colordepth,
-                                        m_refreshrate, vsync, useAA, m_stereo3D, FXAA, !!m_sharpen, !m_disableAO, ss_refl);
+                                        m_refreshrate, vsync, AAfactor, m_stereo3D, FXAA, !!m_sharpen, !m_disableAO, ss_refl);
 
 #ifdef ENABLE_SDL
    if (m_stereo3D == STEREO_VR)
@@ -1751,7 +1790,7 @@ HRESULT Player::Init()
 
    m_ptable->m_progressDialog.Destroy();
 
-   // Show the window.
+   // Show the window (even without preview, we need to create a window).
    ShowWindow(SW_SHOW);
    SetForegroundWindow();
    SetFocus();
@@ -1796,6 +1835,7 @@ HRESULT Player::Init()
 //  5. render all dynamic objects as normal
 void Player::RenderStaticMirror(const bool onlyBalls)
 {
+#ifndef ENABLE_SDL // FIXME will be part of the VPVR mirror fix
    // Direct all renders to the temporary mirror buffer (plus the static z-buffer)
    m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture()->Activate(true);
    m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
@@ -1857,6 +1897,7 @@ void Player::RenderStaticMirror(const bool onlyBalls)
    }
 
    m_pin3d.m_pddsStatic->Activate(false);
+#endif
 }
 
 void Player::RenderDynamicMirror(const bool onlyBalls)
@@ -2151,7 +2192,7 @@ void Player::InitStatic()
    const bool useAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1));
    if (!m_disableAO && !useAO && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && (m_ptable->m_AOScale > 0.f))
    {
-      const bool useAA = (m_AA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
+      const bool useAA = ((m_AAfactor != 1.0) && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
 
       m_pin3d.m_pddsStatic->CopyTo(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()); // save Z buffer and render (cannot be called inside BeginScene -> EndScene cycle)
 
@@ -4375,7 +4416,7 @@ void Player::UpdateHUD()
     }
     SetDebugOutputPosition(x, y);
 
-    if (!m_closeDown && (m_stereo3D != 0) && !m_stereo3Denabled && (usec() < m_StartTime_usec + 4e+6)) // show for max. 4 seconds
+    if (!m_closeDown && (m_stereo3D != STEREO_OFF  && !m_stereo3Denabled && (usec() < m_StartTime_usec + 4e+6))) // show for max. 4 seconds
         DebugPrint(DBG_SPRITE_SIZE/2, 10, "3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on", true);
 
     if (!m_closeDown && m_supportsTouch && m_showTouchMessage && (usec() < m_StartTime_usec + 12e+6)) // show for max. 12 seconds
@@ -4463,7 +4504,7 @@ void Player::UpdateHUD()
 
 void Player::PrepareVideoBuffersNormal()
 {
-   const bool useAA = (m_AA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
+   const bool useAA = ((m_AAfactor != 1.0) && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
    const bool stereo = m_stereo3D == STEREO_VR || ((m_stereo3D != STEREO_OFF) && m_stereo3Denabled && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable());
    const bool SMAA  = (((m_FXAA == Quality_SMAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_SMAA));
    const bool DLAA  = (((m_FXAA == Standard_DLAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_DLAA));
@@ -4563,7 +4604,7 @@ void Player::PrepareVideoBuffersNormal()
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
    if (m_cameraMode)
-       UpdateCameraModeDisplay();
+      UpdateCameraModeDisplay();
 
 #ifdef USE_IMGUI
    RenderHUD_IMGUI();
@@ -4589,7 +4630,7 @@ void Player::FlipVideoBuffers(const bool vsync)
 
 void Player::PrepareVideoBuffersAO()
 {
-   const bool useAA = (m_AA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
+   const bool useAA = ((m_AAfactor != 1.0) && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
    const bool stereo= m_stereo3D == STEREO_VR || ((m_stereo3D != STEREO_OFF) && m_stereo3Denabled && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable());
    const bool SMAA  = (((m_FXAA == Quality_SMAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_SMAA));
    const bool DLAA  = (((m_FXAA == Standard_DLAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_DLAA));
@@ -5066,6 +5107,9 @@ void Player::Render()
       m_pin3d.m_pd3dPrimaryDevice->EndScene();
    }
 
+   // Resolve MSAA buffer to a normal one (noop if not using MSAA), allowing sampling it for postprocessing
+   m_pin3d.m_pd3dPrimaryDevice->ResolveMSAA();
+
    m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
 
    // Check if we should turn animate the plunger light.
@@ -5179,7 +5223,7 @@ void Player::Render()
 
    // limit framerate if requested by user (vsync Hz higher than refreshrate of gfxcard/monitor)
    localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
-   if (localvsync > m_refreshrate)
+   if (m_stereo3D != STEREO_VR && localvsync > m_refreshrate)
    {
       timeforframe = usec() - timeforframe;
       if (timeforframe < 1000000ull / localvsync)
@@ -5586,15 +5630,13 @@ void Player::DrawBalls()
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 
       if (m_cabinetMode && !pball->m_decalMode)
-         m_ballShaderTechnique = SHADER_TECHNIQUE_RenderBall_CabMode;
+         m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBall_CabMode);
       else if (m_cabinetMode && pball->m_decalMode)
-         m_ballShaderTechnique = SHADER_TECHNIQUE_RenderBall_CabMode_DecalMode;
+         m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBall_CabMode_DecalMode);
       else if (!m_cabinetMode && pball->m_decalMode)
-         m_ballShaderTechnique = SHADER_TECHNIQUE_RenderBall_DecalMode;
-      else //if (!m_fCabinetMode && !pball->m_decalMode)
-         m_ballShaderTechnique = SHADER_TECHNIQUE_RenderBall;
-
-      m_ballShader->SetTechnique(m_ballShaderTechnique);
+         m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBall_DecalMode);
+      else //if (!m_cabinetMode && !pball->m_decalMode)
+         m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBall);
 
       m_ballShader->Begin();
       m_pin3d.m_pd3dPrimaryDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_ballVertexBuffer, 0, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, m_ballIndexBuffer, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
