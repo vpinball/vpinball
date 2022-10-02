@@ -1,6 +1,8 @@
 #pragma once
 
+#include <set>
 #include "typedefs3D.h"
+
 class RenderDevice;
 
 enum SamplerFilter
@@ -15,16 +17,21 @@ enum SamplerFilter
 
 enum SamplerAddressMode
 {
-#ifdef ENABLE_SDL
-   SA_REPEAT = GL_REPEAT,
-   SA_CLAMP = GL_CLAMP_TO_EDGE,
-   SA_MIRROR = GL_MIRRORED_REPEAT,
-#else
    SA_REPEAT,
    SA_CLAMP,
    SA_MIRROR,
-#endif
    SA_UNDEFINED, // Used for undefined default values
+};
+
+class Sampler;
+struct SamplerBinding
+{
+   int unit;
+   int use_rank;
+   Sampler* sampler;
+   SamplerFilter filter;
+   SamplerAddressMode clamp_u;
+   SamplerAddressMode clamp_v;
 };
 
 class Sampler
@@ -40,6 +47,7 @@ public:
 #endif
    ~Sampler();
 
+   void Unbind();
    void UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb);
    void SetClamp(const SamplerAddressMode clampu, const SamplerAddressMode clampv);
    void SetFilter(const SamplerFilter filter);
@@ -54,6 +62,7 @@ public:
 
 public:
    bool m_dirty;
+   std::set<SamplerBinding*> m_bindings;
 
 private:
    bool m_ownTexture;
