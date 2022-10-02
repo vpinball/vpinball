@@ -105,7 +105,7 @@ Sampler::~Sampler()
       glDeleteTextures(1, &m_texture);
 #else
    if (m_ownTexture)
-      SAFE_RELEASE_TEXTURE(m_texture);
+      SAFE_RELEASE(m_texture);
 #endif
 }
 
