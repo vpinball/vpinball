@@ -484,7 +484,7 @@ void Spinner::RenderStatic()
 
 void Spinner::SetObjectPos()
 {
-    m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
+   m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
 }
 
 void Spinner::MoveOffset(const float dx, const float dy)

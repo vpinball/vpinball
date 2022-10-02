@@ -39,7 +39,7 @@
 
 static bool IsWindowsVistaOr7()
 {
-   OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0 };
+   OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0, 0, 0, 0 };
    const DWORDLONG dwlConditionMask = //VerSetConditionMask(
       VerSetConditionMask(
          VerSetConditionMask(
@@ -52,7 +52,7 @@ static bool IsWindowsVistaOr7()
 
    const bool vista = VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
 
-   OSVERSIONINFOEXW osvi2 = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0 };
+   OSVERSIONINFOEXW osvi2 = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0, 0, 0, 0 };
    osvi2.dwMajorVersion = HIBYTE(_WIN32_WINNT_WIN7);
    osvi2.dwMinorVersion = LOBYTE(_WIN32_WINNT_WIN7);
    //osvi2.wServicePackMajor = 0;
@@ -468,7 +468,7 @@ void EnumerateDisplayModes(const int display, vector<VideoMode>& modes)
    }
 
    //for (int j = 0; j < 2; ++j)
-   const int j = 0; // limit to 32bit only nowadays
+   constexpr int j = 0; // limit to 32bit only nowadays
    {
       const D3DFORMAT fmt = (D3DFORMAT)((j == 0) ? colorFormat::RGB8 : colorFormat::RGB5);
       const unsigned numModes = d3d->GetAdapterModeCount(adapter, fmt);
@@ -1723,8 +1723,8 @@ void RenderDevice::SetTextureStageState(const DWORD p1, const D3DTEXTURESTAGESTA
 
 #define RENDER_STATE(name, bitpos, bitsize)                                                                                                                                                  \
    const uint32_t RENDER_STATE_SHIFT_##name = bitpos;                                                                                                                                        \
-   const uint32_t RENDER_STATE_MASK_##name = ((0x00000001u << bitsize) - 1) << bitpos;                                                                                                       \
-   const uint32_t RENDER_STATE_CLEAR_MASK_##name = ~(((0x00000001u << bitsize) - 1) << bitpos);
+   const uint32_t RENDER_STATE_MASK_##name = ((0x00000001u << (bitsize)) - 1) << (bitpos);                                                                                                       \
+   const uint32_t RENDER_STATE_CLEAR_MASK_##name = ~(((0x00000001u << (bitsize)) - 1) << (bitpos));
 // These definition must be copy/pasted to RenderDevice.h/cpp when modified to keep the implementation in sync
 RENDER_STATE(ALPHABLENDENABLE, 0, 1) // RS_FALSE or RS_TRUE
 RENDER_STATE(ZENABLE, 1, 1) // RS_FALSE or RS_TRUE
