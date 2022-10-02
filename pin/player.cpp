@@ -2085,19 +2085,15 @@ void Player::InitStatic()
          SetClipPlanePlayfield(true);
       }
 
-      // Finish the frame.
-      m_pin3d.m_pd3dPrimaryDevice->EndScene();
-
-      // Readback static buffer, convert 16bit to 32bit float, and accumulate
-      if (!m_dynamicMode)
+      if (accumulationSurface)
       {
          // Rendering is done to m_pin3d.m_pddsStatic then accumulated to accumulationSurface
          // We use the framebuffer mirror shader wich copy a weighted version of the bound texture
          accumulationSurface->Activate(true);
-         m_pin3d.m_pd3dPrimaryDevice->BeginScene();
          m_pin3d.EnableAlphaBlend(true);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetFloat(SHADER_mirrorFactor, 1.0);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_mirror, m_pin3d.m_pddsStatic->GetColorSampler());
@@ -2105,11 +2101,15 @@ void Player::InitStatic()
          m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
          m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_mirror);
-         m_pin3d.m_pddsStatic->Activate(false);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-         m_pin3d.m_pd3dPrimaryDevice->EndScene();
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+         m_pin3d.m_pddsStatic->Activate(false);
       }
+
+      // Finish the frame.
+      m_pin3d.m_pd3dPrimaryDevice->EndScene();
+
       stats_drawn_static_triangles = RenderDevice::m_stats_drawn_triangles;
    }
 
@@ -2121,8 +2121,7 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(4, TEXTURE_MODE_TRILINEAR);
    }
 
-   // now normalize oversampled result in pdestStatic, convert back to 16bit float, and copy to/overwrite the static GPU buffer
-   if (!m_cameraMode)
+   if (accumulationSurface)
    {
       // copy back weighted accumulated result to the static render target
       m_pin3d.m_pd3dPrimaryDevice->BeginScene();
@@ -2130,6 +2129,7 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetFloat(SHADER_mirrorFactor, (float)(1.0 / STATIC_PRERENDER_ITERATIONS));
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_mirror, accumulationSurface->GetColorSampler());
@@ -2137,11 +2137,13 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
       m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_mirror);
-      m_pin3d.m_pddsStatic->Activate(false);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+      m_pin3d.m_pddsStatic->Activate();
       m_pin3d.m_pd3dPrimaryDevice->EndScene();
+      delete accumulationSurface;
    }
-
-   delete accumulationSurface;
 
    // Now finalize static buffer with non-dynamic AO
 
