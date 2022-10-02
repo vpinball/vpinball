@@ -39,8 +39,6 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
    m_texture = CreateTexture(surf->width(), surf->height(), 0, format, surf->data(), 0);
    m_isLinear = format != colorFormat::SRGB && format != colorFormat::SRGBA;
 #else
-   //const BaseTexture::Format basetexformat = surf->m_format;
-
    colorFormat texformat;
    IDirect3DTexture9* sysTex = CreateSystemTexture(surf, force_linear_rgb, texformat);
 
@@ -102,11 +100,25 @@ Sampler::Sampler(RenderDevice* rd, IDirect3DTexture9* dx9Texture, bool ownTextur
 Sampler::~Sampler()
 {
 #ifdef ENABLE_SDL
+   Unbind();
    if (m_ownTexture)
       glDeleteTextures(1, &m_texture);
 #else
    if (m_ownTexture)
       SAFE_RELEASE_TEXTURE(m_texture);
+#endif
+}
+
+void Sampler::Unbind()
+{
+#ifdef ENABLE_SDL
+   for (auto binding : m_bindings)
+   {
+      binding->sampler = nullptr;
+      glActiveTexture(GL_TEXTURE0 + binding->unit);
+      glBindTexture(GL_TEXTURE_2D, 0);
+   }
+   m_bindings.clear();
 #endif
 }
 
@@ -138,6 +150,13 @@ void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb
       : ((format == GREY_ALPHA) || (format == RG16F))                                                                                                                       ? GL_RG
       : ((format == RGB) || (format == RGB8) || (format == SRGB) || (format == SRGB8) || (format == RGB5) || (format == RGB10) || (format == RGB16F) || (format == RGB32F)) ? GL_RGB
                                                                                                                                                                             : GL_RGBA;
+   // Update bind cache
+   auto tex_unit = m_rd->m_samplerBindings.back();
+   if (tex_unit->sampler != nullptr)
+      tex_unit->sampler->m_bindings.erase(tex_unit);
+   tex_unit->sampler = nullptr;
+   glActiveTexture(GL_TEXTURE0 + tex_unit->unit);
+
    glBindTexture(GL_TEXTURE_2D, m_texture);
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, surf->width(), surf->height(), col_format, col_type, surf->data());
@@ -174,6 +193,13 @@ GLuint Sampler::CreateTexture(UINT Width, UINT Height, UINT Levels, colorFormat 
    const bool col_is_linear = (Format == GREY8) || (Format == RED16F) || (Format == GREY_ALPHA) || (Format == RG16F) || (Format == RGB5) || (Format == RGB) || (Format == RGB8)
       || (Format == RGB10) || (Format == RGB16F) || (Format == RGB32F) || (Format == RGBA16F) || (Format == RGBA32F) || (Format == RGBA) || (Format == RGBA8) || (Format == RGBA10)
       || (Format == DXT5) || (Format == BC6U) || (Format == BC6S) || (Format == BC7);
+
+   // Update bind cache
+   auto tex_unit = m_rd->m_samplerBindings.back();
+   if (tex_unit->sampler != nullptr)
+      tex_unit->sampler->m_bindings.erase(tex_unit);
+   tex_unit->sampler = nullptr;
+   glActiveTexture(GL_TEXTURE0 + tex_unit->unit);
 
    GLuint texture;
    glGenTextures(1, &texture);
