@@ -138,7 +138,6 @@ using std::vector;
 
 #include "media/wavread.h"
 
-#include "pininput.h"
 #include "pinsound.h"
 #include "pinbinary.h"
 
@@ -219,9 +218,9 @@ inline void ShowError(const string& sz)
 
 __forceinline float getBGxmult()
 {
-   const bool useAA = (g_pplayer->m_AA && (g_pplayer->m_ptable->m_useAA == -1)) || (g_pplayer->m_ptable->m_useAA == 1);
+   const bool useAA = ((g_pplayer->m_AAfactor != 1.0f) && (g_pplayer->m_ptable->m_useAA == -1)) || (g_pplayer->m_ptable->m_useAA == 1);
    return (float)g_pplayer->m_wnd_width * (float)(1.0 / EDITOR_BG_WIDTH)
-      * (useAA ? 2.0f : 1.0f);
+      * (useAA ? g_pplayer->m_AAfactor : 1.0f);
 }
 
 __forceinline float getBGymult()
