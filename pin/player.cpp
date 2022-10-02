@@ -229,7 +229,7 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
       m_NudgeShake = LoadValueFloatWithDefault(regKey[RegName::Player], "NudgeStrength"s, 2e-2f);
       m_sharpen = LoadValueIntWithDefault(regKey[RegName::Player], "Sharpen"s, 0);
       m_FXAA = LoadValueIntWithDefault(regKey[RegName::Player], "FXAA"s, Disabled);
-      m_MSAASamples = LoadValueIntWithDefault(regKey[RegName::Player], "MSAASamples"s, 1);
+      m_MSAASamples = 1; // FIXME readd when the option will be added to the video options LoadValueIntWithDefault(regKey[RegName::Player], "MSAASamples"s, 1);
 #ifdef ENABLE_SDL
       m_AAfactor = LoadValueFloatWithDefault(regKey[RegName::Player], "AAFactor"s, LoadValueBoolWithDefault(regKey[RegName::Player], "USEAAs", false) ? 2.0f : 1.0f);
 #else

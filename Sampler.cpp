@@ -6,7 +6,6 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
 {
    m_rd = rd;
    m_dirty = false;
-   m_isMSAA = false;
    m_ownTexture = true;
    m_width = surf->width();
    m_height = surf->height();
@@ -62,11 +61,10 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
 }
 
 #ifdef ENABLE_SDL
-Sampler::Sampler(RenderDevice* rd, GLuint glTexture, bool ownTexture, bool isMSAA, bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
+Sampler::Sampler(RenderDevice* rd, GLuint glTexture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
 {
    m_rd = rd;
    m_dirty = false;
-   m_isMSAA = isMSAA;
    m_ownTexture = ownTexture;
    m_clampu = clampu;
    m_clampv = clampv;
@@ -83,7 +81,6 @@ Sampler::Sampler(RenderDevice* rd, IDirect3DTexture9* dx9Texture, bool ownTextur
 {
    m_rd = rd;
    m_dirty = false;
-   m_isMSAA = false;
    m_ownTexture = ownTexture;
    m_clampu = clampu;
    m_clampv = clampv;
