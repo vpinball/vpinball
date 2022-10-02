@@ -1237,6 +1237,12 @@ bool RenderDevice::LoadShaders()
    return true;
 }
 
+void RenderDevice::ResolveMSAA()
+{ 
+   if (m_pOffscreenMSAABackBufferTexture != m_pOffscreenBackBufferTexture)
+      m_pOffscreenMSAABackBufferTexture->CopyTo(m_pOffscreenBackBufferTexture);
+}
+
 bool RenderDevice::DepthBufferReadBackAvailable()
 {
 #ifdef ENABLE_SDL
