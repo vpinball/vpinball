@@ -232,11 +232,18 @@ __forceinline __m128 sseHorizontalAdd(const __m128 &a) // could use dp instructi
 //
 
 #if __cplusplus >= 202002L
-#include <bit>
-#define float_as_int(x) std::bit_cast<int>(x)
-#define float_as_uint(x) std::bit_cast<unsigned int>(x)
-#define int_as_float(x) std::bit_cast<float>(x)
-#define uint_as_float(x) std::bit_cast<float>(x)
+ #ifndef __APPLE__
+  #include <bit>
+  #define float_as_int(x) std::bit_cast<int>(x)
+  #define float_as_uint(x) std::bit_cast<unsigned int>(x)
+  #define int_as_float(x) std::bit_cast<float>(x)
+  #define uint_as_float(x) std::bit_cast<float>(x)
+ #else // for whatever reason apple/clang is special again
+  #define float_as_int(x) __builtin_bit_cast(int, x)
+  #define float_as_uint(x) __builtin_bit_cast(unsigned int, x)
+  #define int_as_float(x) __builtin_bit_cast(float, x)
+  #define uint_as_float(x) __builtin_bit_cast(float, x)
+ #endif
 #else
 __forceinline int float_as_int(const float x)
 {
