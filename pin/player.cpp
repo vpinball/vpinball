@@ -3893,7 +3893,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_Anaglyph_DeSaturation_Contrast, &a_ds_c);
       }
 
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(is_anaglyph ? SHADER_TECHNIQUE_stereo_Anaglyph : SHADER_TECHNIQUE_stereo);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(is_anaglyph ? SHADER_TECHNIQUE_stereo_anaglyph : SHADER_TECHNIQUE_stereo);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
@@ -4557,9 +4557,9 @@ void Player::PrepareVideoBuffersNormal()
    // switch to output buffer (main output frame buffer, or a temporary one for postprocessing)
 #ifdef ENABLE_SDL
    // On OpenGL, simple stereo is rendered directly through multiple viewport/geometry shader feature without needing postprocessing
-   if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen || !(m_stereo3D == STEREO_OFF || m_stereo3D == STEREO_TB || m_stereo3D == STEREO_SBS))
+   if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen || (stereo && !(m_stereo3D == STEREO_OFF || m_stereo3D == STEREO_TB || m_stereo3D == STEREO_SBS)))
 #else
-   if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen || m_stereo3D != STEREO_OFF)
+   if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen || stereo)
 #endif
       ouputRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture();
    else
@@ -4712,11 +4712,16 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pddsAOBackBuffer = m_pin3d.m_pddsAOBackTmpBuffer;
    m_pin3d.m_pddsAOBackTmpBuffer = tmpAO;
 
-   // switch to output buffer
-   if (!(stereo || SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen))
-      ouputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
-   else
+   // switch to output buffer (main output frame buffer, or a temporary one for postprocessing)
+#ifdef ENABLE_SDL
+   // On OpenGL, simple stereo is rendered directly through multiple viewport/geometry shader feature without needing postprocessing
+   if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen || (stereo && !(m_stereo3D == STEREO_OFF || m_stereo3D == STEREO_TB || m_stereo3D == STEREO_SBS)))
+#else
+   if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen || stereo)
+#endif
       ouputRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture();
+   else
+      ouputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
    ouputRT->Activate(true);
 
    double w = (double)renderedRT->GetWidth(), h = (double)renderedRT->GetHeight();
