@@ -147,9 +147,9 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
 
 #else
    m_color_tex = nullptr;
-   m_depth_tex = nullptr;
-   m_color_sampler = nullptr;
    m_color_surface = nullptr;
+   m_color_sampler = nullptr;
+   m_depth_tex = nullptr;
    m_depth_surface = nullptr;
    m_depth_sampler = nullptr;
    if (nMSAASamples > 1)
@@ -172,17 +172,11 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
       m_use_alternate_depth = m_rd->m_useNvidiaApi || !m_rd->m_INTZ_support;
       if (with_depth)
       {
-         CHECKD3D(m_rd->GetCoreDevice()->CreateTexture(
-            width, height, 1, D3DUSAGE_DEPTHSTENCIL, (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'), (D3DPOOL)memoryPool::DEFAULT, &m_depth_tex, nullptr)); // D3DUSAGE_AUTOGENMIPMAP?
+         CHECKD3D(m_rd->GetCoreDevice()->CreateTexture(width, height, 1, D3DUSAGE_DEPTHSTENCIL, (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'), (D3DPOOL)memoryPool::DEFAULT, &m_depth_tex, nullptr)); // D3DUSAGE_AUTOGENMIPMAP?
          if (m_use_alternate_depth)
          {
             // Alternate depth path. Depth surface and depth texture are separated, synced with a copy.
-            D3DSURFACE_DESC desc;
-            m_color_surface->GetDesc(&desc);
-            const HRESULT hr = m_rd->GetCoreDevice()->CreateDepthStencilSurface(width, height, D3DFMT_D16 /*D3DFMT_D24X8*/, //!!
-               desc.MultiSampleType, desc.MultiSampleQuality, FALSE, &m_depth_surface, nullptr);
-            if (FAILED(hr))
-               ReportError("Fatal Error: unable to create depth buffer!", hr, __FILE__, __LINE__);
+            CHECKD3D(m_rd->GetCoreDevice()->CreateDepthStencilSurface(width, height, D3DFMT_D16 /*D3DFMT_D24X8*/, D3DMULTISAMPLE_NONE, 0, FALSE, &m_depth_surface, nullptr));
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
             if (m_rd->NVAPIinit)
             {

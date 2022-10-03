@@ -1837,8 +1837,8 @@ void Player::RenderStaticMirror(const bool onlyBalls)
 {
 #ifndef ENABLE_SDL // FIXME will be part of the VPVR mirror fix
    // Direct all renders to the temporary mirror buffer (plus the static z-buffer)
-   m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture()->Activate(true);
-   m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
+   m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture()->Activate();
+   m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
 
    if (!onlyBalls)
    {
@@ -1896,14 +1896,17 @@ void Player::RenderStaticMirror(const bool onlyBalls)
       m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(false); // disable playfield clipplane again
    }
 
-   m_pin3d.m_pddsStatic->Activate(false);
+   m_pin3d.m_pddsStatic->Activate();
 #endif
 }
 
 void Player::RenderDynamicMirror(const bool onlyBalls)
 {
    // render into temp mirror back buffer 
-   m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture()->Activate(true);
+   // FIXME This is a quick hack since RenderTarget does not support shared attachments. Here we copy the static pass and only keep depth since we can't share it. Performance will suffer
+   m_pin3d.m_pddsStatic->CopyTo(m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture());
+   m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture()->Activate();
+   //m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
    m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
    D3DMATRIX viewMat;
@@ -1978,9 +1981,12 @@ void Player::RenderMirrorOverlay()
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_mirror, m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture()->GetColorSampler());
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetFloat(SHADER_mirrorFactor, m_ptable->m_playfieldReflectionStrength);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
-
    m_pin3d.EnableAlphaBlend(false, false);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::DST_ALPHA);
+   // Temp fix while implementing clean mirroring
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::ONE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::ONE);
    // z-test must be enabled otherwise mirrored elements are drawn over blocking elements
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
@@ -1992,6 +1998,7 @@ void Player::RenderMirrorOverlay()
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_ALPHA);
 }
 
 void Player::InitStatic()
@@ -2061,12 +2068,8 @@ void Player::InitStatic()
 
       if (!m_dynamicMode)
       {
-         const bool drawBallReflection = ((m_reflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
-         if (!(m_ptable->m_reflectElementsOnPlayfield /*&& m_pf_refl*/) && drawBallReflection)
-            RenderStaticMirror(true);
-         else
-            if (m_ptable->m_reflectElementsOnPlayfield /*&& m_pf_refl*/)
-               RenderStaticMirror(false);
+         if (m_ptable->m_reflectElementsOnPlayfield)
+            RenderStaticMirror(false);
 
 #ifdef ENABLE_SDL
          // For the time being, playfield is not prerendered, but dynamicly rendered with the reflections
@@ -2079,7 +2082,7 @@ void Player::InitStatic()
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 #endif
 
-         if (m_ptable->m_reflectElementsOnPlayfield /*&& m_pf_refl*/)
+         if (m_ptable->m_reflectElementsOnPlayfield)
             RenderMirrorOverlay();
 
          // to compensate for this when rendering the static objects, enable clipplane
@@ -2131,12 +2134,16 @@ void Player::InitStatic()
          // Rendering is done to m_pin3d.m_pddsStatic then accumulated to accumulationSurface
          // We use the framebuffer mirror shader wich copy a weighted version of the bound texture
          accumulationSurface->Activate(true);
-         m_pin3d.EnableAlphaBlend(true);
+         //m_pin3d.EnableAlphaBlend(true);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::ONE);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::ONE);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetFloat(SHADER_mirrorFactor, 1.0);
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetFloat(SHADER_mirrorFactor, (float)(1.0 / STATIC_PRERENDER_ITERATIONS));
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_mirror, m_pin3d.m_pddsStatic->GetColorSampler());
          m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
          m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
@@ -2172,7 +2179,7 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetFloat(SHADER_mirrorFactor, (float)(1.0 / STATIC_PRERENDER_ITERATIONS));
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetFloat(SHADER_mirrorFactor, 1.0f);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_mirror, accumulationSurface->GetColorSampler());
       m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
