@@ -1833,68 +1833,65 @@ HRESULT Player::Init()
 //  3. switch back to normal back buffer
 //  4. render the dynamic mirror texture over the scene
 //  5. render all dynamic objects as normal
-void Player::RenderStaticMirror(const bool onlyBalls)
+void Player::RenderStaticMirror(RenderTarget* mirror)
 {
 #ifndef ENABLE_SDL // FIXME will be part of the VPVR mirror fix
    // Direct all renders to the temporary mirror buffer (plus the static z-buffer)
-   m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture()->Activate();
-   m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
+   mirror->Activate();
+   m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
-   if (!onlyBalls)
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(true);
+
+   D3DMATRIX viewMat;
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+   // flip camera
+   viewMat._33 = -viewMat._33;
+   const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
+   if (rotation != 0.0f)
+      viewMat._31 = -viewMat._31;
+   else
+      viewMat._32 = -viewMat._32;
+   m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+
+   m_ptable->m_reflectionEnabled = true;
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+
+   UpdateBasicShaderMatrix();
+
+   // render mirrored static elements
+   for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
    {
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(true);
-
-      D3DMATRIX viewMat;
-      m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
-      // flip camera
-      viewMat._33 = -viewMat._33;
-      const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
-      if (rotation != 0.0f)
-         viewMat._31 = -viewMat._31;
-      else
-         viewMat._32 = -viewMat._32;
-      m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
-
-      m_ptable->m_reflectionEnabled = true;
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
-
-      UpdateBasicShaderMatrix();
-
-      // render mirrored static elements
-      for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
+      if (m_ptable->m_vedit[i]->GetItemType() != eItemDecal)
       {
-         if (m_ptable->m_vedit[i]->GetItemType() != eItemDecal)
+         Hitable * const ph = m_ptable->m_vedit[i]->GetIHitable();
+         if (ph)
          {
-            Hitable * const ph = m_ptable->m_vedit[i]->GetIHitable();
-            if (ph)
-            {
-               ph->RenderStatic();
-            }
+            ph->RenderStatic();
          }
       }
-
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateDepthBias(0.f); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
-      //m_pin3d.m_pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
-
-      m_ptable->m_reflectionEnabled = false;
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
-
-      // and flip back camera
-      viewMat._33 = -viewMat._33;
-      if (rotation != 0.0f)
-         viewMat._31 = -viewMat._31;
-      else
-         viewMat._32 = -viewMat._32;
-      m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
-      UpdateBasicShaderMatrix();
-
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(false); // disable playfield clipplane again
    }
+
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateDepthBias(0.f); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
+   //m_pin3d.m_pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+
+   m_ptable->m_reflectionEnabled = false;
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+
+   // and flip back camera
+   viewMat._33 = -viewMat._33;
+   if (rotation != 0.0f)
+      viewMat._31 = -viewMat._31;
+   else
+      viewMat._32 = -viewMat._32;
+   m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+   UpdateBasicShaderMatrix();
+
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(false); // disable playfield clipplane again
 
    m_pin3d.m_pddsStatic->Activate();
 #endif
@@ -1903,10 +1900,7 @@ void Player::RenderStaticMirror(const bool onlyBalls)
 void Player::RenderDynamicMirror(const bool onlyBalls)
 {
    // render into temp mirror back buffer 
-   // FIXME This is a quick hack since RenderTarget does not support shared attachments. Here we copy the static pass and only keep depth since we can't share it. Performance will suffer
-   m_pin3d.m_pddsStatic->CopyTo(m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture());
    m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture()->Activate();
-   //m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
    m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
    D3DMATRIX viewMat;
@@ -1975,10 +1969,10 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
    m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->Activate();
 }
 
-void Player::RenderMirrorOverlay()
+void Player::RenderMirrorOverlay(Sampler* mirror)
 {
    // render the mirrored texture over the playfield
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_mirror, m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture()->GetColorSampler());
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_mirror, mirror);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetFloat(SHADER_mirrorFactor, m_ptable->m_playfieldReflectionStrength);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
    m_pin3d.EnableAlphaBlend(false, false);
@@ -2034,6 +2028,8 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(4, TEXTURE_MODE_TRILINEAR);
    }
 
+   RenderTarget *mirror = m_ptable->m_reflectElementsOnPlayfield ? m_pin3d.m_pddsStatic->Duplicate(true) : nullptr;
+
    //#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
    // loop for X times and accumulate/average these renderings on CPU side
    // NOTE: iter == 0 MUST ALWAYS PRODUCE an offset of 0,0!
@@ -2059,7 +2055,7 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->BeginScene();
 
       // Direct all renders to the "static" buffer
-      m_pin3d.m_pddsStatic->Activate(false);
+      m_pin3d.m_pddsStatic->Activate();
 
       m_pin3d.DrawBackground();
 
@@ -2069,7 +2065,7 @@ void Player::InitStatic()
       if (!m_dynamicMode)
       {
          if (m_ptable->m_reflectElementsOnPlayfield)
-            RenderStaticMirror(false);
+            RenderStaticMirror(mirror);
 
 #ifdef ENABLE_SDL
          // For the time being, playfield is not prerendered, but dynamicly rendered with the reflections
@@ -2083,7 +2079,7 @@ void Player::InitStatic()
 #endif
 
          if (m_ptable->m_reflectElementsOnPlayfield)
-            RenderMirrorOverlay();
+            RenderMirrorOverlay(mirror->GetColorSampler());
 
          // to compensate for this when rendering the static objects, enable clipplane
          SetClipPlanePlayfield(false);
@@ -2160,6 +2156,8 @@ void Player::InitStatic()
 
       stats_drawn_static_triangles = RenderDevice::m_stats_drawn_triangles;
    }
+
+   delete mirror;
 
    if (!m_dynamicMode)
    {
@@ -3567,7 +3565,6 @@ void Player::RenderDynamics()
    if (!m_dynamicMode)
    {
       const bool drawBallReflection = ((m_reflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
-
       if (!(m_ptable->m_reflectElementsOnPlayfield && m_pf_refl) && drawBallReflection)
          reflection_path = 1;
       else if (m_ptable->m_reflectElementsOnPlayfield && m_pf_refl)
@@ -3586,7 +3583,7 @@ void Player::RenderDynamics()
       //m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ); // cannot be called inside BeginScene -> EndScene cycle
       //m_pin3d.m_pd3dDevice->BeginScene();
 
-      RenderMirrorOverlay();
+      RenderMirrorOverlay(m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture()->GetColorSampler());
    }
 
    m_pin3d.RenderPlayfieldGraphics(true); // static depth buffer only contained static (&mirror) objects, but no playfield yet -> so render depth only to add this
