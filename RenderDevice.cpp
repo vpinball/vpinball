@@ -1363,10 +1363,12 @@ RenderDevice::~RenderDevice()
 
    FreeShader();
 
+#ifndef ENABLE_SDL
    SAFE_RELEASE(m_pVertexTexelDeclaration);
    SAFE_RELEASE(m_pVertexNormalTexelDeclaration);
    //SAFE_RELEASE(m_pVertexNormalTexelTexelDeclaration);
    SAFE_RELEASE(m_pVertexTrafoTexelDeclaration);
+#endif
 
    m_texMan.UnloadAll();
    delete m_pOffscreenBackBufferTexture;
