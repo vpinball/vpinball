@@ -261,7 +261,7 @@ void ReportFatalError(const HRESULT hr, const char *file, const int line)
 
 void ReportError(const char *errorText, const HRESULT hr, const char *file, const int line)
 {
-   char msg[16384];
+   char msg[4096];
 #ifdef ENABLE_SDL
    sprintf_s(msg, sizeof(msg), "GL Error 0x%0002X %s in %s:%d\n%s", hr, glErrorToString(hr), file, line, errorText);
    ShowError(msg);
@@ -1059,12 +1059,13 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    else
       m_pReflectionBufferTexture = nullptr;
 
+   // alloc buffer for dynamic reflections (same buffer as the one used for rendering, without MSAA if any, sharing its depth with the back buffer)
    m_pMirrorTmpBufferTexture = nullptr;
    if (g_pplayer != nullptr)
    {
       const bool drawBallReflection = ((g_pplayer->m_reflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
-      if ((g_pplayer->m_ptable->m_reflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
-         m_pMirrorTmpBufferTexture = new RenderTarget(this, m_width_aa, m_height_aa, render_format, true, 1, m_stereo3D, "Fatal Error: unable to create mirror buffer!");
+      if ((g_pplayer->m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl) || drawBallReflection)
+         m_pMirrorTmpBufferTexture = m_pOffscreenBackBufferTexture->Duplicate(true);
    }
 
    // alloc bloom tex at 1/4 x 1/4 res (allows for simple HQ downscale of clipped input while saving memory)
