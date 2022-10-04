@@ -95,8 +95,8 @@ void PinSound::UnInitialize()
 {
    if (IsWav())
    {
-      SAFE_RELEASE(m_pDS3DBuffer);
-      SAFE_RELEASE(m_pDSBuffer);
+      SAFE_PINSOUND_RELEASE(m_pDS3DBuffer);
+      SAFE_PINSOUND_RELEASE(m_pDSBuffer);
    }
    else
    {
@@ -349,8 +349,8 @@ void PinSound::Stop()
 
 PinDirectSound::~PinDirectSound()
 {
-   SAFE_RELEASE(m_pDSListener);
-   SAFE_RELEASE(m_pDS);
+   SAFE_PINSOUND_RELEASE(m_pDSListener);
+   SAFE_PINSOUND_RELEASE(m_pDS);
 }
 
 BOOL CALLBACK DSEnumCallBack(LPGUID guid, LPCSTR desc, LPCSTR mod, LPVOID list)
@@ -373,8 +373,8 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
 #ifdef DEBUG_NO_SOUND
    return;
 #endif
-   SAFE_RELEASE(m_pDSListener);
-   SAFE_RELEASE(m_pDS);
+   SAFE_PINSOUND_RELEASE(m_pDSListener);
+   SAFE_PINSOUND_RELEASE(m_pDS);
 
    DSAudioDevices DSads;
    int DSidx = 0;
@@ -459,7 +459,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
 	   // Set the initial position of the listener to be sitting in between the front two speakers. 
 	   m_pDSListener->SetPosition(0.0f, 0.0f, 0.0f, DS3D_IMMEDIATE);
    }
-   SAFE_RELEASE(pDSBPrimary);
+   SAFE_PINSOUND_RELEASE(pDSBPrimary);
 
    //return S_OK;
 }
