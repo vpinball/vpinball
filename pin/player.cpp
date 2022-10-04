@@ -229,11 +229,11 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
       m_NudgeShake = LoadValueFloatWithDefault(regKey[RegName::Player], "NudgeStrength"s, 2e-2f);
       m_sharpen = LoadValueIntWithDefault(regKey[RegName::Player], "Sharpen"s, 0);
       m_FXAA = LoadValueIntWithDefault(regKey[RegName::Player], "FXAA"s, Disabled);
-      m_MSAASamples = 1; // FIXME readd when the option will be added to the video options LoadValueIntWithDefault(regKey[RegName::Player], "MSAASamples"s, 1);
+      m_MSAASamples = 1; // FIXME re-add when the option will be added to the video options LoadValueIntWithDefault(regKey[RegName::Player], "MSAASamples"s, 1);
 #ifdef ENABLE_SDL
       m_AAfactor = LoadValueFloatWithDefault(regKey[RegName::Player], "AAFactor"s, LoadValueBoolWithDefault(regKey[RegName::Player], "USEAAs", false) ? 2.0f : 1.0f);
 #else
-      m_AAfactor = LoadValueBoolWithDefault(regKey[RegName::Player], "USEAAs", false) ? 2.0f : 1.0f;
+      m_AAfactor = LoadValueBoolWithDefault(regKey[RegName::Player], "USEAA"s, false) ? 2.0f : 1.0f;
 #endif
       m_dynamicAO = LoadValueBoolWithDefault(regKey[RegName::Player], "DynamicAO"s, false);
       m_disableAO = LoadValueBoolWithDefault(regKey[RegName::Player], "DisableAO"s, false);
@@ -1389,7 +1389,7 @@ HRESULT Player::Init()
 
    const int vsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
 
-   const float AAfactor = ((m_ptable->m_useAA == -1) || (m_ptable->m_useAA == 1)) ? m_AAfactor : 1.0f;
+   const float aaFactor = m_ptable->m_useAA == -1 ? m_AAfactor : m_ptable->m_useAA == 1 ? 2.0f : 1.0f;
    const unsigned int FXAA = (m_ptable->m_useFXAA == -1) ? m_FXAA : m_ptable->m_useFXAA;
    const bool ss_refl = (m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1);
 
@@ -1397,8 +1397,7 @@ HRESULT Player::Init()
 
    // colordepth & refreshrate are only defined if fullscreen is true.
    // width and height may be modified during initialization (for example for VR, they are adapted to the headset resolution)
-   const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_wnd_width, m_wnd_height, colordepth,
-                                        m_refreshrate, vsync, AAfactor, m_stereo3D, FXAA, !!m_sharpen, !m_disableAO, ss_refl);
+   const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, vsync, aaFactor, m_stereo3D, FXAA, !!m_sharpen, !m_disableAO, ss_refl);
 
 #ifdef ENABLE_SDL
    if (m_stereo3D == STEREO_VR)
