@@ -224,5 +224,6 @@ __forceinline float getBGxmult()
 
 __forceinline float getBGymult()
 {
-   return getBGxmult() / (((float)g_pplayer->m_screenwidth / (float)g_pplayer->m_screenheight) / (float)((double)EDITOR_BG_WIDTH / EDITOR_BG_HEIGHT));
+   //return getBGxmult() / (((float)g_pplayer->m_screenwidth / (float)g_pplayer->m_screenheight) / (float)((double)EDITOR_BG_WIDTH / EDITOR_BG_HEIGHT));
+   return getBGxmult() / (((float)g_pplayer->m_wnd_width / (float)g_pplayer->m_wnd_height) / (float)((double)EDITOR_BG_WIDTH / EDITOR_BG_HEIGHT));
 }
