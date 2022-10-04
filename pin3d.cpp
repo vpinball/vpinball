@@ -442,7 +442,7 @@ BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xre
    return radTex;
 }
 
-HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl)
+HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl)
 {
    const int display = g_pvp->m_primaryDisplay ? 0 : LoadValueIntWithDefault(regKey[RegName::Player], "Display"s, 0);
    vector<DisplayConfig> displays;
@@ -452,12 +452,30 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
       if (display == dispConf->display)
          adapter = dispConf->adapter;
 
-   m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->GetHwnd(), m_viewPort.Width, m_viewPort.Height, fullScreen, colordepth, VSync, useAA, stereo3D, FXAA, sharpen, ss_refl, g_pplayer->m_useNvidiaApi, g_pplayer->m_disableDWM, g_pplayer->m_BWrendering);
+   m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->GetHwnd(), m_viewPort.Width, m_viewPort.Height, fullScreen, colordepth, VSync, AAfactor, stereo3D, FXAA, sharpen, ss_refl, g_pplayer->m_useNvidiaApi, g_pplayer->m_disableDWM, g_pplayer->m_BWrendering);
    try {
       m_pd3dPrimaryDevice->CreateDevice(refreshrate, adapter);
    }
    catch (...) {
       return E_FAIL;
+   }
+
+   if (m_stereo3D == STEREO_VR)
+   { // VR mode renders to a double widthed render target => pin3d viewport is the halh of the render buffer
+      m_viewPort.Width = m_pd3dPrimaryDevice->m_width / 2;
+      m_viewPort.Height = m_pd3dPrimaryDevice->m_height;
+   }
+#ifdef ENABLE_SDL
+   else if (m_stereo3D >= STEREO_ANAGLYPH_RC && m_stereo3D <= STEREO_ANAGLYPH_AB)
+   { // Anaglyph mode renders to a double widthed render target => pin3d viewport is the halh of the render buffer
+      m_viewPort.Width = m_pd3dPrimaryDevice->m_width / 2;
+      m_viewPort.Height = m_pd3dPrimaryDevice->m_height;
+   }
+#endif
+   else
+   { // Use the effective size of the created device's window (should be the same as the requested)
+      m_viewPort.Width = m_pd3dPrimaryDevice->m_width;
+      m_viewPort.Height = m_pd3dPrimaryDevice->m_height;
    }
 
    if (!m_pd3dPrimaryDevice->LoadShaders())
@@ -497,11 +515,12 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
    return S_OK;
 }
 
-HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl)
+HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, const int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl)
 {
    m_stereo3D = stereo3D;
+   m_AAfactor = AAfactor;
 
-   // set the viewport for the newly created device
+   // set the expected viewport for the newly created device (it may be modified upon creation)
    m_viewPort.X = 0;
    m_viewPort.Y = 0;
    m_viewPort.Width = width;
@@ -509,7 +528,7 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    m_viewPort.MinZ = 0.0f;
    m_viewPort.MaxZ = 1.0f;
 
-   if (FAILED(InitPrimary(fullScreen, colordepth, refreshrate, VSync, useAA, stereo3D, FXAA, sharpen, useAO, ss_refl)))
+   if (FAILED(InitPrimary(fullScreen, colordepth, refreshrate, VSync, AAfactor, stereo3D, FXAA, sharpen, useAO, ss_refl)))
       return E_FAIL;
 
    m_pd3dSecondaryDevice = m_pd3dPrimaryDevice; //!! for now, there is no secondary device :/

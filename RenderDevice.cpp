@@ -616,12 +616,12 @@ typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
 static pDEC mDwmEnableComposition = nullptr;
 #endif
 
-RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const bool useAA, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
+RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
     : m_windowHwnd(hwnd), m_width(width), m_height(height), m_fullscreen(fullscreen), 
-      m_colorDepth(colordepth), m_vsync(VSync), m_useAA(useAA), m_stereo3D(stereo3D),
+      m_colorDepth(colordepth), m_vsync(VSync), m_AAfactor(AAfactor), m_stereo3D(stereo3D),
       m_ssRefl(ss_refl), m_disableDwm(disable_dwm), m_sharpen(sharpen), m_FXAA(FXAA), m_BWrendering(BWrendering), m_texMan(*this)
 {
-    m_useNvidiaApi = useNvidiaApi;
+   m_useNvidiaApi = useNvidiaApi;
     m_INTZ_support = false;
     NVAPIinit = false;
 
@@ -1035,11 +1035,12 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 #else
    const colorFormat render_format = ((m_BWrendering == 1) ? colorFormat::RG16F : ((m_BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGBA16F));
 #endif
-   // alloc float buffer for rendering (optionally 2x2 res for manual super sampling)
-   int m_width_aa = (int)(m_useAA ? 2 * m_width : m_width);
-   int m_height_aa = (int)(m_useAA ? 2 * m_height : m_height);
+   // alloc float buffer for rendering (optionally AA factor res for manual super sampling)
+   int m_width_aa = (int)(m_width * m_AAfactor);
+   int m_height_aa = (int)(m_height * m_AAfactor);
 
-   int nMSAASamples = 1; // FIXME g_pplayer->m_MSAASamples;
+   // alloc float buffer for rendering
+   int nMSAASamples = g_pplayer->m_MSAASamples;
 #ifdef ENABLE_SDL
    int maxSamples;
    glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
@@ -1253,6 +1254,12 @@ bool RenderDevice::DepthBufferReadBackAvailable()
 }
 
 #ifdef _DEBUG
+#ifdef ENABLE_SDL
+static void CheckForGLLeak()
+{
+   //TODO
+}
+#else
 static void CheckForD3DLeak(IDirect3DDevice9* d3d)
 {
    IDirect3DSwapChain9 *swapChain;
@@ -1270,6 +1277,7 @@ static void CheckForD3DLeak(IDirect3DDevice9* d3d)
    }
 }
 #endif
+#endif
 
 
 void RenderDevice::FreeShader()
@@ -1277,53 +1285,58 @@ void RenderDevice::FreeShader()
    if (basicShader)
    {
       basicShader->SetTextureNull(SHADER_tex_base_color);
-      basicShader->SetTextureNull(SHADER_tex_env);
-      basicShader->SetTextureNull(SHADER_tex_diffuse_env);
       basicShader->SetTextureNull(SHADER_tex_base_transmission);
       basicShader->SetTextureNull(SHADER_tex_base_normalmap);
+      basicShader->SetTextureNull(SHADER_tex_env);
+      basicShader->SetTextureNull(SHADER_tex_diffuse_env);
       delete basicShader;
-      basicShader = 0;
+      basicShader = nullptr;
    }
    if (DMDShader)
    {
       DMDShader->SetTextureNull(SHADER_tex_dmd);
+      DMDShader->SetTextureNull(SHADER_tex_sprite);
       delete DMDShader;
-      DMDShader = 0;
+      DMDShader = nullptr;
    }
    if (FBShader)
    {
+      FBShader->SetTextureNull(SHADER_tex_fb_filtered);
       FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
+      FBShader->SetTextureNull(SHADER_tex_mirror);
       FBShader->SetTextureNull(SHADER_tex_bloom);
       FBShader->SetTextureNull(SHADER_tex_ao);
+      FBShader->SetTextureNull(SHADER_tex_depth);
       FBShader->SetTextureNull(SHADER_tex_color_lut);
+      FBShader->SetTextureNull(SHADER_tex_ao_dither);
 
       // FIXME Shader rely on texture to be named with a leading texture unit. SetTextureNull will fail otherwise...
       CHECKD3D(FBShader->Core()->SetTexture(SHADER_areaTex2D, nullptr));
       CHECKD3D(FBShader->Core()->SetTexture(SHADER_searchTex2D, nullptr));
 
       delete FBShader;
-      FBShader = 0;
+      FBShader = nullptr;
    }
    if (flasherShader)
    {
       flasherShader->SetTextureNull(SHADER_tex_flasher_A);
       flasherShader->SetTextureNull(SHADER_tex_flasher_B);
       delete flasherShader;
-      flasherShader = 0;
+      flasherShader = nullptr;
    }
    if (lightShader)
    {
       delete lightShader;
-      lightShader = 0;
+      lightShader = nullptr;
    }
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    if (classicLightShader)
    {
-      classicLightShader->SetTextureNull(SHADER_Texture0);
-      classicLightShader->SetTextureNull(SHADER_Texture1);
-      classicLightShader->SetTextureNull(SHADER_Texture2);
+      classicLightShader->SetTextureNull(SHADER_tex_light_base);
+      classicLightShader->SetTextureNull(SHADER_tex_env);
+      classicLightShader->SetTextureNull(SHADER_tex_diffuse_env);
       delete classicLightShader;
-      classicLightShader=0;
+      classicLightShader = nullptr;
    }
 #endif
 }
@@ -1370,6 +1383,8 @@ RenderDevice::~RenderDevice()
    delete m_pBloomBufferTexture;
    delete m_pBloomTmpBufferTexture;
    delete m_pBackBuffer;
+   delete m_pOffscreenVRLeft;
+   delete m_pOffscreenVRRight;
 
    delete m_SMAAareaTexture;
    delete m_SMAAsearchTexture;
@@ -1411,23 +1426,35 @@ RenderDevice::~RenderDevice()
    if (m_dwm_was_enabled)
       mDwmEnableComposition(DWM_EC_ENABLECOMPOSITION);
 #else
+   for (auto binding : m_samplerBindings)
+      delete binding;
+   m_samplerBindings.clear();
 #ifdef ENABLE_VR
-    if (m_pHMD)
-    {
-        turnVROff();
-        SaveValueFloat(regKey[RegName::Player], "VRSlope"s, m_slope);
-        SaveValueFloat(regKey[RegName::Player], "VROrientation"s, m_orientation);
-        SaveValueFloat(regKey[RegName::Player], "VRTableX"s, m_tablex);
-        SaveValueFloat(regKey[RegName::Player], "VRTableY"s, m_tabley);
-        SaveValueFloat(regKey[RegName::Player], "VRTableZ"s, m_tablez);
-        SaveValueFloat(regKey[RegName::Player], "VRRoomOrientation"s, m_roomOrientation);
-        SaveValueFloat(regKey[RegName::Player], "VRRoomX"s, m_roomx);
-        SaveValueFloat(regKey[RegName::Player], "VRRoomY"s, m_roomy);
-    }
+   if (m_pHMD)
+   {
+      turnVROff();
+      SaveValueFloat(regKey[RegName::Player], "VRSlope"s, m_slope);
+      SaveValueFloat(regKey[RegName::Player], "VROrientation"s, m_orientation);
+      SaveValueFloat(regKey[RegName::Player], "VRTableX"s, m_tablex);
+      SaveValueFloat(regKey[RegName::Player], "VRTableY"s, m_tabley);
+      SaveValueFloat(regKey[RegName::Player], "VRTableZ"s, m_tablez);
+      SaveValueFloat(regKey[RegName::Player], "VRRoomOrientation"s, m_roomOrientation);
+      SaveValueFloat(regKey[RegName::Player], "VRRoomX"s, m_roomx);
+      SaveValueFloat(regKey[RegName::Player], "VRRoomY"s, m_roomy);
+   }
 #endif
 
-    SDL_GL_DeleteContext(m_sdl_context);
-    SDL_DestroyWindow(m_sdl_playfieldHwnd);
+   for (int i = 0; i < 3 * 3 * 5; i++)
+   {
+      if (m_samplerStateCache[i] != 0)
+      {
+         glDeleteSamplers(1, &m_samplerStateCache[i]);
+         m_samplerStateCache[i] = 0;
+      }
+   }
+
+   SDL_GL_DeleteContext(m_sdl_context);
+   SDL_DestroyWindow(m_sdl_playfieldHwnd);
 #endif
 }
 
@@ -1521,73 +1548,18 @@ void RenderDevice::Flip(const bool vsync)
    m_curLockCalls = 0;
 }
 
+void RenderDevice::UploadAndSetSMAATextures()
+{
 #ifdef ENABLE_SDL
-void RenderDevice::UploadAndSetSMAATextures()
-{
-   GLuint glTexture;
-   int num_mips;
+   BaseTexture* searchBaseTex = new BaseTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, BaseTexture::BW);
+   memcpy(searchBaseTex->data(), searchTexBytes, SEARCHTEX_WIDTH * SEARCHTEX_HEIGHT);
+   m_SMAAsearchTexture = new Sampler(this, searchBaseTex, true, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT, SamplerFilter::SF_TRILINEAR);
 
-   glGenTextures(1, &glTexture);
-   glBindTexture(GL_TEXTURE_2D, glTexture);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_RED);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-   num_mips = (int)std::log2(float(max(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT))) + 1;
-   if (m_GLversion >= 403)
-      glTexStorage2D(GL_TEXTURE_2D, num_mips, RGB8, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT);
-   else
-   { // should never be triggered nowadays
-      GLsizei w = SEARCHTEX_WIDTH;
-      GLsizei h = SEARCHTEX_HEIGHT;
-      for (int i = 0; i < num_mips; i++)
-      {
-         glTexImage2D(GL_TEXTURE_2D, i, RGB8, w, h, 0, GL_RED, GL_UNSIGNED_BYTE, nullptr);
-         w = max(1, (w / 2));
-         h = max(1, (h / 2));
-      }
-   }
-   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, (void*)searchTexBytes);
-   glGenerateMipmap(GL_TEXTURE_2D); // Generate mip-maps, when using TexStorage will generate same amount as specified in TexStorage, otherwise good idea to limit by GL_TEXTURE_MAX_LEVEL
-   m_SMAAsearchTexture = new Sampler(this, glTexture, true, false, false);
-
-   glGenTextures(1, &glTexture);
-   glBindTexture(GL_TEXTURE_2D, glTexture);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_RED);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_GREEN);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-   num_mips = (int)std::log2(float(max(AREATEX_WIDTH, AREATEX_HEIGHT))) + 1;
-   if (m_GLversion >= 403)
-      glTexStorage2D(GL_TEXTURE_2D, num_mips, RGB8, AREATEX_WIDTH, AREATEX_HEIGHT);
-   else
-   { // should never be triggered nowadays
-      GLsizei w = AREATEX_WIDTH;
-      GLsizei h = AREATEX_HEIGHT;
-      for (int i = 0; i < num_mips; i++)
-      {
-         glTexImage2D(GL_TEXTURE_2D, i, RGB8, w, h, 0, GL_RG, GL_UNSIGNED_BYTE, nullptr);
-         w = max(1, (w / 2));
-         h = max(1, (h / 2));
-      }
-   }
-   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, (void*)searchTexBytes);
-   glGenerateMipmap(GL_TEXTURE_2D); // Generate mip-maps, when using TexStorage will generate same amount as specified in TexStorage, otherwise good idea to limit by GL_TEXTURE_MAX_LEVEL
-   m_SMAAareaTexture = new Sampler(this, glTexture, true, false, false);
-}
+   BaseTexture* areaBaseTex = new BaseTexture(AREATEX_WIDTH, AREATEX_HEIGHT, BaseTexture::BW);
+   memcpy(areaBaseTex->data(), areaTexBytes, AREATEX_WIDTH * AREATEX_HEIGHT);
+   m_SMAAareaTexture = new Sampler(this, areaBaseTex, true, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT, SamplerFilter::SF_TRILINEAR);
 #else
-void RenderDevice::UploadAndSetSMAATextures()
-{
+   // FIXME use standard BaseTexture / Sampler code instead
    {
       IDirect3DTexture9 *sysTex, *tex;
       HRESULT hr = m_pD3DDevice->CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 0, 0, (D3DFORMAT)colorFormat::GREY8, (D3DPOOL)memoryPool::SYSTEM, &sysTex, nullptr);
@@ -1633,8 +1605,8 @@ void RenderDevice::UploadAndSetSMAATextures()
 
       m_SMAAareaTexture = new Sampler(this, tex, true, true);
    }
-}
 #endif
+}
 
 void RenderDevice::SetSamplerState(const DWORD Sampler, const D3DSAMPLERSTATETYPE Type, const DWORD Value)
 {
