@@ -272,6 +272,8 @@ public:
    bool LoadMeshDialog() final;
    void ExportMeshDialog() final;
 
+   bool IsPlayfield() const { return wcscmp(m_wzName, L"playfield_mesh") == 0; }
+
    float GetAlpha() const { return m_d.m_alpha; }
    void SetAlpha(const float value) { m_d.m_alpha = max(value, 0.f); }
 
