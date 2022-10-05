@@ -1232,7 +1232,7 @@ void Primitive::RenderObject()
    SamplerFilter pinf = m_d.m_useAsPlayfield ? SF_ANISOTROPIC : SF_TRILINEAR;
    if (pin && nMap)
    {
-      pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? SHADER_TECHNIQUE_basic_with_texture_normal_isMetal : SHADER_TECHNIQUE_basic_with_texture_normal);
+      pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture_normal, mat->m_bIsMetal);
       pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
       pd3dDevice->basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, SF_TRILINEAR, SA_REPEAT, SA_REPEAT, true);
       pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
@@ -1283,17 +1283,40 @@ void Primitive::RenderObject()
    // Playfield primitive special handling
    if (m_d.m_useAsPlayfield)
    {
-      // Don't write depth for static pre-rendering
-      if (g_pplayer->m_isRenderingStatic)
-         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
-      // Handle depth only pass
-      if (g_pplayer->m_current_renderstage == 1)
+      if (g_pplayer->m_current_renderstage == 0) // Normal rendering
+      { 
+         // Don't write depth for static pre-rendering
+         if (g_pplayer->m_isRenderingStatic)
+            pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
+         // Bind prerendered playfield reflection
+         pd3dDevice->basicShader->SetTexture(SHADER_tex_playfield_reflection, pd3dDevice->GetMirrorTmpBufferTexture()->GetColorSampler());
+         pd3dDevice->basicShader->SetFloat(SHADER_mirrorFactor, m_ptable->m_playfieldReflectionStrength);
+         if (pin && nMap)
+            pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_playfield_with_texture_normal, mat->m_bIsMetal);
+         else if (pin)
+            pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_playfield_with_texture, mat->m_bIsMetal);
+         else
+            pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_playfield_without_texture, mat->m_bIsMetal);
+      }
+      else if (g_pplayer->m_current_renderstage == 1) // Handle depth only pass
       {
          pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, RenderDevice::RGBMASK_NONE);
          if (pin)
-            pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_depth_only_with_texture);
+            pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_basic_depth_only_with_texture);
          else
             pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_basic_depth_only_without_texture);
+      }
+      else if (g_pplayer->m_current_renderstage == 2) // Reflection only pass
+      {
+         g_pplayer->m_pin3d.EnableAlphaBlend(true);
+         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
+         // Bind prerendered playfield reflection
+         pd3dDevice->basicShader->SetTexture(SHADER_tex_playfield_reflection, pd3dDevice->GetMirrorTmpBufferTexture()->GetColorSampler());
+         pd3dDevice->basicShader->SetFloat(SHADER_mirrorFactor, m_ptable->m_playfieldReflectionStrength);
+         if (pin)
+            pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_playfield_refl_with_texture);
+         else
+            pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_playfield_refl_without_texture);
       }
    }
 

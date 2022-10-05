@@ -196,6 +196,8 @@ public:
 
    bool SetMaximumPreRenderedFrames(const DWORD frames);
 
+   void SetMirrorTmpBufferTexture(RenderTarget* pMirrorTmpBufferTexture) { m_pMirrorTmpBufferTexture = pMirrorTmpBufferTexture; }
+
    RenderTarget* GetMSAABackBufferTexture() const { return m_pOffscreenMSAABackBufferTexture; } // Main render target, may be MSAA enabled and not suited for sampling, also may have stereo output (2 viewports)
    void ResolveMSAA(); // Resolve MSAA back buffer texture to be sample  from back buffer texture
    RenderTarget* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture; } // Main render target, with MSAA resolved if any, also may have stereo output (2 viewports)

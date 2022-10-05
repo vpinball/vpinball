@@ -1886,11 +1886,11 @@ HRESULT Player::Init()
 //  3. switch back to normal back buffer
 //  4. render the dynamic mirror texture over the scene
 //  5. render all dynamic objects as normal
-void Player::RenderStaticMirror(RenderTarget* mirror)
+void Player::RenderStaticMirror()
 {
 #ifndef ENABLE_SDL // FIXME will be part of the VPVR mirror fix
    // Direct all renders to the temporary mirror buffer (plus the static z-buffer)
-   mirror->Activate();
+   m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture()->Activate();
    m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(true);
@@ -2022,32 +2022,6 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
    m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->Activate();
 }
 
-void Player::RenderMirrorOverlay(Sampler* mirror)
-{
-   // render the mirrored texture over the playfield
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_mirror, mirror);
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetFloat(SHADER_mirrorFactor, m_ptable->m_playfieldReflectionStrength);
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
-   m_pin3d.EnableAlphaBlend(false, false);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::DST_ALPHA);
-   // Temp fix while implementing clean mirroring
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::ONE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::ONE);
-   // z-test must be enabled otherwise mirrored elements are drawn over blocking elements
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
-
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
-   m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
-
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_ALPHA);
-}
-
 void Player::InitStatic()
 {
    TRACE_FUNCTION();
@@ -2079,7 +2053,7 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(4, TEXTURE_MODE_TRILINEAR);
    }
 
-   RenderTarget *mirror = m_ptable->m_reflectElementsOnPlayfield ? m_pin3d.m_pddsStatic->Duplicate(true) : nullptr;
+   m_pin3d.m_pd3dPrimaryDevice->SetMirrorTmpBufferTexture(m_ptable->m_reflectElementsOnPlayfield ? m_pin3d.m_pddsStatic->Duplicate(true) : nullptr);
 
    //#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
    // loop for X times and accumulate/average these renderings on CPU side
@@ -2116,7 +2090,7 @@ void Player::InitStatic()
       if (!m_dynamicMode)
       {
          if (m_ptable->m_reflectElementsOnPlayfield)
-            RenderStaticMirror(mirror);
+            RenderStaticMirror();
 
 #ifdef ENABLE_SDL
          // For the time being, playfield is not prerendered, but dynamicly rendered with the reflections
@@ -2124,11 +2098,8 @@ void Player::InitStatic()
          // m_pin3d.RenderPlayfieldGraphics(0.0f, false);
 #else
          // exclude playfield depth as dynamic mirror objects have to be added later-on
-         m_pin3d.RenderPlayfieldGraphics(false);
+         m_pin3d.RenderPlayfieldGraphics(0);
 #endif
-
-         if (m_ptable->m_reflectElementsOnPlayfield)
-            RenderMirrorOverlay(mirror->GetColorSampler());
 
          // to compensate for this when rendering the static objects, enable clipplane
          SetClipPlanePlayfield(false);
@@ -2206,7 +2177,14 @@ void Player::InitStatic()
       stats_drawn_static_triangles = RenderDevice::m_stats_drawn_triangles;
    }
 
-   delete mirror;
+   delete m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture();
+
+   // alloc buffer for dynamic reflections (same buffer as the one used for rendering, without MSAA if any, sharing its depth with the back buffer)
+   const bool drawBallReflection = ((g_pplayer->m_reflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
+   if ((g_pplayer->m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl) || drawBallReflection)
+      m_pin3d.m_pd3dPrimaryDevice->SetMirrorTmpBufferTexture(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->Duplicate(true));
+   else
+      m_pin3d.m_pd3dPrimaryDevice->SetMirrorTmpBufferTexture(nullptr);
 
    if (!m_dynamicMode)
    {
@@ -2251,7 +2229,7 @@ void Player::InitStatic()
       m_pin3d.m_pddsStatic->CopyTo(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()); // save Z buffer and render (cannot be called inside BeginScene -> EndScene cycle)
 
       m_pin3d.m_pd3dPrimaryDevice->BeginScene();
-      m_pin3d.RenderPlayfieldGraphics(true); // mirror depth buffer only contained static objects, but no playfield yet -> so render depth only to add this
+      m_pin3d.RenderPlayfieldGraphics(1); // mirror depth buffer only contained static objects, but no playfield yet -> so render depth only to add this
       m_pin3d.m_pd3dPrimaryDevice->EndScene();
 
       RenderTarget* tmpDepth = m_pin3d.m_pddsStatic->Duplicate();
@@ -3622,20 +3600,15 @@ void Player::RenderDynamics()
 
    if (reflection_path != 0)
    {
-      // Create the playfield reflection
+      // Create the dynamic playfield reflection
       m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(true);
       RenderDynamicMirror(reflection_path == 1);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(false); // disable playfield clipplane again
-
-      // depth-'remove' mirror objects from holes again for objects that vanish into the table //!! disabled as it will also look stupid and costs too much for this special case
-      //m_pin3d.m_pd3dDevice->EndScene();
-      //m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ); // cannot be called inside BeginScene -> EndScene cycle
-      //m_pin3d.m_pd3dDevice->BeginScene();
-
-      RenderMirrorOverlay(m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture()->GetColorSampler());
+      if (!m_dynamicMode)
+         m_pin3d.RenderPlayfieldGraphics(2); // Render the dynamic reflections (and only them)
    }
 
-   m_pin3d.RenderPlayfieldGraphics(true); // static depth buffer only contained static (&mirror) objects, but no playfield yet -> so render depth only to add this
+   m_pin3d.RenderPlayfieldGraphics(1); // static depth buffer only contained static (&mirror) objects, but no playfield yet -> so render depth only to add this
 
    if (m_dynamicMode)
    {
@@ -3649,7 +3622,7 @@ void Player::RenderDynamics()
 
       UpdateBallShaderMatrix();
 
-      m_pin3d.RenderPlayfieldGraphics(false);
+      m_pin3d.RenderPlayfieldGraphics(0);
 
       for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
          if (m_ptable->m_vedit[i]->GetItemType() != eItemDecal)
