@@ -541,9 +541,6 @@ public:
    int2 m_dmd;
    BaseTexture* m_texdmd;
 
-   unsigned int m_current_renderstage; // currently only used for bulb lights
-   unsigned int m_dmdstate; // used to distinguish different flasher/DMD rendering mode states
-
    int m_overall_frames; // amount of rendered frames since start
 
 #ifdef LOG
@@ -683,7 +680,9 @@ public:
 
    //bool m_low_quality_bloom;
 
-   bool m_isRenderingStatic;
+   bool m_isRenderingStatic; // Static prerendering or normal one
+   unsigned int m_current_renderstage; // for bulb lights: 0=normal, 1=light buffer / for primitive: 0=normal / 1=depth only
+   unsigned int m_dmdstate; // used to distinguish different flasher/DMD rendering mode states
 
    bool m_overwriteBallImages;
    Texture *m_ballImage;

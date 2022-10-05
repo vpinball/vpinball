@@ -2124,9 +2124,7 @@ void Player::InitStatic()
          // m_pin3d.RenderPlayfieldGraphics(0.0f, false);
 #else
          // exclude playfield depth as dynamic mirror objects have to be added later-on
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
          m_pin3d.RenderPlayfieldGraphics(false);
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 #endif
 
          if (m_ptable->m_reflectElementsOnPlayfield)
