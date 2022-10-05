@@ -1013,7 +1013,7 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
    InitLights();
 }
 
-void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
+void Pin3D::RenderPlayfieldGraphics(const int mode)
 {
    TRACE_FUNCTION();
    const IEditable* piEdit = nullptr;
@@ -1023,10 +1023,8 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
          if (piEdit == nullptr || ((Primitive*)piEdit)->m_d.m_toy || !((Primitive*)piEdit)->m_d.m_collidable) // either the first playfield mesh OR a toy/not-collidable (i.e. only used for visuals)?
             piEdit = g_pplayer->m_ptable->m_vedit[i];
       }
-   g_pplayer->m_current_renderstage = depth_only ? 1 : 0;
+   g_pplayer->m_current_renderstage = mode;
    Primitive* const pPrim = (Primitive*)piEdit;
-   pPrim->m_d.m_szMaterial = g_pplayer->m_ptable->m_playfieldMaterial;
-   pPrim->m_d.m_szImage = g_pplayer->m_ptable->m_image;
    pPrim->m_d.m_visible = true;  // temporary enable the otherwise invisible playfield
    pPrim->RenderObject();
    pPrim->m_d.m_visible = false; // restore

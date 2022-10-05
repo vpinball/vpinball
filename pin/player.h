@@ -293,9 +293,8 @@ public:
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 private:
-   void RenderStaticMirror(RenderTarget* mirror);
+   void RenderStaticMirror();
    void RenderDynamicMirror(const bool onlyBalls);
-   void RenderMirrorOverlay(Sampler* mirror);
    void InitBallShader();
    void InitKeys();
 

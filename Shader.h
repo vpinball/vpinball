@@ -32,8 +32,14 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(basic_without_texture_isMetal),
    SHADER_TECHNIQUE(basic_with_texture_isMetal),
    SHADER_TECHNIQUE(basic_with_texture_normal_isMetal),
-   SHADER_TECHNIQUE(basic_without_texture_n_mirror),
-   SHADER_TECHNIQUE(basic_with_texture_n_mirror),
+   SHADER_TECHNIQUE(playfield_without_texture),
+   SHADER_TECHNIQUE(playfield_with_texture),
+   SHADER_TECHNIQUE(playfield_with_texture_normal),
+   SHADER_TECHNIQUE(playfield_without_texture_isMetal),
+   SHADER_TECHNIQUE(playfield_with_texture_isMetal),
+   SHADER_TECHNIQUE(playfield_with_texture_normal_isMetal),
+   SHADER_TECHNIQUE(playfield_refl_without_texture),
+   SHADER_TECHNIQUE(playfield_refl_with_texture),
    SHADER_TECHNIQUE(basic_depth_only_without_texture),
    SHADER_TECHNIQUE(basic_depth_only_with_texture),
    SHADER_TECHNIQUE(bg_decal_without_texture),
@@ -202,6 +208,7 @@ enum ShaderUniforms
    SHADER_SAMPLER(tex_env, texSampler1, Texture1, 1, SA_REPEAT, SA_CLAMP, SF_TRILINEAR), // environment
    SHADER_SAMPLER(tex_diffuse_env, texSampler2, Texture2, 2, SA_REPEAT, SA_CLAMP, SF_BILINEAR), // diffuse environment contribution/radiance
    SHADER_SAMPLER(tex_base_transmission, texSamplerBL, Texture3, 3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // bulb light/transmission buffer texture
+   SHADER_SAMPLER(tex_playfield_reflection, texSamplerPFReflections, Texture3, 3, SA_CLAMP, SA_CLAMP, SF_NONE), // playfield reflection
    SHADER_SAMPLER(tex_base_normalmap, texSamplerN, Texture4, 4, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // normal map texture
    // Classic light shader
    SHADER_SAMPLER(tex_light_color, texSampler0, Texture0, 0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture

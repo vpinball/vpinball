@@ -1060,15 +1060,6 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    else
       m_pReflectionBufferTexture = nullptr;
 
-   // alloc buffer for dynamic reflections (same buffer as the one used for rendering, without MSAA if any, sharing its depth with the back buffer)
-   m_pMirrorTmpBufferTexture = nullptr;
-   if (g_pplayer != nullptr)
-   {
-      const bool drawBallReflection = ((g_pplayer->m_reflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
-      if ((g_pplayer->m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl) || drawBallReflection)
-         m_pMirrorTmpBufferTexture = m_pOffscreenBackBufferTexture->Duplicate(true);
-   }
-
    // alloc bloom tex at 1/4 x 1/4 res (allows for simple HQ downscale of clipped input while saving memory)
    m_pBloomBufferTexture = new RenderTarget(this, m_width / 4, m_height / 4, render_format, false, 1, STEREO_OFF, "Fatal Error: unable to create bloom buffer!");
 

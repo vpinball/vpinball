@@ -60,6 +60,17 @@ sampler2D texSamplerBL : TEXUNIT3 = sampler_state // bulb light/transmission buf
     ADDRESSV  = Clamp;
 };
  
+sampler2D texSamplerPFReflections : TEXUNIT3 = sampler_state // playfield reflections
+{
+   Texture = (Texture3);
+   MIPFILTER = NONE;
+   MAGFILTER = NONE;
+   MINFILTER = NONE;
+   ADDRESSU = Clamp;
+   ADDRESSV = Clamp;
+   SRGBTexture = true;
+};
+
 sampler2D texSamplerN : TEXUNIT4 = sampler_state // normal map texture
 {
     Texture = (Texture4);
@@ -83,6 +94,8 @@ const float4 cGlossy_ImageLerp;
 
 const float4 staticColor_Alpha;
 const float alphaTestValue;
+
+const float mirrorFactor;
 
 struct VS_OUTPUT 
 { 
@@ -270,7 +283,113 @@ float4 ps_main_texture(const in VS_OUTPUT IN, uniform bool is_metal, uniform boo
    return result * staticColor_Alpha;
 }
 
-float4 ps_main_depth_only_without_texture(const in VS_DEPTH_ONLY_NOTEX_OUTPUT IN) : COLOR
+float4 ps_main_playfield(const in VS_NOTEX_OUTPUT IN, uniform bool is_metal)
+   : COLOR
+{
+   const float3 diffuse = cBase_Alpha.xyz;
+   const float3 glossy = is_metal ? cBase_Alpha.xyz : cGlossy_ImageLerp.xyz * 0.08;
+   const float3 specular = cClearcoat_EdgeAlpha.xyz * 0.08;
+   const float edge = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
+
+   const float3 V = normalize(/*camera=0,0,0,1*/ -IN.worldPos_t1x.xyz);
+   const float3 N = normalize(IN.normal_t1y.xyz);
+
+   //return float4((N+1.0)*0.5,1.0); // visualize normals
+
+   float4 result = float4(
+      lightLoop(IN.worldPos_t1x.xyz, N, V, diffuse, glossy, specular, edge, true,
+         is_metal), //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+      cBase_Alpha.a);
+
+   [branch] if (cBase_Alpha.a < 1.0)
+   {
+      result.a = GeometricOpacity(dot(N, V), result.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
+
+      if (fDisableLighting_top_below.y < 1.0)
+         // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
+         result.xyz += lerp(sqrt(diffuse) * tex2Dlod(texSamplerBL, float4(float2(0.5 * IN.worldPos_t1x.w, -0.5 * IN.normal_t1y.w) + 0.5, 0., 0.)).xyz * result.a, 0.,
+            fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+   }
+
+   return result * staticColor_Alpha;
+}
+
+float4 ps_main_playfield_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform bool is_metal, uniform bool doNormalMapping)
+   : COLOR
+{
+   float4 pixel = tex2D(texSampler0, IN.tex01.xy);
+
+   clip(pixel.a <= alphaTestValue ? -1 : 1); // stop the pixel shader if alpha test should reject pixel
+
+   pixel.a *= cBase_Alpha.a;
+   if (fDisableLighting_top_below.x < 1.0) // if there is lighting applied, make sure to clamp the values (as it could be coming from a HDR tex)
+      pixel.xyz = saturate(pixel.xyz);
+
+   const float3 t = /*InvGamma*/ (pixel.xyz); // uses automatic sRGB trafo instead in sampler! also by now e.g. primitives allow for HDR textures for lightmaps
+
+   const float3 diffuse = t * cBase_Alpha.xyz;
+   const float3 glossy = is_metal ? diffuse : (t * cGlossy_ImageLerp.w + (1.0 - cGlossy_ImageLerp.w)) * cGlossy_ImageLerp.xyz * 0.08; //!! use AO for glossy? specular?
+   const float3 specular = cClearcoat_EdgeAlpha.xyz * 0.08;
+   const float edge = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
+
+   const float3 V = normalize(/*camera=0,0,0,1*/ -IN.worldPos);
+   float3 N = normalize(IN.normal);
+
+   [branch] if (doNormalMapping) N = normal_map(N, V, IN.tex01.xy);
+
+   //!! return float4((N+1.0)*0.5,1.0); // visualize normals
+
+   float4 result = float4(lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, !doNormalMapping, is_metal), pixel.a);
+
+   [branch] if (cBase_Alpha.a < 1.0 && result.a < 1.0)
+   {
+      result.a = GeometricOpacity(dot(N, V), result.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
+
+      if (fDisableLighting_top_below.y < 1.0)
+         // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
+         result.xyz += lerp(sqrt(diffuse) * tex2Dlod(texSamplerBL, float4(float2(0.5 * IN.tex01.z, -0.5 * IN.tex01.w) + 0.5, 0., 0.)).xyz * result.a, 0.,
+            fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+   }
+
+   result.rgb += mirrorFactor * tex2D(texSamplerPFReflections, float2(screenSpace.x / 2560.0, screenSpace.y / 1440.0)).rgb;
+
+   return result * staticColor_Alpha;
+}
+
+float4 ps_main_playfield_refl_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS)
+   : COLOR
+{
+   float4 result;
+
+   result.a = tex2D(texSampler0, IN.tex01.xy).a;
+
+   clip(result.a <= alphaTestValue ? -1 : 1); // stop the pixel shader if alpha test should reject pixel
+
+   result.a *= cBase_Alpha.a;
+
+   [branch] if (cBase_Alpha.a < 1.0 && result.a < 1.0)
+   {
+      const float3 V = normalize(/*camera=0,0,0,1*/ -IN.worldPos);
+      float3 N = normalize(IN.normal);
+      result.a = GeometricOpacity(dot(N, V), result.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
+   }
+
+   result.rgb = mirrorFactor * tex2D(texSamplerPFReflections, float2(screenSpace.x / 2560.0, screenSpace.y / 1440.0)).rgb;
+
+   return result * staticColor_Alpha;
+}
+
+float4 ps_main_playfield_refl(const in VS_OUTPUT IN, float2 screenSpace : VPOS)
+   : COLOR
+{
+   float4 result;
+   result.rgb = mirrorFactor * tex2D(texSamplerPFReflections, float2(screenSpace.x / 2560.0, screenSpace.y / 1440.0)).rgb;
+   result.a = 1.0;
+   return result * staticColor_Alpha;
+}
+
+float4 ps_main_depth_only_without_texture(const in VS_DEPTH_ONLY_NOTEX_OUTPUT IN)
+   : COLOR
 {
     return float4(0.,0.,0.,1.);
 }
@@ -388,6 +507,79 @@ technique basic_with_texture_normal
    {
       VertexShader = compile vs_3_0 vs_main();
       PixelShader  = compile ps_3_0 ps_main_texture(0,1);
+   }
+}
+
+
+technique playfield_without_texture_isMetal
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_notex_main();
+      PixelShader = compile ps_3_0 ps_main_playfield(1);
+   }
+}
+
+technique playfield_without_texture
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_notex_main();
+      PixelShader = compile ps_3_0 ps_main_playfield(0);
+   }
+}
+
+technique playfield_with_texture_isMetal
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_playfield_texture(1, 0);
+   }
+}
+
+technique playfield_with_texture
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_playfield_texture(0, 0);
+   }
+}
+
+technique playfield_with_texture_normal_isMetal
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_playfield_texture(1, 1);
+   }
+}
+
+technique playfield_with_texture_normal
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_playfield_texture(0, 1);
+   }
+}
+
+technique playfield_refl_with_texture
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_playfield_refl_texture();
+   }
+}
+
+technique playfield_refl_without_texture
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_notex_main();
+      PixelShader = compile ps_3_0 ps_main_playfield_refl();
    }
 }
 
