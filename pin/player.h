@@ -533,7 +533,7 @@ public:
    bool m_userDebugPaused;
    bool m_debugWindowActive;
    bool m_cabinetMode;
-   bool m_meshAsPlayfield;
+   Primitive *m_implicitPlayfieldMesh = nullptr;
    bool m_recordContacts;             // flag for DoHitTest()
    vector< CollisionEvent > m_contacts;
    ShaderTechniques m_ballShaderTechnique;

@@ -17,7 +17,6 @@ Pin3D::Pin3D()
    m_pd3dSecondaryDevice = nullptr;
    m_pddsStatic = nullptr;
    m_envRadianceTexture = nullptr;
-   m_tableVBuffer = nullptr;
 
    m_cam.x = 0.f;
    m_cam.y = 0.f;
@@ -43,8 +42,6 @@ Pin3D::~Pin3D()
       delete m_envRadianceTexture;
       m_envRadianceTexture = nullptr;
    }
-
-   SAFE_BUFFER_RELEASE(m_tableVBuffer);
 
    delete m_pddsAOBackBuffer;
    delete m_pddsAOBackTmpBuffer;
@@ -1016,39 +1013,6 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
    InitLights();
 }
 
-void Pin3D::InitPlayfieldGraphics()
-{
-   const IEditable * const piEdit = g_pplayer->m_ptable->GetElementByName("playfield_mesh");
-   if (piEdit == nullptr || piEdit->GetItemType() != ItemTypeEnum::eItemPrimitive)
-   {
-      assert(m_tableVBuffer == nullptr);
-      VertexBuffer::CreateVertexBuffer(4, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_tableVBuffer, PRIMARY_DEVICE);
-
-      Vertex3D_NoTex2 *buffer;
-      m_tableVBuffer->lock(0, 0, (void**)&buffer, VertexBuffer::WRITEONLY);
-
-      unsigned int offs = 0;
-      for (unsigned int y = 0; y <= 1; ++y)
-         for (unsigned int x = 0; x <= 1; ++x, ++offs)
-         {
-            buffer[offs].x = (x & 1) ? g_pplayer->m_ptable->m_right  : g_pplayer->m_ptable->m_left;
-            buffer[offs].y = (y & 1) ? g_pplayer->m_ptable->m_bottom : g_pplayer->m_ptable->m_top;
-            buffer[offs].z = g_pplayer->m_ptable->m_tableheight;
-
-            buffer[offs].tu = (x & 1) ? 1.f : 0.f;
-            buffer[offs].tv = (y & 1) ? 1.f : 0.f;
-
-            buffer[offs].nx = 0.f;
-            buffer[offs].ny = 0.f;
-            buffer[offs].nz = 1.f;
-         }
-
-      m_tableVBuffer->unlock();
-   }
-   else
-      g_pplayer->m_meshAsPlayfield = true;
-}
-
 void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
 {
    TRACE_FUNCTION();
@@ -1087,28 +1051,18 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
        }
    }
 
-   if (!g_pplayer->m_meshAsPlayfield)
-   {
-      assert(m_tableVBuffer != nullptr);
-      m_pd3dPrimaryDevice->basicShader->Begin();
-      m_pd3dPrimaryDevice->DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, m_tableVBuffer, 0, 4, true);
-      m_pd3dPrimaryDevice->basicShader->End();
-   }
-   else
-   {
-      const IEditable* piEdit = nullptr;
-      for (size_t i = 0; i < g_pplayer->m_ptable->m_vedit.size(); ++i)
-         if (g_pplayer->m_ptable->m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && strcmp(g_pplayer->m_ptable->m_vedit[i]->GetName(), "playfield_mesh") == 0)
-         {
-            if (piEdit == nullptr || ((Primitive*)piEdit)->m_d.m_toy || !((Primitive*)piEdit)->m_d.m_collidable) // either the first playfield mesh OR a toy/not-collidable (i.e. only used for visuals)?
-               piEdit = g_pplayer->m_ptable->m_vedit[i];
-         }
+   const IEditable* piEdit = nullptr;
+   for (size_t i = 0; i < g_pplayer->m_ptable->m_vedit.size(); ++i)
+      if (g_pplayer->m_ptable->m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && strcmp(g_pplayer->m_ptable->m_vedit[i]->GetName(), "playfield_mesh") == 0)
+      {
+         if (piEdit == nullptr || ((Primitive*)piEdit)->m_d.m_toy || !((Primitive*)piEdit)->m_d.m_collidable) // either the first playfield mesh OR a toy/not-collidable (i.e. only used for visuals)?
+            piEdit = g_pplayer->m_ptable->m_vedit[i];
+      }
 
-      Primitive * const pPrim = (Primitive *)piEdit;
-      pPrim->m_d.m_visible = true;  // temporary enable the otherwise invisible playfield
-      pPrim->RenderObject();
-      pPrim->m_d.m_visible = false; // restore
-   }
+   Primitive * const pPrim = (Primitive *)piEdit;
+   pPrim->m_d.m_visible = true;  // temporary enable the otherwise invisible playfield
+   pPrim->RenderObject();
+   pPrim->m_d.m_visible = false; // restore
 
    if (pin)
    {

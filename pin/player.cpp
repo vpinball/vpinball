@@ -366,7 +366,7 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
 #endif
    m_ballTrailVertexBuffer = nullptr;
    m_pFont = nullptr;
-   m_meshAsPlayfield = false;
+   m_implicitPlayfieldMesh = nullptr;
    m_ptable = ptable;
 }
 
@@ -743,6 +743,13 @@ void Player::Shutdown()
 #ifndef ENABLE_SDL
    m_limiter.Shutdown();
 #endif
+
+   if (m_implicitPlayfieldMesh)
+   {
+      RemoveFromVectorSingle(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh);
+      m_ptable->m_pcv->RemoveItem(m_implicitPlayfieldMesh->GetScriptable());
+      m_implicitPlayfieldMesh = nullptr;
+   }
 
    for (size_t i = 0; i < m_vhitables.size(); ++i)
       m_vhitables[i]->EndPlay();
@@ -1510,6 +1517,47 @@ HRESULT Player::Init()
 
    Ball::ballID = 0;
 
+   // Add a playfield primitive if it is missing
+   m_implicitPlayfieldMesh = nullptr;
+   const IEditable *const piEdit = m_ptable->GetElementByName("playfield_mesh");
+   if (piEdit == nullptr || piEdit->GetItemType() != ItemTypeEnum::eItemPrimitive)
+   {
+      m_implicitPlayfieldMesh = (Primitive *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemPrimitive, m_ptable, 0, 0);
+      if (m_implicitPlayfieldMesh)
+      {
+         m_implicitPlayfieldMesh->SetName("playfield_mesh"s);
+         m_implicitPlayfieldMesh->m_backglass = false;
+         m_implicitPlayfieldMesh->m_d.m_staticRendering = true;
+         m_implicitPlayfieldMesh->m_d.m_collidable = false;
+         m_implicitPlayfieldMesh->m_d.m_toy = true;
+         m_implicitPlayfieldMesh->m_d.m_use3DMesh = true;
+         m_implicitPlayfieldMesh->m_d.m_vSize.Set(1.0f, 1.0f, 1.0f);
+         m_implicitPlayfieldMesh->m_mesh.m_vertices.resize(4);
+         unsigned int offs = 0;
+         for (unsigned int y = 0; y <= 1; ++y)
+            for (unsigned int x = 0; x <= 1; ++x, ++offs)
+            {
+               int offs = x + y * 2;
+               m_implicitPlayfieldMesh->m_mesh.m_vertices[offs].x = (x & 1) ? m_ptable->m_right : m_ptable->m_left;
+               m_implicitPlayfieldMesh->m_mesh.m_vertices[offs].y = (y & 1) ? m_ptable->m_bottom : m_ptable->m_top;
+               m_implicitPlayfieldMesh->m_mesh.m_vertices[offs].z = m_ptable->m_tableheight;
+               m_implicitPlayfieldMesh->m_mesh.m_vertices[offs].tu = (x & 1) ? 1.f : 0.f;
+               m_implicitPlayfieldMesh->m_mesh.m_vertices[offs].tv = (y & 1) ? 1.f : 0.f;
+               m_implicitPlayfieldMesh->m_mesh.m_vertices[offs].nx = 0.f;
+               m_implicitPlayfieldMesh->m_mesh.m_vertices[offs].ny = 0.f;
+               m_implicitPlayfieldMesh->m_mesh.m_vertices[offs].nz = 1.f;
+            }
+         m_implicitPlayfieldMesh->m_mesh.m_indices.resize(6);
+         m_implicitPlayfieldMesh->m_mesh.m_indices[0] = 0;
+         m_implicitPlayfieldMesh->m_mesh.m_indices[1] = 1;
+         m_implicitPlayfieldMesh->m_mesh.m_indices[2] = 2;
+         m_implicitPlayfieldMesh->m_mesh.m_indices[3] = 2;
+         m_implicitPlayfieldMesh->m_mesh.m_indices[4] = 1;
+         m_implicitPlayfieldMesh->m_mesh.m_indices[5] = 3;
+         m_ptable->m_vedit.push_back(m_implicitPlayfieldMesh);
+      }
+   }
+
    CreateDebugFont();
    m_ptable->m_progressDialog.SetProgress(30);
    m_ptable->m_progressDialog.SetName("Initializing Physics..."s);
@@ -2010,8 +2058,6 @@ void Player::InitStatic()
       Hitable * const ph = m_vhitables[i];
       ph->RenderSetup();
    }
-
-   m_pin3d.InitPlayfieldGraphics();
 
    // For VR, we don't use any static pre-rendering
    if (m_stereo3D == STEREO_VR)
@@ -2924,7 +2970,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
             pball->m_coll.m_obj = nullptr;
 #endif
             // always check for playfield and top glass
-            if (!m_meshAsPlayfield)
+            if (m_implicitPlayfieldMesh)
                DoHitTest(pball, &m_hitPlayfield, pball->m_coll);
 
             DoHitTest(pball, &m_hitTopGlass, pball->m_coll);
