@@ -1016,41 +1016,6 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
 void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
 {
    TRACE_FUNCTION();
-
-   const Material * const mat = g_pplayer->m_ptable->GetMaterial(g_pplayer->m_ptable->m_playfieldMaterial);
-   Texture * const pin = (depth_only && !mat->m_bOpacityActive) ? nullptr : g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_image);
-
-   if (depth_only)
-   {
-       m_pd3dPrimaryDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, RenderDevice::RGBMASK_NONE); //m_pin3d.m_pd3dPrimaryDevice->SetPrimaryRenderTarget(nullptr); // disable color writes
-       // even with depth-only rendering we have to take care of alpha textures (stencil playfield to see underlying objects)
-       if (pin)
-       {
-           SetPrimaryTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
-           m_pd3dPrimaryDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_basic_depth_only_with_texture);
-           m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_ANISOTROPIC, SA_CLAMP, SA_CLAMP);
-           m_pd3dPrimaryDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
-       }
-       else // No image by that name
-           m_pd3dPrimaryDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_basic_depth_only_without_texture);
-   }
-   else
-   {
-       if (pin)
-       {
-           SetPrimaryTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
-           m_pd3dPrimaryDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
-           m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_ANISOTROPIC, SA_CLAMP, SA_CLAMP);
-           m_pd3dPrimaryDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
-           m_pd3dPrimaryDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
-       }
-       else // No image by that name
-       {
-           m_pd3dPrimaryDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
-           m_pd3dPrimaryDevice->basicShader->SetMaterial(mat, false);
-       }
-   }
-
    const IEditable* piEdit = nullptr;
    for (size_t i = 0; i < g_pplayer->m_ptable->m_vedit.size(); ++i)
       if (g_pplayer->m_ptable->m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && strcmp(g_pplayer->m_ptable->m_vedit[i]->GetName(), "playfield_mesh") == 0)
@@ -1058,24 +1023,14 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
          if (piEdit == nullptr || ((Primitive*)piEdit)->m_d.m_toy || !((Primitive*)piEdit)->m_d.m_collidable) // either the first playfield mesh OR a toy/not-collidable (i.e. only used for visuals)?
             piEdit = g_pplayer->m_ptable->m_vedit[i];
       }
-
-   Primitive * const pPrim = (Primitive *)piEdit;
+   g_pplayer->m_current_renderstage = depth_only ? 1 : 0;
+   Primitive* const pPrim = (Primitive*)piEdit;
+   pPrim->m_d.m_szMaterial = g_pplayer->m_ptable->m_playfieldMaterial;
+   pPrim->m_d.m_szImage = g_pplayer->m_ptable->m_image;
    pPrim->m_d.m_visible = true;  // temporary enable the otherwise invisible playfield
    pPrim->RenderObject();
    pPrim->m_d.m_visible = false; // restore
-
-   if (pin)
-   {
-      //m_pd3dPrimaryDevice->basicShader->SetTextureNull(SHADER_Texture0);
-      //m_pd3dPrimaryDevice->m_texMan.UnloadTexture(pin->m_pdsBuffer); //!! is used by ball reflection later-on
-      SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
-   }
-
-   if (depth_only)
-       m_pd3dPrimaryDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, RenderDevice::RGBMASK_RGBA); // reenable color writes with default value
-
-   // Apparently, releasing the vertex buffer here immediately can cause rendering glitches in
-   // later rendering steps, so we keep it around for now.
+   g_pplayer->m_current_renderstage = 0;
 }
 
 void Pin3D::EnableAlphaTestReference(const DWORD alphaRefValue) const
