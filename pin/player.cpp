@@ -1915,13 +1915,12 @@ void Player::RenderStaticMirror()
    // render mirrored static elements
    for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
    {
-      if (m_ptable->m_vedit[i]->GetItemType() != eItemDecal)
+      auto editable = m_ptable->m_vedit[i];
+      if (editable->GetItemType() != eItemDecal)
       {
-         Hitable * const ph = m_ptable->m_vedit[i]->GetIHitable();
+         Hitable *const ph = editable->GetIHitable();
          if (ph)
-         {
             ph->RenderStatic();
-         }
       }
    }
 
@@ -2043,9 +2042,7 @@ void Player::InitStatic()
    if (!m_dynamicMode)
    {
       // The code will fail if the static render target is MSAA (the copy operation we are performing are not allowed)
-#ifdef ENABLE_SDL
       assert(!m_pin3d.m_pddsStatic->IsMSAA());
-#endif
       accumulationSurface = m_pin3d.m_pddsStatic->Duplicate();
       m_isRenderingStatic = true;
       // set up the texture filter again, so that this is triggered correctly
@@ -2092,15 +2089,7 @@ void Player::InitStatic()
          if (m_ptable->m_reflectElementsOnPlayfield)
             RenderStaticMirror();
 
-#ifdef ENABLE_SDL
-         // For the time being, playfield is not prerendered, but dynamicly rendered with the reflections
-         // FIXME This should be split between static/dynamic since it breaks AO (no playfield) and slightly impacts performance
-         // m_pin3d.RenderPlayfieldGraphics(0.0f, false);
-#else
          // exclude playfield depth as dynamic mirror objects have to be added later-on
-         m_pin3d.RenderPlayfieldGraphics(0);
-#endif
-
          // to compensate for this when rendering the static objects, enable clipplane
          SetClipPlanePlayfield(false);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(true);
@@ -2229,7 +2218,7 @@ void Player::InitStatic()
       m_pin3d.m_pddsStatic->CopyTo(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()); // save Z buffer and render (cannot be called inside BeginScene -> EndScene cycle)
 
       m_pin3d.m_pd3dPrimaryDevice->BeginScene();
-      m_pin3d.RenderPlayfieldGraphics(1); // mirror depth buffer only contained static objects, but no playfield yet -> so render depth only to add this
+      m_pin3d.RenderPlayfieldDepth(); // mirror depth buffer only contained static objects, but no playfield yet -> so render depth only to add this
       m_pin3d.m_pd3dPrimaryDevice->EndScene();
 
       RenderTarget* tmpDepth = m_pin3d.m_pddsStatic->Duplicate();
@@ -3589,14 +3578,11 @@ void Player::RenderDynamics()
    TRACE_FUNCTION();
 
    unsigned int reflection_path = 0;
-   if (!m_dynamicMode)
-   {
       const bool drawBallReflection = ((m_reflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
       if (!(m_ptable->m_reflectElementsOnPlayfield && m_pf_refl) && drawBallReflection)
          reflection_path = 1;
       else if (m_ptable->m_reflectElementsOnPlayfield && m_pf_refl)
          reflection_path = 2;
-   }
 
    if (reflection_path != 0)
    {
@@ -3604,11 +3590,9 @@ void Player::RenderDynamics()
       m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(true);
       RenderDynamicMirror(reflection_path == 1);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(false); // disable playfield clipplane again
-      if (!m_dynamicMode)
-         m_pin3d.RenderPlayfieldGraphics(2); // Render the dynamic reflections (and only them)
    }
 
-   m_pin3d.RenderPlayfieldGraphics(1); // static depth buffer only contained static (&mirror) objects, but no playfield yet -> so render depth only to add this
+   m_pin3d.RenderPlayfieldDepth(); // static depth buffer only contained static (&mirror) objects, but no playfield yet -> so render depth only to add this
 
    if (m_dynamicMode)
    {
@@ -3621,8 +3605,6 @@ void Player::RenderDynamics()
 #endif
 
       UpdateBallShaderMatrix();
-
-      m_pin3d.RenderPlayfieldGraphics(0);
 
       for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
          if (m_ptable->m_vedit[i]->GetItemType() != eItemDecal)
