@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -268,7 +268,7 @@ namespace Win32xx
 #if !defined (_MSC_VER) ||  ( _MSC_VER < 1400 )  // not VS or VS < 2005
         assert(::gmtime(&t0));
 #else
-        assert(0 == ::gmtime_s(ptm0, &t0));
+        assert(::gmtime_s(ptm0, &t0) == 0);
 #endif
 
         return t0;
@@ -364,9 +364,9 @@ namespace Win32xx
 
     // Constructs a CTime object from local time elements. Each element is
     // constrained to lie within the following UTC ranges:
-    //   year       1970–2038 (on 32-bit systems)
-    //   month      1–12
-    //   day        1–31
+    //   year       1970-2038 (on 32-bit systems)
+    //   month      1-12
+    //   day        1-31
     //   hour, min, sec no constraint
     inline CTime::CTime(UINT year, UINT month, UINT day, UINT hour, UINT min,
         UINT sec, int isDST /* = -1 */)
@@ -614,7 +614,7 @@ namespace Win32xx
         return ptmbuffer->tm_sec;
     }
 
-    // Returns the day of the week of *this object (0–6, Sunday = 0), local
+    // Returns the day of the week of *this object (0-6, Sunday = 0), local
     // (true) or UTC (false).
     inline int  CTime::GetDayOfWeek(bool local /* = true */) const
     {
@@ -839,7 +839,7 @@ namespace Win32xx
 
         // store CTime as x64
         time_t tt = t;
-        tx64 = tt;
+        tx64 = static_cast<ULONGLONG>(tt);
         ar.Write(&tx64, size);
         return ar;
     }
@@ -863,10 +863,10 @@ namespace Win32xx
     }
 
     // Contructs a CTimeSpan. Valid parameter ranges:
-    //   lDays  0–24,855 (approximately)
-    //   nHours 0–23
-    //   nMins  0–59
-    //   nSecs  0–59
+    //   lDays  0-24,855 (approximately)
+    //   nHours 0-23
+    //   nMins  0-59
+    //   nSecs  0-59
     inline CTimeSpan::CTimeSpan(long days, int hours, int mins, int secs)
     {
         time_t sec_per_day  = 86400;
@@ -909,7 +909,7 @@ namespace Win32xx
     }
 
     // Return the number of hours in the day component of this time
-    // span (–23 through 23).
+    // span (-23 through 23).
     inline int CTimeSpan::GetHours() const
     {
         int sec_per_hour  = 3600;
@@ -918,7 +918,7 @@ namespace Win32xx
     }
 
     // Returns the number of minutes in the hour component of this time
-    // span (–59 through 59).
+    // span (-59 through 59).
     inline int CTimeSpan::GetMinutes() const
     {
         int sec_per_min = 60;
@@ -926,7 +926,7 @@ namespace Win32xx
     }
 
     // Returns the number of seconds in the minute component of this time
-    // span (–59 through 59).
+    // span (-59 through 59).
     inline int CTimeSpan::GetSeconds() const
     {
         int sec_per_min = 60;
@@ -1040,12 +1040,12 @@ namespace Win32xx
             insert.Format(_T("%ld"), GetDays());
             fmt0.Replace(_T("%D"), insert);
         }
-        while (fmt0.Find(_T("%H")) != -1)  // hours (00 – 23)
+        while (fmt0.Find(_T("%H")) != -1)  // hours (00 - 23)
         {
             insert.Format(_T("%02d"), GetHours());
             fmt0.Replace(_T("%H"), insert);
         }
-        while (fmt0.Find(_T("%M")) != -1)  // minutes (00 – 59)
+        while (fmt0.Find(_T("%M")) != -1)  // minutes (00 - 59)
         {
             insert.Format(_T("%02d"), GetMinutes());
             fmt0.Replace(_T("%M"), insert);
@@ -1107,7 +1107,7 @@ namespace Win32xx
         ar.Write(&size, sizeof(size));
 
         // store CTimeSpan as x64
-        tsx64 = ts;
+        tsx64 = static_cast<ULONGLONG>(ts);
         ar.Write(&tsx64, size);
         return ar;
     }

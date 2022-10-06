@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -38,7 +38,7 @@
 ////////////////////////////////////////////////////////
 // Acknowledgement:
 //
-// The original author of CDataExchange is:
+// Developed from code originally provided by:
 //
 //      Robert C. Tausworthe
 //      email: robert.c.tausworthe@ieee.org
@@ -121,42 +121,42 @@ namespace Win32xx
         virtual void DDV_MinMaxULong(ULONG value, ULONG min, ULONG max) const;
 
         // DDX Initialization
-        virtual void DDX_Control(int id, CWnd& control);
+        virtual void DDX_Control(UINT id, CWnd& control);
 
         // Dialog Data eXchange (DDX) functions
-        virtual void DDX_CBIndex(int id, int& index);
-        virtual void DDX_CBString(int id, CString& value);
-        virtual void DDX_CBStringExact(int id, CString& value);
-        virtual void DDX_Check(int id, int& value);
-        virtual void DDX_DateTime(int id, SYSTEMTIME& value);
-        virtual void DDX_LBIndex(int id, int& index);
-        virtual void DDX_LBString(int id, CString& value);
-        virtual void DDX_LBStringExact(int id, CString& value);
-        virtual void DDX_MonthCal(int id, SYSTEMTIME& value);
-        virtual void DDX_Progress(int id, int& value);
-        virtual void DDX_Radio(int id, int& value);
-        virtual void DDX_Scroll(int id, int& value);
-        virtual void DDX_Slider(int id, int& value);
+        virtual void DDX_CBIndex(UINT id, int& index);
+        virtual void DDX_CBString(UINT id, CString& value);
+        virtual void DDX_CBStringExact(UINT id, CString& value);
+        virtual void DDX_Check(UINT id, int& value);
+        virtual void DDX_DateTime(UINT id, SYSTEMTIME& value);
+        virtual void DDX_LBIndex(UINT id, int& index);
+        virtual void DDX_LBString(UINT id, CString& value);
+        virtual void DDX_LBStringExact(UINT id, CString& value);
+        virtual void DDX_MonthCal(UINT id, SYSTEMTIME& value);
+        virtual void DDX_Progress(UINT id, int& value);
+        virtual void DDX_Radio(UINT id, int& value);
+        virtual void DDX_Scroll(UINT id, int& value);
+        virtual void DDX_Slider(UINT id, int& value);
 
         // DDX text operations
-        virtual void DDX_Text(int id, BYTE& value);
-        virtual void DDX_Text(int id, short& value);
-        virtual void DDX_Text(int id, int& value);
-        virtual void DDX_Text(int id, UINT& value);
-        virtual void DDX_Text(int id, long& value);
-        virtual void DDX_Text(int id, ULONG& value);
-        virtual void DDX_Text(int id, CString& value);
-        virtual void DDX_Text(int id, LPTSTR value, int maxLen);
-        virtual void DDX_Text(int id, float& value, int precision = FLT_DIG);
-        virtual void DDX_Text(int id, double& value, int precision = DBL_DIG);
+        virtual void DDX_Text(UINT id, BYTE& value);
+        virtual void DDX_Text(UINT id, short& value);
+        virtual void DDX_Text(UINT id, int& value);
+        virtual void DDX_Text(UINT id, UINT& value);
+        virtual void DDX_Text(UINT id, long& value);
+        virtual void DDX_Text(UINT id, ULONG& value);
+        virtual void DDX_Text(UINT id, CString& value);
+        virtual void DDX_Text(UINT id, LPTSTR value, int maxLen);
+        virtual void DDX_Text(UINT id, float& value, int precision = FLT_DIG);
+        virtual void DDX_Text(UINT id, double& value, int precision = DBL_DIG);
 
         // Helper operations
         void virtual Fail(LPCTSTR message) const;
         HWND GetLastControl()  const { return m_lastControl; }
         HWND GetLastEditControl() const { return m_lastEditControl; }
         void Init(CWnd& dlgWnd, BOOL retrieveAndValidate);
-        HWND PrepareCtrl(int id);      // return HWND of control
-        HWND PrepareEditCtrl(int id);  // record this is an edit
+        HWND PrepareCtrl(UINT id);      // return HWND of control
+        HWND PrepareEditCtrl(UINT id);  // record this is an edit
 
     private:
         // data members
@@ -182,15 +182,14 @@ namespace Win32xx
 {
 
 // required for Borland 5.5 support
-#if !(defined(__BORLANDC__) || (__BORLANDC__ >= 0x600))
-    //============================================================================
+#if !defined(__BORLANDC__) || (__BORLANDC__ >= 0x600)
     inline tStringStream& operator>>(tStringStream& ts, BYTE& value)
     {
         UINT u = 0;
         ts >> u;
         if (u < 256)
         {
-            value = (BYTE)u;
+            value = static_cast<BYTE>(u);
         }
         else
         {
@@ -248,7 +247,8 @@ namespace Win32xx
         else if (m_lastControl != 0 && m_isEditLastControl)
         {
             // limit the control max-chars automatically
-            ::SendMessage(m_lastControl, EM_LIMITTEXT, (WPARAM)count, 0);
+            WPARAM wparam = static_cast<WPARAM>(count);
+            ::SendMessage(m_lastControl, EM_LIMITTEXT, wparam, 0);
         }
     }
 
@@ -296,7 +296,8 @@ namespace Win32xx
         sta[0] = min;
         sta[1] = max;
 
-        ::SendMessage(m_lastControl, DTM_SETRANGE, (WPARAM)GDTR_MIN | GDTR_MAX, (LPARAM)sta);
+        LPARAM lparam = reinterpret_cast<LPARAM>(sta);
+        ::SendMessage(m_lastControl, DTM_SETRANGE, GDTR_MIN | GDTR_MAX, lparam);
     }
 
 
@@ -393,12 +394,15 @@ namespace Win32xx
             }
         }
 
-        SYSTEMTIME MinMax[2];
+        SYSTEMTIME minMax[2];
         DWORD limit = GDTR_MIN | GDTR_MAX;
-        memcpy(&MinMax[0], &min, sizeof(SYSTEMTIME));
-        memcpy(&MinMax[1], &max, sizeof(SYSTEMTIME));
+        memcpy(&minMax[0], &min, sizeof(SYSTEMTIME));
+        memcpy(&minMax[1], &max, sizeof(SYSTEMTIME));
 
-        ::SendMessage(m_lastControl, MCM_SETRANGE, (WPARAM)limit, (LPARAM)&MinMax);
+        WPARAM wparam = static_cast<WPARAM>(limit);
+        LPARAM lparam = reinterpret_cast<LPARAM>(&minMax);
+
+        ::SendMessage(m_lastControl, MCM_SETRANGE, wparam, lparam);
     }
 
     // Ensures that minVal <= value <= maxVal when validating, otherwise
@@ -435,8 +439,10 @@ namespace Win32xx
         }
 
         // set the range tuple
-        ::SendMessage(m_lastControl,TBM_SETRANGEMIN, (WPARAM)FALSE, (LPARAM)min);
-        ::SendMessage(m_lastControl, TBM_SETRANGEMAX, (WPARAM)TRUE, (LPARAM)max);
+        ::SendMessage(m_lastControl,TBM_SETRANGEMIN, static_cast<WPARAM>(FALSE),
+                      static_cast<LPARAM>(min));
+        ::SendMessage(m_lastControl, TBM_SETRANGEMAX, static_cast<WPARAM>(TRUE),
+                      static_cast<LPARAM>(max));
     }
 
     // Ensures that minVal <= value <= maxVal when validating, otherwise
@@ -483,7 +489,7 @@ namespace Win32xx
 
     // This function attaches the window with a control ID of id
     // to the specified CWnd. Controls are only attached once.
-    inline void CDataExchange::DDX_Control(int id, CWnd& control)
+    inline void CDataExchange::DDX_Control(UINT id, CWnd& control)
     {
         if (!control.IsWindow())    // not subclassed yet
         {
@@ -509,14 +515,14 @@ namespace Win32xx
     // to the index of the current combo box selection. If no item is
     // selected, index is set to 0. When m_DX.m_retrieveAndValidate is false,
     // the index item is selected.
-    inline void CDataExchange::DDX_CBIndex(int id, int& index)
+    inline void CDataExchange::DDX_CBIndex(UINT id, int& index)
     {
         HWND control = PrepareCtrl(id);
 
         if (m_retrieveAndValidate)
             index = static_cast<int>(::SendMessage(control, CB_GETCURSEL, 0, 0));
         else
-            ::SendMessage(control, CB_SETCURSEL, (WPARAM)index, 0);
+            ::SendMessage(control, CB_SETCURSEL, static_cast<WPARAM>(index), 0);
     }
 
     // This function manages the transfer of CString data between the edit
@@ -530,17 +536,17 @@ namespace Win32xx
     // string. If a matching item is found, it is selected and copied to the
     // edit control. If the search is unsuccessful, the current edit control
     // is not changed.
-    inline void CDataExchange::DDX_CBString(int id, CString& value)
+    inline void CDataExchange::DDX_CBString(UINT id, CString& value)
     {
         HWND control = PrepareCtrl(id);
         if (m_retrieveAndValidate)
         {
             // get the current edit item text or drop list static where possible
-            int nLen = ::GetWindowTextLength(control);
-            if (nLen > 0)
+            int length = ::GetWindowTextLength(control);
+            if (length > 0)
             {
                 // Get the known length.
-                ::GetWindowText(control, value.GetBuffer(nLen), nLen + 1);
+                ::GetWindowText(control, value.GetBuffer(length), length + 1);
             }
             else
             {
@@ -554,8 +560,8 @@ namespace Win32xx
         else
         {
             // Set the current selection based on value string.
-            if (::SendMessage(control, CB_SELECTSTRING, (WPARAM)-1,
-                (LPARAM)value.c_str()) == CB_ERR)
+            if (::SendMessage(control, CB_SELECTSTRING, static_cast<WPARAM>(-1),
+                reinterpret_cast<LPARAM>(value.c_str()) == CB_ERR))
             {
                 // Value was not found, so just set the edit text.
                 // (this will be ignored if the control is a DROPDOWNLIST)
@@ -576,7 +582,7 @@ namespace Win32xx
     // If a matching item is found, it is selected and copied to the edit
     // window. If the search is unsuccessful, the current edit control
     // is not changed.
-    inline void CDataExchange::DDX_CBStringExact(int id, CString& value)
+    inline void CDataExchange::DDX_CBStringExact(UINT id, CString& value)
     {
         HWND control = PrepareCtrl(id);
         if (m_retrieveAndValidate)
@@ -587,7 +593,7 @@ namespace Win32xx
         {
             // set current selection based on data string
             int i = static_cast<int>(::SendMessage(control, CB_FINDSTRINGEXACT,
-                (WPARAM)(-1), (LPARAM)(value.c_str())));
+                static_cast<WPARAM>(-1), reinterpret_cast<LPARAM>(value.c_str())));
             if (i < 0)
             {
                 // set the edit text (will be ignored if a DROPDOWNLIST)
@@ -596,14 +602,14 @@ namespace Win32xx
             else
             {
                 // select it
-                ::SendMessage(control, CB_SETCURSEL, (WPARAM)i, 0);
+                ::SendMessage(control, CB_SETCURSEL, static_cast<WPARAM>(i), 0);
             }
         }
     }
 
     // Perform a check box control data exchange on the DDX/DDV object m_DX
     // with the control numbered id to and from the given int value.
-    inline void CDataExchange::DDX_Check(int id, int& value)
+    inline void CDataExchange::DDX_Check(UINT id, int& value)
     {
         HWND control = PrepareCtrl(id);
         if (m_retrieveAndValidate)
@@ -623,7 +629,7 @@ namespace Win32xx
                 value = 0;  // set default to off
             }
 
-            ::SendMessage(control, BM_SETCHECK, (WPARAM)value, 0);
+            ::SendMessage(control, BM_SETCHECK, static_cast<WPARAM>(value), 0);
         }
     }
 
@@ -633,14 +639,14 @@ namespace Win32xx
     // the object. When called in the read mode, the value is set to the
     // current state of the control. When called in the write mode, the
     // current state of the control is set to the given value.
-    inline void CDataExchange::DDX_DateTime(int id, SYSTEMTIME &value)
+    inline void CDataExchange::DDX_DateTime(UINT id, SYSTEMTIME &value)
     {
         HWND control = PrepareCtrl(id);
-
+        LPARAM lparam = reinterpret_cast<LPARAM>(&value);
         if (m_retrieveAndValidate)
-            ::SendMessage(control, DTM_GETSYSTEMTIME, 0, (LPARAM)&value);
+            ::SendMessage(control, DTM_GETSYSTEMTIME, 0, lparam);
         else
-            ::SendMessage(control, DTM_SETSYSTEMTIME, 0, (LPARAM)&value);
+            ::SendMessage(control, DTM_SETSYSTEMTIME, 0, lparam);
     }
 
     // This function manages the transfer of data between a list box
@@ -651,13 +657,13 @@ namespace Win32xx
     // is set to the index of the current list box selection. If no item
     // is selected, index is set to LB_ERR. When m_DX.m_retrieveAndValidate is
     // false, the index item is selected.
-    inline void CDataExchange::DDX_LBIndex(int id, int& index)
+    inline void CDataExchange::DDX_LBIndex(UINT id, int& index)
     {
         HWND control = PrepareCtrl(id);
         if (m_retrieveAndValidate)
             index = static_cast<int>(::SendMessage(control, LB_GETCURSEL, 0, 0));
         else
-            ::SendMessage(control, LB_SETCURSEL, (WPARAM)index, 0);
+            ::SendMessage(control, LB_SETCURSEL, static_cast<WPARAM>(index), 0);
     }
 
     // Perform a data exchange for the state of a list box control on the
@@ -666,7 +672,7 @@ namespace Win32xx
     // in value. If no item is selected, value is set to a string of zero
     // length. When m_retrieveAndValidate is false, the item having the given
     // case-insensitive value as a prefix, if it exists, is selected.
-    inline void CDataExchange::DDX_LBString(int id, CString& value)
+    inline void CDataExchange::DDX_LBString(UINT id, CString& value)
     {
         HWND control = PrepareCtrl(id);
         if (m_retrieveAndValidate)
@@ -676,8 +682,11 @@ namespace Win32xx
             if (index != -1)
             {
                 // Read selected text into the CString.
-                int nLen = static_cast<int>(::SendMessage(control, LB_GETTEXTLEN, (WPARAM)index, 0));
-                ::SendMessage(control, LB_GETTEXT, (WPARAM)index, (LPARAM)value.GetBuffer(nLen));
+                int length = static_cast<int>(::SendMessage(control, LB_GETTEXTLEN,
+                                              static_cast<WPARAM>(index), 0));
+
+                ::SendMessage(control, LB_GETTEXT, static_cast<WPARAM>(index),
+                              reinterpret_cast<LPARAM>(value.GetBuffer(length)));
 
                 value.ReleaseBuffer();
             }
@@ -692,7 +701,7 @@ namespace Win32xx
             // search the the entire list box for the given value
             // and select it if it is found
             int index  = static_cast<int>(::SendMessage(control, LB_SELECTSTRING,
-                (WPARAM)-1, (LPARAM)value.c_str()));
+                static_cast<WPARAM>(-1), reinterpret_cast<LPARAM>(value.c_str())));
 
             if (index == LB_ERR)
             {
@@ -712,7 +721,7 @@ namespace Win32xx
     // If no item is selected, value is set to a string of zero length. When
     // m_DX.m_retrieveAndValidate is false, the item having the entire given
     // case-insensitive value as its prefix, if any exists, is selected.
-    inline void CDataExchange::DDX_LBStringExact(int id, CString& value)
+    inline void CDataExchange::DDX_LBStringExact(UINT id, CString& value)
     {
         HWND control = PrepareCtrl(id);
         if (m_retrieveAndValidate)
@@ -726,7 +735,7 @@ namespace Win32xx
             // in a case insensitive search, perhaps in sorted order,
             // if the box has that style.
             int index = static_cast<int>(::SendMessage(control, LB_FINDSTRINGEXACT,
-                (WPARAM)-1, (LPARAM)value.c_str()));
+                static_cast<WPARAM>(-1), reinterpret_cast<LPARAM>(value.c_str())));
 
             if (index < 0)
             {
@@ -737,7 +746,7 @@ namespace Win32xx
             else
             {
                 // select it
-                ::SendMessage(control, LB_SETCURSEL, (WPARAM)index, 0);
+                ::SendMessage(control, LB_SETCURSEL, static_cast<WPARAM>(index), 0);
             }
         }
     }
@@ -751,20 +760,24 @@ namespace Win32xx
     // with a call to the CMonthCalendar::SetCurSel() member method. In read
     // mode, value is set to the current state of the month calendar control.
     // In write mode, the current state is set to the given value.
-    inline void CDataExchange::DDX_MonthCal(int id, SYSTEMTIME& value)
+    inline void CDataExchange::DDX_MonthCal(UINT id, SYSTEMTIME& value)
     {
         HWND control = PrepareCtrl(id);
 
         if (m_retrieveAndValidate)
         {
-            ::SendMessage(control, MCM_GETCURSEL, 0, (LPARAM)&value);
+            LPARAM lparam = reinterpret_cast<LPARAM>(&value);
+            ::SendMessage(control, MCM_GETCURSEL, 0, lparam);
             value.wHour = 0;
             value.wMinute = 0;
             value.wSecond = 0;
             value.wMilliseconds = 0;
         }
         else
-            ::SendMessage(control, MCM_SETCURSEL, 0, (LPARAM)&value);
+        {
+            LPARAM lparam = reinterpret_cast<LPARAM>(&value);
+            ::SendMessage(control, MCM_SETCURSEL, 0, lparam);
+        }
     }
 
     // This function manages the transfer of data between a progress control
@@ -774,30 +787,30 @@ namespace Win32xx
     // the control numbered id. When this function is called, value is set
     // to the current slider entry.  When m_DX.m_retrieveAndValidate
     // is false, the slider entry is set to value.
-    inline void CDataExchange::DDX_Progress(int id, int& value)
+    inline void CDataExchange::DDX_Progress(UINT id, int& value)
     {
         HWND control = PrepareCtrl(id);
 
         if (m_retrieveAndValidate)
             value = static_cast<int>(::SendMessage(control, PBM_GETPOS, 0, 0));
         else
-            ::SendMessage(control, PBM_SETPOS, (WPARAM)value, 0);
+            ::SendMessage(control, PBM_SETPOS, static_cast<WPARAM>(value), 0);
     }
 
     // Perform a data exchange for the state of a group of auto radio buttons
     // on the DDX/DDV object m_DX with the control numbered id to and from
     // the given int value, where the identifier id is that of the first
     // control in the group.
-    inline void CDataExchange::DDX_Radio(int id, int& value)
+    inline void CDataExchange::DDX_Radio(UINT id, int& value)
     {
         HWND control = PrepareCtrl(id);
 
         // Assure that the control is a radio button and part of a group.
-        BOOL firstInGroup = ::GetWindowLongPtr(control, GWL_STYLE) & WS_GROUP;
+        bool firstInGroup = (::GetWindowLongPtr(control, GWL_STYLE) & WS_GROUP) != 0;
         assert(firstInGroup);
 
         // Assure the button is a radio button.
-        BOOL isRadioButton = ::GetWindowLongPtr(control, GWL_STYLE) & (BS_RADIOBUTTON | BS_AUTORADIOBUTTON);
+        bool isRadioButton = (::GetWindowLongPtr(control, GWL_STYLE) & (BS_RADIOBUTTON | BS_AUTORADIOBUTTON)) != 0;
         assert(isRadioButton);
 
         // preset the returned value to empty in case no button is set
@@ -807,7 +820,7 @@ namespace Win32xx
         // traverse all buttons in the group: we've already established
         // there's a group, so set up for the radio buttons in the group
         firstInGroup = FALSE;
-        for (int iButton = 0; control != 0 && !firstInGroup; )
+        for (int button = 0; control != 0 && !firstInGroup; )
         {
             if (isRadioButton) // this control in the group is a radio button
             {
@@ -818,15 +831,16 @@ namespace Win32xx
                         // Record the value the first time, but if it happens again, there
                         // is an error--only one button checked is allowed.
                         assert(value == -1);
-                        value = iButton;
+                        value = button;
                     }
                 }
                 else // if asked to select the radio button,
                 {
                     // then select it
-                    ::SendMessage(control, BM_SETCHECK, (WPARAM)(iButton == value), 0);
+                    WPARAM wparam = static_cast<WPARAM>(button == value);
+                    ::SendMessage(control, BM_SETCHECK, wparam, 0);
                 }
-                iButton++;
+                button++;
             }
             else
             {
@@ -838,8 +852,8 @@ namespace Win32xx
             control = ::GetWindow(control, GW_HWNDNEXT);
             if (control)
             {
-                isRadioButton = ::GetWindowLongPtr(control, GWL_STYLE) & (BS_RADIOBUTTON | BS_AUTORADIOBUTTON);
-                firstInGroup  = ::GetWindowLongPtr(control, GWL_STYLE) & WS_GROUP;
+                isRadioButton = (::GetWindowLongPtr(control, GWL_STYLE) & (BS_RADIOBUTTON | BS_AUTORADIOBUTTON)) != 0;
+                firstInGroup  = (::GetWindowLongPtr(control, GWL_STYLE) & WS_GROUP) != 0;
             }
         }
     }
@@ -851,7 +865,7 @@ namespace Win32xx
     // the control numbered id. When this function is called, value is set
     // to the current scroll bar position.  When m_DX.m_retrieveAndValidate
     // is false, the scroll bar position is set to value.
-    inline void CDataExchange::DDX_Scroll(int id, int& value)
+    inline void CDataExchange::DDX_Scroll(UINT id, int& value)
     {
         HWND control = PrepareCtrl(id);
 
@@ -868,14 +882,15 @@ namespace Win32xx
     // the control numbered id. When this function is called, value is set
     // to the current slider entry.  When m_DX.m_retrieveAndValidate
     // is false, the slider entry is set to value.
-    inline void CDataExchange::DDX_Slider(int id, int& value)
+    inline void CDataExchange::DDX_Slider(UINT id, int& value)
     {
         HWND control = PrepareCtrl(id);
 
         if (m_retrieveAndValidate)
             value = static_cast<int>(::SendMessage(control, TBM_GETPOS, 0, 0));
         else
-            ::SendMessage(control, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)value);
+            ::SendMessage(control, TBM_SETPOS, static_cast<WPARAM>(TRUE),
+                static_cast<LPARAM>(value));
     }
 
     ////////////////////////////////////////////////////////////////
@@ -886,7 +901,7 @@ namespace Win32xx
 
     // Perform a text box data exchange on the current DDX/DDV object m_DX with
     // data value of type BYTE.
-    inline void CDataExchange::DDX_Text(int id, BYTE& value)
+    inline void CDataExchange::DDX_Text(UINT id, BYTE& value)
     {
         HWND control = PrepareEditCtrl(id);
         if (m_retrieveAndValidate)
@@ -912,7 +927,7 @@ namespace Win32xx
 
     // Perform a text box data exchange on the current DDX/DDV object m_DX with
     // data value of type short.
-    inline void CDataExchange::DDX_Text(int id, short& value)
+    inline void CDataExchange::DDX_Text(UINT id, short& value)
     {
         HWND control = PrepareEditCtrl(id);
         if (m_retrieveAndValidate)
@@ -938,7 +953,7 @@ namespace Win32xx
 
     // Perform a text box data exchange on the current DDX/DDV object m_DX with
     // data value of type int.
-    inline void CDataExchange::DDX_Text(int id, int& value)
+    inline void CDataExchange::DDX_Text(UINT id, int& value)
     {
         HWND control = PrepareEditCtrl(id);
         if (m_retrieveAndValidate)
@@ -964,7 +979,7 @@ namespace Win32xx
 
     // Perform a text box data exchange on the current DDX/DDV object m_DX with
     // data value of type UINT.
-    inline void CDataExchange::DDX_Text(int id, UINT& value)
+    inline void CDataExchange::DDX_Text(UINT id, UINT& value)
     {
         HWND control = PrepareEditCtrl(id);
         if (m_retrieveAndValidate)
@@ -990,7 +1005,7 @@ namespace Win32xx
 
     // Perform a text box data exchange on the current DDX/DDV object m_DX with
     // data value of type long.
-    inline void CDataExchange::DDX_Text(int id, long& value)
+    inline void CDataExchange::DDX_Text(UINT id, long& value)
     {
         HWND control = PrepareEditCtrl(id);
         if (m_retrieveAndValidate)
@@ -1016,7 +1031,7 @@ namespace Win32xx
 
     // Perform a text box data exchange on the current DDX/DDV object m_DX with
     // data value of type ULONG.
-    inline void CDataExchange::DDX_Text(int id, ULONG& value)
+    inline void CDataExchange::DDX_Text(UINT id, ULONG& value)
     {
         HWND control = PrepareEditCtrl(id);
         if (m_retrieveAndValidate)
@@ -1042,7 +1057,7 @@ namespace Win32xx
 
     // Perform a text box data exchange on the current DDX/DDV object m_DX with
     // data value of type float with the given precision.
-    inline void CDataExchange::DDX_Text(int id, float& value, int precision /* = FLT_DIG */)
+    inline void CDataExchange::DDX_Text(UINT id, float& value, int precision /* = FLT_DIG */)
     {
         HWND control = PrepareEditCtrl(id);
         if (m_retrieveAndValidate)
@@ -1068,7 +1083,7 @@ namespace Win32xx
 
     // Perform a text box data exchange on the current DDX/DDV object m_DX with
     // data value of type double with the given precision.
-    inline void CDataExchange::DDX_Text(int id, double& value, int precision /* = DBL_DIG */)
+    inline void CDataExchange::DDX_Text(UINT id, double& value, int precision /* = DBL_DIG */)
     {
         HWND control = PrepareEditCtrl(id);
         if (m_retrieveAndValidate)
@@ -1094,7 +1109,7 @@ namespace Win32xx
 
     // Perform a text box data exchange on the current DDX/DDV object m_DX with
     // data value of type CString.
-    inline void CDataExchange::DDX_Text(int id, CString& value)
+    inline void CDataExchange::DDX_Text(UINT id, CString& value)
     {
         HWND control = PrepareEditCtrl(id);
         if (m_retrieveAndValidate)
@@ -1109,7 +1124,7 @@ namespace Win32xx
 
     // Perform a text box data exchange on the current DDX/DDV object m_DX with
     // data value of type LPTSTR with the given maximum length.
-    inline void CDataExchange::DDX_Text(int id, LPTSTR value, int maxLen)
+    inline void CDataExchange::DDX_Text(UINT id, LPTSTR value, int maxLen)
     {
         assert(value);
 
@@ -1118,7 +1133,7 @@ namespace Win32xx
         {
             CString str;
             str.GetWindowText(control);
-            StrCopy(value, str, maxLen);
+            StrCopy(value, str, static_cast<size_t>(maxLen));
         }
         else
         {
@@ -1169,12 +1184,12 @@ namespace Win32xx
     // Find the handle to the control whose numeric identifier is id and
     // record this as the last control handle encountered. Set the last-edit
     // member to a FALSE default value.
-    inline HWND CDataExchange::PrepareCtrl(int id)
+    inline HWND CDataExchange::PrepareCtrl(UINT id)
     {
         assert(id != 0);
-        assert(id != -1); // not allowed
+        assert(static_cast<int>(id) != -1); // not allowed
 
-        HWND    control = ::GetDlgItem(m_parent, id);
+        HWND    control = ::GetDlgItem(m_parent, static_cast<int>(id));
         assert(control);
 
         m_lastControl  = control;
@@ -1184,7 +1199,7 @@ namespace Win32xx
 
     // Get and record the handle corresponding to id and set the m_isEditLastControl
     // variable to TRUE. This method is only used for edit controls.
-    inline HWND CDataExchange::PrepareEditCtrl(int id)
+    inline HWND CDataExchange::PrepareEditCtrl(UINT id)
     {
         HWND control = PrepareCtrl(id);
         assert(control);

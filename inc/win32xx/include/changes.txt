@@ -1,3 +1,57 @@
+Version 9.1
+===========
+
+This version improves support for high resolution monitors by accepting a
+range of icon sizes used for menus, tab controls and dock containers.
+
+New Features and Enhancements
+-----------------------------
+* Updated the images for menus used by CFrame and CDockFrame.
+  - Win32++ now supports a range of image sizes displayed in the popup menu for
+    CFrame and CDockFrame. The GetMenuIconHeight function returns the
+    appropriate height of these images in pixels (16, 24, 32 etc.). The 
+    framework will automatically scale the toolbar images down to a size
+    suitable for the popup menu for the toolbar bitmap with a resource ID of
+    IDW_MAIN. Alternatively you can provide icons with multiple image sizes as
+    demonstrated in the samples.
+
+ * A range of image sizes is supported by tab controls and dock containers,
+    based on the size of the tab's text.
+
+* Standardised the type used for resources.
+  - For consistency, the resources IDs used by toolbars, menus and dialogs are
+    all treated as the unsigned integer type (UINT).
+
+* Updated the ListView sample.
+  - An edit control has been added to provide support the in-place editing of
+    the List-View's and subitems. A List-View control doesn't have built-in
+    support for the editing of subitems.
+  - Support for sorting by column has been added. To sort a column in ascending
+    or descending order, click on the column in the list-view's header.
+
+Changes in Detail
+-----------------
+Added    CComboBox::GetComboBoxInfo
+Added    CEdit::GetTextLength
+Added    CFrameT::GetMenuIconHeight
+Added    CString::Remove             additional overload for a single character
+Added    CToolbar::SetButtonInfo        additional overload
+Modified CDialog::EndDialog             now only closes a modal dialog
+Modified CFrameT::AddDisabledMenuImage  removed iconWidth parameter
+Modified CFrameT::AddMenuIcon           removed iconWidth parameter
+Modified CToolBar::GetButtonSize        returns CSize
+Modified CToolBar::GetPadding           returns CSize
+Removed  CDialog::IsModal
+Removed  CDialog::IsIndirect
+Renamed  CMenuBar::GetMenu   to   CMenuBar::GetBarMenu
+Renamed  CMenuBar::SetMenu   to   CMenuBar::SetupMenuBar
+
+Updated CBitmap.  Function parameters for resource IDs now use UINT.
+Updated CDC.      Function parameters for resource IDs now use UINT.
+Updated CToolbar. Function parameters for resource IDs now use UINT. 
+Updated CWnd.     Function parameters for resource IDs now use UINT.
+
+
 Version 9.0
 ===========
 
@@ -20,8 +74,8 @@ Bug fixes:
 - Fixed several issues in CString.
 
 New Features and Enhancements
------------------------------
-* Added CMesssagePump. CWinApp now inherits from CMessagePump instead of 
+----------------------------- 
+* Added CMesssagePump. CWinApp now inherits from CMessagePump instead of
   CWinThread.
 
 * Updated thread support. Thread classes now use the CThreadT class template.

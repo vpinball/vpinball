@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -91,10 +91,6 @@ namespace Win32xx
     // Define the maximum size for TCHAR strings
     const int WXX_MAX_STRING_SIZE = 255;
 
-    // tString is a TCHAR std::string
-    typedef std::basic_string<TCHAR> tString;
-    typedef std::basic_stringstream<TCHAR> tStringStream;
-
     // Some useful smart pointers
     // Note: Modern C++ compilers can use these typedefs instead.
     // typedef std::shared_ptr<CBitmap> BitmapPtr;
@@ -106,7 +102,7 @@ namespace Win32xx
     // typedef std::shared_ptr<CImageList> ImageListPtr;
     // typedef std::shared_ptr<CMDIChild> MDIChildPtr;
     // typedef std::shared_ptr<CMenu> MenuPtr;
-    // typedef std::shared_ptr<MenuItemData> ItemDataPtr;
+    // typedef std::shared_ptr<MenuItemData> MenuItemDataPtr;
     // typedef std::shared_ptr<CPalette> PalettePtr;
     // typedef std::shared_ptr<CPen> PenPtr;
     // typedef std::shared_ptr<CPropertyPage> PropertyPagePtr;
@@ -124,7 +120,7 @@ namespace Win32xx
     typedef Shared_Ptr<CImageList> ImageListPtr;
     typedef Shared_Ptr<CMDIChild> MDIChildPtr;
     typedef Shared_Ptr<CMenu> MenuPtr;
-    typedef Shared_Ptr<MenuItemData> ItemDataPtr;
+    typedef Shared_Ptr<MenuItemData> MenuItemDataPtr;
     typedef Shared_Ptr<CPalette> PalettePtr;
     typedef Shared_Ptr<CPen> PenPtr;
     typedef Shared_Ptr<CPropertyPage> PropertyPagePtr;
@@ -250,11 +246,11 @@ namespace Win32xx
         HINSTANCE GetResourceHandle() const { return (m_resource ? m_resource : m_instance); }
         TLSData*  GetTlsData() const;
         HCURSOR   LoadCursor(LPCTSTR resourceName) const;
-        HCURSOR   LoadCursor(int cursorID) const;
+        HCURSOR   LoadCursor(UINT cursorID) const;
         HICON     LoadIcon(LPCTSTR resourceName) const;
-        HICON     LoadIcon(int iconID) const;
+        HICON     LoadIcon(UINT iconID) const;
         HANDLE    LoadImage(LPCTSTR resourceName, UINT type, int cx, int  cy, UINT flags = LR_DEFAULTCOLOR) const;
-        HANDLE    LoadImage(int imageID, UINT type, int cx, int cy, UINT flags = LR_DEFAULTCOLOR) const;
+        HANDLE    LoadImage(UINT imageID, UINT type, int cx, int cy, UINT flags = LR_DEFAULTCOLOR) const;
         HCURSOR   LoadStandardCursor(LPCTSTR cursorName) const;
         HICON     LoadStandardIcon(LPCTSTR iconName) const;
         HCURSOR   SetCursor(HCURSOR cursor) const;

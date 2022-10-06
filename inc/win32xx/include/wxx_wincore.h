@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -57,7 +57,6 @@
 
 #include "wxx_wincore.h"
 
-
 // A class that inherits from CWnd. It is used to create the window.
 class CView : public CWnd
 {
@@ -66,7 +65,6 @@ public:
     virtual ~CView() {}
     virtual void OnDestroy() { PostQuitMessage(0); }    // Ends the program
 };
-
 
 
 int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -138,7 +136,7 @@ namespace Win32xx
     inline void CWnd::AddToMap()
     {
         // This HWND is should not be in the map yet
-        assert (0 == GetApp()->GetCWndFromMap(*this));
+        assert (GetApp()->GetCWndFromMap(*this) == 0);
 
         // Remove any old map entry for this CWnd (required when the CWnd is reused).
         RemoveFromMap();
@@ -169,7 +167,7 @@ namespace Win32xx
     {
         assert(::IsWindow(parent));
 
-        HWND wnd = ::GetDlgItem(parent, id);
+        HWND wnd = ::GetDlgItem(parent, static_cast<int>(id));
         return Attach(wnd);
     }
 
@@ -218,11 +216,14 @@ namespace Win32xx
         if (hUser32)
         {
 
-            pfnMonitorFromWindow = (LPMFW)::GetProcAddress(hUser32, "MonitorFromWindow");
+            pfnMonitorFromWindow = reinterpret_cast<LPMFW>(
+                reinterpret_cast<void*>(::GetProcAddress(hUser32, "MonitorFromWindow")));
   #ifdef UNICODE
-            pfnGetMonitorInfo = (LPGMI)::GetProcAddress(hUser32, "GetMonitorInfoW");
+            pfnGetMonitorInfo = reinterpret_cast<LPGMI>(
+                reinterpret_cast<void*>(::GetProcAddress(hUser32, "GetMonitorInfoW")));
   #else
-            pfnGetMonitorInfo = (LPGMI)::GetProcAddress(hUser32, "GetMonitorInfoA");
+            pfnGetMonitorInfo = reinterpret_cast<LPGMI>(
+                reinterpret_cast<void*>(::GetProcAddress(hUser32, "GetMonitorInfoA")));
   #endif
 
             // Take multi-monitor systems into account.
@@ -290,11 +291,11 @@ namespace Win32xx
             cs.lpszClass = _T("Win32++ Window");
 
         // Set a reasonable default window style.
-        DWORD dwOverlappedStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
+        LONG dwOverlappedStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
         cs.style = WS_VISIBLE | ((parent)? WS_CHILD : dwOverlappedStyle );
 
         // Set a reasonable default window position
-        if (0 == parent)
+        if (parent == 0)
         {
             cs.x  = CW_USEDEFAULT;
             cs.cx = CW_USEDEFAULT;
@@ -305,7 +306,7 @@ namespace Win32xx
         // Allow the CREATESTRUCT parameters to be modified.
         PreCreate(cs);
 
-        DWORD style = cs.style & ~WS_VISIBLE;
+        DWORD style = static_cast<DWORD>(cs.style & ~WS_VISIBLE);
         HWND wnd;
 
         // Create the window.
@@ -335,7 +336,7 @@ namespace Win32xx
         int cx = rc.right - rc.left;
         int cy = rc.bottom - rc.top;
 
-        INT_PTR idMenu = id;
+        INT_PTR idMenu = static_cast<INT_PTR>(id);
         HMENU menu = parent ? reinterpret_cast<HMENU>(idMenu) :
                               ::LoadMenu(GetApp()->GetResourceHandle(), MAKEINTRESOURCE(id));
 
@@ -497,13 +498,6 @@ namespace Win32xx
             return ::DefWindowProc(*this, msg, wparam, lparam);
     }
 
-    // Retrieves the pointer to the CWnd associated with the specified HWND.
-    // Returns NULL if a CWnd object doesn't already exist for this HWND.
-    inline CWnd* CWnd::GetCWndPtr(HWND wnd)
-    {
-        return wnd? GetApp()->GetCWndFromMap(wnd) : 0;
-    }
-
     // The GetAncestor function retrieves the ancestor (root parent)
     // of the window. Supports Win95.
     inline CWnd CWnd::GetAncestor(UINT flags /*= GA_ROOTOWNER*/) const
@@ -519,7 +513,8 @@ namespace Win32xx
         if (user32 != 0)
         {
             // Declare a pointer to the GetAncestor function.
-            pfnGetAncestor = reinterpret_cast<GETANCESTOR*>(::GetProcAddress(user32, "GetAncestor"));
+            pfnGetAncestor = reinterpret_cast<GETANCESTOR*>(
+                reinterpret_cast<void*>(::GetProcAddress(user32, "GetAncestor")));
 
             if (pfnGetAncestor)
                 wnd = (*pfnGetAncestor)(*this, flags);
@@ -552,14 +547,22 @@ namespace Win32xx
         return str;
     }
 
+    // Retrieves the pointer to the CWnd associated with the specified HWND.
+    // Returns NULL if a CWnd object doesn't already exist for this HWND.
+    inline CWnd* CWnd::GetCWndPtr(HWND wnd)
+    {
+        return wnd ? GetApp()->GetCWndFromMap(wnd) : 0;
+    }
+
     // Retrieves the title or text associated with a control in a dialog box.
-    inline CString CWnd::GetDlgItemText(int dlgItemID) const
+    inline CString CWnd::GetDlgItemText(UINT dlgItemID) const
     {
         assert(IsWindow());
 
-        int nLength = ::GetWindowTextLength(::GetDlgItem(*this, dlgItemID));
+        int dlgItem = static_cast<int>(dlgItemID);
+        int length = ::GetWindowTextLength(::GetDlgItem(*this, dlgItem));
         CString str;
-        VERIFY(::GetDlgItemText(*this, dlgItemID, str.GetBuffer(nLength), nLength+1));
+        VERIFY(::GetDlgItemText(*this, dlgItem, str.GetBuffer(length), length+1));
         str.ReleaseBuffer();
         return str;
     }
@@ -598,7 +601,7 @@ namespace Win32xx
         case WM_MEASUREITEM:
         case WM_DELETEITEM:
         case WM_COMPAREITEM:
-            wnd = GetDlgItem(static_cast<int>(wparam));
+            wnd = GetDlgItem(static_cast<UINT>(wparam));
             break;
 
         case WM_PARENTNOTIFY:
@@ -905,7 +908,7 @@ namespace Win32xx
     }
 
     // Sets the large icon associated with the window.
-    inline HICON CWnd::SetIconLarge(int iconID)
+    inline HICON CWnd::SetIconLarge(UINT iconID)
     {
         assert(IsWindow());
 
@@ -924,7 +927,7 @@ namespace Win32xx
     }
 
     // Sets the small icon associated with the window.
-    inline HICON CWnd::SetIconSmall(int iconID)
+    inline HICON CWnd::SetIconSmall(UINT iconID)
     {
         assert(IsWindow());
 
@@ -1076,10 +1079,10 @@ namespace Win32xx
                     result = pWnd->OnCommand(wparam, lparam);
 
                 // Handle user commands.
-                if (0 == result)
+                if (result == 0)
                     result =  OnCommand(wparam, lparam);
 
-                if (0 != result) return 0;
+                if (result != 0) return 0;
             }
             break;  // Note: Some MDI commands require default processing.
         case WM_CREATE:
@@ -1201,19 +1204,20 @@ namespace Win32xx
 
     // The CheckDlgButton function changes the check state of a button control.
     // Refer to CheckDlgButton in the Windows API documentation for more information.
-    inline BOOL CWnd::CheckDlgButton(int buttonID, UINT check) const
+    inline BOOL CWnd::CheckDlgButton(UINT buttonID, UINT check) const
     {
         assert(IsWindow());
-        return ::CheckDlgButton(*this, buttonID, check);
+        return ::CheckDlgButton(*this, static_cast<int>(buttonID), check);
     }
 
     // The CheckRadioButton function adds a check mark to (checks) a specified radio button in a group
     // and removes a check mark from (clears) all other radio buttons in the group.
     // Refer to CheckRadioButton in the Windows API documentation for more information.
-    inline BOOL CWnd::CheckRadioButton(int firstButtonID, int lastButtonID, int checkButtonID) const
+    inline BOOL CWnd::CheckRadioButton(UINT firstButtonID, UINT lastButtonID, UINT checkButtonID) const
     {
         assert(IsWindow());
-        return ::CheckRadioButton(*this, firstButtonID, lastButtonID, checkButtonID);
+        return ::CheckRadioButton(*this, static_cast<int>(firstButtonID),
+                                  static_cast<int>(lastButtonID), static_cast<int>(checkButtonID));
     }
 
     // Determines which, if any, of the child windows belonging to a parent window contains
@@ -1239,7 +1243,7 @@ namespace Win32xx
     inline BOOL CWnd::ClientToScreen(RECT& rect) const
     {
         assert(IsWindow());
-        return (::MapWindowPoints(*this, 0, (LPPOINT)&rect, 2) != 0);
+        return static_cast<BOOL>(::MapWindowPoints(*this, 0, (LPPOINT)&rect, 2));
     }
 
     // The Close function issues a close requests to the window. The OnClose function is called
@@ -1250,6 +1254,15 @@ namespace Win32xx
     {
         assert(IsWindow());
         PostMessage(WM_CLOSE);
+    }
+
+    // The CloseWindow function minimizes (but does not destroy) the window.
+    // To destroy a window, an application can use the Destroy function.
+    // Refer to CloseWindow in the Windows API documentation for more information.
+    inline BOOL CWnd::CloseWindow() const
+    {
+        assert(IsWindow());
+        return ::CloseWindow(*this);
     }
 
     // The DeferWindowPos function updates the specified multiple window position structure for the window.
@@ -1279,6 +1292,62 @@ namespace Win32xx
         return ::DefWindowProc(*this, msg, wparam, lparam);
     }
 
+    // The DlgDirList function replaces the contents of a list box with the names of the subdirectories and files
+    // in a specified directory. You can filter the list of names by specifying a set of file attributes.
+    // Refer to DlgDirList in the Windows API documentation for more information.
+    inline int CWnd::DlgDirList(LPTSTR pathSpec, UINT listBoxID, UINT staticPathID, UINT fileType) const
+    {
+        assert(IsWindow());
+        return ::DlgDirList(*this, pathSpec, static_cast<int>(listBoxID),
+                            static_cast<int>(staticPathID), fileType);
+    }
+
+    // The DlgDirListComboBox function replaces the contents of a combo box with the names of the subdirectories
+    // and files in a specified directory. You can filter the list of names by specifying a set of file attributes.
+    // in a specified directory. You can filter the list of names by specifying a set of file attributes.
+    // Refer to DlgDirListComboBox in the Windows API documentation for more information.
+    inline int CWnd::DlgDirListComboBox(LPTSTR pathSpec, UINT comboBoxID, UINT staticPathID, UINT fileType) const
+    {
+        assert(IsWindow());
+        return ::DlgDirListComboBox(*this, pathSpec, static_cast<int>(comboBoxID),
+                                    static_cast<int>(staticPathID), fileType);
+    }
+
+    // The DlgDirSelectEx function retrieves the current selection from a single-selection list box. It assumes that the list box
+    // has been filled by the DlgDirList function and that the selection is a drive letter, filename, or directory name.
+    // Refer to DlgDirSelectEx in the Windows API documentation for more information.
+    inline BOOL CWnd::DlgDirSelectEx(LPTSTR string, int count, UINT listBoxID) const
+    {
+        assert(IsWindow());
+        return ::DlgDirSelectEx(*this, string, count, static_cast<int>(listBoxID));
+    }
+
+    // The DlgDirSelectComboBoxEx function retrieves the current selection from a combo box filled by using the
+    // DlgDirListComboBox function. The selection is interpreted as a drive letter, a file, or a directory name.
+    // Refer to DlgDirSelectComboBoxEx in the Windows API documentation for more information.
+    inline BOOL CWnd::DlgDirSelectComboBoxEx(LPTSTR string, int count, UINT comboBoxID) const
+    {
+        assert(IsWindow());
+        return ::DlgDirSelectComboBoxEx(*this, string, count, static_cast<int>(comboBoxID));
+    }
+
+    // The DrawAnimatedRects function draws a wire-frame rectangle and animates it to indicate the opening of
+    // an icon or the minimizing or maximizing of a window.
+    // Refer to DrawAnimatedRects in the Windows API documentation for more information.
+    inline BOOL CWnd::DrawAnimatedRects(UINT aniID, const RECT& from, const RECT& to) const
+    {
+        assert(IsWindow());
+        return ::DrawAnimatedRects(*this, static_cast<int>(aniID), &from, &to);
+    }
+
+    // The DrawCaption function draws a window caption.
+    // Refer to DrawCaption in the Windows API documentation for more information.
+    inline BOOL CWnd::DrawCaption(HDC dc, const RECT& rect, UINT flags) const
+    {
+        assert(IsWindow());
+        return ::DrawCaption(*this, dc, &rect, flags);
+    }
+
     // The DrawMenuBar function redraws the menu bar of the specified window.
     // If the menu bar changes after the system has created the window, this function
     // must be called to draw the changed menu bar.
@@ -1287,6 +1356,14 @@ namespace Win32xx
     {
         assert(IsWindow());
         return ::DrawMenuBar(*this);
+    }
+
+    // The EnableScrollBar function enables or disables one or both scroll bar arrows.
+    // Refer to EnableScrollBar in the Windows API documentation for more information.
+    inline BOOL CWnd::EnableScrollBar(UINT flags, UINT arrows) const
+    {
+        assert(IsWindow());
+        return ::EnableScrollBar(*this, flags, arrows);
     }
 
     // The EnableWindow function enables or disables mouse and
@@ -1376,34 +1453,34 @@ namespace Win32xx
 
     // Retrieves the control ID value for any child window.
     // Refer to GetDlgCtrlID in the Windows API documentation for more information.
-    inline int CWnd::GetDlgCtrlID() const
+    inline UINT CWnd::GetDlgCtrlID() const
     {
         assert(IsWindow());
-        return ::GetDlgCtrlID(*this);
+        return static_cast<UINT>(::GetDlgCtrlID(*this));
     }
 
     // The GetDlgItem function retrieves a handle to a control in the dialog box.
     // Refer to GetDlgItem in the Windows API documentation for more information.
-    inline CWnd CWnd::GetDlgItem(int dlgItemID) const
+    inline CWnd CWnd::GetDlgItem(UINT dlgItemID) const
     {
         assert(IsWindow());
-        return CWnd( ::GetDlgItem(*this, dlgItemID) );
+        return CWnd( ::GetDlgItem(*this, static_cast<int>(dlgItemID)) );
     }
 
     // The GetDlgItemInt function translates the text of a specified control in a dialog box into an integer value.
     // Refer to GetDlgItemInt in the Windows API documentation for more information.
-    inline UINT CWnd::GetDlgItemInt(int dlgItemID, BOOL& isTranslated, BOOL isSigned) const
+    inline UINT CWnd::GetDlgItemInt(UINT dlgItemID, BOOL& isTranslated, BOOL isSigned) const
     {
         assert(IsWindow());
-        return ::GetDlgItemInt(*this, dlgItemID, &isTranslated, isSigned);
+        return ::GetDlgItemInt(*this, static_cast<int>(dlgItemID), &isTranslated, isSigned);
     }
 
     // The GetDlgItemInt function translates the text of a specified control in a dialog box into an integer value.
     // Refer to GetDlgItemInt in the Windows API documentation for more information.
-    inline UINT CWnd::GetDlgItemInt(int dlgItemID, BOOL isSigned) const
+    inline UINT CWnd::GetDlgItemInt(UINT dlgItemID, BOOL isSigned) const
     {
         assert(IsWindow());
-        return ::GetDlgItemInt(*this, dlgItemID, NULL, isSigned);
+        return ::GetDlgItemInt(*this, static_cast<int>(dlgItemID), NULL, isSigned);
     }
 
     // Retrieves the window's extended window style.
@@ -1436,7 +1513,25 @@ namespace Win32xx
     inline HICON CWnd::GetIcon(BOOL isBigIcon) const
     {
         assert(IsWindow());
-        return (HICON)SendMessage(WM_GETICON, (WPARAM)isBigIcon, 0);
+        WPARAM wparam = static_cast<WPARAM>(isBigIcon);
+        return reinterpret_cast<HICON>(SendMessage(WM_GETICON, wparam, 0));
+    }
+
+    // The GetLastActivePopup function determines which pop-up window owned by the specified window was most recently active.
+    // Refer to GetLastActivePopup in the Windows API documentation for more information.
+    inline CWnd CWnd::GetLastActivePopup() const
+    {
+        assert(IsWindow());
+        return CWnd(::GetLastActivePopup(*this));
+    }
+
+    // The GetMenu function retrieves a handle to the menu assigned to the window.
+    // The menu handle will be zero if the window doesn't have a menu.
+    // Refer to GetMenu in the Windows API documentation for more information.
+    inline CMenu CWnd::GetMenu() const
+    {
+        assert(IsWindow());
+        return CMenu(::GetMenu(*this));
     }
 
     // The GetNextDlgGroupItem function retrieves the first control in a group of controls that
@@ -1475,12 +1570,69 @@ namespace Win32xx
         return ::GetScrollInfo(*this, barType, &si);
     }
 
+    // The GetScrollPos function retrieves the current position of the scroll box
+    // (thumb) in the specified scroll bar.
+    // Refer to GetScrollPos in the Windows API documentation for more information.
+    inline int CWnd::GetScrollPos(int bar) const
+    {
+        assert(IsWindow());
+        return ::GetScrollPos(*this, bar);
+    }
+
+    // The GetScrollRange function retrieves the current minimum and maximum scroll box
+    // (thumb) positions for the specified scroll bar.
+    // Refer to GetScrollRange in the Windows API documentation for more information.
+    inline BOOL CWnd::GetScrollRange(int bar, int& minPos, int& maxPos) const
+    {
+        assert(IsWindow());
+        return ::GetScrollRange(*this, bar, &minPos, &maxPos);
+    }
+
     // Retrieves the window's window style.
     // Refer to GetWindowLongPtr in the Windows API documentation for more information.
     inline DWORD CWnd::GetStyle() const
     {
         assert(IsWindow());
         return static_cast<DWORD>(GetWindowLongPtr(GWL_STYLE));
+    }
+
+
+    // The GetSystemMenu function allows the application to access the window menu (AKA system menu).
+    // If this parameter is TRUE, GetSystemMenu resets the window menu back to the default state.
+    // Refer to GetSystemMenu in the Windows API documentation for more information.
+    inline CMenu CWnd::GetSystemMenu(BOOL revertToDefault) const
+    {
+        assert(IsWindow());
+        if (revertToDefault)
+        {
+            // Detach any currently attached CMenu before the menu is destroyed.
+            CMenu menu(::GetSystemMenu(*this, FALSE));
+            menu.Detach();
+
+            // Reset the window menu back to the default state.
+            ::GetSystemMenu(*this, revertToDefault);
+        }
+
+        return CMenu(::GetSystemMenu(*this, FALSE));
+    }
+
+
+    // The GetTopWindow function examines the Z order of the child windows associated with the parent window and
+    // retrieves a handle to the child window at the top of the Z order.
+    // Refer to GetTopWindow in the Windows API documentation for more information.
+    inline CWnd CWnd::GetTopWindow() const
+    {
+        assert(IsWindow());
+        return CWnd(::GetTopWindow(*this));
+    }
+
+    // The GetWindowPlacement function retrieves the show state and the restored,
+    // minimized, and maximized positions of the window.
+    // Refer to GetWindowPlacement in the Windows API documentation for more information.
+    inline BOOL CWnd::GetWindowPlacement(WINDOWPLACEMENT& wp) const
+    {
+        assert(IsWindow());
+        return ::GetWindowPlacement(*this, &wp);
     }
 
     // The GetUpdateRect function retrieves the coordinates of the smallest rectangle that completely
@@ -1555,6 +1707,14 @@ namespace Win32xx
         return ::GetWindowTextLength(*this);
     }
 
+    // The HiliteMenuItem function highlights or removes the highlighting from an item in a menu bar.
+    // Refer to HiliteMenuItem in the Windows API documentation for more information.
+    inline BOOL CWnd::HiliteMenuItem(HMENU menu, UINT itemID, UINT hilite) const
+    {
+        assert(IsWindow());
+        return ::HiliteMenuItem(*this, menu, itemID, hilite);
+    }
+
     // The Invalidate function adds the entire client area to the window's update region.
     // The update region represents the portion of the window's client area that must be redrawn.
     // Refer to InvalidateRect in the Windows API documentation for more information.
@@ -1623,10 +1783,10 @@ namespace Win32xx
     //
     // If the button has any other style, the return value is zero.
     // Refer to IsDlgButtonChecked in the Windows API documentation for more information.
-    inline UINT CWnd::IsDlgButtonChecked(int buttonID) const
+    inline UINT CWnd::IsDlgButtonChecked(UINT buttonID) const
     {
         assert(IsWindow());
-        return ::IsDlgButtonChecked(*this, buttonID);
+        return ::IsDlgButtonChecked(*this, static_cast<int>(buttonID));
     }
 
     // The IsWindowEnabled function determines whether the window is enabled
@@ -1638,6 +1798,21 @@ namespace Win32xx
         return ::IsWindowEnabled(*this);
     }
 
+    // The IsIconic function determines whether the window is minimized (iconic).
+    // Refer to IsIconic in the Windows API documentation for more information.
+    inline BOOL CWnd::IsIconic() const
+    {
+        assert(IsWindow());
+        return ::IsIconic(*this);
+    }
+
+    // The IsWindow function determines whether the window exists.
+    // Refer to IsWindow in the Windows API documentation for more information.
+    inline BOOL CWnd::IsWindow() const
+    {
+        return ::IsWindow(*this);
+    }
+
     // The IsWindowVisible function retrieves the visibility state of the window.
     // Refer to IsWindowVisible in the Windows API documentation for more information.
     inline BOOL CWnd::IsWindowVisible() const
@@ -1647,11 +1822,29 @@ namespace Win32xx
         return (GetWindowLongPtr(GWL_STYLE) & WS_VISIBLE) != 0;
     }
 
-    // The IsWindow function determines whether the window exists.
-    // Refer to IsWindow in the Windows API documentation for more information.
-    inline BOOL CWnd::IsWindow() const
+    // The IsZoomed function determines whether the window is maximized.
+    // Refer to IsZoomed in the Windows API documentation for more information.
+    inline BOOL CWnd::IsZoomed() const
     {
-        return ::IsWindow(*this);
+        assert(IsWindow());
+        return ::IsZoomed(*this);
+    }
+
+    // Destroys the specified timer.
+    // Refer to KillTimer in the Windows API documentation for more information.
+    inline BOOL CWnd::KillTimer(UINT_PTR eventID) const
+    {
+        assert(IsWindow());
+        return ::KillTimer(*this, eventID);
+    }
+
+    // Disables drawing in the window. Only one window can be locked at a time.
+    // Use UnLockWindowUpdate to re-enable drawing in the window.
+    // Refer to LockWindowUpdate in the Windows API documentation for more information.
+    inline BOOL CWnd::LockWindowUpdate() const
+    {
+        assert(IsWindow());
+        return ::LockWindowUpdate(*this);
     }
 
     // The MapWindowPoints function converts (maps) a set of points from a coordinate space relative to one
@@ -1718,6 +1911,14 @@ namespace Win32xx
         return ::PostMessage(*this, msg, wparam, lparam);
     }
 
+    // The OpenIcon function restores a minimized (iconic) window to its previous size and position.
+    // Refer to OpenIcon in the Windows API documentation for more information.
+    inline BOOL CWnd::OpenIcon() const
+    {
+        assert(IsWindow());
+        return ::OpenIcon(*this);
+    }
+
     // The PostMessage function places (posts) a message in the message queue
     // associated with the thread that created the window and returns without
     // waiting for the thread to process the message.
@@ -1727,6 +1928,16 @@ namespace Win32xx
         // Required by by some macros
         assert(IsWindow());
         return ::PostMessage(wnd, msg, wparam, lparam);
+    }
+
+    // Requests that the window draw itself in the specified device context, most commonly in a printer device context.
+    // Refer to WM_PRINT in the Windows API documentation for more information.
+    inline void CWnd::Print(HDC dc, DWORD flags) const
+    {
+        assert(IsWindow());
+        WPARAM wparam = reinterpret_cast<WPARAM>(dc);
+        LPARAM lparam = static_cast<LPARAM>(flags);
+        SendMessage(*this, WM_PRINT, wparam, lparam);
     }
 
     // The RedrawWindow function updates the specified rectangle in a window's client area.
@@ -1777,15 +1988,59 @@ namespace Win32xx
     inline BOOL CWnd::ScreenToClient(RECT& rect) const
     {
         assert(IsWindow());
-        return (::MapWindowPoints(0, *this, (LPPOINT)&rect, 2) != 0);
+        return static_cast<BOOL>(::MapWindowPoints(0, *this, (LPPOINT)&rect, 2));
+    }
+
+    // The ScrollWindow function scrolls the contents of the window's client area.
+    // scrollRect specifies the portion of the client area to be scrolled.
+    // pClipRect points to the clipping rectangle to scroll. Only bits inside this rectangle are scrolled.
+    // If prcClip is NULL, no clipping is performed on the scroll rectangle.
+    // Refer to ScrollWindow in the Windows API documentation for more information.
+    inline BOOL CWnd::ScrollWindow(int xAmount, int yAmount, const RECT& scrollRect, LPCRECT pClipRect) const
+    {
+        assert(IsWindow());
+        return ::ScrollWindow(*this, xAmount, yAmount, &scrollRect, pClipRect);
+    }
+
+    // The ScrollWindow function scrolls the contents of the window's client area.
+    // The entire client area is scrolled.
+    // pClipRect points to the clipping rectangle to scroll. Only bits inside this rectangle are scrolled.
+    // If pClipRect is NULL, no clipping is performed on the scroll rectangle.
+    // Refer to ScrollWindow in the Windows API documentation for more information.
+    inline BOOL CWnd::ScrollWindow(int xAmount, int yAmount, LPCRECT pClipRect) const
+    {
+        assert(IsWindow());
+        return ::ScrollWindow(*this, xAmount, yAmount, NULL, pClipRect);
+    }
+
+    // The ScrollWindow function scrolls the contents of the window's client area.
+    // pScrollRect: Pointer to a RECT structure that specifies the portion of the client area to be scrolled.
+    //              If this parameter is NULL, the entire client area is scrolled.
+    // pClipRect:   Pointer to a RECT structure that contains the coordinates of the clipping rectangle.
+    //              Only device bits within the clipping rectangle are affected. This parameter may be NULL.
+    // update:      Handle to the region that is modified to hold the region invalidated by scrolling.
+    //              This parameter may be 0.
+    // pUpdateRect: Pointer to a RECT structure that receives the boundaries of the rectangle invalidated by scrolling.
+    //              This parameter may be NULL.
+    // flags:       Specifies flags that control scrolling.This parameter can be one of the following values.
+    //   SW_ERASE:          Erases the newly invalidated region when specified with the SW_INVALIDATE flag.
+    //   SW_INVALIDATE:     Invalidates the region identified by the hrgnUpdate parameter after scrolling.
+    //   SW_SCROLLCHILDREN: Scrolls all child windows that intersect the rectangle pointed to by the prcScroll parameter.
+    //   SW_SMOOTHSCROLL:   Scrolls using smooth scrolling.
+    // Refer to ScrollWindowEx in the Windows API documentation for more information.
+    inline int CWnd::ScrollWindowEx(int dx, int dy, LPCRECT pScrollRect, LPCRECT pClipRect,
+        HRGN update, LPRECT pUpdateRect, UINT flags) const
+    {
+        assert(IsWindow());
+        return ::ScrollWindowEx(*this, dx, dy, pScrollRect, pClipRect, update, pUpdateRect, flags);
     }
 
     // The SendDlgItemMessage function sends a message to the specified control in a dialog box.
     // Refer to SendDlgItemMessage in the Windows API documentation for more information.
-    inline LRESULT CWnd::SendDlgItemMessage(int dlgItemID, UINT msg, WPARAM wparam, LPARAM lparam) const
+    inline LRESULT CWnd::SendDlgItemMessage(UINT dlgItemID, UINT msg, WPARAM wparam, LPARAM lparam) const
     {
         assert(IsWindow());
-        return ::SendDlgItemMessage(*this, dlgItemID, msg, wparam, lparam);
+        return ::SendDlgItemMessage(*this, static_cast<int>(dlgItemID), msg, wparam, lparam);
     }
 
     // The SendMessage function sends the specified message to a window or windows.
@@ -1853,7 +2108,7 @@ namespace Win32xx
 
     // Assigns an id to the window. Note that only child windows can have an ID assigned.
     // Refer to SetClassLongPtr in the Windows API documentation for more information.
-    inline LONG_PTR CWnd::SetDlgCtrlID(int id) const
+    inline LONG_PTR CWnd::SetDlgCtrlID(UINT id) const
     {
         assert(IsWindow());
         return SetWindowLongPtr(GWLP_ID, id);
@@ -1862,18 +2117,18 @@ namespace Win32xx
     // The SetDlgItemInt function sets the text of a control in a dialog box to the string
     // representation of a specified integer value.
     // Refer to SetDlgItemInt in the Windows API documentation for more information.
-    inline BOOL CWnd::SetDlgItemInt(int dlgItemID, UINT value, BOOL isSigned) const
+    inline BOOL CWnd::SetDlgItemInt(UINT dlgItemID, UINT value, BOOL isSigned) const
     {
         assert(IsWindow());
-        return ::SetDlgItemInt(*this, dlgItemID, value, isSigned);
+        return ::SetDlgItemInt(*this, static_cast<int>(dlgItemID), value, isSigned);
     }
 
     // The SetDlgItemText function sets the title or text of a control in a dialog box.
     // Refer to SetDlgItemText in the Windows API documentation for more information.
-    inline BOOL CWnd::SetDlgItemText(int dlgItemID, LPCTSTR string) const
+    inline BOOL CWnd::SetDlgItemText(UINT dlgItemID, LPCTSTR string) const
     {
         assert(IsWindow());
-        return ::SetDlgItemText(*this, dlgItemID, string);
+        return ::SetDlgItemText(*this, static_cast<int>(dlgItemID), string);
     }
 
     // Assigns a new windows extended style to the window.
@@ -1881,7 +2136,7 @@ namespace Win32xx
     inline void CWnd::SetExStyle(DWORD exStyle) const
     {
         assert(IsWindow());
-        ::SetWindowLongPtr(*this, GWL_EXSTYLE, exStyle);
+        ::SetWindowLongPtr(*this, GWL_EXSTYLE, static_cast<LONG_PTR>(exStyle));
     }
 
     // The SetFocus function sets the keyboard focus to the window.
@@ -1897,15 +2152,9 @@ namespace Win32xx
     inline void CWnd::SetFont(HFONT font, BOOL redraw /* = TRUE*/) const
     {
         assert(IsWindow());
-        SendMessage(WM_SETFONT, (WPARAM)font, (LPARAM)redraw);
-    }
-
-    // Associates a new large or small icon with a window.
-    // Refer to WM_SETICON in the Windows API documentation for more information.
-    inline HICON CWnd::SetIcon(HICON icon, BOOL isBigIcon) const
-    {
-        assert(IsWindow());
-        return (HICON)SendMessage(WM_SETICON, (WPARAM)isBigIcon, (LPARAM)icon);
+        WPARAM wparam = reinterpret_cast<WPARAM>(font);
+        LPARAM lparam = static_cast<LPARAM>(redraw);
+        SendMessage(WM_SETFONT, wparam, lparam);
     }
 
     // The SetForegroundWindow function puts the thread that created the window into the
@@ -1915,6 +2164,25 @@ namespace Win32xx
     {
         assert(IsWindow());
         return ::SetForegroundWindow(*this);
+    }
+
+    // Associates a new large or small icon with a window.
+    // Refer to WM_SETICON in the Windows API documentation for more information.
+    inline HICON CWnd::SetIcon(HICON icon, BOOL isBigIcon) const
+    {
+        assert(IsWindow());
+        WPARAM wparam = static_cast<WPARAM>(isBigIcon);
+        LPARAM lparam = reinterpret_cast<LPARAM>(icon);
+        return reinterpret_cast<HICON>(SendMessage(WM_SETICON, wparam, lparam));
+    }
+
+    // The SetMenu function assigns a menu to the specified window.
+    // A menu of 0 removes the menu.
+    // Refer to SetMenu in the Windows API documentation for more information.
+    inline BOOL CWnd::SetMenu(HMENU menu) const
+    {
+        assert(IsWindow());
+        return ::SetMenu(*this, menu);
     }
 
     // The SetParent function changes the parent window of the child window.
@@ -1931,7 +2199,35 @@ namespace Win32xx
     inline BOOL CWnd::SetRedraw(BOOL redraw /*= TRUE*/) const
     {
         assert(IsWindow());
-        return (::SendMessage(*this, WM_SETREDRAW, (WPARAM)redraw, 0) != 0);
+        WPARAM wparam = static_cast<WPARAM>(redraw);
+        return static_cast<BOOL>(::SendMessage(*this, WM_SETREDRAW, wparam, 0));
+    }
+
+    // The SetScrollInfo function sets the parameters of a scroll bar, including
+    // the minimum and maximum scrolling positions, the page size, and the
+    // position of the scroll box (thumb).
+    // Refer to SetScrollInfo in the Windows API documentation for more information.
+    inline int CWnd::SetScrollInfo(int barType, const SCROLLINFO& si, BOOL redraw) const
+    {
+        assert(IsWindow());
+        return ::SetScrollInfo(*this, barType, &si, redraw);
+    }
+
+    // The SetScrollPos function sets the position of the scroll box (thumb) in
+    // the specified scroll bar.
+    // Refer to SetScrollPos in the Windows API documentation for more information.
+    inline int CWnd::SetScrollPos(int barType, int pos, BOOL redraw) const
+    {
+        assert(IsWindow());
+        return ::SetScrollPos(*this, barType, pos, redraw);
+    }
+
+    // The SetScrollRange function sets the minimum and maximum scroll box positions for the scroll bar.
+    // Refer to SetScrollRange in the Windows API documentation for more information.
+    inline BOOL CWnd::SetScrollRange(int barType, int minPos, int maxPos, BOOL redraw) const
+    {
+        assert(IsWindow());
+        return ::SetScrollRange(*this, barType, minPos, maxPos, redraw);
     }
 
     // Assigns a new windows style to the window.
@@ -1939,7 +2235,7 @@ namespace Win32xx
     inline void CWnd::SetStyle(DWORD style) const
     {
         assert(IsWindow());
-        ::SetWindowLongPtr(*this, GWL_STYLE, style);
+        ::SetWindowLongPtr(*this, GWL_STYLE, static_cast<LONG_PTR>(style));
     }
 
     // Creates a timer with the specified time-out value.
@@ -1959,6 +2255,15 @@ namespace Win32xx
     {
         assert(IsWindow());
         return ::SetWindowLongPtr(*this, index, newLong);
+    }
+
+    // The SetWindowPlacement function sets the show state and the restored, minimized,
+    // and maximized positions of the window.
+    // Refer to SetWindowPlacement in the Windows API documentation for more information.
+    inline BOOL CWnd::SetWindowPlacement(const WINDOWPLACEMENT& wndpl) const
+    {
+        assert(IsWindow());
+        return ::SetWindowPlacement(*this, &wndpl);
     }
 
     // The SetWindowPos function changes the size, position, and Z order of a child, pop-up,
@@ -2018,7 +2323,8 @@ namespace Win32xx
         if (theme != 0)
         {
             typedef HRESULT (__stdcall *PFNSETWINDOWTHEME)(HWND wnd, LPCWSTR subAppName, LPCWSTR subIdList);
-            PFNSETWINDOWTHEME pfn = (PFNSETWINDOWTHEME)GetProcAddress(theme, "SetWindowTheme");
+            PFNSETWINDOWTHEME pfn = reinterpret_cast<PFNSETWINDOWTHEME>(
+                reinterpret_cast<void*>(GetProcAddress(theme, "SetWindowTheme")));
 
             result = pfn(*this, subAppName, subIdList);
 
@@ -2026,6 +2332,22 @@ namespace Win32xx
         }
 
         return result;
+    }
+
+    // The ShowOwnedPopups function shows or hides all pop-up windows owned by the specified window.
+    // Refer to ShowOwnedPopups in the Windows API documentation for more information.
+    inline BOOL CWnd::ShowOwnedPopups(BOOL show) const
+    {
+        assert(IsWindow());
+        return ::ShowOwnedPopups(*this, show);
+    }
+
+    // The ShowScrollBar function shows or hides the specified scroll bar.
+    // Refer to ShowScrollBar in the Windows API documentation for more information.
+    inline BOOL CWnd::ShowScrollBar(int bar, BOOL show) const
+    {
+        assert(IsWindow());
+        return ::ShowScrollBar(*this, bar, show);
     }
 
     // The ShowWindow function sets the window's show state.
@@ -2036,6 +2358,14 @@ namespace Win32xx
         return ::ShowWindow(*this, showCmd);
     }
 
+    // The ShowWindowAsync function sets the show state of a window created by a different thread.
+    // Refer to ShowWindowAsync in the Windows API documentation for more information.
+    inline BOOL CWnd::ShowWindowAsync(int showCmd) const
+    {
+        assert(IsWindow());
+        return ::ShowWindowAsync(*this, showCmd);
+    }
+
     // The UpdateWindow function updates the client area of the window by sending a
     // WM_PAINT message to the window if the window's update region is not empty.
     // If the update region is empty, no message is sent.
@@ -2044,6 +2374,15 @@ namespace Win32xx
     {
         assert(IsWindow());
         return ::UpdateWindow(*this);
+    }
+
+    // Enables drawing in the window. Only one window can be locked at a time.
+    // Use LockWindowUpdate to disable drawing in the window.
+    // Refer to LockWindowUpdate in the Windows API documentation for more information.
+    inline BOOL CWnd::UnLockWindowUpdate() const
+    {
+        assert(IsWindow());
+        return ::LockWindowUpdate(0);
     }
 
     // The ValidateRect function validates the client area within a rectangle by
@@ -2072,6 +2411,13 @@ namespace Win32xx
         return ::ValidateRgn(*this, rgn);
     }
 
+    // The WindowFromDC function returns a handle to the window associated with the specified display device context (DC).
+    // Refer to WindowFromDC in the Windows API documentation for more information.
+    inline CWnd CWnd::WindowFromDC(HDC dc) const
+    {
+        return CWnd(::WindowFromDC(dc));
+    }
+
     // Retrieves the window that contains the specified point (in screen coordinates).
     // Refer to WindowFromPoint in the Windows API documentation for more information.
     inline CWnd CWnd::WindowFromPoint(POINT point) const
@@ -2079,51 +2425,6 @@ namespace Win32xx
         return CWnd(::WindowFromPoint(point));
     }
 
-    // The CloseWindow function minimizes (but does not destroy) the window.
-    // To destroy a window, an application can use the Destroy function.
-    // Refer to CloseWindow in the Windows API documentation for more information.
-    inline BOOL CWnd::CloseWindow() const
-    {
-        assert(IsWindow());
-        return ::CloseWindow(*this);
-    }
-
-    // The DlgDirList function replaces the contents of a list box with the names of the subdirectories and files
-    // in a specified directory. You can filter the list of names by specifying a set of file attributes.
-    // Refer to DlgDirList in the Windows API documentation for more information.
-    inline int CWnd::DlgDirList(LPTSTR pathSpec, int listBoxID, int staticPathID, UINT fileType) const
-    {
-        assert(IsWindow());
-        return ::DlgDirList(*this, pathSpec, listBoxID, staticPathID, fileType);
-    }
-
-    // The DlgDirListComboBox function replaces the contents of a combo box with the names of the subdirectories
-    // and files in a specified directory. You can filter the list of names by specifying a set of file attributes.
-    // in a specified directory. You can filter the list of names by specifying a set of file attributes.
-    // Refer to DlgDirListComboBox in the Windows API documentation for more information.
-    inline int CWnd::DlgDirListComboBox(LPTSTR pathSpec, int comboBoxID, int staticPathID, UINT fileType) const
-    {
-        assert(IsWindow());
-        return ::DlgDirListComboBox(*this, pathSpec, comboBoxID, staticPathID, fileType);
-    }
-
-    // The DlgDirSelectEx function retrieves the current selection from a single-selection list box. It assumes that the list box
-    // has been filled by the DlgDirList function and that the selection is a drive letter, filename, or directory name.
-    // Refer to DlgDirSelectEx in the Windows API documentation for more information.
-    inline BOOL CWnd::DlgDirSelectEx(LPTSTR string, int count, int listBoxID) const
-    {
-        assert(IsWindow());
-        return ::DlgDirSelectEx(*this, string, count, listBoxID);
-    }
-
-    // The DlgDirSelectComboBoxEx function retrieves the current selection from a combo box filled by using the
-    // DlgDirListComboBox function. The selection is interpreted as a drive letter, a file, or a directory name.
-    // Refer to DlgDirSelectComboBoxEx in the Windows API documentation for more information.
-    inline BOOL CWnd::DlgDirSelectComboBoxEx(LPTSTR string, int count, int comboBoxID) const
-    {
-        assert(IsWindow());
-        return ::DlgDirSelectComboBoxEx(*this, string, count, comboBoxID);
-    }
 
     #ifndef WIN32_LEAN_AND_MEAN
 
@@ -2136,288 +2437,6 @@ namespace Win32xx
     }
 
     #endif
-
-    // The DrawAnimatedRects function draws a wire-frame rectangle and animates it to indicate the opening of
-    // an icon or the minimizing or maximizing of a window.
-    // Refer to DrawAnimatedRects in the Windows API documentation for more information.
-    inline BOOL CWnd::DrawAnimatedRects(int aniID, const RECT& from, const RECT& to) const
-    {
-        assert(IsWindow());
-        return ::DrawAnimatedRects(*this, aniID, &from, &to);
-    }
-
-    // The DrawCaption function draws a window caption.
-    // Refer to DrawCaption in the Windows API documentation for more information.
-    inline BOOL CWnd::DrawCaption(HDC dc, const RECT& rect, UINT flags) const
-    {
-        assert(IsWindow());
-        return ::DrawCaption(*this, dc, &rect, flags);
-    }
-
-    // The EnableScrollBar function enables or disables one or both scroll bar arrows.
-    // Refer to EnableScrollBar in the Windows API documentation for more information.
-    inline BOOL CWnd::EnableScrollBar(UINT flags, UINT arrows) const
-    {
-        assert(IsWindow());
-        return ::EnableScrollBar(*this, flags, arrows);
-    }
-
-    // The GetLastActivePopup function determines which pop-up window owned by the specified window was most recently active.
-    // Refer to GetLastActivePopup in the Windows API documentation for more information.
-    inline CWnd CWnd::GetLastActivePopup() const
-    {
-        assert(IsWindow());
-        return CWnd( ::GetLastActivePopup(*this) );
-    }
-
-    // The GetMenu function retrieves a handle to the menu assigned to the window.
-    // Refer to GetMenu in the Windows API documentation for more information.
-    inline CMenu CWnd::GetMenu() const
-    {
-        assert(IsWindow());
-        return CMenu(::GetMenu(*this));
-    }
-
-    // The GetScrollPos function retrieves the current position of the scroll box
-    // (thumb) in the specified scroll bar.
-    // Refer to GetScrollPos in the Windows API documentation for more information.
-    inline int CWnd::GetScrollPos(int bar) const
-    {
-        assert(IsWindow());
-        return ::GetScrollPos(*this, bar);
-    }
-
-    // The GetScrollRange function retrieves the current minimum and maximum scroll box
-    // (thumb) positions for the specified scroll bar.
-    // Refer to GetScrollRange in the Windows API documentation for more information.
-    inline BOOL CWnd::GetScrollRange(int bar, int& minPos, int& maxPos) const
-    {
-        assert(IsWindow());
-        return ::GetScrollRange(*this, bar, &minPos, &maxPos );
-    }
-
-    // The GetSystemMenu function allows the application to access the window menu (AKA system menu).
-    // If this parameter is TRUE, GetSystemMenu resets the window menu back to the default state.
-    // Refer to GetSystemMenu in the Windows API documentation for more information.
-    inline CMenu CWnd::GetSystemMenu(BOOL revertToDefault) const
-    {
-        assert(IsWindow());
-        if (revertToDefault)
-        {
-            // Detach any currently attached CMenu before the menu is destroyed.
-            CMenu menu(::GetSystemMenu(*this, FALSE));
-            menu.Detach();
-
-            // Reset the window menu back to the default state.
-            ::GetSystemMenu(*this, revertToDefault);
-        }
-
-        return CMenu( ::GetSystemMenu(*this, FALSE) );
-    }
-
-    // The GetTopWindow function examines the Z order of the child windows associated with the parent window and
-    // retrieves a handle to the child window at the top of the Z order.
-    // Refer to GetTopWindow in the Windows API documentation for more information.
-    inline CWnd CWnd::GetTopWindow() const
-    {
-        assert(IsWindow());
-        return CWnd( ::GetTopWindow(*this) );
-    }
-
-    // The GetWindowPlacement function retrieves the show state and the restored,
-    // minimized, and maximized positions of the window.
-    // Refer to GetWindowPlacement in the Windows API documentation for more information.
-    inline BOOL CWnd::GetWindowPlacement(WINDOWPLACEMENT& wp) const
-    {
-        assert(IsWindow());
-        return ::GetWindowPlacement(*this, &wp);
-    }
-
-    // The HiliteMenuItem function highlights or removes the highlighting from an item in a menu bar.
-    // Refer to HiliteMenuItem in the Windows API documentation for more information.
-    inline BOOL CWnd::HiliteMenuItem(HMENU menu, UINT itemID, UINT hilite) const
-    {
-        assert(IsWindow());
-        return ::HiliteMenuItem(*this, menu, itemID, hilite);
-    }
-
-    // The IsIconic function determines whether the window is minimized (iconic).
-    // Refer to IsIconic in the Windows API documentation for more information.
-    inline BOOL CWnd::IsIconic() const
-    {
-        assert(IsWindow());
-        return ::IsIconic(*this);
-    }
-
-    // The IsZoomed function determines whether the window is maximized.
-    // Refer to IsZoomed in the Windows API documentation for more information.
-    inline BOOL CWnd::IsZoomed() const
-    {
-        assert(IsWindow());
-        return ::IsZoomed(*this);
-    }
-
-    // Destroys the specified timer.
-    // Refer to KillTimer in the Windows API documentation for more information.
-    inline BOOL CWnd::KillTimer(UINT_PTR eventID) const
-    {
-        assert(IsWindow());
-        return ::KillTimer(*this, eventID);
-    }
-
-    // Disables drawing in the window. Only one window can be locked at a time.
-    // Use UnLockWindowUpdate to re-enable drawing in the window.
-    // Refer to LockWindowUpdate in the Windows API documentation for more information.
-    inline BOOL CWnd::LockWindowUpdate() const
-    {
-        assert(IsWindow());
-        return ::LockWindowUpdate(*this);
-    }
-
-    // The OpenIcon function restores a minimized (iconic) window to its previous size and position.
-    // Refer to OpenIcon in the Windows API documentation for more information.
-    inline BOOL CWnd::OpenIcon() const
-    {
-        assert(IsWindow());
-        return ::OpenIcon(*this);
-    }
-
-    // Requests that the window draw itself in the specified device context, most commonly in a printer device context.
-    // Refer to WM_PRINT in the Windows API documentation for more information.
-    inline void CWnd::Print(HDC dc, DWORD flags) const
-    {
-        assert(IsWindow());
-        SendMessage(*this, WM_PRINT, (WPARAM)dc, (LPARAM)flags);
-    }
-
-    // The ScrollWindow function scrolls the contents of the window's client area.
-    // scrollRect specifies the portion of the client area to be scrolled.
-    // pClipRect points to the clipping rectangle to scroll. Only bits inside this rectangle are scrolled.
-    // If prcClip is NULL, no clipping is performed on the scroll rectangle.
-    // Refer to ScrollWindow in the Windows API documentation for more information.
-    inline BOOL CWnd::ScrollWindow(int xAmount, int yAmount, const RECT& scrollRect, LPCRECT pClipRect) const
-    {
-        assert(IsWindow());
-        return ::ScrollWindow(*this, xAmount, yAmount, &scrollRect, pClipRect);
-    }
-
-    // The ScrollWindow function scrolls the contents of the window's client area.
-    // The entire client area is scrolled.
-    // pClipRect points to the clipping rectangle to scroll. Only bits inside this rectangle are scrolled.
-    // If pClipRect is NULL, no clipping is performed on the scroll rectangle.
-    // Refer to ScrollWindow in the Windows API documentation for more information.
-    inline BOOL CWnd::ScrollWindow(int xAmount, int yAmount, LPCRECT pClipRect) const
-    {
-        assert(IsWindow());
-        return ::ScrollWindow(*this, xAmount, yAmount, NULL, pClipRect);
-    }
-
-    // The ScrollWindow function scrolls the contents of the window's client area.
-    // pScrollRect: Pointer to a RECT structure that specifies the portion of the client area to be scrolled.
-    //              If this parameter is NULL, the entire client area is scrolled.
-    // pClipRect:   Pointer to a RECT structure that contains the coordinates of the clipping rectangle.
-    //              Only device bits within the clipping rectangle are affected. This parameter may be NULL.
-    // update:      Handle to the region that is modified to hold the region invalidated by scrolling.
-    //              This parameter may be 0.
-    // pUpdateRect: Pointer to a RECT structure that receives the boundaries of the rectangle invalidated by scrolling.
-    //              This parameter may be NULL.
-    // flags:       Specifies flags that control scrolling.This parameter can be one of the following values.
-    //   SW_ERASE:          Erases the newly invalidated region when specified with the SW_INVALIDATE flag.
-    //   SW_INVALIDATE:     Invalidates the region identified by the hrgnUpdate parameter after scrolling.
-    //   SW_SCROLLCHILDREN: Scrolls all child windows that intersect the rectangle pointed to by the prcScroll parameter.
-    //   SW_SMOOTHSCROLL:   Scrolls using smooth scrolling.
-    // Refer to ScrollWindowEx in the Windows API documentation for more information.
-    inline int CWnd::ScrollWindowEx(int dx, int dy, LPCRECT pScrollRect, LPCRECT pClipRect,
-                                    HRGN update, LPRECT pUpdateRect, UINT flags) const
-    {
-        assert(IsWindow());
-        return ::ScrollWindowEx(*this, dx, dy, pScrollRect, pClipRect, update, pUpdateRect, flags);
-    }
-
-    // The SetMenu function assigns a menu to the specified window.
-    // A menu of 0 removes the menu.
-    // Refer to SetMenu in the Windows API documentation for more information.
-    inline BOOL CWnd::SetMenu(HMENU menu) const
-    {
-        assert(IsWindow());
-        return ::SetMenu(*this, menu);
-    }
-
-    // The SetScrollInfo function sets the parameters of a scroll bar, including
-    // the minimum and maximum scrolling positions, the page size, and the
-    // position of the scroll box (thumb).
-    // Refer to SetScrollInfo in the Windows API documentation for more information.
-    inline int CWnd::SetScrollInfo(int barType, const SCROLLINFO& si, BOOL redraw) const
-    {
-        assert(IsWindow());
-        return ::SetScrollInfo(*this, barType, &si, redraw);
-    }
-
-    // The SetScrollPos function sets the position of the scroll box (thumb) in
-    // the specified scroll bar.
-    // Refer to SetScrollPos in the Windows API documentation for more information.
-    inline int CWnd::SetScrollPos(int barType, int pos, BOOL redraw) const
-    {
-        assert(IsWindow());
-        return ::SetScrollPos(*this, barType, pos, redraw);
-    }
-
-    // The SetScrollRange function sets the minimum and maximum scroll box positions for the scroll bar.
-    // Refer to SetScrollRange in the Windows API documentation for more information.
-    inline BOOL CWnd::SetScrollRange(int barType, int minPos, int maxPos, BOOL redraw) const
-    {
-        assert(IsWindow());
-        return ::SetScrollRange(*this, barType, minPos, maxPos, redraw);
-    }
-
-    // The SetWindowPlacement function sets the show state and the restored, minimized,
-    // and maximized positions of the window.
-    // Refer to SetWindowPlacement in the Windows API documentation for more information.
-    inline BOOL CWnd::SetWindowPlacement(const WINDOWPLACEMENT& wndpl) const
-    {
-        assert(IsWindow());
-        return ::SetWindowPlacement(*this, &wndpl);
-    }
-
-    // The ShowOwnedPopups function shows or hides all pop-up windows owned by the specified window.
-    // Refer to ShowOwnedPopups in the Windows API documentation for more information.
-    inline BOOL CWnd::ShowOwnedPopups(BOOL show) const
-    {
-        assert(IsWindow());
-        return ::ShowOwnedPopups(*this, show);
-    }
-
-    // The ShowScrollBar function shows or hides the specified scroll bar.
-    // Refer to ShowScrollBar in the Windows API documentation for more information.
-    inline BOOL CWnd::ShowScrollBar(int bar, BOOL show) const
-    {
-        assert(IsWindow());
-        return ::ShowScrollBar(*this, bar, show);
-    }
-
-    // The ShowWindowAsync function sets the show state of a window created by a different thread.
-    // Refer to ShowWindowAsync in the Windows API documentation for more information.
-    inline BOOL CWnd::ShowWindowAsync(int showCmd) const
-    {
-        assert(IsWindow());
-        return ::ShowWindowAsync(*this, showCmd);
-    }
-
-    // Enables drawing in the window. Only one window can be locked at a time.
-    // Use LockWindowUpdate to disable drawing in the window.
-    // Refer to LockWindowUpdate in the Windows API documentation for more information.
-    inline BOOL CWnd::UnLockWindowUpdate() const
-    {
-        assert(IsWindow());
-        return ::LockWindowUpdate(0);
-    }
-
-    // The WindowFromDC function returns a handle to the window associated with the specified display device context (DC).
-    // Refer to WindowFromDC in the Windows API documentation for more information.
-    inline CWnd CWnd::WindowFromDC(HDC dc) const
-    {
-        return CWnd( ::WindowFromDC(dc) );
-    }
 
 
     /////////////////////////////////////////////////////////
@@ -2534,9 +2553,11 @@ namespace Win32xx
 
             // Get the function pointer of the SHGetFolderPath function
 #ifdef UNICODE
-            MYPROC pSHGetFolderPath = (MYPROC)GetProcAddress(hShell, "SHGetFolderPathW");
+            MYPROC pSHGetFolderPath = reinterpret_cast<MYPROC>(
+                reinterpret_cast<void*>(GetProcAddress(hShell, "SHGetFolderPathW")));
 #else
-            MYPROC pSHGetFolderPath = (MYPROC)GetProcAddress(hShell, "SHGetFolderPathA");
+            MYPROC pSHGetFolderPath = reinterpret_cast<MYPROC>(
+                reinterpret_cast<void*>(GetProcAddress(hShell, "SHGetFolderPathA")));
 #endif
 
 #ifndef CSIDL_APPDATA
@@ -2561,9 +2582,11 @@ namespace Win32xx
                 typedef HRESULT(WINAPI * GETSPECIALPATH)(HWND, LPTSTR, int, BOOL);
 
 #ifdef UNICODE
-                GETSPECIALPATH pGetSpecialPath = (GETSPECIALPATH)GetProcAddress(hShell, "SHGetSpecialFolderPathW");
+                GETSPECIALPATH pGetSpecialPath = reinterpret_cast<GETSPECIALPATH>(
+                    reinterpret_cast<void*>(GetProcAddress(hShell, "SHGetSpecialFolderPathW")));
 #else
-                GETSPECIALPATH pGetSpecialPath = (GETSPECIALPATH)GetProcAddress(hShell, "SHGetSpecialFolderPathA");
+                GETSPECIALPATH pGetSpecialPath = reinterpret_cast<GETSPECIALPATH>(
+                    reinterpret_cast<void*>(GetProcAddress(hShell, "SHGetSpecialFolderPathA")));
 #endif
 
                 if (pGetSpecialPath)

@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -161,16 +161,16 @@ namespace Win32xx
         BOOL IntersectRect(LPCRECT prc1, LPCRECT prc2)  { return ::IntersectRect(this, prc1, prc2); }
         BOOL IsRectEmpty() const                    { return ::IsRectEmpty(this);}
         BOOL IsRectNull() const                     { return (left == 0 && right == 0 && top == 0 && bottom == 0); }
-        CRect MulDiv(int nMult, int nDiv) const     { return CRect ((left * nMult) / nDiv, (top * nMult) / nDiv,
-                                                        (right * nMult) / nDiv, (bottom * nMult) / nDiv); }
-        void NormalizeRect()                        { int nTemp; if (left > right) { nTemp = left; left = right; right = nTemp; }
-                                                        if (top > bottom) { nTemp = top; top = bottom; bottom = nTemp; } }
+        CRect MulDiv(int mult, int div) const       { return CRect ((left * mult) / div, (top * mult) / div,
+                                                        (right * mult) / div, (bottom * mult) / div); }
+        void NormalizeRect()                        { int temp; if (left > right) { temp = left; left = right; right = temp; }
+                                                        if (top > bottom) { temp = top; top = bottom; bottom = temp; } }
         BOOL OffsetRect(int dx, int dy)             { return ::OffsetRect(this, dx, dy); }
         BOOL OffsetRect(POINT pt)                   { return ::OffsetRect(this, pt.x, pt.y); }
         BOOL OffsetRect(SIZE size)                  { return ::OffsetRect(this, size.cx, size.cy); }
         BOOL PtInRect(POINT pt) const               { return ::PtInRect(this, pt); }
         BOOL SetRect(int l, int t, int r, int b)    { return ::SetRect(this, l, t, r, b); }
-        BOOL SetRect(POINT TopLeft, POINT BtmRight) { return ::SetRect(this, TopLeft.x, TopLeft.y, BtmRight.x, BtmRight.y); }
+        BOOL SetRect(POINT topLeft, POINT bottomRight) { return ::SetRect(this, topLeft.x, topLeft.y, bottomRight.x, bottomRight.y); }
         BOOL SetRectEmpty()                         { return ::SetRectEmpty(this); }
         BOOL SubtractRect(LPCRECT prc1, LPCRECT prc2)   { return ::SubtractRect(this, prc1, prc2); }
         BOOL UnionRect(LPCRECT prc1, LPCRECT prc2)  { return ::UnionRect(this, prc1, prc2); }

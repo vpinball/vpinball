@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -106,7 +106,7 @@ namespace Win32xx
     private:
         TCHAR m_text[WXX_MAX_STRING_SIZE];
         TCHAR m_errorString[WXX_MAX_STRING_SIZE];
-        DWORD m_messageID;
+        int m_messageID;
         DWORD m_error;
     };
 

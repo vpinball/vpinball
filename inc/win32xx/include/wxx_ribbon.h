@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -143,6 +143,8 @@ namespace Win32xx
 
         CRibbonFrameT() {}
         virtual ~CRibbonFrameT() {}
+
+    protected:
         virtual CRect GetViewRect() const;
         virtual int  OnCreate(CREATESTRUCT& cs);
         virtual void OnDestroy();
@@ -164,6 +166,10 @@ namespace Win32xx
     public:
         CRibbonFrame() {}
         virtual ~CRibbonFrame() {}
+
+    private:
+        CRibbonFrame(const CRibbonFrame&);              // Disable copy construction
+        CRibbonFrame& operator = (const CRibbonFrame&); // Disable assignment operator
     };
 
     ////////////////////////////////////////////////////
@@ -174,6 +180,10 @@ namespace Win32xx
     public:
         CRibbonDockFrame() {}
         virtual ~CRibbonDockFrame() {}
+
+    private:
+        CRibbonDockFrame(const CRibbonDockFrame&);              // Disable copy construction
+        CRibbonDockFrame& operator = (const CRibbonDockFrame&); // Disable assignment operator
     };
 
     //////////////////////////////////////////////////////////////
@@ -184,6 +194,10 @@ namespace Win32xx
     public:
         CRibbonMDIFrame() {}
         virtual ~CRibbonMDIFrame() {}
+
+    private:
+        CRibbonMDIFrame(const CRibbonMDIFrame&);              // Disable copy construction
+        CRibbonMDIFrame& operator = (const CRibbonMDIFrame&); // Disable assignment operator
     };
 
     ////////////////////////////////////////////////////////////////
@@ -195,6 +209,10 @@ namespace Win32xx
     public:
         CRibbonMDIDockFrame() {}
         virtual ~CRibbonMDIDockFrame() {}
+
+    private:
+        CRibbonMDIDockFrame(const CRibbonMDIDockFrame&);              // Disable copy construction
+        CRibbonMDIDockFrame& operator = (const CRibbonMDIDockFrame&); // Disable assignment operator
     };
 
 }
@@ -223,12 +241,12 @@ namespace Win32xx
 
     inline STDMETHODIMP_(ULONG) CRibbon::AddRef()
     {
-        return InterlockedIncrement(&m_count);
+        return static_cast<ULONG>(InterlockedIncrement(&m_count));
     }
 
     inline STDMETHODIMP_(ULONG) CRibbon::Release()
     {
-        return InterlockedDecrement(&m_count);
+        return static_cast<ULONG>(InterlockedDecrement(&m_count));
     }
 
     // Responds to execute events on Commands bound to the Command handler.
@@ -480,10 +498,9 @@ namespace Win32xx
     template <class T>
     inline void CRibbonFrameT<T>::UpdateMRUMenu()
     {
-        // Suppress UpdateMRUMenu when ribbon is used.
-        if (GetRibbonFramework() != 0) return;
-
-        T::UpdateMRUMenu();
+        // Update the MRU menu when the ribbon isn't used.
+        if (GetRibbonFramework() == NULL)
+            T::UpdateMRUMenu();
     }
 
 
@@ -515,13 +532,13 @@ namespace Win32xx
     template <class T>
     inline STDMETHODIMP_(ULONG) CRibbonFrameT<T>::CRecentFiles::AddRef()
     {
-        return InterlockedIncrement(&m_count);
+        return static_cast<ULONG>(InterlockedIncrement(&m_count));
     }
 
     template <class T>
     inline STDMETHODIMP_(ULONG) CRibbonFrameT<T>::CRecentFiles::Release()
     {
-        return InterlockedDecrement(&m_count);
+        return static_cast<ULONG>(InterlockedDecrement(&m_count));
     }
 
     template <class T>

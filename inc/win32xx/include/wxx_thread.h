@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -59,7 +59,7 @@ namespace Win32xx
         // Operations
         HANDLE  CreateThread(unsigned initflag = 0, unsigned stack_size = 0, LPSECURITY_ATTRIBUTES pSecurityAttributes = NULL);
         HANDLE  GetThread() const;
-        int     GetThreadID() const;
+        UINT    GetThreadID() const;
         int     GetThreadPriority() const;
         BOOL    IsRunning() const { return (WaitForSingleObject(m_thread, 0) == WAIT_TIMEOUT); }
         BOOL    PostThreadMessage(UINT message, WPARAM wparam, LPARAM lparam) const;
@@ -99,10 +99,10 @@ namespace Win32xx
     };
 
 
-#if defined (_MSC_VER) && (_MSC_VER <= 1600)   // <= VS2010
+#if defined (_MSC_VER)
 #pragma warning ( push )
 #pragma warning ( disable : 4355 )            // 'this' used in base member initializer list
-#endif // (_MSC_VER) && (_MSC_VER <= 1600)
+#endif // (_MSC_VER)
 
     /////////////////////////////////////////////////////////////
     // CWinThread manages a thread which is capable of supporting
@@ -111,7 +111,7 @@ namespace Win32xx
     {
     public:
         CWinThread() : WinThread(StaticThreadProc, this) {}
-        virtual ~CWinThread() {}
+        virtual ~CWinThread();
 
     private:
         CWinThread(const CWinThread&);              // Disable copy construction
@@ -120,9 +120,9 @@ namespace Win32xx
         static  UINT WINAPI StaticThreadProc(LPVOID pCThread);
     };
 
-#if defined (_MSC_VER) && (_MSC_VER <= 1600)
+#if defined (_MSC_VER)
 #pragma warning (pop)
-#endif // (_MSC_VER) && (_MSC_VER <= 1600)
+#endif // (_MSC_VER)
 
 }
 
@@ -204,7 +204,7 @@ namespace Win32xx
 
     // Retrieves the thread's ID.
     template <class T>
-    inline int CThreadT<T>::GetThreadID() const
+    inline UINT CThreadT<T>::GetThreadID() const
     {
         assert(m_thread);
         return m_threadID;
@@ -238,9 +238,11 @@ namespace Win32xx
         return ::ResumeThread(m_thread);
     }
 
-    // Sets the priority of this thread. The nPriority parameter can
-    // be -7, -6, -5, -4, -3, 3, 4, 5, or 6 or other values permitted
-    // by the SetThreadPriority Windows API function.
+    // Sets the priority of this thread. The priority parameter can be:
+    // THREAD_PRIORITY_IDLE, THREAD_PRIORITY_LOWEST, THREAD_PRIORITY_BELOW_NORMAL,
+    // THREAD_PRIORITY_NORMAL, THREAD_PRIORITY_ABOVE_NORMAL, THREAD_PRIORITY_HIGHEST,
+    // THREAD_PRIORITY_TIME_CRITICAL or other values permitted by the
+    // SetThreadPriority Windows API function.
     // Refer to SetThreadPriority in the Windows API documentation for more information.
     template <class T>
     inline BOOL CThreadT<T>::SetThreadPriority(int priority) const
@@ -263,14 +265,23 @@ namespace Win32xx
     // Definitions for the CWinThread class.
     //
 
+    inline CWinThread::~CWinThread()
+    {
+        // Post a WM_QUIT to safely end the thread.
+        PostThreadMessage(WM_QUIT, 0, 0);
+
+        // Wait up to 1 second for the thread to end.
+        ::WaitForSingleObject(*this, 1000);
+    }
+
     // When the GUI thread starts, it runs this function.
     inline UINT WINAPI CWinThread::StaticThreadProc(LPVOID pCThread)
     {
         // Get the pointer for this CWinThread object
         CWinThread* pThread = static_cast<CWinThread*>(pCThread);
-        assert(pThread != 0);
+        assert(pThread != NULL);
 
-        if (pThread != 0)
+        if (pThread != NULL)
         {
             // Set the thread's TLS Data.
             GetApp()->SetTlsData();
@@ -278,7 +289,7 @@ namespace Win32xx
             // Run the thread's message loop if InitInstance returns TRUE.
             if (pThread->InitInstance())
             {
-                return pThread->MessageLoop();
+                return static_cast<UINT>(pThread->MessageLoop());
             }
         }
 

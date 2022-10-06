@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -513,7 +513,7 @@ namespace Win32xx
                 if (isHBAlwaysOn || ((totalRect.Width() > clientRect.Width()) && isVBAlwaysOn))
                 {
                     si.nMax = totalRect.Width();
-                    si.nPage = clientRect.Width();
+                    si.nPage = static_cast<UINT>(clientRect.Width());
                     si.nPos = m_currentPos.x;
                     SetScrollInfo(SB_HORZ, si, TRUE);
                     ShowScrollBar(SB_HORZ, TRUE);
@@ -530,7 +530,7 @@ namespace Win32xx
                 if (isVBAlwaysOn || ((totalRect.Height() > clientRect.Height()) && isHBAlwaysOn))
                 {
                     si.nMax = totalRect.Height();
-                    si.nPage = clientRect.Height();
+                    si.nPage = static_cast<UINT>(clientRect.Height());
                     si.nPos = m_currentPos.y;
                     SetScrollInfo(SB_VERT, si, TRUE);
                     ShowScrollBar(SB_VERT, TRUE);

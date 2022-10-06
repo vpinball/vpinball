@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -68,7 +68,6 @@
 namespace Win32xx
 {
 
-
     /////////////////////////////////////////////////////////////
     // This class provides support for property pages. A property
     // page is an individual page used in a property sheet.
@@ -96,7 +95,7 @@ namespace Win32xx
         void CancelToClose() const;
         INT_PTR DialogProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
         PROPSHEETPAGE GetPSP() const {return m_psp;}
-        BOOL IsButtonEnabled(int button) const;
+        BOOL IsButtonEnabled(UINT buttonID) const;
         LRESULT QuerySiblings(WPARAM wparam, LPARAM lparam) const;
         void SetModified(BOOL isChanged) const;
         void SetTitle(LPCTSTR title);
@@ -178,7 +177,7 @@ namespace Win32xx
     // Definitions for the CPropertyPage class
     //
 
-    inline CPropertyPage::CPropertyPage(UINT templateID, LPCTSTR title /* = 0*/) : CDialog(static_cast<UINT>(0))
+    inline CPropertyPage::CPropertyPage(UINT templateID, LPCTSTR title /* = 0*/)
     {
         ZeroMemory(&m_psp, sizeof(m_psp));
         SetTitle(title);
@@ -189,7 +188,7 @@ namespace Win32xx
         m_psp.pszTemplate   = MAKEINTRESOURCE(templateID);
         m_psp.pszTitle      = m_title;
         m_psp.pfnDlgProc    = (DLGPROC)CPropertyPage::StaticDialogProc;
-        m_psp.lParam        = (LPARAM)this;
+        m_psp.lParam        = reinterpret_cast<LPARAM>(this);
         m_psp.pfnCallback   = CPropertyPage::StaticPropSheetPageProc;
     }
 
@@ -236,10 +235,10 @@ namespace Win32xx
     }
 
     // Returns TRUE if the button is enabled
-    inline BOOL CPropertyPage::IsButtonEnabled(int button) const
+    inline BOOL CPropertyPage::IsButtonEnabled(UINT buttonID) const
     {
         assert(IsWindow());
-        return GetParent().GetDlgItem(button).IsWindowEnabled();
+        return GetParent().GetDlgItem(buttonID).IsWindowEnabled();
     }
 
     // This function is called for each page when the Apply, OK or Close button is pressed.
@@ -389,7 +388,8 @@ namespace Win32xx
         if (msg.message == WM_KEYDOWN && GetAsyncKeyState(VK_CONTROL) < 0 &&
             (msg.wParam == VK_TAB || msg.wParam == VK_PRIOR || msg.wParam == VK_NEXT))
         {
-            if (GetParent().SendMessage(PSM_ISDIALOGMESSAGE, 0, (LPARAM)&msg))
+            LPARAM lparam = reinterpret_cast<LPARAM>(&msg);
+            if (GetParent().SendMessage(PSM_ISDIALOGMESSAGE, 0, lparam))
                 return TRUE;
         }
 
@@ -420,10 +420,11 @@ namespace Win32xx
     {
         assert(IsWindow());
 
+        WPARAM wparam = reinterpret_cast<WPARAM>(GetHwnd());
         if (isChanged)
-            GetParent().SendMessage(PSM_CHANGED, (WPARAM)GetHwnd(), 0);
+            GetParent().SendMessage(PSM_CHANGED, wparam, 0);
         else
-            GetParent().SendMessage(PSM_UNCHANGED, (WPARAM)GetHwnd(), 0);
+            GetParent().SendMessage(PSM_UNCHANGED, wparam, 0);
     }
 
     // Sets the title of the property page.
@@ -523,10 +524,11 @@ namespace Win32xx
         else
             m_psh.dwSize = PROPSHEETHEADER_V1_SIZE;
 
-        m_psh.dwFlags          = PSH_PROPSHEETPAGE | PSH_USECALLBACK;
-        m_psh.hwndParent       = parent;
-        m_psh.hInstance        = GetApp()->GetInstanceHandle();
-        m_psh.pfnCallback      = (PFNPROPSHEETCALLBACK)CPropertySheet::Callback;
+        m_psh.dwFlags     = PSH_PROPSHEETPAGE | PSH_USECALLBACK;
+        m_psh.hwndParent  = parent;
+        m_psh.hInstance   = GetApp()->GetInstanceHandle();
+        m_psh.pfnCallback = reinterpret_cast<PFNPROPSHEETCALLBACK>(
+            reinterpret_cast<void*>(CPropertySheet::Callback));
     }
 
     inline CPropertySheet::CPropertySheet(LPCTSTR caption /*= NULL*/, HWND parent /* = 0*/)
@@ -539,10 +541,11 @@ namespace Win32xx
         else
             m_psh.dwSize = PROPSHEETHEADER_V1_SIZE;
 
-        m_psh.dwFlags          = PSH_PROPSHEETPAGE | PSH_USECALLBACK;
-        m_psh.hwndParent       = parent;
-        m_psh.hInstance        = GetApp()->GetInstanceHandle();
-        m_psh.pfnCallback      = (PFNPROPSHEETCALLBACK)CPropertySheet::Callback;
+        m_psh.dwFlags     = PSH_PROPSHEETPAGE | PSH_USECALLBACK;
+        m_psh.hwndParent  = parent;
+        m_psh.hInstance   = GetApp()->GetInstanceHandle();
+        m_psh.pfnCallback = reinterpret_cast<PFNPROPSHEETCALLBACK>(
+            reinterpret_cast<void*>(CPropertySheet::Callback));
     }
 
     // Adds a Property Page to the Property Sheet.
@@ -550,7 +553,7 @@ namespace Win32xx
     // and deletes the CPropertyPage object when the PropertySheet is destroyed.
     inline CPropertyPage* CPropertySheet::AddPage(CPropertyPage* pPage)
     {
-        assert(NULL != pPage);
+        assert(pPage != NULL);
         if (!pPage) return NULL;
 
         m_allPages.push_back(PropertyPagePtr(pPage));
@@ -563,7 +566,7 @@ namespace Win32xx
             PropSheet_AddPage(*this, hpsp);
         }
 
-        m_psh.nPages = static_cast<int>(m_allPages.size());
+        m_psh.nPages = static_cast<UINT>(m_allPages.size());
 
         return pPage;
     }
@@ -747,13 +750,19 @@ namespace Win32xx
     inline int CPropertySheet::GetPageIndex(CPropertyPage* pPage) const
     {
         assert(IsWindow());
+        int page = -1;
 
         for (int i = 0; i < GetPageCount(); i++)
         {
-            if (m_allPages[i].get() == pPage)
-                return i;
+            size_t index = static_cast<size_t>(i);
+            if (m_allPages[index].get() == pPage)
+            {
+                page = i;
+                break;
+            }
         }
-        return -1;
+
+        return page;
     }
 
     // Returns the handle to the Property Sheet's tab control.
@@ -767,13 +776,13 @@ namespace Win32xx
     // Returns TRUE of the property sheet is modeless.
     inline BOOL CPropertySheet::IsModeless() const
     {
-        return (m_psh.dwFlags & PSH_MODELESS);
+        return static_cast<BOOL>(m_psh.dwFlags & PSH_MODELESS);
     }
 
     // Returns TRUE if this property sheet is a wizard.
     inline BOOL CPropertySheet::IsWizard() const
     {
-        return (m_psh.dwFlags & PSH_WIZARD);
+        return static_cast<BOOL>(m_psh.dwFlags & PSH_WIZARD);
     }
 
     // Called in response to a DM_SETDEFID message.
@@ -804,12 +813,13 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        int nPage = GetPageIndex(pPage);
+        int page = GetPageIndex(pPage);
+        WPARAM wparam = static_cast<WPARAM>(page);
         if (GetHwnd() != 0)
-            SendMessage(*this, PSM_REMOVEPAGE, (WPARAM)nPage, 0);
+            SendMessage(*this, PSM_REMOVEPAGE, wparam, 0);
 
-        m_allPages.erase(m_allPages.begin() + nPage, m_allPages.begin() + nPage+1);
-        m_psh.nPages = static_cast<int>(m_allPages.size());
+        m_allPages.erase(m_allPages.begin() + page, m_allPages.begin() + page+1);
+        m_psh.nPages = static_cast<UINT>(m_allPages.size());
     }
 
     // Override this function to filter mouse and keyboard messages prior to
@@ -820,7 +830,8 @@ namespace Win32xx
         if (msg.message == WM_KEYDOWN && GetAsyncKeyState(VK_CONTROL) < 0 &&
             (msg.wParam == VK_TAB || msg.wParam == VK_PRIOR || msg.wParam == VK_NEXT))
         {
-            if (SendMessage(PSM_ISDIALOGMESSAGE, 0, (LPARAM)&msg))
+            LPARAM lparam = reinterpret_cast<LPARAM>(&msg);
+            if (SendMessage(PSM_ISDIALOGMESSAGE, 0, lparam))
                 return TRUE;
         }
 
@@ -838,16 +849,17 @@ namespace Win32xx
     inline BOOL CPropertySheet::SetActivePage(int page)
     {
         assert(IsWindow());
-        return (SendMessage(*this, PSM_SETCURSEL, (WPARAM)page, 0) != 0);
+        WPARAM wparam = static_cast<WPARAM>(page);
+        return static_cast<BOOL>(SendMessage(*this, PSM_SETCURSEL, wparam, 0));
     }
 
     // Activates the specified property page.
     inline BOOL CPropertySheet::SetActivePage(CPropertyPage* pPage)
     {
         assert(IsWindow());
-        int nPage = GetPageIndex(pPage);
-        if ((nPage >= 0))
-            return SetActivePage(nPage);
+        int page = GetPageIndex(pPage);
+        if ((page >= 0))
+            return SetActivePage(page);
 
         return FALSE;
     }

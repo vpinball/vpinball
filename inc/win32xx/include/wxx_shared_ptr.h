@@ -138,7 +138,7 @@ namespace Win32xx
         Shared_Ptr(const Shared_Ptr& rhs) : m_ptr(rhs.m_ptr), m_count(rhs.m_count) { inc_ref(); }
         ~Shared_Ptr()
         {
-            if (m_count && 0 == dec_ref())
+            if (m_count && dec_ref() == 0)
             {
                 // Note: This code doesn't handle a pointer to an array.
                 //  We would need delete[] m_ptr to handle that.

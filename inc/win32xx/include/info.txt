@@ -11,8 +11,6 @@ sln       | A project file used by Visual Studio 2003 and above
 vcproj    | A project file used by Visual Studio 2003, VS2005 or VS2008
 vcxproj   | A project file used by Visual Studio 2010 and above
 filters   | An additional project file used by Visual Studio 2010 and above
-vcp       | A project file used by eMbedded Visual C++
-vcw       | A project file used by eMbedded Visual C++
 dev       | A project file used by Dev-C++
 cpp       | A C++ source file
 h         | A C++ header file

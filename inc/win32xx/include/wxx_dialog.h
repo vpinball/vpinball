@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -99,14 +99,10 @@ namespace Win32xx
         virtual ~CDialog();
 
         // Virtual functions
-        virtual void AttachItem(int id, CWnd& wnd);
+        virtual void AttachItem(UINT id, CWnd& wnd);
         virtual HWND Create(HWND parent = 0) { return DoModeless(parent); }
         virtual INT_PTR DoModal(HWND parent = 0);
         virtual HWND DoModeless(HWND parent = 0);
-
-        // State functions
-        virtual BOOL IsModal() const { return m_isModal; }
-        BOOL IsIndirect() const { return (NULL != m_pDlgTemplate); }
 
         // Mutators that assign the dialog resource
         void SetDialogFromID(UINT resourceID);
@@ -114,7 +110,7 @@ namespace Win32xx
         void SetDialogTemplate(LPCDLGTEMPLATE pDlgTemplate);
 
         // Wrappers for Windows API functions
-        DWORD GetDefID() const;
+        UINT  GetDefID() const;
         void GotoDlgCtrl(HWND control);
         BOOL MapDialogRect(RECT& rc) const;
         void NextDlgCtrl() const;
@@ -142,6 +138,10 @@ namespace Win32xx
 
         static INT_PTR CALLBACK StaticDialogProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam);
         static LRESULT CALLBACK StaticMsgHook(int code, WPARAM wparam, LPARAM lparam);
+
+        // State functions
+        BOOL IsModal() const { return m_isModal; }
+        BOOL IsIndirect() const { return (m_pDlgTemplate != NULL); }
 
         BOOL m_isModal;                  // a flag for modal dialogs
         LPCTSTR m_resourceName;          // the resource name for the dialog
@@ -192,12 +192,12 @@ namespace Win32xx
 
         struct ResizeData
         {
-            ResizeData() : corner(topleft), isFixedWidth(FALSE), isFixedHeight(FALSE), wnd(0) {}
+            ResizeData() : corner(topleft), isFixedWidth(false), isFixedHeight(false), wnd(0) {}
             CRect initRect;
             CRect oldRect;
             Alignment corner;
-            BOOL isFixedWidth;
-            BOOL isFixedHeight;
+            bool isFixedWidth;
+            bool isFixedHeight;
             HWND wnd;
         };
 
@@ -229,8 +229,8 @@ namespace Win32xx
     // Definitions for the CDialog class
     //
 
-    
-    // Default constructor. Use SetDialogTemplate, SetDialogResource or 
+
+    // Default constructor. Use SetDialogTemplate, SetDialogResource or
     // SetDialogResourceFromID to specify the dialog if this constructor
     // is used.
     inline CDialog::CDialog() : m_isModal(FALSE),
@@ -280,7 +280,7 @@ namespace Win32xx
     }
 
     // Attaches a dialog item to a CWnd
-    inline void CDialog::AttachItem(int id, CWnd& wnd)
+    inline void CDialog::AttachItem(UINT id, CWnd& wnd)
     {
         wnd.AttachDlgItem(id, *this);
     }
@@ -362,7 +362,7 @@ namespace Win32xx
                 // Restricting OnNotifyReflect to child windows avoids double handling.
                 LPNMHDR pHeader = reinterpret_cast<LPNMHDR>(lparam);
                 assert(pHeader);
-                if (pHeader != 0)
+                if (pHeader != NULL)
                 {
                     HWND from = pHeader->hwndFrom;
                     CWnd* pFrom = GetApp()->GetCWndFromMap(from);
@@ -455,7 +455,7 @@ namespace Win32xx
         // Retrieve this thread's TLS data
         TLSData* pTLSData = GetApp()->GetTlsData();
 
-        if (0 == pTLSData->msgHook )
+        if (pTLSData->msgHook == 0)
         {
             pTLSData->msgHook = ::SetWindowsHookEx(WH_MSGFILTER, (HOOKPROC)StaticMsgHook, 0, ::GetCurrentThreadId());
         }
@@ -465,7 +465,7 @@ namespace Win32xx
         pTLSData->pWnd = this;
 
         // Create a modal dialog
-        if (m_pDlgTemplate != 0)
+        if (m_pDlgTemplate != NULL)
             result = ::DialogBoxIndirect(instance, m_pDlgTemplate, parent, (DLGPROC)CDialog::StaticDialogProc);
         else
         {
@@ -513,7 +513,7 @@ namespace Win32xx
         HWND wnd;
 
         // Create the modeless dialog
-        if (m_pDlgTemplate != 0)
+        if (m_pDlgTemplate != NULL)
             wnd = ::CreateDialogIndirect(instance, m_pDlgTemplate, parent, (DLGPROC)CDialog::StaticDialogProc);
         else
         {
@@ -535,30 +535,34 @@ namespace Win32xx
         return wnd;
     }
 
-    // Ends a modal or modeless dialog.
+    // Ends a modal dialog.
     // Refer to EndDialog in the Windows API documentation for more information.
     inline void CDialog::EndDialog(INT_PTR result)
     {
         assert(IsWindow());
+        assert(IsModal());
 
-        if (IsModal())
-            ::EndDialog(*this, result);
-        else
-            Destroy();
+        ::EndDialog(*this, result);
     }
 
     // Called when the Cancel button is pressed. Automatically closes the dialog.
     // Override to customize OnCancel behavior.
     inline void CDialog::OnCancel()
     {
-        EndDialog(IDCANCEL);
+        if (IsModal())
+            EndDialog(IDCANCEL);
+        else
+            Destroy();
     }
 
     // Called when the Close button is pressed. Automatically closes the dialog.
     // Override to customize OnClose behavior.
     inline void CDialog::OnClose()
     {
-        EndDialog(0);
+        if (IsModal())
+            EndDialog(0);
+        else
+            Destroy();
     }
 
     // Called when the dialog is initialized.
@@ -573,8 +577,10 @@ namespace Win32xx
     // Override to customize OnOK behavior.
     inline void CDialog::OnOK()
     {
-        if ( IsWindow() )
+        if (IsModal())
             EndDialog(IDOK);
+        else
+            Destroy();
     }
 
     // Override this function to filter mouse and keyboard messages prior to
@@ -588,7 +594,7 @@ namespace Win32xx
             if (!IsModal())
             {
                 TLSData* pTLSData = GetApp()->GetTlsData();
-                if (0 == pTLSData->msgHook)
+                if (pTLSData->msgHook == 0)
                 {
                     if (IsDialogMessage(msg))
                         return TRUE;
@@ -606,7 +612,7 @@ namespace Win32xx
 
     // Retrieves the identifier of the default push button control for the dialog.
     // Refer to DM_GETDEFID in the Windows API documentation for more information.
-    inline DWORD CDialog::GetDefID() const
+    inline UINT CDialog::GetDefID() const
     {
         assert(IsWindow());
         DWORD id = 0;
@@ -614,7 +620,7 @@ namespace Win32xx
         if (DC_HASDEFID == HIWORD(result))
             id = LOWORD(result);
 
-        return id;
+        return static_cast<UINT>(id);
     }
 
     // Sets the keyboard focus to the specified control.
@@ -623,7 +629,9 @@ namespace Win32xx
     {
         assert(IsWindow());
         assert(::IsWindow(control));
-        SendMessage(WM_NEXTDLGCTL, (WPARAM)control, (LPARAM)TRUE);
+        WPARAM wparam = reinterpret_cast<WPARAM>(control);
+        LPARAM lparam = static_cast<LPARAM>(TRUE);
+        SendMessage(WM_NEXTDLGCTL, wparam, lparam);
     }
 
     // Converts the dialog box units to screen units (pixels).
@@ -639,7 +647,7 @@ namespace Win32xx
     inline void CDialog::NextDlgCtrl() const
     {
         assert(IsWindow());
-        SendMessage(WM_NEXTDLGCTL, (WPARAM)FALSE, (LPARAM)FALSE);
+        SendMessage(WM_NEXTDLGCTL, 0, 0);
     }
 
     // Sets the keyboard focus to the previous dialog control.
@@ -647,7 +655,7 @@ namespace Win32xx
     inline void CDialog::PrevDlgCtrl() const
     {
         assert(IsWindow());
-        SendMessage(WM_NEXTDLGCTL, (WPARAM)TRUE, (LPARAM)FALSE);
+        SendMessage(WM_NEXTDLGCTL, static_cast<WPARAM>(TRUE), 0);
     }
 
     // Changes the identifier of the default push button for a dialog box.
@@ -655,7 +663,7 @@ namespace Win32xx
     inline void CDialog::SetDefID(UINT id)
     {
         assert(IsWindow());
-        SendMessage(DM_SETDEFID, (WPARAM)id, 0);
+        SendMessage(DM_SETDEFID, static_cast<WPARAM>(id), 0);
     }
 
     // Sets the dialog from the specified dialog resource ID.
@@ -663,7 +671,7 @@ namespace Win32xx
     {
         m_resourceName = MAKEINTRESOURCE(resourceID);
     }
-    
+
     // Sets the dialog from the specified dialog resource.
     inline void CDialog::SetDialogResource(LPCTSTR resourceName)
     {
@@ -744,7 +752,7 @@ namespace Win32xx
                 {
                     // Only CDialogs respond to this message
                     CDialog* pDialog = reinterpret_cast<CDialog*>(::SendMessage(wnd, UWM_GETCDIALOG, 0, 0));
-                    if (pDialog != 0)
+                    if (pDialog != NULL)
                     {
                         if (pDialog->PreTranslateMessage(*pMsg))
                             return 1; // Eat the message
@@ -873,12 +881,12 @@ namespace Win32xx
         m_resizeData.clear();
 
         // Add scroll bar support to the parent window
-        DWORD style = static_cast<DWORD>(::GetClassLongPtr(parent, GCL_STYLE));
+        LONG_PTR style = static_cast<LONG_PTR>(::GetClassLongPtr(parent, GCL_STYLE));
         style |= WS_HSCROLL | WS_VSCROLL;
         ::SetClassLongPtr(parent, GCL_STYLE, style);
 
         // Calls AddChild for each child window with default settings.
-        ::EnumChildWindows(parent, EnumWindowsProc, (LPARAM)this);
+        ::EnumChildWindows(parent, EnumWindowsProc, reinterpret_cast<LPARAM>(this));
     }
 
     // Called to perform horizontal scrolling.
@@ -1021,11 +1029,11 @@ namespace Win32xx
         si.cbSize = sizeof(si);
         si.fMask  = SIF_RANGE | SIF_PAGE | SIF_POS;
         si.nMax   = m_minRect.Width();
-        si.nPage  = currentRect.Width();
+        si.nPage  = static_cast<UINT>(currentRect.Width());
         si.nPos   = m_xScrollPos;
         ::SetScrollInfo(m_parent, SB_HORZ, &si, TRUE);
         si.nMax   = m_minRect.Height();
-        si.nPage  = currentRect.Height();
+        si.nPage  = static_cast<UINT>(currentRect.Height());
         si.nPos   = m_yScrollPos;
         ::SetScrollInfo(m_parent, SB_VERT, &si, TRUE);
 

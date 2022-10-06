@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -404,7 +404,7 @@ namespace Win32xx
         // Calculate the length of all strings including the terminating characters.
         ULONG bytes = sizeof(TCHAR);
         LPCTSTR temp = value;
-        ULONG length = lstrlen(temp) +1; // +1 to include the terminating character
+        int length = lstrlen(temp) +1; // +1 to include the terminating character
 
         while (length != 1)
         {

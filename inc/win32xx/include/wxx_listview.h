@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -64,7 +64,7 @@ namespace Win32xx
         COLORREF GetBkColor( ) const;
         BOOL    GetBkImage( LVBKIMAGE& image ) const;
         UINT    GetCallbackMask( ) const;
-        BOOL    GetCheckState( UINT item ) const;
+        BOOL    GetCheckState( int item ) const;
         BOOL    GetColumn( int col, LVCOLUMN& colInfo ) const;
         BOOL    GetColumnOrderArray( LPINT pArrayOfCol, int count = -1 ) const;
         int     GetColumnWidth( int col ) const;
@@ -82,7 +82,7 @@ namespace Win32xx
         BOOL    GetItemPosition( int item, CPoint& pt ) const;
         BOOL    GetItemRect( int item, RECT& rc, UINT code ) const;
         UINT    GetItemState( int item, UINT mask ) const;
-        CString GetItemText( int item, int subItem, UINT textMax = 260 ) const;
+        CString GetItemText( int item, int subItem, int textMax = 260 ) const;
         int     GetNextItem( int item, int flags ) const;
         UINT    GetNumberOfWorkAreas( ) const;
         BOOL    GetOrigin( CPoint& pt ) const;
@@ -163,21 +163,6 @@ namespace Win32xx
 
 namespace Win32xx
 {
-    // Sets the window creation parameters.
-    inline void CListView::PreCreate(CREATESTRUCT& cs)
-    {
-        cs.style = WS_CHILD | WS_VISIBLE | LVS_SHAREIMAGELISTS;
-
-        // LVS_SHAREIMAGELISTS:
-        // The image list will not be deleted when the control is destroyed.
-        // Allows Win32++ to control the destruction of the image list.
-    }
-
-    // Sets the window class parameters.
-    inline void CListView::PreRegisterClass(WNDCLASS& wc)
-    {
-        wc.lpszClassName =  WC_LISTVIEW;
-    }
 
     // Calculates the approximate width and height required to display a given number of items.
     // Refer to ListView_ApproximateViewRect in the Windows API documentation for more information.
@@ -185,6 +170,74 @@ namespace Win32xx
     {
         assert(IsWindow());
         return CSize( ListView_ApproximateViewRect( *this, sz.cx, sz.cy, count ) );
+    }
+
+    // Arranges items in icon view.
+    // Refer to ListView_Arrange in the Windows API documentation for more information.
+    inline BOOL CListView::Arrange(UINT code) const
+    {
+        assert(IsWindow());
+        return ListView_Arrange(*this, code);
+    }
+
+    // Creates a drag image list for the specified item.
+    // Refer to ListView_CreateDragImage in the Windows API documentation for more information.
+    inline CImageList CListView::CreateDragImage(int item, CPoint& pt) const
+    {
+        assert(IsWindow());
+        HIMAGELIST images = ListView_CreateDragImage(*this, item, &pt);
+        return CImageList(images);
+    }
+
+    // Removes all items from the list-view control.
+    // Refer to ListView_DeleteAllItems in the Windows API documentation for more information.
+    inline BOOL CListView::DeleteAllItems() const
+    {
+        assert(IsWindow());
+        return ListView_DeleteAllItems(*this);
+    }
+
+    // Removes a column from the list-view control.
+    // Refer to ListView_DeleteColumn in the Windows API documentation for more information.
+    inline BOOL CListView::DeleteColumn(int col) const
+    {
+        assert(IsWindow());
+        return ListView_DeleteColumn(*this, col);
+    }
+
+    // Removes an item from the list-view control.
+    // Refer to ListView_DeleteItem in the Windows API documentation for more information.
+    inline BOOL CListView::DeleteItem(int item) const
+    {
+        assert(IsWindow());
+        return ListView_DeleteItem(*this, item);
+    }
+
+    // Begins in-place editing of the list-view item's text.
+    // Refer to ListView_EditLabel in the Windows API documentation for more information.
+    inline HWND CListView::EditLabel(int item) const
+    {
+        assert(IsWindow());
+        return ListView_EditLabel(*this, item);
+    }
+
+    // Ensures that a list-view item is either entirely or partially visible,
+    // scrolling the list-view control if necessary.
+    // Refer to LVM_ENSUREVISIBLE in the Windows API documentation for more information.
+    inline BOOL CListView::EnsureVisible(int item, BOOL isPartialOK) const
+    {
+        assert(IsWindow());
+        WPARAM wparam = static_cast<WPARAM>(item);
+        LPARAM lparam = static_cast<LPARAM>(isPartialOK);
+        return static_cast<BOOL>(SendMessage(LVM_ENSUREVISIBLE, wparam, lparam));
+    }
+
+    // Searches for a list-view item with the specified characteristics.
+    // Refer to ListView_FindItem in the Windows API documentation for more information.
+    inline int CListView::FindItem(LVFINDINFO& findInfo, int start /*= -1*/) const
+    {
+        assert(IsWindow());
+        return ListView_FindItem(*this, start, &findInfo);
     }
 
     // Retrieves the background color of the list-view control.
@@ -208,15 +261,15 @@ namespace Win32xx
     inline UINT CListView::GetCallbackMask( ) const
     {
         assert(IsWindow());
-        return ListView_GetCallbackMask( *this );
+        return static_cast<UINT>(ListView_GetCallbackMask( *this ));
     }
 
     // Determines if an item in the list-view control is selected.
     // Refer to ListView_GetCheckState in the Windows API documentation for more information.
-    inline BOOL CListView::GetCheckState( UINT item ) const
+    inline BOOL CListView::GetCheckState( int item ) const
     {
         assert(IsWindow());
-        return ListView_GetCheckState( *this, item );
+        return static_cast<BOOL>(ListView_GetCheckState( *this, item ));
     }
 
     // Retrieves the attributes of the list-view control's column.
@@ -336,8 +389,8 @@ namespace Win32xx
         ZeroMemory(&lvi, sizeof(lvi));
         lvi.iItem = item;
         lvi.mask = LVIF_PARAM;
-        SendMessage(LVM_GETITEM, 0, (LPARAM)&lvi);
-        return lvi.lParam;
+        SendMessage(LVM_GETITEM, 0, reinterpret_cast<LPARAM>(&lvi));
+        return static_cast<DWORD_PTR>(lvi.lParam);
     }
 
     // Retrieves the position of the list-view item.
@@ -354,7 +407,7 @@ namespace Win32xx
     inline BOOL CListView::GetItemRect( int item, RECT& rc, UINT code ) const
     {
         assert(IsWindow());
-        return ListView_GetItemRect( *this, item, &rc, code );
+        return ListView_GetItemRect( *this, item, &rc, static_cast<LONG>(code) );
     }
 
     // Retrieves the state of the list-view item.
@@ -376,7 +429,7 @@ namespace Win32xx
     // Note: Although the list-view control allows any length string to be stored
     //       as item text, only the first 260 characters are displayed.
     // Refer to LVM_GETITEM in the Windows API documentation for more information.
-    inline CString CListView::GetItemText( int item, int subItem, UINT textMax /* = 260 */ ) const
+    inline CString CListView::GetItemText( int item, int subItem, int textMax /* = 260 */ ) const
     {
         assert(IsWindow());
 
@@ -390,7 +443,7 @@ namespace Win32xx
             lvi.mask = LVIF_TEXT;
             lvi.cchTextMax = textMax;
             lvi.pszText = str.GetBuffer(textMax);
-            SendMessage(LVM_GETITEM, 0 , (LPARAM)&lvi);
+            SendMessage(LVM_GETITEM, 0 , reinterpret_cast<LPARAM>(&lvi));
             str.ReleaseBuffer();
         }
         return str;
@@ -411,7 +464,7 @@ namespace Win32xx
     {
         assert(IsWindow());
         UINT workAreas = 0;
-        SendMessage(LVM_GETNUMBEROFWORKAREAS, 0, (LPARAM)&workAreas);
+        SendMessage(LVM_GETNUMBEROFWORKAREAS, 0, reinterpret_cast<LPARAM>(&workAreas));
         return workAreas;
     }
 
@@ -444,7 +497,8 @@ namespace Win32xx
     inline int CListView::GetStringWidth( LPCTSTR string ) const
     {
         assert(IsWindow());
-        return static_cast<int>(SendMessage( LVM_GETSTRINGWIDTH, 0, (LPARAM)string));
+        LPARAM lparam = reinterpret_cast<LPARAM>(string);
+        return static_cast<int>(SendMessage( LVM_GETSTRINGWIDTH, 0, lparam));
     }
 
     // Retrieves information about the rectangle that surrounds a subitem in the list-view control.
@@ -500,7 +554,159 @@ namespace Win32xx
     inline void CListView::GetWorkAreas( int workAreas, LPRECT pRectArray ) const
     {
         assert(IsWindow());
-        SendMessage(LVM_GETWORKAREAS, (WPARAM)workAreas, (LPARAM)pRectArray);
+        WPARAM wparam = static_cast<WPARAM>(workAreas);
+        LPARAM lparam = reinterpret_cast<LPARAM>(pRectArray);
+        SendMessage(LVM_GETWORKAREAS, wparam, lparam);
+    }
+
+    // Determines which list-view item, if any, is at a specified position.
+    // Refer to ListView_HitTest in the Windows API documentation for more information.
+    inline int CListView::HitTest(LVHITTESTINFO& hitInfo) const
+    {
+        assert(IsWindow());
+        return ListView_HitTest(*this, &hitInfo);
+    }
+
+    // Determines which list-view item, if any, is at a specified position.
+    // Refer to ListView_HitTest in the Windows API documentation for more information.
+    inline int CListView::HitTest(CPoint pt, UINT* pFlags /*= NULL*/) const
+    {
+        assert(IsWindow());
+
+        LVHITTESTINFO hti;
+        ZeroMemory(&hti, sizeof(hti));
+        hti.flags = *pFlags;
+        hti.pt = pt;
+        return ListView_HitTest(*this, &hti);
+    }
+
+    // Inserts a new column in the list-view control.
+    // Refer to ListView_InsertColumn in the Windows API documentation for more information.
+    inline int CListView::InsertColumn(int col, const LVCOLUMN& colInfo) const
+    {
+        assert(IsWindow());
+        return ListView_InsertColumn(*this, col, &colInfo);
+    }
+
+    // Inserts a new column in the list-view control.
+    // format :
+    //  LVCFMT_BITMAP_ON_RIGHT    The bitmap appears to the right of text.
+    //  LVCFMT_CENTER             Text is centered.
+    //  LVCFMT_IMAGE              The item displays an image from an image list.
+    //  LVCFMT_JUSTIFYMASK        A bitmask used to select those bits of fmt that control field justification.
+    //  LVCFMT_LEFT               Text is left-aligned.
+    //  LVCFMT_RIGHT              Text is right-aligned.
+    // Refer to ListView_InsertColumn in the Windows API documentation for more information.
+    inline int CListView::InsertColumn(int col, LPCTSTR columnHeading, int format /*= LVCFMT_LEFT*/,
+        int width /*= -1*/, int subItem /*= -1*/) const
+    {
+        assert(IsWindow());
+
+        LVCOLUMN lvc;
+        ZeroMemory(&lvc, sizeof(lvc));
+        lvc.mask = LVCF_TEXT | LVCF_ORDER | LVCF_FMT;
+        if (-1 != width)
+        {
+            lvc.mask |= LVCF_WIDTH;
+            lvc.cx = width;
+        }
+        if (-1 != subItem)
+        {
+            lvc.mask |= LVCF_SUBITEM;
+            lvc.iSubItem = subItem;
+        }
+
+        lvc.iOrder = col;
+        lvc.pszText = const_cast<LPTSTR>(columnHeading);
+        lvc.fmt = format;
+        lvc.iSubItem = subItem;
+        return ListView_InsertColumn(*this, col, &lvc);
+    }
+
+    // Inserts a new item in the list-view control.
+    // Refer to ListView_InsertItem in the Windows API documentation for more information.
+    inline int CListView::InsertItem(const LVITEM& itemInfo) const
+    {
+        assert(IsWindow());
+        return ListView_InsertItem(*this, &itemInfo);
+    }
+
+    // Inserts a new item in the list-view control.
+    // Refer to ListView_InsertItem in the Windows API documentation for more information.
+    inline int CListView::InsertItem(int item, LPCTSTR text) const
+    {
+        assert(IsWindow());
+
+        LVITEM lvi;
+        ZeroMemory(&lvi, sizeof(lvi));
+        lvi.iItem = item;
+        lvi.pszText = const_cast<LPTSTR>(text);
+        lvi.mask = LVIF_TEXT;
+        return ListView_InsertItem(*this, &lvi);
+    }
+
+    // Inserts a new item in the list-view control.
+    // Refer to ListView_InsertItem in the Windows API documentation for more information.
+    inline int CListView::InsertItem(int item, LPCTSTR text, int image) const
+    {
+        assert(IsWindow());
+
+        LVITEM lvi;
+        ZeroMemory(&lvi, sizeof(lvi));
+        lvi.iItem = item;
+        lvi.pszText = const_cast<LPTSTR>(text);
+        lvi.iImage = image;
+        lvi.mask = LVIF_TEXT | LVIF_IMAGE;
+        return ListView_InsertItem(*this, &lvi);
+    }
+
+    inline int CListView::InsertItem(UINT mask, int item, LPCTSTR text, UINT state,
+        UINT stateMask, int image, LPARAM lparam) const
+    {
+        assert(IsWindow());
+
+        LVITEM lvi;
+        ZeroMemory(&lvi, sizeof(lvi));
+        lvi.mask = mask;
+        lvi.iItem = item;
+        lvi.pszText = const_cast<LPTSTR>(text);
+        lvi.iImage = image;
+        lvi.state = state;
+        lvi.stateMask = stateMask;
+        lvi.lParam = lparam;
+        return ListView_InsertItem(*this, &lvi);
+    }
+
+    // Sets the window creation parameters.
+    inline void CListView::PreCreate(CREATESTRUCT& cs)
+    {
+        cs.style = WS_CHILD | WS_VISIBLE | LVS_SHAREIMAGELISTS;
+
+        // LVS_SHAREIMAGELISTS:
+        // The image list will not be deleted when the control is destroyed.
+        // Allows Win32++ to control the destruction of the image list.
+    }
+
+    // Sets the window class parameters.
+    inline void CListView::PreRegisterClass(WNDCLASS& wc)
+    {
+        wc.lpszClassName = WC_LISTVIEW;
+    }
+
+    // Forces the list-view control to redraw a range of items.
+    // Refer to ListView_RedrawItems in the Windows API documentation for more information.
+    inline BOOL CListView::RedrawItems(int first, int last) const
+    {
+        assert(IsWindow());
+        return ListView_RedrawItems(*this, first, last);
+    }
+
+    // Scrolls the content of the list-view control.
+    // Refer to ListView_Scroll in the Windows API documentation for more information.
+    inline BOOL CListView::Scroll(CSize sz) const
+    {
+        assert(IsWindow());
+        return ListView_Scroll(*this, sz.cx, sz.cy);
     }
 
     // Sets the background color of the list-view control.
@@ -533,7 +739,7 @@ namespace Win32xx
     inline void CListView::SetCheckState( int item, BOOL checked /*= TRUE*/ ) const
     {
         assert(IsWindow());
-        ListView_SetItemState(*this, item, INDEXTOSTATEIMAGEMASK((checked!=FALSE)?2:1),LVIS_STATEIMAGEMASK);
+        ListView_SetItemState(*this, item, INDEXTOSTATEIMAGEMASK((checked!=FALSE)?2U:1U),LVIS_STATEIMAGEMASK);
     }
 
     // Sets the attributes of the list-view column.
@@ -565,7 +771,7 @@ namespace Win32xx
     inline DWORD CListView::SetExtendedStyle( DWORD exStyle ) const
     {
         assert(IsWindow());
-        return ListView_SetExtendedListViewStyle( *this, exStyle );
+        return ListView_SetExtendedListViewStyle( *this, static_cast<LPARAM>(exStyle) );
     }
 
     // Sets the HCURSOR that the list-view control uses when the pointer is
@@ -686,7 +892,7 @@ namespace Win32xx
         LVITEM lvi;
         ZeroMemory(&lvi, sizeof(lvi));
         lvi.iItem = item;
-        lvi.lParam = data;
+        lvi.lParam = static_cast<LPARAM>(data);
         lvi.mask = LVIF_PARAM;
         return ListView_SetItem(*this, &lvi);
     }
@@ -700,7 +906,7 @@ namespace Win32xx
     }
 
     // Changes the state of an item in the list-view control.
-    // Possible values of mask:
+    // Possible values of the mask:
     // LVIS_CUT             The item is marked for a cut-and-paste operation.
     // LVIS_DROPHILITED     The item is highlighted as a drag-and-drop target.
     // LVIS_FOCUSED         The item has the focus, so it is surrounded by a standard focus rectangle.
@@ -711,10 +917,19 @@ namespace Win32xx
     inline BOOL CListView::SetItemState( int item, LVITEM& itemInfo ) const
     {
         assert(IsWindow());
-        return (SendMessage(LVM_SETITEMSTATE, (WPARAM)item, (LPARAM)&itemInfo) != 0);
+        WPARAM wparam = static_cast<WPARAM>(item);
+        LPARAM lparam = reinterpret_cast<LPARAM>(&itemInfo);
+        return static_cast<BOOL>(SendMessage(LVM_SETITEMSTATE, wparam, lparam));
     }
 
     // Changes the state of an item in the list-view control.
+    // Possible values of the state and mask:
+    // LVIS_CUT             The item is marked for a cut-and-paste operation.
+    // LVIS_DROPHILITED     The item is highlighted as a drag-and-drop target.
+    // LVIS_FOCUSED         The item has the focus, so it is surrounded by a standard focus rectangle.
+    // LVIS_SELECTED        The item is selected.
+    // LVIS_OVERLAYMASK     Use this mask to retrieve the item's overlay image index.
+    // LVIS_STATEIMAGEMASK  Use this mask to retrieve the item's state image index.
     // Refer to ListView_SetItemState in the Windows API documentation for more information.
     inline void CListView::SetItemState( int item, UINT state, UINT mask ) const
     {
@@ -722,7 +937,7 @@ namespace Win32xx
         ListView_SetItemState(*this, item, state, mask);
     }
 
-    // Sets the text color of the list-view control.
+    // Changes the text of a list-view item or subitem.
     // Refer to ListView_SetItemText in the Windows API documentation for more information.
     inline void CListView::SetItemText( int item, int subItem, LPCTSTR text ) const
     {
@@ -759,7 +974,8 @@ namespace Win32xx
     inline HWND CListView::SetToolTips( HWND toolTip ) const
     {
         assert(IsWindow());
-        return reinterpret_cast<HWND>(SendMessage(LVM_SETTOOLTIPS, (WPARAM)toolTip, 0));
+        WPARAM wparam = reinterpret_cast<WPARAM>(toolTip);
+        return reinterpret_cast<HWND>(SendMessage(LVM_SETTOOLTIPS, wparam, 0));
     }
 
     // Sets the working area within the list-view control.
@@ -767,7 +983,17 @@ namespace Win32xx
     inline void CListView::SetWorkAreas( int workAreas, LPCRECT pRectArray ) const
     {
         assert(IsWindow());
-        SendMessage(LVM_SETWORKAREAS, (WPARAM)workAreas, (LPARAM)pRectArray);
+        WPARAM wparam = static_cast<WPARAM>(workAreas);
+        LPARAM lparam = reinterpret_cast<LPARAM>(pRectArray);
+        SendMessage(LVM_SETWORKAREAS, wparam, lparam);
+    }
+
+    // Uses an application-defined comparison function to sort the items of the list-view control.
+    // Refer to ListView_SortItems in the Windows API documentation for more information.
+    inline BOOL CListView::SortItems(PFNLVCOMPARE pCompareFn, DWORD_PTR data) const
+    {
+        assert(IsWindow());
+        return ListView_SortItems(*this, pCompareFn, data);
     }
 
     // Determines which list-view item or subitem is located at a given position.
@@ -776,218 +1002,6 @@ namespace Win32xx
     {
         assert(IsWindow());
         return ListView_SubItemHitTest( *this, &hitInfo );
-    }
-
-
-    /////////////
-    // Operations
-
-    // Arranges items in icon view.
-    // Refer to ListView_Arrange in the Windows API documentation for more information.
-    inline BOOL CListView::Arrange( UINT code ) const
-    {
-        assert(IsWindow());
-        return ListView_Arrange( *this, code );
-    }
-
-    // Creates a drag image list for the specified item.
-    // Refer to ListView_CreateDragImage in the Windows API documentation for more information.
-    inline CImageList CListView::CreateDragImage( int item, CPoint& pt ) const
-    {
-        assert(IsWindow());
-        HIMAGELIST images = ListView_CreateDragImage( *this, item, &pt );
-        return CImageList(images);
-    }
-
-    // Removes all items from the list-view control.
-    // Refer to ListView_DeleteAllItems in the Windows API documentation for more information.
-    inline BOOL CListView::DeleteAllItems( ) const
-    {
-        assert(IsWindow());
-        return ListView_DeleteAllItems( *this );
-    }
-
-    // Removes a column from the list-view control.
-    // Refer to ListView_DeleteColumn in the Windows API documentation for more information.
-    inline BOOL CListView::DeleteColumn( int col ) const
-    {
-        assert(IsWindow());
-        return ListView_DeleteColumn( *this, col );
-    }
-
-    // Removes an item from the list-view control.
-    // Refer to ListView_DeleteItem in the Windows API documentation for more information.
-    inline BOOL CListView::DeleteItem( int item ) const
-    {
-        assert(IsWindow());
-        return ListView_DeleteItem( *this, item );
-    }
-
-    // Begins in-place editing of the list-view item's text.
-    // Refer to ListView_EditLabel in the Windows API documentation for more information.
-    inline HWND CListView::EditLabel( int item ) const
-    {
-        assert(IsWindow());
-        return ListView_EditLabel( *this, item );
-    }
-
-    // Ensures that a list-view item is either entirely or partially visible,
-    // scrolling the list-view control if necessary.
-    // Refer to LVM_ENSUREVISIBLE in the Windows API documentation for more information.
-    inline BOOL CListView::EnsureVisible( int item, BOOL isPartialOK ) const
-    {
-        assert(IsWindow());
-        return (SendMessage(LVM_ENSUREVISIBLE, item, isPartialOK ) != 0);
-    }
-
-    // Searches for a list-view item with the specified characteristics.
-    // Refer to ListView_FindItem in the Windows API documentation for more information.
-    inline int CListView::FindItem( LVFINDINFO& findInfo, int start /*= -1*/ ) const
-    {
-        assert(IsWindow());
-        return ListView_FindItem( *this, start, &findInfo );
-    }
-
-    // Determines which list-view item, if any, is at a specified position.
-    // Refer to ListView_HitTest in the Windows API documentation for more information.
-    inline int CListView::HitTest( LVHITTESTINFO& hitInfo ) const
-    {
-        assert(IsWindow());
-        return ListView_HitTest( *this, &hitInfo );
-    }
-
-    // Determines which list-view item, if any, is at a specified position.
-    // Refer to ListView_HitTest in the Windows API documentation for more information.
-    inline int CListView::HitTest( CPoint pt, UINT* pFlags /*= NULL*/ ) const
-    {
-        assert(IsWindow());
-
-        LVHITTESTINFO hti;
-        ZeroMemory(&hti, sizeof(hti));
-        hti.flags = *pFlags;
-        hti.pt = pt;
-        return ListView_HitTest( *this, &hti );
-    }
-
-    // Inserts a new column in the list-view control.
-    // Refer to ListView_InsertColumn in the Windows API documentation for more information.
-    inline int CListView::InsertColumn( int col, const LVCOLUMN& colInfo ) const
-    {
-        assert(IsWindow());
-        return ListView_InsertColumn( *this, col, &colInfo );
-    }
-
-    // Inserts a new column in the list-view control.
-    // format :
-    //  LVCFMT_BITMAP_ON_RIGHT    The bitmap appears to the right of text.
-    //  LVCFMT_CENTER             Text is centered.
-    //  LVCFMT_IMAGE              The item displays an image from an image list.
-    //  LVCFMT_JUSTIFYMASK        A bitmask used to select those bits of fmt that control field justification.
-    //  LVCFMT_LEFT               Text is left-aligned.
-    //  LVCFMT_RIGHT              Text is right-aligned.
-    // Refer to ListView_InsertColumn in the Windows API documentation for more information.
-    inline int CListView::InsertColumn( int col, LPCTSTR columnHeading, int format /*= LVCFMT_LEFT*/,
-                        int width /*= -1*/, int subItem /*= -1*/ ) const
-    {
-        assert(IsWindow());
-
-        LVCOLUMN lvc;
-        ZeroMemory(&lvc, sizeof(lvc));
-        lvc.mask = LVCF_TEXT|LVCF_ORDER|LVCF_FMT;
-        if (-1 != width)
-        {
-            lvc.mask |= LVCF_WIDTH;
-            lvc.cx = width;
-        }
-        if (-1 !=  subItem)
-        {
-            lvc.mask |= LVCF_SUBITEM;
-            lvc.iSubItem = subItem;
-        }
-
-        lvc.iOrder = col;
-        lvc.pszText = const_cast<LPTSTR>(columnHeading);
-        lvc.fmt = format;
-        lvc.iSubItem = subItem;
-        return ListView_InsertColumn( *this, col, &lvc );
-    }
-
-    // Inserts a new item in the list-view control.
-    // Refer to ListView_InsertItem in the Windows API documentation for more information.
-    inline int CListView::InsertItem( const LVITEM& itemInfo ) const
-    {
-        assert(IsWindow());
-        return ListView_InsertItem( *this, &itemInfo);
-    }
-
-    // Inserts a new item in the list-view control.
-    // Refer to ListView_InsertItem in the Windows API documentation for more information.
-    inline int CListView::InsertItem( int item, LPCTSTR text ) const
-    {
-        assert(IsWindow());
-
-        LVITEM lvi;
-        ZeroMemory(&lvi, sizeof(lvi));
-        lvi.iItem = item;
-        lvi.pszText = const_cast<LPTSTR>(text);
-        lvi.mask = LVIF_TEXT;
-        return ListView_InsertItem( *this, &lvi );
-    }
-
-    // Inserts a new item in the list-view control.
-    // Refer to ListView_InsertItem in the Windows API documentation for more information.
-    inline int CListView::InsertItem( int item, LPCTSTR text, int image ) const
-    {
-        assert(IsWindow());
-
-        LVITEM lvi;
-        ZeroMemory(&lvi, sizeof(lvi));
-        lvi.iItem = item;
-        lvi.pszText = const_cast<LPTSTR>(text);
-        lvi.iImage = image;
-        lvi.mask = LVIF_TEXT | LVIF_IMAGE;
-        return ListView_InsertItem( *this, &lvi );
-    }
-
-    inline int CListView::InsertItem(UINT mask, int item, LPCTSTR text, UINT state,
-                                     UINT stateMask, int image, LPARAM lparam) const
-    {
-        assert(IsWindow());
-
-        LVITEM lvi;
-        ZeroMemory(&lvi, sizeof(lvi));
-        lvi.mask = mask;
-        lvi.iItem = item;
-        lvi.pszText = const_cast<LPTSTR>(text);
-        lvi.iImage = image;
-        lvi.state = state;
-        lvi.stateMask = stateMask;
-        lvi.lParam = lparam;
-        return ListView_InsertItem(*this, &lvi);
-    }
-
-    // Forces the list-view control to redraw a range of items.
-    // Refer to ListView_RedrawItems in the Windows API documentation for more information.
-    inline BOOL CListView::RedrawItems( int first, int last ) const
-    {
-        assert(IsWindow());
-        return ListView_RedrawItems( *this, first, last );
-    }
-
-    // Scrolls the content of the list-view control.
-    // Refer to ListView_Scroll in the Windows API documentation for more information.
-    inline BOOL CListView::Scroll( CSize sz ) const
-    {
-        assert(IsWindow());
-        return ListView_Scroll( *this, sz.cx, sz.cy );
-    }
-
-    // Uses an application-defined comparison function to sort the items of the list-view control.
-    // Refer to ListView_SortItems in the Windows API documentation for more information.
-    inline BOOL CListView::SortItems( PFNLVCOMPARE pCompareFn, DWORD_PTR data ) const
-    {
-        assert(IsWindow());
-        return ListView_SortItems( *this, pCompareFn, data );
     }
 
     // Updates a list-view item. If the list-view control has the LVS_AUTOARRANGE style,

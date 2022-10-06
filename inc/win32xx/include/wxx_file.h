@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -95,7 +95,7 @@ namespace Win32xx
         void SeekToBegin();
         ULONGLONG SeekToEnd();
         void SetFilePath(LPCTSTR fileName);
-        void SetLength(ULONGLONG length);
+        void SetLength(LONGLONG length);
         void UnlockRange(ULONGLONG pos, ULONGLONG count);
         void Write(const void* buffer, UINT count);
 
@@ -276,7 +276,7 @@ namespace Win32xx
 
         DWORD lowPosCur = SetFilePointer(m_file, 0, &highPosCur, FILE_CURRENT);
         DWORD lowPosEnd = SetFilePointer(m_file, 0, &highPosEnd, FILE_END);
-        SetFilePointer(m_file, lowPosCur, &highPosCur, FILE_BEGIN);
+        SetFilePointer(m_file, static_cast<LONG>(lowPosCur), &highPosCur, FILE_BEGIN);
 
         ULONGLONG result = (static_cast<ULONGLONG>(highPosEnd) << 32) + lowPosEnd;
         return result;
@@ -451,10 +451,11 @@ namespace Win32xx
     {
         LPTSTR pShortFileName = NULL;
 
-        int buffSize = ::GetFullPathName(fileName, 0, 0, 0);
-        if (buffSize > 0)
+        DWORD buffSize = ::GetFullPathName(fileName, 0, 0, 0);
+        int buffer = static_cast<int>(buffSize);
+        if (buffer > 0)
         {
-            ::GetFullPathName(fileName, buffSize, m_filePath.GetBuffer(buffSize), &pShortFileName);
+            ::GetFullPathName(fileName, buffSize, m_filePath.GetBuffer(buffer), &pShortFileName);
 
             if (pShortFileName != NULL)
                 m_fileName = pShortFileName;
@@ -467,7 +468,7 @@ namespace Win32xx
 
     // Changes the length of the file to the specified value.
     // Refer to SetEndOfFile in the Windows API documentation for more information.
-    inline void CFile::SetLength(ULONGLONG length)
+    inline void CFile::SetLength(LONGLONG length)
     {
         assert(m_file != INVALID_HANDLE_VALUE);
 

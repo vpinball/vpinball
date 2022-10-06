@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -213,9 +213,10 @@ namespace Win32xx
         if (str)
         {
             // Resize the vector and assign null WCHAR to each element.
-            int charBytes = (charCount == -1) ? -1 : sizeof(CHAR) * charCount;
+            int charSize = static_cast<int>(sizeof(CHAR));
+            int charBytes = (charCount == -1) ? -1 : charSize * charCount;
             int length = MultiByteToWideChar(codePage, 0, str, charBytes, NULL, 0) + 1;
-            m_wideArray.assign(length, L'\0');
+            m_wideArray.assign(static_cast<size_t>(length), L'\0');
 
             // Fill our vector with the converted WCHAR array.
             MultiByteToWideChar(codePage, 0, str, charBytes, &m_wideArray[0], length);
@@ -237,9 +238,10 @@ namespace Win32xx
     inline CWtoA::CWtoA(LPCWSTR str, UINT codePage /*= CP_ACP*/, int charCount /*= -1*/) : m_str(str)
     {
         // Resize the vector and assign null char to each element
-        int charBytes = (charCount == -1) ? -1 : sizeof(WCHAR) * charCount;
+        int charSize = static_cast<int>(sizeof(WCHAR));
+        int charBytes = (charCount == -1) ? -1 : charSize * charCount;
         int length = WideCharToMultiByte(codePage, 0, str, charBytes, NULL, 0, NULL, NULL) + 1;
-        m_ansiArray.assign(length, '\0');
+        m_ansiArray.assign(static_cast<size_t>(length), '\0');
 
         // Fill our vector with the converted char array
         WideCharToMultiByte(codePage, 0, str, charCount, &m_ansiArray[0], length, NULL, NULL);

@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -155,7 +155,7 @@ namespace Win32xx
     // Constructor for CPrintDialogEx class. The flags parameter specifies the
     // flags for the PRINTDLGEX structure. Refer to the description of the
     // PRINTDLGEX struct in the Windows API documentation.
-    inline CPrintDialogEx::CPrintDialogEx(DWORD flags) : CDialog(UINT(0)), m_pServices(NULL)
+    inline CPrintDialogEx::CPrintDialogEx(DWORD flags) : m_pServices(NULL)
     {
         ZeroMemory(&m_pdex, sizeof(m_pdex));
         m_pdex.lStructSize = sizeof(m_pdex);
@@ -215,7 +215,7 @@ namespace Win32xx
         // Create the dialog
         if (S_OK != PrintDlgEx(&m_pdex))
         {
-            DWORD error = CommDlgExtendedError();
+            int error = static_cast<int>(CommDlgExtendedError());
             throw CWinException(GetApp()->MsgWndDialog(), error);
         }
 
@@ -262,7 +262,7 @@ namespace Win32xx
         if ((m_pdex.Flags & PD_USEDEVMODECOPIES) != 0)
             return GetDevMode()->dmCopies;
 
-        return m_pdex.nCopies;
+        return static_cast<int>(m_pdex.nCopies);
     }
 
     // Fill a DEVMODE structure with information about the currently
@@ -296,7 +296,8 @@ namespace Win32xx
         {
             UINT size = 0;
             m_pServices->GetCurrentPortName(0, &size);
-            m_pServices->GetCurrentPortName(str.GetBuffer(size), &size);
+            int bufferSize = static_cast<int>(size);
+            m_pServices->GetCurrentPortName(str.GetBuffer(bufferSize), &size);
             str.ReleaseBuffer();
         }
 
@@ -312,7 +313,8 @@ namespace Win32xx
         {
             UINT size = 0;
             m_pServices->GetCurrentPrinterName(0, &size);
-            m_pServices->GetCurrentPrinterName(str.GetBuffer(size), &size);
+            int bufferSize = static_cast<int>(size);
+            m_pServices->GetCurrentPrinterName(str.GetBuffer(bufferSize), &size);
             str.ReleaseBuffer();
         }
 
@@ -349,7 +351,7 @@ namespace Win32xx
         m_pdex.hDevNames = 0;
 
         // Return TRUE if default printer exists
-        return (GetApp()->m_devNames.Get() != 0);
+        return (GetApp()->m_devNames.Get()) ? TRUE : FALSE;
     }
 
     // Retrieves the name of the default or currently selected printer device.

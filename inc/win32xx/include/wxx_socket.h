@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -76,9 +76,9 @@
 // Refer to the NetClient and NetServer samples for an example of how to use
 // this class to create event sockets for a TCP/UDP client & server.
 
-// To compile programs with CSocket, link with ws3_32.lib for Win32,
-// and ws2.lib for Windows CE. This class uses Winsock version 2, and
-// supports Windows 98 and above.
+// To compile programs with CSocket, link with ws2_32.lib. This class uses
+// Winsock version 2, and supports Windows 98 and above. Windows 95 systems
+// will need to install the "Windows Sockets 2.0 for Windows 95".
 
 // For a TCP server using event sockets, inherit a class from CSocket
 // and override OnAccept, OnDisconnect and OnReceive. Create one instance
@@ -157,39 +157,39 @@ namespace Win32xx
         virtual ~CSocket();
 
         // Operations
-        virtual void Accept(CSocket& rClientSock, struct sockaddr* addr, int* addrlen) const;
-        virtual int  Bind(LPCTSTR addr, UINT port) const;
-        virtual int  Bind(const struct sockaddr* name, int namelen) const;
-        virtual int  Connect(LPCTSTR addr, UINT port) const;
-        virtual int  Connect(const struct sockaddr* name, int namelen) const;
-        virtual bool Create( int family, int type, int protocol = IPPROTO_IP);
-        virtual void Disconnect();
+        void Accept(CSocket& rClientSock, struct sockaddr* addr, int* addrlen) const;
+        int  Bind(LPCTSTR addr, UINT port) const;
+        int  Bind(const struct sockaddr* name, int namelen) const;
+        int  Connect(LPCTSTR addr, UINT port) const;
+        int  Connect(const struct sockaddr* name, int namelen) const;
+        bool Create( int family, int type, int protocol = IPPROTO_IP);
+        void Disconnect();
 
 #ifdef GetAddrInfo
-        virtual void FreeAddrInfo( struct addrinfo* ai ) const;
-        virtual int  GetAddrInfo( LPCTSTR nodename, LPCTSTR servname, const struct addrinfo* hints, struct addrinfo** res) const;
+        void FreeAddrInfo( struct addrinfo* ai ) const;
+        int  GetAddrInfo( LPCTSTR nodename, LPCTSTR servname, const struct addrinfo* hints, struct addrinfo** res) const;
 #endif
 
-        virtual CString GetErrorString() const;
-        virtual int  ioCtlSocket(long cmd, u_long* argp) const;
-        virtual bool IsIPV6Supported() const;
-        virtual int  Listen(int backlog = SOMAXCONN) const;
-        virtual int  Receive(char* buf, int len, int flags) const;
-        virtual int  ReceiveFrom(char* buf, int len, int flags, struct sockaddr* from, int* fromlen) const;
-        virtual int  Send(const char* buf, int len, int flags) const;
-        virtual int  SendTo(const char* send, int len, int flags, LPCTSTR addr, UINT port) const;
-        virtual int  SendTo(const char* buf, int len, int flags, const struct sockaddr* to, int tolen) const;
+        CString GetErrorString() const;
+        int  ioCtlSocket(long cmd, u_long* argp) const;
+        bool IsIPV6Supported() const;
+        int  Listen(int backlog = SOMAXCONN) const;
+        int  Receive(char* buf, int len, int flags) const;
+        int  ReceiveFrom(char* buf, int len, int flags, struct sockaddr* from, int* fromlen) const;
+        int  Send(const char* buf, int len, int flags) const;
+        int  SendTo(const char* send, int len, int flags, LPCTSTR addr, UINT port) const;
+        int  SendTo(const char* buf, int len, int flags, const struct sockaddr* to, int tolen) const;
 
-        virtual int  StartAsync(HWND wnd, UINT message, long events);
-        virtual void StartEvents();
-        virtual void StopEvents();
+        int  StartAsync(HWND wnd, UINT message, long events);
+        void StartEvents();
+        void StopEvents();
 
         // Accessors and mutators
-        virtual int  GetPeerName(struct sockaddr* name, int* namelen) const;
-        virtual int  GetSockName(struct sockaddr* name, int* namelen) const;
+        int  GetPeerName(struct sockaddr* name, int* namelen) const;
+        int  GetSockName(struct sockaddr* name, int* namelen) const;
         SOCKET& GetSocket() { return m_socket; }
-        virtual int  GetSockOpt(int level, int optname, char* optval, int* optlen) const;
-        virtual int  SetSockOpt(int level, int optname, const char* optval, int optlen) const;
+        int  GetSockOpt(int level, int optname, char* optval, int* optlen) const;
+        int  SetSockOpt(int level, int optname, const char* optval, int optlen) const;
 
         // Override these functions to monitor events
         virtual void OnAccept()     {}
@@ -237,8 +237,10 @@ namespace Win32xx
         if (m_ws2_32 == 0)
             throw CNotSupportedException(GetApp()->MsgSocWS2Dll());
 
-        m_pfnGetAddrInfo = reinterpret_cast<GETADDRINFO*>( GetProcAddress(m_ws2_32, "getaddrinfo") );
-        m_pfnFreeAddrInfo = reinterpret_cast<FREEADDRINFO*>( GetProcAddress(m_ws2_32, "freeaddrinfo") );
+        m_pfnGetAddrInfo = reinterpret_cast<GETADDRINFO*>(
+            reinterpret_cast<void*>(GetProcAddress(m_ws2_32, "getaddrinfo")));
+        m_pfnFreeAddrInfo = reinterpret_cast<FREEADDRINFO*>(
+            reinterpret_cast<void*>(GetProcAddress(m_ws2_32, "freeaddrinfo")));
 
         WorkThreadPtr threadPtr(new CWorkThread(EventThread, this));
         m_threadPtr = threadPtr;
@@ -341,7 +343,7 @@ namespace Win32xx
             clientService.sin_port = htons( static_cast<u_short>(port) );
 
             result = ::bind( m_socket, reinterpret_cast<SOCKADDR*>( &clientService), sizeof(clientService) );
-            if ( 0 != result)
+            if (result != 0)
                 TRACE("Bind failed\n");
         }
 
@@ -353,7 +355,7 @@ namespace Win32xx
     inline int CSocket::Bind(const struct sockaddr* name, int namelen) const
     {
         int result = ::bind (m_socket, name, namelen);
-        if ( 0 != result)
+        if (result != 0)
             TRACE("Bind failed\n");
         return result;
     }
@@ -416,7 +418,7 @@ namespace Win32xx
             clientService.sin_port = htons( static_cast<u_short>(port) );
 
             result = ::connect( m_socket, reinterpret_cast<SOCKADDR*>( &clientService ), sizeof(clientService) );
-            if ( 0 != result)
+            if (result != 0)
                 TRACE("Connect failed\n");
         }
 
@@ -428,7 +430,7 @@ namespace Win32xx
     inline int CSocket::Connect(const struct sockaddr* name, int namelen) const
     {
         int result = ::connect( m_socket, name, namelen );
-        if ( 0 != result)
+        if (result != 0)
             TRACE("Connect failed\n");
 
         return result;
@@ -585,7 +587,7 @@ namespace Win32xx
     // Refer to WSAGetLastError in the Windows API documentation for additional information.
     inline CString CSocket::GetErrorString() const
     {
-        int errorCode = WSAGetLastError();
+        DWORD errorCode = static_cast<DWORD>(WSAGetLastError());
         LPTSTR message = NULL;
         CString errorMessage;
 

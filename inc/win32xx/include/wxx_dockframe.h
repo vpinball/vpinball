@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -75,8 +75,6 @@ namespace Win32xx
     public:
         CDockFrame() {}
         virtual ~CDockFrame() {}
-        virtual CWnd& GetView() const       { return CDocker::GetView(); }
-        virtual void SetView(CWnd& wndView) { CDocker::SetView(wndView); }
 
     protected:
         virtual LRESULT OnActivate(UINT msg, WPARAM wparam, LPARAM lparam);
@@ -106,15 +104,14 @@ namespace Win32xx
         CMDIDockFrame();
         virtual ~CMDIDockFrame() {}
 
-        virtual CWnd& GetMDIClient() const { return *m_pDockMDIClient; }
-        void SetDockClient(CMDIClient<CDocker::CDockClient>& dockClient) { m_pDockMDIClient = &dockClient; }
-
     protected:
         virtual int OnCreate(CREATESTRUCT& cs);
 
     private:
+        CMDIDockFrame(const CMDIDockFrame&);              // Disable copy construction
+        CMDIDockFrame& operator = (const CMDIDockFrame&); // Disable assignment operator
+
         CMDIClient<CDocker::CDockClient> m_dockMDIClient;   // MDIClient for docking
-        CMDIClient<CDocker::CDockClient>* m_pDockMDIClient;
     };
 
 }
@@ -221,12 +218,14 @@ namespace Win32xx
     // Constructor.
     inline CMDIDockFrame::CMDIDockFrame()
     {
-        // The view window for a CMDIDockFrame is the MDI Client
-        CDocker::SetDockClient(m_dockMDIClient);
+        // Assign m_dockMDIClient as this MDI frame's MDI client.
+        SetMDIClient(m_dockMDIClient);
+
+        // Assign m_dockMDIClient as this docker's dock client.
         SetDockClient(m_dockMDIClient);
 
-        SetView(GetMDIClient());
-        GetDockClient().SetDocker(this);
+        // Assign this CMDIDockFrame as the new dock client's docker.
+        m_dockMDIClient.SetDocker(this);
     }
 
     // Called when the frame window is created

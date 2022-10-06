@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -38,7 +38,7 @@
 ////////////////////////////////////////////////////////
 // Acknowledgement:
 //
-// The original author of these classes is:
+// Developed from code originally provided by:
 //
 //      Robert C. Tausworthe
 //      email: robert.c.tausworthe@ieee.org
@@ -523,7 +523,7 @@ namespace Win32xx
         }
         else
         {
-            DWORD error = CommDlgExtendedError();
+            int error = static_cast<int>(CommDlgExtendedError());
             if ((error != 0) && (error != CDERR_DIALOGFAILURE))
             // ignore the error caused by closing the dialog
             {
@@ -579,7 +579,7 @@ namespace Win32xx
         m_pd.hDevNames = 0;
 
         // Return TRUE if default printer exists
-        return (GetApp()->m_devNames.Get() != 0);
+        return (GetApp()->m_devNames.Get()) ? TRUE : FALSE;
     }
 
     // Retrieves the name of the default or currently selected printer device.
@@ -858,7 +858,7 @@ namespace Win32xx
         }
         else
         {
-            DWORD error = CommDlgExtendedError();
+            int error = static_cast<int>(CommDlgExtendedError());
             if ((error != 0) && (error != CDERR_DIALOGFAILURE)) // ignore the exception caused by closing the dialog
             {
                 // Reset global memory
@@ -950,7 +950,7 @@ namespace Win32xx
                 assert(lparam);
                 if (lparam == 0) return 0;
                 PAGESETUPDLG psd = *((LPPAGESETUPDLG)lparam);
-                return pDlg->OnPreDrawPage(LOWORD(wparam), HIWORD(wparam), psd);
+                return static_cast<INT_PTR>(pDlg->OnPreDrawPage(LOWORD(wparam), HIWORD(wparam), psd));
             }
 
         case WM_PSD_FULLPAGERECT:
@@ -963,7 +963,7 @@ namespace Win32xx
                 assert(lparam);
                 if (lparam == 0) return 0;
                 RECT rc = *((LPRECT)lparam);
-                return pDlg->OnDrawPage(reinterpret_cast<HDC>(wparam), message, rc);
+                return static_cast<INT_PTR>(pDlg->OnDrawPage(reinterpret_cast<HDC>(wparam), message, rc));
             }
         }
         return 0;

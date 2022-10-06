@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -80,7 +80,7 @@ namespace Win32xx
 
         // Initialization
         BOOL Create(int cx, int cy, UINT flags, int initial, int grow);
-        BOOL Create(UINT bitmapID, int cx, int grow, COLORREF mask);
+        BOOL Create(int bitmapID, int cx, int grow, COLORREF mask);
         BOOL Create(LPCTSTR resourceName, int cx, int grow, COLORREF mask);
         BOOL Create(HIMAGELIST images);
         BOOL CreateDisabledImageList(HIMAGELIST normalImages);
@@ -90,7 +90,7 @@ namespace Win32xx
         int Add(HBITMAP bitmap, HBITMAP mask) const;
         int Add(HBITMAP bitmap, COLORREF mask) const;
         int Add(HICON icon) const;
-        int AddIcon(int iconID) const;
+        int AddIcon(UINT iconID) const;
         void Attach(HIMAGELIST images);
         BOOL BeginDrag(int image, CPoint hotSpot) const;
         BOOL Copy(int dst, int src, UINT flags /*= ILCF_MOVE*/) const;
@@ -206,7 +206,6 @@ namespace Win32xx
                 pApp->m_mapCImlData.erase(m);
                 success = TRUE;
             }
-
         }
 
         return success;
@@ -247,7 +246,7 @@ namespace Win32xx
 
     // Adds an icon specified by its resource ID to the image list.
     // Refer to ImageList_ReplaceIcon in the Windows API documentation for more information.
-    inline int CImageList::AddIcon(int iconID) const
+    inline int CImageList::AddIcon(UINT iconID) const
     {
         HICON icon = GetApp()->LoadIcon(iconID);
         return Add(icon);
@@ -332,7 +331,7 @@ namespace Win32xx
         Attach(images);
         m_pData->isManagedHiml = true;
 
-        return (images != 0 );
+        return (images != 0) ? TRUE : FALSE;
     }
 
     // Creates a new image list.
@@ -341,7 +340,7 @@ namespace Win32xx
     // crMask   The color used to generate a mask. Each pixel of this color in the specified bitmap is changed to black,
     //          and the corresponding bit in the mask is set to 1. If this parameter is the CLR_NONE value, no mask is generated.
     // Refer to ImageList_Create in the Windows API documentation for more information.
-    inline BOOL CImageList::Create(UINT bitmapID, int cx, int grow, COLORREF mask)
+    inline BOOL CImageList::Create(int bitmapID, int cx, int grow, COLORREF mask)
     {
         assert(m_pData);
 
@@ -367,7 +366,7 @@ namespace Win32xx
         Attach(images);
         m_pData->isManagedHiml = true;
 
-        return (images != 0 );
+        return (images != 0) ? TRUE : FALSE;
     }
 
     // Creates a duplicate ImageList
@@ -383,7 +382,7 @@ namespace Win32xx
         Attach(copyImages);
         m_pData->isManagedHiml = true;
 
-        return (copyImages != 0 );
+        return (copyImages != 0) ? TRUE : FALSE;
     }
 
     // Destroys an image list.
@@ -666,7 +665,7 @@ namespace Win32xx
     // Creates a gray scale image list from the specified color image list.
     inline BOOL CImageList::CreateDisabledImageList(HIMAGELIST normalImages)
     {
-        assert(0 == m_pData->images);
+        assert(m_pData->images == 0);
         assert(normalImages);
 
         int count = ImageList_GetImageCount(normalImages);
@@ -708,7 +707,7 @@ namespace Win32xx
             }
         }
 
-        return ( m_pData->images != 0 );
+        return (m_pData->images != 0) ? TRUE : FALSE;
     }
 
 }   // namespace Win32xx

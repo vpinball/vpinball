@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -299,10 +299,11 @@ namespace Win32xx
 
             // Extract the device independent image data.
             CMemDC memDC(dc);
-            memDC.GetDIBits(m_bitmap, 0, bm.bmHeight, NULL, pbmi, DIB_RGB_COLORS);
+            UINT scanLines = static_cast<UINT>(bm.bmHeight);
+            memDC.GetDIBits(m_bitmap, 0, scanLines, NULL, pbmi, DIB_RGB_COLORS);
             std::vector<byte> byteArray(pBIH->biSizeImage, 0);
             byte* pByteArray = &byteArray.front();
-            memDC.GetDIBits(m_bitmap, 0, bm.bmHeight, pByteArray, pbmi, DIB_RGB_COLORS);
+            memDC.GetDIBits(m_bitmap, 0, scanLines, pByteArray, pbmi, DIB_RGB_COLORS);
 
             // Use half tone stretch mode for smoother rendering.
             dc.SetStretchBltMode(HALFTONE);

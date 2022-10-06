@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -157,7 +157,7 @@ using namespace Win32xx;
 #define MIN(a,b)        (((a) < (b)) ? (a) : (b))
 
 // Version macro
-#define _WIN32XX_VER 0x0900     // Win32++ version 9.0.0
+#define _WIN32XX_VER 0x0910     // Win32++ version 9.1.0
 
 // Define the TRACE Macro.
 // In debug mode, TRACE send text to the debug/output pane, or an external debugger
@@ -180,6 +180,10 @@ using namespace Win32xx;
     #define VERIFY(f) assert(f)
   #endif
 #endif
+
+// tString is a TCHAR std::string
+typedef std::basic_string<TCHAR> tString;
+typedef std::basic_stringstream<TCHAR> tStringStream;
 
 namespace Win32xx
 {
@@ -241,7 +245,7 @@ namespace Win32xx
         if (comCtl == 0)
             return 0;
 
-        int comCtlVer = 400;
+        DWORD comCtlVer = 400;
 
         if (::GetProcAddress(comCtl, "InitCommonControlsEx"))
         {
@@ -250,13 +254,14 @@ namespace Win32xx
 
             if (::GetProcAddress(comCtl, "DllGetVersion"))
             {
-                typedef HRESULT CALLBACK DLLGETVERSION(DLLVERSIONINFO*);
-                DLLGETVERSION* pfnDLLGetVersion = NULL;
+                DLLGETVERSIONPROC pfnDLLGetVersion;
 
-                pfnDLLGetVersion = reinterpret_cast<DLLGETVERSION*>(::GetProcAddress(comCtl, "DllGetVersion"));
+                pfnDLLGetVersion = reinterpret_cast<DLLGETVERSIONPROC>(
+                    reinterpret_cast<void*>(::GetProcAddress(comCtl, "DllGetVersion")));
                 if (pfnDLLGetVersion)
                 {
                     DLLVERSIONINFO dvi;
+                    ZeroMemory(&dvi, sizeof(dvi));
                     dvi.cbSize = sizeof dvi;
                     if (NOERROR == pfnDLLGetVersion(&dvi))
                     {
@@ -272,7 +277,7 @@ namespace Win32xx
 
         ::FreeLibrary(comCtl);
 
-        return comCtlVer;
+        return static_cast<int>(comCtlVer);
     }
 
     // Retrieves the window version
@@ -317,12 +322,12 @@ namespace Win32xx
 #pragma warning ( pop )
 #endif // (_MSC_VER) && (_MSC_VER >= 1400)
 
-        int platform = osvi.dwPlatformId;
-        int majorVer = osvi.dwMajorVersion;
-        int minorVer = osvi.dwMinorVersion;
+        DWORD platform = osvi.dwPlatformId;
+        DWORD majorVer = osvi.dwMajorVersion;
+        DWORD minorVer = osvi.dwMinorVersion;
 
-        int result = 1000 * platform + 100 * majorVer + minorVer;
-        return result;
+        DWORD result = 1000 * platform + 100 * majorVer + minorVer;
+        return static_cast<int>(result);
     }
 
     // Returns a NONCLIENTMETRICS struct filled from the system parameters.
@@ -375,7 +380,8 @@ namespace Win32xx
             // Declare a typedef for the InItCommonControlsEx function.
             typedef BOOL WINAPI INIT_EX(INITCOMMONCONTROLSEX*);
 
-            INIT_EX* pfnInitEx = reinterpret_cast<INIT_EX*>(::GetProcAddress(comCtl, "InitCommonControlsEx"));
+            INIT_EX* pfnInitEx = reinterpret_cast<INIT_EX*>(
+                reinterpret_cast<void*>(::GetProcAddress(comCtl, "InitCommonControlsEx")));
 
             if (pfnInitEx)
             {

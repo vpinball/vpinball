@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -68,7 +68,7 @@ namespace Win32xx
         static CCriticalSection cs;
         CThreadLock appLock(cs);
 
-        if (0 == SetnGetThis())
+        if (SetnGetThis() == 0)
         {
             m_tlsData = ::TlsAlloc();
             if (m_tlsData != TLS_OUT_OF_INDEXES)
@@ -280,7 +280,7 @@ namespace Win32xx
 
     // Loads the cursor resource from the resource script (resource.rc)
     // Refer to LoadCursor in the Windows API documentation for more information.
-    inline HCURSOR CWinApp::LoadCursor(int cursorID) const
+    inline HCURSOR CWinApp::LoadCursor(UINT cursorID) const
     {
         return ::LoadCursor(GetResourceHandle(), MAKEINTRESOURCE (cursorID));
     }
@@ -304,7 +304,7 @@ namespace Win32xx
 
     // Loads the icon resource whose size conforms to the SM_CXICON and SM_CYICON system metric values.
     // Refer to LoadIcon in the Windows API documentation for more information.
-    inline HICON CWinApp::LoadIcon(int iconID) const
+    inline HICON CWinApp::LoadIcon(UINT iconID) const
     {
         return ::LoadIcon(GetResourceHandle(), MAKEINTRESOURCE (iconID));
     }
@@ -337,7 +337,7 @@ namespace Win32xx
     // LR_LOADMAP3DCOLORS, R_LOADTRANSPARENT, LR_MONOCHROME, LR_SHARED, LR_VGACOLOR.
     // Ideally the image should be destroyed unless it is loaded with LR_SHARED.
     // Refer to LoadImage in the Windows API documentation for more information.
-    inline HANDLE CWinApp::LoadImage(int imageID, UINT type, int cx, int cy, UINT flags) const
+    inline HANDLE CWinApp::LoadImage(UINT imageID, UINT type, int cx, int cy, UINT flags) const
     {
         return ::LoadImage(GetResourceHandle(), MAKEINTRESOURCE (imageID), type, cx, cy, flags);
     }
@@ -384,13 +384,17 @@ namespace Win32xx
     {
         static CWinApp* pWinApp = 0;
 
-        if (pWinApp == 0)
-            pWinApp = pThis;
-        else
-            assert(pThis == 0);
-
         if (reset)
+        {
             pWinApp = 0;
+        }
+        else
+        {
+            if (pWinApp == 0)
+                pWinApp = pThis;
+            else
+                assert(pThis == 0);
+        }
 
         return pWinApp;
     }
@@ -427,7 +431,7 @@ namespace Win32xx
     inline void CWinApp::SetTlsData()
     {
         TLSData* pTLSData = GetTlsData();
-        if (NULL == pTLSData)
+        if (pTLSData == NULL)
         {
             pTLSData = new TLSData;
             TLSDataPtr dataPtr(pTLSData);

@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -38,7 +38,7 @@
 ////////////////////////////////////////////////////////
 // Acknowledgement:
 //
-// The original author of these classes is:
+// Developed from code originally provided by:
 //
 //      Robert C. Tausworthe
 //      email: robert.c.tausworthe@ieee.org
@@ -83,15 +83,15 @@ namespace Win32xx
     class CCommonDialog : public CDialog
     {
     public:
-        CCommonDialog() : CDialog(UINT(0)) {}
+        CCommonDialog() {}
         virtual ~CCommonDialog(){}
 
     protected:
-        virtual BOOL    IsModal() const { return TRUE; }
-        virtual void    OnCancel()  {}  // a required to override
+        virtual void    OnCancel()  {}  // a required override
+        virtual void    OnClose()   {}  // a required override
         virtual void    OnHelpButton();
         virtual BOOL    OnInitDialog();
-        virtual void    OnOK()  {}      // a required to override
+        virtual void    OnOK()  {}      // a required override
 
         // static callback
         static INT_PTR CALLBACK CDHookProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -179,7 +179,7 @@ namespace Win32xx
         virtual LRESULT OnFileNameOK();
         virtual void    OnFolderChange();
         virtual void    OnInitDone();
-        virtual void    OnLBSelChangedNotify(UINT boxID, UINT curSel, UINT code);
+        virtual void    OnLBSelChangedNotify(int boxID, int curSel, UINT code);
         virtual LRESULT OnNotify(WPARAM, LPARAM);
         virtual LRESULT OnShareViolation(LPCTSTR pathName);
         virtual void    OnTypeChange();
@@ -215,8 +215,6 @@ namespace Win32xx
                         LPCTSTR replaceWith = NULL,
                         DWORD   flags = FR_DOWN,
                         HWND    parent = 0);
-
-        virtual BOOL IsModal() const                    { return FALSE; }
 
         // Operations:
         BOOL    FindNext() const;           // TRUE = find next
@@ -450,7 +448,7 @@ namespace Win32xx
 
         if (!isValid)
         {
-            DWORD error = CommDlgExtendedError();
+            int error = static_cast<int>(CommDlgExtendedError());
             if ((error != 0) && (error != CDERR_DIALOGFAILURE))
                 // ignore the exception caused by closing the dialog
                 throw CWinException(GetApp()->MsgWndDialog(), error);
@@ -605,7 +603,7 @@ namespace Win32xx
         if (message == UWM_LBSELCHSTRING)
         {   // handle the registered list box selection change
             // notifications:
-            OnLBSelChangedNotify(static_cast<UINT>(wparam), LOWORD(lparam), HIWORD(lparam));
+            OnLBSelChangedNotify(static_cast<int>(wparam), LOWORD(lparam), HIWORD(lparam));
             return 0;
         }
 
@@ -642,16 +640,17 @@ namespace Win32xx
         pTLSData->pWnd = this;
 
         m_ofn.hwndOwner = owner;
-        m_ofn.lpstrFile = m_fileName.GetBuffer(m_ofn.nMaxFile);
+        int maxFileSize = static_cast<int>(m_ofn.nMaxFile);
+        m_ofn.lpstrFile = m_fileName.GetBuffer(maxFileSize);
         int ok = (m_isOpenFileDialog ? ::GetOpenFileName(&m_ofn) : ::GetSaveFileName(&m_ofn));
-        m_fileName.ReleaseBuffer(m_ofn.nMaxFile);
+        m_fileName.ReleaseBuffer(maxFileSize);
         m_ofn.lpstrFile = const_cast<LPTSTR>(m_fileName.c_str());
         m_wnd = 0;
 
         // the result of the file choice box is processed here:
         if (!ok)
         {
-            DWORD error = CommDlgExtendedError();
+            int error = static_cast<int>(CommDlgExtendedError());
             if (error != 0)
             {
                 // ignore the exception caused by closing the dialog
@@ -722,10 +721,10 @@ namespace Win32xx
     {
         assert(pos >= 0);
 
-        BOOL isExplorer = m_ofn.Flags & OFN_EXPLORER;
+        bool isExplorer = (m_ofn.Flags & OFN_EXPLORER) != 0;
         TCHAR delimiter = (isExplorer ? _T('\0') : _T(' '));
-
-        int bufferSize = MIN(MAX_PATH, m_ofn.nMaxFile - pos);
+        int maxFileSize = static_cast<int>(m_ofn.nMaxFile);
+        int bufferSize = MIN(MAX_PATH, maxFileSize - pos);
         CString fileNames(m_ofn.lpstrFile + pos, bufferSize); // strFile can contain NULLs
         int index = 0;
         if (pos == 0)
@@ -769,8 +768,8 @@ namespace Win32xx
         if (!pathName.IsEmpty())
         {
             // Get the last character from the path
-            int nPathLen = pathName.GetLength();
-            TCHAR termination = pathName.GetAt(nPathLen -1);
+            int pathLength = pathName.GetLength();
+            TCHAR termination = pathName.GetAt(pathLength -1);
 
             if (termination == _T('\\'))
             {
@@ -854,7 +853,7 @@ namespace Win32xx
     // selection changes in the list box. The ID of the list or combo box in
     // which the selection occurred is boxID. The index of the current
     // selection is curSel. The control notification code is code.
-    inline void CFileDialog::OnLBSelChangedNotify(UINT, UINT, UINT)
+    inline void CFileDialog::OnLBSelChangedNotify(int, int, UINT)
     {
     }
 
@@ -1083,7 +1082,7 @@ namespace Win32xx
     // Create and display either a Find or FindReplace dialog box. findWhat
     // is the search string, and replaceWith is the replace string.
     // Set flags to a combination of one or more flags the dialog box.
-    // Set parent to the handle of the dialog box’s parent or owner window.
+    // Set parent to the handle of the dialog box's parent or owner window.
     // An exception is thrown if the window isn't created.
     inline BOOL CFindReplaceDialog::Create(BOOL isFindDialogOnly, LPCTSTR findWhat,
             LPCTSTR replaceWith, DWORD flags, HWND parent /* = 0*/)
@@ -1154,7 +1153,6 @@ namespace Win32xx
 
     // The Default message handling for CFindReplaceDialog. Don't override this function,
     // override DialogProc instead.
-    // Note: OnCancel and OnOK are called by DoModal.
     inline INT_PTR CFindReplaceDialog::DialogProcDefault(UINT message, WPARAM wparam, LPARAM)
     {
         switch (message)
@@ -1180,7 +1178,7 @@ namespace Win32xx
     // occurrence of the search string.
     inline BOOL CFindReplaceDialog::FindNext() const
     {
-        return ((m_fr.Flags & FR_FINDNEXT )!= 0);
+        return (m_fr.Flags & FR_FINDNEXT)? TRUE : FALSE;
     }
 
     // Call this function to return the default string to find.
@@ -1211,35 +1209,35 @@ namespace Win32xx
     // Returns TRUE if the user has decided to terminate the dialog box;
     inline BOOL CFindReplaceDialog::IsTerminating()
     {
-        return ((m_fr.Flags & FR_DIALOGTERM) != 0);
+        return (m_fr.Flags & FR_DIALOGTERM)? TRUE : FALSE;
     }
 
     // Return TRUE if the user wants to find occurrences of the search string
     // that exactly match the case of the search string; otherwise FALSE.
     inline BOOL CFindReplaceDialog::MatchCase() const
     {
-        return ((m_fr.Flags & FR_MATCHCASE) != 0);
+        return (m_fr.Flags & FR_MATCHCASE)? TRUE : FALSE;
     }
 
     // Return TRUE if the user wants to match only the entire words of the
     // search string.
     inline BOOL CFindReplaceDialog::MatchWholeWord() const
     {
-        return ((m_fr.Flags & FR_WHOLEWORD) != 0);
+        return (m_fr.Flags & FR_WHOLEWORD)? TRUE : FALSE;
     }
 
     // Return TRUE if the user has requested that all strings matching the
     // replace string be replaced.
     inline BOOL CFindReplaceDialog::ReplaceAll() const
     {
-        return ((m_fr.Flags & FR_REPLACEALL) != 0);
+        return (m_fr.Flags & FR_REPLACEALL)? TRUE : FALSE;
     }
 
     // Return TRUE if the user has requested that the currently selected string
     // be replaced with the replace string.
     inline BOOL CFindReplaceDialog::ReplaceCurrent() const
     {
-        return ((m_fr.Flags & FR_REPLACE) != 0);
+        return (m_fr.Flags & FR_REPLACE)? TRUE : FALSE;
     }
 
     // Return TRUE if the user wants the search to proceed in a downward
@@ -1247,7 +1245,7 @@ namespace Win32xx
     // direction.
     inline BOOL CFindReplaceDialog::SearchDown() const
     {
-        return ((m_fr.Flags & FR_DOWN) != 0);
+        return (m_fr.Flags & FR_DOWN)? TRUE : FALSE;
     }
 
     // Sets the various parameters of the FINDREPLACE struct.
@@ -1452,7 +1450,7 @@ namespace Win32xx
         // process the result of the font choice box:
         if (!ok)
         {
-            DWORD error = CommDlgExtendedError();
+            int error = static_cast<int>(CommDlgExtendedError());
             if ((error != 0) && (error != CDERR_DIALOGFAILURE))
                 // ignore the exception caused by closing the dialog
                 throw CWinException(GetApp()->MsgWndDialog(), error);
@@ -1554,7 +1552,7 @@ namespace Win32xx
         if ((cf.dwMask & (CFM_ITALIC|CFM_BOLD)) == (CFM_ITALIC|CFM_BOLD))
         {
             m_logFont.lfWeight = (cf.dwEffects & CFE_BOLD) ? FW_BOLD : FW_NORMAL;
-            m_logFont.lfItalic = (cf.dwEffects & CFE_ITALIC) ? TRUE : FALSE;
+            m_logFont.lfItalic = (cf.dwEffects & CFE_ITALIC) ? 1U : 0U;
         }
         else
         {
@@ -1567,13 +1565,13 @@ namespace Win32xx
             (CFM_UNDERLINE|CFM_STRIKEOUT|CFM_COLOR))
         {
             flags |= CF_EFFECTS;
-            m_logFont.lfUnderline = (cf.dwEffects & CFE_UNDERLINE) ? TRUE : FALSE;
-            m_logFont.lfStrikeOut = (cf.dwEffects & CFE_STRIKEOUT) ? TRUE : FALSE;
+            m_logFont.lfUnderline = (cf.dwEffects & CFE_UNDERLINE) ? 1U : 0U;
+            m_logFont.lfStrikeOut = (cf.dwEffects & CFE_STRIKEOUT) ? 1U : 0U;
         }
         else
         {
-            m_logFont.lfUnderline = (BYTE)FALSE;
-            m_logFont.lfStrikeOut = (BYTE)FALSE;
+            m_logFont.lfUnderline = 0U;
+            m_logFont.lfStrikeOut = 0U;
         }
 
         if (cf.dwMask & CFM_CHARSET)
@@ -1593,7 +1591,7 @@ namespace Win32xx
         else
         {
             m_logFont.lfPitchAndFamily = DEFAULT_PITCH|FF_DONTCARE;
-            m_logFont.lfFaceName[0] = (TCHAR)0;
+            m_logFont.lfFaceName[0] = _T('\0');
         }
 
         return flags;

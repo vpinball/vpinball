@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -126,15 +126,18 @@ namespace Win32xx
     private:
         struct TaskButton
         {
-            TaskButton(UINT id, LPCWSTR text) : buttonID(id)
+            TaskButton(int id, LPCWSTR text) : buttonID(id)
             {
                 if (IS_INTRESOURCE(text))        // support MAKEINTRESOURCE
-                    buttonText.LoadString((UINT)(UINT_PTR)text);
+                {
+                    UINT textID = static_cast<UINT>(reinterpret_cast<UINT_PTR>(text));
+                    buttonText.LoadString(textID);
+                }
                 else
                     buttonText = text;
             }
 
-            UINT buttonID;
+            int buttonID;
             CStringW buttonText;
         };
 
@@ -217,7 +220,7 @@ namespace Win32xx
     inline void CTaskDialog::ClickButton(int buttonID) const
     {
         assert(GetHwnd());
-        SendMessage(TDM_CLICK_BUTTON, (WPARAM)buttonID, 0);
+        SendMessage(TDM_CLICK_BUTTON, static_cast<WPARAM>(buttonID), 0);
     }
 
     // Simulates the action of a radio button click in the TaskDialog.
@@ -225,7 +228,8 @@ namespace Win32xx
     inline void CTaskDialog::ClickRadioButton(int radioButtonID) const
     {
         assert(GetHwnd());
-        SendMessage(TDM_CLICK_RADIO_BUTTON, (WPARAM)radioButtonID, 0);
+        WPARAM wparam = static_cast<WPARAM>(radioButtonID);
+        SendMessage(TDM_CLICK_RADIO_BUTTON, wparam, 0);
     }
 
     // Creates and displays the Task Dialog.
@@ -283,7 +287,8 @@ namespace Win32xx
 
         if (comCtl)
         {
-            TASKDIALOGINDIRECT* pTaskDialogIndirect = reinterpret_cast<TASKDIALOGINDIRECT*>(::GetProcAddress(comCtl, "TaskDialogIndirect"));
+            TASKDIALOGINDIRECT* pTaskDialogIndirect = reinterpret_cast<TASKDIALOGINDIRECT*>(
+                ::GetProcAddress(comCtl, "TaskDialogIndirect"));
 
             // Call TaskDialogIndirect through our function pointer.
             result = pTaskDialogIndirect(&m_tc, &m_selectedButtonID, &m_selectedRadioButtonID, &m_verificationCheckboxState);
@@ -307,7 +312,9 @@ namespace Win32xx
     inline void CTaskDialog::ElevateButton(int buttonID, BOOL isElevated) const
     {
         assert(GetHwnd());
-        SendMessage(TDM_SET_BUTTON_ELEVATION_REQUIRED_STATE, (WPARAM)buttonID, (LPARAM)isElevated);
+        WPARAM wparam = static_cast<WPARAM>(buttonID);
+        LPARAM lparam = static_cast<LPARAM>(isElevated);
+        SendMessage(TDM_SET_BUTTON_ELEVATION_REQUIRED_STATE, wparam, lparam);
     }
 
     // Enables or disables a push button in the TaskDialog.
@@ -315,7 +322,9 @@ namespace Win32xx
     inline void CTaskDialog::EnableButton(int buttonID, BOOL isEnabled) const
     {
         assert(GetHwnd());
-        SendMessage(TDM_ENABLE_BUTTON, (WPARAM)buttonID, (LPARAM)isEnabled);
+        WPARAM wparam = static_cast<WPARAM>(buttonID);
+        LPARAM lparam = static_cast<LPARAM>(isEnabled);
+        SendMessage(TDM_ENABLE_BUTTON, wparam, lparam);
     }
 
     // Enables or disables a radio button in the TaskDialog.
@@ -323,7 +332,9 @@ namespace Win32xx
     inline void CTaskDialog::EnableRadioButton(int radioButtonID, BOOL isEnabled) const
     {
         assert(GetHwnd());
-        SendMessage(TDM_ENABLE_RADIO_BUTTON, (WPARAM)radioButtonID, (LPARAM)isEnabled);
+        WPARAM wparam = static_cast<WPARAM>(radioButtonID);
+        LPARAM lparam = static_cast<LPARAM>(isEnabled);
+        SendMessage(TDM_ENABLE_RADIO_BUTTON, wparam, lparam);
     }
 
     // Fills a CString from a string resource or a text string.
@@ -331,7 +342,10 @@ namespace Win32xx
     {
         CStringW str;
         if (IS_INTRESOURCE(text))      // support MAKEINTRESOURCE
-            str.LoadString((UINT)(UINT_PTR)text);
+        {
+            UINT textID = static_cast<UINT>(reinterpret_cast<UINT_PTR>(text));
+            str.LoadString(textID);
+        }
         else
             str = text;
 
@@ -383,7 +397,7 @@ namespace Win32xx
         assert(comctl);
         if (comctl)
         {
-            result = (::GetProcAddress(comctl, "TaskDialogIndirect") != FALSE);
+            result = (::GetProcAddress(comctl, "TaskDialogIndirect")) ? TRUE : FALSE;
             ::FreeLibrary(comctl);
         }
 
@@ -396,7 +410,7 @@ namespace Win32xx
     {
         assert(GetHwnd());
         TASKDIALOGCONFIG tc = taskDialog.GetConfig();
-        SendMessage(TDM_NAVIGATE_PAGE, 0, (WPARAM)&tc);
+        SendMessage(TDM_NAVIGATE_PAGE, 0, reinterpret_cast<LPARAM>(&tc));
     }
 
     // Called when the user selects a button or command link.
@@ -478,9 +492,11 @@ namespace Win32xx
     {
         m_content = FillString(content);
         m_tc.pszContent = m_content;
+        WPARAM wparam = static_cast<WPARAM>(TDE_CONTENT);
+        LPARAM lparam = reinterpret_cast<LPARAM>(m_content.c_str());
 
         if (IsWindow())
-            SendMessage(TDM_SET_ELEMENT_TEXT, (WPARAM)TDE_CONTENT, (LPARAM)m_content.c_str());
+            SendMessage(TDM_SET_ELEMENT_TEXT, wparam, lparam);
     }
 
     // Sets the task dialog's default button.
@@ -518,9 +534,11 @@ namespace Win32xx
 
         m_collapsedControlText = FillString(collapsedLabel);
         m_tc.pszCollapsedControlText = m_collapsedControlText;
+        WPARAM wparam = static_cast<WPARAM>(TDE_EXPANDED_INFORMATION);
+        LPARAM lparam = reinterpret_cast<LPARAM>(m_expandedInformation.c_str());
 
         if (IsWindow())
-            SendMessage(TDM_SET_ELEMENT_TEXT, (WPARAM)TDE_EXPANDED_INFORMATION, (LPARAM)m_expandedInformation.c_str());
+            SendMessage(TDM_SET_ELEMENT_TEXT, wparam, lparam);
     }
 
     // Sets the icon that will be displayed in the Task Dialog's footer.
@@ -528,9 +546,11 @@ namespace Win32xx
     inline void CTaskDialog::SetFooterIcon(HICON footerIcon)
     {
         m_tc.hFooterIcon = footerIcon;
+        WPARAM wparam = static_cast<WPARAM>(TDIE_ICON_FOOTER);
+        LPARAM lparam = reinterpret_cast<LPARAM>(footerIcon);
 
         if (IsWindow())
-            SendMessage(TDM_UPDATE_ICON, (WPARAM)TDIE_ICON_FOOTER, (LPARAM)footerIcon);
+            SendMessage(TDM_UPDATE_ICON, wparam, lparam);
     }
 
     // Sets the icon that will be displayed in the Task Dialog's footer.
@@ -544,9 +564,11 @@ namespace Win32xx
     inline void CTaskDialog::SetFooterIcon(LPCWSTR footerIcon)
     {
         m_tc.pszFooterIcon = const_cast<LPCWSTR>(footerIcon);
+        WPARAM wparam = static_cast<WPARAM>(TDIE_ICON_FOOTER);
+        LPARAM lparam = reinterpret_cast<LPARAM>(footerIcon);
 
         if (IsWindow())
-            SendMessage(TDM_UPDATE_ICON, (WPARAM)TDIE_ICON_FOOTER, (LPARAM)footerIcon);
+            SendMessage(TDM_UPDATE_ICON, wparam, lparam);
     }
 
     // Sets the text that will be displayed in the Task Dialog's footer.
@@ -555,9 +577,11 @@ namespace Win32xx
     {
         m_footer = FillString(footer);
         m_tc.pszFooter = m_footer;
+        WPARAM wparam = static_cast<WPARAM>(TDE_FOOTER);
+        LPARAM lparam = reinterpret_cast<LPARAM>(m_footer.c_str());
 
         if (IsWindow())
-            SendMessage(TDM_SET_ELEMENT_TEXT, (WPARAM)TDE_FOOTER, (LPARAM)(m_footer.c_str()));
+            SendMessage(TDM_SET_ELEMENT_TEXT, wparam, lparam);
     }
 
     // Sets Task Dialog's main icon.
@@ -565,9 +589,11 @@ namespace Win32xx
     inline void CTaskDialog::SetMainIcon(HICON mainIcon)
     {
         m_tc.hMainIcon = mainIcon;
+        WPARAM wparam = static_cast<WPARAM>(TDIE_ICON_MAIN);
+        LPARAM lparam = reinterpret_cast<LPARAM>(mainIcon);
 
         if (IsWindow())
-            SendMessage(TDM_UPDATE_ICON, (WPARAM)TDIE_ICON_MAIN, (LPARAM)mainIcon);
+            SendMessage(TDM_UPDATE_ICON, wparam, lparam);
     }
 
     // Sets Task Dialog's main icon.
@@ -580,9 +606,11 @@ namespace Win32xx
     inline void CTaskDialog::SetMainIcon(LPCWSTR mainIcon)
     {
         m_tc.pszMainIcon = const_cast<LPCWSTR>(mainIcon);
+        WPARAM wparam = static_cast<WPARAM>(TDIE_ICON_MAIN);
+        LPARAM lparam = reinterpret_cast<LPARAM>(mainIcon);
 
         if (IsWindow())
-            SendMessage(TDM_UPDATE_ICON, (WPARAM)TDIE_ICON_MAIN, (LPARAM)mainIcon);
+            SendMessage(TDM_UPDATE_ICON, wparam, lparam);
     }
 
     // Sets the Task Dialog's main instruction text.
@@ -591,9 +619,11 @@ namespace Win32xx
     {
         m_mainInstruction = FillString(mainInstruction);
         m_tc.pszMainInstruction = m_mainInstruction;
+        WPARAM wparam = static_cast<WPARAM>(TDE_FOOTER);
+        LPARAM lparam = reinterpret_cast<LPARAM>(m_mainInstruction.c_str());
 
         if (IsWindow())
-            SendMessage(TDM_SET_ELEMENT_TEXT, (WPARAM)TDE_FOOTER, (LPARAM)m_mainInstruction.c_str());
+            SendMessage(TDM_SET_ELEMENT_TEXT, wparam, lparam);
     }
 
     // Sets the Task Dialog's options. These are a combination of:
@@ -612,7 +642,9 @@ namespace Win32xx
     inline void CTaskDialog::SetProgressBarMarquee(BOOL isEnabled /* = TRUE*/, int marqueeSpeed /* = 0*/) const
     {
         assert(GetHwnd());
-        SendMessage(TDM_SET_PROGRESS_BAR_MARQUEE, (WPARAM)isEnabled, (LPARAM)marqueeSpeed);
+        WPARAM wparam = static_cast<WPARAM>(isEnabled);
+        LPARAM lparam = static_cast<LPARAM>(marqueeSpeed);
+        SendMessage(TDM_SET_PROGRESS_BAR_MARQUEE, wparam, lparam);
     }
 
     // Sets the current position for a progress bar.
@@ -620,7 +652,8 @@ namespace Win32xx
     inline void CTaskDialog::SetProgressBarPosition(int progressPos) const
     {
         assert(GetHwnd());
-        SendMessage(TDM_SET_PROGRESS_BAR_POS, (WPARAM)progressPos, 0);
+        WPARAM wparam = static_cast<WPARAM>(progressPos);
+        SendMessage(TDM_SET_PROGRESS_BAR_POS, wparam, 0);
     }
 
     // Sets the minimum and maximum values for the hosted progress bar.
@@ -637,7 +670,8 @@ namespace Win32xx
     inline void CTaskDialog::SetProgressBarState(int newState /* = PBST_NORMAL*/) const
     {
         assert(GetHwnd());
-        SendMessage(TDM_SET_PROGRESS_BAR_STATE, (WPARAM)newState, 0);
+        WPARAM wparam = static_cast<WPARAM>(newState);
+        SendMessage(TDM_SET_PROGRESS_BAR_STATE, wparam, 0);
     }
 
     // Simulates a click on the verification checkbox of the Task Dialog, if it exists.
@@ -645,7 +679,9 @@ namespace Win32xx
     inline void CTaskDialog::SetVerificationCheckbox(BOOL isChecked) const
     {
         assert(GetHwnd());
-        SendMessage(TDM_CLICK_VERIFICATION, (WPARAM)isChecked, (LPARAM)isChecked);
+        WPARAM wparam = static_cast<WPARAM>(isChecked);
+        LPARAM lparam = static_cast<LPARAM>(isChecked);
+        SendMessage(TDM_CLICK_VERIFICATION, wparam, lparam);
     }
 
     // Sets the text for the verification check box.
@@ -706,10 +742,14 @@ namespace Win32xx
     // Provides default handling of Task Dialog's messages.
     inline LRESULT CTaskDialog::TaskDialogProcDefault(UINT msg, WPARAM wparam, LPARAM lparam)
     {
+        int button = static_cast<int>(wparam);
+        BOOL isClicked = static_cast<BOOL>(wparam);
+        LPCWSTR hyperLink = reinterpret_cast<LPCWSTR>(lparam);
+        DWORD milliseconds = static_cast<DWORD>(wparam);
         switch(msg)
         {
         case TDN_BUTTON_CLICKED:
-            return OnTDButtonClicked((int)wparam);
+            return OnTDButtonClicked(button);
 
         case TDN_CREATED:
             OnTDCreated();
@@ -721,25 +761,25 @@ namespace Win32xx
             OnTDConstructed();
             break;
         case TDN_EXPANDO_BUTTON_CLICKED:
-            OnTDExpandButtonClicked((BOOL)wparam);
+            OnTDExpandButtonClicked(isClicked);
             break;
         case TDN_HELP:
             OnTDHelp();
             break;
         case TDN_HYPERLINK_CLICKED:
-            OnTDHyperlinkClicked(reinterpret_cast<LPCWSTR>(lparam));
+            OnTDHyperlinkClicked(hyperLink);
             break;
         case TDN_NAVIGATED:
             OnTDNavigatePage();
             break;
         case TDN_RADIO_BUTTON_CLICKED:
-            OnTDRadioButtonClicked((int)wparam);
+            OnTDRadioButtonClicked(button);
             break;
         case TDN_TIMER:
-            return OnTDTimer((DWORD)wparam);
+            return OnTDTimer(milliseconds);
 
         case TDN_VERIFICATION_CLICKED:
-            OnTDVerificationCheckboxClicked((BOOL)wparam);
+            OnTDVerificationCheckboxClicked(isClicked);
             break;
         }
 
@@ -774,7 +814,9 @@ namespace Win32xx
     inline void CTaskDialog::UpdateElementText(TASKDIALOG_ELEMENTS element, LPCWSTR newText) const
     {
         assert(GetHwnd());
-        SendMessage(TDM_UPDATE_ELEMENT_TEXT, (WPARAM)element, (LPARAM)newText);
+        WPARAM wparam = static_cast<WPARAM>(element);
+        LPARAM lparam = reinterpret_cast<LPARAM>(newText);
+        SendMessage(TDM_UPDATE_ELEMENT_TEXT, wparam, lparam);
     }
 
 }

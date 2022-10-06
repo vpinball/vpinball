@@ -1,5 +1,5 @@
-// Win32++   Version 9.0
-// Release Date: 30th April 2022
+// Win32++   Version 9.1
+// Release Date: 26th September 2022
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -149,7 +149,7 @@ namespace Win32xx
     class CFolderDialog : public CDialog
     {
     public:
-        CFolderDialog(UINT id = 0);
+        CFolderDialog();
         virtual ~CFolderDialog();
 
         virtual INT_PTR DoModal(HWND parent = 0);
@@ -158,7 +158,7 @@ namespace Win32xx
         CString GetFolderPath() const;
         LPITEMIDLIST GetFolderPidl() const   { return m_fullPidl.back(); }
         int  GetImageIndex() const           { return m_imageIndex; }
-        int  GetFlags() const                { return m_flags; }
+        UINT GetFlags() const                { return m_flags; }
         void EnableOK(BOOL enable = TRUE);
         void SetExpanded(LPCWSTR path);
         void SetExpanded(LPITEMIDLIST pItemIDList);
@@ -202,11 +202,11 @@ namespace Win32xx
 namespace Win32xx
 {
 
-    inline CFolderDialog::CFolderDialog(UINT id) : CDialog(id), m_pidlRoot(0), m_imageIndex(0)
+    inline CFolderDialog::CFolderDialog() : m_pidlRoot(0), m_imageIndex(0)
     {
         ZeroMemory(&m_bi, sizeof(m_bi));
         m_bi.lpfn = BrowseCallbackProc;
-        m_bi.lParam = (LPARAM)this;
+        m_bi.lParam = reinterpret_cast<LPARAM>(this);
 
         // Set the default flags.
         //  BIF_NEWDIALOGSTYLE    - Only return file system directories.
@@ -289,7 +289,7 @@ namespace Win32xx
     // Enables or disables the OK button.
     inline void CFolderDialog::EnableOK(BOOL enable /*TRUE*/)
     {
-        SendMessage(BFFM_ENABLEOK, (WPARAM)enable, 0);
+        SendMessage(BFFM_ENABLEOK, static_cast<WPARAM>(enable), 0);
     }
 
     // Returns the path of the selected folder.
@@ -347,21 +347,25 @@ namespace Win32xx
     // Refer to BFFM_SETEXPANDED in the Windows API documentation for more information.
     inline void CFolderDialog::SetExpanded(LPCWSTR path)
     {
-        SendMessage(BFFM_SETEXPANDED, (WPARAM)TRUE, (LPARAM)path);
+        WPARAM wparam = static_cast<WPARAM>(TRUE);
+        LPARAM lparam = reinterpret_cast<LPARAM>(path);
+        SendMessage(BFFM_SETEXPANDED, wparam, lparam);
     }
 
     // Specifies the path of a folder to expand in the Browse dialog box.
     // Refer to BFFM_SETEXPANDED in the Windows API documentation for more information.
     inline void CFolderDialog::SetExpanded(LPITEMIDLIST pItemIDList)
     {
-        SendMessage(BFFM_SETEXPANDED, (WPARAM)FALSE, (LPARAM)pItemIDList);
+        WPARAM wparam = static_cast<WPARAM>(FALSE);
+        LPARAM lparam = reinterpret_cast<LPARAM>(pItemIDList);
+        SendMessage(BFFM_SETEXPANDED, wparam, lparam);
     }
 
     // Sets the text of the OK button.
     // Refer to BFFM_SETOKTEXT in the Windows API documentation for more information.
     inline void CFolderDialog::SetOKText(LPCWSTR text)
     {
-        SendMessage(BFFM_SETOKTEXT, 0, (LPARAM)text);
+        SendMessage(BFFM_SETOKTEXT, 0, reinterpret_cast<LPARAM>(text));
     }
 
     // Sets the location of the root folder from which to start browsing.
@@ -374,14 +378,14 @@ namespace Win32xx
     // Refer to BFFM_SETSELECTION in the Windows API documentation for more information.
     inline void CFolderDialog::SetSelection(LPITEMIDLIST pItemIDList)
     {
-        SendMessage(BFFM_SETSELECTION, FALSE, (LPARAM)pItemIDList);
+        SendMessage(BFFM_SETSELECTION, FALSE, reinterpret_cast<LPARAM>(pItemIDList));
     }
 
     // Specifies the path of a folder to select.
     // Refer to BFFM_SETSELECTION in the Windows API documentation for more information.
     inline void CFolderDialog::SetSelection(LPCTSTR path)
     {
-        SendMessage(BFFM_SETSELECTION, TRUE, (LPARAM)path);
+        SendMessage(BFFM_SETSELECTION, TRUE, reinterpret_cast<LPARAM>(path));
     }
 
     // Sets the status text.
@@ -389,7 +393,7 @@ namespace Win32xx
     // Refer to BFFM_SETSTATUSTEXT in the Windows API documentation for more information.
     inline void CFolderDialog::SetStatusText(LPCTSTR text)
     {
-        SendMessage(BFFM_SETSTATUSTEXT, 0, (LPARAM)text);
+        SendMessage(BFFM_SETSTATUSTEXT, 0, reinterpret_cast<LPARAM>(text));
     }
 
     // Sets the title of the browse for folder dialog.
