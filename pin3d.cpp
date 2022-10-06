@@ -1013,21 +1013,17 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
    InitLights();
 }
 
-void Pin3D::RenderPlayfieldGraphics(const int mode)
+void Pin3D::RenderPlayfieldDepth()
 {
    TRACE_FUNCTION();
    const IEditable* piEdit = nullptr;
+   g_pplayer->m_current_renderstage = 1;
    for (size_t i = 0; i < g_pplayer->m_ptable->m_vedit.size(); ++i)
-      if (g_pplayer->m_ptable->m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && strcmp(g_pplayer->m_ptable->m_vedit[i]->GetName(), "playfield_mesh") == 0)
-      {
-         if (piEdit == nullptr || ((Primitive*)piEdit)->m_d.m_toy || !((Primitive*)piEdit)->m_d.m_collidable) // either the first playfield mesh OR a toy/not-collidable (i.e. only used for visuals)?
-            piEdit = g_pplayer->m_ptable->m_vedit[i];
-      }
-   g_pplayer->m_current_renderstage = mode;
-   Primitive* const pPrim = (Primitive*)piEdit;
-   pPrim->m_d.m_visible = true;  // temporary enable the otherwise invisible playfield
-   pPrim->RenderObject();
-   pPrim->m_d.m_visible = false; // restore
+   {
+      piEdit = g_pplayer->m_ptable->m_vedit[i];
+      if (piEdit->GetItemType() == ItemTypeEnum::eItemPrimitive && ((Primitive*)piEdit)->IsPlayfield())
+         ((Primitive*)piEdit)->RenderObject();
+   }
    g_pplayer->m_current_renderstage = 0;
 }
 
