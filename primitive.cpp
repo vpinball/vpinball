@@ -1294,10 +1294,7 @@ void Primitive::RenderObject()
          pd3dDevice->basicShader->SetFloat(SHADER_mirrorFactor, m_ptable->m_playfieldReflectionStrength);
          bool is_reflection_only;
          if (g_pplayer->m_isRenderingStatic)
-         {
             is_reflection_only = false; // Static prepass => render playfield and reflections
-            pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE); // Don't write depth for static pre-rendering
-         }
          else if (g_pplayer->m_dynamicMode)
             is_reflection_only = false; // Normal pass without a static prepass => render playfield and reflections
          else

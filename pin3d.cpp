@@ -1013,20 +1013,6 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
    InitLights();
 }
 
-void Pin3D::RenderPlayfieldDepth()
-{
-   TRACE_FUNCTION();
-   const IEditable* piEdit = nullptr;
-   g_pplayer->m_current_renderstage = 1;
-   for (size_t i = 0; i < g_pplayer->m_ptable->m_vedit.size(); ++i)
-   {
-      piEdit = g_pplayer->m_ptable->m_vedit[i];
-      if (piEdit->GetItemType() == ItemTypeEnum::eItemPrimitive && ((Primitive*)piEdit)->IsPlayfield())
-         ((Primitive*)piEdit)->RenderObject();
-   }
-   g_pplayer->m_current_renderstage = 0;
-}
-
 void Pin3D::EnableAlphaTestReference(const DWORD alphaRefValue) const
 {
    m_pd3dPrimaryDevice->SetRenderStateAlphaTestFunction(alphaRefValue, RenderDevice::Z_GREATEREQUAL, true);

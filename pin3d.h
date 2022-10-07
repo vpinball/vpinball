@@ -68,7 +68,6 @@ public:
    void EnableAlphaBlend(const bool additiveBlending, const bool set_dest_blend = true, const bool set_blend_op = true) const;
 
    void DrawBackground();
-   void RenderPlayfieldDepth();
 
    const Matrix3D& GetWorldTransform() const   { return m_proj.m_matWorld; }
    const Matrix3D& GetViewTransform() const    { return m_proj.m_matView; }
