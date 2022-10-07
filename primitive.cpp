@@ -1291,8 +1291,10 @@ void Primitive::RenderObject()
       }
       else if (mirror) // We have reflections to render on the primitive
       {
+         const vec4 cWidth_Height_MirrorAmount(
+            RenderTarget::GetCurrentRenderTarget()->GetWidth(), RenderTarget::GetCurrentRenderTarget()->GetHeight(), m_ptable->m_playfieldReflectionStrength, 0.0f);
+         pd3dDevice->basicShader->SetVector(SHADER_cWidth_Height_MirrorAmount, &cWidth_Height_MirrorAmount);
          pd3dDevice->basicShader->SetTexture(SHADER_tex_playfield_reflection, mirror->GetColorSampler());
-         pd3dDevice->basicShader->SetFloat(SHADER_mirrorFactor, m_ptable->m_playfieldReflectionStrength);
          bool is_reflection_only;
          if (g_pplayer->m_isRenderingStatic)
             is_reflection_only = false; // Static prepass => render playfield and reflections
