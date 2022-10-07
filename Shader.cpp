@@ -151,8 +151,8 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_UNIFORM(SUT_Float4, vRes_Alpha_time),
    SHADER_UNIFORM(SUT_Float4, SSR_bumpHeight_fresnelRefl_scale_FS),
    SHADER_UNIFORM(SUT_Float2, AO_scale_timeblur),
-   SHADER_UNIFORM(SUT_Float4, clip_planes), // OpenGL only
    SHADER_UNIFORM(SUT_Float4, cWidth_Height_MirrorAmount),
+   SHADER_UNIFORM(SUT_Float4, clip_planes), // OpenGL only
    SHADER_UNIFORM(SUT_Float4, lightEmission),
    SHADER_UNIFORM(SUT_Float4, lightPos),
    SHADER_UNIFORM(SUT_Float4v, packedLights), // DX9 only

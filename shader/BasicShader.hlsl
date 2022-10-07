@@ -95,7 +95,7 @@ const float4 cGlossy_ImageLerp;
 const float4 staticColor_Alpha;
 const float alphaTestValue;
 
-const float mirrorFactor;
+const float4 cWidth_Height_MirrorAmount;
 
 struct VS_OUTPUT 
 { 
@@ -351,7 +351,7 @@ float4 ps_main_playfield_texture(const in VS_OUTPUT IN, float2 screenSpace : VPO
             fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
-   result.rgb += mirrorFactor * tex2D(texSamplerPFReflections, float2(screenSpace.x / 2560.0, screenSpace.y / 1440.0)).rgb;
+   result.rgb += cWidth_Height_MirrorAmount.z * tex2D(texSamplerPFReflections, float2(screenSpace.x / cWidth_Height_MirrorAmount.x, screenSpace.y / cWidth_Height_MirrorAmount.y)).rgb;
 
    return result * staticColor_Alpha;
 }
@@ -374,7 +374,7 @@ float4 ps_main_playfield_refl_texture(const in VS_OUTPUT IN, float2 screenSpace 
       result.a = GeometricOpacity(dot(N, V), result.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
    }
 
-   result.rgb = mirrorFactor * tex2D(texSamplerPFReflections, float2(screenSpace.x / 2560.0, screenSpace.y / 1440.0)).rgb;
+   result.rgb = cWidth_Height_MirrorAmount.z * tex2D(texSamplerPFReflections, float2(screenSpace.x / cWidth_Height_MirrorAmount.x, screenSpace.y / cWidth_Height_MirrorAmount.y)).rgb;
 
    return result * staticColor_Alpha;
 }
@@ -383,7 +383,7 @@ float4 ps_main_playfield_refl(const in VS_OUTPUT IN, float2 screenSpace : VPOS)
    : COLOR
 {
    float4 result;
-   result.rgb = mirrorFactor * tex2D(texSamplerPFReflections, float2(screenSpace.x / 2560.0, screenSpace.y / 1440.0)).rgb;
+   result.rgb = cWidth_Height_MirrorAmount.z * tex2D(texSamplerPFReflections, float2(screenSpace.x / cWidth_Height_MirrorAmount.x, screenSpace.y / cWidth_Height_MirrorAmount.y)).rgb;
    result.a = 1.0;
    return result * staticColor_Alpha;
 }
