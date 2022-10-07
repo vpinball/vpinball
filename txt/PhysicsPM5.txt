@@ -8,7 +8,7 @@ VP10 has a completely overhauled physics engine; see details below for more info
 
 
 
-VP 10 has a completely overhauled and much more realistic physics engine. The main new features are the following:
+The main new features are the following:
 
 * Physics framerate raised from 100 Hz to 1000 Hz. This increases the smoothness, accuracy and stability of the physics simulation.
 * Physics now always use a fixed timestep. This eliminates all FPS dependence of the physics code and makes smooth gameplay at vsynced framerates possible.
