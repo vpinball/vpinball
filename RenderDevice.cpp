@@ -676,7 +676,9 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     m_pOffscreenVRRight = nullptr;
     m_pBloomBufferTexture = nullptr;
     m_pBloomTmpBufferTexture = nullptr;
-    m_pMirrorTmpBufferTexture = nullptr;
+    m_pStaticMirrorRenderTarget = nullptr;
+    m_pDynamicMirrorRenderTarget = nullptr;
+    m_pReflectionBufferTexture = nullptr;
 }
 
 void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
@@ -1054,17 +1056,20 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    else
       m_pOffscreenBackBufferTexture = m_pOffscreenMSAABackBufferTexture;
 
+   // alloc buffer for static and dynamic playfield reflections
+   const bool drawBallReflection = ((g_pplayer->m_reflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
+   if (g_pplayer->m_ptable->m_reflectElementsOnPlayfield)
+      m_pStaticMirrorRenderTarget = m_pOffscreenBackBufferTexture->Duplicate();
+   if ((g_pplayer->m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl) || drawBallReflection)
+      m_pDynamicMirrorRenderTarget = m_pOffscreenBackBufferTexture->Duplicate();
+
    // alloc buffer for screen space fake reflection rendering
    if (m_ssRefl)
       m_pReflectionBufferTexture = new RenderTarget(this, m_width_aa, m_height_aa, render_format, false, 1, STEREO_OFF, "Fatal Error: unable to create reflection buffer!");
-   else
-      m_pReflectionBufferTexture = nullptr;
 
    // alloc bloom tex at 1/4 x 1/4 res (allows for simple HQ downscale of clipped input while saving memory)
    m_pBloomBufferTexture = new RenderTarget(this, m_width / 4, m_height / 4, render_format, false, 1, STEREO_OFF, "Fatal Error: unable to create bloom buffer!");
-
-   // temporary buffer for gaussian blur
-   m_pBloomTmpBufferTexture = new RenderTarget(this, m_width / 4, m_height / 4, render_format, false, 1, STEREO_OFF, "Fatal Error: unable to create blur buffer!");
+   m_pBloomTmpBufferTexture = m_pBloomBufferTexture->Duplicate();
 
 #ifdef ENABLE_SDL
    if (m_stereo3D == STEREO_VR) {
@@ -1089,12 +1094,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
       m_pOffscreenVRLeft = new RenderTarget(this, m_width / 2, m_height, renderBufferFormatVR, false, 1, STEREO_OFF, "Fatal Error: unable to create left eye buffer!");
       m_pOffscreenVRRight = new RenderTarget(this, m_width / 2, m_height, renderBufferFormatVR, false, 1, STEREO_OFF, "Fatal Error: unable to create right eye buffer!");
    }
-   else
 #endif
-   {
-      m_pOffscreenVRLeft = nullptr;
-      m_pOffscreenVRRight = nullptr;
-   }
 
    // Buffers for post-processing (postprocess is done at scene resolution, on a LDR render target without MSAA or full scene supersampling)
 #ifdef ENABLE_SDL
@@ -1106,14 +1106,10 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    // alloc temporary buffer for stereo3D/post-processing AA/sharpen
    if ((m_stereo3D != STEREO_OFF) || (m_FXAA != FXAASettings::Disabled) || m_sharpen)
       m_pOffscreenBackBufferTmpTexture = new RenderTarget(this, m_width, m_height, pp_format, false, 1, STEREO_OFF, "Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!");
-   else
-      m_pOffscreenBackBufferTmpTexture = nullptr;
 
    // alloc one more temporary buffer for SMAA, DLAA, stereo post processing
    if ((m_stereo3D != STEREO_OFF) || m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA)
-      m_pOffscreenBackBufferTmpTexture2 = new RenderTarget(this, m_width, m_height, pp_format, false, 1, STEREO_OFF, "Fatal Error: unable to create SMAA buffer!");
-   else
-      m_pOffscreenBackBufferTmpTexture2 = nullptr;
+      m_pOffscreenBackBufferTmpTexture2 = m_pOffscreenBackBufferTmpTexture->Duplicate();
 
    if (video10bit && (m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA))
       ShowError("SMAA or DLAA post-processing AA should not be combined with 10bit-output rendering (will result in visible artifacts)!");
@@ -1367,12 +1363,8 @@ RenderDevice::~RenderDevice()
    delete m_pOffscreenBackBufferTmpTexture2;
    delete m_pReflectionBufferTexture;
 
-   if (g_pplayer)
-   {
-      const bool drawBallReflection = ((g_pplayer->m_reflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
-      if ((g_pplayer->m_ptable->m_reflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
-         delete m_pMirrorTmpBufferTexture;
-   }
+   delete m_pStaticMirrorRenderTarget;
+   delete m_pDynamicMirrorRenderTarget;
    delete m_pBloomBufferTexture;
    delete m_pBloomTmpBufferTexture;
    delete m_pBackBuffer;
