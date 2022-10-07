@@ -76,6 +76,7 @@ public:
    Vertex2D GetCenter() const final;
    void PutCenter(const Vertex2D& pv) final;
 
+   void PreRenderStatic(RenderDevice* pd3dDevice) final;
    void SetDefaultPhysics(bool fromMouseClick) final;
    void ExportMesh(ObjLoader& loader) final;
 

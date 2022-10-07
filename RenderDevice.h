@@ -91,26 +91,30 @@ class Shader;
 class RenderDevice final
 {
 public:
-#define RENDER_STATE(name, bitpos, bitsize) name,
-   // These definition must be copy/pasted to RenderDevice.h/cpp when modified to keep the implementation in sync
+
+#ifdef ENABLE_SDL
    enum RenderStates
    {
-      RENDER_STATE(ALPHABLENDENABLE, 0, 1) // RS_FALSE or RS_TRUE
-      RENDER_STATE(ZENABLE, 1, 1) // RS_FALSE or RS_TRUE
-      RENDER_STATE(ALPHATESTENABLE, 2, 1) // RS_FALSE or RS_TRUE
-      RENDER_STATE(ALPHAFUNC, 3, 3) // Operation from Z_ALWAYS, Z_LESS, Z_LESSEQUAL, Z_GREATER, Z_GREATEREQUAL
-      RENDER_STATE(BLENDOP, 6, 2) // Operation from BLENDOP_MAX, BLENDOP_ADD, BLENDOP_SUB, BLENDOP_REVSUBTRACT
-      RENDER_STATE(CLIPPLANEENABLE, 8, 1) // PLANE0 or 0 (for disable)
-      RENDER_STATE(CULLMODE, 9, 2) // CULL_NONE, CULL_CW, CULL_CCW
-      RENDER_STATE(DESTBLEND, 11, 3) // ZERO, ONE, SRC_ALPHA, DST_ALPHA, INVSRC_ALPHA, INVSRC_COLOR
-      RENDER_STATE(SRCBLEND, 14, 3) // ZERO, ONE, SRC_ALPHA, DST_ALPHA, INVSRC_ALPHA, INVSRC_COLOR
-      RENDER_STATE(ZFUNC, 17, 3) // Operation from Z_ALWAYS, Z_LESS, Z_LESSEQUAL, Z_GREATER, Z_GREATEREQUAL
-      RENDER_STATE(ZWRITEENABLE, 20, 1) // RS_FALSE or RS_TRUE
-      RENDER_STATE(COLORWRITEENABLE, 21, 4) // RGBA mask (4 bits)
+      ALPHABLENDENABLE,
+      ZENABLE,
+      DEPTHBIAS,
+      ALPHATESTENABLE,
+      ALPHAREF,
+      ALPHAFUNC,
+      BLENDOP,
+      CLIPPING,
+      CLIPPLANEENABLE,
+      CULLMODE,
+      DESTBLEND,
+      LIGHTING,
+      SRCBLEND,
+      SRGBWRITEENABLE,
+      ZFUNC,
+      ZWRITEENABLE,
+      COLORWRITEENABLE,
       RENDERSTATE_COUNT,
       RENDERSTATE_INVALID
    };
-#undef RENDER_STATE
 
    enum RenderStateValue
    {
@@ -119,35 +123,34 @@ public:
       RS_TRUE = 1,
       //Culling
       CULL_NONE = 0,
-      CULL_CW = 1,
-      CULL_CCW = 2,
+      CULL_CW = GL_CW,
+      CULL_CCW = GL_CCW,
       //Depth functions
-      Z_ALWAYS = 0,
-      Z_LESS = 1,
-      Z_LESSEQUAL = 2,
-      Z_GREATER = 3,
-      Z_GREATEREQUAL = 4,
+      Z_ALWAYS = GL_ALWAYS,
+      Z_LESS = GL_LESS,
+      Z_LESSEQUAL = GL_LEQUAL,
+      Z_GREATER = GL_GREATER,
+      Z_GREATEREQUAL = GL_GEQUAL,
       //Blending ops
-      BLENDOP_MAX = 0,
-      BLENDOP_ADD = 1,
-      BLENDOP_REVSUBTRACT = 2,
+      BLENDOP_MAX = GL_MAX,
+      BLENDOP_ADD = GL_FUNC_ADD,
+      BLENDOP_SUB = GL_FUNC_SUBTRACT,
+      BLENDOP_REVSUBTRACT = GL_FUNC_REVERSE_SUBTRACT,
       //Blending values
-      ZERO = 0,
-      ONE = 1,
-      SRC_ALPHA = 2,
-      DST_ALPHA = 3,
-      INVSRC_ALPHA = 4,
-      INVSRC_COLOR = 5,
+      ZERO = GL_ZERO,
+      ONE = GL_ONE,
+      SRC_ALPHA = GL_SRC_ALPHA,
+      DST_ALPHA = GL_DST_ALPHA,
+      SRC_COLOR = GL_SRC_COLOR,
+      DST_COLOR = GL_DST_COLOR,
+      INVSRC_ALPHA = GL_ONE_MINUS_SRC_ALPHA,
+      INVSRC_COLOR = GL_ONE_MINUS_SRC_COLOR,
       //Clipping planes
       PLANE0 = 1,
-      //Color mask
-      RGBMASK_NONE = 0x00000000u,
-      RGBMASK_RGBA = 0x0000000Fu,
 
       UNDEFINED
    };
 
-#ifdef ENABLE_SDL
    enum SamplerStateValues {
       NONE = 0,
       POINT = 0,
@@ -166,9 +169,67 @@ public:
       LINESTRIP = GL_LINE_STRIP
    };
 
-   SDL_Window* m_sdl_playfieldHwnd;
-   SDL_GLContext m_sdl_context;
+   SDL_Window *m_sdl_playfieldHwnd;
+   SDL_GLContext  m_sdl_context;
+
 #else
+
+   enum RenderStates
+   {
+      ALPHABLENDENABLE = D3DRS_ALPHABLENDENABLE,
+      ALPHATESTENABLE = D3DRS_ALPHATESTENABLE,
+      ALPHAREF = D3DRS_ALPHAREF,
+      ALPHAFUNC = D3DRS_ALPHAFUNC,
+      BLENDOP = D3DRS_BLENDOP,
+      CLIPPING = D3DRS_CLIPPING,
+      CLIPPLANEENABLE = D3DRS_CLIPPLANEENABLE,
+      CULLMODE = D3DRS_CULLMODE,
+      DESTBLEND = D3DRS_DESTBLEND,
+      LIGHTING = D3DRS_LIGHTING,
+      SRCBLEND = D3DRS_SRCBLEND,
+      SRGBWRITEENABLE = D3DRS_SRGBWRITEENABLE,
+      ZENABLE = D3DRS_ZENABLE,
+      ZFUNC = D3DRS_ZFUNC,
+      ZWRITEENABLE = D3DRS_ZWRITEENABLE,
+      TEXTUREFACTOR = D3DRS_TEXTUREFACTOR,
+      DEPTHBIAS = D3DRS_DEPTHBIAS,
+      COLORWRITEENABLE = D3DRS_COLORWRITEENABLE,
+      RENDERSTATE_COUNT,
+      RENDERSTATE_INVALID
+   };
+
+   enum RenderStateValue
+   {
+      //Booleans
+      RS_FALSE = FALSE,
+      RS_TRUE = TRUE,
+      //Culling
+      CULL_NONE = D3DCULL_NONE,
+      CULL_CW = D3DCULL_CW,
+      CULL_CCW = D3DCULL_CCW,
+      //Depth functions
+      Z_ALWAYS = D3DCMP_ALWAYS,
+      Z_LESS = D3DCMP_LESS,
+      Z_LESSEQUAL = D3DCMP_LESSEQUAL,
+      Z_GREATER = D3DCMP_GREATER,
+      Z_GREATEREQUAL = D3DCMP_GREATEREQUAL,
+      //Blending ops
+      BLENDOP_MAX = D3DBLENDOP_MAX,
+      BLENDOP_ADD = D3DBLENDOP_ADD,
+      BLENDOP_REVSUBTRACT = D3DBLENDOP_REVSUBTRACT,
+      //Blending values
+      ZERO = D3DBLEND_ZERO,
+      ONE = D3DBLEND_ONE,
+      SRC_ALPHA = D3DBLEND_SRCALPHA,
+      DST_ALPHA = D3DBLEND_DESTALPHA,
+      INVSRC_ALPHA = D3DBLEND_INVSRCALPHA,
+      INVSRC_COLOR = D3DBLEND_INVSRCCOLOR,
+      //Clipping planes
+      PLANE0 = D3DCLIPPLANE0,
+
+      UNDEFINED
+   };
+
    enum TextureAddressMode {
       TEX_WRAP = D3DTADDRESS_WRAP,
       TEX_CLAMP = D3DTADDRESS_CLAMP,
@@ -221,31 +282,13 @@ public:
 
    bool DepthBufferReadBackAvailable();
 
-   struct RenderStateCache
-   {
-      unsigned int state;
-      float depth_bias;
-      DWORD alpha_ref;
-   };
-   void SetRenderState(const RenderStates p1, const RenderStateValue p2);
+   void SetRenderState(const RenderStates p1, DWORD p2);
+   bool SetRenderStateCache(const RenderStates p1, DWORD p2);
    void SetRenderStateCulling(RenderStateValue cull);
    void SetRenderStateDepthBias(float bias);
    void SetRenderStateClipPlane0(const bool enabled);
    void SetRenderStateAlphaTestFunction(const DWORD testValue, const RenderStateValue testFunction, const bool enabled);
-   void CopyRenderStates(const bool copyTo, RenderStateCache& state);
-   void ApplyRenderStates();
 
-private:
-   struct RenderStateMask
-   {
-      uint32_t shift;
-      uint32_t mask;
-      uint32_t clear_mask;
-   };
-   static const RenderStateMask render_state_masks[RENDERSTATE_COUNT];
-   RenderStateCache m_current_renderstate, m_renderstate;
-
-public:
    void SetTextureFilter(const DWORD texUnit, DWORD mode);
    void SetTextureAddressMode(const DWORD texUnit, const TextureAddressMode mode);
 #ifndef ENABLE_SDL
@@ -316,8 +359,8 @@ public:
 #endif
 
    HWND         m_windowHwnd;
-   int          m_width; // Width of the render buffer (not the window width, for example for stereo the render width is doubled, or for VR, the size depends on the headset)
-   int          m_height; // Height of the render buffer
+   int          m_width;
+   int          m_height;
    bool         m_fullscreen;
    int          m_colorDepth;
    int          m_vsync;
@@ -370,6 +413,7 @@ private:
    static constexpr DWORD TEXTURE_STATE_CACHE_SIZE = 256;
    static constexpr DWORD TEXTURE_SAMPLER_CACHE_SIZE = 14;
 
+   robin_hood::unordered_map<RenderStates, DWORD> renderStateCache;         // for caching
    DWORD textureStateCache[TEXTURE_SAMPLERS][TEXTURE_STATE_CACHE_SIZE];     // dto.
    DWORD textureSamplerCache[TEXTURE_SAMPLERS][TEXTURE_SAMPLER_CACHE_SIZE]; // dto.
 

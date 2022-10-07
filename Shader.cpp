@@ -135,7 +135,7 @@ void Shader::SetTextureNull(const SHADER_UNIFORM_HANDLE texelName)
    m_renderDevice->m_curTextureChanges++;
 }
 
-void Shader::SetMaterial(const Material* const mat, const bool has_alpha)
+void Shader::SetMaterial(const Material* const mat)
 {
    COLORREF cBase, cGlossy, cClearcoat;
    float fWrapLighting, fRoughness, fGlossyImageLerp, fThickness, fEdge, fEdgeAlpha, fOpacity;
@@ -210,7 +210,7 @@ void Shader::SetMaterial(const Material* const mat, const bool has_alpha)
       currentMaterial.m_fEdgeAlpha = fEdgeAlpha;
    }
 
-   if (bOpacityActive && (has_alpha || alpha < 1.0f))
+   if (bOpacityActive /*&& (alpha < 1.0f)*/)
       g_pplayer->m_pin3d.EnableAlphaBlend(false);
    else
       g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);

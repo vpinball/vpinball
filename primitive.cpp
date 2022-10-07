@@ -1214,6 +1214,7 @@ void Primitive::RenderObject()
    if (!m_d.m_useAsPlayfield)
    {
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+      pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->SetRenderStateDepthBias(0.f);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
@@ -1236,7 +1237,6 @@ void Primitive::RenderObject()
          //g_pplayer->m_pin3d.SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
          // accommodate models with UV coords outside of [0,1]
          pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
-         pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
       }
       else if (pin)
       {
@@ -1247,13 +1247,9 @@ void Primitive::RenderObject()
          //g_pplayer->m_pin3d.SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
          // accommodate models with UV coords outside of [0,1]
          pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
-         pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
       }
       else
-      {
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
-         pd3dDevice->basicShader->SetMaterial(mat, false);
-      }
 
       // set transform
       g_pplayer->UpdateBasicShaderMatrix(m_fullMatrix);
@@ -1274,7 +1270,7 @@ void Primitive::RenderObject()
       }
 
       // draw the mesh
-      pd3dDevice->basicShader->Begin();
+      pd3dDevice->basicShader->Begin(0);
       if (m_d.m_groupdRendering)
          pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numGroupVertices, m_indexBuffer, 0, m_numGroupIndices);
       else
@@ -1284,7 +1280,7 @@ void Primitive::RenderObject()
       if (m_d.m_backfacesEnabled && mat->m_bOpacityActive)
       {
          pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
-         pd3dDevice->basicShader->Begin();
+         pd3dDevice->basicShader->Begin(0);
          if (m_d.m_groupdRendering)
             pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numGroupVertices, m_indexBuffer, 0, m_numGroupIndices);
          else
@@ -1312,7 +1308,7 @@ void Primitive::RenderObject()
       //pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW); // don't mess with the render states when doing playfield rendering
       // set transform
       g_pplayer->UpdateBasicShaderMatrix(m_fullMatrix);
-      pd3dDevice->basicShader->Begin();
+      pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), m_indexBuffer, 0, (DWORD)m_mesh.NumIndices());
       pd3dDevice->basicShader->End();
       // reset transform
