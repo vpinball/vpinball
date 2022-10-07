@@ -4,7 +4,6 @@
 #include "quadtree.h"
 #include "Debugger.h"
 #include "Shader.h"
-#include "pininput.h"
 
 #define DEFAULT_PLAYER_WIDTH 1024
 #define DEFAULT_PLAYER_FS_WIDTH 1920
@@ -358,7 +357,9 @@ public:
    float ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2);
 #endif
 
+#ifndef ENABLE_SDL
    void DMDdraw(const float DMDposx, const float DMDposy, const float DMDwidth, const float DMDheight, const COLORREF DMDcolor, const float intensity);
+#endif
    void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture* const tex, const float intensity, const bool backdrop=false);
    void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Sampler* const tex, const float intensity, const bool backdrop=false);
 
@@ -433,8 +434,7 @@ public:
    int m_maxPrerenderedFrames;
    int m_FXAA;    // =FXAASettings
    int m_sharpen; // 0=off, 1=CAS, 2=bilateral CAS
-   int m_MSAASamples;
-   float m_AAfactor;
+   bool m_AA;
 
    bool m_dynamicAO;
    bool m_disableAO;

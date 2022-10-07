@@ -6,7 +6,7 @@
 class BallMoverObject : public MoverObject
 {
 public:
-   bool AddToList() const override { return false; } // We add ourselves to the mover list.
+   bool AddToList() const override { return false; } // We add ourselves to the mover list.  
                                                      // If we allow the table to do that, we might get added twice, if we get created in the player Init code
    void UpdateDisplacements(const float dtime) override;
    void UpdateVelocities() override;

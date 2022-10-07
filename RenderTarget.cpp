@@ -23,7 +23,7 @@ RenderTarget::RenderTarget(RenderDevice* rd, int width, int height)
    m_width = width;
    m_height = height;
    m_has_depth = false;
-   m_nMSAASamples = 1;
+   m_nMSAASamples = 0;
    m_color_sampler = nullptr;
    m_depth_sampler = nullptr;
 #ifdef ENABLE_SDL
@@ -62,11 +62,7 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
       || (format == RGB10) || (format == RGB16F) || (format == RGB32F) || (format == RGBA16F) || (format == RGBA32F) || (format == RGBA) || (format == RGBA8) || (format == RGBA10)
       || (format == DXT5) || (format == BC6U) || (format == BC6S) || (format == BC7);
 
-   m_color_tex = 0;
-   m_depth_tex = 0;
-   m_color_sampler = nullptr;
-   m_depth_sampler = nullptr;
-
+   m_color_tex = m_depth_tex = 0;
    glGenFramebuffers(1, &m_framebuffer);
    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
 
@@ -134,11 +130,15 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
       exit(-1);
    }
 
-   if (nMSAASamples == 1)
+   if (nMSAASamples > 1)
    {
-      m_color_sampler = new Sampler(m_rd, m_color_tex, false, false, true);
-      if (width_depth)
-         m_depth_sampler = new Sampler(m_rd, m_depth_tex, false, false, true);
+      m_color_sampler = nullptr;
+      m_depth_sampler = nullptr;
+   }
+   else
+   {
+      m_color_sampler = new Sampler(m_rd, m_color_tex, false, nMSAASamples > 1, true);
+      m_depth_sampler = with_depth ? new Sampler(m_rd, m_depth_tex, false, nMSAASamples > 1, true) : nullptr;
    }
 
    glClearDepthf(1.0f);
@@ -146,57 +146,44 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 #else
-   m_color_tex = nullptr;
-   m_depth_tex = nullptr;
-   m_color_sampler = nullptr;
-   m_color_surface = nullptr;
-   m_depth_surface = nullptr;
-   m_depth_sampler = nullptr;
-   if (nMSAASamples > 1)
+
+   HRESULT hr = m_rd->GetCoreDevice()->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, (D3DFORMAT)format, (D3DPOOL)memoryPool::DEFAULT, &m_color_tex, nullptr);
+   if (FAILED(hr))
+      ReportError(failureMessage, hr, __FILE__, __LINE__);
+   m_color_tex->GetSurfaceLevel(0, &m_color_surface);
+   m_color_sampler = new Sampler(m_rd, m_color_tex, false, true);
+   m_use_alternate_depth = m_rd->m_useNvidiaApi || !m_rd->m_INTZ_support;
+   if (with_depth)
    {
-      // MSAA is made through a rendering surface that must be resolved a texture to be sampled
-      // In theory, we should check adapter support using CheckDeviceMultiSampleType before creating but nowadays most GPU do support what VPX request
-      D3DMULTISAMPLE_TYPE ms_type = (D3DMULTISAMPLE_TYPE) (D3DMULTISAMPLE_NONE + nMSAASamples);
-      DWORD ms_quality = 0;
-      CHECKD3D(m_rd->GetCoreDevice()->CreateRenderTarget(width, height, (D3DFORMAT)format, ms_type, ms_quality, FALSE, &m_color_surface, nullptr));
-      if (with_depth)
-         CHECKD3D(m_rd->GetCoreDevice()->CreateRenderTarget(width, height, (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'), ms_type, ms_quality, FALSE, &m_depth_surface, nullptr));
+      CHECKD3D(m_rd->GetCoreDevice()->CreateTexture(width, height, 1, D3DUSAGE_DEPTHSTENCIL, (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'), (D3DPOOL)memoryPool::DEFAULT, &m_depth_tex, nullptr)); // D3DUSAGE_AUTOGENMIPMAP?
+      if (m_use_alternate_depth)
+      {
+         // Alternate depth path. Depth surface and depth texture are separated, synced with a copy.
+         D3DSURFACE_DESC desc;
+         m_color_surface->GetDesc(&desc);
+         const HRESULT hr = m_rd->GetCoreDevice()->CreateDepthStencilSurface(width, height, D3DFMT_D16 /*D3DFMT_D24X8*/, //!!
+            desc.MultiSampleType, desc.MultiSampleQuality, FALSE, &m_depth_surface, nullptr);
+         if (FAILED(hr))
+            ReportError("Fatal Error: unable to create depth buffer!", hr, __FILE__, __LINE__);
+#ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
+         if (m_rd->NVAPIinit)
+         {
+            CHECKNVAPI(NvAPI_D3D9_RegisterResource(m_depth_surface));
+            CHECKNVAPI(NvAPI_D3D9_RegisterResource(m_depth_tex));
+         }
+#endif
+      }
+      else
+      {
+         CHECKD3D(m_depth_tex->GetSurfaceLevel(0, &m_depth_surface));
+      }
+      m_depth_sampler = new Sampler(m_rd, m_depth_tex, false, true);
    }
    else
    {
-      HRESULT hr = m_rd->GetCoreDevice()->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, (D3DFORMAT)format, (D3DPOOL)memoryPool::DEFAULT, &m_color_tex, nullptr);
-      if (FAILED(hr))
-         ReportError(failureMessage, hr, __FILE__, __LINE__);
-      m_color_tex->GetSurfaceLevel(0, &m_color_surface);
-      m_color_sampler = new Sampler(m_rd, m_color_tex, false, true);
-      m_use_alternate_depth = m_rd->m_useNvidiaApi || !m_rd->m_INTZ_support;
-      if (with_depth)
-      {
-         CHECKD3D(m_rd->GetCoreDevice()->CreateTexture(
-            width, height, 1, D3DUSAGE_DEPTHSTENCIL, (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'), (D3DPOOL)memoryPool::DEFAULT, &m_depth_tex, nullptr)); // D3DUSAGE_AUTOGENMIPMAP?
-         if (m_use_alternate_depth)
-         {
-            // Alternate depth path. Depth surface and depth texture are separated, synced with a copy.
-            D3DSURFACE_DESC desc;
-            m_color_surface->GetDesc(&desc);
-            const HRESULT hr = m_rd->GetCoreDevice()->CreateDepthStencilSurface(width, height, D3DFMT_D16 /*D3DFMT_D24X8*/, //!!
-               desc.MultiSampleType, desc.MultiSampleQuality, FALSE, &m_depth_surface, nullptr);
-            if (FAILED(hr))
-               ReportError("Fatal Error: unable to create depth buffer!", hr, __FILE__, __LINE__);
-#ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
-            if (m_rd->NVAPIinit)
-            {
-               CHECKNVAPI(NvAPI_D3D9_RegisterResource(m_depth_surface));
-               CHECKNVAPI(NvAPI_D3D9_RegisterResource(m_depth_tex));
-            }
-#endif
-         }
-         else
-         {
-            CHECKD3D(m_depth_tex->GetSurfaceLevel(0, &m_depth_surface));
-         }
-         m_depth_sampler = new Sampler(m_rd, m_depth_tex, false, true);
-      }
+      m_depth_tex = nullptr;
+      m_depth_surface = nullptr;
+      m_depth_sampler = nullptr;
    }
 #endif
 }
@@ -273,9 +260,7 @@ void RenderTarget::CopyTo(RenderTarget* dest)
 #else
    CHECKD3D(m_rd->GetCoreDevice()->StretchRect(m_color_surface, nullptr, dest->m_color_surface, nullptr, D3DTEXF_NONE));
    if (m_has_depth && dest->m_has_depth)
-   {
       CHECKD3D(m_rd->GetCoreDevice()->StretchRect(m_depth_surface, nullptr, dest->m_depth_surface, nullptr, D3DTEXF_NONE));
-   }
 #endif
 }
 
@@ -339,12 +324,6 @@ void RenderTarget::Activate(const bool ignoreStereo)
 #else
    CHECKD3D(m_rd->GetCoreDevice()->SetRenderTarget(0, m_color_surface));
    if (m_depth_surface)
-   {
       CHECKD3D(m_rd->GetCoreDevice()->SetDepthStencilSurface(m_depth_surface));
-   }
-   else
-   {
-      CHECKD3D(m_rd->GetCoreDevice()->SetDepthStencilSurface(nullptr));
-   }
 #endif
 }
