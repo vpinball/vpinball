@@ -218,12 +218,13 @@ inline void ShowError(const string& sz)
 
 __forceinline float getBGxmult()
 {
-   const float aaFactor = g_pplayer->m_ptable->m_useAA == -1 ? g_pplayer->m_AAfactor : g_pplayer->m_ptable->m_useAA == 1 ? 2.0f : 1.0f;
-   return (float)g_pplayer->m_wnd_width * (float)(1.0 / EDITOR_BG_WIDTH) * aaFactor;
+   const bool useAA = ((g_pplayer->m_AAfactor != 1.0f) && (g_pplayer->m_ptable->m_useAA == -1)) || (g_pplayer->m_ptable->m_useAA == 1);
+   return (float)g_pplayer->m_wnd_width * (float)(1.0 / EDITOR_BG_WIDTH)
+      * (useAA ? g_pplayer->m_AAfactor : 1.0f);
 }
 
 __forceinline float getBGymult()
 {
-   //return getBGxmult() / (((float)g_pplayer->m_screenwidth / (float)g_pplayer->m_screenheight) / (float)((double)EDITOR_BG_WIDTH / EDITOR_BG_HEIGHT));
-   return getBGxmult() / (((float)g_pplayer->m_wnd_width / (float)g_pplayer->m_wnd_height) / (float)((double)EDITOR_BG_WIDTH / EDITOR_BG_HEIGHT));
+   return getBGxmult() /
+      (((float)g_pplayer->m_screenwidth / (float)g_pplayer->m_screenheight) / (float)((double)EDITOR_BG_WIDTH / EDITOR_BG_HEIGHT));
 }

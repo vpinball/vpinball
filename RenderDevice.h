@@ -183,7 +183,7 @@ public:
    };
 #endif
 
-   RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering);
+   RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const bool useAA, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering);
    ~RenderDevice();
    void CreateDevice(int &refreshrate, UINT adapterIndex = D3DADAPTER_DEFAULT);
    bool LoadShaders();
@@ -319,7 +319,7 @@ public:
    int          m_colorDepth;
    int          m_vsync;
    StereoMode   m_stereo3D;
-   float        m_AAfactor;
+   bool         m_useAA;
    bool         m_ssRefl;
    bool         m_disableDwm;
    bool         m_sharpen;
@@ -367,15 +367,6 @@ private:
    DWORD textureSamplerCache[TEXTURE_SAMPLERS][TEXTURE_SAMPLER_CACHE_SIZE]; // dto.
 
    VertexDeclaration *currentDeclaration; // for caching
-
-#ifdef ENABLE_SDL
-   static GLuint m_samplerStateCache[3 * 3 * 5];
-#endif
-
-public:
-#ifdef ENABLE_SDL
-   GLuint GetSamplerState(SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v);
-#endif
 
 #ifdef ENABLE_SDL
    GLfloat m_maxaniso;

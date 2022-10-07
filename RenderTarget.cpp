@@ -42,7 +42,7 @@ RenderTarget::RenderTarget(RenderDevice* rd, int width, int height)
 #endif
 }
 
-RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, StereoMode stereo, const char* failureMessage, RenderTarget* sharedDepth)
+RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, StereoMode stereo, const char* failureMessage)
 {
    m_is_back_buffer = false;
    m_rd = rd;
@@ -147,18 +147,11 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
 
 #else
    m_color_tex = nullptr;
-   m_color_surface = nullptr;
-   m_color_sampler = nullptr;
    m_depth_tex = nullptr;
+   m_color_sampler = nullptr;
+   m_color_surface = nullptr;
    m_depth_surface = nullptr;
    m_depth_sampler = nullptr;
-   m_shared_depth = sharedDepth != nullptr;
-   if (m_shared_depth)
-   {
-      m_depth_tex = sharedDepth->m_depth_tex;
-      m_depth_surface = sharedDepth->m_depth_surface;
-      m_depth_sampler = sharedDepth->m_depth_sampler;
-   }
    if (nMSAASamples > 1)
    {
       // MSAA is made through a rendering surface that must be resolved a texture to be sampled
@@ -166,7 +159,7 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
       D3DMULTISAMPLE_TYPE ms_type = (D3DMULTISAMPLE_TYPE) (D3DMULTISAMPLE_NONE + nMSAASamples);
       DWORD ms_quality = 0;
       CHECKD3D(m_rd->GetCoreDevice()->CreateRenderTarget(width, height, (D3DFORMAT)format, ms_type, ms_quality, FALSE, &m_color_surface, nullptr));
-      if (with_depth && !m_shared_depth)
+      if (with_depth)
          CHECKD3D(m_rd->GetCoreDevice()->CreateRenderTarget(width, height, (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'), ms_type, ms_quality, FALSE, &m_depth_surface, nullptr));
    }
    else
@@ -177,13 +170,19 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
       m_color_tex->GetSurfaceLevel(0, &m_color_surface);
       m_color_sampler = new Sampler(m_rd, m_color_tex, false, true);
       m_use_alternate_depth = m_rd->m_useNvidiaApi || !m_rd->m_INTZ_support;
-      if (with_depth && !m_shared_depth)
+      if (with_depth)
       {
-         CHECKD3D(m_rd->GetCoreDevice()->CreateTexture(width, height, 1, D3DUSAGE_DEPTHSTENCIL, (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'), (D3DPOOL)memoryPool::DEFAULT, &m_depth_tex, nullptr)); // D3DUSAGE_AUTOGENMIPMAP?
+         CHECKD3D(m_rd->GetCoreDevice()->CreateTexture(
+            width, height, 1, D3DUSAGE_DEPTHSTENCIL, (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'), (D3DPOOL)memoryPool::DEFAULT, &m_depth_tex, nullptr)); // D3DUSAGE_AUTOGENMIPMAP?
          if (m_use_alternate_depth)
          {
             // Alternate depth path. Depth surface and depth texture are separated, synced with a copy.
-            CHECKD3D(m_rd->GetCoreDevice()->CreateDepthStencilSurface(width, height, D3DFMT_D16 /*D3DFMT_D24X8*/, D3DMULTISAMPLE_NONE, 0, FALSE, &m_depth_surface, nullptr));
+            D3DSURFACE_DESC desc;
+            m_color_surface->GetDesc(&desc);
+            const HRESULT hr = m_rd->GetCoreDevice()->CreateDepthStencilSurface(width, height, D3DFMT_D16 /*D3DFMT_D24X8*/, //!!
+               desc.MultiSampleType, desc.MultiSampleQuality, FALSE, &m_depth_surface, nullptr);
+            if (FAILED(hr))
+               ReportError("Fatal Error: unable to create depth buffer!", hr, __FILE__, __LINE__);
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
             if (m_rd->NVAPIinit)
             {
@@ -205,19 +204,18 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
 RenderTarget::~RenderTarget()
 {
    delete m_color_sampler;
-   if (!m_shared_depth)
-      delete m_depth_sampler;
+   delete m_depth_sampler;
 #ifdef ENABLE_SDL
    if (m_nMSAASamples > 1)
    {
       glDeleteRenderbuffers(1, &m_color_tex);
-      if (m_depth_tex && !m_shared_depth)
+      if (m_depth_tex)
          glDeleteRenderbuffers(1, &m_depth_tex);
    }
    else
    {
       glDeleteTextures(1, &m_color_tex);
-      if (m_depth_tex && !m_shared_depth)
+      if (m_depth_tex)
          glDeleteTextures(1, &m_depth_tex);
    }
    glDeleteFramebuffers(1, &m_framebuffer);
@@ -225,7 +223,7 @@ RenderTarget::~RenderTarget()
    // Texture share its refcount with surface, it must be decremented, but it won't be 0 until surface is also released
    SAFE_RELEASE_NO_RCC(m_color_tex);
    SAFE_RELEASE(m_color_surface);
-   if (m_has_depth && !m_shared_depth)
+   if (m_has_depth)
    {
       if (m_use_alternate_depth)
       {
@@ -261,24 +259,20 @@ void RenderTarget::UpdateDepthSampler()
 #endif
 }
 
-RenderTarget* RenderTarget::Duplicate(const bool shareDepthSurface)
+RenderTarget* RenderTarget::Duplicate()
 {
    assert(!m_is_back_buffer);
-   return new RenderTarget(m_rd, m_width, m_height, m_format, m_has_depth, m_nMSAASamples, m_stereo, "Failed to duplicate render target", shareDepthSurface ? this : nullptr);
+   return new RenderTarget(m_rd, m_width, m_height, m_format, m_has_depth, m_nMSAASamples, m_stereo, "Failed to duplicate render target");
 }
 
-void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool copyDepth)
+void RenderTarget::CopyTo(RenderTarget* dest)
 {
 #ifdef ENABLE_SDL
-   int bitmask = (copyColor ? GL_COLOR_BUFFER_BIT : 0) | (m_has_depth && dest->m_has_depth && copyDepth ? GL_DEPTH_BUFFER_BIT : 0);
-   assert(bitmask != 0); // This is supposed to be called to actually do something
-   glBlitNamedFramebuffer(GetCoreFrameBuffer(), dest->GetCoreFrameBuffer(), 0, 0, GetWidth(), GetHeight(), 0, 0, dest->GetWidth(), dest->GetHeight(), bitmask, GL_NEAREST);
+   glBlitNamedFramebuffer(GetCoreFrameBuffer(), dest->GetCoreFrameBuffer(), 0, 0, GetWidth(), GetHeight(), 0, 0, dest->GetWidth(), dest->GetHeight(),
+      m_has_depth && dest->m_has_depth  ? GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT : GL_COLOR_BUFFER_BIT, GL_NEAREST);
 #else
-   if (copyColor)
-   {
-      CHECKD3D(m_rd->GetCoreDevice()->StretchRect(m_color_surface, nullptr, dest->m_color_surface, nullptr, D3DTEXF_NONE));
-   }
-   if (m_has_depth && dest->m_has_depth && copyDepth)
+   CHECKD3D(m_rd->GetCoreDevice()->StretchRect(m_color_surface, nullptr, dest->m_color_surface, nullptr, D3DTEXF_NONE));
+   if (m_has_depth && dest->m_has_depth)
    {
       CHECKD3D(m_rd->GetCoreDevice()->StretchRect(m_depth_surface, nullptr, dest->m_depth_surface, nullptr, D3DTEXF_NONE));
    }
@@ -287,57 +281,70 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
 
 void RenderTarget::Activate(const bool ignoreStereo)
 {
+   current_render_target = this;
 #ifdef ENABLE_SDL
-   static int currentStereoMode = -1;
-   if (current_render_target == this && currentStereoMode == (ignoreStereo ? STEREO_OFF : m_stereo))
-      return;
-   currentStereoMode = ignoreStereo ? STEREO_OFF : m_stereo;
    static GLfloat viewPorts[] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+   static RenderTarget* currentFrameBuffer = nullptr;
+   static int currentStereoMode = -1;
+   if (currentFrameBuffer == this && currentStereoMode == (ignoreStereo || m_is_back_buffer ? STEREO_OFF : m_stereo))
+      return;
+   currentFrameBuffer = this;
+   currentStereoMode = ignoreStereo || m_is_back_buffer ? STEREO_OFF : m_stereo;
    if (m_color_sampler)
       m_color_sampler->Unbind();
    if (m_depth_sampler)
       m_depth_sampler->Unbind();
    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
-   switch (ignoreStereo ? STEREO_OFF : m_stereo)
+   if (m_is_back_buffer)
    {
-   case STEREO_OFF:
       glViewport(0, 0, m_width, m_height);
-      m_rd->lightShader->SetBool(SHADER_ignoreStereo, true); // For non-stereo lightbulb texture, can't use pre-processor for this
-      break;
-   case STEREO_TB: // Render left eye in the upper part, and right eye in the lower part
-   case STEREO_INT:
-   case STEREO_FLIPPED_INT:
-      glViewport(0, 0, m_width, m_height / 2); // Set default viewport width/height values of all viewports before we define the array or we get undefined behaviour in shader (flickering viewports).
-      viewPorts[2] = viewPorts[6] = (float)m_width;
-      viewPorts[3] = viewPorts[7] = (float)(m_height * 0.5);
-      viewPorts[4] = 0.0f;
-      viewPorts[5] = (float)(m_height * 0.5);
-      glViewportArrayv(0, 2, viewPorts);
-      m_rd->lightShader->SetBool(SHADER_ignoreStereo, false);
-      break;
-   default: //For all other stereo mode, render left eye in the left part, and right eye in the right part
-      glViewport(0, 0, m_width / 2, m_height); // Set default viewport width/height values of all viewports before we define the array or we get undefined behaviour in shader (flickering viewports).
-      viewPorts[2] = viewPorts[6] = (float)(m_width * 0.5);
-      viewPorts[3] = viewPorts[7] = (float)m_height;
-      viewPorts[4] = (float)(m_width * 0.5);
-      viewPorts[5] = 0.0f;
-      glViewportArrayv(0, 2, viewPorts);
-      m_rd->lightShader->SetBool(SHADER_ignoreStereo, false);
-      break;
+   }
+   else
+   {
+      if (ignoreStereo)
+      {
+         glViewport(0, 0, m_width, m_height);
+      }
+      else
+      {
+         switch (m_stereo)
+         {
+         case STEREO_OFF:
+            glViewport(0, 0, m_width, m_height);
+            m_rd->lightShader->SetBool(SHADER_ignoreStereo, true); // For non-stereo lightbulb texture, can't use pre-processor for this
+            break;
+         case STEREO_TB: // Render left eye in the upper part, and right eye in the lower part
+         case STEREO_INT:
+         case STEREO_FLIPPED_INT:
+            glViewport(0, 0, m_width, m_height / 2); // Set default viewport width/height values of all viewports before we define the array or we get undefined behaviour in shader (flickering viewports).
+            viewPorts[2] = viewPorts[6] = (float)m_width;
+            viewPorts[3] = viewPorts[7] = (float)(m_height * 0.5);
+            viewPorts[4] = 0.0f;
+            viewPorts[5] = (float)(m_height * 0.5);
+            glViewportArrayv(0, 2, viewPorts);
+            m_rd->lightShader->SetBool(SHADER_ignoreStereo, false);
+            break;
+         default: //For all other stereo mode, render left eye in the left part, and right eye in the right part
+            glViewport(0, 0, m_width / 2, m_height); // Set default viewport width/height values of all viewports before we define the array or we get undefined behaviour in shader (flickering viewports).
+            viewPorts[2] = viewPorts[6] = (float)(m_width * 0.5);
+            viewPorts[3] = viewPorts[7] = (float)m_height;
+            viewPorts[4] = (float)(m_width * 0.5);
+            viewPorts[5] = 0.0f;
+            glViewportArrayv(0, 2, viewPorts);
+            m_rd->lightShader->SetBool(SHADER_ignoreStereo, false);
+            break;
+         }
+      }
    }
 #else
-   static IDirect3DSurface9* currentColorSurface = nullptr;
-   if (currentColorSurface != m_color_surface)
+   CHECKD3D(m_rd->GetCoreDevice()->SetRenderTarget(0, m_color_surface));
+   if (m_depth_surface)
    {
-      currentColorSurface = m_color_surface;
-      CHECKD3D(m_rd->GetCoreDevice()->SetRenderTarget(0, m_color_surface));
-   }
-   static IDirect3DSurface9* currentDepthSurface = nullptr;
-   if (currentDepthSurface != m_depth_surface)
-   {
-      currentDepthSurface = m_depth_surface;
       CHECKD3D(m_rd->GetCoreDevice()->SetDepthStencilSurface(m_depth_surface));
    }
+   else
+   {
+      CHECKD3D(m_rd->GetCoreDevice()->SetDepthStencilSurface(nullptr));
+   }
 #endif
-   current_render_target = this;
 }
