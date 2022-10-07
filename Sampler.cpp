@@ -2,7 +2,7 @@
 #include "Sampler.h"
 #include "RenderDevice.h"
 
-Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
+Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_linear_rgb)
 {
    m_rd = rd;
    m_dirty = false;
@@ -10,9 +10,6 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
    m_ownTexture = true;
    m_width = surf->width();
    m_height = surf->height();
-   m_clampu = clampu;
-   m_clampv = clampv;
-   m_filter = filter;
 #ifdef ENABLE_SDL
    colorFormat format;
    if (surf->m_format == BaseTexture::SRGBA)
@@ -64,32 +61,26 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
 }
 
 #ifdef ENABLE_SDL
-Sampler::Sampler(RenderDevice* rd, GLuint glTexture, bool ownTexture, bool isMSAA, bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
+Sampler::Sampler(RenderDevice* rd, GLuint glTexture, bool ownTexture, bool isMSAA, bool force_linear_rgb)
 {
    m_rd = rd;
    m_dirty = false;
    m_isMSAA = isMSAA;
    m_ownTexture = ownTexture;
-   m_clampu = clampu;
-   m_clampv = clampv;
-   m_filter = filter;
    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &m_width);
    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &m_height);
    int internal_format;
    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
-   m_isLinear = !((internal_format == SRGB) || (internal_format == SRGBA) || (internal_format == SDXT5) || (internal_format == SBC7)) || force_linear_rgb;
+   m_isLinear = !((internal_format == SRGB) && (internal_format == SRGBA) && (internal_format == SDXT5) && (internal_format == SBC7)) || force_linear_rgb;
    m_texture = glTexture;
 }
 #else
-Sampler::Sampler(RenderDevice* rd, IDirect3DTexture9* dx9Texture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
+Sampler::Sampler(RenderDevice* rd, IDirect3DTexture9* dx9Texture, bool ownTexture, bool force_linear_rgb)
 {
    m_rd = rd;
    m_dirty = false;
    m_isMSAA = false;
    m_ownTexture = ownTexture;
-   m_clampu = clampu;
-   m_clampv = clampv;
-   m_filter = filter;
    D3DSURFACE_DESC desc;
    dx9Texture->GetLevelDesc(0, &desc);
    m_width = desc.Width;
@@ -127,12 +118,10 @@ void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb
    else if (surf->m_format == BaseTexture::RGB_FP32)
       format = colorFormat::RGB32F;
    if (force_linear_rgb)
-   {
       if (format == colorFormat::SRGB)
          format = colorFormat::RGB;
       else if (format == colorFormat::SRGBA)
          format = colorFormat::RGBA;
-   }
    const GLuint col_type = ((format == RGBA32F) || (format == RGB32F)) ? GL_FLOAT : ((format == RGBA16F) || (format == RGB16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
    const GLuint col_format = ((format == GREY8) || (format == RED16F))                                                                                                      ? GL_RED
       : ((format == GREY_ALPHA) || (format == RG16F))                                                                                                                       ? GL_RG
@@ -146,22 +135,12 @@ void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb
 #else
    colorFormat texformat;
    IDirect3DTexture9* sysTex = CreateSystemTexture(surf, force_linear_rgb, texformat);
+   m_rd->m_curTextureUpdates++;
    CHECKD3D(m_rd->GetCoreDevice()->UpdateTexture(sysTex, m_texture));
    SAFE_RELEASE(sysTex);
 #endif
-   m_rd->m_curTextureUpdates++;
 }
 
-void Sampler::SetClamp(const SamplerAddressMode clampu, const SamplerAddressMode clampv)
-{
-   m_clampu = clampu;
-   m_clampv = clampv;
-}
-
-void Sampler::SetFilter(const SamplerFilter filter)
-{
-   m_filter = filter;
-}
 
 #ifdef ENABLE_SDL
 GLuint Sampler::CreateTexture(UINT Width, UINT Height, UINT Levels, colorFormat Format, void* data, int stereo)
@@ -201,6 +180,10 @@ GLuint Sampler::CreateTexture(UINT Width, UINT Height, UINT Levels, colorFormat 
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_BLUE);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
+
+      // Anisotropic filtering
+      if (m_rd->m_maxaniso > 0)
+         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, min(max(1.f, m_rd->m_maxaniso), 16.f));
    }
 
    colorFormat comp_format = Format;
@@ -235,8 +218,6 @@ GLuint Sampler::CreateTexture(UINT Width, UINT Height, UINT Levels, colorFormat 
    if (data)
    {
       glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-      // This line causes a false GLIntercept error log on OpenGL >= 403 since the image is initialized through TexStorage and not TexImage (expected by GLIntercept)
-      // InterceptImage::SetImageDirtyPost - Flagging an image as dirty when it is not ready/init?
       glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, Width, Height, col_format, col_type, data);
       glGenerateMipmap(GL_TEXTURE_2D); // Generate mip-maps, when using TexStorage will generate same amount as specified in TexStorage, otherwise good idea to limit by GL_TEXTURE_MAX_LEVEL
    }

@@ -94,6 +94,8 @@ public:
    RenderTarget* m_pddsAOBackBuffer;
    RenderTarget* m_pddsAOBackTmpBuffer;
 
+   RenderTarget* m_pddsBackBuffer;
+
    RenderTarget* m_pddsStatic;
 
    Texture m_pinballEnvTexture; // loaded from Resources

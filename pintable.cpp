@@ -803,14 +803,14 @@ STDMETHODIMP ScriptGlobalTable::MaterialColor(BSTR pVal, OLE_COLOR newVal)
 STDMETHODIMP ScriptGlobalTable::get_WindowWidth(int *pVal)
 {
    if (g_pplayer)
-      *pVal = g_pplayer->m_wnd_width;
+      *pVal = g_pplayer->m_width;
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_WindowHeight(int *pVal)
 {
    if (g_pplayer)
-      *pVal = g_pplayer->m_wnd_height;
+      *pVal = g_pplayer->m_height;
    return S_OK;
 }
 
@@ -844,7 +844,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
       {
          if (g_pplayer->m_texdmd)
          {
-            g_pplayer->m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTextureNull(SHADER_tex_dmd);
+            g_pplayer->m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTextureNull(SHADER_Texture0);
             g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.UnloadTexture(g_pplayer->m_texdmd);
             delete g_pplayer->m_texdmd;
          }
@@ -888,7 +888,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
       {
          if (g_pplayer->m_texdmd)
          {
-            g_pplayer->m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTextureNull(SHADER_tex_dmd);
+            g_pplayer->m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTextureNull(SHADER_Texture0);
             g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.UnloadTexture(g_pplayer->m_texdmd);
             delete g_pplayer->m_texdmd;
          }

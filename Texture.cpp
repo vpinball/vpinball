@@ -518,6 +518,7 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
       unsigned char * const __restrict stbi_data = stbi_load_from_memory(data, size, &x, &y, &channels_in_file, (ok && channels_in_file <= 3) ? 3 : 4);
       if (stbi_data) // will only enter this path for JPG files
       {
+         assert(channels_in_file == 3 || channels_in_file == 4);
          BaseTexture* tex = nullptr;
          try
          {

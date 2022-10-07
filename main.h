@@ -220,7 +220,7 @@ inline void ShowError(const string& sz)
 __forceinline float getBGxmult()
 {
    const bool useAA = (g_pplayer->m_AA && (g_pplayer->m_ptable->m_useAA == -1)) || (g_pplayer->m_ptable->m_useAA == 1);
-   return (float)g_pplayer->m_wnd_width * (float)(1.0 / EDITOR_BG_WIDTH)
+   return (float)g_pplayer->m_width * (float)(1.0 / EDITOR_BG_WIDTH)
       * (useAA ? 2.0f : 1.0f);
 }
 

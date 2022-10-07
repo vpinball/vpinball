@@ -173,7 +173,7 @@ technique light_with_texture_isMetal
    }
 }
 
-technique light_with_texture
+technique light_with_texture_isNotMetal
 {
    pass P0
    {
@@ -194,7 +194,7 @@ technique light_without_texture_isMetal
    }
 }
 
-technique light_without_texture
+technique light_without_texture_isNotMetal
 {
    pass P0
    {

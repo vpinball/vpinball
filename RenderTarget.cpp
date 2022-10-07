@@ -10,9 +10,6 @@
 #include "nvapi.h"
 #endif
 
-RenderTarget* RenderTarget::current_render_target = nullptr;
-RenderTarget* RenderTarget::GetCurrentRenderTarget() { return current_render_target; }
-
 RenderTarget::RenderTarget(RenderDevice* rd, int width, int height)
 {
    m_rd = rd;
@@ -23,7 +20,7 @@ RenderTarget::RenderTarget(RenderDevice* rd, int width, int height)
    m_width = width;
    m_height = height;
    m_has_depth = false;
-   m_nMSAASamples = 0;
+   m_use_mSAA = false;
    m_color_sampler = nullptr;
    m_depth_sampler = nullptr;
 #ifdef ENABLE_SDL
@@ -42,7 +39,7 @@ RenderTarget::RenderTarget(RenderDevice* rd, int width, int height)
 #endif
 }
 
-RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, StereoMode stereo, const char* failureMessage)
+RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, const colorFormat format, bool with_depth, bool use_MSAA, int stereo, const char* failureMessage)
 {
    m_is_back_buffer = false;
    m_rd = rd;
@@ -51,7 +48,7 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
    m_height = height;
    m_format = format;
    m_has_depth = with_depth;
-   m_nMSAASamples = nMSAASamples;
+   m_use_mSAA = use_MSAA;
 #ifdef ENABLE_SDL
    const GLuint col_type = ((format == RGBA32F) || (format == RGB32F)) ? GL_FLOAT : ((format == RGBA16F) || (format == RGB16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
    const GLuint col_format = ((format == GREY8) || (format == RED16F))                                                                                                      ? GL_RED
@@ -62,46 +59,48 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
       || (format == RGB10) || (format == RGB16F) || (format == RGB32F) || (format == RGBA16F) || (format == RGBA32F) || (format == RGBA) || (format == RGBA8) || (format == RGBA10)
       || (format == DXT5) || (format == BC6U) || (format == BC6S) || (format == BC7);
 
-   m_color_tex = m_depth_tex = 0;
    glGenFramebuffers(1, &m_framebuffer);
    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
+   glGenTextures(1, &m_color_tex);
 
-   // Update bind cache
-   auto tex_unit = m_rd->m_samplerBindings.back();
-   if (tex_unit->sampler != nullptr)
-      tex_unit->sampler->m_bindings.erase(tex_unit);
-   tex_unit->sampler = nullptr;
-   glActiveTexture(GL_TEXTURE0 + tex_unit->unit);
-
-   if (nMSAASamples > 1)
+   if (g_pplayer->m_MSAASamples > 1 && use_MSAA)
    {
-      glGenTextures(1, &m_color_tex);
       glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_color_tex);
-      glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, nMSAASamples, format, width, height, GL_TRUE);
+      glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, g_pplayer->m_MSAASamples, format, width, height, GL_TRUE);
       glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_color_tex, 0);
+
       if (with_depth)
       {
          glGenRenderbuffers(1, &m_depth_tex);
          glBindRenderbuffer(GL_RENDERBUFFER, m_depth_tex);
-         glRenderbufferStorageMultisample(GL_RENDERBUFFER, nMSAASamples, GL_DEPTH_COMPONENT, width, height);
+         glRenderbufferStorageMultisample(GL_RENDERBUFFER, g_pplayer->m_MSAASamples, GL_DEPTH_COMPONENT, width, height);
          glBindRenderbuffer(GL_RENDERBUFFER, 0);
          glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depth_tex);
       }
+      else
+      {
+         m_depth_tex = 0;
+      }
    }
-   else
+   else // RENDERTARGET & RENDERTARGET_DEPTH
    {
-      glGenTextures(1, &m_color_tex);
       glBindTexture(GL_TEXTURE_2D, m_color_tex);
-      glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, col_format, col_type, nullptr);
+      glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, GL_RGBA, col_type, nullptr);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_color_tex, 0);
+
       if (with_depth)
       {
-         glGenTextures(1, &m_depth_tex);
-         glBindTexture(GL_TEXTURE_2D, m_depth_tex);
-         glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, col_type, 0);
-         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depth_tex, 0);
+         glGenRenderbuffers(1, &m_depth_tex);
+         glBindRenderbuffer(GL_RENDERBUFFER, m_depth_tex);
+         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+         glBindRenderbuffer(GL_RENDERBUFFER, 0);
+         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depth_tex);
+      }
+      else
+      {
+         m_depth_tex = 0;
       }
    }
 
@@ -130,20 +129,8 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
       exit(-1);
    }
 
-   if (nMSAASamples > 1)
-   {
-      m_color_sampler = nullptr;
-      m_depth_sampler = nullptr;
-   }
-   else
-   {
-      m_color_sampler = new Sampler(m_rd, m_color_tex, false, nMSAASamples > 1, true);
-      m_depth_sampler = with_depth ? new Sampler(m_rd, m_depth_tex, false, nMSAASamples > 1, true) : nullptr;
-   }
-
-   glClearDepthf(1.0f);
-   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+   m_color_sampler = new Sampler(m_rd, m_color_tex, false, use_MSAA, true);
+   m_depth_sampler = with_depth ? new Sampler(m_rd, m_depth_tex, false, use_MSAA, true) : nullptr;
 
 #else
 
@@ -190,22 +177,8 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
 
 RenderTarget::~RenderTarget()
 {
-   delete m_color_sampler;
-   delete m_depth_sampler;
 #ifdef ENABLE_SDL
-   if (m_nMSAASamples > 1)
-   {
-      glDeleteRenderbuffers(1, &m_color_tex);
-      if (m_depth_tex)
-         glDeleteRenderbuffers(1, &m_depth_tex);
-   }
-   else
-   {
-      glDeleteTextures(1, &m_color_tex);
-      if (m_depth_tex)
-         glDeleteTextures(1, &m_depth_tex);
-   }
-   glDeleteFramebuffers(1, &m_framebuffer);
+
 #else
    // Texture share its refcount with surface, it must be decremented, but it won't be 0 until surface is also released
    SAFE_RELEASE_NO_RCC(m_color_tex);
@@ -232,6 +205,8 @@ RenderTarget::~RenderTarget()
       }
    }
 #endif
+   delete m_color_sampler;
+   delete m_depth_sampler;
 }
    
 void RenderTarget::UpdateDepthSampler()
@@ -249,14 +224,13 @@ void RenderTarget::UpdateDepthSampler()
 RenderTarget* RenderTarget::Duplicate()
 {
    assert(!m_is_back_buffer);
-   return new RenderTarget(m_rd, m_width, m_height, m_format, m_has_depth, m_nMSAASamples, m_stereo, "Failed to duplicate render target");
+   return new RenderTarget(m_rd, m_width, m_height, m_format, m_has_depth, m_use_mSAA, m_stereo, "Failed to duplicate render target");
 }
 
 void RenderTarget::CopyTo(RenderTarget* dest)
 {
 #ifdef ENABLE_SDL
-   glBlitNamedFramebuffer(GetCoreFrameBuffer(), dest->GetCoreFrameBuffer(), 0, 0, GetWidth(), GetHeight(), 0, 0, dest->GetWidth(), dest->GetHeight(),
-      m_has_depth && dest->m_has_depth  ? GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT : GL_COLOR_BUFFER_BIT, GL_NEAREST);
+   // FIXME unimplementd (only used to copy render target for static pass)
 #else
    CHECKD3D(m_rd->GetCoreDevice()->StretchRect(m_color_surface, nullptr, dest->m_color_surface, nullptr, D3DTEXF_NONE));
    if (m_has_depth && dest->m_has_depth)
@@ -264,9 +238,8 @@ void RenderTarget::CopyTo(RenderTarget* dest)
 #endif
 }
 
-void RenderTarget::Activate(const bool ignoreStereo)
+void RenderTarget::Activate(bool ignoreStereo)
 {
-   current_render_target = this;
 #ifdef ENABLE_SDL
    static GLfloat viewPorts[] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
    static RenderTarget* currentFrameBuffer = nullptr;
@@ -275,10 +248,6 @@ void RenderTarget::Activate(const bool ignoreStereo)
       return;
    currentFrameBuffer = this;
    currentStereoMode = ignoreStereo || m_is_back_buffer ? STEREO_OFF : m_stereo;
-   if (m_color_sampler)
-      m_color_sampler->Unbind();
-   if (m_depth_sampler)
-      m_depth_sampler->Unbind();
    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
    if (m_is_back_buffer)
    {
@@ -286,6 +255,9 @@ void RenderTarget::Activate(const bool ignoreStereo)
    }
    else
    {
+      Shader::setTextureDirty(m_color_tex);
+      if (m_has_depth)
+         Shader::setTextureDirty(m_depth_tex);
       if (ignoreStereo)
       {
          glViewport(0, 0, m_width, m_height);
@@ -298,10 +270,10 @@ void RenderTarget::Activate(const bool ignoreStereo)
             glViewport(0, 0, m_width, m_height);
             m_rd->lightShader->SetBool(SHADER_ignoreStereo, true); // For non-stereo lightbulb texture, can't use pre-processor for this
             break;
-         case STEREO_TB: // Render left eye in the upper part, and right eye in the lower part
+         case STEREO_TB:
          case STEREO_INT:
-         case STEREO_FLIPPED_INT:
-            glViewport(0, 0, m_width, m_height / 2); // Set default viewport width/height values of all viewports before we define the array or we get undefined behaviour in shader (flickering viewports).
+            glViewport(0, 0, m_width,
+               m_height / 2); // Set default viewport width/height values of all viewports before we define the array or we get undefined behaviour in shader (flickering viewports).
             viewPorts[2] = viewPorts[6] = (float)m_width;
             viewPorts[3] = viewPorts[7] = (float)(m_height * 0.5);
             viewPorts[4] = 0.0f;
@@ -309,8 +281,10 @@ void RenderTarget::Activate(const bool ignoreStereo)
             glViewportArrayv(0, 2, viewPorts);
             m_rd->lightShader->SetBool(SHADER_ignoreStereo, false);
             break;
-         default: //For all other stereo mode, render left eye in the left part, and right eye in the right part
-            glViewport(0, 0, m_width / 2, m_height); // Set default viewport width/height values of all viewports before we define the array or we get undefined behaviour in shader (flickering viewports).
+         case STEREO_SBS:
+         case STEREO_VR:
+            glViewport(0, 0, m_width / 2,
+               m_height); // Set default viewport width/height values of all viewports before we define the array or we get undefined behaviour in shader (flickering viewports).
             viewPorts[2] = viewPorts[6] = (float)(m_width * 0.5);
             viewPorts[3] = viewPorts[7] = (float)m_height;
             viewPorts[4] = (float)(m_width * 0.5);

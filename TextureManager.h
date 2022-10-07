@@ -8,6 +8,7 @@
 #include "typedefs3D.h"
 
 class RenderDevice;
+enum TextureFilter;
 
 class TextureManager final
 {
@@ -20,7 +21,7 @@ public:
       UnloadAll();
    }
 
-   Sampler* LoadTexture(BaseTexture* memtex, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb);
+   Sampler* LoadTexture(BaseTexture* memtex, const TextureFilter filter, const bool clampU, const bool clampV, const bool force_linear_rgb);
    void SetDirty(BaseTexture* memtex);
    void UnloadTexture(BaseTexture* memtex);
    void UnloadAll();

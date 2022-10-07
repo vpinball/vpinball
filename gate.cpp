@@ -446,6 +446,9 @@ void Gate::RenderObject()
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat, false);
 
+   const Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+   ppin3d->EnableAlphaBlend(false);
+
    pd3dDevice->SetRenderStateDepthBias(0.0f);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);

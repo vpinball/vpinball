@@ -520,6 +520,7 @@ void Kicker::RenderSetup()
    m_vertexBuffer->unlock();
 }
 
+
 void Kicker::SetDefaultPhysics(bool fromMouseClick)
 {
    m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(regKey[RegName::DefaultPropsKicker], "Scatter"s, 0.f) : 0.f;
@@ -557,7 +558,7 @@ void Kicker::RenderDynamic()
       if (m_d.m_kickertype != KickerHoleSimple)
       {
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
-         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, &m_texture);
+         pd3dDevice->basicShader->SetTexture(SHADER_Texture0, &m_texture, TextureFilter::TEXTURE_MODE_TRILINEAR, false, false, false);
       }
       else
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);

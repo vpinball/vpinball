@@ -5,27 +5,27 @@
 #include "Texture.h"
 #include "typedefs3D.h"
 
-Sampler* TextureManager::LoadTexture(BaseTexture* memtex, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb)
+Sampler* TextureManager::LoadTexture(BaseTexture* memtex, const TextureFilter filter, const bool clampU, const bool clampV, const bool force_linear_rgb)
 {
    const Iter it = m_map.find(memtex);
    if (it == m_map.end())
    {
-      Sampler* sampler = new Sampler(&m_rd, memtex, force_linear_rgb, clampU, clampV, filter);
-      sampler->m_dirty = false;
-      m_map[memtex] = sampler;
+      Sampler* sampler = new Sampler(&m_rd, memtex, force_linear_rgb);
+      if (sampler)
+      {
+         sampler->m_dirty = false;
+         m_map[memtex] = sampler;
+      }
       return sampler;
    }
    else
    {
-      Sampler* sampler = it->second;
-      if (sampler->m_dirty)
+      if (it->second->m_dirty)
       {
-         sampler->UpdateTexture(memtex, force_linear_rgb);
-         sampler->m_dirty = false;
+         it->second->UpdateTexture(memtex, force_linear_rgb);
+         it->second->m_dirty = false;
       }
-      sampler->SetClamp(clampU, clampV);
-      sampler->SetFilter(filter);
-      return sampler;
+      return it->second;
    }
 }
 

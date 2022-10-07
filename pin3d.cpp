@@ -11,6 +11,7 @@ int NumVideoBytes = 0;
 
 Pin3D::Pin3D()
 {
+   m_pddsBackBuffer = nullptr;
    m_pddsAOBackBuffer = nullptr;
    m_pddsAOBackTmpBuffer = nullptr;
    m_pd3dPrimaryDevice = nullptr;
@@ -471,11 +472,9 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
 
    m_pd3dPrimaryDevice->SetViewport(&m_viewPort);
 
-   // Static render target is a copy of the main back buffer (without MSAA since static prerender is done with custom antialiasing)
-   if (m_stereo3D != STEREO_VR)
-      m_pddsStatic = m_pd3dPrimaryDevice->GetBackBufferTexture()->Duplicate();
-   else
-      m_pddsStatic = nullptr;
+   m_pddsBackBuffer = m_pd3dPrimaryDevice->GetBackBufferTexture();
+
+   m_pddsStatic = m_pddsBackBuffer->Duplicate();
 
    if (m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && useAO)
    {
@@ -568,9 +567,9 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
 
    // Direct all renders to the "static" buffer.
    if (m_pddsStatic)
-      m_pddsStatic->Activate();
+      m_pddsStatic->Activate(true);
    else
-      m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->Activate();
+      m_pddsBackBuffer->Activate(true);
 
    //m_gpu_profiler.Init(m_pd3dDevice->GetCoreDevice()); // done by first BeginFrame() call lazily
 
@@ -972,9 +971,6 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
    m_proj.ComputeNearFarPlane(vvertex3D);
    if (fabsf(inclination) < 0.0075f) //!! magic threshold, otherwise kicker holes are missing for inclination ~0
       m_proj.m_rzfar += 10.f;
-   //!! TODO magic: In stereo, we usually have a room made of primitives, but primitive bounding box are not implemented and are not taken in account. So add some space
-   if (m_stereo3D != STEREO_OFF)
-      m_proj.m_rzfar += 5000.f;
    Matrix3D proj = Matrix3D::MatrixPerspectiveFovLH(ANGTORAD(FOV), aspect, m_proj.m_rznear, m_proj.m_rzfar);
    memcpy(m_proj.m_matProj.m, proj.m, sizeof(float) * 4 * 4);
    // in-pixel offset for manual oversampling
@@ -1047,7 +1043,7 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
        {
            SetPrimaryTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
            m_pd3dPrimaryDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_basic_depth_only_with_texture);
-           m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_ANISOTROPIC, SA_CLAMP, SA_CLAMP);
+           m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_Texture0, pin, TextureFilter::TEXTURE_MODE_TRILINEAR, true, true, false);
            m_pd3dPrimaryDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
        }
        else // No image by that name
@@ -1059,7 +1055,7 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
        {
            SetPrimaryTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
            m_pd3dPrimaryDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
-           m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_ANISOTROPIC, SA_CLAMP, SA_CLAMP);
+           m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_Texture0, pin, TextureFilter::TEXTURE_MODE_TRILINEAR, true, true, false);
            m_pd3dPrimaryDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
            m_pd3dPrimaryDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
        }
@@ -1320,15 +1316,11 @@ void PinProjection::ComputeNearFarPlane(const vector<Vertex3Ds>& verts)
    slintf("m_rznear: %f\n", m_rznear);
    slintf("m_rzfar : %f\n", m_rzfar);
 
-   //m_rznear *= 0.89f; //!! magic, influences also stereo3D code
-   // Avoid near plane below 1 which result in loss of precision and z rendering artefacts
+   // beware the div-0 problem, also avoid near plane below 1 which result in loss of precision and z rendering artefacts
    if (m_rznear < 1.0f)
       m_rznear = 1.0f;
-
+   //m_rznear *= 0.89f; //!! magic, influences also stereo3D code
    m_rzfar *= 1.01f;
-   // Avoid div-0 problem (div by far - near)
-   if (m_rzfar <= m_rznear)
-      m_rzfar = m_rznear + 1.0f;
 }
 
 void PinProjection::CacheTransform()

@@ -239,7 +239,7 @@ void Plunger::RenderDynamic()
    if (pin)
    {
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin);
+      pd3dDevice->basicShader->SetTexture(SHADER_Texture0, pin, TextureFilter::TEXTURE_MODE_TRILINEAR, false, false, false);
       pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
       pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
    }
@@ -375,13 +375,11 @@ void Plunger::RenderSetup()
       // by semicolons.
       int nTip = 1;
       for (const char *p = m_d.m_szTipShape; *p != '\0'; ++p)
-      {
          if (*p == ';')
          {
             ++nTip;
             ++nn;
          }
-      }
 
       // allocate the descriptor and the coordinate array
       desc = customDesc = new PlungerDesc;
