@@ -53,6 +53,8 @@ FIXES:
 
 - fix registry defaults load/save for EM-Reels
 
+- avoid thrashing of the saved dock/window settings when running in minimized mode
+
 - fix extremely old wire ramp issue (too many triangles created)
 
 - fix Z/depth rendering artefacts in interactive camera/light editing mode (e.g. when launching the table with F6 or the respective menu entry)
@@ -67,9 +69,6 @@ FIXES:
 - optimize floating point texture video memory usage/bandwidth (e.g. flasher/primitive and environment textures)
 
 - improved full example table (thanks kiwi!)
-
-- update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
-- DirectX 8 port for input handling (currently disabled)
 
 - see Changelog_Scripts.txt for the respective core script changes (version 3.59)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
