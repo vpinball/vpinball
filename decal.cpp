@@ -566,6 +566,11 @@ void Decal::RenderObject()
       }
    }
 
+   // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
+   //!!   pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_MIRROR);
+
+   //Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+   //ppin3d->SetPrimaryTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
 
    if (!m_backglass)
@@ -585,6 +590,7 @@ void Decal::RenderObject()
    pd3dDevice->basicShader->End();
 
    // Set the render state.
+   //pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
    //pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE); //!! not necessary anymore
 
    //if(m_backglass && (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled))

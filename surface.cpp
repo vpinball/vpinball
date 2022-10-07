@@ -1072,6 +1072,8 @@ void Surface::RenderWallsAtHeight(const bool drop)
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
          pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pinSide);
          pd3dDevice->basicShader->SetAlphaTestValue(pinSide->m_alphaTestValue * (float)(1.0 / 255.0));
+
+         //g_pplayer->m_pin3d.SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
          pd3dDevice->basicShader->SetMaterial(mat, pinSide->m_pdsBuffer->has_alpha());
       }
       else
@@ -1105,6 +1107,8 @@ void Surface::RenderWallsAtHeight(const bool drop)
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
          pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
+
+         //g_pplayer->m_pin3d.SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
          pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
       }
       else

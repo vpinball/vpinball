@@ -612,6 +612,10 @@ void Flipper::RenderDynamic()
       // accomodate models with UV coords outside of [0,1]
       pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_UNDEFINED, SA_REPEAT, SA_REPEAT);
       pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
+
+      //g_pplayer->m_pin3d.SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
+      // accomodate models with UV coords outside of [0,1]
+      //pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
       pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
    }
    else
