@@ -1474,7 +1474,8 @@ void VPinball::OnClose()
 
          SaveValueBool(regKey[RegName::Editor], "WindowMaximized"s, !!IsZoomed());
       }
-      SaveDockRegistrySettings(DOCKER_REGISTRY_KEY);
+      if (!m_open_minimized) // otherwise the window/dock settings are screwed up and have to be manually restored each time
+         SaveDockRegistrySettings(DOCKER_REGISTRY_KEY);
 
       CWnd::OnClose();
    }
