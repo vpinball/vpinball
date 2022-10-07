@@ -1890,7 +1890,7 @@ void Player::RenderStaticMirror()
 {
 #ifndef ENABLE_SDL // FIXME will be part of the VPVR mirror fix
    // Direct all renders to the temporary mirror buffer (plus the static z-buffer)
-   m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture()->Activate();
+   m_pin3d.m_pd3dPrimaryDevice->GetMirrorRenderTarget(true)->Activate();
    m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
 
    SetClipPlanePlayfield(true); // Set the clip plane to only allow object above the playfield (do not reflect what is under or the playfield itself)
@@ -1953,7 +1953,7 @@ void Player::RenderStaticMirror()
 void Player::RenderDynamicMirror(const bool onlyBalls)
 {
    // render into temp mirror back buffer 
-   m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture()->Activate();
+   m_pin3d.m_pd3dPrimaryDevice->GetMirrorRenderTarget(false)->Activate();
    m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
 
    SetClipPlanePlayfield(true); // Set the clip plane to only allow object above the playfield (do not reflect what is under or the playfield itself)
@@ -2055,8 +2055,6 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
       m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(4, TEXTURE_MODE_TRILINEAR);
    }
-
-   m_pin3d.m_pd3dPrimaryDevice->SetMirrorTmpBufferTexture(m_ptable->m_reflectElementsOnPlayfield ? m_pin3d.m_pddsStatic->Duplicate() : nullptr);
 
    //#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
    // loop for X times and accumulate/average these renderings on CPU side
@@ -2160,15 +2158,6 @@ void Player::InitStatic()
 
       stats_drawn_static_triangles = RenderDevice::m_stats_drawn_triangles;
    }
-
-   delete m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture();
-
-   // alloc buffer for dynamic reflections (same buffer as the one used for rendering, without MSAA if any, sharing its depth with the back buffer)
-   const bool drawBallReflection = ((g_pplayer->m_reflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
-   if ((g_pplayer->m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl) || drawBallReflection)
-      m_pin3d.m_pd3dPrimaryDevice->SetMirrorTmpBufferTexture(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->Duplicate());
-   else
-      m_pin3d.m_pd3dPrimaryDevice->SetMirrorTmpBufferTexture(nullptr);
 
    if (!m_dynamicMode)
    {

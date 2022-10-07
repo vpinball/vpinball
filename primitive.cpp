@@ -1282,15 +1282,16 @@ void Primitive::RenderObject()
    // Apply reflections and handle depth only pass of playfield primitives
    if (m_d.m_useAsPlayfield)
    {
+      RenderTarget *mirror = pd3dDevice->GetMirrorRenderTarget(g_pplayer->m_isRenderingStatic);
       pd3dDevice->SetRenderStateClipPlane0(false); // Clip plane must be disable when rendering the playfield
       if (g_pplayer->m_current_renderstage == 1) // Depth only pass
       {
          pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, RenderDevice::RGBMASK_NONE);
          pd3dDevice->basicShader->SetTechnique(pin ? SHADER_TECHNIQUE_basic_depth_only_with_texture : SHADER_TECHNIQUE_basic_depth_only_without_texture);
       }
-      else if (pd3dDevice->GetMirrorTmpBufferTexture() != nullptr) // We have reflections to render on the primitive
+      else if (mirror) // We have reflections to render on the primitive
       {
-         pd3dDevice->basicShader->SetTexture(SHADER_tex_playfield_reflection, pd3dDevice->GetMirrorTmpBufferTexture()->GetColorSampler());
+         pd3dDevice->basicShader->SetTexture(SHADER_tex_playfield_reflection, mirror->GetColorSampler());
          pd3dDevice->basicShader->SetFloat(SHADER_mirrorFactor, m_ptable->m_playfieldReflectionStrength);
          bool is_reflection_only;
          if (g_pplayer->m_isRenderingStatic)
@@ -1354,8 +1355,8 @@ void Primitive::RenderDynamic()
 {
    TRACE_FUNCTION();
    
-   if (m_d.m_staticRendering && !(m_d.m_useAsPlayfield && g_pplayer->m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture() != nullptr))
-      return; //don't render static (except for playfield dynamic reflections)
+   if (m_d.m_staticRendering && !(m_d.m_useAsPlayfield && g_pplayer->m_pin3d.m_pd3dPrimaryDevice->GetMirrorRenderTarget(false) != nullptr))
+      return; //don't render static (except for playfield with dynamic reflections, to render the reflections)
    if (m_lockedByLS) 
    {
        //don't render in LS when state off
