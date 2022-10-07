@@ -1045,24 +1045,24 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 
 #else
 
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
-   m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
-   m_pin3d.m_pd3dPrimaryDevice->lightShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix("matWorldViewProj", &matWorldViewProj);
+   m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetMatrix("matWorldViewProj", &matWorldViewProj);
+   m_pin3d.m_pd3dPrimaryDevice->lightShader->SetMatrix("matWorldViewProj", &matWorldViewProj);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
-   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
+   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix("matWorldViewProj", &matWorldViewProj);
 #endif
 
-   m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
+   m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetMatrix("matWorldViewProj", &matWorldViewProj);
 
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorldView, &matWorldView);
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorldViewInverseTranspose, &matWorldViewInvTrans);
-   //m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorld, &matWorld);
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matView, &matView);
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix("matWorldView", &matWorldView);
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
+   //m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix("matWorld", &matWorld);
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix("matView", &matView);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
-   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix(SHADER_matWorldView, &matWorldView);
-   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix(SHADER_matWorldViewInverseTranspose, &matWorldViewInvTrans);
-   //m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix(SHADER_matWorld, &matWorld);
-   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix(SHADER_matView, &matView);
+   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix("matWorldView", &matWorldView);
+   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
+   //m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix("matWorld", &matWorld);
+   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix("matView", &matView);
 #endif
 
    //memcpy(temp.m, matView.m, 4 * 4 * sizeof(float));
@@ -1145,18 +1145,18 @@ void Player::UpdateBallShaderMatrix()
 #ifdef ENABLE_SDL
    m_pin3d.m_pd3dPrimaryDevice->ballShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matView.m[0][0], (eyes + 3) * 16);
 #else
-   m_ballShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
-   m_ballShader->SetMatrix(SHADER_matWorldView, &matWorldView);
-   m_ballShader->SetMatrix(SHADER_matWorldViewInverse, &matWorldViewInv);
-   //m_ballShader->SetMatrix(SHADER_matWorldViewInverseTranspose, &matWorldViewInvTrans);
-   m_ballShader->SetMatrix(SHADER_matView, &matView);
+   m_ballShader->SetMatrix("matWorldViewProj", &matWorldViewProj);
+   m_ballShader->SetMatrix("matWorldView", &matWorldView);
+   m_ballShader->SetMatrix("matWorldViewInverse", &matWorldViewInv);
+   //m_ballShader->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
+   m_ballShader->SetMatrix("matView", &matView);
 
    //memcpy(temp.m, matView.m, 4 * 4 * sizeof(float));
    //temp.Transpose();
    //D3DXMATRIX matViewInvInvTrans;
    //memcpy(matViewInvInvTrans.m, temp.m, 4 * 4 * sizeof(float));
 
-   //m_ballShader->SetMatrix(SHADER_matViewInverseInverseTranspose, &matViewInvInvTrans);
+   //m_ballShader->SetMatrix("matViewInverseInverseTranspose", &matViewInvInvTrans);
 #endif
 }
 
@@ -2085,15 +2085,19 @@ void Player::InitStatic()
          SetClipPlanePlayfield(true);
       }
 
-      if (accumulationSurface)
+      // Finish the frame.
+      m_pin3d.m_pd3dPrimaryDevice->EndScene();
+
+      // Readback static buffer, convert 16bit to 32bit float, and accumulate
+      if (!m_dynamicMode)
       {
          // Rendering is done to m_pin3d.m_pddsStatic then accumulated to accumulationSurface
          // We use the framebuffer mirror shader wich copy a weighted version of the bound texture
          accumulationSurface->Activate(true);
+         m_pin3d.m_pd3dPrimaryDevice->BeginScene();
          m_pin3d.EnableAlphaBlend(true);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetFloat(SHADER_mirrorFactor, 1.0);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_mirror, m_pin3d.m_pddsStatic->GetColorSampler());
@@ -2101,15 +2105,11 @@ void Player::InitStatic()
          m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
          m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_mirror);
+         m_pin3d.m_pddsStatic->Activate(false);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
-         m_pin3d.m_pddsStatic->Activate(false);
+         m_pin3d.m_pd3dPrimaryDevice->EndScene();
       }
-
-      // Finish the frame.
-      m_pin3d.m_pd3dPrimaryDevice->EndScene();
-
       stats_drawn_static_triangles = RenderDevice::m_stats_drawn_triangles;
    }
 
@@ -2121,7 +2121,8 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(4, TEXTURE_MODE_TRILINEAR);
    }
 
-   if (accumulationSurface)
+   // now normalize oversampled result in pdestStatic, convert back to 16bit float, and copy to/overwrite the static GPU buffer
+   if (!m_cameraMode)
    {
       // copy back weighted accumulated result to the static render target
       m_pin3d.m_pd3dPrimaryDevice->BeginScene();
@@ -2129,7 +2130,6 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetFloat(SHADER_mirrorFactor, (float)(1.0 / STATIC_PRERENDER_ITERATIONS));
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_mirror, accumulationSurface->GetColorSampler());
@@ -2137,13 +2137,11 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
       m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_mirror);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
-      m_pin3d.m_pddsStatic->Activate();
+      m_pin3d.m_pddsStatic->Activate(false);
       m_pin3d.m_pd3dPrimaryDevice->EndScene();
-      delete accumulationSurface;
    }
+
+   delete accumulationSurface;
 
    // Now finalize static buffer with non-dynamic AO
 
@@ -3841,7 +3839,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
       const bool is_anaglyph = m_stereo3D >= STEREO_ANAGLYPH_RC && m_stereo3D <= STEREO_ANAGLYPH_AB;
       const vec4 ms_zpd_ya_td(m_ptable->GetMaxSeparation(), m_ptable->GetZPD(), m_stereo3DY ? 1.0f : 0.0f,
           is_anaglyph ? (float)m_stereo3D : ((m_stereo3D == STEREO_SBS) ? 2.0f : (m_stereo3D == STEREO_TB) ? 1.0f : ((m_stereo3D == STEREO_INT) ? 0.0f : 0.5f)));
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_ms_zpd_ya_td, &ms_zpd_ya_td);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("ms_zpd_ya_td", &ms_zpd_ya_td);
 
       const vec4 w_h_height((float)(1.0 / (double)renderedRT->GetWidth()), (float)(1.0 / (double)renderedRT->GetHeight()), (float)renderedRT->GetHeight(), m_ptable->Get3DOffset());
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &w_h_height);
@@ -3849,7 +3847,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
       if (is_anaglyph)
       {
          const vec4 a_ds_c(m_global3DDesaturation, m_global3DContrast, 0.f,0.f);
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_Anaglyph_DeSaturation_Contrast, &a_ds_c);
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("Anaglyph_DeSaturation_Contrast", &a_ds_c);
       }
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(is_anaglyph ? SHADER_TECHNIQUE_stereo_Anaglyph : SHADER_TECHNIQUE_stereo);
@@ -4629,7 +4627,7 @@ void Player::PrepareVideoBuffersAO()
    // separate normal generation pass, currently roughly same perf or even much worse
    /*m_pin3d.m_pd3dDevice->GetBackBufferTmpTexture()->Activate(); //!! expects stereo or FXAA enabled
 
-   m_pin3d.m_pd3dDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pdds3DZBuffer, true);
+   m_pin3d.m_pd3dDevice->FBShader->SetTexture(SHADER_Texture3, m_pin3d.m_pdds3DZBuffer, true);
 
    const vec4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height),
       radical_inverse(m_overall_frames%2048)*(float)(1. / 8.0),
@@ -5527,7 +5525,7 @@ void Player::DrawBalls()
             l[light_i + MAX_LIGHT_SOURCES].vEmission[2] = 0.0f;
          }
 
-      m_ballShader->SetValue(SHADER_packedLights, l, sizeof(CLight) * (MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES));
+      m_ballShader->SetValue("packedLights", l, sizeof(CLight)*(MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES));
 
       // now for a weird hack: make material more rough, depending on how near the nearest lightsource is, to 'emulate' the area of the bulbs (as VP only features point lights so far)
       float Roughness = 0.8f;

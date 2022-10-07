@@ -39,7 +39,7 @@
 
 static bool IsWindowsVistaOr7()
 {
-   OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0, 0, 0, 0 };
+   OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0 };
    const DWORDLONG dwlConditionMask = //VerSetConditionMask(
       VerSetConditionMask(
          VerSetConditionMask(
@@ -52,7 +52,7 @@ static bool IsWindowsVistaOr7()
 
    const bool vista = VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
 
-   OSVERSIONINFOEXW osvi2 = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0, 0, 0, 0 };
+   OSVERSIONINFOEXW osvi2 = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0 };
    osvi2.dwMajorVersion = HIBYTE(_WIN32_WINNT_WIN7);
    osvi2.dwMinorVersion = LOBYTE(_WIN32_WINNT_WIN7);
    //osvi2.wServicePackMajor = 0;
@@ -468,7 +468,7 @@ void EnumerateDisplayModes(const int display, vector<VideoMode>& modes)
    }
 
    //for (int j = 0; j < 2; ++j)
-   constexpr int j = 0; // limit to 32bit only nowadays
+   const int j = 0; // limit to 32bit only nowadays
    {
       const D3DFORMAT fmt = (D3DFORMAT)((j == 0) ? colorFormat::RGB8 : colorFormat::RGB5);
       const unsigned numModes = d3d->GetAdapterModeCount(adapter, fmt);
@@ -1723,8 +1723,8 @@ void RenderDevice::SetTextureStageState(const DWORD p1, const D3DTEXTURESTAGESTA
 
 #define RENDER_STATE(name, bitpos, bitsize)                                                                                                                                                  \
    const uint32_t RENDER_STATE_SHIFT_##name = bitpos;                                                                                                                                        \
-   const uint32_t RENDER_STATE_MASK_##name = ((0x00000001u << (bitsize)) - 1) << (bitpos);                                                                                                       \
-   const uint32_t RENDER_STATE_CLEAR_MASK_##name = ~(((0x00000001u << (bitsize)) - 1) << (bitpos));
+   const uint32_t RENDER_STATE_MASK_##name = ((0x00000001u << bitsize) - 1) << bitpos;                                                                                                       \
+   const uint32_t RENDER_STATE_CLEAR_MASK_##name = ~(((0x00000001u << bitsize) - 1) << bitpos);
 // These definition must be copy/pasted to RenderDevice.h/cpp when modified to keep the implementation in sync
 RENDER_STATE(ALPHABLENDENABLE, 0, 1) // RS_FALSE or RS_TRUE
 RENDER_STATE(ZENABLE, 1, 1) // RS_FALSE or RS_TRUE
@@ -1802,43 +1802,6 @@ void RenderDevice::CopyRenderStates(const bool copyTo, RenderStateCache& state)
       m_renderstate.depth_bias = state.depth_bias;
       m_renderstate.alpha_ref = state.alpha_ref;
    }
-}
-
-string RenderDevice::GetRenderStateLog() const
-{
-   auto blend = (m_renderstate.state & RENDER_STATE_MASK_ALPHABLENDENABLE) != 0;
-   auto z_test = (m_renderstate.state & RENDER_STATE_MASK_ZENABLE) != 0;
-   auto alpha_test = (m_renderstate.state & RENDER_STATE_MASK_ALPHATESTENABLE) != 0;
-   auto alpha_func = (m_renderstate.state & RENDER_STATE_MASK_ALPHAFUNC) >> RENDER_STATE_SHIFT_ALPHAFUNC;
-   auto blend_op = (m_renderstate.state & RENDER_STATE_MASK_BLENDOP) >> RENDER_STATE_SHIFT_BLENDOP;
-   auto clip_plane = (m_renderstate.state & RENDER_STATE_MASK_CLIPPLANEENABLE) != 0;
-   auto cull_mode = (m_renderstate.state & RENDER_STATE_MASK_CULLMODE) >> RENDER_STATE_SHIFT_CULLMODE;
-   auto blend_dest = (m_renderstate.state & RENDER_STATE_MASK_DESTBLEND) >> RENDER_STATE_SHIFT_DESTBLEND;
-   auto blend_src = (m_renderstate.state & RENDER_STATE_MASK_SRCBLEND) >> RENDER_STATE_SHIFT_SRCBLEND;
-   auto z_func = (m_renderstate.state & RENDER_STATE_MASK_ZFUNC) >> RENDER_STATE_SHIFT_ZFUNC;
-   auto z_write = (m_renderstate.state & RENDER_STATE_MASK_ZWRITEENABLE) != 0;
-   auto color_write = (m_renderstate.state & RENDER_STATE_MASK_COLORWRITEENABLE) >> RENDER_STATE_SHIFT_COLORWRITEENABLE;
-   string cull_modes[] = { " ___ "s, " CW  "s, " CCW "s };
-   string functions[] = { " __ ", " <  ", " <= ", " >  ", " >= " };
-   string blend_modes[] = { " M ", " A ", " R " };
-   string blend_functions[] = { "  0  ", "  1  ", " SA  ", " DA  ", " RSA ", " RSC " };
-   string s = "Blend: {";
-   s.append(blend ? " B " : " _ ");
-   s.append(blend_modes[blend_op]);
-   s.append(blend_functions[blend_dest]);
-   s.append(blend_functions[blend_src]);
-   s.append("} Depth: {");
-   s.append(z_test ? " Z " : " _ ");
-   s.append(functions[z_func]);
-   s.append(z_write ? " ZW " : " __ ");
-   s.append("} Alpha: {");
-   s.append(alpha_test ? " A " : " _ ");
-   s.append(functions[alpha_func]);
-   s.append("} Clip:");
-   s.append(clip_plane ? " C " : " _ ");
-   s.append("Cull:");
-   s.append(cull_modes[cull_mode]);
-   return s;
 }
 
 void RenderDevice::ApplyRenderStates()

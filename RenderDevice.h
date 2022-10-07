@@ -84,6 +84,8 @@ enum UsageFlags {
 #endif
 };
 
+enum StereoMode;
+
 class Shader;
 
 class RenderDevice final
@@ -230,7 +232,6 @@ public:
    void SetRenderStateAlphaTestFunction(const DWORD testValue, const RenderStateValue testFunction, const bool enabled);
    void CopyRenderStates(const bool copyTo, RenderStateCache& state);
    void ApplyRenderStates();
-   string GetRenderStateLog() const;
 
 private:
    struct RenderStateMask

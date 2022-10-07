@@ -28,7 +28,7 @@ RenderTarget::RenderTarget(RenderDevice* rd, int width, int height)
    m_depth_sampler = nullptr;
 #ifdef ENABLE_SDL
    m_framebuffer = 0;
-   glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*)&m_framebuffer); // Not sure about this (taken from VPVR original implementation). Doesn't the back buffer alays bind to 0 on OpenGL ?
+   glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*)(&m_framebuffer)); // Not sure about this (taken from VPVR original implementation). Doesn't the back buffer alays bind to 0 on OpenGL ?
 #else
    HRESULT hr = m_rd->GetCoreDevice()->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_color_surface);
    if (FAILED(hr))

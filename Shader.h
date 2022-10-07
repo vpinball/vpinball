@@ -95,87 +95,74 @@ enum ShaderTechniques
 };
 #undef SHADER_TECHNIQUE
 
-enum ShaderUniformType
-{
-   SUT_Bool,
-   SUT_Int,
-   SUT_Float,
-   SUT_Float2,
-   SUT_Float3,
-   SUT_Float4,
-   SUT_Float4v,
-   SUT_FloatBlock,
-   SUT_Float3x3,
-   SUT_Float3x4,
-   SUT_Float4x3,
-   SUT_Float4x4,
-   SUT_Sampler
-};
-
 // Declaration of all uniforms and samplers used in the shaders
 // When changed, this list must also be copied unchanged to Shader.cpp (for its implementation)
 // Samplers defines how to sample a texture. For DX9, they are defined in the effect files, only the texture reference is set through the API.
 // Otherwise, the sampler states can be directly overriden through DX9Device->SetSamplerState (per tex unit), being carefull that the effect
 // framework will also apply the ones defined in the effect file during Technique->Begin call (so either don't define them, or reapply).
-#define SHADER_UNIFORM(type, name) SHADER_##name
+#define SHADER_UNIFORM(name) SHADER_##name
+#define SHADER_TEXTURE(name) SHADER_##name
 #define SHADER_SAMPLER(name, legacy_name, texture_ref, default_tex_unit, default_clampu, default_clampv, default_filter) SHADER_##name
 enum ShaderUniforms
 {
-   // -- Matrices --
-   SHADER_UNIFORM(SUT_FloatBlock, matrixBlock), // OpenGL only, matrices as a float block
-   SHADER_UNIFORM(SUT_Float4x4, matWorldViewProj), // DX9 only
-   SHADER_UNIFORM(SUT_Float4x4, matWorldView), // DX9 only
-   SHADER_UNIFORM(SUT_Float4x3, matWorldViewInverse), // DX9 only
-   SHADER_UNIFORM(SUT_Float3x4, matWorldViewInverseTranspose), // DX9 only
-   SHADER_UNIFORM(SUT_Float4x3, matView), // DX9 only
-   SHADER_UNIFORM(SUT_Float4x3, orientation),
    // -- Floats --
-   SHADER_UNIFORM(SUT_Float, RenderBall),
-   SHADER_UNIFORM(SUT_Float, blend_modulate_vs_add),
-   SHADER_UNIFORM(SUT_Float, alphaTestValue),
-   SHADER_UNIFORM(SUT_Float, eye),
-   SHADER_UNIFORM(SUT_Float, fKickerScale),
-   SHADER_UNIFORM(SUT_Float, mirrorFactor),
+   SHADER_UNIFORM(RenderBall),
+   SHADER_UNIFORM(blend_modulate_vs_add),
+   SHADER_UNIFORM(alphaTestValue),
+   SHADER_UNIFORM(eye),
+   SHADER_UNIFORM(fKickerScale),
    // -- Vectors and Float Arrays --
-   SHADER_UNIFORM(SUT_Float4, Roughness_WrapL_Edge_Thickness),
-   SHADER_UNIFORM(SUT_Float4, cBase_Alpha),
-   SHADER_UNIFORM(SUT_Float4, lightCenter_maxRange),
-   SHADER_UNIFORM(SUT_Float4, lightColor2_falloff_power),
-   SHADER_UNIFORM(SUT_Float4, lightColor_intensity),
-   SHADER_UNIFORM(SUT_Float2, fenvEmissionScale_TexWidth),
-   SHADER_UNIFORM(SUT_Float4, invTableRes_playfield_height_reflection),
-   SHADER_UNIFORM(SUT_Float4, cAmbient_LightRange),
-   SHADER_UNIFORM(SUT_Float3, cClearcoat_EdgeAlpha),
-   SHADER_UNIFORM(SUT_Float3, cGlossy_ImageLerp),
-   SHADER_UNIFORM(SUT_Float2, fDisableLighting_top_below),
-   SHADER_UNIFORM(SUT_Float4, backBoxSize),
-   SHADER_UNIFORM(SUT_Float4, vColor_Intensity),
-   SHADER_UNIFORM(SUT_Float4, w_h_height),
-   SHADER_UNIFORM(SUT_Float4, alphaTestValueAB_filterMode_addBlend),
-   SHADER_UNIFORM(SUT_Float3, amount_blend_modulate_vs_add_flasherMode),
-   SHADER_UNIFORM(SUT_Float4, staticColor_Alpha),
-   SHADER_UNIFORM(SUT_Float4, ms_zpd_ya_td),
-   SHADER_UNIFORM(SUT_Float2, Anaglyph_DeSaturation_Contrast),
-   SHADER_UNIFORM(SUT_Float4, vRes_Alpha_time),
-   SHADER_UNIFORM(SUT_Float4, SSR_bumpHeight_fresnelRefl_scale_FS),
-   SHADER_UNIFORM(SUT_Float2, AO_scale_timeblur),
-   SHADER_UNIFORM(SUT_Float4, clip_planes), // OpenGL only
-   SHADER_UNIFORM(SUT_Float4, cWidth_Height_MirrorAmount),
-   SHADER_UNIFORM(SUT_Float4, lightEmission),
-   SHADER_UNIFORM(SUT_Float4, lightPos),
-   SHADER_UNIFORM(SUT_Float4v, packedLights), // DX9 only
+   SHADER_UNIFORM(Roughness_WrapL_Edge_Thickness),
+   SHADER_UNIFORM(cBase_Alpha),
+   SHADER_UNIFORM(lightCenter_maxRange),
+   SHADER_UNIFORM(lightColor2_falloff_power),
+   SHADER_UNIFORM(lightColor_intensity),
+   SHADER_UNIFORM(matrixBlock),
+   SHADER_UNIFORM(fenvEmissionScale_TexWidth),
+   SHADER_UNIFORM(invTableRes_playfield_height_reflection),
+   SHADER_UNIFORM(lightEmission),
+   SHADER_UNIFORM(lightPos),
+   SHADER_UNIFORM(orientation),
+   SHADER_UNIFORM(cAmbient_LightRange),
+   SHADER_UNIFORM(cClearcoat_EdgeAlpha),
+   SHADER_UNIFORM(cGlossy_ImageLerp),
+   SHADER_UNIFORM(fDisableLighting_top_below),
+   SHADER_UNIFORM(backBoxSize),
+   SHADER_UNIFORM(vColor_Intensity),
+   SHADER_UNIFORM(w_h_height),
+   SHADER_UNIFORM(alphaTestValueAB_filterMode_addBlend),
+   SHADER_UNIFORM(amount_blend_modulate_vs_add_flasherMode),
+   SHADER_UNIFORM(staticColor_Alpha),
+   SHADER_UNIFORM(ms_zpd_ya_td),
+   SHADER_UNIFORM(Anaglyph_DeSaturation_Contrast),
+   SHADER_UNIFORM(vRes_Alpha_time),
+   SHADER_UNIFORM(mirrorFactor),
+   SHADER_UNIFORM(SSR_bumpHeight_fresnelRefl_scale_FS),
+   SHADER_UNIFORM(AO_scale_timeblur),
+   SHADER_UNIFORM(clip_planes),
+   SHADER_UNIFORM(cWidth_Height_MirrorAmount),
    // -- Integer and Bool --
-   SHADER_UNIFORM(SUT_Bool, ignoreStereo),
-   SHADER_UNIFORM(SUT_Bool, disableLighting),
-   SHADER_UNIFORM(SUT_Bool, doNormalMapping),
-   SHADER_UNIFORM(SUT_Bool, is_metal),
-   SHADER_UNIFORM(SUT_Bool, color_grade),
-   SHADER_UNIFORM(SUT_Bool, do_bloom),
-   SHADER_UNIFORM(SUT_Bool, lightingOff),
-   SHADER_UNIFORM(SUT_Bool, objectSpaceNormalMap),
-   SHADER_UNIFORM(SUT_Bool, do_dither),
-   SHADER_UNIFORM(SUT_Bool, imageBackglassMode),
-   SHADER_UNIFORM(SUT_Int, lightSources),
+   SHADER_UNIFORM(ignoreStereo),
+   SHADER_UNIFORM(disableLighting),
+   SHADER_UNIFORM(lightSources),
+   SHADER_UNIFORM(doNormalMapping),
+   SHADER_UNIFORM(is_metal),
+   SHADER_UNIFORM(color_grade),
+   SHADER_UNIFORM(do_bloom),
+   SHADER_UNIFORM(lightingOff),
+   SHADER_UNIFORM(objectSpaceNormalMap),
+   SHADER_UNIFORM(do_dither),
+   SHADER_UNIFORM(imageBackglassMode),
+   // FIXME -- Legacy Textures (to be removed) --
+   SHADER_TEXTURE(Texture0),
+   SHADER_TEXTURE(Texture1),
+   SHADER_TEXTURE(Texture2),
+   SHADER_TEXTURE(Texture3),
+   SHADER_TEXTURE(Texture4),
+   SHADER_TEXTURE(edgesTex2D),
+   SHADER_TEXTURE(blendTex2D),
+   SHADER_TEXTURE(areaTex2D),
+   SHADER_TEXTURE(searchTex2D),
    // -- Samplers (a texture reference with sampling configuration) --
    // DMD shader
    SHADER_SAMPLER(tex_dmd, texSampler0, Texture0, 0, SA_MIRROR, SA_MIRROR, SF_NONE), // DMD
@@ -210,6 +197,7 @@ enum ShaderUniforms
    // Stereo shader (VPVR only, combine the 2 rendered eyes into a single one)
    SHADER_SAMPLER(tex_stereo_fb, texSampler0, Texture0, 0, SA_CLAMP, SA_CLAMP, SF_POINT), // Framebuffer (unfiltered)
    // SMAA shader
+   // FIXME SMAA shader also use the color and colorGamma samplers. This has to be looked at more deeply for a clean implementation
    SHADER_SAMPLER(colorTex, colorTex, colorTex, 0, SA_CLAMP, SA_CLAMP, SF_TRILINEAR),
    SHADER_SAMPLER(colorGammaTex, colorGammaTex, colorGammaTex, 1, SA_CLAMP, SA_CLAMP, SF_TRILINEAR),
    SHADER_SAMPLER(edgesTex, edgesTex, edgesTex2D, 2, SA_CLAMP, SA_CLAMP, SF_TRILINEAR),
@@ -220,10 +208,65 @@ enum ShaderUniforms
    SHADER_UNIFORM_INVALID
 };
 #undef SHADER_UNIFORM
+#undef SHADER_TEXTURE
 #undef SHADER_SAMPLER
 
 #ifndef ENABLE_SDL
+
+//Float
+#define SHADER_blend_modulate_vs_add "blend_modulate_vs_add"
+#define SHADER_alphaTestValue "alphaTestValue"
+#define SHADER_eye "eye"
+#define SHADER_fKickerScale "fKickerScale"
+
+//Vectors and Float Arrays
+#define SHADER_Roughness_WrapL_Edge_Thickness "Roughness_WrapL_Edge_Thickness"
+#define SHADER_cBase_Alpha "cBase_Alpha"
+#define SHADER_lightCenter_maxRange "lightCenter_maxRange"
+#define SHADER_lightColor2_falloff_power "lightColor2_falloff_power"
+#define SHADER_lightColor_intensity "lightColor_intensity"
+#define SHADER_matrixBlock "matrixBlock"
+#define SHADER_fenvEmissionScale_TexWidth "fenvEmissionScale_TexWidth"
+#define SHADER_invTableRes_playfield_height_reflection "invTableRes_playfield_height_reflection"
+#define SHADER_lightEmission "lightEmission"
+#define SHADER_lightPos "lightPos"
+#define SHADER_orientation "orientation"
+#define SHADER_cAmbient_LightRange "cAmbient_LightRange"
+#define SHADER_cClearcoat_EdgeAlpha "cClearcoat_EdgeAlpha"
+#define SHADER_cGlossy_ImageLerp "cGlossy_ImageLerp"
+#define SHADER_fDisableLighting_top_below "fDisableLighting_top_below"
+#define SHADER_backBoxSize "backBoxSize"
+#define SHADER_quadOffsetScale "quadOffsetScale"
+#define SHADER_quadOffsetScaleTex "quadOffsetScaleTex"
+#define SHADER_vColor_Intensity "vColor_Intensity"
+#define SHADER_w_h_height "w_h_height"
+#define SHADER_alphaTestValueAB_filterMode_addBlend "alphaTestValueAB_filterMode_addBlend"
+#define SHADER_amount_blend_modulate_vs_add_flasherMode "amount_blend_modulate_vs_add_flasherMode"
+#define SHADER_staticColor_Alpha "staticColor_Alpha"
+#define SHADER_width_height_rotated_flipLR "width_height_rotated_flipLR"
+#define SHADER_vRes_Alpha_time "vRes_Alpha_time"
+#define SHADER_mirrorFactor "mirrorFactor"
+#define SHADER_SSR_bumpHeight_fresnelRefl_scale_FS "SSR_bumpHeight_fresnelRefl_scale_FS"
+#define SHADER_AO_scale_timeblur "AO_scale_timeblur"
+
+//Integer
+#define SHADER_ignoreStereo "ignoreStereo"
+#define SHADER_disableLighting "disableLighting"
+#define SHADER_lightSources "lightSources"
+#define SHADER_doNormalMapping "doNormalMapping"
+#define SHADER_is_metal "is_metal"
+#define SHADER_color_grade "color_grade"
+#define SHADER_do_bloom "do_bloom"
+#define SHADER_lightingOff "lightingOff"
+#define SHADER_objectSpaceNormalMap "objectSpaceNormalMap"
+#define SHADER_do_dither "do_dither"
+
 //Textures
+#define SHADER_Texture0 "Texture0"
+#define SHADER_Texture1 "Texture1"
+#define SHADER_Texture2 "Texture2"
+#define SHADER_Texture3 "Texture3"
+#define SHADER_Texture4 "Texture4"
 #define SHADER_edgesTex2D "edgesTex2D"
 #define SHADER_blendTex2D "blendTex2D"
 #define SHADER_areaTex2D "areaTex2D"
@@ -234,6 +277,8 @@ enum ShaderUniforms
 #define SHADER_ATTRIBUTE_NORM "vNormal"
 #define SHADER_ATTRIBUTE_TC "tc"
 #define SHADER_ATTRIBUTE_TEX "tex0"
+
+typedef D3DXHANDLE SHADER_UNIFORM_HANDLE;
 #endif
 
 class Shader final
@@ -275,11 +320,12 @@ public:
    void SetTechniqueMetal(const ShaderTechniques technique, const bool isMetal);
    ShaderTechniques GetCurrentTechnique() { return m_technique; }
 
-   void SetMatrix(const ShaderUniforms hParameter, const D3DXMATRIX* pMatrix);
-   void SetVector(const ShaderUniforms hParameter, const vec4* pVector);
-   void SetFloat(const ShaderUniforms hParameter, const float f);
-   void SetBool(const ShaderUniforms hParameter, const bool b);
-   void SetValue(const ShaderUniforms hParameter, const void* pData, const unsigned int Bytes);
+   void SetMatrix(const SHADER_UNIFORM_HANDLE hParameter, const D3DXMATRIX* pMatrix);
+   void SetVector(const SHADER_UNIFORM_HANDLE hParameter, const vec4* pVector);
+   void SetFloat(const SHADER_UNIFORM_HANDLE hParameter, const float f);
+   void SetInt(const SHADER_UNIFORM_HANDLE hParameter, const int i);
+   void SetBool(const SHADER_UNIFORM_HANDLE hParameter, const bool b);
+   void SetValue(const SHADER_UNIFORM_HANDLE hParameter, const void* pData, const unsigned int Bytes);
 
    static void SetDefaultSamplerFilter(const ShaderUniforms sampler, const SamplerFilter sf);
 
@@ -331,7 +377,7 @@ private:
 
    struct ShaderUniform
    {
-      ShaderUniformType type;
+      bool is_sampler;
       string name;
       string legacy_name;
       string texture_ref;
