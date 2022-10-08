@@ -19,6 +19,17 @@ enum deviceNumber {
    SECONDARY_DEVICE
 };
 
+enum PlayfieldReflectionMode
+{
+   PFREFL_NONE, // No reflections
+   PFREFL_BALLS, // Only balls reflections
+   PFREFL_STATIC, // Only static reflections
+   PFREFL_STATIC_N_BALLS, // Static reflections and balls, without depth sync (static or dynamic reflection may be rendered while they should be occluded)
+   PFREFL_UNSYNCED_DYNAMIC, // Static and dynamic reflections, without depth sync (static or dynamic reflection may be rendered while they should be occluded)
+   PFREFL_SYNCED_DYNAMIC, // Static and dynamic reflections, with depth sync (static reflection may be rendered while they should be occluded)
+   PFREFL_DYNAMIC // All reflections are dynamic allowing for correct occlusion between them at the cost of performance
+};
+
 enum StereoMode
 {
    STEREO_OFF = 0, // Disabled

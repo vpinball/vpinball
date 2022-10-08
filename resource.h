@@ -751,6 +751,7 @@
 #define IDC_ASPECT_RATIO_EDIT           461
 #define IDC_FXAACB                      462
 #define IDC_ABOUT_VERSION               463
+#define IDC_GLOBAL_PF_REFLECTION        463
 #define DISPID_PluFrames                464
 #define DISPID_Width                    465
 #define DISPID_ZAdjust                  466
