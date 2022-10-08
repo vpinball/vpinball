@@ -1907,6 +1907,9 @@ HRESULT Player::Init()
 //  5. render all dynamic objects as normal
 void Player::RenderStaticMirror()
 {
+   if (m_pfReflectionMode < PFREFL_STATIC || m_pfReflectionMode == PFREFL_DYNAMIC)
+      return;
+
 #ifndef ENABLE_SDL // FIXME will be part of the VPVR mirror fix
    // Direct all renders to the temporary mirror buffer (plus the static z-buffer)
    m_pin3d.m_pd3dPrimaryDevice->GetMirrorRenderTarget(true)->Activate();
@@ -2008,9 +2011,51 @@ void Player::RenderDynamicMirror()
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
    if (!onlyBalls)
-      UpdateBasicShaderMatrix(); //!! Camera seems skewed when rendering the flipped elements in VR, something with the matrix? Looks fine in 2D.
+      UpdateBasicShaderMatrix();
 
    UpdateBallShaderMatrix();
+
+   // Draw reflection of all objects dynamicly to allow correct reflection occlusion or when camera is dynamic like VR or BAM headtracking
+   if (m_pfReflectionMode == PFREFL_DYNAMIC)
+   {
+      for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
+         if (m_ptable->m_vedit[i]->GetItemType() != eItemDecal)
+         {
+            Hitable *const ph = m_ptable->m_vedit[i]->GetIHitable();
+            if (ph)
+               ph->RenderStatic();
+         }
+      // Draw decals (they have transparency, so they have to be drawn after the wall they are on)
+      for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
+         if (m_ptable->m_vedit[i]->GetItemType() == eItemDecal)
+         {
+            Hitable *const ph = m_ptable->m_vedit[i]->GetIHitable();
+            if (ph)
+               ph->RenderStatic();
+         }
+   }
+
+   if (!onlyBalls)
+   {
+      // Draw non-transparent objects.
+      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
+         m_vHitNonTrans[i]->RenderDynamic();
+
+      // Main rendering process non DMD before DMD. I can't see any reason why this is not the same for reflections ?
+      /*m_dmdstate = 0;
+      // Draw non-transparent objects. No DMD's
+      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
+         if (!m_vHitNonTrans[i]->IsDMD())
+            m_vHitNonTrans[i]->RenderDynamic();
+
+      m_dmdstate = 2;
+      // Draw non-transparent DMD's
+      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
+         if (m_vHitNonTrans[i]->IsDMD())
+            m_vHitNonTrans[i]->RenderDynamic();*/
+   }
+
+   DrawBalls();
 
    if (!onlyBalls)
    {
@@ -2020,16 +2065,20 @@ void Player::RenderDynamicMirror()
       for (size_t i = 0; i < m_vHitTrans.size(); ++i)
          m_vHitTrans[i]->RenderDynamic();
 
+      // Main rendering process non DMD before DMD. I can't see any reason why this is not the same for reflections ?
+      /*m_dmdstate = 0;
+      // Draw transparent objects. No DMD's
+      for (size_t i = 0; i < m_vHitTrans.size(); ++i)
+         if (!m_vHitTrans[i]->IsDMD())
+            m_vHitTrans[i]->RenderDynamic();
+
+      m_dmdstate = 1;
+      // Draw only transparent DMD's
+      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i) // NonTrans is correct as DMDs are always sorted in there
+         if (m_vHitNonTrans[i]->IsDMD())
+            m_vHitNonTrans[i]->RenderDynamic();*/
+
       stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth);
-   }
-
-   DrawBalls();
-
-   if (!onlyBalls)
-   {
-      // Draw non-transparent objects.
-      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
-         m_vHitNonTrans[i]->RenderDynamic();
    }
 
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
@@ -3590,8 +3639,15 @@ void Player::RenderDynamics()
 {
    TRACE_FUNCTION();
 
+   // Update Bulb light buffer
+   DrawBulbLightBuffer();
+   if (GetProfilingMode() == PF_ENABLED)
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_LightBuffer);
+
    // Create the dynamic playfield reflection
    RenderDynamicMirror();
+   if (GetProfilingMode() == PF_ENABLED)
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_PlayfieldGraphics);
 
    if (m_dynamicMode)
    {
@@ -3622,9 +3678,6 @@ void Player::RenderDynamics()
          }
    }
 
-   if (GetProfilingMode() == PF_ENABLED)
-      m_pin3d.m_gpu_profiler.Timestamp(GTS_PlayfieldGraphics);
-
    if (GetProfilingMode() != PF_SPLIT_RENDERING) // normal rendering path for standard gameplay
    {
       m_dmdstate = 0;
@@ -3648,11 +3701,6 @@ void Player::RenderDynamics()
       m_limiter.Execute(m_pin3d.m_pd3dPrimaryDevice); //!! move below other draw calls??
 #endif
 
-      DrawBulbLightBuffer();
-
-      if (GetProfilingMode() == PF_ENABLED)
-         m_pin3d.m_gpu_profiler.Timestamp(GTS_LightBuffer);
-
       m_dmdstate = 0;
       // Draw transparent objects. No DMD's
       for (size_t i = 0; i < m_vHitTrans.size(); ++i)
@@ -3673,8 +3721,6 @@ void Player::RenderDynamics()
 #ifndef ENABLE_SDL
       m_limiter.Execute(m_pin3d.m_pd3dPrimaryDevice); //!! move below other draw calls??
 #endif
-
-      DrawBulbLightBuffer();
 
       m_pin3d.m_gpu_profiler.BeginFrame(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
 

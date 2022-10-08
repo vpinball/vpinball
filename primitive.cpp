@@ -1291,8 +1291,7 @@ void Primitive::RenderObject()
       }
       else if (mirror) // We have reflections to render on the primitive
       {
-         const vec4 cWidth_Height_MirrorAmount(
-            RenderTarget::GetCurrentRenderTarget()->GetWidth(), RenderTarget::GetCurrentRenderTarget()->GetHeight(), m_ptable->m_playfieldReflectionStrength, 0.0f);
+         const vec4 cWidth_Height_MirrorAmount((float)RenderTarget::GetCurrentRenderTarget()->GetWidth(), (float)RenderTarget::GetCurrentRenderTarget()->GetHeight(), m_ptable->m_playfieldReflectionStrength, 0.0f);
          pd3dDevice->basicShader->SetVector(SHADER_cWidth_Height_MirrorAmount, &cWidth_Height_MirrorAmount);
          pd3dDevice->basicShader->SetTexture(SHADER_tex_playfield_reflection, mirror->GetColorSampler());
          bool is_reflection_only;
@@ -1345,7 +1344,10 @@ void Primitive::RenderObject()
    g_pplayer->UpdateBasicShaderMatrix();
 
    if (m_d.m_useAsPlayfield)
+   {
+      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_transmission, pd3dDevice->GetBloomBufferTexture()->GetColorSampler()); // Restore bulb light transmission on Texture3 (staticly shared with playfield reflection on DX9)
       pd3dDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
+   }
    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
    if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
       pd3dDevice->basicShader->SetDisableLighting(vec4(0.f, 0.f, 0.f, 0.f));
