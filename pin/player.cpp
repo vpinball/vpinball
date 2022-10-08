@@ -232,6 +232,9 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
       m_pfReflectionMode = PFREFL_BALLS;
    if (m_ptable->m_useReflectionForBalls == 1 && m_pfReflectionMode == PFREFL_STATIC)
       m_pfReflectionMode = PFREFL_STATIC_N_BALLS;
+   // For dynamic mode, static reflections are not available so adapt the mode
+   if (m_dynamicMode &&m_pfReflectionMode >= PFREFL_STATIC)
+      m_pfReflectionMode = PFREFL_DYNAMIC;
 
    if (useVR)
    {
@@ -1080,13 +1083,6 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    D3DXMATRIX matWorld(worldMat);
    D3DXMATRIX matObject(objectTrafo);
 
-   if (m_ptable->m_reflectionEnabled)
-   {
-      // *2.0f because every element is calculated that the lowest edge is around z=0 + table height so to get a correct
-      // reflection the translation must be 1x table height + 1x table height to center around table height or 0
-      matObject._43 -= m_ptable->m_tableheight*2.0f;
-   }
-
    D3DXMATRIX matWorldView = matObject * matWorld * matView;
    D3DXMATRIX matWorldViewProj = matWorldView * matProj;
 
@@ -1918,16 +1914,29 @@ void Player::RenderStaticMirror()
    SetClipPlanePlayfield(true); // Set the clip plane to only allow object above the playfield (do not reflect what is under or the playfield itself)
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(true);
 
-   D3DMATRIX viewMat;
-   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+   D3DMATRIX dxViewMat;
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &dxViewMat);
    // flip camera
-   viewMat._33 = -viewMat._33;
-   const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
-   if (rotation != 0.0f)
-      viewMat._31 = -viewMat._31;
-   else
-      viewMat._32 = -viewMat._32;
-   m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+   Matrix3D viewMat;
+   memcpy(viewMat.m, dxViewMat.m, 4 * 4 * sizeof(float));
+   // Reflect against reflection plane given by its normal (formula from https://en.wikipedia.org/wiki/Transformation_matrix#Reflection_2)
+   Matrix3D reflect;
+   reflect.SetIdentity();
+   //float nx = 0.0f, ny = 0.0f, nz = 1.0f;
+   //reflect._11 = 1.0f - 2.0f * nx * nx;
+   //reflect._12 = -2.0f * nx * ny;
+   //reflect._13 = -2.0f * nx * nz;
+   //reflect._21 = -2.0f * nx * ny;
+   //reflect._22 = 1.0f - 2.0f * ny * ny;
+   //reflect._23 = -2.0f * ny * nz;
+   //reflect._31 = -2.0f * nx * nz;
+   //reflect._32 = -2.0f * ny * nz;
+   //reflect._33 = 1.0f - 2.0f * nz * nz;
+   reflect._33 = -1.0f;
+   viewMat = reflect * viewMat;
+   // Translate the camera on the other side of the playfield plane
+   reflect.SetTranslation(0.0f, 0.0f, -m_ptable->m_tableheight * 2.0f);
+   viewMat = reflect * viewMat;
 
    m_ptable->m_reflectionEnabled = true;
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
@@ -1958,12 +1967,7 @@ void Player::RenderStaticMirror()
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
    // and flip back camera
-   viewMat._33 = -viewMat._33;
-   if (rotation != 0.0f)
-      viewMat._31 = -viewMat._31;
-   else
-      viewMat._32 = -viewMat._32;
-   m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+   m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &dxViewMat);
    UpdateBasicShaderMatrix();
 
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(false); // disable playfield clipplane again
@@ -1995,15 +1999,29 @@ void Player::RenderDynamicMirror()
    SetClipPlanePlayfield(true); // Set the clip plane to only allow object above the playfield (do not reflect what is under or the playfield itself)
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(true);
 
-   D3DMATRIX viewMat;
-   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+   D3DMATRIX dxViewMat;
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &dxViewMat);
    // flip camera
-   viewMat._33 = -viewMat._33;
-   const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
-   if (rotation != 0.0f)
-      viewMat._31 = -viewMat._31;
-   else
-      viewMat._32 = -viewMat._32;
+   Matrix3D viewMat;
+   memcpy(viewMat.m, dxViewMat.m, 4 * 4 * sizeof(float));
+   // Reflect against reflection plane given by its normal (formula from https://en.wikipedia.org/wiki/Transformation_matrix#Reflection_2)
+   Matrix3D reflect;
+   reflect.SetIdentity();
+   //float nx = 0.0f, ny = 0.0f, nz = 1.0f;
+   //reflect._11 = 1.0f - 2.0f * nx * nx;
+   //reflect._12 = -2.0f * nx * ny;
+   //reflect._13 = -2.0f * nx * nz;
+   //reflect._21 = -2.0f * nx * ny;
+   //reflect._22 = 1.0f - 2.0f * ny * ny;
+   //reflect._23 = -2.0f * ny * nz;
+   //reflect._31 = -2.0f * nx * nz;
+   //reflect._32 = -2.0f * ny * nz;
+   //reflect._33 = 1.0f - 2.0f * nz * nz;
+   reflect._33 = -1.0f;
+   viewMat = reflect * viewMat;
+   // Translate the camera on the other side of the playfield plane
+   reflect.SetTranslation(0.0f, 0.0f, -m_ptable->m_tableheight * 2.0f);
+   viewMat = reflect * viewMat;
    m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
 
    m_ptable->m_reflectionEnabled = true; // set to let matrices and postrenderstatics know that we need to handle reflections now
@@ -2092,12 +2110,12 @@ void Player::RenderDynamicMirror()
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
    // and flip back camera
-   viewMat._33 = -viewMat._33;
+   /* viewMat._33 = -viewMat._33;
    if (rotation != 0.0f)
       viewMat._31 = -viewMat._31;
    else
-      viewMat._32 = -viewMat._32;
-   m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+      viewMat._32 = -viewMat._32;*/
+   m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &dxViewMat);
 
    if (!onlyBalls)
       UpdateBasicShaderMatrix();
@@ -5544,9 +5562,6 @@ void Player::DrawBalls()
 
       // calculate/adapt height of ball
       float zheight = (!pball->m_d.m_frozen) ? pball->m_d.m_pos.z : (pball->m_d.m_pos.z - pball->m_d.m_radius);
-
-      if (m_ptable->m_reflectionEnabled)
-         zheight -= m_ptable->m_tableheight*2.0f;
 
       const float maxz = (pball->m_d.m_radius + m_ptable->m_tableheight) + 3.0f;
       const float minz = (pball->m_d.m_radius + m_ptable->m_tableheight) - 0.1f;
