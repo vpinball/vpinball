@@ -1283,7 +1283,6 @@ void Primitive::RenderObject()
    if (m_d.m_useAsPlayfield)
    {
       RenderTarget *mirror = pd3dDevice->GetMirrorRenderTarget(g_pplayer->m_isRenderingStatic);
-      pd3dDevice->SetRenderStateClipPlane0(false); // Clip plane must be disable when rendering the playfield
       if (g_pplayer->m_current_renderstage == 1) // Depth only pass
       {
          pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, RenderDevice::RGBMASK_NONE);
@@ -1299,6 +1298,8 @@ void Primitive::RenderObject()
             is_reflection_only = false; // Static prepass => render playfield and reflections
          else if (g_pplayer->m_dynamicMode)
             is_reflection_only = false; // Normal pass without a static prepass => render playfield and reflections
+         else if (!m_d.m_staticRendering)
+            is_reflection_only = false; // The playfield is a dynamic primitive => it must be rendered with the reflections since it is not staticly prerendered
          else
             is_reflection_only = true; // Normal pass with a static prepass => render only additive reflections (playfield is already rendered in the static prepass)
          if (is_reflection_only) // Reflection only pass
