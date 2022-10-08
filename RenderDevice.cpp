@@ -1057,10 +1057,9 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
       m_pOffscreenBackBufferTexture = m_pOffscreenMSAABackBufferTexture;
 
    // alloc buffer for static and dynamic playfield reflections
-   const bool drawBallReflection = ((g_pplayer->m_reflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
-   if (g_pplayer->m_ptable->m_reflectElementsOnPlayfield)
+   if (g_pplayer->m_pfReflectionMode >= PFREFL_STATIC)
       m_pStaticMirrorRenderTarget = m_pOffscreenBackBufferTexture->Duplicate();
-   if ((g_pplayer->m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl) || drawBallReflection)
+   if (g_pplayer->m_pfReflectionMode != PFREFL_NONE && g_pplayer->m_pfReflectionMode != PFREFL_STATIC)
       m_pDynamicMirrorRenderTarget = m_pOffscreenBackBufferTexture->Duplicate();
 
    // alloc buffer for screen space fake reflection rendering

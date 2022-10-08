@@ -263,6 +263,8 @@ BOOL VideoOptionsDialog::OnInitDialog()
       AddToolTip("Enables brute-force 4x Anti-Aliasing (similar to DSR).\r\nThis delivers very good quality, but slows down performance significantly.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_AA_ALL_TABLES).GetHwnd());
       AddToolTip("When checked it overwrites the ball image/decal image(s) for every table.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_OVERWRITE_BALL_IMAGE_CHECK).GetHwnd());
       AddToolTip("Select Display for Video output.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DISPLAY_ID).GetHwnd());
+      AddToolTip("Enables post-processed reflections on all objects (beside the playfield).", hwndDlg, toolTipHwnd, GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd());
+      AddToolTip("Enables playfield reflections.\r\n\r\n'Dynamic' is recommended and will give the best result but may harm performance.\r\n\r\n'Static Only' has no performance cost except in VR.\r\n\r\nOther options are trade-off between quality and performance.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd());
    }
 
    const int maxTexDim = LoadValueIntWithDefault(regKey[RegName::Player], "MaxTexDimension"s, 0); // default: Don't resize textures
@@ -274,9 +276,6 @@ BOOL VideoOptionsDialog::OnInitDialog()
       case 2048:SendMessage(GetDlgItem(IDC_Tex2048).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);      break;
       default:	SendMessage(GetDlgItem(IDC_TexUnlimited).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0); break;
    }
-
-   const bool reflection = LoadValueBoolWithDefault(regKey[RegName::Player], "BallReflection"s, true);
-   SendMessage(GetDlgItem(IDC_GLOBAL_REFLECTION_CHECK).GetHwnd(), BM_SETCHECK, reflection ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const bool trail = LoadValueBoolWithDefault(regKey[RegName::Player], "BallTrail"s, true);
    SendMessage(GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd(), BM_SETCHECK, trail ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -327,8 +326,29 @@ BOOL VideoOptionsDialog::OnInitDialog()
    const bool ssreflection = LoadValueBoolWithDefault(regKey[RegName::Player], "SSRefl"s, false);
    SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_SETCHECK, ssreflection ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const bool pfreflection = LoadValueBoolWithDefault(regKey[RegName::Player], "PFRefl"s, true);
-   SendMessage(GetDlgItem(IDC_GLOBAL_PFREFLECTION_CHECK).GetHwnd(), BM_SETCHECK, pfreflection ? BST_CHECKED : BST_UNCHECKED, 0);
+   HWND hwnd = GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd();
+   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disabled");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Balls Only");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static Only");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static & Balls");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static & Unsynced Dynamic");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static & Synced Dynamic");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Dynamic");
+   int pfr = LoadValueIntWithDefault(regKey[RegName::Player], "PFReflection"s, -1);
+   PlayfieldReflectionMode pfReflection;
+   if (pfr != -1)
+      pfReflection = (PlayfieldReflectionMode)pfr;
+   else
+   {
+      pfReflection = PFREFL_STATIC;
+      if (LoadValueBoolWithDefault(regKey[RegName::Player], "BallReflection"s, true))
+         pfReflection = PFREFL_STATIC_N_BALLS;
+      if (LoadValueBoolWithDefault(regKey[RegName::Player], "PFRefl"s, true))
+         pfReflection = PFREFL_UNSYNCED_DYNAMIC;
+   }
+   SendMessage(hwnd, CB_SETCURSEL, pfReflection, 0);
+   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    const bool overwiteBallImage = LoadValueBoolWithDefault(regKey[RegName::Player], "OverwriteBallImage"s, false);
    SendMessage(GetDlgItem(IDC_OVERWRITE_BALL_IMAGE_CHECK).GetHwnd(), BM_SETCHECK, overwiteBallImage ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -351,7 +371,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    }
 
    const int fxaa = LoadValueIntWithDefault(regKey[RegName::Player], "FXAA"s, Standard_FXAA);
-   HWND hwnd = GetDlgItem(IDC_FXAACB).GetHwnd();
+   hwnd = GetDlgItem(IDC_FXAACB).GetHwnd();
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Disabled");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Fast FXAA");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Standard FXAA");
@@ -767,9 +787,6 @@ void VideoOptionsDialog::OnOK()
       maxTexDim = 2048;
    SaveValueInt(regKey[RegName::Player], "MaxTexDimension"s, maxTexDim);
 
-   const bool reflection = (SendMessage(GetDlgItem(IDC_GLOBAL_REFLECTION_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
-   SaveValueBool(regKey[RegName::Player], "BallReflection"s, reflection);
-
    const bool trail = (SendMessage(GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValueBool(regKey[RegName::Player], "BallTrail"s, trail);
 
@@ -816,15 +833,17 @@ void VideoOptionsDialog::OnOK()
    useAO = SendMessage(GetDlgItem(IDC_ENABLE_AO).GetHwnd(), BM_GETCHECK, 0, 0) ? false : true; // inverted logic
    SaveValueBool(regKey[RegName::Player], "DisableAO"s, useAO);
 
+   LRESULT pfReflectionMode = SendMessage(GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd(), CB_GETCURSEL, 0, 0);
+   if (pfReflectionMode == LB_ERR)
+      pfReflectionMode = PFREFL_STATIC;
+   SaveValueInt(regKey[RegName::Player], "PFReflection"s, (int)pfReflectionMode);
+
    const bool ssreflection = (SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValueBool(regKey[RegName::Player], "SSRefl"s, ssreflection);
 
-   const bool pfreflection = (SendMessage(GetDlgItem(IDC_GLOBAL_PFREFLECTION_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
-   SaveValueBool(regKey[RegName::Player], "PFRefl"s, pfreflection);
-
    LRESULT stereo3D = SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (stereo3D == LB_ERR)
-      stereo3D = 0;
+      stereo3D = STEREO_OFF;
    SaveValueInt(regKey[RegName::Player], "Stereo3D"s, (int)stereo3D);
    SaveValueInt(regKey[RegName::Player], "Stereo3DEnabled"s, (int)stereo3D);
 

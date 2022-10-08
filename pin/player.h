@@ -294,7 +294,7 @@ public:
 
 private:
    void RenderStaticMirror();
-   void RenderDynamicMirror(const bool onlyBalls);
+   void RenderDynamicMirror();
    void InitBallShader();
    void InitKeys();
 
@@ -438,8 +438,8 @@ public:
    bool m_dynamicAO;
    bool m_disableAO;
 
+   PlayfieldReflectionMode m_pfReflectionMode;
    bool m_ss_refl;
-   bool m_pf_refl; // render playfield reflections for dynamic elements?
 
    bool m_useNvidiaApi;
    bool m_disableDWM;
@@ -474,7 +474,6 @@ public:
 
    bool m_showWindowedCaption;
 
-   bool m_reflectionForBalls;
    bool m_trailForBalls;
    bool m_disableLightingForBalls;
 

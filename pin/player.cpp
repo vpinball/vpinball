@@ -185,6 +185,8 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
 
    m_curPlunger = JOYRANGEMN - 1;
 
+   m_ptable = ptable;
+
    m_current_renderstage = 0;
    m_dmdstate = 0;
 
@@ -208,6 +210,28 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_ditherOff = LoadValueBoolWithDefault(regKey[RegName::Player], "Render10Bit"s, false); // if rendering at 10bit output resolution, disable dithering
    m_BWrendering = LoadValueIntWithDefault(regKey[RegName::Player], "BWRendering"s, 0);
    m_detectScriptHang = LoadValueBoolWithDefault(regKey[RegName::Player], "DetectHang"s, false);
+   int pfr = LoadValueIntWithDefault(regKey[useVR ? RegName::PlayerVR : RegName::Player], "PFReflection"s, -1);
+   if (pfr != -1)
+      m_pfReflectionMode = (PlayfieldReflectionMode)pfr;
+   else
+   {
+      m_pfReflectionMode = PFREFL_STATIC;
+      if (LoadValueBoolWithDefault(regKey[useVR ? RegName::PlayerVR : RegName::Player], "BallReflection"s, true))
+         m_pfReflectionMode = PFREFL_STATIC_N_BALLS;
+      if (LoadValueBoolWithDefault(regKey[useVR ? RegName::PlayerVR : RegName::Player], "PFRefl"s, true))
+         m_pfReflectionMode = PFREFL_UNSYNCED_DYNAMIC;
+   }
+   // Apply table specific overrides
+   if (!m_ptable->m_reflectElementsOnPlayfield)
+      m_pfReflectionMode = PFREFL_NONE;
+   if (m_ptable->m_useReflectionForBalls == 0 && m_pfReflectionMode == PFREFL_BALLS)
+      m_pfReflectionMode = PFREFL_NONE;
+   if (m_ptable->m_useReflectionForBalls == 0 && m_pfReflectionMode == PFREFL_STATIC_N_BALLS)
+      m_pfReflectionMode = PFREFL_STATIC;
+   if (m_ptable->m_useReflectionForBalls == 1 && m_pfReflectionMode == PFREFL_NONE)
+      m_pfReflectionMode = PFREFL_BALLS;
+   if (m_ptable->m_useReflectionForBalls == 1 && m_pfReflectionMode == PFREFL_STATIC)
+      m_pfReflectionMode = PFREFL_STATIC_N_BALLS;
 
    if (useVR)
    {
@@ -222,11 +246,9 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
       m_dynamicAO = LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "DynamicAO"s, false);
       m_disableAO = LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "DisableAO"s, false);
       m_ss_refl = LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "SSRefl"s, false);
-      m_pf_refl = LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "PFRefl"s, true);
       m_scaleFX_DMD = LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "ScaleFXDMD"s, false);
       m_bloomOff = LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "ForceBloomOff"s, false);
       m_VSync = 0; //Disable VSync for VR
-      m_reflectionForBalls = LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "BallReflection"s, true);
    }
    else
    {
@@ -244,13 +266,11 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
       m_dynamicAO = LoadValueBoolWithDefault(regKey[RegName::Player], "DynamicAO"s, false);
       m_disableAO = LoadValueBoolWithDefault(regKey[RegName::Player], "DisableAO"s, false);
       m_ss_refl = LoadValueBoolWithDefault(regKey[RegName::Player], "SSRefl"s, false);
-      m_pf_refl = LoadValueBoolWithDefault(regKey[RegName::Player], "PFRefl"s, true);
       m_stereo3Denabled = LoadValueBoolWithDefault(regKey[RegName::Player], "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
       m_stereo3DY = LoadValueBoolWithDefault(regKey[RegName::Player], "Stereo3DYAxis"s, false);
       m_scaleFX_DMD = LoadValueBoolWithDefault(regKey[RegName::Player], "ScaleFXDMD"s, false);
       m_bloomOff = LoadValueBoolWithDefault(regKey[RegName::Player], "ForceBloomOff"s, false);
       m_VSync = LoadValueIntWithDefault(regKey[RegName::Player], "AdaptiveVSync"s, 0);
-      m_reflectionForBalls = LoadValueBoolWithDefault(regKey[RegName::Player], "BallReflection"s, true);
    }
 
    m_ballImage = nullptr;
@@ -367,7 +387,6 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_ballTrailVertexBuffer = nullptr;
    m_pFont = nullptr;
    m_implicitPlayfieldMesh = nullptr;
-   m_ptable = ptable;
 }
 
 Player::~Player()
@@ -1950,11 +1969,25 @@ void Player::RenderStaticMirror()
 #endif
 }
 
-void Player::RenderDynamicMirror(const bool onlyBalls)
+void Player::RenderDynamicMirror()
 {
-   // render into temp mirror back buffer 
-   m_pin3d.m_pd3dPrimaryDevice->GetMirrorRenderTarget(false)->Activate();
-   m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
+   if (m_pfReflectionMode == PFREFL_NONE || m_pfReflectionMode == PFREFL_STATIC)
+      return;
+   const bool onlyBalls = m_pfReflectionMode < PFREFL_UNSYNCED_DYNAMIC;
+
+   // Prepare to render into temp dynamic mirror back buffer
+   if (m_pfReflectionMode == PFREFL_SYNCED_DYNAMIC)
+   {
+      // Intialize dynamic depth buffer from static one to avoid incorrect overlaps of staticly rendered parts by dynamic ones
+      m_pin3d.m_pd3dPrimaryDevice->GetMirrorRenderTarget(true)->CopyTo(m_pin3d.m_pd3dPrimaryDevice->GetMirrorRenderTarget(false), false, true);
+      m_pin3d.m_pd3dPrimaryDevice->GetMirrorRenderTarget(false)->Activate();
+      m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
+   }
+   else
+   {
+      m_pin3d.m_pd3dPrimaryDevice->GetMirrorRenderTarget(false)->Activate();
+      m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
+   }
 
    SetClipPlanePlayfield(true); // Set the clip plane to only allow object above the playfield (do not reflect what is under or the playfield itself)
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(true);
@@ -2087,7 +2120,7 @@ void Player::InitStatic()
 
       if (!m_dynamicMode)
       {
-         if (m_ptable->m_reflectElementsOnPlayfield)
+         if (m_pfReflectionMode > PFREFL_BALLS)
             RenderStaticMirror();
 
          // now render everything else
@@ -3558,14 +3591,7 @@ void Player::RenderDynamics()
    TRACE_FUNCTION();
 
    // Create the dynamic playfield reflection
-   unsigned int reflection_path = 0;
-   const bool drawBallReflection = ((m_reflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
-   if (!(m_ptable->m_reflectElementsOnPlayfield && m_pf_refl) && drawBallReflection)
-      reflection_path = 1;
-   else if (m_ptable->m_reflectElementsOnPlayfield && m_pf_refl)
-      reflection_path = 2;
-   if (reflection_path != 0)
-      RenderDynamicMirror(reflection_path == 1);
+   RenderDynamicMirror();
 
    if (m_dynamicMode)
    {
@@ -5456,11 +5482,6 @@ void Player::DrawBalls()
          lights.push_back((Light *)item);
    }
 
-   bool drawReflection = ((m_reflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
-   const bool orgDrawReflection = drawReflection;
-   //     if (reflectionOnly && !drawReflection)
-   //        return;
-
    //m_pin3d.m_pd3dPrimaryDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
    //m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
 
@@ -5475,11 +5496,6 @@ void Player::DrawBalls()
       if (!pball->m_visible)
          continue;
 
-      if (orgDrawReflection && !pball->m_reflectionEnabled)
-         drawReflection = false;
-      if (orgDrawReflection && pball->m_reflectionEnabled)
-         drawReflection = true;
-
       // calculate/adapt height of ball
       float zheight = (!pball->m_d.m_frozen) ? pball->m_d.m_pos.z : (pball->m_d.m_pos.z - pball->m_d.m_radius);
 
@@ -5488,12 +5504,19 @@ void Player::DrawBalls()
 
       const float maxz = (pball->m_d.m_radius + m_ptable->m_tableheight) + 3.0f;
       const float minz = (pball->m_d.m_radius + m_ptable->m_tableheight) - 0.1f;
-      if ((m_reflectionForBalls && pball->m_reflectionEnabled && !pball->m_forceReflection && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1 && !pball->m_forceReflection))
-         // don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker)
-         drawReflection = !((zheight > maxz) || pball->m_d.m_frozen || (pball->m_d.m_pos.z < minz));
 
-      if (!drawReflection && m_ptable->m_reflectionEnabled)
-         continue;
+      if (m_ptable->m_reflectionEnabled)
+      {
+         // Don't draw if ball reflection are globally disabled
+         if (m_pfReflectionMode == PFREFL_NONE || m_pfReflectionMode == PFREFL_STATIC)
+            continue;
+         // Don't draw if ball reflection is disabled for this ball
+         if (!pball->m_reflectionEnabled)
+            continue;
+         // Don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker), except if explicitely asked too
+         if (!pball->m_forceReflection && ((zheight > maxz) || pball->m_d.m_frozen || (pball->m_d.m_pos.z < minz)))
+            continue;
+      }
 
       const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
       const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
