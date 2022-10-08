@@ -1555,7 +1555,7 @@ HRESULT Player::Init()
                int offs = x + y * 2;
                m_implicitPlayfieldMesh->m_mesh.m_vertices[offs].x = (x & 1) ? m_ptable->m_right : m_ptable->m_left;
                m_implicitPlayfieldMesh->m_mesh.m_vertices[offs].y = (y & 1) ? m_ptable->m_bottom : m_ptable->m_top;
-               m_implicitPlayfieldMesh->m_mesh.m_vertices[offs].z = m_ptable->m_tableheight;
+               m_implicitPlayfieldMesh->m_mesh.m_vertices[offs].z = 0.0f;
                m_implicitPlayfieldMesh->m_mesh.m_vertices[offs].tu = (x & 1) ? 1.f : 0.f;
                m_implicitPlayfieldMesh->m_mesh.m_vertices[offs].tv = (y & 1) ? 1.f : 0.f;
                m_implicitPlayfieldMesh->m_mesh.m_vertices[offs].nx = 0.f;
