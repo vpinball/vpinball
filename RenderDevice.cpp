@@ -1057,7 +1057,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
       m_pOffscreenBackBufferTexture = m_pOffscreenMSAABackBufferTexture;
 
    // alloc buffer for static and dynamic playfield reflections
-   if (g_pplayer->m_pfReflectionMode >= PFREFL_STATIC)
+   if (g_pplayer->m_pfReflectionMode >= PFREFL_STATIC && g_pplayer->m_pfReflectionMode != PFREFL_DYNAMIC)
       m_pStaticMirrorRenderTarget = m_pOffscreenBackBufferTexture->Duplicate();
    if (g_pplayer->m_pfReflectionMode != PFREFL_NONE && g_pplayer->m_pfReflectionMode != PFREFL_STATIC)
       m_pDynamicMirrorRenderTarget = m_pOffscreenBackBufferTexture->Duplicate();
