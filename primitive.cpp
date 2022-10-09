@@ -450,6 +450,8 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
    WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
    m_d.m_useAsPlayfield = IsPlayfield();
+   if (m_d.m_useAsPlayfield) // Do not render playfield in playfield reflection probe
+      m_d.m_reflectionEnabled = false;
 
    //
 
@@ -1403,7 +1405,6 @@ void Primitive::RenderSetup()
 void Primitive::RenderStatic()
 {
    if (!m_d.m_staticRendering) return; //don't render dynamic
-   if (m_d.m_useAsPlayfield && m_ptable->m_reflectionEnabled) return; // don't render playfield in playfield reflection
    if (m_lockedByLS)
    {
        if(!m_inPlayState) return; //don't render in LS when state off

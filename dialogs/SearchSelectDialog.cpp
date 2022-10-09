@@ -689,7 +689,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
 
       ListView_SetItemText(m_hElementList, idx, 6, (LPSTR)"N/A"); //!!
-      ListView_SetItemText(m_hElementList, idx, 7, (LPSTR)(primitive->m_d.m_collidable && (!primitive->m_d.m_toy || primitive->m_d.m_useAsPlayfield) ? usedStringYes : usedStringNo));
+      ListView_SetItemText(m_hElementList, idx, 7, (LPSTR)(primitive->m_d.m_collidable && (!primitive->m_d.m_toy || primitive->IsPlayfield()) ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 8, (LPSTR)(primitive->m_isVisible ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 9, (LPSTR)(primitive->m_d.m_tdr.m_TimerEnabled ? usedStringYes : usedStringNo));
       char textBuf[MAXNAMEBUFFER];
