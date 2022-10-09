@@ -329,6 +329,7 @@ private:
     PropertyTab  m_tab;
     BasePropertyDialog *m_tabs[PROPERTY_TABS];
     ItemTypeEnum m_previousType;
+    bool         m_isPlayfieldMesh;
     bool         m_backglassView;
 
     int      m_curTabIndex;

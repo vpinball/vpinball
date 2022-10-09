@@ -95,6 +95,7 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
 
     int activePage = m_tab.m_activePage;
     m_backglassView = g_pvp->m_backglassView;
+    m_isPlayfieldMesh = false; 
     switch (psel->GetItemType())
     {
     case eItemTable:
@@ -338,7 +339,8 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
     }
     case eItemPrimitive:
     {
-        m_elementTypeName.SetWindowText("Primitive");
+        m_isPlayfieldMesh = pvsel.size() == 1 && ((Primitive *)psel)->IsPlayfield();
+        m_elementTypeName.SetWindowText(m_isPlayfieldMesh ? "Playfield Primitive" : "Primitive");
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new PrimitiveVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new PrimitivePositionProperty(&pvsel), _T("Position")));
         m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new PrimitivePhysicsProperty(&pvsel), _T("Physics")));
@@ -529,7 +531,8 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
         return;
 
     ShowWindow(SW_HIDE);
-    if (m_previousType != psel->GetItemType() || m_backglassView!=g_pvp->m_backglassView || m_multipleElementsStatic.IsWindowVisible())
+    const bool is_playfield_mesh = psel->GetItemType() == eItemPrimitive && ((Primitive *)psel)->IsPlayfield();
+    if (m_previousType != psel->GetItemType() || m_isPlayfieldMesh != is_playfield_mesh || m_backglassView != g_pvp->m_backglassView || m_multipleElementsStatic.IsWindowVisible())
     {
         BasePropertyDialog::m_disableEvents = true;
         m_curTabIndex = m_tab.GetCurSel();

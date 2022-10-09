@@ -52,6 +52,14 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
             m_colorButton.SetColor(prim->m_d.m_color);
 
+        // Disable playfield settings that are taken from table settings to avoid confusing the user
+        if (m_hReflectionEnabledCheck && (dispid == IDC_REFLECT_ENABLED_CHECK || dispid == -1))
+           ::EnableWindow(m_hReflectionEnabledCheck, !prim->IsPlayfield());
+        if (m_baseImageCombo && (dispid == DISPID_Image || dispid == -1))
+           m_baseImageCombo->EnableWindow(!prim->IsPlayfield());
+        if (m_baseMaterialCombo && (dispid == IDC_MATERIAL_COMBO || dispid == -1))
+           m_baseMaterialCombo->EnableWindow(!prim->IsPlayfield());
+
         UpdateBaseVisuals(prim, &prim->m_d, dispid);
         //only show the first element on multi-select
         break;
