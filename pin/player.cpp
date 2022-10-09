@@ -1906,7 +1906,6 @@ void Player::RenderStaticMirror()
    if (m_pfReflectionMode < PFREFL_STATIC || m_pfReflectionMode == PFREFL_DYNAMIC)
       return;
 
-#ifndef ENABLE_SDL // FIXME will be part of the VPVR mirror fix
    // Direct all renders to the temporary mirror buffer (plus the static z-buffer)
    m_pin3d.m_pd3dPrimaryDevice->GetMirrorRenderTarget(true)->Activate();
    m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
@@ -1973,7 +1972,6 @@ void Player::RenderStaticMirror()
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(false); // disable playfield clipplane again
 
    m_pin3d.m_pddsStatic->Activate();
-#endif
 }
 
 void Player::RenderDynamicMirror()

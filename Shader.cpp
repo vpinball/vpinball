@@ -219,7 +219,7 @@ ShaderUniforms Shader::getUniformByName(const string& name)
       if (name == shaderUniformNames[i].name)
          return (ShaderUniforms)i;
 
-   // FIXME LOG(1, m_shaderCodeName, string("getUniformByName Could not find uniform ").append(name).append(" in shaderUniformNames."));
+   LOG(1, m_shaderCodeName, string("getUniformByName Could not find uniform ").append(name).append(" in shaderUniformNames."));
    return SHADER_UNIFORM_INVALID;
 }
 
