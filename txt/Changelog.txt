@@ -3,12 +3,29 @@ VP 10.8.0 Changelog
 
 FEATURES:
 
-FIXES:
+- playfield is now processed like all the other parts instead of being rendered before them with under playfield clipping and blending limited to alpha clipping:
+  - if the 'playfield_mesh' primitive has the 'Static rendering' disabled, it will be rendered with transparent parts (this results in 'playfield_mesh' to be blended like other primitives, no more need for alpha test or insert overlays)
+  - parts under the playfield (like lower playfield or 3D inserts) can have 'Static rendering' checked and can have materials without the 'Active' checkbox (under playfield parts without these were clipped out before),
+
+- playfield reflections are now rendered using a 'reflection probe' instead of a 'fullscreen mirror overlay':
+  - performance may change a bit (better or worse) depending on the table and display configuration
+  - reflection settings were unified between balls/playfield and for camera mode, and extended with new rendering modes:
+    - Disabled: *NEW* remove all reflections
+    - Balls: dynamic balls only
+    - Static: reflection of static parts only (no change)
+    - Static & Balls: reflection of static parts and dynamic balls (no change)
+    - Unsynced dynamic: *NEW* reflection of static parts and dynamic parts without depth buffer synchronisation. Overlapping of dynamic over static and of static over dynamic reflections is incorrect. It has a limited performance cost. Added for lower end systems.
+    - Synced dynamic: reflection of static parts and dynamic parts with depth buffer synchronisation. This corresponds to the way reflections were processed before. Overlapping of dynamic over static reflections is incorrect. It has a small performance cost.
+    - Full dynamic: *NEW* dynamic reflection of all parts. It gives the best results without any overlapping artefact at the cost of more performances.
 
 - update BASS library to 2.4.17
 
 - update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
 - DirectX 8 port for input handling (currently disabled)
+
+FIXES:
+
+- reflections now work in Camera mode as well
 
 - see Changelog_Scripts.txt for the respective core script changes (version 3.60)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
