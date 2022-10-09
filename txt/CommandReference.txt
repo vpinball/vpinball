@@ -256,7 +256,7 @@ BallImage(string)
 BallFrontDecal(string) - image of the ball front decal
 *BallDecalMode(bool) - switch between using the ball decal as ball logo or ball 'scratches'
 
-*Image(string) - playfield image
+Image(string) - playfield image (this property may be written, but it will only be visually updated if the playfield is not statically rendered, using a non static playfield_mesh primitive)
 
 *EnableAntialiasing(bool) - enables AA for this table if you have set 'Enable AntiAliasing' in the video options. default=false
 *EnableFXAA(bool) - enables FXAA for this table if you have set 'Enable FXAA' in the video options. default=false

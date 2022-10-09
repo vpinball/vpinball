@@ -6,6 +6,7 @@ FEATURES:
 - playfield is now processed like all the other parts instead of being rendered before them with under playfield clipping and blending limited to alpha clipping:
   - if the 'playfield_mesh' primitive has the 'Static rendering' disabled, it will be rendered with transparent parts (this results in 'playfield_mesh' to be blended like other primitives, no more need for alpha test or insert overlays)
   - parts under the playfield (like lower playfield or 3D inserts) can have 'Static rendering' checked and can have materials without the 'Active' checkbox (under playfield parts without these were clipped out before),
+  - playfield texture can now be changed at runtime throught the script (see CommandReference.txt)
 
 - playfield reflections are now rendered using a 'reflection probe' instead of a 'fullscreen mirror overlay':
   - performance may change a bit (better or worse) depending on the table and display configuration
