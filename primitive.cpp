@@ -1285,12 +1285,7 @@ void Primitive::RenderObject()
    if (m_d.m_useAsPlayfield)
    {
       RenderTarget *mirror = pd3dDevice->GetMirrorRenderTarget(g_pplayer->m_isRenderingStatic);
-      if (g_pplayer->m_current_renderstage == 1) // Depth only pass
-      {
-         pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, RenderDevice::RGBMASK_NONE);
-         pd3dDevice->basicShader->SetTechnique(pin ? SHADER_TECHNIQUE_basic_depth_only_with_texture : SHADER_TECHNIQUE_basic_depth_only_without_texture);
-      }
-      else if (mirror) // We have reflections to render on the primitive
+      if (mirror) // We have reflections to render on the primitive
       {
          const vec4 cWidth_Height_MirrorAmount((float)RenderTarget::GetCurrentRenderTarget()->GetWidth(), (float)RenderTarget::GetCurrentRenderTarget()->GetHeight(), m_ptable->m_playfieldReflectionStrength, 0.0f);
          pd3dDevice->basicShader->SetVector(SHADER_cWidth_Height_MirrorAmount, &cWidth_Height_MirrorAmount);
