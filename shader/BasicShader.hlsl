@@ -155,6 +155,14 @@ float3 normal_map(const float3 N, const float3 V, const float2 uv)
                             tn) );
 }
 
+// Compute reflection on playfield from reflection probe (screen space coordinates)
+float3 playfield_reflection(const float2 screenSpace, const float3 N)
+{
+   // Only apply to faces pointing in the direction of the probe (normal = [0,0,-1])
+   // the smoothstep values are *magic* values taken from visual tests
+   return smoothstep(0.5, 0.9, -N.z) * cWidth_Height_MirrorAmount.z * tex2D(texSamplerPFReflections, float2(screenSpace.x / cWidth_Height_MirrorAmount.x, screenSpace.y / cWidth_Height_MirrorAmount.y)).rgb;
+}
+
 //------------------------------------
 //
 // Standard Materials
@@ -283,7 +291,7 @@ float4 ps_main_texture(const in VS_OUTPUT IN, uniform bool is_metal, uniform boo
    return result * staticColor_Alpha;
 }
 
-float4 ps_main_playfield(const in VS_NOTEX_OUTPUT IN, uniform bool is_metal)
+float4 ps_main_playfield(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform bool is_metal)
    : COLOR
 {
    const float3 diffuse = cBase_Alpha.xyz;
@@ -310,6 +318,8 @@ float4 ps_main_playfield(const in VS_NOTEX_OUTPUT IN, uniform bool is_metal)
          result.xyz += lerp(sqrt(diffuse) * tex2Dlod(texSamplerBL, float4(float2(0.5 * IN.worldPos_t1x.w, -0.5 * IN.normal_t1y.w) + 0.5, 0., 0.)).xyz * result.a, 0.,
             fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
+
+   result.rgb += playfield_reflection(screenSpace, N);
 
    return result * staticColor_Alpha;
 }
@@ -351,7 +361,7 @@ float4 ps_main_playfield_texture(const in VS_OUTPUT IN, float2 screenSpace : VPO
             fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
-   result.rgb += cWidth_Height_MirrorAmount.z * tex2D(texSamplerPFReflections, float2(screenSpace.x / cWidth_Height_MirrorAmount.x, screenSpace.y / cWidth_Height_MirrorAmount.y)).rgb;
+   result.rgb += playfield_reflection(screenSpace, N);
 
    return result * staticColor_Alpha;
 }
@@ -367,14 +377,14 @@ float4 ps_main_playfield_refl_texture(const in VS_OUTPUT IN, float2 screenSpace 
 
    result.a *= cBase_Alpha.a;
 
+   float3 N = normalize(IN.normal);
+   result.rgb = playfield_reflection(screenSpace, N);
+
    [branch] if (cBase_Alpha.a < 1.0 && result.a < 1.0)
    {
       const float3 V = normalize(/*camera=0,0,0,1*/ -IN.worldPos);
-      float3 N = normalize(IN.normal);
       result.a = GeometricOpacity(dot(N, V), result.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
    }
-
-   result.rgb = cWidth_Height_MirrorAmount.z * tex2D(texSamplerPFReflections, float2(screenSpace.x / cWidth_Height_MirrorAmount.x, screenSpace.y / cWidth_Height_MirrorAmount.y)).rgb;
 
    return result * staticColor_Alpha;
 }
@@ -383,7 +393,8 @@ float4 ps_main_playfield_refl(const in VS_OUTPUT IN, float2 screenSpace : VPOS)
    : COLOR
 {
    float4 result;
-   result.rgb = cWidth_Height_MirrorAmount.z * tex2D(texSamplerPFReflections, float2(screenSpace.x / cWidth_Height_MirrorAmount.x, screenSpace.y / cWidth_Height_MirrorAmount.y)).rgb;
+   float3 N = normalize(IN.normal);
+   result.rgb = playfield_reflection(screenSpace, N);
    result.a = 1.0;
    return result * staticColor_Alpha;
 }
