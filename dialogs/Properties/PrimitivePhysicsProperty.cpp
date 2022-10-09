@@ -42,6 +42,29 @@ void PrimitivePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
             PropertyDialog::SetFloatTextbox(m_reducePolyEdit, prim->m_d.m_collision_reductionFactor);
 
         UpdateBaseVisuals(prim, &prim->m_d, dispid);
+
+        // Disable playfield settings that are taken from table settings to avoid confusing the user
+        if (m_hCollidableCheck)
+        {
+            if(m_hHitEventCheck)            ::EnableWindow(m_hHitEventCheck, prim->m_d.m_collidable && !prim->IsPlayfield());
+            if(m_hOverwritePhysicsCheck)    ::EnableWindow(m_hOverwritePhysicsCheck, prim->m_d.m_collidable && !prim->IsPlayfield());
+            if(m_baseHitThresholdEdit)      m_baseHitThresholdEdit->EnableWindow(prim->m_d.m_collidable && !prim->IsPlayfield());
+            if(m_basePhysicsMaterialCombo)  m_basePhysicsMaterialCombo->EnableWindow(prim->m_d.m_collidable && !prim->IsPlayfield());
+            if(m_baseElasticityEdit)        m_baseElasticityEdit->EnableWindow(prim->m_d.m_collidable && !prim->IsPlayfield());
+            if(m_baseFrictionEdit)          m_baseFrictionEdit->EnableWindow(prim->m_d.m_collidable && !prim->IsPlayfield());
+            if(m_baseScatterAngleEdit)      m_baseScatterAngleEdit->EnableWindow(prim->m_d.m_collidable && !prim->IsPlayfield());
+            if (m_elasticityFalloffEdit)    m_elasticityFalloffEdit.EnableWindow(prim->m_d.m_collidable && !prim->IsPlayfield());
+        }
+        if (m_hHitEventCheck && prim->m_d.m_collidable)
+            if (m_baseHitThresholdEdit)     m_baseHitThresholdEdit->EnableWindow(prim->m_d.m_hitEvent&& !prim->IsPlayfield());
+        if (m_hOverwritePhysicsCheck && prim->m_d.m_collidable)
+        {
+            if (m_basePhysicsMaterialCombo) m_basePhysicsMaterialCombo->EnableWindow(!prim->m_d.m_overwritePhysics&& !prim->IsPlayfield());
+            if (m_baseElasticityEdit)       m_baseElasticityEdit->EnableWindow(prim->m_d.m_overwritePhysics&& !prim->IsPlayfield());
+            if (m_baseFrictionEdit)         m_baseFrictionEdit->EnableWindow(prim->m_d.m_overwritePhysics&& !prim->IsPlayfield());
+            if (m_baseScatterAngleEdit)     m_baseScatterAngleEdit->EnableWindow(prim->m_d.m_overwritePhysics&& !prim->IsPlayfield());
+        }
+
         //only show the first element on multi-select
         break;
     }
