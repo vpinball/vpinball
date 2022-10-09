@@ -1936,6 +1936,7 @@ void Player::RenderStaticMirror()
    // Translate the camera on the other side of the playfield plane
    reflect.SetTranslation(0.0f, 0.0f, -m_ptable->m_tableheight * 2.0f);
    viewMat = reflect * viewMat;
+   m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
 
    m_ptable->m_reflectionEnabled = true;
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
