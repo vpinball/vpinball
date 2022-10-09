@@ -679,7 +679,7 @@ public:
    //bool m_low_quality_bloom;
 
    bool m_isRenderingStatic; // Static prerendering or normal one
-   unsigned int m_current_renderstage; // for bulb lights: 0=normal, 1=light buffer / for primitive: 0=normal / 1=depth only
+   unsigned int m_current_renderstage; // for bulb lights: 0=normal, 1=light buffer
    unsigned int m_dmdstate; // used to distinguish different flasher/DMD rendering mode states
 
    bool m_overwriteBallImages;
