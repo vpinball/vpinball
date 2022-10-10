@@ -316,10 +316,12 @@ BEGIN
     LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,0,328,32,8,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "VP10 Active Development",IDC_STATIC,65,183,102,9
     LTEXT           "Fuzzel",IDC_STATIC,13,194,21,8
-    LTEXT           "Toxie",IDC_STATIC,48,194,37,9
-    LTEXT           "DJRobX",IDC_STATIC,90,194,32,8
+    LTEXT           "Toxie",IDC_STATIC,41,194,22,9
+    LTEXT           "DJRobX",IDC_STATIC,67,194,32,8
     LTEXT           "Caligula",IDC_STATIC,48,152,32,8
     LTEXT           "Rawnei",IDC_STATIC,48,162,32,8
+    LTEXT           "Vincent Bousquet",IDC_STATIC,150,194,70,8
+    LTEXT           "Jason Millard",IDC_STATIC,100,194,48,9
 END
 
 IDD_VIDEO_OPTIONS DIALOGEX 0, 0, 356, 407
