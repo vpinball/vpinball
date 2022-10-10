@@ -348,8 +348,8 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
       const BYTE* const __restrict psrc = (BYTE*)(surf->data());
       for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
       {
-         pdest[i * 4 + 0] = psrc[i];
-         pdest[i * 4 + 1] = psrc[i];
+         pdest[i * 4 + 0] =
+         pdest[i * 4 + 1] =
          pdest[i * 4 + 2] = psrc[i];
          pdest[i * 4 + 3] = 255u;
       }

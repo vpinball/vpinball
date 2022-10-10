@@ -621,7 +621,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
       m_colorDepth(colordepth), m_vsync(VSync), m_AAfactor(AAfactor), m_stereo3D(stereo3D),
       m_ssRefl(ss_refl), m_disableDwm(disable_dwm), m_sharpen(sharpen), m_FXAA(FXAA), m_BWrendering(BWrendering), m_texMan(*this)
 {
-   m_useNvidiaApi = useNvidiaApi;
+    m_useNvidiaApi = useNvidiaApi;
     m_INTZ_support = false;
     NVAPIinit = false;
 
@@ -1036,11 +1036,11 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    const colorFormat render_format = ((m_BWrendering == 1) ? colorFormat::RG16F : ((m_BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGBA16F));
 #endif
    // alloc float buffer for rendering (optionally AA factor res for manual super sampling)
-   int m_width_aa = (int)(m_width * m_AAfactor);
-   int m_height_aa = (int)(m_height * m_AAfactor);
+   int m_width_aa = (int)((float)m_width * m_AAfactor);
+   int m_height_aa = (int)((float)m_height * m_AAfactor);
 
    // alloc float buffer for rendering
-   int nMSAASamples = g_pplayer->m_MSAASamples;
+   int nMSAASamples = (g_pplayer != nullptr) ? g_pplayer->m_MSAASamples : 1;
 #ifdef ENABLE_SDL
    int maxSamples;
    glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
@@ -1554,12 +1554,12 @@ void RenderDevice::UploadAndSetSMAATextures()
 {
 #ifdef ENABLE_SDL
    BaseTexture* searchBaseTex = new BaseTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, BaseTexture::BW);
-   memcpy(searchBaseTex->data(), searchTexBytes, SEARCHTEX_WIDTH * SEARCHTEX_HEIGHT);
-   m_SMAAsearchTexture = new Sampler(this, searchBaseTex, true, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT, SamplerFilter::SF_TRILINEAR);
+   memcpy(searchBaseTex->data(), searchTexBytes, SEARCHTEX_SIZE);
+   m_SMAAsearchTexture = new Sampler(this, searchBaseTex, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE);
 
    BaseTexture* areaBaseTex = new BaseTexture(AREATEX_WIDTH, AREATEX_HEIGHT, BaseTexture::BW);
-   memcpy(areaBaseTex->data(), areaTexBytes, AREATEX_WIDTH * AREATEX_HEIGHT);
-   m_SMAAareaTexture = new Sampler(this, areaBaseTex, true, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT, SamplerFilter::SF_TRILINEAR);
+   memcpy(areaBaseTex->data(), areaTexBytes, AREATEX_SIZE);
+   m_SMAAareaTexture = new Sampler(this, areaBaseTex, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR);
 #else
    // FIXME use standard BaseTexture / Sampler code instead
    {
@@ -1780,25 +1780,25 @@ void RenderDevice::CopyRenderStates(const bool copyTo, RenderStateCache& state)
    }
 }
 
-string RenderDevice::GetRenderStateLog() const
+const string RenderDevice::GetRenderStateLog() const
 {
-   auto blend = (m_renderstate.state & RENDER_STATE_MASK_ALPHABLENDENABLE) != 0;
-   auto z_test = (m_renderstate.state & RENDER_STATE_MASK_ZENABLE) != 0;
-   auto alpha_test = (m_renderstate.state & RENDER_STATE_MASK_ALPHATESTENABLE) != 0;
-   auto alpha_func = (m_renderstate.state & RENDER_STATE_MASK_ALPHAFUNC) >> RENDER_STATE_SHIFT_ALPHAFUNC;
-   auto blend_op = (m_renderstate.state & RENDER_STATE_MASK_BLENDOP) >> RENDER_STATE_SHIFT_BLENDOP;
-   auto clip_plane = (m_renderstate.state & RENDER_STATE_MASK_CLIPPLANEENABLE) != 0;
-   auto cull_mode = (m_renderstate.state & RENDER_STATE_MASK_CULLMODE) >> RENDER_STATE_SHIFT_CULLMODE;
-   auto blend_dest = (m_renderstate.state & RENDER_STATE_MASK_DESTBLEND) >> RENDER_STATE_SHIFT_DESTBLEND;
-   auto blend_src = (m_renderstate.state & RENDER_STATE_MASK_SRCBLEND) >> RENDER_STATE_SHIFT_SRCBLEND;
-   auto z_func = (m_renderstate.state & RENDER_STATE_MASK_ZFUNC) >> RENDER_STATE_SHIFT_ZFUNC;
-   auto z_write = (m_renderstate.state & RENDER_STATE_MASK_ZWRITEENABLE) != 0;
-   auto color_write = (m_renderstate.state & RENDER_STATE_MASK_COLORWRITEENABLE) >> RENDER_STATE_SHIFT_COLORWRITEENABLE;
-   string cull_modes[] = { " ___ "s, " CW  "s, " CCW "s };
-   string functions[] = { " __ ", " <  ", " <= ", " >  ", " >= " };
-   string blend_modes[] = { " M ", " A ", " R " };
-   string blend_functions[] = { "  0  ", "  1  ", " SA  ", " DA  ", " RSA ", " RSC " };
-   string s = "Blend: {";
+   const auto blend = (m_renderstate.state & RENDER_STATE_MASK_ALPHABLENDENABLE) != 0;
+   const auto z_test = (m_renderstate.state & RENDER_STATE_MASK_ZENABLE) != 0;
+   const auto alpha_test = (m_renderstate.state & RENDER_STATE_MASK_ALPHATESTENABLE) != 0;
+   const auto alpha_func = (m_renderstate.state & RENDER_STATE_MASK_ALPHAFUNC) >> RENDER_STATE_SHIFT_ALPHAFUNC;
+   const auto blend_op = (m_renderstate.state & RENDER_STATE_MASK_BLENDOP) >> RENDER_STATE_SHIFT_BLENDOP;
+   const auto clip_plane = (m_renderstate.state & RENDER_STATE_MASK_CLIPPLANEENABLE) != 0;
+   const auto cull_mode = (m_renderstate.state & RENDER_STATE_MASK_CULLMODE) >> RENDER_STATE_SHIFT_CULLMODE;
+   const auto blend_dest = (m_renderstate.state & RENDER_STATE_MASK_DESTBLEND) >> RENDER_STATE_SHIFT_DESTBLEND;
+   const auto blend_src = (m_renderstate.state & RENDER_STATE_MASK_SRCBLEND) >> RENDER_STATE_SHIFT_SRCBLEND;
+   const auto z_func = (m_renderstate.state & RENDER_STATE_MASK_ZFUNC) >> RENDER_STATE_SHIFT_ZFUNC;
+   const auto z_write = (m_renderstate.state & RENDER_STATE_MASK_ZWRITEENABLE) != 0;
+   const auto color_write = (m_renderstate.state & RENDER_STATE_MASK_COLORWRITEENABLE) >> RENDER_STATE_SHIFT_COLORWRITEENABLE;
+   static const string cull_modes[] = { " ___ "s, " CW  "s, " CCW "s };
+   static const string functions[] = { " __ "s, " <  "s, " <= "s, " >  "s, " >= "s };
+   static const string blend_modes[] = { " M "s, " A "s, " R "s };
+   static const string blend_functions[] = { "  0  "s, "  1  "s, " SA  "s, " DA  "s, " RSA "s, " RSC "s };
+   string s { "Blend: {"s };
    s.append(blend ? " B " : " _ ");
    s.append(blend_modes[blend_op]);
    s.append(blend_functions[blend_dest]);
@@ -2065,7 +2065,7 @@ void RenderDevice::DrawPrimitive(const PrimitiveTypes type, const DWORD fvf, con
    ApplyRenderStates();
 
 #ifdef ENABLE_SDL
-   assert(false); // This part is not implemented as it is unused (shoudl be removed ?). This is a guard block, just in case.
+   assert(false); // This part is not implemented as it is unused (should be removed ?). This is a guard block, just in case.
 #else
    const unsigned int np = ComputePrimitiveCount(type, vertexCount);
    m_stats_drawn_triangles += np;

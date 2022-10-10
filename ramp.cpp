@@ -929,7 +929,7 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
    }
    else
    {
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_UNDEFINED, sam, sam);
+      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, sam, sam);
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
       pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
 
@@ -2156,7 +2156,7 @@ void Ramp::RenderRamp(const Material * const mat)
          SamplerAddressMode sam = m_d.m_imagealignment == ImageModeWrap ? SA_CLAMP : SA_REPEAT;
 
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
-         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_UNDEFINED, sam, sam);
+         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, sam, sam);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 
          //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );

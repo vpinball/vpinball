@@ -143,8 +143,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       // failed to get mem?
       catch(...)
       {
-         if (tex)
-            delete tex;
+         delete tex;
 
          if (dibConv != dibResized) // did we allocate a copy from conversion?
             FreeImage_Unload(dibConv);
@@ -176,8 +175,8 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       for (unsigned int y = 0; y < tex->m_height; ++y)
       {
          const float* __restrict pixel = (float*)bits;
-         const unsigned int offs = (tex->m_height - y - 1) * (tex->m_width*3);
-         for (unsigned int o = offs; o < tex->m_width*3+offs; o+=3)
+         const size_t offs = (size_t)(tex->m_height - y - 1) * (tex->m_width*3);
+         for (size_t o = offs; o < tex->m_width*3+offs; o+=3)
          {
             pdst[o + 0] = float2half(pixel[0]);
             pdst[o + 1] = float2half(pixel[1]);
@@ -195,8 +194,8 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       for (unsigned int y = 0; y < tex->m_height; ++y)
       {
          const float* __restrict pixel = (float*)bits;
-         const unsigned int offs = (tex->m_height - y - 1) * (tex->m_width*3);
-         for (unsigned int o = offs; o < tex->m_width*3+offs; o+=3)
+         const size_t offs = (size_t)(tex->m_height - y - 1) * (tex->m_width*3);
+         for (size_t o = offs; o < tex->m_width*3+offs; o+=3)
          {
             pdst[o + 0] = pixel[0];
             pdst[o + 1] = pixel[1];
@@ -214,7 +213,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       for (unsigned int y = 0; y < tex->m_height; ++y)
       {
          const BYTE* __restrict pixel = (BYTE*)bits;
-         unsigned int offs = (tex->m_height - y - 1) * tex->m_width;
+         size_t offs = (size_t)(tex->m_height - y - 1) * tex->m_width;
          memcpy(&(pdst[offs]), pixel, tex->m_width);
          bits += pitch;
       }
@@ -229,13 +228,13 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       for (unsigned int y = 0; y < tex->m_height; ++y)
       {
          const BYTE* __restrict pixel = (BYTE*)bits;
-         const unsigned int offs = (tex->m_height - y - 1) * (tex->m_width*stride);
+         const size_t offs = (size_t)(tex->m_height - y - 1) * (tex->m_width*stride);
 #if (FI_RGBA_RED == 2) && (FI_RGBA_GREEN == 1) && (FI_RGBA_BLUE == 0) && (FI_RGBA_ALPHA == 3)
          if (has_alpha)
             copy_bgra_rgba<false>((unsigned int*)(pdst+offs),(const unsigned int*)pixel,tex->m_width);
          else
 #endif
-         for (unsigned int o = offs; o < tex->m_width*stride+offs; o+=stride)
+         for (size_t o = offs; o < tex->m_width*stride+offs; o+=stride)
          {
             pdst[o + 0] = pixel[FI_RGBA_RED];
             pdst[o + 1] = pixel[FI_RGBA_GREEN];
@@ -261,10 +260,8 @@ BaseTexture* BaseTexture::CreateFromFile(const string& szfile)
    if (szfile.empty())
       return nullptr;
 
-   FREE_IMAGE_FORMAT fif;
-
    // check the file signature and deduce its format
-   fif = FreeImage_GetFileType(szfile.c_str(), 0);
+   FREE_IMAGE_FORMAT fif = FreeImage_GetFileType(szfile.c_str(), 0);
    if (fif == FIF_UNKNOWN) {
       // try to guess the file format from the file extension
       fif = FreeImage_GetFIFFromFilename(szfile.c_str());
@@ -360,7 +357,7 @@ BaseTexture* BaseTexture::ToBGRA()
    if (m_format == BaseTexture::RGB_FP32) // Tonemap for 8bpc-Display
    {
       const float* const __restrict src = (float*)data();
-      unsigned int o = 0;
+      size_t o = 0;
       for (unsigned int j = 0; j < height(); ++j)
          for (unsigned int i = 0; i < width(); ++i, ++o)
          {
@@ -378,7 +375,7 @@ BaseTexture* BaseTexture::ToBGRA()
    else if (m_format == BaseTexture::RGB_FP16) // Tonemap for 8bpc-Display
    {
       const unsigned short* const __restrict src = (unsigned short*)data();
-      unsigned int o = 0;
+      size_t o = 0;
       for (unsigned int j = 0; j < height(); ++j)
          for (unsigned int i = 0; i < width(); ++i, ++o)
          {
@@ -396,20 +393,20 @@ BaseTexture* BaseTexture::ToBGRA()
    else if (m_format == BaseTexture::BW)
    {
       const BYTE* const __restrict src = data();
-      unsigned int o = 0;
+      size_t o = 0;
       for (unsigned int j = 0; j < height(); ++j)
          for (unsigned int i = 0; i < width(); ++i, ++o)
          {
-            tmp[o * 4 + 0] = src[o]; // B
-            tmp[o * 4 + 1] = src[o]; // G
-            tmp[o * 4 + 2] = src[o]; // R
+            tmp[o * 4 + 0] =
+            tmp[o * 4 + 1] =
+            tmp[o * 4 + 2] = src[o];
             tmp[o * 4 + 3] = 255; // A
          }
    }
    else if (m_format == BaseTexture::RGB || m_format == BaseTexture::SRGB)
    {
       const BYTE* const __restrict src = data();
-      unsigned int o = 0;
+      size_t o = 0;
       for (unsigned int j = 0; j < height(); ++j)
          for (unsigned int i = 0; i < width(); ++i, ++o)
          {
@@ -422,7 +419,7 @@ BaseTexture* BaseTexture::ToBGRA()
    else if (m_format == BaseTexture::RGBA || m_format == BaseTexture::SRGBA)
    {
       const BYTE* const __restrict psrc = data();
-      unsigned int o = 0;
+      size_t o = 0;
       const bool isWinXP = GetWinVersion() < 2600;
       for (unsigned int j = 0; j < height(); ++j)
       {
@@ -562,8 +559,7 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
          // failed to get mem?
          catch(...)
          {
-            if(tex)
-               delete tex;
+            delete tex;
 
             goto freeimage_fallback;
          }

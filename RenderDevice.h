@@ -230,7 +230,7 @@ public:
    void SetRenderStateAlphaTestFunction(const DWORD testValue, const RenderStateValue testFunction, const bool enabled);
    void CopyRenderStates(const bool copyTo, RenderStateCache& state);
    void ApplyRenderStates();
-   string GetRenderStateLog() const;
+   const string GetRenderStateLog() const;
 
 private:
    struct RenderStateMask

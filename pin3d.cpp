@@ -66,8 +66,8 @@ void Pin3D::TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, cons
    // transformed vertices to fit the render window.
    const float rClipWidth = (float)m_viewPort.Width*0.5f;
    const float rClipHeight = (float)m_viewPort.Height*0.5f;
-   const int xoffset = m_viewPort.X;
-   const int yoffset = m_viewPort.Y;
+   const float xoffset = (float)m_viewPort.X;
+   const float yoffset = (float)m_viewPort.Y;
 
    // Transform each vertex through the current matrix set
    for (int i = 0; i < count; ++i)
@@ -257,9 +257,9 @@ BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xre
                   }
                   else if (env_format == BaseTexture::RGB)
                   {
-                     r = ((BYTE*)envmap)[offs*3  ] * (float)(1.0 / 255.0);
-                     g = ((BYTE*)envmap)[offs*3+1] * (float)(1.0 / 255.0);
-                     b = ((BYTE*)envmap)[offs*3+2] * (float)(1.0 / 255.0);
+                     r = (float)((BYTE*)envmap)[offs*3  ] * (float)(1.0 / 255.0);
+                     g = (float)((BYTE*)envmap)[offs*3+1] * (float)(1.0 / 255.0);
+                     b = (float)((BYTE*)envmap)[offs*3+2] * (float)(1.0 / 255.0);
                   }
                   else if (env_format == BaseTexture::RGBA)
                   {
@@ -270,9 +270,9 @@ BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xre
                   }
                   else if (env_format == BaseTexture::SRGB)
                   {
-                     r = invGammaApprox(((BYTE*)envmap)[offs*3  ] * (float)(1.0 / 255.0));
-                     g = invGammaApprox(((BYTE*)envmap)[offs*3+1] * (float)(1.0 / 255.0));
-                     b = invGammaApprox(((BYTE*)envmap)[offs*3+2] * (float)(1.0 / 255.0));
+                     r = invGammaApprox((float)((BYTE*)envmap)[offs*3  ] * (float)(1.0 / 255.0));
+                     g = invGammaApprox((float)((BYTE*)envmap)[offs*3+1] * (float)(1.0 / 255.0));
+                     b = invGammaApprox((float)((BYTE*)envmap)[offs*3+2] * (float)(1.0 / 255.0));
                   }
                   else if (env_format == BaseTexture::SRGBA)
                   {
@@ -1358,10 +1358,10 @@ void PinProjection::CacheTransform()
 // transforms the backdrop
 void PinProjection::TransformVertices(const Vertex3Ds * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const
 {
-   const float rClipWidth = (m_rcviewport.right - m_rcviewport.left)*0.5f;
-   const float rClipHeight = (m_rcviewport.bottom - m_rcviewport.top)*0.5f;
-   const int xoffset = m_rcviewport.left;
-   const int yoffset = m_rcviewport.top;
+   const float rClipWidth = (float)(m_rcviewport.right - m_rcviewport.left)*0.5f;
+   const float rClipHeight = (float)(m_rcviewport.bottom - m_rcviewport.top)*0.5f;
+   const float xoffset = (float)m_rcviewport.left;
+   const float yoffset = (float)m_rcviewport.top;
 
    // Transform each vertex through the current matrix set
    for (int i = 0; i < count; ++i)

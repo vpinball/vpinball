@@ -1,3 +1,17 @@
+VP 10.8.0 Changelog
+------------------------
+
+FEATURES:
+
+FIXES:
+
+- update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
+- DirectX 8 port for input handling (currently disabled)
+
+- see Changelog_Scripts.txt for the respective core script changes (version 3.60)
+- see CommandReference.txt for the changelog of all the scripting properties/interface changes
+- see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
+
 VP 10.7.2 Changelog
 ------------------------
 
@@ -69,9 +83,6 @@ FIXES:
 - optimize floating point texture video memory usage/bandwidth (e.g. flasher/primitive and environment textures)
 
 - improved full example table (thanks kiwi!)
-
-- update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
-- DirectX 8 port for input handling (currently disabled)
 
 - see Changelog_Scripts.txt for the respective core script changes (version 3.59)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
