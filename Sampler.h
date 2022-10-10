@@ -1,6 +1,5 @@
 #pragma once
 
-#include <set>
 #include "typedefs3D.h"
 
 class RenderDevice;
@@ -59,9 +58,8 @@ public:
    SamplerAddressMode GetClampU() const { return m_clampu; }
    SamplerAddressMode GetClampV() const { return m_clampv; }
 
-public:
    bool m_dirty;
-   std::set<SamplerBinding*> m_bindings;
+   robin_hood::unordered_set<SamplerBinding*> m_bindings;
 
 private:
    bool m_ownTexture;
