@@ -16,9 +16,9 @@
 #endif
 
 #if __cplusplus >= 202002L
-using namespace std::ranges;
+ #define stable_sort std::ranges::stable_sort
 #else
-using namespace std;
+ #define stable_sort std::stable_sort
 #endif
 
 // utility structure for realtime plot //!! cleanup
