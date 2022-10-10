@@ -20,6 +20,7 @@ RenderTarget::RenderTarget(RenderDevice* rd, int width, int height)
    m_is_back_buffer = true;
    // FIXME we should gather backbuffer informations
    // m_format = ;
+   // m_shared_depth = ;
    m_width = width;
    m_height = height;
    m_has_depth = false;
@@ -159,6 +160,7 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
       m_depth_surface = sharedDepth->m_depth_surface;
       m_depth_sampler = sharedDepth->m_depth_sampler;
    }
+   m_use_alternate_depth = m_rd->m_useNvidiaApi || !m_rd->m_INTZ_support;
    if (nMSAASamples > 1)
    {
       // MSAA is made through a rendering surface that must be resolved a texture to be sampled
@@ -176,7 +178,6 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
          ReportError(failureMessage, hr, __FILE__, __LINE__);
       m_color_tex->GetSurfaceLevel(0, &m_color_surface);
       m_color_sampler = new Sampler(m_rd, m_color_tex, false, true);
-      m_use_alternate_depth = m_rd->m_useNvidiaApi || !m_rd->m_INTZ_support;
       if (with_depth && !m_shared_depth)
       {
          CHECKD3D(m_rd->GetCoreDevice()->CreateTexture(width, height, 1, D3DUSAGE_DEPTHSTENCIL, (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'), (D3DPOOL)memoryPool::DEFAULT, &m_depth_tex, nullptr)); // D3DUSAGE_AUTOGENMIPMAP?
