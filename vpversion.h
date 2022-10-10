@@ -1,8 +1,8 @@
 #pragma once
 
 #define VP_VERSION_MAJOR    10 // X Digits
-#define VP_VERSION_MINOR    7  // Max 2 Digits
-#define VP_VERSION_REV      2  // Max 1 Digit
+#define VP_VERSION_MINOR    8  // Max 2 Digits
+#define VP_VERSION_REV      0  // Max 1 Digit
 
 #define CURRENT_FILE_FORMAT_VERSION  1072
 #define NO_ENCRYPTION_FORMAT_VERSION 1050

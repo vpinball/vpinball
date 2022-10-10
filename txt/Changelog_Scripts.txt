@@ -1,3 +1,5 @@
+New in 3.60 (Update by )
+
 New in 3.59 (Update by toxie, JP)
 - NVOffset now uses the internal ROMName (needs VPM 3.5)
 - Change coin key mappings for Inder games
