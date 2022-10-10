@@ -396,22 +396,22 @@ inline void RemoveSpaces(char* const source)
 
 //
 
-__forceinline float vpUnitsToInches(const float value)
+constexpr __forceinline float vpUnitsToInches(const float value)
 {
    return value * 0.0212765f;
 }
 
-__forceinline float inchesToVPUnits(const float value)
+constexpr __forceinline float inchesToVPUnits(const float value)
 {
    return value * (float)(1.0/0.0212765);
 }
 
-__forceinline float vpUnitsToMillimeters(const float value)
+constexpr __forceinline float vpUnitsToMillimeters(const float value)
 {
    return value * 0.540425f;
 }
 
-__forceinline float millimetersToVPUnits(const float value)
+constexpr __forceinline float millimetersToVPUnits(const float value)
 {
    return value * (float)(1.0/0.540425);
 }

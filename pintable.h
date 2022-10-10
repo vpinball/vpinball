@@ -984,11 +984,11 @@ public:
 
    void Init(VPinball *vpinball, PinTable *pt);
 
-   virtual IDispatch *GetDispatch() override { return (IDispatch *)this; }
-   virtual const IDispatch *GetDispatch() const override { return (const IDispatch *)this; }
+   IDispatch *GetDispatch() override { return (IDispatch *)this; }
+   const IDispatch *GetDispatch() const override { return (const IDispatch *)this; }
 
-   virtual ISelect *GetISelect() override { return nullptr; }
-   virtual const ISelect *GetISelect() const override { return nullptr; }
+   ISelect *GetISelect() override { return nullptr; }
+   const ISelect *GetISelect() const override { return nullptr; }
 
    BEGIN_COM_MAP(ScriptGlobalTable)
    COM_INTERFACE_ENTRY(ITableGlobal)
