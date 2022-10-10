@@ -15,6 +15,12 @@
 #include "sdl2/SDL_syswm.h"
 #endif
 
+#if __cplusplus >= 202002L
+using namespace std::ranges;
+#else
+using namespace std;
+#endif
+
 // utility structure for realtime plot //!! cleanup
 class ScrollingData {
 private:
@@ -1671,10 +1677,10 @@ HRESULT Player::Init()
    unsigned long long m;
    if (!m_vHitNonTrans.empty())
    {
-      std::ranges::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableDepthReverse); // stable, so that em reels (=same depth) will keep user defined order
-      std::ranges::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableImage); // stable, so that objects with same images will keep depth order
+      stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableDepthReverse); // stable, so that em reels (=same depth) will keep user defined order
+      stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableImage); // stable, so that objects with same images will keep depth order
       // sort by vertexbuffer not useful currently
-      std::ranges::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableMaterial); // stable, so that objects with same materials will keep image order
+      stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableMaterial); // stable, so that objects with same materials will keep image order
 
       m = m_vHitNonTrans[0]->GetMaterialID();
       for (size_t i = 1; i < m_vHitNonTrans.size(); ++i)
@@ -1687,10 +1693,10 @@ HRESULT Player::Init()
 
    if (!m_vHitTrans.empty())
    {
-      std::ranges::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableImage); // see above
+      stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableImage); // see above
       // sort by vertexbuffer not useful currently
-      std::ranges::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableMaterial);
-      std::ranges::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth);
+      stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableMaterial);
+      stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth);
 
       m = m_vHitTrans[0]->GetMaterialID();
       for (size_t i = 1; i < m_vHitTrans.size(); ++i)
@@ -1924,13 +1930,13 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
 
    if (!onlyBalls)
    {
-      std::ranges::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepthInverse);
+      stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepthInverse);
 
       // Draw transparent objects.
       for (size_t i = 0; i < m_vHitTrans.size(); ++i)
          m_vHitTrans[i]->RenderDynamic();
 
-      std::ranges::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth);
+      stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth);
    }
 
    DrawBalls();
