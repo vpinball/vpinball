@@ -5,6 +5,8 @@ FEATURES:
 
 FIXES:
 
+- update BASS library to 2.4.17
+
 - update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
 - DirectX 8 port for input handling (currently disabled)
 
