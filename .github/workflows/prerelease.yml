@@ -57,8 +57,8 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           prerelease: true
-          name: "v${{ needs.version.outputs.sha7 }}"
-          tag: "v${{ needs.version.outputs.sha7 }}" 
+          name: "v${{ needs.version.outputs.tag }}"
+          tag: "v${{ needs.version.outputs.tag }}" 
           commit: ${{ needs.version.outputs.sha }}
           token:  ${{ secrets.GITHUB_TOKEN }}
           artifacts: "*"
