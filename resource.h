@@ -440,6 +440,10 @@
 #define ID_RESUME                       294
 #define ID_DEBUGWINDOW                  295
 #define IDD_PHYSICS_OPTIONS             297
+#define IDC_ROOMREC_TEXT                298
+#define IDC_TABLEREC_TEXT               299
+#define IDC_TABLEUP_TEXT                300
+#define IDC_TABLEDOWN_TEXT              301
 #define IDC_VERSION                     302
 #define IDC_TRANSWEBSITE                303
 #define IDC_TRANSNAME                   304

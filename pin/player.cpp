@@ -591,15 +591,18 @@ void Player::CreateWnd(HWND parent /* = 0 */)
 
    DWORD style = cs.style & ~WS_VISIBLE;
 
-   const int colordepth = LoadValueIntWithDefault(regKey[RegName::Player], "ColorDepth"s, 32);
-   bool video10bit = LoadValueBoolWithDefault(regKey[RegName::Player], "Render10Bit"s, false);
+   const int colordepth = m_stereo3D == STEREO_VR ? 32 : LoadValueIntWithDefault(regKey[RegName::Player], "ColorDepth"s, 32);
+   const bool video10bit = m_stereo3D == STEREO_VR ? false : LoadValueBoolWithDefault(regKey[RegName::Player], "Render10Bit"s, false);
    int channelDepth = video10bit ? 10 : ((colordepth == 16) ? 5 : 8);
-   // FIXME this will fail for 10 bits output
-   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, channelDepth);
-   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, channelDepth);
-   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, channelDepth);
-   SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 0);
-   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+   // We only set bit depth for fullscreen desktop modes (otherwise, use the desktop bit depth)
+   if (m_fullScreen)
+   {
+      SDL_GL_SetAttribute(SDL_GL_RED_SIZE, channelDepth);
+      SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, channelDepth);
+      SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, channelDepth);
+      SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 0);
+      SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+   }
 
    // Multisampling is performed on the offscreen buffers, not the window framebuffer
    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
@@ -618,8 +621,7 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    // Attach it (raise a WM_CREATE which in turns call OnInitialUpdate)
    Attach(wmInfo.info.win.window);
 
-   const VRPreviewMode vrPreview = (VRPreviewMode)LoadValueIntWithDefault(regKey[RegName::PlayerVR], "VRPreview"s, VRPREVIEW_LEFT);
-   if (cs.style & WS_VISIBLE && ((m_stereo3D != STEREO_VR) || (vrPreview != VRPREVIEW_DISABLED)))
+   if (cs.style & WS_VISIBLE)
    {
       if (cs.style & WS_MAXIMIZE)
          ShowWindow(SW_MAXIMIZE);
@@ -721,14 +723,17 @@ void Player::Shutdown()
 #endif
 
 #ifdef USE_IMGUI
- #ifdef ENABLE_SDL
-   ImGui_ImplOpenGL3_Shutdown();
- #else
-   ImGui_ImplDX9_Shutdown();
- #endif
-   ImGui_ImplWin32_Shutdown();
-   ImPlot::DestroyContext();
-   ImGui::DestroyContext();
+   if (ImGui::GetCurrentContext())
+   {
+#ifdef ENABLE_SDL
+      ImGui_ImplOpenGL3_Shutdown();
+#else
+      ImGui_ImplDX9_Shutdown();
+#endif
+      ImGui_ImplWin32_Shutdown();
+      ImPlot::DestroyContext();
+      ImGui::DestroyContext();
+   }
 #endif
 
    if(m_toogle_DTFS && m_ptable->m_BG_current_set != 2)
@@ -1890,17 +1895,6 @@ HRESULT Player::Init()
    return S_OK;
 }
 
-// reflection is split into two parts static and dynamic
-// for the static objects:
-//  1. switch to a temporary mirror texture/back buffer and a mirror z-buffer (e.g. the static z-buffer)
-//  2. render the mirrored elements into these buffers
-//
-// for the dynamic objects:
-//  1. use the previous mirror depthbuffer
-//  2. switch to a temporary mirror texture and render all dynamic elements into that buffer
-//  3. switch back to normal back buffer
-//  4. render the dynamic mirror texture over the scene
-//  5. render all dynamic objects as normal
 void Player::RenderStaticMirror()
 {
    if (m_pfReflectionMode < PFREFL_STATIC || m_pfReflectionMode == PFREFL_DYNAMIC)
@@ -3828,6 +3822,26 @@ void Player::RenderDynamics()
 
 void Player::SetClipPlanePlayfield(const bool clip_orientation)
 {
+#ifdef ENABLE_SDL
+   const int eyes = m_stereo3D == STEREO_OFF ? 1 : 2;
+   Matrix3D mT;
+   float x = 0.0f;
+   float y = 0.0f;
+   float z = clip_orientation ? -1.0f : 1.0f;
+   float w = clip_orientation ? m_ptable->m_tableheight : -m_ptable->m_tableheight;
+   float clip_planes[2][4];
+   for (int eye = 0; eye < eyes; ++eye)
+   {
+      memcpy(mT.m, m_pin3d.m_proj.m_matrixTotal[eye].m, 64); // = world * view * proj
+      mT.Invert();
+      mT.Transpose();
+      clip_planes[eye][0] = mT._11 * x + mT._21 * y + mT._31 * z + mT._41 * w;
+      clip_planes[eye][1] = mT._12 * x + mT._22 * y + mT._32 * z + mT._42 * w;
+      clip_planes[eye][2] = mT._13 * x + mT._23 * y + mT._33 * z + mT._43 * w;
+      clip_planes[eye][3] = mT._14 * x + mT._24 * y + mT._34 * z + mT._44 * w;
+   }
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetFloatArray(SHADER_clip_planes, (float *)clip_planes, 4 * eyes);
+#else
    Matrix3D mT = m_pin3d.m_proj.m_matrixTotal; // = world * view * proj
    mT.Invert();
    mT.Transpose();
@@ -3836,6 +3850,7 @@ void Player::SetClipPlanePlayfield(const bool clip_orientation)
    const D3DXPLANE plane(0.0f, 0.0f, clip_orientation ? -1.0f : 1.0f, clip_orientation ? m_ptable->m_tableheight : -m_ptable->m_tableheight);
    D3DXPlaneTransform(&clipSpacePlane, &plane, &m);
    m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice()->SetClipPlane(0, clipSpacePlane);
+#endif
 }
 
 void Player::SSRefl()
