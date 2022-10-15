@@ -95,7 +95,7 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
 
     int activePage = m_tab.m_activePage;
     m_backglassView = g_pvp->m_backglassView;
-    m_isPlayfieldMesh = false; 
+    m_isPlayfieldMesh = false;
     switch (psel->GetItemType())
     {
     case eItemTable:

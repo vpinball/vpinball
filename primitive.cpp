@@ -1356,7 +1356,7 @@ void Primitive::RenderObject()
 void Primitive::RenderDynamic()
 {
    TRACE_FUNCTION();
-   
+
    if (m_d.m_staticRendering && !(m_d.m_useAsPlayfield && g_pplayer->m_pin3d.m_pd3dPrimaryDevice->GetMirrorRenderTarget(false) != nullptr))
       return; //don't render static (except for playfield with dynamic reflections, to render the reflections)
    if (m_lockedByLS) 

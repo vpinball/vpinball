@@ -128,7 +128,6 @@ void VertexBuffer::bind()
       m_curVertexBuffer = this;
       IndexBuffer::m_curIndexBuffer = nullptr; // glBindVertexArray also can/will change the GL_ELEMENT_ARRAY_BUFFER binding!
    }
-   Shader::getCurrentShader()->setAttributeFormat(fvf);
 #else
    if (/*m_curVertexBuffer == nullptr ||*/ m_curVertexBuffer != this)
    {

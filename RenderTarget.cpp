@@ -137,9 +137,9 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
 
    if (nMSAASamples == 1)
    {
-      m_color_sampler = new Sampler(m_rd, m_color_tex, false, false, true);
-      if (width_depth)
-         m_depth_sampler = new Sampler(m_rd, m_depth_tex, false, false, true);
+      m_color_sampler = new Sampler(m_rd, m_color_tex, false, true);
+      if (with_depth)
+         m_depth_sampler = new Sampler(m_rd, m_depth_tex, false, true);
    }
 
    glClearDepthf(1.0f);

@@ -532,7 +532,7 @@ BOOL KeysConfigDialog::OnInitDialog()
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    for (unsigned int i = 0; i < eCKeys; ++i) if (regkey_idc[i] != -1)
+    for (unsigned int i = eLeftFlipperKey; i <= eLockbarKey; ++i) if (regkey_idc[i] != -1)
     {
         const HRESULT hr = LoadValue(regKey[RegName::Player], regkey_string[i], key);
         if (hr != S_OK || key > 0xdd)
