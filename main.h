@@ -13,14 +13,14 @@
 #include <windows.h>
 #include <MMSystem.h>
 
-#ifndef ENABLE_SDL
- #ifdef USE_DINPUT8
-  #define DIRECTINPUT_VERSION 0x0800
- #else
-  #define DIRECTINPUT_VERSION 0x0700
- #endif
- #include <dinput.h>
+#ifdef USE_DINPUT8
+ #define DIRECTINPUT_VERSION 0x0800
+#else
+ #define DIRECTINPUT_VERSION 0x0700
+#endif
+#include <dinput.h>
 
+#ifndef ENABLE_SDL
  #ifdef _DEBUG
   #define D3D_DEBUG_INFO
  #endif
