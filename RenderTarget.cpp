@@ -10,6 +10,10 @@
 #include "nvapi.h"
 #endif
 
+#ifdef ENABLE_SDL
+int RenderTarget::m_current_stereo_mode = -1;
+#endif
+
 RenderTarget* RenderTarget::current_render_target = nullptr;
 RenderTarget* RenderTarget::GetCurrentRenderTarget() { return current_render_target; }
 
@@ -53,6 +57,9 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
    m_format = format;
    m_has_depth = with_depth;
    m_nMSAASamples = nMSAASamples;
+   m_shared_depth = m_has_depth && (sharedDepth != nullptr);
+   m_color_sampler = nullptr;
+   m_depth_sampler = nullptr;
 #ifdef ENABLE_SDL
    const GLuint col_type = ((format == RGBA32F) || (format == RGB32F)) ? GL_FLOAT : ((format == RGBA16F) || (format == RGB16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
    const GLuint col_format = ((format == GREY8) || (format == RED16F))                                                                                                      ? GL_RED
@@ -65,8 +72,11 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
 
    m_color_tex = 0;
    m_depth_tex = 0;
-   m_color_sampler = nullptr;
-   m_depth_sampler = nullptr;
+   if (m_shared_depth)
+   {
+      m_depth_tex = sharedDepth->m_depth_tex;
+      m_depth_sampler = sharedDepth->m_depth_sampler;
+   }
 
    glGenFramebuffers(1, &m_framebuffer);
    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
@@ -87,10 +97,13 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_color_tex, 0);
       if (with_depth)
       {
-         glGenRenderbuffers(1, &m_depth_tex);
-         glBindRenderbuffer(GL_RENDERBUFFER, m_depth_tex);
-         glRenderbufferStorageMultisample(GL_RENDERBUFFER, nMSAASamples, GL_DEPTH_COMPONENT, width, height);
-         glBindRenderbuffer(GL_RENDERBUFFER, 0);
+         if (!m_shared_depth)
+         {
+            glGenRenderbuffers(1, &m_depth_tex);
+            glBindRenderbuffer(GL_RENDERBUFFER, m_depth_tex);
+            glRenderbufferStorageMultisample(GL_RENDERBUFFER, nMSAASamples, GL_DEPTH_COMPONENT, width, height);
+            glBindRenderbuffer(GL_RENDERBUFFER, 0);
+         }
          glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depth_tex);
       }
    }
@@ -103,9 +116,12 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_color_tex, 0);
       if (with_depth)
       {
-         glGenTextures(1, &m_depth_tex);
-         glBindTexture(GL_TEXTURE_2D, m_depth_tex);
-         glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, col_type, 0);
+         if (!m_shared_depth)
+         {
+            glGenTextures(1, &m_depth_tex);
+            glBindTexture(GL_TEXTURE_2D, m_depth_tex);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, col_type, 0);
+         }
          glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depth_tex, 0);
       }
    }
@@ -149,11 +165,8 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
 #else
    m_color_tex = nullptr;
    m_color_surface = nullptr;
-   m_color_sampler = nullptr;
    m_depth_tex = nullptr;
    m_depth_surface = nullptr;
-   m_depth_sampler = nullptr;
-   m_shared_depth = sharedDepth != nullptr;
    if (m_shared_depth)
    {
       m_depth_tex = sharedDepth->m_depth_tex;
@@ -289,10 +302,9 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
 void RenderTarget::Activate(const bool ignoreStereo)
 {
 #ifdef ENABLE_SDL
-   static int currentStereoMode = -1;
-   if (current_render_target == this && currentStereoMode == (ignoreStereo ? STEREO_OFF : m_stereo))
+   if (current_render_target == this && m_current_stereo_mode == (ignoreStereo ? STEREO_OFF : m_stereo))
       return;
-   currentStereoMode = ignoreStereo ? STEREO_OFF : m_stereo;
+   m_current_stereo_mode = ignoreStereo ? STEREO_OFF : m_stereo;
    static GLfloat viewPorts[] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
    if (m_color_sampler)
       m_color_sampler->Unbind();
@@ -342,3 +354,32 @@ void RenderTarget::Activate(const bool ignoreStereo)
 #endif
    current_render_target = this;
 }
+
+#ifdef _DEBUG
+#ifdef ENABLE_SDL
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+#endif
+
+void RenderTarget::SaveToPng(string filename)
+{
+#ifdef ENABLE_SDL
+   bool rt_is_stereo = m_current_stereo_mode != -1 && m_current_stereo_mode != STEREO_OFF;
+   RenderTarget* rt = GetCurrentRenderTarget();
+   Activate(true);
+   glFlush();
+   GLsizei nrChannels = 3;
+   GLsizei stride = nrChannels * m_width;
+   stride += (stride % 4) ? (4 - stride % 4) : 0;
+   GLsizei bufferSize = stride * m_height;
+   std::vector<char> buffer(bufferSize);
+   glPixelStorei(GL_PACK_ALIGNMENT, 4);
+   glReadPixels(0, 0, m_width, m_height, GL_RGB, GL_UNSIGNED_BYTE, buffer.data());
+   stbi_flip_vertically_on_write(true);
+   stbi_write_png(filename.c_str(), m_width, m_height, nrChannels, buffer.data(), stride);
+   rt->Activate(!rt_is_stereo);
+#else
+   D3DXSaveSurfaceToFile(filename.c_str(), D3DXIFF_PNG, m_color_surface, nullptr, nullptr);
+#endif
+}
+#endif

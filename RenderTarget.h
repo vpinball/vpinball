@@ -28,6 +28,10 @@ public:
    bool HasDepth() const { return m_has_depth; }
    colorFormat GetColorFormat() const { return m_format; }
 
+#ifdef _DEBUG
+   void SaveToPng(string filename);
+#endif
+
 #ifdef ENABLE_SDL
    GLuint GetCoreFrameBuffer() const { return m_framebuffer; }
 #else
@@ -49,6 +53,7 @@ private:
    static RenderTarget* current_render_target;
 
 #ifdef ENABLE_SDL
+   static int m_current_stereo_mode;
    GLuint m_framebuffer;
    GLuint m_color_tex;
    GLuint m_depth_tex;
