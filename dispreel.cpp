@@ -209,7 +209,7 @@ void DispReel::RenderDynamic()
 {
    TRACE_FUNCTION();
 
-   if (!m_d.m_visible || !GetPTable()->GetEMReelsEnabled())
+   if (!m_d.m_visible || !GetPTable()->GetEMReelsEnabled() || (m_backglass && m_ptable->m_reflectionEnabled))
       return;
 
    // get a pointer to the image specified in the object
