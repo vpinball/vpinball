@@ -3633,6 +3633,13 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   ((Primitive*)m_vedit[i])->put_Collidable(FTOVB(true));
                }
 
+         if (loadfileversion < 1080) // playfield meshes were always forced as visible until 10.8.0
+            for (size_t i = 0; i < m_vedit.size(); ++i)
+               if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && strcmp(m_vedit[i]->GetName(), "playfield_mesh") == 0)
+               {
+                  ((Primitive *)m_vedit[i])->put_Visible(FTOVB(true));
+               }
+
          //////// End Authentication block
       }
       pstgData->Release();
