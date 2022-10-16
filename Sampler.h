@@ -71,6 +71,7 @@ private:
    SamplerAddressMode m_clampu;
    SamplerAddressMode m_clampv;
    SamplerFilter m_filter;
+
 #ifdef ENABLE_SDL
    GLuint m_texture = 0;
    GLuint CreateTexture(UINT Width, UINT Height, UINT Levels, colorFormat Format, void* data, int stereo);
