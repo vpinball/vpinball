@@ -132,8 +132,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       // failed to get mem?
       catch(...)
       {
-         if (tex)
-            delete tex;
+         delete tex;
 
          if (dibConv != dibResized) // did we allocate a copy from conversion?
             FreeImage_Unload(dibConv);
@@ -237,10 +236,8 @@ BaseTexture* BaseTexture::CreateFromFile(const string& szfile)
    if (szfile.empty())
       return nullptr;
 
-   FREE_IMAGE_FORMAT fif;
-
    // check the file signature and deduce its format
-   fif = FreeImage_GetFileType(szfile.c_str(), 0);
+   FREE_IMAGE_FORMAT fif = FreeImage_GetFileType(szfile.c_str(), 0);
    if (fif == FIF_UNKNOWN) {
       // try to guess the file format from the file extension
       fif = FreeImage_GetFIFFromFilename(szfile.c_str());
@@ -504,7 +501,6 @@ HRESULT Texture::LoadFromStream(IStream* pstream, int version, PinTable* pt, boo
    return ((m_pdsBuffer != nullptr) ? S_OK : E_FAIL);
 }
 
-
 bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
 {
    if (m_pdsBuffer)
@@ -527,8 +523,7 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
          // failed to get mem?
          catch(...)
          {
-            if(tex)
-               delete tex;
+            delete tex;
 
             goto freeimage_fallback;
          }
@@ -567,7 +562,6 @@ freeimage_fallback:
 
    return true;
 }
-
 
 bool Texture::LoadToken(const int id, BiffReader * const pbr)
 {
@@ -639,6 +633,11 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
       pbr->GetInt(linkid);
       PinTable * const pt = (PinTable *)pbr->m_pdata;
       m_ppb = pt->GetImageLinkBinary(linkid);
+      if (!m_ppb)
+      {
+         assert(!"Invalid PinBinary");
+         return false;
+      }
       return LoadFromMemory((BYTE*)m_ppb->m_pdata, m_ppb->m_cdata);
       //break;
    }

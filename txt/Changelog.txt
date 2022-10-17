@@ -55,6 +55,8 @@ FIXES:
 
 - fix extremely old problem with put_TimerEnabled (would only work 'most of the time')
 
+- fix "Reflection Enabled" not saving/loading for Spinners
+
 - avoid thrashing of the saved dock/window settings when running in minimized mode
 
 - fix extremely old wire ramp issue (too many triangles created)
