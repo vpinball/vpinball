@@ -530,6 +530,7 @@ HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backu
    bw.WriteString(FID(IMGF), m_d.m_szImage);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
    bw.WriteWideString(FID(NAME), m_wzName);
+   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
 
    ISelect::SaveData(pstm, hcrypthash);
 
@@ -571,6 +572,7 @@ bool Spinner::LoadToken(const int id, BiffReader * const pbr)
    case FID(IMGF): pbr->GetString(m_d.m_szImage); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
    case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
+   case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
    return true;
