@@ -669,6 +669,11 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
       pbr->GetInt(linkid);
       PinTable * const pt = (PinTable *)pbr->m_pdata;
       m_ppb = pt->GetImageLinkBinary(linkid);
+      if (!m_ppb)
+      {
+         assert(!"Invalid PinBinary");
+         return false;
+      }
       return LoadFromMemory((BYTE*)m_ppb->m_pdata, m_ppb->m_cdata);
       //break;
    }
