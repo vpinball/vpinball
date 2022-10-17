@@ -399,7 +399,7 @@ void DispReel::Animate()
             m_reelInfo[i].motorOffset = 0;
 
             // play the sound (if any) for each click of the reel
-            if (!m_d.m_szSound.empty())
+            if (!m_d.m_szSound.empty() && (m_d.m_szSound != "<None>"))
             {
                WCHAR mySound[MAXTOKEN];
                MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSound.c_str(), -1, mySound, MAXTOKEN);
