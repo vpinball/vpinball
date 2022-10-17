@@ -160,7 +160,8 @@ float3 playfield_reflection(const float2 screenSpace, const float3 N)
 {
    // Only apply to faces pointing in the direction of the probe (normal = [0,0,-1])
    // the smoothstep values are *magic* values taken from visual tests
-   return smoothstep(0.5, 0.9, -N.z) * cWidth_Height_MirrorAmount.z * tex2D(texSamplerPFReflections, float2(screenSpace.x / cWidth_Height_MirrorAmount.x, screenSpace.y / cWidth_Height_MirrorAmount.y)).rgb;
+   const float3 playfield_normal = normalize(mul(float3(0., 0., 1.), matWorldViewInverseTranspose).xyz);
+   return smoothstep(0.5, 0.9, dot(playfield_normal, N)) * cWidth_Height_MirrorAmount.z * tex2D(texSamplerPFReflections, float2(screenSpace.x / cWidth_Height_MirrorAmount.x, screenSpace.y / cWidth_Height_MirrorAmount.y)).rgb;
 }
 
 //------------------------------------
@@ -389,11 +390,11 @@ float4 ps_main_playfield_refl_texture(const in VS_OUTPUT IN, float2 screenSpace 
    return result * staticColor_Alpha;
 }
 
-float4 ps_main_playfield_refl(const in VS_OUTPUT IN, float2 screenSpace : VPOS)
+float4 ps_main_playfield_refl(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS)
    : COLOR
 {
    float4 result;
-   float3 N = normalize(IN.normal);
+   float3 N = normalize(IN.normal_t1y.xyz);
    result.rgb = playfield_reflection(screenSpace, N);
    result.a = 1.0;
    return result * staticColor_Alpha;
@@ -576,21 +577,21 @@ technique playfield_with_texture_normal
    }
 }
 
-technique playfield_refl_with_texture
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_main();
-      PixelShader = compile ps_3_0 ps_main_playfield_refl_texture();
-   }
-}
-
 technique playfield_refl_without_texture
 {
    pass P0
    {
       VertexShader = compile vs_3_0 vs_notex_main();
       PixelShader = compile ps_3_0 ps_main_playfield_refl();
+   }
+}
+
+technique playfield_refl_with_texture
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_playfield_refl_texture();
    }
 }
 
