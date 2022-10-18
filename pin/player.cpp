@@ -2232,7 +2232,7 @@ void Player::InitStatic()
          if (iter == STATIC_PRERENDER_ITERATIONS - 1)
             m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
-         vec4 whm = vec4(m_pin3d.m_pddsStatic->GetWidth(), m_pin3d.m_pddsStatic->GetHeight(), (float)STATIC_PRERENDER_ITERATIONS, 0.0f);
+         vec4 whm = vec4((float)m_pin3d.m_pddsStatic->GetWidth(), (float)m_pin3d.m_pddsStatic->GetHeight(), (float)STATIC_PRERENDER_ITERATIONS, 0.0f);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_cWidth_Height_MirrorAmount, &whm);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_mirror, m_pin3d.m_pddsStatic->GetColorSampler());
          m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
