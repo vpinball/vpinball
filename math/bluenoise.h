@@ -1,6 +1,6 @@
 // precomputed blue-noiseish points for oversampling the static pre-rendered objects
 
-#define STATIC_PRERENDER_ITERATIONS /*32*/64/*128*/
+#define STATIC_PRERENDER_ITERATIONS /*32*//*64*/128
 /*   static const float xyLDBNbnot[STATIC_PRERENDER_ITERATIONS*2] = {
      0.00000f,0.00000f,
      0.23151f,0.02134f,
@@ -35,7 +35,7 @@
      0.67643f,0.95568f,
      0.85440f,0.82776f};*/
 
-   static const float xyLDBNbnot[STATIC_PRERENDER_ITERATIONS*2] = {
+/*   static const float xyLDBNbnot[STATIC_PRERENDER_ITERATIONS*2] = {
      0.00000f,0.00000f,
      0.13926f,0.00971f,
      0.99043f,0.01365f,
@@ -99,9 +99,9 @@
      0.35008f,0.99485f,
      0.45254f,0.96332f,
      0.69685f,0.96726f,
-     0.91753f,0.97515f};
+     0.91753f,0.97515f};*/
 
-/*   static const float xyLDBNbnot[STATIC_PRERENDER_ITERATIONS*2] = {
+   static const float xyLDBNbnot[STATIC_PRERENDER_ITERATIONS*2] = {
      0.00000f,0.00000f,
      0.01267f,0.07171f,
      0.10232f,0.04930f,
@@ -229,4 +229,4 @@
      0.90786f,0.95150f,
      0.99192f,0.91227f,
      0.00566f,0.99072f,
-     0.61086f,0.98512f};*/
+     0.61086f,0.98512f};

@@ -643,7 +643,7 @@ float4 ps_main_fb_bloom_vert39x39(const in VS_OUTPUT_2D IN) : COLOR
 // mirror
 float4 ps_main_fb_mirror(const in VS_OUTPUT_2D IN) : COLOR
 {
-   return float4(tex2D(texSamplerMirror, IN.tex0 + (0.5/cWidth_Height_MirrorAmount.xy)).rgb / cWidth_Height_MirrorAmount.z, 1.0);
+   return float4(tex2D(texSamplerMirror, IN.tex0 + 0.5/cWidth_Height_MirrorAmount.xy).rgb * (1./cWidth_Height_MirrorAmount.z), 1.0);
 }
 
 
