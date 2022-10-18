@@ -37,7 +37,7 @@ private:
 
 #ifdef ENABLE_SDL
 public:
-   GLuint getOffset() const { return offset; }
+   GLuint getOffset() const { return m_offset; }
 
 private:
    GLuint m_count;

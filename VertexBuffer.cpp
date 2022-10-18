@@ -94,7 +94,7 @@ void VertexBuffer::release()
       m_Array = 0;
       m_sizePerVertex = 0;
       m_offset = 0;
-      m_m_count = 0;
+      m_count = 0;
       m_size = 0;
    }
 #else
