@@ -702,7 +702,7 @@ void Bumper::RenderSetup()
       m_baseIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(bumperBaseNumIndices, bumperBaseIndices, PRIMARY_DEVICE);
 
       SAFE_BUFFER_RELEASE(m_baseVertexBuffer);
-      VertexBuffer::CreateVertexBuffer(bumperBaseNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_baseVertexBuffer, PRIMARY_DEVICE);
+      m_baseVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperBaseNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
 
       Vertex3D_NoTex2 *buf;
       m_baseVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
@@ -718,7 +718,7 @@ void Bumper::RenderSetup()
       m_socketIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(bumperSocketNumIndices, bumperSocketIndices, PRIMARY_DEVICE);
 
       SAFE_BUFFER_RELEASE(m_socketVertexBuffer);
-      VertexBuffer::CreateVertexBuffer(bumperSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_socketVertexBuffer, PRIMARY_DEVICE);
+      m_socketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
 
       Vertex3D_NoTex2 *buf;
       m_socketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
@@ -734,7 +734,7 @@ void Bumper::RenderSetup()
       m_ringIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(bumperRingNumIndices, bumperRingIndices, PRIMARY_DEVICE);
 
       SAFE_BUFFER_RELEASE(m_ringVertexBuffer);
-      VertexBuffer::CreateVertexBuffer(bumperRingNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_ringVertexBuffer, PRIMARY_DEVICE);
+      m_ringVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperRingNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
 
       m_ringVertices = new Vertex3D_NoTex2[bumperRingNumVertices];
       GenerateRingMesh(m_ringVertices);
@@ -753,7 +753,7 @@ void Bumper::RenderSetup()
       m_capIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(bumperCapNumIndices, bumperCapIndices, PRIMARY_DEVICE);
 
       SAFE_BUFFER_RELEASE(m_capVertexBuffer);
-      VertexBuffer::CreateVertexBuffer(bumperCapNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_capVertexBuffer, PRIMARY_DEVICE);
+      m_capVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperCapNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
 
       Vertex3D_NoTex2 *buf;
       m_capVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);

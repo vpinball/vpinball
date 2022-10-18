@@ -597,7 +597,6 @@ int getPrimaryDisplay()
 
 ////////////////////////////////////////////////////////////////////
 
-VertexBuffer* RenderDevice::m_quadVertexBuffer = nullptr;
 unsigned int RenderDevice::m_stats_drawn_triangles = 0;
 
 #ifndef ENABLE_SDL
@@ -626,6 +625,8 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     NVAPIinit = false;
 
     m_current_renderstate.state = m_renderstate.state = 0;
+    m_quadVertexBuffer = nullptr;
+    m_quadDynVertexBuffer = nullptr;
 
     m_stats_drawn_triangles = 0;
 
@@ -1113,15 +1114,21 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    if (video10bit && (m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA))
       ShowError("SMAA or DLAA post-processing AA should not be combined with 10bit-output rendering (will result in visible artifacts)!");
 
-   //
-
    // create default vertex declarations for shaders
    CreateVertexDeclaration(VertexTexelElement, &m_pVertexTexelDeclaration);
    CreateVertexDeclaration(VertexNormalTexelElement, &m_pVertexNormalTexelDeclaration);
    //CreateVertexDeclaration( VertexNormalTexelTexelElement, &m_pVertexNormalTexelTexelDeclaration );
    CreateVertexDeclaration(VertexTrafoTexelElement, &m_pVertexTrafoTexelDeclaration);
 
-   if(m_FXAA == Quality_SMAA)
+   // Vertex buffer
+   m_quadVertexBuffer = new VertexBuffer(this, 4, 0, MY_D3DFVF_TEX); //!! have 2 for both devices?
+   Vertex3D_TexelOnly* bufvb;
+   RenderDevice::m_quadVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::WRITEONLY);
+   static constexpr float verts[4 * 5] = { 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 1.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f };
+   memcpy(bufvb, verts, 4 * sizeof(Vertex3D_TexelOnly));
+   RenderDevice::m_quadVertexBuffer->unlock();
+
+   if (m_FXAA == Quality_SMAA)
        UploadAndSetSMAATextures();
    else
    {

@@ -857,7 +857,7 @@ void Surface::PrepareWallsAtHeight()
    vector<WORD> sideIndices;
    GenerateMesh(topBottomBuf, sideBuf, topBottomIndices, sideIndices);
 
-   VertexBuffer::CreateVertexBuffer(m_numVertices * 4 + (!topBottomBuf.empty() ? m_numVertices * 3 : 0), 0, MY_D3DFVF_NOTEX2_VERTEX, &m_VBuffer, PRIMARY_DEVICE);
+   m_VBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices * 4 + (!topBottomBuf.empty() ? m_numVertices * 3 : 0), 0, MY_D3DFVF_NOTEX2_VERTEX);
 
    Vertex3D_NoTex2 *verts;
    m_VBuffer->lock(0, 0, (void**)&verts, VertexBuffer::WRITEONLY);
@@ -927,7 +927,7 @@ void Surface::PrepareSlingshots()
    }
 
    SAFE_BUFFER_RELEASE(m_slingshotVBuffer);
-   VertexBuffer::CreateVertexBuffer((unsigned int)m_vlinesling.size() * 9, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_slingshotVBuffer, PRIMARY_DEVICE);
+   m_slingshotVBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)m_vlinesling.size() * 9, 0, MY_D3DFVF_NOTEX2_VERTEX);
 
    Vertex3D_NoTex2 *buf;
    m_slingshotVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);

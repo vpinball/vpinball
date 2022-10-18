@@ -47,9 +47,6 @@ Pin3D::~Pin3D()
    delete m_pddsAOBackTmpBuffer;
    delete m_pddsStatic;
 
-   SAFE_BUFFER_RELEASE(RenderDevice::m_quadVertexBuffer);
-   //SAFE_BUFFER_RELEASE(RenderDevice::m_quadDynVertexBuffer);
-
    if(m_pd3dPrimaryDevice != m_pd3dSecondaryDevice)
       delete m_pd3dSecondaryDevice;
    delete m_pd3dPrimaryDevice;
@@ -533,27 +530,10 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    //
 
 #ifndef ENABLE_SDL
-   VertexBuffer::setD3DDevice(m_pd3dPrimaryDevice->GetCoreDevice(), m_pd3dSecondaryDevice->GetCoreDevice());
    IndexBuffer::setD3DDevice(m_pd3dPrimaryDevice->GetCoreDevice(), m_pd3dSecondaryDevice->GetCoreDevice());
 #endif
    VertexBuffer::bindNull();
    IndexBuffer::bindNull();
-
-   if (RenderDevice::m_quadVertexBuffer == nullptr)
-   {
-      VertexBuffer::CreateVertexBuffer(4, 0, MY_D3DFVF_TEX, &RenderDevice::m_quadVertexBuffer, PRIMARY_DEVICE); //!! have 2 for both devices?
-      Vertex3D_TexelOnly* bufvb;
-      RenderDevice::m_quadVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::WRITEONLY);
-      static constexpr float verts[4 * 5] =
-      {
-          1.0f,  1.0f, 0.0f, 1.0f, 0.0f,
-         -1.0f,  1.0f, 0.0f, 0.0f, 0.0f,
-          1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
-         -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
-      };
-      memcpy(bufvb, verts, 4*sizeof(Vertex3D_TexelOnly));
-      RenderDevice::m_quadVertexBuffer->unlock();
-   }
 
    //m_quadDynVertexBuffer = nullptr;
    //CreateVertexBuffer(4, USAGE_DYNAMIC, MY_D3DFVF_TEX, &RenderDevice::m_quadDynVertexBuffer);

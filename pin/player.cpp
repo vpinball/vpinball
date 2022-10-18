@@ -1271,7 +1271,7 @@ void Player::InitBallShader()
 
    // VB for normal ball
    assert(m_ballVertexBuffer == nullptr);
-   VertexBuffer::CreateVertexBuffer(lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_ballVertexBuffer, PRIMARY_DEVICE);
+   m_ballVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
 
    // load precomputed ball vertices into vertex buffer
    Vertex3D_NoTex2 *buf;
@@ -1801,7 +1801,7 @@ HRESULT Player::Init()
       }
 
       assert(m_ballDebugPoints == nullptr);
-      VertexBuffer::CreateVertexBuffer((unsigned int)ballDbgVtx.size(), 0, MY_D3DFVF_TEX, &m_ballDebugPoints, PRIMARY_DEVICE);
+      m_ballDebugPoints = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, (unsigned int)ballDbgVtx.size(), 0, MY_D3DFVF_TEX);
       void *buf;
       m_ballDebugPoints->lock(0, 0, &buf, VertexBuffer::WRITEONLY);
       memcpy(buf, ballDbgVtx.data(), ballDbgVtx.size() * sizeof(ballDbgVtx[0]));
@@ -1810,7 +1810,7 @@ HRESULT Player::Init()
 #endif
 
    assert(m_ballTrailVertexBuffer == nullptr);
-   VertexBuffer::CreateVertexBuffer((MAX_BALL_TRAIL_POS-2)*2+4, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_ballTrailVertexBuffer, PRIMARY_DEVICE);
+   m_ballTrailVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, (MAX_BALL_TRAIL_POS - 2) * 2 + 4, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
 
    m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
 
@@ -2159,16 +2159,15 @@ void Player::InitStatic()
       float u1 = xyLDBNbnot[iter*2  ];  //      (float)iter*(float)(1.0                                /STATIC_PRERENDER_ITERATIONS);
       float u2 = xyLDBNbnot[iter*2+1];  //fmodf((float)iter*(float)(STATIC_PRERENDER_ITERATIONS_KOROBOV/STATIC_PRERENDER_ITERATIONS), 1.f);
       // the following line implements filter importance sampling for a small gauss (i.e. less jaggies as it also samples neighboring pixels) -> but also potentially more artifacts in compositing!
-      gaussianDistribution(u1, u2, 0.5f, 0.5f); //!! first 0.5 could be increased for more blur, but is pretty much what is recommended
+      gaussianDistribution(u1, u2, 0.5f, 0.0f); //!! first 0.5 could be increased for more blur, but is pretty much what is recommended
       // sanity check to be sure to limit filter area to 3x3 in practice, as the gauss transformation is unbound (which is correct, but for our use-case/limited amount of samples very bad)
-      assert(u1 > -1.f && u1 < 2.f);
-      assert(u2 > -1.f && u2 < 2.f);
+      assert(u1 > -1.5f && u1 < 1.5f);
+      assert(u2 > -1.5f && u2 < 1.5f);
       // Last iteration MUST set a sample offset of 0,0 so that final depth buffer features 'correctly' centered pixel sample
-      if (iter == 0)
-         assert(u1 == 0.5f && u2 == 0.5f);
+      assert(iter != 0 || (u1 == 0.f && u2 == 0.f));
 
       // Setup Camera,etc matrices for each iteration.
-      m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation(), u1 - 0.5f, u2 - 0.5f);
+      m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation(), u1, u2);
 
       // Now begin rendering of static buffer
       m_pin3d.m_pd3dPrimaryDevice->BeginScene();
@@ -2233,7 +2232,7 @@ void Player::InitStatic()
          if (iter == STATIC_PRERENDER_ITERATIONS - 1)
             m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetFloat(SHADER_mirrorFactor, (float)(1.0 / STATIC_PRERENDER_ITERATIONS));
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetFloat(SHADER_mirrorFactor, (float) STATIC_PRERENDER_ITERATIONS);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_mirror, m_pin3d.m_pddsStatic->GetColorSampler());
          m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
          m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();

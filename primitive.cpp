@@ -272,7 +272,7 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
    }
 
    SAFE_BUFFER_RELEASE(m_vertexBuffer);
-   VertexBuffer::CreateVertexBuffer(m_numGroupVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_vertexBuffer, PRIMARY_DEVICE);
+   m_vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numGroupVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
 
    SAFE_BUFFER_RELEASE(m_indexBuffer);
    m_indexBuffer = IndexBuffer::CreateAndFillIndexBuffer(indices, PRIMARY_DEVICE);
@@ -1391,7 +1391,7 @@ void Primitive::RenderSetup()
    m_currentFrame = -1.f;
 
    SAFE_BUFFER_RELEASE(m_vertexBuffer);
-   VertexBuffer::CreateVertexBuffer((unsigned int)m_mesh.NumVertices(), 0, MY_D3DFVF_NOTEX2_VERTEX, &m_vertexBuffer, PRIMARY_DEVICE);
+   m_vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)m_mesh.NumVertices(), 0, MY_D3DFVF_NOTEX2_VERTEX);
 
    SAFE_BUFFER_RELEASE(m_indexBuffer);
    m_indexBuffer = IndexBuffer::CreateAndFillIndexBuffer(m_mesh.m_indices, PRIMARY_DEVICE);

@@ -864,7 +864,7 @@ void Flipper::RenderSetup()
    m_indexBuffer = IndexBuffer::CreateAndFillIndexBuffer(flipperBaseNumIndices, flipperBaseIndices, PRIMARY_DEVICE);
 
    SAFE_BUFFER_RELEASE(m_vertexBuffer);
-   VertexBuffer::CreateVertexBuffer(flipperBaseVertices * 2, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_vertexBuffer, PRIMARY_DEVICE);
+   m_vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, flipperBaseVertices * 2, 0, MY_D3DFVF_NOTEX2_VERTEX);
 
    Vertex3D_NoTex2 *buf;
    m_vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);

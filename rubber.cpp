@@ -1462,7 +1462,7 @@ void Rubber::GenerateVertexBuffer()
    GenerateMesh();
 
    SAFE_BUFFER_RELEASE(m_dynamicVertexBuffer);
-   VertexBuffer::CreateVertexBuffer(m_numVertices, m_d.m_staticRendering ? 0 : USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_dynamicVertexBuffer, PRIMARY_DEVICE);
+   m_dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, m_d.m_staticRendering ? 0 : USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
 
    Vertex3D_NoTex2 *buf;
    m_dynamicVertexBuffer->lock(0, 0, (void**)&buf, m_d.m_staticRendering ? VertexBuffer::WRITEONLY : VertexBuffer::DISCARDCONTENTS);
