@@ -273,9 +273,8 @@ public:
    void tableUp();
    void tableDown();
    void recenterTable();
-   void recenterRoom();
 
-   float m_slope, m_orientation, m_tablex, m_tabley, m_tablez, m_roomOrientation, m_roomx, m_roomy;
+   float m_slope, m_orientation, m_tablex, m_tabley, m_tablez;
 
    void updateTableMatrix();
    vr::TrackedDevicePose_t hmdPosition;
@@ -402,8 +401,9 @@ private:
    Matrix3D m_matProj[2];
    Matrix3D m_matView;
    Matrix3D m_tableWorld;
-   Matrix3D m_roomWorld;
    vr::TrackedDevicePose_t *m_rTrackedDevicePose;
+
+public:
    float m_scale;
 #endif
 

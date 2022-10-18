@@ -1429,9 +1429,6 @@ RenderDevice::~RenderDevice()
       SaveValueFloat(regKey[RegName::Player], "VRTableX"s, m_tablex);
       SaveValueFloat(regKey[RegName::Player], "VRTableY"s, m_tabley);
       SaveValueFloat(regKey[RegName::Player], "VRTableZ"s, m_tablez);
-      SaveValueFloat(regKey[RegName::Player], "VRRoomOrientation"s, m_roomOrientation);
-      SaveValueFloat(regKey[RegName::Player], "VRRoomX"s, m_roomx);
-      SaveValueFloat(regKey[RegName::Player], "VRRoomY"s, m_roomy);
    }
 #endif
 
