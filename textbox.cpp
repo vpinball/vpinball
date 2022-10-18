@@ -398,7 +398,7 @@ void Textbox::PreRenderText()
    GdiFlush();     // make sure everything is drawn
 
    if (!m_texture)
-      m_texture = new BaseTexture(width, height, BaseTexture::RGBA); // This could be optimized to an RGB texture if transparent is not set
+      m_texture = new BaseTexture(width, height, BaseTexture::SRGBA); // This could be optimized to an RGB texture if transparent is not set
 
    // Set alpha for pixels that match transparent color (if transparent enabled), otherwise set to opaque
    const D3DCOLOR* __restrict bitsd = (D3DCOLOR*)bits;
