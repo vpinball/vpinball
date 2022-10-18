@@ -4,14 +4,14 @@
 
 FlasherVisualsProperty::FlasherVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPFLASHER_VISUALS, pvsel)
 {
-    m_filterList.push_back("None");
-    m_filterList.push_back("Additive");
-    m_filterList.push_back("Overlay");
-    m_filterList.push_back("Multiply");
-    m_filterList.push_back("Screen");
+    m_filterList.push_back("None"s);
+    m_filterList.push_back("Additive"s);
+    m_filterList.push_back("Overlay"s);
+    m_filterList.push_back("Multiply"s);
+    m_filterList.push_back("Screen"s);
 
-    m_imageAlignList.push_back("World");
-    m_imageAlignList.push_back("Wrap");
+    m_imageAlignList.push_back("World"s);
+    m_imageAlignList.push_back("Wrap"s);
 
     m_opacityAmountEdit.SetDialog(this);
     m_filterAmountEdit.SetDialog(this);

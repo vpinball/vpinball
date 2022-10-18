@@ -4,14 +4,14 @@
 
 TriggerVisualsProperty::TriggerVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTRIGGER_VISUALS, pvsel)
 {
-    m_shapeList.push_back("None");
-    m_shapeList.push_back("Wire A");
-    m_shapeList.push_back("Star");
-    m_shapeList.push_back("Wire B");
-    m_shapeList.push_back("Button");
-    m_shapeList.push_back("Wire C");
-    m_shapeList.push_back("Wire D");
-    m_shapeList.push_back("Inder");
+    m_shapeList.push_back("None"s);
+    m_shapeList.push_back("Wire A"s);
+    m_shapeList.push_back("Star"s);
+    m_shapeList.push_back("Wire B"s);
+    m_shapeList.push_back("Button"s);
+    m_shapeList.push_back("Wire C"s);
+    m_shapeList.push_back("Wire D"s);
+    m_shapeList.push_back("Inder"s);
 
     m_wireThicknessEdit.SetDialog(this);
     m_starRadiusEdit.SetDialog(this);
