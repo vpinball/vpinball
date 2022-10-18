@@ -1116,7 +1116,6 @@
 #define IDC_STATIC_THICKNESS            818
 #define IDC_STATIC_THICKNESS_TEXT       819
 #define IDC_GLOBAL_SSREFLECTION_CHECK   820
-#define IDC_GLOBAL_PFREFLECTION_CHECK   821
 #define IDC_BUMPER_SKIRT_ANIM           822
 #define IDC_CUSTOM_PARAMS               823
 #define IDW_SPLITH                      823

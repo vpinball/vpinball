@@ -91,7 +91,7 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    SendMessage(GetDlgItem(IDC_DYNAMIC_AO).GetHwnd(), BM_SETCHECK, profile == 2 ? BST_CHECKED : BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_ENABLE_AO).GetHwnd(), BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_SETCHECK, profile == 2 ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_GLOBAL_PFREFLECTION_CHECK).GetHwnd(), BM_SETCHECK, profile != 1 ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendMessage(GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd(), CB_SETCURSEL, profile == 0 ? PFREFL_UNSYNCED_DYNAMIC : (profile == 2 ? PFREFL_DYNAMIC : PFREFL_STATIC_N_BALLS), 0);
 
    if (profile == 0)
    {
@@ -287,7 +287,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
       AddToolTip("Set the amount of MSAA samples.\r\n\r\nMSAA can help reduce geometry aliasing at the cost of performance and GPU memory.\r\n\r\nThis can really help improve image quality when not using supersampling.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_MSAA_COMBO).GetHwnd());
       AddToolTip("When checked, it overwrites the ball image/decal image(s) for every table.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_OVERWRITE_BALL_IMAGE_CHECK).GetHwnd());
       AddToolTip("Select Display for Video output.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DISPLAY_ID).GetHwnd());
-      AddToolTip("Enable BAM Headtracking. See https://www.ravarcade.pl", hwndDlg, toolTipHwnd, GetDlgItem(IDC_HEADTRACKING).GetHwnd());
+      AddToolTip("Enables BAM Headtracking. See https://www.ravarcade.pl", hwndDlg, toolTipHwnd, GetDlgItem(IDC_HEADTRACKING).GetHwnd());
       AddToolTip("Enables post-processed reflections on all objects (beside the playfield).", hwndDlg, toolTipHwnd, GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd());
       AddToolTip("Enables playfield reflections.\r\n\r\n'Dynamic' is recommended and will give the best results, but may harm performance.\r\n\r\n'Static Only' has no performance cost (except for VR rendering).\r\n\r\nOther options feature different trade-offs between quality and performance.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd());
    }
