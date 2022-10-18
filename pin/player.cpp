@@ -210,7 +210,7 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_ditherOff = LoadValueBoolWithDefault(regKey[RegName::Player], "Render10Bit"s, false); // if rendering at 10bit output resolution, disable dithering
    m_BWrendering = LoadValueIntWithDefault(regKey[RegName::Player], "BWRendering"s, 0);
    m_detectScriptHang = LoadValueBoolWithDefault(regKey[RegName::Player], "DetectHang"s, false);
-   int pfr = LoadValueIntWithDefault(regKey[useVR ? RegName::PlayerVR : RegName::Player], "PFReflection"s, -1);
+   const int pfr = LoadValueIntWithDefault(regKey[useVR ? RegName::PlayerVR : RegName::Player], "PFReflection"s, -1);
    if (pfr != -1)
       m_pfReflectionMode = (PlayfieldReflectionMode)pfr;
    else
@@ -233,7 +233,7 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    if (m_ptable->m_useReflectionForBalls == 1 && m_pfReflectionMode == PFREFL_STATIC)
       m_pfReflectionMode = PFREFL_STATIC_N_BALLS;
    // For dynamic mode, static reflections are not available so adapt the mode
-   if (m_dynamicMode &&m_pfReflectionMode >= PFREFL_STATIC)
+   if (m_dynamicMode && m_pfReflectionMode >= PFREFL_STATIC)
       m_pfReflectionMode = PFREFL_DYNAMIC;
 
    if (useVR)
