@@ -5,6 +5,27 @@
 #define GET_WINDOW_MODES		WM_USER+100
 #define GET_FULLSCREENMODES		WM_USER+101
 
+// factor is applied to width and to height, so 2.0f increases pixel count by 4. Additional values can be added.
+constexpr float AAfactors[] = { 0.5f, 0.75f, 1.0f, 1.25f, (float)(4.0/3.0), 1.5f, 1.75f, 2.0f };
+constexpr LPCSTR AAfactorNames[] = { "50%", "75%", "Disabled", "125%", "133%", "150%", "175%", "200%" };
+constexpr int AAfactorCount = 8;
+
+constexpr int MSAASamplesOpts[] = { 1, 4, 6, 8 };
+constexpr LPCSTR MSAASampleNames[] = { "Disabled", "4 Samples", "6 Samples", "8 Samples" };
+constexpr int MSAASampleCount = 4;
+
+static size_t getBestMatchingAAfactorIndex(float f)
+{
+   float delta = fabsf(f - AAfactors[0]);
+   size_t bestMatch = 0;
+   for (size_t i = 1; i < AAfactorCount; ++i)
+      if (fabsf(f - AAfactors[i]) < delta) {
+         delta = fabsf(f - AAfactors[i]);
+         bestMatch = i;
+      }
+   return bestMatch;
+}
+
 VideoOptionsDialog::VideoOptionsDialog() : CDialog(IDD_VIDEO_OPTIONS)
 {
 }
@@ -63,7 +84,9 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    SetDlgItemText(IDC_NUDGE_STRENGTH, tmp);
    }
 
-   SendMessage(GetDlgItem(IDC_AA_ALL_TABLES).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendMessage(GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd(), TBM_SETPOS, TRUE, getBestMatchingAAfactorIndex(1.0f));
+   SendMessage(GetDlgItem(IDC_MSAA_COMBO).GetHwnd(), TBM_SETPOS, TRUE, 1);
+
    SendMessage(GetDlgItem(IDC_DYNAMIC_DN).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_DYNAMIC_AO).GetHwnd(), BM_SETCHECK, profile == 2 ? BST_CHECKED : BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_ENABLE_AO).GetHwnd(), BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -84,8 +107,8 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    }
    }
 
-   SendMessage(GetDlgItem(IDC_FXAACB).GetHwnd(), CB_SETCURSEL, profile == 1 ? Disabled : (profile == 2 ? Quality_FXAA : Standard_FXAA), 0);
-   SendMessage(GetDlgItem(IDC_SHARPENCB).GetHwnd(), CB_SETCURSEL, profile != 2 ? 0 : 2, 0);
+   SendMessage(GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd(), CB_SETCURSEL, profile == 1 ? Disabled : (profile == 2 ? Quality_FXAA : Standard_FXAA), 0);
+   SendMessage(GetDlgItem(IDC_SHARPEN_COMBO).GetHwnd(), CB_SETCURSEL, profile != 2 ? 0 : 2, 0);
    SendMessage(GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
 
    if (profile == 0)
@@ -258,11 +281,13 @@ BOOL VideoOptionsDialog::OnInitDialog()
          AddToolTip("Enforces exclusive Fullscreen Mode.\r\nDo not enable if you require to see the VPinMAME or B2S windows for example.\r\nEnforcing exclusive FS can slightly reduce input lag though.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_FULLSCREEN).GetHwnd());
       AddToolTip("Enforces 10Bit (WCG) rendering.\r\nRequires a corresponding 10Bit output capable graphics card and monitor.\r\nAlso requires to have exclusive fullscreen mode enforced (for now).", hwndDlg, toolTipHwnd, GetDlgItem(IDC_10BIT_VIDEO).GetHwnd());
       AddToolTip("Switches all tables to use the respective Cabinet display setup.\r\nAlso useful if a 270 degree rotated Desktop monitor is used.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_BG_SET).GetHwnd());
-      AddToolTip("Enables post-processed Anti-Aliasing.\r\nThis delivers smoother images, at the cost of slight blurring.\r\n'Quality FXAA' and 'Quality SMAA' are recommended and lead to less artifacts,\nbut will harm performance on low-end graphics cards.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_FXAACB).GetHwnd());
-      AddToolTip("Enables post-processed sharpening of the image.\r\n'Bilateral CAS' is recommended,\nbut will harm performance on low-end graphics cards.\r\n'CAS' is less aggressive and faster, but also rather subtle.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SHARPENCB).GetHwnd());
-      AddToolTip("Enables brute-force 4x Anti-Aliasing (similar to DSR).\r\nThis delivers very good quality, but slows down performance significantly.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_AA_ALL_TABLES).GetHwnd());
+      AddToolTip("Enables post-processed Anti-Aliasing.\r\nThis delivers smoother images, at the cost of slight blurring.\r\n'Quality FXAA' and 'Quality SMAA' are recommended and lead to less artifacts,\nbut will harm performance on low-end graphics cards.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd());
+      AddToolTip("Enables post-processed sharpening of the image.\r\n'Bilateral CAS' is recommended,\nbut will harm performance on low-end graphics cards.\r\n'CAS' is less aggressive and faster, but also rather subtle.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SHARPEN_COMBO).GetHwnd());
+      AddToolTip("Enables brute-force Up/Downsampling (similar to DSR).\r\n\r\nThis delivers very good quality but has a significant impact on performance.\r\n\r\n200% means twice the resolution to be handled while rendering.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd());
+      AddToolTip("Set the amount of MSAA samples.\r\n\r\nMSAA can help reduce geometry aliasing at the cost of performance and GPU memory.\r\n\r\nThis can really help improve image quality when not using supersampling.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_MSAA_COMBO).GetHwnd());
       AddToolTip("When checked, it overwrites the ball image/decal image(s) for every table.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_OVERWRITE_BALL_IMAGE_CHECK).GetHwnd());
       AddToolTip("Select Display for Video output.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DISPLAY_ID).GetHwnd());
+      AddToolTip("Enable BAM Headtracking. See https://www.ravarcade.pl", hwndDlg, toolTipHwnd, GetDlgItem(IDC_HEADTRACKING).GetHwnd());
       AddToolTip("Enables post-processed reflections on all objects (beside the playfield).", hwndDlg, toolTipHwnd, GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd());
       AddToolTip("Enables playfield reflections.\r\n\r\n'Dynamic' is recommended and will give the best results, but may harm performance.\r\n\r\n'Static Only' has no performance cost (except for VR rendering).\r\n\r\nOther options feature different trade-offs between quality and performance.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd());
    }
@@ -311,8 +336,22 @@ BOOL VideoOptionsDialog::OnInitDialog()
    sprintf_s(tmp, sizeof(tmp), "%f", nudgeStrength);
    SetDlgItemText(IDC_NUDGE_STRENGTH, tmp);
 
-   const int useAA = LoadValueIntWithDefault(regKey[RegName::Player], "USEAA"s, 0);
-   SendMessage(GetDlgItem(IDC_AA_ALL_TABLES).GetHwnd(), BM_SETCHECK, (useAA != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+   HWND hwnd = GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd();
+   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+   for (size_t i = 0; i < AAfactorCount; ++i)
+      SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) AAfactorNames[i]);
+   const float AAfactor = LoadValueFloatWithDefault(regKey[RegName::Player], "AAFactor"s, LoadValueBoolWithDefault(regKey[RegName::Player], "USEAA", false) ? 1.5f : 1.0f);
+   SendMessage(hwnd, CB_SETCURSEL, getBestMatchingAAfactorIndex(AAfactor), 0);
+   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+
+   hwnd = GetDlgItem(IDC_MSAA_COMBO).GetHwnd();
+   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+   for (size_t i = 0; i < MSAASampleCount; ++i)
+      SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) MSAASampleNames[i]);
+   const int MSAASamples = LoadValueIntWithDefault(regKey[RegName::Player], "MSAASamples"s, 1);
+   const int CurrMSAAPos = std::find(MSAASamplesOpts, MSAASamplesOpts + (sizeof(MSAASamplesOpts) / sizeof(MSAASamplesOpts[0])), MSAASamples) - MSAASamplesOpts;
+   SendMessage(hwnd, CB_SETCURSEL, CurrMSAAPos, 0);
+   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    const int useDN = LoadValueIntWithDefault(regKey[RegName::Player], "DynamicDayNight"s, 0);
    SendMessage(GetDlgItem(IDC_DYNAMIC_DN).GetHwnd(), BM_SETCHECK, (useDN != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -322,11 +361,12 @@ BOOL VideoOptionsDialog::OnInitDialog()
 
    useAO = LoadValueBoolWithDefault(regKey[RegName::Player], "DisableAO"s, false);
    SendMessage(GetDlgItem(IDC_ENABLE_AO).GetHwnd(), BM_SETCHECK, useAO ? BST_UNCHECKED : BST_CHECKED, 0); // inverted logic
+   GetDlgItem(IDC_DYNAMIC_AO).EnableWindow(!useAO);
 
    const bool ssreflection = LoadValueBoolWithDefault(regKey[RegName::Player], "SSRefl"s, false);
    SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_SETCHECK, ssreflection ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   HWND hwnd = GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd();
+   hwnd = GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disabled");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Balls Only");
@@ -371,7 +411,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    }
 
    const int fxaa = LoadValueIntWithDefault(regKey[RegName::Player], "FXAA"s, Standard_FXAA);
-   hwnd = GetDlgItem(IDC_FXAACB).GetHwnd();
+   hwnd = GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd();
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Disabled");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Fast FXAA");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Standard FXAA");
@@ -382,7 +422,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_SETCURSEL, fxaa, 0);
 
    const int sharpen = LoadValueIntWithDefault(regKey[RegName::Player], "Sharpen"s, 0);
-   hwnd = GetDlgItem(IDC_SHARPENCB).GetHwnd();
+   hwnd = GetDlgItem(IDC_SHARPEN_COMBO).GetHwnd();
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Disabled");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"CAS");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Bilateral CAS");
@@ -433,6 +473,9 @@ BOOL VideoOptionsDialog::OnInitDialog()
    const float stereo3DZPD = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DZPD"s, 0.5f);
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DZPD);
    SetDlgItemText(IDC_3D_STEREO_ZPD, tmp);
+
+   const bool bamHeadtracking = LoadValueBoolWithDefault(regKey[RegName::Player], "BAMheadTracking"s, false);
+   SendMessage(GetDlgItem(IDC_HEADTRACKING).GetHwnd(), BM_SETCHECK, bamHeadtracking ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const float stereo3DContrast = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DContrast"s, 1.0f);
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DContrast);
@@ -523,6 +566,33 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"9:21 (R)");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"21:9");
    SendMessage(hwnd, CB_SETCURSEL, selected, 0);*/
+
+// Disable unsupported features in UI
+#ifdef ENABLE_SDL
+   GetDlgItem(IDC_DISABLE_DWM).EnableWindow(false);
+   GetDlgItem(IDC_10BIT_VIDEO).EnableWindow(false);
+   GetDlgItem(IDC_3D_STEREO_ZPD).EnableWindow(false);
+#else
+   // adapt layout for the hidden MSAA control
+   GetDlgItem(IDC_MSAA_LABEL).ShowWindow(false);
+   GetDlgItem(IDC_MSAA_COMBO).ShowWindow(false);
+   GetDlgItem(IDC_MSAA_COMBO).EnableWindow(false);
+#define SHIFT_WND(id, amount)                                                                                                                                                                          \
+   {                                                                                                                                                                                         \
+   CRect rc = GetDlgItem(id).GetClientRect(); \
+   GetDlgItem(id).MapWindowPoints(this->GetHwnd(), rc); \
+   rc.OffsetRect(0, amount); \
+   GetDlgItem(id).MoveWindow(rc); \
+   }
+   SHIFT_WND(IDC_SUPER_SAMPLING_LABEL, -14)
+   SHIFT_WND(IDC_SUPER_SAMPLING_COMBO, -14)
+   SHIFT_WND(IDC_POST_PROCESS_AA_LABEL, -9)
+   SHIFT_WND(IDC_POST_PROCESS_COMBO, -9)
+   SHIFT_WND(IDC_SHARPEN_LABEL, -4)
+   SHIFT_WND(IDC_SHARPEN_COMBO, -4)
+   GetDlgItem(IDC_HEADTRACKING).ShowWindow(false);
+   GetDlgItem(IDC_HEADTRACKING).EnableWindow(false);
+#endif
 
    return TRUE;
 }
@@ -749,6 +819,12 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          SendMessage(checked ? GET_FULLSCREENMODES : GET_WINDOW_MODES, 0, 0);
          break;
       }
+      case IDC_ENABLE_AO:
+      {
+         const size_t checked = SendDlgItemMessage(IDC_ENABLE_AO, BM_GETCHECK, 0, 0);
+         GetDlgItem(IDC_DYNAMIC_AO).EnableWindow(checked);
+         break;
+      }
       default:
          return FALSE;
    }
@@ -805,12 +881,12 @@ void VideoOptionsDialog::OnOK()
    SaveValue(regKey[RegName::Player], "Latitude"s, GetDlgItemText(IDC_DN_LATITUDE).c_str());
    SaveValue(regKey[RegName::Player], "NudgeStrength"s, GetDlgItemText(IDC_NUDGE_STRENGTH).c_str());
 
-   LRESULT fxaa = SendMessage(GetDlgItem(IDC_FXAACB).GetHwnd(), CB_GETCURSEL, 0, 0);
+   LRESULT fxaa = SendMessage(GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (fxaa == LB_ERR)
       fxaa = Standard_FXAA;
    SaveValueInt(regKey[RegName::Player], "FXAA"s, (int)fxaa);
 
-   LRESULT sharpen = SendMessage(GetDlgItem(IDC_SHARPENCB).GetHwnd(), CB_GETCURSEL, 0, 0);
+   LRESULT sharpen = SendMessage(GetDlgItem(IDC_SHARPEN_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (sharpen == LB_ERR)
       sharpen = 0;
    SaveValueInt(regKey[RegName::Player], "Sharpen"s, (int)sharpen);
@@ -821,8 +897,18 @@ void VideoOptionsDialog::OnOK()
    const size_t BGSet = SendMessage(GetDlgItem(IDC_BG_SET).GetHwnd(), BM_GETCHECK, 0, 0);
    SaveValueInt(regKey[RegName::Player], "BGSet"s, (int)BGSet);
 
-   const size_t useAA = SendMessage(GetDlgItem(IDC_AA_ALL_TABLES).GetHwnd(), BM_GETCHECK, 0, 0);
-   SaveValueInt(regKey[RegName::Player], "USEAA"s, (int)useAA);
+   LRESULT AAfactorIndex = SendMessage(GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
+   if (AAfactorIndex == LB_ERR)
+      AAfactorIndex = getBestMatchingAAfactorIndex(1);
+   const float AAfactor = (AAfactorIndex < AAfactorCount) ? AAfactors[AAfactorIndex] : 1.0f;
+   SaveValueBool(regKey[RegName::Player], "USEAA"s, AAfactor > 1.0f);
+   SaveValueFloat(regKey[RegName::Player], "AAFactor"s, AAfactor);
+
+   LRESULT MSAASamplesIndex = SendMessage(GetDlgItem(IDC_MSAA_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
+   if (MSAASamplesIndex == LB_ERR)
+      MSAASamplesIndex = 0;
+   const int MSAASamples = (MSAASamplesIndex < MSAASampleCount) ? MSAASamplesOpts[MSAASamplesIndex] : 1;
+   SaveValueInt(regKey[RegName::Player], "MSAASamples"s, MSAASamples);
 
    const bool useDN = (SendMessage(GetDlgItem(IDC_DYNAMIC_DN).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValueBool(regKey[RegName::Player], "DynamicDayNight"s, useDN);
@@ -866,6 +952,9 @@ void VideoOptionsDialog::OnOK()
    SaveValue(regKey[RegName::Player], "Stereo3DZPD"s, GetDlgItemText(IDC_3D_STEREO_ZPD).c_str());
    SaveValue(regKey[RegName::Player], "Stereo3DContrast"s, GetDlgItemText(IDC_3D_STEREO_CONTRAST).c_str());
    SaveValue(regKey[RegName::Player], "Stereo3DDesaturation"s, GetDlgItemText(IDC_3D_STEREO_DESATURATION).c_str());
+
+   const bool bamHeadtracking = (SendMessage(GetDlgItem(IDC_HEADTRACKING).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
+   SaveValueBool(regKey[RegName::Player], "BAMheadTracking"s, bamHeadtracking);
 
    const bool disableDWM = (SendMessage(GetDlgItem(IDC_DISABLE_DWM).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValueBool(regKey[RegName::Player], "DisableDWM"s, disableDWM);
