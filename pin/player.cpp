@@ -2141,7 +2141,7 @@ void Player::InitStatic()
    // if rendering static/with heavy oversampling, disable the aniso/trilinear filter to get a sharper/more precise result overall!
    if (!m_dynamicMode)
    {
-      // The code will fail if the static render target is MSAA (the copy operation we are performing are not allowed)
+      // The code will fail if the static render target is MSAA (the copy operation we are performing is not allowed)
       assert(!m_pin3d.m_pddsStatic->IsMSAA());
       accumulationSurface = m_pin3d.m_pddsStatic->Duplicate();
       // set up the texture filter again, so that this is triggered correctly
@@ -2149,8 +2149,10 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(4, TEXTURE_MODE_TRILINEAR);
    }
 
+   g_pvp->ProfileLog("Static PreRender Start"s);
+
    //#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
-   // loop for X times and accumulate/average these renderings on CPU side
+   // loop for X times and accumulate/average these renderings
    // NOTE: iter == 0 MUST ALWAYS PRODUCE an offset of 0,0!
    for (int iter = m_dynamicMode ? 0 : (STATIC_PRERENDER_ITERATIONS - 1); iter >= 0; --iter) // just do one iteration if in dynamic camera/light/material tweaking mode
    {
@@ -2232,7 +2234,7 @@ void Player::InitStatic()
          if (iter == STATIC_PRERENDER_ITERATIONS - 1)
             m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
-         vec4 whm = vec4((float)m_pin3d.m_pddsStatic->GetWidth(), (float)m_pin3d.m_pddsStatic->GetHeight(), (float)STATIC_PRERENDER_ITERATIONS, 0.0f);
+         const vec4 whm = vec4((float)m_pin3d.m_pddsStatic->GetWidth(), (float)m_pin3d.m_pddsStatic->GetHeight(), (float)STATIC_PRERENDER_ITERATIONS, 0.0f);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_cWidth_Height_MirrorAmount, &whm);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_mirror, m_pin3d.m_pddsStatic->GetColorSampler());
          m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
@@ -2261,6 +2263,8 @@ void Player::InitStatic()
    }
 
    m_isRenderingStatic = false;
+
+   g_pvp->ProfileLog("AO PreRender Start"s);
 
    // Now finalize static buffer with non-dynamic AO
    // Dynamic AO disabled? -> Pre-Render Static AO
@@ -2338,6 +2342,8 @@ void Player::InitStatic()
 
       m_pin3d.m_pd3dPrimaryDevice->EndScene();
    }
+
+   g_pvp->ProfileLog("AO/Static PreRender End"s);
 }
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)
@@ -3524,7 +3530,7 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
 
    for (unsigned int i = 0; i < 4; ++i)
    {
-      Verts[i * 5] = (Verts[i * 5] * width + posx)*2.0f - 1.0f;
+      Verts[i * 5    ] =        (Verts[i * 5    ] * width  + posx)*2.0f - 1.0f;
       Verts[i * 5 + 1] = 1.0f - (Verts[i * 5 + 1] * height + posy)*2.0f;
    }
 
