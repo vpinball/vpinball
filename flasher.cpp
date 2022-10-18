@@ -373,8 +373,8 @@ void Flasher::RenderSetup()
    m_dynamicIndexBuffer->unlock();
 
    SAFE_BUFFER_RELEASE(m_dynamicVertexBuffer);
-   VertexBuffer::CreateVertexBuffer(m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_TEX, &m_dynamicVertexBuffer, PRIMARY_DEVICE);
-   NumVideoBytes += (int)(m_numVertices*sizeof(Vertex3D_TexelOnly));
+   m_dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_TEX);
+   NumVideoBytes += (int)(m_numVertices * sizeof(Vertex3D_TexelOnly));
 
    if (m_vertices)
       delete[] m_vertices;

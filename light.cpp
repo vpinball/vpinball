@@ -623,7 +623,7 @@ void Light::PrepareMoversCustom()
 
    m_customMoverVertexNum = (unsigned int)m_vvertex.size();
    const DWORD vertexType = (!m_backglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;
-   VertexBuffer::CreateVertexBuffer(m_customMoverVertexNum, 0, vertexType, &m_customMoverVBuffer, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
+   m_customMoverVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_customMoverVertexNum, 0, vertexType);
 
    UpdateCustomMoverVBuffer();
 }
@@ -723,7 +723,7 @@ void Light::RenderSetup()
       m_bulbLightIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(bulbLightNumFaces, bulbLightIndices, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
 
       SAFE_BUFFER_RELEASE(m_bulbLightVBuffer);
-      VertexBuffer::CreateVertexBuffer(bulbLightNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_bulbLightVBuffer, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
+      m_bulbLightVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbLightNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
 
       Vertex3D_NoTex2 *buf;
       m_bulbLightVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
@@ -744,7 +744,7 @@ void Light::RenderSetup()
       m_bulbSocketIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(bulbSocketNumFaces, bulbSocketIndices, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
 
       SAFE_BUFFER_RELEASE(m_bulbSocketVBuffer);
-      VertexBuffer::CreateVertexBuffer(bulbSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_bulbSocketVBuffer, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
+      m_bulbSocketVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
 
       m_bulbSocketVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
       for (unsigned int i = 0; i < bulbSocketNumVertices; i++)

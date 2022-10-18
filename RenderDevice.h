@@ -407,15 +407,15 @@ private:
    float m_scale;
 #endif
 
+   VertexBuffer* m_quadVertexBuffer;    // internal vb for rendering quads //!! only on primary device for now!
+   VertexBuffer* m_quadDynVertexBuffer; // internal vb for rendering dynamic quads //!!
+
 public:
 #ifndef ENABLE_SDL
    bool m_useNvidiaApi;
    bool m_INTZ_support;
    bool NVAPIinit;
 #endif
-
-   static VertexBuffer* m_quadVertexBuffer;      // internal vb for rendering quads //!! only on primary device for now!
-   //static VertexBuffer *m_quadDynVertexBuffer; // internal vb for rendering dynamic quads //!!
 
    // performance counters
    unsigned int m_curDrawCalls, m_frameDrawCalls;

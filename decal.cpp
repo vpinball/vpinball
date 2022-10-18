@@ -457,7 +457,7 @@ void Decal::RenderSetup()
 
    SAFE_BUFFER_RELEASE(m_vertexBuffer);
    const DWORD vertexType = m_backglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX;
-   VertexBuffer::CreateVertexBuffer(4, 0, vertexType, &m_vertexBuffer, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
+   m_vertexBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, 4, 0, vertexType);
 
    Vertex3D_NoTex2 *vertices;
    m_vertexBuffer->lock(0, 0, (void**)&vertices, VertexBuffer::WRITEONLY);
