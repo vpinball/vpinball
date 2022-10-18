@@ -182,7 +182,7 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
       DWORD ms_quality = 0;
       CHECKD3D(m_rd->GetCoreDevice()->CreateRenderTarget(width, height, (D3DFORMAT)format, ms_type, ms_quality, FALSE, &m_color_surface, nullptr));
       if (with_depth && !m_shared_depth)
-         CHECKD3D(m_rd->GetCoreDevice()->CreateRenderTarget(width, height, (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'), ms_type, ms_quality, FALSE, &m_depth_surface, nullptr));
+         CHECKD3D(m_rd->GetCoreDevice()->CreateDepthStencilSurface(width, height, D3DFMT_D16, ms_type, ms_quality, FALSE, &m_depth_surface, nullptr));
    }
    else
    {
@@ -294,6 +294,7 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
    }
    if (m_has_depth && dest->m_has_depth && copyDepth)
    {
+      assert(m_nMSAASamples == 1 && dest->m_nMSAASamples == 1); // DX9 does not support resolving an MSAA depth surface
       CHECKD3D(m_rd->GetCoreDevice()->StretchRect(m_depth_surface, nullptr, dest->m_depth_surface, nullptr, D3DTEXF_NONE));
    }
 #endif
