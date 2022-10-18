@@ -4,7 +4,7 @@ const float4 ms_zpd_ya_td;
 const float4 w_h_height; // for bloom, w_h_height.z keeps strength; for dither, w_h_height.zw keeps per-frame offset for temporal variation of the pattern
 
 const float2 AO_scale_timeblur;
-const float mirrorFactor;
+const float4 cWidth_Height_MirrorAmount;
 
 const bool color_grade;
 const bool do_dither;
@@ -643,7 +643,7 @@ float4 ps_main_fb_bloom_vert39x39(const in VS_OUTPUT_2D IN) : COLOR
 // mirror
 float4 ps_main_fb_mirror(const in VS_OUTPUT_2D IN) : COLOR
 {
-   return float4(tex2D(texSamplerMirror, IN.tex0).rgb / mirrorFactor, 1.0);
+   return float4(tex2D(texSamplerMirror, IN.tex0 + (0.5/cWidth_Height_MirrorAmount.xy)).rgb / cWidth_Height_MirrorAmount.z, 1.0);
 }
 
 
