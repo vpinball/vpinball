@@ -4,9 +4,10 @@
 
 LightStatesProperty::LightStatesProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPLIGHT_STATE, pvsel)
 {
-    m_stateList.push_back("Off");
-    m_stateList.push_back("On");
-    m_stateList.push_back("Blinking");
+    m_stateList.push_back("Off"s);
+    m_stateList.push_back("On"s);
+    m_stateList.push_back("Blinking"s);
+
     m_blinkPatternEdit.SetDialog(this);
     m_blinkIntervalEdit.SetDialog(this);
     m_stateCombo.SetDialog(this);

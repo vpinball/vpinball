@@ -4,15 +4,15 @@
 
 HitTargetVisualsProperty::HitTargetVisualsProperty(const VectorProtected<ISelect> *pvsel):BasePropertyDialog(IDD_PROPHITTARGET_VISUALS, pvsel)
 {
-    m_typeList.push_back("DropTarget Beveled");
-    m_typeList.push_back("DropTarget Simple");
-    m_typeList.push_back("HitTarget Round");
-    m_typeList.push_back("HitTarget Rectangle");
-    m_typeList.push_back("HitTarget Rectangle Fat");
-    m_typeList.push_back("HitTarget Square Fat");
-    m_typeList.push_back("DropTarget Simple Flat");
-    m_typeList.push_back("HitTarget Slim Fat");
-    m_typeList.push_back("HitTarget Slim");
+    m_typeList.push_back("DropTarget Beveled"s);
+    m_typeList.push_back("DropTarget Simple"s);
+    m_typeList.push_back("HitTarget Round"s);
+    m_typeList.push_back("HitTarget Rectangle"s);
+    m_typeList.push_back("HitTarget Rectangle Fat"s);
+    m_typeList.push_back("HitTarget Square Fat"s);
+    m_typeList.push_back("DropTarget Simple Flat"s);
+    m_typeList.push_back("HitTarget Slim Fat"s);
+    m_typeList.push_back("HitTarget Slim"s);
 
     m_dropSpeedEdit.SetDialog(this);
     m_raiseDelayEdit.SetDialog(this);

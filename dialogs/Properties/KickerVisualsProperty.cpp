@@ -4,13 +4,13 @@
 
 KickerVisualsProperty::KickerVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPKICKER_VISUALS, pvsel)
 {
-    m_typeList.push_back("Invisible");
-    m_typeList.push_back("Hole");
-    m_typeList.push_back("Cup");
-    m_typeList.push_back("Simple Hole");
-    m_typeList.push_back("Williams");
-    m_typeList.push_back("Gottlieb");
-    m_typeList.push_back("Cup 2");
+    m_typeList.push_back("Invisible"s);
+    m_typeList.push_back("Hole"s);
+    m_typeList.push_back("Cup"s);
+    m_typeList.push_back("Simple Hole"s);
+    m_typeList.push_back("Williams"s);
+    m_typeList.push_back("Gottlieb"s);
+    m_typeList.push_back("Cup 2"s);
 
     m_radiusEdit.SetDialog(this);
     m_orientationEdit.SetDialog(this);

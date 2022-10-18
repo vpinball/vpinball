@@ -4,15 +4,15 @@
 
 RampVisualsProperty::RampVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRAMP_VISUALS, pvsel)
 {
-    m_typeList.push_back("Flat");
-    m_typeList.push_back("4-Wire");
-    m_typeList.push_back("2-Wire");
-    m_typeList.push_back("3-Wire Left");
-    m_typeList.push_back("3-Wire Right");
-    m_typeList.push_back("1-Wire");
+    m_typeList.push_back("Flat"s);
+    m_typeList.push_back("4-Wire"s);
+    m_typeList.push_back("2-Wire"s);
+    m_typeList.push_back("3-Wire Left"s);
+    m_typeList.push_back("3-Wire Right"s);
+    m_typeList.push_back("1-Wire"s);
 
-    m_imageModeList.push_back("World");
-    m_imageModeList.push_back("Wrap");
+    m_imageModeList.push_back("World"s);
+    m_imageModeList.push_back("Wrap"s);
 
     m_depthBiasEdit.SetDialog(this);
     m_topHeightEdit.SetDialog(this);

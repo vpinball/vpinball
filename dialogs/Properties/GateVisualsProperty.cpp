@@ -4,10 +4,10 @@
 
 GateVisualsProperty::GateVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPGATE_VISUALS, pvsel)
 {
-    m_typeList.push_back("Wire W");
-    m_typeList.push_back("Wire Rectangle");
-    m_typeList.push_back("Plate");
-    m_typeList.push_back("Long Plate");
+    m_typeList.push_back("Wire W"s);
+    m_typeList.push_back("Wire Rectangle"s);
+    m_typeList.push_back("Plate"s);
+    m_typeList.push_back("Long Plate"s);
 
     m_xposEdit.SetDialog(this);
     m_yposEdit.SetDialog(this);
