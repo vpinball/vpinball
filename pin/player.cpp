@@ -2135,6 +2135,7 @@ void Player::InitStatic()
    if (m_stereo3D == STEREO_VR)
       return;
 
+   m_isRenderingStatic = true;
    RenderTarget *accumulationSurface = nullptr;
 
    // if rendering static/with heavy oversampling, disable the aniso/trilinear filter to get a sharper/more precise result overall!
@@ -2143,7 +2144,6 @@ void Player::InitStatic()
       // The code will fail if the static render target is MSAA (the copy operation we are performing are not allowed)
       assert(!m_pin3d.m_pddsStatic->IsMSAA());
       accumulationSurface = m_pin3d.m_pddsStatic->Duplicate();
-      m_isRenderingStatic = true;
       // set up the texture filter again, so that this is triggered correctly
       m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
       m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(4, TEXTURE_MODE_TRILINEAR);
@@ -2178,10 +2178,9 @@ void Player::InitStatic()
 
       m_pin3d.DrawBackground();
 
-      if (!m_dynamicMode)
+      if (accumulationSurface)
       {
-         if (m_pfReflectionMode > PFREFL_BALLS)
-            RenderStaticMirror();
+         RenderStaticMirror();
 
          // now render everything else
          for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
@@ -2218,14 +2217,12 @@ void Player::InitStatic()
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
-      }
 
-      if (accumulationSurface)
-      {
          // Rendering is done to m_pin3d.m_pddsStatic then accumulated to accumulationSurface
          // We use the framebuffer mirror shader which copies a weighted version of the bound texture
          accumulationSurface->Activate(true);
-         //m_pin3d.EnableAlphaBlend(true);
+         RenderDevice::RenderStateCache initial_state;
+         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::ONE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::ONE);
@@ -2233,6 +2230,8 @@ void Player::InitStatic()
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+         if (iter == STATIC_PRERENDER_ITERATIONS - 1)
+            m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetFloat(SHADER_mirrorFactor, (float)(1.0 / STATIC_PRERENDER_ITERATIONS));
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_mirror, m_pin3d.m_pddsStatic->GetColorSampler());
@@ -2240,10 +2239,8 @@ void Player::InitStatic()
          m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
          m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_mirror);
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
-         m_pin3d.m_pddsStatic->Activate(false);
+         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
+         m_pin3d.m_pddsStatic->Activate();
       }
 
       // Finish the frame.
@@ -2252,40 +2249,20 @@ void Player::InitStatic()
       stats_drawn_static_triangles = RenderDevice::m_stats_drawn_triangles;
    }
 
-   if (!m_dynamicMode)
-   {
-      // if rendering static/with heavy oversampling, re-enable the aniso/trilinear filter now for the normal rendering
-      m_isRenderingStatic = false;
-      m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
-      m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(4, TEXTURE_MODE_TRILINEAR);
-   }
-
    if (accumulationSurface)
    {
-      // copy back weighted accumulated result to the static render target
-      m_pin3d.m_pd3dPrimaryDevice->BeginScene();
-      m_pin3d.m_pddsStatic->Activate(true);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetFloat(SHADER_mirrorFactor, 1.0f);
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_mirror, accumulationSurface->GetColorSampler());
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
-      m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_mirror);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
-      m_pin3d.m_pddsStatic->Activate();
-      m_pin3d.m_pd3dPrimaryDevice->EndScene();
+      // if rendering static/with heavy oversampling, re-enable the aniso/trilinear filter now for the normal rendering
+      m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
+      m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(4, TEXTURE_MODE_TRILINEAR);
+
+      // copy back weighted antialiased color result to the static render target, keeping depth untouched
+      accumulationSurface->CopyTo(m_pin3d.m_pddsStatic, true, false);
       delete accumulationSurface;
    }
 
-   // Now finalize static buffer with non-dynamic AO
+   m_isRenderingStatic = false;
 
+   // Now finalize static buffer with non-dynamic AO
    // Dynamic AO disabled? -> Pre-Render Static AO
    const bool useAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1));
    if (!m_disableAO && !useAO && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && (m_ptable->m_AOScale > 0.f))
