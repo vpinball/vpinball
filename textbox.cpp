@@ -266,7 +266,7 @@ void Textbox::RenderDynamic()
 {
    TRACE_FUNCTION();
 
-   const bool dmd = m_d.m_isDMD || (m_d.m_sztext.find("DMD"s) != std::string::npos); //!! second part is VP10.0 legacy
+   const bool dmd = m_d.m_isDMD || StrStrI(m_d.m_sztext.c_str(), "DMD") != nullptr; //!! second part is VP10.0 legacy
 
    if (!m_d.m_visible || (dmd && !g_pplayer->m_texdmd) || (m_backglass && m_ptable->m_reflectionEnabled))
       return;
