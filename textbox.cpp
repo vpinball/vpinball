@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "Shader.h"
 
 Textbox::Textbox()
 {
@@ -294,20 +295,14 @@ void Textbox::RenderDynamic()
    if (dmd)
    {
       pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
-      g_pplayer->DMDdraw(x, y, width, height,
-                         m_d.m_fontcolor, m_d.m_intensity_scale); //!! replace??!
+      g_pplayer->DMDdraw(x, y, width, height, m_d.m_fontcolor, m_d.m_intensity_scale); //!! replace??!
    }
-   else
-      if (m_texture)
-      {
-         g_pplayer->m_pin3d.EnableAlphaTestReference(0x80);
-         g_pplayer->m_pin3d.EnableAlphaBlend(false);
-
-         g_pplayer->Spritedraw(x, y, width, height, 0xFFFFFFFF, pd3dDevice->m_texMan.LoadTexture(m_texture, SF_TRILINEAR, SA_REPEAT, SA_REPEAT, false), m_d.m_intensity_scale);
-
-         //pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE); //!! not necessary anymore
-         pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, RenderDevice::RS_FALSE);
-      }
+   else if (m_texture)
+   {
+      pd3dDevice->DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
+      g_pplayer->Spritedraw(x, y, width, height, 0xFFFFFFFF, pd3dDevice->m_texMan.LoadTexture(m_texture, SF_TRILINEAR, SA_REPEAT, SA_REPEAT, false), m_d.m_intensity_scale);
+      pd3dDevice->DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
+   }
 
    //if (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled)
    //	pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);

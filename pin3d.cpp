@@ -993,11 +993,6 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
    InitLights();
 }
 
-void Pin3D::EnableAlphaTestReference(const DWORD alphaRefValue) const
-{
-   m_pd3dPrimaryDevice->SetRenderStateAlphaTestFunction(alphaRefValue, RenderDevice::Z_GREATEREQUAL, true);
-}
-
 void Pin3D::EnableAlphaBlend(const bool additiveBlending, const bool set_dest_blend, const bool set_blend_op) const
 {
    m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);

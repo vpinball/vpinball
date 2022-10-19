@@ -228,8 +228,7 @@ void DispReel::RenderDynamic()
    pd3dDevice->SetRenderStateDepthBias(0.0f);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 
-   g_pplayer->m_pin3d.EnableAlphaTestReference(0xE0); //!!
-   pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, RenderDevice::Z_GREATER); //!! still necessary?
+   pd3dDevice->DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
 
    pd3dDevice->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_noDMD);
@@ -276,7 +275,7 @@ void DispReel::RenderDynamic()
    pd3dDevice->DMDShader->End();
 
    //pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE); //!! not necessary anymore
-   pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, RenderDevice::RS_FALSE);
+   pd3dDevice->DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
 
    //if(m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled)
    //	pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
