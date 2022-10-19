@@ -3,8 +3,10 @@
 
 Textbox::Textbox()
 {
-   m_pIFont = nullptr;
+   m_ptable = nullptr;
    m_texture = nullptr;
+   m_pIFont = nullptr;
+   m_pIFontPlay = nullptr;
 }
 
 Textbox::~Textbox()
@@ -264,18 +266,18 @@ void Textbox::RenderDynamic()
 {
    TRACE_FUNCTION();
 
-   const bool dmd = (m_d.m_isDMD || StrStrI(m_d.m_sztext.c_str(), "DMD") != nullptr); //!! second part is VP10.0 legacy
+   const bool dmd = m_d.m_isDMD || (m_d.m_sztext.find("DMD"s) != std::string::npos); //!! second part is VP10.0 legacy
 
-   if (!m_d.m_visible || (dmd && !g_pplayer->m_texdmd))
+   if (!m_d.m_visible || (dmd && !g_pplayer->m_texdmd) || (m_backglass && m_ptable->m_reflectionEnabled))
       return;
 
    RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
+   RenderDevice::RenderStateCache initial_state;
+   pd3dDevice->CopyRenderStates(true, initial_state);
    if (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled)
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
    else
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
-
    pd3dDevice->SetRenderStateDepthBias(0.0f);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 
@@ -304,8 +306,7 @@ void Textbox::RenderDynamic()
       pd3dDevice->DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
    }
 
-   //if (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled)
-   //	pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+   pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
 void Textbox::RenderSetup()

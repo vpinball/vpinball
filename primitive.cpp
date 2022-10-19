@@ -178,6 +178,15 @@ Primitive::Primitive()
    m_currentFrame = -1.f;
    m_lockedByLS = false;
 
+   m_speed = 0.0f;
+   m_ptable = nullptr;
+   m_inPlayState = false;
+   m_endless = false;
+   m_doAnimation = false;
+   m_compressedVertices = false;
+   m_compressedIndices = false;
+   m_compressedAnimationVertices = false;
+
    m_numIndices = 0;
    m_numVertices = 0;
    m_propPhysics = nullptr;
