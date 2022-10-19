@@ -1127,7 +1127,6 @@
 #define IDC_3D_STEREO_ZPD_LABEL         826
 #define IDC_PROP_TAB                    827
 #define IDC_VR_SLOPE_LABEL              827
-#define IDC_REFLECT_ENABLE_CHECK        828
 #define IDC_3D_VR_ORIENTATION_LABEL     828
 #define IDC_VR_OFFSET_X_LABEL           829
 #define IDC_MULTIPLE_ELEMENTS_SELECTED_STATIC 830
@@ -1158,7 +1157,6 @@
 #define IDC_STATIC6                     843
 #define IDC_MSAA_LABEL                  843
 #define IDC_STATIC11                    844
-#define IDC_CAP_PUP2                    844
 #define IDC_STATIC1                     845
 #define IDC_STATIC2                     846
 #define IDC_STATIC3                     847
