@@ -3447,9 +3447,31 @@ void Player::UpdatePhysics()
 
 void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwidth, const float DMDheight, const COLORREF DMDcolor, const float intensity)
 {
-#ifndef ENABLE_SDL
    if (m_texdmd)
    {
+      float x = DMDposx;
+      float y = DMDposy;
+      float w = DMDwidth;
+      float h = DMDheight;
+      RenderDevice::RenderStateCache initial_state;
+      m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
+
+#ifdef ENABLE_SDL
+      // If DMD capture is enabled check if external DMD exists and update m_texdmd with captured data (for capturing UltraDMD+P-ROC DMD)
+      m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTechnique(m_capExtDMD ? SHADER_TECHNIQUE_basic_DMD_ext : SHADER_TECHNIQUE_basic_DMD); //!! DMD_UPSCALE ?? -> should just work
+
+      if (m_pin3d.m_backGlass)
+      {
+         m_pin3d.m_backGlass->GetDMDPos(x, y, w, h);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE); // is this really necessary ?
+      }
+#else
+      //const float width = m_pin3d.m_useAA ? 2.0f*(float)m_width : (float)m_width; //!! AA ?? -> should just work
+      m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD); //!! DMD_UPSCALE ?? -> should just work
+#endif
+
       float DMDVerts[4 * 5] =
       {
          1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
@@ -3460,12 +3482,9 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
 
       for (unsigned int i = 0; i < 4; ++i)
       {
-         DMDVerts[i * 5] = (DMDVerts[i * 5] * DMDwidth + DMDposx)*2.0f - 1.0f;
-         DMDVerts[i * 5 + 1] = 1.0f - (DMDVerts[i * 5 + 1] * DMDheight + DMDposy)*2.0f;
+         DMDVerts[i * 5    ] =        (DMDVerts[i * 5    ] * w + x)*2.0f - 1.0f;
+         DMDVerts[i * 5 + 1] = 1.0f - (DMDVerts[i * 5 + 1] * h + y)*2.0f;
       }
-
-      //const float width = m_pin3d.m_useAA ? 2.0f*(float)m_width : (float)m_width; //!! AA ?? -> should just work
-      m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD); //!! DMD_UPSCALE ?? -> should just work
 
       const vec4 c = convertColor(DMDcolor, intensity);
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetVector(SHADER_vColor_Intensity, &c);
@@ -3481,8 +3500,9 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->Begin();
       m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)DMDVerts);
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->End();
+
+      m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
    }
-#endif
 }
 
 void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture * const tex, const float intensity, const bool backdrop)
