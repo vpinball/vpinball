@@ -95,16 +95,14 @@ public:
    {
       RENDER_STATE(ALPHABLENDENABLE, 0, 1) // RS_FALSE or RS_TRUE
       RENDER_STATE(ZENABLE, 1, 1) // RS_FALSE or RS_TRUE
-      RENDER_STATE(ALPHATESTENABLE, 2, 1) // RS_FALSE or RS_TRUE
-      RENDER_STATE(ALPHAFUNC, 3, 3) // Operation from Z_ALWAYS, Z_LESS, Z_LESSEQUAL, Z_GREATER, Z_GREATEREQUAL
-      RENDER_STATE(BLENDOP, 6, 2) // Operation from BLENDOP_MAX, BLENDOP_ADD, BLENDOP_SUB, BLENDOP_REVSUBTRACT
-      RENDER_STATE(CLIPPLANEENABLE, 8, 1) // PLANE0 or 0 (for disable)
-      RENDER_STATE(CULLMODE, 9, 2) // CULL_NONE, CULL_CW, CULL_CCW
-      RENDER_STATE(DESTBLEND, 11, 3) // ZERO, ONE, SRC_ALPHA, DST_ALPHA, INVSRC_ALPHA, INVSRC_COLOR
-      RENDER_STATE(SRCBLEND, 14, 3) // ZERO, ONE, SRC_ALPHA, DST_ALPHA, INVSRC_ALPHA, INVSRC_COLOR
-      RENDER_STATE(ZFUNC, 17, 3) // Operation from Z_ALWAYS, Z_LESS, Z_LESSEQUAL, Z_GREATER, Z_GREATEREQUAL
-      RENDER_STATE(ZWRITEENABLE, 20, 1) // RS_FALSE or RS_TRUE
-      RENDER_STATE(COLORWRITEENABLE, 21, 4) // RGBA mask (4 bits)
+      RENDER_STATE(BLENDOP, 2, 2) // Operation from BLENDOP_MAX, BLENDOP_ADD, BLENDOP_SUB, BLENDOP_REVSUBTRACT
+      RENDER_STATE(CLIPPLANEENABLE, 4, 1) // PLANE0 or 0 (for disable)
+      RENDER_STATE(CULLMODE, 5, 2) // CULL_NONE, CULL_CW, CULL_CCW
+      RENDER_STATE(DESTBLEND, 7, 3) // ZERO, ONE, SRC_ALPHA, DST_ALPHA, INVSRC_ALPHA, INVSRC_COLOR
+      RENDER_STATE(SRCBLEND, 10, 3) // ZERO, ONE, SRC_ALPHA, DST_ALPHA, INVSRC_ALPHA, INVSRC_COLOR
+      RENDER_STATE(ZFUNC, 13, 3) // Operation from Z_ALWAYS, Z_LESS, Z_LESSEQUAL, Z_GREATER, Z_GREATEREQUAL
+      RENDER_STATE(ZWRITEENABLE, 16, 1) // RS_FALSE or RS_TRUE
+      RENDER_STATE(COLORWRITEENABLE, 17, 4) // RGBA mask (4 bits)
       RENDERSTATE_COUNT,
       RENDERSTATE_INVALID
    };
@@ -221,13 +219,11 @@ public:
    {
       unsigned int state;
       float depth_bias;
-      DWORD alpha_ref;
    };
    void SetRenderState(const RenderStates p1, const RenderStateValue p2);
    void SetRenderStateCulling(RenderStateValue cull);
    void SetRenderStateDepthBias(float bias);
    void SetRenderStateClipPlane0(const bool enabled);
-   void SetRenderStateAlphaTestFunction(const DWORD testValue, const RenderStateValue testFunction, const bool enabled);
    void CopyRenderStates(const bool copyTo, RenderStateCache& state);
    void ApplyRenderStates();
    const string GetRenderStateLog() const;

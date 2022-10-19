@@ -4,6 +4,7 @@
 
 const float4 vColor_Intensity;
 const float4 vRes_Alpha_time;
+const float alphaTestValue;
 
 texture Texture0;
 
@@ -167,7 +168,8 @@ float4 ps_main_DMD(const in VS_OUTPUT IN) : COLOR
 float4 ps_main_noDMD(const in VS_OUTPUT IN) : COLOR
 {
    const float4 l = tex2D(texSampler1, IN.tex0);
-
+   if (l.a <= alphaTestValue)
+      discard; //stop the pixel shader if alpha test should reject pixel to avoid writing to the depth buffer
    return float4(InvToneMap(/*InvGamma*/(l.xyz * vColor_Intensity.xyz * vColor_Intensity.w)), l.w); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
 }
 
