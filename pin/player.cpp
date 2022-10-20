@@ -5658,7 +5658,7 @@ void Player::DrawBalls()
             l[light_i + MAX_LIGHT_SOURCES].vEmission[2] = 0.0f;
          }
 
-      m_ballShader->SetValue(SHADER_packedLights, l, sizeof(CLight) * (MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES));
+      m_ballShader->SetFloat4v(SHADER_packedLights, (vec4*) l, sizeof(CLight) * (MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES) / (4 * sizeof(float)));
 
       // now for a weird hack: make material more rough, depending on how near the nearest lightsource is, to 'emulate' the area of the bulbs (as VP only features point lights so far)
       float Roughness = 0.8f;
