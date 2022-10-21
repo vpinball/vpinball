@@ -2154,19 +2154,47 @@ void RenderDevice::GetTransform(const TransformStateType p1, D3DMATRIX* p2)
    CHECKD3D(m_pD3DDevice->GetTransform((D3DTRANSFORMSTATETYPE)p1, p2));
 }
 
+void RenderDevice::ForceAnisotropicFiltering(const bool enable)
+{
+#ifndef ENABLE_SDL
+   m_force_aniso = enable;
+#endif
+   SamplerFilter sf = enable ? SF_ANISOTROPIC : SF_TRILINEAR;
+   Shader::SetDefaultSamplerFilter(SHADER_tex_sprite, sf);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_A, sf);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_B, sf);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_base_color, sf);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_base_normalmap, sf);
+}
+
 void RenderDevice::Clear(const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil)
 {
-#ifdef ENABLE_SDL
-   static float clear_r=0.f, clear_g = 0.f, clear_b = 0.f, clear_a = 0.f, clear_z=1.f;//Default OpenGL Values
-   static GLint clear_s=0;
+   ApplyRenderStates();
 
-   if (clear_s != stencil) { clear_s = stencil;  glClearStencil(stencil); }
-   if (clear_z != z) { clear_z = z;  glClearDepthf(z); }
-   const float r = (float)( color & 0xff) / 255.0f;
-   const float g = (float)((color & 0xff00) >> 8) / 255.0f;
-   const float b = (float)((color & 0xff0000) >> 16) / 255.0f;
-   const float a = (float)((color & 0xff000000) >> 24) / 255.0f;
-   if ((r != clear_r) || (g != clear_g) || (b != clear_b) || (a != clear_a)) { clear_z = z;  glClearColor(r,g,b,a); }
+#ifdef ENABLE_SDL
+   // Default OpenGL Values
+   static float clear_z = 1.f;
+   static GLint clear_s = 0;
+   static D3DCOLOR clear_color = 0;
+   if (clear_s != stencil)
+   {
+      clear_s = stencil;
+      glClearStencil(stencil);
+   }
+   if (clear_z != z)
+   {
+      clear_z = z;
+      glClearDepthf(z);
+   }
+   if (clear_color != color)
+   {
+      clear_color = color;
+      const float r = (float)(color & 0xff) / 255.0f;
+      const float g = (float)((color & 0xff00) >> 8) / 255.0f;
+      const float b = (float)((color & 0xff0000) >> 16) / 255.0f;
+      const float a = (float)((color & 0xff000000) >> 24) / 255.0f;
+      glClearColor(r, g, b, a);
+   }
    glClear(flags);
 #else
    CHECKD3D(m_pD3DDevice->Clear(0, nullptr, flags, color, z, stencil));
