@@ -144,16 +144,8 @@ public:
    };
 
 #ifdef ENABLE_SDL
-   enum SamplerStateValues {
-      NONE = 0,
-      POINT = 0,
-      LINEAR = 1,
-      TEX_WRAP = GL_REPEAT,
-      TEX_CLAMP = GL_CLAMP_TO_EDGE,
-      TEX_MIRROR = GL_MIRRORED_REPEAT
-   };
-
-   enum PrimitiveTypes {
+   enum PrimitiveTypes
+   {
       TRIANGLEFAN = GL_TRIANGLE_FAN,
       TRIANGLESTRIP = GL_TRIANGLE_STRIP,
       TRIANGLELIST = GL_TRIANGLES,
@@ -171,7 +163,8 @@ public:
       TEX_MIRROR = D3DTADDRESS_MIRROR
    };
 
-   enum PrimitiveTypes {
+   enum PrimitiveTypes
+   {
       TRIANGLEFAN = D3DPT_TRIANGLEFAN,
       TRIANGLESTRIP = D3DPT_TRIANGLESTRIP,
       TRIANGLELIST = D3DPT_TRIANGLELIST,
@@ -258,7 +251,7 @@ public:
    void SetTransform(const TransformStateType, const D3DMATRIX*);
    void GetTransform(const TransformStateType, D3DMATRIX*);
 
-   void ForceAnisotropicFiltering(const bool enable) { m_force_aniso = enable; }
+   void ForceAnisotropicFiltering(const bool enable);
    void CompressTextures(const bool enable) { m_compress_textures = enable; }
 
    //VR stuff
