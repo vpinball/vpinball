@@ -16,9 +16,6 @@ static ShaderTechniques m_bound_technique = ShaderTechniques::SHADER_TECHNIQUE_I
 
 #if DEBUG_LEVEL_LOG == 0
 #define LOG(a,b,c)
-#else
-// FIXME implement clean log
-#define LOG(a, b, c)
 #endif
 
 #define SHADER_TECHNIQUE(name) #name
@@ -208,10 +205,10 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    // SMAA shader
    SHADER_SAMPLER(colorTex, colorTex, colorTex, 0, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
    SHADER_SAMPLER(colorGammaTex, colorGammaTex, colorGammaTex, 1, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
-   SHADER_SAMPLER(edgesTex, edgesTex, edgesTex2D, 2, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
-   SHADER_SAMPLER(blendTex, blendTex, blendTex2D, 3, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
-   SHADER_SAMPLER(areaTex, areaTex, areaTex2D, 4, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
-   SHADER_SAMPLER(searchTex, searchTex, searchTex2D, 5, SA_CLAMP, SA_CLAMP, SF_NONE), // Note that this should have a w address mode set to clamp as well
+   SHADER_SAMPLER(edgesTex2D, edgesTex, edgesTex2D, 2, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
+   SHADER_SAMPLER(blendTex2D, blendTex, blendTex2D, 3, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
+   SHADER_SAMPLER(areaTex2D, areaTex, areaTex2D, 4, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
+   SHADER_SAMPLER(searchTex2D, searchTex, searchTex2D, 5, SA_CLAMP, SA_CLAMP, SF_NONE), // Note that this should have a w address mode set to clamp as well
 };
 #undef SHADER_UNIFORM
 #undef SHADER_SAMPLER
@@ -231,9 +228,26 @@ void Shader::SetDefaultSamplerFilter(const ShaderUniforms sampler, const Sampler
    Shader::shaderUniformNames[sampler].default_filter = sf;
 }
 
-//
-//
-//
+// When changed, this list must also be copied unchanged to Shader.cpp (for its implementation)
+#define SHADER_ATTRIBUTE(name, shader_name) #shader_name
+const string Shader::shaderAttributeNames[SHADER_ATTRIBUTE_COUNT]
+{
+   SHADER_ATTRIBUTE(POS, vPosition),
+   SHADER_ATTRIBUTE(NORM, vNormal),
+   SHADER_ATTRIBUTE(TC, tc),
+   SHADER_ATTRIBUTE(TEX, tex0),
+};
+#undef SHADER_ATTRIBUTE
+
+ShaderAttributes Shader::getAttributeByName(const string& name)
+{
+   for (int i = 0; i < SHADER_ATTRIBUTE_COUNT; ++i)
+      if (name == shaderAttributeNames[i])
+         return ShaderAttributes(i);
+
+   LOG(1, m_shaderCodeName, string("getAttributeByName Could not find attribute ").append(name).append(" in shaderAttributeNames."));
+   return SHADER_ATTRIBUTE_INVALID;
+}
 
 Shader* Shader::current_shader = nullptr;
 Shader* Shader::GetCurrentShader() { return current_shader;  }
@@ -913,18 +927,10 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    }
 }
 
-
-#ifdef ENABLE_SDL
-///////////////////////////////////////////////////////////////////////////////
-// OpenGL specific implementation
-
-string Shader::shaderPath;
-string Shader::Defines;
-Matrix3D Shader::mWorld, Shader::mView, Shader::mProj[2];
-
 #if DEBUG_LEVEL_LOG > 0
 void Shader::LOG(const int level, const string& fileNameRoot, const string& message) {
    if (level <= DEBUG_LEVEL_LOG) {
+#ifdef ENABLE_SDL
       if (!logFile) {
          string name = Shader::shaderPath;
          name.append("log\\").append(fileNameRoot).append(".log");
@@ -960,9 +966,18 @@ bla:
          break;
       }
       (*logFile) << message << '\n';
+#endif
    }
 }
 #endif
+
+#ifdef ENABLE_SDL
+///////////////////////////////////////////////////////////////////////////////
+// OpenGL specific implementation
+
+string Shader::shaderPath;
+string Shader::Defines;
+Matrix3D Shader::mWorld, Shader::mView, Shader::mProj[2];
 
 //parse a file. Is called recursively for includes
 bool Shader::parseFile(const string& fileNameRoot, const string& fileName, int level, robin_hood::unordered_map<string, string> &values, const string& parentMode) {
@@ -1278,11 +1293,11 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
 }
 
 //Check if technique is valid and replace %PARAMi% with the values in the function header
-string Shader::analyzeFunction(const char* shaderCodeName, const string& _technique, const string& functionName, const robin_hood::unordered_map<string, string> &values) {
+string Shader::analyzeFunction(const string& shaderCodeName, const string& _technique, const string& functionName, const robin_hood::unordered_map<string, string> &values) {
    const size_t start = functionName.find('(');
    const size_t end = functionName.find(')');
    if ((start == string::npos) || (end == string::npos) || (start > end)) {
-      LOG(2, (const char*)shaderCodeName, string("Invalid technique: ").append(_technique));
+      LOG(2, shaderCodeName, string("Invalid technique: ").append(_technique));
       return string();
    }
    const robin_hood::unordered_map<string, string>::const_iterator it = values.find(functionName.substr(0, start));
@@ -1299,16 +1314,16 @@ string Shader::analyzeFunction(const char* shaderCodeName, const string& _techni
    return functionCode;
 }
 
-bool Shader::Load(const char* shaderCodeName, UINT codeSize)
+bool Shader::Load(const std::string name, const BYTE* code, UINT codeSize)
 {
-   m_shaderCodeName = shaderCodeName;
-   LOG(3, (const char*)shaderCodeName, "Start parsing file");
+   m_shaderCodeName = name;
+   LOG(3, m_shaderCodeName, "Start parsing file");
    robin_hood::unordered_map<string, string> values;
-   const bool parsing = parseFile(shaderCodeName, shaderCodeName, 0, values, "GLOBAL");
+   const bool parsing = parseFile(m_shaderCodeName, m_shaderCodeName, 0, values, "GLOBAL");
    if (!parsing) {
-      LOG(1, (const char*)shaderCodeName, "Parsing failed");
+      LOG(1, m_shaderCodeName, "Parsing failed");
       char msg[128];
-      sprintf_s(msg, sizeof(msg), "Fatal Error: Shader parsing of %s failed!", shaderCodeName);
+      sprintf_s(msg, sizeof(msg), "Fatal Error: Shader parsing of %s failed!", m_shaderCodeName);
       ReportError(msg, -1, __FILE__, __LINE__);
       if (logFile)
       {
@@ -1319,7 +1334,7 @@ bool Shader::Load(const char* shaderCodeName, UINT codeSize)
       return false;
    }
    else {
-      LOG(3, (const char*)shaderCodeName, "Parsing successful. Start compiling shaders");
+      LOG(3, m_shaderCodeName, "Parsing successful. Start compiling shaders");
    }
    robin_hood::unordered_map<string, string>::iterator it = values.find("GLOBAL");
    string global = (it != values.end()) ? it->second : string();
@@ -1358,24 +1373,24 @@ bool Shader::Load(const char* shaderCodeName, UINT codeSize)
             ShaderTechniques technique = getTechniqueByName(element[0]);
             if (technique == SHADER_TECHNIQUE_INVALID)
             {
-               LOG(3, (const char*)shaderCodeName, string("Unexpected technique skipped: ").append(element[0]));
+               LOG(3, m_shaderCodeName, string("Unexpected technique skipped: ").append(element[0]));
             }
             else
             {
                string vertexShaderCode = vertex;
                vertexShaderCode.append("\n//").append(_technique).append("\n//").append(element[2]).append("\n");
-               vertexShaderCode.append(analyzeFunction(shaderCodeName, _technique, element[2], values)).append("\0");
+               vertexShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[2], values)).append("\0");
                string geometryShaderCode;
                if (elem == 5 && element[3].length() > 0)
                {
                   geometryShaderCode = geometry;
                   geometryShaderCode.append("\n//").append(_technique).append("\n//").append(element[3]).append("\n");
-                  geometryShaderCode.append(analyzeFunction(shaderCodeName, _technique, element[3], values)).append("\0");
+                  geometryShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[3], values)).append("\0");
                }
                string fragmentShaderCode = fragment;
                fragmentShaderCode.append("\n//").append(_technique).append("\n//").append(element[elem - 1]).append("\n");
-               fragmentShaderCode.append(analyzeFunction(shaderCodeName, _technique, element[elem - 1], values)).append("\0");
-               ShaderTechnique* build = compileGLShader(technique, shaderCodeName, element[0] /*.append("_").append(element[1])*/, vertexShaderCode, geometryShaderCode, fragmentShaderCode);
+               fragmentShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[elem - 1], values)).append("\0");
+               ShaderTechnique* build = compileGLShader(technique, m_shaderCodeName, element[0] /*.append("_").append(element[1])*/, vertexShaderCode, geometryShaderCode, fragmentShaderCode);
                if (build != nullptr)
                {
                   m_techniques[technique] = build;
@@ -1384,7 +1399,7 @@ bool Shader::Load(const char* shaderCodeName, UINT codeSize)
                else
                {
                   char msg[128];
-                  sprintf_s(msg, sizeof(msg), "Fatal Error: Shader compilation failed for %s!", shaderCodeName);
+                  sprintf_s(msg, sizeof(msg), "Fatal Error: Shader compilation failed for %s!", m_shaderCodeName);
                   ReportError(msg, -1, __FILE__, __LINE__);
                   if (logFile)
                   {
@@ -1397,12 +1412,12 @@ bool Shader::Load(const char* shaderCodeName, UINT codeSize)
             }
          }
       }
-      LOG(3, (const char*)shaderCodeName, string("Compiled successfully ").append(std::to_string(tecCount)).append(" shaders."));
+      LOG(3, m_shaderCodeName, string("Compiled successfully ").append(std::to_string(tecCount)).append(" shaders."));
    }
    else {
-      LOG(1, (const char*)shaderCodeName, "No techniques found.");
+      LOG(1, m_shaderCodeName, "No techniques found.");
       char msg[128];
-      sprintf_s(msg, sizeof(msg), "Fatal Error: No shader techniques found in %s!", shaderCodeName);
+      sprintf_s(msg, sizeof(msg), "Fatal Error: No shader techniques found in %s!", m_shaderCodeName);
       ReportError(msg, -1, __FILE__, __LINE__);
       if (logFile)
       {
@@ -1536,8 +1551,9 @@ void Shader::SetTransform(const TransformStateType p1, const Matrix3D * p2, cons
 // loads an HLSL effect file
 // if fromFile is true the shaderName should point to the full filename (with path) to the .fx file
 // if fromFile is false the shaderName should be the resource name not the IDC_XX_YY value. Search vpinball_eng.rc for ".fx" to see an example
-bool Shader::Load(const BYTE* shaderCodeName, UINT codeSize)
+bool Shader::Load(const std::string name, const BYTE* code, UINT codeSize)
 {
+   m_shaderCodeName = name;
    LPD3DXBUFFER pBufferErrors;
    constexpr DWORD dwShaderFlags
       = 0; //D3DXSHADER_SKIPVALIDATION // these do not have a measurable effect so far (also if used in the offline fxc step): D3DXSHADER_PARTIALPRECISION, D3DXSHADER_PREFER_FLOW_CONTROL/D3DXSHADER_AVOID_FLOW_CONTROL
@@ -1569,7 +1585,7 @@ bool Shader::Load(const BYTE* shaderCodeName, UINT codeSize)
 
        }
        */
-   hr = D3DXCreateEffect(m_renderDevice->GetCoreDevice(), shaderCodeName, codeSize, nullptr, nullptr, dwShaderFlags, nullptr, &m_shader, &pBufferErrors);
+   hr = D3DXCreateEffect(m_renderDevice->GetCoreDevice(), code, codeSize, nullptr, nullptr, dwShaderFlags, nullptr, &m_shader, &pBufferErrors);
    if (FAILED(hr))
    {
       if (pBufferErrors)

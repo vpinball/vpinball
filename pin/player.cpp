@@ -1236,9 +1236,9 @@ void Player::InitBallShader()
 {
    m_ballShader = new Shader(m_pin3d.m_pd3dPrimaryDevice);
 #ifdef ENABLE_SDL
-   m_ballShader->Load("ballShader.glfx", 0);
+   m_ballShader->Load("BallShader.glfx"s, nullptr, 0);
 #else
-   m_ballShader->Load(g_ballShaderCode, sizeof(g_ballShaderCode));
+   m_ballShader->Load("BallShader.hlsl"s, g_ballShaderCode, sizeof(g_ballShaderCode));
 #endif
 
    UpdateBallShaderMatrix();
@@ -4026,7 +4026,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
 
          if (SMAA)
          {
-             CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture(SHADER_edgesTex2D, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler()->GetCoreTexture())); //!! opt.?
+             CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("edgesTex2D", m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler()->GetCoreTexture())); //!! opt.?
          }
          else
             m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
@@ -4040,7 +4040,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
 
          if (SMAA)
          {
-            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture(SHADER_edgesTex2D, nullptr)); //!! opt.??
+            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("edgesTex2D", nullptr)); //!! opt.??
 
             if (sharpen)
                outputRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture();
@@ -4048,7 +4048,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
                outputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
             outputRT->Activate(true);
 
-            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture(SHADER_blendTex2D, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture2()->GetColorSampler()->GetCoreTexture())); //!! opt.?
+            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("blendTex2D", m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture2()->GetColorSampler()->GetCoreTexture())); //!! opt.?
 
             m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_NeighborhoodBlending);
 
@@ -4058,7 +4058,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
             renderedRT = outputRT;
 
             #ifndef ENABLE_SDL
-            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture(SHADER_blendTex2D, nullptr)); //!! opt.?
+            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("blendTex2D", nullptr)); //!! opt.?
             #endif
          }
       }
