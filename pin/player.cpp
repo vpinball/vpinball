@@ -2145,8 +2145,7 @@ void Player::InitStatic()
       assert(!m_pin3d.m_pddsStatic->IsMSAA());
       accumulationSurface = m_pin3d.m_pddsStatic->Duplicate();
       // set up the texture filter again, so that this is triggered correctly
-      m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
-      m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(4, TEXTURE_MODE_TRILINEAR);
+      m_pin3d.m_pd3dPrimaryDevice->ForceAnisotropicFiltering(false);
    }
 
    g_pvp->ProfileLog("Static PreRender Start"s);
@@ -2254,8 +2253,8 @@ void Player::InitStatic()
    if (accumulationSurface)
    {
       // if rendering static/with heavy oversampling, re-enable the aniso/trilinear filter now for the normal rendering
-      m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
-      m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(4, TEXTURE_MODE_TRILINEAR);
+      const bool forceAniso = LoadValueBoolWithDefault(regKey[RegName::Player], "ForceAnisotropicFiltering"s, true);
+      m_pin3d.m_pd3dPrimaryDevice->ForceAnisotropicFiltering(forceAniso);
 
       // copy back weighted antialiased color result to the static render target, keeping depth untouched
       accumulationSurface->CopyTo(m_pin3d.m_pddsStatic, true, false);
@@ -3734,9 +3733,8 @@ void Player::RenderDynamics()
    {
 #ifndef ENABLE_SDL
       m_limiter.Execute(m_pin3d.m_pd3dPrimaryDevice); //!! move below other draw calls??
-#endif
-
       m_pin3d.m_gpu_profiler.BeginFrame(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
+#endif
 
       m_dmdstate = 0;
 
@@ -5167,8 +5165,10 @@ void Player::Render()
    for (size_t l = 0; l < m_vanimate.size(); ++l)
       m_vanimate[l]->Animate();
 
+#ifndef ENABLE_SDL
    if (GetProfilingMode() == PF_ENABLED)
       m_pin3d.m_gpu_profiler.BeginFrame(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
+#endif
 
    // Update camera point of view
 #ifdef ENABLE_VR

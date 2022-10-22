@@ -6,15 +6,6 @@
 
 extern int NumVideoBytes;
 
-enum TextureFilter
-{
-   TEXTURE_MODE_NONE,			// No filtering at all, single texel returned.
-   TEXTURE_MODE_POINT,			// Point sampled (aka nearest mipmap) texture filtering.
-   TEXTURE_MODE_BILINEAR,		// Bilinar texture filtering. 
-   TEXTURE_MODE_TRILINEAR,		// Trilinar texture filtering. 
-   TEXTURE_MODE_ANISOTROPIC		// Anisotropic texture filtering. 
-};
-
 class PinProjection
 {
 public:
@@ -59,10 +50,6 @@ public:
    Vertex3Ds Get3DPointFrom2D(const POINT& p);
 
    void Flip(const bool vsync);
-
-   void SetTextureFilter(RenderDevice * const pd3dDevice, const int TextureNum, const int Mode) const;
-   void SetPrimaryTextureFilter(const int TextureNum, const int Mode) const;
-   void SetSecondaryTextureFilter(const int TextureNum, const int Mode) const;
 
    void EnableAlphaBlend(const bool additiveBlending, const bool set_dest_blend = true, const bool set_blend_op = true) const;
 

@@ -18,7 +18,7 @@ CGpuProfiler::~CGpuProfiler() {}
 bool CGpuProfiler::Init(void* const pDevice) { return true; }
 void CGpuProfiler::ResetCounters() {}
 void CGpuProfiler::Shutdown() {}
-void CGpuProfiler::BeginFrame(void* const pDevice) {}
+void CGpuProfiler::BeginFrame() {}
 void CGpuProfiler::Timestamp(GTS gts) {}
 void CGpuProfiler::EndFrame() {}
 void CGpuProfiler::WaitForDataAndUpdate() {}

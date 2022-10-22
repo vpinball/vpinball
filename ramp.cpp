@@ -932,8 +932,6 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
       pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, sam, sam);
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
       pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
-
-      //g_pplayer->m_pin3d.SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
    }
 
    if ((m_d.m_type == RampType2Wire) || (m_d.m_type == RampType4Wire))
@@ -1235,13 +1233,6 @@ void Ramp::RenderStatic()
    // don't render transparent ramps into static buffer, these are done per frame later-on
    if (mat->m_bOpacityActive)
       return;
-
-   /* TODO: This is a misnomer right now, but clamp fixes some visual glitches (single-pixel lines)
-    * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
-    * since the texture coordinates always stay within [0,1] anyway.
-    */
-   //if (m_d.m_imagealignment == ImageModeWrap)
-   //    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
 
    if (isHabitrail())
       RenderStaticHabitrail(mat);
@@ -2130,10 +2121,6 @@ void Ramp::RenderRamp(const Material * const mat)
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
-   // see the comment in RenderStatic() above
-   if (m_d.m_imagealignment == ImageModeWrap)
-      pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
-
    if (isHabitrail())
       RenderStaticHabitrail(mat);
    else
@@ -2158,8 +2145,6 @@ void Ramp::RenderRamp(const Material * const mat)
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
          pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, sam, sam);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
-
-         //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
          pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
       }
       else

@@ -408,8 +408,8 @@ public:
    UniformDesc m_uniform_desc[SHADER_UNIFORM_COUNT];
    ShaderTechniques m_bound_technique = ShaderTechniques::SHADER_TECHNIQUE_INVALID;
    static constexpr DWORD TEXTURESET_STATE_CACHE_SIZE = 32;
-   IDirect3DTexture9* m_texture_cache[TEXTURESET_STATE_CACHE_SIZE];
-   IDirect3DTexture9* m_bound_texture[TEXTURESET_STATE_CACHE_SIZE];
+   Sampler* m_texture_cache[TEXTURESET_STATE_CACHE_SIZE];
+   Sampler* m_bound_texture[TEXTURESET_STATE_CACHE_SIZE];
 
 public:
    ID3DXEffect* Core() const { return m_shader; }
