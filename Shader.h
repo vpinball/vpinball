@@ -124,7 +124,7 @@ enum ShaderUniformType
 // Otherwise, the sampler states can be directly overriden through DX9Device->SetSamplerState (per tex unit), being carefull that the effect
 // framework will also apply the ones defined in the effect file during Technique->Begin call (so either don't define them, or reapply).
 #define SHADER_UNIFORM(type, name) SHADER_##name
-#define SHADER_SAMPLER(name, default_clampu, default_clampv, default_filter) SHADER_##name
+#define SHADER_SAMPLER(name, tex_name, default_clampu, default_clampv, default_filter) SHADER_##name
 enum ShaderUniforms
 {
    // -- Matrices --
@@ -361,7 +361,7 @@ private:
 #else
       D3DXHANDLE handle; // Handle of the constant
       D3DXHANDLE tex_handle; // For samplers, handle fo the associated texture constant
-      DWORD sampler; // For samplers texture unit defined in the effect file
+      int sampler; // For samplers texture unit defined in the effect file
 #endif
    };
 
@@ -407,8 +407,9 @@ public:
    ID3DXEffect * m_shader;
    UniformDesc m_uniform_desc[SHADER_UNIFORM_COUNT];
    ShaderTechniques m_bound_technique = ShaderTechniques::SHADER_TECHNIQUE_INVALID;
-   static constexpr DWORD TEXTURESET_STATE_CACHE_SIZE = 5; // current convention: SetTexture gets "TextureX", where X 0..4
-   IDirect3DTexture9* m_current_texture[TEXTURESET_STATE_CACHE_SIZE];
+   static constexpr DWORD TEXTURESET_STATE_CACHE_SIZE = 32;
+   IDirect3DTexture9* m_texture_cache[TEXTURESET_STATE_CACHE_SIZE];
+   IDirect3DTexture9* m_bound_texture[TEXTURESET_STATE_CACHE_SIZE];
 
 public:
    ID3DXEffect* Core() const { return m_shader; }
