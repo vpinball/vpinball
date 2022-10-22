@@ -262,7 +262,8 @@ Shader::Shader(RenderDevice* renderDevice)
    memset(m_techniques, 0, sizeof(ShaderTechnique*) * SHADER_TECHNIQUE_COUNT);
 #else
    m_shader = nullptr;
-   memset(m_current_texture, 0, sizeof(IDirect3DTexture9*) * TEXTURESET_STATE_CACHE_SIZE);
+   memset(m_texture_cache, 0, sizeof(IDirect3DTexture9*) * TEXTURESET_STATE_CACHE_SIZE);
+   memset(m_bound_texture, 0, sizeof(IDirect3DTexture9*) * TEXTURESET_STATE_CACHE_SIZE);
 #endif
    currentAlphaTestValue = -FLT_MAX;
    currentDisableLighting = vec4(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
@@ -692,23 +693,14 @@ void Shader::SetTexture(const ShaderUniforms texelName, BaseTexture* texel, cons
       SetTexture(texelName, m_renderDevice->m_texMan.LoadTexture(texel, filter, clampU, clampV, force_linear_rgb));
 }
 
-void Shader::SetTexture(const ShaderUniforms texelName, Sampler* texel)
+void Shader::SetTexture(const ShaderUniforms uniformName, Sampler* texel)
 {
 #ifdef ENABLE_SDL
-   m_uniformCache[SHADER_TECHNIQUE_COUNT][texelName].val.sampler = texel;
-   ApplyUniform(texelName);
+   m_uniformCache[SHADER_TECHNIQUE_COUNT][uniformName].val.sampler = texel;
+   ApplyUniform(uniformName);
 #else
-   // FIXME for the time being the texture state is directly applied for DX9, breaking any reordering attempt
-   // FIXME DX9 sampler state is set up using direct device SetSamplerState, independently of teh effect framework state management, this should be managed here
-   DWORD idx = m_uniform_desc[texelName].sampler;
-   const bool cache = 0 <= idx && idx < TEXTURESET_STATE_CACHE_SIZE;
-   IDirect3DTexture9* tex = texel ? texel->GetCoreTexture() : nullptr;
-   if (!cache || m_current_texture[idx] != tex)
-   {
-      if (cache) m_current_texture[idx] = tex;
-      CHECKD3D(m_shader->SetTexture(m_uniform_desc[texelName].tex_handle, tex));
-      m_renderDevice->m_curTextureChanges++;
-   }
+   // Since DirectX effect framework manages the samplers, we only care about the texture here
+   m_texture_cache[m_uniform_desc[uniformName].sampler] = texel ? texel->GetCoreTexture() : nullptr;
 #endif
 }
 
@@ -863,7 +855,28 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          m_renderDevice->m_curParameterChanges++;
       }
       break;
-#ifdef ENABLE_SDL
+#ifndef ENABLE_SDL
+   case SUT_Sampler:
+      {
+         // A sampler bind performs 3 things:
+         // - bind the texture to a texture stage (done by DirectX effect framework)
+         // - adjust the sampling state (filter, wrappîng, ...) of the choosen texture stage (partly done by DirectX effect framework which only applies the ones defined in the effect file)
+         // - set the shader constant buffer to point to the selected texture stage (done by DirectX effect framework)
+         // So, for DirectX, we simply fetch the Texture, DirectX will then use the texture for one or more samplers, applying there default states if any
+         // TODO move non static sampler state changes here (the ones not defined in the effect files)
+         int unit = desc.sampler;
+         IDirect3DTexture9* tex = m_texture_cache[unit];
+         bool cache = 0 <= unit && unit < TEXTURESET_STATE_CACHE_SIZE;
+         if (!cache || m_bound_texture[unit] != tex)
+         {
+            CHECKD3D(m_shader->SetTexture(desc.tex_handle, tex));
+            if (cache)
+               m_bound_texture[unit] = tex;
+            m_renderDevice->m_curTextureChanges++;
+         }
+      }
+      break;
+#else
    case SUT_Sampler:
       {
          // DX9 implementation uses preaffected texture units, not samplers, so these can not be used for OpenGL. This would cause some collisions.
@@ -1614,6 +1627,7 @@ bool Shader::Load(const std::string name, const BYTE* code, UINT codeSize)
    // Collect the list of uniforms and there informations (handle, type,...)
    D3DXEFFECT_DESC effect_desc;
    m_shader->GetDesc(&effect_desc);
+   int texture_mask = 0;
    for (UINT i = 0; i < effect_desc.Parameters; i++)
    {
       D3DXPARAMETER_DESC param_desc;
@@ -1657,9 +1671,9 @@ bool Shader::Load(const std::string name, const BYTE* code, UINT codeSize)
       {
          type = ShaderUniformType::SUT_Sampler;
       }
-      else if (param_desc.Class == D3DXPC_OBJECT && param_desc.Type == D3DXPT_TEXTURE)
+      else if (param_desc.Class == D3DXPC_OBJECT && (param_desc.Type == D3DXPT_TEXTURE || param_desc.Type == D3DXPT_TEXTURE2D))
       {
-         // We bind on the samplers, not the texture, so just skip the textures
+         // We track the samplers (since they hold the TEXUNIT semantic), not the texture, so just skip them
          continue;
       }
       if (type == ShaderUniformType::SUT_INVALID)
@@ -1684,9 +1698,15 @@ bool Shader::Load(const std::string name, const BYTE* code, UINT codeSize)
          m_uniform_desc[uniformIndex].sampler = -1; 
          if (type == ShaderUniformType::SUT_Sampler)
          {
-            if (param_desc.Semantic != nullptr && std::string(param_desc.Semantic).starts_with("TEXUNIT"s))
-               m_uniform_desc[uniformIndex].sampler = param_desc.Semantic[strlen(param_desc.Semantic) - 1] - '0';
             m_uniform_desc[uniformIndex].tex_handle = m_shader->GetParameterByName(NULL, shaderUniformNames[uniformIndex].tex_name.c_str());
+            if (param_desc.Semantic != nullptr && std::string(param_desc.Semantic).starts_with("TEXUNIT"s))
+            {
+               int unit = param_desc.Semantic[strlen(param_desc.Semantic) - 1] - '0';
+               m_uniform_desc[uniformIndex].sampler = unit;
+               // Since we only manages the texture state and not the sampler ones, only add one of the samplers bound to a given texture unit to avoid useless calls
+               if ((texture_mask & (1 << unit)) != 0) continue;
+               texture_mask |= 1 << unit;
+            }
          }
          // TODO we do not filter on technique for DX9. Not a big problem, but not that clean either (all uniforms are applied for all techniques)
          for (int j = 0; j < SHADER_TECHNIQUE_COUNT; j++)
