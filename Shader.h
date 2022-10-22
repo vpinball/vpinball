@@ -124,7 +124,7 @@ enum ShaderUniformType
 // Otherwise, the sampler states can be directly overriden through DX9Device->SetSamplerState (per tex unit), being carefull that the effect
 // framework will also apply the ones defined in the effect file during Technique->Begin call (so either don't define them, or reapply).
 #define SHADER_UNIFORM(type, name) SHADER_##name
-#define SHADER_SAMPLER(name, legacy_name, texture_ref, default_tex_unit, default_clampu, default_clampv, default_filter) SHADER_##name
+#define SHADER_SAMPLER(name, default_clampu, default_clampv, default_filter) SHADER_##name
 enum ShaderUniforms
 {
    // -- Matrices --
@@ -168,8 +168,8 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float2, AO_scale_timeblur),
    SHADER_UNIFORM(SUT_Float4, cWidth_Height_MirrorAmount),
    SHADER_UNIFORM(SUT_Float4v, clip_planes), // OpenGL only
-   SHADER_UNIFORM(SUT_Float4v, lightEmission),
-   SHADER_UNIFORM(SUT_Float4v, lightPos),
+   SHADER_UNIFORM(SUT_Float4v, lightEmission), // OpenGL only
+   SHADER_UNIFORM(SUT_Float4v, lightPos), // OpenGL only
    SHADER_UNIFORM(SUT_Float4v, packedLights), // DX9 only
    // -- Integer and Bool --
    SHADER_UNIFORM(SUT_Bool, ignoreStereo),
@@ -185,45 +185,43 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float2, imageBackglassMode), // OpenGL only
    // -- Samplers (a texture reference with sampling configuration) --
    // DMD shader
-   SHADER_SAMPLER(tex_dmd, texSampler0, Texture0, 0, SA_CLAMP, SA_CLAMP, SF_NONE), // DMD
-   SHADER_SAMPLER(tex_sprite, texSampler1, Texture0, 0, SA_MIRROR, SA_MIRROR, SF_TRILINEAR), // Sprite
+   SHADER_SAMPLER(tex_dmd, Texture0, SA_CLAMP, SA_CLAMP, SF_NONE), // DMD
+   SHADER_SAMPLER(tex_sprite, Texture0, SA_MIRROR, SA_MIRROR, SF_TRILINEAR), // Sprite
    // Flasher shader
-   SHADER_SAMPLER(tex_flasher_A, texSampler0, Texture0, 0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
-   SHADER_SAMPLER(tex_flasher_B, texSampler1, Texture1, 1, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // texB
+   SHADER_SAMPLER(tex_flasher_A, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
+   SHADER_SAMPLER(tex_flasher_B, Texture1, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // texB
    // FB shader
-   SHADER_SAMPLER(tex_fb_unfiltered, texSampler4, Texture0, 0, SA_CLAMP, SA_CLAMP, SF_NONE), // Framebuffer (unfiltered)
-   SHADER_SAMPLER(tex_fb_filtered, texSampler5, Texture0, 0, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Framebuffer (filtered)
-   SHADER_SAMPLER(tex_mirror, texSamplerMirror, Texture0, 0, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // base mirror texture
-   SHADER_SAMPLER(tex_bloom, texSamplerBloom, Texture1, 1, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Bloom
-   SHADER_SAMPLER(tex_ao, texSampler3, Texture3, 2, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // AO Result
-   SHADER_SAMPLER(tex_depth, texSamplerDepth, Texture3, 2, SA_CLAMP, SA_CLAMP, SF_NONE), // Depth
-   SHADER_SAMPLER(tex_color_lut, texSampler6, Texture4, 2, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Color grade LUT
-   SHADER_SAMPLER(tex_ao_dither, texSamplerAOdither, Texture4, 3, SA_REPEAT, SA_REPEAT, SF_NONE), // AO dither
+   SHADER_SAMPLER(tex_fb_unfiltered, Texture0, SA_CLAMP, SA_CLAMP, SF_NONE), // Framebuffer (unfiltered)
+   SHADER_SAMPLER(tex_fb_filtered, Texture0, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Framebuffer (filtered)
+   SHADER_SAMPLER(tex_mirror, Texture0, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // base mirror texture
+   SHADER_SAMPLER(tex_bloom, Texture1, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Bloom
+   SHADER_SAMPLER(tex_ao, Texture3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // AO Result
+   SHADER_SAMPLER(tex_depth, Texture3, SA_CLAMP, SA_CLAMP, SF_NONE), // Depth
+   SHADER_SAMPLER(tex_color_lut, Texture4, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Color grade LUT
+   SHADER_SAMPLER(tex_ao_dither, Texture4, SA_REPEAT, SA_REPEAT, SF_NONE), // AO dither
+   // Shared material samplers for Ball, Basic and Classic light shaders
+   SHADER_SAMPLER(tex_env, Texture1, SA_REPEAT, SA_CLAMP, SF_TRILINEAR), // environment
+   SHADER_SAMPLER(tex_diffuse_env, Texture2, SA_REPEAT, SA_CLAMP, SF_BILINEAR), // diffuse environment contribution/radiance
    // Ball shader
-   SHADER_SAMPLER(tex_ball_color, texSampler0, Texture0, 0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
-   SHADER_SAMPLER(tex_ball_playfield, texSampler1, Texture1, 1, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // playfield
-   //SHADER_SAMPLER(tex_diffuse_env, texSampler2, Texture2, 2, SA_REPEAT, SA_CLAMP, SF_BILINEAR), // diffuse environment contribution/radiance [Shared with basic]
-   SHADER_SAMPLER(tex_ball_decal, texSampler7, Texture3, 3, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // ball decal
+   SHADER_SAMPLER(tex_ball_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
+   SHADER_SAMPLER(tex_ball_playfield, Texture4, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // playfield
+   SHADER_SAMPLER(tex_ball_decal, Texture3, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // ball decal
    // Basic shader
-   SHADER_SAMPLER(tex_base_color, texSampler0, Texture0, 0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
-   SHADER_SAMPLER(tex_env, texSampler1, Texture1, 1, SA_REPEAT, SA_CLAMP, SF_TRILINEAR), // environment
-   SHADER_SAMPLER(tex_diffuse_env, texSampler2, Texture2, 2, SA_REPEAT, SA_CLAMP, SF_BILINEAR), // diffuse environment contribution/radiance
-   SHADER_SAMPLER(tex_base_transmission, texSamplerBL, Texture3, 3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // bulb light/transmission buffer texture
-   SHADER_SAMPLER(tex_playfield_reflection, texSamplerPFReflections, Texture3, 3, SA_CLAMP, SA_CLAMP, SF_NONE), // playfield reflection
-   SHADER_SAMPLER(tex_base_normalmap, texSamplerN, Texture4, 4, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // normal map texture
+   SHADER_SAMPLER(tex_base_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
+   SHADER_SAMPLER(tex_base_transmission, Texture3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // bulb light/transmission buffer texture
+   SHADER_SAMPLER(tex_playfield_reflection, Texture3, SA_CLAMP, SA_CLAMP, SF_NONE), // playfield reflection
+   SHADER_SAMPLER(tex_base_normalmap, Texture4, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // normal map texture
    // Classic light shader
-   SHADER_SAMPLER(tex_light_color, texSampler0, Texture0, 0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
-   // SHADER_SAMPLER(tex_env, texSampler1, Texture1, 1, SA_REPEAT, SA_CLAMP, SF_TRILINEAR), // environment [Shared with basic]
-   // SHADER_SAMPLER(tex_diffuse_env, texSampler2, Texture2, 2, SA_REPEAT, SA_CLAMP, SF_BILINEAR), // diffuse environment contribution/radiance [Shared with basic]
+   SHADER_SAMPLER(tex_light_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
    // Stereo shader (VPVR only, combine the 2 rendered eyes into a single one)
-   SHADER_SAMPLER(tex_stereo_fb, texSampler0, Texture0, 0, SA_CLAMP, SA_CLAMP, SF_NONE), // Framebuffer (unfiltered)
+   SHADER_SAMPLER(tex_stereo_fb, Undefined, SA_CLAMP, SA_CLAMP, SF_NONE), // Framebuffer (unfiltered)
    // SMAA shader
-   SHADER_SAMPLER(colorTex, colorTex, colorTex, 0, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
-   SHADER_SAMPLER(colorGammaTex, colorGammaTex, colorGammaTex, 1, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
-   SHADER_SAMPLER(edgesTex2D, edgesTex, edgesTex2D, 2, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
-   SHADER_SAMPLER(blendTex2D, blendTex, blendTex2D, 3, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
-   SHADER_SAMPLER(areaTex2D, areaTex, areaTex2D, 4, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
-   SHADER_SAMPLER(searchTex2D, searchTex, searchTex2D, 5, SA_CLAMP, SA_CLAMP, SF_NONE), // Note that this should have a w address mode set to clamp as well
+   SHADER_SAMPLER(colorTex, colorTex, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
+   SHADER_SAMPLER(colorGammaTex, colorGammaTex, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
+   SHADER_SAMPLER(edgesTex2D, edgesTex2D, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
+   SHADER_SAMPLER(blendTex2D, blendTex2D, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
+   SHADER_SAMPLER(areaTex2D, areaTex2D, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
+   SHADER_SAMPLER(searchTex2D, searchTex2D, SA_CLAMP, SA_CLAMP, SF_NONE), // Note that this should have a w address mode set to clamp as well
    SHADER_UNIFORM_COUNT,
    SHADER_UNIFORM_INVALID
 };
@@ -319,8 +317,6 @@ private:
 
    vec4 currentDisableLighting; // x and y: top and below, z and w unused
 
-   static constexpr DWORD TEXTURESET_STATE_CACHE_SIZE = 5; // current convention: SetTexture gets "TextureX", where X 0..4
-   BaseTexture *currentTexture[TEXTURESET_STATE_CACHE_SIZE];
    float currentAlphaTestValue;
 
    vec4 currentFlasherColor; // all flasher only-data
@@ -337,9 +333,7 @@ private:
    {
       ShaderUniformType type;
       string name;
-      string legacy_name;
-      string texture_ref;
-      int default_tex_unit;
+      string tex_name;
       SamplerAddressMode default_clampu;
       SamplerAddressMode default_clampv;
       SamplerFilter default_filter;
@@ -362,10 +356,12 @@ private:
       ShaderUniform uniform;
       int count;
 #ifdef ENABLE_SDL
-      GLint location;
+      GLint location; // Location of the uniform
       GLuint blockBuffer;
 #else
-      D3DXHANDLE handle;
+      D3DXHANDLE handle; // Handle of the constant
+      D3DXHANDLE tex_handle; // For samplers, handle fo the associated texture constant
+      DWORD sampler; // For samplers texture unit defined in the effect file
 #endif
    };
 
@@ -411,6 +407,8 @@ public:
    ID3DXEffect * m_shader;
    UniformDesc m_uniform_desc[SHADER_UNIFORM_COUNT];
    ShaderTechniques m_bound_technique = ShaderTechniques::SHADER_TECHNIQUE_INVALID;
+   static constexpr DWORD TEXTURESET_STATE_CACHE_SIZE = 5; // current convention: SetTexture gets "TextureX", where X 0..4
+   IDirect3DTexture9* m_current_texture[TEXTURESET_STATE_CACHE_SIZE];
 
 public:
    ID3DXEffect* Core() const { return m_shader; }

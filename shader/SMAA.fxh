@@ -88,7 +88,7 @@ texture2D searchTex2D;
     SRGBTexture = true;
 };*/
 
-#define colorTex texSampler5 //!! misses SRGB, also see SMAA_NeighborhoodBlending()
+#define colorTex tex_fb_filtered //!! misses SRGB, also see SMAA_NeighborhoodBlending()
 
 /*sampler2D colorGammaTex {
     Texture = <colorTex2D>;
@@ -97,7 +97,7 @@ texture2D searchTex2D;
     SRGBTexture = false;
 };*/
 
-#define colorGammaTex texSampler5 //!! misses MipFilter
+#define colorGammaTex tex_fb_filtered //!! misses MipFilter
 
 #ifdef SMAA_USE_DEPTH
 sampler2D depthTex {

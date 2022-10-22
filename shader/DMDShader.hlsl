@@ -8,7 +8,7 @@ const float alphaTestValue;
 
 texture Texture0;
 
-sampler2D texSampler0 : TEXUNIT0 = sampler_state // DMD
+sampler2D tex_dmd : TEXUNIT0 = sampler_state // DMD
 {
     Texture   = (Texture0);
     MIPFILTER = NONE;
@@ -20,7 +20,7 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state // DMD
     SRGBTexture = false; //!! 0..100 false, but RGB true ???
 };
 
-sampler2D texSampler1 : TEXUNIT0 = sampler_state // Sprite
+sampler2D tex_sprite : TEXUNIT0 = sampler_state // Sprite
 {
     Texture   = (Texture0);
     MIPFILTER = LINEAR;
@@ -74,7 +74,7 @@ VS_OUTPUT vs_simple_world(const in float4 vPosition : POSITION0,
 #if 0 // raw pixelated output
 float4 ps_main_DMD_no(const in VS_OUTPUT IN) : COLOR
 {
-   const float4 rgba = tex2Dlod(texSampler0, float4(IN.tex0, 0.,0.));
+   const float4 rgba = tex2Dlod(tex_dmd, float4(IN.tex0, 0.,0.));
    float3 color = vColor_Intensity.xyz * vColor_Intensity.w; //!! create function that resembles LUT from VPM?
    if(rgba.a != 0.0)
       color *= rgba.rgb;
@@ -139,7 +139,7 @@ float4 ps_main_DMD(const in VS_OUTPUT IN) : COLOR
       //const float2 gxi = gaussianPDF(xi);
       const float2 uv = IN.tex0 + /*gxi.x*ddxs + gxi.y*ddys; /*/ triangularPDF(xi.x)*ddxs + triangularPDF(xi.y)*ddys; //!! lots of ALU
 
-      const float4 rgba = tex2Dlod(texSampler0, float4(uv, 0., 0.)); //!! lots of tex access by doing this all the time, but (tex) cache should be able to catch all of it
+      const float4 rgba = tex2Dlod(tex_dmd, float4(uv, 0., 0.)); //!! lots of tex access by doing this all the time, but (tex) cache should be able to catch all of it
 
       // simulate dot within the sampled texel
       const float2 dist = frac(uv*vRes_Alpha_time.xy)*2.2 - 1.1;
@@ -167,7 +167,7 @@ float4 ps_main_DMD(const in VS_OUTPUT IN) : COLOR
 
 float4 ps_main_noDMD(const in VS_OUTPUT IN) : COLOR
 {
-   const float4 l = tex2D(texSampler1, IN.tex0);
+   const float4 l = tex2D(tex_sprite, IN.tex0);
    if (l.a < alphaTestValue)
       discard; //stop the pixel shader if alpha test should reject pixel to avoid writing to the depth buffer
    return float4(InvToneMap(/*InvGamma*/(l.xyz * vColor_Intensity.xyz * vColor_Intensity.w)), l.w); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?

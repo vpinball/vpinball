@@ -16,7 +16,7 @@ const float3 amount_blend_modulate_vs_add_flasherMode; // last one is integer
 texture Texture0; // base texture
 texture Texture1; // second image
 
-sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
+sampler2D tex_flasher_A : TEXUNIT0 = sampler_state // base texture
 {
     Texture	  = (Texture0);
     //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic
@@ -27,7 +27,7 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
     SRGBTexture = true;
 };
 
-sampler2D texSampler1 : TEXUNIT1 = sampler_state // texB
+sampler2D tex_flasher_B : TEXUNIT1 = sampler_state // texB
 {
     Texture   = (Texture1);
     MIPFILTER = LINEAR; //!! ?
@@ -62,12 +62,12 @@ float4 ps_main_noLight(const in VS_OUTPUT_2D IN) : COLOR
 
    [branch] if (amount_blend_modulate_vs_add_flasherMode.z < 2.) // Mode 0 & 1
    {
-      pixel1 = tex2D(texSampler0, IN.tex0);
+      pixel1 = tex2D(tex_flasher_A, IN.tex0);
       stop = (pixel1.a <= alphaTestValueAB_filterMode_addBlend.x);
    }
    [branch] if (amount_blend_modulate_vs_add_flasherMode.z == 1.)
    {
-      pixel2 = tex2D(texSampler1, IN.tex0);
+      pixel2 = tex2D(tex_flasher_B, IN.tex0);
       stop = (stop || pixel2.a <= alphaTestValueAB_filterMode_addBlend.y);
    }
 
