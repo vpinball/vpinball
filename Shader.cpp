@@ -1699,7 +1699,7 @@ bool Shader::Load(const std::string name, const BYTE* code, UINT codeSize)
          if (type == ShaderUniformType::SUT_Sampler)
          {
             m_uniform_desc[uniformIndex].tex_handle = m_shader->GetParameterByName(NULL, shaderUniformNames[uniformIndex].tex_name.c_str());
-            if (param_desc.Semantic != nullptr && std::string(param_desc.Semantic).starts_with("TEXUNIT"s))
+            if (param_desc.Semantic != nullptr && std::string(param_desc.Semantic).rfind("TEXUNIT"s, 0) == 0)
             {
                int unit = param_desc.Semantic[strlen(param_desc.Semantic) - 1] - '0';
                m_uniform_desc[uniformIndex].sampler = unit;
