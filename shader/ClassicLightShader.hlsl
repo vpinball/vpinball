@@ -13,42 +13,7 @@ const float4x3 matView;
 //const float4x4 matViewInverseInverseTranspose; // matView used instead and multiplied from other side
 
 texture Texture0; // base texture
-texture Texture1; // envmap
-texture Texture2; // envmap radiance
  
-sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
-{
-    Texture   = (Texture0);
-    //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic
-    //MAGFILTER = LINEAR;
-    //MINFILTER = LINEAR;
-    //ADDRESSU  = Wrap; //!! ?
-    //ADDRESSV  = Wrap;
-    SRGBTexture = true;
-};
-
-sampler2D texSampler1 : TEXUNIT1 = sampler_state // environment
-{
-    Texture   = (Texture1);
-    MIPFILTER = LINEAR; //!! ?
-    MAGFILTER = LINEAR;
-    MINFILTER = LINEAR;
-    ADDRESSU  = Wrap;
-    ADDRESSV  = Clamp;
-    SRGBTexture = true;
-};
-
-sampler2D texSampler2 : TEXUNIT2 = sampler_state // diffuse environment contribution/radiance
-{
-    Texture   = (Texture2);
-    MIPFILTER = NONE;
-    MAGFILTER = LINEAR;
-    MINFILTER = LINEAR;
-    ADDRESSU  = Wrap;
-    ADDRESSV  = Clamp;
-    SRGBTexture = true;
-};
-
 #include "Material.fxh"
 
 const float3 cGlossy_ImageLerp; // actually doesn't feature image lerp
@@ -60,6 +25,17 @@ const float3 cClearcoat_EdgeAlpha; // actually doesn't feature edge-alpha
 
 //const float  alphaTestValue;
 #endif
+
+sampler2D tex_light_color : TEXUNIT0 = sampler_state // base texture
+{
+   Texture = (Texture0);
+   //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic
+   //MAGFILTER = LINEAR;
+   //MINFILTER = LINEAR;
+   //ADDRESSU  = Wrap; //!! ?
+   //ADDRESSV  = Wrap;
+   SRGBTexture = true;
+};
 
 const float4 lightColor_intensity;
 const float4 lightColor2_falloff_power;
@@ -96,7 +72,7 @@ VS_LIGHT_OUTPUT vs_light_main (const in float4 vPosition : POSITION0,
 
 float4 PS_LightWithTexel(const in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLOR
 {
-    float4 pixel = tex2D(texSampler0, IN.tex0);
+    float4 pixel = tex2D(tex_light_color, IN.tex0);
     //if (!hdrTexture0)
     //    pixel.xyz = InvGamma(pixel.xyz); // nowadays done when reading the texture
 

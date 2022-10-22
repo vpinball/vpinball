@@ -12,12 +12,10 @@ const float4x3 matView;
 //const float4x4 matViewInverseInverseTranspose; // matView used instead and multiplied from other side
 
 texture Texture0; // base texture
-texture Texture1; // envmap
-texture Texture2; // envmap radiance
 texture Texture3; // bulb light buffer
 texture Texture4; // normal map
 
-sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
+sampler2D tex_base_color : TEXUNIT0 = sampler_state // base texture
 {
     Texture   = (Texture0);
     //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic
@@ -28,29 +26,7 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
     SRGBTexture = true;
 };
 
-sampler2D texSampler1 : TEXUNIT1 = sampler_state // environment
-{
-    Texture   = (Texture1);
-    MIPFILTER = LINEAR; //!! ?
-    MAGFILTER = LINEAR;
-    MINFILTER = LINEAR;
-    ADDRESSU  = Wrap;
-    ADDRESSV  = Clamp;
-    SRGBTexture = true;
-};
-
-sampler2D texSampler2 : TEXUNIT2 = sampler_state // diffuse environment contribution/radiance
-{
-    Texture   = (Texture2);
-    MIPFILTER = NONE;
-    MAGFILTER = LINEAR;
-    MINFILTER = LINEAR;
-    ADDRESSU  = Wrap;
-    ADDRESSV  = Clamp;
-    SRGBTexture = true;
-};
-
-sampler2D texSamplerBL : TEXUNIT3 = sampler_state // bulb light/transmission buffer texture
+sampler2D tex_base_transmission : TEXUNIT3 = sampler_state // bulb light/transmission buffer texture
 {
     Texture   = (Texture3);
     MIPFILTER = NONE; //!! ??
@@ -60,7 +36,7 @@ sampler2D texSamplerBL : TEXUNIT3 = sampler_state // bulb light/transmission buf
     ADDRESSV  = Clamp;
 };
  
-sampler2D texSamplerPFReflections : TEXUNIT3 = sampler_state // playfield reflections
+sampler2D tex_playfield_reflection : TEXUNIT3 = sampler_state // playfield reflections
 {
    Texture = (Texture3);
    MIPFILTER = NONE;
@@ -71,7 +47,7 @@ sampler2D texSamplerPFReflections : TEXUNIT3 = sampler_state // playfield reflec
    SRGBTexture = true;
 };
 
-sampler2D texSamplerN : TEXUNIT4 = sampler_state // normal map texture
+sampler2D tex_base_normalmap : TEXUNIT4 = sampler_state // normal map texture
 {
     Texture = (Texture4);
     //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic //!! disallow and always use normal bilerp only? not even mipmaps?
@@ -141,7 +117,7 @@ float3x3 TBN_trafo(const float3 N, const float3 V, const float2 uv, const float3
 
 float3 normal_map(const float3 N, const float3 V, const float2 uv)
 {
-   float3 tn = tex2D(texSamplerN, uv).xyz * (255./127.) - (128./127.); // Note that Blender apparently does export tangent space normalmaps for Z (Blue) at full range, so 0..255 -> 0..1, which misses an option for here!
+   float3 tn = tex2D(tex_base_normalmap, uv).xyz * (255./127.) - (128./127.); // Note that Blender apparently does export tangent space normalmaps for Z (Blue) at full range, so 0..255 -> 0..1, which misses an option for here!
 
    const float3 dpx = ddx(V); //!! these 2 are declared here instead of TBN_trafo() to workaround a compiler quirk
    const float3 dpy = ddy(V);
@@ -161,7 +137,7 @@ float3 playfield_reflection(const float2 screenSpace, const float3 N)
    // Only apply to faces pointing in the direction of the probe (normal = [0,0,-1])
    // the smoothstep values are *magic* values taken from visual tests
    const float3 playfield_normal = normalize(mul(float3(0., 0., 1.), matWorldViewInverseTranspose).xyz);
-   return smoothstep(0.5, 0.9, dot(playfield_normal, N)) * cWidth_Height_MirrorAmount.z * tex2D(texSamplerPFReflections, float2(screenSpace.x / cWidth_Height_MirrorAmount.x, screenSpace.y / cWidth_Height_MirrorAmount.y)).rgb;
+   return smoothstep(0.5, 0.9, dot(playfield_normal, N)) * cWidth_Height_MirrorAmount.z * tex2D(tex_playfield_reflection, float2(screenSpace.x / cWidth_Height_MirrorAmount.x, screenSpace.y / cWidth_Height_MirrorAmount.y)).rgb;
 }
 
 //------------------------------------
@@ -246,7 +222,7 @@ float4 ps_main(const in VS_NOTEX_OUTPUT IN, uniform bool is_metal) : COLOR
 
       if (fDisableLighting_top_below.y < 1.0)
          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-         result.xyz += lerp(sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.worldPos_t1x.w,-0.5*IN.normal_t1y.w)+0.5, 0.,0.)).xyz*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+         result.xyz += lerp(sqrt(diffuse)*tex2Dlod(tex_base_transmission, float4(float2(0.5*IN.worldPos_t1x.w,-0.5*IN.normal_t1y.w)+0.5, 0.,0.)).xyz*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
    return result * staticColor_Alpha;
@@ -254,7 +230,7 @@ float4 ps_main(const in VS_NOTEX_OUTPUT IN, uniform bool is_metal) : COLOR
 
 float4 ps_main_texture(const in VS_OUTPUT IN, uniform bool is_metal, uniform bool doNormalMapping) : COLOR
 {
-   float4 pixel = tex2D(texSampler0, IN.tex01.xy);
+   float4 pixel = tex2D(tex_base_color, IN.tex01.xy);
 
    clip(pixel.a <= alphaTestValue ? - 1 : 1); // stop the pixel shader if alpha test should reject pixel
 
@@ -286,7 +262,7 @@ float4 ps_main_texture(const in VS_OUTPUT IN, uniform bool is_metal, uniform boo
 
       if (fDisableLighting_top_below.y < 1.0)
          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-         result.xyz += lerp(sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.tex01.z,-0.5*IN.tex01.w)+0.5, 0., 0.)).xyz*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+         result.xyz += lerp(sqrt(diffuse)*tex2Dlod(tex_base_transmission, float4(float2(0.5*IN.tex01.z,-0.5*IN.tex01.w)+0.5, 0., 0.)).xyz*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
    return result * staticColor_Alpha;
@@ -316,7 +292,7 @@ float4 ps_main_playfield(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS,
 
       if (fDisableLighting_top_below.y < 1.0)
          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-         result.xyz += lerp(sqrt(diffuse) * tex2Dlod(texSamplerBL, float4(float2(0.5 * IN.worldPos_t1x.w, -0.5 * IN.normal_t1y.w) + 0.5, 0., 0.)).xyz * result.a, 0.,
+         result.xyz += lerp(sqrt(diffuse) * tex2Dlod(tex_base_transmission, float4(float2(0.5 * IN.worldPos_t1x.w, -0.5 * IN.normal_t1y.w) + 0.5, 0., 0.)).xyz * result.a, 0.,
             fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
@@ -328,7 +304,7 @@ float4 ps_main_playfield(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS,
 float4 ps_main_playfield_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform bool is_metal, uniform bool doNormalMapping)
    : COLOR
 {
-   float4 pixel = tex2D(texSampler0, IN.tex01.xy);
+   float4 pixel = tex2D(tex_base_color, IN.tex01.xy);
 
    clip(pixel.a <= alphaTestValue ? -1 : 1); // stop the pixel shader if alpha test should reject pixel
 
@@ -358,7 +334,7 @@ float4 ps_main_playfield_texture(const in VS_OUTPUT IN, float2 screenSpace : VPO
 
       if (fDisableLighting_top_below.y < 1.0)
          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-         result.xyz += lerp(sqrt(diffuse) * tex2Dlod(texSamplerBL, float4(float2(0.5 * IN.tex01.z, -0.5 * IN.tex01.w) + 0.5, 0., 0.)).xyz * result.a, 0.,
+         result.xyz += lerp(sqrt(diffuse) * tex2Dlod(tex_base_transmission, float4(float2(0.5 * IN.tex01.z, -0.5 * IN.tex01.w) + 0.5, 0., 0.)).xyz * result.a, 0.,
             fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
@@ -372,7 +348,7 @@ float4 ps_main_playfield_refl_texture(const in VS_OUTPUT IN, float2 screenSpace 
 {
    float4 result;
 
-   result.a = tex2D(texSampler0, IN.tex01.xy).a;
+   result.a = tex2D(tex_base_color, IN.tex01.xy).a;
 
    clip(result.a <= alphaTestValue ? -1 : 1); // stop the pixel shader if alpha test should reject pixel
 
@@ -408,7 +384,7 @@ float4 ps_main_depth_only_without_texture(const in VS_DEPTH_ONLY_NOTEX_OUTPUT IN
 
 float4 ps_main_depth_only_with_texture(const in VS_DEPTH_ONLY_TEX_OUTPUT IN) : COLOR
 {
-   clip(tex2D(texSampler0, IN.tex0).a <= alphaTestValue ? -1 : 1); // stop the pixel shader if alpha test should reject pixel
+   clip(tex2D(tex_base_color, IN.tex0).a <= alphaTestValue ? -1 : 1); // stop the pixel shader if alpha test should reject pixel
 
    return float4(0., 0., 0., 1.);
 }
@@ -423,7 +399,7 @@ float4 ps_main_bg_decal(const in VS_NOTEX_OUTPUT IN) : COLOR
 
 float4 ps_main_bg_decal_texture(const in VS_OUTPUT IN) : COLOR
 {
-   float4 pixel = tex2D(texSampler0, IN.tex01.xy);
+   float4 pixel = tex2D(tex_base_color, IN.tex01.xy);
 
    clip(pixel.a <= alphaTestValue ? - 1 : 1); // stop the pixel shader if alpha test should reject pixel
 

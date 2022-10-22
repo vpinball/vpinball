@@ -1,4 +1,4 @@
-// uses texSamplerDepth & texSampler4,texSampler5 & texSamplerAOdither & w_h_height.xy
+// uses tex_depth & tex_fb_unfiltered,tex_fb_filtered & tex_ao_dither & w_h_height.xy
 
 const float4 SSR_bumpHeight_fresnelRefl_scale_FS;
 
@@ -6,15 +6,15 @@ float3 approx_bump_normal(const float2 coords, const float2 offs, const float sc
 {
     const float3 lumw = float3(0.212655,0.715158,0.072187);
 
-    const float lpx = dot(tex2Dlod(texSampler5, float4(coords.x+offs.x,coords.y, 0.,0.)).xyz, lumw);
-    const float lmx = dot(tex2Dlod(texSampler5, float4(coords.x-offs.x,coords.y, 0.,0.)).xyz, lumw);
-    const float lpy = dot(tex2Dlod(texSampler5, float4(coords.x,coords.y+offs.y, 0.,0.)).xyz, lumw);
-    const float lmy = dot(tex2Dlod(texSampler5, float4(coords.x,coords.y-offs.y, 0.,0.)).xyz, lumw);
+    const float lpx = dot(tex2Dlod(tex_fb_filtered, float4(coords.x+offs.x,coords.y, 0.,0.)).xyz, lumw);
+    const float lmx = dot(tex2Dlod(tex_fb_filtered, float4(coords.x-offs.x,coords.y, 0.,0.)).xyz, lumw);
+    const float lpy = dot(tex2Dlod(tex_fb_filtered, float4(coords.x,coords.y+offs.y, 0.,0.)).xyz, lumw);
+    const float lmy = dot(tex2Dlod(tex_fb_filtered, float4(coords.x,coords.y-offs.y, 0.,0.)).xyz, lumw);
 
-    const float dpx = tex2Dlod(texSamplerDepth, float4(coords.x+offs.x,coords.y, 0.,0.)).x;
-    const float dmx = tex2Dlod(texSamplerDepth, float4(coords.x-offs.x,coords.y, 0.,0.)).x;
-    const float dpy = tex2Dlod(texSamplerDepth, float4(coords.x,coords.y+offs.y, 0.,0.)).x;
-    const float dmy = tex2Dlod(texSamplerDepth, float4(coords.x,coords.y-offs.y, 0.,0.)).x;
+    const float dpx = tex2Dlod(tex_depth, float4(coords.x + offs.x, coords.y, 0., 0.)).x;
+    const float dmx = tex2Dlod(tex_depth, float4(coords.x - offs.x, coords.y, 0., 0.)).x;
+    const float dpy = tex2Dlod(tex_depth, float4(coords.x, coords.y + offs.y, 0., 0.)).x;
+    const float dmy = tex2Dlod(tex_depth, float4(coords.x, coords.y - offs.y, 0., 0.)).x;
 
     const float2 xymult = max(1.0 - float2(abs(dmx - dpx), abs(dmy - dpy)) * sharpness, 0.0);
 
@@ -30,9 +30,9 @@ float4 ps_main_fb_ss_refl(in VS_OUTPUT_2D IN) : COLOR
 {
 	const float2 u = IN.tex0 + w_h_height.xy*0.5;
 
-	const float3 color0 = tex2Dlod(texSampler4, float4(u, 0.,0.)).xyz; // original pixel
+	const float3 color0 = tex2Dlod(tex_fb_unfiltered, float4(u, 0.,0.)).xyz; // original pixel
 
-	const float depth0 = tex2Dlod(texSamplerDepth, float4(u, 0.,0.)).x;
+	const float depth0 = tex2Dlod(tex_depth, float4(u, 0., 0.)).x;
 	[branch] if((depth0 == 1.0) || (depth0 == 0.0)) //!!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
 		return float4(color0, 1.0);
 
@@ -58,7 +58,7 @@ float4 ps_main_fb_ss_refl(in VS_OUTPUT_2D IN) : COLOR
 	const float ReflBlurWidth = 2.2; //!! magic, small enough to not collect too much, and large enough to have cool reflection effects
 
 	const float ushift = /*hash(IN.tex0) + w_h_height.zw*/ // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
-	                     /*frac(*/tex2Dlod(texSamplerAOdither, float4(IN.tex0/(64.0*w_h_height.xy), 0.,0.)).z /*+ w_h_height.z)*/; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
+	                     /*frac(*/tex2Dlod(tex_ao_dither, float4(IN.tex0/(64.0*w_h_height.xy), 0.,0.)).z /*+ w_h_height.z)*/; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
 	const float2 offsMul = normal_b.xy * (/*w_h_height.xy*/ float2(1.0/1920.0,1.0/1080.0) * ReflBlurWidth * (32./(float)samples)); //!! makes it more resolution independent?? test with 4xSSAA
 
 	// loop in screen space, simply collect all pixels in the normal direction (not even a depth check done!)
@@ -67,7 +67,7 @@ float4 ps_main_fb_ss_refl(in VS_OUTPUT_2D IN) : COLOR
 	[unroll] for(int i=1; i</*=*/samples; i++) //!! due to jitter
 	{
 		const float2 offs = u + ((float)i+ushift)*offsMul; //!! jitter per pixel (uses blue noise tex)
-		const float3 color = tex2Dlod(texSampler5, float4(offs, 0.,0.)).xyz;
+		const float3 color = tex2Dlod(tex_fb_filtered, float4(offs, 0.,0.)).xyz;
 		
 		[branch] if(i==1) // necessary special case as compiler warns/'optimizes' sqrt below into rqsrt?!
 		{
