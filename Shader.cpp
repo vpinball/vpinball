@@ -677,7 +677,7 @@ void Shader::SetFloat4v(const ShaderUniforms hParameter, const vec4* pData, cons
 
 void Shader::SetTextureNull(const ShaderUniforms texelName)
 {
-   SetTexture(texelName, (Sampler*)nullptr); 
+   SetTexture(texelName, (Sampler*)nullptr);
 }
 
 void Shader::SetTexture(const ShaderUniforms texelName, Texture* texel, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb)
@@ -700,7 +700,7 @@ void Shader::SetTexture(const ShaderUniforms uniformName, Sampler* texel)
    ApplyUniform(uniformName);
 #else
    // Since DirectX effect framework manages the samplers, we only care about the texture here
-   m_texture_cache[m_uniform_desc[uniformName].sampler] = texel ? texel->GetCoreTexture() : nullptr;
+   m_texture_cache[m_uniform_desc[uniformName].sampler] = texel;
 #endif
 }
 
@@ -860,19 +860,44 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
       {
          // A sampler bind performs 3 things:
          // - bind the texture to a texture stage (done by DirectX effect framework)
-         // - adjust the sampling state (filter, wrappîng, ...) of the choosen texture stage (partly done by DirectX effect framework which only applies the ones defined in the effect file)
+         // - adjust the sampling state (filter, wrapping, ...) of the choosen texture stage (partly done by DirectX effect framework which only applies the ones defined in the effect file)
          // - set the shader constant buffer to point to the selected texture stage (done by DirectX effect framework)
          // So, for DirectX, we simply fetch the Texture, DirectX will then use the texture for one or more samplers, applying there default states if any
-         // TODO move non static sampler state changes here (the ones not defined in the effect files)
          int unit = desc.sampler;
-         IDirect3DTexture9* tex = m_texture_cache[unit];
-         bool cache = 0 <= unit && unit < TEXTURESET_STATE_CACHE_SIZE;
-         if (!cache || m_bound_texture[unit] != tex)
+
+         // Bind the texture to the shader
+         Sampler* tex = m_texture_cache[unit];
+         IDirect3DTexture9* bounded = m_bound_texture[unit] ? m_bound_texture[unit]->GetCoreTexture() : nullptr;
+         IDirect3DTexture9* tobound = tex ? tex->GetCoreTexture() : nullptr;
+         if (bounded != tobound)
          {
-            CHECKD3D(m_shader->SetTexture(desc.tex_handle, tex));
-            if (cache)
-               m_bound_texture[unit] = tex;
+            CHECKD3D(m_shader->SetTexture(desc.tex_handle, tobound));
+            m_bound_texture[unit] = tex;
             m_renderDevice->m_curTextureChanges++;
+         }
+
+         // Apply the texture sampling states
+         if (tex)
+         {
+            SamplerFilter filter = tex->GetFilter();
+            SamplerAddressMode clampu = tex->GetClampU();
+            SamplerAddressMode clampv = tex->GetClampV();
+            if (filter == SF_UNDEFINED)
+            {
+               filter = shaderUniformNames[uniformName].default_filter;
+               if (filter == SF_UNDEFINED) filter = SF_NONE;
+            }
+            if (clampu == SA_UNDEFINED)
+            {
+               clampu = shaderUniformNames[uniformName].default_clampu;
+               if (clampu == SA_UNDEFINED) clampu = SA_CLAMP;
+            }
+            if (clampv == SA_UNDEFINED)
+            {
+               clampv = shaderUniformNames[uniformName].default_clampv;
+               if (clampv == SA_UNDEFINED) clampv = SA_CLAMP;
+            }
+            m_renderDevice->SetSamplerState(unit, filter, clampu, clampv);
          }
       }
       break;
@@ -905,25 +930,23 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          }
          else
          {
-            SamplerFilter filter = shaderUniformNames[uniformName].default_filter;
-            SamplerAddressMode clampu = shaderUniformNames[uniformName].default_clampu;
-            SamplerAddressMode clampv = shaderUniformNames[uniformName].default_clampv;
-            if (filter == SF_UNDEFINED) {
-               filter = texel->GetFilter();
-               if (filter == SF_UNDEFINED)
-                  filter = SF_NONE;
+            SamplerFilter filter = texel->GetFilter();
+            SamplerAddressMode clampu = texel->GetClampU();
+            SamplerAddressMode clampv = texel->GetClampV();
+            if (filter == SF_UNDEFINED)
+            {
+               filter = shaderUniformNames[uniformName].default_filter;
+               if (filter == SF_UNDEFINED) filter = SF_NONE;
             }
             if (clampu == SA_UNDEFINED)
             {
-               clampu = texel->GetClampU();
-               if (clampu == SA_UNDEFINED)
-                  clampu = SA_CLAMP;
+               clampu = shaderUniformNames[uniformName].default_clampu;
+               if (clampu == SA_UNDEFINED) clampu = SA_CLAMP;
             }
             if (clampv == SA_UNDEFINED)
             {
-               clampv = texel->GetClampV();
-               if (clampv == SA_UNDEFINED)
-                  clampv = SA_CLAMP;
+               clampv = shaderUniformNames[uniformName].default_clampv;
+               if (clampv == SA_UNDEFINED) clampv = SA_CLAMP;
             }
             for (auto binding : texel->m_bindings)
             {
@@ -946,9 +969,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
                glActiveTexture(GL_TEXTURE0 + tex_unit->unit);
                glBindTexture(GL_TEXTURE_2D, texel->GetCoreTexture());
                m_renderDevice->m_curTextureChanges++;
-               GLuint sampler_state = m_renderDevice->GetSamplerState(filter, clampu, clampv);
-               glBindSampler(tex_unit->unit, sampler_state);
-               m_renderDevice->m_curStateChanges++;
+               m_renderDevice->SetSamplerState(tex_unit->unit, filter, clampu, clampv);
             }
          }
          // Bind the sampler
@@ -1264,7 +1285,7 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
                shader->uniform_desc[uniformIndex].uniform = uniform;
                shader->uniform_desc[uniformIndex].count = size;
                shader->uniform_desc[uniformIndex].location = location;
-               if (shaderUniformNames[uniformIndex].default_tex_unit != -1)
+               if (shaderUniformNames[uniformIndex].type == SUT_Sampler)
                {
                   // FIXME this is wrong. After checking the specs, OpenGL sample a texture unit bound to texture #0 as (0, 0, 0, 1)
                   // Unlike DirectX, OpenGL won't return 0 if the texture is not bound to a black texture
@@ -1695,7 +1716,7 @@ bool Shader::Load(const std::string name, const BYTE* code, UINT codeSize)
          m_uniform_desc[uniformIndex].handle = parameter;
          m_uniform_desc[uniformIndex].tex_handle = nullptr;
          m_uniform_desc[uniformIndex].count = count;
-         m_uniform_desc[uniformIndex].sampler = -1; 
+         m_uniform_desc[uniformIndex].sampler = -1;
          if (type == ShaderUniformType::SUT_Sampler)
          {
             m_uniform_desc[uniformIndex].tex_handle = m_shader->GetParameterByName(NULL, shaderUniformNames[uniformIndex].tex_name.c_str());

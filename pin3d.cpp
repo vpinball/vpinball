@@ -535,11 +535,6 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    VertexBuffer::bindNull();
    IndexBuffer::bindNull();
 
-   //m_quadDynVertexBuffer = nullptr;
-   //CreateVertexBuffer(4, USAGE_DYNAMIC, MY_D3DFVF_TEX, &RenderDevice::m_quadDynVertexBuffer);
-
-   //
-
    // Create the "static" color buffer.
    // This will hold a pre-rendered image of the table and any non-changing elements (ie ramps, decals, etc).
 
@@ -573,22 +568,6 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    return S_OK;
 }
 
-// Sets the texture filtering state.
-void Pin3D::SetTextureFilter(RenderDevice * const pd3dDevice, const int TextureNum, const int Mode) const
-{
-   pd3dDevice->SetTextureFilter(TextureNum, Mode);
-}
-
-void Pin3D::SetPrimaryTextureFilter(const int TextureNum, const int Mode) const
-{
-   SetTextureFilter(m_pd3dPrimaryDevice, TextureNum, Mode);
-}
-
-void Pin3D::SetSecondaryTextureFilter(const int TextureNum, const int Mode) const
-{
-   SetTextureFilter(m_pd3dSecondaryDevice, TextureNum, Mode);
-}
-
 void Pin3D::InitRenderState(RenderDevice * const pd3dDevice)
 {
    pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
@@ -602,21 +581,16 @@ void Pin3D::InitRenderState(RenderDevice * const pd3dDevice)
    pd3dDevice->SetRenderStateClipPlane0(false);
 
    // initialize first texture stage
-   pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP/*WRAP*/);
 #ifndef ENABLE_SDL
    CHECKD3D(pd3dDevice->GetCoreDevice()->SetRenderState(D3DRS_LIGHTING, FALSE));
    CHECKD3D(pd3dDevice->GetCoreDevice()->SetRenderState(D3DRS_CLIPPING, FALSE));
-   pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-   pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-   pd3dDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
-   pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-   pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-   pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR); // default tfactor: 1,1,1,1
+   CHECKD3D(pd3dDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1));
+   CHECKD3D(pd3dDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE));
+   CHECKD3D(pd3dDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0));
+   CHECKD3D(pd3dDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE));
+   CHECKD3D(pd3dDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE));
+   CHECKD3D(pd3dDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR)); // default tfactor: 1,1,1,1
 #endif
-   SetTextureFilter(pd3dDevice, 0, TEXTURE_MODE_TRILINEAR);
-
-   pd3dDevice->SetTextureAddressMode(4, RenderDevice::TEX_CLAMP/*WRAP*/); // normal maps
-   SetTextureFilter(pd3dDevice, 4, TEXTURE_MODE_TRILINEAR);
 }
 
 void Pin3D::InitPrimaryRenderState()
@@ -631,8 +605,6 @@ void Pin3D::InitSecondaryRenderState()
 
 void Pin3D::DrawBackground()
 {
-   SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
-
    const PinTable * const ptable = g_pplayer->m_ptable;
    Texture * const pin = ptable->GetDecalsEnabled()
       ? ptable->GetImage(ptable->m_BG_image[ptable->m_BG_current_set])

@@ -1226,7 +1226,6 @@ void Primitive::RenderObject()
    {
       m_d.m_szMaterial = g_pplayer->m_ptable->m_playfieldMaterial;
       m_d.m_szImage = g_pplayer->m_ptable->m_image;
-      pd3dDevice->SetTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
       pinf = SF_ANISOTROPIC;
    }
 
@@ -1247,10 +1246,6 @@ void Primitive::RenderObject()
       pd3dDevice->basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, SF_TRILINEAR, SA_REPEAT, SA_REPEAT, true);
       pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
       pd3dDevice->basicShader->SetBool(SHADER_objectSpaceNormalMap, m_d.m_objectSpaceNormalMap);
-
-      //g_pplayer->m_pin3d.SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
-      // accommodate models with UV coords outside of [0,1]
-      pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
       pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
    }
    else if (pin)
@@ -1259,10 +1254,6 @@ void Primitive::RenderObject()
       // accommodate models with UV coords outside of [0,1]
       pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
       pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
-
-      //g_pplayer->m_pin3d.SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
-      // accommodate models with UV coords outside of [0,1]
-      pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
       pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
    }
    else
@@ -1353,9 +1344,7 @@ void Primitive::RenderObject()
    if (m_d.m_useAsPlayfield)
    {
       pd3dDevice->basicShader->SetTexture(SHADER_tex_base_transmission, pd3dDevice->GetBloomBufferTexture()->GetColorSampler()); // Restore bulb light transmission on Texture3 (staticly shared with playfield reflection on DX9)
-      pd3dDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
    }
-   pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
    if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
       pd3dDevice->basicShader->SetDisableLighting(vec4(0.f, 0.f, 0.f, 0.f));
    pd3dDevice->CopyRenderStates(false, initial_state);

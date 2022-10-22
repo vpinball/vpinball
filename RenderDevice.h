@@ -157,12 +157,6 @@ public:
    SDL_Window* m_sdl_playfieldHwnd;
    SDL_GLContext m_sdl_context;
 #else
-   enum TextureAddressMode {
-      TEX_WRAP = D3DTADDRESS_WRAP,
-      TEX_CLAMP = D3DTADDRESS_CLAMP,
-      TEX_MIRROR = D3DTADDRESS_MIRROR
-   };
-
    enum PrimitiveTypes
    {
       TRIANGLEFAN = D3DPT_TRIANGLEFAN,
@@ -232,13 +226,6 @@ private:
    RenderStateCache m_current_renderstate, m_renderstate;
 
 public:
-   void SetTextureFilter(const DWORD texUnit, DWORD mode);
-   void SetTextureAddressMode(const DWORD texUnit, const TextureAddressMode mode);
-#ifndef ENABLE_SDL
-   void SetTextureStageState(const DWORD stage, const D3DTEXTURESTAGESTATETYPE type, const DWORD value);
-#endif
-   void SetSamplerState(const DWORD Sampler, const D3DSAMPLERSTATETYPE Type, const DWORD Value);
-
    void DrawTexturedQuad(const Vertex3D_TexelOnly* vertices);
    void DrawFullscreenTexturedQuad();
    
@@ -284,21 +271,12 @@ public:
    void SetVertexDeclaration(VertexDeclaration * declaration);
 
 #ifdef ENABLE_SDL
-   void* GetCoreDevice() const
-   {
-      return nullptr;
-   }
-
-   int getGLVersion() const
-   {
-      return m_GLversion;
-   }
+   int getGLVersion() const { return m_GLversion; }
 #else
-   IDirect3DDevice9* GetCoreDevice() const
-   {
-      return m_pD3DDevice;
-   }
+   IDirect3DDevice9* GetCoreDevice() const { return m_pD3DDevice; }
 #endif
+
+   HWND getHwnd() const { return m_windowHwnd; }
 
    HWND         m_windowHwnd;
    int          m_width; // Width of the render buffer (not the window width, for example for stereo the render width is doubled, or for VR, the size depends on the headset)
@@ -324,11 +302,9 @@ private:
 #ifndef ENABLE_SDL
 #ifdef USE_D3D9EX
    IDirect3D9Ex* m_pD3DEx;
-
    IDirect3DDevice9Ex* m_pD3DDeviceEx;
 #endif
    IDirect3D9* m_pD3D;
-
    IDirect3DDevice9* m_pD3DDevice;
 #endif
 
@@ -348,22 +324,19 @@ private:
 
    UINT m_adapter;      // index of the display adapter to use
 
-   static constexpr DWORD TEXTURE_SAMPLERS = 8;
-   static constexpr DWORD TEXTURE_STATE_CACHE_SIZE = 256;
-   static constexpr DWORD TEXTURE_SAMPLER_CACHE_SIZE = 14;
-
-   DWORD textureStateCache[TEXTURE_SAMPLERS][TEXTURE_STATE_CACHE_SIZE];     // dto.
-   DWORD textureSamplerCache[TEXTURE_SAMPLERS][TEXTURE_SAMPLER_CACHE_SIZE]; // dto.
-
    VertexDeclaration *currentDeclaration; // for caching
 
+public:
+   void SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v);
+
+private:
 #ifdef ENABLE_SDL
    static GLuint m_samplerStateCache[3 * 3 * 5];
-#endif
-
-public:
-#ifdef ENABLE_SDL
-   GLuint GetSamplerState(SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v);
+#else
+   static constexpr DWORD TEXTURESET_STATE_CACHE_SIZE = 32;
+   SamplerFilter m_bound_filter[TEXTURESET_STATE_CACHE_SIZE];
+   SamplerAddressMode m_bound_clampu[TEXTURESET_STATE_CACHE_SIZE];
+   SamplerAddressMode m_bound_clampv[TEXTURESET_STATE_CACHE_SIZE];
 #endif
 
 #ifdef ENABLE_SDL
@@ -377,7 +350,6 @@ public:
 public:
    bool m_autogen_mipmap;
    //bool m_RESZ_support;
-   bool m_force_aniso;
    bool m_compress_textures;
 
 private:
@@ -419,6 +391,9 @@ public:
    Shader *FBShader;
    Shader *flasherShader;
    Shader *lightShader;
+#ifdef ENABLE_SDL
+   Shader *StereoShader;
+#endif
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    Shader *classicLightShader;
 #else
@@ -428,6 +403,10 @@ public:
    //Shader* m_curShader; // for caching
 
    TextureManager m_texMan;
+
+#ifdef ENABLE_SDL
+   std::vector<SamplerBinding*> m_samplerBindings;
+#endif
 
    static unsigned int m_stats_drawn_triangles;
 

@@ -13,7 +13,11 @@
 
 #include "RenderDevice.h"
 #include "Shader.h"
-#ifndef ENABLE_SDL
+#ifdef ENABLE_SDL
+#include "typedefs3D.h"
+#include "TextureManager.h"
+#include "sdl2/SDL_syswm.h"
+#else
 #include "Material.h"
 #include "BasicShader.h"
 #include "DMDShader.h"
@@ -140,6 +144,9 @@ constexpr VertexElement VertexTrafoTexelElement[] =
    D3DDECL_END()*/
 };
 VertexDeclaration* RenderDevice::m_pVertexTrafoTexelDeclaration = (VertexDeclaration*)&VertexTrafoTexelElement;
+
+GLuint RenderDevice::m_samplerStateCache[3 * 3 * 5];
+
 #else
 constexpr VertexElement VertexTexelElement[] =
 {
@@ -655,10 +662,6 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     currentDeclaration = nullptr;
     //m_curShader = nullptr;
 
-    // fill state caches with dummy values
-    memset(textureStateCache, 0xCC, sizeof(DWORD) * TEXTURE_SAMPLERS * TEXTURE_STATE_CACHE_SIZE);
-    memset(textureSamplerCache, 0xCC, sizeof(DWORD) * TEXTURE_SAMPLERS * TEXTURE_SAMPLER_CACHE_SIZE);
-
     // initialize performance counters
     m_curDrawCalls = m_frameDrawCalls = 0;
     m_curStateChanges = m_frameStateChanges = 0;
@@ -862,6 +865,9 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    // check which parameters can be used for anisotropic filter
    m_mag_aniso = (caps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFANISOTROPIC) != 0;
    m_maxaniso = caps.MaxAnisotropy;
+   memset(m_bound_filter, 0xCC, TEXTURESET_STATE_CACHE_SIZE * sizeof(SamplerFilter));
+   memset(m_bound_clampu, 0xCC, TEXTURESET_STATE_CACHE_SIZE * sizeof(SamplerAddressMode));
+   memset(m_bound_clampv, 0xCC, TEXTURESET_STATE_CACHE_SIZE * sizeof(SamplerAddressMode));
 
    if (((caps.TextureCaps & D3DPTEXTURECAPS_NONPOW2CONDITIONAL) != 0) || ((caps.TextureCaps & D3DPTEXTURECAPS_POW2) != 0))
       ShowError("D3D device does only support power of 2 textures");
@@ -1641,91 +1647,113 @@ void RenderDevice::UploadAndSetSMAATextures()
 #endif
 }
 
-void RenderDevice::SetSamplerState(const DWORD Sampler, const D3DSAMPLERSTATETYPE Type, const DWORD Value)
+void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v)
 {
-#ifdef ENABLE_SDL //!! ??
-/*   glSamplerParameteri(Sampler, GL_TEXTURE_MIN_FILTER, minFilter ? (mipFilter ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR) : GL_NEAREST);
-   glSamplerParameteri(Sampler, GL_TEXTURE_MAG_FILTER, magFilter ? (mipFilter ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR) : GL_NEAREST);
-   m_curStateChanges += 2;*/
-#else
-   const bool invalid_set = ((unsigned int)Type >= TEXTURE_SAMPLER_CACHE_SIZE || Sampler >= TEXTURE_SAMPLERS);
-   if (invalid_set || textureSamplerCache[Sampler][Type] != Value)
+#ifdef ENABLE_SDL
+   int samplerStateId = min((int)clamp_u, 2) * 5 * 3 + min((int)clamp_v, 2) * 5 + min((int)filter, 4);
+   GLuint sampler_state = m_samplerStateCache[samplerStateId];
+   if (sampler_state == 0)
    {
-      CHECKD3D(m_pD3DDevice->SetSamplerState(Sampler, Type, Value));
-      if (!invalid_set)
-         textureSamplerCache[Sampler][Type] = Value;
+      m_curStateChanges += 5;
+      glGenSamplers(1, &sampler_state);
+      m_samplerStateCache[samplerStateId] = sampler_state;
+      constexpr int glAddress[] = { GL_REPEAT, GL_CLAMP_TO_EDGE, GL_MIRRORED_REPEAT, GL_REPEAT };
+      glSamplerParameteri(sampler_state, GL_TEXTURE_WRAP_S, glAddress[clamp_u]);
+      glSamplerParameteri(sampler_state, GL_TEXTURE_WRAP_T, glAddress[clamp_v]);
+      switch (filter)
+      {
+      default: assert(!"unknown filter");
+      case SF_NONE: // No mipmapping
+         glSamplerParameteri(sampler_state, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+         glSamplerParameteri(sampler_state, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+         glSamplerParameterf(sampler_state, GL_TEXTURE_MAX_ANISOTROPY, 1.0f);
+         break;
+      case SF_POINT: // Point sampled (aka nearest mipmap) texture filtering.
+         glSamplerParameteri(sampler_state, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+         glSamplerParameteri(sampler_state, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+         glSamplerParameterf(sampler_state, GL_TEXTURE_MAX_ANISOTROPY, 1.0f);
+         break;
+      case SF_BILINEAR: // Bilinar texture filtering.
+         glSamplerParameteri(sampler_state, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+         glSamplerParameteri(sampler_state, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+         glSamplerParameterf(sampler_state, GL_TEXTURE_MAX_ANISOTROPY, 1.0f);
+         break;
+      case SF_TRILINEAR: // Trilinar texture filtering.
+         glSamplerParameteri(sampler_state, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+         glSamplerParameteri(sampler_state, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+         glSamplerParameterf(sampler_state, GL_TEXTURE_MAX_ANISOTROPY, 1.0f);
+         break;
+      case SF_ANISOTROPIC: // Anisotropic texture filtering.
+         glSamplerParameteri(sampler_state, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+         glSamplerParameteri(sampler_state, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+         glSamplerParameterf(sampler_state, GL_TEXTURE_MAX_ANISOTROPY, m_maxaniso);
+         break;
+      }
+   }
+   glBindSampler(unit, sampler_state);
+   m_curStateChanges++;
+#else
+   if (filter != m_bound_filter[unit])
+   {
+      switch (filter)
+      {
+      default:
+      case SF_NONE:
+         // Don't filter textures, no mipmapping.
+         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MAGFILTER, D3DTEXF_POINT));
+         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MINFILTER, D3DTEXF_POINT));
+         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MIPFILTER, D3DTEXF_NONE));
+         m_curStateChanges+=3;
+         break;
 
-      m_curStateChanges++;
+      case SF_BILINEAR:
+         // Interpolate in 2x2 texels, no mipmapping.
+         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR));
+         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MINFILTER, D3DTEXF_LINEAR));
+         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MIPFILTER, D3DTEXF_NONE));
+         m_curStateChanges += 3;
+         break;
+
+      case SF_TRILINEAR:
+         // Filter textures on 2 mip levels (interpolate in 2x2 texels). And filter between the 2 mip levels.
+         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR));
+         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MINFILTER, D3DTEXF_LINEAR));
+         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR));
+         m_curStateChanges += 3;
+         break;
+
+      case SF_ANISOTROPIC:
+         // Full HQ anisotropic Filter. Should lead to driver doing whatever it thinks is best.
+         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MAGFILTER, m_mag_aniso ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR));
+         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC));
+         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR));
+         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MAXANISOTROPY, min(m_maxaniso, (DWORD)16)));
+         m_curStateChanges += 4;
+         break;
+      }
+      m_bound_filter[unit] = filter;
+   }
+   if (clamp_u != m_bound_clampu[unit])
+   {
+      switch (clamp_u)
+      {
+         case SA_REPEAT: CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP)); m_curStateChanges++; break;
+         case SA_CLAMP: CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP)); m_curStateChanges++; break;
+         case SA_MIRROR: CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_ADDRESSU, D3DTADDRESS_MIRROR)); m_curStateChanges++; break;
+      }
+      m_bound_clampu[unit] = clamp_u;
+   }
+   if (clamp_v != m_bound_clampv[unit])
+   {
+      switch (clamp_v)
+      {
+         case SA_REPEAT: CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP)); m_curStateChanges++; break;
+         case SA_CLAMP: CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP)); m_curStateChanges++; break;
+         case SA_MIRROR: CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_ADDRESSV, D3DTADDRESS_MIRROR)); m_curStateChanges++; break;
+      }
+      m_bound_clampv[unit] = clamp_u;
    }
 #endif
-}
-
-void RenderDevice::SetTextureFilter(const DWORD texUnit, DWORD mode)
-{
-   // user can override the standard/faster-on-low-end trilinear by aniso filtering
-   if ((mode == TEXTURE_MODE_TRILINEAR) && m_force_aniso)
-      mode = TEXTURE_MODE_ANISOTROPIC;
-
-   // if in static rendering mode, use the oversampling there to do the texture 'filtering' (i.e. more sharp and crisp than aniso)
-   if (mode == TEXTURE_MODE_ANISOTROPIC || mode == TEXTURE_MODE_TRILINEAR)
-      if (g_pplayer->m_isRenderingStatic)
-      {
-          SetSamplerState(texUnit, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-          SetSamplerState(texUnit, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-          SetSamplerState(texUnit, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
-          return;
-      }
-
-   //
-
-   switch (mode)
-   {
-   default:
-   case TEXTURE_MODE_POINT:
-      // Don't filter textures, no mipmapping.
-      SetSamplerState(texUnit, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
-      SetSamplerState(texUnit, D3DSAMP_MINFILTER, D3DTEXF_POINT);
-      SetSamplerState(texUnit, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
-      break;
-
-   case TEXTURE_MODE_BILINEAR:
-      // Interpolate in 2x2 texels, no mipmapping.
-      SetSamplerState(texUnit, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-      SetSamplerState(texUnit, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-      SetSamplerState(texUnit, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
-      break;
-
-   case TEXTURE_MODE_TRILINEAR:
-      // Filter textures on 2 mip levels (interpolate in 2x2 texels). And filter between the 2 mip levels.
-      SetSamplerState(texUnit, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-      SetSamplerState(texUnit, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-      SetSamplerState(texUnit, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
-      break;
-
-   case TEXTURE_MODE_ANISOTROPIC:
-      // Full HQ anisotropic Filter. Should lead to driver doing whatever it thinks is best.
-      SetSamplerState(texUnit, D3DSAMP_MAGFILTER, m_mag_aniso ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR);
-      SetSamplerState(texUnit, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC);
-      SetSamplerState(texUnit, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
-      SetSamplerState(texUnit, D3DSAMP_MAXANISOTROPY, min(m_maxaniso, (DWORD)16));
-      break;
-   }
-}
-
-void RenderDevice::SetTextureStageState(const DWORD p1, const D3DTEXTURESTAGESTATETYPE p2, const DWORD p3)
-{
-   if ((unsigned int)p2 < TEXTURE_STATE_CACHE_SIZE && p1 < TEXTURE_SAMPLERS)
-   {
-      if (textureStateCache[p1][p2] == p3)
-      {
-         // texture stage state hasn't changed since last call of this function -> do nothing here
-         return;
-      }
-      textureStateCache[p1][p2] = p3;
-   }
-   CHECKD3D(m_pD3DDevice->SetTextureStageState(p1, p2, p3));
-
-   m_curStateChanges++;
 }
 
 #define RENDER_STATE(name, bitpos, bitsize)                                                                                                                                                  \
@@ -2013,12 +2041,6 @@ void RenderDevice::ApplyRenderStates()
    }
 }
 
-void RenderDevice::SetTextureAddressMode(const DWORD texUnit, const TextureAddressMode mode)
-{
-   SetSamplerState(texUnit, D3DSAMP_ADDRESSU, mode);
-   SetSamplerState(texUnit, D3DSAMP_ADDRESSV, mode);
-}
-
 void RenderDevice::CreateVertexDeclaration(const VertexElement * const element, VertexDeclaration ** declaration)
 {
 #ifndef ENABLE_SDL
@@ -2156,9 +2178,6 @@ void RenderDevice::GetTransform(const TransformStateType p1, D3DMATRIX* p2)
 
 void RenderDevice::ForceAnisotropicFiltering(const bool enable)
 {
-#ifndef ENABLE_SDL
-   m_force_aniso = enable;
-#endif
    SamplerFilter sf = enable ? SF_ANISOTROPIC : SF_TRILINEAR;
    Shader::SetDefaultSamplerFilter(SHADER_tex_sprite, sf);
    Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_A, sf);
