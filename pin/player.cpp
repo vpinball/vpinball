@@ -3936,6 +3936,13 @@ void Player::Bloom()
 
 void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool SMAA, const bool DLAA, const bool NFAA, const bool FXAA1, const bool FXAA2, const bool FXAA3, const unsigned int sharpen, const bool depth_available) //!! SMAA, luma sharpen, dither?
 {
+#ifdef ENABLE_SDL
+   const bool pp_stereo = stereo && m_stereo3D != STEREO_TB && m_stereo3D != STEREO_SBS;
+#else
+   // Stereo is not supported together with post processed AA on DX9 except for top/bottom or side by side
+   assert(!stereo || m_stereo3D == STEREO_TB || m_stereo3D == STEREO_SBS || (!SMAA && !DLAA && !NFAA && !FXAA1 && !FXAA2 && !FXAA3));
+   const bool pp_stereo = stereo;
+#endif
    RenderTarget *outputRT = nullptr;
 
    // Stereo and AA are performed on LDR render buffer after tonemapping (RGB8 or RGB10, but nof RGBF).
@@ -3943,12 +3950,295 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
    // SMAA is a special case since it needs 3 passes, so it uses GetBackBufferTexture also (which is somewhat overkill since it is RGB16F)
    assert(renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer() || renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture());
 
-   if (stereo) // stereo implicitly disables FXAA/SMAA/etc
+   // First Step: Perform post processed anti aliasing
+
+   if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3)
    {
-      if (sharpen && (m_stereo3D == STEREO_TB || m_stereo3D == STEREO_SBS)) // don't sharpen in interlaced stereo or anaglyph!
-         outputRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture();
+      assert(renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture());
+      outputRT = SMAA                   ? m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture() : // SMAA use 3 passes, so we reuse the back buffer for the first
+         (DLAA || sharpen || pp_stereo) ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessTexture(renderedRT)
+                                        : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
+      outputRT->Activate(true);
+
+#ifdef ENABLE_SDL
+      // For DX9, these are defined to fb_unfiltered
+      if (SMAA)
+      {
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_colorTex, renderedRT->GetColorSampler());
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_colorGammaTex, renderedRT->GetColorSampler());
+      }
+#endif
+
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
+      if (depth_available) // Depth is always taken from the MSAA resolved render buffer
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
       else
-         outputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_depth);
+
+      const vec4 w_h_height((float)(1.0 / (double)renderedRT->GetWidth()), (float)(1.0 / (double)renderedRT->GetHeight()), (float)renderedRT->GetWidth(), depth_available ? 1.f : 0.f);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &w_h_height);
+
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SMAA ? SHADER_TECHNIQUE_SMAA_ColorEdgeDetection :
+                                                         (DLAA ? SHADER_TECHNIQUE_DLAA_edge :
+                                                         (NFAA ? SHADER_TECHNIQUE_NFAA :
+                                                         (FXAA3 ? SHADER_TECHNIQUE_FXAA3 :
+                                                         (FXAA2 ? SHADER_TECHNIQUE_FXAA2 :
+                                                                  SHADER_TECHNIQUE_FXAA1)))));
+
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
+      m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
+      renderedRT = outputRT;
+
+      if (SMAA || DLAA) // actual SMAA/DLAA filtering pass, above only edge detection
+      {
+         outputRT = SMAA                 ? m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture2() : // SMAA use 3 passes, so we have a special processing instead of RT ping pong
+                    sharpen || pp_stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessTexture(renderedRT) 
+                                         : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
+         outputRT->Activate(true);
+
+         if (SMAA)
+         {
+            #ifdef ENABLE_SDL
+            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_edgesTex2D, renderedRT->GetColorSampler());
+            #else
+            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("edgesTex2D", renderedRT->GetColorSampler()->GetCoreTexture())); //!! opt.?
+            #endif
+         }
+         else
+            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SMAA ? SHADER_TECHNIQUE_SMAA_BlendWeightCalculation : SHADER_TECHNIQUE_DLAA);
+
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
+         m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
+         renderedRT = outputRT;
+
+         if (SMAA)
+         {
+            outputRT = sharpen || pp_stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessTexture(renderedRT)
+                                            : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
+            outputRT->Activate(true);
+
+            #ifdef ENABLE_SDL
+            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_blendTex2D, renderedRT->GetColorSampler());
+            #else
+            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("edgesTex2D", nullptr)); //!! opt.??
+            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("blendTex2D", renderedRT->GetColorSampler()->GetCoreTexture())); //!! opt.?
+            #endif
+
+            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_NeighborhoodBlending);
+
+            m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
+            m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
+            m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
+            renderedRT = outputRT;
+
+            #ifndef ENABLE_SDL
+            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("blendTex2D", nullptr)); //!! opt.?
+            #endif
+         }
+      }
+   }
+
+   // Second step: performs sharpening
+
+   if (sharpen)
+   {
+      assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
+      outputRT = pp_stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessTexture(renderedRT)
+                           : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
+      outputRT->Activate(true);
+
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
+      if (depth_available) // Depth is always taken from the MSAA resolved render buffer
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
+
+      const vec4 w_h_height((float)(1.0 / (double)renderedRT->GetWidth()), (float)(1.0 / (double)renderedRT->GetHeight()), (float)renderedRT->GetWidth(), depth_available ? 1.f : 0.f);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &w_h_height);
+
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique((sharpen == 1) ? SHADER_TECHNIQUE_CAS : SHADER_TECHNIQUE_BilateralSharp_CAS);
+
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
+      m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
+      renderedRT = outputRT;
+   }
+
+   // Third step: apply stereo
+
+   if (stereo)
+   {
+#ifdef ENABLE_SDL
+      // For STEREO_OFF, STEREO_TB, STEREO_SBS, this won't do anything. The previous postprocess steps should already have written to OutputBackBuffer
+      // For VR, copy each eye to the HMD texture and render the wanted preview if activated
+      if (m_stereo3D == STEREO_VR)
+      {
+#ifdef ENABLE_VR
+         assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
+
+         static int blitMode = -1;
+         if (blitMode == -1)
+         {
+            blitMode = LoadValueIntWithDefault(regKey[RegName::Player], "blitModeVR"s, 0);
+            if (blitMode == 1 && m_pin3d.m_pd3dPrimaryDevice->getGLVersion() < 405)
+               blitMode = 0;
+         }
+
+         RenderTarget *leftTexture = m_pin3d.m_pd3dPrimaryDevice->GetOffscreenVR(0);
+         RenderTarget *rightTexture = m_pin3d.m_pd3dPrimaryDevice->GetOffscreenVR(1);
+
+         switch (blitMode)
+         {
+         case 0:
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, renderedRT->GetCoreFrameBuffer());
+
+            // srcx0, srcy0, srcx1, srcy1, dstx0, dsty0, dstx1, dstyx1
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, leftTexture->GetCoreFrameBuffer());
+            glBlitFramebuffer(0, 0, leftTexture->GetWidth(), leftTexture->GetHeight(), 0, 0, leftTexture->GetWidth(), leftTexture->GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, rightTexture->GetCoreFrameBuffer());
+            glBlitFramebuffer(leftTexture->GetWidth(), 0, leftTexture->GetWidth() + rightTexture->GetWidth(), rightTexture->GetHeight(), 0, 0, rightTexture->GetWidth(),
+               rightTexture->GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+            if (m_vrPreview == VRPREVIEW_LEFT)
+            {
+               glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetCoreFrameBuffer());
+               glBindFramebuffer(GL_READ_FRAMEBUFFER, leftTexture->GetCoreFrameBuffer());
+               glBlitFramebuffer(0, 0, leftTexture->GetWidth(), leftTexture->GetHeight(), 0, 0, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetWidth(),
+                  m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+            }
+            else if (m_vrPreview == VRPREVIEW_RIGHT)
+            {
+               glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetCoreFrameBuffer());
+               glBindFramebuffer(GL_READ_FRAMEBUFFER, rightTexture->GetCoreFrameBuffer());
+               glBlitFramebuffer(0, 0, rightTexture->GetWidth(), rightTexture->GetHeight(), 0, 0, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetWidth(),
+                  m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+            }
+            else if (m_vrPreview == VRPREVIEW_BOTH)
+            {
+               glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetCoreFrameBuffer());
+               glBindFramebuffer(GL_READ_FRAMEBUFFER, leftTexture->GetCoreFrameBuffer());
+               glBlitFramebuffer(0, 0, leftTexture->GetWidth(), leftTexture->GetHeight(), 0, 0, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetWidth() / 2,
+                  m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+               glBindFramebuffer(GL_READ_FRAMEBUFFER, rightTexture->GetCoreFrameBuffer());
+               glBlitFramebuffer(0, 0, rightTexture->GetWidth(), rightTexture->GetHeight(), m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetWidth() / 2, 0,
+                  m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetWidth(), m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+            }
+            break;
+         case 1:
+            glBlitNamedFramebuffer(renderedRT->GetCoreFrameBuffer(), leftTexture->GetCoreFrameBuffer(), 0, 0, leftTexture->GetWidth(), leftTexture->GetHeight(), 0, 0, leftTexture->GetWidth(), leftTexture->GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+            glBlitNamedFramebuffer(renderedRT->GetCoreFrameBuffer(), rightTexture->GetCoreFrameBuffer(), leftTexture->GetWidth(), 0, leftTexture->GetWidth() + rightTexture->GetWidth(), rightTexture->GetHeight(), 0, 0, rightTexture->GetWidth(), rightTexture->GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+            if (m_vrPreview == VRPREVIEW_LEFT)
+            {
+               glBlitNamedFramebuffer(leftTexture->GetCoreFrameBuffer(), m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetCoreFrameBuffer(), 0, 0, leftTexture->GetWidth(),
+                  leftTexture->GetHeight(), 0, 0, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetWidth(), m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetHeight(),
+                  GL_COLOR_BUFFER_BIT, GL_NEAREST);
+            }
+            else if (m_vrPreview == VRPREVIEW_RIGHT)
+            {
+               glBlitNamedFramebuffer(rightTexture->GetCoreFrameBuffer(), m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetCoreFrameBuffer(), 0, 0, rightTexture->GetWidth(),
+                  rightTexture->GetHeight(), 0, 0, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetWidth(), m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetHeight(),
+                  GL_COLOR_BUFFER_BIT, GL_NEAREST);
+            }
+            else if (m_vrPreview == VRPREVIEW_BOTH)
+            {
+               glBlitNamedFramebuffer(leftTexture->GetCoreFrameBuffer(), m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetCoreFrameBuffer(), 0, 0, leftTexture->GetWidth(),
+                  leftTexture->GetHeight(), 0, 0, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetWidth() / 2, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetHeight(),
+                  GL_COLOR_BUFFER_BIT, GL_NEAREST);
+               glBlitNamedFramebuffer(rightTexture->GetCoreFrameBuffer(), m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetCoreFrameBuffer(), 0, 0, rightTexture->GetWidth(),
+                  rightTexture->GetHeight(), m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetWidth() / 2, 0, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetWidth(),
+                  m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+            }
+            break;
+         default:
+            m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTechnique(SHADER_TECHNIQUE_stereo_AMD_DEBUG);
+            m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTexture(SHADER_tex_stereo_fb, renderedRT->GetColorSampler());
+
+            leftTexture->Activate();
+            m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetFloat(SHADER_eye, 0.0f);
+            m_pin3d.m_pd3dPrimaryDevice->StereoShader->Begin();
+            m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
+            m_pin3d.m_pd3dPrimaryDevice->StereoShader->End();
+
+            rightTexture->Activate();
+            m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetFloat(SHADER_eye, 1.0f);
+            m_pin3d.m_pd3dPrimaryDevice->StereoShader->Begin();
+            m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
+            m_pin3d.m_pd3dPrimaryDevice->StereoShader->End();
+
+            if (m_vrPreview != VRPREVIEW_DISABLED)
+            {
+               m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->Activate();
+               if (m_vrPreview != VRPREVIEW_LEFT)
+                  m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetFloat(SHADER_eye, 0.0f);
+               else // FIXME implement both eye preview mode
+                  m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetFloat(SHADER_eye, 1.0f);
+               m_pin3d.m_pd3dPrimaryDevice->StereoShader->Begin();
+               m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
+               m_pin3d.m_pd3dPrimaryDevice->StereoShader->End();
+            }
+            break;
+         }
+         if (m_pin3d.m_pd3dPrimaryDevice->IsVRReady())
+         {
+            vr::Texture_t leftEyeTexture = { (void *)leftTexture->GetColorSampler()->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
+            vr::EVRCompositorError error = vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
+            if (error != vr::VRCompositorError_None)
+            {
+               char msg[128];
+               sprintf_s(msg, sizeof(msg), "VRCompositor Submit Left Error %u", error);
+               ShowError(msg);
+            }
+            vr::Texture_t rightEyeTexture = { (void *)rightTexture->GetColorSampler()->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
+            error = vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
+            if (error != vr::VRCompositorError_None)
+            {
+               char msg[128];
+               sprintf_s(msg, sizeof(msg), "VRCompositor Submit Right Error %u", error);
+               ShowError(msg);
+            }
+            //vr::VRCompositor()->PostPresentHandoff(); // PostPresentHandoff gives mixed results, improved GPU frametime for some, worse CPU frametime for others, troublesome enough to not warrants it's usage for now
+         }
+#endif
+      }
+      else if (m_stereo3D >= STEREO_ANAGLYPH_RC && m_stereo3D <= STEREO_ANAGLYPH_AB)
+      {
+         // Anaglyph
+         assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
+         const vec4 ms_zpd_ya_td(m_ptable->GetMaxSeparation(), m_ptable->GetZPD(), m_stereo3DY ? 1.0f : 0.0f, (float)m_stereo3D);
+         const vec4 a_ds_c(m_global3DDesaturation, m_global3DContrast, 0.f, 0.f);
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTechnique(SHADER_TECHNIQUE_stereo_anaglyph);
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTexture(SHADER_tex_stereo_fb, renderedRT->GetColorSampler());
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_ms_zpd_ya_td, &ms_zpd_ya_td);
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Anaglyph_DeSaturation_Contrast, &a_ds_c);
+         m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->Activate();
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->Begin();
+         m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->End();
+      }
+      else if (m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT)
+      {
+         // Interlaced, handled in shader
+         assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTechnique(m_stereo3D == STEREO_INT ? SHADER_TECHNIQUE_stereo_Int : SHADER_TECHNIQUE_stereo_Flipped_Int);
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTexture(SHADER_tex_stereo_fb, renderedRT->GetColorSampler());
+         m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->Activate();
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->Begin();
+         m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->End();
+      }
+      else
+      {
+         // STEREO_OFF, STEREO_TB: top bottom, STEREO_SBS: side by side : nothing to do
+         assert(renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
+      }
+#else
+      // DirectX doesn't support 'real' stereo, instead of performing 2 renders from each eyes, it fakes stereo using a postprocess parallax filter
+      assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
+      outputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
       outputRT->Activate(true);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
@@ -3975,110 +4265,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
       m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
       renderedRT = outputRT;
-   }
-   else if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3)
-   {
-      if(SMAA || DLAA || sharpen)
-         outputRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture();
-      else
-         outputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
-      outputRT->Activate(true);
-
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
-      if (depth_available) // Depth is always taken from the MSAA resolved render buffer
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
-
-      const vec4 w_h_height((float)(1.0 / (double)renderedRT->GetWidth()), (float)(1.0 / (double)renderedRT->GetHeight()), (float)renderedRT->GetWidth(), depth_available ? 1.f : 0.f);
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &w_h_height);
-
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SMAA ? SHADER_TECHNIQUE_SMAA_ColorEdgeDetection :
-                                                         (DLAA ? SHADER_TECHNIQUE_DLAA_edge :
-                                                         (NFAA ? SHADER_TECHNIQUE_NFAA :
-                                                         (FXAA3 ? SHADER_TECHNIQUE_FXAA3 :
-                                                         (FXAA2 ? SHADER_TECHNIQUE_FXAA2 :
-                                                                  SHADER_TECHNIQUE_FXAA1)))));
-
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
-      m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
-      renderedRT = outputRT;
-
-      if (SMAA || DLAA) // actual SMAA/DLAA filtering pass, above only edge detection
-      {
-         if (SMAA)
-            outputRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture2();
-         else
-            outputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
-         outputRT->Activate(true);
-
-         if (SMAA)
-         {
-             CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("edgesTex2D", m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler()->GetCoreTexture())); //!! opt.?
-         }
-         else
-            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
-
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SMAA ? SHADER_TECHNIQUE_SMAA_BlendWeightCalculation : SHADER_TECHNIQUE_DLAA);
-
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
-         m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
-         renderedRT = outputRT;
-
-         if (SMAA)
-         {
-            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("edgesTex2D", nullptr)); //!! opt.??
-
-            if (sharpen)
-               outputRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture();
-            else
-               outputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
-            outputRT->Activate(true);
-
-            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("blendTex2D", m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture2()->GetColorSampler()->GetCoreTexture())); //!! opt.?
-
-            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_NeighborhoodBlending);
-
-            m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
-            m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
-            m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
-            renderedRT = outputRT;
-
-            #ifndef ENABLE_SDL
-            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("blendTex2D", nullptr)); //!! opt.?
-            #endif
-         }
-      }
-   }
-
-   //
-
-#ifdef ENABLE_SDL
-   if (sharpen)
-#else
-   // Since DirectX performs stereo as a postprocess parallax step, don't sharpen in interlaced stereo or anaglyph!
-   if (sharpen && (!stereo || (m_stereo3D == STEREO_TB || m_stereo3D == STEREO_SBS)))
 #endif
-   {
-      assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
-      outputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
-      outputRT->Activate(true);
-
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
-      if (depth_available) // Depth is always taken from the MSAA resolved render buffer
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
-
-      const vec4 w_h_height((float)(1.0 / (double)renderedRT->GetWidth()), (float)(1.0 / (double)renderedRT->GetHeight()), (float)renderedRT->GetWidth(), depth_available ? 1.f : 0.f);
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &w_h_height);
-
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique((sharpen == 1) ? SHADER_TECHNIQUE_CAS : SHADER_TECHNIQUE_BilateralSharp_CAS);
-
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
-      m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
-      renderedRT = outputRT;
    }
 }
 
@@ -4596,14 +4783,20 @@ void Player::PrepareVideoBuffersNormal()
 {
    const bool useAA = ((m_AAfactor != 1.0f) && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
    const bool stereo= m_stereo3D == STEREO_VR || ((m_stereo3D != STEREO_OFF) && m_stereo3Denabled && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable());
-   const bool SMAA  = (((m_FXAA == Quality_SMAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_SMAA));
-   const bool DLAA  = (((m_FXAA == Standard_DLAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_DLAA));
-   const bool NFAA  = (((m_FXAA == Fast_NFAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_NFAA));
-   const bool FXAA1 = (((m_FXAA == Fast_FXAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_FXAA));
-   const bool FXAA2 = (((m_FXAA == Standard_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_FXAA));
-   const bool FXAA3 = (((m_FXAA == Quality_FXAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_FXAA));
+#ifdef ENABLE_SDL
+   const bool PostProcAA = true;
+#else
+   // Since stereo is applied as a postprocess step in DX9, it disables AA and sharpening except for top/bottom & side by side modes
+   const bool PostProcAA = !stereo || (m_stereo3D == STEREO_TB) || (m_stereo3D == STEREO_SBS);
+#endif
+   const bool SMAA  = PostProcAA && (((m_FXAA == Quality_SMAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_SMAA));
+   const bool DLAA  = PostProcAA && (((m_FXAA == Standard_DLAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_DLAA));
+   const bool NFAA  = PostProcAA && (((m_FXAA == Fast_NFAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_NFAA));
+   const bool FXAA1 = PostProcAA && (((m_FXAA == Fast_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_FXAA));
+   const bool FXAA2 = PostProcAA && (((m_FXAA == Standard_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_FXAA));
+   const bool FXAA3 = PostProcAA && (((m_FXAA == Quality_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_FXAA));
    const bool ss_refl = (((m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1)) && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && m_ptable->m_SSRScale > 0.f);
-   const unsigned int sharpen = m_sharpen;
+   const unsigned int sharpen = PostProcAA ? m_sharpen : 0;
 
    RenderTarget *renderedRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture();
    RenderTarget *ouputRT = nullptr;
@@ -4739,14 +4932,20 @@ void Player::PrepareVideoBuffersAO()
 {
    const bool useAA = ((m_AAfactor != 1.0f) && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
    const bool stereo= m_stereo3D == STEREO_VR || ((m_stereo3D != STEREO_OFF) && m_stereo3Denabled && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable());
-   const bool SMAA  = (((m_FXAA == Quality_SMAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_SMAA));
-   const bool DLAA  = (((m_FXAA == Standard_DLAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_DLAA));
-   const bool NFAA  = (((m_FXAA == Fast_NFAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_NFAA));
-   const bool FXAA1 = (((m_FXAA == Fast_FXAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_FXAA));
-   const bool FXAA2 = (((m_FXAA == Standard_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_FXAA));
-   const bool FXAA3 = (((m_FXAA == Quality_FXAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_FXAA));
+#ifdef ENABLE_SDL
+   const bool PostProcAA = true;
+#else
+   // Since stereo is applied as a postprocess step in DX9, it disables AA and sharpening except for top/bottom & side by side modes
+   const bool PostProcAA = !stereo || stereo == STEREO_TB || stereo == STEREO_SBS;
+#endif
+   const bool SMAA  = PostProcAA && (((m_FXAA == Quality_SMAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_SMAA));
+   const bool DLAA  = PostProcAA && (((m_FXAA == Standard_DLAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_DLAA));
+   const bool NFAA  = PostProcAA && (((m_FXAA == Fast_NFAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_NFAA));
+   const bool FXAA1 = PostProcAA && (((m_FXAA == Fast_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_FXAA));
+   const bool FXAA2 = PostProcAA && (((m_FXAA == Standard_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_FXAA));
+   const bool FXAA3 = PostProcAA && (((m_FXAA == Quality_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_FXAA));
    const bool ss_refl = (((m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1)) && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && m_ptable->m_SSRScale > 0.f);
-   const unsigned int sharpen = m_sharpen;
+   const unsigned int sharpen = PostProcAA ? m_sharpen : 0;
 
    RenderTarget *renderedRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture();
    RenderTarget *ouputRT = nullptr;
