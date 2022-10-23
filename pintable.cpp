@@ -10,6 +10,7 @@
 #include <fstream>
 #include <sstream>
 #include "Shader.h"
+#include "captureExt.h"
 #include "freeimage.h"
 #include "inc\ThreadPool.h"
 #include "inc\scalefx.h"
@@ -830,6 +831,9 @@ STDMETHODIMP ScriptGlobalTable::put_DMDHeight(int pVal)
 
 STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!! use 64bit instead of 8bit to reduce overhead??
 {
+   if (captureExternalDMD()) // If DMD capture is enabled check if external DMD exists
+      return S_OK;
+
    SAFEARRAY *psa = pVal.parray;
 
    if (psa && g_pplayer && g_pplayer->m_dmd.x > 0 && g_pplayer->m_dmd.y > 0)
@@ -874,6 +878,9 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
 
 STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as input //!! use 64bit instead of 32bit to reduce overhead??
 {
+   if (captureExternalDMD()) // If DMD capture is enabled check if external DMD exists
+      return S_OK;
+
 	SAFEARRAY *psa = pVal.parray;
 
 	if (psa && g_pplayer && g_pplayer->m_dmd.x > 0 && g_pplayer->m_dmd.y > 0)

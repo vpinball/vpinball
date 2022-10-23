@@ -17,6 +17,7 @@ Pin3D::Pin3D()
    m_pd3dSecondaryDevice = nullptr;
    m_pddsStatic = nullptr;
    m_envRadianceTexture = nullptr;
+   m_backGlass = nullptr;
 
    m_cam.x = 0.f;
    m_cam.y = 0.f;
@@ -52,6 +53,8 @@ Pin3D::~Pin3D()
    delete m_pd3dPrimaryDevice;
    m_pd3dPrimaryDevice = nullptr;
    m_pd3dSecondaryDevice = nullptr;
+
+   delete m_backGlass;
 }
 
 void Pin3D::TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, const WORD * const __restrict rgi, const int count, Vertex2D * const __restrict rgvout) const
@@ -492,11 +495,12 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
    if (m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && useAO)
    {
 #ifdef ENABLE_SDL
-      m_pddsAOBackTmpBuffer = new RenderTarget(m_pd3dPrimaryDevice, m_pd3dPrimaryDevice->getBufwidth(), m_pd3dPrimaryDevice->getBufheight(), colorFormat::GREY8, false, false, stereo3D,
+      // the width must be the one the back render buffer (not the one of the preview viewport)
+      m_pddsAOBackBuffer = new RenderTarget(m_pd3dPrimaryDevice, m_pd3dPrimaryDevice->m_width, m_pd3dPrimaryDevice->m_height, colorFormat::GREY8, false, 1, STEREO_OFF,
          "Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
-      m_pddsAOBackBuffer = new RenderTarget(m_pd3dPrimaryDevice, m_pd3dPrimaryDevice->getBufwidth(), m_pd3dPrimaryDevice->getBufheight(), colorFormat::GREY8, false, false, stereo3D,
-         "Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
+      m_pddsAOBackTmpBuffer = m_pddsAOBackBuffer->Duplicate();
 #else
+      // FIXME there should not be any difference between DX & OGL here
       m_pddsAOBackTmpBuffer = new RenderTarget(m_pd3dPrimaryDevice, m_viewPort.Width, m_viewPort.Height, colorFormat::GREY8, false, false, stereo3D,
          "Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
       m_pddsAOBackBuffer = new RenderTarget(m_pd3dPrimaryDevice, m_viewPort.Width, m_viewPort.Height, colorFormat::GREY8, false, false, stereo3D,
@@ -528,6 +532,11 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    m_pd3dSecondaryDevice = m_pd3dPrimaryDevice; //!! for now, there is no secondary device :/
 
    //
+
+   if (m_stereo3D == STEREO_VR)
+      m_backGlass = new BackGlass(m_pd3dSecondaryDevice, g_pplayer->m_ptable->GetDecalsEnabled() ? g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_BG_image[g_pplayer->m_ptable->m_BG_current_set]) : nullptr);
+   else
+      m_backGlass = nullptr;
 
 #ifndef ENABLE_SDL
    IndexBuffer::setD3DDevice(m_pd3dPrimaryDevice->GetCoreDevice(), m_pd3dSecondaryDevice->GetCoreDevice());
@@ -918,7 +927,13 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
    m_proj.m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
    m_proj.ScaleView(g_pplayer->m_ptable->m_BG_scalex[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_scaley[g_pplayer->m_ptable->m_BG_current_set], 1.0f);
 
-   //!! FSS: added 500.0f to next line on camera y 
+#ifdef ENABLE_VR
+   // Full scene scaling is only used in VR (and VR preview for debugging) to adapt to HMD scale
+   if (m_stereo3D == STEREO_VR)
+      m_proj.ScaleView(m_pd3dPrimaryDevice->m_scale, m_pd3dPrimaryDevice->m_scale, m_pd3dPrimaryDevice->m_scale);
+#endif
+
+   //!! FSS: added 500.0f to next line on camera y
    //!! FSS: m_proj.m_vertexcamera.y += camy;
    //!! FSS: g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set] += camy;
    //!! FSS: camy = 0.0f;

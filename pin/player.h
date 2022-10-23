@@ -555,6 +555,7 @@ public:
 
    int2 m_dmd;
    BaseTexture* m_texdmd;
+   BaseTexture* m_texPUP = nullptr;
 
    int m_overall_frames; // amount of rendered frames since start
 
@@ -688,6 +689,8 @@ public:
 #endif
 
    bool m_scaleFX_DMD;
+   bool m_capExtDMD;
+   bool m_capPUP;
 
    bool m_toogle_DTFS;
 
