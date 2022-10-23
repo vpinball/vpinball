@@ -5881,47 +5881,71 @@ void Player::DrawBalls()
       Light* light_nearest[MAX_BALL_LIGHT_SOURCES];
       search_for_nearest(pball, lights, light_nearest);
 
+      vec4 emission = convertColor(m_ptable->m_Light[0].emission);
+      emission.x *= m_ptable->m_lightEmissionScale * m_globalEmissionScale;
+      emission.y *= m_ptable->m_lightEmissionScale * m_globalEmissionScale;
+      emission.z *= m_ptable->m_lightEmissionScale * m_globalEmissionScale;
+
+#ifdef ENABLE_SDL
+      float lightPos[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES][4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      float lightEmission[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES][4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      float *pLightPos = (float *)lightPos, *pLightEm = (float *)lightEmission;
+#else
       struct CLight
       {
          float vPos[3];
          float vEmission[3];
       };
       CLight l[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES];
-
-      vec4 emission = convertColor(m_ptable->m_Light[0].emission);
-      emission.x *= m_ptable->m_lightEmissionScale*m_globalEmissionScale;
-      emission.y *= m_ptable->m_lightEmissionScale*m_globalEmissionScale;
-      emission.z *= m_ptable->m_lightEmissionScale*m_globalEmissionScale;
+      float *pLightPos = (float *)l, *pLightEm = (float *)l;
+#endif
 
       for (unsigned int i2 = 0; i2 < MAX_LIGHT_SOURCES; ++i2)
       {
-         memcpy(&l[i2].vPos, &m_ptable->m_Light[i2].pos, sizeof(float) * 3);
-         memcpy(&l[i2].vEmission, &emission, sizeof(float) * 3);
+#ifdef ENABLE_SDL
+         const int pPos = i2 * 4, pEm = pPos;
+#else
+         const int pPos = i2 * 6, pEm = pPos + 3;
+#endif
+         memcpy(&pLightPos[pPos], &m_ptable->m_Light[i2].pos, sizeof(float) * 3);
+         memcpy(&pLightEm[pEm], &emission, sizeof(float) * 3);
       }
 
       for (unsigned int light_i = 0; light_i < MAX_BALL_LIGHT_SOURCES; ++light_i)
+      {
+#ifdef ENABLE_SDL
+         const int pPos = (light_i + MAX_LIGHT_SOURCES) * 4, pEm = pPos;
+#else
+         const int pPos = (light_i + MAX_LIGHT_SOURCES) * 6, pEm = pPos + 3;
+#endif
          if (light_nearest[light_i] != nullptr)
          {
-            l[light_i + MAX_LIGHT_SOURCES].vPos[0] = light_nearest[light_i]->m_d.m_vCenter.x;
-            l[light_i + MAX_LIGHT_SOURCES].vPos[1] = light_nearest[light_i]->m_d.m_vCenter.y;
-            l[light_i + MAX_LIGHT_SOURCES].vPos[2] = light_nearest[light_i]->m_d.m_meshRadius + light_nearest[light_i]->m_surfaceHeight; //!! z pos
+            pLightPos[pPos + 0] = light_nearest[light_i]->m_d.m_vCenter.x;
+            pLightPos[pPos + 1] = light_nearest[light_i]->m_d.m_vCenter.y;
+            pLightPos[pPos + 2] = light_nearest[light_i]->m_d.m_meshRadius + light_nearest[light_i]->m_surfaceHeight; //!! z pos
             const float c = map_bulblight_to_emission(light_nearest[light_i]) * pball->m_bulb_intensity_scale;
             const vec4 color = convertColor(light_nearest[light_i]->m_d.m_color);
-            l[light_i + MAX_LIGHT_SOURCES].vEmission[0] = color.x*c;
-            l[light_i + MAX_LIGHT_SOURCES].vEmission[1] = color.y*c;
-            l[light_i + MAX_LIGHT_SOURCES].vEmission[2] = color.z*c;
+            pLightEm[pEm + 0] = color.x * c;
+            pLightEm[pEm + 1] = color.y * c;
+            pLightEm[pEm + 2] = color.z * c;
          }
          else //!! rather just set the max number of ball lights!?
          {
-            l[light_i + MAX_LIGHT_SOURCES].vPos[0] = -100000.0f;
-            l[light_i + MAX_LIGHT_SOURCES].vPos[1] = -100000.0f;
-            l[light_i + MAX_LIGHT_SOURCES].vPos[2] = -100000.0f;
-            l[light_i + MAX_LIGHT_SOURCES].vEmission[0] = 0.0f;
-            l[light_i + MAX_LIGHT_SOURCES].vEmission[1] = 0.0f;
-            l[light_i + MAX_LIGHT_SOURCES].vEmission[2] = 0.0f;
+            pLightPos[pPos + 0] = -100000.0f;
+            pLightPos[pPos + 1] = -100000.0f;
+            pLightPos[pPos + 2] = -100000.0f;
+            pLightEm[pEm + 0] = 0.0f;
+            pLightEm[pEm + 1] = 0.0f;
+            pLightEm[pEm + 2] = 0.0f;
          }
+      }
 
-      m_ballShader->SetFloat4v(SHADER_packedLights, (vec4*) l, sizeof(CLight) * (MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES) / (4 * sizeof(float)));
+#ifdef ENABLE_SDL
+      m_ballShader->SetFloat4v(SHADER_lightPos, (vec4 *)lightPos, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
+      m_ballShader->SetFloat4v(SHADER_lightEmission, (vec4 *)lightEmission, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
+#else
+      m_ballShader->SetFloat4v(SHADER_packedLights, (vec4 *)l, sizeof(CLight) * (MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES) / (4 * sizeof(float)));
+#endif
 
       // now for a weird hack: make material more rough, depending on how near the nearest lightsource is, to 'emulate' the area of the bulbs (as VP only features point lights so far)
       float Roughness = 0.8f;
