@@ -1,4 +1,4 @@
-name: vpinball
+name: vpinball-gl
 on:
   push:
 
@@ -54,8 +54,8 @@ jobs:
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
   build:
-    name: Build VPinballX-${{ matrix.config }}-${{ matrix.platform }}
-    runs-on: windows-2019
+    name: Build VPinballX_GL-${{ matrix.config }}-${{ matrix.platform }}
+    runs-on: windows-latest
     needs: [ dxsdk, version ]
     strategy:
       fail-fast: false
@@ -66,24 +66,36 @@ jobs:
             bass: x64/Bass64.dll
             free-image: x64/FreeImage64.dll
             sci-lexer-vp: x64/SciLexerVP64.dll
+            sdl2-ttf: x64/SDL2_ttf.dll
+            sdl2: x64/SDL2.dll
+            openvr-api: x64/openvr_api.dll
             config: Release
           - platform: win-x64
             platform-name: x64
             bass: x64/Bass64.dll
             free-image: x64/FreeImage64.dll
             sci-lexer-vp: x64/SciLexerVP64.dll
+            sdl2-ttf: x64/SDL2_ttf.dll
+            sdl2: x64/SDL2.dll
+            openvr-api: x64/openvr_api.dll
             config: Debug
           - platform: win-x86
             platform-name: Win32
             bass: Bass.dll
             free-image: FreeImage.dll
             sci-lexer-vp: SciLexerVP.dll
+            sdl2-ttf: SDL2_ttf.dll
+            sdl2: SDL2.dll
+            openvr-api: openvr_api.dll
             config: Release
           - platform: win-x86
             platform-name: Win32
             bass: Bass.dll
             free-image: FreeImage.dll
             sci-lexer-vp: SciLexerVP.dll
+            sdl2-ttf: SDL2_ttf.dll
+            sdl2: SDL2.dll
+            openvr-api: openvr_api.dll
             config: Debug
     steps:
       - uses: actions/checkout@v3
@@ -97,10 +109,8 @@ jobs:
       - name: Build
         run: |
           export DXSDK_DIR="${GITHUB_WORKSPACE}/DXSDK"
-          # cmake can't find fxc.exe so copy one into the a directory in the path
-          cp "/c/Program Files (x86)/Windows Kits/10/bin/10.0.16299.0/x86/fxc.exe" /mingw64/bin
           cp cmake/CMakeLists_${{ matrix.platform}}.txt CMakeLists.txt
-          cmake -T v141_xp -G "Visual Studio 16 2019" -A ${{ matrix.platform-name }} -B build
+          cmake -G "Visual Studio 17 2022" -A ${{ matrix.platform-name }} -B build
           cmake --build build --config ${{ matrix.config }}
 #      - name: Compress
 #        if: matrix.config == 'Release'
@@ -108,13 +118,16 @@ jobs:
 #          curl -sL -H "Authorization: Token ${{ secrets.GH_PAT }}" https://api.github.com/repos/upx/upx/actions/artifacts/${{ env.UPX_ARTIFACT }}/zip -o upx.zip
 #          7z x upx.zip -oupx
 #          rm upx.zip
-#          ./upx/upx.exe --best --lzma build/${{ matrix.config }}/VPinballX.exe
+#          ./upx/upx.exe --best --lzma build/${{ matrix.config }}/VPinballX_GL.exe
       - run: |
           mkdir tmp 
-          cp build/${{ matrix.config }}/VPinballX.* tmp
+          cp build/${{ matrix.config }}/VPinballX_GL.* tmp
           cp dll/${{ matrix.bass }} tmp
           cp dll/${{ matrix.free-image }} tmp
           cp dll/${{ matrix.sci-lexer-vp }} tmp
+          cp dll/${{ matrix.sdl2-ttf }} tmp
+          cp dll/${{ matrix.sdl2 }} tmp
+          cp dll/${{ matrix.openvr-api }} tmp
           cp txt/Changelog_Scripts.txt tmp
           cp txt/Changelog.txt tmp
           cp txt/CommandLineParameters.txt tmp
@@ -130,9 +143,10 @@ jobs:
           cp txt/PhysicValues.txt tmp
           cp txt/RegistryKeys.txt tmp
           cp txt/Scripts.txt tmp 
+          cp -r glshader tmp 
           cp -r scripts tmp
           cp -r tables tmp
       - uses: actions/upload-artifact@v3
         with:
-          name: VPinballX-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
+          name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
           path: tmp
