@@ -33,6 +33,7 @@ add_compile_definitions(
    TWEAK_GL_SHADER
    ENABLE_BAM
    USE_DINPUT8
+   USE_IMGUI
 )
 
 add_compile_options(
