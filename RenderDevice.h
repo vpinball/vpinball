@@ -195,7 +195,7 @@ public:
    RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; } // The screen render target
 
    // VR/Stereo Stuff
-#ifdef ENABLE_SDL
+#ifdef ENABLE_VR
    void InitVR();
    bool IsVRReady() const { return m_pHMD != nullptr; }
    void SetTransformVR();
@@ -388,9 +388,7 @@ public:
    Shader *FBShader;
    Shader *flasherShader;
    Shader *lightShader;
-#ifdef ENABLE_SDL
    Shader *StereoShader;
-#endif
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    Shader *classicLightShader;
 #else
