@@ -61,7 +61,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: win-x64
+          - platform: gl-win-x64
             platform-name: x64
             bass: x64/Bass64.dll
             free-image: x64/FreeImage64.dll
@@ -70,7 +70,7 @@ jobs:
             sdl2: x64/SDL2.dll
             openvr-api: x64/openvr_api.dll
             config: Release
-          - platform: win-x64
+          - platform: gl-win-x64
             platform-name: x64
             bass: x64/Bass64.dll
             free-image: x64/FreeImage64.dll
@@ -79,7 +79,7 @@ jobs:
             sdl2: x64/SDL2.dll
             openvr-api: x64/openvr_api.dll
             config: Debug
-          - platform: win-x86
+          - platform: gl-win-x86
             platform-name: Win32
             bass: Bass.dll
             free-image: FreeImage.dll
@@ -88,7 +88,7 @@ jobs:
             sdl2: SDL2.dll
             openvr-api: openvr_api.dll
             config: Release
-          - platform: win-x86
+          - platform: gl-win-x86
             platform-name: Win32
             bass: Bass.dll
             free-image: FreeImage.dll
