@@ -1238,30 +1238,46 @@ void Primitive::RenderObject()
    if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
       pd3dDevice->basicShader->SetDisableLighting(vec4(m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f, 0.f));
 
-   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+   Texture * pin = nullptr;
    Texture * const nMap = m_ptable->GetImage(m_d.m_szNormalMap);
-   if (pin && nMap)
-   {
-      pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture_normal, mat->m_bIsMetal);
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, SF_TRILINEAR, SA_REPEAT, SA_REPEAT, true);
-      pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
-      pd3dDevice->basicShader->SetBool(SHADER_objectSpaceNormalMap, m_d.m_objectSpaceNormalMap);
-      pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
-   }
-   else if (pin)
+
+   if (g_pplayer->m_texPUP && m_d.m_isBackGlassImage)
    {
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
       // accommodate models with UV coords outside of [0,1]
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
-      pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
-      pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
+      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, g_pplayer->m_texPUP, SF_TRILINEAR, SA_REPEAT, SA_REPEAT);
    }
    else
    {
-      pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
-      pd3dDevice->basicShader->SetMaterial(mat, false);
+      pin = m_ptable->GetImage(m_d.m_szImage);
+      if (pin && nMap)
+      {
+         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
+         // accommodate models with UV coords outside of [0,1]
+         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
+         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, SF_TRILINEAR, SA_REPEAT, SA_REPEAT, true);
+         pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
+         pd3dDevice->basicShader->SetBool(SHADER_objectSpaceNormalMap, m_d.m_objectSpaceNormalMap);
+         pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
+      }
+      else if (pin)
+      {
+         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
+         // accommodate models with UV coords outside of [0,1]
+         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
+         pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
+         pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
+      }
+      else
+      {
+         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
+         pd3dDevice->basicShader->SetMaterial(mat, false);
+      }
    }
+
+#ifdef ENABLE_SDL
+   pd3dDevice->basicShader->SetBool(SHADER_doNormalMapping, nMap);
+#endif
 
    // set transform
    g_pplayer->UpdateBasicShaderMatrix(m_fullMatrix);
@@ -1336,6 +1352,9 @@ void Primitive::RenderObject()
          pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), m_indexBuffer, 0, (DWORD)m_mesh.NumIndices());
       pd3dDevice->basicShader->End();
    }
+#ifdef ENABLE_SDL
+   if (nMap) pd3dDevice->basicShader->SetBool(SHADER_doNormalMapping, false);//Only place where nMap is used
+#endif
 
    pd3dDevice->basicShader->SetFlasherColorAlpha(previousFlasherColorAlpha);
 
@@ -1634,7 +1653,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    case FID(RTV6): pbr->GetFloat(m_d.m_aRotAndTra[6]); break;
    case FID(RTV7): pbr->GetFloat(m_d.m_aRotAndTra[7]); break;
    case FID(RTV8): pbr->GetFloat(m_d.m_aRotAndTra[8]); break;
-   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
+   case FID(IMAG): pbr->GetString(m_d.m_szImage); m_d.m_isBackGlassImage = (_stricmp(m_d.m_szImage.c_str(), "backglassimage") == 0); break;
    case FID(NRMA): pbr->GetString(m_d.m_szNormalMap); break;
    case FID(SIDS): pbr->GetInt(m_d.m_Sides); break;
    case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
