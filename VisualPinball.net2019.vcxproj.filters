@@ -1506,16 +1506,16 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="inc\stb_image_write.h">
-      <Filter>headers</Filter>
+      <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\glad\glad.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imgui_impl_opengl3.h">
-      <Filter>headers</Filter>
+      <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imgui_impl_opengl3_loader.h">
-      <Filter>headers</Filter>
+      <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\VROptionsDialog.h">
       <Filter>headers</Filter>
