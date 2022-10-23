@@ -74,9 +74,9 @@ void Pin3D::TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, cons
       const float z = rgv[l].z;
 
       // Transform it through the current matrix set
-      const float xp = m_proj.m_matrixTotal._11*x + m_proj.m_matrixTotal._21*y + m_proj.m_matrixTotal._31*z + m_proj.m_matrixTotal._41;
-      const float yp = m_proj.m_matrixTotal._12*x + m_proj.m_matrixTotal._22*y + m_proj.m_matrixTotal._32*z + m_proj.m_matrixTotal._42;
-      const float wp = m_proj.m_matrixTotal._14*x + m_proj.m_matrixTotal._24*y + m_proj.m_matrixTotal._34*z + m_proj.m_matrixTotal._44;
+      const float xp = m_proj.m_matrixTotal[0]._11*x + m_proj.m_matrixTotal[0]._21*y + m_proj.m_matrixTotal[0]._31*z + m_proj.m_matrixTotal[0]._41;
+      const float yp = m_proj.m_matrixTotal[0]._12*x + m_proj.m_matrixTotal[0]._22*y + m_proj.m_matrixTotal[0]._32*z + m_proj.m_matrixTotal[0]._42;
+      const float wp = m_proj.m_matrixTotal[0]._14*x + m_proj.m_matrixTotal[0]._24*y + m_proj.m_matrixTotal[0]._34*z + m_proj.m_matrixTotal[0]._44;
 
       // Finally, scale the vertices to screen coords. This step first
       // "flattens" the coordinates from 3D space to 2D device coordinates,
@@ -511,7 +511,7 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
 
 HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, const int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl)
 {
-   m_stereo3D = stereo3D;
+   m_proj.m_stereo3D = m_stereo3D = stereo3D;
    m_AAfactor = AAfactor;
 
    // set the expected viewport for the newly created device (it may be modified upon creation)
@@ -710,18 +710,17 @@ Matrix3D ComputeLaybackTransform(const float layback)
 void Pin3D::UpdateMatrices()
 {
 #ifdef ENABLE_VR
-   if (m_stereo3D == STEREO_VR) {
+   if (m_stereo3D == STEREO_VR && m_pd3dPrimaryDevice->IsVRReady())
+   {
+      // FIXME RenderDevice should update directly the pinprojection instead of duplicating and copying
       m_pd3dPrimaryDevice->SetTransformVR();
-      Shader::GetTransform(TRANSFORMSTATE_PROJECTION, m_proj.m_matProj, 2);
-      Shader::GetTransform(TRANSFORMSTATE_VIEW, &m_proj.m_matView, 1);
+      m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_PROJECTION, m_proj.m_matProj, 2);
+      m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &m_proj.m_matView, 1);
    } else
 #endif
-   {
-      m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_PROJECTION, &m_proj.m_matProj);
-      m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &m_proj.m_matView);
-   }
+   m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_PROJECTION, m_proj.m_matProj, m_stereo3D != STEREO_OFF  ? 2 : 1);
+   m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &m_proj.m_matView);
    m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_WORLD, &m_proj.m_matWorld);
-
    m_proj.CacheTransform();
 }
 
@@ -812,7 +811,7 @@ void Pin3D::InitLayoutFS()
 #endif
    {
       proj = Matrix3D::MatrixPerspectiveOffCenterLH(left, right, bottom, top, m_proj.m_rznear, m_proj.m_rzfar);
-      memcpy(m_proj.m_matProj.m, proj.m, sizeof(float) * 4 * 4);
+      memcpy(m_proj.m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
    }
 
    //m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
@@ -942,13 +941,14 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
    if (m_stereo3D != STEREO_OFF)
       m_proj.m_rzfar += 5000.f;
    Matrix3D proj = Matrix3D::MatrixPerspectiveFovLH(ANGTORAD(FOV), aspect, m_proj.m_rznear, m_proj.m_rzfar);
-   memcpy(m_proj.m_matProj.m, proj.m, sizeof(float) * 4 * 4);
+   memcpy(m_proj.m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
    // in-pixel offset for manual oversampling
    if (xpixoff != 0.f || ypixoff != 0.f)
    {
       Matrix3D projTrans;
       projTrans.SetTranslation((float)((double)xpixoff / (double)m_viewPort.Width), (float)((double)ypixoff / (double)m_viewPort.Height), 0.f);
-      projTrans.Multiply(m_proj.m_matProj, m_proj.m_matProj);
+      projTrans.Multiply(m_proj.m_matProj[0], m_proj.m_matProj[0]);
+      projTrans.Multiply(m_proj.m_matProj[1], m_proj.m_matProj[1]);
    }
 
    //m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
@@ -984,7 +984,7 @@ Vertex3Ds Pin3D::Unproject(const Vertex3Ds& point)
 {
    m_proj.CacheTransform(); // compute m_matrixTotal
 
-   Matrix3D m2 = m_proj.m_matrixTotal; // = world * view * proj
+   Matrix3D m2 = m_proj.m_matrixTotal[0]; // = world * view * proj
    m2.Invert();
    const Vertex3Ds p(
        2.0f * (point.x - (float)m_viewPort.X) / (float)m_viewPort.Width - 1.0f,
@@ -1190,8 +1190,12 @@ void PinProjection::ComputeNearFarPlane(const vector<Vertex3Ds>& verts)
 void PinProjection::CacheTransform()
 {
    Matrix3D matT;
-   m_matProj.Multiply(m_matView, matT);        // matT = matView * matProj
-   matT.Multiply(m_matWorld, m_matrixTotal);   // total = matWorld * matView * matProj
+   m_matProj[0].Multiply(m_matView, matT);        // matT = matView * matProj
+   matT.Multiply(m_matWorld, m_matrixTotal[0]);   // total = matWorld * matView * matProj
+   if (m_stereo3D != STEREO_OFF ) {
+      m_matProj[1].Multiply(m_matView, matT);
+      matT.Multiply(m_matWorld, m_matrixTotal[1]);
+   }
 }
 
 // transforms the backdrop
@@ -1213,9 +1217,9 @@ void PinProjection::TransformVertices(const Vertex3Ds * const rgv, const WORD * 
       const float z = rgv[l].z;
 
       // Transform it through the current matrix set
-      const float xp = m_matrixTotal._11*x + m_matrixTotal._21*y + m_matrixTotal._31*z + m_matrixTotal._41;
-      const float yp = m_matrixTotal._12*x + m_matrixTotal._22*y + m_matrixTotal._32*z + m_matrixTotal._42;
-      const float wp = m_matrixTotal._14*x + m_matrixTotal._24*y + m_matrixTotal._34*z + m_matrixTotal._44;
+      const float xp = m_matrixTotal[0]._11*x + m_matrixTotal[0]._21*y + m_matrixTotal[0]._31*z + m_matrixTotal[0]._41;
+      const float yp = m_matrixTotal[0]._12*x + m_matrixTotal[0]._22*y + m_matrixTotal[0]._32*z + m_matrixTotal[0]._42;
+      const float wp = m_matrixTotal[0]._14*x + m_matrixTotal[0]._24*y + m_matrixTotal[0]._34*z + m_matrixTotal[0]._44;
 
       // Finally, scale the vertices to screen coords. This step first
       // "flattens" the coordinates from 3D space to 2D device coordinates,

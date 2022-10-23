@@ -1046,7 +1046,6 @@ bla:
 
 string Shader::shaderPath;
 string Shader::Defines;
-Matrix3D Shader::mWorld, Shader::mView, Shader::mProj[2];
 
 //parse a file. Is called recursively for includes
 bool Shader::parseFile(const string& fileNameRoot, const string& fileName, int level, robin_hood::unordered_map<string, string> &values, const string& parentMode) {
@@ -1553,38 +1552,6 @@ void Shader::SetUniformBlock(const ShaderUniforms hParameter, const float* pMatr
    }
    memcpy(elem->val.data, pMatrix, size);
    ApplyUniform(hParameter);
-}
-
-void Shader::GetTransform(const TransformStateType p1, Matrix3D* p2, const int count)
-{
-   switch (p1) {
-   case TRANSFORMSTATE_WORLD:
-      *p2 = Shader::mWorld;
-      break;
-   case TRANSFORMSTATE_VIEW:
-      *p2 = Shader::mView;
-      break;
-   case TRANSFORMSTATE_PROJECTION:
-      for(int i = 0; i < count; ++i)
-         p2[i] = Shader::mProj[i];
-      break;
-   }
-}
-
-void Shader::SetTransform(const TransformStateType p1, const Matrix3D * p2, const int count)
-{
-   switch (p1) {
-   case TRANSFORMSTATE_WORLD:
-      Shader::mWorld = *p2;
-      break;
-   case TRANSFORMSTATE_VIEW:
-      Shader::mView = *p2;
-      break;
-   case TRANSFORMSTATE_PROJECTION:
-      for(int i = 0; i < count; ++i)
-         Shader::mProj[i] = p2[i];
-      break;
-   }
 }
 
 #else

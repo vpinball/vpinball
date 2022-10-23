@@ -1180,12 +1180,27 @@ bool RenderDevice::LoadShaders()
    StereoShader = nullptr;
    char glShaderPath[MAX_PATH];
    /*DWORD length =*/ GetModuleFileName(nullptr, glShaderPath, MAX_PATH);
-   if (m_stereo3D == STEREO_OFF) {
-      Shader::Defines = "#define eyes 1\n#define enable_VR 0";
-   } else  if (m_stereo3D == STEREO_VR) {
-      Shader::Defines = "#define eyes 2\n#define enable_VR 1";
-   } else {
-      Shader::Defines = "#define eyes 2\n#define enable_VR 0";
+   Shader::Defines = ""s;
+   if (m_stereo3D == STEREO_OFF)
+   {
+      Shader::Defines.append("#define eyes 1\n"s);
+      Shader::Defines.append("#define enable_VR 0\n"s);
+      Shader::Defines.append("#define stereo_vert 0\n"s);
+   }
+   else if (m_stereo3D == STEREO_VR)
+   {
+      Shader::Defines.append("#define eyes 2\n"s);
+      Shader::Defines.append("#define enable_VR 1\n"s);
+      Shader::Defines.append("#define stereo_vert 0\n"s);
+   }
+   else
+   {
+      Shader::Defines.append("#define eyes 2\n"s);
+      Shader::Defines.append("#define enable_VR 0\n"s);
+      if (m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT)
+         Shader::Defines.append("#define stereo_vert 1\n"s);
+      else
+         Shader::Defines.append("#define stereo_vert 0\n"s);
    }
    Shader::shaderPath = string(glShaderPath);
    Shader::shaderPath = Shader::shaderPath.substr(0, Shader::shaderPath.find_last_of("\\/"));
@@ -1318,8 +1333,13 @@ void RenderDevice::FreeShader()
       FBShader->SetTextureNull(SHADER_tex_ao_dither);
 
       // FIXME Shader rely on texture to be named with a leading texture unit. SetTextureNull will fail otherwise...
+#ifdef ENABLE_SDL
+      FBShader->SetTextureNull(SHADER_areaTex2D);
+      FBShader->SetTextureNull(SHADER_searchTex2D);
+#else
       CHECKD3D(FBShader->Core()->SetTexture("areaTex2D", nullptr));
       CHECKD3D(FBShader->Core()->SetTexture("searchTex2D", nullptr));
+#endif
 
       delete FBShader;
       FBShader = nullptr;
@@ -1918,7 +1938,6 @@ void RenderDevice::ApplyRenderStates()
          renderstate_mask &= RENDER_STATE_CLEAR_MASK_CLIPPLANEENABLE;
          val = m_renderstate.state & RENDER_STATE_MASK_CLIPPLANEENABLE;
 #ifdef ENABLE_SDL
-         // Basicshader already prepared with proper clipplane so just need to enable/disable it
          if (val) glEnable(GL_CLIP_DISTANCE0); else glDisable(GL_CLIP_DISTANCE0);
 #else
          CHECKD3D(m_pD3DDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, val ? PLANE0 : 0));
@@ -2166,14 +2185,38 @@ void RenderDevice::DrawIndexedPrimitiveVB(const PrimitiveTypes type, const DWORD
    m_curDrawCalls++;
 }
 
-void RenderDevice::SetTransform(const TransformStateType p1, const D3DMATRIX * p2)
+void RenderDevice::SetTransform(const TransformStateType p1, const Matrix3D * p2, const int count)
 {
-   CHECKD3D(m_pD3DDevice->SetTransform((D3DTRANSFORMSTATETYPE)p1, p2));
+#ifdef ENABLE_SDL
+   switch (p1)
+   {
+   case TRANSFORMSTATE_WORLD: m_MatWorld = *p2; break;
+   case TRANSFORMSTATE_VIEW: m_MatView = *p2; break;
+   case TRANSFORMSTATE_PROJECTION:
+      for (int i = 0; i < count; ++i)
+         m_MatProj[i] = p2[i];
+      break;
+   }
+#else
+   CHECKD3D(m_pD3DDevice->SetTransform((D3DTRANSFORMSTATETYPE)p1, (D3DMATRIX*)p2));
+#endif
 }
 
-void RenderDevice::GetTransform(const TransformStateType p1, D3DMATRIX* p2)
+void RenderDevice::GetTransform(const TransformStateType p1, Matrix3D* p2, const int count)
 {
-   CHECKD3D(m_pD3DDevice->GetTransform((D3DTRANSFORMSTATETYPE)p1, p2));
+#ifdef ENABLE_SDL
+   switch (p1)
+   {
+   case TRANSFORMSTATE_WORLD: *p2 = m_MatWorld; break;
+   case TRANSFORMSTATE_VIEW: *p2 = m_MatView; break;
+   case TRANSFORMSTATE_PROJECTION:
+      for (int i = 0; i < count; ++i)
+         p2[i] = m_MatProj[i];
+      break;
+   }
+#else
+   CHECKD3D(m_pD3DDevice->GetTransform((D3DTRANSFORMSTATETYPE)p1, (D3DMATRIX*)p2));
+#endif
 }
 
 void RenderDevice::ForceAnisotropicFiltering(const bool enable)

@@ -545,7 +545,6 @@ public:
    Primitive *m_implicitPlayfieldMesh = nullptr;
    bool m_recordContacts;             // flag for DoHitTest()
    vector< CollisionEvent > m_contacts;
-   ShaderTechniques m_ballShaderTechnique;
 
    int2 m_dmd;
    BaseTexture* m_texdmd;

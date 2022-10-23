@@ -194,10 +194,32 @@ public:
    RenderTarget* GetBloomTmpBufferTexture() const { return m_pBloomTmpBufferTexture; }
    RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; } // The screen render target
 
+   // VR/Stereo Stuff
 #ifdef ENABLE_SDL
+   void InitVR();
+   bool IsVRReady() const { return m_pHMD != nullptr; }
+   void SetTransformVR();
+   void UpdateVRPosition();
+   void tableUp();
+   void tableDown();
+   void recenterTable();
+   void updateTableMatrix();
    static bool isVRinstalled();
    static bool isVRturnedOn();
    static void turnVROff();
+
+   float m_scale;
+
+private:
+   static vr::IVRSystem* m_pHMD;
+   float m_slope, m_orientation, m_tablex, m_tabley, m_tablez;
+   vr::TrackedDevicePose_t hmdPosition;
+   Matrix3D m_matProj[2];
+   Matrix3D m_matView;
+   Matrix3D m_tableWorld;
+   vr::TrackedDevicePose_t* m_rTrackedDevicePose;
+
+public:
 #endif
 
    bool DepthBufferReadBackAvailable();
@@ -235,26 +257,11 @@ public:
    void SetViewport(const ViewPort*);
    void GetViewport(ViewPort*);
 
-   void SetTransform(const TransformStateType, const D3DMATRIX*);
-   void GetTransform(const TransformStateType, D3DMATRIX*);
+   void SetTransform(const TransformStateType p1, const Matrix3D* p2, const int count = 1);
+   void GetTransform(const TransformStateType p1, Matrix3D* p2, const int count = 1);
 
    void ForceAnisotropicFiltering(const bool enable);
    void CompressTextures(const bool enable) { m_compress_textures = enable; }
-
-   //VR stuff
-#ifdef ENABLE_VR
-   bool IsVRReady() const { return m_pHMD != nullptr; }
-   void SetTransformVR();
-   void UpdateVRPosition();
-   void tableUp();
-   void tableDown();
-   void recenterTable();
-
-   float m_slope, m_orientation, m_tablex, m_tabley, m_tablez;
-
-   void updateTableMatrix();
-   vr::TrackedDevicePose_t hmdPosition;
-#endif
 
    // performance counters
    unsigned int Perf_GetNumDrawCalls() const      { return m_frameDrawCalls; }
@@ -342,6 +349,7 @@ private:
 #ifdef ENABLE_SDL
    GLfloat m_maxaniso;
    int m_GLversion;
+   Matrix3D m_MatWorld, m_MatView, m_MatProj[2];
 #else
    DWORD m_maxaniso;
    bool m_mag_aniso;
@@ -356,19 +364,8 @@ private:
    bool m_dwm_was_enabled;
    bool m_dwm_enabled;
 
-   //VR/Stereo Stuff
-#ifdef ENABLE_VR
-   static vr::IVRSystem *m_pHMD;
-   Matrix3D m_matProj[2];
-   Matrix3D m_matView;
-   Matrix3D m_tableWorld;
-   vr::TrackedDevicePose_t *m_rTrackedDevicePose;
-
 public:
-   float m_scale;
-#endif
-
-   VertexBuffer* m_quadVertexBuffer;    // internal vb for rendering quads //!! only on primary device for now!
+   VertexBuffer* m_quadVertexBuffer; // internal vb for rendering quads //!! only on primary device for now!
    VertexBuffer* m_quadDynVertexBuffer; // internal vb for rendering dynamic quads //!!
 
 public:

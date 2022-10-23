@@ -1078,10 +1078,11 @@ static bool CompareHitableImage(const Hitable* h1, const Hitable* h2)
 
 void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 {
-   D3DMATRIX worldMat,viewMat,projMat;
+    const int eyes = m_stereo3D != STEREO_OFF ? 2 : 1;
+   Matrix3D worldMat,viewMat,projMat;
    m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_WORLD, &worldMat);
    m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
-   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_PROJECTION, &projMat);
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_PROJECTION, &projMat, eyes);
 
    D3DXMATRIX matProj(projMat);
    D3DXMATRIX matView(viewMat);
@@ -1185,7 +1186,7 @@ void Player::InitShader()
 
 void Player::UpdateBallShaderMatrix()
 {
-   D3DMATRIX worldMat,viewMat,projMat;
+   Matrix3D worldMat,viewMat,projMat;
    m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_WORLD, &worldMat);
    m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
    m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_PROJECTION, &projMat);
@@ -1900,6 +1901,9 @@ void Player::RenderStaticMirror()
    if (m_pfReflectionMode < PFREFL_STATIC || m_pfReflectionMode == PFREFL_DYNAMIC)
       return;
 
+   RenderDevice::RenderStateCache initial_state;
+   m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
+
    // Direct all renders to the temporary mirror buffer (plus the static z-buffer)
    m_pin3d.m_pd3dPrimaryDevice->GetMirrorRenderTarget(true)->Activate();
    m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
@@ -1907,11 +1911,10 @@ void Player::RenderStaticMirror()
    SetClipPlanePlayfield(true); // Set the clip plane to only allow object above the playfield (do not reflect what is under or the playfield itself)
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(true);
 
-   D3DMATRIX dxViewMat;
-   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &dxViewMat);
+   Matrix3D viewMat, initialViewMat;
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat, 1);
+   memcpy(initialViewMat.m, viewMat.m, 4 * 4 * sizeof(float));
    // flip camera
-   Matrix3D viewMat;
-   memcpy(viewMat.m, dxViewMat.m, 4 * 4 * sizeof(float));
    // Reflect against reflection plane given by its normal (formula from https://en.wikipedia.org/wiki/Transformation_matrix#Reflection_2)
    Matrix3D reflect;
    reflect.SetIdentity();
@@ -1950,22 +1953,11 @@ void Player::RenderStaticMirror()
       }
    }
 
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateDepthBias(0.f); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
-   //m_pin3d.m_pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
-
+   // Restore initial render states and camera
    m_ptable->m_reflectionEnabled = false;
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
-
-   // and flip back camera
-   m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &dxViewMat);
+   m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
+   m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &initialViewMat);
    UpdateBasicShaderMatrix();
-
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(false); // disable playfield clipplane again
-
    m_pin3d.m_pddsStatic->Activate();
 }
 
@@ -1974,6 +1966,9 @@ void Player::RenderDynamicMirror()
    if (m_pfReflectionMode == PFREFL_NONE || m_pfReflectionMode == PFREFL_STATIC)
       return;
    const bool onlyBalls = m_pfReflectionMode < PFREFL_UNSYNCED_DYNAMIC;
+
+   RenderDevice::RenderStateCache initial_state;
+   m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
 
    // Prepare to render into temp dynamic mirror back buffer
    if (m_pfReflectionMode == PFREFL_SYNCED_DYNAMIC)
@@ -1992,11 +1987,10 @@ void Player::RenderDynamicMirror()
    SetClipPlanePlayfield(true); // Set the clip plane to only allow object above the playfield (do not reflect what is under or the playfield itself)
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(true);
 
-   D3DMATRIX dxViewMat;
-   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &dxViewMat);
+   Matrix3D viewMat, initialViewMat;
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat, 1);
+   memcpy(initialViewMat.m, viewMat.m, 4 * 4 * sizeof(float));
    // flip camera
-   Matrix3D viewMat;
-   memcpy(viewMat.m, dxViewMat.m, 4 * 4 * sizeof(float));
    // Reflect against reflection plane given by its normal (formula from https://en.wikipedia.org/wiki/Transformation_matrix#Reflection_2)
    Matrix3D reflect;
    reflect.SetIdentity();
@@ -2029,6 +2023,7 @@ void Player::RenderDynamicMirror()
    // Draw reflection of all objects dynamicly to allow correct reflection occlusion or when camera is dynamic like VR or BAM headtracking
    if (m_pfReflectionMode == PFREFL_DYNAMIC)
    {
+      m_isRenderingStatic = true;
       for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
          if (m_ptable->m_vedit[i]->GetItemType() != eItemDecal)
          {
@@ -2044,6 +2039,7 @@ void Player::RenderDynamicMirror()
             if (ph)
                ph->RenderStatic();
          }
+      m_isRenderingStatic = false;
    }
 
    if (!onlyBalls)
@@ -2092,30 +2088,13 @@ void Player::RenderDynamicMirror()
       stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth);
    }
 
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateDepthBias(0.0f); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
-   //m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
-
+   // Restore initial render states and camera
    m_ptable->m_reflectionEnabled = false;
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
-
-   // and flip back camera
-   /* viewMat._33 = -viewMat._33;
-   if (rotation != 0.0f)
-      viewMat._31 = -viewMat._31;
-   else
-      viewMat._32 = -viewMat._32;*/
-   m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &dxViewMat);
-
+   m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
+   m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &initialViewMat);
    if (!onlyBalls)
       UpdateBasicShaderMatrix();
-
    UpdateBallShaderMatrix();
-
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateClipPlane0(false); // disable playfield clipplane again
 
    m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->Activate();
 }
@@ -3843,7 +3822,7 @@ void Player::SetClipPlanePlayfield(const bool clip_orientation)
    }
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetFloatArray(SHADER_clip_planes, (float *)clip_planes, 4 * eyes);
 #else
-   Matrix3D mT = m_pin3d.m_proj.m_matrixTotal; // = world * view * proj
+   Matrix3D mT = m_pin3d.m_proj.m_matrixTotal[0]; // = world * view * proj
    mT.Invert();
    mT.Transpose();
    const D3DXMATRIX m(mT);
@@ -5888,7 +5867,7 @@ void Player::DoDebugObjectMenu(const int x, const int y)
       InitDebugHitStructure();
    }
 
-   Matrix3D mat3D = m_pin3d.m_proj.m_matrixTotal;
+   Matrix3D mat3D = m_pin3d.m_proj.m_matrixTotal[0];
    mat3D.Invert();
 
    ViewPort vp;

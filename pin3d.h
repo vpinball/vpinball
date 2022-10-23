@@ -23,8 +23,9 @@ public:
 
    Matrix3D m_matWorld;
    Matrix3D m_matView;
-   Matrix3D m_matProj;
-   Matrix3D m_matrixTotal;
+   Matrix3D m_matProj[2];
+   Matrix3D m_matrixTotal[2];
+   StereoMode m_stereo3D;
 
    RECT m_rcviewport;
 

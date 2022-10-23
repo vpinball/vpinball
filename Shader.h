@@ -392,13 +392,9 @@ private:
    ShaderTechnique* compileGLShader(const ShaderTechniques technique, const string& fileNameRoot, string& shaderCodeName, const string& vertex, const string& geometry, const string& fragment);
 
    ShaderTechnique* m_techniques[SHADER_TECHNIQUE_COUNT];
-   static Matrix3D mWorld, mView, mProj[2];
 
 public:
    void setAttributeFormat(const DWORD fvf);
-
-   static void SetTransform(const TransformStateType p1, const Matrix3D* p2, const int count);
-   static void GetTransform(const TransformStateType p1, Matrix3D* p2, const int count);
 
    static string shaderPath;
    static string Defines;
