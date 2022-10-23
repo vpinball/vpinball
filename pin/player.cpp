@@ -1080,33 +1080,32 @@ static bool CompareHitableImage(const Hitable* h1, const Hitable* h2)
 
 void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 {
-    const int eyes = m_stereo3D != STEREO_OFF ? 2 : 1;
-   Matrix3D worldMat,viewMat,projMat;
-   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_WORLD, &worldMat);
-   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
-   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_PROJECTION, &projMat, eyes);
+   const int eyes = m_stereo3D != STEREO_OFF ? 2 : 1;
+   Matrix3D matWorld;
+   Matrix3D matProj[2];
+   struct {
+      Matrix3D matView;
+      Matrix3D matWorldView;
+      Matrix3D matWorldViewInverseTranspose;
+      Matrix3D matWorldViewProj[2];
+   } matrices;
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_WORLD, &matWorld);
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &matrices.matView);
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_PROJECTION, matProj, eyes);
 
-   D3DXMATRIX matProj(projMat);
-   D3DXMATRIX matView(viewMat);
-   D3DXMATRIX matWorld(worldMat);
-   D3DXMATRIX matObject(objectTrafo);
-
-   D3DXMATRIX matWorldView = matObject * matWorld * matView;
-   D3DXMATRIX matWorldViewProj = matWorldView * matProj;
+   matrices.matWorldView = objectTrafo * matWorld * matrices.matView;
+   for (int eye = 0;eye<eyes;++eye) matrices.matWorldViewProj[eye] = matrices.matWorldView * matProj[eye];
 
    if (m_ptable->m_tblMirrorEnabled)
    {
-      const D3DXMATRIX flipx(-1, 0, 0, 0,  0,  1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1);
-      const D3DXMATRIX flipy( 1, 0, 0, 0,  0, -1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1);
+      const Matrix3D flipx(-1, 0, 0, 0,  0,  1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1);
+      const Matrix3D flipy( 1, 0, 0, 0,  0, -1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1);
       const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
-      matWorldViewProj = matWorldViewProj * (rotation != 0.0f ? flipy : flipx);
+      for (int eye = 0;eye<eyes;++eye) matrices.matWorldViewProj[eye] = matrices.matWorldViewProj[eye] * (rotation != 0.0f ? flipy : flipx);
    }
-   Matrix3D temp;
-   memcpy(temp.m, matWorldView.m, 4 * 4 * sizeof(float));
-   temp.Invert();
-   temp.Transpose();
-   D3DXMATRIX matWorldViewInvTrans;
-   memcpy(matWorldViewInvTrans.m, temp.m, 4 * 4 * sizeof(float));
+   memcpy(matrices.matWorldViewInverseTranspose.m, matrices.matWorldView.m, 4 * 4 * sizeof(float));
+   matrices.matWorldViewInverseTranspose.Invert();
+   matrices.matWorldViewInverseTranspose.Transpose();
 
 #ifdef ENABLE_SDL
    m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorldViewProj[0].m[0][0], eyes * 16 * sizeof(float));
@@ -1117,26 +1116,23 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    m_pin3d.m_pd3dPrimaryDevice->lightShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorldViewProj[0].m[0][0], (eyes + 3) * 16 * sizeof(float));
 #endif
 
-#else
-
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
-   m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
-   m_pin3d.m_pd3dPrimaryDevice->lightShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
+#else // For DX9
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
+   m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
+   m_pin3d.m_pd3dPrimaryDevice->lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
-   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
+   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
 #endif
-
-   m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
-
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorldView, &matWorldView);
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorldViewInverseTranspose, &matWorldViewInvTrans);
-   //m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorld, &matWorld);
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matView, &matView);
+   m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorldViewInverseTranspose, &matrices.matWorldViewInverseTranspose);
+   //m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorld, &matrices.matWorld);
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matView, &matrices.matView);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
-   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix(SHADER_matWorldView, &matWorldView);
+   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
    m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix(SHADER_matWorldViewInverseTranspose, &matWorldViewInvTrans);
-   //m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix(SHADER_matWorld, &matWorld);
-   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix(SHADER_matView, &matView);
+   //m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix(SHADER_matWorld, &matrices.matWorld);
+   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix(SHADER_matView, &matrices.matView);
 #endif
 
    //memcpy(temp.m, matView.m, 4 * 4 * sizeof(float));
@@ -4936,7 +4932,7 @@ void Player::PrepareVideoBuffersAO()
    const bool PostProcAA = true;
 #else
    // Since stereo is applied as a postprocess step in DX9, it disables AA and sharpening except for top/bottom & side by side modes
-   const bool PostProcAA = !stereo || stereo == STEREO_TB || stereo == STEREO_SBS;
+   const bool PostProcAA = !stereo || (m_stereo3D == STEREO_TB) || (m_stereo3D == STEREO_SBS);
 #endif
    const bool SMAA  = PostProcAA && (((m_FXAA == Quality_SMAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_SMAA));
    const bool DLAA  = PostProcAA && (((m_FXAA == Standard_DLAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_DLAA));
@@ -5946,7 +5942,7 @@ void Player::DrawBalls()
       const vec4 diffuse = convertColor(pball->m_color, 1.0f);
       m_ballShader->SetVector(SHADER_cBase_Alpha, &diffuse);
 
-      D3DXMATRIX m(pball->m_orientation.m_d[0][0], pball->m_orientation.m_d[1][0], pball->m_orientation.m_d[2][0], 0.0f,
+      Matrix3D m(pball->m_orientation.m_d[0][0], pball->m_orientation.m_d[1][0], pball->m_orientation.m_d[2][0], 0.0f,
          pball->m_orientation.m_d[0][1], pball->m_orientation.m_d[1][1], pball->m_orientation.m_d[2][1], 0.0f,
          pball->m_orientation.m_d[0][2], pball->m_orientation.m_d[1][2], pball->m_orientation.m_d[2][2], 0.0f,
          0.f, 0.f, 0.f, 1.f);
