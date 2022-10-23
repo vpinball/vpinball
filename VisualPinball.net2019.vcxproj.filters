@@ -303,7 +303,9 @@
     <ClCompile Include="glad.c">
       <Filter>inc</Filter>
     </ClCompile>
-    <ClCompile Include="dialogs\VROptionsDialog.cpp" />
+    <ClCompile Include="dialogs\VROptionsDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1518,7 +1520,7 @@
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\VROptionsDialog.h">
-      <Filter>headers</Filter>
+      <Filter>dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
