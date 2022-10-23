@@ -66,24 +66,68 @@ jobs:
             bass: x64/Bass64.dll
             free-image: x64/FreeImage64.dll
             sci-lexer-vp: x64/SciLexerVP64.dll
+            target: VPX
             config: Release
           - platform: win-x64
             platform-name: x64
             bass: x64/Bass64.dll
             free-image: x64/FreeImage64.dll
             sci-lexer-vp: x64/SciLexerVP64.dll
+            target: VPX
             config: Debug
           - platform: win-x86
             platform-name: Win32
             bass: Bass.dll
             free-image: FreeImage.dll
             sci-lexer-vp: SciLexerVP.dll
+            target: VPX
             config: Release
           - platform: win-x86
             platform-name: Win32
             bass: Bass.dll
             free-image: FreeImage.dll
             sci-lexer-vp: SciLexerVP.dll
+            target: VPX
+            config: Debug
+          - platform: gl-win-x64
+            platform-name: x64
+            bass: x64/Bass64.dll
+            free-image: x64/FreeImage64.dll
+            sci-lexer-vp: x64/SciLexerVP64.dll
+            sdl2-ttf: x64/SDL2_ttf.dll
+            sdl2: x64/SDL2.dll
+            openvr-api: x64/openvr_api.dll
+            target: VPX_GL
+            config: Release
+          - platform: gl-win-x64
+            platform-name: x64
+            bass: x64/Bass64.dll
+            free-image: x64/FreeImage64.dll
+            sci-lexer-vp: x64/SciLexerVP64.dll
+            sdl2-ttf: x64/SDL2_ttf.dll
+            sdl2: x64/SDL2.dll
+            openvr-api: x64/openvr_api.dll
+            target: VPX_GL
+            config: Debug
+          - platform: gl-win-x86
+            platform-name: Win32
+            bass: Bass.dll
+            free-image: FreeImage.dll
+            sci-lexer-vp: SciLexerVP.dll
+            sdl2-ttf: SDL2_ttf.dll
+            sdl2: SDL2.dll
+            openvr-api: openvr_api.dll
+            target: VPX_GL
+            config: Release
+          - platform: gl-win-x86
+            platform-name: Win32
+            bass: Bass.dll
+            free-image: FreeImage.dll
+            sci-lexer-vp: SciLexerVP.dll
+            sdl2-ttf: SDL2_ttf.dll
+            sdl2: SDL2.dll
+            openvr-api: openvr_api.dll
+            target: VPX_GL
             config: Debug
     steps:
       - uses: actions/checkout@v3
@@ -132,6 +176,13 @@ jobs:
           cp txt/Scripts.txt tmp 
           cp -r scripts tmp
           cp -r tables tmp
+      - name: VPX_GL additional files
+        if: matrix.target == 'VPX_GL'
+        run: |
+          cp dll/${{ matrix.sdl2-ttf }} tmp
+          cp dll/${{ matrix.sdl2 }} tmp
+          cp dll/${{ matrix.openvr-api }} tmp
+          cp -r glshader tmp 
       - uses: actions/upload-artifact@v3
         with:
           name: VPinballX-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
