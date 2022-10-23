@@ -5599,10 +5599,15 @@ void Player::Render()
          const int captionheight = GetSystemMetrics(SM_CYCAPTION);
          if (!m_fullScreen && (m_showWindowedCaption || (!m_showWindowedCaption && ((m_screenheight - m_wnd_height) >= (captionheight * 2))))) // We have enough room for a frame? //!! *2 ??
          {
+            int x, y;
+#ifdef ENABLE_SDL
+            SDL_SetWindowBordered(m_sdl_playfieldHwnd, !m_showWindowedCaption ? SDL_TRUE : SDL_FALSE);
+            SDL_GetWindowPosition(m_sdl_playfieldHwnd, &x, &y);
+#else
             RECT rect;
             ::GetWindowRect(GetHwnd(), &rect);
-            const int x = rect.left;
-            const int y = rect.top;
+            x = rect.left;
+            y = rect.top;
 
             // Add/Remove a pretty window border and standard control boxes.
             const int windowflags = m_showWindowedCaption ? WS_POPUP : (WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN);
@@ -5614,12 +5619,12 @@ void Player::Render()
             SetWindowLongPtr(GWL_EXSTYLE, windowflagsex);
             SetWindowPos(nullptr, x, m_showWindowedCaption ? (y + captionheight) : (y - captionheight), m_wnd_width, m_wnd_height + (m_showWindowedCaption ? 0 : captionheight), SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
             ShowWindow(SW_SHOW);
-
+#endif
             // Save position of non-fullscreen player window to registry, and only if it was potentially moved around (i.e. when caption was already visible)
             if (m_showWindowedCaption)
             {
-               HRESULT hr = SaveValueInt(regKey[RegName::Player], "WindowPosX"s, x);
-                       hr = SaveValueInt(regKey[RegName::Player], "WindowPosY"s, y + captionheight);
+               HRESULT hr = SaveValueInt((m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosX"s, x);
+                       hr = SaveValueInt((m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosY"s, y + captionheight);
             }
 
             m_showWindowedCaption = !m_showWindowedCaption;
