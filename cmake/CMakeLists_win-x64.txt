@@ -79,8 +79,12 @@ set_source_files_properties(shader/LightShader.hlsl PROPERTIES
 )
 
 add_executable(vpinball WIN32
+   backGlass.cpp
+   backGlass.h
    BlackBox.cpp
    BlackBox.h
+   captureExt.cpp
+   captureExt.h
    codeviewedit.cpp
    codeviewedit.h
    CrashHandler.cpp
@@ -113,6 +117,8 @@ add_executable(vpinball WIN32
    dialogs/ScriptErrorDialog.h
    dialogs/PhysicsOptionsDialog.cpp
    dialogs/PhysicsOptionsDialog.h
+   dialogs/VROptionsDialog.cpp
+   dialogs/VROptionsDialog.h
    dialogs/Properties/BackglassCameraProperty.cpp
    dialogs/Properties/BackglassCameraProperty.h
    dialogs/Properties/BackglassVisualsProperty.cpp
