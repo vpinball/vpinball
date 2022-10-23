@@ -295,6 +295,15 @@
     <ClCompile Include="RenderTarget.cpp" />
     <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="backGlass.cpp" />
+    <ClCompile Include="captureExt.cpp" />
+    <ClCompile Include="imgui\imgui_impl_opengl3.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="glad.c">
+      <Filter>inc</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\VROptionsDialog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1488,6 +1497,27 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="Sampler.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="backGlass.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="captureExt.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\stb_image_write.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\glad\glad.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_opengl3.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_opengl3_loader.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\VROptionsDialog.h">
       <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>
