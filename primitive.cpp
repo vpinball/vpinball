@@ -1342,9 +1342,7 @@ void Primitive::RenderObject()
    g_pplayer->UpdateBasicShaderMatrix();
 
    if (m_d.m_useAsPlayfield)
-   {
       pd3dDevice->basicShader->SetTexture(SHADER_tex_base_transmission, pd3dDevice->GetBloomBufferTexture()->GetColorSampler()); // Restore bulb light transmission on Texture3 (staticly shared with playfield reflection on DX9)
-   }
    if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
       pd3dDevice->basicShader->SetDisableLighting(vec4(0.f, 0.f, 0.f, 0.f));
    pd3dDevice->CopyRenderStates(false, initial_state);

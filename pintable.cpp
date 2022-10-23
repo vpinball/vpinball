@@ -1866,7 +1866,8 @@ void PinTable::Render3DProjection(Sur * const psur)
    pinproj.m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
    pinproj.m_matWorld.SetIdentity();
    Matrix3D proj = Matrix3D::MatrixPerspectiveFovLH(ANGTORAD(FOV), aspect, pinproj.m_rznear, pinproj.m_rzfar);
-   memcpy(pinproj.m_matProj.m, proj.m, sizeof(float) * 4 * 4);
+   memcpy(pinproj.m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
+   memcpy(pinproj.m_matProj[1].m, proj.m, sizeof(float) * 4 * 4);
 
    //pinproj.SetFieldOfView(FOV, aspect, pinproj.m_rznear, pinproj.m_rzfar);
 
