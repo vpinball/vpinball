@@ -494,18 +494,10 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
 
    if (m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && useAO)
    {
-#ifdef ENABLE_SDL
       // the width must be the one the back render buffer (not the one of the preview viewport)
       m_pddsAOBackBuffer = new RenderTarget(m_pd3dPrimaryDevice, m_pd3dPrimaryDevice->m_width, m_pd3dPrimaryDevice->m_height, colorFormat::GREY8, false, 1, STEREO_OFF,
          "Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
       m_pddsAOBackTmpBuffer = m_pddsAOBackBuffer->Duplicate();
-#else
-      // FIXME there should not be any difference between DX & OGL here
-      m_pddsAOBackTmpBuffer = new RenderTarget(m_pd3dPrimaryDevice, m_viewPort.Width, m_viewPort.Height, colorFormat::GREY8, false, false, stereo3D,
-         "Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
-      m_pddsAOBackBuffer = new RenderTarget(m_pd3dPrimaryDevice, m_viewPort.Width, m_viewPort.Height, colorFormat::GREY8, false, false, stereo3D,
-         "Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
-#endif
       if (!m_pddsAOBackBuffer || !m_pddsAOBackTmpBuffer)
          return E_FAIL;
    }
@@ -630,6 +622,7 @@ void Pin3D::DrawBackground()
 
       m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
 
+      // FIXME this should be called with a trilinear/anisotropy filtering override
       g_pplayer->Spritedraw(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, pin, ptable->m_ImageBackdropNightDay ? sqrtf(g_pplayer->m_globalEmissionScale) : 1.0f, true);
 
       if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled)
@@ -664,20 +657,36 @@ void Pin3D::InitLights()
    emission.y *= g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_globalEmissionScale;
    emission.z *= g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_globalEmissionScale;
 
+#ifdef ENABLE_SDL
+   float lightPos[MAX_LIGHT_SOURCES][4] = { 0.f };
+   float lightEmission[MAX_LIGHT_SOURCES][4] = { 0.f };
+
+   for (unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
+   {
+      memcpy(&lightPos[i], &g_pplayer->m_ptable->m_Light[i].pos, sizeof(float) * 3);
+      memcpy(&lightEmission[i], &emission, sizeof(float) * 3);
+   }
+
+   m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_lightPos, (vec4*) lightPos, MAX_LIGHT_SOURCES);
+   m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_lightEmission, (vec4*) lightEmission, MAX_LIGHT_SOURCES);
+#else
    struct CLight
    {
       float vPos[3];
       float vEmission[3];
    };
    CLight l[MAX_LIGHT_SOURCES];
+
    for (unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
    {
       memcpy(&l[i].vPos, &g_pplayer->m_ptable->m_Light[i].pos, sizeof(float) * 3);
       memcpy(&l[i].vEmission, &emission, sizeof(float) * 3);
    }
+
    m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_packedLights, (vec4*) l, sizeof(CLight) * MAX_LIGHT_SOURCES / (4 * sizeof(float)));
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    m_pd3dPrimaryDevice->classicLightShader->SetFloat4v(SHADER_packedLights, (vec4*) l, sizeof(CLight) * MAX_LIGHT_SOURCES / (4 * sizeof(float)));
+#endif
 #endif
 
    vec4 amb_lr = convertColor(g_pplayer->m_ptable->m_lightAmbient, g_pplayer->m_ptable->m_lightRange);
@@ -957,6 +966,30 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
       m_proj.m_rzfar += 5000.f;
    Matrix3D proj = Matrix3D::MatrixPerspectiveFovLH(ANGTORAD(FOV), aspect, m_proj.m_rznear, m_proj.m_rzfar);
    memcpy(m_proj.m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
+
+#ifdef ENABLE_SDL
+   float top = m_proj.m_rznear * tanf(ANGTORAD(FOV) / 2.0f);
+   float bottom = -top;
+   float right = top * aspect;
+   float left = -right;
+   //Create Projection Matrix
+   if (m_stereo3D != STEREO_OFF) {
+      // float stereoOffset = 0.04f*m_proj.m_rznear;
+      // This is not a perfect interpretation of parallax settings but it is somewhat close to what it gives in parallax with ZPD=0.5
+      float stereoOffset = max_separation * 2.0f * m_proj.m_rznear;
+      proj = Matrix3D::MatrixPerspectiveOffCenterLH(left + stereoOffset, right + stereoOffset, bottom, top, m_proj.m_rznear, m_proj.m_rzfar);
+      proj._41 += 1.4f * stereoOffset;
+      memcpy(m_proj.m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
+      proj = Matrix3D::MatrixPerspectiveOffCenterLH(left - stereoOffset, right - stereoOffset, bottom, top, m_proj.m_rznear, m_proj.m_rzfar);
+      proj._41 -= 1.4f * stereoOffset;
+      memcpy(m_proj.m_matProj[1].m, proj.m, sizeof(float) * 4 * 4);
+   }
+   else {
+      proj = Matrix3D::MatrixPerspectiveOffCenterLH(left, right, bottom, top, m_proj.m_rznear, m_proj.m_rzfar);
+      memcpy(m_proj.m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
+   }
+#endif
+
    // in-pixel offset for manual oversampling
    if (xpixoff != 0.f || ypixoff != 0.f)
    {
