@@ -127,6 +127,7 @@ INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(cameraMode)
 {
+   m_ballShader = nullptr;
    m_dynamicMode = m_cameraMode; // We can move the camera => disable static pre-rendering
 
 #if defined(_M_ARM64)
@@ -190,14 +191,17 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_current_renderstage = 0;
    m_dmdstate = 0;
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_VR
    const int vrDetectionMode = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "AskToTurnOn"s, 0);
    bool useVR = vrDetectionMode == 2 /* VR Disabled */  ? false : RenderDevice::isVRinstalled();
    if (useVR && (vrDetectionMode == 1 /* VR Autodetect => ask to turn on and adapt accordingly */) && !RenderDevice::isVRturnedOn())
       useVR = MessageBox("VR headset detected but SteamVR is not running.\n\nTurn VR on?", "VR Headset Detected", MB_YESNO) == IDYES;
+   m_capExtDMD = LoadValueBoolWithDefault(regKey[RegName::Player], "CaptureExternalDMD"s, false);
+   m_capPUP = LoadValueBoolWithDefault(regKey[RegName::Player], "CapturePUP"s, false);
 #else
    bool useVR = false;
 #endif
+
    m_trailForBalls = LoadValueBoolWithDefault(regKey[RegName::Player], "BallTrail"s, true);
    m_disableLightingForBalls = LoadValueBoolWithDefault(regKey[RegName::Player], "DisableLightingForBalls"s, false);
    m_stereo3D = (StereoMode)LoadValueIntWithDefault(regKey[RegName::Player], "Stereo3D"s, STEREO_OFF);
@@ -236,6 +240,8 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    if (m_dynamicMode && m_pfReflectionMode >= PFREFL_STATIC)
       m_pfReflectionMode = PFREFL_DYNAMIC;
 
+#ifdef ENABLE_VR
+   m_vrPreview = (VRPreviewMode)LoadValueIntWithDefault(regKey[RegName::PlayerVR], "VRPreview"s, VRPREVIEW_LEFT);
    if (useVR)
    {
       m_stereo3D = STEREO_VR;
@@ -254,18 +260,20 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
       m_VSync = 0; //Disable VSync for VR
    }
    else
+#endif
    {
       m_stereo3D = (StereoMode)LoadValueIntWithDefault(regKey[RegName::Player], "Stereo3D"s, STEREO_OFF);
       m_maxPrerenderedFrames = LoadValueIntWithDefault(regKey[RegName::Player], "MaxPrerenderedFrames"s, 0);
       m_NudgeShake = LoadValueFloatWithDefault(regKey[RegName::Player], "NudgeStrength"s, 2e-2f);
       m_sharpen = LoadValueIntWithDefault(regKey[RegName::Player], "Sharpen"s, 0);
       m_FXAA = LoadValueIntWithDefault(regKey[RegName::Player], "FXAA"s, Disabled);
-      m_MSAASamples = 1; // FIXME re-add when the option will be added to the video options LoadValueIntWithDefault(regKey[RegName::Player], "MSAASamples"s, 1);
 #ifdef ENABLE_SDL
-      m_AAfactor = LoadValueFloatWithDefault(regKey[RegName::Player], "AAFactor"s, LoadValueBoolWithDefault(regKey[RegName::Player], "USEAAs", false) ? 2.0f : 1.0f);
+      m_MSAASamples = LoadValueIntWithDefault(regKey[RegName::Player], "MSAASamples"s, 1);
 #else
-      m_AAfactor = LoadValueBoolWithDefault(regKey[RegName::Player], "USEAA"s, false) ? 2.0f : 1.0f;
+      // Sadly DX9 does not support resolving an MSAA depth buffer, making MSAA implementation complex for it. So just disable for now
+      m_MSAASamples = 1;
 #endif
+      m_AAfactor = LoadValueFloatWithDefault(regKey[RegName::Player], "AAFactor"s, LoadValueBoolWithDefault(regKey[RegName::Player], "USEAAs", false) ? 2.0f : 1.0f);
       m_dynamicAO = LoadValueBoolWithDefault(regKey[RegName::Player], "DynamicAO"s, false);
       m_disableAO = LoadValueBoolWithDefault(regKey[RegName::Player], "DisableAO"s, false);
       m_ss_refl = LoadValueBoolWithDefault(regKey[RegName::Player], "SSRefl"s, false);
@@ -275,6 +283,11 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
       m_bloomOff = LoadValueBoolWithDefault(regKey[RegName::Player], "ForceBloomOff"s, false);
       m_VSync = LoadValueIntWithDefault(regKey[RegName::Player], "AdaptiveVSync"s, 0);
    }
+
+#ifdef ENABLE_BAM
+   m_headTracking = LoadValueBoolWithDefault(regKey[RegName::Player], "BAMheadTracking"s, false);
+   m_dynamicMode |= m_headTracking; // disable static pre-rendering when head tracking is activated
+#endif
 
    m_ballImage = nullptr;
    m_decalImage = nullptr;
@@ -1096,13 +1109,12 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    memcpy(matWorldViewInvTrans.m, temp.m, 4 * 4 * sizeof(float));
 
 #ifdef ENABLE_SDL
-   m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorldViewProj[0].m[0][0], eyes * 16);
-   m_pin3d.m_pd3dPrimaryDevice->lightShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorldViewProj[0].m[0][0], eyes * 16);
-   m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorldViewProj[0].m[0][0], eyes * 16);
-
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matView.m[0][0], (eyes + 3) * 16);
+   m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorldViewProj[0].m[0][0], eyes * 16 * sizeof(float));
+   m_pin3d.m_pd3dPrimaryDevice->lightShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorldViewProj[0].m[0][0], eyes * 16 * sizeof(float));
+   m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorldViewProj[0].m[0][0], eyes * 16 * sizeof(float));
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matView.m[0][0], (eyes + 3) * 16 * sizeof(float));
 #ifdef SEPARATE_CLASSICLIGHTSHADER
-   m_pin3d.m_pd3dPrimaryDevice->lightShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorldViewProj[0].m[0][0], (eyes + 3) * 16);
+   m_pin3d.m_pd3dPrimaryDevice->lightShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorldViewProj[0].m[0][0], (eyes + 3) * 16 * sizeof(float));
 #endif
 
 #else
@@ -1158,6 +1170,15 @@ void Player::InitShader()
    //m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetVector("camera", &cam);
 #endif
 
+#ifdef ENABLE_SDL
+   // In VR we scale the scene to the controller scale, so the shader needs to scale light range accordingly
+#ifdef ENABLE_VR
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetFloat(SHADER_fSceneScale, m_pin3d.m_pd3dPrimaryDevice->m_scale);
+#else
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetFloat(SHADER_fSceneScale, 1.0f);
+#endif
+#endif
+
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_env, m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.m_builtinEnvTexture);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_diffuse_env, m_pin3d.m_envRadianceTexture);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
@@ -1205,7 +1226,7 @@ void Player::UpdateBallShaderMatrix()
    //memcpy(matWorldViewInvTrans.m, temp.m, 4 * 4 * sizeof(float));
 
 #ifdef ENABLE_SDL
-   m_pin3d.m_pd3dPrimaryDevice->ballShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matView.m[0][0], (eyes + 3) * 16);
+   m_ballShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matView.m[0][0], (eyes + 3) * 16 * sizeof(float));
 #else
    m_ballShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
    m_ballShader->SetMatrix(SHADER_matWorldView, &matWorldView);
@@ -1225,8 +1246,14 @@ void Player::UpdateBallShaderMatrix()
 void Player::InitBallShader()
 {
    m_ballShader = new Shader(m_pin3d.m_pd3dPrimaryDevice);
-#ifdef ENABLE_SDL
-   m_ballShader->Load("BallShader.glfx"s, nullptr, 0);
+ #ifdef ENABLE_SDL
+   m_ballShader->Load("BallShader.glfx", nullptr, 0);
+   // In VR we scale the scene to the controller scale, so the shader needs to scale light range accordingly
+#ifdef ENABLE_VR
+   m_ballShader->SetFloat(SHADER_fSceneScale, m_pin3d.m_pd3dPrimaryDevice->m_scale);
+#else
+   m_ballShader->SetFloat(SHADER_fSceneScale, 1.0f);
+#endif
 #else
    m_ballShader->Load("BallShader.hlsl"s, g_ballShaderCode, sizeof(g_ballShaderCode));
 #endif
@@ -3577,7 +3604,7 @@ void Player::DrawBulbLightBuffer()
             m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_filtered);
 
             // switch to 'bloom' temporary output buffer for horizontal phase of gaussian blur
-            m_pin3d.m_pd3dPrimaryDevice->GetBloomTmpBufferTexture()->Activate();
+            m_pin3d.m_pd3dPrimaryDevice->GetBloomTmpBufferTexture()->Activate(true);
 
             m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture()->GetColorSampler());
             m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &fb_inv_resolution_05);
@@ -3591,7 +3618,7 @@ void Player::DrawBulbLightBuffer()
             m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_filtered);
 
             // switch to 'bloom' output buffer for vertical phase of gaussian blur
-            m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture()->Activate();
+            m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture()->Activate(true);
 
             m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pin3d.m_pd3dPrimaryDevice->GetBloomTmpBufferTexture()->GetColorSampler());
             m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &fb_inv_resolution_05);
@@ -3640,6 +3667,7 @@ void Player::RenderDynamics()
       m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
 #endif
 
+      UpdateBasicShaderMatrix();
       UpdateBallShaderMatrix();
 
       for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
@@ -3809,7 +3837,7 @@ void Player::SetClipPlanePlayfield(const bool clip_orientation)
       clip_planes[eye][2] = mT._13 * x + mT._23 * y + mT._33 * z + mT._43 * w;
       clip_planes[eye][3] = mT._14 * x + mT._24 * y + mT._34 * z + mT._44 * w;
    }
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetFloatArray(SHADER_clip_planes, (float *)clip_planes, 4 * eyes);
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_clip_planes, (vec4 *)clip_planes, eyes);
 #else
    Matrix3D mT = m_pin3d.m_proj.m_matrixTotal[0]; // = world * view * proj
    mT.Invert();
@@ -4384,6 +4412,7 @@ void Player::UpdateHUD()
 			float(1e-3 * (double)m_script_total / (double)m_count), float(1e-3*m_script_max), float((double)m_script_total*100.0 / (double)m_total), float(1e-3*m_script_max_total));
 		DebugPrint(0, 70, szFoo);
 
+#ifndef ENABLE_SDL
 		// performance counters
 		sprintf_s(szFoo, sizeof(szFoo), "Draw calls: %u (%u Locks)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumDrawCalls(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumLockCalls());
 		DebugPrint(0, 95, szFoo);
@@ -4395,6 +4424,7 @@ void Player::UpdateHUD()
 		DebugPrint(0, 155, szFoo);
 		sprintf_s(szFoo, sizeof(szFoo), "Objects: %u Transparent, %u Solid", (unsigned int)m_vHitTrans.size(), (unsigned int)m_vHitNonTrans.size());
 		DebugPrint(0, 175, szFoo);
+#endif
 
 		sprintf_s(szFoo, sizeof(szFoo), "Physics: %u iterations per frame (%u avg %u max)    Ball Velocity / Ang.Vel.: %.1f %.1f",
 			m_phys_iterations,
@@ -5117,6 +5147,10 @@ void Player::LockForegroundWindow(const bool enable)
 
 void Player::Render()
 {
+   // Rendering outputs to m_pd3dPrimaryDevice->GetBackBufferTexture(). If MSAA is used, it is resolved as part of the rendering (i.e. this surface is NOT the MSAA rneder surface but its resolved copy)
+   // Then it is tonemapped/bloom/dither/... to m_pd3dPrimaryDevice->GetBackBufferTmpTexture() if needed for postprocessing (sharpen, FXAA,...), or directly to the main output framebuffer otherwise
+   // The optional postprocessing is done from m_pd3dPrimaryDevice->GetBackBufferTmpTexture() to the main output framebuffer
+
    U64 timeforframe = usec();
 
    m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
@@ -5222,6 +5256,7 @@ void Player::Render()
    if (GetInfoMode() != IF_STATIC_ONLY)
    {
       m_pin3d.m_pd3dPrimaryDevice->BeginScene();
+      m_pin3d.UpdateMatrices();
       RenderDynamics();
       m_pin3d.m_pd3dPrimaryDevice->EndScene();
    }
@@ -5853,7 +5888,7 @@ void Player::DrawBalls()
          }
       }
 
-#ifdef DEBUG_BALL_SPIN // draw debug points for visualizing ball rotation
+#if defined(DEBUG_BALL_SPIN) && !defined(ENABLE_SDL)        // draw debug points for visualizing ball rotation
       if (ShowStats() && !ShowFPSonly())
       {
          // set transform

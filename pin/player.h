@@ -462,6 +462,9 @@ public:
    bool m_stereo3Denabled;
    bool m_stereo3DY;
    StereoMode m_stereo3D;
+   VRPreviewMode m_vrPreview;
+
+   bool m_headTracking;
    float m_global3DContrast;
    float m_global3DDesaturation;
 
