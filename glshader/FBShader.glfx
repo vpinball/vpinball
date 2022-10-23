@@ -1,0 +1,546 @@
+////GLOBAL
+#version 450 core
+
+////VERTEX
+uniform vec4 w_h_height; // in bloom w_h_height.z keeps strength
+
+////FRAGMENT
+#include "Helpers.fxh"
+
+uniform vec4 ms_zpd_ya_td; // Not currently used in VPVR only in VPX
+uniform vec4 w_h_height; // in bloom w_h_height.z keeps strength
+
+uniform vec2 AO_scale_timeblur;
+uniform float4 cWidth_Height_MirrorAmount;
+
+uniform bool color_grade;
+uniform bool do_dither;
+uniform bool do_bloom;
+
+uniform sampler2D tex_fb_filtered; // Framebuffer (filtered)
+uniform sampler2D tex_fb_unfiltered; // Framebuffer (unfiltered)
+uniform sampler2D tex_mirror; // Base mirror texture
+uniform sampler2D tex_bloom; // Bloom
+uniform sampler2D tex_ao; // AO Result (also used as input from the previous frame when computing AO)
+uniform sampler2D tex_depth; // Depth
+uniform sampler2D tex_color_lut; // Color grade LUT
+uniform sampler2D tex_ao_dither; // AO dither
+uniform sampler2D tex_normals; // Normals
+
+
+out vec4 color;
+
+/*const float bayer_dither_pattern[8][8] = float[][] (
+    {( 0/64.0-0.5)/255.0, (32/64.0-0.5)/255.0, ( 8/64.0-0.5)/255.0, (40/64.0-0.5)/255.0, ( 2/64.0-0.5)/255.0, (34/64.0-0.5)/255.0, (10/64.0-0.5)/255.0, (42/64.0-0.5)/255.0},   
+    {(48/64.0-0.5)/255.0, (16/64.0-0.5)/255.0, (56/64.0-0.5)/255.0, (24/64.0-0.5)/255.0, (50/64.0-0.5)/255.0, (18/64.0-0.5)/255.0, (58/64.0-0.5)/255.0, (26/64.0-0.5)/255.0},   
+    {(12/64.0-0.5)/255.0, (44/64.0-0.5)/255.0, ( 4/64.0-0.5)/255.0, (36/64.0-0.5)/255.0, (14/64.0-0.5)/255.0, (46/64.0-0.5)/255.0, ( 6/64.0-0.5)/255.0, (38/64.0-0.5)/255.0},   
+    {(60/64.0-0.5)/255.0, (28/64.0-0.5)/255.0, (52/64.0-0.5)/255.0, (20/64.0-0.5)/255.0, (62/64.0-0.5)/255.0, (30/64.0-0.5)/255.0, (54/64.0-0.5)/255.0, (22/64.0-0.5)/255.0},   
+    {( 3/64.0-0.5)/255.0, (35/64.0-0.5)/255.0, (11/64.0-0.5)/255.0, (43/64.0-0.5)/255.0, ( 1/64.0-0.5)/255.0, (33/64.0-0.5)/255.0, ( 9/64.0-0.5)/255.0, (41/64.0-0.5)/255.0},   
+    {(51/64.0-0.5)/255.0, (19/64.0-0.5)/255.0, (59/64.0-0.5)/255.0, (27/64.0-0.5)/255.0, (49/64.0-0.5)/255.0, (17/64.0-0.5)/255.0, (57/64.0-0.5)/255.0, (25/64.0-0.5)/255.0},
+    {(15/64.0-0.5)/255.0, (47/64.0-0.5)/255.0, ( 7/64.0-0.5)/255.0, (39/64.0-0.5)/255.0, (13/64.0-0.5)/255.0, (45/64.0-0.5)/255.0, ( 5/64.0-0.5)/255.0, (37/64.0-0.5)/255.0},
+    {(63/64.0-0.5)/255.0, (31/64.0-0.5)/255.0, (55/64.0-0.5)/255.0, (23/64.0-0.5)/255.0, (61/64.0-0.5)/255.0, (29/64.0-0.5)/255.0, (53/64.0-0.5)/255.0, (21/64.0-0.5)/255.0} );
+*/
+
+float triangularPDF(float r) // from -1..1, c=0 (with random no r=0..1)
+{
+   float p = 2.*r;
+   bool b = (p > 1.);
+   if (b)
+      p = 2.-p;
+   p = 1.-sqrt(p);
+   return b ? p : -p;
+}
+vec3 triangularPDF(vec3 r) // from -1..1, c=0 (with random no r=0..1)
+{
+   return vec3(triangularPDF(r.x), triangularPDF(r.y), triangularPDF(r.z));
+}
+
+/*float DitherGradientNoise(vec2 tex0)
+{
+   // Interleaved Gradient Noise from "NEXT GENERATION POST PROCESSING IN CALL OF DUTY: ADVANCED WARFARE" http://advances.realtimerendering.com/s2014/index.html
+   vec3 magic = vec3(0.06711056, 0.00583715, 52.9829189);
+
+   return frac(magic.z * frac(dot(tex0, magic.xy)));
+}
+
+float Dither64(vec2 tex0, float time)
+{
+   vec3 k0 = vec3(33., 52., 25.);
+
+   return frac(dot(vec3(tex0, time), k0 * (1.0/64.0)));
+}*/
+
+vec3 blue_gauss_noise(const vec2 c1, const vec3 rgb)
+{
+   // https://www.shadertoy.com/view/XljyRR
+   //vec2 c0 = vec2(c1.x - 1., c1.y);
+   //vec2 c2 = vec2(c1.x + 1., c1.y);
+   const vec3 cx = vec3(c1.x - 1., c1.x, c1.x + 1.);
+   const vec4 f0 = frac(vec4(cx * 9.1031, c1.y * 8.1030));
+   const vec4 f1 = frac(vec4(cx * 7.0973, c1.y * 6.0970));
+   const vec4 t0 = vec4(f0.xw,f1.xw); //frac(c0.xyxy * vec4(.1031,.1030,.0973,.0970));
+   const vec4 t1 = vec4(f0.yw,f1.yw); //frac(c1.xyxy * vec4(.1031,.1030,.0973,.0970));
+   const vec4 t2 = vec4(f0.zw,f1.zw); //frac(c2.xyxy * vec4(.1031,.1030,.0973,.0970));
+   const vec4 p0 = t0 + dot(t0, t0.wzxy + 19.19);
+   const vec4 p1 = t1 + dot(t1, t1.wzxy + 19.19);
+   const vec4 p2 = t2 + dot(t2, t2.wzxy + 19.19);
+   const vec4 n0 = frac(p0.zywx * (p0.xxyz + p0.yzzw));
+   const vec4 n1 = frac(p1.zywx * (p1.xxyz + p1.yzzw));
+   const vec4 n2 = frac(p2.zywx * (p2.xxyz + p2.yzzw));
+   const vec4 r4 = 0.5*n1 - 0.125*(n0 + n2);
+   const float  r  = r4.x+r4.y+r4.z+r4.w - 0.5;
+
+   const float quantSteps = 256.0; //!! how to choose/select this for 5/6/5bit??
+   return rgb + vec3(r,-r,r) * (1.0/(quantSteps - 1.0));
+}
+
+vec3 DitherVlachos(vec2 tex0, vec3 rgb)
+{
+   // Vlachos 2016, "Advanced VR Rendering", but using a TPDF
+   const float quantSteps = 256.0; //!! how to choose/select this for 5/6/5bit??
+
+   float noise = dot(vec2(171.0, 231.0), tex0);
+   vec3 noise3 = frac(noise * (1.0 / vec3(103.0, 71.0, 97.0)));
+
+   return rgb + triangularPDF(noise3)/*(noise3*2.0-1.0)*/ * (1.0/(quantSteps - 1.0));
+}
+
+vec3 FBDither(vec3 color, /*int2 pos*/vec2 tex0)
+{
+   if (!do_dither)
+      return color;
+   //return color + bayer_dither_pattern[pos.x%8][pos.y%8];
+
+#ifndef BLUE_NOISE_DITHER
+   //return DitherVlachos(floor(tex0*(1.0/(2.0*w_h_height.xy))+0.5) + w_h_height.z/*w*/, color);       // note that w_h_height.w is the same nowadays
+   return blue_gauss_noise(floor(tex0*(1.0/(2.0*w_h_height.xy))+0.5) + 0.07*w_h_height.z/*w*/, color); // dto.
+#else // needs texSamplerAOdither
+   float quantSteps = 256.0; //!! how to choose/select this for 5/6/5??
+
+   // TPDF:
+   vec3 dither = /*vec3(GradientNoise(tex0 / (2.0*w_h_height.xy) + w_h_height.zw*3.141),
+      GradientNoise(tex0.yx / (2.0*w_h_height.yx) + w_h_height.zw*1.618),
+      GradientNoise(tex0 / (2.0*w_h_height.xy) + w_h_height.wz*2.718281828459));*/
+   // Dither64(tex0 / (2.0*w_h_height.xy)+w_h_height.zw, 0.);
+       textureLod(texSamplerAOdither, tex0 / (64.0*(2.0*w_h_height.xy)) + w_h_height.zw*3.141, 0).xyz;
+   return color + triangularPDF(dither) * (1.0/quantSteps); // quantSteps-1. ?
+
+   /*vec3 dither = tex2Dlod(texSamplerAOdither, vec4(tex0 / (64.0*(2.0*w_h_height.xy)) + w_h_height.zw*2.718281828459, 0., 0.)).xyz;
+   vec3 dither2 = tex2Dlod(texSamplerAOdither, vec4(tex0 / (64.0*(2.0*w_h_height.xy)) + w_h_height.wz*3.14159265358979, 0., 0.)).xyz;
+   return color + (dither - dither2) / quantSteps;*/
+
+   //vec3 dither = tex2Dlod(texSamplerAOdither, vec4(tex0 / (64.0*(2.0*w_h_height.xy)) + w_h_height.wz*3.141, 0., 0.)).xyz*2.0 - 1.0;
+
+   // Lottes (1st one not working, 2nd 'quality', 3rd 'tradeoff'), IMHO too much magic:
+   /*float blackLimit = 0.5 * InvGamma(1.0/(quantSteps - 1.0));
+   float amount = 0.75 * (InvGamma(1.0/(quantSteps - 1.0)) - 1.0);
+   return color + dither*min(color + blackLimit, amount);*/
+
+   //vec3 amount = InvGamma(FBGamma(color) + (4. / quantSteps)) - color;
+   
+   //float luma = saturate(dot(color,vec3(0.212655,0.715158,0.072187)));
+   //vec3 amount = lerp(
+   //  InvGamma(4. / quantSteps), //!! precalc? would also solve 5/6/5bit issue!
+   //  InvGamma((4. / quantSteps)+1.)-1.,
+   //  luma);
+
+   //return color + dither*amount;
+
+   // RPDF:
+   //return color + dither/quantSteps; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
+#endif
+}
+
+vec2 FBDither(vec2 color, /*int2 pos*/vec2 tex0)
+{
+   return color; // on RG-only rendering do not dither anything for performance
+}
+
+float FBDither(float color, /*int2 pos*/vec2 tex0)
+{
+   return color; // on R-only rendering do not dither anything for performance
+}
+
+vec3 FBColorGrade(vec3 color)
+{
+   if(!color_grade)
+       return color;
+	   
+   color.xy = color.xy*(15.0/16.0) + 1.0/32.0; // assumes 16x16x16 resolution flattened to 256x16 texture
+   color.z *= 15.0;
+
+   float x = (color.x + floor(color.z))/16.0;
+   vec3 lut1 = textureLod(tex_color_lut, vec2(x,          color.y), 0).xyz; // two lookups to blend/lerp between blue 2D regions
+   vec3 lut2 = textureLod(tex_color_lut, vec2(x+1.0/16.0, color.y), 0).xyz;
+   return mix(lut1,lut2, frac(color.z));
+}
+
+#include "FXAAStereoAO.fxh"
+
+#include "SSR.fxh"
+
+////vs_main_no_trafo
+
+in vec3 vPosition;
+in vec2 tc;
+
+out vec2 tex0;
+
+void main()
+{ 
+   gl_Position = vec4(vPosition.x, vPosition.y,0.0,1.0);
+   // Offset texture coordinates since OpenGL texel center is shifted by half a texel from DirectX texel center
+   tex0 = vec2(tc.x-w_h_height.x, 1.0-tc.y-w_h_height.y);
+}
+
+////ps_main_fb_tonemap
+
+in vec2 tex0;
+
+void main()
+{
+   //!! float depth0 = tex2Dlod(tex_depth, vec4(u, 0.,0.)).x;
+   //!! if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
+   //!!   return vec4(tex2Dlod(tex_fb_filtered, vec4(tex0, 0.,0.)).xyz, 1.0);
+
+   vec3 result = FBToneMap(textureLod(tex_fb_filtered, tex0, 0).xyz);
+   if (do_bloom)
+      result += textureLod(tex_bloom, tex0, 0.).xyz; //!! offset?
+   color = vec4(FBColorGrade(FBGamma(clamp(result, 0.0, 1.0))), 1.0);
+}
+
+////ps_main_fb_bloom
+
+in vec2 tex0;
+
+float3 bloom_cutoff(const float3 c) {
+    const float Threshold = 2.5; //!! magic
+    const float SoftThreshold = 1.0;
+    const float Knee = Threshold * SoftThreshold;
+
+    const float brightness = max(c.r, max(c.g, c.b));
+    float soft = brightness - (Threshold - Knee);
+    soft = clamp(soft, 0., 2. * Knee);
+    soft *= soft * (1.0 / (4. * Knee + 0.00001));
+    const float contribution = max(soft, brightness - Threshold) / max(brightness, 0.00001);
+	// FIXME we are facing overflows here causing visual artefacts (not present for DX9)
+    //return c * contribution;
+    return clamp(c * contribution, vec3(0.0), vec3(5.0));
+}
+
+void main()
+{
+    // collect clipped contribution of the 4x4 texels (via box blur, NOT gaussian, as this is wrong) from original FB
+    const float3 result = (textureLod(tex_fb_filtered, tex0 + (w_h_height.xy*1.25 -w_h_height.xy), 0.).xyz
+                        +  textureLod(tex_fb_filtered, tex0 + (w_h_height.xy*1.25 +w_h_height.xy), 0.).xyz
+                        +  textureLod(tex_fb_filtered, tex0 + (w_h_height.xy*1.25 +float2(w_h_height.x,-w_h_height.y)), 0.).xyz
+                        +  textureLod(tex_fb_filtered, tex0 + (w_h_height.xy*1.25 +float2(-w_h_height.x,w_h_height.y)), 0.).xyz)*0.25; //!! offset for useAA?
+    color = float4(bloom_cutoff(FBToneMap(result)), 1.0);
+}
+
+////ps_main_fb_AO
+
+in vec2 tex0;
+
+void main()
+{
+   vec3 result = vec3(textureLod(tex_ao, tex0/*-w_h_height.xy*/, 0).x); // omitting the shift blurs over 2x2 window
+   color = vec4(FBGamma(saturate(result)), 1.0);
+}
+
+////ps_main_fb_tonemap_AO
+
+in vec2 tex0;
+
+void main()
+{
+   vec3 result = FBToneMap(textureLod(tex_fb_filtered, tex0, 0).xyz) // moving AO before tonemap does not really change the look
+                         * textureLod(tex_ao, tex0/*-w_h_height.xy*/, 0).x; // omitting the shift blurs over 2x2 window
+   if (do_bloom)
+      result += textureLod(tex_bloom, tex0, 0).xyz; //!! offset?
+   color = vec4(FBColorGrade(FBGamma(clamp(result, 0.0, 1.0))), 1.0);
+}
+
+////ps_main_fb_tonemap_AO_static
+
+in vec2 tex0;
+
+void main()
+{
+   vec3 result = textureLod(tex_fb_filtered, tex0, 0).xyz
+               * textureLod(tex_ao, tex0/*-w_h_height.xy*/, 0).x; // omitting the shift blurs over 2x2 window
+   color = vec4(result, 1.0);
+}
+
+////ps_main_fb_tonemap_no_filter
+
+in vec2 tex0;
+
+void main()
+{
+   vec3 result = FBToneMap(textureLod(tex_fb_unfiltered, tex0+w_h_height.xy, 0).xyz);
+   if (do_bloom)
+      result += textureLod(tex_bloom, tex0, 0).xyz; //!! offset?
+   color = vec4(/*FBDither(*/FBColorGrade(FBGamma(clamp(result, 0.0, 1.0))),/*tex0*w_h_height.zw),*/ 1.0);
+}
+
+////ps_main_fb_tonemap_no_filterRGB
+
+in vec2 tex0;
+
+void main()
+{
+   vec3 result = FBToneMap(textureLod(tex_fb_unfiltered, tex0+w_h_height.xy, 0).xyz);
+   //vec3 result = FBToneMap(textureLod(tex_fb_unfiltered, tex0, 0).xyz);
+   if (do_bloom)
+      result += textureLod(tex_bloom, tex0, 0).xyz; //!! offset?
+   color = vec4(FBColorGrade(FBGamma(clamp(FBDither(result, tex0), 0.0, 1.0))), 1.0);
+}
+
+////ps_main_fb_tonemap_no_filterRG
+
+in vec2 tex0;
+
+void main()
+{
+   float result = FBToneMap(textureLod(tex_fb_unfiltered,tex0+w_h_height.xy, 0).xyz).x;
+   if (do_bloom)
+      result += textureLod(tex_bloom, tex0, 0).x; //!! offset?
+   float gray = /*FBDither(*//*FBColorGrade*/(FBGamma(vec3(clamp(result, 0.0, 1.0)))).x/*,tex0*w_h_height.zw)*/;
+   color = vec4(gray,gray,gray,1.0);
+}
+
+////ps_main_fb_tonemap_no_filterR
+
+in vec2 tex0;
+
+void main()
+{
+   vec3 result = FBToneMap(textureLod(tex_fb_unfiltered, tex0+w_h_height.xy, 0).xyz) // moving AO before tonemap does not really change the look
+                         * textureLod(tex_ao, tex0/*-w_h_height.xy*/, 0).x; // omitting the shift blurs over 2x2 window
+   if (do_bloom)
+      result += textureLod(tex_bloom, tex0, 0).xyz;  //!! offset?
+   color = vec4(FBColorGrade(FBGamma(clamp(result, 0.0, 1.0))), 1.0);
+}
+
+////ps_main_fb_tonemap_AO_no_filter
+
+in vec2 tex0;
+
+void main()
+{
+   vec3 result = FBToneMap(textureLod(tex_fb_unfiltered, tex0+w_h_height.xy, 0).xyz) // moving AO before tonemap does not really change the look
+                         * textureLod(tex_ao, tex0/*-w_h_height.xy*/, 0).x; // omitting the shift blurs over 2x2 window
+   if (do_bloom)
+      result += textureLod(tex_bloom, tex0, 0).xyz;  //!! offset?
+   color = vec4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+}
+
+////ps_main_fb_tonemap_AO_no_filter_static
+
+in vec2 tex0;
+
+void main()
+{
+   vec3 result = textureLod(tex_fb_unfiltered, tex0 + w_h_height.xy, 0).xyz
+               * textureLod(tex_ao, tex0/*-w_h_height.xy*/, 0).x; // omitting the shift blurs over 2x2 window
+   color = vec4(result, 1.0);
+}
+
+//
+// Bloom (9x9)
+//
+
+////ps_main_fb_bloom_horiz9x9
+in vec2 tex0;
+
+void main()
+{
+   const float offset9x9[3] = float[]( 0.0, 1.3846153846, 3.2307692308 );
+   const float weight9x9[3] = float[]( 0.2270270270, 0.3162162162, 0.0702702703 );
+   vec3 result = texture(tex_fb_filtered, tex0+w_h_height.xy*0.5).xyz*weight9x9[0];
+   for (int i = 1; i < 3; ++i)
+      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset9x9[i],0.0))).xyz
+                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset9x9[i],0.0))).xyz)*weight9x9[i];
+
+   color = vec4(result, 1.0);
+}
+
+////ps_main_fb_bloom_vert9x9
+in vec2 tex0;
+
+void main()
+{
+   const float offset9x9[3] = float[]( 0.0, 1.3846153846, 3.2307692308 );
+   const float weight9x9[3] = float[]( 0.2270270270, 0.3162162162, 0.0702702703 );
+   vec3 result = texture(tex_fb_unfiltered, vec2(tex0+w_h_height.xy*0.5)).xyz*weight9x9[0];
+   for (int i = 1; i < 3; ++i)
+      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset9x9[i]))).xyz
+                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset9x9[i]))).xyz)*weight9x9[i];
+
+   color = vec4(result*w_h_height.z, 1.0);
+}
+
+////ps_main_fb_bloom_horiz19x19
+in vec2 tex0;
+
+void main()
+{
+   const float offset19x19[5] = float[]( 0.65323, 2.42572, 4.36847, 6.31470, 8.26547 ); //no center!
+   const float weight19x19[5] = float[]( 0.19923, 0.18937, 0.08396, 0.02337, 0.00408 ); //no center!
+   vec3 result = vec3(0.0, 0.0, 0.0);
+   for(int i = 0; i < 5; ++i)
+      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset19x19[i],0.0))).xyz
+                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset19x19[i],0.0))).xyz)*weight19x19[i];
+
+   color = vec4(result, 1.0);
+}
+
+////ps_main_fb_bloom_vert19x19
+
+in vec2 tex0;
+
+void main()
+{
+   const float offset19x19[5] = float[]( 0.65323, 2.42572, 4.36847, 6.31470, 8.26547 ); //no center!
+   const float weight19x19[5] = float[]( 0.19923, 0.18937, 0.08396, 0.02337, 0.00408 ); //no center!
+   vec3 result = vec3(0.0, 0.0, 0.0);
+   for(int i = 0; i < 5; ++i)
+      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset19x19[i]))).xyz
+                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset19x19[i]))).xyz)*weight19x19[i];
+
+   color = vec4(result*w_h_height.z, 1.0);
+}
+
+//const float offset19x19h[5] = float[] ( 0.64625, 2.38872, 4.30686, 6.23559, 8.17666 );
+//const float weight19x19h[5] = float[] ( 0.23996, 0.19335, 0.05753, 0.00853, 0.00063 );
+//const float offset19x19h[5] = float[] ( 0.63232, 2.31979, 4.20448, 6.12322, 8.07135 );
+//const float weight19x19h[5] = float[] ( 0.29809, 0.17619, 0.02462, 0.00109, 0.00002 );
+
+////ps_main_fb_bloom_horiz19x19h
+
+in vec2 tex0;
+
+void main()
+{
+   const float offset19x19h[5] = float[]( 0.63918, 2.35282, 4.25124, 6.17117, 8.11278 ); //no center!
+   const float weight19x19h[5] = float[]( 0.27233, 0.18690, 0.03767, 0.00301, 0.00009 ); //no center!
+   vec3 result = vec3(0.0, 0.0, 0.0);
+   for(int i = 0; i < 5; ++i)
+      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset19x19h[i],0.0))).xyz
+                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset19x19h[i],0.0))).xyz)*weight19x19h[i];
+
+   color = vec4(result, 1.0);
+}
+
+////ps_main_fb_bloom_vert19x19h
+
+in vec2 tex0;
+
+void main()
+{
+   const float offset19x19h[5] = float[]( 0.63918, 2.35282, 4.25124, 6.17117, 8.11278 ); //no center!
+   const float weight19x19h[5] = float[]( 0.27233, 0.18690, 0.03767, 0.00301, 0.00009 ); //no center!
+   vec3 result = vec3(0.0, 0.0, 0.0);
+   for(int i = 0; i < 5; ++i)
+      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset19x19h[i]))).xyz
+                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset19x19h[i]))).xyz)*weight19x19h[i];
+
+   color = vec4(result*w_h_height.z, 1.0);
+}
+
+
+////ps_main_fb_bloom_horiz39x39
+
+in vec2 tex0;
+
+void main()
+{
+    const float offset39x39[10] = float[] ( 0.66063, 2.46625, 4.43946, 6.41301, 8.38706, 10.36173, 12.33715, 14.31341, 16.29062, 18.26884
+                                          /*0.66214, 2.47462, 4.45440, 6.43433, 8.41447, 10.39489, 12.37564, 14.35677, 16.33834, 18.32039*/
+                                          /*0.66368, 2.48326, 4.46990, 6.45658, 8.44332, 10.43015, 12.41707, 14.40410, 16.39127, 18.37859*/ ); //no center!
+    const float weight39x39[10] = float[] ( 0.13669, 0.15600, 0.10738, 0.05971, 0.02682, 0.00973, 0.00285, 0.00067, 0.00013, 0.00002
+                                          /*0.11904, 0.14115, 0.10650, 0.06841, 0.03741, 0.01742, 0.00690, 0.00233, 0.00067, 0.00016*/
+                                          /*0.09721, 0.11993, 0.09955, 0.07429, 0.04984, 0.03006, 0.01630, 0.00795, 0.00348, 0.00137*/ ); //no center!
+    float3 result = float3(0.0, 0.0, 0.0);
+    for(int i = 0; i < 10; ++i)
+        result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset39x39[i],0.0))).xyz
+                  +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset39x39[i],0.0))).xyz)*weight39x39[i];
+
+    color = float4(result, 1.0);
+}
+
+////ps_main_fb_bloom_vert39x39
+
+in vec2 tex0;
+
+void main()
+{
+    const float offset39x39[10] = float[] ( 0.66063, 2.46625, 4.43946, 6.41301, 8.38706, 10.36173, 12.33715, 14.31341, 16.29062, 18.26884
+                                          /*0.66214, 2.47462, 4.45440, 6.43433, 8.41447, 10.39489, 12.37564, 14.35677, 16.33834, 18.32039*/
+                                          /*0.66368, 2.48326, 4.46990, 6.45658, 8.44332, 10.43015, 12.41707, 14.40410, 16.39127, 18.37859*/ ); //no center!
+    const float weight39x39[10] = float[] ( 0.13669, 0.15600, 0.10738, 0.05971, 0.02682, 0.00973, 0.00285, 0.00067, 0.00013, 0.00002
+                                          /*0.11904, 0.14115, 0.10650, 0.06841, 0.03741, 0.01742, 0.00690, 0.00233, 0.00067, 0.00016*/
+                                          /*0.09721, 0.11993, 0.09955, 0.07429, 0.04984, 0.03006, 0.01630, 0.00795, 0.00348, 0.00137*/ ); //no center!
+    float3 result = float3(0.0, 0.0, 0.0);
+    for(int i = 0; i < 10; ++i)
+        result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset39x39[i]))).xyz
+                  +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset39x39[i]))).xyz)*weight39x39[i];
+
+    color = float4(result*w_h_height.z, 1.0);
+}
+
+////ps_main_fb_mirror
+// mirror
+in vec2 tex0;
+
+void main()
+{
+   color = float4(texture(tex_mirror, tex0 + 0.5/cWidth_Height_MirrorAmount.xy).rgb * (1./cWidth_Height_MirrorAmount.z), 1.0);
+}
+
+
+////TECHNIQUES
+
+//normals:P0:vs_main_no_trafo():ps_main_normals()
+AO:P0:vs_main_no_trafo():ps_main_ao()
+//stereo:P0:vs_main_no_trafo():ps_main_stereo()
+NFAA:P0:vs_main_no_trafo():ps_main_nfaa()
+DLAA_edge:P0:vs_main_no_trafo():ps_main_dlaa_edge()
+DLAA:P0:vs_main_no_trafo():ps_main_dlaa()
+FXAA1:P0:vs_main_no_trafo():ps_main_fxaa1()
+FXAA2:P0:vs_main_no_trafo():ps_main_fxaa2()
+FXAA3:P0:vs_main_no_trafo():ps_main_fxaa3()
+fb_tonemap:P0:vs_main_no_trafo():ps_main_fb_tonemap()
+fb_bloom:P0:vs_main_no_trafo():ps_main_fb_bloom()
+fb_AO:P0:vs_main_no_trafo():ps_main_fb_AO()
+fb_tonemap_AO:P0:vs_main_no_trafo():ps_main_fb_tonemap_AO()
+fb_tonemap_AO_static:P0:vs_main_no_trafo():ps_main_fb_tonemap_AO_static()
+
+fb_tonemap_no_filterRGB:P0:vs_main_no_trafo():ps_main_fb_tonemap_no_filterRGB()
+fb_tonemap_no_filterRG:P0:vs_main_no_trafo():ps_main_fb_tonemap_no_filterRG()
+fb_tonemap_no_filterR:P0:vs_main_no_trafo():ps_main_fb_tonemap_no_filterR()
+fb_tonemap_AO_no_filter:P0:vs_main_no_trafo():ps_main_fb_tonemap_AO_no_filter()
+
+//!! SRGBWriteEnable = true
+fb_tonemap_AO_no_filter_static:P0:vs_main_no_trafo():ps_main_fb_tonemap_AO_no_filter_static()
+
+// All Bloom variants:
+fb_bloom_horiz9x9:P0:vs_main_no_trafo():ps_main_fb_bloom_horiz9x9()
+fb_bloom_vert9x9:P0:vs_main_no_trafo():ps_main_fb_bloom_vert9x9()
+//fb_bloom_horiz9x9_4:P0:vs_main_no_trafo():ps_main_fb_bloom_horiz9x9_4()
+//fb_bloom_vert9x9_4:P0:vs_main_no_trafo():ps_main_fb_bloom_vert9x9_4()
+//fb_bloom_horiz11x11:P0:vs_main_no_trafo():ps_main_fb_bloom_horiz11x11()
+//fb_bloom_vert11x11:P0:vs_main_no_trafo():ps_main_fb_bloom_vert11x11()
+fb_bloom_horiz19x19:P0:vs_main_no_trafo():ps_main_fb_bloom_horiz19x19()
+fb_bloom_vert19x19:P0:vs_main_no_trafo():ps_main_fb_bloom_vert19x19()
+fb_bloom_horiz19x19h:P0:vs_main_no_trafo():ps_main_fb_bloom_horiz19x19h()
+fb_bloom_vert19x19h:P0:vs_main_no_trafo():ps_main_fb_bloom_vert19x19h()
+//fb_bloom_horiz27x27:P0:vs_main_no_trafo():ps_main_fb_bloom_horiz27x27()
+//fb_bloom_vert27x27:P0:vs_main_no_trafo():ps_main_fb_bloom_vert27x27()
+fb_bloom_horiz39x39:P0:vs_main_no_trafo():ps_main_fb_bloom_horiz39x39()
+fb_bloom_vert39x39:P0:vs_main_no_trafo():ps_main_fb_bloom_vert39x39()
+fb_mirror:P0:vs_main_no_trafo():ps_main_fb_mirror()
+CAS:P0:vs_main_no_trafo():ps_main_CAS()
+BilateralSharp_CAS:P0:vs_main_no_trafo():ps_main_BilateralSharp_CAS()
+SSReflection:P0:vs_main_no_trafo():ps_main_fb_ss_refl()

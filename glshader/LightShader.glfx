@@ -1,0 +1,83 @@
+////GLOBAL
+#version 400
+
+////DEFINES
+
+layout(std140) uniform matrixBlock { mat4 matWorldViewProj[eyes];};
+
+////VERTEX
+
+////GEOMETRY
+#extension GL_ARB_viewport_array : enable
+layout(triangles) in;
+layout(triangle_strip, max_vertices = 3) out;
+
+uniform bool ignoreStereo = false; // Must be able to force only one invocation for drawing bulb light texture
+
+// Use geometry invocations for stereo rendering
+#if (eyes == 1)
+   layout(invocations = 1) in;
+#else
+   layout(invocations = 2) in;
+#endif
+
+////FRAGMENT
+uniform vec4 lightColor_intensity;
+uniform vec4 lightColor2_falloff_power;
+uniform vec4 lightCenter_maxRange;
+uniform float blend_modulate_vs_add;
+
+out vec4 color;
+
+////vs_lightbulb_main
+
+in vec3 vPosition;
+in vec2 tc;
+
+out vec3 tablePos_gs;
+
+void main()
+{
+   gl_Position = vec4(vPosition, 1.0);
+   tablePos_gs = vPosition;
+}
+
+////gs_lightbulb_main
+
+in vec3 tablePos_gs[];
+out vec3 tablePos;
+
+void main()
+{
+   gl_ViewportIndex = gl_InvocationID;
+   if (gl_ViewportIndex == 0 || !ignoreStereo)
+   {
+      for (int i=0;i<gl_in.length();i++) {
+         //Default
+         gl_Position = (matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position);
+         gl_Position.z = max(gl_Position.z, 0.00001); // clamp lights to near clip plane to avoid them being partially clipped
+         //Custom
+         tablePos = tablePos_gs[i];
+         //Default
+         EmitVertex();
+      }
+      EndPrimitive();
+   }
+}
+
+////PS_BulbLight
+
+in vec3 tablePos;
+
+void main()
+{
+	float len = length(lightCenter_maxRange.xyz - tablePos) * lightCenter_maxRange.w;
+	float atten = clamp(pow(1.0 - clamp(len, 0.0, 1.0), lightColor2_falloff_power.w), 0.0, 1.0);
+	vec3 lcolor = mix(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
+	color.xyz = lcolor*(-blend_modulate_vs_add*atten*lightColor_intensity.w); // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
+	color.a = 1.0/blend_modulate_vs_add - 1.0; //saturate(atten*lightColor_intensity.w);
+}
+
+////TECHNIQUES
+
+bulb_light:P0:vs_lightbulb_main():gs_lightbulb_main():PS_BulbLight()
