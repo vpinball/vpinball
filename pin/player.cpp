@@ -881,28 +881,29 @@ void Player::ToggleFPS()
 
 InfoMode Player::GetInfoMode() const
 {
-   const unsigned int modes = (m_showFPS % 9);
+   const unsigned int modes = (m_showFPS % 10);
    switch (modes)
    {
    default:
    case 0: return InfoMode::IF_NONE;
    case 1: return InfoMode::IF_FPS;
    case 2: return InfoMode::IF_PROFILING;
-   case 3: return InfoMode::IF_NONE;
-   case 4: return InfoMode::IF_PROFILING_SPLIT_RENDERING;
-   case 5: return InfoMode::IF_NONE;
-   case 6: return InfoMode::IF_STATIC_ONLY;
-   case 7: return InfoMode::IF_NONE;
-   case 8: return InfoMode::IF_AO_ONLY;
+   case 3: return InfoMode::IF_PROFILING_SPLIT_RENDERING;
+   case 4: return m_pin3d.m_pddsStatic == nullptr ? InfoMode::IF_NONE : InfoMode::IF_STATIC_ONLY;
+   case 5: return InfoMode::IF_DYNAMIC_ONLY;
+   case 6: return m_pin3d.m_pd3dPrimaryDevice->GetMirrorRenderTarget(true) == nullptr ? InfoMode::IF_NONE : InfoMode::IF_STATIC_REFL_ONLY;
+   case 7: return m_pin3d.m_pd3dPrimaryDevice->GetMirrorRenderTarget(false) == nullptr ? InfoMode::IF_NONE : InfoMode::IF_DYNAMIC_REFL_ONLY;
+   case 8: return m_pin3d.m_pddsAOBackBuffer == nullptr ? InfoMode::IF_NONE : InfoMode::IF_AO_ONLY;
+   case 9: return InfoMode::IF_LIGHT_BUFFER_ONLY;
    }
 }
 
 ProfilingMode Player::GetProfilingMode() const
 {
-   const unsigned int modes = (m_showFPS % 9);
-   if (modes == 3)
+   const InfoMode mode = GetInfoMode();
+   if (mode == IF_PROFILING)
       return ProfilingMode::PF_ENABLED;
-   else if (modes == 4)
+   else if (mode == IF_PROFILING_SPLIT_RENDERING)
       return ProfilingMode::PF_SPLIT_RENDERING;
    else
       return ProfilingMode::PF_DISABLED;
@@ -910,26 +911,14 @@ ProfilingMode Player::GetProfilingMode() const
 
 bool Player::ShowFPSonly() const
 {
-   const unsigned int modes = (m_showFPS % 9);
-   return (modes == 1 || modes == 6 || modes == 8);
+   const InfoMode mode = GetInfoMode();
+   return mode == IF_FPS || mode == IF_STATIC_ONLY || mode == IF_AO_ONLY;
 }
 
 bool Player::ShowStats() const
 {
-   const unsigned int modes = (m_showFPS % 9);
-   return (modes == 1 || modes == 2 || modes == 3 || modes == 4 || modes == 6 || modes == 8);
-}
-
-bool Player::RenderStaticOnly() const
-{
-   const unsigned int modes = (m_showFPS % 9);
-   return (modes == 6);
-}
-
-bool Player::RenderAOOnly() const
-{
-   const unsigned int modes = (m_showFPS % 9);
-   return (modes == 8);
+   const InfoMode mode = GetInfoMode();
+   return mode == IF_FPS || mode == IF_PROFILING || mode == IF_PROFILING_SPLIT_RENDERING;
 }
 
 void Player::RecomputePauseState()
@@ -3858,14 +3847,8 @@ void Player::SSRefl()
 
 void Player::Bloom()
 {
-   if (m_ptable->m_bloom_strength <= 0.0f || m_bloomOff)
-   {
-      // need to reset content from (optional) bulb light abuse of the buffer
-      /*m_pin3d.m_pd3dDevice->GetBloomBufferTexture()->Activate();
-      m_pin3d.m_pd3dDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);*/
-
+   if (m_ptable->m_bloom_strength <= 0.0f || m_bloomOff || GetInfoMode() == IF_LIGHT_BUFFER_ONLY)
       return;
-   }
 
    double w = (double)m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth();
    double h = (double)m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight();
@@ -4093,16 +4076,15 @@ void Player::UpdateHUD_IMGUI()
 
    switch (infoMode)
    {
-      case IF_FPS:
-         ImGui::Begin("FPS"); break;
-      case IF_PROFILING:
-         ImGui::Begin("Profiling"); break;
-      case IF_PROFILING_SPLIT_RENDERING:
-         ImGui::Begin("Profiling (using split rendering)"); break;
-      case IF_STATIC_ONLY:
-         ImGui::Begin("Display staticly rendered parts"); break;
-      case IF_AO_ONLY:
-         ImGui::Begin("Display ambient occlusion"); break;
+   case IF_FPS: ImGui::Begin("FPS"); break;
+   case IF_PROFILING: ImGui::Begin("Profiling"); break;
+   case IF_PROFILING_SPLIT_RENDERING: ImGui::Begin("Profiling (using split rendering)"); break;
+   case IF_STATIC_ONLY: ImGui::Begin("Staticly rendered parts"); break;
+   case IF_DYNAMIC_ONLY: ImGui::Begin("Dynamicly rendered parts"); break;
+   case IF_STATIC_REFL_ONLY: ImGui::Begin("Static reflections"); break;
+   case IF_DYNAMIC_REFL_ONLY: ImGui::Begin("Dynamic reflections"); break;
+   case IF_AO_ONLY: ImGui::Begin("Ambient occlusion"); break;
+   case IF_LIGHT_BUFFER_ONLY: ImGui::Begin("Indirect lights"); break;
    }
 
    const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / (float)m_fpsCount;
@@ -4117,7 +4099,8 @@ void Player::UpdateHUD_IMGUI()
    if (ImGui::Button("Toggle Profiling"))
       profiling = !profiling;
 
-   ImGui::Text("FPS: %.1f (%.1f avg)  Display %s Objects(%uk/%uk Triangles)", m_fps + 0.01f, fpsAvg + 0.01f, RenderStaticOnly() ? "only static" : "all", (RenderDevice::m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000);
+   ImGui::Text("FPS: %.1f (%.1f avg)  Display %s Objects(%uk/%uk Triangles)", m_fps + 0.01f, fpsAvg + 0.01f, GetInfoMode() == IF_STATIC_ONLY ? "only static" : "all",
+      (RenderDevice::m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000);
    ImGui::Text("DayNight %u%%", quantizeUnsignedPercent(m_globalEmissionScale));
 
    const U32 period = m_lastFrameDuration;
@@ -4317,7 +4300,17 @@ void Player::UpdateHUD()
     SetDebugOutputPosition(x, y);
 
 	// draw all kinds of stats, incl. FPS counter
-	if (ShowStats() && !m_cameraMode && !m_closeDown)
+   const InfoMode mode = GetInfoMode();
+   switch (mode)
+   {
+   case IF_STATIC_ONLY: DebugPrint(0, 10, "Staticly pre-rendered parts"); break;
+   case IF_DYNAMIC_ONLY: DebugPrint(0, 10, "Dynamicly rendered parts"); break;
+   case IF_STATIC_REFL_ONLY: DebugPrint(0, 10, "Static reflections"); break;
+   case IF_DYNAMIC_REFL_ONLY: DebugPrint(0, 10, "Dynamic reflections"); break;
+   case IF_AO_ONLY: DebugPrint(0, 10, "Ambient occlusion"); break;
+   case IF_LIGHT_BUFFER_ONLY: DebugPrint(0, 10, "Transmitted light buffer"); break;
+   }
+   if (ShowStats() && !m_cameraMode && !m_closeDown)
 	{
 		char szFoo[256];
 
@@ -4335,7 +4328,9 @@ void Player::UpdateHUD()
 		//DebugPrint(0, 230, szFoo); //!!?
 
 		// Draw the framerate.
-		sprintf_s(szFoo, sizeof(szFoo), "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %u%%", m_fps+0.01f, fpsAvg+0.01f, RenderStaticOnly() ? "only static" : "all", (RenderDevice::m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, quantizeUnsignedPercent(m_globalEmissionScale));
+      sprintf_s(szFoo, sizeof(szFoo), "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %u%%", m_fps + 0.01f, fpsAvg + 0.01f,
+         GetInfoMode() == IF_STATIC_ONLY ? "only static" : "all", (RenderDevice::m_stats_drawn_triangles + 999) / 1000,
+         (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, quantizeUnsignedPercent(m_globalEmissionScale));
 		DebugPrint(0, 10, szFoo);
 
 		const U32 period = m_lastFrameDuration;
@@ -4583,6 +4578,23 @@ void Player::PrepareVideoBuffersNormal()
    RenderTarget *renderedRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture();
    RenderTarget *ouputRT = nullptr;
 
+   // For information mode, use the wanted render target instead of the render buffer
+   const InfoMode infoMode = GetInfoMode();
+   if (infoMode == IF_STATIC_REFL_ONLY)
+   {
+      const auto rt = m_pin3d.m_pd3dPrimaryDevice->GetMirrorRenderTarget(true);
+      renderedRT = rt == nullptr ? renderedRT : rt;
+   }
+   else if (infoMode == IF_DYNAMIC_REFL_ONLY)
+   {
+      const auto rt = m_pin3d.m_pd3dPrimaryDevice->GetMirrorRenderTarget(false);
+      renderedRT = rt == nullptr ? renderedRT : rt;
+   }
+   else if (infoMode == IF_LIGHT_BUFFER_ONLY)
+   {
+      renderedRT = m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture();
+   }
+
    if (stereo || ss_refl)
       renderedRT->UpdateDepthSampler(); // do not put inside BeginScene/EndScene Block
 
@@ -4643,7 +4655,7 @@ void Player::PrepareVideoBuffersNormal()
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_color_lut, pin, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool(SHADER_color_grade, pin != nullptr);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool(SHADER_do_dither, !m_ditherOff);
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool(SHADER_do_bloom, (m_ptable->m_bloom_strength > 0.0f && !m_bloomOff));
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool(SHADER_do_bloom, (m_ptable->m_bloom_strength > 0.0f && !m_bloomOff && infoMode < IF_STATIC_REFL_ONLY));
 
    //const unsigned int jittertime = (unsigned int)((U64)msec()*90/1000);
    const float jitter = (float)((msec() & 2047) / 1000.0);
@@ -4708,6 +4720,23 @@ void Player::PrepareVideoBuffersAO()
 
    RenderTarget *renderedRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture();
    RenderTarget *ouputRT = nullptr;
+
+   // For information mode, use the wanted render target instead of the render buffer
+   const InfoMode infoMode = GetInfoMode();
+   if (infoMode == IF_STATIC_REFL_ONLY)
+   {
+      const auto rt = m_pin3d.m_pd3dPrimaryDevice->GetMirrorRenderTarget(true);
+      renderedRT = rt == nullptr ? renderedRT : rt;
+   }
+   else if (infoMode == IF_DYNAMIC_REFL_ONLY)
+   {
+      const auto rt = m_pin3d.m_pd3dPrimaryDevice->GetMirrorRenderTarget(false);
+      renderedRT = rt == nullptr ? renderedRT : rt;
+   }
+   else if (infoMode == IF_LIGHT_BUFFER_ONLY)
+   {
+      renderedRT = m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture();
+   }
 
    renderedRT->UpdateDepthSampler(); // do not put inside BeginScene/EndScene Block
 
@@ -4811,7 +4840,7 @@ void Player::PrepareVideoBuffersAO()
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_color_lut, pin, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool(SHADER_color_grade, pin != nullptr);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool(SHADER_do_dither, !m_ditherOff);
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool(SHADER_do_bloom, (m_ptable->m_bloom_strength > 0.0f && !m_bloomOff));
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool(SHADER_do_bloom, (m_ptable->m_bloom_strength > 0.0f && !m_bloomOff && infoMode < IF_STATIC_REFL_ONLY));
 
    //const unsigned int jittertime = (unsigned int)((U64)msec()*90/1000);
    const float jitter = (float)((msec()&2047)/1000.0);
@@ -4820,8 +4849,7 @@ void Player::PrepareVideoBuffersAO()
       jitter, //radical_inverse(jittertime)*11.0f,
       jitter);//sobol(jittertime)*13.0f); // jitter for dither pattern
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &fb_inv_resolution_05);
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(RenderAOOnly() ? SHADER_TECHNIQUE_fb_AO :
-                                                (useAA ? SHADER_TECHNIQUE_fb_tonemap_AO : SHADER_TECHNIQUE_fb_tonemap_AO_no_filter));
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(infoMode == IF_AO_ONLY ? SHADER_TECHNIQUE_fb_AO : (useAA ? SHADER_TECHNIQUE_fb_tonemap_AO : SHADER_TECHNIQUE_fb_tonemap_AO_no_filter));
 
    m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
    m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)shiftedVerts);
@@ -5126,12 +5154,31 @@ void Player::Render()
    c_deepTested = 0;
 #endif
 
+#ifdef ENABLE_SDL
+   // Trigger captures
+   if (m_capExtDMD)
+      captureExternalDMD();
+   if (m_capPUP)
+      capturePUP();
+#endif
+
    m_LastKnownGoodCounter++;
 
    RenderDevice::m_stats_drawn_triangles = 0;
 
-   // copy static buffers to back buffer including z buffer
-   m_pin3d.m_pddsStatic->CopyTo(m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture()); // cannot be called inside BeginScene -> EndScene cycle
+   if (m_stereo3D == STEREO_VR || GetInfoMode() == IF_DYNAMIC_ONLY)
+   {
+      // For VR start from a clear render
+      m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->Activate();
+      m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
+   }
+   else
+   {
+      // copy static buffers to back buffer including z buffer
+      m_pin3d.m_pddsStatic->CopyTo(m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture()); // cannot be called inside BeginScene -> EndScene cycle
+      m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->Activate();
+   }
+
 
    // Physics/Timer updates, done at the last moment, especially to handle key input (VP<->VPM rountrip) and animation triggers
    //if ( !cameraMode )
@@ -5172,7 +5219,7 @@ void Player::Render()
    }
 #endif
 
-   if (!RenderStaticOnly())
+   if (GetInfoMode() != IF_STATIC_ONLY)
    {
       m_pin3d.m_pd3dPrimaryDevice->BeginScene();
       RenderDynamics();

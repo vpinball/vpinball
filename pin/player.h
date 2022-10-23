@@ -3,7 +3,7 @@
 #include "kdtree.h"
 #include "quadtree.h"
 #include "Debugger.h"
-#include "Shader.h"
+#include "typedefs3D.h"
 #include "pininput.h"
 
 #define DEFAULT_PLAYER_WIDTH 1024
@@ -136,7 +136,11 @@ enum InfoMode
    IF_PROFILING,
    IF_PROFILING_SPLIT_RENDERING,
    IF_STATIC_ONLY,
-   IF_AO_ONLY
+   IF_DYNAMIC_ONLY,
+   IF_STATIC_REFL_ONLY,
+   IF_DYNAMIC_REFL_ONLY,
+   IF_AO_ONLY,
+   IF_LIGHT_BUFFER_ONLY,
 };
 
 enum ProfilingMode
@@ -657,8 +661,6 @@ private:
    void InitFPS();
    bool ShowFPSonly() const;
    bool ShowStats() const;
-   bool RenderStaticOnly() const;
-   bool RenderAOOnly() const;
    InfoMode GetInfoMode() const;
    ProfilingMode GetProfilingMode() const;
 
