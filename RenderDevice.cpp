@@ -851,7 +851,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
       }
    }
 
-   m_adapter = m_pD3D->GetAdapterCount() > (int)adapterIndex ? adapterIndex : 0;
+   m_adapter = m_pD3D->GetAdapterCount() > adapterIndex ? adapterIndex : 0;
 
    D3DDEVTYPE devtype = D3DDEVTYPE_HAL;
 
@@ -1596,9 +1596,6 @@ void RenderDevice::UploadAndSetSMAATextures()
    memcpy(searchBaseTex->data(), searchTexBytes, SEARCHTEX_SIZE);
    m_SMAAsearchTexture = new Sampler(this, searchBaseTex, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE);
 
-   GLuint glTexture;
-   int num_mips;
-
    // Update bind cache
    auto tex_unit = m_samplerBindings.back();
    if (tex_unit->sampler != nullptr)
@@ -1606,6 +1603,7 @@ void RenderDevice::UploadAndSetSMAATextures()
    tex_unit->sampler = nullptr;
    glActiveTexture(GL_TEXTURE0 + tex_unit->unit);
 
+   GLuint glTexture;
    glGenTextures(1, &glTexture);
    glBindTexture(GL_TEXTURE_2D, glTexture);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -1616,7 +1614,7 @@ void RenderDevice::UploadAndSetSMAATextures()
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_GREEN);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-   num_mips = (int)std::log2(float(max(AREATEX_WIDTH, AREATEX_HEIGHT))) + 1;
+   int num_mips = (int)std::log2(float(max(AREATEX_WIDTH, AREATEX_HEIGHT))) + 1;
    if (m_GLversion >= 403)
       glTexStorage2D(GL_TEXTURE_2D, num_mips, RGB8, AREATEX_WIDTH, AREATEX_HEIGHT);
    else
@@ -1743,6 +1741,14 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
          m_curStateChanges+=3;
          break;
 
+      case SF_POINT:
+         // Point sampled (aka nearest mipmap) texture filtering.
+         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MAGFILTER, D3DTEXF_POINT));
+         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MINFILTER, D3DTEXF_POINT));
+         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MIPFILTER, D3DTEXF_POINT));
+         m_curStateChanges += 3;
+         break;
+
       case SF_BILINEAR:
          // Interpolate in 2x2 texels, no mipmapping.
          CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR));
@@ -1788,7 +1794,7 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
          case SA_CLAMP: CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP)); m_curStateChanges++; break;
          case SA_MIRROR: CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_ADDRESSV, D3DTADDRESS_MIRROR)); m_curStateChanges++; break;
       }
-      m_bound_clampv[unit] = clamp_u;
+      m_bound_clampv[unit] = clamp_v;
    }
 #endif
 }

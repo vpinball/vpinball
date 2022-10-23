@@ -867,8 +867,8 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
 
          // Bind the texture to the shader
          Sampler* tex = m_texture_cache[unit];
-         IDirect3DTexture9* bounded = m_bound_texture[unit] ? m_bound_texture[unit]->GetCoreTexture() : nullptr;
-         IDirect3DTexture9* tobound = tex ? tex->GetCoreTexture() : nullptr;
+         IDirect3DTexture9* const bounded = m_bound_texture[unit] ? m_bound_texture[unit]->GetCoreTexture() : nullptr;
+         IDirect3DTexture9* const tobound = tex ? tex->GetCoreTexture() : nullptr;
          if (bounded != tobound)
          {
             CHECKD3D(m_shader->SetTexture(desc.tex_handle, tobound));
@@ -1391,7 +1391,7 @@ bool Shader::Load(const std::string& name, const BYTE* code, UINT codeSize)
    if (!parsing) {
       LOG(1, m_shaderCodeName, "Parsing failed");
       char msg[128];
-      sprintf_s(msg, sizeof(msg), "Fatal Error: Shader parsing of %s failed!", m_shaderCodeName);
+      sprintf_s(msg, sizeof(msg), "Fatal Error: Shader parsing of %s failed!", m_shaderCodeName.c_str());
       ReportError(msg, -1, __FILE__, __LINE__);
       if (logFile)
       {
@@ -1467,7 +1467,7 @@ bool Shader::Load(const std::string& name, const BYTE* code, UINT codeSize)
                else
                {
                   char msg[128];
-                  sprintf_s(msg, sizeof(msg), "Fatal Error: Shader compilation failed for %s!", m_shaderCodeName);
+                  sprintf_s(msg, sizeof(msg), "Fatal Error: Shader compilation failed for %s!", m_shaderCodeName.c_str());
                   ReportError(msg, -1, __FILE__, __LINE__);
                   if (logFile)
                   {
@@ -1485,7 +1485,7 @@ bool Shader::Load(const std::string& name, const BYTE* code, UINT codeSize)
    else {
       LOG(1, m_shaderCodeName, "No techniques found.");
       char msg[128];
-      sprintf_s(msg, sizeof(msg), "Fatal Error: No shader techniques found in %s!", m_shaderCodeName);
+      sprintf_s(msg, sizeof(msg), "Fatal Error: No shader techniques found in %s!", m_shaderCodeName.c_str());
       ReportError(msg, -1, __FILE__, __LINE__);
       if (logFile)
       {

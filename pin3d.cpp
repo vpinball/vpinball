@@ -115,8 +115,8 @@ BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xre
    {
       const float scale_factor = (float)env_xres*(float)(1.0 / 64.);
       const int xs = (int)(scale_factor*0.5f + 0.5f);
-      const void* const __restrict envmap2 = malloc(env_xres * env_yres * 3 * 4);
-      const void* const __restrict envmap3 = malloc(env_xres * env_yres * 3 * 4);
+      const void* const __restrict envmap2 = malloc(env_xres * env_yres * (3 * 4));
+      const void* const __restrict envmap3 = malloc(env_xres * env_yres * (3 * 4));
       const float sigma = (scale_factor - 1.f)*0.25f;
       float* const __restrict weights = (float*)malloc((xs * 2 + 1) * 4);
       for (int x = 0; x < (xs * 2 + 1); ++x)
@@ -1322,7 +1322,7 @@ void Mat4Mul(float * const __restrict OA, const float * const __restrict B)
 
 void CreateProjectionAndViewMatrix(float * const __restrict P, float * const __restrict V)
 {
-   const float degToRad = 0.01745329251f;
+   constexpr float degToRad = 0.01745329251f;
 
    // VPX stuffs
    const PinTable* const t = g_pplayer->m_ptable;
@@ -1387,8 +1387,8 @@ void CreateProjectionAndViewMatrix(float * const __restrict P, float * const __r
 
    // --- Scale, ... some math
    const float pixelsToMillimeters = (float)(25.4*DisplaySize / sqrt(DisplayNativeWidth*DisplayNativeWidth + DisplayNativeHeight * DisplayNativeHeight));
-   const float pixelsToMillimetersX = pixelsToMillimeters * DisplayNativeWidth / resolutionWidth;
-   const float pixelsToMillimetersY = pixelsToMillimeters * DisplayNativeHeight / resolutionHeight;
+   const float pixelsToMillimetersX = pixelsToMillimeters * DisplayNativeWidth / (float)resolutionWidth;
+   const float pixelsToMillimetersY = pixelsToMillimeters * DisplayNativeHeight / (float)resolutionHeight;
    const float ptm = rotation & 1 ? pixelsToMillimetersX : pixelsToMillimetersY;
    const float tableLengthInMillimeters = ptm * tableLength;
    const float displayLengthInMillimeters = ptm * (rotation & 1 ? pixelsToMillimeters * DisplayNativeWidth : pixelsToMillimeters * DisplayNativeHeight);
