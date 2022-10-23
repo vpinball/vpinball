@@ -835,7 +835,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          #ifdef ENABLE_SDL
          glUniform4fv(desc.location, desc.count, (float*) src->val.data);
          #else
-         CHECKD3D(m_shader->SetFloatArray(desc.handle, (float*) src->val.data, desc.count));
+         CHECKD3D(m_shader->SetFloatArray(desc.handle, (float*) src->val.data, desc.count * 4));
          #endif
          m_renderDevice->m_curParameterChanges++;
       }
