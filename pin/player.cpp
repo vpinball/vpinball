@@ -2223,6 +2223,9 @@ void Player::InitStatic()
          if (iter == STATIC_PRERENDER_ITERATIONS - 1)
             m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
+         const vec4 fb_inv_resolution((float)(0.5 / (double)m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth()),
+            (float)(0.5 / (double)m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight()), 1.0f, 1.0f);
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &fb_inv_resolution);
          const vec4 whm = vec4((float)m_pin3d.m_pddsStatic->GetWidth(), (float)m_pin3d.m_pddsStatic->GetHeight(), (float)STATIC_PRERENDER_ITERATIONS, 0.0f);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_cWidth_Height_MirrorAmount, &whm);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_mirror, m_pin3d.m_pddsStatic->GetColorSampler());
@@ -3989,7 +3992,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
       if (SMAA || DLAA) // actual SMAA/DLAA filtering pass, above only edge detection
       {
          outputRT = SMAA                 ? m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture2() : // SMAA use 3 passes, so we have a special processing instead of RT ping pong
-                    sharpen || pp_stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessTexture(renderedRT) 
+                    sharpen || pp_stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessTexture(renderedRT)
                                          : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
          outputRT->Activate(true);
 
