@@ -367,6 +367,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
    HRESULT hr = LoadValue(strKeyName, "Image"s, m_d.m_szImage);
    if ((hr != S_OK) && fromMouseClick)
       m_d.m_szImage.clear();
+   m_d.m_isBackGlassImage = (_stricmp(m_d.m_szImage.c_str(), "backglassimage") == 0);
 
    hr = LoadValue(strKeyName, "NormalMap"s, m_d.m_szNormalMap);
    if ((hr != S_OK) && fromMouseClick)

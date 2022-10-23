@@ -5,13 +5,15 @@
 #include <string>
 #include <mutex>
 
-#include <d3d11.h>
-#include <dxgi1_2.h>
-
 bool captureExternalDMD();
 bool capturePUP();
 void captureStartup();
 void captureStop();
+
+// Disabled for DX9 since it causes conflict with DX9
+#ifdef ENABLE_SDL
+#include <d3d11.h>
+#include <dxgi1_2.h>
 
 enum ecStage { ecSearching, ecFoundWaiting, ecTexture, ecFailure, ecCapturing, ecUninitialized };
 
@@ -75,3 +77,4 @@ private:
 
    int m_Width, m_Height = 0;
 };
+#endif

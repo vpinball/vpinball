@@ -2,6 +2,15 @@
 #include <thread>
 #include "captureExt.h"
 
+#ifndef ENABLE_SDL
+
+bool captureExternalDMD() { return false; }
+bool capturePUP() { return false; }
+void captureStartup() { }
+void captureStop() { }
+
+#else
+
 // The capture thread will do most of the capture work, it must:
 // 1. Find DMD or PUP windows, if enabled.
 // 2. Prepare DXGI capture interfaces
@@ -502,3 +511,4 @@ void ExtCapture::Dispose()
    m_duplicatormap.clear();
    m_allCaptures.clear();
 }
+#endif

@@ -86,6 +86,7 @@ public:
    bool m_backfacesEnabled;
    bool m_displayTexture;     // in editor
    bool m_objectSpaceNormalMap; // matches the +X,+Y,+Z object space export/baking of Blender
+   bool m_isBackGlassImage;
 };
 
 class Primitive :

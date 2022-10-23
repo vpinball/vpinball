@@ -2,6 +2,7 @@
 #include "Shader.h"
 #include "IndexBuffer.h"
 #include "VertexBuffer.h"
+#include "captureExt.h"
 
 Flasher::Flasher()
 {
@@ -1207,6 +1208,10 @@ void Flasher::RenderDynamic()
        const vec4 r((float)g_pplayer->m_dmd.x, (float)g_pplayer->m_dmd.y, m_d.m_modulate_vs_add, (float)(g_pplayer->m_overall_frames%2048)); //(float)(0.5 / m_width), (float)(0.5 / m_height));
 #endif
        pd3dDevice->DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
+
+       // If we're capturing Freezy DMD switch to ext technique to avoid incorrect colorization
+       if (captureExternalDMD())
+          pd3dDevice->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD_world_ext);
 
        if (g_pplayer->m_texdmd != nullptr)
           pd3dDevice->DMDShader->SetTexture(SHADER_tex_dmd, g_pplayer->m_texdmd, SF_NONE, SA_CLAMP, SA_CLAMP);

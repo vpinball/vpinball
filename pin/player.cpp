@@ -1,6 +1,9 @@
 #include "stdafx.h"
 
-//#define USE_IMGUI
+#ifdef ENABLE_SDL
+#include "sdl2/SDL_syswm.h"
+#endif
+
 #ifdef USE_IMGUI
  #include "imgui/imgui.h"
  #ifdef ENABLE_SDL
@@ -10,10 +13,6 @@
  #endif
  #include "imgui/imgui_impl_win32.h"
  #include "imgui/implot/implot.h"
-
-#ifdef ENABLE_SDL
-#include "sdl2/SDL_syswm.h"
-#endif
 
 #if __cplusplus >= 202002L
  #define stable_sort std::ranges::stable_sort
@@ -82,6 +81,7 @@ public:
 #include "../meshes/ballMesh.h"
 #include "Shader.h"
 #include "typedefs3D.h"
+#include "captureExt.h"
 #ifndef ENABLE_SDL
  #include "BallShader.h"
 #endif
@@ -734,6 +734,7 @@ void Player::Shutdown()
 #ifdef ENABLE_SDL
    Detach();
 #endif
+   captureStop();
 
 #ifdef USE_IMGUI
    if (ImGui::GetCurrentContext())
@@ -3654,6 +3655,10 @@ void Player::RenderDynamics()
    RenderDynamicMirror();
    if (GetProfilingMode() == PF_ENABLED)
       m_pin3d.m_gpu_profiler.Timestamp(GTS_PlayfieldGraphics);
+
+   // Render the backglass
+   if (m_pin3d.m_backGlass != nullptr)
+      m_pin3d.m_backGlass->Render();
 
    if (m_dynamicMode)
    {

@@ -3,6 +3,7 @@
 #include "inc\gpuprofiler.h"
 #include "RenderDevice.h"
 #include "Texture.h"
+#include "backGlass.h"
 
 extern int NumVideoBytes;
 
@@ -60,6 +61,8 @@ public:
    const Matrix3D& GetViewTransform() const    { return m_proj.m_matView; }
    void InitLights();
    void UpdateMatrices();
+
+   BackGlass* m_backGlass;
 
 private:
    void InitRenderState(RenderDevice * const pd3dDevice);
