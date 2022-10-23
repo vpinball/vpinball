@@ -24,8 +24,8 @@ void ReportError(const char *errorText, const HRESULT hr, const char *file, cons
 
 #if 1//def _DEBUG
 #ifdef ENABLE_SDL
-void checkGLErrors(const char *file, const int line);
-#define CHECKD3D(s) { s; } //checkGLErrors(__FILE__, __LINE__); }
+//void checkGLErrors(const char *file, const int line);
+#define CHECKD3D(s) { s; } //checkGLErrors(__FILE__, __LINE__); } // by now the callback is used instead
 #else //ENABLE_SDL
 #define CHECKD3D(s) { const HRESULT hrTmp = (s); if (FAILED(hrTmp)) ReportFatalError(hrTmp, __FILE__, __LINE__); }
 #endif
@@ -365,7 +365,7 @@ private:
    bool m_dwm_enabled;
 
 public:
-   VertexBuffer* m_quadVertexBuffer; // internal vb for rendering quads //!! only on primary device for now!
+   VertexBuffer* m_quadVertexBuffer;    // internal vb for rendering quads //!! only on primary device for now!
    VertexBuffer* m_quadDynVertexBuffer; // internal vb for rendering dynamic quads //!!
 
 public:

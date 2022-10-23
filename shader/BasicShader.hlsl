@@ -137,7 +137,7 @@ float3 playfield_reflection(const float2 screenSpace, const float3 N)
    // Only apply to faces pointing in the direction of the probe (normal = [0,0,-1])
    // the smoothstep values are *magic* values taken from visual tests
    const float3 playfield_normal = normalize(mul(float3(0., 0., 1.), matWorldViewInverseTranspose).xyz);
-   return smoothstep(0.5, 0.9, dot(playfield_normal, N)) * cWidth_Height_MirrorAmount.z * tex2D(tex_playfield_reflection, float2(screenSpace.x / cWidth_Height_MirrorAmount.x, screenSpace.y / cWidth_Height_MirrorAmount.y)).rgb;
+   return smoothstep(0.5, 0.9, dot(playfield_normal, N)) * cWidth_Height_MirrorAmount.z * tex2D(tex_playfield_reflection, screenSpace / cWidth_Height_MirrorAmount.xy).rgb;
 }
 
 //------------------------------------

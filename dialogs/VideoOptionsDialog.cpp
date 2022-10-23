@@ -822,7 +822,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       case IDC_ENABLE_AO:
       {
          const size_t checked = SendDlgItemMessage(IDC_ENABLE_AO, BM_GETCHECK, 0, 0);
-         GetDlgItem(IDC_DYNAMIC_AO).EnableWindow(checked);
+         GetDlgItem(IDC_DYNAMIC_AO).EnableWindow(checked ? TRUE : FALSE);
          break;
       }
       default:

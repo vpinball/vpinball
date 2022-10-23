@@ -1103,7 +1103,7 @@ bool Shader::parseFile(const string& fileNameRoot, const string& fileName, int l
 }
 
 //compile and link shader. Also write the created shader files
-Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques technique, const string& fileNameRoot, string& shaderCodeName, const string& vertex, const string& geometry, const string& fragment)
+Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques technique, const string& fileNameRoot, const string& shaderCodeName, const string& vertex, const string& geometry, const string& fragment)
 {
    bool success = true;
    ShaderTechnique* shader = nullptr;
@@ -1382,7 +1382,7 @@ string Shader::analyzeFunction(const string& shaderCodeName, const string& _tech
    return functionCode;
 }
 
-bool Shader::Load(const std::string name, const BYTE* code, UINT codeSize)
+bool Shader::Load(const std::string& name, const BYTE* code, UINT codeSize)
 {
    m_shaderCodeName = name;
    LOG(3, m_shaderCodeName, "Start parsing file");
@@ -1564,7 +1564,7 @@ void Shader::SetUniformBlock(const ShaderUniforms hParameter, const float* pMatr
 // loads an HLSL effect file
 // if fromFile is true the shaderName should point to the full filename (with path) to the .fx file
 // if fromFile is false the shaderName should be the resource name not the IDC_XX_YY value. Search vpinball_eng.rc for ".fx" to see an example
-bool Shader::Load(const std::string name, const BYTE* code, UINT codeSize)
+bool Shader::Load(const std::string& name, const BYTE* code, UINT codeSize)
 {
    m_shaderCodeName = name;
    LPD3DXBUFFER pBufferErrors;

@@ -282,7 +282,7 @@ void ReportError(const char *errorText, const HRESULT hr, const char *file, cons
 unsigned m_curLockCalls, m_frameLockCalls;
 unsigned int RenderDevice::Perf_GetNumLockCalls() const { return m_frameLockCalls; }
 
-#ifdef ENABLE_SDL
+#if 0 //def ENABLE_SDL // not used anymore
 void checkGLErrors(const char *file, const int line) {
    GLenum err;
    unsigned int count = 0;
@@ -684,7 +684,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     m_SMAAareaTexture = nullptr;
     m_SMAAsearchTexture = nullptr;
 
-   StereoShader = nullptr;
+    StereoShader = nullptr;
 
     m_pOffscreenMSAABackBufferTexture = nullptr;
     m_pOffscreenBackBufferTexture = nullptr;
@@ -1161,7 +1161,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    //
 
    if (m_FXAA == Quality_SMAA)
-       UploadAndSetSMAATextures();
+      UploadAndSetSMAATextures();
 
    // Setup a defined initial render state
    SetRenderState(ALPHABLENDENABLE, RS_FALSE);

@@ -546,7 +546,7 @@ void Rubber::GetHitShapes(vector<HitObject*> &pvho)
    UpdateRubber(false, m_d.m_hitHeight);
 
    // add collision triangles and edges
-   for (unsigned i = 0; i < m_ringIndices.size(); i += 3)
+   for (size_t i = 0; i < m_ringIndices.size(); i += 3)
    {
       Vertex3Ds rgv3D[3];
       // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
@@ -564,7 +564,7 @@ void Rubber::GetHitShapes(vector<HitObject*> &pvho)
    }
 
    // add collision vertices
-   for (unsigned i = 0; i < m_vertices.size(); ++i)
+   for (size_t i = 0; i < m_vertices.size(); ++i)
    {
       Vertex3Ds v = Vertex3Ds(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
       SetupHitObject(pvho, new HitPoint(v));

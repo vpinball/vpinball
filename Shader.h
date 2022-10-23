@@ -247,7 +247,7 @@ public:
    Shader(RenderDevice *renderDevice);
    ~Shader();
 
-   bool Load(const std::string name, const BYTE* code, UINT codeSize);
+   bool Load(const std::string& name, const BYTE* code, UINT codeSize);
 
    void Begin();
    void End();
@@ -380,7 +380,7 @@ private:
    struct ShaderTechnique
    {
       int index;
-      string& name;
+      const string& name;
       GLuint program;
       attributeLoc attributeLocation[SHADER_ATTRIBUTE_COUNT];
       UniformDesc uniform_desc[SHADER_UNIFORM_COUNT];
@@ -389,7 +389,7 @@ private:
    std::ofstream* logFile;
    bool parseFile(const string& fileNameRoot, const string& fileName, int level, robin_hood::unordered_map<string, string>& values, const string& parentMode);
    string analyzeFunction(const string& shaderCodeName, const string& technique, const string& functionName, const robin_hood::unordered_map<string, string>& values);
-   ShaderTechnique* compileGLShader(const ShaderTechniques technique, const string& fileNameRoot, string& shaderCodeName, const string& vertex, const string& geometry, const string& fragment);
+   ShaderTechnique* compileGLShader(const ShaderTechniques technique, const string& fileNameRoot, const string& shaderCodeName, const string& vertex, const string& geometry, const string& fragment);
 
    ShaderTechnique* m_techniques[SHADER_TECHNIQUE_COUNT];
 
