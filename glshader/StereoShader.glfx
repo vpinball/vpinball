@@ -1,0 +1,179 @@
+////GLOBAL
+#version 330
+
+#include "hlsl_glsl.fxh"
+
+uniform float4 ms_zpd_ya_td;
+uniform float4 w_h_height; // for bloom, w_h_height.z keeps strength; for dither, w_h_height.zw keeps per-frame offset for temporal variation of the pattern
+
+uniform float2 Anaglyph_DeSaturation_Contrast; // Anaglyph (de)saturation to preprocess/remove color from the anaglyph image: 1 = Black & White, 0 = normal color
+
+
+float3 anaglyph(const float3 L, const float3 R)
+{
+	const float c = saturate(Anaglyph_DeSaturation_Contrast.y*0.5 + 0.5);
+
+	float DeGhost = 0.06;
+
+	const float3 LMA = lerp(L, vec3(dot(L,float3(0.299, 0.587, 0.114))), Anaglyph_DeSaturation_Contrast.x);
+	const float3 RMA = lerp(R, vec3(dot(R,float3(0.299, 0.587, 0.114))), Anaglyph_DeSaturation_Contrast.x);
+
+	if (ms_zpd_ya_td.w == 5.0 || ms_zpd_ya_td.w == 12.0) // Anaglyph 3D Red/Cyan
+		return pow(float3(LMA.r,RMA.g,RMA.b), vec3(1./Anaglyph_DeSaturation_Contrast.y)); //!! Contrast is meh here
+	if (ms_zpd_ya_td.w == 6.0 || ms_zpd_ya_td.w == 13.0) // Anaglyph 3D Green/Magenta
+		return pow(float3(RMA.r,LMA.g,RMA.b), vec3(1./Anaglyph_DeSaturation_Contrast.y)); //!! Contrast is meh here
+	if (ms_zpd_ya_td.w == 7.0 || ms_zpd_ya_td.w == 14.0) // Anaglyph 3D Dubois Red/Cyan
+	{
+		const float r = dot(LMA,float3( 0.437,  0.449,  0.164)) + dot(RMA,float3(-0.011, -0.032, -0.007));
+		const float g = dot(LMA,float3(-0.062, -0.062, -0.024)) + dot(RMA,float3( 0.377,  0.761,  0.009));
+		const float b = dot(LMA,float3(-0.048, -0.050, -0.017)) + dot(RMA,float3(-0.026, -0.093,  1.234));
+		return saturate(pow(float3(r,g,b), vec3(1./Anaglyph_DeSaturation_Contrast.y))); //!! Contrast is meh here
+	}
+	if (ms_zpd_ya_td.w == 8.0 || ms_zpd_ya_td.w == 15.0) // Anaglyph 3D Dubois Green/Magenta
+	{
+		const float r = dot(LMA,float3(-0.062, -0.158, -0.039)) + dot(RMA,float3( 0.529,  0.705, 0.024));
+		const float g = dot(LMA,float3( 0.284,  0.668,  0.143)) + dot(RMA,float3(-0.016, -0.015, 0.065));
+		const float b = dot(LMA,float3(-0.015, -0.027,  0.021)) + dot(RMA,float3( 0.009,  0.075, 0.937));
+		return saturate(pow(float3(r,g,b), vec3(1./Anaglyph_DeSaturation_Contrast.y))); //!! Contrast is meh here
+	}
+	if (ms_zpd_ya_td.w == 9.0 || ms_zpd_ya_td.w == 16.0) // Anaglyph 3D Deghosted Red/Cyan Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
+	{
+		const float LOne = c*0.45;
+		const float ROne = c;
+		DeGhost *= 0.1;
+
+		float3 accum = saturate(LMA * float3(LOne,(1.0-LOne)*0.5,(1.0-LOne)*0.5));
+		const float r = /*pow(*/accum.r+accum.g+accum.b/*, 1.00)*/;
+
+			   accum = saturate(RMA * float3(1.0-ROne,ROne,ROne));
+		const float g = pow(accum.r+accum.g, 1.15);
+		const float b = pow(accum.r+accum.b, 1.15);
+
+		float3 color;
+		color.r = r + r* DeGhost        + g*(DeGhost* -0.5) + b*(DeGhost*-0.5);
+		color.g = g + r*(DeGhost*-0.25) + g*(DeGhost*  0.5) + b*(DeGhost*-0.25);
+		color.b = b + r*(DeGhost*-0.25) + g*(DeGhost*-0.25) + b*(DeGhost* 0.5);
+		return saturate(color);
+	}
+	if (ms_zpd_ya_td.w == 10.0 || ms_zpd_ya_td.w == 17.0) // Anaglyph 3D Deghosted Green/Magenta Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
+	{
+		const float LOne = c*0.45;
+		const float ROne = c*0.8;
+		DeGhost *= 0.275;
+
+		float3 accum = saturate(RMA * float3(ROne,1.0-ROne,ROne));
+		const float r = pow(accum.r+accum.g, 1.15);
+		const float b = pow(accum.g+accum.b, 1.15);
+
+			   accum = saturate(LMA * float3((1.0-LOne)*0.5,LOne,(1.0-LOne)*0.5));
+		const float g = pow(accum.r+accum.g+accum.b, 1.05);
+
+		float3 color;
+		color.r = r + r*(DeGhost* 0.5)  + g*(DeGhost*-0.25) + b*(DeGhost*-0.25);
+		color.g = g + r*(DeGhost*-0.5)  + g*(DeGhost* 0.25) + b*(DeGhost*-0.5);
+		color.b = b + r*(DeGhost*-0.25) + g*(DeGhost*-0.25) + b*(DeGhost*0.5);
+		return saturate(color);
+	}
+	if (ms_zpd_ya_td.w == 11.0 || ms_zpd_ya_td.w == 18.0) // Anaglyph 3D Blue/Amber Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
+	{
+		const float LOne = c*0.45;
+		const float ROne = c;
+		DeGhost *= 0.275;
+
+		float3 accum = saturate(LMA * float3(ROne,ROne,1.0-ROne));
+		const float r = pow(accum.r+accum.b, 1.05);
+		const float g = pow(accum.g+accum.b, 1.10);
+
+			   accum = saturate(RMA * float3((1.0-LOne)*0.5,(1.0-LOne)*0.5,LOne));
+		float b = /*pow(*/accum.r+accum.g+accum.b/*, 1.0)*/;
+			  b = lerp(pow(b,(DeGhost*0.15)+1.0), 1.0-pow(abs(1.0-b),(DeGhost*0.15)+1.0), b);
+
+		float3 color;
+		color.r = r + r*(DeGhost*  1.5) + g*(DeGhost*-0.75) + b*(DeGhost*-0.75);
+		color.g = g + r*(DeGhost*-0.75) + g*(DeGhost*  1.5) + b*(DeGhost*-0.75);
+		color.b = b + r*(DeGhost* -1.5) + g*(DeGhost* -1.5) + b*(DeGhost*3.0);
+		return saturate(color);
+	}
+	return LMA; //!! testing mode
+}
+
+////VERTEX
+
+in vec3 vPosition;
+in vec2 tc;
+
+out vec2 tex0;
+
+////FRAGMENT
+
+uniform sampler2D  tex_stereo_fb; // Render buffer with the 2 eyes side by side for anaglyph, top/bottom for interlaced
+
+in vec2 tex0;
+
+out vec4 color;
+
+////vs_main_no_trafo
+
+void main()
+{
+   gl_Position = vec4(vPosition.x, vPosition.y, 0.0, 1.0);
+   tex0 = float2(tc.x, 1.0-tc.y);
+}
+
+////ps_main_int
+
+void main()
+{
+   color = tex2D(tex_stereo_fb, vec2(tex0.x,0.5*tex0.y + ((frac(gl_FragCoord.y*0.5) < 0.5) ? 0.0 : 0.5)));
+}
+
+////ps_main_flipped_int
+
+void main()
+{
+   color = tex2D(tex_stereo_fb, vec2(tex0.x,0.5*tex0.y + ((frac(gl_FragCoord.y*0.5) < 0.5) ? 0.5 : 0.0)));
+}
+
+////vs_main_amd
+
+void main()
+{
+   gl_Position = vec4(vPosition.x, vPosition.y, 0.0, 1.0);
+   tex0 = float2(tc.x, 1.0-tc.y);
+}
+
+////ps_main_amd
+
+uniform float eye;
+
+void main()
+{
+   float x;
+   if (eye>1.5) {
+      x = tex0.x;
+   } else if (eye<0.5) {
+      x = tex0.x*0.5;
+   } else {
+      x = tex0.x*0.5+0.5;
+   }
+   color = tex2D(tex_stereo_fb, vec2(x,tex0.y));
+}
+
+////ps_main_stereo_anaglyph
+
+void main()
+{
+	const float3 lcol = tex2D(tex_stereo_fb, vec2(0.5*tex0.x,tex0.y)).rgb;
+	const float3 rcol = tex2D(tex_stereo_fb, vec2(0.5*tex0.x+0.5,tex0.y)).rgb;
+	const float3 l = (ms_zpd_ya_td.w > 11.0) ? rcol : lcol; // > 10.0 means: flip the eye color
+	const float3 r = (ms_zpd_ya_td.w > 11.0) ? lcol : rcol; // > 10.0 means: flip the eye color
+	color = float4(anaglyph(l, r), 1.0);
+}
+
+
+////TECHNIQUES
+
+stereo_Int:P0:vs_main_no_trafo():ps_main_int()
+stereo_Flipped_Int:P0:vs_main_no_trafo():ps_main_flipped_int()
+stereo_AMD_DEBUG:P0:vs_main_amd():ps_main_amd()
+stereo_anaglyph:P0:vs_main_no_trafo():ps_main_stereo_anaglyph()
