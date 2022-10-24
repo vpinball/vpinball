@@ -19,7 +19,6 @@ uniform bool do_bloom;
 
 uniform sampler2D tex_fb_filtered; // Framebuffer (filtered)
 uniform sampler2D tex_fb_unfiltered; // Framebuffer (unfiltered)
-uniform sampler2D tex_mirror; // Base mirror texture
 uniform sampler2D tex_bloom; // Bloom
 uniform sampler2D tex_ao; // AO Result (also used as input from the previous frame when computing AO)
 uniform sampler2D tex_depth; // Depth
@@ -496,7 +495,7 @@ in vec2 tex0;
 
 void main()
 {
-   color = float4(texture(tex_mirror, tex0 + 0.5/cWidth_Height_MirrorAmount.xy).rgb * (1./cWidth_Height_MirrorAmount.z), 1.0);
+   color = float4(texture(tex_fb_unfiltered, tex0 + 0.5/cWidth_Height_MirrorAmount.xy).rgb * (1./cWidth_Height_MirrorAmount.z), 1.0);
 }
 
 
