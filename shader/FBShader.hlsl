@@ -16,16 +16,6 @@ texture Texture2; // Color grade
 texture Texture3; // AO Result & DepthBuffer
 texture Texture4; // AO Dither
 
-sampler2D tex_mirror : TEXUNIT0 = sampler_state // base texture
-{
-   Texture = (Texture0);
-   MIPFILTER = NONE; //!! ??
-   MAGFILTER = LINEAR;
-   MINFILTER = LINEAR;
-   ADDRESSU = Clamp;
-   ADDRESSV = Clamp;
-};
-
 sampler2D tex_fb_unfiltered : TEXUNIT0 = sampler_state // Framebuffer (unfiltered)
 {
 	Texture	  = (Texture0);
@@ -644,7 +634,7 @@ float4 ps_main_fb_bloom_vert39x39(const in VS_OUTPUT_2D IN) : COLOR
 // mirror
 float4 ps_main_fb_mirror(const in VS_OUTPUT_2D IN) : COLOR
 {
-   return float4(tex2D(tex_mirror, IN.tex0 + 0.5 / cWidth_Height_MirrorAmount.xy).rgb * (1. / cWidth_Height_MirrorAmount.z), 1.0);
+   return float4(tex2D(tex_fb_unfiltered, IN.tex0 + 0.5 / cWidth_Height_MirrorAmount.xy).rgb * (1. / cWidth_Height_MirrorAmount.z), 1.0);
 }
 
 

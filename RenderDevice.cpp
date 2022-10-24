@@ -1335,7 +1335,6 @@ void RenderDevice::FreeShader()
    {
       FBShader->SetTextureNull(SHADER_tex_fb_filtered);
       FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
-      FBShader->SetTextureNull(SHADER_tex_mirror);
       FBShader->SetTextureNull(SHADER_tex_bloom);
       FBShader->SetTextureNull(SHADER_tex_ao);
       FBShader->SetTextureNull(SHADER_tex_depth);
