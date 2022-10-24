@@ -722,7 +722,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    refreshrate = mode.refresh_rate;
    bool video10bit = mode.format == SDL_PIXELFORMAT_ARGB2101010;
 
-   memset(m_samplerStateCache, 0, 3 * 3 * 5 * sizeof(GLuint));
+   memset(m_samplerStateCache, 0, sizeof(m_samplerStateCache));
 
    m_sdl_playfieldHwnd = g_pplayer->m_sdl_playfieldHwnd;
    SDL_SysWMinfo wmInfo;
@@ -1485,7 +1485,7 @@ RenderDevice::~RenderDevice()
    }
 #endif
 
-   for (int i = 0; i < 3 * 3 * 5; i++)
+   for (size_t i = 0; i < sizeof(m_samplerStateCache)/sizeof(m_samplerStateCache[0]); i++)
    {
       if (m_samplerStateCache[i] != 0)
       {
@@ -1685,6 +1685,7 @@ void RenderDevice::UploadAndSetSMAATextures()
 void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v)
 {
 #ifdef ENABLE_SDL
+   assert(sizeof(m_samplerStateCache)/sizeof(m_samplerStateCache[0]) == 3*3*5);
    int samplerStateId = min((int)clamp_u, 2) * 5 * 3 + min((int)clamp_v, 2) * 5 + min((int)filter, 4);
    GLuint sampler_state = m_samplerStateCache[samplerStateId];
    if (sampler_state == 0)
