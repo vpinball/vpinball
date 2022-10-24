@@ -31,7 +31,7 @@ typedef unsigned short ScoreType;
 #define SCORE_SCALING 7281
 
 typedef unsigned char AdjacencyType;
-#define MAX_ADJACENCY 0xffui8
+#define MAX_ADJACENCY UINT8_MAX
 
 typedef unsigned int VertexIndexType;
 typedef signed char  CachePosType;

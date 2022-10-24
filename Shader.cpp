@@ -1000,8 +1000,7 @@ void Shader::LOG(const int level, const string& fileNameRoot, const string& mess
    if (level <= DEBUG_LEVEL_LOG) {
 #ifdef ENABLE_SDL
       if (!logFile) {
-         string name = Shader::shaderPath;
-         name.append("log\\").append(fileNameRoot).append(".log");
+         string name = Shader::shaderPath + "log" + PATH_SEPARATOR_CHAR + fileNameRoot + ".log";
          logFile = new std::ofstream();
 bla:
          logFile->open(name);
@@ -1059,7 +1058,7 @@ bool Shader::parseFile(const string& fileNameRoot, const string& fileName, int l
    robin_hood::unordered_map<string, string>::iterator currentElemIt = values.find(parentMode);
    string currentElement = (currentElemIt != values.end()) ? currentElemIt->second : string();
    std::ifstream glfxFile;
-   glfxFile.open(string(Shader::shaderPath).append(fileName), std::ifstream::in);
+   glfxFile.open(Shader::shaderPath + fileName, std::ifstream::in);
    if (glfxFile.is_open())
    {
       string line;

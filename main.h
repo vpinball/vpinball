@@ -42,6 +42,9 @@
 //#include <cstdio>
 //#include "wchar.h"
 
+#define PATH_SEPARATOR_CHAR '\\'
+#define PATH_SEPARATOR_WCHAR L'\\'
+
 #include <OLEAUTO.h>
 
 #include <wincrypt.h>

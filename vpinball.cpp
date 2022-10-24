@@ -162,14 +162,22 @@ VPinball::~VPinball()
 void VPinball::GetMyPath()
 {
    char szPath[MAXSTRING];
+#ifdef _MSC_VER
    GetModuleFileName(nullptr, szPath, MAXSTRING);
-
+#else
+#ifdef __APPLE__
+   uint32_t pathSize = (uint32_t)sizeof(szPath);
+   _NSGetExecutablePath(szPath, &pathSize);
+#else
+   readlink( "/proc/self/exe", szPath, MAXSTRING );
+#endif
+#endif
    char *szEnd = szPath + lstrlen(szPath);
 
    // search for first backslash
    while (szEnd > szPath)
    {
-      if (*szEnd == '\\')
+      if (*szEnd == PATH_SEPARATOR_CHAR)
          break;
       szEnd--;
    }
@@ -1003,7 +1011,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
          ppt->m_pcv->LoadFromFile(szFileNameAuto);
       else // Otherwise we seek in the Scripts folder
       {
-         szFileNameAuto = m_szMyPath + "Scripts\\" + ppt->m_szTitle + ".vbs";
+         szFileNameAuto = m_szMyPath + "Scripts" + PATH_SEPARATOR_CHAR + ppt->m_szTitle + ".vbs";
          if (Exists(szFileNameAuto))
             ppt->m_pcv->LoadFromFile(szFileNameAuto);
       }

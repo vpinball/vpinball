@@ -527,6 +527,8 @@ BOOL CALLBACK MonitorEnumList(__in  HMONITOR hMonitor, __in  HDC hdcMonitor, __i
 int getDisplayList(vector<DisplayConfig>& displays)
 {
    displays.clear();
+
+#ifdef _MSC_VER
    std::map<string, DisplayConfig> displayMap;
    // Get the resolution of all enabled displays.
    EnumDisplayMonitors(nullptr, nullptr, MonitorEnumList, reinterpret_cast<LPARAM>(&displayMap));
@@ -569,6 +571,28 @@ int getDisplayList(vector<DisplayConfig>& displays)
       }
       i++;
    }
+#else
+   //int maxAdapter = SDL_GetNumVideoDrivers(); //!!
+   int i;
+   for (i = 0; i < getNumberOfDisplays(); ++i) {
+      SDL_Rect displayBounds;
+      if (SDL_GetDisplayBounds(i, &displayBounds) == 0) {
+         DisplayConfig displayConf;
+         displayConf.display = i;
+         displayConf.adapter = 0;
+         displayConf.isPrimary = (displayBounds.x == 0) && (displayBounds.y == 0);
+         displayConf.top = displayBounds.x;
+         displayConf.left = displayBounds.x;
+         displayConf.width = displayBounds.w;
+         displayConf.height = displayBounds.h;
+
+         strncpy_s(displayConf.DeviceName, SDL_GetDisplayName(displayConf.display), 32);
+         strncpy_s(displayConf.GPU_Name, SDL_GetVideoDriver(displayConf.adapter), MAX_DEVICE_IDENTIFIER_STRING-1);
+
+         displays.push_back(displayConf);
+      }
+   }
+#endif
    return i;
 }
 
@@ -1685,7 +1709,9 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
 {
 #ifdef ENABLE_SDL
    assert(sizeof(m_samplerStateCache)/sizeof(m_samplerStateCache[0]) == 3*3*5);
-   int samplerStateId = min((int)clamp_u, 2) * 5 * 3 + min((int)clamp_v, 2) * 5 + min((int)filter, 4);
+   int samplerStateId = min((int)clamp_u, 2) * 5 * 3
+                      + min((int)clamp_v, 2) * 5
+                      + min((int)filter, 4);
    GLuint sampler_state = m_samplerStateCache[samplerStateId];
    if (sampler_state == 0)
    {
@@ -1799,9 +1825,9 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
 #endif
 }
 
-#define RENDER_STATE(name, bitpos, bitsize)                                                                                                                                                  \
-   const uint32_t RENDER_STATE_SHIFT_##name = bitpos;                                                                                                                                        \
-   const uint32_t RENDER_STATE_MASK_##name = ((0x00000001u << (bitsize)) - 1) << (bitpos);                                                                                                       \
+#define RENDER_STATE(name, bitpos, bitsize)                                                         \
+   const uint32_t RENDER_STATE_SHIFT_##name = bitpos;                                               \
+   const uint32_t RENDER_STATE_MASK_##name = ((0x00000001u << (bitsize)) - 1) << (bitpos);          \
    const uint32_t RENDER_STATE_CLEAR_MASK_##name = ~(((0x00000001u << (bitsize)) - 1) << (bitpos));
 // These definition must be copy/pasted to RenderDevice.h/cpp when modified to keep the implementation in sync
 RENDER_STATE(ALPHABLENDENABLE, 0, 1) // RS_FALSE or RS_TRUE

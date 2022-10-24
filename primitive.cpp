@@ -5,9 +5,9 @@
 #include "stdafx.h" 
 #include "forsyth.h"
 #include "objloader.h"
-#include "inc\miniz.c"
-#include "inc\progmesh.h"
-#include "inc\ThreadPool.h"
+#include "inc/miniz.c"
+#include "inc/progmesh.h"
+#include "inc/ThreadPool.h"
 #include "Shader.h"
 
 ThreadPool *g_pPrimitiveDecompressThreadPool = nullptr;

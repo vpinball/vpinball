@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include <mmsystem.h>
+
 static HMIXER m_hMixer;
 //static MIXERCAPS sMxCaps;
 static DWORD m_dwMinimum;

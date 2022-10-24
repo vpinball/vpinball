@@ -227,6 +227,7 @@ public:
       rde::CrashHandler::Init();
 #endif
 
+#ifdef _MSC_VER
       // disable auto-rotate on tablets
 #if (WINVER <= 0x0601)
       SetDisplayAutoRotationPreferences = (pSDARP)GetProcAddress(GetModuleHandle(TEXT("user32.dll")),
@@ -241,11 +242,15 @@ public:
       SYSTEM_INFO sysinfo;
       GetSystemInfo(&sysinfo);
       m_vpinball.m_logicalNumberOfProcessors = sysinfo.dwNumberOfProcessors; //!! this ignores processor groups, so if at some point we need extreme multi threading, implement this in addition!
+#else
+      m_vpinball.m_logicalNumberOfProcessors = 1; //!!
+#endif
 
       IsOnWine(); // init static variable in there
 
       InitXMLregistry(m_vpinball.m_szMyPath);
 
+#ifdef _MSC_VER
 #if _WIN32_WINNT >= 0x0400 & defined(_ATL_FREE_THREADED)
       const HRESULT hRes = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 #else
@@ -253,6 +258,7 @@ public:
 #endif
       _ASSERTE(SUCCEEDED(hRes));
       _Module.Init(ObjectMap, m_vpinball.theInstance, &LIBID_VPinballLib);
+#endif
 
       file = false;
       play = false;

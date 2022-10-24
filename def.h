@@ -93,8 +93,8 @@ typedef unsigned char    U8;
 typedef signed char      S8;
 typedef float           F32;
 typedef double          F64;
-typedef unsigned _int64 U64;
-typedef _int64          S64;
+typedef uint64          U64;
+typedef int64           S64;
 
 #define MAXNAMEBUFFER 32
 #define MAXSTRING 1024 // usually used for paths,filenames,etc
@@ -188,7 +188,9 @@ public:
    WCHAR m_szbuffer[256];
 };
 
+#ifndef M_PI
 #define M_PI 3.1415926535897932384626433832795
+#endif
 
 #define ANGTORAD(x) ((x) *(float)(M_PI/180.0))
 #define RADTOANG(x) ((x) *(float)(180.0/M_PI))
@@ -226,7 +228,7 @@ __forceinline __m128 sseHorizontalAdd(const __m128 &a) // could use dp instructi
 //
 
 #if __cplusplus >= 202002L
- #ifndef __APPLE__
+ #ifndef __clang__
   #include <bit>
   #define float_as_int(x) std::bit_cast<int>(x)
   #define float_as_uint(x) std::bit_cast<unsigned int>(x)

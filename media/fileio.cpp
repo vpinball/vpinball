@@ -43,7 +43,7 @@ string TitleFromFilename(const string& szfilename)
    int begin;
    for (begin = len; begin >= 0; begin--)
    {
-      if (szfilename[begin] == '\\')
+      if (szfilename[begin] == PATH_SEPARATOR_CHAR)
       {
          begin++;
          break;

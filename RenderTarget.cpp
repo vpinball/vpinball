@@ -286,7 +286,13 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
 #ifdef ENABLE_SDL
    int bitmask = (copyColor ? GL_COLOR_BUFFER_BIT : 0) | (m_has_depth && dest->m_has_depth && copyDepth ? GL_DEPTH_BUFFER_BIT : 0);
    assert(bitmask != 0); // This is supposed to be called to actually do something
+#ifdef GL_ARB_direct_state_access
    glBlitNamedFramebuffer(GetCoreFrameBuffer(), dest->GetCoreFrameBuffer(), 0, 0, GetWidth(), GetHeight(), 0, 0, dest->GetWidth(), dest->GetHeight(), bitmask, GL_NEAREST);
+#else
+   glBindFramebuffer(GL_READ_FRAMEBUFFER, GetCoreFrameBuffer());
+   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetCoreFrameBuffer());
+   glBlitFramebuffer(0, 0, GetWidth(), GetHeight(), 0, 0, dest->GetWidth(), dest->GetHeight(), bitmask, GL_NEAREST);
+#endif
 #else
    if (copyColor)
    {

@@ -1,10 +1,11 @@
 #include "stdafx.h"
 #include "RenderDevice.h"
 #include "Shader.h"
-#include "inc\ThreadPool.h"
+#include "math/math.h"
+#include "inc/ThreadPool.h"
 #ifdef ENABLE_BAM
-#include "BAM\BAM_ViewPortSetup.h"
-#include "BAM\BAM_Tracker.h"
+#include "BAM/BAM_ViewPortSetup.h"
+#include "BAM/BAM_Tracker.h"
 #endif
 
 int NumVideoBytes = 0;

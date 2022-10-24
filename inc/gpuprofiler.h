@@ -130,5 +130,7 @@ protected:
 	int m_frameCountAvg;						// Frames rendered in current averaging period
 	double m_tBeginAvg;							// Time at which current averaging period started
 
+#ifndef ENABLE_SDL
 	IDirect3DDevice9 * m_device;
+#endif
 };

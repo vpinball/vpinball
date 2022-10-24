@@ -301,7 +301,7 @@ private:
    NotesDialog *m_notesDialog = nullptr;
    CDockNotes* m_dockNotes = nullptr;
 
-   FILE *m_profile_file;
+   FILE *m_profile_file = nullptr;
 };
 
 

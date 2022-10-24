@@ -30,10 +30,10 @@ struct LightSource
 
 struct ProtectionData
 {
-   long fileversion;
-   long size;
+   INT32 fileversion;
+   INT32 size;
    unsigned char paraphrase[16 + 8];
-   unsigned long flags;
+   UINT32 flags;
    int keyversion;
    int spare1;
    int spare2;

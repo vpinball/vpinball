@@ -83,8 +83,13 @@ void wintimer_init()
 {
    sTimerInit = 1;
 
+#ifdef _MSC_VER
    QueryPerformanceFrequency(&TimerFreq);
    QueryPerformanceCounter(&sTimerStart);
+#else
+   TimerFreq.QuadPart = SDL_GetPerformanceFrequency();
+   sTimerStart.QuadPart = SDL_GetPerformanceCounter();
+#endif
 }
 
 unsigned long long usec()
@@ -92,7 +97,11 @@ unsigned long long usec()
    if (sTimerInit == 0) return 0;
 
    LARGE_INTEGER TimerNow;
+#ifdef _MSC_VER
    QueryPerformanceCounter(&TimerNow);
+#else
+   TimerNow.QuadPart = SDL_GetPerformanceCounter();
+#endif
    const unsigned long long cur_tick = (unsigned long long)(TimerNow.QuadPart - sTimerStart.QuadPart);
    return ((unsigned long long)TimerFreq.QuadPart < 100000000ull) ? (cur_tick * 1000000ull / (unsigned long long)TimerFreq.QuadPart)
       : (cur_tick * 1000ull / ((unsigned long long)TimerFreq.QuadPart / 1000ull));
@@ -103,7 +112,11 @@ U32 msec()
    if (sTimerInit == 0) return 0;
 
    LARGE_INTEGER TimerNow;
+#ifdef _MSC_VER
    QueryPerformanceCounter(&TimerNow);
+#else
+   TimerNow.QuadPart = SDL_GetPerformanceCounter();
+#endif
    const LONGLONG cur_tick = TimerNow.QuadPart - sTimerStart.QuadPart;
    return (U32)((unsigned long long)cur_tick * 1000ull / (unsigned long long)TimerFreq.QuadPart);
 }
@@ -116,7 +129,11 @@ void uSleep(const unsigned long long u)
    if (sTimerInit == 0) return;
 
    LARGE_INTEGER TimerNow;
+#ifdef _MSC_VER
    QueryPerformanceCounter(&TimerNow);
+#else
+   TimerNow.QuadPart = SDL_GetPerformanceCounter();
+#endif
    LARGE_INTEGER TimerEnd;
    TimerEnd.QuadPart = TimerNow.QuadPart + ((u * TimerFreq.QuadPart) / 1000000ull);
    const LONGLONG TwoMSTimerTicks = (2000 * TimerFreq.QuadPart) / 1000000ull;
@@ -128,7 +145,11 @@ void uSleep(const unsigned long long u)
       else
          YieldProcessor(); // was: "SwitchToThread() let other threads on same core run" //!! could also try Sleep(0) or directly use _mm_pause() instead of YieldProcessor() here
 
+#ifdef _MSC_VER
       QueryPerformanceCounter(&TimerNow);
+#else
+      TimerNow.QuadPart = SDL_GetPerformanceCounter();
+#endif
    }
 }
 
@@ -140,14 +161,22 @@ void uOverSleep(const unsigned long long u)
    if (sTimerInit == 0) return;
 
    LARGE_INTEGER TimerNow;
+#ifdef _MSC_VER
    QueryPerformanceCounter(&TimerNow);
+#else
+   TimerNow.QuadPart = SDL_GetPerformanceCounter();
+#endif
    LARGE_INTEGER TimerEnd;
    TimerEnd.QuadPart = TimerNow.QuadPart + ((u * TimerFreq.QuadPart) / 1000000ull);
 
    while (TimerNow.QuadPart < TimerEnd.QuadPart)
    {
       Sleep(1); // really pause thread for 1-2ms (depending on OS)
+#ifdef _MSC_VER
       QueryPerformanceCounter(&TimerNow);
+#else
+      TimerNow.QuadPart = SDL_GetPerformanceCounter();
+#endif
    }
 }
 

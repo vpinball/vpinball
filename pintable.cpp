@@ -12,10 +12,10 @@
 #include "Shader.h"
 #include "captureExt.h"
 #include "freeimage.h"
-#include "inc\ThreadPool.h"
-#include "inc\scalefx.h"
+#include "inc/ThreadPool.h"
+#include "inc/scalefx.h"
 
-#include "inc\serial.h"
+#include "inc/serial.h"
 static serial Serial;
 
 using namespace rapidxml;
@@ -435,7 +435,7 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
 
 STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
 {
-   const wstring wzPath = m_vpinball->m_wzMyPath + L"User\\";
+   const wstring wzPath = m_vpinball->m_wzMyPath + L"User" + PATH_SEPARATOR_WCHAR;
    *pVal = SysAllocString(wzPath.c_str());
 
    return S_OK;
