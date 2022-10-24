@@ -12,27 +12,18 @@ const bool do_bloom;
 
 texture Texture0; // FB
 texture Texture1; // Bloom
+texture Texture2; // Color grade
 texture Texture3; // AO Result & DepthBuffer
-texture Texture4; // AO Dither & Color grade
+texture Texture4; // AO Dither
 
-sampler2D tex_ao : TEXUNIT2 = sampler_state // AO Result
+sampler2D tex_mirror : TEXUNIT0 = sampler_state // base texture
 {
-	Texture	  = (Texture3);
+   Texture = (Texture0);
    MIPFILTER = NONE; //!! ??
    MAGFILTER = LINEAR;
    MINFILTER = LINEAR;
-	ADDRESSU  = Clamp;
-	ADDRESSV  = Clamp;
-};
-
-sampler2D tex_depth : TEXUNIT2 = sampler_state // Depth
-{
-	Texture	  = (Texture3);
-	MIPFILTER = NONE; //!! ??
-	MAGFILTER = POINT;
-	MINFILTER = POINT;
-	ADDRESSU  = Clamp;
-	ADDRESSV  = Clamp;
+   ADDRESSU = Clamp;
+   ADDRESSV = Clamp;
 };
 
 sampler2D tex_fb_unfiltered : TEXUNIT0 = sampler_state // Framebuffer (unfiltered)
@@ -55,34 +46,14 @@ sampler2D tex_fb_filtered : TEXUNIT0 = sampler_state // Framebuffer (filtered)
 	ADDRESSV  = Clamp;
 };
 
-sampler2D tex_color_lut : TEXUNIT2 = sampler_state // Color grade LUT
-{
-	Texture	  = (Texture4);
-   MIPFILTER = NONE;
-   MAGFILTER = LINEAR;
-   MINFILTER = LINEAR;
-	ADDRESSU  = Clamp;
-	ADDRESSV  = Clamp;
-};
-
-sampler2D tex_ao_dither : TEXUNIT3 = sampler_state // AO dither
-{
-	Texture = (Texture4);
-	MIPFILTER = NONE;
-	MAGFILTER = POINT;
-	MINFILTER = POINT;
-	ADDRESSU = Wrap;
-	ADDRESSV = Wrap;
-};
-
 sampler2D tex_bloom : TEXUNIT1 = sampler_state // Bloom
 {
-	Texture	  = (Texture1);
+   Texture = (Texture1);
    MIPFILTER = NONE; //!! ??
    MAGFILTER = LINEAR;
    MINFILTER = LINEAR;
-	ADDRESSU  = Clamp;
-	ADDRESSV  = Clamp;
+   ADDRESSU = Clamp;
+   ADDRESSV = Clamp;
 };
 
 /*sampler2D texSamplerNormals : TEXUNIT1 = sampler_state // Normals (unfiltered)
@@ -95,14 +66,44 @@ sampler2D tex_bloom : TEXUNIT1 = sampler_state // Bloom
 	ADDRESSV  = Clamp;
 };*/
 
-sampler2D tex_mirror : TEXUNIT0 = sampler_state // base texture
+sampler2D tex_color_lut : TEXUNIT2 = sampler_state // Color grade LUT
 {
-   Texture = (Texture0);
+	Texture	  = (Texture2);
+   MIPFILTER = NONE;
+   MAGFILTER = LINEAR;
+   MINFILTER = LINEAR;
+	ADDRESSU  = Clamp;
+	ADDRESSV  = Clamp;
+};
+
+sampler2D tex_ao : TEXUNIT3 = sampler_state // AO Result
+{
+   Texture = (Texture3);
    MIPFILTER = NONE; //!! ??
    MAGFILTER = LINEAR;
    MINFILTER = LINEAR;
-   ADDRESSU  = Clamp;
-   ADDRESSV  = Clamp;
+   ADDRESSU = Clamp;
+   ADDRESSV = Clamp;
+};
+
+sampler2D tex_depth : TEXUNIT3 = sampler_state // Depth
+{
+   Texture = (Texture3);
+   MIPFILTER = NONE; //!! ??
+   MAGFILTER = POINT;
+   MINFILTER = POINT;
+   ADDRESSU = Clamp;
+   ADDRESSV = Clamp;
+};
+
+sampler2D tex_ao_dither : TEXUNIT4 = sampler_state // AO dither
+{
+   Texture = (Texture4);
+   MIPFILTER = NONE;
+   MAGFILTER = POINT;
+   MINFILTER = POINT;
+   ADDRESSU = Wrap;
+   ADDRESSV = Wrap;
 };
 
 struct VS_OUTPUT_2D
