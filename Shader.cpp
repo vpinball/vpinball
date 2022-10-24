@@ -180,9 +180,9 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_SAMPLER(tex_fb_filtered, Texture0, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Framebuffer (filtered)
    SHADER_SAMPLER(tex_mirror, Texture0, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // base mirror texture
    SHADER_SAMPLER(tex_bloom, Texture1, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Bloom
+   SHADER_SAMPLER(tex_color_lut, Texture2, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Color grade LUT
    SHADER_SAMPLER(tex_ao, Texture3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // AO Result
    SHADER_SAMPLER(tex_depth, Texture3, SA_CLAMP, SA_CLAMP, SF_NONE), // Depth
-   SHADER_SAMPLER(tex_color_lut, Texture4, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Color grade LUT
    SHADER_SAMPLER(tex_ao_dither, Texture4, SA_REPEAT, SA_REPEAT, SF_NONE), // AO dither
    // Shared material samplers for Ball, Basic and Classic light shaders
    SHADER_SAMPLER(tex_env, Texture1, SA_REPEAT, SA_CLAMP, SF_TRILINEAR), // environment
