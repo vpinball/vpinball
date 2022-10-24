@@ -2229,11 +2229,11 @@ void Player::InitStatic()
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &fb_inv_resolution);
          const vec4 whm = vec4((float)m_pin3d.m_pddsStatic->GetWidth(), (float)m_pin3d.m_pddsStatic->GetHeight(), (float)STATIC_PRERENDER_ITERATIONS, 0.0f);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_cWidth_Height_MirrorAmount, &whm);
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_mirror, m_pin3d.m_pddsStatic->GetColorSampler());
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_pin3d.m_pddsStatic->GetColorSampler());
          m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
          m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
          m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_mirror);
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
          m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
          m_pin3d.m_pddsStatic->Activate();
       }
