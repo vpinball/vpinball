@@ -8,7 +8,7 @@ This project is a modified version of [VPinballX](https://github.com/vpinball/vp
 
 ## Background
 
-Visual Pinball was built over 20 years ago using Microsoft technologies such as OLE Compound Documents, DirectX, VBScript, COM, and ATL -- many of which have no cross platform equivalents or support. 
+Visual Pinball was built over 20 years ago using Microsoft technologies such as OLE Compound Documents, DirectX, VBScript, COM, and ATL -- many of which have no cross platform equivalents or support.
 
 To make a successful port, we would need tackle several tasks:
 
@@ -56,7 +56,7 @@ To make a successful port, we would need tackle several tasks:
 > - Provide stubs for as much COM and ATL code as possible by using Wine and [ReactOS](https://github.com/reactos/reactos/tree/master/sdk/lib/atl) source code.
 > - Embed Wine's VBScript engine instead of trying to replicate Windows [RPC](https://learn.microsoft.com/en-us/windows/win32/rpc/rpc-start-page).
 > - Replace Windows `typelib` magic with class methods for `GetIDsOfNames`, `Invoke`, and `FireDispID`
-> - Create an helper application (`idlparser`) that reads the `vpinball.idl` [Interface Definition File](https://learn.microsoft.com/en-us/windows/win32/midl/interface-definition-idl-file) and automatically generates code for `GetIDsOfNames`, `Invoke`, and `FireDispID` 
+> - Create an helper application (`idlparser`) that reads the `vpinball.idl` [Interface Definition File](https://learn.microsoft.com/en-us/windows/win32/midl/interface-definition-idl-file) and automatically generates code for `GetIDsOfNames`, `Invoke`, and `FireDispID`
 > - Embed `libpinmame` to provide support for PinMAME based games. [Future]
 
 > ***Graphics***
@@ -71,7 +71,7 @@ To make a successful port, we would need tackle several tasks:
 > - Visual Pinball uses DirectSound for playing `.wav` files and [BASS](http://www.un4seen.com/) for playing all other audio files.
 >
 > **Solution**
-> - Use the `ONLY_USE_BASS` preprocessor definition which uses BASS for all audio files including `.wav` files. 
+> - Use the `ONLY_USE_BASS` preprocessor definition which uses BASS for all audio files including `.wav` files.
 
 > ***Input***
 > - Visual Pinball uses XInput and either DirectInput 8 or SDL2 for getting keyboard and joystick info.
@@ -87,12 +87,12 @@ To make a successful port, we would need tackle several tasks:
 > - Updates must be easy to rebase, so all changes must be wrapped in:
 >
 >   ```
->   #ifdef __STANDALONE__ 
+>   #ifdef __STANDALONE__
 >   #endif
 >   ```
 >   or
 >   ```
->   #ifndef __STANDALONE__ 
+>   #ifndef __STANDALONE__
 >   #else
 >   #endif
 >   ```
@@ -106,7 +106,7 @@ In a terminal execute the following:
 brew install cmake sdl2 sdl2_ttf freeimage bison
 export PATH="$(brew --prefix bison)/bin:$PATH"
 git clone -b standalone https://github.com/vpinball/vpinball
-cd vpinball 
+cd vpinball
 cp cmake/CMakeLists_gl-osx-x64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build
@@ -116,9 +116,21 @@ cmake --build build
 
 In a terminal execute the following:
 ```
-sudo apt install git cmake build-essential libsdl2-dev libsdl2-ttf-dev libfreetype-dev libfreeimage-dev bison 
+sudo apt install git cmake build-essential libsdl2-dev libsdl2-ttf-dev libfreetype-dev libfreeimage-dev bison
 git clone -b standalone https://github.com/vpinball/vpinball
-cd vpinball 
+cd vpinball
+cp cmake/CMakeLists_gl-linux-x64.txt CMakeLists.txt
+cmake -DCMAKE_BUILD_TYPE=Release -B build
+cmake --build build
+```
+### Linux (Fedora 37)
+
+In a terminal execute the following:
+```
+sudo dnf groupinstall "Development Tools"
+sudo dnf install freeimage-devel SDL2-devel SDL2_ttf-devel gcc-c++ cmake
+git clone -b standalone https://github.com/vpinball/vpinball
+cd vpinball
 cp cmake/CMakeLists_gl-linux-x64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build
@@ -130,7 +142,7 @@ Start with a [Raspberry Pi OS Lite (64-Bit)](https://www.raspberrypi.com/softwar
 ```
 sudo apt-get install git cmake libgles2-mesa libgles2-mesa-dev libsdl2-dev libsdl2-ttf-dev libfreetype-dev libfreeimage-dev bison
 git clone -b standalone https://github.com/vpinball/vpinball
-cd vpinball 
+cd vpinball
 cp cmake/CMakeLists_gl-linux-arm64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build
@@ -158,14 +170,14 @@ In Visual Studio Code:
   - Install the [`C/C++ Extension Pack`](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools-extension-pack) extension.
   - Open the `vpinball` folder.
   - If prompted, select the latest version of clang, ex: `Clang 14.0.0 arm64-apple-darwin21.6.0`
-  - Go to `Settings` -> `CMake: Debug Config` and click `Edit in settings.json` 
+  - Go to `Settings` -> `CMake: Debug Config` and click `Edit in settings.json`
   - Update `settings.json` with:
   ```
       "cmake.debugConfig": {
          "args": [ "-DisableTrueFullscreen", "-Play", "../res/exampleTable.vpx" ],
       }
   ```
-  - Click the bug button (to the left of the play button) in the bottom bar 
+  - Click the bug button (to the left of the play button) in the bottom bar
 
 ### Raspberry Pi 4
 
@@ -179,11 +191,11 @@ Make sure SSH is configured and enabled on your Raspberry Pi.
 
 On the host computer, in Visual Studio Code:
   - Install the [`Remote Development`](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack) extension.
-  - Select `Remote-SSH: Connect to Host...` from the Command Palette (F1, ⇧⌘P) 
+  - Select `Remote-SSH: Connect to Host...` from the Command Palette (F1, ⇧⌘P)
   - Enter the `user@address` of the Raspberry Pi.
   - Once connected, install the [`C/C++ Extension Pack`](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools-extension-pack) extension.
   - If prompted, select the latest version of gcc, ex: `GCC 10.2.1 aarch64-linux-gnu`
-  - Go to `Settings` (`Remote SSH`) -> `CMake: Debug Config` and click `Edit in settings.json` 
+  - Go to `Settings` (`Remote SSH`) -> `CMake: Debug Config` and click `Edit in settings.json`
   - Update `settings.json` with:
   ```
     "cmake.parallelJobs": 1,
@@ -192,7 +204,7 @@ On the host computer, in Visual Studio Code:
         "args": [ "-Play", "../res/exampleTable.vpx" ],
     }
   ```
-  - Click the bug button (to the left of the play button) in the bottom bar 
+  - Click the bug button (to the left of the play button) in the bottom bar
 
 ### Miscellaneous
 
@@ -216,7 +228,7 @@ tools/widl/widl -o ../vpinmame.h --nostdinc -Ldlls/\* -Iinclude -D__WINESRC__ -D
 
 - Wine and the amazing people who support the VBScript engine
   - Robert Wilhelm
-  - Nikolay Sivov 
+  - Nikolay Sivov
 
 - The people who make this such an exciting hobby to be a part of
   - @Bord, @Cupiii, @ecurtz, @freezy, @Iaaki, @Lucidish, @mkalkbrenner, @Niwak, @Scottacus64, @Thalamus, @toxie
