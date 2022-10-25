@@ -218,7 +218,7 @@ static VertexDeclaration* fvfToDecl(const DWORD fvf)
 }
 #endif
 
-static UINT ComputePrimitiveCount(const RenderDevice::PrimitiveTypes type, const int vertexCount)
+static unsigned int ComputePrimitiveCount(const RenderDevice::PrimitiveTypes type, const int vertexCount)
 {
    switch (type)
    {

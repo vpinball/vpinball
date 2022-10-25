@@ -34,7 +34,7 @@ public:
 
 private:
    char* m_MetaDataBuffer = nullptr;
-   UINT m_MetaDataBufferSize = 0;
+   unsigned int m_MetaDataBufferSize = 0;
 };
 
 typedef std::map<std::tuple<int, int>, ExtCaptureOutput *> outputmaptype;

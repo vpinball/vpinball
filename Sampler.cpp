@@ -186,7 +186,7 @@ void Sampler::SetFilter(const SamplerFilter filter)
 }
 
 #ifdef ENABLE_SDL
-GLuint Sampler::CreateTexture(UINT Width, UINT Height, UINT Levels, colorFormat Format, void* data, int stereo)
+GLuint Sampler::CreateTexture(unsigned int Width, unsigned int Height, unsigned int Levels, colorFormat Format, void* data, int stereo)
 {
    const GLuint col_type = ((Format == RGBA32F) || (Format == RGB32F)) ? GL_FLOAT : ((Format == RGBA16F) || (Format == RGB16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
    const GLuint col_format = ((Format == GREY8) || (Format == RED16F))                                                                                                      ? GL_RED

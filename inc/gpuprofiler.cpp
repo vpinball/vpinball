@@ -200,7 +200,7 @@ void CGpuProfiler::WaitForDataAndUpdate ()
 	}
 
 	// Wait for data
-	UINT32 c = 0;
+	unsigned int c = 0;
 	BOOL disjoint;
 	while (m_apQueryTsDisjoint[m_iFrameCollect]->GetData(&disjoint,sizeof(BOOL), FLUSH_DATA) == S_FALSE && c < GET_DATA_RETRIES)
 	{

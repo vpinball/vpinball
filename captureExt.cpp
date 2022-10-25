@@ -204,7 +204,7 @@ bool ExtCapture::SetupCapture(const RECT& inputRect)
       return false;
 
    /* Enumerate the adapters.*/
-   UINT i = 0, dx = 0;
+   unsigned int i = 0, dx = 0;
 
    POINT pt;
    pt.x = inputRect.left;
@@ -405,7 +405,7 @@ void ExtCaptureOutput::AcquireFrame()
          ShowError("Capture: MapDesktopSurface returned an unknown error.");
       }
    }
-   UINT BufSize = frame_info.TotalMetadataBufferSize;
+   unsigned int BufSize = frame_info.TotalMetadataBufferSize;
    if (m_MetaDataBufferSize < BufSize)
    {
       delete [] m_MetaDataBuffer;

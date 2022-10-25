@@ -92,13 +92,13 @@ public:
 
    HWND m_hwnd;
 
-   UINT64 m_leftkey_down_usec;
+   uint64_t m_leftkey_down_usec;
    unsigned int m_leftkey_down_frame;
-   UINT64 m_leftkey_down_usec_rotate_to_end;
+   uint64_t m_leftkey_down_usec_rotate_to_end;
    unsigned int m_leftkey_down_frame_rotate_to_end;
-   UINT64 m_leftkey_down_usec_EOS;
+   uint64_t m_leftkey_down_usec_EOS;
    unsigned int m_leftkey_down_frame_EOS;
-   UINT64 m_lastclick_ballcontrol_usec;
+   uint64_t m_lastclick_ballcontrol_usec;
 
    int e_JoyCnt;
    int uShockType;

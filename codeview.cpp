@@ -403,13 +403,13 @@ static bool FindOrInsertStringIntoAutolist(vector<string>& ListIn, const string 
 		return true;
 	}
 	const unsigned int ListSize = (unsigned int)ListIn.size();
-	UINT32 iNewPos = 1u << 31;
+	unsigned int iNewPos = 1u << 31;
 	while (!(iNewPos & ListSize) && (iNewPos > 1))
 		iNewPos >>= 1;
 	int iJumpDelta = iNewPos >> 1;
 	--iNewPos; //Zero Base
 	const string strSearchData = lowerCase(strIn);
-	UINT32 iCurPos;
+	unsigned int iCurPos;
 	int result;
 	while (true)
 	{

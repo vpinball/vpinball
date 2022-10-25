@@ -1291,12 +1291,12 @@ void PinInput::ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input)
 		g_pplayer->m_pBCTarget = new Vertex3Ds(g_pplayer->m_pin3d.Get3DPointFrom2D(point));
 		if (input->dwData == 1 || input->dwData == 3)
 		{
-			const UINT64 cur = usec();
+			const uint64_t cur = usec();
 			if (m_lastclick_ballcontrol_usec + BALLCONTROL_DOUBLECLICK_THRESHOLD_USEC > cur)
 			{
 				// Double click.  Move the ball directly to the target if possible.   Drop 
 				// it fast from the glass height, so it will appear over any object (or on a raised playfield)
-			
+
 				Ball * const pBall = g_pplayer->m_pactiveballBC;
 				if (pBall && !pBall->m_d.m_frozen)
 				{

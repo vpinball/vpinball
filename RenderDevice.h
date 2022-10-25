@@ -329,7 +329,7 @@ private:
    RenderTarget* m_pDynamicMirrorRenderTarget;
    RenderTarget* m_pReflectionBufferTexture;
 
-   UINT m_adapter;      // index of the display adapter to use
+   unsigned int m_adapter; // index of the display adapter to use
 
    VertexDeclaration *currentDeclaration; // for caching
 

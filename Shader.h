@@ -246,7 +246,7 @@ public:
    Shader(RenderDevice *renderDevice);
    ~Shader();
 
-   bool Load(const std::string& name, const BYTE* code, UINT codeSize);
+   bool Load(const std::string& name, const BYTE* code, unsigned int codeSize);
 
    void Begin();
    void End();

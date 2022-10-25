@@ -30,13 +30,13 @@ struct LightSource
 
 struct ProtectionData
 {
-   INT32 fileversion;
-   INT32 size;
-   unsigned char paraphrase[16 + 8];
-   UINT32 flags;
-   int keyversion;
-   int spare1;
-   int spare2;
+   int32_t fileversion;
+   int32_t size;
+   uint8_t paraphrase[16 + 8];
+   uint32_t flags;
+   int32_t keyversion;
+   int32_t spare1;
+   int32_t spare2;
 };
 
 class ScriptGlobalTable;
