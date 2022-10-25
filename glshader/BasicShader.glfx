@@ -41,7 +41,9 @@ layout(triangle_strip, max_vertices = 3) out;
 //#extension GL_ARB_shader_image_load_store : enable
 #extension GL_ARB_conservative_depth : enable
 //layout(early_fragment_tests) in;
+#ifndef __APPLE__
 layout(depth_unchanged) out float gl_FragDepth;
+#endif
 
 uniform sampler2D tex_base_color; // base texture
 uniform sampler2D tex_env; // envmap

@@ -1,12 +1,19 @@
 #pragma once
 
+#include <inc/robin_hood.h>
+
+#ifndef __STANDALONE__
 #include <Commdlg.h>
+#endif
 #include <activscp.h>
 #include <activdbg.h>
 #include <atlcom.h>
 #include "codeviewedit.h"
+#ifndef __STANDALONE__
 #include "ScriptErrorDialog.h"
-#include "inc\scintilla.h"
+#include "inc/scintilla.h"
+#include "inc/scilexer.h"
+#endif
 
 #define MAX_FIND_LENGTH 81
 #define MAX_LINE_LENGTH 2048
@@ -41,6 +48,12 @@ class DebuggerModule :
    public IDispatchImpl<IVPDebug, &IID_IVPDebug, &LIBID_VPinballLib>,
    public IScriptable
 {
+#ifdef __STANDALONE__
+public:
+   static robin_hood::unordered_map<wstring, int> m_nameIDMap;
+   STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
+   STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
+#endif
    BEGIN_COM_MAP(DebuggerModule)
       COM_INTERFACE_ENTRY(IVPDebug)
       COM_INTERFACE_ENTRY(IDispatch)
@@ -48,6 +61,7 @@ class DebuggerModule :
 
    STDMETHOD(Print)(VARIANT *pvar);
 
+public:
    void Init(CodeViewer * const pcv);
 
    IDispatch *GetDispatch() final { return (IDispatch *)this; }
@@ -156,7 +170,11 @@ public:
 
    STDMETHODIMP GetWindow(HWND *phwnd) override
    {
+#ifndef __STANDALONE__
       *phwnd = GetDesktopWindow(); return S_OK; //!! ?
+#else
+      return S_OK;
+#endif
    }
 
    STDMETHODIMP EnableModeless(BOOL) override
@@ -258,7 +276,9 @@ public:
 
    void UpdateScinFromPrefs();
 
+#ifndef __STANDALONE__
    void MarginClick(const Sci_Position position, const int modifiers);
+#endif
 
    void EvaluateScriptStatement(const char * const szScript);
    void AddToDebugOutput(const char * const szText);
@@ -296,7 +316,9 @@ public:
    int m_dwellDisplayTime;
 
    vector<UserData> m_pageConstructsDict;
+#ifndef __STANDALONE__
    Sci_TextRange m_wordUnderCaret;
+#endif
 
    CComObject<DebuggerModule> *m_pdm; // Object to expose to script for global functions
    //ULONG m_cref;
@@ -315,6 +337,8 @@ public:
 
    string external_script_name;  // loaded from external .vbs?
    vector<char> original_table_script; // if yes, then this one stores the original table script
+
+   string m_script_text;
 
 protected:
    void PreCreate(CREATESTRUCT& cs) final;
@@ -413,7 +437,9 @@ private:
    vector<UserData> m_currentMembers;
    string m_autoCompString;
    string m_autoCompMembersString;
+#ifndef __STANDALONE__
    Sci_TextRange m_currentConstruct;
+#endif
 
    HWND m_hwndItemList;
    HWND m_hwndItemText;
@@ -452,6 +478,14 @@ class Collection :
    public IScriptable,
    public ILoadable
 {
+#ifdef __STANDALONE__
+public:
+   static robin_hood::unordered_map<wstring, int> m_nameIDMap;
+   STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
+   STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
+   static robin_hood::unordered_map<int, wstring> m_idNameMap;
+   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
+#endif
 public:
    Collection();
 

@@ -697,7 +697,11 @@ void Bumper::RenderSetup()
    m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
    if (m_d.m_baseVisible)
    {
+#ifndef __STANDALONE__
       m_baseTexture.CreateFromResource(IDB_BUMPER_BASE);
+#else
+      m_baseTexture.CreateFromResource("res/bumperbase.bmp");
+#endif
       SAFE_BUFFER_RELEASE(m_baseIndexBuffer);
       m_baseIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(bumperBaseNumIndices, bumperBaseIndices, PRIMARY_DEVICE);
 
@@ -712,7 +716,11 @@ void Bumper::RenderSetup()
 
    if (m_d.m_skirtVisible)
    {
+#ifndef __STANDALONE__
       m_skirtTexture.CreateFromResource(IDB_BUMPER_SKIRT);
+#else
+      m_skirtTexture.CreateFromResource("res/bumperskirt.bmp");
+#endif
 
       SAFE_BUFFER_RELEASE(m_socketIndexBuffer);
       m_socketIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(bumperSocketNumIndices, bumperSocketIndices, PRIMARY_DEVICE);
@@ -728,7 +736,11 @@ void Bumper::RenderSetup()
 
    if (m_d.m_ringVisible)
    {
+#ifndef __STANDALONE__
       m_ringTexture.CreateFromResource(IDB_BUMPER_RING);
+#else
+      m_ringTexture.CreateFromResource("res/bumperring.bmp");
+#endif
 
       SAFE_BUFFER_RELEASE(m_ringIndexBuffer);
       m_ringIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(bumperRingNumIndices, bumperRingIndices, PRIMARY_DEVICE);
@@ -747,7 +759,11 @@ void Bumper::RenderSetup()
 
    if (m_d.m_capVisible)
    {
+#ifndef __STANDALONE__
       m_capTexture.CreateFromResource(IDB_BUMPERCAP);
+#else
+      m_capTexture.CreateFromResource("res/bumperCap.bmp");
+#endif
 
       SAFE_BUFFER_RELEASE(m_capIndexBuffer);
       m_capIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(bumperCapNumIndices, bumperCapIndices, PRIMARY_DEVICE);

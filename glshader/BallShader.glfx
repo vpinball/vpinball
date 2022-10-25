@@ -1,9 +1,9 @@
 ////GLOBAL
 #version 430
 
+////DEFINES
 #define NUM_BALL_LIGHTS 8
 
-////DEFINES
 uniform mat4 orientation;
 
 layout(std140) uniform matrixBlock {
@@ -31,8 +31,10 @@ layout(triangle_strip, max_vertices = 3) out;
 // Early-Z-test implementation:
 #extension GL_ARB_shader_image_load_store : enable
 #extension GL_ARB_conservative_depth : enable
+#ifndef __APPLE__
 layout(early_fragment_tests) in;
 layout(depth_unchanged) out float gl_FragDepth;
+#endif
 
 uniform sampler2D tex_ball_color; // base texture
 uniform sampler2D tex_ball_playfield; // playfield

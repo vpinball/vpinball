@@ -4,13 +4,16 @@
 // the following URL:
 // http://www.edn.com/article/CA243218.html
 
+#ifndef __STANDALONE__
 extern "C" {
 #include "setupapi.h"
 #include "hidsdi.h"
 }
+#endif
 
 HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
 {
+#ifndef __STANDALONE__
    GUID hidGUID;
    SP_DEVICE_INTERFACE_DATA deviceInterfaceData;
    ULONG requiredSize;
@@ -80,10 +83,14 @@ HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
    SetupDiDestroyDeviceInfoList(hardwareDeviceInfoSet);
    free(deviceDetail);
    return deviceHandle;
+#else 
+   return 0L;
+#endif
 }
 
 static HANDLE hid_connect(U32 vendorID, U32 productID, U32 *versionNumber = nullptr)
 {
+#ifndef __STANDALONE__
    DWORD index = 0;
    HIDD_ATTRIBUTES deviceAttributes;
 
@@ -112,14 +119,17 @@ static HANDLE hid_connect(U32 vendorID, U32 productID, U32 *versionNumber = null
 
       index++;
    }
+#endif
 
    return INVALID_HANDLE_VALUE;
 }
 
 static HANDLE hnd = hid_connect(0x04b4, 0x6470);
+#ifndef __STANDALONE__
 static OVERLAPPED ol;
 static PHIDP_PREPARSED_DATA HidParsedData;
 static HIDP_CAPS Capabilities;
+#endif
 
 void hid_init()
 {
@@ -127,6 +137,7 @@ void hid_init()
 
    if (hnd != INVALID_HANDLE_VALUE)
    {
+#ifndef __STANDALONE__
       printf("Connected to PBW controller\n");
       unsigned char buffer[1024] = { 0 };
       unsigned char inbuffer[1024] = { 0 };
@@ -174,6 +185,7 @@ void hid_init()
          printf("%02x ", inbuffer[i]);
       }
       printf("\n");
+#endif
    }
    else
    {
@@ -260,6 +272,7 @@ void hid_update(const U32 cur_time_msec)
       // This really needs serious optimization by putting in a separate thread or something - AMH
       if (mask != last_written)
       {
+#ifndef __STANDALONE__
          unsigned char buffer[1024] = { 0 };
 
          HANDLE sReportEvent = CreateEvent(nullptr, 1, 0, nullptr);
@@ -277,6 +290,7 @@ void hid_update(const U32 cur_time_msec)
          WriteFile(hnd, buffer, Capabilities.OutputReportByteLength, &written, &ol);
          WaitForSingleObject(sReportEvent, 200);
          CloseHandle(sReportEvent);
+#endif
       }
    }
    else
@@ -296,6 +310,8 @@ void hid_shutdown()
    if (hnd != INVALID_HANDLE_VALUE)
    {
       hnd = INVALID_HANDLE_VALUE;
+#ifndef __STANDALONE__
       CloseHandle(hnd);
+#endif
    }
 }

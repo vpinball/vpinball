@@ -67,6 +67,10 @@ public:
    BaseTexture *CreateFromHBitmap(const HBITMAP hbm, bool with_alpha = true);
    void CreateFromResource(const int id);
 
+#ifdef __STANDALONE__
+   void CreateFromResource(const string szName);
+#endif
+
    bool IsHDR() const
    {
       return m_pdsBuffer != nullptr && (m_pdsBuffer->m_format == BaseTexture::RGB_FP16 || m_pdsBuffer->m_format == BaseTexture::RGB_FP32);

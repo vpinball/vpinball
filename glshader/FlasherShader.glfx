@@ -33,8 +33,10 @@ layout(triangle_strip, max_vertices = 3) out;
 // Early-Z-test implementation:
 #extension GL_ARB_shader_image_load_store : enable
 #extension GL_ARB_conservative_depth : enable
+#ifndef __APPLE__
 layout(early_fragment_tests) in;
 layout(depth_unchanged) out float gl_FragDepth;
+#endif
 
 uniform float4 staticColor_Alpha;
 uniform float4 alphaTestValueAB_filterMode_addBlend; // last one bool

@@ -1,0 +1,12 @@
+/.vs/VisualPinball.net2017/v15
+/.github/workflows
+/x64/Debug_SDL
+
+inc/wine/dlls/vbscript/parser.tab.h
+inc/wine/dlls/vbscript/parser.tab.c
+
+.classpath
+.gradle
+.project
+.settings
+.DS_Store

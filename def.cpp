@@ -1,5 +1,7 @@
 #include "stdafx.h"
+#ifndef __STANDALONE__
 #include "Intshcut.h"
+#endif
 
 unsigned long long tinymt64state[2] = { 'T', 'M' };
 
@@ -103,18 +105,22 @@ int WzSzStrNCmp(const WCHAR *wz1, const char *sz2, const DWORD maxComparisonLen)
 
 LocalString::LocalString(const int resid)
 {
+#ifndef __STANDALONE__
    if (resid > 0)
       /*const int cchar =*/ LoadString(g_pvp->theInstance, resid, m_szbuffer, sizeof(m_szbuffer));
    else
       m_szbuffer[0] = '\0';
+#endif
 }
 
 LocalStringW::LocalStringW(const int resid)
 {
+#ifndef __STANDALONE__
    if (resid > 0)
       LoadStringW(g_pvp->theInstance, resid, m_szbuffer, sizeof(m_szbuffer)/sizeof(WCHAR));
    else
       m_szbuffer[0] = L'\0';
+#endif
 }
 
 WCHAR *MakeWide(const string& sz)
@@ -137,6 +143,7 @@ char *MakeChar(const WCHAR * const wz)
 
 HRESULT OpenURL(const string& szURL)
 {
+#ifndef __STANDALONE__
    IUniformResourceLocator* pURL;
 
    HRESULT hres = CoCreateInstance(CLSID_InternetShortcut, nullptr, CLSCTX_INPROC_SERVER, IID_IUniformResourceLocator, (void**)&pURL);
@@ -162,6 +169,9 @@ HRESULT OpenURL(const string& szURL)
    hres = pURL->InvokeCommand(&ivci);
    pURL->Release();
    return (hres);
+#else
+   return 0L;
+#endif
 }
 
 char* replace(const char* const original, const char* const pattern, const char* const replacement)
@@ -210,10 +220,14 @@ char* replace(const char* const original, const char* const pattern, const char*
 // This exists such that we only check if we're on wine once, and assign the result of this function to a static const var
 static bool IsOnWineInternal()
 {
+#ifndef __STANDALONE__
    // See https://www.winehq.org/pipermail/wine-devel/2008-September/069387.html
    const HMODULE ntdllHandle = GetModuleHandleW(L"ntdll.dll");
    assert(ntdllHandle != nullptr && "Could not GetModuleHandleW(L\"ntdll.dll\")");
    return GetProcAddress(ntdllHandle, "wine_get_version") != nullptr;
+#else
+   return false;
+#endif
 }
 
 bool IsOnWine()

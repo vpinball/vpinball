@@ -15,7 +15,9 @@
 
 #define COMPRESS_MESHES // uses miniz for compressing the meshes
 
+#ifndef __STANDALONE__
 #define CRASH_HANDLER
+#endif
 
 //#define _CRTDBG_MAP_ALLOC
 
@@ -103,8 +105,10 @@
 //VR Support
 
 #ifdef ENABLE_SDL
+#ifndef __STANDALONE__
 //No VR support with DX9 possible, only with DX11 and OpenGL
 #define ENABLE_VR
+#endif
 #endif
 
 //
@@ -139,7 +143,12 @@
  #define WM_MENURBUTTONUP                0x0122
  #define WM_UNINITMENUPOPUP              0x0125
 #endif
+
+#ifndef __STANDALONE__
 #include "main.h"
+#else
+  #include "main_standalone.h"
+#endif
 
 
 //{{AFX_INSERT_LOCATION}}

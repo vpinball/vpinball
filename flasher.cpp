@@ -2,7 +2,9 @@
 #include "Shader.h"
 #include "IndexBuffer.h"
 #include "VertexBuffer.h"
+#ifndef __STANDALONE__
 #include "captureExt.h"
+#endif
 
 Flasher::Flasher()
 {
@@ -1002,6 +1004,7 @@ void Flasher::ResetVideoCap()
 //if PASSED a blank title then we treat this as STOP capture and free resources.
 STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
 {
+#ifndef __STANDALONE__
     if (m_videoCapWidth == 0 || m_videoCapHeight == 0) return S_FALSE; //safety.  VideoCapWidth/Height needs to be set prior to this call
 
     char szWinTitle[MAXNAMEBUFFER];
@@ -1085,6 +1088,7 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
     ReleaseDC(m_videoCapHwnd, hdcWindow);
     DeleteObject(hbmScreen);
     DeleteObject(hdcMemDC);
+#endif
 
     return S_OK;
 }
@@ -1209,9 +1213,11 @@ void Flasher::RenderDynamic()
 #endif
        pd3dDevice->DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
 
+#ifndef __STANDALONE__
        // If we're capturing Freezy DMD switch to ext technique to avoid incorrect colorization
        if (captureExternalDMD())
           pd3dDevice->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD_world_ext);
+#endif
 
        if (g_pplayer->m_texdmd != nullptr)
           pd3dDevice->DMDShader->SetTexture(SHADER_tex_dmd, g_pplayer->m_texdmd, SF_NONE, SA_CLAMP, SA_CLAMP);

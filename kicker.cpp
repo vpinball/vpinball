@@ -445,7 +445,11 @@ void Kicker::RenderSetup()
        break;
        case KickerCup:
        {
+#ifndef __STANDALONE__
           m_texture.CreateFromResource(IDB_KICKER_CUP);
+#else
+          m_texture.CreateFromResource("res/kickerCup.bmp");
+#endif
 
           m_numIndices = kickerCupNumIndices;
           m_numVertices = kickerCupNumVertices;
@@ -455,7 +459,11 @@ void Kicker::RenderSetup()
        break;
        case KickerWilliams:
        {
+#ifndef __STANDALONE__
           m_texture.CreateFromResource(IDB_KICKER_WILLIAMS);
+#else
+          m_texture.CreateFromResource("res/kickerWilliams.bmp");
+#endif
 
           m_numIndices = kickerWilliamsNumIndices;
           m_numVertices = kickerWilliamsNumVertices;
@@ -465,7 +473,11 @@ void Kicker::RenderSetup()
        break;
        case KickerGottlieb:
        {
+#ifndef __STANDALONE__
           m_texture.CreateFromResource(IDB_KICKER_GOTTLIEB);
+#else
+          m_texture.CreateFromResource("res/kickerGottlieb.bmp");
+#endif
 
           m_numIndices = kickerGottliebNumIndices;
           m_numVertices = kickerGottliebNumVertices;
@@ -475,7 +487,11 @@ void Kicker::RenderSetup()
        break;
        case KickerCup2:
        {
+#ifndef __STANDALONE__
           m_texture.CreateFromResource(IDB_KICKER_T1);
+#else
+          m_texture.CreateFromResource("res/kickerT1.bmp");
+#endif
 
           m_numIndices = kickerT1NumIndices;
           m_numVertices = kickerT1NumVertices;
@@ -485,7 +501,11 @@ void Kicker::RenderSetup()
        break;
        case KickerHole:
        {
+#ifndef __STANDALONE__
           m_texture.CreateFromResource(IDB_KICKER_HOLE_WOOD);
+#else
+          m_texture.CreateFromResource("res/kickerHoleWood.bmp");
+#endif
 
           m_numIndices = kickerHoleNumIndices;
           m_numVertices = kickerHoleNumVertices;
@@ -496,7 +516,11 @@ void Kicker::RenderSetup()
        default:
        case KickerHoleSimple:
        {
+#ifndef __STANDALONE__
           m_texture.CreateFromResource(IDB_KICKER_HOLE_WOOD);
+#else
+          m_texture.CreateFromResource("res/kickerHoleWood.bmp");
+#endif
 
           m_numIndices = kickerSimpleHoleNumIndices;
           m_numVertices = kickerSimpleHoleNumVertices;

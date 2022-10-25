@@ -1,6 +1,8 @@
 #include "stdafx.h"
 
+#ifndef __STANDALONE__
 #include <DxErr.h>
+#endif
 
 // Undefine this if you want to debug VR mode without a VR headset
 //#define VR_PREVIEW_TEST
@@ -72,6 +74,7 @@ static pRGV mRtlGetVersion = nullptr;
 
 bool IsWindows10_1803orAbove()
 {
+#ifndef __STANDALONE__
    if (mRtlGetVersion == nullptr)
       mRtlGetVersion = (pRGV)GetProcAddress(GetModuleHandle(TEXT("ntdll")), "RtlGetVersion"); // apparently the only really reliable solution to get the OS version (as of Win10 1803)
 
@@ -90,6 +93,9 @@ bool IsWindows10_1803orAbove()
    }
 
    return false;
+#else
+   return true;
+#endif
 }
 
 #ifdef ENABLE_SDL
@@ -255,7 +261,7 @@ static const char* glErrorToString(const int error) {
 
 void ReportFatalError(const HRESULT hr, const char *file, const int line)
 {
-   char msg[2048+128];
+   char msg[2176];
 #ifdef ENABLE_SDL
    sprintf_s(msg, sizeof(msg), "GL Fatal Error 0x%0002X %s in %s:%d", hr, glErrorToString(hr), file, line);
    ShowError(msg);
@@ -501,6 +507,7 @@ void EnumerateDisplayModes(const int display, vector<VideoMode>& modes)
 #endif
 }
 
+#ifndef __STANDALONE__
 BOOL CALLBACK MonitorEnumList(__in  HMONITOR hMonitor, __in  HDC hdcMonitor, __in  LPRECT lprcMonitor, __in  LPARAM dwData)
 {
    std::map<string,DisplayConfig>* data = reinterpret_cast<std::map<string,DisplayConfig>*>(dwData);
@@ -523,6 +530,7 @@ BOOL CALLBACK MonitorEnumList(__in  HMONITOR hMonitor, __in  HDC hdcMonitor, __i
    data->insert(std::pair<string, DisplayConfig>(config.DeviceName, config));
    return TRUE;
 }
+#endif
 
 int getDisplayList(vector<DisplayConfig>& displays)
 {
@@ -752,7 +760,9 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    SDL_SysWMinfo wmInfo;
    SDL_VERSION(&wmInfo.version);
    SDL_GetWindowWMInfo(m_sdl_playfieldHwnd, &wmInfo);
+#ifndef __STANDALONE__
    m_windowHwnd = wmInfo.info.win.window;
+#endif
 
    m_sdl_context = SDL_GL_CreateContext(m_sdl_playfieldHwnd);
 
@@ -768,12 +778,14 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    glGetIntegerv(GL_MAJOR_VERSION, &gl_majorVersion);
    glGetIntegerv(GL_MINOR_VERSION, &gl_minorVersion);
 
+#ifndef __STANDALONE__
    if (gl_majorVersion < 3 || (gl_majorVersion == 3 && gl_minorVersion < 2)) {
       char errorMsg[256];
       sprintf_s(errorMsg, sizeof(errorMsg), "Your graphics card only supports OpenGL %d.%d, but VPVR requires OpenGL 3.2 or newer.", gl_majorVersion, gl_minorVersion);
       ShowError(errorMsg);
       exit(-1);
    }
+#endif
 
    m_GLversion = gl_majorVersion*100 + gl_minorVersion;
 
@@ -781,7 +793,9 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 #ifdef _DEBUG
    glEnable(GL_DEBUG_OUTPUT); // on its own is the 'fast' version
    //glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); // callback is in sync with errors, so a breakpoint can be placed on the callback in order to get a stacktrace for the GL error
+   if (glad_glDebugMessageCallback) {
    glDebugMessageCallback(GLDebugMessageCallback, nullptr);
+   }
 #endif
 #if 0
    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_FALSE); // disable all
@@ -1212,8 +1226,6 @@ bool RenderDevice::LoadShaders()
 
    bool shaderCompilationOkay = true;
 #ifdef ENABLE_SDL
-   char glShaderPath[MAX_PATH];
-   /*DWORD length =*/ GetModuleFileName(nullptr, glShaderPath, MAX_PATH);
    Shader::Defines = ""s;
    if (m_stereo3D == STEREO_OFF)
    {
@@ -1236,22 +1248,20 @@ bool RenderDevice::LoadShaders()
       else
          Shader::Defines.append("#define stereo_vert 0\n"s);
    }
-   Shader::shaderPath = string(glShaderPath);
-   Shader::shaderPath = Shader::shaderPath.substr(0, Shader::shaderPath.find_last_of("\\/"));
-   Shader::shaderPath.append("\\glshader\\");
+   Shader::shaderPath = string(g_pvp->m_szMyPath) + string("glshader") + PATH_SEPARATOR_CHAR;
    shaderCompilationOkay = basicShader->Load("BasicShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
    shaderCompilationOkay = DMDShader->Load(m_stereo3D == STEREO_VR ? "DMDShaderVR.glfx"s : "DMDShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
    shaderCompilationOkay = FBShader->Load("FBShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
    shaderCompilationOkay = FBShader->Load("SMAA.glfx"s, nullptr, 0) && shaderCompilationOkay;
-   shaderCompilationOkay = flasherShader->Load("flasherShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
-   shaderCompilationOkay = lightShader->Load("lightShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
+   shaderCompilationOkay = flasherShader->Load("FlasherShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
+   shaderCompilationOkay = lightShader->Load("LightShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
    if (m_stereo3D != STEREO_OFF) {
       StereoShader = new Shader(this);
       shaderCompilationOkay = StereoShader->Load("StereoShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
    }
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    classicLightShader = new Shader(this);
-   shaderCompilationOkay = classicLightShader->Load("classicLightShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
+   shaderCompilationOkay = classicLightShader->Load("ClassicLightShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
 #endif
 #else // ENABLE_SDL
    shaderCompilationOkay = basicShader->Load("BasicShader.hlsl"s, g_basicShaderCode, sizeof(g_basicShaderCode)) && shaderCompilationOkay;

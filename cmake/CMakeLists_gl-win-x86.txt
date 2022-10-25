@@ -10,16 +10,15 @@ set(VERSION_REV "${CMAKE_MATCH_1}")
 
 project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
-add_library(glad 
-   inc/glad/glad.h 
-   glad.c
+add_library(glad
+   inc/glad/glad.c
 )
 
-target_include_directories(glad PUBLIC 
-   inc
+target_include_directories(glad PUBLIC
+   inc/glad
 )
 
 set_target_properties(glad PROPERTIES
@@ -30,7 +29,6 @@ add_compile_definitions(
    ENABLE_SDL_INPUT
    ENABLE_SDL
    ENABLE_XINPUT
-   TWEAK_GL_SHADER
    ENABLE_BAM
    USE_DINPUT8
    USE_IMGUI

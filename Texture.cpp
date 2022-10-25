@@ -11,6 +11,11 @@
 #define STBI_NO_FAILURE_STRINGS
 #include "stb_image.h"
 
+#ifdef __STANDALONE__
+#include <fstream>
+#include <iostream>
+#endif
+
 BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Format format)
    : m_width(w)
    , m_height(h)
@@ -312,6 +317,7 @@ BaseTexture* BaseTexture::CreateFromData(const void *data, const size_t size)
 // from the FreeImage FAQ page
 static FIBITMAP* HBitmapToFreeImage(HBITMAP hbmp)
 {
+#ifndef __STANDALONE__
    BITMAP bm;
    GetObject(hbmp, sizeof(BITMAP), &bm);
    FIBITMAP* dib = FreeImage_Allocate(bm.bmWidth, bm.bmHeight, bm.bmBitsPixel);
@@ -328,6 +334,9 @@ static FIBITMAP* HBitmapToFreeImage(HBITMAP hbmp)
    FreeImage_GetInfoHeader(dib)->biClrUsed = nColors;
    FreeImage_GetInfoHeader(dib)->biClrImportant = nColors;
    return dib;
+#else
+   return nullptr;
+#endif
 }
 
 BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbm, bool with_alpha)
@@ -685,12 +694,14 @@ void Texture::FreeStuff()
 {
    delete m_pdsBuffer;
    m_pdsBuffer = nullptr;
+#ifndef __STANDALONE__
    if (m_hbmGDIVersion)
    {
       if(m_hbmGDIVersion != g_pvp->m_hbmInPlayMode)
           DeleteObject(m_hbmGDIVersion);
       m_hbmGDIVersion = nullptr;
    }
+#endif
    if (m_ppb)
    {
       delete m_ppb;
@@ -700,6 +711,7 @@ void Texture::FreeStuff()
 
 void Texture::CreateGDIVersion()
 {
+#ifndef __STANDALONE__
    if (m_hbmGDIVersion)
       return;
 
@@ -734,23 +746,29 @@ void Texture::CreateGDIVersion()
    SelectObject(hdcNew, hbmOld);
    DeleteDC(hdcNew);
    ReleaseDC(nullptr, hdcScreen);
+#endif
 }
 
 void Texture::GetTextureDC(HDC *pdc)
 {
+#ifndef __STANDALONE__
    CreateGDIVersion();
    *pdc = CreateCompatibleDC(nullptr);
    m_oldHBM = (HBITMAP)SelectObject(*pdc, m_hbmGDIVersion);
+#endif
 }
 
 void Texture::ReleaseTextureDC(HDC dc)
 {
+#ifndef __STANDALONE__
    SelectObject(dc, m_oldHBM);
    DeleteDC(dc);
+#endif
 }
 
 void Texture::CreateFromResource(const int id)
 {
+#ifndef __STANDALONE__
    const HBITMAP hbm = (HBITMAP)LoadImage(g_pvp->theInstance, MAKEINTRESOURCE(id), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
 
    if (m_pdsBuffer)
@@ -760,7 +778,44 @@ void Texture::CreateFromResource(const int id)
       return;
 
    m_pdsBuffer = CreateFromHBitmap(hbm);
+#endif
 }
+
+#ifdef __STANDALONE__
+void Texture::CreateFromResource(const string szName)
+{
+   if (m_pdsBuffer)
+      FreeStuff();
+
+   std::ifstream stream(szName);
+   if (stream.fail()) 
+      return;
+
+   stream.seekg(0, std::ios::end);
+   size_t size = stream.tellg();
+   stream.seekg(0);
+   BYTE* data = (BYTE*)malloc(size);
+   stream.read((char*)data, size);
+   stream.close();
+
+   FIMEMORY* const hmem = FreeImage_OpenMemory(data, size);
+   if (!hmem) {
+      free(data);
+      return;
+}
+   const FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(hmem, 0);
+   FIBITMAP* const dib = FreeImage_LoadFromMemory(fif, hmem, 0);
+
+   FreeImage_CloseMemory(hmem);
+   free(data);
+
+   if (!dib)
+      return;
+
+   m_pdsBuffer = BaseTexture::CreateFromFreeImage(dib, true);
+   SetSizeFrom(m_pdsBuffer);
+}
+#endif
 
 BaseTexture* Texture::CreateFromHBitmap(const HBITMAP hbm, bool with_alpha)
 {

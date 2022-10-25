@@ -333,6 +333,7 @@ void ObjLoader::Save(const string& filename, const string& description, const Me
 
 bool ObjLoader::ExportStart(const string& filename)
 {
+#ifndef __STANDALONE__
    const int len = min((int)filename.length(), MAX_PATH - 1);
    int i;
    for (i = len; i >= 0; i--)
@@ -371,6 +372,7 @@ bool ObjLoader::ExportStart(const string& filename)
    m_faceIndexOffset = 0;
    fprintf_s(m_fHandle, "# Visual Pinball table OBJ file\n");
    fprintf_s(m_fHandle, "mtllib %s\n", nameOnly);
+#endif
    return true;
 }
 
@@ -434,6 +436,7 @@ void ObjLoader::WriteFaceInfoList(const WORD* faces, const unsigned int numIndic
 
 bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
 {
+#ifndef __STANDALONE__
    FILE* f;
    if ((fopen_s(&f, filename.c_str(), "r") != 0) || !f)
       return false;
@@ -507,6 +510,7 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
       }
    }
    fclose(f);
+#endif
    return true;
 }
 

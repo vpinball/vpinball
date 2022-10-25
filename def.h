@@ -81,7 +81,9 @@ inline int FindIndexOf(const vector<T>& v, const T& val)
 #define fTrue 1
 #define fFalse 0
 
+#ifndef __STANDALONE__
 #define BOOL int
+#endif
 
 typedef uint32_t        U32;
 typedef int32_t         S32;

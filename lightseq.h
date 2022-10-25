@@ -78,6 +78,14 @@ class LightSeq :
    public IPerPropertyBrowsing     // Ability to fill in dropdown(s) in property browser
    //public EditableImpl<LightSeq>
 {
+#ifdef __STANDALONE__
+public:
+   static robin_hood::unordered_map<wstring, int> m_nameIDMap;
+   STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
+   STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
+   static robin_hood::unordered_map<int, wstring> m_idNameMap;
+   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
+#endif
 public:
    LightSeq();
    ~LightSeq();

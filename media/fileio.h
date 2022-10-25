@@ -36,7 +36,7 @@ public:
    HRESULT WriteVector3Padded(const int id, const Vertex3Ds& vec);
    HRESULT WriteTag(const int id);
 
-   HRESULT WriteBytes(const void *pv, const unsigned long count, unsigned long *foo);
+   HRESULT WriteBytes(const void *pv, const ULONG count, ULONG *foo);
 
    HRESULT WriteRecordSize(const int size);
 
@@ -59,6 +59,7 @@ public:
       value = val;
       return hr;
    }
+#ifndef __STANDALONE__
    HRESULT GetInt(unsigned int &value)
    {
       int val;
@@ -66,6 +67,7 @@ public:
       value = val;
       return hr;
    }
+#endif
    HRESULT GetInt(long &value)
    {
       int val;
@@ -91,7 +93,7 @@ public:
    HRESULT GetVector3(Vertex3Ds& vec);
    HRESULT GetVector3Padded(Vertex3Ds& vec);
 
-   HRESULT ReadBytes(void * const pv, const unsigned long count, unsigned long * const foo);
+   HRESULT ReadBytes(void * const pv, const ULONG count, ULONG *  const foo);
 
    HRESULT Load();
 
@@ -115,25 +117,25 @@ public:
    FastIStorage();
    virtual ~FastIStorage();
 
-   long __stdcall QueryInterface(const struct _GUID &, void **);
-   unsigned long __stdcall AddRef();
-   unsigned long __stdcall Release();
+   HRESULT __stdcall QueryInterface(const struct _GUID &, void **);
+   ULONG __stdcall AddRef();
+   ULONG __stdcall Release();
 
-   long __stdcall CreateStream(const WCHAR *, unsigned long, unsigned long, unsigned long, struct IStream **);
-   long __stdcall OpenStream(const WCHAR *, void *, unsigned long, unsigned long, struct IStream **);
-   long __stdcall CreateStorage(const WCHAR *, unsigned long, unsigned long, unsigned long, struct IStorage **);
-   long __stdcall OpenStorage(const WCHAR *, struct IStorage *, unsigned long, WCHAR **, unsigned long, struct IStorage **);
-   long __stdcall CopyTo(unsigned long, const struct _GUID *, WCHAR **, struct IStorage *);
-   long __stdcall MoveElementTo(const WCHAR *, struct IStorage *, const WCHAR *, unsigned long);
-   long __stdcall Commit(unsigned long);
-   long __stdcall Revert();
-   long __stdcall EnumElements(unsigned long, void *, unsigned long, struct IEnumSTATSTG **);
-   long __stdcall DestroyElement(const WCHAR *);
-   long __stdcall RenameElement(const WCHAR *, const WCHAR *);
-   long __stdcall SetElementTimes(const WCHAR *, const struct _FILETIME *, const struct _FILETIME *, const struct _FILETIME *);
-   long __stdcall SetClass(const struct _GUID &);
-   long __stdcall SetStateBits(unsigned long, unsigned long);
-   long __stdcall Stat(struct tagSTATSTG *, unsigned long);
+   HRESULT __stdcall CreateStream(const WCHAR *, ULONG, ULONG, ULONG, struct IStream **);
+   HRESULT __stdcall OpenStream(const WCHAR *, void *, ULONG, ULONG, struct IStream **);
+   HRESULT __stdcall CreateStorage(const WCHAR *, ULONG, ULONG, ULONG, struct IStorage **);
+   HRESULT __stdcall OpenStorage(const WCHAR *, struct IStorage *, ULONG, WCHAR **, ULONG, struct IStorage **);
+   HRESULT __stdcall CopyTo(ULONG, const struct _GUID *, WCHAR **, struct IStorage *);
+   HRESULT __stdcall MoveElementTo(const WCHAR *, struct IStorage *, const WCHAR *, ULONG);
+   HRESULT __stdcall Commit(ULONG);
+   HRESULT __stdcall Revert();
+   HRESULT __stdcall EnumElements(ULONG, void *, ULONG, struct IEnumSTATSTG **);
+   HRESULT __stdcall DestroyElement(const WCHAR *);
+   HRESULT __stdcall RenameElement(const WCHAR *, const WCHAR *);
+   HRESULT __stdcall SetElementTimes(const WCHAR *, const struct _FILETIME *, const struct _FILETIME *, const struct _FILETIME *);
+   HRESULT __stdcall SetClass(const struct _GUID &);
+   HRESULT __stdcall SetStateBits(ULONG, ULONG);
+   HRESULT __stdcall Stat(struct tagSTATSTG *, ULONG);
 
 private:
    int m_cref;
@@ -150,21 +152,21 @@ public:
    FastIStream();
    virtual ~FastIStream();
 
-   long __stdcall QueryInterface(const struct _GUID &, void **);
-   unsigned long __stdcall AddRef();
-   unsigned long __stdcall Release();
-   long __stdcall Read(void *pv, unsigned long count, unsigned long *foo);
-   long __stdcall Write(const void *pv, unsigned long count, unsigned long *foo);
-   long __stdcall Seek(union _LARGE_INTEGER, unsigned long, union _ULARGE_INTEGER *);
-   long __stdcall SetSize(union _ULARGE_INTEGER);
-   long __stdcall CopyTo(struct IStream *, union _ULARGE_INTEGER, union _ULARGE_INTEGER *, union _ULARGE_INTEGER *);
-   long __stdcall Commit(unsigned long);
-   long __stdcall Revert();
+   HRESULT __stdcall QueryInterface(REFIID, void **);
+   ULONG __stdcall AddRef();
+   ULONG __stdcall Release();
+   HRESULT __stdcall Read(void *pv, ULONG count, ULONG *foo);
+   HRESULT __stdcall Write(const void *pv, ULONG count, ULONG *foo);
+   HRESULT __stdcall Seek(union _LARGE_INTEGER, ULONG, union _ULARGE_INTEGER *);
+   HRESULT __stdcall SetSize(union _ULARGE_INTEGER);
+   HRESULT __stdcall CopyTo(struct IStream *, union _ULARGE_INTEGER, union _ULARGE_INTEGER *, union _ULARGE_INTEGER *);
+   HRESULT __stdcall Commit(ULONG);
+   HRESULT __stdcall Revert();
 
-   long __stdcall LockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, unsigned long);
-   long __stdcall UnlockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, unsigned long);
-   long __stdcall Stat(struct tagSTATSTG *, unsigned long);
-   long __stdcall Clone(struct IStream **);
+   HRESULT __stdcall LockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, ULONG);
+   HRESULT __stdcall UnlockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, ULONG);
+   HRESULT __stdcall Stat(struct tagSTATSTG *, ULONG);
+   HRESULT __stdcall Clone(struct IStream **);
 
    char  *m_rg;          // Data buffer
    WCHAR *m_wzName;

@@ -11,7 +11,7 @@
 #endif
 
 #include <windows.h>
-#include <MMSystem.h>
+#include <mmsystem.h>
 
 #ifdef USE_DINPUT8
  #define DIRECTINPUT_VERSION 0x0800

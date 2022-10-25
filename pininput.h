@@ -1,6 +1,8 @@
 #pragma once
 
+#ifndef __STANDALONE__
 #define ENABLE_XINPUT
+#endif
 
 #ifdef ENABLE_XINPUT
 #include <XInput.h>
@@ -44,7 +46,9 @@
 #define APP_JOYSTICKMX (APP_JOYSTICKMN + PININ_JOYMXCNT -1)
 #define APP_JOYSTICK(n) (APP_JOYSTICKMN + (n))
 
+#ifndef __STANDALONE__
 #define USE_DINPUT_FOR_KEYBOARD // can lead to less input lag maybe on some systems if disabled, but can miss input if key is only pressed very very quickly and/or FPS are low
+#endif
 
 class PinInput
 {
@@ -86,8 +90,10 @@ public:
    LPDIRECTINPUT8       m_pDI;
    LPDIRECTINPUTDEVICE8 m_pJoystick[PININ_JOYMXCNT];
 #else
+#ifndef __STANDALONE__
    LPDIRECTINPUT        m_pDI;
    LPDIRECTINPUTDEVICE  m_pJoystick[PININ_JOYMXCNT];
+#endif
 #endif
 
    HWND m_hwnd;
@@ -126,6 +132,7 @@ private:
 
    //int InputControlRun;
 
+#ifndef __STANDALONE__
 #ifdef USE_DINPUT8
 #ifdef USE_DINPUT_FOR_KEYBOARD
    LPDIRECTINPUTDEVICE8 m_pKeyboard;
@@ -136,6 +143,7 @@ private:
    LPDIRECTINPUTDEVICE m_pKeyboard;
 #endif
    LPDIRECTINPUTDEVICE m_pMouse;
+#endif
 #endif
 
    U32 m_firedautostart;
@@ -152,7 +160,9 @@ private:
 
    DIDEVICEOBJECTDATA m_diq[MAX_KEYQUEUE_SIZE]; // circular queue of direct input events
 
+#ifndef __STANDALONE__
    STICKYKEYS m_StartupStickyKeys;
+#endif
 
    int m_head; // head==tail means empty, (head+1)%MAX_KEYQUEUE_SIZE == tail means full
 
@@ -178,11 +188,13 @@ private:
    int m_inputApi;   // 0=DirectInput 1=XInput, 2=SDL, 3=IGamecontroller
    int m_rumbleMode; // 0=Off, 1=Table only, 2=Generic only, 3=Table with generic as fallback
 
+#ifndef __STANDALONE__
 #ifdef ENABLE_XINPUT
    int m_inputDeviceXI;
    XINPUT_STATE m_inputDeviceXIstate;
    DWORD m_rumbleOffTime;
    bool m_rumbleRunning;
+#endif
 #endif
 #ifdef ENABLE_SDL_INPUT
    SDL_Joystick* m_inputDeviceSDL;
@@ -193,6 +205,7 @@ private:
 };
 
 #define VK_TO_DIK_SIZE 105
+#ifndef __STANDALONE__
 static constexpr unsigned char VK_TO_DIK[VK_TO_DIK_SIZE][2] =
 {
    { VK_BACK, DIK_BACK },
@@ -320,3 +333,126 @@ inline unsigned int get_dik(const unsigned int vk)
 
    return ~0u;
 }
+#endif
+
+#ifdef __STANDALONE__
+#define SDLK_TO_DIK_SIZE 105
+static constexpr Sint32 SDLK_TO_DIK[VK_TO_DIK_SIZE][2] =
+{
+   { SDLK_BACKSPACE, DIK_BACK },
+   { SDLK_TAB, DIK_TAB },
+   //{ SDLK_CLEAR, DIK_NUMPAD5 },      /* Num Lock off */
+   { SDLK_RETURN, DIK_RETURN },
+   { SDLK_RETURN, DIK_NUMPADENTER },
+   { SDLK_LSHIFT, DIK_LSHIFT },
+   { SDLK_RSHIFT, DIK_RSHIFT },
+   { SDLK_LCTRL, DIK_LCONTROL },
+   { SDLK_RCTRL, DIK_RCONTROL },
+   { SDLK_LALT, DIK_LMENU },
+   { SDLK_RALT, DIK_RMENU },
+   { SDLK_CAPSLOCK, DIK_CAPITAL },
+   { SDLK_ESCAPE, DIK_ESCAPE },
+   { SDLK_SPACE, DIK_SPACE },
+   { SDLK_PAGEUP, DIK_PRIOR },
+   { SDLK_PAGEDOWN, DIK_NEXT },
+   { SDLK_END, DIK_END },
+   { SDLK_HOME, DIK_HOME },
+   { SDLK_LEFT, DIK_LEFT },
+   { SDLK_UP, DIK_UP },
+   { SDLK_RIGHT, DIK_RIGHT },
+   { SDLK_DOWN, DIK_DOWN },
+   { SDLK_INSERT, DIK_INSERT },
+   { SDLK_DELETE, DIK_DELETE },
+   { SDLK_0, DIK_0 },
+   { SDLK_1, DIK_1 },
+   { SDLK_2, DIK_2 },
+   { SDLK_3, DIK_3 },
+   { SDLK_4, DIK_4 },
+   { SDLK_5, DIK_5 },
+   { SDLK_6, DIK_6 },
+   { SDLK_7, DIK_7 },
+   { SDLK_8, DIK_8 },
+   { SDLK_9, DIK_9 },
+   { SDLK_a, DIK_A },
+   { SDLK_b, DIK_B },
+   { SDLK_c, DIK_C },
+   { SDLK_d, DIK_D },
+   { SDLK_e, DIK_E },
+   { SDLK_f, DIK_F },
+   { SDLK_g, DIK_G },
+   { SDLK_h, DIK_H },
+   { SDLK_i, DIK_I },
+   { SDLK_j, DIK_J },
+   { SDLK_k, DIK_K },
+   { SDLK_l, DIK_L },
+   { SDLK_m, DIK_M },
+   { SDLK_n, DIK_N },
+   { SDLK_o, DIK_O },
+   { SDLK_p, DIK_P },
+   { SDLK_q, DIK_Q },
+   { SDLK_r, DIK_R },
+   { SDLK_s, DIK_S },
+   { SDLK_t, DIK_T },
+   { SDLK_u, DIK_U },
+   { SDLK_v, DIK_V },
+   { SDLK_w, DIK_W },
+   { SDLK_x, DIK_X },
+   { SDLK_y, DIK_Y },
+   { SDLK_z, DIK_Z },
+   { SDLK_LGUI, DIK_LWIN },
+   { SDLK_RGUI, DIK_RWIN },
+   { SDLK_APPLICATION, DIK_APPS },
+   { SDLK_KP_0, DIK_NUMPAD0 },
+   { SDLK_KP_1, DIK_NUMPAD1 },
+   { SDLK_KP_2, DIK_NUMPAD2 },
+   { SDLK_KP_3, DIK_NUMPAD3 },
+   { SDLK_KP_4, DIK_NUMPAD4 },
+   { SDLK_KP_5, DIK_NUMPAD5 },      /* Num Lock on */
+   { SDLK_KP_6, DIK_NUMPAD6 },
+   { SDLK_KP_7, DIK_NUMPAD7 },
+   { SDLK_KP_8, DIK_NUMPAD8 },
+   { SDLK_KP_9, DIK_NUMPAD9 },
+   { SDLK_KP_MULTIPLY, DIK_MULTIPLY },
+   { SDLK_KP_PLUS, DIK_ADD },
+   { SDLK_KP_MINUS, DIK_SUBTRACT },
+   { SDLK_KP_PERIOD, DIK_DECIMAL },
+   { SDLK_KP_DIVIDE, DIK_DIVIDE },
+   { SDLK_F1, DIK_F1 },
+   { SDLK_F2, DIK_F2 },
+   { SDLK_F3, DIK_F3 },
+   { SDLK_F4, DIK_F4 },
+   { SDLK_F5, DIK_F5 },
+   { SDLK_F6, DIK_F6 },
+   { SDLK_F7, DIK_F7 },
+   { SDLK_F8, DIK_F8 },
+   { SDLK_F9, DIK_F9 },
+   { SDLK_F10, DIK_F10 },
+   { SDLK_F11, DIK_F11 },
+   { SDLK_F12, DIK_F12 },
+   { SDLK_F13, DIK_F13 },
+   { SDLK_F14, DIK_F14 },
+   { SDLK_F15, DIK_F15 },
+   { SDLK_NUMLOCKCLEAR, DIK_NUMLOCK },
+   { SDLK_SCROLLLOCK, DIK_SCROLL },
+   { SDLK_SEMICOLON, DIK_SEMICOLON },
+   { SDLK_PLUS, DIK_EQUALS },
+   { SDLK_COMMA, DIK_COMMA },
+   { SDLK_MINUS, DIK_MINUS },
+   { SDLK_PERIOD, DIK_PERIOD },
+   { SDLK_SLASH, DIK_SLASH },
+   { SDLK_BACKQUOTE, DIK_GRAVE },
+   { SDLK_LEFTBRACKET, DIK_LBRACKET },
+   { SDLK_BACKSLASH, DIK_BACKSLASH },
+   { SDLK_RIGHTBRACKET, DIK_RBRACKET },
+   { SDLK_QUOTE, DIK_APOSTROPHE }
+};
+
+inline unsigned int get_dik_from_sdlk(const unsigned int sdlk)
+{
+   for (unsigned int i = 0; i < SDLK_TO_DIK_SIZE; ++i)
+      if (SDLK_TO_DIK[i][0] == sdlk)
+         return SDLK_TO_DIK[i][1];
+
+   return ~0u;
+}
+#endif

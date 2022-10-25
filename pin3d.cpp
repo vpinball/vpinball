@@ -540,11 +540,21 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    // Create the "static" color buffer.
    // This will hold a pre-rendered image of the table and any non-changing elements (ie ramps, decals, etc).
 
+#ifndef __STANDALONE__
    m_pinballEnvTexture.CreateFromResource(IDB_BALL);
    m_aoDitherTexture.CreateFromResource(IDB_AO_DITHER);
+#else
+   m_pinballEnvTexture.CreateFromResource("res/ball.bmp");
+   m_aoDitherTexture.CreateFromResource("res/AOdither.bmp");
+#endif
 
    m_envTexture = g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_envImage);
+
+#ifndef __STANDALONE__
    m_builtinEnvTexture.CreateFromResource(IDB_ENV);
+#else
+   m_builtinEnvTexture.CreateFromResource("res/envmap.bmp");
+#endif
 
    const Texture * const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
 
@@ -1131,10 +1141,12 @@ void PinProjection::FitCameraToVerticesFS(const vector<Vertex3Ds>& pvvertex3D, f
       minxintercept = min(minxintercept, v.x - slopex*v.z);
    }
 
+#ifndef __STANDALONE__
    slintf("maxy: %f\n", maxyintercept);
    slintf("miny: %f\n", minyintercept);
    slintf("maxx: %f\n", maxxintercept);
    slintf("minx: %f\n", minxintercept);
+#endif
 
    // Find camera center in xy plane
 
@@ -1188,10 +1200,12 @@ void PinProjection::FitCameraToVertices(const vector<Vertex3Ds>& pvvertex3D, flo
       minxintercept = min(minxintercept, v.x - slopex*v.z);
    }
 
+#ifndef __STANDALONE__
    slintf("maxy: %f\n", maxyintercept);
    slintf("miny: %f\n", minyintercept);
    slintf("maxx: %f\n", maxxintercept);
    slintf("minx: %f\n", minxintercept);
+#endif
 
    // Find camera center in xy plane
 
@@ -1219,8 +1233,10 @@ void PinProjection::ComputeNearFarPlane(const vector<Vertex3Ds>& verts)
       m_rzfar = max(m_rzfar, tempz);
    }
 
+#ifndef __STANDALONE__
    slintf("m_rznear: %f\n", m_rznear);
    slintf("m_rzfar : %f\n", m_rzfar);
+#endif
 
    //m_rznear *= 0.89f; //!! magic, influences also stereo3D code
    // Avoid near plane below 1 which result in loss of precision and z rendering artefacts

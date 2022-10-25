@@ -36,7 +36,9 @@ void ISelect::OnLButtonUp(int x, int y)
 {
    m_dragging = false;
 
+#ifndef __STANDALONE__
    ReleaseCapture();
+#endif
 
    if (m_markedForUndo)
    {
@@ -89,6 +91,7 @@ void ISelect::EditMenu(CMenu &menu)
 
 void ISelect::DoCommand(int icmd, int x, int y)
 {
+#ifndef __STANDALONE__
    IEditable * const piedit = GetIEditable();
 
    if ((icmd & 0x0000FFFF) == ID_SELECT_ELEMENT)
@@ -187,6 +190,7 @@ void ISelect::DoCommand(int icmd, int x, int y)
       psel->DoCommand(command, x, y);
       break;*/
    }
+#endif
 }
 
 #define COLOR_LOCKED RGB(160,160,160)
@@ -301,7 +305,9 @@ void ISelect::GetTypeNameForType(const ItemTypeEnum type, WCHAR * const buf) con
       strID = EditableRegistry::GetTypeNameStringID(type); break;
    }
 
+#ifndef __STANDALONE__
    /*const int len =*/ LoadStringW(m_vpinball->theInstance, strID, buf, 256);
+#endif
 }
 
 bool ISelect::LoadToken(const int id, BiffReader * const pbr)

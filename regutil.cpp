@@ -11,6 +11,10 @@
 #include <rapidxml_print.hpp>
 #include <fstream>
 
+#ifdef __STANDALONE__
+#include <sstream>
+#endif
+
 using namespace rapidxml;
 
 static xml_document<> xmlDoc;
@@ -20,6 +24,7 @@ static string xmlContent;
 // if ini does not exist yet, loop over reg values of each subkey and fill all in
 static void InitXMLnodeFromRegistry(xml_node<> *const node, const string &szPath)
 {
+#ifndef __STANDALONE__
    HKEY hk;
    LONG res = RegOpenKeyEx(HKEY_CURRENT_USER, szPath.c_str(), 0, KEY_READ, &hk);
    if (res != ERROR_SUCCESS)
@@ -100,6 +105,7 @@ static void InitXMLnodeFromRegistry(xml_node<> *const node, const string &szPath
    }
 
    RegCloseKey(hk);
+#endif
 }
 
 void SaveXMLregistry(const string &path)
@@ -419,6 +425,7 @@ static HRESULT SaveValue(const string &szKey, const string &szValue, const DWORD
    string szPath(szKey == regKey[RegName::Controller] ? VP_REGKEY_GENERAL : VP_REGKEY);
    szPath += szKey;
 
+#ifndef __STANDALONE__
    HKEY hk;
    //RetVal = RegOpenKeyEx(HKEY_CURRENT_USER, szPath.c_str(), 0, KEY_ALL_ACCESS, &hk);
    DWORD RetVal = RegCreateKeyEx(HKEY_CURRENT_USER, szPath.c_str(), 0, nullptr,
@@ -432,6 +439,9 @@ static HRESULT SaveValue(const string &szKey, const string &szValue, const DWORD
    }
 
    return (RetVal == ERROR_SUCCESS) ? S_OK : E_FAIL;
+#else
+   return S_OK;
+#endif
 }
 
 HRESULT SaveValueBool(const string &szKey, const string &szValue, const bool val)
@@ -464,6 +474,7 @@ HRESULT SaveValue(const string &szKey, const string &szValue, const string& val)
 
 HRESULT DeleteValue(const string &szKey, const string &szValue)
 {
+#ifndef __STANDALONE__
    string szPath(szKey == regKey[RegName::Controller] ? VP_REGKEY_GENERAL : VP_REGKEY);
    szPath += szKey;
 
@@ -479,8 +490,12 @@ HRESULT DeleteValue(const string &szKey, const string &szValue)
       return S_OK; // It is a success if you want to delete something that doesn't exist.
 
    return (RetVal == ERROR_SUCCESS) ? S_OK : E_FAIL;
+#else
+   return S_OK;
+#endif
 }
 
+#ifndef __STANDALONE__
 static HRESULT RegDelnodeRecurse(const HKEY hKeyRoot, char lpSubKey[MAX_PATH * 2])
 {
    // First, see if we can delete the key without having
@@ -551,9 +566,11 @@ static HRESULT RegDelnodeRecurse(const HKEY hKeyRoot, char lpSubKey[MAX_PATH * 2
 
    return (lResult == ERROR_SUCCESS) ? S_OK : E_FAIL;
 }
+#endif
 
 HRESULT DeleteSubKey(const string &szKey)
 {
+#ifndef __STANDALONE__
    string szPath(szKey == regKey[RegName::Controller] ? VP_REGKEY_GENERAL : VP_REGKEY);
    szPath += szKey;
 
@@ -561,4 +578,7 @@ HRESULT DeleteSubKey(const string &szKey)
    strcpy_s(szDelKey, MAX_PATH * 2, szPath.c_str());
 
    return RegDelnodeRecurse(HKEY_CURRENT_USER, szDelKey);
+#else
+   return E_FAIL;
+#endif
 }

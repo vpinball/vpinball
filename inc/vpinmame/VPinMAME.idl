@@ -1,0 +1,481 @@
+// VPinMAME.idl : IDL source for VPinMAME.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (VPinMAME.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+	// ROM interface and related
+	[
+		object,
+		uuid(AF29EADA-63C3-4CB9-89AB-1A8D2F280710),
+		dual,
+		helpstring("IRom Interface"),
+		pointer_default(unique),
+		hidden
+	]
+	interface IRom : IDispatch
+	{
+		[propget, id(1), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
+		[propget, id(2), helpstring("property State")] HRESULT State([out, retval] long *pVal);
+		[propget, id(3), helpstring("property StateDescription")] HRESULT StateDescription([out, retval] BSTR *pVal);
+		[id(4), helpstring("method Audit")] HRESULT Audit([in,defaultvalue(0)] VARIANT_BOOL fStrict);
+		[propget, id(5), helpstring("property Length")] HRESULT Length([out, retval] long *pVal);
+		[propget, id(6), helpstring("property ExpLength")] HRESULT ExpLength([out, retval] long *pVal);
+		[propget, id(7), helpstring("property Checksum")] HRESULT Checksum([out, retval] long *pVal);
+		[propget, id(8), helpstring("property ExpChecksum")] HRESULT ExpChecksum([out, retval] long *pVal);
+		[propget, id(9), helpstring("property Flags")] HRESULT Flags([out, retval] long *pVal);
+	};
+
+	[
+		object,
+		uuid(FDAD01BA-CE74-46AA-A1BC-6A176AB22902),
+		dual,
+		helpstring("IRoms Interface"),
+		pointer_default(unique),
+		hidden
+	]
+	interface IRoms : IDispatch
+	{
+		[propget] HRESULT Count([out, retval] long* pnCount);
+		[propget, id(DISPID_VALUE)] HRESULT Item([in] VARIANT *pKey, [out, retval] IRom* *ppGame);
+		[propget, id(DISPID_NEWENUM)] HRESULT _NewEnum([out, retval] IUnknown** ppunkEnum);
+		[propget, id(1), helpstring("property Available")] HRESULT Available([out, retval] VARIANT_BOOL *pVal);
+		[propget, id(2), helpstring("property State")] HRESULT State([out, retval] long *pVal);
+		[propget, id(3), helpstring("property StateDescription")] HRESULT StateDescription([out, retval] BSTR *pVal);
+		[id(4), helpstring("method Audit")] HRESULT Audit([in,defaultvalue(0)] VARIANT_BOOL fStrict);
+	};
+
+	[
+		object,
+		uuid(821A5916-A71F-4AE0-B48E-DA6ffC0AF6CD),
+		dual,
+		helpstring("IEnumRoms Interface"),
+		pointer_default(unique),
+		hidden
+	]
+	interface IEnumRoms : IDispatch
+	{
+		[local] HRESULT Next([in] ULONG celt, [out] VARIANT* rgVar, [out] ULONG *pCeltFetched);
+		HRESULT Skip([in] ULONG celt);
+		HRESULT Reset();
+		HRESULT Clone([out] IUnknown **ppEnum);
+	};
+
+	// GAME interface and related
+	[
+		object,
+		uuid(693C0A27-A067-4895-B948-65912551E7C3),
+		dual,
+		helpstring("IGameSettings Interface"),
+		pointer_default(unique)
+	]
+	interface IGameSettings : IDispatch
+	{
+		[id(1), helpstring("method ShowSettingsDlg")] HRESULT ShowSettingsDlg([in,defaultvalue(0)] LONG_PTR hParentWnd);
+		[id(2), helpstring("method Clear")] HRESULT Clear();
+		[propget, id(3), helpstring("property Value")] HRESULT Value([in] BSTR sName, [out, retval] VARIANT *pVal);
+		[propput, id(3), helpstring("property Value")] HRESULT Value([in] BSTR sName, [in] VARIANT newVal);
+		[id(4), helpstring("method SetDisplayPosition")] HRESULT SetDisplayPosition([in] VARIANT newValX, [in] VARIANT newValY, [in,defaultvalue(0)] LONG_PTR hWnd);
+	};
+
+	[
+		object,
+		uuid(BD262BEE-902B-47D2-8CC4-54890BB7DC1C),
+		dual,
+		helpstring("IGame Interface"),
+		pointer_default(unique),
+		hidden
+	]
+	interface IGame : IDispatch
+	{
+		[propget, id(1), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
+		[propget, id(2), helpstring("property Description")] HRESULT Description([out, retval] BSTR *pVal);
+		[propget, id(3), helpstring("property Year")] HRESULT Year([out, retval] BSTR *pVal);
+		[propget, id(4), helpstring("property Manufacturer")] HRESULT Manufacturer([out, retval] BSTR *pVal);
+		[propget, id(5), helpstring("property CloneOf")] HRESULT CloneOf([out, retval] BSTR *pVal);
+		[propget, id(6), helpstring("property Roms")] HRESULT Roms([out, retval] IRoms* *pVal);
+		[propget, id(7), helpstring("property Settings")] HRESULT Settings([out, retval] IGameSettings* *pVal);
+		[id(8), helpstring("method ShowInfoDlg")] HRESULT ShowInfoDlg([in,defaultvalue(0)] int nShowOptions, [in,defaultvalue(0)] LONG_PTR hParentWnd, [out, retval] int *pVal);
+		[propget, id(9), helpstring("property IsSupported")] HRESULT IsSupported([out, retval] VARIANT_BOOL *pVal);
+	};
+
+	[
+		object,
+		uuid(0F7B0EC8-343F-48D3-B3B8-98BA4AC621E9),
+		dual,
+		helpstring("IGames Interface"),
+		pointer_default(unique),
+		hidden
+	]
+	interface IGames : IDispatch
+	{
+		[propget] HRESULT Count([out, retval] long* pnCount);
+		[propget, id(DISPID_VALUE)] HRESULT Item([in] VARIANT *pKey, [out, retval] IGame* *ppGame);
+		[propget, id(DISPID_NEWENUM)] HRESULT _NewEnum([out, retval] IUnknown** ppunkEnum);
+	};
+
+	[
+		object,
+		uuid(6A4DAE2F-2FEE-4E6F-86BA-5A93742E584C),
+		dual,
+		helpstring("IEnumGames Interface"),
+		pointer_default(unique),
+		hidden
+	]
+	interface IEnumGames : IDispatch
+	{
+		[local] HRESULT Next([in] ULONG celt, [out] VARIANT* rgVar, [out] ULONG *pCeltFetched);
+		HRESULT Skip([in] ULONG celt);
+		HRESULT Reset();
+		HRESULT Clone([out] IUnknown **ppEnum);
+	};
+
+	[
+		object,
+		uuid(1BFE619E-A76E-465B-B11E-4A2853891A45),
+		dual,
+		helpstring("IControllerSettings Interface"),
+		pointer_default(unique)
+	]
+	interface IControllerSettings : IDispatch
+	{
+		[id(1), helpstring("method ShowSettingsDlg")] HRESULT ShowSettingsDlg(LONG_PTR hParentWnd);
+		[id(2), helpstring("method Clear")] HRESULT Clear();
+		[propget, id(3), helpstring("property Value")] HRESULT Value([in] BSTR sName, [out, retval] VARIANT *pVal);
+		[propput, id(3), helpstring("property Value")] HRESULT Value([in] BSTR sName, [in] VARIANT newVal);
+		[propget, id(4), helpstring("property InstallDir")] HRESULT InstallDir([out, retval] BSTR *pVal);
+	};
+
+	[
+		object,
+		uuid(CE9ECC7C-960F-407E-B27B-62E39AB1E30F),
+		dual,
+		helpstring("IController Interface"),
+		pointer_default(unique)
+	]
+	interface IController : IDispatch
+	{
+		[id(1), helpstring("method Run")] HRESULT Run([in,defaultvalue(0)] LONG_PTR hParentWnd, [in,defaultvalue(99)] int nMinVersion);
+		[id(2), helpstring("method Stop")] HRESULT Stop();
+/* ! */	[id(3), helpstring("method ShowOptsDialog")] HRESULT ShowOptsDialog([in,defaultvalue(0)] LONG_PTR hParentWnd);
+/* ! */	[id(4), helpstring("method ShowAboutDialog")] HRESULT ShowAboutDialog([in,defaultvalue(0)] LONG_PTR hParentWnd);
+		[propget, id(5), helpstring("property Lamp")] HRESULT Lamp([in] int nLamp, [out, retval] VARIANT_BOOL *pVal);
+		[propget, id(6), helpstring("property Solenoid")] HRESULT Solenoid([in] int nSolenoid, [out, retval] VARIANT_BOOL *pVal);
+		[propget, id(7), helpstring("property Switch")] HRESULT Switch([in] int nSwitchNo, [out, retval] VARIANT_BOOL *pVal);
+		[propput, id(7), helpstring("property Switch")] HRESULT Switch([in] int nSwitchNo, [in] VARIANT_BOOL newVal);
+		[propget, id(12), helpstring("property WPCNumbering")] HRESULT WPCNumbering([out, retval] VARIANT_BOOL *pVal);
+		[propget, id(13), helpstring("property Lamps")] HRESULT Lamps([out, retval] VARIANT *pVal);
+		[propget, id(14), helpstring("property ChangedLamps")] HRESULT ChangedLamps([out, retval] VARIANT *pVal);
+		[propget, id(15), helpstring("property Switches")] HRESULT Switches([out, retval] VARIANT *pVal);
+		[propput, id(15), helpstring("property Switches")] HRESULT Switches([in] VARIANT newVal);
+		[propget, id(16), helpstring("property ChangedSolenoids")] HRESULT ChangedSolenoids([out, retval] VARIANT *pVal);
+		[propget, id(17), helpstring("property GameName")] HRESULT GameName([out, retval] BSTR *pVal);
+		[propput, id(17), helpstring("property GameName")] HRESULT GameName([in] BSTR newVal);
+		[propget, id(19), helpstring("property HandleKeyboard")] HRESULT HandleKeyboard([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(19), helpstring("property HandleKeyboard")] HRESULT HandleKeyboard([in] VARIANT_BOOL newVal);
+/* ! */	[propget, id(21), helpstring("property ShowTitle")] HRESULT ShowTitle([out, retval] VARIANT_BOOL *pVal);
+/* ! */	[propput, id(21), helpstring("property ShowTitle")] HRESULT ShowTitle([in] VARIANT_BOOL newVal);
+		[propget, id(22), helpstring("property Pause")] HRESULT Pause([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(22), helpstring("property Pause")] HRESULT Pause([in] VARIANT_BOOL newVal);
+		[propget, id(23), helpstring("property Machines")] HRESULT Machines([in,defaultvalue("")] BSTR sMachine, [out, retval] VARIANT *pVal);
+		[propget, id(24), helpstring("property Running")] HRESULT Running([out, retval] VARIANT_BOOL *pVal);
+/* ! */	[id(25), helpstring("method CheckROMS")] HRESULT CheckROMS([in,defaultvalue(0)] int nShowOptions, [in,defaultvalue(0)] LONG_PTR hParentWnd, [out, retval] VARIANT_BOOL *pVal);
+		[propget, id(26), helpstring("property HandleMechanics")] HRESULT HandleMechanics([out, retval] int *pVal);
+		[propput, id(26), helpstring("property HandleMechanics")] HRESULT HandleMechanics([in] int newVal);
+		[propget, id(27), helpstring("property GIString")] HRESULT GIString(int nString, [out, retval] int *pVal);
+		[propget, id(28), helpstring("property ChangedGIStrings")] HRESULT ChangedGIStrings([out, retval] VARIANT *pVal);
+/* ! */	[propget, id(29), helpstring("property ShowDMDOnly")] HRESULT ShowDMDOnly([out, retval] VARIANT_BOOL *pVal);
+/* ! */	[propput, id(29), helpstring("property ShowDMDOnly")] HRESULT ShowDMDOnly([in] VARIANT_BOOL newVal);
+		[propget, id(30), helpstring("property SplashInfoLine")] HRESULT SplashInfoLine([out, retval] BSTR *pVal);
+		[propput, id(30), helpstring("property SplashInfoLine")] HRESULT SplashInfoLine([in] BSTR newVal);
+		[propget, id(31), helpstring("property Solenoids")] HRESULT Solenoids([out, retval] VARIANT *pVal);
+		[propget, id(32), helpstring("property Dip")] HRESULT Dip([in] int nNo, [out, retval] int *pVal);
+		[propput, id(32), helpstring("property Dip")] HRESULT Dip([in] int nNo, [in] int newVal);
+		[propget, id(33), helpstring("property GIStrings")] HRESULT GIStrings([out, retval] VARIANT *pVal);
+		[propget, id(34), helpstring("property GetMech")] HRESULT GetMech([in] int mechNo, [out, retval] int *pVal);
+/* ! */	[propget, id(35), helpstring("property ShowFrame")] HRESULT ShowFrame([out, retval] VARIANT_BOOL *pVal);
+/* ! */	[propput, id(35), helpstring("property ShowFrame")] HRESULT ShowFrame([in] VARIANT_BOOL newVal);
+/* ! */	[propget, id(41), helpstring("property DoubleSize")] HRESULT DoubleSize([out, retval] VARIANT_BOOL *pVal);
+/* ! */	[propput, id(41), helpstring("property DoubleSize")] HRESULT DoubleSize([in] VARIANT_BOOL newVal);
+/* ! */	[id(42), helpstring("method SetDisplayPosition")] HRESULT SetDisplayPosition([in] int x, [in] int y, [in,defaultvalue(0)] LONG_PTR hParentWindow);
+		[propget, id(43), helpstring("property LockDisplay")] HRESULT LockDisplay([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(43), helpstring("property LockDisplay")] HRESULT LockDisplay([in] VARIANT_BOOL newVal);
+		[propget, id(45), helpstring("property SolMask")] HRESULT SolMask([in] int nLow, [out, retval] long *pVal);
+		[propput, id(45), helpstring("property SolMask")] HRESULT SolMask([in] int nLow, [in] long newVal);
+/* ! */	[id(46), helpstring("method ShowPathesDialog")] HRESULT ShowPathesDialog([in,defaultvalue(0)] LONG_PTR hParentWnd);
+		[propget, id(48), helpstring("property Version")] HRESULT Version([out, retval] BSTR *pVal);
+		[propput, id(49), helpstring("property Mech")] HRESULT Mech([in] int param, [in] int newVal);
+/* ! */	[propget, id(50), helpstring("property NewSoundCommands")] HRESULT NewSoundCommands([out, retval] VARIANT *pVal);
+		[propget, id(51), helpstring("property Games")] HRESULT Games([out, retval] IGames* *pVal);
+		[propget, id(52), helpstring("property Settings")] HRESULT Settings([out, retval] IControllerSettings * *pVal);
+		[propget, id(53), helpstring("property ChangedLEDs")] HRESULT ChangedLEDs([in] int nHigh, [in] int nLow, [in,defaultvalue(0)] int nnHigh, [in,defaultvalue(0)] int nnLow, [out, retval] VARIANT *pVal);
+		[propget, id(54), helpstring("property Hidden")] HRESULT Hidden([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(54), helpstring("property Hidden")] HRESULT Hidden([in] VARIANT_BOOL newVal);
+		[propget, id(55), helpstring("property Game")] HRESULT Game([out, retval] IGame * *pVal);
+		[propget, id(56), helpstring("property MechSamples")] HRESULT MechSamples([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(56), helpstring("property MechSamples")] HRESULT MechSamples([in] VARIANT_BOOL newVal);
+		[id(57), helpstring("method GetWindowRect")] HRESULT GetWindowRect([in,defaultvalue(0)] LONG_PTR hWnd, [out, retval] VARIANT *pVal);
+		[id(58), helpstring("method GetClientRect")] HRESULT GetClientRect([in,defaultvalue(0)] LONG_PTR hWnd, [out, retval] VARIANT *pVal);
+		[propget, id(78), helpstring("property RawDmdWidth")] HRESULT RawDmdWidth([out, retval] int *pVal);
+		[propget, id(79), helpstring("property RawDmdHeight")] HRESULT RawDmdHeight([out, retval] int *pVal);
+		[propget, id(80), helpstring("property RawDmdPixels")] HRESULT RawDmdPixels([out, retval] VARIANT *pVal);
+		[propget, id(59), helpstring("property DmdWidth")] HRESULT DmdWidth([out, retval] int *pVal);
+		[propget, id(60), helpstring("property DmdHeight")] HRESULT DmdHeight([out, retval] int *pVal);		
+		[propget, id(61), helpstring("property DmdPixel")] HRESULT DmdPixel([in] int x, [in] int y, [out, retval] int *pVal);		
+		[propget, id(62), helpstring("property updateDmdPixels")] HRESULT updateDmdPixels([in] int **buf, [in] int width, [in] int height, [out, retval] int *pVal);
+		[propget, id(63), helpstring("property ChangedLampsState")] HRESULT ChangedLampsState([in] int **buf, [out, retval] int *pVal);
+		[propget, id(64), helpstring("property LampsState")] HRESULT LampsState([in] int **buf, [out, retval] int *pVal);
+		[propget, id(65), helpstring("property ChangedSolenoidsState")] HRESULT ChangedSolenoidsState([in] int **buf, [out, retval] int *pVal);
+		[propget, id(66), helpstring("property SolenoidsState")] HRESULT SolenoidsState([in] int **buf, [out, retval] int *pVal);
+		[propget, id(67), helpstring("property ChangedGIsState")] HRESULT ChangedGIsState([in] int **buf, [out, retval] int *pVal);
+		[propget, id(68), helpstring("property MasterVolume")] HRESULT MasterVolume([out, retval] int *pVal);
+		[propput, id(68), helpstring("property MasterVolume")] HRESULT MasterVolume([in] int newVal);
+		[propget, id(69), helpstring("property EnumAudioDevices")] HRESULT EnumAudioDevices([out, retval] int *pVal);
+		[propget, id(70), helpstring("property AudioDevicesCount")] HRESULT AudioDevicesCount([out, retval] int *pVal);
+		[propget, id(71), helpstring("property AudioDeviceDescription")] HRESULT AudioDeviceDescription([in] int num,[out, retval] BSTR *pVal);
+		[propget, id(72), helpstring("property AudioDeviceModule")] HRESULT AudioDeviceModule([in] int num,[out, retval] BSTR *pVal);
+		[propget, id(73), helpstring("property CurrentAudioDevice")] HRESULT CurrentAudioDevice([out, retval] int *pVal);
+		[propput, id(73), helpstring("property CurrentAudioDevice")] HRESULT CurrentAudioDevice([in] int newVal);
+		[propget, id(74), helpstring("property FastFrames")] HRESULT FastFrames([out, retval] int *pVal);
+		[propput, id(74), helpstring("property FastFrames")] HRESULT FastFrames([in] int newVal);
+		[propget, id(75), helpstring("property IgnoreRomCrc")] HRESULT IgnoreRomCrc([out, retval] VARIANT_BOOL  *pVal);
+		[propput, id(75), helpstring("property IgnoreRomCrc")] HRESULT IgnoreRomCrc([in] VARIANT_BOOL  newVal);
+		[propget, id(76), helpstring("property CabinetMode")] HRESULT CabinetMode([out, retval] VARIANT_BOOL  *pVal);
+		[propput, id(76), helpstring("property CabinetMode")] HRESULT CabinetMode([in] VARIANT_BOOL  newVal);
+		[propget, id(77), helpstring("property ShowPinDMD")] HRESULT ShowPinDMD([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(77), helpstring("property ShowPinDMD")] HRESULT ShowPinDMD([in] VARIANT_BOOL newVal);
+		[propget, id(81), helpstring("property ShowWinDMD")] HRESULT ShowWinDMD([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(81), helpstring("property ShowWinDMD")] HRESULT ShowWinDMD([in] VARIANT_BOOL newVal);
+		[propget, id(82), helpstring("property ChangedLEDsState")] HRESULT ChangedLEDsState([in] int nHigh, [in] int nLow, [in] int nnHigh, [in] int nnLow, [in] int **buf, [out, retval] int *pVal);
+		[propget, id(83), helpstring("property RawDmdColoredPixels")] HRESULT RawDmdColoredPixels([out, retval] VARIANT *pVal);
+		[propget, id(84), helpstring("property NVRAM")] HRESULT NVRAM([out, retval] VARIANT *pVal);
+		[propget, id(85), helpstring("property ChangedNVRAM")] HRESULT ChangedNVRAM([out, retval] VARIANT *pVal);
+		[propget, id(86), helpstring("property SoundMode")] HRESULT SoundMode([out, retval] int *pVal);
+		[propput, id(86), helpstring("property SoundMode")] HRESULT SoundMode([in] int newVal);
+		[propget, id(87), helpstring("property ROMName")] HRESULT ROMName([out, retval] BSTR *pVal);
+	};
+
+	// WSHDlg and related interfaces
+	[
+		object,
+		uuid(18B280D8-B768-4709-86F4-6675F3FE601B),
+		dual,
+		helpstring("IWSHDlgCtrl Interface"),
+		pointer_default(unique)
+	]
+	interface IWSHDlgCtrl : IDispatch
+	{
+		[propget, id(1), helpstring("property Type")] HRESULT Type([out, retval] BSTR *pVal);
+		[propget, id(2), helpstring("property Value")] HRESULT Value([out, retval] VARIANT *pVal);
+		[propput, id(2), helpstring("property Value")] HRESULT Value([in] VARIANT newVal);
+		[propget, id(3), helpstring("property Title")] HRESULT Title([out, retval] BSTR *pVal);
+		[propput, id(3), helpstring("property Title")] HRESULT Title([in] BSTR newVal);
+	};
+	
+	[
+		object,
+		uuid(80936D79-B8CA-45B1-93B5-224458C8AD5A),
+		dual,
+		helpstring("IWSHDlgCtrls Interface"),
+		pointer_default(unique),
+		hidden
+	]
+	interface IWSHDlgCtrls : IDispatch
+	{
+		[propget] HRESULT Count([out, retval] long* pnCount);
+		[propget, id(DISPID_VALUE)] HRESULT Item([in] VARIANT *pKey, [out, retval] IWSHDlgCtrl* *ppWSHDlgCtrl);
+		[propget, id(DISPID_NEWENUM)] HRESULT _NewEnum([out, retval] IUnknown** ppunkEnum);
+	};
+
+	[
+		object,
+		uuid(D52E5842-7A8D-4AB0-A8AE-E8FFC9EC9FB7),
+		dual,
+		helpstring("IEnumWSHDlgCtrls Interface"),
+		pointer_default(unique),
+		hidden
+	]
+	interface IEnumWSHDlgCtrls : IDispatch
+	{
+		[local] HRESULT Next([in] ULONG celt, [out] VARIANT* rgVar, [out] ULONG *pCeltFetched);
+		HRESULT Skip([in] ULONG celt);
+		HRESULT Reset();
+		HRESULT Clone([out] IUnknown **ppEnum);
+	};
+
+
+	[
+		object,
+		uuid(C0BC59EF-ED67-4FC0-AEE3-23BA1028F65D),
+		dual,
+		helpstring("IWSHDlg Interface"),
+		pointer_default(unique)
+	]
+	interface IWSHDlg : IDispatch
+	{
+		[propget, id(1), helpstring("property x")] HRESULT x([out, retval] long *pVal);
+		[propput, id(1), helpstring("property x")] HRESULT x([in] long newVal);
+		[propget, id(2), helpstring("property y")] HRESULT y([out, retval] long *pVal);
+		[propput, id(2), helpstring("property y")] HRESULT y([in] long newVal);
+		[propget, id(3), helpstring("property w")] HRESULT w([out, retval] long *pVal);
+		[propput, id(3), helpstring("property w")] HRESULT w([in] long newVal);
+		[propget, id(4), helpstring("property h")] HRESULT h([out, retval] long *pVal);
+		[propput, id(4), helpstring("property h")] HRESULT h([in] long newVal);
+		[propget, id(5), helpstring("property Title")] HRESULT Title([out, retval] BSTR *pVal);
+		[propput, id(5), helpstring("property Title")] HRESULT Title([in] BSTR newVal);
+		[id(6), helpstring("method AddCtrl")] HRESULT AddCtrl([in] BSTR sType, [in] long x, [in] long y, [in] long w, [in] long h, [in] BSTR sTitle, [out,retval] IUnknown **pRetVal);
+		[id(7), helpstring("method Show")] HRESULT Show([in,defaultvalue(0)] LONG_PTR hParentWnd, [out, retval] VARIANT *RetVal);
+		[propget, id(8), helpstring("property get_Ctrls")] HRESULT Ctrls([out, retval] IWSHDlgCtrls **ppVal);
+	};
+
+
+[
+	uuid(57270B76-C846-4B1E-88D4-53C8337A0623),
+	version(1.0),
+	helpstring("Visual PinMAME 1.0 Type Library")
+]
+library VPinMAMELib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(75D6FFF0-21E5-4B71-90B4-59409A27297C),
+		helpstring("Game Class"),
+		hidden
+	]
+	coclass Game
+	{
+		[default] interface IGame;
+	};
+
+	[
+		uuid(B9AF5401-086E-4359-B998-8B5FA0510FBC),
+		helpstring("GameSettings Class")
+	]
+	coclass GameSettings
+	{
+		[default] interface IGameSettings;
+	};
+
+	[
+		uuid(B31AD191-C0C5-4E44-AF24-BD0459EDA52F),
+		helpstring("Visual PinMAME Games"),
+		hidden
+	]
+	coclass Games
+	{
+		[default] interface IGames;
+	};
+
+	[
+		uuid(D1FAB4A1-F9E6-4FEF-A02F-BD218EC5B792),
+		helpstring("EnumGames Class"),
+		hidden
+	]
+	coclass EnumGames
+	{
+		[default] interface IEnumGames;
+	};
+
+	[
+		uuid(CCBAD9CC-CC5A-4DD3-BA51-391f3744D815),
+		helpstring("Rom Class"),
+		hidden
+	]
+	coclass Rom
+	{
+		[default] interface IRom;
+	};
+
+	[
+		uuid(C983A522-7DC2-4153-BF78-5DD5A2DADE01),
+		helpstring("Roms Class"),
+		hidden
+	]
+	coclass Roms
+	{
+		[default] interface IRoms;
+	};
+	[
+		uuid(EF1F6336-7983-4CC4-8FA2-1CE9EDFC964F),
+		helpstring("EnumRoms Class"),
+		hidden
+	]
+	coclass EnumRoms
+	{
+		[default] interface IEnumRoms;
+	};
+
+	[
+		uuid(2CE80EC7-AC05-4087-83E7-414DE4F0F545),
+		helpstring("_IControllerEvents Interface")
+	]
+	dispinterface _IControllerEvents
+	{
+		properties:
+		methods:
+		[id(1), helpstring("method OnSolenoid")] HRESULT OnSolenoid([in] int nSolenoid, [in] int IsActive);
+		[id(2), helpstring("method OnStateChange")] HRESULT OnStateChange([in] int nState);
+	};
+
+	[
+		uuid(DC6936CD-13BE-4091-98E3-071ACC38CCB8),
+		helpstring("ControllerSettings Class")
+	]
+	coclass ControllerSettings
+	{
+		[default] interface IControllerSettings;
+	};
+	
+	[
+		uuid(F389C8B7-144F-4C63-A2E3-246D168F9D39),
+		helpstring("Controller Class")
+	]
+	coclass Controller
+	{
+		[default] interface IController;
+		[default, source] dispinterface _IControllerEvents;
+	};
+
+	[
+		uuid(D3BA6587-82A7-46A7-AEFE-7A75CAD51F31),
+		helpstring("WSHDlgCtrl Class")
+	]
+	coclass WSHDlgCtrl
+	{
+		[default] interface IWSHDlgCtrl;
+	};
+
+	[
+		uuid(73C1A53E-2C2B-42A3-BCEB-E9EE0539B0FF),
+		helpstring("WSHDlgCtrls Class"),
+		hidden
+	]
+	coclass WSHDlgCtrls
+	{
+		[default] interface IWSHDlgCtrls;
+	};
+
+	[
+		uuid(587ED49F-B712-48C7-A580-61C25257EB3E),
+		helpstring("EnumWSHDlgCtrls Class"),
+		hidden
+	]
+	coclass EnumWSHDlgCtrls
+	{
+		[default] interface IEnumWSHDlgCtrls;
+	};
+
+	[
+		uuid(1DCAFFA5-978D-4CC0-9576-73BC0293E67C),
+		helpstring("WSHDlg Class")
+	]
+	coclass WSHDlg
+	{
+		[default] interface IWSHDlg;
+	};
+};

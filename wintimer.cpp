@@ -18,11 +18,14 @@ static HMODULE hNtDll = nullptr;
 static ULONG win_timer_old_period = -1;
 #endif
 
+#ifndef __STANDALONE__
 static TIMECAPS win_timer_caps;
 static MMRESULT win_timer_result = TIMERR_NOCANDO;
+#endif
 
 void set_lowest_possible_win_timer_resolution()
 {
+#ifndef __STANDALONE__
 	// First crank up the multimedia timer resolution to its max
 	// this gives the system much finer timeslices (usually 1-2ms)
 	win_timer_result = timeGetDevCaps(&win_timer_caps, sizeof(win_timer_caps));
@@ -47,6 +50,7 @@ void set_lowest_possible_win_timer_resolution()
 		}
 	}
 #endif
+#endif
 }
 
 void restore_win_timer_resolution()
@@ -65,11 +69,13 @@ void restore_win_timer_resolution()
 	}
 #endif
 
+#ifndef __STANDALONE__
 	if (win_timer_result == TIMERR_NOERROR)
 	{
 		timeEndPeriod(win_timer_caps.wPeriodMin);
 		win_timer_result = TIMERR_NOCANDO;
 	}
+#endif
 }
 
 //
@@ -361,31 +367,31 @@ int _tmain(int argc, _TCHAR* argv[])
     const double rlong = lon * (M_PI / 180.);
 
     const double _AngleOfDay = AngleOfDay(day, month, year);
-    std::cout << "Angle of day: " << _AngleOfDay << "\n";
+    std::cout << "Angle of day: " << _AngleOfDay << std::endl;
 
     const double _Declination = SolarDeclination(_AngleOfDay);
-    std::cout << "Declination (Delta): " << _Declination << "\n";
+    std::cout << "Declination (Delta): " << _Declination << std::endl;
 
     const double _EquationOfTime = EquationOfTimeRadian(_AngleOfDay) * (12. / M_PI);
-    std::cout << "Equation Of Time (Delta): " << _EquationOfTime << "\n";
+    std::cout << "Equation Of Time (Delta): " << _EquationOfTime << std::endl;
 
     const double _DayDurationHours = DayDurationHours(_Declination, rlat);
-    std::cout << "Day duration: " << _DayDurationHours << "\n";
+    std::cout << "Day duration: " << _DayDurationHours << std::endl;
 
     const double _OrbitalExcentricity = OrbitalExcentricity(_AngleOfDay);
-    std::cout << "Excentricity: " << _OrbitalExcentricity << "\n";
+    std::cout << "Excentricity: " << _OrbitalExcentricity << std::endl;
 
     const double _TheoreticRadiation = TheoreticRadiation(day, month, year, rlat);
-    std::cout << "Theoretical radiation: " << _TheoreticRadiation << "\n";
+    std::cout << "Theoretical radiation: " << _TheoreticRadiation << std::endl;
 
     const double _MaxTheoreticRadiation = MaxTheoreticRadiation(year, rlat);
-    std::cout << "Max./Year Theoretical radiation: " << _MaxTheoreticRadiation << "\n";
+    std::cout << "Max./Year Theoretical radiation: " << _MaxTheoreticRadiation << std::endl;
 
     const double _SunriseLocalTime = SunsetSunriseLocalTime(day, month, year, rlong, rlat, true);
-    std::cout << "Sunrise Local Time: " << _SunriseLocalTime << "\n";
+    std::cout << "Sunrise Local Time: " << _SunriseLocalTime << std::endl;
 
     const double _SunsetLocalTime = SunsetSunriseLocalTime(day, month, year, rlong, rlat, false);
-    std::cout << "Sunset Local Time: " << _SunsetLocalTime << "\n";
+    std::cout << "Sunset Local Time: " << _SunsetLocalTime << std::endl;
 
     return 0;
 }

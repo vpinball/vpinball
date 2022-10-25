@@ -389,6 +389,9 @@ private:
    bool parseFile(const string& fileNameRoot, const string& fileName, int level, robin_hood::unordered_map<string, string>& values, const string& parentMode);
    string analyzeFunction(const string& shaderCodeName, const string& technique, const string& functionName, const robin_hood::unordered_map<string, string>& values);
    ShaderTechnique* compileGLShader(const ShaderTechniques technique, const string& fileNameRoot, const string& shaderCodeName, const string& vertex, const string& geometry, const string& fragment);
+#ifdef __STANDALONE__
+   string preprocessGLShader(const string& shaderCode);
+#endif
 
    ShaderTechnique* m_techniques[SHADER_TECHNIQUE_COUNT];
 

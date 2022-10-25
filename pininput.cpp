@@ -1,4 +1,7 @@
 #include "stdafx.h"
+#ifdef __STANDALONE__
+#include "imgui/imgui_impl_sdl.h"
+#endif
 
 // from dinput.h, modernized to please clang
 #undef DIJOFS_X
@@ -36,11 +39,13 @@ PinInput::PinInput()
 
    //InputControlRun = 0;
 
+#ifndef __STANDALONE__
    m_pDI = nullptr;
 #ifdef USE_DINPUT_FOR_KEYBOARD
    m_pKeyboard = nullptr;
 #endif
    m_pMouse = nullptr;
+#endif
 
    leftMouseButtonDown = false;
    rightMouseButtonDown = false;
@@ -51,8 +56,10 @@ PinInput::PinInput()
    ZeroMemory(m_diq, sizeof(m_diq));
 
    e_JoyCnt = 0;
+#ifndef __STANDALONE__
    for (int k = 0; k < PININ_JOYMXCNT; ++k)
       m_pJoystick[k] = nullptr;
+#endif
 
    uShockType = 0;
 
@@ -200,6 +207,7 @@ void PinInput::LoadSettings()
 //		joystick. This function enables user interface elements for objects
 //		that are found to exist, and scales axes min/max values.
 //-----------------------------------------------------------------------------
+#ifndef __STANDALONE__
 BOOL CALLBACK EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* pdidoi,
    VOID* pContext)
 {
@@ -324,6 +332,7 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
    else
        return DIENUM_STOP;			//allocation for only PININ_JOYMXCNT joysticks, ignore any others
 }
+#endif
 
 void PinInput::PushQueue(DIDEVICEOBJECTDATA * const data, const unsigned int app_data/*, const U32 curr_time_msec*/)
 {
@@ -386,6 +395,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
    // cache to avoid double key triggers
    static bool oldKeyStates[eCKeys] = { false };
 
+#ifndef __STANDALONE__
    unsigned int i2 = 0;
    for (unsigned int i = 0; i < eCKeys; ++i)
    {
@@ -409,7 +419,9 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
       ++i2;
    }
 #endif
+#endif
 
+#ifndef __STANDALONE__
    // mouse
    if (m_pMouse && m_enableMouseInPlayer)
    {
@@ -506,6 +518,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
          }
       }
    }
+#endif
 
    // same for joysticks 
    switch (m_inputApi) {
@@ -527,6 +540,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 
 void PinInput::handleInputDI(DIDEVICEOBJECTDATA *didod)
 {
+#ifndef __STANDALONE__
    for (int k = 0; k < e_JoyCnt; ++k)
    {
 #ifdef USE_DINPUT8
@@ -551,6 +565,7 @@ void PinInput::handleInputDI(DIDEVICEOBJECTDATA *didod)
          }
       }
    }
+#endif
 }
 
 void PinInput::handleInputXI(DIDEVICEOBJECTDATA *didod)
@@ -664,9 +679,15 @@ void PinInput::handleInputSDL(DIDEVICEOBJECTDATA *didod)
    int j = 0;
    while (SDL_PollEvent(&e) != 0 && j<32)
    {
+#ifdef __STANDALONE__
+       ImGui_ImplSDL2_ProcessEvent(&e);
+#endif
       //User requests quit
       switch (e.type) {
       case SDL_QUIT:
+#ifdef __STANDALONE__
+         g_pplayer->m_closeDown = true;
+#endif
          //Open Exit dialog
          break;
       case SDL_JOYDEVICEADDED:
@@ -721,7 +742,21 @@ void PinInput::handleInputSDL(DIDEVICEOBJECTDATA *didod)
             PushQueue(&didod[j], APP_JOYSTICK(0));
             j++;
          }
+         break;
+#ifdef __STANDALONE__
+      case SDL_KEYUP:
+      case SDL_KEYDOWN:
+         const unsigned int dik = get_dik_from_sdlk(e.key.keysym.sym);
+         if (dik != ~0u)  {
+            didod[j].dwOfs = dik;
+            didod[j].dwData = e.type == SDL_KEYDOWN ? 0x80 : 0;
+            //didod[j].dwTimeStamp = curr_time_msec;
+            PushQueue(&didod[j], APP_KEYBOARD/*, curr_time_msec*/);
+            j++; 
       }
+         break;
+#endif
+   }
    }
 #endif
 }
@@ -774,6 +809,7 @@ void PinInput::Init(const HWND hwnd)
    SDL_InitSubSystem(SDL_INIT_JOYSTICK);
 #endif
 
+#ifndef __STANDALONE__
    HRESULT hr;
 #ifdef USE_DINPUT8
    hr = DirectInput8Create(g_pvp->theInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&m_pDI, nullptr);
@@ -832,6 +868,7 @@ void PinInput::Init(const HWND hwnd)
    newStickyKeys.cbSize = sizeof(STICKYKEYS);
    newStickyKeys.dwFlags = 0;
    SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &newStickyKeys, SPIF_SENDCHANGE);
+#endif
 
    for (int i = 0; i < 4; i++)
       m_keyPressedState[i] = false;
@@ -839,6 +876,10 @@ void PinInput::Init(const HWND hwnd)
    uShockType = 0;
 
    m_inputApi = LoadValueIntWithDefault(regKey[RegName::Player], "InputApi"s, 0);
+
+#ifdef __STANDALONE__
+   m_inputApi = 2;
+#endif
 
    switch (m_inputApi) {
    case 1: //xInput
@@ -880,6 +921,7 @@ void PinInput::Init(const HWND hwnd)
 
    m_rumbleMode = (m_inputApi > 0) ? LoadValueIntWithDefault(regKey[RegName::Player], "RumbleMode"s, 3) : 0;
 
+#ifndef __STANDALONE__
    if (m_inputApi == 0) {
 #ifdef USE_DINPUT8
       m_pDI->EnumDevices(DI8DEVCLASS_GAMECTRL, DIEnumJoystickCallback, this, DIEDFL_ATTACHEDONLY); //enum Joysticks
@@ -887,6 +929,7 @@ void PinInput::Init(const HWND hwnd)
       m_pDI->EnumDevices(DIDEVTYPE_JOYSTICK, DIEnumJoystickCallback, this, DIEDFL_ATTACHEDONLY);   //enum Joysticks
 #endif
    }
+#endif
 
    gMixerKeyDown = false;
    gMixerKeyUp = false;
@@ -911,6 +954,7 @@ void PinInput::UnInit()
    SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
 #endif
 
+#ifndef __STANDALONE__
 #ifdef USE_DINPUT_FOR_KEYBOARD
    if (m_pKeyboard)
    {
@@ -948,6 +992,7 @@ void PinInput::UnInit()
       m_pDI->Release();
       m_pDI = nullptr;
    }
+#endif
 
    m_head = m_tail = 0;
 
@@ -2028,6 +2073,7 @@ int PinInput::GetNextKey() // return last valid keyboard key
 #else
    for (unsigned int i = 0; i < 0xFF; ++i)
    {
+#ifndef __STANDALONE__
       const SHORT keyState = GetAsyncKeyState(i);
       if (keyState & 1)
       {
@@ -2035,6 +2081,7 @@ int PinInput::GetNextKey() // return last valid keyboard key
          if (dik != ~0u)
             return dik;
       }
+#endif
    }
 #endif
 

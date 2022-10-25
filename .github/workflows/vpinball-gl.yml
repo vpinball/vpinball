@@ -150,3 +150,34 @@ jobs:
         with:
           name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
           path: tmp
+          
+  build-osx:
+    name: Build VPinballX_GL-Release-osx
+    runs-on: macos-latest
+    needs: [ version ]
+    steps:
+      - run: |
+          brew install sdl2 sdl2_ttf freeimage bison
+          echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
+      - uses: actions/checkout@v3
+      - run: |
+          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
+          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
+      - name: Build
+        run: |
+          cp cmake/CMakeLists_gl-osx-x64.txt CMakeLists.txt
+          cmake -DCMAKE_BUILD_TYPE=Release -B build/Release
+          cmake --build build/Release
+      - run: |
+          mkdir tmp 
+          cp build/Release/VPinballX_GL tmp
+          cp build/Release/libbass.dylib tmp
+          cp -r build/Release/glshader tmp
+          cp -r build/Release/res tmp 
+          cp -r build/Release/scripts tmp
+          cp -r build/Release/tables tmp
+      - uses: actions/upload-artifact@v3
+        with:
+          name: VPinballX_GL-${{ needs.version.outputs.tag }}-Release-osx
+          path: tmp
+

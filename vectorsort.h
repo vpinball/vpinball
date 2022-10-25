@@ -47,7 +47,7 @@ public:
             break;
          }
 
-         if (strcmp == 1)
+         if (strcmp > 0)
          {
             currentnode -= jumpnode;
          }
@@ -88,7 +88,7 @@ public:
          if (jumpnode == 0)
             break;
 
-         if (strcmp == 1)
+         if (strcmp > 0)
          {
             currentnode += jumpnode;
          }

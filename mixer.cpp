@@ -22,6 +22,7 @@ constexpr U32 volume_adjustment_color[3] = { 0x00ff00, 0xffff, 0xff };
 
 bool mixer_init(const HWND wnd)
 {
+#ifndef __STANDALONE__
    // get the number of mixer devices present in the system
    nmixers = ::mixerGetNumDevs();
 
@@ -89,13 +90,16 @@ bool mixer_init(const HWND wnd)
    m_dwVolumeControlID = mxc.dwControlID;
 
    mixer_get_volume();
+#endif
 
    return true;
 }
 
 void mixer_shutdown()
 {
+#ifndef __STANDALONE__
    ::mixerClose(m_hMixer);
+#endif
    nmixers = 0;
 }
 
@@ -104,6 +108,7 @@ void mixer_get_volume()
    if (!m_hMixer || !nmixers)
       return;
 
+#ifndef __STANDALONE__
    MIXERCONTROLDETAILS_UNSIGNED mxcdVolume;
    MIXERCONTROLDETAILS mxcd;
    mxcd.cbStruct = sizeof(MIXERCONTROLDETAILS);
@@ -123,6 +128,7 @@ void mixer_get_volume()
 
    if (m_dwMaximum > m_dwMinimum)
       gMixerVolume = sqrtf((F32)(mxcdVolume.dwValue - m_dwMinimum) / (F32)(m_dwMaximum - m_dwMinimum));
+#endif
 
    if (g_pplayer->m_ptable->m_tblVolmod != 0.0f)
       gMixerVolume /= g_pplayer->m_ptable->m_tblVolmod;
@@ -164,6 +170,7 @@ void mixer_update()
 
    const DWORD dwVal = (DWORD)((F32)m_dwMinimum + (modded_volume * modded_volume) * (F32)(m_dwMaximum - m_dwMinimum));
 
+#ifndef __STANDALONE__
    MIXERCONTROLDETAILS_UNSIGNED mxcdVolume = { dwVal };
    MIXERCONTROLDETAILS mxcd;
    mxcd.cbStruct = sizeof(MIXERCONTROLDETAILS);
@@ -180,6 +187,7 @@ void mixer_update()
    {
       return;
    }
+#endif
 }
 
 void mixer_draw()

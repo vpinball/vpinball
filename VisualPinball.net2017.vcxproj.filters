@@ -300,7 +300,7 @@
     <ClCompile Include="imgui\imgui_impl_opengl3.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="glad.c">
+    <ClCompile Include="inc\glad\glad.c">
       <Filter>inc</Filter>
     </ClCompile>
     <ClCompile Include="dialogs\VROptionsDialog.cpp">
@@ -1507,7 +1507,7 @@
     <ClInclude Include="inc\stb_image_write.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\glad\glad.h">
+    <ClInclude Include="inc\glad\glad\glad.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imgui_impl_opengl3.h">
