@@ -664,7 +664,7 @@ void Trigger::ExportMesh(ObjLoader& loader)
    }
    default:
    {
-      assert(false);
+      assert(!"Unknown Trigger");
       break;
    }
    }
@@ -845,6 +845,11 @@ void Trigger::RenderSetup()
       m_numVertices = triggerStarNumVertices;
       m_numIndices = triggerStarNumIndices;
       indices = triggerStarIndices;
+      break;
+   }
+   default:
+   {
+      assert(!"Unknown Trigger");
       break;
    }
    }

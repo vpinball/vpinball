@@ -417,25 +417,25 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
 
    // if that fails, try the User, Scripts and Tables sub-directorys under where VP was loaded from
    if (!success)
-      success = GetTextFileFromDirectory(szFileName, "User\\", pContents);
+      success = GetTextFileFromDirectory(szFileName, "user\\", pContents);
    if (!success)
-      success = GetTextFileFromDirectory(szFileName, "Scripts\\", pContents);
+      success = GetTextFileFromDirectory(szFileName, "scripts\\", pContents);
    if (!success)
-      success = GetTextFileFromDirectory(szFileName, "Tables\\", pContents);
+      success = GetTextFileFromDirectory(szFileName, "tables\\", pContents);
    // if that also fails, try the standard installation path
    if (!success)
-      success = GetTextFileFromDirectory(("C:\\Visual Pinball\\User\\"s + szFileName).c_str(), nullptr, pContents);
+      success = GetTextFileFromDirectory(("C:\\Visual Pinball\\user\\"s + szFileName).c_str(), nullptr, pContents);
    if (!success)
-      success = GetTextFileFromDirectory(("C:\\Visual Pinball\\Scripts\\"s + szFileName).c_str(), nullptr, pContents);
+      success = GetTextFileFromDirectory(("C:\\Visual Pinball\\scripts\\"s + szFileName).c_str(), nullptr, pContents);
    if (!success)
-      success = GetTextFileFromDirectory(("C:\\Visual Pinball\\Tables\\"s + szFileName).c_str(), nullptr, pContents);
+      success = GetTextFileFromDirectory(("C:\\Visual Pinball\\tables\\"s + szFileName).c_str(), nullptr, pContents);
 
    return success ? S_OK : E_FAIL;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
 {
-   const wstring wzPath = m_vpinball->m_wzMyPath + L"User" + PATH_SEPARATOR_WCHAR;
+   const wstring wzPath = m_vpinball->m_wzMyPath + L"user" + PATH_SEPARATOR_WCHAR;
    *pVal = SysAllocString(wzPath.c_str());
 
    return S_OK;
@@ -474,7 +474,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
 {
    HRESULT hr;
 
-   const wstring wzPath = m_vpinball->m_wzMyPath + L"User\\VPReg.stg";
+   const wstring wzPath = m_vpinball->m_wzMyPath + L"user\\VPReg.stg";
 
    IStorage *pstgRoot;
    if (FAILED(hr = StgOpenStorage(wzPath.c_str(), nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgRoot)))
@@ -482,7 +482,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
       // Registry file does not exist - create it
       if (FAILED(hr = StgCreateDocfile(wzPath.c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, &pstgRoot)))
       {
-         const wstring wzMkPath = m_vpinball->m_wzMyPath + L"User";
+         const wstring wzMkPath = m_vpinball->m_wzMyPath + L"user";
          if (_wmkdir(wzMkPath.c_str()) != 0)
             return hr;
 
@@ -532,7 +532,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
 {
    HRESULT hr;
 
-   const wstring wzPath = m_vpinball->m_wzMyPath + L"User\\VPReg.stg";
+   const wstring wzPath = m_vpinball->m_wzMyPath + L"user\\VPReg.stg";
 
    IStorage *pstgRoot;
    if (FAILED(hr = StgOpenStorage(wzPath.c_str(), nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgRoot)))
@@ -2237,7 +2237,7 @@ HRESULT PinTable::Save(const bool saveAs)
       {
          const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "LoadDir"s, szInitialDir);
          if (hr != S_OK)
-            szInitialDir = m_vpinball->m_szMyPath + "Tables\\";
+            szInitialDir = m_vpinball->m_szMyPath + "tables\\";
       }
       ofn.lpstrInitialDir = szInitialDir.c_str();
 
@@ -5429,7 +5429,7 @@ void PinTable::ImportBackdropPOV(const string& filename)
        string szInitialDir;
        HRESULT hr = LoadValue(regKey[RegName::RecentDir], "POVDir"s, szInitialDir);
        if (hr != S_OK)
-          szInitialDir = "c:\\Visual Pinball\\Tables\\";
+          szInitialDir = "c:\\Visual Pinball\\tables\\";
    
        if (!m_vpinball->OpenFileDialog(szInitialDir, szFileName, "POV file (*.pov)\0*.pov\0Old POV file(*.xml)\0*.xml\0", "pov", 0))
           return;
@@ -9304,7 +9304,7 @@ STDMETHODIMP PinTable::ImportPhysics()
    string szInitialDir;
    HRESULT hr = LoadValue(regKey[RegName::RecentDir], "PhysicsDir"s, szInitialDir);
    if (hr != S_OK)
-      szInitialDir = "c:\\Visual Pinball\\Tables\\";
+      szInitialDir = "c:\\Visual Pinball\\tables\\";
 
    vector<string> szFileName;
    if (!m_vpinball->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
@@ -9589,7 +9589,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    string szInitialDir;
    const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "PhysicsDir"s, szInitialDir);
    if (hr != S_OK)
-       szInitialDir = "c:\\Visual Pinball\\Tables\\";
+       szInitialDir = "c:\\Visual Pinball\\tables\\";
 
    ofn.lpstrInitialDir = szInitialDir.c_str();
 

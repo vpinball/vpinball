@@ -4,7 +4,7 @@
 #include "RenderDevice.h"
 
 #ifdef ENABLE_SDL
-#include <Windows.h>
+#include <windows.h>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -1216,13 +1216,14 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
    }
    if ((WRITE_SHADER_FILES == 2) || ((WRITE_SHADER_FILES == 1) && !success)) {
       std::ofstream shaderCode;
-      shaderCode.open(string(shaderPath).append("log\\").append(shaderCodeName).append(".vert"));
+      const string szPath = Shader::shaderPath + "log" + PATH_SEPARATOR_CHAR + shaderCodeName;
+      shaderCode.open(szPath + ".vert");
       shaderCode << vertex;
       shaderCode.close();
-      shaderCode.open(string(shaderPath).append("log\\").append(shaderCodeName).append(".geom"));
+      shaderCode.open(szPath + ".geom");
       shaderCode << geometry;
       shaderCode.close();
-      shaderCode.open(string(shaderPath).append("log\\").append(shaderCodeName).append(".frag"));
+      shaderCode.open(szPath + ".frag");
       shaderCode << fragment;
       shaderCode.close();
    }

@@ -67,11 +67,11 @@ Private Const conMaxSwHit	= 5  ' Don't stack up more than 5 events for each swit
 Private Const conFlipRetStrength = 0.01  ' Flipper return strength
 Private Const conFlipRetSpeed	 = 0.137 ' Flipper return speed
 
-Function CheckScript(file) 'Checks Tables and Scripts directories for specified vbs file, and if it exitst, will load it.
+Function CheckScript(file) 'Checks Tables and Scripts directories for specified vbs file, and if it exists, will load it.
 	CheckScript = False
 	On Error Resume Next
-	Dim TablesDirectory:TablesDirectory = Left(UserDirectory,InStrRev(UserDirectory,"\",InStrRev(UserDirectory,"\")-1))&"Tables\"
-	Dim ScriptsDirectory:ScriptsDirectory = Left(UserDirectory,InStrRev(UserDirectory,"\",InStrRev(UserDirectory,"\")-1))&"Scripts\"
+	Dim TablesDirectory:TablesDirectory = Left(UserDirectory,InStrRev(UserDirectory,"\",InStrRev(UserDirectory,"\")-1))&"tables\"
+	Dim ScriptsDirectory:ScriptsDirectory = Left(UserDirectory,InStrRev(UserDirectory,"\",InStrRev(UserDirectory,"\")-1))&"scripts\"
 	Dim check:Set check = CreateObject("Scripting.FileSystemObject")
 	If check.FileExists(tablesdirectory & file) Or check.FileExists(scriptsdirectory & file) Or check.FileExists(file) Then CheckScript = True
 	On Error Goto 0

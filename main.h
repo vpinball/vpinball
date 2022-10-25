@@ -11,7 +11,7 @@
 #endif
 
 #include <windows.h>
-#include <MMSystem.h>
+#include <mmsystem.h>
 
 #ifdef USE_DINPUT8
  #define DIRECTINPUT_VERSION 0x0800
@@ -50,7 +50,7 @@
 #include <wincrypt.h>
 
 #include <intrin.h>
-#if defined(_M_IX86) || defined(_M_X64)
+#if defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
  #include <xmmintrin.h>
 #endif
 

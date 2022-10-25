@@ -14,7 +14,7 @@
  #include "imgui/imgui_impl_win32.h"
  #include "imgui/implot/implot.h"
 
-#if __cplusplus >= 202002L
+#if __cplusplus >= 202002L && !defined(__clang__)
  #define stable_sort std::ranges::stable_sort
 #else
  #define stable_sort std::stable_sort
@@ -130,7 +130,7 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_ballShader = nullptr;
    m_dynamicMode = m_cameraMode; // We can move the camera => disable static pre-rendering
 
-#if defined(_M_ARM64)
+#if !(defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
 #pragma message ( "Warning: No CPU float ignore denorm implemented" )
 #else
    {

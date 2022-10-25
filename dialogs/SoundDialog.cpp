@@ -255,7 +255,7 @@ void SoundDialog::Import()
    string szInitialDir;
    HRESULT hr = LoadValue(regKey[RegName::RecentDir], "SoundDir"s, szInitialDir);
    if (hr != S_OK)
-      szInitialDir = "c:\\Visual Pinball\\Tables\\";
+      szInitialDir = "c:\\Visual Pinball\\tables\\";
 
    vector<string> szFileName;
    if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
@@ -327,7 +327,7 @@ void SoundDialog::ReImportFrom()
             string szInitialDir;
             HRESULT hr = LoadValue(regKey[RegName::RecentDir], "SoundDir"s, szInitialDir);
             if (hr != S_OK)
-                szInitialDir = "c:\\Visual Pinball\\Tables\\";
+                szInitialDir = "c:\\Visual Pinball\\tables\\";
 
             vector<string> szFileName;
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", 0))
@@ -406,7 +406,7 @@ void SoundDialog::Export()
             string initDir;
             const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "SoundDir"s, initDir);
             if (hr != S_OK)
-               initDir = "c:\\Visual Pinball\\Tables\\";
+               initDir = "c:\\Visual Pinball\\tables\\";
 
             ofn.lpstrInitialDir = initDir.c_str();
             //ofn.lpstrTitle = "SAVE AS";

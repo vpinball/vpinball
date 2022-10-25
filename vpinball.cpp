@@ -941,7 +941,7 @@ bool VPinball::LoadFile(const bool updateEditor)
    string szInitialDir;
    HRESULT hr = LoadValue(regKey[RegName::RecentDir], "LoadDir"s, szInitialDir);
    if (hr != S_OK)
-      szInitialDir = "c:\\Visual Pinball\\Tables\\";
+      szInitialDir = "c:\\Visual Pinball\\tables\\";
 
    vector<string> szFileName;
    if (!OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0,
@@ -1011,7 +1011,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
          ppt->m_pcv->LoadFromFile(szFileNameAuto);
       else // Otherwise we seek in the Scripts folder
       {
-         szFileNameAuto = m_szMyPath + "Scripts" + PATH_SEPARATOR_CHAR + ppt->m_szTitle + ".vbs";
+         szFileNameAuto = m_szMyPath + "scripts" + PATH_SEPARATOR_CHAR + ppt->m_szTitle + ".vbs";
          if (Exists(szFileNameAuto))
             ppt->m_pcv->LoadFromFile(szFileNameAuto);
       }
@@ -1974,7 +1974,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
             string szInitialDir;
             const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "FontDir"s, szInitialDir);
             if (hr != S_OK)
-               szInitialDir = "c:\\Visual Pinball\\Tables\\";
+               szInitialDir = "c:\\Visual Pinball\\tables\\";
 
             vector<string> szFileName;
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0))

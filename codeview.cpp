@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "inc\scilexer.h"
+#include "inc/scilexer.h"
 
 #include <initguid.h>
 #include <DbgProp.h>
@@ -2976,27 +2976,27 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 void CodeViewer::ParseVPCore()
 {
 	vector<string> searchPaths;
-	searchPaths.push_back(g_pvp->m_szMyPath + "Scripts" + PATH_SEPARATOR_CHAR + "core.vbs"); // executable path
+	searchPaths.push_back(g_pvp->m_szMyPath + "scripts" + PATH_SEPARATOR_CHAR + "core.vbs"); // executable path
 
 	const size_t index = g_pvp->m_szMyPath.substr(0, g_pvp->m_szMyPath.length()-1).find_last_of(PATH_SEPARATOR_CHAR);
 	if (index != string::npos)
-		searchPaths.push_back(g_pvp->m_szMyPath.substr(0, index+1) + "Scripts" + PATH_SEPARATOR_CHAR + "core.vbs"); // executable minus one dir (i.e. minus Release or Debug)
+		searchPaths.push_back(g_pvp->m_szMyPath.substr(0, index+1) + "scripts" + PATH_SEPARATOR_CHAR + "core.vbs"); // executable minus one dir (i.e. minus Release or Debug)
 
 	searchPaths.push_back(g_pvp->m_currentTablePath + "core.vbs"); // table path
 
 #ifdef _MSC_VER
-	searchPaths.push_back("c:"s + PATH_SEPARATOR_CHAR + "Visual Pinball" + PATH_SEPARATOR_CHAR + "Scripts" + PATH_SEPARATOR_CHAR + "core.vbs"); // default script path
+	searchPaths.push_back("c:"s + PATH_SEPARATOR_CHAR + "Visual Pinball" + PATH_SEPARATOR_CHAR + "scripts" + PATH_SEPARATOR_CHAR + "core.vbs"); // default script path
 #else
-	searchPaths.push_back(string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".vpinball" + PATH_SEPARATOR_CHAR + "Scripts" + PATH_SEPARATOR_CHAR + "core.vbs"); // default script path
+	searchPaths.push_back(string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".vpinball" + PATH_SEPARATOR_CHAR + "scripts" + PATH_SEPARATOR_CHAR + "core.vbs"); // default script path
 #endif
 
 	string szLoadDir;
 	const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "LoadDir"s, szLoadDir); // last known load dir path
 	if (hr != S_OK) {
 #ifdef _MSC_VER
-		szLoadDir = "c:"s + PATH_SEPARATOR_CHAR + "Visual Pinball" + PATH_SEPARATOR_CHAR + "Tables" + PATH_SEPARATOR_CHAR;
+		szLoadDir = "c:"s + PATH_SEPARATOR_CHAR + "Visual Pinball" + PATH_SEPARATOR_CHAR + "tables" + PATH_SEPARATOR_CHAR;
 #else
-		szLoadDir = string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".vpinball" + PATH_SEPARATOR_CHAR + "Tables" + PATH_SEPARATOR_CHAR;
+		szLoadDir = string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".vpinball" + PATH_SEPARATOR_CHAR + "tables" + PATH_SEPARATOR_CHAR;
 #endif
 	}
 	searchPaths.push_back(szLoadDir + "core.vbs");
