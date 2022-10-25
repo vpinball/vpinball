@@ -93,7 +93,7 @@ public:
    bool m_autoTexture;
 
 private:
-#ifdef _M_X64
+#if defined(_M_X64) || !defined(_MSC_VER)
    IHaveDragPoints *m_pihdp;
    #define M_PIHDP m_pihdp
 #else

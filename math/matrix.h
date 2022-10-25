@@ -321,7 +321,8 @@ public:
    void Multiply(const Matrix3D &mult, Matrix3D &result) const
    {
       Matrix3D matrixT;
-#if defined(_M_IX86) || defined(_M_X64) // could replace the loadu/storeu's if alignment would be stricter
+#if defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
+      // could replace the loadu/storeu's if alignment would be stricter
       for (int i = 0; i < 16; i += 4) {
          // unroll first step of the loop
          __m128 a = _mm_loadu_ps(&_11);
@@ -345,7 +346,8 @@ public:
    Matrix3D operator*(const Matrix3D& mult) const
    {
       Matrix3D matrixT;
-#if defined(_M_IX86) || defined(_M_X64) // could replace the loadu/storeu's if alignment would be stricter
+#if defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
+      // could replace the loadu/storeu's if alignment would be stricter
       for (int i = 0; i < 16; i += 4) {
          // unroll first step of the loop
          __m128 a = _mm_loadu_ps(&mult._11);

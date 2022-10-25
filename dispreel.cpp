@@ -263,7 +263,7 @@ void DispReel::RenderDynamic()
 
       for (unsigned int i = 0; i < 4; ++i)
       {
-         Verts[i * 5] = (Verts[i * 5] * m_renderwidth + x1)*2.0f - 1.0f;
+         Verts[i * 5    ] =        (Verts[i * 5    ] * m_renderwidth  + x1)*2.0f - 1.0f;
          Verts[i * 5 + 1] = 1.0f - (Verts[i * 5 + 1] * m_renderheight + y1)*2.0f;
       }
 

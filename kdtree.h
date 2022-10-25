@@ -3,7 +3,7 @@
 #include "pin/ball.h"
 #include "pin/collide.h"
 
-#if defined(_M_IX86) || defined(_M_X64)
+#if defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
 #define KDTREE_SSE_LEAFTEST
 #endif
 
@@ -59,7 +59,7 @@ public:
 
    void HitTestBall(const Ball * const pball, CollisionEvent& coll) const
    {
-#if defined(_M_IX86) || defined(_M_X64)
+#if defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
       m_rootNode.HitTestBallSse(pball, coll);
 #else
       m_rootNode.HitTestBall(pball, coll);
