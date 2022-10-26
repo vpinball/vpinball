@@ -124,6 +124,17 @@ static unsigned int stats_drawn_static_triangles = 0;
 
 INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+#if (defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
+#ifdef _MSC_VER
+ #define init_cpu_detection int regs[4]; __cpuid(regs, 1);
+ #define detect_no_sse (regs[3] & 0x002000000) == 0
+ #define detect_sse2 (regs[3] & 0x004000000) != 0
+#else
+ #define init_cpu_detection __builtin_cpu_init();
+ #define detect_no_sse !__builtin_cpu_supports("sse")
+ #define detect_sse2 __builtin_cpu_supports("sse2")
+#endif
+#endif
 
 Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(cameraMode)
 {
@@ -131,18 +142,17 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_dynamicMode = m_cameraMode; // We can move the camera => disable static pre-rendering
 
 #if !(defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
-#pragma message ( "Warning: No CPU float ignore denorm implemented" )
+ #pragma message ( "Warning: No CPU float ignore denorm implemented" )
 #else
    {
-      int regs[4];
-      __cpuid(regs, 1);
+      init_cpu_detection
       // check for SSE and exit if not available, as some code relies on it by now
-      if ((regs[3] & 0x002000000) == 0) { // No SSE?
+      if (detect_no_sse) { // No SSE?
          ShowError("SSE is not supported on this processor");
          exit(0);
       }
       // disable denormalized floating point numbers, can be faster on some CPUs (and VP doesn't need to rely on denormals)
-      if ((regs[3] & 0x004000000) != 0) // SSE2?
+      if (detect_sse2) // SSE2?
          _mm_setcsr(_mm_getcsr() | 0x8040); // flush denorms to zero and also treat incoming denorms as zeros
       else
          _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON); // only flush denorms to zero
