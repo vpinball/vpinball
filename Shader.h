@@ -32,14 +32,14 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(basic_without_texture_isMetal),
    SHADER_TECHNIQUE(basic_with_texture_isMetal),
    SHADER_TECHNIQUE(basic_with_texture_normal_isMetal),
-   SHADER_TECHNIQUE(playfield_without_texture),
-   SHADER_TECHNIQUE(playfield_with_texture),
-   SHADER_TECHNIQUE(playfield_with_texture_normal),
-   SHADER_TECHNIQUE(playfield_without_texture_isMetal),
-   SHADER_TECHNIQUE(playfield_with_texture_isMetal),
-   SHADER_TECHNIQUE(playfield_with_texture_normal_isMetal),
-   SHADER_TECHNIQUE(playfield_refl_without_texture),
-   SHADER_TECHNIQUE(playfield_refl_with_texture),
+   SHADER_TECHNIQUE(basic_with_refl_without_texture),
+   SHADER_TECHNIQUE(basic_with_refl_with_texture),
+   SHADER_TECHNIQUE(basic_with_refl_with_texture_normal),
+   SHADER_TECHNIQUE(basic_with_refl_without_texture_isMetal),
+   SHADER_TECHNIQUE(basic_with_refl_with_texture_isMetal),
+   SHADER_TECHNIQUE(basic_with_refl_with_texture_normal_isMetal),
+   SHADER_TECHNIQUE(basic_refl_only_without_texture),
+   SHADER_TECHNIQUE(basic_refl_only_with_texture),
    SHADER_TECHNIQUE(basic_depth_only_without_texture),
    SHADER_TECHNIQUE(basic_depth_only_with_texture),
    SHADER_TECHNIQUE(bg_decal_without_texture),
@@ -167,6 +167,7 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float4, SSR_bumpHeight_fresnelRefl_scale_FS),
    SHADER_UNIFORM(SUT_Float2, AO_scale_timeblur),
    SHADER_UNIFORM(SUT_Float4, cWidth_Height_MirrorAmount),
+   SHADER_UNIFORM(SUT_Float3, mirrorNormal),
    SHADER_UNIFORM(SUT_Float4v, clip_planes), // OpenGL only
    SHADER_UNIFORM(SUT_Float4v, lightEmission), // OpenGL only
    SHADER_UNIFORM(SUT_Float4v, lightPos), // OpenGL only
@@ -175,14 +176,15 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Bool, ignoreStereo),
    SHADER_UNIFORM(SUT_Bool, disableLighting),
    SHADER_UNIFORM(SUT_Int, lightSources),
-   SHADER_UNIFORM(SUT_Bool, doNormalMapping),
-   SHADER_UNIFORM(SUT_Bool, is_metal),
    SHADER_UNIFORM(SUT_Bool, color_grade),
    SHADER_UNIFORM(SUT_Bool, do_bloom),
    SHADER_UNIFORM(SUT_Bool, objectSpaceNormalMap),
    SHADER_UNIFORM(SUT_Bool, do_dither),
    SHADER_UNIFORM(SUT_Bool, lightingOff), // DX9 only
    SHADER_UNIFORM(SUT_Float2, imageBackglassMode), // OpenGL only
+   SHADER_UNIFORM(SUT_Bool, is_metal), // OpenGL only [managed by DirectX Effect framework on DirectX]
+   SHADER_UNIFORM(SUT_Bool, doNormalMapping), // OpenGL only [managed by DirectX Effect framework on DirectX]
+   SHADER_UNIFORM(SUT_Bool, doReflections), // OpenGL only [managed by DirectX Effect framework on DirectX]
    // -- Samplers (a texture reference with sampling configuration) --
    // DMD shader
    SHADER_SAMPLER(tex_dmd, Texture0, SA_CLAMP, SA_CLAMP, SF_NONE), // DMD
@@ -208,8 +210,8 @@ enum ShaderUniforms
    // Basic shader
    SHADER_SAMPLER(tex_base_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
    SHADER_SAMPLER(tex_base_transmission, Texture3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // bulb light/transmission buffer texture
-   SHADER_SAMPLER(tex_playfield_reflection, Texture3, SA_CLAMP, SA_CLAMP, SF_NONE), // playfield reflection
    SHADER_SAMPLER(tex_base_normalmap, Texture4, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // normal map texture
+   SHADER_SAMPLER(tex_reflection, Texture5, SA_CLAMP, SA_CLAMP, SF_NONE), // playfield reflection
    // Classic light shader
    SHADER_SAMPLER(tex_light_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
    // Stereo shader (VPVR only, combine the 2 rendered eyes into a single one)

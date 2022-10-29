@@ -1227,6 +1227,8 @@ void Primitive::RenderObject()
    {
       m_d.m_szMaterial = g_pplayer->m_ptable->m_playfieldMaterial;
       m_d.m_szImage = g_pplayer->m_ptable->m_image;
+      m_d.m_szReflectionProbe = "Playfield Reflections"s;
+      m_d.m_reflectionStrength = m_ptable->m_playfieldReflectionStrength;
       pinf = SF_ANISOTROPIC;
    }
 
@@ -1252,7 +1254,12 @@ void Primitive::RenderObject()
       pin = m_ptable->GetImage(m_d.m_szImage);
       if (pin && nMap)
       {
+#ifdef ENABLE_SDL
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
+         pd3dDevice->basicShader->SetBool(SHADER_doNormalMapping, true);
+#else
+         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture_normal, mat->m_bIsMetal);
+#endif
          // accommodate models with UV coords outside of [0,1]
          pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
          pd3dDevice->basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, SF_TRILINEAR, SA_REPEAT, SA_REPEAT, true);
@@ -1275,12 +1282,57 @@ void Primitive::RenderObject()
       }
    }
 
-#ifdef ENABLE_SDL
-   pd3dDevice->basicShader->SetBool(SHADER_doNormalMapping, nMap);
-#endif
-
    // set transform
    g_pplayer->UpdateBasicShaderMatrix(m_fullMatrix);
+
+   // setup for applying reflections from reflection probe
+   RenderProbe *reflection_probe = m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
+   if (reflection_probe)
+   {
+      Sampler *reflections = reflection_probe->GetProbe(g_pplayer->m_isRenderingStatic);
+      if (reflections)
+      {
+         const vec4 cWidth_Height_MirrorAmount((float)RenderTarget::GetCurrentRenderTarget()->GetWidth(), (float)RenderTarget::GetCurrentRenderTarget()->GetHeight(), m_ptable->m_playfieldReflectionStrength, 0.0f);
+         pd3dDevice->basicShader->SetVector(SHADER_cWidth_Height_MirrorAmount, &cWidth_Height_MirrorAmount);
+         Matrix3D matWorldViewInverseTranspose; // This is clearly suboptimal since this transposed inverse is already computed, but the impact is minimal
+         vec4 plane_normal;
+         reflection_probe->GetReflectionPlaneNormal(plane_normal);
+         pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &matWorldViewInverseTranspose);
+         matWorldViewInverseTranspose.Invert();
+         matWorldViewInverseTranspose.Transpose();
+         matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal, plane_normal);
+         pd3dDevice->basicShader->SetVector(SHADER_mirrorNormal, &plane_normal);
+         pd3dDevice->basicShader->SetTexture(SHADER_tex_reflection, reflections);
+         if (!g_pplayer->m_isRenderingStatic && !g_pplayer->m_dynamicMode && m_d.m_staticRendering)
+         { // Dynamic pass after a static prepass => only render additive reflections (primitive itself is already rendered in the static prepass)
+            g_pplayer->m_pin3d.EnableAlphaBlend(true);
+            pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
+            pd3dDevice->basicShader->SetTechnique(pin ? SHADER_TECHNIQUE_basic_refl_only_with_texture : SHADER_TECHNIQUE_basic_refl_only_without_texture);
+         }
+         // Rendering without a static prepass (dynamic primitive, dynamic rendering mode,...) => render primitive with its reflections
+         else if (pin && nMap)
+            #ifdef ENABLE_SDL
+            pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
+            #else
+            pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_refl_with_texture_normal, mat->m_bIsMetal);
+            #endif
+         else if (pin)
+            #ifdef ENABLE_SDL
+            pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
+            #else
+            pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_refl_with_texture, mat->m_bIsMetal);
+            #endif
+         else
+            #ifdef ENABLE_SDL
+            pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
+            #else
+            pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_refl_without_texture, mat->m_bIsMetal);
+            #endif
+         #ifdef ENABLE_SDL
+         pd3dDevice->basicShader->SetBool(SHADER_doReflections, true);
+         #endif
+      }
+   }
 
    // setup for additive blending
    vec4 previousFlasherColorAlpha = pd3dDevice->basicShader->GetCurrentFlasherColorAlpha();
@@ -1298,42 +1350,6 @@ void Primitive::RenderObject()
       pd3dDevice->basicShader->SetFlasherColorAlpha(color);
    }
 
-   // Apply reflections and handle depth only pass of playfield primitives
-   if (m_d.m_useAsPlayfield)
-   {
-      RenderTarget *mirror = pd3dDevice->GetMirrorRenderTarget(g_pplayer->m_isRenderingStatic);
-      if (mirror) // We have reflections to render on the primitive
-      {
-         const vec4 cWidth_Height_MirrorAmount((float)RenderTarget::GetCurrentRenderTarget()->GetWidth(), (float)RenderTarget::GetCurrentRenderTarget()->GetHeight(), m_ptable->m_playfieldReflectionStrength, 0.0f);
-         pd3dDevice->basicShader->SetVector(SHADER_cWidth_Height_MirrorAmount, &cWidth_Height_MirrorAmount);
-         pd3dDevice->basicShader->SetTexture(SHADER_tex_playfield_reflection, mirror->GetColorSampler());
-         bool is_reflection_only;
-         if (g_pplayer->m_isRenderingStatic)
-            is_reflection_only = false; // Static prepass => render playfield and reflections
-         else if (g_pplayer->m_dynamicMode)
-            is_reflection_only = false; // Normal pass without a static prepass => render playfield and reflections
-         else if (!m_d.m_staticRendering)
-            is_reflection_only = false; // The playfield is a dynamic primitive => it must be rendered with the reflections since it is not staticly prerendered
-         else
-            is_reflection_only = true; // Normal pass with a static prepass => render only additive reflections (playfield is already rendered in the static prepass)
-         if (is_reflection_only) // Reflection only pass
-         {
-            g_pplayer->m_pin3d.EnableAlphaBlend(true);
-            pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
-            pd3dDevice->basicShader->SetTechnique(pin ? SHADER_TECHNIQUE_playfield_refl_with_texture : SHADER_TECHNIQUE_playfield_refl_without_texture);
-         }
-         else // Normal rendering (playfield with reflections)
-         {
-            if (pin && nMap)
-               pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_playfield_with_texture_normal, mat->m_bIsMetal);
-            else if (pin)
-               pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_playfield_with_texture, mat->m_bIsMetal);
-            else
-               pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_playfield_without_texture, mat->m_bIsMetal);
-         }
-      }
-   }
-
    // draw the mesh
    pd3dDevice->basicShader->Begin();
    if (m_d.m_groupdRendering)
@@ -1342,6 +1358,7 @@ void Primitive::RenderObject()
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), m_indexBuffer, 0, (DWORD)m_mesh.NumIndices());
    pd3dDevice->basicShader->End();
 
+   // also draw the back of the primitive faces
    if (m_d.m_backfacesEnabled && mat->m_bOpacityActive)
    {
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
@@ -1352,19 +1369,15 @@ void Primitive::RenderObject()
          pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), m_indexBuffer, 0, (DWORD)m_mesh.NumIndices());
       pd3dDevice->basicShader->End();
    }
-#ifdef ENABLE_SDL
-   if (nMap) pd3dDevice->basicShader->SetBool(SHADER_doNormalMapping, false);//Only place where nMap is used
-#endif
 
-   pd3dDevice->basicShader->SetFlasherColorAlpha(previousFlasherColorAlpha);
-
-   // reset transform
+   // Restore state
    g_pplayer->UpdateBasicShaderMatrix();
-
-   if (m_d.m_useAsPlayfield)
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_transmission, pd3dDevice->GetBloomBufferTexture()->GetColorSampler()); // Restore bulb light transmission on Texture3 (staticly shared with playfield reflection on DX9)
-   if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
-      pd3dDevice->basicShader->SetDisableLighting(vec4(0.f, 0.f, 0.f, 0.f));
+#ifdef ENABLE_SDL
+   pd3dDevice->basicShader->SetBool(SHADER_doNormalMapping, false);
+   pd3dDevice->basicShader->SetBool(SHADER_doReflections, false);
+#endif
+   pd3dDevice->basicShader->SetFlasherColorAlpha(previousFlasherColorAlpha);
+   pd3dDevice->basicShader->SetDisableLighting(vec4(0.f, 0.f, 0.f, 0.f));
    pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
@@ -1373,8 +1386,12 @@ void Primitive::RenderDynamic()
 {
    TRACE_FUNCTION();
 
-   if (m_d.m_staticRendering && !(m_d.m_useAsPlayfield && g_pplayer->m_pin3d.m_pd3dPrimaryDevice->GetMirrorRenderTarget(false) != nullptr))
-      return; //don't render static (except for playfield with dynamic reflections, to render the reflections)
+   if (m_d.m_staticRendering)
+   {
+      RenderProbe *reflection_probe = m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
+      if (reflection_probe == nullptr || reflection_probe->IsRendering() || reflection_probe->GetProbe(false) == nullptr)
+         return; //don't render static except if we have dynamic reflections to render above the staticly prerendered primitive
+   }
    if (m_lockedByLS) 
    {
        //don't render in LS when state off
