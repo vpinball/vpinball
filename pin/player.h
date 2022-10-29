@@ -137,10 +137,10 @@ enum InfoMode
    IF_PROFILING_SPLIT_RENDERING,
    IF_STATIC_ONLY,
    IF_DYNAMIC_ONLY,
-   IF_STATIC_REFL_ONLY,
-   IF_DYNAMIC_REFL_ONLY,
    IF_AO_ONLY,
    IF_LIGHT_BUFFER_ONLY,
+   IF_RENDER_PROBES,
+   IF_INVALID
 };
 
 enum ProfilingMode
@@ -309,18 +309,12 @@ public:
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 private:
-   void RenderStaticMirror();
-   void RenderDynamicMirror();
    void InitBallShader();
    void InitKeys();
 
    void InitStatic();
 
    void UpdatePhysics();
-
-   void DrawBalls();
-
-   void SetClipPlanePlayfield(const bool clip_orientation);
 
    void DrawBulbLightBuffer();
    void Bloom();
@@ -341,6 +335,11 @@ public:
    void LockForegroundWindow(const bool enable);
    void Render();
    void RenderDynamics();
+
+   void SetViewVector(const Vertex3Ds &viewVec);
+   void DrawStatics();
+   void DrawBalls();
+   void DrawDynamics();
 
    Ball *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius = 25.0f, const float mass = 1.0f);
    void DestroyBall(Ball *pball);
@@ -660,7 +659,8 @@ private:
 
    void SetScreenOffset(const float x, const float y);     // set render offset in screen coordinates, e.g., for the nudge shake
 
-   unsigned int m_showFPS;
+   InfoMode m_infoMode = IF_NONE;
+   unsigned int m_infoProbeIndex = 0;
 
    void InitFPS();
    bool ShowFPSonly() const;

@@ -718,8 +718,6 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     m_pOffscreenVRRight = nullptr;
     m_pBloomBufferTexture = nullptr;
     m_pBloomTmpBufferTexture = nullptr;
-    m_pStaticMirrorRenderTarget = nullptr;
-    m_pDynamicMirrorRenderTarget = nullptr;
     m_pReflectionBufferTexture = nullptr;
 }
 
@@ -1101,12 +1099,6 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    else
       m_pOffscreenBackBufferTexture = m_pOffscreenMSAABackBufferTexture;
 
-   // alloc buffer for static and dynamic playfield reflections
-   if (g_pplayer->m_pfReflectionMode >= PFREFL_STATIC && g_pplayer->m_pfReflectionMode != PFREFL_DYNAMIC)
-      m_pStaticMirrorRenderTarget = m_pOffscreenBackBufferTexture->Duplicate();
-   if (g_pplayer->m_pfReflectionMode != PFREFL_NONE && g_pplayer->m_pfReflectionMode != PFREFL_STATIC)
-      m_pDynamicMirrorRenderTarget = m_pOffscreenBackBufferTexture->Duplicate();
-
    // alloc buffer for screen space fake reflection rendering
    if (m_ssRefl)
       m_pReflectionBufferTexture = new RenderTarget(this, m_width_aa, m_height_aa, render_format, false, 1, STEREO_OFF, "Fatal Error: unable to create reflection buffer!");
@@ -1445,8 +1437,6 @@ RenderDevice::~RenderDevice()
    delete m_pOffscreenBackBufferTmpTexture2;
    delete m_pReflectionBufferTexture;
 
-   delete m_pStaticMirrorRenderTarget;
-   delete m_pDynamicMirrorRenderTarget;
    delete m_pBloomBufferTexture;
    delete m_pBloomTmpBufferTexture;
    delete m_pBackBuffer;
@@ -2107,6 +2097,35 @@ void RenderDevice::ApplyRenderStates()
       CHECKD3D(m_pD3DDevice->SetRenderState(D3DRS_DEPTHBIAS, float_as_uint(m_renderstate.depth_bias * BASEDEPTHBIAS)));
 #endif
    }
+}
+
+void RenderDevice::SetClipPlane0(const vec4 &plane)
+{
+#ifdef ENABLE_SDL
+   const int eyes = m_stereo3D == STEREO_OFF ? 1 : 2;
+   Matrix3D mT;
+   float clip_planes[2][4];
+   for (int eye = 0; eye < eyes; ++eye)
+   {
+      memcpy(mT.m, g_pplayer->m_pin3d.m_proj.m_matrixTotal[eye].m, 64); // = world * view * proj
+      mT.Invert();
+      mT.Transpose();
+      clip_planes[eye][0] = mT._11 * plane.x + mT._21 * plane.y + mT._31 * plane.z + mT._41 * plane.w;
+      clip_planes[eye][1] = mT._12 * plane.x + mT._22 * plane.y + mT._32 * plane.z + mT._42 * plane.w;
+      clip_planes[eye][2] = mT._13 * plane.x + mT._23 * plane.y + mT._33 * plane.z + mT._43 * plane.w;
+      clip_planes[eye][3] = mT._14 * plane.x + mT._24 * plane.y + mT._34 * plane.z + mT._44 * plane.w;
+   }
+   basicShader->SetFloat4v(SHADER_clip_planes, (vec4 *)clip_planes, eyes);
+#else
+   Matrix3D mT = g_pplayer->m_pin3d.m_proj.m_matrixTotal[0]; // = world * view * proj
+   mT.Invert();
+   mT.Transpose();
+   const D3DXMATRIX m(mT);
+   D3DXPLANE clipSpacePlane;
+   const D3DXPLANE dxplane(plane.x, plane.y, plane.z, plane.w);
+   D3DXPlaneTransform(&clipSpacePlane, &dxplane, &m);
+   GetCoreDevice()->SetClipPlane(0, clipSpacePlane);
+#endif
 }
 
 void RenderDevice::CreateVertexDeclaration(const VertexElement * const element, VertexDeclaration ** declaration)

@@ -10,6 +10,7 @@
 #include <atomic>
 #include "hash.h"
 #include "SearchSelectDialog.h"
+#include "RenderProbe.h"
 
 #define VIEW_PLAYFIELD 1
 #define VIEW_BACKGLASS 2
@@ -379,6 +380,7 @@ public:
    Texture *GetImage(const string &szName) const;
    bool GetImageLink(const Texture *const ppi) const;
    PinBinary *GetImageLinkBinary(const int id);
+   RenderProbe *GetRenderProbe(const string &szName) const;
 
    void ListCustomInfo(HWND hwndListView);
    int AddListItem(HWND hwndListView, const string &szName, const string &szValue1, LPARAM lparam);
@@ -699,6 +701,8 @@ public:
 
    VectorProtected<CComObject<Collection>> m_vcollection;
 
+   vector<RenderProbe *> m_vrenderprobe;
+
    COLORREF m_rgcolorcustom[16]; // array for the choosecolor in property browser
 
    float m_TableSoundVolume;
@@ -880,6 +884,7 @@ private:
    CString m_notesText;
    robin_hood::unordered_map<string, Texture *, StringHashFunctor, StringComparator> m_textureMap; // hash table to speed up texture lookup by name
    robin_hood::unordered_map<string, Material *, StringHashFunctor, StringComparator> m_materialMap; // hash table to speed up material lookup by name
+   robin_hood::unordered_map<string, RenderProbe *, StringHashFunctor, StringComparator> m_renderprobeMap; // hash table to speed up renderprobe lookup by name
    bool m_moving;
 };
 

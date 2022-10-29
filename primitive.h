@@ -76,9 +76,12 @@ public:
    bool m_drawTexturesInside;
    bool m_staticRendering;
 
-   bool m_addBlend;
+   bool m_addBlend = false;
    COLORREF m_color;
-   float m_alpha;
+   float m_alpha = 1.0f;
+
+   string m_szReflectionProbe = ""s;
+   float m_reflectionStrength = 0.0f;
 
    bool m_toy;
    bool m_skipRendering;

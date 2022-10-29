@@ -2059,6 +2059,9 @@ void PinTable::Play(const bool cameraMode)
       m_materialMap.clear();
       for (size_t i = 0; i < m_materials.size(); i++)
          m_materialMap[m_materials[i]->m_szName] = m_materials[i];
+      m_renderprobeMap.clear();
+      for (size_t i = 0; i < m_vrenderprobe.size(); i++)
+         m_renderprobeMap[m_vrenderprobe[i]->GetName()] = m_vrenderprobe[i];
 
       // parse the (optional) override-physics-sets that can be set globally
       float fOverrideContactScatterAngle;
@@ -2114,6 +2117,7 @@ void PinTable::StopPlaying()
       m_pcv->EndSession();
    m_textureMap.clear();
    m_materialMap.clear();
+   m_renderprobeMap.clear();
 
    RestoreBackup();
    g_keepUndoRecords = true;
@@ -3635,18 +3639,25 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
          if (loadfileversion < 1072) // playfield meshes were always forced as collidable until 10.7.1
             for (size_t i = 0; i < m_vedit.size(); ++i)
-               if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && strcmp(m_vedit[i]->GetName(), "playfield_mesh") == 0)
+               if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)m_vedit[i])->IsPlayfield()))
                {
                   ((Primitive*)m_vedit[i])->put_IsToy(FTOVB(false));
                   ((Primitive*)m_vedit[i])->put_Collidable(FTOVB(true));
                }
 
-         if (loadfileversion < 1080) // playfield meshes were always forced as visible until 10.8.0
+         if (loadfileversion < 1080) 
+         {
+            // reflection were hardcoded without render probe before 10.8.0
+            RenderProbe* pf_reflections = new RenderProbe();
+            pf_reflections->SetName("Playfield Reflections"s);
+            m_vrenderprobe.push_back(pf_reflections);
+            // playfield meshes were always forced as visible until 10.8.0
             for (size_t i = 0; i < m_vedit.size(); ++i)
-               if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && strcmp(m_vedit[i]->GetName(), "playfield_mesh") == 0)
+               if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)m_vedit[i])->IsPlayfield()))
                {
                   ((Primitive *)m_vedit[i])->put_Visible(FTOVB(true));
                }
+         }
 
          //////// End Authentication block
       }
@@ -6684,6 +6695,27 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    return S_OK;
 }
 
+RenderProbe *PinTable::GetRenderProbe(const string &szName) const
+{
+   if (szName.empty())
+      return nullptr;
+
+   // during playback, we use the hashtable for lookup
+   if (!m_renderprobeMap.empty())
+   {
+      const robin_hood::unordered_map<string, RenderProbe *, StringHashFunctor, StringComparator>::const_iterator it = m_renderprobeMap.find(szName);
+      if (it != m_renderprobeMap.end())
+         return it->second;
+      else
+         return nullptr;
+   }
+
+   for (size_t i = 0; i < m_vrenderprobe.size(); i++)
+      if (!lstrcmpi(m_vrenderprobe[i]->GetName().c_str(), szName.c_str()))
+         return m_vrenderprobe[i];
+
+   return nullptr;
+}
 
 Texture* PinTable::GetImage(const string &szName) const
 {
