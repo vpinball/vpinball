@@ -1232,6 +1232,10 @@ void Primitive::RenderObject()
       pinf = SF_ANISOTROPIC;
    }
 
+   // Request reflection probe before seting up state
+   RenderProbe *reflection_probe = m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
+   Sampler *reflections = reflection_probe ? reflection_probe->GetProbe(g_pplayer->m_isRenderingStatic)  : nullptr;
+
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
    pd3dDevice->SetRenderStateDepthBias(0.f);
@@ -1286,52 +1290,47 @@ void Primitive::RenderObject()
    g_pplayer->UpdateBasicShaderMatrix(m_fullMatrix);
 
    // setup for applying reflections from reflection probe
-   RenderProbe *reflection_probe = m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
-   if (reflection_probe)
+   if (reflections)
    {
-      Sampler *reflections = reflection_probe->GetProbe(g_pplayer->m_isRenderingStatic);
-      if (reflections)
-      {
-         const vec4 cWidth_Height_MirrorAmount((float)RenderTarget::GetCurrentRenderTarget()->GetWidth(), (float)RenderTarget::GetCurrentRenderTarget()->GetHeight(), m_ptable->m_playfieldReflectionStrength, 0.0f);
-         pd3dDevice->basicShader->SetVector(SHADER_cWidth_Height_MirrorAmount, &cWidth_Height_MirrorAmount);
-         Matrix3D matWorldViewInverseTranspose; // This is clearly suboptimal since this transposed inverse is already computed, but the impact is minimal
-         vec4 plane_normal;
-         reflection_probe->GetReflectionPlaneNormal(plane_normal);
-         pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &matWorldViewInverseTranspose);
-         matWorldViewInverseTranspose.Invert();
-         matWorldViewInverseTranspose.Transpose();
-         matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal, plane_normal);
-         pd3dDevice->basicShader->SetVector(SHADER_mirrorNormal, &plane_normal);
-         pd3dDevice->basicShader->SetTexture(SHADER_tex_reflection, reflections);
-         if (!g_pplayer->m_isRenderingStatic && !g_pplayer->m_dynamicMode && m_d.m_staticRendering)
-         { // Dynamic pass after a static prepass => only render additive reflections (primitive itself is already rendered in the static prepass)
-            g_pplayer->m_pin3d.EnableAlphaBlend(true);
-            pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
-            pd3dDevice->basicShader->SetTechnique(pin ? SHADER_TECHNIQUE_basic_refl_only_with_texture : SHADER_TECHNIQUE_basic_refl_only_without_texture);
-         }
-         // Rendering without a static prepass (dynamic primitive, dynamic rendering mode,...) => render primitive with its reflections
-         else if (pin && nMap)
-            #ifdef ENABLE_SDL
-            pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
-            #else
-            pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_refl_with_texture_normal, mat->m_bIsMetal);
-            #endif
-         else if (pin)
-            #ifdef ENABLE_SDL
-            pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
-            #else
-            pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_refl_with_texture, mat->m_bIsMetal);
-            #endif
-         else
-            #ifdef ENABLE_SDL
-            pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
-            #else
-            pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_refl_without_texture, mat->m_bIsMetal);
-            #endif
-         #ifdef ENABLE_SDL
-         pd3dDevice->basicShader->SetBool(SHADER_doReflections, true);
-         #endif
+      const vec4 cWidth_Height_MirrorAmount((float)RenderTarget::GetCurrentRenderTarget()->GetWidth(), (float)RenderTarget::GetCurrentRenderTarget()->GetHeight(), m_ptable->m_playfieldReflectionStrength, 0.0f);
+      pd3dDevice->basicShader->SetVector(SHADER_cWidth_Height_MirrorAmount, &cWidth_Height_MirrorAmount);
+      Matrix3D matWorldViewInverseTranspose; // This is clearly suboptimal since this transposed inverse is already computed, but the impact is minimal
+      vec4 plane_normal;
+      reflection_probe->GetReflectionPlaneNormal(plane_normal);
+      pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &matWorldViewInverseTranspose);
+      matWorldViewInverseTranspose.Invert();
+      matWorldViewInverseTranspose.Transpose();
+      matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal, plane_normal);
+      pd3dDevice->basicShader->SetVector(SHADER_mirrorNormal, &plane_normal);
+      pd3dDevice->basicShader->SetTexture(SHADER_tex_reflection, reflections);
+      if (!g_pplayer->m_isRenderingStatic && !g_pplayer->m_dynamicMode && m_d.m_staticRendering)
+      { // Dynamic pass after a static prepass => only render additive reflections (primitive itself is already rendered in the static prepass)
+         g_pplayer->m_pin3d.EnableAlphaBlend(true);
+         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
+         pd3dDevice->basicShader->SetTechnique(pin ? SHADER_TECHNIQUE_basic_refl_only_with_texture : SHADER_TECHNIQUE_basic_refl_only_without_texture);
       }
+      // Rendering without a static prepass (dynamic primitive, dynamic rendering mode,...) => render primitive with its reflections
+      else if (pin && nMap)
+         #ifdef ENABLE_SDL
+         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
+         #else
+         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_refl_with_texture_normal, mat->m_bIsMetal);
+         #endif
+      else if (pin)
+         #ifdef ENABLE_SDL
+         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
+         #else
+         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_refl_with_texture, mat->m_bIsMetal);
+         #endif
+      else
+         #ifdef ENABLE_SDL
+         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
+         #else
+         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_refl_without_texture, mat->m_bIsMetal);
+         #endif
+      #ifdef ENABLE_SDL
+      pd3dDevice->basicShader->SetBool(SHADER_doReflections, true);
+      #endif
    }
 
    // setup for additive blending
