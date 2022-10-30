@@ -51,7 +51,7 @@ sampler2D tex_reflection : TEXUNIT5 = sampler_state // reflection probe
 {
    Texture = (Texture5);
    MIPFILTER = NONE;
-   MAGFILTER = NONE;
+   MAGFILTER = LINEAR;
    MINFILTER = NONE;
    ADDRESSU = Clamp;
    ADDRESSV = Clamp;
