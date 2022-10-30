@@ -1289,6 +1289,22 @@ void Primitive::RenderObject()
    // set transform
    g_pplayer->UpdateBasicShaderMatrix(m_fullMatrix);
 
+   // setup for additive blending
+   vec4 previousFlasherColorAlpha = pd3dDevice->basicShader->GetCurrentFlasherColorAlpha();
+   if (m_d.m_addBlend)
+   {
+      g_pplayer->m_pin3d.EnableAlphaBlend(true);
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
+      const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
+      pd3dDevice->basicShader->SetFlasherColorAlpha(vec4(color.x * color.w, color.y * color.w, color.z * color.w, color.w));
+   }
+   else
+   {
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+      const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
+      pd3dDevice->basicShader->SetFlasherColorAlpha(color);
+   }
+
    // setup for applying reflections from reflection probe
    if (reflections)
    {
@@ -1303,11 +1319,23 @@ void Primitive::RenderObject()
       matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal, plane_normal);
       pd3dDevice->basicShader->SetVector(SHADER_mirrorNormal, &plane_normal);
       pd3dDevice->basicShader->SetTexture(SHADER_tex_reflection, reflections);
-      if (!g_pplayer->m_isRenderingStatic && !g_pplayer->m_dynamicMode && m_d.m_staticRendering)
+      bool multipass = false;
+      if (mat->m_bOpacityActive && (mat->m_fOpacity < 1.0f || (pin && pin->m_pdsBuffer->has_alpha())))
+      { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
+         multipass = true;
+         pd3dDevice->basicShader->Begin();
+         if (m_d.m_groupdRendering)
+            pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numGroupVertices, m_indexBuffer, 0, m_numGroupIndices);
+         else
+            pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), m_indexBuffer, 0, (DWORD)m_mesh.NumIndices());
+         pd3dDevice->basicShader->End();
+      }
+      if (multipass || (!g_pplayer->m_isRenderingStatic && !g_pplayer->m_dynamicMode && m_d.m_staticRendering))
       { // Dynamic pass after a static prepass => only render additive reflections (primitive itself is already rendered in the static prepass)
          g_pplayer->m_pin3d.EnableAlphaBlend(true);
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
-         pd3dDevice->basicShader->SetTechnique(pin ? SHADER_TECHNIQUE_basic_refl_only_with_texture : SHADER_TECHNIQUE_basic_refl_only_without_texture);
+         //pd3dDevice->basicShader->SetTechnique(pin ? SHADER_TECHNIQUE_basic_refl_only_with_texture : SHADER_TECHNIQUE_basic_refl_only_without_texture);
+         pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_basic_refl_only_without_texture);
       }
       // Rendering without a static prepass (dynamic primitive, dynamic rendering mode,...) => render primitive with its reflections
       else if (pin && nMap)
@@ -1331,22 +1359,6 @@ void Primitive::RenderObject()
       #ifdef ENABLE_SDL
       pd3dDevice->basicShader->SetBool(SHADER_doReflections, true);
       #endif
-   }
-
-   // setup for additive blending
-   vec4 previousFlasherColorAlpha = pd3dDevice->basicShader->GetCurrentFlasherColorAlpha();
-   if (m_d.m_addBlend)
-   {
-      g_pplayer->m_pin3d.EnableAlphaBlend(true);
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
-      const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
-      pd3dDevice->basicShader->SetFlasherColorAlpha(vec4(color.x * color.w, color.y * color.w, color.z * color.w, color.w));
-   }
-   else
-   {
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-      const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
-      pd3dDevice->basicShader->SetFlasherColorAlpha(color);
    }
 
    // draw the mesh
