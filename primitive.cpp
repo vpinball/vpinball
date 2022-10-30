@@ -1319,19 +1319,19 @@ void Primitive::RenderObject()
       matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal, plane_normal);
       pd3dDevice->basicShader->SetVector(SHADER_mirrorNormal, &plane_normal);
       pd3dDevice->basicShader->SetTexture(SHADER_tex_reflection, reflections);
-      bool multipass = false;
-      if (mat->m_bOpacityActive && (mat->m_fOpacity < 1.0f || (pin && pin->m_pdsBuffer->has_alpha())))
+      bool is_primitive_prerendered = m_d.m_staticRendering  && !g_pplayer->m_isRenderingStatic && !g_pplayer->m_dynamicMode;
+      if (!is_primitive_prerendered && mat->m_bOpacityActive && (mat->m_fOpacity < 1.0f || (pin && pin->m_pdsBuffer->has_alpha())))
       { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
-         multipass = true;
          pd3dDevice->basicShader->Begin();
          if (m_d.m_groupdRendering)
             pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numGroupVertices, m_indexBuffer, 0, m_numGroupIndices);
          else
             pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), m_indexBuffer, 0, (DWORD)m_mesh.NumIndices());
          pd3dDevice->basicShader->End();
+         is_primitive_prerendered = true;
       }
-      if (multipass || (!g_pplayer->m_isRenderingStatic && !g_pplayer->m_dynamicMode && m_d.m_staticRendering))
-      { // Dynamic pass after a static prepass => only render additive reflections (primitive itself is already rendered in the static prepass)
+      if (is_primitive_prerendered)
+      { // If the primitive is already rendered (dynamic pass after a static prepass, or multipass rendering due to alpha blending) => only render additive reflections (primitive itself is already rendered in the static prepass)
          g_pplayer->m_pin3d.EnableAlphaBlend(true);
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
          //pd3dDevice->basicShader->SetTechnique(pin ? SHADER_TECHNIQUE_basic_refl_only_with_texture : SHADER_TECHNIQUE_basic_refl_only_without_texture);
