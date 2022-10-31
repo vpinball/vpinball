@@ -72,15 +72,22 @@ Sampler *RenderProbe::GetProbe(const bool is_static)
       m_rendering = true;
       switch (m_type)
       {
-         case PLANE_REFLECTION: RenderReflectionProbe(is_static); break;
-         case TRANSMITTED_LIGHT: assert(false); break; // Not yet implemented (directly hardcoded in player.cpp)
-         case SCREEN_SPACE_TRANSPARENCY: assert(false); break; // Not yet implemented (only alpha blending without tinting for the time being)
+      case PLANE_REFLECTION: RenderReflectionProbe(is_static); break;
+      case SCREEN_SPACE_TRANSPARENCY: RenderScreenSpaceTransparency(is_static); break;
       }
       m_rendering = false;
       m_dirty = false;
    }
    RenderTarget* rt = is_static ? m_staticRT : m_dynamicRT;
    return rt ? rt->GetColorSampler() : nullptr;
+}
+
+void RenderProbe::RenderScreenSpaceTransparency(const bool is_static)
+{
+   RenderDevice* p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   if (m_dynamicRT == nullptr)
+      m_dynamicRT = p3dDevice->GetBackBufferTexture()->Duplicate();
+   p3dDevice->GetMSAABackBufferTexture()->CopyTo(m_dynamicRT);
 }
 
 void RenderProbe::RenderReflectionProbe(const bool is_static)
@@ -97,14 +104,22 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    if (is_static)
    {
       if (m_staticRT == nullptr)
-         m_staticRT = p3dDevice->GetBackBufferTexture()->Duplicate();
+      {
+         //m_staticRT = p3dDevice->GetBackBufferTexture()->Duplicate();
+         const int w = p3dDevice->GetBackBufferTexture()->GetWidth(), h = p3dDevice->GetBackBufferTexture()->GetHeight();
+         m_staticRT = new RenderTarget(p3dDevice, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, p3dDevice->GetBackBufferTexture()->GetStereo(), "Failed to create plane reflection static render target", nullptr);
+      }
       m_staticRT->Activate();
       p3dDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
    }
    else
    {
       if (m_dynamicRT == nullptr)
-         m_dynamicRT = p3dDevice->GetBackBufferTexture()->Duplicate();
+      {
+         // m_dynamicRT = p3dDevice->GetBackBufferTexture()->Duplicate();
+         const int w = p3dDevice->GetBackBufferTexture()->GetWidth(), h = p3dDevice->GetBackBufferTexture()->GetHeight();
+         m_dynamicRT = new RenderTarget(p3dDevice, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, p3dDevice->GetBackBufferTexture()->GetStereo(), "Failed to create plane reflection dynamic render target", nullptr);
+      }
       if (m_reflection_mode == REFL_SYNCED_DYNAMIC && m_staticRT != nullptr)
       {
          // Intialize dynamic depth buffer from static one to avoid incorrect overlaps of staticly rendered parts by dynamic ones (this does not prevent overlaps the other way around though)

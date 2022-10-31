@@ -7,7 +7,6 @@ public:
    enum ProbeType
    {
       PLANE_REFLECTION,
-      TRANSMITTED_LIGHT,
       SCREEN_SPACE_TRANSPARENCY,
    };
 
@@ -43,6 +42,7 @@ public:
 
 private:
    void RenderReflectionProbe(const bool is_static);
+   void RenderScreenSpaceTransparency(const bool is_static);
 
    ProbeType m_type = PLANE_REFLECTION;
    bool m_dirty = true;
