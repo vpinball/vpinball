@@ -16,7 +16,7 @@ HRESULT RenderProbe::SaveData(IStream* pstm, HCRYPTHASH hcrypthash)
    BiffWriter bw(pstm, hcrypthash);
    bw.WriteInt(FID(TYPE), m_type);
    bw.WriteString(FID(NAME), m_name);
-   bw.WriteStruct(FID(RPLA), m_reflection_plane, sizeof(vec4));
+   bw.WriteStruct(FID(RPLA), (void*) &m_reflection_plane, sizeof(vec4));
    bw.WriteInt(FID(RMOD), m_reflection_mode);
    bw.WriteTag(FID(ENDB));
    return S_OK;
