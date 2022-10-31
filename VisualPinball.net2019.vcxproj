@@ -955,6 +955,21 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="glshader\SMAA.hlsl" />
+    <None Include="glshader\BallShader.glfx" />
+    <None Include="glshader\BasicShader.glfx" />
+    <None Include="glshader\DMDShader.glfx" />
+    <None Include="glshader\DMDShaderVR.glfx" />
+    <None Include="glshader\FBShader.glfx" />
+    <None Include="glshader\FlasherShader.glfx" />
+    <None Include="glshader\FXAAStereoAO.fxh" />
+    <None Include="glshader\Helpers.fxh" />
+    <None Include="glshader\hlsl_glsl.fxh" />
+    <None Include="glshader\LightShader.glfx" />
+    <None Include="glshader\Material.fxh" />
+    <None Include="glshader\SMAA.glfx" />
+    <None Include="glshader\SSR.fxh" />
+    <None Include="glshader\StereoShader.glfx" />
     <None Include="res\ball.rgs" />
     <None Include="res\blankTable.vpx" />
     <None Include="res\bumper.rgs" />

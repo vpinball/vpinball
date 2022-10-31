@@ -663,6 +663,51 @@
     <None Include="res\lightSeqTable.vpx">
       <Filter>res</Filter>
     </None>
+    <None Include="glshader\BasicShader.glfx">
+      <Filter>shaders-gl</Filter>
+    </None>
+    <None Include="glshader\BallShader.glfx">
+      <Filter>shaders-gl</Filter>
+    </None>
+    <None Include="glshader\DMDShader.glfx">
+      <Filter>shaders-gl</Filter>
+    </None>
+    <None Include="glshader\DMDShaderVR.glfx">
+      <Filter>shaders-gl</Filter>
+    </None>
+    <None Include="glshader\FBShader.glfx">
+      <Filter>shaders-gl</Filter>
+    </None>
+    <None Include="glshader\FlasherShader.glfx">
+      <Filter>shaders-gl</Filter>
+    </None>
+    <None Include="glshader\FXAAStereoAO.fxh">
+      <Filter>shaders-gl</Filter>
+    </None>
+    <None Include="glshader\StereoShader.glfx">
+      <Filter>shaders-gl</Filter>
+    </None>
+    <None Include="glshader\SSR.fxh">
+      <Filter>shaders-gl</Filter>
+    </None>
+    <None Include="glshader\SMAA.glfx">
+      <Filter>shaders-gl</Filter>
+    </None>
+    <None Include="glshader\Material.fxh">
+      <Filter>shaders-gl</Filter>
+    </None>
+    <None Include="glshader\LightShader.glfx">
+      <Filter>shaders-gl</Filter>
+    </None>
+    <None Include="glshader\hlsl_glsl.fxh">
+      <Filter>shaders-gl</Filter>
+    </None>
+    <None Include="glshader\Helpers.fxh">
+      <Filter>shaders-gl</Filter>
+    </None>
+    <None Include="glshader\SMAA.hlsl">
+      <Filter>shaders-gl</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inc">
@@ -697,6 +742,9 @@
     </Filter>
     <Filter Include="imgui\implot">
       <UniqueIdentifier>{fc16eece-2096-4e44-bad4-380f77d82bef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders-gl">
+      <UniqueIdentifier>{fa46dc63-2eb4-4403-99cd-b3d89430515d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
