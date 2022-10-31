@@ -253,6 +253,8 @@ public:
    
    void DrawPrimitiveVB(const PrimitiveTypes type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, const bool stereo);
    void DrawIndexedPrimitiveVB(const PrimitiveTypes type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount);
+   
+   void DrawGaussianBlur(Sampler* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size);
 
    void SetViewport(const ViewPort*);
    void GetViewport(ViewPort*);
