@@ -27,16 +27,20 @@ public:
    string GetName() const;
    void SetName(const string name);
    
+   // Reflection plane properties
    void SetReflectionPlane(vec4& plane);
    void GetReflectionPlaneNormal(vec4& normal) const;
-   bool IsRendering() const;
+   void SetReflectionMode(ReflectionMode mode);
 
-   // From ILoadable
-   virtual bool LoadToken(const int id, BiffReader *const pbr);
+   // Load/Save
+   HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash);
+   HRESULT LoadData(IStream* pstm, PinTable* ppt, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
+   bool LoadToken(const int id, BiffReader* const pbr);
 
    // Rendering
    void RenderSetup();
    void MarkDirty(); // Mark this probe as dirty, should be called when starting a new frame
+   bool IsRendering() const; // Rendering is not reentrant so GetProbe should not be called when this returns true
    Sampler* GetProbe(const bool is_static); // Request render probe, eventually rendering it if it is dirty
    void EndPlay();
 

@@ -10,11 +10,33 @@ RenderProbe::~RenderProbe()
    assert((m_staticRT == nullptr) && (m_dynamicRT == nullptr));
 }
 
-bool RenderProbe::LoadToken(const int id, BiffReader * const pbr)
+
+HRESULT RenderProbe::SaveData(IStream* pstm, HCRYPTHASH hcrypthash)
+{
+   BiffWriter bw(pstm, hcrypthash);
+   bw.WriteInt(FID(TYPE), m_type);
+   bw.WriteString(FID(NAME), m_name);
+   bw.WriteStruct(FID(RPLA), m_reflection_plane, sizeof(vec4));
+   bw.WriteInt(FID(RMOD), m_reflection_mode);
+   bw.WriteTag(FID(ENDB));
+   return S_OK;
+}
+
+HRESULT RenderProbe::LoadData(IStream* pstm, PinTable* ppt, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+{
+   BiffReader br(pstm, this, ppt, version, hcrypthash, hcryptkey);
+   br.Load();
+   return S_OK;
+}
+
+bool RenderProbe::LoadToken(const int id, BiffReader* const pbr)
 {
    switch (id)
    {
-   //case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(TYPE): pbr->GetInt(&m_type); break;
+   case FID(NAME): pbr->GetString(m_name); break;
+   case FID(RPLA): pbr->GetStruct(&m_reflection_plane, sizeof(vec4)); break;
+   case FID(RMOD): pbr->GetInt(&m_reflection_mode); break;
    }
    return true;
 }
@@ -27,18 +49,6 @@ string RenderProbe::GetName() const
 void RenderProbe::SetName(const string name)
 {
    m_name = name;
-}
-
-void RenderProbe::SetReflectionPlane(vec4& plane)
-{
-   m_reflection_plane = plane;
-}
-
-void RenderProbe::GetReflectionPlaneNormal(vec4& normal) const
-{
-   normal.x = m_reflection_plane.x;
-   normal.y = m_reflection_plane.y;
-   normal.z = m_reflection_plane.z;
 }
 
 bool RenderProbe::IsRendering() const
@@ -82,12 +92,36 @@ Sampler *RenderProbe::GetProbe(const bool is_static)
    return rt ? rt->GetColorSampler() : nullptr;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Screen copy
+
 void RenderProbe::RenderScreenSpaceTransparency(const bool is_static)
 {
    RenderDevice* p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
    if (m_dynamicRT == nullptr)
       m_dynamicRT = p3dDevice->GetBackBufferTexture()->Duplicate();
    p3dDevice->GetMSAABackBufferTexture()->CopyTo(m_dynamicRT);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Reflection plane
+
+void RenderProbe::SetReflectionPlane(vec4& plane)
+{
+   m_reflection_plane = plane;
+}
+
+void RenderProbe::GetReflectionPlaneNormal(vec4& normal) const
+{
+   normal.x = m_reflection_plane.x;
+   normal.y = m_reflection_plane.y;
+   normal.z = m_reflection_plane.z;
+}
+
+void RenderProbe::SetReflectionMode(ReflectionMode mode) 
+{
+   assert(m_reflection_mode == mode || (m_staticRT == nullptr && m_dynamicRT == nullptr)); // Reflection mode may not be changed between RenderSetup/EndPlay
+   m_reflection_mode = mode;
 }
 
 void RenderProbe::RenderReflectionProbe(const bool is_static)
