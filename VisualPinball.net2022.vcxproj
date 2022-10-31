@@ -791,13 +791,13 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"
     <ClCompile Include="hittarget.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
-    <ClCompile Include="imgui\imgui_impl_opengl3.cpp" >
+    <ClCompile Include="imgui\imgui_impl_opengl3.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_impl_dx9.cpp" >
+    <ClCompile Include="imgui\imgui_impl_dx9.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
@@ -956,6 +956,21 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="glshader\SMAA.hlsl" />
+    <None Include="glshader\BallShader.glfx" />
+    <None Include="glshader\BasicShader.glfx" />
+    <None Include="glshader\DMDShader.glfx" />
+    <None Include="glshader\DMDShaderVR.glfx" />
+    <None Include="glshader\FBShader.glfx" />
+    <None Include="glshader\FlasherShader.glfx" />
+    <None Include="glshader\FXAAStereoAO.fxh" />
+    <None Include="glshader\Helpers.fxh" />
+    <None Include="glshader\hlsl_glsl.fxh" />
+    <None Include="glshader\LightShader.glfx" />
+    <None Include="glshader\Material.fxh" />
+    <None Include="glshader\SMAA.glfx" />
+    <None Include="glshader\SSR.fxh" />
+    <None Include="glshader\StereoShader.glfx" />
     <None Include="res\ball.rgs" />
     <None Include="res\blankTable.vpx" />
     <None Include="res\bumper.rgs" />
@@ -1163,13 +1178,13 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"
     <ClInclude Include="ieditable.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
-    <ClInclude Include="imgui\imgui_impl_opengl3.h" >
+    <ClInclude Include="imgui\imgui_impl_opengl3.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="imgui\imgui_impl_dx9.h" >
+    <ClInclude Include="imgui\imgui_impl_dx9.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
