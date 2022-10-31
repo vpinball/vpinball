@@ -461,18 +461,18 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Balls Only");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Dynamic");
    int pfr = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "PFReflection"s, -1);
-   PlayfieldReflectionMode pfReflection;
+   RenderProbe::ReflectionMode pfReflection;
    if (pfr != -1)
-      pfReflection = (PlayfieldReflectionMode)pfr;
+      pfReflection = (RenderProbe::ReflectionMode)pfr;
    else
    {
-      pfReflection = PFREFL_NONE;
+      pfReflection = RenderProbe::REFL_NONE;
       if (LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "BallReflection"s, true))
-         pfReflection = PFREFL_BALLS;
+         pfReflection = RenderProbe::REFL_BALLS;
       if (LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "PFRefl"s, true))
-         pfReflection = PFREFL_DYNAMIC;
+         pfReflection = RenderProbe::REFL_DYNAMIC;
    }
-   if (pfReflection == PFREFL_DYNAMIC)
+   if (pfReflection == RenderProbe::REFL_DYNAMIC)
       SendMessage(hwnd, CB_SETCURSEL, 2, 0);
    else
       SendMessage(hwnd, CB_SETCURSEL, pfReflection, 0);
@@ -833,9 +833,9 @@ void VROptionsDialog::OnOK()
 
    LRESULT pfReflectionMode = SendMessage(GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (pfReflectionMode == LB_ERR)
-      pfReflectionMode = PFREFL_NONE;
+      pfReflectionMode = RenderProbe::REFL_NONE;
    if (pfReflectionMode == 2)
-      pfReflectionMode = PFREFL_DYNAMIC;
+      pfReflectionMode = RenderProbe::REFL_DYNAMIC;
    SaveValueInt(regKey[RegName::PlayerVR], "PFReflection"s, (int)pfReflectionMode);
 
    //AMD Debugging

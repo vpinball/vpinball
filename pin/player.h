@@ -452,7 +452,7 @@ public:
    bool m_dynamicAO;
    bool m_disableAO;
 
-   PlayfieldReflectionMode m_pfReflectionMode;
+   RenderProbe::ReflectionMode m_pfReflectionMode;
    bool m_ss_refl;
 
    bool m_useNvidiaApi;
