@@ -2253,6 +2253,42 @@ void RenderDevice::DrawIndexedPrimitiveVB(const PrimitiveTypes type, const DWORD
    m_curDrawCalls++;
 }
 
+void RenderDevice::DrawGaussianBlur(Sampler* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size)
+{
+   // TODO implement real kernel size support
+   RenderTarget* initial_rt = RenderTarget::GetCurrentRenderTarget();
+   RenderStateCache initial_state;
+   CopyRenderStates(true, initial_state);
+   SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
+   SetRenderStateCulling(RenderDevice::CULL_NONE);
+   SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
+   SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
+   {
+      const vec4 fb_inv_resolution_05((float)(1.0 / (double)source->GetWidth()), (float)(1.0 / (double)source->GetHeight()), 1.0f, 1.0f);
+      FBShader->SetTextureNull(SHADER_tex_fb_filtered);
+      tmp->Activate(true); // switch to temporary output buffer for horizontal phase of gaussian blur
+      FBShader->SetTexture(SHADER_tex_fb_filtered, source);
+      FBShader->SetVector(SHADER_w_h_height, &fb_inv_resolution_05);
+      FBShader->SetTechnique(kernel_size < 25 ? SHADER_TECHNIQUE_fb_bloom_horiz19x19 : SHADER_TECHNIQUE_fb_bloom_horiz39x39);
+      FBShader->Begin();
+      DrawFullscreenTexturedQuad();
+      FBShader->End();
+   }
+   {
+      const vec4 fb_inv_resolution_05((float)(1.0 / (double)tmp->GetColorSampler()->GetWidth()), (float)(1.0 / (double)tmp->GetColorSampler()->GetHeight()), 1.0f, 1.0f);
+      FBShader->SetTextureNull(SHADER_tex_fb_filtered);
+      dest->Activate(true); // switch to output buffer for vertical phase of gaussian blur
+      FBShader->SetTexture(SHADER_tex_fb_filtered, tmp->GetColorSampler());
+      FBShader->SetVector(SHADER_w_h_height, &fb_inv_resolution_05);
+      FBShader->SetTechnique(kernel_size < 25 ? SHADER_TECHNIQUE_fb_bloom_vert19x19 : SHADER_TECHNIQUE_fb_bloom_vert39x39);
+      FBShader->Begin();
+      DrawFullscreenTexturedQuad();
+      FBShader->End();
+   }
+   CopyRenderStates(false, initial_state);
+   initial_rt->Activate();
+}
+
 void RenderDevice::SetTransform(const TransformStateType p1, const Matrix3D * p2, const int count)
 {
 #ifdef ENABLE_SDL
