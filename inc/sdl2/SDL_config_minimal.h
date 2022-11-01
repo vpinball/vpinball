@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -49,7 +49,6 @@ typedef unsigned long long uint64_t;
 typedef unsigned long uintptr_t;
 #else
 #define HAVE_STDINT_H 1
-#define HAVE_INTTYPES_H 1
 #endif /* Visual Studio 2008 */
 
 #ifdef __GNUC__
@@ -64,12 +63,6 @@ typedef unsigned long uintptr_t;
 
 /* Enable the stub haptic driver (src/haptic/dummy/\*.c) */
 #define SDL_HAPTIC_DISABLED 1
-
-/* Enable the stub HIDAPI */
-#define SDL_HIDAPI_DISABLED 1
-
-/* Enable the stub sensor driver (src/sensor/dummy/\*.c) */
-#define SDL_SENSOR_DISABLED 1
 
 /* Enable the stub shared object loader (src/loadso/dummy/\*.c) */
 #define SDL_LOADSO_DISABLED 1

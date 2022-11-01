@@ -19,20 +19,14 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_config_pandora_h_
-#define SDL_config_pandora_h_
+#ifndef SDL_config_wiz_h_
+#define SDL_config_wiz_h_
 #define SDL_config_h_
 
 /* This is a set of defines to configure the SDL features */
 
 /* General platform specific identifiers */
 #include "SDL_platform.h"
-
-#ifdef __LP64__
-#define SIZEOF_VOIDP 8
-#else
-#define SIZEOF_VOIDP 4
-#endif
 
 #define SDL_BYTEORDER 1234
 
@@ -102,6 +96,7 @@
 #define HAVE_SIGACTION 1
 #define HAVE_SETJMP 1
 #define HAVE_NANOSLEEP 1
+#define HAVE_POW 1
 
 #define SDL_AUDIO_DRIVER_DUMMY 1
 #define SDL_AUDIO_DRIVER_OSS 1
@@ -117,12 +112,10 @@
 #define SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP 1
 
 #define SDL_TIMER_UNIX 1
-#define SDL_FILESYSTEM_UNIX 1
 
 #define SDL_VIDEO_DRIVER_DUMMY 1
-#define SDL_VIDEO_DRIVER_X11 1
 #define SDL_VIDEO_DRIVER_PANDORA 1
 #define SDL_VIDEO_RENDER_OGL_ES 1
 #define SDL_VIDEO_OPENGL_ES 1
 
-#endif /* SDL_config_pandora_h_ */
+#endif /* SDL_config_wiz_h_ */

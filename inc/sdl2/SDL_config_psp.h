@@ -19,19 +19,17 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_config_android_h_
-#define SDL_config_android_h_
+#ifndef SDL_config_psp_h_
+#define SDL_config_psp_h_
 #define SDL_config_h_
 
 #include "SDL_platform.h"
 
-/**
- *  \file SDL_config_android.h
- *
- *  This is a configuration that can be used to build SDL for Android
- */
 
-#include <stdarg.h>
+
+#ifdef __GNUC__
+#define HAVE_GCC_SYNC_LOCK_TEST_AND_SET 1
+#endif
 
 #define HAVE_GCC_ATOMICS    1
 
@@ -44,7 +42,7 @@
 #define HAVE_STDINT_H   1
 #define HAVE_CTYPE_H    1
 #define HAVE_MATH_H 1
-#define HAVE_SIGNAL_H 1
+#define HAVE_SIGNAL_H   1
 
 /* C library functions */
 #define HAVE_MALLOC 1
@@ -77,7 +75,7 @@
 #define HAVE_STRTOULL   1
 #define HAVE_STRTOD 1
 #define HAVE_ATOI   1
-#define HAVE_ATOF 1
+#define HAVE_ATOF   1
 #define HAVE_STRCMP 1
 #define HAVE_STRNCMP    1
 #define HAVE_STRCASECMP 1
@@ -104,54 +102,43 @@
 #define HAVE_SQRTF  1
 #define HAVE_TAN    1
 #define HAVE_TANF   1
-#define HAVE_SIGACTION 1
 #define HAVE_SETJMP 1
 #define HAVE_NANOSLEEP  1
-#define HAVE_SYSCONF    1
-#define HAVE_CLOCK_GETTIME	1
+/* #define HAVE_SYSCONF  1 */
+/* #define HAVE_SIGACTION    1 */
 
-#define SIZEOF_VOIDP 4
 
-/* Enable various audio drivers */
-#define SDL_AUDIO_DRIVER_ANDROID    1
-#define SDL_AUDIO_DRIVER_DUMMY  1
+/* PSP isn't that sophisticated */
+#define LACKS_SYS_MMAN_H 1
 
-/* Enable various input drivers */
-#define SDL_JOYSTICK_ANDROID    1
-#define SDL_HAPTIC_ANDROID    1
+/* Enable the stub thread support (src/thread/psp/\*.c) */
+#define SDL_THREAD_PSP  1
 
-/* Enable various shared object loading systems */
-#define SDL_LOADSO_DLOPEN   1
+/* Enable the stub timer support (src/timer/psp/\*.c) */
+#define SDL_TIMERS_PSP  1
 
-/* Enable various threading systems */
-#define SDL_THREAD_PTHREAD  1
-#define SDL_THREAD_PTHREAD_RECURSIVE_MUTEX  1
+/* Enable the stub joystick driver (src/joystick/psp/\*.c) */
+#define SDL_JOYSTICK_PSP        1
 
-/* Enable various timer systems */
-#define SDL_TIMER_UNIX  1
+/* Enable the stub audio driver (src/audio/psp/\*.c) */
+#define SDL_AUDIO_DRIVER_PSP    1
 
-/* Enable various video drivers */
-#define SDL_VIDEO_DRIVER_ANDROID 1
+/* PSP video dirver */
+#define SDL_VIDEO_DRIVER_PSP   1
 
-/* Enable OpenGL ES */
-#define SDL_VIDEO_OPENGL_ES 1
-#define SDL_VIDEO_OPENGL_ES2 1
-#define SDL_VIDEO_OPENGL_EGL 1
-#define SDL_VIDEO_RENDER_OGL_ES 1
-#define SDL_VIDEO_RENDER_OGL_ES2    1
+/* PSP render dirver */
+#define SDL_VIDEO_RENDER_PSP   1
 
-/* Enable Vulkan support */
-/* Android does not support Vulkan in native code using the "armeabi" ABI. */
-#if defined(__ARM_ARCH) && __ARM_ARCH < 7
-#define SDL_VIDEO_VULKAN 0
-#else
-#define SDL_VIDEO_VULKAN 1
-#endif
+#define SDL_POWER_PSP          1
 
-/* Enable system power support */
-#define SDL_POWER_ANDROID 1
+/* !!! FIXME: what does PSP do for filesystem stuff? */
+#define SDL_FILESYSTEM_DUMMY   1
 
-/* Enable the filesystem driver */
-#define SDL_FILESYSTEM_ANDROID   1
+/* PSP doesn't have haptic device (src/haptic/dummy/\*.c) */
+#define SDL_HAPTIC_DISABLED    1
 
-#endif /* SDL_config_android_h_ */
+/* PSP can't load shared object (src/loadso/dummy/\*.c) */
+#define SDL_LOADSO_DISABLED    1
+
+
+#endif /* SDL_config_psp_h_ */
