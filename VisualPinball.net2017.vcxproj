@@ -797,6 +797,7 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"
     <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="math\math.cpp" />
     <ClCompile Include="MemoryStatus.cpp" />
+    <ClCompile Include="RenderProbe.cpp" />
     <ClCompile Include="RenderTarget.cpp" />
     <ClCompile Include="rubber.cpp" />
     <ClCompile Include="hash.cpp" />
@@ -1323,6 +1324,7 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"
     <ClInclude Include="ramp.h" />
     <ClInclude Include="regutil.h" />
     <ClInclude Include="RenderDevice.h" />
+    <ClInclude Include="RenderProbe.h" />
     <ClInclude Include="RenderTarget.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="rubber.h" />
