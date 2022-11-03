@@ -1311,13 +1311,13 @@ void Primitive::RenderObject()
       const vec4 cWidth_Height_MirrorAmount((float)RenderTarget::GetCurrentRenderTarget()->GetWidth(), (float)RenderTarget::GetCurrentRenderTarget()->GetHeight(), m_ptable->m_playfieldReflectionStrength, 0.0f);
       pd3dDevice->basicShader->SetVector(SHADER_cWidth_Height_MirrorAmount, &cWidth_Height_MirrorAmount);
       Matrix3D matWorldViewInverseTranspose; // This is clearly suboptimal since this transposed inverse is already computed, but the impact is minimal
-      vec4 plane_normal;
+      vec3 plane_normal;
       reflection_probe->GetReflectionPlaneNormal(plane_normal);
       pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &matWorldViewInverseTranspose);
       matWorldViewInverseTranspose.Invert();
       matWorldViewInverseTranspose.Transpose();
       matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal, plane_normal);
-      pd3dDevice->basicShader->SetVector(SHADER_mirrorNormal, &plane_normal);
+      pd3dDevice->basicShader->SetVector(SHADER_mirrorNormal, plane_normal.x,plane_normal.y,plane_normal.z,0.f);
       pd3dDevice->basicShader->SetTexture(SHADER_tex_reflection, reflections);
       bool is_primitive_prerendered = m_d.m_staticRendering  && !g_pplayer->m_isRenderingStatic && !g_pplayer->m_dynamicMode;
       if (!is_primitive_prerendered && mat->m_bOpacityActive && (mat->m_fOpacity < 1.0f || (pin && pin->m_pdsBuffer->has_alpha())))

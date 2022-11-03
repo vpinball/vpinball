@@ -80,7 +80,7 @@ public:
    COLORREF m_color;
    float m_alpha = 1.0f;
 
-   string m_szReflectionProbe = ""s;
+   string m_szReflectionProbe;
    float m_reflectionStrength = 0.0f;
 
    bool m_toy;

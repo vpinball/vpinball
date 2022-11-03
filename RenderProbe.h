@@ -25,11 +25,11 @@ public:
    ~RenderProbe();
 
    string GetName() const;
-   void SetName(const string name);
-   
+   void SetName(const string& name);
+
    // Reflection plane properties
-   void SetReflectionPlane(vec4& plane);
-   void GetReflectionPlaneNormal(vec4& normal) const;
+   void SetReflectionPlane(const vec4& plane);
+   void GetReflectionPlaneNormal(vec3& normal) const;
    void SetReflectionMode(ReflectionMode mode);
 
    // Load/Save
@@ -50,7 +50,7 @@ private:
 
    ProbeType m_type = PLANE_REFLECTION;
    bool m_dirty = true;
-   string m_name = ""s;
+   string m_name;
    int m_roughness = 1; // 0 is perfect mirror (full size, matching sampling), 1 is half texel offseted sampling, 2 is 50% rendering, 3 if 50% rendering with half texel offseted sampling, and so on
    RenderTarget* m_staticRT = nullptr;
    RenderTarget* m_dynamicRT = nullptr;

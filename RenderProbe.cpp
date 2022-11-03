@@ -46,7 +46,7 @@ string RenderProbe::GetName() const
    return m_name;
 }
 
-void RenderProbe::SetName(const string name)
+void RenderProbe::SetName(const string& name)
 {
    m_name = name;
 }
@@ -106,12 +106,12 @@ void RenderProbe::RenderScreenSpaceTransparency(const bool is_static)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Reflection plane
 
-void RenderProbe::SetReflectionPlane(vec4& plane)
+void RenderProbe::SetReflectionPlane(const vec4& plane)
 {
    m_reflection_plane = plane;
 }
 
-void RenderProbe::GetReflectionPlaneNormal(vec4& normal) const
+void RenderProbe::GetReflectionPlaneNormal(vec3& normal) const
 {
    normal.x = m_reflection_plane.x;
    normal.y = m_reflection_plane.y;
@@ -231,5 +231,3 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
       g_pplayer->UpdateBallShaderMatrix();
    previousRT->Activate();
 }
-
-
