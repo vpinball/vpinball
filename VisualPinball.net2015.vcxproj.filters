@@ -306,6 +306,7 @@
     <ClCompile Include="dialogs\VROptionsDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="RenderProbe.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1569,6 +1570,9 @@
     </ClInclude>
     <ClInclude Include="dialogs\VROptionsDialog.h">
       <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderProbe.h">
+      <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
