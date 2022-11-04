@@ -753,7 +753,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    case SDL_PIXELFORMAT_ARGB2101010: back_buffer_format = colorFormat::RGBA10; break;
    default: 
    {
-      ShowError("Invalid Output format: "s.append(std::to_string(mod.format).c_str()));
+      ShowError("Invalid Output format: "s.append(std::to_string(mode.format).c_str()));
       exit(-1);
    }
    }
