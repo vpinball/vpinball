@@ -799,6 +799,7 @@
 #define IDC_BLEND_DISABLE_LIGHTING      494
 #define IDC_START_VP_FILE_DIALOG2       494
 #define IDC_ENABLE_LEGACY_NUDGE         495
+#define IDC_REFLECTION_AMOUNT           495
 #define IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW 496
 #define IDC_BALLDECALMODE               497
 #define IDC_DEFAULTS_LOW                498
@@ -1217,7 +1218,9 @@
 #define DISPID_Image2                   1501
 #define DISPID_Surface                  1502
 #define IDC_SURFACE_COMBO               1502
+#define DISPID_REFLECTION_PROBE         1502
 #define DISPID_Shape                    1503
+#define DISPID_REFRACTION_PROBE         1503
 #define DISPID_UserValue                1504
 #define DISPID_Image3                   1505
 #define DISPID_Sound                    1506

@@ -11,6 +11,9 @@ PrimitiveVisualsProperty::PrimitiveVisualsProperty(const VectorProtected<ISelect
     m_depthBiasEdit.SetDialog(this);
     m_imageCombo.SetDialog(this);
     m_normalMapCombo.SetDialog(this);
+    m_reflectionCombo.SetDialog(this);
+    m_reflectionAmountEdit.SetDialog(this);
+    m_refractionCombo.SetDialog(this);
     m_materialCombo.SetDialog(this);
     m_opacityAmountEdit.SetDialog(this);
 }
@@ -51,6 +54,12 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             PropertyDialog::UpdateTextureComboBox(prim->GetPTable()->GetImageList(), m_normalMapCombo, prim->m_d.m_szNormalMap);
         if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
             m_colorButton.SetColor(prim->m_d.m_color);
+        if (dispid == DISPID_REFLECTION_PROBE || dispid == -1)
+           UpdateRenderProbeComboBox(prim->GetPTable()->GetRenderProbeList(RenderProbe::PLANE_REFLECTION), m_reflectionCombo, prim->m_d.m_szReflectionProbe);
+        if (dispid == IDC_REFLECTION_AMOUNT || dispid == -1)
+           PropertyDialog::SetFloatTextbox(m_reflectionAmountEdit, prim->m_d.m_reflectionStrength);
+        if (dispid == DISPID_REFRACTION_PROBE || dispid == -1)
+           UpdateRenderProbeComboBox(prim->GetPTable()->GetRenderProbeList(RenderProbe::SCREEN_SPACE_TRANSPARENCY), m_refractionCombo, prim->m_d.m_szReflectionProbe);
 
         // Disable playfield settings that are taken from table settings to avoid confusing the user
         if (m_hReflectionEnabledCheck && (dispid == IDC_REFLECT_ENABLED_CHECK || dispid == -1))
@@ -64,6 +73,31 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         //only show the first element on multi-select
         break;
     }
+}
+
+void PrimitiveVisualsProperty::UpdateRenderProbeComboBox(const vector<RenderProbe *> &contentList, const CComboBox &combo, const string &selectName)
+{
+    bool need_reset = combo.GetCount() != contentList.size() + 1; // Not the same number of items
+    need_reset |= combo.FindStringExact(1, selectName.c_str()) == CB_ERR; // Selection is not part of combo
+    if (!need_reset)
+    {
+        bool texelFound = false;
+        for (const auto texel : contentList)
+        {
+            if (strncmp(texel->GetName().c_str(), selectName.c_str(), MAXTOKEN) == 0) //!! _stricmp?
+                texelFound = true;
+            need_reset |= combo.FindStringExact(1, texel->GetName().c_str()) == CB_ERR; // Combo does not contain an image from the image list
+        }
+        need_reset |= !texelFound; // Selection is not part of image list
+    }
+    if (need_reset)
+    {
+        combo.ResetContent();
+        combo.AddString(_T("<None>"));
+        for (size_t i = 0; i < contentList.size(); i++)
+            combo.AddString(contentList[i]->GetName().c_str());
+    }
+    combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
 
 void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
@@ -142,6 +176,12 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
                 }
                 break;
             }
+            case DISPID_REFLECTION_PROBE:
+                CHECK_UPDATE_COMBO_TEXT_STRING(prim->m_d.m_szReflectionProbe, m_reflectionCombo, prim);
+                break;
+            case IDC_REFLECTION_AMOUNT:
+                CHECK_UPDATE_ITEM(prim->m_d.m_reflectionStrength, PropertyDialog::GetFloatTextbox(m_reflectionAmountEdit), prim);
+                break;
             default:
                 UpdateBaseProperties(prim, &prim->m_d, dispid);
                 break;
@@ -174,6 +214,9 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     m_disableLightFromBelowEdit.AttachItem(IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW);
     m_legacySidesEdit.AttachItem(IDC_PRIMITIVE_LEGACY_SIDES_EDIT);
     m_edgeFactorUIEdit.AttachItem(IDC_EDGE_FACTOR_UI);
+    m_reflectionCombo.AttachItem(DISPID_REFLECTION_PROBE);
+    m_reflectionAmountEdit.AttachItem(IDC_REFLECTION_AMOUNT);
+    m_refractionCombo.AttachItem(DISPID_REFRACTION_PROBE);
     AttachItem(IDC_COLOR_BUTTON1, m_colorButton);
     UpdateVisuals();
 
@@ -206,6 +249,9 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_legacySidesEdit, CResizer::topleft, 0);
     m_resizer.AddChild(m_edgeFactorUIEdit, CResizer::topright, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_colorButton, CResizer::topleft, 0);
+    m_resizer.AddChild(m_reflectionCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_reflectionAmountEdit, CResizer::topright, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_refractionCombo, CResizer::topleft, RD_STRETCH_WIDTH);
 
     return TRUE;
 }

@@ -1727,7 +1727,7 @@ BEGIN
     EDITTEXT        DISPID_ROTRA9,24,184,60,12,ES_AUTOHSCROLL
 END
 
-IDD_PROPPRIMITIVE_VISUALS DIALOGEX 0, 0, 125, 259
+IDD_PROPPRIMITIVE_VISUALS DIALOGEX 0, 0, 125, 340
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1766,6 +1766,12 @@ BEGIN
     CONTROL         "",IDC_COLOR_BUTTON1,"Button",BS_OWNERDRAW | WS_TABSTOP,44,239,36,14,WS_EX_DLGMODALFRAME | WS_EX_RIGHT
     LTEXT           "Opacity",IDC_STATIC11,86,230,25,8
     EDITTEXT        IDC_ALPHA_EDIT,83,240,34,12,ES_AUTOHSCROLL
+    LTEXT           "Reflection Probe",IDC_STATIC12,3,266,51,8
+    COMBOBOX        DISPID_REFLECTION_PROBE,3,276,117,124,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Strength",IDC_STATIC14,3,292,78,10
+    EDITTEXT        IDC_REFLECTION_AMOUNT,82,290,36,12,ES_AUTOHSCROLL
+    LTEXT           "Refraction Probe",IDC_STATIC15,3,305,52,8
+    COMBOBOX        DISPID_REFRACTION_PROBE,3,315,117,124,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_PROPPLUNGER_VISUALS DIALOGEX 0, 0, 125, 337
@@ -2849,15 +2855,9 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-#ifdef ENABLE_SDL
-            VALUE "FileDescription", "Visual Pinball OpenGL 10.8.0"
-            VALUE "OriginalFilename", "VPinballX_GL.exe"
-            VALUE "ProductName", "Visual Pinball OpenGL"
-#else
             VALUE "FileDescription", "Visual Pinball 10.8.0"
             VALUE "OriginalFilename", "VPinballX.exe"
             VALUE "ProductName", "Visual Pinball"
-#endif
             VALUE "FileVersion", "10, 8, 0, 0"
             VALUE "InternalName", "Visual Pinball"
             VALUE "LegalCopyright", "Copyright 2000-2022"
@@ -3020,9 +3020,6 @@ BEGIN
     BEGIN
         MENUITEM "&Audio Options...",           ID_EDIT_AUDIOOPTIONS
         MENUITEM "&Video/Graphics Options...",  ID_EDIT_VIDEOOPTIONS
-#ifdef ENABLE_SDL
-        MENUITEM "V&R Settings...",             ID_EDIT_VROPTIONS
-#endif
         MENUITEM "&Editor/UI Options...",       ID_EDIT_EDITOROPTIONS
         MENUITEM "Configure &Keys, Nudge and DOF...", ID_EDIT_KEYS
         MENUITEM "Configure (Optional) Global &Physics Sets...", ID_EDIT_PHYSICSOPTIONS

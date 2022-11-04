@@ -702,6 +702,13 @@ public:
    VectorProtected<CComObject<Collection>> m_vcollection;
 
    vector<RenderProbe *> m_vrenderprobe;
+   const vector<RenderProbe *> &GetRenderProbeList() const { return m_vrenderprobe; }
+   const vector<RenderProbe *> GetRenderProbeList(RenderProbe::ProbeType type) const
+   {
+      std::vector<RenderProbe *> list;
+      std::copy_if(m_vrenderprobe.begin(), m_vrenderprobe.end(), std::back_inserter(list), [type](RenderProbe *rp) { return rp->GetType() == type; });
+      return list;
+   }
 
    COLORREF m_rgcolorcustom[16]; // array for the choosecolor in property browser
 

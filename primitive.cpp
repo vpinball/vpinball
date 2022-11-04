@@ -1444,6 +1444,9 @@ void Primitive::RenderSetup()
 void Primitive::RenderStatic()
 {
    if (!m_d.m_staticRendering) return; //don't render dynamic
+   RenderProbe *reflection_probe = m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
+   if (reflection_probe != nullptr && reflection_probe->IsRendering())
+      return;
    if (m_lockedByLS)
    {
        if(!m_inPlayState) return; //don't render in LS when state off
