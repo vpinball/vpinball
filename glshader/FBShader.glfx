@@ -223,9 +223,7 @@ float3 bloom_cutoff(const float3 c) {
     soft = clamp(soft, 0., 2. * Knee);
     soft *= soft * (1.0 / (4. * Knee + 0.00001));
     const float contribution = max(soft, brightness - Threshold) / max(brightness, 0.00001);
-	// FIXME we are facing overflows here causing visual artefacts (not present for DX9)
-    //return c * contribution;
-    return clamp(c * contribution, vec3(0.0), vec3(5.0));
+    return c * contribution;
 }
 
 void main()
@@ -235,7 +233,9 @@ void main()
                         +  textureLod(tex_fb_filtered, tex0 + w_h_height.xy, 0.).xyz
                         +  textureLod(tex_fb_filtered, tex0 + float2(w_h_height.x,-w_h_height.y), 0.).xyz
                         +  textureLod(tex_fb_filtered, tex0 + float2(-w_h_height.x,w_h_height.y), 0.).xyz)*0.25; //!! offset for useAA?
-    color = float4(bloom_cutoff(FBToneMap(result)), 1.0);
+	// FIXME we are facing overflows here causing visual artefacts (not happening for DX9)
+    //color = float4(bloom_cutoff(FBToneMap(result)), 1.0);
+    color = float4(max(FBToneMap(result) - vec3(1.0), vec3(0.0)), 1.0);
 }
 
 ////ps_main_fb_AO
