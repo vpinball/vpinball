@@ -26,6 +26,7 @@ public:
 
    string GetName() const;
    void SetName(const string& name);
+   ProbeType GetType() const { return m_type; }
 
    // Reflection plane properties
    void SetReflectionPlane(const vec4& plane);
