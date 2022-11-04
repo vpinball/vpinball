@@ -712,8 +712,8 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
     m_pOffscreenMSAABackBufferTexture = nullptr;
     m_pOffscreenBackBufferTexture = nullptr;
-    m_pOffscreenBackBufferTmpTexture = nullptr;
-    m_pOffscreenBackBufferTmpTexture2 = nullptr;
+    m_pPostProcessRenderTarget1 = nullptr;
+    m_pPostProcessRenderTarget2 = nullptr;
     m_pOffscreenVRLeft = nullptr;
     m_pOffscreenVRRight = nullptr;
     m_pBloomBufferTexture = nullptr;
@@ -726,6 +726,8 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    assert(g_pplayer != nullptr); // Player must be created to give access to the output window
    m_current_renderstate.state = m_renderstate.state = 0;
    m_current_renderstate.depth_bias = m_renderstate.depth_bias = 0.0f;
+   colorFormat back_buffer_format;
+
 #ifdef ENABLE_SDL
    ///////////////////////////////////
    // OpenGL device initialization
@@ -743,6 +745,18 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    }
    refreshrate = mode.refresh_rate;
    bool video10bit = mode.format == SDL_PIXELFORMAT_ARGB2101010;
+   switch (mode.format)
+   {
+   case SDL_PIXELFORMAT_RGB565: back_buffer_format = colorFormat::RGB5; break;
+   case SDL_PIXELFORMAT_RGB888: back_buffer_format = colorFormat::RGB8; break;
+   case SDL_PIXELFORMAT_ARGB8888: back_buffer_format = colorFormat::RGBA8; break;
+   case SDL_PIXELFORMAT_ARGB2101010: back_buffer_format = colorFormat::RGBA10; break;
+   default: 
+   {
+      ShowError("Invalid Output format: "s.append(std::to_string(mod.format).c_str()));
+      exit(-1);
+   }
+   }
 
    memset(m_samplerStateCache, 0, sizeof(m_samplerStateCache));
 
@@ -929,6 +943,18 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    {
       format = (D3DFORMAT)(video10bit ? colorFormat::RGBA10 : ((m_colorDepth == 16) ? colorFormat::RGB5 : colorFormat::RGB8));
    }
+   switch (format)
+   {
+   case D3DFMT_R5G6B5: back_buffer_format = colorFormat::RGB5; break;
+   case D3DFMT_X8R8G8B8: back_buffer_format = colorFormat::RGB8; break;
+   case D3DFMT_A8R8G8B8: back_buffer_format = colorFormat::RGBA8; break;
+   case D3DFMT_A2R10G10B10: back_buffer_format = colorFormat::RGBA10; break;
+   default:
+   {
+      ShowError("Invalid Output format: "s.append(std::to_string(format).c_str()));
+      exit(-1);
+   }
+   }
 
    // limit vsync rate to actual refresh rate, otherwise special handling in renderloop
    if (m_vsync > refreshrate)
@@ -1073,7 +1099,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    back_buffer_width = m_width;
    back_buffer_height = m_height;
 #endif
-   m_pBackBuffer = new RenderTarget(this, back_buffer_width, back_buffer_height);
+   m_pBackBuffer = new RenderTarget(this, back_buffer_width, back_buffer_height, back_buffer_format);
 
 #ifdef ENABLE_SDL
    const colorFormat render_format = ((m_BWrendering == 1) ? colorFormat::RG16F : ((m_BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGB16F));
@@ -1138,14 +1164,6 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 #else
     colorFormat pp_format = video10bit ? colorFormat::RGBA10 : colorFormat::RGBA8;
 #endif
-
-   // alloc temporary buffer for stereo3D/post-processing AA/sharpen
-   if ((m_stereo3D != STEREO_OFF) || (m_FXAA != FXAASettings::Disabled) || m_sharpen)
-      m_pOffscreenBackBufferTmpTexture = new RenderTarget(this, m_width, m_height, pp_format, false, 1, STEREO_OFF, "Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!");
-
-   // alloc one more temporary buffer for SMAA, DLAA, stereo post processing
-   if ((m_stereo3D != STEREO_OFF) || m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA)
-      m_pOffscreenBackBufferTmpTexture2 = m_pOffscreenBackBufferTmpTexture->Duplicate();
 
    if (video10bit && (m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA))
       ShowError("SMAA or DLAA post-processing AA should not be combined with 10bit-output rendering (will result in visible artifacts)!");
@@ -1281,6 +1299,37 @@ bool RenderDevice::LoadShaders()
    DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f); // No alpha clipping
 
    return true;
+}
+
+RenderTarget* RenderDevice::GetPostProcessRenderTarget1()
+{
+   if (m_pPostProcessRenderTarget1 == nullptr)
+   {
+// Buffers for post-processing (postprocess is done at scene resolution, on a LDR render target without MSAA nor full scene supersampling)
+#ifdef ENABLE_SDL
+      colorFormat pp_format = GetBackBufferTexture()->GetColorFormat() == RGBA10 ? colorFormat::RGB10 : colorFormat::RGB8;
+#else
+      colorFormat pp_format = GetBackBufferTexture()->GetColorFormat() == RGBA10 ? colorFormat::RGBA10 : colorFormat::RGBA8;
+#endif
+      m_pPostProcessRenderTarget1 = new RenderTarget(this, m_width, m_height, pp_format, false, 1, STEREO_OFF, "Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!");
+   }
+   return m_pPostProcessRenderTarget1;
+}
+   
+RenderTarget* RenderDevice::GetPostProcessRenderTarget2()
+{
+   if (m_pPostProcessRenderTarget2 == nullptr)
+      m_pPostProcessRenderTarget2 = GetPostProcessRenderTarget1()->Duplicate();
+   return m_pPostProcessRenderTarget2;
+}
+
+RenderTarget* RenderDevice::GetPostProcessRenderTarget(RenderTarget* renderedRT)
+{
+   RenderTarget* pp1 = GetPostProcessRenderTarget1();
+   if (renderedRT == pp1)
+      return GetPostProcessRenderTarget2();
+   else
+      return pp1;
 }
 
 void RenderDevice::ResolveMSAA()
@@ -1433,8 +1482,8 @@ RenderDevice::~RenderDevice()
 
    m_texMan.UnloadAll();
    delete m_pOffscreenBackBufferTexture;
-   delete m_pOffscreenBackBufferTmpTexture;
-   delete m_pOffscreenBackBufferTmpTexture2;
+   delete m_pPostProcessRenderTarget1;
+   delete m_pPostProcessRenderTarget2;
    delete m_pReflectionBufferTexture;
 
    delete m_pBloomBufferTexture;

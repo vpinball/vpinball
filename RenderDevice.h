@@ -184,9 +184,9 @@ public:
    RenderTarget* GetMSAABackBufferTexture() const { return m_pOffscreenMSAABackBufferTexture; } // Main render target, may be MSAA enabled and not suited for sampling, also may have stereo output (2 viewports)
    void ResolveMSAA(); // Resolve MSAA back buffer texture to be sample  from back buffer texture
    RenderTarget* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture; } // Main render target, with MSAA resolved if any, also may have stereo output (2 viewports)
-   RenderTarget* GetBackBufferTmpTexture() const { return m_pOffscreenBackBufferTmpTexture; } // sharpen, stereo & FXAA
-   RenderTarget* GetBackBufferTmpTexture2() const { return m_pOffscreenBackBufferTmpTexture2; } // sharpen & SMAA
-   RenderTarget* GetPostProcessTexture(RenderTarget* renderedRT) const { return renderedRT == m_pOffscreenBackBufferTmpTexture ? m_pOffscreenBackBufferTmpTexture2 : m_pOffscreenBackBufferTmpTexture; }
+   RenderTarget* GetPostProcessRenderTarget1();
+   RenderTarget* GetPostProcessRenderTarget2();
+   RenderTarget* GetPostProcessRenderTarget(RenderTarget* renderedRT);
    RenderTarget* GetOffscreenVR(int eye) const { return eye == 0 ? m_pOffscreenVRLeft : m_pOffscreenVRRight; }
    RenderTarget* GetReflectionBufferTexture() const { return m_pReflectionBufferTexture; }
    RenderTarget* GetBloomBufferTexture() const { return m_pBloomBufferTexture; }
@@ -321,8 +321,8 @@ private:
 
    RenderTarget* m_pOffscreenMSAABackBufferTexture;
    RenderTarget* m_pOffscreenBackBufferTexture;
-   RenderTarget* m_pOffscreenBackBufferTmpTexture; // stereo/FXAA only
-   RenderTarget* m_pOffscreenBackBufferTmpTexture2; // SMAA only
+   RenderTarget* m_pPostProcessRenderTarget1;
+   RenderTarget* m_pPostProcessRenderTarget2;
    RenderTarget* m_pOffscreenVRLeft;
    RenderTarget* m_pOffscreenVRRight;
    RenderTarget* m_pBloomBufferTexture;

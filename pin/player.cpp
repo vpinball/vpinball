@@ -3520,15 +3520,15 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
    // Stereo and AA are performed on LDR render buffer after tonemapping (RGB8 or RGB10, but nof RGBF).
    // We ping pong between BackBufferTmpTexture and BackBufferTmpTexture2 for the different postprocess
    // SMAA is a special case since it needs 3 passes, so it uses GetBackBufferTexture also (which is somewhat overkill since it is RGB16F)
-   assert(renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer() || renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture());
+   assert(renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer() || renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget1());
 
    // First Step: Perform post processed anti aliasing
 
    if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3)
    {
-      assert(renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture());
+      assert(renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget1());
       outputRT = SMAA                   ? m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture() : // SMAA use 3 passes, so we reuse the back buffer for the first
-         (DLAA || sharpen || pp_stereo) ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessTexture(renderedRT)
+         (DLAA || sharpen || pp_stereo) ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT)
                                         : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
       outputRT->Activate(true);
 
@@ -3565,8 +3565,8 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
 
       if (SMAA || DLAA) // actual SMAA/DLAA filtering pass, above only edge detection
       {
-         outputRT = SMAA                 ? m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture2() : // SMAA use 3 passes, so we have a special processing instead of RT ping pong
-                    sharpen || pp_stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessTexture(renderedRT)
+         outputRT = SMAA                 ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget2() : // SMAA use 3 passes, so we have a special processing instead of RT ping pong
+                    sharpen || pp_stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT)
                                          : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
          outputRT->Activate(true);
 
@@ -3590,7 +3590,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
 
          if (SMAA)
          {
-            outputRT = sharpen || pp_stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessTexture(renderedRT)
+            outputRT = sharpen || pp_stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT)
                                             : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
             outputRT->Activate(true);
 
@@ -3620,7 +3620,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
    if (sharpen)
    {
       assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
-      outputRT = pp_stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessTexture(renderedRT)
+      outputRT = pp_stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT)
                            : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
       outputRT->Activate(true);
 
@@ -4426,7 +4426,7 @@ void Player::PrepareVideoBuffersNormal()
 #else
    if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen || stereo)
 #endif
-      ouputRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture();
+      ouputRT = m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget1();
    else
       ouputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
    ouputRT->Activate();
@@ -4563,7 +4563,7 @@ void Player::PrepareVideoBuffersAO()
       m_pin3d.m_gpu_profiler.Timestamp(GTS_SSR);
 
    // separate normal generation pass, currently roughly same perf or even much worse
-   /*m_pin3d.m_pd3dDevice->GetBackBufferTmpTexture()->Activate(); //!! expects stereo or FXAA enabled
+   /*m_pin3d.m_pd3dDevice->GetPostProcessRenderTarget1()->Activate(); //!! expects stereo or FXAA enabled
 
    m_pin3d.m_pd3dDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pdds3DZBuffer, true);
 
@@ -4581,7 +4581,7 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pddsAOBackTmpBuffer->Activate();
 
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pin3d.m_pddsAOBackBuffer->GetColorSampler());
-   //m_pin3d.m_pd3dDevice->FBShader->SetTexture(SHADER_Texture1, m_pin3d.m_pd3dDevice->GetBackBufferTmpTexture()); // temporary normals
+   //m_pin3d.m_pd3dDevice->FBShader->SetTexture(SHADER_Texture1, m_pin3d.m_pd3dDevice->GetPostProcessRenderTarget1()); // temporary normals
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao_dither, &m_pin3d.m_aoDitherTexture, SF_NONE, SA_REPEAT, SA_REPEAT, true); // FIXME the force linear RGB is not honored
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
 
@@ -4614,7 +4614,7 @@ void Player::PrepareVideoBuffersAO()
 #else
    if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen || stereo)
 #endif
-      ouputRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture();
+      ouputRT = m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget1();
    else
       ouputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
    ouputRT->Activate(true);
@@ -4943,8 +4943,8 @@ void Player::LockForegroundWindow(const bool enable)
 void Player::Render()
 {
    // Rendering outputs to m_pd3dPrimaryDevice->GetBackBufferTexture(). If MSAA is used, it is resolved as part of the rendering (i.e. this surface is NOT the MSAA rneder surface but its resolved copy)
-   // Then it is tonemapped/bloom/dither/... to m_pd3dPrimaryDevice->GetBackBufferTmpTexture() if needed for postprocessing (sharpen, FXAA,...), or directly to the main output framebuffer otherwise
-   // The optional postprocessing is done from m_pd3dPrimaryDevice->GetBackBufferTmpTexture() to the main output framebuffer
+   // Then it is tonemapped/bloom/dither/... to m_pd3dPrimaryDevice->GetPostProcessRenderTarget1() if needed for postprocessing (sharpen, FXAA,...), or directly to the main output framebuffer otherwise
+   // The optional postprocessing is done from m_pd3dPrimaryDevice->GetPostProcessRenderTarget1() to the main output framebuffer
 
    U64 timeforframe = usec();
 

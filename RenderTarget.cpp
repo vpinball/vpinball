@@ -17,14 +17,13 @@ int RenderTarget::m_current_stereo_mode = -1;
 RenderTarget* RenderTarget::current_render_target = nullptr;
 RenderTarget* RenderTarget::GetCurrentRenderTarget() { return current_render_target; }
 
-RenderTarget::RenderTarget(RenderDevice* rd, int width, int height)
+RenderTarget::RenderTarget(RenderDevice* rd, int width, int height, colorFormat format)
 {
    m_rd = rd;
    m_stereo = STEREO_OFF;
    m_is_back_buffer = true;
-   // FIXME we should gather backbuffer informations
-   // m_format = ;
-   // m_shared_depth = ;
+   m_format = format;
+   m_shared_depth = false;
    m_width = width;
    m_height = height;
    m_has_depth = false;
