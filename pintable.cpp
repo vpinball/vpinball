@@ -3651,11 +3651,14 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             RenderProbe* pf_reflections = new RenderProbe();
             pf_reflections->SetName("Playfield Reflections"s);
             m_vrenderprobe.push_back(pf_reflections);
-            // playfield meshes were always forced as visible until 10.8.0
+
             for (size_t i = 0; i < m_vedit.size(); ++i)
                if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)m_vedit[i])->IsPlayfield()))
                {
+                  // playfield meshes were always forced as visible until 10.8.0
                   ((Primitive *)m_vedit[i])->put_Visible(FTOVB(true));
+                  // playfield meshes were always drawn before other transparent parts until 10.8.0
+                  ((Primitive *)m_vedit[i])->m_d.m_depthBias = 1000.0f;
                }
          }
 
