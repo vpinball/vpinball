@@ -115,6 +115,8 @@ add_executable(vpinball WIN32
    dialogs/NotesDialog.h
    dialogs/ScriptErrorDialog.cpp
    dialogs/ScriptErrorDialog.h
+   dialogs/RenderProbeDialog.cpp
+   dialogs/RenderProbeDialog.h
    dialogs/PhysicsOptionsDialog.cpp
    dialogs/PhysicsOptionsDialog.h
    dialogs/VROptionsDialog.cpp

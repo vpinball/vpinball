@@ -470,7 +470,7 @@ public:
    HRESULT LoadGameFromStorage(IStorage *pstgRoot);
    HRESULT LoadInfo(IStorage *pstg, HCRYPTHASH hcrypthash, int version);
    HRESULT LoadCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version);
-   HRESULT LoadData(IStream *pstm, int &csubobj, int &csounds, int &ctextures, int &cfonts, int &ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
+   HRESULT LoadData(IStream *pstm, int &csubobj, int &csounds, int &ctextures, int &cfonts, int &ccollection, int &cprobes, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
    void ReadAccelerometerCalibration();
    virtual IEditable *GetIEditable() override { return (IEditable *)this; }
    virtual const IEditable *GetIEditable() const override { return (const IEditable *)this; }
@@ -702,6 +702,8 @@ public:
    VectorProtected<CComObject<Collection>> m_vcollection;
 
    vector<RenderProbe *> m_vrenderprobe;
+   void RemoveRenderProbe(RenderProbe *pb) { m_vrenderprobe.erase(std::remove(m_vrenderprobe.begin(), m_vrenderprobe.end(), pb), m_vrenderprobe.end()); }
+   RenderProbe *NewRenderProbe() { auto pb = new RenderProbe(); m_vrenderprobe.push_back(pb); return pb; }
    const vector<RenderProbe *> &GetRenderProbeList() const { return m_vrenderprobe; }
    const vector<RenderProbe *> GetRenderProbeList(RenderProbe::ProbeType type) const
    {

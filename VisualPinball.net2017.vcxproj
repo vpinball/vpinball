@@ -711,6 +711,7 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\LayersListDialog.cpp" />
     <ClCompile Include="dialogs\MaterialDialog.cpp" />
     <ClCompile Include="dialogs\NotesDialog.cpp" />
+    <ClCompile Include="dialogs\RenderProbeDialog.cpp" />
     <ClCompile Include="dialogs\ScriptErrorDialog.cpp" />
     <ClCompile Include="dialogs\PhysicsOptionsDialog.cpp" />
     <ClCompile Include="dialogs\Properties\BackglassCameraProperty.cpp" />
@@ -1089,6 +1090,7 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"
     <ClInclude Include="dialogs\LayersListDialog.h" />
     <ClInclude Include="dialogs\MaterialDialog.h" />
     <ClInclude Include="dialogs\NotesDialog.h" />
+    <ClInclude Include="dialogs\RenderProbeDialog.h" />
     <ClInclude Include="dialogs\ScriptErrorDialog.h" />
     <ClInclude Include="dialogs\PhysicsOptionsDialog.h" />
     <ClInclude Include="dialogs\Properties\BackglassCameraProperty.h" />

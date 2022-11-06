@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by vpinball_eng.rc
+// fichier Include Microsoft Visual C++.
+// Utilisé par vpinball_eng.rc
 //
 #define DISPID_Textbox_BackColor        1
 #define DISPID_Textbox_FontColor        2
@@ -103,6 +103,7 @@
 #define IDC_PRIMITIVE_LEGACY_SIDES_EDIT 101
 #define IDC_Y_SCALE_EDIT                101
 #define IDC_X_OFFSET_EDIT               102
+#define IDS_TYPE                        102
 #define IDR_DRAG_POINT                  103
 #define IDS_TB_SELECT                   103
 #define IDC_Y_OFFSET_EDIT               103
@@ -802,6 +803,8 @@
 #define IDC_REFLECTION_AMOUNT           495
 #define IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW 496
 #define IDC_BALLDECALMODE               497
+#define IDC_REFLECTION_AMOUNT2          497
+#define IDC_REFRACTION_THICKNESS        497
 #define IDC_DEFAULTS_LOW                498
 #define IDC_DEFAULTS_HIGH               499
 #define IDC_LEGACY_NUDGE_STRENGTH       500
@@ -963,6 +966,7 @@
 #define IDI_CAMERA                      666
 #define IDC_DATE_SAVED                  667
 #define IDD_NOTES_DIALOG                668
+#define IDD_RENDERPROBE                 669
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -1157,6 +1161,7 @@
 #define IDC_STATIC7                     842
 #define IDC_STATIC6                     843
 #define IDC_MSAA_LABEL                  843
+#define IDC_STATIC27                    843
 #define IDC_STATIC11                    844
 #define IDC_STATIC1                     845
 #define IDC_STATIC2                     846
@@ -1201,6 +1206,15 @@
 #define IDC_BG_SOURCE                   885
 #define IDC_BACKGLASS_GROUP             886
 #define IDC_BACKGLASS_GROUP2            887
+#define IDC_REFLECTION_PROBE            888
+#define IDC_REFRACTION_PROBE            889
+#define IDC_RENDER_PROBE_NAME_LABEL     890
+#define IDC_REFLECTION_PLANE_NX         891
+#define IDC_REFLECTION_PLANE_NY         892
+#define IDC_REFLECTION_PLANE_NZ         893
+#define IDC_REFLECTION_PLANE_DIST       894
+#define IDC_RENDERPROBE_LIST            895
+#define IDC_REFLECTION_MAX_LEVEL        896
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1279,6 +1293,7 @@
 #define ID_TABLE_NOTES                  4024
 #define ID_NEW_STRIPPEDTABLE            4025
 #define ID_NEW_LIGHTSEQTABLE            4026
+#define ID_TABLE_RENDERPROBEMANAGER     4027
 #define IDC_ENABLE_EMREEL_CHECK         13432
 #define IDC_ENABLE_DECAL_CHECK          13433
 #define IDC_BG_TEST_DESKTOP_CHECK       13434
@@ -1394,9 +1409,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        669
-#define _APS_NEXT_COMMAND_VALUE         4027
-#define _APS_NEXT_CONTROL_VALUE         888
+#define _APS_NEXT_RESOURCE_VALUE        671
+#define _APS_NEXT_COMMAND_VALUE         4028
+#define _APS_NEXT_CONTROL_VALUE         897
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

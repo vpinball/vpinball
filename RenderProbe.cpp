@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "RenderProbe.h"
 
+const string PLAYFIELD_REFLECTION_RENDERPROBE_NAME = "Playfield Reflections"s;
+
 RenderProbe::RenderProbe()
 { 
 }
@@ -10,8 +12,7 @@ RenderProbe::~RenderProbe()
    assert((m_staticRT == nullptr) && (m_dynamicRT == nullptr));
 }
 
-
-HRESULT RenderProbe::SaveData(IStream* pstm, HCRYPTHASH hcrypthash)
+HRESULT RenderProbe::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
 {
    BiffWriter bw(pstm, hcrypthash);
    bw.WriteInt(FID(TYPE), m_type);
@@ -41,7 +42,7 @@ bool RenderProbe::LoadToken(const int id, BiffReader* const pbr)
    return true;
 }
 
-string RenderProbe::GetName() const
+string& RenderProbe::GetName()
 {
    return m_name;
 }
@@ -106,8 +107,15 @@ void RenderProbe::RenderScreenSpaceTransparency(const bool is_static)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Reflection plane
 
-void RenderProbe::SetReflectionPlane(const vec4& plane)
+void RenderProbe::GetReflectionPlane(vec4& plane) const
 {
+   plane.x = m_reflection_plane.x;
+   plane.y = m_reflection_plane.y;
+   plane.z = m_reflection_plane.z;
+   plane.w = m_reflection_plane.w;
+}
+
+void RenderProbe::SetReflectionPlane(const vec4& plane) {
    m_reflection_plane = plane;
 }
 
