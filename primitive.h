@@ -81,7 +81,10 @@ public:
    float m_alpha = 1.0f;
 
    string m_szReflectionProbe;
-   float m_reflectionStrength = 0.0f;
+   float m_reflectionStrength = 1.0f;
+
+   string m_szRefractionProbe;
+   float m_refractionThickness = 10.0f;
 
    bool m_toy;
    bool m_skipRendering;

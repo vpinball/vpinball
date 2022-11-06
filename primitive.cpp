@@ -1227,12 +1227,14 @@ void Primitive::RenderObject()
    {
       m_d.m_szMaterial = g_pplayer->m_ptable->m_playfieldMaterial;
       m_d.m_szImage = g_pplayer->m_ptable->m_image;
-      m_d.m_szReflectionProbe = "Playfield Reflections"s;
+      m_d.m_szReflectionProbe = PLAYFIELD_REFLECTION_RENDERPROBE_NAME;
       m_d.m_reflectionStrength = m_ptable->m_playfieldReflectionStrength;
       pinf = SF_ANISOTROPIC;
    }
 
-   // Request reflection probe before seting up state
+   // Request probes before setting up state
+   RenderProbe *refraction_probe = m_ptable->GetRenderProbe(m_d.m_szRefractionProbe); // FIXME do not apply refraction when rendering reflections
+   Sampler *refractions = refraction_probe ? refraction_probe->GetProbe(g_pplayer->m_isRenderingStatic) : nullptr;
    RenderProbe *reflection_probe = m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
    Sampler *reflections = reflection_probe ? reflection_probe->GetProbe(g_pplayer->m_isRenderingStatic)  : nullptr;
 
@@ -1334,31 +1336,24 @@ void Primitive::RenderObject()
       { // If the primitive is already rendered (dynamic pass after a static prepass, or multipass rendering due to alpha blending) => only render additive reflections (primitive itself is already rendered in the static prepass)
          g_pplayer->m_pin3d.EnableAlphaBlend(true);
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
-         //pd3dDevice->basicShader->SetTechnique(pin ? SHADER_TECHNIQUE_basic_refl_only_with_texture : SHADER_TECHNIQUE_basic_refl_only_without_texture);
          pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_basic_refl_only_without_texture);
       }
       // Rendering without a static prepass (dynamic primitive, dynamic rendering mode,...) => render primitive with its reflections
       else if (pin && nMap)
-         #ifdef ENABLE_SDL
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
-         #else
-         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_refl_with_texture_normal, mat->m_bIsMetal);
-         #endif
       else if (pin)
-         #ifdef ENABLE_SDL
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
-         #else
-         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_refl_with_texture, mat->m_bIsMetal);
-         #endif
       else
-         #ifdef ENABLE_SDL
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
-         #else
-         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_refl_without_texture, mat->m_bIsMetal);
-         #endif
-      #ifdef ENABLE_SDL
       pd3dDevice->basicShader->SetBool(SHADER_doReflections, true);
-      #endif
+   }
+
+   // setup for applying refractions from screen space probe
+   if (refractions)
+   {
+      pd3dDevice->basicShader->SetTexture(SHADER_tex_refraction, refractions);
+      pd3dDevice->basicShader->SetBool(SHADER_doRefractions, true);
+      pd3dDevice->basicShader->SetFloat(SHADER_refractionThickness, m_d.m_refractionThickness);
    }
 
    // draw the mesh
@@ -1385,8 +1380,9 @@ void Primitive::RenderObject()
    g_pplayer->UpdateBasicShaderMatrix();
 #ifdef ENABLE_SDL
    pd3dDevice->basicShader->SetBool(SHADER_doNormalMapping, false);
-   pd3dDevice->basicShader->SetBool(SHADER_doReflections, false);
 #endif
+   pd3dDevice->basicShader->SetBool(SHADER_doReflections, false);
+   pd3dDevice->basicShader->SetBool(SHADER_doRefractions, false);
    pd3dDevice->basicShader->SetFlasherColorAlpha(previousFlasherColorAlpha);
    pd3dDevice->basicShader->SetDisableLighting(vec4(0.f, 0.f, 0.f, 0.f));
    pd3dDevice->CopyRenderStates(false, initial_state);
@@ -1634,6 +1630,11 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool bac
    bw.WriteFloat(FID(FALP), m_d.m_alpha);
    bw.WriteInt(FID(COLR), m_d.m_color);
 
+   bw.WriteString(FID(REFL), m_d.m_szReflectionProbe);
+   bw.WriteFloat(FID(RSTR), m_d.m_reflectionStrength);
+   bw.WriteString(FID(REFR), m_d.m_szRefractionProbe);
+   bw.WriteFloat(FID(RTHI), m_d.m_refractionThickness);
+
    ISelect::SaveData(pstm, hcrypthash);
 
    bw.WriteTag(FID(ENDB));
@@ -1847,6 +1848,12 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    case FID(ADDB): pbr->GetBool(m_d.m_addBlend); break;
    case FID(FALP): pbr->GetFloat(m_d.m_alpha); break;
    case FID(COLR): pbr->GetInt(m_d.m_color); break;
+
+   case FID(REFL): pbr->GetString(m_d.m_szReflectionProbe); break;
+   case FID(RSTR): pbr->GetFloat(m_d.m_reflectionStrength); break;
+   case FID(REFR): pbr->GetString(m_d.m_szRefractionProbe); break;
+   case FID(RTHI): pbr->GetFloat(m_d.m_refractionThickness); break;
+
    default: ISelect::LoadToken(id, pbr); break;
    }
    return true;

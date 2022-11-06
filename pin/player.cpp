@@ -1466,6 +1466,13 @@ HRESULT Player::Init()
    // colordepth & refreshrate are only defined if fullscreen is true.
    // width and height may be modified during initialization (for example for VR, they are adapted to the headset resolution)
    const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, vsync, aaFactor, m_stereo3D, FXAA, !!m_sharpen, !m_disableAO, ss_refl);
+   if (hr != S_OK)
+   {
+      char szFoo[64];
+      sprintf_s(szFoo, sizeof(szFoo), "InitPin3D Error code: %x", hr);
+      ShowError(szFoo);
+      return hr;
+   }
 
 #ifdef ENABLE_SDL
    if (m_stereo3D == STEREO_VR)
@@ -1497,14 +1504,6 @@ HRESULT Player::Init()
 #endif
    // Set the output frame buffer size to the size of the window output
    m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->SetSize(m_wnd_width, m_wnd_height);
-
-   if (hr != S_OK)
-   {
-      char szFoo[64];
-      sprintf_s(szFoo, sizeof(szFoo), "InitPin3D Error code: %x", hr);
-      ShowError(szFoo);
-      return hr;
-   }
 
    if (m_fullScreen)
       SetWindowPos(nullptr, 0, 0, m_wnd_width, m_wnd_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
@@ -1587,6 +1586,7 @@ HRESULT Player::Init()
          m_implicitPlayfieldMesh->m_d.m_toy = true;
          m_implicitPlayfieldMesh->m_d.m_use3DMesh = true;
          m_implicitPlayfieldMesh->m_d.m_vSize.Set(1.0f, 1.0f, 1.0f);
+         m_implicitPlayfieldMesh->m_d.m_depthBias = 1000.0f; // Draw before the other objects
          m_implicitPlayfieldMesh->m_mesh.m_vertices.resize(4);
          unsigned int offs = 0;
          for (unsigned int y = 0; y <= 1; ++y)
@@ -1614,7 +1614,7 @@ HRESULT Player::Init()
    }
 
    // Adjust the implicit playfield reflection probe
-   RenderProbe *pf_reflection_probe = m_ptable->GetRenderProbe("Playfield Reflections"s);
+   RenderProbe *pf_reflection_probe = m_ptable->GetRenderProbe(PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
    if (pf_reflection_probe)
    {
       vec4 plane = vec4(0.f, 0.f, 1.f, m_ptable->m_tableheight);

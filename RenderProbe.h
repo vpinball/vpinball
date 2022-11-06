@@ -1,5 +1,7 @@
 #pragma once
 
+extern const string PLAYFIELD_REFLECTION_RENDERPROBE_NAME;
+
 // A render probe is a render of the scene to an offscreen render target which is later used for shading scene parts, for example for reflections
 class RenderProbe : ILoadable
 {
@@ -24,17 +26,20 @@ public:
    RenderProbe();
    ~RenderProbe();
 
-   string GetName() const;
+   string& GetName();
    void SetName(const string& name);
    ProbeType GetType() const { return m_type; }
+   void SetType(const ProbeType type) { m_type = type; }
 
    // Reflection plane properties
+   void GetReflectionPlane(vec4& plane) const;
    void SetReflectionPlane(const vec4& plane);
    void GetReflectionPlaneNormal(vec3& normal) const;
+   ReflectionMode GetReflectionMode() const { return m_reflection_mode;  }
    void SetReflectionMode(ReflectionMode mode);
 
    // Load/Save
-   HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash);
+   HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool backupForPlay);
    HRESULT LoadData(IStream* pstm, PinTable* ppt, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
    bool LoadToken(const int id, BiffReader* const pbr);
 

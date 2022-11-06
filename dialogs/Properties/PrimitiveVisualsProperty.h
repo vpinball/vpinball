@@ -27,6 +27,7 @@ private:
     ComboBox    m_reflectionCombo;
     EditBox     m_reflectionAmountEdit;
     ComboBox    m_refractionCombo;
+    EditBox     m_refractionThicknessEdit;
     HWND        m_hDisplayImageCheck;
     HWND        m_hObjectSpaceCheck;
     EditBox     m_depthBiasEdit;

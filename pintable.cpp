@@ -2500,6 +2500,25 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                csaveditems++;
                ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
             }
+
+            for (int i = 0; i < m_vrenderprobe.size(); i++)
+            {
+               const string szStmName = "RenderProbe" + std::to_string(i);
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
+
+               if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
+               {
+                  m_vrenderprobe[i]->SaveData(pstmItem, hch, false);
+                  pstmItem->Release();
+                  pstmItem = nullptr;
+               }
+
+               csaveditems++;
+               ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
+            }
+
+            ProfileLog("RenderProbe"s);
+
          }
          pstmGame->Release();
       }
@@ -3261,6 +3280,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
       bw.WriteInt(FID(SIMG), (int)m_vimage.size());
       bw.WriteInt(FID(SFNT), (int)m_vfont.size());
       bw.WriteInt(FID(SCOL), m_vcollection.size());
+      bw.WriteInt(FID(SRPR), m_vrenderprobe.size());
 
       bw.WriteWideString(FID(NAME), m_wzName);
 
@@ -3412,12 +3432,13 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
          int ctextures = 0;
          int cfonts = 0;
          int ccollection = 0;
+         int cprobes = 0;
 
-         if (SUCCEEDED(hr = LoadData(pstmGame, csubobj, csounds, ctextures, cfonts, ccollection, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : NULL)))
+         if (SUCCEEDED(hr = LoadData(pstmGame, csubobj, csounds, ctextures, cfonts, ccollection, cprobes, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : NULL)))
          {
             ProfileLog("LoadData"s);
 
-            const int ctotalitems = csubobj + csounds + ctextures + cfonts;
+            const int ctotalitems = csubobj + csounds + ctextures + cfonts + cprobes;
             int cloadeditems = 0;
             ::SendMessage(hwndProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, ctotalitems));
 
@@ -3579,6 +3600,26 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
             ProfileLog("Collection"s);
 
+            for (int i = 0; i < cprobes; i++)
+            {
+               const string szStmName = "RenderProbe" + std::to_string(i);
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
+
+               IStream *pstmItem;
+               if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
+               {
+                  RenderProbe *prb = new RenderProbe();
+                  prb->LoadData(pstmItem, this, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : NULL);
+                  m_vrenderprobe.push_back(prb);
+                  pstmItem->Release();
+                  pstmItem = nullptr;
+               }
+               cloadeditems++;
+               ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
+            }
+
+            ProfileLog("RenderProbe"s);
+
             for (size_t i = 0; i < m_vedit.size(); i++)
             {
                IEditable * const piedit = m_vedit[i];
@@ -3649,7 +3690,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
          {
             // reflection were hardcoded without render probe before 10.8.0
             RenderProbe* pf_reflections = new RenderProbe();
-            pf_reflections->SetName("Playfield Reflections"s);
+            pf_reflections->SetName(PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
             m_vrenderprobe.push_back(pf_reflections);
 
             for (size_t i = 0; i < m_vedit.size(); ++i)
@@ -3759,11 +3800,11 @@ void PinTable::SetLoadDefaults()
    m_overridePhysicsFlipper = false;
 }
 
-HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctextures, int& cfonts, int& ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctextures, int& cfonts, int& ccollection, int& cprobes, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetLoadDefaults();
 
-   int rgi[6] = { 0, 0, 0, 0, 0, 0 };
+   int rgi[7] = { 0, 0, 0, 0, 0, 0, 0 };
 
    BiffReader br(pstm, this, rgi, version, hcrypthash, hcryptkey);
 
@@ -3774,6 +3815,7 @@ HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctext
    ctextures = rgi[3];
    cfonts = rgi[4];
    ccollection = rgi[5];
+   cprobes = rgi[6];
 
    return S_OK;
 }
@@ -3878,7 +3920,8 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(SIMG): pbr->GetInt(&((int *)pbr->m_pdata)[3]); break;
    case FID(SFNT): pbr->GetInt(&((int *)pbr->m_pdata)[4]); break;
    case FID(SCOL): pbr->GetInt(&((int *)pbr->m_pdata)[5]); break;
-   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
+   case FID(SRPR): pbr->GetInt(&((int *)pbr->m_pdata)[6]); break;
+   case FID(NAME): pbr->GetWideString(m_wzName, sizeof(m_wzName) / sizeof(m_wzName[0])); break;
    case FID(BIMG): pbr->GetString(m_BG_image[0]); break;
    case FID(BIMF): pbr->GetString(m_BG_image[1]); break;
    case FID(BIMS): pbr->GetString(m_BG_image[2]); break;
@@ -6142,8 +6185,8 @@ HRESULT PinTable::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versio
 {
    SetDefaults(false);
 
-   int csubobj, csounds, ctextures, cfonts, ccollection;
-   LoadData(pstm, csubobj, csounds, ctextures, cfonts, ccollection, version, hcrypthash, hcryptkey);
+   int csubobj, csounds, ctextures, cfonts, ccollection, cprobes;
+   LoadData(pstm, csubobj, csounds, ctextures, cfonts, ccollection, cprobes, version, hcrypthash, hcryptkey);
 
    return S_OK;
 }

@@ -15,6 +15,7 @@ texture Texture0; // base texture
 texture Texture3; // bulb light buffer
 texture Texture4; // normal map
 texture Texture5; // reflection probe
+texture Texture6; // refraction probe
 
 sampler2D tex_base_color : TEXUNIT0 = sampler_state // base texture
 {
@@ -55,7 +56,18 @@ sampler2D tex_reflection : TEXUNIT5 = sampler_state // reflection probe
    MINFILTER = NONE;
    ADDRESSU = Clamp;
    ADDRESSV = Clamp;
-   SRGBTexture = true;
+   SRGBTexture = false;
+};
+
+sampler2D tex_refraction : TEXUNIT6 = sampler_state // refraction probe
+{
+   Texture = (Texture6);
+   MIPFILTER = LINEAR;
+   MAGFILTER = LINEAR;
+   MINFILTER = LINEAR;
+   ADDRESSU = Clamp;
+   ADDRESSV = Clamp;
+   SRGBTexture = false;
 };
 
 const bool objectSpaceNormalMap;
@@ -74,6 +86,10 @@ const float alphaTestValue;
 
 const float4 cWidth_Height_MirrorAmount;
 const float3 mirrorNormal;
+
+const bool doReflections;
+const bool doRefractions;
+const float refractionThickness;
 
 struct VS_OUTPUT 
 { 
@@ -133,6 +149,46 @@ float3 normal_map(const float3 N, const float3 V, const float2 uv)
                             tn) );
 }
 
+float4x4 inverse(float4x4 m)
+{
+   float n11 = m[0][0], n12 = m[1][0], n13 = m[2][0], n14 = m[3][0];
+   float n21 = m[0][1], n22 = m[1][1], n23 = m[2][1], n24 = m[3][1];
+   float n31 = m[0][2], n32 = m[1][2], n33 = m[2][2], n34 = m[3][2];
+   float n41 = m[0][3], n42 = m[1][3], n43 = m[2][3], n44 = m[3][3];
+
+   float t11 = n23 * n34 * n42 - n24 * n33 * n42 + n24 * n32 * n43 - n22 * n34 * n43 - n23 * n32 * n44 + n22 * n33 * n44;
+   float t12 = n14 * n33 * n42 - n13 * n34 * n42 - n14 * n32 * n43 + n12 * n34 * n43 + n13 * n32 * n44 - n12 * n33 * n44;
+   float t13 = n13 * n24 * n42 - n14 * n23 * n42 + n14 * n22 * n43 - n12 * n24 * n43 - n13 * n22 * n44 + n12 * n23 * n44;
+   float t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34;
+
+   float det = n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14;
+   float idet = 1.0f / det;
+
+   float4x4 ret;
+
+   ret[0][0] = t11 * idet;
+   ret[0][1] = (n24 * n33 * n41 - n23 * n34 * n41 - n24 * n31 * n43 + n21 * n34 * n43 + n23 * n31 * n44 - n21 * n33 * n44) * idet;
+   ret[0][2] = (n22 * n34 * n41 - n24 * n32 * n41 + n24 * n31 * n42 - n21 * n34 * n42 - n22 * n31 * n44 + n21 * n32 * n44) * idet;
+   ret[0][3] = (n23 * n32 * n41 - n22 * n33 * n41 - n23 * n31 * n42 + n21 * n33 * n42 + n22 * n31 * n43 - n21 * n32 * n43) * idet;
+
+   ret[1][0] = t12 * idet;
+   ret[1][1] = (n13 * n34 * n41 - n14 * n33 * n41 + n14 * n31 * n43 - n11 * n34 * n43 - n13 * n31 * n44 + n11 * n33 * n44) * idet;
+   ret[1][2] = (n14 * n32 * n41 - n12 * n34 * n41 - n14 * n31 * n42 + n11 * n34 * n42 + n12 * n31 * n44 - n11 * n32 * n44) * idet;
+   ret[1][3] = (n12 * n33 * n41 - n13 * n32 * n41 + n13 * n31 * n42 - n11 * n33 * n42 - n12 * n31 * n43 + n11 * n32 * n43) * idet;
+
+   ret[2][0] = t13 * idet;
+   ret[2][1] = (n14 * n23 * n41 - n13 * n24 * n41 - n14 * n21 * n43 + n11 * n24 * n43 + n13 * n21 * n44 - n11 * n23 * n44) * idet;
+   ret[2][2] = (n12 * n24 * n41 - n14 * n22 * n41 + n14 * n21 * n42 - n11 * n24 * n42 - n12 * n21 * n44 + n11 * n22 * n44) * idet;
+   ret[2][3] = (n13 * n22 * n41 - n12 * n23 * n41 - n13 * n21 * n42 + n11 * n23 * n42 + n12 * n21 * n43 - n11 * n22 * n43) * idet;
+
+   ret[3][0] = t14 * idet;
+   ret[3][1] = (n13 * n24 * n31 - n14 * n23 * n31 + n14 * n21 * n33 - n11 * n24 * n33 - n13 * n21 * n34 + n11 * n23 * n34) * idet;
+   ret[3][2] = (n14 * n22 * n31 - n12 * n24 * n31 - n14 * n21 * n32 + n11 * n24 * n32 + n12 * n21 * n34 - n11 * n22 * n34) * idet;
+   ret[3][3] = (n12 * n23 * n31 - n13 * n22 * n31 + n13 * n21 * n32 - n11 * n23 * n32 - n12 * n21 * n33 + n11 * n22 * n33) * idet;
+
+   return ret;
+}
+
 // Compute reflections from reflection probe (screen space coordinates)
 float3 compute_reflection(const float2 screenSpace, const float3 N)
 {
@@ -141,6 +197,29 @@ float3 compute_reflection(const float2 screenSpace, const float3 N)
    // dot(mirrorNormal, N) does not really needs to be done per pixel and could be moved to the vertx shader
    // Offset by half a texel to use GPU filtering for some blur
    return smoothstep(0.5, 0.9, dot(mirrorNormal, N)) * cWidth_Height_MirrorAmount.z * tex2D(tex_reflection, (screenSpace + float2(0.5, 0.5)) / cWidth_Height_MirrorAmount.xy).rgb;
+}
+
+// Compute refractions from screen space probe
+float3 compute_refraction(const float3 pos, const float3 N, const float3 V)
+{
+   // Compute refracted visible position
+   float3 R = refract(V, N, 1.0 / 1.5); // n1 = 1.0 (air), n2 = 1.5 (plastic), eta = n1 / n2
+   float3 refracted_pos = pos + refractionThickness * R; // Shift ray by the thickness of the material
+
+   // Project from world view position to probe UV
+   float4x4 matProj = mul(inverse(matWorldView), matWorldViewProj); // FIXME this must be moved to the matrix uniform stack
+   float4 proj = mul(float4(refracted_pos.x, refracted_pos.y, refracted_pos.z, 1.0), matProj);
+   float2 uv = 0.5 * (float2(1.0, 1.0) + float2(proj.x, -proj.y) / proj.w);
+
+   /* // Debug output
+   if (length(N) < 0.5) // invalid normal, shown as red for debugging
+      return float3(1.0, 0.0, 0.0);
+   if (dot(N, V) < 0.0) // Wrong orientation? (looking from the back, shown as blue for debugging)
+      return float3(0.0, 0.0, 1.0);
+   if (length(R) < 0.5) // invalid refraction state (no refraction, shown as green for debugging)
+      return float3(0.0, 1.0, 0.0);*/
+
+   return tex2D(tex_refraction, uv).rgb;
 }
 
 //------------------------------------
@@ -204,7 +283,7 @@ VS_DEPTH_ONLY_TEX_OUTPUT vs_depth_only_main_with_texture(const in float4 vPositi
    return Out;
 }
 
-float4 ps_main(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform bool is_metal, uniform bool doReflections) : COLOR
+float4 ps_main(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform bool is_metal) : COLOR
 {
    const float3 diffuse  = cBase_Alpha.xyz;
    const float3 glossy   = is_metal ? cBase_Alpha.xyz : cGlossy_ImageLerp.xyz*0.08;
@@ -231,10 +310,17 @@ float4 ps_main(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform b
    [branch] if (doReflections)
       result.rgb += compute_reflection(screenSpace, N);
 
+   [branch] if (doRefractions)
+   {
+      // alpha channel is the transparency of the object, base color (diffuse) is the tint (even if alpha is 0)
+      result.rgb = lerp(cBase_Alpha.rgb * compute_refraction(IN.worldPos_t1x.xyz, N, V), result.rgb, cBase_Alpha.a);
+      result.a = 1.0;
+   }
+
    return result * staticColor_Alpha;
 }
 
-float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform bool is_metal, uniform bool doNormalMapping, uniform bool doReflections) : COLOR
+float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform bool is_metal, uniform bool doNormalMapping) : COLOR
 {
    float4 pixel = tex2D(tex_base_color, IN.tex01.xy);
 
@@ -273,6 +359,13 @@ float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform
 
    [branch] if (doReflections)
       result.rgb += compute_reflection(screenSpace, N);
+
+   [branch] if (doRefractions)
+   {
+      // Texture must use separate channels, with alpha channel for transparency channel, rgb for tint (even if alpha is 0, for example for colored plastic)
+      result.rgb = lerp(diffuse * compute_refraction(IN.worldPos, N, V), result.rgb, result.a);
+      result.a = 1.0;
+   }
 
    return result * staticColor_Alpha;
 }
@@ -381,7 +474,7 @@ technique basic_without_texture_isMetal
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_notex_main(); 
-      PixelShader  = compile ps_3_0 ps_main(1, 0);
+      PixelShader  = compile ps_3_0 ps_main(1);
    } 
 }
 
@@ -390,7 +483,7 @@ technique basic_without_texture
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_notex_main(); 
-      PixelShader  = compile ps_3_0 ps_main(0, 0);
+      PixelShader  = compile ps_3_0 ps_main(0);
    } 
 }
 
@@ -399,7 +492,7 @@ technique basic_with_texture_isMetal
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_main(); 
-      PixelShader  = compile ps_3_0 ps_main_texture(1, 0, 0);
+      PixelShader  = compile ps_3_0 ps_main_texture(1, 0);
    } 
 }
 
@@ -408,7 +501,7 @@ technique basic_with_texture
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_main(); 
-      PixelShader  = compile ps_3_0 ps_main_texture(0, 0, 0);
+      PixelShader  = compile ps_3_0 ps_main_texture(0, 0);
    } 
 }
 
@@ -417,7 +510,7 @@ technique basic_with_texture_normal_isMetal
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main();
-      PixelShader  = compile ps_3_0 ps_main_texture(1, 1, 0);
+      PixelShader  = compile ps_3_0 ps_main_texture(1, 1);
    }
 }
 
@@ -426,62 +519,7 @@ technique basic_with_texture_normal
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main();
-      PixelShader  = compile ps_3_0 ps_main_texture(0, 1, 0);
-   }
-}
-
-
-technique basic_with_refl_without_texture_isMetal
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_notex_main();
-      PixelShader = compile ps_3_0 ps_main(1, 1);
-   }
-}
-
-technique basic_with_refl_without_texture
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_notex_main();
-      PixelShader = compile ps_3_0 ps_main(0, 1);
-   }
-}
-
-technique basic_with_refl_with_texture_isMetal
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_main();
-      PixelShader = compile ps_3_0 ps_main_texture(1, 0, 1);
-   }
-}
-
-technique basic_with_refl_with_texture
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_main();
-      PixelShader = compile ps_3_0 ps_main_texture(0, 0, 1);
-   }
-}
-
-technique basic_with_refl_with_texture_normal_isMetal
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_main();
-      PixelShader = compile ps_3_0 ps_main_texture(1, 1, 1);
-   }
-}
-
-technique basic_with_refl_with_texture_normal
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_main();
-      PixelShader = compile ps_3_0 ps_main_texture(0, 1, 1);
+      PixelShader  = compile ps_3_0 ps_main_texture(0, 1);
    }
 }
 
@@ -554,7 +592,7 @@ technique kickerBoolean_isMetal
    {
       //ZWriteEnable=TRUE;
       VertexShader = compile vs_3_0 vs_kicker();
-      PixelShader  = compile ps_3_0 ps_main(1, 0);
+      PixelShader  = compile ps_3_0 ps_main(1);
    }
 }
 
@@ -564,7 +602,7 @@ technique kickerBoolean
    {
       //ZWriteEnable=TRUE;
       VertexShader = compile vs_3_0 vs_kicker();
-      PixelShader  = compile ps_3_0 ps_main(0, 0);
+      PixelShader  = compile ps_3_0 ps_main(0);
    }
 }
 

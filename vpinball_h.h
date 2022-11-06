@@ -14,6 +14,7 @@
 #include "AudioOptionsDialog.h"
 #include "CollectionManagerDialog.h"
 #include "PhysicsOptionsDialog.h"
+#include "RenderProbeDialog.h"
 #include "TableInfoDialog.h"
 #include "DimensionDialog.h"
 #include "MaterialDialog.h"
@@ -286,6 +287,7 @@ private:
    PhysicsOptionsDialog m_physicsOptDialog;
    TableInfoDialog m_tableInfoDialog;
    DimensionDialog m_dimensionDialog;
+   RenderProbeDialog m_renderProbeDialog;
    MaterialDialog m_materialDialog;
    AboutDialog m_aboutDialog;
 #ifdef ENABLE_SDL

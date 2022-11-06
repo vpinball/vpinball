@@ -864,6 +864,11 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
          ShowSubDialog(m_collectionMngDlg, true);
       return true;
    }
+   case ID_TABLE_RENDERPROBEMANAGER:
+   {
+      ShowSubDialog(m_renderProbeDialog, true);
+      return true;
+   }
    case ID_PREFERENCES_SECURITYOPTIONS:
    {
       DialogBoxParam(theInstance, MAKEINTRESOURCE(IDD_SECURITY_OPTIONS), GetHwnd(), SecurityOptionsProc, 0);
@@ -1282,6 +1287,8 @@ bool VPinball::processKeyInputForDialogs(MSG *pmsg)
          consumed = !!m_collectionMngDlg.IsDialogMessage(*pmsg);
       if (!consumed && m_dimensionDialog.IsWindow())
          consumed = !!m_dimensionDialog.IsDialogMessage(*pmsg);
+      if (!consumed && m_renderProbeDialog.IsWindow())
+         consumed = !!m_renderProbeDialog.IsDialogMessage(*pmsg);
 
       const HWND activeHwnd = ::GetFocus();
       if (!consumed && m_toolbarDialog && (activeHwnd == m_toolbarDialog->GetHwnd()))
@@ -1359,8 +1366,9 @@ void VPinball::MainMsgLoop()
          }
          catch (...) // something failed on load/init
          {
-            delete g_pplayer;
+            auto player = g_pplayer;
             g_pplayer = nullptr;
+            delete player;
 
             g_pvp->m_ptableActive->HandleLoadFailure();
          }
@@ -2123,6 +2131,8 @@ void VPinball::CloseAllDialogs()
       m_tableInfoDialog.Destroy();
    if (m_dimensionDialog.IsWindow())
       m_dimensionDialog.Destroy();
+   if (m_renderProbeDialog.IsWindow())
+      m_renderProbeDialog.Destroy();
    if (m_materialDialog.IsWindow())
       m_materialDialog.Destroy();
    if (m_aboutDialog.IsWindow())

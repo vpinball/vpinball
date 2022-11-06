@@ -14,6 +14,7 @@ PrimitiveVisualsProperty::PrimitiveVisualsProperty(const VectorProtected<ISelect
     m_reflectionCombo.SetDialog(this);
     m_reflectionAmountEdit.SetDialog(this);
     m_refractionCombo.SetDialog(this);
+    m_refractionThicknessEdit.SetDialog(this);
     m_materialCombo.SetDialog(this);
     m_opacityAmountEdit.SetDialog(this);
 }
@@ -59,7 +60,9 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == IDC_REFLECTION_AMOUNT || dispid == -1)
            PropertyDialog::SetFloatTextbox(m_reflectionAmountEdit, prim->m_d.m_reflectionStrength);
         if (dispid == DISPID_REFRACTION_PROBE || dispid == -1)
-           UpdateRenderProbeComboBox(prim->GetPTable()->GetRenderProbeList(RenderProbe::SCREEN_SPACE_TRANSPARENCY), m_refractionCombo, prim->m_d.m_szReflectionProbe);
+           UpdateRenderProbeComboBox(prim->GetPTable()->GetRenderProbeList(RenderProbe::SCREEN_SPACE_TRANSPARENCY), m_refractionCombo, prim->m_d.m_szRefractionProbe);
+        if (dispid == IDC_REFRACTION_THICKNESS || dispid == -1)
+           PropertyDialog::SetFloatTextbox(m_refractionThicknessEdit, prim->m_d.m_refractionThickness);
 
         // Disable playfield settings that are taken from table settings to avoid confusing the user
         if (m_hReflectionEnabledCheck && (dispid == IDC_REFLECT_ENABLED_CHECK || dispid == -1))
@@ -182,6 +185,12 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
             case IDC_REFLECTION_AMOUNT:
                 CHECK_UPDATE_ITEM(prim->m_d.m_reflectionStrength, PropertyDialog::GetFloatTextbox(m_reflectionAmountEdit), prim);
                 break;
+            case DISPID_REFRACTION_PROBE:
+                CHECK_UPDATE_COMBO_TEXT_STRING(prim->m_d.m_szRefractionProbe, m_refractionCombo, prim);
+                break;
+            case IDC_REFRACTION_THICKNESS:
+                CHECK_UPDATE_ITEM(prim->m_d.m_refractionThickness, PropertyDialog::GetFloatTextbox(m_refractionThicknessEdit), prim);
+                break;
             default:
                 UpdateBaseProperties(prim, &prim->m_d, dispid);
                 break;
@@ -217,41 +226,54 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     m_reflectionCombo.AttachItem(DISPID_REFLECTION_PROBE);
     m_reflectionAmountEdit.AttachItem(IDC_REFLECTION_AMOUNT);
     m_refractionCombo.AttachItem(DISPID_REFRACTION_PROBE);
+    m_refractionThicknessEdit.AttachItem(IDC_REFRACTION_THICKNESS);
     AttachItem(IDC_COLOR_BUTTON1, m_colorButton);
     UpdateVisuals();
 
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), CResizer::topleft, 0);
-    m_resizer.AddChild(m_hDisplayImageCheck, CResizer::topleft, 0);
-    m_resizer.AddChild(m_hObjectSpaceCheck, CResizer::topleft, 0);
-    m_resizer.AddChild(m_hVisibleCheck, CResizer::topleft, 0);
-    m_resizer.AddChild(m_hReflectionEnabledCheck, CResizer::topleft, 0);
-    m_resizer.AddChild(m_hRenderBackfacingCheck, CResizer::topleft, 0);
-    m_resizer.AddChild(m_hStaticRenderingCheck, CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hDrawTexturesInsideCheck, CResizer::topleft, 0);
-    m_resizer.AddChild(m_imageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_normalMapCombo, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_materialCombo, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hAdditiveBlendCheck, CResizer::topleft, 0);
-    m_resizer.AddChild(m_opacityAmountEdit, CResizer::topright, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_depthBiasEdit, CResizer::topright, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_disableLightingEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_disableLightFromBelowEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(m_legacySidesEdit, CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
     m_resizer.AddChild(m_edgeFactorUIEdit, CResizer::topright, RD_STRETCH_WIDTH);
+
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hVisibleCheck, CResizer::topleft, 0);
+    m_resizer.AddChild(m_hStaticRenderingCheck, CResizer::topleft, 0);
+    m_resizer.AddChild(m_hReflectionEnabledCheck, CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);
+    m_resizer.AddChild(m_hRenderBackfacingCheck, CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topleft, 0);
+    m_resizer.AddChild(m_depthBiasEdit, CResizer::topright, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hAdditiveBlendCheck, CResizer::topleft, 0);
+
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_materialCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, 0);
+    m_resizer.AddChild(m_imageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hDisplayImageCheck, CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), CResizer::topleft, 0);
+    m_resizer.AddChild(m_normalMapCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hObjectSpaceCheck, CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), CResizer::topleft, 0);
+    m_resizer.AddChild(m_disableLightingEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC11), CResizer::topleft, 0);
+    m_resizer.AddChild(m_disableLightFromBelowEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC12), CResizer::topleft, 0);
     m_resizer.AddChild(m_colorButton, CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC13), CResizer::topleft, 0);
+    m_resizer.AddChild(m_opacityAmountEdit, CResizer::topright, RD_STRETCH_WIDTH);
+
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC14), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_reflectionCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC15), CResizer::topleft, 0);
     m_resizer.AddChild(m_reflectionAmountEdit, CResizer::topright, RD_STRETCH_WIDTH);
+
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC16), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_refractionCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC17), CResizer::topleft, 0);
+    m_resizer.AddChild(m_refractionThicknessEdit, CResizer::topright, RD_STRETCH_WIDTH);
 
     return TRUE;
 }
