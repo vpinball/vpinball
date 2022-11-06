@@ -1161,7 +1161,6 @@
 #define IDC_STATIC7                     842
 #define IDC_STATIC6                     843
 #define IDC_MSAA_LABEL                  843
-#define IDC_STATIC27                    843
 #define IDC_STATIC11                    844
 #define IDC_STATIC1                     845
 #define IDC_STATIC2                     846
@@ -1409,7 +1408,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        671
+#define _APS_NEXT_RESOURCE_VALUE        670
 #define _APS_NEXT_COMMAND_VALUE         4028
 #define _APS_NEXT_CONTROL_VALUE         897
 #define _APS_NEXT_SYMED_VALUE           188

@@ -152,7 +152,7 @@ float3 normal_map(const float3 N, const float3 V, const float2 uv)
                             tn) );
 }
 
-float4x4 inverse(float4x4 m)
+float4x4 inverse(const float4x4 m)
 {
    float n11 = m[0][0], n12 = m[1][0], n13 = m[2][0], n14 = m[3][0];
    float n21 = m[0][1], n22 = m[1][1], n23 = m[2][1], n24 = m[3][1];
@@ -165,7 +165,7 @@ float4x4 inverse(float4x4 m)
    float t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34;
 
    float det = n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14;
-   float idet = 1.0f / det;
+   float idet = 1.0 / det;
 
    float4x4 ret;
 
@@ -206,13 +206,13 @@ float3 compute_reflection(const float2 screenSpace, const float3 N)
 float3 compute_refraction(const float3 pos, const float3 N, const float3 V)
 {
    // Compute refracted visible position
-   float3 R = refract(V, N, 1.0 / 1.5); // n1 = 1.0 (air), n2 = 1.5 (plastic), eta = n1 / n2
-   float3 refracted_pos = pos + refractionThickness * R; // Shift ray by the thickness of the material
+   const float3 R = refract(V, N, 1.0 / 1.5); // n1 = 1.0 (air), n2 = 1.5 (plastic), eta = n1 / n2
+   const float3 refracted_pos = pos + refractionThickness * R; // Shift ray by the thickness of the material
 
    // Project from world view position to probe UV
-   float4x4 matProj = mul(inverse(matWorldView), matWorldViewProj); // FIXME this must be moved to the matrix uniform stack
-   float4 proj = mul(float4(refracted_pos.x, refracted_pos.y, refracted_pos.z, 1.0), matProj);
-   float2 uv = 0.5 * (float2(1.0, 1.0) + float2(proj.x, -proj.y) / proj.w);
+   const float4x4 matProj = mul(inverse(matWorldView), matWorldViewProj); // FIXME this must be moved to the matrix uniform stack
+   const float4 proj = mul(float4(refracted_pos.x, refracted_pos.y, refracted_pos.z, 1.0), matProj);
+   const float2 uv = float2(0.5, 0.5) + float2(proj.x, -proj.y) * (0.5 / proj.w);
 
    /* // Debug output
    if (length(N) < 0.5) // invalid normal, shown as red for debugging
