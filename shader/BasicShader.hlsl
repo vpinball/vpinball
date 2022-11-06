@@ -53,7 +53,7 @@ sampler2D tex_reflection : TEXUNIT5 = sampler_state // reflection probe
    Texture = (Texture5);
    MIPFILTER = NONE;
    MAGFILTER = LINEAR;
-   MINFILTER = NONE;
+   MINFILTER = LINEAR;
    ADDRESSU = Clamp;
    ADDRESSV = Clamp;
    SRGBTexture = false;
@@ -62,7 +62,7 @@ sampler2D tex_reflection : TEXUNIT5 = sampler_state // reflection probe
 sampler2D tex_refraction : TEXUNIT6 = sampler_state // refraction probe
 {
    Texture = (Texture6);
-   MIPFILTER = LINEAR;
+   MIPFILTER = NONE;
    MAGFILTER = LINEAR;
    MINFILTER = LINEAR;
    ADDRESSU = Clamp;
