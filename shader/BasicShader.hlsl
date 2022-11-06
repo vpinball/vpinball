@@ -87,8 +87,11 @@ const float alphaTestValue;
 const float4 cWidth_Height_MirrorAmount;
 const float3 mirrorNormal;
 
-const bool doReflections;
-const bool doRefractions;
+// DX9 needs these to be defined outside of the shader (unless, you get a X4014 error), so use the effect framework for these
+//uniform bool is_metal;
+//uniform bool doNormalMapping;
+//const bool doReflections;
+//const bool doRefractions;
 const float refractionThickness;
 
 struct VS_OUTPUT 
@@ -283,7 +286,7 @@ VS_DEPTH_ONLY_TEX_OUTPUT vs_depth_only_main_with_texture(const in float4 vPositi
    return Out;
 }
 
-float4 ps_main(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform bool is_metal) : COLOR
+float4 ps_main(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform bool is_metal, uniform bool doReflections, uniform bool doRefractions) : COLOR
 {
    const float3 diffuse  = cBase_Alpha.xyz;
    const float3 glossy   = is_metal ? cBase_Alpha.xyz : cGlossy_ImageLerp.xyz*0.08;
@@ -320,7 +323,7 @@ float4 ps_main(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform b
    return result * staticColor_Alpha;
 }
 
-float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform bool is_metal, uniform bool doNormalMapping) : COLOR
+float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform bool is_metal, uniform bool doNormalMapping, uniform bool doReflections, uniform bool doRefractions) : COLOR
 {
    float4 pixel = tex2D(tex_base_color, IN.tex01.xy);
 
@@ -469,22 +472,87 @@ VS_NOTEX_OUTPUT vs_kicker (const in float4 vPosition : POSITION0,
 // Standard Materials
 //
 
+technique basic_without_texture
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_notex_main();
+      PixelShader = compile ps_3_0 ps_main(0, 0, 0);
+   }
+}
+
 technique basic_without_texture_isMetal
 { 
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_notex_main(); 
-      PixelShader  = compile ps_3_0 ps_main(1);
+      PixelShader  = compile ps_3_0 ps_main(1, 0, 0);
    } 
 }
 
-technique basic_without_texture
-{ 
-   pass P0 
-   { 
-      VertexShader = compile vs_3_0 vs_notex_main(); 
-      PixelShader  = compile ps_3_0 ps_main(0);
-   } 
+technique basic_without_texture_refl
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_notex_main();
+      PixelShader = compile ps_3_0 ps_main(0, 1, 0);
+   }
+}
+
+technique basic_without_texture_refl_isMetal
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_notex_main();
+      PixelShader = compile ps_3_0 ps_main(1, 1, 0);
+   }
+}
+
+technique basic_without_texture_refr
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_notex_main();
+      PixelShader = compile ps_3_0 ps_main(0, 0, 1);
+   }
+}
+
+technique basic_without_texture_refr_isMetal
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_notex_main();
+      PixelShader = compile ps_3_0 ps_main(1, 0, 1);
+   }
+}
+
+technique basic_without_texture_refr_refl
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_notex_main();
+      PixelShader = compile ps_3_0 ps_main(0, 1, 1);
+   }
+}
+
+technique basic_without_texture_refr_refl_isMetal
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_notex_main();
+      PixelShader = compile ps_3_0 ps_main(1, 1, 1);
+   }
+}
+
+
+
+technique basic_with_texture
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_texture(0, 0, 0, 0);
+   }
 }
 
 technique basic_with_texture_isMetal
@@ -492,26 +560,8 @@ technique basic_with_texture_isMetal
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_main(); 
-      PixelShader  = compile ps_3_0 ps_main_texture(1, 0);
+      PixelShader = compile ps_3_0 ps_main_texture(1, 0, 0, 0);
    } 
-}
-
-technique basic_with_texture
-{ 
-   pass P0 
-   { 
-      VertexShader = compile vs_3_0 vs_main(); 
-      PixelShader  = compile ps_3_0 ps_main_texture(0, 0);
-   } 
-}
-
-technique basic_with_texture_normal_isMetal
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_main();
-      PixelShader  = compile ps_3_0 ps_main_texture(1, 1);
-   }
 }
 
 technique basic_with_texture_normal
@@ -519,9 +569,130 @@ technique basic_with_texture_normal
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main();
-      PixelShader  = compile ps_3_0 ps_main_texture(0, 1);
+      PixelShader = compile ps_3_0 ps_main_texture(0, 1, 0, 0);
    }
 }
+
+technique basic_with_texture_normal_isMetal
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_texture(1, 1, 0, 0);
+   }
+}
+
+technique basic_with_texture_refl
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_texture(0, 0, 1, 0);
+   }
+}
+
+technique basic_with_texture_refl_isMetal
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_texture(1, 0, 1, 0);
+   }
+}
+
+technique basic_with_texture_refl_normal
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_texture(0, 1, 1, 0);
+   }
+}
+
+technique basic_with_texture_refl_normal_isMetal
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_texture(1, 1, 1, 0);
+   }
+}
+
+technique basic_with_texture_refr
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_texture(0, 0, 0, 1);
+   }
+}
+
+technique basic_with_texture_refr_isMetal
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_texture(1, 0, 0, 1);
+   }
+}
+
+technique basic_with_texture_refr_normal
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_texture(0, 1, 0, 1);
+   }
+}
+
+technique basic_with_texture_refr_normal_isMetal
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_texture(1, 1, 0, 1);
+   }
+}
+
+technique basic_with_texture_refr_refl
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_texture(0, 0, 1, 1);
+   }
+}
+
+technique basic_with_texture_refr_refl_isMetal
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_texture(1, 0, 1, 1);
+   }
+}
+
+technique basic_with_texture_refr_refl_normal
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_texture(0, 1, 1, 1);
+   }
+}
+
+technique basic_with_texture_refr_refl_normal_isMetal
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_texture(1, 1, 1, 1);
+   }
+}
+
+
+
+
 
 technique basic_refl_only_without_texture
 {
@@ -540,6 +711,8 @@ technique basic_refl_only_with_texture
       PixelShader = compile ps_3_0 ps_main_reflection_only_with_texture();
    }
 }
+
+
 
 technique basic_depth_only_without_texture
 {
@@ -592,7 +765,7 @@ technique kickerBoolean_isMetal
    {
       //ZWriteEnable=TRUE;
       VertexShader = compile vs_3_0 vs_kicker();
-      PixelShader  = compile ps_3_0 ps_main(1);
+      PixelShader = compile ps_3_0 ps_main(1, 0, 0);
    }
 }
 
@@ -602,7 +775,7 @@ technique kickerBoolean
    {
       //ZWriteEnable=TRUE;
       VertexShader = compile vs_3_0 vs_kicker();
-      PixelShader  = compile ps_3_0 ps_main(0);
+      PixelShader = compile ps_3_0 ps_main(0, 0, 0);
    }
 }
 

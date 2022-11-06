@@ -55,7 +55,6 @@ uniform bool objectSpaceNormalMap;
 
 uniform bool is_metal;
 uniform bool doNormalMapping;
-
 uniform bool doReflections;
 uniform bool doRefractions;
 uniform float refractionThickness;
