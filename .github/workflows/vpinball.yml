@@ -98,7 +98,7 @@ jobs:
         run: |
           export DXSDK_DIR="${GITHUB_WORKSPACE}/DXSDK"
           # cmake can't find fxc.exe so copy one into the a directory in the path
-          cp "/c/Program Files (x86)/Windows Kits/10/bin/10.0.16299.0/x86/fxc.exe" /mingw64/bin
+          cp "/c/Program Files (x86)/Windows Kits/10/bin/10.0.19041.0/x86/fxc.exe" /mingw64/bin
           cp cmake/CMakeLists_${{ matrix.platform}}.txt CMakeLists.txt
           cmake -T v141_xp -G "Visual Studio 16 2019" -A ${{ matrix.platform-name }} -B build
           cmake --build build --config ${{ matrix.config }}
