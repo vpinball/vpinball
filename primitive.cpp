@@ -1260,12 +1260,6 @@ void Primitive::RenderObject()
       pin = m_ptable->GetImage(m_d.m_szImage);
       if (pin && nMap)
       {
-#ifdef ENABLE_SDL
-         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
-         pd3dDevice->basicShader->SetBool(SHADER_doNormalMapping, true);
-#else
-         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture_normal, mat->m_bIsMetal);
-#endif
          // accommodate models with UV coords outside of [0,1]
          pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
          pd3dDevice->basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, SF_TRILINEAR, SA_REPEAT, SA_REPEAT, true);
@@ -1275,7 +1269,6 @@ void Primitive::RenderObject()
       }
       else if (pin)
       {
-         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
          // accommodate models with UV coords outside of [0,1]
          pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
@@ -1283,7 +1276,6 @@ void Primitive::RenderObject()
       }
       else
       {
-         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
          pd3dDevice->basicShader->SetMaterial(mat, false);
       }
    }
@@ -1307,6 +1299,16 @@ void Primitive::RenderObject()
       pd3dDevice->basicShader->SetFlasherColorAlpha(color);
    }
 
+
+   // setup for applying refractions from screen space probe
+   if (refractions)
+   {
+      pd3dDevice->basicShader->SetTexture(SHADER_tex_refraction, refractions);
+      pd3dDevice->basicShader->SetFloat(SHADER_refractionThickness, m_d.m_refractionThickness);
+   }
+
+   bool is_reflection_only_pass = false;
+
    // setup for applying reflections from reflection probe
    if (reflections)
    {
@@ -1321,39 +1323,29 @@ void Primitive::RenderObject()
       matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal, plane_normal);
       pd3dDevice->basicShader->SetVector(SHADER_mirrorNormal, plane_normal.x,plane_normal.y,plane_normal.z,0.f);
       pd3dDevice->basicShader->SetTexture(SHADER_tex_reflection, reflections);
-      bool is_primitive_prerendered = m_d.m_staticRendering  && !g_pplayer->m_isRenderingStatic && !g_pplayer->m_dynamicMode;
-      if (!is_primitive_prerendered && mat->m_bOpacityActive && (mat->m_fOpacity < 1.0f || (pin && pin->m_pdsBuffer->has_alpha())))
+      is_reflection_only_pass = m_d.m_staticRendering && !g_pplayer->m_isRenderingStatic && !g_pplayer->m_dynamicMode;
+      if (!is_reflection_only_pass && mat->m_bOpacityActive && (mat->m_fOpacity < 1.0f || (pin && pin->m_pdsBuffer->has_alpha())))
       { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
+         pd3dDevice->basicShader->SetTechniqueMetal(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal, nMap, false, false);
          pd3dDevice->basicShader->Begin();
          if (m_d.m_groupdRendering)
             pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numGroupVertices, m_indexBuffer, 0, m_numGroupIndices);
          else
             pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), m_indexBuffer, 0, (DWORD)m_mesh.NumIndices());
          pd3dDevice->basicShader->End();
-         is_primitive_prerendered = true;
+         is_reflection_only_pass = true;
       }
-      if (is_primitive_prerendered)
-      { // If the primitive is already rendered (dynamic pass after a static prepass, or multipass rendering due to alpha blending) => only render additive reflections (primitive itself is already rendered in the static prepass)
-         g_pplayer->m_pin3d.EnableAlphaBlend(true);
-         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
-         pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_basic_refl_only_without_texture);
-      }
-      // Rendering without a static prepass (dynamic primitive, dynamic rendering mode,...) => render primitive with its reflections
-      else if (pin && nMap)
-         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
-      else if (pin)
-         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
-      else
-         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
-      pd3dDevice->basicShader->SetBool(SHADER_doReflections, true);
    }
 
-   // setup for applying refractions from screen space probe
-   if (refractions)
+   if (is_reflection_only_pass)
+   { // If the primitive is already rendered (dynamic pass after a static prepass, or multipass rendering due to alpha blending) => only render additive reflections (primitive itself is already rendered in the static prepass)
+      g_pplayer->m_pin3d.EnableAlphaBlend(true);
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
+      pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_basic_refl_only_without_texture);
+   }
+   else
    {
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_refraction, refractions);
-      pd3dDevice->basicShader->SetBool(SHADER_doRefractions, true);
-      pd3dDevice->basicShader->SetFloat(SHADER_refractionThickness, m_d.m_refractionThickness);
+      pd3dDevice->basicShader->SetTechniqueMetal(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal, nMap, reflections, refractions);
    }
 
    // draw the mesh

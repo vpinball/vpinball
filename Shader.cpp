@@ -26,12 +26,33 @@ const string Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT]
    SHADER_TECHNIQUE(RenderBall_CabMode),
    SHADER_TECHNIQUE(RenderBall_CabMode_DecalMode),
    SHADER_TECHNIQUE(RenderBallTrail),
-   SHADER_TECHNIQUE(basic_without_texture),
+   // OpenGL only has the first variant. DX9 needs all of them due to shader compiler limitation
    SHADER_TECHNIQUE(basic_with_texture),
-   SHADER_TECHNIQUE(basic_with_texture_normal),
-   SHADER_TECHNIQUE(basic_without_texture_isMetal),
    SHADER_TECHNIQUE(basic_with_texture_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_normal),
    SHADER_TECHNIQUE(basic_with_texture_normal_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_refl),
+   SHADER_TECHNIQUE(basic_with_texture_refl_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_refl_normal),
+   SHADER_TECHNIQUE(basic_with_texture_refl_normal_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_refr),
+   SHADER_TECHNIQUE(basic_with_texture_refr_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_refr_normal),
+   SHADER_TECHNIQUE(basic_with_texture_refr_normal_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_refr_refl),
+   SHADER_TECHNIQUE(basic_with_texture_refr_refl_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_refr_refl_normal),
+   SHADER_TECHNIQUE(basic_with_texture_refr_refl_normal_isMetal),
+   // OpenGL only has the first variant. DX9 needs all of them due to shader compiler limitation
+   SHADER_TECHNIQUE(basic_without_texture),
+   SHADER_TECHNIQUE(basic_without_texture_isMetal),
+   SHADER_TECHNIQUE(basic_without_texture_refl),
+   SHADER_TECHNIQUE(basic_without_texture_refl_isMetal),
+   SHADER_TECHNIQUE(basic_without_texture_refr),
+   SHADER_TECHNIQUE(basic_without_texture_refr_isMetal),
+   SHADER_TECHNIQUE(basic_without_texture_refr_refl),
+   SHADER_TECHNIQUE(basic_without_texture_refr_refl_isMetal),
+
    SHADER_TECHNIQUE(basic_refl_only_without_texture),
    SHADER_TECHNIQUE(basic_refl_only_with_texture),
    SHADER_TECHNIQUE(basic_depth_only_without_texture),
@@ -515,43 +536,76 @@ void Shader::SetLightImageBackglassMode(const bool imageMode, const bool backgla
 
 void Shader::SetTechnique(ShaderTechniques technique)
 {
-   assert(current_shader != this); // Changing the technique of a used shader is not allowed (between Begin/End)
-   assert(0 <= technique && technique < SHADER_TECHNIQUE_COUNT);
+   SetTechniqueMetal(technique, false);
+}
+
+void Shader::SetTechniqueMetal(ShaderTechniques technique, const bool isMetal, const bool doNormalMapping, const bool doReflections, const bool doRefractions)
+{
+   ShaderTechniques tech = technique;
 #ifdef ENABLE_SDL
-   if (m_techniques[technique] == nullptr)
+   SetBool(SHADER_is_metal, isMetal);
+   SetBool(SHADER_doNormalMapping, doNormalMapping);
+   SetBool(SHADER_doReflections, doReflections);
+   SetBool(SHADER_doRefractions, doRefractions);
+#else
+   switch (technique)
+   {
+   case SHADER_TECHNIQUE_basic_with_texture:
+   {
+      static ShaderTechniques tech_with_texture[16] = {
+         SHADER_TECHNIQUE_basic_with_texture,
+         SHADER_TECHNIQUE_basic_with_texture_isMetal,
+         SHADER_TECHNIQUE_basic_with_texture_normal,
+         SHADER_TECHNIQUE_basic_with_texture_normal_isMetal,
+         SHADER_TECHNIQUE_basic_with_texture_refl,
+         SHADER_TECHNIQUE_basic_with_texture_refl_isMetal,
+         SHADER_TECHNIQUE_basic_with_texture_refl_normal,
+         SHADER_TECHNIQUE_basic_with_texture_refl_normal_isMetal,
+         SHADER_TECHNIQUE_basic_with_texture_refr,
+         SHADER_TECHNIQUE_basic_with_texture_refr_isMetal,
+         SHADER_TECHNIQUE_basic_with_texture_refr_normal,
+         SHADER_TECHNIQUE_basic_with_texture_refr_normal_isMetal,
+         SHADER_TECHNIQUE_basic_with_texture_refr_refl,
+         SHADER_TECHNIQUE_basic_with_texture_refr_refl_isMetal,
+         SHADER_TECHNIQUE_basic_with_texture_refr_refl_normal,
+         SHADER_TECHNIQUE_basic_with_texture_refr_refl_normal_isMetal,
+      };
+      int idx = (isMetal ? 1 : 0) + (doNormalMapping ? 2 : 0) + (doReflections ? 4 : 0) + (doRefractions ? 8 : 0);
+      tech = tech_with_texture[idx];
+   }
+   break;
+   case SHADER_TECHNIQUE_basic_without_texture:
+   {
+      static ShaderTechniques tech_without_texture[8] = {
+         SHADER_TECHNIQUE_basic_without_texture,
+         SHADER_TECHNIQUE_basic_without_texture_isMetal,
+         SHADER_TECHNIQUE_basic_without_texture_refl,
+         SHADER_TECHNIQUE_basic_without_texture_refl_isMetal,
+         SHADER_TECHNIQUE_basic_without_texture_refr,
+         SHADER_TECHNIQUE_basic_without_texture_refr_isMetal,
+         SHADER_TECHNIQUE_basic_without_texture_refr_refl,
+         SHADER_TECHNIQUE_basic_without_texture_refr_refl_isMetal,
+      };
+      int idx = (isMetal ? 1 : 0) + (doReflections ? 2 : 0) + (doRefractions ? 4 : 0);
+      tech = tech_without_texture[idx];
+   }
+   break;
+   case SHADER_TECHNIQUE_kickerBoolean: if (isMetal) tech = SHADER_TECHNIQUE_kickerBoolean_isMetal; break;
+   case SHADER_TECHNIQUE_light_with_texture: if (isMetal) tech = SHADER_TECHNIQUE_light_with_texture_isMetal; break;
+   case SHADER_TECHNIQUE_light_without_texture: if (isMetal) tech = SHADER_TECHNIQUE_light_without_texture_isMetal; break;
+   }
+#endif
+   assert(current_shader != this); // Changing the technique of a used shader is not allowed (between Begin/End)
+   assert(0 <= tech && tech < SHADER_TECHNIQUE_COUNT);
+#ifdef ENABLE_SDL
+   if (m_techniques[tech] == nullptr)
    {
       m_technique = SHADER_TECHNIQUE_INVALID;
       ShowError("Fatal Error: Could not find shader technique " + shaderTechniqueNames[technique]);
       exit(-1);
    }
 #endif
-   m_technique = technique;
-}
-
-void Shader::SetTechniqueMetal(ShaderTechniques technique, const bool isMetal)
-{
-#ifdef ENABLE_SDL
-   SetTechnique(technique);
-   SetBool(SHADER_is_metal, isMetal);
-#else
-   if (isMetal)
-   {
-      switch (technique)
-      {
-      case SHADER_TECHNIQUE_basic_with_texture: SetTechnique(SHADER_TECHNIQUE_basic_with_texture_isMetal); break;
-      case SHADER_TECHNIQUE_basic_with_texture_normal: SetTechnique(SHADER_TECHNIQUE_basic_with_texture_normal_isMetal); break;
-      case SHADER_TECHNIQUE_basic_without_texture: SetTechnique(SHADER_TECHNIQUE_basic_without_texture_isMetal); break;
-      case SHADER_TECHNIQUE_kickerBoolean: SetTechnique(SHADER_TECHNIQUE_kickerBoolean_isMetal); break;
-      case SHADER_TECHNIQUE_light_with_texture: SetTechnique(SHADER_TECHNIQUE_light_with_texture_isMetal); break;
-      case SHADER_TECHNIQUE_light_without_texture: SetTechnique(SHADER_TECHNIQUE_light_without_texture_isMetal); break;
-      default: assert(false); // Invalid technique: no metal shading variant
-      }
-   }
-   else
-   {
-      SetTechnique(technique);
-   }
-#endif
+   m_technique = tech;
 }
 
 uint32_t Shader::CopyUniformCache(const bool copyTo, const ShaderTechniques technique, UniformCache (&uniformCache)[SHADER_UNIFORM_COUNT])

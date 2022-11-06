@@ -26,12 +26,33 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(RenderBall_CabMode),
    SHADER_TECHNIQUE(RenderBall_CabMode_DecalMode),
    SHADER_TECHNIQUE(RenderBallTrail),
-   SHADER_TECHNIQUE(basic_without_texture),
+   // OpenGL only has the first variant. DX9 needs all of them due to shader compiler limitation
    SHADER_TECHNIQUE(basic_with_texture),
-   SHADER_TECHNIQUE(basic_with_texture_normal),
-   SHADER_TECHNIQUE(basic_without_texture_isMetal),
    SHADER_TECHNIQUE(basic_with_texture_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_normal),
    SHADER_TECHNIQUE(basic_with_texture_normal_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_refl),
+   SHADER_TECHNIQUE(basic_with_texture_refl_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_refl_normal),
+   SHADER_TECHNIQUE(basic_with_texture_refl_normal_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_refr),
+   SHADER_TECHNIQUE(basic_with_texture_refr_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_refr_normal),
+   SHADER_TECHNIQUE(basic_with_texture_refr_normal_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_refr_refl),
+   SHADER_TECHNIQUE(basic_with_texture_refr_refl_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_refr_refl_normal),
+   SHADER_TECHNIQUE(basic_with_texture_refr_refl_normal_isMetal),
+   // OpenGL only has the first variant. DX9 needs all of them due to shader compiler limitation
+   SHADER_TECHNIQUE(basic_without_texture),
+   SHADER_TECHNIQUE(basic_without_texture_isMetal),
+   SHADER_TECHNIQUE(basic_without_texture_refl),
+   SHADER_TECHNIQUE(basic_without_texture_refl_isMetal),
+   SHADER_TECHNIQUE(basic_without_texture_refr),
+   SHADER_TECHNIQUE(basic_without_texture_refr_isMetal),
+   SHADER_TECHNIQUE(basic_without_texture_refr_refl),
+   SHADER_TECHNIQUE(basic_without_texture_refr_refl_isMetal),
+
    SHADER_TECHNIQUE(basic_refl_only_without_texture),
    SHADER_TECHNIQUE(basic_refl_only_with_texture),
    SHADER_TECHNIQUE(basic_depth_only_without_texture),
@@ -271,7 +292,7 @@ public:
    //
 
    void SetTechnique(const ShaderTechniques technique);
-   void SetTechniqueMetal(const ShaderTechniques technique, const bool isMetal);
+   void SetTechniqueMetal(ShaderTechniques technique, const bool isMetal, const bool doNormalMapping = false, const bool doReflection = false, const bool doRefraction = false);
    ShaderTechniques GetCurrentTechnique() { return m_technique; }
 
    void SetMatrix(const ShaderUniforms hParameter, const D3DXMATRIX* pMatrix);
