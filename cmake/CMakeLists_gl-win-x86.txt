@@ -58,55 +58,6 @@ set_source_files_properties(
    vpinball.rc LANGUAGE RC
 )
 
-set_source_files_properties(shader/BallShader.hlsl PROPERTIES 
-   VS_SHADER_TYPE Effect 
-   VS_SHADER_MODEL 2.0 
-   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/shader/%(Filename).h"
-   VS_SHADER_ENTRYPOINT ballShaderCode
-)
-
-set_source_files_properties(shader/BasicShader.hlsl PROPERTIES
-   VS_SHADER_TYPE Effect 
-   VS_SHADER_MODEL 2.0
-   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/shader/%(Filename).h"
-   VS_SHADER_ENTRYPOINT basicShaderCode
-)
-
-set_source_files_properties(shader/DMDShader.hlsl PROPERTIES
-   VS_SHADER_TYPE Effect
-   VS_SHADER_MODEL 2.0 
-   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/shader/%(Filename).h"
-   VS_SHADER_ENTRYPOINT dmdShaderCode
-)
-
-set_source_files_properties(shader/FBShader.hlsl PROPERTIES
-   VS_SHADER_TYPE Effect 
-   VS_SHADER_MODEL 2.0
-   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/shader/%(Filename).h"
-   VS_SHADER_ENTRYPOINT FBShaderCode
-)
-
-set_source_files_properties(shader/FlasherShader.hlsl PROPERTIES
-   VS_SHADER_TYPE Effect 
-   VS_SHADER_MODEL 2.0
-   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/shader/%(Filename).h"
-   VS_SHADER_ENTRYPOINT flasherShaderCode
-)
-
-set_source_files_properties(shader/LightShader.hlsl PROPERTIES
-   VS_SHADER_TYPE Effect
-   VS_SHADER_MODEL 2.0
-   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/shader/%(Filename).h"
-   VS_SHADER_ENTRYPOINT lightShaderCode 
-)
-
-set_source_files_properties(shader/StereoShader.hlsl PROPERTIES
-   VS_SHADER_TYPE Effect
-   VS_SHADER_MODEL 2.0
-   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/shader/%(Filename).h"
-   VS_SHADER_ENTRYPOINT stereoShaderCode 
-)
-
 add_executable(vpinball WIN32
    backGlass.cpp
    backGlass.h
@@ -540,13 +491,6 @@ add_executable(vpinball WIN32
 
    vpinball.rc
    vpinball.idl
-
-   shader/BallShader.hlsl
-   shader/BasicShader.hlsl
-   shader/DMDShader.hlsl
-   shader/FBShader.hlsl
-   shader/FlasherShader.hlsl
-   shader/LightShader.hlsl
 
    res/ball.rgs
    res/bumper.rgs
