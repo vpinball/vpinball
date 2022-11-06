@@ -2501,7 +2501,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
             }
 
-            for (int i = 0; i < m_vrenderprobe.size(); i++)
+            for (size_t i = 0; i < m_vrenderprobe.size(); i++)
             {
                const string szStmName = "RenderProbe" + std::to_string(i);
                MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
