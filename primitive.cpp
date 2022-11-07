@@ -1233,10 +1233,20 @@ void Primitive::RenderObject()
    }
 
    // Request probes before setting up state
-   RenderProbe *refraction_probe = m_ptable->GetRenderProbe(m_d.m_szRefractionProbe); // FIXME do not apply refraction when rendering reflections
-   Sampler *refractions = refraction_probe ? refraction_probe->GetProbe(g_pplayer->m_isRenderingStatic) : nullptr;
-   RenderProbe *reflection_probe = m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
-   Sampler *reflections = reflection_probe ? reflection_probe->GetProbe(g_pplayer->m_isRenderingStatic)  : nullptr;
+   RenderProbe *refraction_probe = nullptr;
+   Sampler *refractions = nullptr;
+   if (!m_ptable->m_reflectionEnabled) // Refraction is not supported inside reflection (i.e. do not reflect refracted part)
+   {
+      refraction_probe = m_ptable->GetRenderProbe(m_d.m_szRefractionProbe);
+      refractions = refraction_probe ? refraction_probe->GetProbe(g_pplayer->m_isRenderingStatic) : nullptr;
+   }
+   RenderProbe *reflection_probe = nullptr;
+   Sampler *reflections = nullptr;
+   if (m_d.m_reflectionStrength > 0)
+   {
+      reflection_probe = m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
+      reflections = reflection_probe ? reflection_probe->GetProbe(g_pplayer->m_isRenderingStatic)  : nullptr;
+   }
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
