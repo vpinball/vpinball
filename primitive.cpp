@@ -1370,11 +1370,6 @@ void Primitive::RenderObject()
 
    // Restore state
    g_pplayer->UpdateBasicShaderMatrix();
-#ifdef ENABLE_SDL
-   pd3dDevice->basicShader->SetBool(SHADER_doNormalMapping, false);
-#endif
-   pd3dDevice->basicShader->SetBool(SHADER_doReflections, false);
-   pd3dDevice->basicShader->SetBool(SHADER_doRefractions, false);
    pd3dDevice->basicShader->SetFlasherColorAlpha(previousFlasherColorAlpha);
    pd3dDevice->basicShader->SetDisableLighting(vec4(0.f, 0.f, 0.f, 0.f));
    pd3dDevice->CopyRenderStates(false, initial_state);
