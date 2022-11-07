@@ -152,7 +152,7 @@ float3 normal_map(const float3 N, const float3 V, const float2 uv)
                             tn) );
 }
 
-float4x4 inverse(const float4x4 m)
+float4x4 inverse4x4(const float4x4 m)
 {
    float n11 = m[0][0], n12 = m[1][0], n13 = m[2][0], n14 = m[3][0];
    float n21 = m[0][1], n22 = m[1][1], n23 = m[2][1], n24 = m[3][1];
@@ -210,7 +210,7 @@ float3 compute_refraction(const float3 pos, const float3 N, const float3 V)
    const float3 refracted_pos = pos + refractionThickness * R; // Shift ray by the thickness of the material
 
    // Project from world view position to probe UV
-   const float4x4 matProj = mul(inverse(matWorldView), matWorldViewProj); // FIXME this must be moved to the matrix uniform stack
+   const float4x4 matProj = mul(inverse4x4(matWorldView), matWorldViewProj); // FIXME this must be moved to the matrix uniform stack
    const float4 proj = mul(float4(refracted_pos.x, refracted_pos.y, refracted_pos.z, 1.0), matProj);
    const float2 uv = float2(0.5, 0.5) + float2(proj.x, -proj.y) * (0.5 / proj.w);
 
