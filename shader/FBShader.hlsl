@@ -311,7 +311,7 @@ float4 ps_main_fb_bloom(const in VS_OUTPUT_2D IN) : COLOR
                         +  tex2Dlod(tex_fb_filtered, float4(IN.tex0 + w_h_height.xy, 0.,0.)).xyz
                         +  tex2Dlod(tex_fb_filtered, float4(IN.tex0 + float2(w_h_height.x,-w_h_height.y), 0.,0.)).xyz
                         +  tex2Dlod(tex_fb_filtered, float4(IN.tex0 + float2(-w_h_height.x,w_h_height.y), 0.,0.)).xyz)*0.25; //!! offset for useAA?
-    return float4(bloom_cutoff(FBToneMap(result)), 1.0);
+    return float4(bloom_cutoff(FBToneMap(result)) * w_h_height.z, 1.0);
 }
 
 float4 ps_main_fb_AO(const in VS_OUTPUT_2D IN) : COLOR
@@ -379,12 +379,11 @@ float4 ps_main_fb_tonemap_AO_no_filter_static(const in VS_OUTPUT_2D IN) : COLOR
 }
 
 //
-// Bloom (9x9)
+// Gaussian Blur Kernels
 //
 
-#if 0
 #if 0 // full or abusing lerp
-float4 ps_main_fb_bloom_horiz9x9(const in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_blur_horiz9x9(const in VS_OUTPUT_2D IN) : COLOR
 {
     const float offset9x9[5] = { 0.0, 1.0, 2.0, 3.0, 4.0 };
     const float weight9x9[5] = { 0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162 };
@@ -397,7 +396,7 @@ float4 ps_main_fb_bloom_horiz9x9(const in VS_OUTPUT_2D IN) : COLOR
     return float4(result, 1.0);
 }
 
-float4 ps_main_fb_bloom_vert9x9(const in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_blur_vert9x9(const in VS_OUTPUT_2D IN) : COLOR
 {
     const float offset9x9[5] = { 0.0, 1.0, 2.0, 3.0, 4.0 };
     const float weight9x9[5] = { 0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162 };
@@ -407,12 +406,12 @@ float4 ps_main_fb_bloom_vert9x9(const in VS_OUTPUT_2D IN) : COLOR
         result += tex2Dlod(tex_fb_unfiltered, float4(IN.tex0+w_h_height.xy*0.5+float2(0.0,w_h_height.y*offset9x9[i]), 0.,0.)).xyz*weight9x9[i];
         result += tex2Dlod(tex_fb_unfiltered, float4(IN.tex0+w_h_height.xy*0.5-float2(0.0,w_h_height.y*offset9x9[i]), 0.,0.)).xyz*weight9x9[i];
     }
-    return float4(result*w_h_height.z, 1.0);
+    return float4(result, 1.0);
 }
 
 #else
 
-float4 ps_main_fb_bloom_horiz9x9(const in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_blur_horiz9x9(const in VS_OUTPUT_2D IN) : COLOR
 {
     const float offset9x9[3] = { 0.0, 1.3846153846, 3.2307692308 };
     const float weight9x9[3] = { 0.2270270270, 0.3162162162, 0.0702702703 };
@@ -424,7 +423,7 @@ float4 ps_main_fb_bloom_horiz9x9(const in VS_OUTPUT_2D IN) : COLOR
     return float4(result, 1.0);
 }
 
-float4 ps_main_fb_bloom_vert9x9(const in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_blur_vert9x9(const in VS_OUTPUT_2D IN) : COLOR
 {
     const float offset9x9[3] = { 0.0, 1.3846153846, 3.2307692308 };
     const float weight9x9[3] = { 0.2270270270, 0.3162162162, 0.0702702703 };
@@ -433,12 +432,12 @@ float4 ps_main_fb_bloom_vert9x9(const in VS_OUTPUT_2D IN) : COLOR
         result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+w_h_height.xy*0.5+float2(0.0,w_h_height.y*offset9x9[i]), 0.,0.)).xyz
                   +tex2Dlod(tex_fb_filtered, float4(IN.tex0+w_h_height.xy*0.5-float2(0.0,w_h_height.y*offset9x9[i]), 0.,0.)).xyz)*weight9x9[i];
 
-    return float4(result*w_h_height.z, 1.0);
+    return float4(result, 1.0);
 }
 #endif
 
 #if 0
-float4 ps_main_fb_bloom_horiz9x9_4(const in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_blur_horiz9x9_4(const in VS_OUTPUT_2D IN) : COLOR
 {
     const float offset9x9[3] = { 0.0, 1.3846153846, 3.2307692308 };
     const float weight9x9[3] = { 0.2270270270, 0.3162162162, 0.0702702703 };
@@ -450,7 +449,7 @@ float4 ps_main_fb_bloom_horiz9x9_4(const in VS_OUTPUT_2D IN) : COLOR
     return result;
 }
 
-float4 ps_main_fb_bloom_vert9x9_4(const in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_blur_vert9x9_4(const in VS_OUTPUT_2D IN) : COLOR
 {
     const float offset9x9[3] = { 0.0, 1.3846153846, 3.2307692308 };
     const float weight9x9[3] = { 0.2270270270, 0.3162162162, 0.0702702703 };
@@ -458,13 +457,10 @@ float4 ps_main_fb_bloom_vert9x9_4(const in VS_OUTPUT_2D IN) : COLOR
     [unroll] for (int i = 1; i < 3; ++i)
         result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+w_h_height.xy*0.5+float2(0.0,w_h_height.y*offset9x9[i]), 0.,0.))
                   +tex2Dlod(tex_fb_filtered, float4(IN.tex0+w_h_height.xy*0.5-float2(0.0,w_h_height.y*offset9x9[i]), 0.,0.)))*weight9x9[i];
-
-    return result*w_h_height.z;
+    return result;
 }
 #endif
-#endif
 
-#if 0
 //const float offset[4] = { 0.0, 1.411764705882353, 3.2941176470588234, 5.176470588235294 }; //13
 //const float weight[4] = { 0.1964825501511404, 0.2969069646728344, 0.09447039785044732, 0.010381362401148057 }; //13
 
@@ -478,7 +474,7 @@ float4 ps_main_fb_bloom_vert9x9_4(const in VS_OUTPUT_2D IN) : COLOR
 //const float offset11x11h[3] = { 0.59804, 2.18553, 4.06521 }; //no center!
 //const float weight11x11h[3] = { 0.38173, 0.11538, 0.00289 }; //no center!
 
-float4 ps_main_fb_bloom_horiz11x11(const in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_blur_horiz11x11(const in VS_OUTPUT_2D IN) : COLOR
 {
     const float offset11x11[3] = { 0.62195, 2.27357, 4.14706 }; //no center!
     const float weight11x11[3] = { 0.32993, 0.15722, 0.01285 }; //no center!
@@ -490,7 +486,7 @@ float4 ps_main_fb_bloom_horiz11x11(const in VS_OUTPUT_2D IN) : COLOR
     return float4(result, 1.0);
 }
 
-float4 ps_main_fb_bloom_vert11x11(const in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_blur_vert11x11(const in VS_OUTPUT_2D IN) : COLOR
 {
     const float offset11x11[3] = { 0.62195, 2.27357, 4.14706 }; //no center!
     const float weight11x11[3] = { 0.32993, 0.15722, 0.01285 }; //no center!
@@ -499,11 +495,10 @@ float4 ps_main_fb_bloom_vert11x11(const in VS_OUTPUT_2D IN) : COLOR
         result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+w_h_height.xy*0.5+float2(0.0,w_h_height.y*offset11x11[i]), 0.,0.)).xyz
                   +tex2Dlod(tex_fb_filtered, float4(IN.tex0+w_h_height.xy*0.5-float2(0.0,w_h_height.y*offset11x11[i]), 0.,0.)).xyz)*weight11x11[i];
 
-    return float4(result*w_h_height.z, 1.0);
+    return float4(result, 1.0);
 }
-#endif
 
-float4 ps_main_fb_bloom_horiz19x19(const in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_blur_horiz19x19(const in VS_OUTPUT_2D IN) : COLOR
 {
     const float offset19x19[5] = { 0.65323, 2.42572, 4.36847, 6.31470, 8.26547 }; //no center!
     const float weight19x19[5] = { 0.19923, 0.18937, 0.08396, 0.02337, 0.00408 }; //no center!
@@ -515,7 +510,7 @@ float4 ps_main_fb_bloom_horiz19x19(const in VS_OUTPUT_2D IN) : COLOR
     return float4(result, 1.0);
 }
 
-float4 ps_main_fb_bloom_vert19x19(const in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_blur_vert19x19(const in VS_OUTPUT_2D IN) : COLOR
 {
     const float offset19x19[5] = { 0.65323, 2.42572, 4.36847, 6.31470, 8.26547 }; //no center!
     const float weight19x19[5] = { 0.19923, 0.18937, 0.08396, 0.02337, 0.00408 }; //no center!
@@ -524,7 +519,7 @@ float4 ps_main_fb_bloom_vert19x19(const in VS_OUTPUT_2D IN) : COLOR
         result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+w_h_height.xy*0.5+float2(0.0,w_h_height.y*offset19x19[i]), 0.,0.)).xyz
                   +tex2Dlod(tex_fb_filtered, float4(IN.tex0+w_h_height.xy*0.5-float2(0.0,w_h_height.y*offset19x19[i]), 0.,0.)).xyz)*weight19x19[i];
 
-    return float4(result*w_h_height.z, 1.0);
+    return float4(result, 1.0);
 }
 
 #if 0
@@ -533,7 +528,7 @@ float4 ps_main_fb_bloom_vert19x19(const in VS_OUTPUT_2D IN) : COLOR
 //const float offset19x19h[5] = { 0.63232, 2.31979, 4.20448, 6.12322, 8.07135 };
 //const float weight19x19h[5] = { 0.29809, 0.17619, 0.02462, 0.00109, 0.00002 };
 
-float4 ps_main_fb_bloom_horiz19x19h(const in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_blur_horiz19x19h(const in VS_OUTPUT_2D IN) : COLOR
 {
     const float offset19x19h[5] = { 0.63918, 2.35282, 4.25124, 6.17117, 8.11278 }; //no center!
     const float weight19x19h[5] = { 0.27233, 0.18690, 0.03767, 0.00301, 0.00009 }; //no center!
@@ -545,7 +540,7 @@ float4 ps_main_fb_bloom_horiz19x19h(const in VS_OUTPUT_2D IN) : COLOR
     return float4(result, 1.0);
 }
 
-float4 ps_main_fb_bloom_vert19x19h(const in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_blur_vert19x19h(const in VS_OUTPUT_2D IN) : COLOR
 {
     const float offset19x19h[5] = { 0.63918, 2.35282, 4.25124, 6.17117, 8.11278 }; //no center!
     const float weight19x19h[5] = { 0.27233, 0.18690, 0.03767, 0.00301, 0.00009 }; //no center!
@@ -554,10 +549,11 @@ float4 ps_main_fb_bloom_vert19x19h(const in VS_OUTPUT_2D IN) : COLOR
         result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+w_h_height.xy*0.5+float2(0.0,w_h_height.y*offset19x19h[i]), 0.,0.)).xyz
                   +tex2Dlod(tex_fb_filtered, float4(IN.tex0+w_h_height.xy*0.5-float2(0.0,w_h_height.y*offset19x19h[i]), 0.,0.)).xyz)*weight19x19h[i];
 
-    return float4(result*w_h_height.z, 1.0);
+    return float4(result, 1.0);
 }
+#endif
 
-float4 ps_main_fb_bloom_horiz27x27(const in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_blur_horiz27x27(const in VS_OUTPUT_2D IN) : COLOR
 {
     // 'h'-versions:
     const float weight27x27[7] = { /*0.19592,0.18829,0.08573,0.02488,0.00460,0.00054,0.00004*/
@@ -577,7 +573,7 @@ float4 ps_main_fb_bloom_horiz27x27(const in VS_OUTPUT_2D IN) : COLOR
     return float4(result, 1.0);
 }
 
-float4 ps_main_fb_bloom_vert27x27(const in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_blur_vert27x27(const in VS_OUTPUT_2D IN) : COLOR
 {
     // 'h'-versions:
     const float weight27x27[7] = { /*0.19592,0.18829,0.08573,0.02488,0.00460,0.00054,0.00004*/
@@ -594,11 +590,10 @@ float4 ps_main_fb_bloom_vert27x27(const in VS_OUTPUT_2D IN) : COLOR
         result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+w_h_height.xy*0.5+float2(0.0,w_h_height.y*offset27x27[i]), 0.,0.)).xyz
                   +tex2Dlod(tex_fb_filtered, float4(IN.tex0+w_h_height.xy*0.5-float2(0.0,w_h_height.y*offset27x27[i]), 0.,0.)).xyz)*weight27x27[i];
 
-    return float4(result*w_h_height.z, 1.0);
+    return float4(result, 1.0);
 }
-#endif
 
-float4 ps_main_fb_bloom_horiz39x39(const in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_blur_horiz39x39(const in VS_OUTPUT_2D IN) : COLOR
 {
     const float offset39x39[10] = { 0.66063, 2.46625, 4.43946, 6.41301, 8.38706, 10.36173, 12.33715, 14.31341, 16.29062, 18.26884
                                   /*0.66214, 2.47462, 4.45440, 6.43433, 8.41447, 10.39489, 12.37564, 14.35677, 16.33834, 18.32039*/
@@ -614,7 +609,7 @@ float4 ps_main_fb_bloom_horiz39x39(const in VS_OUTPUT_2D IN) : COLOR
     return float4(result, 1.0);
 }
 
-float4 ps_main_fb_bloom_vert39x39(const in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_blur_vert39x39(const in VS_OUTPUT_2D IN) : COLOR
 {
     const float offset39x39[10] = { 0.66063, 2.46625, 4.43946, 6.41301, 8.38706, 10.36173, 12.33715, 14.31341, 16.29062, 18.26884
                                   /*0.66214, 2.47462, 4.45440, 6.43433, 8.41447, 10.39489, 12.37564, 14.35677, 16.33834, 18.32039*/
@@ -627,7 +622,7 @@ float4 ps_main_fb_bloom_vert39x39(const in VS_OUTPUT_2D IN) : COLOR
         result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+w_h_height.xy*0.5+float2(0.0,w_h_height.y*offset39x39[i]), 0.,0.)).xyz
                   +tex2Dlod(tex_fb_filtered, float4(IN.tex0+w_h_height.xy*0.5-float2(0.0,w_h_height.y*offset39x39[i]), 0.,0.)).xyz)*weight39x39[i];
 
-    return float4(result*w_h_height.z, 1.0);
+    return float4(result, 1.0);
 }
 
 
@@ -826,133 +821,133 @@ technique fb_tonemap_AO_no_filter_static
 
 // All Bloom variants:
 
+technique fb_blur_horiz9x9
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+      PixelShader  = compile ps_3_0 ps_main_fb_blur_horiz9x9();
+   }
+}
+
+technique fb_blur_vert9x9
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+      PixelShader  = compile ps_3_0 ps_main_fb_blur_vert9x9();
+   }
+}
+
 #if 0
-technique fb_bloom_horiz9x9
+technique fb_blur_horiz9x9_4
 {
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-      PixelShader  = compile ps_3_0 ps_main_fb_bloom_horiz9x9();
+      PixelShader  = compile ps_3_0 ps_main_fb_blur_horiz9x9_4();
    }
 }
 
-technique fb_bloom_vert9x9
+technique fb_blur_vert9x9_4
 {
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-      PixelShader  = compile ps_3_0 ps_main_fb_bloom_vert9x9();
-   }
-}
-
-technique fb_bloom_horiz9x9_4
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-      PixelShader  = compile ps_3_0 ps_main_fb_bloom_horiz9x9_4();
-   }
-}
-
-technique fb_bloom_vert9x9_4
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-      PixelShader  = compile ps_3_0 ps_main_fb_bloom_vert9x9_4();
-   }
-}
-
-technique fb_bloom_horiz11x11
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-      PixelShader  = compile ps_3_0 ps_main_fb_bloom_horiz11x11();
-   }
-}
-
-technique fb_bloom_vert11x11
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-      PixelShader  = compile ps_3_0 ps_main_fb_bloom_vert11x11();
+      PixelShader  = compile ps_3_0 ps_main_fb_blur_vert9x9_4();
    }
 }
 #endif
 
-technique fb_bloom_horiz19x19
+technique fb_blur_horiz11x11
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+      PixelShader  = compile ps_3_0 ps_main_fb_blur_horiz11x11();
+   }
+}
+
+technique fb_blur_vert11x11
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+      PixelShader  = compile ps_3_0 ps_main_fb_blur_vert11x11();
+   }
+}
+
+technique fb_blur_horiz19x19
 {
 	pass P0
 	{
 		VertexShader = compile vs_3_0 vs_main_no_trafo();
-		PixelShader  = compile ps_3_0 ps_main_fb_bloom_horiz19x19();
+		PixelShader  = compile ps_3_0 ps_main_fb_blur_horiz19x19();
 	}
 }
 
-technique fb_bloom_vert19x19
+technique fb_blur_vert19x19
 {
 	pass P0
 	{
 		VertexShader = compile vs_3_0 vs_main_no_trafo();
-		PixelShader  = compile ps_3_0 ps_main_fb_bloom_vert19x19();
+		PixelShader  = compile ps_3_0 ps_main_fb_blur_vert19x19();
 	}
 }
 
 #if 0
-technique fb_bloom_horiz19x19h
+technique fb_blur_horiz19x19h
 {
 	pass P0
 	{
 		VertexShader = compile vs_3_0 vs_main_no_trafo();
-		PixelShader  = compile ps_3_0 ps_main_fb_bloom_horiz19x19h();
+		PixelShader  = compile ps_3_0 ps_main_fb_blur_horiz19x19h();
 	}
 }
 
-technique fb_bloom_vert19x19h
+technique fb_blur_vert19x19h
 {
 	pass P0
 	{
 		VertexShader = compile vs_3_0 vs_main_no_trafo();
-		PixelShader  = compile ps_3_0 ps_main_fb_bloom_vert19x19h();
-	}
-}
-
-technique fb_bloom_horiz27x27
-{
-	pass P0
-	{
-		VertexShader = compile vs_3_0 vs_main_no_trafo();
-		PixelShader  = compile ps_3_0 ps_main_fb_bloom_horiz27x27();
-	}
-}
-
-technique fb_bloom_vert27x27
-{
-	pass P0
-	{
-		VertexShader = compile vs_3_0 vs_main_no_trafo();
-		PixelShader  = compile ps_3_0 ps_main_fb_bloom_vert27x27();
+		PixelShader  = compile ps_3_0 ps_main_fb_blur_vert19x19h();
 	}
 }
 #endif
 
-technique fb_bloom_horiz39x39
+technique fb_blur_horiz27x27
 {
 	pass P0
 	{
 		VertexShader = compile vs_3_0 vs_main_no_trafo();
-		PixelShader  = compile ps_3_0 ps_main_fb_bloom_horiz39x39();
+		PixelShader  = compile ps_3_0 ps_main_fb_blur_horiz27x27();
 	}
 }
 
-technique fb_bloom_vert39x39
+technique fb_blur_vert27x27
 {
 	pass P0
 	{
 		VertexShader = compile vs_3_0 vs_main_no_trafo();
-		PixelShader  = compile ps_3_0 ps_main_fb_bloom_vert39x39();
+		PixelShader  = compile ps_3_0 ps_main_fb_blur_vert27x27();
+	}
+}
+
+technique fb_blur_horiz39x39
+{
+	pass P0
+	{
+		VertexShader = compile vs_3_0 vs_main_no_trafo();
+		PixelShader  = compile ps_3_0 ps_main_fb_blur_horiz39x39();
+	}
+}
+
+technique fb_blur_vert39x39
+{
+	pass P0
+	{
+		VertexShader = compile vs_3_0 vs_main_no_trafo();
+		PixelShader  = compile ps_3_0 ps_main_fb_blur_vert39x39();
 	}
 }
 
