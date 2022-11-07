@@ -2304,7 +2304,33 @@ void RenderDevice::DrawIndexedPrimitiveVB(const PrimitiveTypes type, const DWORD
 
 void RenderDevice::DrawGaussianBlur(Sampler* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size)
 {
-   // TODO implement real kernel size support
+   ShaderTechniques tech_h, tech_v;
+   if (kernel_size < 10)
+   {
+      tech_h = SHADER_TECHNIQUE_fb_blur_horiz9x9;
+      tech_v = SHADER_TECHNIQUE_fb_blur_vert9x9;
+   }
+   else if (kernel_size < 10)
+   {
+      tech_h = SHADER_TECHNIQUE_fb_blur_horiz11x11;
+      tech_v = SHADER_TECHNIQUE_fb_blur_vert11x11;
+   }
+   else if (kernel_size < 15)
+   {
+      tech_h = SHADER_TECHNIQUE_fb_blur_horiz19x19;
+      tech_v = SHADER_TECHNIQUE_fb_blur_vert19x19;
+   }
+   else if (kernel_size < 23)
+   {
+      tech_h = SHADER_TECHNIQUE_fb_blur_horiz27x27;
+      tech_v = SHADER_TECHNIQUE_fb_blur_vert27x27;
+   }
+   else
+   {
+      tech_h = SHADER_TECHNIQUE_fb_blur_horiz39x39;
+      tech_v = SHADER_TECHNIQUE_fb_blur_vert39x39;
+   }
+
    RenderTarget* initial_rt = RenderTarget::GetCurrentRenderTarget();
    RenderStateCache initial_state;
    CopyRenderStates(true, initial_state);
@@ -2318,7 +2344,7 @@ void RenderDevice::DrawGaussianBlur(Sampler* source, RenderTarget* tmp, RenderTa
       tmp->Activate(true); // switch to temporary output buffer for horizontal phase of gaussian blur
       FBShader->SetTexture(SHADER_tex_fb_filtered, source);
       FBShader->SetVector(SHADER_w_h_height, &fb_inv_resolution_05);
-      FBShader->SetTechnique(kernel_size < 25 ? SHADER_TECHNIQUE_fb_bloom_horiz19x19 : SHADER_TECHNIQUE_fb_bloom_horiz39x39);
+      FBShader->SetTechnique(tech_h);
       FBShader->Begin();
       DrawFullscreenTexturedQuad();
       FBShader->End();
@@ -2329,7 +2355,7 @@ void RenderDevice::DrawGaussianBlur(Sampler* source, RenderTarget* tmp, RenderTa
       dest->Activate(true); // switch to output buffer for vertical phase of gaussian blur
       FBShader->SetTexture(SHADER_tex_fb_filtered, tmp->GetColorSampler());
       FBShader->SetVector(SHADER_w_h_height, &fb_inv_resolution_05);
-      FBShader->SetTechnique(kernel_size < 25 ? SHADER_TECHNIQUE_fb_bloom_vert19x19 : SHADER_TECHNIQUE_fb_bloom_vert39x39);
+      FBShader->SetTechnique(tech_v);
       FBShader->Begin();
       DrawFullscreenTexturedQuad();
       FBShader->End();
