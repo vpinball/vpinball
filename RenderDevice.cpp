@@ -2310,17 +2310,17 @@ void RenderDevice::DrawGaussianBlur(Sampler* source, RenderTarget* tmp, RenderTa
       tech_h = SHADER_TECHNIQUE_fb_blur_horiz9x9;
       tech_v = SHADER_TECHNIQUE_fb_blur_vert9x9;
    }
-   else if (kernel_size < 10)
+   else if (kernel_size < 15)
    {
       tech_h = SHADER_TECHNIQUE_fb_blur_horiz11x11;
       tech_v = SHADER_TECHNIQUE_fb_blur_vert11x11;
    }
-   else if (kernel_size < 15)
+   else if (kernel_size < 23)
    {
       tech_h = SHADER_TECHNIQUE_fb_blur_horiz19x19;
       tech_v = SHADER_TECHNIQUE_fb_blur_vert19x19;
    }
-   else if (kernel_size < 23)
+   else if (kernel_size < 31)
    {
       tech_h = SHADER_TECHNIQUE_fb_blur_horiz27x27;
       tech_v = SHADER_TECHNIQUE_fb_blur_vert27x27;
