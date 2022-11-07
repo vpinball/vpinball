@@ -352,9 +352,37 @@ void main()
 // Gaussian Blur Kernels
 //
 
-////ps_main_fb_blur_horiz9x9
-in vec2 tex0;
+////ps_main_fb_blur_horiz7x7
 
+in vec2 tex0;
+void main()
+{
+   const float offset7x7[2] = float[]( 0.53473, 2.05896 ); //no center!
+   const float weight7x7[2] = float[]( 0.45134, 0.04866 ); //no center!
+   vec3 result = vec3(0.0, 0.0, 0.0);
+   for(int i = 0; i < 2; ++i)
+      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset7x7[i],0.0))).xyz
+                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset7x7[i],0.0))).xyz)*weight7x7[i];
+   color = vec4(result, 1.0);
+}
+
+////ps_main_fb_blur_vert7x7
+
+in vec2 tex0;
+void main()
+{
+   const float offset7x7[2] = float[]( 0.53473, 2.05896 ); //no center!
+   const float weight7x7[2] = float[]( 0.45134, 0.04866 ); //no center!
+   vec3 result = vec3(0.0, 0.0, 0.0);
+   for(int i = 0; i < 2; ++i)
+      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset7x7[i]))).xyz
+                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset7x7[i]))).xyz)*weight7x7[i];
+   color = vec4(result, 1.0);
+}
+
+////ps_main_fb_blur_horiz9x9
+
+in vec2 tex0;
 void main()
 {
    const float offset9x9[3] = float[]( 0.0, 1.3846153846, 3.2307692308 );
@@ -363,13 +391,12 @@ void main()
    for (int i = 1; i < 3; ++i)
       result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset9x9[i],0.0))).xyz
                 +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset9x9[i],0.0))).xyz)*weight9x9[i];
-
    color = vec4(result, 1.0);
 }
 
 ////ps_main_fb_blur_vert9x9
-in vec2 tex0;
 
+in vec2 tex0;
 void main()
 {
    const float offset9x9[3] = float[]( 0.0, 1.3846153846, 3.2307692308 );
@@ -378,13 +405,12 @@ void main()
    for (int i = 1; i < 3; ++i)
       result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset9x9[i]))).xyz
                 +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset9x9[i]))).xyz)*weight9x9[i];
-
    color = vec4(result, 1.0);
 }
 
 ////ps_main_fb_blur_horiz11x11
-in vec2 tex0;
 
+in vec2 tex0;
 void main()
 {
    const float offset11x11[3] = float[]( 0.62195, 2.27357, 4.14706 ); //no center!
@@ -393,14 +419,12 @@ void main()
    for(int i = 0; i < 3; ++i)
       result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset11x11[i],0.0))).xyz
                 +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset11x11[i],0.0))).xyz)*weight11x11[i];
-
    color = vec4(result, 1.0);
 }
 
 ////ps_main_fb_blur_vert11x11
 
 in vec2 tex0;
-
 void main()
 {
    const float offset11x11[3] = float[]( 0.62195, 2.27357, 4.14706 ); //no center!
@@ -409,13 +433,68 @@ void main()
    for(int i = 0; i < 3; ++i)
       result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset11x11[i]))).xyz
                 +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset11x11[i]))).xyz)*weight11x11[i];
+   color = vec4(result, 1.0);
+}
 
+////ps_main_fb_blur_horiz13x13
+
+in vec2 tex0;
+void main()
+{
+   const float offset13x13[4] = float[]( 0.0, 1.411764705882353, 3.2941176470588234, 5.176470588235294 );
+   const float weight13x13[4] = float[]( 0.1964825501511404, 0.2969069646728344, 0.09447039785044732, 0.010381362401148057 );
+   vec3 result = texture(tex_fb_filtered, tex0+w_h_height.xy*0.5).xyz*weight13x13[0];
+   for (int i = 1; i < 4; ++i)
+      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset13x13[i],0.0))).xyz
+                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset13x13[i],0.0))).xyz)*weight13x13[i];
+   color = vec4(result, 1.0);
+}
+
+////ps_main_fb_blur_vert13x13
+
+in vec2 tex0;
+void main()
+{
+   const float offset13x13[4] = float[]( 0.0, 1.411764705882353, 3.2941176470588234, 5.176470588235294 );
+   const float weight13x13[4] = float[]( 0.1964825501511404, 0.2969069646728344, 0.09447039785044732, 0.010381362401148057 );
+   vec3 result = texture(tex_fb_filtered, tex0+w_h_height.xy*0.5).xyz*weight13x13[0];
+   for (int i = 1; i < 4; ++i)
+      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset13x13[i]))).xyz
+                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset13x13[i]))).xyz)*weight13x13[i];
+   color = vec4(result, 1.0);
+}
+
+////ps_main_fb_blur_horiz15x15
+
+in vec2 tex0;
+void main()
+{
+   const float offset15x15[4] = float[]( 0.64417, 2.37795, 4.28970, 6.21493 ); //no center!
+   const float weight15x15[4] = float[]( 0.25044, 0.19233, 0.05095, 0.00628 ); //no center!
+   vec3 result = vec3(0.0, 0.0, 0.0);
+   for(int i = 0; i < 4; ++i)
+      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset15x15[i],0.0))).xyz
+                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset15x15[i],0.0))).xyz)*weight15x15[i];
+   color = vec4(result, 1.0);
+}
+
+////ps_main_fb_blur_vert15x15
+
+in vec2 tex0;
+void main()
+{
+   const float offset15x15[4] = float[]( 0.64417, 2.37795, 4.28970, 6.21493 ); //no center!
+   const float weight15x15[4] = float[]( 0.25044, 0.19233, 0.05095, 0.00628 ); //no center!
+   vec3 result = vec3(0.0, 0.0, 0.0);
+   for(int i = 0; i < 4; ++i)
+      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset15x15[i]))).xyz
+                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset15x15[i]))).xyz)*weight15x15[i];
    color = vec4(result, 1.0);
 }
 
 ////ps_main_fb_blur_horiz19x19
-in vec2 tex0;
 
+in vec2 tex0;
 void main()
 {
    const float offset19x19[5] = float[]( 0.65323, 2.42572, 4.36847, 6.31470, 8.26547 ); //no center!
@@ -424,14 +503,12 @@ void main()
    for(int i = 0; i < 5; ++i)
       result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset19x19[i],0.0))).xyz
                 +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset19x19[i],0.0))).xyz)*weight19x19[i];
-
    color = vec4(result, 1.0);
 }
 
 ////ps_main_fb_blur_vert19x19
 
 in vec2 tex0;
-
 void main()
 {
    const float offset19x19[5] = float[]( 0.65323, 2.42572, 4.36847, 6.31470, 8.26547 ); //no center!
@@ -440,7 +517,6 @@ void main()
    for(int i = 0; i < 5; ++i)
       result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset19x19[i]))).xyz
                 +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset19x19[i]))).xyz)*weight19x19[i];
-
    color = vec4(result, 1.0);
 }
 
@@ -452,7 +528,6 @@ void main()
 ////ps_main_fb_blur_horiz19x19h
 
 in vec2 tex0;
-
 void main()
 {
    const float offset19x19h[5] = float[]( 0.63918, 2.35282, 4.25124, 6.17117, 8.11278 ); //no center!
@@ -461,14 +536,12 @@ void main()
    for(int i = 0; i < 5; ++i)
       result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset19x19h[i],0.0))).xyz
                 +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset19x19h[i],0.0))).xyz)*weight19x19h[i];
-
    color = vec4(result, 1.0);
 }
 
 ////ps_main_fb_blur_vert19x19h
 
 in vec2 tex0;
-
 void main()
 {
    const float offset19x19h[5] = float[]( 0.63918, 2.35282, 4.25124, 6.17117, 8.11278 ); //no center!
@@ -477,14 +550,40 @@ void main()
    for(int i = 0; i < 5; ++i)
       result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset19x19h[i]))).xyz
                 +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset19x19h[i]))).xyz)*weight19x19h[i];
+   color = vec4(result, 1.0);
+}
 
+////ps_main_fb_blur_horiz23x23
+
+in vec2 tex0;
+void main()
+{
+   const float offset23x23[6] = float[]( 0.65769, 2.45001, 4.41069, 6.37247, 8.33578, 10.30098 ); //no center!
+   const float weight23x23[6] = float[]( 0.16526, 0.17520, 0.10103, 0.04252, 0.01306, 0.00293 ); //no center!
+   vec3 result = vec3(0.0, 0.0, 0.0);
+   for(int i = 0; i < 6; ++i)
+      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset23x23[i],0.0))).xyz
+                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset23x23[i],0.0))).xyz)*weight23x23[i];
+   color = vec4(result, 1.0);
+}
+
+////ps_main_fb_blur_vert23x23
+
+in vec2 tex0;
+void main()
+{
+   const float offset23x23[6] = float[]( 0.65769, 2.45001, 4.41069, 6.37247, 8.33578, 10.30098 ); //no center!
+   const float weight23x23[6] = float[]( 0.16526, 0.17520, 0.10103, 0.04252, 0.01306, 0.00293 ); //no center!
+   vec3 result = vec3(0.0, 0.0, 0.0);
+   for(int i = 0; i < 6; ++i)
+      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset23x23[i]))).xyz
+                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset23x23[i]))).xyz)*weight23x23[i];
    color = vec4(result, 1.0);
 }
 
 ////ps_main_fb_blur_horiz27x27
 
 in vec2 tex0;
-
 void main()
 {
     // 'h'-versions:
@@ -501,14 +600,12 @@ void main()
     for(int i = 0; i < 7; ++i)
         result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset27x27[i],0.0))).xyz
                   +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset27x27[i],0.0))).xyz)*weight27x27[i];
-
     color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_vert27x27
 
 in vec2 tex0;
-
 void main()
 {
     // 'h'-versions:
@@ -525,14 +622,12 @@ void main()
     for(int i = 0; i < 7; ++i)
         result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset27x27[i]))).xyz
                   +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset27x27[i]))).xyz)*weight27x27[i];
-
     color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_horiz39x39
 
 in vec2 tex0;
-
 void main()
 {
     const float offset39x39[10] = float[] ( 0.66063, 2.46625, 4.43946, 6.41301, 8.38706, 10.36173, 12.33715, 14.31341, 16.29062, 18.26884
@@ -545,14 +640,12 @@ void main()
     for(int i = 0; i < 10; ++i)
         result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset39x39[i],0.0))).xyz
                   +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset39x39[i],0.0))).xyz)*weight39x39[i];
-
     color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_vert39x39
 
 in vec2 tex0;
-
 void main()
 {
     const float offset39x39[10] = float[] ( 0.66063, 2.46625, 4.43946, 6.41301, 8.38706, 10.36173, 12.33715, 14.31341, 16.29062, 18.26884
@@ -565,7 +658,6 @@ void main()
     for(int i = 0; i < 10; ++i)
         result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset39x39[i]))).xyz
                   +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset39x39[i]))).xyz)*weight39x39[i];
-
     color = float4(result, 1.0);
 }
 
@@ -605,16 +697,24 @@ fb_tonemap_AO_no_filter:P0:vs_main_no_trafo():ps_main_fb_tonemap_AO_no_filter()
 fb_tonemap_AO_no_filter_static:P0:vs_main_no_trafo():ps_main_fb_tonemap_AO_no_filter_static()
 
 // All Bloom variants:
+fb_blur_horiz7x7:P0:vs_main_no_trafo():ps_main_fb_blur_horiz7x7()
+fb_blur_vert7x7:P0:vs_main_no_trafo():ps_main_fb_blur_vert7x7()
 fb_blur_horiz9x9:P0:vs_main_no_trafo():ps_main_fb_blur_horiz9x9()
 fb_blur_vert9x9:P0:vs_main_no_trafo():ps_main_fb_blur_vert9x9()
 //fb_blur_horiz9x9_4:P0:vs_main_no_trafo():ps_main_fb_blur_horiz9x9_4()
 //fb_blur_vert9x9_4:P0:vs_main_no_trafo():ps_main_fb_blur_vert9x9_4()
 fb_blur_horiz11x11:P0:vs_main_no_trafo():ps_main_fb_blur_horiz11x11()
 fb_blur_vert11x11:P0:vs_main_no_trafo():ps_main_fb_blur_vert11x11()
+fb_blur_horiz13x13:P0:vs_main_no_trafo():ps_main_fb_blur_horiz13x13()
+fb_blur_vert13x13:P0:vs_main_no_trafo():ps_main_fb_blur_vert13x13()
+fb_blur_horiz15x15:P0:vs_main_no_trafo():ps_main_fb_blur_horiz15x15()
+fb_blur_vert15x15:P0:vs_main_no_trafo():ps_main_fb_blur_vert15x15()
 fb_blur_horiz19x19:P0:vs_main_no_trafo():ps_main_fb_blur_horiz19x19()
 fb_blur_vert19x19:P0:vs_main_no_trafo():ps_main_fb_blur_vert19x19()
 //fb_blur_horiz19x19h:P0:vs_main_no_trafo():ps_main_fb_blur_horiz19x19h()
 //fb_blur_vert19x19h:P0:vs_main_no_trafo():ps_main_fb_blur_vert19x19h()
+fb_blur_horiz23x23:P0:vs_main_no_trafo():ps_main_fb_blur_horiz23x23()
+fb_blur_vert23x23:P0:vs_main_no_trafo():ps_main_fb_blur_vert23x23()
 fb_blur_horiz27x27:P0:vs_main_no_trafo():ps_main_fb_blur_horiz27x27()
 fb_blur_vert27x27:P0:vs_main_no_trafo():ps_main_fb_blur_vert27x27()
 fb_blur_horiz39x39:P0:vs_main_no_trafo():ps_main_fb_blur_horiz39x39()

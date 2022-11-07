@@ -2305,20 +2305,40 @@ void RenderDevice::DrawIndexedPrimitiveVB(const PrimitiveTypes type, const DWORD
 void RenderDevice::DrawGaussianBlur(Sampler* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size)
 {
    ShaderTechniques tech_h, tech_v;
-   if (kernel_size < 10)
+   if (kernel_size < 8)
+   {
+      tech_h = SHADER_TECHNIQUE_fb_blur_horiz7x7;
+      tech_v = SHADER_TECHNIQUE_fb_blur_vert7x7;
+   }
+   else if (kernel_size < 10)
    {
       tech_h = SHADER_TECHNIQUE_fb_blur_horiz9x9;
       tech_v = SHADER_TECHNIQUE_fb_blur_vert9x9;
    }
-   else if (kernel_size < 15)
+   else if (kernel_size < 12)
    {
       tech_h = SHADER_TECHNIQUE_fb_blur_horiz11x11;
       tech_v = SHADER_TECHNIQUE_fb_blur_vert11x11;
    }
-   else if (kernel_size < 23)
+   else if (kernel_size < 14)
+   {
+      tech_h = SHADER_TECHNIQUE_fb_blur_horiz13x13;
+      tech_v = SHADER_TECHNIQUE_fb_blur_vert13x13;
+   }
+   else if (kernel_size < 17)
+   {
+      tech_h = SHADER_TECHNIQUE_fb_blur_horiz15x15;
+      tech_v = SHADER_TECHNIQUE_fb_blur_vert15x15;
+   }
+   else if (kernel_size < 21)
    {
       tech_h = SHADER_TECHNIQUE_fb_blur_horiz19x19;
       tech_v = SHADER_TECHNIQUE_fb_blur_vert19x19;
+   }
+   else if (kernel_size < 25)
+   {
+      tech_h = SHADER_TECHNIQUE_fb_blur_horiz23x23;
+      tech_v = SHADER_TECHNIQUE_fb_blur_vert23x23;
    }
    else if (kernel_size < 31)
    {
