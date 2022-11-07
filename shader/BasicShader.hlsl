@@ -193,6 +193,7 @@ float4x4 inverse4x4(const float4x4 m)
 }
 
 // Compute reflections from reflection probe (screen space coordinates)
+// This is a simplified reflection model where reflected light is added instead of being mixed according to the fresnel coefficient (stronger reflection hiding the object's color at grazing angles)
 float3 compute_reflection(const float2 screenSpace, const float3 N)
 {
    // Only apply to faces pointing in the direction of the probe (normal = [0,0,-1])
