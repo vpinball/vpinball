@@ -291,7 +291,9 @@ float4 ps_main_fb_tonemap(const in VS_OUTPUT_2D IN) : COLOR
     return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
 }
 
-float3 bloom_cutoff(const float3 c) {
+// From https://catlikecoding.com/unity/tutorials/advanced-rendering/bloom/
+float3 bloom_cutoff(const float3 c)
+{
     const float Threshold = 2.5; //!! magic
     const float SoftThreshold = 1.0;
     const float Knee = Threshold * SoftThreshold;
