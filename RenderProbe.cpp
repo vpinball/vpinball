@@ -17,7 +17,9 @@ HRESULT RenderProbe::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool b
    BiffWriter bw(pstm, hcrypthash);
    bw.WriteInt(FID(TYPE), m_type);
    bw.WriteString(FID(NAME), m_name);
-   bw.WriteStruct(FID(RPLA), (void*) &m_reflection_plane, sizeof(vec4));
+   bw.WriteInt(FID(RBAS), m_roughness_base);
+   bw.WriteInt(FID(RCLE), m_roughness_clear);
+   bw.WriteStruct(FID(RPLA), (void*)&m_reflection_plane, sizeof(vec4));
    bw.WriteInt(FID(RMOD), m_reflection_mode);
    bw.WriteTag(FID(ENDB));
    return S_OK;
@@ -36,6 +38,8 @@ bool RenderProbe::LoadToken(const int id, BiffReader* const pbr)
    {
    case FID(TYPE): pbr->GetInt(&m_type); break;
    case FID(NAME): pbr->GetString(m_name); break;
+   case FID(RBAS): pbr->GetInt(&m_roughness_base); break;
+   case FID(RCLE): pbr->GetInt(&m_roughness_clear); break;
    case FID(RPLA): pbr->GetStruct(&m_reflection_plane, sizeof(vec4)); break;
    case FID(RMOD): pbr->GetInt(&m_reflection_mode); break;
    }
@@ -68,6 +72,8 @@ void RenderProbe::EndPlay()
    m_staticRT = nullptr;
    delete m_dynamicRT;
    m_dynamicRT = nullptr;
+   delete m_blurRT;
+   m_blurRT = nullptr;
 }
 
 void RenderProbe::MarkDirty()
@@ -93,6 +99,26 @@ Sampler *RenderProbe::GetProbe(const bool is_static)
    return rt ? rt->GetColorSampler() : nullptr;
 }
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// Roughness implementation, using downscaling and bluring
+
+int RenderProbe::GetRoughnessDownscale(const int roughness)
+{
+   return 1; 
+}
+
+void RenderProbe::ApplyRoughness(RenderTarget* probe, const int roughness)
+{
+   if (roughness <= 1)
+      return;
+   RenderDevice* p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   if (m_blurRT == nullptr)
+      m_blurRT = probe->Duplicate();
+   p3dDevice->DrawGaussianBlur(probe->GetColorSampler(), m_blurRT, probe, 39.f);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Screen copy
 
@@ -100,9 +126,15 @@ void RenderProbe::RenderScreenSpaceTransparency(const bool is_static)
 {
    RenderDevice* p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
    if (m_dynamicRT == nullptr)
-      m_dynamicRT = p3dDevice->GetBackBufferTexture()->Duplicate();
+   {
+      const int downscale = GetRoughnessDownscale(m_roughness_base);
+      const int w = p3dDevice->GetBackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetBackBufferTexture()->GetHeight() / downscale;
+      m_dynamicRT = new RenderTarget(p3dDevice, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), false, 1, StereoMode::STEREO_OFF, "Failed to create refraction render target", nullptr);
+   }
    p3dDevice->GetMSAABackBufferTexture()->CopyTo(m_dynamicRT);
+   ApplyRoughness(m_dynamicRT, m_roughness_base);
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Reflection plane
@@ -133,9 +165,9 @@ void RenderProbe::SetReflectionMode(ReflectionMode mode)
 }
 
 void RenderProbe::RenderReflectionProbe(const bool is_static)
-{ 
-   if ((is_static && (m_reflection_mode == REFL_NONE || m_reflection_mode == REFL_BALLS || m_reflection_mode == REFL_DYNAMIC))
-      || (!is_static && (m_reflection_mode == REFL_NONE || m_reflection_mode == REFL_STATIC)))
+{
+   ReflectionMode mode = min(m_reflection_mode, g_pplayer->m_pfReflectionMode);
+   if ((is_static && (mode == REFL_NONE || mode == REFL_BALLS || m_reflection_mode == REFL_DYNAMIC)) || (!is_static && (mode == REFL_NONE || mode == REFL_STATIC)))
          return;
 
    RenderTarget* previousRT = RenderTarget::GetCurrentRenderTarget();
@@ -147,8 +179,8 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    {
       if (m_staticRT == nullptr)
       {
-         //m_staticRT = p3dDevice->GetBackBufferTexture()->Duplicate();
-         const int w = p3dDevice->GetBackBufferTexture()->GetWidth(), h = p3dDevice->GetBackBufferTexture()->GetHeight();
+         const int downscale = GetRoughnessDownscale(m_roughness_base);
+         const int w = p3dDevice->GetBackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetBackBufferTexture()->GetHeight() / downscale;
          m_staticRT = new RenderTarget(p3dDevice, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, p3dDevice->GetBackBufferTexture()->GetStereo(), "Failed to create plane reflection static render target", nullptr);
       }
       m_staticRT->Activate();
@@ -158,11 +190,11 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    {
       if (m_dynamicRT == nullptr)
       {
-         // m_dynamicRT = p3dDevice->GetBackBufferTexture()->Duplicate();
-         const int w = p3dDevice->GetBackBufferTexture()->GetWidth(), h = p3dDevice->GetBackBufferTexture()->GetHeight();
+         const int downscale = GetRoughnessDownscale(m_roughness_base);
+         const int w = p3dDevice->GetBackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetBackBufferTexture()->GetHeight() / downscale;
          m_dynamicRT = new RenderTarget(p3dDevice, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, p3dDevice->GetBackBufferTexture()->GetStereo(), "Failed to create plane reflection dynamic render target", nullptr);
       }
-      if (m_reflection_mode == REFL_SYNCED_DYNAMIC && m_staticRT != nullptr)
+      if (mode == REFL_SYNCED_DYNAMIC && m_staticRT != nullptr)
       {
          // Intialize dynamic depth buffer from static one to avoid incorrect overlaps of staticly rendered parts by dynamic ones (this does not prevent overlaps the other way around though)
          m_staticRT->CopyTo(m_dynamicRT, false, true);
@@ -207,9 +239,9 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    viewMat = reflect * viewMat;
    p3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
 
-   const bool render_static = is_static || (m_reflection_mode == REFL_DYNAMIC);
-   const bool render_balls = !is_static && (m_reflection_mode != REFL_NONE && m_reflection_mode != REFL_STATIC);
-   const bool render_dynamic = !is_static && (m_reflection_mode >= REFL_UNSYNCED_DYNAMIC);
+   const bool render_static = is_static || (mode == REFL_DYNAMIC);
+   const bool render_balls = !is_static && (mode != REFL_NONE && mode != REFL_STATIC);
+   const bool render_dynamic = !is_static && (mode >= REFL_UNSYNCED_DYNAMIC);
 
    if (render_static || render_dynamic)
       g_pplayer->UpdateBasicShaderMatrix();
@@ -237,5 +269,8 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
       g_pplayer->UpdateBasicShaderMatrix();
    if (render_balls)
       g_pplayer->UpdateBallShaderMatrix();
+
+   ApplyRoughness(RenderTarget::GetCurrentRenderTarget(), m_roughness_base);
+
    previousRT->Activate();
 }
