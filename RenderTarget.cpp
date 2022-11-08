@@ -286,11 +286,11 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
    int bitmask = (copyColor ? GL_COLOR_BUFFER_BIT : 0) | (m_has_depth && dest->m_has_depth && copyDepth ? GL_DEPTH_BUFFER_BIT : 0);
    assert(bitmask != 0); // This is supposed to be called to actually do something
    if (GLAD_GL_VERSION_4_5)
-      glBlitNamedFramebuffer(GetCoreFrameBuffer(), dest->GetCoreFrameBuffer(), 0, 0, GetWidth(), GetHeight(), 0, 0, dest->GetWidth(), dest->GetHeight(), bitmask, GL_NEAREST);
+      glBlitNamedFramebuffer(GetCoreFrameBuffer(), dest->GetCoreFrameBuffer(), 0, 0, GetWidth(), GetHeight(), 0, 0, dest->GetWidth(), dest->GetHeight(), bitmask, GL_LINEAR);
    else {
       glBindFramebuffer(GL_READ_FRAMEBUFFER, GetCoreFrameBuffer());
       glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetCoreFrameBuffer());
-      glBlitFramebuffer(0, 0, GetWidth(), GetHeight(), 0, 0, dest->GetWidth(), dest->GetHeight(), bitmask, GL_NEAREST);
+      glBlitFramebuffer(0, 0, GetWidth(), GetHeight(), 0, 0, dest->GetWidth(), dest->GetHeight(), bitmask, GL_LINEAR);
    }
 #else
    if (copyColor)

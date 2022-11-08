@@ -30,6 +30,10 @@ public:
    void SetName(const string& name);
    ProbeType GetType() const { return m_type; }
    void SetType(const ProbeType type) { m_type = type; }
+   int GetBaseRoughness() const { return m_roughness_base; }
+   void SetBaseRoughness(const int roughness) { m_roughness_base = roughness; }
+   int GetClearRoughness() const { return m_roughness_clear; }
+   void SetClearRoughness(const int roughness) { m_roughness_clear = roughness; }
 
    // Reflection plane properties
    void GetReflectionPlane(vec4& plane) const;
@@ -51,16 +55,20 @@ public:
    void EndPlay();
 
 private:
+   int GetRoughnessDownscale(const int roughness);
+   void ApplyRoughness(RenderTarget* probe, const int roughness);
    void RenderReflectionProbe(const bool is_static);
    void RenderScreenSpaceTransparency(const bool is_static);
 
    ProbeType m_type = PLANE_REFLECTION;
    bool m_dirty = true;
    string m_name;
-   int m_roughness = 1; // 0 is perfect mirror (full size, matching sampling), 1 is half texel offseted sampling, 2 is 50% rendering, 3 if 50% rendering with half texel offseted sampling, and so on
+   int m_roughness_base = 0; // Default roughness level
+   int m_roughness_clear = 0; // Roughness level to be used when there is a roughness map (lerp between base and clear according to roughness map)
+   bool m_rendering = false;
+   RenderTarget* m_blurRT = nullptr;
    RenderTarget* m_staticRT = nullptr;
    RenderTarget* m_dynamicRT = nullptr;
-   bool m_rendering = false;
 
    // Properties for reflection probe
    vec4 m_reflection_plane = vec4(0.f, 0.f, 1.f, 0.f); // Plane equation: xyz is the normal, w is the projected distance

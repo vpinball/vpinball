@@ -22,12 +22,12 @@ BOOL RenderProbeDialog::OnInitDialog()
    lvcol.cx = 200;
    ListView_InsertColumn(hListHwnd, 0, &lvcol);
 
-   lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
+   /* lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
    lvcol.fmt = LVCFMT_CENTER;
    const LocalString ls2(IDS_TYPE);
    lvcol.pszText = (LPSTR)ls2.m_szbuffer; // = "Type";
    lvcol.cx = 200;
-   ListView_InsertColumn(hListHwnd, 1, &lvcol);
+   ListView_InsertColumn(hListHwnd, 1, &lvcol); */
 
    HWND hwnd = GetDlgItem(IDC_REFLECTION_MAX_LEVEL).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
@@ -63,12 +63,11 @@ void RenderProbeDialog::UpdateList()
       lvitem.lParam = (size_t)prp;
 
       const int index = ListView_InsertItem(hListHwnd, &lvitem);
-
-      switch (prp->GetType())
+      /* switch (prp->GetType())
       {
       case RenderProbe::PLANE_REFLECTION: ListView_SetItemText(hListHwnd, index, 1, (LPSTR) "Plane Reflection"); break;
       case RenderProbe::SCREEN_SPACE_TRANSPARENCY: ListView_SetItemText(hListHwnd, index, 1, (LPSTR) "ScreenSpace Refraction"); break;
-      }
+      }*/
    }
 }
 
@@ -88,19 +87,18 @@ INT_PTR RenderProbeDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          NMLVDISPINFO *pinfo = (NMLVDISPINFO *)lParam;
          if (pinfo->item.pszText == nullptr || pinfo->item.pszText[0] == '\0')
             return FALSE;
+         auto new_name = string(pinfo->item.pszText);
          LVITEM lvitem;
          lvitem.mask = LVIF_PARAM;
          lvitem.iItem = pinfo->item.iItem;
          lvitem.iSubItem = 0;
          ListView_GetItem(hListHwnd, &lvitem);
-         RenderProbe *const pcol = (RenderProbe *)lvitem.lParam;
+         RenderProbe *const pb = (RenderProbe *)lvitem.lParam;
          // prohibit editing core playfield reflection probe name (or creating a duplicate)
-         auto new_name = string(pinfo->item.pszText);
-         if (pcol->GetName() == PLAYFIELD_REFLECTION_RENDERPROBE_NAME || new_name == PLAYFIELD_REFLECTION_RENDERPROBE_NAME)
+         if (pb->GetName() == PLAYFIELD_REFLECTION_RENDERPROBE_NAME || new_name == PLAYFIELD_REFLECTION_RENDERPROBE_NAME)
             return FALSE;
-         ListView_SetItemText(hListHwnd, pinfo->item.iItem, 0, pinfo->item.pszText);
-         pcol->SetName(new_name);
-         pt->SetNonUndoableDirty(eSaveDirty);
+         SaveProbeFromUI(pb);
+         LoadProbeToUI(pb);
          return TRUE;
       }
       break;
@@ -119,23 +117,7 @@ INT_PTR RenderProbeDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                lvitem.iSubItem = 0;
                ListView_GetItem(hListHwnd, &lvitem);
                RenderProbe *const pb = (RenderProbe *)lvitem.lParam;
-               if (pb != nullptr)
-               {
-                  GetDlgItem(IDC_RENDER_PROBE_NAME_LABEL).SetWindowText(pb->GetName().c_str());
-                  SendMessage(GetDlgItem(IDC_REFLECTION_MAX_LEVEL).GetHwnd(), CB_SETCURSEL, pb->GetReflectionMode(), 0);
-                  RenderProbe::ProbeType type = pb->GetType();
-                  CheckRadioButton(IDC_REFLECTION_PROBE, IDC_REFRACTION_PROBE, type == RenderProbe::PLANE_REFLECTION ? IDC_REFLECTION_PROBE : IDC_REFRACTION_PROBE);
-                  vec4 plane;
-                  pb->GetReflectionPlane(plane);
-                  GetDlgItem(IDC_REFLECTION_PLANE_NX).SetWindowText(f2sz(plane.x).c_str());
-                  GetDlgItem(IDC_REFLECTION_PLANE_NY).SetWindowText(f2sz(plane.y).c_str());
-                  GetDlgItem(IDC_REFLECTION_PLANE_NZ).SetWindowText(f2sz(plane.z).c_str());
-                  GetDlgItem(IDC_REFLECTION_PLANE_DIST).SetWindowText(f2sz(plane.w).c_str());
-                  GetDlgItem(IDC_REFLECTION_PLANE_NX).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
-                  GetDlgItem(IDC_REFLECTION_PLANE_NY).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
-                  GetDlgItem(IDC_REFLECTION_PLANE_NZ).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
-                  GetDlgItem(IDC_REFLECTION_PLANE_DIST).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
-               }
+               LoadProbeToUI(pb);
             }
          }
       }
@@ -151,36 +133,10 @@ INT_PTR RenderProbeDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          lvitem.iSubItem = 0;
          ListView_GetItem(hListHwnd, &lvitem);
          RenderProbe *const pb = (RenderProbe *)lvitem.lParam;
-         if (pb != nullptr)
-         {
-            const size_t isReflection = SendMessage(GetDlgItem(IDC_REFLECTION_PROBE).GetHwnd(), BM_GETCHECK, 0, 0);
-            RenderProbe::ProbeType type = isReflection ? RenderProbe::PLANE_REFLECTION : RenderProbe::SCREEN_SPACE_TRANSPARENCY;
-            vec4 plane;
-            pb->GetReflectionPlane(plane);
-            const float vx = sz2f(GetDlgItemText(IDC_REFLECTION_PLANE_NX).c_str());
-            const float vy = sz2f(GetDlgItemText(IDC_REFLECTION_PLANE_NY).c_str());
-            const float vz = sz2f(GetDlgItemText(IDC_REFLECTION_PLANE_NZ).c_str());
-            const float vw = sz2f(GetDlgItemText(IDC_REFLECTION_PLANE_DIST).c_str());
-            LRESULT reflectionMode = SendMessage(GetDlgItem(IDC_REFLECTION_MAX_LEVEL).GetHwnd(), CB_GETCURSEL, 0, 0);
-            if (reflectionMode == LB_ERR)
-               reflectionMode = RenderProbe::REFL_STATIC;
-
-            if (pb->GetType() != type || pb->GetReflectionMode() != reflectionMode || plane.x != vx || plane.y != vy || plane.z != vz || plane.w != vw)
-            {
-               plane.x = vx;
-               plane.y = vy;
-               plane.z = vz;
-               plane.w = vw;
-               pb->SetType(type);
-               pb->SetReflectionPlane(plane);
-               pb->SetReflectionMode((RenderProbe::ReflectionMode) reflectionMode);
-               CCO(PinTable) *const pt = g_pvp->GetActiveTable();
-               pt->SetNonUndoableDirty(eSaveDirty);
-            }
-            const int count = ListView_GetSelectedCount(hListHwnd);
-            const BOOL enable = !(count > 1);
-            ::EnableWindow(GetDlgItem(IDC_RENAME).GetHwnd(), enable);
-         }
+         SaveProbeFromUI(pb);
+         const int count = ListView_GetSelectedCount(hListHwnd);
+         const BOOL enable = !(count > 1);
+         ::EnableWindow(GetDlgItem(IDC_RENAME).GetHwnd(), enable);
          break;
       }
       }
@@ -189,6 +145,71 @@ INT_PTR RenderProbeDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    }
 
    return DialogProcDefault(uMsg, wParam, lParam);
+}
+
+void RenderProbeDialog::LoadProbeToUI(RenderProbe *const pb)
+{
+   GetDlgItem(IDC_RENDER_PROBE_NAME_LABEL).SetWindowText(pb->GetName().c_str());
+   SendMessage(GetDlgItem(IDC_REFLECTION_MAX_LEVEL).GetHwnd(), CB_SETCURSEL, pb->GetReflectionMode(), 0);
+   RenderProbe::ProbeType type = pb->GetType();
+   CheckRadioButton(IDC_REFLECTION_PROBE, IDC_REFRACTION_PROBE, type == RenderProbe::PLANE_REFLECTION ? IDC_REFLECTION_PROBE : IDC_REFRACTION_PROBE);
+   vec4 plane;
+   pb->GetReflectionPlane(plane);
+   GetDlgItem(IDC_REFLECTION_PLANE_NX).SetWindowText(f2sz(plane.x).c_str());
+   GetDlgItem(IDC_REFLECTION_PLANE_NY).SetWindowText(f2sz(plane.y).c_str());
+   GetDlgItem(IDC_REFLECTION_PLANE_NZ).SetWindowText(f2sz(plane.z).c_str());
+   GetDlgItem(IDC_REFLECTION_PLANE_DIST).SetWindowText(f2sz(plane.w).c_str());
+   GetDlgItem(IDC_REFLECTION_PLANE_NX).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
+   GetDlgItem(IDC_REFLECTION_PLANE_NY).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
+   GetDlgItem(IDC_REFLECTION_PLANE_NZ).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
+   GetDlgItem(IDC_REFLECTION_PLANE_DIST).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
+   GetDlgItem(IDC_REFLECTION_MAX_LEVEL).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
+   HWND hwnd = GetDlgItem(IDC_ROUGHNESS_BASE).GetHwnd();
+   SendMessage(hwnd, TBM_SETRANGE, fTrue, MAKELONG(0, 5 - 1));
+   SendMessage(hwnd, TBM_SETTICFREQ, 1, 0);
+   SendMessage(hwnd, TBM_SETLINESIZE, 0, 1);
+   SendMessage(hwnd, TBM_SETPAGESIZE, 0, 1);
+   SendMessage(hwnd, TBM_SETTHUMBLENGTH, 5, 0);
+   SendMessage(hwnd, TBM_SETPOS, TRUE, pb->GetBaseRoughness());
+   hwnd = GetDlgItem(IDC_ROUGHNESS_CLEAR).GetHwnd();
+   SendMessage(hwnd, TBM_SETRANGE, fTrue, MAKELONG(0, 5 - 1));
+   SendMessage(hwnd, TBM_SETTICFREQ, 1, 0);
+   SendMessage(hwnd, TBM_SETLINESIZE, 0, 1);
+   SendMessage(hwnd, TBM_SETPAGESIZE, 0, 1);
+   SendMessage(hwnd, TBM_SETTHUMBLENGTH, 5, 0);
+   SendMessage(hwnd, TBM_SETPOS, TRUE, pb->GetClearRoughness());
+}
+
+void RenderProbeDialog::SaveProbeFromUI(RenderProbe *const pb)
+{
+   const size_t isReflection = SendMessage(GetDlgItem(IDC_REFLECTION_PROBE).GetHwnd(), BM_GETCHECK, 0, 0);
+   RenderProbe::ProbeType type = isReflection ? RenderProbe::PLANE_REFLECTION : RenderProbe::SCREEN_SPACE_TRANSPARENCY;
+   vec4 plane;
+   pb->GetReflectionPlane(plane);
+   const float vx = sz2f(GetDlgItemText(IDC_REFLECTION_PLANE_NX).c_str());
+   const float vy = sz2f(GetDlgItemText(IDC_REFLECTION_PLANE_NY).c_str());
+   const float vz = sz2f(GetDlgItemText(IDC_REFLECTION_PLANE_NZ).c_str());
+   const float vw = sz2f(GetDlgItemText(IDC_REFLECTION_PLANE_DIST).c_str());
+   LRESULT reflectionMode = SendMessage(GetDlgItem(IDC_REFLECTION_MAX_LEVEL).GetHwnd(), CB_GETCURSEL, 0, 0);
+   if (reflectionMode == LB_ERR)
+      reflectionMode = RenderProbe::REFL_STATIC;
+   const size_t roughness_base = SendMessage(GetDlgItem(IDC_ROUGHNESS_BASE).GetHwnd(), TBM_GETPOS, 0, 0);
+   const size_t roughness_clear = SendMessage(GetDlgItem(IDC_ROUGHNESS_CLEAR).GetHwnd(), TBM_GETPOS, 0, 0);
+
+   if (pb->GetType() != type || pb->GetReflectionMode() != reflectionMode || plane.x != vx || plane.y != vy || plane.z != vz || plane.w != vw || roughness_base != pb->GetBaseRoughness() || roughness_clear != pb->GetClearRoughness())
+   {
+      plane.x = vx;
+      plane.y = vy;
+      plane.z = vz;
+      plane.w = vw;
+      pb->SetType(type);
+      pb->SetBaseRoughness(roughness_base);
+      pb->SetClearRoughness(roughness_clear);
+      pb->SetReflectionPlane(plane);
+      pb->SetReflectionMode((RenderProbe::ReflectionMode)reflectionMode);
+      CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+      pt->SetNonUndoableDirty(eSaveDirty);
+   }
 }
 
 BOOL RenderProbeDialog::OnCommand(WPARAM wParam, LPARAM lParam)
@@ -244,6 +265,26 @@ BOOL RenderProbeDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                pt->SetNonUndoableDirty(eSaveDirty);
                UpdateList();
             }
+         }
+      }
+      break;
+   }
+   case IDC_REFLECTION_PROBE:
+   case IDC_REFRACTION_PROBE:
+   {
+      auto sel = ListView_GetSelectionMark(hListHwnd);
+      if (sel >= 0)
+      {
+         LVITEM lvitem;
+         lvitem.mask = LVIF_PARAM;
+         lvitem.iItem = sel;
+         lvitem.iSubItem = 0;
+         ListView_GetItem(hListHwnd, &lvitem);
+         RenderProbe *const pb = (RenderProbe *)lvitem.lParam;
+         if (pb != nullptr)
+         {
+            SaveProbeFromUI(pb);
+            LoadProbeToUI(pb);
          }
       }
       break;
