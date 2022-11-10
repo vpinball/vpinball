@@ -92,8 +92,8 @@ void main()
 		//}
 	}
 
-	refl = refl + color0*color0w;
-	refl = refl * 1.0/float(samples-1); //!! -1 due to jitter
+	refl += color0*color0w;
+	refl *= 1.0/float(samples-1); //!! -1 due to jitter
 
 	color = float4(lerp(color0,refl, min(fresnel,1.0)), 1.0);
 }

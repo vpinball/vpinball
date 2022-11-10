@@ -9,6 +9,7 @@
 #define sincos(phi,sp,cp) {sp=sin(phi);cp=cos(phi);}
 #define frac(x) fract(x)
 #define rsqrt(x) inversesqrt(x)
+#define rcp(x) (1.0/(x))
 
 #define tex2Dlod(sampler, v) textureLod(sampler, (v).xy,(v).w)
 #define tex2D(sampler, v) texture(sampler, v)

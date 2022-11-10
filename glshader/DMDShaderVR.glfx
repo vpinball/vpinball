@@ -136,19 +136,19 @@ in vec2 tex0;
 
 void main()
 {
-   vec2 ddxs = dFdx(tex0) * 0.4; // use ddx and ddy to help the oversampling below/make filtering radius dependent on projected 'dot'/texel
-   vec2 ddys = dFdy(tex0) * 0.4;
+   float2 ddxs = dFdx(tex0) * 0.4; // use ddx and ddy to help the oversampling below/make filtering radius dependent on projected 'dot'/texel
+   float2 ddys = dFdy(tex0) * 0.4;
 
    // brute force oversampling of DMD-texture and especially the dot-function (using 25 samples)
-    vec3 color2 = vec3(0., 0., 0.);
+    float3 color2 = float3(0., 0., 0.);
     for (int j = -2; j <= 2; ++j)
     {
-        vec2 uvj = tex0 + float(j) * ddys;
+        float2 uvj = tex0 + float(j) * ddys;
         for (int i = -2; i <= 2; ++i)
         {
-            vec2 uv = uvj + float(i) * ddxs;
+            const float2 uv = uvj + float(i) * ddxs;
 
-            vec4 rgba = texture(tex_dmd, uv); //!! lots of tex access by doing this all the time, but (tex) cache should be able to catch all of it
+            const float4 rgba = texture(tex_dmd, uv); //!! lots of tex access by doing this all the time, but (tex) cache should be able to catch all of it
             color.rgb = vColor_Intensity.xyz * vColor_Intensity.w; //!! create function that resembles LUT from VPM?
             if (rgba.a != 0.0)
                 color.rgb *= rgba.rgb;
@@ -156,15 +156,15 @@ void main()
                 color.rgb *= rgba.r * (255.9 / 100.);
 
             // simulate dot within the sampled texel
-            vec2 dist = fract(uv*vRes_Alpha_time.xy) * 2.2 - 1.1;
-            float d = dist.x * dist.x + dist.y * dist.y;
+            const float2 dist = fract(uv*vRes_Alpha_time.xy) * 2.2 - 1.1;
+            const float d = dist.x * dist.x + dist.y * dist.y;
 
             color2 += color.rgb * smoothstep(0., 1., 1.0 - d * d);
         }
     }
     color2 *= 1. / 25.;
 
-   /*vec3 colorg = vec3(0,0,0);
+   /*float3 colorg = float3(0,0,0);
    for(int j = -1; j <= 1; ++j)
    for(int i = -1; i <= 1; ++i)
    {
@@ -172,9 +172,9 @@ void main()
    }*/
 
    //if (rgba.b > 200.0)
-   //   return vec4(InvToneMap(InvGamma(min(color2,vec3(1.5,1.5,1.5))/*+colorg*/)), 0.5);
+   //   return float4(InvToneMap(InvGamma(min(color2,float3(1.5,1.5,1.5))/*+colorg*/)), 0.5);
    //else
-    color = vec4(InvToneMap(InvGamma(color2 /*+colorg*/)), vRes_Alpha_time.z); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+    color = float4(InvToneMap(InvGamma(color2 /*+colorg*/)), vRes_Alpha_time.z); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
 }
 
 ////ps_main_DMD_ext
@@ -183,7 +183,7 @@ in vec2 tex0;
 
 void main()
 {
-   vec4 rgba = texture(tex_dmd, tex0); //!! lots of tex access by doing this all the time, but (tex) cache should be able to catch all of it
+   float4 rgba = texture(tex_dmd, tex0); //!! lots of tex access by doing this all the time, but (tex) cache should be able to catch all of it
    color.rgb = rgba.rgb;
    color.a = vRes_Alpha_time.z;
 }
@@ -194,17 +194,17 @@ in vec2 tex0;
 
 void main()
 {
-   vec4 l = texture(tex_sprite, tex0);
+   float4 l = texture(tex_sprite, tex0);
    if (l.a < alphaTestValue)
       discard;           //stop the pixel shader if alpha test should reject pixel to avoid writing to the depth buffer
-   color = vec4(InvToneMap(InvGamma(l.xyz * vColor_Intensity.xyz * vColor_Intensity.w)), l.w); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+   color = float4(InvToneMap(InvGamma(l.xyz * vColor_Intensity.xyz * vColor_Intensity.w)), l.w); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
 }
 
 ////ps_main_noDMD_notex
 
 void main()
 {
-   color = vec4(InvToneMap(InvGamma(vColor_Intensity.xyz * vColor_Intensity.w)), 1.0); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+   color = float4(InvToneMap(InvGamma(vColor_Intensity.xyz * vColor_Intensity.w)), 1.0); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
 }
 
 ////TECHNIQUES

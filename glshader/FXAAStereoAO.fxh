@@ -225,12 +225,11 @@ void main()
 	// weight with result(s) from previous frames
 	const float ao = 1.0 - total_strength * occlusion;
 	color = float4( (textureLod(tex_fb_filtered, uv0, 0).x //abuse bilerp for filtering (by using half texel/pixel shift)
-			  +textureLod(tex_fb_filtered, uv1, 0).x
-			  +textureLod(tex_fb_filtered, float2(uv0.x, uv1.y), 0).x
-			  +textureLod(tex_fb_filtered, float2(uv1.x, uv0.y), 0).x)
+					+textureLod(tex_fb_filtered, uv1, 0).x
+					+textureLod(tex_fb_filtered, float2(uv0.x, uv1.y), 0).x
+					+textureLod(tex_fb_filtered, float2(uv1.x, uv0.y), 0).x)
 		*(0.25*(1.0-AO_scale_timeblur.y))+saturate(ao /*+base*/)*AO_scale_timeblur.y, 0.,0.,0.);
 }
-
 
 // stereo
 
@@ -242,26 +241,26 @@ in float2 tex0;
 void main()
 {
 	float2 u = tex0 + w_h_height.xy*0.5;
-	float MaxSeparation = ms_zpd_ya_td.x;
-	float ZPD = ms_zpd_ya_td.y;
-	bool yaxis = (ms_zpd_ya_td.z != 0.0); //!! uniform
-	bool topdown = (ms_zpd_ya_td.w == 1.0); //!! uniform
-	bool sidebyside = (ms_zpd_ya_td.w == 2.0); //!! uniform
-	int y = w_h_height.z*u.y;
+	const float MaxSeparation = ms_zpd_ya_td.x;
+	const float ZPD = ms_zpd_ya_td.y;
+	const bool yaxis = (ms_zpd_ya_td.z != 0.0); //!! uniform
+	const bool topdown = (ms_zpd_ya_td.w == 1.0); //!! uniform
+	const bool sidebyside = (ms_zpd_ya_td.w == 2.0); //!! uniform
+	const int y = w_h_height.z*u.y;
 	bool l = sidebyside ? (u.x < 0.5) : topdown ? (u.y < 0.5) : ((y+1)/2 == y/2); //last check actually means (y&1) //!! %2 //!! float diff = frac(dot(tex,(screen_size / 2.0))+0.25); if(diff < 0.5)... //returns 0.25 and 0.75
 	if(topdown) { u.y *= 2.0; if(!l) u.y -= 1.0; }  //!! !topdown: (u.y+w_h_height.y) ?
 	else if(sidebyside) { u.x *= 2.0; if(!l) u.x -= 1.0; }
-	float su = l ? MaxSeparation : -MaxSeparation;
+	const float su = l ? MaxSeparation : -MaxSeparation;
 	float minDepth = min(min(textureLod(tex_depth, u + (yaxis ? float2(0.0,0.5*su) : float2(0.5*su,0.0)), 0).x, textureLod(tex_depth, u + (yaxis ? float2(0.0,0.666*su) : float2(0.666*su,0.0)), 0).x), textureLod(tex_depth, u + (yaxis ? float2(0.0,su) : float2(su,0.0)), 0).x);
 	float parallax = (w_h_height.w+MaxSeparation) - min(MaxSeparation/(0.5+minDepth*(1.0/ZPD-0.5)), (w_h_height.w+MaxSeparation));
 	if(!l)
 		parallax = -parallax;
 	if(yaxis)
 		parallax = -parallax;
-	float3 col = textureLod(tex_fb_filtered, u + (yaxis ? float2(0.0,parallax) : float2(parallax,0.0)), 0).xyz;
+	const float3 col = textureLod(tex_fb_filtered, u + (yaxis ? float2(0.0,parallax) : float2(parallax,0.0)), 0).xyz;
 	//if(!aa)
 	//	return float4(col, 1.0); // otherwise blend with 'missing' scanline
-	float2 aaoffs = sidebyside ? float2(w_h_height.x,0.0) : float2(0.0,w_h_height.y);
+	const float2 aaoffs = sidebyside ? float2(w_h_height.x,0.0) : float2(0.0,w_h_height.y);
 	minDepth = min(min(textureLod(tex_depth, u + (yaxis ? float2(0.0,0.5*su) : float2(0.5*su,0.0)) + aaoffs, 0).x, textureLod(tex_depth, u + (yaxis ? float2(0.0,0.666*su) : float2(0.666*su,0.0)) + aaoffs, 0).x), textureLod(tex_depth, u + (yaxis ? float2(0.0,su) : float2(su,0.0)) + aaoffs, 0).x);
 	parallax = (w_h_height.w+MaxSeparation) - min(MaxSeparation/(0.5+minDepth*(1.0/ZPD-0.5)), (w_h_height.w+MaxSeparation));
 	if(!l)
@@ -282,7 +281,7 @@ void main()
 #define NFAA_VARIANT // variant 1
 //#define NFAA_VARIANT2 // variant 2
 
-float GetLuminance(float3 l)
+float GetLuminance(const float3 l)
 {
 	return dot(l, float3(0.25,0.5,0.25)); // experimental, red and blue should not suffer too much
 	//return 0.299*l.x + 0.587*l.y + 0.114*l.z;
@@ -291,30 +290,30 @@ float GetLuminance(float3 l)
 }
 
 #ifndef NFAA_USE_COLOR
-float2 findContrastByLuminance(float2 XYCoord, float filterSpread)
+float2 findContrastByLuminance(const float2 XYCoord, const float filterSpread)
 {
-	float2 upOffset    = float2(0.0, w_h_height.y * filterSpread);
-	float2 rightOffset = float2(w_h_height.x * filterSpread, 0.0);
+	const float2 upOffset    = float2(0.0, w_h_height.y * filterSpread);
+	const float2 rightOffset = float2(w_h_height.x * filterSpread, 0.0);
 
-	float topHeight         = GetLuminance(textureLod(tex_fb_filtered, XYCoord +               upOffset, 0).rgb);
-	float bottomHeight      = GetLuminance(textureLod(tex_fb_filtered, XYCoord -               upOffset, 0).rgb);
-	float rightHeight       = GetLuminance(textureLod(tex_fb_filtered, XYCoord + rightOffset           , 0).rgb);
-	float leftHeight        = GetLuminance(textureLod(tex_fb_filtered, XYCoord - rightOffset           , 0).rgb);
-	float leftTopHeight     = GetLuminance(textureLod(tex_fb_filtered, XYCoord - rightOffset + upOffset, 0).rgb);
-	float leftBottomHeight  = GetLuminance(textureLod(tex_fb_filtered, XYCoord - rightOffset - upOffset, 0).rgb);
-	float rightBottomHeight = GetLuminance(textureLod(tex_fb_filtered, XYCoord + rightOffset + upOffset, 0).rgb);
-	float rightTopHeight    = GetLuminance(textureLod(tex_fb_filtered, XYCoord + rightOffset - upOffset, 0).rgb);
+	const float topHeight         = GetLuminance(textureLod(tex_fb_filtered, XYCoord +               upOffset, 0).rgb);
+	const float bottomHeight      = GetLuminance(textureLod(tex_fb_filtered, XYCoord -               upOffset, 0).rgb);
+	const float rightHeight       = GetLuminance(textureLod(tex_fb_filtered, XYCoord + rightOffset           , 0).rgb);
+	const float leftHeight        = GetLuminance(textureLod(tex_fb_filtered, XYCoord - rightOffset           , 0).rgb);
+	const float leftTopHeight     = GetLuminance(textureLod(tex_fb_filtered, XYCoord - rightOffset + upOffset, 0).rgb);
+	const float leftBottomHeight  = GetLuminance(textureLod(tex_fb_filtered, XYCoord - rightOffset - upOffset, 0).rgb);
+	const float rightBottomHeight = GetLuminance(textureLod(tex_fb_filtered, XYCoord + rightOffset + upOffset, 0).rgb);
+	const float rightTopHeight    = GetLuminance(textureLod(tex_fb_filtered, XYCoord + rightOffset - upOffset, 0).rgb);
 
 #ifdef NFAA_EDGE_DETECTION_VARIANT
-	float sum0 = rightTopHeight    + bottomHeight + leftTopHeight;
-	float sum1 = leftBottomHeight  + topHeight    + rightBottomHeight;
-	float sum2 = leftTopHeight     + rightHeight  + leftBottomHeight;
-	float sum3 = rightBottomHeight + leftHeight   + rightTopHeight;
+	const float sum0 = rightTopHeight    + bottomHeight + leftTopHeight;
+	const float sum1 = leftBottomHeight  + topHeight    + rightBottomHeight;
+	const float sum2 = leftTopHeight     + rightHeight  + leftBottomHeight;
+	const float sum3 = rightBottomHeight + leftHeight   + rightTopHeight;
 #else
-	float sum0 = rightTopHeight + topHeight + rightBottomHeight;
-	float sum1 = leftTopHeight + bottomHeight + leftBottomHeight;
-	float sum2 = leftTopHeight + leftHeight + rightTopHeight;
-	float sum3 = leftBottomHeight + rightHeight + rightBottomHeight;
+	const float sum0 = rightTopHeight + topHeight + rightBottomHeight;
+	const float sum1 = leftTopHeight + bottomHeight + leftBottomHeight;
+	const float sum2 = leftTopHeight + leftHeight + rightTopHeight;
+	const float sum3 = leftBottomHeight + rightHeight + rightBottomHeight;
 #endif
 
 	// finite differences for final vectors
@@ -323,30 +322,30 @@ float2 findContrastByLuminance(float2 XYCoord, float filterSpread)
 
 #else
 
-float2 findContrastByColor(float2 XYCoord, float filterSpread)
+float2 findContrastByColor(const float2 XYCoord, const float filterSpread)
 {
-	float2 upOffset    = float2(0.0, w_h_height.y * filterSpread);
-	float2 rightOffset = float2(w_h_height.x * filterSpread, 0.0);
+	const float2 upOffset    = float2(0.0, w_h_height.y * filterSpread);
+	const float2 rightOffset = float2(w_h_height.x * filterSpread, 0.0);
 
-	float3 topHeight         = textureLod(tex_fb_filtered, XYCoord +               upOffset, 0).rgb;
-	float3 bottomHeight      = textureLod(tex_fb_filtered, XYCoord -               upOffset, 0).rgb;
-	float3 rightHeight       = textureLod(tex_fb_filtered, XYCoord + rightOffset           , 0).rgb;
-	float3 leftHeight        = textureLod(tex_fb_filtered, XYCoord - rightOffset           , 0).rgb;
-	float3 leftTopHeight     = textureLod(tex_fb_filtered, XYCoord - rightOffset + upOffset, 0).rgb;
-	float3 leftBottomHeight  = textureLod(tex_fb_filtered, XYCoord - rightOffset - upOffset, 0).rgb;
-	float3 rightBottomHeight = textureLod(tex_fb_filtered, XYCoord + rightOffset + upOffset, 0).rgb;
-	float3 rightTopHeight    = textureLod(tex_fb_filtered, XYCoord + rightOffset - upOffset, 0).rgb;
+	const float3 topHeight         = textureLod(tex_fb_filtered, XYCoord +               upOffset, 0).rgb;
+	const float3 bottomHeight      = textureLod(tex_fb_filtered, XYCoord -               upOffset, 0).rgb;
+	const float3 rightHeight       = textureLod(tex_fb_filtered, XYCoord + rightOffset           , 0).rgb;
+	const float3 leftHeight        = textureLod(tex_fb_filtered, XYCoord - rightOffset           , 0).rgb;
+	const float3 leftTopHeight     = textureLod(tex_fb_filtered, XYCoord - rightOffset + upOffset, 0).rgb;
+	const float3 leftBottomHeight  = textureLod(tex_fb_filtered, XYCoord - rightOffset - upOffset, 0).rgb;
+	const float3 rightBottomHeight = textureLod(tex_fb_filtered, XYCoord + rightOffset + upOffset, 0).rgb;
+	const float3 rightTopHeight    = textureLod(tex_fb_filtered, XYCoord + rightOffset - upOffset, 0).rgb;
 
 #ifdef NFAA_EDGE_DETECTION_VARIANT
-	float sum0 = rightTopHeight    + bottomHeight + leftTopHeight;
-	float sum1 = leftBottomHeight  + topHeight    + rightBottomHeight;
-	float sum2 = leftTopHeight     + rightHeight  + leftBottomHeight;
-	float sum3 = rightBottomHeight + leftHeight   + rightTopHeight;
+	const float sum0 = rightTopHeight    + bottomHeight + leftTopHeight;
+	const float sum1 = leftBottomHeight  + topHeight    + rightBottomHeight;
+	const float sum2 = leftTopHeight     + rightHeight  + leftBottomHeight;
+	const float sum3 = rightBottomHeight + leftHeight   + rightTopHeight;
 #else
-	float sum0 = rightTopHeight + topHeight + rightBottomHeight;
-	float sum1 = leftTopHeight + bottomHeight + leftBottomHeight;
-	float sum2 = leftTopHeight + leftHeight + rightTopHeight;
-	float sum3 = leftBottomHeight + rightHeight + rightBottomHeight;
+	const float sum0 = rightTopHeight + topHeight + rightBottomHeight;
+	const float sum1 = leftTopHeight + bottomHeight + leftBottomHeight;
+	const float sum2 = leftTopHeight + leftHeight + rightTopHeight;
+	const float sum3 = leftBottomHeight + rightHeight + rightBottomHeight;
 #endif
 
 	// finite differences for final vectors
@@ -360,19 +359,19 @@ void main()
 {
 #ifndef NFAA_VARIANT2
  #ifdef NFAA_VARIANT
-	float filterStrength = 1.0;
+	const float filterStrength = 1.0;
  #else
-	float filterStrength = 0.5;
+	const float filterStrength = 0.5;
  #endif
-	float filterSpread = 4.0; //!! or original 3? or larger 5?
+	const float filterSpread = 4.0; //!! or original 3? or larger 5?
 #else
-	float filterSpread = 1.0;
+	const float filterSpread = 1.0;
 #endif
 
-	float2 u = tex0 + w_h_height.xy*0.5;
+	const float2 u = tex0 + w_h_height.xy*0.5;
 
-	float3 Scene0 = textureLod(tex_fb_filtered, u, 0).rgb;
-	float depth0 = textureLod(tex_depth, u, 0).x;
+	const float3 Scene0 = textureLod(tex_fb_filtered, u, 0).rgb;
+	const float depth0 = textureLod(tex_depth, u, 0).x;
 	if ((w_h_height.w == 1.0) && ((depth0 == 1.0) || (depth0 == 0.0))) // early out if depth too large (=BG) or too small (=DMD,etc)
 			color = float4(Scene0, 1.0);
 	else {
@@ -383,30 +382,30 @@ void main()
 #endif
 
 #ifndef NFAA_VARIANT2
-		float filterStrength2 = filterStrength + filterSpread*0.5;
-		float filterClamp = filterStrength2 / filterSpread;
+		const float filterStrength2 = filterStrength + filterSpread*0.5;
+		const float filterClamp = filterStrength2 / filterSpread;
 
 		Vectors = clamp(Vectors * filterStrength2, -float2(filterClamp, filterClamp), float2(filterClamp, filterClamp));
 #else
 		Vectors *= filterSpread;
 #endif
 
-		float2 Normal = Vectors * (w_h_height.xy /* * 2.0*/);
+		const float2 Normal = Vectors * (w_h_height.xy /* * 2.0*/);
 
-		float3 Scene1 = textureLod(tex_fb_filtered, u + Normal, 0).rgb;
-		float3 Scene2 = textureLod(tex_fb_filtered, u - Normal, 0).rgb;
+		const float3 Scene1 = textureLod(tex_fb_filtered, u + Normal, 0).rgb;
+		const float3 Scene2 = textureLod(tex_fb_filtered, u - Normal, 0).rgb;
 #if defined(NFAA_VARIANT) || defined(NFAA_VARIANT2)
-		float3 Scene3 = textureLod(tex_fb_filtered, u + float2(Normal.x, -Normal.y)*0.5, 0).rgb;
-		float3 Scene4 = textureLod(tex_fb_filtered, u - float2(Normal.x, -Normal.y)*0.5, 0).rgb;
+		const float3 Scene3 = textureLod(tex_fb_filtered, u + float2(Normal.x, -Normal.y)*0.5, 0).rgb;
+		const float3 Scene4 = textureLod(tex_fb_filtered, u - float2(Normal.x, -Normal.y)*0.5, 0).rgb;
 #else
-		float3 Scene3 = textureLod(tex_fb_filtered, u + float2(Normal.x, -Normal.y), 0).rgb;
-		float3 Scene4 = textureLod(tex_fb_filtered, u - float2(Normal.x, -Normal.y), 0).rgb;
+		const float3 Scene3 = textureLod(tex_fb_filtered, u + float2(Normal.x, -Normal.y), 0).rgb;
+		const float3 Scene4 = textureLod(tex_fb_filtered, u - float2(Normal.x, -Normal.y), 0).rgb;
 #endif
 
 #ifdef NFAA_TEST_MODE // debug
-		float3 o_Color = normalize(float3(Vectors * 0.5 + 0.5, 1.0));
+		const float3 o_Color = normalize(float3(Vectors * 0.5 + 0.5, 1.0));
 #else
-		float3 o_Color = (Scene0 + Scene1 + Scene2 + Scene3 + Scene4) * 0.2;
+		const float3 o_Color = (Scene0 + Scene1 + Scene2 + Scene3 + Scene4) * 0.2;
 #endif
 
 		color = float4(o_Color, 1.0);
@@ -415,17 +414,17 @@ void main()
 
 ////FRAGMENT
 
-float3 sampleOffset(float2 u, float2 pixelOffset )
+float3 sampleOffset(const float2 u, const float2 pixelOffset )
 {
    return textureLod(tex_fb_filtered, u + pixelOffset * w_h_height.xy, 0).xyz;
 }
 
-float4 sampleOffseta(float2 u, float2 pixelOffset )
+float4 sampleOffseta(const float2 u, const float2 pixelOffset )
 {
    return textureLod(tex_fb_filtered, u + pixelOffset * w_h_height.xy, 0);
 }
 
-float avg(float3 l)
+float avg(const float3 l)
 {
    //return dot(l, float3(0.25,0.5,0.25)); // experimental, red and blue should not suffer too much
    return (l.x+l.y+l.z) * (1.0 / 3.0);
@@ -440,16 +439,16 @@ in float2 tex0;
 
 void main()
 {
-   float2 u = tex0 + w_h_height.xy*0.5;
+   const float2 u = tex0 + w_h_height.xy*0.5;
 
-   float3 sCenter    = sampleOffset(u, float2( 0.0,  0.0) );
-   float3 sUpLeft    = sampleOffset(u, float2(-0.5, -0.5) );
-   float3 sUpRight   = sampleOffset(u, float2( 0.5, -0.5) );
-   float3 sDownLeft  = sampleOffset(u, float2(-0.5,  0.5) );
-   float3 sDownRight = sampleOffset(u, float2( 0.5,  0.5) );
+   const float3 sCenter    = sampleOffset(u, float2( 0.0,  0.0) );
+   const float3 sUpLeft    = sampleOffset(u, float2(-0.5, -0.5) );
+   const float3 sUpRight   = sampleOffset(u, float2( 0.5, -0.5) );
+   const float3 sDownLeft  = sampleOffset(u, float2(-0.5,  0.5) );
+   const float3 sDownRight = sampleOffset(u, float2( 0.5,  0.5) );
 
-   float3 diff       = abs( (sUpLeft + sUpRight) + (sDownLeft + sDownRight) - sCenter * 4.0 );
-   float  edgeMask   = avg(diff) * 4.0; //!! magic
+   const float3 diff       = abs( (sUpLeft + sUpRight) + (sDownLeft + sDownRight) - sCenter * 4.0 );
+   const float  edgeMask   = avg(diff) * 4.0; //!! magic
 
    color = /*test: float4(edgeMask,edgeMask,edgeMask,1.0);*/ float4(sCenter, edgeMask);
 }
@@ -460,11 +459,11 @@ in float2 tex0;
 
 void main()
 {
-   float2 u = tex0 + w_h_height.xy*0.5;
+	const float2 u = tex0 + w_h_height.xy*0.5;
 
-   float4 sampleCenter = sampleOffseta(u, float2( 0.0,  0.0) );
-   
-	float depth0 = textureLod(tex_depth, u, 0).x;
+	const float4 sampleCenter = sampleOffseta(u, float2( 0.0,  0.0) );
+
+	const float depth0 = textureLod(tex_depth, u, 0).x;
 	if ((w_h_height.w == 1.0) && ((depth0 == 1.0) || (depth0 == 0.0))) // early out if depth too large (=BG) or too small (=DMD,etc)
 			color = float4(sampleCenter.xyz, 1.0);
 	else {
@@ -474,73 +473,73 @@ void main()
 	   float4 sampleVertNeg0   = sampleOffseta(u, float2( 0.0, -1.5) ); 
 	   float4 sampleVertPos0   = sampleOffseta(u, float2( 0.0,  1.5) );
 
-	   float3 sumHoriz         = sampleHorizNeg0.xyz + sampleHorizPos0.xyz;
-	   float3 sumVert          = sampleVertNeg0.xyz  + sampleVertPos0.xyz;
+	   const float3 sumHoriz         = sampleHorizNeg0.xyz + sampleHorizPos0.xyz;
+	   const float3 sumVert          = sampleVertNeg0.xyz  + sampleVertPos0.xyz;
 
-	   float3 sampleLeft       = sampleOffset(u, float2(-1.0,  0.0) );
-	   float3 sampleRight      = sampleOffset(u, float2( 1.0,  0.0) );
-	   float3 sampleTop        = sampleOffset(u, float2( 0.0, -1.0) );
-	   float3 sampleDown       = sampleOffset(u, float2( 0.0,  1.0) );
+	   const float3 sampleLeft       = sampleOffset(u, float2(-1.0,  0.0) );
+	   const float3 sampleRight      = sampleOffset(u, float2( 1.0,  0.0) );
+	   const float3 sampleTop        = sampleOffset(u, float2( 0.0, -1.0) );
+	   const float3 sampleDown       = sampleOffset(u, float2( 0.0,  1.0) );
 
-	   float3 diffToCenterHoriz= abs((sampleLeft+sampleRight) * 0.5 - sampleCenter.xyz); //!! was sumHoriz instead of l&r
-	   float3 diffToCenterVert = abs((sampleTop+sampleDown) * 0.5 - sampleCenter.xyz); //!! was sumVert instead of t&d
+	   const float3 diffToCenterHoriz= abs((sampleLeft+sampleRight) * 0.5 - sampleCenter.xyz); //!! was sumHoriz instead of l&r
+	   const float3 diffToCenterVert = abs((sampleTop+sampleDown) * 0.5 - sampleCenter.xyz); //!! was sumVert instead of t&d
 
-	   float valueEdgeHoriz    = avg(diffToCenterHoriz);
-	   float valueEdgeVert     = avg(diffToCenterVert);
+	   const float valueEdgeHoriz    = avg(diffToCenterHoriz);
+	   const float valueEdgeVert     = avg(diffToCenterVert);
 
-	   float edgeDetectHoriz   = 3.0 * valueEdgeHoriz - 0.1; //!! magic params
-	   float edgeDetectVert    = 3.0 * valueEdgeVert  - 0.1;
+	   const float edgeDetectHoriz   = 3.0 * valueEdgeHoriz - 0.1; //!! magic params
+	   const float edgeDetectVert    = 3.0 * valueEdgeVert  - 0.1;
 
-	   float3 avgHoriz         = (sumHoriz + sampleCenter.xyz) * (1.0/3.0);
-	   float3 avgVert          = (sumVert  + sampleCenter.xyz) * (1.0/3.0);
+	   const float3 avgHoriz         = (sumHoriz + sampleCenter.xyz) * (1.0/3.0);
+	   const float3 avgVert          = (sumVert  + sampleCenter.xyz) * (1.0/3.0);
 
-	   float valueHoriz        = avg(avgHoriz);
-	   float valueVert         = avg(avgVert);
+	   const float valueHoriz        = avg(avgHoriz);
+	   const float valueVert         = avg(avgVert);
 
-	   float blurAmountHoriz   = saturate(edgeDetectHoriz / valueHoriz);
-	   float blurAmountVert    = saturate(edgeDetectVert  / valueVert);
+	   const float blurAmountHoriz   = saturate(edgeDetectHoriz / valueHoriz);
+	   const float blurAmountVert    = saturate(edgeDetectVert  / valueVert);
 
 	   float3 aaResult               = lerp( sampleCenter.xyz, avgHoriz, blurAmountVert * 0.5); //!! magic sharpen
 	   aaResult                      = lerp( aaResult,         avgVert,  blurAmountHoriz * 0.5); //!! magic sharpen
 
 	   // long edges
-	   float4 sampleVertNeg1   = sampleOffseta(u, float2(0.0, -3.5) );
-	   float4 sampleVertNeg15  = sampleOffseta(u, float2(0.0, -5.5) );
-	   float4 sampleVertNeg2   = sampleOffseta(u, float2(0.0, -7.5) );
-	   float4 sampleVertPos1   = sampleOffseta(u, float2(0.0,  3.5) ); 
-	   float4 sampleVertPos15  = sampleOffseta(u, float2(0.0,  5.5) ); 
-	   float4 sampleVertPos2   = sampleOffseta(u, float2(0.0,  7.5) ); 
+	   const float4 sampleVertNeg1   = sampleOffseta(u, float2(0.0, -3.5) );
+	   const float4 sampleVertNeg15  = sampleOffseta(u, float2(0.0, -5.5) );
+	   const float4 sampleVertNeg2   = sampleOffseta(u, float2(0.0, -7.5) );
+	   const float4 sampleVertPos1   = sampleOffseta(u, float2(0.0,  3.5) ); 
+	   const float4 sampleVertPos15  = sampleOffseta(u, float2(0.0,  5.5) ); 
+	   const float4 sampleVertPos2   = sampleOffseta(u, float2(0.0,  7.5) ); 
 
-	   float4 sampleHorizNeg1  = sampleOffseta(u, float2(-3.5, 0.0) ); 
-	   float4 sampleHorizNeg15 = sampleOffseta(u, float2(-5.5, 0.0) ); 
-	   float4 sampleHorizNeg2  = sampleOffseta(u, float2(-7.5, 0.0) );
-	   float4 sampleHorizPos1  = sampleOffseta(u, float2( 3.5, 0.0) ); 
-	   float4 sampleHorizPos15 = sampleOffseta(u, float2( 5.5, 0.0) ); 
-	   float4 sampleHorizPos2  = sampleOffseta(u, float2( 7.5, 0.0) ); 
+	   const float4 sampleHorizNeg1  = sampleOffseta(u, float2(-3.5, 0.0) ); 
+	   const float4 sampleHorizNeg15 = sampleOffseta(u, float2(-5.5, 0.0) ); 
+	   const float4 sampleHorizNeg2  = sampleOffseta(u, float2(-7.5, 0.0) );
+	   const float4 sampleHorizPos1  = sampleOffseta(u, float2( 3.5, 0.0) ); 
+	   const float4 sampleHorizPos15 = sampleOffseta(u, float2( 5.5, 0.0) ); 
+	   const float4 sampleHorizPos2  = sampleOffseta(u, float2( 7.5, 0.0) ); 
 
-	   float pass1EdgeAvgHoriz = saturate(( sampleHorizNeg2.a + sampleHorizNeg1.a + sampleHorizNeg15.a + sampleHorizNeg0.a + sampleHorizPos0.a + sampleHorizPos1.a + sampleHorizPos15.a + sampleHorizPos2.a ) * (2.0 / 8.0) - 1.0);
-	   float pass1EdgeAvgVert  = saturate(( sampleVertNeg2.a  + sampleVertNeg1.a + sampleVertNeg15.a  + sampleVertNeg0.a  + sampleVertPos0.a + sampleVertPos1.a + sampleVertPos15.a  + sampleVertPos2.a  ) * (2.0 / 8.0) - 1.0);
+	   const float pass1EdgeAvgHoriz = saturate(( sampleHorizNeg2.a + sampleHorizNeg1.a + sampleHorizNeg15.a + sampleHorizNeg0.a + sampleHorizPos0.a + sampleHorizPos1.a + sampleHorizPos15.a + sampleHorizPos2.a ) * (2.0 / 8.0) - 1.0);
+	   const float pass1EdgeAvgVert  = saturate(( sampleVertNeg2.a  + sampleVertNeg1.a + sampleVertNeg15.a  + sampleVertNeg0.a  + sampleVertPos0.a + sampleVertPos1.a + sampleVertPos15.a  + sampleVertPos2.a  ) * (2.0 / 8.0) - 1.0);
 
 	   if(abs(pass1EdgeAvgHoriz - pass1EdgeAvgVert) > 0.2) //!! magic
 	   {
-			float valueHorizLong = avg(sampleHorizNeg2.xyz + sampleHorizNeg1.xyz + sampleHorizNeg15.xyz + sampleHorizNeg0.xyz + sampleHorizPos0.xyz + sampleHorizPos1.xyz + sampleHorizPos15.xyz + sampleHorizPos2.xyz) * (1.0/8.0);
-			float valueVertLong  = avg(sampleVertNeg2.xyz  + sampleVertNeg1.xyz + sampleVertNeg15.xyz + sampleVertNeg0.xyz  + sampleVertPos0.xyz + sampleVertPos1.xyz + sampleVertPos15.xyz + sampleVertPos2.xyz) * (1.0/8.0);
+			const float valueHorizLong = avg(sampleHorizNeg2.xyz + sampleHorizNeg1.xyz + sampleHorizNeg15.xyz + sampleHorizNeg0.xyz + sampleHorizPos0.xyz + sampleHorizPos1.xyz + sampleHorizPos15.xyz + sampleHorizPos2.xyz) * (1.0/8.0);
+			const float valueVertLong  = avg(sampleVertNeg2.xyz  + sampleVertNeg1.xyz + sampleVertNeg15.xyz + sampleVertNeg0.xyz  + sampleVertPos0.xyz + sampleVertPos1.xyz + sampleVertPos15.xyz + sampleVertPos2.xyz) * (1.0/8.0);
 
-			float valueCenter    = avg(sampleCenter.xyz);
-			float valueLeft      = avg(sampleLeft);
-			float valueRight     = avg(sampleRight);
-			float valueTop       = avg(sampleTop);
-			float valueBottom    = avg(sampleDown);
+			const float valueCenter    = avg(sampleCenter.xyz);
+			const float valueLeft      = avg(sampleLeft);
+			const float valueRight     = avg(sampleRight);
+			const float valueTop       = avg(sampleTop);
+			const float valueBottom    = avg(sampleDown);
 
-			float vx = (valueCenter == valueLeft)   ? 0. : saturate(      ( valueVertLong  - valueLeft   ) / (valueCenter - valueLeft));
-			float hx = (valueCenter == valueTop)    ? 0. : saturate(      ( valueHorizLong - valueTop    ) / (valueCenter - valueTop));
-			float vy = (valueCenter == valueRight)  ? 0. : saturate(1.0 + ( valueVertLong  - valueCenter ) / (valueCenter - valueRight));
-			float hy = (valueCenter == valueBottom) ? 0. : saturate(1.0 + ( valueHorizLong - valueCenter ) / (valueCenter - valueBottom));
+			const float vx = (valueCenter == valueLeft)   ? 0. : saturate(      ( valueVertLong  - valueLeft   ) / (valueCenter - valueLeft));
+			const float hx = (valueCenter == valueTop)    ? 0. : saturate(      ( valueHorizLong - valueTop    ) / (valueCenter - valueTop));
+			const float vy = (valueCenter == valueRight)  ? 0. : saturate(1.0 + ( valueVertLong  - valueCenter ) / (valueCenter - valueRight));
+			const float hy = (valueCenter == valueBottom) ? 0. : saturate(1.0 + ( valueHorizLong - valueCenter ) / (valueCenter - valueBottom));
 
-			float3 longBlurVert  = lerp( sampleRight,
+			const float3 longBlurVert  = lerp( sampleRight,
 											   lerp( sampleLeft,  sampleCenter.xyz, vx ),
 											   vy );
-			float3 longBlurHoriz = lerp( sampleDown,
+			const float3 longBlurHoriz = lerp( sampleDown,
 											   lerp( sampleTop,   sampleCenter.xyz, hx ),
 											   hy );
 
@@ -557,7 +556,7 @@ void main()
 
 ////FRAGMENT
 
-float luma(float3 l)
+float luma(const float3 l)
 {
     return dot(l, float3(0.25,0.5,0.25)); // experimental, red and blue should not suffer too much
     //return 0.299*l.x + 0.587*l.y + 0.114*l.z;
@@ -576,45 +575,45 @@ in float2 tex0;
 
 void main()
 {
-	float2 u = tex0 + w_h_height.xy*0.5;
+	const float2 u = tex0 + w_h_height.xy*0.5;
 
-	float3 rMc = textureLod(tex_fb_unfiltered, u, 0).xyz;
+	const float3 rMc = textureLod(tex_fb_unfiltered, u, 0).xyz;
 	float depth0 = textureLod(tex_depth, u, 0).x;
 	if ((w_h_height.w == 1.0) && ((depth0 == 1.0) || (depth0 == 0.0))) // early out if depth too large (=BG) or too small (=DMD,etc)
 			color = float4(rMc, 1.0);
 	else {
-		float2 offs = w_h_height.xy;
-		float rNW = luma(textureLod(tex_fb_unfiltered, u - offs, 0).xyz);
-		float rN = luma(textureLod(tex_fb_unfiltered, u - float2(0.0,offs.y), 0).xyz);
-		float rNE = luma(textureLod(tex_fb_unfiltered, u - float2(-offs.x,offs.y), 0).xyz);
-		float rW = luma(textureLod(tex_fb_unfiltered, u - float2(offs.x,0.0), 0).xyz);
-		float rM = luma(rMc);
-		float rE = luma(textureLod(tex_fb_unfiltered, u + float2(offs.x,0.0), 0).xyz);
-		float rSW = luma(textureLod(tex_fb_unfiltered, u + float2(-offs.x,offs.y), 0).xyz);
-		float rS = luma(textureLod(tex_fb_unfiltered, u + float2(0.0,offs.y), 0).xyz);
-		float rSE = luma(textureLod(tex_fb_unfiltered, u + offs, 0).xyz);
-		float rMrN = rM+rN;
-		float lumaNW = rMrN+rNW+rW;
-		float lumaNE = rMrN+rNE+rE;
-		float rMrS = rM+rS;
-		float lumaSW = rMrS+rSW+rW;
-		float lumaSE = rMrS+rSE+rE;
-		bool g0 = (lumaSW > lumaSE);
-		float tempMax = g0 ? lumaSW : lumaSE;
-		float tempMin = g0 ? lumaSE : lumaSW;
-		bool g1 = (lumaNW > lumaNE);
-		float tempMax2 = g1 ? lumaNW : lumaNE;
-		float tempMin2 = g1 ? lumaNE : lumaNW;
-		float lumaMin = min(rM, min(tempMin, tempMin2));
-		float lumaMax = max(rM, max(tempMax, tempMax2));
-		float SWSE = lumaSW + lumaSE;
-		float NWNE = lumaNW + lumaNE;
+		const float2 offs = w_h_height.xy;
+		const float rNW = luma(textureLod(tex_fb_unfiltered, u - offs, 0).xyz);
+		const float rN = luma(textureLod(tex_fb_unfiltered, u - float2(0.0,offs.y), 0).xyz);
+		const float rNE = luma(textureLod(tex_fb_unfiltered, u - float2(-offs.x,offs.y), 0).xyz);
+		const float rW = luma(textureLod(tex_fb_unfiltered, u - float2(offs.x,0.0), 0).xyz);
+		const float rM = luma(rMc);
+		const float rE = luma(textureLod(tex_fb_unfiltered, u + float2(offs.x,0.0), 0).xyz);
+		const float rSW = luma(textureLod(tex_fb_unfiltered, u + float2(-offs.x,offs.y), 0).xyz);
+		const float rS = luma(textureLod(tex_fb_unfiltered, u + float2(0.0,offs.y), 0).xyz);
+		const float rSE = luma(textureLod(tex_fb_unfiltered, u + offs, 0).xyz);
+		const float rMrN = rM+rN;
+		const float lumaNW = rMrN+rNW+rW;
+		const float lumaNE = rMrN+rNE+rE;
+		const float rMrS = rM+rS;
+		const float lumaSW = rMrS+rSW+rW;
+		const float lumaSE = rMrS+rSE+rE;
+		const bool g0 = (lumaSW > lumaSE);
+		const float tempMax = g0 ? lumaSW : lumaSE;
+		const float tempMin = g0 ? lumaSE : lumaSW;
+		const bool g1 = (lumaNW > lumaNE);
+		const float tempMax2 = g1 ? lumaNW : lumaNE;
+		const float tempMin2 = g1 ? lumaNE : lumaNW;
+		const float lumaMin = min(rM, min(tempMin, tempMin2));
+		const float lumaMax = max(rM, max(tempMax, tempMax2));
+		const float SWSE = lumaSW + lumaSE;
+		const float NWNE = lumaNW + lumaNE;
 		float2 dir = float2(SWSE - NWNE, (lumaNW + lumaSW) - (lumaNE + lumaSE));
-		float temp = 1.0/(min(abs(dir.x), abs(dir.y)) + max((NWNE + SWSE)*0.03125, 0.0078125)); //!! tweak?
+		const float temp = 1.0/(min(abs(dir.x), abs(dir.y)) + max((NWNE + SWSE)*0.03125, 0.0078125)); //!! tweak?
 		dir = clamp(dir*temp, float2(-8.0), float2(8.0)) * offs; //!! tweak?
-		float3 rgbA = 0.5 * (textureLod(tex_fb_filtered, u-dir*(0.5/3.0), 0).xyz + textureLod(tex_fb_filtered, u+dir*(0.5/3.0), 0).xyz);
-		float3 rgbB = 0.5 * rgbA + 0.25 * (textureLod(tex_fb_filtered, u-dir*0.5, 0).xyz + textureLod(tex_fb_filtered, u+dir*0.5, 0).xyz);
-		float lumaB = luma(rgbB);
+		const float3 rgbA = 0.5 * (textureLod(tex_fb_filtered, u-dir*(0.5/3.0), 0).xyz + textureLod(tex_fb_filtered, u+dir*(0.5/3.0), 0).xyz);
+		const float3 rgbB = 0.5 * rgbA + 0.25 * (textureLod(tex_fb_filtered, u-dir*0.5, 0).xyz + textureLod(tex_fb_filtered, u+dir*0.5, 0).xyz);
+		const float lumaB = luma(rgbB);
 		color = float4(((lumaB < lumaMin) || (lumaB > lumaMax)) ? rgbA : rgbB, 1.0);
 	}
 }
@@ -631,88 +630,88 @@ in float2 tex0;
 
 void main()
 {
-	float2 u = tex0 + w_h_height.xy*0.5;
+	const float2 u = tex0 + w_h_height.xy*0.5;
 
 	float3 rgbyM = textureLod(tex_fb_unfiltered, u, 0).xyz;
 	float depth0 = textureLod(tex_depth, u, 0).x;
 	if ((w_h_height.w == 1.0) && ((depth0 == 1.0) || (depth0 == 0.0))) // early out if depth too large (=BG) or too small (=DMD,etc)
 			color = float4(rgbyM, 1.0);
 	else {
-		float2 offs = w_h_height.xy;
-		float lumaNW = luma(textureLod(tex_fb_unfiltered, u - offs, 0).xyz);
-		float lumaN = luma(textureLod(tex_fb_unfiltered, u - float2(0.0,offs.y), 0).xyz);
-		float lumaNE = luma(textureLod(tex_fb_unfiltered, u - float2(-offs.x,offs.y), 0).xyz);
-		float lumaW = luma(textureLod(tex_fb_unfiltered, u - float2(offs.x,0.0), 0).xyz);
-		float lumaM = luma(rgbyM);
-		float lumaE = luma(textureLod(tex_fb_unfiltered, u + float2(offs.x,0.0), 0).xyz);
-		float lumaSW = luma(textureLod(tex_fb_unfiltered, u + float2(-offs.x,offs.y), 0).xyz);
-		float lumaS = luma(textureLod(tex_fb_unfiltered, u + float2(0.0,offs.y), 0).xyz);
-		float lumaSE = luma(textureLod(tex_fb_unfiltered, u + offs, 0).xyz);
-		float maxSM = max(lumaS, lumaM);
-		float minSM = min(lumaS, lumaM);
-		float maxESM = max(lumaE, maxSM);
-		float minESM = min(lumaE, minSM);
-		float maxWN = max(lumaN, lumaW);
-		float minWN = min(lumaN, lumaW);
-		float rangeMax = max(maxWN, maxESM);
-		float rangeMin = min(minWN, minESM);
-		float rangeMaxScaled = rangeMax * 0.125; //0.333 (faster) .. 0.063 (slower) // reshade: 0.125, fxaa : 0.166
-		float range = rangeMax - rangeMin;
-		float rangeMaxClamped = max(0.0833, rangeMaxScaled); //0.0625 (high quality/faster) .. 0.0312 (visible limit/slower) // reshade: 0.0, fxaa : 0.0833
-		bool earlyExit = range < rangeMaxClamped;
-		if (earlyExit)
+		const float2 offs = w_h_height.xy;
+		const float lumaNW = luma(textureLod(tex_fb_unfiltered, u - offs, 0).xyz);
+		const float lumaN = luma(textureLod(tex_fb_unfiltered, u - float2(0.0,offs.y), 0).xyz);
+		const float lumaNE = luma(textureLod(tex_fb_unfiltered, u - float2(-offs.x,offs.y), 0).xyz);
+		const float lumaW = luma(textureLod(tex_fb_unfiltered, u - float2(offs.x,0.0), 0).xyz);
+		const float lumaM = luma(rgbyM);
+		const float lumaE = luma(textureLod(tex_fb_unfiltered, u + float2(offs.x,0.0), 0).xyz);
+		const float lumaSW = luma(textureLod(tex_fb_unfiltered, u + float2(-offs.x,offs.y), 0).xyz);
+		const float lumaS = luma(textureLod(tex_fb_unfiltered, u + float2(0.0,offs.y), 0).xyz);
+		const float lumaSE = luma(textureLod(tex_fb_unfiltered, u + offs, 0).xyz);
+		const float maxSM = max(lumaS, lumaM);
+		const float minSM = min(lumaS, lumaM);
+		const float maxESM = max(lumaE, maxSM);
+		const float minESM = min(lumaE, minSM);
+		const float maxWN = max(lumaN, lumaW);
+		const float minWN = min(lumaN, lumaW);
+		const float rangeMax = max(maxWN, maxESM);
+		const float rangeMin = min(minWN, minESM);
+		const float rangeMaxScaled = rangeMax * 0.125; //0.333 (faster) .. 0.063 (slower) // reshade: 0.125, fxaa : 0.166
+		const float range = rangeMax - rangeMin;
+		const float rangeMaxClamped = max(0.0833, rangeMaxScaled); //0.0625 (high quality/faster) .. 0.0312 (visible limit/slower) // reshade: 0.0, fxaa : 0.0833
+		const bool earlyExit = range < rangeMaxClamped;
+		if(earlyExit)
 			color = float4(rgbyM, 1.0);
 		else {
-			float lumaNS = lumaN + lumaS;
-			float lumaWE = lumaW + lumaE;
-			float subpixRcpRange = 1.0/range;
-			float subpixNSWE = lumaNS + lumaWE;
-			float edgeHorz1 = -2.0 * lumaM + lumaNS;
-			float edgeVert1 = -2.0 * lumaM + lumaWE;
-			float lumaNESE = lumaNE + lumaSE;
-			float lumaNWNE = lumaNW + lumaNE;
-			float edgeHorz2 = -2.0 * lumaE + lumaNESE;
-			float edgeVert2 = -2.0 * lumaN + lumaNWNE;
-			float lumaNWSW = lumaNW + lumaSW;
-			float lumaSWSE = lumaSW + lumaSE;
-			float edgeHorz4 = abs(edgeHorz1) * 2.0 + abs(edgeHorz2);
-			float edgeVert4 = abs(edgeVert1) * 2.0 + abs(edgeVert2);
-			float edgeHorz3 = -2.0 * lumaW + lumaNWSW;
-			float edgeVert3 = -2.0 * lumaS + lumaSWSE;
-			float edgeHorz = abs(edgeHorz3) + edgeHorz4;
-			float edgeVert = abs(edgeVert3) + edgeVert4;
-			float subpixNWSWNESE = lumaNWSW + lumaNESE;
+			const float lumaNS = lumaN + lumaS;
+			const float lumaWE = lumaW + lumaE;
+			const float subpixRcpRange = 1.0/range;
+			const float subpixNSWE = lumaNS + lumaWE;
+			const float edgeHorz1 = -2.0 * lumaM + lumaNS;
+			const float edgeVert1 = -2.0 * lumaM + lumaWE;
+			const float lumaNESE = lumaNE + lumaSE;
+			const float lumaNWNE = lumaNW + lumaNE;
+			const float edgeHorz2 = -2.0 * lumaE + lumaNESE;
+			const float edgeVert2 = -2.0 * lumaN + lumaNWNE;
+			const float lumaNWSW = lumaNW + lumaSW;
+			const float lumaSWSE = lumaSW + lumaSE;
+			const float edgeHorz4 = abs(edgeHorz1) * 2.0 + abs(edgeHorz2);
+			const float edgeVert4 = abs(edgeVert1) * 2.0 + abs(edgeVert2);
+			const float edgeHorz3 = -2.0 * lumaW + lumaNWSW;
+			const float edgeVert3 = -2.0 * lumaS + lumaSWSE;
+			const float edgeHorz = abs(edgeHorz3) + edgeHorz4;
+			const float edgeVert = abs(edgeVert3) + edgeVert4;
+			const float subpixNWSWNESE = lumaNWSW + lumaNESE;
 			float lengthSign = offs.x;
-			bool horzSpan = edgeHorz >= edgeVert;
-			float subpixA = subpixNSWE * 2.0 + subpixNWSWNESE;
+			const bool horzSpan = edgeHorz >= edgeVert;
+			const float subpixA = subpixNSWE * 2.0 + subpixNWSWNESE;
 			if(!horzSpan) lumaN = lumaW;
 			if(!horzSpan) lumaS = lumaE;
 			if(horzSpan) lengthSign = offs.y;
-			float subpixB = subpixA * (1.0/12.0) - lumaM;
-			float gradientN = lumaN - lumaM;
-			float gradientS = lumaS - lumaM;
+			const float subpixB = subpixA * (1.0/12.0) - lumaM;
+			const float gradientN = lumaN - lumaM;
+			const float gradientS = lumaS - lumaM;
 			float lumaNN = lumaN + lumaM;
-			float lumaSS = lumaS + lumaM;
-			bool pairN = (abs(gradientN) >= abs(gradientS));
-			float gradient = max(abs(gradientN), abs(gradientS));
+			const float lumaSS = lumaS + lumaM;
+			const bool pairN = (abs(gradientN) >= abs(gradientS));
+			const float gradient = max(abs(gradientN), abs(gradientS));
 			if(pairN) lengthSign = -lengthSign;
-			float subpixC = clamp(abs(subpixB) * subpixRcpRange, 0.0, 1.0);
-			float2 offNP = float2(!horzSpan ? 0.0 : offs.x, horzSpan ? 0.0 : offs.y);
+			const float subpixC = clamp(abs(subpixB) * subpixRcpRange, 0.0, 1.0);
+			const float2 offNP = float2(!horzSpan ? 0.0 : offs.x, horzSpan ? 0.0 : offs.y);
 			float2 posB = u;
-			float l05 = lengthSign * 0.5;
+			const float l05 = lengthSign * 0.5;
 			if(horzSpan) posB.y += l05;
 			else posB.x += l05;
 			float2 posN = float2(posB.x - offNP.x * FXAA_QUALITY__P0, posB.y - offNP.y * FXAA_QUALITY__P0);
 			float2 posP = float2(posB.x + offNP.x * FXAA_QUALITY__P0, posB.y + offNP.y * FXAA_QUALITY__P0);
-			float subpixD = -2.0 * subpixC + 3.0;
-			float lumaEndN = luma(textureLod(tex_fb_filtered, posN, 0).xyz);
-			float subpixE = subpixC * subpixC;
-			float lumaEndP = luma(textureLod(tex_fb_filtered, posP, 0).xyz);
+			const float subpixD = -2.0 * subpixC + 3.0;
+			const float lumaEndN = luma(textureLod(tex_fb_filtered, posN, 0).xyz);
+			const float subpixE = subpixC * subpixC;
+			const float lumaEndP = luma(textureLod(tex_fb_filtered, posP, 0).xyz);
 			if(!pairN) lumaNN = lumaSS;
-			float gradientScaled = gradient * (1.0/4.0);
-			float lumaMM = lumaM - lumaNN * 0.5;
-			float subpixF = subpixD * subpixE;
-			bool lumaMLTZero = (lumaMM < 0.0);
+			const float gradientScaled = gradient * (1.0/4.0);
+			const float lumaMM = lumaM - lumaNN * 0.5;
+			const float subpixF = subpixD * subpixE;
+			const bool lumaMLTZero = (lumaMM < 0.0);
 			lumaEndN -= lumaNN * 0.5;
 			lumaEndP -= lumaNN * 0.5;
 			bool doneN = (abs(lumaEndN) >= gradientScaled);
@@ -735,22 +734,22 @@ void main()
 				if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P2;
 				if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P2;
 			}
-			float dstN = horzSpan ? (u.x - posN.x) : (u.y - posN.y);
-			float dstP = horzSpan ? (posP.x - u.x) : (posP.y - u.y);
-			bool goodSpanN = ((lumaEndN < 0.0) != lumaMLTZero);
-			float spanLength = dstP + dstN;
-			bool goodSpanP = ((lumaEndP < 0.0) != lumaMLTZero);
-			float spanLengthRcp = 1.0/spanLength;
-			bool directionN = (dstN < dstP);
-			float dst = min(dstN, dstP);
-			bool goodSpan = directionN ? goodSpanN : goodSpanP;
-			float subpixG = subpixF * subpixF;
-			float pixelOffset = 0.5 - dst * spanLengthRcp;
-			float subpixH = subpixG * 0.5; //1.00 (upper limit/softer) .. 0.50 (lower limit/sharper) .. 0.00 (completely off) // reshade : 0.25, fxaa : 0.75
-			float pixelOffsetGood = goodSpan ? pixelOffset : 0.0;
-			float pixelOffsetSubpix = max(pixelOffsetGood, subpixH);
+			const float dstN = horzSpan ? (u.x - posN.x) : (u.y - posN.y);
+			const float dstP = horzSpan ? (posP.x - u.x) : (posP.y - u.y);
+			const bool goodSpanN = ((lumaEndN < 0.0) != lumaMLTZero);
+			const float spanLength = dstP + dstN;
+			const bool goodSpanP = ((lumaEndP < 0.0) != lumaMLTZero);
+			const float spanLengthRcp = 1.0/spanLength;
+			const bool directionN = (dstN < dstP);
+			const float dst = min(dstN, dstP);
+			const bool goodSpan = directionN ? goodSpanN : goodSpanP;
+			const float subpixG = subpixF * subpixF;
+			const float pixelOffset = 0.5 - dst * spanLengthRcp;
+			const float subpixH = subpixG * 0.5; //1.00 (upper limit/softer) .. 0.50 (lower limit/sharper) .. 0.00 (completely off) // reshade : 0.25, fxaa : 0.75
+			const float pixelOffsetGood = goodSpan ? pixelOffset : 0.0;
+			const float pixelOffsetSubpix = max(pixelOffsetGood, subpixH);
 			float2 un = u;
-			float pl = pixelOffsetSubpix * lengthSign;
+			const float pl = pixelOffsetSubpix * lengthSign;
 			if(horzSpan) un.y += pl;
 			else un.x += pl;
 			color = float4(textureLod(tex_fb_filtered, un, 0).xyz, 1.0);
@@ -1092,14 +1091,14 @@ void main()
 	mxRGB += mxRGB2;
 
 	// Smooth minimum distance to signal limit divided by smooth max.
-	const float3 rcpMRGB = float3(1.0) / (mxRGB);
+	const float3 rcpMRGB = rcp(mxRGB);
 	float3 ampRGB = saturate(min(mnRGB, 2.0 - mxRGB) * rcpMRGB);
 
 	// Shaping amount of sharpening.
 	ampRGB = rsqrt(ampRGB);
 
 	const float peak = -3.0 * Contrast + 8.0;
-	const float3 wRGB = -float3(1.0) / (ampRGB * peak);
+	const float3 wRGB = -rcp(ampRGB * peak);
 
 	const float3 rcpWeightRGB = float3(1.0) / (4.0 * wRGB + float3(1.0));
 

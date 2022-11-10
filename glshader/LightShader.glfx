@@ -71,9 +71,9 @@ in vec3 tablePos;
 
 void main()
 {
-	float len = length(lightCenter_maxRange.xyz - tablePos) * lightCenter_maxRange.w;
-	float atten = clamp(pow(1.0 - clamp(len, 0.0, 1.0), lightColor2_falloff_power.w), 0.0, 1.0);
-	vec3 lcolor = mix(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
+	const float len = length(lightCenter_maxRange.xyz - tablePos) * lightCenter_maxRange.w;
+	const float atten = clamp(pow(1.0 - clamp(len, 0.0, 1.0), lightColor2_falloff_power.w), 0.0, 1.0);
+	const float3 lcolor = mix(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
 	color.xyz = lcolor*(-blend_modulate_vs_add*atten*lightColor_intensity.w); // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
 	color.a = 1.0/blend_modulate_vs_add - 1.0; //saturate(atten*lightColor_intensity.w);
 }

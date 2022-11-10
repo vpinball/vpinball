@@ -62,7 +62,7 @@ float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const floa
    if (fDisableLighting_top_below.x == 1.0)
       return diffuse;
 
-	//!! do in vertex shader?! or completely before?!
+   //!! do in vertex shader?! or completely before?!
 #if enable_VR
    const float3 lightDir = ((matView * vec4(lightPos[i].xyz, 1.0)).xyz - pos) / fSceneScale; // In VR we need to scale to the overall scene scaling
 #else
@@ -113,7 +113,7 @@ float3 DoEnvmapDiffuse(const float3 N, const float3 diffuse)
 		0.5 + atan2_approx_div2PI(N.y, N.x),
 		acos_approx_divPI(N.z));
 
-   float3 env = textureLod(tex_diffuse_env, uv, 0).xyz;
+   const float3 env = textureLod(tex_diffuse_env, uv, 0).xyz;
    return diffuse * env*fenvEmissionScale_TexWidth.x;
 }
 
@@ -130,7 +130,7 @@ float3 DoEnvmapGlossy(const float3 N, const float3 V, const float2 Ruv, const fl
 float3 DoEnvmap2ndLayer(const float3 color1stLayer, const float3 pos, const float3 N, const float3 V, const float NdotV, const float2 Ruv, const float3 specular)
 {
    const float3 w = FresnelSchlick(specular, NdotV, Roughness_WrapL_Edge_Thickness.z); //!! ?
-   float3 env = textureLod(tex_env, Ruv, 0.).xyz;
+   const float3 env = textureLod(tex_env, Ruv, 0.).xyz;
    return lerp(color1stLayer, env*fenvEmissionScale_TexWidth.x, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular
 }
 
@@ -168,17 +168,17 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
    }
 
    if (!is_metal && (diffuseMax > 0.0))
-      color += DoEnvmapDiffuse(normalize((vec4(N,0.0) * matView).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(vec4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
+      color += DoEnvmapDiffuse(normalize((float4(N,0.0) * matView).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(vec4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
 
    if ((glossyMax > 0.0) || (specularMax > 0.0))
    {
 	   float3 R = (2.0*NdotV)*N - V; // reflect(-V,n);
-	   R = normalize((vec4(R,0.0) * matView).xyz); // trafo back to world for lookup into world space envmap // actually: mul(vec4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
+	   R = normalize((float4(R,0.0) * matView).xyz); // trafo back to world for lookup into world space envmap // actually: mul(vec4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
 
 	   const float2 Ruv = float2( // remap to 2D envmap coords
 			0.5 + atan2_approx_div2PI(R.y, R.x),
 			acos_approx_divPI(R.z));
-          
+
 //#if !enable_VR
 	   if (glossyMax > 0.0)
 		  color += DoEnvmapGlossy(N, V, Ruv, glossy, Roughness_WrapL_Edge_Thickness.x);
@@ -188,7 +188,7 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
 		  color = DoEnvmap2ndLayer(color, pos, N, V, NdotV, Ruv, specular);
 /*#else
       // Abuse mipmaps to reduce shimmering in VR
-      vec4 colorMip;
+      float4 colorMip;
       if (is_metal)
       {
          // Use low-res mipmap for metallic objects to reduce shimmering in VR
@@ -208,8 +208,8 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
             mipLevel = 4.0;
          colorMip = textureLod(tex_env, Ruv, mipLevel);
       }
-         
-      vec3 envTex = colorMip.rgb;
+
+      const float3 envTex = colorMip.rgb;
 
       // EnvmapGlossy
       if(glossyMax > 0.0)
@@ -218,7 +218,7 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
       // Envmap2ndLayer
       if(fix_normal_orientation && specularMax > 0.0)
       {
-        vec3 w = FresnelSchlick(specular, NdotV, Roughness_WrapL_Edge_Thickness.z);
+        const float3 w = FresnelSchlick(specular, NdotV, Roughness_WrapL_Edge_Thickness.z);
         color = mix(color, envTex * fenvEmissionScale_TexWidth.x, w);
       }
 #endif*/
