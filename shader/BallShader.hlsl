@@ -74,16 +74,16 @@ struct vin
 struct vout
 {
     float4 position	   : POSITION0;
-	float4 normal_t0x  : TEXCOORD0; // tex0 is stored in w of float4s
-	float4 worldPos_t0y: TEXCOORD1;
+    float4 normal_t0x  : TEXCOORD0; // tex0 is stored in w of float4s
+    float4 worldPos_t0y: TEXCOORD1;
 };
 
 //vertex to pixel shader structure
 struct voutReflection
 {
     float4 position	   : POSITION0;
-	float2 tex0        : TEXCOORD0;
-	float3 r           : TEXCOORD1;
+    float2 tex0        : TEXCOORD0;
+    float3 r           : TEXCOORD1;
 };
 
 //vertex to pixel shader structure
@@ -129,23 +129,23 @@ voutReflection vsBallReflection( const in vin IN )
 
 	const float3 p = mul_w1(pos.xyz, matWorldView);
 
-    const float3 nspin = mul_w0(IN.normal, orientation);
+	const float3 nspin = mul_w0(IN.normal, orientation);
 	const float3 normal = normalize(mul(matWorldViewInverse, nspin).xyz); // actually: mul(float4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
 
-    const float3 r = reflect(normalize(/*camera=0,0,0,1*/-p), normal);
+	const float3 r = reflect(normalize(/*camera=0,0,0,1*/-p), normal);
 
 	voutReflection OUT;
 	OUT.position = mul(pos, matWorldViewProj);
 	OUT.tex0	 = pos.xy;
-    OUT.r		 = r;
+	OUT.r		 = r;
 	return OUT;
 }
 #endif
 
 voutTrail vsBallTrail( const in vin IN )
 {
-    voutTrail OUT;
-    OUT.position = mul(IN.position, matWorldViewProj);
+	voutTrail OUT;
+	OUT.position = mul(IN.position, matWorldViewProj);
 	OUT.tex0_alpha = float3(IN.tex0, IN.normal.x); //!! abuses normal for now
 
 	return OUT;
@@ -158,7 +158,7 @@ float3 ballLightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float
    // normalize input vectors for BRDF evals
    N = normalize(N);
    V = normalize(V);
-   
+
    // normalize BRDF layer inputs //!! use diffuse = (1-glossy)*diffuse instead?
    const float diffuseMax = max(diffuse.x,max(diffuse.y,diffuse.z));
    const float glossyMax = max(glossy.x,max(glossy.y,glossy.z));
@@ -188,12 +188,12 @@ float3 ballLightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float
 
    if(specularMax > 0.0)
       color += specular; //!! blend? //!! Fresnel with 1st layer?
-  
+
    return color;
 }
 
 float3 PFDoPointLight(const float3 pos, const float3 N, const float3 diffuse, const int i) 
-{ 
+{
    const float3 lightDir = mul_w1(lights[i].vPos, matView) - pos; //!! do in vertex shader?! or completely before?!
    const float3 L = normalize(lightDir);
    const float NdotL = dot(N, L);
