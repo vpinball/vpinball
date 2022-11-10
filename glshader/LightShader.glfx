@@ -22,6 +22,8 @@ uniform bool ignoreStereo = false; // Must be able to force only one invocation 
 #endif
 
 ////FRAGMENT
+#include "hlsl_glsl.fxh"
+
 uniform vec4 lightColor_intensity;
 uniform vec4 lightColor2_falloff_power;
 uniform vec4 lightCenter_maxRange;
