@@ -1,5 +1,6 @@
 ////GLOBAL
 #version 410
+#include "Helpers.fxh"
 
 ////DEFINES
 
@@ -33,19 +34,6 @@ layout(triangle_strip, max_vertices = 3) out;
 in int instanceID[];
 
 ////FRAGMENT
-#define BURN_HIGHLIGHTS 0.25
-
-vec3 InvGamma( vec3 color) //!! use hardware support? D3DSAMP_SRGBTEXTURE
-{
-   return /*color * (color * (color * 0.305306011 + 0.682171111) + 0.012522878);/*/ pow(color, vec3(2.2)); // pow does not matter anymore on current GPUs
-}
-
-vec3 InvToneMap( vec3 color)
-{
-   float inv_2bh = 0.5/BURN_HIGHLIGHTS;
-   float bh = 4.0*BURN_HIGHLIGHTS - 2.0;
-   return (color - 1.0 + sqrt(color*(color + bh) + 1.0))*inv_2bh;
-}
 
 uniform sampler2D tex_dmd; // base texture for DMD (unfiltered)
 uniform sampler2D tex_sprite; // base texture for sprites (filtered)
