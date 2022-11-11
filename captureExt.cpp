@@ -490,7 +490,7 @@ bool ExtCapture::GetFrame()
    for (int h = 0; h < m_Height; ++h)
    {
       // Copy acquired frame, swapping red and blue channel
-      copy_bgra_rgba<false>((unsigned int*)ddptr, (const unsigned int*)sptr + m_DispLeft, m_Width);
+      copy_bgra_rgba<true>((unsigned int*)ddptr, (const unsigned int*)sptr + m_DispLeft, m_Width);
       sptr += m_pCapOut->m_pitch;
       ddptr += m_Width * 4;
       Sleep(0); //!! ??
