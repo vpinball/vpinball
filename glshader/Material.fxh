@@ -179,14 +179,14 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
 			0.5 + atan2_approx_div2PI(R.y, R.x),
 			acos_approx_divPI(R.z));
 
-//#if !enable_VR
+#if !enable_VR
 	   if (glossyMax > 0.0)
 		  color += DoEnvmapGlossy(N, V, Ruv, glossy, Roughness_WrapL_Edge_Thickness.x);
 
 	   // 2nd Layer
 	   if (specularMax > 0.0)
 		  color = DoEnvmap2ndLayer(color, pos, N, V, NdotV, Ruv, specular);
-/*#else
+#else
       // Abuse mipmaps to reduce shimmering in VR
       float4 colorMip;
       if (is_metal)
@@ -221,7 +221,7 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
         const float3 w = FresnelSchlick(specular, NdotV, Roughness_WrapL_Edge_Thickness.z);
         color = mix(color, envTex * fenvEmissionScale_TexWidth.x, w);
       }
-#endif*/
+#endif
    }
 
    return /*Gamma(ToneMap(*/color/*))*/;
