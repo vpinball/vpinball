@@ -205,18 +205,18 @@ float3 FBDither(const float3 color, /*const int2 pos*/const float2 tex0)
    const float quantSteps = 256.0; //!! how to choose/select this for 5/6/5bit??
 
    // TPDF:
-   const float3 dither = /*float3(GradientNoise(tex0 / (2.0*w_h_height.xy) + w_h_height.zw*3.141),
+   const float3 dither = /*float3(GradientNoise(tex0 / w_h_height.xy + w_h_height.zw*3.141),
       GradientNoise(tex0.yx / w_h_height.yx + w_h_height.zw*1.618),
       GradientNoise(tex0 / w_h_height.xy + w_h_height.wz*2.718281828459));*/
    // Dither64(tex0 / w_h_height.xy+w_h_height.zw, 0.);
-       tex2Dlod(tex_ao_dither, float4(tex0 / (64.0*w_h_height.xy) + w_h_height.zw*3.141, 0., 0.)).xyz;
+       texNoLod(tex_ao_dither, tex0 / (64.0*w_h_height.xy) + w_h_height.zw*3.141).xyz;
    return color + triangularPDF(dither) * (1.0/quantSteps); // quantSteps-1. ?
 
-   /*const float3 dither = tex2Dlod(tex_ao_dither, float4(tex0 / (64.0*w_h_height.xy) + w_h_height.zw*2.718281828459, 0., 0.)).xyz;
-   const float3 dither2 = tex2Dlod(tex_ao_dither, float4(tex0 / (64.0*w_h_height.xy) + w_h_height.wz*3.14159265358979, 0., 0.)).xyz;
+   /*const float3 dither = texNoLod(tex_ao_dither, tex0 / (64.0*w_h_height.xy) + w_h_height.zw*2.718281828459).xyz;
+   const float3 dither2 = texNoLod(tex_ao_dither, tex0 / (64.0*w_h_height.xy) + w_h_height.wz*3.14159265358979).xyz;
    return color + (dither - dither2) / quantSteps;*/
 
-   //const float3 dither = tex2Dlod(tex_ao_dither, float4(tex0 / (64.0*w_h_height.xy) + w_h_height.wz*3.141, 0., 0.)).xyz*2.0 - 1.0;
+   //const float3 dither = texNoLod(tex_ao_dither, tex0 / (64.0*w_h_height.xy) + w_h_height.wz*3.141).xyz*2.0 - 1.0;
 
    // Lottes (1st one not working, 2nd 'quality', 3rd 'tradeoff'), IMHO too much magic:
    /*const float blackLimit = 0.5 * InvGamma(1.0/(quantSteps - 1.0));
@@ -259,8 +259,8 @@ float3 FBColorGrade(float3 color)
    color.z *= 15.0;
 
    const float x = (color.x + floor(color.z))/16.0;
-   const float3 lut1 = tex2Dlod(tex_color_lut, float4(x, color.y, 0., 0.)).xyz; // two lookups to blend/lerp between blue 2D regions
-   const float3 lut2 = tex2Dlod(tex_color_lut, float4(x + 1.0 / 16.0, color.y, 0., 0.)).xyz;
+   const float3 lut1 = texNoLod(tex_color_lut, float2(x,          color.y)).xyz; // two lookups to blend/lerp between blue 2D regions
+   const float3 lut2 = texNoLod(tex_color_lut, float2(x+1.0/16.0, color.y)).xyz;
    return lerp(lut1,lut2, frac(color.z));
 }
 
@@ -292,9 +292,9 @@ float4 ps_main_fb_tonemap(const in VS_OUTPUT_2D IN) : COLOR
    //!! if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
    //!!   return float4(tex2Dlod(tex_fb_filtered, float4(IN.tex0, 0.,0.)).xyz, 1.0);
 
-   float3 result = FBToneMap(tex2Dlod(tex_fb_filtered, float4(IN.tex0, 0.,0.)).xyz);
+   float3 result = FBToneMap(texNoLod(tex_fb_filtered, IN.tex0).xyz);
    [branch] if (do_bloom)
-      result += tex2Dlod(tex_bloom, float4(IN.tex0, 0., 0.)).xyz; //!! offset?
+      result += texNoLod(tex_bloom, IN.tex0).xyz; //!! offset?
    return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
 }
 
@@ -316,77 +316,77 @@ float3 bloom_cutoff(const float3 c)
 float4 ps_main_fb_bloom(const in VS_OUTPUT_2D IN) : COLOR
 {
     // collect clipped contribution of the 4x4 texels (via box blur, NOT gaussian, as this is wrong) from original FB
-    const float3 result = (tex2Dlod(tex_fb_filtered, float4(IN.tex0 - w_h_height.xy, 0.,0.)).xyz
-                        +  tex2Dlod(tex_fb_filtered, float4(IN.tex0 + w_h_height.xy, 0.,0.)).xyz
-                        +  tex2Dlod(tex_fb_filtered, float4(IN.tex0 + float2(w_h_height.x,-w_h_height.y), 0.,0.)).xyz
-                        +  tex2Dlod(tex_fb_filtered, float4(IN.tex0 + float2(-w_h_height.x,w_h_height.y), 0.,0.)).xyz)*0.25; //!! offset for useAA?
+    const float3 result = (texNoLod(tex_fb_filtered, IN.tex0 - w_h_height.xy).xyz
+                        +  texNoLod(tex_fb_filtered, IN.tex0 + w_h_height.xy).xyz
+                        +  texNoLod(tex_fb_filtered, IN.tex0 + float2(w_h_height.x,-w_h_height.y)).xyz
+                        +  texNoLod(tex_fb_filtered, IN.tex0 + float2(-w_h_height.x,w_h_height.y)).xyz)*0.25; //!! offset for useAA?
     return float4(bloom_cutoff(FBToneMap(result)) * w_h_height.z, 1.0);
 }
 
 float4 ps_main_fb_AO(const in VS_OUTPUT_2D IN) : COLOR
 {
-   const float3 result = tex2Dlod(tex_ao, float4(IN.tex0 - 0.5 * w_h_height.xy, 0., 0.)).x; // shift half a texel to blurs over 2x2 window
+   const float3 result = texNoLod(tex_ao, IN.tex0 - 0.5 * w_h_height.xy).xxx; // shift half a texel to blurs over 2x2 window
    return float4(FBGamma(saturate(result)), 1.0);
 }
 
 float4 ps_main_fb_tonemap_AO(const in VS_OUTPUT_2D IN) : COLOR
 {
    // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
-   float3 result = FBToneMap(tex2Dlod(tex_fb_filtered, float4(IN.tex0, 0., 0.)).xyz) // moving AO before tonemap does not really change the look
-                 * tex2Dlod(tex_ao, float4(IN.tex0 - 0.5*w_h_height.xy, 0.,0.)).x; // shift half a texel to blurs over 2x2 window
+   float3 result = FBToneMap(texNoLod(tex_fb_filtered, IN.tex0).xyz) // moving AO before tonemap does not really change the look
+                 * texNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    [branch] if (do_bloom)
-      result += tex2Dlod(tex_bloom, float4(IN.tex0, 0., 0.)).xyz; //!! offset?
+      result += texNoLod(tex_bloom, IN.tex0).xyz; //!! offset?
    return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
 }
 
 float4 ps_main_fb_tonemap_AO_static(const in VS_OUTPUT_2D IN) : COLOR
 {
    // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
-   const float3 result = tex2Dlod(tex_fb_filtered, float4(IN.tex0, 0., 0.)).xyz // moving AO before tonemap does not really change the look
-                 * tex2Dlod(tex_ao, float4(IN.tex0 - 0.5*w_h_height.xy, 0.,0.)).x; // shift half a texel to blurs over 2x2 window
+   const float3 result = texNoLod(tex_fb_filtered, IN.tex0).xyz // moving AO before tonemap does not really change the look
+                 * texNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    return float4(result, 1.0);
 }
 
 float4 ps_main_fb_tonemap_no_filterRGB(const in VS_OUTPUT_2D IN) : COLOR
 {
-   float3 result = FBToneMap(tex2Dlod(tex_fb_unfiltered, float4(IN.tex0, 0.,0.)).xyz);
+   float3 result = FBToneMap(texNoLod(tex_fb_unfiltered, IN.tex0).xyz);
    [branch] if (do_bloom)
-      result += tex2Dlod(tex_bloom, float4(IN.tex0, 0., 0.)).xyz;
+      result += texNoLod(tex_bloom, IN.tex0).xyz;
    return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
 }
 
 float4 ps_main_fb_tonemap_no_filterRG(const in VS_OUTPUT_2D IN) : COLOR
 {
-   float2 result = FBToneMap(tex2Dlod(tex_fb_unfiltered, float4(IN.tex0, 0.,0.)).xy);
+   float2 result = FBToneMap(texNoLod(tex_fb_unfiltered, IN.tex0).xy);
    [branch] if (do_bloom)
-      result += tex2Dlod(tex_bloom, float4(IN.tex0, 0., 0.)).xy;
+      result += texNoLod(tex_bloom, IN.tex0).xy;
    const float rg = /*FBColorGrade*/(FBGamma(saturate(dot(FBDither(result, IN.tex0), float2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5)))));
    return float4(rg,rg,rg,1.0);
 }
 
 float4 ps_main_fb_tonemap_no_filterR(const in VS_OUTPUT_2D IN) : COLOR
 {
-   float result = FBToneMap(tex2Dlod(tex_fb_unfiltered, float4(IN.tex0, 0.,0.)).x);
+   float result = FBToneMap(texNoLod(tex_fb_unfiltered, IN.tex0).x);
    [branch] if (do_bloom)
-      result += tex2Dlod(tex_bloom, float4(IN.tex0, 0., 0.)).x;
+      result += texNoLod(tex_bloom, IN.tex0).x;
    const float gray = /*FBColorGrade*/(FBGamma(saturate(FBDither(result, IN.tex0))));
    return float4(gray,gray,gray,1.0);
 }
 
 float4 ps_main_fb_tonemap_AO_no_filter(const in VS_OUTPUT_2D IN) : COLOR
 {
-   float3 result = FBToneMap(tex2Dlod(tex_fb_unfiltered, float4(IN.tex0, 0.,0.)).xyz) // moving AO before tonemap does not really change the look
-                 * tex2Dlod(tex_ao, float4(IN.tex0 - 0.5*w_h_height.xy, 0.,0.)).x; // shift half a texel to blurs over 2x2 window
+   float3 result = FBToneMap(texNoLod(tex_fb_unfiltered, IN.tex0).xyz) // moving AO before tonemap does not really change the look
+                 * texNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    return float4(result, 1.0);
    [branch] if (do_bloom)
-      result += tex2Dlod(tex_bloom, float4(IN.tex0, 0., 0.)).xyz; //!! offset?
+      result += texNoLod(tex_bloom, IN.tex0).xyz; //!! offset?
    return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
 }
 
 float4 ps_main_fb_tonemap_AO_no_filter_static(const in VS_OUTPUT_2D IN) : COLOR
 {
-   const float3 result = tex2Dlod(tex_fb_unfiltered, float4(IN.tex0, 0., 0.)).xyz
-                 * tex2Dlod(tex_ao, float4(IN.tex0 - 0.5*w_h_height.xy, 0.,0.)).x; // shift half a texel to blurs over 2x2 window
+   const float3 result = texNoLod(tex_fb_unfiltered, IN.tex0).xyz
+                 * texNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    return float4(result, 1.0);
 }
 
@@ -402,8 +402,8 @@ float4 ps_main_fb_blur_horiz7x7(const in VS_OUTPUT_2D IN) : COLOR
    const float weight7x7[2] = { 0.45134, 0.04866 }; //7 (no center!)
    float3 result = float3(0.0, 0.0, 0.0);
    [unroll] for(int i = 0; i < 2; ++i)
-      result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(w_h_height.x*offset7x7[i],0.0), 0.,0.)).xyz
-                +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(w_h_height.x*offset7x7[i],0.0), 0.,0.)).xyz)*weight7x7[i];
+      result += (texNoLod(tex_fb_filtered, IN.tex0+float2(w_h_height.x*offset7x7[i],0.0)).xyz
+                +texNoLod(tex_fb_filtered, IN.tex0-float2(w_h_height.x*offset7x7[i],0.0)).xyz)*weight7x7[i];
    return float4(result, 1.0);
 }
 
