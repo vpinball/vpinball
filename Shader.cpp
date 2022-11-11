@@ -151,7 +151,7 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_UNIFORM(SUT_Float, alphaTestValue),
    SHADER_UNIFORM(SUT_Float, eye),
    SHADER_UNIFORM(SUT_Float, fKickerScale),
-   SHADER_UNIFORM(SUT_Float, fSceneScale),
+   SHADER_UNIFORM(SUT_Float, fSceneScale), // OpenGL only (VR only)
    SHADER_UNIFORM(SUT_Float, mirrorFactor),
    SHADER_UNIFORM(SUT_Float, refractionThickness),
    // -- Vectors and Float Arrays --

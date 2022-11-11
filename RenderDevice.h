@@ -207,7 +207,7 @@ public:
    static bool isVRturnedOn();
    static void turnVROff();
 
-   float m_scale;
+   float m_scale = 1.0f;
 
 private:
    static vr::IVRSystem* m_pHMD;
