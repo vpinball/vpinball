@@ -25,8 +25,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
-
+//Modified for Visual pinball
+ 
 #define SMAA_PRESET_HIGH
 //#define SMAA_USE_DEPTH
 //#define SMAA_USE_STENCIL
@@ -58,7 +58,7 @@ float cornerRounding;
 #define SMAA_CORNER_ROUNDING cornerRounding
 #endif
 
-// And include our header!
+// And include our header (identical for HLSL/GLSL)!
 #include "SMAA.hlsl"
 
 
@@ -81,7 +81,7 @@ texture2D searchTex2D;
 /**
  * DX9 samplers.
  */
-/*sampler2D colorTex {
+/*sampler2D colorTex : TEXUNIT0 {
     Texture = <colorTex2D>;
     AddressU  = Clamp; AddressV = Clamp;
     MipFilter = Point; MinFilter = Linear; MagFilter = Linear;
@@ -90,7 +90,7 @@ texture2D searchTex2D;
 
 #define colorTex tex_fb_filtered //!! misses SRGB, also see SMAA_NeighborhoodBlending()
 
-/*sampler2D colorGammaTex {
+/*sampler2D colorGammaTex : TEXUNIT1 {
     Texture = <colorTex2D>;
     AddressU  = Clamp; AddressV = Clamp;
     MipFilter = Linear; MinFilter = Linear; MagFilter = Linear;
@@ -108,28 +108,28 @@ sampler2D depthTex {
 };
 #endif
 
-sampler2D edgesTex {
+sampler2D edgesTex : TEXUNIT6 {
     Texture = <edgesTex2D>;
     AddressU = Clamp; AddressV = Clamp;
     MipFilter = Linear; MinFilter = Linear; MagFilter = Linear; //!! ??
     //SRGBTexture = false;
 };
 
-sampler2D blendTex {
+sampler2D blendTex : TEXUNIT7 {
     Texture = <blendTex2D>;
     AddressU = Clamp; AddressV = Clamp;
     MipFilter = Linear; MinFilter = Linear; MagFilter = Linear; //!! ??
     //SRGBTexture = false;
 };
 
-sampler2D areaTex {
+sampler2D areaTex : TEXUNIT8 {
     Texture = <areaTex2D>;
     AddressU = Clamp; AddressV = Clamp; AddressW = Clamp;
     MipFilter = Linear; MinFilter = Linear; MagFilter = Linear; //!! ??
     //SRGBTexture = false;
 };
 
-sampler2D searchTex {
+sampler2D searchTex : TEXUNIT9 {
     Texture = <searchTex2D>;
     AddressU = Clamp; AddressV = Clamp; AddressW = Clamp;
     MipFilter = Point; MinFilter = Point; MagFilter = Point;
@@ -143,6 +143,7 @@ sampler2D searchTex {
 void DX9_SMAAEdgeDetectionVS(inout float4 position : POSITION,
                              inout float2 texcoord : TEXCOORD0,
                              out float4 offset[3] : TEXCOORD1) {
+    // DirectX has 0,0 at the top left corner of the first texel. Pixel perfect sampling needs coordinates to be offseted by half a texel.
     texcoord += w_h_height.xy*0.5;
     SMAAEdgeDetectionVS(texcoord, offset);
 }
@@ -151,6 +152,7 @@ void DX9_SMAABlendingWeightCalculationVS(inout float4 position : POSITION,
                                          inout float2 texcoord : TEXCOORD0,
                                          out float2 pixcoord : TEXCOORD1,
                                          out float4 offset[3] : TEXCOORD2) {
+    // DirectX has 0,0 at the top left corner of the first texel. Pixel perfect sampling needs coordinates to be offseted by half a texel.
     texcoord += w_h_height.xy*0.5;
     SMAABlendingWeightCalculationVS(texcoord, pixcoord, offset);
 }
@@ -158,6 +160,7 @@ void DX9_SMAABlendingWeightCalculationVS(inout float4 position : POSITION,
 void DX9_SMAANeighborhoodBlendingVS(inout float4 position : POSITION,
                                     inout float2 texcoord : TEXCOORD0,
                                     out float4 offset : TEXCOORD1) {
+    // DirectX has 0,0 at the top left corner of the first texel. Pixel perfect sampling needs coordinates to be offseted by half a texel.
     texcoord += w_h_height.xy*0.5;
     SMAANeighborhoodBlendingVS(texcoord, offset);
 }

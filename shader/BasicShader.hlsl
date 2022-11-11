@@ -84,7 +84,9 @@ const float4 cGlossy_ImageLerp;
 const float4 staticColor_Alpha;
 const float alphaTestValue;
 
-const float4 cWidth_Height_MirrorAmount;
+const float4 w_h_height;
+
+const float mirrorFactor;
 const float3 mirrorNormal;
 
 // DX9 needs these to be defined outside of the shader (unless, you get a X4014 error), so use the effect framework for these
@@ -97,16 +99,16 @@ const float refractionThickness;
 struct VS_OUTPUT 
 { 
    float4 pos      : POSITION;
-   float4 tex01    : TEXCOORD0; // pack tex0 and tex1 into one float4
-   float3 worldPos : TEXCOORD1;
-   float3 normal   : TEXCOORD2;
+   float3 worldPos : TEXCOORD0;
+   float3 normal   : TEXCOORD1;
+   float2 tex0     : TEXCOORD2;
 };
 
 struct VS_NOTEX_OUTPUT 
 {
    float4 pos      : POSITION;
-   float4 worldPos_t1x : TEXCOORD0; // pack tex1 into w component of the float4s
-   float4 normal_t1y : TEXCOORD1;
+   float3 worldPos : TEXCOORD0;
+   float3 normal   : TEXCOORD1;
 };
 
 struct VS_DEPTH_ONLY_NOTEX_OUTPUT 
@@ -200,7 +202,7 @@ float3 compute_reflection(const float2 screenSpace, const float3 N)
    // the smoothstep values are *magic* values taken from visual tests
    // dot(mirrorNormal, N) does not really needs to be done per pixel and could be moved to the vertx shader
    // Offset by half a texel to use GPU filtering for some blur
-   return smoothstep(0.5, 0.9, dot(mirrorNormal, N)) * cWidth_Height_MirrorAmount.z * tex2D(tex_reflection, screenSpace + float2(0.5, 0.5) / cWidth_Height_MirrorAmount.xy).rgb;
+   return smoothstep(0.5, 0.9, dot(mirrorNormal, N)) * mirrorFactor * tex2D(tex_reflection, (screenSpace + 0.5) * w_h_height.xy).rgb;
 }
 
 // Compute refractions from screen space probe
@@ -241,10 +243,10 @@ VS_OUTPUT vs_main (const in float4 vPosition : POSITION0,
 
    VS_OUTPUT Out;
    Out.pos = mul(vPosition, matWorldViewProj);
-   Out.tex01 = float4(tc, /*(cBase_Alpha.a < 1.0) ?*/Out.pos.xy/Out.pos.w);
    Out.worldPos = P;
    Out.normal = N;
-   return Out; 
+   Out.tex0 = tc;
+   return Out;
 }
 
 VS_NOTEX_OUTPUT vs_notex_main (const in float4 vPosition : POSITION0,
@@ -257,13 +259,8 @@ VS_NOTEX_OUTPUT vs_notex_main (const in float4 vPosition : POSITION0,
 
    VS_NOTEX_OUTPUT Out;
    Out.pos = mul(vPosition, matWorldViewProj);
-   //if(cBase_Alpha.a < 1.0)
-   {
-      Out.worldPos_t1x.w = Out.pos.x/Out.pos.w;
-      Out.normal_t1y.w = Out.pos.y/Out.pos.w;
-   }
-   Out.worldPos_t1x.xyz = P;
-   Out.normal_t1y.xyz = N;
+   Out.worldPos = P;
+   Out.normal = N;
    return Out; 
 }
 
@@ -294,13 +291,13 @@ float4 ps_main(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform b
    const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
    const float  edge     = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
 
-   const float3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos_t1x.xyz);
-   const float3 N = normalize(IN.normal_t1y.xyz);
+   const float3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos);
+   const float3 N = normalize(IN.normal);
 
    //return float4((N+1.0)*0.5,1.0); // visualize normals
 
    float4 result = float4(
-      lightLoop(IN.worldPos_t1x.xyz, N, V, diffuse, glossy, specular, edge, true, is_metal), //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+      lightLoop(IN.worldPos.xyz, N, V, diffuse, glossy, specular, edge, true, is_metal), //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
       cBase_Alpha.a);
 
    [branch] if (cBase_Alpha.a < 1.0) {
@@ -308,7 +305,7 @@ float4 ps_main(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform b
 
       if (fDisableLighting_top_below.y < 1.0)
          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-         result.xyz += lerp(sqrt(diffuse)*tex2Dlod(tex_base_transmission, float4(float2(0.5*IN.worldPos_t1x.w,-0.5*IN.normal_t1y.w)+0.5, 0.,0.)).xyz*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+         result.rgb += lerp(sqrt(diffuse)*tex2Dlod(tex_base_transmission, float4(screenSpace * w_h_height.xy, 0., 0.)).rgb*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
    [branch] if (doReflections)
@@ -317,7 +314,7 @@ float4 ps_main(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform b
    [branch] if (doRefractions)
    {
       // alpha channel is the transparency of the object, base color (diffuse) is the tint (even if alpha is 0)
-      result.rgb = lerp(cBase_Alpha.rgb * compute_refraction(IN.worldPos_t1x.xyz, N, V), result.rgb, cBase_Alpha.a);
+      result.rgb = lerp(cBase_Alpha.rgb * compute_refraction(IN.worldPos.xyz, N, V), result.rgb, cBase_Alpha.a);
       result.a = 1.0;
    }
 
@@ -326,7 +323,7 @@ float4 ps_main(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform b
 
 float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform bool is_metal, uniform bool doNormalMapping, uniform bool doReflections, uniform bool doRefractions) : COLOR
 {
-   float4 pixel = tex2D(tex_base_color, IN.tex01.xy);
+   float4 pixel = tex2D(tex_base_color, IN.tex0);
 
    clip(pixel.a <= alphaTestValue ? - 1 : 1); // stop the pixel shader if alpha test should reject pixel
 
@@ -345,7 +342,7 @@ float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform
    float3 N = normalize(IN.normal);
 
    [branch] if (doNormalMapping)
-      N = normal_map(N, V, IN.tex01.xy);
+      N = normal_map(N, V, IN.tex0);
    
    //!! return float4((N+1.0)*0.5,1.0); // visualize normals
 
@@ -358,7 +355,7 @@ float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform
 
       if (fDisableLighting_top_below.y < 1.0)
          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-         result.xyz += lerp(sqrt(diffuse)*tex2Dlod(tex_base_transmission, float4(float2(0.5*IN.tex01.z,-0.5*IN.tex01.w)+0.5, 0., 0.)).xyz*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+         result.rgb += lerp(sqrt(diffuse)*tex2Dlod(tex_base_transmission, float4(screenSpace * w_h_height.xy, 0., 0.)).rgb*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
    [branch] if (doReflections)
@@ -377,7 +374,7 @@ float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform
 float4 ps_main_reflection_only_without_texture(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS) : COLOR
 {
    float4 result;
-   float3 N = normalize(IN.normal_t1y.xyz);
+   float3 N = normalize(IN.normal);
    result.rgb = compute_reflection(screenSpace, N);
    result.a = 1.0;
    return result * staticColor_Alpha;
@@ -387,7 +384,7 @@ float4 ps_main_reflection_only_with_texture(const in VS_OUTPUT IN, float2 screen
 {
    float4 result;
 
-   result.a = tex2D(tex_base_color, IN.tex01.xy).a;
+   result.a = tex2D(tex_base_color, IN.tex0).a;
 
    clip(result.a <= alphaTestValue ? -1 : 1); // stop the pixel shader if alpha test should reject pixel
 
@@ -428,7 +425,7 @@ float4 ps_main_bg_decal(const in VS_NOTEX_OUTPUT IN) : COLOR
 
 float4 ps_main_bg_decal_texture(const in VS_OUTPUT IN) : COLOR
 {
-   float4 pixel = tex2D(tex_base_color, IN.tex01.xy);
+   float4 pixel = tex2D(tex_base_color, IN.tex0);
 
    clip(pixel.a <= alphaTestValue ? - 1 : 1); // stop the pixel shader if alpha test should reject pixel
 
@@ -455,13 +452,8 @@ VS_NOTEX_OUTPUT vs_kicker (const in float4 vPosition : POSITION0,
     float4 P2 = vPosition;
     P2.z -= 30.0*fKickerScale; //!!
     Out.pos.z = mul(P2, matWorldViewProj).z;
-    //if(cBase_Alpha.a < 1.0)
-    {
-        Out.worldPos_t1x.w = Out.pos.x/Out.pos.w; //!! not necessary
-        Out.normal_t1y.w = Out.pos.y/Out.pos.w; //!! not necessary
-    }
-    Out.worldPos_t1x.xyz = P;
-    Out.normal_t1y.xyz = N;
+    Out.worldPos = P;
+    Out.normal = N;
     return Out; 
 }
 

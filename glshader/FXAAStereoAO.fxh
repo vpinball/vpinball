@@ -84,7 +84,7 @@ float3 rotate_to_vector_upper(const float3 vec, const float3 normal)
 
 /*float4 ps_main_normals(const in VS_OUTPUT_2D IN) : COLOR // separate pass to generate normals (should actually reduce bandwidth needed in AO pass, but overall close to no performance difference or even much worse perf, depending on gfxboard)
 {
-	const float2 u = IN.tex0 + w_h_height.xy*0.5;
+	const float2 u = IN.tex0;
 
 	const float depth0 = tex2Dlod(texSamplerDepth, float4(u, 0.,0.)).x;
 	[branch] if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
@@ -182,10 +182,10 @@ in float2 tex0;
 
 void main()
 {
-	const float2 u = tex0 + w_h_height.xy*0.5;
+	const float2 u = tex0;
 	
-	const float2 uv0 = tex0 + w_h_height.xy; // half pixel shift in x & y for filter
-	const float2 uv1 = tex0;                 // dto.
+	const float2 uv0 = tex0 - w_h_height.xy * 0.5 + w_h_height.xy; // half pixel shift in x & y for filter
+   const float2 uv1 = tex0 - w_h_height.xy * 0.5; // dto.
 
 	const float depth0 = textureLod(tex_depth, u, 0).x;
 	if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
@@ -194,8 +194,8 @@ void main()
 		return;
 	}
 
-	const float3 ushift = /*hash(tex0) + w_h_height.zw*/ // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
-						  textureLod(tex_ao_dither, tex0/(64.0*w_h_height.xy) + w_h_height.zw, 0).xyz; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
+	const float3 ushift = /*hash(uv1) + w_h_height.zw*/ // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
+						  textureLod(tex_ao_dither, uv1/(64.0*w_h_height.xy) + w_h_height.zw, 0).xyz; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
 	//const float base = 0.0;
 	const float area = 0.06; //!!
 	const float falloff = 0.0002; //!!
@@ -240,7 +240,7 @@ in float2 tex0;
 
 void main()
 {
-	float2 u = tex0 + w_h_height.xy*0.5;
+	float2 u = tex0;
 	const float MaxSeparation = ms_zpd_ya_td.x;
 	const float ZPD = ms_zpd_ya_td.y;
 	const bool yaxis = (ms_zpd_ya_td.z != 0.0); //!! uniform
@@ -368,7 +368,7 @@ void main()
 	const float filterSpread = 1.0;
 #endif
 
-	const float2 u = tex0 + w_h_height.xy*0.5;
+	const float2 u = tex0;
 
 	const float3 Scene0 = textureLod(tex_fb_filtered, u, 0).rgb;
 	const float depth0 = textureLod(tex_depth, u, 0).x;
@@ -439,7 +439,7 @@ in float2 tex0;
 
 void main()
 {
-   const float2 u = tex0 + w_h_height.xy*0.5;
+   const float2 u = tex0;
 
    const float3 sCenter    = sampleOffset(u, float2( 0.0,  0.0) );
    const float3 sUpLeft    = sampleOffset(u, float2(-0.5, -0.5) );
@@ -459,7 +459,7 @@ in float2 tex0;
 
 void main()
 {
-	const float2 u = tex0 + w_h_height.xy*0.5;
+	const float2 u = tex0;
 
 	const float4 sampleCenter = sampleOffseta(u, float2( 0.0,  0.0) );
 
@@ -575,47 +575,52 @@ in float2 tex0;
 
 void main()
 {
-	const float2 u = tex0 + w_h_height.xy*0.5;
+   const float2 u = tex0;
 
-	const float3 rMc = textureLod(tex_fb_unfiltered, u, 0).xyz;
-	float depth0 = textureLod(tex_depth, u, 0).x;
-	if ((w_h_height.w == 1.0) && ((depth0 == 1.0) || (depth0 == 0.0))) // early out if depth too large (=BG) or too small (=DMD,etc)
+   const float3 rMc = textureLod(tex_fb_unfiltered, u, 0).xyz;
+   if (w_h_height.w == 1.0) // depth buffer available?
+   {
+      const float depth0 = textureLod(tex_depth, u, 0).x;
+		if ((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
+		{
 			color = float4(rMc, 1.0);
-	else {
-		const float2 offs = w_h_height.xy;
-		const float rNW = luma(textureLod(tex_fb_unfiltered, u - offs, 0).xyz);
-		const float rN = luma(textureLod(tex_fb_unfiltered, u - float2(0.0,offs.y), 0).xyz);
-		const float rNE = luma(textureLod(tex_fb_unfiltered, u - float2(-offs.x,offs.y), 0).xyz);
-		const float rW = luma(textureLod(tex_fb_unfiltered, u - float2(offs.x,0.0), 0).xyz);
-		const float rM = luma(rMc);
-		const float rE = luma(textureLod(tex_fb_unfiltered, u + float2(offs.x,0.0), 0).xyz);
-		const float rSW = luma(textureLod(tex_fb_unfiltered, u + float2(-offs.x,offs.y), 0).xyz);
-		const float rS = luma(textureLod(tex_fb_unfiltered, u + float2(0.0,offs.y), 0).xyz);
-		const float rSE = luma(textureLod(tex_fb_unfiltered, u + offs, 0).xyz);
-		const float rMrN = rM+rN;
-		const float lumaNW = rMrN+rNW+rW;
-		const float lumaNE = rMrN+rNE+rE;
-		const float rMrS = rM+rS;
-		const float lumaSW = rMrS+rSW+rW;
-		const float lumaSE = rMrS+rSE+rE;
-		const bool g0 = (lumaSW > lumaSE);
-		const float tempMax = g0 ? lumaSW : lumaSE;
-		const float tempMin = g0 ? lumaSE : lumaSW;
-		const bool g1 = (lumaNW > lumaNE);
-		const float tempMax2 = g1 ? lumaNW : lumaNE;
-		const float tempMin2 = g1 ? lumaNE : lumaNW;
-		const float lumaMin = min(rM, min(tempMin, tempMin2));
-		const float lumaMax = max(rM, max(tempMax, tempMax2));
-		const float SWSE = lumaSW + lumaSE;
-		const float NWNE = lumaNW + lumaNE;
-		float2 dir = float2(SWSE - NWNE, (lumaNW + lumaSW) - (lumaNE + lumaSE));
-		const float temp = 1.0/(min(abs(dir.x), abs(dir.y)) + max((NWNE + SWSE)*0.03125, 0.0078125)); //!! tweak?
-		dir = clamp(dir*temp, float2(-8.0), float2(8.0)) * offs; //!! tweak?
-		const float3 rgbA = 0.5 * (textureLod(tex_fb_filtered, u-dir*(0.5/3.0), 0).xyz + textureLod(tex_fb_filtered, u+dir*(0.5/3.0), 0).xyz);
-		const float3 rgbB = 0.5 * rgbA + 0.25 * (textureLod(tex_fb_filtered, u-dir*0.5, 0).xyz + textureLod(tex_fb_filtered, u+dir*0.5, 0).xyz);
-		const float lumaB = luma(rgbB);
-		color = float4(((lumaB < lumaMin) || (lumaB > lumaMax)) ? rgbA : rgbB, 1.0);
+         return;
+		}
 	}
+
+	const float2 offs = w_h_height.xy;
+	const float rNW = luma(textureLod(tex_fb_unfiltered, u - offs, 0).xyz);
+	const float rN = luma(textureLod(tex_fb_unfiltered, u - float2(0.0,offs.y), 0).xyz);
+	const float rNE = luma(textureLod(tex_fb_unfiltered, u - float2(-offs.x,offs.y), 0).xyz);
+	const float rW = luma(textureLod(tex_fb_unfiltered, u - float2(offs.x,0.0), 0).xyz);
+	const float rM = luma(rMc);
+	const float rE = luma(textureLod(tex_fb_unfiltered, u + float2(offs.x,0.0), 0).xyz);
+	const float rSW = luma(textureLod(tex_fb_unfiltered, u + float2(-offs.x,offs.y), 0).xyz);
+	const float rS = luma(textureLod(tex_fb_unfiltered, u + float2(0.0,offs.y), 0).xyz);
+	const float rSE = luma(textureLod(tex_fb_unfiltered, u + offs, 0).xyz);
+	const float rMrN = rM+rN;
+	const float lumaNW = rMrN+rNW+rW;
+	const float lumaNE = rMrN+rNE+rE;
+	const float rMrS = rM+rS;
+	const float lumaSW = rMrS+rSW+rW;
+	const float lumaSE = rMrS+rSE+rE;
+	const bool g0 = (lumaSW > lumaSE);
+	const float tempMax = g0 ? lumaSW : lumaSE;
+	const float tempMin = g0 ? lumaSE : lumaSW;
+	const bool g1 = (lumaNW > lumaNE);
+	const float tempMax2 = g1 ? lumaNW : lumaNE;
+	const float tempMin2 = g1 ? lumaNE : lumaNW;
+	const float lumaMin = min(rM, min(tempMin, tempMin2));
+	const float lumaMax = max(rM, max(tempMax, tempMax2));
+	const float SWSE = lumaSW + lumaSE;
+	const float NWNE = lumaNW + lumaNE;
+	float2 dir = float2(SWSE - NWNE, (lumaNW + lumaSW) - (lumaNE + lumaSE));
+	const float temp = 1.0/(min(abs(dir.x), abs(dir.y)) + max((NWNE + SWSE)*0.03125, 0.0078125)); //!! tweak?
+	dir = clamp(dir*temp, float2(-8.0), float2(8.0)) * offs; //!! tweak?
+	const float3 rgbA = 0.5 * (textureLod(tex_fb_filtered, u-dir*(0.5/3.0), 0).xyz + textureLod(tex_fb_filtered, u+dir*(0.5/3.0), 0).xyz);
+	const float3 rgbB = 0.5 * rgbA + 0.25 * (textureLod(tex_fb_filtered, u-dir*0.5, 0).xyz + textureLod(tex_fb_filtered, u+dir*0.5, 0).xyz);
+	const float lumaB = luma(rgbB);
+	color = float4(((lumaB < lumaMin) || (lumaB > lumaMax)) ? rgbA : rgbB, 1.0);
 }
 
 ////ps_main_fxaa2
@@ -630,130 +635,135 @@ in float2 tex0;
 
 void main()
 {
-	const float2 u = tex0 + w_h_height.xy*0.5;
+	const float2 u = tex0;
 
 	float3 rgbyM = textureLod(tex_fb_unfiltered, u, 0).xyz;
-	float depth0 = textureLod(tex_depth, u, 0).x;
-	if ((w_h_height.w == 1.0) && ((depth0 == 1.0) || (depth0 == 0.0))) // early out if depth too large (=BG) or too small (=DMD,etc)
-			color = float4(rgbyM, 1.0);
+   if (w_h_height.w == 1.0) // depth buffer available?
+   {
+      const float depth0 = textureLod(tex_depth, u, 0).x;
+      if ((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
+      {
+         color = float4(rgbyM, 1.0);
+         return;
+      }
+   }
+
+	const float2 offs = w_h_height.xy;
+	const float lumaNW = luma(textureLod(tex_fb_unfiltered, u - offs, 0).xyz);
+	const float lumaN = luma(textureLod(tex_fb_unfiltered, u - float2(0.0,offs.y), 0).xyz);
+	const float lumaNE = luma(textureLod(tex_fb_unfiltered, u - float2(-offs.x,offs.y), 0).xyz);
+	const float lumaW = luma(textureLod(tex_fb_unfiltered, u - float2(offs.x,0.0), 0).xyz);
+	const float lumaM = luma(rgbyM);
+	const float lumaE = luma(textureLod(tex_fb_unfiltered, u + float2(offs.x,0.0), 0).xyz);
+	const float lumaSW = luma(textureLod(tex_fb_unfiltered, u + float2(-offs.x,offs.y), 0).xyz);
+	const float lumaS = luma(textureLod(tex_fb_unfiltered, u + float2(0.0,offs.y), 0).xyz);
+	const float lumaSE = luma(textureLod(tex_fb_unfiltered, u + offs, 0).xyz);
+	const float maxSM = max(lumaS, lumaM);
+	const float minSM = min(lumaS, lumaM);
+	const float maxESM = max(lumaE, maxSM);
+	const float minESM = min(lumaE, minSM);
+	const float maxWN = max(lumaN, lumaW);
+	const float minWN = min(lumaN, lumaW);
+	const float rangeMax = max(maxWN, maxESM);
+	const float rangeMin = min(minWN, minESM);
+	const float rangeMaxScaled = rangeMax * 0.125; //0.333 (faster) .. 0.063 (slower) // reshade: 0.125, fxaa : 0.166
+	const float range = rangeMax - rangeMin;
+	const float rangeMaxClamped = max(0.0833, rangeMaxScaled); //0.0625 (high quality/faster) .. 0.0312 (visible limit/slower) // reshade: 0.0, fxaa : 0.0833
+	const bool earlyExit = range < rangeMaxClamped;
+	if(earlyExit)
+		color = float4(rgbyM, 1.0);
 	else {
-		const float2 offs = w_h_height.xy;
-		const float lumaNW = luma(textureLod(tex_fb_unfiltered, u - offs, 0).xyz);
-		const float lumaN = luma(textureLod(tex_fb_unfiltered, u - float2(0.0,offs.y), 0).xyz);
-		const float lumaNE = luma(textureLod(tex_fb_unfiltered, u - float2(-offs.x,offs.y), 0).xyz);
-		const float lumaW = luma(textureLod(tex_fb_unfiltered, u - float2(offs.x,0.0), 0).xyz);
-		const float lumaM = luma(rgbyM);
-		const float lumaE = luma(textureLod(tex_fb_unfiltered, u + float2(offs.x,0.0), 0).xyz);
-		const float lumaSW = luma(textureLod(tex_fb_unfiltered, u + float2(-offs.x,offs.y), 0).xyz);
-		const float lumaS = luma(textureLod(tex_fb_unfiltered, u + float2(0.0,offs.y), 0).xyz);
-		const float lumaSE = luma(textureLod(tex_fb_unfiltered, u + offs, 0).xyz);
-		const float maxSM = max(lumaS, lumaM);
-		const float minSM = min(lumaS, lumaM);
-		const float maxESM = max(lumaE, maxSM);
-		const float minESM = min(lumaE, minSM);
-		const float maxWN = max(lumaN, lumaW);
-		const float minWN = min(lumaN, lumaW);
-		const float rangeMax = max(maxWN, maxESM);
-		const float rangeMin = min(minWN, minESM);
-		const float rangeMaxScaled = rangeMax * 0.125; //0.333 (faster) .. 0.063 (slower) // reshade: 0.125, fxaa : 0.166
-		const float range = rangeMax - rangeMin;
-		const float rangeMaxClamped = max(0.0833, rangeMaxScaled); //0.0625 (high quality/faster) .. 0.0312 (visible limit/slower) // reshade: 0.0, fxaa : 0.0833
-		const bool earlyExit = range < rangeMaxClamped;
-		if(earlyExit)
-			color = float4(rgbyM, 1.0);
-		else {
-			const float lumaNS = lumaN + lumaS;
-			const float lumaWE = lumaW + lumaE;
-			const float subpixRcpRange = 1.0/range;
-			const float subpixNSWE = lumaNS + lumaWE;
-			const float edgeHorz1 = -2.0 * lumaM + lumaNS;
-			const float edgeVert1 = -2.0 * lumaM + lumaWE;
-			const float lumaNESE = lumaNE + lumaSE;
-			const float lumaNWNE = lumaNW + lumaNE;
-			const float edgeHorz2 = -2.0 * lumaE + lumaNESE;
-			const float edgeVert2 = -2.0 * lumaN + lumaNWNE;
-			const float lumaNWSW = lumaNW + lumaSW;
-			const float lumaSWSE = lumaSW + lumaSE;
-			const float edgeHorz4 = abs(edgeHorz1) * 2.0 + abs(edgeHorz2);
-			const float edgeVert4 = abs(edgeVert1) * 2.0 + abs(edgeVert2);
-			const float edgeHorz3 = -2.0 * lumaW + lumaNWSW;
-			const float edgeVert3 = -2.0 * lumaS + lumaSWSE;
-			const float edgeHorz = abs(edgeHorz3) + edgeHorz4;
-			const float edgeVert = abs(edgeVert3) + edgeVert4;
-			const float subpixNWSWNESE = lumaNWSW + lumaNESE;
-			float lengthSign = offs.x;
-			const bool horzSpan = edgeHorz >= edgeVert;
-			const float subpixA = subpixNSWE * 2.0 + subpixNWSWNESE;
-			if(!horzSpan) lumaN = lumaW;
-			if(!horzSpan) lumaS = lumaE;
-			if(horzSpan) lengthSign = offs.y;
-			const float subpixB = subpixA * (1.0/12.0) - lumaM;
-			const float gradientN = lumaN - lumaM;
-			const float gradientS = lumaS - lumaM;
-			float lumaNN = lumaN + lumaM;
-			const float lumaSS = lumaS + lumaM;
-			const bool pairN = (abs(gradientN) >= abs(gradientS));
-			const float gradient = max(abs(gradientN), abs(gradientS));
-			if(pairN) lengthSign = -lengthSign;
-			const float subpixC = clamp(abs(subpixB) * subpixRcpRange, 0.0, 1.0);
-			const float2 offNP = float2(!horzSpan ? 0.0 : offs.x, horzSpan ? 0.0 : offs.y);
-			float2 posB = u;
-			const float l05 = lengthSign * 0.5;
-			if(horzSpan) posB.y += l05;
-			else posB.x += l05;
-			float2 posN = float2(posB.x - offNP.x * FXAA_QUALITY__P0, posB.y - offNP.y * FXAA_QUALITY__P0);
-			float2 posP = float2(posB.x + offNP.x * FXAA_QUALITY__P0, posB.y + offNP.y * FXAA_QUALITY__P0);
-			const float subpixD = -2.0 * subpixC + 3.0;
-			const float lumaEndN = luma(textureLod(tex_fb_filtered, posN, 0).xyz);
-			const float subpixE = subpixC * subpixC;
-			const float lumaEndP = luma(textureLod(tex_fb_filtered, posP, 0).xyz);
-			if(!pairN) lumaNN = lumaSS;
-			const float gradientScaled = gradient * (1.0/4.0);
-			const float lumaMM = lumaM - lumaNN * 0.5;
-			const float subpixF = subpixD * subpixE;
-			const bool lumaMLTZero = (lumaMM < 0.0);
-			lumaEndN -= lumaNN * 0.5;
-			lumaEndP -= lumaNN * 0.5;
-			bool doneN = (abs(lumaEndN) >= gradientScaled);
-			bool doneP = (abs(lumaEndP) >= gradientScaled);
-			if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P1;
-			if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P1;
-			bool doneNP = ((!doneN) || (!doneP));
-			if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P1;
-			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P1;
-			if(doneNP) {
-				if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-				if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
-				if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-				if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-				doneN = abs(lumaEndN) >= gradientScaled;
-				doneP = abs(lumaEndP) >= gradientScaled;
-				if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P2;
-				if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P2;
-				doneNP = ((!doneN) || (!doneP));
-				if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P2;
-				if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P2;
-			}
-			const float dstN = horzSpan ? (u.x - posN.x) : (u.y - posN.y);
-			const float dstP = horzSpan ? (posP.x - u.x) : (posP.y - u.y);
-			const bool goodSpanN = ((lumaEndN < 0.0) != lumaMLTZero);
-			const float spanLength = dstP + dstN;
-			const bool goodSpanP = ((lumaEndP < 0.0) != lumaMLTZero);
-			const float spanLengthRcp = 1.0/spanLength;
-			const bool directionN = (dstN < dstP);
-			const float dst = min(dstN, dstP);
-			const bool goodSpan = directionN ? goodSpanN : goodSpanP;
-			const float subpixG = subpixF * subpixF;
-			const float pixelOffset = 0.5 - dst * spanLengthRcp;
-			const float subpixH = subpixG * 0.5; //1.00 (upper limit/softer) .. 0.50 (lower limit/sharper) .. 0.00 (completely off) // reshade : 0.25, fxaa : 0.75
-			const float pixelOffsetGood = goodSpan ? pixelOffset : 0.0;
-			const float pixelOffsetSubpix = max(pixelOffsetGood, subpixH);
-			float2 un = u;
-			const float pl = pixelOffsetSubpix * lengthSign;
-			if(horzSpan) un.y += pl;
-			else un.x += pl;
-			color = float4(textureLod(tex_fb_filtered, un, 0).xyz, 1.0);
+		const float lumaNS = lumaN + lumaS;
+		const float lumaWE = lumaW + lumaE;
+		const float subpixRcpRange = 1.0/range;
+		const float subpixNSWE = lumaNS + lumaWE;
+		const float edgeHorz1 = -2.0 * lumaM + lumaNS;
+		const float edgeVert1 = -2.0 * lumaM + lumaWE;
+		const float lumaNESE = lumaNE + lumaSE;
+		const float lumaNWNE = lumaNW + lumaNE;
+		const float edgeHorz2 = -2.0 * lumaE + lumaNESE;
+		const float edgeVert2 = -2.0 * lumaN + lumaNWNE;
+		const float lumaNWSW = lumaNW + lumaSW;
+		const float lumaSWSE = lumaSW + lumaSE;
+		const float edgeHorz4 = abs(edgeHorz1) * 2.0 + abs(edgeHorz2);
+		const float edgeVert4 = abs(edgeVert1) * 2.0 + abs(edgeVert2);
+		const float edgeHorz3 = -2.0 * lumaW + lumaNWSW;
+		const float edgeVert3 = -2.0 * lumaS + lumaSWSE;
+		const float edgeHorz = abs(edgeHorz3) + edgeHorz4;
+		const float edgeVert = abs(edgeVert3) + edgeVert4;
+		const float subpixNWSWNESE = lumaNWSW + lumaNESE;
+		float lengthSign = offs.x;
+		const bool horzSpan = edgeHorz >= edgeVert;
+		const float subpixA = subpixNSWE * 2.0 + subpixNWSWNESE;
+		if(!horzSpan) lumaN = lumaW;
+		if(!horzSpan) lumaS = lumaE;
+		if(horzSpan) lengthSign = offs.y;
+		const float subpixB = subpixA * (1.0/12.0) - lumaM;
+		const float gradientN = lumaN - lumaM;
+		const float gradientS = lumaS - lumaM;
+		float lumaNN = lumaN + lumaM;
+		const float lumaSS = lumaS + lumaM;
+		const bool pairN = (abs(gradientN) >= abs(gradientS));
+		const float gradient = max(abs(gradientN), abs(gradientS));
+		if(pairN) lengthSign = -lengthSign;
+		const float subpixC = clamp(abs(subpixB) * subpixRcpRange, 0.0, 1.0);
+		const float2 offNP = float2(!horzSpan ? 0.0 : offs.x, horzSpan ? 0.0 : offs.y);
+		float2 posB = u;
+		const float l05 = lengthSign * 0.5;
+		if(horzSpan) posB.y += l05;
+		else posB.x += l05;
+		float2 posN = float2(posB.x - offNP.x * FXAA_QUALITY__P0, posB.y - offNP.y * FXAA_QUALITY__P0);
+		float2 posP = float2(posB.x + offNP.x * FXAA_QUALITY__P0, posB.y + offNP.y * FXAA_QUALITY__P0);
+		const float subpixD = -2.0 * subpixC + 3.0;
+		const float lumaEndN = luma(textureLod(tex_fb_filtered, posN, 0).xyz);
+		const float subpixE = subpixC * subpixC;
+		const float lumaEndP = luma(textureLod(tex_fb_filtered, posP, 0).xyz);
+		if(!pairN) lumaNN = lumaSS;
+		const float gradientScaled = gradient * (1.0/4.0);
+		const float lumaMM = lumaM - lumaNN * 0.5;
+		const float subpixF = subpixD * subpixE;
+		const bool lumaMLTZero = (lumaMM < 0.0);
+		lumaEndN -= lumaNN * 0.5;
+		lumaEndP -= lumaNN * 0.5;
+		bool doneN = (abs(lumaEndN) >= gradientScaled);
+		bool doneP = (abs(lumaEndP) >= gradientScaled);
+		if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P1;
+		if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P1;
+		bool doneNP = ((!doneN) || (!doneP));
+		if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P1;
+		if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P1;
+		if(doneNP) {
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+			doneN = abs(lumaEndN) >= gradientScaled;
+			doneP = abs(lumaEndP) >= gradientScaled;
+			if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P2;
+			if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P2;
+			doneNP = ((!doneN) || (!doneP));
+			if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P2;
+			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P2;
 		}
+		const float dstN = horzSpan ? (u.x - posN.x) : (u.y - posN.y);
+		const float dstP = horzSpan ? (posP.x - u.x) : (posP.y - u.y);
+		const bool goodSpanN = ((lumaEndN < 0.0) != lumaMLTZero);
+		const float spanLength = dstP + dstN;
+		const bool goodSpanP = ((lumaEndP < 0.0) != lumaMLTZero);
+		const float spanLengthRcp = 1.0/spanLength;
+		const bool directionN = (dstN < dstP);
+		const float dst = min(dstN, dstP);
+		const bool goodSpan = directionN ? goodSpanN : goodSpanP;
+		const float subpixG = subpixF * subpixF;
+		const float pixelOffset = 0.5 - dst * spanLengthRcp;
+		const float subpixH = subpixG * 0.5; //1.00 (upper limit/softer) .. 0.50 (lower limit/sharper) .. 0.00 (completely off) // reshade : 0.25, fxaa : 0.75
+		const float pixelOffsetGood = goodSpan ? pixelOffset : 0.0;
+		const float pixelOffsetSubpix = max(pixelOffsetGood, subpixH);
+		float2 un = u;
+		const float pl = pixelOffsetSubpix * lengthSign;
+		if(horzSpan) un.y += pl;
+		else un.x += pl;
+		color = float4(textureLod(tex_fb_filtered, un, 0).xyz, 1.0);
 	}
 }
 
@@ -782,258 +792,263 @@ in float2 tex0;
 
 void main()
 {
-	float2 u = tex0 + w_h_height.xy*0.5;
+	float2 u = tex0;
 
-	float3 rgbyM = textureLod(tex_fb_unfiltered, u, 0).xyz;
-	float depth0 = textureLod(tex_depth, u, 0).x;
-	if ((w_h_height.w == 1.0) && ((depth0 == 1.0) || (depth0 == 0.0))) // early out if depth too large (=BG) or too small (=DMD,etc)
-			color = float4(rgbyM, 1.0);
+   float3 rgbyM = textureLod(tex_fb_unfiltered, u, 0).xyz;
+   if (w_h_height.w == 1.0) // depth buffer available?
+   {
+      const float depth0 = textureLod(tex_depth, u, 0).x;
+      if ((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
+      {
+         color = float4(rgbyM, 1.0);
+         return;
+      }
+   }
+
+	float2 offs = w_h_height.xy;
+	float lumaNW = luma(textureLod(tex_fb_unfiltered, u - offs, 0).xyz);
+	float lumaN = luma(textureLod(tex_fb_unfiltered, u - float2(0.0,offs.y), 0).xyz);
+	float lumaNE = luma(textureLod(tex_fb_unfiltered, u - float2(-offs.x,offs.y), 0).xyz);
+	float lumaW = luma(textureLod(tex_fb_unfiltered, u - float2(offs.x,0.0), 0).xyz);
+	float lumaM = luma(rgbyM);
+	float lumaE = luma(textureLod(tex_fb_unfiltered, u + float2(offs.x,0.0), 0).xyz);
+	float lumaSW = luma(textureLod(tex_fb_unfiltered, u + float2(-offs.x,offs.y), 0).xyz);
+	float lumaS = luma(textureLod(tex_fb_unfiltered, u + float2(0.0,offs.y), 0).xyz);
+	float lumaSE = luma(textureLod(tex_fb_unfiltered, u + offs, 0).xyz);
+	float maxSM = max(lumaS, lumaM);
+	float minSM = min(lumaS, lumaM);
+	float maxESM = max(lumaE, maxSM);
+	float minESM = min(lumaE, minSM);
+	float maxWN = max(lumaN, lumaW);
+	float minWN = min(lumaN, lumaW);
+	float rangeMax = max(maxWN, maxESM);
+	float rangeMin = min(minWN, minESM);
+	float rangeMaxScaled = rangeMax * 0.125; //0.333 (faster) .. 0.063 (slower) // reshade: 0.125, fxaa : 0.166
+	float range = rangeMax - rangeMin;
+	float rangeMaxClamped = max(0.0833, rangeMaxScaled); //0.0625 (high quality/faster) .. 0.0312 (visible limit/slower) // reshade: 0.0, fxaa : 0.0833
+	bool earlyExit = range < rangeMaxClamped;
+	if(earlyExit)
+		color = float4(rgbyM, 1.0);
 	else {
-		float2 offs = w_h_height.xy;
-		float lumaNW = luma(textureLod(tex_fb_unfiltered, u - offs, 0).xyz);
-		float lumaN = luma(textureLod(tex_fb_unfiltered, u - float2(0.0,offs.y), 0).xyz);
-		float lumaNE = luma(textureLod(tex_fb_unfiltered, u - float2(-offs.x,offs.y), 0).xyz);
-		float lumaW = luma(textureLod(tex_fb_unfiltered, u - float2(offs.x,0.0), 0).xyz);
-		float lumaM = luma(rgbyM);
-		float lumaE = luma(textureLod(tex_fb_unfiltered, u + float2(offs.x,0.0), 0).xyz);
-		float lumaSW = luma(textureLod(tex_fb_unfiltered, u + float2(-offs.x,offs.y), 0).xyz);
-		float lumaS = luma(textureLod(tex_fb_unfiltered, u + float2(0.0,offs.y), 0).xyz);
-		float lumaSE = luma(textureLod(tex_fb_unfiltered, u + offs, 0).xyz);
-		float maxSM = max(lumaS, lumaM);
-		float minSM = min(lumaS, lumaM);
-		float maxESM = max(lumaE, maxSM);
-		float minESM = min(lumaE, minSM);
-		float maxWN = max(lumaN, lumaW);
-		float minWN = min(lumaN, lumaW);
-		float rangeMax = max(maxWN, maxESM);
-		float rangeMin = min(minWN, minESM);
-		float rangeMaxScaled = rangeMax * 0.125; //0.333 (faster) .. 0.063 (slower) // reshade: 0.125, fxaa : 0.166
-		float range = rangeMax - rangeMin;
-		float rangeMaxClamped = max(0.0833, rangeMaxScaled); //0.0625 (high quality/faster) .. 0.0312 (visible limit/slower) // reshade: 0.0, fxaa : 0.0833
-		bool earlyExit = range < rangeMaxClamped;
-		if(earlyExit)
-			color = float4(rgbyM, 1.0);
-		else {
-			float lumaNS = lumaN + lumaS;
-			float lumaWE = lumaW + lumaE;
-			float subpixRcpRange = 1.0/range;
-			float subpixNSWE = lumaNS + lumaWE;
-			float edgeHorz1 = -2.0 * lumaM + lumaNS;
-			float edgeVert1 = -2.0 * lumaM + lumaWE;
-			float lumaNESE = lumaNE + lumaSE;
-			float lumaNWNE = lumaNW + lumaNE;
-			float edgeHorz2 = -2.0 * lumaE + lumaNESE;
-			float edgeVert2 = -2.0 * lumaN + lumaNWNE;
-			float lumaNWSW = lumaNW + lumaSW;
-			float lumaSWSE = lumaSW + lumaSE;
-			float edgeHorz4 = abs(edgeHorz1) * 2.0 + abs(edgeHorz2);
-			float edgeVert4 = abs(edgeVert1) * 2.0 + abs(edgeVert2);
-			float edgeHorz3 = -2.0 * lumaW + lumaNWSW;
-			float edgeVert3 = -2.0 * lumaS + lumaSWSE;
-			float edgeHorz = abs(edgeHorz3) + edgeHorz4;
-			float edgeVert = abs(edgeVert3) + edgeVert4;
-			float subpixNWSWNESE = lumaNWSW + lumaNESE;
-			float lengthSign = offs.x;
-			bool horzSpan = edgeHorz >= edgeVert;
-			float subpixA = subpixNSWE * 2.0 + subpixNWSWNESE;
-			if(!horzSpan) lumaN = lumaW;
-			if(!horzSpan) lumaS = lumaE;
-			if(horzSpan) lengthSign = offs.y;
-			float subpixB = subpixA * (1.0/12.0) - lumaM;
-			float gradientN = lumaN - lumaM;
-			float gradientS = lumaS - lumaM;
-			float lumaNN = lumaN + lumaM;
-			float lumaSS = lumaS + lumaM;
-			bool pairN = (abs(gradientN) >= abs(gradientS));
-			float gradient = max(abs(gradientN), abs(gradientS));
-			if(pairN) lengthSign = -lengthSign;
-			float subpixC = clamp(abs(subpixB) * subpixRcpRange, 0.0, 1.0);
-			float2 offNP = float2(!horzSpan ? 0.0 : offs.x, horzSpan ? 0.0 : offs.y);
-			float2 posB = u;
-			float l05 = lengthSign * 0.5;
-			if(horzSpan) posB.y += l05;
-			else posB.x += l05;
-			float2 posN = float2(posB.x - offNP.x * FXAA_QUALITY__P0, posB.y - offNP.y * FXAA_QUALITY__P0);
-			float2 posP = float2(posB.x + offNP.x * FXAA_QUALITY__P0, posB.y + offNP.y * FXAA_QUALITY__P0);
-			float subpixD = -2.0 * subpixC + 3.0;
-			float lumaEndN = luma(textureLod(tex_fb_filtered, posN, 0).xyz);
-			float subpixE = subpixC * subpixC;
-			float lumaEndP = luma(textureLod(tex_fb_filtered, posP, 0).xyz);
-			if(!pairN) lumaNN = lumaSS;
-			float gradientScaled = gradient * (1.0/4.0);
-			float lumaMM = lumaM - lumaNN * 0.5;
-			float subpixF = subpixD * subpixE;
-			bool lumaMLTZero = (lumaMM < 0.0);
-			lumaEndN -= lumaNN * 0.5;
-			lumaEndP -= lumaNN * 0.5;
-			bool doneN = (abs(lumaEndN) >= gradientScaled);
-			bool doneP = (abs(lumaEndP) >= gradientScaled);
-			if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P1;
-			if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P1;
-			bool doneNP = ((!doneN) || (!doneP));
-			if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P1;
-			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P1;
+		float lumaNS = lumaN + lumaS;
+		float lumaWE = lumaW + lumaE;
+		float subpixRcpRange = 1.0/range;
+		float subpixNSWE = lumaNS + lumaWE;
+		float edgeHorz1 = -2.0 * lumaM + lumaNS;
+		float edgeVert1 = -2.0 * lumaM + lumaWE;
+		float lumaNESE = lumaNE + lumaSE;
+		float lumaNWNE = lumaNW + lumaNE;
+		float edgeHorz2 = -2.0 * lumaE + lumaNESE;
+		float edgeVert2 = -2.0 * lumaN + lumaNWNE;
+		float lumaNWSW = lumaNW + lumaSW;
+		float lumaSWSE = lumaSW + lumaSE;
+		float edgeHorz4 = abs(edgeHorz1) * 2.0 + abs(edgeHorz2);
+		float edgeVert4 = abs(edgeVert1) * 2.0 + abs(edgeVert2);
+		float edgeHorz3 = -2.0 * lumaW + lumaNWSW;
+		float edgeVert3 = -2.0 * lumaS + lumaSWSE;
+		float edgeHorz = abs(edgeHorz3) + edgeHorz4;
+		float edgeVert = abs(edgeVert3) + edgeVert4;
+		float subpixNWSWNESE = lumaNWSW + lumaNESE;
+		float lengthSign = offs.x;
+		bool horzSpan = edgeHorz >= edgeVert;
+		float subpixA = subpixNSWE * 2.0 + subpixNWSWNESE;
+		if(!horzSpan) lumaN = lumaW;
+		if(!horzSpan) lumaS = lumaE;
+		if(horzSpan) lengthSign = offs.y;
+		float subpixB = subpixA * (1.0/12.0) - lumaM;
+		float gradientN = lumaN - lumaM;
+		float gradientS = lumaS - lumaM;
+		float lumaNN = lumaN + lumaM;
+		float lumaSS = lumaS + lumaM;
+		bool pairN = (abs(gradientN) >= abs(gradientS));
+		float gradient = max(abs(gradientN), abs(gradientS));
+		if(pairN) lengthSign = -lengthSign;
+		float subpixC = clamp(abs(subpixB) * subpixRcpRange, 0.0, 1.0);
+		float2 offNP = float2(!horzSpan ? 0.0 : offs.x, horzSpan ? 0.0 : offs.y);
+		float2 posB = u;
+		float l05 = lengthSign * 0.5;
+		if(horzSpan) posB.y += l05;
+		else posB.x += l05;
+		float2 posN = float2(posB.x - offNP.x * FXAA_QUALITY__P0, posB.y - offNP.y * FXAA_QUALITY__P0);
+		float2 posP = float2(posB.x + offNP.x * FXAA_QUALITY__P0, posB.y + offNP.y * FXAA_QUALITY__P0);
+		float subpixD = -2.0 * subpixC + 3.0;
+		float lumaEndN = luma(textureLod(tex_fb_filtered, posN, 0).xyz);
+		float subpixE = subpixC * subpixC;
+		float lumaEndP = luma(textureLod(tex_fb_filtered, posP, 0).xyz);
+		if(!pairN) lumaNN = lumaSS;
+		float gradientScaled = gradient * (1.0/4.0);
+		float lumaMM = lumaM - lumaNN * 0.5;
+		float subpixF = subpixD * subpixE;
+		bool lumaMLTZero = (lumaMM < 0.0);
+		lumaEndN -= lumaNN * 0.5;
+		lumaEndP -= lumaNN * 0.5;
+		bool doneN = (abs(lumaEndN) >= gradientScaled);
+		bool doneP = (abs(lumaEndP) >= gradientScaled);
+		if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P1;
+		if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P1;
+		bool doneNP = ((!doneN) || (!doneP));
+		if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P1;
+		if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P1;
+		if(doneNP) {
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+			doneN = abs(lumaEndN) >= gradientScaled;
+			doneP = abs(lumaEndP) >= gradientScaled;
+			if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P2;
+			if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P2;
+			doneNP = ((!doneN) || (!doneP));
+			if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P2;
+			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P2;
+
+			//
+
 			if(doneNP) {
-				if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-				if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
-				if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-				if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-				doneN = abs(lumaEndN) >= gradientScaled;
-				doneP = abs(lumaEndP) >= gradientScaled;
-				if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P2;
-				if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P2;
-				doneNP = ((!doneN) || (!doneP));
-				if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P2;
-				if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P2;
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+			doneN = abs(lumaEndN) >= gradientScaled;
+			doneP = abs(lumaEndP) >= gradientScaled;
+			if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P3;
+			if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P3;
+			doneNP = ((!doneN) || (!doneP));
+			if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P3;
+			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P3;
 
-				//
+			if(doneNP) {
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+			doneN = abs(lumaEndN) >= gradientScaled;
+			doneP = abs(lumaEndP) >= gradientScaled;
+			if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P4;
+			if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P4;
+			doneNP = ((!doneN) || (!doneP));
+			if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P4;
+			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P4;
 
-				if(doneNP) {
-				if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-				if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
-				if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-				if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-				doneN = abs(lumaEndN) >= gradientScaled;
-				doneP = abs(lumaEndP) >= gradientScaled;
-				if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P3;
-				if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P3;
-				doneNP = ((!doneN) || (!doneP));
-				if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P3;
-				if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P3;
+			if(doneNP) {
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+			doneN = abs(lumaEndN) >= gradientScaled;
+			doneP = abs(lumaEndP) >= gradientScaled;
+			if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P5;
+			if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P5;
+			doneNP = ((!doneN) || (!doneP));
+			if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P5;
+			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P5;
 
-				if(doneNP) {
-				if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-				if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
-				if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-				if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-				doneN = abs(lumaEndN) >= gradientScaled;
-				doneP = abs(lumaEndP) >= gradientScaled;
-				if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P4;
-				if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P4;
-				doneNP = ((!doneN) || (!doneP));
-				if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P4;
-				if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P4;
+			if(doneNP) {
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+			doneN = abs(lumaEndN) >= gradientScaled;
+			doneP = abs(lumaEndP) >= gradientScaled;
+			if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P6;
+			if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P6;
+			doneNP = ((!doneN) || (!doneP));
+			if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P6;
+			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P6;
 
-				if(doneNP) {
-				if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-				if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
-				if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-				if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-				doneN = abs(lumaEndN) >= gradientScaled;
-				doneP = abs(lumaEndP) >= gradientScaled;
-				if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P5;
-				if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P5;
-				doneNP = ((!doneN) || (!doneP));
-				if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P5;
-				if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P5;
+			if(doneNP) {
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+			doneN = abs(lumaEndN) >= gradientScaled;
+			doneP = abs(lumaEndP) >= gradientScaled;
+			if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P7;
+			if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P7;
+			doneNP = ((!doneN) || (!doneP));
+			if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P7;
+			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P7;
 
-				if(doneNP) {
-				if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-				if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
-				if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-				if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-				doneN = abs(lumaEndN) >= gradientScaled;
-				doneP = abs(lumaEndP) >= gradientScaled;
-				if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P6;
-				if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P6;
-				doneNP = ((!doneN) || (!doneP));
-				if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P6;
-				if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P6;
+			if(doneNP) {
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+			doneN = abs(lumaEndN) >= gradientScaled;
+			doneP = abs(lumaEndP) >= gradientScaled;
+			if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P8;
+			if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P8;
+			doneNP = ((!doneN) || (!doneP));
+			if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P8;
+			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P8;
 
-				if(doneNP) {
-				if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-				if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
-				if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-				if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-				doneN = abs(lumaEndN) >= gradientScaled;
-				doneP = abs(lumaEndP) >= gradientScaled;
-				if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P7;
-				if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P7;
-				doneNP = ((!doneN) || (!doneP));
-				if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P7;
-				if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P7;
+			if(doneNP) {
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+			doneN = abs(lumaEndN) >= gradientScaled;
+			doneP = abs(lumaEndP) >= gradientScaled;
+			if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P9;
+			if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P9;
+			doneNP = ((!doneN) || (!doneP));
+			if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P9;
+			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P9;
 
-				if(doneNP) {
-				if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-				if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
-				if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-				if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-				doneN = abs(lumaEndN) >= gradientScaled;
-				doneP = abs(lumaEndP) >= gradientScaled;
-				if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P8;
-				if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P8;
-				doneNP = ((!doneN) || (!doneP));
-				if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P8;
-				if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P8;
+			if(doneNP) {
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+			doneN = abs(lumaEndN) >= gradientScaled;
+			doneP = abs(lumaEndP) >= gradientScaled;
+			if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P10;
+			if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P10;
+			doneNP = ((!doneN) || (!doneP));
+			if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P10;
+			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P10;
 
-				if(doneNP) {
-				if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-				if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
-				if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-				if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-				doneN = abs(lumaEndN) >= gradientScaled;
-				doneP = abs(lumaEndP) >= gradientScaled;
-				if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P9;
-				if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P9;
-				doneNP = ((!doneN) || (!doneP));
-				if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P9;
-				if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P9;
-
-				if(doneNP) {
-				if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-				if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
-				if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-				if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-				doneN = abs(lumaEndN) >= gradientScaled;
-				doneP = abs(lumaEndP) >= gradientScaled;
-				if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P10;
-				if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P10;
-				doneNP = ((!doneN) || (!doneP));
-				if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P10;
-				if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P10;
-
-				if(doneNP) {
-				if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-				if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
-				if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-				if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-				doneN = abs(lumaEndN) >= gradientScaled;
-				doneP = abs(lumaEndP) >= gradientScaled;
-				if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P11;
-				if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P11;
-				doneNP = ((!doneN) || (!doneP));
-				if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P11;
-				if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P11;
-				}
-				}
-				}
-				}
-				}
-				}
-				}
-				}
-				}
+			if(doneNP) {
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+			doneN = abs(lumaEndN) >= gradientScaled;
+			doneP = abs(lumaEndP) >= gradientScaled;
+			if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P11;
+			if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P11;
+			doneNP = ((!doneN) || (!doneP));
+			if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P11;
+			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P11;
 			}
-			float dstN = horzSpan ? (u.x - posN.x) : (u.y - posN.y);
-			float dstP = horzSpan ? (posP.x - u.x) : (posP.y - u.y);
-			bool goodSpanN = ((lumaEndN < 0.0) != lumaMLTZero);
-			float spanLength = dstP + dstN;
-			bool goodSpanP = ((lumaEndP < 0.0) != lumaMLTZero);
-			float spanLengthRcp = 1.0/spanLength;
-			bool directionN = (dstN < dstP);
-			float dst = min(dstN, dstP);
-			bool goodSpan = directionN ? goodSpanN : goodSpanP;
-			float subpixG = subpixF * subpixF;
-			float pixelOffset = 0.5 - dst * spanLengthRcp;
-			float subpixH = subpixG * 0.5; //1.00 (upper limit/softer) .. 0.50 (lower limit/sharper) .. 0.00 (completely off) // reshade : 0.25, fxaa : 0.75
-			float pixelOffsetGood = goodSpan ? pixelOffset : 0.0;
-			float pixelOffsetSubpix = max(pixelOffsetGood, subpixH);
-			float2 un = u;
-			float pl = pixelOffsetSubpix * lengthSign;
-			if(horzSpan) un.y += pl;
-			else un.x += pl;
-			color = float4(textureLod(tex_fb_filtered, un, 0).xyz, 1.0);
+			}
+			}
+			}
+			}
+			}
+			}
+			}
+			}
 		}
+		float dstN = horzSpan ? (u.x - posN.x) : (u.y - posN.y);
+		float dstP = horzSpan ? (posP.x - u.x) : (posP.y - u.y);
+		bool goodSpanN = ((lumaEndN < 0.0) != lumaMLTZero);
+		float spanLength = dstP + dstN;
+		bool goodSpanP = ((lumaEndP < 0.0) != lumaMLTZero);
+		float spanLengthRcp = 1.0/spanLength;
+		bool directionN = (dstN < dstP);
+		float dst = min(dstN, dstP);
+		bool goodSpan = directionN ? goodSpanN : goodSpanP;
+		float subpixG = subpixF * subpixF;
+		float pixelOffset = 0.5 - dst * spanLengthRcp;
+		float subpixH = subpixG * 0.5; //1.00 (upper limit/softer) .. 0.50 (lower limit/sharper) .. 0.00 (completely off) // reshade : 0.25, fxaa : 0.75
+		float pixelOffsetGood = goodSpan ? pixelOffset : 0.0;
+		float pixelOffsetSubpix = max(pixelOffsetGood, subpixH);
+		float2 un = u;
+		float pl = pixelOffsetSubpix * lengthSign;
+		if(horzSpan) un.y += pl;
+		else un.x += pl;
+		color = float4(textureLod(tex_fb_filtered, un, 0).xyz, 1.0);
 	}
 }
 
@@ -1133,7 +1148,7 @@ void main()
 {
 	const float sharpness = 0.625*3.1;
 
-	const float2 u = tex0 + w_h_height.xy*0.5;
+	const float2 u = tex0;
 
 	const float3 e = tex2Dlod(tex_fb_unfiltered, float4(u, 0.,0.)).xyz;
 	if(w_h_height.w == 1.0) // depth buffer available?

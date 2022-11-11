@@ -85,7 +85,7 @@ float3 rotate_to_vector_upper(const float3 vec, const float3 normal)
 
 /*float4 ps_main_normals(const in VS_OUTPUT_2D IN) : COLOR // separate pass to generate normals (should actually reduce bandwidth needed in AO pass, but overall close to no performance difference or even much worse perf, depending on gfxboard)
 {
-	const float2 u = IN.tex0 + w_h_height.xy*0.5;
+	const float2 u = IN.tex0;
 
 	const float depth0 = tex2Dlod(tex_depth, float4(u, 0.,0.)).x;
 	[branch] if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
@@ -179,17 +179,17 @@ float3 decompress_normal(const float2 c)
 
 float4 ps_main_ao(const in VS_OUTPUT_2D IN) : COLOR
 {
-	const float2 u = IN.tex0 + w_h_height.xy*0.5;
+	const float2 u = IN.tex0;
 
-	const float2 uv0 = IN.tex0 + w_h_height.xy; // half pixel shift in x & y for filter
-	const float2 uv1 = IN.tex0;                 // dto.
+	const float2 uv0 = IN.tex0 - w_h_height.xy * 0.5 + w_h_height.xy; // half pixel shift in x & y for filter
+   const float2 uv1 = IN.tex0 - w_h_height.xy * 0.5; // dto.
 
 	const float depth0 = tex2Dlod(tex_depth, float4(u, 0.,0.)).x;
 	[branch] if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
 		return float4(1.0, 0.,0.,0.);
 
-	const float3 ushift = /*hash(IN.tex0) + w_h_height.zw*/ // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
-	                      tex2Dlod(tex_ao_dither, float4(IN.tex0/(64.0*w_h_height.xy) + w_h_height.zw, 0.,0.)).xyz; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
+	const float3 ushift = /*hash(uv1) + w_h_height.zw*/ // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
+	                      tex2Dlod(tex_ao_dither, float4(uv1/(64.0*w_h_height.xy) + w_h_height.zw, 0.,0.)).xyz; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
 	//const float base = 0.0;
 	const float area = 0.06; //!!
 	const float falloff = 0.0002; //!!
@@ -318,7 +318,7 @@ float3 anaglyph(const float3 L, const float3 R)
 //!! opt.?
 float4 ps_main_stereo(const in VS_OUTPUT_2D IN) : COLOR
 {
-	float2 u = IN.tex0 + w_h_height.xy*0.5;
+	float2 u = IN.tex0;
 	const float MaxSeparation = ms_zpd_ya_td.x;
 	const float ZPD = ms_zpd_ya_td.y;
 	const bool yaxis = (ms_zpd_ya_td.z != 0.0); //!! uniform
@@ -353,7 +353,7 @@ float4 ps_main_stereo(const in VS_OUTPUT_2D IN) : COLOR
 // more or less copy pasted from above
 float4 ps_main_stereo_anaglyph(const in VS_OUTPUT_2D IN) : COLOR
 {
-	float2 u = IN.tex0 + w_h_height.xy*0.5;
+	float2 u = IN.tex0;
 	const float MaxSeparation = ms_zpd_ya_td.x;
 	const float ZPD = ms_zpd_ya_td.y;
 	const bool yaxis = (ms_zpd_ya_td.z != 0.0); //!! uniform
@@ -468,7 +468,7 @@ float4 ps_main_nfaa(const in VS_OUTPUT_2D IN) : COLOR
 	const float filterSpread = 1.0;
 #endif
 
-	const float2 u = IN.tex0 + w_h_height.xy*0.5;
+	const float2 u = IN.tex0;
 
 	const float3 Scene0 = tex2Dlod(tex_fb_filtered, float4(u, 0.,0.)).rgb;
 	[branch] if(w_h_height.w == 1.0) // depth buffer available?
@@ -534,7 +534,7 @@ float avg(const float3 l)
 
 float4 ps_main_dlaa_edge(const in VS_OUTPUT_2D IN) : COLOR
 {
-   const float2 u = IN.tex0 + w_h_height.xy*0.5;
+   const float2 u = IN.tex0;
 
    const float3 sCenter    = sampleOffset(u, float2( 0.0,  0.0) );
    const float3 sUpLeft    = sampleOffset(u, float2(-0.5, -0.5) );
@@ -551,7 +551,7 @@ float4 ps_main_dlaa_edge(const in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_dlaa(const in VS_OUTPUT_2D IN) : COLOR
 {
-   const float2 u = IN.tex0 + w_h_height.xy*0.5;
+   const float2 u = IN.tex0;
 
    const float4 sampleCenter = sampleOffseta(u, float2( 0.0,  0.0) );
    [branch] if(w_h_height.w == 1.0 /*&& sampleCenter.a == 0.0*/) // depth buffer available? /*AND no edge here? -> ignored because of performance*/
@@ -661,7 +661,7 @@ float luma(const float3 l)
 // Approximation of FXAA
 float4 ps_main_fxaa1(const in VS_OUTPUT_2D IN) : COLOR
 {
-	const float2 u = IN.tex0 + w_h_height.xy*0.5;
+	const float2 u = IN.tex0;
 
 	const float3 rMc = tex2Dlod(tex_fb_unfiltered, float4(u, 0.,0.)).xyz;
 	[branch] if(w_h_height.w == 1.0) // depth buffer available?
@@ -713,7 +713,7 @@ float4 ps_main_fxaa1(const in VS_OUTPUT_2D IN) : COLOR
 // Full mid-quality PC FXAA 3.11
 float4 ps_main_fxaa2(const in VS_OUTPUT_2D IN) : COLOR
 {
-	const float2 u = IN.tex0 + w_h_height.xy*0.5;
+	const float2 u = IN.tex0;
 
 	const float3 rgbyM = tex2Dlod(tex_fb_unfiltered, float4(u, 0.,0.)).xyz;
 	[branch] if(w_h_height.w == 1.0) // depth buffer available?
@@ -860,7 +860,7 @@ float4 ps_main_fxaa2(const in VS_OUTPUT_2D IN) : COLOR
 // Full extreme-quality PC FXAA 3.11
 float4 ps_main_fxaa3(const in VS_OUTPUT_2D IN) : COLOR
 {
-	const float2 u = IN.tex0 + w_h_height.xy*0.5;
+	const float2 u = IN.tex0;
 
 	const float3 rgbyM = tex2Dlod(tex_fb_unfiltered, float4(u, 0.,0.)).xyz;
 	[branch] if(w_h_height.w == 1.0) // depth buffer available?
@@ -1123,7 +1123,7 @@ float4 ps_main_CAS(const in VS_OUTPUT_2D IN) : COLOR
 	const float Contrast   = 0.0; // 0..1, Adjusts the range the shader adapts to high contrast (0 is not all the way off).  Higher values = more high contrast sharpening.
 	const float Sharpening = 1.0; // 0..1, Adjusts sharpening intensity by averaging the original pixels to the sharpened result.  1.0 is the unmodified default.
 
-	const float2 u = IN.tex0 + w_h_height.xy*0.5;
+	const float2 u = IN.tex0;
 
 	const float3 e = tex2Dlod(tex_fb_unfiltered, float4(u, 0.,0.)).xyz;
 	[branch] if(w_h_height.w == 1.0) // depth buffer available?
@@ -1200,7 +1200,7 @@ float4 ps_main_BilateralSharp_CAS(const in VS_OUTPUT_2D IN) : COLOR
 {
 	const float sharpness = 0.625*3.1;
 
-	const float2 u = IN.tex0 + w_h_height.xy*0.5;
+	const float2 u = IN.tex0;
 
 	const float3 e = tex2Dlod(tex_fb_unfiltered, float4(u, 0.,0.)).xyz;
 	[branch] if(w_h_height.w == 1.0) // depth buffer available?

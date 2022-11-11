@@ -1,17 +1,17 @@
 ////GLOBAL
 #version 450 core
-
-////VERTEX
-uniform vec4 w_h_height; // in bloom w_h_height.z keeps strength
-
-////FRAGMENT
 #include "Helpers.fxh"
 
-uniform vec4 ms_zpd_ya_td; // Not currently used in VPVR only in VPX
-uniform vec4 w_h_height; // in bloom w_h_height.z keeps strength
+// w_h_height.xy contains inverse size of source texture (1/w, 1/h), i.e. one texel shift to the upper (DX)/lower (OpenGL) left texel. Since OpenGL has upside down textures it leads to a different texel if not sampled on both sides
+// . for bloom, w_h_height.z keeps strength
+// . for mirror, w_h_height.z keeps inverse strength
+// . for AO, w_h_height.zw keeps per-frame offset for temporal variation of the pattern
+// . for AA techniques, w_h_height.z keeps source texture width, w_h_height.w is a boolean set to 1 when depth is available
+// . for parallax stereo, w_h_height.z keeps source texture height, w_h_height.w keeps the 3D offset
+uniform vec4 w_h_height;
 
+////FRAGMENT
 uniform vec2 AO_scale_timeblur;
-uniform float4 cWidth_Height_MirrorAmount;
 
 uniform bool color_grade;
 uniform bool do_dither;
@@ -111,24 +111,24 @@ float3 FBDither(const float3 color, /*const int2 pos*/const float2 tex0)
    //return color + bayer_dither_pattern[pos.x%8][pos.y%8];
 
 #ifndef BLUE_NOISE_DITHER
-   //return DitherVlachos(floor(tex0*(1.0/(2.0*w_h_height.xy))+0.5) + w_h_height.z/*w*/, color);       // note that w_h_height.w is the same nowadays
-   return blue_gauss_noise(floor(tex0*(1.0/(2.0*w_h_height.xy))+0.5) + 0.07*w_h_height.z/*w*/, color); // dto.
+   //return DitherVlachos(floor(tex0*(1.0/w_h_height.xy)+0.5) + w_h_height.z/*w*/, color);       // note that w_h_height.w is the same nowadays
+   return blue_gauss_noise(floor(tex0*(1.0/w_h_height.xy)+0.5) + 0.07*w_h_height.z/*w*/, color); // dto.
 #else // needs texSamplerAOdither
    const float quantSteps = 256.0; //!! how to choose/select this for 5/6/5??
 
    // TPDF:
-   const float3 dither = /*float3(GradientNoise(tex0 / (2.0*w_h_height.xy) + w_h_height.zw*3.141),
-      GradientNoise(tex0.yx / (2.0*w_h_height.yx) + w_h_height.zw*1.618),
-      GradientNoise(tex0 / (2.0*w_h_height.xy) + w_h_height.wz*2.718281828459));*/
-   // Dither64(tex0 / (2.0*w_h_height.xy)+w_h_height.zw, 0.);
-       textureLod(texSamplerAOdither, tex0 / (64.0*(2.0*w_h_height.xy)) + w_h_height.zw*3.141, 0).xyz;
+   const float3 dither = /*float3(GradientNoise(tex0 / w_h_height.xy + w_h_height.zw*3.141),
+      GradientNoise(tex0.yx / w_h_height.yx + w_h_height.zw*1.618),
+      GradientNoise(tex0 / w_h_height.xy + w_h_height.wz*2.718281828459));*/
+   // Dither64(tex0 / w_h_height.xy+w_h_height.zw, 0.);
+       textureLod(texSamplerAOdither, tex0 / (64.0*w_h_height.xy) + w_h_height.zw*3.141, 0).xyz;
    return color + triangularPDF(dither) * (1.0/quantSteps); // quantSteps-1. ?
 
-   /*const float3 dither = tex2Dlod(texSamplerAOdither, float4(tex0 / (64.0*(2.0*w_h_height.xy)) + w_h_height.zw*2.718281828459, 0., 0.)).xyz;
-   const float3 dither2 = tex2Dlod(texSamplerAOdither, float4(tex0 / (64.0*(2.0*w_h_height.xy)) + w_h_height.wz*3.14159265358979, 0., 0.)).xyz;
+   /*const float3 dither = tex2Dlod(texSamplerAOdither, float4(tex0 / (64.0*w_h_height.xy) + w_h_height.zw*2.718281828459, 0., 0.)).xyz;
+   const float3 dither2 = tex2Dlod(texSamplerAOdither, float4(tex0 / (64.0*w_h_height.xy) + w_h_height.wz*3.14159265358979, 0., 0.)).xyz;
    return color + (dither - dither2) / quantSteps;*/
 
-   //const float3 dither = tex2Dlod(texSamplerAOdither, float4(tex0 / (64.0*(2.0*w_h_height.xy)) + w_h_height.wz*3.141, 0., 0.)).xyz*2.0 - 1.0;
+   //const float3 dither = tex2Dlod(texSamplerAOdither, float4(tex0 / (64.0*w_h_height.xy) + w_h_height.wz*3.141, 0., 0.)).xyz*2.0 - 1.0;
 
    // Lottes (1st one not working, 2nd 'quality', 3rd 'tradeoff'), IMHO too much magic:
    /*const float blackLimit = 0.5 * InvGamma(1.0/(quantSteps - 1.0));
@@ -185,14 +185,29 @@ float3 FBColorGrade(float3 color)
 in vec3 vPosition;
 in vec2 tc;
 
+// Pixel perfect coordinates of corresponding sample from source texture (tex_fb_filtered/tex_fb_unfiltered/tex_mirror/...)
 out vec2 tex0;
 
 void main()
 { 
-   gl_Position = vec4(vPosition.x, vPosition.y,0.0,1.0);
-   // Offset texture coordinates since OpenGL texel center is shifted by half a texel from DirectX texel center
-   // FIXME This needs a full review since w_h_height sometimes contains 1.0/resolution and other times it's 0.5/resolution
-   tex0 = vec2(tc.x-w_h_height.x, 1.0-tc.y-w_h_height.y);
+   // OpenGL texture coordinates are centered on texel center (0,0 is first texel center) so no offset. Rendering is bottom up with regards to DirectX though
+   gl_Position = vec4(vPosition.x, -vPosition.y,0.0,1.0);
+   tex0 = tc;
+}
+
+////vs_main_no_trafo_zoomed
+
+in vec3 vPosition;
+in vec2 tc;
+
+// Pixel perfect coordinates of corresponding sample from source texture (tex_fb_filtered/tex_fb_unfiltered/tex_mirror/...)
+out vec2 tex0;
+
+void main()
+{ 
+   // OpenGL texture coordinates are centered on texel center (0,0 is first texel center) so no offset. Rendering is bottom up with regards to DirectX though
+   gl_Position = vec4(vPosition.x * 2.0, -vPosition.y * 2.0,0.0,1.0);
+   tex0 = tc;
 }
 
 ////ps_main_fb_tonemap
@@ -248,7 +263,7 @@ in vec2 tex0;
 
 void main()
 {
-   const float3 result = float3(textureLod(tex_ao, tex0/*-w_h_height.xy*/, 0).x); // omitting the shift blurs over 2x2 window
+   const float3 result = float3(textureLod(tex_ao, tex0 - 0.5*w_h_height.xy, 0).x); // shift half a texel to blurs over 2x2 window
    color = float4(FBGamma(saturate(result)), 1.0);
 }
 
@@ -258,10 +273,11 @@ in vec2 tex0;
 
 void main()
 {
+   // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
    float3 result = FBToneMap(textureLod(tex_fb_filtered, tex0, 0).xyz) // moving AO before tonemap does not really change the look
-                 * textureLod(tex_ao, tex0/*-w_h_height.xy*/, 0).x; // omitting the shift blurs over 2x2 window
+                           * textureLod(tex_ao, tex0 - 0.5*w_h_height.xy, 0).x; // shift half a texel to blurs over 2x2 window
    if (do_bloom)
-      result += textureLod(tex_bloom, tex0, 0).xyz; //!! offset?
+      result += textureLod(tex_bloom, tex0, 0).xyz;
    color = float4(FBColorGrade(FBGamma(clamp(result, 0.0, 1.0))), 1.0);
 }
 
@@ -271,8 +287,9 @@ in vec2 tex0;
 
 void main()
 {
-   float3 result = textureLod(tex_fb_filtered, tex0, 0).xyz
-                 * textureLod(tex_ao, tex0/*-w_h_height.xy*/, 0).x; // omitting the shift blurs over 2x2 window
+   // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
+   float3 result = textureLod(tex_fb_filtered, tex0, 0).xyz // moving AO before tonemap does not really change the look
+                           * textureLod(tex_ao, tex0 - 0.5*w_h_height.xy, 0).x; // shift half a texel to blurs over 2x2 window
    color = float4(result, 1.0);
 }
 
@@ -282,9 +299,9 @@ in vec2 tex0;
 
 void main()
 {
-   float3 result = FBToneMap(textureLod(tex_fb_unfiltered, tex0+w_h_height.xy, 0).xyz);
+   float3 result = FBToneMap(textureLod(tex_fb_unfiltered, tex0, 0).xyz);
    if (do_bloom)
-      result += textureLod(tex_bloom, tex0, 0).xyz; //!! offset?
+      result += textureLod(tex_bloom, tex0, 0).xyz;
    color = float4(/*FBDither(*/FBColorGrade(FBGamma(clamp(result, 0.0, 1.0))),/*tex0*w_h_height.zw),*/ 1.0);
 }
 
@@ -294,10 +311,9 @@ in vec2 tex0;
 
 void main()
 {
-   float3 result = FBToneMap(textureLod(tex_fb_unfiltered, tex0+w_h_height.xy, 0).xyz);
-   //float3 result = FBToneMap(textureLod(tex_fb_unfiltered, tex0, 0).xyz);
+   float3 result = FBToneMap(textureLod(tex_fb_unfiltered, tex0, 0).xyz);
    if (do_bloom)
-      result += textureLod(tex_bloom, tex0, 0).xyz; //!! offset?
+      result += textureLod(tex_bloom, tex0, 0).xyz;
    color = float4(FBColorGrade(FBGamma(clamp(FBDither(result, tex0), 0.0, 1.0))), 1.0);
 }
 
@@ -307,9 +323,9 @@ in vec2 tex0;
 
 void main()
 {
-   float result = FBToneMap(textureLod(tex_fb_unfiltered,tex0+w_h_height.xy, 0).xyz).x;
+   float result = FBToneMap(textureLod(tex_fb_unfiltered,tex0, 0).xyz).x;
    if (do_bloom)
-      result += textureLod(tex_bloom, tex0, 0).x; //!! offset?
+      result += textureLod(tex_bloom, tex0, 0).x;
    float gray = /*FBDither(*//*FBColorGrade*/(FBGamma(vec3(clamp(result, 0.0, 1.0)))).x/*,tex0*w_h_height.zw)*/;
    color = float4(gray,gray,gray,1.0);
 }
@@ -320,10 +336,10 @@ in vec2 tex0;
 
 void main()
 {
-   float3 result = FBToneMap(textureLod(tex_fb_unfiltered, tex0+w_h_height.xy, 0).xyz) // moving AO before tonemap does not really change the look
-                           * textureLod(tex_ao, tex0/*-w_h_height.xy*/, 0).x; // omitting the shift blurs over 2x2 window
+   float3 result = FBToneMap(textureLod(tex_fb_unfiltered, tex0, 0).xyz) // moving AO before tonemap does not really change the look
+                           * textureLod(tex_ao, tex0 - 0.5*w_h_height.xy, 0).x; // shift half a texel to blurs over 2x2 window
    if (do_bloom)
-      result += textureLod(tex_bloom, tex0, 0).xyz;  //!! offset?
+      result += textureLod(tex_bloom, tex0, 0).xyz;
    color = float4(FBColorGrade(FBGamma(clamp(result, 0.0, 1.0))), 1.0);
 }
 
@@ -333,10 +349,10 @@ in vec2 tex0;
 
 void main()
 {
-   float3 result = FBToneMap(textureLod(tex_fb_unfiltered, tex0+w_h_height.xy, 0).xyz) // moving AO before tonemap does not really change the look
-                           * textureLod(tex_ao, tex0/*-w_h_height.xy*/, 0).x; // omitting the shift blurs over 2x2 window
+   float3 result = FBToneMap(textureLod(tex_fb_unfiltered, tex0, 0).xyz) // moving AO before tonemap does not really change the look
+                           * textureLod(tex_ao, tex0 - 0.5*w_h_height.xy, 0).x; // shift half a texel to blurs over 2x2 window
    if (do_bloom)
-      result += textureLod(tex_bloom, tex0, 0).xyz;  //!! offset?
+      result += textureLod(tex_bloom, tex0, 0).xyz; 
    color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
 }
 
@@ -346,8 +362,8 @@ in vec2 tex0;
 
 void main()
 {
-   float3 result = textureLod(tex_fb_unfiltered, tex0 + w_h_height.xy, 0).xyz
-                 * textureLod(tex_ao, tex0/*-w_h_height.xy*/, 0).x; // omitting the shift blurs over 2x2 window
+   float3 result = textureLod(tex_fb_unfiltered, tex0, 0).xyz
+                           * textureLod(tex_ao, tex0 - 0.5*w_h_height.xy, 0).x; // shift half a texel to blurs over 2x2 window
    color = float4(result, 1.0);
 }
 
@@ -665,12 +681,11 @@ void main()
 }
 
 ////ps_main_fb_mirror
-// mirror
-in vec2 tex0;
 
+in vec2 tex0;
 void main()
 {
-   color = float4(texture(tex_fb_unfiltered, tex0 + 0.5/cWidth_Height_MirrorAmount.xy).rgb * (1./cWidth_Height_MirrorAmount.z), 1.0);
+   color = float4(texture(tex_fb_unfiltered, tex0).rgb * (1./w_h_height.z), 1.0);
 }
 
 

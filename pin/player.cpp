@@ -1963,17 +1963,14 @@ void Player::InitStatic()
 
    m_isRenderingStatic = true;
 
-   RenderTarget *accumulationSurface = nullptr;
+   // The code will fail if the static render target is MSAA (the copy operation we are performing is not allowed)
+   assert(!m_pin3d.m_pddsStatic->IsMSAA());
+   
+   RenderTarget *accumulationSurface = m_dynamicMode ? nullptr : m_pin3d.m_pddsStatic->Duplicate();
 
    // if rendering static/with heavy oversampling, disable the aniso/trilinear filter to get a sharper/more precise result overall!
    if (!m_dynamicMode)
-   {
-      // The code will fail if the static render target is MSAA (the copy operation we are performing is not allowed)
-      assert(!m_pin3d.m_pddsStatic->IsMSAA());
-      accumulationSurface = m_pin3d.m_pddsStatic->Duplicate();
-      // set up the texture filter again, so that this is triggered correctly
       m_pin3d.m_pd3dPrimaryDevice->ForceAnisotropicFiltering(false);
-   }
 
    g_pvp->ProfileLog("Static PreRender Start"s);
 
@@ -2028,11 +2025,9 @@ void Player::InitStatic()
          if (iter == STATIC_PRERENDER_ITERATIONS - 1)
             m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
-         const vec4 fb_inv_resolution((float)(0.5 / (double)m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth()),
-            (float)(0.5 / (double)m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight()), 1.0f, 1.0f);
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &fb_inv_resolution);
-         const vec4 whm = vec4((float)m_pin3d.m_pddsStatic->GetWidth(), (float)m_pin3d.m_pddsStatic->GetHeight(), (float)STATIC_PRERENDER_ITERATIONS, 0.0f);
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_cWidth_Height_MirrorAmount, &whm);
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
+            (float)(1.0 / (double)m_pin3d.m_pddsStatic->GetWidth()), (float)(1.0 / (double)m_pin3d.m_pddsStatic->GetHeight()),
+            (float)((double)STATIC_PRERENDER_ITERATIONS), 1.0f);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_pin3d.m_pddsStatic->GetColorSampler());
          m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
          m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
@@ -2099,12 +2094,9 @@ void Player::InitStatic()
 
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pin3d.m_pddsAOBackBuffer->GetColorSampler()); //!! ?
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_pin3d.m_pddsAOBackBuffer->GetColorSampler()); //!! ?
-
-         const vec4 w_h_height((float)(1.0 / (double)m_pin3d.m_pddsAOBackBuffer->GetWidth()), (float)(1.0 / (double)m_pin3d.m_pddsAOBackBuffer->GetHeight()),
-            radical_inverse(i)*(float)(1. / 8.0),
-             /*sobol*/radical_inverse<3>(i)*(float)(1. / 8.0)); // jitter within (64/8)x(64/8) neighborhood of 64x64 tex, good compromise between blotches and noise
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &w_h_height);
-
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
+            (float)(1.0 / m_pin3d.m_pddsAOBackBuffer->GetWidth()), (float)(1.0 / m_pin3d.m_pddsAOBackBuffer->GetHeight()),
+            radical_inverse(i) * (float)(1. / 8.0), /*sobol*/ radical_inverse<3>(i) * (float)(1. / 8.0)); // jitter within (64/8)x(64/8) neighborhood of 64x64 tex, good compromise between blotches and noise
          m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
          m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
          m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
@@ -2124,8 +2116,8 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao, m_pin3d.m_pddsAOBackBuffer->GetColorSampler());
 
-      const vec4 fb_inv_resolution_05((float)(0.5 / (double)m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth()), (float)(0.5 / (double)m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight()), 1.0f, 1.0f);
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &fb_inv_resolution_05);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
+         (float)(1.0 / m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth()), (float)(1.0 / m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight()), 1.0f, 1.0f);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAA ? SHADER_TECHNIQUE_fb_tonemap_AO_static : SHADER_TECHNIQUE_fb_tonemap_AO_no_filter_static);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
@@ -3456,8 +3448,8 @@ void Player::SSRefl()
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao_dither, &m_pin3d.m_aoDitherTexture, SF_NONE, SA_REPEAT, SA_REPEAT, true); // FIXME the force linear RGB is not honored in VR
 
    // FIXME check if size should not be taken from renderdevice to account for VR (double width) or supersampling
-   const vec4 w_h_height((float)(1.0 / (double)m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth()), (float)(1.0 / (double)m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight()), 1.0f/*radical_inverse(m_overall_frames%2048)*/, 1.0f);
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &w_h_height);
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
+      (float)(1.0 / m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth()), (float)(1.0 / m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight()), 1.0f /*radical_inverse(m_overall_frames%2048)*/, 1.0f);
 
    const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
    const vec4 SSR_bumpHeight_fresnelRefl_scale_FS(0.3f, 0.3f, m_ptable->m_SSRScale, rotation);
@@ -3491,8 +3483,7 @@ void Player::Bloom()
       m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture()->Activate(true);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
-      const vec4 fb_inv_resolution((float)(1.0 / w), (float)(1.0 / h), m_ptable->m_bloom_strength, 1.0f);
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &fb_inv_resolution);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float) (1.0 / w), (float) (1.0 / h), m_ptable->m_bloom_strength, 1.0f);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_bloom);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
@@ -3527,37 +3518,32 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
    if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3)
    {
       assert(renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget1());
-      outputRT = SMAA                   ? m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture() : // SMAA use 3 passes, so we reuse the back buffer for the first
+      outputRT = SMAA                   ? m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture() : // SMAA use 3 passes, all of them using the initial render, so we reuse the back buffer for the first
          (DLAA || sharpen || pp_stereo) ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT)
                                         : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
       outputRT->Activate(true);
-
-#ifdef ENABLE_SDL
-      // For DX9, these are defined to fb_unfiltered
-      if (SMAA)
-      {
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_colorTex, renderedRT->GetColorSampler());
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_colorGammaTex, renderedRT->GetColorSampler());
-      }
-#endif
-
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
       if (depth_available) // Depth is always taken from the MSAA resolved render buffer
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
       else
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_depth);
-
-      const vec4 w_h_height((float)(1.0 / (double)renderedRT->GetWidth()), (float)(1.0 / (double)renderedRT->GetHeight()), (float)renderedRT->GetWidth(), depth_available ? 1.f : 0.f);
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &w_h_height);
-
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SMAA ? SHADER_TECHNIQUE_SMAA_ColorEdgeDetection :
-                                                         (DLAA ? SHADER_TECHNIQUE_DLAA_edge :
-                                                         (NFAA ? SHADER_TECHNIQUE_NFAA :
+      if (SMAA)
+      {
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_areaTex, m_pin3d.m_pd3dPrimaryDevice->m_SMAAareaTexture);
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_searchTex, m_pin3d.m_pd3dPrimaryDevice->m_SMAAsearchTexture);
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(
+            SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), (float)renderedRT->GetHeight());
+      }
+      else
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), 
+            (float)renderedRT->GetWidth(), depth_available ? 1.f : 0.f);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SMAA  ? SHADER_TECHNIQUE_SMAA_ColorEdgeDetection :
+                                                         (DLAA  ? SHADER_TECHNIQUE_DLAA_edge :
+                                                         (NFAA  ? SHADER_TECHNIQUE_NFAA :
                                                          (FXAA3 ? SHADER_TECHNIQUE_FXAA3 :
                                                          (FXAA2 ? SHADER_TECHNIQUE_FXAA2 :
                                                                   SHADER_TECHNIQUE_FXAA1)))));
-
       m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
       m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
@@ -3569,20 +3555,11 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
                     sharpen || pp_stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT)
                                          : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
          outputRT->Activate(true);
-
          if (SMAA)
-         {
-            #ifdef ENABLE_SDL
-            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_edgesTex2D, renderedRT->GetColorSampler());
-            #else
-            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("edgesTex2D", renderedRT->GetColorSampler()->GetCoreTexture())); //!! opt.?
-            #endif
-         }
+            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_edgesTex, renderedRT->GetColorSampler());
          else
             m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
-
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SMAA ? SHADER_TECHNIQUE_SMAA_BlendWeightCalculation : SHADER_TECHNIQUE_DLAA);
-
          m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
          m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
          m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
@@ -3593,24 +3570,12 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
             outputRT = sharpen || pp_stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT)
                                             : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
             outputRT->Activate(true);
-
-            #ifdef ENABLE_SDL
-            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_blendTex2D, renderedRT->GetColorSampler());
-            #else
-            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("edgesTex2D", nullptr)); //!! opt.??
-            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("blendTex2D", renderedRT->GetColorSampler()->GetCoreTexture())); //!! opt.?
-            #endif
-
+            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_blendTex, renderedRT->GetColorSampler());
             m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_NeighborhoodBlending);
-
             m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
             m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
             m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
             renderedRT = outputRT;
-
-            #ifndef ENABLE_SDL
-            CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->FBShader->Core()->SetTexture("blendTex2D", nullptr)); //!! opt.?
-            #endif
          }
       }
    }
@@ -3629,8 +3594,8 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
       if (depth_available) // Depth is always taken from the MSAA resolved render buffer
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
 
-      const vec4 w_h_height((float)(1.0 / (double)renderedRT->GetWidth()), (float)(1.0 / (double)renderedRT->GetHeight()), (float)renderedRT->GetWidth(), depth_available ? 1.f : 0.f);
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &w_h_height);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(
+         SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), depth_available ? 1.f : 0.f);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique((sharpen == 1) ? SHADER_TECHNIQUE_CAS : SHADER_TECHNIQUE_BilateralSharp_CAS);
 
@@ -3822,8 +3787,8 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
           is_anaglyph ? (float)m_stereo3D : ((m_stereo3D == STEREO_SBS) ? 2.0f : (m_stereo3D == STEREO_TB) ? 1.0f : ((m_stereo3D == STEREO_INT) ? 0.0f : 0.5f)));
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_ms_zpd_ya_td, &ms_zpd_ya_td);
 
-      const vec4 w_h_height((float)(1.0 / (double)renderedRT->GetWidth()), (float)(1.0 / (double)renderedRT->GetHeight()), (float)renderedRT->GetHeight(), m_ptable->Get3DOffset());
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &w_h_height);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(
+         SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetHeight(), m_ptable->Get3DOffset());
 
       if (is_anaglyph)
       {
@@ -3985,6 +3950,15 @@ void Player::UpdateHUD_IMGUI()
       }
       ImGui::End();
    }
+
+   ImGui::SetNextWindowSize(ImVec2(530, 200), ImGuiCond_FirstUseEver);
+   ImGui::SetNextWindowPos(ImVec2((float)(m_wnd_width - 530 - 10), 570), ImGuiCond_FirstUseEver);
+   ImGui::Begin("Settings");
+   const char *postprocessed_aa_items[] = { "Disabled", "Fast FXAA", "Standard FXAA", "Quality FXAA", "Fast NFAA", "Standard DLAA", "Quality SMAA" };
+   ImGui::Combo("Postprocessed AA", &m_FXAA, postprocessed_aa_items, IM_ARRAYSIZE(postprocessed_aa_items));
+   const char *sharpen_items[] = { "Disabled", "CAS", "Bilateral CAS" };
+   ImGui::Combo("Sharpen", &m_sharpen, sharpen_items, IM_ARRAYSIZE(sharpen_items));
+   ImGui::End();
 
    ImGui::SetNextWindowSize(ImVec2(530, 550), ImGuiCond_FirstUseEver);
    ImGui::SetNextWindowPos(ImVec2((float)(m_wnd_width - 530 - 10), 10), ImGuiCond_FirstUseEver);
@@ -4379,21 +4353,6 @@ void Player::PrepareVideoBuffersNormal()
       renderedRT->UpdateDepthSampler(); // do not put inside BeginScene/EndScene Block
 
    double w = (double)renderedRT->GetWidth(), h = (double)renderedRT->GetHeight();
-   const float shiftedVerts[4 * 5] =
-   {
-#ifdef ENABLE_SDL
-       1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 0.0f,
-      -1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 0.0f,
-       1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 1.0f,
-      -1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 1.0f
-#else
-// FIXME DX shader expect texture units to be off-centered by 1 texel for some reason.
-       1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 1.0f + (float)(1.0 / w), 0.0f + (float)(1.0 / h),
-      -1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 0.0f + (float)(1.0 / w), 0.0f + (float)(1.0 / h),
-       1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f + (float)(1.0 / w), 1.0f + (float)(1.0 / h),
-      -1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 0.0f + (float)(1.0 / w), 1.0f + (float)(1.0 / h)
-#endif
-   };
 
    m_pin3d.m_pd3dPrimaryDevice->BeginScene();
 
@@ -4471,17 +4430,42 @@ void Player::PrepareVideoBuffersNormal()
 
    //const unsigned int jittertime = (unsigned int)((U64)msec()*90/1000);
    const float jitter = (float)((msec() & 2047) / 1000.0);
-   const vec4 fb_inv_resolution_05((float)(0.5 / (double)render_w), (float)(0.5 / (double)render_h),
-      //1.0f, 1.0f);
-      jitter, //radical_inverse(jittertime)*11.0f,
-      jitter); //sobol(jittertime)*13.0f); // jitter for dither pattern
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &fb_inv_resolution_05);
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / render_w), (float)(1.0 / render_h),
+      (float)jitter /* radical_inverse(jittertime) * 11.0f */, (float)jitter /*sobol(jittertime)*13.0f*/); // jitter for dither pattern
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAA || infoMode == IF_RENDER_PROBES ? SHADER_TECHNIQUE_fb_tonemap : (m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_tonemap_no_filterRG : (m_BWrendering == 2 ? SHADER_TECHNIQUE_fb_tonemap_no_filterR : SHADER_TECHNIQUE_fb_tonemap_no_filterRGB)));
 
    m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
-   m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)shiftedVerts);
+   m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
    m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
    renderedRT = ouputRT;
+
+   // This code allows to check that the FB shader does perform pixel perfect processing (1 to 1 match between renderedRT and outputRT)
+   // This needs a modification of the shader to used the filtered texture (tex_fb_filtered) instead of unfiltered
+   if (false)
+   {
+      BaseTexture *tex = new BaseTexture(renderedRT->GetWidth(), renderedRT->GetHeight(), BaseTexture::RGB);
+      BYTE *const __restrict pdest = tex->data();
+      for (size_t i = 0; i < (size_t)renderedRT->GetWidth() * renderedRT->GetHeight(); ++i)
+      {
+         int y = i / renderedRT->GetWidth();
+#ifdef ENABLE_SDL
+         y = renderedRT->GetHeight() - 1 - y;
+#endif
+         pdest[i * 3 + 0] = ((i & 1) == 0 && (y&1) == 0) ? 0x00 : 0xFF;
+         pdest[i * 3 + 1] = ((i >> 2) & 1) == 0 ? 0x00 : ((i & 1) == 0 && (y & 1) == 0) ? 0x00 : 0xFF;
+         pdest[i * 3 + 2] = ((y >> 2) & 1) == 0 ? 0x00 : ((i & 1) == 0 && (y & 1) == 0) ? 0x00 : 0xFF;
+      }
+      Sampler *checker = new Sampler(m_pin3d.m_pd3dPrimaryDevice, tex, true, SA_CLAMP, SA_CLAMP, SF_NONE);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / render_w), (float)(1.0 / render_h), 1.f, 1.f);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, checker);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
+      m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
+      renderedRT = ouputRT;
+      delete checker;
+      delete tex;
+   }
 
    StereoFXAA(renderedRT, stereo, SMAA, DLAA, NFAA, FXAA1, FXAA2, FXAA3, sharpen, false);
 
@@ -4564,16 +4548,10 @@ void Player::PrepareVideoBuffersAO()
 
    // separate normal generation pass, currently roughly same perf or even much worse
    /*m_pin3d.m_pd3dDevice->GetPostProcessRenderTarget1()->Activate(); //!! expects stereo or FXAA enabled
-
    m_pin3d.m_pd3dDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pdds3DZBuffer, true);
-
-   const vec4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height),
-      radical_inverse(m_overall_frames%2048)*(float)(1. / 8.0),
-      sobol(m_overall_frames%2048)*(float)(5. / 8.0)); // jitter within lattice cell //!! ?
-   m_pin3d.m_pd3dDevice->FBShader->SetVector(SHADER_w_h_height, &w_h_height);
-
+   m_pin3d.m_pd3dDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / m_width), (float)(1.0 / m_height),
+      radical_inverse(m_overall_frames%2048)*(float)(1. / 8.0), sobol(m_overall_frames%2048)*(float)(5. / 8.0));// jitter within lattice cell //!! ?
    m_pin3d.m_pd3dDevice->FBShader->SetTechnique("normals");
-
    m_pin3d.m_pd3dDevice->FBShader->Begin();
    m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
    m_pin3d.m_pd3dDevice->FBShader->End();*/
@@ -4585,11 +4563,10 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao_dither, &m_pin3d.m_aoDitherTexture, SF_NONE, SA_REPEAT, SA_REPEAT, true); // FIXME the force linear RGB is not honored
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
 
-   const vec4 w_h_height((float)(1.0 / (double)m_pin3d.m_pddsAOBackBuffer->GetWidth()), (float)(1.0 / (double)m_pin3d.m_pddsAOBackBuffer->GetHeight()),
-      radical_inverse(m_overall_frames%2048)*(float)(1. / 8.0),
-      /*sobol*/radical_inverse<3>(m_overall_frames%2048)*(float)(1. / 8.0)); // jitter within (64/8)x(64/8) neighborhood of 64x64 tex, good compromise between blotches and noise
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / m_pin3d.m_pddsAOBackBuffer->GetWidth()), (float)(1.0 / m_pin3d.m_pddsAOBackBuffer->GetHeight()),
+      radical_inverse(m_overall_frames % 2048) * (float)(1. / 8.0),
+      /*sobol*/ radical_inverse<3>(m_overall_frames % 2048) * (float)(1. / 8.0)); // jitter within (64/8)x(64/8) neighborhood of 64x64 tex, good compromise between blotches and noise
 
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &w_h_height);
    const vec4 ao_s_tb(m_ptable->m_AOScale, 0.4f, 0.f,0.f); //!! 0.4f: fake global option in video pref? or time dependent? //!! commonly used is 0.1, but would require to clear history for moving stuff
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_AO_scale_timeblur, &ao_s_tb);
 
@@ -4620,13 +4597,6 @@ void Player::PrepareVideoBuffersAO()
    ouputRT->Activate(true);
 
    double w = (double)renderedRT->GetWidth(), h = (double)renderedRT->GetHeight();
-   const float shiftedVerts[4 * 5] =
-   {
-       1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 1.0f + (float)(1.0 / w), 0.0f + (float)(1.0 / h),
-      -1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 0.0f + (float)(1.0 / w), 0.0f + (float)(1.0 / h),
-       1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f + (float)(1.0 / w), 1.0f + (float)(1.0 / h),
-      -1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 0.0f + (float)(1.0 / w), 1.0f + (float)(1.0 / h)
-   };
 
    // copy framebuffer over from texture and tonemap/gamma
    int render_w = renderedRT->GetWidth(), render_h = renderedRT->GetHeight();
@@ -4669,15 +4639,14 @@ void Player::PrepareVideoBuffersAO()
 
    //const unsigned int jittertime = (unsigned int)((U64)msec()*90/1000);
    const float jitter = (float)((msec()&2047)/1000.0);
-   const vec4 fb_inv_resolution_05((float)(0.5 / (double)render_w), (float)(0.5 / (double)render_h),
-      //1.0f, 1.0f);
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
+      (float)(1.0 / (double)render_w), (float)(1.0 / (double)render_h), //1.0f, 1.0f);
       jitter, //radical_inverse(jittertime)*11.0f,
-      jitter);//sobol(jittertime)*13.0f); // jitter for dither pattern
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, &fb_inv_resolution_05);
+      jitter); //sobol(jittertime)*13.0f); // jitter for dither pattern
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(infoMode == IF_AO_ONLY ? SHADER_TECHNIQUE_fb_AO : (useAA || infoMode == IF_RENDER_PROBES ? SHADER_TECHNIQUE_fb_tonemap_AO : SHADER_TECHNIQUE_fb_tonemap_AO_no_filter));
 
    m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
-   m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)shiftedVerts);
+   m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
    m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
    renderedRT = ouputRT;
 
