@@ -1784,7 +1784,7 @@ HRESULT Player::Init()
 
    // Setup anisotropic filtering
    const bool forceAniso = LoadValueBoolWithDefault(regKey[RegName::Player], "ForceAnisotropicFiltering"s, true);
-   m_pin3d.m_pd3dPrimaryDevice->ForceAnisotropicFiltering(forceAniso);
+   m_pin3d.m_pd3dPrimaryDevice->SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
 
    // Pre-render all non-changing elements such as static walls, rails, backdrops, etc. and also static playfield reflections
    InitStatic();
@@ -1974,9 +1974,7 @@ void Player::InitStatic()
 
    // if rendering static/with heavy oversampling, disable the aniso/trilinear filter to get a sharper/more precise result overall!
    if (!m_dynamicMode)
-      m_pin3d.m_pd3dPrimaryDevice->ForceAnisotropicFiltering(false);
-   // FIXME my test shows teh exact opposite, and comparisons let think that 10.7.2- did apply anisotropic.
-   m_pin3d.m_pd3dPrimaryDevice->ForceAnisotropicFiltering(true);
+      m_pin3d.m_pd3dPrimaryDevice->SetMainTextureDefaultFiltering(SF_BILINEAR);
 
    g_pvp->ProfileLog("Static PreRender Start"s);
 
@@ -2059,7 +2057,7 @@ void Player::InitStatic()
 
    // if rendering static/with heavy oversampling, re-enable the aniso/trilinear filter now for the normal rendering
    const bool forceAniso = LoadValueBoolWithDefault(regKey[RegName::Player], "ForceAnisotropicFiltering"s, true);
-   m_pin3d.m_pd3dPrimaryDevice->ForceAnisotropicFiltering(forceAniso);
+   m_pin3d.m_pd3dPrimaryDevice->SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
 
    g_pvp->ProfileLog("AO PreRender Start"s);
 

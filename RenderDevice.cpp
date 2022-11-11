@@ -2382,14 +2382,13 @@ void RenderDevice::GetTransform(const TransformStateType p1, Matrix3D* p2, const
 #endif
 }
 
-void RenderDevice::ForceAnisotropicFiltering(const bool enable)
+void RenderDevice::SetMainTextureDefaultFiltering(const SamplerFilter filter)
 {
-   SamplerFilter sf = enable ? SF_ANISOTROPIC : SF_TRILINEAR;
-   Shader::SetDefaultSamplerFilter(SHADER_tex_sprite, sf);
-   Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_A, sf);
-   Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_B, sf);
-   Shader::SetDefaultSamplerFilter(SHADER_tex_base_color, sf);
-   Shader::SetDefaultSamplerFilter(SHADER_tex_base_normalmap, sf);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_sprite, filter);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_A, filter);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_B, filter);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_base_color, filter);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_base_normalmap, filter);
 }
 
 void RenderDevice::Clear(const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil)

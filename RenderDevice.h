@@ -262,7 +262,7 @@ public:
    void SetTransform(const TransformStateType p1, const Matrix3D* p2, const int count = 1);
    void GetTransform(const TransformStateType p1, Matrix3D* p2, const int count = 1);
 
-   void ForceAnisotropicFiltering(const bool enable);
+   void SetMainTextureDefaultFiltering(const SamplerFilter filter);
    void CompressTextures(const bool enable) { m_compress_textures = enable; }
 
    // performance counters
