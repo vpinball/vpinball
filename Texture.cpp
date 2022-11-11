@@ -347,6 +347,29 @@ BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbm, bool with_alpha)
    return pdds;
 }
 
+void BaseTexture::RemoveAlpha()
+{
+   if (!has_alpha())
+      return;
+   switch (m_format)
+   {
+   case RGBA: m_format = RGB; break;
+   case SRGBA: m_format = SRGB; break;
+   default: assert(false);
+   }
+   const BYTE* const __restrict src = data();
+   size_t o = 0;
+   vector<BYTE> new_data(3 * width() * height());
+   for (unsigned int j = 0; j < height(); ++j)
+      for (unsigned int i = 0; i < width(); ++i, ++o)
+      {
+         new_data[o * 3 + 0] = src[o * 4 + 0];
+         new_data[o * 3 + 1] = src[o * 4 + 1];
+         new_data[o * 3 + 2] = src[o * 4 + 2];
+      }
+   m_data = new_data;
+}
+
 BaseTexture* BaseTexture::ToBGRA()
 {
    BaseTexture* tex = new BaseTexture(m_width, m_height, RGBA);
