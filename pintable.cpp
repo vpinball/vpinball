@@ -3517,6 +3517,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                }
             }
             // due to multithreaded loading and pre-allocation, check if some images could not be loaded, and perform a retry since more memory is available now
+            bool failed_or_resized = false;
             for (size_t i = 0; i < m_vimage.size(); ++i)
                 if (!m_vimage[i] || m_vimage[i]->m_pdsBuffer == nullptr)
                 {
@@ -3534,7 +3535,22 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                             pstmItem = nullptr;
                         }
                     }
+                    if (!m_vimage[i] || m_vimage[i]->m_pdsBuffer == nullptr)
+                       failed_or_resized = true;
                 }
+                else
+                {
+                   failed_or_resized |= (m_vimage[i]->m_realWidth != m_vimage[i]->m_width) || (m_vimage[i]->m_realHeight != m_vimage[i]->m_height);
+                }
+            if (failed_or_resized)
+            {
+#ifdef _WIN64
+               m_vpinball->MessageBox("WARNING ! WARNING ! WARNING ! WARNING!\n\nAll images were not loaded for an unknown reason.\n\nDO NOT SAVE THIS FILE OR YOU WILL LOOSE DATA", "Load Error", 0);
+#else
+               m_vpinball->MessageBox("WARNING ! WARNING ! WARNING ! WARNING!\n\nAll images were not loaded likely due to low memory.\nPlease use the 64bit version of the application.\n\nDO NOT SAVE THIS FILE OR YOU WILL LOOSE DATA", "Load Error", 0);
+#endif
+            }
+
             // check if some images could not be loaded and erase them
             for (size_t i = 0; i < m_vimage.size(); ++i)
                 if (!m_vimage[i] || m_vimage[i]->m_pdsBuffer == nullptr)
