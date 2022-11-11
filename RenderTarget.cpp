@@ -283,11 +283,10 @@ RenderTarget* RenderTarget::Duplicate(const bool shareDepthSurface)
 void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool copyDepth)
 {
 #ifdef ENABLE_SDL
-   int bitmask = (copyColor ? GL_COLOR_BUFFER_BIT : 0) | (m_has_depth && dest->m_has_depth && copyDepth ? GL_DEPTH_BUFFER_BIT : 0);
-   assert(bitmask != 0); // This is supposed to be called to actually do something
    int w1 = GetWidth(), h1 = GetHeight(), w2 = dest->GetWidth(), h2 = dest->GetHeight();
    if (w1 == w2 && h1 == h2)
    {
+      int bitmask = (copyColor ? GL_COLOR_BUFFER_BIT : 0) | (m_has_depth && dest->m_has_depth && copyDepth ? GL_DEPTH_BUFFER_BIT : 0);
       if (GLAD_GL_VERSION_4_5)
          glBlitNamedFramebuffer(GetCoreFrameBuffer(), dest->GetCoreFrameBuffer(), 0, 0, w1, h1, 0, 0, w2, h2, bitmask, GL_NEAREST);
       else
