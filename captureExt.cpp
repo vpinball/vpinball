@@ -348,7 +348,9 @@ void ExtCaptureOutput::AcquireFrame()
       ShowError("Capture: Received DXGI_ERROR_ACCESS_LOST.");
    }
    else if (DXGI_ERROR_WAIT_TIMEOUT == hr) {
-      ShowError("Capture: Received DXGI_ERROR_WAIT_TIMEOUT.");
+      // Silently discard timeouts
+      // ShowError("Capture: Received DXGI_ERROR_WAIT_TIMEOUT.");
+      return;
    }
    else if (DXGI_ERROR_INVALID_CALL == hr) {
       ShowError("Capture: Received DXGI_ERROR_INVALID_CALL.");
