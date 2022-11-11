@@ -180,9 +180,8 @@ float3 decompress_normal(const float2 c)
 float4 ps_main_ao(const in VS_OUTPUT_2D IN) : COLOR
 {
 	const float2 u = IN.tex0;
-
-	const float2 uv0 = IN.tex0 - w_h_height.xy * 0.5 + w_h_height.xy; // half pixel shift in x & y for filter
-   const float2 uv1 = IN.tex0 - w_h_height.xy * 0.5; // dto.
+    const float2 uv0 = u - w_h_height.xy * 0.5 + w_h_height.xy; // half pixel shift in x & y for filter
+    const float2 uv1 = u - w_h_height.xy * 0.5; // dto.
 
 	const float depth0 = texNoLod(tex_depth, u).x;
 	[branch] if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
@@ -198,7 +197,7 @@ float4 ps_main_ao(const in VS_OUTPUT_2D IN) : COLOR
 	const float depth_threshold_normal = 0.005;
 	const float total_strength = AO_scale_timeblur.x * (/*1.0 for uniform*/0.5 / samples);
 	const float3 normal = normalize(get_nonunit_normal(depth0, u));
-	//const float3 normal = texNoLod(texSamplerNormals, u).xyz *2.0-1.0; // use 8bitRGB pregenerated normals
+	//const float3 normal = texNoLod(tex_normals, u).xyz *2.0-1.0; // use 8bitRGB pregenerated normals
 	const float radius_depth = radius/depth0;
 
 	float occlusion = 0.0;
@@ -211,17 +210,17 @@ float4 ps_main_ao(const in VS_OUTPUT_2D IN) : COLOR
 		const float2 hemi_ray = u + (radius_depth /** sign(rdotn) for uniform*/) * ray.xy;
       const float occ_depth = texNoLod(tex_depth, hemi_ray).x;
 		const float3 occ_normal = get_nonunit_normal(occ_depth, hemi_ray);
-		//const float3 occ_normal = tex2Dlod(texSamplerNormals, float4(hemi_ray, 0.,0.)).xyz *2.0-1.0;  // use 8bitRGB pregenerated normals, can also omit normalization below then
+		//const float3 occ_normal = tex2Dlod(tex_normals, float4(hemi_ray, 0.,0.)).xyz *2.0-1.0;  // use 8bitRGB pregenerated normals, can also omit normalization below then
 		const float diff_depth = depth0 - occ_depth;
 		const float diff_norm = dot(occ_normal,normal);
 		occlusion += step(falloff, diff_depth) * /*abs(rdotn)* for uniform*/ (diff_depth < depth_threshold_normal ? (1.0-diff_norm*diff_norm/dot(occ_normal,occ_normal)) : 1.0) * (1.0-smoothstep(falloff, area, diff_depth));
 	}
 	// weight with result(s) from previous frames
 	const float ao = 1.0 - total_strength * occlusion;
-	return float4( (texNoLod(tex_fb_filtered, uv0).x //abuse bilerp for filtering (by using half texel/pixel shift)
-				      +texNoLod(tex_fb_filtered, uv1).x
-				      +texNoLod(tex_fb_filtered, float2(uv0.x,uv1.y)).x
-				      +texNoLod(tex_fb_filtered, float2(uv1.x,uv0.y)).x)
+	return float4((texNoLod(tex_fb_filtered, uv0).x //abuse bilerp for filtering (by using half texel/pixel shift)
+				  +texNoLod(tex_fb_filtered, uv1).x
+				  +texNoLod(tex_fb_filtered, float2(uv0.x,uv1.y)).x
+				  +texNoLod(tex_fb_filtered, float2(uv1.x,uv0.y)).x)
 		*(0.25*(1.0-AO_scale_timeblur.y))+saturate(ao /*+base*/)*AO_scale_timeblur.y, 0.,0.,0.);
 }
 
