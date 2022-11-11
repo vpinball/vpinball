@@ -3852,10 +3852,10 @@ void Player::UpdateHUD_IMGUI()
    case IF_FPS: ImGui::Begin("FPS"); break;
    case IF_PROFILING: ImGui::Begin("Profiling"); break;
    case IF_PROFILING_SPLIT_RENDERING: ImGui::Begin("Profiling (using split rendering)"); break;
-   case IF_STATIC_ONLY: ImGui::Begin("Staticly rendered parts"); break;
-   case IF_DYNAMIC_ONLY: ImGui::Begin("Dynamicly rendered parts"); break;
+   case IF_STATIC_ONLY: ImGui::Begin("Static pre-rendered parts"); break;
+   case IF_DYNAMIC_ONLY: ImGui::Begin("Dynamic rendered parts"); break;
    case IF_AO_ONLY: ImGui::Begin("Ambient occlusion"); break;
-   case IF_LIGHT_BUFFER_ONLY: ImGui::Begin("Indirect lights"); break;
+   case IF_LIGHT_BUFFER_ONLY: ImGui::Begin("Transmitted light buffer"); break;
    case IF_RENDER_PROBES:
       ImGui::Begin("Render Probe: "s.append(m_ptable->m_vrenderprobe[m_infoProbeIndex >> 1]->GetName()).append((m_infoProbeIndex & 1) == 0 ? " [Static]"s : " [Dynamic]"s).c_str());
       break;
@@ -4082,12 +4082,12 @@ void Player::UpdateHUD()
     }
     SetDebugOutputPosition(x, y);
 
-	// draw all kinds of stats, incl. FPS counter
+   // draw all kinds of stats, incl. FPS counter
    const InfoMode mode = GetInfoMode();
    switch (mode)
    {
-   case IF_STATIC_ONLY: DebugPrint(0, 10, "Staticly pre-rendered parts"); break;
-   case IF_DYNAMIC_ONLY: DebugPrint(0, 10, "Dynamicly rendered parts"); break;
+   case IF_STATIC_ONLY: DebugPrint(0, 10, "Static pre-rendered parts"); break;
+   case IF_DYNAMIC_ONLY: DebugPrint(0, 10, "Dynamic rendered parts"); break;
    case IF_AO_ONLY: DebugPrint(0, 10, "Ambient occlusion"); break;
    case IF_LIGHT_BUFFER_ONLY: DebugPrint(0, 10, "Transmitted light buffer"); break;
    case IF_RENDER_PROBES:
