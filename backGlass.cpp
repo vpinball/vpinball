@@ -169,6 +169,7 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
                   size_t size = decode_base64(attrib->value(), data, attrib->value_size(), data_len);
                   if ((size > 0) && (strcmp(imagesNode->name(), "BackglassImage") == 0)) {
                      m_loaded_image = BaseTexture::CreateFromData(data, size);
+                     m_loaded_image->RemoveAlpha();
                      m_backgroundTexture = m_pd3dDevice->m_texMan.LoadTexture(m_loaded_image, SF_TRILINEAR, SA_CLAMP, SA_CLAMP, false);
                      m_backglass_width = m_backgroundTexture->GetWidth();
                      m_backglass_height = m_backgroundTexture->GetHeight();

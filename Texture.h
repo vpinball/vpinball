@@ -32,6 +32,7 @@ public:
    bool has_alpha() const      { return m_format == RGBA || m_format == SRGBA; }
 
    BaseTexture *ToBGRA(); // swap R and B channels, also tonemaps floating point buffers during conversion and adds an opaque alpha channel (if format with missing alpha)
+   void RemoveAlpha();
 
 private:
    unsigned int m_width, m_height;
