@@ -209,8 +209,8 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_SAMPLER(tex_bloom, Texture1, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Bloom
    SHADER_SAMPLER(tex_color_lut, Texture2, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Color grade LUT
    SHADER_SAMPLER(tex_ao, Texture3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // AO Result
-   SHADER_SAMPLER(tex_depth, Texture3, SA_CLAMP, SA_CLAMP, SF_NONE), // Depth
-   SHADER_SAMPLER(tex_ao_dither, Texture4, SA_REPEAT, SA_REPEAT, SF_NONE), // AO dither
+   SHADER_SAMPLER(tex_depth, Texture4, SA_CLAMP, SA_CLAMP, SF_NONE), // Depth
+   SHADER_SAMPLER(tex_ao_dither, Texture5, SA_REPEAT, SA_REPEAT, SF_NONE), // AO dither
    // Shared material samplers for Ball, Basic and Classic light shaders
    SHADER_SAMPLER(tex_env, Texture1, SA_REPEAT, SA_CLAMP, SF_TRILINEAR), // environment
    SHADER_SAMPLER(tex_diffuse_env, Texture2, SA_REPEAT, SA_CLAMP, SF_BILINEAR), // diffuse environment contribution/radiance
@@ -936,6 +936,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          // Apply the texture sampling states
          if (tex)
          {
+            //CHECKD3D(m_renderDevice->GetCoreDevice()->SetSamplerState(unit, D3DSAMP_SRGBTEXTURE, !tex->IsLinear()));
             SamplerFilter filter = tex->GetFilter();
             SamplerAddressMode clampu = tex->GetClampU();
             SamplerAddressMode clampv = tex->GetClampV();

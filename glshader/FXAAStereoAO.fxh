@@ -86,7 +86,7 @@ float3 rotate_to_vector_upper(const float3 vec, const float3 normal)
 {
 	const float2 u = IN.tex0;
 
-	const float depth0 = tex2Dlod(texSamplerDepth, float4(u, 0.,0.)).x;
+	const float depth0 = tex2Dlod(tex_depth, float4(u, 0.,0.)).x;
 	[branch] if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
 		return float4(0.0, 0.,0.,0.);
 
@@ -183,9 +183,8 @@ in float2 tex0;
 void main()
 {
 	const float2 u = tex0;
-	
-	const float2 uv0 = tex0 - w_h_height.xy * 0.5 + w_h_height.xy; // half pixel shift in x & y for filter
-   const float2 uv1 = tex0 - w_h_height.xy * 0.5; // dto.
+    const float2 uv0 = u - w_h_height.xy * 0.5 + w_h_height.xy; // half pixel shift in x & y for filter
+    const float2 uv1 = u - w_h_height.xy * 0.5; // dto.
 
 	const float depth0 = texNoLod(tex_depth, u).x;
 	if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
@@ -195,7 +194,7 @@ void main()
 	}
 
 	const float3 ushift = /*hash(uv1) + w_h_height.zw*/ // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
-						  texNoLod(tex_ao_dither, uv1/(64.0*w_h_height.xy) + w_h_height.zw).xyz; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
+	                      texNoLod(tex_ao_dither, uv1/(64.0*w_h_height.xy) + w_h_height.zw).xyz; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
 	//const float base = 0.0;
 	const float area = 0.06; //!!
 	const float falloff = 0.0002; //!!
@@ -226,8 +225,8 @@ void main()
 	const float ao = 1.0 - total_strength * occlusion;
    color = float4((texNoLod(tex_fb_filtered, uv0).x //abuse bilerp for filtering (by using half texel/pixel shift)
                   +texNoLod(tex_fb_filtered, uv1).x
-					   +texNoLod(tex_fb_filtered, float2(uv0.x, uv1.y)).x
-					   +texNoLod(tex_fb_filtered, float2(uv1.x, uv0.y)).x)
+				  +texNoLod(tex_fb_filtered, float2(uv0.x,uv1.y)).x
+				  +texNoLod(tex_fb_filtered, float2(uv1.x,uv0.y)).x)
 		*(0.25*(1.0-AO_scale_timeblur.y))+saturate(ao /*+base*/)*AO_scale_timeblur.y, 0.,0.,0.);
 }
 

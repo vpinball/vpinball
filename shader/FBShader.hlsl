@@ -290,7 +290,7 @@ float4 ps_main_fb_tonemap(const in VS_OUTPUT_2D IN) : COLOR
 {
    //!! const float depth0 = tex2Dlod(tex_depth, float4(u, 0.,0.)).x;
    //!! if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
-   //!!   return float4(tex2Dlod(tex_fb_filtered, float4(IN.tex0, 0.,0.)).xyz, 1.0);
+   //!!   return float4(texNoLod(tex_fb_filtered, IN.tex0).xyz, 1.0);
 
    float3 result = FBToneMap(texNoLod(tex_fb_filtered, IN.tex0).xyz);
    [branch] if (do_bloom)
@@ -333,7 +333,7 @@ float4 ps_main_fb_tonemap_AO(const in VS_OUTPUT_2D IN) : COLOR
 {
    // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
    float3 result = FBToneMap(texNoLod(tex_fb_filtered, IN.tex0).xyz) // moving AO before tonemap does not really change the look
-                 * texNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+                           * texNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    [branch] if (do_bloom)
       result += texNoLod(tex_bloom, IN.tex0).xyz; //!! offset?
    return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
@@ -343,7 +343,7 @@ float4 ps_main_fb_tonemap_AO_static(const in VS_OUTPUT_2D IN) : COLOR
 {
    // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
    const float3 result = texNoLod(tex_fb_filtered, IN.tex0).xyz // moving AO before tonemap does not really change the look
-                 * texNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+                       * texNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    return float4(result, 1.0);
 }
 
@@ -375,17 +375,16 @@ float4 ps_main_fb_tonemap_no_filterR(const in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_tonemap_AO_no_filter(const in VS_OUTPUT_2D IN) : COLOR
 {
-   float3 result = FBToneMap(texNoLod(tex_fb_unfiltered, IN.tex0).xyz) // moving AO before tonemap does not really change the look
-                 * texNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
-   return float4(result, 1.0);
+   float3 result = FBToneMap(texNoLod(tex_fb_unfiltered, IN.tex0).rgb) // moving AO before tonemap does not really change the look
+                           * texNoLod(tex_ao,            IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    [branch] if (do_bloom)
-      result += texNoLod(tex_bloom, IN.tex0).xyz; //!! offset?
+      result += texNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
    return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
 }
 
 float4 ps_main_fb_tonemap_AO_no_filter_static(const in VS_OUTPUT_2D IN) : COLOR
 {
-   const float3 result = texNoLod(tex_fb_unfiltered, IN.tex0).xyz
+   const float3 result = texNoLod(tex_fb_unfiltered, IN.tex0).rgb
                  * texNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    return float4(result, 1.0);
 }

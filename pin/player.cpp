@@ -4561,21 +4561,16 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dDevice->FBShader->End();*/
 
    m_pin3d.m_pddsAOBackTmpBuffer->Activate();
-
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pin3d.m_pddsAOBackBuffer->GetColorSampler());
    //m_pin3d.m_pd3dDevice->FBShader->SetTexture(SHADER_Texture1, m_pin3d.m_pd3dDevice->GetPostProcessRenderTarget1()); // temporary normals
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao_dither, &m_pin3d.m_aoDitherTexture, SF_NONE, SA_REPEAT, SA_REPEAT, true); // FIXME the force linear RGB is not honored
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
-
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / m_pin3d.m_pddsAOBackBuffer->GetWidth()), (float)(1.0 / m_pin3d.m_pddsAOBackBuffer->GetHeight()),
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
+      (float)(1.0 / m_pin3d.m_pddsAOBackBuffer->GetWidth()), (float)(1.0 / m_pin3d.m_pddsAOBackBuffer->GetHeight()),
       radical_inverse(m_overall_frames % 2048) * (float)(1. / 8.0),
       /*sobol*/ radical_inverse<3>(m_overall_frames % 2048) * (float)(1. / 8.0)); // jitter within (64/8)x(64/8) neighborhood of 64x64 tex, good compromise between blotches and noise
-
-   const vec4 ao_s_tb(m_ptable->m_AOScale, 0.4f, 0.f,0.f); //!! 0.4f: fake global option in video pref? or time dependent? //!! commonly used is 0.1, but would require to clear history for moving stuff
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_AO_scale_timeblur, &ao_s_tb);
-
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_AO_scale_timeblur, m_ptable->m_AOScale, 0.4f, 0.f, 0.f); //!! 0.4f: fake global option in video pref? or time dependent? //!! commonly used is 0.1, but would require to clear history for moving stuff
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_AO);
-
    m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
    m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
    m_pin3d.m_pd3dPrimaryDevice->FBShader->End();

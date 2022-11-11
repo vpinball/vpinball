@@ -347,7 +347,7 @@ void main()
    float3 result = FBToneMap(texNoLod(tex_fb_unfiltered, tex0).xyz) // moving AO before tonemap does not really change the look
                            * texNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    if (do_bloom)
-      result += texNoLod(tex_bloom, tex0).xyz;
+      result += texNoLod(tex_bloom, tex0).rgb;
    color = float4(FBColorGrade(FBGamma(clamp(result, 0.0, 1.0))), 1.0);
 }
 
@@ -358,9 +358,9 @@ in vec2 tex0;
 void main()
 {
    float3 result = FBToneMap(texNoLod(tex_fb_unfiltered, tex0).xyz) // moving AO before tonemap does not really change the look
-                           * texNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+                           * texNoLod(tex_ao,            tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    if (do_bloom)
-      result += texNoLod(tex_bloom, tex0).xyz; 
+      result += texNoLod(tex_bloom, tex0).rgb; 
    color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
 }
 
@@ -370,7 +370,7 @@ in vec2 tex0;
 
 void main()
 {
-   float3 result = texNoLod(tex_fb_unfiltered, tex0).xyz
+   float3 result = texNoLod(tex_fb_unfiltered, tex0).rgb
                  * texNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    color = float4(result, 1.0);
 }
