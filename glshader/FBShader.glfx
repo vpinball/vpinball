@@ -380,8 +380,8 @@ void main()
    const float weight7x7[2] = float[]( 0.45134, 0.04866 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    for(int i = 0; i < 2; ++i)
-      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset7x7[i],0.0))).xyz
-                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset7x7[i],0.0))).xyz)*weight7x7[i];
+      result += (texture(tex_fb_filtered, vec2(tex0+vec2(w_h_height.x*offset7x7[i],0.0))).xyz
+                +texture(tex_fb_filtered, vec2(tex0-vec2(w_h_height.x*offset7x7[i],0.0))).xyz)*weight7x7[i];
    color = float4(result, 1.0);
 }
 
@@ -394,8 +394,8 @@ void main()
    const float weight7x7[2] = float[]( 0.45134, 0.04866 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    for(int i = 0; i < 2; ++i)
-      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset7x7[i]))).xyz
-                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset7x7[i]))).xyz)*weight7x7[i];
+      result += (texture(tex_fb_filtered, vec2(tex0+vec2(0.0,w_h_height.y*offset7x7[i]))).xyz
+                +texture(tex_fb_filtered, vec2(tex0-vec2(0.0,w_h_height.y*offset7x7[i]))).xyz)*weight7x7[i];
    color = float4(result, 1.0);
 }
 
@@ -406,10 +406,10 @@ void main()
 {
    const float offset9x9[3] = float[]( 0.0, 1.3846153846, 3.2307692308 );
    const float weight9x9[3] = float[]( 0.2270270270, 0.3162162162, 0.0702702703 );
-   float3 result = texture(tex_fb_filtered, tex0+w_h_height.xy*0.5).xyz*weight9x9[0];
+   float3 result = texture(tex_fb_filtered, tex0).xyz*weight9x9[0];
    for (int i = 1; i < 3; ++i)
-      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset9x9[i],0.0))).xyz
-                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset9x9[i],0.0))).xyz)*weight9x9[i];
+      result += (texture(tex_fb_filtered, vec2(tex0+vec2(w_h_height.x*offset9x9[i],0.0))).xyz
+                +texture(tex_fb_filtered, vec2(tex0-vec2(w_h_height.x*offset9x9[i],0.0))).xyz)*weight9x9[i];
    color = float4(result, 1.0);
 }
 
@@ -420,10 +420,10 @@ void main()
 {
    const float offset9x9[3] = float[]( 0.0, 1.3846153846, 3.2307692308 );
    const float weight9x9[3] = float[]( 0.2270270270, 0.3162162162, 0.0702702703 );
-   float3 result = texture(tex_fb_unfiltered, vec2(tex0+w_h_height.xy*0.5)).xyz*weight9x9[0];
+   float3 result = texture(tex_fb_unfiltered, vec2(tex0)).xyz*weight9x9[0];
    for (int i = 1; i < 3; ++i)
-      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset9x9[i]))).xyz
-                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset9x9[i]))).xyz)*weight9x9[i];
+      result += (texture(tex_fb_filtered, vec2(tex0+vec2(0.0,w_h_height.y*offset9x9[i]))).xyz
+                +texture(tex_fb_filtered, vec2(tex0-vec2(0.0,w_h_height.y*offset9x9[i]))).xyz)*weight9x9[i];
    color = float4(result, 1.0);
 }
 
@@ -436,8 +436,8 @@ void main()
    const float weight11x11[3] = float[]( 0.32993, 0.15722, 0.01285 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    for(int i = 0; i < 3; ++i)
-      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset11x11[i],0.0))).xyz
-                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset11x11[i],0.0))).xyz)*weight11x11[i];
+      result += (texture(tex_fb_filtered, vec2(tex0+vec2(w_h_height.x*offset11x11[i],0.0))).xyz
+                +texture(tex_fb_filtered, vec2(tex0-vec2(w_h_height.x*offset11x11[i],0.0))).xyz)*weight11x11[i];
    color = float4(result, 1.0);
 }
 
@@ -450,8 +450,8 @@ void main()
    const float weight11x11[3] = float[]( 0.32993, 0.15722, 0.01285 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    for(int i = 0; i < 3; ++i)
-      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset11x11[i]))).xyz
-                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset11x11[i]))).xyz)*weight11x11[i];
+      result += (texture(tex_fb_filtered, vec2(tex0+vec2(0.0,w_h_height.y*offset11x11[i]))).xyz
+                +texture(tex_fb_filtered, vec2(tex0-vec2(0.0,w_h_height.y*offset11x11[i]))).xyz)*weight11x11[i];
    color = float4(result, 1.0);
 }
 
@@ -462,10 +462,10 @@ void main()
 {
    const float offset13x13[4] = float[]( 0.0, 1.411764705882353, 3.2941176470588234, 5.176470588235294 );
    const float weight13x13[4] = float[]( 0.1964825501511404, 0.2969069646728344, 0.09447039785044732, 0.010381362401148057 );
-   float3 result = texture(tex_fb_filtered, tex0+w_h_height.xy*0.5).xyz*weight13x13[0];
+   float3 result = texture(tex_fb_filtered, tex0).xyz*weight13x13[0];
    for (int i = 1; i < 4; ++i)
-      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset13x13[i],0.0))).xyz
-                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset13x13[i],0.0))).xyz)*weight13x13[i];
+      result += (texture(tex_fb_filtered, vec2(tex0+vec2(w_h_height.x*offset13x13[i],0.0))).xyz
+                +texture(tex_fb_filtered, vec2(tex0-vec2(w_h_height.x*offset13x13[i],0.0))).xyz)*weight13x13[i];
    color = float4(result, 1.0);
 }
 
@@ -476,10 +476,10 @@ void main()
 {
    const float offset13x13[4] = float[]( 0.0, 1.411764705882353, 3.2941176470588234, 5.176470588235294 );
    const float weight13x13[4] = float[]( 0.1964825501511404, 0.2969069646728344, 0.09447039785044732, 0.010381362401148057 );
-   float3 result = texture(tex_fb_filtered, tex0+w_h_height.xy*0.5).xyz*weight13x13[0];
+   float3 result = texture(tex_fb_filtered, tex0).xyz*weight13x13[0];
    for (int i = 1; i < 4; ++i)
-      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset13x13[i]))).xyz
-                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset13x13[i]))).xyz)*weight13x13[i];
+      result += (texture(tex_fb_filtered, vec2(tex0+vec2(0.0,w_h_height.y*offset13x13[i]))).xyz
+                +texture(tex_fb_filtered, vec2(tex0-vec2(0.0,w_h_height.y*offset13x13[i]))).xyz)*weight13x13[i];
    color = float4(result, 1.0);
 }
 
@@ -492,8 +492,8 @@ void main()
    const float weight15x15[4] = float[]( 0.25044, 0.19233, 0.05095, 0.00628 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    for(int i = 0; i < 4; ++i)
-      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset15x15[i],0.0))).xyz
-                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset15x15[i],0.0))).xyz)*weight15x15[i];
+      result += (texture(tex_fb_filtered, vec2(tex0+vec2(w_h_height.x*offset15x15[i],0.0))).xyz
+                +texture(tex_fb_filtered, vec2(tex0-vec2(w_h_height.x*offset15x15[i],0.0))).xyz)*weight15x15[i];
    color = float4(result, 1.0);
 }
 
@@ -506,8 +506,8 @@ void main()
    const float weight15x15[4] = float[]( 0.25044, 0.19233, 0.05095, 0.00628 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    for(int i = 0; i < 4; ++i)
-      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset15x15[i]))).xyz
-                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset15x15[i]))).xyz)*weight15x15[i];
+      result += (texture(tex_fb_filtered, vec2(tex0+vec2(0.0,w_h_height.y*offset15x15[i]))).xyz
+                +texture(tex_fb_filtered, vec2(tex0-vec2(0.0,w_h_height.y*offset15x15[i]))).xyz)*weight15x15[i];
    color = float4(result, 1.0);
 }
 
@@ -520,8 +520,8 @@ void main()
    const float weight19x19[5] = float[]( 0.19923, 0.18937, 0.08396, 0.02337, 0.00408 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    for(int i = 0; i < 5; ++i)
-      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset19x19[i],0.0))).xyz
-                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset19x19[i],0.0))).xyz)*weight19x19[i];
+      result += (texture(tex_fb_filtered, vec2(tex0+vec2(w_h_height.x*offset19x19[i],0.0))).xyz
+                +texture(tex_fb_filtered, vec2(tex0-vec2(w_h_height.x*offset19x19[i],0.0))).xyz)*weight19x19[i];
    color = float4(result, 1.0);
 }
 
@@ -534,8 +534,8 @@ void main()
    const float weight19x19[5] = float[]( 0.19923, 0.18937, 0.08396, 0.02337, 0.00408 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    for(int i = 0; i < 5; ++i)
-      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset19x19[i]))).xyz
-                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset19x19[i]))).xyz)*weight19x19[i];
+      result += (texture(tex_fb_filtered, vec2(tex0+vec2(0.0,w_h_height.y*offset19x19[i]))).xyz
+                +texture(tex_fb_filtered, vec2(tex0-vec2(0.0,w_h_height.y*offset19x19[i]))).xyz)*weight19x19[i];
    color = float4(result, 1.0);
 }
 
@@ -553,8 +553,8 @@ void main()
    const float weight19x19h[5] = float[]( 0.27233, 0.18690, 0.03767, 0.00301, 0.00009 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    for(int i = 0; i < 5; ++i)
-      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset19x19h[i],0.0))).xyz
-                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset19x19h[i],0.0))).xyz)*weight19x19h[i];
+      result += (texture(tex_fb_filtered, vec2(tex0+vec2(w_h_height.x*offset19x19h[i],0.0))).xyz
+                +texture(tex_fb_filtered, vec2(tex0-vec2(w_h_height.x*offset19x19h[i],0.0))).xyz)*weight19x19h[i];
    color = float4(result, 1.0);
 }
 
@@ -567,8 +567,8 @@ void main()
    const float weight19x19h[5] = float[]( 0.27233, 0.18690, 0.03767, 0.00301, 0.00009 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    for(int i = 0; i < 5; ++i)
-      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset19x19h[i]))).xyz
-                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset19x19h[i]))).xyz)*weight19x19h[i];
+      result += (texture(tex_fb_filtered, vec2(tex0+vec2(0.0,w_h_height.y*offset19x19h[i]))).xyz
+                +texture(tex_fb_filtered, vec2(tex0-vec2(0.0,w_h_height.y*offset19x19h[i]))).xyz)*weight19x19h[i];
    color = float4(result, 1.0);
 }
 
@@ -581,8 +581,8 @@ void main()
    const float weight23x23[6] = float[]( 0.16526, 0.17520, 0.10103, 0.04252, 0.01306, 0.00293 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    for(int i = 0; i < 6; ++i)
-      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset23x23[i],0.0))).xyz
-                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset23x23[i],0.0))).xyz)*weight23x23[i];
+      result += (texture(tex_fb_filtered, vec2(tex0+vec2(w_h_height.x*offset23x23[i],0.0))).xyz
+                +texture(tex_fb_filtered, vec2(tex0-vec2(w_h_height.x*offset23x23[i],0.0))).xyz)*weight23x23[i];
    color = float4(result, 1.0);
 }
 
@@ -595,8 +595,8 @@ void main()
    const float weight23x23[6] = float[]( 0.16526, 0.17520, 0.10103, 0.04252, 0.01306, 0.00293 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    for(int i = 0; i < 6; ++i)
-      result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset23x23[i]))).xyz
-                +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset23x23[i]))).xyz)*weight23x23[i];
+      result += (texture(tex_fb_filtered, vec2(tex0+vec2(0.0,w_h_height.y*offset23x23[i]))).xyz
+                +texture(tex_fb_filtered, vec2(tex0-vec2(0.0,w_h_height.y*offset23x23[i]))).xyz)*weight23x23[i];
    color = float4(result, 1.0);
 }
 
@@ -617,8 +617,8 @@ void main()
     //const float weight27x27[7] = float[] ( 0.14096, 0.15932, 0.10714, 0.05743, 0.02454, 0.00835, 0.00227 );   //no center!
     float3 result = float3(0.0, 0.0, 0.0);
     for(int i = 0; i < 7; ++i)
-        result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset27x27[i],0.0))).xyz
-                  +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset27x27[i],0.0))).xyz)*weight27x27[i];
+        result += (texture(tex_fb_filtered, vec2(tex0+vec2(w_h_height.x*offset27x27[i],0.0))).xyz
+                  +texture(tex_fb_filtered, vec2(tex0-vec2(w_h_height.x*offset27x27[i],0.0))).xyz)*weight27x27[i];
     color = float4(result, 1.0);
 }
 
@@ -639,8 +639,8 @@ void main()
     //const float weight27x27[7] = float[] ( 0.14096, 0.15932, 0.10714, 0.05743, 0.02454, 0.00835, 0.00227 );   //no center!
     float3 result = float3(0.0, 0.0, 0.0);
     for(int i = 0; i < 7; ++i)
-        result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset27x27[i]))).xyz
-                  +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset27x27[i]))).xyz)*weight27x27[i];
+        result += (texture(tex_fb_filtered, vec2(tex0+vec2(0.0,w_h_height.y*offset27x27[i]))).xyz
+                  +texture(tex_fb_filtered, vec2(tex0-vec2(0.0,w_h_height.y*offset27x27[i]))).xyz)*weight27x27[i];
     color = float4(result, 1.0);
 }
 
@@ -657,8 +657,8 @@ void main()
                                           /*0.09721, 0.11993, 0.09955, 0.07429, 0.04984, 0.03006, 0.01630, 0.00795, 0.00348, 0.00137*/ ); //no center!
     float3 result = float3(0.0, 0.0, 0.0);
     for(int i = 0; i < 10; ++i)
-        result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(w_h_height.x*offset39x39[i],0.0))).xyz
-                  +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(w_h_height.x*offset39x39[i],0.0))).xyz)*weight39x39[i];
+        result += (texture(tex_fb_filtered, vec2(tex0+vec2(w_h_height.x*offset39x39[i],0.0))).xyz
+                  +texture(tex_fb_filtered, vec2(tex0-vec2(w_h_height.x*offset39x39[i],0.0))).xyz)*weight39x39[i];
     color = float4(result, 1.0);
 }
 
@@ -675,8 +675,8 @@ void main()
                                           /*0.09721, 0.11993, 0.09955, 0.07429, 0.04984, 0.03006, 0.01630, 0.00795, 0.00348, 0.00137*/ ); //no center!
     float3 result = float3(0.0, 0.0, 0.0);
     for(int i = 0; i < 10; ++i)
-        result += (texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5+vec2(0.0,w_h_height.y*offset39x39[i]))).xyz
-                  +texture(tex_fb_filtered, vec2(tex0+w_h_height.xy*0.5-vec2(0.0,w_h_height.y*offset39x39[i]))).xyz)*weight39x39[i];
+        result += (texture(tex_fb_filtered, vec2(tex0+vec2(0.0,w_h_height.y*offset39x39[i]))).xyz
+                  +texture(tex_fb_filtered, vec2(tex0-vec2(0.0,w_h_height.y*offset39x39[i]))).xyz)*weight39x39[i];
     color = float4(result, 1.0);
 }
 
