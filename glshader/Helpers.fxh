@@ -2,6 +2,17 @@
 
 #define PI 3.1415926535897932384626433832795
 
+// GLSL is automatically defined by the framework
+#ifndef GLSL
+#define HLSL
+#endif
+
+#ifdef GLSL
+#define texNoLod(tex, pos) textureLod(tex, pos, 0)
+#else
+#define texNoLod(tex, pos) tex2Dlod(tex, float4(pos, 0., 0.))
+#endif
+
 float sqr(const float v)
 {
     return v*v;

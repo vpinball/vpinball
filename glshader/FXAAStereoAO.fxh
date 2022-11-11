@@ -22,8 +22,8 @@ float2 hash(const float2 gridcell)
 
 float3 get_nonunit_normal(const float depth0, const float2 u) // use neighboring pixels // quite some tex access by this
 {
-	const float depth1 = textureLod(tex_depth, float2(u.x, u.y+w_h_height.y), 0).x;
-	const float depth2 = textureLod(tex_depth, float2(u.x+w_h_height.x, u.y), 0).x;
+   const float depth1 = texNoLod(tex_depth, float2(u.x, u.y + w_h_height.y)).x;
+   const float depth2 = texNoLod(tex_depth, float2(u.x + w_h_height.x, u.y)).x;
 	return float3(w_h_height.y * (depth2 - depth0), (depth1 - depth0) * w_h_height.x, w_h_height.y * w_h_height.x); //!!
 }
 
@@ -187,7 +187,7 @@ void main()
 	const float2 uv0 = tex0 - w_h_height.xy * 0.5 + w_h_height.xy; // half pixel shift in x & y for filter
    const float2 uv1 = tex0 - w_h_height.xy * 0.5; // dto.
 
-	const float depth0 = textureLod(tex_depth, u, 0).x;
+	const float depth0 = texNoLod(tex_depth, u).x;
 	if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
 	{
 		color = float4(1.0, 0.,0.,0.);
@@ -195,7 +195,7 @@ void main()
 	}
 
 	const float3 ushift = /*hash(uv1) + w_h_height.zw*/ // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
-						  textureLod(tex_ao_dither, uv1/(64.0*w_h_height.xy) + w_h_height.zw, 0).xyz; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
+						  texNoLod(tex_ao_dither, uv1/(64.0*w_h_height.xy) + w_h_height.zw).xyz; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
 	//const float base = 0.0;
 	const float area = 0.06; //!!
 	const float falloff = 0.0002; //!!
@@ -204,7 +204,7 @@ void main()
 	const float depth_threshold_normal = 0.005;
 	const float total_strength = AO_scale_timeblur.x * (/*1.0 for uniform*/0.5 / samples);
 	const float3 normal = normalize(get_nonunit_normal(depth0, u));
-	//const float3 normal = tex2Dlod(tex_normals, float4(u, 0.,0.)).xyz *2.0-1.0; // use 8bitRGB pregenerated normals
+	//const float3 normal = texNoLod(tex_normals, u).xyz *2.0-1.0; // use 8bitRGB pregenerated normals
 	const float radius_depth = radius/depth0;
 
 	float occlusion = 0.0;
@@ -215,7 +215,7 @@ void main()
 		//!! maybe a bit worse distribution: const float2 ray = cos_hemisphere_sample(normal,frac(r+ushift.xy)).xy; // shift lattice
 		//const float rdotn = dot(ray,normal);
 		const float2 hemi_ray = u + (radius_depth /** sign(rdotn) for uniform*/) * ray.xy;
-		const float occ_depth = textureLod(tex_depth, hemi_ray, 0).x;
+      const float occ_depth = texNoLod(tex_depth, hemi_ray).x;
 		const float3 occ_normal = get_nonunit_normal(occ_depth, hemi_ray);
 		//const float3 occ_normal = tex2Dlod(tex_normals, float4(hemi_ray, 0.,0.)).xyz *2.0-1.0;  // use 8bitRGB pregenerated normals, can also omit normalization below then
 		const float diff_depth = depth0 - occ_depth;
@@ -224,10 +224,10 @@ void main()
 	}
 	// weight with result(s) from previous frames
 	const float ao = 1.0 - total_strength * occlusion;
-	color = float4( (textureLod(tex_fb_filtered, uv0, 0).x //abuse bilerp for filtering (by using half texel/pixel shift)
-					+textureLod(tex_fb_filtered, uv1, 0).x
-					+textureLod(tex_fb_filtered, float2(uv0.x, uv1.y), 0).x
-					+textureLod(tex_fb_filtered, float2(uv1.x, uv0.y), 0).x)
+   color = float4((texNoLod(tex_fb_filtered, uv0).x //abuse bilerp for filtering (by using half texel/pixel shift)
+                  +texNoLod(tex_fb_filtered, uv1).x
+					   +texNoLod(tex_fb_filtered, float2(uv0.x, uv1.y)).x
+					   +texNoLod(tex_fb_filtered, float2(uv1.x, uv0.y)).x)
 		*(0.25*(1.0-AO_scale_timeblur.y))+saturate(ao /*+base*/)*AO_scale_timeblur.y, 0.,0.,0.);
 }
 
