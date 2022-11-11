@@ -554,7 +554,7 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(GetDlgItem(IDC_TURN_VR_ON).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"VR disabled");
    SendMessage(GetDlgItem(IDC_TURN_VR_ON).GetHwnd(), CB_SETCURSEL, askToTurnOn, 0);
 
-   const int DMDsource = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "DMDsource"s, 1);
+   const int DMDsource = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "DMDsource"s, 1); // Unimplemented for the time being
    SendMessage(GetDlgItem(IDC_DMD_SOURCE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Internal Text/Flasher (via vbscript)");
    SendMessage(GetDlgItem(IDC_DMD_SOURCE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Screenreader");
    SendMessage(GetDlgItem(IDC_DMD_SOURCE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"SharedMemory API");
@@ -563,7 +563,7 @@ BOOL VROptionsDialog::OnInitDialog()
    bool on = LoadValueBoolWithDefault(regKey[RegName::Player], "CaptureExternalDMD"s, false);
    ::SendMessage(GetDlgItem(IDC_CAP_EXTDMD).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const int BGsource = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "BGsource"s, 1);
+   const int BGsource = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "BGsource"s, 1); // Unimplemented for the time being
    SendMessage(GetDlgItem(IDC_BG_SOURCE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Default table background");
    SendMessage(GetDlgItem(IDC_BG_SOURCE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"directb2s File (auto only)");
    SendMessage(GetDlgItem(IDC_BG_SOURCE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"directb2s File");
