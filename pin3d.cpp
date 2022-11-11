@@ -969,12 +969,12 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
    memcpy(m_proj.m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
 
 #ifdef ENABLE_SDL
-   float top = m_proj.m_rznear * tanf(ANGTORAD(FOV) / 2.0f);
-   float bottom = -top;
-   float right = top * aspect;
-   float left = -right;
-   //Create Projection Matrix
    if (m_stereo3D != STEREO_OFF) {
+      // Create eye projection matrices for stereo
+      float top = m_proj.m_rznear * tanf(ANGTORAD(FOV) / 2.0f);
+      float bottom = -top;
+      float right = top * aspect;
+      float left = -right;
       // float stereoOffset = 0.04f*m_proj.m_rznear;
       // This is not a perfect interpretation of parallax settings but it is somewhat close to what it gives in parallax with ZPD=0.5
       float stereoOffset = max_separation * 2.0f * m_proj.m_rznear;
@@ -984,10 +984,6 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
       proj = Matrix3D::MatrixPerspectiveOffCenterLH(left - stereoOffset, right - stereoOffset, bottom, top, m_proj.m_rznear, m_proj.m_rzfar);
       proj._41 -= 1.4f * stereoOffset;
       memcpy(m_proj.m_matProj[1].m, proj.m, sizeof(float) * 4 * 4);
-   }
-   else {
-      proj = Matrix3D::MatrixPerspectiveOffCenterLH(left, right, bottom, top, m_proj.m_rznear, m_proj.m_rzfar);
-      memcpy(m_proj.m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
    }
 #endif
 
