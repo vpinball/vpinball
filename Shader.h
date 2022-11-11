@@ -193,6 +193,7 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float4, SSR_bumpHeight_fresnelRefl_scale_FS),
    SHADER_UNIFORM(SUT_Float2, AO_scale_timeblur),
    SHADER_UNIFORM(SUT_Float3, mirrorNormal),
+   SHADER_UNIFORM(SUT_Float4v, balls),
    SHADER_UNIFORM(SUT_Float4v, clip_planes), // OpenGL only
    SHADER_UNIFORM(SUT_Float4v, lightEmission), // OpenGL only
    SHADER_UNIFORM(SUT_Float4v, lightPos), // OpenGL only

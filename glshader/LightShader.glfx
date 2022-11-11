@@ -24,6 +24,9 @@ uniform bool ignoreStereo = false; // Must be able to force only one invocation 
 ////FRAGMENT
 #include "hlsl_glsl.fxh"
 
+#define NUM_BALLS 8
+uniform vec4 balls[NUM_BALLS];
+
 uniform vec4 lightColor_intensity;
 uniform vec4 lightColor2_falloff_power;
 uniform vec4 lightCenter_maxRange;
@@ -80,6 +83,42 @@ void main()
 	color.a = 1.0/blend_modulate_vs_add - 1.0; //saturate(atten*lightColor_intensity.w);
 }
 
+////PS_BulbLight_with_ball_shadows
+
+in vec3 tablePos;
+
+void main()
+{
+	const float len = length(lightCenter_maxRange.xyz - tablePos) * lightCenter_maxRange.w;
+	const float atten = clamp(pow(1.0 - clamp(len, 0.0, 1.0), lightColor2_falloff_power.w), 0.0, 1.0);
+	const float3 lcolor = mix(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
+	color.xyz = lcolor*(-blend_modulate_vs_add*atten*lightColor_intensity.w); // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
+	color.a = 1.0/blend_modulate_vs_add - 1.0; //saturate(atten*lightColor_intensity.w);
+
+	// Raytraced ball shadows
+    for (int i = 0; i < NUM_BALLS; i++)
+	{
+		const float light_r = 10.0f; // light radius in VPX units
+		float ball_r = balls[i].w;
+		float3 ball_pos = balls[i].xyz;
+		float3 light_dir = tablePos - lightCenter_maxRange.xyz;
+		float light_dist = length(light_dir);
+		float3 light_ray = light_dir / light_dist;
+		float3 light_ball_ray = ball_pos - lightCenter_maxRange.xyz;
+		float dot_lbr_lr = dot(light_ball_ray, light_ray);
+		// Don't cast shadow behind the light or before occluder
+		if (dot_lbr_lr > 0.0 && dot_lbr_lr < light_dist)
+		{
+			float3 dist = light_ball_ray - dot_lbr_lr * light_ray;
+			float d2 = length(dist);
+			float smoothness = light_r * (1.0 - dot_lbr_lr / light_dist);
+			color.rgb *= 0.1 + 0.9 * smoothstep(ball_r-smoothness, ball_r+smoothness, d2);
+		}
+	}
+}
+
 ////TECHNIQUES
 
 bulb_light:P0:vs_lightbulb_main():gs_lightbulb_main():PS_BulbLight()
+//bulb_light:P0:vs_lightbulb_main():gs_lightbulb_main():PS_BulbLight_with_ball_shadows()
+bulb_light_with_ball_shadows:P0:vs_lightbulb_main():gs_lightbulb_main():PS_BulbLight_with_ball_shadows()
