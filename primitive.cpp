@@ -1222,7 +1222,7 @@ void Primitive::RenderObject()
    pd3dDevice->CopyRenderStates(true, initial_state);
 
    // Update playfield primitive settings from table settings
-   SamplerFilter pinf = SF_TRILINEAR;
+   SamplerFilter pinf = SF_UNDEFINED; // Use the default filtering of the sampler (trilinear or anisotropic, depending on user choice)
    if (m_d.m_useAsPlayfield)
    {
       m_d.m_szMaterial = g_pplayer->m_ptable->m_playfieldMaterial;
@@ -1263,7 +1263,7 @@ void Primitive::RenderObject()
    {
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
       // accommodate models with UV coords outside of [0,1]
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, g_pplayer->m_texPUP, SF_TRILINEAR, SA_REPEAT, SA_REPEAT);
+      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, g_pplayer->m_texPUP, SF_UNDEFINED, SA_REPEAT, SA_REPEAT);
    }
    else
    {
@@ -1272,7 +1272,7 @@ void Primitive::RenderObject()
       {
          // accommodate models with UV coords outside of [0,1]
          pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
-         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, SF_TRILINEAR, SA_REPEAT, SA_REPEAT, true);
+         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, SF_UNDEFINED, SA_REPEAT, SA_REPEAT, true);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
          pd3dDevice->basicShader->SetBool(SHADER_objectSpaceNormalMap, m_d.m_objectSpaceNormalMap);
          pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());

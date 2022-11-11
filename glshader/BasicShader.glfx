@@ -72,7 +72,7 @@ uniform float4 cGlossy_ImageLerp;
 uniform float4 staticColor_Alpha;
 uniform float alphaTestValue;
 
-uniform float2 w_h_height;
+uniform float4 w_h_height;
 
 uniform float mirrorFactor;
 uniform float3 mirrorNormal;
