@@ -1322,8 +1322,7 @@ void Primitive::RenderObject()
    // setup for applying reflections from reflection probe
    if (reflections)
    {
-      const vec4 cWidth_Height_MirrorAmount((float)RenderTarget::GetCurrentRenderTarget()->GetWidth(), (float)RenderTarget::GetCurrentRenderTarget()->GetHeight(), m_d.m_reflectionStrength, 0.0f);
-      pd3dDevice->basicShader->SetVector(SHADER_cWidth_Height_MirrorAmount, &cWidth_Height_MirrorAmount);
+      pd3dDevice->basicShader->SetFloat(SHADER_mirrorFactor, m_d.m_reflectionStrength);
       Matrix3D matWorldViewInverseTranspose; // This is clearly suboptimal since this transposed inverse is already computed, but the impact is minimal
       vec3 plane_normal;
       reflection_probe->GetReflectionPlaneNormal(plane_normal);

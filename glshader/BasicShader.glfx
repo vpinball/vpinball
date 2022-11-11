@@ -72,7 +72,9 @@ uniform float4 cGlossy_ImageLerp;
 uniform float4 staticColor_Alpha;
 uniform float alphaTestValue;
 
-uniform float4 cWidth_Height_MirrorAmount;
+uniform float2 w_h_height;
+
+uniform float mirrorFactor;
 uniform float3 mirrorNormal;
 
 out vec4 color;
@@ -155,7 +157,7 @@ float3 compute_reflection(const float2 screenSpace, const float3 N)
    // the smoothstep values are *magic* values taken from visual tests
    // dot(mirrorNormal, N) does not really needs to be done per pixel and could be moved to the vertx shader
    // Offset by half a texel to use GPU filtering for some blur
-   return smoothstep(0.5, 0.9, dot(mirrorNormal, N)) * cWidth_Height_MirrorAmount.z * tex2D(tex_reflection, screenSpace + float2(0.5, 0.5) / cWidth_Height_MirrorAmount.xy).rgb;
+   return smoothstep(0.5, 0.9, dot(mirrorNormal, N)) * mirrorFactor * tex2D(tex_reflection, screenSpace + 0.5 * w_h_height.xy).rgb;
 }
 
 // Compute refractions from screen space probe
@@ -200,7 +202,7 @@ void main()
 {
    gl_Position = vec4(vPosition, 1.0);
    tex01_gs = tc;
-   vec4 bulbPos = (matWorldViewProj[0]*vec4(vPosition, 1.0));
+   // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    worldPos_gs = (matWorldView*vec4(vPosition, 1.0)).xyz;
    normal_gs = normalize((matWorldViewInverseTranspose*vNormal).xyz);
 }
@@ -217,7 +219,6 @@ out vec3 normal_gs;
 void main()
 {
    gl_Position = float4(vPosition, 1.0);
-   float4 bulbPos = (matWorldViewProj[0]*float4(vPosition, 1.0));
    worldPos_gs = (matWorldView*float4(vPosition, 1.0)).xyz;
    normal_gs = normalize((matWorldViewInverseTranspose*vNormal).xyz);
 }

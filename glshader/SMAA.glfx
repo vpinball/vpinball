@@ -45,6 +45,14 @@ float maxSearchStepsDiag;
 float cornerRounding;
 #endif
 
+uniform vec4 w_h_height; 
+// Use a real macro here for maximum performance!
+#ifndef SMAA_RT_METRICS // This is just for compilation-time syntax checking.
+//!! //vec4(1.0 / 1280.0, 1.0 / 720.0, 1280.0, 720.0)
+//#define SMAA_RT_METRICS vec4(w_h_height.x, w_h_height.y, 1.0/w_h_height.x, 1.0/w_h_height.y)
+#define SMAA_RT_METRICS w_h_height
+#endif
+
 // Set the GLSL version:
 #define SMAA_GLSL_4
 
@@ -55,25 +63,29 @@ float cornerRounding;
 #define SMAA_CORNER_ROUNDING cornerRounding
 #endif
 
-uniform vec4 w_h_height; 
-// Use a real macro here for maximum performance!
-#ifndef SMAA_RT_METRICS // This is just for compilation-time syntax checking.
-#define SMAA_RT_METRICS vec4(w_h_height.x,w_h_height.y,w_h_height.z,1.0/w_h_height.y) //!! //vec4(1.0 / 1280.0, 1.0 / 720.0, 1280.0, 720.0)
-#endif
-
-// And include our header!
+// And include our header (identical for HLSL/GLSL)!
 #include "SMAA.hlsl"
 
 ////FRAGMENT
 
-uniform sampler2D colorTex;
-uniform sampler2D colorGammaTex;
+/**
+ * Input vars and textures.
+ */
 
-uniform sampler2D edgesTex2D;
-uniform sampler2D blendTex2D;
 
-uniform sampler2D areaTex2D;
-uniform sampler2D searchTex2D;
+uniform sampler2D edgesTex;
+uniform sampler2D blendTex;
+
+uniform sampler2D areaTex;
+uniform sampler2D searchTex;
+
+uniform sampler2D tex_fb_filtered; // Framebuffer (filtered)
+
+//uniform sampler2D colorTex;
+#define colorTex tex_fb_filtered //!! misses SRGB, also see SMAA_NeighborhoodBlending()
+
+//uniform sampler2D colorGammaTex;
+#define colorGammaTex tex_fb_filtered //!! misses MipFilter
 
 out vec4 color;
 
@@ -88,9 +100,6 @@ out vec4[3] offset;
 void main()
 {
     gl_Position = vec4(vPosition.x,-vPosition.y,0.0,1.0);
-    //gl_Position = vec4(2.0*vPosition.x-1.0,2.0*vPosition.y-1.0, 0.0,1.0);
-    // Offset texture coordinates since OpenGL texel center is shifted by half a texel from DirectX texel center
-    //texcoord = vec2(tc.x,1.0-tc.y) + w_h_height.xy*0.5;
     texcoord = tc;
     SMAAEdgeDetectionVS(texcoord, offset);
 }
@@ -107,9 +116,6 @@ out vec2 pixcoord;
 void main()
 {
     gl_Position = vec4(vPosition.x,-vPosition.y,0.0,1.0);
-    //gl_Position = vec4(2.0*vPosition.x-1.0,2.0*vPosition.y-1.0, 0.0,1.0);
-    // Offset texture coordinates since OpenGL texel center is shifted by half a texel from DirectX texel center
-    //texcoord = vec2(tc.x,1.0-tc.y) + w_h_height.xy*0.5;
     texcoord = tc;
     SMAABlendingWeightCalculationVS(texcoord, pixcoord, offset);
 }
@@ -125,9 +131,8 @@ out vec4 offset;
 void main()
 {
     gl_Position = vec4(vPosition.x,-vPosition.y,0.0,1.0);
-    // gl_Position = vec4(2.0*vPosition.x-1.0,2.0*vPosition.y-1.0, 0.0,1.0);
-    // Offset texture coordinates since OpenGL texel center is shifted by half a texel from DirectX texel center
-    //texcoord = vec2(tc.x,1.0-tc.y) + w_h_height.xy*0.5;
+    // use this in the last pass to zoom on the slingshot in order to easily check antialiasing
+    // gl_Position = vec4(vPosition.x * 4.0 + 0.5, -vPosition.y * 4.0 + 0.75,0.0,1.0);
     texcoord = tc;
     SMAANeighborhoodBlendingVS(texcoord, offset);
 }
@@ -150,7 +155,7 @@ in vec2 pixcoord;
 
 void main()
 {
-    color = SMAABlendingWeightCalculationPS(texcoord, pixcoord, offset, edgesTex2D, areaTex2D, searchTex2D, vec4(0.0));
+    color = SMAABlendingWeightCalculationPS(texcoord, pixcoord, offset, edgesTex, areaTex, searchTex, vec4(0.0));
 }
 
 ////GLSL_SMAANeighborhoodBlendingPS
@@ -160,7 +165,7 @@ in vec4 offset;
 
 void main()
 {
-    color = SMAANeighborhoodBlendingPS(texcoord, offset, colorTex, blendTex2D);
+    color = SMAANeighborhoodBlendingPS(texcoord, offset, colorTex, blendTex);
 }
 
 ////TECHNIQUES

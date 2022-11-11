@@ -305,9 +305,12 @@ private:
    void DrawPrimitive(const PrimitiveTypes type, const DWORD fvf, const void* vertices, const DWORD vertexCount);
 
    void UploadAndSetSMAATextures();
+
+public:
    Sampler* m_SMAAsearchTexture;
    Sampler* m_SMAAareaTexture;
 
+private:
 #ifndef ENABLE_SDL
 #ifdef USE_D3D9EX
    IDirect3D9Ex* m_pD3DEx;

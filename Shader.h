@@ -192,7 +192,6 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float4, vRes_Alpha_time),
    SHADER_UNIFORM(SUT_Float4, SSR_bumpHeight_fresnelRefl_scale_FS),
    SHADER_UNIFORM(SUT_Float2, AO_scale_timeblur),
-   SHADER_UNIFORM(SUT_Float4, cWidth_Height_MirrorAmount),
    SHADER_UNIFORM(SUT_Float3, mirrorNormal),
    SHADER_UNIFORM(SUT_Float4v, clip_planes), // OpenGL only
    SHADER_UNIFORM(SUT_Float4v, lightEmission), // OpenGL only
@@ -245,12 +244,10 @@ enum ShaderUniforms
    // Stereo shader (VPVR only, combine the 2 rendered eyes into a single one)
    SHADER_SAMPLER(tex_stereo_fb, Undefined, SA_CLAMP, SA_CLAMP, SF_NONE), // Framebuffer (unfiltered)
    // SMAA shader
-   SHADER_SAMPLER(colorTex, colorTex, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
-   SHADER_SAMPLER(colorGammaTex, colorGammaTex, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
-   SHADER_SAMPLER(edgesTex2D, edgesTex2D, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
-   SHADER_SAMPLER(blendTex2D, blendTex2D, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
-   SHADER_SAMPLER(areaTex2D, areaTex2D, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
-   SHADER_SAMPLER(searchTex2D, searchTex2D, SA_CLAMP, SA_CLAMP, SF_NONE), // Note that this should have a w address mode set to clamp as well
+   SHADER_SAMPLER(edgesTex, edgesTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR),
+   SHADER_SAMPLER(blendTex, blendTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR),
+   SHADER_SAMPLER(areaTex, areaTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR),
+   SHADER_SAMPLER(searchTex, searchTex2D, SA_CLAMP, SA_CLAMP, SF_NONE),
    SHADER_UNIFORM_COUNT,
    SHADER_UNIFORM_INVALID
 };

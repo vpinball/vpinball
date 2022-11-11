@@ -1194,7 +1194,9 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 
    //
 
+#ifndef ENABLE_SDL
    if (m_FXAA == Quality_SMAA)
+#endif
       UploadAndSetSMAATextures();
 
    // Setup a defined initial render state
@@ -1281,22 +1283,17 @@ bool RenderDevice::LoadShaders()
       return false;
    }
 
-   // Now that shaders are compiled, set static textures for SMAA postprocessing shader
-   if (m_FXAA == Quality_SMAA)
-   {
-#ifdef ENABLE_SDL
-      FBShader->SetTexture(SHADER_areaTex2D, m_SMAAareaTexture);
-      FBShader->SetTexture(SHADER_searchTex2D, m_SMAAsearchTexture);
-#else
-      // FIXME Shader rely on texture to be named with a leading texture unit. SetTexture will fail otherwise...
-      CHECKD3D(FBShader->Core()->SetTexture("areaTex2D", m_SMAAareaTexture->GetCoreTexture()));
-      CHECKD3D(FBShader->Core()->SetTexture("searchTex2D", m_SMAAsearchTexture->GetCoreTexture()));
-#endif
-   }
-
    // Initialize uniform to default value
+   basicShader->SetVector(SHADER_w_h_height, (float)(1.0 / (double)GetMSAABackBufferTexture()->GetWidth()), (float)(1.0 / (double)GetMSAABackBufferTexture()->GetHeight()), 0.0f, 0.0f);
    basicShader->SetFlasherColorAlpha(vec4(1.0f, 1.0f, 1.0f, 1.0f)); // No tinting
    DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f); // No alpha clipping
+#ifndef ENABLE_SDL
+   if (m_FXAA == Quality_SMAA)
+#endif
+   {
+      FBShader->SetTexture(SHADER_areaTex, m_SMAAareaTexture);
+      FBShader->SetTexture(SHADER_searchTex, m_SMAAsearchTexture);
+   }
 
    return true;
 }
@@ -1405,16 +1402,8 @@ void RenderDevice::FreeShader()
       FBShader->SetTextureNull(SHADER_tex_depth);
       FBShader->SetTextureNull(SHADER_tex_color_lut);
       FBShader->SetTextureNull(SHADER_tex_ao_dither);
-
-      // FIXME Shader rely on texture to be named with a leading texture unit. SetTextureNull will fail otherwise...
-#ifdef ENABLE_SDL
-      FBShader->SetTextureNull(SHADER_areaTex2D);
-      FBShader->SetTextureNull(SHADER_searchTex2D);
-#else
-      CHECKD3D(FBShader->Core()->SetTexture("areaTex2D", nullptr));
-      CHECKD3D(FBShader->Core()->SetTexture("searchTex2D", nullptr));
-#endif
-
+      FBShader->SetTextureNull(SHADER_areaTex);
+      FBShader->SetTextureNull(SHADER_searchTex);
       delete FBShader;
       FBShader = nullptr;
    }
@@ -1653,11 +1642,12 @@ void RenderDevice::Flip(const bool vsync)
 
 void RenderDevice::UploadAndSetSMAATextures()
 {
-#ifdef ENABLE_SDL
    BaseTexture* searchBaseTex = new BaseTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, BaseTexture::BW);
    memcpy(searchBaseTex->data(), searchTexBytes, SEARCHTEX_SIZE);
    m_SMAAsearchTexture = new Sampler(this, searchBaseTex, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE);
 
+   // FIXME use standard BaseTexture / Sampler code instead
+#ifdef ENABLE_SDL
    // Update bind cache
    auto tex_unit = m_samplerBindings.back();
    if (tex_unit->sampler != nullptr)
@@ -1691,34 +1681,10 @@ void RenderDevice::UploadAndSetSMAATextures()
       }
    }
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, (void*)searchTexBytes);
+   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, (void*)areaTexBytes);
    glGenerateMipmap(GL_TEXTURE_2D); // Generate mip-maps, when using TexStorage will generate same amount as specified in TexStorage, otherwise good idea to limit by GL_TEXTURE_MAX_LEVEL
    m_SMAAareaTexture = new Sampler(this, glTexture, true, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR);
 #else
-   // FIXME use standard BaseTexture / Sampler code instead
-   {
-      IDirect3DTexture9 *sysTex, *tex;
-      HRESULT hr = m_pD3DDevice->CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 0, 0, (D3DFORMAT)colorFormat::GREY8, (D3DPOOL)memoryPool::SYSTEM, &sysTex, nullptr);
-      if (FAILED(hr))
-         ReportError("Fatal Error: unable to create texture!", hr, __FILE__, __LINE__);
-      hr = m_pD3DDevice->CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 0, 0, (D3DFORMAT)colorFormat::GREY8, (D3DPOOL)memoryPool::DEFAULT, &tex, nullptr);
-      if (FAILED(hr))
-         ReportError("Fatal Error: out of VRAM!", hr, __FILE__, __LINE__);
-
-      //!! use D3DXLoadSurfaceFromMemory
-      D3DLOCKED_RECT locked;
-      CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
-      void* const pdest = locked.pBits;
-      const void* const psrc = searchTexBytes;
-      memcpy(pdest, psrc, SEARCHTEX_SIZE);
-      CHECKD3D(sysTex->UnlockRect(0));
-
-      CHECKD3D(m_pD3DDevice->UpdateTexture(sysTex, tex));
-      SAFE_RELEASE(sysTex);
-
-      m_SMAAsearchTexture = new Sampler(this, tex, true, true);
-   }
-   //
    {
       IDirect3DTexture9 *sysTex, *tex;
       HRESULT hr = m_pD3DDevice->CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 0, 0, (D3DFORMAT)colorFormat::GREYA8, (D3DPOOL)memoryPool::SYSTEM, &sysTex, nullptr);
@@ -2359,22 +2325,20 @@ void RenderDevice::DrawGaussianBlur(Sampler* source, RenderTarget* tmp, RenderTa
    SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
    SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
    {
-      const vec4 fb_inv_resolution_05((float)(1.0 / (double)source->GetWidth()), (float)(1.0 / (double)source->GetHeight()), 1.0f, 1.0f);
       FBShader->SetTextureNull(SHADER_tex_fb_filtered);
       tmp->Activate(true); // switch to temporary output buffer for horizontal phase of gaussian blur
       FBShader->SetTexture(SHADER_tex_fb_filtered, source);
-      FBShader->SetVector(SHADER_w_h_height, &fb_inv_resolution_05);
+      FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / source->GetWidth()), (float)(1.0 / source->GetHeight()), 1.0f, 1.0f);
       FBShader->SetTechnique(tech_h);
       FBShader->Begin();
       DrawFullscreenTexturedQuad();
       FBShader->End();
    }
    {
-      const vec4 fb_inv_resolution_05((float)(1.0 / (double)tmp->GetColorSampler()->GetWidth()), (float)(1.0 / (double)tmp->GetColorSampler()->GetHeight()), 1.0f, 1.0f);
       FBShader->SetTextureNull(SHADER_tex_fb_filtered);
       dest->Activate(true); // switch to output buffer for vertical phase of gaussian blur
       FBShader->SetTexture(SHADER_tex_fb_filtered, tmp->GetColorSampler());
-      FBShader->SetVector(SHADER_w_h_height, &fb_inv_resolution_05);
+      FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / tmp->GetColorSampler()->GetWidth()), (float)(1.0 / tmp->GetColorSampler()->GetHeight()), 1.0f, 1.0f);
       FBShader->SetTechnique(tech_v);
       FBShader->Begin();
       DrawFullscreenTexturedQuad();
