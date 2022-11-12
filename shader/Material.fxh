@@ -1,6 +1,7 @@
 //
 // Lights
 //
+#pragma warning(once : 3571) // only output 'pow(f, e) will not work for negative f, use abs(f) or conditionally handle negative values if you expect them' once
 
 #define NUM_LIGHTS 2
 
