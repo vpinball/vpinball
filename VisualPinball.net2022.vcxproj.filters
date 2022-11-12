@@ -667,50 +667,44 @@
     <None Include="res\lightSeqTable.vpx">
       <Filter>res</Filter>
     </None>
-    <None Include="glshader\BasicShader.glfx">
-      <Filter>shaders-gl</Filter>
+    <None Include="shader\BasicShader.glfx">
+      <Filter>shaders</Filter>
     </None>
-    <None Include="glshader\BallShader.glfx">
-      <Filter>shaders-gl</Filter>
+    <None Include="shader\BallShader.glfx">
+      <Filter>shaders</Filter>
     </None>
-    <None Include="glshader\DMDShader.glfx">
-      <Filter>shaders-gl</Filter>
+    <None Include="shader\DMDShader.glfx">
+      <Filter>shaders</Filter>
     </None>
-    <None Include="glshader\DMDShaderVR.glfx">
-      <Filter>shaders-gl</Filter>
+    <None Include="shader\DMDShaderVR.glfx">
+      <Filter>shaders</Filter>
     </None>
-    <None Include="glshader\FBShader.glfx">
-      <Filter>shaders-gl</Filter>
+    <None Include="shader\FBShader.glfx">
+      <Filter>shaders</Filter>
     </None>
-    <None Include="glshader\FlasherShader.glfx">
-      <Filter>shaders-gl</Filter>
+    <None Include="shader\FlasherShader.glfx">
+      <Filter>shaders</Filter>
     </None>
-    <None Include="glshader\FXAAStereoAO.fxh">
-      <Filter>shaders-gl</Filter>
+    <None Include="shader\FXAAStereoAO_GL.fxh">
+      <Filter>shaders</Filter>
     </None>
-    <None Include="glshader\StereoShader.glfx">
-      <Filter>shaders-gl</Filter>
+    <None Include="shader\StereoShader.glfx">
+      <Filter>shaders</Filter>
     </None>
-    <None Include="glshader\SSR.fxh">
-      <Filter>shaders-gl</Filter>
+    <None Include="shader\SSR_GL.fxh">
+      <Filter>shaders</Filter>
     </None>
-    <None Include="glshader\SMAA.glfx">
-      <Filter>shaders-gl</Filter>
+    <None Include="shader\Material_GL.fxh">
+      <Filter>shaders</Filter>
     </None>
-    <None Include="glshader\Material.fxh">
-      <Filter>shaders-gl</Filter>
+    <None Include="shader\LightShader.glfx">
+      <Filter>shaders</Filter>
     </None>
-    <None Include="glshader\LightShader.glfx">
-      <Filter>shaders-gl</Filter>
+    <None Include="shader\SMAA.glfx">
+      <Filter>shaders</Filter>
     </None>
-    <None Include="glshader\hlsl_glsl.fxh">
-      <Filter>shaders-gl</Filter>
-    </None>
-    <None Include="glshader\Helpers.fxh">
-      <Filter>shaders-gl</Filter>
-    </None>
-    <None Include="glshader\SMAA.hlsl">
-      <Filter>shaders-gl</Filter>
+    <None Include="shader\SMAA.fxh">
+      <Filter>shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -746,9 +740,6 @@
     </Filter>
     <Filter Include="imgui\implot">
       <UniqueIdentifier>{fc16eece-2096-4e44-bad4-380f77d82bef}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="shaders-gl">
-      <UniqueIdentifier>{fa46dc63-2eb4-4403-99cd-b3d89430515d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1601,6 +1592,9 @@
       <Filter>shaders</Filter>
     </FxCompile>
     <FxCompile Include="shader\ClassicLightShader.hlsl">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\SMAA.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
   </ItemGroup>

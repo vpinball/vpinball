@@ -308,7 +308,9 @@
     <PostBuildEvent>
       <Message>Copies EXE and DLLs to production directory.</Message>
       <Command>%40echo off
-copy "$(MSBuildProjectDirectory)\glshader\*.*" "$(TargetDir)glshader"
+if not exist "$(TargetDir)shader" mkdir "$(TargetDir)shader"
+copy "$(MSBuildProjectDirectory)\shader\*.fxh" "$(TargetDir)shader"
+copy "$(MSBuildProjectDirectory)\shader\*.glfx" "$(TargetDir)shader"
 if ".%25VPIN_DIR%25" == "." set VPIN_DIR=C:\Games\Visual PinballX
 echo VPIN_DIR="%25VPIN_DIR%25"
 if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
@@ -422,7 +424,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <PostBuildEvent>
       <Message>Copies EXE and DLLs to production directory.</Message>
       <Command>%40echo off
-copy "$(MSBuildProjectDirectory)\glshader\*.*" "$(TargetDir)glshader"
+if not exist "$(TargetDir)shader" mkdir "$(TargetDir)shader"
+copy "$(MSBuildProjectDirectory)\shader\*.fxh" "$(TargetDir)shader"
+copy "$(MSBuildProjectDirectory)\shader\*.glfx" "$(TargetDir)shader"
 if ".%25VPIN_DIR%25" == "." set VPIN_DIR=C:\Games\Visual PinballX
 echo VPIN_DIR="%25VPIN_DIR%25"
 if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
@@ -553,7 +557,9 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"</Command>
     <PostBuildEvent>
       <Message>Copies EXE and DLLs to production directory.</Message>
       <Command>%40echo off
-copy "$(MSBuildProjectDirectory)\glshader\*.*" "$(TargetDir)glshader"
+if not exist "$(TargetDir)shader" mkdir "$(TargetDir)shader"
+copy "$(MSBuildProjectDirectory)\shader\*.fxh" "$(TargetDir)shader"
+copy "$(MSBuildProjectDirectory)\shader\*.glfx" "$(TargetDir)shader"
 if ".%25VPIN_DIR%25" == "." set VPIN_DIR=C:\Games\Visual PinballX
 echo VPIN_DIR="%25VPIN_DIR%25"
 if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
@@ -686,7 +692,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <PostBuildEvent>
       <Message>Copies EXE and DLLs to production directory.</Message>
       <Command>%40echo off
-copy "$(MSBuildProjectDirectory)\glshader\*.*" "$(TargetDir)glshader"
+if not exist "$(TargetDir)shader" mkdir "$(TargetDir)shader"
+copy "$(MSBuildProjectDirectory)\shader\*.fxh" "$(TargetDir)shader"
+copy "$(MSBuildProjectDirectory)\shader\*.glfx" "$(TargetDir)shader"
 if ".%25VPIN_DIR%25" == "." set VPIN_DIR=C:\Games\Visual PinballX
 echo VPIN_DIR="%25VPIN_DIR%25"
 if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
@@ -942,21 +950,19 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="glshader\SMAA.hlsl" />
-    <None Include="glshader\BallShader.glfx" />
-    <None Include="glshader\BasicShader.glfx" />
-    <None Include="glshader\DMDShader.glfx" />
-    <None Include="glshader\DMDShaderVR.glfx" />
-    <None Include="glshader\FBShader.glfx" />
-    <None Include="glshader\FlasherShader.glfx" />
-    <None Include="glshader\FXAAStereoAO.fxh" />
-    <None Include="glshader\Helpers.fxh" />
-    <None Include="glshader\hlsl_glsl.fxh" />
-    <None Include="glshader\LightShader.glfx" />
-    <None Include="glshader\Material.fxh" />
-    <None Include="glshader\SMAA.glfx" />
-    <None Include="glshader\SSR.fxh" />
-    <None Include="glshader\StereoShader.glfx" />
+    <None Include="shader\SMAA.fxh" />
+    <None Include="shader\BallShader.glfx" />
+    <None Include="shader\BasicShader.glfx" />
+    <None Include="shader\DMDShader.glfx" />
+    <None Include="shader\DMDShaderVR.glfx" />
+    <None Include="shader\FBShader.glfx" />
+    <None Include="shader\FlasherShader.glfx" />
+    <None Include="shader\FXAAStereoAO_GL.fxh" />
+    <None Include="shader\LightShader.glfx" />
+    <None Include="shader\Material_GL.fxh" />
+    <None Include="shader\SMAA.glfx" />
+    <None Include="shader\SSR_GL.fxh" />
+    <None Include="shader\StereoShader.glfx" />
     <None Include="res\ball.rgs" />
     <None Include="res\blankTable.vpx" />
     <None Include="res\bumper.rgs" />

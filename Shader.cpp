@@ -1065,7 +1065,7 @@ void Shader::LOG(const int level, const string& fileNameRoot, const string& mess
 bla:
          logFile->open(name);
          if (!logFile->is_open()) {
-            const wstring wzMkPath = g_pvp->m_wzMyPath + L"glshader";
+            const wstring wzMkPath = g_pvp->m_wzMyPath + L"shader";
             if (_wmkdir(wzMkPath.c_str()) != 0 || _wmkdir((wzMkPath + L"\\log").c_str()) != 0)
             {
                 char msg[512];
