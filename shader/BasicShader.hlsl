@@ -313,8 +313,8 @@ float4 ps_main(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform b
 
    [branch] if (doRefractions)
    {
-      // alpha channel is the transparency of the object, base color (diffuse) is the tint (even if alpha is 0)
-      result.rgb = lerp(cBase_Alpha.rgb * compute_refraction(IN.worldPos.xyz, N, V), result.rgb, cBase_Alpha.a);
+      // alpha channel is the transparency of the object, tinting will be supported (even if alpha is 0)
+      result.rgb = lerp(compute_refraction(IN.worldPos.xyz, N, V), result.rgb, cBase_Alpha.a);
       result.a = 1.0;
    }
 
@@ -363,8 +363,8 @@ float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform
 
    [branch] if (doRefractions)
    {
-      // Texture must use separate channels, with alpha channel for transparency channel, rgb for tint (even if alpha is 0, for example for colored plastic)
-      result.rgb = lerp(diffuse * compute_refraction(IN.worldPos, N, V), result.rgb, result.a);
+      // alpha channel is the transparency of the object, tinting will be supported (even if alpha is 0) but not from main texture since these are different informations (reflected/refracted color)
+      result.rgb = lerp(compute_refraction(IN.worldPos, N, V), result.rgb, result.a);
       result.a = 1.0;
    }
 
