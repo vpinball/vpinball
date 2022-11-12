@@ -40,14 +40,16 @@
 //vec2 pow(vec2 b, float e) {return pow(b,vec2(e));}
 
 #define texNoLod(tex, pos) textureLod(tex, pos, 0)
-
+#define BRANCH 
 
 //**************************************************************************
 // HLSL defines to support common shader code
 #else
 #define HLSL
 #pragma warning(once : 3571) // only output 'pow(f, e) will not work for negative f, use abs(f) or conditionally handle negative values if you expect them' once
+
 #define texNoLod(tex, pos) tex2Dlod(tex, float4(pos, 0., 0.))
+#define BRANCH [branch]
 
 #endif
 
