@@ -919,9 +919,9 @@ void Player::ToggleFPS()
       }
       m_infoMode = (InfoMode)(m_infoMode + 1);
       if (m_infoMode == IF_STATIC_ONLY && m_pin3d.m_pddsStatic == nullptr)
-         m_infoMode = (InfoMode)(m_infoMode + 1);
+         continue;
       if (m_infoMode == IF_AO_ONLY && m_pin3d.m_pddsAOBackBuffer == nullptr)
-         m_infoMode = (InfoMode)(m_infoMode + 1);
+         continue;
       if (m_infoMode == IF_INVALID)
          m_infoMode = IF_NONE;
       if (m_infoMode != IF_RENDER_PROBES)
@@ -1465,7 +1465,9 @@ HRESULT Player::Init()
 
    // colordepth & refreshrate are only defined if fullscreen is true.
    // width and height may be modified during initialization (for example for VR, they are adapted to the headset resolution)
-   const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, vsync, aaFactor, m_stereo3D, FXAA, !!m_sharpen, !m_disableAO, ss_refl);
+   const bool dynamicAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1));
+   const bool useAO = !m_disableAO && (m_ptable->m_AOScale > 0.f) && (dynamicAO  || !m_dynamicMode);
+   const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, vsync, aaFactor, m_stereo3D, FXAA, !!m_sharpen, useAO, ss_refl);
    if (hr != S_OK)
    {
       char szFoo[64];
@@ -2133,6 +2135,12 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
       m_pin3d.m_pd3dPrimaryDevice->EndScene();
+
+      // Delete buffers: we don't need them anymore
+      delete m_pin3d.m_pddsAOBackBuffer;
+      delete m_pin3d.m_pddsAOBackTmpBuffer;
+      m_pin3d.m_pddsAOBackBuffer = nullptr;
+      m_pin3d.m_pddsAOBackTmpBuffer = nullptr;
    }
 
    g_pvp->ProfileLog("AO/Static PreRender End"s);
