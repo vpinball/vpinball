@@ -49,6 +49,8 @@ class BiffReader final
 public:
    BiffReader(IStream *pistream, ILoadable *piloadable, void *ppassdata, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey);
 
+   int GetBytesInRecordRemaining() const { return m_bytesinrecordremaining; }
+
    HRESULT GetIntNoHash(int &value);
    HRESULT GetInt(void * const value);
    HRESULT GetInt(int &value);
