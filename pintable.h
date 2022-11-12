@@ -319,6 +319,7 @@ public:
    PinTable();
    virtual ~PinTable();
 
+   void ClearForOverwrite() final;
    void InitBuiltinTable(const size_t tableId);
    void InitTablePostLoad();
    void RemoveInvalidReferences();

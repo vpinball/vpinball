@@ -1356,6 +1356,13 @@ void PinTable::UpdatePropertyImageList()
     g_pvp->GetPropertiesDocker()->GetContainProperties()->GetPropertyDialog()->UpdateTabs(m_vmultisel);
 }
 
+void PinTable::ClearForOverwrite()
+{
+   for (size_t i = 0; i < m_vrenderprobe.size(); i++)
+      delete m_vrenderprobe[i];
+   m_vrenderprobe.clear();
+}
+
 void PinTable::InitBuiltinTable(const size_t tableId)
 {
    HRSRC hrsrc;
