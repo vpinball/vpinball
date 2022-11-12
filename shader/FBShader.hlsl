@@ -1073,4 +1073,4 @@ technique BilateralSharp_CAS
 
 //
 
-#include "SMAA.fxh"
+#include "SMAA.hlsl"

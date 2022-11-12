@@ -1252,7 +1252,7 @@ bool RenderDevice::LoadShaders()
    }
    Shader::shaderPath = string(glShaderPath);
    Shader::shaderPath = Shader::shaderPath.substr(0, Shader::shaderPath.find_last_of("\\/"));
-   Shader::shaderPath.append("\\glshader\\");
+   Shader::shaderPath.append("\\shader\\");
    shaderCompilationOkay = basicShader->Load("BasicShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
    shaderCompilationOkay = DMDShader->Load(m_stereo3D == STEREO_VR ? "DMDShaderVR.glfx"s : "DMDShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
    shaderCompilationOkay = FBShader->Load("FBShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
