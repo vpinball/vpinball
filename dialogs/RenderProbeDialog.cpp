@@ -97,6 +97,10 @@ INT_PTR RenderProbeDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          // prohibit editing core playfield reflection probe name (or creating a duplicate)
          if (pb->GetName() == PLAYFIELD_REFLECTION_RENDERPROBE_NAME || new_name == PLAYFIELD_REFLECTION_RENDERPROBE_NAME)
             return FALSE;
+         pb->SetName(new_name);
+         lvitem.mask = LVIF_TEXT;
+         lvitem.pszText = pinfo->item.pszText;
+         ListView_SetItem(hListHwnd, &lvitem);
          SaveProbeFromUI(pb);
          LoadProbeToUI(pb);
          return TRUE;
