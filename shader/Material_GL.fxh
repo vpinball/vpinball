@@ -1,18 +1,35 @@
 //
 // Lights
 //
+#pragma warning(once : 3571) // only output 'pow(f, e) will not work for negative f, use abs(f) or conditionally handle negative values if you expect them' once
 
 #define NUM_LIGHTS 2
 
 #define iLightPointNum NUM_LIGHTS
 #define iLightPointBallsNum (NUM_LIGHTS+NUM_BALL_LIGHTS)
 
+#ifdef GLSL
 #if iLightPointBallsNum == iLightPointNum // basic shader
 uniform vec4 lightPos[iLightPointNum];
 uniform vec4 lightEmission[iLightPointNum];
 #else
 uniform vec4 lightPos[iLightPointBallsNum];
 uniform vec4 lightEmission[iLightPointBallsNum];
+#endif
+
+#else // HLSL
+struct CLight 
+{ 
+   float3 vPos; 
+   float3 vEmission;
+};
+#if iLightPointBallsNum == iLightPointNum // basic shader
+const float4 packedLights[3]; //!! 4x3 = NUM_LIGHTSx6
+static const CLight lights[iLightPointBallsNum] = (CLight[iLightPointBallsNum])packedLights;
+#else                                     // ball shader
+const float4 packedLights[15]; //!! 4x15 = (NUM_LIGHTS+NUM_BALL_LIGHTS)x6
+static const CLight lights[iLightPointBallsNum] = (CLight[iLightPointBallsNum])packedLights;
+#endif
 #endif
 
 uniform float4 cAmbient_LightRange; //!! remove completely, just rely on envmap/IBL?
@@ -59,15 +76,15 @@ float3 FresnelSchlick(const float3 spec, const float LdotH, const float edge)
 float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const float3 diffuse, const float3 glossy, const float edge, const float glossyPower, const int i, const bool is_metal) 
 { 
    // early out here or maybe we can add more material elements without lighting later?
-   if (fDisableLighting_top_below.x == 1.0)
+   BRANCH if (fDisableLighting_top_below.x == 1.0)
       return diffuse;
 
    //!! do in vertex shader?! or completely before?!
 #if enable_VR
-   const float3 lightDir = ((matView * vec4(lightPos[i].xyz, 1.0)).xyz - pos) / fSceneScale; // In VR we need to scale to the overall scene scaling
+   const float3 lightDir = ((matView * float4(lightPos[i].xyz, 1.0)).xyz - pos) / fSceneScale; // In VR we need to scale to the overall scene scaling
 #else
    //const float3 lightDir = mul_w1(lightPos[i].xyz, matView) - pos;
-   const float3 lightDir = (matView * vec4(lightPos[i].xyz, 1.0)).xyz - pos;
+   const float3 lightDir = (matView * float4(lightPos[i].xyz, 1.0)).xyz - pos;
 #endif
    const float3 L = normalize(lightDir);
    const float NdotL = dot(N, L);
@@ -78,7 +95,7 @@ float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const floa
       Out = diffuse * ((NdotL + Roughness_WrapL_Edge_Thickness.y) / sqr(1.0+Roughness_WrapL_Edge_Thickness.y));
 
    // add glossy component (modified ashikhmin/blinn bastard), not fully energy conserving, but good enough
-   if (NdotL > 0.0)
+   BRANCH if (NdotL > 0.0)
    {
 	 const float3 H = normalize(L + V); // half vector
 	 const float NdotH = dot(N, H);
@@ -113,7 +130,7 @@ float3 DoEnvmapDiffuse(const float3 N, const float3 diffuse)
 		0.5 + atan2_approx_div2PI(N.y, N.x),
 		acos_approx_divPI(N.z));
 
-   const float3 env = textureLod(tex_diffuse_env, uv, 0).xyz;
+   const float3 env = texNoLod(tex_diffuse_env, uv).xyz;
    return diffuse * env*fenvEmissionScale_TexWidth.x;
 }
 
@@ -130,7 +147,7 @@ float3 DoEnvmapGlossy(const float3 N, const float3 V, const float2 Ruv, const fl
 float3 DoEnvmap2ndLayer(const float3 color1stLayer, const float3 pos, const float3 N, const float3 V, const float NdotV, const float2 Ruv, const float3 specular)
 {
    const float3 w = FresnelSchlick(specular, NdotV, Roughness_WrapL_Edge_Thickness.z); //!! ?
-   const float3 env = textureLod(tex_env, Ruv, 0.).xyz;
+   const float3 env = texNoLod(tex_env, Ruv).xyz;
    return lerp(color1stLayer, env*fenvEmissionScale_TexWidth.x, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular
 }
 
@@ -161,16 +178,16 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
    float3 color = float3(0.0, 0.0, 0.0);
 
    // 1st Layer
-   if ((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
+   BRANCH if ((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
    {
       for (int i = 0; i < iLightPointNum; i++)
          color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal); // no clearcoat needed as only pointlights so far
    }
 
-   if (!is_metal && (diffuseMax > 0.0))
+   BRANCH if (!is_metal && (diffuseMax > 0.0))
       color += DoEnvmapDiffuse(normalize((float4(N,0.0) * matView).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(vec4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
 
-   if ((glossyMax > 0.0) || (specularMax > 0.0))
+   BRANCH if ((glossyMax > 0.0) || (specularMax > 0.0))
    {
 	   float3 R = (2.0*NdotV)*N - V; // reflect(-V,n);
 	   R = normalize((float4(R,0.0) * matView).xyz); // trafo back to world for lookup into world space envmap // actually: mul(vec4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
