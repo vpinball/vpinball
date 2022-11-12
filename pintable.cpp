@@ -3255,10 +3255,22 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
 
    for (size_t i = 0; i < m_vrenderprobe.size(); i++)
    {
-      // Multiple time the same tag marking the presence of a renderprobe block. Allow for backward compatibility
-      bw.WriteTag(FID(RPRB));
-      m_vrenderprobe[i]->SaveData(pstm, hcrypthash, false);
-      bw.WriteTag(FID(ENDB));
+      // Save each render probe as a data blob inside the main gamedata.
+      // This allows backward compatibility since the block will be blindly discarded on older versions, still hashing it.
+      const int record_size = m_vrenderprobe[i]->GetSaveSize() + 2 *sizeof(int);
+      HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
+      CComPtr<IStream> spStream;
+      HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
+      m_vrenderprobe[i]->SaveData(spStream, NULL, false);
+      BiffWriter sub_bw(spStream, NULL);
+      sub_bw.WriteTag(FID(ENDB));
+      LPVOID pData = ::GlobalLock(hMem);
+      ULONG writ = 0;
+      int id = FID(RPRB);
+      bw.WriteRecordSize(sizeof(int) + record_size);
+      bw.WriteBytes(&id, sizeof(int), &writ);
+      bw.WriteBytes(pData, record_size, &writ);
+      ::GlobalUnlock(hMem);
    }
 
    // HACK!!!! - Don't save special values when copying for undo.  For instance, don't reset the code.
@@ -3551,13 +3563,13 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
             // search for duplicate names, delete dupes
             if (m_vimage.size() > 0)
-               for (size_t i = 0; i < m_vimage.size()-1; ++i)
-                   for (size_t i2 = i+1; i2 < m_vimage.size(); ++i2)
-                       if (m_vimage[i]->m_szName == m_vimage[i2]->m_szName && m_vimage[i]->m_szPath == m_vimage[i2]->m_szPath)
-                       {
-                           m_vimage.erase(m_vimage.begin()+i2);
-                           --i2;
-                       }
+               for (size_t i = 0; i < m_vimage.size() - 1; ++i)
+                  for (size_t i2 = i+1; i2 < m_vimage.size(); ++i2)
+                     if (m_vimage[i]->m_szName == m_vimage[i2]->m_szName && m_vimage[i]->m_szPath == m_vimage[i2]->m_szPath)
+                     {
+                        m_vimage.erase(m_vimage.begin()+i2);
+                        --i2;
+                     }
 
             ProfileLog("Image"s);
 
@@ -4040,8 +4052,15 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    }
    case FID(RPRB):
    {
+      const int record_size = pbr->GetBytesInRecordRemaining();
+      HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
+      LPVOID pData = ::GlobalLock(hMem);
+      pbr->GetStruct(pData, record_size);
+      ::GlobalUnlock(hMem);
       RenderProbe *rpb = new RenderProbe();
-      if (rpb->LoadData(pbr->m_pistream, this, pbr->m_version, pbr->m_hcrypthash, pbr->m_hcryptkey) != S_OK)
+      CComPtr<IStream> spStream;
+      HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
+      if (rpb->LoadData(spStream, this, pbr->m_version, NULL, NULL) != S_OK)
       {
          assert(!"Invalid binary image file");
          return false;

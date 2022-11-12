@@ -12,6 +12,18 @@ RenderProbe::~RenderProbe()
    assert((m_staticRT == nullptr) && (m_dynamicRT == nullptr));
 }
 
+int RenderProbe::GetSaveSize() const
+{
+   int size = 0;
+   size += 2*sizeof(int) + sizeof(int); // TYPE
+   size += 2 * sizeof(int) + sizeof(int) + (int)m_name.length(); // NAME
+   size += 2 * sizeof(int) + sizeof(int); // RBAS
+   size += 2 * sizeof(int) + sizeof(int); // RCLE
+   size += 2 * sizeof(int) + sizeof(vec4); // RPLA
+   size += 2 * sizeof(int) + sizeof(int); // RMOD
+   return size;
+}
+
 HRESULT RenderProbe::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
 {
    BiffWriter bw(pstm, hcrypthash);
@@ -21,6 +33,7 @@ HRESULT RenderProbe::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool b
    bw.WriteInt(FID(RCLE), m_roughness_clear);
    bw.WriteStruct(FID(RPLA), (void*)&m_reflection_plane, sizeof(vec4));
    bw.WriteInt(FID(RMOD), m_reflection_mode);
+   bw.WriteTag(FID(ENDB));
    return S_OK;
 }
 
