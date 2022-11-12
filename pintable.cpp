@@ -3540,14 +3540,15 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                 }
                 else
                 {
-                   failed_or_resized |= (m_vimage[i]->m_realWidth != m_vimage[i]->m_width) || (m_vimage[i]->m_realHeight != m_vimage[i]->m_height);
+                   //failed_or_resized |= (m_vimage[i]->m_realWidth > m_vimage[i]->m_width) || (m_vimage[i]->m_realHeight > m_vimage[i]->m_height); //!! do not warn on resize, as original image file/binary blob is always loaded into mem! (otherwise table load failure is triggered)
                 }
+
             if (failed_or_resized)
             {
 #ifdef _WIN64
-               m_vpinball->MessageBox("WARNING ! WARNING ! WARNING ! WARNING!\n\nAll images were not loaded for an unknown reason.\n\nDO NOT SAVE THIS FILE OR YOU WILL LOOSE DATA", "Load Error", 0);
+               m_vpinball->MessageBox("WARNING ! WARNING ! WARNING ! WARNING !\n\nNot all images were loaded for an unknown reason.\n\nDO NOT SAVE THIS FILE OR YOU MAY LOOSE DATA", "Load Error", 0);
 #else
-               m_vpinball->MessageBox("WARNING ! WARNING ! WARNING ! WARNING!\n\nAll images were not loaded likely due to low memory.\nPlease use the 64bit version of the application.\n\nDO NOT SAVE THIS FILE OR YOU WILL LOOSE DATA", "Load Error", 0);
+               m_vpinball->MessageBox("WARNING ! WARNING ! WARNING ! WARNING !\n\nNot all images were loaded, likely due to low memory.\nPlease use the 64-bit version of the application.\n\nDO NOT SAVE THIS FILE OR YOU MAY LOOSE DATA", "Load Error", 0);
 #endif
             }
 
@@ -7003,8 +7004,10 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
 
    if (ppi->m_realWidth == ppi->m_width && ppi->m_realHeight == ppi->m_height)
       _snprintf_s(sizeString, MAXTOKEN - 1, "%ix%i", ppi->m_realWidth, ppi->m_realHeight);
-   else
+   else if (ppi->m_realWidth > ppi->m_width || ppi->m_realHeight > ppi->m_height)
       _snprintf_s(sizeString, MAXTOKEN - 1, "%ix%i downsized to %ix%i", ppi->m_realWidth, ppi->m_realHeight, ppi->m_width, ppi->m_height);
+   else
+      _snprintf_s(sizeString, MAXTOKEN - 1, "%ix%i upscaled to %ix%i", ppi->m_realWidth, ppi->m_realHeight, ppi->m_width, ppi->m_height);
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
    ListView_SetItemText(hwndListView, index, 1, (LPSTR)ppi->m_szPath.c_str());

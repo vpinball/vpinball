@@ -679,7 +679,11 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
    case FID(JPEG):
    {
       m_ppb = new PinBinary();
-      m_ppb->LoadFromStream(pbr->m_pistream, pbr->m_version);
+      if (m_ppb->LoadFromStream(pbr->m_pistream, pbr->m_version) != S_OK)
+      {
+         assert(!"Invalid binary image file");
+         return false;
+      }
       // m_ppb->m_szPath has the original filename
       // m_ppb->m_pdata() is the buffer
       // m_ppb->m_cdata() is the filesize
