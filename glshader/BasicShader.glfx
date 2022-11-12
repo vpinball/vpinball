@@ -427,8 +427,8 @@ void main() {
 
    if (doRefractions)
    {
-      // alpha channel is the transparency of the object, base color (diffuse) is the tint (even if alpha is 0)
-      color.rgb = lerp(cBase_Alpha.rgb * compute_refraction(worldPos.xyz, N, V), color.rgb, cBase_Alpha.a);
+      // alpha channel is the transparency of the object, tinting will be supported (even if alpha is 0)
+      color.rgb = lerp(compute_refraction(worldPos.xyz, N, V), color.rgb, cBase_Alpha.a);
       color.a = 1.0;
    }
 
@@ -484,7 +484,7 @@ void main() {
 
    if (doRefractions)
    {
-      // Texture must use separate channels, with alpha channel for transparency channel, rgb for tint (even if alpha is 0, for example for colored plastic)
+      // alpha channel is the transparency of the object, tinting will be supported (even if alpha is 0) but not from main texture since these are different informations (reflected/refracted color)
       color.rgb = lerp(diffuse * compute_refraction(worldPos, N, V), color.rgb, color.a);
       color.a = 1.0;
    }
