@@ -468,7 +468,7 @@ float4 ps_main_fb_blur_horiz13x13(const in VS_OUTPUT_2D IN) : COLOR
 {
    const float offset13x13[4] = { 0.0, 1.411764705882353, 3.2941176470588234, 5.176470588235294 }; //13
    const float weight13x13[4] = { 0.1964825501511404, 0.2969069646728344, 0.09447039785044732, 0.010381362401148057 }; //13
-   float3 result = tex2Dlod(tex_fb_filtered, float4(IN.tex0, 0., 0.)) * weight13x13[0];
+   float3 result = tex2Dlod(tex_fb_filtered, float4(IN.tex0, 0., 0.)).xyz * weight13x13[0];
    [unroll] for(int i = 1; i < 4; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(w_h_height.x*offset13x13[i],0.0), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(w_h_height.x*offset13x13[i],0.0), 0.,0.)).xyz)*weight13x13[i];
@@ -479,7 +479,7 @@ float4 ps_main_fb_blur_vert13x13(const in VS_OUTPUT_2D IN) : COLOR
 {
    const float offset13x13[4] = { 0.0, 1.411764705882353, 3.2941176470588234, 5.176470588235294 }; //13
    const float weight13x13[4] = { 0.1964825501511404, 0.2969069646728344, 0.09447039785044732, 0.010381362401148057 }; //13
-   float3 result = tex2Dlod(tex_fb_filtered, float4(IN.tex0, 0., 0.)) * weight13x13[0];
+   float3 result = tex2Dlod(tex_fb_filtered, float4(IN.tex0, 0., 0.)).xyz * weight13x13[0];
    [unroll] for(int i = 1; i < 4; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(0.0,w_h_height.y*offset13x13[i]), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(0.0,w_h_height.y*offset13x13[i]), 0.,0.)).xyz)*weight13x13[i];
