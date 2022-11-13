@@ -3438,10 +3438,6 @@ void Player::RenderDynamics()
    if (GetProfilingMode() == PF_ENABLED)
       m_pin3d.m_gpu_profiler.Timestamp(GTS_PlayfieldGraphics);
 
-   // Render the backglass
-   if (m_pin3d.m_backGlass != nullptr)
-      m_pin3d.m_backGlass->Render();
-
    if (m_dynamicMode)
    {
       UpdateBasicShaderMatrix();
@@ -3452,6 +3448,10 @@ void Player::RenderDynamics()
    DrawBalls();
 
    DrawDynamics();
+
+   // Render the backglass
+   if (m_pin3d.m_backGlass != nullptr)
+      m_pin3d.m_backGlass->Render();
 
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTextureNull(SHADER_tex_base_transmission); // need to reset the bulb light texture, as its used as render target for bloom again
 
@@ -4476,7 +4476,7 @@ void Player::PrepareVideoBuffersNormal()
       BYTE *const __restrict pdest = tex->data();
       for (size_t i = 0; i < (size_t)renderedRT->GetWidth() * renderedRT->GetHeight(); ++i)
       {
-         int y = i / renderedRT->GetWidth();
+         size_t y = i / renderedRT->GetWidth();
 #ifdef ENABLE_SDL
          y = renderedRT->GetHeight() - 1 - y;
 #endif

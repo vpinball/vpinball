@@ -266,12 +266,6 @@ void BackGlass::Render()
    m_pd3dDevice->DMDShader->SetVector(SHADER_vColor_Intensity, 1.0f, 1.0f, 1.0f, 1.0f);
 
    static constexpr float Verts[4 * 5] =
-      /* {
-       1.0f,  1.0f, 0.0f, 1.0f, 0.0f,
-      -1.0f,  1.0f, 0.0f, 0.0f, 0.0f,
-       1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
-      -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
-   };*/
       {
          1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
          0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
