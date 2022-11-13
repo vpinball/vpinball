@@ -673,6 +673,9 @@
     <None Include="shader\BallShader.glfx">
       <Filter>shaders</Filter>
     </None>
+    <None Include="shader\ClassicLightShader.glfx">
+      <Filter>shaders</Filter>
+    </None>
     <None Include="shader\DMDShader.glfx">
       <Filter>shaders</Filter>
     </None>
