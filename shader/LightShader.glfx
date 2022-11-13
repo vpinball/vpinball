@@ -1,6 +1,8 @@
 ////GLOBAL
 #version 400
 
+uniform bool disableVertexShader; // To support pretransformed vertices (used for backglass)
+
 ////DEFINES
 #include "Helpers.fxh"
 
@@ -44,7 +46,10 @@ out vec3 tablePos_gs;
 void main()
 {
    gl_Position = vec4(vPosition, 1.0);
-   tablePos_gs = vPosition;
+   if (disableVertexShader)
+	  tablePos_gs = float3(tc.x, tc.y, 0.0);
+   else
+	  tablePos_gs = vPosition;
 }
 
 ////gs_lightbulb_main
@@ -59,8 +64,13 @@ void main()
    {
       for (int i=0;i<gl_in.length();i++) {
          //Default
-         gl_Position = (matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position);
-         gl_Position.z = max(gl_Position.z, 0.00001); // clamp lights to near clip plane to avoid them being partially clipped
+         if (disableVertexShader)
+             gl_Position = gl_in[i].gl_Position;
+         else
+		 {
+			gl_Position = (matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position);
+			gl_Position.z = max(gl_Position.z, 0.00001); // clamp lights to near clip plane to avoid them being partially clipped
+		 }
          //Custom
          tablePos = tablePos_gs[i];
          //Default

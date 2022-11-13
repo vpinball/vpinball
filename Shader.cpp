@@ -193,10 +193,10 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_UNIFORM(SUT_Bool, do_dither),
    SHADER_UNIFORM(SUT_Bool, doReflections),
    SHADER_UNIFORM(SUT_Bool, doRefractions),
-   SHADER_UNIFORM(SUT_Bool, lightingOff), // DX9 only
-   SHADER_UNIFORM(SUT_Float2, imageBackglassMode), // OpenGL only
+   SHADER_UNIFORM(SUT_Bool, lightingOff),
    SHADER_UNIFORM(SUT_Bool, is_metal), // OpenGL only [managed by DirectX Effect framework on DirectX]
    SHADER_UNIFORM(SUT_Bool, doNormalMapping), // OpenGL only [managed by DirectX Effect framework on DirectX]
+   SHADER_UNIFORM(SUT_Bool, disableVertexShader), // OpenGL only to support pretransformed vertices
    // -- Samplers (a texture reference with sampling configuration) --
    // DMD shader
    SHADER_SAMPLER(tex_dmd, Texture0, SA_CLAMP, SA_CLAMP, SF_NONE), // DMD
@@ -534,11 +534,7 @@ void Shader::SetLightImageBackglassMode(const bool imageMode, const bool backgla
    {
       currentLightImageMode = (unsigned int)imageMode;
       currentLightBackglassMode = (unsigned int)backglassMode;
-#ifdef ENABLE_SDL
-      SetVector(SHADER_imageBackglassMode, imageMode ? 1.0f : 0.0f, backglassMode ? 1.0f : 0.0f, 0.0f, 0.0f);
-#else
       SetBool(SHADER_lightingOff, imageMode || backglassMode); // at the moment can be combined into a single bool due to what the shader actually does in the end
-#endif
    }
 }
 

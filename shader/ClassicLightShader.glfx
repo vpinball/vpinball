@@ -1,3 +1,27 @@
+// The header part is not needed since this file is included in basic shader
+
+////GLOBAL
+// #version 400
+
+////DEFINES
+// #include "Helpers.fxh"
+
+////VERTEX
+
+////GEOMETRY
+// #extension GL_ARB_viewport_array : enable
+// layout(triangles) in;
+// layout(triangle_strip, max_vertices = 3) out;
+
+// uniform bool disableVertexShader; // To support pretransformed vertices (used for backglass)
+
+// Use geometry invocations for stereo rendering
+// #if (eyes == 1)
+//    layout(invocations = 1) in;
+// #else
+//    layout(invocations = 2) in;
+// #endif
+
 ////FRAGMENT
 
 #define NUM_BALLS 8
@@ -6,7 +30,8 @@ uniform vec4 balls[NUM_BALLS];
 uniform vec4 lightColor_intensity;
 uniform vec4 lightColor2_falloff_power;
 uniform vec4 lightCenter_maxRange;
-uniform vec2 imageBackglassMode; // actually bool2
+
+const bool lightingOff;
 
 uniform sampler2D tex_light_color; // base texture
 
@@ -23,15 +48,27 @@ out vec3 normal_gs;
 
 void main()
 {
-   // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
-   float3 P = (matWorldView * vec4(vPosition,1.0)).xyz;
-   float3 N = normalize((matWorldViewInverseTranspose * vNormal).xyz);
+    if (disableVertexShader)
+    {
+        // Backglass mode: vertices are pretransformed, following DX9 format, leading to this somewhat messy processing
+        gl_Position = float4(vPosition, 1.0);
+        tex0_gs = float2(vNormal.y, vNormal.z);
+        tablePos_gs = float3(tc.x, tc.y, 0.0);
+        worldPos_gs = float3(tc.x, tc.y, 0.0);
+        normal_gs = float3(0.0, -1.0, 0.0);
+    }
+    else
+    {
+        // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
+        float3 P = (matWorldView * vec4(vPosition,1.0)).xyz;
+        float3 N = normalize((matWorldViewInverseTranspose * vNormal).xyz);
 
-   gl_Position = float4(vPosition, 1.0);
-   tex0_gs = tc;
-   tablePos_gs = vPosition.xyz;
-   worldPos_gs = P;
-   normal_gs = N;
+        gl_Position = float4(vPosition, 1.0);
+        tex0_gs = tc;
+        tablePos_gs = vPosition.xyz;
+        worldPos_gs = P;
+        normal_gs = N;
+   }
 }
 
 ////gs_light_main
@@ -54,14 +91,14 @@ void main()
    if (gl_ViewportIndex == 0 || !ignoreStereo)
    {
       for (int i=0;i<gl_in.length();i++) {
-         //Default
-         gl_Position = (matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position);
-         //Custom
+         if (disableVertexShader)
+             gl_Position = gl_in[i].gl_Position;
+         else
+             gl_Position = (matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position);
          tex0 = tex0_gs[i];
          worldPos = worldPos_gs[i];
          tablePos = tablePos_gs[i];
          normal = normal_gs[i];
-         //Default
          EmitVertex();
       }
       EndPrimitive();
@@ -81,7 +118,7 @@ void main()
     float4 pixel = textureLod(tex_light_color, tex0, 0); //!! IN.tex0 abused in backglass mode
 
     // no lighting if HUD vertices or passthrough mode
-    if(imageBackglassMode.x != 0. || imageBackglassMode.y != 0.)
+    if(lightingOff)
         color = pixel;
     else
     {
@@ -98,7 +135,7 @@ void main()
 
     if(lightColor_intensity.w != 0.0)
     {
-        const float len = length(lightCenter_maxRange.xyz - (imageBackglassMode.y == 0. ? tablePos : vec3(tex0,0.0))) * lightCenter_maxRange.w;
+        const float len = length(lightCenter_maxRange.xyz - tablePos) * lightCenter_maxRange.w;
         const float atten = pow(1.0 - clamp(len,0.0,1.0), lightColor2_falloff_power.w);
         const float3 lcolor = mix(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
         color += float4(lcolor*(atten*lightColor_intensity.w),
@@ -120,7 +157,7 @@ void main()
     float4 result = float4(0.0, 0.0, 0.0, 0.0);
     if (lightColor_intensity.w != 0.0)
     {
-        const float len = length(lightCenter_maxRange.xyz - (imageBackglassMode.y == 0. ? tablePos : vec3(tex0,0.0))) * lightCenter_maxRange.w;
+        const float len = length(lightCenter_maxRange.xyz - tablePos) * lightCenter_maxRange.w;
         const float atten = pow(1.0 - clamp(len,0.0,1.0), lightColor2_falloff_power.w);
         const float3 lcolor = mix(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
         result.xyz = lcolor*(atten*lightColor_intensity.w);
@@ -128,7 +165,7 @@ void main()
     }
 
     // no lighting if HUD vertices or passthrough mode
-    if(imageBackglassMode.x != 0. || imageBackglassMode.y != 0.)
+    if(lightingOff)
         color.xyz = lightColor_intensity.xyz;
     else
     {

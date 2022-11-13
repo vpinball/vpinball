@@ -441,6 +441,9 @@ void Light::RenderDynamic()
          return;
    }
 
+   RenderDevice::RenderStateCache initial_state;
+   pd3dDevice->CopyRenderStates(true, initial_state);
+
    if (!m_backglass)
    {
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
@@ -453,7 +456,7 @@ void Light::RenderDynamic()
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    }
 
-   if (m_backglass && (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled))
+   if (m_backglass || (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled))
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
    else
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
@@ -475,7 +478,7 @@ void Light::RenderDynamic()
    {
       pd3dDevice->classicLightShader->SetLightData(center_range);
       pd3dDevice->classicLightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
-
+      pd3dDevice->classicLightShader->SetBool(SHADER_disableVertexShader, m_backglass);
       pd3dDevice->classicLightShader->SetLightImageBackglassMode(m_d.m_imageMode, m_backglass);
       pd3dDevice->classicLightShader->SetMaterial(m_surfaceMaterial);
 
@@ -500,7 +503,6 @@ void Light::RenderDynamic()
    {
       pd3dDevice->lightShader->SetLightData(center_range);
       pd3dDevice->lightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
-
       pd3dDevice->lightShader->SetTechnique(SHADER_TECHNIQUE_bulb_light);
 
       const Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -522,6 +524,7 @@ void Light::RenderDynamic()
          pd3dDevice->lightShader->End();
       }
 
+      pd3dDevice->lightShader->SetBool(SHADER_disableVertexShader, m_backglass);
       pd3dDevice->lightShader->SetFloat(SHADER_blend_modulate_vs_add, (g_pplayer->m_current_renderstage == 0) ? min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
    }
 
@@ -548,28 +551,17 @@ void Light::RenderDynamic()
       pd3dDevice->lightShader->Begin();
    }
 
-   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, (!m_backglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX, m_customMoverVBuffer, 0, m_customMoverVertexNum, m_customMoverIBuffer, 0, m_customMoverIndexNum);
+   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, m_backglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, m_customMoverVBuffer, 0, m_customMoverVertexNum, m_customMoverIBuffer, 0, m_customMoverIndexNum);
 
    if (!m_d.m_BulbLight)
       pd3dDevice->classicLightShader->End();
    else
       pd3dDevice->lightShader->End();
 
-   if (!m_d.m_BulbLight && offTexel != nullptr /*&& m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl*/ && !m_backglass) // See above: // TOTAN and Flintstones inserts break if alpha blending is disabled here.
-   {
-      pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
-      pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::SRC_ALPHA);
-      pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_ALPHA);
-   }
-
-   /*if ( m_d.m_BulbLight ) //!! not necessary anymore
-   {
-   pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
-   pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
-   }*/
-
-   //if(m_backglass && (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled))
-   //	pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+   // Restore state
+   pd3dDevice->classicLightShader->SetBool(SHADER_disableVertexShader, false); // Needed since this uniform is shared with techniques of basic shader
+   pd3dDevice->lightShader->SetBool(SHADER_disableVertexShader, false);
+   pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
 void Light::PrepareMoversCustom()
@@ -630,6 +622,8 @@ void Light::PrepareMoversCustom()
 
 void Light::UpdateCustomMoverVBuffer()
 {
+   RenderDevice *const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    float height = m_initSurfaceHeight;
    if (m_d.m_BulbLight)
    {
@@ -678,8 +672,13 @@ void Light::UpdateCustomMoverVBuffer()
          const float x = pv0->x* mult - 0.5f;
          const float y = pv0->y*ymult - 0.5f;
 
+         #ifdef ENABLE_SDL
+         buf[t].x = (float)(2.0 * (x / pd3dDevice->GetBackBufferTexture()->GetWidth()) - 1.0);
+         buf[t].y = (float)(1.0 - 2.0 * (y / pd3dDevice->GetBackBufferTexture()->GetHeight()));
+         #else
          buf[t].x = x;
          buf[t].y = y;
+         #endif
          buf[t].z = 0.0f;
 
          buf[t].nx = 1.f; //!! for backglass we use no vertex shader (D3DDECLUSAGE_POSITIONT), thus w component is actually mapped to nx, and that must be 1
