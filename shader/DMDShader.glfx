@@ -4,8 +4,6 @@
 ////DEFINES
 #include "Helpers.fxh"
 
-uniform vec4 quadOffsetScale; //.xy =>Offset from center .wz =>Scale (1.0 is fullscreen)
-uniform vec4 quadOffsetScaleTex; //.xy =>Offset from center .wz =>Scale (1.0 is fullscreen)
 uniform vec4 vColor_Intensity;
 uniform vec4 vRes_Alpha_time;
 uniform float alphaTestValue;

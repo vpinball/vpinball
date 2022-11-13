@@ -2,6 +2,8 @@
 #include <thread>
 #include "captureExt.h"
 
+// See for reference implementation: https://github.com/microsoft/Windows-classic-samples/blob/main/Samples/DXGIDesktopDuplication/cpp/DuplicationManager.cpp)
+
 #ifndef ENABLE_SDL
 
 bool captureExternalDMD() { return false; }
@@ -41,9 +43,7 @@ void captureCheckTextures()
          g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.UnloadTexture(g_pplayer->m_texdmd);
          delete g_pplayer->m_texdmd;
       }
-      // Sleaze alert! - ec creates a HBitmap, but we hijack ec's data pointer to dump its data directly into VP's texture
-      g_pplayer->m_texdmd = BaseTexture::CreateFromHBitmap(ecDMD.m_HBitmap);
-      ecDMD.m_pData = g_pplayer->m_texdmd->data();
+      g_pplayer->m_texdmd = ecDMD.m_texture;
       ecDMD.m_ecStage = ecCapturing;
    }
    if (ecPUP.m_ecStage == ecTexture)
@@ -53,8 +53,7 @@ void captureCheckTextures()
          g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.UnloadTexture(g_pplayer->m_texPUP);
          delete g_pplayer->m_texPUP;
       }
-      g_pplayer->m_texPUP = BaseTexture::CreateFromHBitmap(ecPUP.m_HBitmap);
-      ecPUP.m_pData = g_pplayer->m_texPUP->data();
+      g_pplayer->m_texPUP = ecPUP.m_texture;
       ecPUP.m_ecStage = ecCapturing;
    }
 }
@@ -177,7 +176,6 @@ void ExtCapture::Setup(const vector<string>& windowlist)
    m_ecStage = ecUninitialized;
    m_delay = 0;
    m_searchWindows = windowlist;
-   m_pData = nullptr;
 }
 
 bool ExtCapture::SetupCapture(const RECT& inputRect)
@@ -252,7 +250,7 @@ bool ExtCapture::SetupCapture(const RECT& inputRect)
    }
    else
    {
-      m_pCapOut = new ExtCaptureOutput();
+      m_pCapOut = new ExtCaptureOutput(this);
 
       hr = D3D11CreateDevice(m_Adapter, /* Adapter: The adapter (video card) we want to use. We may use NULL to pick the default adapter. */
          D3D_DRIVER_TYPE_UNKNOWN,  /* DriverType: We use the GPU as backing device. */
@@ -289,6 +287,7 @@ bool ExtCapture::SetupCapture(const RECT& inputRect)
          ShowError("Capture: Duplication var is nullptr.");
          return false;
       }
+
       /* Create the staging texture that we need to download the pixels from gpu. */
       D3D11_TEXTURE2D_DESC tex_desc;
       tex_desc.Width = m_outputdesc.DesktopCoordinates.right - m_outputdesc.DesktopCoordinates.left;
@@ -316,21 +315,8 @@ bool ExtCapture::SetupCapture(const RECT& inputRect)
    }
    m_allCaptures.push_back(this);
 
-   // duplication->GetDesc(&m_duplication_desc);
+   m_texture = new BaseTexture(m_Width, m_Height, BaseTexture::Format::RGBA);
 
-   const HDC all_screen = GetDC(nullptr);
-   const int BitsPerPixel = GetDeviceCaps(all_screen, BITSPIXEL);
-   const HDC hdc2 = CreateCompatibleDC(all_screen);
-
-   BITMAPINFO info;
-   info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-   info.bmiHeader.biWidth = m_Width;
-   info.bmiHeader.biHeight = -m_Height;
-   info.bmiHeader.biPlanes = 1;
-   info.bmiHeader.biBitCount = (WORD)BitsPerPixel;
-   info.bmiHeader.biCompression = BI_RGB;
-
-   m_HBitmap = CreateDIBSection(hdc2, &info, DIB_RGB_COLORS, (void**)&m_pData, 0, 0);
    return true;
 }
 
@@ -362,7 +348,7 @@ void ExtCaptureOutput::AcquireFrame()
          ShowError("Capture: Failed to query the ID3D11Texture2D interface on IDXGIResource.");
          exit(EXIT_FAILURE);
       }
-      DXGI_MAPPED_RECT mapped_rect;
+      /* DXGI_MAPPED_RECT mapped_rect;
       hr = m_duplication->MapDesktopSurface(&mapped_rect);
       if (S_OK == hr) {
          //printf("We got access to the desktop surface\n");
@@ -371,7 +357,7 @@ void ExtCaptureOutput::AcquireFrame()
             ShowError("Capture: Failed to unmap the desktop surface after successfully mapping it.");
          }
       }
-      else if (DXGI_ERROR_UNSUPPORTED == hr) {
+      else if (DXGI_ERROR_UNSUPPORTED == hr) {*/
          m_d3d_context->CopyResource(m_staging_tex, tex);
 
          D3D11_MAPPED_SUBRESOURCE map;
@@ -387,13 +373,27 @@ void ExtCaptureOutput::AcquireFrame()
             //printf("RowPitch: %u, DepthPitch: %u, %02X, %02X, %02X\n", map.RowPitch, map.DepthPitch, data[0], data[1], data[2]);
             m_pitch = map.RowPitch;
 
+            const uint8_t* __restrict sptr = reinterpret_cast<uint8_t*>(m_srcdata) + m_pitch * m_cap->m_DispTop;
+            uint8_t* __restrict ddptr = (uint8_t*)m_cap->m_texture->data();
+
+            for (int h = 0; h < m_cap->m_Height; ++h)
+            {
+               // Copy acquired frame, swapping red and blue channel and removing alpha channel
+               copy_bgra_rgba<true>((unsigned int*)ddptr, (const unsigned int*)sptr + m_cap->m_DispLeft, m_cap->m_Width);
+               sptr += m_pitch;
+               ddptr += m_cap->m_Width * 4;
+            }
+
+            // To check that the capture is ok
+            //stbi_write_png("D:/PUPCapture.png"s.c_str(), m_cap->m_Width, m_cap->m_Height, 4, m_cap->m_pData, m_cap->m_Width * 4);
+            //exit(0);
          }
          else {
             ShowError("Capture: Failed to map the staging tex. Cannot access the pixels.");
          }
 
          m_d3d_context->Unmap(m_staging_tex, 0);
-      }
+      /*}
       else if (DXGI_ERROR_INVALID_CALL == hr) {
          ShowError("Capture: MapDesktopSurface returned DXGI_ERROR_INVALID_CALL.");
       }
@@ -405,7 +405,7 @@ void ExtCaptureOutput::AcquireFrame()
       }
       else {
          ShowError("Capture: MapDesktopSurface returned an unknown error.");
-      }
+      }*/
    }
    unsigned int BufSize = frame_info.TotalMetadataBufferSize;
    if (m_MetaDataBufferSize < BufSize)
@@ -416,8 +416,6 @@ void ExtCaptureOutput::AcquireFrame()
    }
 
    // Get move rectangles
-
-
    hr = m_duplication->GetFrameMoveRects(BufSize, reinterpret_cast<DXGI_OUTDUPL_MOVE_RECT*>(m_MetaDataBuffer), &BufSize);
    if (SUCCEEDED(hr))
    {
@@ -485,18 +483,6 @@ bool ExtCapture::GetFrame()
       return false;
 
    m_bDirty = false;
-
-   const uint8_t* __restrict sptr = reinterpret_cast<uint8_t*>(m_pCapOut->m_srcdata) + m_pCapOut->m_pitch * m_DispTop;
-   uint8_t* __restrict ddptr = (uint8_t*)m_pData;
-
-   for (int h = 0; h < m_Height; ++h)
-   {
-      // Copy acquired frame, swapping red and blue channel
-      copy_bgra_rgba<true>((unsigned int*)ddptr, (const unsigned int*)sptr + m_DispLeft, m_Width);
-      sptr += m_pCapOut->m_pitch;
-      ddptr += m_Width * 4;
-      Sleep(0); //!! ??
-   }
 
    return true;
 }

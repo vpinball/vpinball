@@ -4,8 +4,6 @@
 ////DEFINES
 #include "Helpers.fxh"
 
-uniform vec4 quadOffsetScale; //.xy =>Offset from bottom left .wz =>Scale (1.0 is fullscreen)
-uniform vec4 quadOffsetScaleTex; //.xy =>Offset from top left .wz =>Scale (1.0 is fullscreen)
 uniform vec4 backBoxSize; //xy=backbox location relative to rear left edge of the playfield zw=size  (all values in VPin Units)
 uniform vec4 vColor_Intensity;
 uniform vec4 vRes_Alpha_time;
@@ -53,8 +51,7 @@ out vec2 tex0_gs;
 
 void main()
 {
-   gl_Position = vec4(vPosition, 1.0);
-   //tex0_gs = vec2(tc.x, tc.y) * quadOffsetScaleTex.zw + quadOffsetScaleTex.xy;
+   gl_Position = vec4(vPosition.x*backBoxSize.z+backBoxSize.x, 0.0, vPosition.y*backBoxSize.w+backBoxSize.y, 1.0);
    tex0_gs = tc;
 }
 
@@ -71,31 +68,7 @@ void main()
    tex0_gs = tc;
 }
 
-////gs_simple_main
-
-in vec2 tex0_gs[];
-out vec2 tex0;
-
-void main()
-{
-   gl_ViewportIndex = gl_InvocationID;
-   for (int i=0;i<gl_in.length();i++) {
-      //Default
-      //gl_Position = (matWorldViewProj[gl_InvocationID] *
-      //               vec4((gl_in[i].gl_Position.x*backBoxSize.z*quadOffsetScale.z+quadOffsetScale.x+backBoxSize.x),0.0,
-      //               (gl_in[i].gl_Position.y*quadOffsetScale.w*backBoxSize.w+quadOffsetScale.y+backBoxSize.y),1.0));
-      gl_Position = (matWorldViewProj[gl_InvocationID] *
-                     vec4((gl_in[i].gl_Position.x*backBoxSize.z+backBoxSize.x),0.0,
-                     (gl_in[i].gl_Position.y*backBoxSize.w+backBoxSize.y),1.0));
-      //Custom
-      tex0 = tex0_gs[i];
-      //Default
-      EmitVertex();
-   }
-   EndPrimitive();
-}
-
-////gs_simple_world
+////gs_simple
 
 in vec2 tex0_gs[];
 out vec2 tex0;
@@ -110,8 +83,8 @@ void main()
       tex0 = tex0_gs[i];
       //Default
       EmitVertex();
-    }
-    EndPrimitive();
+   }
+   EndPrimitive();
 }
 
 //
@@ -197,10 +170,10 @@ void main()
 
 ////TECHNIQUES
 
-basic_DMD:P0:vs_main():gs_simple_main():ps_main_DMD()
-basic_DMD_ext:P0:vs_main():gs_simple_main():ps_main_DMD_ext()
-basic_DMD_world:P0:vs_simple_world():gs_simple_world():ps_main_DMD()
-basic_DMD_world_ext:P0:vs_simple_world():gs_simple_world():ps_main_DMD_ext()
-basic_noDMD:P0:vs_main():gs_simple_main():ps_main_noDMD()
-basic_noDMD_world:P0:vs_simple_world():gs_simple_world():ps_main_noDMD()
-basic_noDMD_notex:P0:vs_main():gs_simple_main():ps_main_noDMD_notex()
+basic_DMD:P0:vs_main():gs_simple():ps_main_DMD()
+basic_DMD_ext:P0:vs_main():gs_simple():ps_main_DMD_ext()
+basic_DMD_world:P0:vs_simple_world():gs_simple():ps_main_DMD()
+basic_DMD_world_ext:P0:vs_simple_world():gs_simple():ps_main_DMD_ext()
+basic_noDMD:P0:vs_main():gs_simple():ps_main_noDMD()
+basic_noDMD_world:P0:vs_simple_world():gs_simple():ps_main_noDMD()
+basic_noDMD_notex:P0:vs_main():gs_simple():ps_main_noDMD_notex()
