@@ -94,7 +94,7 @@ void main()
          if (disableVertexShader)
              gl_Position = gl_in[i].gl_Position;
          else
-             gl_Position = (matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position);
+             gl_Position = matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position;
          tex0 = tex0_gs[i];
          worldPos = worldPos_gs[i];
          tablePos = tablePos_gs[i];

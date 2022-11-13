@@ -490,13 +490,13 @@ void Decal::RenderSetup()
 
       for (int i = 0; i < 4; ++i)
       {
-         #ifdef ENABLE_SDL
-         vertices[i].x = (float)(2.0 * ((vertices[i].x * mult - 0.5f) / pd3dDevice->GetBackBufferTexture()->GetWidth()) - 1.0);
-         vertices[i].y = (float)(1.0 - 2.0 * ((vertices[i].y*ymult - 0.5f) / pd3dDevice->GetBackBufferTexture()->GetHeight()));
-         #else
-         vertices[i].x = vertices[i].x * mult - 0.5f;
-         vertices[i].y = vertices[i].y*ymult - 0.5f;
-         #endif
+#ifdef ENABLE_SDL
+         vertices[i].x =        2.0f * (vertices[i].x * mult  - 0.5f) / (float)pd3dDevice->GetBackBufferTexture()->GetWidth() - 1.0f;
+         vertices[i].y = 1.0f - 2.0f * (vertices[i].y * ymult - 0.5f) / (float)pd3dDevice->GetBackBufferTexture()->GetHeight();
+#else
+         vertices[i].x = vertices[i].x * mult  - 0.5f;
+         vertices[i].y = vertices[i].y * ymult - 0.5f;
+#endif
          vertices[i].z = 0.0f;
 
          vertices[i].nx = 1.0f; //!! as this is the w component due to MY_D3DTRANSFORMED_NOTEX2_VERTEX usage

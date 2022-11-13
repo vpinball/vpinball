@@ -15,7 +15,7 @@ RenderProbe::~RenderProbe()
 int RenderProbe::GetSaveSize() const
 {
    int size = 0;
-   size += 2*sizeof(int) + sizeof(int); // TYPE
+   size += 2 * sizeof(int) + sizeof(int); // TYPE
    size += 2 * sizeof(int) + sizeof(int) + (int)m_name.length(); // NAME
    size += 2 * sizeof(int) + sizeof(int); // RBAS
    size += 2 * sizeof(int) + sizeof(int); // RCLE

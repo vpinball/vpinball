@@ -47,9 +47,9 @@ void main()
 {
    gl_Position = vec4(vPosition, 1.0);
    if (disableVertexShader)
-	  tablePos_gs = float3(tc.x, tc.y, 0.0);
+      tablePos_gs = float3(tc.x, tc.y, 0.0);
    else
-	  tablePos_gs = vPosition;
+      tablePos_gs = vPosition;
 }
 
 ////gs_lightbulb_main
@@ -67,10 +67,10 @@ void main()
          if (disableVertexShader)
              gl_Position = gl_in[i].gl_Position;
          else
-		 {
-			gl_Position = (matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position);
-			gl_Position.z = max(gl_Position.z, 0.00001); // clamp lights to near clip plane to avoid them being partially clipped
-		 }
+         {
+            gl_Position = matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position;
+            gl_Position.z = max(gl_Position.z, 0.00001); // clamp lights to near clip plane to avoid them being partially clipped
+         }
          //Custom
          tablePos = tablePos_gs[i];
          //Default

@@ -672,18 +672,18 @@ void Light::UpdateCustomMoverVBuffer()
          const float x = pv0->x* mult - 0.5f;
          const float y = pv0->y*ymult - 0.5f;
 
-         #ifdef ENABLE_SDL
-         buf[t].x = (float)(2.0 * (x / pd3dDevice->GetBackBufferTexture()->GetWidth()) - 1.0);
-         buf[t].y = (float)(1.0 - 2.0 * (y / pd3dDevice->GetBackBufferTexture()->GetHeight()));
-         #else
+#ifdef ENABLE_SDL
+         buf[t].x =        2.0f * x / (float)pd3dDevice->GetBackBufferTexture()->GetWidth() - 1.0f;
+         buf[t].y = 1.0f - 2.0f * y / (float)pd3dDevice->GetBackBufferTexture()->GetHeight();
+#else
          buf[t].x = x;
          buf[t].y = y;
-         #endif
+#endif
          buf[t].z = 0.0f;
 
          buf[t].nx = 1.f; //!! for backglass we use no vertex shader (D3DDECLUSAGE_POSITIONT), thus w component is actually mapped to nx, and that must be 1
-         buf[t].ny = (pv0->x * (float)(1.0 / EDITOR_BG_WIDTH)); //!! abuses normal to pass tex coord via TEXCOORD1.xy to shader for non-bulbs :/
-         buf[t].nz = (pv0->y * (float)(1.0 / EDITOR_BG_HEIGHT));
+         buf[t].ny = pv0->x * (float)(1.0 / EDITOR_BG_WIDTH); //!! abuses normal to pass tex coord via TEXCOORD1.xy to shader for non-bulbs :/
+         buf[t].nz = pv0->y * (float)(1.0 / EDITOR_BG_HEIGHT);
 
          //!! in backglass mode, position is also passed in via texture coords (due to D3DDECLUSAGE_POSITIONT again)
          buf[t].tu = x;
