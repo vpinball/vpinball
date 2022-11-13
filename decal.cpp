@@ -432,6 +432,8 @@ static constexpr WORD rgi0123[4] = { 0, 1, 2, 3 };
 
 void Decal::RenderSetup()
 {
+   RenderDevice *const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    PreRenderText();
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
@@ -488,8 +490,13 @@ void Decal::RenderSetup()
 
       for (int i = 0; i < 4; ++i)
       {
-         vertices[i].x = vertices[i].x* mult - 0.5f;
+         #ifdef ENABLE_SDL
+         vertices[i].x = (float)(2.0 * ((vertices[i].x * mult - 0.5f) / pd3dDevice->GetBackBufferTexture()->GetWidth()) - 1.0);
+         vertices[i].y = (float)(1.0 - 2.0 * ((vertices[i].y*ymult - 0.5f) / pd3dDevice->GetBackBufferTexture()->GetHeight()));
+         #else
+         vertices[i].x = vertices[i].x * mult - 0.5f;
          vertices[i].y = vertices[i].y*ymult - 0.5f;
+         #endif
          vertices[i].z = 0.0f;
 
          vertices[i].nx = 1.0f; //!! as this is the w component due to MY_D3DTRANSFORMED_NOTEX2_VERTEX usage
@@ -580,9 +587,13 @@ void Decal::RenderObject()
       pd3dDevice->basicShader->SetVector(SHADER_cBase_Alpha, &staticColor);
    }
 
+   pd3dDevice->basicShader->SetBool(SHADER_disableVertexShader, m_backglass);
+
    pd3dDevice->basicShader->Begin();
    pd3dDevice->DrawPrimitiveVB(RenderDevice::TRIANGLEFAN, m_backglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, 4, true);
    pd3dDevice->basicShader->End();
+
+   pd3dDevice->basicShader->SetBool(SHADER_disableVertexShader, false);
 
    // Set the render state.
    //pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE); //!! not necessary anymore
