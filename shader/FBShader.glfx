@@ -262,9 +262,13 @@ void main()
                         +  texNoLod(tex_fb_filtered, tex0 + w_h_height.xy).xyz
                         +  texNoLod(tex_fb_filtered, tex0 + float2(w_h_height.x,-w_h_height.y)).xyz
                         +  texNoLod(tex_fb_filtered, tex0 + float2(-w_h_height.x,w_h_height.y)).xyz)*0.25; //!! offset for useAA?
-	// FIXME we are facing overflows here causing visual artefacts (black squares not happening for DX9)
+#if enable_VR
+	// FIXME we are facing overflows here causing visual artefacts in VR (black squares)
+	// These overflows only happens in VR, likely due to the scene scaling and its impact on lighting computation (in Material.fxh)
+    color = float4(max(FBToneMap(result) - vec3(1.0), vec3(0.0)) * w_h_height.z, 1.0);
+#else
     color = float4(bloom_cutoff(FBToneMap(result)) * w_h_height.z, 1.0);
-    //color = float4(max(FBToneMap(result) - vec3(1.0), vec3(0.0)) * w_h_height.z, 1.0);
+#endif
 }
 
 ////ps_main_fb_AO
