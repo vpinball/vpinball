@@ -10,6 +10,12 @@
 
 #define NUM_RGB_BLINK_PATTERN 33 //!! remove
 
+enum ShadowMode
+{
+   NONE,
+   RAYTRACED_BALL_SHADOWS
+};
+
 class LightData final : public BaseProperty
 {
 public:
@@ -42,6 +48,8 @@ public:
    bool m_showBulbMesh;
    bool m_showReflectionOnBall;
    bool m_staticBulbMesh;
+
+   ShadowMode m_shadows = ShadowMode::NONE;
 };
 
 /////////////////////////////////////////////////////////////////////////////

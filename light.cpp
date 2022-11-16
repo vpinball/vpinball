@@ -526,6 +526,8 @@ void Light::RenderDynamic()
 
       pd3dDevice->lightShader->SetBool(SHADER_disableVertexShader, m_backglass);
       pd3dDevice->lightShader->SetFloat(SHADER_blend_modulate_vs_add, (g_pplayer->m_current_renderstage == 0) ? min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
+      if (m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS)
+         pd3dDevice->lightShader->SetTechnique(SHADER_TECHNIQUE_bulb_light_with_ball_shadows);
    }
 
    // (maybe) update, then render light shape
@@ -820,6 +822,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupF
    bw.WriteFloat(FID(BMSC), m_d.m_meshRadius);
    bw.WriteFloat(FID(BMVA), m_d.m_modulate_vs_add);
    bw.WriteFloat(FID(BHHI), m_d.m_bulbHaloHeight);
+   bw.WriteInt(FID(SHDW), m_d.m_shadows);
 
    ISelect::SaveData(pstm, hcrypthash);
 
@@ -903,6 +906,7 @@ bool Light::LoadToken(const int id, BiffReader * const pbr)
    case FID(BMSC): pbr->GetFloat(m_d.m_meshRadius); break;
    case FID(BMVA): pbr->GetFloat(m_d.m_modulate_vs_add); break;
    case FID(BHHI): pbr->GetFloat(m_d.m_bulbHaloHeight); break;
+   case FID(SHDW): pbr->GetInt(&m_d.m_shadows); break;
    default:
    {
       LoadPointToken(id, pbr, pbr->m_version);

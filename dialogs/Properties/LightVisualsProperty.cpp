@@ -48,6 +48,8 @@ void LightVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             PropertyDialog::SetCheckboxState(m_hStaticMeshCheck, light->m_d.m_staticBulbMesh);
         if (dispid == IDC_REFLECT_ON_BALLS || dispid == -1)
             PropertyDialog::SetCheckboxState(m_hRelectOnBalls, light->m_d.m_showReflectionOnBall);
+        if (dispid == IDC_SHADOWS || dispid == -1)
+            PropertyDialog::SetCheckboxState(m_hRaytracedBallShadows, light->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS);
         if (dispid == IDC_DEPTH_BIAS || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_depthBiasEdit, light->m_d.m_depthBias);
         if (dispid == IDC_HALO_EDIT || dispid == -1)
@@ -117,6 +119,9 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case IDC_REFLECT_ON_BALLS:
                 CHECK_UPDATE_ITEM(light->m_d.m_showReflectionOnBall, PropertyDialog::GetCheckboxState(m_hRelectOnBalls), light);
+                break;
+            case IDC_SHADOWS:
+                CHECK_UPDATE_ITEM(light->m_d.m_shadows, PropertyDialog::GetCheckboxState(m_hRaytracedBallShadows) ? ShadowMode::RAYTRACED_BALL_SHADOWS : ShadowMode::NONE, light);
                 break;
             case IDC_HALO_EDIT:
                 CHECK_UPDATE_ITEM(light->m_d.m_bulbHaloHeight, PropertyDialog::GetFloatTextbox(m_haloHeightEdit), light);
@@ -221,6 +226,7 @@ BOOL LightVisualsProperty::OnInitDialog()
     m_modulateEdit.AttachItem(IDC_BULB_MODULATE_VS_ADD);
     m_transmitEdit.AttachItem(IDC_TRANSMISSION_SCALE);
     m_hRelectOnBalls = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ON_BALLS);
+    m_hRaytracedBallShadows = ::GetDlgItem(GetHwnd(), IDC_SHADOWS);
     m_posXEdit.AttachItem(902);
     m_posYEdit.AttachItem(903);
     m_surfaceCombo.AttachItem(IDC_SURFACE_COMBO);
@@ -264,6 +270,7 @@ BOOL LightVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_modulateEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_transmitEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hRelectOnBalls, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hRaytracedBallShadows, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_posXEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_posYEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_surfaceCombo, CResizer::topleft, RD_STRETCH_WIDTH);
