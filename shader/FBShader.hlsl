@@ -282,6 +282,16 @@ VS_OUTPUT_2D vs_main_no_trafo (const in float4 vPosition  : POSITION0,
    return Out;
 }
 
+VS_OUTPUT_2D vs_main_no_trafo_subpixel(const in float4 vPosition : POSITION0, const in float2 tc : TEXCOORD0)
+{
+   VS_OUTPUT_2D Out;
+   Out.pos = float4(vPosition.xy, 0.0, 1.0);
+   // DirectX has 0,0 at the top left corner of the first texel. Pixel perfect sampling needs coordinates to be offseted by half a texel.
+   // Here we do not apply it to sample in between the samples for filtering
+   // Out.tex0 = tc + 0.5 * w_h_height.xy;
+   return Out;
+}
+
 //
 // PS functions
 //
@@ -746,7 +756,7 @@ technique FXAA3
 {
    pass P0
    {
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
+     VertexShader = compile vs_3_0 vs_main_no_trafo();
 	  PixelShader  = compile ps_3_0 ps_main_fxaa3();
    }
 }
@@ -755,7 +765,7 @@ technique fb_tonemap
 {
    pass P0
    {
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
+     VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel();
 	  PixelShader  = compile ps_3_0 ps_main_fb_tonemap();
    }
 }
@@ -764,7 +774,7 @@ technique fb_bloom
 {
    pass P0
    {
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
+     VertexShader = compile vs_3_0 vs_main_no_trafo();
 	  PixelShader  = compile ps_3_0 ps_main_fb_bloom();
    }
 }
@@ -773,7 +783,7 @@ technique fb_AO
 {
 	pass P0
 	{
-		VertexShader = compile vs_3_0 vs_main_no_trafo();
+		VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel();
 		PixelShader  = compile ps_3_0 ps_main_fb_AO();
 	}
 }
@@ -782,7 +792,7 @@ technique fb_tonemap_AO
 {
    pass P0
    {
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
+     VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel();
 	  PixelShader  = compile ps_3_0 ps_main_fb_tonemap_AO();
    }
 }
@@ -791,7 +801,7 @@ technique fb_tonemap_AO_static
 {
 	pass P0
 	{
-		VertexShader = compile vs_3_0 vs_main_no_trafo();
+		VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel();
 		PixelShader  = compile ps_3_0 ps_main_fb_tonemap_AO_static();
 	}
 }
