@@ -113,6 +113,7 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(SSReflection),
    SHADER_TECHNIQUE(basic_noLight),
    SHADER_TECHNIQUE(bulb_light),
+   SHADER_TECHNIQUE(bulb_light_with_ball_shadows),
    SHADER_TECHNIQUE(SMAA_ColorEdgeDetection),
    SHADER_TECHNIQUE(SMAA_BlendWeightCalculation),
    SHADER_TECHNIQUE(SMAA_NeighborhoodBlending),

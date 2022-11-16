@@ -24,6 +24,7 @@ private:
     HWND        m_hShowMeshCheck;
     HWND        m_hStaticMeshCheck;
     HWND        m_hRelectOnBalls;
+    HWND        m_hRaytracedBallShadows;
     EditBox     m_falloffEdit;
     EditBox     m_falloffPowerEdit;
     EditBox     m_intensityEdit;
