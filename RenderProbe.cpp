@@ -93,7 +93,7 @@ void RenderProbe::MarkDirty()
    m_dirty = true;
 }
 
-Sampler *RenderProbe::GetProbe(const bool is_static)
+RenderTarget *RenderProbe::GetProbe(const bool is_static)
 {
    if (m_dirty)
    {
@@ -108,7 +108,7 @@ Sampler *RenderProbe::GetProbe(const bool is_static)
       m_dirty = false;
    }
    RenderTarget* rt = is_static ? m_staticRT : m_dynamicRT;
-   return rt ? rt->GetColorSampler() : nullptr;
+   return rt;
 }
 
 
@@ -141,7 +141,7 @@ void RenderProbe::RenderScreenSpaceTransparency(const bool is_static)
    {
       const int downscale = GetRoughnessDownscale(m_roughness_base);
       const int w = p3dDevice->GetBackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetBackBufferTexture()->GetHeight() / downscale;
-      m_dynamicRT = new RenderTarget(p3dDevice, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), false, 1, StereoMode::STEREO_OFF, "Failed to create refraction render target", nullptr);
+      m_dynamicRT = new RenderTarget(p3dDevice, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, StereoMode::STEREO_OFF, "Failed to create refraction render target", nullptr);
    }
    p3dDevice->GetMSAABackBufferTexture()->CopyTo(m_dynamicRT);
    ApplyRoughness(m_dynamicRT, m_roughness_base);

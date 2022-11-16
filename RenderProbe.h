@@ -52,7 +52,7 @@ public:
    void RenderSetup();
    void MarkDirty(); // Mark this probe as dirty, should be called when starting a new frame
    bool IsRendering() const; // Rendering is not reentrant so GetProbe should not be called when this returns true
-   Sampler* GetProbe(const bool is_static); // Request render probe, eventually rendering it if it is dirty
+   RenderTarget* GetProbe(const bool is_static); // Request render probe, eventually rendering it if it is dirty
    void EndPlay();
 
 private:

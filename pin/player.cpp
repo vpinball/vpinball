@@ -912,7 +912,7 @@ void Player::ToggleFPS()
                break;
             }
             RenderProbe *render_probe = m_ptable->m_vrenderprobe[m_infoProbeIndex >> 1];
-            Sampler *probe = render_probe->GetProbe((m_infoProbeIndex & 1) == 0);
+            RenderTarget *probe = render_probe->GetProbe((m_infoProbeIndex & 1) == 0);
             if (probe != nullptr)
                return;
          }
@@ -4431,11 +4431,11 @@ void Player::PrepareVideoBuffersNormal()
    if (infoMode == IF_RENDER_PROBES)
    {
       RenderProbe *render_probe = m_ptable->m_vrenderprobe[m_infoProbeIndex >> 1];
-      Sampler *probe = render_probe->GetProbe((m_infoProbeIndex & 1) == 0);
+      RenderTarget *probe = render_probe->GetProbe((m_infoProbeIndex & 1) == 0);
       if (probe)
       {
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, probe);
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, probe);
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, probe->GetColorSampler());
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, probe->GetColorSampler());
          render_w = probe->GetWidth();
          render_h = probe->GetHeight();
       }
@@ -4635,11 +4635,11 @@ void Player::PrepareVideoBuffersAO()
    if (infoMode == IF_RENDER_PROBES)
    {
       RenderProbe *render_probe = m_ptable->m_vrenderprobe[m_infoProbeIndex >> 1];
-      Sampler *probe = render_probe->GetProbe((m_infoProbeIndex & 1) == 0);
+      RenderTarget *probe = render_probe->GetProbe((m_infoProbeIndex & 1) == 0);
       if (probe)
       {
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, probe);
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, probe);
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, probe->GetColorSampler());
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, probe->GetColorSampler());
          render_w = probe->GetWidth();
          render_h = probe->GetHeight();
       }
@@ -4811,6 +4811,14 @@ void Player::UpdateBackdropSettings(const bool up)
 
 void Player::UpdateCameraModeDisplay()
 {
+   // Don't display camera info when in info mode
+   if (GetInfoMode() != IF_NONE)
+      return;
+
+   // Don't display camera info when camera is not aligned with screen
+   if (round(fmod(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 90.0f)) > 0.0f)
+      return;
+
    float x = 0.f, y = 0.f;
    if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 270.0f)
    {

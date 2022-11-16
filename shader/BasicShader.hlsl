@@ -16,6 +16,8 @@ texture Texture3; // bulb light buffer
 texture Texture4; // normal map
 texture Texture5; // reflection probe
 texture Texture6; // refraction probe
+texture Texture7; // depth probe
+
 
 sampler2D tex_base_color : TEXUNIT0 = sampler_state // base texture
 {
@@ -62,6 +64,17 @@ sampler2D tex_reflection : TEXUNIT5 = sampler_state // reflection probe
 sampler2D tex_refraction : TEXUNIT6 = sampler_state // refraction probe
 {
    Texture = (Texture6);
+   MIPFILTER = NONE;
+   MAGFILTER = LINEAR;
+   MINFILTER = LINEAR;
+   ADDRESSU = Clamp;
+   ADDRESSV = Clamp;
+   SRGBTexture = false;
+};
+
+sampler2D tex_probe_depth : TEXUNIT7 = sampler_state // depth probe
+{
+   Texture = (Texture7);
    MIPFILTER = NONE;
    MAGFILTER = LINEAR;
    MINFILTER = LINEAR;
@@ -206,7 +219,7 @@ float3 compute_reflection(const float2 screenSpace, const float3 N)
 }
 
 // Compute refractions from screen space probe
-float3 compute_refraction(const float3 pos, const float3 N, const float3 V)
+float3 compute_refraction(const float3 pos, const float2 screenSpace, const float3 N, const float3 V)
 {
    // Compute refracted visible position
    const float3 R = refract(V, N, 1.0 / 1.5); // n1 = 1.0 (air), n2 = 1.5 (plastic), eta = n1 / n2
@@ -214,9 +227,23 @@ float3 compute_refraction(const float3 pos, const float3 N, const float3 V)
 
    // Project from world view position to probe UV
    const float4x4 matProj = mul(inverse4x4(matWorldView), matWorldViewProj); // FIXME this must be moved to the matrix uniform stack
-   const float4 proj = mul(float4(refracted_pos.x, refracted_pos.y, refracted_pos.z, 1.0), matProj);
-   const float2 uv = float2(0.5, 0.5) + float2(proj.x, -proj.y) * (0.5 / proj.w);
 
+   const float4 proj = mul(float4(refracted_pos.x, refracted_pos.y, refracted_pos.z, 1.0), matProj);
+   float2 uv = float2(0.5, 0.5) + float2(proj.x, -proj.y) * (0.5 / proj.w);
+
+   // Check if the sample position is behind the object pos. If not take don't perform refraction as it would lead to refract things above us (so reflect)
+   float d = tex2D(tex_probe_depth, uv).x;
+   const float4 proj_base = mul(float4(pos, 1.0), matProj); // Sadly DX9 does not give access to transformed fragment position
+   BRANCH if (d < proj_base.z / proj_base.w)
+      uv = screenSpace * w_h_height.xy;
+
+   // The following code gives a smoother transition but depends too much on the POV since it uses homogeneous depth to lerp instead of fragment's world depth
+   //const float3 unbiased = float3(1.0, 0.0, 0.0);
+   //const float3 biased = float3(0.0, 1.0, 0.0);
+   //const float3 unbiased = tex2D(tex_refraction, screenSpace * w_h_height.xy).rgb;
+   //const float3 biased = tex2D(tex_refraction, uv).rgb;
+   //return lerp(unbiased, biased, saturate(100.0 * (d - proj_base.z / proj_base.w)));
+   
    /* // Debug output
    if (length(N) < 0.5) // invalid normal, shown as red for debugging
       return float3(1.0, 0.0, 0.0);
@@ -314,7 +341,7 @@ float4 ps_main(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform b
    [branch] if (doRefractions)
    {
       // alpha channel is the transparency of the object, tinting will be supported (even if alpha is 0)
-      result.rgb = lerp(compute_refraction(IN.worldPos.xyz, N, V), result.rgb, cBase_Alpha.a);
+      result.rgb = lerp(compute_refraction(IN.worldPos.xyz, screenSpace, N, V), result.rgb, cBase_Alpha.a);
       result.a = 1.0;
    }
 
@@ -364,7 +391,7 @@ float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform
    [branch] if (doRefractions)
    {
       // alpha channel is the transparency of the object, tinting will be supported (even if alpha is 0) but not from main texture since these are different informations (reflected/refracted color)
-      result.rgb = lerp(compute_refraction(IN.worldPos, N, V), result.rgb, result.a);
+      result.rgb = lerp(compute_refraction(IN.worldPos, screenSpace, N, V), result.rgb, result.a);
       result.a = 1.0;
    }
 
