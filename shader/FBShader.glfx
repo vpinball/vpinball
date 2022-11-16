@@ -201,6 +201,22 @@ void main()
    tex0 = tc;
 }
 
+////vs_main_no_trafo_subpixel
+
+in vec3 vPosition;
+in vec2 tc;
+
+// Pixel perfect coordinates of corresponding sample from source texture (tex_fb_filtered/tex_fb_unfiltered/tex_mirror/...)
+out vec2 tex0;
+
+void main()
+{ 
+   // OpenGL texture coordinates are centered on texel center (0,0 is first texel center) so no offset. Rendering is bottom up with regards to DirectX though
+   gl_Position = vec4(vPosition.x, -vPosition.y,0.0,1.0);
+   // Here we apply an offset to sample in between the samples for filtering
+   tex0 = tc + 0.5 * w_h_height.xy;
+}
+
 ////vs_main_no_trafo_zoomed
 
 in vec3 vPosition;
@@ -714,11 +730,11 @@ DLAA:P0:vs_main_no_trafo():ps_main_dlaa()
 FXAA1:P0:vs_main_no_trafo():ps_main_fxaa1()
 FXAA2:P0:vs_main_no_trafo():ps_main_fxaa2()
 FXAA3:P0:vs_main_no_trafo():ps_main_fxaa3()
-fb_tonemap:P0:vs_main_no_trafo():ps_main_fb_tonemap()
+fb_tonemap:P0:vs_main_no_trafo_subpixel():ps_main_fb_tonemap()
 fb_bloom:P0:vs_main_no_trafo():ps_main_fb_bloom()
-fb_AO:P0:vs_main_no_trafo():ps_main_fb_AO()
-fb_tonemap_AO:P0:vs_main_no_trafo():ps_main_fb_tonemap_AO()
-fb_tonemap_AO_static:P0:vs_main_no_trafo():ps_main_fb_tonemap_AO_static()
+fb_AO:P0:vs_main_no_trafo_subpixel():ps_main_fb_AO()
+fb_tonemap_AO:P0:vs_main_no_trafo_subpixel():ps_main_fb_tonemap_AO()
+fb_tonemap_AO_static:P0:vs_main_no_trafo_subpixel():ps_main_fb_tonemap_AO_static()
 
 fb_tonemap_no_filterRGB:P0:vs_main_no_trafo():ps_main_fb_tonemap_no_filterRGB()
 fb_tonemap_no_filterRG:P0:vs_main_no_trafo():ps_main_fb_tonemap_no_filterRG()
