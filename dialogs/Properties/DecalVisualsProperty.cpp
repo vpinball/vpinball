@@ -4,12 +4,12 @@
 
 DecalVisualsProperty::DecalVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPDECAL_VISUALS, pvsel), m_font(nullptr)
 {
-    m_typeList.push_back("Text");
-    m_typeList.push_back("Image");
+    m_typeList.push_back("Text"s);
+    m_typeList.push_back("Image"s);
 
-    m_sizingList.push_back("Auto Size");
-    m_sizingList.push_back("Auto Width");
-    m_sizingList.push_back("Manual Size");
+    m_sizingList.push_back("Auto Size"s);
+    m_sizingList.push_back("Auto Width"s);
+    m_sizingList.push_back("Manual Size"s);
     m_textEdit.SetDialog(this);
     m_posXEdit.SetDialog(this);
     m_posYEdit.SetDialog(this);
@@ -38,13 +38,25 @@ void DecalVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         Decal * const decal = (Decal *)m_pvsel->ElementAt(i);
 
         if (dispid == IDC_FONT_TYPE_COMBO || dispid == -1)
+        {
             PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[decal->m_d.m_decaltype]);
+            decal->EnsureSize();
+        }
         if (dispid == DISPID_Decal_SizingType || dispid == -1)
+        {
             PropertyDialog::UpdateComboBox(m_sizingList, m_sizingCombo, m_sizingList[decal->m_d.m_sizingtype]);
+            decal->EnsureSize();
+        }
         if (dispid == IDC_DECAL_TEXT_EDIT || dispid == -1)
+        {
             m_textEdit.SetWindowText(decal->m_d.m_sztext.c_str());
+            decal->EnsureSize();
+        }
         if (dispid == IDC_DECAL_VERTICAL_TEXT_CHECK || dispid == -1)
+        {
             PropertyDialog::SetCheckboxState(m_hVerticalTextCheck, decal->m_d.m_verticalText);
+            decal->EnsureSize();
+        }
         if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
             m_fontColorButton.SetColor(decal->m_d.m_color);
 
@@ -53,9 +65,15 @@ void DecalVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == 6 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_posYEdit, decal->m_d.m_vCenter.y);
         if (dispid == 3 || dispid == -1)
+        {
             PropertyDialog::SetFloatTextbox(m_widthEdit, decal->m_d.m_width);
+            decal->EnsureSize();
+        }
         if (dispid == 4 || dispid == -1)
+        {
             PropertyDialog::SetFloatTextbox(m_heigthEdit, decal->m_d.m_height);
+            decal->EnsureSize();
+        }
         if (dispid == 1 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_rotationEdit, decal->m_d.m_rotation);
         if (dispid == IDC_SURFACE_COMBO || dispid == -1)

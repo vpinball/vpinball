@@ -85,11 +85,12 @@ public:
 
    ItemTypeEnum HitableGetItemType() const final { return eItemDecal; }
 
+   void EnsureSize();
+
    DecalData m_d;
    IFont *m_pIFont;
 
 private:
-   void EnsureSize();
    void GetTextSize(int * const px, int * const py);
    void PreRenderText();
    void RenderObject();
