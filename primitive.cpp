@@ -1234,14 +1234,14 @@ void Primitive::RenderObject()
 
    // Request probes before setting up state
    RenderProbe *refraction_probe = nullptr;
-   Sampler *refractions = nullptr;
+   RenderTarget *refractions = nullptr;
    if (!m_ptable->m_reflectionEnabled) // Refraction is not supported inside reflection (i.e. do not reflect refracted part)
    {
       refraction_probe = m_ptable->GetRenderProbe(m_d.m_szRefractionProbe);
       refractions = refraction_probe ? refraction_probe->GetProbe(g_pplayer->m_isRenderingStatic) : nullptr;
    }
    RenderProbe *reflection_probe = nullptr;
-   Sampler *reflections = nullptr;
+   RenderTarget *reflections = nullptr;
    if (m_d.m_reflectionStrength > 0)
    {
       reflection_probe = m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
@@ -1313,7 +1313,8 @@ void Primitive::RenderObject()
    // setup for applying refractions from screen space probe
    if (refractions)
    {
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_refraction, refractions);
+      pd3dDevice->basicShader->SetTexture(SHADER_tex_refraction, refractions->GetColorSampler());
+      pd3dDevice->basicShader->SetTexture(SHADER_tex_probe_depth, refractions->GetDepthSampler());
       pd3dDevice->basicShader->SetFloat(SHADER_refractionThickness, m_d.m_refractionThickness);
    }
 
@@ -1331,7 +1332,7 @@ void Primitive::RenderObject()
       matWorldViewInverseTranspose.Transpose();
       matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal, plane_normal);
       pd3dDevice->basicShader->SetVector(SHADER_mirrorNormal, plane_normal.x,plane_normal.y,plane_normal.z,0.f);
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_reflection, reflections);
+      pd3dDevice->basicShader->SetTexture(SHADER_tex_reflection, reflections->GetColorSampler());
       is_reflection_only_pass = m_d.m_staticRendering && !g_pplayer->m_isRenderingStatic && !g_pplayer->m_dynamicMode;
       if (!is_reflection_only_pass && mat->m_bOpacityActive && (mat->m_fOpacity < 1.0f || (pin && pin->m_pdsBuffer->has_alpha())))
       { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
