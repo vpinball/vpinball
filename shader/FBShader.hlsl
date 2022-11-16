@@ -288,7 +288,7 @@ VS_OUTPUT_2D vs_main_no_trafo_subpixel(const in float4 vPosition : POSITION0, co
    Out.pos = float4(vPosition.xy, 0.0, 1.0);
    // DirectX has 0,0 at the top left corner of the first texel. Pixel perfect sampling needs coordinates to be offseted by half a texel.
    // Here we do not apply it to sample in between the samples for filtering
-   // Out.tex0 = tc + 0.5 * w_h_height.xy;
+   Out.tex0 = tc;
    return Out;
 }
 
