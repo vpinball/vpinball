@@ -906,7 +906,7 @@ bool Light::LoadToken(const int id, BiffReader * const pbr)
    case FID(BMSC): pbr->GetFloat(m_d.m_meshRadius); break;
    case FID(BMVA): pbr->GetFloat(m_d.m_modulate_vs_add); break;
    case FID(BHHI): pbr->GetFloat(m_d.m_bulbHaloHeight); break;
-   case FID(SHDW): pbr->GetInt(&m_d.m_shadows); break;
+   case FID(SHDW): pbr->GetInt(m_d.m_shadows); break;
    default:
    {
       LoadPointToken(id, pbr, pbr->m_version);

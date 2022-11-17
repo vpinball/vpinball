@@ -10,7 +10,7 @@
 
 #define NUM_RGB_BLINK_PATTERN 33 //!! remove
 
-enum ShadowMode
+enum ShadowMode : int
 {
    NONE,
    RAYTRACED_BALL_SHADOWS
