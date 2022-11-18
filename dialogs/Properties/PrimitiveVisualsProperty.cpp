@@ -290,7 +290,7 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC19), CResizer::topleft, 0);
     m_resizer.AddChild(m_lightmapCombo, CResizer::topleft, RD_STRETCH_WIDTH);
 
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_materialCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, 0);
     m_resizer.AddChild(m_imageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
@@ -307,12 +307,12 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC13), CResizer::topleft, 0);
     m_resizer.AddChild(m_opacityAmountEdit, CResizer::topright, RD_STRETCH_WIDTH);
 
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC14), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC14), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_reflectionCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC15), CResizer::topleft, 0);
     m_resizer.AddChild(m_reflectionAmountEdit, CResizer::topright, RD_STRETCH_WIDTH);
 
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC16), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC16), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_refractionCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC17), CResizer::topleft, 0);
     m_resizer.AddChild(m_refractionThicknessEdit, CResizer::topright, RD_STRETCH_WIDTH);
