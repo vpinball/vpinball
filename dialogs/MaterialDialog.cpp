@@ -292,12 +292,12 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                lvitem.iSubItem = 0;
                ListView_GetItem(m_hMaterialList, &lvitem);
                Material *pmat = (Material *)lvitem.lParam;
-               m_colorDialog.SetColor(pmat->m_cClearcoat);
+               m_colorDialog.SetColor(pmat->m_cRefractionTint);
                if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
                {
                    memcpy(pt->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(pt->m_rgcolorcustom));
                    pmat->m_cRefractionTint = m_colorDialog.GetColor();
-                   m_colorButton3.SetColor(pmat->m_cRefractionTint);
+                   m_colorButton4.SetColor(pmat->m_cRefractionTint);
                    while (sel != -1)
                    {
                        sel = ListView_GetNextItem(m_hMaterialList, sel, LVNI_SELECTED);
@@ -743,6 +743,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   m_colorButton1.SetColor(pmat->m_cBase);
                   m_colorButton2.SetColor(pmat->m_cGlossy);
                   m_colorButton3.SetColor(pmat->m_cClearcoat);
+                  m_colorButton4.SetColor(pmat->m_cRefractionTint);
                   setItemText(IDC_DIFFUSE_EDIT, pmat->m_fWrapLighting);
                   setItemText(IDC_GLOSSY_EDIT, pmat->m_fRoughness);
                   setItemText(IDC_GLOSSY_IMGLERP_EDIT, pmat->m_fGlossyImageLerp);
@@ -794,6 +795,10 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          else if (nID == IDC_COLOR_BUTTON3)
          {
              m_colorButton3.DrawItem(lpDrawItemStruct);
+         }
+         else if (nID == IDC_COLOR_BUTTON5)
+         {
+             m_colorButton4.DrawItem(lpDrawItemStruct);
          }
 
          return TRUE;
