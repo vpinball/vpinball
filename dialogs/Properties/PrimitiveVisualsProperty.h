@@ -16,7 +16,8 @@ protected:
     virtual BOOL OnInitDialog();
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-   void UpdateRenderProbeComboBox(const vector<RenderProbe *> &contentList, const CComboBox &combo, const string &selectName);
+    void UpdateLightmapComboBox(const PinTable* table, const CComboBox &combo, const string &selectName);
+    void UpdateRenderProbeComboBox(const vector<RenderProbe *> &contentList, const CComboBox &combo, const string &selectName);
 
 private:
     CButton     m_importMeshButton;
@@ -24,6 +25,7 @@ private:
     ComboBox    m_imageCombo;
     ComboBox    m_normalMapCombo;
     ComboBox    m_materialCombo;
+    ComboBox    m_lightmapCombo;
     ComboBox    m_reflectionCombo;
     EditBox     m_reflectionAmountEdit;
     ComboBox    m_refractionCombo;

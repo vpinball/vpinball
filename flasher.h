@@ -28,6 +28,7 @@ public:
    bool m_isVisible;
    bool m_addBlend;
    bool m_isDMD;
+   string m_szLightmap;
 };
 
 /////////////////////////////////////////////////////////////////////////////

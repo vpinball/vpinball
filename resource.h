@@ -44,6 +44,7 @@
 #define IDC_HIT_TARGET_TYPE             9
 #define DISPID_Surface_FaceColor        10
 #define DISPID_Light_BlinkInterval      10
+#define IDC_LIGHTMAP                    10
 #define DISPID_Light_BlinkInterval2     11
 #define DISPID_Light_BlinkDuration      11
 #define IDC_TEXTBOX_ALIGN_COMBO         11

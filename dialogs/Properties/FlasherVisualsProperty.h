@@ -16,7 +16,9 @@ protected:
     virtual BOOL OnInitDialog();
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-private:
+    void UpdateLightmapComboBox(const PinTable *table, const CComboBox &combo, const string &selectName);
+
+private :
     ComboBox    m_imageACombo;
     ComboBox    m_imageBCombo;
     ComboBox    m_modeCombo;
@@ -29,6 +31,7 @@ private:
     EditBox     m_intensityEdit;
     EditBox     m_fadeSpeedUpEdit;
     EditBox     m_fadeSpeedDownEdit;
+    ComboBox    m_lightmapCombo;
     EditBox     m_heightEdit;
     EditBox     m_rotXEdit;
     EditBox     m_rotYEdit;
