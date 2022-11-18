@@ -282,8 +282,8 @@ RenderTarget* RenderTarget::Duplicate(const bool shareDepthSurface)
 
 void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool copyDepth)
 {
-#ifdef ENABLE_SDL
    int w1 = GetWidth(), h1 = GetHeight(), w2 = dest->GetWidth(), h2 = dest->GetHeight();
+#ifdef ENABLE_SDL
    if (w1 == w2 && h1 == h2)
    {
       int bitmask = (copyColor ? GL_COLOR_BUFFER_BIT : 0) | (m_has_depth && dest->m_has_depth && copyDepth ? GL_DEPTH_BUFFER_BIT : 0);
@@ -324,7 +324,7 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
 #else
    if (copyColor)
    {
-      CHECKD3D(m_rd->GetCoreDevice()->StretchRect(m_color_surface, nullptr, dest->m_color_surface, nullptr, D3DTEXF_NONE));
+      CHECKD3D(m_rd->GetCoreDevice()->StretchRect(m_color_surface, nullptr, dest->m_color_surface, nullptr, w1 == w2 && h1 == h2 ? D3DTEXF_NONE : D3DTEXF_LINEAR));
    }
    if (m_has_depth && dest->m_has_depth && copyDepth)
    {

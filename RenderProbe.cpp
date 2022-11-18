@@ -117,6 +117,8 @@ RenderTarget *RenderProbe::GetProbe(const bool is_static)
 
 int RenderProbe::GetRoughnessDownscale(const int roughness)
 {
+   if (m_type == SCREEN_SPACE_TRANSPARENCY)
+      return 1; // No downscaling since this is not supported by hardware for depth buffer
    return roughness < 7 ? 1 : 2;
 }
 
@@ -131,8 +133,17 @@ void RenderProbe::ApplyRoughness(RenderTarget* probe, const int roughness)
       // The kernel sizes were chosen by reverse engiennering the blur shader. So there's a part of guess here.
       // The blur shader seems to mix binomial & gaussian distributions, with a kernel size which does not directly matches the pascal triangle size.
       // Ideally this should be a gaussian distribution's sigma, scaled by the render height against a reference height.
-      const float kernel[] = { 0.f, 7.f, 9.f, 13.f, 15.f, 19.f, 23.f, 13.f, 15.f, 19.f, 23.f, 27.f, 39.f};
-      p3dDevice->DrawGaussianBlur(probe->GetColorSampler(), m_blurRT, probe, kernel[roughness]);
+      if (m_type == SCREEN_SPACE_TRANSPARENCY)
+      {
+         // FIXME adjut the kernels to have as many as there are roughness levels
+         const float kernel[] = { 0.f, 7.f, 9.f, 11.f, 13.f, 15.f, 19.f, 23.f, 27.f, 39.f, 39.f, 39.f, 39.f };
+         p3dDevice->DrawGaussianBlur(probe->GetColorSampler(), m_blurRT, probe, kernel[roughness]);
+      }
+      else
+      {
+         const float kernel[] = { 0.f, 7.f, 9.f, 13.f, 15.f, 19.f, 23.f, 13.f, 15.f, 19.f, 23.f, 27.f, 39.f };
+         p3dDevice->DrawGaussianBlur(probe->GetColorSampler(), m_blurRT, probe, kernel[roughness]);
+      }
    }
 }
 
