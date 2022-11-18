@@ -763,6 +763,10 @@ INT_PTR DbgMaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 m_colorButton3.DrawItem(lpDrawItemStruct);
             }
+            else if (nID == IDC_COLOR_BUTTON4)
+            {
+                m_colorButton4.DrawItem(lpDrawItemStruct);
+            }
             return TRUE;
         }
     }
