@@ -30,6 +30,8 @@ FlasherVisualsProperty::FlasherVisualsProperty(const VectorProtected<ISelect> *p
     m_imageBCombo.SetDialog(this);
     m_modeCombo.SetDialog(this);
     m_filterCombo.SetDialog(this);
+
+    m_lightmapCombo.SetDialog(this);
 }
 
 void FlasherVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -78,9 +80,44 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             PropertyDialog::UpdateComboBox(m_filterList, m_filterCombo, m_filterList[flash->m_d.m_filter]);
         if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
             m_colorButton.SetColor(flash->m_d.m_color);
+        if (dispid == IDC_LIGHTMAP || dispid == -1)
+            UpdateLightmapComboBox(flash->GetPTable(), m_lightmapCombo, flash->m_d.m_szLightmap);
         //only show the first element on multi-select
         break;
     }
+}
+
+void FlasherVisualsProperty::UpdateLightmapComboBox(const PinTable *table, const CComboBox &combo, const string &selectName)
+{
+    std::vector<Light *> lights;
+    for (size_t i = 0; i < table->m_vedit.size(); i++)
+    {
+        IEditable *const pe = table->m_vedit[i];
+        if (pe->GetItemType() == ItemTypeEnum::eItemLight)
+            lights.push_back((Light *)pe);
+    }
+
+    bool need_reset = combo.GetCount() != lights.size() + 1; // Not the same number of items
+    need_reset |= combo.FindStringExact(1, selectName.c_str()) == CB_ERR; // Selection is not part of combo
+    if (!need_reset)
+    {
+        bool texelFound = false;
+        for (const auto texel : lights)
+        {
+            if (strncmp(texel->GetName(), selectName.c_str(), MAXTOKEN) == 0) //!! _stricmp?
+               texelFound = true;
+            need_reset |= combo.FindStringExact(1, texel->GetName()) == CB_ERR; // Combo does not contain an image from the image list
+        }
+        need_reset |= !texelFound; // Selection is not part of image list
+    }
+    if (need_reset)
+    {
+        combo.ResetContent();
+        combo.AddString(_T("<None>"));
+        for (size_t i = 0; i < lights.size(); i++)
+            combo.AddString(lights[i]->GetName());
+    }
+    combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
 
 void FlasherVisualsProperty::UpdateProperties(const int dispid)
@@ -184,6 +221,9 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
                 }
                 break;
             }
+            case IDC_LIGHTMAP:
+                CHECK_UPDATE_COMBO_TEXT_STRING(flash->m_d.m_szLightmap, m_lightmapCombo, flash);
+                break;
             default:
                 break;
         }
@@ -213,6 +253,7 @@ BOOL FlasherVisualsProperty::OnInitDialog()
     m_rotYEdit.AttachItem(2);
     m_rotZEdit.AttachItem(1);
     AttachItem(IDC_COLOR_BUTTON1, m_colorButton);
+    m_lightmapCombo.AttachItem(IDC_LIGHTMAP);
     UpdateVisuals();
 
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
@@ -234,6 +275,8 @@ BOOL FlasherVisualsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC16), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC17), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC18), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC19), CResizer::topleft, 0);
+    m_resizer.AddChild(m_lightmapCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hVisibleCheck, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_imageACombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hDisplayInEditorCheck, CResizer::topleft, RD_STRETCH_WIDTH);

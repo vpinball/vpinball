@@ -11,6 +11,7 @@ PrimitiveVisualsProperty::PrimitiveVisualsProperty(const VectorProtected<ISelect
     m_depthBiasEdit.SetDialog(this);
     m_imageCombo.SetDialog(this);
     m_normalMapCombo.SetDialog(this);
+    m_lightmapCombo.SetDialog(this);
     m_reflectionCombo.SetDialog(this);
     m_reflectionAmountEdit.SetDialog(this);
     m_refractionCombo.SetDialog(this);
@@ -63,6 +64,8 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
            UpdateRenderProbeComboBox(prim->GetPTable()->GetRenderProbeList(RenderProbe::SCREEN_SPACE_TRANSPARENCY), m_refractionCombo, prim->m_d.m_szRefractionProbe);
         if (dispid == IDC_REFRACTION_THICKNESS || dispid == -1)
            PropertyDialog::SetFloatTextbox(m_refractionThicknessEdit, prim->m_d.m_refractionThickness);
+        if (dispid == IDC_LIGHTMAP || dispid == -1)
+           UpdateLightmapComboBox(prim->GetPTable(), m_lightmapCombo, prim->m_d.m_szLightmap);
 
         // Disable playfield settings that are taken from table settings to avoid confusing the user
         if (m_hReflectionEnabledCheck && (dispid == IDC_REFLECT_ENABLED_CHECK || dispid == -1))
@@ -76,6 +79,39 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         //only show the first element on multi-select
         break;
     }
+}
+
+void PrimitiveVisualsProperty::UpdateLightmapComboBox(const PinTable *table, const CComboBox &combo, const string &selectName)
+{
+   std::vector<Light*> lights;
+   for (size_t i = 0; i < table->m_vedit.size(); i++)
+   {
+      IEditable *const pe = table->m_vedit[i];
+      if (pe->GetItemType() == ItemTypeEnum::eItemLight)
+         lights.push_back((Light *)pe);
+   }
+
+    bool need_reset = combo.GetCount() != lights.size() + 1; // Not the same number of items
+    need_reset |= combo.FindStringExact(1, selectName.c_str()) == CB_ERR; // Selection is not part of combo
+    if (!need_reset)
+    {
+        bool texelFound = false;
+           for (const auto texel : lights)
+        {
+           if (strncmp(texel->GetName(), selectName.c_str(), MAXTOKEN) == 0) //!! _stricmp?
+              texelFound = true;
+           need_reset |= combo.FindStringExact(1, texel->GetName()) == CB_ERR; // Combo does not contain an image from the image list
+        }
+        need_reset |= !texelFound; // Selection is not part of image list
+    }
+    if (need_reset)
+    {
+        combo.ResetContent();
+        combo.AddString(_T("<None>"));
+        for (size_t i = 0; i < lights.size(); i++)
+           combo.AddString(lights[i]->GetName());
+    }
+    combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
 
 void PrimitiveVisualsProperty::UpdateRenderProbeComboBox(const vector<RenderProbe *> &contentList, const CComboBox &combo, const string &selectName)
@@ -179,6 +215,9 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
                 }
                 break;
             }
+            case IDC_LIGHTMAP:
+                CHECK_UPDATE_COMBO_TEXT_STRING(prim->m_d.m_szLightmap, m_lightmapCombo, prim);
+                break;
             case DISPID_REFLECTION_PROBE:
                 CHECK_UPDATE_COMBO_TEXT_STRING(prim->m_d.m_szReflectionProbe, m_reflectionCombo, prim);
                 break;
@@ -223,6 +262,7 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     m_disableLightFromBelowEdit.AttachItem(IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW);
     m_legacySidesEdit.AttachItem(IDC_PRIMITIVE_LEGACY_SIDES_EDIT);
     m_edgeFactorUIEdit.AttachItem(IDC_EDGE_FACTOR_UI);
+    m_lightmapCombo.AttachItem(IDC_LIGHTMAP);
     m_reflectionCombo.AttachItem(DISPID_REFLECTION_PROBE);
     m_reflectionAmountEdit.AttachItem(IDC_REFLECTION_AMOUNT);
     m_refractionCombo.AttachItem(DISPID_REFRACTION_PROBE);
@@ -247,8 +287,10 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topleft, 0);
     m_resizer.AddChild(m_depthBiasEdit, CResizer::topright, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hAdditiveBlendCheck, CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC19), CResizer::topleft, 0);
+    m_resizer.AddChild(m_lightmapCombo, CResizer::topleft, RD_STRETCH_WIDTH);
 
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, 0);
     m_resizer.AddChild(m_materialCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, 0);
     m_resizer.AddChild(m_imageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
@@ -265,12 +307,12 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC13), CResizer::topleft, 0);
     m_resizer.AddChild(m_opacityAmountEdit, CResizer::topright, RD_STRETCH_WIDTH);
 
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC14), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC14), CResizer::topleft, 0);
     m_resizer.AddChild(m_reflectionCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC15), CResizer::topleft, 0);
     m_resizer.AddChild(m_reflectionAmountEdit, CResizer::topright, RD_STRETCH_WIDTH);
 
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC16), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC16), CResizer::topleft, 0);
     m_resizer.AddChild(m_refractionCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC17), CResizer::topleft, 0);
     m_resizer.AddChild(m_refractionThicknessEdit, CResizer::topright, RD_STRETCH_WIDTH);

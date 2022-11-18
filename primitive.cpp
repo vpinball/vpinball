@@ -1629,6 +1629,8 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool bac
    bw.WriteFloat(FID(FALP), m_d.m_alpha);
    bw.WriteInt(FID(COLR), m_d.m_color);
 
+   bw.WriteString(FID(LMAP), m_d.m_szLightmap);
+
    bw.WriteString(FID(REFL), m_d.m_szReflectionProbe);
    bw.WriteFloat(FID(RSTR), m_d.m_reflectionStrength);
    bw.WriteString(FID(REFR), m_d.m_szRefractionProbe);
@@ -1847,6 +1849,8 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    case FID(ADDB): pbr->GetBool(m_d.m_addBlend); break;
    case FID(FALP): pbr->GetFloat(m_d.m_alpha); break;
    case FID(COLR): pbr->GetInt(m_d.m_color); break;
+
+   case FID(LMAP): pbr->GetString(m_d.m_szLightmap); break;
 
    case FID(REFL): pbr->GetString(m_d.m_szReflectionProbe); break;
    case FID(RSTR): pbr->GetFloat(m_d.m_reflectionStrength); break;

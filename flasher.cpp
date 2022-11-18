@@ -558,6 +558,7 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backu
    bw.WriteInt(FID(ALGN), m_d.m_imagealignment);
    bw.WriteInt(FID(FILT), m_d.m_filter);
    bw.WriteInt(FID(FIAM), m_d.m_filterAmount);
+   bw.WriteString(FID(LMAP), m_d.m_szLightmap);
    ISelect::SaveData(pstm, hcrypthash);
 
    HRESULT hr;
@@ -625,6 +626,7 @@ bool Flasher::LoadToken(const int id, BiffReader * const pbr)
    case FID(ALGN): pbr->GetInt(&m_d.m_imagealignment); break;
    case FID(FILT): pbr->GetInt(&m_d.m_filter); break;
    case FID(FIAM): pbr->GetInt(m_d.m_filterAmount); break;
+   case FID(LMAP): pbr->GetString(m_d.m_szLightmap); break;
    default:
    {
       LoadPointToken(id, pbr, pbr->m_version);
