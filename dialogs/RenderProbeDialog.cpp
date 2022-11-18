@@ -141,11 +141,36 @@ INT_PTR RenderProbeDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          const int count = ListView_GetSelectedCount(hListHwnd);
          const BOOL enable = !(count > 1);
          ::EnableWindow(GetDlgItem(IDC_RENAME).GetHwnd(), enable);
-         break;
       }
+      break;
+      
       }
    }
    break;
+
+   case WM_HSCROLL:
+   {
+      if ((HWND)lParam == GetDlgItem(IDC_ROUGHNESS_BASE).GetHwnd() || (HWND)lParam == GetDlgItem(IDC_ROUGHNESS_CLEAR_LABEL).GetHwnd())
+      {
+         auto sel = ListView_GetSelectionMark(hListHwnd);
+         if (sel >= 0)
+         {
+            LVITEM lvitem;
+            lvitem.mask = LVIF_PARAM;
+            lvitem.iItem = sel;
+            lvitem.iSubItem = 0;
+            ListView_GetItem(hListHwnd, &lvitem);
+            RenderProbe *const pb = (RenderProbe *)lvitem.lParam;
+            if (pb != nullptr)
+            {
+               SaveProbeFromUI(pb);
+               LoadProbeToUI(pb);
+            }
+         }
+      }
+   }
+   break;
+
    }
 
    return DialogProcDefault(uMsg, wParam, lParam);
@@ -169,19 +194,21 @@ void RenderProbeDialog::LoadProbeToUI(RenderProbe *const pb)
    GetDlgItem(IDC_REFLECTION_PLANE_DIST).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
    GetDlgItem(IDC_REFLECTION_MAX_LEVEL).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
    HWND hwnd = GetDlgItem(IDC_ROUGHNESS_BASE).GetHwnd();
-   SendMessage(hwnd, TBM_SETRANGE, fTrue, MAKELONG(0, 5 - 1));
+   SendMessage(hwnd, TBM_SETRANGE, fTrue, MAKELONG(0, 13 - 1));
    SendMessage(hwnd, TBM_SETTICFREQ, 1, 0);
    SendMessage(hwnd, TBM_SETLINESIZE, 0, 1);
    SendMessage(hwnd, TBM_SETPAGESIZE, 0, 1);
    SendMessage(hwnd, TBM_SETTHUMBLENGTH, 5, 0);
    SendMessage(hwnd, TBM_SETPOS, TRUE, pb->GetBaseRoughness());
+   GetDlgItem(IDC_ROUGHNESS_BASE_LABEL).SetWindowText("Base: "s.append(std::to_string(pb->GetBaseRoughness())).c_str());
    hwnd = GetDlgItem(IDC_ROUGHNESS_CLEAR).GetHwnd();
-   SendMessage(hwnd, TBM_SETRANGE, fTrue, MAKELONG(0, 5 - 1));
+   SendMessage(hwnd, TBM_SETRANGE, fTrue, MAKELONG(0, 13 - 1));
    SendMessage(hwnd, TBM_SETTICFREQ, 1, 0);
    SendMessage(hwnd, TBM_SETLINESIZE, 0, 1);
    SendMessage(hwnd, TBM_SETPAGESIZE, 0, 1);
    SendMessage(hwnd, TBM_SETTHUMBLENGTH, 5, 0);
    SendMessage(hwnd, TBM_SETPOS, TRUE, pb->GetClearRoughness());
+   GetDlgItem(IDC_ROUGHNESS_CLEAR_LABEL).SetWindowText("Clear: "s.append(std::to_string(pb->GetClearRoughness())).c_str());
 }
 
 void RenderProbeDialog::SaveProbeFromUI(RenderProbe *const pb)
