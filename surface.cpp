@@ -1008,7 +1008,7 @@ void Surface::RenderSlingshots()
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szSlingShotMaterial);
-   pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
+   pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
    pd3dDevice->basicShader->SetMaterial(mat, false);
 
    pd3dDevice->SetRenderStateDepthBias(0.0f);
@@ -1069,14 +1069,14 @@ void Surface::RenderWallsAtHeight(const bool drop)
       Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
       if (pinSide)
       {
-         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
+         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat);
          pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pinSide);
          pd3dDevice->basicShader->SetAlphaTestValue(pinSide->m_alphaTestValue * (float)(1.0 / 255.0));
          pd3dDevice->basicShader->SetMaterial(mat, pinSide->m_pdsBuffer->has_alpha());
       }
       else
       {
-         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
+         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
          pd3dDevice->basicShader->SetMaterial(mat, false);
       }
 
@@ -1102,14 +1102,14 @@ void Surface::RenderWallsAtHeight(const bool drop)
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
       if (pin)
       {
-         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
+         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat);
          pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
          pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
       }
       else
       {
-         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
+         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
          pd3dDevice->basicShader->SetMaterial(mat, false);
       }
 

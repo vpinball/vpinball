@@ -18,7 +18,7 @@ bool MaterialDialog::m_deletingItem;
 
 void MaterialDialog::EnableAllMaterialDialogItems(const BOOL e)
 {
-   ::EnableWindow(GetDlgItem(IDC_DIFFUSE_CHECK).GetHwnd(), e);
+   ::EnableWindow(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), e);
    ::EnableWindow(GetDlgItem(IDC_DIFFUSE_EDIT).GetHwnd(), e);
    ::EnableWindow(GetDlgItem(IDC_GLOSSY_EDIT).GetHwnd(), e);
    ::EnableWindow(GetDlgItem(IDC_GLOSSY_IMGLERP_EDIT).GetHwnd(), e);
@@ -57,10 +57,19 @@ BOOL MaterialDialog::OnInitDialog()
    AttachItem(IDC_COLOR_BUTTON1, m_colorButton1);
    AttachItem(IDC_COLOR_BUTTON2, m_colorButton2);
    AttachItem(IDC_COLOR_BUTTON3, m_colorButton3);
+   AttachItem(IDC_COLOR_BUTTON5, m_colorButton4);
+
+   HWND hwnd = GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd();
+   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Basic");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Metal");
+   // SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Unshaded");
+   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    m_resizer.Initialize(*this, CRect(0, 0, 780, 520));
    m_resizer.AddChild(m_hMaterialList, CResizer::topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-   m_resizer.AddChild(GetDlgItem(IDC_DIFFUSE_CHECK).GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC1).GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), CResizer::topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC_BASE_COLOR).GetHwnd(), CResizer::topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC_GLOSSY_LAYER).GetHwnd(), CResizer::topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC_CLEARCOAR_LAYER).GetHwnd(), CResizer::topright, 0);
@@ -69,6 +78,8 @@ BOOL MaterialDialog::OnInitDialog()
    m_resizer.AddChild(GetDlgItem(IDC_COLOR_BUTTON1).GetHwnd(), CResizer::topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_COLOR_BUTTON2).GetHwnd(), CResizer::topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_COLOR_BUTTON3).GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_COLOR_BUTTON5).GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC2).GetHwnd(), CResizer::topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC_WRAP).GetHwnd(), CResizer::topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_DIFFUSE_EDIT).GetHwnd(), CResizer::topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC_WRAP_TEXT).GetHwnd(), CResizer::topright, 0);
@@ -263,6 +274,48 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
            }
            break;
        }
+       case IDC_COLOR_BUTTON5:
+       {
+           CHOOSECOLOR cc = m_colorDialog.GetParameters();
+           cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+           m_colorDialog.SetParameters(cc);
+           m_colorDialog.SetCustomColors(pt->m_rgcolorcustom);
+           if (ListView_GetSelectedCount(m_hMaterialList)) // if some items are selected???
+           {
+               int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
+               if (sel == -1)
+                   break;
+
+               LVITEM lvitem;
+               lvitem.mask = LVIF_PARAM;
+               lvitem.iItem = sel;
+               lvitem.iSubItem = 0;
+               ListView_GetItem(m_hMaterialList, &lvitem);
+               Material *pmat = (Material *)lvitem.lParam;
+               m_colorDialog.SetColor(pmat->m_cClearcoat);
+               if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
+               {
+                   memcpy(pt->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(pt->m_rgcolorcustom));
+                   pmat->m_cRefractionTint = m_colorDialog.GetColor();
+                   m_colorButton3.SetColor(pmat->m_cRefractionTint);
+                   while (sel != -1)
+                   {
+                       sel = ListView_GetNextItem(m_hMaterialList, sel, LVNI_SELECTED);
+                       if (sel != -1)
+                       {
+                           lvitem.mask = LVIF_PARAM;
+                           lvitem.iItem = sel;
+                           lvitem.iSubItem = 0;
+                           ListView_GetItem(m_hMaterialList, &lvitem);
+                           pmat = (Material *)lvitem.lParam;
+                           pmat->m_cRefractionTint = m_colorDialog.GetColor();
+                       }
+                   }
+                   pt->SetNonUndoableDirty(eSaveDirty);
+               }
+           }
+           break;
+       }
 
       case IDC_CLONE_BUTTON:
       {
@@ -333,7 +386,9 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                fread(&friction, sizeof(float), 1, f);
                fread(&scatterAngle, sizeof(float), 1, f);
 
-               Material * const pmat = new Material(mat.fWrapLighting, mat.fRoughness, dequantizeUnsigned<8>(mat.fGlossyImageLerp), dequantizeUnsigned<8>(mat.fThickness), mat.fEdge, dequantizeUnsigned<7>(mat.bOpacityActive_fEdgeAlpha >> 1), mat.fOpacity, mat.cBase, mat.cGlossy, mat.cClearcoat, mat.bIsMetal, !!(mat.bOpacityActive_fEdgeAlpha & 1), elasticity, elasticityFalloff, friction, scatterAngle);
+               Material *const pmat = new Material(mat.bIsMetal ? Material::METAL : Material::BASIC ,mat.fWrapLighting, mat.fRoughness, dequantizeUnsigned<8>(mat.fGlossyImageLerp), dequantizeUnsigned<8>(mat.fThickness),
+                  mat.fEdge, dequantizeUnsigned<7>(mat.bOpacityActive_fEdgeAlpha >> 1), mat.fOpacity, mat.cBase, mat.cGlossy, mat.cClearcoat, !!(mat.bOpacityActive_fEdgeAlpha & 1),
+                  elasticity, elasticityFalloff, friction, scatterAngle, 0xFFFFFFFF);
                pmat->m_szName = mat.szName;
 
                pt->AddMaterial(pmat);
@@ -413,7 +468,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                   mat.fThickness = quantizeUnsigned<8>(clamp(pmat->m_fThickness, 0.f, 1.f));
                   mat.fEdge = pmat->m_fEdge;
                   mat.fWrapLighting = pmat->m_fWrapLighting;
-                  mat.bIsMetal = pmat->m_bIsMetal;
+                  mat.bIsMetal = pmat->m_type == Material::METAL;
                   mat.fOpacity = pmat->m_fOpacity;
                   mat.bOpacityActive_fEdgeAlpha = pmat->m_bOpacityActive ? 1 : 0;
                   mat.bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(pmat->m_fEdgeAlpha, 0.f, 1.f)) << 1;
@@ -585,6 +640,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                      m_colorButton1.SetColor(pmat->m_cBase);
                      m_colorButton2.SetColor(pmat->m_cGlossy);
                      m_colorButton3.SetColor(pmat->m_cClearcoat);
+                     m_colorButton4.SetColor(pmat->m_cRefractionTint);
                      setItemText(IDC_DIFFUSE_EDIT, pmat->m_fWrapLighting);
                      setItemText(IDC_GLOSSY_EDIT, pmat->m_fRoughness);
                      setItemText(IDC_GLOSSY_IMGLERP_EDIT, pmat->m_fGlossyImageLerp);
@@ -593,7 +649,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                      setItemText(IDC_OPACITY_EDIT, pmat->m_fOpacity);
                      setItemText(IDC_EDGEALPHA_EDIT, pmat->m_fEdgeAlpha);
 
-                     SendMessage(GetDlgItem(IDC_DIFFUSE_CHECK).GetHwnd(), BM_SETCHECK, pmat->m_bIsMetal ? BST_CHECKED : BST_UNCHECKED, 0);
+                     SendMessage(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), CB_SETCURSEL, pmat->m_type, 0);
                      SendMessage(GetDlgItem(IDC_OPACITY_CHECK).GetHwnd(), BM_SETCHECK, pmat->m_bOpacityActive ? BST_CHECKED : BST_UNCHECKED, 0);
 
                      setItemText(IDC_MAT_ELASTICITY, pmat->m_fElasticity);
@@ -652,11 +708,11 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   if (pmat->m_fOpacity != fv)
                      pt->SetNonUndoableDirty(eSaveDirty);
                   pmat->m_fOpacity = fv;
-                  size_t checked = SendDlgItemMessage(IDC_DIFFUSE_CHECK, BM_GETCHECK, 0, 0);
-                  if (pmat->m_bIsMetal != (checked == 1))
+                  size_t type = SendMessage(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), CB_GETCURSEL, 0, 0);
+                  if (pmat->m_type != type)
                      pt->SetNonUndoableDirty(eSaveDirty);
-                  pmat->m_bIsMetal = (checked == 1);
-                  checked = SendDlgItemMessage(IDC_OPACITY_CHECK, BM_GETCHECK, 0, 0);
+                  pmat->m_type = (Material::MaterialType) type;
+                  size_t checked = SendDlgItemMessage(IDC_OPACITY_CHECK, BM_GETCHECK, 0, 0);
                   if (pmat->m_bOpacityActive != (checked == 1))
                      pt->SetNonUndoableDirty(eSaveDirty);
                   pmat->m_bOpacityActive = (checked == 1);
@@ -694,7 +750,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   setItemText(IDC_SPECULAR_EDIT, pmat->m_fEdge);
                   setItemText(IDC_OPACITY_EDIT, pmat->m_fOpacity);
 
-                  SendMessage(GetDlgItem(IDC_DIFFUSE_CHECK).GetHwnd(), BM_SETCHECK, pmat->m_bIsMetal ? BST_CHECKED : BST_UNCHECKED, 0);
+                  SendMessage(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), CB_SETCURSEL, pmat->m_type, 0);
                   SendMessage(GetDlgItem(IDC_OPACITY_CHECK).GetHwnd(), BM_SETCHECK, pmat->m_bOpacityActive ? BST_CHECKED : BST_UNCHECKED, 0);
 
                   setItemText(IDC_EDGEALPHA_EDIT, pmat->m_fEdgeAlpha);
@@ -792,12 +848,12 @@ void MaterialDialog::OnOK()
             pt->SetNonUndoableDirty(eSaveDirty);
          pmat->m_fOpacity = fv;
 
-         size_t checked = SendDlgItemMessage(IDC_DIFFUSE_CHECK, BM_GETCHECK, 0, 0);
-         if (pmat->m_bIsMetal != (checked == 1))
+         size_t type = SendMessage(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), CB_SETCURSEL, pmat->m_type, 0);
+         if (pmat->m_type != type)
             pt->SetNonUndoableDirty(eSaveDirty);
-         pmat->m_bIsMetal = (checked == 1);
+         pmat->m_type = (Material::MaterialType)type;
 
-         checked = SendDlgItemMessage(IDC_OPACITY_CHECK, BM_GETCHECK, 0, 0);
+         size_t checked = SendDlgItemMessage(IDC_OPACITY_CHECK, BM_GETCHECK, 0, 0);
          if (pmat->m_bOpacityActive != (checked == 1))
             pt->SetNonUndoableDirty(eSaveDirty);
          pmat->m_bOpacityActive = (checked == 1);

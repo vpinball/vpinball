@@ -539,6 +539,7 @@ BOOL DbgMaterialDialog::OnInitDialog()
     AttachItem(IDC_COLOR_BUTTON1, m_colorButton1);
     AttachItem(IDC_COLOR_BUTTON2, m_colorButton2);
     AttachItem(IDC_COLOR_BUTTON3, m_colorButton3);
+    AttachItem(IDC_COLOR_BUTTON4, m_colorButton4);
 
     vector<string> matNames;
     matNames.reserve(g_pplayer->m_ptable->m_materials.size());
@@ -572,9 +573,9 @@ void DbgMaterialDialog::OnOK()
         pMat->m_fOpacity         = saturate(sz2f(GetDlgItemText(IDC_DBG_MATERIAL_OPACITY_AMOUNT_EDIT).c_str()));
         pMat->m_fEdgeAlpha       = saturate(sz2f(GetDlgItemText(DBG_MATERIAL_OPACITY_EDGE_EDIT).c_str()));
 
-        size_t checked = SendDlgItemMessage(IDC_DBG_METAL_MATERIAL_CHECK, BM_GETCHECK, 0, 0);
-        pMat->m_bIsMetal = (checked == 1);
-        checked = SendDlgItemMessage(IDC_DBG_MATERIAL_OPACITY_ACTIVE_CHECK, BM_GETCHECK, 0, 0);
+        size_t type = SendMessage(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), CB_GETCURSEL, 0, 0);
+        pMat->m_type = (Material::MaterialType)type;
+        size_t checked = SendDlgItemMessage(IDC_DBG_MATERIAL_OPACITY_ACTIVE_CHECK, BM_GETCHECK, 0, 0);
         pMat->m_bOpacityActive = (checked == 1);
 
         g_pplayer->m_ptable->AddDbgMaterial(pMat);
@@ -613,11 +614,12 @@ BOOL DbgMaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                         SetDlgItemText(IDC_DBG_MATERIAL_EDGE_EDIT, f2sz(pMat->m_fEdge).c_str());
                         SetDlgItemText(IDC_DBG_MATERIAL_OPACITY_AMOUNT_EDIT, f2sz(pMat->m_fOpacity).c_str());
                         SetDlgItemText(DBG_MATERIAL_OPACITY_EDGE_EDIT, f2sz(pMat->m_fEdgeAlpha).c_str());
-                        SendMessage(GetDlgItem(IDC_DBG_METAL_MATERIAL_CHECK), BM_SETCHECK, pMat->m_bIsMetal ? BST_CHECKED : BST_UNCHECKED, 0);
+                        SendMessage(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), CB_SETCURSEL, pMat->m_type, 0);
                         SendMessage(GetDlgItem(IDC_DBG_MATERIAL_OPACITY_ACTIVE_CHECK), BM_SETCHECK, pMat->m_bOpacityActive ? BST_CHECKED : BST_UNCHECKED, 0);
                         m_colorButton1.SetColor(pMat->m_cBase);
                         m_colorButton2.SetColor(pMat->m_cGlossy);
                         m_colorButton3.SetColor(pMat->m_cClearcoat);
+                        m_colorButton4.SetColor(pMat->m_cRefractionTint);
                     }
                     return TRUE;
                 }
@@ -693,6 +695,31 @@ BOOL DbgMaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 {
                     pMat->m_cClearcoat = m_colorDialog.GetColor();
                     m_colorButton3.SetColor(pMat->m_cClearcoat);
+                    memcpy(g_pplayer->m_ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(g_pplayer->m_ptable->m_rgcolorcustom));
+                    g_pplayer->m_ptable->AddDbgMaterial(pMat);
+                }
+            }
+            return TRUE;
+        }
+        case IDC_COLOR_BUTTON4:
+        {
+            CHOOSECOLOR cc = m_colorDialog.GetParameters();
+            cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+
+            char strText[MAXSTRING] = { 0 };
+            const int idx_row = m_materialsCombo.GetCurSel();
+            m_materialsCombo.GetLBText(idx_row, strText);
+
+            Material* const pMat = g_pplayer->m_ptable->GetMaterial(strText);
+            if (pMat != &g_pvp->m_dummyMaterial)
+            {
+                m_colorDialog.SetParameters(cc);
+                m_colorDialog.SetColor(pMat->m_cRefractionTint);
+                m_colorDialog.SetCustomColors(g_pplayer->m_ptable->m_rgcolorcustom);
+                if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
+                {
+                    pMat->m_cRefractionTint = m_colorDialog.GetColor();
+                    m_colorButton4.SetColor(pMat->m_cRefractionTint);
                     memcpy(g_pplayer->m_ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(g_pplayer->m_ptable->m_rgcolorcustom));
                     g_pplayer->m_ptable->AddDbgMaterial(pMat);
                 }

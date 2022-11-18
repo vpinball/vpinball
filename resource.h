@@ -1217,6 +1217,7 @@
 #define IDC_REFLECTION_MAX_LEVEL        896
 #define IDC_ROUGHNESS_BASE              897
 #define IDC_ROUGHNESS_CLEAR             898
+#define IDC_MATERIAL_TYPE               899
 #define IDC_ROUGHNESS_BASE_LABEL        902
 #define IDC_ROUGHNESS_CLEAR_LABEL       903
 #define IDC_LAYBACK_EDIT                1040

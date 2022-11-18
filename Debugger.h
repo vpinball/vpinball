@@ -44,6 +44,7 @@ private:
     ColorButton  m_colorButton1;
     ColorButton  m_colorButton2;
     ColorButton  m_colorButton3;
+    ColorButton  m_colorButton4;
 };
 
 class DebuggerDialog : public CDialog
