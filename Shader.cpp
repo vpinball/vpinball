@@ -166,6 +166,7 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_UNIFORM(SUT_Float4, cAmbient_LightRange),
    SHADER_UNIFORM(SUT_Float4, cClearcoat_EdgeAlpha),
    SHADER_UNIFORM(SUT_Float4, cGlossy_ImageLerp),
+   SHADER_UNIFORM(SUT_Float3, refractionTint),
    SHADER_UNIFORM(SUT_Float2, fDisableLighting_top_below),
    SHADER_UNIFORM(SUT_Float4, backBoxSize),
    SHADER_UNIFORM(SUT_Float4, vColor_Intensity),
@@ -280,7 +281,7 @@ Shader* Shader::current_shader = nullptr;
 Shader* Shader::GetCurrentShader() { return current_shader;  }
 
 Shader::Shader(RenderDevice* renderDevice)
-   : currentMaterial(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, 0xCCCCCCCC, 0xCCCCCCCC, 0xCCCCCCCC, false, false, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX)
+   : currentMaterial(Material::MaterialType::BASIC, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, 0xCCCCCCCC, 0xCCCCCCCC, 0xCCCCCCCC, false, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, 0xCCCCCCCC)
 {
    m_renderDevice = renderDevice;
    m_technique = SHADER_TECHNIQUE_INVALID;
@@ -382,7 +383,7 @@ void Shader::SetMaterial(const Material* const mat, const bool has_alpha)
       cBase = mat->m_cBase;
       cGlossy = mat->m_cGlossy;
       cClearcoat = mat->m_cClearcoat;
-      bIsMetal = mat->m_bIsMetal;
+      bIsMetal = mat->m_type == Material::MaterialType::METAL;
       bOpacityActive = mat->m_bOpacityActive;
    }
    else
@@ -540,13 +541,9 @@ void Shader::SetLightImageBackglassMode(const bool imageMode, const bool backgla
    }
 }
 
-void Shader::SetTechnique(ShaderTechniques technique)
+void Shader::SetTechniqueMetal(ShaderTechniques technique, const Material& mat, const bool doNormalMapping, const bool doReflections, const bool doRefractions)
 {
-   SetTechniqueMetal(technique, false);
-}
-
-void Shader::SetTechniqueMetal(ShaderTechniques technique, const bool isMetal, const bool doNormalMapping, const bool doReflections, const bool doRefractions)
-{
+   const bool isMetal = mat.m_type == Material::MaterialType::METAL;
    ShaderTechniques tech = technique;
 #ifdef ENABLE_SDL
    SetBool(SHADER_is_metal, isMetal);
@@ -601,17 +598,22 @@ void Shader::SetTechniqueMetal(ShaderTechniques technique, const bool isMetal, c
    case SHADER_TECHNIQUE_light_without_texture: if (isMetal) tech = SHADER_TECHNIQUE_light_without_texture_isMetal; break;
    }
 #endif
+   SetTechnique(tech);
+}
+
+void Shader::SetTechnique(ShaderTechniques technique)
+{
    assert(current_shader != this); // Changing the technique of a used shader is not allowed (between Begin/End)
-   assert(0 <= tech && tech < SHADER_TECHNIQUE_COUNT);
+   assert(0 <= technique && technique < SHADER_TECHNIQUE_COUNT);
 #ifdef ENABLE_SDL
-   if (m_techniques[tech] == nullptr)
+   if (m_techniques[technique] == nullptr)
    {
       m_technique = SHADER_TECHNIQUE_INVALID;
       ShowError("Fatal Error: Could not find shader technique " + shaderTechniqueNames[technique]);
       exit(-1);
    }
 #endif
-   m_technique = tech;
+   m_technique = technique;
 }
 
 uint32_t Shader::CopyUniformCache(const bool copyTo, const ShaderTechniques technique, UniformCache (&uniformCache)[SHADER_UNIFORM_COUNT])

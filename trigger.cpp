@@ -605,7 +605,7 @@ void Trigger::RenderDynamic()
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal);
+   pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
    pd3dDevice->basicShader->SetMaterial(mat, false);
 
    pd3dDevice->SetRenderStateDepthBias(0.0f);

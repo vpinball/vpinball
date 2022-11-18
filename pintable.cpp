@@ -690,7 +690,7 @@ STDMETHODIMP ScriptGlobalTable::UpdateMaterial(BSTR pVal, float wrapLighting, fl
       pMat->m_cBase = base;
       pMat->m_cGlossy = glossy;
       pMat->m_cClearcoat = clearcoat;
-      pMat->m_bIsMetal = VBTOb(isMetal);
+      pMat->m_type = VBTOb(isMetal) ? Material::MaterialType::METAL : Material::MaterialType::BASIC;
       pMat->m_bOpacityActive = VBTOb(opacityActive);
       pMat->m_fElasticity = elasticity;
       pMat->m_fElasticityFalloff = elasticityFalloff;
@@ -726,7 +726,7 @@ STDMETHODIMP ScriptGlobalTable::GetMaterial(BSTR pVal, VARIANT *wrapLighting, VA
       CComVariant(pMat->m_cBase).Detach(base);
       CComVariant(pMat->m_cGlossy).Detach(glossy);
       CComVariant(pMat->m_cClearcoat).Detach(clearcoat);
-      CComVariant(pMat->m_bIsMetal).Detach(isMetal);
+      CComVariant(pMat->m_type == Material::MaterialType::METAL).Detach(isMetal);
       CComVariant(pMat->m_bOpacityActive).Detach(opacityActive);
       CComVariant(pMat->m_fElasticity).Detach(elasticity);
       CComVariant(pMat->m_fElasticityFalloff).Detach(elasticityFalloff);
@@ -1358,6 +1358,10 @@ void PinTable::UpdatePropertyImageList()
 
 void PinTable::ClearForOverwrite()
 {
+   for (size_t i = 0; i < m_materials.size(); ++i)
+       delete m_materials[i];
+   m_materials.clear();
+
    for (size_t i = 0; i < m_vrenderprobe.size(); i++)
       delete m_vrenderprobe[i];
    m_vrenderprobe.clear();
@@ -3220,6 +3224,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
    bw.WriteInt(FID(USSR), m_useSSR);
    bw.WriteFloat(FID(BLST), m_bloom_strength);
 
+   // Legacy material saving for backward compatibility
    bw.WriteInt(FID(MASI), (int)m_materials.size());
    if (!m_materials.empty())
    {
@@ -3236,7 +3241,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
          mats[i].fThickness = quantizeUnsigned<8>(clamp(m->m_fThickness, 0.05f, 1.f)); // clamp with 0.05f to be compatible with previous table versions
          mats[i].fEdge = m->m_fEdge;
          mats[i].fOpacity = m->m_fOpacity;
-         mats[i].bIsMetal = m->m_bIsMetal;
+         mats[i].bIsMetal = m->m_type == Material::MaterialType::METAL;
          mats[i].bOpacityActive_fEdgeAlpha = m->m_bOpacityActive ? 1 : 0;
          mats[i].bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(m->m_fEdgeAlpha, 0.f, 1.f)) << 1;
          strncpy_s(mats[i].szName, m->m_szName.c_str(), sizeof(mats[i].szName)-1);
@@ -3258,6 +3263,24 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
           phymats[i].fScatterAngle = m->m_fScatterAngle;
       }
       bw.WriteStruct(FID(PHMA), phymats.data(), (int)(sizeof(SavePhysicsMaterial)*m_materials.size()));
+   }
+   // 10.8+ material saving (this format support new properties, can be extend in future version and does not perform quantizations)
+   for (size_t i = 0; i < m_materials.size(); i++)
+   {
+      const int record_size = m_materials[i]->GetSaveSize() + 2 *sizeof(int);
+      HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
+      CComPtr<IStream> spStream;
+      HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
+      m_materials[i]->SaveData(spStream, NULL, false);
+      BiffWriter sub_bw(spStream, NULL);
+      sub_bw.WriteTag(FID(ENDB));
+      LPVOID pData = ::GlobalLock(hMem);
+      ULONG writ = 0;
+      int id = FID(MATR);
+      bw.WriteRecordSize(sizeof(int) + record_size);
+      bw.WriteBytes(&id, sizeof(int), &writ);
+      bw.WriteBytes(pData, record_size, &writ);
+      ::GlobalUnlock(hMem);
    }
 
    for (size_t i = 0; i < m_vrenderprobe.size(); i++)
@@ -4008,28 +4031,26 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    {
       vector<SaveMaterial> mats(m_numMaterials);
       pbr->GetStruct(mats.data(), (int)sizeof(SaveMaterial)*m_numMaterials);
-
-      for (size_t i = 0; i < m_materials.size(); ++i)
-          delete m_materials[i];
-      m_materials.clear();
-
-      for (int i = 0; i < m_numMaterials; i++)
+      if (pbr->m_version < 1080)
       {
-         Material * const pmat = new Material();
-         pmat->m_cBase = mats[i].cBase;
-         pmat->m_cGlossy = mats[i].cGlossy;
-         pmat->m_cClearcoat = mats[i].cClearcoat;
-         pmat->m_fWrapLighting = mats[i].fWrapLighting;
-         pmat->m_fRoughness = mats[i].fRoughness;
-         pmat->m_fGlossyImageLerp = 1.0f - dequantizeUnsigned<8>(mats[i].fGlossyImageLerp); //!! '1.0f -' to be compatible with previous table versions
-         pmat->m_fThickness = (mats[i].fThickness == 0) ? 0.05f : dequantizeUnsigned<8>(mats[i].fThickness); //!! 0 -> 0.05f to be compatible with previous table versions
-         pmat->m_fEdge = mats[i].fEdge;
-         pmat->m_fOpacity = mats[i].fOpacity;
-         pmat->m_bIsMetal = mats[i].bIsMetal;
-         pmat->m_bOpacityActive = !!(mats[i].bOpacityActive_fEdgeAlpha & 1);
-         pmat->m_fEdgeAlpha = dequantizeUnsigned<7>(mats[i].bOpacityActive_fEdgeAlpha >> 1);
-         pmat->m_szName = mats[i].szName;
-         m_materials.push_back(pmat);
+         for (int i = 0; i < m_numMaterials; i++)
+         {
+            Material * const pmat = new Material();
+            pmat->m_cBase = mats[i].cBase;
+            pmat->m_cGlossy = mats[i].cGlossy;
+            pmat->m_cClearcoat = mats[i].cClearcoat;
+            pmat->m_fWrapLighting = mats[i].fWrapLighting;
+            pmat->m_fRoughness = mats[i].fRoughness;
+            pmat->m_fGlossyImageLerp = 1.0f - dequantizeUnsigned<8>(mats[i].fGlossyImageLerp); //!! '1.0f -' to be compatible with previous table versions
+            pmat->m_fThickness = (mats[i].fThickness == 0) ? 0.05f : dequantizeUnsigned<8>(mats[i].fThickness); //!! 0 -> 0.05f to be compatible with previous table versions
+            pmat->m_fEdge = mats[i].fEdge;
+            pmat->m_fOpacity = mats[i].fOpacity;
+            pmat->m_type = mats[i].bIsMetal ? Material::MaterialType::METAL : Material::MaterialType::BASIC;
+            pmat->m_bOpacityActive = !!(mats[i].bOpacityActive_fEdgeAlpha & 1);
+            pmat->m_fEdgeAlpha = dequantizeUnsigned<7>(mats[i].bOpacityActive_fEdgeAlpha >> 1);
+            pmat->m_szName = mats[i].szName;
+            m_materials.push_back(pmat);
+         }
       }
       break;
    }
@@ -4037,26 +4058,46 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    {
        vector<SavePhysicsMaterial> mats(m_numMaterials);
        pbr->GetStruct(mats.data(), (int)sizeof(SavePhysicsMaterial)*m_numMaterials);
-
-       for (int i = 0; i < m_numMaterials; i++)
+       if (pbr->m_version < 1080)
        {
-           bool found = true;
-           Material * pmat = GetMaterial(mats[i].szName);
-           if (pmat == &m_vpinball->m_dummyMaterial)
-           {
-               assert(!"SaveMaterial not found");
-               pmat = new Material();
-               pmat->m_szName = mats[i].szName;
-               found = false;
-           }
-           pmat->m_fElasticity = mats[i].fElasticity;
-           pmat->m_fElasticityFalloff = mats[i].fElasticityFallOff;
-           pmat->m_fFriction = mats[i].fFriction;
-           pmat->m_fScatterAngle = mats[i].fScatterAngle;
-           if (!found)
-              m_materials.push_back(pmat);
+          for (int i = 0; i < m_numMaterials; i++)
+          {
+              bool found = true;
+              Material * pmat = GetMaterial(mats[i].szName);
+              if (pmat == &m_vpinball->m_dummyMaterial)
+              {
+                  assert(!"SaveMaterial not found");
+                  pmat = new Material();
+                  pmat->m_szName = mats[i].szName;
+                  found = false;
+              }
+              pmat->m_fElasticity = mats[i].fElasticity;
+              pmat->m_fElasticityFalloff = mats[i].fElasticityFallOff;
+              pmat->m_fFriction = mats[i].fFriction;
+              pmat->m_fScatterAngle = mats[i].fScatterAngle;
+              if (!found)
+                 m_materials.push_back(pmat);
+          }
        }
        break;
+   }
+   case FID(MATR):
+   {
+      const int record_size = pbr->GetBytesInRecordRemaining();
+      HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
+      LPVOID pData = ::GlobalLock(hMem);
+      pbr->GetStruct(pData, record_size);
+      ::GlobalUnlock(hMem);
+      Material *rpb = new Material();
+      CComPtr<IStream> spStream;
+      HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
+      if (rpb->LoadData(spStream, this, pbr->m_version, NULL, NULL) != S_OK)
+      {
+         assert(!"Invalid binary image file");
+         return false;
+      }
+      m_materials.push_back(rpb);
+      break;
    }
    case FID(RPRB):
    {
@@ -4074,6 +4115,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
          return false;
       }
       m_vrenderprobe.push_back(rpb);
+      break;
    }
    }
    return true;
@@ -7257,7 +7299,7 @@ void PinTable::AddDbgMaterial(const Material * const pmat)
       
    if (alreadyIn)
    {
-      m_dbgChangedMaterials[i]->m_bIsMetal = pmat->m_bIsMetal;
+      m_dbgChangedMaterials[i]->m_type = pmat->m_type;
       m_dbgChangedMaterials[i]->m_bOpacityActive = pmat->m_bOpacityActive;
       m_dbgChangedMaterials[i]->m_cBase = pmat->m_cBase;
       m_dbgChangedMaterials[i]->m_cClearcoat = pmat->m_cClearcoat;
@@ -7273,7 +7315,7 @@ void PinTable::AddDbgMaterial(const Material * const pmat)
    else
    {
       Material * const newMat = new Material();
-      newMat->m_bIsMetal = pmat->m_bIsMetal;
+      newMat->m_type = pmat->m_type;
       newMat->m_bOpacityActive = pmat->m_bOpacityActive;
       newMat->m_cBase = pmat->m_cBase;
       newMat->m_cClearcoat = pmat->m_cClearcoat;
@@ -7301,7 +7343,7 @@ void PinTable::UpdateDbgMaterial()
          if(pmat->m_szName==m_materials[t]->m_szName)
          {
             Material * const mat = m_materials[t];
-            mat->m_bIsMetal = pmat->m_bIsMetal;
+            mat->m_type = pmat->m_type;
             mat->m_bOpacityActive = pmat->m_bOpacityActive;
             mat->m_cBase = pmat->m_cBase;
             mat->m_cClearcoat = pmat->m_cClearcoat;

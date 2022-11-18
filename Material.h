@@ -1,6 +1,6 @@
 #pragma once
 
-// only used for loading and saving
+// only used for backward compatibility loading and saving (VPX version < 10.8)
 struct SaveMaterial //!! could still squeeze some stuff in here, due to implicit padding after the bool & unsigned chars!
 {
    SaveMaterial() { memset(this,0,sizeof(SaveMaterial)); }
@@ -32,9 +32,15 @@ struct SavePhysicsMaterial
 
 #define MATERIAL_VERSION 1 // for im/export
 
-class Material final
+class Material final : ILoadable
 {
 public:
+
+   enum MaterialType
+   {
+      BASIC,
+      METAL
+   };
 
    inline Material() :
          m_fWrapLighting(0.0f)
@@ -47,19 +53,20 @@ public:
        , m_cBase(0xB469FF)
        , m_cGlossy(0)
        , m_cClearcoat(0)
-       , m_bIsMetal(false)
+       , m_type(MaterialType::BASIC)
        , m_bOpacityActive(false)
        , m_fElasticity(0.0f)
        , m_fElasticityFalloff(0.0f)
        , m_fFriction(0.0f)
        , m_fScatterAngle(0.0f)
+       , m_cRefractionTint(0xFFFFFF)
    {
       m_szName = "dummyMaterial";
    }
 
-   inline Material(float wrapLighting, float roughness, float glossyImageLerp, float thickness, float edge, float edgeAlpha, float opacity,
-       COLORREF base, COLORREF glossy, COLORREF clearcoat, bool isMetal, bool opacityActive,
-       float elasticity, float elasticityFalloff, float friction, float scatterAngle) :
+   inline Material(MaterialType type, float wrapLighting, float roughness, float glossyImageLerp, float thickness, float edge, float edgeAlpha, float opacity,
+       COLORREF base, COLORREF glossy, COLORREF clearcoat, bool opacityActive,
+       float elasticity, float elasticityFalloff, float friction, float scatterAngle, COLORREF refractionTint) :
          m_fWrapLighting(wrapLighting)
        , m_fRoughness(roughness)
        , m_fGlossyImageLerp(glossyImageLerp)
@@ -70,12 +77,13 @@ public:
        , m_cBase(base)
        , m_cGlossy(glossy)
        , m_cClearcoat(clearcoat)
-       , m_bIsMetal(isMetal)
+       , m_type(type)
        , m_bOpacityActive(opacityActive)
        , m_fElasticity(elasticity)
        , m_fElasticityFalloff(elasticityFalloff)
        , m_fFriction(friction)
        , m_fScatterAngle(scatterAngle)
+       , m_cRefractionTint(refractionTint)
    {
       m_szName = "dummyMaterial";
    }
@@ -91,12 +99,13 @@ public:
        , m_cBase(pmat->m_cBase)
        , m_cGlossy(pmat->m_cGlossy)
        , m_cClearcoat(pmat->m_cClearcoat)
-       , m_bIsMetal(pmat->m_bIsMetal)
+       , m_type(pmat->m_type)
        , m_bOpacityActive(pmat->m_bOpacityActive)
        , m_fElasticity(pmat->m_fElasticity)
        , m_fElasticityFalloff(pmat->m_fElasticityFalloff)
        , m_fFriction(pmat->m_fFriction)
        , m_fScatterAngle(pmat->m_fScatterAngle)
+       , m_cRefractionTint(pmat->m_cRefractionTint)
    {
       m_szName = pmat->m_szName;
    }
@@ -109,16 +118,14 @@ public:
          };
          unsigned long long ull;
       } h;
-
-      h.uc[0] = ((unsigned int)m_bIsMetal << 6) | ((unsigned int)m_bOpacityActive << 7) | (((size_t)this / sizeof(Material)) & 63); //!! meh
+      h.uc[0] = ((unsigned int)m_type << 6) | ((unsigned int)m_bOpacityActive << 8) | (((size_t)this / sizeof(Material)) & 63); //!! meh
       h.uc[1] = (unsigned char)(clamp(m_fWrapLighting, 0.f, 1.f)*255.0f);
       h.uc[2] = (unsigned char)(clamp(m_fRoughness, 0.f, 1.f)*255.0f);
       h.uc[3] = (((unsigned char)(clamp(m_fEdge, 0.f, 1.f)*255.0f)) >> 4) | (m_bOpacityActive ? ((((unsigned char)(clamp(m_fEdgeAlpha, 0.f, 1.f)*255.0f)) >> 4) << 4) : 0);
       h.uc[4] = ((m_cBase & 255) >> 5) | ((((m_cBase >> 8) & 255) >> 5) << 3) | ((((m_cBase >> 16) & 255) >> 6) << 6);
-      h.uc[5] = !m_bIsMetal ? ((m_cGlossy & 255) >> 5) | ((((m_cGlossy >> 8) & 255) >> 5) << 3) | ((((m_cGlossy >> 16) & 255) >> 6) << 6) : 0;
+      h.uc[5] = m_type == MaterialType::BASIC ? ((m_cGlossy & 255) >> 5) | ((((m_cGlossy >> 8) & 255) >> 5) << 3) | ((((m_cGlossy >> 16) & 255) >> 6) << 6) : 0;
       h.uc[6] = ((m_cClearcoat & 255) >> 5) | ((((m_cClearcoat >> 8) & 255) >> 5) << 3) | ((((m_cClearcoat >> 16) & 255) >> 6) << 6);
       h.uc[7] = m_bOpacityActive ? (unsigned char)(clamp(m_fOpacity, 0.f, 1.f)*255.0f) : 0;
-
       return h.ull;
 
       /*return ((unsigned long long)(h.uc[0]&  1)<< 0) | ((unsigned long long)(h.uc[1]&  1)<< 1) | ((unsigned long long)(h.uc[2]&  1)<< 2) | ((unsigned long long)(h.uc[3]&  1)<< 3) | ((unsigned long long)(h.uc[4]&  1)<< 4) | ((unsigned long long)(h.uc[5]&  1)<< 5) | ((unsigned long long)(h.uc[6]&  1)<< 6) | ((unsigned long long)(h.uc[7]&  1)<< 7) |
@@ -140,6 +147,9 @@ public:
    }
 
    string m_szName;
+   
+   // shading properties
+   MaterialType m_type;
    float m_fWrapLighting;
    float m_fRoughness;
    float m_fGlossyImageLerp;
@@ -150,12 +160,94 @@ public:
    COLORREF m_cBase;
    COLORREF m_cGlossy;
    COLORREF m_cClearcoat;
-   bool m_bIsMetal;
    bool m_bOpacityActive;
+   COLORREF m_cRefractionTint; // 10.8+ only
 
-   //physics
+   // physic properties
    float m_fElasticity;
    float m_fElasticityFalloff;
    float m_fFriction;
    float m_fScatterAngle;
+   
+   int GetSaveSize() const
+   {
+      int size = 0;
+      size += 2 * sizeof(int) + sizeof(int); // TYPE
+      size += 2 * sizeof(int) + sizeof(int) + (int)m_szName.length(); // NAME
+      size += 2 * sizeof(int) + sizeof(float); // WLIG
+      size += 2 * sizeof(int) + sizeof(float); // ROUG
+      size += 2 * sizeof(int) + sizeof(float); // GIML
+      size += 2 * sizeof(int) + sizeof(float); // THCK
+      size += 2 * sizeof(int) + sizeof(float); // EDGE
+      size += 2 * sizeof(int) + sizeof(float); // EALP
+      size += 2 * sizeof(int) + sizeof(float); // OPAC
+      size += 2 * sizeof(int) + sizeof(int); // BASE
+      size += 2 * sizeof(int) + sizeof(int); // GLOS
+      size += 2 * sizeof(int) + sizeof(int); // COAT
+      size += 2 * sizeof(int) + sizeof(int); // RTNT
+      size += 2 * sizeof(int) + sizeof(int); // EOPA
+      size += 2 * sizeof(int) + sizeof(float); // ELAS
+      size += 2 * sizeof(int) + sizeof(float); // ELFO
+      size += 2 * sizeof(int) + sizeof(float); // FRIC
+      size += 2 * sizeof(int) + sizeof(float); // SCAT
+      return size;
+   }
+
+   HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
+   {
+      BiffWriter bw(pstm, hcrypthash);
+      bw.WriteInt(FID(TYPE), m_type);
+      bw.WriteString(FID(NAME), m_szName);
+      bw.WriteFloat(FID(WLIG), m_fWrapLighting);
+      bw.WriteFloat(FID(ROUG), m_fRoughness);
+      bw.WriteFloat(FID(GIML), m_fGlossyImageLerp);
+      bw.WriteFloat(FID(THCK), m_fThickness);
+      bw.WriteFloat(FID(EDGE), m_fEdge);
+      bw.WriteFloat(FID(EALP), m_fEdgeAlpha);
+      bw.WriteFloat(FID(OPAC), m_fOpacity);
+      bw.WriteInt(FID(BASE), m_cBase);
+      bw.WriteInt(FID(GLOS), m_cGlossy);
+      bw.WriteInt(FID(COAT), m_cClearcoat);
+      bw.WriteInt(FID(RTNT), m_cRefractionTint);
+      bw.WriteBool(FID(EOPA), m_bOpacityActive);
+      bw.WriteFloat(FID(ELAS), m_fElasticity);
+      bw.WriteFloat(FID(ELFO), m_fElasticityFalloff);
+      bw.WriteFloat(FID(FRIC), m_fFriction);
+      bw.WriteFloat(FID(SCAT), m_fScatterAngle);
+      bw.WriteTag(FID(ENDB));
+      return S_OK;
+   }
+
+   HRESULT LoadData(IStream* pstm, PinTable* ppt, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+   {
+      BiffReader br(pstm, this, ppt, version, hcrypthash, hcryptkey);
+      br.Load();
+      return S_OK;
+   }
+
+   bool LoadToken(const int id, BiffReader* const pbr)
+   {
+      switch (id)
+      {
+      case FID(TYPE): pbr->GetInt(&m_type); break;
+      case FID(NAME): pbr->GetString(m_szName); break;
+      case FID(WLIG): pbr->GetFloat(m_fWrapLighting); break;
+      case FID(ROUG): pbr->GetFloat(m_fRoughness); break;
+      case FID(GIML): pbr->GetFloat(m_fGlossyImageLerp); break;
+      case FID(THCK): pbr->GetFloat(m_fThickness); break;
+      case FID(EDGE): pbr->GetFloat(m_fEdge); break;
+      case FID(EALP): pbr->GetFloat(m_fEdgeAlpha); break;
+      case FID(OPAC): pbr->GetFloat(m_fOpacity); break;
+      case FID(BASE): pbr->GetInt(m_cBase); break;
+      case FID(GLOS): pbr->GetInt(m_cGlossy); break;
+      case FID(COAT): pbr->GetInt(m_cClearcoat); break;
+      case FID(RTNT): pbr->GetInt(m_cRefractionTint); break;
+      case FID(EOPA): pbr->GetBool(m_bOpacityActive); break;
+      case FID(ELAS): pbr->GetFloat(m_fElasticity); break;
+      case FID(ELFO): pbr->GetFloat(m_fElasticityFalloff); break;
+      case FID(FRIC): pbr->GetFloat(m_fFriction); break;
+      case FID(SCAT): pbr->GetFloat(m_fScatterAngle); break;
+      }
+      return true;
+   }
 };

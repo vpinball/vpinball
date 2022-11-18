@@ -181,6 +181,7 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float4, cAmbient_LightRange),
    SHADER_UNIFORM(SUT_Float4, cClearcoat_EdgeAlpha),
    SHADER_UNIFORM(SUT_Float4, cGlossy_ImageLerp),
+   SHADER_UNIFORM(SUT_Float3, refractionTint),
    SHADER_UNIFORM(SUT_Float2, fDisableLighting_top_below),
    SHADER_UNIFORM(SUT_Float4, backBoxSize),
    SHADER_UNIFORM(SUT_Float4, vColor_Intensity),
@@ -302,7 +303,7 @@ public:
    //
 
    void SetTechnique(const ShaderTechniques technique);
-   void SetTechniqueMetal(ShaderTechniques technique, const bool isMetal, const bool doNormalMapping = false, const bool doReflection = false, const bool doRefraction = false);
+   void SetTechniqueMetal(ShaderTechniques technique, const Material& mat, const bool doNormalMapping = false, const bool doReflection = false, const bool doRefraction = false);
    ShaderTechniques GetCurrentTechnique() { return m_technique; }
 
    void SetMatrix(const ShaderUniforms hParameter, const D3DXMATRIX* pMatrix);

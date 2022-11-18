@@ -107,7 +107,9 @@ const float3 mirrorNormal;
 //uniform bool doNormalMapping;
 //const bool doReflections;
 //const bool doRefractions;
+
 const float refractionThickness;
+const float3 refractionTint;
 
 struct VS_OUTPUT 
 { 
@@ -252,7 +254,7 @@ float3 compute_refraction(const float3 pos, const float2 screenSpace, const floa
    if (length(R) < 0.5) // invalid refraction state (no refraction, shown as green for debugging)
       return float3(0.0, 1.0, 0.0);*/
 
-   return tex2D(tex_refraction, uv).rgb;
+   return refractionTint.rgb * tex2D(tex_refraction, uv).rgb;
 }
 
 //------------------------------------
@@ -340,7 +342,7 @@ float4 ps_main(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform b
 
    [branch] if (doRefractions)
    {
-      // alpha channel is the transparency of the object, tinting will be supported (even if alpha is 0)
+      // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color
       result.rgb = lerp(compute_refraction(IN.worldPos.xyz, screenSpace, N, V), result.rgb, cBase_Alpha.a);
       result.a = 1.0;
    }
@@ -390,7 +392,7 @@ float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform
 
    [branch] if (doRefractions)
    {
-      // alpha channel is the transparency of the object, tinting will be supported (even if alpha is 0) but not from main texture since these are different informations (reflected/refracted color)
+      // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color (not from main texture since these are different informations (reflected/refracted color))
       result.rgb = lerp(compute_refraction(IN.worldPos, screenSpace, N, V), result.rgb, result.a);
       result.a = 1.0;
    }

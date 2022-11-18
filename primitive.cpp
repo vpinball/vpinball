@@ -1261,7 +1261,7 @@ void Primitive::RenderObject()
 
    if (g_pplayer->m_texPUP && m_d.m_isBackGlassImage)
    {
-      pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat->m_bIsMetal);
+      pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat);
       // accommodate models with UV coords outside of [0,1]
       pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, g_pplayer->m_texPUP, SF_UNDEFINED, SA_REPEAT, SA_REPEAT);
    }
@@ -1313,6 +1313,8 @@ void Primitive::RenderObject()
    // setup for applying refractions from screen space probe
    if (refractions)
    {
+      const vec4 color = convertColor(mat->m_cRefractionTint);
+      pd3dDevice->basicShader->SetVector(SHADER_refractionTint, &color);
       pd3dDevice->basicShader->SetTexture(SHADER_tex_refraction, refractions->GetColorSampler());
       pd3dDevice->basicShader->SetTexture(SHADER_tex_probe_depth, refractions->GetDepthSampler());
       pd3dDevice->basicShader->SetFloat(SHADER_refractionThickness, m_d.m_refractionThickness);
@@ -1336,7 +1338,7 @@ void Primitive::RenderObject()
       is_reflection_only_pass = m_d.m_staticRendering && !g_pplayer->m_isRenderingStatic && !g_pplayer->m_dynamicMode;
       if (!is_reflection_only_pass && mat->m_bOpacityActive && (mat->m_fOpacity < 1.0f || (pin && pin->m_pdsBuffer->has_alpha())))
       { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
-         pd3dDevice->basicShader->SetTechniqueMetal(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal, nMap, false, false);
+         pd3dDevice->basicShader->SetTechniqueMetal(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat, nMap, false, false);
          pd3dDevice->basicShader->Begin();
          if (m_d.m_groupdRendering)
             pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numGroupVertices, m_indexBuffer, 0, m_numGroupIndices);
@@ -1355,7 +1357,7 @@ void Primitive::RenderObject()
    }
    else
    {
-      pd3dDevice->basicShader->SetTechniqueMetal(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat->m_bIsMetal, nMap, reflections, refractions);
+      pd3dDevice->basicShader->SetTechniqueMetal(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat, nMap, reflections, refractions);
    }
 
    // draw the mesh
