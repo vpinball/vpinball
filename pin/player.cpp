@@ -3447,6 +3447,10 @@ void Player::RenderDynamics()
    if (GetProfilingMode() == PF_ENABLED)
       m_pin3d.m_gpu_profiler.Timestamp(GTS_PlayfieldGraphics);
 
+   // Render the default backglass without depth write before the table so that it will be visible for tables without a VR backglass but overwriten otherwise
+   if (m_pin3d.m_backGlass != nullptr)
+      m_pin3d.m_backGlass->Render();
+
    if (m_dynamicMode)
    {
       UpdateBasicShaderMatrix();
@@ -3457,10 +3461,6 @@ void Player::RenderDynamics()
    DrawBalls();
 
    DrawDynamics();
-
-   // Render the backglass
-   if (m_pin3d.m_backGlass != nullptr)
-      m_pin3d.m_backGlass->Render();
 
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTextureNull(SHADER_tex_base_transmission); // need to reset the bulb light texture, as its used as render target for bloom again
 

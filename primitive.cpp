@@ -367,7 +367,6 @@ void Primitive::SetDefaults(bool fromMouseClick)
    HRESULT hr = LoadValue(strKeyName, "Image"s, m_d.m_szImage);
    if ((hr != S_OK) && fromMouseClick)
       m_d.m_szImage.clear();
-   m_d.m_isBackGlassImage = (_stricmp(m_d.m_szImage.c_str(), "backglassimage") == 0);
 
    hr = LoadValue(strKeyName, "NormalMap"s, m_d.m_szNormalMap);
    if ((hr != S_OK) && fromMouseClick)
@@ -1251,43 +1250,50 @@ void Primitive::RenderObject()
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
    pd3dDevice->SetRenderStateDepthBias(0.f);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    pd3dDevice->SetRenderStateCulling(m_d.m_backfacesEnabled && mat->m_bOpacityActive ? RenderDevice::CULL_CW : RenderDevice::CULL_CCW);
 
    if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
       pd3dDevice->basicShader->SetDisableLighting(vec4(m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f, 0.f));
 
-   Texture * pin = nullptr;
+   // Select textures, replacing backglass image by capture if it is available
    Texture * const nMap = m_ptable->GetImage(m_d.m_szNormalMap);
-
+   BaseTexture *pin = nullptr;
    if (g_pplayer->m_texPUP && m_d.m_isBackGlassImage)
    {
-      pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat);
-      // accommodate models with UV coords outside of [0,1]
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, g_pplayer->m_texPUP, SF_UNDEFINED, SA_REPEAT, SA_REPEAT);
+      pin = g_pplayer->m_texPUP;
+      pd3dDevice->basicShader->SetAlphaTestValue(0.f);
    }
    else
    {
-      pin = m_ptable->GetImage(m_d.m_szImage);
-      if (pin && nMap)
+      Texture *img = m_ptable->GetImage(m_d.m_szImage);
+      if (img != nullptr)
       {
-         // accommodate models with UV coords outside of [0,1]
-         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
-         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, SF_UNDEFINED, SA_REPEAT, SA_REPEAT, true);
-         pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
-         pd3dDevice->basicShader->SetBool(SHADER_objectSpaceNormalMap, m_d.m_objectSpaceNormalMap);
-         pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
-      }
-      else if (pin)
-      {
-         // accommodate models with UV coords outside of [0,1]
-         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
-         pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
-         pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
+         pin = img->m_pdsBuffer;
+         pd3dDevice->basicShader->SetAlphaTestValue(img->m_alphaTestValue * (float)(1.0 / 255.0));
       }
       else
       {
-         pd3dDevice->basicShader->SetMaterial(mat, false);
+         pin = nullptr;
       }
+   }
+
+   // accommodate models with UV coords outside of [0,1] by using Repeat address mode
+   if (pin && nMap)
+   {
+      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
+      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, SF_UNDEFINED, SA_REPEAT, SA_REPEAT, true);
+      pd3dDevice->basicShader->SetBool(SHADER_objectSpaceNormalMap, m_d.m_objectSpaceNormalMap);
+      pd3dDevice->basicShader->SetMaterial(mat, pin->has_alpha());
+   }
+   else if (pin)
+   {
+      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
+      pd3dDevice->basicShader->SetMaterial(mat, pin->has_alpha());
+   }
+   else
+   {
+      pd3dDevice->basicShader->SetMaterial(mat, false);
    }
 
    // set transform
@@ -1341,7 +1347,7 @@ void Primitive::RenderObject()
       pd3dDevice->basicShader->SetVector(SHADER_mirrorNormal, plane_normal.x,plane_normal.y,plane_normal.z,0.f);
       pd3dDevice->basicShader->SetTexture(SHADER_tex_reflection, reflections->GetColorSampler());
       is_reflection_only_pass = m_d.m_staticRendering && !g_pplayer->m_isRenderingStatic && !g_pplayer->m_dynamicMode;
-      if (!is_reflection_only_pass && mat->m_bOpacityActive && (mat->m_fOpacity < 1.0f || (pin && pin->m_pdsBuffer->has_alpha())))
+      if (!is_reflection_only_pass && mat->m_bOpacityActive && (mat->m_fOpacity < 1.0f || (pin && pin->has_alpha())))
       { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
          pd3dDevice->basicShader->SetTechniqueMetal(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat, nMap, false, false);
          pd3dDevice->basicShader->Begin();
@@ -1434,6 +1440,7 @@ void Primitive::RenderSetup()
       return;
 
    m_currentFrame = -1.f;
+   m_d.m_isBackGlassImage = IsBackglass();
 
    SAFE_BUFFER_RELEASE(m_vertexBuffer);
    m_vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)m_mesh.NumVertices(), 0, MY_D3DFVF_NOTEX2_VERTEX);
@@ -1692,7 +1699,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    case FID(RTV6): pbr->GetFloat(m_d.m_aRotAndTra[6]); break;
    case FID(RTV7): pbr->GetFloat(m_d.m_aRotAndTra[7]); break;
    case FID(RTV8): pbr->GetFloat(m_d.m_aRotAndTra[8]); break;
-   case FID(IMAG): pbr->GetString(m_d.m_szImage); m_d.m_isBackGlassImage = (_stricmp(m_d.m_szImage.c_str(), "backglassimage") == 0); break;
+   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    case FID(NRMA): pbr->GetString(m_d.m_szNormalMap); break;
    case FID(SIDS): pbr->GetInt(m_d.m_Sides); break;
    case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
