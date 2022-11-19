@@ -2070,6 +2070,13 @@ void PinTable::Play(const bool cameraMode)
       m_materialMap.clear();
       for (size_t i = 0; i < m_materials.size(); i++)
          m_materialMap[m_materials[i]->m_szName] = m_materials[i];
+      m_lightMap.clear();
+      for (size_t i = 0; i < m_vedit.size(); i++)
+      {
+         IEditable *const pe = m_vedit[i];
+         if (pe->GetItemType() == ItemTypeEnum::eItemLight)
+            m_lightMap[pe->GetName()] = (Light*)pe;
+      }
       m_renderprobeMap.clear();
       for (size_t i = 0; i < m_vrenderprobe.size(); i++)
          m_renderprobeMap[m_vrenderprobe[i]->GetName()] = m_vrenderprobe[i];
@@ -2128,6 +2135,7 @@ void PinTable::StopPlaying()
       m_pcv->EndSession();
    m_textureMap.clear();
    m_materialMap.clear();
+   m_lightMap.clear();
    m_renderprobeMap.clear();
 
    RestoreBackup();
@@ -6823,6 +6831,31 @@ RenderProbe *PinTable::GetRenderProbe(const string &szName) const
    for (size_t i = 0; i < m_vrenderprobe.size(); i++)
       if (!lstrcmpi(m_vrenderprobe[i]->GetName().c_str(), szName.c_str()))
          return m_vrenderprobe[i];
+
+   return nullptr;
+}
+
+Light *PinTable::GetLight(const string &szName) const
+{
+   if (szName.empty())
+      return nullptr;
+
+   // during playback, we use the hashtable for lookup
+   if (!m_lightMap.empty())
+   {
+      const robin_hood::unordered_map<string, Light *, StringHashFunctor, StringComparator>::const_iterator it = m_lightMap.find(szName);
+      if (it != m_lightMap.end())
+         return it->second;
+      else
+         return nullptr;
+   }
+
+   for (size_t i = 0; i < m_vedit.size(); i++)
+   {
+      IEditable *const pe = m_vedit[i];
+      if (pe->GetItemType() == ItemTypeEnum::eItemLight && !lstrcmpi(pe->GetName(), szName.c_str()))
+         return (Light *)pe;
+   }
 
    return nullptr;
 }

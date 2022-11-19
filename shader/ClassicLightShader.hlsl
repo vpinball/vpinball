@@ -5,9 +5,6 @@
 
 #include "Helpers.fxh"
 
-#define NUM_BALLS 8
-uniform vec4 balls[NUM_BALLS];
-
 // transformation matrices
 const float4x4 matWorldViewProj : WORLDVIEWPROJ;
 const float4x4 matWorldView     : WORLDVIEW;

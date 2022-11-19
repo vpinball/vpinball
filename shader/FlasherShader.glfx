@@ -41,6 +41,8 @@ uniform float4 staticColor_Alpha;
 uniform float4 alphaTestValueAB_filterMode_addBlend; // last one bool
 uniform float3 amount_blend_modulate_vs_add_flasherMode;
 
+uniform float4 lightCenter_doShadow;
+
 uniform sampler2D tex_flasher_A; // base texture
 uniform sampler2D tex_flasher_B; // second image
 
@@ -58,6 +60,7 @@ void main()
 ////gs_simple_main
 
 in vec2 tex0_gs[];
+out vec3 tablePos;
 out vec2 tex0;
 
 void main()
@@ -67,6 +70,7 @@ void main()
 		//Default
 		gl_Position = (matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position);
 		//Custom
+        tablePos = gl_in[i].gl_Position.xyz;
 		tex0 = tex0_gs[i];
 		//Default
 		EmitVertex();
@@ -75,6 +79,10 @@ void main()
 }
 
 ////ps_main_noLight
+
+in vec3 tablePos;
+
+#include "BallShadows.fxh"
 
 void main()
 {
@@ -112,6 +120,14 @@ void main()
          result *= Additive(pixel1,pixel2, amount_blend_modulate_vs_add_flasherMode.x);
       if (alphaTestValueAB_filterMode_addBlend.z == Filter_Screen)
          result *= ScreenHDR(pixel1,pixel2); // could be HDR
+   }
+
+   BRANCH if (lightCenter_doShadow.w != 0.)
+   {
+      const float3 light_dir = tablePos.xyz - lightCenter_doShadow.xyz;
+      const float light_dist = length(light_dir);
+      const float shadow = get_light_ball_shadow(lightCenter_doShadow.xyz, light_dir, light_dist);
+      result.rgb *= shadow;
    }
 
    if (alphaTestValueAB_filterMode_addBlend.w == 0.)
