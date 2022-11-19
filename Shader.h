@@ -155,11 +155,13 @@ enum ShaderUniforms
 {
    // -- Matrices --
    SHADER_UNIFORM(SUT_DataBlock, matrixBlock), // OpenGL only, matrices as a float block
+   SHADER_UNIFORM(SUT_Float4x4, matWorld), // DX9 only
+   SHADER_UNIFORM(SUT_Float4x3, matView), // DX9 only
+   SHADER_UNIFORM(SUT_Float4x4, matProj),
    SHADER_UNIFORM(SUT_Float4x4, matWorldViewProj), // DX9 only
    SHADER_UNIFORM(SUT_Float4x4, matWorldView), // DX9 only
    SHADER_UNIFORM(SUT_Float4x3, matWorldViewInverse), // DX9 only
    SHADER_UNIFORM(SUT_Float3x4, matWorldViewInverseTranspose), // DX9 only
-   SHADER_UNIFORM(SUT_Float4x3, matView), // DX9 only
    SHADER_UNIFORM(SUT_Float4x3, orientation),
    // -- Floats --
    SHADER_UNIFORM(SUT_Float, RenderBall),
@@ -173,6 +175,7 @@ enum ShaderUniforms
    // -- Vectors and Float Arrays --
    SHADER_UNIFORM(SUT_Float4, Roughness_WrapL_Edge_Thickness),
    SHADER_UNIFORM(SUT_Float4, cBase_Alpha),
+   SHADER_UNIFORM(SUT_Float4, lightCenter_doShadow),
    SHADER_UNIFORM(SUT_Float4, lightCenter_maxRange),
    SHADER_UNIFORM(SUT_Float4, lightColor2_falloff_power),
    SHADER_UNIFORM(SUT_Float4, lightColor_intensity),

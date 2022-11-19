@@ -8,8 +8,12 @@
 const float4x4 matWorldViewProj : WORLDVIEWPROJ;
 const float4x4 matWorldView     : WORLDVIEW;
 const float3x4 matWorldViewInverseTranspose;
+const float4x4 matWorld;
 const float4x3 matView;
+const float4x4 matProj;
 //const float4x4 matViewInverseInverseTranspose; // matView used instead and multiplied from other side
+
+const float4 lightCenter_doShadow;
 
 texture Texture0; // base texture
 texture Texture3; // bulb light buffer
@@ -115,15 +119,17 @@ struct VS_OUTPUT
 { 
    float4 pos      : POSITION;
    float3 worldPos : TEXCOORD0;
-   float3 normal   : TEXCOORD1;
-   float2 tex0     : TEXCOORD2;
+   float3 tablePos : TEXCOORD1;
+   float3 normal   : TEXCOORD2;
+   float2 tex0     : TEXCOORD3;
 };
 
 struct VS_NOTEX_OUTPUT 
 {
    float4 pos      : POSITION;
    float3 worldPos : TEXCOORD0;
-   float3 normal   : TEXCOORD1;
+   float3 tablePos : TEXCOORD1;
+   float3 normal   : TEXCOORD2;
 };
 
 struct VS_DEPTH_ONLY_NOTEX_OUTPUT 
@@ -136,6 +142,8 @@ struct VS_DEPTH_ONLY_TEX_OUTPUT
    float4 pos      : POSITION;
    float2 tex0     : TEXCOORD0;
 };
+
+#include "BallShadows.fxh"
 
 float3x3 TBN_trafo(const float3 N, const float3 V, const float2 uv, const float3 dpx, const float3 dpy)
 {
@@ -160,54 +168,14 @@ float3 normal_map(const float3 N, const float3 V, const float2 uv)
    const float3 dpx = ddx(V); //!! these 2 are declared here instead of TBN_trafo() to workaround a compiler quirk
    const float3 dpy = ddy(V);
 
-   [branch] if (objectSpaceNormalMap)
+   BRANCH if (objectSpaceNormalMap)
    {
       tn.z = -tn.z; // this matches the object space, +X +Y +Z, export/baking in Blender with our trafo setup
       return normalize( mul(tn, matWorldViewInverseTranspose).xyz );
    } else // tangent space
-      return normalize( mul(TBN_trafo(N, V, uv, dpx, dpy),
-                            tn) );
+      return normalize( mul(TBN_trafo(N, V, uv, dpx, dpy), tn) );
 }
 
-float4x4 inverse4x4(const float4x4 m)
-{
-   float n11 = m[0][0], n12 = m[1][0], n13 = m[2][0], n14 = m[3][0];
-   float n21 = m[0][1], n22 = m[1][1], n23 = m[2][1], n24 = m[3][1];
-   float n31 = m[0][2], n32 = m[1][2], n33 = m[2][2], n34 = m[3][2];
-   float n41 = m[0][3], n42 = m[1][3], n43 = m[2][3], n44 = m[3][3];
-
-   float t11 = n23 * n34 * n42 - n24 * n33 * n42 + n24 * n32 * n43 - n22 * n34 * n43 - n23 * n32 * n44 + n22 * n33 * n44;
-   float t12 = n14 * n33 * n42 - n13 * n34 * n42 - n14 * n32 * n43 + n12 * n34 * n43 + n13 * n32 * n44 - n12 * n33 * n44;
-   float t13 = n13 * n24 * n42 - n14 * n23 * n42 + n14 * n22 * n43 - n12 * n24 * n43 - n13 * n22 * n44 + n12 * n23 * n44;
-   float t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34;
-
-   float det = n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14;
-   float idet = 1.0 / det;
-
-   float4x4 ret;
-
-   ret[0][0] = t11 * idet;
-   ret[0][1] = (n24 * n33 * n41 - n23 * n34 * n41 - n24 * n31 * n43 + n21 * n34 * n43 + n23 * n31 * n44 - n21 * n33 * n44) * idet;
-   ret[0][2] = (n22 * n34 * n41 - n24 * n32 * n41 + n24 * n31 * n42 - n21 * n34 * n42 - n22 * n31 * n44 + n21 * n32 * n44) * idet;
-   ret[0][3] = (n23 * n32 * n41 - n22 * n33 * n41 - n23 * n31 * n42 + n21 * n33 * n42 + n22 * n31 * n43 - n21 * n32 * n43) * idet;
-
-   ret[1][0] = t12 * idet;
-   ret[1][1] = (n13 * n34 * n41 - n14 * n33 * n41 + n14 * n31 * n43 - n11 * n34 * n43 - n13 * n31 * n44 + n11 * n33 * n44) * idet;
-   ret[1][2] = (n14 * n32 * n41 - n12 * n34 * n41 - n14 * n31 * n42 + n11 * n34 * n42 + n12 * n31 * n44 - n11 * n32 * n44) * idet;
-   ret[1][3] = (n12 * n33 * n41 - n13 * n32 * n41 + n13 * n31 * n42 - n11 * n33 * n42 - n12 * n31 * n43 + n11 * n32 * n43) * idet;
-
-   ret[2][0] = t13 * idet;
-   ret[2][1] = (n14 * n23 * n41 - n13 * n24 * n41 - n14 * n21 * n43 + n11 * n24 * n43 + n13 * n21 * n44 - n11 * n23 * n44) * idet;
-   ret[2][2] = (n12 * n24 * n41 - n14 * n22 * n41 + n14 * n21 * n42 - n11 * n24 * n42 - n12 * n21 * n44 + n11 * n22 * n44) * idet;
-   ret[2][3] = (n13 * n22 * n41 - n12 * n23 * n41 - n13 * n21 * n42 + n11 * n23 * n42 + n12 * n21 * n43 - n11 * n22 * n43) * idet;
-
-   ret[3][0] = t14 * idet;
-   ret[3][1] = (n13 * n24 * n31 - n14 * n23 * n31 + n14 * n21 * n33 - n11 * n24 * n33 - n13 * n21 * n34 + n11 * n23 * n34) * idet;
-   ret[3][2] = (n14 * n22 * n31 - n12 * n24 * n31 - n14 * n21 * n32 + n11 * n24 * n32 + n12 * n21 * n34 - n11 * n22 * n34) * idet;
-   ret[3][3] = (n12 * n23 * n31 - n13 * n22 * n31 + n13 * n21 * n32 - n11 * n23 * n32 - n12 * n21 * n33 + n11 * n22 * n33) * idet;
-
-   return ret;
-}
 
 // Compute reflections from reflection probe (screen space coordinates)
 // This is a simplified reflection model where reflected light is added instead of being mixed according to the fresnel coefficient (stronger reflection hiding the object's color at grazing angles)
@@ -223,19 +191,16 @@ float3 compute_reflection(const float2 screenSpace, const float3 N)
 // Compute refractions from screen space probe
 float3 compute_refraction(const float3 pos, const float2 screenSpace, const float3 N, const float3 V)
 {
-   // Compute refracted visible position
+   // Compute refracted visible position then project from world view position to probe UV
+   // const float4x4 matProj = mul(inverse4x4(matWorldView), matWorldViewProj); // this has been moved to the matrix uniform stack for performance reasons
    const float3 R = refract(V, N, 1.0 / 1.5); // n1 = 1.0 (air), n2 = 1.5 (plastic), eta = n1 / n2
    const float3 refracted_pos = pos + refractionThickness * R; // Shift ray by the thickness of the material
-
-   // Project from world view position to probe UV
-   const float4x4 matProj = mul(inverse4x4(matWorldView), matWorldViewProj); // FIXME this must be moved to the matrix uniform stack
-
-   const float4 proj = mul(float4(refracted_pos.x, refracted_pos.y, refracted_pos.z, 1.0), matProj);
+   const float4 proj = mul(float4(refracted_pos, 1.0), matProj);
    float2 uv = float2(0.5, 0.5) + float2(proj.x, -proj.y) * (0.5 / proj.w);
 
-   // Check if the sample position is behind the object pos. If not take don't perform refraction as it would lead to refract things above us (so reflect)
+   // Check if the sample position is behind the object pos. If it is, don't perform refraction as it would lead to refract things above us (like a reflection instead of a refraction)
    float d = tex2D(tex_probe_depth, uv).x;
-   const float4 proj_base = mul(float4(pos, 1.0), matProj); // Sadly DX9 does not give access to transformed fragment position
+   const float4 proj_base = mul(float4(pos, 1.0), matProj); // Sadly DX9 does not give access to transformed fragment position and we need to project it again here...
    BRANCH if (d < proj_base.z / proj_base.w)
       uv = screenSpace * w_h_height.xy;
 
@@ -272,6 +237,7 @@ VS_OUTPUT vs_main (const in float4 vPosition : POSITION0,
 
    VS_OUTPUT Out;
    Out.pos = mul(vPosition, matWorldViewProj);
+   Out.tablePos = mul(vPosition, matWorld).xyz;
    Out.worldPos = P;
    Out.normal = N;
    Out.tex0 = tc;
@@ -288,6 +254,7 @@ VS_NOTEX_OUTPUT vs_notex_main (const in float4 vPosition : POSITION0,
 
    VS_NOTEX_OUTPUT Out;
    Out.pos = mul(vPosition, matWorldViewProj);
+   Out.tablePos = mul(vPosition, matWorld).xyz;
    Out.worldPos = P;
    Out.normal = N;
    return Out; 
@@ -329,18 +296,27 @@ float4 ps_main(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform b
       lightLoop(IN.worldPos.xyz, N, V, diffuse, glossy, specular, edge, true, is_metal), //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
       cBase_Alpha.a);
 
-   [branch] if (cBase_Alpha.a < 1.0) {
+   BRANCH if (cBase_Alpha.a < 1.0)
+   {
       result.a = GeometricOpacity(dot(N,V),result.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
 
       if (fDisableLighting_top_below.y < 1.0)
          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-         result.rgb += lerp(sqrt(diffuse)*tex2Dlod(tex_base_transmission, float4(screenSpace * w_h_height.xy, 0., 0.)).rgb*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+         result.rgb += lerp(sqrt(diffuse)*texNoLod(tex_base_transmission, screenSpace * w_h_height.xy).rgb*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
-   [branch] if (doReflections)
+   BRANCH if (lightCenter_doShadow.w != 0.)
+   {
+      const float3 light_dir = IN.tablePos.xyz - lightCenter_doShadow.xyz;
+      const float light_dist = length(light_dir);
+      const float shadow = get_light_ball_shadow(lightCenter_doShadow.xyz, light_dir, light_dist);
+      result.rgb *= shadow;
+   }
+
+   BRANCH if (doReflections)
       result.rgb += compute_reflection(screenSpace, N);
 
-   [branch] if (doRefractions)
+   BRANCH if (doRefractions)
    {
       // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color
       result.rgb = lerp(compute_refraction(IN.worldPos.xyz, screenSpace, N, V), result.rgb, cBase_Alpha.a);
@@ -370,7 +346,7 @@ float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform
    const float3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos);
    float3 N = normalize(IN.normal);
 
-   [branch] if (doNormalMapping)
+   BRANCH if (doNormalMapping)
       N = normal_map(N, V, IN.tex0);
    
    //!! return float4((N+1.0)*0.5,1.0); // visualize normals
@@ -379,18 +355,27 @@ float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform
       lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, !doNormalMapping, is_metal),
       pixel.a);
 
-   [branch] if (cBase_Alpha.a < 1.0 && result.a < 1.0) {
+   BRANCH if (cBase_Alpha.a < 1.0 && result.a < 1.0)
+   {
       result.a = GeometricOpacity(dot(N,V),result.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
 
       if (fDisableLighting_top_below.y < 1.0)
          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-         result.rgb += lerp(sqrt(diffuse)*tex2Dlod(tex_base_transmission, float4(screenSpace * w_h_height.xy, 0., 0.)).rgb*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+         result.rgb += lerp(sqrt(diffuse)*texNoLod(tex_base_transmission, screenSpace * w_h_height.xy).rgb*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
-   [branch] if (doReflections)
+   BRANCH if (lightCenter_doShadow.w != 0.)
+   {
+      const float3 light_dir = IN.tablePos.xyz - lightCenter_doShadow.xyz;
+      const float light_dist = length(light_dir);
+      const float shadow = get_light_ball_shadow(lightCenter_doShadow.xyz, light_dir, light_dist);
+      result.rgb *= shadow;
+   }
+
+   BRANCH if (doReflections)
       result.rgb += compute_reflection(screenSpace, N);
 
-   [branch] if (doRefractions)
+   BRANCH if (doRefractions)
    {
       // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color (not from main texture since these are different informations (reflected/refracted color))
       result.rgb = lerp(compute_refraction(IN.worldPos, screenSpace, N, V), result.rgb, result.a);
@@ -482,6 +467,7 @@ VS_NOTEX_OUTPUT vs_kicker (const in float4 vPosition : POSITION0,
     P2.z -= 30.0*fKickerScale; //!!
     Out.pos.z = mul(P2, matWorldViewProj).z;
     Out.worldPos = P;
+    Out.tablePos = mul(vPosition, matWorld).xyw;
     Out.normal = N;
     return Out; 
 }

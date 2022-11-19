@@ -140,11 +140,13 @@ ShaderTechniques Shader::getTechniqueByName(const string& name)
 Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    // -- Matrices --
    SHADER_UNIFORM(SUT_DataBlock, matrixBlock), // OpenGL only, matrices as a float block
+   SHADER_UNIFORM(SUT_Float4x4, matWorld), // DX9 only
+   SHADER_UNIFORM(SUT_Float4x3, matView), // DX9 only
+   SHADER_UNIFORM(SUT_Float4x4, matProj),
    SHADER_UNIFORM(SUT_Float4x4, matWorldViewProj), // DX9 only
    SHADER_UNIFORM(SUT_Float4x4, matWorldView), // DX9 only
    SHADER_UNIFORM(SUT_Float4x3, matWorldViewInverse), // DX9 only
    SHADER_UNIFORM(SUT_Float3x4, matWorldViewInverseTranspose), // DX9 only
-   SHADER_UNIFORM(SUT_Float4x3, matView), // DX9 only
    SHADER_UNIFORM(SUT_Float4x3, orientation),
    // -- Floats --
    SHADER_UNIFORM(SUT_Float, RenderBall),
@@ -158,6 +160,7 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    // -- Vectors and Float Arrays --
    SHADER_UNIFORM(SUT_Float4, Roughness_WrapL_Edge_Thickness),
    SHADER_UNIFORM(SUT_Float4, cBase_Alpha),
+   SHADER_UNIFORM(SUT_Float4, lightCenter_doShadow),
    SHADER_UNIFORM(SUT_Float4, lightCenter_maxRange),
    SHADER_UNIFORM(SUT_Float4, lightColor2_falloff_power),
    SHADER_UNIFORM(SUT_Float4, lightColor_intensity),
@@ -1338,7 +1341,7 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
                assert(uniform.type != SUT_Float4v || type == GL_FLOAT_VEC4);
                assert(uniform.type != SUT_Float3x4); // Unused so unimplemented
                assert(uniform.type != SUT_Float4x3 || type == GL_FLOAT_MAT4); // FIXME this should be GL_FLOAT_MAT4x3 or GL_FLOAT_MAT3x4 => fix orientation uniform in gl shader
-               assert(uniform.type != SUT_Float4x4); // Unused so unimplemented
+               assert(uniform.type != SUT_Float4x4 || type == GL_FLOAT_MAT4);
                assert(uniform.type != SUT_DataBlock); // Unused so unimplemented
                assert(uniform.type != SUT_Sampler || type == GL_SAMPLER_2D);
                shader->uniform_desc[uniformIndex].uniform = uniform;

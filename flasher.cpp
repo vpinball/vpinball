@@ -1283,6 +1283,11 @@ void Flasher::RenderDynamic()
           flasherMode, 0.f);
        pd3dDevice->flasherShader->SetFlasherData(flasherData, flasherData2);
 
+       // Check if this flasher is used as a lightmap and should be convoluted with the light shadows
+       Light *lightmap = m_ptable->GetLight(m_d.m_szLightmap);
+       if (lightmap != nullptr && lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS)
+          pd3dDevice->flasherShader->SetVector(SHADER_lightCenter_doShadow, lightmap->m_d.m_vCenter.x, lightmap->m_d.m_vCenter.y, lightmap->m_d.m_bulbHaloHeight, 1.0f);
+
        pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
        g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_addBlend, false, false);
        pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_addBlend ? RenderDevice::INVSRC_COLOR : RenderDevice::INVSRC_ALPHA);
@@ -1291,6 +1296,8 @@ void Flasher::RenderDynamic()
        pd3dDevice->flasherShader->Begin();
        pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_TEX, m_dynamicVertexBuffer, 0, m_numVertices, m_dynamicIndexBuffer, 0, m_numPolys * 3);
        pd3dDevice->flasherShader->End();
+
+       pd3dDevice->flasherShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
    }
 
    //pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
