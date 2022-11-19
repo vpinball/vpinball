@@ -70,8 +70,6 @@ public:
    float m_disableLightingTop;   // was bool, now 0..1
    float m_disableLightingBelow; // 0..1
 
-   bool m_useAsPlayfield;
-
    bool m_use3DMesh;
    bool m_drawTexturesInside;
    bool m_staticRendering;
@@ -94,6 +92,9 @@ public:
    bool m_backfacesEnabled;
    bool m_displayTexture;     // in editor
    bool m_objectSpaceNormalMap; // matches the +X,+Y,+Z object space export/baking of Blender
+
+   // These fields are only valid during play
+   bool m_useAsPlayfield;
    bool m_isBackGlassImage;
 };
 
@@ -282,6 +283,7 @@ public:
    void ExportMeshDialog() final;
 
    bool IsPlayfield() const { return wcscmp(m_wzName, L"playfield_mesh") == 0; }
+   bool IsBackglass() const { return _stricmp(m_d.m_szImage.c_str(), "backglassimage") == 0; }
 
    float GetAlpha() const { return m_d.m_alpha; }
    void SetAlpha(const float value) { m_d.m_alpha = max(value, 0.f); }
