@@ -4039,7 +4039,8 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    {
       vector<SaveMaterial> mats(m_numMaterials);
       pbr->GetStruct(mats.data(), (int)sizeof(SaveMaterial)*m_numMaterials);
-      if (pbr->m_version < 1080)
+      if (pbr->m_version < 1080
+         || m_materials.empty()) // Also loads materials for 10.8 table if there were saved before new material format was added. This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
       {
          for (int i = 0; i < m_numMaterials; i++)
          {
@@ -4066,7 +4067,8 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    {
        vector<SavePhysicsMaterial> mats(m_numMaterials);
        pbr->GetStruct(mats.data(), (int)sizeof(SavePhysicsMaterial)*m_numMaterials);
-       if (pbr->m_version < 1080)
+       if (pbr->m_version < 1080
+          || m_materials.size() == m_numMaterials) // Also loads materials for 10.8 table if there were saved before new material format was added. This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
        {
           for (int i = 0; i < m_numMaterials; i++)
           {
@@ -4091,6 +4093,13 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    }
    case FID(MATR):
    {
+      // Replace legacy materials with new ones. This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
+      if (pbr->m_version >= 1080 && m_materials.size() == m_numMaterials)
+      {
+         for (int i = 0; i < m_numMaterials; i++)
+            delete m_materials[i];
+         m_materials.clear();
+      }
       const int record_size = pbr->GetBytesInRecordRemaining();
       HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
       LPVOID pData = ::GlobalLock(hMem);
