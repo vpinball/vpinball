@@ -967,6 +967,7 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"
   <ItemGroup>
     <None Include="shader\SMAA.hlsl" />
     <None Include="shader\BallShader.glfx" />
+    <None Include="shader\BallShadows.fxh" />
     <None Include="shader\BasicShader.glfx" />
     <None Include="shader\ClassicLightShader.glfx" />
     <None Include="shader\DMDShader.glfx" />
