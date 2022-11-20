@@ -1,4 +1,3 @@
-
 // Shared shader file used by bulb lights and basic shaders (OpenGL and DX9)
 
 #define NUM_BALLS 8
@@ -12,7 +11,7 @@ const float4 balls[NUM_BALLS];
 // Raytraced ball shadows
 float get_light_ball_shadow(const float3 light_pos, const float3 light_dir, const float light_dist)
 {
-   float result = 1.0;
+	float result = 1.0;
 	for (int i = 0; i < NUM_BALLS; i++)
 	{
 		const float ball_r = balls[i].w;
@@ -25,11 +24,10 @@ float get_light_ball_shadow(const float3 light_pos, const float3 light_dir, cons
 		{
 			const float3 dist = light_ball_ray - dot_lbr_lr * light_ray;
 			const float d2 = length(dist);
-         const float light_r = 10.0; // light radius in VPX units
+			const float light_r = 10.0; // light radius in VPX units
 			const float smoothness = light_r * (1.0 - dot_lbr_lr / light_dist);
 			result *= 0.1 + 0.9 * smoothstep(ball_r-smoothness, ball_r+smoothness, d2);
 		}
 	}
-   return result;
+	return result;
 }
-

@@ -1219,8 +1219,8 @@
 #define IDC_ROUGHNESS_BASE              897
 #define IDC_ROUGHNESS_CLEAR             898
 #define IDC_MATERIAL_TYPE               899
-#define IDC_ROUGHNESS_BASE_LABEL        902
-#define IDC_ROUGHNESS_CLEAR_LABEL       903
+#define IDC_ROUGHNESS_BASE_LABEL        900
+#define IDC_ROUGHNESS_CLEAR_LABEL       901
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1417,7 +1417,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        670
 #define _APS_NEXT_COMMAND_VALUE         4028
-#define _APS_NEXT_CONTROL_VALUE         904
+#define _APS_NEXT_CONTROL_VALUE         902
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

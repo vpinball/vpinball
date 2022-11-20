@@ -199,9 +199,9 @@ float3 compute_refraction(const float3 pos, const float2 screenSpace, const floa
    float2 uv = float2(0.5, 0.5) + float2(proj.x, -proj.y) * (0.5 / proj.w);
 
    // Check if the sample position is behind the object pos. If it is, don't perform refraction as it would lead to refract things above us (like a reflection instead of a refraction)
-   float d = tex2D(tex_probe_depth, uv).x;
+   const float d = tex2D(tex_probe_depth, uv).x;
    const float4 proj_base = mul(float4(pos, 1.0), matProj); // Sadly DX9 does not give access to transformed fragment position and we need to project it again here...
-   BRANCH if (d < proj_base.z / proj_base.w)
+   if (d < proj_base.z / proj_base.w)
       uv = screenSpace * w_h_height.xy;
 
    // The following code gives a smoother transition but depends too much on the POV since it uses homogeneous depth to lerp instead of fragment's world depth

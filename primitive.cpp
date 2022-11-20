@@ -1266,7 +1266,7 @@ void Primitive::RenderObject()
    }
    else
    {
-      Texture *img = m_ptable->GetImage(m_d.m_szImage);
+      Texture * const img = m_ptable->GetImage(m_d.m_szImage);
       if (img != nullptr)
       {
          pin = img->m_pdsBuffer;
@@ -1327,7 +1327,7 @@ void Primitive::RenderObject()
    }
 
    // Check if this primitive is used as a lightmap and should be convoluted with the light shadows
-   Light *lightmap = m_ptable->GetLight(m_d.m_szLightmap);
+   Light * const lightmap = m_ptable->GetLight(m_d.m_szLightmap);
    if (lightmap != nullptr && lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS)
       pd3dDevice->basicShader->SetVector(SHADER_lightCenter_doShadow, lightmap->m_d.m_vCenter.x, lightmap->m_d.m_vCenter.y, lightmap->m_d.m_bulbHaloHeight, 1.0f);
 

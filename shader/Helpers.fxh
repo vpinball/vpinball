@@ -157,7 +157,6 @@ float atan_approx(const float x)
 {
 	return x * (-0.1784 * abs(x) - 0.0663 * x*x + 1.0301);
 }
-#endif
 
 float4x4 inverse4x4(const float4x4 m)
 {
@@ -198,8 +197,7 @@ float4x4 inverse4x4(const float4x4 m)
 
    return ret;
 }
-
-
+#endif
 
 
 //
