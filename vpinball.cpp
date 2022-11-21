@@ -980,13 +980,16 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
    CComObject<PinTable> * const ppt = mdiTable->GetTable();
    const HRESULT hr = ppt->LoadGameFromFilename(szFileName);
 
-   if (!SUCCEEDED(hr))
+   const bool hashing_error = (hr == APPX_E_BLOCK_HASH_INVALID || hr == APPX_E_CORRUPT_CONTENT);
+   if (hashing_error)
    {
-      if (hr == E_ACCESSDENIED)
-      {
-         const LocalString ls(IDS_CORRUPTFILE);
-         ShowError(ls.m_szbuffer);
-      }
+      const LocalString ls(IDS_CORRUPTFILE);
+      ShowError(ls.m_szbuffer);
+   }
+
+   if (!SUCCEEDED(hr) && !hashing_error)
+   {
+      ShowError("This file is corrupt and failed to load.");
 
       delete mdiTable;
    }
@@ -1368,7 +1371,7 @@ void VPinball::MainMsgLoop()
          }
          catch (...) // something failed on load/init
          {
-            auto player = g_pplayer;
+            volatile auto player = g_pplayer;
             g_pplayer = nullptr;
             delete player;
 

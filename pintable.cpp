@@ -1359,7 +1359,7 @@ void PinTable::UpdatePropertyImageList()
 void PinTable::ClearForOverwrite()
 {
    for (size_t i = 0; i < m_materials.size(); ++i)
-       delete m_materials[i];
+      delete m_materials[i];
    m_materials.clear();
 
    for (size_t i = 0; i < m_vrenderprobe.size(); i++)
@@ -3272,7 +3272,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
       }
       bw.WriteStruct(FID(PHMA), phymats.data(), (int)(sizeof(SavePhysicsMaterial)*m_materials.size()));
    }
-   // 10.8+ material saving (this format support new properties, can be extend in future version and does not perform quantizations)
+   // 10.8+ material saving (this format supports new properties, and can be extended in future versions, and does not perform quantizations)
    for (size_t i = 0; i < m_materials.size(); i++)
    {
       const int record_size = m_materials[i]->GetSaveSize() + 2 *sizeof(int);
@@ -3694,17 +3694,16 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                pstmVersion->Release();
 
                for (int i = 0; i < HASHLENGTH; i++)
-               {
                   if (hashval[i] != hashvalOld[i])
                   {
-                     hr = E_ACCESSDENIED;
+                     hr = APPX_E_BLOCK_HASH_INVALID;
+                     break;
                   }
-               }
             }
             else
             {
                // Error
-               hr = E_ACCESSDENIED;
+               hr = APPX_E_CORRUPT_CONTENT;
             }
          }
 
@@ -4040,7 +4039,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       vector<SaveMaterial> mats(m_numMaterials);
       pbr->GetStruct(mats.data(), (int)sizeof(SaveMaterial)*m_numMaterials);
       if (pbr->m_version < 1080
-         || m_materials.empty()) // Also loads materials for 10.8 table if there were saved before new material format was added. This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
+         || m_materials.empty()) // Also loads materials for 10.8+ tables if these were saved before the new material format was added. // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
       {
          for (int i = 0; i < m_numMaterials; i++)
          {
@@ -4068,7 +4067,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
        vector<SavePhysicsMaterial> mats(m_numMaterials);
        pbr->GetStruct(mats.data(), (int)sizeof(SavePhysicsMaterial)*m_numMaterials);
        if (pbr->m_version < 1080
-          || m_materials.size() == m_numMaterials) // Also loads materials for 10.8 table if there were saved before new material format was added. This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
+          || m_materials.size() == m_numMaterials) // Also loads materials for 10.8+ tables if these were saved before the new material format was added. // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
        {
           for (int i = 0; i < m_numMaterials; i++)
           {
@@ -4093,7 +4092,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    }
    case FID(MATR):
    {
-      // Replace legacy materials with new ones. This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
+      // Replace legacy materials with the new ones. // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
       if (pbr->m_version >= 1080 && m_materials.size() == m_numMaterials)
       {
          for (int i = 0; i < m_numMaterials; i++)
