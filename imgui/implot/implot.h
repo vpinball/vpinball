@@ -145,20 +145,22 @@ enum ImPlotFlags_ {
 // Options for plot axes (see SetupAxis).
 enum ImPlotAxisFlags_ {
     ImPlotAxisFlags_None          = 0,       // default
-    ImPlotAxisFlags_NoLabel       = 1 << 0,  // the axis label will not be displayed (axis labels also hidden if the supplied string name is NULL)
+    ImPlotAxisFlags_NoLabel       = 1 << 0,  // the axis label will not be displayed (axis labels are also hidden if the supplied string name is NULL)
     ImPlotAxisFlags_NoGridLines   = 1 << 1,  // no grid lines will be displayed
     ImPlotAxisFlags_NoTickMarks   = 1 << 2,  // no tick marks will be displayed
     ImPlotAxisFlags_NoTickLabels  = 1 << 3,  // no text labels will be displayed
     ImPlotAxisFlags_NoInitialFit  = 1 << 4,  // axis will not be initially fit to data extents on the first rendered frame
     ImPlotAxisFlags_NoMenus       = 1 << 5,  // the user will not be able to open context menus with right-click
-    ImPlotAxisFlags_Opposite      = 1 << 6,  // axis ticks and labels will be rendered on the conventionally opposite side (i.e, right or top)
-    ImPlotAxisFlags_Foreground    = 1 << 7,  // grid lines will be displayed in the foreground (i.e. on top of data) in stead of the background
-    ImPlotAxisFlags_Invert        = 1 << 8,  // the axis will be inverted
-    ImPlotAxisFlags_AutoFit       = 1 << 9,  // axis will be auto-fitting to data extents
-    ImPlotAxisFlags_RangeFit      = 1 << 10, // axis will only fit points if the point is in the visible range of the **orthogonal** axis
-    ImPlotAxisFlags_PanStretch    = 1 << 11, // panning in a locked or constrained state will cause the axis to stretch if possible
-    ImPlotAxisFlags_LockMin       = 1 << 12, // the axis minimum value will be locked when panning/zooming
-    ImPlotAxisFlags_LockMax       = 1 << 13, // the axis maximum value will be locked when panning/zooming
+    ImPlotAxisFlags_NoSideSwitch  = 1 << 6,  // the user will not be able to switch the axis side by dragging it
+    ImPlotAxisFlags_NoHighlight   = 1 << 7,  // the axis will not have its background highlighted when hovered or held
+    ImPlotAxisFlags_Opposite      = 1 << 8,  // axis ticks and labels will be rendered on the conventionally opposite side (i.e, right or top)
+    ImPlotAxisFlags_Foreground    = 1 << 9,  // grid lines will be displayed in the foreground (i.e. on top of data) instead of the background
+    ImPlotAxisFlags_Invert        = 1 << 10, // the axis will be inverted
+    ImPlotAxisFlags_AutoFit       = 1 << 11, // axis will be auto-fitting to data extents
+    ImPlotAxisFlags_RangeFit      = 1 << 12, // axis will only fit points if the point is in the visible range of the **orthogonal** axis
+    ImPlotAxisFlags_PanStretch    = 1 << 13, // panning in a locked or constrained state will cause the axis to stretch if possible
+    ImPlotAxisFlags_LockMin       = 1 << 14, // the axis minimum value will be locked when panning/zooming
+    ImPlotAxisFlags_LockMax       = 1 << 15, // the axis maximum value will be locked when panning/zooming
     ImPlotAxisFlags_Lock          = ImPlotAxisFlags_LockMin | ImPlotAxisFlags_LockMax,
     ImPlotAxisFlags_NoDecorations = ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels,
     ImPlotAxisFlags_AuxDefault    = ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_Opposite
@@ -189,6 +191,7 @@ enum ImPlotLegendFlags_ {
     ImPlotLegendFlags_NoMenus         = 1 << 3, // the user will not be able to open context menus with right-click
     ImPlotLegendFlags_Outside         = 1 << 4, // legend will be rendered outside of the plot area
     ImPlotLegendFlags_Horizontal      = 1 << 5, // legend entries will be displayed horizontally
+    ImPlotLegendFlags_Sort            = 1 << 6, // legend entries will be displayed in alphabetical order
 };
 
 // Options for mouse hover text (see SetupMouseText)
@@ -540,28 +543,34 @@ struct ImPlotStyle {
     IMPLOT_API ImPlotStyle();
 };
 
+// Support for legacy versions
 #if (IMGUI_VERSION_NUM < 18716) // Renamed in 1.88
-#define ImGuiModFlags       ImGuiKeyModFlags
-#define ImGuiModFlags_None  ImGuiKeyModFlags_None
-#define ImGuiModFlags_Ctrl  ImGuiKeyModFlags_Ctrl
-#define ImGuiModFlags_Shift ImGuiKeyModFlags_Shift
-#define ImGuiModFlags_Alt   ImGuiKeyModFlags_Alt
-#define ImGuiModFlags_Super ImGuiKeyModFlags_Super
+#define ImGuiMod_None       0
+#define ImGuiMod_Ctrl       ImGuiKeyModFlags_Ctrl
+#define ImGuiMod_Shift      ImGuiKeyModFlags_Shift
+#define ImGuiMod_Alt        ImGuiKeyModFlags_Alt
+#define ImGuiMod_Super      ImGuiKeyModFlags_Super
+#elif (IMGUI_VERSION_NUM < 18823) // Renamed in 1.89, sorry
+#define ImGuiMod_None       0
+#define ImGuiMod_Ctrl       ImGuiModFlags_Ctrl
+#define ImGuiMod_Shift      ImGuiModFlags_Shift
+#define ImGuiMod_Alt        ImGuiModFlags_Alt
+#define ImGuiMod_Super      ImGuiModFlags_Super
 #endif
 
 // Input mapping structure. Default values listed. See also MapInputDefault, MapInputReverse.
 struct ImPlotInputMap {
     ImGuiMouseButton Pan;           // LMB    enables panning when held,
-    ImGuiModFlags    PanMod;        // none   optional modifier that must be held for panning/fitting
+    int              PanMod;        // none   optional modifier that must be held for panning/fitting
     ImGuiMouseButton Fit;           // LMB    initiates fit when double clicked
     ImGuiMouseButton Select;        // RMB    begins box selection when pressed and confirms selection when released
     ImGuiMouseButton SelectCancel;  // LMB    cancels active box selection when pressed; cannot be same as Select
-    ImGuiModFlags    SelectMod;     // none   optional modifier that must be held for box selection
-    ImGuiModFlags    SelectHorzMod; // Alt    expands active box selection horizontally to plot edge when held
-    ImGuiModFlags    SelectVertMod; // Shift  expands active box selection vertically to plot edge when held
+    int              SelectMod;     // none   optional modifier that must be held for box selection
+    int              SelectHorzMod; // Alt    expands active box selection horizontally to plot edge when held
+    int              SelectVertMod; // Shift  expands active box selection vertically to plot edge when held
     ImGuiMouseButton Menu;          // RMB    opens context menus (if enabled) when clicked
-    ImGuiModFlags    OverrideMod;   // Ctrl   when held, all input is ignored; used to enable axis/plots as DND sources
-    ImGuiModFlags    ZoomMod;       // none   optional modifier that must be held for scroll wheel zooming
+    int              OverrideMod;   // Ctrl   when held, all input is ignored; used to enable axis/plots as DND sources
+    int              ZoomMod;       // none   optional modifier that must be held for scroll wheel zooming
     float            ZoomRate;      // 0.1f   zoom rate for scroll (e.g. 0.1f = 10% plot range every scroll click); make negative to invert
     IMPLOT_API ImPlotInputMap();
 };
@@ -923,7 +932,7 @@ IMPLOT_API bool DragLineX(int id, double* x, const ImVec4& col, float thickness 
 // Shows a draggable horizontal guide line at a y-value. #col defaults to ImGuiCol_Text.
 IMPLOT_API bool DragLineY(int id, double* y, const ImVec4& col, float thickness = 1, ImPlotDragToolFlags flags=0);
 // Shows a draggable and resizeable rectangle.
-IMPLOT_API bool DragRect(int id, double* x_min, double* y_min, double* x_max, double* y_max, const ImVec4& col, ImPlotDragToolFlags flags=0);
+IMPLOT_API bool DragRect(int id, double* x1, double* y1, double* x2, double* y2, const ImVec4& col, ImPlotDragToolFlags flags=0);
 
 // Shows an annotation callout at a chosen point. Clamping keeps annotations in the plot area. Annotations are always rendered on top.
 IMPLOT_API void Annotation(double x, double y, const ImVec4& col, const ImVec2& pix_offset, bool clamp, bool round = false);
@@ -1020,7 +1029,7 @@ IMPLOT_API bool BeginDragDropTargetLegend();
 IMPLOT_API void EndDragDropTarget();
 
 // NB: By default, plot and axes drag and drop *sources* require holding the Ctrl modifier to initiate the drag.
-// You can change the modifier if desired. If ImGuiModFlags_None is provided, the axes will be locked from panning.
+// You can change the modifier if desired. If ImGuiMod_None is provided, the axes will be locked from panning.
 
 // Turns the current plot's plotting area into a drag and drop source. You must hold Ctrl. Don't forget to call EndDragDropSource!
 IMPLOT_API bool BeginDragDropSourcePlot(ImGuiDragDropFlags flags=0);

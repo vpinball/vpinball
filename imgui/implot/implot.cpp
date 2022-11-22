@@ -582,8 +582,8 @@ ImVec2 CalcLegendSize(ImPlotItemGroup& items, const ImVec2& pad, const ImVec2& s
     return legend_size;
 }
 
-int LegendSortingComp(void* _items, const void* _a, const void* _b) {
-    ImPlotItemGroup* items = (ImPlotItemGroup*)_items;
+int LegendSortingComp(const void* _a, const void* _b) {
+    ImPlotItemGroup* items = GImPlot->SortItems;
     const int a = *(const int*)_a;
     const int b = *(const int*)_b;
     const char* label_a = items->GetLegendLabel(a);
@@ -605,18 +605,18 @@ bool ShowLegendEntries(ImPlotItemGroup& items, const ImRect& legend_bb, bool hov
     const int num_items = items.GetLegendCount();
     if (num_items < 1)
         return hovered;
-    // ImVector<int>& indices = GImPlot->TempInt1;
-    // indices.resize(num_items);
-    // // bool sort = true;
-    // // if (sort && num_items > 1) {
-    // //     qsort_s(indices.Data, num_items, sizeof(int), LegendSortingComp, &items);
-    // // }
-    // // else {
-    // //     for (int i = 0; i < num_items; ++i)
-    // //         indices[i] = i;
-    // // }
+    // build render order
+    ImVector<int>& indices = GImPlot->TempInt1;
+    indices.resize(num_items);
+    for (int i = 0; i < num_items; ++i)
+        indices[i] = i;
+    if (ImHasFlag(items.Legend.Flags, ImPlotLegendFlags_Sort) && num_items > 1) {
+        GImPlot->SortItems = &items;
+        qsort(indices.Data, num_items, sizeof(int), LegendSortingComp);
+    }
+    // render
     for (int i = 0; i < num_items; ++i) {
-        const int idx           = i; //indices[i];
+        const int idx           = indices[i];
         ImPlotItem* item        = items.GetLegendItem(idx);
         const char* label       = items.GetLegendLabel(idx);
         const float label_width = ImGui::CalcTextSize(label, NULL, true).x;
@@ -1057,6 +1057,7 @@ int FormatTime(const ImPlotTime& t, char* buffer, int size, ImPlotTimeFmt fmt, b
             case ImPlotTimeFmt_SUs:       return ImFormatString(buffer, size, ":%02d.%03d %03d", sec, ms, us);
             case ImPlotTimeFmt_SMs:       return ImFormatString(buffer, size, ":%02d.%03d", sec, ms);
             case ImPlotTimeFmt_S:         return ImFormatString(buffer, size, ":%02d", sec);
+            case ImPlotTimeFmt_MinSMs:    return ImFormatString(buffer, size, ":%02d:%02d.%03d", min, sec, ms);
             case ImPlotTimeFmt_HrMinSMs:  return ImFormatString(buffer, size, "%02d:%02d:%02d.%03d", hr, min, sec, ms);
             case ImPlotTimeFmt_HrMinS:    return ImFormatString(buffer, size, "%02d:%02d:%02d", hr, min, sec);
             case ImPlotTimeFmt_HrMin:     return ImFormatString(buffer, size, "%02d:%02d", hr, min);
@@ -1072,6 +1073,7 @@ int FormatTime(const ImPlotTime& t, char* buffer, int size, ImPlotTimeFmt fmt, b
             case ImPlotTimeFmt_SUs:       return ImFormatString(buffer, size, ":%02d.%03d %03d", sec, ms, us);
             case ImPlotTimeFmt_SMs:       return ImFormatString(buffer, size, ":%02d.%03d", sec, ms);
             case ImPlotTimeFmt_S:         return ImFormatString(buffer, size, ":%02d", sec);
+            case ImPlotTimeFmt_MinSMs:    return ImFormatString(buffer, size, ":%02d:%02d.%03d", min, sec, ms);
             case ImPlotTimeFmt_HrMinSMs:  return ImFormatString(buffer, size, "%d:%02d:%02d.%03d%s", hr, min, sec, ms, ap);
             case ImPlotTimeFmt_HrMinS:    return ImFormatString(buffer, size, "%d:%02d:%02d%s", hr, min, sec, ap);
             case ImPlotTimeFmt_HrMin:     return ImFormatString(buffer, size, "%d:%02d%s", hr, min, ap);
@@ -1193,7 +1195,7 @@ void Locator_Time(ImPlotTicker& ticker, const ImPlotRange& range, float pixels, 
     (void)vertical;
     // get units for level 0 and level 1 labels
     const ImPlotTimeUnit unit0 = GetUnitForRange(range.Size() / (pixels / 100)); // level = 0 (top)
-    const ImPlotTimeUnit unit1 = unit0 + 1;                                          // level = 1 (bottom)
+    const ImPlotTimeUnit unit1 = ImClamp(unit0 + 1, 0, ImPlotTimeUnit_COUNT-1);  // level = 1 (bottom)
     // get time format specs
     const ImPlotDateTimeSpec fmt0 = GetDateTimeFmt(TimeFormatLevel0, unit0);
     const ImPlotDateTimeSpec fmt1 = GetDateTimeFmt(TimeFormatLevel1, unit1);
@@ -1231,7 +1233,7 @@ void Locator_Time(ImPlotTicker& ticker, const ImPlotRange& range, float pixels, 
                 ftd.Time = t1; ftd.Spec = fmt0;
                 ticker.AddTick(t1.ToDouble(), true, 0, true, Formatter_Time, &ftd);
                 // major level 1 tick
-                ftd.Time = t1; ftd.Spec = last_major_offset < 0 == NULL ? fmtf : fmt1;
+                ftd.Time = t1; ftd.Spec = last_major_offset < 0 ? fmtf : fmt1;
                 ImPlotTick& tick_maj = ticker.AddTick(t1.ToDouble(), true, 1, true, Formatter_Time, &ftd);
                 const char* this_major = ticker.GetText(tick_maj);
                 if (last_major_offset >= 0 && TimeLabelSame(ticker.TextBuffer.Buf.Data + last_major_offset, this_major))
@@ -1565,9 +1567,21 @@ static inline double RoundAxisValue(const ImPlotAxis& axis, double value) {
 }
 
 void LabelAxisValue(const ImPlotAxis& axis, double value, char* buff, int size, bool round) {
-    if (round)
-        value = RoundAxisValue(axis, value);
-    axis.Formatter(value, buff, size, axis.FormatterData);
+    ImPlotContext& gp = *GImPlot;
+    // TODO: We shouldn't explicitly check that the axis is Time here. Ideally,
+    // Formatter_Time would handle the formatting for us, but the code below
+    // needs additional arguments which are not currently available in ImPlotFormatter
+    if (axis.Locator == Locator_Time) {
+        ImPlotTimeUnit unit = axis.Vertical
+                            ? GetUnitForRange(axis.Range.Size() / (gp.CurrentPlot->PlotRect.GetHeight() / 100)) // TODO: magic value!
+                            : GetUnitForRange(axis.Range.Size() / (gp.CurrentPlot->PlotRect.GetWidth() / 100)); // TODO: magic value!
+        FormatDateTime(ImPlotTime::FromDouble(value), buff, size, GetDateTimeFmt(TimeFormatMouseCursor, unit));
+    }
+    else {
+        if (round)
+            value = RoundAxisValue(axis, value);
+        axis.Formatter(value, buff, size, axis.FormatterData);
+    }
 }
 
 void UpdateAxisColors(ImPlotAxis& axis) {
@@ -2150,7 +2164,7 @@ void SetupAxisTicks(ImAxis idx, const double* values, int n_ticks, const char* c
 void SetupAxisTicks(ImAxis idx, double v_min, double v_max, int n_ticks, const char* const labels[], bool show_default) {
     IM_ASSERT_USER_ERROR(GImPlot->CurrentPlot != NULL && !GImPlot->CurrentPlot->SetupLocked,
                          "Setup needs to be called after BeginPlot and before any setup locking functions (e.g. PlotX)!");
-    IM_ASSERT_USER_ERROR(n_ticks > 1, "The number of ticks must be greater than 1");
+    n_ticks = n_ticks < 2 ? 2 : n_ticks;
     FillRange(GImPlot->TempDouble1, n_ticks, v_min, v_max);
     SetupAxisTicks(idx, GImPlot->TempDouble1.Data, n_ticks, labels, show_default);
 }
@@ -2630,7 +2644,7 @@ void SetupFinish() {
         ImPlotAxis& ax = plot.XAxis(i);
         if (!ax.Enabled)
             continue;
-        if ((ax.Hovered || ax.Held) && !plot.Held)
+        if ((ax.Hovered || ax.Held) && !plot.Held && !ImHasFlag(ax.Flags, ImPlotAxisFlags_NoHighlight))
             DrawList.AddRectFilled(ax.HoverRect.Min, ax.HoverRect.Max, ax.Held ? ax.ColorAct : ax.ColorHov);
         else if (ax.ColorHiLi != IM_COL32_BLACK_TRANS) {
             DrawList.AddRectFilled(ax.HoverRect.Min, ax.HoverRect.Max, ax.ColorHiLi);
@@ -2669,7 +2683,7 @@ void SetupFinish() {
         ImPlotAxis& ax = plot.YAxis(i);
         if (!ax.Enabled)
             continue;
-        if ((ax.Hovered || ax.Held) && !plot.Held)
+        if ((ax.Hovered || ax.Held) && !plot.Held && !ImHasFlag(ax.Flags, ImPlotAxisFlags_NoHighlight))
             DrawList.AddRectFilled(ax.HoverRect.Min, ax.HoverRect.Max, ax.Held ? ax.ColorAct : ax.ColorHov);
         else if (ax.ColorHiLi != IM_COL32_BLACK_TRANS) {
             DrawList.AddRectFilled(ax.HoverRect.Min, ax.HoverRect.Max, ax.ColorHiLi);
@@ -2929,6 +2943,8 @@ void EndPlot() {
         trigger_rect.Expand(-10);
         for (int i = 0; i < IMPLOT_NUM_X_AXES; ++i) {
             ImPlotAxis& x_axis = plot.XAxis(i);
+            if (ImHasFlag(x_axis.Flags, ImPlotAxisFlags_NoSideSwitch))
+                continue;
             if (x_axis.Held && plot.PlotRect.Contains(mouse_pos)) {
                 const bool opp = ImHasFlag(x_axis.Flags, ImPlotAxisFlags_Opposite);
                 if (!opp) {
@@ -2951,6 +2967,8 @@ void EndPlot() {
         }
         for (int i = 0; i < IMPLOT_NUM_Y_AXES; ++i) {
             ImPlotAxis& y_axis = plot.YAxis(i);
+            if (ImHasFlag(y_axis.Flags, ImPlotAxisFlags_NoSideSwitch))
+                continue;
             if (y_axis.Held && plot.PlotRect.Contains(mouse_pos)) {
                 const bool opp = ImHasFlag(y_axis.Flags, ImPlotAxisFlags_Opposite);
                 if (!opp) {
@@ -3678,7 +3696,7 @@ void Annotation(double x, double y, const ImVec4& col, const ImVec2& offset, boo
     char x_buff[IMPLOT_LABEL_MAX_SIZE];
     char y_buff[IMPLOT_LABEL_MAX_SIZE];
     ImPlotAxis& x_axis = gp.CurrentPlot->Axes[gp.CurrentPlot->CurrentX];
-    ImPlotAxis& y_axis = gp.CurrentPlot->Axes[gp.CurrentPlot->CurrentX];
+    ImPlotAxis& y_axis = gp.CurrentPlot->Axes[gp.CurrentPlot->CurrentY];
     LabelAxisValue(x_axis, x, x_buff, sizeof(x_buff), round);
     LabelAxisValue(y_axis, y, y_buff, sizeof(y_buff), round);
     Annotation(x,y,col,offset,clamp,"%s, %s",x_buff,y_buff);
@@ -4219,7 +4237,7 @@ ImPlotStyle& GetStyle() {
 void PushStyleColor(ImPlotCol idx, ImU32 col) {
     ImPlotContext& gp = *GImPlot;
     ImGuiColorMod backup;
-    backup.Col = idx;
+    backup.Col = (ImGuiCol)idx;
     backup.BackupValue = gp.Style.Colors[idx];
     gp.ColorModifiers.push_back(backup);
     gp.Style.Colors[idx] = ImGui::ColorConvertU32ToFloat4(col);
@@ -4228,7 +4246,7 @@ void PushStyleColor(ImPlotCol idx, ImU32 col) {
 void PushStyleColor(ImPlotCol idx, const ImVec4& col) {
     ImPlotContext& gp = *GImPlot;
     ImGuiColorMod backup;
-    backup.Col = idx;
+    backup.Col = (ImGuiCol)idx;
     backup.BackupValue = gp.Style.Colors[idx];
     gp.ColorModifiers.push_back(backup);
     gp.Style.Colors[idx] = col;
@@ -4251,7 +4269,7 @@ void PushStyleVar(ImPlotStyleVar idx, float val) {
     const ImPlotStyleVarInfo* var_info = GetPlotStyleVarInfo(idx);
     if (var_info->Type == ImGuiDataType_Float && var_info->Count == 1) {
         float* pvar = (float*)var_info->GetVarPtr(&gp.Style);
-        gp.StyleModifiers.push_back(ImGuiStyleMod(idx, *pvar));
+        gp.StyleModifiers.push_back(ImGuiStyleMod((ImGuiStyleVar)idx, *pvar));
         *pvar = val;
         return;
     }
@@ -4263,27 +4281,27 @@ void PushStyleVar(ImPlotStyleVar idx, int val) {
     const ImPlotStyleVarInfo* var_info = GetPlotStyleVarInfo(idx);
     if (var_info->Type == ImGuiDataType_S32 && var_info->Count == 1) {
         int* pvar = (int*)var_info->GetVarPtr(&gp.Style);
-        gp.StyleModifiers.push_back(ImGuiStyleMod(idx, *pvar));
+        gp.StyleModifiers.push_back(ImGuiStyleMod((ImGuiStyleVar)idx, *pvar));
         *pvar = val;
         return;
     }
     else if (var_info->Type == ImGuiDataType_Float && var_info->Count == 1) {
         float* pvar = (float*)var_info->GetVarPtr(&gp.Style);
-        gp.StyleModifiers.push_back(ImGuiStyleMod(idx, *pvar));
+        gp.StyleModifiers.push_back(ImGuiStyleMod((ImGuiStyleVar)idx, *pvar));
         *pvar = (float)val;
         return;
     }
     IM_ASSERT(0 && "Called PushStyleVar() int variant but variable is not a int!");
 }
 
-void PushStyleVar(ImGuiStyleVar idx, const ImVec2& val)
+void PushStyleVar(ImPlotStyleVar idx, const ImVec2& val)
 {
     ImPlotContext& gp = *GImPlot;
     const ImPlotStyleVarInfo* var_info = GetPlotStyleVarInfo(idx);
     if (var_info->Type == ImGuiDataType_Float && var_info->Count == 2)
     {
         ImVec2* pvar = (ImVec2*)var_info->GetVarPtr(&gp.Style);
-        gp.StyleModifiers.push_back(ImGuiStyleMod(idx, *pvar));
+        gp.StyleModifiers.push_back(ImGuiStyleMod((ImGuiStyleVar)idx, *pvar));
         *pvar = val;
         return;
     }
@@ -4619,32 +4637,32 @@ ImPlotInputMap& GetInputMap() {
 void MapInputDefault(ImPlotInputMap* dst) {
     ImPlotInputMap& map = dst ? *dst : GetInputMap();
     map.Pan             = ImGuiMouseButton_Left;
-    map.PanMod          = ImGuiModFlags_None;
+    map.PanMod          = ImGuiMod_None;
     map.Fit             = ImGuiMouseButton_Left;
     map.Menu            = ImGuiMouseButton_Right;
     map.Select          = ImGuiMouseButton_Right;
-    map.SelectMod       = ImGuiModFlags_None;
+    map.SelectMod       = ImGuiMod_None;
     map.SelectCancel    = ImGuiMouseButton_Left;
-    map.SelectHorzMod   = ImGuiModFlags_Alt;
-    map.SelectVertMod   = ImGuiModFlags_Shift;
-    map.OverrideMod     = ImGuiModFlags_Ctrl;
-    map.ZoomMod         = ImGuiModFlags_None;
+    map.SelectHorzMod   = ImGuiMod_Alt;
+    map.SelectVertMod   = ImGuiMod_Shift;
+    map.OverrideMod     = ImGuiMod_Ctrl;
+    map.ZoomMod         = ImGuiMod_None;
     map.ZoomRate        = 0.1f;
 }
 
 void MapInputReverse(ImPlotInputMap* dst) {
     ImPlotInputMap& map = dst ? *dst : GetInputMap();
     map.Pan             = ImGuiMouseButton_Right;
-    map.PanMod          = ImGuiModFlags_None;
+    map.PanMod          = ImGuiMod_None;
     map.Fit             = ImGuiMouseButton_Left;
     map.Menu            = ImGuiMouseButton_Right;
     map.Select          = ImGuiMouseButton_Left;
-    map.SelectMod       = ImGuiModFlags_None;
+    map.SelectMod       = ImGuiMod_None;
     map.SelectCancel    = ImGuiMouseButton_Right;
-    map.SelectHorzMod   = ImGuiModFlags_Alt;
-    map.SelectVertMod   = ImGuiModFlags_Shift;
-    map.OverrideMod     = ImGuiModFlags_Ctrl;
-    map.ZoomMod         = ImGuiModFlags_None;
+    map.SelectHorzMod   = ImGuiMod_Alt;
+    map.SelectVertMod   = ImGuiMod_Shift;
+    map.OverrideMod     = ImGuiMod_Ctrl;
+    map.ZoomMod         = ImGuiMod_None;
     map.ZoomRate        = 0.1f;
 }
 

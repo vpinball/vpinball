@@ -93,7 +93,19 @@ ImGui::DestroyContext();
 
 You should be good to go!
 
-If you want to test ImPlot quickly, consider trying [mahi-gui](https://github.com/mahilab/mahi-gui), which bundles ImGui, ImPlot, and several other packages for you.
+## Installing ImPlot using vcpkg
+
+You can download and install ImPlot using the [vcpkg](https://github.com/Microsoft/vcpkg) dependency manager:
+
+```bash
+git clone https://github.com/Microsoft/vcpkg.git
+cd vcpkg
+./bootstrap-vcpkg.sh
+./vcpkg integrate install
+./vcpkg install implot
+```
+
+The ImPlot port in vcpkg is kept up to date by Microsoft team members and community contributors. If the version is out of date, please [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.
 
 ## Extremely Important Note
 
@@ -123,7 +135,7 @@ A: Yes, within reason. You can plot tens to hundreds of thousands of points with
 **Q: What data types can I plot?**
 
 A: ImPlot plotting functions accept most scalar types:
-`float`, `double`, `int8`, `uint8`, `int16`, `uint16`, `int32`, `uint32`, `int64`, `uint64`. Arrays of custom structs or classes (e.g. `Vector2f` or similar) are easily passed to ImPlot functions using the built in striding features (see `implot.h` for documentation), and many plotters provide a "getter" overload which accepts data generating callbacks.
+`float`, `double`, `int8`, `uint8`, `int16`, `uint16`, `int32`, `uint32`, `int64`, `uint64`. Arrays of custom structs or classes (e.g. `Vector2f` or similar) are easily passed to ImPlot functions using the built-in striding features (see `implot.h` for documentation), and many plotters provide a "getter" overload which accepts data generating callbacks. You can fully customize the list of accepted types by defining `IMPLOT_CUSTOM_NUMERIC_TYPES` at compile time: see doc in `implot_items.cpp`.
 
 **Q: Can plot styles be modified?**
 
