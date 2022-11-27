@@ -315,7 +315,7 @@ bool ExtCapture::SetupCapture(const RECT& inputRect)
    }
    m_allCaptures.push_back(this);
 
-   m_texture = new BaseTexture(m_Width, m_Height, BaseTexture::Format::RGBA);
+   m_texture = new BaseTexture(m_Width, m_Height, BaseTexture::Format::SRGBA);
 
    return true;
 }
