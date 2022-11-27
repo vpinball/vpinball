@@ -183,11 +183,12 @@ out vec3 normal_gs;
 
 void main()
 {
-   gl_Position = vec4(vPosition, 1.0);
+   float4 vPosition4 = float4(vPosition,1.0);
+   gl_Position = vPosition4;
    tex01_gs = tc;
-   tablePos_gs = (matWorld*vec4(vPosition, 1.0)).xyz;
+   tablePos_gs = (matWorld*vPosition4).xyz;
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
-   worldPos_gs = (matWorldView*vec4(vPosition, 1.0)).xyz;
+   worldPos_gs = (matWorldView*vPosition4).xyz;
    normal_gs = normalize((matWorldViewInverseTranspose*vNormal).xyz);
 }
 
@@ -203,9 +204,10 @@ out vec3 normal_gs;
 
 void main()
 {
-   gl_Position = float4(vPosition, 1.0);
-   tablePos_gs = (matWorld*vec4(vPosition, 1.0)).xyz;
-   worldPos_gs = (matWorldView*float4(vPosition, 1.0)).xyz;
+   float4 vPosition4 = float4(vPosition,1.0);
+   gl_Position = vPosition4;
+   tablePos_gs = (matWorld*vPosition4).xyz;
+   worldPos_gs = (matWorldView*vPosition4).xyz;
    normal_gs = normalize((matWorldViewInverseTranspose*vNormal).xyz);
 }
 
@@ -613,6 +615,7 @@ in vec3 vPosition;
 in vec3 vNormal;
 in vec2 tc;
 
+out vec3 tablePos_gs;
 out vec3 worldPos_gs;
 out vec3 normal_gs;
 out vec2 tex03_gs;
@@ -620,7 +623,8 @@ out vec2 tex03_gs;
 void main() {
    float4 vPosition4 = float4(vPosition,1.0);
    gl_Position = vPosition4;
-   float4 bulbPos = (matWorldViewProj[0]*float4(vPosition, 1.0));
+   tablePos_gs = (matWorld * vPosition4).xyz;
+   float4 bulbPos = (matWorldViewProj[0] * vPosition4);
    tex03_gs = vec2(bulbPos.xy/bulbPos.w);
    worldPos_gs = (matWorldView * vPosition4).xyz;
    normal_gs = normalize((matWorldViewInverseTranspose*vNormal).xyz);
