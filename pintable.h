@@ -542,6 +542,7 @@ public:
    void MoveCollectionUp(CComObject<Collection> *pcol);
    void MoveCollectionDown(CComObject<Collection> *pcol);
    void UpdatePropertyImageList();
+   void UpdatePropertyMaterialList();
    int GetDetailLevel() const; // used for rubber, ramp and ball
    void SetDetailLevel(const int value);
    float GetZPD() const;
