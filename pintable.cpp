@@ -3733,10 +3733,13 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             for (size_t i = 0; i < m_vedit.size(); ++i)
                if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)m_vedit[i])->IsPlayfield()))
                {
+                  // playfield meshes were always processed as static until 10.8.0 (more precisely, directly rendered before everything else even in camera mode, then skipped when rendering all parts)
+                  ((Primitive *)m_vedit[i])->m_d.m_staticRendering = true;
                   // playfield meshes were always forced as visible until 10.8.0
                   ((Primitive *)m_vedit[i])->put_Visible(FTOVB(true));
                   // playfield meshes were always drawn before other transparent parts until 10.8.0
-                  ((Primitive *)m_vedit[i])->m_d.m_depthBias = 1000.0f;
+                  ((Primitive *)m_vedit[i])->m_d.m_depthBias = 100000.0f;
+                  // FIXME if playfield is given an active material, it will be rendered after opaque parts potentially breaking backward compatibility on some tables
                }
          }
 
