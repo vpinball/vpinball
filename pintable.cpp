@@ -1356,6 +1356,12 @@ void PinTable::UpdatePropertyImageList()
     g_pvp->GetPropertiesDocker()->GetContainProperties()->GetPropertyDialog()->UpdateTabs(m_vmultisel);
 }
 
+void PinTable::UpdatePropertyMaterialList()
+{
+    // just update the combo boxes in the property dialog
+    g_pvp->GetPropertiesDocker()->GetContainProperties()->GetPropertyDialog()->UpdateTabs(m_vmultisel);
+}
+
 void PinTable::ClearForOverwrite()
 {
    for (size_t i = 0; i < m_materials.size(); ++i)
