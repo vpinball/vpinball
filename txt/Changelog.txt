@@ -3,7 +3,7 @@ VP 10.8.0 Changelog
 
 FEATURES:
 
-- the playfield is now processed like all the other parts, i.e. its not preprocessed anymore, and thus underlying table elements will work as expected now (so no more under playfield clipping, and alpha blending is not limited to simple alpha clipping/cutouts anymore):
+- the playfield is now processed like all the other parts, i.e. its not forced as static/preprocessed anymore, and thus underlying table elements will work as expected now (so no more under playfield clipping, and alpha blending is not limited to simple alpha clipping/cutouts anymore):
   - if the 'playfield_mesh' primitive has 'Static rendering' disabled, it will be rendered with transparent parts (this results in the 'playfield_mesh' to be blended like plain primitives, so no more need for alpha test or insert overlays)
   - parts under the playfield (like a lower playfield or 3D inserts) can have 'Static rendering' checked and can feature materials without the 'Active' checkbox (previously, under-playfield parts without these flags were clipped)
   - the playfield texture can now be changed at runtime through the script (see CommandReference.txt)
@@ -19,15 +19,38 @@ FEATURES:
     - Static & Unsynced Dynamic: *NEW* reflection of static parts and dynamic parts without depth buffer synchronisation. Overlapping of dynamic-over-static and of static-over-dynamic reflections is thus incorrect (features just a limited performance cost, added for lower end systems)
     - Static & Synced Dynamic: reflection of static parts and dynamic parts with depth buffer synchronisation. This corresponds to the way reflections were processed before. Overlapping of dynamic-over-static reflections is incorrect (features just a small performance cost)
     - Dynamic: *NEW* dynamic reflection of all parts. It provides the best results without any overlapping artefact at the cost of more performance (recommended)
+  - additional roughness parameter
+
+- add support for refraction to primitives
+
+- add refraction tint to the material parameters
+
+- add lightmaps to flashers & primitive
+
+- add native ball shadows for bulb lights
+
+FIXES:
+
+- reflections now work in the interactive camera/light editing mode (F6) as well
+
+- fix potentially wrong primitive animation interpolation
+
+- fix material list combobox not updating
+
+- fix missing decal UI updates
+
+- do not fail to load a table if only the hash/checksum fails, but instead just output a warning
+- handle broken tables better and try to load as much as possible
+
+- static element preprocessing is now done on the GPU (which leads to a faster VPX-player start)
+- increase preprocessing sample rate for the static parts of the table
+
+- do not attempt to play "<None>" reel sound (which otherwise polluted the debug outputs)
 
 - update BASS library to 2.4.17
 
 - update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
 - DirectX 8 port for input handling (currently disabled)
-
-FIXES:
-
-- reflections now work in the interactive camera/light editing mode (F6) as well
 
 - see Changelog_Scripts.txt for the respective core script changes (version 3.60)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
