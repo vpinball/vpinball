@@ -21,7 +21,7 @@ FEATURES:
     - Dynamic: *NEW* dynamic reflection of all parts. It provides the best results without any overlapping artefact at the cost of more performance (recommended)
   - additional roughness parameter
 
-- add support for refraction to primitives
+- add support for refraction to primitives (using 'refraction probe's)
 
 - add refraction tint to the material parameters
 
@@ -37,7 +37,7 @@ FIXES:
 
 - fix material list combobox not updating
 
-- fix missing decal UI updates
+- fix missing decal UI updates (e.g. width,height)
 
 - do not fail to load a table if only the hash/checksum fails, but instead just output a warning
 - handle broken tables better and try to load as much as possible
