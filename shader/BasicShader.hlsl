@@ -185,7 +185,7 @@ float3 compute_reflection(const float2 screenSpace, const float3 N)
    // the smoothstep values are *magic* values taken from visual tests
    // dot(mirrorNormal, N) does not really needs to be done per pixel and could be moved to the vertx shader
    // Offset by half a texel to use GPU filtering for some blur
-   return smoothstep(0.5, 0.9, dot(mirrorNormal, N)) * mirrorFactor * tex2D(tex_reflection, (screenSpace + 0.5) * w_h_height.xy).rgb;
+   return smoothstep(0.5, 0.9, dot(mirrorNormal, N)) * mirrorFactor * tex2D(tex_reflection, screenSpace + 0.5 * w_h_height.xy).rgb;
 }
 
 // Compute refractions from screen space probe
@@ -202,12 +202,12 @@ float3 compute_refraction(const float3 pos, const float2 screenSpace, const floa
    const float d = tex2D(tex_probe_depth, uv).x;
    const float4 proj_base = mul(float4(pos, 1.0), matProj); // Sadly DX9 does not give access to transformed fragment position and we need to project it again here...
    if (d < proj_base.z / proj_base.w)
-      uv = screenSpace * w_h_height.xy;
+      uv = screenSpace;
 
    // The following code gives a smoother transition but depends too much on the POV since it uses homogeneous depth to lerp instead of fragment's world depth
    //const float3 unbiased = float3(1.0, 0.0, 0.0);
    //const float3 biased = float3(0.0, 1.0, 0.0);
-   //const float3 unbiased = tex2D(tex_refraction, screenSpace * w_h_height.xy).rgb;
+   //const float3 unbiased = tex2D(tex_refraction, screenSpace).rgb;
    //const float3 biased = tex2D(tex_refraction, uv).rgb;
    //return lerp(unbiased, biased, saturate(100.0 * (d - proj_base.z / proj_base.w)));
    
@@ -314,12 +314,12 @@ float4 ps_main(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform b
    }
 
    BRANCH if (doReflections)
-      result.rgb += compute_reflection(screenSpace, N);
+      result.rgb += compute_reflection(screenSpace * w_h_height.xy, N);
 
    BRANCH if (doRefractions)
    {
       // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color
-      result.rgb = lerp(compute_refraction(IN.worldPos.xyz, screenSpace, N, V), result.rgb, cBase_Alpha.a);
+      result.rgb = lerp(compute_refraction(IN.worldPos.xyz, screenSpace * w_h_height.xy, N, V), result.rgb, cBase_Alpha.a);
       result.a = 1.0;
    }
 
@@ -373,12 +373,12 @@ float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform
    }
 
    BRANCH if (doReflections)
-      result.rgb += compute_reflection(screenSpace, N);
+      result.rgb += compute_reflection(screenSpace * w_h_height.xy, N);
 
    BRANCH if (doRefractions)
    {
       // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color (not from main texture since these are different informations (reflected/refracted color))
-      result.rgb = lerp(compute_refraction(IN.worldPos, screenSpace, N, V), result.rgb, result.a);
+      result.rgb = lerp(compute_refraction(IN.worldPos, screenSpace * w_h_height.xy, N, V), result.rgb, result.a);
       result.a = 1.0;
    }
 
