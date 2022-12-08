@@ -3745,7 +3745,8 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   ((Primitive *)m_vedit[i])->put_Visible(FTOVB(true));
                   // playfield meshes were always drawn before other transparent parts until 10.8.0
                   ((Primitive *)m_vedit[i])->m_d.m_depthBias = 100000.0f;
-                  // FIXME if playfield is given an active material, it will be rendered after opaque parts potentially breaking backward compatibility on some tables
+                  // playfield meshes did not handled backfaces until 10.8.0
+                  ((Primitive *)m_vedit[i])->m_d.m_backfacesEnabled = false;
                }
          }
 
