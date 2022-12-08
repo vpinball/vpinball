@@ -139,13 +139,13 @@ float3 compute_refraction(const float3 pos, const float2 screenSpace, const floa
    // const float4x4 matProj = mul(inverse4x4(matWorldView), matWorldViewProj[0]); // this has been moved to the matrix uniform stack for performance reasons
    const float3 R = refract(V, N, 1.0 / 1.5); // n1 = 1.0 (air), n2 = 1.5 (plastic), eta = n1 / n2
    const float3 refracted_pos = pos + refractionThickness * R; // Shift ray by the thickness of the material
-   const float4 proj = mul(float4(refracted_pos, 1.0), matProj);
-   float2 uv = float2(0.5, 0.5) + proj.xy * (0.5 / proj.w); //!! DX9 has float2(proj.x, -proj.y)
+   const float4 proj = matProj * float4(refracted_pos, 1.0);
+   float2 uv = float2(0.5, 0.5) + float2(proj.x, -proj.y) * (0.5 / proj.w);
 
    // Check if the sample position is behind the object pos. If not take don't perform refraction as it would lead to refract things above us (so reflect)
    const float d = tex2D(tex_probe_depth, uv).x;
    if (d < gl_FragCoord.z)
-      uv = screenSpace * w_h_height.xy;
+      uv = screenSpace;
 
    // The following code gives a smoother transition but depends too much on the POV since it uses homogeneous depth to lerp instead of fragment's world depth
    //const float3 unbiased = float3(1.0, 0.0, 0.0);
