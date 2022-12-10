@@ -1232,8 +1232,8 @@ PinTable::PinTable()
    m_tblAutoStart = LoadValueIntWithDefault(regKey[RegName::Player], "Autostart"s, 0) * 10;
    m_tblAutoStartRetry = LoadValueIntWithDefault(regKey[RegName::Player], "AutostartRetry"s, 0) * 10;
    m_tblAutoStartEnabled = LoadValueBoolWithDefault(regKey[RegName::Player], "asenable"s, false);
-   m_tblVolmod = (float)LoadValueIntWithDefault(regKey[RegName::Player], "Volmod"s, 1000) * (float)(1.0 / 1000.0);
-   m_tblExitConfirm = LoadValueIntWithDefault(regKey[RegName::Player], "Exitconfirm"s, 120) * 1000 / 60;
+   m_tblVolmod = (float)LoadValueIntWithDefault(regKey[RegName::Player], "Volmod"s, 1000) * (float)(1.0/1000.0);
+   m_tblExitConfirm = LoadValueIntWithDefault(regKey[RegName::Player], "Exitconfirm"s, 120) * 1000 / 60; // this is supposed to be seconds, but is seconds*60  :/
 
    SaveValue(regKey[RegName::Version], "VPinball"s, VP_VERSION_STRING_DIGITS);
 
@@ -2601,16 +2601,14 @@ HRESULT PinTable::SaveSoundToStream(const PinSound * const pps, IStream *pstm)
    if (FAILED(hr = pstm->Write(pps->m_szPath.c_str(), len, &writ)))
       return hr;
 
-   // deprecated: writes name again, but in lower case
-   len = (int)pps->m_szName.length();
+   // removed: previously did write the same name again, but just in lower case
+   //  this rudimentary version here needs to stay as otherwise problems when loading, as one field less
+   len = 1;
    if (FAILED(hr = pstm->Write(&len, sizeof(int), &writ)))
       return hr;
-   char * tmp = new char[len+1];
-   strncpy_s(tmp, len+1, pps->m_szName.c_str(), len);
-   CharLowerBuff(tmp, len);
-   if (FAILED(hr = pstm->Write(tmp, len, &writ)))
+   constexpr char tmp = '\0'; // now just writes a short dummy/empty string
+   if (FAILED(hr = pstm->Write(&tmp, len, &writ)))
       return hr;
-   delete [] tmp;
    //
 
    if (pps->IsWav2()) // only use old code if playing wav's
@@ -2665,7 +2663,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
        delete pps;
        return hr;
    }
-   tmp[len] = 0;
+   tmp[len] = '\0';
    pps->m_szName = tmp;
    delete[] tmp;
 
@@ -2681,20 +2679,21 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
        delete pps;
        return hr;
    }
-   tmp[len] = 0;
+   tmp[len] = '\0';
    pps->m_szPath = tmp;
    delete[] tmp;
 
+   // deprecated lower case name, but not used anymore nowadays, so 10.8+ stores only 1,'\0'
    if (FAILED(hr = pstm->Read(&len, sizeof(len), &read)))
    {
        delete pps;
        return hr;
    }
 
-   // deprecated lower case name
-   tmp = new char[len+1];
+   tmp = new char[len];
    if (FAILED(hr = pstm->Read(tmp, len, &read)))
    {
+       delete[] tmp;
        delete pps;
        return hr;
    }
@@ -2827,17 +2826,17 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 
    if (FAILED(hr = pps->ReInitialize()))
    {
-	   delete pps;
-	   return hr;
+      delete pps;
+      return hr;
    }
 
    // search for duplicate names, do not load dupes
    for(size_t i = 0; i < m_vsound.size(); ++i)
-       if (m_vsound[i]->m_szName == pps->m_szName && m_vsound[i]->m_szPath == pps->m_szPath)
-       {
-           delete pps;
-           return S_FAIL;
-       }
+      if (m_vsound[i]->m_szName == pps->m_szName && m_vsound[i]->m_szPath == pps->m_szPath)
+      {
+         delete pps;
+         return S_FAIL;
+      }
 
    m_vsound.push_back(pps);
    return S_OK;
@@ -3731,7 +3730,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
          if (loadfileversion < 1080) 
          {
-            // reflection were hardcoded without render probe before 10.8.0
+            // reflections were hardcoded without render probe before 10.8.0
             RenderProbe* pf_reflections = new RenderProbe();
             pf_reflections->SetName(PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
             m_vrenderprobe.push_back(pf_reflections);
@@ -3745,7 +3744,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   ((Primitive *)m_vedit[i])->put_Visible(FTOVB(true));
                   // playfield meshes were always drawn before other transparent parts until 10.8.0
                   ((Primitive *)m_vedit[i])->m_d.m_depthBias = 100000.0f;
-                  // playfield meshes did not handled backfaces until 10.8.0
+                  // playfield meshes did not handle backfaces until 10.8.0
                   ((Primitive *)m_vedit[i])->m_d.m_backfacesEnabled = false;
                }
          }
@@ -9533,7 +9532,7 @@ void PinTable::ImportVPP(const string& filename)
       char str[16];
       float val;
 
-      if(physTab->first_node("gravityConstant")!=nullptr)
+      if(physTab->first_node("gravityConstant") != nullptr)
       {
           strncpy_s(str, physTab->first_node("gravityConstant")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &val);
@@ -9608,7 +9607,7 @@ void PinTable::ImportVPP(const string& filename)
       //    ShowError("playfieldmaxslope is missing"); //was added lateron, so don't error
           put_SlopeMax(DEFAULT_TABLE_MAX_SLOPE);
 
-      if(physFlip->first_node("speed")!=nullptr)
+      if(physFlip->first_node("speed") != nullptr)
       {
           strncpy_s(str, physFlip->first_node("speed")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsMass);
@@ -9619,7 +9618,7 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsMass = 0.0f;
       }
 
-      if(physFlip->first_node("strength")!=nullptr)
+      if(physFlip->first_node("strength") != nullptr)
       {
           strncpy_s(str, physFlip->first_node("strength")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsStrength);
@@ -9630,7 +9629,7 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsStrength = 0.0f;
       }
 
-      if(physFlip->first_node("elasticity")!=nullptr)
+      if(physFlip->first_node("elasticity") != nullptr)
       {
           strncpy_s(str, physFlip->first_node("elasticity")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsElasticity);
@@ -9641,7 +9640,7 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsElasticity = 0.0f;
       }
 
-      if(physFlip->first_node("scatter")!=nullptr)
+      if(physFlip->first_node("scatter") != nullptr)
       {
           strncpy_s(str, physFlip->first_node("scatter")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsScatter);
@@ -9652,7 +9651,7 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsScatter = 0.0f;
       }
 
-      if(physFlip->first_node("eosTorque")!=nullptr)
+      if(physFlip->first_node("eosTorque") != nullptr)
       {
           strncpy_s(str, physFlip->first_node("eosTorque")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsTorqueDamping);
@@ -9663,7 +9662,7 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsTorqueDamping = 0.0f;
       }
 
-      if(physFlip->first_node("eosTorqueAngle")!=nullptr)
+      if(physFlip->first_node("eosTorqueAngle") != nullptr)
       {
           strncpy_s(str, physFlip->first_node("eosTorqueAngle")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsTorqueDampingAngle);
@@ -9675,7 +9674,7 @@ void PinTable::ImportVPP(const string& filename)
       }
 
 
-      if(physFlip->first_node("returnStrength")!=nullptr)
+      if(physFlip->first_node("returnStrength") != nullptr)
       {
           strncpy_s(str, physFlip->first_node("returnStrength")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsReturnStrength);
@@ -9687,7 +9686,7 @@ void PinTable::ImportVPP(const string& filename)
       }
 
 
-      if(physFlip->first_node("elasticityFalloff")!=nullptr)
+      if(physFlip->first_node("elasticityFalloff") != nullptr)
       {
           strncpy_s(str, physFlip->first_node("elasticityFalloff")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsElasticityFalloff);
@@ -9698,7 +9697,7 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsElasticityFalloff = 0.0f;
       }
 
-      if(physFlip->first_node("friction")!=nullptr)
+      if(physFlip->first_node("friction") != nullptr)
       {
           strncpy_s(str, physFlip->first_node("friction")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsFriction);
@@ -9709,7 +9708,7 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsFriction = 0.0f;
       }
 
-      if(physFlip->first_node("coilRampUp")!=nullptr)
+      if(physFlip->first_node("coilRampUp") != nullptr)
       {
           strncpy_s(str, physFlip->first_node("coilRampUp")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsCoilRampUp);
@@ -10448,7 +10447,7 @@ PinTableMDI::~PinTableMDI()
 
 bool PinTableMDI::CanClose() const
 {
-    if (m_table!=nullptr && m_table->FDirty() && !g_pvp->m_povEdit)
+    if (m_table != nullptr && m_table->FDirty() && !g_pvp->m_povEdit)
     {
         const LocalString ls1(IDS_SAVE_CHANGES1);
         const LocalString ls2(IDS_SAVE_CHANGES2);
