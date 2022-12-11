@@ -437,6 +437,12 @@ BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xre
 
    g_pvp->ProfileLog("EnvmapPrecalc End"s);
 
+#ifdef __OPENGLES__
+   if (radTex->m_format == BaseTexture::SRGB) {
+      radTex->AddAlpha();
+   }
+#endif
+
    return radTex;
 }
 

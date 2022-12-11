@@ -7,7 +7,7 @@
 #endif
 
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
-#include "nvapi.h"
+#include "inc/nvapi.h"
 #endif
 
 #ifdef ENABLE_SDL
@@ -119,7 +119,11 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
          {
             glGenTextures(1, &m_depth_tex);
             glBindTexture(GL_TEXTURE_2D, m_depth_tex);
+#ifndef __OPENGLES__
             glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, col_type, 0);
+#else
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, 0); //!!
+#endif
          }
          glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depth_tex, 0);
       }
@@ -138,11 +142,15 @@ RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, 
       case GL_FRAMEBUFFER_UNDEFINED: errorCode = "GL_FRAMEBUFFER_UNDEFINED"; break;
       case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: errorCode = "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT"; break;
       case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: errorCode = "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT"; break;
+#ifndef __OPENGLES__
       case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: errorCode = "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER"; break;
       case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: errorCode = "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER"; break;
+#endif
       case GL_FRAMEBUFFER_UNSUPPORTED: errorCode = "GL_FRAMEBUFFER_UNSUPPORTED"; break;
       case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: errorCode = "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE"; break;
+#ifndef __OPENGLES__
       case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: errorCode = "GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS"; break;
+#endif
       default: errorCode = "unknown"; break;
       }
       sprintf_s(msg, sizeof(msg), "glCheckFramebufferStatus returned 0x%0002X %s", glCheckFramebufferStatus(m_framebuffer), errorCode);
@@ -287,9 +295,11 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
    if (w1 == w2 && h1 == h2)
    {
       int bitmask = (copyColor ? GL_COLOR_BUFFER_BIT : 0) | (m_has_depth && dest->m_has_depth && copyDepth ? GL_DEPTH_BUFFER_BIT : 0);
+#ifndef __OPENGLES__
       if (GLAD_GL_VERSION_4_5)
          glBlitNamedFramebuffer(GetCoreFrameBuffer(), dest->GetCoreFrameBuffer(), 0, 0, w1, h1, 0, 0, w2, h2, bitmask, GL_NEAREST);
       else
+#endif
       {
          glBindFramebuffer(GL_READ_FRAMEBUFFER, GetCoreFrameBuffer());
          glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetCoreFrameBuffer());
@@ -300,9 +310,11 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
    {
       if (copyColor)
       {
+#ifndef __OPENGLES__
          if (GLAD_GL_VERSION_4_5)
             glBlitNamedFramebuffer(GetCoreFrameBuffer(), dest->GetCoreFrameBuffer(), 0, 0, w1, h1, 0, 0, w2, h2, GL_COLOR_BUFFER_BIT, GL_LINEAR);
          else
+#endif
          {
             glBindFramebuffer(GL_READ_FRAMEBUFFER, GetCoreFrameBuffer());
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetCoreFrameBuffer());
@@ -311,9 +323,11 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
       }
       if (m_has_depth && dest->m_has_depth && copyDepth)
       {
+#ifndef __OPENGLES__
          if (GLAD_GL_VERSION_4_5)
             glBlitNamedFramebuffer(GetCoreFrameBuffer(), dest->GetCoreFrameBuffer(), 0, 0, w1, h1, 0, 0, w2, h2, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
          else
+#endif
          {
             glBindFramebuffer(GL_READ_FRAMEBUFFER, GetCoreFrameBuffer());
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetCoreFrameBuffer());
@@ -393,7 +407,7 @@ void RenderTarget::Activate(const bool ignoreStereo)
 #ifdef _DEBUG
 #ifdef ENABLE_SDL
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
+#include "inc/stb_image_write.h"
 #endif
 
 void RenderTarget::SaveToPng(string filename)

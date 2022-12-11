@@ -43,7 +43,7 @@ float4 ps_main_fb_ss_refl(in VS_OUTPUT_2D IN) : COLOR
 
 	const float3 V = normalize(float3(0.5-u, -0.5)); // WTF?! cam is in 0,0,0 but why z=-0.5?
 
-	const float fresnel = (SSR_bumpHeight_fresnelRefl_scale_FS.y + (1.0-SSR_bumpHeight_fresnelRefl_scale_FS.y) * pow(1.0-saturate(dot(V,normal_b)),5)) // fresnel for falloff towards silhouette
+	const float fresnel = (SSR_bumpHeight_fresnelRefl_scale_FS.y + (1.0-SSR_bumpHeight_fresnelRefl_scale_FS.y) * pow(1.0-saturate(dot(V,normal_b)),5.)) // fresnel for falloff towards silhouette
 	                     * SSR_bumpHeight_fresnelRefl_scale_FS.z // user scale
 	                     * sqr(normal_fade_factor(normal_b/*normal*/)); // avoid reflections on playfield, etc
 

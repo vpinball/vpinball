@@ -1,13 +1,19 @@
 ////GLOBAL
 #version 400
 
+#ifdef SHADER_GLES30
+precision mediump float;
+#endif
+
 uniform bool disableVertexShader; // To support pretransformed vertices (used for backglass)
 
 
 ////DEFINES
 #include "Helpers.fxh"
 
-layout(std140) uniform matrixBlock { mat4 matWorldViewProj[eyes]; };
+layout(std140) uniform matrixBlock {
+   mat4 matWorldViewProj[eyes];
+};
 
 
 ////VERTEX

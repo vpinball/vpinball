@@ -90,6 +90,9 @@ void Trigger::UpdateStatusBarInfo()
          meshVertices = triggerStar;
          break;
       }
+      default:
+         assert(!"Unhandled Trigger case");
+         break;
       }
 
       m_vertices.resize(m_numVertices);

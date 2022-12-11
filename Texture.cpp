@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Texture.h"
 
-#include "freeimage.h"
+#include "inc/freeimage.h"
 
 #include "math/math.h"
 
@@ -9,7 +9,7 @@
 #define STBI_ONLY_JPEG // only use the SSE2-JPG path from stbi, as all others are not faster than FreeImage //!! can remove stbi again if at some point FreeImage incorporates libjpeg-turbo or something similar
 #define STBI_NO_STDIO
 #define STBI_NO_FAILURE_STRINGS
-#include "stb_image.h"
+#include "inc/stb_image.h"
 
 BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Format format)
    : m_width(w)
@@ -252,6 +252,12 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       FreeImage_Unload(dibResized);
    FreeImage_Unload(dib);
 
+#ifdef __OPENGLES__
+   if (tex->m_format == SRGB) {
+      tex->AddAlpha();
+   }
+#endif
+
    return tex;
 }
 
@@ -347,27 +353,53 @@ BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbm, bool with_alpha)
    return pdds;
 }
 
+void BaseTexture::AddAlpha()
+{
+   if (has_alpha())
+      return;
+
+   switch (m_format)
+   {
+   case RGB: m_format = RGBA; break;
+   case SRGB: m_format = SRGBA; break;
+   default: assert(!"unknown format in AddAlpha"); break;
+   }
+
+   size_t o = 0;
+   vector<BYTE> new_data((size_t)4 * width() * height());
+   for (unsigned int j = 0; j < height(); ++j)
+      for (unsigned int i = 0; i < width(); ++i, ++o)
+      {
+         new_data[o * 4 + 0] = m_data[o * 3 + 0];
+         new_data[o * 4 + 1] = m_data[o * 3 + 1];
+         new_data[o * 4 + 2] = m_data[o * 3 + 2];
+         new_data[o * 4 + 3] = 255;
+      }
+   m_data = std::move(new_data);
+}
+
 void BaseTexture::RemoveAlpha()
 {
    if (!has_alpha())
       return;
+
    switch (m_format)
    {
    case RGBA: m_format = RGB; break;
    case SRGBA: m_format = SRGB; break;
-   default: assert(false);
+   default: assert(!"unknown format in RemoveAlpha"); break;
    }
-   const BYTE* const __restrict src = data();
+
    size_t o = 0;
-   vector<BYTE> new_data(3 * width() * height());
+   vector<BYTE> new_data((size_t)3 * width() * height());
    for (unsigned int j = 0; j < height(); ++j)
       for (unsigned int i = 0; i < width(); ++i, ++o)
       {
-         new_data[o * 3 + 0] = src[o * 4 + 0];
-         new_data[o * 3 + 1] = src[o * 4 + 1];
-         new_data[o * 3 + 2] = src[o * 4 + 2];
+         new_data[o * 3 + 0] = m_data[o * 4 + 0];
+         new_data[o * 3 + 1] = m_data[o * 4 + 1];
+         new_data[o * 3 + 2] = m_data[o * 4 + 2];
       }
-   m_data = new_data;
+   m_data = std::move(new_data);
 }
 
 BaseTexture* BaseTexture::ToBGRA()
@@ -596,6 +628,13 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
          tex->m_realHeight = y;
 
          m_pdsBuffer = tex;
+
+#ifdef __OPENGLES__
+         if (m_pdsBuffer->m_format == BaseTexture::SRGB) {
+            m_pdsBuffer->AddAlpha();
+         }
+#endif
+
          SetSizeFrom(m_pdsBuffer);
 
          return true;
@@ -637,7 +676,7 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
          FreeStuff();
 
       // BMP stored as a 32-bit SBGRA picture
-      BYTE* const __restrict tmp = new BYTE[m_width * m_height * 4];
+      BYTE* const __restrict tmp = new BYTE[(size_t)m_width * m_height * 4];
       LZWReader lzwreader(pbr->m_pistream, (int *)tmp, m_width * 4, m_height, m_width * 4);
       lzwreader.Decoder();
 
@@ -660,7 +699,7 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
 
       // copy, converting from SBGR to SRGB, and eventually dropping the alpha channel
       BYTE* const __restrict pdst = m_pdsBuffer->data();
-      unsigned int o1 = 0, o2 = 0;
+      size_t o1 = 0, o2 = 0;
       const unsigned int o2_step = has_alpha ? 4 : 3;
       for (unsigned int yo = 0; yo < m_height; yo++)
          for (unsigned int xo = 0; xo < m_width; xo++, o1+=4, o2+=o2_step)
@@ -672,6 +711,13 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
          }
 
       delete[] tmp;
+
+#ifdef __OPENGLES__
+      if (m_pdsBuffer->m_format == BaseTexture::SRGB) {
+         m_pdsBuffer->AddAlpha();
+      }
+#endif
+
       SetSizeFrom(m_pdsBuffer);
 
       break;

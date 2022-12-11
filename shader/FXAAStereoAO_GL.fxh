@@ -199,22 +199,24 @@ void main()
 	const float area = 0.06; //!!
 	const float falloff = 0.0002; //!!
 	const int samples = 8/*9*/; //4,8,9,13,16,21,25,32 korobov,fibonacci
+	const float samples_float = float(samples);
 	const float radius = 0.001+/*frac*/(ushift.z)*0.009; // sample radius
 	const float depth_threshold_normal = 0.005;
-	const float total_strength = AO_scale_timeblur.x * (/*1.0 for uniform*/0.5 / samples);
+	const float total_strength = AO_scale_timeblur.x * (/*1.0 for uniform*/0.5 / samples_float);
 	const float3 normal = normalize(get_nonunit_normal(depth0, u));
 	//const float3 normal = texNoLod(tex_normals, u).xyz *2.0-1.0; // use 8bitRGB pregenerated normals
 	const float radius_depth = radius/depth0;
 
 	float occlusion = 0.0;
 	for(int i=0; i < samples; ++i) {
-		const float2 r = float2(i*(1.0 / samples), i*(5.0/*2.0*/ / samples)); //1,5,2,8,4,13,7,7 korobov,fibonacci //!! could also use progressive/extensible lattice via rad_inv(i)*(1501825329, 359975893) (check precision though as this should be done in double or uint64)
+		const float i_float = float(i);
+		const float2 r = float2(i_float* (1.0 / samples_float), i_float* (5.0/*2.0*/ / samples_float)); //1,5,2,8,4,13,7,7 korobov,fibonacci //!! could also use progressive/extensible lattice via rad_inv(i)*(1501825329, 359975893) (check precision though as this should be done in double or uint64)
 		//const float3 ray = sphere_sample(frac(r+ushift.xy)); // shift lattice // uniform variant
 		const float2 ray = rotate_to_vector_upper(cos_hemisphere_sample(frac(r+ushift.xy)), normal).xy; // shift lattice
 		//!! maybe a bit worse distribution: const float2 ray = cos_hemisphere_sample(normal,frac(r+ushift.xy)).xy; // shift lattice
 		//const float rdotn = dot(ray,normal);
 		const float2 hemi_ray = u + (radius_depth /** sign(rdotn) for uniform*/) * ray.xy;
-      const float occ_depth = texNoLod(tex_depth, hemi_ray).x;
+		const float occ_depth = texNoLod(tex_depth, hemi_ray).x;
 		const float3 occ_normal = get_nonunit_normal(occ_depth, hemi_ray);
 		//const float3 occ_normal = tex2Dlod(tex_normals, float4(hemi_ray, 0.,0.)).xyz *2.0-1.0;  // use 8bitRGB pregenerated normals, can also omit normalization below then
 		const float diff_depth = depth0 - occ_depth;
@@ -223,7 +225,7 @@ void main()
 	}
 	// weight with result(s) from previous frames
 	const float ao = 1.0 - total_strength * occlusion;
-   color = float4((texNoLod(tex_fb_filtered, uv0).x //abuse bilerp for filtering (by using half texel/pixel shift)
+	color = float4((texNoLod(tex_fb_filtered, uv0).x //abuse bilerp for filtering (by using half texel/pixel shift)
                   +texNoLod(tex_fb_filtered, uv1).x
 				  +texNoLod(tex_fb_filtered, float2(uv0.x,uv1.y)).x
 				  +texNoLod(tex_fb_filtered, float2(uv1.x,uv0.y)).x)
@@ -256,7 +258,7 @@ void main()
 		parallax = -parallax;
 	if(yaxis)
 		parallax = -parallax;
-	const float3 col = textureLod(tex_fb_filtered, u + (yaxis ? float2(0.0,parallax) : float2(parallax,0.0)), 0).xyz;
+	const float3 col = textureLod(tex_fb_filtered, u + (yaxis ? float2(0.0,parallax) : float2(parallax,0.0)), 0.).xyz;
 	//if(!aa)
 	//	return float4(col, 1.0); // otherwise blend with 'missing' scanline
 	const float2 aaoffs = sidebyside ? float2(w_h_height.x,0.0) : float2(0.0,w_h_height.y);
@@ -266,7 +268,7 @@ void main()
 		parallax = -parallax;
 	if(yaxis)
 		parallax = -parallax;
-	color = float4((col + textureLod(tex_fb_filtered, u + (yaxis ? float2(0.0,parallax) : float2(parallax,0.0)) + aaoffs, 0).xyz)*0.5, 1.0);
+	color = float4((col + textureLod(tex_fb_filtered, u + (yaxis ? float2(0.0,parallax) : float2(parallax,0.0)) + aaoffs, 0.).xyz)*0.5, 1.0);
 }
 
 ////ps_main_nfaa
@@ -294,14 +296,14 @@ float2 findContrastByLuminance(const float2 XYCoord, const float filterSpread)
 	const float2 upOffset    = float2(0.0, w_h_height.y * filterSpread);
 	const float2 rightOffset = float2(w_h_height.x * filterSpread, 0.0);
 
-	const float topHeight         = GetLuminance(textureLod(tex_fb_filtered, XYCoord +               upOffset, 0).rgb);
-	const float bottomHeight      = GetLuminance(textureLod(tex_fb_filtered, XYCoord -               upOffset, 0).rgb);
-	const float rightHeight       = GetLuminance(textureLod(tex_fb_filtered, XYCoord + rightOffset           , 0).rgb);
-	const float leftHeight        = GetLuminance(textureLod(tex_fb_filtered, XYCoord - rightOffset           , 0).rgb);
-	const float leftTopHeight     = GetLuminance(textureLod(tex_fb_filtered, XYCoord - rightOffset + upOffset, 0).rgb);
-	const float leftBottomHeight  = GetLuminance(textureLod(tex_fb_filtered, XYCoord - rightOffset - upOffset, 0).rgb);
-	const float rightBottomHeight = GetLuminance(textureLod(tex_fb_filtered, XYCoord + rightOffset + upOffset, 0).rgb);
-	const float rightTopHeight    = GetLuminance(textureLod(tex_fb_filtered, XYCoord + rightOffset - upOffset, 0).rgb);
+	const float topHeight         = GetLuminance(textureLod(tex_fb_filtered, XYCoord +               upOffset, 0.).rgb);
+	const float bottomHeight      = GetLuminance(textureLod(tex_fb_filtered, XYCoord -               upOffset, 0.).rgb);
+	const float rightHeight       = GetLuminance(textureLod(tex_fb_filtered, XYCoord + rightOffset           , 0.).rgb);
+	const float leftHeight        = GetLuminance(textureLod(tex_fb_filtered, XYCoord - rightOffset           , 0.).rgb);
+	const float leftTopHeight     = GetLuminance(textureLod(tex_fb_filtered, XYCoord - rightOffset + upOffset, 0.).rgb);
+	const float leftBottomHeight  = GetLuminance(textureLod(tex_fb_filtered, XYCoord - rightOffset - upOffset, 0.).rgb);
+	const float rightBottomHeight = GetLuminance(textureLod(tex_fb_filtered, XYCoord + rightOffset + upOffset, 0.).rgb);
+	const float rightTopHeight    = GetLuminance(textureLod(tex_fb_filtered, XYCoord + rightOffset - upOffset, 0.).rgb);
 
 #ifdef NFAA_EDGE_DETECTION_VARIANT
 	const float sum0 = rightTopHeight    + bottomHeight + leftTopHeight;
@@ -326,14 +328,14 @@ float2 findContrastByColor(const float2 XYCoord, const float filterSpread)
 	const float2 upOffset    = float2(0.0, w_h_height.y * filterSpread);
 	const float2 rightOffset = float2(w_h_height.x * filterSpread, 0.0);
 
-	const float3 topHeight         = textureLod(tex_fb_filtered, XYCoord +               upOffset, 0).rgb;
-	const float3 bottomHeight      = textureLod(tex_fb_filtered, XYCoord -               upOffset, 0).rgb;
-	const float3 rightHeight       = textureLod(tex_fb_filtered, XYCoord + rightOffset           , 0).rgb;
-	const float3 leftHeight        = textureLod(tex_fb_filtered, XYCoord - rightOffset           , 0).rgb;
-	const float3 leftTopHeight     = textureLod(tex_fb_filtered, XYCoord - rightOffset + upOffset, 0).rgb;
-	const float3 leftBottomHeight  = textureLod(tex_fb_filtered, XYCoord - rightOffset - upOffset, 0).rgb;
-	const float3 rightBottomHeight = textureLod(tex_fb_filtered, XYCoord + rightOffset + upOffset, 0).rgb;
-	const float3 rightTopHeight    = textureLod(tex_fb_filtered, XYCoord + rightOffset - upOffset, 0).rgb;
+	const float3 topHeight         = textureLod(tex_fb_filtered, XYCoord +               upOffset, 0.).rgb;
+	const float3 bottomHeight      = textureLod(tex_fb_filtered, XYCoord -               upOffset, 0.).rgb;
+	const float3 rightHeight       = textureLod(tex_fb_filtered, XYCoord + rightOffset           , 0.).rgb;
+	const float3 leftHeight        = textureLod(tex_fb_filtered, XYCoord - rightOffset           , 0.).rgb;
+	const float3 leftTopHeight     = textureLod(tex_fb_filtered, XYCoord - rightOffset + upOffset, 0.).rgb;
+	const float3 leftBottomHeight  = textureLod(tex_fb_filtered, XYCoord - rightOffset - upOffset, 0.).rgb;
+	const float3 rightBottomHeight = textureLod(tex_fb_filtered, XYCoord + rightOffset + upOffset, 0.).rgb;
+	const float3 rightTopHeight    = textureLod(tex_fb_filtered, XYCoord + rightOffset - upOffset, 0.).rgb;
 
 #ifdef NFAA_EDGE_DETECTION_VARIANT
 	const float sum0 = rightTopHeight    + bottomHeight + leftTopHeight;
@@ -369,8 +371,8 @@ void main()
 
 	const float2 u = tex0;
 
-	const float3 Scene0 = textureLod(tex_fb_filtered, u, 0).rgb;
-	const float depth0 = textureLod(tex_depth, u, 0).x;
+	const float3 Scene0 = textureLod(tex_fb_filtered, u, 0.).rgb;
+	const float depth0 = textureLod(tex_depth, u, 0.).x;
 	if ((w_h_height.w == 1.0) && ((depth0 == 1.0) || (depth0 == 0.0))) // early out if depth too large (=BG) or too small (=DMD,etc)
 			color = float4(Scene0, 1.0);
 	else {
@@ -391,14 +393,14 @@ void main()
 
 		const float2 Normal = Vectors * (w_h_height.xy /* * 2.0*/);
 
-		const float3 Scene1 = textureLod(tex_fb_filtered, u + Normal, 0).rgb;
-		const float3 Scene2 = textureLod(tex_fb_filtered, u - Normal, 0).rgb;
+		const float3 Scene1 = textureLod(tex_fb_filtered, u + Normal, 0.).rgb;
+		const float3 Scene2 = textureLod(tex_fb_filtered, u - Normal, 0.).rgb;
 #if defined(NFAA_VARIANT) || defined(NFAA_VARIANT2)
-		const float3 Scene3 = textureLod(tex_fb_filtered, u + float2(Normal.x, -Normal.y)*0.5, 0).rgb;
-		const float3 Scene4 = textureLod(tex_fb_filtered, u - float2(Normal.x, -Normal.y)*0.5, 0).rgb;
+		const float3 Scene3 = textureLod(tex_fb_filtered, u + float2(Normal.x, -Normal.y)*0.5, 0.).rgb;
+		const float3 Scene4 = textureLod(tex_fb_filtered, u - float2(Normal.x, -Normal.y)*0.5, 0.).rgb;
 #else
-		const float3 Scene3 = textureLod(tex_fb_filtered, u + float2(Normal.x, -Normal.y), 0).rgb;
-		const float3 Scene4 = textureLod(tex_fb_filtered, u - float2(Normal.x, -Normal.y), 0).rgb;
+		const float3 Scene3 = textureLod(tex_fb_filtered, u + float2(Normal.x, -Normal.y), 0.).rgb;
+		const float3 Scene4 = textureLod(tex_fb_filtered, u - float2(Normal.x, -Normal.y), 0.).rgb;
 #endif
 
 #ifdef NFAA_TEST_MODE // debug
@@ -415,12 +417,12 @@ void main()
 
 float3 sampleOffset(const float2 u, const float2 pixelOffset )
 {
-   return textureLod(tex_fb_filtered, u + pixelOffset * w_h_height.xy, 0).xyz;
+   return textureLod(tex_fb_filtered, u + pixelOffset * w_h_height.xy, 0.).xyz;
 }
 
 float4 sampleOffseta(const float2 u, const float2 pixelOffset )
 {
-   return textureLod(tex_fb_filtered, u + pixelOffset * w_h_height.xy, 0);
+   return textureLod(tex_fb_filtered, u + pixelOffset * w_h_height.xy, 0.);
 }
 
 float avg(const float3 l)
@@ -462,7 +464,7 @@ void main()
 
 	const float4 sampleCenter = sampleOffseta(u, float2( 0.0,  0.0) );
 
-	const float depth0 = textureLod(tex_depth, u, 0).x;
+	const float depth0 = textureLod(tex_depth, u, 0.).x;
 	if ((w_h_height.w == 1.0) && ((depth0 == 1.0) || (depth0 == 0.0))) // early out if depth too large (=BG) or too small (=DMD,etc)
 			color = float4(sampleCenter.xyz, 1.0);
 	else {
@@ -576,10 +578,10 @@ void main()
 {
    const float2 u = tex0;
 
-   const float3 rMc = textureLod(tex_fb_unfiltered, u, 0).xyz;
+   const float3 rMc = textureLod(tex_fb_unfiltered, u, 0.).xyz;
    if (w_h_height.w == 1.0) // depth buffer available?
    {
-      const float depth0 = textureLod(tex_depth, u, 0).x;
+      const float depth0 = textureLod(tex_depth, u, 0.).x;
 		if ((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
 		{
 			color = float4(rMc, 1.0);
@@ -588,15 +590,15 @@ void main()
 	}
 
 	const float2 offs = w_h_height.xy;
-	const float rNW = luma(textureLod(tex_fb_unfiltered, u - offs, 0).xyz);
-	const float rN = luma(textureLod(tex_fb_unfiltered, u - float2(0.0,offs.y), 0).xyz);
-	const float rNE = luma(textureLod(tex_fb_unfiltered, u - float2(-offs.x,offs.y), 0).xyz);
-	const float rW = luma(textureLod(tex_fb_unfiltered, u - float2(offs.x,0.0), 0).xyz);
+	const float rNW = luma(textureLod(tex_fb_unfiltered, u - offs, 0.).xyz);
+	const float rN = luma(textureLod(tex_fb_unfiltered, u - float2(0.0,offs.y), 0.).xyz);
+	const float rNE = luma(textureLod(tex_fb_unfiltered, u - float2(-offs.x,offs.y), 0.).xyz);
+	const float rW = luma(textureLod(tex_fb_unfiltered, u - float2(offs.x,0.0), 0.).xyz);
 	const float rM = luma(rMc);
-	const float rE = luma(textureLod(tex_fb_unfiltered, u + float2(offs.x,0.0), 0).xyz);
-	const float rSW = luma(textureLod(tex_fb_unfiltered, u + float2(-offs.x,offs.y), 0).xyz);
-	const float rS = luma(textureLod(tex_fb_unfiltered, u + float2(0.0,offs.y), 0).xyz);
-	const float rSE = luma(textureLod(tex_fb_unfiltered, u + offs, 0).xyz);
+	const float rE = luma(textureLod(tex_fb_unfiltered, u + float2(offs.x,0.0), 0.).xyz);
+	const float rSW = luma(textureLod(tex_fb_unfiltered, u + float2(-offs.x,offs.y), 0.).xyz);
+	const float rS = luma(textureLod(tex_fb_unfiltered, u + float2(0.0,offs.y), 0.).xyz);
+	const float rSE = luma(textureLod(tex_fb_unfiltered, u + offs, 0.).xyz);
 	const float rMrN = rM+rN;
 	const float lumaNW = rMrN+rNW+rW;
 	const float lumaNE = rMrN+rNE+rE;
@@ -616,8 +618,8 @@ void main()
 	float2 dir = float2(SWSE - NWNE, (lumaNW + lumaSW) - (lumaNE + lumaSE));
 	const float temp = 1.0/(min(abs(dir.x), abs(dir.y)) + max((NWNE + SWSE)*0.03125, 0.0078125)); //!! tweak?
 	dir = clamp(dir*temp, float2(-8.0), float2(8.0)) * offs; //!! tweak?
-	const float3 rgbA = 0.5 * (textureLod(tex_fb_filtered, u-dir*(0.5/3.0), 0).xyz + textureLod(tex_fb_filtered, u+dir*(0.5/3.0), 0).xyz);
-	const float3 rgbB = 0.5 * rgbA + 0.25 * (textureLod(tex_fb_filtered, u-dir*0.5, 0).xyz + textureLod(tex_fb_filtered, u+dir*0.5, 0).xyz);
+	const float3 rgbA = 0.5 * (textureLod(tex_fb_filtered, u-dir*(0.5/3.0), 0.).xyz + textureLod(tex_fb_filtered, u+dir*(0.5/3.0), 0.).xyz);
+	const float3 rgbB = 0.5 * rgbA + 0.25 * (textureLod(tex_fb_filtered, u-dir*0.5, 0.).xyz + textureLod(tex_fb_filtered, u+dir*0.5, 0.).xyz);
 	const float lumaB = luma(rgbB);
 	color = float4(((lumaB < lumaMin) || (lumaB > lumaMax)) ? rgbA : rgbB, 1.0);
 }
@@ -636,10 +638,10 @@ void main()
 {
 	const float2 u = tex0;
 
-	float3 rgbyM = textureLod(tex_fb_unfiltered, u, 0).xyz;
+	float3 rgbyM = textureLod(tex_fb_unfiltered, u, 0.).xyz;
    if (w_h_height.w == 1.0) // depth buffer available?
    {
-      const float depth0 = textureLod(tex_depth, u, 0).x;
+      const float depth0 = textureLod(tex_depth, u, 0.).x;
       if ((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
       {
          color = float4(rgbyM, 1.0);
@@ -648,15 +650,15 @@ void main()
    }
 
 	const float2 offs = w_h_height.xy;
-	const float lumaNW = luma(textureLod(tex_fb_unfiltered, u - offs, 0).xyz);
-	const float lumaN = luma(textureLod(tex_fb_unfiltered, u - float2(0.0,offs.y), 0).xyz);
-	const float lumaNE = luma(textureLod(tex_fb_unfiltered, u - float2(-offs.x,offs.y), 0).xyz);
-	const float lumaW = luma(textureLod(tex_fb_unfiltered, u - float2(offs.x,0.0), 0).xyz);
+	const float lumaNW = luma(textureLod(tex_fb_unfiltered, u - offs, 0.).xyz);
+	const float lumaN = luma(textureLod(tex_fb_unfiltered, u - float2(0.0,offs.y), 0.).xyz);
+	const float lumaNE = luma(textureLod(tex_fb_unfiltered, u - float2(-offs.x,offs.y), 0.).xyz);
+	const float lumaW = luma(textureLod(tex_fb_unfiltered, u - float2(offs.x,0.0), 0.).xyz);
 	const float lumaM = luma(rgbyM);
-	const float lumaE = luma(textureLod(tex_fb_unfiltered, u + float2(offs.x,0.0), 0).xyz);
-	const float lumaSW = luma(textureLod(tex_fb_unfiltered, u + float2(-offs.x,offs.y), 0).xyz);
-	const float lumaS = luma(textureLod(tex_fb_unfiltered, u + float2(0.0,offs.y), 0).xyz);
-	const float lumaSE = luma(textureLod(tex_fb_unfiltered, u + offs, 0).xyz);
+	const float lumaE = luma(textureLod(tex_fb_unfiltered, u + float2(offs.x,0.0), 0.).xyz);
+	const float lumaSW = luma(textureLod(tex_fb_unfiltered, u + float2(-offs.x,offs.y), 0.).xyz);
+	const float lumaS = luma(textureLod(tex_fb_unfiltered, u + float2(0.0,offs.y), 0.).xyz);
+	const float lumaSE = luma(textureLod(tex_fb_unfiltered, u + offs, 0.).xyz);
 	const float maxSM = max(lumaS, lumaM);
 	const float minSM = min(lumaS, lumaM);
 	const float maxESM = max(lumaE, maxSM);
@@ -714,9 +716,9 @@ void main()
 		float2 posN = float2(posB.x - offNP.x * FXAA_QUALITY__P0, posB.y - offNP.y * FXAA_QUALITY__P0);
 		float2 posP = float2(posB.x + offNP.x * FXAA_QUALITY__P0, posB.y + offNP.y * FXAA_QUALITY__P0);
 		const float subpixD = -2.0 * subpixC + 3.0;
-		const float lumaEndN = luma(textureLod(tex_fb_filtered, posN, 0).xyz);
+		const float lumaEndN = luma(textureLod(tex_fb_filtered, posN, 0.).xyz);
 		const float subpixE = subpixC * subpixC;
-		const float lumaEndP = luma(textureLod(tex_fb_filtered, posP, 0).xyz);
+		const float lumaEndP = luma(textureLod(tex_fb_filtered, posP, 0.).xyz);
 		if(!pairN) lumaNN = lumaSS;
 		const float gradientScaled = gradient * (1.0/4.0);
 		const float lumaMM = lumaM - lumaNN * 0.5;
@@ -732,8 +734,8 @@ void main()
 		if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P1;
 		if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P1;
 		if(doneNP) {
-			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0.).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0.).xyz);
 			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 			doneN = abs(lumaEndN) >= gradientScaled;
@@ -762,7 +764,7 @@ void main()
 		const float pl = pixelOffsetSubpix * lengthSign;
 		if(horzSpan) un.y += pl;
 		else un.x += pl;
-		color = float4(textureLod(tex_fb_filtered, un, 0).xyz, 1.0);
+		color = float4(textureLod(tex_fb_filtered, un, 0.).xyz, 1.0);
 	}
 }
 
@@ -793,10 +795,10 @@ void main()
 {
 	float2 u = tex0;
 
-   float3 rgbyM = textureLod(tex_fb_unfiltered, u, 0).xyz;
+   float3 rgbyM = textureLod(tex_fb_unfiltered, u, 0.).xyz;
    if (w_h_height.w == 1.0) // depth buffer available?
    {
-      const float depth0 = textureLod(tex_depth, u, 0).x;
+      const float depth0 = textureLod(tex_depth, u, 0.).x;
       if ((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
       {
          color = float4(rgbyM, 1.0);
@@ -805,15 +807,15 @@ void main()
    }
 
 	float2 offs = w_h_height.xy;
-	float lumaNW = luma(textureLod(tex_fb_unfiltered, u - offs, 0).xyz);
-	float lumaN = luma(textureLod(tex_fb_unfiltered, u - float2(0.0,offs.y), 0).xyz);
-	float lumaNE = luma(textureLod(tex_fb_unfiltered, u - float2(-offs.x,offs.y), 0).xyz);
-	float lumaW = luma(textureLod(tex_fb_unfiltered, u - float2(offs.x,0.0), 0).xyz);
+	float lumaNW = luma(textureLod(tex_fb_unfiltered, u - offs, 0.).xyz);
+	float lumaN = luma(textureLod(tex_fb_unfiltered, u - float2(0.0,offs.y), 0.).xyz);
+	float lumaNE = luma(textureLod(tex_fb_unfiltered, u - float2(-offs.x,offs.y), 0.).xyz);
+	float lumaW = luma(textureLod(tex_fb_unfiltered, u - float2(offs.x,0.0), 0.).xyz);
 	float lumaM = luma(rgbyM);
-	float lumaE = luma(textureLod(tex_fb_unfiltered, u + float2(offs.x,0.0), 0).xyz);
-	float lumaSW = luma(textureLod(tex_fb_unfiltered, u + float2(-offs.x,offs.y), 0).xyz);
-	float lumaS = luma(textureLod(tex_fb_unfiltered, u + float2(0.0,offs.y), 0).xyz);
-	float lumaSE = luma(textureLod(tex_fb_unfiltered, u + offs, 0).xyz);
+	float lumaE = luma(textureLod(tex_fb_unfiltered, u + float2(offs.x,0.0), 0.).xyz);
+	float lumaSW = luma(textureLod(tex_fb_unfiltered, u + float2(-offs.x,offs.y), 0.).xyz);
+	float lumaS = luma(textureLod(tex_fb_unfiltered, u + float2(0.0,offs.y), 0.).xyz);
+	float lumaSE = luma(textureLod(tex_fb_unfiltered, u + offs, 0.).xyz);
 	float maxSM = max(lumaS, lumaM);
 	float minSM = min(lumaS, lumaM);
 	float maxESM = max(lumaE, maxSM);
@@ -871,9 +873,9 @@ void main()
 		float2 posN = float2(posB.x - offNP.x * FXAA_QUALITY__P0, posB.y - offNP.y * FXAA_QUALITY__P0);
 		float2 posP = float2(posB.x + offNP.x * FXAA_QUALITY__P0, posB.y + offNP.y * FXAA_QUALITY__P0);
 		float subpixD = -2.0 * subpixC + 3.0;
-		float lumaEndN = luma(textureLod(tex_fb_filtered, posN, 0).xyz);
+		float lumaEndN = luma(textureLod(tex_fb_filtered, posN, 0.).xyz);
 		float subpixE = subpixC * subpixC;
-		float lumaEndP = luma(textureLod(tex_fb_filtered, posP, 0).xyz);
+		float lumaEndP = luma(textureLod(tex_fb_filtered, posP, 0.).xyz);
 		if(!pairN) lumaNN = lumaSS;
 		float gradientScaled = gradient * (1.0/4.0);
 		float lumaMM = lumaM - lumaNN * 0.5;
@@ -889,8 +891,8 @@ void main()
 		if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P1;
 		if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P1;
 		if(doneNP) {
-			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0.).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0.).xyz);
 			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 			doneN = abs(lumaEndN) >= gradientScaled;
@@ -904,8 +906,8 @@ void main()
 			//
 
 			if(doneNP) {
-			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0.).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0.).xyz);
 			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 			doneN = abs(lumaEndN) >= gradientScaled;
@@ -917,8 +919,8 @@ void main()
 			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P3;
 
 			if(doneNP) {
-			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0.).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0.).xyz);
 			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 			doneN = abs(lumaEndN) >= gradientScaled;
@@ -930,8 +932,8 @@ void main()
 			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P4;
 
 			if(doneNP) {
-			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0.).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0.).xyz);
 			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 			doneN = abs(lumaEndN) >= gradientScaled;
@@ -943,8 +945,8 @@ void main()
 			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P5;
 
 			if(doneNP) {
-			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0.).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0.).xyz);
 			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 			doneN = abs(lumaEndN) >= gradientScaled;
@@ -956,8 +958,8 @@ void main()
 			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P6;
 
 			if(doneNP) {
-			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0.).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0.).xyz);
 			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 			doneN = abs(lumaEndN) >= gradientScaled;
@@ -969,8 +971,8 @@ void main()
 			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P7;
 
 			if(doneNP) {
-			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0.).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0.).xyz);
 			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 			doneN = abs(lumaEndN) >= gradientScaled;
@@ -982,8 +984,8 @@ void main()
 			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P8;
 
 			if(doneNP) {
-			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0.).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0.).xyz);
 			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 			doneN = abs(lumaEndN) >= gradientScaled;
@@ -995,8 +997,8 @@ void main()
 			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P9;
 
 			if(doneNP) {
-			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0.).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0.).xyz);
 			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 			doneN = abs(lumaEndN) >= gradientScaled;
@@ -1008,8 +1010,8 @@ void main()
 			if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P10;
 
 			if(doneNP) {
-			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0).xyz);
-			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0).xyz);
+			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0.).xyz);
+			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0.).xyz);
 			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 			doneN = abs(lumaEndN) >= gradientScaled;
@@ -1047,7 +1049,7 @@ void main()
 		float pl = pixelOffsetSubpix * lengthSign;
 		if(horzSpan) un.y += pl;
 		else un.x += pl;
-		color = float4(textureLod(tex_fb_filtered, un, 0).xyz, 1.0);
+		color = float4(textureLod(tex_fb_filtered, un, 0.).xyz, 1.0);
 	}
 }
 
@@ -1164,13 +1166,17 @@ void main()
 	float3 final_colour = float3(0.,0.,0.);
 	float Z = 0.0;
 	for (int j=-2; j <= 2; ++j) // 2 = kernelradius
+	{
+		const float j_float = float(j);
 		for (int i=-2; i <= 2; ++i)
 		{
-			const float3 cc = tex2Dlod(tex_fb_unfiltered, float4(u.x + i*(w_h_height.x*0.5), u.y + j*(w_h_height.y*0.5), 0.,0.)).xyz; // *0.5 = 1/kernelradius
+			const float i_float = float(i);
+			const float3 cc = tex2Dlod(tex_fb_unfiltered, float4(u.x + i_float*(w_h_height.x*0.5), u.y + j_float*(w_h_height.y*0.5), 0.,0.)).xyz; // *0.5 = 1/kernelradius
 			const float factor = normpdf(cc-e, 0.25); // 0.25 = BSIGMA
 			Z += factor;
 			final_colour += factor*cc;
 		}
+	}
 
 	// CAS (without Better Diagonals)
 	const float2 um1 = u - w_h_height.xy;

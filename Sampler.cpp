@@ -237,18 +237,25 @@ GLuint Sampler::CreateTexture(unsigned int Width, unsigned int Height, unsigned 
    {
       if (col_type == GL_FLOAT || col_type == GL_HALF_FLOAT)
       {
+#ifndef __OPENGLES__
          if (GLAD_GL_ARB_texture_compression_bptc)
             comp_format = colorFormat::BC6S; // We should use unsigned BC6 but this needs to know beforehand if the texture is only positive
+#endif
       }
+#ifndef __OPENGLES__
       else if (GLAD_GL_ARB_texture_compression_bptc)
          comp_format = col_is_linear ? colorFormat::BC7 : colorFormat::SBC7;
+#endif
       else
          comp_format = col_is_linear ? colorFormat::DXT5 : colorFormat::SDXT5;
    }
 
    const int num_mips = (int)std::log2(float(max(Width, Height))) + 1;
+#ifndef __OPENGLES__
    if (m_rd->getGLVersion() >= 403)
+#endif
       glTexStorage2D(GL_TEXTURE_2D, num_mips, comp_format, Width, Height);
+#ifndef __OPENGLES__
    else
    { // should never be triggered nowadays
       GLsizei w = Width;
@@ -260,6 +267,7 @@ GLuint Sampler::CreateTexture(unsigned int Width, unsigned int Height, unsigned 
          h = max(1, (h / 2));
       }
    }
+#endif
 
    if (data)
    {

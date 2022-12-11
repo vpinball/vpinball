@@ -631,6 +631,16 @@ void Player::CreateWnd(HWND parent /* = 0 */)
 
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
+#ifdef __OPENGLES__
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#elif defined(__APPLE__) && defined(TARGET_OS_MAC)
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+#endif
+
    //SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
    // Create the window.
@@ -3875,6 +3885,9 @@ void Player::UpdateHUD_IMGUI()
    case IF_LIGHT_BUFFER_ONLY: ImGui::Begin("Transmitted light buffer"); break;
    case IF_RENDER_PROBES:
       ImGui::Begin("Render Probe: "s.append(m_ptable->m_vrenderprobe[m_infoProbeIndex >> 1]->GetName()).append((m_infoProbeIndex & 1) == 0 ? " [Static]"s : " [Dynamic]"s).c_str());
+      break;
+   default:
+      assert(!"Unhandled Info Mode");
       break;
    }
 

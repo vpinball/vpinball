@@ -2,7 +2,7 @@
 
 #define MIN_TEXTURE_SIZE 8u
 
-#ifndef _MSC_VER //!!
+#if !defined(_MSC_VER) && !defined(_rotl) //!!
 #define _rotl(x,y)  (((x) << (y)) | ((x) >> (-(y) & 31)))
 #endif
 
@@ -32,6 +32,7 @@ public:
    bool has_alpha() const      { return m_format == RGBA || m_format == SRGBA; }
 
    BaseTexture *ToBGRA(); // swap R and B channels, also tonemaps floating point buffers during conversion and adds an opaque alpha channel (if format with missing alpha)
+   void AddAlpha();
    void RemoveAlpha();
 
 private:

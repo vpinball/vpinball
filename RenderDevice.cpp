@@ -8,7 +8,7 @@
 //#include "Dwmapi.h" // use when we get rid of XP at some point, get rid of the manual dll loads in here then
 
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
-#include "nvapi.h"
+#include "inc/nvapi.h"
 #endif
 
 #include "RenderDevice.h"
@@ -244,8 +244,10 @@ static const char* glErrorToString(const int error) {
    case GL_INVALID_ENUM: return "GL_INVALID_ENUM";
    case GL_INVALID_VALUE: return "GL_INVALID_VALUE";
    case GL_INVALID_OPERATION: return "GL_INVALID_OPERATION";
+#ifndef __OPENGLES__
    case GL_STACK_OVERFLOW: return "GL_STACK_OVERFLOW";
    case GL_STACK_UNDERFLOW: return "GL_STACK_UNDERFLOW";
+#endif
    case GL_OUT_OF_MEMORY: return "GL_OUT_OF_MEMORY";
    case GL_INVALID_FRAMEBUFFER_OPERATION: return "GL_INVALID_FRAMEBUFFER_OPERATION";
    default: return "unknown";
@@ -298,6 +300,7 @@ void checkGLErrors(const char *file, const int line) {
 
 // Callback function for printing debug statements
 #if defined(ENABLE_SDL) && defined(_DEBUG)
+#ifndef __OPENGLES__
 void APIENTRY GLDebugMessageCallback(GLenum source, GLenum type, GLuint id,
                                      GLenum severity, GLsizei length,
                                      const GLchar *msg, const void *data)
@@ -405,6 +408,7 @@ void APIENTRY GLDebugMessageCallback(GLenum source, GLenum type, GLuint id,
     if (type == GL_DEBUG_TYPE_ERROR || type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR || severity == GL_DEBUG_SEVERITY_HIGH)
         ShowError(msg);
 }
+#endif
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -751,6 +755,9 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    case SDL_PIXELFORMAT_RGB888: back_buffer_format = colorFormat::RGB8; break;
    case SDL_PIXELFORMAT_ARGB8888: back_buffer_format = colorFormat::RGBA8; break;
    case SDL_PIXELFORMAT_ARGB2101010: back_buffer_format = colorFormat::RGBA10; break;
+#ifdef __OPENGLES__
+   case SDL_PIXELFORMAT_ABGR8888: back_buffer_format = colorFormat::RGBA8; break;
+#endif
    default: 
    {
       ShowError("Invalid Output format: "s.append(std::to_string(mode.format).c_str()));
@@ -770,7 +777,11 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 
    SDL_GL_MakeCurrent(m_sdl_playfieldHwnd, m_sdl_context);
 
+#ifndef __OPENGLES__
    if (!gladLoadGLLoader(SDL_GL_GetProcAddress)) {
+#else
+   if (!gladLoadGLES2((GLADloadfunc) SDL_GL_GetProcAddress)) {
+#endif
       ShowError("Glad failed");
       exit(-1);
    }
@@ -791,9 +802,13 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 
    // Enable debugging layer of OpenGL
 #ifdef _DEBUG
+#ifndef __OPENGLES__
    glEnable(GL_DEBUG_OUTPUT); // on its own is the 'fast' version
    //glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); // callback is in sync with errors, so a breakpoint can be placed on the callback in order to get a stacktrace for the GL error
-   glDebugMessageCallback(GLDebugMessageCallback, nullptr);
+   if (glad_glDebugMessageCallback) {
+      glDebugMessageCallback(GLDebugMessageCallback, nullptr);
+   }
+#endif
 #endif
 #if 0
    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_FALSE); // disable all
@@ -1669,8 +1684,11 @@ void RenderDevice::UploadAndSetSMAATextures()
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
    int num_mips = (int)std::log2(float(max(AREATEX_WIDTH, AREATEX_HEIGHT))) + 1;
+#ifndef __OPENGLES__
    if (m_GLversion >= 403)
+#endif
       glTexStorage2D(GL_TEXTURE_2D, num_mips, RGB8, AREATEX_WIDTH, AREATEX_HEIGHT);
+#ifndef __OPENGLES__
    else
    { // should never be triggered nowadays
       GLsizei w = AREATEX_WIDTH;
@@ -1682,6 +1700,7 @@ void RenderDevice::UploadAndSetSMAATextures()
          h = max(1, (h / 2));
       }
    }
+#endif
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, (void*)areaTexBytes);
    glGenerateMipmap(GL_TEXTURE_2D); // Generate mip-maps, when using TexStorage will generate same amount as specified in TexStorage, otherwise good idea to limit by GL_TEXTURE_MAX_LEVEL
@@ -2259,7 +2278,11 @@ void RenderDevice::DrawIndexedPrimitiveVB(const PrimitiveTypes type, const DWORD
 #ifdef ENABLE_SDL
    Shader::GetCurrentShader()->setAttributeFormat(fvf);
    const int offset = ib->getOffset() + (ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? 2 : 4) * startIndex;
+#ifndef __OPENGLES__
    glDrawElementsBaseVertex(type, indexCount, ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)offset, vb->getOffset() + startVertex);
+#else
+   glDrawElements(type, indexCount, ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)(intptr_t)offset);
+#endif
 #else
    VertexDeclaration* declaration = fvfToDecl(fvf);
    SetVertexDeclaration(declaration);

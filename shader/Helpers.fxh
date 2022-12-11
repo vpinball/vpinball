@@ -39,7 +39,7 @@
 //vec3 pow(vec3 b, float e) {return pow(b,vec3(e));}
 //vec2 pow(vec2 b, float e) {return pow(b,vec2(e));}
 
-#define texNoLod(tex, pos) textureLod(tex, pos, 0)
+#define texNoLod(tex, pos) textureLod(tex, pos, 0.)
 #define BRANCH 
 
 //**************************************************************************

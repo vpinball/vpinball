@@ -88,7 +88,7 @@ float GeometricOpacity(const float NdotV, const float alpha, const float blendin
 
 float3 FresnelSchlick(const float3 spec, const float LdotH, const float edge)
 {
-    return spec + (float3(edge,edge,edge) - spec) * pow(1.0 - LdotH, 5); // UE4: float3(edge,edge,edge) = saturate(50.0*spec.g)
+    return spec + (float3(edge,edge,edge) - spec) * pow(1.0 - LdotH, 5.); // UE4: float3(edge,edge,edge) = saturate(50.0*spec.g)
 }
 
 //

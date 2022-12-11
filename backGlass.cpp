@@ -6,11 +6,13 @@
 #include "RenderDevice.h"
 #include "Shader.h"
 #include "captureExt.h"
+#ifdef ENABLE_VR
+ #include <fstream>
+#endif
 
 //#define WRITE_BACKGLASS_IMAGES
 #ifdef WRITE_BACKGLASS_IMAGES
  #include <iostream>
- #include <fstream>
 #endif
 
 //XML helpers

@@ -1,6 +1,10 @@
 ////GLOBAL
 #version 450 core
 
+#ifdef SHADER_GLES30
+precision mediump float;
+#endif
+
 ////DEFINES
 #include "Helpers.fxh"
 

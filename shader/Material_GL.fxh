@@ -38,7 +38,7 @@ uniform float2 fenvEmissionScale_TexWidth;
 
 uniform float2 fDisableLighting_top_below;
 
-uniform float fSceneScale = 1.0f;
+uniform float fSceneScale = 1.0;
 
 //
 // Material Params
@@ -63,12 +63,12 @@ float GeometricOpacity(const float NdotV, const float alpha, const float blendin
     //new version (COD/IW, t = thickness), t = 0.05 roughly corresponds to above version
     const float x = abs(NdotV); // flip normal in case of wrong orientation (backside lighting)
     const float g = blending - blending * ( x / (x * (1.0 - t) + t) ); // Smith-Schlick G
-    return lerp(alpha, 1.0, g); // fake opacity lerp to â€˜shadowedâ€™
+    return lerp(alpha, 1.0, g); // fake opacity lerp to ‘shadowed’
 }
 
 float3 FresnelSchlick(const float3 spec, const float LdotH, const float edge)
 {
-    return spec + (float3(edge,edge,edge) - spec) * pow(1.0 - LdotH, 5); // UE4: float3(edge,edge,edge) = saturate(50.0*spec.g)
+    return spec + (float3(edge,edge,edge) - spec) * pow(1.0 - LdotH, 5.); // UE4: float3(edge,edge,edge) = saturate(50.0*spec.g)
 }
 
 //

@@ -11,7 +11,7 @@
 #include <sstream>
 #include "Shader.h"
 #include "captureExt.h"
-#include "freeimage.h"
+#include "inc/freeimage.h"
 #include "inc/ThreadPool.h"
 #include "inc/scalefx.h"
 

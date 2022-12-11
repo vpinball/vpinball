@@ -1,9 +1,13 @@
 ////GLOBAL
 #version 430
 
-#define NUM_BALL_LIGHTS 8
+#ifdef SHADER_GLES30
+precision mediump float;
+#endif
 
 ////DEFINES
+#define NUM_BALL_LIGHTS 8
+
 #include "Helpers.fxh"
 
 uniform mat4 orientation;
@@ -32,8 +36,10 @@ layout(triangle_strip, max_vertices = 3) out;
 // Early-Z-test implementation:
 #extension GL_ARB_shader_image_load_store : enable
 #extension GL_ARB_conservative_depth : enable
+#if !defined(SHADER_GL410) && !defined(SHADER_GLES30)
 layout(early_fragment_tests) in;
 layout(depth_unchanged) out float gl_FragDepth;
+#endif
 
 uniform sampler2D tex_ball_color; // base texture
 uniform sampler2D tex_ball_playfield; // playfield
@@ -178,8 +184,8 @@ float3 ballLightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float
 }
 
 float3 PFDoPointLight(const float3 pos, const float3 N, const float3 diffuse, const int i) 
-{ 
-	//!! do in vertex shader?! or completely before?!
+{
+   //!! do in vertex shader?! or completely before?!
 #if enable_VR
    const float3 lightDir = ((matView * vec4(lightPos[i].xyz, 1.0)).xyz - pos) / fSceneScale; // In VR we need to scale to the overall scene scaling
 #else

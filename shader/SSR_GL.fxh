@@ -10,15 +10,15 @@ float3 approx_bump_normal(const float2 coords, const float2 offs, const float sc
 {
     const float3 lumw = float3(0.212655,0.715158,0.072187);
 
-    const float lpx = dot(textureLod(tex_fb_filtered, vec2(coords.x+offs.x,coords.y), 0).xyz, lumw);
-    const float lmx = dot(textureLod(tex_fb_filtered, vec2(coords.x-offs.x,coords.y), 0).xyz, lumw);
-    const float lpy = dot(textureLod(tex_fb_filtered, vec2(coords.x,coords.y+offs.y), 0).xyz, lumw);
-    const float lmy = dot(textureLod(tex_fb_filtered, vec2(coords.x,coords.y-offs.y), 0).xyz, lumw);
+    const float lpx = dot(textureLod(tex_fb_filtered, vec2(coords.x+offs.x,coords.y), 0.).xyz, lumw);
+    const float lmx = dot(textureLod(tex_fb_filtered, vec2(coords.x-offs.x,coords.y), 0.).xyz, lumw);
+    const float lpy = dot(textureLod(tex_fb_filtered, vec2(coords.x,coords.y+offs.y), 0.).xyz, lumw);
+    const float lmy = dot(textureLod(tex_fb_filtered, vec2(coords.x,coords.y-offs.y), 0.).xyz, lumw);
 
-    const float dpx = textureLod(tex_depth, vec2(coords.x+offs.x,coords.y), 0).x;
-    const float dmx = textureLod(tex_depth, vec2(coords.x-offs.x,coords.y), 0).x;
-    const float dpy = textureLod(tex_depth, vec2(coords.x,coords.y+offs.y), 0).x;
-    const float dmy = textureLod(tex_depth, vec2(coords.x,coords.y-offs.y), 0).x;
+    const float dpx = textureLod(tex_depth, vec2(coords.x+offs.x,coords.y), 0.).x;
+    const float dmx = textureLod(tex_depth, vec2(coords.x-offs.x,coords.y), 0.).x;
+    const float dpy = textureLod(tex_depth, vec2(coords.x,coords.y+offs.y), 0.).x;
+    const float dmy = textureLod(tex_depth, vec2(coords.x,coords.y-offs.y), 0.).x;
 
     const float2 xymult = max(1.0 - float2(abs(dmx - dpx), abs(dmy - dpy)) * sharpness, 0.0);
 
@@ -50,7 +50,7 @@ void main()
 
 	const float3 V = normalize(float3(0.5-u, -0.5)); // WTF?! cam is in 0,0,0 but why z=-0.5?
 
-	const float fresnel = (SSR_bumpHeight_fresnelRefl_scale_FS.y + (1.0-SSR_bumpHeight_fresnelRefl_scale_FS.y) * pow(1.0-saturate(dot(V,normal_b)),5)) // fresnel for falloff towards silhouette
+	const float fresnel = (SSR_bumpHeight_fresnelRefl_scale_FS.y + (1.0-SSR_bumpHeight_fresnelRefl_scale_FS.y) * pow(1.0-saturate(dot(V,normal_b)),5.)) // fresnel for falloff towards silhouette
 	                     * SSR_bumpHeight_fresnelRefl_scale_FS.z // user scale
 	                     * sqr(normal_fade_factor(normal_b/*normal*/)); // avoid reflections on playfield, etc
 
@@ -69,7 +69,7 @@ void main()
 	const float ReflBlurWidth = 2.2; //!! magic, small enough to not collect too much, and large enough to have cool reflection effects
 
 	const float ushift = /*hash(IN.tex0) + w_h_height.zw*/ // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
-	                     /*frac(*/textureLod(tex_ao_dither, tex0/(64.0*w_h_height.xy), 0).z /*+ w_h_height.z)*/; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
+	                     /*frac(*/textureLod(tex_ao_dither, tex0/(64.0*w_h_height.xy), 0.).z /*+ w_h_height.z)*/; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
 	const float2 offsMul = normal_b.xy * (/*w_h_height.xy*/ float2(1.0/1920.0,1.0/1080.0) * ReflBlurWidth * (32./float(samples))); //!! makes it more resolution independent?? test with 4xSSAA
 
 	// loop in screen space, simply collect all pixels in the normal direction (not even a depth check done!)
@@ -78,8 +78,8 @@ void main()
 	for(int i=1; i</*=*/samples; i++) //!! due to jitter
 	{
 		const float2 offs = u + (float(i)+ushift)*offsMul; //!! jitter per pixel (uses blue noise tex)
-		const float3 color = textureLod(tex_fb_filtered, offs, 0).xyz;
-		
+		const float3 color = textureLod(tex_fb_filtered, offs, 0.).xyz;
+
 		/*if(i==1) // necessary special case as compiler warns/'optimizes' sqrt below into rqsrt?!
 		{
 			refl += color;
