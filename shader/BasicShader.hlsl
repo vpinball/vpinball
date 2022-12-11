@@ -116,7 +116,7 @@ const float refractionThickness;
 const float3 refractionTint;
 
 struct VS_OUTPUT 
-{ 
+{
    float4 pos      : POSITION;
    float3 worldPos : TEXCOORD0;
    float3 tablePos : TEXCOORD1;
@@ -134,7 +134,7 @@ struct VS_NOTEX_OUTPUT
 
 struct VS_DEPTH_ONLY_NOTEX_OUTPUT 
 { 
-   float4 pos      : POSITION; 
+   float4 pos      : POSITION;
 };
 
 struct VS_DEPTH_ONLY_TEX_OUTPUT
@@ -265,7 +265,7 @@ VS_DEPTH_ONLY_NOTEX_OUTPUT vs_depth_only_main_without_texture(const in float4 vP
    VS_DEPTH_ONLY_NOTEX_OUTPUT Out;
 
    Out.pos = mul(vPosition, matWorldViewProj);
-   
+
    return Out; 
 }
 
@@ -469,7 +469,7 @@ VS_NOTEX_OUTPUT vs_kicker (const in float4 vPosition : POSITION0,
     Out.worldPos = P;
     Out.tablePos = mul(vPosition, matWorld).xyw;
     Out.normal = N;
-    return Out; 
+    return Out;
 }
 
 //------------------------------------
@@ -701,7 +701,6 @@ technique basic_with_texture_refr_refl_normal_isMetal
 
 
 
-
 technique basic_refl_only_without_texture
 {
    pass P0
@@ -732,7 +731,7 @@ technique basic_depth_only_without_texture
 }
 
 technique basic_depth_only_with_texture
-{ 
+{
    pass P0
    {
       VertexShader = compile vs_3_0 vs_depth_only_main_with_texture(); 
@@ -745,7 +744,7 @@ technique basic_depth_only_with_texture
 //
 
 technique bg_decal_without_texture
-{ 
+{
    pass P0
    {
       VertexShader = compile vs_3_0 vs_notex_main(); 
@@ -754,7 +753,7 @@ technique bg_decal_without_texture
 }
 
 technique bg_decal_with_texture
-{ 
+{
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main();
@@ -768,7 +767,7 @@ technique bg_decal_with_texture
 //
 
 technique kickerBoolean_isMetal
-{ 
+{
    pass P0
    {
       //ZWriteEnable=TRUE;
@@ -778,7 +777,7 @@ technique kickerBoolean_isMetal
 }
 
 technique kickerBoolean
-{ 
+{
    pass P0
    {
       //ZWriteEnable=TRUE;

@@ -3420,7 +3420,7 @@ void Player::RenderDynamics()
 {
    TRACE_FUNCTION();
 
-   // Mark all probes ot be re-rendered for this frame (only if needed, lazily rendered)
+   // Mark all probes to be re-rendered for this frame (only if needed, lazily rendered)
    for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); ++i)
       m_ptable->m_vrenderprobe[i]->MarkDirty();
 

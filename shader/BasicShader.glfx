@@ -15,7 +15,7 @@ uniform bool disableVertexShader; // To support pretransformed vertices (used by
 #define NUM_BALL_LIGHTS 0 // just to avoid having too much constant mem allocated
 
 layout(std140) uniform matrixBlock {
-    mat4 matWorld;
+	mat4 matWorld;
 	mat4 matView;
 	mat4 matWorldView;
 	mat3x4 matWorldViewInverseTranspose;

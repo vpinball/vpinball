@@ -739,7 +739,7 @@ technique FXAA1
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader  = compile ps_3_0 ps_main_fxaa1();
+      PixelShader  = compile ps_3_0 ps_main_fxaa1();
    }
 }
 
@@ -748,7 +748,7 @@ technique FXAA2
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader  = compile ps_3_0 ps_main_fxaa2();
+      PixelShader  = compile ps_3_0 ps_main_fxaa2();
    }
 }
 
@@ -756,8 +756,8 @@ technique FXAA3
 {
    pass P0
    {
-     VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader  = compile ps_3_0 ps_main_fxaa3();
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+      PixelShader  = compile ps_3_0 ps_main_fxaa3();
    }
 }
 
@@ -765,8 +765,8 @@ technique fb_tonemap
 {
    pass P0
    {
-     VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel();
-	  PixelShader  = compile ps_3_0 ps_main_fb_tonemap();
+      VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel();
+      PixelShader  = compile ps_3_0 ps_main_fb_tonemap();
    }
 }
 
@@ -774,8 +774,8 @@ technique fb_bloom
 {
    pass P0
    {
-     VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader  = compile ps_3_0 ps_main_fb_bloom();
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+      PixelShader  = compile ps_3_0 ps_main_fb_bloom();
    }
 }
 
@@ -792,8 +792,8 @@ technique fb_tonemap_AO
 {
    pass P0
    {
-     VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel();
-	  PixelShader  = compile ps_3_0 ps_main_fb_tonemap_AO();
+      VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel();
+      PixelShader  = compile ps_3_0 ps_main_fb_tonemap_AO();
    }
 }
 
@@ -811,7 +811,7 @@ technique fb_tonemap_no_filterRGB
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader  = compile ps_3_0 ps_main_fb_tonemap_no_filterRGB();
+      PixelShader  = compile ps_3_0 ps_main_fb_tonemap_no_filterRGB();
    }
 }
 
@@ -820,7 +820,7 @@ technique fb_tonemap_no_filterRG
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader  = compile ps_3_0 ps_main_fb_tonemap_no_filterRG();
+      PixelShader  = compile ps_3_0 ps_main_fb_tonemap_no_filterRG();
    }
 }
 
@@ -829,7 +829,7 @@ technique fb_tonemap_no_filterR
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader  = compile ps_3_0 ps_main_fb_tonemap_no_filterR();
+      PixelShader  = compile ps_3_0 ps_main_fb_tonemap_no_filterR();
    }
 }
 
@@ -838,9 +838,9 @@ technique fb_tonemap_AO_no_filter
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader  = compile ps_3_0 ps_main_fb_tonemap_AO_no_filter();
+      PixelShader  = compile ps_3_0 ps_main_fb_tonemap_AO_no_filter();
 
-	  //!! SRGBWriteEnable = true;
+      //!! SRGBWriteEnable = true;
    }
 }
 
@@ -860,7 +860,7 @@ technique fb_blur_horiz7x7
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-      PixelShader = compile ps_3_0 ps_main_fb_blur_horiz7x7();
+      PixelShader  = compile ps_3_0 ps_main_fb_blur_horiz7x7();
    }
 }
 
@@ -869,7 +869,7 @@ technique fb_blur_vert7x7
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-      PixelShader = compile ps_3_0 ps_main_fb_blur_vert7x7();
+      PixelShader  = compile ps_3_0 ps_main_fb_blur_vert7x7();
    }
 }
 
@@ -914,7 +914,7 @@ technique fb_blur_horiz13x13
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-      PixelShader = compile ps_3_0 ps_main_fb_blur_horiz13x13();
+      PixelShader  = compile ps_3_0 ps_main_fb_blur_horiz13x13();
    }
 }
 
@@ -923,7 +923,7 @@ technique fb_blur_vert13x13
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-      PixelShader = compile ps_3_0 ps_main_fb_blur_vert13x13();
+      PixelShader  = compile ps_3_0 ps_main_fb_blur_vert13x13();
    }
 }
 
@@ -932,7 +932,7 @@ technique fb_blur_horiz15x15
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-      PixelShader = compile ps_3_0 ps_main_fb_blur_horiz15x15();
+      PixelShader  = compile ps_3_0 ps_main_fb_blur_horiz15x15();
    }
 }
 
@@ -941,7 +941,7 @@ technique fb_blur_vert15x15
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-      PixelShader = compile ps_3_0 ps_main_fb_blur_vert15x15();
+      PixelShader  = compile ps_3_0 ps_main_fb_blur_vert15x15();
    }
 }
 
@@ -988,7 +988,7 @@ technique fb_blur_horiz23x23
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-      PixelShader = compile ps_3_0 ps_main_fb_blur_horiz23x23();
+      PixelShader  = compile ps_3_0 ps_main_fb_blur_horiz23x23();
    }
 }
 
@@ -997,7 +997,7 @@ technique fb_blur_vert23x23
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-      PixelShader = compile ps_3_0 ps_main_fb_blur_vert23x23();
+      PixelShader  = compile ps_3_0 ps_main_fb_blur_vert23x23();
    }
 }
 
