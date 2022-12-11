@@ -3,6 +3,48 @@ VP 10.8.0 Changelog
 
 FEATURES:
 
+- VPX and VPVR are finally reunited!
+  some of the changes that came in via VPVR:
+
+  - added SDL2 / OpenGL as an additional render pipeline.
+    switching between DirectX 9 and OpenGL is (for now) only possible at compile time, thus two executables are shipped.
+
+  - the new OpenGL pipeline is also capable to render to VR devices (support for SteamVR):
+    To use VR you need a SteamVR compatible HMD, a Steam account, and the Steam client/app
+    with SteamVR client installed. More information on OpenVR + SteamVR can be found on http://steamvr.com
+
+  - autodetection of SteamVR driver installation. If its not installed, the standard 2D mode is started up instead.
+    If VR drivers are installed, and the HMD is turned on, VPX starts in VR mode. Otherwise a prompt shows up to choose between VR mode and 2D mode (can be disabled).
+
+  - the new OpenGL pipeline also is no longer computing/approximating Stereo3D only from depth buffer information.
+    If any stereo mode is enabled, the table is then always rendered to two independent eye buffers instead.
+    This increases CPU and GPU load for all stereo modes, but increases the image quality.
+    Also anti-aliasing can be enabled for all stereo modes.
+
+  - super-sampling based anti-aliasing can now be adjusted with a slider from 0.5 (downsampling) up to 2.
+    The factor describes the scaling in X and Y direction, so 2 increases the overall pixel-count by a factor of 4.
+
+  - splitted the video settings into the 'old' 2D based video settings menu and a new VR settings menu.
+    Also different registry entries are used to store the various settings like stereo mode, display, resolution, postprocessing etc. separately.
+    Things like Ball rendering and Day/Night cycle are used for both.
+
+  - the near/far plane can be adjusted now (in centimeters). Both planes are like walls in front of the player. Everything between the player and the near-
+    plane, and everything behind the far-plane is invisible. It might be helpful if one has a room around the table or one changed the scaling too
+    much. Depending on the GPU/driver, having too small values for the near-plane or too large values for the far-plane, Z-fighting artifacts might occur.
+
+  - scaling of the table is now possible within the VR settings. One can either set a factor (e.g. 1.1 increases the table size by 10%) or one can
+    scale all tables to a fixed width (in centimeters) to match a PinSim Controller. The scaling factor has no lower/upper limit (so yes,
+    one can scale up the table to play soccer ;)  Or be attacked by a giant rolling Indy-Trap  Or scale it down to matchbox car size  If it gets
+    weird we warned you). If you have issues locating the table or getting nightmares, it is NOT our fault.
+    Default values are: box unchecked and 1.
+
+  - added rudimentary support for BAM Headtracking (thanks to Rafal from ravarcade.pl). Usage:
+    It works almost the same way as with Arcade Pinball, but one doesn't have control over the table location.
+     1. The User needs a working Future Pinball installation with head tracking enabled (FP is just used to setup the head tracking, FP can then be closed).
+     2. Start BAM-Tracker.exe, select head tracking method, leave it running.
+     3. Run VPinballX (the OpenGL version)
+     https://www.youtube.com/watch?v=g-EpTp_3wKo
+
 - the playfield is now processed like all the other parts, i.e. its not forced as static/preprocessed anymore, and thus underlying table elements will work as expected now (so no more under playfield clipping, and alpha blending is not limited to simple alpha clipping/cutouts anymore):
   - if the 'playfield_mesh' primitive has 'Static rendering' disabled, it will be rendered with transparent parts (this results in the 'playfield_mesh' to be blended like plain primitives, so no more need for alpha test or insert overlays)
   - parts under the playfield (like a lower playfield or 3D inserts) can have 'Static rendering' checked and can feature materials without the 'Active' checkbox (previously, under-playfield parts without these flags were clipped)
