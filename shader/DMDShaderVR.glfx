@@ -1,6 +1,10 @@
 ////GLOBAL
 #version 410
 
+#ifdef SHADER_GLES30
+precision mediump float;
+#endif
+
 ////DEFINES
 #include "Helpers.fxh"
 
@@ -51,7 +55,7 @@ out vec2 tex0_gs;
 
 void main()
 {
-   gl_Position = vec4(vPosition.x*backBoxSize.z+backBoxSize.x, 0.0, vPosition.y*backBoxSize.w+backBoxSize.y, 1.0);
+   gl_Position = float4(vPosition.x*backBoxSize.z+backBoxSize.x, 0.0, vPosition.y*backBoxSize.w+backBoxSize.y, 1.0);
    tex0_gs = tc;
 }
 
@@ -64,7 +68,7 @@ out vec2 tex0_gs;
 
 void main()
 {
-   gl_Position = vec4(vPosition, 1.0);
+   gl_Position = float4(vPosition, 1.0);
    tex0_gs = tc;
 }
 
@@ -126,8 +130,8 @@ void main()
     color2 *= 1. / 25.;
 
    /*float3 colorg = float3(0,0,0);
-   for(int j = -1; j <= 1; ++j)
-   for(int i = -1; i <= 1; ++i)
+   [unroll] for(int j = -1; j <= 1; ++j)
+   [unroll] for(int i = -1; i <= 1; ++i)
    {
       //collect glow from neighbors
    }*/
@@ -157,7 +161,7 @@ void main()
 {
    float4 l = texture(tex_sprite, tex0);
    if (l.a < alphaTestValue)
-      discard;           //stop the pixel shader if alpha test should reject pixel to avoid writing to the depth buffer
+      discard; //stop the pixel shader if alpha test should reject pixel to avoid writing to the depth buffer
    color = float4(InvToneMap(InvGamma(l.xyz * vColor_Intensity.xyz * vColor_Intensity.w)), l.w); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
 }
 
