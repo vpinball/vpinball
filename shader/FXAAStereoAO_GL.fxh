@@ -1062,7 +1062,7 @@ void main()
 	const float Contrast   = 0.0; // 0..1, Adjusts the range the shader adapts to high contrast (0 is not all the way off).  Higher values = more high contrast sharpening.
 	const float Sharpening = 1.0; // 0..1, Adjusts sharpening intensity by averaging the original pixels to the sharpened result.  1.0 is the unmodified default.
 
-	const float2 u = tex0 + w_h_height.xy*0.5;
+	const float2 u = tex0;
 
 	const float3 e = tex2Dlod(tex_fb_unfiltered, float4(u, 0.,0.)).xyz;
 	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
