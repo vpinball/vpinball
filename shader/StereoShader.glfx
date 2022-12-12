@@ -16,28 +16,28 @@ float3 anaglyph(const float3 L, const float3 R)
 
 	float DeGhost = 0.06;
 
-	const float3 LMA = lerp(L, vec3(dot(L,float3(0.299, 0.587, 0.114))), Anaglyph_DeSaturation_Contrast.x);
-	const float3 RMA = lerp(R, vec3(dot(R,float3(0.299, 0.587, 0.114))), Anaglyph_DeSaturation_Contrast.x);
+	const float3 LMA = lerp(L, dot(L,float3(0.299, 0.587, 0.114)), Anaglyph_DeSaturation_Contrast.x);
+	const float3 RMA = lerp(R, dot(R,float3(0.299, 0.587, 0.114)), Anaglyph_DeSaturation_Contrast.x);
 
-	if (ms_zpd_ya_td.w == 5.0 || ms_zpd_ya_td.w == 12.0) // Anaglyph 3D Red/Cyan
+	BRANCH if (ms_zpd_ya_td.w == 5.0 || ms_zpd_ya_td.w == 12.0) // Anaglyph 3D Red/Cyan
 		return pow(float3(LMA.r,RMA.g,RMA.b), vec3(1./Anaglyph_DeSaturation_Contrast.y)); //!! Contrast is meh here
-	if (ms_zpd_ya_td.w == 6.0 || ms_zpd_ya_td.w == 13.0) // Anaglyph 3D Green/Magenta
+	BRANCH if (ms_zpd_ya_td.w == 6.0 || ms_zpd_ya_td.w == 13.0) // Anaglyph 3D Green/Magenta
 		return pow(float3(RMA.r,LMA.g,RMA.b), vec3(1./Anaglyph_DeSaturation_Contrast.y)); //!! Contrast is meh here
-	if (ms_zpd_ya_td.w == 7.0 || ms_zpd_ya_td.w == 14.0) // Anaglyph 3D Dubois Red/Cyan
+	BRANCH if (ms_zpd_ya_td.w == 7.0 || ms_zpd_ya_td.w == 14.0) // Anaglyph 3D Dubois Red/Cyan
 	{
 		const float r = dot(LMA,float3( 0.437,  0.449,  0.164)) + dot(RMA,float3(-0.011, -0.032, -0.007));
 		const float g = dot(LMA,float3(-0.062, -0.062, -0.024)) + dot(RMA,float3( 0.377,  0.761,  0.009));
 		const float b = dot(LMA,float3(-0.048, -0.050, -0.017)) + dot(RMA,float3(-0.026, -0.093,  1.234));
 		return saturate(pow(float3(r,g,b), vec3(1./Anaglyph_DeSaturation_Contrast.y))); //!! Contrast is meh here
 	}
-	if (ms_zpd_ya_td.w == 8.0 || ms_zpd_ya_td.w == 15.0) // Anaglyph 3D Dubois Green/Magenta
+	BRANCH if (ms_zpd_ya_td.w == 8.0 || ms_zpd_ya_td.w == 15.0) // Anaglyph 3D Dubois Green/Magenta
 	{
 		const float r = dot(LMA,float3(-0.062, -0.158, -0.039)) + dot(RMA,float3( 0.529,  0.705, 0.024));
 		const float g = dot(LMA,float3( 0.284,  0.668,  0.143)) + dot(RMA,float3(-0.016, -0.015, 0.065));
 		const float b = dot(LMA,float3(-0.015, -0.027,  0.021)) + dot(RMA,float3( 0.009,  0.075, 0.937));
 		return saturate(pow(float3(r,g,b), vec3(1./Anaglyph_DeSaturation_Contrast.y))); //!! Contrast is meh here
 	}
-	if (ms_zpd_ya_td.w == 9.0 || ms_zpd_ya_td.w == 16.0) // Anaglyph 3D Deghosted Red/Cyan Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
+	BRANCH if (ms_zpd_ya_td.w == 9.0 || ms_zpd_ya_td.w == 16.0) // Anaglyph 3D Deghosted Red/Cyan Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
 	{
 		const float LOne = c*0.45;
 		const float ROne = c;
@@ -56,7 +56,7 @@ float3 anaglyph(const float3 L, const float3 R)
 		color.b = b + r*(DeGhost*-0.25) + g*(DeGhost*-0.25) + b*(DeGhost* 0.5);
 		return saturate(color);
 	}
-	if (ms_zpd_ya_td.w == 10.0 || ms_zpd_ya_td.w == 17.0) // Anaglyph 3D Deghosted Green/Magenta Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
+	BRANCH if (ms_zpd_ya_td.w == 10.0 || ms_zpd_ya_td.w == 17.0) // Anaglyph 3D Deghosted Green/Magenta Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
 	{
 		const float LOne = c*0.45;
 		const float ROne = c*0.8;
@@ -75,7 +75,7 @@ float3 anaglyph(const float3 L, const float3 R)
 		color.b = b + r*(DeGhost*-0.25) + g*(DeGhost*-0.25) + b*(DeGhost*0.5);
 		return saturate(color);
 	}
-	if (ms_zpd_ya_td.w == 11.0 || ms_zpd_ya_td.w == 18.0) // Anaglyph 3D Blue/Amber Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
+	BRANCH if (ms_zpd_ya_td.w == 11.0 || ms_zpd_ya_td.w == 18.0) // Anaglyph 3D Blue/Amber Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
 	{
 		const float LOne = c*0.45;
 		const float ROne = c;

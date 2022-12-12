@@ -88,7 +88,7 @@ float3 rotate_to_vector_upper(const float3 vec, const float3 normal)
 	const float2 u = IN.tex0;
 
 	const float depth0 = tex2Dlod(tex_depth, float4(u, 0.,0.)).x;
-	[branch] if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
+	BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
 		return float4(0.0, 0.,0.,0.);
 
 	const float3 normal = normalize(get_nonunit_normal(depth0, u)) *0.5+0.5;
@@ -180,11 +180,11 @@ float3 decompress_normal(const float2 c)
 float4 ps_main_ao(const in VS_OUTPUT_2D IN) : COLOR
 {
 	const float2 u = IN.tex0;
-    const float2 uv0 = u - w_h_height.xy * 0.5 + w_h_height.xy; // half pixel shift in x & y for filter
-    const float2 uv1 = u - w_h_height.xy * 0.5; // dto.
+	const float2 uv0 = u - w_h_height.xy * 0.5 + w_h_height.xy; // half pixel shift in x & y for filter
+	const float2 uv1 = u - w_h_height.xy * 0.5; // dto.
 
 	const float depth0 = texNoLod(tex_depth, u).x;
-	[branch] if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
+	BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
 		return float4(1.0, 0.,0.,0.);
 
 	const float3 ushift = /*hash(uv1) + w_h_height.zw*/ // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
@@ -201,14 +201,14 @@ float4 ps_main_ao(const in VS_OUTPUT_2D IN) : COLOR
 	const float radius_depth = radius/depth0;
 
 	float occlusion = 0.0;
-	[unroll] for(int i=0; i < samples; ++i) {
+	UNROLL for(int i=0; i < samples; ++i) {
 		const float2 r = float2(i*(1.0 / samples), i*(5.0/*2.0*/ / samples)); //1,5,2,8,4,13,7,7 korobov,fibonacci //!! could also use progressive/extensible lattice via rad_inv(i)*(1501825329, 359975893) (check precision though as this should be done in double or uint64)
 		//const float3 ray = sphere_sample(frac(r+ushift.xy)); // shift lattice // uniform variant
 		const float2 ray = rotate_to_vector_upper(cos_hemisphere_sample(frac(r+ushift.xy)), normal).xy; // shift lattice
 		//!! maybe a bit worse distribution: const float2 ray = cos_hemisphere_sample(normal,frac(r+ushift.xy)).xy; // shift lattice
 		//const float rdotn = dot(ray,normal);
 		const float2 hemi_ray = u + (radius_depth /** sign(rdotn) for uniform*/) * ray.xy;
-      const float occ_depth = texNoLod(tex_depth, hemi_ray).x;
+		const float occ_depth = texNoLod(tex_depth, hemi_ray).x;
 		const float3 occ_normal = get_nonunit_normal(occ_depth, hemi_ray);
 		//const float3 occ_normal = tex2Dlod(tex_normals, float4(hemi_ray, 0.,0.)).xyz *2.0-1.0;  // use 8bitRGB pregenerated normals, can also omit normalization below then
 		const float diff_depth = depth0 - occ_depth;
@@ -235,25 +235,25 @@ float3 anaglyph(const float3 L, const float3 R)
 	const float3 LMA = lerp(L, dot(L,float3(0.299, 0.587, 0.114)), Anaglyph_DeSaturation_Contrast.x);
 	const float3 RMA = lerp(R, dot(R,float3(0.299, 0.587, 0.114)), Anaglyph_DeSaturation_Contrast.x);
 
-	[branch] if (ms_zpd_ya_td.w == 5.0 || ms_zpd_ya_td.w == 12.0) // Anaglyph 3D Red/Cyan
+	BRANCH if (ms_zpd_ya_td.w == 5.0 || ms_zpd_ya_td.w == 12.0) // Anaglyph 3D Red/Cyan
 		return pow(float3(LMA.r,RMA.g,RMA.b), 1./Anaglyph_DeSaturation_Contrast.y); //!! Contrast is meh here
-	[branch] if (ms_zpd_ya_td.w == 6.0 || ms_zpd_ya_td.w == 13.0) // Anaglyph 3D Green/Magenta
+	BRANCH if (ms_zpd_ya_td.w == 6.0 || ms_zpd_ya_td.w == 13.0) // Anaglyph 3D Green/Magenta
 		return pow(float3(RMA.r,LMA.g,RMA.b), 1./Anaglyph_DeSaturation_Contrast.y); //!! Contrast is meh here
-	[branch] if (ms_zpd_ya_td.w == 7.0 || ms_zpd_ya_td.w == 14.0) // Anaglyph 3D Dubois Red/Cyan
+	BRANCH if (ms_zpd_ya_td.w == 7.0 || ms_zpd_ya_td.w == 14.0) // Anaglyph 3D Dubois Red/Cyan
 	{
 		const float r = dot(LMA,float3( 0.437,  0.449,  0.164)) + dot(RMA,float3(-0.011, -0.032, -0.007));
 		const float g = dot(LMA,float3(-0.062, -0.062, -0.024)) + dot(RMA,float3( 0.377,  0.761,  0.009));
 		const float b = dot(LMA,float3(-0.048, -0.050, -0.017)) + dot(RMA,float3(-0.026, -0.093,  1.234));
 		return saturate(pow(float3(r,g,b), 1./Anaglyph_DeSaturation_Contrast.y)); //!! Contrast is meh here
 	}
-	[branch] if (ms_zpd_ya_td.w == 8.0 || ms_zpd_ya_td.w == 15.0) // Anaglyph 3D Dubois Green/Magenta
+	BRANCH if (ms_zpd_ya_td.w == 8.0 || ms_zpd_ya_td.w == 15.0) // Anaglyph 3D Dubois Green/Magenta
 	{
 		const float r = dot(LMA,float3(-0.062, -0.158, -0.039)) + dot(RMA,float3( 0.529,  0.705, 0.024));
 		const float g = dot(LMA,float3( 0.284,  0.668,  0.143)) + dot(RMA,float3(-0.016, -0.015, 0.065));
 		const float b = dot(LMA,float3(-0.015, -0.027,  0.021)) + dot(RMA,float3( 0.009,  0.075, 0.937));
 		return saturate(pow(float3(r,g,b), 1./Anaglyph_DeSaturation_Contrast.y)); //!! Contrast is meh here
 	}
-	[branch] if (ms_zpd_ya_td.w == 9.0 || ms_zpd_ya_td.w == 16.0) // Anaglyph 3D Deghosted Red/Cyan Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
+	BRANCH if (ms_zpd_ya_td.w == 9.0 || ms_zpd_ya_td.w == 16.0) // Anaglyph 3D Deghosted Red/Cyan Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
 	{
 		const float LOne = c*0.45;
 		const float ROne = c;
@@ -272,7 +272,7 @@ float3 anaglyph(const float3 L, const float3 R)
 		color.b = b + r*(DeGhost*-0.25) + g*(DeGhost*-0.25) + b*(DeGhost* 0.5);
 		return saturate(color);
 	}
-	[branch] if (ms_zpd_ya_td.w == 10.0 || ms_zpd_ya_td.w == 17.0) // Anaglyph 3D Deghosted Green/Magenta Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
+	BRANCH if (ms_zpd_ya_td.w == 10.0 || ms_zpd_ya_td.w == 17.0) // Anaglyph 3D Deghosted Green/Magenta Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
 	{
 		const float LOne = c*0.45;
 		const float ROne = c*0.8;
@@ -291,7 +291,7 @@ float3 anaglyph(const float3 L, const float3 R)
 		color.b = b + r*(DeGhost*-0.25) + g*(DeGhost*-0.25) + b*(DeGhost*0.5);
 		return saturate(color);
 	}
-	[branch] if (ms_zpd_ya_td.w == 11.0 || ms_zpd_ya_td.w == 18.0) // Anaglyph 3D Blue/Amber Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
+	BRANCH if (ms_zpd_ya_td.w == 11.0 || ms_zpd_ya_td.w == 18.0) // Anaglyph 3D Blue/Amber Code From http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com by John Einselen
 	{
 		const float LOne = c*0.45;
 		const float ROne = c;
@@ -470,10 +470,10 @@ float4 ps_main_nfaa(const in VS_OUTPUT_2D IN) : COLOR
 	const float2 u = IN.tex0;
 
 	const float3 Scene0 = tex2Dlod(tex_fb_filtered, float4(u, 0.,0.)).rgb;
-	[branch] if(w_h_height.w == 1.0) // depth buffer available?
+	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
 	{
 		const float depth0 = tex2Dlod(tex_depth, float4(u, 0.,0.)).x;
-		[branch] if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
+		BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
 			return float4(Scene0, 1.0);
 	}
 
@@ -553,10 +553,10 @@ float4 ps_main_dlaa(const in VS_OUTPUT_2D IN) : COLOR
    const float2 u = IN.tex0;
 
    const float4 sampleCenter = sampleOffseta(u, float2( 0.0,  0.0) );
-   [branch] if(w_h_height.w == 1.0 /*&& sampleCenter.a == 0.0*/) // depth buffer available? /*AND no edge here? -> ignored because of performance*/
+   BRANCH if(w_h_height.w == 1.0 /*&& sampleCenter.a == 0.0*/) // depth buffer available? /*AND no edge here? -> ignored because of performance*/
    {
       const float depth0 = tex2Dlod(tex_depth, float4(u, 0.,0.)).x;
-      [branch] if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
+      BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
          return float4(sampleCenter.xyz, 1.0);
    }
 
@@ -613,7 +613,7 @@ float4 ps_main_dlaa(const in VS_OUTPUT_2D IN) : COLOR
    const float pass1EdgeAvgHoriz = saturate(( sampleHorizNeg2.a + sampleHorizNeg1.a + sampleHorizNeg15.a + sampleHorizNeg0.a + sampleHorizPos0.a + sampleHorizPos1.a + sampleHorizPos15.a + sampleHorizPos2.a ) * (2.0 / 8.0) - 1.0);
    const float pass1EdgeAvgVert  = saturate(( sampleVertNeg2.a  + sampleVertNeg1.a + sampleVertNeg15.a  + sampleVertNeg0.a  + sampleVertPos0.a + sampleVertPos1.a + sampleVertPos15.a  + sampleVertPos2.a  ) * (2.0 / 8.0) - 1.0);
 
-   [branch] if(abs(pass1EdgeAvgHoriz - pass1EdgeAvgVert) > 0.2) //!! magic
+   BRANCH if(abs(pass1EdgeAvgHoriz - pass1EdgeAvgVert) > 0.2) //!! magic
    {
         const float valueHorizLong = avg(sampleHorizNeg2.xyz + sampleHorizNeg1.xyz + sampleHorizNeg15.xyz + sampleHorizNeg0.xyz + sampleHorizPos0.xyz + sampleHorizPos1.xyz + sampleHorizPos15.xyz + sampleHorizPos2.xyz) * (1.0/8.0);
         const float valueVertLong  = avg(sampleVertNeg2.xyz  + sampleVertNeg1.xyz + sampleVertNeg15.xyz + sampleVertNeg0.xyz  + sampleVertPos0.xyz + sampleVertPos1.xyz + sampleVertPos15.xyz + sampleVertPos2.xyz) * (1.0/8.0);
@@ -663,10 +663,10 @@ float4 ps_main_fxaa1(const in VS_OUTPUT_2D IN) : COLOR
 	const float2 u = IN.tex0;
 
 	const float3 rMc = tex2Dlod(tex_fb_unfiltered, float4(u, 0.,0.)).xyz;
-	[branch] if(w_h_height.w == 1.0) // depth buffer available?
+	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
 	{
 		const float depth0 = tex2Dlod(tex_depth, float4(u, 0.,0.)).x;
-		[branch] if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
+		BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
 			return float4(rMc, 1.0);
 	}
 
@@ -715,10 +715,10 @@ float4 ps_main_fxaa2(const in VS_OUTPUT_2D IN) : COLOR
 	const float2 u = IN.tex0;
 
 	const float3 rgbyM = tex2Dlod(tex_fb_unfiltered, float4(u, 0.,0.)).xyz;
-	[branch] if(w_h_height.w == 1.0) // depth buffer available?
+	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
 	{
 		const float depth0 = tex2Dlod(tex_depth, float4(u, 0.,0.)).x;
-		[branch] if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
+		BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
 			return float4(rgbyM, 1.0);
 	}
 
@@ -744,7 +744,7 @@ float4 ps_main_fxaa2(const in VS_OUTPUT_2D IN) : COLOR
 	const float range = rangeMax - rangeMin;
 	const float rangeMaxClamped = max(0.0833, rangeMaxScaled); //0.0625 (high quality/faster) .. 0.0312 (visible limit/slower) // reshade: 0.0, fxaa : 0.0833
 	const bool earlyExit = range < rangeMaxClamped;
-	[branch] if(earlyExit)
+	BRANCH if(earlyExit)
 		return float4(rgbyM, 1.0);
 	const float lumaNS = lumaN + lumaS;
 	const float lumaWE = lumaW + lumaE;
@@ -862,10 +862,10 @@ float4 ps_main_fxaa3(const in VS_OUTPUT_2D IN) : COLOR
 	const float2 u = IN.tex0;
 
 	const float3 rgbyM = tex2Dlod(tex_fb_unfiltered, float4(u, 0.,0.)).xyz;
-	[branch] if(w_h_height.w == 1.0) // depth buffer available?
+	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
 	{
 		const float depth0 = tex2Dlod(tex_depth, float4(u, 0.,0.)).x;
-		[branch] if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
+		BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
 			return float4(rgbyM, 1.0);
 	}
 
@@ -891,7 +891,7 @@ float4 ps_main_fxaa3(const in VS_OUTPUT_2D IN) : COLOR
 	const float range = rangeMax - rangeMin;
 	const float rangeMaxClamped = max(0.0833, rangeMaxScaled); //0.0625 (high quality/faster) .. 0.0312 (visible limit/slower) // reshade: 0.0, fxaa : 0.0833
 	const bool earlyExit = range < rangeMaxClamped;
-	[branch] if(earlyExit)
+	BRANCH if(earlyExit)
 		return float4(rgbyM, 1.0);
 	const float lumaNS = lumaN + lumaS;
 	const float lumaWE = lumaW + lumaE;
@@ -952,7 +952,7 @@ float4 ps_main_fxaa3(const in VS_OUTPUT_2D IN) : COLOR
 	bool doneNP = ((!doneN) || (!doneP));
 	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P1;
 	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P1;
-	[branch] if(doneNP) {
+	BRANCH if(doneNP) {
 		if(!doneN) lumaEndN = luma(tex2Dlod(tex_fb_filtered, float4(posN.xy, 0.,0.)).xyz);
 		if(!doneP) lumaEndP = luma(tex2Dlod(tex_fb_filtered, float4(posP.xy, 0.,0.)).xyz);
 		if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
@@ -1125,10 +1125,10 @@ float4 ps_main_CAS(const in VS_OUTPUT_2D IN) : COLOR
 	const float2 u = IN.tex0;
 
 	const float3 e = tex2Dlod(tex_fb_unfiltered, float4(u, 0.,0.)).xyz;
-	[branch] if(w_h_height.w == 1.0) // depth buffer available?
+	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
 	{
 		const float depth0 = tex2Dlod(tex_depth, float4(u, 0.,0.)).x;
-		[branch] if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
+		BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
 			return float4(e, 1.0);
 	}
 
@@ -1202,18 +1202,18 @@ float4 ps_main_BilateralSharp_CAS(const in VS_OUTPUT_2D IN) : COLOR
 	const float2 u = IN.tex0;
 
 	const float3 e = tex2Dlod(tex_fb_unfiltered, float4(u, 0.,0.)).xyz;
-	[branch] if(w_h_height.w == 1.0) // depth buffer available?
+	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
 	{
 		const float depth0 = tex2Dlod(tex_depth, float4(u, 0.,0.)).x;
-		[branch] if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
+		BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
 			return float4(e, 1.0);
 	}
 
 	// Bilateral Blur (crippled)
 	float3 final_colour = float3(0.,0.,0.);
 	float Z = 0.0;
-	[unroll] for (int j=-2; j <= 2; ++j) // 2 = kernelradius
-		[unroll] for (int i=-2; i <= 2; ++i)
+	UNROLL for (int j=-2; j <= 2; ++j) // 2 = kernelradius
+		UNROLL for (int i=-2; i <= 2; ++i)
 		{
 			const float3 cc = tex2Dlod(tex_fb_unfiltered, float4(u.x + i*(w_h_height.x*0.5), u.y + j*(w_h_height.y*0.5), 0.,0.)).xyz; // *0.5 = 1/kernelradius
 			const float factor = normpdf(cc-e, 0.25); // 0.25 = BSIGMA

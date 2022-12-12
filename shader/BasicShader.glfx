@@ -119,7 +119,7 @@ float3 normal_map(const float3 N, const float3 V, const float2 uv)
 {
    float3 tn = texture(tex_base_normalmap, uv).xyz * (255./127.) - (128./127.); // Note that Blender apparently does export tangent space normalmaps for Z (Blue) at full range, so 0..255 -> 0..1, which misses an option for here!
 
-   if (objectSpaceNormalMap)
+   BRANCH if (objectSpaceNormalMap)
    {
       tn.z = -tn.z; // this matches the object space, +X +Y +Z, export/baking in Blender with our trafo setup
       return normalize((inverse(matView) * vec4(tn,0.0)).xyz);
@@ -420,7 +420,7 @@ void main() {
    const float3 diffuse  = cBase_Alpha.xyz;
    const float3 glossy   = is_metal ? cBase_Alpha.xyz : cGlossy_ImageLerp.xyz*0.08;
    const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
-   const float edge      = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
+   const float  edge     = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
 
    const float3 V = normalize(-worldPos);
    const float3 N = normalize(normal);
@@ -431,12 +431,13 @@ void main() {
       lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, true, is_metal), //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
       cBase_Alpha.a);
 
-   if (cBase_Alpha.a < 1.0) {
-      color.a = GeometricOpacity(dot(N,V), color.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
+   BRANCH if (cBase_Alpha.a < 1.0)
+   {
+      color.a = GeometricOpacity(dot(N,V), color.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
 
       if (fDisableLighting_top_below.y < 1.0)
-          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-          color.xyz += mix(sqrt(diffuse)*texture(tex_base_transmission, tex03.xy, 0.).xyz*color.a, float3(0.), fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+         // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
+         color.xyz += mix(sqrt(diffuse)*texture(tex_base_transmission, tex03.xy, 0.).xyz*color.a, float3(0.), fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
    BRANCH if (lightCenter_doShadow.w != 0.)
@@ -447,10 +448,10 @@ void main() {
       color.rgb *= shadow;
    }
 
-   if (doReflections)
+   BRANCH if (doReflections)
       color.rgb += compute_reflection(tex03.xy, N);
 
-   if (doRefractions)
+   BRANCH if (doRefractions)
    {
       // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color
       color.rgb = lerp(compute_refraction(worldPos.xyz, tex03.xy, N, V), color.rgb, cBase_Alpha.a);
@@ -482,27 +483,26 @@ void main() {
    const float3 diffuse  = t*cBase_Alpha.xyz;
    const float3 glossy   = is_metal ? diffuse : (t*cGlossy_ImageLerp.w + (1.0-cGlossy_ImageLerp.w))*cGlossy_ImageLerp.xyz*0.08; //!! use AO for glossy? specular?
    const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
-   const float edge      = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
+   const float  edge     = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
 
    const float3 V = normalize(-worldPos);
    float3 N = normalize(normal);
 
-   if (doNormalMapping)
+   BRANCH if (doNormalMapping)
       N = normal_map(N, normalize(worldPos), tex01);
 
-   //color = float4((N+1.0)*0.5,1.0); return; // visualize normals
+   //!! color = float4((N+1.0)*0.5,1.0); return; // visualize normals
 
    color.rgb = lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, !doNormalMapping, is_metal);
-   color.a = clamp(pixel.a * cBase_Alpha.a, 0.0, 1.0);
+   color.a = saturate(pixel.a * cBase_Alpha.a);
 
-   if (cBase_Alpha.a < 1.0 && color.a < 1.0) {
-      color.a = GeometricOpacity(dot(N,V), color.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
+   BRANCH if (cBase_Alpha.a < 1.0 && color.a < 1.0)
+   {
+      color.a = GeometricOpacity(dot(N,V),color.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
 
       if (fDisableLighting_top_below.y < 1.0)
-      {
          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
          color.xyz += mix(sqrt(diffuse)*texture(tex_base_transmission, tex03.xy).xyz*color.a, float3(0.), fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
-      }
    }
 
    BRANCH if (lightCenter_doShadow.w != 0.)
@@ -513,10 +513,10 @@ void main() {
       color.rgb *= shadow;
    }
 
-   if (doReflections)
+   BRANCH if (doReflections)
       color.rgb += compute_reflection(tex03.xy, N);
 
-   if (doRefractions)
+   BRANCH if (doRefractions)
    {
       // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color (not from main texture since these are different informations (reflected/refracted color))
       color.rgb = lerp(compute_refraction(worldPos, tex03.xy, N, V), color.rgb, color.a);
@@ -536,7 +536,7 @@ in vec3 normal;
 
 void main() {
    float3 N = normalize(normal);
-   color.rgb = compute_reflection(tex03.xy, N);
+   color.rgb = compute_reflection(tex03, N);
    color.a = 1.0;
    color *= staticColor_Alpha;
 }
@@ -560,9 +560,9 @@ void main() {
    result.a *= cBase_Alpha.a;
 
    float3 N = normalize(normal);
-   result.rgb = compute_reflection(tex03.xy, N);
+   result.rgb = compute_reflection(tex03, N);
 
-   if (cBase_Alpha.a < 1.0 && result.a < 1.0)
+   BRANCH if (cBase_Alpha.a < 1.0 && result.a < 1.0)
    {
       const float3 V = normalize(/*camera=0,0,0,1*/ -worldPos);
       result.a = GeometricOpacity(dot(N, V), result.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
@@ -594,7 +594,7 @@ void main() {
 // BG-Decal
 
 void main() {
-   color = float4(InvToneMap(cBase_Alpha.xyz), clamp(cBase_Alpha.a, 0.0, 1.0));
+   color = float4(InvToneMap(cBase_Alpha.xyz), saturate(cBase_Alpha.a));
 }
 
 ////ps_main_bg_decal_texture

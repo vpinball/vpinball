@@ -10,15 +10,15 @@ float3 approx_bump_normal(const float2 coords, const float2 offs, const float sc
 {
     const float3 lumw = float3(0.212655,0.715158,0.072187);
 
-    const float lpx = dot(textureLod(tex_fb_filtered, vec2(coords.x+offs.x,coords.y), 0.).xyz, lumw);
-    const float lmx = dot(textureLod(tex_fb_filtered, vec2(coords.x-offs.x,coords.y), 0.).xyz, lumw);
-    const float lpy = dot(textureLod(tex_fb_filtered, vec2(coords.x,coords.y+offs.y), 0.).xyz, lumw);
-    const float lmy = dot(textureLod(tex_fb_filtered, vec2(coords.x,coords.y-offs.y), 0.).xyz, lumw);
+    const float lpx = dot(textureLod(tex_fb_filtered, float2(coords.x+offs.x,coords.y), 0.).xyz, lumw);
+    const float lmx = dot(textureLod(tex_fb_filtered, float2(coords.x-offs.x,coords.y), 0.).xyz, lumw);
+    const float lpy = dot(textureLod(tex_fb_filtered, float2(coords.x,coords.y+offs.y), 0.).xyz, lumw);
+    const float lmy = dot(textureLod(tex_fb_filtered, float2(coords.x,coords.y-offs.y), 0.).xyz, lumw);
 
-    const float dpx = textureLod(tex_depth, vec2(coords.x+offs.x,coords.y), 0.).x;
-    const float dmx = textureLod(tex_depth, vec2(coords.x-offs.x,coords.y), 0.).x;
-    const float dpy = textureLod(tex_depth, vec2(coords.x,coords.y+offs.y), 0.).x;
-    const float dmy = textureLod(tex_depth, vec2(coords.x,coords.y-offs.y), 0.).x;
+    const float dpx = textureLod(tex_depth, float2(coords.x+offs.x,coords.y), 0.).x;
+    const float dmx = textureLod(tex_depth, float2(coords.x-offs.x,coords.y), 0.).x;
+    const float dpy = textureLod(tex_depth, float2(coords.x,coords.y+offs.y), 0.).x;
+    const float dmy = textureLod(tex_depth, float2(coords.x,coords.y-offs.y), 0.).x;
 
     const float2 xymult = max(1.0 - float2(abs(dmx - dpx), abs(dmy - dpy)) * sharpness, 0.0);
 
@@ -37,7 +37,7 @@ void main()
 	const float3 color0 = textureLod(tex_fb_unfiltered, u, 0.).xyz; // original pixel
 
 	const float depth0 = textureLod(tex_depth, u, 0.).x;
-	if((depth0 == 1.0) || (depth0 == 0.0)) //!!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
+	BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) //!!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
 	{
 		color = float4(color0, 1.0);
 		return;
@@ -59,7 +59,7 @@ void main()
 	return;
 #endif
 
-	if(fresnel < 0.01) //!! early out if contribution too low
+	BRANCH if(fresnel < 0.01) //!! early out if contribution too low
 	{
 		color = float4(color0, 1.0);
 		return;
@@ -75,14 +75,14 @@ void main()
 	// loop in screen space, simply collect all pixels in the normal direction (not even a depth check done!)
 	float3 refl = float3(0.,0.,0.);
 	float color0w = 0.;
-	for(int i=1; i</*=*/samples; i++) //!! due to jitter
+	UNROLL for(int i=1; i</*=*/samples; i++) //!! due to jitter
 	{
 		const float2 offs = u + (float(i)+ushift)*offsMul; //!! jitter per pixel (uses blue noise tex)
 		const float3 color = textureLod(tex_fb_filtered, offs, 0.).xyz;
 
-		/*if(i==1) // necessary special case as compiler warns/'optimizes' sqrt below into rqsrt?!
+		/*BRANCH if(i==1) // necessary special case as compiler warns/'optimizes' sqrt below into rqsrt?!
 		{
-			refl += color;
+		refl += color;
 		}
 		else
 		{*/

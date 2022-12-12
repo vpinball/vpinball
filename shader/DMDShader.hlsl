@@ -133,7 +133,7 @@ float4 ps_main_DMD(const in VS_OUTPUT IN) : COLOR
    float3 color2 = float3(0., 0., 0.);
 
    const int samples = 21; //4,8,9,13,21,25,32 korobov,fibonacci
-   [unroll] for (int i = 0; i < samples; ++i) // oversample the dots
+   UNROLL for (int i = 0; i < samples; ++i) // oversample the dots
    {
       const float2 xi = float2(frac(i* (1.0 / samples) + offs.x), frac(i* (13.0 / samples) + offs.y)); //1,5,2,8,13,7,7 korobov,fibonacci
       //const float2 gxi = gaussianPDF(xi);
@@ -153,8 +153,8 @@ float4 ps_main_DMD(const in VS_OUTPUT IN) : COLOR
    color2 *= vColor_Intensity.xyz * (vColor_Intensity.w/samples); //!! create function that resembles LUT from VPM?
 
    /*float3 colorg = float3(0,0,0);
-   [unroll] for(int j = -1; j <= 1; ++j)
-   [unroll] for(int i = -1; i <= 1; ++i)
+   UNROLL for(int j = -1; j <= 1; ++j)
+   UNROLL for(int i = -1; i <= 1; ++i)
    {
       //collect glow from neighbors
    }*/

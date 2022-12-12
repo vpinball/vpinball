@@ -78,7 +78,7 @@ void main()
 		//Default
 		gl_Position = (matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position);
 		//Custom
-        tablePos = gl_in[i].gl_Position.xyz;
+		tablePos = gl_in[i].gl_Position.xyz;
 		tex0 = tex0_gs[i];
 		//Default
 		EmitVertex();
@@ -97,12 +97,12 @@ void main()
    float4 pixel1,pixel2;
    bool stop = false;
 
-   if (amount_blend_modulate_vs_add_flasherMode.z < 2.) // Mode 0 & 1
+   BRANCH if (amount_blend_modulate_vs_add_flasherMode.z < 2.) // Mode 0 & 1
    {
       pixel1 = texture(tex_flasher_A, tex0);
       stop = (pixel1.a <= alphaTestValueAB_filterMode_addBlend.x);
    }
-   if (amount_blend_modulate_vs_add_flasherMode.z == 1.)
+   BRANCH if (amount_blend_modulate_vs_add_flasherMode.z == 1.)
    {
       pixel2 = texture(tex_flasher_B, tex0);
       stop = (stop || pixel2.a <= alphaTestValueAB_filterMode_addBlend.y);
@@ -112,15 +112,15 @@ void main()
 
    float4 result = staticColor_Alpha; // Mode 2 wires this through
 
-   if (amount_blend_modulate_vs_add_flasherMode.z == 0.) // Mode 0 mods it by texture
+   if (amount_blend_modulate_vs_add_flasherMode.z == 0.) // Mode 0 mods it by Texture
    {
       result *= pixel1;
       result.a = clamp(result.a, 0.0, 200.0); // Need to clamp here or we get some saturation artifacts on some tables
    }
 
-   if (amount_blend_modulate_vs_add_flasherMode.z == 1.) // Mode 1 allows blends between Tex 1 & 2, and then mods the staticColor with it
+   BRANCH if (amount_blend_modulate_vs_add_flasherMode.z == 1.) // Mode 1 allows blends between Tex 1 & 2, and then mods the staticColor with it
    {
-      if (alphaTestValueAB_filterMode_addBlend.z == Filter_Overlay)
+      BRANCH if (alphaTestValueAB_filterMode_addBlend.z == Filter_Overlay)
          result *= OverlayHDR(pixel1,pixel2); // could be HDR
       if (alphaTestValueAB_filterMode_addBlend.z == Filter_Multiply)
          result *= Multiply(pixel1,pixel2, amount_blend_modulate_vs_add_flasherMode.x);

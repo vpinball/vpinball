@@ -78,7 +78,7 @@ float4 PS_LightWithTexel(const in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : C
 
     float4 color;
     // no lighting if HUD vertices or passthrough mode
-    [branch] if (lightingOff)
+    BRANCH if (lightingOff)
         color = pixel;
     else
     {
@@ -93,7 +93,7 @@ float4 PS_LightWithTexel(const in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : C
     }
     color.a *= cBase_Alpha.a;
 
-    [branch] if (lightColor_intensity.w != 0.0)
+    BRANCH if (lightColor_intensity.w != 0.0)
     {
         const float len = length(lightCenter_maxRange.xyz - IN.tablePos) * lightCenter_maxRange.w; //!! backglass mode passes in position directly via the otherwise named mesh normal!
         const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
@@ -110,7 +110,7 @@ float4 PS_LightWithTexel(const in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : C
 float4 PS_LightWithoutTexel(const in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLOR
 {
     float4 result = float4(0.0, 0.0, 0.0, 0.0);
-    [branch] if (lightColor_intensity.w != 0.0)
+    BRANCH if (lightColor_intensity.w != 0.0)
     {
         const float len = length(lightCenter_maxRange.xyz - IN.tablePos) * lightCenter_maxRange.w; //!! backglass mode passes in position directly via the otherwise named mesh normal!
         const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
@@ -121,7 +121,7 @@ float4 PS_LightWithoutTexel(const in VS_LIGHT_OUTPUT IN, uniform bool is_metal) 
 
     float4 color;
     // no lighting if HUD vertices or passthrough mode
-    [branch] if (lightingOff)
+    BRANCH if (lightingOff)
         color.xyz = lightColor_intensity.xyz;
     else
     {

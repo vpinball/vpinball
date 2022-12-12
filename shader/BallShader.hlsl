@@ -101,7 +101,7 @@ vout vsBall( const in vin IN )
 	// apply spinning and move the ball to it's actual position
 	float4 pos = IN.position;
 	pos.xyz = mul_w1(pos.xyz, orientation);
-	
+
 	// apply spinning to the normals too to get the sphere mapping effect
 	const float3 nspin = mul_w0(IN.normal, orientation);
 	const float3 normal = normalize(mul(matWorldViewInverse, nspin).xyz); // actually: mul(float4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
@@ -177,13 +177,13 @@ float3 ballLightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float
 
    float3 color = float3(0.0, 0.0, 0.0);
 
-   [branch] if((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
+   BRANCH if((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
    {
       for(int i = 0; i < iLightPointBallsNum; i++)  
          color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal); // no clearcoat needed as only pointlights so far
    }
 
-   [branch] if(!is_metal && (diffuseMax > 0.0))
+   BRANCH if(!is_metal && (diffuseMax > 0.0))
       color += DoEnvmapDiffuse(normalize(mul(matView, N).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(float4(N, 0.0), matViewInverseInverseTranspose)
 
    if(specularMax > 0.0)
@@ -213,7 +213,7 @@ float3 PFlightLoop(const float3 pos, const float3 N, const float3 diffuse)
 
    float3 color = float3(0.0,0.0,0.0);
 
-   [branch] if (diffuseMax > 0.0)
+   BRANCH if (diffuseMax > 0.0)
    {
       for (int i = 0; i < iLightPointNum; i++)
          color += PFDoPointLight(pos, N, diffuse, i);
@@ -255,7 +255,7 @@ float4 psBall( const in vout IN, uniform bool cabMode, uniform bool decalMode ) 
     else
        ballImageColor = ScreenHDR(ballImageColor, decalColor);
 
-    [branch] if (disableLighting)
+    BRANCH if (disableLighting)
        return float4(ballImageColor,cBase_Alpha.a);
 
     if (!decalMode)
@@ -267,7 +267,7 @@ float4 psBall( const in vout IN, uniform bool cabMode, uniform bool decalMode ) 
     const float NdotR = dot(playfield_normal,r);
 
     float3 playfieldColor;
-    [branch] if(/*(reflection_ball_playfield > 0.0) &&*/ (NdotR > 0.0))
+    BRANCH if(/*(reflection_ball_playfield > 0.0) &&*/ (NdotR > 0.0))
     {
        const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,invTableRes_playfield_height_reflection.z), matWorldView);
        const float t = dot(playfield_normal, IN.worldPos_t0y.xyz - playfield_p0) / NdotR;

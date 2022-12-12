@@ -103,7 +103,7 @@ float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const floa
    const float3 L = normalize(lightDir);
    const float NdotL = dot(N, L);
    float3 Out = float3(0.0,0.0,0.0);
-   
+
    // compute diffuse color (lambert with optional rim/wrap component)
    if (!is_metal && (NdotL + Roughness_WrapL_Edge_Thickness.y > 0.0))
       Out = diffuse * ((NdotL + Roughness_WrapL_Edge_Thickness.y) / sqr(1.0+Roughness_WrapL_Edge_Thickness.y));

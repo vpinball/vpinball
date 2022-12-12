@@ -408,7 +408,7 @@ float4 ps_main_reflection_only_with_texture(const in VS_OUTPUT IN, float2 screen
    result.rgb = compute_reflection(screenSpace, N);
 
    // Maybe overkill for just the additive reflections
-   [branch] if (cBase_Alpha.a < 1.0 && result.a < 1.0)
+   BRANCH if (cBase_Alpha.a < 1.0 && result.a < 1.0)
    {
       const float3 V = normalize(/*camera=0,0,0,1*/ -IN.worldPos);
       result.a = GeometricOpacity(dot(N, V), result.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);

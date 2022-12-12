@@ -177,7 +177,7 @@ void main()
 
    const int samples = 21; //4,8,9,13,21,25,32 korobov,fibonacci
    const float samples_float = float(samples);
-   [unroll] for (int i = 0; i < samples; ++i) // oversample the dots
+   UNROLL for (int i = 0; i < samples; ++i) // oversample the dots
    {
       const float i_float = float(i);
       const float2 xi = float2(frac(i_float* (1.0 / samples_float) + offs.x), frac(i_float* (13.0 / samples_float) + offs.y)); //1,5,2,8,13,7,7 korobov,fibonacci
@@ -198,8 +198,8 @@ void main()
    color2 *= vColor_Intensity.xyz * (vColor_Intensity.w/samples_float); //!! create function that resembles LUT from VPM?
 
    /*float3 colorg = float3(0,0,0);
-   [unroll] for(int j = -1; j <= 1; ++j)
-   [unroll] for(int i = -1; i <= 1; ++i)
+   UNROLL for(int j = -1; j <= 1; ++j)
+   UNROLL for(int i = -1; i <= 1; ++i)
    {
       //collect glow from neighbors
    }*/

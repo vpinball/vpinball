@@ -87,7 +87,7 @@ float3 rotate_to_vector_upper(const float3 vec, const float3 normal)
 	const float2 u = IN.tex0;
 
 	const float depth0 = tex2Dlod(tex_depth, float4(u, 0.,0.)).x;
-	[branch] if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
+	BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
 		return float4(0.0, 0.,0.,0.);
 
 	const float3 normal = normalize(get_nonunit_normal(depth0, u)) *0.5+0.5;
@@ -183,11 +183,11 @@ in float2 tex0;
 void main()
 {
 	const float2 u = tex0;
-    const float2 uv0 = u - w_h_height.xy * 0.5 + w_h_height.xy; // half pixel shift in x & y for filter
-    const float2 uv1 = u - w_h_height.xy * 0.5; // dto.
+	const float2 uv0 = u - w_h_height.xy * 0.5 + w_h_height.xy; // half pixel shift in x & y for filter
+	const float2 uv1 = u - w_h_height.xy * 0.5; // dto.
 
 	const float depth0 = texNoLod(tex_depth, u).x;
-	if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
+	BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
 	{
 		color = float4(1.0, 0.,0.,0.);
 		return;
@@ -208,7 +208,7 @@ void main()
 	const float radius_depth = radius/depth0;
 
 	float occlusion = 0.0;
-	for(int i=0; i < samples; ++i) {
+	UNROLL for(int i=0; i < samples; ++i) {
 		const float i_float = float(i);
 		const float2 r = float2(i_float* (1.0 / samples_float), i_float* (5.0/*2.0*/ / samples_float)); //1,5,2,8,4,13,7,7 korobov,fibonacci //!! could also use progressive/extensible lattice via rad_inv(i)*(1501825329, 359975893) (check precision though as this should be done in double or uint64)
 		//const float3 ray = sphere_sample(frac(r+ushift.xy)); // shift lattice // uniform variant
@@ -226,7 +226,7 @@ void main()
 	// weight with result(s) from previous frames
 	const float ao = 1.0 - total_strength * occlusion;
 	color = float4((texNoLod(tex_fb_filtered, uv0).x //abuse bilerp for filtering (by using half texel/pixel shift)
-                  +texNoLod(tex_fb_filtered, uv1).x
+				  +texNoLod(tex_fb_filtered, uv1).x
 				  +texNoLod(tex_fb_filtered, float2(uv0.x,uv1.y)).x
 				  +texNoLod(tex_fb_filtered, float2(uv1.x,uv0.y)).x)
 		*(0.25*(1.0-AO_scale_timeblur.y))+saturate(ao /*+base*/)*AO_scale_timeblur.y, 0.,0.,0.);
@@ -373,8 +373,8 @@ void main()
 
 	const float3 Scene0 = textureLod(tex_fb_filtered, u, 0.).rgb;
 	const float depth0 = textureLod(tex_depth, u, 0.).x;
-	if ((w_h_height.w == 1.0) && ((depth0 == 1.0) || (depth0 == 0.0))) // early out if depth too large (=BG) or too small (=DMD,etc)
-			color = float4(Scene0, 1.0);
+	BRANCH if ((w_h_height.w == 1.0) && ((depth0 == 1.0) || (depth0 == 0.0))) // early out if depth too large (=BG) or too small (=DMD,etc)
+		color = float4(Scene0, 1.0);
 	else {
 #ifdef NFAA_USE_COLOR // edges from color
 		float2 Vectors = findContrastByColor(u, filterSpread);
@@ -413,6 +413,8 @@ void main()
 	}
 }
 
+// DLAA approximation
+
 ////FRAGMENT
 
 float3 sampleOffset(const float2 u, const float2 pixelOffset )
@@ -432,9 +434,6 @@ float avg(const float3 l)
 }
 
 ////ps_main_dlaa_edge
-
-// DLAA approximation
-
 
 in float2 tex0;
 
@@ -465,8 +464,8 @@ void main()
 	const float4 sampleCenter = sampleOffseta(u, float2( 0.0,  0.0) );
 
 	const float depth0 = textureLod(tex_depth, u, 0.).x;
-	if ((w_h_height.w == 1.0) && ((depth0 == 1.0) || (depth0 == 0.0))) // early out if depth too large (=BG) or too small (=DMD,etc)
-			color = float4(sampleCenter.xyz, 1.0);
+	BRANCH if ((w_h_height.w == 1.0) && ((depth0 == 1.0) || (depth0 == 0.0))) // early out if depth too large (=BG) or too small (=DMD,etc)
+		color = float4(sampleCenter.xyz, 1.0);
 	else {
 	   // short edges
 	   float4 sampleHorizNeg0  = sampleOffseta(u, float2(-1.5,  0.0) );
@@ -521,7 +520,7 @@ void main()
 	   const float pass1EdgeAvgHoriz = saturate(( sampleHorizNeg2.a + sampleHorizNeg1.a + sampleHorizNeg15.a + sampleHorizNeg0.a + sampleHorizPos0.a + sampleHorizPos1.a + sampleHorizPos15.a + sampleHorizPos2.a ) * (2.0 / 8.0) - 1.0);
 	   const float pass1EdgeAvgVert  = saturate(( sampleVertNeg2.a  + sampleVertNeg1.a + sampleVertNeg15.a  + sampleVertNeg0.a  + sampleVertPos0.a + sampleVertPos1.a + sampleVertPos15.a  + sampleVertPos2.a  ) * (2.0 / 8.0) - 1.0);
 
-	   if(abs(pass1EdgeAvgHoriz - pass1EdgeAvgVert) > 0.2) //!! magic
+	   BRANCH if(abs(pass1EdgeAvgHoriz - pass1EdgeAvgVert) > 0.2) //!! magic
 	   {
 			const float valueHorizLong = avg(sampleHorizNeg2.xyz + sampleHorizNeg1.xyz + sampleHorizNeg15.xyz + sampleHorizNeg0.xyz + sampleHorizPos0.xyz + sampleHorizPos1.xyz + sampleHorizPos15.xyz + sampleHorizPos2.xyz) * (1.0/8.0);
 			const float valueVertLong  = avg(sampleVertNeg2.xyz  + sampleVertNeg1.xyz + sampleVertNeg15.xyz + sampleVertNeg0.xyz  + sampleVertPos0.xyz + sampleVertPos1.xyz + sampleVertPos15.xyz + sampleVertPos2.xyz) * (1.0/8.0);
@@ -557,6 +556,8 @@ void main()
 
 ////FRAGMENT
 
+// FXAA
+
 float luma(const float3 l)
 {
     return dot(l, float3(0.25,0.5,0.25)); // experimental, red and blue should not suffer too much
@@ -567,25 +568,22 @@ float luma(const float3 l)
 
 ////ps_main_fxaa1
 
-// FXAA
-
 // Approximation of FXAA
-
 
 in float2 tex0;
 
 void main()
 {
-   const float2 u = tex0;
+	const float2 u = tex0;
 
-   const float3 rMc = textureLod(tex_fb_unfiltered, u, 0.).xyz;
-   if (w_h_height.w == 1.0) // depth buffer available?
-   {
-      const float depth0 = textureLod(tex_depth, u, 0.).x;
-		if ((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
+	const float3 rMc = textureLod(tex_fb_unfiltered, u, 0.).xyz;
+	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
+	{
+		const float depth0 = textureLod(tex_depth, u, 0.).x;
+		BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
 		{
 			color = float4(rMc, 1.0);
-         return;
+			return;
 		}
 	}
 
@@ -639,15 +637,15 @@ void main()
 	const float2 u = tex0;
 
 	float3 rgbyM = textureLod(tex_fb_unfiltered, u, 0.).xyz;
-   if (w_h_height.w == 1.0) // depth buffer available?
-   {
-      const float depth0 = textureLod(tex_depth, u, 0.).x;
-      if ((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
-      {
-         color = float4(rgbyM, 1.0);
-         return;
-      }
-   }
+	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
+	{
+		const float depth0 = textureLod(tex_depth, u, 0.).x;
+		BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
+		{
+			color = float4(rgbyM, 1.0);
+			return;
+		}
+	}
 
 	const float2 offs = w_h_height.xy;
 	const float lumaNW = luma(textureLod(tex_fb_unfiltered, u - offs, 0.).xyz);
@@ -671,7 +669,7 @@ void main()
 	const float range = rangeMax - rangeMin;
 	const float rangeMaxClamped = max(0.0833, rangeMaxScaled); //0.0625 (high quality/faster) .. 0.0312 (visible limit/slower) // reshade: 0.0, fxaa : 0.0833
 	const bool earlyExit = range < rangeMaxClamped;
-	if(earlyExit)
+	BRANCH if(earlyExit)
 		color = float4(rgbyM, 1.0);
 	else {
 		const float lumaNS = lumaN + lumaS;
@@ -795,16 +793,16 @@ void main()
 {
 	float2 u = tex0;
 
-   float3 rgbyM = textureLod(tex_fb_unfiltered, u, 0.).xyz;
-   if (w_h_height.w == 1.0) // depth buffer available?
-   {
-      const float depth0 = textureLod(tex_depth, u, 0.).x;
-      if ((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
-      {
-         color = float4(rgbyM, 1.0);
-         return;
-      }
-   }
+	float3 rgbyM = textureLod(tex_fb_unfiltered, u, 0.).xyz;
+	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
+	{
+		const float depth0 = textureLod(tex_depth, u, 0.).x;
+		BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
+		{
+			color = float4(rgbyM, 1.0);
+			return;
+		}
+	}
 
 	float2 offs = w_h_height.xy;
 	float lumaNW = luma(textureLod(tex_fb_unfiltered, u - offs, 0.).xyz);
@@ -1067,10 +1065,10 @@ void main()
 	const float2 u = tex0 + w_h_height.xy*0.5;
 
 	const float3 e = tex2Dlod(tex_fb_unfiltered, float4(u, 0.,0.)).xyz;
-	if(w_h_height.w == 1.0) // depth buffer available?
+	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
 	{
 		const float depth0 = tex2Dlod(tex_depth, float4(u, 0.,0.)).x;
-		if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
+		BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
 		{
 			color = float4(e, 1.0);
 			return;
@@ -1125,7 +1123,7 @@ void main()
 	const float3 outColor = saturate((window * wRGB + e) * rcpWeightRGB);
 
 	color = float4(lerp(e, outColor, Sharpening), 1.);
-	
+
 	color = vec4(outColor, 1.0);
 }
 
@@ -1152,10 +1150,10 @@ void main()
 	const float2 u = tex0;
 
 	const float3 e = tex2Dlod(tex_fb_unfiltered, float4(u, 0.,0.)).xyz;
-	if(w_h_height.w == 1.0) // depth buffer available?
+	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
 	{
 		const float depth0 = tex2Dlod(tex_depth, float4(u, 0.,0.)).x;
-		if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
+		BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
 		{
 			color = float4(e, 1.0);
 			return;
@@ -1165,10 +1163,10 @@ void main()
 	// Bilateral Blur (crippled)
 	float3 final_colour = float3(0.,0.,0.);
 	float Z = 0.0;
-	for (int j=-2; j <= 2; ++j) // 2 = kernelradius
+	UNROLL for (int j=-2; j <= 2; ++j) // 2 = kernelradius
 	{
 		const float j_float = float(j);
-		for (int i=-2; i <= 2; ++i)
+		UNROLL for (int i=-2; i <= 2; ++i)
 		{
 			const float i_float = float(i);
 			const float3 cc = tex2Dlod(tex_fb_unfiltered, float4(u.x + i_float*(w_h_height.x*0.5), u.y + j_float*(w_h_height.y*0.5), 0.,0.)).xyz; // *0.5 = 1/kernelradius
@@ -1192,7 +1190,7 @@ void main()
 	const float mxRGB = max(max(max(d, e1), max(f, b)), h);
 
 	// Smooth minimum distance to signal limit divided by smooth max.
-	const float rcpMRGB = 1.0 / mxRGB;
+	const float rcpMRGB = rcp(mxRGB);
 	const float ampRGB = saturate(min(mnRGB, 1.0 - mxRGB) * rcpMRGB);
 
 	float3 sharpen = (e-final_colour/Z) * sharpness;

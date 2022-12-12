@@ -76,10 +76,10 @@ void main()
 	pos.xyz = (orientation * pos).xyz;
 
 	// apply spinning to the normals too to get the sphere mapping effect
-	float3 nspin = (orientation * vec4(vNormal,0.0)).xyz;
-	float3 normal = normalize((vec4(nspin, 0.0) * matWorldViewInverse).xyz); // actually: mul(vec4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
-	
-	float3 p = (matWorldView * pos).xyz;
+	const float3 nspin = (orientation * vec4(vNormal,0.0)).xyz;
+	const float3 normal = normalize((vec4(nspin, 0.0) * matWorldViewInverse).xyz); // actually: mul(vec4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
+
+	const float3 p = (matWorldView * pos).xyz;
 
 	gl_Position = pos;
 	normal_t0x_gs = float4(normal,tex0.x);
@@ -149,7 +149,7 @@ float3 ballLightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float
    // normalize input vectors for BRDF evals
    N = normalize(N);
    V = normalize(V);
-   
+
    // normalize BRDF layer inputs //!! use diffuse = (1-glossy)*diffuse instead?
    const float diffuseMax = max(diffuse.x,max(diffuse.y,diffuse.z));
    const float glossyMax = max(glossy.x,max(glossy.y,glossy.z));
@@ -168,13 +168,13 @@ float3 ballLightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float
 
    float3 color = float3(0.0, 0.0, 0.0);
 
-   if((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
+   BRANCH if((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
    {
       for(int i = 0; i < iLightPointBallsNum; i++)  
          color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal); // no clearcoat needed as only pointlights so far
    }
 
-   if(!is_metal && (diffuseMax > 0.0))
+   BRANCH if(!is_metal && (diffuseMax > 0.0))
       color += DoEnvmapDiffuse(normalize((matView * vec4(N,0.0)).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(vec4(N, 0.0), matViewInverseInverseTranspose)
 
    if(specularMax > 0.0)
@@ -210,7 +210,7 @@ float3 PFlightLoop(const float3 pos, const float3 N, const float3 diffuse)
 
    float3 color = float3(0.0,0.0,0.0);
 
-   if (diffuseMax > 0.0)
+   BRANCH if (diffuseMax > 0.0)
    {
       for (int i = 0; i < iLightPointNum; i++)
          color += PFDoPointLight(pos, N, diffuse, i);
@@ -239,9 +239,9 @@ void main()
 		0.0;
 
     const float2 uv0 = %PARAM0% ? float2(r.y*-m + 0.5, r.x*-m + 0.5) : float2(r.x*-m + 0.5, r.y*m + 0.5);
-    float3 ballImageColor = texture(tex_ball_color, uv0).rgb;
+    float3 ballImageColor = texture(tex_ball_color, uv0).xyz;
 
-    const float4 decalColorT = texture(tex_ball_decal, vec2(normal_t0x.w, worldPos_t0y.w));
+    const float4 decalColorT = texture(tex_ball_decal, float2(normal_t0x.w, worldPos_t0y.w));
     float3 decalColor = decalColorT.xyz;
 
     if (!%PARAM1%) // decalMode
@@ -254,7 +254,7 @@ void main()
     else
        ballImageColor = ScreenHDR(ballImageColor, decalColor);
 
-    if (disableLighting)
+    BRANCH if (disableLighting)
     {
        color = float4(ballImageColor,cBase_Alpha.a);
        return;
@@ -269,7 +269,7 @@ void main()
     const float NdotR = dot(playfield_normal,r);
 
     float3 playfieldColor;
-    if(/*(reflection_ball_playfield > 0.0) &&*/ (NdotR > 0.0))
+    BRANCH if(/*(reflection_ball_playfield > 0.0) &&*/ (NdotR > 0.0))
     {
        const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,invTableRes_playfield_height_reflection.z), matWorldView);
        const float t = dot(playfield_normal, worldPos_t0y.xyz - playfield_p0) / NdotR;
@@ -311,7 +311,7 @@ void main()
 float4 psBallReflection( const in voutReflection IN ) : COLOR
 {
    const float2 envTex = cabMode ? float2(r.y*0.5 + 0.5, -r.x*0.5 + 0.5) : float2(r.x*0.5 + 0.5, r.y*0.5 + 0.5);
-   float3 ballImageColor = texture(tex_ball_color, envTex).rgb;
+   float3 ballImageColor = texture(tex_ball_color, envTex).xyz;
    ballImageColor = (cBase_Alpha.xyz*(0.075*0.25) + ballImageColor)*fenvEmissionScale_TexWidth.x; //!! just add the ballcolor in, this is a whacky reflection anyhow
    float alpha = saturate((tex0.y - position_radius.y) / position_radius.w);
    alpha = (alpha*alpha)*(alpha*alpha)*reflection_ball_playfield;
@@ -325,7 +325,7 @@ in vec3 tex0_alpha;
 
 void main()
 {
-   const float3 ballImageColor = texture(tex_ball_color, tex0_alpha.xy).rgb;
+   const float3 ballImageColor = texture(tex_ball_color, tex0_alpha.xy).xyz;
    if (disableLighting)
       color = float4(ballImageColor, tex0_alpha.z);
    else

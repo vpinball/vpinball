@@ -25,27 +25,27 @@ texture Texture5; // AO Dither
 
 sampler2D tex_fb_unfiltered : TEXUNIT0 = sampler_state // Framebuffer (unfiltered)
 {
-	Texture	  = (Texture0);
+   Texture   = (Texture0);
    MIPFILTER = NONE; //!! ??
    MAGFILTER = POINT;
    MINFILTER = POINT;
-	ADDRESSU  = Clamp;
-	ADDRESSV  = Clamp;
+   ADDRESSU  = Clamp;
+   ADDRESSV  = Clamp;
 };
 
 sampler2D tex_fb_filtered : TEXUNIT0 = sampler_state // Framebuffer (filtered)
 {
-	Texture	  = (Texture0);
+   Texture   = (Texture0);
    MIPFILTER = NONE; //!! ??
    MAGFILTER = LINEAR;
    MINFILTER = LINEAR;
-	ADDRESSU  = Clamp;
-	ADDRESSV  = Clamp;
+   ADDRESSU  = Clamp;
+   ADDRESSV  = Clamp;
 };
 
 sampler2D tex_bloom : TEXUNIT1 = sampler_state // Bloom
 {
-   Texture = (Texture1);
+   Texture   = (Texture1);
    MIPFILTER = NONE; //!! ??
    MAGFILTER = LINEAR;
    MINFILTER = LINEAR;
@@ -55,56 +55,56 @@ sampler2D tex_bloom : TEXUNIT1 = sampler_state // Bloom
 
 /*sampler2D texSamplerNormals : TEXUNIT1 = sampler_state // Normals (unfiltered)
 {
-	Texture	  = (Texture1);
-    MIPFILTER = NONE; //!! ??
-    MAGFILTER = POINT;
-    MINFILTER = POINT;
-	ADDRESSU  = Clamp;
-	ADDRESSV  = Clamp;
+   Texture   = (Texture1);
+   MIPFILTER = NONE; //!! ??
+   MAGFILTER = POINT;
+   MINFILTER = POINT;
+   ADDRESSU  = Clamp;
+   ADDRESSV  = Clamp;
 };*/
 
 sampler2D tex_color_lut : TEXUNIT2 = sampler_state // Color grade LUT
 {
-	Texture	  = (Texture2);
+   Texture   = (Texture2);
    MIPFILTER = NONE;
    MAGFILTER = LINEAR;
    MINFILTER = LINEAR;
-	ADDRESSU  = Clamp;
-	ADDRESSV  = Clamp;
+   ADDRESSU  = Clamp;
+   ADDRESSV  = Clamp;
 };
 
 sampler2D tex_ao : TEXUNIT3 = sampler_state // AO Result
 {
-   Texture = (Texture3);
+   Texture   = (Texture3);
    MIPFILTER = NONE; //!! ??
    MAGFILTER = LINEAR;
    MINFILTER = LINEAR;
-   ADDRESSU = Clamp;
-   ADDRESSV = Clamp;
+   ADDRESSU  = Clamp;
+   ADDRESSV  = Clamp;
 };
 
 sampler2D tex_depth : TEXUNIT4 = sampler_state // Depth
 {
-   Texture = (Texture4);
+   Texture   = (Texture4);
    MIPFILTER = NONE; //!! ??
    MAGFILTER = POINT;
    MINFILTER = POINT;
-   ADDRESSU = Clamp;
-   ADDRESSV = Clamp;
+   ADDRESSU  = Clamp;
+   ADDRESSV  = Clamp;
 };
 
 sampler2D tex_ao_dither : TEXUNIT5 = sampler_state // AO dither
 {
-   Texture = (Texture5);
+   Texture   = (Texture5);
    MIPFILTER = NONE;
    MAGFILTER = POINT;
    MINFILTER = POINT;
-   ADDRESSU = Wrap;
-   ADDRESSV = Wrap;
+   ADDRESSU  = Wrap;
+   ADDRESSV  = Wrap;
 };
 
 struct VS_OUTPUT_2D
-{ 
+{
    float4 pos  : POSITION; 
    float2 tex0 : TEXCOORD0;
 };
@@ -193,7 +193,7 @@ float3 DitherVlachos(const float2 tex0, const float3 rgb)
 
 float3 FBDither(const float3 color, /*const int2 pos*/const float2 tex0)
 {
-   [branch] if (!do_dither)
+   BRANCH if (!do_dither)
        return color;
 
    //return color + bayer_dither_pattern[pos.x%8][pos.y%8];
@@ -252,7 +252,7 @@ float FBDither(const float color, /*const int2 pos*/const float2 tex0)
 
 float3 FBColorGrade(float3 color)
 {
-   [branch] if (!color_grade)
+   BRANCH if (!color_grade)
        return color;
 
    color.xy = color.xy*(15.0/16.0) + 1.0/32.0; // assumes 16x16x16 resolution flattened to 256x16 texture
@@ -303,7 +303,7 @@ float4 ps_main_fb_tonemap(const in VS_OUTPUT_2D IN) : COLOR
    //!!   return float4(texNoLod(tex_fb_filtered, IN.tex0).xyz, 1.0);
 
    float3 result = FBToneMap(texNoLod(tex_fb_filtered, IN.tex0).xyz);
-   [branch] if (do_bloom)
+   BRANCH if (do_bloom)
       result += texNoLod(tex_bloom, IN.tex0).xyz; //!! offset?
    return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
 }
@@ -335,16 +335,17 @@ float4 ps_main_fb_bloom(const in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_AO(const in VS_OUTPUT_2D IN) : COLOR
 {
-   const float3 result = texNoLod(tex_ao, IN.tex0 - 0.5 * w_h_height.xy).xxx; // shift half a texel to blurs over 2x2 window
-   return float4(FBGamma(saturate(result)), 1.0);
+   float result = texNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+   result = FBGamma(saturate(result));
+   return float4(result,result,result, 1.0);
 }
 
 float4 ps_main_fb_tonemap_AO(const in VS_OUTPUT_2D IN) : COLOR
 {
    // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
    float3 result = FBToneMap(texNoLod(tex_fb_filtered, IN.tex0).xyz) // moving AO before tonemap does not really change the look
-                           * texNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
-   [branch] if (do_bloom)
+                           * texNoLod(tex_ao,          IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+   BRANCH if (do_bloom)
       result += texNoLod(tex_bloom, IN.tex0).xyz; //!! offset?
    return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
 }
@@ -353,14 +354,14 @@ float4 ps_main_fb_tonemap_AO_static(const in VS_OUTPUT_2D IN) : COLOR
 {
    // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
    const float3 result = texNoLod(tex_fb_filtered, IN.tex0).xyz // moving AO before tonemap does not really change the look
-                       * texNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+                       * texNoLod(tex_ao,          IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    return float4(result, 1.0);
 }
 
 float4 ps_main_fb_tonemap_no_filterRGB(const in VS_OUTPUT_2D IN) : COLOR
 {
    float3 result = FBToneMap(texNoLod(tex_fb_unfiltered, IN.tex0).xyz);
-   [branch] if (do_bloom)
+   BRANCH if (do_bloom)
       result += texNoLod(tex_bloom, IN.tex0).xyz;
    return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
 }
@@ -368,7 +369,7 @@ float4 ps_main_fb_tonemap_no_filterRGB(const in VS_OUTPUT_2D IN) : COLOR
 float4 ps_main_fb_tonemap_no_filterRG(const in VS_OUTPUT_2D IN) : COLOR
 {
    float2 result = FBToneMap(texNoLod(tex_fb_unfiltered, IN.tex0).xy);
-   [branch] if (do_bloom)
+   BRANCH if (do_bloom)
       result += texNoLod(tex_bloom, IN.tex0).xy;
    const float rg = /*FBColorGrade*/(FBGamma(saturate(dot(FBDither(result, IN.tex0), float2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5)))));
    return float4(rg,rg,rg,1.0);
@@ -377,7 +378,7 @@ float4 ps_main_fb_tonemap_no_filterRG(const in VS_OUTPUT_2D IN) : COLOR
 float4 ps_main_fb_tonemap_no_filterR(const in VS_OUTPUT_2D IN) : COLOR
 {
    float result = FBToneMap(texNoLod(tex_fb_unfiltered, IN.tex0).x);
-   [branch] if (do_bloom)
+   BRANCH if (do_bloom)
       result += texNoLod(tex_bloom, IN.tex0).x;
    const float gray = /*FBColorGrade*/(FBGamma(saturate(FBDither(result, IN.tex0))));
    return float4(gray,gray,gray,1.0);
@@ -387,7 +388,7 @@ float4 ps_main_fb_tonemap_AO_no_filter(const in VS_OUTPUT_2D IN) : COLOR
 {
    float3 result = FBToneMap(texNoLod(tex_fb_unfiltered, IN.tex0).rgb) // moving AO before tonemap does not really change the look
                            * texNoLod(tex_ao,            IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
-   [branch] if (do_bloom)
+   BRANCH if (do_bloom)
       result += texNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
    return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
 }
@@ -395,22 +396,43 @@ float4 ps_main_fb_tonemap_AO_no_filter(const in VS_OUTPUT_2D IN) : COLOR
 float4 ps_main_fb_tonemap_AO_no_filter_static(const in VS_OUTPUT_2D IN) : COLOR
 {
    const float3 result = texNoLod(tex_fb_unfiltered, IN.tex0).rgb
-                 * texNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+                       * texNoLod(tex_ao,            IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    return float4(result, 1.0);
 }
 
 //
 // Gaussian Blur Kernels
-// 
-// Separable Gaussian blur kernels, using GPU linear sampling to perform 2 samples in a single tex fetch (similar to https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/)
 //
+// Separable (approximate) Gaussian blur kernels, using GPU linear sampling to perform 2 samples in a single tex fetch (similar to https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/)
+// Use e.g. https://observablehq.com/@s4l4x/efficient-gaussian-blur-with-linear-sampling to compute centered coefficients/offsets
+// Use e.g. https://www.intel.com/content/www/us/en/developer/articles/technical/an-investigation-of-fast-real-time-gpu-based-image-blur-algorithms.html to compue not centered coefficients/offsets
+
+float4 ps_main_fb_blur_horiz5x5(const in VS_OUTPUT_2D IN) : COLOR
+{
+   const float offset5x5[2] = { 0.0, 1.3333333333333333 };
+   const float weight5x5[2] = { 0.29411764705882354, 0.35294117647058826 };
+   float3 result = tex2Dlod(tex_fb_filtered, float4(IN.tex0, 0.,0.)).xyz*weight5x5[0];
+   result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(w_h_height.x*offset5x5[1],0.0), 0.,0.)).xyz
+             +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(w_h_height.x*offset5x5[1],0.0), 0.,0.)).xyz)*weight5x5[1];
+   return float4(result, 1.0);
+}
+
+float4 ps_main_fb_blur_vert5x5(const in VS_OUTPUT_2D IN) : COLOR
+{
+   const float offset5x5[2] = { 0.0, 1.3333333333333333 };
+   const float weight5x5[2] = { 0.29411764705882354, 0.35294117647058826 };
+   float3 result = tex2Dlod(tex_fb_filtered, float4(IN.tex0, 0.,0.)).xyz*weight5x5[0];
+   result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(0.0,w_h_height.y*offset5x5[1]), 0.,0.)).xyz
+             +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(0.0,w_h_height.y*offset5x5[1]), 0.,0.)).xyz)*weight5x5[1];
+   return float4(result, 1.0);
+}
 
 float4 ps_main_fb_blur_horiz7x7(const in VS_OUTPUT_2D IN) : COLOR
 {
    const float offset7x7[2] = { 0.53473, 2.05896 }; //7 (no center!)
    const float weight7x7[2] = { 0.45134, 0.04866 }; //7 (no center!)
    float3 result = float3(0.0, 0.0, 0.0);
-   [unroll] for(int i = 0; i < 2; ++i)
+   UNROLL for(int i = 0; i < 2; ++i)
       result += (texNoLod(tex_fb_filtered, IN.tex0+float2(w_h_height.x*offset7x7[i],0.0)).xyz
                 +texNoLod(tex_fb_filtered, IN.tex0-float2(w_h_height.x*offset7x7[i],0.0)).xyz)*weight7x7[i];
    return float4(result, 1.0);
@@ -421,7 +443,7 @@ float4 ps_main_fb_blur_vert7x7(const in VS_OUTPUT_2D IN) : COLOR
    const float offset7x7[2] = { 0.53473, 2.05896 }; //7 (no center!)
    const float weight7x7[2] = { 0.45134, 0.04866 }; //7 (no center!)
    float3 result = float3(0.0, 0.0, 0.0);
-   [unroll] for(int i = 0; i < 2; ++i)
+   UNROLL for(int i = 0; i < 2; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(0.0,w_h_height.y*offset7x7[i]), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(0.0,w_h_height.y*offset7x7[i]), 0.,0.)).xyz)*weight7x7[i];
    return float4(result, 1.0);
@@ -429,10 +451,10 @@ float4 ps_main_fb_blur_vert7x7(const in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_blur_horiz9x9(const in VS_OUTPUT_2D IN) : COLOR
 {
-   const float offset9x9[3] = { 0.0, 1.3846153846, 3.2307692308 };
-   const float weight9x9[3] = { 0.2270270270, 0.3162162162, 0.0702702703 };
+   const float offset9x9[3] = { 0.0, 1.3846153846153846, 3.2307692307692304 };
+   const float weight9x9[3] = { 0.22697126013264554, 0.31613854089904203, 0.070253009088676 };
    float3 result = tex2Dlod(tex_fb_filtered, float4(IN.tex0, 0.,0.)).xyz*weight9x9[0];
-   [unroll] for(int i = 1; i < 3; ++i)
+   UNROLL for(int i = 1; i < 3; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(w_h_height.x*offset9x9[i],0.0), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(w_h_height.x*offset9x9[i],0.0), 0.,0.)).xyz)*weight9x9[i];
    return float4(result, 1.0);
@@ -440,15 +462,16 @@ float4 ps_main_fb_blur_horiz9x9(const in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_blur_vert9x9(const in VS_OUTPUT_2D IN) : COLOR
 {
-   const float offset9x9[3] = { 0.0, 1.3846153846, 3.2307692308 };
-   const float weight9x9[3] = { 0.2270270270, 0.3162162162, 0.0702702703 };
+   const float offset9x9[3] = { 0.0, 1.3846153846153846, 3.2307692307692304 };
+   const float weight9x9[3] = { 0.22697126013264554, 0.31613854089904203, 0.070253009088676 };
    float3 result = tex2Dlod(tex_fb_filtered, float4(IN.tex0, 0.,0.)).xyz*weight9x9[0];
-   [unroll] for(int i = 1; i < 3; ++i)
+   UNROLL for(int i = 1; i < 3; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(0.0,w_h_height.y*offset9x9[i]), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(0.0,w_h_height.y*offset9x9[i]), 0.,0.)).xyz)*weight9x9[i];
    return float4(result, 1.0);
 }
 
+//!! would be smoother fadeout on edges:
 //const float offset11x11h[3] = { 0.59804, 2.18553, 4.06521 }; //no center!
 //const float weight11x11h[3] = { 0.38173, 0.11538, 0.00289 }; //no center!
 
@@ -457,7 +480,7 @@ float4 ps_main_fb_blur_horiz11x11(const in VS_OUTPUT_2D IN) : COLOR
    const float offset11x11[3] = { 0.62195, 2.27357, 4.14706 }; //no center!
    const float weight11x11[3] = { 0.32993, 0.15722, 0.01285 }; //no center!
    float3 result = float3(0.0, 0.0, 0.0);
-   [unroll] for(int i = 0; i < 3; ++i)
+   UNROLL for(int i = 0; i < 3; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(w_h_height.x*offset11x11[i],0.0), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(w_h_height.x*offset11x11[i],0.0), 0.,0.)).xyz)*weight11x11[i];
    return float4(result, 1.0);
@@ -468,7 +491,7 @@ float4 ps_main_fb_blur_vert11x11(const in VS_OUTPUT_2D IN) : COLOR
    const float offset11x11[3] = { 0.62195, 2.27357, 4.14706 }; //no center!
    const float weight11x11[3] = { 0.32993, 0.15722, 0.01285 }; //no center!
    float3 result = float3(0.0, 0.0, 0.0);
-   [unroll] for(int i = 0; i < 3; ++i)
+   UNROLL for(int i = 0; i < 3; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(0.0,w_h_height.y*offset11x11[i]), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(0.0,w_h_height.y*offset11x11[i]), 0.,0.)).xyz)*weight11x11[i];
    return float4(result, 1.0);
@@ -476,10 +499,10 @@ float4 ps_main_fb_blur_vert11x11(const in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_blur_horiz13x13(const in VS_OUTPUT_2D IN) : COLOR
 {
-   const float offset13x13[4] = { 0.0, 1.411764705882353, 3.2941176470588234, 5.176470588235294 }; //13
-   const float weight13x13[4] = { 0.1964825501511404, 0.2969069646728344, 0.09447039785044732, 0.010381362401148057 }; //13
+   const float offset13x13[4] = { 0.0, 1.4117647058823528, 3.2941176470588234, 5.176470588235294 }; //13
+   const float weight13x13[4] = { 0.1964795505549364, 0.2969024319496817, 0.09446895562035326, 0.010381203914324535 }; //13
    float3 result = tex2Dlod(tex_fb_filtered, float4(IN.tex0, 0., 0.)).xyz * weight13x13[0];
-   [unroll] for(int i = 1; i < 4; ++i)
+   UNROLL for(int i = 1; i < 4; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(w_h_height.x*offset13x13[i],0.0), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(w_h_height.x*offset13x13[i],0.0), 0.,0.)).xyz)*weight13x13[i];
    return float4(result, 1.0);
@@ -487,10 +510,10 @@ float4 ps_main_fb_blur_horiz13x13(const in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_blur_vert13x13(const in VS_OUTPUT_2D IN) : COLOR
 {
-   const float offset13x13[4] = { 0.0, 1.411764705882353, 3.2941176470588234, 5.176470588235294 }; //13
-   const float weight13x13[4] = { 0.1964825501511404, 0.2969069646728344, 0.09447039785044732, 0.010381362401148057 }; //13
+   const float offset13x13[4] = { 0.0, 1.4117647058823528, 3.2941176470588234, 5.176470588235294 }; //13
+   const float weight13x13[4] = { 0.1964795505549364, 0.2969024319496817, 0.09446895562035326, 0.010381203914324535 }; //13
    float3 result = tex2Dlod(tex_fb_filtered, float4(IN.tex0, 0., 0.)).xyz * weight13x13[0];
-   [unroll] for(int i = 1; i < 4; ++i)
+   UNROLL for(int i = 1; i < 4; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(0.0,w_h_height.y*offset13x13[i]), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(0.0,w_h_height.y*offset13x13[i]), 0.,0.)).xyz)*weight13x13[i];
    return float4(result, 1.0);
@@ -501,7 +524,7 @@ float4 ps_main_fb_blur_horiz15x15(const in VS_OUTPUT_2D IN) : COLOR
    const float offset15x15[4] = { 0.64417, 2.37795, 4.28970, 6.21493 }; //15 (no center!)
    const float weight15x15[4] = { 0.25044, 0.19233, 0.05095, 0.00628 }; //15 (no center!)
    float3 result = float3(0.0, 0.0, 0.0);
-   [unroll] for(int i = 0; i < 4; ++i)
+   UNROLL for(int i = 0; i < 4; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(w_h_height.x*offset15x15[i],0.0), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(w_h_height.x*offset15x15[i],0.0), 0.,0.)).xyz)*weight15x15[i];
    return float4(result, 1.0);
@@ -512,7 +535,7 @@ float4 ps_main_fb_blur_vert15x15(const in VS_OUTPUT_2D IN) : COLOR
    const float offset15x15[4] = { 0.64417, 2.37795, 4.28970, 6.21493 }; //15 (no center!)
    const float weight15x15[4] = { 0.25044, 0.19233, 0.05095, 0.00628 }; //15 (no center!)
    float3 result = float3(0.0, 0.0, 0.0);
-   [unroll] for(int i = 0; i < 4; ++i)
+   UNROLL for(int i = 0; i < 4; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(0.0,w_h_height.y*offset15x15[i]), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(0.0,w_h_height.y*offset15x15[i]), 0.,0.)).xyz)*weight15x15[i];
    return float4(result, 1.0);
@@ -523,7 +546,7 @@ float4 ps_main_fb_blur_horiz19x19(const in VS_OUTPUT_2D IN) : COLOR
    const float offset19x19[5] = { 0.65323, 2.42572, 4.36847, 6.31470, 8.26547 }; //no center!
    const float weight19x19[5] = { 0.19923, 0.18937, 0.08396, 0.02337, 0.00408 }; //no center!
    float3 result = float3(0.0, 0.0, 0.0);
-   [unroll] for(int i = 0; i < 5; ++i)
+   UNROLL for(int i = 0; i < 5; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(w_h_height.x*offset19x19[i],0.0), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(w_h_height.x*offset19x19[i],0.0), 0.,0.)).xyz)*weight19x19[i];
    return float4(result, 1.0);
@@ -534,24 +557,28 @@ float4 ps_main_fb_blur_vert19x19(const in VS_OUTPUT_2D IN) : COLOR
    const float offset19x19[5] = { 0.65323, 2.42572, 4.36847, 6.31470, 8.26547 }; //no center!
    const float weight19x19[5] = { 0.19923, 0.18937, 0.08396, 0.02337, 0.00408 }; //no center!
    float3 result = float3(0.0, 0.0, 0.0);
-   [unroll] for(int i = 0; i < 5; ++i)
+   UNROLL for(int i = 0; i < 5; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(0.0,w_h_height.y*offset19x19[i]), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(0.0,w_h_height.y*offset19x19[i]), 0.,0.)).xyz)*weight19x19[i];
    return float4(result, 1.0);
 }
 
 #if 0
+//!! would be smoother fadeout on edges:
 //const float offset19x19h[5] = { 0.64625, 2.38872, 4.30686, 6.23559, 8.17666 };
 //const float weight19x19h[5] = { 0.23996, 0.19335, 0.05753, 0.00853, 0.00063 };
+
+//!! would be smoothestest fadeout on edges:
 //const float offset19x19h[5] = { 0.63232, 2.31979, 4.20448, 6.12322, 8.07135 };
 //const float weight19x19h[5] = { 0.29809, 0.17619, 0.02462, 0.00109, 0.00002 };
 
+//!! would be smoothest fadeout on edges:
 float4 ps_main_fb_blur_horiz19x19h(const in VS_OUTPUT_2D IN) : COLOR
 {
    const float offset19x19h[5] = { 0.63918, 2.35282, 4.25124, 6.17117, 8.11278 }; //no center!
    const float weight19x19h[5] = { 0.27233, 0.18690, 0.03767, 0.00301, 0.00009 }; //no center!
    float3 result = float3(0.0, 0.0, 0.0);
-   [unroll] for(int i = 0; i < 5; ++i)
+   UNROLL for(int i = 0; i < 5; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(w_h_height.x*offset19x19h[i],0.0), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(w_h_height.x*offset19x19h[i],0.0), 0.,0.)).xyz)*weight19x19h[i];
    return float4(result, 1.0);
@@ -562,7 +589,7 @@ float4 ps_main_fb_blur_vert19x19h(const in VS_OUTPUT_2D IN) : COLOR
    const float offset19x19h[5] = { 0.63918, 2.35282, 4.25124, 6.17117, 8.11278 }; //no center!
    const float weight19x19h[5] = { 0.27233, 0.18690, 0.03767, 0.00301, 0.00009 }; //no center!
    float3 result = float3(0.0, 0.0, 0.0);
-   [unroll] for(int i = 0; i < 5; ++i)
+   UNROLL for(int i = 0; i < 5; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(0.0,w_h_height.y*offset19x19h[i]), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(0.0,w_h_height.y*offset19x19h[i]), 0.,0.)).xyz)*weight19x19h[i];
    return float4(result, 1.0);
@@ -571,10 +598,15 @@ float4 ps_main_fb_blur_vert19x19h(const in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_blur_horiz23x23(const in VS_OUTPUT_2D IN) : COLOR
 {
-   const float offset23x23[6] = { 0.65769, 2.45001, 4.41069, 6.37247, 8.33578, 10.30098 }; //23 (no center!)
-   const float weight23x23[6] = { 0.16526, 0.17520, 0.10103, 0.04252, 0.01306, 0.00293 }; //23 (no center!)
+   // smoother fadeout on edges
+   const float offset23x23[6] = { //0.65769, 2.45001, 4.41069, 6.37247, 8.33578, 10.30098 //23 (no center!)
+      0.64851, 2.40054, 4.32612, 6.25954, 8.20247, 10.15531
+   };
+   const float weight23x23[6] = { //0.16526, 0.17520, 0.10103, 0.04252, 0.01306, 0.00293  //23 (no center!)
+      0.22791, 0.19358, 0.06543, 0.01187, 0.00115, 0.00006
+   };
    float3 result = float3(0.0, 0.0, 0.0);
-   [unroll] for(int i = 0; i < 6; ++i)
+   UNROLL for(int i = 0; i < 6; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(w_h_height.x*offset23x23[i],0.0), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(w_h_height.x*offset23x23[i],0.0), 0.,0.)).xyz)*weight23x23[i];
    return float4(result, 1.0);
@@ -582,10 +614,15 @@ float4 ps_main_fb_blur_horiz23x23(const in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_blur_vert23x23(const in VS_OUTPUT_2D IN) : COLOR
 {
-   const float offset23x23[6] = { 0.65769, 2.45001, 4.41069, 6.37247, 8.33578, 10.30098 }; //23 (no center!)
-   const float weight23x23[6] = { 0.16526, 0.17520, 0.10103, 0.04252, 0.01306, 0.00293 }; //23 (no center!)
+   // smoother fadeout on edges
+   const float offset23x23[6] = { //0.65769, 2.45001, 4.41069, 6.37247, 8.33578, 10.30098 //23 (no center!)
+      0.64851, 2.40054, 4.32612, 6.25954, 8.20247, 10.15531
+   };
+   const float weight23x23[6] = { //0.16526, 0.17520, 0.10103, 0.04252, 0.01306, 0.00293  //23 (no center!)
+      0.22791, 0.19358, 0.06543, 0.01187, 0.00115, 0.00006
+   };
    float3 result = float3(0.0, 0.0, 0.0);
-   [unroll] for(int i = 0; i < 6; ++i)
+   UNROLL for(int i = 0; i < 6; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(0.0,w_h_height.y*offset23x23[i]), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(0.0,w_h_height.y*offset23x23[i]), 0.,0.)).xyz)*weight23x23[i];
    return float4(result, 1.0);
@@ -593,7 +630,7 @@ float4 ps_main_fb_blur_vert23x23(const in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_blur_horiz27x27(const in VS_OUTPUT_2D IN) : COLOR
 {
-   // 'h'-versions:
+   // 'h'-versions:  (smoother fadeout on edges)
    const float weight27x27[7] = { /*0.19592,0.18829,0.08573,0.02488,0.00460,0.00054,0.00004*/
       0.20227,0.19003,0.08192,0.02181,0.00358,0.00036,0.00002
    };
@@ -604,7 +641,7 @@ float4 ps_main_fb_blur_horiz27x27(const in VS_OUTPUT_2D IN) : COLOR
    //const float offset27x27[7] = { 0.66025, 2.46412, 4.43566, 6.40762, 8.38017, 10.35347, 12.32765 }; //no center!
    //const float weight27x27[7] = { 0.14096, 0.15932, 0.10714, 0.05743, 0.02454, 0.00835, 0.00227 };   //no center!
    float3 result = float3(0.0, 0.0, 0.0);
-   [unroll] for(int i = 0; i < 7; ++i)
+   UNROLL for(int i = 0; i < 7; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(w_h_height.x*offset27x27[i],0.0), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(w_h_height.x*offset27x27[i],0.0), 0.,0.)).xyz)*weight27x27[i];
    return float4(result, 1.0);
@@ -612,7 +649,7 @@ float4 ps_main_fb_blur_horiz27x27(const in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_blur_vert27x27(const in VS_OUTPUT_2D IN) : COLOR
 {
-   // 'h'-versions:
+   // 'h'-versions:  (smoother fadeout on edges)
    const float weight27x27[7] = { /*0.19592,0.18829,0.08573,0.02488,0.00460,0.00054,0.00004*/
       0.20227,0.19003,0.08192,0.02181,0.00358,0.00036,0.00002
    };
@@ -623,7 +660,7 @@ float4 ps_main_fb_blur_vert27x27(const in VS_OUTPUT_2D IN) : COLOR
    //const float offset27x27[7] = { 0.66025, 2.46412, 4.43566, 6.40762, 8.38017, 10.35347, 12.32765 }; //no center!
    //const float weight27x27[7] = { 0.14096, 0.15932, 0.10714, 0.05743, 0.02454, 0.00835, 0.00227 };   //no center!
    float3 result = float3(0.0, 0.0, 0.0);
-   [unroll] for(int i = 0; i < 7; ++i)
+   UNROLL for(int i = 0; i < 7; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(0.0,w_h_height.y*offset27x27[i]), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(0.0,w_h_height.y*offset27x27[i]), 0.,0.)).xyz)*weight27x27[i];
    return float4(result, 1.0);
@@ -631,6 +668,7 @@ float4 ps_main_fb_blur_vert27x27(const in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_blur_horiz39x39(const in VS_OUTPUT_2D IN) : COLOR
 {
+   // smoother fadeout on edges
    const float offset39x39[10] = { 0.66063, 2.46625, 4.43946, 6.41301, 8.38706, 10.36173, 12.33715, 14.31341, 16.29062, 18.26884
                                  /*0.66214, 2.47462, 4.45440, 6.43433, 8.41447, 10.39489, 12.37564, 14.35677, 16.33834, 18.32039*/
                                  /*0.66368, 2.48326, 4.46990, 6.45658, 8.44332, 10.43015, 12.41707, 14.40410, 16.39127, 18.37859*/ }; //no center!
@@ -638,7 +676,7 @@ float4 ps_main_fb_blur_horiz39x39(const in VS_OUTPUT_2D IN) : COLOR
                                  /*0.11904, 0.14115, 0.10650, 0.06841, 0.03741, 0.01742, 0.00690, 0.00233, 0.00067, 0.00016*/
                                  /*0.09721, 0.11993, 0.09955, 0.07429, 0.04984, 0.03006, 0.01630, 0.00795, 0.00348, 0.00137*/ }; //no center!
    float3 result = float3(0.0, 0.0, 0.0);
-   [unroll] for(int i = 0; i < 10; ++i)
+   UNROLL for(int i = 0; i < 10; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(w_h_height.x*offset39x39[i],0.0), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(w_h_height.x*offset39x39[i],0.0), 0.,0.)).xyz)*weight39x39[i];
    return float4(result, 1.0);
@@ -653,7 +691,7 @@ float4 ps_main_fb_blur_vert39x39(const in VS_OUTPUT_2D IN) : COLOR
                                  /*0.11904, 0.14115, 0.10650, 0.06841, 0.03741, 0.01742, 0.00690, 0.00233, 0.00067, 0.00016*/
                                  /*0.09721, 0.11993, 0.09955, 0.07429, 0.04984, 0.03006, 0.01630, 0.00795, 0.00348, 0.00137*/ }; //no center!
    float3 result = float3(0.0, 0.0, 0.0);
-   [unroll] for(int i = 0; i < 10; ++i)
+   UNROLL for(int i = 0; i < 10; ++i)
       result += (tex2Dlod(tex_fb_filtered, float4(IN.tex0+float2(0.0,w_h_height.y*offset39x39[i]), 0.,0.)).xyz
                 +tex2Dlod(tex_fb_filtered, float4(IN.tex0-float2(0.0,w_h_height.y*offset39x39[i]), 0.,0.)).xyz)*weight39x39[i];
    return float4(result, 1.0);

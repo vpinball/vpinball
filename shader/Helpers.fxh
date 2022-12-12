@@ -1,5 +1,3 @@
-
-
 //**************************************************************************
 // GLSL defines to support common shader code
 ////GLOBAL
@@ -40,7 +38,8 @@
 //vec2 pow(vec2 b, float e) {return pow(b,vec2(e));}
 
 #define texNoLod(tex, pos) textureLod(tex, pos, 0.)
-#define BRANCH 
+#define BRANCH
+#define UNROLL
 
 //**************************************************************************
 // HLSL defines to support common shader code
@@ -50,6 +49,7 @@
 
 #define texNoLod(tex, pos) tex2Dlod(tex, float4(pos, 0., 0.))
 #define BRANCH [branch]
+#define UNROLL [unroll]
 
 #endif
 
