@@ -356,7 +356,7 @@ void main()
    BRANCH if (do_bloom)
       result += texNoLod(tex_bloom, tex0).xy;
    const float rg = /*FBColorGrade*/(FBGamma(saturate(dot(FBDither(result, tex0), float2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5)))));
-   return float4(rg,rg,rg,1.0);
+   color = float4(rg,rg,rg,1.0);
 }
 
 ////ps_main_fb_tonemap_no_filterR
@@ -369,7 +369,7 @@ void main()
    BRANCH if (do_bloom)
       result += texNoLod(tex_bloom, tex0).x;
    const float gray = /*FBColorGrade*/(FBGamma(saturate(FBDither(result, tex0))));
-   return float4(gray,gray,gray,1.0);
+   color = float4(gray,gray,gray,1.0);
 }
 
 ////ps_main_fb_tonemap_AO_no_filter
