@@ -714,9 +714,9 @@ void main()
 		float2 posN = float2(posB.x - offNP.x * FXAA_QUALITY__P0, posB.y - offNP.y * FXAA_QUALITY__P0);
 		float2 posP = float2(posB.x + offNP.x * FXAA_QUALITY__P0, posB.y + offNP.y * FXAA_QUALITY__P0);
 		const float subpixD = -2.0 * subpixC + 3.0;
-		const float lumaEndN = luma(textureLod(tex_fb_filtered, posN, 0.).xyz);
+		const float lumaEndN = luma(texNoLod(tex_fb_filtered, posN).xyz);
 		const float subpixE = subpixC * subpixC;
-		const float lumaEndP = luma(textureLod(tex_fb_filtered, posP, 0.).xyz);
+		const float lumaEndP = luma(texNoLod(tex_fb_filtered, posP).xyz);
 		if(!pairN) lumaNN = lumaSS;
 		const float gradientScaled = gradient * (1.0/4.0);
 		const float lumaMM = lumaM - lumaNN * 0.5;
@@ -732,8 +732,8 @@ void main()
 		if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P1;
 		if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P1;
 		if(doneNP) {
-			if(!doneN) lumaEndN = luma(textureLod(tex_fb_filtered, posN.xy, 0.).xyz);
-			if(!doneP) lumaEndP = luma(textureLod(tex_fb_filtered, posP.xy, 0.).xyz);
+			if(!doneN) lumaEndN = luma(texNoLod(tex_fb_filtered, posN).xyz);
+			if(!doneP) lumaEndP = luma(texNoLod(tex_fb_filtered, posP).xyz);
 			if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 			if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 			doneN = abs(lumaEndN) >= gradientScaled;

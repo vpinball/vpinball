@@ -25,65 +25,65 @@ texture Texture7; // depth probe
 
 sampler2D tex_base_color : TEXUNIT0 = sampler_state // base texture
 {
-    Texture   = (Texture0);
-    //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic
-    //MAGFILTER = LINEAR;
-    //MINFILTER = LINEAR;
-    //ADDRESSU  = Wrap; //!! ?
-    //ADDRESSV  = Wrap;
-    SRGBTexture = true;
+   Texture     = (Texture0);
+   //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic
+   //MAGFILTER = LINEAR;
+   //MINFILTER = LINEAR;
+   //ADDRESSU  = Wrap; //!! ?
+   //ADDRESSV  = Wrap;
+   SRGBTexture = true;
 };
 
 sampler2D tex_base_transmission : TEXUNIT3 = sampler_state // bulb light/transmission buffer texture
 {
-    Texture   = (Texture3);
-    MIPFILTER = NONE; //!! ??
-    MAGFILTER = LINEAR;
-    MINFILTER = LINEAR;
-    ADDRESSU  = Clamp;
-    ADDRESSV  = Clamp;
+   Texture   = (Texture3);
+   MIPFILTER = NONE; //!! ??
+   MAGFILTER = LINEAR;
+   MINFILTER = LINEAR;
+   ADDRESSU  = Clamp;
+   ADDRESSV  = Clamp;
 };
  
 sampler2D tex_base_normalmap : TEXUNIT4 = sampler_state // normal map texture
 {
-    Texture = (Texture4);
-    //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic //!! disallow and always use normal bilerp only? not even mipmaps?
-    //MAGFILTER = LINEAR;
-    //MINFILTER = LINEAR;
-    //ADDRESSU  = Wrap; //!! ?
-    //ADDRESSV  = Wrap;
+   Texture     = (Texture4);
+   //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic //!! disallow and always use normal bilerp only? not even mipmaps?
+   //MAGFILTER = LINEAR;
+   //MINFILTER = LINEAR;
+   //ADDRESSU  = Wrap; //!! ?
+   //ADDRESSV  = Wrap;
 };
 
 sampler2D tex_reflection : TEXUNIT5 = sampler_state // reflection probe
 {
-   Texture = (Texture5);
-   MIPFILTER = NONE;
-   MAGFILTER = LINEAR;
-   MINFILTER = LINEAR;
-   ADDRESSU = Clamp;
-   ADDRESSV = Clamp;
+   Texture     = (Texture5);
+   MIPFILTER   = NONE;
+   MAGFILTER   = LINEAR;
+   MINFILTER   = LINEAR;
+   ADDRESSU    = Clamp;
+   ADDRESSV    = Clamp;
    SRGBTexture = false;
 };
 
 sampler2D tex_refraction : TEXUNIT6 = sampler_state // refraction probe
 {
-   Texture = (Texture6);
-   MIPFILTER = NONE;
-   MAGFILTER = LINEAR;
-   MINFILTER = LINEAR;
-   ADDRESSU = Clamp;
-   ADDRESSV = Clamp;
+   Texture     = (Texture6);
+   MIPFILTER   = NONE;
+   MAGFILTER   = LINEAR;
+   MINFILTER   = LINEAR;
+   ADDRESSU    = Clamp;
+   ADDRESSV    = Clamp;
    SRGBTexture = false;
 };
 
 sampler2D tex_probe_depth : TEXUNIT7 = sampler_state // depth probe
 {
-   Texture = (Texture7);
-   MIPFILTER = NONE;
-   MAGFILTER = LINEAR;
-   MINFILTER = LINEAR;
-   ADDRESSU = Clamp;
-   ADDRESSV = Clamp;
+   Texture     = (Texture7);
+   MIPFILTER   = NONE;
+   MAGFILTER   = LINEAR;
+   MINFILTER   = LINEAR;
+   ADDRESSU    = Clamp;
+   ADDRESSV    = Clamp;
    SRGBTexture = false;
 };
 
@@ -133,7 +133,7 @@ struct VS_NOTEX_OUTPUT
 };
 
 struct VS_DEPTH_ONLY_NOTEX_OUTPUT 
-{ 
+{
    float4 pos      : POSITION;
 };
 
@@ -176,7 +176,6 @@ float3 normal_map(const float3 N, const float3 V, const float2 uv)
       return normalize( mul(TBN_trafo(N, V, uv, dpx, dpy), tn) );
 }
 
-
 // Compute reflections from reflection probe (screen space coordinates)
 // This is a simplified reflection model where reflected light is added instead of being mixed according to the fresnel coefficient (stronger reflection hiding the object's color at grazing angles)
 float3 compute_reflection(const float2 screenSpace, const float3 N)
@@ -210,7 +209,7 @@ float3 compute_refraction(const float3 pos, const float2 screenSpace, const floa
    //const float3 unbiased = tex2D(tex_refraction, screenSpace).rgb;
    //const float3 biased = tex2D(tex_refraction, uv).rgb;
    //return lerp(unbiased, biased, saturate(100.0 * (d - proj_base.z / proj_base.w)));
-   
+
    /* // Debug output
    if (length(N) < 0.5) // invalid normal, shown as red for debugging
       return float3(1.0, 0.0, 0.0);
@@ -348,7 +347,7 @@ float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform
 
    BRANCH if (doNormalMapping)
       N = normal_map(N, V, IN.tex0);
-   
+
    //!! return float4((N+1.0)*0.5,1.0); // visualize normals
 
    float4 result = float4(
@@ -419,7 +418,7 @@ float4 ps_main_reflection_only_with_texture(const in VS_OUTPUT IN, float2 screen
 
 float4 ps_main_depth_only_without_texture(const in VS_DEPTH_ONLY_NOTEX_OUTPUT IN) : COLOR
 {
-    return float4(0.,0.,0.,1.);
+   return float4(0.,0.,0.,1.);
 }
 
 float4 ps_main_depth_only_with_texture(const in VS_DEPTH_ONLY_TEX_OUTPUT IN) : COLOR
@@ -458,18 +457,18 @@ VS_NOTEX_OUTPUT vs_kicker (const in float4 vPosition : POSITION0,
                            const in float3 vNormal   : NORMAL0,
                            const in float2 tc        : TEXCOORD0)
 {
-    const float3 P = mul(vPosition, matWorldView).xyz;
-    const float3 N = normalize(mul(vNormal, matWorldViewInverseTranspose).xyz);
+   const float3 P = mul(vPosition, matWorldView).xyz;
+   const float3 N = normalize(mul(vNormal, matWorldViewInverseTranspose).xyz);
 
-    VS_NOTEX_OUTPUT Out;
-    Out.pos.xyw = mul(vPosition, matWorldViewProj).xyw;
-    float4 P2 = vPosition;
-    P2.z -= 30.0*fKickerScale; //!!
-    Out.pos.z = mul(P2, matWorldViewProj).z;
-    Out.worldPos = P;
-    Out.tablePos = mul(vPosition, matWorld).xyw;
-    Out.normal = N;
-    return Out;
+   VS_NOTEX_OUTPUT Out;
+   Out.pos.xyw = mul(vPosition, matWorldViewProj).xyw;
+   float4 P2 = vPosition;
+   P2.z -= 30.0*fKickerScale; //!!
+   Out.pos.z = mul(P2, matWorldViewProj).z;
+   Out.worldPos = P;
+   Out.tablePos = mul(vPosition, matWorld).xyw;
+   Out.normal = N;
+   return Out;
 }
 
 //------------------------------------

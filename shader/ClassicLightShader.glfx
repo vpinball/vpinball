@@ -112,7 +112,7 @@ in vec3 normal;
 void main()
 {
     // FIXME check tex_light_color declaration
-    float4 pixel = textureLod(tex_light_color, tex0, 0.); //!! IN.tex0 abused in backglass mode
+    float4 pixel = texNoLod(tex_light_color, tex0); //!! IN.tex0 abused in backglass mode
 
     // no lighting if HUD vertices or passthrough mode
     BRANCH if (lightingOff)
