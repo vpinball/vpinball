@@ -1085,9 +1085,9 @@ void main()
 	const float3 a = texNoLod(tex_fb_unfiltered,        um1          ).xyz;
 	const float3 b = texNoLod(tex_fb_unfiltered, float2(u.x,   um1.y)).xyz;
 	const float3 c = texNoLod(tex_fb_unfiltered, float2(up1.x, um1.y)).xyz;
-	const float3 d = texNoLod(tex_fb_unfiltered, float2(um1.x, u.y, )).xyz;
+	const float3 d = texNoLod(tex_fb_unfiltered, float2(um1.x, u.y  )).xyz;
 	const float3 g = texNoLod(tex_fb_unfiltered, float2(um1.x, up1.y)).xyz; 
-	const float3 f = texNoLod(tex_fb_unfiltered, float2(up1.x, u.y, )).xyz;
+	const float3 f = texNoLod(tex_fb_unfiltered, float2(up1.x, u.y  )).xyz;
 	const float3 h = texNoLod(tex_fb_unfiltered, float2(u.x,   up1.y)).xyz;
 	const float3 i = texNoLod(tex_fb_unfiltered,        up1          ).xyz;
 
