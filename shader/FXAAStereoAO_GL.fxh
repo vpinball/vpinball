@@ -1123,8 +1123,6 @@ void main()
 	const float3 outColor = saturate((window * wRGB + e) * rcpWeightRGB);
 
 	color = float4(lerp(e, outColor, Sharpening), 1.);
-
-	color = vec4(outColor, 1.0);
 }
 
 
