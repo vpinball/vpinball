@@ -1046,7 +1046,7 @@ float4 ps_main_fxaa3(const in VS_OUTPUT_2D IN) : COLOR
 		if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P8;
 
 		if(doneNP) {
-		if(!doneN) lumaEndN = luma(texNoLod(tex_fb_filtered, posN.xyz);
+		if(!doneN) lumaEndN = luma(texNoLod(tex_fb_filtered, posN).xyz);
 		if(!doneP) lumaEndP = luma(texNoLod(tex_fb_filtered, posP).xyz);
 		if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 		if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
