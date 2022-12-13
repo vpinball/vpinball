@@ -277,7 +277,7 @@ void main()
 
        const float2 uv = (inverse(matWorldView) * vec4(playfield_hit, 1.0)).xy * invTableRes_playfield_height_reflection.xy;
        playfieldColor = (t < 0.) ? float3(0.,0.,0.) // happens for example when inside kicker
-                                 : texture(tex_ball_playfield, uv).xyz * invTableRes_playfield_height_reflection.w; //!! rather use screen space sample from previous frame??
+                                 : texNoLod(tex_ball_playfield, uv).xyz * invTableRes_playfield_height_reflection.w; //!! rather use screen space sample from previous frame??
 
        //!! hack to get some lighting on reflection sample, but only diffuse, the rest is not setup correctly anyhow
        playfieldColor = PFlightLoop(playfield_hit, playfield_normal, playfieldColor);

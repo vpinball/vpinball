@@ -275,7 +275,7 @@ float4 psBall( const in vout IN, uniform bool cabMode, uniform bool decalMode ) 
 
        const float2 uv = mul_w1(playfield_hit, matWorldViewInverse).xy * invTableRes_playfield_height_reflection.xy;
        playfieldColor = (t < 0.) ? float3(0.,0.,0.) // happens for example when inside kicker
-                                 : tex2Dlod(tex_ball_playfield, float4(uv, 0., 0.)).xyz * invTableRes_playfield_height_reflection.w; //!! rather use screen space sample from previous frame??
+                                 : texNoLod(tex_ball_playfield, uv).xyz * invTableRes_playfield_height_reflection.w; //!! rather use screen space sample from previous frame??
 
        //!! hack to get some lighting on reflection sample, but only diffuse, the rest is not setup correctly anyhow
        playfieldColor = PFlightLoop(playfield_hit, playfield_normal, playfieldColor);

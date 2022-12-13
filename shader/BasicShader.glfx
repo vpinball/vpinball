@@ -437,7 +437,7 @@ void main() {
 
       if (fDisableLighting_top_below.y < 1.0)
          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-         color.xyz += mix(sqrt(diffuse)*texture(tex_base_transmission, tex03.xy, 0.).xyz*color.a, float3(0.), fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+         color.xyz += mix(sqrt(diffuse)*texNoLod(tex_base_transmission, tex03).rgb*color.a, float3(0.), fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
    BRANCH if (lightCenter_doShadow.w != 0.)
@@ -454,7 +454,7 @@ void main() {
    BRANCH if (doRefractions)
    {
       // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color
-      color.rgb = lerp(compute_refraction(worldPos.xyz, tex03.xy, N, V), color.rgb, cBase_Alpha.a);
+      color.rgb = lerp(compute_refraction(worldPos.xyz, tex03, N, V), color.rgb, cBase_Alpha.a);
       color.a = 1.0;
    }
 
@@ -502,7 +502,7 @@ void main() {
 
       if (fDisableLighting_top_below.y < 1.0)
          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-         color.xyz += mix(sqrt(diffuse)*texture(tex_base_transmission, tex03.xy).xyz*color.a, float3(0.), fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+         color.xyz += lerp(sqrt(diffuse)*texNoLod(tex_base_transmission, tex03).rgb*color.a, float3(0.), fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
    BRANCH if (lightCenter_doShadow.w != 0.)
@@ -514,12 +514,12 @@ void main() {
    }
 
    BRANCH if (doReflections)
-      color.rgb += compute_reflection(tex03.xy, N);
+      color.rgb += compute_reflection(tex03, N);
 
    BRANCH if (doRefractions)
    {
       // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color (not from main texture since these are different informations (reflected/refracted color))
-      color.rgb = lerp(compute_refraction(worldPos, tex03.xy, N, V), color.rgb, color.a);
+      color.rgb = lerp(compute_refraction(worldPos, tex03, N, V), color.rgb, color.a);
       color.a = 1.0;
    }
 
@@ -583,7 +583,7 @@ void main() {
 in vec2 tex0;
 
 void main() {
-   if (textureLod(tex_base_color, tex0, 0.).a <= alphaTestValue)
+   if (texNoLod(tex_base_color, tex0).a <= alphaTestValue)
       discard;           //stop the pixel shader if alpha test should reject pixel
 
    color = float4(0., 0., 0., 1.);
@@ -606,7 +606,7 @@ void main() {
 
    //if (pixel.a <= alphaTestValue) discard;
 
-   pixel.a = clamp(pixel.a * cBase_Alpha.a, 0.0, 1.0);
+   pixel.a = saturate(pixel.a * cBase_Alpha.a);
 
    color = float4(InvToneMap(pixel.xyz*cBase_Alpha.xyz), pixel.a);
 }
@@ -630,8 +630,8 @@ void main() {
    float4 vPosition4 = float4(vPosition,1.0);
    gl_Position = vPosition4;
    tablePos_gs = (matWorld * vPosition4).xyz;
-   float4 bulbPos = (matWorldViewProj[0] * vPosition4);
-   tex03_gs = vec2(bulbPos.xy/bulbPos.w);
+   float4 bulbPos = matWorldViewProj[0] * vPosition4;
+   tex03_gs = bulbPos.xy/bulbPos.w;
    worldPos_gs = (matWorldView * vPosition4).xyz;
    normal_gs = normalize((matWorldViewInverseTranspose*vNormal).xyz);
 }
