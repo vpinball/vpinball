@@ -74,7 +74,7 @@ void main()
          else
          {
             gl_Position = matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position;
-            gl_Position.z = max(gl_Position.z, 0.00001); // clamp lights to near clip plane to avoid them being partially clipped
+            gl_Position.z = max(gl_Position.z, 0.00006103515625); // clamp lights to near clip plane to avoid them being partially clipped // 0.00006103515625 due to 16bit half float
          }
          //Custom
          tablePos = tablePos_gs[i];

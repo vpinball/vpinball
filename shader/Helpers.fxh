@@ -2,6 +2,13 @@
 // GLSL defines to support common shader code
 ////GLOBAL
 #ifdef GLSL
+
+#ifdef SHADER_GLES30
+#define FLT_MIN_VALUE 0.00006103515625
+#else
+#define FLT_MIN_VALUE 0.0000001
+#endif
+
 //HLSL to GLSL helpers
 #define clip(x) {if (x<0) {discard;}}
 #define ddx(x) dFdx(x)
@@ -46,6 +53,8 @@
 #else
 #define HLSL
 #pragma warning(once : 3571) // only output 'pow(f, e) will not work for negative f, use abs(f) or conditionally handle negative values if you expect them' once
+
+#define FLT_MIN_VALUE 0.0000001
 
 #define texNoLod(tex, pos) tex2Dlod(tex, float4(pos, 0., 0.))
 #define BRANCH [branch]
@@ -93,7 +102,7 @@ float3 mul_w0(const float3 v, const float4x3 m)
 float acos_approx(const float v)
 {
     const float x = abs(v);
-    if(1. - x < 0.0000001) // necessary due to compiler doing 1./rsqrt instead of sqrt
+    if(1. - x <= FLT_MIN_VALUE) // necessary due to compiler doing 1./rsqrt instead of sqrt
        return (v >= 0.) ? 0. : PI;
     const float res = (-0.155972/*C1*/ * x + 1.56467/*C0*/) * sqrt(1. - x);
     return (v >= 0.) ? res : PI - res;
@@ -105,7 +114,7 @@ float acos_approx_divPI(const float v)
     //return acos(v)*(1./PI);
 
     const float x = abs(v);
-    if(1. - x < 0.0000001) // necessary due to compiler doing 1./rsqrt instead of sqrt
+    if(1. - x <= FLT_MIN_VALUE) // necessary due to compiler doing 1./rsqrt instead of sqrt
        return (v >= 0.) ? 0. : 1.;
     const float res = ((-0.155972/PI)/*C1*/ * x + (1.56467/PI)/*C0*/) * sqrt(1. - x);
     return (v >= 0.) ? res : 1. - res;
@@ -117,7 +126,7 @@ float atan2_approx(const float y, const float x)
 	const float abs_y = abs(y);
 	const float abs_x = abs(x);
 
-	if(abs_x < 0.0000001 && abs_y < 0.0000001)
+	if(abs_x <= FLT_MIN_VALUE && abs_y <= FLT_MIN_VALUE)
 	   return 0.;//(PI/4.);
 
 	const float r = (abs_x - abs_y) / (abs_x + abs_y);
@@ -134,7 +143,7 @@ float atan2_approx_div2PI(const float y, const float x)
 	const float abs_y = abs(y);
 	const float abs_x = abs(x);
 
-	if(abs_x < 0.0000001 && abs_y < 0.0000001)
+	if(abs_x <= FLT_MIN_VALUE && abs_y <= FLT_MIN_VALUE)
 	   return 0.;//(PI/4.)*(0.5/PI);
 
 	const float r = (abs_x - abs_y) / (abs_x + abs_y);
