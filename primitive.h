@@ -96,6 +96,8 @@ public:
    // These fields are only valid during play
    bool m_useAsPlayfield;
    bool m_isBackGlassImage;
+
+   U32 m_time_msec;
 };
 
 class Primitive :

@@ -1185,6 +1185,10 @@ void Primitive::ExportMesh(ObjLoader& loader)
 
 void Primitive::RenderObject()
 {
+   const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
+   m_d.m_time_msec = g_pplayer->m_time_msec;
+   const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
+
    if (!m_d.m_groupdRendering)
    {
       RecalculateMatrices();
@@ -1194,7 +1198,7 @@ void Primitive::RenderObject()
          m_mesh.UploadToVB(m_vertexBuffer, m_currentFrame);
          if (m_currentFrame != -1.0f && m_doAnimation)
          {
-            m_currentFrame += m_speed;
+            m_currentFrame += m_speed*(diff_time_msec*(float)(60./1000.));
             if (m_currentFrame >= (float)m_mesh.m_animationFrames.size())
             {
                if (m_endless)
@@ -1438,6 +1442,8 @@ void Primitive::RenderSetup()
 {
    if (m_d.m_groupdRendering || m_d.m_skipRendering)
       return;
+
+   m_d.m_time_msec = g_pplayer->m_time_msec;
 
    m_currentFrame = -1.f;
    m_d.m_isBackGlassImage = IsBackglass();
