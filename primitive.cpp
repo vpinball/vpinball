@@ -2874,7 +2874,7 @@ STDMETHODIMP Primitive::PlayAnim(float startFrame, float speed)
       //   startFrame = -startFrame;
       if (speed < 0.0f) speed = -speed;
 
-      m_vertexBufferRegenerate = (m_currentFrame != startFrame) || (m_speed != speed) || !m_doAnimation || m_endless;
+      m_vertexBufferRegenerate = m_vertexBufferRegenerate || (m_currentFrame != startFrame) || (m_speed != speed) || !m_doAnimation || m_endless;
 
       m_currentFrame = startFrame;
       m_speed = speed;
@@ -2891,7 +2891,7 @@ STDMETHODIMP Primitive::PlayAnimEndless(float speed)
    {
       if (speed < 0.0f) speed = -speed;
 
-      m_vertexBufferRegenerate = (m_currentFrame != 0.f) || (m_speed != speed) || !m_doAnimation || !m_endless;
+      m_vertexBufferRegenerate = m_vertexBufferRegenerate || (m_currentFrame != 0.f) || (m_speed != speed) || !m_doAnimation || !m_endless;
 
       m_currentFrame = 0.0f;
       m_speed = speed;
@@ -2916,7 +2916,7 @@ STDMETHODIMP Primitive::ContinueAnim(float speed)
    {
       if (speed < 0.0f) speed = -speed;
 
-      m_vertexBufferRegenerate = (m_speed != speed) || !m_doAnimation;
+      m_vertexBufferRegenerate = m_vertexBufferRegenerate || (m_speed != speed) || !m_doAnimation;
 
       m_speed = speed;
       m_doAnimation = true;
@@ -2932,7 +2932,7 @@ STDMETHODIMP Primitive::ShowFrame(float frame)
       if ((size_t)frame >= m_mesh.m_animationFrames.size())
          frame = (float)(m_mesh.m_animationFrames.size() - 1);
 
-      m_vertexBufferRegenerate = (m_currentFrame != frame) || m_doAnimation;
+      m_vertexBufferRegenerate = m_vertexBufferRegenerate || (m_currentFrame != frame) || m_doAnimation;
 
       m_currentFrame = frame;
       m_doAnimation = false;
