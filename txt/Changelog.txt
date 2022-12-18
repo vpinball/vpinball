@@ -76,10 +76,14 @@ FIXES:
 - reflections now work in the interactive camera/light editing mode (F6) as well
 
 - fix potentially wrong primitive animation interpolation
+- fix primitive animations getting stuck
+- fix primitive animation speed being dependent on the framerate
 
 - fix material list combobox not updating
 
 - fix missing decal UI updates (e.g. width,height)
+
+- fix loading of greyscale/8bit JPEGs (10.7.2 regression)
 
 - do not fail to load a table if only the hash/checksum fails, but instead just output a warning
 - handle broken tables better and try to load as much as possible
