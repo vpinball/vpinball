@@ -509,16 +509,20 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
    const int maxTexDim = LoadValueIntWithDefault(regKey[RegName::Player], "MaxTexDimension"s, 0); // default: Don't resize textures
    if(maxTexDim <= 0) // only use fast JPG path via stbi if no texture resize must be triggered
    {
-      int ok, x, y, channels_in_file;
-      ok = stbi_info_from_memory(data, size, &x, &y, &channels_in_file); // Request stbi to convert image to SRGB or SRGBA
-      unsigned char * const __restrict stbi_data = stbi_load_from_memory(data, size, &x, &y, &channels_in_file, (ok && channels_in_file <= 3) ? 3 : 4);
+      int x, y, channels_in_file;
+      const int ok = stbi_info_from_memory(data, size, &x, &y, &channels_in_file); // Request stbi to convert image to BW, SRGB or SRGBA
+      assert(channels_in_file != 2);
+      assert(channels_in_file <= 4); // 2 or >4 should never happen for JPEGs (4 also not, but we handle it anyway)
+      unsigned char * const __restrict stbi_data = (ok && channels_in_file != 2 && channels_in_file <= 4) ?
+          stbi_load_from_memory(data, size, &x, &y, &channels_in_file, channels_in_file) :
+          nullptr;
       if (stbi_data) // will only enter this path for JPG files
       {
          assert(channels_in_file == 3 || channels_in_file == 4);
          BaseTexture* tex = nullptr;
          try
          {
-            tex = new BaseTexture(x, y, channels_in_file == 4 ? BaseTexture::SRGBA : BaseTexture::SRGB);
+            tex = new BaseTexture(x, y, channels_in_file == 4 ? BaseTexture::SRGBA : ((channels_in_file == 1) ? BaseTexture::BW : BaseTexture::SRGB));
          }
          // failed to get mem?
          catch(...)
