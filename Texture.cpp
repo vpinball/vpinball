@@ -601,7 +601,7 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
    const int maxTexDim = LoadValueIntWithDefault(regKey[RegName::Player], "MaxTexDimension"s, 0); // default: Don't resize textures
    if(maxTexDim <= 0) // only use fast JPG path via stbi if no texture resize must be triggered
    {
-      int x, y, channels_in_file;
+      int x, y, channels_in_file = 0;
       const int ok = stbi_info_from_memory(data, size, &x, &y, &channels_in_file); // Request stbi to convert image to BW, SRGB or SRGBA
       assert(channels_in_file != 2);
       assert(channels_in_file <= 4); // 2 or >4 should never happen for JPEGs (4 also not, but we handle it anyway)
