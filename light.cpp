@@ -345,6 +345,8 @@ void Light::RenderBulbMesh()
    mat.m_cClearcoat = 0;
 
    RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice::RenderStateCache initial_state;
+   pd3dDevice->CopyRenderStates(true, initial_state);
 
    pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
    pd3dDevice->basicShader->SetMaterial(&mat, false);
@@ -371,6 +373,8 @@ void Light::RenderBulbMesh()
    pd3dDevice->basicShader->Begin();
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bulbLightVBuffer, 0, bulbLightNumVertices, m_bulbLightIndexBuffer, 0, bulbLightNumFaces);
    pd3dDevice->basicShader->End();
+
+   pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
 void Light::RenderDynamic()
