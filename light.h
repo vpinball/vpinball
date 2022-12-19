@@ -19,7 +19,10 @@ enum ShadowMode : int
 class LightData final : public BaseProperty
 {
 public:
-   Vertex2D m_vCenter;
+   Vertex2D m_vCenter; // xy table pos
+   float m_height = 0.0f; // z pos above surface
+   string m_szSurface;
+
    float m_falloff;
    float m_falloff_power;
    float m_intensity;
@@ -27,26 +30,27 @@ public:
    float m_fadeSpeedUp;
    float m_fadeSpeedDown;
    float m_currentIntensity;
-   float m_transmissionScale;
-   float m_modulate_vs_add;
-   float m_meshRadius;
+   
    LightState m_state;
    COLORREF m_color;
    COLORREF m_color2; // color full
    TimerDataRoot m_tdr;
    Shape m_shape;
-   //float m_borderwidth;
-   //COLORREF m_bordercolor;
-   string m_szSurface;
 
    float m_depthBias; // for determining depth sorting
-   float m_bulbHaloHeight;
 
-   bool m_imageMode;  // true = pass through/no lighting, false = use surface material
-   bool m_BulbLight;
+   bool m_imageMode; // For default render mode: true = pass through/no lighting, false = use surface material
+
+   bool m_BulbLight; // Bulb halo render mode
+   float m_bulbHaloHeight; // height of the halo (may be different from light z pos, for example a GI light rendered at playfield level)
+   float m_transmissionScale;
+   float m_modulate_vs_add;
+
    bool m_showBulbMesh;
-   bool m_showReflectionOnBall;
    bool m_staticBulbMesh;
+   float m_meshRadius;
+
+   bool m_showReflectionOnBall;
 
    ShadowMode m_shadows = ShadowMode::NONE;
 };
@@ -117,6 +121,7 @@ public:
    void PutCenter(const Vertex2D& pv) final { PutPointCenter(pv); }
    Vertex2D GetPointCenter() const final;
    void PutPointCenter(const Vertex2D& pv) final;
+   float GetCurrentHeight() const { return m_backglass ? 0.0f : m_initSurfaceHeight + m_d.m_height * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]; }
 
    bool IsTransparent() const final { return m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive); }
    bool RenderToLightBuffer() const final { return m_d.m_BulbLight && (m_d.m_transmissionScale > 0.f) && !m_backglass; }

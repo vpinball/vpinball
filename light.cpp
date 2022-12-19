@@ -66,8 +66,8 @@ void Light::SetDefaults(bool fromMouseClick)
 
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled"s, false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "TimerInterval"s, 100) : 100;
-   m_d.m_color = fromMouseClick ? LoadValueIntWithDefault(regKey, "Color"s, RGB(255,255,0)) : RGB(255,255,0);
-   m_d.m_color2 = fromMouseClick ? LoadValueIntWithDefault(regKey, "ColorFull"s, RGB(255,255,255)) : RGB(255,255,255);
+   m_d.m_color = fromMouseClick ? LoadValueIntWithDefault(regKey, "Color"s, RGB(255,169,87)) : RGB(255,169,87); // Default to 2700K incandescent bulb
+   m_d.m_color2 = fromMouseClick ? LoadValueIntWithDefault(regKey, "ColorFull"s, RGB(255,169,87)) : RGB(255,169,87); // Default to 2700K incandescent bulb (burst is useless since VPX is HDR)
 
    HRESULT hr = LoadValue(regKey, "OffImage"s, m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
@@ -78,7 +78,7 @@ void Light::SetDefaults(bool fromMouseClick)
       m_rgblinkpattern = "10";
 
    m_blinkinterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "BlinkInterval"s, 125) : 125;
-   m_d.m_intensity = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Intensity"s, 1.0f) : 1.0f;
+   m_d.m_intensity = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Intensity"s, 10.0f) : 10.0f;
    m_d.m_transmissionScale = fromMouseClick ? LoadValueFloatWithDefault(regKey, "TransmissionScale"s, 0.5f) : 0.f; // difference in defaults is intended
 
    m_d.m_intensity_scale = 1.0f;
@@ -89,8 +89,8 @@ void Light::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface.clear();
 
-   m_d.m_fadeSpeedUp = fromMouseClick ? LoadValueFloatWithDefault(regKey, "FadeSpeedUp"s, 0.2f) : 0.2f;
-   m_d.m_fadeSpeedDown = fromMouseClick ? LoadValueFloatWithDefault(regKey, "FadeSpeedDown"s, 0.2f) : 0.2f;
+   m_d.m_fadeSpeedUp = fromMouseClick ? LoadValueFloatWithDefault(regKey, "FadeSpeedUp"s, m_d.m_intensity / 200.f) : m_d.m_intensity / 200.f; // Default: 200ms up (slow incandescent bulb)
+   m_d.m_fadeSpeedDown = fromMouseClick ? LoadValueFloatWithDefault(regKey, "FadeSpeedDown"s, m_d.m_intensity / 500.f) : m_d.m_intensity / 500.f; // Default: 500ms down (slow incandescent bulb)
    m_d.m_BulbLight = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Bulb"s, false) : false;
    m_d.m_imageMode = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ImageMode"s, false) : false;
    m_d.m_showBulbMesh = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ShowBulbMesh"s, false) : false;
@@ -390,7 +390,7 @@ void Light::RenderDynamic()
    if (m_backglass && !GetPTable()->GetDecalsEnabled())
       return;
 
-   if (m_d.m_BulbLight && m_d.m_showBulbMesh && !m_d.m_staticBulbMesh && g_pplayer->m_current_renderstage == 0)
+   if (m_d.m_showBulbMesh && !m_d.m_staticBulbMesh && g_pplayer->m_current_renderstage == 0)
       RenderBulbMesh();
 
    Texture *offTexel = nullptr;
@@ -440,7 +440,30 @@ void Light::RenderDynamic()
       centerHUD.x = centerHUD.x* mult - 0.5f;
       centerHUD.y = centerHUD.y*ymult - 0.5f;
    }
-   const vec4 center_range(centerHUD.x, centerHUD.y, !m_backglass ? m_surfaceHeight + 0.05f : 0.0f, 1.0f / max(m_d.m_falloff, 0.1f));
+   const vec4 center_range(centerHUD.x, centerHUD.y, GetCurrentHeight(), 1.0f / max(m_d.m_falloff, 0.1f));
+
+   if (m_d.m_showBulbMesh) // blend bulb mesh hull additive over "normal" bulb to approximate the emission directly reaching the camera
+   {
+      pd3dDevice->lightShader->SetLightData(center_range);
+      pd3dDevice->lightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
+      pd3dDevice->lightShader->SetTechnique(SHADER_TECHNIQUE_bulb_light);
+
+      const Pin3D *const ppin3d = &g_pplayer->m_pin3d;
+      ppin3d->EnableAlphaBlend(false, false, false);
+      //pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  RenderDevice::SRC_ALPHA);  // add the lightcontribution
+      pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
+      pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_REVSUBTRACT);
+
+      lightColor_intensity.w = m_d.m_currentIntensity * 0.02f; //!! make configurable?
+      if (m_d.m_BulbLight && g_pplayer->m_current_renderstage == 1)
+         lightColor_intensity.w *= m_d.m_transmissionScale;
+      pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
+      pd3dDevice->lightShader->SetFloat(SHADER_blend_modulate_vs_add, 0.00001f); // additive, but avoid full 0, as it disables the blend
+
+      pd3dDevice->lightShader->Begin();
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bulbLightVBuffer, 0, bulbLightNumVertices, m_bulbLightIndexBuffer, 0, bulbLightNumFaces);
+      pd3dDevice->lightShader->End();
+   }
 
    if (!m_d.m_BulbLight)
    {
@@ -466,12 +489,14 @@ void Light::RenderDynamic()
       }
       else
          pd3dDevice->classicLightShader->SetTechniqueMetal(SHADER_TECHNIQUE_light_without_texture, m_surfaceMaterial);
+
+      lightColor_intensity.w = m_d.m_currentIntensity;
+      pd3dDevice->classicLightShader->SetLightColorIntensity(lightColor_intensity);
    }
    else
    {
       pd3dDevice->lightShader->SetLightData(center_range);
       pd3dDevice->lightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
-      pd3dDevice->lightShader->SetTechnique(SHADER_TECHNIQUE_bulb_light);
 
       const Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       ppin3d->EnableAlphaBlend(false, false, false);
@@ -479,23 +504,14 @@ void Light::RenderDynamic()
       pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
       pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_REVSUBTRACT);
 
-      if (m_d.m_showBulbMesh) // blend bulb mesh hull additive over "normal" bulb to approximate the emission directly reaching the camera
-      {
-         lightColor_intensity.w = m_d.m_currentIntensity*0.02f; //!! make configurable?
-         if (g_pplayer->m_current_renderstage == 1)
-            lightColor_intensity.w *= m_d.m_transmissionScale;
-         pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
-         pd3dDevice->lightShader->SetFloat(SHADER_blend_modulate_vs_add, 0.00001f); // additive, but avoid full 0, as it disables the blend
-
-         pd3dDevice->lightShader->Begin();
-         pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bulbLightVBuffer, 0, bulbLightNumVertices, m_bulbLightIndexBuffer, 0, bulbLightNumFaces);
-         pd3dDevice->lightShader->End();
-      }
-
       pd3dDevice->lightShader->SetBool(SHADER_disableVertexShader, m_backglass);
       pd3dDevice->lightShader->SetFloat(SHADER_blend_modulate_vs_add, (g_pplayer->m_current_renderstage == 0) ? min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
-      if (m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS)
-         pd3dDevice->lightShader->SetTechnique(SHADER_TECHNIQUE_bulb_light_with_ball_shadows);
+      pd3dDevice->lightShader->SetTechnique(m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS ? SHADER_TECHNIQUE_bulb_light_with_ball_shadows : SHADER_TECHNIQUE_bulb_light);
+
+      lightColor_intensity.w = m_d.m_currentIntensity;
+      if (g_pplayer->m_current_renderstage == 1)
+         lightColor_intensity.w *= m_d.m_transmissionScale;
+      pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
    }
 
    // (maybe) update, then render light shape
@@ -507,26 +523,10 @@ void Light::RenderDynamic()
       m_updateBulbLightHeight = false;
    }
 
-   lightColor_intensity.w = m_d.m_currentIntensity;
-   if (!m_d.m_BulbLight)
-   {
-      pd3dDevice->classicLightShader->SetLightColorIntensity(lightColor_intensity);
-      pd3dDevice->classicLightShader->Begin();
-   }
-   else
-   {
-      if (g_pplayer->m_current_renderstage == 1)
-         lightColor_intensity.w *= m_d.m_transmissionScale;
-      pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
-      pd3dDevice->lightShader->Begin();
-   }
-
+   Shader *shader = m_d.m_BulbLight ? pd3dDevice->lightShader : pd3dDevice->classicLightShader;
+   shader->Begin();
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, m_backglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, m_customMoverVBuffer, 0, m_customMoverVertexNum, m_customMoverIBuffer, 0, m_customMoverIndexNum);
-
-   if (!m_d.m_BulbLight)
-      pd3dDevice->classicLightShader->End();
-   else
-      pd3dDevice->lightShader->End();
+   shader->End();
 
    // Restore state
    pd3dDevice->classicLightShader->SetBool(SHADER_disableVertexShader, false); // Needed since this uniform is shared with techniques of basic shader
@@ -685,7 +685,7 @@ void Light::RenderSetup()
    else
       m_d.m_currentIntensity = 0.0f;
 
-   if (m_d.m_BulbLight && m_d.m_showBulbMesh)
+   if (m_d.m_showBulbMesh)
    {
       SAFE_BUFFER_RELEASE(m_bulbLightIndexBuffer);
       m_bulbLightIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(bulbLightNumFaces, bulbLightIndices, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
@@ -770,7 +770,7 @@ void Light::UpdateAnimation(float diff_time_msec)
 
 void Light::RenderStatic()
 {
-   if (m_d.m_BulbLight && m_d.m_showBulbMesh && m_d.m_staticBulbMesh)
+   if (m_d.m_showBulbMesh && m_d.m_staticBulbMesh)
       RenderBulbMesh();
 }
 
@@ -798,6 +798,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupF
    BiffWriter bw(pstm, hcrypthash);
 
    bw.WriteVector2(FID(VCEN), m_d.m_vCenter);
+   bw.WriteFloat(FID(HGHT), m_d.m_height);
    bw.WriteFloat(FID(RADI), m_d.m_falloff);
    bw.WriteFloat(FID(FAPO), m_d.m_falloff_power);
    bw.WriteInt(FID(STAT), m_d.m_state);
@@ -876,6 +877,7 @@ bool Light::LoadToken(const int id, BiffReader * const pbr)
    {
    case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
    case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
+   case FID(HGHT): pbr->GetFloat(m_d.m_height); break;
    case FID(RADI): pbr->GetFloat(m_d.m_falloff); break;
    case FID(FAPO): pbr->GetFloat(m_d.m_falloff_power); break;
    case FID(STAT):
