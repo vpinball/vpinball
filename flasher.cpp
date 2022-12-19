@@ -1292,7 +1292,7 @@ void Flasher::RenderDynamic()
        // Check if this flasher is used as a lightmap and should be convoluted with the light shadows
        Light * const lightmap = m_ptable->GetLight(m_d.m_szLightmap);
        if (lightmap != nullptr && lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS)
-          pd3dDevice->flasherShader->SetVector(SHADER_lightCenter_doShadow, lightmap->m_d.m_vCenter.x, lightmap->m_d.m_vCenter.y, lightmap->m_d.m_bulbHaloHeight, 1.0f);
+          pd3dDevice->flasherShader->SetVector(SHADER_lightCenter_doShadow, lightmap->m_d.m_vCenter.x, lightmap->m_d.m_vCenter.y, lightmap->GetCurrentHeight(), 1.0f);
 
        pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
        g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_addBlend, false, false);
