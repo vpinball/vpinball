@@ -3736,6 +3736,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             m_vrenderprobe.push_back(pf_reflections);
 
             for (size_t i = 0; i < m_vedit.size(); ++i)
+            {
                if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)m_vedit[i])->IsPlayfield()))
                {
                   // playfield meshes were always processed as static until 10.8.0 (more precisely, directly rendered before everything else even in camera mode, then skipped when rendering all parts)
@@ -3747,6 +3748,20 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   // playfield meshes did not handle backfaces until 10.8.0
                   ((Primitive *)m_vedit[i])->m_d.m_backfacesEnabled = false;
                }
+               if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemLight)
+               {
+                  Light *light = (Light *)m_vedit[i];
+                  // Before 10.8, lights did not have a z coordinate
+                  light->m_d.m_height = light->m_d.m_BulbLight ? light->m_d.m_bulbHaloHeight : 0.0f;
+                  if (!light->m_d.m_BulbLight)
+                  {
+                     // Before 10.8, classic light could not have a bulb mesh so force it off
+                     light->m_d.m_showBulbMesh = false;
+                     // Before 10.8, classic light could not have ball reflection so force it off
+                     light->m_d.m_showReflectionOnBall = false;
+                  }
+               }
+            }
          }
 
          //////// End Authentication block

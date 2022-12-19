@@ -5649,7 +5649,7 @@ void Player::DrawBalls()
    for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
    {
       IEditable * const item = m_ptable->m_vedit[i];
-      if (item && item->GetItemType() == eItemLight && ((Light *)item)->m_d.m_BulbLight && ((Light *)item)->m_d.m_showReflectionOnBall)
+      if (item && item->GetItemType() == eItemLight && ((Light *)item)->m_d.m_showReflectionOnBall)
          lights.push_back((Light *)item);
    }
 
