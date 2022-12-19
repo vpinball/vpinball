@@ -9,7 +9,7 @@ As for coding light sequences for original tables, please check this helper app:
 
 Changelog:
 10.8.0:
-- add Animate event to Light, Flipper, Gate, Spinner, Trigger, Targets and EMReel. This event is called when the object's visual properties is animated in order to easily sync with custom visuals
+- add Animate event to Bumper, Light, Flipper, Gate, Spinner, Trigger, Targets and EMReel. This event is called when the object's visual properties is animated in order to easily sync with custom visuals
 - add CurrentAnimOffset to the Trigger and Target elements
 
 10.7.2:
@@ -344,6 +344,10 @@ Methods
 -------
 
 PlayHit() - if called the bumper will play the hit animation without triggering the actual hit event.
+
+Events
+-------
+Animate() - Called when the visual of the bumper is animated (ring or skirt)
 
 
 DECAL
