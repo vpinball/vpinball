@@ -1234,10 +1234,7 @@ void Ramp::RenderStatic()
    if (mat->m_bOpacityActive)
       return;
 
-   if (isHabitrail())
-      RenderStaticHabitrail(mat);
-   else
-      RenderRamp(mat);
+   RenderRamp(mat);
 }
 
 void Ramp::SetObjectPos()
@@ -2120,6 +2117,8 @@ void Ramp::RenderRamp(const Material * const mat)
    }
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice::RenderStateCache initial_state;
+   pd3dDevice->CopyRenderStates(true, initial_state);
 
    if (isHabitrail())
       RenderStaticHabitrail(mat);
@@ -2194,6 +2193,8 @@ void Ramp::RenderRamp(const Material * const mat)
 
       //pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE); //!! not necessary anymore
    }
+
+   pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
 // Always called each frame to render over everything else (along with primitives)

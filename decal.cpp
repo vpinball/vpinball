@@ -529,6 +529,8 @@ void Decal::RenderObject()
       return;
 
    RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice::RenderStateCache initial_state;
+   pd3dDevice->CopyRenderStates(true, initial_state);
 
    if (m_backglass && (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled))
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
@@ -595,11 +597,7 @@ void Decal::RenderObject()
 
    pd3dDevice->basicShader->SetBool(SHADER_disableVertexShader, false);
 
-   // Set the render state.
-   //pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE); //!! not necessary anymore
-
-   //if(m_backglass && (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled))
-   //   pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+   pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
 void Decal::RenderStatic()

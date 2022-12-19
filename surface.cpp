@@ -1045,6 +1045,8 @@ void Surface::RenderWallsAtHeight(const bool drop)
       return;
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice::RenderStateCache initial_state;
+   pd3dDevice->CopyRenderStates(true, initial_state);
 
    if ((m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f) && (m_d.m_sideVisible || m_d.m_topBottomVisible))
       pd3dDevice->basicShader->SetDisableLighting(vec4(m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f,0.f));
@@ -1133,8 +1135,7 @@ void Surface::RenderWallsAtHeight(const bool drop)
    }
 
    // reset render states
-   //pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE); //!!  not necessary anymore
-   //pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+   pd3dDevice->CopyRenderStates(false, initial_state);
    if ((m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f) && (m_d.m_sideVisible || m_d.m_topBottomVisible))
       pd3dDevice->basicShader->SetDisableLighting(vec4(0.f,0.f, 0.f,0.f));
 }

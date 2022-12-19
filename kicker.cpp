@@ -527,13 +527,15 @@ void Kicker::SetDefaultPhysics(bool fromMouseClick)
 
 void Kicker::RenderDynamic()
 {
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    if (m_ptable->m_reflectionEnabled)
       return;
 
    if (m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole || m_d.m_kickertype == KickerHoleSimple || m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb || m_d.m_kickertype == KickerCup2)
    {
+      RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+      RenderDevice::RenderStateCache initial_state;
+      pd3dDevice->CopyRenderStates(true, initial_state);
+
       pd3dDevice->SetRenderStateDepthBias(0.0f);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
       if (m_d.m_kickertype != KickerHoleSimple)
@@ -569,6 +571,7 @@ void Kicker::RenderDynamic()
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numVertices, m_indexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();
 
+      pd3dDevice->CopyRenderStates(false, initial_state);
    }
 }
 

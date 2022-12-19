@@ -5439,12 +5439,23 @@ void Player::SetViewVector(const Vertex3Ds &viewVec)
 
 void Player::DrawStatics()
 {
+   #ifdef DEBUG
+   // Check that RenderStatic / RenderDynamic restore render state to its initial value
+   RenderDevice::RenderStateCache initial_state, live_state;
+   m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
+   #endif
+
    for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
       if (m_ptable->m_vedit[i]->GetItemType() != eItemDecal)
       {
          Hitable *const ph = m_ptable->m_vedit[i]->GetIHitable();
          if (ph)
             ph->RenderStatic();
+         #ifdef DEBUG
+         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
+         assert(initial_state.state == live_state.state);
+         assert(initial_state.depth_bias == live_state.depth_bias);
+         #endif
       }
    // Draw decals (they have transparency, so they have to be drawn after the wall they are on)
    for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
@@ -5453,24 +5464,49 @@ void Player::DrawStatics()
          Hitable *const ph = m_ptable->m_vedit[i]->GetIHitable();
          if (ph)
             ph->RenderStatic();
+         #ifdef DEBUG
+         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
+         assert(initial_state.state == live_state.state);
+         assert(initial_state.depth_bias == live_state.depth_bias);
+         #endif
       }
 }
 
 void Player::DrawDynamics()
 {
+   #ifdef DEBUG
+   // Check that RenderStatic / RenderDynamic restore render state to its initial value
+   RenderDevice::RenderStateCache initial_state, live_state;
+   m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
+   #endif
+
    if (GetProfilingMode() != PF_SPLIT_RENDERING) // normal rendering path for standard gameplay
    {
       m_dmdstate = 0;
       // Draw non-transparent objects. No DMD's
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
          if (!m_vHitNonTrans[i]->IsDMD())
+         {
             m_vHitNonTrans[i]->RenderDynamic();
+            #ifdef DEBUG
+            m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
+            assert(initial_state.state == live_state.state);
+            assert(initial_state.depth_bias == live_state.depth_bias);
+            #endif
+         }
 
       m_dmdstate = 2;
       // Draw non-transparent DMD's
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
          if (m_vHitNonTrans[i]->IsDMD())
+         {
             m_vHitNonTrans[i]->RenderDynamic();
+            #ifdef DEBUG
+            m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
+            assert(initial_state.state == live_state.state);
+            assert(initial_state.depth_bias == live_state.depth_bias);
+            #endif
+         }
 
       if (GetProfilingMode() == PF_ENABLED)
          m_pin3d.m_gpu_profiler.Timestamp(GTS_NonTransparent);
@@ -5483,13 +5519,27 @@ void Player::DrawDynamics()
       // Draw transparent objects. No DMD's
       for (size_t i = 0; i < m_vHitTrans.size(); ++i)
          if (!m_vHitTrans[i]->IsDMD())
+         {
             m_vHitTrans[i]->RenderDynamic();
+            #ifdef DEBUG
+            m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
+            assert(initial_state.state == live_state.state);
+            assert(initial_state.depth_bias == live_state.depth_bias);
+            #endif
+         }
 
       m_dmdstate = 1;
       // Draw only transparent DMD's
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i) // NonTrans is correct as DMDs are always sorted in there
          if (m_vHitNonTrans[i]->IsDMD())
+         {
             m_vHitNonTrans[i]->RenderDynamic();
+            #ifdef DEBUG
+            m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
+            assert(initial_state.state == live_state.state);
+            assert(initial_state.depth_bias == live_state.depth_bias);
+            #endif
+         }
 
       if (GetProfilingMode() == PF_ENABLED)
          m_pin3d.m_gpu_profiler.Timestamp(GTS_Transparent);

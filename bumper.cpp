@@ -399,6 +399,9 @@ void Bumper::RenderDynamic()
    const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
 
    RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice::RenderStateCache initial_state;
+   pd3dDevice->CopyRenderStates(true, initial_state);
+
    pd3dDevice->SetRenderStateDepthBias(0.0f);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
@@ -523,6 +526,8 @@ void Bumper::RenderDynamic()
          RenderCap(mat);
       }
    }
+
+   pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
 void Bumper::ExportMesh(ObjLoader& loader)
@@ -765,10 +770,12 @@ void Bumper::RenderSetup()
 
 void Bumper::RenderStatic()
 {
-   const RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
       return;
+
+   RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice::RenderStateCache initial_state;
+   pd3dDevice->CopyRenderStates(true, initial_state);
 
    if (m_d.m_baseVisible)
    {
@@ -789,6 +796,8 @@ void Bumper::RenderStatic()
          RenderCap(mat);
       }
    }
+
+   pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
 void Bumper::SetObjectPos()

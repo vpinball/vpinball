@@ -1127,8 +1127,6 @@ void Flasher::setInPlayState(const bool newVal)
 
 void Flasher::RenderDynamic()
 {
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    TRACE_FUNCTION();
 
    //Don't render if LightSequence in play and state is off
@@ -1149,6 +1147,10 @@ void Flasher::RenderDynamic()
 
    if (m_d.m_isDMD && (g_pplayer->m_dmdstate == 0)) // don't draw any DMD, but this case should not happen in the first place
       return;
+
+   RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice::RenderStateCache initial_state;
+   pd3dDevice->CopyRenderStates(true, initial_state);
 
    const bool alphadmd = (m_d.m_modulate_vs_add < 1.f);
 
@@ -1300,7 +1302,5 @@ void Flasher::RenderDynamic()
        pd3dDevice->flasherShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
    }
 
-   //pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
-   //pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD); //!! not necessary anymore
-   //pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE); //!! not necessary anymore
+   pd3dDevice->CopyRenderStates(false, initial_state);
 }
