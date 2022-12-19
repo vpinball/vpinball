@@ -753,6 +753,7 @@ void Light::UpdateAnimation(float diff_time_msec)
          m_d.m_currentIntensity += m_d.m_fadeSpeedUp * diff_time_msec;
          if (m_d.m_currentIntensity > m_d.m_intensity * m_d.m_intensity_scale)
             m_d.m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale;
+         FireGroupEvent(DISPID_AnimateEvents_Animate);
       }
    }
    else
@@ -762,6 +763,7 @@ void Light::UpdateAnimation(float diff_time_msec)
          m_d.m_currentIntensity -= m_d.m_fadeSpeedDown * diff_time_msec;
          if (m_d.m_currentIntensity < 0.0f)
             m_d.m_currentIntensity = 0.0f;
+         FireGroupEvent(DISPID_AnimateEvents_Animate);
       }
    }
 }

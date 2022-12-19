@@ -870,11 +870,19 @@ void Flipper::RenderSetup()
    m_vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    GenerateBaseMesh(buf);
    m_vertexBuffer->unlock();
+
+   m_lastAngle = 123486.0f;
 }
 
 void Flipper::UpdateAnimation(float diff_time_msec)
 {
    // Animation is updated by physics engine through a MoverObject. No additional visual animation here
+   // Still monitor angle updates in order to fire animate event at most once per frame (physics engine perform far more cycle per frame)
+   if (m_phitflipper && m_lastAngle != m_phitflipper->m_flipperMover.m_angleCur)
+   {
+      m_lastAngle = m_phitflipper->m_flipperMover.m_angleCur;
+      FireGroupEvent(DISPID_AnimateEvents_Animate);
+   }
 }
 
 void Flipper::RenderStatic() {

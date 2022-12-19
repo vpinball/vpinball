@@ -645,6 +645,7 @@ void HitTarget::UpdateAnimation(float diff_time_msec)
                 }
             }
             UpdateTarget();
+            FireGroupEvent(DISPID_AnimateEvents_Animate);
         }
     }
     else
@@ -673,6 +674,7 @@ void HitTarget::UpdateAnimation(float diff_time_msec)
                 }
             }
             UpdateTarget();
+            FireGroupEvent(DISPID_AnimateEvents_Animate);
         }
     }
 }
@@ -1347,6 +1349,13 @@ STDMETHODIMP HitTarget::get_DropSpeed(float *pVal)
 STDMETHODIMP HitTarget::put_DropSpeed(float newVal)
 {
    m_d.m_dropSpeed = newVal;
+
+   return S_OK;
+}
+
+STDMETHODIMP HitTarget::get_CurrentAnimOffset(float *pVal)
+{
+   *pVal = m_moveAnimationOffset;
 
    return S_OK;
 }

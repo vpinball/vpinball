@@ -90,8 +90,6 @@ public:
 
    SpinnerData m_d;
 
-   HitSpinner *m_phitspinner;
-
 private:
    void UpdatePlate(Vertex3D_NoTex2 * const vertBuffer);
 
@@ -104,6 +102,9 @@ private:
    Matrix3D m_fullMatrix;
 
    float m_posZ;
+
+   HitSpinner *m_phitspinner;
+   float m_lastAngle;
 
    float m_vertexBuffer_spinneranimangle;
 

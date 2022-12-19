@@ -271,11 +271,7 @@ void DispReel::RenderDynamic()
    }
    pd3dDevice->DMDShader->End();
 
-   //pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE); //!! not necessary anymore
    pd3dDevice->DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
-
-   //if(m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled)
-   //	pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 }
 
 void DispReel::RenderSetup()
@@ -373,6 +369,7 @@ void DispReel::RenderStatic()
 // number of motor steps queued up for each reel
 void DispReel::UpdateAnimation(float diff_time_msec)
 {
+   bool animated = false;
    while (g_pplayer->m_time_msec >= m_timeNextUpdate)
    {
       m_timeNextUpdate += m_d.m_updateinterval;
@@ -403,6 +400,8 @@ void DispReel::UpdateAnimation(float diff_time_msec)
                m_ptable->PlaySound(mySoundBSTR, 0, 1.0f, 0.f, 0.f, 0, VARIANT_FALSE, VARIANT_TRUE, 0.f);
                SysFreeString(mySoundBSTR);
             }
+
+            animated = true;
          }
 
          // is the reel in the process of moving??
@@ -410,7 +409,7 @@ void DispReel::UpdateAnimation(float diff_time_msec)
          {
             m_reelInfo[i].motorOffset += m_reelInfo[i].motorCalcStep;
             m_reelInfo[i].motorStepCount--;
-            // have re reached the end of the step
+            // have we reached the end of the step
             if (m_reelInfo[i].motorStepCount <= 0)
             {
                m_reelInfo[i].motorStepCount = 0;      // best to be safe (paranoid)
@@ -442,9 +441,13 @@ void DispReel::UpdateAnimation(float diff_time_msec)
                   }
                }
             }
+
+            animated = true;
          }
       }
    }
+   if (animated)
+      FireGroupEvent(DISPID_AnimateEvents_Animate);
 }
 
 void DispReel::SetObjectPos()

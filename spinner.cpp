@@ -455,6 +455,12 @@ void Spinner::RenderSetup()
 void Spinner::UpdateAnimation(float diff_time_msec)
 {
    // Animation is updated by physics engine through a MoverObject. No additional visual animation here
+   // Still monitor angle updates in order to fire animate event at most once per frame (physics engine perform far more cycle per frame)
+   if (m_phitspinner && m_lastAngle != m_phitspinner->m_spinnerMover.m_angle)
+   {
+      m_lastAngle = m_phitspinner->m_spinnerMover.m_angle;
+      FireGroupEvent(DISPID_AnimateEvents_Animate);
+   }
 }
 
 void Spinner::RenderStatic()
