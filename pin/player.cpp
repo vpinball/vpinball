@@ -1703,18 +1703,6 @@ HRESULT Player::Init()
 
          // build list of hitables
          m_vhitables.push_back(ph);
-
-         // Adding objects to animation update list (slingshot is done below :/)
-         if (pe->GetItemType() == eItemDispReel)
-         {
-             DispReel * const dispReel = (DispReel*)pe;
-             m_vanimate.push_back(&dispReel->m_dispreelanim);
-         }
-         else if (pe->GetItemType() == eItemLightSeq)
-         {
-             LightSeq * const lightseq = (LightSeq*)pe;
-             m_vanimate.push_back(&lightseq->m_lightseqanim);
-         }
       }
    }
 
@@ -1734,8 +1722,6 @@ HRESULT Player::Init()
 
       if (pho->GetType() == eFlipper)
          m_vFlippers.push_back((HitFlipper*)pho);
-      else if (pho->GetType() == eLineSegSlingshot) // Adding objects to animation update list, only slingshot! (dispreels and lightseqs are added above :/)
-         m_vanimate.push_back(&((LineSegSlingshot*)pho)->m_slingshotanim);
 
       MoverObject * const pmo = pho->GetMoverObject();
       if (pmo && pmo->AddToList()) // Spinner, Gate, Flipper, Plunger (ball is added separately on each create ball)
@@ -5039,9 +5025,16 @@ void Player::Render()
 
    m_overall_frames++;
 
-   // Process all AnimObjects (currently only DispReel, LightSeq and Slingshot)
-   for (size_t l = 0; l < m_vanimate.size(); ++l)
-      m_vanimate[l]->Animate();
+   // Update all animated parts
+   static U32 old_time_msec = m_time_msec;
+   const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
+   old_time_msec = m_time_msec;
+   for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
+   {
+      Hitable *const ph = m_ptable->m_vedit[i]->GetIHitable();
+      if (ph)
+         ph->UpdateAnimation(diff_time_msec);
+   }
 
 #ifndef ENABLE_SDL
    if (GetProfilingMode() == PF_ENABLED)

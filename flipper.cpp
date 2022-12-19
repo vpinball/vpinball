@@ -872,8 +872,12 @@ void Flipper::RenderSetup()
    m_vertexBuffer->unlock();
 }
 
-void Flipper::RenderStatic()
+void Flipper::UpdateAnimation(float diff_time_msec)
 {
+   // Animation is updated by physics engine through a MoverObject. No additional visual animation here
+}
+
+void Flipper::RenderStatic() {
 }
 
 HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)

@@ -182,16 +182,6 @@ public:
    long     GetUpdateInterval() const { return m_d.m_updateinterval; }
    void     SetUpdateInterval(const long value) { m_d.m_updateinterval = max((long)1, value); }
 
-   void     Animate();
-
-   class LightSeqAnimObject final : public AnimObject
-   {
-   public:
-      void Animate() final { m_pLightSeq->Animate(); } // this function is called every frame to animate the object/light sequence
-
-      LightSeq *m_pLightSeq;
-   } m_lightseqanim;
-
    LightSeqData m_d;
 
 private:

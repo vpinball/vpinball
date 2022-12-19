@@ -321,6 +321,10 @@ void Textbox::RenderSetup()
    PreRenderText();
 }
 
+void Textbox::UpdateAnimation(float diff_time_msec)
+{
+}
+
 void Textbox::RenderStatic()
 {
 }

@@ -145,16 +145,6 @@ public:
        m_d.m_updateinterval = max((int)5, interval);
    }
 
-   void    Animate();
-
-   class DispReelAnimObject final : public AnimObject
-   {
-   public:
-      void Animate() { m_pDispReel->Animate(); } // this function is called every frame to animate the object/reels animation
-
-      DispReel *m_pDispReel;
-   } m_dispreelanim;
-
    DispReelData m_d;
 
 private:

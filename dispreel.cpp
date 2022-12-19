@@ -3,7 +3,6 @@
 
 DispReel::DispReel()
 {
-   m_dispreelanim.m_pDispReel = this;
 }
 
 // This function is called when ever a new instance of this object is created
@@ -12,8 +11,6 @@ DispReel::DispReel()
 HRESULT DispReel::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
    m_ptable = ptable;
-
-   m_dispreelanim.m_pDispReel = this;
 
    SetDefaults(fromMouseClick);
 
@@ -371,10 +368,10 @@ void DispReel::RenderStatic()
 {
 }
 
-// This function is called during Animate().  It basically check to see if the update
+// This function is called each frame.  It basically check to see if the update
 // interval has expired and if so handles the rolling of the reels according to the
 // number of motor steps queued up for each reel
-void DispReel::Animate()
+void DispReel::UpdateAnimation(float diff_time_msec)
 {
    while (g_pplayer->m_time_msec >= m_timeNextUpdate)
    {

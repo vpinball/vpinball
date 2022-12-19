@@ -397,49 +397,44 @@ void Gate::EndPlay()
    }
 }
 
-void Gate::UpdateWire()
-{
-   if (m_phitgate->m_gateMover.m_angle == m_vertexbuffer_angle)
-      return;
-
-   m_vertexbuffer_angle = m_phitgate->m_gateMover.m_angle;
-
-   Matrix3D fullMatrix, tempMat;
-
-   fullMatrix.RotateXMatrix(m_d.m_twoWay ? m_phitgate->m_gateMover.m_angle : -m_phitgate->m_gateMover.m_angle);
-   tempMat.RotateZMatrix(ANGTORAD(m_d.m_rotation));
-   tempMat.Multiply(fullMatrix, fullMatrix);
-
-   Matrix3D vertMatrix;
-   tempMat.SetScaling(m_d.m_length, m_d.m_length, m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
-   tempMat.Multiply(fullMatrix, vertMatrix);
-   tempMat.SetTranslation(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight);
-   tempMat.Multiply(vertMatrix, vertMatrix);
-
-   Vertex3D_NoTex2 *buf;
-   m_wireVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
-   for (unsigned int i = 0; i < m_numVertices; i++)
-   {
-      Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
-      vert = vertMatrix.MultiplyVector(vert);
-      buf[i].x = vert.x;
-      buf[i].y = vert.y;
-      buf[i].z = vert.z;
-
-      vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
-      vert = fullMatrix.MultiplyVectorNoTranslate(vert);
-      buf[i].nx = vert.x;
-      buf[i].ny = vert.y;
-      buf[i].nz = vert.z;
-      buf[i].tu = m_vertices[i].tu;
-      buf[i].tv = m_vertices[i].tv;
-   }
-   m_wireVertexBuffer->unlock();
-}
-
 void Gate::RenderObject()
 {
-   UpdateWire();
+   if (m_phitgate->m_gateMover.m_angle != m_vertexbuffer_angle)
+   {
+      m_vertexbuffer_angle = m_phitgate->m_gateMover.m_angle;
+
+      Matrix3D fullMatrix, tempMat;
+
+      fullMatrix.RotateXMatrix(m_d.m_twoWay ? m_phitgate->m_gateMover.m_angle : -m_phitgate->m_gateMover.m_angle);
+      tempMat.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+      tempMat.Multiply(fullMatrix, fullMatrix);
+
+      Matrix3D vertMatrix;
+      tempMat.SetScaling(m_d.m_length, m_d.m_length, m_d.m_length * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+      tempMat.Multiply(fullMatrix, vertMatrix);
+      tempMat.SetTranslation(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight);
+      tempMat.Multiply(vertMatrix, vertMatrix);
+
+      Vertex3D_NoTex2 *buf;
+      m_wireVertexBuffer->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);
+      for (unsigned int i = 0; i < m_numVertices; i++)
+      {
+         Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
+         vert = vertMatrix.MultiplyVector(vert);
+         buf[i].x = vert.x;
+         buf[i].y = vert.y;
+         buf[i].z = vert.z;
+
+         vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
+         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+         buf[i].nx = vert.x;
+         buf[i].ny = vert.y;
+         buf[i].nz = vert.z;
+         buf[i].tu = m_vertices[i].tu;
+         buf[i].tv = m_vertices[i].tv;
+      }
+      m_wireVertexBuffer->unlock();
+   }
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
@@ -582,6 +577,11 @@ void Gate::RenderSetup()
    m_wireVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
    GenerateWireMesh(buf);
    m_wireVertexBuffer->unlock();
+}
+
+void Gate::UpdateAnimation(float diff_time_msec)
+{
+   // Animation is updated by physics engine through a MoverObject. No additional visual animation here
 }
 
 void Gate::RenderStatic()

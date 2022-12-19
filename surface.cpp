@@ -895,7 +895,7 @@ void Surface::PrepareSlingshots()
    for (size_t i = 0; i < m_vlinesling.size(); i++, offset += 9)
    {
       LineSegSlingshot * const plinesling = m_vlinesling[i];
-      plinesling->m_slingshotanim.m_animations = m_d.m_slingshotAnimation;
+      plinesling->m_animations = m_d.m_slingshotAnimation;
 
       rgv3D[offset].x = plinesling->v1.x;
       rgv3D[offset].y = plinesling->v1.y;
@@ -976,6 +976,12 @@ void Surface::FreeBuffers()
    SAFE_BUFFER_RELEASE(slingIBuffer); // NB: global instance
 }
 
+void Surface::UpdateAnimation(float diff_time_msec)
+{
+   for (size_t i = 0; i < m_vlinesling.size(); i++)
+      m_vlinesling[i]->Animate();
+}
+
 void Surface::RenderStatic()
 {
    if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
@@ -995,7 +1001,7 @@ void Surface::RenderSlingshots()
    for (size_t i = 0; i < m_vlinesling.size(); i++)
    {
       const LineSegSlingshot * const plinesling = m_vlinesling[i];
-      if (plinesling->m_slingshotanim.m_iframe || plinesling->m_doHitEvent)
+      if (plinesling->m_iframe || plinesling->m_doHitEvent)
       {
          nothing_to_draw = false;
          break;
@@ -1019,7 +1025,7 @@ void Surface::RenderSlingshots()
    for (size_t i = 0; i < m_vlinesling.size(); i++)
    {
       LineSegSlingshot * const plinesling = m_vlinesling[i];
-      if (!plinesling->m_slingshotanim.m_iframe && !plinesling->m_doHitEvent)
+      if (!plinesling->m_iframe && !plinesling->m_doHitEvent)
          continue;
       else if (plinesling->m_doHitEvent)
       {

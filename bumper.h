@@ -17,7 +17,6 @@ public:
    float m_orientation;
    float m_ringSpeed;
    float m_ringDropOffset;
-   U32 m_time_msec;
    TimerDataRoot m_tdr;
    string m_szCapMaterial;
    string m_szBaseMaterial;

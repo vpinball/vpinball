@@ -77,14 +77,14 @@ void LineSegSlingshot::Collide(const CollisionEvent& coll)
        if (dist_ls > 0.25f) //!! magic distance, must be a new place if only by a little
        {
            ((IFireEvents *)m_obj)->FireGroupEvent(DISPID_SurfaceEvents_Slingshot);
-           m_slingshotanim.m_TimeReset = g_pplayer->m_time_msec + 100;
+           m_TimeReset = g_pplayer->m_time_msec + 100;
 
            g_pplayer->m_pininput.PlayRumble(0.15f, 0.1f, 100);
        }
    }
 }
 
-void SlingshotAnimObject::Animate()
+void LineSegSlingshot::Animate()
 {
    if (!m_iframe && (m_TimeReset != 0) && m_animations)
    {

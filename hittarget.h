@@ -181,7 +181,6 @@ public:
 
 private:
 
-   void UpdateAnimation();
    void RenderObject();
    void UpdateTarget();
    void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const bool setHitObject);

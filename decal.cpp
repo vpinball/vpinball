@@ -600,6 +600,10 @@ void Decal::RenderObject()
    pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
+void Decal::UpdateAnimation(float diff_time_msec)
+{
+}
+
 void Decal::RenderStatic()
 {
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);

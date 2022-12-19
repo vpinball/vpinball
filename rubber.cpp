@@ -691,6 +691,10 @@ void Rubber::RenderSetup()
    GenerateVertexBuffer();
 }
 
+void Rubber::UpdateAnimation(float diff_time_msec)
+{
+}
+
 void Rubber::RenderStatic()
 {
    if (m_d.m_staticRendering)
