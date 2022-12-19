@@ -3,6 +3,7 @@
 // Utilisé par vpinball_eng.rc
 //
 #define DISPID_Textbox_BackColor        1
+#define IDC_FALLOFF                     1
 #define DISPID_Textbox_FontColor        2
 #define DISPID_Light_State              2
 #define IDC_FORCE_EDIT                  2
@@ -54,6 +55,7 @@
 #define IDC_DBG_LIGHT_INTENSITY         12
 #define IDC_TEXTBOX_TRANSP_CHECK        12
 #define IDC_BACK_TRANSP_CHECK           12
+#define IDC_INTENSITY                   12
 #define DISPID_ROTRA2                   13
 #define IDC_DECAL_VERTICAL_TEXT_CHECK   13
 #define IDC_DISPLAY_IMAGE_CHECK         13
@@ -1221,6 +1223,14 @@
 #define IDC_MATERIAL_TYPE               899
 #define IDC_ROUGHNESS_BASE_LABEL        900
 #define IDC_ROUGHNESS_CLEAR_LABEL       901
+#define IDC_POS_X                       902
+#define IDC_POS_Y                       903
+#define IDC_POS_Z                       904
+#define IDC_HALO_LABEL                  905
+#define IDC_MODULATE_LABEL              906
+#define IDC_TRANSMIT_LABEL              907
+#define IDC_IMAGE_LABEL                 908
+#define IDC_DEPTHBIAS_LABEL             909
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1241,6 +1251,7 @@
 #define DISPID_REFLECTION_PROBE         1502
 #define DISPID_Shape                    1503
 #define DISPID_REFRACTION_PROBE         1503
+#define IDC_LIGHT_TYPE_COMBO            1503
 #define DISPID_UserValue                1504
 #define DISPID_Image3                   1505
 #define DISPID_Sound                    1506
@@ -1417,7 +1428,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        670
 #define _APS_NEXT_COMMAND_VALUE         4028
-#define _APS_NEXT_CONTROL_VALUE         902
+#define _APS_NEXT_CONTROL_VALUE         910
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

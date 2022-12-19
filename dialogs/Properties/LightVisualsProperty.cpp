@@ -16,8 +16,47 @@ LightVisualsProperty::LightVisualsProperty(const VectorProtected<ISelect> *pvsel
     m_transmitEdit.SetDialog(this);
     m_posXEdit.SetDialog(this);
     m_posYEdit.SetDialog(this);
+    m_posZEdit.SetDialog(this);
     m_imageCombo.SetDialog(this);
+    m_typeCombo.SetDialog(this);
     m_surfaceCombo.SetDialog(this);
+}
+
+void LightVisualsProperty::UpdateLightType(const int mode)
+{
+    GetDlgItem(IDC_IMAGE_LABEL).ShowWindow(SW_HIDE);
+    m_imageCombo.ShowWindow(SW_HIDE);
+    GetDlgItem(IDC_IMAGE_MODE).ShowWindow(SW_HIDE);
+    GetDlgItem(IDC_HALO_LABEL).ShowWindow(SW_HIDE);
+    GetDlgItem(IDC_HALO_EDIT).ShowWindow(SW_HIDE);
+    GetDlgItem(IDC_MODULATE_LABEL).ShowWindow(SW_HIDE);
+    GetDlgItem(IDC_BULB_MODULATE_VS_ADD).ShowWindow(SW_HIDE);
+    GetDlgItem(IDC_TRANSMIT_LABEL).ShowWindow(SW_HIDE);
+    GetDlgItem(IDC_TRANSMISSION_SCALE).ShowWindow(SW_HIDE);
+    if (mode == 0)
+    {
+       GetDlgItem(IDC_DEPTHBIAS_LABEL).ShowWindow(SW_HIDE);
+       GetDlgItem(IDC_DEPTH_BIAS).ShowWindow(SW_HIDE);
+    }
+    else if (mode == 1)
+    {
+       GetDlgItem(IDC_IMAGE_LABEL).ShowWindow(SW_SHOWNORMAL);
+       m_imageCombo.ShowWindow(SW_SHOWNORMAL);
+       GetDlgItem(IDC_IMAGE_MODE).ShowWindow(SW_SHOWNORMAL);
+       GetDlgItem(IDC_DEPTHBIAS_LABEL).ShowWindow(SW_SHOWNORMAL);
+       GetDlgItem(IDC_DEPTH_BIAS).ShowWindow(SW_SHOWNORMAL);
+    }
+    else
+    {
+       GetDlgItem(IDC_HALO_LABEL).ShowWindow(SW_SHOWNORMAL);
+       GetDlgItem(IDC_HALO_EDIT).ShowWindow(SW_SHOWNORMAL);
+       GetDlgItem(IDC_MODULATE_LABEL).ShowWindow(SW_SHOWNORMAL);
+       GetDlgItem(IDC_BULB_MODULATE_VS_ADD).ShowWindow(SW_SHOWNORMAL);
+       GetDlgItem(IDC_TRANSMIT_LABEL).ShowWindow(SW_SHOWNORMAL);
+       GetDlgItem(IDC_TRANSMISSION_SCALE).ShowWindow(SW_SHOWNORMAL);
+       GetDlgItem(IDC_DEPTHBIAS_LABEL).ShowWindow(SW_SHOWNORMAL);
+       GetDlgItem(IDC_DEPTH_BIAS).ShowWindow(SW_SHOWNORMAL);
+    }
 }
 
 void LightVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -28,50 +67,75 @@ void LightVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         Light * const light = (Light *)m_pvsel->ElementAt(i);
 
-        if (dispid == 1 || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_falloffEdit, light->m_d.m_falloff);
-        if (dispid == IDC_LIGHT_FALLOFF_POWER || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_falloffPowerEdit, light->m_d.m_falloff_power);
-        if (dispid == 12 || dispid == -1)
+        if (dispid == IDC_INTENSITY || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_intensityEdit, light->m_d.m_intensity);
         if (dispid == IDC_FADE_SPEED_UP || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_fadeSpeedUpEdit, light->m_d.m_fadeSpeedUp);
+            PropertyDialog::SetIntTextbox(m_fadeSpeedUpEdit, (int)(0.5 + light->m_d.m_intensity / light->m_d.m_fadeSpeedUp));
         if (dispid == IDC_FADE_SPEED_DOWN || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_fadeSpeedDownEdit, light->m_d.m_fadeSpeedDown);
-        if (dispid == IDC_IMAGE_MODE || dispid == -1)
-            PropertyDialog::SetCheckboxState(m_hPassThroughCheck, light->m_d.m_imageMode);
-        if (dispid == IDC_LIGHT_TYPE_CHECKBOX || dispid == -1)
-            PropertyDialog::SetCheckboxState(m_hEnableCheck, light->m_d.m_BulbLight);
-        if (dispid == IDC_SHOW_BULB_MESH || dispid == -1)
-            PropertyDialog::SetCheckboxState(m_hShowMeshCheck, light->m_d.m_showBulbMesh);
-        if (dispid == IDC_STATIC_BULB_MESH || dispid == -1)
-            PropertyDialog::SetCheckboxState(m_hStaticMeshCheck, light->m_d.m_staticBulbMesh);
-        if (dispid == IDC_REFLECT_ON_BALLS || dispid == -1)
-            PropertyDialog::SetCheckboxState(m_hRelectOnBalls, light->m_d.m_showReflectionOnBall);
-        if (dispid == IDC_SHADOWS || dispid == -1)
-            PropertyDialog::SetCheckboxState(m_hRaytracedBallShadows, light->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS);
-        if (dispid == IDC_DEPTH_BIAS || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_depthBiasEdit, light->m_d.m_depthBias);
-        if (dispid == IDC_HALO_EDIT || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_haloHeightEdit, light->m_d.m_bulbHaloHeight);
-        if (dispid == IDC_SCALE_BULB_MESH || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_scaleMeshEdit, light->m_d.m_meshRadius);
-        if (dispid == IDC_BULB_MODULATE_VS_ADD || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_modulateEdit, light->m_d.m_modulate_vs_add);
-        if (dispid == IDC_TRANSMISSION_SCALE || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_transmitEdit, light->m_d.m_transmissionScale);
-        if (dispid == 902 || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_posXEdit, light->m_d.m_vCenter.x);
-        if (dispid == 903 || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_posYEdit, light->m_d.m_vCenter.y);
-        if (dispid == IDC_SURFACE_COMBO || dispid == -1)
-            PropertyDialog::UpdateSurfaceComboBox(light->GetPTable(), m_surfaceCombo, light->m_d.m_szSurface);
+            PropertyDialog::SetIntTextbox(m_fadeSpeedDownEdit, (int)(0.5 + light->m_d.m_intensity / light->m_d.m_fadeSpeedDown));
         if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
             m_colorButton1.SetColor(light->m_d.m_color);
         if (dispid == IDC_COLOR_BUTTON2 || dispid == -1)
             m_colorButton2.SetColor(light->m_d.m_color2);
+        if (dispid == IDC_FALLOFF || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_falloffEdit, light->m_d.m_falloff);
+        if (dispid == IDC_LIGHT_FALLOFF_POWER || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_falloffPowerEdit, light->m_d.m_falloff_power);
+
+        if (dispid == IDC_LIGHT_TYPE_COMBO || dispid == -1)
+        {
+            if (!light->m_d.m_visible)
+            {
+               m_typeCombo.SetCurSel(0);
+               UpdateLightType(0);
+            }
+            else if (!light->m_d.m_BulbLight)
+            {
+               m_typeCombo.SetCurSel(1);
+               UpdateLightType(1);
+            }
+            else
+            {
+               m_typeCombo.SetCurSel(2);
+               UpdateLightType(2);
+            }
+        }
+        if (dispid == IDC_DEPTH_BIAS || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_depthBiasEdit, light->m_d.m_depthBias);
+
+        if (dispid == IDC_HALO_EDIT || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_haloHeightEdit, light->m_d.m_bulbHaloHeight);
+        if (dispid == IDC_BULB_MODULATE_VS_ADD || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_modulateEdit, light->m_d.m_modulate_vs_add);
+        if (dispid == IDC_TRANSMISSION_SCALE || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_transmitEdit, light->m_d.m_transmissionScale);
+
+        if (dispid == IDC_IMAGE_MODE || dispid == -1)
+            PropertyDialog::SetCheckboxState(m_hPassThroughCheck, light->m_d.m_imageMode);
+
+        if (dispid == IDC_SHOW_BULB_MESH || dispid == -1)
+            PropertyDialog::SetCheckboxState(m_hShowMeshCheck, light->m_d.m_showBulbMesh);
+        if (dispid == IDC_STATIC_BULB_MESH || dispid == -1)
+            PropertyDialog::SetCheckboxState(m_hStaticMeshCheck, light->m_d.m_staticBulbMesh);
+        if (dispid == IDC_SCALE_BULB_MESH || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_scaleMeshEdit, light->m_d.m_meshRadius);
+
+        if (dispid == IDC_REFLECT_ON_BALLS || dispid == -1)
+            PropertyDialog::SetCheckboxState(m_hRelectOnBalls, light->m_d.m_showReflectionOnBall);
+        if (dispid == IDC_SHADOWS || dispid == -1)
+            PropertyDialog::SetCheckboxState(m_hRaytracedBallShadows, light->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS);
+
+        if (dispid == IDC_POS_X || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_posXEdit, light->m_d.m_vCenter.x);
+        if (dispid == IDC_POS_Y || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_posYEdit, light->m_d.m_vCenter.y);
+        if (dispid == IDC_POS_Z || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_posZEdit, light->m_d.m_height);
+        if (dispid == IDC_SURFACE_COMBO || dispid == -1)
+            PropertyDialog::UpdateSurfaceComboBox(light->GetPTable(), m_surfaceCombo, light->m_d.m_szSurface);
 
         UpdateBaseVisuals(light, &light->m_d, dispid);
+
         //only show the first element on multi-select
         break;
     }
@@ -87,47 +151,62 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
 
         switch (dispid)
         {
-            case 1:
+            case IDC_FALLOFF:
                 CHECK_UPDATE_ITEM(light->m_d.m_falloff, PropertyDialog::GetFloatTextbox(m_falloffEdit), light);
                 break;
             case IDC_LIGHT_FALLOFF_POWER:
                 CHECK_UPDATE_ITEM(light->m_d.m_falloff_power, PropertyDialog::GetFloatTextbox(m_falloffPowerEdit), light);
                 break;
-            case 12:
-                CHECK_UPDATE_ITEM(light->m_d.m_intensity, PropertyDialog::GetFloatTextbox(m_intensityEdit), light);
+            case IDC_INTENSITY:
+                 {
+                     if (light->m_d.m_intensity != PropertyDialog::GetFloatTextbox(m_intensityEdit))
+                     {
+                         PropertyDialog::StartUndo(light);
+                         light->m_d.m_intensity = PropertyDialog::GetFloatTextbox(m_intensityEdit);
+                         light->m_d.m_fadeSpeedUp = light->m_d.m_intensity / (float)PropertyDialog::GetIntTextbox(m_fadeSpeedUpEdit);
+                         light->m_d.m_fadeSpeedDown = light->m_d.m_intensity / (float)PropertyDialog::GetIntTextbox(m_fadeSpeedDownEdit);
+                         PropertyDialog::EndUndo(light);
+                     }
+                 }
                 break;
             case IDC_FADE_SPEED_UP:
-                CHECK_UPDATE_ITEM(light->m_d.m_fadeSpeedUp, PropertyDialog::GetFloatTextbox(m_fadeSpeedUpEdit), light);
+                CHECK_UPDATE_ITEM(light->m_d.m_fadeSpeedUp, light->m_d.m_intensity / (float) PropertyDialog::GetIntTextbox(m_fadeSpeedUpEdit), light);
                 break;
             case IDC_FADE_SPEED_DOWN:
-                CHECK_UPDATE_ITEM(light->m_d.m_fadeSpeedDown, PropertyDialog::GetFloatTextbox(m_fadeSpeedDownEdit), light);
+                CHECK_UPDATE_ITEM(light->m_d.m_fadeSpeedDown, light->m_d.m_intensity / (float) PropertyDialog::GetIntTextbox(m_fadeSpeedDownEdit), light);
                 break;
-            case IDC_IMAGE_MODE:
-                CHECK_UPDATE_ITEM(light->m_d.m_imageMode, PropertyDialog::GetCheckboxState(m_hPassThroughCheck), light);
+
+            case IDC_LIGHT_TYPE_COMBO:
+                PropertyDialog::StartUndo(light);
+                if (m_typeCombo.GetCurSel() == 0)
+                {
+                   light->m_d.m_visible = false;
+                   UpdateLightType(0);
+                }
+                else if (m_typeCombo.GetCurSel() == 1)
+                {
+                   light->m_d.m_visible = true;
+                   light->m_d.m_BulbLight = false;
+                   UpdateLightType(1);
+                }
+                else
+                {
+                   light->m_d.m_visible = true;
+                   light->m_d.m_BulbLight = true;
+                   UpdateLightType(2);
+                }
+                PropertyDialog::EndUndo(light);
                 break;
             case IDC_DEPTH_BIAS:
                 CHECK_UPDATE_ITEM(light->m_d.m_depthBias, PropertyDialog::GetFloatTextbox(m_depthBiasEdit), light);
                 break;
-            case IDC_LIGHT_TYPE_CHECKBOX:
-                CHECK_UPDATE_ITEM(light->m_d.m_BulbLight, PropertyDialog::GetCheckboxState(m_hEnableCheck), light);
+
+            case IDC_IMAGE_MODE:
+                CHECK_UPDATE_ITEM(light->m_d.m_imageMode, PropertyDialog::GetCheckboxState(m_hPassThroughCheck), light);
                 break;
-            case IDC_SHOW_BULB_MESH:
-                CHECK_UPDATE_ITEM(light->m_d.m_showBulbMesh, PropertyDialog::GetCheckboxState(m_hShowMeshCheck), light);
-                break;
-            case IDC_STATIC_BULB_MESH:
-                CHECK_UPDATE_ITEM(light->m_d.m_staticBulbMesh, PropertyDialog::GetCheckboxState(m_hStaticMeshCheck), light);
-                break;
-            case IDC_REFLECT_ON_BALLS:
-                CHECK_UPDATE_ITEM(light->m_d.m_showReflectionOnBall, PropertyDialog::GetCheckboxState(m_hRelectOnBalls), light);
-                break;
-            case IDC_SHADOWS:
-                CHECK_UPDATE_ITEM(light->m_d.m_shadows, PropertyDialog::GetCheckboxState(m_hRaytracedBallShadows) ? ShadowMode::RAYTRACED_BALL_SHADOWS : ShadowMode::NONE, light);
-                break;
+            
             case IDC_HALO_EDIT:
                 CHECK_UPDATE_ITEM(light->m_d.m_bulbHaloHeight, PropertyDialog::GetFloatTextbox(m_haloHeightEdit), light);
-                break;
-            case IDC_SCALE_BULB_MESH:
-                CHECK_UPDATE_ITEM(light->m_d.m_meshRadius, PropertyDialog::GetFloatTextbox(m_scaleMeshEdit), light);
                 break;
             case IDC_BULB_MODULATE_VS_ADD:
                 CHECK_UPDATE_ITEM(light->m_d.m_modulate_vs_add, PropertyDialog::GetFloatTextbox(m_modulateEdit), light);
@@ -135,15 +214,37 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
             case IDC_TRANSMISSION_SCALE:
                 CHECK_UPDATE_ITEM(light->m_d.m_transmissionScale, PropertyDialog::GetFloatTextbox(m_transmitEdit), light);
                 break;
-            case 902:
+
+            case IDC_SHOW_BULB_MESH:
+                CHECK_UPDATE_ITEM(light->m_d.m_showBulbMesh, PropertyDialog::GetCheckboxState(m_hShowMeshCheck), light);
+                break;
+            case IDC_STATIC_BULB_MESH:
+                CHECK_UPDATE_ITEM(light->m_d.m_staticBulbMesh, PropertyDialog::GetCheckboxState(m_hStaticMeshCheck), light);
+                break;
+            case IDC_SCALE_BULB_MESH:
+                CHECK_UPDATE_ITEM(light->m_d.m_meshRadius, PropertyDialog::GetFloatTextbox(m_scaleMeshEdit), light);
+                break;
+            
+            case IDC_REFLECT_ON_BALLS:
+                CHECK_UPDATE_ITEM(light->m_d.m_showReflectionOnBall, PropertyDialog::GetCheckboxState(m_hRelectOnBalls), light);
+                break;
+            case IDC_SHADOWS:
+                CHECK_UPDATE_ITEM(light->m_d.m_shadows, PropertyDialog::GetCheckboxState(m_hRaytracedBallShadows) ? ShadowMode::RAYTRACED_BALL_SHADOWS : ShadowMode::NONE, light);
+                break;
+
+            case IDC_POS_X:
                 CHECK_UPDATE_ITEM(light->m_d.m_vCenter.x, PropertyDialog::GetFloatTextbox(m_posXEdit), light);
                 break;
-            case 903:
+            case IDC_POS_Y:
                 CHECK_UPDATE_ITEM(light->m_d.m_vCenter.y, PropertyDialog::GetFloatTextbox(m_posYEdit), light);
+                break;
+            case IDC_POS_Z:
+                CHECK_UPDATE_ITEM(light->m_d.m_height, PropertyDialog::GetFloatTextbox(m_posZEdit), light);
                 break;
             case IDC_SURFACE_COMBO:
                 CHECK_UPDATE_COMBO_TEXT_STRING(light->m_d.m_szSurface, m_surfaceCombo, light);
                 break;
+
             case IDC_COLOR_BUTTON1:
             {
                 CComObject<PinTable> * const ptable = g_pvp->GetActiveTable();
@@ -209,73 +310,88 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
 
 BOOL LightVisualsProperty::OnInitDialog()
 {
-    m_falloffEdit.AttachItem(1);
-    m_falloffPowerEdit.AttachItem(IDC_LIGHT_FALLOFF_POWER);
-    m_intensityEdit.AttachItem(12);
-    m_fadeSpeedUpEdit.AttachItem(IDC_FADE_SPEED_UP);
-    m_fadeSpeedDownEdit.AttachItem(IDC_FADE_SPEED_DOWN);
-    m_hPassThroughCheck = ::GetDlgItem(GetHwnd(), IDC_IMAGE_MODE);
-    m_imageCombo.AttachItem(DISPID_Image);
-    m_baseImageCombo = &m_imageCombo;
-    m_depthBiasEdit.AttachItem(IDC_DEPTH_BIAS);
-    m_hEnableCheck= ::GetDlgItem(GetHwnd(), IDC_LIGHT_TYPE_CHECKBOX);
-    m_hShowMeshCheck = ::GetDlgItem(GetHwnd(), IDC_SHOW_BULB_MESH);
-    m_hStaticMeshCheck = ::GetDlgItem(GetHwnd(), IDC_STATIC_BULB_MESH);
-    m_haloHeightEdit.AttachItem(IDC_HALO_EDIT);
-    m_scaleMeshEdit.AttachItem(IDC_SCALE_BULB_MESH);
-    m_modulateEdit.AttachItem(IDC_BULB_MODULATE_VS_ADD);
-    m_transmitEdit.AttachItem(IDC_TRANSMISSION_SCALE);
-    m_hRelectOnBalls = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ON_BALLS);
-    m_hRaytracedBallShadows = ::GetDlgItem(GetHwnd(), IDC_SHADOWS);
-    m_posXEdit.AttachItem(902);
-    m_posYEdit.AttachItem(903);
-    m_surfaceCombo.AttachItem(IDC_SURFACE_COMBO);
-    AttachItem(IDC_COLOR_BUTTON1, m_colorButton1);
-    AttachItem(IDC_COLOR_BUTTON2, m_colorButton2);
-    UpdateVisuals();
-
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), CResizer::topleft, RD_STRETCH_WIDTH); // Light setting group box
     m_resizer.AddChild(GetDlgItem(IDC_STATIC4), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC11), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC12), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC13), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC14), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC15), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC16), CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC17), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC18), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC19), CResizer::topleft, 0);
-    m_resizer.AddChild(m_falloffEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_falloffPowerEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_intensityEdit.AttachItem(IDC_INTENSITY);
     m_resizer.AddChild(m_intensityEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);
+    m_fadeSpeedUpEdit.AttachItem(IDC_FADE_SPEED_UP);
     m_resizer.AddChild(m_fadeSpeedUpEdit, CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC12), CResizer::topleft, 0);
+    m_fadeSpeedDownEdit.AttachItem(IDC_FADE_SPEED_DOWN);
     m_resizer.AddChild(m_fadeSpeedDownEdit, CResizer::topright, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hPassThroughCheck, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_imageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_depthBiasEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hEnableCheck, CResizer::topleft, 0);
-    m_resizer.AddChild(m_hShowMeshCheck, CResizer::topleft, 0);
-    m_resizer.AddChild(m_hStaticMeshCheck, CResizer::topleft, 0);
-    m_resizer.AddChild(m_haloHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_scaleMeshEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_modulateEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_transmitEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hRelectOnBalls, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hRaytracedBallShadows, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_posXEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_posYEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_surfaceCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topleft, 0);
+    AttachItem(IDC_COLOR_BUTTON1, m_colorButton1);
     m_resizer.AddChild(m_colorButton1, CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC15), CResizer::topleft, 0);
+    AttachItem(IDC_COLOR_BUTTON2, m_colorButton2);
     m_resizer.AddChild(m_colorButton2, CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
+    m_falloffEdit.AttachItem(IDC_FALLOFF);
+    m_resizer.AddChild(m_falloffEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
+    m_falloffPowerEdit.AttachItem(IDC_LIGHT_FALLOFF_POWER);
+    m_resizer.AddChild(m_falloffPowerEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, RD_STRETCH_WIDTH); // Render Mode group box
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC23), CResizer::topleft, 0);
+    m_typeCombo.AttachItem(IDC_LIGHT_TYPE_COMBO);
+    m_typeCombo.AddString("Hidden");
+    m_typeCombo.AddString("Classic");
+    m_typeCombo.AddString("Halo");
+    m_resizer.AddChild(m_typeCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_HALO_LABEL), CResizer::topleft, 0);
+    m_haloHeightEdit.AttachItem(IDC_HALO_EDIT);
+    m_resizer.AddChild(m_haloHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_MODULATE_LABEL), CResizer::topleft, 0);
+    m_modulateEdit.AttachItem(IDC_BULB_MODULATE_VS_ADD);
+    m_resizer.AddChild(m_modulateEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_TRANSMIT_LABEL), CResizer::topleft, 0);
+    m_transmitEdit.AttachItem(IDC_TRANSMISSION_SCALE);
+    m_resizer.AddChild(m_transmitEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+
+    m_resizer.AddChild(GetDlgItem(IDC_IMAGE_LABEL), CResizer::topleft, 0);
+    m_baseImageCombo = &m_imageCombo;
+    m_imageCombo.AttachItem(DISPID_Image);
+    m_resizer.AddChild(m_imageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_hPassThroughCheck = ::GetDlgItem(GetHwnd(), IDC_IMAGE_MODE);
+    m_resizer.AddChild(m_hPassThroughCheck, CResizer::topleft, RD_STRETCH_WIDTH);
+
+    m_resizer.AddChild(GetDlgItem(IDC_DEPTHBIAS_LABEL), CResizer::topleft, 0);
+    m_depthBiasEdit.AttachItem(IDC_DEPTH_BIAS);
+    m_resizer.AddChild(m_depthBiasEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC21), CResizer::topleft, RD_STRETCH_WIDTH); // Ball & reflections group box
+    m_hRelectOnBalls = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ON_BALLS);
+    m_resizer.AddChild(m_hRelectOnBalls, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_hRaytracedBallShadows = ::GetDlgItem(GetHwnd(), IDC_SHADOWS);
+    m_resizer.AddChild(m_hRaytracedBallShadows, CResizer::topleft, RD_STRETCH_WIDTH);
+
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC22), CResizer::topleft, RD_STRETCH_WIDTH); // Bulb group box
+    m_hShowMeshCheck = ::GetDlgItem(GetHwnd(), IDC_SHOW_BULB_MESH);
+    m_resizer.AddChild(m_hShowMeshCheck, CResizer::topleft, 0);
+    m_hStaticMeshCheck = ::GetDlgItem(GetHwnd(), IDC_STATIC_BULB_MESH);
+    m_resizer.AddChild(m_hStaticMeshCheck, CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), CResizer::topleft, 0);
+    m_scaleMeshEdit.AttachItem(IDC_SCALE_BULB_MESH);
+    m_resizer.AddChild(m_scaleMeshEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC16), CResizer::topleft, RD_STRETCH_WIDTH); // Position group box
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC17), CResizer::topleft, 0);
+    m_posXEdit.AttachItem(IDC_POS_X);
+    m_resizer.AddChild(m_posXEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC18), CResizer::topleft, 0);
+    m_posYEdit.AttachItem(IDC_POS_Y);
+    m_resizer.AddChild(m_posYEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC20), CResizer::topleft, 0);
+    m_posZEdit.AttachItem(IDC_POS_Z);
+    m_resizer.AddChild(m_posZEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC19), CResizer::topleft, 0);
+    m_surfaceCombo.AttachItem(IDC_SURFACE_COMBO);
+    m_resizer.AddChild(m_surfaceCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+
+    UpdateVisuals();
 
     return TRUE;
 }
