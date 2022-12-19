@@ -181,6 +181,7 @@ public:
    STDMETHOD(put_Orientation)(/*[in]*/ float newVal);
    STDMETHOD(get_RingDropOffset)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_RingDropOffset)(/*[in]*/ float newVal);
+   STDMETHOD(get_CurrentRingOffset)(/*[out, retval]*/ float *pVal);
    STDMETHOD(get_Radius)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Radius)(/*[in]*/ float newVal);
    STDMETHOD(get_HasHitEvent)(/*[out, retval]*/ VARIANT_BOOL *pVal);
