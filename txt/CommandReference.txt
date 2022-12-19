@@ -324,6 +324,7 @@ RingDropOffset(float) - An offset to influence the ring animation. The default m
                         The final move down limit is calculated by RingDropOffset + (HeightScale*0.5)* Table_Scalez.
                         For example: If the ring is moving too far down you have to try to set the RingDropOffset to -10.
 RingSpeed(float)
+*CurrentRingOffset(float) - Live position of the ring (see RingDropOffset and RingSpeed, default is 0..-45 for RingDropOffset is 0 and HeightScale is 90)
 *X(float) - X position
 *Y(float) - Y position
 *Surface(string)

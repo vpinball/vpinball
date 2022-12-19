@@ -1021,6 +1021,13 @@ STDMETHODIMP Bumper::put_RingDropOffset(float newVal)
    return S_OK;
 }
 
+STDMETHODIMP Bumper::get_CurrentRingOffset(float *pVal)
+{
+   *pVal = m_pbumperhitcircle->m_bumperanim_ringAnimOffset;
+
+   return S_OK;
+}
+
 STDMETHODIMP Bumper::get_Orientation(float *pVal)
 {
    *pVal = m_d.m_orientation;
