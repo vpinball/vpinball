@@ -9,6 +9,7 @@ As for coding light sequences for original tables, please check this helper app:
 
 Changelog:
 10.8.0:
+- add AnimHeightOffset to the trigger element
 
 10.7.2:
 - add GetInPlayIntensity to the light element
@@ -785,6 +786,7 @@ UserValue(any) - can store any user defined value for re-use later-on
 HitHeight(float)
 Rotation(float)
 AnimSpeed(float)
+*AnimHeightOffset(float) - Visual offset of trigger when ball pass on it (negative value, 0..-25 for Inder & Wire D triggers, 0..-60 for Wire C, 0..-1/5 of radius for star, 0..-1/10 of radius for buttons, 0..-32 otherwise) 
 WireThickness(float) - This option is only used for wire shape triggers. The thickness is a factor to scale the wire 0=normal thickness(default). To make it thicker use values like 0.5, 1, 1.5, 2...
 
 Methods
