@@ -511,15 +511,16 @@ void Trigger::TriggerAnimationUnhit()
 
 void Trigger::UpdateAnimation(float diff_time_msec)
 {
-   float animLimit = (m_d.m_shape == TriggerStar) ? m_d.m_radius * (float)(1.0/5.0) : 32.0f;
-   if (m_d.m_shape == TriggerButton)
-      animLimit = m_d.m_radius * (float)(1.0/10.0);
-   else if (m_d.m_shape == TriggerWireC)
-      animLimit = 60.0f;
-   else if (m_d.m_shape == TriggerWireD)
-       animLimit = 25.0f;
-   else if (m_d.m_shape == TriggerInder)
-       animLimit = 25.0f;
+   float animLimit;
+   switch (m_d.m_shape)
+   {
+   case TriggerStar:   animLimit = m_d.m_radius * (float)(1.0 /  5.0); break;
+   case TriggerButton: animLimit = m_d.m_radius * (float)(1.0 / 10.0); break;
+   case TriggerWireC:  animLimit = 60.0f; break;
+   case TriggerWireD:  animLimit = 25.0f; break;
+   case TriggerInder:  animLimit = 25.0f; break;
+   default:            animLimit = 32.0f; break;
+   }
 
    const float limit = animLimit*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
@@ -1350,6 +1351,13 @@ STDMETHODIMP Trigger::get_AnimSpeed(float *pVal)
 STDMETHODIMP Trigger::put_AnimSpeed(float newVal)
 {
    m_d.m_animSpeed = newVal;
+
+   return S_OK;
+}
+
+STDMETHODIMP Trigger::get_AnimHeightOffset(float *pVal)
+{
+   *pVal = m_animHeightOffset;
 
    return S_OK;
 }
