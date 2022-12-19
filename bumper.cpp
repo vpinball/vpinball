@@ -740,6 +740,8 @@ void Bumper::UpdateAnimation(float diff_time_msec)
          }
          if (m_ringVertexBuffer && (old_bumperanim_ringAnimOffset != m_pbumperhitcircle->m_bumperanim_ringAnimOffset))
               UpdateRing();
+
+         FireGroupEvent(DISPID_AnimateEvents_Animate);
       }
    }
 
@@ -761,12 +763,14 @@ void Bumper::UpdateAnimation(float diff_time_msec)
                   m_doSkirtAnimation = false;
                   UpdateSkirt(false);
               }
+              FireGroupEvent(DISPID_AnimateEvents_Animate);
          }
       }
       else if (m_updateSkirt) // do a single update if the animation was turned off via script
       {
          m_updateSkirt = false;
          UpdateSkirt(false);
+         FireGroupEvent(DISPID_AnimateEvents_Animate);
       }
    }
 }
