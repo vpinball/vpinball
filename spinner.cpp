@@ -363,8 +363,6 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
 
 void Spinner::RenderDynamic()
 {
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    TRACE_FUNCTION();
 
    if (!m_phitspinner->m_spinnerMover.m_visible || !m_d.m_visible)
@@ -372,6 +370,10 @@ void Spinner::RenderDynamic()
 
    if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
       return;
+
+   RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice::RenderStateCache initial_state;
+   pd3dDevice->CopyRenderStates(true, initial_state);
 
    UpdatePlate(nullptr);
 
@@ -399,9 +401,7 @@ void Spinner::RenderDynamic()
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_plateVertexBuffer, 0, spinnerPlateNumVertices, m_plateIndexBuffer, 0, spinnerPlateNumFaces);
    pd3dDevice->basicShader->End();
 
-   //    g_pplayer->UpdateBasicShaderMatrix();
-
-   //    pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+   pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
 
@@ -472,7 +472,6 @@ void Spinner::RenderStatic()
       return;
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   const Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
    Material mat;
    mat.m_type = Material::MaterialType::METAL;

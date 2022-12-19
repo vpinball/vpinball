@@ -686,6 +686,8 @@ void HitTarget::UpdateAnimation(float diff_time_msec)
 void HitTarget::RenderObject()
 {
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice::RenderStateCache initial_state;
+   pd3dDevice->CopyRenderStates(true, initial_state);
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
@@ -732,6 +734,8 @@ void HitTarget::RenderObject()
 
    if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
       pd3dDevice->basicShader->SetDisableLighting(vec4(0.f,0.f, 0.f,0.f));
+
+   pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
 void HitTarget::UpdateTarget()
