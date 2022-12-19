@@ -3454,9 +3454,7 @@ void Player::RenderDynamics()
       DrawStatics();
    }
 
-   DrawBalls();
-
-   DrawDynamics();
+   DrawDynamics(false);
 
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTextureNull(SHADER_tex_base_transmission); // need to reset the bulb light texture, as its used as render target for bloom again
 
@@ -5436,6 +5434,12 @@ void Player::DrawStatics()
    // Check that RenderStatic / RenderDynamic restore render state to its initial value
    RenderDevice::RenderStateCache initial_state, live_state;
    m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
+   // Default expected State: Blend: { _  A  SA   RSA } Depth: { Z  <=  ZW } Clip: _ Cull: CCW Mask: F
+   // - Blend disabled / Add / Source alpha / 1 - Source alpha
+   // - Enable depth test / less or equal / enable write depth
+   // - No clipping
+   // - Counter clockwise culling
+   // - Write all channels (RGBA + Depth)
    #endif
 
    for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
@@ -5465,13 +5469,25 @@ void Player::DrawStatics()
       }
 }
 
-void Player::DrawDynamics()
+void Player::DrawDynamics(bool onlyBalls)
 {
    #ifdef DEBUG
    // Check that RenderStatic / RenderDynamic restore render state to its initial value
    RenderDevice::RenderStateCache initial_state, live_state;
    m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
+   // Default expected State: Blend: { _  A  SA   RSA } Depth: { Z  <=  ZW } Clip: _ Cull: CCW Mask: F
+   // - Blend disabled / Add / Source alpha / 1 - Source alpha
+   // - Enable depth test / less or equal / enable write depth
+   // - No clipping
+   // - Counter clockwise culling
+   // - Write all channels (RGBA + Depth)
    #endif
+
+   if (onlyBalls)
+   {
+      DrawBalls();
+      return;
+   }
 
    if (GetProfilingMode() != PF_SPLIT_RENDERING) // normal rendering path for standard gameplay
    {
@@ -5500,6 +5516,9 @@ void Player::DrawDynamics()
             assert(initial_state.depth_bias == live_state.depth_bias);
             #endif
          }
+
+      // Balls must be rendered after (non transparent) kickers since kickers perform a depth shift (to be visible despite the playfield) that would render them above the ball otherwise
+      DrawBalls();
 
       if (GetProfilingMode() == PF_ENABLED)
          m_pin3d.m_gpu_profiler.Timestamp(GTS_NonTransparent);
@@ -5563,6 +5582,8 @@ void Player::DrawDynamics()
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
          if (m_vHitNonTrans[i]->IsDMD() && m_vHitNonTrans[i]->HitableGetItemType() == eItemFlasher)
             m_vHitNonTrans[i]->RenderDynamic();
+
+      DrawBalls();
 
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
          if (m_vHitNonTrans[i]->HitableGetItemType() != eItemPrimitive && m_vHitNonTrans[i]->HitableGetItemType() != eItemSurface && m_vHitNonTrans[i]->HitableGetItemType() != eItemRamp
