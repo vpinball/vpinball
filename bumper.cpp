@@ -275,6 +275,9 @@ void Bumper::EndPlay()
 
 void Bumper::UpdateRing()
 {
+   if (m_ringVertexBuffer == nullptr)
+       return;
+
    //TODO update Worldmatrix instead.
    Vertex3D_NoTex2 *buf;
    m_ringVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
@@ -333,6 +336,9 @@ void Bumper::RenderCap(const Material * const capMaterial)
 
 void Bumper::UpdateSkirt(const bool doCalculation)
 {
+   if (m_socketVertexBuffer == nullptr)
+      return;
+
    constexpr float SKIRT_TILT = 5.0f;
 
    const float scalexy = m_d.m_radius;
