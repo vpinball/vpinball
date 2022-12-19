@@ -9,6 +9,7 @@ As for coding light sequences for original tables, please check this helper app:
 
 Changelog:
 10.8.0:
+- add Animate event to Trigger, this event is called when the object's visual is animated
 - add AnimHeightOffset to the trigger element
 
 10.7.2:
@@ -794,6 +795,10 @@ Methods
 
 BallCntOver(int value)
 DestroyBall(int ballId)
+
+Events
+-------
+Animate() - Called when the visual of the trigger is animated (when a ball pass on it)
 
 
 WALL
