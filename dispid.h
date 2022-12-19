@@ -98,6 +98,7 @@
 #define DISPID_HitEvents_Unhit 1401
 #define DISPID_LimitEvents_EOS 1402
 #define DISPID_LimitEvents_BOS 1403
+#define DISPID_AnimateEvents_Animate 1404
 
 //
 // end of license:GPLv3+, back to 'old MAME'-like

@@ -566,6 +566,7 @@ void Trigger::UpdateAnimation(float diff_time_msec)
             m_moveDown = true;
          }
       }
+      FireGroupEvent(DISPID_AnimateEvents_Animate);
    }
 }
 

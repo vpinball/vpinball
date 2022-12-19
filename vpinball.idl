@@ -1393,6 +1393,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [id(DISPID_TimerEvents_Timer)]  void Timer();
                 [id(DISPID_HitEvents_Hit)]  void Hit();
                 [id(DISPID_HitEvents_Unhit)]  void Unhit();
+                [id(DISPID_AnimateEvents_Animate)]  void Animate();
         }
 
         //////////////////////////////
