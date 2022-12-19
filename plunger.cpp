@@ -229,7 +229,9 @@ void Plunger::RenderDynamic()
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice::RenderStateCache initial_state;
+   pd3dDevice->CopyRenderStates(true, initial_state);
 
    pd3dDevice->SetRenderStateDepthBias(0.0f);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
@@ -254,6 +256,8 @@ void Plunger::RenderDynamic()
       frame*m_vtsPerFrame, m_vtsPerFrame,
       m_indexBuffer, 0, m_indicesPerFrame);
    pd3dDevice->basicShader->End();
+
+   pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
 //
