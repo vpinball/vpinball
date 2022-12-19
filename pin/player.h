@@ -331,6 +331,8 @@ private:
 
    void PhysicsSimulateCycle(float dtime);
 
+   void DrawBalls();
+
 public:
    void LockForegroundWindow(const bool enable);
    void Render();
@@ -338,8 +340,7 @@ public:
 
    void SetViewVector(const Vertex3Ds &viewVec);
    void DrawStatics();
-   void DrawBalls();
-   void DrawDynamics();
+   void DrawDynamics(bool onlyBalls);
 
    Ball *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius = 25.0f, const float mass = 1.0f);
    void DestroyBall(Ball *pball);

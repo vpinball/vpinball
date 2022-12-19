@@ -117,18 +117,18 @@ const float3 refractionTint;
 
 struct VS_OUTPUT 
 {
-   float4 pos      : POSITION;
-   float3 worldPos : TEXCOORD0;
-   float3 tablePos : TEXCOORD1;
+   float4 pos      : POSITION;  // projected position (in camera space, normalized, not divided by w, vertex position * world matrix * view matrix * projection matrix)
+   float3 worldPos : TEXCOORD0; // position in view space (vertex position * world matrix * view matrix)
+   float3 tablePos : TEXCOORD1; // position in table space (vertex position * world matrix)
    float3 normal   : TEXCOORD2;
    float2 tex0     : TEXCOORD3;
 };
 
 struct VS_NOTEX_OUTPUT 
 {
-   float4 pos      : POSITION;
-   float3 worldPos : TEXCOORD0;
-   float3 tablePos : TEXCOORD1;
+   float4 pos      : POSITION;  // projected position (in camera space, normalized, not divided by w, vertex position * world matrix * view matrix * projection matrix)
+   float3 worldPos : TEXCOORD0; // position in view space (vertex position * world matrix * view matrix)
+   float3 tablePos : TEXCOORD1; // position in table space (vertex position * world matrix)
    float3 normal   : TEXCOORD2;
 };
 
@@ -462,12 +462,13 @@ VS_NOTEX_OUTPUT vs_kicker (const in float4 vPosition : POSITION0,
 
    VS_NOTEX_OUTPUT Out;
    Out.pos.xyw = mul(vPosition, matWorldViewProj).xyw;
-   float4 P2 = vPosition;
-   P2.z -= 30.0*fKickerScale; //!!
-   Out.pos.z = mul(P2, matWorldViewProj).z;
    Out.worldPos = P;
-   Out.tablePos = mul(vPosition, matWorld).xyw;
+   Out.tablePos = mul(vPosition, matWorld).xyz;
    Out.normal = N;
+   // Offset projected position to always render kicker depth "above" playfield (legacy behavior that breaks VR use of the table, was needed since playfield transparency and under playfield objects used to be unsupported)
+   float4 P2 = vPosition;
+   P2.z -= 30.0*fKickerScale;
+   Out.pos.z = mul(P2, matWorldViewProj).z;
    return Out;
 }
 

@@ -197,11 +197,12 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
 {
    ReflectionMode mode = min(m_reflection_mode, g_pplayer->m_pfReflectionMode);
    if ((is_static && (mode == REFL_NONE || mode == REFL_BALLS || m_reflection_mode == REFL_DYNAMIC)) || (!is_static && (mode == REFL_NONE || mode == REFL_STATIC)))
-         return;
+      return;
 
    RenderTarget* previousRT = RenderTarget::GetCurrentRenderTarget();
    RenderDevice* p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderDevice::RenderStateCache initial_state; p3dDevice->CopyRenderStates(true, initial_state);
+   RenderDevice::RenderStateCache initial_state;
+   p3dDevice->CopyRenderStates(true, initial_state);
 
    // Prepare to render into the reflection back buffer
    if (is_static)
@@ -210,7 +211,8 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
       {
          const int downscale = GetRoughnessDownscale(m_roughness_base);
          const int w = p3dDevice->GetBackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetBackBufferTexture()->GetHeight() / downscale;
-         m_staticRT = new RenderTarget(p3dDevice, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, p3dDevice->GetBackBufferTexture()->GetStereo(), "Failed to create plane reflection static render target", nullptr);
+         m_staticRT = new RenderTarget(p3dDevice, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, p3dDevice->GetBackBufferTexture()->GetStereo(),
+            "Failed to create plane reflection static render target", nullptr);
       }
       m_staticRT->Activate();
       p3dDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
@@ -221,7 +223,8 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
       {
          const int downscale = GetRoughnessDownscale(m_roughness_base);
          const int w = p3dDevice->GetBackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetBackBufferTexture()->GetHeight() / downscale;
-         m_dynamicRT = new RenderTarget(p3dDevice, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, p3dDevice->GetBackBufferTexture()->GetStereo(), "Failed to create plane reflection dynamic render target", nullptr);
+         m_dynamicRT = new RenderTarget(p3dDevice, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, p3dDevice->GetBackBufferTexture()->GetStereo(),
+            "Failed to create plane reflection dynamic render target", nullptr);
       }
       if (mode == REFL_SYNCED_DYNAMIC && m_staticRT != nullptr)
       {
@@ -279,15 +282,16 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
 
    if (render_static)
       g_pplayer->DrawStatics();
-   
-   if (render_balls)
-      g_pplayer->DrawBalls();
 
    if (render_dynamic)
    {
       g_pplayer->SetViewVector(Vertex3Ds(0.f, 0.f, 1.f));
-      g_pplayer->DrawDynamics();
+      g_pplayer->DrawDynamics(false);
       g_pplayer->SetViewVector(Vertex3Ds(0.f, 0.f, -1.f));
+   }
+   else if (render_balls)
+   {
+      g_pplayer->DrawDynamics(true);
    }
    
    // Restore initial render states and camera
