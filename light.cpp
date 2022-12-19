@@ -379,44 +379,7 @@ void Light::RenderBulbMesh()
 
 void Light::RenderDynamic()
 {
-   RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    TRACE_FUNCTION();
-
-   const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
-   m_d.m_time_msec = g_pplayer->m_time_msec;
-   const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
-
-   if ((m_duration > 0) && (m_timerDurationEndTime < m_d.m_time_msec))
-   {
-      m_inPlayState = (LightState)m_finalState;
-      m_duration = 0;
-      if (m_inPlayState == LightStateBlinking)
-         RestartBlinker(g_pplayer->m_time_msec);
-   }
-   if (m_inPlayState == LightStateBlinking)
-      UpdateBlinker(g_pplayer->m_time_msec);
-
-   const bool isOn = (m_inPlayState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_inPlayState != LightStateOff);
-
-   if (isOn)
-   {
-      if (m_d.m_currentIntensity < m_d.m_intensity*m_d.m_intensity_scale)
-      {
-         m_d.m_currentIntensity += m_d.m_fadeSpeedUp*diff_time_msec;
-         if (m_d.m_currentIntensity > m_d.m_intensity*m_d.m_intensity_scale)
-            m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
-      }
-   }
-   else
-   {
-      if (m_d.m_currentIntensity > 0.0f)
-      {
-         m_d.m_currentIntensity -= m_d.m_fadeSpeedDown*diff_time_msec;
-         if (m_d.m_currentIntensity < 0.0f)
-            m_d.m_currentIntensity = 0.0f;
-      }
-   }
 
    if (!m_d.m_visible || m_ptable->m_reflectionEnabled)
       return;
@@ -445,6 +408,7 @@ void Light::RenderDynamic()
          return;
    }
 
+   RenderDevice *const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
    RenderDevice::RenderStateCache initial_state;
    pd3dDevice->CopyRenderStates(true, initial_state);
 
@@ -702,7 +666,6 @@ void Light::UpdateCustomMoverVBuffer()
 void Light::RenderSetup()
 {
    m_iblinkframe = 0;
-   m_d.m_time_msec = g_pplayer->m_time_msec;
    m_updateBulbLightHeight = false;
 
    m_initSurfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
@@ -767,6 +730,40 @@ void Light::RenderSetup()
    }
 
    PrepareMoversCustom();
+}
+
+void Light::UpdateAnimation(float diff_time_msec)
+{
+   if ((m_duration > 0) && (m_timerDurationEndTime < g_pplayer->m_time_msec))
+   {
+      m_inPlayState = (LightState)m_finalState;
+      m_duration = 0;
+      if (m_inPlayState == LightStateBlinking)
+         RestartBlinker(g_pplayer->m_time_msec);
+   }
+   if (m_inPlayState == LightStateBlinking)
+      UpdateBlinker(g_pplayer->m_time_msec);
+
+   const bool isOn = (m_inPlayState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_inPlayState != LightStateOff);
+
+   if (isOn)
+   {
+      if (m_d.m_currentIntensity < m_d.m_intensity * m_d.m_intensity_scale)
+      {
+         m_d.m_currentIntensity += m_d.m_fadeSpeedUp * diff_time_msec;
+         if (m_d.m_currentIntensity > m_d.m_intensity * m_d.m_intensity_scale)
+            m_d.m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale;
+      }
+   }
+   else
+   {
+      if (m_d.m_currentIntensity > 0.0f)
+      {
+         m_d.m_currentIntensity -= m_d.m_fadeSpeedDown * diff_time_msec;
+         if (m_d.m_currentIntensity < 0.0f)
+            m_d.m_currentIntensity = 0.0f;
+      }
+   }
 }
 
 void Light::RenderStatic()

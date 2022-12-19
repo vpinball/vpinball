@@ -7,10 +7,12 @@ public:
    virtual void GetHitShapesDebug(vector<HitObject*> &pvho) = 0;
    virtual void GetTimers(vector<HitTimer*> &pvht) = 0;
    virtual EventProxyBase *GetEventProxyBase() = 0;
-   virtual void EndPlay() = 0;
+
+   virtual void RenderSetup() = 0;
+   virtual void UpdateAnimation(float diff_time_msec) = 0;
    virtual void RenderStatic() = 0;
    virtual void RenderDynamic() = 0;
-   virtual void RenderSetup() = 0;
+   virtual void EndPlay() = 0;
 
    virtual ItemTypeEnum HitableGetItemType() const = 0;
 

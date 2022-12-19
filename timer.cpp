@@ -112,22 +112,25 @@ void Timer::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 
-void Timer::EndPlay()
+void Timer::RenderSetup()
 {
-   IEditable::EndPlay();
+}
+
+void Timer::UpdateAnimation(float diff_time_msec)
+{
+}
+
+void Timer::RenderStatic()
+{
 }
 
 void Timer::RenderDynamic()
 {
 }
 
-void Timer::RenderSetup()
+void Timer::EndPlay()
 {
-
-}
-
-void Timer::RenderStatic()
-{
+   IEditable::EndPlay();
 }
 
 STDMETHODIMP Timer::InterfaceSupportsErrorInfo(REFIID riid)

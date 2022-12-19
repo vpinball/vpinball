@@ -99,7 +99,6 @@ public:
    GateData m_d;
 
 private:
-   void UpdateWire();
    void RenderObject();
    void GenerateBracketMesh(Vertex3D_NoTex2 *buf);
    void GenerateWireMesh(Vertex3D_NoTex2 *buf);

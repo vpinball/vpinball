@@ -403,8 +403,6 @@ public:
    vector<Ball*> m_vball;
    vector<HitFlipper*> m_vFlippers;
 
-   vector<AnimObject*> m_vanimate; // animated objects that need frame updates
-
    vector<HitTimer*> m_vht;
    vector<TimerOnOff> m_changed_vht; // stores all en/disable changes to the m_vht timer list, to avoid problems with timers dis/enabling themselves
 

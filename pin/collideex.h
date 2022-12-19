@@ -22,24 +22,14 @@ public:
    bool m_bumperanim_hitEvent;
 };
 
-class SlingshotAnimObject : public AnimObject
-{
-public:
-   void Animate() override;
-
-   U32 m_TimeReset; // Time at which to pull in slingshot, Zero means the slingshot is currently reset
-   bool m_animations;
-   bool m_iframe;
-};
-
 class LineSegSlingshot : public LineSeg
 {
 public:
    LineSegSlingshot(const Vertex2D& p1, const Vertex2D& p2, const float _zlow, const float _zhigh)
       : LineSeg(p1, p2, _zlow, _zhigh)
    {
-      m_slingshotanim.m_iframe = false;
-      m_slingshotanim.m_TimeReset = 0; // Reset
+      m_iframe = false;
+      m_TimeReset = 0; // Reset
       m_doHitEvent = false;
       m_force = 0.f;
       m_EventTimeReset = 0;
@@ -55,9 +45,13 @@ public:
    float m_force;
    unsigned int m_EventTimeReset;
 
-   SlingshotAnimObject m_slingshotanim;
-
    bool m_doHitEvent;
+
+   void Animate();
+
+   U32 m_TimeReset; // Time at which to pull in slingshot, Zero means the slingshot is currently reset
+   bool m_animations;
+   bool m_iframe;
 };
 
 class Hit3DPoly : public HitObject

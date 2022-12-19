@@ -394,10 +394,6 @@ void Bumper::RenderDynamic()
    if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
       return;
 
-   const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
-   m_d.m_time_msec = g_pplayer->m_time_msec;
-   const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
-
    RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
    RenderDevice::RenderStateCache initial_state;
    pd3dDevice->CopyRenderStates(true, initial_state);
@@ -406,49 +402,8 @@ void Bumper::RenderDynamic()
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
-   if (m_pbumperhitcircle->m_bumperanim_hitEvent)
-      g_pplayer->m_pininput.PlayRumble(0.1f, 0.05f, 100);
-
-   const int state = m_pbumperhitcircle->m_bumperanim_hitEvent ? 1 : 0;    // 0 = not hit, 1 = hit
-   m_pbumperhitcircle->m_bumperanim_hitEvent = false;
-
    if (m_d.m_ringVisible)
    {
-      const float limit = m_d.m_ringDropOffset + (m_d.m_heightScale*0.5f)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-
-      if (state == 1)
-      {
-         m_ringAnimate = true;
-         m_ringDown = true;
-      }
-
-      if (m_ringAnimate)
-      {
-         float step = m_d.m_ringSpeed*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-         if (m_ringDown)
-            step = -step;
-         const float old_bumperanim_ringAnimOffset = m_pbumperhitcircle->m_bumperanim_ringAnimOffset;
-         m_pbumperhitcircle->m_bumperanim_ringAnimOffset += step*diff_time_msec;
-         if (m_ringDown)
-         {
-            if (m_pbumperhitcircle->m_bumperanim_ringAnimOffset <= -limit)
-            {
-               m_pbumperhitcircle->m_bumperanim_ringAnimOffset = -limit;
-               m_ringDown = false;
-            }
-         }
-         else
-         {
-            if (m_pbumperhitcircle->m_bumperanim_ringAnimOffset >= 0.0f)
-            {
-               m_pbumperhitcircle->m_bumperanim_ringAnimOffset = 0.0f;
-               m_ringAnimate = false;
-            }
-         }
-         if (m_ringVertexBuffer && (old_bumperanim_ringAnimOffset != m_pbumperhitcircle->m_bumperanim_ringAnimOffset))
-            UpdateRing();
-      }
-
       Material ringMaterial;
       if (m_d.m_szRingMaterial[0] != '\0')
       {
@@ -474,30 +429,6 @@ void Bumper::RenderDynamic()
 
    if (m_d.m_skirtVisible)
    {
-      if (m_enableSkirtAnimation)
-      {
-          if (state == 1)
-          {
-              m_doSkirtAnimation = true;
-              UpdateSkirt(true);
-              m_skirtCounter = 0.0f;
-          }
-          if (m_doSkirtAnimation)
-          {
-              m_skirtCounter += /*1.0f**/diff_time_msec;
-              if (m_skirtCounter > 160.0f)
-              {
-                  m_doSkirtAnimation = false;
-                  UpdateSkirt(false);
-              }
-          }
-      }
-      else if(m_updateSkirt) // do a single update if the animation was turned off via script
-      {
-         m_updateSkirt = false;
-         UpdateSkirt(false);
-      }
-
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
       pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, &m_skirtTexture);
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat);
@@ -695,8 +626,6 @@ void Bumper::GenerateCapMesh(Vertex3D_NoTex2 *buf)
 
 void Bumper::RenderSetup()
 {
-   m_d.m_time_msec = g_pplayer->m_time_msec;
-
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
@@ -766,6 +695,80 @@ void Bumper::RenderSetup()
       m_capVertexBuffer->unlock();
    }
 
+}
+
+void Bumper::UpdateAnimation(float diff_time_msec)
+{
+   if (m_pbumperhitcircle->m_bumperanim_hitEvent)
+      g_pplayer->m_pininput.PlayRumble(0.1f, 0.05f, 100);
+
+   const int state = m_pbumperhitcircle->m_bumperanim_hitEvent ? 1 : 0; // 0 = not hit, 1 = hit
+   m_pbumperhitcircle->m_bumperanim_hitEvent = false;
+
+   // Ring animation
+   {
+      const float limit = m_d.m_ringDropOffset + (m_d.m_heightScale * 0.5f) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+
+      if (state == 1)
+      {
+         m_ringAnimate = true;
+         m_ringDown = true;
+      }
+
+      if (m_ringAnimate)
+      {
+         float step = m_d.m_ringSpeed * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+         if (m_ringDown)
+              step = -step;
+         const float old_bumperanim_ringAnimOffset = m_pbumperhitcircle->m_bumperanim_ringAnimOffset;
+         m_pbumperhitcircle->m_bumperanim_ringAnimOffset += step * diff_time_msec;
+         if (m_ringDown)
+         {
+              if (m_pbumperhitcircle->m_bumperanim_ringAnimOffset <= -limit)
+              {
+                  m_pbumperhitcircle->m_bumperanim_ringAnimOffset = -limit;
+                  m_ringDown = false;
+              }
+         }
+         else
+         {
+              if (m_pbumperhitcircle->m_bumperanim_ringAnimOffset >= 0.0f)
+              {
+                  m_pbumperhitcircle->m_bumperanim_ringAnimOffset = 0.0f;
+                  m_ringAnimate = false;
+              }
+         }
+         if (m_ringVertexBuffer && (old_bumperanim_ringAnimOffset != m_pbumperhitcircle->m_bumperanim_ringAnimOffset))
+              UpdateRing();
+      }
+   }
+
+   // Skirt animation
+   {
+      if (m_enableSkirtAnimation)
+      {
+         if (state == 1)
+         {
+              m_doSkirtAnimation = true;
+              UpdateSkirt(true);
+              m_skirtCounter = 0.0f;
+         }
+         if (m_doSkirtAnimation)
+         {
+              m_skirtCounter += /*1.0f**/ diff_time_msec;
+              if (m_skirtCounter > 160.0f)
+              {
+                  m_doSkirtAnimation = false;
+                  UpdateSkirt(false);
+              }
+         }
+      }
+      else if (m_updateSkirt) // do a single update if the animation was turned off via script
+      {
+         m_updateSkirt = false;
+         UpdateSkirt(false);
+      }
+   }
 }
 
 void Bumper::RenderStatic()

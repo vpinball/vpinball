@@ -19,7 +19,6 @@ public:
    float m_scaleX;
    float m_scaleY;
    float m_hit_height; // trigger hit object height ... default 50
-   U32 m_time_msec;
    float m_animSpeed;
    float m_wireThickness;
    bool m_enabled;
@@ -114,7 +113,6 @@ private:
    void AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2, const float height);
 
    void InitShape(float x, float y);
-   void UpdateAnimation();
    void GenerateMesh();
 
    PinTable *m_ptable;

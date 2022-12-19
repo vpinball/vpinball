@@ -26,7 +26,6 @@ public:
    float m_intensity_scale;
    float m_fadeSpeedUp;
    float m_fadeSpeedDown;
-   U32   m_time_msec;
    float m_currentIntensity;
    float m_transmissionScale;
    float m_modulate_vs_add;

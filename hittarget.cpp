@@ -594,11 +594,9 @@ void HitTarget::UpdateStatusBarInfo()
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/HitTarget/HitTargetAnimationSystem.cs
 //
 
-void HitTarget::UpdateAnimation()
+void HitTarget::UpdateAnimation(float diff_time_msec)
 {
-    const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
     m_d.m_time_msec = g_pplayer->m_time_msec;
-    const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
 
     if (m_hitEvent)
     {
@@ -685,8 +683,6 @@ void HitTarget::UpdateAnimation()
 
 void HitTarget::RenderObject()
 {
-   UpdateAnimation();
-
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
@@ -796,9 +792,10 @@ void HitTarget::RenderDynamic()
 {
    TRACE_FUNCTION();
 
-   if (!m_d.m_visible)
-      return;
    if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+       return;
+
+   if (!m_d.m_visible)
       return;
 
    RenderObject();

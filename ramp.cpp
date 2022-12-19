@@ -1219,6 +1219,10 @@ void Ramp::RenderSetup()
    }
 }
 
+void Ramp::UpdateAnimation(float diff_time_msec)
+{
+}
+
 void Ramp::RenderStatic()
 {
    // return if not Visible

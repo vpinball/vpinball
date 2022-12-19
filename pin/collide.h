@@ -42,12 +42,6 @@ public:
    virtual void UpdateVelocities() = 0;
 };
 
-class AnimObject // DispReel, LightSeq and Slingshot
-{
-public:
-   virtual void Animate() = 0;
-};
-
 //
 // license:GPLv3+
 // Ported at: VisualPinball.Engine/Math/Functions.cs

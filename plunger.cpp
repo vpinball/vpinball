@@ -863,8 +863,12 @@ void Plunger::RenderSetup()
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-void Plunger::RenderStatic()
+void Plunger::UpdateAnimation(float diff_time_msec)
 {
+   // Animation is updated by physics engine through a MoverObject. No additional visual animation here
+}
+
+void Plunger::RenderStatic() {
 }
 
 STDMETHODIMP Plunger::InterfaceSupportsErrorInfo(REFIID riid)

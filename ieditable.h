@@ -161,7 +161,8 @@ public:
 	virtual Hitable *GetIHitable() {return static_cast<Hitable *>(this);} \
 	virtual const Hitable *GetIHitable() const {return static_cast<const Hitable *>(this);} \
 	virtual void RenderSetup(); \
-	virtual void RenderStatic(); \
+	virtual void UpdateAnimation(float diff_time_msec); \
+   virtual void RenderStatic(); \
 	virtual void RenderDynamic(); \
 	STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) {return hrNotImplemented;}\
 	STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID *pclsid) {return hrNotImplemented;} \

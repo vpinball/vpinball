@@ -1455,6 +1455,10 @@ void Primitive::RenderSetup()
    m_indexBuffer = IndexBuffer::CreateAndFillIndexBuffer(m_mesh.m_indices, PRIMARY_DEVICE);
 }
 
+void Primitive::UpdateAnimation(float diff_time_msec)
+{
+}
+
 void Primitive::RenderStatic()
 {
    if (!m_d.m_staticRendering) return; //don't render dynamic

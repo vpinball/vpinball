@@ -232,6 +232,10 @@ void Kicker::EndPlay()
    IEditable::EndPlay();
 }
 
+void Kicker::UpdateAnimation(float diff_time_msec)
+{
+}
+
 void Kicker::RenderStatic()
 {
 }

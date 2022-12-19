@@ -2,7 +2,6 @@
 
 LightSeq::LightSeq()
 {
-   m_lightseqanim.m_pLightSeq = this;
 }
 
 LightSeq::~LightSeq()
@@ -15,8 +14,6 @@ HRESULT LightSeq::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    m_d.m_v.x = x;
    m_d.m_v.y = y;
-
-   m_lightseqanim.m_pLightSeq = this;
 
    SetDefaults(fromMouseClick);
 
@@ -334,9 +331,9 @@ void LightSeq::RenderStatic()
 {
 }
 
-// This function is called during Animate(). It basically checks to see if the update
+// This function is called each frame. It basically checks to see if the update
 // interval has expired and if so handles the light effect
-void LightSeq::Animate()
+void LightSeq::UpdateAnimation(float diff_time_msec)
 {
    if (m_playInProgress)
    {

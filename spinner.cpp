@@ -452,6 +452,11 @@ void Spinner::RenderSetup()
    UpdatePlate(nullptr);
 }
 
+void Spinner::UpdateAnimation(float diff_time_msec)
+{
+   // Animation is updated by physics engine through a MoverObject. No additional visual animation here
+}
+
 void Spinner::RenderStatic()
 {
    if (!m_d.m_showBracket || !m_d.m_visible)

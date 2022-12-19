@@ -509,12 +509,8 @@ void Trigger::TriggerAnimationUnhit()
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Trigger/TriggerAnimationSystem.cs
 //
 
-void Trigger::UpdateAnimation()
+void Trigger::UpdateAnimation(float diff_time_msec)
 {
-   const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
-   m_d.m_time_msec = g_pplayer->m_time_msec;
-   const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
-
    float animLimit = (m_d.m_shape == TriggerStar) ? m_d.m_radius * (float)(1.0/5.0) : 32.0f;
    if (m_d.m_shape == TriggerButton)
       animLimit = m_d.m_radius * (float)(1.0/10.0);
@@ -569,26 +565,6 @@ void Trigger::UpdateAnimation()
             m_moveDown = true;
          }
       }
-
-      if (m_animHeightOffset != m_vertexBuffer_animHeightOffset)
-      {
-          m_vertexBuffer_animHeightOffset = m_animHeightOffset;
-
-          Vertex3D_NoTex2 *buf;
-          m_vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
-          for (int i = 0; i < m_numVertices; i++)
-          {
-              buf[i].x  = m_triggerVertices[i].x;
-              buf[i].y  = m_triggerVertices[i].y;
-              buf[i].z  = m_triggerVertices[i].z + m_animHeightOffset;
-              buf[i].nx = m_triggerVertices[i].nx;
-              buf[i].ny = m_triggerVertices[i].ny;
-              buf[i].nz = m_triggerVertices[i].nz;
-              buf[i].tu = m_triggerVertices[i].tu;
-              buf[i].tv = m_triggerVertices[i].tv;
-          }
-          m_vertexBuffer->unlock();
-      }
    }
 }
 
@@ -603,13 +579,31 @@ void Trigger::RenderDynamic()
    if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
       return;
 
-   UpdateAnimation();
-
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
    RenderDevice::RenderStateCache initial_state;
    pd3dDevice->CopyRenderStates(true, initial_state);
 
-   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   if (m_animHeightOffset != m_vertexBuffer_animHeightOffset)
+   {
+      m_vertexBuffer_animHeightOffset = m_animHeightOffset;
+
+      Vertex3D_NoTex2 *buf;
+      m_vertexBuffer->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);
+      for (int i = 0; i < m_numVertices; i++)
+      {
+         buf[i].x = m_triggerVertices[i].x;
+         buf[i].y = m_triggerVertices[i].y;
+         buf[i].z = m_triggerVertices[i].z + m_animHeightOffset;
+         buf[i].nx = m_triggerVertices[i].nx;
+         buf[i].ny = m_triggerVertices[i].ny;
+         buf[i].nz = m_triggerVertices[i].nz;
+         buf[i].tu = m_triggerVertices[i].tu;
+         buf[i].tv = m_triggerVertices[i].tv;
+      }
+      m_vertexBuffer->unlock();
+   }
+
+   const Material *const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
    pd3dDevice->basicShader->SetMaterial(mat, false);
 
@@ -801,8 +795,6 @@ void Trigger::GenerateMesh()
 
 void Trigger::RenderSetup()
 {
-   m_d.m_time_msec = g_pplayer->m_time_msec;
-
    m_hitEvent = false;
    m_unhitEvent = false;
    m_doAnimation = false;
