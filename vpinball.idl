@@ -1051,6 +1051,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [id(DISPID_LimitEvents_EOS)]  void LimitEOS( [in] float parm);
                 [id(DISPID_LimitEvents_BOS)]  void LimitBOS( [in] float parm);
                 [id(DISPID_FlipperEvents_Collide)]  void Collide( [in] float parm);
+                [id(DISPID_AnimateEvents_Animate)]  void Animate();
         }
 
 
@@ -1377,7 +1378,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(347), helpstring("property WireThickness")] HRESULT WireThickness([in] float newVal);
                 [propget, id(26), helpstring("property AnimSpeed")] HRESULT AnimSpeed([out, retval] float *pVal);
                 [propput, id(26), helpstring("property AnimSpeed")] HRESULT AnimSpeed([in] float newVal);
-                [propget, id(27), helpstring("property AnimHeightOffset")] HRESULT AnimHeightOffset([out, retval] float *pVal);
+                [propget, id(27), helpstring("property CurrentAnimOffset")] HRESULT CurrentAnimOffset([out, retval] float *pVal);
                 [propget, id(431), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(431), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([in] VARIANT_BOOL newVal);
         };
@@ -1484,6 +1485,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
         methods:
                 [id(DISPID_GameEvents_Init)]  void Init();
                 [id(DISPID_TimerEvents_Timer)]  void Timer();
+                [id(DISPID_AnimateEvents_Animate)]  void Animate();
         }
 
 
@@ -1850,6 +1852,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 
                 [propget, id(377), helpstring("property DropSpeed")] HRESULT DropSpeed([out, retval] float *pVal);
                 [propput, id(377), helpstring("property DropSpeed")] HRESULT DropSpeed([in] float newVal);
+                [propget, id(27), helpstring("property CurrentAnimOffset")] HRESULT CurrentAnimOffset([out, retval] float *pVal);
                 [propget, id(435), helpstring("property IsDropped")] HRESULT IsDropped([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(435), helpstring("property IsDropped")] HRESULT IsDropped([in] VARIANT_BOOL newVal);
                 [propget, id(9), helpstring("property DrawStyle")] HRESULT DrawStyle([out, retval] TargetType *pVal);
@@ -1877,6 +1880,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [id(DISPID_HitEvents_Hit)]  void Hit();
                 [id(DISPID_TargetEvents_Dropped)]  void Dropped();
                 [id(DISPID_TargetEvents_Raised)]  void Raised();
+                [id(DISPID_AnimateEvents_Animate)]  void Animate();
         }
 
         //////////////////////////////
@@ -1959,6 +1963,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [id(DISPID_HitEvents_Hit)]  void Hit();
                 [id(DISPID_LimitEvents_EOS)]  void LimitEOS( [in] float parm);
                 [id(DISPID_LimitEvents_BOS)]  void LimitBOS( [in] float parm);
+                [id(DISPID_AnimateEvents_Animate)]  void Animate();
         }
 
         //////////////////////////////
@@ -2028,6 +2033,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [id(DISPID_SpinnerEvents_Spin)]  void Spin();
                 [id(DISPID_LimitEvents_EOS)]  void LimitEOS( [in] float parm);
                 [id(DISPID_LimitEvents_BOS)]  void LimitBOS( [in] float parm);
+                [id(DISPID_AnimateEvents_Animate)]  void Animate();
         }
 
         /////////////////////////////////////////////
@@ -2428,6 +2434,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
         methods:
                 [id(DISPID_GameEvents_Init)]  void Init();
                 [id(DISPID_TimerEvents_Timer)]  void Timer();
+                [id(DISPID_AnimateEvents_Animate)]  void Animate();
         }
 
         [

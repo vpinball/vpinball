@@ -127,6 +127,7 @@ public:
    STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
    STDMETHOD(get_DropSpeed)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_DropSpeed)(/*[in]*/ float newVal);
+   STDMETHOD(get_CurrentAnimOffset)(/*[out, retval]*/ float *pVal);
    STDMETHOD(get_DisableLighting)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_DisableLighting)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_BlendDisableLighting)(/*[out, retval]*/ float *pVal);

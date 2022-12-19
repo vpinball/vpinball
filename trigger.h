@@ -166,7 +166,7 @@ public:
    STDMETHOD(put_AnimSpeed)(/*[in]*/ float newVal);
    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
-   STDMETHOD(get_AnimHeightOffset)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(get_CurrentAnimOffset)(/*[out, retval]*/ float *pVal);
 };
 
 #endif // !defined(AFX_TRIGGER_H__2CA7256C_4072_43C3_9D65_AE091B601377__INCLUDED_)

@@ -185,6 +185,7 @@ private:
       IndexBuffer *m_indexBuffer;
 
       HitFlipper *m_phitflipper;
+      float m_lastAngle;
 
 // IFlipper
 public:

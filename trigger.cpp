@@ -1356,7 +1356,7 @@ STDMETHODIMP Trigger::put_AnimSpeed(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP Trigger::get_AnimHeightOffset(float *pVal)
+STDMETHODIMP Trigger::get_CurrentAnimOffset(float *pVal)
 {
    *pVal = m_animHeightOffset;
 

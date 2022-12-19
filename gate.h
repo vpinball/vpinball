@@ -107,6 +107,7 @@ private:
 
    LineSeg *m_plineseg;
    HitGate *m_phitgate;
+   float m_lastAngle;
 
    VertexBuffer *m_wireVertexBuffer;
    IndexBuffer *m_wireIndexBuffer;
