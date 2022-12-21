@@ -1733,7 +1733,7 @@ LightState LightSeq::GetElementState(const int index) const
    if (type == eItemLight)
    {
        const Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
-       rc = (LightState)pLight->m_inPlayState;
+       rc = (LightState)(int)pLight->m_inPlayState;
    }
    else if (type == eItemFlasher)
    {
