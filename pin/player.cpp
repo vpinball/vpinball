@@ -1667,6 +1667,7 @@ HRESULT Player::Init()
 
    // Need to set timecur here, for init functions that set timers
    m_time_msec = 0;
+   m_last_frame_time_msec = 0;
 
    InitFPS();
    m_infoMode = IF_NONE;
@@ -5024,9 +5025,8 @@ void Player::Render()
    m_overall_frames++;
 
    // Update all animated parts
-   static U32 old_time_msec = m_time_msec;
-   const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
-   old_time_msec = m_time_msec;
+   const float diff_time_msec = (float)(m_time_msec - m_last_frame_time_msec);
+   m_last_frame_time_msec = m_time_msec;
    for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
    {
       Hitable *const ph = m_ptable->m_vedit[i]->GetIHitable();

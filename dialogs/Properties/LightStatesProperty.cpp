@@ -19,9 +19,13 @@ void LightStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemLight))
             continue;
-        const Light * const light = (Light *)m_pvsel->ElementAt(i);
+        Light * const light = (Light *)m_pvsel->ElementAt(i);
         if (dispid == DISPID_Light_State || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_stateList, m_stateCombo, m_stateList[(int)light->getLightState()]);
+        {
+            float state;
+            light->get_State(&state);
+            PropertyDialog::UpdateComboBox(m_stateList, m_stateCombo, m_stateList[(int)state]);
+        }
         if (dispid == IDC_BLINK_PATTERN_EDIT || dispid == -1)
             m_blinkPatternEdit.SetWindowText(light->m_rgblinkpattern.c_str());
         if (dispid == DISPID_Light_BlinkInterval || dispid == -1)
@@ -41,8 +45,17 @@ void LightStatesProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case DISPID_Light_State:
-                CHECK_UPDATE_COMBO_VALUE_SETTER(light->setLightState, light->getLightState, (LightState)(PropertyDialog::GetComboBoxIndex(m_stateCombo, m_stateList)), light);
-                break;
+            {
+               float state; light->get_State(&state);
+               auto value = (float)(PropertyDialog::GetComboBoxIndex(m_stateCombo, m_stateList));
+               if (state != value)
+               {
+                  PropertyDialog::StartUndo(light);
+                  light->put_State(value);
+                  PropertyDialog::EndUndo(light);
+               }
+               break;
+            }
             case IDC_BLINK_PATTERN_EDIT:
             {
                 const string pattern(m_blinkPatternEdit.GetWindowText().c_str());

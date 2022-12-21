@@ -394,6 +394,7 @@ public:
 
    Pin3D m_pin3d;
 
+   U32 m_last_frame_time_msec;
    U32 m_time_msec;
 
    Ball *m_pactiveball;      // ball the script user can get with ActiveBall

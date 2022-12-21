@@ -11,6 +11,7 @@ Changelog:
 10.8.0:
 - add Animate event to Bumper, Light, Flipper, Gate, Spinner, Trigger, Targets and EMReel. This event is called when the object's visual properties is animated in order to easily sync with custom visuals
 - add CurrentAnimOffset to the Trigger and Target elements
+- add support for 'modulated' lights by changing light state to be a float and allowing it to be also defined between 0 and 1 (2 remains blinking state)
 
 10.7.2:
 - add GetInPlayIntensity to the light element

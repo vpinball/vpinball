@@ -738,30 +738,24 @@ void Light::UpdateAnimation(float diff_time_msec)
       if (m_inPlayState == LightStateBlinking)
          RestartBlinker(g_pplayer->m_time_msec);
    }
+
    if (m_inPlayState == LightStateBlinking)
       UpdateBlinker(g_pplayer->m_time_msec);
 
-   const bool isOn = (m_inPlayState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_inPlayState != LightStateOff);
-
-   if (isOn)
+   float targetIntensity = m_d.m_intensity * m_d.m_intensity_scale * ((m_inPlayState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState);
+   if (m_d.m_currentIntensity < targetIntensity)
    {
-      if (m_d.m_currentIntensity < m_d.m_intensity * m_d.m_intensity_scale)
-      {
-         m_d.m_currentIntensity += m_d.m_fadeSpeedUp * diff_time_msec;
-         if (m_d.m_currentIntensity > m_d.m_intensity * m_d.m_intensity_scale)
-            m_d.m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale;
-         FireGroupEvent(DISPID_AnimateEvents_Animate);
-      }
+      m_d.m_currentIntensity += m_d.m_fadeSpeedUp * diff_time_msec;
+      if (m_d.m_currentIntensity > targetIntensity)
+         m_d.m_currentIntensity = targetIntensity;
+      FireGroupEvent(DISPID_AnimateEvents_Animate);
    }
-   else
+   else if (m_d.m_currentIntensity > targetIntensity)
    {
-      if (m_d.m_currentIntensity > 0.0f)
-      {
-         m_d.m_currentIntensity -= m_d.m_fadeSpeedDown * diff_time_msec;
-         if (m_d.m_currentIntensity < 0.0f)
-            m_d.m_currentIntensity = 0.0f;
-         FireGroupEvent(DISPID_AnimateEvents_Animate);
-      }
+      m_d.m_currentIntensity -= m_d.m_fadeSpeedDown * diff_time_msec;
+      if (m_d.m_currentIntensity < targetIntensity)
+         m_d.m_currentIntensity = targetIntensity;
+      FireGroupEvent(DISPID_AnimateEvents_Animate);
    }
 }
 
@@ -1063,7 +1057,7 @@ STDMETHODIMP Light::put_FalloffPower(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP Light::get_State(LightState *pVal)
+STDMETHODIMP Light::get_State(float *pVal)
 {
    if (g_pplayer && !m_lockedByLS)
       *pVal = m_inPlayState;
@@ -1072,7 +1066,7 @@ STDMETHODIMP Light::get_State(LightState *pVal)
    return S_OK;
 }
 
-STDMETHODIMP Light::put_State(LightState newVal)
+STDMETHODIMP Light::put_State(float newVal)
 {
    if (!m_lockedByLS)
       setInPlayState(newVal);
@@ -1491,7 +1485,7 @@ STDMETHODIMP Light::put_BulbHaloHeight(float newVal)
    return S_OK;
 }
 
-void Light::setInPlayState(const LightState newVal)
+void Light::setInPlayState(const float newVal)
 {
    if (newVal != m_inPlayState) // state changed???
    {
@@ -1510,7 +1504,7 @@ void Light::setInPlayState(const LightState newVal)
    }
 }
 
-STDMETHODIMP Light::GetInPlayState(LightState* pVal)
+STDMETHODIMP Light::GetInPlayState(float* pVal)
 {
     *pVal = m_inPlayState;
     return S_OK;
@@ -1529,19 +1523,6 @@ STDMETHODIMP Light::GetInPlayIntensity(float *pVal)
    *pVal = m_d.m_currentIntensity;
 
    return S_OK;
-}
-
-void Light::setLightState(const LightState newVal)
-{
-   if (!m_lockedByLS)
-      setInPlayState(newVal);
-
-   m_d.m_state = newVal;
-}
-
-LightState Light::getLightState() const
-{
-   return m_d.m_state;
 }
 
 STDMETHODIMP Light::get_Visible(VARIANT_BOOL *pVal)
