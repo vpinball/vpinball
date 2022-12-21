@@ -12,6 +12,7 @@ Changelog:
 - add Animate event to Bumper, Light, Flipper, Gate, Spinner, Trigger, Targets and EMReel. This event is called when the object's visual properties is animated in order to easily sync with custom visuals
 - add CurrentAnimOffset to the Trigger and Target elements
 - add support for 'modulated' lights by changing light state to be a float and allowing it to be also defined between 0 and 1 (2 remains blinking state)
+- add support for multiple custom DMDs by adding DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels to flashers. The flasher will use the provided data if any, or defaults to the table data (captured or directly defined)
 
 10.7.2:
 - add GetInPlayIntensity to the light element
@@ -897,6 +898,10 @@ AddBlend(bool) - use additive alpha blending instead of classical alpha blending
 ImageAlignment
 ModulateVsAdd(float) - blends between modulating and additive when bulb is enabled (0..1)
 DMD(bool) - enable DMD image via script connection
+DMDWidth(int) - set width of DMD
+DMDHeight(int) - set height of DMD
+DMDPixels(VARIANT) - set array of (byte-)values (0..100), size needs to match the previously set width and height
+DMDColoredPixels(VARIANT) - set array of (long-)values (0..255,0..255,0..255), size needs to match the previously set width and height
 VideoCapWidth(int) - width of the window content to capture
 VideoCapHeight(int) - height of the window content to capture
 VideoCapUpdate(string) - uses the window title of the window content to capture, which is then copied into the flasher texture each time this function is called

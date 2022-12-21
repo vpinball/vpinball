@@ -977,6 +977,109 @@ STDMETHODIMP Flasher::put_DMD(VARIANT_BOOL newVal)
    return S_OK;
 }
 
+STDMETHODIMP Flasher::put_DMDWidth(int pVal)
+{
+   m_dmdSize.x = pVal;
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::put_DMDHeight(int pVal)
+{
+   m_dmdSize.y = pVal;
+   return S_OK;
+}
+
+// Implementation included in pintable.cpp
+void upscale(DWORD *const data, const int2 &res, const bool is_brightness_data);
+
+STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!! use 64bit instead of 8bit to reduce overhead??
+{
+   SAFEARRAY *psa = pVal.parray;
+
+   if (psa && m_dmdSize.x > 0 && m_dmdSize.y > 0)
+   {
+      const int size = m_dmdSize.x * m_dmdSize.y;
+      if (!m_texdmd
+#ifdef DMD_UPSCALE
+         || (m_texdmd->width() * m_texdmd->height() != size * (3 * 3)))
+#else
+         || (m_texdmd->width() * m_texdmd->height() != size))
+#endif
+      {
+         if (m_texdmd)
+         {
+            g_pplayer->m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTextureNull(SHADER_tex_dmd);
+            g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.UnloadTexture(m_texdmd);
+            delete m_texdmd;
+         }
+#ifdef DMD_UPSCALE
+         m_texdmd = new BaseTexture(m_dmdSize.x * 3, m_dmdSize.y * 3, BaseTexture::RGBA);
+#else
+         m_texdmd = new BaseTexture(m_dmdSize.x, m_dmdSize.y, BaseTexture::RGBA);
+#endif
+      }
+
+      DWORD *const data = (DWORD *)m_texdmd->data(); //!! assumes tex data to be always 32bit
+
+      VARIANT *p;
+      SafeArrayAccessData(psa, (void **)&p);
+      for (int ofs = 0; ofs < size; ++ofs)
+         data[ofs] = p[ofs].cVal; // store raw values (0..100), let shader do the rest
+      SafeArrayUnaccessData(psa);
+
+      if (g_pplayer->m_scaleFX_DMD)
+         upscale(data, m_dmdSize, true);
+
+      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.SetDirty(m_texdmd);
+   }
+
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as input //!! use 64bit instead of 32bit to reduce overhead??
+{
+   SAFEARRAY *psa = pVal.parray;
+
+   if (psa && m_dmdSize.x > 0 && m_dmdSize.y > 0)
+   {
+      const int size = m_dmdSize.x * m_dmdSize.y;
+      if (!m_texdmd
+#ifdef DMD_UPSCALE
+         || (m_texdmd->width() * m_texdmd->height() != size * (3 * 3)))
+#else
+         || (m_texdmd->width() * m_texdmd->height() != size))
+#endif
+      {
+         if (m_texdmd)
+         {
+            g_pplayer->m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTextureNull(SHADER_tex_dmd);
+            g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.UnloadTexture(m_texdmd);
+            delete m_texdmd;
+         }
+#ifdef DMD_UPSCALE
+         m_texdmd = new BaseTexture(m_dmdSize.x * 3, m_dmdSize.y * 3, BaseTexture::RGBA);
+#else
+         m_texdmd = new BaseTexture(m_dmdSize.x, m_dmdSize.y, BaseTexture::RGBA);
+#endif
+      }
+
+      DWORD *const data = (DWORD *)m_texdmd->data(); //!! assumes tex data to be always 32bit
+
+      VARIANT *p;
+      SafeArrayAccessData(psa, (void **)&p);
+      for (int ofs = 0; ofs < size; ++ofs)
+         data[ofs] = p[ofs].uintVal | 0xFF000000u; // store RGB values and let shader do the rest (set alpha to let shader know that this is RGB and not just brightness)
+      SafeArrayUnaccessData(psa);
+
+      if (g_pplayer->m_scaleFX_DMD)
+         upscale(data, m_dmdSize, false);
+
+      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.SetDirty(m_texdmd);
+   }
+
+   return S_OK;
+}
+
 STDMETHODIMP Flasher::put_VideoCapWidth(long cWidth)
 {
     if (m_videoCapWidth != cWidth) ResetVideoCap(); //resets capture
@@ -1210,10 +1313,13 @@ void Flasher::RenderDynamic()
 
        pd3dDevice->DMDShader->SetVector(SHADER_vColor_Intensity, &color);
 
+       BaseTexture *texdmd = m_texdmd != nullptr ? m_texdmd : g_pplayer->m_texdmd;
+       const int2 &dmdSize = m_texdmd != nullptr ? m_dmdSize : g_pplayer->m_dmd;
+
 #ifdef DMD_UPSCALE
-       const vec4 r((float)(g_pplayer->m_dmd.x*3), (float)(g_pplayer->m_dmd.y*3), m_d.m_modulate_vs_add, (float)(g_pplayer->m_overall_frames%2048)); //(float)(0.5 / m_width), (float)(0.5 / m_height));
+       const vec4 r((float)(dmdSize.x * 3), (float)(dmdSize.y * 3), m_d.m_modulate_vs_add, (float)(g_pplayer->m_overall_frames % 2048)); //(float)(0.5 / m_width), (float)(0.5 / m_height));
 #else
-       const vec4 r((float)g_pplayer->m_dmd.x, (float)g_pplayer->m_dmd.y, m_d.m_modulate_vs_add, (float)(g_pplayer->m_overall_frames%2048)); //(float)(0.5 / m_width), (float)(0.5 / m_height));
+       const vec4 r((float)dmdSize.x, (float)dmdSize.y, m_d.m_modulate_vs_add, (float)(g_pplayer->m_overall_frames % 2048)); //(float)(0.5 / m_width), (float)(0.5 / m_height));
 #endif
        pd3dDevice->DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
 
@@ -1221,8 +1327,8 @@ void Flasher::RenderDynamic()
        if (captureExternalDMD())
           pd3dDevice->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD_world_ext);
 
-       if (g_pplayer->m_texdmd != nullptr)
-          pd3dDevice->DMDShader->SetTexture(SHADER_tex_dmd, g_pplayer->m_texdmd, SF_NONE, SA_CLAMP, SA_CLAMP);
+       if (texdmd != nullptr)
+          pd3dDevice->DMDShader->SetTexture(SHADER_tex_dmd, texdmd, SF_NONE, SA_CLAMP, SA_CLAMP);
 
        pd3dDevice->DMDShader->Begin();
        pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_TEX, m_dynamicVertexBuffer, 0, m_numVertices, m_dynamicIndexBuffer, 0, m_numPolys * 3);
