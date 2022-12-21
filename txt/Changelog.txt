@@ -77,6 +77,8 @@ FEATURES:
   - add support for 'modulated' lights (through script only, corresponding to PWM modulated outputs of most 1990+ pinballs)
   - tried to make the interface more intuitive
 
+- add support for more than one DMD (for original tables, in game DMD menu,...)
+
 FIXES:
 
 - reflections now work in the interactive camera/light editing mode (F6) as well

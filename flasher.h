@@ -168,7 +168,10 @@ private:
    HWND m_videoCapHwnd = nullptr;
    BaseTexture* m_videoCapTex = nullptr;
 
-// IFlasher
+   int2 m_dmdSize;
+   BaseTexture *m_texdmd;
+
+   // IFlasher
 public:
    STDMETHOD(get_ImageA)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_ImageA)(/*[in]*/ BSTR newVal);
@@ -200,8 +203,13 @@ public:
    STDMETHOD(put_DisplayTexture)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_AddBlend)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_AddBlend)(/*[in]*/ VARIANT_BOOL newVal);
+
    STDMETHOD(get_DMD)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_DMD)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(put_DMDWidth)(/*[in]*/ int pVal);
+   STDMETHOD(put_DMDHeight)(/*[in]*/ int pVal);
+   STDMETHOD(put_DMDPixels)(/*[in]*/ VARIANT pVal);
+   STDMETHOD(put_DMDColoredPixels)(/*[in]*/ VARIANT pVal);
 
    STDMETHOD(put_VideoCapWidth)(/*[in]*/ long cWidth);
    STDMETHOD(put_VideoCapHeight)(/*[in]*/ long cHeight);
