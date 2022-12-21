@@ -378,7 +378,7 @@ void Light::RenderDynamic()
 {
    TRACE_FUNCTION();
 
-   if (!m_d.m_visible || m_ptable->m_reflectionEnabled)
+   if (m_ptable->m_reflectionEnabled)
       return;
 
    if (m_customMoverVBuffer == nullptr) // in case of degenerate light
@@ -389,6 +389,9 @@ void Light::RenderDynamic()
 
    if (m_d.m_showBulbMesh && !m_d.m_staticBulbMesh && g_pplayer->m_current_renderstage == 0)
       RenderBulbMesh();
+
+   if (!m_d.m_visible)
+      return;
 
    Texture *offTexel = nullptr;
 
