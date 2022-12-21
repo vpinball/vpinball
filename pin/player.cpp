@@ -5029,13 +5029,16 @@ void Player::Render()
    m_overall_frames++;
 
    // Update all animated parts
-   const float diff_time_msec = (float)(m_time_msec - m_last_frame_time_msec);
-   m_last_frame_time_msec = m_time_msec;
-   for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
+   if (!m_pause)
    {
-      Hitable *const ph = m_ptable->m_vedit[i]->GetIHitable();
-      if (ph)
-         ph->UpdateAnimation(diff_time_msec);
+      const float diff_time_msec = (float)(m_time_msec - m_last_frame_time_msec);
+      m_last_frame_time_msec = m_time_msec;
+      for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
+      {
+         Hitable *const ph = m_ptable->m_vedit[i]->GetIHitable();
+         if (ph)
+            ph->UpdateAnimation(diff_time_msec);
+      }
    }
 
 #ifndef ENABLE_SDL
