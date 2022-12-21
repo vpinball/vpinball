@@ -4954,9 +4954,12 @@ void Player::Render()
    // Then it is tonemapped/bloom/dither/... to m_pd3dPrimaryDevice->GetPostProcessRenderTarget1() if needed for postprocessing (sharpen, FXAA,...), or directly to the main output framebuffer otherwise
    // The optional postprocessing is done from m_pd3dPrimaryDevice->GetPostProcessRenderTarget1() to the main output framebuffer
 
+   // In pause mode: input, physics, animation and audio are not processed but rendering is still performed. This allows to modify properties (transform, visibility,..) using the debugger and get direct feedback
+
    U64 timeforframe = usec();
 
-   m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
+   if (!m_pause)
+      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
 
    if (m_overall_frames < 10)
    {
@@ -4971,7 +4974,8 @@ void Player::Render()
    if (m_sleeptime > 0)
       Sleep(m_sleeptime - 1);
 
-   m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
+   if (!m_pause)
+      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
 
 #ifdef DEBUGPHYSICS
    c_hitcnts = 0;
@@ -5019,7 +5023,7 @@ void Player::Render()
 
    // Physics/Timer updates, done at the last moment, especially to handle key input (VP<->VPM rountrip) and animation triggers
    //if ( !cameraMode )
-   if (m_minphyslooptime == 0) // (vsync) latency reduction code not active? -> Do Physics Updates here
+   if (!m_pause && m_minphyslooptime == 0) // (vsync) latency reduction code not active? -> Do Physics Updates here
       UpdatePhysics();
 
    m_overall_frames++;
@@ -5102,7 +5106,7 @@ void Player::Render()
       PrepareVideoBuffersNormal();
 
    // DJRobX's crazy latency-reduction code active? Insert some Physics updates before vsync'ing
-   if (m_minphyslooptime > 0)
+   if (!m_pause && m_minphyslooptime > 0)
    {
       UpdatePhysics();
       m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
@@ -5150,11 +5154,12 @@ void Player::Render()
 
    m_pactiveball = old_pactiveball;
 #else
-   m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
+   if (!m_pause)
+      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
 #endif
 
    // Update music stream
-   if (m_audio)
+   if (!m_pause && m_audio)
    {
       if (!m_audio->MusicActive())
       {
