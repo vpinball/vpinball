@@ -226,6 +226,12 @@ void Light::RenderOutline(Sur * const psur)
       psur->Line(m_d.m_vCenter.x - 10.0f, m_d.m_vCenter.y, m_d.m_vCenter.x + 10.0f, m_d.m_vCenter.y);
       psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - 10.0f, m_d.m_vCenter.x, m_d.m_vCenter.y + 10.0f);
    }
+
+   if (m_d.m_showBulbMesh)
+   {
+      psur->SetBorderColor(RGB(0, 127, 255), false, 0);
+      psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_meshRadius / 2.0f);
+   }
 }
 
 void Light::RenderBlueprint(Sur *psur, const bool solid)
