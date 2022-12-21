@@ -31,7 +31,7 @@ public:
    float m_fadeSpeedDown;
    float m_currentIntensity;
    
-   LightState m_state;
+   float m_state; // 0..1 is modulated from off to on, 2 is blinking
    COLORREF m_color;
    COLORREF m_color2; // color full
    TimerDataRoot m_tdr;
@@ -133,7 +133,7 @@ public:
 
    void WriteRegDefaults() final;
 
-   STDMETHOD(GetInPlayState)(/*[out, retval]*/ LightState* pVal);
+   STDMETHOD(GetInPlayState)(/*[out, retval]*/ float* pVal);
    STDMETHOD(GetInPlayStateBool)(/*[out, retval]*/ VARIANT_BOOL* pVal);
    STDMETHOD(GetInPlayIntensity)(/*[out, retval]*/ float *pVal);
 
@@ -143,17 +143,15 @@ public:
    void FreeBuffers();
 
    void InitShape();
-   void setInPlayState(const LightState newVal);
+   void setInPlayState(const float newVal);
 
    void RenderOutline(Sur *const psur);
 
-   void setLightState(const LightState newVal);
-   LightState getLightState() const;
    void RenderBulbMesh();
 
    LightData m_d;
 
-   LightState m_inPlayState;
+   float m_inPlayState; // 0..1 is modulated from off to on, 2 is blinking
    float m_surfaceHeight;
    bool  m_lockedByLS;
    string m_rgblinkpattern;
@@ -244,8 +242,8 @@ public:
    STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
    STDMETHOD(get_ColorFull)(/*[out, retval]*/ OLE_COLOR *pVal);
    STDMETHOD(put_ColorFull)(/*[in]*/ OLE_COLOR newVal);
-   STDMETHOD(get_State)(/*[out, retval]*/ LightState *pVal);
-   STDMETHOD(put_State)(/*[in]*/ LightState newVal);
+   STDMETHOD(get_State)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_State)(/*[in]*/ float newVal);
    STDMETHOD(get_Falloff)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Falloff)(/*[in]*/ float newVal);
    STDMETHOD(get_FalloffPower)(/*[out, retval]*/ float *pVal);

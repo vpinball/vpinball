@@ -816,7 +816,7 @@ public:
       float fadeSpeedDown;
       COLORREF color1;
       COLORREF color2;
-      LightState lightstate;
+      float lightstate;
    };
 
    vector<DebugLightData *> m_dbgChangedLights;

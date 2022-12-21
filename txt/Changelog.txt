@@ -69,10 +69,12 @@ FEATURES:
 
 - add native ball shadows for bulb lights, as well as flashers & primitives used as lightmaps (using additive blending)
 
-- reworked light interface to be more intuitive and:
+- reworked light:
   - allow to hide light's rendering (still allowing ball reflections or shadows through primitives or flashers),
   - allow bulb mesh for classic light as well as bulb lights
   - allow reflection on ball for classic light as well as bulb lights
+  - add support for 'modulated' lights through script only (corresponding to PWM modulated outputs of most 1990+ pinballs)
+  - tried to mahe the interface more intuitive
 
 FIXES:
 

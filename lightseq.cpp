@@ -624,7 +624,7 @@ STDMETHODIMP LightSeq::StopPlay()
          if (type == eItemLight)
          {
             Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(i);
-            LightState state;
+            float state;
             pLight->get_State(&state);
             pLight->m_lockedByLS = false;
             pLight->put_State(state);
@@ -1733,7 +1733,7 @@ LightState LightSeq::GetElementState(const int index) const
    if (type == eItemLight)
    {
        const Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
-       rc = pLight->m_inPlayState;
+       rc = (LightState)pLight->m_inPlayState;
    }
    else if (type == eItemFlasher)
    {

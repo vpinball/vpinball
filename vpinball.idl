@@ -1416,9 +1416,9 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(1), helpstring("property Falloff")] HRESULT Falloff([in] float newVal);
                 [propget, id(432), helpstring("property FalloffPower")] HRESULT FalloffPower([out, retval] float *pVal);
                 [propput, id(432), helpstring("property FalloffPower")] HRESULT FalloffPower([in] float newVal);
-                [propget, id(DISPID_Light_State), helpstring("property State")] HRESULT State([out, retval] LightState *pVal);
-                [propput, id(DISPID_Light_State), helpstring("property State")] HRESULT State([in] LightState newVal);
-                [id(595), helpstring("method GetInPlayState")] HRESULT GetInPlayState([out, retval] LightState* pVal);
+                [propget, id(DISPID_Light_State), helpstring("property State")] HRESULT State([out, retval] float *pVal);
+                [propput, id(DISPID_Light_State), helpstring("property State")] HRESULT State([in] float newVal);
+                [id(595), helpstring("method GetInPlayState")] HRESULT GetInPlayState([out, retval] float* pVal);
                 [id(596), helpstring("method GetInPlayStateBool")] HRESULT GetInPlayStateBool([out, retval] VARIANT_BOOL* pVal);
                 [id(597), helpstring("method GetInPlayIntensity")] HRESULT GetInPlayIntensity([out, retval] float* pVal);
                 [propget, id(3), helpstring("property Color")] HRESULT Color([out, retval] OLE_COLOR *pVal);
