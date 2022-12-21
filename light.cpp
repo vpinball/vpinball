@@ -141,15 +141,6 @@ void Light::UIRenderPass1(Sur * const psur)
    psur->SetFillColor(m_ptable->RenderSolid() ? (((m_d.m_color & 0xFEFEFE) + (m_d.m_color2 & 0xFEFEFE)) / 2) : -1);
    psur->SetObject(this);
 
-   // workaround for the old round light object
-   // after loading m_roundLight is true if an pre-VPX table was loaded
-   // init the round light to the new custom one
-   if (m_roundLight)
-   {
-      InitShape();
-      m_roundLight = false;
-   }
-
    switch (m_d.m_shape)
    {
    default:
@@ -924,6 +915,15 @@ bool Light::LoadToken(const int id, BiffReader * const pbr)
 
 HRESULT Light::InitPostLoad()
 {
+   // workaround for the old round light object
+   // after loading m_roundLight is true if an pre-VPX table was loaded
+   // init the round light to the new custom one
+   if (m_roundLight)
+   {
+      InitShape();
+      m_roundLight = false;
+   }
+
    return S_OK;
 }
 
