@@ -216,6 +216,8 @@ void DispReel::RenderDynamic()
       return;
 
    RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice::RenderStateCache initial_state;
+   pd3dDevice->CopyRenderStates(true, initial_state);
 
    if (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled)
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
@@ -272,6 +274,8 @@ void DispReel::RenderDynamic()
    pd3dDevice->DMDShader->End();
 
    pd3dDevice->DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
+
+   pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
 void DispReel::RenderSetup()
