@@ -3751,8 +3751,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemLight)
                {
                   Light *light = (Light *)m_vedit[i];
-                  // Before 10.8, lights did not have a z coordinate
-                  light->m_d.m_height = light->m_d.m_BulbLight ? light->m_d.m_bulbHaloHeight : 0.0f;
+                  // Before 10.8, lights did not have a z coordinate (light emission point)
+                  // Before 10.8, bulb mesh was rendered at surface level (28 VP units below light emission point)
+                  light->m_d.m_height = light->m_d.m_BulbLight ? light->m_d.m_showBulbMesh ? 28.f : light->m_d.m_bulbHaloHeight : 0.0f;
                   if (!light->m_d.m_BulbLight)
                   {
                      // Before 10.8, classic light could not have a bulb mesh so force it off
@@ -3760,6 +3761,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                      // Before 10.8, classic light could not have ball reflection so force it off
                      light->m_d.m_showReflectionOnBall = false;
                   }
+                  // Before 10.8, bulb mesh visibility was combined with lightmap visibility (i.e. a hidden light could be reflecting but not have a bulb mesh). Note that light visible property was only accessible through script
+                  if (!light->m_d.m_visible)
+                     light->m_d.m_showBulbMesh = false;
                }
             }
          }

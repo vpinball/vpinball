@@ -684,6 +684,9 @@ void Light::RenderSetup()
 
    if (m_d.m_showBulbMesh)
    {
+      // 28.f is the distance between the light (emitting point) and the bulb base (bulb mesh origin)
+      float bulb_z = m_surfaceHeight + (m_d.m_height - 28.f) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+
       SAFE_BUFFER_RELEASE(m_bulbLightIndexBuffer);
       m_bulbLightIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(bulbLightNumFaces, bulbLightIndices, m_backglass ? SECONDARY_DEVICE : PRIMARY_DEVICE);
 
@@ -696,7 +699,7 @@ void Light::RenderSetup()
       {
          buf[i].x = bulbLight[i].x*m_d.m_meshRadius + m_d.m_vCenter.x;
          buf[i].y = bulbLight[i].y*m_d.m_meshRadius + m_d.m_vCenter.y;
-         buf[i].z = bulbLight[i].z*m_d.m_meshRadius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_surfaceHeight;
+         buf[i].z = bulbLight[i].z*m_d.m_meshRadius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + bulb_z;
          buf[i].nx = bulbLight[i].nx;
          buf[i].ny = bulbLight[i].ny;
          buf[i].nz = bulbLight[i].nz;
@@ -716,7 +719,7 @@ void Light::RenderSetup()
       {
          buf[i].x = bulbSocket[i].x*m_d.m_meshRadius + m_d.m_vCenter.x;
          buf[i].y = bulbSocket[i].y*m_d.m_meshRadius + m_d.m_vCenter.y;
-         buf[i].z = bulbSocket[i].z*m_d.m_meshRadius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_surfaceHeight;
+         buf[i].z = bulbSocket[i].z*m_d.m_meshRadius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + bulb_z;
          buf[i].nx = bulbSocket[i].nx;
          buf[i].ny = bulbSocket[i].ny;
          buf[i].nz = bulbSocket[i].nz;
