@@ -333,7 +333,7 @@ void LightSeq::RenderStatic()
 
 // This function is called each frame. It basically checks to see if the update
 // interval has expired and if so handles the light effect
-void LightSeq::UpdateAnimation(float diff_time_msec)
+void LightSeq::UpdateAnimation(const float diff_time_msec)
 {
    if (m_playInProgress)
    {

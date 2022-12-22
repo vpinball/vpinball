@@ -371,7 +371,7 @@ void DispReel::RenderStatic()
 // This function is called each frame.  It basically check to see if the update
 // interval has expired and if so handles the rolling of the reels according to the
 // number of motor steps queued up for each reel
-void DispReel::UpdateAnimation(float diff_time_msec)
+void DispReel::UpdateAnimation(const float diff_time_msec)
 {
    bool animated = false;
    while (g_pplayer->m_time_msec >= m_timeNextUpdate)

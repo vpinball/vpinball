@@ -9,7 +9,7 @@ public:
    virtual EventProxyBase *GetEventProxyBase() = 0;
 
    virtual void RenderSetup() = 0;
-   virtual void UpdateAnimation(float diff_time_msec) = 0;
+   virtual void UpdateAnimation(const float diff_time_msec) = 0;
    virtual void RenderStatic() = 0;
    virtual void RenderDynamic() = 0;
    virtual void EndPlay() = 0;

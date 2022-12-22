@@ -422,7 +422,7 @@ void Flasher::RenderSetup()
    }
 }
 
-void Flasher::UpdateAnimation(float diff_time_msec)
+void Flasher::UpdateAnimation(const float diff_time_msec)
 {
 }
 

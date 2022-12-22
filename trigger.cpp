@@ -509,17 +509,17 @@ void Trigger::TriggerAnimationUnhit()
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Trigger/TriggerAnimationSystem.cs
 //
 
-void Trigger::UpdateAnimation(float diff_time_msec)
+void Trigger::UpdateAnimation(const float diff_time_msec)
 {
    float animLimit;
    switch (m_d.m_shape)
    {
-   case TriggerStar:   animLimit = m_d.m_radius * (float)(1.0 /  5.0); break;
-   case TriggerButton: animLimit = m_d.m_radius * (float)(1.0 / 10.0); break;
-   case TriggerWireC:  animLimit = 60.0f; break;
-   case TriggerWireD:  animLimit = 25.0f; break;
-   case TriggerInder:  animLimit = 25.0f; break;
-   default:            animLimit = 32.0f; break;
+      case TriggerStar:   animLimit = m_d.m_radius * (float)(1.0 /  5.0); break;
+      case TriggerButton: animLimit = m_d.m_radius * (float)(1.0 / 10.0); break;
+      case TriggerWireC:  animLimit = 60.0f; break;
+      case TriggerWireD:  animLimit = 25.0f; break;
+      case TriggerInder:  animLimit = 25.0f; break;
+      default:            animLimit = 32.0f; break;
    }
 
    const float limit = animLimit*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];

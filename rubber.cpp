@@ -691,7 +691,7 @@ void Rubber::RenderSetup()
    GenerateVertexBuffer();
 }
 
-void Rubber::UpdateAnimation(float diff_time_msec)
+void Rubber::UpdateAnimation(const float diff_time_msec)
 {
 }
 
@@ -708,7 +708,7 @@ void Rubber::RenderStatic()
 
 void Rubber::SetObjectPos()
 {
-    m_vpinball->SetObjectPosCur(0, 0);
+   m_vpinball->SetObjectPosCur(0, 0);
 }
 
 void Rubber::MoveOffset(const float dx, const float dy)

@@ -600,7 +600,7 @@ void Decal::RenderObject()
    pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
-void Decal::UpdateAnimation(float diff_time_msec)
+void Decal::UpdateAnimation(const float diff_time_msec)
 {
 }
 

@@ -39,6 +39,8 @@ public:
 
    float m_depthBias; // for determining depth sorting
 
+   bool m_showReflectionOnBall;
+
    bool m_imageMode; // For default render mode: true = pass through/no lighting, false = use surface material
 
    bool m_BulbLight; // Bulb halo render mode
@@ -49,8 +51,6 @@ public:
    bool m_showBulbMesh;
    bool m_staticBulbMesh;
    float m_meshRadius;
-
-   bool m_showReflectionOnBall;
 
    ShadowMode m_shadows = ShadowMode::NONE;
 };

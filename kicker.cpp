@@ -232,7 +232,7 @@ void Kicker::EndPlay()
    IEditable::EndPlay();
 }
 
-void Kicker::UpdateAnimation(float diff_time_msec)
+void Kicker::UpdateAnimation(const float diff_time_msec)
 {
 }
 
@@ -243,7 +243,7 @@ void Kicker::RenderStatic()
 void Kicker::ExportMesh(ObjLoader& loader)
 {
    if (m_d.m_kickertype == KickerInvisible)
-       return;
+      return;
 
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
    WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);

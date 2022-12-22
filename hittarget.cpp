@@ -594,10 +594,8 @@ void HitTarget::UpdateStatusBarInfo()
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/HitTarget/HitTargetAnimationSystem.cs
 //
 
-void HitTarget::UpdateAnimation(float diff_time_msec)
+void HitTarget::UpdateAnimation(const float diff_time_msec)
 {
-    m_d.m_time_msec = g_pplayer->m_time_msec;
-
     if (m_hitEvent)
     {
         if (!m_d.m_isDropped)
@@ -615,7 +613,7 @@ void HitTarget::UpdateAnimation(float diff_time_msec)
             const float limit = DROP_TARGET_LIMIT*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
             if (m_moveDown)
                 step = -step;
-            else if ((m_d.m_time_msec - m_timeStamp) < (unsigned int)m_d.m_raiseDelay)
+            else if ((g_pplayer->m_time_msec - m_timeStamp) < (unsigned int)m_d.m_raiseDelay)
             {
                 step = 0.0f;
             }
@@ -633,8 +631,8 @@ void HitTarget::UpdateAnimation(float diff_time_msec)
                         FireGroupEvent(DISPID_TargetEvents_Dropped);
                 }
             }
-            else 
-            {                 
+            else
+            {
                 if (m_moveAnimationOffset >= 0.0f)
                 {
                     m_moveAnimationOffset = 0.0f;
@@ -834,7 +832,6 @@ void HitTarget::RenderSetup()
    m_vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
    memcpy(buf, m_transformedVertices.data(), m_numVertices*sizeof(Vertex3D_NoTex2));
    m_vertexBuffer->unlock();
-   m_d.m_time_msec = g_pplayer->m_time_msec;
 }
 
 void HitTarget::RenderStatic()

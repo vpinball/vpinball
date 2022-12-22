@@ -276,7 +276,7 @@ void Bumper::EndPlay()
 void Bumper::UpdateRing()
 {
    if (m_ringVertexBuffer == nullptr)
-       return;
+      return;
 
    //TODO update Worldmatrix instead.
    Vertex3D_NoTex2 *buf;
@@ -703,7 +703,7 @@ void Bumper::RenderSetup()
 
 }
 
-void Bumper::UpdateAnimation(float diff_time_msec)
+void Bumper::UpdateAnimation(const float diff_time_msec)
 {
    if (m_pbumperhitcircle->m_bumperanim_hitEvent)
       g_pplayer->m_pininput.PlayRumble(0.1f, 0.05f, 100);

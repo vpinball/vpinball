@@ -116,7 +116,7 @@ void Timer::RenderSetup()
 {
 }
 
-void Timer::UpdateAnimation(float diff_time_msec)
+void Timer::UpdateAnimation(const float diff_time_msec)
 {
 }
 

@@ -31,7 +31,6 @@ public:
 
    float m_elasticityFalloff;
    float m_dropSpeed;
-   U32   m_time_msec;
    int   m_raiseDelay;
 
    float m_depthBias;      // for determining depth sorting

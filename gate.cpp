@@ -579,7 +579,7 @@ void Gate::RenderSetup()
    m_wireVertexBuffer->unlock();
 }
 
-void Gate::UpdateAnimation(float diff_time_msec)
+void Gate::UpdateAnimation(const float diff_time_msec)
 {
    // Animation is updated by physics engine through a MoverObject. No additional visual animation here
    // Still monitor angle updates in order to fire animate event at most once per frame (physics engine perform far more cycle per frame)

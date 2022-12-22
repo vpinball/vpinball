@@ -161,14 +161,14 @@ public:
 	virtual Hitable *GetIHitable() {return static_cast<Hitable *>(this);} \
 	virtual const Hitable *GetIHitable() const {return static_cast<const Hitable *>(this);} \
 	virtual void RenderSetup(); \
-	virtual void UpdateAnimation(float diff_time_msec); \
-   virtual void RenderStatic(); \
+	virtual void UpdateAnimation(const float diff_time_msec); \
+	virtual void RenderStatic(); \
 	virtual void RenderDynamic(); \
-	STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) {return hrNotImplemented;}\
+	STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) {return hrNotImplemented;} \
 	STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID *pclsid) {return hrNotImplemented;} \
 	STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut) {return GetPTable()->GetPredefinedStrings(dispID, pcaStringsOut, pcaCookiesOut, this);} \
 	STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut) {return GetPTable()->GetPredefinedValue(dispID, dwCookie, pVarOut, this);} \
-	virtual void SetDefaults(bool fromMouseClick);
+	virtual void SetDefaults(const bool fromMouseClick);
 
 #define _STANDARD_EDITABLE_CONSTANTS(ItTy, ResName, AllwdViews) \
 	static const ItemTypeEnum ItemType = ItTy; \

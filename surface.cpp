@@ -976,9 +976,9 @@ void Surface::FreeBuffers()
    SAFE_BUFFER_RELEASE(slingIBuffer); // NB: global instance
 }
 
-void Surface::UpdateAnimation(float diff_time_msec)
+void Surface::UpdateAnimation(const float diff_time_msec)
 {
-   for (size_t i = 0; i < m_vlinesling.size(); i++)
+   for (size_t i = 0; i < m_vlinesling.size(); ++i)
       m_vlinesling[i]->Animate();
 }
 

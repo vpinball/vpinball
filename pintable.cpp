@@ -3724,14 +3724,15 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             for (size_t i = 0; i < m_vedit.size(); ++i)
                if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)m_vedit[i])->IsPlayfield()))
                {
-                  ((Primitive*)m_vedit[i])->put_IsToy(FTOVB(false));
-                  ((Primitive*)m_vedit[i])->put_Collidable(FTOVB(true));
+                  Primitive* const prim = (Primitive *)m_vedit[i];
+                  prim->put_IsToy(FTOVB(false));
+                  prim->put_Collidable(FTOVB(true));
                }
 
          if (loadfileversion < 1080) 
          {
             // reflections were hardcoded without render probe before 10.8.0
-            RenderProbe* pf_reflections = new RenderProbe();
+            RenderProbe* const pf_reflections = new RenderProbe();
             pf_reflections->SetName(PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
             m_vrenderprobe.push_back(pf_reflections);
 
@@ -3739,18 +3740,19 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             {
                if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)m_vedit[i])->IsPlayfield()))
                {
+                  Primitive* const prim = (Primitive *)m_vedit[i];
                   // playfield meshes were always processed as static until 10.8.0 (more precisely, directly rendered before everything else even in camera mode, then skipped when rendering all parts)
-                  ((Primitive *)m_vedit[i])->m_d.m_staticRendering = true;
+                  prim->m_d.m_staticRendering = true;
                   // playfield meshes were always forced as visible until 10.8.0
-                  ((Primitive *)m_vedit[i])->put_Visible(FTOVB(true));
+                  prim->put_Visible(FTOVB(true));
                   // playfield meshes were always drawn before other transparent parts until 10.8.0
-                  ((Primitive *)m_vedit[i])->m_d.m_depthBias = 100000.0f;
+                  prim->m_d.m_depthBias = 100000.0f;
                   // playfield meshes did not handle backfaces until 10.8.0
-                  ((Primitive *)m_vedit[i])->m_d.m_backfacesEnabled = false;
+                  prim->m_d.m_backfacesEnabled = false;
                }
                if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemLight)
                {
-                  Light *light = (Light *)m_vedit[i];
+                  Light* const light = (Light *)m_vedit[i];
                   // Before 10.8, lights did not have a z coordinate (light emission point)
                   // Before 10.8, bulb mesh was rendered at surface level (28 VP units below light emission point)
                   light->m_d.m_height = light->m_d.m_BulbLight ? light->m_d.m_showBulbMesh ? 28.f : light->m_d.m_bulbHaloHeight : 0.0f;

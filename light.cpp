@@ -735,7 +735,7 @@ void Light::RenderSetup()
    PrepareMoversCustom();
 }
 
-void Light::UpdateAnimation(float diff_time_msec)
+void Light::UpdateAnimation(const float diff_time_msec)
 {
    if ((m_duration > 0) && (m_timerDurationEndTime < g_pplayer->m_time_msec))
    {

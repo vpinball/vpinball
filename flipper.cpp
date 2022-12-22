@@ -874,7 +874,7 @@ void Flipper::RenderSetup()
    m_lastAngle = 123486.0f;
 }
 
-void Flipper::UpdateAnimation(float diff_time_msec)
+void Flipper::UpdateAnimation(const float diff_time_msec)
 {
    // Animation is updated by physics engine through a MoverObject. No additional visual animation here
    // Still monitor angle updates in order to fire animate event at most once per frame (physics engine perform far more cycle per frame)
@@ -885,7 +885,8 @@ void Flipper::UpdateAnimation(float diff_time_msec)
    }
 }
 
-void Flipper::RenderStatic() {
+void Flipper::RenderStatic()
+{
 }
 
 HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)

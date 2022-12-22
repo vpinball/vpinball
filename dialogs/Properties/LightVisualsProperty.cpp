@@ -224,7 +224,7 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
             case IDC_SCALE_BULB_MESH:
                 CHECK_UPDATE_ITEM(light->m_d.m_meshRadius, PropertyDialog::GetFloatTextbox(m_scaleMeshEdit), light);
                 break;
-            
+
             case IDC_REFLECT_ON_BALLS:
                 CHECK_UPDATE_ITEM(light->m_d.m_showReflectionOnBall, PropertyDialog::GetCheckboxState(m_hRelectOnBalls), light);
                 break;

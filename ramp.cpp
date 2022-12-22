@@ -1219,7 +1219,7 @@ void Ramp::RenderSetup()
    }
 }
 
-void Ramp::UpdateAnimation(float diff_time_msec)
+void Ramp::UpdateAnimation(const float diff_time_msec)
 {
 }
 
@@ -1243,7 +1243,7 @@ void Ramp::RenderStatic()
 
 void Ramp::SetObjectPos()
 {
-    m_vpinball->SetObjectPosCur(0, 0);
+   m_vpinball->SetObjectPosCur(0, 0);
 }
 
 void Ramp::MoveOffset(const float dx, const float dy)
