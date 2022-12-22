@@ -41,7 +41,7 @@ void Kicker::UpdateStatusBarInfo()
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
 
-HRESULT Kicker::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
+HRESULT Kicker::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
    m_ptable = ptable;
 
@@ -53,7 +53,7 @@ HRESULT Kicker::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    return InitVBA(fTrue, 0, nullptr);
 }
 
-void Kicker::SetDefaults(bool fromMouseClick)
+void Kicker::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsKicker]
 
@@ -524,7 +524,7 @@ void Kicker::RenderSetup()
    m_vertexBuffer->unlock();
 }
 
-void Kicker::SetDefaultPhysics(bool fromMouseClick)
+void Kicker::SetDefaultPhysics(const bool fromMouseClick)
 {
    m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(regKey[RegName::DefaultPropsKicker], "Scatter"s, 0.f) : 0.f;
 }

@@ -159,7 +159,7 @@ void Trigger::InitShape(float x, float y)
    }
 }
 
-HRESULT Trigger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
+HRESULT Trigger::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
    m_ptable = ptable;
 
@@ -173,7 +173,7 @@ HRESULT Trigger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    return InitVBA(fTrue, 0, nullptr);
 }
 
-void Trigger::SetDefaults(bool fromMouseClick)
+void Trigger::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsTrigger]
 

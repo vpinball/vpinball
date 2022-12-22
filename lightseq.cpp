@@ -8,7 +8,7 @@ LightSeq::~LightSeq()
 {
 }
 
-HRESULT LightSeq::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
+HRESULT LightSeq::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
    m_ptable = ptable;
 
@@ -20,7 +20,7 @@ HRESULT LightSeq::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    return InitVBA(fTrue, 0, nullptr);
 }
 
-void LightSeq::SetDefaults(bool fromMouseClick)
+void LightSeq::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsLightSequence]
 

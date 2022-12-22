@@ -73,7 +73,7 @@ public:
    // Multi-object manipulation
    Vertex2D GetCenter() const final;
    void PutCenter(const Vertex2D& pv) final;
-   void SetDefaultPhysics(bool fromMouseClick) final;
+   void SetDefaultPhysics(const bool fromMouseClick) final;
 
    unsigned long long GetMaterialID() const final { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
    unsigned long long GetImageID() const final { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }

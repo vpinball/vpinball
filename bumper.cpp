@@ -34,7 +34,7 @@ Bumper::~Bumper()
    EndPlay();
 }
 
-HRESULT Bumper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
+HRESULT Bumper::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
    m_ptable = ptable;
 
@@ -46,7 +46,7 @@ HRESULT Bumper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    return InitVBA(fTrue, 0, nullptr);
 }
 
-void Bumper::SetDefaults(bool fromMouseClick)
+void Bumper::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsBumper]
 
@@ -1311,7 +1311,7 @@ STDMETHODIMP Bumper::PlayHit()
    return S_OK;
 }
 
-void Bumper::SetDefaultPhysics(bool fromMouseClick)
+void Bumper::SetDefaultPhysics(const bool fromMouseClick)
 {
    m_d.m_force   = fromMouseClick ? LoadValueFloatWithDefault(regKey[RegName::DefaultPropsBumper], "Force"s, 15) : 15;
    m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(regKey[RegName::DefaultPropsBumper], "Scatter"s, 0) : 0;

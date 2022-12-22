@@ -97,7 +97,7 @@ public:
    unsigned long long GetMaterialID() const final { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
    unsigned long long GetImageID() const final { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
    ItemTypeEnum HitableGetItemType() const final { return eItemRubber; }
-   void SetDefaultPhysics(bool fromMouseClick) final;
+   void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader& loader) final;
 
    void WriteRegDefaults() final;

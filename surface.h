@@ -52,7 +52,7 @@ public:
    Surface();
    virtual ~Surface();
 
-   //HRESULT InitTarget(PinTable * const ptable, const float x, const float y, bool fromMouseClick);
+   //HRESULT InitTarget(PinTable * const ptable, const float x, const float y, const bool fromMouseClick);
 
    STANDARD_EDITABLE_DECLARES(Surface, eItemSurface, WALL, 1)
 
@@ -116,7 +116,7 @@ public:
    }
    ItemTypeEnum HitableGetItemType() const final { return eItemSurface; }
    bool IsTransparent() const final;
-   void SetDefaultPhysics(bool fromMouseClick) final;
+   void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader& loader) final;
    void AddPoint(int x, int y, const bool smooth) final;
    void UpdateStatusBarInfo() final;

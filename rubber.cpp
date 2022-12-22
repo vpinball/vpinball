@@ -34,7 +34,7 @@ void Rubber::UpdateStatusBarInfo()
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
 
-HRESULT Rubber::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
+HRESULT Rubber::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
    m_ptable = ptable;
    m_d.m_visible = true;
@@ -63,7 +63,7 @@ HRESULT Rubber::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    return S_OK;
 }
 
-void Rubber::SetDefaults(bool fromMouseClick)
+void Rubber::SetDefaults(const bool fromMouseClick)
 {
 #define strKeyName regKey[RegName::DefaultPropsRubber]
 
@@ -1527,7 +1527,7 @@ void Rubber::UpdateRubber(const bool updateVB, const float height)
    }
 }
 
-void Rubber::SetDefaultPhysics(bool fromMouseClick)
+void Rubber::SetDefaultPhysics(const bool fromMouseClick)
 {
 #define strKeyName regKey[RegName::DefaultPropsRubber]
 

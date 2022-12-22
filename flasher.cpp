@@ -76,7 +76,7 @@ void Flasher::InitShape()
    }
 }
 
-HRESULT Flasher::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
+HRESULT Flasher::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
    m_ptable = ptable;
    m_d.m_isVisible = true;
@@ -96,7 +96,7 @@ HRESULT Flasher::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    return S_OK;
 }
 
-void Flasher::SetDefaults(bool fromMouseClick)
+void Flasher::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsFlasher]
 

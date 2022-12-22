@@ -308,7 +308,7 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
    m_vertexBuffer->unlock();
 }
 
-HRESULT Primitive::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
+HRESULT Primitive::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
    m_ptable = ptable;
 
@@ -324,7 +324,7 @@ HRESULT Primitive::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    return S_OK;
 }
 
-void Primitive::SetDefaults(bool fromMouseClick)
+void Primitive::SetDefaults(const bool fromMouseClick)
 {
 #define strKeyName regKey[RegName::DefaultPropsPrimitive]
 
@@ -3055,7 +3055,7 @@ STDMETHODIMP Primitive::ShowFrame(float frame)
    return S_OK;
 }
 
-void Primitive::SetDefaultPhysics(bool fromMouseClick)
+void Primitive::SetDefaultPhysics(const bool fromMouseClick)
 {
 #define strKeyName regKey[RegName::DefaultPropsPrimitive]
 

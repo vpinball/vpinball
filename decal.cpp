@@ -27,7 +27,7 @@ Decal::~Decal()
    SAFE_BUFFER_RELEASE(m_vertexBuffer);
 }
 
-HRESULT Decal::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
+HRESULT Decal::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
    m_ptable = ptable;
 
@@ -43,7 +43,7 @@ HRESULT Decal::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    return S_OK;
 }
 
-void Decal::SetDefaults(bool fromMouseClick)
+void Decal::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsDecal]
 

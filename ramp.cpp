@@ -48,7 +48,7 @@ bool Ramp::IsTransparent() const
    return m_ptable->GetMaterial(m_d.m_szMaterial)->m_bOpacityActive;
 }
 
-HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
+HRESULT Ramp::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
    m_ptable = ptable;
    SetDefaults(fromMouseClick);
@@ -80,7 +80,7 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    return S_OK;
 }
 
-void Ramp::SetDefaults(bool fromMouseClick)
+void Ramp::SetDefaults(const bool fromMouseClick)
 {
 #define strKeyName regKey[RegName::DefaultPropsRamp]
 
@@ -2442,7 +2442,7 @@ void Ramp::GenerateVertexBuffer()
    delete[] tmpBuffer;
 }
 
-void Ramp::SetDefaultPhysics(bool fromMouseClick)
+void Ramp::SetDefaultPhysics(const bool fromMouseClick)
 {
 #define strKeyName regKey[RegName::DefaultPropsRamp]
 

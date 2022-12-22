@@ -14,7 +14,7 @@ Plunger::~Plunger()
    SAFE_BUFFER_RELEASE(m_indexBuffer);
 }
 
-HRESULT Plunger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
+HRESULT Plunger::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
    m_ptable = ptable;
 
@@ -25,7 +25,7 @@ HRESULT Plunger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    return InitVBA(fTrue, 0, nullptr);
 }
 
-void Plunger::SetDefaults(bool fromMouseClick)
+void Plunger::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsPlunger]
 
@@ -197,7 +197,7 @@ void Plunger::PutCenter(const Vertex2D& pv)
    m_d.m_v = pv;
 }
 
-void Plunger::SetDefaultPhysics(bool fromMouseClick)
+void Plunger::SetDefaultPhysics(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsPlunger]
 

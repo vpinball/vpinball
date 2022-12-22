@@ -86,7 +86,7 @@ void Spinner::SetAngleMin(const float angle)
         m_d.m_angleMin = newVal;
 }
 
-HRESULT Spinner::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
+HRESULT Spinner::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
    m_ptable = ptable;
 
@@ -124,7 +124,7 @@ void Spinner::WriteRegDefaults()
 #undef regKey
 }
 
-void Spinner::SetDefaults(bool fromMouseClick)
+void Spinner::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsSpinner]
 
@@ -513,7 +513,7 @@ void Spinner::PutCenter(const Vertex2D& pv)
    m_d.m_vCenter = pv;
 }
 
-void Spinner::SetDefaultPhysics(bool fromMouseClick)
+void Spinner::SetDefaultPhysics(const bool fromMouseClick)
 {
    m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(regKey[RegName::DefaultPropsSpinner], "Elasticity"s, 0.3f) : 0.3f;
    m_d.m_damping = fromMouseClick ? LoadValueFloatWithDefault(regKey[RegName::DefaultPropsSpinner], "AntiFriction"s, 0.9879f) : 0.9879f;

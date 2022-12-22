@@ -124,7 +124,7 @@ public:
 
    virtual void PutCenter(const Vertex2D& pv) = 0;
 
-   virtual void SetDefaultPhysics(bool fromMouseClick) {}
+   virtual void SetDefaultPhysics(const bool fromMouseClick) {}
 
    virtual IEditable *GetIEditable() = 0;
    virtual const IEditable *GetIEditable() const = 0;

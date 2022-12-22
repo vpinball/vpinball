@@ -143,7 +143,7 @@ public:
    // Multi-object manipulation
    Vertex2D GetCenter() const final;
    void PutCenter(const Vertex2D &pv) final;
-   void SetDefaultPhysics(bool fromMouseClick) final;
+   void SetDefaultPhysics(const bool fromMouseClick) final;
    ItemTypeEnum HitableGetItemType() const final { return eItemPlunger; }
 
    void WriteRegDefaults() final;

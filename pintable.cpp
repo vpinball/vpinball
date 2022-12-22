@@ -6311,11 +6311,11 @@ HRESULT PinTable::InitVBA(BOOL fNew, int id, WCHAR * const wzName)
    return S_OK;
 }
 
-void PinTable::SetDefaults(bool fromMouseClick)
+void PinTable::SetDefaults(const bool fromMouseClick)
 {
 }
 
-void PinTable::SetDefaultPhysics(bool fromMouseClick)
+void PinTable::SetDefaultPhysics(const bool fromMouseClick)
 {
    m_Gravity = 0.97f*GRAVITYCONST;
 

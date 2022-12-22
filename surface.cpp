@@ -39,7 +39,7 @@ bool Surface::IsTransparent() const
    return result;
 }
 
-HRESULT Surface::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
+HRESULT Surface::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
    m_ptable = ptable;
    m_isWall = true;
@@ -117,7 +117,7 @@ void Surface::WriteRegDefaults()
 }
 
 #if 0
-HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float y, bool fromMouseClick)
+HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
 #define strKeyName regKey[RegName::DefaultPropsTarget]
 
@@ -201,7 +201,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 }
 #endif
 
-void Surface::SetDefaults(bool fromMouseClick)
+void Surface::SetDefaults(const bool fromMouseClick)
 {
 #define strKeyName regKey[RegName::DefaultPropsWall]
 
@@ -1968,7 +1968,7 @@ STDMETHODIMP Surface::PlaySlingshotHit()
     return S_OK;
 }
 
-void Surface::SetDefaultPhysics(bool fromMouseClick)
+void Surface::SetDefaultPhysics(const bool fromMouseClick)
 {
 #define strKeyName regKey[RegName::DefaultPropsWall]
 

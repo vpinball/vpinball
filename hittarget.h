@@ -167,7 +167,7 @@ public:
    unsigned long long GetImageID() const final { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
    ItemTypeEnum HitableGetItemType() const final { return eItemHitTarget; }
 
-   void SetDefaultPhysics(bool fromMouseClick) final;
+   void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader& loader) final;
 
    void GenerateMesh(vector<Vertex3D_NoTex2> &buf);

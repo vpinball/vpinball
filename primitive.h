@@ -296,7 +296,7 @@ public:
    unsigned long long GetImageID() const final { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
    ItemTypeEnum HitableGetItemType() const final { return eItemPrimitive; }
 
-   void SetDefaultPhysics(bool fromMouseClick) final;
+   void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader &loader) final;
    void RenderBlueprint(Sur *psur, const bool solid) final;
    void UpdateStatusBarInfo() final;

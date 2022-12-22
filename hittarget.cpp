@@ -128,7 +128,7 @@ void HitTarget::SetMeshType(const TargetType type)
     }
 }
 
-HRESULT HitTarget::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
+HRESULT HitTarget::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
    m_ptable = ptable;
 
@@ -145,7 +145,7 @@ HRESULT HitTarget::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    return S_OK;
 }
 
-void HitTarget::SetDefaults(bool fromMouseClick)
+void HitTarget::SetDefaults(const bool fromMouseClick)
 {
 #define strKeyName regKey[RegName::DefaultPropsHitTarget]
 
@@ -1314,7 +1314,7 @@ STDMETHODIMP HitTarget::put_ReflectionEnabled(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-void HitTarget::SetDefaultPhysics(bool fromMouseClick)
+void HitTarget::SetDefaultPhysics(const bool fromMouseClick)
 {
 #define strKeyName regKey[RegName::DefaultPropsHitTarget]
 

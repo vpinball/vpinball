@@ -76,7 +76,7 @@ public:
    Vertex2D GetCenter() const final;
    void PutCenter(const Vertex2D& pv) final;
 
-   void SetDefaultPhysics(bool fromMouseClick) final;
+   void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader& loader) final;
 
    unsigned long long GetMaterialID() const final { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }

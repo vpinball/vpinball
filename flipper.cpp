@@ -95,7 +95,7 @@ Flipper::~Flipper()
    SAFE_BUFFER_RELEASE(m_indexBuffer);
 }
 
-HRESULT Flipper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
+HRESULT Flipper::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
    m_ptable = ptable;
 
@@ -109,7 +109,7 @@ HRESULT Flipper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    return InitVBA(fTrue, 0, nullptr);
 }
 
-void Flipper::SetDefaults(bool fromMouseClick)
+void Flipper::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsFlipper]
 
@@ -522,7 +522,7 @@ void Flipper::PutCenter(const Vertex2D& pv)
    m_d.m_Center = pv;
 }
 
-void Flipper::SetDefaultPhysics(bool fromMouseClick)
+void Flipper::SetDefaultPhysics(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsFlipper]
 

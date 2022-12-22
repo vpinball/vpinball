@@ -424,9 +424,9 @@ public:
    virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *const wzName) override;
    virtual ISelect *GetISelect() override { return (ISelect *)this; }
    virtual const ISelect *GetISelect() const override { return (const ISelect *)this; }
-   virtual void SetDefaults(bool fromMouseClick) override;
+   virtual void SetDefaults(const bool fromMouseClick) override;
    virtual IScriptable *GetScriptable() override { return (IScriptable *)this; }
-   virtual void SetDefaultPhysics(bool fromMouseClick) override;
+   virtual void SetDefaultPhysics(const bool fromMouseClick) override;
 
    virtual PinTable *GetPTable() override { return this; }
    virtual const PinTable *GetPTable() const override { return this; }

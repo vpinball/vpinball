@@ -14,7 +14,7 @@ Textbox::~Textbox()
    m_pIFont->Release();
 }
 
-HRESULT Textbox::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
+HRESULT Textbox::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
    m_ptable = ptable;
 
@@ -31,7 +31,7 @@ HRESULT Textbox::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    return InitVBA(fTrue, 0, nullptr);//ApcProjectItem.Define(ptable->ApcProject, GetDispatch(), axTypeHostProjectItem/*axTypeHostClass*/, L"Textbox", nullptr);
 }
 
-void Textbox::SetDefaults(bool fromMouseClick)
+void Textbox::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsTextBox]
 

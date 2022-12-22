@@ -129,13 +129,13 @@ public:
         return obj; \
     } \
     static IEditable* COMCreateEditable()   { return static_cast<IEditable*>(COMCreate()); } \
-    static IEditable* COMCreateAndInit(PinTable *ptable, float x, float y) \
+    static IEditable* COMCreateAndInit(PinTable * const ptable, const float x, const float y) \
     { \
         T *obj = T::COMCreate(); \
         obj->Init(ptable, x, y, true); \
         return obj; \
     } \
-	HRESULT Init(PinTable *ptable, float x, float y, bool fromMouseClick); \
+	HRESULT Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick); \
 	INITVBA(ItemType) \
 	virtual void UIRenderPass1(Sur * const psur); \
 	virtual void UIRenderPass2(Sur * const psur); \
@@ -225,7 +225,7 @@ public:
    virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName) = 0;
    virtual ISelect *GetISelect() = 0;
    virtual const ISelect *GetISelect() const = 0;
-   virtual void SetDefaults(bool fromMouseClick) = 0;
+   virtual void SetDefaults(const bool fromMouseClick) = 0;
    virtual IScriptable *GetScriptable() = 0;
    virtual IFireEvents *GetIFireEvents() = 0;
    virtual ItemTypeEnum GetItemType() const = 0;

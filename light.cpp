@@ -33,7 +33,7 @@ Light::~Light()
    SAFE_BUFFER_RELEASE(m_bulbSocketVBuffer);
 }
 
-HRESULT Light::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
+HRESULT Light::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
    m_ptable = ptable;
 
@@ -51,7 +51,7 @@ HRESULT Light::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    return InitVBA(fTrue, 0, nullptr);
 }
 
-void Light::SetDefaults(bool fromMouseClick)
+void Light::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsLight]
 

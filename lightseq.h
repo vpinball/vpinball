@@ -82,7 +82,7 @@ public:
    LightSeq();
    ~LightSeq();
 
-   //HRESULT Init(PinTable *ptable, float x, float y);
+   //HRESULT Init(PinTable * const ptable, const float x, const float y);
 
    BEGIN_COM_MAP(LightSeq)
       COM_INTERFACE_ENTRY(IDispatch)

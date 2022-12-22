@@ -8,7 +8,7 @@ DispReel::DispReel()
 // This function is called when ever a new instance of this object is created
 // (along with the constructor (above))
 //
-HRESULT DispReel::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
+HRESULT DispReel::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
    m_ptable = ptable;
 
@@ -26,7 +26,7 @@ HRESULT DispReel::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 // is a new instance of this object or there is a backwards compatability
 // issue (old version of object doesn't contain all the needed fields)
 //
-void DispReel::SetDefaults(bool fromMouseClick)
+void DispReel::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsEMReel]
 

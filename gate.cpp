@@ -82,7 +82,7 @@ void Gate::UpdateStatusBarInfo()
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
 
-HRESULT Gate::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
+HRESULT Gate::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
    m_ptable = ptable;
 
@@ -96,7 +96,7 @@ HRESULT Gate::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    return S_OK;
 }
 
-void Gate::SetDefaults(bool fromMouseClick)
+void Gate::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsGate]
 
@@ -284,7 +284,7 @@ void Gate::UIRenderPass2(Sur * const psur)
    }
 }
 
-void Gate::SetDefaultPhysics(bool fromMouseClick)
+void Gate::SetDefaultPhysics(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsGate]
 

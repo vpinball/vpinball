@@ -46,7 +46,7 @@ public:
    Timer();
    virtual ~Timer();
 
-   //HRESULT Init(PinTable *ptable, float x, float y);
+   //HRESULT Init(PinTable * const ptable, const float x, const float y);
 
    BEGIN_COM_MAP(Timer)
       COM_INTERFACE_ENTRY(IDispatch)
