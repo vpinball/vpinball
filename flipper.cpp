@@ -877,7 +877,7 @@ void Flipper::RenderSetup()
 void Flipper::UpdateAnimation(const float diff_time_msec)
 {
    // Animation is updated by physics engine through a MoverObject. No additional visual animation here
-   // Still monitor angle updates in order to fire animate event at most once per frame (physics engine perform far more cycle per frame)
+   // Still monitor angle updates in order to fire animate event at most once per frame (physics engine performs far more cycles per frame)
    if (m_phitflipper && m_lastAngle != m_phitflipper->m_flipperMover.m_angleCur)
    {
       m_lastAngle = m_phitflipper->m_flipperMover.m_angleCur;
