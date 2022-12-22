@@ -63,7 +63,7 @@ void LightSeq::WriteRegDefaults()
 
 void LightSeq::SetObjectPos()
 {
-    m_vpinball->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
+   m_vpinball->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
 }
 
 void LightSeq::MoveOffset(const float dx, const float dy)
@@ -546,7 +546,7 @@ STDMETHODIMP LightSeq::put_UpdateInterval(long newVal)
 
 STDMETHODIMP LightSeq::Play(SequencerState Animation, long TailLength, long Repeat, long Pause)
 {
-   HRESULT	rc = S_OK;
+   HRESULT rc = S_OK;
 
    // sanity check the parameters
    if (TailLength < 0)
@@ -1485,7 +1485,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
 
    // if this tracer isn't valid or there is no collection, then exit with a finished return code
    if (pTracer->type == eSeqNull || m_pcollection == nullptr)
-	   return true;
+      return true;
 
    if (pTracer->delay == 0)
    {
@@ -1684,21 +1684,21 @@ void LightSeq::SetElementToState(const int index, const LightState State)
    const ItemTypeEnum type = m_pcollection->m_visel[index].GetIEditable()->GetItemType();
    if (type == eItemLight)
    {
-      Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
+      Light* const pLight = (Light*)m_pcollection->m_visel.ElementAt(index);
       pLight->m_lockedByLS = true;
-      pLight->setInPlayState(State);
+      pLight->setInPlayState((float)State);
    }
    else if (type == eItemFlasher) 
    {
-       Flasher* const pFlasher = (Flasher*)m_pcollection->m_visel.ElementAt(index);
-       pFlasher->m_lockedByLS = true;
-       pFlasher->setInPlayState(State > LightStateOff ? true : false);
+      Flasher* const pFlasher = (Flasher*)m_pcollection->m_visel.ElementAt(index);
+      pFlasher->m_lockedByLS = true;
+      pFlasher->setInPlayState(State != LightStateOff ? true : false);
    }
    else if (type == eItemPrimitive) 
    {
-       Primitive* const pPrimitive = (Primitive*)m_pcollection->m_visel.ElementAt(index);
-       pPrimitive->m_lockedByLS = true;
-       pPrimitive->setInPlayState(State > LightStateOff ? true : false);
+      Primitive* const pPrimitive = (Primitive*)m_pcollection->m_visel.ElementAt(index);
+      pPrimitive->m_lockedByLS = true;
+      pPrimitive->setInPlayState(State != LightStateOff ? true : false);
    }
 }
 
@@ -1709,7 +1709,7 @@ bool LightSeq::VerifyAndSetGridElement(const int x, const int y, const LightStat
    {
       const int gridIndex = (y * m_lightSeqGridWidth) + x;
 
-      int	index = m_pgridData[gridIndex];
+      int index = m_pgridData[gridIndex];
       if (index != 0)
       {
          index--;
@@ -1732,8 +1732,8 @@ LightState LightSeq::GetElementState(const int index) const
    const ItemTypeEnum type = m_pcollection->m_visel[index].GetIEditable()->GetItemType();
    if (type == eItemLight)
    {
-       const Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
-       rc = (LightState)(int)pLight->m_inPlayState;
+       const Light* const pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
+       rc = pLight->m_inPlayState == 0.f ? LightStateOff : (pLight->m_inPlayState == 2.f ? LightStateBlinking : LightStateOn); // backwards compatibility, 0=Off, (0..1]=On, 2=Blinking
    }
    else if (type == eItemFlasher)
    {
@@ -1755,34 +1755,34 @@ LightState LightSeq::GetElementState(const int index) const
 #if 0
 // turn on all lights starting in the centre and scrolling (screwing) clockwise out
       case SeqTwirlOutRightOff:
-         inverse				= true;
+         inverse = true;
       case SeqTwirlOutRightOn:
-         m_th1.type			= eSeqTwirl;
-         m_th1.radius		= 0;
-         m_th1.stepRadius	= 1;
-         m_th1.angle			= 0;
-         m_th1.stepAngle		= 1;
-         m_th1.x				= m_GridXCenter;
-         m_th1.y				= m_GridYCenter;
-         m_th1.length		= 30;
-         m_th1.frameCount	= (360/m_th1.length)*(m_lightSeqGridHeight/2+m_GridYCenterAdjust);
+         m_th1.type = eSeqTwirl;
+         m_th1.radius = 0;
+         m_th1.stepRadius = 1;
+         m_th1.angle = 0;
+         m_th1.stepAngle = 1;
+         m_th1.x = m_GridXCenter;
+         m_th1.y = m_GridYCenter;
+         m_th1.length = 30;
+         m_th1.frameCount = (360/m_th1.length)*(m_lightSeqGridHeight/2+m_GridYCenterAdjust);
          break;
 
          // turn on all lights starting in the centre and scrolling (screwing) anti-clockwise out
       case SeqTwirlOutLeftOff:
-         inverse				= true;
+         inverse = true;
       case SeqTwirlOutLeftOn:
          break;
 
          // turn on all lights starting in the outside and scrolling (screwing) clockwise in
       case SeqTwirlInRightOff:
-         inverse				= true;
+         inverse = true;
       case SeqTwirlInRightOn:
          break;
 
          // turn on all lights starting in the outside and scrolling (screwing) anti-clockwise in
       case SeqTwirlInLeftOff:
-         inverse				= true;
+         inverse = true;
       case SeqTwirlInLeftOn:
          break;
 

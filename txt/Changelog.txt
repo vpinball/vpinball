@@ -67,17 +67,17 @@ FEATURES:
 
 - add refraction tint to the material parameters
 
-- add native ball shadows for bulb lights, as well as flashers & primitives used as lightmaps (using additive blending)
+- add native ball shadows for bulb lights, as well as to flashers & primitives that are used as lightmaps (using additive blending)
 
-- reworked light:
-  - now light have a z coordinate (relative to the surface they are on) that is used for shadowing and bulb rendering
-  - allow to hide light's rendering (still allowing ball reflections or shadows through primitives or flashers. This was only possible through script before),
-  - allow bulb mesh for classic light as well as bulb lights
-  - allow reflection on ball for classic light as well as bulb lights
-  - add support for 'modulated' lights (through script only, corresponding to PWM modulated outputs of most 1990+ pinballs)
-  - tried to make the interface more intuitive
+- reworked lights:
+  - now lights have a z coordinate (relative to the surface they are on) that is used for shadows and bulb rendering
+  - allow to hide light's rendering (still allowing for ball reflections or shadows through primitives or flashers). This was only possible through script before
+  - allow the bulb mesh to work for both classic lights as well as bulb lights
+  - allow the reflection on ball to work for both classic lights as well as bulb lights
+  - add support for 'modulated' lights (through script only, corresponding to PWModulated outputs of most 1990+ pinballs)
+  - try to make the user interface more intuitive
 
-- add support for more than one DMD (for original tables, in game DMD menu,...)
+- add support for more than one DMD (for original tables, in-game DMD menu,...)
 
 FIXES:
 

@@ -9,9 +9,9 @@ As for coding light sequences for original tables, please check this helper app:
 
 Changelog:
 10.8.0:
-- add Animate event to Bumper, Light, Flipper, Gate, Spinner, Trigger, Targets and EMReel. This event is called when the object's visual properties is animated in order to easily sync with custom visuals
+- add Animate event to Bumper, Light, Flipper, Gate, Spinner, Trigger, Targets and EMReel. This event is called when the object's visual properties are animated, in order to easily sync with custom visuals
 - add CurrentAnimOffset to the Trigger and Target elements
-- add support for 'modulated' lights by changing light state to be a float and allowing it to be also defined between 0 and 1 (2 remains blinking state)
+- add support for 'modulated' lights by changing the previous light state (0=Off,1=On,2=Blinking) to float (see State and GetInPlayState), and allowing it to be also defined between 0 and 1 (2 remains the blinking state)
 - add support for multiple custom DMDs by adding DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels to flashers. The flasher will use the provided data if any, or defaults to the table data (captured or directly defined)
 
 10.7.2:
@@ -350,7 +350,7 @@ PlayHit() - if called the bumper will play the hit animation without triggering 
 
 Events
 -------
-Animate() - Called when the visual of the bumper is animated (ring or skirt)
+Animate() - Called when the visual properties of the bumper are animated (ring or skirt)
 
 
 DECAL
@@ -433,7 +433,7 @@ SetValue(int value)
 
 Events
 -------
-Animate() - Called when the visual of the reel is animated
+Animate() - Called when the visual properties of the reel are animated
 
 
 FLIPPER
@@ -488,7 +488,7 @@ RotateToEnd()
 
 Events
 -------
-Animate() - Called when the visual of the flipper is animated (when rotating and its current angle changes)
+Animate() - Called when the visual properties of the flipper are animated (when rotating and its current angle changes)
 
 
 GATE
@@ -527,7 +527,7 @@ Move(int dir, float speed, float angle) - dir(0/1)
 
 Events
 -------
-Animate() - Called when the visual of the gate is animated (when the wire rotates and current angle changes)
+Animate() - Called when the visual properties of the gate are animated (when the wire rotates and current angle changes)
 
 
 KICKER
@@ -580,8 +580,8 @@ Variables
 *Shape(Shape) - 0=Circle, 1=Custom
 Falloff(float)
 FalloffPower(float)
-State(LightState) - 0=Off, 1=On, 2=Blinking. Note that if Light Sequencer is running, still returns the 'normal' state
-*GetInPlayState(LightState) - 0=Off, 1=On, 2=Blinking. Note that if Light Sequencer is running, returns the current state set by the Light Sequencer, otherwise the 'normal' state
+State(float) - 0=Fully off..1=Fully on; 2=Blinking. Note that if Light Sequencer is running, still returns the 'normal' state
+*GetInPlayState(float) - 0=Fully off..1=Fully on; 2=Blinking. Note that if Light Sequencer is running, returns the current state set by the Light Sequencer, otherwise the 'normal' state
 *GetInPlayStateBool(bool) - 0=Off, 1=On. Note that if Light Sequencer is running, returns the current state set by the Light Sequencer, otherwise the 'normal' state. 2=Blinking is mapped to the current state the light is actually in (0 or 1)
 *GetInPlayIntensity(float) - get the live intensity of the light, including its live fading
 Color(OLE_COLOR) - 'normal' color
@@ -617,7 +617,7 @@ Duration(int startState, int durationTime, int endState) - starts a light in sta
 
 Events
 -------
-Animate() - Called when the visual of the light is animated (when its GetInPlayIntensity changes)
+Animate() - Called when the visual properties of the light are animated (when its GetInPlayIntensity changes)
 
 
 PLUNGER
@@ -792,7 +792,7 @@ CurrentAngle(float) - only readable
 
 Events
 -------
-Animate() - Called when the visual of the gate is animated (when the plate rotates and current angle changes)
+Animate() - Called when the visual properties of the gate are animated (when the plate rotates and current angle changes)
 
 
 TRIGGER
@@ -815,7 +815,7 @@ UserValue(any) - can store any user defined value for re-use later-on
 HitHeight(float)
 Rotation(float)
 AnimSpeed(float)
-*CurrentAnimOffset(float) - Visual offset of trigger when ball pass on it (negative value, 0..-25 for Inder & Wire D triggers, 0..-60 for Wire C, 0..-1/5 of radius for star, 0..-1/10 of radius for buttons, 0..-32 otherwise) 
+*CurrentAnimOffset(float) - Visual offset of trigger when ball passes over it (negative value, 0..-25 for Inder & Wire D triggers, 0..-60 for Wire C, 0..-1/5 of radius for star, 0..-1/10 of radius for buttons, 0..-32 otherwise) 
 WireThickness(float) - This option is only used for wire shape triggers. The thickness is a factor to scale the wire 0=normal thickness(default). To make it thicker use values like 0.5, 1, 1.5, 2...
 
 Methods
@@ -826,7 +826,7 @@ DestroyBall(int ballId)
 
 Events
 -------
-Animate() - Called when the visual of the trigger is animated (when a ball pass on it)
+Animate() - Called when the visual properties of the trigger are animated (when a ball passes over it)
 
 
 WALL
@@ -1009,7 +1009,7 @@ UserValue(any)              - can store any user defined value for re-use later-
 
 Events
 -------
-Animate() - Called when the visual of the reel is animated
+Animate() - Called when the visual properties of the reel are animated
 
 
 TIMER

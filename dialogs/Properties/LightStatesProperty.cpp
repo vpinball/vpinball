@@ -46,8 +46,9 @@ void LightStatesProperty::UpdateProperties(const int dispid)
         {
             case DISPID_Light_State:
             {
-               float state; light->get_State(&state);
-               auto value = (float)(PropertyDialog::GetComboBoxIndex(m_stateCombo, m_stateList));
+               float state;
+               light->get_State(&state);
+               const float value = (float)(PropertyDialog::GetComboBoxIndex(m_stateCombo, m_stateList));
                if (state != value)
                {
                   PropertyDialog::StartUndo(light);
