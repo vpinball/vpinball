@@ -10,7 +10,7 @@
 
 #define NUM_RGB_BLINK_PATTERN 33 //!! remove
 
-enum ShadowMode : int
+enum ShadowMode : int // has to be int for loading
 {
    NONE,
    RAYTRACED_BALL_SHADOWS
@@ -274,12 +274,12 @@ public:
    STDMETHOD(put_ShowReflectionOnBall)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
-   STDMETHOD(Duration)(/*[in]*/long startState, /*[in]*/long newVal, /*[in]*/long endState);
+   STDMETHOD(Duration)(/*[in]*/float startState, /*[in]*/long newVal, /*[in]*/float endState);
 
    // was: class IBlink
 private:
    int m_duration;
-   int m_finalState;
+   float m_finalLightState; // 0..1=Off..On, 2=Blinking
 
    U32 m_timenextblink;
    U32 m_timerDurationEndTime;

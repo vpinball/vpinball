@@ -56,7 +56,7 @@ void Light::SetDefaults(bool fromMouseClick)
 #define regKey regKey[RegName::DefaultPropsLight]
 
    m_duration = 0;
-   m_finalState = 0;
+   m_finalLightState = 0.f;
 
    m_d.m_falloff = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Falloff"s, 50.f) : 50.f;
    m_d.m_falloff_power = fromMouseClick ? LoadValueFloatWithDefault(regKey, "FalloffPower"s, 2.0f) : 2.0f;
@@ -90,7 +90,7 @@ void Light::SetDefaults(bool fromMouseClick)
       m_d.m_szSurface.clear();
 
    m_d.m_fadeSpeedUp = fromMouseClick ? LoadValueFloatWithDefault(regKey, "FadeSpeedUp"s, m_d.m_intensity * (float)(1.0/200.0)) : (m_d.m_intensity * (float)(1.0/200.0)); // Default: 200ms up (slow incandescent bulb)
-   m_d.m_fadeSpeedDown = fromMouseClick ? LoadValueFloatWithDefault(regKey, "FadeSpeedDown"s, m_d.m_intensity / 500.f) : m_d.m_intensity / 500.f; // Default: 500ms down (slow incandescent bulb)
+   m_d.m_fadeSpeedDown = fromMouseClick ? LoadValueFloatWithDefault(regKey, "FadeSpeedDown"s, m_d.m_intensity * (float)(1.0/500.0)) : m_d.m_intensity * (float)(1.0/500.0); // Default: 500ms down (slow incandescent bulb)
    m_d.m_BulbLight = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Bulb"s, false) : false;
    m_d.m_imageMode = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ImageMode"s, false) : false;
    m_d.m_showBulbMesh = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ShowBulbMesh"s, false) : false;
@@ -679,11 +679,7 @@ void Light::RenderSetup()
    else if (m_duration > 0 && m_inPlayState != 0.f)
       m_timerDurationEndTime = g_pplayer->m_time_msec + m_duration;
 
-   const bool isOn = (m_inPlayState == (float)LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_inPlayState != 0.f);
-   if (isOn)
-      m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
-   else
-      m_d.m_currentIntensity = 0.0f;
+   m_d.m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale * ((m_inPlayState == (float)LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState);
 
    if (m_d.m_showBulbMesh)
    {
@@ -739,7 +735,7 @@ void Light::UpdateAnimation(const float diff_time_msec)
 {
    if ((m_duration > 0) && (m_timerDurationEndTime < g_pplayer->m_time_msec))
    {
-      m_inPlayState = (LightState)m_finalState;
+      m_inPlayState = m_finalLightState;
       m_duration = 0;
       if (m_inPlayState == (float)LightStateBlinking)
          RestartBlinker(g_pplayer->m_time_msec);
@@ -748,7 +744,7 @@ void Light::UpdateAnimation(const float diff_time_msec)
    if (m_inPlayState == (float)LightStateBlinking)
       UpdateBlinker(g_pplayer->m_time_msec);
 
-   float targetIntensity = m_d.m_intensity * m_d.m_intensity_scale * ((m_inPlayState == (float)LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState);
+   const float targetIntensity = m_d.m_intensity * m_d.m_intensity_scale * ((m_inPlayState == (float)LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState);
    if (m_d.m_currentIntensity < targetIntensity)
    {
       m_d.m_currentIntensity += m_d.m_fadeSpeedUp * diff_time_msec;
@@ -1237,11 +1233,11 @@ STDMETHODIMP Light::put_BlinkInterval(long newVal)
 }
 
 
-STDMETHODIMP Light::Duration(long startState, long newVal, long endState)
+STDMETHODIMP Light::Duration(float startState, long newVal, float endState)
 {
-    m_inPlayState = (LightState)startState;
+    m_inPlayState = startState;
     m_duration = newVal;
-    m_finalState = endState;
+    m_finalLightState = endState;
     if (g_pplayer)
     {
         m_timerDurationEndTime = g_pplayer->m_time_msec + m_duration;
@@ -1266,9 +1262,7 @@ STDMETHODIMP Light::get_Intensity(float *pVal)
 STDMETHODIMP Light::put_Intensity(float newVal)
 {
    m_d.m_intensity = max(0.f, newVal);
-   const bool isOn = (m_inPlayState == (float)LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_inPlayState != 0.f);
-   if (isOn)
-      m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
+   m_d.m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale * ((m_inPlayState == (float)LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState);
 
    return S_OK;
 }
@@ -1296,10 +1290,8 @@ STDMETHODIMP Light::get_IntensityScale(float *pVal)
 
 STDMETHODIMP Light::put_IntensityScale(float newVal)
 {
-   m_d.m_intensity_scale = newVal;
-   const bool isOn = (m_inPlayState == (float)LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_inPlayState != 0.f);
-   if (isOn)
-      m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
+   m_d.m_intensity_scale = max(newVal,0.f);
+   m_d.m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale * ((m_inPlayState == (float)LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState);
 
    return S_OK;
 }

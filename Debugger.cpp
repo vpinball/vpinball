@@ -509,24 +509,22 @@ Light* DbgLightDialog::GetLight()
 
 void DbgLightDialog::SetCheckButtonState(const Light *plight)
 {
-    if (plight->m_d.m_state == LightStateOn)
+    if (plight->m_d.m_state == (float)LightStateBlinking)
+    {
+        Button_SetCheck(m_hLightOnCheck, BST_UNCHECKED);
+        Button_SetCheck(m_hLightOffCheck, BST_UNCHECKED);
+    }
+    else if (plight->m_d.m_state != 0.f) // LightStateOn
     {
         Button_SetCheck(m_hLightOnCheck, BST_CHECKED);
         Button_SetCheck(m_hLightOffCheck, BST_UNCHECKED);
-        Button_SetCheck(m_hLightBlinkCheck, BST_UNCHECKED);
     }
-    else if (plight->m_d.m_state == LightStateOff)
+    else //if (plight->m_d.m_state == 0.f) // LightStateOff
     {
         Button_SetCheck(m_hLightOnCheck, BST_UNCHECKED);
         Button_SetCheck(m_hLightOffCheck, BST_CHECKED);
-        Button_SetCheck(m_hLightBlinkCheck, BST_UNCHECKED);
     }
-    else if (plight->m_d.m_state == LightStateBlinking)
-    {
-        Button_SetCheck(m_hLightOnCheck, BST_UNCHECKED);
-        Button_SetCheck(m_hLightOffCheck, BST_UNCHECKED);
-        Button_SetCheck(m_hLightBlinkCheck, BST_CHECKED);
-    }
+    Button_SetCheck(m_hLightBlinkCheck, plight->m_d.m_state == (float)LightStateBlinking ? BST_CHECKED : BST_UNCHECKED);
 }
 
 DbgMaterialDialog::DbgMaterialDialog() : CDialog(IDD_DBGMATERIALDIALOG)
