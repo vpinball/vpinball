@@ -11,7 +11,7 @@ Changelog:
 10.8.0:
 - add Animate event to Bumper, Light, Flipper, Gate, Spinner, Trigger, Targets and EMReel. This event is called when the object's visual properties are animated, in order to easily sync with custom visuals
 - add CurrentAnimOffset to the Trigger and Target elements
-- add support for 'modulated' lights by changing the previous light state (0=Off,1=On,2=Blinking) to float (see State and GetInPlayState), and allowing it to be also defined between 0 and 1 (2 remains the blinking state)
+- add support for 'modulated' lights by changing the previous light state (0=Off,1=On,2=Blinking) to float (see State, GetInPlayState and Duration), and allowing it to be also defined between 0 and 1 (2 remains the blinking state)
 - add support for multiple custom DMDs by adding DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels to flashers. The flasher will use the provided data if any, or defaults to the table data (captured or directly defined)
 
 10.7.2:
@@ -611,9 +611,8 @@ Visible(bool)
 
 Methods
 -------
-Duration(int startState, int durationTime, int endState) - starts a light in startState and leaves it into that state for the amount of milliseconds defined by durationTime until the light switches to the endState
-                                                           e.g.: 
-                                                           light1.Duration 2, 1000, 1 (light starts to blink for 1000ms and then switches to ON)
+Duration(float startState, int durationTime, float endState) - starts a light in startState (0..1 (Off..On); 2 (Blinking)) and leaves it in that state for the amount of milliseconds defined by durationTime until the light switches to the endState
+                                                               e.g.: light1.Duration 2, 1000, 1 (light starts to blink for 1000ms and then switches to ON)
 
 Events
 -------
