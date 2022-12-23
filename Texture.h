@@ -2,6 +2,10 @@
 
 #define MIN_TEXTURE_SIZE 8u
 
+#if !defined(_MSC_VER) && !defined(_rotl) //!!
+#define _rotl(x,y)  (((x) << (y)) | ((x) >> (-(y) & 31)))
+#endif
+
 struct FIBITMAP;
 
 // texture stored in main memory in 24/32bit RGB/RGBA uchar format or 48/96bit RGB float
@@ -10,6 +14,7 @@ class BaseTexture final
 public:
    enum Format
    { // RGB/RGBA formats must be ordered R, G, B (and eventually A)
+      BW,			// Linear BW image, 1 byte per texel
       RGB,			// Linear RGB without alpha channel, 1 byte per channel
       RGBA,			// Linear RGB with alpha channel, 1 byte per channel
       SRGB,			// sRGB without alpha channel, 1 byte per channel
@@ -18,13 +23,11 @@ public:
       RGB_FP32		// Linear RGB, 1 float per channel
    };
 
-   BaseTexture(const unsigned int w, const unsigned int h, const Format format)
-      : m_width(w), m_height(h), m_data((format == RGBA || format == SRGBA ? 4 : 3) * (format == RGB_FP32 ? 4 : format == RGB_FP16 ? 2 : 1) * w * h), m_realWidth(w), m_realHeight(h), m_format(format)
-   { }
+   BaseTexture(const unsigned int w, const unsigned int h, const Format format);
 
    unsigned int width() const  { return m_width; }
    unsigned int height() const { return m_height; }
-   unsigned int pitch() const  { return (has_alpha() ? 4 : 3) * (m_format == RGB_FP32 ? 4 : m_format == RGB_FP16 ? 2 : 1) * m_width; } // pitch in bytes
+   unsigned int pitch() const  { return (m_format == BW ? 1 : (has_alpha() ? 4 : 3)) * (m_format == RGB_FP32 ? 4 : m_format == RGB_FP16 ? 2 : 1) * m_width; } // pitch in bytes
    BYTE* data()                { return m_data.data(); }
    bool has_alpha() const      { return m_format == RGBA || m_format == SRGBA; }
 

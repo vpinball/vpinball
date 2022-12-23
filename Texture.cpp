@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Texture.h"
 
-#include "freeimage.h"
+#include "inc/freeimage.h"
 
 #include "math/math.h"
 
@@ -9,7 +9,17 @@
 #define STBI_ONLY_JPEG // only use the SSE2-JPG path from stbi, as all others are not faster than FreeImage //!! can remove stbi again if at some point FreeImage incorporates libjpeg-turbo or something similar
 #define STBI_NO_STDIO
 #define STBI_NO_FAILURE_STRINGS
-#include "stb_image.h"
+#include "inc/stb_image.h"
+
+BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Format format)
+   : m_width(w)
+   , m_height(h)
+   , m_data((format == RGBA || format == SRGBA ? 4 : (format == BW ? 1 : 3)) * (format == RGB_FP32 ? 4 : format == RGB_FP16 ? 2 : 1) * w * h)
+   , m_realWidth(w)
+   , m_realHeight(h)
+   , m_format(format)
+{
+}
 
 BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_mem)
 {
@@ -76,7 +86,8 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       const FREE_IMAGE_TYPE img_type = FreeImage_GetImageType(dibResized);
       const bool rgbf = (img_type == FIT_FLOAT) || (img_type == FIT_DOUBLE) || (img_type == FIT_RGBF) || (img_type == FIT_RGBAF); //(FreeImage_GetBPP(dibResized) > 32);
       const bool has_alpha = !rgbf && FreeImage_IsTransparent(dibResized);
-      // already in correct format?
+      // already in correct format (24bits RGB, 32bits RGBA, 96bits RGBF) ?
+      // Note that 8bits BW image are converted to 24bits RGB since they are in sRGB color space and there is no sGREY8 GPU format
       if(((img_type == FIT_BITMAP) && (FreeImage_GetBPP(dibResized) == (has_alpha ? 32 : 24))) || (img_type == FIT_RGBF))
          dibConv = dibResized;
       else
@@ -164,8 +175,8 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       for (unsigned int y = 0; y < tex->m_height; ++y)
       {
          const float* __restrict pixel = (float*)bits;
-         const unsigned int offs = (tex->m_height - y - 1) * (tex->m_width*3);
-         for (unsigned int o = offs; o < tex->m_width*3+offs; o+=3)
+         const size_t offs = (size_t)(tex->m_height - y - 1) * (tex->m_width*3);
+         for (size_t o = offs; o < tex->m_width*3+offs; o+=3)
          {
             pdst[o + 0] = float2half(pixel[0]);
             pdst[o + 1] = float2half(pixel[1]);
@@ -183,14 +194,27 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       for (unsigned int y = 0; y < tex->m_height; ++y)
       {
          const float* __restrict pixel = (float*)bits;
-         const unsigned int offs = (tex->m_height - y - 1) * (tex->m_width*3);
-         for (unsigned int o = offs; o < tex->m_width*3+offs; o+=3)
+         const size_t offs = (size_t)(tex->m_height - y - 1) * (tex->m_width*3);
+         for (size_t o = offs; o < tex->m_width*3+offs; o+=3)
          {
             pdst[o + 0] = pixel[0];
             pdst[o + 1] = pixel[1];
             pdst[o + 2] = pixel[2];
             pixel += 3;
          }
+         bits += pitch;
+      }
+   }
+   else if (tex->m_format == BW)
+   {
+      const BYTE* __restrict bits = FreeImage_GetBits(dibConv);
+      const unsigned pitch = FreeImage_GetPitch(dibConv);
+      BYTE* const __restrict pdst = tex->data();
+      for (unsigned int y = 0; y < tex->m_height; ++y)
+      {
+         const BYTE* __restrict pixel = (BYTE*)bits;
+         size_t offs = (size_t)(tex->m_height - y - 1) * tex->m_width;
+         memcpy(&(pdst[offs]), pixel, tex->m_width);
          bits += pitch;
       }
    }
@@ -204,13 +228,13 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       for (unsigned int y = 0; y < tex->m_height; ++y)
       {
          const BYTE* __restrict pixel = (BYTE*)bits;
-         const unsigned int offs = (tex->m_height - y - 1) * (tex->m_width*stride);
+         const size_t offs = (size_t)(tex->m_height - y - 1) * (tex->m_width*stride);
 #if (FI_RGBA_RED == 2) && (FI_RGBA_GREEN == 1) && (FI_RGBA_BLUE == 0) && (FI_RGBA_ALPHA == 3)
          if (has_alpha)
             copy_bgra_rgba<false>((unsigned int*)(pdst+offs),(const unsigned int*)pixel,tex->m_width);
          else
 #endif
-         for (unsigned int o = offs; o < tex->m_width*stride+offs; o+=stride)
+         for (size_t o = offs; o < tex->m_width*stride+offs; o+=stride)
          {
             pdst[o + 0] = pixel[FI_RGBA_RED];
             pdst[o + 1] = pixel[FI_RGBA_GREEN];
@@ -333,7 +357,7 @@ BaseTexture* BaseTexture::ToBGRA()
    if (m_format == BaseTexture::RGB_FP32) // Tonemap for 8bpc-Display
    {
       const float* const __restrict src = (float*)data();
-      unsigned int o = 0;
+      size_t o = 0;
       for (unsigned int j = 0; j < height(); ++j)
          for (unsigned int i = 0; i < width(); ++i, ++o)
          {
@@ -351,7 +375,7 @@ BaseTexture* BaseTexture::ToBGRA()
    else if (m_format == BaseTexture::RGB_FP16) // Tonemap for 8bpc-Display
    {
       const unsigned short* const __restrict src = (unsigned short*)data();
-      unsigned int o = 0;
+      size_t o = 0;
       for (unsigned int j = 0; j < height(); ++j)
          for (unsigned int i = 0; i < width(); ++i, ++o)
          {
@@ -366,10 +390,23 @@ BaseTexture* BaseTexture::ToBGRA()
             tmp[o * 4 + 3] = 255;
          }
    }
+   else if (m_format == BaseTexture::BW)
+   {
+      const BYTE* const __restrict src = data();
+      size_t o = 0;
+      for (unsigned int j = 0; j < height(); ++j)
+         for (unsigned int i = 0; i < width(); ++i, ++o)
+         {
+            tmp[o * 4 + 0] =
+            tmp[o * 4 + 1] =
+            tmp[o * 4 + 2] = src[o];
+            tmp[o * 4 + 3] = 255; // A
+         }
+   }
    else if (m_format == BaseTexture::RGB || m_format == BaseTexture::SRGB)
    {
       const BYTE* const __restrict src = data();
-      unsigned int o = 0;
+      size_t o = 0;
       for (unsigned int j = 0; j < height(); ++j)
          for (unsigned int i = 0; i < width(); ++i, ++o)
          {
@@ -382,7 +419,7 @@ BaseTexture* BaseTexture::ToBGRA()
    else if (m_format == BaseTexture::RGBA || m_format == BaseTexture::SRGBA)
    {
       const BYTE* const __restrict psrc = data();
-      unsigned int o = 0;
+      size_t o = 0;
       const bool isWinXP = GetWinVersion() < 2600;
       for (unsigned int j = 0; j < height(); ++j)
       {
@@ -518,7 +555,6 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
           nullptr;
       if (stbi_data) // will only enter this path for JPG files
       {
-         assert(channels_in_file == 3 || channels_in_file == 4);
          BaseTexture* tex = nullptr;
          try
          {
@@ -582,7 +618,7 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
          FreeStuff();
 
       // BMP stored as a 32-bit SBGRA picture
-      BYTE* const __restrict tmp = new BYTE[m_width * m_height * 4];
+      BYTE* const __restrict tmp = new BYTE[(size_t)m_width * m_height * 4];
       LZWReader lzwreader(pbr->m_pistream, (int *)tmp, m_width * 4, m_height, m_width * 4);
       lzwreader.Decoder();
 
@@ -605,7 +641,7 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
 
       // copy, converting from SBGR to SRGB, and eventually dropping the alpha channel
       BYTE* const __restrict pdst = m_pdsBuffer->data();
-      unsigned int o1 = 0, o2 = 0;
+      size_t o1 = 0, o2 = 0;
       const unsigned int o2_step = has_alpha ? 4 : 3;
       for (unsigned int yo = 0; yo < m_height; yo++)
          for (unsigned int xo = 0; xo < m_width; xo++, o1+=4, o2+=o2_step)
@@ -624,7 +660,11 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
    case FID(JPEG):
    {
       m_ppb = new PinBinary();
-      m_ppb->LoadFromStream(pbr->m_pistream, pbr->m_version);
+      if (m_ppb->LoadFromStream(pbr->m_pistream, pbr->m_version) != S_OK)
+      {
+         assert(!"Invalid binary image file");
+         return false;
+      }
       // m_ppb->m_szPath has the original filename
       // m_ppb->m_pdata() is the buffer
       // m_ppb->m_cdata() is the filesize
