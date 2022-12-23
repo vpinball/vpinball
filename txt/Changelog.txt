@@ -22,6 +22,10 @@ FIXES:
 
 - do not attempt to play "<None>" reel sound (which otherwise polluted the debug outputs)
 
+- update BASS library to 2.4.17
+
+- see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
+
 VP 10.7.2 Changelog
 ------------------------
 
