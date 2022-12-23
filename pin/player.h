@@ -362,12 +362,12 @@ public:
 
    Pin3D m_pin3d;
 
-   U32 m_time_msec;
+   U32 m_time_msec;          // current physics time
 
    Ball *m_pactiveball;      // ball the script user can get with ActiveBall
    Ball *m_pactiveballDebug; // ball the debugger will use as Activeball when firing events
    Ball *m_pactiveballBC;    // ball that the ball control UI will use
-   Vertex3Ds *m_pBCTarget;   // If non-null, the target location for the ball to roll towards
+   Vertex3Ds *m_pBCTarget;   // if non-null, the target location for the ball to roll towards
 
    vector<Ball*> m_vball;
    vector<HitFlipper*> m_vFlippers;
@@ -525,7 +525,7 @@ public:
    unsigned int m_current_renderstage; // currently only used for bulb lights
    unsigned int m_dmdstate; // used to distinguish different flasher/DMD rendering mode states
 
-   int m_overall_frames; // amount of rendered frames since start
+   unsigned int m_overall_frames; // amount of rendered frames since start
 
 #ifdef LOG
    FILE *m_flog;

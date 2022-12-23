@@ -3329,9 +3329,9 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
       const vec4 c = convertColor(DMDcolor, intensity);
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetVector(SHADER_vColor_Intensity, &c);
 #ifdef DMD_UPSCALE
-      const vec4 r((float)(m_dmd.x*3), (float)(m_dmd.y*3), 1.f, (float)(g_pplayer->m_overall_frames%2048));
+      const vec4 r((float)(m_dmd.x*3), (float)(m_dmd.y*3), 1.f, (float)(m_overall_frames%2048));
 #else
-      const vec4 r((float)m_dmd.x, (float)m_dmd.y, 1.f, (float)(g_pplayer->m_overall_frames%2048));
+      const vec4 r((float)m_dmd.x, (float)m_dmd.y, 1.f, (float)(m_overall_frames%2048));
 #endif
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
 
@@ -4876,7 +4876,7 @@ void Player::UpdateCameraModeDisplay()
    }
    }
    DebugPrint(0, 150, szFoo);
-   sprintf_s(szFoo, sizeof(szFoo), "Camera at X: %.2f Y: %.2f Z: %.2f,  Rotation: %.2f", -m_pin3d.m_proj.m_matView._41, (m_ptable->m_BG_current_set == 0 || m_ptable->m_BG_current_set == 2) ? m_pin3d.m_proj.m_matView._42 : -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43, g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set]); // DT & FSS
+   sprintf_s(szFoo, sizeof(szFoo), "Camera at X: %.2f Y: %.2f Z: %.2f,  Rotation: %.2f", -m_pin3d.m_proj.m_matView._41, (m_ptable->m_BG_current_set == 0 || m_ptable->m_BG_current_set == 2) ? m_pin3d.m_proj.m_matView._42 : -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43, m_ptable->m_BG_rotation[m_ptable->m_BG_current_set]); // DT & FSS
    DebugPrint(0, 130, szFoo);
    DebugPrint(0, 190, "Navigate around with the Arrow Keys and Left Alt Key (if enabled in the Key settings)");
    if(g_pvp->m_povEdit)
@@ -4906,26 +4906,29 @@ void Player::Render()
 {
    // In pause mode: input, physics, animation and audio are not processed but rendering is still performed. This allows to modify properties (transform, visibility,..) using the debugger and get direct feedback
 
-   U64 timeforframe = usec();
+   const U64 startRenderUsec = usec();
 
    if (!m_pause)
-      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
+      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(startRenderUsec / 1000)); // trigger key events mainly for VPM<->VP roundtrip
 
+   // Try to bring PinMAME window back on top
    if (m_overall_frames < 10)
    {
       const HWND hVPMWnd = FindWindow("MAME", nullptr);
       if (hVPMWnd != nullptr)
       {
          if (::IsWindowVisible(hVPMWnd))
-            ::SetWindowPos(hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE)); // in some strange cases the vpinmame window is not on top, so enforce it
+            ::SetWindowPos(hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE)); // in some strange cases the VPinMAME window is not on top, so enforce it
       }
    }
 
    if (m_sleeptime > 0)
+   {
       Sleep(m_sleeptime - 1);
 
-   if (!m_pause)
-      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
+      if (!m_pause)
+         m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(startRenderUsec / 1000)); // trigger key events mainly for VPM<->VP roundtrip
+   }
 
 #ifdef DEBUGPHYSICS
    c_hitcnts = 0;
@@ -4952,7 +4955,7 @@ void Player::Render()
    // copy static buffers to back buffer and z buffer
    m_pin3d.m_pddsStatic->CopyTo(m_pin3d.m_pddsBackBuffer); // cannot be called inside BeginScene -> EndScene cycle
 
-   // Physics/Timer updates, done at the last moment, especially to handle key input (VP<->VPM rountrip) and animation triggers
+   // Physics/Timer updates, done at the last moment, especially to handle key input (VP<->VPM roundtrip) and animation triggers
    //if ( !cameraMode )
    if (!m_pause && m_minphyslooptime == 0) // (vsync) latency reduction code not active? -> Do Physics Updates here
       UpdatePhysics();
@@ -4960,8 +4963,9 @@ void Player::Render()
    m_overall_frames++;
 
    // Process all AnimObjects (currently only DispReel, LightSeq and Slingshot)
-   for (size_t l = 0; l < m_vanimate.size(); ++l)
-      m_vanimate[l]->Animate();
+   if (!m_pause)
+      for (size_t l = 0; l < m_vanimate.size(); ++l)
+         m_vanimate[l]->Animate();
 
    if (ProfilingMode() == 1)
       m_pin3d.m_gpu_profiler.BeginFrame(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
@@ -4996,7 +5000,7 @@ void Player::Render()
       m_pin3d.m_pd3dPrimaryDevice->EndScene();
    }
 
-   m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
+   m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(startRenderUsec / 1000)); // trigger key events mainly for VPM<->VP roundtrip
 
    // Check if we should turn animate the plunger light.
    hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
@@ -5028,7 +5032,7 @@ void Player::Render()
    if (!m_pause && m_minphyslooptime > 0)
    {
       UpdatePhysics();
-      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
+      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(startRenderUsec / 1000)); // trigger key events mainly for VPM<->VP rountrip
    }
    FlipVideoBuffers(vsync);
 
@@ -5074,7 +5078,7 @@ void Player::Render()
    m_pactiveball = old_pactiveball;
 #else
    if (!m_pause)
-      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
+      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(startRenderUsec / 1000)); // trigger key events mainly for VPM<->VP rountrip
 #endif
 
    // Update music stream
@@ -5112,9 +5116,9 @@ void Player::Render()
    localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
    if (localvsync > m_refreshrate)
    {
-      timeforframe = usec() - timeforframe;
-      if (timeforframe < 1000000ull / localvsync)
-         uSleep(1000000ull / localvsync - timeforframe);
+      const U64 timeForFrame = usec() - startRenderUsec;
+      if (timeForFrame < 1000000ull / localvsync)
+         uSleep(1000000ull / localvsync - timeForFrame);
    }
 
    if (m_ptable->m_pcv->m_scriptError)
