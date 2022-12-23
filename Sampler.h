@@ -56,7 +56,7 @@ private:
    int m_height;
 #ifdef ENABLE_SDL
    GLuint m_texture = 0;
-   GLuint CreateTexture(UINT Width, UINT Height, UINT Levels, colorFormat Format, void* data, int stereo);
+   GLuint CreateTexture(unsigned int Width, unsigned int Height, unsigned int Levels, colorFormat Format, void* data, int stereo);
 #else
    IDirect3DTexture9* m_texture;
    IDirect3DTexture9* CreateSystemTexture(BaseTexture* const surf, const bool force_linear_rgb, colorFormat& texformat);

@@ -24,6 +24,8 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
       format = colorFormat::RGB16F;
    else if (surf->m_format == BaseTexture::RGB_FP32)
       format = colorFormat::RGB32F;
+   else if (surf->m_format == BaseTexture::BW)
+      format = colorFormat::GREY8;
    else
       assert(false); // Unsupported image format
    if (force_linear_rgb)
@@ -71,7 +73,7 @@ Sampler::Sampler(RenderDevice* rd, GLuint glTexture, bool ownTexture, bool isMSA
    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &m_height);
    int internal_format;
    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
-   m_isLinear = !((internal_format == SRGB) && (internal_format == SRGBA) && (internal_format == SDXT5) && (internal_format == SBC7)) || force_linear_rgb;
+   m_isLinear = !((internal_format == SRGB) || (internal_format == SRGBA) || (internal_format == SDXT5) || (internal_format == SBC7)) || force_linear_rgb;
    m_texture = glTexture;
 }
 #else
@@ -117,11 +119,17 @@ void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb
       format = colorFormat::RGB16F;
    else if (surf->m_format == BaseTexture::RGB_FP32)
       format = colorFormat::RGB32F;
+   else if (surf->m_format == BaseTexture::BW)
+      format = colorFormat::GREY8;
+   else
+      assert(false);
    if (force_linear_rgb)
+   {
       if (format == colorFormat::SRGB)
          format = colorFormat::RGB;
       else if (format == colorFormat::SRGBA)
          format = colorFormat::RGBA;
+   }
    const GLuint col_type = ((format == RGBA32F) || (format == RGB32F)) ? GL_FLOAT : ((format == RGBA16F) || (format == RGB16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
    const GLuint col_format = ((format == GREY8) || (format == RED16F))                                                                                                      ? GL_RED
       : ((format == GREY_ALPHA) || (format == RG16F))                                                                                                                       ? GL_RG
@@ -135,15 +143,15 @@ void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb
 #else
    colorFormat texformat;
    IDirect3DTexture9* sysTex = CreateSystemTexture(surf, force_linear_rgb, texformat);
-   m_rd->m_curTextureUpdates++;
    CHECKD3D(m_rd->GetCoreDevice()->UpdateTexture(sysTex, m_texture));
    SAFE_RELEASE(sysTex);
 #endif
+   m_rd->m_curTextureUpdates++;
 }
 
 
 #ifdef ENABLE_SDL
-GLuint Sampler::CreateTexture(UINT Width, UINT Height, UINT Levels, colorFormat Format, void* data, int stereo)
+GLuint Sampler::CreateTexture(unsigned int Width, unsigned int Height, unsigned int Levels, colorFormat Format, void* data, int stereo)
 {
    const GLuint col_type = ((Format == RGBA32F) || (Format == RGB32F)) ? GL_FLOAT : ((Format == RGBA16F) || (Format == RGB16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
    const GLuint col_format = ((Format == GREY8) || (Format == RED16F))                                                                                                      ? GL_RED
@@ -287,6 +295,23 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
          pdest[i * 4 + 1] = psrc[i * 3 + 1];
          pdest[i * 4 + 2] = psrc[i * 3 + 2];
          pdest[i * 4 + 3] = one16;
+      }
+
+      CHECKD3D(sysTex->UnlockRect(0));
+   }
+   else if ((basetexformat == BaseTexture::BW) && texformat == colorFormat::RGBA8)
+   {
+      D3DLOCKED_RECT locked;
+      CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
+
+      BYTE* const __restrict pdest = (BYTE*)locked.pBits;
+      const BYTE* const __restrict psrc = (BYTE*)(surf->data());
+      for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
+      {
+         pdest[i * 4 + 0] =
+         pdest[i * 4 + 1] =
+         pdest[i * 4 + 2] = psrc[i];
+         pdest[i * 4 + 3] = 255u;
       }
 
       CHECKD3D(sysTex->UnlockRect(0));
