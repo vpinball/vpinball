@@ -436,13 +436,19 @@ void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList,
 
 void PropertyDialog::UpdateMaterialComboBox(const vector<Material *>& contentList, const CComboBox &combo, const string &selectName)
 {
-    bool matFound = false;
-    for (const auto mat : contentList)
+    bool need_reset = combo.GetCount() != contentList.size() + 1; // Not the same number of items
+    need_reset |= combo.FindStringExact(1, selectName.c_str()) == CB_ERR; // Selection is not part of combo
+    if (!need_reset)
     {
-        if (mat->m_szName==selectName)
-            matFound = true;
+       bool matFound = false;
+       for (const auto mat : contentList)
+       {
+           if (mat->m_szName==selectName)
+               matFound = true;
+       }
+       need_reset |= !matFound; // Selection is not part of the list
     }
-    if(combo.FindStringExact(1, selectName.c_str()) == CB_ERR || !matFound)
+    if (need_reset)
     {
         combo.ResetContent();
         combo.AddString(_T("<None>"));

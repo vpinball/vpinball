@@ -1349,6 +1349,12 @@ void PinTable::UpdatePropertyImageList()
     g_pvp->GetPropertiesDocker()->GetContainProperties()->GetPropertyDialog()->UpdateTabs(m_vmultisel);
 }
 
+void PinTable::UpdatePropertyMaterialList()
+{
+    // just update the combo boxes in the property dialog
+    g_pvp->GetPropertiesDocker()->GetContainProperties()->GetPropertyDialog()->UpdateTabs(m_vmultisel);
+}
+
 void PinTable::InitBuiltinTable(const size_t tableId)
 {
    HRSRC hrsrc;

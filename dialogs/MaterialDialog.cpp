@@ -175,6 +175,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                        }
                    }
                    pt->SetNonUndoableDirty(eSaveDirty);
+                   pt->UpdatePropertyMaterialList();
                }
            }
            break;
@@ -217,6 +218,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                        }
                    }
                    pt->SetNonUndoableDirty(eSaveDirty);
+                   pt->UpdatePropertyMaterialList();
                }
            }
            break;
@@ -259,6 +261,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                        }
                    }
                    pt->SetNonUndoableDirty(eSaveDirty);
+                   pt->UpdatePropertyMaterialList();
                }
            }
            break;
@@ -286,6 +289,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                sel = ListView_GetNextItem(m_hMaterialList, sel, LVNI_SELECTED);
             }
             pt->SetNonUndoableDirty(eSaveDirty);
+            pt->UpdatePropertyMaterialList();
          }
          break;
       }
@@ -296,6 +300,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          pt->AddMaterial(pmat);
          pt->AddListMaterial(m_hMaterialList, pmat);
          pt->SetNonUndoableDirty(eSaveDirty);
+         pt->UpdatePropertyMaterialList();
 
          break;
       }
@@ -346,6 +351,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                SaveValue(regKey[RegName::RecentDir], "MaterialDir"s, szFilename[0].substr(0, index));
 
             pt->SetNonUndoableDirty(eSaveDirty);
+            pt->UpdatePropertyMaterialList();
          }
          break;
       }
@@ -481,6 +487,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                }
             }
             pt->SetNonUndoableDirty(eSaveDirty);
+            pt->UpdatePropertyMaterialList();
          }
          break;
       }
@@ -555,6 +562,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   ListView_SetItemText(m_hMaterialList, pinfo->item.iItem, 0, (LPSTR)pmat->m_szName.c_str());
                }
                pt->SetNonUndoableDirty(eSaveDirty);
+               pt->UpdatePropertyMaterialList();
                return TRUE;
             }
             case LVN_ITEMCHANGING:
@@ -681,6 +689,8 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   if (pmat->m_fScatterAngle != fv)
                      pt->SetNonUndoableDirty(eSaveDirty);
                   pmat->m_fScatterAngle = fv;
+
+                  pt->UpdatePropertyMaterialList();
                }
                else if ((plistview->uOldState & LVIS_SELECTED) == 0)
                {
@@ -829,6 +839,8 @@ void MaterialDialog::OnOK()
 
          // The previous selection is now deleted, so look again from the top of the list
          sel = ListView_GetNextItem(m_hMaterialList, sel, LVNI_SELECTED);
+
+         pt->UpdatePropertyMaterialList();
       }
    }
    SavePosition();
