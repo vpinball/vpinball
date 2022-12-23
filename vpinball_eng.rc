@@ -3810,7 +3810,7 @@ BEGIN
     IDS_SETASDEFAULT        "Set element parameters as new default"
     IDS_CONTROLPOINT        "Control Point"
     IDS_REMOVEMATERIAL      "Are you sure you want to remove the selected material(s)?"
-    IDS_CORRUPTFILE         "This file is corrupt and can not be loaded."
+    IDS_CORRUPTFILE         "This file is corrupt and some data may be invalid or even crashing VPX. Be careful, especially when re-saving this file."
     IDS_UNSECURECONTROL1    "This table is attempting to create an object of type '"
     IDS_UNSECURECONTROL2    "'.  This object may not be safe.  Do you want to allow this object to be created?  Only answer Yes if you trust the author of this table."
     IDS_COLLECTION          "Collection"

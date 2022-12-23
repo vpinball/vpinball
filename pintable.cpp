@@ -3603,17 +3603,16 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                pstmVersion->Release();
 
                for (int i = 0; i < HASHLENGTH; i++)
-               {
                   if (hashval[i] != hashvalOld[i])
                   {
-                     hr = E_ACCESSDENIED;
+                     hr = APPX_E_BLOCK_HASH_INVALID;
+                     break;
                   }
-               }
             }
             else
             {
                // Error
-               hr = E_ACCESSDENIED;
+               hr = APPX_E_CORRUPT_CONTENT;
             }
          }
 
