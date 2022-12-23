@@ -86,6 +86,8 @@ public:
    bool m_backfacesEnabled;
    bool m_displayTexture;     // in editor
    bool m_objectSpaceNormalMap; // matches the +X,+Y,+Z object space export/baking of Blender
+
+   U32 m_time_msec;
 };
 
 class Primitive :
