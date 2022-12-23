@@ -11,6 +11,7 @@ Changelog:
 10.8.0:
 - add Animate event to Bumper, Light, Flipper, Gate, Spinner, Trigger, Targets and EMReel. This event is called when the object's visual properties are animated, in order to easily sync with custom visuals
 - add CurrentAnimOffset to the Trigger and Target elements
+- add CurrentRingOffset to the Bumper Element
 - add support for 'modulated' lights by changing the previous light state (0=Off,1=On,2=Blinking) to float (see State, GetInPlayState and Duration), and allowing it to be also defined between 0 and 1 (2 remains the blinking state)
 - add support for multiple custom DMDs by adding DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels to flashers. The flasher will use the provided data if any, or defaults to the table data (captured or directly defined)
 
