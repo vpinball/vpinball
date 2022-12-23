@@ -1,3 +1,27 @@
+VP 10.7.3 Changelog
+------------------------
+
+FIXES:
+
+- fix missing render updates when debugging/changing parameters in pause mode
+
+- show bulb in UI/viewport
+
+- fix primitive animations getting stuck
+- fix primitive animation speed being dependent on the framerate
+
+- fix material list combobox not updating
+
+- fix missing decal UI updates (e.g. width,height)
+
+- fix loading of greyscale/8bit JPEGs (10.7.2 regression)
+
+- fix crash when bumper skirt is not visible
+
+- do not fail to load a table if only the hash/checksum fails, but instead just output a warning
+
+- do not attempt to play "<None>" reel sound (which otherwise polluted the debug outputs)
+
 VP 10.7.2 Changelog
 ------------------------
 
