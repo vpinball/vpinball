@@ -5,9 +5,9 @@
 #include "stdafx.h" 
 #include "forsyth.h"
 #include "objloader.h"
-#include "inc\miniz.c"
-#include "inc\progmesh.h"
-#include "inc\ThreadPool.h"
+#include "inc/miniz.c"
+#include "inc/progmesh.h"
+#include "inc/ThreadPool.h"
 #include "Shader.h"
 
 ThreadPool *g_pPrimitiveDecompressThreadPool = nullptr;
@@ -122,7 +122,7 @@ void Mesh::UploadToVB(VertexBuffer * vb, const float frame)
    if (frame >= 0.f)
    {
       float intPart;
-      const float fractpart = modf(frame, &intPart);
+      const float fractpart = modff(frame, &intPart);
       const int iFrame = (int)intPart;
 
       if (iFrame+1 < (int)m_animationFrames.size())
@@ -1933,7 +1933,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             string szInitialDir;
             HRESULT hr = LoadValue(regKey[RegName::RecentDir], "ImportDir"s, szInitialDir);
             if (hr != S_OK)
-               szInitialDir = "c:\\Visual Pinball\\Tables\\";
+               szInitialDir = "c:\\Visual Pinball\\tables\\";
 
             vector<string> szFileName;
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0))
@@ -1987,7 +1987,7 @@ bool Primitive::BrowseFor3DMeshFile()
 
    const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "ImportDir"s, szInitialDir);
    if (hr != S_OK)
-       szInitialDir = "c:\\Visual Pinball\\Tables\\";
+       szInitialDir = "c:\\Visual Pinball\\tables\\";
 
    ofn.lpstrInitialDir = szInitialDir.c_str();
 
@@ -2121,7 +2121,7 @@ void Primitive::ExportMeshDialog()
    string szInitialDir;
    HRESULT hr = LoadValue(regKey[RegName::RecentDir], "ImportDir"s, szInitialDir);
    if (hr != S_OK)
-       szInitialDir = "c:\\Visual Pinball\\Tables\\";
+       szInitialDir = "c:\\Visual Pinball\\tables\\";
 
    vector<string> szFileName;
    if (m_vpinball->SaveFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY))
