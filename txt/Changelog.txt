@@ -3,7 +3,7 @@ VP 10.7.3 Changelog
 
 FIXES:
 
-- fix missing render updates when debugging/changing parameters in pause mode
+- fix missing render updates when debugging/changing parameters in pause mode (10.7.0 regression)
 
 - show bulb in UI/viewport
 

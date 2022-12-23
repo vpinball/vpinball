@@ -288,7 +288,7 @@ BEGIN
     CTEXT           "This application uses Visual Basic Scripting Edition by Microsoft",IDC_STATIC,23,318,119,17
     CONTROL         IDC_RIGHTFLIPPERBUTTON,IDC_STATIC,"Static",SS_BITMAP | SS_CENTERIMAGE,7,7,218,49
     LTEXT           "A Randy Davis and Visual Pinball team Production",IDC_STATIC,7,65,161,8
-    LTEXT           "Version 10.7.2 Final",IDC_ABOUT_VERSION,7,75,200,10
+    LTEXT           "Version 10.7.3 Final",IDC_ABOUT_VERSION,7,75,200,10
     GROUPBOX        "Credits",IDC_STATIC,7,91,216,116
     LTEXT           "Original VP8/VP9 Team",IDC_STATIC,68,99,88,9
     LTEXT           "Randy Davis",IDC_STATIC,13,110,59,9
@@ -2742,8 +2742,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 10,7,2,0
- PRODUCTVERSION 10,7,2,0
+ FILEVERSION 10,7,3,0
+ PRODUCTVERSION 10,7,3,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2758,13 +2758,13 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "FileDescription", "Visual Pinball 10.7.2"
-            VALUE "FileVersion", "10, 7, 2, 0"
+            VALUE "FileDescription", "Visual Pinball 10.7.3"
+            VALUE "FileVersion", "10, 7, 3, 0"
             VALUE "InternalName", "Visual Pinball"
             VALUE "LegalCopyright", "Copyright 2000-2022"
             VALUE "OriginalFilename", "VPinballX.exe"
             VALUE "ProductName", "Visual Pinball"
-            VALUE "ProductVersion", "10, 7, 2, 0"
+            VALUE "ProductVersion", "10, 7, 3, 0"
         END
     END
     BLOCK "VarFileInfo"
