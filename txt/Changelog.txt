@@ -81,11 +81,30 @@ FEATURES:
 
 FIXES:
 
+- reflections now work in the interactive camera/light editing mode (F6) as well
+
+- handle broken tables better and try to load as much as possible
+
+- static element preprocessing is now done on the GPU (which leads to a faster VPX-player start)
+- increase preprocessing sample rate for the static parts of the table
+
+- update example tables with new raytraced ball shadows enabled
+
+- update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
+- DirectX 8 port for input handling (currently disabled)
+
+- see Changelog_Scripts.txt for the respective core script changes (version 3.60)
+- see CommandReference.txt for the changelog of all the scripting properties/interface changes
+- see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
+
+VP 10.7.3 Changelog
+------------------------
+
+FIXES:
+
 - fix missing render updates when debugging/changing parameters in pause mode (10.7.0 regression)
 
 - show bulb in UI/viewport
-
-- reflections now work in the interactive camera/light editing mode (F6) as well
 
 - fix potentially wrong primitive animation interpolation
 - fix primitive animations getting stuck
@@ -100,22 +119,11 @@ FIXES:
 - fix crash when bumper skirt is not visible
 
 - do not fail to load a table if only the hash/checksum fails, but instead just output a warning
-- handle broken tables better and try to load as much as possible
-
-- static element preprocessing is now done on the GPU (which leads to a faster VPX-player start)
-- increase preprocessing sample rate for the static parts of the table
 
 - do not attempt to play "<None>" reel sound (which otherwise polluted the debug outputs)
 
-- update example tables with new raytraced ball shadows enabled
-
 - update BASS library to 2.4.17
 
-- update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
-- DirectX 8 port for input handling (currently disabled)
-
-- see Changelog_Scripts.txt for the respective core script changes (version 3.60)
-- see CommandReference.txt for the changelog of all the scripting properties/interface changes
 - see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
 
 VP 10.7.2 Changelog
