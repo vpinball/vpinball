@@ -333,7 +333,7 @@ private:
    bool ParseOKLineLength(const size_t LineLen);
    string ParseDelimtByColon(string &wholeline);
    void ParseFindConstruct(size_t &Pos, const string &UCLine, WordType &Type, int &ConstructSize);
-   bool ParseStructureName(vector<UserData>& ListIn, UserData ud, const string &UCline, const string &line, const int Lineno);
+   bool ParseStructureName(vector<UserData>& ListIn, const UserData &ud, const string &UCline, const string &line, const int Lineno);
 
    size_t SureFind(const string &LineIn, const string &ToFind);
    void RemoveByVal(string &line); 
@@ -344,7 +344,7 @@ private:
    void ColorError(const int line, const int nchar);
 
    void ParseVPCore();
-   
+
    void ReadLineToParseBrain(string wholeline, const int linecount, vector<UserData>& ListIn);
 
    void GetMembers(const vector<UserData>& ListIn, const string &StrIn);
