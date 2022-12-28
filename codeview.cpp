@@ -1110,10 +1110,13 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	EXCEPINFO exception = {};
 	pscripterror->GetExceptionInfo(&exception);
 	nLine++;
-	if (dwCookie == CONTEXTCOOKIE_DEBUG)
+
+   PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Script Error at line " << nLine << " : " << exception.bstrDescription;
+
+   if (dwCookie == CONTEXTCOOKIE_DEBUG)
 	{
 		const char* const szT = MakeChar(exception.bstrDescription);
-		AddToDebugOutput(szT);
+      AddToDebugOutput(szT);
 		delete[] szT;
 		SysFreeString(bstr);
 		return S_OK;
@@ -1264,7 +1267,10 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	EXCEPINFO exception = {};
 	pscripterror->GetExceptionInfo(&exception);
 	nLine++;
-	if (dwCookie == CONTEXTCOOKIE_DEBUG)
+
+   PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Script Error at line " << nLine << " : " << exception.bstrDescription;
+
+   if (dwCookie == CONTEXTCOOKIE_DEBUG)
 	{
 		char* szT = MakeChar(exception.bstrDescription);
 		AddToDebugOutput(szT);
@@ -1354,11 +1360,16 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 				errorStream << L" (";
 				errorStream << stackVariablesStream.str();
 				errorStream << L')';
-			}
+            PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Stacktrace: " << frameDesc << " (" << stackVariablesStream.str() << ")";
+         }
+         else
+         {
+            PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Stacktrace: " << frameDesc;
+         }
 
 			errorStream << L"\r\n";
 
-			SysFreeString(frameDesc);
+         SysFreeString(frameDesc);
 		}
 
 		stackFramesEnum->Release();
@@ -3920,12 +3931,11 @@ void DebuggerModule::Init(CodeViewer * const pcv)
 
 STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
 {
-   if (!g_pplayer->m_hwndDebugOutput)
-      return S_OK;
-
    if (pvar->vt == VT_EMPTY || pvar->vt == VT_NULL || pvar->vt == VT_ERROR)
    {
-      m_pcv->AddToDebugOutput("");
+      if (g_pplayer->m_hwndDebugOutput)
+         m_pcv->AddToDebugOutput("");
+      PLOGI_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Script.Print ''";
       return S_OK;
    }
 
@@ -3935,7 +3945,9 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
    if (FAILED(hr))
    {
       const LocalString ls(IDS_DEBUGNOCONVERT);
-      m_pcv->AddToDebugOutput(ls.m_szbuffer);
+      if (g_pplayer->m_hwndDebugOutput)
+         m_pcv->AddToDebugOutput(ls.m_szbuffer);
+      PLOGI_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Script.Print '" << ls.m_szbuffer << "'";
       return S_OK;
    }
 
@@ -3944,7 +3956,9 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
 
    char * const szT = new char[len + 1];
    WideCharToMultiByteNull(CP_ACP, 0, wzT, -1, szT, len + 1, nullptr, nullptr);
-   m_pcv->AddToDebugOutput(szT);
+   if (g_pplayer->m_hwndDebugOutput)
+      m_pcv->AddToDebugOutput(szT);
+   PLOGI_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Script.Print '" << szT << "'";
    delete[] szT;
 
    return S_OK;
