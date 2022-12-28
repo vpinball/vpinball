@@ -3595,7 +3595,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 #ifdef _WIN64
                m_vpinball->MessageBox(("WARNING ! WARNING ! WARNING ! WARNING !\n\nNot all images were loaded for an unknown reason.\n\nDO NOT SAVE THIS FILE OR YOU MAY LOOSE DATA!\n\nAffected Files:\n" + failed_load_img).c_str(), "Load Error", 0);
 #else
-               m_vpinball->MessageBox(("WARNING ! WARNING ! WARNING ! WARNING !\n\nNot all images were loaded, likely due to low memory.\nPlease use the 64-bit version of the application.\n\nDO NOT SAVE THIS FILE OR YOU MAY LOOSE DATA!\n\nAffected Files:\n" + failed_or_resized).c_str(), "Load Error", 0);
+               m_vpinball->MessageBox(("WARNING ! WARNING ! WARNING ! WARNING !\n\nNot all images were loaded, likely due to low memory.\nPlease use the 64-bit version of the application.\n\nDO NOT SAVE THIS FILE OR YOU MAY LOOSE DATA!\n\nAffected Files:\n" + failed_load_img).c_str(), "Load Error", 0);
 #endif
             }
 
