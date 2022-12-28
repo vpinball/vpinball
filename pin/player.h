@@ -558,9 +558,7 @@ public:
 
    unsigned int m_overall_frames; // amount of rendered frames since start
 
-#ifdef LOG
-   FILE *m_flog;
-#else
+#ifndef LOG
 private:
 #endif
    vector<MoverObject*> m_vmover; // moving objects for physics simulation

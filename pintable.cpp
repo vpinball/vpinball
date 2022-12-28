@@ -4612,9 +4612,9 @@ void PinTable::FireKeyEvent(int dispid, int keycode)
    if (g_pplayer)
    {
       if (dispid == DISPID_GameEvents_KeyDown)
-         fprintf(g_pplayer->m_flog, "Key Down %d\n", keycode);
+         PLOGD.printf("Key Down %d", keycode);
       else
-         fprintf(g_pplayer->m_flog, "Key Up %d\n", keycode);
+         PLOGD.printf("Key Up %d", keycode);
    }
 #endif
 
