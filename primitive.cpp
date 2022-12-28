@@ -1185,44 +1185,21 @@ void Primitive::ExportMesh(ObjLoader& loader)
 
 void Primitive::RenderObject()
 {
-   const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
-   m_d.m_time_msec = g_pplayer->m_time_msec;
-   const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
+   RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice::RenderStateCache initial_state;
+   pd3dDevice->CopyRenderStates(true, initial_state);
 
-   if (!m_d.m_groupdRendering)
+   if (m_d.m_groupdRendering)
+      m_fullMatrix.SetIdentity();
+   else
    {
       RecalculateMatrices();
-
       if (m_vertexBufferRegenerate)
       {
          m_mesh.UploadToVB(m_vertexBuffer, m_currentFrame);
-         if (m_currentFrame != -1.0f && m_doAnimation)
-         {
-            m_currentFrame += m_speed*(diff_time_msec*(float)(60./1000.));
-            if (m_currentFrame >= (float)m_mesh.m_animationFrames.size())
-            {
-               if (m_endless)
-                  m_currentFrame = 0.0f;
-               else
-               {
-                  m_currentFrame = (float)(m_mesh.m_animationFrames.size() - 1);
-                  m_doAnimation = false;
-                  m_vertexBufferRegenerate = false;
-               }
-            }
-            if(m_speed == 0.f)
-               m_vertexBufferRegenerate = false;
-         }
-         else
-            m_vertexBufferRegenerate = false;
+         m_vertexBufferRegenerate = false;
       }
    }
-   else
-      m_fullMatrix.SetIdentity();
-
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderDevice::RenderStateCache initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
 
    // Update playfield primitive settings from table settings
    SamplerFilter pinf = SF_UNDEFINED; // Use the default filtering of the sampler (trilinear or anisotropic, depending on user choice)
@@ -1443,7 +1420,6 @@ void Primitive::RenderSetup()
    if (m_d.m_groupdRendering || m_d.m_skipRendering)
       return;
 
-   m_d.m_time_msec = g_pplayer->m_time_msec;
 
    m_currentFrame = -1.f;
    m_d.m_isBackGlassImage = IsBackglass();
@@ -1457,6 +1433,24 @@ void Primitive::RenderSetup()
 
 void Primitive::UpdateAnimation(const float diff_time_msec)
 {
+   if (m_currentFrame != -1.0f && m_doAnimation)
+   {
+      float previousFrame = m_currentFrame;
+      m_currentFrame += m_speed * (diff_time_msec * (float)(60. / 1000.));
+      if (m_currentFrame >= (float)m_mesh.m_animationFrames.size())
+      {
+          if (m_endless)
+          {
+             m_currentFrame = 0.0f;
+          }
+          else
+          {
+             m_currentFrame = (float)(m_mesh.m_animationFrames.size() - 1);
+             m_doAnimation = false;
+          }
+      }
+      m_vertexBufferRegenerate |= m_currentFrame != previousFrame;
+   }
 }
 
 void Primitive::RenderStatic()
