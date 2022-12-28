@@ -311,6 +311,8 @@ void Light::EndPlay()
 
    m_vvertex.clear();
 
+   m_lightmaps.clear();
+
    IEditable::EndPlay();
    FreeBuffers();
 }
@@ -744,19 +746,32 @@ void Light::UpdateAnimation(const float diff_time_msec)
    if (m_inPlayState == (float)LightStateBlinking)
       UpdateBlinker(g_pplayer->m_time_msec);
 
+   boolean animated = false;
+
+
    const float targetIntensity = m_d.m_intensity * m_d.m_intensity_scale * ((m_inPlayState == (float)LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState);
    if (m_d.m_currentIntensity < targetIntensity)
    {
       m_d.m_currentIntensity += m_d.m_fadeSpeedUp * diff_time_msec;
       if (m_d.m_currentIntensity > targetIntensity)
          m_d.m_currentIntensity = targetIntensity;
-      FireGroupEvent(DISPID_AnimateEvents_Animate);
+      animated = true;
    }
    else if (m_d.m_currentIntensity > targetIntensity)
    {
       m_d.m_currentIntensity -= m_d.m_fadeSpeedDown * diff_time_msec;
       if (m_d.m_currentIntensity < targetIntensity)
          m_d.m_currentIntensity = targetIntensity;
+      animated = true;
+   }
+
+   if (animated)
+   {
+      for (size_t i = 0; i < m_lightmaps.size(); ++i)
+         if (m_lightmaps[i]->GetItemType() == ItemTypeEnum::eItemPrimitive)
+            ((Primitive *)m_lightmaps[i])->put_Opacity(100.0f * m_d.m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale));
+         else if (m_lightmaps[i]->GetItemType() == ItemTypeEnum::eItemFlasher)
+            ((Flasher *)m_lightmaps[i])->put_Opacity((long)(100.0f * m_d.m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale)));
       FireGroupEvent(DISPID_AnimateEvents_Animate);
    }
 }

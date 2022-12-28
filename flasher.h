@@ -171,6 +171,8 @@ private:
    int2 m_dmdSize = int2(128,32);
    BaseTexture *m_texdmd = nullptr;
 
+   Light *m_lightmap = nullptr;
+
    // IFlasher
 public:
    STDMETHOD(get_ImageA)(/*[out, retval]*/ BSTR *pVal);
