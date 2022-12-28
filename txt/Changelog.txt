@@ -79,6 +79,8 @@ FEATURES:
 
 - add support for more than one DMD (for original tables, in-game DMD menu,...)
 
+- add a log file, named vpinball.log, with script and error informations
+
 FIXES:
 
 - reflections now work in the interactive camera/light editing mode (F6) as well
