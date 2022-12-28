@@ -2031,6 +2031,8 @@ void PinTable::Play(const bool cameraMode)
    if (g_pplayer)
       return; // Can't play twice
 
+   PLOGI << "Starting Play mode [table: " << m_szTableName << ", camera mode: " << cameraMode << "]";
+   
    mixer_get_volume();
 
    EndAutoSaveCounter();
@@ -2151,6 +2153,8 @@ void PinTable::StopPlaying()
    UpdateDbgLight();
 
    BeginAutoSaveCounter();
+
+   PLOGI << "Ending Play mode [table: " << m_szTableName << "]";
 }
 
 HRESULT PinTable::InitVBA()
