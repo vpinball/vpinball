@@ -3565,7 +3565,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                }
             }
             // due to multithreaded loading and pre-allocation, check if some images could not be loaded, and perform a retry since more memory is available now
-            string failed_or_resized;
+            string failed_load_img;
             for (size_t i = 0; i < m_vimage.size(); ++i)
                 if (!m_vimage[i] || m_vimage[i]->m_pdsBuffer == nullptr)
                 {
@@ -3585,17 +3585,15 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                     }
 
                     if (!m_vimage[i] || m_vimage[i]->m_pdsBuffer == nullptr)
-                       failed_or_resized += '\n' + (m_vimage[i] ? m_vimage[i]->m_szName : szStmName);
+                        failed_load_img += '\n' + (m_vimage[i] ? m_vimage[i]->m_szName : szStmName);
+                    else if ((m_vimage[i]->m_realWidth > m_vimage[i]->m_width) || (m_vimage[i]->m_realHeight > m_vimage[i]->m_height)) //!! do not warn on resize, as original image file/binary blob is always loaded into mem! (otherwise table load failure is triggered)
+                        PLOGW << "Image '" << m_vimage[i]->m_szName << "' was downsized from " << m_vimage[i]->m_realWidth << "x" << m_vimage[i]->m_realHeight << " to " << m_vimage[i]->m_width << "x" << m_vimage[i]->m_height << " due to low memory ";
                 }
-                //else if ((m_vimage[i]->m_realWidth > m_vimage[i]->m_width) || (m_vimage[i]->m_realHeight > m_vimage[i]->m_height)) //!! do not warn on resize, as original image file/binary blob is always loaded into mem! (otherwise table load failure is triggered)
-                //{
-                //   failed_or_resized += '\n' + m_vimage[i]->m_szName;
-                //}
 
-            if (!failed_or_resized.empty())
+            if (!failed_load_img.empty())
             {
 #ifdef _WIN64
-               m_vpinball->MessageBox(("WARNING ! WARNING ! WARNING ! WARNING !\n\nNot all images were loaded for an unknown reason.\n\nDO NOT SAVE THIS FILE OR YOU MAY LOOSE DATA!\n\nAffected Files:\n" + failed_or_resized).c_str(), "Load Error", 0);
+               m_vpinball->MessageBox(("WARNING ! WARNING ! WARNING ! WARNING !\n\nNot all images were loaded for an unknown reason.\n\nDO NOT SAVE THIS FILE OR YOU MAY LOOSE DATA!\n\nAffected Files:\n" + failed_load_img).c_str(), "Load Error", 0);
 #else
                m_vpinball->MessageBox(("WARNING ! WARNING ! WARNING ! WARNING !\n\nNot all images were loaded, likely due to low memory.\nPlease use the 64-bit version of the application.\n\nDO NOT SAVE THIS FILE OR YOU MAY LOOSE DATA!\n\nAffected Files:\n" + failed_or_resized).c_str(), "Load Error", 0);
 #endif
