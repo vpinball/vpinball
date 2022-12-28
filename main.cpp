@@ -15,6 +15,11 @@
 
 #include "vpinball_i.c"
 
+#include <locale>
+#include <codecvt>
+
+#include "plog/Initializers/RollingFileInitializer.h"
+
 #ifdef CRASH_HANDLER
 extern "C" int __cdecl _purecall(void)
 {
@@ -575,6 +580,30 @@ public:
    }
 };
 
+template <class Formatter> 
+class DebugAppender : public plog::IAppender 
+{
+public:
+   virtual void write(const plog::Record &record) PLOG_OVERRIDE
+   {
+      if (g_pvp == nullptr || g_pplayer == nullptr)
+         return;
+      auto table = g_pvp->GetActiveTable();
+      if (table == nullptr)
+         return;
+      plog::util::nstring str = Formatter::format(record);
+      #ifdef _WIN32
+      // Convert from wstring to string on Win32
+      using convert_typeX = std::codecvt_utf8<wchar_t>;
+      std::wstring_convert<convert_typeX, wchar_t> converterX;
+      table->m_pcv->AddToDebugOutput(converterX.to_bytes(str).c_str());
+      #else
+      table->m_pcv->AddToDebugOutput(str.c_str());
+      #endif
+   }
+};
+
+
 extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR /*lpCmdLine*/, int /*nShowCmd*/)
 {
    int retval;
@@ -590,6 +619,13 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 #endif
       );
 #endif
+
+      static plog::RollingFileAppender<plog::TxtFormatter> fileAppender("vpinball.log", 1024 * 1024 * 5, 1);
+      static DebugAppender<plog::TxtFormatter> debugAppender;
+      plog::init<PLOG_DEFAULT_INSTANCE_ID>(plog::debug, &fileAppender).addAppender(&debugAppender);
+      plog::init<PLOG_NO_DBG_OUT_INSTANCE_ID>(plog::debug, &fileAppender); // Logger that do not show in the debug window to avoid duplicated messages
+      PLOGI << "Starting VPX...";
+
       // Start Win32++
       VPApp theApp(hInstance);
       theApp.InitInstance();
@@ -608,5 +644,6 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 #if defined(ENABLE_SDL) || defined(ENABLE_SDL_INPUT)
    SDL_Quit();
 #endif
+   PLOGI << "Closing VPX...";
    return retval;
 }

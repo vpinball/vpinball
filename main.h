@@ -100,6 +100,10 @@ using std::vector;
 //#include <wxx_webbrowser.h>		// Add CAXWindow, CWebBrowser
 #include <wxx_wincore.h>
 
+#define PLOG_OMIT_LOG_DEFINES 
+#define PLOG_NO_DBG_OUT_INSTANCE_ID 1
+#include <plog/Log.h>
+
 #include "helpers.h"
 
 #include "def.h"
