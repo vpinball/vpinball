@@ -317,6 +317,7 @@ public:
 
 private:
    PinTable *m_ptable;
+   Light * m_lightmap = nullptr;
 
    Matrix3D m_fullMatrix;
    int m_numGroupVertices;

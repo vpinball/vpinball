@@ -297,6 +297,8 @@ void Flasher::EndPlay()
       delete[] m_vertices;
       m_vertices = nullptr;
    }
+
+   m_lightmap = nullptr;
 }
 
 void Flasher::UpdateMesh()
@@ -336,6 +338,10 @@ void Flasher::UpdateMesh()
 
 void Flasher::RenderSetup()
 {
+   m_lightmap = m_ptable->GetLight(m_d.m_szLightmap);
+   if (m_lightmap)
+      m_lightmap->AddLightmap(this);
+
    vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
 
@@ -1396,9 +1402,8 @@ void Flasher::RenderDynamic()
        pd3dDevice->flasherShader->SetFlasherData(flasherData, flasherData2);
 
        // Check if this flasher is used as a lightmap and should be convoluted with the light shadows
-       Light * const lightmap = m_ptable->GetLight(m_d.m_szLightmap);
-       if (lightmap != nullptr && lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS)
-          pd3dDevice->flasherShader->SetVector(SHADER_lightCenter_doShadow, lightmap->m_d.m_vCenter.x, lightmap->m_d.m_vCenter.y, lightmap->GetCurrentHeight(), 1.0f);
+       if (m_lightmap != nullptr && m_lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS)
+          pd3dDevice->flasherShader->SetVector(SHADER_lightCenter_doShadow, m_lightmap->m_d.m_vCenter.x, m_lightmap->m_d.m_vCenter.y, m_lightmap->GetCurrentHeight(), 1.0f);
 
        pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
        g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_addBlend, false, false);

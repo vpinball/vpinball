@@ -649,6 +649,8 @@ void Primitive::EndPlay()
    m_d.m_skipRendering = false;
    m_d.m_groupdRendering = false;
 
+   m_lightmap = nullptr;
+
    IEditable::EndPlay();
 }
 
@@ -1308,9 +1310,8 @@ void Primitive::RenderObject()
    }
 
    // Check if this primitive is used as a lightmap and should be convoluted with the light shadows
-   Light * const lightmap = m_ptable->GetLight(m_d.m_szLightmap);
-   if (lightmap != nullptr && lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS)
-      pd3dDevice->basicShader->SetVector(SHADER_lightCenter_doShadow, lightmap->m_d.m_vCenter.x, lightmap->m_d.m_vCenter.y, lightmap->GetCurrentHeight(), 1.0f);
+   if (m_lightmap != nullptr && m_lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS)
+      pd3dDevice->basicShader->SetVector(SHADER_lightCenter_doShadow, m_lightmap->m_d.m_vCenter.x, m_lightmap->m_d.m_vCenter.y, m_lightmap->GetCurrentHeight(), 1.0f);
 
    bool is_reflection_only_pass = false;
 
@@ -1420,6 +1421,9 @@ void Primitive::RenderSetup()
    if (m_d.m_groupdRendering || m_d.m_skipRendering)
       return;
 
+   m_lightmap = m_ptable->GetLight(m_d.m_szLightmap);
+   if (m_lightmap)
+      m_lightmap->AddLightmap(this);
 
    m_currentFrame = -1.f;
    m_d.m_isBackGlassImage = IsBackglass();

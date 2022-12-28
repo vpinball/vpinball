@@ -157,6 +157,8 @@ public:
    string m_rgblinkpattern;
    int m_blinkinterval;
 
+   void AddLightmap(IEditable* lightmap) { m_lightmaps.push_back(lightmap); }
+
 private:
 
    class LightCenter final : public ISelect
@@ -220,6 +222,8 @@ private:
    bool  m_updateBulbLightHeight;
 
    bool  m_roundLight; // pre-VPX compatibility
+
+   vector<IEditable *> m_lightmaps; // Populated when playing with primitives and flashers declared as lightmaps of this light
 
 public:
    STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);
