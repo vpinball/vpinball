@@ -121,6 +121,8 @@ public:
 private:
    PinTable *m_ptable;
 
+   bool m_isStaticRendering;
+
    int m_rampVertex;
    Vertex2D *m_rgvInit;    // just for setup/static drawing
    float *m_rgheightInit;
