@@ -182,10 +182,6 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_fplaylog = nullptr;
 #endif
 
-#ifdef LOG
-   m_flog = nullptr;
-#endif
-
    for (int i = 0; i < PININ_JOYMXCNT; ++i)
       m_curAccel[i] = int2(0,0);
 
@@ -855,10 +851,6 @@ void Player::Shutdown()
       m_texdmd = nullptr;
    }
 
-#ifdef LOG
-   if (m_flog)
-      fclose(m_flog);
-#endif
 #ifdef PLAYBACK
    if (m_fplaylog)
       fclose(m_fplaylog);
@@ -1882,10 +1874,6 @@ HRESULT Player::Init()
 
    m_ptable->FireVoidEvent(DISPID_GameEvents_Init);
 
-#ifdef LOG
-   m_flog = fopen("c:\\log.txt","w");
-#endif
-
 #ifdef PLAYBACK
    if (m_playback)
       m_fplaylog = fopen("c:\\badlog.txt", "r");
@@ -1907,8 +1895,8 @@ HRESULT Player::Init()
 #endif
 
 #ifdef LOG
-   fprintf(m_flog, "Step Time %llu\n", m_StartTime_usec);
-   fprintf(m_flog, "End Frame\n");
+   PLOGD.printf("Step Time %llu", m_StartTime_usec);
+   PLOGD.printf("End Frame");
 #endif
 
    m_ptable->m_progressDialog.SetProgress(100);
@@ -3057,8 +3045,8 @@ void Player::UpdatePhysics()
 #endif
 #endif //PLAYBACK
 
-   fprintf(m_flog, "Frame Time %.20f %u %u %u %u\n", frametime, initial_time_usec>>32, initial_time_usec, m_nextPhysicsFrameTime>>32, m_nextPhysicsFrameTime);
-   fprintf(m_flog, "End Frame\n");
+   PLOGD.printf("Frame Time %.20f %u %u %u %u", frametime, initial_time_usec >> 32, initial_time_usec, m_nextPhysicsFrameTime >> 32, m_nextPhysicsFrameTime);
+   PLOGD.printf("End Frame");
 #endif
 
    m_phys_iterations = 0;
