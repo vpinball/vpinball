@@ -405,7 +405,6 @@ private:
 
    // keyword lists
    string m_vbsKeyWords;
-   vector<string> m_autoCompList;
    // Dictionaries
    vector<UserData> m_VBwordsDict;
    vector<UserData> m_componentsDict;
@@ -537,7 +536,7 @@ __forceinline string lowerCase(string input)
 inline void RemovePadding(string &line)
 {
     const size_t LL = line.length();
-    size_t Pos = (line.find_first_not_of("\n\r\t ,"));
+    size_t Pos = line.find_first_not_of("\n\r\t ,");
     if (Pos == string::npos)
     {
         line.clear();
@@ -550,7 +549,7 @@ inline void RemovePadding(string &line)
         line = line.substr(Pos, (LL - Pos));
     }
 
-    Pos = (line.find_last_not_of("\n\r\t ,"));
+    Pos = line.find_last_not_of("\n\r\t ,");
     if (Pos != string::npos)
     {
         if (Pos < 1) return;
@@ -565,11 +564,9 @@ inline string ParseRemoveVBSLineComments(string &Line)
     string RetVal = Line.substr(commentIdx + 1, string::npos);
     RemovePadding(RetVal);
     if (commentIdx > 0)
-    {
         Line = Line.substr(0, commentIdx);
-        return RetVal;
-    }
-    Line.clear();
+    else
+        Line.clear();
     return RetVal;
 }
 
