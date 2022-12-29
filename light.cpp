@@ -733,6 +733,15 @@ void Light::RenderSetup()
    PrepareMoversCustom();
 }
 
+void Light::AddLightmap(IEditable *lightmap)
+{ 
+   m_lightmaps.push_back(lightmap);
+   if (lightmap->GetItemType() == ItemTypeEnum::eItemPrimitive)
+      ((Primitive *)lightmap)->put_Opacity(100.0f * m_d.m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale));
+   else if (lightmap->GetItemType() == ItemTypeEnum::eItemFlasher)
+      ((Flasher *)lightmap)->put_Opacity((long)(100.0f * m_d.m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale)));
+}
+
 void Light::UpdateAnimation(const float diff_time_msec)
 {
    if ((m_duration > 0) && (m_timerDurationEndTime < g_pplayer->m_time_msec))
@@ -746,8 +755,7 @@ void Light::UpdateAnimation(const float diff_time_msec)
    if (m_inPlayState == (float)LightStateBlinking)
       UpdateBlinker(g_pplayer->m_time_msec);
 
-   boolean animated = false;
-
+   float m_previousIntensity = m_d.m_currentIntensity;
 
    const float targetIntensity = m_d.m_intensity * m_d.m_intensity_scale * ((m_inPlayState == (float)LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState);
    if (m_d.m_currentIntensity < targetIntensity)
@@ -755,17 +763,15 @@ void Light::UpdateAnimation(const float diff_time_msec)
       m_d.m_currentIntensity += m_d.m_fadeSpeedUp * diff_time_msec;
       if (m_d.m_currentIntensity > targetIntensity)
          m_d.m_currentIntensity = targetIntensity;
-      animated = true;
    }
    else if (m_d.m_currentIntensity > targetIntensity)
    {
       m_d.m_currentIntensity -= m_d.m_fadeSpeedDown * diff_time_msec;
       if (m_d.m_currentIntensity < targetIntensity)
          m_d.m_currentIntensity = targetIntensity;
-      animated = true;
    }
 
-   if (animated)
+   if (m_previousIntensity != m_d.m_currentIntensity)
    {
       for (size_t i = 0; i < m_lightmaps.size(); ++i)
          if (m_lightmaps[i]->GetItemType() == ItemTypeEnum::eItemPrimitive)
