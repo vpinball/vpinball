@@ -276,6 +276,8 @@ public:
    STDMETHOD(put_BulbHaloHeight)(/*[in]*/ float newVal);
    STDMETHOD(get_ShowReflectionOnBall)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ShowReflectionOnBall)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_Shadows)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(put_Shadows)(/*[in]*/ long newVal);
    STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(Duration)(/*[in]*/float startState, /*[in]*/long newVal, /*[in]*/float endState);
