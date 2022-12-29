@@ -157,7 +157,7 @@ public:
    string m_rgblinkpattern;
    int m_blinkinterval;
 
-   void AddLightmap(IEditable* lightmap) { m_lightmaps.push_back(lightmap); }
+   void AddLightmap(IEditable *lightmap);
 
 private:
 
