@@ -580,7 +580,6 @@ public:
    }
 };
 
-template <class Formatter> 
 class DebugAppender : public plog::IAppender 
 {
 public:
@@ -591,18 +590,41 @@ public:
       auto table = g_pvp->GetActiveTable();
       if (table == nullptr)
          return;
-      plog::util::nstring str = Formatter::format(record);
       #ifdef _WIN32
-      // Convert from wstring to string on Win32
+      // Convert from wchar* to char* on Win32
       using convert_typeX = std::codecvt_utf8<wchar_t>;
       std::wstring_convert<convert_typeX, wchar_t> converterX;
-      table->m_pcv->AddToDebugOutput(converterX.to_bytes(str).c_str());
+      table->m_pcv->AddToDebugOutput(converterX.to_bytes(record.getMessage()).c_str());
       #else
-      table->m_pcv->AddToDebugOutput(str.c_str());
+      table->m_pcv->AddToDebugOutput(record.getMessage());
       #endif
    }
 };
 
+void SetupLogger()
+{
+   plog::Severity maxLogSeverity = plog::none;
+   if (LoadValueBoolWithDefault(regKey[RegName::Editor], "EnableLog"s, false))
+   {
+      static bool initialized = false;
+      if (!initialized)
+      {
+         initialized = true;
+         static plog::RollingFileAppender<plog::TxtFormatter> fileAppender("vpinball.log", 1024 * 1024 * 5, 1);
+         static DebugAppender debugAppender;
+         plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&debugAppender);
+         plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&fileAppender);
+         plog::Logger<PLOG_NO_DBG_OUT_INSTANCE_ID>::getInstance()->addAppender(&fileAppender);
+      }
+#ifdef _DEBUG
+      maxLogSeverity = plog::debug;
+#else
+      maxLogSeverity = plog::info;
+#endif
+   }
+   plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->setMaxSeverity(maxLogSeverity);
+   plog::Logger<PLOG_NO_DBG_OUT_INSTANCE_ID>::getInstance()->setMaxSeverity(maxLogSeverity);
+}
 
 extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR /*lpCmdLine*/, int /*nShowCmd*/)
 {
@@ -620,10 +642,9 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       );
 #endif
 
-      static plog::RollingFileAppender<plog::TxtFormatter> fileAppender("vpinball.log", 1024 * 1024 * 5, 1);
-      static DebugAppender<plog::TxtFormatter> debugAppender;
-      plog::init<PLOG_DEFAULT_INSTANCE_ID>(plog::debug, &fileAppender).addAppender(&debugAppender);
-      plog::init<PLOG_NO_DBG_OUT_INSTANCE_ID>(plog::debug, &fileAppender); // Logger that do not show in the debug window to avoid duplicated messages
+      plog::init<PLOG_DEFAULT_INSTANCE_ID>();
+      plog::init<PLOG_NO_DBG_OUT_INSTANCE_ID>(); // Logger that do not show in the debug window to avoid duplicated messages
+      SetupLogger();
       PLOGI << "Starting VPX...";
 
       // Start Win32++

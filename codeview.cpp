@@ -3933,11 +3933,14 @@ void DebuggerModule::Init(CodeViewer * const pcv)
 
 STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
 {
+   const auto enableLog = LoadValueBoolWithDefault(regKey[RegName::Editor], "EnableLog"s, false);
+   const auto logScript = enableLog && LoadValueBoolWithDefault(regKey[RegName::Editor], "LogScriptOutput"s, true);
+
    if (pvar->vt == VT_EMPTY || pvar->vt == VT_NULL || pvar->vt == VT_ERROR)
    {
       if (g_pplayer->m_hwndDebugOutput)
          m_pcv->AddToDebugOutput("");
-      PLOGI_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Script.Print ''";
+      PLOGI_IF_(PLOG_NO_DBG_OUT_INSTANCE_ID, logScript) << "Script.Print ''";
       return S_OK;
    }
 
@@ -3949,7 +3952,7 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
       const LocalString ls(IDS_DEBUGNOCONVERT);
       if (g_pplayer->m_hwndDebugOutput)
          m_pcv->AddToDebugOutput(ls.m_szbuffer);
-      PLOGI_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Script.Print '" << ls.m_szbuffer << "'";
+      PLOGI_IF_(PLOG_NO_DBG_OUT_INSTANCE_ID, logScript) << "Script.Print '" << ls.m_szbuffer << "'";
       return S_OK;
    }
 
@@ -3960,7 +3963,7 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
    WideCharToMultiByteNull(CP_ACP, 0, wzT, -1, szT, len + 1, nullptr, nullptr);
    if (g_pplayer->m_hwndDebugOutput)
       m_pcv->AddToDebugOutput(szT);
-   PLOGI_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Script.Print '" << szT << "'";
+   PLOGI_IF_(PLOG_NO_DBG_OUT_INSTANCE_ID, logScript) << "Script.Print '" << szT << "'";
    delete[] szT;
 
    return S_OK;

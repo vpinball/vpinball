@@ -4,6 +4,9 @@
 
 #define AUTOSAVE_DEFAULT_TIME 10
 
+// Implemented in main.cpp, update application logger settings
+extern void SetupLogger();
+
 EditorOptionsDialog::EditorOptionsDialog() : CDialog(IDD_EDITOR_OPTIONS)
 {
     m_toolTip = nullptr;
@@ -88,6 +91,12 @@ BOOL EditorOptionsDialog::OnInitDialog()
 
     const float throwBallMass = LoadValueFloatWithDefault(regKey[RegName::Editor], "ThrowBallMass"s, 1.0f);
     SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, f2sz(throwBallMass).c_str());
+
+    const bool enableLog = LoadValueBoolWithDefault(regKey[RegName::Editor], "EnableLog"s, false);
+    SendMessage(GetDlgItem(IDC_ENABLE_LOGGING).GetHwnd(), BM_SETCHECK, enableLog ? BST_CHECKED : BST_UNCHECKED, 0);
+
+    const bool logScript = LoadValueBoolWithDefault(regKey[RegName::Editor], "LogScriptOutput"s, false);
+    SendMessage(GetDlgItem(IDC_ENABLE_SCRIPT_LOGGING).GetHwnd(), BM_SETCHECK, logScript ? BST_CHECKED : BST_UNCHECKED, 0);
 
     const int units = LoadValueIntWithDefault(regKey[RegName::Editor], "Units"s, 0);
     const HWND hwnd = GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd();
@@ -204,6 +213,8 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
           SendDlgItemMessage(IDC_START_VP_FILE_DIALOG2, BM_SETCHECK, BST_CHECKED, 0);
           SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_SETCURSEL, 0, 0);
           SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, "1.0");
+          SendMessage(GetDlgItem(IDC_ENABLE_LOGGING).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
+          SendMessage(GetDlgItem(IDC_ENABLE_SCRIPT_LOGGING).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
           constexpr int x = 0;
           constexpr int y = 0;
           SaveValueInt(regKey[RegName::Editor], "CodeViewPosX"s, x);
@@ -301,6 +312,13 @@ void EditorOptionsDialog::OnOK()
     checked = (SendDlgItemMessage(IDC_ALWAYSVIEWSCRIPT, BM_GETCHECK, 0, 0) == BST_CHECKED);
     SaveValueBool(regKey[RegName::Editor], "AlwaysViewScript"s, checked);
 
+    checked = (SendDlgItemMessage(IDC_ENABLE_LOGGING, BM_GETCHECK, 0, 0) == BST_CHECKED);
+    SaveValueBool(regKey[RegName::Editor], "EnableLog"s, checked);
+
+    checked = (SendDlgItemMessage(IDC_ENABLE_SCRIPT_LOGGING, BM_GETCHECK, 0, 0) == BST_CHECKED);
+    SaveValueBool(regKey[RegName::Editor], "LogScriptOutput"s, checked);
+
+    SetupLogger();
 
     // Go through and reset the autosave time on all the tables
     if (autosave)

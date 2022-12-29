@@ -469,6 +469,9 @@
 #define IDD_EDITOR_OPTIONS              317
 #define IDC_DRAW_DRAGPOINTS             318
 #define IDC_DRAW_LIGHTCENTERS           319
+#define IDC_ENABLE_LOGGING              320
+#define IDC_DRAW_LIGHTCENTERS2          321
+#define IDC_ENABLE_SCRIPT_LOGGING       321
 #define IDD_PROPWALL_VISUALS            330
 #define IDD_PROPWALL_PHYSICS            331
 #define IDD_PROPGATE_VISUALS            333
