@@ -1,4 +1,4 @@
-'Last Updated in VBS v3.60
+'Last Updated in VBS v3.36
 '
 'First Added in VBS v3.20
 
@@ -45,10 +45,10 @@ Private Sub peyperShowDips
 		With vpmDips
 			.AddForm 200,300,"Peyper / Sonic switches"
 			.AddFrame 0,0,80,"DIP switches",0,_
-			  Array("DIP  1",&H00000001,"DIP  2",&H00000002,"DIP  3",&H00000004,"DIP  4",&H00000008,_
-			        "DIP  5",&H00000010,"DIP  6",&H00000020,"DIP  7",&H00000040,"DIP  8",&H00000080,_
-			        "DIP  9",&H00000100,"DIP 10",&H00000200,"DIP 11",&H00000400,"DIP 12",&H00000800,_
-			        "DIP 13",&H00001000,"DIP 14",&H00002000,"DIP 15",&H00004000,"DIP 16",&H00008000)
+			  Array("Dip 0",&H00000800,"Dip 1",&H00000400,"Dip 2",&H00000200,"Dip 3",&H00000100,_
+			        "Dip 4",32768,     "Dip 5",&H00004000,"Dip 6",&H00002000,"Dip 7",&H00001000,_
+			        "Dip 8",&H00000008,"Dip 9",&H00000004,"Dip10",&H00000002,"Dip11",&H00000001,_
+			        "Dip12",&H00000080,"Dip13",&H00000040,"Dip14",&H00000020,"Dip15",&H00000010)
 		End With
 	End If
 	vpmDips.ViewDips
