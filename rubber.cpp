@@ -1251,6 +1251,8 @@ void Rubber::RenderObject()
       UpdateRubber(true, m_d.m_height);
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice::RenderStateCache initial_state;
+   pd3dDevice->CopyRenderStates(true, initial_state);
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
@@ -1275,6 +1277,8 @@ void Rubber::RenderObject()
    pd3dDevice->basicShader->Begin();
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_dynamicVertexBuffer, 0, m_numVertices, m_dynamicIndexBuffer, 0, m_numIndices);
    pd3dDevice->basicShader->End();
+
+   pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
 // Always called each frame to render over everything else (along with primitives)
