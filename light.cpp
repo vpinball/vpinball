@@ -1468,6 +1468,20 @@ STDMETHODIMP Light::put_ShowReflectionOnBall(VARIANT_BOOL newVal)
    return S_OK;
 }
 
+STDMETHODIMP Light::get_Shadows(long *pVal)
+{
+   *pVal = (long) m_d.m_shadows;
+
+   return S_OK;
+}
+
+STDMETHODIMP Light::put_Shadows(long newVal)
+{
+   m_d.m_shadows = (ShadowMode) newVal;
+
+   return S_OK;
+}
+
 STDMETHODIMP Light::get_ScaleBulbMesh(float *pVal)
 {
    *pVal = m_d.m_meshRadius;
