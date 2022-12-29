@@ -842,6 +842,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupF
    bw.WriteFloat(FID(BMVA), m_d.m_modulate_vs_add);
    bw.WriteFloat(FID(BHHI), m_d.m_bulbHaloHeight);
    bw.WriteInt(FID(SHDW), m_d.m_shadows);
+   bw.WriteBool(FID(VSBL), m_d.m_visible);
 
    ISelect::SaveData(pstm, hcrypthash);
 
@@ -934,6 +935,7 @@ bool Light::LoadToken(const int id, BiffReader * const pbr)
    case FID(BMVA): pbr->GetFloat(m_d.m_modulate_vs_add); break;
    case FID(BHHI): pbr->GetFloat(m_d.m_bulbHaloHeight); break;
    case FID(SHDW): pbr->GetInt(&m_d.m_shadows); break;
+   case FID(VSBL): pbr->GetBool(m_d.m_visible); break;
    default:
    {
       LoadPointToken(id, pbr, pbr->m_version);
