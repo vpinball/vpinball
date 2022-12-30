@@ -23,8 +23,10 @@ public:
         m_hReflectionEnabledCheck = 0;
         m_hVisibleCheck = 0;
     }
+
     virtual void UpdateProperties(const int dispid) = 0;
     virtual void UpdateVisuals(const int dispid=-1) = 0;
+
     BOOL OnCommand(WPARAM wParam, LPARAM lParam) override
     {
         UNREFERENCED_PARAMETER(lParam);
@@ -57,11 +59,13 @@ public:
         }
         return FALSE;
     }
+
     void UpdateBaseProperties(ISelect *psel, BaseProperty *property, const int dispid);
     void UpdateBaseVisuals(ISelect *psel, BaseProperty *property, const int dispid = -1);
 
     const VectorProtected<ISelect>* m_pvsel;
     static bool m_disableEvents;
+
 protected:
     INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
@@ -87,12 +91,15 @@ class EditBox : public CEdit
 public:
     EditBox() : m_basePropertyDialog(nullptr), m_id(-1) {}
     virtual ~EditBox() {}
+
     void    SetDialog(BasePropertyDialog* dialog) { m_basePropertyDialog = dialog; }
+
     virtual void AttachItem(int id)
     {
         m_id = id;
         m_basePropertyDialog->AttachItem(id, *this);
     }
+
 protected:
     virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
 
@@ -106,6 +113,7 @@ class ComboBox : public CComboBox
 public:
     ComboBox() : m_basePropertyDialog(nullptr), m_id(-1) {}
     virtual ~ComboBox() {}
+
     void    SetDialog(BasePropertyDialog* dialog) { m_basePropertyDialog = dialog; }
     virtual void AttachItem(int id)
     {
@@ -127,12 +135,14 @@ class TimerProperty: public BasePropertyDialog
 {
 public:
     TimerProperty(const VectorProtected<ISelect> *pvsel);
-    virtual void UpdateProperties(const int dispid);
-    virtual void UpdateVisuals(const int dispid=-1);
+    void UpdateProperties(const int dispid) override;
+    void UpdateVisuals(const int dispid=-1) override;
+
 protected:
-    virtual BOOL OnInitDialog();
-    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    BOOL OnInitDialog() override;
+    BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+    INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+
 private:
     EditBox m_timerIntervalEdit;
     EditBox m_userValueEdit;
@@ -144,10 +154,8 @@ private:
 class ColorButton: public CButton
 {
 public:
-    ColorButton() : m_color(0)
-    {
-    }
-    ~ColorButton(){}
+    ColorButton() : m_color(0) {}
+    ~ColorButton() {}
     
     void SetColor(const COLORREF color)
     {
@@ -209,6 +217,7 @@ public:
 
         dc.Detach();
     }
+
 private:
     COLORREF m_color;
 };
@@ -320,10 +329,10 @@ public:
     virtual LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
 
 protected:
-    virtual BOOL OnInitDialog();
-    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-    virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam);
-    virtual void OnClose();
+    BOOL OnInitDialog() override;
+    BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+    INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
+    void OnClose() override;
 
 private:
     PropertyTab  m_tab;
@@ -408,9 +417,8 @@ class CContainProperties: public CDockContainer
 {
 public:
     CContainProperties();
-    ~CContainProperties()
-    {
-    }
+    ~CContainProperties() {}
+
     PropertyDialog *GetPropertyDialog()
     {
         return &m_propertyDialog;
@@ -424,10 +432,8 @@ class CDockProperty: public CDocker
 {
 public:
     CDockProperty();
+    virtual ~CDockProperty() {}
 
-    virtual ~CDockProperty()
-    {
-    }
     virtual void OnClose();
 
     CContainProperties *GetContainProperties()

@@ -27,7 +27,7 @@ void BackglassVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_fsImageCombo, table->m_BG_image[1]);
     if (dispid == DISPID_Image8 || dispid == -1)
         PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_fssImageCombo, table->m_BG_image[2]);
-    if (dispid == 1509 || dispid == -1)
+    if (dispid == DISPID_Image5 || dispid == -1)
         PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_colorGradingCombo, table->m_imageColorGrade);
     if (dispid == IDC_ENABLE_DECAL_CHECK || dispid == -1)
         PropertyDialog::SetCheckboxState(m_hEnableDecal, table->m_renderDecals);
@@ -65,7 +65,7 @@ void BackglassVisualsProperty::UpdateProperties(const int dispid)
         case DISPID_Image8:
             CHECK_UPDATE_COMBO_TEXT_STRING(table->m_BG_image[2], m_fssImageCombo, table);
             break;
-        case 1509:
+        case DISPID_Image5:
             CHECK_UPDATE_COMBO_TEXT_STRING(table->m_imageColorGrade, m_colorGradingCombo, table);
             break;
         case IDC_ENABLE_EMREEL_CHECK:
@@ -113,7 +113,7 @@ BOOL BackglassVisualsProperty::OnInitDialog()
     m_dtImageCombo.AttachItem(DISPID_Image2);
     m_fsImageCombo.AttachItem(DISPID_Image6);
     m_fssImageCombo.AttachItem(DISPID_Image8);
-    m_colorGradingCombo.AttachItem(1509);
+    m_colorGradingCombo.AttachItem(DISPID_Image5);
     m_hEnableEMReelCheck = ::GetDlgItem(GetHwnd(), IDC_ENABLE_EMREEL_CHECK);
     m_hEnableDecal = ::GetDlgItem(GetHwnd(), IDC_ENABLE_DECAL_CHECK);
     m_hOverwriteGlobalStereoSettingsCheck = ::GetDlgItem(GetHwnd(), IDC_GLOBAL_3DSTEREO);

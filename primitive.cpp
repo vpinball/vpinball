@@ -1439,7 +1439,7 @@ void Primitive::UpdateAnimation(const float diff_time_msec)
 {
    if (m_currentFrame != -1.0f && m_doAnimation)
    {
-      float previousFrame = m_currentFrame;
+      const float previousFrame = m_currentFrame;
       m_currentFrame += m_speed * (diff_time_msec * (float)(60. / 1000.));
       if (m_currentFrame >= (float)m_mesh.m_animationFrames.size())
       {

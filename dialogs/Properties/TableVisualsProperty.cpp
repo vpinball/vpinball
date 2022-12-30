@@ -27,11 +27,11 @@ void TableVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetCheckboxState(m_hReflectElementsCheck, table->m_reflectElementsOnPlayfield);
     if (dispid == IDC_REFLECTION_PLAYFIELD || dispid == -1)
         PropertyDialog::SetIntTextbox(m_reflectionStrengthEdit, table->GetPlayfieldReflectionStrength());
-    if (dispid == 1505 || dispid == -1)
+    if (dispid == DISPID_Image3 || dispid == -1)
         PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_ballImageCombo, table->m_ballImage);
     if (dispid == IDC_BALL_DECAL_MODE || dispid == -1)
         PropertyDialog::SetCheckboxState(m_hLogoModeCheck, table->m_BallDecalMode);
-    if (dispid == 1508 || dispid == -1)
+    if (dispid == DISPID_Image4 || dispid == -1)
         PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_ballDecalCombo, table->m_ballImageDecal);
     if (dispid == IDC_BALLPLAYFIELD_REFLECTION || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_ballReflectPlayfieldEdit, table->m_ballPlayfieldReflectionStrength);
@@ -62,10 +62,10 @@ void TableVisualsProperty::UpdateProperties(const int dispid)
         case IDC_BALL_DECAL_MODE:
             CHECK_UPDATE_ITEM(table->m_BallDecalMode, PropertyDialog::GetCheckboxState(m_hLogoModeCheck), table);
             break;
-        case 1505:
+        case DISPID_Image3:
             CHECK_UPDATE_COMBO_TEXT_STRING(table->m_ballImage, m_ballImageCombo, table);
             break;
-        case 1508:
+        case DISPID_Image4:
             CHECK_UPDATE_COMBO_TEXT_STRING(table->m_ballImageDecal, m_ballDecalCombo, table);
             break;
         case IDC_BALLPLAYFIELD_REFLECTION:
@@ -84,8 +84,8 @@ BOOL TableVisualsProperty::OnInitDialog()
 {
     m_imageCombo.AttachItem(DISPID_Image);
     m_materialCombo.AttachItem(IDC_MATERIAL_COMBO);
-    m_ballImageCombo.AttachItem(1505);
-    m_ballDecalCombo.AttachItem(1508);
+    m_ballImageCombo.AttachItem(DISPID_Image3);
+    m_ballDecalCombo.AttachItem(DISPID_Image4);
     m_hReflectElementsCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ELEMENTS_CHECK);
     m_reflectionStrengthEdit.AttachItem(IDC_REFLECTION_PLAYFIELD);
     m_hLogoModeCheck = ::GetDlgItem(GetHwnd(), IDC_BALL_DECAL_MODE);

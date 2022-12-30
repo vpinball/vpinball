@@ -32,7 +32,7 @@ void TriggerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         Trigger * const trigger = (Trigger *)m_pvsel->ElementAt(i);
 
-        if (dispid == 1503 || dispid == -1)
+        if (dispid == DISPID_Shape || dispid == -1)
             PropertyDialog::UpdateComboBox(m_shapeList, m_shapeCombo, m_shapeList[(int)trigger->m_d.m_shape]);
         if (dispid == 902 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_posXEdit, trigger->m_d.m_vCenter.x);
@@ -69,7 +69,7 @@ void TriggerVisualsProperty::UpdateProperties(const int dispid)
         Trigger * const trigger = (Trigger *)m_pvsel->ElementAt(i);
         switch (dispid)
         {
-            case 1503:
+            case DISPID_Shape:
                 CHECK_UPDATE_ITEM(trigger->m_d.m_shape, (TriggerShape)(PropertyDialog::GetComboBoxIndex(m_shapeCombo, m_shapeList)), trigger);
                 break;
             case 902:
@@ -107,7 +107,7 @@ BOOL TriggerVisualsProperty::OnInitDialog()
     m_materialCombo.AttachItem(IDC_MATERIAL_COMBO);
     m_baseMaterialCombo = &m_materialCombo;
     m_surfaceCombo.AttachItem(IDC_SURFACE_COMBO);
-    m_shapeCombo.AttachItem(1503);
+    m_shapeCombo.AttachItem(DISPID_Shape);
     m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
     m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
     m_posXEdit.AttachItem(902);
