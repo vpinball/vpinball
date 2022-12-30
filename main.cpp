@@ -21,7 +21,7 @@
 #include "plog/Initializers/RollingFileInitializer.h"
 
 #ifdef CRASH_HANDLER
-extern "C" int __cdecl _purecall(void)
+extern "C" int __cdecl _purecall()
 {
    ShowError("Pure Virtual Function Call");
 
@@ -190,6 +190,8 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
    return argv;
 }
 
+void SetupLogger();
+
 robin_hood::unordered_map<ItemTypeEnum, EditableInfo> EditableRegistry::m_map;
 
 class VPApp : public CWinApp
@@ -212,7 +214,7 @@ public:
        m_vpinball.theInstance = GetInstanceHandle();
        SetResourceHandle(m_vpinball.theInstance);
    }
-   
+
    virtual ~VPApp() 
    {
       _Module.Term();
@@ -226,8 +228,8 @@ public:
       _CrtDumpMemoryLeaks();
 #endif
    }
-   virtual BOOL InitInstance() 
-   { 
+   BOOL InitInstance() override
+   {
 #ifdef CRASH_HANDLER
       rde::CrashHandler::Init();
 #endif
@@ -254,6 +256,9 @@ public:
       IsOnWine(); // init static variable in there
 
       InitXMLregistry(m_vpinball.m_szMyPath);
+
+      SetupLogger();
+      PLOGI << "Starting VPX...";
 
 #ifdef _MSC_VER
 #if _WIN32_WINNT >= 0x0400 & defined(_ATL_FREE_THREADED)
@@ -556,7 +561,7 @@ public:
        }
    }
 
-   virtual int Run()
+   int Run() override
    {
       if (run)
       {
@@ -644,8 +649,6 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 
       plog::init<PLOG_DEFAULT_INSTANCE_ID>();
       plog::init<PLOG_NO_DBG_OUT_INSTANCE_ID>(); // Logger that do not show in the debug window to avoid duplicated messages
-      SetupLogger();
-      PLOGI << "Starting VPX...";
 
       // Start Win32++
       VPApp theApp(hInstance);
