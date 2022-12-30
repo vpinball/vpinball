@@ -10,7 +10,7 @@ set(VERSION_REV "${CMAKE_MATCH_1}")
 
 project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
 add_library(glad 
@@ -30,7 +30,6 @@ add_compile_definitions(
    ENABLE_SDL_INPUT
    ENABLE_SDL
    ENABLE_XINPUT
-   TWEAK_GL_SHADER
    ENABLE_BAM
    USE_DINPUT8
    USE_IMGUI
@@ -518,15 +517,14 @@ add_executable(vpinball WIN32
 
 target_include_directories(vpinball PUBLIC
    $ENV{DXSDK_DIR}/Include
-   dialogs
-   shader
-   inc
-   inc/win32xx/include
-   pin
-   media
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)
-   ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/shader
+   inc
+   inc/rapidxml
+   inc/win32xx/include
+   dialogs
+   media
+   pin
 )
 
 target_precompile_headers(vpinball PUBLIC
@@ -573,4 +571,18 @@ set_target_properties(vpinball PROPERTIES
    VS_DPI_AWARE "On"
    RUNTIME_OUTPUT_NAME "VPinballX_GL"
    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
+)
+
+add_custom_command(TARGET vpinball POST_BUILD
+   COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/user"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/scripts" "$<TARGET_FILE_DIR:vpinball>/scripts"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tables" "$<TARGET_FILE_DIR:vpinball>/tables"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/shader" "$<TARGET_FILE_DIR:vpinball>/shader"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/txt" "$<TARGET_FILE_DIR:vpinball>/docs"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/dll/Bass.dll" "$<TARGET_FILE_DIR:vpinball>"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/dll/SDL2.dll" "$<TARGET_FILE_DIR:vpinball>"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/dll/SDL2_ttf.dll" "$<TARGET_FILE_DIR:vpinball>"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/dll/openvr_api.dll" "$<TARGET_FILE_DIR:vpinball>"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/dll/FreeImage.dll" "$<TARGET_FILE_DIR:vpinball>"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/dll/SciLexerVP.dll" "$<TARGET_FILE_DIR:vpinball>"
 )
