@@ -79,7 +79,8 @@ FEATURES:
 
 - add support for more than one DMD (for original tables, in-game DMD menu,...)
 
-- add a log file, named vpinball.log, with script and error informations
+- add new log file functionality (vpinball.log), with script and error informations
+  logging can be en/disabled in the UI/Editor preferences
 
 FIXES:
 
@@ -89,6 +90,8 @@ FIXES:
 
 - static element preprocessing is now done on the GPU (which leads to a faster VPX-player start)
 - increase preprocessing sample rate for the static parts of the table
+
+- improve script editing performance again
 
 - update example tables with new raytraced ball shadows enabled
 
