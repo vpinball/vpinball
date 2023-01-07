@@ -437,6 +437,8 @@ void Gate::RenderObject()
    }
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice::RenderStateCache initial_state;
+   pd3dDevice->CopyRenderStates(true, initial_state);
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat, false);
@@ -455,6 +457,8 @@ void Gate::RenderObject()
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_wireVertexBuffer, 0, m_numVertices, m_wireIndexBuffer, 0, m_numIndices);
 
    pd3dDevice->basicShader->End();
+
+   pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
 void Gate::RenderDynamic()
