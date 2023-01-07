@@ -12,8 +12,6 @@ int NumVideoBytes = 0;
 
 Pin3D::Pin3D()
 {
-   m_pddsAOBackBuffer = nullptr;
-   m_pddsAOBackTmpBuffer = nullptr;
    m_pd3dPrimaryDevice = nullptr;
    m_pd3dSecondaryDevice = nullptr;
    m_pddsStatic = nullptr;
@@ -45,8 +43,6 @@ Pin3D::~Pin3D()
       m_envRadianceTexture = nullptr;
    }
 
-   delete m_pddsAOBackBuffer;
-   delete m_pddsAOBackTmpBuffer;
    delete m_pddsStatic;
 
    if(m_pd3dPrimaryDevice != m_pd3dSecondaryDevice)
@@ -446,7 +442,7 @@ BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xre
    return radTex;
 }
 
-HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl)
+HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl)
 {
    const int display = g_pvp->m_primaryDisplay ? 0 : LoadValueIntWithDefault(regKey[RegName::Player], "Display"s, 0);
    vector<DisplayConfig> displays;
@@ -496,20 +492,10 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
    else
       m_pddsStatic = nullptr;
 
-   if (m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && useAO)
-   {
-      // the width must be the one the back render buffer (not the one of the preview viewport)
-      m_pddsAOBackBuffer = new RenderTarget(m_pd3dPrimaryDevice, m_pd3dPrimaryDevice->m_width, m_pd3dPrimaryDevice->m_height, colorFormat::GREY8, false, 1, STEREO_OFF,
-         "Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
-      m_pddsAOBackTmpBuffer = m_pddsAOBackBuffer->Duplicate();
-      if (!m_pddsAOBackBuffer || !m_pddsAOBackTmpBuffer)
-         return E_FAIL;
-   }
-
    return S_OK;
 }
 
-HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, const int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl)
+HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, const int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl)
 {
    m_proj.m_stereo3D = m_stereo3D = stereo3D;
    m_AAfactor = AAfactor;
@@ -522,7 +508,7 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    m_viewPort.MinZ = 0.0f;
    m_viewPort.MaxZ = 1.0f;
 
-   if (FAILED(InitPrimary(fullScreen, colordepth, refreshrate, VSync, AAfactor, stereo3D, FXAA, sharpen, useAO, ss_refl)))
+   if (FAILED(InitPrimary(fullScreen, colordepth, refreshrate, VSync, AAfactor, stereo3D, FXAA, sharpen, ss_refl)))
       return E_FAIL;
 
    m_pd3dSecondaryDevice = m_pd3dPrimaryDevice; //!! for now, there is no secondary device :/

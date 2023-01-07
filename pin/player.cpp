@@ -922,7 +922,7 @@ void Player::ToggleFPS()
       m_infoMode = (InfoMode)(m_infoMode + 1);
       if (m_infoMode == IF_STATIC_ONLY && m_pin3d.m_pddsStatic == nullptr)
          continue;
-      if (m_infoMode == IF_AO_ONLY && m_pin3d.m_pddsAOBackBuffer == nullptr)
+      if (m_infoMode == IF_AO_ONLY && m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1) == nullptr)
          continue;
       if (m_infoMode == IF_INVALID)
          m_infoMode = IF_NONE;
@@ -1467,9 +1467,7 @@ HRESULT Player::Init()
 
    // colordepth & refreshrate are only defined if fullscreen is true.
    // width and height may be modified during initialization (for example for VR, they are adapted to the headset resolution)
-   const bool dynamicAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1));
-   const bool useAO = !m_disableAO && (m_ptable->m_AOScale > 0.f) && (dynamicAO  || !m_dynamicMode);
-   const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, vsync, aaFactor, m_stereo3D, FXAA, !!m_sharpen, useAO, ss_refl);
+   const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, vsync, aaFactor, m_stereo3D, FXAA, !!m_sharpen, ss_refl);
    if (hr != S_OK)
    {
       char szFoo[64];
@@ -1945,6 +1943,16 @@ HRESULT Player::Init()
    return S_OK;
 }
 
+int Player::GetAOMode()
+{
+   // We must evaluate this dynamically since AO scale and enabled/disable can be changed from script
+   if (m_disableAO || m_ptable->m_useAO == 0 || !m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() || m_ptable->m_AOScale == 0.f)
+      return 0;
+   if (m_dynamicAO)
+      return 2;
+   return m_dynamicMode ? 0 : 1; // If AO is static only and we are running in dynamic mode, disable it
+}
+
 void Player::InitStatic()
 {
    TRACE_FUNCTION();
@@ -2049,10 +2057,8 @@ void Player::InitStatic()
 
    g_pvp->ProfileLog("AO PreRender Start"s);
 
-   // Now finalize static buffer with non-dynamic AO
-   // Dynamic AO disabled? -> Pre-Render Static AO
-   const bool dynamicAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1));
-   if (!m_disableAO && !dynamicAO && !m_dynamicMode && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && (m_ptable->m_AOScale > 0.f))
+   // Now finalize static buffer with static AO
+   if (GetAOMode() == 1)
    {
       const bool useAA = ((m_AAfactor != 1.0f) && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
 
@@ -2070,7 +2076,7 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
 
-      m_pin3d.m_pddsAOBackTmpBuffer->Activate();
+      m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(0)->Activate();
       m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, tmpDepth->GetDepthSampler());
@@ -2082,21 +2088,19 @@ void Player::InitStatic()
       for (unsigned int i = 0; i < 50; ++i) // 50 iterations to get AO smooth
       {
          if (i != 0)
-            m_pin3d.m_pddsAOBackTmpBuffer->Activate();
+            m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(0)->Activate();
 
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pin3d.m_pddsAOBackBuffer->GetColorSampler()); //!! ?
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_pin3d.m_pddsAOBackBuffer->GetColorSampler()); //!! ?
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler()); //!! ?
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler()); //!! ?
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
-            (float)(1.0 / m_pin3d.m_pddsAOBackBuffer->GetWidth()), (float)(1.0 / m_pin3d.m_pddsAOBackBuffer->GetHeight()),
+            (float)(1.0 / m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetWidth()), (float)(1.0 / m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetHeight()),
             radical_inverse(i) * (float)(1. / 8.0), /*sobol*/ radical_inverse<3>(i) * (float)(1. / 8.0)); // jitter within (64/8)x(64/8) neighborhood of 64x64 tex, good compromise between blotches and noise
          m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
          m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
          m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
 
          // flip AO buffers (avoids copy)
-         RenderTarget *tmpAO = m_pin3d.m_pddsAOBackBuffer;
-         m_pin3d.m_pddsAOBackBuffer = m_pin3d.m_pddsAOBackTmpBuffer;
-         m_pin3d.m_pddsAOBackTmpBuffer = tmpAO;
+         m_pin3d.m_pd3dPrimaryDevice->SwapAORenderTargets();
       }
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_depth);
@@ -2106,7 +2110,7 @@ void Player::InitStatic()
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao, m_pin3d.m_pddsAOBackBuffer->GetColorSampler());
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao, m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler());
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
          (float)(1.0 / m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth()), (float)(1.0 / m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight()), 1.0f, 1.0f);
@@ -2122,11 +2126,8 @@ void Player::InitStatic()
 
       m_pin3d.m_pd3dPrimaryDevice->EndScene();
 
-      // Delete buffers: we don't need them anymore
-      delete m_pin3d.m_pddsAOBackBuffer;
-      delete m_pin3d.m_pddsAOBackTmpBuffer;
-      m_pin3d.m_pddsAOBackBuffer = nullptr;
-      m_pin3d.m_pddsAOBackTmpBuffer = nullptr;
+      // Delete buffers: we won't need them anymore since dynamic AO is disabled
+      m_pin3d.m_pd3dPrimaryDevice->ReleaseAORenderTargets();
    }
 
    g_pvp->ProfileLog("AO/Static PreRender End"s);
@@ -4581,13 +4582,13 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
    m_pin3d.m_pd3dDevice->FBShader->End();*/
 
-   m_pin3d.m_pddsAOBackTmpBuffer->Activate();
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pin3d.m_pddsAOBackBuffer->GetColorSampler());
+   m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(0)->Activate();
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler());
    //m_pin3d.m_pd3dDevice->FBShader->SetTexture(SHADER_Texture1, m_pin3d.m_pd3dDevice->GetPostProcessRenderTarget1()); // temporary normals
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao_dither, &m_pin3d.m_aoDitherTexture, SF_NONE, SA_REPEAT, SA_REPEAT, true); // FIXME the force linear RGB is not honored
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
-      (float)(1.0 / m_pin3d.m_pddsAOBackBuffer->GetWidth()), (float)(1.0 / m_pin3d.m_pddsAOBackBuffer->GetHeight()),
+      (float)(1.0 / m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetWidth()), (float)(1.0 / m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetHeight()),
       radical_inverse(m_overall_frames % 2048) * (float)(1. / 8.0),
       /*sobol*/ radical_inverse<3>(m_overall_frames % 2048) * (float)(1. / 8.0)); // jitter within (64/8)x(64/8) neighborhood of 64x64 tex, good compromise between blotches and noise
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_AO_scale_timeblur, m_ptable->m_AOScale, 0.4f, 0.f, 0.f); //!! 0.4f: fake global option in video pref? or time dependent? //!! commonly used is 0.1, but would require to clear history for moving stuff
@@ -4600,9 +4601,7 @@ void Player::PrepareVideoBuffersAO()
       m_pin3d.m_gpu_profiler.Timestamp(GTS_AO);
 
    // flip AO buffers (avoids copy)
-   RenderTarget* tmpAO = m_pin3d.m_pddsAOBackBuffer;
-   m_pin3d.m_pddsAOBackBuffer = m_pin3d.m_pddsAOBackTmpBuffer;
-   m_pin3d.m_pddsAOBackTmpBuffer = tmpAO;
+   m_pin3d.m_pd3dPrimaryDevice->SwapAORenderTargets();
 
    // switch to output buffer (main output frame buffer, or a temporary one for postprocessing)
 #ifdef ENABLE_SDL
@@ -4624,7 +4623,7 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
    if (m_ptable->m_bloom_strength > 0.0f && !m_bloomOff)
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_bloom, m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture()->GetColorSampler());
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao, m_pin3d.m_pddsAOBackBuffer->GetColorSampler());
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao, m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler());
 
    // For information mode, override with the wanted render target instead of the render buffer
    const InfoMode infoMode = GetInfoMode();
@@ -5089,13 +5088,11 @@ void Player::Render()
          if (m_fps > localvsync*ADAPT_VSYNC_FACTOR)
             vsync = true;
 
-   const bool useAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1)) && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && (m_ptable->m_AOScale > 0.f);
-
 #ifdef USE_IMGUI
    UpdateHUD_IMGUI();
 #endif
 
-   if (useAO && !m_disableAO)
+   if (GetAOMode() == 2)
       PrepareVideoBuffersAO();
    else
       PrepareVideoBuffersNormal();

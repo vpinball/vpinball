@@ -192,6 +192,9 @@ public:
    RenderTarget* GetBloomBufferTexture() const { return m_pBloomBufferTexture; }
    RenderTarget* GetBloomTmpBufferTexture() const { return m_pBloomTmpBufferTexture; }
    RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; } // The screen render target
+   RenderTarget* GetAORenderTarget(int idx);
+   void SwapAORenderTargets();
+   void ReleaseAORenderTargets() { delete m_pAORenderTarget1; m_pAORenderTarget1 = nullptr; delete m_pAORenderTarget2; m_pAORenderTarget2 = nullptr; }
 
    // VR/Stereo Stuff
 #ifdef ENABLE_VR
@@ -307,8 +310,8 @@ private:
    void UploadAndSetSMAATextures();
 
 public:
-   Sampler* m_SMAAsearchTexture;
-   Sampler* m_SMAAareaTexture;
+   Sampler* m_SMAAsearchTexture = nullptr;
+   Sampler* m_SMAAareaTexture = nullptr;
 
 private:
 #ifndef ENABLE_SDL
@@ -320,17 +323,19 @@ private:
    IDirect3DDevice9* m_pD3DDevice;
 #endif
 
-   RenderTarget* m_pBackBuffer;
+   RenderTarget* m_pBackBuffer = nullptr;
 
-   RenderTarget* m_pOffscreenMSAABackBufferTexture;
-   RenderTarget* m_pOffscreenBackBufferTexture;
-   RenderTarget* m_pPostProcessRenderTarget1;
-   RenderTarget* m_pPostProcessRenderTarget2;
-   RenderTarget* m_pOffscreenVRLeft;
-   RenderTarget* m_pOffscreenVRRight;
-   RenderTarget* m_pBloomBufferTexture;
-   RenderTarget* m_pBloomTmpBufferTexture;
-   RenderTarget* m_pReflectionBufferTexture;
+   RenderTarget* m_pOffscreenMSAABackBufferTexture = nullptr;
+   RenderTarget* m_pOffscreenBackBufferTexture = nullptr;
+   RenderTarget* m_pPostProcessRenderTarget1 = nullptr;
+   RenderTarget* m_pPostProcessRenderTarget2 = nullptr;
+   RenderTarget* m_pOffscreenVRLeft = nullptr;
+   RenderTarget* m_pOffscreenVRRight = nullptr;
+   RenderTarget* m_pBloomBufferTexture = nullptr;
+   RenderTarget* m_pBloomTmpBufferTexture = nullptr;
+   RenderTarget* m_pReflectionBufferTexture = nullptr;
+   RenderTarget* m_pAORenderTarget1 = nullptr;
+   RenderTarget* m_pAORenderTarget2 = nullptr;
 
    unsigned int m_adapter; // index of the display adapter to use
 
