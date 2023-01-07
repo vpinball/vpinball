@@ -41,7 +41,7 @@ public:
    Pin3D();
    ~Pin3D();
 
-   HRESULT InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl);
+   HRESULT InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl);
 
    void InitLayoutFS();
    void InitLayout(const bool FSS_mode, const float max_separation, const float xpixoff = 0.f, const float ypixoff = 0.f);
@@ -68,7 +68,7 @@ private:
    void InitRenderState(RenderDevice * const pd3dDevice);
    void InitPrimaryRenderState();
    void InitSecondaryRenderState();
-   HRESULT InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool useAO, const bool ss_refl);
+   HRESULT InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl);
 
    StereoMode m_stereo3D;
 
@@ -78,9 +78,6 @@ public:
 
    RenderDevice* m_pd3dPrimaryDevice;
    RenderDevice* m_pd3dSecondaryDevice;
-
-   RenderTarget* m_pddsAOBackBuffer;
-   RenderTarget* m_pddsAOBackTmpBuffer;
 
    RenderTarget* m_pddsStatic;
 

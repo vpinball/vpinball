@@ -451,6 +451,7 @@ public:
 
    bool m_dynamicAO;
    bool m_disableAO;
+   int GetAOMode(); // 0=Off, 1=Static, 2=Dynamic
 
    RenderProbe::ReflectionMode m_pfReflectionMode;
    bool m_ss_refl;

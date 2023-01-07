@@ -709,20 +709,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
     m_curLockCalls = m_frameLockCalls = 0; //!! meh
 
-    m_SMAAareaTexture = nullptr;
-    m_SMAAsearchTexture = nullptr;
-
     StereoShader = nullptr;
-
-    m_pOffscreenMSAABackBufferTexture = nullptr;
-    m_pOffscreenBackBufferTexture = nullptr;
-    m_pPostProcessRenderTarget1 = nullptr;
-    m_pPostProcessRenderTarget2 = nullptr;
-    m_pOffscreenVRLeft = nullptr;
-    m_pOffscreenVRRight = nullptr;
-    m_pBloomBufferTexture = nullptr;
-    m_pBloomTmpBufferTexture = nullptr;
-    m_pReflectionBufferTexture = nullptr;
 }
 
 void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
@@ -1346,6 +1333,26 @@ RenderTarget* RenderDevice::GetPostProcessRenderTarget(RenderTarget* renderedRT)
       return pp1;
 }
 
+RenderTarget* RenderDevice::GetAORenderTarget(int idx)
+{
+   // Lazily creates AO render target since this can be enabled during play from script
+   if (m_pAORenderTarget1 == nullptr)
+   {
+      m_pAORenderTarget1 = new RenderTarget(this, m_width, m_height, colorFormat::GREY8, false, 1, STEREO_OFF,
+         "Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
+      m_pAORenderTarget2 = m_pAORenderTarget1->Duplicate();
+
+   }
+   return idx == 0 ? m_pAORenderTarget1 : m_pAORenderTarget2;
+}
+
+void RenderDevice::SwapAORenderTargets() 
+{
+   RenderTarget* tmpAO = m_pAORenderTarget1;
+   m_pAORenderTarget1 = m_pAORenderTarget2;
+   m_pAORenderTarget2 = tmpAO;
+}
+
 void RenderDevice::ResolveMSAA()
 { 
    if (m_pOffscreenMSAABackBufferTexture != m_pOffscreenBackBufferTexture)
@@ -1497,6 +1504,9 @@ RenderDevice::~RenderDevice()
    delete m_pBackBuffer;
    delete m_pOffscreenVRLeft;
    delete m_pOffscreenVRRight;
+
+   delete m_pAORenderTarget1;
+   delete m_pAORenderTarget2;
 
    delete m_SMAAareaTexture;
    delete m_SMAAsearchTexture;
