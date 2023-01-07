@@ -95,9 +95,11 @@ void RenderProbe::MarkDirty()
 
 RenderTarget *RenderProbe::GetProbe(const bool is_static)
 {
-   if (m_dirty)
+   // Rendering is not reentrant. If a probe is requested while probe is being updated 
+   // (for example and object with reflection, rendering itsled in its reflection probe),
+   // then the last render probe (may be null) will be returned
+   if (m_dirty && !m_rendering)
    {
-      assert(!m_rendering); // Rendering is not reentrant (this could be allowed but has little benefit)
       m_rendering = true;
       switch (m_type)
       {
