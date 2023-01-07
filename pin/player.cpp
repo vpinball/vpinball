@@ -2051,8 +2051,8 @@ void Player::InitStatic()
 
    // Now finalize static buffer with non-dynamic AO
    // Dynamic AO disabled? -> Pre-Render Static AO
-   const bool useAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1));
-   if (!m_disableAO && !useAO && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && (m_ptable->m_AOScale > 0.f))
+   const bool dynamicAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1));
+   if (!m_disableAO && !dynamicAO && !m_dynamicMode && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && (m_ptable->m_AOScale > 0.f))
    {
       const bool useAA = ((m_AAfactor != 1.0f) && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
 
