@@ -922,7 +922,7 @@ void Player::ToggleFPS()
       m_infoMode = (InfoMode)(m_infoMode + 1);
       if (m_infoMode == IF_STATIC_ONLY && m_pin3d.m_pddsStatic == nullptr)
          continue;
-      if (m_infoMode == IF_AO_ONLY && m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1) == nullptr)
+      if (m_infoMode == IF_AO_ONLY && GetAOMode() == 0)
          continue;
       if (m_infoMode == IF_INVALID)
          m_infoMode = IF_NONE;
