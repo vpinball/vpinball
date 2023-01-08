@@ -351,7 +351,9 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       char textBuf[MAXNAMEBUFFER];
       sprintf_s(textBuf, sizeof(textBuf), "%.03f", ramp->m_d.m_depthBias);
       ListView_SetItemText(m_hElementList, idx, 10, textBuf);
-      ListView_SetItemText(m_hElementList, idx, 11, (LPSTR)(ramp->isHabitrail() /*&& !ramp->m_ptable->GetMaterial(ramp->m_d.m_szMaterial)->m_bOpacityActive*/ ? usedStringYes : usedStringNo)); //!!
+
+      const Material *const mat = m_curTable->GetMaterial(ramp->m_d.m_szMaterial);
+      ListView_SetItemText(m_hElementList, idx, 11, (LPSTR)(mat == nullptr || !mat->m_bOpacityActive ? usedStringYes : usedStringNo)); //!!
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(ramp->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
       break;
    }
