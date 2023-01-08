@@ -75,6 +75,10 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (m_baseMaterialCombo && (dispid == IDC_MATERIAL_COMBO || dispid == -1))
            m_baseMaterialCombo->EnableWindow(!prim->IsPlayfield());
 
+        // Disable 'disable from light from below' for static part to avoid confusing the user
+        if (m_disableLightFromBelowEdit && dispid == IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW || dispid == -1)
+           m_disableLightFromBelowEdit.EnableWindow(!prim->m_d.m_staticRendering);
+
         UpdateBaseVisuals(prim, &prim->m_d, dispid);
         //only show the first element on multi-select
         break;
@@ -162,6 +166,7 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case IDC_STATIC_RENDERING_CHECK:
                 CHECK_UPDATE_ITEM(prim->m_d.m_staticRendering, PropertyDialog::GetCheckboxState(m_hStaticRenderingCheck), prim);
+                UpdateVisuals(IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW);
                 break;
             case IDC_DRAW_TEXTURES_SIDES_CHECK:
                 CHECK_UPDATE_ITEM(prim->m_d.m_drawTexturesInside, PropertyDialog::GetCheckboxState(m_hDrawTexturesInsideCheck), prim);

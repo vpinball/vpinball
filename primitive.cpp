@@ -1237,7 +1237,8 @@ void Primitive::RenderObject()
    pd3dDevice->SetRenderStateCulling(m_d.m_backfacesEnabled && mat->m_bOpacityActive ? RenderDevice::CULL_CW : RenderDevice::CULL_CCW);
 
    if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
-      pd3dDevice->basicShader->SetDisableLighting(vec4(m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f, 0.f));
+      // Force disable light from below for objects marked as static since there is no light from below during pre-render pass (to get the same result in dynamic mode & static mode)
+      pd3dDevice->basicShader->SetDisableLighting(vec4(m_d.m_disableLightingTop, m_d.m_staticRendering ? 1.0f : m_d.m_disableLightingBelow, 0.f, 0.f));
 
    // Select textures, replacing backglass image by capture if it is available
    Texture * const nMap = m_ptable->GetImage(m_d.m_szNormalMap);
@@ -1420,6 +1421,8 @@ void Primitive::RenderSetup()
 {
    if (m_d.m_groupdRendering || m_d.m_skipRendering)
       return;
+
+   PLOGD_IF(m_d.m_staticRendering && m_d.m_disableLightingBelow != 1.0f) << "Primitive '" << m_wzName << "' is set as static rendering with lighting from below not disabled. The back lighting will not be performed.";
 
    m_lightmap = m_ptable->GetLight(m_d.m_szLightmap);
    if (m_lightmap)
