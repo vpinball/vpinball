@@ -3426,6 +3426,12 @@ void Player::RenderDynamics()
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
    m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
 
+   if (m_dynamicMode)
+   {
+      UpdateBasicShaderMatrix();
+      UpdateBallShaderMatrix();
+   }
+
    // Update Bulb light buffer
    DrawBulbLightBuffer();
    if (GetProfilingMode() == PF_ENABLED)
@@ -3439,11 +3445,7 @@ void Player::RenderDynamics()
       m_pin3d.m_backGlass->Render();
 
    if (m_dynamicMode)
-   {
-      UpdateBasicShaderMatrix();
-      UpdateBallShaderMatrix();
       DrawStatics();
-   }
 
    DrawDynamics(false);
 
