@@ -5635,6 +5635,9 @@ void Player::DrawDynamics(bool onlyBalls)
 
 void Player::DrawBalls()
 {
+   RenderDevice::RenderStateCache initial_state;
+   m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
+
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateDepthBias(0.0f);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
@@ -5972,6 +5975,8 @@ void Player::DrawBalls()
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
    if (m_toggleDebugBalls)
       m_toggleDebugBalls = false;
+
+   m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
 }
 
 struct DebugMenuItem
