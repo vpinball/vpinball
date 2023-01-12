@@ -1,4 +1,4 @@
-// dear imgui, v1.89
+// dear imgui, v1.89.2
 // (widgets code)
 
 /*
@@ -126,7 +126,7 @@ static const ImU64          IM_U64_MAX = (2ULL * 9223372036854775807LL + 1);
 // For InputTextEx()
 static bool             InputTextFilterCharacter(unsigned int* p_char, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* user_data, ImGuiInputSource input_source);
 static int              InputTextCalcTextLenAndLineCount(const char* text_begin, const char** out_text_end);
-static ImVec2           InputTextCalcTextSizeW(const ImWchar* text_begin, const ImWchar* text_end, const ImWchar** remaining = NULL, ImVec2* out_offset = NULL, bool stop_on_new_line = false);
+static ImVec2           InputTextCalcTextSizeW(ImGuiContext* ctx, const ImWchar* text_begin, const ImWchar* text_end, const ImWchar** remaining = NULL, ImVec2* out_offset = NULL, bool stop_on_new_line = false);
 
 //-------------------------------------------------------------------------
 // [SECTION] Widgets: Text, etc.
@@ -544,13 +544,21 @@ bool ImGui::ButtonBehavior(const ImRect& bb, ImGuiID id, bool* out_hovered, bool
     const ImGuiID test_owner_id = (flags & ImGuiButtonFlags_NoTestKeyOwner) ? ImGuiKeyOwner_Any : id;
     if (hovered)
     {
+        // Poll mouse buttons
+        // - 'mouse_button_clicked' is generally carried into ActiveIdMouseButton when setting ActiveId.
+        // - Technically we only need some values in one code path, but since this is gated by hovered test this is fine.
+        int mouse_button_clicked = -1;
+        int mouse_button_released = -1;
+        for (int button = 0; button < 3; button++)
+            if (flags & (ImGuiButtonFlags_MouseButtonLeft << button)) // Handle ImGuiButtonFlags_MouseButtonRight and ImGuiButtonFlags_MouseButtonMiddle here.
+            {
+                if (IsMouseClicked(button, test_owner_id) && mouse_button_clicked == -1) { mouse_button_clicked = button; }
+                if (IsMouseReleased(button, test_owner_id) && mouse_button_released == -1) { mouse_button_released = button; }
+            }
+
+        // Process initial action
         if (!(flags & ImGuiButtonFlags_NoKeyModifiers) || (!g.IO.KeyCtrl && !g.IO.KeyShift && !g.IO.KeyAlt))
         {
-            // Poll buttons
-            int mouse_button_clicked = -1;
-            if ((flags & ImGuiButtonFlags_MouseButtonLeft) && IsMouseClicked(0, test_owner_id))         { mouse_button_clicked = 0; }
-            else if ((flags & ImGuiButtonFlags_MouseButtonRight) && IsMouseClicked(1, test_owner_id))   { mouse_button_clicked = 1; }
-            else if ((flags & ImGuiButtonFlags_MouseButtonMiddle) && IsMouseClicked(2, test_owner_id))  { mouse_button_clicked = 2; }
             if (mouse_button_clicked != -1 && g.ActiveId != id)
             {
                 if (!(flags & ImGuiButtonFlags_NoSetKeyOwner))
@@ -578,10 +586,6 @@ bool ImGui::ButtonBehavior(const ImRect& bb, ImGuiID id, bool* out_hovered, bool
             }
             if (flags & ImGuiButtonFlags_PressedOnRelease)
             {
-                int mouse_button_released = -1;
-                if ((flags & ImGuiButtonFlags_MouseButtonLeft) && IsMouseReleased(0, test_owner_id))        { mouse_button_released = 0; }
-                else if ((flags & ImGuiButtonFlags_MouseButtonRight) && IsMouseReleased(1, test_owner_id))  { mouse_button_released = 1; }
-                else if ((flags & ImGuiButtonFlags_MouseButtonMiddle) && IsMouseReleased(2, test_owner_id)) { mouse_button_released = 2; }
                 if (mouse_button_released != -1)
                 {
                     const bool has_repeated_at_least_once = (flags & ImGuiButtonFlags_Repeat) && g.IO.MouseDownDurationPrev[mouse_button_released] >= g.IO.KeyRepeatDelay; // Repeat mode trumps on release behavior
@@ -1473,7 +1477,7 @@ void ImGui::Separator()
 }
 
 // Using 'hover_visibility_delay' allows us to hide the highlight and mouse cursor for a short time, which can be convenient to reduce visual noise.
-bool ImGui::SplitterBehavior(const ImRect& bb, ImGuiID id, ImGuiAxis axis, float* size1, float* size2, float min_size1, float min_size2, float hover_extend, float hover_visibility_delay)
+bool ImGui::SplitterBehavior(const ImRect& bb, ImGuiID id, ImGuiAxis axis, float* size1, float* size2, float min_size1, float min_size2, float hover_extend, float hover_visibility_delay, ImU32 bg_col)
 {
     ImGuiContext& g = *GImGui;
     ImGuiWindow* window = g.CurrentWindow;
@@ -1521,7 +1525,9 @@ bool ImGui::SplitterBehavior(const ImRect& bb, ImGuiID id, ImGuiAxis axis, float
         }
     }
 
-    // Render
+    // Render at new position
+    if (bg_col & IM_COL32_A_MASK)
+        window->DrawList->AddRectFilled(bb_render.Min, bb_render.Max, bg_col, 0.0f);
     const ImU32 col = GetColorU32(held ? ImGuiCol_SeparatorActive : (hovered && g.HoveredIdTimer >= hover_visibility_delay) ? ImGuiCol_SeparatorHovered : ImGuiCol_Separator);
     window->DrawList->AddRectFilled(bb_render.Min, bb_render.Max, col, 0.0f);
 
@@ -3563,9 +3569,9 @@ static int InputTextCalcTextLenAndLineCount(const char* text_begin, const char**
     return line_count;
 }
 
-static ImVec2 InputTextCalcTextSizeW(const ImWchar* text_begin, const ImWchar* text_end, const ImWchar** remaining, ImVec2* out_offset, bool stop_on_new_line)
+static ImVec2 InputTextCalcTextSizeW(ImGuiContext* ctx, const ImWchar* text_begin, const ImWchar* text_end, const ImWchar** remaining, ImVec2* out_offset, bool stop_on_new_line)
 {
-    ImGuiContext& g = *GImGui;
+    ImGuiContext& g = *ctx;
     ImFont* font = g.Font;
     const float line_height = g.FontSize;
     const float scale = line_height / font->FontSize;
@@ -3614,14 +3620,14 @@ namespace ImStb
 
 static int     STB_TEXTEDIT_STRINGLEN(const ImGuiInputTextState* obj)                             { return obj->CurLenW; }
 static ImWchar STB_TEXTEDIT_GETCHAR(const ImGuiInputTextState* obj, int idx)                      { return obj->TextW[idx]; }
-static float   STB_TEXTEDIT_GETWIDTH(ImGuiInputTextState* obj, int line_start_idx, int char_idx)  { ImWchar c = obj->TextW[line_start_idx + char_idx]; if (c == '\n') return STB_TEXTEDIT_GETWIDTH_NEWLINE; ImGuiContext& g = *GImGui; return g.Font->GetCharAdvance(c) * (g.FontSize / g.Font->FontSize); }
+static float   STB_TEXTEDIT_GETWIDTH(ImGuiInputTextState* obj, int line_start_idx, int char_idx)  { ImWchar c = obj->TextW[line_start_idx + char_idx]; if (c == '\n') return STB_TEXTEDIT_GETWIDTH_NEWLINE; ImGuiContext& g = *obj->Ctx; return g.Font->GetCharAdvance(c) * (g.FontSize / g.Font->FontSize); }
 static int     STB_TEXTEDIT_KEYTOTEXT(int key)                                                    { return key >= 0x200000 ? 0 : key; }
 static ImWchar STB_TEXTEDIT_NEWLINE = '\n';
 static void    STB_TEXTEDIT_LAYOUTROW(StbTexteditRow* r, ImGuiInputTextState* obj, int line_start_idx)
 {
     const ImWchar* text = obj->TextW.Data;
     const ImWchar* text_remaining = NULL;
-    const ImVec2 size = InputTextCalcTextSizeW(text + line_start_idx, text + obj->CurLenW, &text_remaining, NULL, true);
+    const ImVec2 size = InputTextCalcTextSizeW(obj->Ctx, text + line_start_idx, text + obj->CurLenW, &text_remaining, NULL, true);
     r->x0 = 0.0f;
     r->x1 = size.x;
     r->baseline_y_delta = size.y;
@@ -3637,7 +3643,7 @@ static int  is_word_boundary_from_left(ImGuiInputTextState* obj, int idx)       
 static int  STB_TEXTEDIT_MOVEWORDLEFT_IMPL(ImGuiInputTextState* obj, int idx)   { idx--; while (idx >= 0 && !is_word_boundary_from_right(obj, idx)) idx--; return idx < 0 ? 0 : idx; }
 static int  STB_TEXTEDIT_MOVEWORDRIGHT_MAC(ImGuiInputTextState* obj, int idx)   { idx++; int len = obj->CurLenW; while (idx < len && !is_word_boundary_from_left(obj, idx)) idx++; return idx > len ? len : idx; }
 static int  STB_TEXTEDIT_MOVEWORDRIGHT_WIN(ImGuiInputTextState* obj, int idx)   { idx++; int len = obj->CurLenW; while (idx < len && !is_word_boundary_from_right(obj, idx)) idx++; return idx > len ? len : idx; }
-static int  STB_TEXTEDIT_MOVEWORDRIGHT_IMPL(ImGuiInputTextState* obj, int idx)  { if (ImGui::GetIO().ConfigMacOSXBehaviors) return STB_TEXTEDIT_MOVEWORDRIGHT_MAC(obj, idx); else return STB_TEXTEDIT_MOVEWORDRIGHT_WIN(obj, idx); }
+static int  STB_TEXTEDIT_MOVEWORDRIGHT_IMPL(ImGuiInputTextState* obj, int idx)  { ImGuiContext& g = *obj->Ctx; if (g.IO.ConfigMacOSXBehaviors) return STB_TEXTEDIT_MOVEWORDRIGHT_MAC(obj, idx); else return STB_TEXTEDIT_MOVEWORDRIGHT_WIN(obj, idx); }
 #define STB_TEXTEDIT_MOVEWORDLEFT   STB_TEXTEDIT_MOVEWORDLEFT_IMPL  // They need to be #define for stb_textedit.h
 #define STB_TEXTEDIT_MOVEWORDRIGHT  STB_TEXTEDIT_MOVEWORDRIGHT_IMPL
 
@@ -4099,14 +4105,12 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
     }
     if (g.ActiveId == id)
     {
-        // Declare our inputs
+        // Declare some inputs, the other are registered and polled via Shortcut() routing system.
         if (user_clicked)
             SetKeyOwner(ImGuiKey_MouseLeft, id);
         g.ActiveIdUsingNavDirMask |= (1 << ImGuiDir_Left) | (1 << ImGuiDir_Right);
         if (is_multiline || (flags & ImGuiInputTextFlags_CallbackHistory))
             g.ActiveIdUsingNavDirMask |= (1 << ImGuiDir_Up) | (1 << ImGuiDir_Down);
-        SetKeyOwner(ImGuiKey_Escape, id);
-        SetKeyOwner(ImGuiKey_NavGamepadCancel, id);
         SetKeyOwner(ImGuiKey_Home, id);
         SetKeyOwner(ImGuiKey_End, id);
         if (is_multiline)
@@ -4115,9 +4119,7 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
             SetKeyOwner(ImGuiKey_PageDown, id);
         }
         if (flags & (ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_AllowTabInput)) // Disable keyboard tabbing out as we will use the \t character.
-        {
             SetKeyOwner(ImGuiKey_Tab, id);
-        }
     }
 
     // We have an edge case if ActiveId was set through another widget (e.g. widget being swapped), clear id immediately (don't wait until the end of the function)
@@ -4290,22 +4292,23 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
         const bool is_wordmove_key_down = is_osx ? io.KeyAlt : io.KeyCtrl;                     // OS X style: Text editing cursor movement using Alt instead of Ctrl
         const bool is_startend_key_down = is_osx && io.KeySuper && !io.KeyCtrl && !io.KeyAlt;  // OS X style: Line/Text Start and End using Cmd+Arrows instead of Home/End
 
-        // Using Shortcut() with ImGuiInputFlags_RouteFocused flag to allow routing operations for other code (e.g. calling window trying to use CTRL+A and CTRL+B: formet would be handled by InputText)
+        // Using Shortcut() with ImGuiInputFlags_RouteFocused (default policy) to allow routing operations for other code (e.g. calling window trying to use CTRL+A and CTRL+B: formet would be handled by InputText)
         // Otherwise we could simply assume that we own the keys as we are active.
-        const ImGuiInputFlags shortcut_flags = ImGuiInputFlags_RouteFocused | ImGuiInputFlags_Repeat;
-        const bool is_cut   = (Shortcut(ImGuiMod_Shortcut | ImGuiKey_X, id, shortcut_flags) || Shortcut(ImGuiMod_Shift | ImGuiKey_Delete, id, shortcut_flags)) && !is_readonly && !is_password && (!is_multiline || state->HasSelection());
-        const bool is_copy  = (Shortcut(ImGuiMod_Shortcut | ImGuiKey_C, id, shortcut_flags & ~ImGuiInputFlags_Repeat) || Shortcut(ImGuiMod_Ctrl | ImGuiKey_Insert, id, shortcut_flags & ~ImGuiInputFlags_Repeat))  && !is_password && (!is_multiline || state->HasSelection());
-        const bool is_paste = (Shortcut(ImGuiMod_Shortcut | ImGuiKey_V, id, shortcut_flags) || Shortcut(ImGuiMod_Shift | ImGuiKey_Insert, id, shortcut_flags)) && !is_readonly;
-        const bool is_undo  = (Shortcut(ImGuiMod_Shortcut | ImGuiKey_Z, id, shortcut_flags)) && !is_readonly && is_undoable;
-        const bool is_redo =  (Shortcut(ImGuiMod_Shortcut | ImGuiKey_Y, id, shortcut_flags) || (is_osx && Shortcut(ImGuiMod_Shortcut | ImGuiMod_Shift | ImGuiKey_Z, id, shortcut_flags))) && !is_readonly && is_undoable;
-        const bool is_select_all = Shortcut(ImGuiMod_Shortcut | ImGuiKey_A, id, shortcut_flags & ~ImGuiInputFlags_Repeat);
+        const ImGuiInputFlags f_repeat = ImGuiInputFlags_Repeat;
+        const bool is_cut   = (Shortcut(ImGuiMod_Shortcut | ImGuiKey_X, id, f_repeat) || Shortcut(ImGuiMod_Shift | ImGuiKey_Delete, id, f_repeat)) && !is_readonly && !is_password && (!is_multiline || state->HasSelection());
+        const bool is_copy  = (Shortcut(ImGuiMod_Shortcut | ImGuiKey_C, id) || Shortcut(ImGuiMod_Ctrl | ImGuiKey_Insert, id))  && !is_password && (!is_multiline || state->HasSelection());
+        const bool is_paste = (Shortcut(ImGuiMod_Shortcut | ImGuiKey_V, id, f_repeat) || Shortcut(ImGuiMod_Shift | ImGuiKey_Insert, id, f_repeat)) && !is_readonly;
+        const bool is_undo  = (Shortcut(ImGuiMod_Shortcut | ImGuiKey_Z, id, f_repeat)) && !is_readonly && is_undoable;
+        const bool is_redo =  (Shortcut(ImGuiMod_Shortcut | ImGuiKey_Y, id, f_repeat) || (is_osx && Shortcut(ImGuiMod_Shortcut | ImGuiMod_Shift | ImGuiKey_Z, id, f_repeat))) && !is_readonly && is_undoable;
+        const bool is_select_all = Shortcut(ImGuiMod_Shortcut | ImGuiKey_A, id);
 
         // We allow validate/cancel with Nav source (gamepad) to makes it easier to undo an accidental NavInput press with no keyboard wired, but otherwise it isn't very useful.
         const bool nav_gamepad_active = (io.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) != 0 && (io.BackendFlags & ImGuiBackendFlags_HasGamepad) != 0;
         const bool is_enter_pressed = IsKeyPressed(ImGuiKey_Enter, true) || IsKeyPressed(ImGuiKey_KeypadEnter, true);
         const bool is_gamepad_validate = nav_gamepad_active && (IsKeyPressed(ImGuiKey_NavGamepadActivate, false) || IsKeyPressed(ImGuiKey_NavGamepadInput, false));
-        const bool is_cancel = Shortcut(ImGuiKey_Escape, id, shortcut_flags) || (nav_gamepad_active && IsKeyPressed(ImGuiKey_NavGamepadCancel, false));
+        const bool is_cancel = Shortcut(ImGuiKey_Escape, id, f_repeat) || (nav_gamepad_active && Shortcut(ImGuiKey_NavGamepadCancel, id, f_repeat));
 
+        // FIXME: Should use more Shortcut() and reduce IsKeyPressed()+SetKeyOwner(), but requires modifiers combination to be taken account of.
         if (IsKeyPressed(ImGuiKey_LeftArrow))                        { state->OnKeyPressed((is_startend_key_down ? STB_TEXTEDIT_K_LINESTART : is_wordmove_key_down ? STB_TEXTEDIT_K_WORDLEFT : STB_TEXTEDIT_K_LEFT) | k_mask); }
         else if (IsKeyPressed(ImGuiKey_RightArrow))                  { state->OnKeyPressed((is_startend_key_down ? STB_TEXTEDIT_K_LINEEND : is_wordmove_key_down ? STB_TEXTEDIT_K_WORDRIGHT : STB_TEXTEDIT_K_RIGHT) | k_mask); }
         else if (IsKeyPressed(ImGuiKey_UpArrow) && is_multiline)     { if (io.KeyCtrl) SetScrollY(draw_window, ImMax(draw_window->Scroll.y - g.FontSize, 0.0f)); else state->OnKeyPressed((is_startend_key_down ? STB_TEXTEDIT_K_TEXTSTART : STB_TEXTEDIT_K_UP) | k_mask); }
@@ -4678,11 +4681,11 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
                 searches_result_line_no[1] = line_count;
 
             // Calculate 2d position by finding the beginning of the line and measuring distance
-            cursor_offset.x = InputTextCalcTextSizeW(ImStrbolW(searches_input_ptr[0], text_begin), searches_input_ptr[0]).x;
+            cursor_offset.x = InputTextCalcTextSizeW(&g, ImStrbolW(searches_input_ptr[0], text_begin), searches_input_ptr[0]).x;
             cursor_offset.y = searches_result_line_no[0] * g.FontSize;
             if (searches_result_line_no[1] >= 0)
             {
-                select_start_offset.x = InputTextCalcTextSizeW(ImStrbolW(searches_input_ptr[1], text_begin), searches_input_ptr[1]).x;
+                select_start_offset.x = InputTextCalcTextSizeW(&g, ImStrbolW(searches_input_ptr[1], text_begin), searches_input_ptr[1]).x;
                 select_start_offset.y = searches_result_line_no[1] * g.FontSize;
             }
 
@@ -4751,7 +4754,7 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
                 }
                 else
                 {
-                    ImVec2 rect_size = InputTextCalcTextSizeW(p, text_selected_end, &p, NULL, true);
+                    ImVec2 rect_size = InputTextCalcTextSizeW(&g, p, text_selected_end, &p, NULL, true);
                     if (rect_size.x <= 0.0f) rect_size.x = IM_FLOOR(g.Font->GetCharAdvance((ImWchar)' ') * 0.50f); // So we can see selected empty lines
                     ImRect rect(rect_pos + ImVec2(0.0f, bg_offy_up - g.FontSize), rect_pos + ImVec2(rect_size.x, bg_offy_dn));
                     rect.ClipWith(clip_rect);
@@ -4859,6 +4862,7 @@ void ImGui::DebugNodeInputTextState(ImGuiInputTextState* state)
     Text("ID: 0x%08X, ActiveID: 0x%08X", state->ID, g.ActiveId);
     DebugLocateItemOnHover(state->ID);
     Text("CurLenW: %d, CurLenA: %d, Cursor: %d, Selection: %d..%d", state->CurLenA, state->CurLenW, stb_state->cursor, stb_state->select_start, stb_state->select_end);
+    Text("has_preferred_x: %d (%.2f)", stb_state->has_preferred_x, stb_state->preferred_x);
     Text("undo_point: %d, redo_point: %d, undo_char_point: %d, redo_char_point: %d", undo_state->undo_point, undo_state->redo_point, undo_state->undo_char_point, undo_state->redo_char_point);
     if (BeginChild("undopoints", ImVec2(0.0f, GetTextLineHeight() * 15), true)) // Visualize undo state
     {
@@ -5106,7 +5110,10 @@ bool ImGui::ColorEdit4(const char* label, float col[4], ImGuiColorEditFlags flag
 
     if (label != label_display_end && !(flags & ImGuiColorEditFlags_NoLabel))
     {
+        // Position not necessarily next to last submitted button (e.g. if style.ColorButtonPosition == ImGuiDir_Left),
+        // but we need to use SameLine() to setup baseline correctly. Might want to refactor SameLine() to simplify this.
         SameLine(0.0f, style.ItemInnerSpacing.x);
+        window->DC.CursorPos.x = pos.x + ((flags & ImGuiColorEditFlags_NoInputs) ? w_button : w_full + style.ItemInnerSpacing.x);
         TextEx(label, label_display_end);
     }
 
@@ -6326,7 +6333,7 @@ bool ImGui::Selectable(const char* label, bool selected, ImGuiSelectableFlags fl
     // We use NoHoldingActiveID on menus so user can click and _hold_ on a menu then drag to browse child entries
     ImGuiButtonFlags button_flags = 0;
     if (flags & ImGuiSelectableFlags_NoHoldingActiveID) { button_flags |= ImGuiButtonFlags_NoHoldingActiveId; }
-    if (flags & ImGuiSelectableFlags_NoSetKeyOwner)   { button_flags |= ImGuiButtonFlags_NoSetKeyOwner; }
+    if (flags & ImGuiSelectableFlags_NoSetKeyOwner)     { button_flags |= ImGuiButtonFlags_NoSetKeyOwner; }
     if (flags & ImGuiSelectableFlags_SelectOnClick)     { button_flags |= ImGuiButtonFlags_PressedOnClick; }
     if (flags & ImGuiSelectableFlags_SelectOnRelease)   { button_flags |= ImGuiButtonFlags_PressedOnRelease; }
     if (flags & ImGuiSelectableFlags_AllowDoubleClick)  { button_flags |= ImGuiButtonFlags_PressedOnClickRelease | ImGuiButtonFlags_PressedOnDoubleClick; }
@@ -6367,8 +6374,6 @@ bool ImGui::Selectable(const char* label, bool selected, ImGuiSelectableFlags fl
         g.LastItemData.StatusFlags |= ImGuiItemStatusFlags_ToggledSelection;
 
     // Render
-    if (held && (flags & ImGuiSelectableFlags_DrawHoveredWhenHeld))
-        hovered = true;
     if (hovered || selected)
     {
         const ImU32 col = GetColorU32((held && hovered) ? ImGuiCol_HeaderActive : hovered ? ImGuiCol_HeaderHovered : ImGuiCol_Header);
@@ -7303,7 +7308,7 @@ struct ImGuiTabBarSection
 namespace ImGui
 {
     static void             TabBarLayout(ImGuiTabBar* tab_bar);
-    static ImU32            TabBarCalcTabID(ImGuiTabBar* tab_bar, const char* label);
+    static ImU32            TabBarCalcTabID(ImGuiTabBar* tab_bar, const char* label, ImGuiWindow* docked_window);
     static float            TabBarCalcMaxTabWidth();
     static float            TabBarScrollClamp(ImGuiTabBar* tab_bar, float scrolling);
     static void             TabBarScrollToTab(ImGuiTabBar* tab_bar, ImGuiID tab_id, ImGuiTabBarSection* sections);
@@ -7696,9 +7701,11 @@ static void ImGui::TabBarLayout(ImGuiTabBar* tab_bar)
     window->DC.IdealMaxPos.x = ImMax(window->DC.IdealMaxPos.x, tab_bar->BarRect.Min.x + tab_bar->WidthAllTabsIdeal);
 }
 
-// Dockables uses Name/ID in the global namespace. Non-dockable items use the ID stack.
-static ImU32   ImGui::TabBarCalcTabID(ImGuiTabBar* tab_bar, const char* label)
+// Dockable windows uses Name/ID in the global namespace. Non-dockable items use the ID stack.
+static ImU32   ImGui::TabBarCalcTabID(ImGuiTabBar* tab_bar, const char* label, ImGuiWindow* docked_window)
 {
+    IM_ASSERT(docked_window == NULL); // master branch only
+    IM_UNUSED(docked_window);
     if (tab_bar->Flags & ImGuiTabBarFlags_DockNode)
     {
         ImGuiID id = ImHashStr(label);
@@ -8005,7 +8012,7 @@ bool    ImGui::BeginTabItem(const char* label, bool* p_open, ImGuiTabItemFlags f
     }
     IM_ASSERT(!(flags & ImGuiTabItemFlags_Button)); // BeginTabItem() Can't be used with button flags, use TabItemButton() instead!
 
-    bool ret = TabItemEx(tab_bar, label, p_open, flags);
+    bool ret = TabItemEx(tab_bar, label, p_open, flags, NULL);
     if (ret && !(flags & ImGuiTabItemFlags_NoPushId))
     {
         ImGuiTabItem* tab = &tab_bar->Tabs[tab_bar->LastTabItemIdx];
@@ -8046,10 +8053,10 @@ bool    ImGui::TabItemButton(const char* label, ImGuiTabItemFlags flags)
         IM_ASSERT_USER_ERROR(tab_bar != NULL, "Needs to be called between BeginTabBar() and EndTabBar()!");
         return false;
     }
-    return TabItemEx(tab_bar, label, NULL, flags | ImGuiTabItemFlags_Button | ImGuiTabItemFlags_NoReorder);
+    return TabItemEx(tab_bar, label, NULL, flags | ImGuiTabItemFlags_Button | ImGuiTabItemFlags_NoReorder, NULL);
 }
 
-bool    ImGui::TabItemEx(ImGuiTabBar* tab_bar, const char* label, bool* p_open, ImGuiTabItemFlags flags)
+bool    ImGui::TabItemEx(ImGuiTabBar* tab_bar, const char* label, bool* p_open, ImGuiTabItemFlags flags, ImGuiWindow* docked_window)
 {
     // Layout whole tab bar if not already done
     ImGuiContext& g = *GImGui;
@@ -8064,7 +8071,7 @@ bool    ImGui::TabItemEx(ImGuiTabBar* tab_bar, const char* label, bool* p_open, 
         return false;
 
     const ImGuiStyle& style = g.Style;
-    const ImGuiID id = TabBarCalcTabID(tab_bar, label);
+    const ImGuiID id = TabBarCalcTabID(tab_bar, label, docked_window);
 
     // If the user called us with *p_open == false, we early out and don't render.
     // We make a call to ItemAdd() so that attempts to use a contextual popup menu with an implicit ID won't use an older ID.
@@ -8114,9 +8121,16 @@ bool    ImGui::TabItemEx(ImGuiTabBar* tab_bar, const char* label, bool* p_open, 
     tab->LastFrameVisible = g.FrameCount;
     tab->Flags = flags;
 
-    // Append name with zero-terminator
-    tab->NameOffset = (ImS32)tab_bar->TabsNames.size();
-    tab_bar->TabsNames.append(label, label + strlen(label) + 1);
+    // Append name _WITH_ the zero-terminator
+    if (docked_window != NULL)
+    {
+        IM_ASSERT(docked_window == NULL); // master branch only
+    }
+    else
+    {
+        tab->NameOffset = (ImS32)tab_bar->TabsNames.size();
+        tab_bar->TabsNames.append(label, label + strlen(label) + 1);
+    }
 
     // Update selected tab
     if (!is_tab_button)
@@ -8279,7 +8293,7 @@ void    ImGui::SetTabItemClosed(const char* label)
     if (is_within_manual_tab_bar)
     {
         ImGuiTabBar* tab_bar = g.CurrentTabBar;
-        ImGuiID tab_id = TabBarCalcTabID(tab_bar, label);
+        ImGuiID tab_id = TabBarCalcTabID(tab_bar, label, NULL);
         if (ImGuiTabItem* tab = TabBarFindTabByID(tab_bar, tab_id))
             tab->WantClose = true; // Will be processed by next call to TabBarLayout()
     }
@@ -8295,6 +8309,12 @@ ImVec2 ImGui::TabItemCalcSize(const char* label, bool has_close_button_or_unsave
     else
         size.x += g.Style.FramePadding.x + 1.0f;
     return ImVec2(ImMin(size.x, TabBarCalcMaxTabWidth()), size.y);
+}
+
+ImVec2 ImGui::TabItemCalcSize(ImGuiWindow*)
+{
+    IM_ASSERT(0); // This function exists to facilitate merge with 'docking' branch.
+    return ImVec2(0.0f, 0.0f);
 }
 
 void ImGui::TabItemBackground(ImDrawList* draw_list, const ImRect& bb, ImGuiTabItemFlags flags, ImU32 col)
