@@ -592,7 +592,10 @@ STDMETHODIMP Flipper::RotateToStart() // return to park, key/button up/released
 }
 void Flipper::RenderDynamic()
 {
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice::RenderStateCache initial_state;
+   pd3dDevice->CopyRenderStates(true, initial_state);
+
    TRACE_FUNCTION();
 
    if (m_phitflipper && !m_phitflipper->m_flipperMover.m_visible)
@@ -659,6 +662,8 @@ void Flipper::RenderDynamic()
       pd3dDevice->basicShader->End();
    }
    g_pplayer->UpdateBasicShaderMatrix();
+
+   pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
 void Flipper::ExportMesh(ObjLoader& loader)
