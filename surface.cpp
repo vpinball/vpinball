@@ -1078,7 +1078,7 @@ void Surface::RenderWallsAtHeight(const bool drop)
       if (pinSide)
       {
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat);
-         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pinSide);
+         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pinSide, SF_UNDEFINED, SA_CLAMP, SA_CLAMP);
          pd3dDevice->basicShader->SetAlphaTestValue(pinSide->m_alphaTestValue * (float)(1.0 / 255.0));
          pd3dDevice->basicShader->SetMaterial(mat, pinSide->m_pdsBuffer->has_alpha());
       }
