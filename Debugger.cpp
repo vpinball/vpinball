@@ -412,7 +412,7 @@ BOOL DbgLightDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
             {
                 plight->m_d.m_color2 = m_colorDialog.GetColor();
-                m_colorButton.SetColor(plight->m_d.m_color2);
+                m_colorButton2.SetColor(plight->m_d.m_color2);
                 memcpy(g_pplayer->m_ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(g_pplayer->m_ptable->m_rgcolorcustom));
             }
             return TRUE;
