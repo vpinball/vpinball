@@ -5064,17 +5064,18 @@ void Player::Render()
    }
    else
 #endif
-   if (m_dynamicMode)
-   {
-      m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation());
-   }
 #ifdef ENABLE_BAM
-   else if ((m_stereo3D != STEREO_VR) && m_headTracking)
+   if (m_headTracking)
    {
       // #ravarcade: UpdateBAMHeadTracking will set proj/view matrix to add BAM view and head tracking
       m_pin3d.UpdateBAMHeadTracking();
    }
+   else
 #endif
+   if (m_dynamicMode)
+   {
+      m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation());
+   }
 
    if (GetInfoMode() != IF_STATIC_ONLY)
    {
