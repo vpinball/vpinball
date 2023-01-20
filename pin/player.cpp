@@ -4463,7 +4463,14 @@ void Player::PrepareVideoBuffersNormal()
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAA || infoMode == IF_RENDER_PROBES ? SHADER_TECHNIQUE_fb_tonemap : (m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_tonemap_no_filterRG : (m_BWrendering == 2 ? SHADER_TECHNIQUE_fb_tonemap_no_filterR : SHADER_TECHNIQUE_fb_tonemap_no_filterRGB)));
 
    m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
-   m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
+   const float shiftedVerts[4 * 5] =
+   {
+       1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 0.0f,
+      -1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 0.0f,
+       1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 1.0f,
+      -1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 1.0f
+   };
+   m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad((Vertex3D_TexelOnly *)shiftedVerts);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
    renderedRT = ouputRT;
 
@@ -4667,7 +4674,14 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(infoMode == IF_AO_ONLY ? SHADER_TECHNIQUE_fb_AO : (useAA || infoMode == IF_RENDER_PROBES ? SHADER_TECHNIQUE_fb_tonemap_AO : SHADER_TECHNIQUE_fb_tonemap_AO_no_filter));
 
    m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
-   m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
+   const float shiftedVerts[4 * 5] =
+   {
+       1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 0.0f,
+      -1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 0.0f,
+       1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 1.0f,
+      -1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 1.0f
+   };
+   m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad((Vertex3D_TexelOnly *)shiftedVerts);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
    renderedRT = ouputRT;
 
@@ -5050,17 +5064,18 @@ void Player::Render()
    }
    else
 #endif
-   if (m_dynamicMode)
-   {
-      m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation());
-   }
 #ifdef ENABLE_BAM
-   else if ((m_stereo3D != STEREO_VR) && m_headTracking)
+   if (m_headTracking)
    {
       // #ravarcade: UpdateBAMHeadTracking will set proj/view matrix to add BAM view and head tracking
       m_pin3d.UpdateBAMHeadTracking();
    }
+   else
 #endif
+   if (m_dynamicMode)
+   {
+      m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation());
+   }
 
    if (GetInfoMode() != IF_STATIC_ONLY)
    {
