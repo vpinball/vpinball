@@ -117,6 +117,7 @@ public:
    int m_balance;
    int m_fade;
    int m_volume;
+   float m_freq;
 
    char *m_pdata; // wav: copy of the buffer/sample data so we can save it out, else: the contents of the original file
    int m_cdata;

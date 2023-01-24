@@ -243,6 +243,12 @@ BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xre
                      g = half2float(((unsigned short*)envmap)[offs*3+1]);
                      b = half2float(((unsigned short*)envmap)[offs*3+2]);
                   }
+                  else if (env_format == BaseTexture::RGBA_FP16)
+                  {
+                     r = half2float(((unsigned short*)envmap)[offs*4  ]);
+                     g = half2float(((unsigned short*)envmap)[offs*4+1]);
+                     b = half2float(((unsigned short*)envmap)[offs*4+2]);
+                  }
                   else if (env_format == BaseTexture::RGB_FP32)
                   {
                      r = ((float*)envmap)[offs*3  ];
@@ -434,7 +440,7 @@ BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xre
    g_pvp->ProfileLog("EnvmapPrecalc End"s);
 
 #ifdef __OPENGLES__
-   if (radTex->m_format == BaseTexture::SRGB) {
+   if (radTex->m_format == BaseTexture::SRGB || radTex->m_format == BaseTexture::RGB_FP16) {
       radTex->AddAlpha();
    }
 #endif

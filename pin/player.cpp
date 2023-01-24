@@ -1864,11 +1864,11 @@ HRESULT Player::Init()
    assert(m_ballTrailVertexBuffer == nullptr);
    m_ballTrailVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, (MAX_BALL_TRAIL_POS - 2) * 2 + 4, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
 
-   m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
-
    m_ptable->m_progressDialog.SetName("Starting Game Scripts..."s);
 
    g_pvp->ProfileLog("Start Scripts"s);
+
+   m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
 
    m_ptable->FireVoidEvent(DISPID_GameEvents_Init);
 
