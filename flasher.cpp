@@ -299,6 +299,13 @@ void Flasher::EndPlay()
    }
 
    m_lightmap = nullptr;
+   
+   m_dmdSize = int2(0, 0);
+   if (m_texdmd)
+   {
+      delete m_texdmd;
+      m_texdmd = nullptr;
+   }
 }
 
 void Flasher::UpdateMesh()
@@ -338,6 +345,9 @@ void Flasher::UpdateMesh()
 
 void Flasher::RenderSetup()
 {
+   m_texdmd = nullptr;
+   m_dmdSize = int2(0, 0);
+
    m_lightmap = m_ptable->GetLight(m_d.m_szLightmap);
    if (m_lightmap)
       m_lightmap->AddLightmap(this);
@@ -1248,7 +1258,8 @@ void Flasher::RenderDynamic()
       if (!m_inPlayState) return;
    }
    //Don't render if invisible (or DMD connection not set)
-   else if (!m_d.m_isVisible || m_dynamicVertexBuffer == nullptr || m_ptable->m_reflectionEnabled || (m_d.m_isDMD && !g_pplayer->m_texdmd))
+   BaseTexture *texdmd = m_texdmd != nullptr ? m_texdmd : g_pplayer->m_texdmd;
+   if (!m_d.m_isVisible || m_dynamicVertexBuffer == nullptr || m_ptable->m_reflectionEnabled || (m_d.m_isDMD && !texdmd))
       return;
 
    const vec4 color = convertColor(m_d.m_color, (float)m_d.m_alpha*m_d.m_intensity_scale / 100.0f);
@@ -1319,7 +1330,6 @@ void Flasher::RenderDynamic()
 
        pd3dDevice->DMDShader->SetVector(SHADER_vColor_Intensity, &color);
 
-       BaseTexture *texdmd = m_texdmd != nullptr ? m_texdmd : g_pplayer->m_texdmd;
        const int2 &dmdSize = m_texdmd != nullptr ? m_dmdSize : g_pplayer->m_dmd;
 
 #ifdef DMD_UPSCALE
