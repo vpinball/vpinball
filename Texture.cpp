@@ -14,7 +14,7 @@
 BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Format format)
    : m_width(w)
    , m_height(h)
-   , m_data((format == RGBA || format == SRGBA ? 4 : (format == BW ? 1 : 3)) * (format == RGB_FP32 ? 4 : format == RGB_FP16 ? 2 : 1) * w * h)
+   , m_data((format == RGBA || format == SRGBA || format == RGBA_FP16 ? 4 : (format == BW ? 1 : 3)) * (format == RGB_FP32 ? 4 : (format == RGB_FP16 || format == RGBA_FP16) ? 2 : 1) * w * h)
    , m_realWidth(w)
    , m_realHeight(h)
    , m_format(format)
@@ -253,7 +253,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
    FreeImage_Unload(dib);
 
 #ifdef __OPENGLES__
-   if (tex->m_format == SRGB) {
+   if (tex->m_format == SRGB || tex->m_format == RGB_FP16) {
       tex->AddAlpha();
    }
 #endif
@@ -362,20 +362,35 @@ void BaseTexture::AddAlpha()
    {
    case RGB: m_format = RGBA; break;
    case SRGB: m_format = SRGBA; break;
+   case RGB_FP16: m_format = RGBA_FP16; break;
    default: assert(!"unknown format in AddAlpha"); break;
    }
 
    size_t o = 0;
-   vector<BYTE> new_data((size_t)4 * width() * height());
-   for (unsigned int j = 0; j < height(); ++j)
-      for (unsigned int i = 0; i < width(); ++i, ++o)
-      {
-         new_data[o * 4 + 0] = m_data[o * 3 + 0];
-         new_data[o * 4 + 1] = m_data[o * 3 + 1];
-         new_data[o * 4 + 2] = m_data[o * 3 + 2];
-         new_data[o * 4 + 3] = 255;
-      }
-   m_data = std::move(new_data);
+   if (m_format == SRGBA || m_format == RGBA) {
+      vector<BYTE> new_data((size_t)4 * width() * height());
+      for (unsigned int j = 0; j < height(); ++j)
+         for (unsigned int i = 0; i < width(); ++i, ++o)
+         {
+            new_data[o * 4 + 0] = m_data[o * 3 + 0];
+            new_data[o * 4 + 1] = m_data[o * 3 + 1];
+            new_data[o * 4 + 2] = m_data[o * 3 + 2];
+            new_data[o * 4 + 3] = 255;
+         }
+      m_data = std::move(new_data);
+   }
+   else {
+      vector<unsigned short> new_data((size_t)4 * width() * height());
+      for (unsigned int j = 0; j < height(); ++j)
+         for (unsigned int i = 0; i < width(); ++i, ++o) 
+         {
+            new_data[o * 4 + 0] = m_data[o * 3 + 0];
+            new_data[o * 4 + 1] = m_data[o * 3 + 1];
+            new_data[o * 4 + 2] = m_data[o * 3 + 2];
+            new_data[o * 4 + 3] = 0x3C00; //=1.f
+         }
+      m_data = std::move(new_data);
+   }
 }
 
 void BaseTexture::RemoveAlpha()
@@ -634,7 +649,7 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
          m_pdsBuffer = tex;
 
 #ifdef __OPENGLES__
-         if (m_pdsBuffer->m_format == BaseTexture::SRGB) {
+         if (m_pdsBuffer->m_format == BaseTexture::SRGB || m_pdsBuffer->m_format == BaseTexture::RGB_FP16) {
             m_pdsBuffer->AddAlpha();
          }
 #endif
@@ -717,7 +732,7 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
       delete[] tmp;
 
 #ifdef __OPENGLES__
-      if (m_pdsBuffer->m_format == BaseTexture::SRGB) {
+      if (m_pdsBuffer->m_format == BaseTexture::SRGB || m_pdsBuffer->m_format == BaseTexture::RGB_FP16) {
          m_pdsBuffer->AddAlpha();
       }
 #endif
