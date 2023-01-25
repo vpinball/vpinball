@@ -100,7 +100,7 @@ public:
    unsigned int m_leftkey_down_frame_EOS;
    uint64_t m_lastclick_ballcontrol_usec;
 
-   int e_JoyCnt;
+   int m_num_joy;
    int uShockType;
 
    int mouseX;
@@ -123,8 +123,6 @@ private:
    void handleInputXI(DIDEVICEOBJECTDATA *didod);
    void handleInputSDL(DIDEVICEOBJECTDATA *didod);
    void handleInputIGC(DIDEVICEOBJECTDATA *didod);
-
-   //int InputControlRun;
 
 #ifdef USE_DINPUT8
 #ifdef USE_DINPUT_FOR_KEYBOARD

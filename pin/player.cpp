@@ -2343,20 +2343,20 @@ void Player::CalcBallAspectRatio()
    }
 }
 
-void Player::NudgeX(const int x, const int j)
+void Player::NudgeX(const int x, const int joyidx)
 {
    int v = x;
    if (x >  m_ptable->m_tblAccelMax.x) v =  m_ptable->m_tblAccelMax.x;
    if (x < -m_ptable->m_tblAccelMax.x) v = -m_ptable->m_tblAccelMax.x;
-   m_curAccel[j].x = v;
+   m_curAccel[joyidx].x = v;
 }
 
-void Player::NudgeY(const int y, const int j)
+void Player::NudgeY(const int y, const int joyidx)
 {
    int v = y;
    if (y >  m_ptable->m_tblAccelMax.y) v =  m_ptable->m_tblAccelMax.y;
    if (y < -m_ptable->m_tblAccelMax.y) v = -m_ptable->m_tblAccelMax.y;
-   m_curAccel[j].y = v;
+   m_curAccel[joyidx].y = v;
 }
 
 #define GetNudgeX() (((F32)m_curAccel[0].x) * (F32)(2.0 / JOYRANGE)) // Get the -2 .. 2 values from joystick input tilt sensor / ushock //!! why 2?
@@ -2374,7 +2374,7 @@ int Player::NudgeGetTilt()
    const U32 ms = msec();
 
    U32 tilt_2 = 0;
-   for(int j = 0; j < m_pininput.e_JoyCnt; ++j)    //find largest value
+   for (int j = 0; j < m_pininput.m_num_joy; ++j) //find largest value
    {
       tilt_2 = max(tilt_2, (U32)(m_curAccel[j].x * m_curAccel[j].x + m_curAccel[j].y * m_curAccel[j].y)); //always postive numbers
    }
@@ -2410,7 +2410,7 @@ void Player::NudgeUpdate()      // called on every integral physics frame
    const float cna = cosf(a);
    const float sna = sinf(a);
 
-   for (int j = 0; j < m_pininput.e_JoyCnt; ++j)
+   for (int j = 0; j < m_pininput.m_num_joy; ++j)
    {
             float dx = ((float)m_curAccel[j].x)*(float)(1.0 / JOYRANGE); // norm range -1 .. 1   
       const float dy = ((float)m_curAccel[j].y)*(float)(1.0 / JOYRANGE);

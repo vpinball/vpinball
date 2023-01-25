@@ -358,8 +358,8 @@ public:
 
    void NudgeUpdate();
    void FilterNudge();
-   void NudgeX(const int x, const int j);
-   void NudgeY(const int y, const int j);
+   void NudgeX(const int x, const int joyidx);
+   void NudgeY(const int y, const int joyidx);
 #ifdef UNUSED_TILT
    int  NudgeGetTilt(); // returns non-zero when appropriate to set the tilt switch
 #endif

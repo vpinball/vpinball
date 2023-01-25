@@ -34,8 +34,6 @@ PinInput::PinInput()
 {
    ZeroMemory(this, sizeof(PinInput));
 
-   //InputControlRun = 0;
-
    m_pDI = nullptr;
 #ifdef USE_DINPUT_FOR_KEYBOARD
    m_pKeyboard = nullptr;
@@ -50,7 +48,7 @@ PinInput::PinInput()
 
    ZeroMemory(m_diq, sizeof(m_diq));
 
-   e_JoyCnt = 0;
+   m_num_joy = 0;
    for (int k = 0; k < PININ_JOYMXCNT; ++k)
       m_pJoystick[k] = nullptr;
 
@@ -194,13 +192,17 @@ void PinInput::LoadSettings()
    m_deadz = m_deadz*JOYRANGEMX / 100;
 }
 
+//
+// DirectInput:
+//
+
 //-----------------------------------------------------------------------------
-// Name: EnumObjectsCallback()
+// Name: EnumObjectsCallbackDI()
 // Desc: Callback function for enumerating objects (axes, buttons, POVs) on a 
 //		joystick. This function enables user interface elements for objects
 //		that are found to exist, and scales axes min/max values.
 //-----------------------------------------------------------------------------
-BOOL CALLBACK EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* pdidoi,
+BOOL CALLBACK EnumObjectsCallbackDI(const DIDEVICEOBJECTINSTANCE* pdidoi,
    VOID* pContext)
 {
    const PinInput * const ppinput = (PinInput *)pContext;
@@ -208,8 +210,8 @@ BOOL CALLBACK EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* pdidoi,
 #ifdef _DEBUG
    static int nAxis = 0;
    static int nButtons = 0;
-   static int nSliderCount = 0;	// Number of returned slider controls
-   static int nPOVCount = 0;		// Number of returned POV controls
+   static int nSliderCount = 0; // Number of returned slider controls
+   static int nPOVCount = 0;    // Number of returned POV controls
    static int nKey = 0;
    static int nUnknown = 0;
 #endif
@@ -227,7 +229,7 @@ BOOL CALLBACK EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* pdidoi,
       diprg.lMax = JOYRANGEMX;
 
       // Set the range for the axis
-      if (FAILED(ppinput->m_pJoystick[ppinput->e_JoyCnt]->SetProperty(DIPROP_RANGE, &diprg.diph)))
+      if (FAILED(ppinput->m_pJoystick[ppinput->m_num_joy]->SetProperty(DIPROP_RANGE, &diprg.diph)))
          return DIENUM_STOP;
 
       // set DEADBAND to Zero
@@ -239,7 +241,7 @@ BOOL CALLBACK EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* pdidoi,
       dipdw.dwData = 0; // no dead zone at joystick level
 
       // Set the deadzone
-      if (FAILED(ppinput->m_pJoystick[ppinput->e_JoyCnt]->SetProperty(DIPROP_DEADZONE, &dipdw.diph)))
+      if (FAILED(ppinput->m_pJoystick[ppinput->m_num_joy]->SetProperty(DIPROP_DEADZONE, &dipdw.diph)))
          return DIENUM_STOP;
    }
 
@@ -262,7 +264,7 @@ BOOL CALLBACK EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* pdidoi,
 
 
 // Callback for enumerating joysticks (gamepads)
-BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
+BOOL CALLBACK EnumJoystickCallbackDI(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 {
    DIPROPSTRING dstr;
    dstr.diph.dwSize = sizeof(DIPROPSTRING);
@@ -274,14 +276,14 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 
    HRESULT hr;
 
-   hr = ppinput->m_pDI->CreateDevice(lpddi->guidInstance, &ppinput->m_pJoystick[ppinput->e_JoyCnt], nullptr);
+   hr = ppinput->m_pDI->CreateDevice(lpddi->guidInstance, &ppinput->m_pJoystick[ppinput->m_num_joy], nullptr);
    if (FAILED(hr))
    {
-      ppinput->m_pJoystick[ppinput->e_JoyCnt] = nullptr; // make sure no garbage
-      return DIENUM_CONTINUE;                            // try for another joystick
+      ppinput->m_pJoystick[ppinput->m_num_joy] = nullptr; // make sure no garbage
+      return DIENUM_CONTINUE;                             // try for another joystick
    }
 
-   hr = ppinput->m_pJoystick[ppinput->e_JoyCnt]->GetProperty(DIPROP_PRODUCTNAME, &dstr.diph);
+   hr = ppinput->m_pJoystick[ppinput->m_num_joy]->GetProperty(DIPROP_PRODUCTNAME, &dstr.diph);
    if (hr == S_OK)
    {
       if (!WzSzStrCmp(dstr.wsz, "PinballWizard"))
@@ -300,10 +302,10 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
       else
          ppinput->uShockType = USHOCKTYPE_GENERIC;  // Generic Gamepad
    }
-   hr = ppinput->m_pJoystick[ppinput->e_JoyCnt]->SetDataFormat(&c_dfDIJoystick);
+   hr = ppinput->m_pJoystick[ppinput->m_num_joy]->SetDataFormat(&c_dfDIJoystick);
 
    // joystick input foreground or background focus
-   hr = ppinput->m_pJoystick[ppinput->e_JoyCnt]->SetCooperativeLevel(ppinput->m_hwnd, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND);
+   hr = ppinput->m_pJoystick[ppinput->m_num_joy]->SetCooperativeLevel(ppinput->m_hwnd, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND);
 
    DIPROPDWORD dipdw;
    dipdw.diph.dwSize = sizeof(DIPROPDWORD);
@@ -312,17 +314,17 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
    dipdw.diph.dwHow = DIPH_DEVICE;
    dipdw.dwData = INPUT_BUFFER_SIZE;
 
-   hr = ppinput->m_pJoystick[ppinput->e_JoyCnt]->SetProperty(DIPROP_BUFFERSIZE, &dipdw.diph);
+   hr = ppinput->m_pJoystick[ppinput->m_num_joy]->SetProperty(DIPROP_BUFFERSIZE, &dipdw.diph);
 
    // Enumerate the joystick objects. The callback function enabled user
    // interface elements for objects that are found, and sets the min/max
    // values property for discovered axes.
-   hr = ppinput->m_pJoystick[ppinput->e_JoyCnt]->EnumObjects(EnumObjectsCallback, (VOID*)pvRef, DIDFT_ALL);
+   hr = ppinput->m_pJoystick[ppinput->m_num_joy]->EnumObjects(EnumObjectsCallbackDI, (VOID*)pvRef, DIDFT_ALL);
 
-   if (++(ppinput->e_JoyCnt) < PININ_JOYMXCNT)
+   if (++(ppinput->m_num_joy) < PININ_JOYMXCNT)
        return DIENUM_CONTINUE;
    else
-       return DIENUM_STOP;			//allocation for only PININ_JOYMXCNT joysticks, ignore any others
+       return DIENUM_STOP; //allocation for only PININ_JOYMXCNT joysticks, ignore any others
 }
 
 void PinInput::PushQueue(DIDEVICEOBJECTDATA * const data, const unsigned int app_data/*, const U32 curr_time_msec*/)
@@ -354,6 +356,10 @@ const DIDEVICEOBJECTDATA *PinInput::GetTail(/*const U32 curr_sim_msec*/)
    }
    //else return nullptr;
 }
+
+//
+// End of Direct Input specific code
+//
 
 void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 {
@@ -527,7 +533,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 
 void PinInput::handleInputDI(DIDEVICEOBJECTDATA *didod)
 {
-   for (int k = 0; k < e_JoyCnt; ++k)
+   for (int k = 0; k < m_num_joy; ++k)
    {
 #ifdef USE_DINPUT8
       const LPDIRECTINPUTDEVICE8 pjoy = m_pJoystick[k];
@@ -579,20 +585,20 @@ void PinInput::handleInputXI(DIDEVICEOBJECTDATA *didod)
    unsigned int xie = ERROR_DEVICE_NOT_CONNECTED;
    if (m_inputDeviceXI != -2 && (m_inputDeviceXI == -1 || (xie = XInputGetState(m_inputDeviceXI, &state)) != ERROR_SUCCESS)) {
       m_inputDeviceXI = -1;
-      e_JoyCnt = 0;
+      m_num_joy = 0;
       for (DWORD i = 0; i < XUSER_MAX_COUNT; i++)
       {
          ZeroMemory(&state, sizeof(XINPUT_STATE));
          if ((xie = XInputGetState(i, &state)) == ERROR_SUCCESS) {
             m_inputDeviceXI = i;
-            e_JoyCnt = 1;
+            m_num_joy = 1;
             break;
          }
       }
    }
    if (xie == ERROR_DEVICE_NOT_CONNECTED) { // XInputGetState can cause quite some overhead, especially if no devices connected! Thus disable the polling if nothing connected
       m_inputDeviceXI = -2;
-      e_JoyCnt = 0;
+      m_num_joy = 0;
    }
    if (m_rumbleRunning && m_inputDeviceXI >= 0) {
       DWORD now = timeGetTime();
@@ -677,7 +683,7 @@ void PinInput::handleInputSDL(DIDEVICEOBJECTDATA *didod)
          if (!m_inputDeviceSDL) {
             m_inputDeviceSDL = SDL_JoystickOpen(0);
             if (m_inputDeviceSDL) {
-               e_JoyCnt = 1;
+               m_num_joy = 1;
                if (SDL_JoystickIsHaptic(m_inputDeviceSDL)) {
                   m_rumbleDeviceSDL = SDL_HapticOpenFromJoystick(m_inputDeviceSDL);
                   const int error = SDL_HapticRumbleInit(m_rumbleDeviceSDL);
@@ -699,7 +705,7 @@ void PinInput::handleInputSDL(DIDEVICEOBJECTDATA *didod)
          if (SDL_NumJoysticks() > 0) {
             m_inputDeviceSDL = SDL_JoystickOpen(0);
             if (m_inputDeviceSDL) {
-               e_JoyCnt = 1;
+               m_num_joy = 1;
                if (SDL_JoystickIsHaptic(m_inputDeviceSDL)) {
                   m_rumbleDeviceSDL = SDL_HapticOpenFromJoystick(m_inputDeviceSDL);
                   const int error = SDL_HapticRumbleInit(m_rumbleDeviceSDL);
@@ -713,7 +719,7 @@ void PinInput::handleInputSDL(DIDEVICEOBJECTDATA *didod)
          }
          else {
             m_inputDeviceSDL = nullptr;
-            e_JoyCnt = 0;
+            m_num_joy = 0;
          }
          break;
       case SDL_JOYAXISMOTION:
@@ -866,7 +872,7 @@ void PinInput::Init(const HWND hwnd)
 #ifdef ENABLE_SDL_INPUT
       m_inputDeviceSDL = SDL_JoystickOpen(0);
       if (m_inputDeviceSDL) {
-         e_JoyCnt = 1;
+         m_num_joy = 1;
          if (SDL_JoystickIsHaptic(m_inputDeviceSDL)) {
             m_rumbleDeviceSDL = SDL_HapticOpenFromJoystick(m_inputDeviceSDL);
             int error = SDL_HapticRumbleInit(m_rumbleDeviceSDL);
@@ -897,30 +903,20 @@ void PinInput::Init(const HWND hwnd)
 
    if (m_inputApi == 0) {
 #ifdef USE_DINPUT8
-      m_pDI->EnumDevices(DI8DEVCLASS_GAMECTRL, DIEnumJoystickCallback, this, DIEDFL_ATTACHEDONLY); //enum Joysticks
+      m_pDI->EnumDevices(DI8DEVCLASS_GAMECTRL, EnumJoystickCallbackDI, this, DIEDFL_ATTACHEDONLY); //enum Joysticks
 #else
-      m_pDI->EnumDevices(DIDEVTYPE_JOYSTICK, DIEnumJoystickCallback, this, DIEDFL_ATTACHEDONLY);   //enum Joysticks
+      m_pDI->EnumDevices(DIDEVTYPE_JOYSTICK, EnumJoystickCallbackDI, this, DIEDFL_ATTACHEDONLY);   //enum Joysticks
 #endif
    }
 
    gMixerKeyDown = false;
    gMixerKeyUp = false;
-
-   //InputControlRun = 1; //0==stalled, 1==run,  0 < shutting down, 2==terminated
-   //_beginthread( InputControlProcess, 0, nullptr );
 }
 
 
 void PinInput::UnInit()
 {
-   // Unacquire and release any DirectInputDevice objects.
-   //1==run,  0 < shutting down, 2==terminated
-   //InputControlRun = -100;	// terminate control thread, force after 500mS
-
-   //while (++InputControlRun < 0) Sleep(5);		// set to exit AND WAIT
-
-   //if (!InputControlRun)	//0 == stalled, 1==run,  0 < shutting down, 2==terminated
-   //{exit (-1500);}
+   m_head = m_tail = 0;
 
 #if defined(ENABLE_SDL_INPUT)
    SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
@@ -947,7 +943,11 @@ void PinInput::UnInit()
    // restore the state of the sticky keys
    SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &m_StartupStickyKeys, SPIF_SENDCHANGE);
 
-   for (int k = 0; k < e_JoyCnt; ++k)
+   //
+   // DirectInput:
+   //
+
+   for (int k = 0; k < m_num_joy; ++k)
       if (m_pJoystick[k])
       {
          // Unacquire the device one last time just in case 
@@ -963,8 +963,6 @@ void PinInput::UnInit()
       m_pDI->Release();
       m_pDI = nullptr;
    }
-
-   m_head = m_tail = 0;
 
    ZeroMemory(m_diq, sizeof(m_diq));
 }
