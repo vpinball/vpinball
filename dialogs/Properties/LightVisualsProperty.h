@@ -21,6 +21,7 @@ private:
     ComboBox    m_typeCombo;
     ComboBox    m_imageCombo;
     ComboBox    m_surfaceCombo;
+    ComboBox    m_faderCombo;
     HWND        m_hPassThroughCheck;
     HWND        m_hShowMeshCheck;
     HWND        m_hStaticMeshCheck;

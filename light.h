@@ -16,6 +16,13 @@ enum ShadowMode : int // has to be int for loading
    RAYTRACED_BALL_SHADOWS
 };
 
+enum Fader : int
+{
+   FADER_NONE,
+   FADER_LINEAR,
+   FADER_INCANDESCENT
+};
+
 class LightData final : public BaseProperty
 {
 public:
@@ -30,6 +37,7 @@ public:
    float m_fadeSpeedUp;
    float m_fadeSpeedDown;
    float m_currentIntensity;
+   double m_currentFilamentTemperature;
    
    float m_state; // 0..1 is modulated from off to on, 2 is blinking
    COLORREF m_color;
@@ -53,6 +61,7 @@ public:
    float m_meshRadius;
 
    ShadowMode m_shadows = ShadowMode::NONE;
+   Fader m_fader = Fader::FADER_LINEAR;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -278,6 +287,8 @@ public:
    STDMETHOD(put_ShowReflectionOnBall)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Shadows)(/*[out, retval]*/ long *pVal);
    STDMETHOD(put_Shadows)(/*[in]*/ long newVal);
+   STDMETHOD(get_Fader)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(put_Fader)(/*[in]*/ long newVal);
    STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(Duration)(/*[in]*/float startState, /*[in]*/long newVal, /*[in]*/float endState);
