@@ -380,14 +380,15 @@ void BaseTexture::AddAlpha()
       m_data = std::move(new_data);
    }
    else {
-      vector<unsigned short> new_data((size_t)4 * width() * height());
+      vector<BYTE> new_data((size_t)8 * width() * height());
+      unsigned short* const __restrict new_data16 = (unsigned short*)new_data.data();
       for (unsigned int j = 0; j < height(); ++j)
          for (unsigned int i = 0; i < width(); ++i, ++o) 
          {
-            new_data[o * 4 + 0] = m_data[o * 3 + 0];
-            new_data[o * 4 + 1] = m_data[o * 3 + 1];
-            new_data[o * 4 + 2] = m_data[o * 3 + 2];
-            new_data[o * 4 + 3] = 0x3C00; //=1.f
+            new_data16[o * 4 + 0] = m_data[o * 3 + 0];
+            new_data16[o * 4 + 1] = m_data[o * 3 + 1];
+            new_data16[o * 4 + 2] = m_data[o * 3 + 2];
+            new_data16[o * 4 + 3] = 0x3C00; //=1.f
          }
       m_data = std::move(new_data);
    }
