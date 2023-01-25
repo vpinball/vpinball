@@ -8,7 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <inc/robin_hood.h>
+#include "inc/robin_hood.h"
 #include <regex>
 
 static ShaderTechniques m_bound_technique = ShaderTechniques::SHADER_TECHNIQUE_INVALID;
@@ -16,6 +16,12 @@ static ShaderTechniques m_bound_technique = ShaderTechniques::SHADER_TECHNIQUE_I
 
 #if DEBUG_LEVEL_LOG == 0
 #define LOG(a,b,c)
+#endif
+
+#ifdef __OPENGLES__
+#define FLT_MIN_VALUE 0.00006103515625
+#else
+#define FLT_MIN_VALUE 0.0000001
 #endif
 
 #define SHADER_TECHNIQUE(name) #name

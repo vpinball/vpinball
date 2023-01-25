@@ -744,6 +744,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    case SDL_PIXELFORMAT_ARGB2101010: back_buffer_format = colorFormat::RGBA10; break;
 #ifdef __OPENGLES__
    case SDL_PIXELFORMAT_ABGR8888: back_buffer_format = colorFormat::RGBA8; break;
+   case SDL_PIXELFORMAT_RGBX8888: back_buffer_format = colorFormat::RGBA8; break;
 #endif
    default: 
    {
@@ -772,6 +773,15 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
       ShowError("Glad failed");
       exit(-1);
    }
+
+#ifdef __OPENGLES__
+   int range[2];
+   int precision;
+   glGetShaderPrecisionFormat(GL_VERTEX_SHADER, GL_HIGH_FLOAT, range, &precision);
+   PLOGD.printf("Vertex shader high precision float range: %d %d precision: %d", range[0], range[1], precision);
+   glGetShaderPrecisionFormat(GL_FRAGMENT_SHADER, GL_HIGH_FLOAT, range, &precision);
+   PLOGD.printf("Fragment shader high precision float range: %d %d precision: %d", range[0], range[1], precision);
+#endif
 
    int gl_majorVersion = 0;
    int gl_minorVersion = 0;

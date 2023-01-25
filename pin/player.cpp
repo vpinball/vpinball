@@ -206,6 +206,8 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_capPUP = LoadValueBoolWithDefault(regKey[RegName::Player], "CapturePUP"s, false);
 #else
    bool useVR = false;
+   m_capExtDMD = false;
+   m_capPUP = false;
 #endif
 
    m_trailForBalls = LoadValueBoolWithDefault(regKey[RegName::Player], "BallTrail"s, true);

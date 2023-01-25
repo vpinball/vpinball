@@ -2,7 +2,8 @@
 #version 430
 
 #ifdef SHADER_GLES30
-precision mediump float;
+precision highp float;
+#define noperspective
 #endif
 
 uniform bool disableVertexShader; // To support pretransformed vertices (used by decals and classic lights for backglass)

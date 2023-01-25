@@ -2,7 +2,8 @@
 #version 400
 
 #ifdef SHADER_GLES30
-precision mediump float;
+precision highp float;
+#define noperspective
 #endif
 
 ////DEFINES
