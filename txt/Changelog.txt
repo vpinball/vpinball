@@ -75,6 +75,7 @@ FEATURES:
   - allow the bulb mesh to work for both classic lights as well as bulb lights
   - allow the reflection on ball to work for both classic lights as well as bulb lights
   - add support for 'modulated' lights (through script only, corresponding to PWModulated outputs of most 1990+ pinballs)
+  - allow to select a fading behavior between linear (backward compatible) / LED (no fading) / Incandescent (physic model of an incandescent bulb)
   - try to make the user interface more intuitive
 
 - add support for more than one DMD (for original tables, in-game DMD menu,...)
