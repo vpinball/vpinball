@@ -462,7 +462,7 @@ void ImageDialog::Export()
                int begin; //select only file name from pathfilename
                for (begin = len0; begin >= 0; begin--)
                {
-                  if (ppi->m_szPath[begin] == '\\')
+                  if (ppi->m_szPath[begin] == '\\' || ppi->m_szPath[begin] == '/')
                   {
                      begin++;
                      break;
