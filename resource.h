@@ -1256,6 +1256,7 @@
 #define DISPID_REFRACTION_PROBE         1503
 #define IDC_LIGHT_TYPE_COMBO            1503
 #define DISPID_UserValue                1504
+#define IDC_LIGHT_FADER_COMBO           1504
 #define DISPID_Image3                   1505
 #define DISPID_Sound                    1506
 #define DISPID_Collection               1507

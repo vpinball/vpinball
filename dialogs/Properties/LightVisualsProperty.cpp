@@ -20,6 +20,7 @@ LightVisualsProperty::LightVisualsProperty(const VectorProtected<ISelect> *pvsel
     m_imageCombo.SetDialog(this);
     m_typeCombo.SetDialog(this);
     m_surfaceCombo.SetDialog(this);
+    m_faderCombo.SetDialog(this);
 }
 
 void LightVisualsProperty::UpdateLightType(const int mode)
@@ -81,6 +82,9 @@ void LightVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             PropertyDialog::SetFloatTextbox(m_falloffEdit, light->m_d.m_falloff);
         if (dispid == IDC_LIGHT_FALLOFF_POWER || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_falloffPowerEdit, light->m_d.m_falloff_power);
+
+        if (dispid == IDC_LIGHT_FADER_COMBO || dispid == -1)
+            m_faderCombo.SetCurSel(light->m_d.m_fader);
 
         if (dispid == IDC_LIGHT_TYPE_COMBO || dispid == -1)
         {
@@ -168,6 +172,9 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
                          PropertyDialog::EndUndo(light);
                      }
                  }
+                break;
+            case IDC_LIGHT_FADER_COMBO:
+                CHECK_UPDATE_ITEM(light->m_d.m_fader, (Fader)m_faderCombo.GetCurSel(), light);
                 break;
             case IDC_FADE_SPEED_UP:
                 CHECK_UPDATE_ITEM(light->m_d.m_fadeSpeedUp, light->m_d.m_intensity / (float) PropertyDialog::GetIntTextbox(m_fadeSpeedUpEdit), light);
@@ -315,18 +322,24 @@ BOOL LightVisualsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC4), CResizer::topleft, 0);
     m_intensityEdit.AttachItem(IDC_INTENSITY);
     m_resizer.AddChild(m_intensityEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC24), CResizer::topleft, 0);
+    m_faderCombo.AttachItem(IDC_LIGHT_FADER_COMBO);
+    m_faderCombo.AddString("LED (None)");
+    m_faderCombo.AddString("Linear");
+    m_faderCombo.AddString("Incandescent");
+    m_resizer.AddChild(m_faderCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);
     m_fadeSpeedUpEdit.AttachItem(IDC_FADE_SPEED_UP);
-    m_resizer.AddChild(m_fadeSpeedUpEdit, CResizer::topleft, 0);
+    m_resizer.AddChild(m_fadeSpeedUpEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC12), CResizer::topleft, 0);
     m_fadeSpeedDownEdit.AttachItem(IDC_FADE_SPEED_DOWN);
     m_resizer.AddChild(m_fadeSpeedDownEdit, CResizer::topright, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topleft, 0);
     AttachItem(IDC_COLOR_BUTTON1, m_colorButton1);
-    m_resizer.AddChild(m_colorButton1, CResizer::topleft, 0);
+    m_resizer.AddChild(m_colorButton1, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC15), CResizer::topleft, 0);
     AttachItem(IDC_COLOR_BUTTON2, m_colorButton2);
-    m_resizer.AddChild(m_colorButton2, CResizer::topleft, 0);
+    m_resizer.AddChild(m_colorButton2, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_falloffEdit.AttachItem(IDC_FALLOFF);
     m_resizer.AddChild(m_falloffEdit, CResizer::topleft, RD_STRETCH_WIDTH);
