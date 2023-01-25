@@ -4944,7 +4944,10 @@ void Player::LockForegroundWindow(const bool enable)
     if (m_fullScreen) // revert special tweaks of exclusive fullscreen app
     {
        ::LockSetForegroundWindow(enable ? LSFW_LOCK : LSFW_UNLOCK);
-       ::ShowCursor(enable ? FALSE : TRUE);
+       if(enable)
+          while(::ShowCursor(FALSE)>=0) ;
+       else
+          ::ShowCursor(TRUE);
     }
 #else
 #pragma message ( "Warning: Missing LockSetForegroundWindow()" )
@@ -5271,7 +5274,7 @@ void Player::Render()
             ShowCursor(TRUE);
             option = DialogBox(g_pvp->theInstance, MAKEINTRESOURCE(IDD_GAMEPAUSE), GetHwnd(), PauseProc);
             if(option != ID_DEBUGWINDOW)
-               ShowCursor(FALSE);
+               while(ShowCursor(FALSE)>=0) ;
          }
          else //m_closeType == all others
          {
