@@ -250,11 +250,6 @@ BOOL RenderProbeDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
    switch (LOWORD(wParam))
    {
-   case IDC_OK:
-   {
-      OnClose();
-      break;
-   }
    case IDC_NEW:
    {
       RenderProbe* rp = pt->NewRenderProbe();
@@ -324,4 +319,52 @@ BOOL RenderProbeDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    default: return FALSE;
    }
    return TRUE;
+}
+
+void RenderProbeDialog::OnOK()
+{
+   auto sel = ListView_GetSelectionMark(hListHwnd);
+   if (sel >= 0)
+   {
+      LVITEM lvitem;
+      lvitem.mask = LVIF_PARAM;
+      lvitem.iItem = sel;
+      lvitem.iSubItem = 0;
+      ListView_GetItem(hListHwnd, &lvitem);
+      RenderProbe *const pb = (RenderProbe *)lvitem.lParam;
+      if (pb != nullptr)
+      {
+         SaveProbeFromUI(pb);
+      }
+   }
+   SavePosition();
+   CDialog::OnOK();
+}
+
+void RenderProbeDialog::OnClose()
+{
+   SavePosition();
+   CDialog::OnCancel();
+}
+
+void RenderProbeDialog::LoadPosition()
+{
+   const int x = LoadValueIntWithDefault(regKey[RegName::Editor], "RenderProbeMngPosX"s, 0);
+   const int y = LoadValueIntWithDefault(regKey[RegName::Editor], "RenderProbeMngPosY"s, 0);
+
+   const int w = LoadValueIntWithDefault(regKey[RegName::Editor], "RenderProbeMngWidth"s, 1000);
+   const int h = LoadValueIntWithDefault(regKey[RegName::Editor], "RenderProbeMngHeight"s, 800);
+   SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
+}
+
+void RenderProbeDialog::SavePosition()
+{
+   const CRect rect = GetWindowRect();
+
+   SaveValueInt(regKey[RegName::Editor], "RenderProbeMngPosX"s, rect.left);
+   SaveValueInt(regKey[RegName::Editor], "RenderProbeMngPosY"s, rect.top);
+   const int w = rect.right - rect.left;
+   SaveValueInt(regKey[RegName::Editor], "RenderProbeMngWidth"s, w);
+   const int h = rect.bottom - rect.top;
+   SaveValueInt(regKey[RegName::Editor], "RenderProbeMngHeight"s, h);
 }
