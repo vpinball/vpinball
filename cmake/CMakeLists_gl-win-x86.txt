@@ -68,6 +68,8 @@ add_executable(vpinball WIN32
 
    BlackBox.cpp
    BlackBox.h
+   bulb.cpp
+   bulb.h
    codeviewedit.cpp
    codeviewedit.h
    CrashHandler.cpp
