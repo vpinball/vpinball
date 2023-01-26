@@ -75,7 +75,7 @@ FEATURES:
   - allow the bulb mesh to work for both classic lights as well as bulb lights
   - allow the reflection on ball to work for both classic lights as well as bulb lights
   - add support for 'modulated' lights (through script only, corresponding to PWModulated outputs of most 1990+ pinballs)
-  - allow to select a fading behavior between linear (backward compatible) / LED (no fading) / Incandescent (physic model of an incandescent bulb)
+  - allow to select a fading behavior between linear (backwards compatible) / LED (no fading) / Incandescent (physical model of an incandescent bulb)
   - try to make the user interface more intuitive
 
 - add support for more than one DMD (for original tables, in-game DMD menu,...)
@@ -85,12 +85,20 @@ FEATURES:
 
 FIXES:
 
+- fix analogue nudge not working for joysticks/gamepads in XInput mode
+
+- fix some problems with playing sounds via BASS: pitch/frequency change and loop/restart should now be matching the 'old' player
+
 - reflections now work in the interactive camera/light editing mode (F6) as well
+
+- fix overbrightness in F6 (interactive camera/light editing) mode
 
 - handle broken tables better and try to load as much as possible
 
 - static element preprocessing is now done on the GPU (which leads to a faster VPX-player start)
 - increase preprocessing sample rate for the static parts of the table
+
+- cleanup Light Debugger dialog and fix 2nd color button
 
 - improve script editing performance again
 

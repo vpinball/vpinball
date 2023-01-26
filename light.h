@@ -38,7 +38,7 @@ public:
    float m_fadeSpeedDown;
    float m_currentIntensity;
    double m_currentFilamentTemperature;
-   
+
    float m_state; // 0..1 is modulated from off to on, 2 is blinking
    COLORREF m_color;
    COLORREF m_color2; // color full
