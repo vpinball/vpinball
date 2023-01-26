@@ -4,6 +4,7 @@
 #include "Shader.h"
 #include "IndexBuffer.h"
 #include "VertexBuffer.h"
+#include "bulb.h"
 
 Light::Light() : m_lightcenter(this)
 {
@@ -667,6 +668,8 @@ void Light::UpdateCustomMoverVBuffer()
 
 void Light::RenderSetup()
 {
+   bulb_init();
+
    m_iblinkframe = 0;
    m_updateBulbLightHeight = false;
 
@@ -782,45 +785,19 @@ void Light::UpdateAnimation(const float diff_time_msec)
          break;
       case FADER_INCANDESCENT:
       {
-         // #44 Bulb characteristics (other characteristics are available in PinMAME/core.c but they do not make any noticeable difference and would make things more complicated to the table creators
-         const double U = 6.3 * powf(lightState, 0.25f); // Nominal voltage rating (V)
-         constexpr double R0 = 1.70020865326503000; // Resistor at 293K (Ohms)
-         constexpr double S = 0.00000161355490514; // Filament surface (m²)
-         constexpr double Mass = 0.00000021518852281; // Filament mass (kg)
-         double T = std::max(m_d.m_currentFilamentTemperature, 293.0); // a 0K temperature would cause NaN, so keep it above room temperature of 293K
-         double T2 = T * T;
-         double T3 = T2 * T;
          const double fadeSpeed = m_d.m_intensity / (m_d.m_currentIntensity < targetIntensity ? m_d.m_fadeSpeedUp : m_d.m_fadeSpeedDown); // Fade speed in ms
-         double remaining_time = diff_time_msec * (0.001 * 40.0 / fadeSpeed); // Apply a speed factor (a bulb with this characteristics reach full power between 30 and 40ms so we modulate around this)
-         //const double step_time = m_d.m_fadeSpeedUp < 0.040 ? 0.001 * 40.0 / m_fadeSpeed : 0.001; // Scale integration period as well to avoid having to avoid doing too small steps
-         const double step_time = 0.001 * 40.0 / fadeSpeed;
-         //const double step_time = 0.001; 
-         while (remaining_time > 0.0)
+         const double remaining_time = diff_time_msec * (0.001 * 40.0 / fadeSpeed); // Apply a speed factor (a bulb with this characteristics reach full power between 30 and 40ms so we modulate around this)
+         if (lightState)
          {
-            const double delta_t = std::min(remaining_time, step_time);
-            remaining_time -= delta_t;
-            // Lost energy due to radiating (light but also non visible wavelengths)
-            double delta_energy = -0.00000005670374419 * S * 0.0000664 * pow(T, 5.0796); // pow(T, 5.0796) is pow(T, 4) from Stefan/Boltzmann multiplied by emissivity which is 0.0000664*pow(T,1.0796)
-            // Acquired energy due to electrical heating
-            delta_energy += U * U / (R0 * pow(T / 293.0, 1.215));
-            const double specific_heat = 3.0 * 45.2268 * (1.0 - 310.0 * 310.0 / (20.0 * T2)) + (2.0 * 0.0045549 * T) + (4.0 * 0.000000000577874 * T3);
-            // Clamp dT due to low resolution integration on dt (1ms integration leads to very high dT during intensity surge, 0.1ms would be better)
-            T += std::min(delta_t * delta_energy / (specific_heat * Mass), 1000.0);
-            T2 = T * T;
-            T3 = T2 * T;
+            const double U = 6.3 * powf(lightState, 0.25f); // Modulating by Emission^0.25 is not fully correct (ignoring visible/non visible wavelengths) but an acceptable approximation
+            m_d.m_currentFilamentTemperature = bulb_heat_up(BULB_44, m_d.m_currentFilamentTemperature, remaining_time, U, 0.0);
          }
-         // Store the emission power in the visible range (see http://www.vendian.org/mncharity/dir3/blackbody/UnstableURLs/bbr_color.html)
-         // The formula is a polynomial regression over the wanted range (1500K to 3000K, fitted to get full power at 2700K, which is the steady state temperature used in the bulb model)
-         // The relative luminous flux depending on temperature does not depend on the bulb (mostly).
-         // Note that this power value is the perceived power (convolution of emitted energy by eye sensibility over visible range) so if it is used to drive a light
-         // of another color, then it must be corrected by the ratio of color intensity between 2700K color (this model) and the chosen light color.
-         double emission = 0.00000000164372236759046 * T3 - 0.00000915034539479724000 * T2 + 0.01697990181540710000000 * T - 10.46937655626230000000000;
-         emission = clamp(emission, 0.0, 1.0);
-         // Force stabilization when nearing the expected emission level (only for full state since for intermediate state we are not precise enough on the voltage to reach precise stability)
-         if ((lightState < 0.01f || lightState > 0.99f) && abs(lightState - emission) < 0.01)
-            emission = lightState;
-         m_d.m_currentIntensity = (float)(emission * m_d.m_intensity * m_d.m_intensity_scale);
-         m_d.m_currentFilamentTemperature = T;
+         else
+         {
+            m_d.m_currentFilamentTemperature = bulb_cool_down(BULB_44, m_d.m_currentFilamentTemperature, remaining_time);
+         }
+         m_d.m_currentIntensity = bulb_filament_temperature_to_emission(m_d.m_currentFilamentTemperature) * m_d.m_intensity * m_d.m_intensity_scale;
+         OutputDebugString(std::to_string(m_d.m_currentFilamentTemperature).append("\n"s).c_str());
       }
       break;
       }
