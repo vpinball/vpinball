@@ -704,6 +704,7 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"
   <ItemGroup>
     <ClCompile Include="backGlass.cpp" />
     <ClCompile Include="BlackBox.cpp" />
+    <ClCompile Include="bulb.cpp" />
     <ClCompile Include="captureExt.cpp" />
     <ClCompile Include="codeviewedit.cpp" />
     <ClCompile Include="CrashHandler.cpp" />
@@ -1079,6 +1080,7 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"
     <ClInclude Include="backGlass.h" />
     <ClInclude Include="ballex.h" />
     <ClInclude Include="BlackBox.h" />
+    <ClInclude Include="bulb.h" />
     <ClInclude Include="bumper.h" />
     <ClInclude Include="captureExt.h" />
     <ClInclude Include="codeview.h" />

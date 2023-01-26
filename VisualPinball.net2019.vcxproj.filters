@@ -310,6 +310,7 @@
     <ClCompile Include="dialogs\RenderProbeDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="bulb.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1576,6 +1577,9 @@
     </ClInclude>
     <ClInclude Include="dialogs\RenderProbeDialog.h">
       <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="bulb.h">
+      <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
