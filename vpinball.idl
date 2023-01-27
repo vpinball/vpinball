@@ -1480,6 +1480,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(456), helpstring("property Shadows")] HRESULT Shadows([in] long newVal);
                 [propget, id(458), helpstring("property Fader")] HRESULT Fader([out, retval] long *pVal);
                 [propput, id(458), helpstring("property Fader")] HRESULT Fader([in] long newVal);
+                [propget, id(459), helpstring("property FilamentTemperature")] HRESULT FilamentTemperature([out, retval] float *pVal);
         };
 
         [
