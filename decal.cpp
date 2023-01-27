@@ -532,7 +532,7 @@ void Decal::RenderObject()
    RenderDevice::RenderStateCache initial_state;
    pd3dDevice->CopyRenderStates(true, initial_state);
 
-   if (m_backglass && (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled))
+   if (m_backglass && (m_ptable->m_tblMirrorEnabled ^ g_pplayer->IsRenderPass(Player::REFLECTION_PASS)))
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
    else
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);

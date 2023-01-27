@@ -198,7 +198,7 @@ void mixer_draw()
 
    const bool cabMode = fmodf(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set], 360.f) != 0.f;
 
-   if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled)
+   if (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
       g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
 
    g_pplayer->m_pin3d.EnableAlphaBlend(true);
@@ -254,6 +254,6 @@ void mixer_draw()
          fade);
    }
 
-   if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled)
+   if (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
       g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 }

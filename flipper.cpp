@@ -603,7 +603,7 @@ void Flipper::RenderDynamic()
    if (m_phitflipper == nullptr && !m_d.m_visible)
       return;
 
-   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
       return;
 
    const Material * mat = m_ptable->GetMaterial(m_d.m_szMaterial);

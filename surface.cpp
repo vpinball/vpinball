@@ -548,7 +548,7 @@ void Surface::RenderDynamic()
 {
    TRACE_FUNCTION();
 
-   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
       return;
 
    RenderSlingshots();
@@ -984,7 +984,7 @@ void Surface::UpdateAnimation(const float diff_time_msec)
 
 void Surface::RenderStatic()
 {
-   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
       return;
 
    RenderSlingshots();
@@ -1047,7 +1047,7 @@ void Surface::RenderSlingshots()
 
 void Surface::RenderWallsAtHeight(const bool drop)
 {
-   if (m_ptable->m_reflectionEnabled && (/*m_d.m_heightbottom < 0.0f ||*/ m_d.m_heighttop < 0.0f))
+   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && (/*m_d.m_heightbottom < 0.0f ||*/ m_d.m_heighttop < 0.0f))
       return;
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
@@ -1127,7 +1127,7 @@ void Surface::RenderWallsAtHeight(const bool drop)
       pd3dDevice->basicShader->End();
 
       // Only render Bottom for Reflections
-      if (m_ptable->m_reflectionEnabled)
+      if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
       {
          if (mat->m_bOpacityActive || !m_isDynamic)
             pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);

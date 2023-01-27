@@ -468,7 +468,7 @@ void Gate::RenderDynamic()
    if (!m_phitgate->m_gateMover.m_visible)
       return;
 
-   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
       return;
 
    RenderObject();

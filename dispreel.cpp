@@ -206,7 +206,7 @@ void DispReel::RenderDynamic()
 {
    TRACE_FUNCTION();
 
-   if (!m_d.m_visible || !GetPTable()->GetEMReelsEnabled() || (m_backglass && m_ptable->m_reflectionEnabled))
+   if (!m_d.m_visible || !GetPTable()->GetEMReelsEnabled() || (m_backglass && g_pplayer->IsRenderPass(Player::REFLECTION_PASS)))
       return;
 
    // get a pointer to the image specified in the object
@@ -219,7 +219,7 @@ void DispReel::RenderDynamic()
    RenderDevice::RenderStateCache initial_state;
    pd3dDevice->CopyRenderStates(true, initial_state);
 
-   if (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled)
+   if (m_ptable->m_tblMirrorEnabled ^ g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
    else
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);

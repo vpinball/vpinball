@@ -96,9 +96,9 @@ void RenderProbe::MarkDirty()
 RenderTarget *RenderProbe::GetProbe(const bool is_static)
 {
    // Rendering is not reentrant. If a probe is requested while probe is being updated 
-   // (for example and object with reflection, rendering itsled in its reflection probe),
+   // (for example and object with reflection, rendering itself in its reflection probe),
    // then the last render probe (may be null) will be returned
-   if (m_dirty && !m_rendering)
+   if (m_dirty && !m_rendering && !g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
    {
       m_rendering = true;
       switch (m_type)
@@ -201,10 +201,15 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    if ((is_static && (mode == REFL_NONE || mode == REFL_BALLS || m_reflection_mode == REFL_DYNAMIC)) || (!is_static && (mode == REFL_NONE || mode == REFL_STATIC)))
       return;
 
+   // Rendering reflection is not reentrant and would fail (clip plane are view matrices are not cached)
+   assert(!g_pplayer->IsRenderPass(Player::REFLECTION_PASS));
+
    RenderTarget* previousRT = RenderTarget::GetCurrentRenderTarget();
    RenderDevice* p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
    RenderDevice::RenderStateCache initial_state;
    p3dDevice->CopyRenderStates(true, initial_state);
+
+   g_pplayer->m_render_mask |= Player::REFLECTION_PASS;
 
    // Prepare to render into the reflection back buffer
    if (is_static)
@@ -245,9 +250,8 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    // Set the clip plane to only render objects above the reflection plane (do not reflect what is under or the plane itself)
    vec4 clip_plane = vec4(-m_reflection_plane.x, -m_reflection_plane.y, -m_reflection_plane.z, m_reflection_plane.w);
    p3dDevice->SetClipPlane0(clip_plane);
-   p3dDevice->SetRenderStateClipPlane0(true);
+   // FIXME p3dDevice->SetRenderStateClipPlane0(true);
 
-   g_pplayer->m_ptable->m_reflectionEnabled = true; // set to let matrices and postrenderstatics know that we need to handle reflections now
    p3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW); // re-init/thrash cache entry due to the hacky nature of the table mirroring
 
    // Flip camera
@@ -297,7 +301,7 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    }
    
    // Restore initial render states and camera
-   g_pplayer->m_ptable->m_reflectionEnabled = false;
+   g_pplayer->m_render_mask &= ~Player::REFLECTION_PASS;
    p3dDevice->CopyRenderStates(false, initial_state);
    p3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &initialViewMat);
    if (render_static || render_dynamic)

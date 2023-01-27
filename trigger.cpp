@@ -578,7 +578,7 @@ void Trigger::RenderDynamic()
 {
    if (!m_d.m_visible || m_d.m_shape == TriggerNone)
       return;
-   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
       return;
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;

@@ -531,7 +531,7 @@ void Kicker::SetDefaultPhysics(const bool fromMouseClick)
 
 void Kicker::RenderDynamic()
 {
-   if (m_ptable->m_reflectionEnabled)
+   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
       return;
 
    if (m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole || m_d.m_kickertype == KickerHoleSimple || m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb || m_d.m_kickertype == KickerCup2)

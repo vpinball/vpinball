@@ -381,7 +381,7 @@ void Light::RenderDynamic()
 {
    TRACE_FUNCTION();
 
-   if (m_ptable->m_reflectionEnabled)
+   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
       return;
 
    if (m_customMoverVBuffer == nullptr) // in case of degenerate light
@@ -390,7 +390,7 @@ void Light::RenderDynamic()
    if (m_backglass && !GetPTable()->GetDecalsEnabled())
       return;
 
-   if (m_d.m_showBulbMesh && !m_d.m_staticBulbMesh && g_pplayer->m_current_renderstage == 0)
+   if (m_d.m_showBulbMesh && !m_d.m_staticBulbMesh && !g_pplayer->IsRenderPass(Player::LIGHT_BUFFER))
       RenderBulbMesh();
 
    if (!m_d.m_visible)
@@ -427,7 +427,7 @@ void Light::RenderDynamic()
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    }
 
-   if (m_backglass || (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled))
+   if (m_backglass || (m_ptable->m_tblMirrorEnabled ^ g_pplayer->IsRenderPass(Player::REFLECTION_PASS)))
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
    else
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
@@ -458,7 +458,7 @@ void Light::RenderDynamic()
       pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_REVSUBTRACT);
 
       lightColor_intensity.w = m_d.m_currentIntensity * 0.02f; //!! make configurable?
-      if (m_d.m_BulbLight && g_pplayer->m_current_renderstage == 1)
+      if (m_d.m_BulbLight && g_pplayer->IsRenderPass(Player::LIGHT_BUFFER))
          lightColor_intensity.w *= m_d.m_transmissionScale;
       pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
       pd3dDevice->lightShader->SetFloat(SHADER_blend_modulate_vs_add, 0.00001f); // additive, but avoid full 0, as it disables the blend
@@ -508,11 +508,11 @@ void Light::RenderDynamic()
       pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_REVSUBTRACT);
 
       pd3dDevice->lightShader->SetBool(SHADER_disableVertexShader, m_backglass);
-      pd3dDevice->lightShader->SetFloat(SHADER_blend_modulate_vs_add, (g_pplayer->m_current_renderstage == 0) ? min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
+      pd3dDevice->lightShader->SetFloat(SHADER_blend_modulate_vs_add, !g_pplayer->IsRenderPass(Player::LIGHT_BUFFER) ? min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
       pd3dDevice->lightShader->SetTechnique(m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS ? SHADER_TECHNIQUE_bulb_light_with_ball_shadows : SHADER_TECHNIQUE_bulb_light);
 
       lightColor_intensity.w = m_d.m_currentIntensity;
-      if (g_pplayer->m_current_renderstage == 1)
+      if (g_pplayer->IsRenderPass(Player::LIGHT_BUFFER))
          lightColor_intensity.w *= m_d.m_transmissionScale;
       pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
    }
