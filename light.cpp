@@ -1616,6 +1616,14 @@ STDMETHODIMP Light::GetInPlayIntensity(float *pVal)
    return S_OK;
 }
 
+STDMETHODIMP Light::get_FilamentTemperature(float *pVal)
+{
+   double T = bulb_emission_to_filament_temperature(m_d.m_currentIntensity / m_d.m_intensity * m_d.m_intensity_scale); 
+   *pVal = (float)T;
+
+   return S_OK;
+}
+
 STDMETHODIMP Light::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_visible);

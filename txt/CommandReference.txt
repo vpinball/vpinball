@@ -13,6 +13,7 @@ Changelog:
 - add CurrentAnimOffset to the Trigger and Target elements
 - add CurrentRingOffset to the Bumper Element
 - add support for 'modulated' lights by changing the previous light state (0=Off,1=On,2=Blinking) to float (see State, GetInPlayState and Duration), and allowing it to be also defined between 0 and 1 (2 remains the blinking state)
+- add FilamentTemperature property to lights to get the 'blackbody' temperature of the filament according to the light current intensity, full intensity corresponding to a temperature of 2700K
 - add support for multiple custom DMDs by adding DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels to flashers. The flasher will use the provided data if any, or defaults to the table data (captured or directly defined)
 - add Shadows property to Light element
 
@@ -611,6 +612,7 @@ BulbModulateVsAdd(float) - blends between modulating and additive when bulb is e
 BulbHaloHeight(float) - sets the halo height of a bulb light
 Visible(bool)
 Shadows(int) - Shadowing mode: 0=Off, 1=Raytraced ball shadows
+FilamentTemperature(float) - 'blackbody' temperature of the filament according to the light current intensity, full intensity corresponding to a temperature of 2700K (value equal or below 1500K do not emit light)
 
 Methods
 -------

@@ -98,7 +98,7 @@ double bulb_filament_temperature_to_emission(const double T)
 /-------------------------------*/
 double bulb_emission_to_filament_temperature(const double p)
 {
-   int v = (int)p * 255;
+   int v = (int)(p * 255);
    return v >= 512 ? locals.p_to_t[511] : locals.p_to_t[v];
 }
 
@@ -152,7 +152,7 @@ double bulb_heat_up(const int bulb, double T, double duration, const double U, c
 {
    while (duration > 0.0)
    {
-      T = T < 293.0 ? 293.0 : T > 3000.0 ? 3000.0 : T; // Keeps T within the range of the LUT (between room temperature and melt down point)
+      T = T < 293.0 ? 293.0 : T > 2999.0 ? 2999.0 : T; // Keeps T within the range of the LUT (between room temperature and melt down point)
       double energy;
       if (serial_R)
       {
