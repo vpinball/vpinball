@@ -796,7 +796,7 @@ void Light::UpdateAnimation(const float diff_time_msec)
          {
             m_d.m_currentFilamentTemperature = bulb_cool_down(BULB_44, m_d.m_currentFilamentTemperature, remaining_time);
          }
-         m_d.m_currentIntensity = bulb_filament_temperature_to_emission(m_d.m_currentFilamentTemperature) * m_d.m_intensity * m_d.m_intensity_scale;
+         m_d.m_currentIntensity = (float)(bulb_filament_temperature_to_emission(m_d.m_currentFilamentTemperature) * m_d.m_intensity * m_d.m_intensity_scale);
          OutputDebugString(std::to_string(m_d.m_currentFilamentTemperature).append("\n"s).c_str());
       }
       break;

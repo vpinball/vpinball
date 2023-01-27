@@ -737,9 +737,6 @@ void Player::OnInitialUpdate()
     mixer_init(GetHwnd());
     hid_init();
 
-    if (!m_fullScreen) // see above
-        SetCursorPos(400, 999999);
-
     const HRESULT result = Init();
     if (result != S_OK)
         throw 0; //!! have a more specific code (that is catched in the VPinball PeekMessageA loop)?!
@@ -4940,15 +4937,17 @@ void Player::UpdateCameraModeDisplay()
 
 void Player::LockForegroundWindow(const bool enable)
 {
+    if (m_fullScreen || (m_wnd_width == m_screenwidth && m_wnd_height == m_screenheight)) // detect windowed fullscreen
+    {
+        if(enable)
+            while (ShowCursor(FALSE) >= 0) ;
+        else
+            while (ShowCursor(TRUE) < 0) ;
+    }
+
 #if(_WIN32_WINNT >= 0x0500)
     if (m_fullScreen) // revert special tweaks of exclusive fullscreen app
-    {
        ::LockSetForegroundWindow(enable ? LSFW_LOCK : LSFW_UNLOCK);
-       if(enable)
-          while(::ShowCursor(FALSE)>=0) ;
-       else
-          ::ShowCursor(TRUE);
-    }
 #else
 #pragma message ( "Warning: Missing LockSetForegroundWindow()" )
 #endif
@@ -5271,10 +5270,11 @@ void Player::Render()
          }
          else if ((m_closeType == 0) && !g_pvp->m_disable_pause_menu)
          {
-            ShowCursor(TRUE);
+            while(ShowCursor(TRUE)<0) ;
             option = DialogBox(g_pvp->theInstance, MAKEINTRESOURCE(IDD_GAMEPAUSE), GetHwnd(), PauseProc);
-            if(option != ID_DEBUGWINDOW)
-               while(ShowCursor(FALSE)>=0) ;
+            if (option != ID_DEBUGWINDOW && option != ID_QUIT)
+               if (g_pplayer->m_fullScreen || (g_pplayer->m_wnd_width == g_pplayer->m_screenwidth && g_pplayer->m_wnd_height == g_pplayer->m_screenheight)) // detect windowed fullscreen
+                  while(ShowCursor(FALSE)>=0) ;
          }
          else //m_closeType == all others
          {

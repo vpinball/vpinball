@@ -847,7 +847,7 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
          }
          m_DragItems.clear();
          ReleaseCapture();
-         ShowCursor(TRUE);
+         while(ShowCursor(TRUE)<0) ;
          m_dragging = false;
       }
       break;
@@ -878,7 +878,7 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
       dragItem->m_hDragLayer = GetLayerByItem(dragItem->m_hDragItem);
       m_DragItems.push_back(dragItem);
 
-      ShowCursor(FALSE);
+      while(ShowCursor(FALSE)>=0) ;
       SetCapture();
       m_dragging = true;
       return TRUE;

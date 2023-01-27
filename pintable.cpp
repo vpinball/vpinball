@@ -3746,7 +3746,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   // playfield meshes were always processed as static until 10.8.0 (more precisely, directly rendered before everything else even in camera mode, then skipped when rendering all parts)
                   prim->m_d.m_staticRendering = true;
                   // since playfield were always rendered before bulb light buffer until 10.8, they would never have transmitted light
-                  prim->m_d.m_disableLightingBelow = 1.0;
+                  prim->m_d.m_disableLightingBelow = 1.0f;
                   // playfield meshes were always forced as visible until 10.8.0
                   prim->put_Visible(FTOVB(true));
                   // playfield meshes were always drawn before other transparent parts until 10.8.0
