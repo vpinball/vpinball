@@ -1915,7 +1915,7 @@ void RenderDevice::SetRenderStateClipPlane0(const bool enabled) { SetRenderState
 
 void RenderDevice::SetRenderStateCulling(RenderStateValue cull)
 {
-   if (g_pplayer && (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->m_ptable->m_reflectionEnabled))
+   if (g_pplayer && (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->IsRenderPass(Player::REFLECTION_PASS)))
    {
       if (cull == CULL_CCW)
          cull = CULL_CW;

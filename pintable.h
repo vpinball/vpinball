@@ -800,7 +800,6 @@ public:
    bool m_renderEMReels;
    bool m_overwriteGlobalStereo3D;
    bool m_reflectElementsOnPlayfield;
-   bool m_reflectionEnabled;
 
    vector<Material *> m_dbgChangedMaterials;
 

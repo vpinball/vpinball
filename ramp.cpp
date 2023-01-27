@@ -1233,7 +1233,7 @@ void Ramp::RenderStatic()
    if (!m_d.m_visible)
       return;
 
-   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
       return;
 
    if (!m_isStaticRendering)
@@ -2236,7 +2236,7 @@ void Ramp::RenderDynamic()
    // don't render if invisible or not a transparent ramp
    if (!m_d.m_visible || (!mat->m_bOpacityActive))
       return;
-   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
       return;
 
    RenderRamp(mat);

@@ -1148,8 +1148,6 @@ PinTable::PinTable()
    m_renderDecals = true;
    m_renderEMReels = true;
 
-   m_reflectionEnabled = false;
-
    m_overridePhysics = 0;
    m_overridePhysicsFlipper = false;
 

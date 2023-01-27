@@ -1217,17 +1217,17 @@ void Primitive::RenderObject()
    // Request probes before setting up state
    RenderProbe *refraction_probe = nullptr;
    RenderTarget *refractions = nullptr;
-   if (!m_ptable->m_reflectionEnabled) // Refraction is not supported inside reflection (i.e. do not reflect refracted part)
+   if (!g_pplayer->IsRenderPass(Player::REFLECTION_PASS)) // Refraction is not supported inside reflection (i.e. do not reflect refracted part)
    {
       refraction_probe = m_ptable->GetRenderProbe(m_d.m_szRefractionProbe);
-      refractions = refraction_probe ? refraction_probe->GetProbe(g_pplayer->m_isRenderingStatic) : nullptr;
+      refractions = refraction_probe ? refraction_probe->GetProbe(g_pplayer->IsRenderPass(Player::STATIC_PREPASS)) : nullptr;
    }
    RenderProbe *reflection_probe = nullptr;
    RenderTarget *reflections = nullptr;
    if (m_d.m_reflectionStrength > 0)
    {
       reflection_probe = m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
-      reflections = reflection_probe ? reflection_probe->GetProbe(g_pplayer->m_isRenderingStatic)  : nullptr;
+      reflections = reflection_probe ? reflection_probe->GetProbe(g_pplayer->IsRenderPass(Player::STATIC_PREPASS)) : nullptr;
    }
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
@@ -1329,7 +1329,7 @@ void Primitive::RenderObject()
       matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal, plane_normal);
       pd3dDevice->basicShader->SetVector(SHADER_mirrorNormal, plane_normal.x,plane_normal.y,plane_normal.z,0.f);
       pd3dDevice->basicShader->SetTexture(SHADER_tex_reflection, reflections->GetColorSampler());
-      is_reflection_only_pass = m_d.m_staticRendering && !g_pplayer->m_isRenderingStatic && !g_pplayer->m_dynamicMode;
+      is_reflection_only_pass = m_d.m_staticRendering && !g_pplayer->IsRenderPass(Player::STATIC_PREPASS) && !g_pplayer->m_dynamicMode;
       if (!is_reflection_only_pass && mat->m_bOpacityActive && (mat->m_fOpacity < 1.0f || (pin && pin->has_alpha())))
       { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
          pd3dDevice->basicShader->SetTechniqueMetal(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat, nMap, false, false);
@@ -1402,7 +1402,7 @@ void Primitive::RenderDynamic()
    {
        if (!m_d.m_visible || m_d.m_skipRendering)
            return;
-       if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+       if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
            return;
        if (m_d.m_addBlend)
        {
@@ -1473,7 +1473,7 @@ void Primitive::RenderStatic()
    else 
    {
        if (!m_d.m_visible) return;
-       if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+       if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
            return;
    }
 

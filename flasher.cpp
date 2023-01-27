@@ -1259,7 +1259,7 @@ void Flasher::RenderDynamic()
    }
    //Don't render if invisible (or DMD connection not set)
    BaseTexture *texdmd = m_texdmd != nullptr ? m_texdmd : g_pplayer->m_texdmd;
-   if (!m_d.m_isVisible || m_dynamicVertexBuffer == nullptr || m_ptable->m_reflectionEnabled || (m_d.m_isDMD && !texdmd))
+   if (!m_d.m_isVisible || m_dynamicVertexBuffer == nullptr || g_pplayer->IsRenderPass(Player::REFLECTION_PASS) || (m_d.m_isDMD && !texdmd))
       return;
 
    const vec4 color = convertColor(m_d.m_color, (float)m_d.m_alpha*m_d.m_intensity_scale / 100.0f);
@@ -1269,7 +1269,7 @@ void Flasher::RenderDynamic()
    if (color.x == 0.f && color.y == 0.f && color.z == 0.f)
       return;
 
-   if (m_d.m_isDMD && (g_pplayer->m_dmdstate == 0)) // don't draw any DMD, but this case should not happen in the first place
+   if (m_d.m_isDMD && (g_pplayer->IsRenderPass(Player::OPAQUE_DMD_PASS) || g_pplayer->IsRenderPass(Player::TRANSPARENT_DMD_PASS) )) // don't draw any DMD, but this case should not happen in the first place
       return;
 
    RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
@@ -1279,8 +1279,8 @@ void Flasher::RenderDynamic()
    const bool alphadmd = (m_d.m_modulate_vs_add < 1.f);
 
    if (m_d.m_isDMD &&
-       (((g_pplayer->m_dmdstate == 1) && alphadmd) || // render alpha DMD
-        ((g_pplayer->m_dmdstate == 2) && !alphadmd))) // render normal DMD
+       ((g_pplayer->IsRenderPass(Player::TRANSPARENT_DMD_PASS) && alphadmd) || // render alpha DMD
+        (g_pplayer->IsRenderPass(Player::OPAQUE_DMD_PASS) && !alphadmd))) // render normal DMD
    {
        if (m_dynamicVertexBufferRegenerate)
        {
@@ -1292,7 +1292,7 @@ void Flasher::RenderDynamic()
        pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
 
        pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-       if ((g_pplayer->m_dmdstate == 1) && alphadmd)
+       if (g_pplayer->IsRenderPass(Player::TRANSPARENT_DMD_PASS) && alphadmd)
           g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_addBlend);
        else
           pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
@@ -1350,7 +1350,7 @@ void Flasher::RenderDynamic()
        pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_TEX, m_dynamicVertexBuffer, 0, m_numVertices, m_dynamicIndexBuffer, 0, m_numPolys * 3);
        pd3dDevice->DMDShader->End();
    }
-   else if (g_pplayer->m_dmdstate == 0)
+   else if (!g_pplayer->IsRenderPass(Player::TRANSPARENT_DMD_PASS) && g_pplayer->IsRenderPass(Player::OPAQUE_DMD_PASS))
    {
        if (m_dynamicVertexBufferRegenerate)
        {

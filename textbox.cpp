@@ -268,13 +268,13 @@ void Textbox::RenderDynamic()
 
    const bool dmd = m_d.m_isDMD || StrStrI(m_d.m_sztext.c_str(), "DMD") != nullptr; //!! second part is VP10.0 legacy
 
-   if (!m_d.m_visible || (dmd && !g_pplayer->m_texdmd) || (m_backglass && m_ptable->m_reflectionEnabled))
+   if (!m_d.m_visible || (dmd && !g_pplayer->m_texdmd) || (m_backglass && g_pplayer->IsRenderPass(Player::REFLECTION_PASS)))
       return;
 
    RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
    RenderDevice::RenderStateCache initial_state;
    pd3dDevice->CopyRenderStates(true, initial_state);
-   if (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled)
+   if (m_ptable->m_tblMirrorEnabled ^ g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
    else
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);

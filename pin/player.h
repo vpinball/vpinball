@@ -693,11 +693,17 @@ public:
 
    bool m_toogle_DTFS;
 
-   //bool m_low_quality_bloom;
-
-   bool m_isRenderingStatic; // Static prerendering or normal one
-   unsigned int m_current_renderstage; // for bulb lights: 0=normal, 1=light buffer
-   unsigned int m_dmdstate; // used to distinguish different flasher/DMD rendering mode states
+   enum RenderMask : unsigned int
+   {
+      DEFAULT = 0,
+      STATIC_PREPASS = 1,
+      LIGHT_BUFFER = 2,
+      TRANSPARENT_DMD_PASS = 4,
+      OPAQUE_DMD_PASS = 8,
+      REFLECTION_PASS = 16
+   };
+   unsigned int m_render_mask = 0; // Active pass render bit mask
+   inline bool IsRenderPass(const RenderMask pass_mask) const { return (m_render_mask & pass_mask) != 0; }
 
    bool m_overwriteBallImages;
    Texture *m_ballImage;

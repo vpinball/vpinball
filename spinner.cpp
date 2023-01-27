@@ -368,7 +368,7 @@ void Spinner::RenderDynamic()
    if (!m_phitspinner->m_spinnerMover.m_visible || !m_d.m_visible)
       return;
 
-   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
       return;
 
    RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
@@ -468,7 +468,7 @@ void Spinner::RenderStatic()
    if (!m_d.m_showBracket || !m_d.m_visible)
       return;
 
-   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
+   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
       return;
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;

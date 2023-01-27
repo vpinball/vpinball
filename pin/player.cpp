@@ -170,7 +170,7 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
 
    m_toogle_DTFS = false;
 
-   m_isRenderingStatic = false;
+   m_render_mask = DEFAULT;
 
    m_throwBalls = false;
    m_ballControl = false;
@@ -193,9 +193,6 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_curPlunger = JOYRANGEMN - 1;
 
    m_ptable = ptable;
-
-   m_current_renderstage = 0;
-   m_dmdstate = 0;
 
 #ifdef ENABLE_VR
    const int vrDetectionMode = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "AskToTurnOn"s, 0);
@@ -328,8 +325,6 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_ballControl = LoadValueBoolWithDefault(regKey[RegName::Editor], "BallControlAlwaysOn"s, false);
    m_debugBallSize = LoadValueIntWithDefault(regKey[RegName::Editor], "ThrowBallSize"s, 50);
    m_debugBallMass = LoadValueFloatWithDefault(regKey[RegName::Editor], "ThrowBallMass"s, 1.0f);
-
-   //m_low_quality_bloom = LoadValueBoolWithDefault(regKey[RegName::Player], "LowQualityBloom"s, false);
 
    const int numberOfTimesToShowTouchMessage = LoadValueIntWithDefault(regKey[RegName::Player], "NumberOfTimesToShowTouchMessage"s, 10);
    SaveValueInt(regKey[RegName::Player], "NumberOfTimesToShowTouchMessage"s, max(numberOfTimesToShowTouchMessage - 1, 0));
@@ -1960,7 +1955,7 @@ void Player::InitStatic()
    if (m_stereo3D == STEREO_VR)
       return;
 
-   m_isRenderingStatic = true;
+   m_render_mask |= STATIC_PREPASS;
 
    // The code will fail if the static render target is MSAA (the copy operation we are performing is not allowed)
    assert(!m_pin3d.m_pddsStatic->IsMSAA());
@@ -2131,7 +2126,7 @@ void Player::InitStatic()
 
    g_pvp->ProfileLog("AO/Static PreRender End"s);
    
-   m_isRenderingStatic = false;
+   m_render_mask &= ~STATIC_PREPASS;
 }
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)
@@ -3367,7 +3362,7 @@ void Player::DrawBulbLightBuffer()
 
    // Draw bulb lights with transmission scale only
    bool do_bloom = false;
-   m_current_renderstage = 1; // for bulb lights so they know what they have to do
+   m_render_mask |= LIGHT_BUFFER;
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE); // disable all z-tests as zbuffer is in different resolution
    for (size_t i = 0; i < m_vHitTrans.size(); ++i)
       if (m_vHitTrans[i]->RenderToLightBuffer())
@@ -3375,7 +3370,7 @@ void Player::DrawBulbLightBuffer()
          m_vHitTrans[i]->RenderDynamic();
          do_bloom = true;
       }
-   m_current_renderstage = 0;
+   m_render_mask &= ~LIGHT_BUFFER;
 
    if (do_bloom)
    { // Only apply blur if we have actually rendered some lights
@@ -5510,7 +5505,6 @@ void Player::DrawDynamics(bool onlyBalls)
 
    if (GetProfilingMode() != PF_SPLIT_RENDERING) // normal rendering path for standard gameplay
    {
-      m_dmdstate = 0;
       // Draw non-transparent objects. No DMD's
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
          if (!m_vHitNonTrans[i]->IsDMD())
@@ -5523,8 +5517,8 @@ void Player::DrawDynamics(bool onlyBalls)
             #endif
          }
 
-      m_dmdstate = 2;
       // Draw non-transparent DMD's
+      m_render_mask |= OPAQUE_DMD_PASS;
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
          if (m_vHitNonTrans[i]->IsDMD())
          {
@@ -5535,6 +5529,7 @@ void Player::DrawDynamics(bool onlyBalls)
             assert(initial_state.depth_bias == live_state.depth_bias);
             #endif
          }
+      m_render_mask &= ~OPAQUE_DMD_PASS;
 
       // Balls must be rendered after (non transparent) kickers since kickers perform a depth shift (to be visible despite the playfield) that would render them above the ball otherwise
       DrawBalls();
@@ -5546,7 +5541,6 @@ void Player::DrawDynamics(bool onlyBalls)
       m_limiter.Execute(m_pin3d.m_pd3dPrimaryDevice); //!! move below other draw calls??
 #endif
 
-      m_dmdstate = 0;
       // Draw transparent objects. No DMD's
       for (size_t i = 0; i < m_vHitTrans.size(); ++i)
          if (!m_vHitTrans[i]->IsDMD())
@@ -5559,8 +5553,8 @@ void Player::DrawDynamics(bool onlyBalls)
             #endif
          }
 
-      m_dmdstate = 1;
       // Draw only transparent DMD's
+      m_render_mask |= TRANSPARENT_DMD_PASS;
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i) // NonTrans is correct as DMDs are always sorted in there
          if (m_vHitNonTrans[i]->IsDMD())
          {
@@ -5571,6 +5565,7 @@ void Player::DrawDynamics(bool onlyBalls)
             assert(initial_state.depth_bias == live_state.depth_bias);
             #endif
          }
+      m_render_mask &= ~TRANSPARENT_DMD_PASS;
 
       if (GetProfilingMode() == PF_ENABLED)
          m_pin3d.m_gpu_profiler.Timestamp(GTS_Transparent);
@@ -5581,8 +5576,6 @@ void Player::DrawDynamics(bool onlyBalls)
       m_limiter.Execute(m_pin3d.m_pd3dPrimaryDevice); //!! move below other draw calls??
       m_pin3d.m_gpu_profiler.BeginFrame(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
 #endif
-
-      m_dmdstate = 0;
 
       // Draw non-transparent Primitives.
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
@@ -5597,10 +5590,11 @@ void Player::DrawDynamics(bool onlyBalls)
       m_pin3d.m_gpu_profiler.Timestamp(GTS_Walls_Ramps_Rubbers_NT);
 
       // Else.
-      m_dmdstate = 2;
+      m_render_mask |= TRANSPARENT_DMD_PASS;
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
          if (m_vHitNonTrans[i]->IsDMD() && m_vHitNonTrans[i]->HitableGetItemType() == eItemFlasher)
             m_vHitNonTrans[i]->RenderDynamic();
+      m_render_mask &= ~TRANSPARENT_DMD_PASS;
 
       DrawBalls();
 
@@ -5637,20 +5631,19 @@ void Player::DrawDynamics(bool onlyBalls)
       m_pin3d.m_gpu_profiler.Timestamp(GTS_Lights);
 
       // Draw Flashers.
-      m_dmdstate = 0;
       for (size_t i = 0; i < m_vHitTrans.size(); ++i)
          if (!m_vHitTrans[i]->IsDMD() && m_vHitTrans[i]->HitableGetItemType() == eItemFlasher)
             m_vHitTrans[i]->RenderDynamic();
-      m_dmdstate = 1;
+      m_render_mask |= TRANSPARENT_DMD_PASS;
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
          if (m_vHitNonTrans[i]->IsDMD() && m_vHitNonTrans[i]->HitableGetItemType() == eItemFlasher)
             m_vHitNonTrans[i]->RenderDynamic();
+      m_render_mask &= ~TRANSPARENT_DMD_PASS;
       m_pin3d.m_gpu_profiler.Timestamp(GTS_Flashers);
 
       // Unused so far.
       m_pin3d.m_gpu_profiler.Timestamp(GTS_UNUSED); //!!
    }
-   m_dmdstate = 0;
 }
 
 void Player::DrawBalls()
@@ -5695,7 +5688,7 @@ void Player::DrawBalls()
       const float maxz = (pball->m_d.m_radius + m_ptable->m_tableheight) + 3.0f;
       const float minz = (pball->m_d.m_radius + m_ptable->m_tableheight) - 0.1f;
 
-      if (m_ptable->m_reflectionEnabled)
+      if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
       {
          // Don't draw if ball reflection is disabled for this ball
          if (!pball->m_reflectionEnabled)
@@ -5863,7 +5856,7 @@ void Player::DrawBalls()
       m_ballShader->End();
 
       // ball trails
-      if((!m_ptable->m_reflectionEnabled) && // do not render trails in reflection pass
+      if ((!g_pplayer->IsRenderPass(Player::REFLECTION_PASS)) && // do not render trails in reflection pass
          ((m_trailForBalls && (m_ptable->m_useTrailForBalls == -1)) || (m_ptable->m_useTrailForBalls == 1)))
       {
          Vertex3D_NoTex2 rgv3D_all[MAX_BALL_TRAIL_POS * 2];
