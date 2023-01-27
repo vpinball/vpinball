@@ -250,7 +250,7 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    // Set the clip plane to only render objects above the reflection plane (do not reflect what is under or the plane itself)
    vec4 clip_plane = vec4(-m_reflection_plane.x, -m_reflection_plane.y, -m_reflection_plane.z, m_reflection_plane.w);
    p3dDevice->SetClipPlane0(clip_plane);
-   // FIXME p3dDevice->SetRenderStateClipPlane0(true);
+   p3dDevice->SetRenderStateClipPlane0(true);
 
    p3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW); // re-init/thrash cache entry due to the hacky nature of the table mirroring
 
@@ -262,19 +262,21 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    Matrix3D reflect;
    reflect.SetIdentity();
    reflect._11 = 1.0f - 2.0f * m_reflection_plane.x * m_reflection_plane.x;
-   reflect._12 = -2.0f * m_reflection_plane.x * m_reflection_plane.y;
-   reflect._13 = -2.0f * m_reflection_plane.x * m_reflection_plane.z;
-   reflect._21 = -2.0f * m_reflection_plane.x * m_reflection_plane.y;
+   reflect._12 =      - 2.0f * m_reflection_plane.x * m_reflection_plane.y;
+   reflect._13 =      - 2.0f * m_reflection_plane.x * m_reflection_plane.z;
+   reflect._14 =      - 2.0f * m_reflection_plane.x * m_reflection_plane.w;
+   reflect._21 =      - 2.0f * m_reflection_plane.y * m_reflection_plane.x;
    reflect._22 = 1.0f - 2.0f * m_reflection_plane.y * m_reflection_plane.y;
-   reflect._23 = -2.0f * m_reflection_plane.y * m_reflection_plane.z;
-   reflect._31 = -2.0f * m_reflection_plane.x * m_reflection_plane.z;
-   reflect._32 = -2.0f * m_reflection_plane.y * m_reflection_plane.z;
+   reflect._23 =      - 2.0f * m_reflection_plane.y * m_reflection_plane.z;
+   reflect._24 =      - 2.0f * m_reflection_plane.y * m_reflection_plane.w;
+   reflect._31 =      - 2.0f * m_reflection_plane.z * m_reflection_plane.x;
+   reflect._32 =      - 2.0f * m_reflection_plane.z * m_reflection_plane.y;
    reflect._33 = 1.0f - 2.0f * m_reflection_plane.z * m_reflection_plane.z;
-   reflect._33 = -1.0f;
+   reflect._34 =      - 2.0f * m_reflection_plane.z * m_reflection_plane.w;
    viewMat = reflect * viewMat;
    // Translate the camera on the other side of the plane (move by twice the distance along its normal)
-   reflect.SetTranslation(-m_reflection_plane.w * m_reflection_plane.x * 2.0f, -m_reflection_plane.w * m_reflection_plane.y * 2.0f, -m_reflection_plane.w * m_reflection_plane.z * 2.0f);
-   viewMat = reflect * viewMat;
+   // reflect.SetTranslation(-m_reflection_plane.w * m_reflection_plane.x * 2.0f, -m_reflection_plane.w * m_reflection_plane.y * 2.0f, -m_reflection_plane.w * m_reflection_plane.z * 2.0f);
+   //viewMat = reflect * viewMat;
    p3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
 
    const bool render_static = is_static || (mode == REFL_DYNAMIC);
