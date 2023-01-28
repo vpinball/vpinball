@@ -1193,7 +1193,7 @@ void Ramp::PrepareHabitrail()
    }
 
    SAFE_BUFFER_RELEASE(m_dynamicIndexBuffer);
-   m_dynamicIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_meshIndices);
+   m_dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_meshIndices);
 
    delete[] m_vertBuffer;
    m_vertBuffer = nullptr;
@@ -2462,7 +2462,7 @@ void Ramp::GenerateVertexBuffer()
    }*/
 
    SAFE_BUFFER_RELEASE(m_dynamicIndexBuffer);
-   m_dynamicIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_meshIndices);
+   m_dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_meshIndices);
    delete[] tmpBuffer;
 }
 

@@ -31,19 +31,15 @@ public:
    };
 
    IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format);
-   static IndexBuffer* CreateAndFillIndexBuffer(RenderDevice* rd, const unsigned int numIndices, const unsigned int* indices);
-   static IndexBuffer* CreateAndFillIndexBuffer(RenderDevice* rd, const unsigned int numIndices, const WORD* indices);
-   static IndexBuffer* CreateAndFillIndexBuffer(RenderDevice* rd, const vector<unsigned int>& indices);
-   static IndexBuffer* CreateAndFillIndexBuffer(RenderDevice* rd, const vector<WORD>& indices);
-
-   static void bindNull() { m_curIndexBuffer = nullptr; }
+   IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const unsigned int* indices);
+   IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const WORD* indices);
+   IndexBuffer(RenderDevice* rd, const vector<unsigned int>& indices);
+   IndexBuffer(RenderDevice* rd, const vector<WORD>& indices);
 
    void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void** dataBuffer, const DWORD flags);
    void unlock();
    void release();
    void bind();
-
-   static IndexBuffer* m_curIndexBuffer; // for caching
 
 private:
    RenderDevice* m_rd;
@@ -74,7 +70,7 @@ private:
    void UploadData();
    void addToNotUploadedBuffers();
    static vector<IndexBuffer*> notUploadedBuffers;
-   static void UploadBuffers();
+   static void UploadBuffers(RenderDevice* rd);
 #else
    IDirect3DIndexBuffer9* m_ib = nullptr;
 #endif

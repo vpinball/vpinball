@@ -866,7 +866,7 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 void Flipper::RenderSetup()
 {
    SAFE_BUFFER_RELEASE(m_indexBuffer);
-   m_indexBuffer = IndexBuffer::CreateAndFillIndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, flipperBaseNumIndices, flipperBaseIndices);
+   m_indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, flipperBaseNumIndices, flipperBaseIndices);
 
    SAFE_BUFFER_RELEASE(m_vertexBuffer);
    m_vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, flipperBaseVertices * 2, 0, MY_D3DFVF_NOTEX2_VERTEX);

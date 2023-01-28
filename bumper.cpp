@@ -639,7 +639,7 @@ void Bumper::RenderSetup()
    {
       m_baseTexture.CreateFromResource(IDB_BUMPER_BASE);
       SAFE_BUFFER_RELEASE(m_baseIndexBuffer);
-      m_baseIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperBaseNumIndices, bumperBaseIndices);
+      m_baseIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperBaseNumIndices, bumperBaseIndices);
 
       SAFE_BUFFER_RELEASE(m_baseVertexBuffer);
       m_baseVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperBaseNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
@@ -655,7 +655,7 @@ void Bumper::RenderSetup()
       m_skirtTexture.CreateFromResource(IDB_BUMPER_SKIRT);
 
       SAFE_BUFFER_RELEASE(m_socketIndexBuffer);
-      m_socketIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperSocketNumIndices, bumperSocketIndices);
+      m_socketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperSocketNumIndices, bumperSocketIndices);
 
       SAFE_BUFFER_RELEASE(m_socketVertexBuffer);
       m_socketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
@@ -671,7 +671,7 @@ void Bumper::RenderSetup()
       m_ringTexture.CreateFromResource(IDB_BUMPER_RING);
 
       SAFE_BUFFER_RELEASE(m_ringIndexBuffer);
-      m_ringIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperRingNumIndices, bumperRingIndices);
+      m_ringIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperRingNumIndices, bumperRingIndices);
 
       SAFE_BUFFER_RELEASE(m_ringVertexBuffer);
       m_ringVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperRingNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
@@ -690,7 +690,7 @@ void Bumper::RenderSetup()
       m_capTexture.CreateFromResource(IDB_BUMPERCAP);
 
       SAFE_BUFFER_RELEASE(m_capIndexBuffer);
-      m_capIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperCapNumIndices, bumperCapIndices);
+      m_capIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperCapNumIndices, bumperCapIndices);
 
       SAFE_BUFFER_RELEASE(m_capVertexBuffer);
       m_capVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperCapNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);

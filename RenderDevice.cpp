@@ -2222,7 +2222,7 @@ void RenderDevice::DrawPrimitive(const PrimitiveTypes type, const DWORD fvf, con
    if (FAILED(hr))
       ReportError("Fatal Error: DrawPrimitiveUP failed!", hr, __FILE__, __LINE__);
 
-   VertexBuffer::bindNull();    // DrawPrimitiveUP sets the VB to nullptr
+   m_curVertexBuffer = nullptr; // DrawPrimitiveUP sets the VB to nullptr
 
    m_curDrawCalls++;
 #endif

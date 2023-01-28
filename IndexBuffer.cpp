@@ -7,8 +7,6 @@ extern unsigned m_curLockCalls, m_frameLockCalls;
 //!! Disabled since it still has some bugs
 #define COMBINE_BUFFERS 0
 
-IndexBuffer* IndexBuffer::m_curIndexBuffer = nullptr; // is also reset before each Player start
-
 #ifdef ENABLE_SDL
 vector<IndexBuffer*> IndexBuffer::notUploadedBuffers;
 #endif
@@ -38,34 +36,32 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const 
 #endif
 }
 
-IndexBuffer* IndexBuffer::CreateAndFillIndexBuffer(RenderDevice* rd, const unsigned int numIndices, const WORD* indices)
+IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const unsigned int* indices)
+   : IndexBuffer(rd, numIndices, 0, IndexBuffer::FMT_INDEX32)
 {
-   IndexBuffer* ib = new IndexBuffer(rd, numIndices, 0, IndexBuffer::FMT_INDEX16);
    void* buf;
-   ib->lock(0, 0, &buf, WRITEONLY);
+   lock(0, 0, &buf, WRITEONLY);
    memcpy(buf, indices, numIndices * sizeof(indices[0]));
-   ib->unlock();
-   return ib;
+   unlock();
 }
 
-IndexBuffer* IndexBuffer::CreateAndFillIndexBuffer(RenderDevice* rd, const unsigned int numIndices, const unsigned int* indices)
+IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const WORD* indices)
+   : IndexBuffer(rd, numIndices, 0, IndexBuffer::FMT_INDEX16)
 {
-   IndexBuffer* ib = new IndexBuffer(rd, numIndices, 0, IndexBuffer::FMT_INDEX32);
    void* buf;
-   ib->lock(0, 0, &buf, WRITEONLY);
+   lock(0, 0, &buf, WRITEONLY);
    memcpy(buf, indices, numIndices * sizeof(indices[0]));
-   ib->unlock();
-   return ib;
+   unlock();
 }
 
-IndexBuffer* IndexBuffer::CreateAndFillIndexBuffer(RenderDevice* rd, const vector<WORD>& indices)
+IndexBuffer::IndexBuffer(RenderDevice* rd, const vector<WORD>& indices)
+   : IndexBuffer(rd, (unsigned int)indices.size(), indices.data())
 {
-   return CreateAndFillIndexBuffer(rd, (unsigned int)indices.size(), indices.data());
 }
 
-IndexBuffer* IndexBuffer::CreateAndFillIndexBuffer(RenderDevice* rd, const vector<unsigned int>& indices)
+IndexBuffer::IndexBuffer(RenderDevice* rd, const vector<unsigned int>& indices)
+   : IndexBuffer(rd, (unsigned int)indices.size(), indices.data())
 {
-   return CreateAndFillIndexBuffer(rd, (unsigned int)indices.size(), indices.data());
 }
 
 void IndexBuffer::lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags)
@@ -122,14 +118,14 @@ void IndexBuffer::bind()
    if (!m_isUploaded)
    {
       if (m_sharedBuffer)
-         UploadBuffers();
+         UploadBuffers(m_rd);
       else
          UploadData();
    }
-   if (m_curIndexBuffer == nullptr || m_Buffer != m_curIndexBuffer->m_Buffer)
+   if (m_rd->m_curIndexBuffer == nullptr || m_Buffer != m_rd->m_curIndexBuffer->m_Buffer)
    {
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffer);
-      m_curIndexBuffer = this;
+      m_rd->m_curIndexBuffer = this;
    }
 #else
    if (/*m_curIndexBuffer == nullptr ||*/ m_curIndexBuffer != this)
@@ -165,13 +161,13 @@ void IndexBuffer::UploadData()
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffer);
    if (m_size - m_offsetToLock > 0)
       glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, m_offset + m_offsetToLock, min(m_sizeToLock, m_size - m_offsetToLock), m_dataBuffer);
-   m_curIndexBuffer = this;
+   m_rd->m_curIndexBuffer = this;
    m_isUploaded = true;
    free(m_dataBuffer);
    m_dataBuffer = nullptr;
 }
 
-void IndexBuffer::UploadBuffers()
+void IndexBuffer::UploadBuffers(RenderDevice* rd)
 {
    if (notUploadedBuffers.empty()) return;
 
@@ -210,7 +206,7 @@ void IndexBuffer::UploadBuffers()
       glBufferData(GL_ELEMENT_ARRAY_BUFFER, size32 * 4, nullptr, GL_STATIC_DRAW);
    }
    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-   m_curIndexBuffer = nullptr;
+   rd->m_curIndexBuffer = nullptr;
    for (auto it = notUploadedBuffers.begin(); it != notUploadedBuffers.end(); ++it)
       (*it)->UploadData();
    notUploadedBuffers.clear();

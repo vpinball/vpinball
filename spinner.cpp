@@ -414,7 +414,7 @@ void Spinner::RenderSetup()
    m_posZ = height + m_d.m_height;
 
    SAFE_BUFFER_RELEASE(m_bracketIndexBuffer);
-   m_bracketIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerBracketNumFaces, spinnerBracketIndices);
+   m_bracketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerBracketNumFaces, spinnerBracketIndices);
 
    SAFE_BUFFER_RELEASE(m_bracketVertexBuffer);
    m_bracketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
@@ -443,7 +443,7 @@ void Spinner::RenderSetup()
    m_bracketVertexBuffer->unlock();
 
    SAFE_BUFFER_RELEASE(m_plateIndexBuffer);
-   m_plateIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerPlateNumFaces, spinnerPlateIndices);
+   m_plateIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerPlateNumFaces, spinnerPlateIndices);
 
    SAFE_BUFFER_RELEASE(m_plateVertexBuffer);
    m_plateVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerPlateNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);

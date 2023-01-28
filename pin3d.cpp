@@ -526,9 +526,6 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    else
       m_backGlass = nullptr;
 
-   VertexBuffer::bindNull();
-   IndexBuffer::bindNull();
-
    // Create the "static" color buffer.
    // This will hold a pre-rendered image of the table and any non-changing elements (ie ramps, decals, etc).
 

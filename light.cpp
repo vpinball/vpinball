@@ -694,7 +694,7 @@ void Light::RenderSetup()
       const float bulb_z = m_surfaceHeight + (m_d.m_height - 28.f) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
       SAFE_BUFFER_RELEASE(m_bulbLightIndexBuffer);
-      m_bulbLightIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbLightNumFaces, bulbLightIndices);
+      m_bulbLightIndexBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbLightNumFaces, bulbLightIndices);
 
       SAFE_BUFFER_RELEASE(m_bulbLightVBuffer);
       m_bulbLightVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbLightNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
@@ -715,7 +715,7 @@ void Light::RenderSetup()
       m_bulbLightVBuffer->unlock();
 
       SAFE_BUFFER_RELEASE(m_bulbSocketIndexBuffer);
-      m_bulbSocketIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbSocketNumFaces, bulbSocketIndices);
+      m_bulbSocketIndexBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbSocketNumFaces, bulbSocketIndices);
 
       SAFE_BUFFER_RELEASE(m_bulbSocketVBuffer);
       m_bulbSocketVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);

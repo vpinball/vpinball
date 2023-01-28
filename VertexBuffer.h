@@ -26,14 +26,12 @@ public:
    void unlock();
    void release();
    void bind();
-   static void bindNull() { m_curVertexBuffer = nullptr; }
 
 private:
    RenderDevice* m_rd;
    DWORD m_usage;
    DWORD m_fvf;
    unsigned int m_sizePerVertex;
-   static VertexBuffer* m_curVertexBuffer; // for caching
 
 #ifdef ENABLE_SDL
 public:
@@ -58,7 +56,7 @@ private:
    void UploadData();
    void addToNotUploadedBuffers();
    static vector<VertexBuffer*> notUploadedBuffers;
-   static void UploadBuffers();
+   static void UploadBuffers(RenderDevice* rd);
 #else
    IDirect3DVertexBuffer9* m_vb = nullptr;
 #endif
