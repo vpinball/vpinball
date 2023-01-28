@@ -173,7 +173,7 @@ PlaySound(string, int loopcount, float volume, float pan, float randompitch, int
    front_rear_fade is similar to pan but fades between the front and rear speakers
  - so f.e. PlaySound "FlipperUp",0,0.5,-1.0,1.0,1,1,0.0 would play the sound not looped (0), at half the volume (0.5), only on left speaker (-1.0), with varying pitch (1.0), it would reuse the same channel if it is already playing (1), restarts the sample (1), and plays it on the front speakers only (0.0)
 StopSound(string)
-PlayMusic(string, float volume) - volume 0..1
+PlayMusic(string, float volume) - volume 0..1, one can pass a full path, or just a filename (that is placed in the music subfolder)
 MusicVolume(float volume) - 0..1
 EndMusic
 FireKnocker(int Count)

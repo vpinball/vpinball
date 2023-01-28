@@ -402,7 +402,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             }
             fclose(f);
 
-            const size_t index = szFilename[0].find_last_of('\\');
+            const size_t index = szFilename[0].find_last_of(PATH_SEPARATOR_CHAR);
             if (index != string::npos)
                SaveValue(regKey[RegName::RecentDir], "MaterialDir"s, szFilename[0].substr(0, index));
 
@@ -492,7 +492,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                fclose(f);
 
                const string szFilename(ofn.lpstrFile);
-               const size_t index = szFilename.find_last_of('\\');
+               const size_t index = szFilename.find_last_of(PATH_SEPARATOR_CHAR);
                if (index != string::npos)
                {
                    const string newInitDir(szFilename.substr(0, index));

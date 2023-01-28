@@ -139,7 +139,7 @@ void PinFont::Register()
 
    while (szEnd > szPath)
    {
-      if (*szEnd == '\\')
+      if (*szEnd == PATH_SEPARATOR_CHAR)
          break;
 
       szEnd--;

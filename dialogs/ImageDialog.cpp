@@ -419,7 +419,7 @@ void ImageDialog::Import()
       for (const string &file : szFileName)
          pt->ImportImage(hSoundList, file);
 
-      const size_t index = szFileName[0].find_last_of('\\');
+      const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
       if (index != string::npos)
          hr = SaveValue(regKey[RegName::RecentDir], "ImageDir"s, szFileName[0].substr(0, index));
 
@@ -529,7 +529,7 @@ void ImageDialog::Export()
                int begin; //select only file name from pathfilename
                for (begin = lstrlen(ofn.lpstrFile); begin >= 0; begin--)
                {
-                  if (ofn.lpstrFile[begin] == '\\')
+                  if (ofn.lpstrFile[begin] == PATH_SEPARATOR_CHAR)
                   {
                      begin++;
                      break;
@@ -553,7 +553,7 @@ void ImageDialog::Export()
                      {
                         for (begin = (int)ppi->m_szPath.length(); begin >= 0; begin--)
                         {
-                           if (ppi->m_szPath[begin] == '\\')
+                           if (ppi->m_szPath[begin] == PATH_SEPARATOR_CHAR)
                            {
                               begin++;
                               break;
@@ -738,7 +738,7 @@ void ImageDialog::ReimportFrom()
             Texture * const ppi = (Texture*)lvitem.lParam;
             if (ppi != nullptr)
             {
-               const size_t index = szFileName[0].find_last_of('\\');
+               const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
                if (index != string::npos)
                   SaveValue(regKey[RegName::RecentDir], "ImageDir"s, szFileName[0].substr(0, index));
 

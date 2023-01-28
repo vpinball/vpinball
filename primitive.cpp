@@ -2049,7 +2049,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             {
                SetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, szFileName[0].c_str());
 
-               size_t index = szFileName[0].find_last_of('\\');
+               size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
                if (index != string::npos)
                {
                   hr = SaveValue(regKey[RegName::RecentDir], "ImportDir"s, szFileName[0].substr(0, index));
@@ -2105,7 +2105,7 @@ bool Primitive::BrowseFor3DMeshFile()
       return false;
 
    string filename(ofn.lpstrFile);
-   size_t index = filename.find_last_of('\\');
+   size_t index = filename.find_last_of(PATH_SEPARATOR_CHAR);
    if (index != string::npos)
    {
       const string newInitDir(szFilename.substr(0, index));
@@ -2235,7 +2235,7 @@ void Primitive::ExportMeshDialog()
    vector<string> szFileName;
    if (m_vpinball->SaveFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY))
    {
-      const size_t index = szFileName[0].find_last_of('\\');
+      const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
       if (index != string::npos)
       {
          const string newInitDir(szFileName[0].substr(0, index));

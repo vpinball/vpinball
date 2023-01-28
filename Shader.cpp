@@ -1075,16 +1075,16 @@ bla:
          logFile->open(name);
          if (!logFile->is_open()) {
             const wstring wzMkPath = g_pvp->m_wzMyPath + L"shader";
-            if (_wmkdir(wzMkPath.c_str()) != 0 || _wmkdir((wzMkPath + L"\\log").c_str()) != 0)
+            if (_wmkdir(wzMkPath.c_str()) != 0 || _wmkdir((wzMkPath + PATH_SEPARATOR_WCHAR + L"log").c_str()) != 0)
             {
-                char msg[512];
-                TCHAR full_path[MAX_PATH];
-                GetFullPathName(_T(name.c_str()), MAX_PATH, full_path, nullptr);
-                sprintf_s(msg, sizeof(msg), "Could not create logfile %s", full_path);
-                ShowError(msg);
+               char msg[512];
+               TCHAR full_path[MAX_PATH];
+               GetFullPathName(_T(name.c_str()), MAX_PATH, full_path, nullptr);
+               sprintf_s(msg, sizeof(msg), "Could not create logfile %s", full_path);
+               ShowError(msg);
             }
             else
-                goto bla;
+               goto bla;
          }
       }
       switch (level) {

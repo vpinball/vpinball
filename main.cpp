@@ -435,7 +435,7 @@ public:
             if (szTableFileName[1] != ':') {
                char szLoadDir[MAXSTRING];
                GetCurrentDirectory(MAXSTRING, szLoadDir);
-               szTableFileName = string(szLoadDir) + '\\' + szTableFileName;
+               szTableFileName = string(szLoadDir) + PATH_SEPARATOR_CHAR + szTableFileName;
             }
             else
                // Or set from table path

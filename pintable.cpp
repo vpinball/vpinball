@@ -212,7 +212,7 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
       char szT[512];
       WideCharToMultiByteNull(CP_ACP, 0, str, -1, szT, 512, nullptr, nullptr);
 
-      if (!g_pplayer->m_audio->MusicInit(m_vpinball->m_szMyPath + "Music\\" + szT, PATH_MUSIC + szT, MusicVolume))
+      if (!g_pplayer->m_audio->MusicInit(szT, MusicVolume))
       {
          delete g_pplayer->m_audio;
          g_pplayer->m_audio = nullptr;
@@ -438,9 +438,13 @@ STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
    string szPath = m_vpinball->m_szMyPath + "user" + PATH_SEPARATOR_CHAR;
    if (!DirExists(szPath))
    {
-      szPath = PATH_USER;
+      szPath = m_vpinball->m_currentTablePath + "user" + PATH_SEPARATOR_CHAR;
       if (!DirExists(szPath))
-         return E_FAIL;
+      {
+         szPath = PATH_USER;
+         if (!DirExists(szPath))
+            return E_FAIL;
+      }
    }
    const WCHAR *const wzPath = MakeWide(szPath);
    *pVal = SysAllocString(wzPath);
@@ -454,9 +458,13 @@ STDMETHODIMP ScriptGlobalTable::get_TablesDirectory(BSTR *pVal)
    string szPath = m_vpinball->m_szMyPath + "tables" + PATH_SEPARATOR_CHAR;
    if (!DirExists(szPath))
    {
-      szPath = PATH_TABLES;
+      szPath = m_vpinball->m_currentTablePath + "tables" + PATH_SEPARATOR_CHAR;
       if (!DirExists(szPath))
-         return E_FAIL;
+      {
+         szPath = PATH_TABLES;
+         if (!DirExists(szPath))
+            return E_FAIL;
+      }
    }
    const WCHAR *const wzPath = MakeWide(szPath);
    *pVal = SysAllocString(wzPath);
@@ -470,9 +478,13 @@ STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(BSTR *pVal)
    string szPath = m_vpinball->m_szMyPath + "music" + PATH_SEPARATOR_CHAR;
    if (!DirExists(szPath))
    {
-      szPath = PATH_MUSIC;
+      szPath = m_vpinball->m_currentTablePath + "music" + PATH_SEPARATOR_CHAR;
       if (!DirExists(szPath))
-         return E_FAIL;
+      {
+         szPath = PATH_MUSIC;
+         if (!DirExists(szPath))
+            return E_FAIL;
+      }
    }
    const WCHAR *const wzPath = MakeWide(szPath);
    *pVal = SysAllocString(wzPath);
@@ -486,9 +498,13 @@ STDMETHODIMP ScriptGlobalTable::get_ScriptsDirectory(BSTR *pVal)
    string szPath = m_vpinball->m_szMyPath + "scripts" + PATH_SEPARATOR_CHAR;
    if (!DirExists(szPath))
    {
-      szPath = PATH_SCRIPTS;
+      szPath = m_vpinball->m_currentTablePath + "scripts" + PATH_SEPARATOR_CHAR;
       if (!DirExists(szPath))
-         return E_FAIL;
+      {
+         szPath = PATH_SCRIPTS;
+         if (!DirExists(szPath))
+            return E_FAIL;
+      }
    }
    const WCHAR *const wzPath = MakeWide(szPath);
    *pVal = SysAllocString(wzPath);
@@ -558,7 +574,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
 {
    HRESULT hr;
 
-   const wstring wzPath = m_vpinball->m_wzMyPath + L"user\\VPReg.stg";
+   const wstring wzPath = m_vpinball->m_wzMyPath + L"user" + PATH_SEPARATOR_WCHAR + L"VPReg.stg";
 
    IStorage *pstgRoot;
    if (FAILED(hr = StgOpenStorage(wzPath.c_str(), nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgRoot)))
@@ -616,7 +632,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
 {
    HRESULT hr;
 
-   const wstring wzPath = m_vpinball->m_wzMyPath + L"user\\VPReg.stg";
+   const wstring wzPath = m_vpinball->m_wzMyPath + L"user" + PATH_SEPARATOR_WCHAR + L"VPReg.stg";
 
    IStorage *pstgRoot;
    if (FAILED(hr = StgOpenStorage(wzPath.c_str(), nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgRoot)))
@@ -2344,7 +2360,7 @@ HRESULT PinTable::Save(const bool saveAs)
       {
       string szInitialDir;
       // First, use dir of current table
-      const size_t index = m_szFileName.find_last_of('\\');
+      const size_t index = m_szFileName.find_last_of(PATH_SEPARATOR_CHAR);
       if (index != string::npos)
          szInitialDir = m_szFileName.substr(0, index);
       // Or try with the standard last-used dir
@@ -2352,7 +2368,7 @@ HRESULT PinTable::Save(const bool saveAs)
       {
          const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "LoadDir"s, szInitialDir);
          if (hr != S_OK)
-            szInitialDir = m_vpinball->m_szMyPath + "tables\\";
+            szInitialDir = m_vpinball->m_szMyPath + "tables" + PATH_SEPARATOR_CHAR;
       }
       ofn.lpstrInitialDir = szInitialDir.c_str();
 
@@ -5687,7 +5703,7 @@ void PinTable::ImportBackdropPOV(const string& filename)
        if (!m_vpinball->OpenFileDialog(szInitialDir, szFileName, "POV file (*.pov)\0*.pov\0Old POV file(*.xml)\0*.xml\0", "pov", 0))
           return;
 
-       const size_t index = szFileName[0].find_last_of('\\');
+       const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
        if (index != string::npos)
            hr = SaveValue(regKey[RegName::RecentDir], "POVDir"s, szFileName[0].substr(0, index));
     }
@@ -7164,7 +7180,7 @@ void PinTable::ImportImage(HWND hwndListView, const string& filename)
 
    for (begin = len; begin >= 0; begin--)
    {
-      if (filename[begin] == '\\')
+      if (filename[begin] == PATH_SEPARATOR_CHAR)
       {
          begin++;
          break;
@@ -9611,7 +9627,7 @@ STDMETHODIMP PinTable::ImportPhysics()
    if (!m_vpinball->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
        return S_OK;
 
-   const size_t index = szFileName[0].find_last_of('\\');
+   const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
    if (index != string::npos)
        hr = SaveValue(regKey[RegName::RecentDir], "PhysicsDir"s, szFileName[0].substr(0, index));
 
@@ -9899,7 +9915,7 @@ STDMETHODIMP PinTable::ExportPhysics()
       return S_OK;
 
    const string szFilename(ofn.lpstrFile);
-   const size_t index = szFilename.find_last_of('\\');
+   const size_t index = szFilename.find_last_of(PATH_SEPARATOR_CHAR);
    if (index != string::npos)
    {
        const string newInitDir(szFilename.substr(0, index));

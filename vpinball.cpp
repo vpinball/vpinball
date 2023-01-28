@@ -953,7 +953,7 @@ bool VPinball::LoadFile(const bool updateEditor)
           !updateEditor ? "Select a Table to Play or press Cancel to enter Editor-Mode"s : string()))
       return false;
 
-   const size_t index = szFileName[0].find_last_of('\\');
+   const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
    if (index != string::npos)
       hr = SaveValue(regKey[RegName::RecentDir], "LoadDir"s, szFileName[0].substr(0, index));
 
@@ -1992,7 +1992,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
             vector<string> szFileName;
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0))
             {
-               const size_t index = szFileName[0].find_last_of('\\');
+               const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
                if (index != string::npos)
                   SaveValue(regKey[RegName::RecentDir], "FontDir"s, szFileName[0].substr(0, index));
 

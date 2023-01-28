@@ -354,7 +354,7 @@ bool ObjLoader::ExportStart(const string& filename)
 
    for (i = len; i >= 0; i--)
    {
-      if (matName[i] == '\\')
+      if (matName[i] == PATH_SEPARATOR_CHAR)
       {
          i++;
          break;

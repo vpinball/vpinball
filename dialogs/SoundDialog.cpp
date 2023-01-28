@@ -260,7 +260,7 @@ void SoundDialog::Import()
    vector<string> szFileName;
    if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
    {
-      const size_t index = szFileName[0].find_last_of('\\');
+      const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
       if (index != string::npos)
          hr = SaveValue(regKey[RegName::RecentDir], "SoundDir"s, szFileName[0].substr(0, index));
 
@@ -342,7 +342,7 @@ void SoundDialog::ReImportFrom()
                 pt->ReImportSound( hSoundList, pps, szFileName[0] );
                 ListView_SetItemText( hSoundList, sel, 1, (LPSTR)szFileName[0].c_str() );
 
-                const size_t index = szFileName[0].find_last_of('\\');
+                const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
                 if (index != string::npos)
                    hr = SaveValue(regKey[RegName::RecentDir], "SoundDir"s, szFileName[0].substr(0, index));
 
@@ -385,7 +385,7 @@ void SoundDialog::Export()
                int begin; //select only file name from pathfilename
                for (begin = len0; begin >= 0; begin--)
                {
-                  if (pps->m_szPath[begin] == '\\')
+                  if (pps->m_szPath[begin] == PATH_SEPARATOR_CHAR)
                   {
                      begin++;
                      break;
@@ -417,7 +417,7 @@ void SoundDialog::Export()
                 int begin;
                 for (begin = lstrlen(ofn.lpstrFile); begin >= 0; begin--)
                 {
-                    if (ofn.lpstrFile[begin] == '\\')
+                    if (ofn.lpstrFile[begin] == PATH_SEPARATOR_CHAR)
                     {
                         begin++;
                         break;
@@ -441,7 +441,7 @@ void SoundDialog::Export()
                        {
                           for (begin = (int)pps->m_szPath.length(); begin >= 0; begin--)
                           {
-                             if (pps->m_szPath[begin] == '\\')
+                             if (pps->m_szPath[begin] == PATH_SEPARATOR_CHAR)
                              {
                                 begin++;
                                 break;

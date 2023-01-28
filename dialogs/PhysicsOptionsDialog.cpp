@@ -224,7 +224,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 break;
 
             const string szFilename(ofn.lpstrFile);
-            const size_t index = szFilename.find_last_of('\\');
+            const size_t index = szFilename.find_last_of(PATH_SEPARATOR_CHAR);
             if (index != string::npos)
             {
                 const string newInitDir(szFilename.substr(0, index));
@@ -371,7 +371,7 @@ bool PhysicsOptionsDialog::LoadSetting()
     if (!g_pvp->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
         return false;
 
-    const size_t index = szFileName[0].find_last_of('\\');
+    const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
     if (index != string::npos)
         hr = SaveValue(regKey[RegName::RecentDir], "PhysicsDir"s, szFileName[0].substr(0, index));
 
