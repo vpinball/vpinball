@@ -9,6 +9,7 @@ As for coding light sequences for original tables, please check this helper app:
 
 Changelog:
 10.8.0:
+- add TablesDirectory, MusicDirectory, ScriptsDirectory, PlatformOS, PlatformCPU, PlatformBits to the globals
 - add Animate event to Bumper, Light, Flipper, Gate, Spinner, Trigger, Targets and EMReel. This event is called when the object's visual properties are animated, in order to easily sync with custom visuals
 - add CurrentAnimOffset to the Trigger and Target elements
 - add CurrentRingOffset to the Bumper Element
@@ -16,6 +17,7 @@ Changelog:
 - add FilamentTemperature property to lights to get the 'blackbody' temperature of the filament according to the light current intensity, full intensity corresponding to a temperature of 2700K
 - add support for multiple custom DMDs by adding DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels to flashers. The flasher will use the provided data if any, or defaults to the table data (captured or directly defined)
 - add Shadows property to Light element
+- document missing GetTextFile
 
 10.7.2:
 - add GetInPlayIntensity to the light element
@@ -205,7 +207,15 @@ WriteSerial(VARIANT pVal) - write bytes
 LoadValue(string,string,VARIANT) - load a value for tablename,valuename,value
 SaveValue(string,string,VARIANT) - save a value for tablename,valuename,value
 
-UserDirectory(string)
+UserDirectory(string) - returns path to user directory, e.g. C:\Visual Pinball\user
+TablesDirectory(string) - returns path to tables directory, e.g. C:\Visual Pinball\tables
+MusicDirectory(string) - returns path to music directory, e.g. C:\Visual Pinball\music
+ScriptsDirectory(string) - returns path to scripts directory, e.g. C:\Visual Pinball\scripts
+PlatformOS(string) - returns OS that VPX is running on, e.g. windows,linux,android,macos,ios,ostv
+PlatformCPU(string) - returns CPU that VPX is running on, e.g. x86 or arm
+PlatformBits(string) - returns bitness of VPX executable, i.e. 32 or 64
+
+GetTextFile(string) - returns content of text file
 
 
 TABLE

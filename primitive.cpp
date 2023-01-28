@@ -2042,7 +2042,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             string szInitialDir;
             HRESULT hr = LoadValue(regKey[RegName::RecentDir], "ImportDir"s, szInitialDir);
             if (hr != S_OK)
-               szInitialDir = "c:\\Visual Pinball\\tables\\";
+               szInitialDir = PATH_TABLES;
 
             vector<string> szFileName;
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0))
@@ -2096,13 +2096,13 @@ bool Primitive::BrowseFor3DMeshFile()
 
    const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "ImportDir"s, szInitialDir);
    if (hr != S_OK)
-       szInitialDir = "c:\\Visual Pinball\\tables\\";
+      szInitialDir = PATH_TABLES;
 
    ofn.lpstrInitialDir = szInitialDir.c_str();
 
    const int ret = GetOpenFileName(&ofn);
    if (ret == 0)
-       return false;
+      return false;
 
    string filename(ofn.lpstrFile);
    size_t index = filename.find_last_of('\\');
@@ -2230,7 +2230,7 @@ void Primitive::ExportMeshDialog()
    string szInitialDir;
    HRESULT hr = LoadValue(regKey[RegName::RecentDir], "ImportDir"s, szInitialDir);
    if (hr != S_OK)
-       szInitialDir = "c:\\Visual Pinball\\tables\\";
+      szInitialDir = PATH_TABLES;
 
    vector<string> szFileName;
    if (m_vpinball->SaveFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY))

@@ -708,7 +708,13 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(15), helpstring("property MusicVolume")] HRESULT MusicVolume(float Volume);
                 [id(11), helpstring("method EndMusic")] HRESULT EndMusic();
                 [propget, id(12), helpstring("property StartGameKey")] HRESULT StartGameKey([out, retval] long *pVal);
-                [propget, id(13), helpstring("property UserDirectory")] HRESULT UserDirectory([out, retval] BSTR *pVal);
+                [propget, id(13),  helpstring("property UserDirectory")] HRESULT UserDirectory([out, retval] BSTR *pVal);
+                [propget, id(256), helpstring("property TablesDirectory")] HRESULT TablesDirectory([out, retval] BSTR *pVal);
+                [propget, id(257), helpstring("property MusicDirectory")] HRESULT MusicDirectory([out, retval] BSTR *pVal);
+                [propget, id(258), helpstring("property ScriptsDirectory")] HRESULT ScriptsDirectory([out, retval] BSTR *pVal);
+                [propget, id(259), helpstring("property PlatformOS")] HRESULT PlatformOS([out, retval] BSTR *pVal);
+                [propget, id(260), helpstring("property PlatformCPU")] HRESULT PlatformCPU([out, retval] BSTR *pVal);
+                [propget, id(261), helpstring("property PlatformBits")] HRESULT PlatformBits([out, retval] BSTR *pVal);
 #ifdef _WIN64
                 [propget, id(14), helpstring("property GetPlayerHWnd")] HRESULT GetPlayerHWnd([out, retval] SIZE_T *pVal);
 #else

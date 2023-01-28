@@ -200,6 +200,34 @@ public:
 #define FTOVB(x) ((x) ? (VARIANT_BOOL)-1 : (VARIANT_BOOL)0)
 
 #if defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
+#define GET_PLATFORM_CPU "x86"
+#else
+#define GET_PLATFORM_CPU "arm"
+#endif
+
+#if INTPTR_MAX == INT32_MAX
+#define GET_PLATFORM_BITS "32"
+#else
+#define GET_PLATFORM_BITS "64"
+#endif
+
+#ifdef _MSC_VER
+#define GET_PLATFORM_OS "windows"
+#elif (defined(__linux) || defined(__linux__))
+#define GET_PLATFORM_OS "linux"
+#elif defined(__APPLE__)
+#ifdef TARGET_OS_IOS
+#define GET_PLATFORM_OS "ios"
+#elif TARGET_OS_TV
+#define GET_PLATFORM_OS "ostv"
+#else
+#define GET_PLATFORM_OS "macos"
+#endif
+#elif defined(__ANDROID__)
+#define GET_PLATFORM_OS "android" 
+#endif
+
+#if defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
 __forceinline __m128 rcpps(const __m128 &T) //Newton Raphson
 {
    const __m128 TRCP = _mm_rcp_ps(T);

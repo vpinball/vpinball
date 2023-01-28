@@ -215,7 +215,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             string szInitialDir;
             const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "PhysicsDir"s, szInitialDir);
             if (hr != S_OK)
-               szInitialDir = "c:\\Visual Pinball\\tables\\";
+               szInitialDir = PATH_TABLES;
 
             ofn.lpstrInitialDir = szInitialDir.c_str();
 
@@ -365,7 +365,7 @@ bool PhysicsOptionsDialog::LoadSetting()
     string szInitialDir;
     HRESULT hr = LoadValue(regKey[RegName::RecentDir], "PhysicsDir"s, szInitialDir);
     if (hr != S_OK)
-        szInitialDir = "c:\\Visual Pinball\\tables\\";
+        szInitialDir = PATH_TABLES;
 
     vector<string> szFileName;
     if (!g_pvp->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))

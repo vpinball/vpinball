@@ -408,7 +408,7 @@ void ImageDialog::Import()
    string szInitialDir;
    HRESULT hr = LoadValue(regKey[RegName::RecentDir], "ImageDir"s, szInitialDir);
    if (hr != S_OK)
-      szInitialDir = "c:\\Visual Pinball\\tables\\";
+      szInitialDir = PATH_TABLES;
 
    vector<string> szFileName;
    if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0", "png", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
@@ -516,7 +516,7 @@ void ImageDialog::Export()
             string g_initDir;
             const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "ImageDir"s, g_initDir);
             if (hr != S_OK)
-               g_initDir = "c:\\Visual Pinball\\tables\\";
+               g_initDir = PATH_TABLES;
 
             ofn.lpstrInitialDir = (hr == S_OK) ? g_initDir.c_str() : nullptr;
             //ofn.lpstrTitle = "SAVE AS";
@@ -725,7 +725,7 @@ void ImageDialog::ReimportFrom()
          string szInitialDir;
          const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "ImageDir"s, szInitialDir);
          if (hr != S_OK)
-            szInitialDir = "c:\\Visual Pinball\\tables\\";
+            szInitialDir = PATH_TABLES;
 
          vector<string> szFileName;
          if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0","png",0))

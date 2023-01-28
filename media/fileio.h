@@ -1,7 +1,8 @@
 #pragma once
 #define FID(A) (int)((unsigned int)(#A[0])|((unsigned int)(#A[1])<<8)|((unsigned int)(#A[2])<<16)|((unsigned int)(#A[3])<<24))
 
-bool Exists(const string& filePath);
+bool DirExists(const string& dirPath);
+bool FileExists(const string& filePath);
 string TitleFromFilename(const string& szfilename);
 string ExtensionFromFilename(const string& szfilename);
 bool RawReadFromFile(const char * const szfilename, int *const psize, char **pszout);

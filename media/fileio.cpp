@@ -3,17 +3,39 @@
 #include <mutex>
 static std::mutex mtx; //!! only used for Wine multithreading bug workaround
 
-bool Exists(const string& filePath)
+bool DirExists(const string& dirPath)
 {
-	//This will get the file attributes bitlist of the file
-	const DWORD fileAtt = GetFileAttributesA(filePath.c_str());
+#ifdef _MSC_VER
+   const DWORD fileAtt = GetFileAttributesA(dirPath.c_str());
 
-	//If an error occurred it will equal to INVALID_FILE_ATTRIBUTES
-	if (fileAtt == INVALID_FILE_ATTRIBUTES)
-		return false;
+   return (fileAtt != INVALID_FILE_ATTRIBUTES && (fileAtt & FILE_ATTRIBUTE_DIRECTORY));
+#else
+   struct stat info;
+   if (stat(dirPath.c_str(), &info) != 0)
+      return false;
+   return (info.st_mode & S_IFDIR);
+#endif
+}
 
-	//If the path referers to a directory it should also not exists.
-	return ((fileAtt & FILE_ATTRIBUTE_DIRECTORY) == 0);
+bool FileExists(const string& filePath)
+{
+#ifdef _MSC_VER
+   //This will get the file attributes bitlist of the file
+   const DWORD fileAtt = GetFileAttributesA(filePath.c_str());
+
+   //If an error occurred it will equal to INVALID_FILE_ATTRIBUTES
+   if (fileAtt == INVALID_FILE_ATTRIBUTES)
+      return false;
+
+   //If the path refers to a directory it should also not exist.
+   return ((fileAtt & FILE_ATTRIBUTE_DIRECTORY) == 0);
+#else
+   struct stat info;
+
+   if (stat(filePath.c_str(), &info) != 0)
+      return false;
+   return !(info.st_mode & S_IFDIR);
+#endif
 }
 
 string ExtensionFromFilename(const string& szfilename)

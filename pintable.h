@@ -923,6 +923,12 @@ public:
    STDMETHOD(get_GetPlayerHWnd)(/*[out, retval]*/ long *pVal);
 #endif
    STDMETHOD(get_UserDirectory)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(get_TablesDirectory)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(get_MusicDirectory)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(get_ScriptsDirectory)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(get_PlatformOS)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(get_PlatformCPU)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(get_PlatformBits)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(get_StartGameKey)(/*[out, retval]*/ long *pVal);
    STDMETHOD(PlayMusic)(BSTR str, float volume);
    STDMETHOD(put_MusicVolume)(float volume);
@@ -1013,7 +1019,7 @@ public:
    END_COM_MAP()
 
 private:
-   bool GetTextFileFromDirectory(const char *const szfilename, const char *const dirname, BSTR *pContents);
+   bool GetTextFileFromDirectory(const string& szfilename, const string& dirname, BSTR *pContents);
 
    PinTable *m_pt;
    VPinball *m_vpinball;

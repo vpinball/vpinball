@@ -212,7 +212,7 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
       char szT[512];
       WideCharToMultiByteNull(CP_ACP, 0, str, -1, szT, 512, nullptr, nullptr);
 
-      if (!g_pplayer->m_audio->MusicInit(m_vpinball->m_szMyPath + "Music\\" + szT, "C:\\Visual Pinball\\Music\\"s + szT, MusicVolume))
+      if (!g_pplayer->m_audio->MusicInit(m_vpinball->m_szMyPath + "Music\\" + szT, PATH_MUSIC + szT, MusicVolume))
       {
          delete g_pplayer->m_audio;
          g_pplayer->m_audio = nullptr;
@@ -349,10 +349,10 @@ STDMETHODIMP ScriptGlobalTable::get_LockbarKey(long *pVal)
    return S_OK;
 }
 
-bool ScriptGlobalTable::GetTextFileFromDirectory(const char * const szfilename, const char * const dirname, BSTR *pContents)
+bool ScriptGlobalTable::GetTextFileFromDirectory(const string& szfilename, const string& dirname, BSTR *pContents)
 {
    string szPath;
-   if (dirname != nullptr)
+   if (!dirname.empty())
       szPath = m_vpinball->m_szMyPath + dirname;
    // else: use current directory
    szPath += szfilename;
@@ -413,30 +413,114 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
    WideCharToMultiByteNull(CP_ACP, 0, FileName, -1, szFileName, MAX_PATH, nullptr, nullptr);
 
    // try to load the file from the current directory
-   bool success = GetTextFileFromDirectory(szFileName, nullptr, pContents);
+   bool success = GetTextFileFromDirectory(szFileName, string(), pContents);
 
    // if that fails, try the User, Scripts and Tables sub-directorys under where VP was loaded from
    if (!success)
-      success = GetTextFileFromDirectory(szFileName, "user\\", pContents);
+      success = GetTextFileFromDirectory(szFileName, "user"s   +PATH_SEPARATOR_CHAR, pContents);
    if (!success)
-      success = GetTextFileFromDirectory(szFileName, "scripts\\", pContents);
+      success = GetTextFileFromDirectory(szFileName, "scripts"s+PATH_SEPARATOR_CHAR, pContents);
    if (!success)
-      success = GetTextFileFromDirectory(szFileName, "tables\\", pContents);
+      success = GetTextFileFromDirectory(szFileName, "tables"s +PATH_SEPARATOR_CHAR, pContents);
    // if that also fails, try the standard installation path
    if (!success)
-      success = GetTextFileFromDirectory(("C:\\Visual Pinball\\user\\"s + szFileName).c_str(), nullptr, pContents);
+      success = GetTextFileFromDirectory(PATH_USER    + szFileName, string(), pContents);
    if (!success)
-      success = GetTextFileFromDirectory(("C:\\Visual Pinball\\scripts\\"s + szFileName).c_str(), nullptr, pContents);
+      success = GetTextFileFromDirectory(PATH_SCRIPTS + szFileName, string(), pContents);
    if (!success)
-      success = GetTextFileFromDirectory(("C:\\Visual Pinball\\tables\\"s + szFileName).c_str(), nullptr, pContents);
+      success = GetTextFileFromDirectory(PATH_TABLES  + szFileName, string(), pContents);
 
    return success ? S_OK : E_FAIL;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
 {
-   const wstring wzPath = m_vpinball->m_wzMyPath + L"user" + PATH_SEPARATOR_WCHAR;
-   *pVal = SysAllocString(wzPath.c_str());
+   string szPath = m_vpinball->m_szMyPath + "user" + PATH_SEPARATOR_CHAR;
+   if (!DirExists(szPath))
+   {
+      szPath = PATH_USER;
+      if (!DirExists(szPath))
+         return E_FAIL;
+   }
+   const WCHAR *const wzPath = MakeWide(szPath);
+   *pVal = SysAllocString(wzPath);
+   delete [] wzPath;
+
+   return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::get_TablesDirectory(BSTR *pVal)
+{
+   string szPath = m_vpinball->m_szMyPath + "tables" + PATH_SEPARATOR_CHAR;
+   if (!DirExists(szPath))
+   {
+      szPath = PATH_TABLES;
+      if (!DirExists(szPath))
+         return E_FAIL;
+   }
+   const WCHAR *const wzPath = MakeWide(szPath);
+   *pVal = SysAllocString(wzPath);
+   delete [] wzPath;
+
+   return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(BSTR *pVal)
+{
+   string szPath = m_vpinball->m_szMyPath + "music" + PATH_SEPARATOR_CHAR;
+   if (!DirExists(szPath))
+   {
+      szPath = PATH_MUSIC;
+      if (!DirExists(szPath))
+         return E_FAIL;
+   }
+   const WCHAR *const wzPath = MakeWide(szPath);
+   *pVal = SysAllocString(wzPath);
+   delete [] wzPath;
+
+   return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::get_ScriptsDirectory(BSTR *pVal)
+{
+   string szPath = m_vpinball->m_szMyPath + "scripts" + PATH_SEPARATOR_CHAR;
+   if (!DirExists(szPath))
+   {
+      szPath = PATH_SCRIPTS;
+      if (!DirExists(szPath))
+         return E_FAIL;
+   }
+   const WCHAR *const wzPath = MakeWide(szPath);
+   *pVal = SysAllocString(wzPath);
+   delete [] wzPath;
+
+
+   return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::get_PlatformOS(BSTR *pVal)
+{
+   const WCHAR *const wzPath = MakeWide(GET_PLATFORM_OS);
+   *pVal = SysAllocString(wzPath);
+   delete [] wzPath;
+
+   return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::get_PlatformCPU(BSTR *pVal)
+{
+   const WCHAR *const wzPath = MakeWide(GET_PLATFORM_CPU);
+   *pVal = SysAllocString(wzPath);
+   delete [] wzPath;
+
+   return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::get_PlatformBits(BSTR *pVal)
+{
+   const WCHAR *const wzPath = MakeWide(GET_PLATFORM_BITS);
+   *pVal = SysAllocString(wzPath);
+   delete [] wzPath;
 
    return S_OK;
 }
@@ -5598,8 +5682,8 @@ void PinTable::ImportBackdropPOV(const string& filename)
        string szInitialDir;
        HRESULT hr = LoadValue(regKey[RegName::RecentDir], "POVDir"s, szInitialDir);
        if (hr != S_OK)
-          szInitialDir = "c:\\Visual Pinball\\tables\\";
-   
+          szInitialDir = PATH_TABLES;
+
        if (!m_vpinball->OpenFileDialog(szInitialDir, szFileName, "POV file (*.pov)\0*.pov\0Old POV file(*.xml)\0*.xml\0", "pov", 0))
           return;
 
@@ -9521,7 +9605,7 @@ STDMETHODIMP PinTable::ImportPhysics()
    string szInitialDir;
    HRESULT hr = LoadValue(regKey[RegName::RecentDir], "PhysicsDir"s, szInitialDir);
    if (hr != S_OK)
-      szInitialDir = "c:\\Visual Pinball\\tables\\";
+      szInitialDir = PATH_TABLES;
 
    vector<string> szFileName;
    if (!m_vpinball->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
@@ -9806,7 +9890,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    string szInitialDir;
    const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "PhysicsDir"s, szInitialDir);
    if (hr != S_OK)
-       szInitialDir = "c:\\Visual Pinball\\tables\\";
+      szInitialDir = PATH_TABLES;
 
    ofn.lpstrInitialDir = szInitialDir.c_str();
 

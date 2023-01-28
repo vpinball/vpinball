@@ -2993,21 +2993,12 @@ void CodeViewer::ParseVPCore()
 
 	searchPaths.push_back(g_pvp->m_currentTablePath + "core.vbs"); // table path
 
-#ifdef _MSC_VER
-	searchPaths.push_back("c:"s + PATH_SEPARATOR_CHAR + "Visual Pinball" + PATH_SEPARATOR_CHAR + "scripts" + PATH_SEPARATOR_CHAR + "core.vbs"); // default script path
-#else
-	searchPaths.push_back(string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".vpinball" + PATH_SEPARATOR_CHAR + "scripts" + PATH_SEPARATOR_CHAR + "core.vbs"); // default script path
-#endif
+	searchPaths.push_back(PATH_SCRIPTS + "core.vbs"); // default script path
 
 	string szLoadDir;
 	const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "LoadDir"s, szLoadDir); // last known load dir path
-	if (hr != S_OK) {
-#ifdef _MSC_VER
-		szLoadDir = "c:"s + PATH_SEPARATOR_CHAR + "Visual Pinball" + PATH_SEPARATOR_CHAR + "tables" + PATH_SEPARATOR_CHAR;
-#else
-		szLoadDir = string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".vpinball" + PATH_SEPARATOR_CHAR + "tables" + PATH_SEPARATOR_CHAR;
-#endif
-	}
+	if (hr != S_OK)
+		szLoadDir = PATH_TABLES;
 	searchPaths.push_back(szLoadDir + "core.vbs");
 
 	FILE* fCore = nullptr;

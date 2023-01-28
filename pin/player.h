@@ -533,8 +533,8 @@ public:
 #ifdef DEBUG_BALL_SPIN
    VertexBuffer *m_ballDebugPoints;
 #endif
-   U32 m_movedPlunger;			// has plunger moved, must have moved at least three times
-   U32 m_LastPlungerHit;		// The last time the plunger was in contact (at least the vicinity) of the ball.
+   U32 m_movedPlunger;            // has plunger moved, must have moved at least three times
+   U32 m_LastPlungerHit;          // The last time the plunger was in contact (at least the vicinity) of the ball.
    float m_curMechPlungerPos;
 
    int m_wnd_width, m_wnd_height; // Window height (requested size before creation, effective size after) which is not directly linked to the render size
@@ -550,7 +550,7 @@ public:
    bool m_debugWindowActive;
    bool m_cabinetMode;
    Primitive *m_implicitPlayfieldMesh = nullptr;
-   bool m_recordContacts;             // flag for DoHitTest()
+   bool m_recordContacts;         // flag for DoHitTest()
    vector< CollisionEvent > m_contacts;
 
    int2 m_dmd;
@@ -579,15 +579,15 @@ private:
 #ifdef USE_EMBREE
    HitQuadtree m_hitoctree_dynamic; // should be generated from scratch each time something changes
 #else
-   HitKD m_hitoctree_dynamic; // should be generated from scratch each time something changes
+   HitKD m_hitoctree_dynamic;     // should be generated from scratch each time something changes
 #endif
 
-   HitPlane m_hitPlayfield; // HitPlanes cannot be part of octree (infinite size)
+   HitPlane m_hitPlayfield;       // HitPlanes cannot be part of octree (infinite size)
    HitPlane m_hitTopGlass;
 
    U64 m_StartTime_usec;
-   U64 m_curPhysicsFrameTime;	// Time when the last frame was drawn
-   U64 m_nextPhysicsFrameTime;	// time at which the next physics update should be
+   U64 m_curPhysicsFrameTime;     // Time when the last frame was drawn
+   U64 m_nextPhysicsFrameTime;    // time at which the next physics update should be
    U64 m_lastFlipTime;
 
    // all Hitables obtained from the table's list of Editables
@@ -696,11 +696,11 @@ public:
    enum RenderMask : unsigned int
    {
       DEFAULT = 0,
-      STATIC_PREPASS = 1,
-      LIGHT_BUFFER = 2,
-      TRANSPARENT_DMD_PASS = 4,
-      OPAQUE_DMD_PASS = 8,
-      REFLECTION_PASS = 16
+      STATIC_PREPASS = 1 << 0,
+      LIGHT_BUFFER = 1 << 1,
+      TRANSPARENT_DMD_PASS = 1 << 2,
+      OPAQUE_DMD_PASS = 1 << 3,
+      REFLECTION_PASS = 1 << 4
    };
    unsigned int m_render_mask = 0; // Active pass render bit mask
    inline bool IsRenderPass(const RenderMask pass_mask) const { return (m_render_mask & pass_mask) != 0; }

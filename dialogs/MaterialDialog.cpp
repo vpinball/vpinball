@@ -363,7 +363,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          string szInitialDir;
          const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "MaterialDir"s, szInitialDir);
          if (hr != S_OK)
-            szInitialDir = "c:\\Visual Pinball\\tables\\";
+            szInitialDir = PATH_TABLES;
 
          vector<string> szFilename;
          if (g_pvp->OpenFileDialog(szInitialDir, szFilename, "Material Files (.mat)\0*.mat\0", "mat", 0))
@@ -445,7 +445,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             string szInitialDir;
             const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "MaterialDir"s, szInitialDir);
             if (hr != S_OK)
-               szInitialDir = "c:\\Visual Pinball\\tables\\";
+               szInitialDir = PATH_TABLES;
 
             ofn.lpstrInitialDir = szInitialDir.c_str();
             ofn.lpstrTitle = "Export materials";

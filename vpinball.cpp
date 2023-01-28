@@ -946,7 +946,7 @@ bool VPinball::LoadFile(const bool updateEditor)
    string szInitialDir;
    HRESULT hr = LoadValue(regKey[RegName::RecentDir], "LoadDir"s, szInitialDir);
    if (hr != S_OK)
-      szInitialDir = "c:\\Visual Pinball\\tables\\";
+      szInitialDir = PATH_TABLES;
 
    vector<string> szFileName;
    if (!OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0,
@@ -1004,34 +1004,34 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
 
       // auto-import POV settings, if it exists...
       string szFileNameAuto = m_currentTablePath + ppt->m_szTitle + ".pov";
-      if (Exists(szFileNameAuto)) // We check if there is a matching table pov settings file first
+      if (FileExists(szFileNameAuto)) // We check if there is a matching table pov settings file first
          ppt->ImportBackdropPOV(szFileNameAuto);
       else // Otherwise, we seek for autopov settings
       {
          szFileNameAuto = m_currentTablePath + "autopov.pov";
-         if (Exists(szFileNameAuto))
+         if (FileExists(szFileNameAuto))
             ppt->ImportBackdropPOV(szFileNameAuto);
       }
 
       // auto-import VBS table script, if it exists...
       szFileNameAuto = m_currentTablePath + ppt->m_szTitle + ".vbs";
-      if (Exists(szFileNameAuto)) // We check if there is a matching table vbs first
+      if (FileExists(szFileNameAuto)) // We check if there is a matching table vbs first
          ppt->m_pcv->LoadFromFile(szFileNameAuto);
       else // Otherwise we seek in the Scripts folder
       {
          szFileNameAuto = m_szMyPath + "scripts" + PATH_SEPARATOR_CHAR + ppt->m_szTitle + ".vbs";
-         if (Exists(szFileNameAuto))
+         if (FileExists(szFileNameAuto))
             ppt->m_pcv->LoadFromFile(szFileNameAuto);
       }
 
       // auto-import VPP settings, if it exists...
       szFileNameAuto = m_currentTablePath + ppt->m_szTitle + ".vpp";
-      if (Exists(szFileNameAuto)) // We check if there is a matching table vpp settings file first
+      if (FileExists(szFileNameAuto)) // We check if there is a matching table vpp settings file first
          ppt->ImportVPP(szFileNameAuto);
       else // Otherwise, we seek for autovpp settings
       {
          szFileNameAuto = m_currentTablePath + "autovpp.vpp";
-         if (Exists(szFileNameAuto))
+         if (FileExists(szFileNameAuto))
             ppt->ImportVPP(szFileNameAuto);
       }
 
@@ -1987,7 +1987,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
             string szInitialDir;
             const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "FontDir"s, szInitialDir);
             if (hr != S_OK)
-               szInitialDir = "c:\\Visual Pinball\\tables\\";
+               szInitialDir = PATH_TABLES;
 
             vector<string> szFileName;
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0))
