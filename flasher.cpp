@@ -9,8 +9,6 @@ Flasher::Flasher()
    m_menuid = IDR_SURFACEMENU;
    m_d.m_isVisible = true;
    m_d.m_depthBias = 0.0f;
-   m_dynamicVertexBuffer = nullptr;
-   m_dynamicIndexBuffer = nullptr;
    m_dynamicVertexBufferRegenerate = true;
    m_vertices = nullptr;
    m_propVisual = nullptr;
@@ -26,8 +24,7 @@ Flasher::Flasher()
 
 Flasher::~Flasher()
 {
-   SAFE_BUFFER_RELEASE(m_dynamicVertexBuffer);
-   SAFE_BUFFER_RELEASE(m_dynamicIndexBuffer);
+   delete m_meshBuffer;
    if (m_vertices)
    {
       delete[] m_vertices;
@@ -286,12 +283,9 @@ void Flasher::EndPlay()
    
    ResetVideoCap();
 
-   if (m_dynamicVertexBuffer)
-   {
-      SAFE_BUFFER_RELEASE(m_dynamicVertexBuffer);
-      m_dynamicVertexBufferRegenerate = true;
-   }
-   SAFE_BUFFER_RELEASE(m_dynamicIndexBuffer);
+   delete m_meshBuffer;
+   m_meshBuffer = nullptr;
+   m_dynamicVertexBufferRegenerate = true;
    if (m_vertices)
    {
       delete[] m_vertices;
@@ -331,7 +325,7 @@ void Flasher::UpdateMesh()
    tempMatrix.Multiply(TMatrix, tempMatrix);
 
    Vertex3D_TexelOnly *buf;
-   m_dynamicVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+   m_meshBuffer->m_vb->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);
 
    for (unsigned int i = 0; i < m_numVertices; i++)
    {
@@ -340,7 +334,7 @@ void Flasher::UpdateMesh()
       buf[i] = vert;
    }
 
-   m_dynamicVertexBuffer->unlock();
+   m_meshBuffer->m_vb->unlock();
 }
 
 void Flasher::RenderSetup()
@@ -380,18 +374,19 @@ void Flasher::RenderSetup()
       return;
    }
 
-   SAFE_BUFFER_RELEASE(m_dynamicIndexBuffer);
-   m_dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numPolys * 3, 0, IndexBuffer::FMT_INDEX16);
+   IndexBuffer* dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numPolys * 3, 0, IndexBuffer::FMT_INDEX16);
    NumVideoBytes += (int)(m_numPolys * 3 * sizeof(WORD));
 
    WORD* bufi;
-   m_dynamicIndexBuffer->lock(0, 0, (void**)&bufi, IndexBuffer::WRITEONLY);
+   dynamicIndexBuffer->lock(0, 0, (void**)&bufi, IndexBuffer::WRITEONLY);
    memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
-   m_dynamicIndexBuffer->unlock();
+   dynamicIndexBuffer->unlock();
 
-   SAFE_BUFFER_RELEASE(m_dynamicVertexBuffer);
-   m_dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_TEX);
+   VertexBuffer* dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_TEX);
    NumVideoBytes += (int)(m_numVertices * sizeof(Vertex3D_TexelOnly));
+
+   delete m_meshBuffer;
+   m_meshBuffer = new MeshBuffer(MY_D3DFVF_TEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numPolys * 3, true);
 
    if (m_vertices)
       delete[] m_vertices;
@@ -1259,7 +1254,7 @@ void Flasher::RenderDynamic()
    }
    //Don't render if invisible (or DMD connection not set)
    BaseTexture *texdmd = m_texdmd != nullptr ? m_texdmd : g_pplayer->m_texdmd;
-   if (!m_d.m_isVisible || m_dynamicVertexBuffer == nullptr || g_pplayer->IsRenderPass(Player::REFLECTION_PASS) || (m_d.m_isDMD && !texdmd))
+   if (!m_d.m_isVisible || m_meshBuffer == nullptr || g_pplayer->IsRenderPass(Player::REFLECTION_PASS) || (m_d.m_isDMD && !texdmd))
       return;
 
    const vec4 color = convertColor(m_d.m_color, (float)m_d.m_alpha*m_d.m_intensity_scale / 100.0f);
@@ -1347,7 +1342,7 @@ void Flasher::RenderDynamic()
           pd3dDevice->DMDShader->SetTexture(SHADER_tex_dmd, texdmd, SF_NONE, SA_CLAMP, SA_CLAMP);
 
        pd3dDevice->DMDShader->Begin();
-       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_TEX, m_dynamicVertexBuffer, 0, m_numVertices, m_dynamicIndexBuffer, 0, m_numPolys * 3);
+       pd3dDevice->DrawMesh(m_meshBuffer);
        pd3dDevice->DMDShader->End();
    }
    else if (!(g_pplayer->IsRenderPass(Player::TRANSPARENT_DMD_PASS) || g_pplayer->IsRenderPass(Player::OPAQUE_DMD_PASS)))
@@ -1421,7 +1416,7 @@ void Flasher::RenderDynamic()
        pd3dDevice->SetRenderState(RenderDevice::BLENDOP, m_d.m_addBlend ? RenderDevice::BLENDOP_REVSUBTRACT : RenderDevice::BLENDOP_ADD);
 
        pd3dDevice->flasherShader->Begin();
-       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_TEX, m_dynamicVertexBuffer, 0, m_numVertices, m_dynamicIndexBuffer, 0, m_numPolys * 3);
+       pd3dDevice->DrawMesh(m_meshBuffer);
        pd3dDevice->flasherShader->End();
 
        pd3dDevice->flasherShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
