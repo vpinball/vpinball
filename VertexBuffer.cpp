@@ -40,6 +40,10 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
    m_isUploaded = false;
    m_Array = 0;
    m_Buffer = 0;
+   m_offset = 0;
+   m_offsetToLock = 0;
+   m_sizeToLock = 0;
+   m_sharedBuffer = false;
 #else
    // NB: We always specify WRITEONLY since MSDN states,
    // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
@@ -54,6 +58,7 @@ void VertexBuffer::lock(const unsigned int offsetToLock, const unsigned int size
 {
    m_curLockCalls++;
 #ifdef ENABLE_SDL
+   assert(m_dataBuffer == nullptr);
    m_sizeToLock = sizeToLock == 0 ? m_size : sizeToLock;
    if (offsetToLock < m_size)
    {
@@ -128,6 +133,18 @@ void VertexBuffer::bind()
 }
 
 #ifdef ENABLE_SDL
+void VertexBuffer::addToNotUploadedBuffers()
+{
+   if (COMBINE_BUFFERS == 0 || m_usage != USAGE_STATIC)
+      UploadData();
+   else
+   {
+      m_sharedBuffer = true;
+      if (std::find(notUploadedBuffers.begin(), notUploadedBuffers.end(), this) == notUploadedBuffers.end())
+         notUploadedBuffers.push_back(this);
+   }
+}
+
 void VertexBuffer::UploadData()
 {
    if (m_Array == 0)
@@ -147,14 +164,6 @@ void VertexBuffer::UploadData()
    m_isUploaded = true;
    free(m_dataBuffer);
    m_dataBuffer = nullptr;
-}
-
-void VertexBuffer::addToNotUploadedBuffers()
-{
-   if (COMBINE_BUFFERS == 0 || m_usage != USAGE_STATIC)
-      UploadData();
-   else if (std::find(notUploadedBuffers.begin(), notUploadedBuffers.end(), this) == notUploadedBuffers.end())
-      notUploadedBuffers.push_back(this);
 }
 
 void VertexBuffer::UploadBuffers()
@@ -183,7 +192,7 @@ void VertexBuffer::UploadBuffers()
          }
          else {
             (*it)->m_offset = countNT;
-            countNT += (*it)->m_size;
+            countNT += (*it)->m_count;
             (*it)->m_Buffer = BufferNT;
             (*it)->m_Array = ArrayNT;
          }
@@ -206,5 +215,6 @@ void VertexBuffer::UploadBuffers()
    for (auto it = notUploadedBuffers.begin(); it != notUploadedBuffers.end(); ++it)
       (*it)->UploadData();
    notUploadedBuffers.clear();
+   // OutputDebugString(">>>> Vertex Buffer uploaded\n");
 }
 #endif

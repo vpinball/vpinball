@@ -526,9 +526,6 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    else
       m_backGlass = nullptr;
 
-#ifndef ENABLE_SDL
-   IndexBuffer::setD3DDevice(m_pd3dPrimaryDevice->GetCoreDevice(), m_pd3dSecondaryDevice->GetCoreDevice());
-#endif
    VertexBuffer::bindNull();
    IndexBuffer::bindNull();
 

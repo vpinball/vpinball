@@ -424,7 +424,7 @@ void Kicker::RenderSetup()
       }
 
       SAFE_BUFFER_RELEASE(m_plateIndexBuffer);
-      m_plateIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(kickerPlateNumIndices, kickerPlateIndices, PRIMARY_DEVICE);
+      m_plateIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, kickerPlateNumIndices, kickerPlateIndices);
 
       SAFE_BUFFER_RELEASE(m_plateVertexBuffer);
       m_plateVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, kickerPlateNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
@@ -513,7 +513,7 @@ void Kicker::RenderSetup()
    //
 
    SAFE_BUFFER_RELEASE(m_indexBuffer);
-   m_indexBuffer = IndexBuffer::CreateAndFillIndexBuffer(m_numIndices, indices, PRIMARY_DEVICE);
+   m_indexBuffer = IndexBuffer::CreateAndFillIndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, indices);
 
    SAFE_BUFFER_RELEASE(m_vertexBuffer);
    m_vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);

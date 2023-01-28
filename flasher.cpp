@@ -381,7 +381,7 @@ void Flasher::RenderSetup()
    }
 
    SAFE_BUFFER_RELEASE(m_dynamicIndexBuffer);
-   IndexBuffer::CreateIndexBuffer(m_numPolys * 3, 0, IndexBuffer::FMT_INDEX16, &m_dynamicIndexBuffer, PRIMARY_DEVICE);
+   m_dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numPolys * 3, 0, IndexBuffer::FMT_INDEX16);
    NumVideoBytes += (int)(m_numPolys * 3 * sizeof(WORD));
 
    WORD* bufi;
