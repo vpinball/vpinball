@@ -109,12 +109,9 @@ private:
    HitGate *m_phitgate;
    float m_lastAngle;
 
-   VertexBuffer *m_wireVertexBuffer;
-   IndexBuffer *m_wireIndexBuffer;
    float m_vertexbuffer_angle;
-
-   VertexBuffer *m_bracketVertexBuffer;
-   IndexBuffer *m_bracketIndexBuffer;
+   MeshBuffer *m_wireMeshBuffer = nullptr;
+   MeshBuffer *m_bracketMeshBuffer = nullptr;
 
    const Vertex3D_NoTex2 *m_vertices;
    const WORD            *m_indices;

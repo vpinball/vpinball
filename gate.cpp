@@ -13,10 +13,6 @@ Gate::Gate()
 {
    m_phitgate = nullptr;
    m_plineseg = nullptr;
-   m_bracketIndexBuffer = nullptr;
-   m_bracketVertexBuffer = nullptr;
-   m_wireIndexBuffer = nullptr;
-   m_wireVertexBuffer = nullptr;
    m_vertexbuffer_angle = FLT_MAX;
    m_d.m_type = GateWireW;
    m_vertices = 0;
@@ -69,10 +65,8 @@ void Gate::SetGateType(GateType type)
 
 Gate::~Gate()
 {
-   SAFE_BUFFER_RELEASE(m_bracketVertexBuffer);
-   SAFE_BUFFER_RELEASE(m_bracketIndexBuffer);
-   SAFE_BUFFER_RELEASE(m_wireIndexBuffer);
-   SAFE_BUFFER_RELEASE(m_wireVertexBuffer);
+    delete m_wireMeshBuffer;
+    delete m_bracketMeshBuffer;
 }
 
 void Gate::UpdateStatusBarInfo()
@@ -387,14 +381,11 @@ void Gate::EndPlay()
    m_phitgate = nullptr;
    m_plineseg = nullptr;
 
-   SAFE_BUFFER_RELEASE(m_bracketVertexBuffer);
-   SAFE_BUFFER_RELEASE(m_bracketIndexBuffer);
-   SAFE_BUFFER_RELEASE(m_wireIndexBuffer);
-   if (m_wireVertexBuffer)
-   {
-      SAFE_BUFFER_RELEASE(m_wireVertexBuffer);
-      m_vertexbuffer_angle = FLT_MAX;
-   }
+   delete m_wireMeshBuffer;
+   m_wireMeshBuffer = nullptr;
+   delete m_bracketMeshBuffer;
+   m_bracketMeshBuffer = nullptr;
+   m_vertexbuffer_angle = FLT_MAX;
 }
 
 void Gate::RenderObject()
@@ -416,7 +407,7 @@ void Gate::RenderObject()
       tempMat.Multiply(vertMatrix, vertMatrix);
 
       Vertex3D_NoTex2 *buf;
-      m_wireVertexBuffer->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);
+      m_wireMeshBuffer->m_vb->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);
       for (unsigned int i = 0; i < m_numVertices; i++)
       {
          Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
@@ -433,7 +424,7 @@ void Gate::RenderObject()
          buf[i].tu = m_vertices[i].tu;
          buf[i].tv = m_vertices[i].tv;
       }
-      m_wireVertexBuffer->unlock();
+      m_wireMeshBuffer->m_vb->unlock();
    }
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
@@ -452,9 +443,9 @@ void Gate::RenderObject()
 
    // render bracket
    if (m_d.m_showBracket)
-      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bracketVertexBuffer, 0, gateBracketNumVertices, m_bracketIndexBuffer, 0, gateBracketNumIndices);
+      pd3dDevice->DrawMesh(m_bracketMeshBuffer);
    // render wire
-   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_wireVertexBuffer, 0, m_numVertices, m_wireIndexBuffer, 0, m_numIndices);
+   pd3dDevice->DrawMesh(m_wireMeshBuffer);
 
    pd3dDevice->basicShader->End();
 
@@ -557,30 +548,24 @@ void Gate::GenerateWireMesh(Vertex3D_NoTex2 *buf)
 
 void Gate::RenderSetup()
 {
-   SAFE_BUFFER_RELEASE(m_bracketIndexBuffer);
-   m_bracketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, gateBracketNumIndices, gateBracketIndices);
-
-   SAFE_BUFFER_RELEASE(m_bracketVertexBuffer);
-   m_bracketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, gateBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
-
+   IndexBuffer *bracketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, gateBracketNumIndices, gateBracketIndices);
+   VertexBuffer *bracketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, gateBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
    SetGateType(m_d.m_type);
-
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-
    Vertex3D_NoTex2 *buf;
-   m_bracketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   bracketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    GenerateBracketMesh(buf);
-   m_bracketVertexBuffer->unlock();
+   bracketVertexBuffer->unlock();
+   delete m_bracketMeshBuffer;
+   m_bracketMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, bracketVertexBuffer, 0, gateBracketNumVertices, bracketIndexBuffer, 0, gateBracketNumIndices, true);
 
-   SAFE_BUFFER_RELEASE(m_wireIndexBuffer);
-   m_wireIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, m_indices);
-
-   SAFE_BUFFER_RELEASE(m_wireVertexBuffer);
-   m_wireVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
-
-   m_wireVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+   IndexBuffer *wireIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, m_indices);
+   VertexBuffer *wireVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
+   wireVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
    GenerateWireMesh(buf);
-   m_wireVertexBuffer->unlock();
+   wireVertexBuffer->unlock();
+   delete m_wireMeshBuffer;
+   m_wireMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, wireVertexBuffer, 0, m_numVertices, wireIndexBuffer, 0, m_numIndices, true);
 }
 
 void Gate::UpdateAnimation(const float diff_time_msec)
