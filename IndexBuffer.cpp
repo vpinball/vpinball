@@ -4,12 +4,76 @@
 
 extern unsigned m_curLockCalls, m_frameLockCalls;
 
-//!! Disabled since it still has some bugs
-#define COMBINE_BUFFERS 0
+#define COMBINE_BUFFERS 1
 
 #ifdef ENABLE_SDL
 vector<IndexBuffer*> IndexBuffer::notUploadedBuffers;
 #endif
+
+#include "Shader.h"
+#include "VertexBuffer.h"
+
+MeshBuffer::MeshBuffer(const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, const bool ownBuffers)
+   : MeshBuffer(fvf, vb, startVertex, vertexCount, nullptr, 0, 0, ownBuffers)
+{
+}
+
+MeshBuffer::MeshBuffer(const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount, const bool ownBuffers)
+   : m_vertexFormat(fvf)
+   , m_vb(vb)
+   , m_startVertex(startVertex)
+   , m_vertexCount(vertexCount)
+   , m_ib(ib)
+   , m_startIndex(startIndex)
+   , m_indexCount(indexCount)
+   , m_triangleCount(ib != nullptr ? indexCount / 3 : vertexCount / 3)
+   , m_ownBuffers(ownBuffers)
+{
+}
+
+MeshBuffer::~MeshBuffer()
+{
+   if (m_ownBuffers)
+   {
+      SAFE_BUFFER_RELEASE(m_vb);
+      SAFE_BUFFER_RELEASE(m_ib);
+   }
+   #ifdef ENABLE_SDL
+   if (m_vao != 0)
+   {
+      glDeleteVertexArrays(1, &m_vao);
+      m_vao = 0;
+   }
+   #endif
+}
+
+void MeshBuffer::bind()
+{
+#ifdef ENABLE_SDL
+   static GLuint curVAO = 0;
+   if (m_vao == 0)
+   {
+      glGenVertexArrays(1, &m_vao);
+      glBindVertexArray(m_vao);
+      m_vb->bind();
+      if (m_ib)
+         m_ib->bind();
+      // FIXME this supposes that this mesh buffer is always used with the same attribute layout.
+      // This happens to be true but it would be more clean to fix the attribute layout in the shaders
+      Shader::GetCurrentShader()->setAttributeFormat(m_vertexFormat);
+      curVAO = m_vao;
+   }
+   else if (curVAO != m_vao)
+   {
+      glBindVertexArray(m_vao);
+      curVAO = m_vao;
+   }
+#else
+   m_vb->bind();
+   if (m_ib)
+      m_ib->bind();
+#endif
+}
 
 IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format)
 {
@@ -70,12 +134,14 @@ void IndexBuffer::lock(const unsigned int offsetToLock, const unsigned int sizeT
 #ifdef ENABLE_SDL
    assert(m_dataBuffer == nullptr);
    m_sizeToLock = sizeToLock == 0 ? m_size : sizeToLock;
-   if (offsetToLock < m_size) {
+   if (offsetToLock < m_size)
+   {
       *dataBuffer = malloc(m_sizeToLock); //!! does not init the buffer from the IBuffer data if flags is set accordingly (i.e. WRITEONLY, or better: create a new flag like 'PARTIALUPDATE'?)
       m_dataBuffer = *dataBuffer;
       m_offsetToLock = offsetToLock;
    }
-   else {
+   else
+   {
       *dataBuffer = nullptr;
       m_dataBuffer = nullptr;
       m_sizeToLock = 0;
@@ -122,16 +188,12 @@ void IndexBuffer::bind()
       else
          UploadData();
    }
-   if (m_rd->m_curIndexBuffer == nullptr || m_Buffer != m_rd->m_curIndexBuffer->m_Buffer)
-   {
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffer);
-      m_rd->m_curIndexBuffer = this;
-   }
+   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffer);
 #else
-   if (/*m_curIndexBuffer == nullptr ||*/ m_curIndexBuffer != this)
+   if (/*m_curIndexBuffer == nullptr ||*/ m_rd->m_curIndexBuffer != this)
    {
       CHECKD3D(m_rd->GetCoreDevice()->SetIndices(m_ib));
-      m_curIndexBuffer = this;
+      m_rd->m_curIndexBuffer = this;
    }
 #endif
 }

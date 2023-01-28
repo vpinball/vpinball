@@ -84,15 +84,18 @@ static const Vertex3Ds* const vertsBaseTop = (Vertex3Ds*)vertsBaseTopf;
 Flipper::Flipper()
 {
    m_phitflipper = nullptr;
-   m_vertexBuffer = nullptr;
-   m_indexBuffer = nullptr;
+   m_batMeshBuffer = nullptr;
+   m_rubberMeshBuffer = nullptr;
    m_ptable = nullptr;
+   m_lastAngle = 0.f;
 }
 
 Flipper::~Flipper()
 {
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
-   SAFE_BUFFER_RELEASE(m_indexBuffer);
+   delete m_batMeshBuffer;
+   m_batMeshBuffer = nullptr;
+   delete m_rubberMeshBuffer;
+   m_rubberMeshBuffer = nullptr;
 }
 
 HRESULT Flipper::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
@@ -289,9 +292,10 @@ void Flipper::EndPlay()
 {
    if (m_phitflipper) // Failed player case
       m_phitflipper = nullptr;
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
-   SAFE_BUFFER_RELEASE(m_indexBuffer);
-
+   delete m_batMeshBuffer;
+   m_batMeshBuffer = nullptr;
+   delete m_rubberMeshBuffer;
+   m_rubberMeshBuffer = nullptr;
    IEditable::EndPlay();
 }
 
@@ -639,7 +643,7 @@ void Flipper::RenderDynamic()
    }
    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
    pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, flipperBaseVertices, m_indexBuffer, 0, flipperBaseNumIndices);
+   pd3dDevice->DrawMesh(m_batMeshBuffer);
    pd3dDevice->basicShader->End();
 
    //render rubber
@@ -658,7 +662,7 @@ void Flipper::RenderDynamic()
       }
 
       pd3dDevice->basicShader->Begin();
-      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, flipperBaseVertices, flipperBaseVertices, m_indexBuffer, 0, flipperBaseNumIndices);
+      pd3dDevice->DrawMesh(m_rubberMeshBuffer);
       pd3dDevice->basicShader->End();
    }
    g_pplayer->UpdateBasicShaderMatrix();
@@ -865,17 +869,15 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 
 void Flipper::RenderSetup()
 {
-   SAFE_BUFFER_RELEASE(m_indexBuffer);
-   m_indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, flipperBaseNumIndices, flipperBaseIndices);
-
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
-   m_vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, flipperBaseVertices * 2, 0, MY_D3DFVF_NOTEX2_VERTEX);
-
+   IndexBuffer* indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, flipperBaseNumIndices, flipperBaseIndices);
+   VertexBuffer* vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, flipperBaseVertices * 2, 0, MY_D3DFVF_NOTEX2_VERTEX);
    Vertex3D_NoTex2 *buf;
-   m_vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    GenerateBaseMesh(buf);
-   m_vertexBuffer->unlock();
-
+   vertexBuffer->unlock();
+   delete m_batMeshBuffer;
+   m_batMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, flipperBaseVertices, indexBuffer, 0, flipperBaseNumIndices, true);
+   m_rubberMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, flipperBaseVertices, flipperBaseVertices, indexBuffer, 0, flipperBaseNumIndices, false);
    m_lastAngle = 123486.0f;
 }
 

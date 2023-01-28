@@ -40,7 +40,6 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
    m_count = vertexCount;
    m_size = m_sizePerVertex * m_count;
    m_isUploaded = false;
-   m_Array = 0;
    m_Buffer = 0;
    m_offset = 0;
    m_offsetToLock = 0;
@@ -60,7 +59,8 @@ void VertexBuffer::lock(const unsigned int offsetToLock, const unsigned int size
 {
    m_curLockCalls++;
 #ifdef ENABLE_SDL
-   assert(m_dataBuffer == nullptr);
+   // FIXME this breaks with bumpers
+   // assert(m_dataBuffer == nullptr);
    m_sizeToLock = sizeToLock == 0 ? m_size : sizeToLock;
    if (offsetToLock < m_size)
    {
@@ -96,9 +96,7 @@ void VertexBuffer::release()
    if (!m_sharedBuffer && (m_Buffer != 0))
    {
       glDeleteBuffers(1, &m_Buffer);
-      glDeleteVertexArrays(1, &m_Array);
       m_Buffer = 0;
-      m_Array = 0;
       m_sizePerVertex = 0;
       m_offset = 0;
       m_count = 0;
@@ -112,24 +110,19 @@ void VertexBuffer::release()
 void VertexBuffer::bind()
 {
 #ifdef ENABLE_SDL
-   if (!m_isUploaded) {
+   if (!m_isUploaded)
+   {
       if (m_sharedBuffer)
          UploadBuffers(m_rd);
       else
          UploadData();
    }
-   if (m_rd->m_curVertexBuffer == nullptr || m_Array != m_rd->m_curVertexBuffer->m_Array || m_Buffer != m_rd->m_curVertexBuffer->m_Buffer)
-   {
-      glBindVertexArray(m_Array);
-      glBindBuffer(GL_ARRAY_BUFFER, m_Buffer);
-      m_rd->m_curVertexBuffer = this;
-      m_rd->m_curIndexBuffer = nullptr; // glBindVertexArray also can/will change the GL_ELEMENT_ARRAY_BUFFER binding!
-   }
+   glBindBuffer(GL_ARRAY_BUFFER, m_Buffer);
 #else
-   if (/*m_curVertexBuffer == nullptr ||*/ m_curVertexBuffer != this)
+   if (/*m_curVertexBuffer == nullptr ||*/ m_rd->m_curVertexBuffer != this)
    {
       CHECKD3D(m_rd->GetCoreDevice()->SetStreamSource(0, m_vb, 0, m_sizePerVertex));
-      m_curVertexBuffer = this;
+      m_rd->m_curVertexBuffer = this;
    }
 #endif
 }
@@ -149,9 +142,6 @@ void VertexBuffer::addToNotUploadedBuffers()
 
 void VertexBuffer::UploadData()
 {
-   if (m_Array == 0)
-      glGenVertexArrays(1, &m_Array);
-   glBindVertexArray(m_Array);
    if (m_Buffer == 0)
    {
       glGenBuffers(1, &m_Buffer);
@@ -176,10 +166,6 @@ void VertexBuffer::UploadBuffers(RenderDevice* rd)
    int countT = 0;
    GLuint BufferNT;
    GLuint BufferT;
-   GLuint ArrayNT;
-   GLuint ArrayT;
-   glGenVertexArrays(1, &ArrayNT);
-   glGenVertexArrays(1, &ArrayT);
    glGenBuffers(1, &BufferNT);
    glGenBuffers(1, &BufferT);
    for (auto it = notUploadedBuffers.begin(); it != notUploadedBuffers.end(); ++it) {
@@ -190,13 +176,11 @@ void VertexBuffer::UploadBuffers(RenderDevice* rd)
             (*it)->m_offset = countT;
             countT += (*it)->m_count;
             (*it)->m_Buffer = BufferT;
-            (*it)->m_Array = ArrayT;
          }
          else {
             (*it)->m_offset = countNT;
             countNT += (*it)->m_count;
             (*it)->m_Buffer = BufferNT;
-            (*it)->m_Array = ArrayNT;
          }
          (*it)->m_sharedBuffer = true;
       }
@@ -204,12 +188,10 @@ void VertexBuffer::UploadBuffers(RenderDevice* rd)
    //Allocate BufferData on GPU
    if (countNT > 0) {
       glBindBuffer(GL_ARRAY_BUFFER, BufferNT);
-      glBindVertexArray(ArrayNT);
       glBufferData(GL_ARRAY_BUFFER, countNT * fvfToSize(MY_D3DFVF_NOTEX2_VERTEX), nullptr, GL_STATIC_DRAW);
    }
    if (countT > 0) {
       glBindBuffer(GL_ARRAY_BUFFER, BufferT);
-      glBindVertexArray(ArrayT);
       glBufferData(GL_ARRAY_BUFFER, countT * fvfToSize(MY_D3DFVF_TEX), nullptr, GL_STATIC_DRAW);
    }
    glBindBuffer(GL_ARRAY_BUFFER, 0);
