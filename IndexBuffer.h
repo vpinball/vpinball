@@ -29,6 +29,12 @@ public:
 #ifdef ENABLE_SDL
 private:
    GLuint m_vao = 0;
+   bool m_isSharedVAO = false;
+   struct SharedVAO
+   {
+      GLuint vb, ib, vao, ref_count;
+   };
+   static vector<SharedVAO> sharedVAOs;
 #endif
 };
 
@@ -79,12 +85,13 @@ private:
 #ifdef ENABLE_SDL
 public:
    GLuint getOffset() const { return m_offset; }
+   GLuint getBuffer() const { return m_buffer; }
+   bool useSharedBuffer() const { return m_sharedBuffer; }
    Format getIndexFormat() const { return m_indexFormat; }
 
 private:
    GLuint m_count;
    GLuint m_size;
-   GLuint m_offset;
    bool m_isUploaded;
    bool m_sharedBuffer;
 
@@ -94,7 +101,8 @@ private:
    void* m_dataBuffer = nullptr;
 
    //GPU memory management
-   GLuint m_Buffer = 0;
+   GLuint m_buffer = 0;
+   GLuint m_offset = 0; // Offset if stored in a shared GPU buffer
 
    void UploadData();
    void addToNotUploadedBuffers();

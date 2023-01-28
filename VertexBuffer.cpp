@@ -40,7 +40,7 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
    m_count = vertexCount;
    m_size = m_sizePerVertex * m_count;
    m_isUploaded = false;
-   m_Buffer = 0;
+   m_buffer = 0;
    m_offset = 0;
    m_offsetToLock = 0;
    m_sizeToLock = 0;
@@ -93,10 +93,10 @@ void VertexBuffer::unlock()
 void VertexBuffer::release()
 {
 #ifdef ENABLE_SDL
-   if (!m_sharedBuffer && (m_Buffer != 0))
+   if (!m_sharedBuffer && (m_buffer != 0))
    {
-      glDeleteBuffers(1, &m_Buffer);
-      m_Buffer = 0;
+      glDeleteBuffers(1, &m_buffer);
+      m_buffer = 0;
       m_sizePerVertex = 0;
       m_offset = 0;
       m_count = 0;
@@ -117,7 +117,7 @@ void VertexBuffer::bind()
       else
          UploadData();
    }
-   glBindBuffer(GL_ARRAY_BUFFER, m_Buffer);
+   glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
 #else
    if (/*m_curVertexBuffer == nullptr ||*/ m_rd->m_curVertexBuffer != this)
    {
@@ -142,14 +142,14 @@ void VertexBuffer::addToNotUploadedBuffers()
 
 void VertexBuffer::UploadData()
 {
-   if (m_Buffer == 0)
+   if (m_buffer == 0)
    {
-      glGenBuffers(1, &m_Buffer);
-      glBindBuffer(GL_ARRAY_BUFFER, m_Buffer);
+      glGenBuffers(1, &m_buffer);
+      glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
       glBufferData(GL_ARRAY_BUFFER, m_size, nullptr, m_usage);
    }
    else
-      glBindBuffer(GL_ARRAY_BUFFER, m_Buffer);
+      glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
    if (m_size - m_offsetToLock > 0)
       glBufferSubData(GL_ARRAY_BUFFER, m_offset * m_sizePerVertex + m_offsetToLock, min(m_sizeToLock, m_size - m_offsetToLock), m_dataBuffer);
    m_rd->m_curVertexBuffer = this;
@@ -175,12 +175,12 @@ void VertexBuffer::UploadBuffers(RenderDevice* rd)
          {
             (*it)->m_offset = countT;
             countT += (*it)->m_count;
-            (*it)->m_Buffer = BufferT;
+            (*it)->m_buffer = BufferT;
          }
          else {
             (*it)->m_offset = countNT;
             countNT += (*it)->m_count;
-            (*it)->m_Buffer = BufferNT;
+            (*it)->m_buffer = BufferNT;
          }
          (*it)->m_sharedBuffer = true;
       }

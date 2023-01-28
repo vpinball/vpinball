@@ -8,6 +8,7 @@ extern unsigned m_curLockCalls, m_frameLockCalls;
 
 #ifdef ENABLE_SDL
 vector<IndexBuffer*> IndexBuffer::notUploadedBuffers;
+vector<MeshBuffer::SharedVAO> MeshBuffer::sharedVAOs;
 #endif
 
 #include "Shader.h"
@@ -39,8 +40,9 @@ MeshBuffer::~MeshBuffer()
       SAFE_BUFFER_RELEASE(m_ib);
    }
    #ifdef ENABLE_SDL
-   if (m_vao != 0)
+   if (m_vao != 0 && !m_isSharedVAO)
    {
+      // FIXME perform ref counting for shared VAO
       glDeleteVertexArrays(1, &m_vao);
       m_vao = 0;
    }
@@ -58,6 +60,26 @@ void MeshBuffer::bind()
       m_vb->bind();
       if (m_ib)
          m_ib->bind();
+      // If index & vertex buffer are using shared buffers (for static objects), then this buffer should use a shared VAO
+      m_isSharedVAO = m_vb->useSharedBuffer() && (m_ib == nullptr || m_ib->useSharedBuffer());
+      if (m_isSharedVAO)
+      {
+         GLuint vb = m_vb->getBuffer();
+         GLuint ib = m_ib == nullptr ? 0 : m_ib->getBuffer();
+         std::vector<SharedVAO>::iterator existing = std::find_if(sharedVAOs.begin(), sharedVAOs.end(), [vb, ib](SharedVAO v) { return v.vb == vb && v.ib == ib; });
+         if (existing == sharedVAOs.end())
+         {
+            SharedVAO vao(vb, ib, m_vao, 1);
+            sharedVAOs.push_back(vao);
+         }
+         else
+         {
+            existing->ref_count++;
+            glDeleteVertexArrays(1, &m_vao);
+            m_vao = existing->vao;
+            glBindVertexArray(m_vao);
+         }
+      }
       // FIXME this supposes that this mesh buffer is always used with the same attribute layout.
       // This happens to be true but it would be more clean to fix the attribute layout in the shaders
       Shader::GetCurrentShader()->setAttributeFormat(m_vertexFormat);
@@ -86,7 +108,7 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const 
    m_size = numIndices * m_sizePerIndex;
    m_isUploaded = false;
    m_dataBuffer = nullptr;
-   m_Buffer = 0;
+   m_buffer = 0;
    m_offset = 0;
    m_offsetToLock = 0;
    m_sizeToLock = 0;
@@ -165,10 +187,10 @@ void IndexBuffer::unlock()
 void IndexBuffer::release()
 {
 #ifdef ENABLE_SDL
-   if (!m_sharedBuffer && (m_Buffer != 0))
+   if (!m_sharedBuffer && (m_buffer != 0))
    {
-      glDeleteBuffers(1, &m_Buffer);
-      m_Buffer = 0;
+      glDeleteBuffers(1, &m_buffer);
+      m_buffer = 0;
       m_offset = 0;
       m_count = 0;
       m_size = 0;
@@ -188,7 +210,7 @@ void IndexBuffer::bind()
       else
          UploadData();
    }
-   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffer);
+   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_buffer);
 #else
    if (/*m_curIndexBuffer == nullptr ||*/ m_rd->m_curIndexBuffer != this)
    {
@@ -213,14 +235,14 @@ void IndexBuffer::addToNotUploadedBuffers()
 
 void IndexBuffer::UploadData()
 {
-   if (m_Buffer == 0)
+   if (m_buffer == 0)
    {
-      glGenBuffers(1, &m_Buffer);
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffer);
+      glGenBuffers(1, &m_buffer);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_buffer);
       glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_size, nullptr, m_usage);
    }
    else
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffer);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_buffer);
    if (m_size - m_offsetToLock > 0)
       glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, m_offset + m_offsetToLock, min(m_sizeToLock, m_size - m_offsetToLock), m_dataBuffer);
    m_rd->m_curIndexBuffer = this;
@@ -248,13 +270,13 @@ void IndexBuffer::UploadBuffers(RenderDevice* rd)
          {
             (*it)->m_offset = size16;
             size16 += (*it)->m_size;
-            (*it)->m_Buffer = Buffer16;
+            (*it)->m_buffer = Buffer16;
          }
          else
          {
             (*it)->m_offset = size32;
             size32 += (*it)->m_size;
-            (*it)->m_Buffer = Buffer32;
+            (*it)->m_buffer = Buffer32;
          }
       }
    }
