@@ -1269,7 +1269,7 @@ void Flasher::RenderDynamic()
    if (color.x == 0.f && color.y == 0.f && color.z == 0.f)
       return;
 
-   if (m_d.m_isDMD && (g_pplayer->IsRenderPass(Player::OPAQUE_DMD_PASS) || g_pplayer->IsRenderPass(Player::TRANSPARENT_DMD_PASS) )) // don't draw any DMD, but this case should not happen in the first place
+   if (m_d.m_isDMD && !(g_pplayer->IsRenderPass(Player::OPAQUE_DMD_PASS) || g_pplayer->IsRenderPass(Player::TRANSPARENT_DMD_PASS) )) // don't draw any DMD, but this case should not happen in the first place
       return;
 
    RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
@@ -1350,7 +1350,7 @@ void Flasher::RenderDynamic()
        pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_TEX, m_dynamicVertexBuffer, 0, m_numVertices, m_dynamicIndexBuffer, 0, m_numPolys * 3);
        pd3dDevice->DMDShader->End();
    }
-   else if (!g_pplayer->IsRenderPass(Player::TRANSPARENT_DMD_PASS) && g_pplayer->IsRenderPass(Player::OPAQUE_DMD_PASS))
+   else if (!(g_pplayer->IsRenderPass(Player::TRANSPARENT_DMD_PASS) || g_pplayer->IsRenderPass(Player::OPAQUE_DMD_PASS)))
    {
        if (m_dynamicVertexBufferRegenerate)
        {
