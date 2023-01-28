@@ -53,6 +53,7 @@ void MeshBuffer::bind()
 {
 #ifdef ENABLE_SDL
    static GLuint curVAO = 0;
+   // Create or reuse VAO
    if (m_vao == 0)
    {
       glGenVertexArrays(1, &m_vao);
@@ -85,10 +86,18 @@ void MeshBuffer::bind()
       Shader::GetCurrentShader()->setAttributeFormat(m_vertexFormat);
       curVAO = m_vao;
    }
-   else if (curVAO != m_vao)
+   else 
    {
-      glBindVertexArray(m_vao);
-      curVAO = m_vao;
+      if (curVAO != m_vao)
+      {
+         glBindVertexArray(m_vao);
+         curVAO = m_vao;
+      }
+      // Upload any pending data to GPU buffer
+      if (!m_vb->isUploaded())
+         m_vb->bind();
+      if (m_ib && !m_vb->isUploaded())
+         m_ib->bind();
    }
 #else
    m_vb->bind();
