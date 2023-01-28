@@ -997,12 +997,7 @@ void KeysConfigDialog::OnOK()
     if (tscb)
         SaveValueInt(regKey[RegName::Player], "TiltSensitivity"s, newvalue);
     else
-    {
-        HKEY hkey;
-        RegOpenKey(HKEY_CURRENT_USER, "Software\\Visual Pinball\\Player", &hkey);
-        RegDeleteValue(hkey, "TiltSensitivity");
-        RegCloseKey(hkey);
-    }
+        DeleteValue(regKey[RegName::Player], "TiltSensitivity"s);
 
     for (unsigned int i = 0; i < eCKeys; ++i) if (regkey_idc[i] != -1)
     {
