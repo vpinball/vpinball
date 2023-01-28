@@ -37,6 +37,7 @@ private:
 public:
    GLuint getOffset() const { return m_offset; }
    GLuint getBuffer() const { return m_buffer; }
+   bool isUploaded() const { return m_isUploaded; }
    bool useSharedBuffer() const { return m_sharedBuffer; }
 
 private:
