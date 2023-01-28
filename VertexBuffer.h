@@ -36,6 +36,8 @@ private:
 #ifdef ENABLE_SDL
 public:
    GLuint getOffset() const { return m_offset; }
+   GLuint getBuffer() const { return m_buffer; }
+   bool useSharedBuffer() const { return m_sharedBuffer; }
 
 private:
    GLuint m_count;
@@ -49,8 +51,8 @@ private:
    void* m_dataBuffer = nullptr;
 
    //GPU memory management
-   GLuint m_Buffer = 0;
-   GLuint m_offset = 0; //unused ATM, but if we want to group multiple IndexBuffers later in one buffer we might need it
+   GLuint m_buffer = 0;
+   GLuint m_offset = 0; // Offset if stored in a shared GPU buffer
 
    void UploadData();
    void addToNotUploadedBuffers();
