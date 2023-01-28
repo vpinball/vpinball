@@ -153,12 +153,10 @@ private:
    float m_minx, m_maxx, m_miny, m_maxy;
    Vertex3D_TexelOnly *m_vertices;
 
-   VertexBuffer *m_dynamicVertexBuffer;
-   IndexBuffer *m_dynamicIndexBuffer;
-
    PropertyPane *m_propVisual;
 
    bool m_dynamicVertexBufferRegenerate;
+   MeshBuffer *m_meshBuffer = nullptr;
 
    void ResetVideoCap();
    bool m_isVideoCap = false;
