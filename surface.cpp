@@ -870,7 +870,7 @@ void Surface::PrepareWallsAtHeight()
 
    //
 
-   IndexBuffer::CreateIndexBuffer((unsigned int)topBottomIndices.size() + (unsigned int)sideIndices.size(), 0, IndexBuffer::FMT_INDEX16, &m_IBuffer, PRIMARY_DEVICE);
+   m_IBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)topBottomIndices.size() + (unsigned int)sideIndices.size(), 0, IndexBuffer::FMT_INDEX16);
 
    WORD* buf;
    m_IBuffer->lock(0, 0, (void**)&buf, IndexBuffer::WRITEONLY);
@@ -937,7 +937,7 @@ void Surface::PrepareSlingshots()
    delete[] rgv3D;
 
    if (!slingIBuffer)
-      slingIBuffer = IndexBuffer::CreateAndFillIndexBuffer(24, rgiSlingshot, PRIMARY_DEVICE);
+      slingIBuffer = IndexBuffer::CreateAndFillIndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, 24, rgiSlingshot);
 }
 
 void Surface::RenderSetup()

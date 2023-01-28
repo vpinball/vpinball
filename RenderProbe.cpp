@@ -260,7 +260,6 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    memcpy(initialViewMat.m, viewMat.m, 4 * 4 * sizeof(float));
    // Reflect against reflection plane given by its normal (formula from https://en.wikipedia.org/wiki/Transformation_matrix#Reflection_2)
    Matrix3D reflect;
-   reflect.SetIdentity();
    reflect._11 = 1.0f - 2.0f * m_reflection_plane.x * m_reflection_plane.x;
    reflect._12 =      - 2.0f * m_reflection_plane.x * m_reflection_plane.y;
    reflect._13 =      - 2.0f * m_reflection_plane.x * m_reflection_plane.z;
@@ -273,6 +272,10 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    reflect._32 =      - 2.0f * m_reflection_plane.z * m_reflection_plane.y;
    reflect._33 = 1.0f - 2.0f * m_reflection_plane.z * m_reflection_plane.z;
    reflect._34 =      - 2.0f * m_reflection_plane.z * m_reflection_plane.w;
+   reflect._41 = 0.0f;
+   reflect._42 = 0.0f;
+   reflect._43 = 0.0f;
+   reflect._44 = 1.0f;
    viewMat = reflect * viewMat;
    // Translate the camera on the other side of the plane (move by twice the distance along its normal)
    // reflect.SetTranslation(-m_reflection_plane.w * m_reflection_plane.x * 2.0f, -m_reflection_plane.w * m_reflection_plane.y * 2.0f, -m_reflection_plane.w * m_reflection_plane.z * 2.0f);

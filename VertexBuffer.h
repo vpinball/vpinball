@@ -57,7 +57,6 @@ private:
 
    void UploadData();
    void addToNotUploadedBuffers();
-
    static vector<VertexBuffer*> notUploadedBuffers;
    static void UploadBuffers();
 #else

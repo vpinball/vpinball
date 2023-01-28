@@ -284,7 +284,7 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
    m_vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numGroupVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
 
    SAFE_BUFFER_RELEASE(m_indexBuffer);
-   m_indexBuffer = IndexBuffer::CreateAndFillIndexBuffer(indices, PRIMARY_DEVICE);
+   m_indexBuffer = IndexBuffer::CreateAndFillIndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, indices);
 
    unsigned int ofs = 0;
    Vertex3D_NoTex2 *buf;
@@ -1435,7 +1435,7 @@ void Primitive::RenderSetup()
    m_vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)m_mesh.NumVertices(), 0, MY_D3DFVF_NOTEX2_VERTEX);
 
    SAFE_BUFFER_RELEASE(m_indexBuffer);
-   m_indexBuffer = IndexBuffer::CreateAndFillIndexBuffer(m_mesh.m_indices, PRIMARY_DEVICE);
+   m_indexBuffer = IndexBuffer::CreateAndFillIndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_mesh.m_indices);
 }
 
 void Primitive::UpdateAnimation(const float diff_time_msec)

@@ -856,7 +856,7 @@ void Trigger::RenderSetup()
    }
 
    SAFE_BUFFER_RELEASE(m_triggerIndexBuffer);
-   m_triggerIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(m_numIndices, indices, PRIMARY_DEVICE);
+   m_triggerIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, indices);
    SAFE_BUFFER_RELEASE(m_vertexBuffer);
    m_vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
    NumVideoBytes += m_numVertices * (int)sizeof(Vertex3D_NoTex2);

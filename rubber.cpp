@@ -1478,7 +1478,7 @@ void Rubber::GenerateVertexBuffer()
    m_dynamicVertexBuffer->unlock();
 
    SAFE_BUFFER_RELEASE(m_dynamicIndexBuffer);
-   m_dynamicIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(m_ringIndices, PRIMARY_DEVICE);
+   m_dynamicIndexBuffer = IndexBuffer::CreateAndFillIndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_ringIndices);
 }
 
 void Rubber::UpdateRubber(const bool updateVB, const float height)

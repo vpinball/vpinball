@@ -3,109 +3,79 @@
 #include "stdafx.h"
 #include "typedefs3D.h"
 
-#ifdef ENABLE_SDL
-
 class IndexBuffer final
 {
 public:
    enum Format {
+#ifdef ENABLE_SDL
       FMT_INDEX16 = 16,
       FMT_INDEX32 = 32
+#else
+      FMT_INDEX16 = D3DFMT_INDEX16,
+      FMT_INDEX32 = D3DFMT_INDEX32
+#endif
    };
 
-   enum LockFlags //!! not handled
+   enum LockFlags
    {
+#ifdef ENABLE_SDL
       WRITEONLY,
       NOOVERWRITE,
       DISCARDCONTENTS
+#else
+      WRITEONLY = 0,                        // in DX9, this is specified during VB creation
+      NOOVERWRITE = D3DLOCK_NOOVERWRITE,    // meaning: no recently drawn vertices are overwritten. only works with dynamic VBs.
+                                            // it's only needed for VBs which are locked several times per frame
+      DISCARDCONTENTS = D3DLOCK_DISCARD     // discard previous contents; only works with dynamic VBs
+#endif
    };
 
-   void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags);
+   IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format);
+   static IndexBuffer* CreateAndFillIndexBuffer(RenderDevice* rd, const unsigned int numIndices, const unsigned int* indices);
+   static IndexBuffer* CreateAndFillIndexBuffer(RenderDevice* rd, const unsigned int numIndices, const WORD* indices);
+   static IndexBuffer* CreateAndFillIndexBuffer(RenderDevice* rd, const vector<unsigned int>& indices);
+   static IndexBuffer* CreateAndFillIndexBuffer(RenderDevice* rd, const vector<WORD>& indices);
+
+   static void bindNull() { m_curIndexBuffer = nullptr; }
+
+   void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void** dataBuffer, const DWORD flags);
    void unlock();
    void release();
    void bind();
 
-   static void bindNull() { m_curIndexBuffer = nullptr; }
-   static void CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer **idxBuffer, const deviceNumber dN);
-
-   static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const unsigned int * indices, const deviceNumber dN);
-   static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const WORD * indices, const deviceNumber dN);
-   static IndexBuffer* CreateAndFillIndexBuffer(const vector<unsigned int>& indices, const deviceNumber dN);
-   static IndexBuffer* CreateAndFillIndexBuffer(const vector<WORD>& indices, const deviceNumber dN);
-
-   static void UploadBuffers();
-
-   GLuint getOffset() const { return offset; }
-   Format getIndexFormat() const { return indexFormat; }
-
    static IndexBuffer* m_curIndexBuffer; // for caching
 
 private:
-   GLuint count;
-   GLuint size;
-   GLuint offset;
-   DWORD usage;
-   bool isUploaded;
-   bool sharedBuffer;
+   RenderDevice* m_rd;
+   DWORD m_usage;
+   unsigned int m_sizePerIndex;
+   Format m_indexFormat;
+
+#ifdef ENABLE_SDL
+public:
+   GLuint getOffset() const { return m_offset; }
+   Format getIndexFormat() const { return m_indexFormat; }
+
+private:
+   GLuint m_count;
+   GLuint m_size;
+   GLuint m_offset;
+   bool m_isUploaded;
+   bool m_sharedBuffer;
 
    // CPU memory management
-   unsigned int offsetToLock;
-   unsigned int sizeToLock;
-   void *dataBuffer = nullptr;
+   unsigned int m_offsetToLock;
+   unsigned int m_sizeToLock;
+   void* m_dataBuffer = nullptr;
 
    //GPU memory management
-   GLuint Buffer = 0;
-   Format indexFormat;
+   GLuint m_Buffer = 0;
 
+   void UploadData();
+   void addToNotUploadedBuffers();
    static vector<IndexBuffer*> notUploadedBuffers;
-
-   void UploadData(bool freeData);
-   void addToNotUploadedBuffers(const void* indices = nullptr);
-};
-
+   static void UploadBuffers();
 #else
-
-class IndexBuffer final
-{
-public:
-   enum Format {
-      FMT_INDEX16 = D3DFMT_INDEX16,
-      FMT_INDEX32 = D3DFMT_INDEX32
-   };
-   enum LockFlags
-   {
-      WRITEONLY = 0,                      // in DX9, this is specified during VB creation
-      NOOVERWRITE = D3DLOCK_NOOVERWRITE,  // meaning: no recently drawn vertices are overwritten. only works with dynamic VBs.
-                                          // it's only needed for VBs which are locked several times per frame
-      DISCARDCONTENTS = D3DLOCK_DISCARD   // discard previous contents; only works with dynamic VBs
-   };
-
-   void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags);
-   void unlock();
-   void release();
-   void bind();
-
-   static void bindNull() { m_curIndexBuffer = nullptr; }
-   static void setD3DDevice(IDirect3DDevice9* primary, IDirect3DDevice9* secondary) { m_pd3dPrimaryDevice = primary; m_pd3dSecondaryDevice = secondary; }
-
-   static void CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer** idxBuffer, const deviceNumber dN);
-
-   static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const unsigned int* indices, const deviceNumber dN);
-   static IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const WORD* indices, const deviceNumber dN);
-   static IndexBuffer* CreateAndFillIndexBuffer(const vector<unsigned int>& indices, const deviceNumber dN);
-   static IndexBuffer* CreateAndFillIndexBuffer(const vector<WORD>& indices, const deviceNumber dN);
-
-   static IndexBuffer* m_curIndexBuffer; // for caching
-
    IDirect3DIndexBuffer9* m_ib = nullptr;
-
-private:
-   //IndexBuffer();      // disable default constructor
-
-   deviceNumber m_dN;
-
-   static IDirect3DDevice9* m_pd3dPrimaryDevice;
-   static IDirect3DDevice9* m_pd3dSecondaryDevice;
-};
-
 #endif
+};
