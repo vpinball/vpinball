@@ -365,7 +365,6 @@ private:
 
 public:
    bool m_autogen_mipmap;
-   //bool m_RESZ_support;
    bool m_compress_textures;
 
 private:
@@ -375,6 +374,10 @@ private:
 public:
    VertexBuffer* m_quadVertexBuffer;    // internal vb for rendering quads //!! only on primary device for now!
    VertexBuffer* m_quadDynVertexBuffer; // internal vb for rendering dynamic quads //!!
+
+   // for caching
+   VertexBuffer* m_curVertexBuffer = nullptr;
+   IndexBuffer* m_curIndexBuffer = nullptr;
 
 public:
 #ifndef ENABLE_SDL

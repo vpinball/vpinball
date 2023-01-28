@@ -850,7 +850,7 @@ void Plunger::RenderSetup()
 
    // create the new index buffer
    SAFE_BUFFER_RELEASE(m_indexBuffer);
-   m_indexBuffer = IndexBuffer::CreateAndFillIndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, k, indices);
+   m_indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, k, indices);
 
    // done with the index scratch pad
    delete[] indices;

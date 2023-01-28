@@ -937,7 +937,7 @@ void Surface::PrepareSlingshots()
    delete[] rgv3D;
 
    if (!slingIBuffer)
-      slingIBuffer = IndexBuffer::CreateAndFillIndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, 24, rgiSlingshot);
+      slingIBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, 24, rgiSlingshot);
 }
 
 void Surface::RenderSetup()

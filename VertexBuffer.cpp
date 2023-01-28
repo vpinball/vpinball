@@ -5,8 +5,12 @@
 
 extern unsigned m_curLockCalls, m_frameLockCalls;
 
-//!! Disabled since it still has some bugs
+#ifdef __OPENGLES__ 
+// Disabled since OpenGL ES does not support glDrawElementsBaseVertex and we need it unless we remap the indices when creating the index buffer (and we should)
 #define COMBINE_BUFFERS 0
+#else
+#define COMBINE_BUFFERS 1
+#endif
 
 static unsigned int fvfToSize(const DWORD fvf)
 {
@@ -21,8 +25,6 @@ static unsigned int fvfToSize(const DWORD fvf)
       return 0;
    }
 }
-
-VertexBuffer* VertexBuffer::m_curVertexBuffer = nullptr; // is reset before each Player start
 
 #ifdef ENABLE_SDL
 vector<VertexBuffer*> VertexBuffer::notUploadedBuffers;
@@ -112,16 +114,16 @@ void VertexBuffer::bind()
 #ifdef ENABLE_SDL
    if (!m_isUploaded) {
       if (m_sharedBuffer)
-         UploadBuffers();
+         UploadBuffers(m_rd);
       else
          UploadData();
    }
-   if (m_curVertexBuffer == nullptr || m_Array != m_curVertexBuffer->m_Array || m_Buffer != m_curVertexBuffer->m_Buffer)
+   if (m_rd->m_curVertexBuffer == nullptr || m_Array != m_rd->m_curVertexBuffer->m_Array || m_Buffer != m_rd->m_curVertexBuffer->m_Buffer)
    {
       glBindVertexArray(m_Array);
       glBindBuffer(GL_ARRAY_BUFFER, m_Buffer);
-      m_curVertexBuffer = this;
-      IndexBuffer::m_curIndexBuffer = nullptr; // glBindVertexArray also can/will change the GL_ELEMENT_ARRAY_BUFFER binding!
+      m_rd->m_curVertexBuffer = this;
+      m_rd->m_curIndexBuffer = nullptr; // glBindVertexArray also can/will change the GL_ELEMENT_ARRAY_BUFFER binding!
    }
 #else
    if (/*m_curVertexBuffer == nullptr ||*/ m_curVertexBuffer != this)
@@ -160,13 +162,13 @@ void VertexBuffer::UploadData()
       glBindBuffer(GL_ARRAY_BUFFER, m_Buffer);
    if (m_size - m_offsetToLock > 0)
       glBufferSubData(GL_ARRAY_BUFFER, m_offset * m_sizePerVertex + m_offsetToLock, min(m_sizeToLock, m_size - m_offsetToLock), m_dataBuffer);
-   m_curVertexBuffer = this;
+   m_rd->m_curVertexBuffer = this;
    m_isUploaded = true;
    free(m_dataBuffer);
    m_dataBuffer = nullptr;
 }
 
-void VertexBuffer::UploadBuffers()
+void VertexBuffer::UploadBuffers(RenderDevice* rd)
 {
    if (notUploadedBuffers.empty()) return;
 
@@ -211,7 +213,7 @@ void VertexBuffer::UploadBuffers()
       glBufferData(GL_ARRAY_BUFFER, countT * fvfToSize(MY_D3DFVF_TEX), nullptr, GL_STATIC_DRAW);
    }
    glBindBuffer(GL_ARRAY_BUFFER, 0);
-   m_curVertexBuffer = nullptr;
+   rd->m_curVertexBuffer = nullptr;
    for (auto it = notUploadedBuffers.begin(); it != notUploadedBuffers.end(); ++it)
       (*it)->UploadData();
    notUploadedBuffers.clear();
