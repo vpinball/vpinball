@@ -124,17 +124,10 @@ private:
 
    PinTable *m_ptable;
 
-   VertexBuffer *m_baseVertexBuffer;
-   IndexBuffer *m_baseIndexBuffer;
-
-   VertexBuffer *m_socketVertexBuffer;
-   IndexBuffer *m_socketIndexBuffer;
-
-   VertexBuffer *m_ringVertexBuffer;
-   IndexBuffer *m_ringIndexBuffer;
-
-   VertexBuffer *m_capVertexBuffer;
-   IndexBuffer *m_capIndexBuffer;
+   MeshBuffer *m_baseMeshBuffer;
+   MeshBuffer *m_socketMeshBuffer;
+   MeshBuffer *m_ringMeshBuffer;
+   MeshBuffer *m_capMeshBuffer;
 
    Matrix3D m_fullMatrix;
    Vertex3D_NoTex2 *m_ringVertices;

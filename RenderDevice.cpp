@@ -2268,17 +2268,40 @@ void RenderDevice::DrawPrimitiveVB(const PrimitiveTypes type, const DWORD fvf, V
 
    ApplyRenderStates();
 
-   vb->bind();
 #ifdef ENABLE_SDL
-   Shader::GetCurrentShader()->setAttributeFormat(fvf);
+   MeshBuffer mb(fvf, vb, startVertex, vertexCount, false);
+   mb.bind();
    glDrawArrays(type, vb->getOffset() + startVertex, vertexCount);
 #else
    VertexDeclaration * declaration = fvfToDecl(fvf);
    SetVertexDeclaration(declaration);
 
+   vb->bind();
    const HRESULT hr = m_pD3DDevice->DrawPrimitive((D3DPRIMITIVETYPE)type, startVertex, np);
    if (FAILED(hr))
       ReportError("Fatal Error: DrawPrimitive failed!", hr, __FILE__, __LINE__);
+#endif
+   m_curDrawCalls++;
+}
+
+void RenderDevice::DrawMesh(MeshBuffer* mb)
+{
+   ApplyRenderStates();
+   m_stats_drawn_triangles += mb->m_triangleCount;
+   mb->bind();
+#ifdef ENABLE_SDL
+   const int offset = mb->m_ib->getOffset() + (mb->m_ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? 2 : 4) * mb->m_startIndex;
+#ifndef __OPENGLES__
+   glDrawElementsBaseVertex(
+      TRIANGLELIST, mb->m_indexCount, mb->m_ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)offset, mb->m_vb->getOffset() + mb->m_startVertex);
+#else
+   glDrawElements(TRIANGLELIST, indexCount, mb->m_ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)(intptr_t)offset);
+#endif
+
+#else
+   mb->bind();
+   SetVertexDeclaration(fvfToDecl(mb->m_vertexFormat));
+   CHECKD3D(m_pD3DDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, mb->m_startVertex, 0, mb->m_vertexCount, mb->m_startIndex, mb->m_triangleCount));
 #endif
    m_curDrawCalls++;
 }
@@ -2292,10 +2315,10 @@ void RenderDevice::DrawIndexedPrimitiveVB(const PrimitiveTypes type, const DWORD
 
    const unsigned int np = ComputePrimitiveCount(type, indexCount);
    m_stats_drawn_triangles += np;
-   vb->bind(); // do not change order, this calls glBindVertexArray in GL, which must come before GL_ELEMENT_ARRAY_BUFFER!
-   ib->bind();
 
 #ifdef ENABLE_SDL
+   MeshBuffer mb(fvf, vb, startVertex, vertexCount, ib, startIndex, indexCount, false);
+   mb.bind();
    Shader::GetCurrentShader()->setAttributeFormat(fvf);
    const int offset = ib->getOffset() + (ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? 2 : 4) * startIndex;
 #ifndef __OPENGLES__
@@ -2303,11 +2326,11 @@ void RenderDevice::DrawIndexedPrimitiveVB(const PrimitiveTypes type, const DWORD
 #else
    glDrawElements(type, indexCount, ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)(intptr_t)offset);
 #endif
-#else
-   VertexDeclaration* declaration = fvfToDecl(fvf);
-   SetVertexDeclaration(declaration);
 
-   // render
+#else
+   vb->bind();
+   ib->bind();
+   SetVertexDeclaration(fvfToDecl(fvf));
    CHECKD3D(m_pD3DDevice->DrawIndexedPrimitive((D3DPRIMITIVETYPE)type, startVertex, 0, vertexCount, startIndex, np));
 #endif
    m_curDrawCalls++;

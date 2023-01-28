@@ -13,9 +13,6 @@ Surface::Surface()
    m_d.m_slingshotAnimation = true;
    m_d.m_inner = true;
    m_d.m_isBottomSolid = false;
-   m_slingshotVBuffer = 0;
-   m_VBuffer = 0;
-   m_IBuffer = 0;
    m_propPhysics = nullptr;
    m_d.m_overwritePhysics = true;
 }
@@ -848,36 +845,45 @@ void Surface::ExportMesh(ObjLoader& loader)
 
 void Surface::PrepareWallsAtHeight()
 {
-   SAFE_BUFFER_RELEASE(m_IBuffer);
-   SAFE_BUFFER_RELEASE(m_VBuffer);
-
    vector<Vertex3D_NoTex2> topBottomBuf;
    vector<Vertex3D_NoTex2> sideBuf;
    vector<WORD> topBottomIndices;
    vector<WORD> sideIndices;
    GenerateMesh(topBottomBuf, sideBuf, topBottomIndices, sideIndices);
 
-   m_VBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices * 4 + (!topBottomBuf.empty() ? m_numVertices * 3 : 0), 0, MY_D3DFVF_NOTEX2_VERTEX);
+   VertexBuffer* VBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices * 4 + (!topBottomBuf.empty() ? m_numVertices * 3 : 0), 0, MY_D3DFVF_NOTEX2_VERTEX);
 
    Vertex3D_NoTex2 *verts;
-   m_VBuffer->lock(0, 0, (void**)&verts, VertexBuffer::WRITEONLY);
+   VBuffer->lock(0, 0, (void**)&verts, VertexBuffer::WRITEONLY);
    memcpy(verts, sideBuf.data(), sizeof(Vertex3D_NoTex2)*m_numVertices * 4);
 
    if (!topBottomBuf.empty())
       //if (m_d.m_visible) // Visible could still be set later if rendered dynamically
          memcpy(verts+m_numVertices * 4, topBottomBuf.data(), sizeof(Vertex3D_NoTex2)*m_numVertices * 3);
-   m_VBuffer->unlock();
+   VBuffer->unlock();
 
    //
 
-   m_IBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)topBottomIndices.size() + (unsigned int)sideIndices.size(), 0, IndexBuffer::FMT_INDEX16);
+   IndexBuffer* IBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)topBottomIndices.size() + (unsigned int)sideIndices.size(), 0, IndexBuffer::FMT_INDEX16);
 
    WORD* buf;
-   m_IBuffer->lock(0, 0, (void**)&buf, IndexBuffer::WRITEONLY);
+   IBuffer->lock(0, 0, (void**)&buf, IndexBuffer::WRITEONLY);
    memcpy(buf, sideIndices.data(), sideIndices.size() * sizeof(WORD));
    if (!topBottomIndices.empty())
       memcpy(buf + sideIndices.size(), topBottomIndices.data(), topBottomIndices.size() * sizeof(WORD));
-   m_IBuffer->unlock();
+   IBuffer->unlock();
+
+   delete m_sideMeshBuffer;
+   delete m_topMeshBuffer;
+   delete m_topDroppedMeshBuffer;
+   delete m_bottomMeshBuffer;
+   m_sideMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, VBuffer, 0, m_numVertices * 4, IBuffer, 0, m_numVertices * 6, true);
+   if (!topBottomBuf.empty())
+   {
+      m_topMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, VBuffer, m_numVertices * 4, m_numVertices, IBuffer, m_numVertices * 6, m_numPolys * 3, false);
+      m_topDroppedMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, VBuffer, m_numVertices * 5, m_numVertices, IBuffer, m_numVertices * 6, m_numPolys * 3, false);
+      m_bottomMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, VBuffer, m_numVertices * 6, m_numVertices, IBuffer, m_numVertices * 6, m_numPolys * 3, false);
+   }
 }
 
 static constexpr WORD rgiSlingshot[24] = { 0, 4, 3, 0, 1, 4, 1, 2, 5, 1, 5, 4, 4, 8, 5, 4, 7, 8, 3, 7, 4, 3, 6, 7 };
@@ -888,11 +894,13 @@ void Surface::PrepareSlingshots()
 {
    const float slingbottom = (m_d.m_heighttop - m_d.m_heightbottom) * 0.2f + m_d.m_heightbottom;
    const float slingtop = (m_d.m_heighttop - m_d.m_heightbottom) * 0.8f + m_d.m_heightbottom;
+   const unsigned int n_lines = m_vlinesling.size();
 
-   Vertex3D_NoTex2* const rgv3D = new Vertex3D_NoTex2[m_vlinesling.size() * 9];
+   Vertex3D_NoTex2 *const rgv3D = new Vertex3D_NoTex2[n_lines * 9];
+   unsigned short *const rgIdx = new unsigned short[n_lines * 24];
 
-   unsigned int offset = 0;
-   for (size_t i = 0; i < m_vlinesling.size(); i++, offset += 9)
+   unsigned int offset = 0, offsetIdx = 0;
+   for (size_t i = 0; i < n_lines; i++, offset += 9, offsetIdx += 24)
    {
       LineSegSlingshot * const plinesling = m_vlinesling[i];
       plinesling->m_animations = m_d.m_slingshotAnimation;
@@ -923,21 +931,29 @@ void Surface::PrepareSlingshots()
          rgv3D[l + offset + 6].z = slingtop + m_ptable->m_tableheight;
       }
 
+      for (unsigned int l = 0; l < 24; l++)
+      {
+         rgIdx[l + offsetIdx] = offset + rgiSlingshot[l];
+      }
+
       ComputeNormals(rgv3D + offset, 9, rgiSlingshot, 24);
    }
 
-   SAFE_BUFFER_RELEASE(m_slingshotVBuffer);
-   m_slingshotVBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)m_vlinesling.size() * 9, 0, MY_D3DFVF_NOTEX2_VERTEX);
-
+   VertexBuffer *slingshotVBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, n_lines * 9, 0, MY_D3DFVF_NOTEX2_VERTEX);
    Vertex3D_NoTex2 *buf;
-   m_slingshotVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   slingshotVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    memcpy(buf, rgv3D, m_vlinesling.size() * 9 * sizeof(Vertex3D_NoTex2));
-   m_slingshotVBuffer->unlock();
-
+   slingshotVBuffer->unlock();
    delete[] rgv3D;
 
-   if (!slingIBuffer)
-      slingIBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, 24, rgiSlingshot);
+   IndexBuffer *slingIBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, n_lines * 24, USAGE_STATIC, IndexBuffer::FMT_INDEX16);
+   unsigned short *ibuf;
+   slingIBuffer->lock(0, 0, (void**)&ibuf, VertexBuffer::WRITEONLY);
+   memcpy(ibuf, rgIdx, m_vlinesling.size() * 24 * sizeof(unsigned short));
+   slingIBuffer->unlock();
+
+   delete m_slingshotMeshBuffer;
+   m_slingshotMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, slingshotVBuffer, 0, n_lines * 9, slingIBuffer, 0, n_lines * 24, true);
 }
 
 void Surface::RenderSetup()
@@ -970,10 +986,16 @@ void Surface::RenderSetup()
 
 void Surface::FreeBuffers()
 {
-   SAFE_BUFFER_RELEASE(m_slingshotVBuffer);
-   SAFE_BUFFER_RELEASE(m_VBuffer);
-   SAFE_BUFFER_RELEASE(m_IBuffer);
-   SAFE_BUFFER_RELEASE(slingIBuffer); // NB: global instance
+   delete m_slingshotMeshBuffer;
+   m_slingshotMeshBuffer = nullptr;
+   delete m_sideMeshBuffer;
+   m_sideMeshBuffer = nullptr;
+   delete m_topMeshBuffer;
+   m_topMeshBuffer = nullptr;
+   delete m_topDroppedMeshBuffer;
+   m_topDroppedMeshBuffer = nullptr;
+   delete m_bottomMeshBuffer;
+   m_bottomMeshBuffer = nullptr;
 }
 
 void Surface::UpdateAnimation(const float diff_time_msec)
@@ -1021,7 +1043,6 @@ void Surface::RenderSlingshots()
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
 
-   pd3dDevice->basicShader->Begin();
    for (size_t i = 0; i < m_vlinesling.size(); i++)
    {
       LineSegSlingshot * const plinesling = m_vlinesling[i];
@@ -1037,9 +1058,9 @@ void Surface::RenderSlingshots()
               plinesling->m_EventTimeReset = 0;
           }
       }
-
-      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_slingshotVBuffer, (DWORD)i * 9, 9, slingIBuffer, 0, 24);
    }
+   pd3dDevice->basicShader->Begin();
+   pd3dDevice->DrawMesh(m_slingshotMeshBuffer);
    pd3dDevice->basicShader->End();
 
    //pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
@@ -1090,7 +1111,7 @@ void Surface::RenderWallsAtHeight(const bool drop)
 
       // combine drawcalls into one (hopefully faster)
       pd3dDevice->basicShader->Begin();
-      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_VBuffer, 0, m_numVertices * 4, m_IBuffer, 0, m_numVertices * 6);
+      pd3dDevice->DrawMesh(m_sideMeshBuffer);
       pd3dDevice->basicShader->End();
    }
 
@@ -1123,7 +1144,7 @@ void Surface::RenderWallsAtHeight(const bool drop)
 
       // Top
       pd3dDevice->basicShader->Begin();
-      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_VBuffer, m_numVertices * 4 + (!drop ? 0 : m_numVertices), m_numVertices, m_IBuffer, m_numVertices * 6, m_numPolys * 3);
+      pd3dDevice->DrawMesh(drop ? m_topDroppedMeshBuffer : m_topMeshBuffer);
       pd3dDevice->basicShader->End();
 
       // Only render Bottom for Reflections
@@ -1135,7 +1156,7 @@ void Surface::RenderWallsAtHeight(const bool drop)
             pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CW);
 
          pd3dDevice->basicShader->Begin();
-         pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_VBuffer, m_numVertices * 4 + m_numVertices * 2, m_numVertices, m_IBuffer, m_numVertices * 6, m_numPolys * 3);
+         pd3dDevice->DrawMesh(m_bottomMeshBuffer);
          pd3dDevice->basicShader->End();
       }
    }

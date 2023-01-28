@@ -50,7 +50,6 @@ private:
 
    //GPU memory management
    GLuint m_Buffer = 0;
-   GLuint m_Array = 0;
    GLuint m_offset = 0; //unused ATM, but if we want to group multiple IndexBuffers later in one buffer we might need it
 
    void UploadData();

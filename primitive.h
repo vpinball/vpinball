@@ -393,8 +393,7 @@ private:
    vector<Vertex3Ds> m_vertices;
    vector<float> m_normals; // only z component actually
 
-   VertexBuffer *m_vertexBuffer;
-   IndexBuffer *m_indexBuffer;
+   MeshBuffer *m_meshBuffer;
    bool m_vertexBufferRegenerate;
 };
 

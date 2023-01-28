@@ -162,9 +162,8 @@ void Mesh::UploadToVB(VertexBuffer * vb, const float frame)
 
 Primitive::Primitive()
 {
-   m_vertexBuffer = nullptr;
+   m_meshBuffer = nullptr;
    m_vertexBufferRegenerate = true;
-   m_indexBuffer = nullptr;
    m_d.m_use3DMesh = false;
    m_d.m_staticRendering = false;
    m_d.m_edgeFactorUI = 0.25f;
@@ -199,8 +198,7 @@ Primitive::Primitive()
 Primitive::~Primitive()
 {
    WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
-   SAFE_BUFFER_RELEASE(m_indexBuffer);
+   delete m_meshBuffer;
 }
 
 void Primitive::CreateRenderGroup(const Collection * const collection)
@@ -280,15 +278,11 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
          prims[i]->m_d.m_skipRendering = false;
    }
 
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
-   m_vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numGroupVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
-
-   SAFE_BUFFER_RELEASE(m_indexBuffer);
-   m_indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, indices);
-
+   VertexBuffer* vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numGroupVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
+   IndexBuffer* indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, indices);
    unsigned int ofs = 0;
    Vertex3D_NoTex2 *buf;
-   m_vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    for (size_t i = 0; i < renderedPrims.size(); i++)
    {
       renderedPrims[i]->RecalculateMatrices();
@@ -305,7 +299,8 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
          ofs++;
       }
    }
-   m_vertexBuffer->unlock();
+   vertexBuffer->unlock();
+   m_meshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numGroupVertices, indexBuffer, 0, m_numGroupIndices, true);
 }
 
 HRESULT Primitive::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
@@ -639,12 +634,9 @@ void Primitive::EndPlay()
 {
    m_vhoCollidable.clear();
 
-   if (m_vertexBuffer)
-   {
-      SAFE_BUFFER_RELEASE(m_vertexBuffer);
-      m_vertexBufferRegenerate = true;
-   }
-   SAFE_BUFFER_RELEASE(m_indexBuffer);
+   delete m_meshBuffer;
+   m_meshBuffer = nullptr;
+   m_vertexBufferRegenerate = true;
 
    m_d.m_skipRendering = false;
    m_d.m_groupdRendering = false;
@@ -1198,7 +1190,7 @@ void Primitive::RenderObject()
       RecalculateMatrices();
       if (m_vertexBufferRegenerate)
       {
-         m_mesh.UploadToVB(m_vertexBuffer, m_currentFrame);
+         m_mesh.UploadToVB(m_meshBuffer->m_vb, m_currentFrame);
          m_vertexBufferRegenerate = false;
       }
    }
@@ -1334,10 +1326,7 @@ void Primitive::RenderObject()
       { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
          pd3dDevice->basicShader->SetTechniqueMetal(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat, nMap, false, false);
          pd3dDevice->basicShader->Begin();
-         if (m_d.m_groupdRendering)
-            pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numGroupVertices, m_indexBuffer, 0, m_numGroupIndices);
-         else
-            pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), m_indexBuffer, 0, (DWORD)m_mesh.NumIndices());
+         pd3dDevice->DrawMesh(m_meshBuffer);
          pd3dDevice->basicShader->End();
          is_reflection_only_pass = true;
       }
@@ -1356,10 +1345,7 @@ void Primitive::RenderObject()
 
    // draw the mesh
    pd3dDevice->basicShader->Begin();
-   if (m_d.m_groupdRendering)
-      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numGroupVertices, m_indexBuffer, 0, m_numGroupIndices);
-   else
-      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), m_indexBuffer, 0, (DWORD)m_mesh.NumIndices());
+   pd3dDevice->DrawMesh(m_meshBuffer);
    pd3dDevice->basicShader->End();
 
    // also draw the back of the primitive faces
@@ -1367,10 +1353,7 @@ void Primitive::RenderObject()
    {
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
       pd3dDevice->basicShader->Begin();
-      if (m_d.m_groupdRendering)
-         pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numGroupVertices, m_indexBuffer, 0, m_numGroupIndices);
-      else
-         pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), m_indexBuffer, 0, (DWORD)m_mesh.NumIndices());
+      pd3dDevice->DrawMesh(m_meshBuffer);
       pd3dDevice->basicShader->End();
    }
 
@@ -1432,16 +1415,13 @@ void Primitive::RenderSetup()
    m_d.m_isBackGlassImage = IsBackglass();
 
    bool is_static = m_d.m_staticRendering || m_mesh.m_animationFrames.size() == 0;
-
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
-   m_vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)m_mesh.NumVertices(), is_static ? USAGE_STATIC : USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
-
-   SAFE_BUFFER_RELEASE(m_indexBuffer);
-   m_indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_mesh.m_indices);
+   VertexBuffer* vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)m_mesh.NumVertices(), is_static ? USAGE_STATIC : USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
+   IndexBuffer* indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_mesh.m_indices);
+   m_meshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices(), true);
 
    // Compute and upload mesh to let a chance for renderdevice to share the buffers with other static objects
    RecalculateMatrices();
-   m_mesh.UploadToVB(m_vertexBuffer, m_currentFrame);
+   m_mesh.UploadToVB(vertexBuffer, m_currentFrame);
    m_vertexBufferRegenerate = false;
 }
 
@@ -1955,7 +1935,8 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             }
             prim->m_mesh.Clear();
             prim->m_d.m_use3DMesh = false;
-            SAFE_BUFFER_RELEASE(prim->m_vertexBuffer);
+            delete prim->m_meshBuffer;
+            prim->m_meshBuffer = nullptr;
 
             constexpr bool flipTV = false;
             const bool convertToLeftHanded = IsDlgButtonChecked(hwndDlg, IDC_CONVERT_COORD_CHECK) == BST_CHECKED;

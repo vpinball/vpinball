@@ -3,6 +3,35 @@
 #include "stdafx.h"
 #include "typedefs3D.h"
 
+class VertexBuffer;
+class IndexBuffer;
+
+class MeshBuffer final
+{
+public:
+   MeshBuffer(const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, const bool ownBuffers);
+   MeshBuffer(const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount, const bool ownBuffers);
+   ~MeshBuffer();
+   void bind();
+
+   const bool m_ownBuffers;
+   const int m_triangleCount;
+   const DWORD m_vertexFormat;
+
+   VertexBuffer* m_vb;
+   const DWORD m_startVertex;
+   const DWORD m_vertexCount;
+
+   IndexBuffer* m_ib;
+   const DWORD m_startIndex;
+   const DWORD m_indexCount;
+
+#ifdef ENABLE_SDL
+private:
+   GLuint m_vao = 0;
+#endif
+};
+
 class IndexBuffer final
 {
 public:

@@ -155,9 +155,11 @@ private:
 
    unsigned int m_numVertices, m_numPolys;
 
-   VertexBuffer *m_slingshotVBuffer;
-   VertexBuffer *m_VBuffer;
-   IndexBuffer *m_IBuffer;
+   MeshBuffer *m_slingshotMeshBuffer = nullptr;
+   MeshBuffer *m_sideMeshBuffer = nullptr;
+   MeshBuffer *m_topMeshBuffer = nullptr;
+   MeshBuffer *m_topDroppedMeshBuffer = nullptr;
+   MeshBuffer *m_bottomMeshBuffer = nullptr;
 
    PropertyPane *m_propPhysics;
 
