@@ -422,7 +422,7 @@ static bool FindOrInsertStringIntoAutolist(vector<string>& ListIn, const string 
 		iJumpDelta >>= 1;
 	}
 
-	const vector<string>::iterator i = ListIn.begin() + iCurPos;
+	const vector<string>::const_iterator i = ListIn.begin() + iCurPos;
 
 	if (result == -1) //insert before, somewhere in the middle
 	{
@@ -924,12 +924,11 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 	for (vector<UserData>::iterator i = m_VBwordsDict.begin(); i != m_VBwordsDict.end(); ++i)
 	{
 		//make m_vbsKeyWords in order.
-		m_vbsKeyWords += lowerCase(i->m_keyName);
+		m_vbsKeyWords += lowerCase(i->m_keyName); // lower case shouldn't be needed as list is already lower case
 		m_vbsKeyWords += ' ';
 		//Then capitalize first letter
-		WordChar = i->m_keyName.at(0);
-		if (WordChar >= 'a' && WordChar <= 'z') WordChar -= ('a' - 'A');
-		i->m_keyName.at(0) = WordChar;
+		const char fl = i->m_keyName[0];
+		if (fl >= 'a' && fl <= 'z') i->m_keyName[0] = fl - ('a' - 'A');
 	}
 	///// Preferences
 	InitPreferences();
@@ -1027,7 +1026,6 @@ void CodeViewer::Destroy()
 		m_lPrefsList->clear();
 		delete m_lPrefsList;
 	}
-	m_autoCompList.clear();
 	m_componentsDict.clear();
 	m_pageConstructsDict.clear();
 	m_VBwordsDict.clear();
@@ -2344,7 +2342,10 @@ bool CodeViewer::ShowTooltipOrGoToDefinition(const SCNotification *pSCN, const b
 				Mess = Word->m_description;
 				Mess += " (Line: " + std::to_string(Word->m_lineNum + 1) + ')';
 				if ((Word->m_comment.length() > 1) && m_dwellHelp)
-					Mess += '\n' + m_pageConstructsDict[idx].m_comment;
+				{
+					Mess += '\n';
+					Mess += m_pageConstructsDict[idx].m_comment;
+				}
 				gotoDefinition = Word;
 			}
 			//Search VP core
@@ -2353,7 +2354,10 @@ bool CodeViewer::ShowTooltipOrGoToDefinition(const SCNotification *pSCN, const b
 				idx = FindClosestUD(m_VPcoreDict, CurrentLineNo, idx);
 				Mess = m_VPcoreDict[idx].m_description;
 				if ((m_VPcoreDict[idx].m_comment.length() > 1) && m_dwellHelp)
-					Mess += '\n' + m_VPcoreDict[idx].m_comment;
+				{
+					Mess += '\n';
+					Mess += m_VPcoreDict[idx].m_comment;
+				}
 			}
 			else if (FindUD(m_componentsDict, DwellWord, idx) == 0)
 				Mess = "Component: "s + szDwellWord;
@@ -2812,8 +2816,7 @@ void CodeViewer::ParseFindConstruct(size_t &Pos, const string &UCLineIn, WordTyp
 
 void CodeViewer::ReadLineToParseBrain(string wholeline, const int linecount, vector<UserData>& ListIn)
 {
-		string CommentTmp = ParseRemoveVBSLineComments(wholeline);
-		RemovePadding(CommentTmp);
+		const string comment = ParseRemoveVBSLineComments(wholeline);
 		while (wholeline.length() > 1)
 		{
 			string line = ParseDelimtByColon(wholeline);
@@ -2822,22 +2825,21 @@ void CodeViewer::ReadLineToParseBrain(string wholeline, const int linecount, vec
 			UserData UD;
 			UD.eTyping = eUnknown;
 			UD.m_lineNum = linecount;
-			UD.m_comment = CommentTmp;
+			UD.m_comment = comment;
 			int SearchLength = 0;
 			size_t idx = string::npos;
 			ParseFindConstruct(idx, UCline, UD.eTyping, SearchLength);
-			if (idx == string::npos) continue;
-			else // Found something structural
+			if (idx != string::npos) // Found something structural
 			{
 				const size_t doubleQuoteIdx = line.find('\"');
 				if ((doubleQuoteIdx != string::npos) && (doubleQuoteIdx < idx)) continue; // in a string literal
 				UD.m_description = line;
-				UD.m_keyName = ExtractWordOperand(line, (idx + SearchLength)); // sSubName
+				UD.m_keyName = ExtractWordOperand(line, idx + SearchLength); // sSubName
 				//UserData ud(linecount, line, sSubName, Type);
 				if (!ParseStructureName(ListIn, UD, UCline, line, linecount))
 				{/*A critical brain error occurred */}
 			}// if ( idx != string::npos)
-		}// while (wholeline.length > 1) 
+		}// while (wholeline.length > 1)
 }
 
 void CodeViewer::RemoveByVal(string &line)
@@ -2927,15 +2929,15 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 	}
 
 	//Now merge the lot for Auto complete...
-	m_autoCompList.clear();
+	vector<string> autoCompList;
 	for (vector<UserData>::const_iterator i = m_VBwordsDict.begin(); i != m_VBwordsDict.end(); ++i)
 	{
-		FindOrInsertStringIntoAutolist(m_autoCompList,i->m_keyName);
+		FindOrInsertStringIntoAutolist(autoCompList,i->m_keyName);
 	}
 	string strVPcoreWords;
 	for (vector<UserData>::const_iterator i = m_VPcoreDict.begin(); i != m_VPcoreDict.end(); ++i)
 	{
-		if (FindOrInsertStringIntoAutolist(m_autoCompList,i->m_keyName))
+		if (FindOrInsertStringIntoAutolist(autoCompList,i->m_keyName))
 		{
 			strVPcoreWords += i->m_keyName;
 			strVPcoreWords += ' ';
@@ -2944,7 +2946,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 	string strCompOut;
 	for (vector<UserData>::const_iterator i = m_componentsDict.begin(); i != m_componentsDict.end(); ++i)
 	{
-		if (FindOrInsertStringIntoAutolist(m_autoCompList,i->m_keyName))
+		if (FindOrInsertStringIntoAutolist(autoCompList,i->m_keyName))
 		{
 			strCompOut += i->m_keyName;
 			strCompOut += ' ';
@@ -2953,14 +2955,14 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 	string sSubFunOut;
 	for (vector<UserData>::const_iterator i = m_pageConstructsDict.begin(); i != m_pageConstructsDict.end(); ++i)
 	{
-		if (FindOrInsertStringIntoAutolist(m_autoCompList,i->m_keyName))
+		if (FindOrInsertStringIntoAutolist(autoCompList,i->m_keyName))
 		{
 			sSubFunOut += i->m_keyName;
 			sSubFunOut += ' ';
 		}
 	}
 	m_autoCompString.clear();
-	for (vector<string>::iterator i = m_autoCompList.begin(); i != m_autoCompList.end();++i)
+	for (vector<string>::const_iterator i = autoCompList.begin(); i != autoCompList.end(); ++i)
 	{
 		m_autoCompString += *i;
 		m_autoCompString += ' ';
