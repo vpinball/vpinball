@@ -2201,30 +2201,6 @@ void RenderDevice::SetVertexDeclaration(VertexDeclaration * declaration)
 #endif
 }
 
-void RenderDevice::DrawPrimitive(const PrimitiveTypes type, const DWORD fvf, const void* vertices, const DWORD vertexCount)
-{
-   ApplyRenderStates();
-
-#ifdef ENABLE_SDL
-   assert(false); // This part is not implemented as it is unused (should be removed ?). This is a guard block, just in case.
-#else
-   const unsigned int np = ComputePrimitiveCount(type, vertexCount);
-   m_stats_drawn_triangles += np;
-
-   VertexDeclaration * declaration = fvfToDecl(fvf);
-   SetVertexDeclaration(declaration);
-
-   HRESULT hr = m_pD3DDevice->DrawPrimitiveUP((D3DPRIMITIVETYPE)type, np, vertices, fvfToSize(fvf));
-
-   if (FAILED(hr))
-      ReportError("Fatal Error: DrawPrimitiveUP failed!", hr, __FILE__, __LINE__);
-
-   m_curVertexBuffer = nullptr; // DrawPrimitiveUP sets the VB to nullptr
-
-   m_curDrawCalls++;
-#endif
-}
-
 void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
 {
 #ifdef ENABLE_SDL
@@ -2234,33 +2210,19 @@ void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
    m_quadDynMeshBuffer->m_vb->unlock();
    DrawMesh(m_quadDynMeshBuffer);
 #else
-   // having a VB and lock/copying stuff each time is slower :/
-   DrawPrimitive(RenderDevice::TRIANGLESTRIP, MY_D3DFVF_TEX, vertices, 4); 
+   // having a VB and lock/copying stuff each time is slower on DX9 :/
+   ApplyRenderStates();
+   m_stats_drawn_triangles += 2;
+   SetVertexDeclaration(fvfToDecl(MY_D3DFVF_TEX));
+   CHECKD3D(m_pD3DDevice->DrawPrimitiveUP((D3DPRIMITIVETYPE)RenderDevice::TRIANGLESTRIP, 2, vertices, fvfToSize(MY_D3DFVF_TEX)));
+   m_curVertexBuffer = nullptr; // DrawPrimitiveUP sets the VB to nullptr
+   m_curDrawCalls++;
 #endif
 }
 
 void RenderDevice::DrawFullscreenTexturedQuad()
 {
    DrawMesh(m_quadMeshBuffer);
-}
-
-void RenderDevice::DrawPrimitiveVB(const PrimitiveTypes type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, const bool stereo)
-{
-   const unsigned int np = ComputePrimitiveCount(type, vertexCount);
-   m_stats_drawn_triangles += np;
-
-   ApplyRenderStates();
-
-#ifdef ENABLE_SDL
-   MeshBuffer mb(fvf, PrimitiveType::TRIANGLELIST, vb, startVertex, vertexCount, false);
-   mb.bind();
-   glDrawArrays(type, vb->getOffset() + startVertex, vertexCount);
-#else
-   SetVertexDeclaration(fvfToDecl(fvf));
-   vb->bind();
-   CHECKD3D(m_pD3DDevice->DrawPrimitive((D3DPRIMITIVETYPE)type, startVertex, np));
-#endif
-   m_curDrawCalls++;
 }
 
 void RenderDevice::DrawMesh(MeshBuffer* mb)

@@ -401,7 +401,6 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
 #ifdef DEBUG_BALL_SPIN
    m_ballDebugPoints = nullptr;
 #endif
-   m_ballTrailVertexBuffer = nullptr;
    m_pFont = nullptr;
    m_implicitPlayfieldMesh = nullptr;
 }
@@ -775,9 +774,11 @@ void Player::Shutdown()
       m_ballShader = nullptr;
    }
 #ifdef DEBUG_BALL_SPIN
-   SAFE_BUFFER_RELEASE(m_ballDebugPoints);
+   delete m_ballDebugPoints;
+   m_ballDebugPoints = nullptr;
 #endif
-   SAFE_BUFFER_RELEASE(m_ballTrailVertexBuffer);
+   delete m_ballTrailMeshBuffer;
+   m_ballTrailMeshBuffer = nullptr;
    if (m_ballImage)
    {
        delete m_ballImage;
@@ -1845,16 +1846,14 @@ HRESULT Player::Init()
       }
 
       assert(m_ballDebugPoints == nullptr);
-      m_ballDebugPoints = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, (unsigned int)ballDbgVtx.size(), 0, MY_D3DFVF_TEX);
-      void *buf;
-      m_ballDebugPoints->lock(0, 0, &buf, VertexBuffer::WRITEONLY);
-      memcpy(buf, ballDbgVtx.data(), ballDbgVtx.size() * sizeof(ballDbgVtx[0]));
-      m_ballDebugPoints->unlock();
+      VertexBuffer *ballDebugPoints = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, (unsigned int)ballDbgVtx.size(), 0, MY_D3DFVF_TEX, (float*) ballDbgVtx.data());
+      m_ballDebugPoints = new MeshBuffer(MY_D3DFVF_TEX, PrimitiveType::POINTLIST, ballDebugPoints, 0, 12, true);
    }
 #endif
 
-   assert(m_ballTrailVertexBuffer == nullptr);
-   m_ballTrailVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, (MAX_BALL_TRAIL_POS - 2) * 2 + 4, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
+   assert(m_ballTrailMeshBuffer == nullptr);
+   VertexBuffer* ballTrailVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, (MAX_BALL_TRAIL_POS - 2) * 2 + 4, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
+   m_ballTrailMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, PrimitiveType::TRIANGLESTRIP, ballTrailVertexBuffer, 0, (MAX_BALL_TRAIL_POS - 2) * 2 + 4, true);
 
    m_ptable->m_progressDialog.SetName("Starting Game Scripts..."s);
 
@@ -5935,16 +5934,17 @@ void Player::DrawBalls()
          if (num_rgv3D > 0)
          {
             Vertex3D_NoTex2 *bufvb;
-            m_ballTrailVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::DISCARDCONTENTS);
+            m_ballTrailMeshBuffer->m_vb->lock(0, 0, (void **)&bufvb, VertexBuffer::DISCARDCONTENTS);
             memcpy(bufvb,rgv3D_all,num_rgv3D*sizeof(Vertex3D_NoTex2));
-            m_ballTrailVertexBuffer->unlock();
+            m_ballTrailMeshBuffer->m_vb->unlock();
 
             m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
             m_pin3d.EnableAlphaBlend(false);
 
             m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBallTrail);
             m_ballShader->Begin();
-            m_pin3d.m_pd3dPrimaryDevice->DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, m_ballTrailVertexBuffer, 0, num_rgv3D, true);
+            MeshBuffer mb(m_ballTrailMeshBuffer, num_rgv3D);
+            m_pin3d.m_pd3dPrimaryDevice->DrawMesh(&mb);
             m_ballShader->End();
          }
       }
@@ -5968,7 +5968,7 @@ void Player::DrawBalls()
          // draw points
          constexpr float ptsize = 5.0f;
          m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_POINTSIZE, float_as_uint(ptsize));
-         m_pin3d.m_pd3dPrimaryDevice->DrawPrimitiveVB(RenderDevice::POINTLIST, MY_D3DFVF_TEX, m_ballDebugPoints, 0, 12, true);
+         m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballDebugPoints);
 
          // reset transform
          m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);

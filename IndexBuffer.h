@@ -10,8 +10,8 @@ class MeshBuffer final
 {
 public:
    MeshBuffer(const DWORD fvf, const PrimitiveType type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, const bool ownBuffers);
-   MeshBuffer(const DWORD fvf, const PrimitiveType type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount,
-      const bool ownBuffers);
+   MeshBuffer(const DWORD fvf, const PrimitiveType type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount, const bool ownBuffers);
+   MeshBuffer(MeshBuffer* base, const DWORD strippedVertexCount);
    ~MeshBuffer();
    void bind();
 
@@ -35,6 +35,7 @@ public:
 private:
    GLuint m_vao = 0;
    bool m_isSharedVAO = false;
+   bool m_isMeshView = false;
    struct SharedVAO
    {
       GLuint vb, ib, vao, ref_count;

@@ -389,7 +389,7 @@ public:
 
    IndexBuffer *m_ballIndexBuffer;
    VertexBuffer *m_ballVertexBuffer;
-   VertexBuffer *m_ballTrailVertexBuffer;
+   MeshBuffer *m_ballTrailMeshBuffer = nullptr;
    bool m_antiStretchBall;
 
    bool m_dynamicMode;
@@ -536,7 +536,7 @@ public:
 #endif
 
 #ifdef DEBUG_BALL_SPIN
-   VertexBuffer *m_ballDebugPoints;
+   MeshBuffer *m_ballDebugPoints = nullptr;
 #endif
    U32 m_movedPlunger;            // has plunger moved, must have moved at least three times
    U32 m_LastPlungerHit;          // The last time the plunger was in contact (at least the vicinity) of the ball.
