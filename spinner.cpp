@@ -9,19 +9,13 @@
 Spinner::Spinner()
 {
    m_phitspinner = nullptr;
-   m_bracketVertexBuffer = nullptr;
-   m_bracketIndexBuffer = nullptr;
-   m_plateVertexBuffer = nullptr;
-   m_plateIndexBuffer = nullptr;
    m_vertexBuffer_spinneranimangle = -FLT_MAX;
 }
 
 Spinner::~Spinner()
 {
-   SAFE_BUFFER_RELEASE(m_bracketVertexBuffer);
-   SAFE_BUFFER_RELEASE(m_bracketIndexBuffer);
-   SAFE_BUFFER_RELEASE(m_plateVertexBuffer);
-   SAFE_BUFFER_RELEASE(m_plateIndexBuffer);
+   delete m_bracketMeshBuffer;
+   delete m_plateMeshBuffer;
 }
 
 void Spinner::UpdateStatusBarInfo()
@@ -249,11 +243,10 @@ void Spinner::EndPlay()
 {
    IEditable::EndPlay();
    m_phitspinner = nullptr;
-
-   SAFE_BUFFER_RELEASE(m_bracketVertexBuffer);
-   SAFE_BUFFER_RELEASE(m_bracketIndexBuffer);
-   SAFE_BUFFER_RELEASE(m_plateVertexBuffer);
-   SAFE_BUFFER_RELEASE(m_plateIndexBuffer);
+   delete m_bracketMeshBuffer;
+   delete m_plateMeshBuffer;
+   m_bracketMeshBuffer = nullptr;
+   m_plateMeshBuffer = nullptr;
 }
 
 void Spinner::ExportMesh(ObjLoader& loader)
@@ -336,7 +329,7 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
 
    Vertex3D_NoTex2 *buf;
    if (vertBuffer == nullptr)
-      m_plateVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+      m_plateMeshBuffer->m_vb->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
    else
       buf = vertBuffer;
 
@@ -358,7 +351,7 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
       buf[i].tv = spinnerPlate[i].tv;
    }
    if (vertBuffer == nullptr)
-      m_plateVertexBuffer->unlock();
+      m_plateMeshBuffer->m_vb->unlock();
 }
 
 void Spinner::RenderDynamic()
@@ -398,7 +391,7 @@ void Spinner::RenderDynamic()
    }
 
    pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_plateVertexBuffer, 0, spinnerPlateNumVertices, m_plateIndexBuffer, 0, spinnerPlateNumFaces);
+   pd3dDevice->DrawMesh(m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, spinnerPlateNumFaces);
    pd3dDevice->basicShader->End();
 
    pd3dDevice->CopyRenderStates(false, initial_state);
@@ -413,16 +406,14 @@ void Spinner::RenderSetup()
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    m_posZ = height + m_d.m_height;
 
-   SAFE_BUFFER_RELEASE(m_bracketIndexBuffer);
-   m_bracketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerBracketNumFaces, spinnerBracketIndices);
-
-   SAFE_BUFFER_RELEASE(m_bracketVertexBuffer);
-   m_bracketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
+   IndexBuffer *bracketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerBracketNumFaces, spinnerBracketIndices);
+   VertexBuffer *bracketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
+   m_bracketMeshBuffer = new MeshBuffer(bracketVertexBuffer, bracketIndexBuffer, true);
 
    m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
 
    Vertex3D_NoTex2 *buf;
-   m_bracketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   bracketVertexBuffer->lock(0, 0, (void **)&buf, VertexBuffer::WRITEONLY);
    for (unsigned int i = 0; i < spinnerBracketNumVertices; i++)
    {
       Vertex3Ds vert(spinnerBracket[i].x, spinnerBracket[i].y, spinnerBracket[i].z);
@@ -440,13 +431,11 @@ void Spinner::RenderSetup()
       buf[i].tu = spinnerBracket[i].tu;
       buf[i].tv = spinnerBracket[i].tv;
    }
-   m_bracketVertexBuffer->unlock();
+   bracketVertexBuffer->unlock();
 
-   SAFE_BUFFER_RELEASE(m_plateIndexBuffer);
-   m_plateIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerPlateNumFaces, spinnerPlateIndices);
-
-   SAFE_BUFFER_RELEASE(m_plateVertexBuffer);
-   m_plateVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerPlateNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
+   IndexBuffer* plateIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerPlateNumFaces, spinnerPlateIndices);
+   VertexBuffer* plateVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerPlateNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
+   m_plateMeshBuffer = new MeshBuffer(plateVertexBuffer, plateIndexBuffer, true);
 
    m_vertexBuffer_spinneranimangle = -FLT_MAX;
    UpdatePlate(nullptr);
@@ -488,7 +477,7 @@ void Spinner::RenderStatic()
    pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
 
    pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bracketVertexBuffer, 0, spinnerBracketNumVertices, m_bracketIndexBuffer, 0, spinnerBracketNumFaces);
+   pd3dDevice->DrawMesh(m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, spinnerBracketNumFaces);
    pd3dDevice->basicShader->End();
 }
 

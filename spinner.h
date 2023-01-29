@@ -95,10 +95,8 @@ private:
 
    PinTable *m_ptable;
 
-   VertexBuffer *m_bracketVertexBuffer;
-   IndexBuffer *m_bracketIndexBuffer;
-   VertexBuffer *m_plateVertexBuffer;
-   IndexBuffer *m_plateIndexBuffer;
+   MeshBuffer *m_bracketMeshBuffer = nullptr;
+   MeshBuffer *m_plateMeshBuffer = nullptr;
    Matrix3D m_fullMatrix;
 
    float m_posZ;
