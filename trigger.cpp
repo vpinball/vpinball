@@ -19,8 +19,6 @@ Trigger::Trigger()
    m_vertexBuffer_animHeightOffset = -FLT_MAX;
 
    m_hitEnabled = true;
-   m_vertexBuffer = nullptr;
-   m_triggerIndexBuffer = nullptr;
    m_triggerVertices = nullptr;
    m_menuid = IDR_SURFACEMENU;
    m_propVisual = nullptr;
@@ -28,8 +26,7 @@ Trigger::Trigger()
 
 Trigger::~Trigger()
 {
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
-   SAFE_BUFFER_RELEASE(m_triggerIndexBuffer);
+   delete m_meshBuffer;
    if (m_triggerVertices)
    {
       delete[] m_triggerVertices;
@@ -484,8 +481,8 @@ void Trigger::EndPlay()
 {
    IEditable::EndPlay();
 
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
-   SAFE_BUFFER_RELEASE(m_triggerIndexBuffer);
+   delete m_meshBuffer;
+   m_meshBuffer = nullptr;
    if (m_triggerVertices)
    {
       delete[] m_triggerVertices;
@@ -590,7 +587,7 @@ void Trigger::RenderDynamic()
       m_vertexBuffer_animHeightOffset = m_animHeightOffset;
 
       Vertex3D_NoTex2 *buf;
-      m_vertexBuffer->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);
+      m_meshBuffer->m_vb->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);
       for (int i = 0; i < m_numVertices; i++)
       {
          buf[i].x = m_triggerVertices[i].x;
@@ -602,7 +599,7 @@ void Trigger::RenderDynamic()
          buf[i].tu = m_triggerVertices[i].tu;
          buf[i].tv = m_triggerVertices[i].tv;
       }
-      m_vertexBuffer->unlock();
+      m_meshBuffer->m_vb->unlock();
    }
 
    const Material *const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
@@ -615,7 +612,7 @@ void Trigger::RenderDynamic()
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
 
    pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numVertices, m_triggerIndexBuffer, 0, m_numIndices);
+   pd3dDevice->DrawMesh(m_meshBuffer);
    pd3dDevice->basicShader->End();
 
    pd3dDevice->CopyRenderStates(false, initial_state);
@@ -855,17 +852,11 @@ void Trigger::RenderSetup()
    }
    }
 
-   SAFE_BUFFER_RELEASE(m_triggerIndexBuffer);
-   m_triggerIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, indices);
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
-   m_vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
    NumVideoBytes += m_numVertices * (int)sizeof(Vertex3D_NoTex2);
-
    GenerateMesh();
-   Vertex3D_NoTex2 *buf;
-   m_vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
-   memcpy(buf, m_triggerVertices, sizeof(Vertex3D_NoTex2)*m_numVertices);
-   m_vertexBuffer->unlock();
+   IndexBuffer *triggerIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, indices);
+   VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, (float*) m_triggerVertices);
+   m_meshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, PrimitiveType::TRIANGLELIST, vertexBuffer, 0, m_numVertices, triggerIndexBuffer, 0, m_numIndices, true);
 }
 
 void Trigger::RenderStatic()
