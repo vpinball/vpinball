@@ -31,7 +31,6 @@ public:
 
    const unsigned int m_vertexCount;
 
-private:
    RenderDevice* const m_rd;
    const DWORD m_usage;
    const DWORD m_fvf;
@@ -65,6 +64,7 @@ private:
    static vector<VertexBuffer*> notUploadedBuffers;
    static void UploadBuffers(RenderDevice* rd);
 #else
+private:
    IDirect3DVertexBuffer9* m_vb = nullptr;
 #endif
 };
