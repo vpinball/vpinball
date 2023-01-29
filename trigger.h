@@ -119,8 +119,7 @@ private:
 
    TriggerHitCircle *m_ptriggerhitcircle;
 
-   VertexBuffer *m_vertexBuffer;
-   IndexBuffer *m_triggerIndexBuffer;
+   MeshBuffer *m_meshBuffer = nullptr;
    vector<Vertex3Ds> m_vertices;
    const WORD *m_faceIndices;
    Vertex3D_NoTex2 *m_triggerVertices;
