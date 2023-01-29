@@ -300,8 +300,8 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
       }
    }
    vertexBuffer->unlock();
-   delete m_meshBuffer;
-   m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer);
+   delete prims[0]->m_meshBuffer;
+   prims[0]->m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer);
 }
 
 HRESULT Primitive::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
