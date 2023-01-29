@@ -573,17 +573,21 @@ void PinInput::handleInputXI(DIDEVICEOBJECTDATA *didod)
    unsigned int xie = ERROR_DEVICE_NOT_CONNECTED;
    if (m_inputDeviceXI != -2 && (m_inputDeviceXI == -1 || (xie = XInputGetState(m_inputDeviceXI, &state)) != ERROR_SUCCESS)) {
       m_inputDeviceXI = -1;
+      e_JoyCnt = 0;
       for (DWORD i = 0; i < XUSER_MAX_COUNT; i++)
       {
          ZeroMemory(&state, sizeof(XINPUT_STATE));
          if ((xie = XInputGetState(i, &state)) == ERROR_SUCCESS) {
             m_inputDeviceXI = i;
+            e_JoyCnt = 1;
             break;
          }
       }
    }
-   if (xie == ERROR_DEVICE_NOT_CONNECTED) // XInputGetState can cause quite some overhead, especially if no devices connected! Thus disable the polling if nothing connected
+   if (xie == ERROR_DEVICE_NOT_CONNECTED) { // XInputGetState can cause quite some overhead, especially if no devices connected! Thus disable the polling if nothing connected
       m_inputDeviceXI = -2;
+      e_JoyCnt = 0;
+   }
    if (m_rumbleRunning && m_inputDeviceXI >= 0) {
       DWORD now = timeGetTime();
       if (m_rumbleOffTime <= now || m_rumbleOffTime - now > 65535) {
@@ -666,13 +670,16 @@ void PinInput::handleInputSDL(DIDEVICEOBJECTDATA *didod)
       case SDL_JOYDEVICEADDED:
          if (!m_inputDeviceSDL) {
             m_inputDeviceSDL = SDL_JoystickOpen(0);
-            if (m_inputDeviceSDL && SDL_JoystickIsHaptic(m_inputDeviceSDL)) {
-               m_rumbleDeviceSDL = SDL_HapticOpenFromJoystick(m_inputDeviceSDL);
-               const int error = SDL_HapticRumbleInit(m_rumbleDeviceSDL);
-               if (error < 0) {
-                  ShowError(SDL_GetError());
-                  SDL_HapticClose(m_rumbleDeviceSDL);
-                  m_rumbleDeviceSDL = nullptr;
+            if (m_inputDeviceSDL) {
+               e_JoyCnt = 1;
+               if (SDL_JoystickIsHaptic(m_inputDeviceSDL)) {
+                  m_rumbleDeviceSDL = SDL_HapticOpenFromJoystick(m_inputDeviceSDL);
+                  const int error = SDL_HapticRumbleInit(m_rumbleDeviceSDL);
+                  if (error < 0) {
+                     ShowError(SDL_GetError());
+                     SDL_HapticClose(m_rumbleDeviceSDL);
+                     m_rumbleDeviceSDL = nullptr;
+                  }
                }
             }
          }
@@ -685,18 +692,23 @@ void PinInput::handleInputSDL(DIDEVICEOBJECTDATA *didod)
             SDL_JoystickClose(m_inputDeviceSDL);
          if (SDL_NumJoysticks() > 0) {
             m_inputDeviceSDL = SDL_JoystickOpen(0);
-            if (m_inputDeviceSDL && SDL_JoystickIsHaptic(m_inputDeviceSDL)) {
-               m_rumbleDeviceSDL = SDL_HapticOpenFromJoystick(m_inputDeviceSDL);
-               const int error = SDL_HapticRumbleInit(m_rumbleDeviceSDL);
-               if (error < 0) {
-                  ShowError(SDL_GetError());
-                  SDL_HapticClose(m_rumbleDeviceSDL);
-                  m_rumbleDeviceSDL = nullptr;
+            if (m_inputDeviceSDL) {
+               e_JoyCnt = 1;
+               if (SDL_JoystickIsHaptic(m_inputDeviceSDL)) {
+                  m_rumbleDeviceSDL = SDL_HapticOpenFromJoystick(m_inputDeviceSDL);
+                  const int error = SDL_HapticRumbleInit(m_rumbleDeviceSDL);
+                  if (error < 0) {
+                     ShowError(SDL_GetError());
+                     SDL_HapticClose(m_rumbleDeviceSDL);
+                     m_rumbleDeviceSDL = nullptr;
+                  }
                }
             }
          }
-         else
+         else {
             m_inputDeviceSDL = nullptr;
+            e_JoyCnt = 0;
+         }
          break;
       case SDL_JOYAXISMOTION:
          if (e.jaxis.axis < 6) {
@@ -843,13 +855,16 @@ void PinInput::Init(const HWND hwnd)
    case 2: //SDL2
 #ifdef ENABLE_SDL_INPUT
       m_inputDeviceSDL = SDL_JoystickOpen(0);
-      if (m_inputDeviceSDL && SDL_JoystickIsHaptic(m_inputDeviceSDL)) {
-         m_rumbleDeviceSDL = SDL_HapticOpenFromJoystick(m_inputDeviceSDL);
-         int error = SDL_HapticRumbleInit(m_rumbleDeviceSDL);
-         if (error < 0) {
-            ShowError(SDL_GetError());
-            SDL_HapticClose(m_rumbleDeviceSDL);
-            m_rumbleDeviceSDL = nullptr;
+      if (m_inputDeviceSDL) {
+         e_JoyCnt = 1;
+         if (SDL_JoystickIsHaptic(m_inputDeviceSDL)) {
+            m_rumbleDeviceSDL = SDL_HapticOpenFromJoystick(m_inputDeviceSDL);
+            int error = SDL_HapticRumbleInit(m_rumbleDeviceSDL);
+            if (error < 0) {
+               ShowError(SDL_GetError());
+               SDL_HapticClose(m_rumbleDeviceSDL);
+               m_rumbleDeviceSDL = nullptr;
+            }
          }
       }
       uShockType = USHOCKTYPE_GENERIC;
