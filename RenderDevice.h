@@ -414,8 +414,9 @@ public:
 
    static unsigned int m_stats_drawn_triangles;
 
-   static VertexDeclaration* m_pVertexTexelDeclaration;
-   static VertexDeclaration* m_pVertexNormalTexelDeclaration;
-   //static VertexDeclaration* m_pVertexNormalTexelTexelDeclaration;
-   static VertexDeclaration* m_pVertexTrafoTexelDeclaration;
+#ifndef ENABLE_SDL
+   VertexDeclaration* m_pVertexTexelDeclaration;
+   VertexDeclaration* m_pVertexNormalTexelDeclaration;
+   VertexDeclaration* m_pVertexTrafoTexelDeclaration;
+#endif
 };

@@ -31,6 +31,8 @@ private:
       GLuint vb, ib, vao, ref_count;
    };
    static vector<SharedVAO> sharedVAOs;
+#else
+   VertexDeclaration* const m_vertexDeclaration;
 #endif
 };
 

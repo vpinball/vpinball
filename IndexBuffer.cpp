@@ -24,6 +24,10 @@ MeshBuffer::MeshBuffer(const DWORD fvf, VertexBuffer* vb, IndexBuffer* ib, const
    , m_vb(vb)
    , m_ib(ib)
    , m_ownBuffers(ownBuffers)
+   , m_vertexDeclaration(m_vertexFormat == MY_D3DFVF_NOTEX2_VERTEX ? m_vb->m_rd->m_pVertexNormalTexelDeclaration :
+      m_vertexFormat == MY_D3DTRANSFORMED_NOTEX2_VERTEX ? m_vb->m_rd->m_pVertexTrafoTexelDeclaration :
+      m_vertexFormat == MY_D3DFVF_TEX ? m_vb->m_rd->m_pVertexTexelDeclaration : nullptr
+   )
 {
 }
 
@@ -121,6 +125,7 @@ void MeshBuffer::bind()
    m_vb->bind();
    if (m_ib)
       m_ib->bind();
+   m_vb->m_rd->SetVertexDeclaration(m_vertexDeclaration);
 #endif
 }
 

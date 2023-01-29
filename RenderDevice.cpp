@@ -104,7 +104,6 @@ constexpr VertexElement VertexTexelElement[] =
       { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
       D3DDECL_END()*/
 };
-VertexDeclaration* RenderDevice::m_pVertexTexelDeclaration = (VertexDeclaration*)&VertexTexelElement;
 
 constexpr VertexElement VertexNormalTexelElement[] =
 {
@@ -118,18 +117,6 @@ constexpr VertexElement VertexNormalTexelElement[] =
       { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
       D3DDECL_END()*/
 };
-VertexDeclaration* RenderDevice::m_pVertexNormalTexelDeclaration = (VertexDeclaration*)&VertexNormalTexelElement;
-
-/*constexpr VertexElement VertexNormalTexelTexelElement[] =
-{
-   { 0, 0  * sizeof(float),D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
-   { 0, 3  * sizeof(float),D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0 },  // normal
-   { 0, 6  * sizeof(float),D3DDECLTYPE_FLOAT2,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
-   { 0, 8  * sizeof(float),D3DDECLTYPE_FLOAT2,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },  // tex1
-   D3DDECL_END()
-};
-
-VertexDeclaration* RenderDevice::m_pVertexNormalTexelTexelDeclaration = nullptr;*/
 
 constexpr VertexElement VertexTrafoTexelElement[] =
 {
@@ -143,7 +130,6 @@ constexpr VertexElement VertexTrafoTexelElement[] =
    { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 }, // tex0
    D3DDECL_END()*/
 };
-VertexDeclaration* RenderDevice::m_pVertexTrafoTexelDeclaration = (VertexDeclaration*)&VertexTrafoTexelElement;
 
 GLuint RenderDevice::m_samplerStateCache[3 * 3 * 5];
 
@@ -154,7 +140,6 @@ constexpr VertexElement VertexTexelElement[] =
    { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
    D3DDECL_END()
 };
-VertexDeclaration* RenderDevice::m_pVertexTexelDeclaration = nullptr;
 
 constexpr VertexElement VertexNormalTexelElement[] =
 {
@@ -163,18 +148,6 @@ constexpr VertexElement VertexNormalTexelElement[] =
    { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
    D3DDECL_END()
 };
-VertexDeclaration* RenderDevice::m_pVertexNormalTexelDeclaration = nullptr;
-
-/*constexpr VertexElement VertexNormalTexelTexelElement[] =
-{
-   { 0, 0  * sizeof(float),D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
-   { 0, 3  * sizeof(float),D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0 },  // normal
-   { 0, 6  * sizeof(float),D3DDECLTYPE_FLOAT2,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
-   { 0, 8  * sizeof(float),D3DDECLTYPE_FLOAT2,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },  // tex1
-   D3DDECL_END()
-};
-
-VertexDeclaration* RenderDevice::m_pVertexNormalTexelTexelDeclaration = nullptr;*/
 
 // pre-transformed, take care that this is a float4 and needs proper w component setup (also see https://docs.microsoft.com/en-us/windows/desktop/direct3d9/mapping-fvf-codes-to-a-directx-9-declaration)
 constexpr VertexElement VertexTrafoTexelElement[] =
@@ -184,7 +157,6 @@ constexpr VertexElement VertexTrafoTexelElement[] =
    { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD,  0 }, // tex0
    D3DDECL_END()
 };
-VertexDeclaration* RenderDevice::m_pVertexTrafoTexelDeclaration = nullptr;
 
 static unsigned int fvfToSize(const DWORD fvf)
 {
@@ -198,22 +170,6 @@ static unsigned int fvfToSize(const DWORD fvf)
    default:
       assert(!"Unknown FVF type in fvfToSize");
       return 0;
-   }
-}
-
-static VertexDeclaration* fvfToDecl(const DWORD fvf)
-{
-   switch (fvf)
-   {
-   case MY_D3DFVF_NOTEX2_VERTEX:
-      return RenderDevice::m_pVertexNormalTexelDeclaration;
-   case MY_D3DTRANSFORMED_NOTEX2_VERTEX:
-      return RenderDevice::m_pVertexTrafoTexelDeclaration;
-   case MY_D3DFVF_TEX:
-      return RenderDevice::m_pVertexTexelDeclaration;
-   default:
-      assert(!"Unknown FVF type in fvfToDecl");
-      return nullptr;
    }
 }
 #endif
@@ -2213,7 +2169,7 @@ void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
    // having a VB and lock/copying stuff each time is slower on DX9 :/
    ApplyRenderStates();
    m_stats_drawn_triangles += 2;
-   SetVertexDeclaration(fvfToDecl(MY_D3DFVF_TEX));
+   SetVertexDeclaration(m_pVertexTexelDeclaration);
    CHECKD3D(m_pD3DDevice->DrawPrimitiveUP((D3DPRIMITIVETYPE)RenderDevice::TRIANGLESTRIP, 2, vertices, fvfToSize(MY_D3DFVF_TEX)));
    m_curVertexBuffer = nullptr; // DrawPrimitiveUP sets the VB to nullptr
    m_curDrawCalls++;
@@ -2239,7 +2195,6 @@ void RenderDevice::DrawMesh(MeshBuffer* mb, const PrimitiveTypes type, const DWO
 #ifdef ENABLE_SDL
       glDrawArrays(type, mb->m_vb->getOffset(), indexCount);
 #else
-      SetVertexDeclaration(fvfToDecl(mb->m_vertexFormat));// FIXME move to MesBuffer bind
       CHECKD3D(m_pD3DDevice->DrawPrimitive((D3DPRIMITIVETYPE)type, 0, np));
 #endif
    }
@@ -2253,7 +2208,6 @@ void RenderDevice::DrawMesh(MeshBuffer* mb, const PrimitiveTypes type, const DWO
       glDrawElements(mb->m_type, indexCount, mb->m_ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)(intptr_t)offset);
 #endif
 #else
-      SetVertexDeclaration(fvfToDecl(mb->m_vertexFormat)); // FIXME move to MesBuffer bind
       CHECKD3D(m_pD3DDevice->DrawIndexedPrimitive((D3DPRIMITIVETYPE)type, 0, 0, mb->m_vb->m_vertexCount, startIndice, np));
 #endif
    }
@@ -2281,7 +2235,6 @@ void RenderDevice::DrawIndexedPrimitiveVB(const PrimitiveTypes type, const DWORD
    glDrawElements(type, indexCount, ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)(intptr_t)offset);
 #endif
 #else
-   SetVertexDeclaration(fvfToDecl(mb.m_vertexFormat)); // FIXME move to MesBuffer bind
    CHECKD3D(m_pD3DDevice->DrawIndexedPrimitive((D3DPRIMITIVETYPE)type, startVertex, 0, vertexCount, startIndex, np));
 #endif
    m_curDrawCalls++;
