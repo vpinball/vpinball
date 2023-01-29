@@ -157,8 +157,7 @@ public:
 private:
    PinTable *m_ptable;
 
-   VertexBuffer *m_vertexBuffer;
-   IndexBuffer *m_indexBuffer;
+   MeshBuffer *m_meshBuffer = nullptr;
 
    HitPlunger *m_phitplunger;
 
