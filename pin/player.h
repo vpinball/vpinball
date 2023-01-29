@@ -213,7 +213,7 @@ public:
       if (!m_buffers[m_curIdx])
       {
          VertexBuffer *vb = new VertexBuffer(pd3dDevice, 1024, 0, MY_D3DFVF_NOTEX2_VERTEX);
-         m_buffers[m_curIdx] = new MeshBuffer(vb, true);
+         m_buffers[m_curIdx] = new MeshBuffer(vb);
       }
 
       // idea: locking a static vertex buffer stalls the pipeline if that VB is still

@@ -1152,11 +1152,11 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
       -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
    };
    VertexBuffer* quadVertexBuffer = new VertexBuffer(this, 4, USAGE_STATIC, MY_D3DFVF_TEX, verts);
-   m_quadMeshBuffer = new MeshBuffer(quadVertexBuffer, true);
+   m_quadMeshBuffer = new MeshBuffer(quadVertexBuffer);
 
 #ifdef ENABLE_SDL
    VertexBuffer* quadDynVertexBuffer = new VertexBuffer(this, 4, USAGE_DYNAMIC, MY_D3DFVF_TEX);
-   m_quadDynMeshBuffer = new MeshBuffer(quadDynVertexBuffer, true);
+   m_quadDynMeshBuffer = new MeshBuffer(quadDynVertexBuffer);
 #endif
 
    //

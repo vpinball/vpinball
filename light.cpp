@@ -577,7 +577,7 @@ void Light::PrepareMoversCustom()
    const DWORD vertexType = (!m_backglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;
    VertexBuffer * customMoverVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_customMoverVertexNum, 0, vertexType);
 
-   m_customMoverMeshBuffer = new MeshBuffer(customMoverVBuffer, customMoverIBuffer, true);
+   m_customMoverMeshBuffer = new MeshBuffer(customMoverVBuffer, customMoverIBuffer);
 
    UpdateCustomMoverVBuffer();
 }
@@ -685,7 +685,7 @@ void Light::RenderSetup()
       delete m_bulbLightMeshBuffer;
       IndexBuffer* bulbLightIndexBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbLightNumFaces, bulbLightIndices);
       VertexBuffer* bulbLightVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbLightNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
-      m_bulbLightMeshBuffer = new MeshBuffer(bulbLightVBuffer, bulbLightIndexBuffer, true);
+      m_bulbLightMeshBuffer = new MeshBuffer(bulbLightVBuffer, bulbLightIndexBuffer);
 
       Vertex3D_NoTex2 *buf;
       bulbLightVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
@@ -705,7 +705,7 @@ void Light::RenderSetup()
       delete m_bulbSocketMeshBuffer;
       IndexBuffer* bulbSocketIndexBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbSocketNumFaces, bulbSocketIndices);
       VertexBuffer *bulbSocketVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
-      m_bulbSocketMeshBuffer = new MeshBuffer(bulbSocketVBuffer, bulbSocketIndexBuffer, true);
+      m_bulbSocketMeshBuffer = new MeshBuffer(bulbSocketVBuffer, bulbSocketIndexBuffer);
 
       bulbSocketVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
       for (unsigned int i = 0; i < bulbSocketNumVertices; i++)
