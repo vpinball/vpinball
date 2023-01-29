@@ -4,14 +4,11 @@
 Plunger::Plunger()
 {
    m_phitplunger = nullptr;
-   m_vertexBuffer = nullptr;
-   m_indexBuffer = nullptr;
 }
 
 Plunger::~Plunger()
 {
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
-   SAFE_BUFFER_RELEASE(m_indexBuffer);
+   delete m_meshBuffer;
 }
 
 HRESULT Plunger::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
@@ -172,8 +169,8 @@ void Plunger::EndPlay()
    m_phitplunger = nullptr;       // possible memory leak here?
 
    IEditable::EndPlay();
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
-   SAFE_BUFFER_RELEASE(m_indexBuffer);
+   delete m_meshBuffer;
+   m_meshBuffer = nullptr;
 }
 
 void Plunger::SetObjectPos()
@@ -252,9 +249,7 @@ void Plunger::RenderDynamic()
    }
 
    pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer,
-      frame*m_vtsPerFrame, m_vtsPerFrame,
-      m_indexBuffer, 0, m_indicesPerFrame);
+   pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, frame * m_indicesPerFrame, m_indicesPerFrame);
    pd3dDevice->basicShader->End();
 
    pd3dDevice->CopyRenderStates(false, initial_state);
@@ -545,11 +540,10 @@ void Plunger::RenderSetup()
    // figure the relative spring gauge, in terms of the overall width
    const float springGaugeRel = springGauge / m_d.m_width;
 
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
-   m_vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_cframes * m_vtsPerFrame, 0, MY_D3DFVF_NOTEX2_VERTEX);
+   VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_cframes * m_vtsPerFrame, 0, MY_D3DFVF_NOTEX2_VERTEX);
 
    Vertex3D_NoTex2 *buf;
-   m_vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
 
    Vertex3D_NoTex2 *ptr = buf;
 
@@ -756,101 +750,108 @@ void Plunger::RenderSetup()
    }
 
    // set up the vertex index list
-   WORD * const indices = new WORD[m_indicesPerFrame];
+   unsigned int *const indices = new unsigned int[m_indicesPerFrame * m_cframes];
    int k = 0;
 
-   // set up the vertex list for the lathe circles
-   for (int l = 0, offset = 0; l < circlePoints; l++, offset += lathePoints)
+   for (int f = 0; f < m_cframes; f++)
    {
-      for (int m = 0; m < lathePoints - 1; m++)
-      {
-         indices[k++] = (m + offset) % latheVts;
-         indices[k++] = (m + offset + lathePoints) % latheVts;
-         indices[k++] = (m + offset + 1 + lathePoints) % latheVts;
+      int f_offset = f * m_vtsPerFrame;
 
-         indices[k++] = (m + offset + 1 + lathePoints) % latheVts;
-         indices[k++] = (m + offset + 1) % latheVts;
-         indices[k++] = (m + offset) % latheVts;
+      // if applicable, set up the vertex list for the flat plunger
+      if (m_d.m_type == PlungerTypeFlat)
+      {
+         // for the flat rectangle, we just need two triangles:
+         // bottom left - top left - top right
+         // and top right - bottom right - bottom left
+         indices[k++] = f_offset + 0;
+         indices[k++] = f_offset + 1;
+         indices[k++] = f_offset + 2;
+
+         indices[k++] = f_offset + 2;
+         indices[k++] = f_offset + 3;
+         indices[k++] = f_offset + 0;
+         continue;
       }
-   }
 
-   // set up the vertex list for the spring
-   Vertex3D_NoTex2 *v = &buf[latheVts + 1];
-   for (int l = 0, offset = latheVts; l < springIndices; l += 12, offset += 3, v += 3)
-   {
-      // Direct3D only renders faces if the vertices are in clockwise
-      // order.  We want to render the spring all the way around, so
-      // we need to use different vertex ordering for faces that are
-      // above and below the vertical midpoint on the spring.  We
-      // can use the z normal from the center spiral to determine
-      // whether we're at a top or bottom face.  Note that all of
-      // the springs in all frames have the same relative position
-      // on the spiral, so we can use the first spiral as a proxy
-      // for all of them - the only thing about the spring that
-      // varies from frame to frame is the length of the spiral.
-      if (v->nz <= 0.0f)
+      // set up the vertex list for the lathe circles
+      for (int l = 0, offset = 0; l < circlePoints; l++, offset += lathePoints)
       {
-         // top half vertices
-         indices[k++] = offset + 0;
-         indices[k++] = offset + 3;
-         indices[k++] = offset + 1;
+         for (int m = 0; m < lathePoints - 1; m++)
+         {
+            indices[k++] = f_offset + (m + offset) % latheVts;
+            indices[k++] = f_offset + (m + offset + lathePoints) % latheVts;
+            indices[k++] = f_offset + (m + offset + 1 + lathePoints) % latheVts;
 
-         indices[k++] = offset + 1;
-         indices[k++] = offset + 3;
-         indices[k++] = offset + 4;
-
-         indices[k++] = offset + 4;
-         indices[k++] = offset + 5;
-         indices[k++] = offset + 2;
-
-         indices[k++] = offset + 2;
-         indices[k++] = offset + 1;
-         indices[k++] = offset + 4;
+            indices[k++] = f_offset + (m + offset + 1 + lathePoints) % latheVts;
+            indices[k++] = f_offset + (m + offset + 1) % latheVts;
+            indices[k++] = f_offset + (m + offset) % latheVts;
+         }
       }
-      else
+
+      // set up the vertex list for the spring
+      Vertex3D_NoTex2 *v = &buf[latheVts + 1];
+      for (int l = 0, offset = latheVts; l < springIndices; l += 12, offset += 3, v += 3)
       {
-         // bottom half vertices
-         indices[k++] = offset + 3;
-         indices[k++] = offset + 0;
-         indices[k++] = offset + 4;
+         // Direct3D only renders faces if the vertices are in clockwise
+         // order.  We want to render the spring all the way around, so
+         // we need to use different vertex ordering for faces that are
+         // above and below the vertical midpoint on the spring.  We
+         // can use the z normal from the center spiral to determine
+         // whether we're at a top or bottom face.  Note that all of
+         // the springs in all frames have the same relative position
+         // on the spiral, so we can use the first spiral as a proxy
+         // for all of them - the only thing about the spring that
+         // varies from frame to frame is the length of the spiral.
+         if (v->nz <= 0.0f)
+         {
+            // top half vertices
+            indices[k++] = f_offset + offset + 0;
+            indices[k++] = f_offset + offset + 3;
+            indices[k++] = f_offset + offset + 1;
 
-         indices[k++] = offset + 4;
-         indices[k++] = offset + 0;
-         indices[k++] = offset + 1;
+            indices[k++] = f_offset + offset + 1;
+            indices[k++] = f_offset + offset + 3;
+            indices[k++] = f_offset + offset + 4;
 
-         indices[k++] = offset + 1;
-         indices[k++] = offset + 2;
-         indices[k++] = offset + 5;
+            indices[k++] = f_offset + offset + 4;
+            indices[k++] = f_offset + offset + 5;
+            indices[k++] = f_offset + offset + 2;
 
-         indices[k++] = offset + 5;
-         indices[k++] = offset + 1;
-         indices[k++] = offset + 2;
+            indices[k++] = f_offset + offset + 2;
+            indices[k++] = f_offset + offset + 1;
+            indices[k++] = f_offset + offset + 4;
+         }
+         else
+         {
+            // bottom half vertices
+            indices[k++] = f_offset + offset + 3;
+            indices[k++] = f_offset + offset + 0;
+            indices[k++] = f_offset + offset + 4;
+
+            indices[k++] = f_offset + offset + 4;
+            indices[k++] = f_offset + offset + 0;
+            indices[k++] = f_offset + offset + 1;
+
+            indices[k++] = f_offset + offset + 1;
+            indices[k++] = f_offset + offset + 2;
+            indices[k++] = f_offset + offset + 5;
+
+            indices[k++] = f_offset + offset + 5;
+            indices[k++] = f_offset + offset + 1;
+            indices[k++] = f_offset + offset + 2;
+         }
       }
    }
 
    // done with the vertex buffer
-   m_vertexBuffer->unlock();
-
-   // if applicable, set up the vertex list for the flat plunger
-   if (m_d.m_type == PlungerTypeFlat)
-   {
-      // for the flat rectangle, we just need two triangles:
-      // bottom left - top left - top right
-      // and top right - bottom right - bottom left
-      indices[0] = 0;
-      indices[1] = 1;
-      indices[2] = 2;
-
-      indices[3] = 2;
-      indices[4] = 3;
-      indices[5] = 0;
-
-      k = 6;
-   }
+   vertexBuffer->unlock();
 
    // create the new index buffer
-   SAFE_BUFFER_RELEASE(m_indexBuffer);
-   m_indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, k, indices);
+   IndexBuffer* indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, k, indices);
+
+   // Create the mesh buffer
+   delete m_meshBuffer;
+   m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer, true);
 
    // done with the index scratch pad
    delete[] indices;
