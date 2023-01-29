@@ -24,10 +24,11 @@ MeshBuffer::MeshBuffer(const DWORD fvf, VertexBuffer* vb, IndexBuffer* ib, const
    , m_vb(vb)
    , m_ib(ib)
    , m_ownBuffers(ownBuffers)
+#ifndef ENABLE_SDL
    , m_vertexDeclaration(m_vertexFormat == MY_D3DFVF_NOTEX2_VERTEX ? m_vb->m_rd->m_pVertexNormalTexelDeclaration :
       m_vertexFormat == MY_D3DTRANSFORMED_NOTEX2_VERTEX ? m_vb->m_rd->m_pVertexTrafoTexelDeclaration :
-      m_vertexFormat == MY_D3DFVF_TEX ? m_vb->m_rd->m_pVertexTexelDeclaration : nullptr
-   )
+      m_vertexFormat == MY_D3DFVF_TEX ? m_vb->m_rd->m_pVertexTexelDeclaration : nullptr)
+#endif
 {
 }
 
