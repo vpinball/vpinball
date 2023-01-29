@@ -99,7 +99,7 @@ class CodeViewer :
 	public IServiceProvider
 {
 public:
-   CodeViewer();
+   CodeViewer() : m_haccel(nullptr), m_pProcessDebugManager(nullptr), m_parentLevel(0), m_lastErrorWidgetVisible(false), m_suppressErrorDialogs(false) {}
    virtual ~CodeViewer();
 
    void Init(IScriptableHost *psh);
@@ -295,7 +295,7 @@ public:
    bool m_dwellDisplay;
    int m_dwellDisplayTime;
 
-   vector<UserData> m_pageConstructsDict;
+   fi_vector<UserData> m_pageConstructsDict;
    Sci_TextRange m_wordUnderCaret;
 
    CComObject<DebuggerModule> *m_pdm; // Object to expose to script for global functions
@@ -333,7 +333,7 @@ private:
    bool ParseOKLineLength(const size_t LineLen);
    string ParseDelimtByColon(string &wholeline);
    void ParseFindConstruct(size_t &Pos, const string &UCLine, WordType &Type, int &ConstructSize);
-   bool ParseStructureName(vector<UserData>& ListIn, const UserData &ud, const string &UCline, const string &line, const int Lineno);
+   bool ParseStructureName(fi_vector<UserData> &ListIn, const UserData &ud, const string &UCline, const string &line, const int Lineno);
 
    size_t SureFind(const string &LineIn, const string &ToFind);
    void RemoveByVal(string &line); 
@@ -345,9 +345,9 @@ private:
 
    void ParseVPCore();
 
-   void ReadLineToParseBrain(string wholeline, const int linecount, vector<UserData>& ListIn);
+   void ReadLineToParseBrain(string wholeline, const int linecount, fi_vector<UserData> &ListIn);
 
-   void GetMembers(const vector<UserData>& ListIn, const string &StrIn);
+   void GetMembers(const fi_vector<UserData> &ListIn, const string &StrIn);
 
    void InitPreferences();
 
@@ -378,7 +378,7 @@ private:
     * > no class object {78a51822-51f4-11d0-8f20-00805f2cd064} could be created for context 0x17
     * ... if I try to create CLSID_PrrocessDebugManager
     */
-   IProcessDebugManager* m_pProcessDebugManager = nullptr;
+   IProcessDebugManager* m_pProcessDebugManager;
 
    FINDREPLACE m_findreplacestruct;
    char szFindString[MAX_FIND_LENGTH];
@@ -387,7 +387,6 @@ private:
    VectorSortString<CodeViewDispatch*> m_vcvdTemp; // Objects added through script
 
    string m_validChars;
-   const string m_VBvalidChars;
 
    // CodeViewer Preferences
    CVPreference *prefDefault;
@@ -398,18 +397,16 @@ private:
    CVPreference *prefLiterals;
    CVPreference *prefVPcore;
 
-   int m_parentLevel = 0;
+   int m_parentLevel;
    string m_currentParentKey; // always lower case
    //bool m_parentTreeInvalid;
    //TODO: int TabStop;
 
-   // keyword lists
-   string m_vbsKeyWords;
    // Dictionaries
-   vector<UserData> m_VBwordsDict;
-   vector<UserData> m_componentsDict;
-   vector<UserData> m_VPcoreDict;
-   vector<UserData> m_currentMembers;
+   fi_vector<UserData> m_VBwordsDict;
+   fi_vector<UserData> m_componentsDict;
+   fi_vector<UserData> m_VPcoreDict;
+   fi_vector<UserData> m_currentMembers;
    string m_autoCompString;
    string m_autoCompMembersString;
    Sci_TextRange m_currentConstruct;
@@ -423,14 +420,14 @@ private:
    /**
     * Whether the last error widget is visible
     */
-   bool m_lastErrorWidgetVisible = false;
+   bool m_lastErrorWidgetVisible;
 
    /**
     * If true, error dialogs will be suppressed for the play session
     * 
     * This gets reset to false whenever the script is started
     */
-   bool m_suppressErrorDialogs = false;
+   bool m_suppressErrorDialogs;
 
    /**
     * Handle for the last error widget

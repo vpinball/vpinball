@@ -30,6 +30,8 @@ static constexpr char vbsReservedWords[] =
 "boolean byte currency date double integer long object single string type "
 "variant option explicit randomize";
 
+static const string VBvalidChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"s);
+
 static char CaretTextBuff[MAX_FIND_LENGTH];
 static char ConstructTextBuff[MAX_FIND_LENGTH];
 
@@ -49,12 +51,6 @@ int CodeViewDispatch::SortAgainstValue(const wstring& pv) const
    WideCharToMultiByteNull(CP_ACP, 0, m_wName.c_str(), -1, szName2, MAXSTRING, nullptr, nullptr);
    CharLowerBuff(szName2, lstrlen(szName2));
    return lstrcmp(szName1, szName2); //WideStrCmp((WCHAR *)pv, m_wzName);
-}
-
-CodeViewer::CodeViewer()
-   : m_haccel(nullptr),
-     m_VBvalidChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"s)
-{
 }
 
 void CodeViewer::Init(IScriptableHost *psh)
@@ -194,7 +190,7 @@ static uint32_t validate_utf8(uint32_t *const state, const char * const str, con
 
 // strSearchData has to be lower case
 template<bool uniqueKey> // otherwise keyName
-static int UDKeyIndexHelper(const vector<UserData>& ListIn, const string &strSearchData, int& curPosOut)
+static int UDKeyIndexHelper(const fi_vector<UserData>& ListIn, const string& strSearchData, int& curPosOut)
 {
 	const int ListSize = (int)ListIn.size();
 	curPosOut = 1u << 30;
@@ -214,7 +210,7 @@ static int UDKeyIndexHelper(const vector<UserData>& ListIn, const string &strSea
 //true:  Returns current Index of strIn in ListIn based on m_uniqueKey, or -1 if not found
 //false: Returns current Index of strIn in ListIn based on m_keyName,   or -1 if not found
 template <bool uniqueKey> // otherwise keyName
-static int UDKeyIndex(const vector<UserData>& ListIn, const string &strIn)
+static int UDKeyIndex(const fi_vector<UserData>& ListIn, const string& strIn)
 {
 	if (strIn.empty() || ListIn.empty()) return -1;
 
@@ -231,7 +227,7 @@ static int UDKeyIndex(const vector<UserData>& ListIn, const string &strIn)
  1 =Not Found
 -2 =Zero Length string or error
 strSearchData has to be lower case */
-static int FindUD(const vector<UserData> &ListIn, const string &strSearchData, int &Pos)
+static int FindUD(const fi_vector<UserData>& ListIn, const string& strSearchData, int& Pos)
 {
 	if (strSearchData.empty() || ListIn.empty()) return -2;
 
@@ -273,7 +269,7 @@ static bool warn_on_dupes = false;
 
 //Assumes case insensitive sorted list
 //Returns index or insertion point (-1 == error)
-static size_t FindOrInsertUD(vector<UserData>& ListIn, const UserData &udIn)
+static size_t FindOrInsertUD(fi_vector<UserData>& ListIn, const UserData& udIn)
 {
 	if (ListIn.empty()) // First in
 	{
@@ -286,7 +282,7 @@ static size_t FindOrInsertUD(vector<UserData>& ListIn, const UserData &udIn)
 	if (KeyFound == 0)
 	{
 		//Same name, different parents?
-		const vector<UserData>::const_iterator iterFound = ListIn.begin() + Pos;
+		const fi_vector<UserData>::const_iterator iterFound = ListIn.begin() + Pos;
 		const int ParentResult = udIn.m_uniqueParent.compare(iterFound->m_uniqueParent);
 		if (ParentResult == -1)
 			ListIn.insert(iterFound, udIn);
@@ -335,7 +331,7 @@ static size_t FindOrInsertUD(vector<UserData>& ListIn, const UserData &udIn)
 
 // Needs speeding up.
 // can potentially return a static variable, i.e. use the pointer before the next call
-static const UserData* GetUDfromUniqueKey(const vector<UserData>& ListIn, const string &UniKey)
+static const UserData* GetUDfromUniqueKey(const fi_vector<UserData>& ListIn, const string& UniKey)
 {
 	static UserData RetVal;
 	RetVal.eTyping = eUnknown;
@@ -351,7 +347,7 @@ static const UserData* GetUDfromUniqueKey(const vector<UserData>& ListIn, const 
 }
 
 //TODO: Needs speeding up.
-static size_t GetUDIdxfromUniqueKey(const vector<UserData>& ListIn, const string &UniKey)
+static size_t GetUDIdxfromUniqueKey(const fi_vector<UserData>& ListIn, const string& UniKey)
 {
 	const size_t ListSize = ListIn.size();
 	for (size_t i = 0; i < ListSize; ++i)
@@ -362,7 +358,7 @@ static size_t GetUDIdxfromUniqueKey(const vector<UserData>& ListIn, const string
 
 //Finds the closest UD from CurrentLine in ListIn
 //On entry CurrentIdx must be set to the UD in the line
-static int FindClosestUD(const vector<UserData>& ListIn, const int CurrentLine, const int CurrentIdx)
+static int FindClosestUD(const fi_vector<UserData>& ListIn, const int CurrentLine, const int CurrentIdx)
 {
 	const string strSearchData = lowerCase(ListIn[CurrentIdx].m_keyName);
 	const size_t SearchWidth = strSearchData.size();
@@ -908,6 +904,7 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 	while (WordChar != '\0') //Just make sure with chars, we reached EOL
 	{
 		string szWord;
+
 		intWordFinish++; //skip space
 		WordChar = vbsReservedWords[intWordFinish];
 		while (WordChar != '\0' && WordChar != ' ')
@@ -916,20 +913,18 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 			intWordFinish++;
 			WordChar = vbsReservedWords[intWordFinish];
 		}
+
 		UserData VBWord;
-		VBWord.m_uniqueKey = VBWord.m_keyName = szWord;
+		if (!szWord.empty())
+		{
+			VBWord.m_uniqueKey = VBWord.m_keyName = szWord;
+			// Capitalize first letter
+			const char fl = VBWord.m_keyName[0];
+			if (fl >= 'a' && fl <= 'z') VBWord.m_keyName[0] = fl - ('a' - 'A');
+		}
 		FindOrInsertUD(m_VBwordsDict, VBWord);
 	}
-	m_vbsKeyWords.clear(); // For colouring scintilla
-	for (vector<UserData>::iterator i = m_VBwordsDict.begin(); i != m_VBwordsDict.end(); ++i)
-	{
-		//make m_vbsKeyWords in order.
-		m_vbsKeyWords += lowerCase(i->m_keyName); // lower case shouldn't be needed as list is already lower case
-		m_vbsKeyWords += ' ';
-		//Then capitalize first letter
-		const char fl = i->m_keyName[0];
-		if (fl >= 'a' && fl <= 'z') i->m_keyName[0] = fl - ('a' - 'A');
-	}
+
 	///// Preferences
 	InitPreferences();
 
@@ -2261,7 +2256,7 @@ void CodeViewer::ShowAutoComplete(const SCNotification *pSCN)
 
 		//autocomp string  = members of construct
 		m_autoCompMembersString.clear();
-		for (vector<UserData>::const_iterator i = m_currentMembers.begin(); i != m_currentMembers.end(); ++i)
+		for (fi_vector<UserData>::const_iterator i = m_currentMembers.begin(); i != m_currentMembers.end(); ++i)
 		{
 			m_autoCompMembersString += i->m_keyName;
 			m_autoCompMembersString += ' ';
@@ -2272,7 +2267,7 @@ void CodeViewer::ShowAutoComplete(const SCNotification *pSCN)
 	}
 }
 
-void CodeViewer::GetMembers(const vector<UserData>& ListIn, const string &strIn)
+void CodeViewer::GetMembers(const fi_vector<UserData>& ListIn, const string& strIn)
 {
 	m_currentMembers.clear();
 	const int idx = UDKeyIndex<false>(ListIn, strIn);
@@ -2506,22 +2501,20 @@ static void RemoveComment(const HWND m_hwndScintilla)
 size_t CodeViewer::SureFind(const string &LineIn, const string &ToFind)
 {
 	const size_t Pos = LineIn.find(ToFind);
-	if (Pos == string::npos) return string::npos;
-	const char EndChr = LineIn[Pos + ToFind.length()];
-	size_t IsValidVBChr = m_VBvalidChars.find(EndChr);
-	if (IsValidVBChr != string::npos)
-	{// Extra char on end - not what we want
+	if (Pos == string::npos)
 		return string::npos;
-	}
+
+	const char EndChr = LineIn[Pos + ToFind.length()];
+	size_t IsValidVBChr = VBvalidChars.find(EndChr);
+	if (IsValidVBChr != string::npos) // Extra char on end - not what we want
+		return string::npos;
 
 	if (Pos > 0)
 	{
 		const char StartChr = LineIn[Pos - 1];
-		IsValidVBChr = m_VBvalidChars.find(StartChr);
+		IsValidVBChr = VBvalidChars.find(StartChr);
 		if (IsValidVBChr != string::npos)
-		{
 			return string::npos;
-		}
 	}
 	return Pos;
 }
@@ -2566,7 +2559,7 @@ bool CodeViewer::ParseOKLineLength(const size_t LineLen)
 }
 
 //false is a fail/syntax error
-bool CodeViewer::ParseStructureName(vector<UserData>& ListIn, const UserData &ud_org, const string &UCline, const string &line, const int Lineno)
+bool CodeViewer::ParseStructureName(fi_vector<UserData>& ListIn, const UserData& ud_org, const string& UCline, const string& line, const int Lineno)
 {
 	const size_t endIdx = SureFind(UCline,"END"s); 
 	const size_t exitIdx = SureFind(UCline,"EXIT"s); 
@@ -2814,7 +2807,7 @@ void CodeViewer::ParseFindConstruct(size_t &Pos, const string &UCLineIn, WordTyp
 	Pos = string::npos;
 }
 
-void CodeViewer::ReadLineToParseBrain(string wholeline, const int linecount, vector<UserData>& ListIn)
+void CodeViewer::ReadLineToParseBrain(string wholeline, const int linecount, fi_vector<UserData>& ListIn)
 {
 		const string comment = ParseRemoveVBSLineComments(wholeline);
 		while (wholeline.length() > 1)
@@ -2857,7 +2850,7 @@ void CodeViewer::RemoveByVal(string &line)
 void CodeViewer::RemoveNonVBSChars(string &line)
 {
 	const size_t LL = line.length();
-	size_t Pos = line.find_first_of(m_VBvalidChars);
+	size_t Pos = line.find_first_of(VBvalidChars);
 	if (Pos == string::npos)
 	{
 		line.clear();
@@ -2869,7 +2862,7 @@ void CodeViewer::RemoveNonVBSChars(string &line)
 		line = line.substr(Pos, (LL-Pos));
 	}
 
-	Pos = line.find_last_of(m_VBvalidChars);
+	Pos = line.find_last_of(VBvalidChars);
 	if (Pos != string::npos)
 	{
 		line = line.erase(Pos+1);
@@ -2900,7 +2893,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 	SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
 
 	//Propagate subs&funcs in menu in order
-	for (vector<UserData>::const_iterator i = m_pageConstructsDict.begin(); i != m_pageConstructsDict.end(); ++i) 
+	for (fi_vector<UserData>::const_iterator i = m_pageConstructsDict.begin(); i != m_pageConstructsDict.end(); ++i) 
 	{
 		if (i->eTyping < eDim)
 		{
@@ -2930,12 +2923,12 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 
 	//Now merge the lot for Auto complete...
 	vector<string> autoCompList;
-	for (vector<UserData>::const_iterator i = m_VBwordsDict.begin(); i != m_VBwordsDict.end(); ++i)
+	for (fi_vector<UserData>::const_iterator i = m_VBwordsDict.begin(); i != m_VBwordsDict.end(); ++i)
 	{
 		FindOrInsertStringIntoAutolist(autoCompList,i->m_keyName);
 	}
 	string strVPcoreWords;
-	for (vector<UserData>::const_iterator i = m_VPcoreDict.begin(); i != m_VPcoreDict.end(); ++i)
+	for (fi_vector<UserData>::const_iterator i = m_VPcoreDict.begin(); i != m_VPcoreDict.end(); ++i)
 	{
 		if (FindOrInsertStringIntoAutolist(autoCompList,i->m_keyName))
 		{
@@ -2944,7 +2937,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		}
 	}
 	string strCompOut;
-	for (vector<UserData>::const_iterator i = m_componentsDict.begin(); i != m_componentsDict.end(); ++i)
+	for (fi_vector<UserData>::const_iterator i = m_componentsDict.begin(); i != m_componentsDict.end(); ++i)
 	{
 		if (FindOrInsertStringIntoAutolist(autoCompList,i->m_keyName))
 		{
@@ -2953,7 +2946,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		}
 	}
 	string sSubFunOut;
-	for (vector<UserData>::const_iterator i = m_pageConstructsDict.begin(); i != m_pageConstructsDict.end(); ++i)
+	for (fi_vector<UserData>::const_iterator i = m_pageConstructsDict.begin(); i != m_pageConstructsDict.end(); ++i)
 	{
 		if (FindOrInsertStringIntoAutolist(autoCompList,i->m_keyName))
 		{
