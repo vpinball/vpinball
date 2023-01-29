@@ -9,7 +9,7 @@ extern unsigned m_curLockCalls, m_frameLockCalls;
 // Disabled since OpenGL ES does not support glDrawElementsBaseVertex and we need it unless we remap the indices when creating the index buffer (and we should)
 #define COMBINE_BUFFERS 0
 #else
-#define COMBINE_BUFFERS 0
+#define COMBINE_BUFFERS 1
 #endif
 
 static unsigned int fvfToSize(const DWORD fvf)
