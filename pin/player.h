@@ -197,7 +197,7 @@ public:
    void Shutdown()
    {
       for (size_t i = 0; i < m_buffers.size(); ++i)
-         SAFE_BUFFER_RELEASE(m_buffers[i]);
+         delete m_buffers[i];
    }
 
    void Execute(RenderDevice * const pd3dDevice)
@@ -206,20 +206,23 @@ public:
          return;
 
       if (m_buffers[m_curIdx])
-         pd3dDevice->DrawPrimitiveVB(RenderDevice::TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, m_buffers[m_curIdx], 0, 3, true);
+         pd3dDevice->DrawMesh(m_buffers[m_curIdx]);
 
       m_curIdx = (m_curIdx + 1) % m_buffers.size();
 
       if (!m_buffers[m_curIdx])
-         m_buffers[m_curIdx] = new VertexBuffer(pd3dDevice, 1024, 0, MY_D3DFVF_NOTEX2_VERTEX);
+      {
+         VertexBuffer *vb = new VertexBuffer(pd3dDevice, 1024, 0, MY_D3DFVF_NOTEX2_VERTEX);
+         m_buffers[m_curIdx] = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, PrimitiveType::TRIANGLEFAN, vb, 0, 3, true);
+      }
 
       // idea: locking a static vertex buffer stalls the pipeline if that VB is still
       // in the GPU render queue. In effect, this lets the GPU catch up.
       Vertex3D_NoTex2* buf;
-      m_buffers[m_curIdx]->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      m_buffers[m_curIdx]->m_vb->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
       memset(buf, 0, 3 * sizeof(buf[0]));
       buf[0].z = buf[1].z = buf[2].z = 1e5f;      // single triangle, degenerates to point far off screen
-      m_buffers[m_curIdx]->unlock();
+      m_buffers[m_curIdx]->m_vb->unlock();
    }
 
    FrameQueueLimiter()
@@ -228,17 +231,19 @@ public:
    }
 
 private:
-   vector<VertexBuffer*> m_buffers;
+   vector<MeshBuffer*> m_buffers;
    size_t m_curIdx;
 };
 #else
 class FrameQueueLimiter
 {
 public:
-   static void Init(RenderDevice * const pd3dDevice, const int numFrames)
+   void Init(RenderDevice * const pd3dDevice, const int numFrames)
    {
       pd3dDevice->SetMaximumPreRenderedFrames(numFrames);
    }
+   void Execute(RenderDevice *const pd3dDevice) { }
+   void Shutdown() { }
 };
 #endif
 

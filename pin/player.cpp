@@ -789,9 +789,7 @@ void Player::Shutdown()
        m_decalImage = nullptr;
    }
 
-#ifndef ENABLE_SDL
    m_limiter.Shutdown();
-#endif
 
    if (m_implicitPlayfieldMesh)
    {
@@ -5537,9 +5535,7 @@ void Player::DrawDynamics(bool onlyBalls)
       if (GetProfilingMode() == PF_ENABLED)
          m_pin3d.m_gpu_profiler.Timestamp(GTS_NonTransparent);
 
-#ifndef ENABLE_SDL
       m_limiter.Execute(m_pin3d.m_pd3dPrimaryDevice); //!! move below other draw calls??
-#endif
 
       // Draw transparent objects. No DMD's
       for (size_t i = 0; i < m_vHitTrans.size(); ++i)
@@ -5572,8 +5568,8 @@ void Player::DrawDynamics(bool onlyBalls)
    }
    else // special profiling path by doing separate items, will not be accurate, both perf and rendering wise, but better than nothing
    {
-#ifndef ENABLE_SDL
       m_limiter.Execute(m_pin3d.m_pd3dPrimaryDevice); //!! move below other draw calls??
+#ifndef ENABLE_SDL
       m_pin3d.m_gpu_profiler.BeginFrame(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
 #endif
 
