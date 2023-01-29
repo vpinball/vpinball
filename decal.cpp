@@ -516,7 +516,7 @@ void Decal::RenderSetup()
 
    vertexBuffer->unlock();
 
-   m_meshBuffer = new MeshBuffer(m_backglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, true);
+   m_meshBuffer = new MeshBuffer(vertexBuffer, true);
 }
 
 float Decal::GetDepth(const Vertex3Ds& viewDir) const

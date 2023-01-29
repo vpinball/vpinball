@@ -873,7 +873,7 @@ void Surface::PrepareWallsAtHeight()
    IBuffer->unlock();
 
    delete m_meshBuffer;
-   m_meshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, VBuffer, IBuffer, true);
+   m_meshBuffer = new MeshBuffer(VBuffer, IBuffer, true);
 }
 
 static constexpr WORD rgiSlingshot[24] = { 0, 4, 3, 0, 1, 4, 1, 2, 5, 1, 5, 4, 4, 8, 5, 4, 7, 8, 3, 7, 4, 3, 6, 7 };
@@ -941,7 +941,7 @@ void Surface::PrepareSlingshots()
    slingIBuffer->unlock();
 
    delete m_slingshotMeshBuffer;
-   m_slingshotMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, slingshotVBuffer, slingIBuffer, true);
+   m_slingshotMeshBuffer = new MeshBuffer(slingshotVBuffer, slingIBuffer, true);
 }
 
 void Surface::RenderSetup()

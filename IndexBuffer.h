@@ -9,13 +9,12 @@ class IndexBuffer;
 class MeshBuffer final
 {
 public:
-   MeshBuffer(const DWORD fvf, VertexBuffer* vb, const bool ownBuffers);
-   MeshBuffer(const DWORD fvf, VertexBuffer* vb, IndexBuffer* ib, const bool ownBuffers);
+   MeshBuffer(VertexBuffer* vb, const bool ownBuffers);
+   MeshBuffer(VertexBuffer* vb, IndexBuffer* ib, const bool ownBuffers);
    ~MeshBuffer();
    void bind();
 
    const bool m_ownBuffers;
-   const DWORD m_vertexFormat;
    VertexBuffer* const m_vb;
    IndexBuffer* const m_ib;
 

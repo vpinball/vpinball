@@ -14,20 +14,19 @@ vector<MeshBuffer::SharedVAO> MeshBuffer::sharedVAOs;
 #include "Shader.h"
 #include "VertexBuffer.h"
 
-MeshBuffer::MeshBuffer(const DWORD fvf, VertexBuffer* vb, const bool ownBuffers)
-   : MeshBuffer(fvf, vb, nullptr, ownBuffers)
+MeshBuffer::MeshBuffer(VertexBuffer* vb, const bool ownBuffers)
+   : MeshBuffer(vb, nullptr, ownBuffers)
 {
 }
 
-MeshBuffer::MeshBuffer(const DWORD fvf, VertexBuffer* vb, IndexBuffer* ib, const bool ownBuffers)
-   : m_vertexFormat(fvf)
-   , m_vb(vb)
+MeshBuffer::MeshBuffer(VertexBuffer* vb, IndexBuffer* ib, const bool ownBuffers)
+   : m_vb(vb)
    , m_ib(ib)
    , m_ownBuffers(ownBuffers)
 #ifndef ENABLE_SDL
-   , m_vertexDeclaration(m_vertexFormat == MY_D3DFVF_NOTEX2_VERTEX ? m_vb->m_rd->m_pVertexNormalTexelDeclaration :
-      m_vertexFormat == MY_D3DTRANSFORMED_NOTEX2_VERTEX ? m_vb->m_rd->m_pVertexTrafoTexelDeclaration :
-      m_vertexFormat == MY_D3DFVF_TEX ? m_vb->m_rd->m_pVertexTexelDeclaration : nullptr)
+   , m_vertexDeclaration(vb->m_fvf == MY_D3DFVF_NOTEX2_VERTEX ? m_vb->m_rd->m_pVertexNormalTexelDeclaration :
+      vb->m_fvf == MY_D3DTRANSFORMED_NOTEX2_VERTEX ? m_vb->m_rd->m_pVertexTrafoTexelDeclaration :
+      vb->m_fvf == MY_D3DFVF_TEX ? m_vb->m_rd->m_pVertexTexelDeclaration : nullptr)
 #endif
 {
 }
