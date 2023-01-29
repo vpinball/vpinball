@@ -15,10 +15,6 @@
 Kicker::Kicker()
 {
    m_phitkickercircle = nullptr;
-   m_vertexBuffer = nullptr;
-   m_indexBuffer = nullptr;
-   m_plateVertexBuffer = nullptr;
-   m_plateIndexBuffer = nullptr;
    m_ptable = nullptr;
    m_numVertices = 0;
    m_numIndices = 0;
@@ -27,11 +23,8 @@ Kicker::Kicker()
 
 Kicker::~Kicker()
 {
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
-   SAFE_BUFFER_RELEASE(m_indexBuffer);
-
-   SAFE_BUFFER_RELEASE(m_plateVertexBuffer);
-   SAFE_BUFFER_RELEASE(m_plateIndexBuffer);
+   delete m_meshBuffer;
+   delete m_plateMeshBuffer;
 }
 
 void Kicker::UpdateStatusBarInfo()
@@ -221,11 +214,10 @@ void Kicker::GetHitShapesDebug(vector<HitObject*> &pvho)
 void Kicker::EndPlay()
 {
    m_phitkickercircle = nullptr;
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
-   SAFE_BUFFER_RELEASE(m_indexBuffer);
-
-   SAFE_BUFFER_RELEASE(m_plateVertexBuffer);
-   SAFE_BUFFER_RELEASE(m_plateIndexBuffer);
+   delete m_meshBuffer;
+   delete m_plateMeshBuffer;
+   m_meshBuffer = nullptr;
+   m_plateMeshBuffer = nullptr;
 
    m_hitMesh.clear();
 
@@ -423,16 +415,9 @@ void Kicker::RenderSetup()
          buf[i].tv = 0.0f;
       }
 
-      SAFE_BUFFER_RELEASE(m_plateIndexBuffer);
-      m_plateIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, kickerPlateNumIndices, kickerPlateIndices);
-
-      SAFE_BUFFER_RELEASE(m_plateVertexBuffer);
-      m_plateVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, kickerPlateNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
-
-      Vertex3D_NoTex2 *bufvb;
-      m_plateVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::WRITEONLY);
-      memcpy(bufvb, buf, kickerPlateNumVertices*sizeof(Vertex3D_NoTex2));
-      m_plateVertexBuffer->unlock();
+      IndexBuffer *plateIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, kickerPlateNumIndices, kickerPlateIndices);
+      VertexBuffer *plateVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, kickerPlateNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, (float*)buf);
+      m_plateMeshBuffer = new MeshBuffer(plateVertexBuffer, plateIndexBuffer, true);
 
       delete[] buf;
    }
@@ -512,16 +497,13 @@ void Kicker::RenderSetup()
 
    //
 
-   SAFE_BUFFER_RELEASE(m_indexBuffer);
-   m_indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, indices);
-
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
-   m_vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
-
+   IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, indices);
+   VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
    Vertex3D_NoTex2 *buf;
-   m_vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    GenerateMesh(buf);
-   m_vertexBuffer->unlock();
+   vertexBuffer->unlock();
+   m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer, true);
 }
 
 void Kicker::SetDefaultPhysics(const bool fromMouseClick)
@@ -555,7 +537,7 @@ void Kicker::RenderDynamic()
       pd3dDevice->SetRenderState(RenderDevice::ZFUNC, RenderDevice::Z_ALWAYS);
 
       pd3dDevice->basicShader->Begin();
-      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_plateVertexBuffer, 0, kickerPlateNumVertices, m_plateIndexBuffer, 0, kickerPlateNumIndices);
+      pd3dDevice->DrawMesh(m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, kickerPlateNumIndices);
       pd3dDevice->basicShader->End();
 
       pd3dDevice->SetRenderState(RenderDevice::ZFUNC, RenderDevice::Z_LESSEQUAL);
@@ -572,7 +554,7 @@ void Kicker::RenderDynamic()
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
 
       pd3dDevice->basicShader->Begin();
-      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numVertices, m_indexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
       pd3dDevice->basicShader->End();
 
       pd3dDevice->CopyRenderStates(false, initial_state);

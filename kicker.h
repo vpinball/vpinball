@@ -96,8 +96,7 @@ private:
 
    KickerHitCircle *m_phitkickercircle;
 
-   VertexBuffer *m_vertexBuffer;
-   IndexBuffer  *m_indexBuffer;
+   MeshBuffer *m_meshBuffer = nullptr;
    unsigned int m_numVertices;
    unsigned int m_numIndices;
 
@@ -105,8 +104,7 @@ private:
 
    float m_baseHeight;
 
-   VertexBuffer *m_plateVertexBuffer;
-   IndexBuffer  *m_plateIndexBuffer;
+   MeshBuffer *m_plateMeshBuffer = nullptr;
 
 public:
    // IKicker
