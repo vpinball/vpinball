@@ -386,7 +386,7 @@ void Flasher::RenderSetup()
    NumVideoBytes += (int)(m_numVertices * sizeof(Vertex3D_TexelOnly));
 
    delete m_meshBuffer;
-   m_meshBuffer = new MeshBuffer(MY_D3DFVF_TEX, TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numPolys * 3, true);
+   m_meshBuffer = new MeshBuffer(MY_D3DFVF_TEX, dynamicVertexBuffer, dynamicIndexBuffer, true);
 
    if (m_vertices)
       delete[] m_vertices;
@@ -1342,7 +1342,7 @@ void Flasher::RenderDynamic()
           pd3dDevice->DMDShader->SetTexture(SHADER_tex_dmd, texdmd, SF_NONE, SA_CLAMP, SA_CLAMP);
 
        pd3dDevice->DMDShader->Begin();
-       pd3dDevice->DrawMesh(m_meshBuffer);
+       pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
        pd3dDevice->DMDShader->End();
    }
    else if (!(g_pplayer->IsRenderPass(Player::TRANSPARENT_DMD_PASS) || g_pplayer->IsRenderPass(Player::OPAQUE_DMD_PASS)))
@@ -1416,7 +1416,7 @@ void Flasher::RenderDynamic()
        pd3dDevice->SetRenderState(RenderDevice::BLENDOP, m_d.m_addBlend ? RenderDevice::BLENDOP_REVSUBTRACT : RenderDevice::BLENDOP_ADD);
 
        pd3dDevice->flasherShader->Begin();
-       pd3dDevice->DrawMesh(m_meshBuffer);
+       pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
        pd3dDevice->flasherShader->End();
 
        pd3dDevice->flasherShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);

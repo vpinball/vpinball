@@ -206,14 +206,14 @@ public:
          return;
 
       if (m_buffers[m_curIdx])
-         pd3dDevice->DrawMesh(m_buffers[m_curIdx]);
+         pd3dDevice->DrawMesh(m_buffers[m_curIdx], RenderDevice::TRIANGLEFAN, 0, 3);
 
       m_curIdx = (m_curIdx + 1) % m_buffers.size();
 
       if (!m_buffers[m_curIdx])
       {
          VertexBuffer *vb = new VertexBuffer(pd3dDevice, 1024, 0, MY_D3DFVF_NOTEX2_VERTEX);
-         m_buffers[m_curIdx] = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, PrimitiveType::TRIANGLEFAN, vb, 0, 3, true);
+         m_buffers[m_curIdx] = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, vb, true);
       }
 
       // idea: locking a static vertex buffer stalls the pipeline if that VB is still

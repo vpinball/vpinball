@@ -9,7 +9,7 @@ extern unsigned m_curLockCalls, m_frameLockCalls;
 // Disabled since OpenGL ES does not support glDrawElementsBaseVertex and we need it unless we remap the indices when creating the index buffer (and we should)
 #define COMBINE_BUFFERS 0
 #else
-#define COMBINE_BUFFERS 1
+#define COMBINE_BUFFERS 0
 #endif
 
 static unsigned int fvfToSize(const DWORD fvf)
@@ -31,27 +31,18 @@ vector<VertexBuffer*> VertexBuffer::notUploadedBuffers;
 #endif
 
 VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, const DWORD usage, const DWORD fvf)
+   : m_rd(rd)
+   , m_vertexCount(vertexCount)
+   , m_fvf(fvf)
+   , m_sizePerVertex(fvfToSize(m_fvf))
+   , m_usage(usage ? usage : USAGE_STATIC)
+   , m_size(fvfToSize(m_fvf) * vertexCount)
 {
-   m_rd = rd;
-   m_fvf = fvf;
-   m_sizePerVertex = fvfToSize(m_fvf);
-   m_usage = usage ? usage : USAGE_STATIC;
-#ifdef ENABLE_SDL
-   m_count = vertexCount;
-   m_size = m_sizePerVertex * m_count;
-   m_isUploaded = false;
-   m_buffer = 0;
-   m_offset = 0;
-   m_offsetToLock = 0;
-   m_sizeToLock = 0;
-   m_sharedBuffer = false;
-#else
+#ifndef ENABLE_SDL
    // NB: We always specify WRITEONLY since MSDN states,
    // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
    // This means we cannot read from vertex buffers, but I don't think we need to.
-   const HRESULT hr = rd->GetCoreDevice()->CreateVertexBuffer(vertexCount * m_sizePerVertex, USAGE_STATIC | usage, 0, (D3DPOOL)memoryPool::DEFAULT, &m_vb, nullptr);
-   if (FAILED(hr))
-      ReportError("Fatal Error: unable to create vertex buffer!", hr, __FILE__, __LINE__);
+   CHECKD3D(rd->GetCoreDevice()->CreateVertexBuffer(vertexCount * m_sizePerVertex, USAGE_STATIC | usage, 0, (D3DPOOL)memoryPool::DEFAULT, &m_vb, nullptr));
 #endif
 }
 
@@ -127,10 +118,7 @@ void VertexBuffer::release()
    {
       glDeleteBuffers(1, &m_buffer);
       m_buffer = 0;
-      m_sizePerVertex = 0;
       m_offset = 0;
-      m_count = 0;
-      m_size = 0;
    }
 #else
    SAFE_RELEASE(m_vb);
@@ -206,12 +194,12 @@ void VertexBuffer::UploadBuffers(RenderDevice* rd)
          if ((*it)->m_fvf == MY_D3DFVF_TEX)
          {
             (*it)->m_offset = countT;
-            countT += (*it)->m_count;
+            countT += (*it)->m_vertexCount;
             (*it)->m_buffer = BufferT;
          }
          else {
             (*it)->m_offset = countNT;
-            countNT += (*it)->m_count;
+            countNT += (*it)->m_vertexCount;
             (*it)->m_buffer = BufferNT;
          }
          (*it)->m_sharedBuffer = true;

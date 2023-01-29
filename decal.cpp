@@ -516,7 +516,7 @@ void Decal::RenderSetup()
 
    vertexBuffer->unlock();
 
-   m_meshBuffer = new MeshBuffer(m_backglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, TRIANGLEFAN, vertexBuffer, 0, 4, true);
+   m_meshBuffer = new MeshBuffer(m_backglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, true);
 }
 
 float Decal::GetDepth(const Vertex3Ds& viewDir) const
@@ -594,7 +594,7 @@ void Decal::RenderObject()
    pd3dDevice->basicShader->SetBool(SHADER_disableVertexShader, m_backglass);
 
    pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_meshBuffer);
+   pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLEFAN, 0, 4);
    pd3dDevice->basicShader->End();
 
    pd3dDevice->basicShader->SetBool(SHADER_disableVertexShader, false);

@@ -290,7 +290,7 @@ void Bumper::RenderBase(const Material * const baseMaterial)
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
    pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_baseMeshBuffer);
+   pd3dDevice->DrawMesh(m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
    pd3dDevice->basicShader->End();
 }
 
@@ -303,7 +303,7 @@ void Bumper::RenderSocket(const Material * const socketMaterial)
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
    pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_socketMeshBuffer);
+   pd3dDevice->DrawMesh(m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
    pd3dDevice->basicShader->End();
 }
 
@@ -316,7 +316,7 @@ void Bumper::RenderCap(const Material * const capMaterial)
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
    pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_capMeshBuffer);
+   pd3dDevice->DrawMesh(m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
    pd3dDevice->basicShader->End();
 }
 
@@ -415,7 +415,7 @@ void Bumper::RenderDynamic()
 
       // render ring
       pd3dDevice->basicShader->Begin();
-      pd3dDevice->DrawMesh(m_ringMeshBuffer);
+      pd3dDevice->DrawMesh(m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
       pd3dDevice->basicShader->End();
    }
 
@@ -631,7 +631,7 @@ void Bumper::RenderSetup()
       GenerateBaseMesh(buf);
       baseVertexBuffer->unlock();
       delete m_baseMeshBuffer;
-      m_baseMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, baseVertexBuffer, 0, bumperBaseNumVertices, baseIndexBuffer, 0, bumperBaseNumIndices, true);
+      m_baseMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, baseVertexBuffer, baseIndexBuffer, true);
    }
 
    if (m_d.m_skirtVisible)
@@ -644,7 +644,7 @@ void Bumper::RenderSetup()
       GenerateSocketMesh(buf);
       socketVertexBuffer->unlock();
       delete m_socketMeshBuffer;
-      m_socketMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, socketVertexBuffer, 0, bumperSocketNumVertices, socketIndexBuffer, 0, bumperSocketNumIndices, true);
+      m_socketMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, socketVertexBuffer, socketIndexBuffer, true);
    }
 
    if (m_d.m_ringVisible)
@@ -659,7 +659,7 @@ void Bumper::RenderSetup()
       memcpy(buf, m_ringVertices, bumperRingNumVertices*sizeof(Vertex3D_NoTex2));
       ringVertexBuffer->unlock();
       delete m_ringMeshBuffer;
-      m_ringMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, ringVertexBuffer, 0, bumperRingNumVertices, ringIndexBuffer, 0, bumperRingNumIndices, true);
+      m_ringMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, ringVertexBuffer, ringIndexBuffer, true);
    }
 
    if (m_d.m_capVisible)
@@ -672,7 +672,7 @@ void Bumper::RenderSetup()
       GenerateCapMesh(buf);
       capVertexBuffer->unlock();
       delete m_capMeshBuffer;
-      m_capMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, capVertexBuffer, 0, bumperCapNumVertices, capIndexBuffer, 0, bumperCapNumIndices, true);
+      m_capMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, capVertexBuffer, capIndexBuffer, true);
    }
 }
 

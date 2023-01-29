@@ -882,20 +882,8 @@ void Surface::PrepareWallsAtHeight()
       memcpy(buf + sideIndices.size(), topBottomIndices.data(), topBottomIndices.size() * sizeof(WORD));
    IBuffer->unlock();
 
-   delete m_sideMeshBuffer;
-   delete m_topMeshBuffer;
-   delete m_topDroppedMeshBuffer;
-   delete m_bottomMeshBuffer;
-   m_sideMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, VBuffer, 0, m_numVertices * 4, IBuffer, 0, m_numVertices * 6, true);
-   if (!topBottomBuf.empty())
-   {
-      /* m_topMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, VBuffer, m_numVertices * 4, m_numVertices, IBuffer, m_numVertices * 6, m_numPolys * 3, false);
-      m_topDroppedMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, VBuffer, m_numVertices * 5, m_numVertices, IBuffer, m_numVertices * 6, m_numPolys * 3, false);
-      m_bottomMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, VBuffer, m_numVertices * 6, m_numVertices, IBuffer, m_numVertices * 6, m_numPolys * 3, false);*/
-      m_topMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, VBuffer, 0, m_numVertices, IBuffer, m_numVertices * 6, m_numPolys * 3, false);
-      m_topDroppedMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, VBuffer, 0, m_numVertices, IBuffer, m_numVertices * 6 + m_numPolys * 3, m_numPolys * 3, false);
-      m_bottomMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, VBuffer, 0, m_numVertices, IBuffer, m_numVertices * 6 + m_numPolys * 3 * 2, m_numPolys * 3, false);
-   }
+   delete m_meshBuffer;
+   m_meshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, VBuffer, IBuffer, true);
 }
 
 static constexpr WORD rgiSlingshot[24] = { 0, 4, 3, 0, 1, 4, 1, 2, 5, 1, 5, 4, 4, 8, 5, 4, 7, 8, 3, 7, 4, 3, 6, 7 };
@@ -965,7 +953,7 @@ void Surface::PrepareSlingshots()
    slingIBuffer->unlock();
 
    delete m_slingshotMeshBuffer;
-   m_slingshotMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, slingshotVBuffer, 0, n_lines * 9, slingIBuffer, 0, n_lines * 24, true);
+   m_slingshotMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, slingshotVBuffer, slingIBuffer, true);
 }
 
 void Surface::RenderSetup()
@@ -1000,14 +988,8 @@ void Surface::FreeBuffers()
 {
    delete m_slingshotMeshBuffer;
    m_slingshotMeshBuffer = nullptr;
-   delete m_sideMeshBuffer;
-   m_sideMeshBuffer = nullptr;
-   delete m_topMeshBuffer;
-   m_topMeshBuffer = nullptr;
-   delete m_topDroppedMeshBuffer;
-   m_topDroppedMeshBuffer = nullptr;
-   delete m_bottomMeshBuffer;
-   m_bottomMeshBuffer = nullptr;
+   delete m_meshBuffer;
+   m_meshBuffer = nullptr;
 }
 
 void Surface::UpdateAnimation(const float diff_time_msec)
@@ -1072,7 +1054,7 @@ void Surface::RenderSlingshots()
       }
    }
    pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_slingshotMeshBuffer);
+   pd3dDevice->DrawMesh(m_slingshotMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_vlinesling.size() * 24);
    pd3dDevice->basicShader->End();
 
    //pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
@@ -1123,7 +1105,7 @@ void Surface::RenderWallsAtHeight(const bool drop)
 
       // combine drawcalls into one (hopefully faster)
       pd3dDevice->basicShader->Begin();
-      pd3dDevice->DrawMesh(m_sideMeshBuffer);
+      pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numVertices * 6);
       pd3dDevice->basicShader->End();
    }
 
@@ -1156,7 +1138,7 @@ void Surface::RenderWallsAtHeight(const bool drop)
 
       // Top
       pd3dDevice->basicShader->Begin();
-      pd3dDevice->DrawMesh(drop ? m_topDroppedMeshBuffer : m_topMeshBuffer);
+      pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (drop ? m_numPolys * 3 : 0), m_numPolys * 3);
       pd3dDevice->basicShader->End();
 
       // Only render Bottom for Reflections
@@ -1168,7 +1150,7 @@ void Surface::RenderWallsAtHeight(const bool drop)
             pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CW);
 
          pd3dDevice->basicShader->Begin();
-         pd3dDevice->DrawMesh(m_bottomMeshBuffer);
+         pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);
          pd3dDevice->basicShader->End();
       }
    }

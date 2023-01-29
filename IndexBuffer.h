@@ -9,24 +9,15 @@ class IndexBuffer;
 class MeshBuffer final
 {
 public:
-   MeshBuffer(const DWORD fvf, const PrimitiveType type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, const bool ownBuffers);
-   MeshBuffer(const DWORD fvf, const PrimitiveType type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount, const bool ownBuffers);
-   MeshBuffer(MeshBuffer* base, const DWORD strippedVertexCount);
+   MeshBuffer(const DWORD fvf, VertexBuffer* vb, const bool ownBuffers);
+   MeshBuffer(const DWORD fvf, VertexBuffer* vb, IndexBuffer* ib, const bool ownBuffers);
    ~MeshBuffer();
    void bind();
 
    const bool m_ownBuffers;
-   const int m_triangleCount;
    const DWORD m_vertexFormat;
-   const PrimitiveType m_type;
-
-   VertexBuffer* m_vb;
-   const DWORD m_startVertex;
-   const DWORD m_vertexCount;
-
-   IndexBuffer* m_ib;
-   const DWORD m_startIndex;
-   const DWORD m_indexCount;
+   VertexBuffer* const m_vb;
+   IndexBuffer* const m_ib;
 
 #ifdef ENABLE_SDL
 public:
@@ -35,7 +26,6 @@ public:
 private:
    GLuint m_vao = 0;
    bool m_isSharedVAO = false;
-   bool m_isMeshView = false;
    struct SharedVAO
    {
       GLuint vb, ib, vao, ref_count;
