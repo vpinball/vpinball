@@ -406,6 +406,7 @@ void Spinner::RenderSetup()
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    m_posZ = height + m_d.m_height;
 
+   delete m_bracketMeshBuffer;
    IndexBuffer *bracketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerBracketNumFaces, spinnerBracketIndices);
    VertexBuffer *bracketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
    m_bracketMeshBuffer = new MeshBuffer(bracketVertexBuffer, bracketIndexBuffer);
@@ -433,6 +434,7 @@ void Spinner::RenderSetup()
    }
    bracketVertexBuffer->unlock();
 
+   delete m_plateMeshBuffer;
    IndexBuffer* plateIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerPlateNumFaces, spinnerPlateIndices);
    VertexBuffer* plateVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerPlateNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
    m_plateMeshBuffer = new MeshBuffer(plateVertexBuffer, plateIndexBuffer);

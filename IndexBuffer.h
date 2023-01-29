@@ -104,6 +104,7 @@ private:
 
    void UploadData();
    void addToNotUploadedBuffers();
+
    static vector<IndexBuffer*> notUploadedBuffers;
    static void UploadBuffers(RenderDevice* rd);
 #else

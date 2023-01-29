@@ -300,6 +300,7 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
       }
    }
    vertexBuffer->unlock();
+   delete m_meshBuffer;
    m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer);
 }
 
@@ -1414,7 +1415,8 @@ void Primitive::RenderSetup()
    m_currentFrame = -1.f;
    m_d.m_isBackGlassImage = IsBackglass();
 
-   bool is_static = m_d.m_staticRendering || m_mesh.m_animationFrames.size() == 0;
+   const bool is_static = m_d.m_staticRendering || m_mesh.m_animationFrames.size() == 0;
+   delete m_meshBuffer;
    VertexBuffer* vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)m_mesh.NumVertices(), is_static ? USAGE_STATIC : USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
    IndexBuffer* indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_mesh.m_indices);
    m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer);

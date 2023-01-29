@@ -1112,6 +1112,7 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
 
 void Ramp::PrepareHabitrail()
 {
+   delete m_meshBuffer;
    m_dynamicVertexBufferRegenerate = false;
    Vertex3D_NoTex2 *tmpBuf1 = nullptr;
    Vertex3D_NoTex2 *tmpBuf2 = nullptr;
@@ -2460,6 +2461,7 @@ void Ramp::GenerateVertexBuffer()
    Vertex3D_NoTex2 *tmpBuffer = nullptr;
    GenerateRampMesh(&tmpBuffer);
 
+   delete m_meshBuffer;
    VertexBuffer* dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices * 3, 0, MY_D3DFVF_NOTEX2_VERTEX, (float*) tmpBuffer); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
    IndexBuffer* dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_meshIndices);
    m_meshBuffer = new MeshBuffer(dynamicVertexBuffer, dynamicIndexBuffer);

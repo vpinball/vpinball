@@ -516,6 +516,7 @@ void Decal::RenderSetup()
 
    vertexBuffer->unlock();
 
+   delete m_meshBuffer;
    m_meshBuffer = new MeshBuffer(vertexBuffer);
 }
 
