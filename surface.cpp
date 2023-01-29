@@ -725,16 +725,6 @@ void Surface::GenerateMesh(vector<Vertex3D_NoTex2> &topBuf, vector<Vertex3D_NoTe
          return;
       }
 
-      // Offset indices to directly point to right vertices in the vertex buffer
-      for (unsigned int i = 0; i < m_numPolys * 3; i++)
-         topBottomIndices[i] = topBottomIndices[i] + m_numVertices * 4;
-      // Append indices for dropped top
-      for (unsigned int i = 0; i < m_numPolys * 3; i++)
-         topBottomIndices.push_back(topBottomIndices[i] + m_numVertices);
-      // Append indices for bottom
-      for (unsigned int i = 0; i < m_numPolys * 3; i++)
-         topBottomIndices.push_back(topBottomIndices[i] + m_numVertices * 2);
-
       const float heightNotDropped = m_d.m_heighttop;
       const float heightDropped = m_d.m_heightbottom + 0.1f;
 
@@ -854,32 +844,32 @@ void Surface::ExportMesh(ObjLoader& loader)
 
 void Surface::PrepareWallsAtHeight()
 {
-   vector<Vertex3D_NoTex2> topBottomBuf;
-   vector<Vertex3D_NoTex2> sideBuf;
-   vector<WORD> topBottomIndices;
-   vector<WORD> sideIndices;
+   vector<Vertex3D_NoTex2> topBottomBuf, sideBuf;
+   vector<WORD> topBottomIndices, sideIndices;
    GenerateMesh(topBottomBuf, sideBuf, topBottomIndices, sideIndices);
 
-   VertexBuffer* VBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices * 4 + (!topBottomBuf.empty() ? m_numVertices * 3 : 0), 0, MY_D3DFVF_NOTEX2_VERTEX);
-
+   VertexBuffer *VBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, sideBuf.size() + topBottomBuf.size(), USAGE_STATIC, MY_D3DFVF_NOTEX2_VERTEX);
    Vertex3D_NoTex2 *verts;
    VBuffer->lock(0, 0, (void**)&verts, VertexBuffer::WRITEONLY);
-   memcpy(verts, sideBuf.data(), sizeof(Vertex3D_NoTex2)*m_numVertices * 4);
-
-   if (!topBottomBuf.empty())
-      //if (m_d.m_visible) // Visible could still be set later if rendered dynamically
-         memcpy(verts+m_numVertices * 4, topBottomBuf.data(), sizeof(Vertex3D_NoTex2)*m_numVertices * 3);
+   memcpy(verts, sideBuf.data(), sizeof(Vertex3D_NoTex2) * sideBuf.size());
+   memcpy(verts + sideBuf.size(), topBottomBuf.data(), sizeof(Vertex3D_NoTex2) * topBottomBuf.size());
    VBuffer->unlock();
 
-   //
+   // Offset indices to directly point to the right vertices in the vertex buffer
+   for (unsigned int i = 0; i < m_numPolys * 3; i++)
+      topBottomIndices[i] = topBottomIndices[i] + sideBuf.size();
+   // Append indices for dropped top
+   for (unsigned int i = 0; i < m_numPolys * 3; i++)
+      topBottomIndices.push_back(topBottomIndices[i] + m_numVertices);
+   // Append indices for bottom (used when rendering reflections)
+   for (unsigned int i = 0; i < m_numPolys * 3; i++)
+      topBottomIndices.push_back(topBottomIndices[i] + m_numVertices * 2);
 
-   IndexBuffer* IBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)topBottomIndices.size() + (unsigned int)sideIndices.size(), 0, IndexBuffer::FMT_INDEX16);
-
+   IndexBuffer *IBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)topBottomIndices.size() + (unsigned int)sideIndices.size(), USAGE_STATIC, IndexBuffer::FMT_INDEX16);
    WORD* buf;
    IBuffer->lock(0, 0, (void**)&buf, IndexBuffer::WRITEONLY);
    memcpy(buf, sideIndices.data(), sideIndices.size() * sizeof(WORD));
-   if (!topBottomIndices.empty())
-      memcpy(buf + sideIndices.size(), topBottomIndices.data(), topBottomIndices.size() * sizeof(WORD));
+   memcpy(buf + sideIndices.size(), topBottomIndices.data(), topBottomIndices.size() * sizeof(WORD));
    IBuffer->unlock();
 
    delete m_meshBuffer;
@@ -887,8 +877,6 @@ void Surface::PrepareWallsAtHeight()
 }
 
 static constexpr WORD rgiSlingshot[24] = { 0, 4, 3, 0, 1, 4, 1, 2, 5, 1, 5, 4, 4, 8, 5, 4, 7, 8, 3, 7, 4, 3, 6, 7 };
-
-static IndexBuffer* slingIBuffer = nullptr;        // this is constant so we only have one global instance
 
 void Surface::PrepareSlingshots()
 {
