@@ -856,7 +856,7 @@ void Trigger::RenderSetup()
    GenerateMesh();
    IndexBuffer *triggerIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, indices);
    VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, (float*) m_triggerVertices);
-   m_meshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, triggerIndexBuffer, true);
+   m_meshBuffer = new MeshBuffer(vertexBuffer, triggerIndexBuffer, true);
 }
 
 void Trigger::RenderStatic()

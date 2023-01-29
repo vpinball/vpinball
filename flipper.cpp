@@ -880,8 +880,8 @@ void Flipper::RenderSetup()
    GenerateBaseMesh(buf);
    vertexBuffer->unlock();
    delete m_batMeshBuffer;
-   m_batMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, indexBuffer, true);
-   m_rubberMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, indexBuffer, false);
+   m_batMeshBuffer = new MeshBuffer(vertexBuffer, indexBuffer, true);
+   m_rubberMeshBuffer = new MeshBuffer(vertexBuffer, indexBuffer, false);
    m_lastAngle = 123486.0f;
 }
 
