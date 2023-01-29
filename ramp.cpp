@@ -22,8 +22,7 @@ Ramp::Ramp()
 
 Ramp::~Ramp()
 {
-   delete m_meshBuffer1;
-   delete m_meshBuffer2;
+   delete m_meshBuffer;
 
    if (m_rgheightInit)
       delete[] m_rgheightInit;
@@ -869,10 +868,8 @@ void Ramp::EndPlay()
 {
    IEditable::EndPlay();
    m_vhoCollidable.clear();
-   delete m_meshBuffer1;
-   m_meshBuffer1 = nullptr;
-   delete m_meshBuffer2;
-   m_meshBuffer2 = nullptr;
+   delete m_meshBuffer;
+   m_meshBuffer = nullptr;
    m_dynamicVertexBufferRegenerate = true;
 }
 
@@ -904,17 +901,18 @@ bool Ramp::isHabitrail() const
 
 void Ramp::RenderStaticHabitrail(const Material * const mat)
 {
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   if (!m_meshBuffer || m_dynamicVertexBufferRegenerate)
+      PrepareHabitrail();
+
+   RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    /* TODO: This is a misnomer right now, but clamp fixes some visual glitches (single-pixel lines)
     * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
     * since the texture coordinates always stay within [0,1] anyway. */
    SamplerAddressMode sam = m_d.m_imagealignment == ImageModeWrap ? SA_CLAMP : SA_REPEAT;
-
    pd3dDevice->SetRenderStateDepthBias(0.0f);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
-
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (!pin)
    {
@@ -927,53 +925,9 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat);
       pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
    }
-
-   if ((m_d.m_type == RampType2Wire) || (m_d.m_type == RampType4Wire))
-   {
-      Matrix3D matTrafo;
-      if (m_d.m_type == RampType4Wire)
-      {
-         matTrafo.SetIdentity();
-         matTrafo._43 = m_d.m_wireDistanceY*0.5f;
-         g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-         pd3dDevice->basicShader->Begin();
-         pd3dDevice->DrawMesh(m_meshBuffer1, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-         pd3dDevice->DrawMesh(m_meshBuffer2, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-         pd3dDevice->basicShader->End();
-      }
-      matTrafo.SetIdentity();
-      matTrafo._43 = 3.0f;                // raise the wire a bit because the ball runs on a flat ramp physically
-      g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-      pd3dDevice->basicShader->Begin();
-      pd3dDevice->DrawMesh(m_meshBuffer1, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-      pd3dDevice->DrawMesh(m_meshBuffer2, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-      pd3dDevice->basicShader->End();
-      g_pplayer->UpdateBasicShaderMatrix();
-   }
-   else if ((m_d.m_type == RampType3WireLeft) || (m_d.m_type == RampType3WireRight))
-   {
-      Matrix3D matTrafo;
-      matTrafo.SetIdentity();
-      matTrafo._43 = m_d.m_wireDistanceY*0.5f;
-      g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-      pd3dDevice->basicShader->Begin();
-      pd3dDevice->DrawMesh((m_d.m_type == RampType3WireRight) ? m_meshBuffer1 : m_meshBuffer2, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-      pd3dDevice->basicShader->End();
-      matTrafo.SetIdentity();
-      matTrafo._43 = 3.0f;                // raise the wire a bit because the ball runs on a flat ramp physically
-      g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-      pd3dDevice->basicShader->Begin();
-      pd3dDevice->DrawMesh(m_meshBuffer1, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-      pd3dDevice->DrawMesh(m_meshBuffer2, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-      pd3dDevice->basicShader->End();
-      g_pplayer->UpdateBasicShaderMatrix();
-   }
-   else
-   {
-      pd3dDevice->basicShader->Begin();
-      pd3dDevice->DrawMesh(m_meshBuffer1, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-      pd3dDevice->basicShader->End();
-   }
+   pd3dDevice->basicShader->Begin();
+   pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+   pd3dDevice->basicShader->End();
 }
 
 //
@@ -1163,16 +1117,96 @@ void Ramp::PrepareHabitrail()
    Vertex3D_NoTex2 *tmpBuf2 = nullptr;
    GenerateWireMesh(&tmpBuf1, &tmpBuf2);
 
-   IndexBuffer* dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_meshIndices);
-   VertexBuffer *dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, (float *)tmpBuf1); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
-   m_meshBuffer1 = new MeshBuffer(dynamicVertexBuffer, dynamicIndexBuffer, true);
-
-   if (m_d.m_type != RampType1Wire)
+   switch (m_d.m_type)
    {
-      IndexBuffer *dynamicIndexBuffer2 = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_meshIndices);
-      VertexBuffer *dynamicVertexBuffer2 = new VertexBuffer(
-         g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, (float *)tmpBuf2); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
-      m_meshBuffer2 = new MeshBuffer(dynamicVertexBuffer2, dynamicIndexBuffer2, true);
+   case RampType1Wire:
+   {
+      IndexBuffer *dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_meshIndices);
+      VertexBuffer *dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, USAGE_STATIC, MY_D3DFVF_NOTEX2_VERTEX, (float *)tmpBuf1);
+      m_meshBuffer = new MeshBuffer(dynamicVertexBuffer, dynamicIndexBuffer, true);
+      break;
+   }
+   case RampType2Wire:
+   {
+      Vertex3D_NoTex2* vertices = new Vertex3D_NoTex2[m_numVertices * 2];
+      memcpy(vertices, tmpBuf1, m_numVertices * sizeof(Vertex3D_NoTex2));
+      memcpy(vertices + m_numVertices, tmpBuf2, m_numVertices * sizeof(Vertex3D_NoTex2));
+      for (int i = 0; i < m_numVertices; i++)
+      {
+         // raise the wire a bit because the ball runs on a flat ramp physically
+         vertices[i].z += 3.0f;
+         vertices[i + m_numVertices].z += 3.0f;
+      }
+      WORD *indices = new WORD[m_numIndices * 2];
+      memcpy(indices, m_meshIndices.data(), m_numIndices * sizeof(WORD));
+      for (int i = 0; i < m_numIndices; i++)
+         indices[m_numIndices + i] = indices[i] + m_numVertices;
+      IndexBuffer *dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices * 2, indices);
+      VertexBuffer *dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices * 2, USAGE_STATIC, MY_D3DFVF_NOTEX2_VERTEX, (float *)vertices);
+      m_meshBuffer = new MeshBuffer(dynamicVertexBuffer, dynamicIndexBuffer, true);
+      m_numVertices *= 2;
+      m_numIndices *= 2;
+      break;
+   }
+   case RampType3WireLeft:
+   case RampType3WireRight:
+   {
+      Vertex3D_NoTex2 *vertices = new Vertex3D_NoTex2[m_numVertices * 3];
+      memcpy(vertices, tmpBuf1, m_numVertices * sizeof(Vertex3D_NoTex2));
+      memcpy(vertices + m_numVertices, tmpBuf2, m_numVertices * sizeof(Vertex3D_NoTex2));
+      memcpy(vertices + m_numVertices * 2, (m_d.m_type == RampType3WireLeft) ? tmpBuf2 : tmpBuf1, m_numVertices * sizeof(Vertex3D_NoTex2));
+      for (int i = 0; i < m_numVertices; i++)
+      {
+         // raise the wire a bit because the ball runs on a flat ramp physically
+         vertices[i                    ].z += 3.0f;
+         vertices[i + m_numVertices    ].z += 3.0f;
+         vertices[i + m_numVertices * 2].z += m_d.m_wireDistanceY * 0.5f;
+      }
+      WORD *indices = new WORD[m_numIndices * 3];
+      memcpy(indices, m_meshIndices.data(), m_numIndices * sizeof(WORD));
+      for (int i = 0; i < m_numIndices; i++)
+      {
+         indices[m_numIndices + i] = indices[i] + m_numVertices;
+         indices[m_numIndices * 2 + i] = indices[i] + m_numVertices * 2;
+      }
+      IndexBuffer *dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices * 3, indices);
+      VertexBuffer *dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices * 3, USAGE_STATIC, MY_D3DFVF_NOTEX2_VERTEX, (float *)vertices);
+      m_meshBuffer = new MeshBuffer(dynamicVertexBuffer, dynamicIndexBuffer, true);
+      m_numVertices *= 3;
+      m_numIndices *= 3;
+      break;
+   }
+   case RampType4Wire:
+   {
+      Vertex3D_NoTex2 *vertices = new Vertex3D_NoTex2[m_numVertices * 4];
+      memcpy(vertices, tmpBuf1, m_numVertices * sizeof(Vertex3D_NoTex2));
+      memcpy(vertices + m_numVertices, tmpBuf2, m_numVertices * sizeof(Vertex3D_NoTex2));
+      memcpy(vertices + m_numVertices*2, tmpBuf1, m_numVertices * sizeof(Vertex3D_NoTex2));
+      memcpy(vertices + m_numVertices*3, tmpBuf2, m_numVertices * sizeof(Vertex3D_NoTex2));
+      for (int i = 0; i < m_numVertices; i++)
+      {
+         // raise the wire a bit because the ball runs on a flat ramp physically
+         vertices[i                    ].z += 3.0f;
+         vertices[i + m_numVertices    ].z += 3.0f;
+         // upper wires
+         vertices[i + m_numVertices * 2].z += m_d.m_wireDistanceY * 0.5f;
+         vertices[i + m_numVertices * 3].z += m_d.m_wireDistanceY * 0.5f;
+      }
+      WORD *indices = new WORD[m_numIndices * 4];
+      memcpy(indices, m_meshIndices.data(), m_numIndices * sizeof(WORD));
+      for (int i = 0; i < m_numIndices; i++)
+      {
+         indices[m_numIndices + i] = indices[i] + m_numVertices;
+         indices[m_numIndices*2 + i] = indices[i] + m_numVertices*2;
+         indices[m_numIndices*3 + i] = indices[i] + m_numVertices*3;
+      }
+      IndexBuffer *dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices * 4, indices);
+      VertexBuffer *dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices * 4, USAGE_STATIC, MY_D3DFVF_NOTEX2_VERTEX, (float *)vertices);
+      m_meshBuffer = new MeshBuffer(dynamicVertexBuffer, dynamicIndexBuffer, true);
+      m_numVertices *= 4;
+      m_numIndices *= 4;
+      break;
+   }
    }
 
    delete[] m_vertBuffer;
@@ -1561,9 +1595,8 @@ STDMETHODIMP Ramp::put_Type(RampType newVal)
    {
       m_d.m_type = newVal;
       m_dynamicVertexBufferRegenerate = true;
+      PLOGE_IF(m_isStaticRendering) << "Setting type on ramp '" << m_wzName << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
    }
-
-   PLOGE_IF(m_isStaticRendering) << "Setting type on ramp '" << m_wzName << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
 
    return S_OK;
 }
@@ -1592,9 +1625,8 @@ STDMETHODIMP Ramp::put_Image(BSTR newVal)
    {
       m_d.m_szImage = szImage;
       m_dynamicVertexBufferRegenerate = true;
+      PLOGE_IF(m_isStaticRendering) << "Setting image on ramp '" << m_wzName << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
    }
-
-   PLOGE_IF(m_isStaticRendering) << "Setting image on ramp '" << m_wzName << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
 
    return S_OK;
 }
@@ -1612,9 +1644,8 @@ STDMETHODIMP Ramp::put_ImageAlignment(RampImageAlignment newVal)
    {
       m_d.m_imagealignment = newVal;
       m_dynamicVertexBufferRegenerate = true;
+      PLOGE_IF(m_isStaticRendering) << "Setting image alignment on ramp '" << m_wzName << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
    }
-
-   PLOGE_IF(m_isStaticRendering) << "Setting image alignment on ramp '" << m_wzName << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
 
    return S_OK;
 }
@@ -1632,9 +1663,8 @@ STDMETHODIMP Ramp::put_HasWallImage(VARIANT_BOOL newVal)
    {
       m_d.m_imageWalls = VBTOb(newVal);
       m_dynamicVertexBufferRegenerate = true;
+      PLOGE_IF(m_isStaticRendering) << "Setting wall image on ramp '" << m_wzName << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
    }
-
-   PLOGE_IF(m_isStaticRendering) << "Setting wall image on ramp '" << m_wzName << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
 
    return S_OK;
 }
@@ -1694,9 +1724,9 @@ STDMETHODIMP Ramp::put_VisibleLeftWallHeight(float newVal)
    {
       m_d.m_leftwallheightvisible = nv;
       m_dynamicVertexBufferRegenerate = true;
+      PLOGE_IF(m_isStaticRendering) << "Setting visible left wall height on ramp '" << m_wzName
+                                    << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
    }
-
-   PLOGE_IF(m_isStaticRendering) << "Setting visible left wall height on ramp '" << m_wzName << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
 
    return S_OK;
 }
@@ -1716,9 +1746,9 @@ STDMETHODIMP Ramp::put_VisibleRightWallHeight(float newVal)
    {
       m_d.m_rightwallheightvisible = nv;
       m_dynamicVertexBufferRegenerate = true;
+      PLOGE_IF(m_isStaticRendering) << "Setting visible right wall height on ramp '" << m_wzName
+                                    << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
    }
-
-   PLOGE_IF(m_isStaticRendering) << "Setting visible right wall height on ramp '" << m_wzName << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
 
    return S_OK;
 }
@@ -1872,9 +1902,12 @@ STDMETHODIMP Ramp::get_WireDiameter(float *pVal)
 
 STDMETHODIMP Ramp::put_WireDiameter(float newVal)
 {
-   m_d.m_wireDiameter = newVal;
-
-   PLOGE_IF(m_isStaticRendering) << "Setting wire diameter on ramp '" << m_wzName << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
+   if (m_d.m_wireDiameter != newVal)
+   {
+       m_d.m_wireDiameter = newVal;
+       m_dynamicVertexBufferRegenerate = true;
+       PLOGE_IF(m_isStaticRendering) << "Setting wire diameter on ramp '" << m_wzName << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
+   }
 
    return S_OK;
 }
@@ -1888,9 +1921,12 @@ STDMETHODIMP Ramp::get_WireDistanceX(float *pVal)
 
 STDMETHODIMP Ramp::put_WireDistanceX(float newVal)
 {
-   m_d.m_wireDistanceX = newVal;
-
-   PLOGE_IF(m_isStaticRendering) << "Setting X wire distance on ramp '" << m_wzName << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
+   if (m_d.m_wireDistanceX != newVal)
+   {
+       m_d.m_wireDistanceX = newVal;
+       m_dynamicVertexBufferRegenerate = true;
+       PLOGE_IF(m_isStaticRendering) << "Setting X wire distance on ramp '" << m_wzName << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
+   }
 
    return S_OK;
 }
@@ -1904,9 +1940,12 @@ STDMETHODIMP Ramp::get_WireDistanceY(float *pVal)
 
 STDMETHODIMP Ramp::put_WireDistanceY(float newVal)
 {
-   m_d.m_wireDistanceY = newVal;
-
-   PLOGE_IF(m_isStaticRendering) << "Setting Y wire distance on ramp '" << m_wzName << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
+   if (m_d.m_wireDistanceY != newVal)
+   {
+       m_d.m_wireDistanceY = newVal;
+       m_dynamicVertexBufferRegenerate = true;
+       PLOGE_IF(m_isStaticRendering) << "Setting Y wire distance on ramp '" << m_wzName << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
+   }
 
    return S_OK;
 }
@@ -2132,7 +2171,7 @@ void Ramp::RenderRamp(const Material * const mat)
       RenderStaticHabitrail(mat);
    else
    {
-      if (!m_meshBuffer1 || m_dynamicVertexBufferRegenerate)
+      if (!m_meshBuffer || m_dynamicVertexBufferRegenerate)
          GenerateVertexBuffer();
 
       pd3dDevice->SetRenderStateDepthBias(0.0f);
@@ -2166,14 +2205,14 @@ void Ramp::RenderRamp(const Material * const mat)
       {
          // both walls with image and floor
          pd3dDevice->basicShader->Begin();
-         pd3dDevice->DrawMesh(m_meshBuffer1, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6 * 3);
+         pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6 * 3);
          pd3dDevice->basicShader->End();
       }
       else
       {
          // only floor
          pd3dDevice->basicShader->Begin();
-         pd3dDevice->DrawMesh(m_meshBuffer1, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6);
+         pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6);
 
          if (m_d.m_rightwallheightvisible != 0.f || m_d.m_leftwallheightvisible != 0.f)
          {
@@ -2185,11 +2224,11 @@ void Ramp::RenderRamp(const Material * const mat)
             }
 
             if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f) //only render left & right side if the height is >0
-               pd3dDevice->DrawMesh(m_meshBuffer1, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6, (m_rampVertex - 1) * 6 * 2);
+               pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6, (m_rampVertex - 1) * 6 * 2);
             else if (m_d.m_rightwallheightvisible != 0.f) //only render right side if the height is >0
-               pd3dDevice->DrawMesh(m_meshBuffer1, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6, (m_rampVertex - 1) * 6);
+               pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6, (m_rampVertex - 1) * 6);
             else if (m_d.m_leftwallheightvisible != 0.f) //only render left side if the height is >0
-               pd3dDevice->DrawMesh(m_meshBuffer1, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6 * 2, (m_rampVertex - 1) * 6);
+               pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6 * 2, (m_rampVertex - 1) * 6);
          }
 
          pd3dDevice->basicShader->End();
@@ -2423,7 +2462,7 @@ void Ramp::GenerateVertexBuffer()
 
    VertexBuffer* dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices * 3, 0, MY_D3DFVF_NOTEX2_VERTEX, (float*) tmpBuffer); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
    IndexBuffer* dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_meshIndices);
-   m_meshBuffer1 = new MeshBuffer(dynamicVertexBuffer, dynamicIndexBuffer, true);
+   m_meshBuffer = new MeshBuffer(dynamicVertexBuffer, dynamicIndexBuffer, true);
    delete[] tmpBuffer;
 }
 

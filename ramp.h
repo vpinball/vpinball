@@ -135,8 +135,7 @@ private:
 
    vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
-   MeshBuffer *m_meshBuffer1 = nullptr;
-   MeshBuffer *m_meshBuffer2 = nullptr;
+   MeshBuffer *m_meshBuffer = nullptr;
    bool m_dynamicVertexBufferRegenerate;
 
    PropertyPane *m_propPhysics;
