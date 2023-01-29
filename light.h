@@ -216,12 +216,9 @@ private:
 
    unsigned int m_customMoverVertexNum;
    unsigned int m_customMoverIndexNum;
-   VertexBuffer *m_customMoverVBuffer;
-   IndexBuffer  *m_customMoverIBuffer;
-   VertexBuffer *m_bulbLightVBuffer;
-   IndexBuffer  *m_bulbLightIndexBuffer;
-   VertexBuffer *m_bulbSocketVBuffer;
-   IndexBuffer  *m_bulbSocketIndexBuffer;
+   MeshBuffer *m_customMoverMeshBuffer = nullptr;
+   MeshBuffer *m_bulbSocketMeshBuffer = nullptr;
+   MeshBuffer *m_bulbLightMeshBuffer = nullptr;
    PropertyPane *m_propVisual;
 
    vector<RenderVertex> m_vvertex;

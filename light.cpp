@@ -9,12 +9,6 @@
 Light::Light() : m_lightcenter(this)
 {
    m_menuid = IDR_SURFACEMENU;
-   m_customMoverVBuffer = nullptr;
-   m_customMoverIBuffer = nullptr;
-   m_bulbLightIndexBuffer = nullptr;
-   m_bulbLightVBuffer = nullptr;
-   m_bulbSocketIndexBuffer = nullptr;
-   m_bulbSocketVBuffer = nullptr;
    m_d.m_depthBias = 0.0f;
    m_d.m_shape = ShapeCustom;
    m_d.m_visible = true;
@@ -26,12 +20,7 @@ Light::Light() : m_lightcenter(this)
 
 Light::~Light()
 {
-   SAFE_BUFFER_RELEASE(m_customMoverVBuffer);
-   SAFE_BUFFER_RELEASE(m_customMoverIBuffer);
-   SAFE_BUFFER_RELEASE(m_bulbLightIndexBuffer);
-   SAFE_BUFFER_RELEASE(m_bulbLightVBuffer);
-   SAFE_BUFFER_RELEASE(m_bulbSocketIndexBuffer);
-   SAFE_BUFFER_RELEASE(m_bulbSocketVBuffer);
+   FreeBuffers();
 }
 
 HRESULT Light::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
@@ -297,12 +286,12 @@ void Light::GetHitShapesDebug(vector<HitObject*> &pvho)
 
 void Light::FreeBuffers()
 {
-   SAFE_BUFFER_RELEASE(m_customMoverVBuffer);
-   SAFE_BUFFER_RELEASE(m_customMoverIBuffer);
-   SAFE_BUFFER_RELEASE(m_bulbLightIndexBuffer);
-   SAFE_BUFFER_RELEASE(m_bulbLightVBuffer);
-   SAFE_BUFFER_RELEASE(m_bulbSocketIndexBuffer);
-   SAFE_BUFFER_RELEASE(m_bulbSocketVBuffer);
+   delete m_customMoverMeshBuffer;
+   delete m_bulbSocketMeshBuffer;
+   delete m_bulbLightMeshBuffer;
+   m_customMoverMeshBuffer = nullptr;
+   m_bulbSocketMeshBuffer = nullptr;
+   m_bulbLightMeshBuffer = nullptr;
 }
 
 void Light::EndPlay()
@@ -352,7 +341,7 @@ void Light::RenderBulbMesh()
    pd3dDevice->basicShader->SetMaterial(&mat, false);
 
    pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bulbSocketVBuffer, 0, bulbSocketNumVertices, m_bulbSocketIndexBuffer, 0, bulbSocketNumFaces);
+   pd3dDevice->DrawMesh(m_bulbSocketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbSocketNumFaces);
    pd3dDevice->basicShader->End();
 
    mat.m_cBase = 0;
@@ -371,7 +360,7 @@ void Light::RenderBulbMesh()
    pd3dDevice->basicShader->SetMaterial(&mat, false);
 
    pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bulbLightVBuffer, 0, bulbLightNumVertices, m_bulbLightIndexBuffer, 0, bulbLightNumFaces);
+   pd3dDevice->DrawMesh(m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
    pd3dDevice->basicShader->End();
 
    pd3dDevice->CopyRenderStates(false, initial_state);
@@ -384,7 +373,7 @@ void Light::RenderDynamic()
    if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
       return;
 
-   if (m_customMoverVBuffer == nullptr) // in case of degenerate light
+   if (m_customMoverMeshBuffer == nullptr) // in case of degenerate light
       return;
 
    if (m_backglass && !GetPTable()->GetDecalsEnabled())
@@ -464,7 +453,7 @@ void Light::RenderDynamic()
       pd3dDevice->lightShader->SetFloat(SHADER_blend_modulate_vs_add, 0.00001f); // additive, but avoid full 0, as it disables the blend
 
       pd3dDevice->lightShader->Begin();
-      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bulbLightVBuffer, 0, bulbLightNumVertices, m_bulbLightIndexBuffer, 0, bulbLightNumFaces);
+      pd3dDevice->DrawMesh(m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
       pd3dDevice->lightShader->End();
    }
 
@@ -528,7 +517,7 @@ void Light::RenderDynamic()
 
    Shader *shader = m_d.m_BulbLight ? pd3dDevice->lightShader : pd3dDevice->classicLightShader;
    shader->Begin();
-   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, m_backglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, m_customMoverVBuffer, 0, m_customMoverVertexNum, m_customMoverIBuffer, 0, m_customMoverIndexNum);
+   pd3dDevice->DrawMesh(m_customMoverMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_customMoverIndexNum);
    shader->End();
 
    // Restore state
@@ -564,9 +553,7 @@ void Light::PrepareMoversCustom()
       PolygonToTriangles(m_vvertex, vpoly, vtri, true);
    }
 
-
-   SAFE_BUFFER_RELEASE(m_customMoverIBuffer);
-   SAFE_BUFFER_RELEASE(m_customMoverVBuffer);
+   delete m_customMoverMeshBuffer;
 
    if (vtri.empty())
    {
@@ -579,16 +566,18 @@ void Light::PrepareMoversCustom()
    }
 
    m_customMoverIndexNum = (unsigned int)vtri.size();
-   m_customMoverIBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16);
+   IndexBuffer* customMoverIBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16);
 
    WORD* bufi;
-   m_customMoverIBuffer->lock(0, 0, (void**)&bufi, IndexBuffer::WRITEONLY);
+   customMoverIBuffer->lock(0, 0, (void**)&bufi, IndexBuffer::WRITEONLY);
    memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
-   m_customMoverIBuffer->unlock();
+   customMoverIBuffer->unlock();
 
    m_customMoverVertexNum = (unsigned int)m_vvertex.size();
    const DWORD vertexType = (!m_backglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;
-   m_customMoverVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_customMoverVertexNum, 0, vertexType);
+   VertexBuffer * customMoverVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_customMoverVertexNum, 0, vertexType);
+
+   m_customMoverMeshBuffer = new MeshBuffer(customMoverVBuffer, customMoverIBuffer, true);
 
    UpdateCustomMoverVBuffer();
 }
@@ -614,7 +603,7 @@ void Light::UpdateCustomMoverVBuffer()
    const float ymult = getBGymult();
 
    Vertex3D_NoTex2 *buf;
-   m_customMoverVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   m_customMoverMeshBuffer->m_vb->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    for (unsigned int t = 0; t < m_customMoverVertexNum; t++)
    {
       const RenderVertex * const pv0 = &m_vvertex[t];
@@ -663,7 +652,7 @@ void Light::UpdateCustomMoverVBuffer()
          buf[t].tv = y;
       }
    }
-   m_customMoverVBuffer->unlock();
+   m_customMoverMeshBuffer->m_vb->unlock();
 }
 
 void Light::RenderSetup()
@@ -693,14 +682,13 @@ void Light::RenderSetup()
       // 28.f is the distance between the light (emitting point) and the bulb base (bulb mesh origin)
       const float bulb_z = m_surfaceHeight + (m_d.m_height - 28.f) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
-      SAFE_BUFFER_RELEASE(m_bulbLightIndexBuffer);
-      m_bulbLightIndexBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbLightNumFaces, bulbLightIndices);
-
-      SAFE_BUFFER_RELEASE(m_bulbLightVBuffer);
-      m_bulbLightVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbLightNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
+      delete m_bulbLightMeshBuffer;
+      IndexBuffer* bulbLightIndexBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbLightNumFaces, bulbLightIndices);
+      VertexBuffer* bulbLightVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbLightNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
+      m_bulbLightMeshBuffer = new MeshBuffer(bulbLightVBuffer, bulbLightIndexBuffer, true);
 
       Vertex3D_NoTex2 *buf;
-      m_bulbLightVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      bulbLightVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
       for (unsigned int i = 0; i < bulbLightNumVertices; i++)
       {
          buf[i].x = bulbLight[i].x*m_d.m_meshRadius + m_d.m_vCenter.x;
@@ -712,15 +700,14 @@ void Light::RenderSetup()
          buf[i].tu = bulbLight[i].tu;
          buf[i].tv = bulbLight[i].tv;
       }
-      m_bulbLightVBuffer->unlock();
+      bulbLightVBuffer->unlock();
 
-      SAFE_BUFFER_RELEASE(m_bulbSocketIndexBuffer);
-      m_bulbSocketIndexBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbSocketNumFaces, bulbSocketIndices);
+      delete m_bulbSocketMeshBuffer;
+      IndexBuffer* bulbSocketIndexBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbSocketNumFaces, bulbSocketIndices);
+      VertexBuffer *bulbSocketVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
+      m_bulbSocketMeshBuffer = new MeshBuffer(bulbSocketVBuffer, bulbSocketIndexBuffer, true);
 
-      SAFE_BUFFER_RELEASE(m_bulbSocketVBuffer);
-      m_bulbSocketVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
-
-      m_bulbSocketVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      bulbSocketVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
       for (unsigned int i = 0; i < bulbSocketNumVertices; i++)
       {
          buf[i].x = bulbSocket[i].x*m_d.m_meshRadius + m_d.m_vCenter.x;
@@ -732,7 +719,7 @@ void Light::RenderSetup()
          buf[i].tu = bulbSocket[i].tu;
          buf[i].tv = bulbSocket[i].tv;
       }
-      m_bulbSocketVBuffer->unlock();
+      bulbSocketVBuffer->unlock();
    }
 
    PrepareMoversCustom();
