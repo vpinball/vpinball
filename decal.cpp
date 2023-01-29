@@ -10,7 +10,6 @@
 Decal::Decal()
 {
    m_pIFont = nullptr;
-   m_vertexBuffer = nullptr;
    m_textImg = nullptr;
    m_ptable = nullptr;
    m_leading = 0.0f;
@@ -24,7 +23,7 @@ Decal::~Decal()
    m_pIFont->Release();
    if (m_textImg)
       delete m_textImg;
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
+   delete m_meshBuffer;
 }
 
 HRESULT Decal::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
@@ -415,7 +414,8 @@ void Decal::EndPlay()
       m_textImg = nullptr;
    }
 
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
+   delete m_meshBuffer;
+   m_meshBuffer = nullptr;
 
    IEditable::EndPlay();
 }
@@ -457,12 +457,12 @@ void Decal::RenderSetup()
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
 
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
    const DWORD vertexType = m_backglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX;
-   m_vertexBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, 4, 0, vertexType);
+   VertexBuffer* vertexBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, 4, 0, vertexType);
+
 
    Vertex3D_NoTex2 *vertices;
-   m_vertexBuffer->lock(0, 0, (void**)&vertices, VertexBuffer::WRITEONLY);
+   vertexBuffer->lock(0, 0, (void**)&vertices, VertexBuffer::WRITEONLY);
 
    vertices[0].x = m_d.m_vCenter.x + sn*(halfheight + leading) - cs*halfwidth;
    vertices[0].y = m_d.m_vCenter.y - cs*(halfheight + leading) - sn*halfwidth;
@@ -514,7 +514,9 @@ void Decal::RenderSetup()
    vertices[3].tu = 0;
    vertices[3].tv = 1.0f;
 
-   m_vertexBuffer->unlock();
+   vertexBuffer->unlock();
+
+   m_meshBuffer = new MeshBuffer(m_backglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, TRIANGLEFAN, vertexBuffer, 0, 4, true);
 }
 
 float Decal::GetDepth(const Vertex3Ds& viewDir) const
@@ -592,7 +594,7 @@ void Decal::RenderObject()
    pd3dDevice->basicShader->SetBool(SHADER_disableVertexShader, m_backglass);
 
    pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawPrimitiveVB(RenderDevice::TRIANGLEFAN, m_backglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, 4, true);
+   pd3dDevice->DrawMesh(m_meshBuffer);
    pd3dDevice->basicShader->End();
 
    pd3dDevice->basicShader->SetBool(SHADER_disableVertexShader, false);
