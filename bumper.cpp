@@ -631,7 +631,7 @@ void Bumper::RenderSetup()
       GenerateBaseMesh(buf);
       baseVertexBuffer->unlock();
       delete m_baseMeshBuffer;
-      m_baseMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, baseVertexBuffer, 0, bumperBaseNumVertices, baseIndexBuffer, 0, bumperBaseNumIndices, true);
+      m_baseMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, baseVertexBuffer, 0, bumperBaseNumVertices, baseIndexBuffer, 0, bumperBaseNumIndices, true);
    }
 
    if (m_d.m_skirtVisible)
@@ -644,7 +644,7 @@ void Bumper::RenderSetup()
       GenerateSocketMesh(buf);
       socketVertexBuffer->unlock();
       delete m_socketMeshBuffer;
-      m_socketMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, socketVertexBuffer, 0, bumperSocketNumVertices, socketIndexBuffer, 0, bumperSocketNumIndices, true);
+      m_socketMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, socketVertexBuffer, 0, bumperSocketNumVertices, socketIndexBuffer, 0, bumperSocketNumIndices, true);
    }
 
    if (m_d.m_ringVisible)
@@ -659,7 +659,7 @@ void Bumper::RenderSetup()
       memcpy(buf, m_ringVertices, bumperRingNumVertices*sizeof(Vertex3D_NoTex2));
       ringVertexBuffer->unlock();
       delete m_ringMeshBuffer;
-      m_ringMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, ringVertexBuffer, 0, bumperRingNumVertices, ringIndexBuffer, 0, bumperRingNumIndices, true);
+      m_ringMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, ringVertexBuffer, 0, bumperRingNumVertices, ringIndexBuffer, 0, bumperRingNumIndices, true);
    }
 
    if (m_d.m_capVisible)
@@ -672,7 +672,7 @@ void Bumper::RenderSetup()
       GenerateCapMesh(buf);
       capVertexBuffer->unlock();
       delete m_capMeshBuffer;
-      m_capMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, capVertexBuffer, 0, bumperCapNumVertices, capIndexBuffer, 0, bumperCapNumIndices, true);
+      m_capMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, capVertexBuffer, 0, bumperCapNumVertices, capIndexBuffer, 0, bumperCapNumIndices, true);
    }
 }
 

@@ -55,6 +55,28 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
 #endif
 }
 
+VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, const DWORD usage, const DWORD fvf, const float* verts)
+   : VertexBuffer(rd, vertexCount, usage, fvf)
+{
+   void* bufvb;
+   lock(0, 0, (void**)&bufvb, VertexBuffer::WRITEONLY);
+   memcpy(bufvb, verts, vertexCount * m_sizePerVertex);
+   unlock();
+}
+
+VertexBuffer::~VertexBuffer()
+{
+   release();
+}
+
+#ifdef ENABLE_SDL
+void VertexBuffer::ClearSharedBuffers()
+{
+   // FIXME add some debug logging since a well behaving application should not have any pending upload here
+   notUploadedBuffers.clear(); 
+}
+#endif
+
 void VertexBuffer::lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags)
 {
    m_curLockCalls++;
@@ -93,7 +115,15 @@ void VertexBuffer::unlock()
 void VertexBuffer::release()
 {
 #ifdef ENABLE_SDL
-   if (!m_sharedBuffer && (m_buffer != 0))
+   if (m_sharedBuffer)
+   {
+      if (m_buffer == 0)
+      {
+         RemoveFromVectorSingle(notUploadedBuffers, this);
+      }
+      // FIXME we should ref count the shared buffers and release them
+   }
+   else if (m_buffer != 0)
    {
       glDeleteBuffers(1, &m_buffer);
       m_buffer = 0;
@@ -130,6 +160,7 @@ void VertexBuffer::bind()
 #ifdef ENABLE_SDL
 void VertexBuffer::addToNotUploadedBuffers()
 {
+   assert(m_rd == g_pplayer->m_pin3d.m_pd3dPrimaryDevice);
    if (COMBINE_BUFFERS == 0 || m_usage != USAGE_STATIC)
       UploadData();
    else
@@ -169,6 +200,7 @@ void VertexBuffer::UploadBuffers(RenderDevice* rd)
    glGenBuffers(1, &BufferNT);
    glGenBuffers(1, &BufferT);
    for (auto it = notUploadedBuffers.begin(); it != notUploadedBuffers.end(); ++it) {
+      assert(rd == (*it)->m_rd);
       if (!(*it)->m_isUploaded && (*it)->m_usage == GL_STATIC_DRAW)
       {
          if ((*it)->m_fvf == MY_D3DFVF_TEX)

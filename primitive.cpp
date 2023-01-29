@@ -300,7 +300,7 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
       }
    }
    vertexBuffer->unlock();
-   m_meshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numGroupVertices, indexBuffer, 0, m_numGroupIndices, true);
+   m_meshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, vertexBuffer, 0, m_numGroupVertices, indexBuffer, 0, m_numGroupIndices, true);
 }
 
 HRESULT Primitive::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
@@ -1417,7 +1417,7 @@ void Primitive::RenderSetup()
    bool is_static = m_d.m_staticRendering || m_mesh.m_animationFrames.size() == 0;
    VertexBuffer* vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)m_mesh.NumVertices(), is_static ? USAGE_STATIC : USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
    IndexBuffer* indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_mesh.m_indices);
-   m_meshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices(), true);
+   m_meshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices(), true);
 
    // Compute and upload mesh to let a chance for renderdevice to share the buffers with other static objects
    RecalculateMatrices();

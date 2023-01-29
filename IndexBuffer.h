@@ -9,14 +9,16 @@ class IndexBuffer;
 class MeshBuffer final
 {
 public:
-   MeshBuffer(const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, const bool ownBuffers);
-   MeshBuffer(const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount, const bool ownBuffers);
+   MeshBuffer(const DWORD fvf, const PrimitiveType type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, const bool ownBuffers);
+   MeshBuffer(const DWORD fvf, const PrimitiveType type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount,
+      const bool ownBuffers);
    ~MeshBuffer();
    void bind();
 
    const bool m_ownBuffers;
    const int m_triangleCount;
    const DWORD m_vertexFormat;
+   const PrimitiveType m_type;
 
    VertexBuffer* m_vb;
    const DWORD m_startVertex;
@@ -27,6 +29,9 @@ public:
    const DWORD m_indexCount;
 
 #ifdef ENABLE_SDL
+public:
+   static void ClearSharedBuffers();
+
 private:
    GLuint m_vao = 0;
    bool m_isSharedVAO = false;
@@ -70,6 +75,7 @@ public:
    IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const WORD* indices);
    IndexBuffer(RenderDevice* rd, const vector<unsigned int>& indices);
    IndexBuffer(RenderDevice* rd, const vector<WORD>& indices);
+   ~IndexBuffer();
 
    void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void** dataBuffer, const DWORD flags);
    void unlock();
@@ -88,6 +94,8 @@ public:
    GLuint getBuffer() const { return m_buffer; }
    bool useSharedBuffer() const { return m_sharedBuffer; }
    Format getIndexFormat() const { return m_indexFormat; }
+
+   static void ClearSharedBuffers();
 
 private:
    GLuint m_count;
