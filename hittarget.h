@@ -199,8 +199,7 @@ private:
 
    vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
-   VertexBuffer *m_vertexBuffer;
-   IndexBuffer *m_indexBuffer;
+   MeshBuffer *m_meshBuffer = nullptr;
 
    // Vertices for editor display & hit shape
    vector<Vertex3Ds> m_hitUIVertices;

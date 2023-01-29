@@ -126,8 +126,7 @@ private:
 
    Vertex3Ds m_middlePoint;
 
-   VertexBuffer *m_dynamicVertexBuffer;
-   IndexBuffer *m_dynamicIndexBuffer;
+   MeshBuffer *m_meshBuffer = nullptr;
    bool m_dynamicVertexBufferRegenerate;
 
    PropertyPane *m_propVisual;

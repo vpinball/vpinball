@@ -24,8 +24,6 @@ constexpr float HitTarget::DROP_TARGET_LIMIT = 52.0f;
 
 HitTarget::HitTarget()
 {
-   m_vertexBuffer = 0;
-   m_indexBuffer = 0;
    m_d.m_depthBias = 0.0f;
    m_d.m_reflectionEnabled = true;
 
@@ -47,8 +45,7 @@ HitTarget::HitTarget()
 
 HitTarget::~HitTarget()
 {
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
-   SAFE_BUFFER_RELEASE(m_indexBuffer);
+   delete m_meshBuffer;
 }
 
 void HitTarget::SetMeshType(const TargetType type)
@@ -426,8 +423,8 @@ void HitTarget::EndPlay()
 {
    m_vhoCollidable.clear();
 
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
-   SAFE_BUFFER_RELEASE(m_indexBuffer);
+   delete m_meshBuffer;
+   m_meshBuffer = nullptr;
 
    IEditable::EndPlay();
 }
@@ -717,7 +714,7 @@ void HitTarget::RenderObject()
 
    // draw the mesh
    pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numVertices, m_indexBuffer, 0, m_numIndices);
+   pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
    pd3dDevice->basicShader->End();
 
 #ifdef TWOSIDED_TRANSPARENCY
@@ -739,7 +736,7 @@ void HitTarget::RenderObject()
 void HitTarget::UpdateTarget()
 {
    Vertex3D_NoTex2 *buf;
-   m_vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+   m_meshBuffer->m_vb->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple)
    {
        //TODO Update object Matrix instead
@@ -788,7 +785,7 @@ void HitTarget::UpdateTarget()
            buf[i].tv = m_vertices[i].tv;
        }
    }
-   m_vertexBuffer->unlock();
+   m_meshBuffer->m_vb->unlock();
 }
 
 // Always called each frame to render over everything else (along with alpha ramps)
@@ -807,13 +804,7 @@ void HitTarget::RenderDynamic()
 
 void HitTarget::RenderSetup()
 {
-   SAFE_BUFFER_RELEASE(m_vertexBuffer);
    SetMeshType(m_d.m_targetType);
-   m_vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
-
-   SAFE_BUFFER_RELEASE(m_indexBuffer);
-   m_indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, m_indices);
-
    m_transformedVertices.resize(m_numVertices);
 
    GenerateMesh(m_transformedVertices);
@@ -828,10 +819,10 @@ void HitTarget::RenderSetup()
            return;
        }
    }
-   Vertex3D_NoTex2 *buf;
-   m_vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
-   memcpy(buf, m_transformedVertices.data(), m_numVertices*sizeof(Vertex3D_NoTex2));
-   m_vertexBuffer->unlock();
+
+   VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, (float *)m_transformedVertices.data());
+   IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, m_indices);
+   m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer, true);
 }
 
 void HitTarget::RenderStatic()
