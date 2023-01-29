@@ -84,8 +84,6 @@ static const Vertex3Ds* const vertsBaseTop = (Vertex3Ds*)vertsBaseTopf;
 Flipper::Flipper()
 {
    m_phitflipper = nullptr;
-   m_batMeshBuffer = nullptr;
-   m_rubberMeshBuffer = nullptr;
    m_ptable = nullptr;
    m_lastAngle = 0.f;
 }
@@ -869,15 +867,21 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 
 void Flipper::RenderSetup()
 {
-   IndexBuffer* indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, flipperBaseNumIndices, flipperBaseIndices);
-   VertexBuffer* vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, flipperBaseVertices * 2, 0, MY_D3DFVF_NOTEX2_VERTEX);
+   IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, flipperBaseNumIndices * 2, USAGE_STATIC, IndexBuffer::FMT_INDEX16);
+   WORD *bufI;
+   indexBuffer->lock(0, 0, (void**)&bufI, IndexBuffer::WRITEONLY);
+   memcpy(bufI, flipperBaseIndices, flipperBaseNumIndices * sizeof(flipperBaseIndices[0]));
+   for (int i = 0; i < flipperBaseNumIndices; i++)
+      bufI[flipperBaseNumIndices + i] = flipperBaseIndices[i] + flipperBaseVertices;
+   indexBuffer->unlock();
+   VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, flipperBaseVertices * 2, 0, MY_D3DFVF_NOTEX2_VERTEX);
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    GenerateBaseMesh(buf);
    vertexBuffer->unlock();
    delete m_batMeshBuffer;
    m_batMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, vertexBuffer, 0, flipperBaseVertices, indexBuffer, 0, flipperBaseNumIndices, true);
-   m_rubberMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, vertexBuffer, flipperBaseVertices, flipperBaseVertices, indexBuffer, 0, flipperBaseNumIndices, false);
+   m_rubberMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, vertexBuffer, 0, flipperBaseVertices, indexBuffer, flipperBaseNumIndices, flipperBaseNumIndices, false);
    m_lastAngle = 123486.0f;
 }
 
