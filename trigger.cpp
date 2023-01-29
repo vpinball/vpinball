@@ -612,7 +612,7 @@ void Trigger::RenderDynamic()
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
 
    pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_meshBuffer);
+   pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
    pd3dDevice->basicShader->End();
 
    pd3dDevice->CopyRenderStates(false, initial_state);
@@ -856,7 +856,7 @@ void Trigger::RenderSetup()
    GenerateMesh();
    IndexBuffer *triggerIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, indices);
    VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, (float*) m_triggerVertices);
-   m_meshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, PrimitiveType::TRIANGLELIST, vertexBuffer, 0, m_numVertices, triggerIndexBuffer, 0, m_numIndices, true);
+   m_meshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, triggerIndexBuffer, true);
 }
 
 void Trigger::RenderStatic()

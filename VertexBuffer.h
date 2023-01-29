@@ -29,11 +29,14 @@ public:
    void release();
    void bind();
 
+   const unsigned int m_vertexCount;
+
 private:
-   RenderDevice* m_rd;
-   DWORD m_usage;
-   DWORD m_fvf;
-   unsigned int m_sizePerVertex;
+   RenderDevice* const m_rd;
+   const DWORD m_usage;
+   const DWORD m_fvf;
+   const unsigned int m_sizePerVertex;
+   const unsigned int m_size;
 
 #ifdef ENABLE_SDL
 public:
@@ -45,14 +48,12 @@ public:
    static void ClearSharedBuffers();
 
 private:
-   GLuint m_count;
-   GLuint m_size;
-   bool m_isUploaded;
-   bool m_sharedBuffer;
+   bool m_isUploaded = false;
+   bool m_sharedBuffer = false;
 
    // CPU memory management
-   unsigned int m_offsetToLock;
-   unsigned int m_sizeToLock;
+   unsigned int m_offsetToLock = 0;
+   unsigned int m_sizeToLock = 0;
    void* m_dataBuffer = nullptr;
 
    //GPU memory management

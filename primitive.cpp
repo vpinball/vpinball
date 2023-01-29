@@ -300,7 +300,7 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
       }
    }
    vertexBuffer->unlock();
-   m_meshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, vertexBuffer, 0, m_numGroupVertices, indexBuffer, 0, m_numGroupIndices, true);
+   m_meshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, indexBuffer, true);
 }
 
 HRESULT Primitive::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
@@ -1326,7 +1326,7 @@ void Primitive::RenderObject()
       { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
          pd3dDevice->basicShader->SetTechniqueMetal(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat, nMap, false, false);
          pd3dDevice->basicShader->Begin();
-         pd3dDevice->DrawMesh(m_meshBuffer);
+         pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
          pd3dDevice->basicShader->End();
          is_reflection_only_pass = true;
       }
@@ -1345,7 +1345,7 @@ void Primitive::RenderObject()
 
    // draw the mesh
    pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_meshBuffer);
+   pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD) m_mesh.NumIndices());
    pd3dDevice->basicShader->End();
 
    // also draw the back of the primitive faces
@@ -1353,7 +1353,7 @@ void Primitive::RenderObject()
    {
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
       pd3dDevice->basicShader->Begin();
-      pd3dDevice->DrawMesh(m_meshBuffer);
+      pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
       pd3dDevice->basicShader->End();
    }
 
@@ -1417,7 +1417,7 @@ void Primitive::RenderSetup()
    bool is_static = m_d.m_staticRendering || m_mesh.m_animationFrames.size() == 0;
    VertexBuffer* vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)m_mesh.NumVertices(), is_static ? USAGE_STATIC : USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
    IndexBuffer* indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_mesh.m_indices);
-   m_meshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices(), true);
+   m_meshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, indexBuffer, true);
 
    // Compute and upload mesh to let a chance for renderdevice to share the buffers with other static objects
    RecalculateMatrices();

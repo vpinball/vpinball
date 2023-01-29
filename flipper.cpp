@@ -641,7 +641,7 @@ void Flipper::RenderDynamic()
    }
    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
    pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_batMeshBuffer);
+   pd3dDevice->DrawMesh(m_batMeshBuffer, RenderDevice::TRIANGLELIST, 0, flipperBaseNumIndices);
    pd3dDevice->basicShader->End();
 
    //render rubber
@@ -660,7 +660,7 @@ void Flipper::RenderDynamic()
       }
 
       pd3dDevice->basicShader->Begin();
-      pd3dDevice->DrawMesh(m_rubberMeshBuffer);
+      pd3dDevice->DrawMesh(m_rubberMeshBuffer, RenderDevice::TRIANGLELIST, flipperBaseNumIndices, flipperBaseNumIndices);
       pd3dDevice->basicShader->End();
    }
    g_pplayer->UpdateBasicShaderMatrix();
@@ -880,8 +880,8 @@ void Flipper::RenderSetup()
    GenerateBaseMesh(buf);
    vertexBuffer->unlock();
    delete m_batMeshBuffer;
-   m_batMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, vertexBuffer, 0, flipperBaseVertices, indexBuffer, 0, flipperBaseNumIndices, true);
-   m_rubberMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, vertexBuffer, 0, flipperBaseVertices, indexBuffer, flipperBaseNumIndices, flipperBaseNumIndices, false);
+   m_batMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, indexBuffer, true);
+   m_rubberMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, indexBuffer, false);
    m_lastAngle = 123486.0f;
 }
 

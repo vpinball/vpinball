@@ -14,91 +14,48 @@ vector<MeshBuffer::SharedVAO> MeshBuffer::sharedVAOs;
 #include "Shader.h"
 #include "VertexBuffer.h"
 
-MeshBuffer::MeshBuffer(const DWORD fvf, const PrimitiveType type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, const bool ownBuffers)
-   : MeshBuffer(fvf, type, vb, startVertex, vertexCount, nullptr, 0, 0, ownBuffers)
+MeshBuffer::MeshBuffer(const DWORD fvf, VertexBuffer* vb, const bool ownBuffers)
+   : MeshBuffer(fvf, vb, nullptr, ownBuffers)
 {
 }
 
-static unsigned int ComputePrimitiveCount(const PrimitiveType type, const int vertexCount)
-{
-   switch (type)
-   {
-   case PrimitiveType::POINTLIST: return vertexCount;
-   case PrimitiveType::LINELIST: return vertexCount / 2;
-   case PrimitiveType::LINESTRIP: return std::max(0, vertexCount - 1);
-   case PrimitiveType::TRIANGLELIST: return vertexCount / 3;
-   case PrimitiveType::TRIANGLESTRIP:
-   case PrimitiveType::TRIANGLEFAN: return std::max(0, vertexCount - 2);
-   default: return 0;
-   }
-}
-
-MeshBuffer::MeshBuffer(const DWORD fvf, const PrimitiveType type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex,
-   const DWORD indexCount, const bool ownBuffers)
+MeshBuffer::MeshBuffer(const DWORD fvf, VertexBuffer* vb, IndexBuffer* ib, const bool ownBuffers)
    : m_vertexFormat(fvf)
-   , m_type(type)
    , m_vb(vb)
-   , m_startVertex(startVertex)
-   , m_vertexCount(vertexCount)
    , m_ib(ib)
-   , m_startIndex(startIndex)
-   , m_indexCount(indexCount)
-   , m_triangleCount(ComputePrimitiveCount(type, ib != nullptr ? indexCount : vertexCount))
    , m_ownBuffers(ownBuffers)
 {
-}
-
-MeshBuffer::MeshBuffer(MeshBuffer* base, const DWORD strippedVertexCount) 
-   : m_vertexFormat(base->m_vertexFormat)
-   , m_type(base->m_type)
-   , m_vb(base->m_vb)
-   , m_startVertex(base->m_startVertex)
-   , m_vertexCount(strippedVertexCount)
-   , m_ib(base->m_ib)
-   , m_startIndex(base->m_startIndex)
-   , m_indexCount(base->m_indexCount)
-   , m_triangleCount(ComputePrimitiveCount(base->m_type, base->m_ib != nullptr ? base->m_indexCount : strippedVertexCount))
-   , m_ownBuffers(false)
-{
-#ifdef ENABLE_SDL
-   m_vao = base->m_vao;
-   m_isSharedVAO = base->m_isSharedVAO;
-   m_isMeshView = true;
-#endif
 }
 
 MeshBuffer::~MeshBuffer()
 {
 #ifdef ENABLE_SDL
-   if (!m_isMeshView)
+   if (m_isSharedVAO)
    {
-      if (m_isSharedVAO)
+      // Shared VAO are ref counted
+      GLuint vb = m_vb->getBuffer();
+      GLuint ib = m_ib == nullptr ? 0 : m_ib->getBuffer();
+      std::vector<SharedVAO>::iterator existing = std::find_if(sharedVAOs.begin(), sharedVAOs.end(), [vb, ib](SharedVAO v) { return v.vb == vb && v.ib == ib; });
+      if (existing != sharedVAOs.end())
       {
-         // Shared VAO are ref counted
-         GLuint vb = m_vb->getBuffer();
-         GLuint ib = m_ib == nullptr ? 0 : m_ib->getBuffer();
-         std::vector<SharedVAO>::iterator existing = std::find_if(sharedVAOs.begin(), sharedVAOs.end(), [vb, ib](SharedVAO v) { return v.vb == vb && v.ib == ib; });
-         if (existing != sharedVAOs.end())
+         existing->ref_count--;
+         if (existing->ref_count == 0)
          {
-            existing->ref_count--;
-            if (existing->ref_count == 0)
-            {
-               glDeleteVertexArrays(1, &existing->vao);
-               sharedVAOs.erase(existing);
-            }
+            glDeleteVertexArrays(1, &existing->vao);
+            sharedVAOs.erase(existing);
          }
       }
-      else if (m_vao != 0)
-      {
-         glDeleteVertexArrays(1, &m_vao);
-         m_vao = 0;
-      }
+   }
+   else if (m_vao != 0)
+   {
+      glDeleteVertexArrays(1, &m_vao);
+      m_vao = 0;
    }
    #endif
    if (m_ownBuffers)
    {
-      SAFE_BUFFER_RELEASE(m_vb);
-      SAFE_BUFFER_RELEASE(m_ib);
+      delete m_vb;
+      delete m_ib;
    }
 }
 
