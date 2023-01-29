@@ -1001,6 +1001,8 @@ void KeysConfigDialog::OnOK()
 
     for (unsigned int i = 0; i < eCKeys; ++i) if (regkey_idc[i] != -1)
     {
+        if (i == eTableRecenter || i == eTableUp || i == eTableDown)
+           continue;
         const size_t key = ::GetWindowLongPtr(GetDlgItem(regkey_idc[i]).GetHwnd(), GWLP_USERDATA);
         SaveValueInt(regKey[RegName::Player], regkey_string[i], (int)key);
     }
