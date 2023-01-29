@@ -387,8 +387,7 @@ public:
 #endif
    Shader      *m_ballShader;
 
-   IndexBuffer *m_ballIndexBuffer;
-   VertexBuffer *m_ballVertexBuffer;
+   MeshBuffer *m_ballMeshBuffer = nullptr;
    MeshBuffer *m_ballTrailMeshBuffer = nullptr;
    bool m_antiStretchBall;
 

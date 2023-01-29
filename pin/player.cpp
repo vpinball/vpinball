@@ -396,8 +396,6 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
 
    m_ScreenOffset = Vertex2D(0.f, 0.f);
 
-   m_ballIndexBuffer = nullptr;
-   m_ballVertexBuffer = nullptr;
 #ifdef DEBUG_BALL_SPIN
    m_ballDebugPoints = nullptr;
 #endif
@@ -762,8 +760,8 @@ void Player::Shutdown()
 
    m_pininput.UnInit();
 
-   SAFE_BUFFER_RELEASE(m_ballVertexBuffer);
-   SAFE_BUFFER_RELEASE(m_ballIndexBuffer);
+   delete m_ballMeshBuffer;
+   m_ballMeshBuffer = nullptr;
    if (m_ballShader)
    {
       m_ballShader->SetTextureNull(SHADER_tex_ball_color);
@@ -1295,19 +1293,10 @@ void Player::InitBallShader()
 
    m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_pin3d.m_envRadianceTexture);
 
-   assert(m_ballIndexBuffer == nullptr);
    const bool lowDetailBall = (m_ptable->GetDetailLevel() < 10);
-   m_ballIndexBuffer = new IndexBuffer(m_pin3d.m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
-
-   // VB for normal ball
-   assert(m_ballVertexBuffer == nullptr);
-   m_ballVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
-
-   // load precomputed ball vertices into vertex buffer
-   Vertex3D_NoTex2 *buf;
-   m_ballVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-   memcpy(buf, lowDetailBall ? basicBallLo : basicBallMid, sizeof(Vertex3D_NoTex2)*(lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices));
-   m_ballVertexBuffer->unlock();
+   IndexBuffer* ballIndexBuffer = new IndexBuffer(m_pin3d.m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
+   VertexBuffer* ballVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, (float*)(lowDetailBall ? basicBallLo : basicBallMid));
+   m_ballMeshBuffer = new MeshBuffer(ballVertexBuffer, ballIndexBuffer, true);
 
    vec4 amb_lr = convertColor(m_ptable->m_lightAmbient, m_ptable->m_lightRange);
    amb_lr.x *= m_globalEmissionScale;
@@ -5424,7 +5413,7 @@ void Player::GetBallAspectRatio(const Ball * const pball, Vertex2D &stretch, con
    m_ballShader->SetTechnique("RenderBallReflection");
 
    m_ballShader->Begin();
-   m_pin3d.m_pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, ballVertexBuffer, 0, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, ballIndexBuffer, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
+   m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
    m_ballShader->End();
 
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
@@ -5847,7 +5836,7 @@ void Player::DrawBalls()
          m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBall);
 
       m_ballShader->Begin();
-      m_pin3d.m_pd3dPrimaryDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_ballVertexBuffer, 0, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, m_ballIndexBuffer, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
+      m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
       m_ballShader->End();
 
       // ball trails
