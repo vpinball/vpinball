@@ -48,29 +48,51 @@ MeshBuffer::MeshBuffer(const DWORD fvf, const PrimitiveType type, VertexBuffer* 
 {
 }
 
+MeshBuffer::MeshBuffer(MeshBuffer* base, const DWORD strippedVertexCount) 
+   : m_vertexFormat(base->m_vertexFormat)
+   , m_type(base->m_type)
+   , m_vb(base->m_vb)
+   , m_startVertex(base->m_startVertex)
+   , m_vertexCount(strippedVertexCount)
+   , m_ib(base->m_ib)
+   , m_startIndex(base->m_startIndex)
+   , m_indexCount(base->m_indexCount)
+   , m_triangleCount(ComputePrimitiveCount(base->m_type, base->m_ib != nullptr ? base->m_indexCount : strippedVertexCount))
+   , m_ownBuffers(false)
+{
+#ifdef ENABLE_SDL
+   m_vao = base->m_vao;
+   m_isSharedVAO = base->m_isSharedVAO;
+   m_isMeshView = true;
+#endif
+}
+
 MeshBuffer::~MeshBuffer()
 {
-   #ifdef ENABLE_SDL
-   if (m_isSharedVAO)
+#ifdef ENABLE_SDL
+   if (!m_isMeshView)
    {
-      // Shared VAO are ref counted
-      GLuint vb = m_vb->getBuffer();
-      GLuint ib = m_ib == nullptr ? 0 : m_ib->getBuffer();
-      std::vector<SharedVAO>::iterator existing = std::find_if(sharedVAOs.begin(), sharedVAOs.end(), [vb, ib](SharedVAO v) { return v.vb == vb && v.ib == ib; });
-      if (existing != sharedVAOs.end())
+      if (m_isSharedVAO)
       {
-         existing->ref_count--;
-         if (existing->ref_count == 0)
+         // Shared VAO are ref counted
+         GLuint vb = m_vb->getBuffer();
+         GLuint ib = m_ib == nullptr ? 0 : m_ib->getBuffer();
+         std::vector<SharedVAO>::iterator existing = std::find_if(sharedVAOs.begin(), sharedVAOs.end(), [vb, ib](SharedVAO v) { return v.vb == vb && v.ib == ib; });
+         if (existing != sharedVAOs.end())
          {
-            glDeleteVertexArrays(1, &existing->vao);
-            sharedVAOs.erase(existing);
+            existing->ref_count--;
+            if (existing->ref_count == 0)
+            {
+               glDeleteVertexArrays(1, &existing->vao);
+               sharedVAOs.erase(existing);
+            }
          }
       }
-   }
-   else if (m_vao != 0)
-   {
-      glDeleteVertexArrays(1, &m_vao);
-      m_vao = 0;
+      else if (m_vao != 0)
+      {
+         glDeleteVertexArrays(1, &m_vao);
+         m_vao = 0;
+      }
    }
    #endif
    if (m_ownBuffers)
