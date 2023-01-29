@@ -2234,13 +2234,8 @@ void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
    m_quadDynMeshBuffer->m_vb->unlock();
    DrawMesh(m_quadDynMeshBuffer);
 #else
-   /*Vertex3D_TexelOnly* bufvb;
-   m_quadDynVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::DISCARDCONTENTS);
-   memcpy(bufvb,vertices,4*sizeof(Vertex3D_TexelOnly));
-   m_quadDynVertexBuffer->unlock();
-   DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP,MY_D3DFVF_TEX,m_quadDynVertexBuffer,0,4,true);*/
-
-   DrawPrimitive(RenderDevice::TRIANGLESTRIP, MY_D3DFVF_TEX, vertices, 4); // having a VB and lock/copying stuff each time is slower :/
+   // having a VB and lock/copying stuff each time is slower :/
+   DrawPrimitive(RenderDevice::TRIANGLESTRIP, MY_D3DFVF_TEX, vertices, 4); 
 #endif
 }
 
