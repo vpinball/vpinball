@@ -104,8 +104,8 @@ void MeshBuffer::bind()
          }
       }
       // FIXME this supposes that this mesh buffer is always used with the same attribute layout.
-      // This happens to be true but it would be more clean to fix the attribute layout in the shaders
-      Shader::GetCurrentShader()->setAttributeFormat(m_vertexFormat);
+      // This happens to be true but it would be more clean to enforce the attribute layout in the shaders
+      Shader::GetCurrentShader()->setAttributeFormat(m_vb->m_fvf);
       curVAO = m_vao;
    }
    else 

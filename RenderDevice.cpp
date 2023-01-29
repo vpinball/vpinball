@@ -2167,7 +2167,7 @@ void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
    m_quadDynMeshBuffer->m_vb->unlock();
    DrawMesh(m_quadDynMeshBuffer, TRIANGLESTRIP, 0, 4);
 #else
-   // having a VB and lock/copying stuff each time is slower on DX9 :/
+   // having a VB and lock/copying stuff each time is slower on DX9 :/ (is it still true ? looks overly complicated for a very marginal benefit)
    ApplyRenderStates();
    m_stats_drawn_triangles += 2;
    SetVertexDeclaration(m_pVertexTexelDeclaration);
@@ -2212,32 +2212,6 @@ void RenderDevice::DrawMesh(MeshBuffer* mb, const PrimitiveTypes type, const DWO
       CHECKD3D(m_pD3DDevice->DrawIndexedPrimitive((D3DPRIMITIVETYPE)type, 0, 0, mb->m_vb->m_vertexCount, startIndice, np));
 #endif
    }
-   m_curDrawCalls++;
-}
-
-void RenderDevice::DrawIndexedPrimitiveVB(const PrimitiveTypes type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount)
-{
-   if (vb == nullptr || ib == nullptr) //!! happens for primitives that are grouped on player init render call?!?
-      return;
-
-   ApplyRenderStates();
-
-   const unsigned int np = ComputePrimitiveCount(type, indexCount);
-   m_stats_drawn_triangles += np;
-
-   MeshBuffer mb(vb, ib, false);
-   mb.bind();
-
-#ifdef ENABLE_SDL
-   const int offset = ib->getOffset() + (ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? 2 : 4) * startIndex;
-#ifndef __OPENGLES__
-   glDrawElementsBaseVertex(type, indexCount, ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)offset, vb->getOffset() + startVertex);
-#else
-   glDrawElements(type, indexCount, ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)(intptr_t)offset);
-#endif
-#else
-   CHECKD3D(m_pD3DDevice->DrawIndexedPrimitive((D3DPRIMITIVETYPE)type, startVertex, 0, vertexCount, startIndex, np));
-#endif
    m_curDrawCalls++;
 }
 

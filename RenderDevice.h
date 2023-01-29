@@ -251,11 +251,9 @@ private:
    RenderStateCache m_current_renderstate, m_renderstate;
 
 public:
+   void DrawMesh(MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount);
    void DrawTexturedQuad(const Vertex3D_TexelOnly* vertices);
    void DrawFullscreenTexturedQuad();
-   
-   void DrawIndexedPrimitiveVB(const PrimitiveTypes type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount);
-   void DrawMesh(MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount);
    
    void DrawGaussianBlur(Sampler* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size);
 
