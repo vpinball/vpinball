@@ -14,17 +14,10 @@ vector<MeshBuffer::SharedVAO> MeshBuffer::sharedVAOs;
 #include "Shader.h"
 #include "VertexBuffer.h"
 
-MeshBuffer::MeshBuffer(VertexBuffer* vb, const bool ownBuffers)
-   : MeshBuffer(vb, nullptr, ownBuffers)
-{
-}
-
-MeshBuffer::MeshBuffer(VertexBuffer* vb, IndexBuffer* ib, const bool ownBuffers)
-   : m_vb(vb)
-   , m_ib(ib)
-   , m_ownBuffers(ownBuffers)
+MeshBuffer::MeshBuffer(VertexBuffer* vb, IndexBuffer* ib) : m_vb(vb), m_ib(ib)
 #ifndef ENABLE_SDL
-   , m_vertexDeclaration(vb->m_fvf == MY_D3DFVF_NOTEX2_VERTEX ? m_vb->m_rd->m_pVertexNormalTexelDeclaration :
+   , m_vertexDeclaration(
+      vb->m_fvf == MY_D3DFVF_NOTEX2_VERTEX ? m_vb->m_rd->m_pVertexNormalTexelDeclaration :
       vb->m_fvf == MY_D3DTRANSFORMED_NOTEX2_VERTEX ? m_vb->m_rd->m_pVertexTrafoTexelDeclaration :
       vb->m_fvf == MY_D3DFVF_TEX ? m_vb->m_rd->m_pVertexTexelDeclaration : nullptr)
 #endif
@@ -55,12 +48,9 @@ MeshBuffer::~MeshBuffer()
       glDeleteVertexArrays(1, &m_vao);
       m_vao = 0;
    }
-   #endif
-   if (m_ownBuffers)
-   {
-      delete m_vb;
-      delete m_ib;
-   }
+#endif
+   delete m_vb;
+   delete m_ib;
 }
 
 #ifdef ENABLE_SDL

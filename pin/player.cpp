@@ -1296,7 +1296,7 @@ void Player::InitBallShader()
    const bool lowDetailBall = (m_ptable->GetDetailLevel() < 10);
    IndexBuffer* ballIndexBuffer = new IndexBuffer(m_pin3d.m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
    VertexBuffer* ballVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, (float*)(lowDetailBall ? basicBallLo : basicBallMid));
-   m_ballMeshBuffer = new MeshBuffer(ballVertexBuffer, ballIndexBuffer, true);
+   m_ballMeshBuffer = new MeshBuffer(ballVertexBuffer, ballIndexBuffer);
 
    vec4 amb_lr = convertColor(m_ptable->m_lightAmbient, m_ptable->m_lightRange);
    amb_lr.x *= m_globalEmissionScale;
@@ -1836,13 +1836,13 @@ HRESULT Player::Init()
 
       assert(m_ballDebugPoints == nullptr);
       VertexBuffer *ballDebugPoints = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, (unsigned int)ballDbgVtx.size(), 0, MY_D3DFVF_TEX, (float*) ballDbgVtx.data());
-      m_ballDebugPoints = new MeshBuffer(ballDebugPoints, true);
+      m_ballDebugPoints = new MeshBuffer(ballDebugPoints);
    }
 #endif
 
    assert(m_ballTrailMeshBuffer == nullptr);
    VertexBuffer* ballTrailVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, (MAX_BALL_TRAIL_POS - 2) * 2 + 4, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
-   m_ballTrailMeshBuffer = new MeshBuffer(ballTrailVertexBuffer, true);
+   m_ballTrailMeshBuffer = new MeshBuffer(ballTrailVertexBuffer);
 
    m_ptable->m_progressDialog.SetName("Starting Game Scripts..."s);
 

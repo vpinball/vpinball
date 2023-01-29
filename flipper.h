@@ -181,8 +181,7 @@ private:
 
       void UpdatePhysicsSettings();
 
-      MeshBuffer *m_batMeshBuffer = nullptr;
-      MeshBuffer *m_rubberMeshBuffer = nullptr;
+      MeshBuffer *m_meshBuffer = nullptr;
 
       HitFlipper *m_phitflipper;
       float m_lastAngle;

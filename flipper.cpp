@@ -90,10 +90,7 @@ Flipper::Flipper()
 
 Flipper::~Flipper()
 {
-   delete m_batMeshBuffer;
-   m_batMeshBuffer = nullptr;
-   delete m_rubberMeshBuffer;
-   m_rubberMeshBuffer = nullptr;
+   delete m_meshBuffer;
 }
 
 HRESULT Flipper::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
@@ -290,10 +287,8 @@ void Flipper::EndPlay()
 {
    if (m_phitflipper) // Failed player case
       m_phitflipper = nullptr;
-   delete m_batMeshBuffer;
-   m_batMeshBuffer = nullptr;
-   delete m_rubberMeshBuffer;
-   m_rubberMeshBuffer = nullptr;
+   delete m_meshBuffer;
+   m_meshBuffer = nullptr;
    IEditable::EndPlay();
 }
 
@@ -641,7 +636,7 @@ void Flipper::RenderDynamic()
    }
    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
    pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_batMeshBuffer, RenderDevice::TRIANGLELIST, 0, flipperBaseNumIndices);
+   pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, flipperBaseNumIndices);
    pd3dDevice->basicShader->End();
 
    //render rubber
@@ -660,7 +655,7 @@ void Flipper::RenderDynamic()
       }
 
       pd3dDevice->basicShader->Begin();
-      pd3dDevice->DrawMesh(m_rubberMeshBuffer, RenderDevice::TRIANGLELIST, flipperBaseNumIndices, flipperBaseNumIndices);
+      pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, flipperBaseNumIndices, flipperBaseNumIndices);
       pd3dDevice->basicShader->End();
    }
    g_pplayer->UpdateBasicShaderMatrix();
@@ -879,9 +874,8 @@ void Flipper::RenderSetup()
    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    GenerateBaseMesh(buf);
    vertexBuffer->unlock();
-   delete m_batMeshBuffer;
-   m_batMeshBuffer = new MeshBuffer(vertexBuffer, indexBuffer, true);
-   m_rubberMeshBuffer = new MeshBuffer(vertexBuffer, indexBuffer, false);
+   delete m_meshBuffer;
+   m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer);
    m_lastAngle = 123486.0f;
 }
 
