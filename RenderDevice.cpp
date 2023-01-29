@@ -666,8 +666,6 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     NVAPIinit = false;
 
     m_current_renderstate.state = m_renderstate.state = 0;
-    m_quadVertexBuffer = nullptr;
-    m_quadDynVertexBuffer = nullptr;
 
     m_stats_drawn_triangles = 0;
 
@@ -1189,9 +1187,6 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    CreateVertexDeclaration(VertexTrafoTexelElement, &m_pVertexTrafoTexelDeclaration);
 
    // Vertex buffers
-   m_quadVertexBuffer = new VertexBuffer(this, 4, 0, MY_D3DFVF_TEX); //!! have 2 for both devices?
-   Vertex3D_TexelOnly* bufvb;
-   RenderDevice::m_quadVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::WRITEONLY);
    static constexpr float verts[4 * 5] =
    {
        1.0f,  1.0f, 0.0f, 1.0f, 0.0f,
@@ -1199,11 +1194,12 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
        1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
       -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
    };
-   memcpy(bufvb, verts, 4 * sizeof(Vertex3D_TexelOnly));
-   RenderDevice::m_quadVertexBuffer->unlock();
+   VertexBuffer* quadVertexBuffer = new VertexBuffer(this, 4, USAGE_STATIC, MY_D3DFVF_TEX, verts);
+   m_quadMeshBuffer = new MeshBuffer(MY_D3DFVF_TEX, PrimitiveType::TRIANGLESTRIP, quadVertexBuffer, 0, 4, true);
 
 #ifdef ENABLE_SDL
-   m_quadDynVertexBuffer = new VertexBuffer(this, 4, USAGE_DYNAMIC, MY_D3DFVF_TEX);
+   VertexBuffer* quadDynVertexBuffer = new VertexBuffer(this, 4, USAGE_DYNAMIC, MY_D3DFVF_TEX);
+   m_quadDynMeshBuffer = new MeshBuffer(MY_D3DFVF_TEX, PrimitiveType::TRIANGLESTRIP, quadDynVertexBuffer, 0, 4, true);
 #endif
 
    //
@@ -1474,13 +1470,11 @@ void RenderDevice::FreeShader()
 
 RenderDevice::~RenderDevice()
 {
-   if (m_quadVertexBuffer)
-      m_quadVertexBuffer->release();
-   m_quadVertexBuffer = nullptr;
+   delete m_quadMeshBuffer;
+   m_quadMeshBuffer = nullptr;
 
-   if (m_quadDynVertexBuffer)
-      m_quadDynVertexBuffer->release();
-   m_quadDynVertexBuffer = nullptr;
+   delete m_quadDynMeshBuffer;
+   m_quadDynMeshBuffer = nullptr;
 
 #ifndef ENABLE_SDL
    //
@@ -1558,6 +1552,9 @@ RenderDevice::~RenderDevice()
    if (m_dwm_was_enabled)
       mDwmEnableComposition(DWM_EC_ENABLECOMPOSITION);
 #else
+   MeshBuffer::ClearSharedBuffers();
+   VertexBuffer::ClearSharedBuffers();
+   IndexBuffer::ClearSharedBuffers();
    for (auto binding : m_samplerBindings)
       delete binding;
    m_samplerBindings.clear();
@@ -2232,10 +2229,10 @@ void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
 {
 #ifdef ENABLE_SDL
    Vertex3D_TexelOnly* bufvb;
-   m_quadDynVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::DISCARDCONTENTS);
+   m_quadDynMeshBuffer->m_vb->lock(0, 0, (void**)&bufvb, VertexBuffer::DISCARDCONTENTS);
    memcpy(bufvb, vertices, 4 * sizeof(Vertex3D_TexelOnly));
-   m_quadDynVertexBuffer->unlock();
-   DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP, MY_D3DFVF_TEX, m_quadDynVertexBuffer, 0, 4, true);
+   m_quadDynMeshBuffer->m_vb->unlock();
+   DrawMesh(m_quadDynMeshBuffer);
 #else
    /*Vertex3D_TexelOnly* bufvb;
    m_quadDynVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::DISCARDCONTENTS);
@@ -2249,16 +2246,7 @@ void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
 
 void RenderDevice::DrawFullscreenTexturedQuad()
 {
-   /*constexpr float verts[4 * 5] =
-   {
-      1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-      -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-      1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
-      -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
-   };
-   DrawTexturedQuad((Vertex3D_TexelOnly*)verts);*/
-
-   DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP,MY_D3DFVF_TEX,m_quadVertexBuffer,0,4,false);
+   DrawMesh(m_quadMeshBuffer);
 }
 
 void RenderDevice::DrawPrimitiveVB(const PrimitiveTypes type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, const bool stereo)
@@ -2269,17 +2257,13 @@ void RenderDevice::DrawPrimitiveVB(const PrimitiveTypes type, const DWORD fvf, V
    ApplyRenderStates();
 
 #ifdef ENABLE_SDL
-   MeshBuffer mb(fvf, vb, startVertex, vertexCount, false);
+   MeshBuffer mb(fvf, PrimitiveType::TRIANGLELIST, vb, startVertex, vertexCount, false);
    mb.bind();
    glDrawArrays(type, vb->getOffset() + startVertex, vertexCount);
 #else
-   VertexDeclaration * declaration = fvfToDecl(fvf);
-   SetVertexDeclaration(declaration);
-
+   SetVertexDeclaration(fvfToDecl(fvf));
    vb->bind();
-   const HRESULT hr = m_pD3DDevice->DrawPrimitive((D3DPRIMITIVETYPE)type, startVertex, np);
-   if (FAILED(hr))
-      ReportError("Fatal Error: DrawPrimitive failed!", hr, __FILE__, __LINE__);
+   CHECKD3D(m_pD3DDevice->DrawPrimitive((D3DPRIMITIVETYPE)type, startVertex, np));
 #endif
    m_curDrawCalls++;
 }
@@ -2290,18 +2274,31 @@ void RenderDevice::DrawMesh(MeshBuffer* mb)
    m_stats_drawn_triangles += mb->m_triangleCount;
    mb->bind();
 #ifdef ENABLE_SDL
-   const int offset = mb->m_ib->getOffset() + (mb->m_ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? 2 : 4) * mb->m_startIndex;
+   if (mb->m_ib == nullptr)
+   {
+      glDrawArrays(mb->m_type, mb->m_vb->getOffset() + mb->m_startVertex, mb->m_vertexCount);
+   }
+   else
+   {
+      const int offset = mb->m_ib->getOffset() + (mb->m_ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? 2 : 4) * mb->m_startIndex;
 #ifndef __OPENGLES__
-   glDrawElementsBaseVertex(
-      TRIANGLELIST, mb->m_indexCount, mb->m_ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)offset, mb->m_vb->getOffset() + mb->m_startVertex);
+      glDrawElementsBaseVertex(mb->m_type, mb->m_indexCount, mb->m_ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)offset,
+         mb->m_vb->getOffset() + mb->m_startVertex);
 #else
-   glDrawElements(TRIANGLELIST, indexCount, mb->m_ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)(intptr_t)offset);
+      glDrawElements(mb->m_type, indexCount, mb->m_ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)(intptr_t)offset);
 #endif
-
+   }
 #else
    mb->bind();
    SetVertexDeclaration(fvfToDecl(mb->m_vertexFormat));
-   CHECKD3D(m_pD3DDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, mb->m_startVertex, 0, mb->m_vertexCount, mb->m_startIndex, mb->m_triangleCount));
+   if (mb->m_ib == nullptr)
+   {
+      CHECKD3D(m_pD3DDevice->DrawPrimitive((D3DPRIMITIVETYPE)mb->m_type, mb->m_startVertex, mb->m_triangleCount));
+   }
+   else
+   {
+      CHECKD3D(m_pD3DDevice->DrawIndexedPrimitive((D3DPRIMITIVETYPE)mb->m_type, mb->m_startVertex, 0, mb->m_vertexCount, mb->m_startIndex, mb->m_triangleCount));
+   }
 #endif
    m_curDrawCalls++;
 }
@@ -2317,7 +2314,7 @@ void RenderDevice::DrawIndexedPrimitiveVB(const PrimitiveTypes type, const DWORD
    m_stats_drawn_triangles += np;
 
 #ifdef ENABLE_SDL
-   MeshBuffer mb(fvf, vb, startVertex, vertexCount, ib, startIndex, indexCount, false);
+   MeshBuffer mb(fvf, ::TRIANGLELIST, vb, startVertex, vertexCount, ib, startIndex, indexCount, false);
    mb.bind();
    Shader::GetCurrentShader()->setAttributeFormat(fvf);
    const int offset = ib->getOffset() + (ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? 2 : 4) * startIndex;

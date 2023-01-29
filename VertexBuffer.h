@@ -21,6 +21,8 @@ public:
    };
 
    VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, const DWORD usage, const DWORD fvf);
+   VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, const DWORD usage, const DWORD fvf, const float* verts);
+   ~VertexBuffer();
 
    void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags);
    void unlock();
@@ -39,6 +41,8 @@ public:
    GLuint getBuffer() const { return m_buffer; }
    bool isUploaded() const { return m_isUploaded; }
    bool useSharedBuffer() const { return m_sharedBuffer; }
+
+   static void ClearSharedBuffers();
 
 private:
    GLuint m_count;

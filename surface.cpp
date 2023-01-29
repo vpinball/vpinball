@@ -707,7 +707,6 @@ void Surface::GenerateMesh(vector<Vertex3D_NoTex2> &topBuf, vector<Vertex3D_NoTe
 
    // draw top
    SAFE_VECTOR_DELETE(rgtexcoord);
-   //if (m_d.m_visible)      // Visible could still be set later if rendered dynamically
    {
       topBottomIndices.clear();
 
@@ -725,6 +724,16 @@ void Surface::GenerateMesh(vector<Vertex3D_NoTex2> &topBuf, vector<Vertex3D_NoTe
          // no polys to render leave vertex buffer undefined 
          return;
       }
+
+      // Offset indices to directly point to right vertices in the vertex buffer
+      for (unsigned int i = 0; i < m_numPolys * 3; i++)
+         topBottomIndices[i] = topBottomIndices[i] + m_numVertices * 4;
+      // Append indices for dropped top
+      for (unsigned int i = 0; i < m_numPolys * 3; i++)
+         topBottomIndices.push_back(topBottomIndices[i] + m_numVertices);
+      // Append indices for bottom
+      for (unsigned int i = 0; i < m_numPolys * 3; i++)
+         topBottomIndices.push_back(topBottomIndices[i] + m_numVertices * 2);
 
       const float heightNotDropped = m_d.m_heighttop;
       const float heightDropped = m_d.m_heightbottom + 0.1f;
@@ -877,12 +886,15 @@ void Surface::PrepareWallsAtHeight()
    delete m_topMeshBuffer;
    delete m_topDroppedMeshBuffer;
    delete m_bottomMeshBuffer;
-   m_sideMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, VBuffer, 0, m_numVertices * 4, IBuffer, 0, m_numVertices * 6, true);
+   m_sideMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, VBuffer, 0, m_numVertices * 4, IBuffer, 0, m_numVertices * 6, true);
    if (!topBottomBuf.empty())
    {
-      m_topMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, VBuffer, m_numVertices * 4, m_numVertices, IBuffer, m_numVertices * 6, m_numPolys * 3, false);
+      /* m_topMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, VBuffer, m_numVertices * 4, m_numVertices, IBuffer, m_numVertices * 6, m_numPolys * 3, false);
       m_topDroppedMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, VBuffer, m_numVertices * 5, m_numVertices, IBuffer, m_numVertices * 6, m_numPolys * 3, false);
-      m_bottomMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, VBuffer, m_numVertices * 6, m_numVertices, IBuffer, m_numVertices * 6, m_numPolys * 3, false);
+      m_bottomMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, VBuffer, m_numVertices * 6, m_numVertices, IBuffer, m_numVertices * 6, m_numPolys * 3, false);*/
+      m_topMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, VBuffer, 0, m_numVertices, IBuffer, m_numVertices * 6, m_numPolys * 3, false);
+      m_topDroppedMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, VBuffer, 0, m_numVertices, IBuffer, m_numVertices * 6 + m_numPolys * 3, m_numPolys * 3, false);
+      m_bottomMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, VBuffer, 0, m_numVertices, IBuffer, m_numVertices * 6 + m_numPolys * 3 * 2, m_numPolys * 3, false);
    }
 }
 
@@ -953,7 +965,7 @@ void Surface::PrepareSlingshots()
    slingIBuffer->unlock();
 
    delete m_slingshotMeshBuffer;
-   m_slingshotMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, slingshotVBuffer, 0, n_lines * 9, slingIBuffer, 0, n_lines * 24, true);
+   m_slingshotMeshBuffer = new MeshBuffer(MY_D3DFVF_NOTEX2_VERTEX, TRIANGLELIST, slingshotVBuffer, 0, n_lines * 9, slingIBuffer, 0, n_lines * 24, true);
 }
 
 void Surface::RenderSetup()

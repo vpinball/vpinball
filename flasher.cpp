@@ -386,7 +386,7 @@ void Flasher::RenderSetup()
    NumVideoBytes += (int)(m_numVertices * sizeof(Vertex3D_TexelOnly));
 
    delete m_meshBuffer;
-   m_meshBuffer = new MeshBuffer(MY_D3DFVF_TEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numPolys * 3, true);
+   m_meshBuffer = new MeshBuffer(MY_D3DFVF_TEX, TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numPolys * 3, true);
 
    if (m_vertices)
       delete[] m_vertices;

@@ -372,10 +372,10 @@ private:
    bool m_dwm_was_enabled;
    bool m_dwm_enabled;
 
-public:
-   VertexBuffer* m_quadVertexBuffer;    // internal vb for rendering quads //!! only on primary device for now!
-   VertexBuffer* m_quadDynVertexBuffer; // internal vb for rendering dynamic quads //!!
+   MeshBuffer* m_quadMeshBuffer = nullptr; // internal vb for rendering quads
+   MeshBuffer* m_quadDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads
 
+public:
    // for caching
    VertexBuffer* m_curVertexBuffer = nullptr;
    IndexBuffer* m_curIndexBuffer = nullptr;

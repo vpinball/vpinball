@@ -14,40 +14,79 @@ vector<MeshBuffer::SharedVAO> MeshBuffer::sharedVAOs;
 #include "Shader.h"
 #include "VertexBuffer.h"
 
-MeshBuffer::MeshBuffer(const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, const bool ownBuffers)
-   : MeshBuffer(fvf, vb, startVertex, vertexCount, nullptr, 0, 0, ownBuffers)
+MeshBuffer::MeshBuffer(const DWORD fvf, const PrimitiveType type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, const bool ownBuffers)
+   : MeshBuffer(fvf, type, vb, startVertex, vertexCount, nullptr, 0, 0, ownBuffers)
 {
 }
 
-MeshBuffer::MeshBuffer(const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount, const bool ownBuffers)
+static unsigned int ComputePrimitiveCount(const PrimitiveType type, const int vertexCount)
+{
+   switch (type)
+   {
+   case PrimitiveType::POINTLIST: return vertexCount;
+   case PrimitiveType::LINELIST: return vertexCount / 2;
+   case PrimitiveType::LINESTRIP: return std::max(0, vertexCount - 1);
+   case PrimitiveType::TRIANGLELIST: return vertexCount / 3;
+   case PrimitiveType::TRIANGLESTRIP:
+   case PrimitiveType::TRIANGLEFAN: return std::max(0, vertexCount - 2);
+   default: return 0;
+   }
+}
+
+MeshBuffer::MeshBuffer(const DWORD fvf, const PrimitiveType type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex,
+   const DWORD indexCount, const bool ownBuffers)
    : m_vertexFormat(fvf)
+   , m_type(type)
    , m_vb(vb)
    , m_startVertex(startVertex)
    , m_vertexCount(vertexCount)
    , m_ib(ib)
    , m_startIndex(startIndex)
    , m_indexCount(indexCount)
-   , m_triangleCount(ib != nullptr ? indexCount / 3 : vertexCount / 3)
+   , m_triangleCount(ComputePrimitiveCount(type, ib != nullptr ? indexCount : vertexCount))
    , m_ownBuffers(ownBuffers)
 {
 }
 
 MeshBuffer::~MeshBuffer()
 {
+   #ifdef ENABLE_SDL
+   if (m_isSharedVAO)
+   {
+      // Shared VAO are ref counted
+      GLuint vb = m_vb->getBuffer();
+      GLuint ib = m_ib == nullptr ? 0 : m_ib->getBuffer();
+      std::vector<SharedVAO>::iterator existing = std::find_if(sharedVAOs.begin(), sharedVAOs.end(), [vb, ib](SharedVAO v) { return v.vb == vb && v.ib == ib; });
+      if (existing != sharedVAOs.end())
+      {
+         existing->ref_count--;
+         if (existing->ref_count == 0)
+         {
+            glDeleteVertexArrays(1, &existing->vao);
+            sharedVAOs.erase(existing);
+         }
+      }
+   }
+   else if (m_vao != 0)
+   {
+      glDeleteVertexArrays(1, &m_vao);
+      m_vao = 0;
+   }
+   #endif
    if (m_ownBuffers)
    {
       SAFE_BUFFER_RELEASE(m_vb);
       SAFE_BUFFER_RELEASE(m_ib);
    }
-   #ifdef ENABLE_SDL
-   if (m_vao != 0 && !m_isSharedVAO)
-   {
-      // FIXME perform ref counting for shared VAO
-      glDeleteVertexArrays(1, &m_vao);
-      m_vao = 0;
-   }
-   #endif
 }
+
+#ifdef ENABLE_SDL
+void MeshBuffer::ClearSharedBuffers()
+{
+   // FIXME add some debug logging since a well behaving application should not have any shared VAO still alive at this point
+   sharedVAOs.clear();
+}
+#endif
 
 void MeshBuffer::bind()
 {
@@ -70,7 +109,7 @@ void MeshBuffer::bind()
          std::vector<SharedVAO>::iterator existing = std::find_if(sharedVAOs.begin(), sharedVAOs.end(), [vb, ib](SharedVAO v) { return v.vb == vb && v.ib == ib; });
          if (existing == sharedVAOs.end())
          {
-            SharedVAO vao(vb, ib, m_vao, 1);
+            SharedVAO vao = { vb, ib, m_vao, 1 };
             sharedVAOs.push_back(vao);
          }
          else
@@ -158,6 +197,19 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const vector<unsigned int>& indices)
    : IndexBuffer(rd, (unsigned int)indices.size(), indices.data())
 {
 }
+
+IndexBuffer::~IndexBuffer()
+{
+   release();
+}
+
+#ifdef ENABLE_SDL
+void IndexBuffer::ClearSharedBuffers()
+{
+   // FIXME add some debug logging since a well behaving application should not have any pending upload here
+   notUploadedBuffers.clear();
+}
+#endif
 
 void IndexBuffer::lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags)
 {
