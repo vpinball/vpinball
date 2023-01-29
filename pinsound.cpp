@@ -142,6 +142,9 @@ HRESULT PinSound::ReInitialize()
 		   g_pvp->MessageBox(("BASS music/sound library cannot create stream \"" + m_szPath + "\" (error " + std::to_string(code) + ": " + bla2 + ')').c_str(), "Error", MB_ICONERROR);
 		   return E_FAIL;
 	   }
+	   else {
+		   BASS_ChannelGetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, &m_freq);
+	   }
 
 	   return S_OK;
    }
@@ -263,18 +266,15 @@ void PinSound::Play(const float volume, const float randompitch, const int pitch
 
       if (randompitch > 0.f)
       {
-         float freq;
-         BASS_ChannelGetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, &freq);
-         freq += pitch;
+         float freq = m_freq + (float)pitch;
          const float rndh = rand_mt_01();
          const float rndl = rand_mt_01();
-         BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, freq + freq * randompitch * rndh * rndh - freq * randompitch * rndl * rndl * 0.5f);
+         BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, freq + (freq * randompitch * rndh * rndh) - (freq * randompitch * rndl * rndl * 0.5f));
       }
       else if (pitch != 0)
       {
-         float freq;
-         BASS_ChannelGetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, &freq);
-         BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, (float)(freq + pitch));
+         float freq = m_freq + (float)pitch;
+         BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, freq);
       }
 
       const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault(regKey[RegName::Player], "Sound3D"s, (int)SNDCFG_SND3D2CH);
@@ -326,12 +326,15 @@ void PinSound::Play(const float volume, const float randompitch, const int pitch
          break;
       }
 
-      BASS_ChannelPlay(m_BASSstream, restart ? fTrue : fFalse);
-
       if (flags & DSBPLAY_LOOPING)
          BASS_ChannelFlags(m_BASSstream, BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
       else
          BASS_ChannelFlags(m_BASSstream, 0, BASS_SAMPLE_LOOP);
+
+      if (BASS_ChannelIsActive(m_BASSstream) != BASS_ACTIVE_PLAYING)
+         BASS_ChannelPlay(m_BASSstream, true);
+      else if (restart)
+         BASS_ChannelSetPosition(m_BASSstream, 0, BASS_POS_BYTE);
    }
 }
 
@@ -590,6 +593,9 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 		   BASS_ErrorMapCode(code, bla2);
 		   g_pvp->MessageBox(("BASS music/sound library cannot load \"" + strFileName + "\" (error " + std::to_string(code) + ": " + bla2 + ')').c_str(), "Error", MB_ICONERROR);
 		   return nullptr;
+	   }
+	   else {
+		   BASS_ChannelGetAttribute(pps->m_BASSstream, BASS_ATTRIB_FREQ, &pps->m_freq);
 	   }
    }
 
