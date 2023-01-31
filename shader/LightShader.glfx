@@ -18,8 +18,8 @@ layout(std140) uniform matrixBlock {
 
 
 ////VERTEX
-in vec3 vPosition;
-in vec2 tc;
+layout(location=0) in vec3 vPosition;
+layout(location=1) in vec2 tc;
 out vec3 tablePos_gs;
 
 
