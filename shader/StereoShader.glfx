@@ -100,8 +100,8 @@ float3 anaglyph(const float3 L, const float3 R)
 
 ////VERTEX
 
-in vec3 vPosition;
-in vec2 tc;
+layout(location=0) in vec3 vPosition;
+layout(location=1) in vec2 tc;
 
 out vec2 tex0;
 

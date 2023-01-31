@@ -193,8 +193,8 @@ float3 FBColorGrade(float3 color)
 
 ////vs_main_no_trafo
 
-in vec3 vPosition;
-in vec2 tc;
+layout(location=0) in vec3 vPosition;
+layout(location=1) in vec2 tc;
 
 // Pixel perfect coordinates of corresponding sample from source texture (tex_fb_filtered/tex_fb_unfiltered/tex_mirror/...)
 out vec2 tex0;
@@ -208,8 +208,8 @@ void main()
 
 ////vs_main_no_trafo_subpixel
 
-in vec3 vPosition;
-in vec2 tc;
+layout(location=0) in vec3 vPosition;
+layout(location=1) in vec2 tc;
 
 // Pixel perfect coordinates of corresponding sample from source texture (tex_fb_filtered/tex_fb_unfiltered/tex_mirror/...)
 out vec2 tex0;
@@ -224,8 +224,8 @@ void main()
 
 ////vs_main_no_trafo_zoomed
 
-in vec3 vPosition;
-in vec2 tc;
+layout(location=0) in vec3 vPosition;
+layout(location=1) in vec2 tc;
 
 // Pixel perfect coordinates of corresponding sample from source texture (tex_fb_filtered/tex_fb_unfiltered/tex_mirror/...)
 out vec2 tex0;

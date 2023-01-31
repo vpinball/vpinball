@@ -71,6 +71,8 @@ void MeshBuffer::bind()
       glGenVertexArrays(1, &m_vao);
       glBindVertexArray(m_vao);
       m_vb->bind();
+      // this needs that the attribute layout is enforced in the shaders using layout(location=...)
+      Shader::GetCurrentShader()->setAttributeFormat(m_vb->m_fvf);
       if (m_ib)
          m_ib->bind();
       // If index & vertex buffer are using shared buffers (for static objects), then this buffer should use a shared VAO
@@ -93,9 +95,6 @@ void MeshBuffer::bind()
             glBindVertexArray(m_vao);
          }
       }
-      // FIXME this supposes that this mesh buffer is always used with the same attribute layout.
-      // This happens to be true but it would be more clean to enforce the attribute layout in the shaders
-      Shader::GetCurrentShader()->setAttributeFormat(m_vb->m_fvf);
       curVAO = m_vao;
    }
    else 
@@ -106,10 +105,14 @@ void MeshBuffer::bind()
          curVAO = m_vao;
       }
       // Upload any pending data to GPU buffer
-      if (!m_vb->isUploaded())
+      // FIXME this is broken, so force binding
+      if (true || !m_vb->isUploaded() || (m_ib && !m_vb->isUploaded()))
+      {
          m_vb->bind();
-      if (m_ib && !m_vb->isUploaded())
-         m_ib->bind();
+         Shader::GetCurrentShader()->setAttributeFormat(m_vb->m_fvf);
+         if (m_ib)
+            m_ib->bind();
+      }
    }
 #else
    m_vb->bind();

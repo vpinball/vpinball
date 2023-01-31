@@ -179,9 +179,9 @@ float3 compute_refraction(const float3 pos, const float2 screenSpace, const floa
 
 ////vs_main
 
-in vec3 vPosition;
-in vec3 vNormal;
-in vec2 tc;
+layout(location=0) in vec3 vPosition;
+layout(location=1) in vec3 vNormal;
+layout(location=2) in vec2 tc;
 
 out vec2 tex01_gs;
 out vec3 tablePos_gs;
@@ -201,9 +201,9 @@ void main()
 
 ////vs_notex_main
 
-in vec3 vPosition;
-in vec3 vNormal;
-in vec2 tc;
+layout(location=0) in vec3 vPosition;
+layout(location=1) in vec3 vNormal;
+layout(location=2) in vec2 tc;
 
 out vec3 tablePos_gs;
 out vec3 worldPos_gs;
@@ -220,7 +220,7 @@ void main()
 
 ////vs_depth_only_main_without_texture
 
-in vec3 vPosition;
+layout(location=0) in vec3 vPosition;
 
 void main()
 { 
@@ -229,8 +229,8 @@ void main()
 
 ////vs_depth_only_main_with_texture
 
-in vec3 vPosition;
-in vec2 tc;
+layout(location=0) in vec3 vPosition;
+layout(location=1) in vec2 tc;
 
 out vec2 tex0_gs;
 

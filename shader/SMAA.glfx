@@ -90,8 +90,8 @@ out vec4 color;
 
 ////GLSL_SMAAEdgeDetectionVS
 
-in vec3 vPosition;
-in vec2 tc;
+layout(location=0) in vec3 vPosition;
+layout(location=1) in vec2 tc;
 
 out vec2 texcoord;
 out vec4[3] offset;
@@ -105,8 +105,8 @@ void main()
 
 ////GLSL_SMAABlendingWeightCalculationVS
 
-in vec3 vPosition;
-in vec2 tc;
+layout(location=0) in vec3 vPosition;
+layout(location=1) in vec2 tc;
 
 out vec2 texcoord;
 out vec4[3] offset;
@@ -121,8 +121,8 @@ void main()
 
 ////GLSL_SMAANeighborhoodBlendingVS
 
-in vec3 vPosition;
-in vec2 tc;
+layout(location=0) in vec3 vPosition;
+layout(location=1) in vec2 tc;
 
 out vec2 texcoord;
 out vec4 offset;
