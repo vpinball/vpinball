@@ -25,6 +25,7 @@ public:
    };
 
    BaseTexture(const unsigned int w, const unsigned int h, const Format format);
+   ~BaseTexture() = default;
 
    unsigned int width() const  { return m_width; }
    unsigned int height() const { return m_height; }

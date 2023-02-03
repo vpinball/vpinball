@@ -1147,6 +1147,8 @@ void Ramp::PrepareHabitrail()
       m_meshBuffer = new MeshBuffer(dynamicVertexBuffer, dynamicIndexBuffer);
       m_numVertices *= 2;
       m_numIndices *= 2;
+      delete[] vertices;
+      delete[] indices;
       break;
    }
    case RampType3WireLeft:
@@ -1175,6 +1177,8 @@ void Ramp::PrepareHabitrail()
       m_meshBuffer = new MeshBuffer(dynamicVertexBuffer, dynamicIndexBuffer);
       m_numVertices *= 3;
       m_numIndices *= 3;
+      delete[] vertices;
+      delete[] indices;
       break;
    }
    case RampType4Wire:
@@ -1206,8 +1210,13 @@ void Ramp::PrepareHabitrail()
       m_meshBuffer = new MeshBuffer(dynamicVertexBuffer, dynamicIndexBuffer);
       m_numVertices *= 4;
       m_numIndices *= 4;
+      delete[] vertices;
+      delete[] indices;
       break;
    }
+   default:
+      assert(!"unknown ramp type");
+      break;
    }
 
    delete[] m_vertBuffer;

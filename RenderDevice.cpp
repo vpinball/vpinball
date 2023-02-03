@@ -1638,6 +1638,7 @@ void RenderDevice::UploadAndSetSMAATextures()
    BaseTexture* searchBaseTex = new BaseTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, BaseTexture::BW);
    memcpy(searchBaseTex->data(), searchTexBytes, SEARCHTEX_SIZE);
    m_SMAAsearchTexture = new Sampler(this, searchBaseTex, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE);
+   delete searchBaseTex;
 
    // FIXME use standard BaseTexture / Sampler code instead
 #ifdef ENABLE_SDL

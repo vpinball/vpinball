@@ -4245,6 +4245,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
          return false;
       }
       m_materials.push_back(rpb);
+      ::GlobalFree(hMem);
       break;
    }
    case FID(RPRB):
@@ -4263,6 +4264,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
          return false;
       }
       m_vrenderprobe.push_back(rpb);
+      ::GlobalFree(hMem);
       break;
    }
    }
