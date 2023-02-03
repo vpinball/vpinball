@@ -49,7 +49,7 @@ uniform sampler2D tex_ball_decal; // ball decal
 uniform sampler2D tex_env; // envmap
 uniform sampler2D tex_diffuse_env; // envmap radiance
 
-uniform bool is_metal = false;
+uniform bool is_metal;
 
 #include "Material_GL.fxh"
 

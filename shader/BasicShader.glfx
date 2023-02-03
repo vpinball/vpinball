@@ -24,7 +24,7 @@ layout(std140) uniform matrixBlock {
 	mat4 matWorldViewProj[eyes];
 };
 
-uniform bool ignoreStereo = false; // Must be able to force only one invocation for drawing bulb light texture
+uniform bool ignoreStereo; // Must be able to force only one invocation for drawing bulb light texture
 
 uniform vec4 clip_planes[eyes];
 

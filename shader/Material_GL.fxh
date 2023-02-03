@@ -38,7 +38,7 @@ uniform float2 fenvEmissionScale_TexWidth;
 
 uniform float2 fDisableLighting_top_below;
 
-uniform float fSceneScale = 1.0;
+uniform float fSceneScale;
 
 //
 // Material Params

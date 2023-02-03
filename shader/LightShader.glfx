@@ -28,7 +28,7 @@ out vec3 tablePos_gs;
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
 
-uniform bool ignoreStereo = false; // Must be able to force only one invocation for drawing bulb light texture
+uniform bool ignoreStereo; // Must be able to force only one invocation for drawing bulb light texture
 
 // Use geometry invocations for stereo rendering
 #if (eyes == 1)
