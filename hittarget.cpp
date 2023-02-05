@@ -808,6 +808,11 @@ void HitTarget::RenderSetup()
    m_transformedVertices.resize(m_numVertices);
 
    GenerateMesh(m_transformedVertices);
+   delete m_meshBuffer;
+   VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, (float *)m_transformedVertices.data());
+   IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, m_indices);
+   m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer);
+
    m_moveAnimationOffset = 0.0f;
    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple)
    {
@@ -819,11 +824,6 @@ void HitTarget::RenderSetup()
            return;
        }
    }
-
-   delete m_meshBuffer;
-   VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, (float *)m_transformedVertices.data());
-   IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, m_indices);
-   m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer);
 }
 
 void HitTarget::RenderStatic()
