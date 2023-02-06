@@ -857,7 +857,8 @@ void Surface::PrepareWallsAtHeight()
 
    // Offset indices to directly point to the right vertices in the vertex buffer
    for (unsigned int i = 0; i < m_numPolys * 3; i++)
-      topBottomIndices[i] = topBottomIndices[i] + sideBuf.size();
+      topBottomIndices[i] += (WORD)sideBuf.size();
+   topBottomIndices.reserve(m_numPolys*3 * 3);
    // Append indices for dropped top
    for (unsigned int i = 0; i < m_numPolys * 3; i++)
       topBottomIndices.push_back(topBottomIndices[i] + m_numVertices);
