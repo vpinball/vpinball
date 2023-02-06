@@ -430,7 +430,7 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
    if (!success)
       success = GetTextFileFromDirectory(PATH_TABLES  + szFileName, string(), pContents);
 
-   return success ? S_OK : E_FAIL;
+   return success ? S_OK : S_FALSE;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
@@ -443,7 +443,7 @@ STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
       {
          szPath = PATH_USER;
          if (!DirExists(szPath))
-            return E_FAIL;
+            return S_FALSE;
       }
    }
    const WCHAR *const wzPath = MakeWide(szPath);
@@ -463,7 +463,7 @@ STDMETHODIMP ScriptGlobalTable::get_TablesDirectory(BSTR *pVal)
       {
          szPath = PATH_TABLES;
          if (!DirExists(szPath))
-            return E_FAIL;
+            return S_FALSE;
       }
    }
    const WCHAR *const wzPath = MakeWide(szPath);
@@ -483,7 +483,7 @@ STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(BSTR *pVal)
       {
          szPath = PATH_MUSIC;
          if (!DirExists(szPath))
-            return E_FAIL;
+            return S_FALSE;
       }
    }
    const WCHAR *const wzPath = MakeWide(szPath);
@@ -503,13 +503,12 @@ STDMETHODIMP ScriptGlobalTable::get_ScriptsDirectory(BSTR *pVal)
       {
          szPath = PATH_SCRIPTS;
          if (!DirExists(szPath))
-            return E_FAIL;
+            return S_FALSE;
       }
    }
    const WCHAR *const wzPath = MakeWide(szPath);
    *pVal = SysAllocString(wzPath);
    delete [] wzPath;
-
 
    return S_OK;
 }
