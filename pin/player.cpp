@@ -4923,9 +4923,15 @@ void Player::LockForegroundWindow(const bool enable)
     if (m_fullScreen || (m_wnd_width == m_screenwidth && m_wnd_height == m_screenheight)) // detect windowed fullscreen
     {
         if(enable)
-            while (ShowCursor(FALSE) >= 0) ;
-        else
+        {
             while (ShowCursor(TRUE) < 0) ;
+            while (ShowCursor(FALSE) >= 0) ;
+        }
+        else
+        {
+            while (ShowCursor(FALSE) >= 0) ;
+            while (ShowCursor(TRUE) < 0) ;
+        }
     }
 
 #if(_WIN32_WINNT >= 0x0500)
@@ -5253,11 +5259,15 @@ void Player::Render()
          }
          else if ((m_closeType == 0) && !g_pvp->m_disable_pause_menu)
          {
+            while(ShowCursor(FALSE)>=0) ;
             while(ShowCursor(TRUE)<0) ;
             option = DialogBox(g_pvp->theInstance, MAKEINTRESOURCE(IDD_GAMEPAUSE), GetHwnd(), PauseProc);
             if (option != ID_DEBUGWINDOW && option != ID_QUIT)
                if (g_pplayer->m_fullScreen || (g_pplayer->m_wnd_width == g_pplayer->m_screenwidth && g_pplayer->m_wnd_height == g_pplayer->m_screenheight)) // detect windowed fullscreen
+               {
+                  while(ShowCursor(TRUE)<0) ;
                   while(ShowCursor(FALSE)>=0) ;
+               }
          }
          else //m_closeType == all others
          {
@@ -5284,6 +5294,7 @@ void Player::Render()
       {
           m_debugMode = true;
           m_showDebugger = false;
+          while(ShowCursor(FALSE)>=0) ;
           while(ShowCursor(TRUE)<0) ;
 
           if (!m_debuggerDialog.IsWindow())

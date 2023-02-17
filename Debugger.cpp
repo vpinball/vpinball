@@ -194,7 +194,10 @@ void DebuggerDialog::OnClose()
     g_pplayer->m_showDebugger = false;
     ShowWindow(SW_HIDE);
     if (g_pplayer->m_fullScreen || (g_pplayer->m_wnd_width == g_pplayer->m_screenwidth && g_pplayer->m_wnd_height == g_pplayer->m_screenheight)) // detect windowed fullscreen
-        while (ShowCursor(FALSE) >= 0) ;
+    {
+        while (ShowCursor(TRUE)<0) ;
+        while (ShowCursor(FALSE)>=0) ;
+    }
 }
 
 LRESULT DebuggerDialog::OnNotify(WPARAM wparam, LPARAM lparam)
