@@ -540,6 +540,22 @@ STDMETHODIMP ScriptGlobalTable::get_PlatformBits(BSTR *pVal)
    return S_OK;
 }
 
+STDMETHODIMP ScriptGlobalTable::put_ShowCursor(VARIANT_BOOL enable)
+{
+   if(VBTOb(enable))
+   {
+      while (ShowCursor(TRUE) < 0) ;
+      while (ShowCursor(FALSE) >= 0) ;
+   }
+   else
+   {
+      while (ShowCursor(FALSE) >= 0) ;
+      while (ShowCursor(TRUE) < 0) ;
+   }
+
+   return S_OK;
+}
+
 #ifdef _WIN64
 STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(SIZE_T *pVal)
 #else

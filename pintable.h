@@ -929,6 +929,7 @@ public:
    STDMETHOD(get_PlatformOS)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(get_PlatformCPU)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(get_PlatformBits)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_ShowCursor)(/*[in]*/ VARIANT_BOOL enable);
    STDMETHOD(get_StartGameKey)(/*[out, retval]*/ long *pVal);
    STDMETHOD(PlayMusic)(BSTR str, float volume);
    STDMETHOD(put_MusicVolume)(float volume);
