@@ -22,6 +22,7 @@
 
 // ImPlot v0.14
 
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "stdafx.h"
 
 #include "implot.h"
@@ -83,7 +84,7 @@ static IMPLOT_INLINE float  ImInvSqrt(float x) { return 1.0f / sqrtf(x); }
 //     unsigned long long  ImU64;  // 64-bit unsigned integer
 // (note: this list does *not* include `long`, `unsigned long` and `long double`)
 //
-// You can customize the supported types by defining IMPLOT_CUSTOM_NUMERIC_TYPES at compile time to define your own type list. 
+// You can customize the supported types by defining IMPLOT_CUSTOM_NUMERIC_TYPES at compile time to define your own type list.
 //    As an example, you could use the compile time define given by the line below in order to support only float and double.
 //        -DIMPLOT_CUSTOM_NUMERIC_TYPES="(float)(double)"
 //    In order to support all known C++ types, use:
@@ -2658,7 +2659,7 @@ void PlotText(const char* text, double x, double y, const ImVec2& pixel_offset, 
         ImVec2 siz = CalcTextSizeVertical(text) * 0.5f;
         ImVec2 ctr = siz * 0.5f;
         ImVec2 pos = PlotToPixels(ImPlotPoint(x,y),IMPLOT_AUTO,IMPLOT_AUTO) + ImVec2(-ctr.x, ctr.y) + pixel_offset;
-        if (FitThisFrame()) {
+        if (FitThisFrame() && !ImHasFlag(flags, ImPlotItemFlags_NoFit)) {
             FitPoint(PixelsToPlot(pos));
             FitPoint(PixelsToPlot(pos.x + siz.x, pos.y - siz.y));
         }
@@ -2667,7 +2668,7 @@ void PlotText(const char* text, double x, double y, const ImVec2& pixel_offset, 
     else {
         ImVec2 siz = ImGui::CalcTextSize(text);
         ImVec2 pos = PlotToPixels(ImPlotPoint(x,y),IMPLOT_AUTO,IMPLOT_AUTO) - siz * 0.5f + pixel_offset;
-        if (FitThisFrame()) {
+        if (FitThisFrame() && !ImHasFlag(flags, ImPlotItemFlags_NoFit)) {
             FitPoint(PixelsToPlot(pos));
             FitPoint(PixelsToPlot(pos+siz));
         }

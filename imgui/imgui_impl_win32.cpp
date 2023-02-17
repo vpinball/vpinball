@@ -35,6 +35,7 @@ typedef DWORD (WINAPI *PFN_XInputGetState)(DWORD, XINPUT_STATE*);
 
 // CHANGELOG
 // (minor and older changes stripped away, please see git history for details)
+//  2023-02-02: Inputs: Flipping WM_MOUSEHWHEEL (horizontal mouse-wheel) value to match other backends and offer consistent horizontal scrolling direction. (#4019, #6096, #1463)
 //  2022-10-11: Using 'nullptr' instead of 'NULL' as per our switch to C++11.
 //  2022-09-28: Inputs: Convert WM_CHAR values with MultiByteToWideChar() when window class was registered as MBCS (not Unicode).
 //  2022-09-26: Inputs: Renamed ImGuiKey_ModXXX introduced in 1.87 to ImGuiMod_XXX (old names still supported).
@@ -254,7 +255,8 @@ static void ImGui_ImplWin32_UpdateMouseData()
     ImGuiIO& io = ImGui::GetIO();
     IM_ASSERT(bd->hWnd != 0);
 
-    const bool is_app_focused = (::GetForegroundWindow() == bd->hWnd);
+    HWND focused_window = ::GetForegroundWindow();
+    const bool is_app_focused = (focused_window == bd->hWnd);
     if (is_app_focused)
     {
         // (Optional) Set OS mouse position from Dear ImGui if requested (rarely used, only when ImGuiConfigFlags_NavEnableSetMousePos is enabled by user)
@@ -514,6 +516,7 @@ IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARA
     switch (msg)
     {
     case WM_MOUSEMOVE:
+    {
         // We need to call TrackMouseEvent in order to receive WM_MOUSELEAVE events
         bd->MouseHwnd = hwnd;
         if (!bd->MouseTracked)
@@ -522,8 +525,10 @@ IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARA
             ::TrackMouseEvent(&tme);
             bd->MouseTracked = true;
         }
-        io.AddMousePosEvent((float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
+        POINT mouse_pos = { (LONG)GET_X_LPARAM(lParam), (LONG)GET_Y_LPARAM(lParam) };
+        io.AddMousePosEvent((float)mouse_pos.x, (float)mouse_pos.y);
         break;
+    }
     case WM_MOUSELEAVE:
         if (bd->MouseHwnd == hwnd)
             bd->MouseHwnd = nullptr;
@@ -566,7 +571,7 @@ IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARA
         io.AddMouseWheelEvent(0.0f, (float)GET_WHEEL_DELTA_WPARAM(wParam) / (float)WHEEL_DELTA);
         return 0;
     case WM_MOUSEHWHEEL:
-        io.AddMouseWheelEvent((float)GET_WHEEL_DELTA_WPARAM(wParam) / (float)WHEEL_DELTA, 0.0f);
+        io.AddMouseWheelEvent(-(float)GET_WHEEL_DELTA_WPARAM(wParam) / (float)WHEEL_DELTA, 0.0f);
         return 0;
     case WM_KEYDOWN:
     case WM_KEYUP:
