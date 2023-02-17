@@ -1964,12 +1964,8 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
          }
          else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDBGBalls])
          {
-            // Activate on edge only.
             if ((input->dwData & 0x80) != 0)
-            {
-               g_pplayer->m_debugBalls = !(g_pplayer->m_debugBalls);
-               g_pplayer->m_toggleDebugBalls = true;
-            }
+               g_pplayer->m_debugBalls = !g_pplayer->m_debugBalls;
          }
          else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDebugger])
          {

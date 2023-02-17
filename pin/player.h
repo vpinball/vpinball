@@ -509,8 +509,7 @@ public:
 
    bool m_debugMode;
 
-   bool m_debugBalls;                   // Draw balls in the foreground.
-   bool m_toggleDebugBalls;
+   bool m_debugBalls;                   // Draw balls in the foreground via 'O' key
 
    bool m_swap_ball_collision_handling; // Swaps the order of ball-ball collision handling around each physics cycle (in regard to the RLC comment block in quadtree.cpp (hopefully ;)))
 

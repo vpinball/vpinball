@@ -337,7 +337,6 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_showDebugger = false;
 
    m_debugBalls = false;
-   m_toggleDebugBalls = false;
 
    m_swap_ball_collision_handling = false;
 
@@ -5285,6 +5284,8 @@ void Player::Render()
       {
           m_debugMode = true;
           m_showDebugger = false;
+          while(ShowCursor(TRUE)<0) ;
+
           if (!m_debuggerDialog.IsWindow())
           {
              m_debuggerDialog.Create(GetHwnd());
@@ -5642,7 +5643,7 @@ void Player::DrawBalls()
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
-   if (m_toggleDebugBalls && m_debugBalls)
+   if (m_debugBalls)
       // Set the render state to something that will always display.
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
 
@@ -5971,10 +5972,8 @@ void Player::DrawBalls()
    //m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE); //!! not necessary anymore
 
    // Set the render state to something that will always display.
-   if (m_toggleDebugBalls && m_debugBalls)
+   if (m_debugBalls)
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
-   if (m_toggleDebugBalls)
-      m_toggleDebugBalls = false;
 
    m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
 }
