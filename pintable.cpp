@@ -544,13 +544,13 @@ STDMETHODIMP ScriptGlobalTable::put_ShowCursor(VARIANT_BOOL enable)
 {
    if(VBTOb(enable))
    {
-      while (ShowCursor(TRUE) < 0) ;
       while (ShowCursor(FALSE) >= 0) ;
+      while (ShowCursor(TRUE) < 0) ;
    }
    else
    {
-      while (ShowCursor(FALSE) >= 0) ;
       while (ShowCursor(TRUE) < 0) ;
+      while (ShowCursor(FALSE) >= 0) ;
    }
 
    return S_OK;
