@@ -1122,6 +1122,10 @@ STDMETHODIMP Light::get_State(float *pVal)
 
 STDMETHODIMP Light::put_State(float newVal)
 {
+   // Handle legacy scripts that set state to 'TRUE' for ON which happens to be converted to -1.0f
+   if (newVal < 0)
+      newVal = 1;
+
    if (!m_lockedByLS)
       setInPlayState(newVal);
 
