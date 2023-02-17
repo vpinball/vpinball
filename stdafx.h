@@ -13,6 +13,10 @@
 #define USE_D3D9EX // if enabled can use extended API, does not benefit on XP though // currently only allows to enable adaptive vsync again (on win vista/7 only, seems to be broken in win8)
 #endif
 
+// Needed by ImPlot when using ImGUI
+#define IMGUI_DEFINE_MATH_OPERATORS
+
+
 #define COMPRESS_MESHES // uses miniz for compressing the meshes
 
 #define CRASH_HANDLER
