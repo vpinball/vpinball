@@ -103,7 +103,7 @@ Function vpmKeyUp(ByVal keycode)
 			Case keySelfTest     .Switch(swSelfTest)    = False
 			Case keyCPUDiag      .Switch(swCPUDiag)     = False
 			Case keySlamDoorHit  .Switch(swSlamDoorHit) = False
-			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
+			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyAddBall      .Pause = True : vpmAddBall  : .Pause = False
 			Case keyShowDips     If IsObject(vpmShowDips) Then .Pause = True : vpmShowDips : .Pause = False

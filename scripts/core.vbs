@@ -1931,7 +1931,9 @@ Class cvpmDips
 			mItems(ii)(1).Value = -((dips(mItems(ii)(0) And &H01) And mItems(ii)(4)) = mItems(ii)(3))
 			If (mItems(ii)(0) And &H01) = 0 Then useDip = True
 		Next
+		If vpmVPVer >= 10800 Then ShowCursor = True
 		mLWF.Show GetPlayerHWnd
+		If vpmVPVer >= 10800 Then ShowCursor = False
 		dips(0) = 0 : dips(1) = 0
 		For ii = 1 To mChkCount + mOptCount
 			If mItems(ii)(1).Value Then dips(mItems(ii)(0) And &H01) = dips(mItems(ii)(0) And &H01) Or mItems(ii)(3)
@@ -2593,7 +2595,9 @@ End Function
 Sub vpmAddBall
 	Dim Answer
 	If IsObject(vpmTrough) Then
-			Answer=MsgBox("Click YES to Add a ball to the Trough, NO Removes a ball from the Trough",vbYesNoCancel + vbQuestion)
+		If vpmVPVer >= 10800 Then ShowCursor = True
+		Answer = MsgBox("Click YES to Add a ball to the Trough, NO Removes a ball from the Trough",vbYesNoCancel + vbQuestion + vbMsgBoxSetForeground)
+		If vpmVPVer >= 10800 Then ShowCursor = False
 		If Answer = vbYes Then vpmTrough.AddBall 0
 		If Answer = vbNo Then vpmTrough.Balls=vpmTrough.Balls-1
 	End If
@@ -2886,8 +2890,8 @@ Private Sub vpmShowHelp
 		vpmKeyName(keyFrame)	  & vbTab & "Toggle Display lock"  & vbNewLine &_
 		vpmKeyName(keyDoubleSize) & vbTab & "Toggle Display size"  & vbNewLine
 	If IsObject(vpmShowDips) Then
-			szKeyMsg = szKeyMsg & vpmKeyName(keyShowDips)	& vbTab & "Show DIP Switch / Option Menu" & vbNewLine
-		End If
+		szKeyMsg = szKeyMsg & vpmKeyName(keyShowDips) & vbTab & "Show DIP Switch / Option Menu" & vbNewLine
+	End If
 	If IsObject(vpmTrough) Then
 		szKeyMsg = szKeyMsg & vpmKeyName(keyAddBall) & vbTab & "Add / Remove Ball From Table" & vbNewLine
 	End If
@@ -2911,7 +2915,15 @@ Private Sub vpmShowHelp
 		vpmKeyName(LeftTiltKey)		& vbTab & "Nudge from Left"	 & vbNewLine &_
 		vpmKeyName(RightTiltKey)	& vbTab & "Nudge from Right" & vbNewLine &_
 		vpmKeyName(CenterTiltKey)	& vbTab & "Nudge forward"	 & vbNewLine
-	MsgBox szKeyMsg,vbOkOnly,"Keyboard Settings..."
+	If vpmVPVer >= 10800 Then ShowCursor = True
+	MsgBox szKeyMsg,vbOkOnly + vbMsgBoxSetForeground,"Keyboard Settings..."
+	If vpmVPVer >= 10800 Then ShowCursor = False
+End Sub
+
+Private Sub vpmShowOptions
+	If vpmVPVer >= 10800 Then ShowCursor = True
+	Controller.ShowOptsDialog GetPlayerHWnd
+	If vpmVPVer >= 10800 Then ShowCursor = False
 End Sub
 
 Private Sub NullSub(no,enabled)

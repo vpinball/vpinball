@@ -117,7 +117,7 @@ Function vpmKeyUp(ByVal keycode)
 			Case keyMasterEnter  .Switch(swMasterEnter)   = False
 			Case keySlamDoorHit  .Switch(swSlamTilt)      = False
 			Case keyHiscoreReset .Switch(swHiScoreReset)  = False
-			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
+			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyShowDips     If IsObject(vpmShowDips) Then .Pause = True : vpmShowDips : .Pause = False
 			Case keyAddBall      .Pause = True : vpmAddBall  : .Pause = False

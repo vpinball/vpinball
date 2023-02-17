@@ -107,7 +107,7 @@ Function vpmKeyUp(ByVal keycode)
 			Case keySlamDoorHit  swCopy = swSlamTiltX :    .Switch(swCopy) = False
 			Case StartGameKey    swCopy = swStartButtonX : .Switch(swCopy) = False
 			Case keyCoinDoor     swCopy = swCoinDoorX :    If toggleKeyCoinDoor = False Then .Switch(swCopy) = inverseKeyCoinDoor
-			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
+			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyShowDips     If IsObject(vpmShowDips) Then .Pause = True : vpmShowDips : .Pause = False
 			Case keyAddBall      .Pause = True : vpmAddBall  : .Pause = False

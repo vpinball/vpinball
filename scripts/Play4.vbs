@@ -84,7 +84,7 @@ Function vpmKeyUp(ByVal keycode)
 			'Case keyDown         .Switch(swReplay1)     = False
 			'Case keyUp           .Switch(swReplay2)     = False
 			'Case keyEnter        .Switch(swReplay3)     = False
-			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
+			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyAddBall      .Pause = True : vpmAddBall  : .Pause = False
 			Case keyShowDips     If IsObject(vpmShowDips) Then .Pause = True : vpmShowDips : .Pause = False

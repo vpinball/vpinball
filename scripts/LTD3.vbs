@@ -63,7 +63,7 @@ Function vpmKeyUp(ByVal keycode)
 			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False
 			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False
 			Case StartGameKey    .Switch(swStartButton) = False
-			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
+			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyAddBall      .Pause = True : vpmAddBall  : .Pause = False
 			Case keyReset        .Stop : BeginModal : .Run : vpmTimer.Reset : EndModal

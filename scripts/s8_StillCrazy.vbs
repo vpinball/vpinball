@@ -90,7 +90,7 @@ Function vpmKeyUp(ByVal keycode)
 			Case keySoundDiag    .Switch(swSoundDiag)   = False
 			Case keyMasterEnter  .Switch(swMasterEnter) = False
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = False
-			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
+			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyAddBall      .Pause = True : vpmAddBall  : .Pause = False
 			Case keyShowDips     If IsObject(vpmShowDips) Then .Pause = True : vpmShowDips : .Pause = False

@@ -95,7 +95,7 @@ Function vpmKeyUp(ByVal keycode)
 			Case keyInsertCoin2  .Switch(swCoin2)  = False : Playsound SCoin
 			Case keyInsertCoin3  .Switch(swCoin3)  = False : Playsound SCoin
 			Case StartGameKey    .Switch(swStartButton) = False
-			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
+			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyAddBall      .Pause = True : vpmAddBall  : .Pause = False
 			Case keyReset        .Stop : .Run : vpmTimer.Reset
