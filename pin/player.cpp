@@ -1948,7 +1948,7 @@ void Player::InitStatic()
    // The code will fail if the static render target is MSAA (the copy operation we are performing is not allowed)
    assert(!m_pin3d.m_pddsStatic->IsMSAA());
    
-   RenderTarget *accumulationSurface = m_dynamicMode ? nullptr : m_pin3d.m_pddsStatic->Duplicate();
+   RenderTarget *accumulationSurface = m_dynamicMode ? nullptr : m_pin3d.m_pddsStatic->Duplicate("Accumulation"s);
 
    // if rendering static/with heavy oversampling, disable the aniso/trilinear filter to get a sharper/more precise result overall!
    if (!m_dynamicMode)
@@ -2046,7 +2046,7 @@ void Player::InitStatic()
 
       m_pin3d.m_pddsStatic->CopyTo(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()); // save Z buffer and render (cannot be called inside BeginScene -> EndScene cycle)
 
-      RenderTarget* tmpDepth = m_pin3d.m_pddsStatic->Duplicate();
+      RenderTarget *tmpDepth = m_pin3d.m_pddsStatic->Duplicate("TmpDepth"s);
       m_pin3d.m_pddsStatic->CopyTo(tmpDepth);
 
       m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->CopyTo(m_pin3d.m_pddsStatic); // Restore saved Z buffer and render (cannot be called inside BeginScene -> EndScene cycle)

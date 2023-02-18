@@ -18,6 +18,7 @@ RenderTarget* RenderTarget::current_render_target = nullptr;
 RenderTarget* RenderTarget::GetCurrentRenderTarget() { return current_render_target; }
 
 RenderTarget::RenderTarget(RenderDevice* rd, int width, int height, colorFormat format)
+   : m_name("BackBuffer"s)
 {
    m_rd = rd;
    m_stereo = STEREO_OFF;
@@ -46,7 +47,8 @@ RenderTarget::RenderTarget(RenderDevice* rd, int width, int height, colorFormat 
 #endif
 }
 
-RenderTarget::RenderTarget(RenderDevice* rd, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, StereoMode stereo, const char* failureMessage, RenderTarget* sharedDepth)
+RenderTarget::RenderTarget(RenderDevice* rd, const string name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, StereoMode stereo, const char* failureMessage, RenderTarget* sharedDepth)
+   : m_name(name)
 {
    m_is_back_buffer = false;
    m_rd = rd;
@@ -282,10 +284,10 @@ void RenderTarget::UpdateDepthSampler()
 #endif
 }
 
-RenderTarget* RenderTarget::Duplicate(const bool shareDepthSurface)
+RenderTarget* RenderTarget::Duplicate(const string name, const bool shareDepthSurface)
 {
    assert(!m_is_back_buffer);
-   return new RenderTarget(m_rd, m_width, m_height, m_format, m_has_depth, m_nMSAASamples, m_stereo, "Failed to duplicate render target", shareDepthSurface ? this : nullptr);
+   return new RenderTarget(m_rd, name, m_width, m_height, m_format, m_has_depth, m_nMSAASamples, m_stereo, "Failed to duplicate render target", shareDepthSurface ? this : nullptr);
 }
 
 void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool copyDepth)
