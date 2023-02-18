@@ -131,7 +131,7 @@ void RenderProbe::ApplyRoughness(RenderTarget* probe, const int roughness)
    {
       RenderDevice* p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
       if (m_blurRT == nullptr)
-         m_blurRT = probe->Duplicate();
+         m_blurRT = probe->Duplicate("BlurProbe"s);
       // The kernel sizes were chosen by reverse engineering the blur shader. So there's a part of guess here.
       // The blur shader seems to mix binomial & gaussian distributions, with a kernel size which does not directly match the pascal triangle size.
       // Ideally this should be a gaussian distribution's sigma, scaled by the render height against a reference height.
@@ -160,7 +160,8 @@ void RenderProbe::RenderScreenSpaceTransparency(const bool is_static)
    {
       const int downscale = GetRoughnessDownscale(m_roughness_base);
       const int w = p3dDevice->GetBackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetBackBufferTexture()->GetHeight() / downscale;
-      m_dynamicRT = new RenderTarget(p3dDevice, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, StereoMode::STEREO_OFF, "Failed to create refraction render target", nullptr);
+      m_dynamicRT
+         = new RenderTarget(p3dDevice, "RefractionProbe"s,  w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, StereoMode::STEREO_OFF, "Failed to create refraction render target", nullptr);
    }
    p3dDevice->GetMSAABackBufferTexture()->CopyTo(m_dynamicRT);
    ApplyRoughness(m_dynamicRT, m_roughness_base);
@@ -218,7 +219,7 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
       {
          const int downscale = GetRoughnessDownscale(m_roughness_base);
          const int w = p3dDevice->GetBackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetBackBufferTexture()->GetHeight() / downscale;
-         m_staticRT = new RenderTarget(p3dDevice, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, p3dDevice->GetBackBufferTexture()->GetStereo(),
+         m_staticRT = new RenderTarget(p3dDevice, "StaticReflProbe"s, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, p3dDevice->GetBackBufferTexture()->GetStereo(),
             "Failed to create plane reflection static render target", nullptr);
       }
       m_staticRT->Activate();
@@ -230,7 +231,7 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
       {
          const int downscale = GetRoughnessDownscale(m_roughness_base);
          const int w = p3dDevice->GetBackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetBackBufferTexture()->GetHeight() / downscale;
-         m_dynamicRT = new RenderTarget(p3dDevice, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, p3dDevice->GetBackBufferTexture()->GetStereo(),
+         m_dynamicRT = new RenderTarget(p3dDevice, "DynamicReflProbe"s, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, p3dDevice->GetBackBufferTexture()->GetStereo(),
             "Failed to create plane reflection dynamic render target", nullptr);
       }
       if (mode == REFL_SYNCED_DYNAMIC && m_staticRT != nullptr)

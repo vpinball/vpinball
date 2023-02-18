@@ -1085,21 +1085,21 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
    nMSAASamples = min(maxSamples, nMSAASamples);
 #endif
-   m_pOffscreenMSAABackBufferTexture = new RenderTarget(this, m_width_aa, m_height_aa, render_format, true, nMSAASamples, m_stereo3D, "Fatal Error: unable to create render buffer!");
+   m_pOffscreenMSAABackBufferTexture = new RenderTarget(this, "OffscreenMSAABackBuffer"s, m_width_aa, m_height_aa, render_format, true, nMSAASamples, m_stereo3D, "Fatal Error: unable to create render buffer!");
 
    // If we are doing MSAA we need a texture with the same dimensions as the Back Buffer to resolve the end result to, can also use it for Post-AA
    if (nMSAASamples > 1)
-      m_pOffscreenBackBufferTexture = new RenderTarget(this, m_width_aa, m_height_aa, render_format, true, 1, m_stereo3D, "Fatal Error: unable to create MSAA resolve buffer!");
+      m_pOffscreenBackBufferTexture = new RenderTarget(this, "OffscreenBackBuffer"s, m_width_aa, m_height_aa, render_format, true, 1, m_stereo3D, "Fatal Error: unable to create MSAA resolve buffer!");
    else
       m_pOffscreenBackBufferTexture = m_pOffscreenMSAABackBufferTexture;
 
    // alloc buffer for screen space fake reflection rendering
    if (m_ssRefl)
-      m_pReflectionBufferTexture = new RenderTarget(this, m_width_aa, m_height_aa, render_format, false, 1, STEREO_OFF, "Fatal Error: unable to create reflection buffer!");
+      m_pReflectionBufferTexture = new RenderTarget(this, "ReflectionBuffer"s, m_width_aa, m_height_aa, render_format, false, 1, STEREO_OFF, "Fatal Error: unable to create reflection buffer!");
 
    // alloc bloom tex at 1/4 x 1/4 res (allows for simple HQ downscale of clipped input while saving memory)
-   m_pBloomBufferTexture = new RenderTarget(this, m_width / 4, m_height / 4, render_format, false, 1, m_stereo3D, "Fatal Error: unable to create bloom buffer!");
-   m_pBloomTmpBufferTexture = m_pBloomBufferTexture->Duplicate();
+   m_pBloomBufferTexture = new RenderTarget(this, "BloomBuffer1"s, m_width / 4, m_height / 4, render_format, false, 1, m_stereo3D, "Fatal Error: unable to create bloom buffer!");
+   m_pBloomTmpBufferTexture = m_pBloomBufferTexture->Duplicate("BloomBuffer2"s);
 
 #ifdef ENABLE_SDL
    if (m_stereo3D == STEREO_VR) {
@@ -1121,8 +1121,8 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
          renderBufferFormatVR = RGBA8;
          break;
       }
-      m_pOffscreenVRLeft = new RenderTarget(this, m_width / 2, m_height, renderBufferFormatVR, false, 1, STEREO_OFF, "Fatal Error: unable to create left eye buffer!");
-      m_pOffscreenVRRight = new RenderTarget(this, m_width / 2, m_height, renderBufferFormatVR, false, 1, STEREO_OFF, "Fatal Error: unable to create right eye buffer!");
+      m_pOffscreenVRLeft = new RenderTarget(this, "VRLeft"s, m_width / 2, m_height, renderBufferFormatVR, false, 1, STEREO_OFF, "Fatal Error: unable to create left eye buffer!");
+      m_pOffscreenVRRight = new RenderTarget(this, "VRRight"s, m_width / 2, m_height, renderBufferFormatVR, false, 1, STEREO_OFF, "Fatal Error: unable to create right eye buffer!");
    }
 #endif
 
@@ -1277,7 +1277,7 @@ RenderTarget* RenderDevice::GetPostProcessRenderTarget1()
 #else
       colorFormat pp_format = GetBackBufferTexture()->GetColorFormat() == RGBA10 ? colorFormat::RGBA10 : colorFormat::RGBA8;
 #endif
-      m_pPostProcessRenderTarget1 = new RenderTarget(this, m_width, m_height, pp_format, false, 1, STEREO_OFF, "Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!");
+      m_pPostProcessRenderTarget1 = new RenderTarget(this, "PostProcess1"s, m_width, m_height, pp_format, false, 1, STEREO_OFF, "Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!");
    }
    return m_pPostProcessRenderTarget1;
 }
@@ -1285,7 +1285,7 @@ RenderTarget* RenderDevice::GetPostProcessRenderTarget1()
 RenderTarget* RenderDevice::GetPostProcessRenderTarget2()
 {
    if (m_pPostProcessRenderTarget2 == nullptr)
-      m_pPostProcessRenderTarget2 = GetPostProcessRenderTarget1()->Duplicate();
+      m_pPostProcessRenderTarget2 = GetPostProcessRenderTarget1()->Duplicate("PostProcess2"s);
    return m_pPostProcessRenderTarget2;
 }
 
@@ -1303,9 +1303,9 @@ RenderTarget* RenderDevice::GetAORenderTarget(int idx)
    // Lazily creates AO render target since this can be enabled during play from script
    if (m_pAORenderTarget1 == nullptr)
    {
-      m_pAORenderTarget1 = new RenderTarget(this, m_width, m_height, colorFormat::GREY8, false, 1, STEREO_OFF,
+      m_pAORenderTarget1 = new RenderTarget(this, "AO1"s, m_width, m_height, colorFormat::GREY8, false, 1, STEREO_OFF,
          "Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
-      m_pAORenderTarget2 = m_pAORenderTarget1->Duplicate();
+      m_pAORenderTarget2 = m_pAORenderTarget1->Duplicate("AO2"s);
 
    }
    return idx == 0 ? m_pAORenderTarget1 : m_pAORenderTarget2;

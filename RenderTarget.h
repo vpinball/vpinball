@@ -7,7 +7,7 @@ class RenderTarget final
 {
 public:
    RenderTarget(RenderDevice* rd, int width, int height, colorFormat format); // Default output render target
-   RenderTarget(RenderDevice* rd, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, StereoMode stereo, const char* failureMessage, RenderTarget* sharedDepth = nullptr);
+   RenderTarget(RenderDevice* rd, const string name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, StereoMode stereo, const char* failureMessage, RenderTarget* sharedDepth = nullptr);
    ~RenderTarget();
 
    void Activate(const bool ignoreStereo = false);
@@ -17,7 +17,7 @@ public:
    void UpdateDepthSampler();
    Sampler* GetDepthSampler() { return m_depth_sampler; }
 
-   RenderTarget* Duplicate(const bool shareDepthSurface = false);
+   RenderTarget* Duplicate(const string name, const bool shareDepthSurface = false);
    void CopyTo(RenderTarget* dest, const bool copyColor = true, const bool copyDepth = true);
 
    void SetSize(const int w, const int h) { assert(m_is_back_buffer); m_width = w; m_height = h; }
@@ -39,6 +39,7 @@ public:
 #endif
 
 private:
+   const string m_name;
    int m_width;
    int m_height;
    colorFormat m_format;

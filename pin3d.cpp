@@ -494,7 +494,7 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
 
    // Static render target is a copy of the main back buffer (without MSAA since static prerender is done with custom antialiasing)
    if (m_stereo3D != STEREO_VR)
-      m_pddsStatic = m_pd3dPrimaryDevice->GetBackBufferTexture()->Duplicate();
+      m_pddsStatic = m_pd3dPrimaryDevice->GetBackBufferTexture()->Duplicate("StaticPreRender"s);
    else
       m_pddsStatic = nullptr;
 
