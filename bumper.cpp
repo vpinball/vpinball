@@ -638,7 +638,7 @@ void Bumper::RenderSetup()
    {
       m_skirtTexture.CreateFromResource(IDB_BUMPER_SKIRT);
       IndexBuffer* socketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperSocketNumIndices, bumperSocketIndices);
-      VertexBuffer* socketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
+      VertexBuffer* socketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperSocketNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
       Vertex3D_NoTex2 *buf;
       socketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
       GenerateSocketMesh(buf);
