@@ -72,8 +72,7 @@ void VertexBuffer::lock(const unsigned int offsetToLock, const unsigned int size
 {
    m_curLockCalls++;
 #ifdef ENABLE_SDL
-   // FIXME this breaks with bumpers
-   // assert(m_dataBuffer == nullptr);
+   assert(m_dataBuffer == nullptr);
    m_sizeToLock = sizeToLock == 0 ? m_size : sizeToLock;
    if (offsetToLock < m_size)
    {
