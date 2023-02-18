@@ -542,7 +542,7 @@ STDMETHODIMP ScriptGlobalTable::get_PlatformBits(BSTR *pVal)
 
 STDMETHODIMP ScriptGlobalTable::put_ShowCursor(VARIANT_BOOL enable)
 {
-   if(VBTOb(enable))
+   /*if(VBTOb(enable)) // not needed, otherwise hides mouse cursor in windowed mode
    {
       while (ShowCursor(FALSE) >= 0) ;
       while (ShowCursor(TRUE) < 0) ;
@@ -551,7 +551,9 @@ STDMETHODIMP ScriptGlobalTable::put_ShowCursor(VARIANT_BOOL enable)
    {
       while (ShowCursor(TRUE) < 0) ;
       while (ShowCursor(FALSE) >= 0) ;
-   }
+   }*/
+
+   ShowCursor(VBTOb(enable) ? TRUE : FALSE);
 
    return S_OK;
 }
