@@ -1242,7 +1242,7 @@ void Rubber::RenderObject()
       return;
    }
 
-   if (m_dynamicVertexBufferRegenerate)
+   if (m_dynamicVertexBufferRegenerate && !m_d.m_staticRendering)
       UpdateRubber(true, m_d.m_height);
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
@@ -1460,14 +1460,14 @@ void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape) //!! h
 
 void Rubber::GenerateVertexBuffer()
 {
-   m_dynamicVertexBufferRegenerate = true;
-
    GenerateMesh();
 
    delete m_meshBuffer;
    VertexBuffer* dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, m_d.m_staticRendering ? USAGE_STATIC : USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, (float*) m_vertices.data());
    IndexBuffer *dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_ringIndices);
    m_meshBuffer = new MeshBuffer(dynamicVertexBuffer, dynamicIndexBuffer);
+
+   m_dynamicVertexBufferRegenerate = false;
 }
 
 void Rubber::UpdateRubber(const bool updateVB, const float height)
