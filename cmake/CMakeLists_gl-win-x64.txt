@@ -214,6 +214,10 @@ add_executable(vpinball WIN32
    imgui/implot/implot.h
    imgui/implot/implot_items.cpp
    imgui/implot/implot_internal.h
+   inc/BAM/BAMView.cpp
+   inc/BAM/BAMView.h
+   inc/BAM/BAM_Tracker.h
+   inc/BAM/BAM_ViewPortSetup.h
    inc/gpuprofiler.cpp
    inc/gpuprofiler.h
    inc/serial.cpp
@@ -240,6 +244,8 @@ add_executable(vpinball WIN32
    inc/Sci_Position.h
    inc/stb_image.h
    inc/ThreadPool.h
+   inc/tinyxml2/tinyxml2.cpp
+   inc/tinyxml2/tinyxml2.h
    inc/win32xx/include/wxx_appcore.h
    inc/win32xx/include/wxx_appcore0.h
    inc/win32xx/include/wxx_archive.h
