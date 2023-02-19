@@ -4,6 +4,10 @@
 #include "sdl2/SDL_syswm.h"
 #endif
 
+#ifdef ENABLE_BAM
+#include "BAM/BAMView.h"
+#endif
+
 #ifdef USE_IMGUI
  #include "imgui/imgui.h"
  #ifdef ENABLE_SDL
@@ -3820,7 +3824,7 @@ void Player::UpdateHUD_IMGUI()
    static bool profiling = true;
 
    InfoMode infoMode = GetInfoMode();
-   if (infoMode == IF_NONE || m_closeDown)
+   if (infoMode == IF_NONE || m_closeDown )
       return;
 
 #ifdef ENABLE_SDL
@@ -3845,6 +3849,9 @@ void Player::UpdateHUD_IMGUI()
    case IF_RENDER_PROBES:
       ImGui::Begin("Render Probe: "s.append(m_ptable->m_vrenderprobe[m_infoProbeIndex >> 1]->GetName()).append((m_infoProbeIndex & 1) == 0 ? " [Static]"s : " [Dynamic]"s).c_str());
       break;
+#ifdef ENABLE_BAM
+   case IF_BAM_MENU: BAMView::drawMenu(); return;
+#endif
    default:
       assert(!"Unhandled Info Mode");
       break;
@@ -5058,7 +5065,7 @@ void Player::Render()
    else
 #endif
 #ifdef ENABLE_BAM
-   if (m_headTracking)
+   if ((m_stereo3D != STEREO_VR) && m_headTracking)
    {
       // #ravarcade: UpdateBAMHeadTracking will set proj/view matrix to add BAM view and head tracking
       m_pin3d.UpdateBAMHeadTracking();
