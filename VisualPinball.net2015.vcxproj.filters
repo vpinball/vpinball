@@ -311,6 +311,12 @@
       <Filter>dialogs</Filter>
     </ClCompile>
     <ClCompile Include="bulb.cpp" />
+    <ClCompile Include="inc\BAM\BAMView.cpp">
+      <Filter>inc\BAM</Filter>
+    </ClCompile>
+    <ClCompile Include="inc\tinyxml2\tinyxml2.cpp">
+      <Filter>inc\tinyxml2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -710,7 +716,7 @@
     <None Include="shader\SMAA.glfx">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\SMAA.fxh">
+    <None Include="shader\SMAA.hlsl">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>
@@ -747,6 +753,12 @@
     </Filter>
     <Filter Include="imgui\implot">
       <UniqueIdentifier>{fc16eece-2096-4e44-bad4-380f77d82bef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\BAM">
+      <UniqueIdentifier>{3decb8df-802c-427b-9212-0c2979c079b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\tinyxml2">
+      <UniqueIdentifier>{036fc548-e99a-4b42-8937-097d1b647bcf}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1581,6 +1593,18 @@
     <ClInclude Include="bulb.h">
       <Filter>headers</Filter>
     </ClInclude>
+    <ClInclude Include="inc\BAM\BAM_Tracker.h">
+      <Filter>inc\BAM</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\BAM\BAM_ViewPortSetup.h">
+      <Filter>inc\BAM</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\BAM\BAMView.h">
+      <Filter>inc\BAM</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\tinyxml2\tinyxml2.h">
+      <Filter>inc\tinyxml2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.hlsl">
@@ -1602,9 +1626,6 @@
       <Filter>shaders</Filter>
     </FxCompile>
     <FxCompile Include="shader\ClassicLightShader.hlsl">
-      <Filter>shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="shader\SMAA.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
   </ItemGroup>
