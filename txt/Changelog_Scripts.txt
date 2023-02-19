@@ -1,6 +1,7 @@
 New in 3.60 (Update by toxie, wiesshund)
 - Added solarwars.vbs (based on peyper.vbs)
 - Added LTDPecmen.vbs
+- Added BallyG.vbs
 
 New in 3.59 (Update by toxie, JP)
 - NVOffset now uses the internal ROMName (needs VPM 3.5)
