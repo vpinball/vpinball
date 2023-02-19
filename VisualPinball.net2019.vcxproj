@@ -791,6 +791,7 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\VideoOptionsDialog.cpp" />
     <ClCompile Include="dialogs\VROptionsDialog.cpp" />
     <ClCompile Include="flasher.cpp" />
+    <ClCompile Include="inc\BAM\BAMView.cpp" />
     <ClCompile Include="inc\glad\glad.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -801,13 +802,13 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"
     <ClCompile Include="hittarget.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
-    <ClCompile Include="imgui\imgui_impl_opengl3.cpp" >
+    <ClCompile Include="imgui\imgui_impl_opengl3.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_impl_dx9.cpp" >
+    <ClCompile Include="imgui\imgui_impl_dx9.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
@@ -824,6 +825,7 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"
     </ClCompile>
     <ClCompile Include="inc\progmesh.cpp" />
     <ClCompile Include="inc\serial.cpp" />
+    <ClCompile Include="inc\tinyxml2\tinyxml2.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="math\math.cpp" />
     <ClCompile Include="MemoryStatus.cpp" />
@@ -1190,13 +1192,13 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"
     <ClInclude Include="ieditable.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
-    <ClInclude Include="imgui\imgui_impl_opengl3.h" >
+    <ClInclude Include="imgui\imgui_impl_opengl3.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="imgui\imgui_impl_dx9.h" >
+    <ClInclude Include="imgui\imgui_impl_dx9.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
@@ -1207,6 +1209,9 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"
     <ClInclude Include="imgui\imgui_internal.h" />
     <ClInclude Include="imgui\implot\implot.h" />
     <ClInclude Include="imgui\implot\implot_internal.h" />
+    <ClInclude Include="inc\BAM\BAMView.h" />
+    <ClInclude Include="inc\BAM\BAM_Tracker.h" />
+    <ClInclude Include="inc\BAM\BAM_ViewPortSetup.h" />
     <ClInclude Include="inc\bass.h" />
     <ClInclude Include="inc\forsyth.h" />
     <ClInclude Include="inc\freeimage.h" />
@@ -1232,6 +1237,7 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"
     <ClInclude Include="inc\stb_image.h" />
     <ClInclude Include="inc\stb_image_write.h" />
     <ClInclude Include="inc\ThreadPool.h" />
+    <ClInclude Include="inc\tinyxml2\tinyxml2.h" />
     <ClInclude Include="inc\win32xx\include\default_resource.h" />
     <ClInclude Include="inc\win32xx\include\wxx_appcore.h" />
     <ClInclude Include="inc\win32xx\include\wxx_appcore0.h" />

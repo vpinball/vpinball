@@ -140,6 +140,9 @@ enum InfoMode
    IF_AO_ONLY,
    IF_LIGHT_BUFFER_ONLY,
    IF_RENDER_PROBES,
+#ifdef ENABLE_BAM
+   IF_BAM_MENU,
+#endif
    IF_INVALID
 };
 

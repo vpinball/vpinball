@@ -1,0 +1,547 @@
+#include "stdafx.h"
+#ifdef ENABLE_BAM
+#include "BAM\BAM_ViewPortSetup.h"
+#include "BAM\BAM_Tracker.h"
+#include "imgui\imgui.h"
+#include "tinyxml2\tinyxml2.h"
+#include "BAMView.h"
+
+namespace BAMView
+{
+using tinyxml2::XMLDocument;
+using tinyxml2::XMLPrinter;
+
+BAM_Tracker::BAM_Tracker_Client BAM;
+constexpr float degToRad = 0.01745329251f;
+
+struct BAMGlobalSettings
+{
+   int rotation;
+   int swapWidthHeight;
+   int forceBAMView;
+   bool isVisible;
+
+   BAMGlobalSettings() { memset(this, 0, sizeof(BAMGlobalSettings)); }
+} settings;
+
+struct BAMTableSettings
+{
+   float scale[3];
+   float translation[3];
+   float angle;
+   float camera[3];
+   std::string tableName;
+
+   BAMTableSettings()
+   {
+      scale[0] = scale[1] = scale[2] = 1.0f;
+      translation[0] = translation[1] = translation[2] = 0.0f;
+      angle = 0;
+      camera[0] = 0;
+      camera[1] = -650;
+      camera[2] = 500;
+      tableName = "";
+   }
+} g_TableSettings, g_DefaultSettings;
+
+XMLDocument g_settings;
+
+void Mat4Mul(float* const __restrict O, const float* const __restrict A, const float* const __restrict B)
+{
+   O[0] = A[0] * B[0] + A[1] * B[4] + A[2] * B[8] + A[3] * B[12];
+   O[1] = A[0] * B[1] + A[1] * B[5] + A[2] * B[9] + A[3] * B[13];
+   O[2] = A[0] * B[2] + A[1] * B[6] + A[2] * B[10] + A[3] * B[14];
+   O[3] = A[0] * B[3] + A[1] * B[7] + A[2] * B[11] + A[3] * B[15];
+
+   O[4] = A[4] * B[0] + A[5] * B[4] + A[6] * B[8] + A[7] * B[12];
+   O[5] = A[4] * B[1] + A[5] * B[5] + A[6] * B[9] + A[7] * B[13];
+   O[6] = A[4] * B[2] + A[5] * B[6] + A[6] * B[10] + A[7] * B[14];
+   O[7] = A[4] * B[3] + A[5] * B[7] + A[6] * B[11] + A[7] * B[15];
+
+   O[8] = A[8] * B[0] + A[9] * B[4] + A[10] * B[8] + A[11] * B[12];
+   O[9] = A[8] * B[1] + A[9] * B[5] + A[10] * B[9] + A[11] * B[13];
+   O[10] = A[8] * B[2] + A[9] * B[6] + A[10] * B[10] + A[11] * B[14];
+   O[11] = A[8] * B[3] + A[9] * B[7] + A[10] * B[11] + A[11] * B[15];
+
+   O[12] = A[12] * B[0] + A[13] * B[4] + A[14] * B[8] + A[15] * B[12];
+   O[13] = A[12] * B[1] + A[13] * B[5] + A[14] * B[9] + A[15] * B[13];
+   O[14] = A[12] * B[2] + A[13] * B[6] + A[14] * B[10] + A[15] * B[14];
+   O[15] = A[12] * B[3] + A[13] * B[7] + A[14] * B[11] + A[15] * B[15];
+}
+
+void Mat4Mul(float* const __restrict OA, const float* const __restrict B)
+{
+   float A[16];
+   memcpy_s(A, sizeof(A), OA, sizeof(A));
+   Mat4Mul(OA, A, B);
+}
+
+void Rotate(float* const __restrict V, float a)
+{
+   a *= degToRad;
+   const float _S = sinf(a);
+   const float _C = cosf(a);
+   const float R[16] = { 1, 0, 0, 0, 0, _C, -_S, 0, 0, _S, _C, 0, 0, 0, 0, 1 };
+   Mat4Mul(V, R);
+}
+
+void Scale(float* const __restrict V, float x, float y, float z)
+{
+   const float S[16] = { x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1 };
+   Mat4Mul(V, S);
+}
+
+void Scale(float* const __restrict V, float* s) { Scale(V, s[0], s[1], s[2]); }
+void Scale(float* const __restrict V, float s) { Scale(V, s, s, s); }
+
+void Translate(float* const __restrict V, float x, float y, float z)
+{
+   const float T[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1 };
+   Mat4Mul(V, T);
+}
+
+void Translate(float* const __restrict V, float* t) { Translate(V, t[0], t[1], t[2]); }
+
+void ApplyRST(float* const __restrict V, float a, float* s, float* t)
+{
+   Rotate(V, a);
+   Scale(V, s);
+   Translate(V, t);
+}
+
+void _ceateProjectionAndViewMatrix(float* const __restrict P, float* const __restrict V)
+{
+   // VPX stuffs
+   const PinTable* const t = g_pplayer->m_ptable;
+   int resolutionWidth = g_pplayer->m_pin3d.m_viewPort.Width;
+   int resolutionHeight = g_pplayer->m_pin3d.m_viewPort.Height;
+   int rotation = static_cast<int>(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] / 90.0f);
+   const float tableLength = t->m_bottom;
+   const float tableWidth = t->m_right;
+   const float tableGlass = t->m_glassheight;
+   const float minSlope = (t->m_overridePhysics ? t->m_fOverrideMinSlope : t->m_angletiltMin);
+   const float maxSlope = (t->m_overridePhysics ? t->m_fOverrideMaxSlope : t->m_angletiltMax);
+   const float slope = minSlope + (maxSlope - minSlope) * t->m_globalDifficulty;
+   rotation = (rotation + settings.rotation) % 4;
+
+   // Data from config file (Settings):
+   float DisplaySize;
+   float DisplayNativeWidth;
+   float DisplayNativeHeight;
+   float AboveScreen;
+   float InsideScreen;
+
+   // Data from head tracking
+   float ViewerPositionX, ViewerPositionY, ViewerPositionZ;
+
+   // Get data from BAM Tracker
+   if (BAM.IsBAMTrackerPresent())
+   {
+      // we use Screen Width & Height as Native Resolution. Only aspect ration is important
+      DisplayNativeWidth = static_cast<float>(BAM.GetScreenWidth()); // [mm]
+      DisplayNativeHeight = static_cast<float>(BAM.GetScreenHeight()); // [mm]
+   }
+   else
+   {
+      DisplayNativeWidth = static_cast<float>(resolutionWidth);
+      DisplayNativeHeight = static_cast<float>(resolutionHeight);
+   }
+
+   if (settings.swapWidthHeight)
+   {
+      std::swap(DisplayNativeWidth, DisplayNativeHeight);
+   }
+
+   if (BAM.IsBAMTrackerPresent())
+   {
+      double x, y, z;
+      BAM.GetPosition(x, y, z);
+      ViewerPositionX = (float)x;
+      ViewerPositionY = (float)y;
+      ViewerPositionZ = (float)z;
+   }
+   else
+   {
+      DisplayNativeWidth *= 1300 / DisplayNativeHeight;
+      DisplayNativeHeight = 1300.0f;
+      ViewerPositionX = g_TableSettings.camera[0];
+      ViewerPositionY = g_TableSettings.camera[1];
+      ViewerPositionZ = g_TableSettings.camera[2];
+   }
+
+
+   const double w = DisplayNativeWidth, h = DisplayNativeHeight;
+   DisplaySize = (float)(sqrt(w * w + h * h) / 25.4); // [mm] -> [inchs]
+
+   // constant params for this project
+   AboveScreen = 200.0; // 0.2m
+   InsideScreen = 2000.0; // 2.0m
+
+   // Data build projection matrix
+   BuildProjectionMatrix(P, DisplaySize, DisplayNativeWidth, DisplayNativeHeight, (float)resolutionWidth, (float)resolutionHeight, 0.0f, 0.0f, (float)resolutionWidth,
+      (float)resolutionHeight, ViewerPositionX, ViewerPositionY, ViewerPositionZ, -AboveScreen, InsideScreen, rotation);
+
+   // Build View matrix from parts: Translation, Scale, Rotation
+   // .. but first View Matrix has camera position
+   const float VT[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -ViewerPositionX, -ViewerPositionY, -ViewerPositionZ, 1 };
+
+   // --- Scale, ... some math
+   const float pixelsToMillimeters = (float)(25.4 * DisplaySize / sqrt(DisplayNativeWidth * DisplayNativeWidth + DisplayNativeHeight * DisplayNativeHeight));
+   const float pixelsToMillimetersX = pixelsToMillimeters * DisplayNativeWidth / resolutionWidth;
+   const float pixelsToMillimetersY = pixelsToMillimeters * DisplayNativeHeight / resolutionHeight;
+   const float ptm = rotation & 1 ? pixelsToMillimetersX : pixelsToMillimetersY;
+   const float tableLengthInMillimeters = ptm * tableLength;
+   const float displayLengthInMillimeters = ptm * (rotation & 1 ? pixelsToMillimeters * DisplayNativeWidth : pixelsToMillimeters * DisplayNativeHeight);
+
+   // --- Scale world to fit in screen
+   const float scale = displayLengthInMillimeters / tableLengthInMillimeters; // calc here scale
+
+   // combine all to one matrix
+   const float I[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+   memcpy_s(V, sizeof(I), I, sizeof(I));
+   Scale(V, 1, -1, 1); // mirror on Y axis
+   Translate(V, -tableWidth * 0.5f, tableLength * 0.5f, -tableGlass); // center table
+   Scale(V, scale); // scale to fit in screen
+
+   // User settings
+   ApplyRST(V, g_TableSettings.angle, g_TableSettings.scale, g_TableSettings.translation);
+
+   Mat4Mul(V, VT);
+
+}
+
+std::wstring GetFileNameForSettingsXML()
+{
+   const wchar_t* SettingsXML = L"BAMViewSettings.xml";
+   wchar_t path[2048]; // [MAX_PATH] ;
+   HMODULE hm = NULL;
+   path[0] = 0;
+
+   if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)&GetFileNameForSettingsXML, &hm) == 0)
+   {
+      int ret = GetLastError();
+      TRACE("GetModuleHandle failed");
+      return SettingsXML;
+   }
+
+   if (GetModuleFileNameW(hm, path, sizeof(path)) == 0)
+   {
+      int ret = GetLastError();
+      TRACE("GetModuleFileName failed");
+      return SettingsXML;
+   }
+
+   auto backslash = wcsrchr(path, '\\');
+   auto slash = wcsrchr(path, '/');
+   auto dst = std::max(backslash, slash);
+   if (dst == nullptr)
+      return SettingsXML;
+   wcscpy_s(dst + 1, path + _countof(path) - dst - 2, SettingsXML);
+
+   return path;
+}
+
+std::string GetTableName()
+{
+   const PinTable* const t = g_pplayer->m_ptable;
+   auto backslash = strrchr(t->m_szFileName.c_str(), '\\');
+   auto slash = strrchr(t->m_szFileName.c_str(), '/');
+   auto dst = std::max(backslash, slash);
+   return dst ? dst + 1 : "Unknown";
+}
+
+bool SaveFile(std::wstring path, const void* data, SIZE_T size)
+{
+   HANDLE hFile;
+
+   hFile = CreateFileW(path.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+   DWORD err = GetLastError();
+
+   if (hFile == INVALID_HANDLE_VALUE)
+      return false;
+
+   if (WriteFile(hFile, data, (DWORD)size, NULL, NULL) == FALSE)
+   {
+      err = GetLastError();
+      return false;
+   }
+
+   CloseHandle(hFile);
+   return true;
+}
+
+std::string LoadFile(std::wstring path)
+{
+   HANDLE hFile;
+   OVERLAPPED ol = { 0 };
+
+   hFile = CreateFileW(path.c_str(), GENERIC_READ,
+      FILE_SHARE_READ, //FILE_SHARE_READ | FILE_FLAG_OVERLAPPED,
+      NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+   DWORD err = GetLastError();
+
+   if (hFile == INVALID_HANDLE_VALUE)
+      return "";
+
+   LARGE_INTEGER size;
+   if (!GetFileSizeEx(hFile, &size))
+   {
+      DWORD err = GetLastError();
+      CloseHandle(hFile);
+      return "";
+   }
+
+   std::string out;
+   out.resize(static_cast<size_t>(size.QuadPart));
+   DWORD bytesReaded = 0;
+   ReadFile(hFile, (void*)out.c_str(), static_cast<size_t>(size.QuadPart), &bytesReaded, &ol);
+
+   CloseHandle(hFile);
+   return out;
+}
+
+void SetTableSettingsInXML(BAMTableSettings& t)
+{
+   XMLDocument& doc = g_settings;
+   auto ts = doc.NewElement("TableSettings");
+
+   ts->SetAttribute("name", t.tableName.c_str());
+
+   auto tss = doc.NewElement("Scale");
+   tss->SetAttribute("x", t.scale[0]);
+   tss->SetAttribute("y", t.scale[1]);
+   tss->SetAttribute("z", t.scale[2]);
+   ts->InsertFirstChild(tss);
+
+   auto tst = doc.NewElement("Translation");
+   tst->SetAttribute("x", t.translation[0]);
+   tst->SetAttribute("y", t.translation[1]);
+   tst->SetAttribute("z", t.translation[2]);
+   ts->InsertEndChild(tst);
+
+   auto tsa = doc.NewElement("Angle");
+   tsa->SetAttribute("x", t.angle);
+   ts->InsertEndChild(tsa);
+
+   auto tsc = doc.NewElement("Camera");
+   tsc->SetAttribute("x", t.camera[0]);
+   tsc->SetAttribute("y", t.camera[1]);
+   tsc->SetAttribute("z", t.camera[2]);
+   ts->InsertEndChild(tsc);
+
+
+   tinyxml2::XMLElement* oldts = nullptr;
+   for (auto r = doc.FirstChildElement("TableSettings"); r; r = r->NextSiblingElement())
+   {
+      auto szName = r->Attribute("name");
+      if (szName && t.tableName == szName)
+      {
+         oldts = r;
+         break;
+      }
+   }
+
+   if (oldts)
+   {
+      doc.InsertAfterChild(oldts, ts);
+      doc.DeleteChild(oldts);
+   }
+   else
+   {
+      doc.InsertEndChild(ts);
+   }
+}
+
+void SaveXML(BAMTableSettings* tableSettings)
+{
+   XMLDocument& doc = g_settings;
+
+   auto& g = settings;
+   auto gs = doc.FirstChildElement("GlobalSettings");
+   if (gs == nullptr)
+   {
+      gs = doc.NewElement("GlobalSettings");
+      doc.InsertFirstChild(gs);
+   }
+
+   //gs->SetAttribute("MenuKey", g.menuKey);
+   gs->SetAttribute("ScreenRotation", g.rotation);
+   gs->SetAttribute("SwapWidthHeight", g.swapWidthHeight);
+   gs->SetAttribute("ForceBAMView", g.forceBAMView);
+
+   if (tableSettings)
+      SetTableSettingsInXML(*tableSettings);
+
+   XMLPrinter prn;
+   doc.Print(&prn);
+
+   auto fn = GetFileNameForSettingsXML();
+   SaveFile(fn, prn.CStr(), prn.CStrSize() - 1);
+}
+
+BAMTableSettings LoadXML(tinyxml2::XMLElement* ts)
+{
+   BAMTableSettings t;
+
+   auto szName = ts->Attribute("name");
+   if (szName)
+   {
+      t.tableName = szName;
+   }
+
+   auto tss = ts->FirstChildElement("Scale");
+   if (tss)
+   {
+      t.scale[0] = tss->FloatAttribute("x", 1.0f);
+      t.scale[1] = tss->FloatAttribute("y", 1.0f);
+      t.scale[2] = tss->FloatAttribute("z", 1.0f);
+   }
+
+   auto tst = ts->FirstChildElement("Translation");
+   if (tst)
+   {
+      t.translation[0] = tst->FloatAttribute("x", 0.0f);
+      t.translation[1] = tst->FloatAttribute("y", 0.0f);
+      t.translation[2] = tst->FloatAttribute("z", 0.0f);
+   }
+
+   auto tsa = ts->FirstChildElement("Angle");
+   if (tsa)
+   {
+      t.angle = tsa->FloatAttribute("x", 0.0f);
+   }
+
+   auto tsc = ts->FirstChildElement("Camera");
+   if (tsc)
+   {
+      t.camera[0] = tsc->FloatAttribute("x", 0.0f);
+      t.camera[1] = tsc->FloatAttribute("y", 0.0f);
+      t.camera[2] = tsc->FloatAttribute("z", 0.0f);
+   }
+   return t;
+}
+
+void LoadXML()
+{
+   XMLDocument& doc = g_settings;
+
+   auto fn = GetFileNameForSettingsXML();
+   auto xml = LoadFile(fn);
+
+   if (xml.size() == 0)
+      return;
+
+   if (doc.Parse(xml.c_str(), xml.size()))
+      return;
+
+   auto gs = doc.FirstChildElement("GlobalSettings");
+   if (gs)
+   {
+      auto& g = settings;
+      g.rotation = gs->IntAttribute("ScreenRotation", 0);
+      g.swapWidthHeight = gs->IntAttribute("SwapWidthHeight", 0);
+      g.forceBAMView = gs->IntAttribute("ForceBAMView", 0);
+   }
+
+   auto tableName = GetTableName();
+   for (auto ts = doc.FirstChildElement("TableSettings"); ts; ts = ts->NextSiblingElement())
+   {
+      auto szName = ts->Attribute("name");
+      if (szName && tableName == szName)
+      {
+         g_TableSettings = LoadXML(ts);
+         return;
+      }
+      if (szName && std::string("Default") == szName)
+      {
+         g_DefaultSettings = LoadXML(ts);
+      }
+   }
+   g_TableSettings = g_DefaultSettings;
+   g_TableSettings.tableName = tableName;
+}
+
+// =============================================================================
+
+void init()
+{
+   settings = BAMGlobalSettings();
+   g_TableSettings = BAMTableSettings();
+
+   LoadXML();
+   SaveXML(nullptr);
+}
+
+void drawMenu()
+{
+   ImGuiIO& io = ImGui::GetIO();
+   ImGui::SetNextWindowSizeConstraints(ImVec2(350, 300), ImVec2(FLT_MAX, FLT_MAX));
+
+   if (ImGui::Begin("BAM MENU", &settings.isVisible))
+   {
+      if (ImGui::CollapsingHeader("Global Settings", ImGuiTreeNodeFlags_DefaultOpen))
+      {
+         ImGui::Text("Screen rotation:");
+         ImGui::SameLine();
+         int& r = settings.rotation;
+         ImGui::RadioButton("0", &r, 0);
+         ImGui::SameLine();
+         ImGui::RadioButton("90", &r, 1);
+         ImGui::SameLine();
+         ImGui::RadioButton("180", &r, 2);
+         ImGui::SameLine();
+         ImGui::RadioButton("270", &r, 3);
+
+         bool v = settings.swapWidthHeight != 0;
+         ImGui::Checkbox("Swap width/height", &v);
+         settings.swapWidthHeight = v ? 1 : 0;
+
+         v = settings.forceBAMView != 0;
+         ImGui::Checkbox("Force BAM View", &v);
+         settings.forceBAMView = v ? 1 : 0;
+      }
+
+      ImGui::Separator();
+      if (ImGui::CollapsingHeader("Table Settings", ImGuiTreeNodeFlags_DefaultOpen))
+      {
+         auto& t = g_TableSettings;
+         ImGui::DragFloat3("Translation", t.translation);
+         ImGui::DragFloat3("Scale", t.scale, 0.01);
+         ImGui::DragFloat("Angle", &t.angle, 0.05f, -180.0f, 180.0f, "%.01f");
+         if (!BAM.IsBAMTrackerPresent())
+         {
+            ImGui::DragFloat3("Camera", t.camera);
+         }
+      }
+
+      int i = static_cast<int>(ImGui::GetWindowSize().x);
+      ImGui::Separator();
+      if (ImGui::Button("Save as Default", ImVec2(140, 30)))
+      {
+         g_DefaultSettings = g_TableSettings;
+         g_DefaultSettings.tableName = "Default";
+         SaveXML(&g_DefaultSettings);
+      }
+      ImGui::SameLine();
+
+      ImGui::Indent(std::max(150.0f, i - 70.0f));
+      if (ImGui::Button("Save", ImVec2(60, 30)))
+      {
+         SaveXML(&g_TableSettings);
+      }
+   }
+
+   ImGui::End();
+   ImGui::EndFrame();
+}
+
+void createProjectionAndViewMatrix(float* const __restrict P, float* const __restrict V)
+{
+   // If BAM tracker is not running, we will not do anything.
+   if (BAM.IsBAMTrackerPresent() || settings.forceBAMView)
+      _ceateProjectionAndViewMatrix(P, V);
+}
+} // namespace BAMView
+#endif

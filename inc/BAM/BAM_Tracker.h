@@ -1,3 +1,5 @@
+#pragma once
+#ifdef ENABLE_BAM
 /**
 *  Copyright (C) 2016 Rafal Janicki
 *
@@ -282,3 +284,4 @@ namespace BAM_Tracker {
 	};
 
 }
+#endif
