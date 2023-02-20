@@ -77,6 +77,10 @@ void CollectionManagerDialog::EditCollection()
         char szT[sizeof(pcol->m_wzName)/sizeof(pcol->m_wzName[0])];
         WideCharToMultiByteNull(CP_ACP, 0, pcol->m_wzName, -1, szT, sizeof(szT), nullptr, nullptr);
         ListView_SetItemText(hListHwnd, sel, 0, szT);
+
+        char buf[16] = { 0 };
+        sprintf_s(buf, sizeof(buf), "%i", pcol->m_visel.size());
+        ListView_SetItemText(hListHwnd, sel, 1, buf);
     }
 }
 
