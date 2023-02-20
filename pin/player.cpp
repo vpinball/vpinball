@@ -907,19 +907,24 @@ void Player::ToggleFPS()
                m_infoProbeIndex = 0;
                break;
             }
-            RenderProbe *render_probe = m_ptable->m_vrenderprobe[m_infoProbeIndex >> 1];
-            RenderTarget *probe = render_probe->GetProbe((m_infoProbeIndex & 1) == 0);
+            RenderProbe * const render_probe = m_ptable->m_vrenderprobe[m_infoProbeIndex >> 1];
+            RenderTarget * const probe = render_probe->GetProbe((m_infoProbeIndex & 1) == 0);
             if (probe != nullptr)
                return;
          }
       }
+      if (m_infoMode == IF_NONE)
+         ShowCursor(TRUE);
       m_infoMode = (InfoMode)(m_infoMode + 1);
       if (m_infoMode == IF_STATIC_ONLY && m_pin3d.m_pddsStatic == nullptr)
          continue;
       if (m_infoMode == IF_AO_ONLY && GetAOMode() == 0)
          continue;
       if (m_infoMode == IF_INVALID)
+      {
+         ShowCursor(FALSE);
          m_infoMode = IF_NONE;
+      }
       if (m_infoMode != IF_RENDER_PROBES)
          return;
    }
