@@ -1,12 +1,12 @@
-// Win32++   Version 9.1
-// Release Date: 26th September 2022
+// Win32++   Version 9.2
+// Release Date: 20th February 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2022  David Nash
+// Copyright (c) 2005-2023  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -42,7 +42,7 @@
 namespace Win32xx
 {
     // typedef for _beginthreadex's callback function.
-    typedef UINT(WINAPI* PFNTHREADPROC)(LPVOID);
+    typedef UINT WINAPI THREADPROC(LPVOID);
 
 
     ////////////////////////////////////////////////////
@@ -53,7 +53,7 @@ namespace Win32xx
     {
     public:
         CThreadT();
-        CThreadT(PFNTHREADPROC pfnThreadProc, LPVOID pParam);
+        CThreadT(THREADPROC* pfnThreadProc, LPVOID pParam);
         virtual ~CThreadT();
 
         // Operations
@@ -72,7 +72,7 @@ namespace Win32xx
         CThreadT(const CThreadT&);              // Disable copy construction
         CThreadT& operator = (const CThreadT&); // Disable assignment operator
 
-        PFNTHREADPROC m_pfnThreadProc;  // Thread callback function
+        THREADPROC* m_pfnThreadProc;    // Thread callback function
         LPVOID m_pThreadParams;         // Thread parameter
         HANDLE m_thread;                // Handle of this thread
         UINT m_threadID;                // ID of this thread
@@ -89,7 +89,7 @@ namespace Win32xx
     class CWorkThread : public WorkThread
     {
     public:
-        CWorkThread(PFNTHREADPROC pfnThreadProc, LPVOID pParam)
+        CWorkThread(THREADPROC* pfnThreadProc, LPVOID pParam)
               : WorkThread(pfnThreadProc, pParam) {}
         virtual ~CWorkThread() {}
 
@@ -144,7 +144,7 @@ namespace Win32xx
 
     // CThreadT constructor.
     template <class T>
-    inline CThreadT<T>::CThreadT(PFNTHREADPROC pfnThreadProc, LPVOID pParam) :m_pfnThreadProc(0),
+    inline CThreadT<T>::CThreadT(THREADPROC* pfnThreadProc, LPVOID pParam) :m_pfnThreadProc(0),
         m_pThreadParams(0), m_thread(0), m_threadID(0)
     {
         m_pfnThreadProc = pfnThreadProc;
@@ -183,7 +183,7 @@ namespace Win32xx
         if (m_thread)
         {
             assert(!IsRunning());
-            CloseHandle(m_thread);
+            ::CloseHandle(m_thread);
         }
 
         m_thread = reinterpret_cast<HANDLE>(::_beginthreadex(pSecurityAttributes, stack_size, m_pfnThreadProc,
@@ -267,8 +267,11 @@ namespace Win32xx
 
     inline CWinThread::~CWinThread()
     {
-        // Post a WM_QUIT to safely end the thread.
-        PostThreadMessage(WM_QUIT, 0, 0);
+        if (GetThread() != 0)
+        {
+            // Post a WM_QUIT to safely end the thread.
+            PostThreadMessage(WM_QUIT, 0, 0);
+        }
 
         // Wait up to 1 second for the thread to end.
         ::WaitForSingleObject(*this, 1000);

@@ -1,5 +1,5 @@
-// Win32++   Version 9.1
-// Release Date: 26th September 2022
+// Win32++   Version 9.2
+// Release Date: 20th February 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -436,9 +436,6 @@ namespace Win32xx
     {
         // Display some text in the debugger.
         ::OutputDebugString(_T("*** CUserException thrown ***\n"));
-
-        if (GetError() != 0)
-            ::OutputDebugString(GetErrorString());
     }
 
     // CUserException constructor
@@ -453,9 +450,6 @@ namespace Win32xx
             ::OutputDebugString(text);
             ::OutputDebugString(_T("\n"));
         }
-
-        if (GetError() != 0)
-            ::OutputDebugString(GetErrorString());
     }
 
     // CUserException destructor.

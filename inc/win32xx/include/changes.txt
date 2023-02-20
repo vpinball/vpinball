@@ -1,3 +1,50 @@
+Version 9.2
+===========
+
+This version provides support for dark mode and provides a sample
+that demonstrates how to implement dark mode for a frame application.
+
+New Features and Enhancements
+-----------------------------
+* Added support for colored text in the status bar.
+  CFrame now uses owner draw to render the status bar, allowing different
+  colored text to be displayed. The StatusBarTheme struct has been extended
+  to allow the status bar text color to be specified. The Themes sample 
+  demonstrates the use of different colored text in the status bar.
+
+* Added support for dark mode.
+  CFrame now provides support for dark mode by providing the option to use a
+  dark menu. This can be used to develop an application with an appropriate
+  visual style for dark mode when combined with a black Win32++ theme. Refer
+  to the black theme in the Themes sample, and also the DarkMode sample.
+
+* Added the DarkModeFrame sample.
+  This samples demonstrates how to make a Win32++ application dark mode aware.
+  It uses the Windows App API which is an optional feature that can be 
+  installed with Visual Studio Community 2022. This sample detects when the
+  Windows theme is using dark mode, and adjusts the frame's theme accordingly.
+  The sample also uses a dialog that supports dark mode to display the 
+  information about the application. 
+  This samples requires Windows 10 or higher.
+
+Changes in Detail
+-----------------
+Added CFrameT::GetMenuBarFont
+Added CFrameT::GetStatusBarFont
+Added CFrameT::IsUsingDarkMenu
+Added CFrameT::IsUsingOwnerDrawnMenu
+Added CFrameT::OnDrawStatusBar
+Added CFrameT::ResetMenuMetrics
+Added CFrameT::UseDarkMenu
+Added CFrameT::UseOwnerDrawnMenu
+Added CMenu::GetMenuItemData
+Added StatusBarTheme::clrText
+
+Removed CFrameT::GetMenuItemPos (use CMenu::FindMenuItem instead)
+
+Added DarkModeFrame sample
+
+
 Version 9.1
 ===========
 
@@ -14,13 +61,6 @@ New Features and Enhancements
     suitable for the popup menu for the toolbar bitmap with a resource ID of
     IDW_MAIN. Alternatively you can provide icons with multiple image sizes as
     demonstrated in the samples.
-
- * A range of image sizes is supported by tab controls and dock containers,
-    based on the size of the tab's text.
-
-* Standardised the type used for resources.
-  - For consistency, the resources IDs used by toolbars, menus and dialogs are
-    all treated as the unsigned integer type (UINT).
 
 * Updated the ListView sample.
   - An edit control has been added to provide support the in-place editing of
@@ -46,78 +86,17 @@ Removed  CDialog::IsIndirect
 Renamed  CMenuBar::GetMenu   to   CMenuBar::GetBarMenu
 Renamed  CMenuBar::SetMenu   to   CMenuBar::SetupMenuBar
 
-Updated CBitmap.  Function parameters for resource IDs now use UINT.
-Updated CDC.      Function parameters for resource IDs now use UINT.
-Updated CToolbar. Function parameters for resource IDs now use UINT. 
-Updated CWnd.     Function parameters for resource IDs now use UINT.
-
 
 Version 9.0
 ===========
 
-Changes affecting compatibility with previous versions:
--------------------------------------------------------
-* Worker threads now use CWorkThread instead of CWinThread.
-  Note: Window threads continue to use CWinThread as before.
-* The CResizer alignment enum is defined within CResizer. When used, they are
-  now prefixed with "CResizer::", for example CResizer::bottomright.
-* The CString constructor no longer accepts an int or double argument.
-  The operator << can now be used for this instead.
-* The following CFrameT functions are no longer virtual: GetMenuBar;
-  GetReBar; GetStatusBar; and GetToolBar. 
-  To change the menubar, rebar, statusbar and toolbar, use the following:
-  SetMenuBar; SetReBar; SetStatusBar; and SetToolBar.
-
-Bug fixes:
-- Fixed a GDI resource leak in CFont::CreatePointFontIndirect.
-- Fixed a C++20 compliance issue in CRibbonFrameT.
-- Fixed several issues in CString.
-
 New Features and Enhancements
------------------------------ 
-* Added CMesssagePump. CWinApp now inherits from CMessagePump instead of
-  CWinThread.
-
+-----------------------------
 * Updated thread support. Thread classes now use the CThreadT class template.
   Threads that support windows continue to use CWinThread. Worker threads now
   use CWorkThread. 
   CWinThread inherits from CThreadT<CMessagePump>.
   CWorkThread inherits from CThreadT<CObject>.
-
-* Updated CString.
-  - CString's int and double constructors have been replaced with ToCString.
-    The ToCString function accepts all types supported by std::stringstream.
-  - The operator+ and operator+= overloads for int and double have been 
-    replaced with the operator<< overload. The operator<< overload accepts 
-    all types supported by std::stringstream.
-
-    Coding example:
-    int i = 3;
-    UINT u = 8;
-    CString str = ToCString(u);
-    str << "Some text " << u << " " << i << 'c' << 'h';
-
-* All unscoped enums have been replaced with scoped enums to avoid potential
-  name clashes. The Alignment enum used by CResizer no longer has global scope.
-  It is now used as follows:
-    m_resizer.AddChild(m_checkA, CResizer::bottomright, 0);
-    m_resizer.AddChild(m_checkB, CResizer::bottomright, 0);
-    m_resizer.AddChild(m_checkC, CResizer::bottomright, 0);
-    m_resizer.AddChild(m_richEdit1, CResizer::topright, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_richEdit2, CResizer::bottomleft, RD_STRETCH_WIDTH| RD_STRETCH_HEIGHT);	
-
-* Updated CFrameT
-  Frames provide their own rebar, menubar, toolbar and statusbar controls
-  which are used by default. Alternative controls that have been customised can
-  be used instead. These controls can be specified by using one of the
-  following functions: SetMenuBar, SetReBar, SetStatusBar, or SetToolBar.
-  Refer to the StatusBar sample for a demonstration of how to use a customised
-  status bar control with a frame.
-
-* Added wxx_setup.h to the Win32++ library. This file defines the set of macros
-  and includes the C, C++, and windows header files required by Win32++. The
-  wxx_cstring.h file now includes wxx_setup.h, allowing CString to be used
-  independently from the rest of the library.
 
 * The values for WINVER and related macros now default to values suitable for 
   Windows 10 and Windows 11. Different values can be specified before including
@@ -125,23 +104,15 @@ New Features and Enhancements
   targetver.h as shown in the samples. Visual Studio 6 will require WINVER to
   be set to values appropriate for Win95 or Win98.
 
-* Updated CFile.
-  Additional flags and attributes can be specified when files are created or 
-  opened. CFile's constructor and Open functions now support an additional
-  attributes parameter which allows the flags and attributes to be specified.
-
 * Updated CDialog
   Added a default constructor. Use either the SetDialogTemplate, 
   SetDialogResource or SetDialogFromID functions to specify the dialog if the
   default constructor is used.
 
 * Updated the MenuTheme struct.
-  A clrText member has been added to the MenuTheme struc to define the color of
+  A clrText member has been added to the MenuTheme struct to define the color of
   menubar text. This is now used to set the menubar text color to white for the
   BLACK theme in the themes sample.
-
-* Added the project files for Microsoft Visual Studio Community 2022 to the 
-  samples. These are configured to use C++20.
 
 * Added the DialogTemplate sample.
   This sample demonstrates how to search for the resources embedded in a
@@ -167,9 +138,6 @@ New Features and Enhancements
 * Added the TitlebarFrame sample.
   This sample demonstrates how to use a customized title bar with a frame.
   It demonstrates the frame in two modes: mini-frame and full-frame.
-
-* Support for WinCE has been removed.
-  Version 8.9.1 is the most recent version of Win32++ that supports WinCE.
 
 
 Changes in Detail
@@ -268,11 +236,6 @@ New Features and Enhancements
     which allows the user to select the printer to use.
     Requires Windows 2000 or newer ( WINVER >= 0500 ).
 
-* Updated CMenuBar.
-  - CMenuBar now emulates the behavior of a traditional menu more closely.
-  - The accelerator prefixes are now normally hidden, but are displayed for
-    keyboard navigation.
-
  * Updated CDC.
   - A CDC restores its device context to its original state when its last
     copy is destroyed, unless the Detach function is used to detach it.
@@ -282,10 +245,6 @@ New Features and Enhancements
     Detach is not required unless we need to keep the changes made to the
     device context.
 
- * Updated CBitmap.
-  - Added CopyImage.
-  - Added GetSize.
-
  * Updated CString.
   - Added << operator overload. It accepts integers, doubles, characters,
     character arrays and CStrings. Use as follows:
@@ -294,31 +253,7 @@ New Features and Enhancements
     double y = 3.14;
     str << "Equation: " << x << " + " << y << " = " << x+y << '\n';
 
- * Updated CPropertySheet.
-   OnSetDEFID can be overridden to set the default push button for the 
-   property sheet.
-
- * Updated CTaskTialog
-   The declarations of several member functions have changed. Member functions
-   which previously used a LPTCSTR parameter now use use a LPWCSTR parameter.   
-
  * Added ListView sample.
-
-
-
-Changes in Detail
------------------
-Added ListView                      sample
-Added CPrintDialogEx                class
-Added CBitmap::CopyImage            member function
-Added CBitmap::GetSize              member function
-Added CBitmap::LoadImage            (additional overloads)
-Added CFrameT::OnKeyboardHook       member function
-Added CMenuBar::IsAltMode           member function
-Added CPropertySheet::OnSetDEFID    member function
-Added CString::operator <<          global function
-Added CStringT::operator <<         global function
-Modified CTaskDialog. Replaced LPCTSTR function arguments with LPCWSTR
 
 
 Version 8.9
@@ -327,14 +262,6 @@ Version 8.9
 This version adds support for the Clang compiler, and improves the handling
 of error messages.
 
-Bug fixes:
-- Corrected CRegKey::SetMultiStringValue
-- Corrected CRegKey::SetStringValue
-- Corrected CDC::LoadImage
-- Corrected CDC::GetNearestColor
-- Corrected CMDIFrameT<T>::OnViewStatusBar
-- Corrected CMDIFrameT<T>::OnViewToolBar()
-- CWnd::Close can now be used to close applications with a Ribbon UI.
 
 New Features and Enhancements
 -----------------------------
@@ -350,84 +277,9 @@ New Features and Enhancements
   - CImageList throws a CResourceException if the image list can't be created.
   - CDC throws a CResourceException the selection of a GDI object fails.
 
-* Updated CPrintPreview to support changes to Windows 10.
-
-* The samples demonstrate exception handling in their window procedures.
-   Exceptions that are raised when messages are processed are handled
-   gracefully, and allow the program to continue. Adding exception handling
-   to WndProc and DialogProc also catches exceptions raised in OnCommand,
-   OnNotify, OnDraw etc.
-   
 * Updated the manifests used in the samples.
    The manifests now use GDI scaling. This provides better support for dual
    monitors, and monitors with high resolution.
-
-
-Changes in detail
------------------
-Added the following set of virtual functions to CWinApp for error messages.
-  CWinApp::MsgAppThreadFailed
-  CWinApp::MsgArReadFail
-  CWinApp::MsgArNotCStringA
-  CWinApp::MsgArNotCStringW
-  CWinApp::MsgCriticalSection
-  CWinApp::MsgMtxEvent
-  CWinApp::MsgMtxMutex
-  CWinApp::MsgMtxSemaphore
-  CWinApp::MsgWndCreateEx
-  CWinApp::MsgWndDoModal
-  CWinApp::MsgWndGlobalLock
-  CWinApp::MsgWndPropertSheet
-  CWinApp::MsgSocWSAStartup
-  CWinApp::MsgSocWS2Dll
-  CWinApp::MsgIPControl
-  CWinApp::MsgRichEditDll
-  CWinApp::MsgTaskDialog
-  CWinApp::MsgFileClose
-  CWinApp::MsgFileFlush
-  CWinApp::MsgFileLock
-  CWinApp::MsgFileOpen
-  CWinApp::MsgFileRead
-  CWinApp::MsgFileRename
-  CWinApp::MsgFileRemove
-  CWinApp::MsgFileLength
-  CWinApp::MsgFileUnlock
-  CWinApp::MsgFileWrite
-  CWinApp::MsgGdiDC
-  CWinApp::MsgGdiIC
-  CWinApp::MsgGdiBitmap
-  CWinApp::MsgGdiBrush
-  CWinApp::MsgGdiFont
-  CWinApp::MsgGdiPalette
-  CWinApp::MsgGdiPen
-  CWinApp::MsgGdiRegion
-  CWinApp::MsgGdiGetDC
-  CWinApp::MsgGdiGetDCEx
-  CWinApp::MsgGdiSelObject
-  CWinApp::MsgGdiGetWinDC
-  CWinApp::MsgGdiBeginPaint
-  CWinApp::MsgImageList
-  CWinApp::MsgMenu
-  CWinApp::MsgPrintFound
-  CWinApp::MsgDDX_Byte
-  CWinApp::MsgDDX_Int
-  CWinApp::MsgDDX_Long
-  CWinApp::MsgDDX_Short
-  CWinApp::MsgDDX_Real
-  CWinApp::MsgDDX_UINT
-  CWinApp::MsgDDX_ULONG
-  CWinApp::MsgDDV_IntRange
-  CWinApp::MsgDDV_UINTRange
-  CWinApp::MsgDDV_RealRange
-  CWinApp::MsgDDV_StringSize
-
-The following functions now throw a CResourceException on failure:
-  CDC::SelectObject
-  CDC::SelectPalette
-  CImageList::Create
-  CImageList::CreateDisabledImageList
-  CMenu::CreateMenu
-  CMenu::CreatePopupMenu
 
 
 Version 8.8
@@ -435,9 +287,6 @@ Version 8.8
 
 This version adds the BrowserATL, MovieShow and WinPlot samples. It also adds
 support for Code::Blocks version 20.03.
-
-Bug Fixes:
-- Corrected the definition of CEventSink in the Browser sample.
 
 
 New Features and Enhancements
@@ -463,77 +312,17 @@ New Features and Enhancements
    This sample demonstrates the interoperability between Win32++ and ATL.
    It does the same thing as the Browser sample, except that it uses ATL.
 
-* Extended the Toolbar sample.
-   The toolbar sample now demonstrates how to add additional toolbars to the
-   frame. It continues to demonstrate how to customisz a toolbar in runtime,
-   and how to add a horizontal or vertical toolbar to the frame's view.
-
-* Updated the Code::Blocks project files support version 20.03.
-   Note: The MinGW compiler that ships with version 20.03 of Code::Blocks
-   compiles 64 bit code only. To support code 32bit code you can use the
-   MinGW compiler that ships with Code::Blocks version 17:12.
-
-* Updated the CAXHost class.
-   This class implements a COM container which hosts an ActiveX control,
-   such as internet explorer. The CWebBrowser class uses CAXHost as a
-   COM container for the IWebBrowser2 interface.
-   
 * Updated the manifest file in the samples.
    The manifest file now provides support for Windows 10 features, and
    support for Per-Monitor DPI Awareness, version 2. GetWinVersion now
    reports a value of 3000 for Windows 10.
 
-* Minor updates to the samples.
-  - The Notepad and PrintPreview samples use OnIdle to update the toolbar.
-  - Samples which use CWebBrowser now suppress the display of java script
-    errors.
-  - Added column sort to explorer sample.
-  - Samples which require Windows XP and above use wide characters. Samples
-    which are supported on Windows 98 continue to use tchar characters.
-  
-* Minor updates to the help documentation.
 
-
-Changes in detail
------------------
-Updated CAXHost                                    class
-
-Added BrowserATL                                   sample
-Added MovieShow                                    sample
-Added WinPlot                                      sample
-
-Added CDC::AbortPath                               member function
-Added CDC::CreatePointFont                         member function
-Added CDC::CreatePointFontIndirect                 member function
-Added CDC::CreateRgnFromData                       member function
-Added CDC::CreateRgnFromPath                       member function
-Added CDC::CreateRoundRectRgn                      member function
-Added CDC::ExtCreatePen                            member function
-Added CDC::StrokePath                              member function
-Added CDC::StrokeAndFillPath                       member function
-Added CFrameT::AddMenuIcon (additional overload)   member function
-Added CFrameT::SetKbdHook                          member function
-Added CImageList::AddIcon                          member function
-Added CListView::InsertItem (additional overload)  member function
-Added CTreeView::InsertItem (additional overload)  member function
-Added CWnd::Close                                  member function
-Modified CMonthCalendar::SetDayState               member function
-Modified CRibbon::CreateRibbon                     member function
-Modified CRibbon::DestroyRibbon                    member function
-Modified CToolbar::EnableButton                    member function
-Renamed CTab::SetFont to CTab::SetTabFont          member function
-
-
-Version 8.7.0
-=============
+Version 8.7
+===========
 
 This version adds print preview support to the framework, and support for
 Microsoft Visual Studio Community 2019.
-
-Bug Fix
--------
-* Corrected a possible access violation in debug mode when an application with
-  a ribbon is closed.
 
 
 New Features and Enhancements
@@ -567,63 +356,6 @@ New Features and Enhancements
   The CGlobalLock class is used to automatically lock and unlock global memory.
   This can be useful when working with printers. Global memory is used to hold
   memory for DEVNAMES and DEVMODE structures.
-
-  When the global memory is locked, we acquire a pointer we can use to access
-  its contents. CDevMode and CDevNames are useful typedefs for CGlobalLock.
-  The global memory is locked when CGlobalLock is constructed, and unlocked
-  when CGlobalLock is destructed.
-
-* Extended CScrollView
-  CScrollView now processes the following keys:
-  - Home and End.
-  - Page Up and Page Down.
-  - Left, right, up, and down arrow keys.
-
-* The samples now demonstrate an improved implementation of the Doc/View
-  architecture. Previously CDoc and CView were both member variables of
-  CMainFrame. Now CView is a member variable of CMainFrame, and CDoc is
-  a member variable of CView. This allows both CMainFrame and CView to
-  easily access CDoc, which is what we need.
-
-
-Changes in detail
------------------
-Added Console                                    sample
-Added CHGlobal                                   class
-Added CPrintPreview                              class
-Added CDC::GetBrushOrgEx                         member function
-Added CDC::SetBrushOrgEx                         member function
-Added CGlobalLock<DEVNAMES>::GetDeviceName       member function
-Added CGlobalLock<DEVNAMES>::GetDriverName       member function
-Added CGlobalLock<DEVNAMES>::GetPortName         member function
-Added CGlobalLock<DEVNAMES>::IsDefaultPrinter    member function
-Added CPrintDialog::SetDefaults                  member function
-Added CScrollView::GetLineScrollSize             member function
-Added CScrollView::GetPageScrollSize             member function
-Added CWebBrowser::GetDocument                   member function
-
-Modified ::GetApp               Now returns a pointer to CWinApp.
-
-Added VS2019 project files to all samples and tutorials
-
-Updated the samples
- - Browser sample now demonstrates print and print preview.
- - FastGDI sample now demonstrates print and print preview.
- - PrintPreview sample now demonstrates print and print preview.
- - NotePad sample now demonstrates print and print preview.
- - Scribble sample now demonstrates print and print preview.
- - Frame sample now demonstrates print and print preview.
- - INIFrame sample now demonstrates print and print preview.
- - Added PrintPreview sample to demonstrate CPrintPreview.
-
-Updated the tutorials
- - The tutorials now demonstrate how to implement a print preview.
- - The project files have been moved to a separate folder.
-
-Updated the documentation
- - Added 'Networking' to 'Using Win32++
- - Added 'Printing' to 'Using Win32++
- - Added 'Print Preview' to 'Using Win32++
 
 
 Version 8.6
@@ -685,63 +417,6 @@ New Features and Enhancements
   - bottomcenter: Positions proportionally along the bottom side
 
 
-Changes in detail
------------------
-Added NetClientAsync                             sample
-Added NetServerAsync                             sample
-Added wxx_mutex.h                                header file
-Added CEvent                                     class
-Added CMutex                                     class
-Added CSemaphore                                 class
-Added CBitmap::ConvertToDisabled                 member function
-Added CComboBox::GetEditCtrl                     member function
-Added CComboBox::GetLBCtrl                       member function
-Added CEdit::AppendText                          member function
-Added CFrameT::AddDisabledMenuImage              member function
-Added CFrameT::IsUsingStatusBar                  member function
-Added CFrameT::UseStatusBar                      member function
-Added CImageList::Copy                           member function
-Added CImageList::GetBkColor                     member function
-Added CImageList::GetDragImage                   member function
-Added CImageList::EndDrag                        member function
-Added CImageList::ExtractIcon                    member function
-Added CImageList::Read                           member function
-Added CImageList::SetBkColor                     member function
-Added CImageList::SetDragCursorImage             member function
-Added CImageLIst::Write                          member function
-Added CResizer::SetMinRect                       member function
-Added CResizer::SetMaxRect                       member function
-Added CRichEdit::AppendText                      member function
-Added CSocket::StartAsync                        member function
-Added CWinThread::IsRunning                      member function
-Added StrCopy                                    function
-Added StrCopyA                                   function
-Added StrCopyW                                   function
-
-Modified CFrameT::AddMenuIcon                    added optional iconWidth argument
-CTime::GetGmtTm                                  argument no longer optional or NULL
-CTime::GetLocalTm                                argument no longer optional or NULL
-
-Renamed CFrameT::GetUseIndicatorStatus    to     CFrameT::IsUsingIndicatorStatus
-Renamed CFrameT::GetUseMenuStatus         to     CFrameT::IsUsingMenuStatus
-Renamed CFrameT::GetUseReBar              to     CFrameT::IsUsingReBar
-Renamed CFrameT::GetUseThemes             to     CFrameT::IsUsingThemes
-Renamed CFrameT::GetUseToolBar            to     CFrameT::IsUsingToolBar
-Renamed CFrameT::SetUseIndicatorStatus    to     CFrameT::UseIndicatorStatus
-Renamed CFrameT::SetUseMenuStatus         to     CFrameT::UseMenuStatus
-Renamed CFrameT::SetUseReBar              to     CFrameT::UseReBar
-Renamed CFrameT::SetUseThemes             to     CFrameT::UseThemes
-Renamed CFrameT::SetUseToolBar            to     CFrameT::UseToolBar
-Renamed CSocket::GetLastError             to     CSocket::GetErrorString
-Renamed CToolBar::SetBitmap               to     CToolBar::AddReplaceBitmap
-
-The CFrameT::InitValues struct has been updated and now has the following members:
- CRect   position
- int     showCmd
- BOOL    showStatusBar
- BOOL    showToolBar
-
-
 Version 8.5
 ===========
 
@@ -784,47 +459,6 @@ New Features and Enhancements
     the order in which items are added for owner drawn controls.
 
 
-Changes in detail
------------------
-Added CEnhMetaFileDC                                 class
-Added CFileFind                                      class
-Added CFolderDialog                                  class
-Added CThreadLock                                    class
-
-Added CComboBox::CompareItem                         member function
-Added CDocker::GetActiveView                         member function
-Added CDocker::SaveContainerRegistrySettings         member function
-Added CDockFrame::OnActivate                         member function
-Added CDockFrame::OnDockActivated                    member function
-Added CDockFrame::OnDockDestroyed                    member function
-Added CDockFrame::OnMouseActivate                    member function
-Added CDockFrame::OnSysColorChange                   member function
-Added CListBox::CompareItem                          member function
-Added CTab::SetBlankPageColor                        member function
-Added CToolBar::GetExtendedStyle                     member function
-Added CWnd::GetExStyle                               member function
-Added CWnd::GetStyle                                 member function
-Added CWnd::SetExStyle                               member function
-Added CWnd::SetStyle                                 member function
-
-Added ::GetNonClientMetrics                          global function
-Added UWM_GETCDIALOG                                 message
-
-Added Direct2D                                       sample
-Added FilePrintPreview                               sample
-
-Modified CFile::Rename          now throws an exception on failure
-Modified CFile::Remove          now throws an exception on failure
-Modified CFile::Flush           now throws an exception on failure
-Modified CFile::Close           now throws an exception on failure
-Modified CFile::SetLength       now throws an exception on failure
-Modified CFile::LockRange       now throws an exception on failure
-Modified CFile::UnlockRange     now throws an exception on failure
-Modified CTab::AddTabPage       now returns CWnd*
-
-Removed ::GetSizeofNonClientMetrics   Use ::GetNonClientMetrics instead
-
-
 Version 8.4
 ===========
 
@@ -837,7 +471,7 @@ optional features are provided using class templates.
 
 New Features and Enhancements
 -----------------------------
-* Added CFrameT class template
+* Added CFrameT template class
    - CFrame now inherits from CFrameT<CWnd>.
    - CDockFrame now inherits from CFrameT<CDocker>.
    To use these classes, inherit your CMainFrame from either CFrame or
@@ -1623,18 +1257,8 @@ Version 6.4
 
 New Features and Enhancements
 -----------------------------
-* Docking:
-  - Added tabbed docking container with optional ToolBar
-  - Added close button to the caption of docked windows
-  - Added 'outer' docking  i.e. docking at the side of the frame rather
-      than inside another Docker.
-  - Added a second docking example demonstrating containers
-  - Added save/restore dock layout to docking examples
-  - Added Close All Dockables and Default Dock Layout to docking examples
-  - Added Win98 and WinME support for docking.
+* Extended support for docking with CDockContainer.
 * Added Region support to CDC class.
-* Updated the Notepad sample to handle Unicode text.
-* Themes example now demonstrates a ComboBoxEx control in its ToolBar
 
 
 Version 6.3
@@ -1651,8 +1275,6 @@ New Features and Enhancements
    to process the tab (and other) keys.
 * Added a CWnd::Destroy function. This returns a CWnd back to its default
    state ready to be reused.
-* The Frame now stores which child window had focus before it is de-activated,
-   and returns focus to this child when the frame application is reactivated.
 
 
 Version 6.2

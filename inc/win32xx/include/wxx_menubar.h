@@ -1,5 +1,5 @@
-// Win32++   Version 9.1
-// Release Date: 26th September 2022
+// Win32++   Version 9.2
+// Release Date: 20th February 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -1124,10 +1124,10 @@ namespace Win32xx
             AddButtons(1, &tbb);
 
             // Add the menu title to the string table.
-            std::vector<TCHAR> menuName(WXX_MAX_STRING_SIZE +1, _T('\0') );
-            TCHAR* pMenuName = &menuName[0];
-            GetMenuString(menu, static_cast<UINT>(i), pMenuName, WXX_MAX_STRING_SIZE, MF_BYPOSITION);
-            SetButtonText(static_cast<UINT>(i + maxedOffset), pMenuName);
+            CString menuName;
+            GetMenuString(menu, static_cast<UINT>(i), menuName.GetBuffer(WXX_MAX_STRING_SIZE), WXX_MAX_STRING_SIZE, MF_BYPOSITION);
+            menuName.ReleaseBuffer();
+            SetButtonText(static_cast<UINT>(i + maxedOffset), menuName);
         }
     }
 

@@ -1,5 +1,5 @@
-// Win32++   Version 9.1
-// Release Date: 26th September 2022
+// Win32++   Version 9.2
+// Release Date: 20th February 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -510,8 +510,8 @@ namespace Win32xx
         UINT cx = static_cast<UINT>(size.cx);
         UINT cy = static_cast<UINT>(size.cy);
         GetBandInfo(band, rbbi);
-        rbbi.cx         = cx + 2;
-        rbbi.cxMinChild = cx + 2;
+        rbbi.cx         = cx;
+        rbbi.cxMinChild = cx;
         rbbi.cyMinChild = cy;
         rbbi.cyMaxChild = cy;
 

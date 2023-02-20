@@ -1,5 +1,5 @@
-// Win32++   Version 9.1
-// Release Date: 26th September 2022
+// Win32++   Version 9.2
+// Release Date: 20th February 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -204,7 +204,7 @@ namespace Win32xx
     private:
         CMDIFrameT(const CMDIFrameT&);              // Disable copy construction
         CMDIFrameT& operator = (const CMDIFrameT&); // Disable assignment operator
-        void AppendMDIMenu(CMenu menuWindow);
+        void UpdateMDIMenu(CMenu menuWindow);
 
         std::vector<MDIChildPtr> m_mdiChildren;
         CMDIClient<CWnd> m_mdiClient;
@@ -270,10 +270,10 @@ namespace Win32xx
         return pMDIChild;
     }
 
-    // Adds the additional menu items the the "Window" submenu when
-    // MDI child windows are created.
+    // Updates the menu items the the "Window" submenu when
+    // MDI child windows are created or destroyed.
     template <class T>
-    inline void CMDIFrameT<T>::AppendMDIMenu(CMenu windowMenu)
+    inline void CMDIFrameT<T>::UpdateMDIMenu(CMenu windowMenu)
     {
         if (!windowMenu.GetHandle())
             return;
@@ -329,7 +329,8 @@ namespace Win32xx
                     ++window;
                 }
                 else if (9 == window)
-                // For the 10th MDI child, add this menu item and return
+                // For the 10th MDI child, add this menu item and return.
+                // The MDIClient creates a dialog when this menu entry is selected.
                 {
                     windowMenu.AppendMenu(MF_STRING, IDW_FIRSTCHILD + UINT_PTR(window), _T("&Windows..."));
                     return;
@@ -765,11 +766,15 @@ namespace Win32xx
                 {
                     if (T::GetMenuBar().IsWindow())
                     {
-                        AppendMDIMenu(menuWindow);
+                        // Update the popup Window menu.
+                        UpdateMDIMenu(menuWindow);
+
+                        // Update the menubar.
                         T::GetMenuBar().SetupMenuBar(menu);
                     }
                     else
                     {
+                        // Updates the MDI frame's menu adding the MDI children
                         WPARAM wparam = reinterpret_cast<WPARAM>(menu.GetHandle());
                         LPARAM lparam = reinterpret_cast<LPARAM>(menuWindow.GetHandle());
                         GetMDIClient().SendMessage(WM_MDISETMENU, wparam, lparam);

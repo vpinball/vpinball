@@ -1,5 +1,5 @@
-// Win32++   Version 9.1
-// Release Date: 26th September 2022
+// Win32++   Version 9.2
+// Release Date: 20th February 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -93,38 +93,18 @@ namespace Win32xx
 
     // Some useful smart pointers
     // Note: Modern C++ compilers can use these typedefs instead.
-    // typedef std::shared_ptr<CBitmap> BitmapPtr;
-    // typedef std::shared_ptr<CBrush> BrushPtr;
-    // typedef std::shared_ptr<CDC> DCPtr;
     // typedef std::shared_ptr<CDocker> DockPtr;
-    // typedef std::shared_ptr<CFont> FontPtr;
-    // typedef std::shared_ptr<CGDIObject> GDIPtr;
-    // typedef std::shared_ptr<CImageList> ImageListPtr;
     // typedef std::shared_ptr<CMDIChild> MDIChildPtr;
-    // typedef std::shared_ptr<CMenu> MenuPtr;
     // typedef std::shared_ptr<MenuItemData> MenuItemDataPtr;
-    // typedef std::shared_ptr<CPalette> PalettePtr;
-    // typedef std::shared_ptr<CPen> PenPtr;
     // typedef std::shared_ptr<CPropertyPage> PropertyPagePtr;
-    // typedef std::shared_ptr<CRgn> RgnPtr;
     // typedef std::shared_ptr<TLSData> TLSDataPtr;
     // typedef std::shared_ptr<CWinThread> WinThreadPtr;
     // typedef std::shared_ptr<CWorkThread> WorkThreadPtr;
     // typedef std::shared_ptr<CWnd> WndPtr;
-    typedef Shared_Ptr<CBitmap> BitmapPtr;
-    typedef Shared_Ptr<CBrush> BrushPtr;
-    typedef Shared_Ptr<CDC> DCPtr;
     typedef Shared_Ptr<CDocker> DockPtr;
-    typedef Shared_Ptr<CFont> FontPtr;
-    typedef Shared_Ptr<CGDIObject> GDIPtr;
-    typedef Shared_Ptr<CImageList> ImageListPtr;
     typedef Shared_Ptr<CMDIChild> MDIChildPtr;
-    typedef Shared_Ptr<CMenu> MenuPtr;
-    typedef Shared_Ptr<MenuItemData> MenuItemDataPtr;
-    typedef Shared_Ptr<CPalette> PalettePtr;
-    typedef Shared_Ptr<CPen> PenPtr;
+    typedef Shared_Ptr<MenuItemData> MenuItemDataPtr;;
     typedef Shared_Ptr<CPropertyPage> PropertyPagePtr;
-    typedef Shared_Ptr<CRgn> RgnPtr;
     typedef Shared_Ptr<TLSData> TLSDataPtr;
     typedef Shared_Ptr<CWinThread> WinThreadPtr;
     typedef Shared_Ptr<CWorkThread> WorkThreadPtr;
@@ -160,7 +140,6 @@ namespace Win32xx
         // Constructor
         CMenu_Data() : menu(0), isManagedMenu(false), count(1L) {}
 
-        std::vector<MenuPtr> vSubMenus; // A vector of smart pointers to CMenu
         HMENU menu;
         bool isManagedMenu;
         long count;
@@ -224,9 +203,11 @@ namespace Win32xx
         // Provide these access to CWinApp's private members:
         friend class CDC;
         friend class CDialog;
+        friend class CEnhMetaFile;
         friend class CGDIObject;
         friend class CImageList;
         friend class CMenu;
+        friend class CMetaFile;
         friend class CPageSetupDialog;
         friend class CPrintDialog;
         friend class CPrintDialogEx;

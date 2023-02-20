@@ -1,5 +1,5 @@
-// Win32++   Version 9.1
-// Release Date: 26th September 2022
+// Win32++   Version 9.2
+// Release Date: 20th February 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -149,6 +149,7 @@ namespace Win32xx
 
     inline CMetaFile::CMetaFile(const CMetaFile& rhs)
     {
+        CThreadLock mapLock(GetApp()->m_gdiLock);
         m_pData = rhs.m_pData;
         InterlockedIncrement(&m_pData->count);
     }
@@ -162,6 +163,7 @@ namespace Win32xx
     {
         if (this != &rhs)
         {
+            CThreadLock mapLock(GetApp()->m_gdiLock);
             InterlockedIncrement(&rhs.m_pData->count);
             Release();
             m_pData = rhs.m_pData;
@@ -179,6 +181,7 @@ namespace Win32xx
     // The HMETAFILE can be 0.
     inline void CMetaFile::Attach(HMETAFILE metaFile)
     {
+        CThreadLock mapLock(GetApp()->m_gdiLock);
         assert(m_pData);
 
         if (m_pData && metaFile != m_pData->metaFile)
@@ -196,6 +199,8 @@ namespace Win32xx
 
     inline void CMetaFile::Release()
     {
+        if (CWinApp::SetnGetThis())
+            CThreadLock mapLock(GetApp()->m_gdiLock);
         assert(m_pData);
 
         if (m_pData && InterlockedDecrement(&m_pData->count) == 0)
@@ -257,6 +262,7 @@ namespace Win32xx
     // The HENHMETAFILE can be 0.
     inline void CEnhMetaFile::Attach(HENHMETAFILE enhMetaFile)
     {
+        CThreadLock mapLock(GetApp()->m_gdiLock);
         assert(m_pData);
 
         if (m_pData && enhMetaFile != m_pData->enhMetaFile)
@@ -274,6 +280,8 @@ namespace Win32xx
 
     inline void CEnhMetaFile::Release()
     {
+        if (CWinApp::SetnGetThis())
+            CThreadLock mapLock(GetApp()->m_gdiLock);
         assert(m_pData);
 
         if (m_pData && InterlockedDecrement(&m_pData->count) == 0)

@@ -1,5 +1,5 @@
-// Win32++   Version 9.1
-// Release Date: 26th September 2022
+// Win32++   Version 9.2
+// Release Date: 20th February 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -2337,7 +2337,7 @@ namespace Win32xx
     // Sets the CREATESTRUCT parameters before the control is created.
     inline void CSpinButton::PreCreate(CREATESTRUCT& cs)
     {
-        cs.style = WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VISIBLE | UDS_SETBUDDYINT;
+        cs.style = WS_CHILD | WS_VISIBLE | WS_BORDER | UDS_SETBUDDYINT;
     }
 
     // Sets the WNDCLASS parameters before the control is created.

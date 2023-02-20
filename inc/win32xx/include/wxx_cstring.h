@@ -1,12 +1,12 @@
-// Win32++   Version 9.1
-// Release Date: 26th September 2022
+// Win32++   Version 9.2
+// Release Date: 20th February 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2022  David Nash
+// Copyright (c) 2005-2023  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -283,19 +283,15 @@ namespace Win32xx
 
         CString& operator = (const char ch)
         {
-            char str[2] = {0};
-            str[0] = ch;
-            AtoT tch(str);
-            m_str.assign(1, static_cast<LPCTSTR>(tch)[0]);
+            AtoT tch(&ch, CP_ACP, 1);
+            m_str.assign(1, tch.c_str()[0]);
             return *this;
         }
 
         CString& operator = (const WCHAR ch)
         {
-            WCHAR str[2] = {0};
-            str[0] = ch;
-            WtoT tch(str);
-            m_str.assign(1, static_cast<LPCTSTR>(tch)[0]);
+            WtoT tch(&ch, CP_ACP, 1);
+            m_str.assign(1, tch.c_str()[0]);
             return *this;
         }
 
@@ -331,19 +327,15 @@ namespace Win32xx
 
         CString& operator += (const char ch)
         {
-            char str[2] = {0};
-            str[0] = ch;
-            AtoT tch(str);
-            m_str.append(1, static_cast<LPCTSTR>(tch)[0]);
+            AtoT tch(&ch, CP_ACP, 1);
+            m_str.append(1, tch.c_str()[0]);
             return *this;
         }
 
         CString& operator += (const WCHAR ch)
         {
-            WCHAR str[2] = {0};
-            str[0] = ch;
-            WtoT tch(str);
-            m_str.append(1, static_cast<LPCTSTR>(tch)[0]);
+            WtoT tch(&ch, CP_ACP, 1);
+            m_str.append(1, tch.c_str()[0]);
             return *this;
         }
 
@@ -965,11 +957,14 @@ namespace Win32xx
     inline void CStringT<CHAR>::GetErrorString(DWORD error)
     {
         Empty();
-        CHAR* temp = 0;
+        CHAR* buffer = NULL;
         DWORD flags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
-        ::FormatMessageA(flags, NULL, error, 0, reinterpret_cast<LPSTR>(&temp), 1, NULL);
-        m_str.assign(temp);
-        ::LocalFree(temp);
+        ::FormatMessageA(flags, NULL, error, 0, reinterpret_cast<LPSTR>(&buffer), 1, NULL);
+        if (buffer != NULL)
+        {
+            m_str.assign(buffer);
+            ::LocalFree(buffer);
+        }
     }
 
     // Returns the error string for the specified System Error Code (e.g from GetLastError).
@@ -977,11 +972,14 @@ namespace Win32xx
     inline void CStringT<WCHAR>::GetErrorString(DWORD error)
     {
         Empty();
-        WCHAR* temp = 0;
+        WCHAR* buffer = NULL;
         DWORD flags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
-        ::FormatMessageW(flags, NULL, error, 0, reinterpret_cast<LPWSTR>(&temp), 1, NULL);
-        m_str.assign(temp);
-        ::LocalFree(temp);
+        ::FormatMessageW(flags, NULL, error, 0, reinterpret_cast<LPWSTR>(&buffer), 1, NULL);
+        if (buffer != NULL)
+        {
+            m_str.assign(buffer);
+            ::LocalFree(buffer);
+        }
     }
 
     // Inserts a single character at the given index within the string.
@@ -1305,16 +1303,17 @@ namespace Win32xx
         CStringT str;
         if (start >= 0)
         {
-        size_t pos1 = m_str.find_first_not_of(tokens, static_cast<size_t>(start));
-        size_t pos2 = m_str.find_first_of(tokens, pos1);
+            size_t pos1 = m_str.find_first_not_of(tokens, static_cast<size_t>(start));
+            size_t pos2 = m_str.find_first_of(tokens, pos1);
 
-        start = static_cast<int>(pos2) + 1;
-        if (pos2 == m_str.npos)
-            start = -1;
+            start = static_cast<int>(pos2) + 1;
+            if (pos2 == m_str.npos)
+                start = -1;
 
-        if (pos1 != m_str.npos)
-            str.m_str = m_str.substr(pos1, pos2-pos1);
+            if (pos1 != m_str.npos)
+                str.m_str = m_str.substr(pos1, pos2 - pos1);
         }
+
         return str;
     }
 

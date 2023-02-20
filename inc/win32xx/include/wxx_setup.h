@@ -1,5 +1,5 @@
-// Win32++   Version 9.1
-// Release Date: 26th September 2022
+// Win32++   Version 9.2
+// Release Date: 20th February 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -240,8 +240,8 @@ namespace Win32xx
     // 616  dll ver 6.16    Windows Vista SP1 or above with XP themes
     inline int GetComCtlVersion()
     {
-        // Load the Common Controls DLL.
-        HMODULE comCtl = ::LoadLibrary(_T("COMCTL32.DLL"));
+        // Retrieve the Common Controls DLL handle.
+        HMODULE comCtl = ::GetModuleHandle(_T("comctl32.dll"));
         if (comCtl == 0)
             return 0;
 
@@ -275,8 +275,6 @@ namespace Win32xx
                 comCtlVer = 471;    // InitializeFlatSB is unique to version 4.71.
         }
 
-        ::FreeLibrary(comCtl);
-
         return static_cast<int>(comCtlVer);
     }
 
@@ -293,34 +291,40 @@ namespace Win32xx
     //  2601     Windows 7 and Windows Server 2008 r2
     //  2602     Windows 8 and Windows Server 2012
     //  2603     Windows 8.1 and Windows Server 2012 r2
-    //  3000     Windows 10
-    // Note: For windows 8.1 and above, the value returned is also affected by the embedded manifest
-    //       Applications not manifested for Windows 8.1 or Windows 10 will return the Windows 8 OS (2602).
+    //  3000     Windows 10 or Windows 11
     inline int GetWinVersion()
     {
-#if defined (_MSC_VER) && (_MSC_VER >= 1400)   // >= VS2005
-#pragma warning ( push )
-#pragma warning ( disable : 4996 )           // GetVersion declared deprecated.
-#pragma warning ( disable : 28159 )          // Deprecated function.
-#endif // (_MSC_VER) && (_MSC_VER >= 1400)
 
-#if defined __clang_major__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"  // Disable Clang deprecated warning.
-#endif
+// if (MSC < VS2008) or (Borland < version 6)
+#if ((defined (_MSC_VER) && (_MSC_VER < 1500)) || defined(__BORLANDC__) && (__BORLANDC__ < 0x600))
 
+        // Use the legacy GetVersionEx function.
         OSVERSIONINFO osvi;
         ZeroMemory(&osvi, sizeof(osvi));
         osvi.dwOSVersionInfoSize = sizeof(osvi);
         GetVersionEx(&osvi);
 
-#if defined __clang_major__
-#pragma clang diagnostic pop
-#endif
+#else
 
-#if defined (_MSC_VER) && (_MSC_VER >= 1400)
-#pragma warning ( pop )
-#endif // (_MSC_VER) && (_MSC_VER >= 1400)
+        // Use the modern RtlGetVersion function.
+        typedef NTSTATUS WINAPI RTLGETVERSION(PRTL_OSVERSIONINFOW);
+
+        HMODULE module = ::GetModuleHandleW(L"ntdll.dll");
+        RTL_OSVERSIONINFOW osvi;
+        ZeroMemory(&osvi, sizeof(osvi));
+        if (module)
+        {
+            RTLGETVERSION* pfn = reinterpret_cast<RTLGETVERSION*>(
+                reinterpret_cast<void*>(::GetProcAddress(module, "RtlGetVersion")));
+
+            if (pfn != NULL)
+            {
+                osvi.dwOSVersionInfoSize = sizeof(osvi);
+                pfn(&osvi);
+            }
+        }
+
+#endif
 
         DWORD platform = osvi.dwPlatformId;
         DWORD majorVer = osvi.dwMajorVersion;
@@ -370,10 +374,10 @@ namespace Win32xx
     // Refer to InitCommonControlsEx in the Windows API documentation for more information.
     inline void LoadCommonControls()
     {
-        // Load the Common Controls DLL
-        HMODULE comCtl = ::LoadLibrary(_T("COMCTL32.DLL"));
+        // Retrieve the Common Controls DLL handle.
+        HMODULE comCtl = ::GetModuleHandle(_T("comctl32.dll"));
         if (comCtl == 0)
-            comCtl = ::LoadLibrary(_T("COMMCTRL.DLL"));
+            comCtl = ::GetModuleHandle(_T("commctrl.dll"));
 
         if (comCtl)
         {
@@ -405,8 +409,6 @@ namespace Win32xx
                 // InitCommonControlsEx not supported. Use older InitCommonControls.
                 InitCommonControls();
             }
-
-            ::FreeLibrary(comCtl);
         }
     }
 
