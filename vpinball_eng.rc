@@ -311,7 +311,7 @@ BEGIN
     LTEXT           "DJRobX",IDC_STATIC,48,172,32,8
     CTEXT           "Mukuste",IDC_STATIC,82,172,42,9
     LTEXT           "Brandrew",IDC_STATIC,150,172,42,9
-    CTEXT           "Copyright (C) 2000-2022 Randy Davis and the\nVisual Pinball team. All rights reserved (see license.txt)",IDC_STATIC,1,293,167,25
+    CTEXT           "Copyright (C) 2000-2023 Randy Davis and the\nVisual Pinball team. All rights reserved (see license.txt)",IDC_STATIC,1,293,167,25
     LTEXT           "Translator's Name - Translation",IDC_TRANSNAME,171,65,52,9,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,0,328,32,8,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "VP10 Active Development",IDC_STATIC,65,183,102,9
@@ -2742,8 +2742,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 10,7,3,0
- PRODUCTVERSION 10,7,3,0
+ FILEVERSION 10,7,4,0
+ PRODUCTVERSION 10,7,4,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2758,13 +2758,13 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "FileDescription", "Visual Pinball 10.7.3"
-            VALUE "FileVersion", "10, 7, 3, 0"
+            VALUE "FileDescription", "Visual Pinball 10.7.4"
+            VALUE "FileVersion", "10, 7, 4, 0"
             VALUE "InternalName", "Visual Pinball"
-            VALUE "LegalCopyright", "Copyright 2000-2022"
+            VALUE "LegalCopyright", "Copyright 2000-2023"
             VALUE "OriginalFilename", "VPinballX.exe"
             VALUE "ProductName", "Visual Pinball"
-            VALUE "ProductVersion", "10, 7, 3, 0"
+            VALUE "ProductVersion", "10, 7, 4, 0"
         END
     END
     BLOCK "VarFileInfo"
