@@ -404,7 +404,7 @@ float4 ps_main_reflection_only_with_texture(const in VS_OUTPUT IN, float2 screen
    result.a *= cBase_Alpha.a;
 
    float3 N = normalize(IN.normal);
-   result.rgb = compute_reflection(screenSpace, N);
+   result.rgb = compute_reflection(screenSpace * w_h_height.xy, N);
 
    // Maybe overkill for just the additive reflections
    BRANCH if (cBase_Alpha.a < 1.0 && result.a < 1.0)
