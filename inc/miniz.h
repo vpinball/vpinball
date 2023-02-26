@@ -812,12 +812,7 @@ MINIZ_EXPORT void tdefl_compressor_free(tdefl_compressor *pComp);
 }
 #endif
 
-#endif /*#ifndef MINIZ_NO_DEFLATE_APIS*/
-
-
 /* ------------------- Low-level Decompression API Definitions */
-
-#ifndef MINIZ_NO_INFLATE_APIS
 
 #ifdef __cplusplus
 extern "C" {
