@@ -526,7 +526,7 @@ typedef void *const voidpc;
 #ifdef __cplusplus
 }
 #endif
-#pragma once
+
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -622,7 +622,6 @@ extern MINIZ_EXPORT void *miniz_def_realloc_func(void *opaque, void *address, si
 #ifdef __cplusplus
 }
 #endif
-#pragma once
 
 
 #ifdef __cplusplus
@@ -815,7 +814,6 @@ MINIZ_EXPORT void tdefl_compressor_free(tdefl_compressor *pComp);
 
 #endif /*#ifndef MINIZ_NO_DEFLATE_APIS*/
 
-#pragma once
 
 /* ------------------- Low-level Decompression API Definitions */
 
@@ -961,12 +959,6 @@ struct tinfl_decompressor_tag
 #ifdef __cplusplus
 }
 #endif
-
-#endif /*#ifndef MINIZ_NO_INFLATE_APIS*/
-
-
-#pragma once
-
 
 /* ------------------- ZIP archive reading/writing */
 
