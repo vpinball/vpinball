@@ -135,6 +135,8 @@
     <TargetName>VPinballX</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">
     <ExecutablePath>C:\Tools\squishcoco\visualstudio;$(DXSDK_DIR)Utilities\Bin\x86;$(ExecutablePath)</ExecutablePath>
@@ -142,18 +144,24 @@
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
     <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
+    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ExecutablePath>C:\Tools\squishcoco\visualstudio;$(DXSDK_DIR)Utilities\Bin\x64;$(ExecutablePath)</ExecutablePath>
     <TargetName>VPinballX</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">
     <ExecutablePath>C:\Tools\squishcoco\visualstudio;$(DXSDK_DIR)Utilities\Bin\x64;$(ExecutablePath)</ExecutablePath>
     <TargetName>VPinballX_GL64</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ExecutablePath>$(DXSDK_DIR)Utilities\Bin\x86;$(ExecutablePath)</ExecutablePath>
@@ -163,6 +171,8 @@
     <GenerateManifest>true</GenerateManifest>
     <EmbedManifest>true</EmbedManifest>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">
     <ExecutablePath>$(DXSDK_DIR)Utilities\Bin\x86;$(ExecutablePath)</ExecutablePath>
@@ -173,6 +183,8 @@
     <EmbedManifest>true</EmbedManifest>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
+    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ExecutablePath>$(DXSDK_DIR)Utilities\Bin\x64;$(ExecutablePath)</ExecutablePath>
@@ -182,6 +194,8 @@
     <GenerateManifest>true</GenerateManifest>
     <EmbedManifest>true</EmbedManifest>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">
     <ExecutablePath>$(DXSDK_DIR)Utilities\Bin\x64;$(ExecutablePath)</ExecutablePath>
@@ -191,6 +205,8 @@
     <GenerateManifest>true</GenerateManifest>
     <EmbedManifest>true</EmbedManifest>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
@@ -306,16 +322,15 @@
       <SuppressStartupBanner>false</SuppressStartupBanner>
     </Xdcmake>
     <PostBuildEvent>
-      <Message>Copies EXE and DLLs to production directory.</Message>
       <Command>%40echo off
-if not exist "$(TargetDir)shader" mkdir "$(TargetDir)shader"
-copy "$(MSBuildProjectDirectory)\shader\*.fxh" "$(TargetDir)shader"
-copy "$(MSBuildProjectDirectory)\shader\*.glfx" "$(TargetDir)shader"
-if ".%25VPIN_DIR%25" == "." set VPIN_DIR=C:\Games\Visual PinballX
+if ".%25VPIN_DIR%25" == "." (
+echo Define VPIN_DIR env. variable if you want to deploy on build
+) else (
+echo Copies EXE and DLLs to production directory.
 echo VPIN_DIR="%25VPIN_DIR%25"
 if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
 copy "$(TargetPath)" "%25VPIN_DIR%25"
-copy "$(MSBuildProjectDirectory)\dll\*.dll" "%25VPIN_DIR%25"
+)
 </Command>
     </PostBuildEvent>
     <Manifest>
@@ -366,12 +381,15 @@ copy "$(MSBuildProjectDirectory)\dll\*.dll" "%25VPIN_DIR%25"
       <SuppressStartupBanner>false</SuppressStartupBanner>
     </Xdcmake>
     <PostBuildEvent>
-      <Message>Copies exe to production directory.</Message>
       <Command>%40echo off
-if ".%25VPIN_DIR%25" == "." set VPIN_DIR=C:\UPin\VisualPinball\data\exe
+if ".%25VPIN_DIR%25" == "." (
+echo Define VPIN_DIR env. variable if you want to deploy on build
+) else (
+echo Copies EXE and DLLs to production directory.
 echo VPIN_DIR="%25VPIN_DIR%25"
 if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
 copy "$(TargetPath)" "%25VPIN_DIR%25"
+)
 </Command>
     </PostBuildEvent>
     <Manifest>
@@ -422,16 +440,16 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <SuppressStartupBanner>false</SuppressStartupBanner>
     </Xdcmake>
     <PostBuildEvent>
-      <Message>Copies EXE and DLLs to production directory.</Message>
       <Command>%40echo off
-if not exist "$(TargetDir)shader" mkdir "$(TargetDir)shader"
-copy "$(MSBuildProjectDirectory)\shader\*.fxh" "$(TargetDir)shader"
-copy "$(MSBuildProjectDirectory)\shader\*.glfx" "$(TargetDir)shader"
-if ".%25VPIN_DIR%25" == "." set VPIN_DIR=C:\Games\Visual PinballX
+if ".%25VPIN_DIR%25" == "." (
+echo Define VPIN_DIR env. variable if you want to deploy on build
+) else (
+echo Copies EXE and DLLs to production directory.
 echo VPIN_DIR="%25VPIN_DIR%25"
 if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
 copy "$(TargetPath)" "%25VPIN_DIR%25"
-copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"</Command>
+)
+</Command>
     </PostBuildEvent>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
@@ -555,16 +573,15 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"</Command>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Message>Copies EXE and DLLs to production directory.</Message>
       <Command>%40echo off
-if not exist "$(TargetDir)shader" mkdir "$(TargetDir)shader"
-copy "$(MSBuildProjectDirectory)\shader\*.fxh" "$(TargetDir)shader"
-copy "$(MSBuildProjectDirectory)\shader\*.glfx" "$(TargetDir)shader"
-if ".%25VPIN_DIR%25" == "." set VPIN_DIR=C:\Games\Visual PinballX
+if ".%25VPIN_DIR%25" == "." (
+echo Define VPIN_DIR env. variable if you want to deploy on build
+) else (
+echo Copies EXE and DLLs to production directory.
 echo VPIN_DIR="%25VPIN_DIR%25"
 if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
 copy "$(TargetPath)" "%25VPIN_DIR%25"
-copy "$(MSBuildProjectDirectory)\dll\*.dll" "%25VPIN_DIR%25"
+)
 </Command>
     </PostBuildEvent>
     <Manifest>
@@ -626,10 +643,14 @@ copy "$(MSBuildProjectDirectory)\dll\*.dll" "%25VPIN_DIR%25"
     </Link>
     <PostBuildEvent>
       <Command>%40echo off
-if ".%25VPIN_DIR%25" == "." set VPIN_DIR=C:\UPin\VisualPinball\data\exe
+if ".%25VPIN_DIR%25" == "." (
+echo Define VPIN_DIR env. variable if you want to deploy on build
+) else (
+echo Copies EXE and DLLs to production directory.
 echo VPIN_DIR="%25VPIN_DIR%25"
 if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
 copy "$(TargetPath)" "%25VPIN_DIR%25"
+)
 </Command>
     </PostBuildEvent>
     <Manifest>
@@ -690,16 +711,15 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Message>Copies EXE and DLLs to production directory.</Message>
       <Command>%40echo off
-if not exist "$(TargetDir)shader" mkdir "$(TargetDir)shader"
-copy "$(MSBuildProjectDirectory)\shader\*.fxh" "$(TargetDir)shader"
-copy "$(MSBuildProjectDirectory)\shader\*.glfx" "$(TargetDir)shader"
-if ".%25VPIN_DIR%25" == "." set VPIN_DIR=C:\Games\Visual PinballX
+if ".%25VPIN_DIR%25" == "." (
+echo Define VPIN_DIR env. variable if you want to deploy on build
+) else (
+echo Copies EXE and DLLs to production directory.
 echo VPIN_DIR="%25VPIN_DIR%25"
 if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
 copy "$(TargetPath)" "%25VPIN_DIR%25"
-copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"
+)
 </Command>
     </PostBuildEvent>
     <Manifest>
@@ -1764,6 +1784,30 @@ copy "$(MSBuildProjectDirectory)\dll\x64\*.dll" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ContentWithTargetPath Include="scripts\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>scripts\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+  <ItemGroup>
+    <ContentWithTargetPath Include="dll\*.dll" Condition="'$(Platform)'=='Win32'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+  <ItemGroup>
+    <ContentWithTargetPath Include="dll\x64\*.dll" Condition="'$(Platform)'=='x64'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+  <ItemGroup>
+    <ContentWithTargetPath Include="shader\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>shader\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
