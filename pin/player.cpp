@@ -334,10 +334,7 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    SaveValueInt(regKey[RegName::Player], "NumberOfTimesToShowTouchMessage"s, max(numberOfTimesToShowTouchMessage - 1, 0));
    m_showTouchMessage = (numberOfTimesToShowTouchMessage != 0);
 
-   m_closeDown = false;
-   m_closeDownDelay = true;
    m_showWindowedCaption = false;
-   m_closeType = 0;
    m_showDebugger = false;
 
    m_debugBalls = false;
@@ -3829,7 +3826,7 @@ void Player::UpdateHUD_IMGUI()
    static bool profiling = true;
 
    InfoMode infoMode = GetInfoMode();
-   if (infoMode == IF_NONE || m_closeDown )
+   if (infoMode == IF_NONE || m_closing != CS_PLAYING )
       return;
 
 #ifdef ENABLE_SDL
@@ -4054,7 +4051,7 @@ void Player::UpdateHUD_IMGUI()
 void Player::RenderHUD_IMGUI()
 {
    InfoMode infoMode = GetInfoMode();
-   if (infoMode == IF_NONE || m_closeDown)
+   if (infoMode == IF_NONE || m_closing != CS_PLAYING)
       return;
 
    ImGui::Render();
@@ -4095,7 +4092,7 @@ void Player::UpdateHUD()
       DebugPrint(0, 10, "Render Probe: "s.append(m_ptable->m_vrenderprobe[m_infoProbeIndex >> 1]->GetName()).append((m_infoProbeIndex & 1) == 0 ? " [Static]"s : " [Dynamic]"s).c_str());
       break;
    }
-   if (ShowStats() && !m_cameraMode && !m_closeDown)
+   if (ShowStats() && !m_cameraMode && m_closing == CS_PLAYING)
 	{
 		char szFoo[256];
 
@@ -4216,7 +4213,7 @@ void Player::UpdateHUD()
 
 	// Draw performance readout - at end of CPU frame, so hopefully the previous frame
 	//  (whose data we're getting) will have finished on the GPU by now.
-	if (GetProfilingMode() != PF_DISABLED && !m_closeDown && !m_cameraMode)
+   if (GetProfilingMode() != PF_DISABLED && m_closing == CS_PLAYING && !m_cameraMode)
 	{
 		DebugPrint(0, 300, "Detailed (approximate) GPU profiling:");
 
@@ -4263,10 +4260,10 @@ void Player::UpdateHUD()
     }
     SetDebugOutputPosition(x, y);
 
-    if (!m_closeDown && (m_stereo3D != STEREO_OFF  && !m_stereo3Denabled && (usec() < m_StartTime_usec + 4e+6))) // show for max. 4 seconds
+    if (m_closing == CS_PLAYING && (m_stereo3D != STEREO_OFF && !m_stereo3Denabled && (usec() < m_StartTime_usec + 4e+6))) // show for max. 4 seconds
         DebugPrint(DBG_SPRITE_SIZE/2, 10, "3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on", true);
 
-    if (!m_closeDown && m_supportsTouch && m_showTouchMessage && (usec() < m_StartTime_usec + 12e+6)) // show for max. 12 seconds
+    if (m_closing == CS_PLAYING && m_supportsTouch && m_showTouchMessage && (usec() < m_StartTime_usec + 12e+6)) // show for max. 12 seconds
     {
         DebugPrint(DBG_SPRITE_SIZE/2, 40, "You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger", true);
         DebugPrint(DBG_SPRITE_SIZE/2, 70, "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit", true); //!!!!!!!!!!!! Extra Button?
@@ -4274,10 +4271,10 @@ void Player::UpdateHUD()
         //!! visualize with real buttons or at least the areas??
     }
 
-	if (m_fullScreen && m_closeDown && !IsWindows10_1803orAbove()) // cannot use dialog boxes in exclusive fullscreen on older windows versions, so necessary
+	if (m_fullScreen && m_closing != CS_PLAYING && !IsWindows10_1803orAbove()) // cannot use dialog boxes in exclusive fullscreen on older windows versions, so necessary
 		DebugPrint(DBG_SPRITE_SIZE/2, m_wnd_height/2-5, "Press 'Enter' to continue or Press 'Q' to exit", true);
 
-	if (m_closeDown) // print table name,author,version and blurb and description in pause mode
+	if (m_closing != CS_PLAYING) // print table name,author,version and blurb and description in pause mode
 	{
 		char szFoo[256];
 		szFoo[0] = '\0';
@@ -5212,116 +5209,133 @@ void Player::Render()
          uSleep(1000000ull / localvsync - timeForFrame);
    }
 
+   // Crash back to the editor
    if (m_ptable->m_pcv->m_scriptError)
    {
-      // Crash back to the editor
-      //SendMessage(WM_CLOSE, 0, 0);
       m_ptable->SendMessage(WM_COMMAND, ID_TABLE_STOP_PLAY, 0);
    }
-   else
+
+   // Close requested with user input: toggle window border and show dialog box since this aalso give access to debugger
+   if (m_closing == CS_USER_INPUT && !g_pvp->m_disable_pause_menu)
    {
-      if (m_closeDown && m_closeDownDelay) // wait for one frame to stop game, to be able to display the additional text (table info, etc)
+      // TODO add a dedicated, simple UI for this which would always work and would be less cumbersome to find for user (from video settings?)
+      // add or remove caption, border and buttons (only if in windowed mode?) to allow user to move the player window
+      const int captionheight = GetSystemMetrics(SM_CYCAPTION);
+      if (!m_fullScreen && (m_showWindowedCaption || (!m_showWindowedCaption && ((m_screenheight - m_wnd_height) >= (captionheight * 2))))) // We have enough room for a frame? //!! *2 ??
       {
-         m_closeDownDelay = false;
-
-         // add or remove caption, border and buttons (only if in windowed mode)?
-         const int captionheight = GetSystemMetrics(SM_CYCAPTION);
-         if (!m_fullScreen && (m_showWindowedCaption || (!m_showWindowedCaption && ((m_screenheight - m_wnd_height) >= (captionheight * 2))))) // We have enough room for a frame? //!! *2 ??
-         {
-            int x, y;
+         int x, y;
 #ifdef ENABLE_SDL
-            SDL_SetWindowBordered(m_sdl_playfieldHwnd, !m_showWindowedCaption ? SDL_TRUE : SDL_FALSE);
-            SDL_GetWindowPosition(m_sdl_playfieldHwnd, &x, &y);
+         SDL_SetWindowBordered(m_sdl_playfieldHwnd, !m_showWindowedCaption ? SDL_TRUE : SDL_FALSE);
+         SDL_GetWindowPosition(m_sdl_playfieldHwnd, &x, &y);
 #else
-            RECT rect;
-            ::GetWindowRect(GetHwnd(), &rect);
-            x = rect.left;
-            y = rect.top;
+         RECT rect;
+         ::GetWindowRect(GetHwnd(), &rect);
+         x = rect.left;
+         y = rect.top;
 
-            // Add/Remove a pretty window border and standard control boxes.
-            const int windowflags = m_showWindowedCaption ? WS_POPUP : (WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN);
-            const int windowflagsex = m_showWindowedCaption ? 0 : WS_EX_OVERLAPPEDWINDOW;
+         // Add/Remove a pretty window border and standard control boxes.
+         const int windowflags = m_showWindowedCaption ? WS_POPUP : (WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN);
+         const int windowflagsex = m_showWindowedCaption ? 0 : WS_EX_OVERLAPPEDWINDOW;
 
-            //!! does not respect borders so far!!! -> remove them or change width/height accordingly ?? otherwise ignore as eventually it will be restored anyway??
-            //!! like this the render window is scaled and thus implicitly blurred though!
-            SetWindowLongPtr(GWL_STYLE, windowflags);
-            SetWindowLongPtr(GWL_EXSTYLE, windowflagsex);
-            SetWindowPos(nullptr, x, m_showWindowedCaption ? (y + captionheight) : (y - captionheight), m_wnd_width, m_wnd_height + (m_showWindowedCaption ? 0 : captionheight), SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-            ShowWindow(SW_SHOW);
+         //!! does not respect borders so far!!! -> remove them or change width/height accordingly ?? otherwise ignore as eventually it will be restored anyway??
+         //!! like this the render window is scaled and thus implicitly blurred though!
+         SetWindowLongPtr(GWL_STYLE, windowflags);
+         SetWindowLongPtr(GWL_EXSTYLE, windowflagsex);
+         SetWindowPos(nullptr, x, m_showWindowedCaption ? (y + captionheight) : (y - captionheight), m_wnd_width, m_wnd_height + (m_showWindowedCaption ? 0 : captionheight), SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+         ShowWindow(SW_SHOW);
 #endif
-            // Save position of non-fullscreen player window to registry, and only if it was potentially moved around (i.e. when caption was already visible)
-            if (m_showWindowedCaption)
-            {
-               HRESULT hr = SaveValueInt((m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosX"s, x);
-                       hr = SaveValueInt((m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosY"s, y + captionheight);
-            }
-
-            m_showWindowedCaption = !m_showWindowedCaption;
+         // Save position of non-fullscreen player window to registry, and only if it was potentially moved around (i.e. when caption was already visible)
+         if (m_showWindowedCaption)
+         {
+            HRESULT hr = SaveValueInt((m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosX"s, x);
+                     hr = SaveValueInt((m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosY"s, y + captionheight);
          }
+
+         m_showWindowedCaption = !m_showWindowedCaption;
       }
-      else if (m_closeDown)
+
+#ifndef ENABLE_IMGUI
+      // Little hack when not using IMGUI: we delay modal state to render one more frame with table info shown
+      static bool close_delay = true;
+      if (close_delay)
+         close_delay = false;
+      else
       {
-         PauseMusic();
-
-         size_t option;
-
-         if (m_closeType == 2)
-         {
-            exit(-9999); // blast into space
-         }
-         else if ((m_closeType == 0) && !g_pvp->m_disable_pause_menu)
-         {
-            while(ShowCursor(FALSE)>=0) ;
-            while(ShowCursor(TRUE)<0) ;
-            option = DialogBox(g_pvp->theInstance, MAKEINTRESOURCE(IDD_GAMEPAUSE), GetHwnd(), PauseProc);
-            if (option != ID_DEBUGWINDOW && option != ID_QUIT)
-               if (g_pplayer->m_fullScreen || (g_pplayer->m_wnd_width == g_pplayer->m_screenwidth && g_pplayer->m_wnd_height == g_pplayer->m_screenheight)) // detect windowed fullscreen
-               {
-                  while(ShowCursor(TRUE)<0) ;
-                  while(ShowCursor(FALSE)>=0) ;
-               }
-         }
-         else //m_closeType == all others
-         {
-            option = ID_QUIT;
-            SendMessage(g_pvp->GetHwnd(), WM_COMMAND, ID_FILE_EXIT, NULL);
-         }
-
-         m_closeDown = false;
-         m_closeDownDelay = true;
-         m_noTimeCorrect = true; // Skip the time we were in the dialog
-         UnpauseMusic();
-
-         if (option == ID_QUIT)
-         {
-#ifdef ENABLE_SDL
-            StopPlayer();
 #endif
-            if (g_pvp->m_open_minimized && !g_pvp->m_disable_pause_menu)
-               SendMessage(g_pvp->GetHwnd(), WM_COMMAND, ID_FILE_EXIT, NULL);
-            m_ptable->SendMessage(WM_COMMAND, ID_TABLE_STOP_PLAY, 0);
-         }
-      }
-      else if (m_showDebugger && !g_pvp->m_disable_pause_menu)
+
+      // Show option dialog, with visible mouse cursor if hidden, then restore state
+      PauseMusic();
+      while(ShowCursor(FALSE)>=0) ;
+      while(ShowCursor(TRUE)<0) ;
+      size_t option = DialogBox(g_pvp->theInstance, MAKEINTRESOURCE(IDD_GAMEPAUSE), GetHwnd(), PauseProc);
+      m_closing = CS_PLAYING;
+      m_noTimeCorrect = true; // Skip the time we were in the dialog
+      UnpauseMusic();
+      if (g_pplayer->m_fullScreen || (g_pplayer->m_wnd_width == g_pplayer->m_screenwidth && g_pplayer->m_wnd_height == g_pplayer->m_screenheight)) // detect windowed fullscreen
       {
-          m_debugMode = true;
-          m_showDebugger = false;
-          while(ShowCursor(FALSE)>=0) ;
-          while(ShowCursor(TRUE)<0) ;
-
-          if (!m_debuggerDialog.IsWindow())
-          {
-             m_debuggerDialog.Create(GetHwnd());
-             m_debuggerDialog.ShowWindow();
-          }
-          else
-             m_debuggerDialog.SetForegroundWindow();
-
-          EndDialog( g_pvp->GetHwnd(), ID_DEBUGWINDOW );
+         while(ShowCursor(TRUE)<0) ;
+         while(ShowCursor(FALSE)>=0) ;
       }
+      switch (option)
+      {
+      case ID_QUIT: m_closing = CS_STOP_PLAY; break;
+      case ID_DEBUGWINDOW: m_showDebugger = true; break;
+      }
+
+#ifndef ENABLE_IMGUI
+      close_delay = true;
+      }
+#endif
    }
-   ///// Don't put anything here - the ID_QUIT check must be the last thing done
-   ///// in this function
+
+   // Brute force stop: blast into space
+   if (m_closing == CS_FORCE_STOP)
+      exit(-9999); 
+
+   // Promote stop play to close application if started minimized without user interaction
+   if (m_closing == CS_STOP_PLAY && g_pvp->m_open_minimized && !g_pvp->m_disable_pause_menu)
+      m_closing = CS_CLOSE_APP;
+
+   // Close player back to editor
+   if (m_closing == CS_STOP_PLAY)
+   {
+      PauseMusic();
+      while (ShowCursor(FALSE) >= 0) ;
+      while(ShowCursor(TRUE)<0) ;
+
+#ifdef ENABLE_SDL
+      StopPlayer();
+#endif
+      m_ptable->SendMessage(WM_COMMAND, ID_TABLE_STOP_PLAY, 0);
+   }
+
+   // Close application
+   if (m_closing == CS_CLOSE_APP)
+   {
+      PauseMusic();
+      while (ShowCursor(FALSE) >= 0) ;
+      while(ShowCursor(TRUE)<0) ;
+      SendMessage(g_pvp->GetHwnd(), WM_COMMAND, ID_FILE_EXIT, NULL);
+   }
+
+   // Open debugger window
+   if (m_closing == CS_PLAYING && m_showDebugger && !g_pvp->m_disable_pause_menu)
+   {
+      m_debugMode = true;
+      m_showDebugger = false;
+      while(ShowCursor(FALSE)>=0) ;
+      while(ShowCursor(TRUE)<0) ;
+
+      if (!m_debuggerDialog.IsWindow())
+      {
+         m_debuggerDialog.Create(GetHwnd());
+         m_debuggerDialog.ShowWindow();
+      }
+      else
+         m_debuggerDialog.SetForegroundWindow();
+
+      EndDialog( g_pvp->GetHwnd(), ID_DEBUGWINDOW );
+   }
 }
 
 void Player::PauseMusic()

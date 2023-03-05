@@ -549,14 +549,14 @@ public:
                string szScriptFilename = szTableFileName;
                if(ReplaceExtensionFromFilename(szScriptFilename, "vbs"s))
                    m_vpinball.m_ptableActive->m_pcv->SaveToFile(szScriptFilename);
-               m_vpinball.Quit();
+               m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
            }
            if (extractPov && loadFileResult)
            {
                string szPOVFilename = szTableFileName;
                if (ReplaceExtensionFromFilename(szPOVFilename, "pov"s))
                    m_vpinball.m_ptableActive->ExportBackdropPOV(szPOVFilename);
-               m_vpinball.Quit();
+               m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
            }
        }
    }

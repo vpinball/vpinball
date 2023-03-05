@@ -1044,12 +1044,12 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             string szPOVFilename = g_pplayer->m_ptable->m_szFileName;
             if (ReplaceExtensionFromFilename(szPOVFilename, "pov"s))
                g_pplayer->m_ptable->ExportBackdropPOV(szPOVFilename);
-            g_pvp->Quit();
+            g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
          }
       }
       else if (keycode == g_pplayer->m_rgKeys[eAddCreditKey] && dispid == DISPID_GameEvents_KeyDown && g_pvp->m_povEdit)
       {
-         g_pvp->Quit();
+         g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
       }
       else if (keycode == g_pplayer->m_rgKeys[eRightMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
       {
@@ -1154,7 +1154,7 @@ void PinInput::button_exit(const U32 msecs, const U32 curr_time_msec)
    if (m_exit_stamp &&                         // Initialized.
       (curr_time_msec - m_exit_stamp > msecs)) // Held exit button for number of mseconds.
    {
-      g_pvp->Quit();
+      g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
    }
 }
 
@@ -1264,7 +1264,7 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
    if (m_joyexitgamekey == n)
    {
       if (DISPID_GameEvents_KeyDown == updown)
-         g_pplayer->m_closeDown = true;
+         g_pvp->QuitPlayer(Player::CS_USER_INPUT);
    }
    if (m_joyframecount == n)
    {
@@ -1476,7 +1476,8 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
         {
             if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // pause menu
             {
-                if (DISPID_GameEvents_KeyDown == updown) g_pplayer->m_closeDown = true;
+                if (DISPID_GameEvents_KeyDown == updown)
+                   g_pvp->QuitPlayer(Player::CS_USER_INPUT);
             }
             else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // volume down
                 FireKeyEvent(updown, g_pplayer->m_rgKeys[eVolumeDown]);
@@ -1995,7 +1996,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                else
                { //on key up only
                   m_exit_stamp = 0;
-                  g_pplayer->m_closeDown = true;
+                  g_pvp->QuitPlayer(Player::CS_USER_INPUT);
                }
             }
          }
