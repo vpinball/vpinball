@@ -492,9 +492,15 @@ public:
    int m_LastKnownGoodCounter;
    int m_ModalRefCount;
 
-   int m_closeType;                  // if 0 exit player and close application if started minimized, if 1 close application always, 2 is brute force exit
-   bool m_closeDown;                 // Whether to shut down the player at the end of this frame
-   bool m_closeDownDelay;
+   enum CloseState
+   {
+      CS_PLAYING = 0, // Normal state
+      CS_USER_INPUT = 1, // Open UI to let user choose between debugger, quit,...
+      CS_STOP_PLAY = 2, // Stop play and get back to editor, if started without user input (minimized) then close the application
+      CS_CLOSE_APP = 3, // Close the application and get back to operating system
+      CS_FORCE_STOP = 4 // Force close the application and get back to operating system
+   };
+   CloseState m_closing = CS_PLAYING;
    bool m_showDebugger;
 
    bool m_showWindowedCaption;

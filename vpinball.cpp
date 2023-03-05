@@ -1782,19 +1782,16 @@ STDMETHODIMP VPinball::FireKnocker(int Count)
 
 STDMETHODIMP VPinball::QuitPlayer(int CloseType)
 {
-   if (g_pplayer) g_pplayer->m_ptable->QuitPlayer(CloseType);
-
-   return S_OK;
-}
-
-void VPinball::Quit()
-{
-   if (g_pplayer) {
-      g_pplayer->m_closeDown = true;
-      g_pplayer->m_closeType = 1;
+   if (g_pplayer)
+   {
+      g_pplayer->m_closing = (Player::CloseState) CloseType;
    }
    else
+   {
       PostMessage(WM_CLOSE, 0, 0);
+   }
+
+   return S_OK;
 }
 
 int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)

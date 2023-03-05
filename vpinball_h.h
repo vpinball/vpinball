@@ -50,7 +50,6 @@ public:
     
    VPinball();
    virtual ~VPinball();
-   void Quit();
 
    void ShowSubDialog(CDialog& dlg, const bool show);
 
