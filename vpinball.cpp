@@ -1367,7 +1367,10 @@ void VPinball::MainMsgLoop()
          try {
             const bool consumed = ApcHost_OnTranslateMessage(&msg);
             if (!consumed)
+            {
+               TranslateMessage(&msg);
                DispatchMessage(&msg);
+            }
          }
          catch (...) // something failed on load/init
          {
