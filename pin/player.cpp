@@ -891,6 +891,11 @@ void Player::InitFPS()
 
 void Player::ToggleFPS()
 {
+#ifdef USE_IMGUI
+   // For IMGUI, just openup the interactive UI
+   m_infoMode = IF_FPS;
+   return;
+#endif
    m_pin3d.m_gpu_profiler.Shutdown(); // Kill it so that it cannot influence standard rendering performance (and otherwise if just switching profile modes to not falsify counters and query info)
    while (true)
    {
@@ -2027,7 +2032,8 @@ void Player::InitStatic()
 
       // Finish the frame.
       m_pin3d.m_pd3dPrimaryDevice->EndScene();
-      m_ptable->m_progressDialog.SetProgress(60 +(((30 * (n_iter + 1 - iter)) / (n_iter + 1))));
+      if (m_ptable->m_progressDialog.IsWindow())
+         m_ptable->m_progressDialog.SetProgress(60 +(((30 * (n_iter + 1 - iter)) / (n_iter + 1))));
 
       stats_drawn_static_triangles = RenderDevice::m_stats_drawn_triangles;
    }
@@ -3820,11 +3826,23 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
 }
 
 #ifdef USE_IMGUI
+// Helper to display a little (?) mark which shows a tooltip when hovered.
+static void HelpMarker(const char *desc)
+{
+   ImGui::TextDisabled("(?)");
+   if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+   {
+      ImGui::BeginTooltip();
+      ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+      ImGui::TextUnformatted(desc);
+      ImGui::PopTextWrapPos();
+      ImGui::EndTooltip();
+   }
+}
+
 // call UpdateHUD_IMGUI outside of m_pin3d.m_pd3dPrimaryDevice->BeginScene()/EndSecene()
 void Player::UpdateHUD_IMGUI()
 {
-   static bool profiling = true;
-
    InfoMode infoMode = GetInfoMode();
    if (infoMode == IF_NONE || m_closing != CS_PLAYING )
       return;
@@ -3836,214 +3854,524 @@ void Player::UpdateHUD_IMGUI()
 #endif
    ImGui_ImplWin32_NewFrame();
    ImGui::NewFrame();
-   ImGui::SetNextWindowSize(infoMode != IF_PROFILING && infoMode != IF_PROFILING_SPLIT_RENDERING ? ImVec2(200, 50) : ImVec2(500, 350), ImGuiCond_FirstUseEver);
-   ImGui::SetNextWindowPos(ImVec2(10, 10));
 
-   switch (infoMode)
-   {
-   case IF_FPS: ImGui::Begin("FPS"); break;
-   case IF_PROFILING: ImGui::Begin("Profiling"); break;
-   case IF_PROFILING_SPLIT_RENDERING: ImGui::Begin("Profiling (using split rendering)"); break;
-   case IF_STATIC_ONLY: ImGui::Begin("Static pre-rendered parts"); break;
-   case IF_DYNAMIC_ONLY: ImGui::Begin("Dynamic rendered parts"); break;
-   case IF_AO_ONLY: ImGui::Begin("Ambient occlusion"); break;
-   case IF_LIGHT_BUFFER_ONLY: ImGui::Begin("Transmitted light buffer"); break;
-   case IF_RENDER_PROBES:
-      ImGui::Begin("Render Probe: "s.append(m_ptable->m_vrenderprobe[m_infoProbeIndex >> 1]->GetName()).append((m_infoProbeIndex & 1) == 0 ? " [Static]"s : " [Dynamic]"s).c_str());
-      break;
 #ifdef ENABLE_BAM
-   case IF_BAM_MENU: BAMView::drawMenu(); return;
-#endif
-   default:
-      assert(!"Unhandled Info Mode");
-      break;
-   }
-
-   const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / (float)m_fpsCount;
-   if (infoMode != IF_PROFILING && infoMode != IF_PROFILING_SPLIT_RENDERING)
+   if (m_infoMode == IF_BAM_MENU)
    {
-      ImGui::Text("FPS: %.1f (%.1f avg)", m_fps + 0.01f, fpsAvg + 0.01f);
-      ImGui::End();
+      BAMView::drawMenu();
       ImGui::EndFrame();
       return;
    }
-
-   if (ImGui::Button("Toggle Profiling"))
-      profiling = !profiling;
-
-   ImGui::Text("FPS: %.1f (%.1f avg)  Display %s Objects(%uk/%uk Triangles)", m_fps + 0.01f, fpsAvg + 0.01f, GetInfoMode() == IF_STATIC_ONLY ? "only static" : "all",
-      (RenderDevice::m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000);
-   ImGui::Text("DayNight %u%%", quantizeUnsignedPercent(m_globalEmissionScale));
-
-   const U32 period = m_lastFrameDuration;
-   if (period > m_max || m_time_msec - m_lastMaxChangeTime > 1000)
-      m_max = period;
-   if (period > m_max_total && period < 100000)
-      m_max_total = period;
-
-   if (m_phys_period - m_script_period > m_phys_max || m_time_msec - m_lastMaxChangeTime > 1000)
-      m_phys_max = m_phys_period - m_script_period;
-   if (m_phys_period - m_script_period > m_phys_max_total)
-      m_phys_max_total = m_phys_period - m_script_period;
-
-   if (m_phys_iterations > m_phys_max_iterations || m_time_msec - m_lastMaxChangeTime > 1000)
-      m_phys_max_iterations = m_phys_iterations;
-
-   if (m_script_period > m_script_max || m_time_msec - m_lastMaxChangeTime > 1000)
-      m_script_max = m_script_period;
-   if (m_script_period > m_script_max_total)
-      m_script_max_total = m_script_period;
-
-   if (m_time_msec - m_lastMaxChangeTime > 1000)
-      m_lastMaxChangeTime = m_time_msec;
-
-   if (m_count == 0)
-   {
-      m_total = period;
-      m_phys_total = m_phys_period - m_script_period;
-      m_phys_total_iterations = m_phys_iterations;
-      m_script_total = m_script_period;
-      m_count = 1;
-   }
-   else
-   {
-      m_total += period;
-      m_phys_total += m_phys_period - m_script_period;
-      m_phys_total_iterations += m_phys_iterations;
-      m_script_total += m_script_period;
-      m_count++;
-   }
-   ImGui::Text("Overall: %.1f ms (%.1f (%.1f) avg %.1f max)", float(1e-3 * period), float(1e-3 * (double)m_total / (double)m_count), float(1e-3 * m_max), float(1e-3 * m_max_total));
-   ImGui::Text("%4.1f%% Physics: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
-               float((m_phys_period - m_script_period) * 100.0 / period), float(1e-3 * (m_phys_period - m_script_period)),
-               float(1e-3 * (double)m_phys_total / (double)m_count), float(1e-3 * m_phys_max), float((double)m_phys_total * 100.0 / (double)m_total), float(1e-3 * m_phys_max_total));
-
-   ImGui::Text("%4.1f%% Scripts: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
-               float(m_script_period * 100.0 / period), float(1e-3 * m_script_period),
-               float(1e-3 * (double)m_script_total / (double)m_count), float(1e-3 * m_script_max), float((double)m_script_total * 100.0 / (double)m_total), float(1e-3 * m_script_max_total));
-
-   // performance counters
-#ifdef ENABLE_SDL
-   ImGui::Text("Draw calls: %u", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumDrawCalls());
-#else
-   ImGui::Text("Draw calls: %u (%u Locks)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumDrawCalls(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumLockCalls());
 #endif
-   ImGui::Text("State changes: %u", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumStateChanges());
-   ImGui::Text("Texture changes: %u (%u Uploads)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureUploads());
-   ImGui::Text("Shader/Parameter changes: %u / %u (%u Material ID changes)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTechniqueChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumParameterChanges(), material_flips);
-   ImGui::Text("Objects: %u Transparent, %u Solid", (unsigned int)m_vHitTrans.size(), (unsigned int)m_vHitNonTrans.size());
 
-   ImGui::Text("Physics: %u iterations per frame (%u avg %u max)    Ball Velocity / Ang.Vel.: %.1f %.1f",
-      m_phys_iterations,
-      (U32)(m_phys_total_iterations / m_count),
-      m_phys_max_iterations,
-      m_pactiveball ? (m_pactiveball->m_d.m_vel + (float)PHYS_FACTOR * m_gravity).Length() : -1.f, m_pactiveball ? (m_pactiveball->m_angularmomentum / m_pactiveball->Inertia()).Length() : -1.f);
-
-   ImGui::Text("Left Flipper keypress to rotate: %.1f ms (%d f) to eos: %.1f ms (%d f)",
-      (INT64)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) / 1000.,
-      (int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame),
-      (INT64)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) / 1000.,
-      (int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame));
-   ImGui::End();
-
-   if (profiling)
+   enum UILocation
    {
-      ImGui::SetNextWindowSize(ImVec2(500, 350), ImGuiCond_FirstUseEver);
-      ImGui::SetNextWindowPos(ImVec2(10, 370));
-      ImGui::Begin("Detailed (approximate) GPU profiling:");
-      m_pin3d.m_gpu_profiler.WaitForDataAndUpdate();
-      double dTDrawTotal = 0.0;
-      for (GTS gts = GTS_BeginFrame; gts < GTS_EndFrame; gts = GTS(gts + 1))
-         dTDrawTotal += m_pin3d.m_gpu_profiler.DtAvg(gts);
-      if (GetProfilingMode() == PF_ENABLED)
+      UI_ROOT,
+      UI_CAMERA_SETTINGS,
+      UI_AUDIO_SETTINGS,
+      UI_VIDEO_SETTINGS,
+      UI_RENDERER_INSPECTION,
+      UI_HEADTRACKING,
+   };
+   static UILocation ui_pos = UI_ROOT;
+
+   int fps_mode = 0;
+
+   const char* title;
+   ImGuiStyle &style = ImGui::GetStyle();
+   style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0, 0, 0, (ui_pos == UI_ROOT || ui_pos == UI_AUDIO_SETTINGS) ? 0.5f : 0.0f);
+   switch (ui_pos)
+   {
+   case UI_ROOT: title = "Settings###In Game UI"; break;
+   case UI_CAMERA_SETTINGS: title = "Settings > Camera Point of View###In Game UI"; break;
+   case UI_AUDIO_SETTINGS: title = "Settings > Audio Options###In Game UI"; break;
+   case UI_VIDEO_SETTINGS: title = "Settings > Video Options###In Game UI"; break;
+   case UI_RENDERER_INSPECTION: title = "Settings > Renderer Inspection###In Game UI"; break;
+   case UI_HEADTRACKING: title = "Settings > Head Tracking###In Game UI"; break;
+   }
+
+   // Directly open the modal dialog at root level on user interaction
+   if (!ImGui::IsPopupOpen(title))
+   {
+      ui_pos = UI_ROOT;
+      ImGui::OpenPopup(title);
+   }
+
+   // Main UI window
+   if (ImGui::BeginPopupModal(title, NULL, ImGuiWindowFlags_AlwaysAutoResize))
+   {
+      switch (ui_pos)
       {
-         ImGui::Text(" Draw time: %.2f ms", float(1000.0 * dTDrawTotal));
-         for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
-            ImGui::Text("   %s: %.2f ms (%4.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
-         ImGui::Text(" Frame time: %.2f ms", float(1000.0 * (dTDrawTotal + m_pin3d.m_gpu_profiler.DtAvg(GTS_EndFrame))));
+         //////////////////////////////////////////////////////////////////////////
+         // Root UI panel
+         case UI_ROOT:
+         {
+            if (ImGui::Button("Resume Game"))
+            {
+               m_infoMode = IF_NONE;
+               ImGui::CloseCurrentPopup();
+            }
+            if (ImGui::Button("Camera Settings"))
+               ui_pos = UI_CAMERA_SETTINGS;
+            /* if (ImGui::Button("Audio Settings"))
+               ui_pos = UI_AUDIO_SETTINGS;*/
+            if (ImGui::Button("Video Settings"))
+               ui_pos = UI_VIDEO_SETTINGS;
+#ifdef ENABLE_BAM
+            if (ImGui::Button("Head Tracking"))
+            {
+               m_infoMode = IF_BAM_MENU;
+               ImGui::CloseCurrentPopup();
+            }
+#endif
+            if (ImGui::Button("Renderer Inspection"))
+               ui_pos = UI_RENDERER_INSPECTION;
+            if (ImGui::Button("Debugger"))
+            {
+               m_showDebugger = true;
+               m_infoMode = IF_NONE;
+               ImGui::CloseCurrentPopup();
+            }
+            if (ImGui::Button("Quit to editor"))
+            {
+               m_ptable->QuitPlayer(CS_STOP_PLAY);
+               ImGui::CloseCurrentPopup();
+            }
+            break;
+         }
+
+         //////////////////////////////////////////////////////////////////////////
+         // Camera settings (point of view, import/export,...)
+         case UI_CAMERA_SETTINGS:
+         {
+            static bool restore_static_mode = false;
+            if (!m_dynamicMode)
+            {
+               m_dynamicMode = true;
+               restore_static_mode = true;
+               InitStatic();
+            }
+
+            if (!g_pvp->m_povEdit)
+            {
+               if (ImGui::Button("Reset"))
+               {
+                  bool old_camera_mode = m_cameraMode;
+                  m_cameraMode = true;
+                  m_pininput.FireKeyEvent(DISPID_GameEvents_KeyDown, m_rgKeys[eStartGameKey]);
+                  m_cameraMode = old_camera_mode;
+                  m_pin3d.InitLights(); // Needed to update shaders with new light settings
+                  const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
+                  m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+                  #ifdef SEPARATE_CLASSICLIGHTSHADER
+                  m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+                  #endif
+               }
+               ImGui::SameLine();
+               if (ImGui::Button("Import"))
+               {
+                  m_ptable->ImportBackdropPOV(string());
+                  m_pin3d.InitLights(); // Needed to update shaders with new light settings
+                  const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
+                  m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+                  #ifdef SEPARATE_CLASSICLIGHTSHADER
+                  m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+                  #endif
+               }
+               ImGui::SameLine();
+               if (ImGui::Button("Export"))
+                  m_ptable->ExportBackdropPOV(string());
+               ImGui::SameLine();
+            }
+            if (ImGui::Button("Back"))
+            {
+               if (restore_static_mode)
+               {
+                  m_cameraMode = false;
+                  m_dynamicMode = false;
+                  InitStatic();
+               }
+               ui_pos = UI_ROOT;
+            }
+
+            ImGui::NewLine();
+
+            ImGui::Checkbox("Interactive camera mode", &m_cameraMode);
+
+            ImGui::NewLine();
+
+            for (int i = 0; i < 14; i++)
+            {
+               if (m_cameraMode && (i == m_backdropSettingActive || (m_backdropSettingActive == 3 && (i == 4 || i == 5))))
+                  ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+               switch (i)
+               {
+               case 0:
+                  if (ImGui::InputFloat("Inclination", &(m_ptable->m_BG_inclination[m_ptable->m_BG_current_set]), 0.2f, 1.0f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+                     m_ptable->SetNonUndoableDirty(eSaveDirty);
+                  break;
+               case 1:
+                  if (ImGui::InputFloat("Field Of View", &(m_ptable->m_BG_FOV[m_ptable->m_BG_current_set]), 0.2f, 1.0f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+                     m_ptable->SetNonUndoableDirty(eSaveDirty);
+                  break;
+               case 2:
+                  if (ImGui::InputFloat("Layback", &(m_ptable->m_BG_layback[m_ptable->m_BG_current_set]), 0.2f, 1.0f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+                     m_ptable->SetNonUndoableDirty(eSaveDirty);
+                  ImGui::NewLine();
+                  break;
+               case 4:
+                  if (ImGui::InputFloat("X Scale", &(m_ptable->m_BG_scalex[m_ptable->m_BG_current_set]), 0.002f, 0.01f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+                     m_ptable->SetNonUndoableDirty(eSaveDirty);
+                  break;
+               case 5:
+                  if (ImGui::InputFloat("Y Scale", &(m_ptable->m_BG_scaley[m_ptable->m_BG_current_set]), 0.002f, 0.01f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+                     m_ptable->SetNonUndoableDirty(eSaveDirty);
+                  break;
+               case 6:
+                  if (ImGui::InputFloat("Z Scale", &(m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]), 0.002f, 0.01f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+                     m_ptable->SetNonUndoableDirty(eSaveDirty);
+                  ImGui::NewLine();
+                  break;
+               case 7: 
+                  if (ImGui::InputFloat("X Offset", &(m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set]), 10.0f, 50.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
+                     m_ptable->SetNonUndoableDirty(eSaveDirty);
+                  break;
+               case 8:
+                  if (ImGui::InputFloat("Y Offset", &(m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set]), 10.0f, 50.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
+                     m_ptable->SetNonUndoableDirty(eSaveDirty);
+                  break;
+               case 9:
+                  if (ImGui::InputFloat("Z Offset", &(m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set]), 10.0f, 50.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
+                     m_ptable->SetNonUndoableDirty(eSaveDirty);
+                  ImGui::NewLine();
+                  break;
+               case 10:
+                  if (ImGui::InputFloat("Light Emission Scale", &(m_ptable->m_lightEmissionScale), 20000.0f, 100000.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
+                  {
+                     m_ptable->SetNonUndoableDirty(eSaveDirty);
+                     m_pin3d.InitLights(); // Needed to update shaders with new light settings
+                  }
+                  break;
+               case 11:
+                  if (ImGui::InputFloat("Light Range", &(m_ptable->m_lightRange), 200.0f, 1000.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
+                     m_ptable->SetNonUndoableDirty(eSaveDirty);
+                  break;
+               case 12:
+                  if (ImGui::InputFloat("Light Height", &(m_ptable->m_lightHeight), 20.0f, 100.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
+                     m_ptable->SetNonUndoableDirty(eSaveDirty);
+                  ImGui::NewLine();
+                  break;
+               case 13: 
+                  if (ImGui::InputFloat("Environment Emission", &(m_ptable->m_envEmissionScale), 0.1f, 0.5f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+                  {
+                     m_ptable->SetNonUndoableDirty(eSaveDirty);
+                     const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
+                     m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+                     #ifdef SEPARATE_CLASSICLIGHTSHADER
+                     m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+                     #endif
+                  }
+                  break;
+               }
+               if (m_cameraMode && (i == m_backdropSettingActive || (m_backdropSettingActive == 3 && (i == 4 || i == 5))))
+                  ImGui::PopStyleColor();
+            }
+
+            ImGui::NewLine();
+
+            char szFoo[128];
+            sprintf_s(szFoo, sizeof(szFoo), "Camera at X: %.2f Y: %.2f Z: %.2f,  Rotation: %.2f", -m_pin3d.m_proj.m_matView._41,
+               (m_ptable->m_BG_current_set == 0 || m_ptable->m_BG_current_set == 2) ? m_pin3d.m_proj.m_matView._42 : -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43,
+               m_ptable->m_BG_rotation[m_ptable->m_BG_current_set]); // DT & FSS
+            ImGui::Text(szFoo);
+
+            if (m_cameraMode)
+            {
+               ImGui::NewLine();
+               ImGui::Text("Left / Right flipper key = decrease / increase value highlighted in green");
+               ImGui::Text("Left / Right magna save key = previous / next option");
+               ImGui::Text("");
+               ImGui::Text("Left / Right nudge key = rotate table orientation (if enabled in the Key settings)");
+               ImGui::Text("Navigate around with the Arrow Keys and Left Alt Key (if enabled in the Key settings)");
+               if (g_pvp->m_povEdit)
+                  ImGui::Text("Start Key: export POV file and quit, or Credit Key: quit without export");
+               else
+                  ImGui::Text("Start Key: reset POV to old values");
+            }
+            break;
+         }
+
+         //////////////////////////////////////////////////////////////////////////
+         // Video options
+         case UI_VIDEO_SETTINGS:
+         {
+            fps_mode = 1; // Show FPS while adjusting video options
+
+            if (ImGui::Button("Back"))
+               ui_pos = UI_ROOT;
+
+            ImGui::NewLine();
+
+            ImGui::Text("Global settings");
+
+            ImGui::NewLine();
+
+            if (ImGui::Checkbox("Force Bloom filter off", &m_bloomOff))
+               SaveValueBool(regKey[m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "ForceBloomOff"s, m_bloomOff);
+
+            if (m_ptable->m_useFXAA == -1)
+            {
+               const char *postprocessed_aa_items[] = { "Disabled", "Fast FXAA", "Standard FXAA", "Quality FXAA", "Fast NFAA", "Standard DLAA", "Quality SMAA" };
+               if (ImGui::Combo("Postprocessed AA", &m_FXAA, postprocessed_aa_items, IM_ARRAYSIZE(postprocessed_aa_items)))
+                  SaveValueInt(regKey[m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "FXAA"s, m_FXAA);
+            }
+
+            const char *sharpen_items[] = { "Disabled", "CAS", "Bilateral CAS" };
+            if (ImGui::Combo("Sharpen", &m_sharpen, sharpen_items, IM_ARRAYSIZE(sharpen_items)))
+               SaveValueInt(regKey[m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "Sharpen"s, m_sharpen);
+
+            if (ImGui::Checkbox("Enable stereo rendering", &m_stereo3Denabled))
+               SaveValueBool(regKey[RegName::Player], "Stereo3DEnabled"s, m_stereo3Denabled);
+            
+            ImGui::NewLine();
+
+            ImGui::Text("Table settings");
+
+            ImGui::NewLine();
+
+            if (ImGui::InputFloat("Bloom Strength", &(m_ptable->m_bloom_strength), 0.1f, 1.0f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+               m_ptable->SetNonUndoableDirty(eSaveDirty);
+
+            break;
+         }
+
+         //////////////////////////////////////////////////////////////////////////
+         // Renderer inspection (display individual render passes, performance indicators,...)
+         case UI_RENDERER_INSPECTION:
+         {
+            if (ImGui::Button("Back"))
+               ui_pos = UI_ROOT;
+
+            ImGui::NewLine();
+
+            static bool show_fps_plot = false;
+            ImGui::Checkbox("Display FPS plots", &show_fps_plot);
+            fps_mode = show_fps_plot ? 2 : 1;
+
+            ImGui::NewLine();
+
+            ImGui::Text("Display single render pass:");
+            static int pass_selection = IF_FPS;
+            ImGui::RadioButton("Disabled", &pass_selection, IF_FPS);
+            ImGui::RadioButton("Profiler", &pass_selection, IF_PROFILING);
+            ImGui::RadioButton("Profiler (Split rendering)", &pass_selection, IF_PROFILING_SPLIT_RENDERING);
+            ImGui::RadioButton("Static prerender pass", &pass_selection, IF_STATIC_ONLY);
+            ImGui::RadioButton("Dynamic render pass", &pass_selection, IF_DYNAMIC_ONLY);
+            ImGui::RadioButton("Transmitted light pass", &pass_selection, IF_LIGHT_BUFFER_ONLY);
+            if (GetAOMode() != 0)
+               ImGui::RadioButton("Ambient Occlusion pass", &pass_selection, IF_AO_ONLY);
+            for (int i = 0; i < 2 * m_ptable->m_vrenderprobe.size(); i++)
+            {
+               string name = m_ptable->m_vrenderprobe[i >> 1]->GetName() + ((i & 1) == 0 ? " - Static pass" : " - Dynamic pass");
+               ImGui::RadioButton(name.c_str(), &pass_selection, 100 + i);
+            }
+            if (pass_selection < 100)
+               m_infoMode = (InfoMode) pass_selection;
+            else
+            {
+               m_infoMode = IF_RENDER_PROBES;
+               m_infoProbeIndex = pass_selection - 100;
+            }
+
+            ImGui::NewLine();
+
+            const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / (float)m_fpsCount;
+            ImGui::Text("FPS: %.1f (%.1f avg)  Display %s Objects(%uk/%uk Triangles)", m_fps + 0.01f, fpsAvg + 0.01f, GetInfoMode() == IF_STATIC_ONLY ? "only static" : "all",
+               (RenderDevice::m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000);
+            ImGui::Text("DayNight %u%%", quantizeUnsignedPercent(m_globalEmissionScale));
+
+            const U32 period = m_lastFrameDuration;
+            if (period > m_max || m_time_msec - m_lastMaxChangeTime > 1000)
+               m_max = period;
+            if (period > m_max_total && period < 100000)
+               m_max_total = period;
+
+            if (m_phys_period - m_script_period > m_phys_max || m_time_msec - m_lastMaxChangeTime > 1000)
+               m_phys_max = m_phys_period - m_script_period;
+            if (m_phys_period - m_script_period > m_phys_max_total)
+               m_phys_max_total = m_phys_period - m_script_period;
+
+            if (m_phys_iterations > m_phys_max_iterations || m_time_msec - m_lastMaxChangeTime > 1000)
+               m_phys_max_iterations = m_phys_iterations;
+
+            if (m_script_period > m_script_max || m_time_msec - m_lastMaxChangeTime > 1000)
+               m_script_max = m_script_period;
+            if (m_script_period > m_script_max_total)
+               m_script_max_total = m_script_period;
+
+            if (m_time_msec - m_lastMaxChangeTime > 1000)
+               m_lastMaxChangeTime = m_time_msec;
+
+            if (m_count == 0)
+            {
+               m_total = period;
+               m_phys_total = m_phys_period - m_script_period;
+               m_phys_total_iterations = m_phys_iterations;
+               m_script_total = m_script_period;
+               m_count = 1;
+            }
+            else
+            {
+               m_total += period;
+               m_phys_total += m_phys_period - m_script_period;
+               m_phys_total_iterations += m_phys_iterations;
+               m_script_total += m_script_period;
+               m_count++;
+            }
+            ImGui::Text("Overall: %.1f ms (%.1f (%.1f) avg %.1f max)", float(1e-3 * period), float(1e-3 * (double)m_total / (double)m_count), float(1e-3 * m_max), float(1e-3 * m_max_total));
+            ImGui::Text("%4.1f%% Physics: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
+                        float((m_phys_period - m_script_period) * 100.0 / period), float(1e-3 * (m_phys_period - m_script_period)),
+                        float(1e-3 * (double)m_phys_total / (double)m_count), float(1e-3 * m_phys_max), float((double)m_phys_total * 100.0 / (double)m_total), float(1e-3 * m_phys_max_total));
+
+            ImGui::Text("%4.1f%% Scripts: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
+                        float(m_script_period * 100.0 / period), float(1e-3 * m_script_period),
+                        float(1e-3 * (double)m_script_total / (double)m_count), float(1e-3 * m_script_max), float((double)m_script_total * 100.0 / (double)m_total), float(1e-3 * m_script_max_total));
+
+            // performance counters
+         #ifdef ENABLE_SDL
+            ImGui::Text("Draw calls: %u", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumDrawCalls());
+         #else
+            ImGui::Text("Draw calls: %u (%u Locks)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumDrawCalls(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumLockCalls());
+         #endif
+            ImGui::Text("State changes: %u", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumStateChanges());
+            ImGui::Text("Texture changes: %u (%u Uploads)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureUploads());
+            ImGui::Text("Shader/Parameter changes: %u / %u (%u Material ID changes)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTechniqueChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumParameterChanges(), material_flips);
+            ImGui::Text("Objects: %u Transparent, %u Solid", (unsigned int)m_vHitTrans.size(), (unsigned int)m_vHitNonTrans.size());
+            ImGui::Text("Physics: %u iterations per frame (%u avg %u max)", m_phys_iterations, (U32)(m_phys_total_iterations / m_count), m_phys_max_iterations);
+            ImGui::Text("Ball Velocity / Ang.Vel.: %.1f %.1f", 
+               m_pactiveball ? (m_pactiveball->m_d.m_vel + (float)PHYS_FACTOR * m_gravity).Length() : -1.f,
+               m_pactiveball ? (m_pactiveball->m_angularmomentum / m_pactiveball->Inertia()).Length() : -1.f);
+            ImGui::Text("Left Flipper keypress to rotate: %.1f ms (%d f) to eos: %.1f ms (%d f)",
+               (INT64)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) / 1000.,
+               (int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame),
+               (INT64)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) / 1000.,
+               (int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame));
+
+
+            // Profiler information
+            if (m_infoMode == IF_PROFILING || m_infoMode == IF_PROFILING_SPLIT_RENDERING)
+            {
+               ImGui::NewLine();
+
+               m_pin3d.m_gpu_profiler.WaitForDataAndUpdate();
+               double dTDrawTotal = 0.0;
+               for (GTS gts = GTS_BeginFrame; gts < GTS_EndFrame; gts = GTS(gts + 1))
+                  dTDrawTotal += m_pin3d.m_gpu_profiler.DtAvg(gts);
+               if (GetProfilingMode() == PF_ENABLED)
+               {
+                  ImGui::Text(" Draw time: %.2f ms", float(1000.0 * dTDrawTotal));
+                  for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
+                     ImGui::Text("   %s: %.2f ms (%4.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
+                  ImGui::Text(" Frame time: %.2f ms", float(1000.0 * (dTDrawTotal + m_pin3d.m_gpu_profiler.DtAvg(GTS_EndFrame))));
+               }
+               else
+               {
+                  for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
+                     ImGui::Text("   %s: %.2f ms (%4.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
+               }
+            }
+
+         }
       }
-      else
-      {
-         for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
-            ImGui::Text("   %s: %.2f ms (%4.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
-      }
+
+      ImGui::EndPopup();
+   }
+
+   // Display simple FPS window
+   if (fps_mode > 0)
+   {
+      ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+      ImGui::SetNextWindowBgAlpha(0.35f);
+      ImGui::SetNextWindowPos(ImVec2(10, 10));
+      ImGui::Begin("FPS", NULL, window_flags);
+      const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / (float)m_fpsCount;
+      ImGui::Text("FPS: %.1f (%.1f avg)", m_fps + 0.01f, fpsAvg + 0.01f);
       ImGui::End();
    }
 
-   ImGui::SetNextWindowSize(ImVec2(530, 200), ImGuiCond_FirstUseEver);
-   ImGui::SetNextWindowPos(ImVec2((float)(m_wnd_width - 530 - 10), 570), ImGuiCond_FirstUseEver);
-   ImGui::Begin("Settings");
-   const char *postprocessed_aa_items[] = { "Disabled", "Fast FXAA", "Standard FXAA", "Quality FXAA", "Fast NFAA", "Standard DLAA", "Quality SMAA" };
-   ImGui::Combo("Postprocessed AA", &m_FXAA, postprocessed_aa_items, IM_ARRAYSIZE(postprocessed_aa_items));
-   const char *sharpen_items[] = { "Disabled", "CAS", "Bilateral CAS" };
-   ImGui::Combo("Sharpen", &m_sharpen, sharpen_items, IM_ARRAYSIZE(sharpen_items));
-   ImGui::End();
+   // Display FPS window with plots
+   if (fps_mode == 2)
+   {
+      ImGui::SetNextWindowSize(ImVec2(530, 550), ImGuiCond_FirstUseEver);
+      ImGui::SetNextWindowPos(ImVec2((float)(m_wnd_width - 530 - 10), 10), ImGuiCond_FirstUseEver);
+      ImGui::Begin("Plots");
+          //!! This example assumes 60 FPS. Higher FPS requires larger buffer size.
+          static ScrollingData sdata1, sdata2, sdata3, sdata4, sdata5, sdata6;
+          //static RollingData   rdata1, rdata2;
+          static double t = 0.f;
+          t += ImGui::GetIO().DeltaTime;
 
-   ImGui::SetNextWindowSize(ImVec2(530, 550), ImGuiCond_FirstUseEver);
-   ImGui::SetNextWindowPos(ImVec2((float)(m_wnd_width - 530 - 10), 10), ImGuiCond_FirstUseEver);
-   ImGui::Begin("Plots");
-       //!! This example assumes 60 FPS. Higher FPS requires larger buffer size.
-       static ScrollingData sdata1, sdata2, sdata3, sdata4, sdata5, sdata6;
-       //static RollingData   rdata1, rdata2;
-       static double t = 0.f;
-       t += ImGui::GetIO().DeltaTime;
+          sdata6.AddPoint((float)t, float(1e-3 * m_script_period) * 1.f);
+          sdata5.AddPoint((float)t, sdata5.GetLast().y*0.95f + sdata6.GetLast().y*0.05f);
 
-       sdata6.AddPoint((float)t, float(1e-3 * m_script_period) * 1.f);
-       sdata5.AddPoint((float)t, sdata5.GetLast().y*0.95f + sdata6.GetLast().y*0.05f);
+          sdata4.AddPoint((float)t, float(1e-3 * (m_phys_period - m_script_period)) * 5.f);
+          sdata3.AddPoint((float)t, sdata3.GetLast().y*0.95f + sdata4.GetLast().y*0.05f);
 
-       sdata4.AddPoint((float)t, float(1e-3 * (m_phys_period - m_script_period)) * 5.f);
-       sdata3.AddPoint((float)t, sdata3.GetLast().y*0.95f + sdata4.GetLast().y*0.05f);
+          sdata2.AddPoint((float)t, m_fps * 0.003f);
+          //rdata2.AddPoint((float)t, m_fps * 0.003f);
+          sdata1.AddPoint((float)t, sdata1.GetLast().y*0.95f + sdata2.GetLast().y*0.05f);
+          //rdata1.AddPoint((float)t, sdata1.GetLast().y*0.95f + sdata2.GetLast().y*0.05f);
 
-       sdata2.AddPoint((float)t, m_fps * 0.003f);
-       //rdata2.AddPoint((float)t, m_fps * 0.003f);
-       sdata1.AddPoint((float)t, sdata1.GetLast().y*0.95f + sdata2.GetLast().y*0.05f);
-       //rdata1.AddPoint((float)t, sdata1.GetLast().y*0.95f + sdata2.GetLast().y*0.05f);
+          static float history = 2.5f;
+          ImGui::SliderFloat("History", &history, 1, 10, "%.1f s");
+          //rdata1.Span = history;
+          //rdata2.Span = history;
+          constexpr int rt_axis = ImPlotAxisFlags_NoTickLabels;
+          if (ImPlot::BeginPlot("##ScrollingFPS", ImVec2(-1, 150), ImPlotFlags_None)) {
+              ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
+              ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis | ImPlotAxisFlags_LockMin);
+              ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
+              ImPlot::PlotLine("FPS", &sdata2.Data[0].x, &sdata2.Data[0].y, sdata2.Data.size(), 0, sdata2.Offset, 2 * sizeof(float));
+              ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
+              ImPlot::PlotLine("Smoothed FPS", &sdata1.Data[0].x, &sdata1.Data[0].y, sdata1.Data.size(), 0, sdata1.Offset, 2 * sizeof(float));
+              ImPlot::PopStyleColor();
+              ImPlot::EndPlot();
+          }
+          /*
+          if (ImPlot::BeginPlot("##RollingFPS", ImVec2(-1, 150), ImPlotFlags_Default)) {
+              ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
+              ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis);
+              ImPlot::SetupAxis(ImAxis_X1, 0, history, ImGuiCond_Always);
+              ImPlot::PlotLine("Average FPS", &rdata1.Data[0].x, &rdata1.Data[0].y, rdata1.Data.size(), 0, 0, 2 * sizeof(float));
+              ImPlot::PlotLine("FPS", &rdata2.Data[0].x, &rdata2.Data[0].y, rdata2.Data.size(), 0, 0, 2 * sizeof(float));
+              ImPlot::EndPlot();
+          }*/
+          if (ImPlot::BeginPlot("##ScrollingPhysics", ImVec2(-1, 150), ImPlotFlags_None)) {
+              ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
+              ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis | ImPlotAxisFlags_LockMin);
+              ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
+              ImPlot::PlotLine("ms Physics", &sdata4.Data[0].x, &sdata4.Data[0].y, sdata4.Data.size(), 0, sdata4.Offset, 2 * sizeof(float));
+              ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
+              ImPlot::PlotLine("Smoothed ms Physics", &sdata3.Data[0].x, &sdata3.Data[0].y, sdata3.Data.size(), 0, sdata3.Offset, 2 * sizeof(float));
+              ImPlot::PopStyleColor();
+              ImPlot::EndPlot();
+          }
+          if (ImPlot::BeginPlot("##ScrollingScript",ImVec2(-1, 150), ImPlotFlags_None)) {
+              ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
+              ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis | ImPlotAxisFlags_LockMin);
+              ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
+              ImPlot::PlotLine("ms Script", &sdata6.Data[0].x, &sdata6.Data[0].y, sdata6.Data.size(), 0, sdata6.Offset, 2 * sizeof(float));
+              ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
+              ImPlot::PlotLine("Smoothed ms Script", &sdata5.Data[0].x, &sdata5.Data[0].y, sdata5.Data.size(), 0, sdata5.Offset, 2 * sizeof(float));
+              ImPlot::PopStyleColor();
+              ImPlot::EndPlot();
+          }
+      ImGui::End();
+   }
 
-       static float history = 2.5f;
-       ImGui::SliderFloat("History", &history, 1, 10, "%.1f s");
-       //rdata1.Span = history;
-       //rdata2.Span = history;
-       constexpr int rt_axis = ImPlotAxisFlags_NoTickLabels;
-       if (ImPlot::BeginPlot("##ScrollingFPS", ImVec2(-1, 150), ImPlotFlags_None)) {
-           ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
-           ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis | ImPlotAxisFlags_LockMin);
-           ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
-           ImPlot::PlotLine("FPS", &sdata2.Data[0].x, &sdata2.Data[0].y, sdata2.Data.size(), 0, sdata2.Offset, 2 * sizeof(float));
-           ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
-           ImPlot::PlotLine("Smoothed FPS", &sdata1.Data[0].x, &sdata1.Data[0].y, sdata1.Data.size(), 0, sdata1.Offset, 2 * sizeof(float));
-           ImPlot::PopStyleColor();
-           ImPlot::EndPlot();
-       }
-       /*
-       if (ImPlot::BeginPlot("##RollingFPS", ImVec2(-1, 150), ImPlotFlags_Default)) {
-           ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
-           ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis);
-           ImPlot::SetupAxis(ImAxis_X1, 0, history, ImGuiCond_Always);
-           ImPlot::PlotLine("Average FPS", &rdata1.Data[0].x, &rdata1.Data[0].y, rdata1.Data.size(), 0, 0, 2 * sizeof(float));
-           ImPlot::PlotLine("FPS", &rdata2.Data[0].x, &rdata2.Data[0].y, rdata2.Data.size(), 0, 0, 2 * sizeof(float));
-           ImPlot::EndPlot();
-       }*/
-       if (ImPlot::BeginPlot("##ScrollingPhysics", ImVec2(-1, 150), ImPlotFlags_None)) {
-           ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
-           ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis | ImPlotAxisFlags_LockMin);
-           ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
-           ImPlot::PlotLine("ms Physics", &sdata4.Data[0].x, &sdata4.Data[0].y, sdata4.Data.size(), 0, sdata4.Offset, 2 * sizeof(float));
-           ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
-           ImPlot::PlotLine("Smoothed ms Physics", &sdata3.Data[0].x, &sdata3.Data[0].y, sdata3.Data.size(), 0, sdata3.Offset, 2 * sizeof(float));
-           ImPlot::PopStyleColor();
-           ImPlot::EndPlot();
-       }
-       if (ImPlot::BeginPlot("##ScrollingScript",ImVec2(-1, 150), ImPlotFlags_None)) {
-           ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
-           ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis | ImPlotAxisFlags_LockMin);
-           ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
-           ImPlot::PlotLine("ms Script", &sdata6.Data[0].x, &sdata6.Data[0].y, sdata6.Data.size(), 0, sdata6.Offset, 2 * sizeof(float));
-           ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
-           ImPlot::PlotLine("Smoothed ms Script", &sdata5.Data[0].x, &sdata5.Data[0].y, sdata5.Data.size(), 0, sdata5.Offset, 2 * sizeof(float));
-           ImPlot::PopStyleColor();
-           ImPlot::EndPlot();
-       }
-   ImGui::End();
+   // Kill the profiler so that it does not affect performance
+   if (m_infoMode != IF_PROFILING && m_infoMode != IF_PROFILING_SPLIT_RENDERING)
+      m_pin3d.m_gpu_profiler.Shutdown();
 
    ImGui::EndFrame();
 }
@@ -4778,6 +5106,7 @@ void Player::UpdateBackdropSettings(const bool up)
       m_ptable->m_lightEmissionScale += thesign*100000.f;
       if (m_ptable->m_lightEmissionScale < 0.f)
          m_ptable->m_lightEmissionScale = 0.f;
+      m_pin3d.InitLights();
       m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
@@ -4802,6 +5131,11 @@ void Player::UpdateBackdropSettings(const bool up)
       m_ptable->m_envEmissionScale += thesign*0.5f;
       if (m_ptable->m_envEmissionScale < 0.f)
          m_ptable->m_envEmissionScale = 0.f;
+      const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
+      m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+      #ifdef SEPARATE_CLASSICLIGHTSHADER
+      m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+      #endif
       m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
@@ -5307,6 +5641,7 @@ void Player::Render()
       StopPlayer();
 #endif
       m_ptable->SendMessage(WM_COMMAND, ID_TABLE_STOP_PLAY, 0);
+      return;
    }
 
    // Close application
@@ -5316,10 +5651,11 @@ void Player::Render()
       while (ShowCursor(FALSE) >= 0) ;
       while(ShowCursor(TRUE)<0) ;
       SendMessage(g_pvp->GetHwnd(), WM_COMMAND, ID_FILE_EXIT, NULL);
+      return;
    }
 
    // Open debugger window
-   if (m_closing == CS_PLAYING && m_showDebugger && !g_pvp->m_disable_pause_menu)
+   if (m_showDebugger && !g_pvp->m_disable_pause_menu)
    {
       m_debugMode = true;
       m_showDebugger = false;
