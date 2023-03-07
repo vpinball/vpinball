@@ -396,6 +396,8 @@ add_executable(vpinball WIN32
    light.h
    lightseq.cpp
    lightseq.h
+   LiveUI.cpp
+   LiveUI.h
    Material.h
    memutil.cpp
    memutil.h

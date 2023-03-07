@@ -1161,12 +1161,8 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    m_quadDynMeshBuffer = new MeshBuffer(quadDynVertexBuffer);
 #endif
 
-   //
-
-#if !defined(ENABLE_SDL) && !defined(USE_IMGUI)
-   if (m_FXAA == Quality_SMAA)
-#endif
-      UploadAndSetSMAATextures();
+   // Always load the (small) SMAA textures since SMAA can be toggled at runtime through the live UI
+   UploadAndSetSMAATextures();
 
    // Setup a defined initial render state
    SetRenderState(ALPHABLENDENABLE, RS_FALSE);
@@ -1256,13 +1252,8 @@ bool RenderDevice::LoadShaders()
    basicShader->SetVector(SHADER_w_h_height, (float)(1.0 / (double)GetMSAABackBufferTexture()->GetWidth()), (float)(1.0 / (double)GetMSAABackBufferTexture()->GetHeight()), 0.0f, 0.0f);
    basicShader->SetFlasherColorAlpha(vec4(1.0f, 1.0f, 1.0f, 1.0f)); // No tinting
    DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f); // No alpha clipping
-#if !defined(ENABLE_SDL) && !defined(USE_IMGUI)
-   if (m_FXAA == Quality_SMAA)
-#endif
-   {
-      FBShader->SetTexture(SHADER_areaTex, m_SMAAareaTexture);
-      FBShader->SetTexture(SHADER_searchTex, m_SMAAsearchTexture);
-   }
+   FBShader->SetTexture(SHADER_areaTex, m_SMAAareaTexture);
+   FBShader->SetTexture(SHADER_searchTex, m_SMAAsearchTexture);
 
    return true;
 }

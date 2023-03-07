@@ -32,7 +32,6 @@ add_compile_definitions(
    ENABLE_XINPUT
    ENABLE_BAM
    USE_DINPUT8
-   USE_IMGUI
 )
 
 add_compile_options(
@@ -381,6 +380,8 @@ add_executable(vpinball WIN32
    light.h
    lightseq.cpp
    lightseq.h
+   LiveUI.cpp
+   LiveUI.h
    Material.h
    memutil.cpp
    memutil.h
