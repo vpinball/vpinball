@@ -8,86 +8,17 @@
 #include "BAM/BAMView.h"
 #endif
 
-#ifdef USE_IMGUI
- #include "imgui/imgui.h"
- #ifdef ENABLE_SDL
-  #include "imgui/imgui_impl_opengl3.h"
- #else
-  #include "imgui/imgui_impl_dx9.h"
- #endif
- #include "imgui/imgui_impl_win32.h"
- #include "imgui/implot/implot.h"
-
-#if __cplusplus >= 202002L && !defined(__clang__)
- #define stable_sort std::ranges::stable_sort
-#else
- #define stable_sort std::stable_sort
-#endif
-
-// utility structure for realtime plot //!! cleanup
-class ScrollingData {
-private:
-    int MaxSize;
-public:
-    int Offset;
-    ImVector<ImVec2> Data;
-    ScrollingData() {
-        MaxSize = 500;
-        Offset  = 0;
-        Data.reserve(MaxSize);
-    }
-    void AddPoint(const float x, const float y) {
-        if (Data.size() < MaxSize)
-            Data.push_back(ImVec2(x,y));
-        else {
-            Data[Offset] = ImVec2(x,y);
-            Offset++;
-            if (Offset == MaxSize)
-                Offset = 0;
-        }
-    }
-    void Erase() {
-        if (!Data.empty()) {
-            Data.shrink(0);
-            Offset  = 0;
-        }
-    }
-    ImVec2 GetLast() {
-        if (Data.empty())
-            return ImVec2(0.f, 0.f);
-        else if (Data.size() < MaxSize || Offset == 0)
-            return Data.back();
-        else
-            return Data[Offset - 1];
-    }
-};
-
-// utility structure for realtime plot
-/*class RollingData {
-    float Span;
-    ImVector<ImVec2> Data;
-    RollingData() {
-        Span = 10.0f;
-        Data.reserve(500);
-    }
-    void AddPoint(const float x, const float y) {
-        const float xmod = fmodf(x, Span);
-        if (!Data.empty() && xmod < Data.back().x)
-            Data.shrink(0);
-        Data.push_back(ImVec2(xmod, y));
-    }
-};*/
-#endif
-
+#include "imgui/imgui_impl_win32.h"
 
 #include <algorithm>
 #include <ctime>
+#include <format>
 #include "../meshes/ballMesh.h"
 #include "Shader.h"
 #include "typedefs3D.h"
 #include "captureExt.h"
 #ifndef ENABLE_SDL
- #include "BallShader.h"
+#include "BallShader.h"
 #endif
 #include "../math/bluenoise.h"
 #include "../inc/winsdk/legacy_touch.h"
@@ -118,7 +49,6 @@ EnumAssignKeys touchkeymap[8] = {
 #endif /* _WIN32_WINNT >= 0x0500 */
 
 //
-
 static unsigned int material_flips = 0;
 static unsigned int stats_drawn_static_triangles = 0;
 
@@ -399,26 +329,11 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
 #ifdef DEBUG_BALL_SPIN
    m_ballDebugPoints = nullptr;
 #endif
-   m_pFont = nullptr;
    m_implicitPlayfieldMesh = nullptr;
 }
 
 Player::~Player()
 {
-#ifdef ENABLE_SDL
-   //!! TODO Render font
-#else
-    if (m_fontSprite)
-    {
-        m_fontSprite->Release();
-        m_fontSprite = nullptr;
-    }
-    if (m_pFont)
-    {
-        m_pFont->Release();
-        m_pFont = nullptr;
-    }
-#endif
     if (m_ballImage)
     {
        delete m_ballImage;
@@ -741,19 +656,7 @@ void Player::Shutdown()
 #endif
    captureStop();
 
-#ifdef USE_IMGUI
-   if (ImGui::GetCurrentContext())
-   {
-#ifdef ENABLE_SDL
-      ImGui_ImplOpenGL3_Shutdown();
-#else
-      ImGui_ImplDX9_Shutdown();
-#endif
-      ImGui_ImplWin32_Shutdown();
-      ImPlot::DestroyContext();
-      ImGui::DestroyContext();
-   }
-#endif
+   delete m_liveUI;
 
    if(m_toogle_DTFS && m_ptable->m_BG_current_set != 2)
       m_ptable->m_BG_current_set ^= 1;
@@ -889,47 +792,9 @@ void Player::InitFPS()
     m_script_max_total = 0;
 }
 
-void Player::ToggleFPS()
+void Player::ShowUI()
 {
-#ifdef USE_IMGUI
-   // For IMGUI, just openup the interactive UI
-   m_infoMode = IF_FPS;
-   return;
-#endif
-   m_pin3d.m_gpu_profiler.Shutdown(); // Kill it so that it cannot influence standard rendering performance (and otherwise if just switching profile modes to not falsify counters and query info)
-   while (true)
-   {
-      if (m_infoMode == IF_RENDER_PROBES)
-      {
-         while (true)
-         {
-            m_infoProbeIndex++;
-            if (m_infoProbeIndex >= 2 * m_ptable->m_vrenderprobe.size())
-            {
-               m_infoProbeIndex = 0;
-               break;
-            }
-            RenderProbe * const render_probe = m_ptable->m_vrenderprobe[m_infoProbeIndex >> 1];
-            RenderTarget * const probe = render_probe->GetProbe((m_infoProbeIndex & 1) == 0);
-            if (probe != nullptr)
-               return;
-         }
-      }
-      if (m_infoMode == IF_NONE)
-         ShowCursor(TRUE);
-      m_infoMode = (InfoMode)(m_infoMode + 1);
-      if (m_infoMode == IF_STATIC_ONLY && m_pin3d.m_pddsStatic == nullptr)
-         continue;
-      if (m_infoMode == IF_AO_ONLY && GetAOMode() == 0)
-         continue;
-      if (m_infoMode == IF_INVALID)
-      {
-         ShowCursor(FALSE);
-         m_infoMode = IF_NONE;
-      }
-      if (m_infoMode != IF_RENDER_PROBES)
-         return;
-   }
+   m_liveUI->OpenMainUI();
 }
 
 InfoMode Player::GetInfoMode() const
@@ -1316,89 +1181,6 @@ void Player::InitBallShader()
    m_ballShader->SetVector(SHADER_cAmbient_LightRange, &amb_lr);
 }
 
-void Player::CreateDebugFont()
-{
-#ifdef ENABLE_SDL
-   //!! TODO Init Font for debugging
-#else
-    int fontSize = 20;
-    if (m_wnd_width > 1024 && m_wnd_width <= 1920)
-        fontSize = 24;
-    else if (m_wnd_width > 1920)
-        fontSize = 30;
-
-    const HRESULT hr = D3DXCreateFont(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice(), //device
-                                fontSize,                              //font height
-                                0,                                     //font width
-                                FW_BOLD,                               //font weight
-                                1,                                     //mip levels
-                                fFalse,                                //italic
-                                DEFAULT_CHARSET,                       //charset
-                                OUT_DEFAULT_PRECIS,                    //output precision
-                                DEFAULT_QUALITY,                       //quality
-                                DEFAULT_PITCH | FF_DONTCARE,           //pitch and family
-                                "Arial",                               //font name
-                                &m_pFont);                             //font pointer
-    if (FAILED(hr))
-    {
-        ShowError("Unable to create debug font via D3DXCreateFont!");
-        m_pFont = nullptr;
-    }
-    if (FAILED(D3DXCreateSprite(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice(), &m_fontSprite)))
-        ShowError("D3DXCreateSprite failed!");
-
-    SetRect(&m_fontRect, 0, 0, DBG_SPRITE_SIZE, DBG_SPRITE_SIZE);
-#endif
-}
-
-
-void Player::SetDebugOutputPosition(const float x, const float y)
-{
-#ifdef ENABLE_SDL
-    //!! TODO Implement Font for debugging
-#else
-    const D3DXVECTOR2 spritePos(x,y);
-    const D3DXVECTOR2 spriteCenter(DBG_SPRITE_SIZE/2, DBG_SPRITE_SIZE/2);
-
-    const float angle = ANGTORAD(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set]);
-    D3DXMATRIX mat;
-    D3DXMatrixTransformation2D(&mat, nullptr, 0.0, nullptr, &spriteCenter, angle, &spritePos);
-    m_fontSprite->SetTransform(&mat);
-#endif
-}
-
-void Player::DebugPrint(int x, int y, LPCSTR text, bool center /*= false*/)
-{
-#ifdef ENABLE_SDL
-   //!! TODO Implement Font for debugging
-#else
-   if(m_pFont)
-   {
-       int xx = x;
-       m_fontSprite->Begin(D3DXSPRITE_ALPHABLEND | D3DXSPRITE_SORT_TEXTURE);
-       RECT fontRect;
-       SetRect(&fontRect, x, y, 0, 0);
-       m_pFont->DrawText(m_fontSprite, text, -1, &fontRect, DT_CALCRECT, 0xFFFFFFFF);
-       if (center)
-           xx = x - (fontRect.right - fontRect.left) / 2;
-       SetRect(&fontRect, xx, y, 0, 0);
-
-       //if(shadow)
-            for(unsigned int i = 0; i < 4; ++i)
-            {
-               constexpr int offset = 1;
-               RECT shadowRect;
-               SetRect( &shadowRect, xx + ((i == 0) ? -offset : (i == 1) ? offset : 0), y + ((i == 2) ? -offset : (i == 3) ? offset : 0), 0, 0 );
-               m_pFont->DrawText(m_fontSprite, text, -1, &shadowRect, DT_NOCLIP, 0xFF000000);
-            }
-
-      m_pFont->DrawText(m_fontSprite, text, -1, &fontRect, DT_NOCLIP, 0xFFFFFFFF);
-
-      m_fontSprite->End();
-   }
-#endif
-}
-
 HRESULT Player::Init()
 {
    TRACE_FUNCTION();
@@ -1531,19 +1313,8 @@ HRESULT Player::Init()
        m_toogle_DTFS = false;
 
    m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation());
-#ifdef USE_IMGUI
-   IMGUI_CHECKVERSION();
-   ImGui::CreateContext();
-   ImPlot::CreateContext();
-   ImGuiIO& io = ImGui::GetIO();
-   io.IniFilename = nullptr;  //don't use an ini file for configuration
-   ImGui_ImplWin32_Init(GetHwnd());
- #ifdef ENABLE_SDL
-   ImGui_ImplOpenGL3_Init();
- #else
-   ImGui_ImplDX9_Init(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
- #endif
-#endif
+
+   m_liveUI = new LiveUI(m_pin3d.m_pd3dPrimaryDevice);
 
    const float minSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMinSlope : m_ptable->m_angletiltMin);
    const float maxSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMaxSlope : m_ptable->m_angletiltMax);
@@ -1617,7 +1388,6 @@ HRESULT Player::Init()
       pf_reflection_probe->SetReflectionMode(m_pfReflectionMode);
    }
 
-   CreateDebugFont();
    m_ptable->m_progressDialog.SetProgress(30);
    m_ptable->m_progressDialog.SetName("Initializing Physics..."s);
 
@@ -3825,854 +3595,134 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
    }
 }
 
-#ifdef USE_IMGUI
-// Helper to display a little (?) mark which shows a tooltip when hovered.
-static void HelpMarker(const char *desc)
+string Player::GetPerfInfo()
 {
-   ImGui::TextDisabled("(?)");
-   if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+   std::ostringstream info;
+   const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
+
+	// Draw the amount of video memory used.
+   //!! Disabled until we can compute this correctly.
+   //sprintf_s(szFoo, sizeof(szFoo), " Used Graphics Memory: %.2f MB ", (float)NumVideoBytes / (float)(1024 * 1024));
+   //DebugPrint(0, 230, szFoo); //!!?
+
+   // Draw the framerate.
+   info << std::format("FPS: {:.1f} ({:.1f} avg)  Display {:s} Objects ({:d}k/{:d}k Triangles)  DayNight {:d}%%\n", m_fps + 0.01f, fpsAvg + 0.01f,
+      GetInfoMode() == IF_STATIC_ONLY ? "only static" : "all", (RenderDevice::m_stats_drawn_triangles + 999) / 1000,
+      (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, quantizeUnsignedPercent(m_globalEmissionScale));
+
+   const U32 period = m_lastFrameDuration;
+   if (period > m_max || m_time_msec - m_lastMaxChangeTime > 1000)
+      m_max = period;
+   if (period > m_max_total && period < 100000)
+      m_max_total = period;
+
+   if (m_phys_period - m_script_period > m_phys_max || m_time_msec - m_lastMaxChangeTime > 1000)
+      m_phys_max = m_phys_period - m_script_period;
+   if (m_phys_period - m_script_period > m_phys_max_total)
+      m_phys_max_total = m_phys_period - m_script_period;
+
+   if (m_phys_iterations > m_phys_max_iterations || m_time_msec - m_lastMaxChangeTime > 1000)
+      m_phys_max_iterations = m_phys_iterations;
+
+   if (m_script_period > m_script_max || m_time_msec - m_lastMaxChangeTime > 1000)
+      m_script_max = m_script_period;
+   if (m_script_period > m_script_max_total)
+      m_script_max_total = m_script_period;
+
+   if (m_time_msec - m_lastMaxChangeTime > 1000)
+      m_lastMaxChangeTime = m_time_msec;
+
+   if (m_count == 0)
    {
-      ImGui::BeginTooltip();
-      ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-      ImGui::TextUnformatted(desc);
-      ImGui::PopTextWrapPos();
-      ImGui::EndTooltip();
+      m_total = period;
+      m_phys_total = m_phys_period - m_script_period;
+      m_phys_total_iterations = m_phys_iterations;
+      m_script_total = m_script_period;
+      m_count = 1;
    }
-}
-
-// call UpdateHUD_IMGUI outside of m_pin3d.m_pd3dPrimaryDevice->BeginScene()/EndSecene()
-void Player::UpdateHUD_IMGUI()
-{
-   InfoMode infoMode = GetInfoMode();
-   if (infoMode == IF_NONE || m_closing != CS_PLAYING )
-      return;
-
-#ifdef ENABLE_SDL
-   ImGui_ImplOpenGL3_NewFrame();
-#else
-   ImGui_ImplDX9_NewFrame();
-#endif
-   ImGui_ImplWin32_NewFrame();
-   ImGui::NewFrame();
-
-#ifdef ENABLE_BAM
-   if (m_infoMode == IF_BAM_MENU)
+   else
    {
-      BAMView::drawMenu();
-      ImGui::EndFrame();
-      return;
-   }
-#endif
-
-   enum UILocation
-   {
-      UI_ROOT,
-      UI_CAMERA_SETTINGS,
-      UI_AUDIO_SETTINGS,
-      UI_VIDEO_SETTINGS,
-      UI_RENDERER_INSPECTION,
-      UI_HEADTRACKING,
-   };
-   static UILocation ui_pos = UI_ROOT;
-
-   int fps_mode = 0;
-
-   const char* title;
-   ImGuiStyle &style = ImGui::GetStyle();
-   style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0, 0, 0, (ui_pos == UI_ROOT || ui_pos == UI_AUDIO_SETTINGS) ? 0.5f : 0.0f);
-   switch (ui_pos)
-   {
-   case UI_ROOT: title = "Settings###In Game UI"; break;
-   case UI_CAMERA_SETTINGS: title = "Settings > Camera Point of View###In Game UI"; break;
-   case UI_AUDIO_SETTINGS: title = "Settings > Audio Options###In Game UI"; break;
-   case UI_VIDEO_SETTINGS: title = "Settings > Video Options###In Game UI"; break;
-   case UI_RENDERER_INSPECTION: title = "Settings > Renderer Inspection###In Game UI"; break;
-   case UI_HEADTRACKING: title = "Settings > Head Tracking###In Game UI"; break;
+      m_total += period;
+      m_phys_total += m_phys_period - m_script_period;
+      m_phys_total_iterations += m_phys_iterations;
+      m_script_total += m_script_period;
+      m_count++;
    }
 
-   // Directly open the modal dialog at root level on user interaction
-   if (!ImGui::IsPopupOpen(title))
-   {
-      ui_pos = UI_ROOT;
-      ImGui::OpenPopup(title);
-   }
-
-   // Main UI window
-   if (ImGui::BeginPopupModal(title, NULL, ImGuiWindowFlags_AlwaysAutoResize))
-   {
-      switch (ui_pos)
-      {
-         //////////////////////////////////////////////////////////////////////////
-         // Root UI panel
-         case UI_ROOT:
-         {
-            if (ImGui::Button("Resume Game"))
-            {
-               m_infoMode = IF_NONE;
-               ImGui::CloseCurrentPopup();
-            }
-            if (ImGui::Button("Camera Settings"))
-               ui_pos = UI_CAMERA_SETTINGS;
-            /* if (ImGui::Button("Audio Settings"))
-               ui_pos = UI_AUDIO_SETTINGS;*/
-            if (ImGui::Button("Video Settings"))
-               ui_pos = UI_VIDEO_SETTINGS;
-#ifdef ENABLE_BAM
-            if (ImGui::Button("Head Tracking"))
-            {
-               m_infoMode = IF_BAM_MENU;
-               ImGui::CloseCurrentPopup();
-            }
-#endif
-            if (ImGui::Button("Renderer Inspection"))
-               ui_pos = UI_RENDERER_INSPECTION;
-            if (ImGui::Button("Debugger"))
-            {
-               m_showDebugger = true;
-               m_infoMode = IF_NONE;
-               ImGui::CloseCurrentPopup();
-            }
-            if (ImGui::Button("Quit to editor"))
-            {
-               m_ptable->QuitPlayer(CS_STOP_PLAY);
-               ImGui::CloseCurrentPopup();
-            }
-            break;
-         }
-
-         //////////////////////////////////////////////////////////////////////////
-         // Camera settings (point of view, import/export,...)
-         case UI_CAMERA_SETTINGS:
-         {
-            static bool restore_static_mode = false;
-            if (!m_dynamicMode)
-            {
-               m_dynamicMode = true;
-               restore_static_mode = true;
-               InitStatic();
-            }
-
-            if (!g_pvp->m_povEdit)
-            {
-               if (ImGui::Button("Reset"))
-               {
-                  bool old_camera_mode = m_cameraMode;
-                  m_cameraMode = true;
-                  m_pininput.FireKeyEvent(DISPID_GameEvents_KeyDown, m_rgKeys[eStartGameKey]);
-                  m_cameraMode = old_camera_mode;
-                  m_pin3d.InitLights(); // Needed to update shaders with new light settings
-                  const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
-                  m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-                  #ifdef SEPARATE_CLASSICLIGHTSHADER
-                  m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-                  #endif
-               }
-               ImGui::SameLine();
-               if (ImGui::Button("Import"))
-               {
-                  m_ptable->ImportBackdropPOV(string());
-                  m_pin3d.InitLights(); // Needed to update shaders with new light settings
-                  const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
-                  m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-                  #ifdef SEPARATE_CLASSICLIGHTSHADER
-                  m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-                  #endif
-               }
-               ImGui::SameLine();
-               if (ImGui::Button("Export"))
-                  m_ptable->ExportBackdropPOV(string());
-               ImGui::SameLine();
-            }
-            if (ImGui::Button("Back"))
-            {
-               if (restore_static_mode)
-               {
-                  m_cameraMode = false;
-                  m_dynamicMode = false;
-                  InitStatic();
-               }
-               ui_pos = UI_ROOT;
-            }
-
-            ImGui::NewLine();
-
-            ImGui::Checkbox("Interactive camera mode", &m_cameraMode);
-
-            ImGui::NewLine();
-
-            for (int i = 0; i < 14; i++)
-            {
-               if (m_cameraMode && (i == m_backdropSettingActive || (m_backdropSettingActive == 3 && (i == 4 || i == 5))))
-                  ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-               switch (i)
-               {
-               case 0:
-                  if (ImGui::InputFloat("Inclination", &(m_ptable->m_BG_inclination[m_ptable->m_BG_current_set]), 0.2f, 1.0f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
-                     m_ptable->SetNonUndoableDirty(eSaveDirty);
-                  break;
-               case 1:
-                  if (ImGui::InputFloat("Field Of View", &(m_ptable->m_BG_FOV[m_ptable->m_BG_current_set]), 0.2f, 1.0f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
-                     m_ptable->SetNonUndoableDirty(eSaveDirty);
-                  break;
-               case 2:
-                  if (ImGui::InputFloat("Layback", &(m_ptable->m_BG_layback[m_ptable->m_BG_current_set]), 0.2f, 1.0f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
-                     m_ptable->SetNonUndoableDirty(eSaveDirty);
-                  ImGui::NewLine();
-                  break;
-               case 4:
-                  if (ImGui::InputFloat("X Scale", &(m_ptable->m_BG_scalex[m_ptable->m_BG_current_set]), 0.002f, 0.01f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
-                     m_ptable->SetNonUndoableDirty(eSaveDirty);
-                  break;
-               case 5:
-                  if (ImGui::InputFloat("Y Scale", &(m_ptable->m_BG_scaley[m_ptable->m_BG_current_set]), 0.002f, 0.01f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
-                     m_ptable->SetNonUndoableDirty(eSaveDirty);
-                  break;
-               case 6:
-                  if (ImGui::InputFloat("Z Scale", &(m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]), 0.002f, 0.01f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
-                     m_ptable->SetNonUndoableDirty(eSaveDirty);
-                  ImGui::NewLine();
-                  break;
-               case 7: 
-                  if (ImGui::InputFloat("X Offset", &(m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set]), 10.0f, 50.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
-                     m_ptable->SetNonUndoableDirty(eSaveDirty);
-                  break;
-               case 8:
-                  if (ImGui::InputFloat("Y Offset", &(m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set]), 10.0f, 50.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
-                     m_ptable->SetNonUndoableDirty(eSaveDirty);
-                  break;
-               case 9:
-                  if (ImGui::InputFloat("Z Offset", &(m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set]), 10.0f, 50.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
-                     m_ptable->SetNonUndoableDirty(eSaveDirty);
-                  ImGui::NewLine();
-                  break;
-               case 10:
-                  if (ImGui::InputFloat("Light Emission Scale", &(m_ptable->m_lightEmissionScale), 20000.0f, 100000.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
-                  {
-                     m_ptable->SetNonUndoableDirty(eSaveDirty);
-                     m_pin3d.InitLights(); // Needed to update shaders with new light settings
-                  }
-                  break;
-               case 11:
-                  if (ImGui::InputFloat("Light Range", &(m_ptable->m_lightRange), 200.0f, 1000.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
-                     m_ptable->SetNonUndoableDirty(eSaveDirty);
-                  break;
-               case 12:
-                  if (ImGui::InputFloat("Light Height", &(m_ptable->m_lightHeight), 20.0f, 100.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
-                     m_ptable->SetNonUndoableDirty(eSaveDirty);
-                  ImGui::NewLine();
-                  break;
-               case 13: 
-                  if (ImGui::InputFloat("Environment Emission", &(m_ptable->m_envEmissionScale), 0.1f, 0.5f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
-                  {
-                     m_ptable->SetNonUndoableDirty(eSaveDirty);
-                     const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
-                     m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-                     #ifdef SEPARATE_CLASSICLIGHTSHADER
-                     m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-                     #endif
-                  }
-                  break;
-               }
-               if (m_cameraMode && (i == m_backdropSettingActive || (m_backdropSettingActive == 3 && (i == 4 || i == 5))))
-                  ImGui::PopStyleColor();
-            }
-
-            ImGui::NewLine();
-
-            char szFoo[128];
-            sprintf_s(szFoo, sizeof(szFoo), "Camera at X: %.2f Y: %.2f Z: %.2f,  Rotation: %.2f", -m_pin3d.m_proj.m_matView._41,
-               (m_ptable->m_BG_current_set == 0 || m_ptable->m_BG_current_set == 2) ? m_pin3d.m_proj.m_matView._42 : -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43,
-               m_ptable->m_BG_rotation[m_ptable->m_BG_current_set]); // DT & FSS
-            ImGui::Text(szFoo);
-
-            if (m_cameraMode)
-            {
-               ImGui::NewLine();
-               ImGui::Text("Left / Right flipper key = decrease / increase value highlighted in green");
-               ImGui::Text("Left / Right magna save key = previous / next option");
-               ImGui::Text("");
-               ImGui::Text("Left / Right nudge key = rotate table orientation (if enabled in the Key settings)");
-               ImGui::Text("Navigate around with the Arrow Keys and Left Alt Key (if enabled in the Key settings)");
-               if (g_pvp->m_povEdit)
-                  ImGui::Text("Start Key: export POV file and quit, or Credit Key: quit without export");
-               else
-                  ImGui::Text("Start Key: reset POV to old values");
-            }
-            break;
-         }
-
-         //////////////////////////////////////////////////////////////////////////
-         // Video options
-         case UI_VIDEO_SETTINGS:
-         {
-            fps_mode = 1; // Show FPS while adjusting video options
-
-            if (ImGui::Button("Back"))
-               ui_pos = UI_ROOT;
-
-            ImGui::NewLine();
-
-            ImGui::Text("Global settings");
-
-            ImGui::NewLine();
-
-            if (ImGui::Checkbox("Force Bloom filter off", &m_bloomOff))
-               SaveValueBool(regKey[m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "ForceBloomOff"s, m_bloomOff);
-
-            if (m_ptable->m_useFXAA == -1)
-            {
-               const char *postprocessed_aa_items[] = { "Disabled", "Fast FXAA", "Standard FXAA", "Quality FXAA", "Fast NFAA", "Standard DLAA", "Quality SMAA" };
-               if (ImGui::Combo("Postprocessed AA", &m_FXAA, postprocessed_aa_items, IM_ARRAYSIZE(postprocessed_aa_items)))
-                  SaveValueInt(regKey[m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "FXAA"s, m_FXAA);
-            }
-
-            const char *sharpen_items[] = { "Disabled", "CAS", "Bilateral CAS" };
-            if (ImGui::Combo("Sharpen", &m_sharpen, sharpen_items, IM_ARRAYSIZE(sharpen_items)))
-               SaveValueInt(regKey[m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "Sharpen"s, m_sharpen);
-
-            if (ImGui::Checkbox("Enable stereo rendering", &m_stereo3Denabled))
-               SaveValueBool(regKey[RegName::Player], "Stereo3DEnabled"s, m_stereo3Denabled);
-            
-            ImGui::NewLine();
-
-            ImGui::Text("Table settings");
-
-            ImGui::NewLine();
-
-            if (ImGui::InputFloat("Bloom Strength", &(m_ptable->m_bloom_strength), 0.1f, 1.0f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
-               m_ptable->SetNonUndoableDirty(eSaveDirty);
-
-            break;
-         }
-
-         //////////////////////////////////////////////////////////////////////////
-         // Renderer inspection (display individual render passes, performance indicators,...)
-         case UI_RENDERER_INSPECTION:
-         {
-            if (ImGui::Button("Back"))
-               ui_pos = UI_ROOT;
-
-            ImGui::NewLine();
-
-            static bool show_fps_plot = false;
-            ImGui::Checkbox("Display FPS plots", &show_fps_plot);
-            fps_mode = show_fps_plot ? 2 : 1;
-
-            ImGui::NewLine();
-
-            ImGui::Text("Display single render pass:");
-            static int pass_selection = IF_FPS;
-            ImGui::RadioButton("Disabled", &pass_selection, IF_FPS);
-            ImGui::RadioButton("Profiler", &pass_selection, IF_PROFILING);
-            ImGui::RadioButton("Profiler (Split rendering)", &pass_selection, IF_PROFILING_SPLIT_RENDERING);
-            ImGui::RadioButton("Static prerender pass", &pass_selection, IF_STATIC_ONLY);
-            ImGui::RadioButton("Dynamic render pass", &pass_selection, IF_DYNAMIC_ONLY);
-            ImGui::RadioButton("Transmitted light pass", &pass_selection, IF_LIGHT_BUFFER_ONLY);
-            if (GetAOMode() != 0)
-               ImGui::RadioButton("Ambient Occlusion pass", &pass_selection, IF_AO_ONLY);
-            for (int i = 0; i < 2 * m_ptable->m_vrenderprobe.size(); i++)
-            {
-               string name = m_ptable->m_vrenderprobe[i >> 1]->GetName() + ((i & 1) == 0 ? " - Static pass" : " - Dynamic pass");
-               ImGui::RadioButton(name.c_str(), &pass_selection, 100 + i);
-            }
-            if (pass_selection < 100)
-               m_infoMode = (InfoMode) pass_selection;
-            else
-            {
-               m_infoMode = IF_RENDER_PROBES;
-               m_infoProbeIndex = pass_selection - 100;
-            }
-
-            ImGui::NewLine();
-
-            const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / (float)m_fpsCount;
-            ImGui::Text("FPS: %.1f (%.1f avg)  Display %s Objects(%uk/%uk Triangles)", m_fps + 0.01f, fpsAvg + 0.01f, GetInfoMode() == IF_STATIC_ONLY ? "only static" : "all",
-               (RenderDevice::m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000);
-            ImGui::Text("DayNight %u%%", quantizeUnsignedPercent(m_globalEmissionScale));
-
-            const U32 period = m_lastFrameDuration;
-            if (period > m_max || m_time_msec - m_lastMaxChangeTime > 1000)
-               m_max = period;
-            if (period > m_max_total && period < 100000)
-               m_max_total = period;
-
-            if (m_phys_period - m_script_period > m_phys_max || m_time_msec - m_lastMaxChangeTime > 1000)
-               m_phys_max = m_phys_period - m_script_period;
-            if (m_phys_period - m_script_period > m_phys_max_total)
-               m_phys_max_total = m_phys_period - m_script_period;
-
-            if (m_phys_iterations > m_phys_max_iterations || m_time_msec - m_lastMaxChangeTime > 1000)
-               m_phys_max_iterations = m_phys_iterations;
-
-            if (m_script_period > m_script_max || m_time_msec - m_lastMaxChangeTime > 1000)
-               m_script_max = m_script_period;
-            if (m_script_period > m_script_max_total)
-               m_script_max_total = m_script_period;
-
-            if (m_time_msec - m_lastMaxChangeTime > 1000)
-               m_lastMaxChangeTime = m_time_msec;
-
-            if (m_count == 0)
-            {
-               m_total = period;
-               m_phys_total = m_phys_period - m_script_period;
-               m_phys_total_iterations = m_phys_iterations;
-               m_script_total = m_script_period;
-               m_count = 1;
-            }
-            else
-            {
-               m_total += period;
-               m_phys_total += m_phys_period - m_script_period;
-               m_phys_total_iterations += m_phys_iterations;
-               m_script_total += m_script_period;
-               m_count++;
-            }
-            ImGui::Text("Overall: %.1f ms (%.1f (%.1f) avg %.1f max)", float(1e-3 * period), float(1e-3 * (double)m_total / (double)m_count), float(1e-3 * m_max), float(1e-3 * m_max_total));
-            ImGui::Text("%4.1f%% Physics: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
-                        float((m_phys_period - m_script_period) * 100.0 / period), float(1e-3 * (m_phys_period - m_script_period)),
-                        float(1e-3 * (double)m_phys_total / (double)m_count), float(1e-3 * m_phys_max), float((double)m_phys_total * 100.0 / (double)m_total), float(1e-3 * m_phys_max_total));
-
-            ImGui::Text("%4.1f%% Scripts: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
-                        float(m_script_period * 100.0 / period), float(1e-3 * m_script_period),
-                        float(1e-3 * (double)m_script_total / (double)m_count), float(1e-3 * m_script_max), float((double)m_script_total * 100.0 / (double)m_total), float(1e-3 * m_script_max_total));
-
-            // performance counters
-         #ifdef ENABLE_SDL
-            ImGui::Text("Draw calls: %u", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumDrawCalls());
-         #else
-            ImGui::Text("Draw calls: %u (%u Locks)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumDrawCalls(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumLockCalls());
-         #endif
-            ImGui::Text("State changes: %u", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumStateChanges());
-            ImGui::Text("Texture changes: %u (%u Uploads)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureUploads());
-            ImGui::Text("Shader/Parameter changes: %u / %u (%u Material ID changes)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTechniqueChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumParameterChanges(), material_flips);
-            ImGui::Text("Objects: %u Transparent, %u Solid", (unsigned int)m_vHitTrans.size(), (unsigned int)m_vHitNonTrans.size());
-            ImGui::Text("Physics: %u iterations per frame (%u avg %u max)", m_phys_iterations, (U32)(m_phys_total_iterations / m_count), m_phys_max_iterations);
-            ImGui::Text("Ball Velocity / Ang.Vel.: %.1f %.1f", 
-               m_pactiveball ? (m_pactiveball->m_d.m_vel + (float)PHYS_FACTOR * m_gravity).Length() : -1.f,
-               m_pactiveball ? (m_pactiveball->m_angularmomentum / m_pactiveball->Inertia()).Length() : -1.f);
-            ImGui::Text("Left Flipper keypress to rotate: %.1f ms (%d f) to eos: %.1f ms (%d f)",
-               (INT64)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) / 1000.,
-               (int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame),
-               (INT64)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) / 1000.,
-               (int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame));
-
-
-            // Profiler information
-            if (m_infoMode == IF_PROFILING || m_infoMode == IF_PROFILING_SPLIT_RENDERING)
-            {
-               ImGui::NewLine();
-
-               m_pin3d.m_gpu_profiler.WaitForDataAndUpdate();
-               double dTDrawTotal = 0.0;
-               for (GTS gts = GTS_BeginFrame; gts < GTS_EndFrame; gts = GTS(gts + 1))
-                  dTDrawTotal += m_pin3d.m_gpu_profiler.DtAvg(gts);
-               if (GetProfilingMode() == PF_ENABLED)
-               {
-                  ImGui::Text(" Draw time: %.2f ms", float(1000.0 * dTDrawTotal));
-                  for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
-                     ImGui::Text("   %s: %.2f ms (%4.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
-                  ImGui::Text(" Frame time: %.2f ms", float(1000.0 * (dTDrawTotal + m_pin3d.m_gpu_profiler.DtAvg(GTS_EndFrame))));
-               }
-               else
-               {
-                  for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
-                     ImGui::Text("   %s: %.2f ms (%4.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
-               }
-            }
-
-         }
-      }
-
-      ImGui::EndPopup();
-   }
-
-   // Display simple FPS window
-   if (fps_mode > 0)
-   {
-      ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-      ImGui::SetNextWindowBgAlpha(0.35f);
-      ImGui::SetNextWindowPos(ImVec2(10, 10));
-      ImGui::Begin("FPS", NULL, window_flags);
-      const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / (float)m_fpsCount;
-      ImGui::Text("FPS: %.1f (%.1f avg)", m_fps + 0.01f, fpsAvg + 0.01f);
-      ImGui::End();
-   }
-
-   // Display FPS window with plots
-   if (fps_mode == 2)
-   {
-      ImGui::SetNextWindowSize(ImVec2(530, 550), ImGuiCond_FirstUseEver);
-      ImGui::SetNextWindowPos(ImVec2((float)(m_wnd_width - 530 - 10), 10), ImGuiCond_FirstUseEver);
-      ImGui::Begin("Plots");
-          //!! This example assumes 60 FPS. Higher FPS requires larger buffer size.
-          static ScrollingData sdata1, sdata2, sdata3, sdata4, sdata5, sdata6;
-          //static RollingData   rdata1, rdata2;
-          static double t = 0.f;
-          t += ImGui::GetIO().DeltaTime;
-
-          sdata6.AddPoint((float)t, float(1e-3 * m_script_period) * 1.f);
-          sdata5.AddPoint((float)t, sdata5.GetLast().y*0.95f + sdata6.GetLast().y*0.05f);
-
-          sdata4.AddPoint((float)t, float(1e-3 * (m_phys_period - m_script_period)) * 5.f);
-          sdata3.AddPoint((float)t, sdata3.GetLast().y*0.95f + sdata4.GetLast().y*0.05f);
-
-          sdata2.AddPoint((float)t, m_fps * 0.003f);
-          //rdata2.AddPoint((float)t, m_fps * 0.003f);
-          sdata1.AddPoint((float)t, sdata1.GetLast().y*0.95f + sdata2.GetLast().y*0.05f);
-          //rdata1.AddPoint((float)t, sdata1.GetLast().y*0.95f + sdata2.GetLast().y*0.05f);
-
-          static float history = 2.5f;
-          ImGui::SliderFloat("History", &history, 1, 10, "%.1f s");
-          //rdata1.Span = history;
-          //rdata2.Span = history;
-          constexpr int rt_axis = ImPlotAxisFlags_NoTickLabels;
-          if (ImPlot::BeginPlot("##ScrollingFPS", ImVec2(-1, 150), ImPlotFlags_None)) {
-              ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
-              ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis | ImPlotAxisFlags_LockMin);
-              ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
-              ImPlot::PlotLine("FPS", &sdata2.Data[0].x, &sdata2.Data[0].y, sdata2.Data.size(), 0, sdata2.Offset, 2 * sizeof(float));
-              ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
-              ImPlot::PlotLine("Smoothed FPS", &sdata1.Data[0].x, &sdata1.Data[0].y, sdata1.Data.size(), 0, sdata1.Offset, 2 * sizeof(float));
-              ImPlot::PopStyleColor();
-              ImPlot::EndPlot();
-          }
-          /*
-          if (ImPlot::BeginPlot("##RollingFPS", ImVec2(-1, 150), ImPlotFlags_Default)) {
-              ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
-              ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis);
-              ImPlot::SetupAxis(ImAxis_X1, 0, history, ImGuiCond_Always);
-              ImPlot::PlotLine("Average FPS", &rdata1.Data[0].x, &rdata1.Data[0].y, rdata1.Data.size(), 0, 0, 2 * sizeof(float));
-              ImPlot::PlotLine("FPS", &rdata2.Data[0].x, &rdata2.Data[0].y, rdata2.Data.size(), 0, 0, 2 * sizeof(float));
-              ImPlot::EndPlot();
-          }*/
-          if (ImPlot::BeginPlot("##ScrollingPhysics", ImVec2(-1, 150), ImPlotFlags_None)) {
-              ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
-              ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis | ImPlotAxisFlags_LockMin);
-              ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
-              ImPlot::PlotLine("ms Physics", &sdata4.Data[0].x, &sdata4.Data[0].y, sdata4.Data.size(), 0, sdata4.Offset, 2 * sizeof(float));
-              ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
-              ImPlot::PlotLine("Smoothed ms Physics", &sdata3.Data[0].x, &sdata3.Data[0].y, sdata3.Data.size(), 0, sdata3.Offset, 2 * sizeof(float));
-              ImPlot::PopStyleColor();
-              ImPlot::EndPlot();
-          }
-          if (ImPlot::BeginPlot("##ScrollingScript",ImVec2(-1, 150), ImPlotFlags_None)) {
-              ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
-              ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis | ImPlotAxisFlags_LockMin);
-              ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
-              ImPlot::PlotLine("ms Script", &sdata6.Data[0].x, &sdata6.Data[0].y, sdata6.Data.size(), 0, sdata6.Offset, 2 * sizeof(float));
-              ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
-              ImPlot::PlotLine("Smoothed ms Script", &sdata5.Data[0].x, &sdata5.Data[0].y, sdata5.Data.size(), 0, sdata5.Offset, 2 * sizeof(float));
-              ImPlot::PopStyleColor();
-              ImPlot::EndPlot();
-          }
-      ImGui::End();
-   }
-
-   // Kill the profiler so that it does not affect performance
-   if (m_infoMode != IF_PROFILING && m_infoMode != IF_PROFILING_SPLIT_RENDERING)
-      m_pin3d.m_gpu_profiler.Shutdown();
-
-   ImGui::EndFrame();
-}
-
-void Player::RenderHUD_IMGUI()
-{
-   InfoMode infoMode = GetInfoMode();
-   if (infoMode == IF_NONE || m_closing != CS_PLAYING)
-      return;
-
-   ImGui::Render();
-#ifdef ENABLE_SDL
-   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-#else
-   ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
-#endif
-}
-
-#else
-
-void Player::UpdateHUD()
-{
-    // set debug output pos for left aligned text
-    float x = 0.f, y = 0.f;
-    if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 270.0f)
-    {
-        x = 0.0f;
-        y = (float)(m_wnd_height - DBG_SPRITE_SIZE);
-    }
-    else if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 90.0f)
-    {
-        x = (float)(m_wnd_width - DBG_SPRITE_SIZE);
-        y = 0.0f;
-    }
-    SetDebugOutputPosition(x, y);
-
-   // draw all kinds of stats, incl. FPS counter
-   const InfoMode mode = GetInfoMode();
-   switch (mode)
-   {
-   case IF_STATIC_ONLY: DebugPrint(0, 10, "Static pre-rendered parts"); break;
-   case IF_DYNAMIC_ONLY: DebugPrint(0, 10, "Dynamic rendered parts"); break;
-   case IF_AO_ONLY: DebugPrint(0, 10, "Ambient occlusion"); break;
-   case IF_LIGHT_BUFFER_ONLY: DebugPrint(0, 10, "Transmitted light buffer"); break;
-   case IF_RENDER_PROBES:
-      DebugPrint(0, 10, "Render Probe: "s.append(m_ptable->m_vrenderprobe[m_infoProbeIndex >> 1]->GetName()).append((m_infoProbeIndex & 1) == 0 ? " [Static]"s : " [Dynamic]"s).c_str());
-      break;
-   }
-   if (ShowStats() && !m_cameraMode && m_closing == CS_PLAYING)
-	{
-		char szFoo[256];
-
-		const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
-		if (ShowFPSonly())
-		{
-			sprintf_s(szFoo, sizeof(szFoo), "FPS: %.1f (%.1f avg)", m_fps + 0.01f, fpsAvg + 0.01f);
-			DebugPrint(0, 10, szFoo);
-		}
-		else
-		{
-		// Draw the amount of video memory used.
-		//!! Disabled until we can compute this correctly.
-		//sprintf_s(szFoo, sizeof(szFoo), " Used Graphics Memory: %.2f MB ", (float)NumVideoBytes / (float)(1024 * 1024));
-		//DebugPrint(0, 230, szFoo); //!!?
-
-		// Draw the framerate.
-      sprintf_s(szFoo, sizeof(szFoo), "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %u%%", m_fps + 0.01f, fpsAvg + 0.01f,
-         GetInfoMode() == IF_STATIC_ONLY ? "only static" : "all", (RenderDevice::m_stats_drawn_triangles + 999) / 1000,
-         (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, quantizeUnsignedPercent(m_globalEmissionScale));
-		DebugPrint(0, 10, szFoo);
-
-		const U32 period = m_lastFrameDuration;
-		if (period > m_max || m_time_msec - m_lastMaxChangeTime > 1000)
-			m_max = period;
-		if (period > m_max_total && period < 100000)
-			m_max_total = period;
-
-		if (m_phys_period-m_script_period > m_phys_max || m_time_msec - m_lastMaxChangeTime > 1000)
-			m_phys_max = m_phys_period-m_script_period;
-		if (m_phys_period-m_script_period > m_phys_max_total)
-			m_phys_max_total = m_phys_period-m_script_period;
-
-		if (m_phys_iterations > m_phys_max_iterations || m_time_msec - m_lastMaxChangeTime > 1000)
-			m_phys_max_iterations = m_phys_iterations;
-
-		if (m_script_period > m_script_max || m_time_msec - m_lastMaxChangeTime > 1000)
-			m_script_max = m_script_period;
-		if (m_script_period > m_script_max_total)
-			m_script_max_total = m_script_period;
-
-		if (m_time_msec - m_lastMaxChangeTime > 1000)
-			m_lastMaxChangeTime = m_time_msec;
-
-		if (m_count == 0)
-		{
-			m_total = period;
-			m_phys_total = m_phys_period-m_script_period;
-			m_phys_total_iterations = m_phys_iterations;
-			m_script_total = m_script_period;
-			m_count = 1;
-		}
-		else
-		{
-			m_total += period;
-			m_phys_total += m_phys_period-m_script_period;
-			m_phys_total_iterations += m_phys_iterations;
-			m_script_total += m_script_period;
-			m_count++;
-		}
-
-		sprintf_s(szFoo, sizeof(szFoo), "Overall: %.1f ms (%.1f (%.1f) avg %.1f max)",
-			float(1e-3*period), float(1e-3 * (double)m_total / (double)m_count), float(1e-3*m_max), float(1e-3*m_max_total));
-		DebugPrint(0, 30, szFoo);
-		sprintf_s(szFoo, sizeof(szFoo), "%4.1f%% Physics: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
-			float((m_phys_period-m_script_period)*100.0 / period), float(1e-3*(m_phys_period-m_script_period)),
-			float(1e-3 * (double)m_phys_total / (double)m_count), float(1e-3*m_phys_max), float((double)m_phys_total*100.0 / (double)m_total), float(1e-3*m_phys_max_total));
-		DebugPrint(0, 50, szFoo);
-		sprintf_s(szFoo, sizeof(szFoo), "%4.1f%% Scripts: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
-			float(m_script_period*100.0 / period), float(1e-3*m_script_period),
-			float(1e-3 * (double)m_script_total / (double)m_count), float(1e-3*m_script_max), float((double)m_script_total*100.0 / (double)m_total), float(1e-3*m_script_max_total));
-		DebugPrint(0, 70, szFoo);
+   info << std::format("Overall: {:.1f} ms ({:.1f} ({:.1f}) avg {:.1f} max)\n", float(1e-3 * period), float(1e-3 * (double)m_total / (double)m_count), float(1e-3 * m_max), float(1e-3 * m_max_total));
+   info << std::format("{:4.1f}%% Physics: {:.1f} ms ({:.1f} ({:.1f} {:4.1f}%%) avg {:.1f} max)\n", float((m_phys_period - m_script_period) * 100.0 / period),
+      float(1e-3 * (m_phys_period - m_script_period)), float(1e-3 * (double)m_phys_total / (double)m_count), float(1e-3 * m_phys_max), float((double)m_phys_total * 100.0 / (double)m_total),
+      float(1e-3 * m_phys_max_total));
+   info << std::format("{:4.1f}%% Scripts: {:.1f} ms ({:.1f} ({:.1f} {:4.1f}%%) avg {:.1f} max)\n", float(m_script_period * 100.0 / period), float(1e-3 * m_script_period),
+      float(1e-3 * (double)m_script_total / (double)m_count), float(1e-3 * m_script_max), float((double)m_script_total * 100.0 / (double)m_total), float(1e-3 * m_script_max_total));
 
 #ifndef ENABLE_SDL
-		// performance counters
-		sprintf_s(szFoo, sizeof(szFoo), "Draw calls: %u (%u Locks)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumDrawCalls(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumLockCalls());
-		DebugPrint(0, 95, szFoo);
-		sprintf_s(szFoo, sizeof(szFoo), "State changes: %u", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumStateChanges());
-		DebugPrint(0, 115, szFoo);
-		sprintf_s(szFoo, sizeof(szFoo), "Texture changes: %u (%u Uploads)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureUploads());
-		DebugPrint(0, 135, szFoo);
-		sprintf_s(szFoo, sizeof(szFoo), "Shader/Parameter changes: %u / %u (%u Material ID changes)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTechniqueChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumParameterChanges(), material_flips);
-		DebugPrint(0, 155, szFoo);
-		sprintf_s(szFoo, sizeof(szFoo), "Objects: %u Transparent, %u Solid", (unsigned int)m_vHitTrans.size(), (unsigned int)m_vHitNonTrans.size());
-		DebugPrint(0, 175, szFoo);
+   // performance counters
+   info << "\n";
+   info << std::format("Draw calls: {:d} ({:d} Locks)\n", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumDrawCalls(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumLockCalls());
+   info << std::format("State changes: {:d}\n", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumStateChanges());
+   info << std::format("Texture changes: {:d} ({:d} Uploads)\n", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureUploads());
+   info << std::format("Shader/Parameter changes: {:d} / {:d} ({:d} Material ID changes)\n", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTechniqueChanges(),
+      m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumParameterChanges(), material_flips);
+   info << std::format("Objects: {:d} Transparent, {:d} Solid\n", (unsigned int)m_vHitTrans.size(), (unsigned int)m_vHitNonTrans.size());
+   info << "\n";
 #endif
 
-		sprintf_s(szFoo, sizeof(szFoo), "Physics: %u iterations per frame (%u avg %u max)    Ball Velocity / Ang.Vel.: %.1f %.1f",
-			m_phys_iterations,
-			(U32)(m_phys_total_iterations / m_count),
-			m_phys_max_iterations,
-			m_pactiveball ? (m_pactiveball->m_d.m_vel + (float)PHYS_FACTOR*m_gravity).Length() : -1.f, m_pactiveball ? (m_pactiveball->m_angularmomentum / m_pactiveball->Inertia()).Length() : -1.f);
-		DebugPrint(0, 200, szFoo);
+   info << std::format("Physics: {:d} iterations per frame ({:d} avg {:d} max)    Ball Velocity / Ang.Vel.: {:.1f} {:.1f}\n", m_phys_iterations, (U32)(m_phys_total_iterations / m_count),
+      m_phys_max_iterations, m_pactiveball ? (m_pactiveball->m_d.m_vel + (float)PHYS_FACTOR * m_gravity).Length() : -1.f,
+      m_pactiveball ? (m_pactiveball->m_angularmomentum / m_pactiveball->Inertia()).Length() : -1.f);
 
 #ifdef DEBUGPHYSICS
 #ifdef C_DYNAMIC
-		sprintf_s(szFoo, sizeof(szFoo), "Hits:%5u Collide:%5u Ctacs:%5u Static:%5u Embed:%5u TimeSearch:%5u",
-			c_hitcnts, c_collisioncnt, c_contactcnt, c_staticcnt, c_embedcnts, c_timesearch);
+   info << std::format("Hits:{:5d} Collide:{:5d} Ctacs:{:5d} Static:{:5d} Embed:{:5d} TimeSearch:{:5d}\n", c_hitcnts, c_collisioncnt, c_contactcnt, c_staticcnt, c_embedcnts, c_timesearch);
 #else
-		sprintf_s(szFoo, sizeof(szFoo), "Hits:%5u Collide:%5u Ctacs:%5u Embed:%5u TimeSearch:%5u",
-			c_hitcnts, c_collisioncnt, c_contactcnt, c_embedcnts, c_timesearch);
+   info << std::format("Hits:{:5d} Collide:{:5d} Ctacs:{:5d} Embed:{:5d} TimeSearch:{:5d}\n", c_hitcnts, c_collisioncnt, c_contactcnt, c_embedcnts, c_timesearch);
 #endif
-		DebugPrint(0, 220, szFoo);
-
-		sprintf_s(szFoo, sizeof(szFoo), "kDObjects: %5u kD:%5u QuadObjects: %5u Quadtree:%5u Traversed:%5u Tested:%5u DeepTested:%5u",
-			c_kDObjects, c_kDNextlevels, c_quadObjects, c_quadNextlevels, c_traversed, c_tested, c_deepTested);
-		DebugPrint(0, 240, szFoo);
+   info << std::format("kDObjects: {:5d} kD:{:5d} QuadObjects: {:5d} Quadtree:{:5d} Traversed:{:5d} Tested:{:5d} DeepTested:{:5d}\n", c_kDObjects, c_kDNextlevels, c_quadObjects,
+      c_quadNextlevels, c_traversed, c_tested, c_deepTested);
 #endif
 
-		sprintf_s(szFoo, sizeof(szFoo), "Left Flipper keypress to rotate: %.1f ms (%d f) to eos: %.1f ms (%d f)",
-			(INT64)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) / 1000.,
-			(int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame),
-			(INT64)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) / 1000.,
-			(int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame));
-		DebugPrint(0, 260, szFoo);
-		}
-	}
+   info << std::format("Left Flipper keypress to rotate: {:.1f} ms ({:d} f) to eos: {:.1f} ms ({:d} f)\n",
+      (INT64)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) / 1000.,
+      (int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame),
+      (INT64)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) / 1000.,
+      (int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame));
+   info << "\n";
 
-	// Draw performance readout - at end of CPU frame, so hopefully the previous frame
-	//  (whose data we're getting) will have finished on the GPU by now.
+   // Draw performance readout - at end of CPU frame, so hopefully the previous frame
+   //  (whose data we're getting) will have finished on the GPU by now.
    if (GetProfilingMode() != PF_DISABLED && m_closing == CS_PLAYING && !m_cameraMode)
-	{
-		DebugPrint(0, 300, "Detailed (approximate) GPU profiling:");
+   {
+      info << "Detailed (approximate) GPU profiling:\n";
 
-		m_pin3d.m_gpu_profiler.WaitForDataAndUpdate();
+      m_pin3d.m_gpu_profiler.WaitForDataAndUpdate();
 
-		double dTDrawTotal = 0.0;
-		for (GTS gts = GTS_BeginFrame; gts < GTS_EndFrame; gts = GTS(gts + 1))
-			dTDrawTotal += m_pin3d.m_gpu_profiler.DtAvg(gts);
+      double dTDrawTotal = 0.0;
+      for (GTS gts = GTS_BeginFrame; gts < GTS_EndFrame; gts = GTS(gts + 1))
+         dTDrawTotal += m_pin3d.m_gpu_profiler.DtAvg(gts);
 
-		char szFoo[256];
-		if (GetProfilingMode() == PF_ENABLED)
-		{
-			sprintf_s(szFoo, sizeof(szFoo), " Draw time: %.2f ms", float(1000.0 * dTDrawTotal));
-			DebugPrint(0, 320, szFoo);
-			for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
-			{
-				sprintf_s(szFoo, sizeof(szFoo), "   %s: %.2f ms (%4.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts)/dTDrawTotal));
-				DebugPrint(0, 320 + gts * 20, szFoo);
-			}
-			sprintf_s(szFoo, sizeof(szFoo), " Frame time: %.2f ms", float(1000.0 * (dTDrawTotal + m_pin3d.m_gpu_profiler.DtAvg(GTS_EndFrame))));
-			DebugPrint(0, 320 + GTS_EndFrame * 20, szFoo);
-		}
-		else
-		{
-			for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
-			{
-				sprintf_s(szFoo, sizeof(szFoo), " %s: %.2f ms (%4.1f%%)", GTS_name_item[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts)/dTDrawTotal));
-				DebugPrint(0, 300 + gts * 20, szFoo);
-			}
-		}
-	}
+      if (GetProfilingMode() == PF_ENABLED)
+      {
+         info << std::format(" Draw time: {:.2f} ms\n", float(1000.0 * dTDrawTotal));
+         for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
+         {
+            info << std::format("   {:s}: {:.2f} ms ({:4.1f}%%)\n", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)),
+               float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
+         }
+         info << std::format(" Frame time: {:.2f} ms\n", float(1000.0 * (dTDrawTotal + m_pin3d.m_gpu_profiler.DtAvg(GTS_EndFrame))));
+      }
+      else
+      {
+         for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
+         {
+            info << std::format(" {:s}: {:.2f} ms ({:4.1f}%%)\n", GTS_name_item[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)),
+               float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
+         }
+      }
+   }
 
-    // set debug output pos for centered text
-    x = (float)(m_wnd_width - DBG_SPRITE_SIZE)*0.5f;
-    if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 270.0f)
-    {
-        x = 0.0f;
-        y = (float)(m_wnd_height - DBG_SPRITE_SIZE)*0.5f;
-    }
-    else if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 90.0f)
-    {
-        x = (float)(m_wnd_width - DBG_SPRITE_SIZE);
-        y = (float)(m_wnd_height - DBG_SPRITE_SIZE)*0.5f;
-    }
-    SetDebugOutputPosition(x, y);
-
-    if (m_closing == CS_PLAYING && (m_stereo3D != STEREO_OFF && !m_stereo3Denabled && (usec() < m_StartTime_usec + 4e+6))) // show for max. 4 seconds
-        DebugPrint(DBG_SPRITE_SIZE/2, 10, "3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on", true);
-
-    if (m_closing == CS_PLAYING && m_supportsTouch && m_showTouchMessage && (usec() < m_StartTime_usec + 12e+6)) // show for max. 12 seconds
-    {
-        DebugPrint(DBG_SPRITE_SIZE/2, 40, "You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger", true);
-        DebugPrint(DBG_SPRITE_SIZE/2, 70, "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit", true); //!!!!!!!!!!!! Extra Button?
-
-        //!! visualize with real buttons or at least the areas??
-    }
-
-	if (m_fullScreen && m_closing != CS_PLAYING && !IsWindows10_1803orAbove()) // cannot use dialog boxes in exclusive fullscreen on older windows versions, so necessary
-		DebugPrint(DBG_SPRITE_SIZE/2, m_wnd_height/2-5, "Press 'Enter' to continue or Press 'Q' to exit", true);
-
-	if (m_closing != CS_PLAYING) // print table name,author,version and blurb and description in pause mode
-	{
-		char szFoo[256];
-		szFoo[0] = '\0';
-
-		int line = 0;
-
-		if ( !m_ptable->m_szTableName.empty() )
-			strncat_s(szFoo, m_ptable->m_szTableName.c_str(), sizeof(szFoo)-strnlen_s(szFoo, sizeof(szFoo))-1);
-		else
-			strncat_s(szFoo, "Table", sizeof(szFoo)-strnlen_s(szFoo, sizeof(szFoo))-1);
-		if (!m_ptable->m_szAuthor.empty())
-		{
-			strncat_s(szFoo, " by ", sizeof(szFoo)-strnlen_s(szFoo, sizeof(szFoo))-1);
-			strncat_s(szFoo, m_ptable->m_szAuthor.c_str(), sizeof(szFoo)-strnlen_s(szFoo, sizeof(szFoo))-1);
-		}
-		if (!m_ptable->m_szVersion.empty())
-		{
-			strncat_s(szFoo, " (", sizeof(szFoo)-strnlen_s(szFoo, sizeof(szFoo))-1);
-			strncat_s(szFoo, m_ptable->m_szVersion.c_str(), sizeof(szFoo)-strnlen_s(szFoo, sizeof(szFoo))-1);
-			strncat_s(szFoo, ")", sizeof(szFoo)-strnlen_s(szFoo, sizeof(szFoo))-1);
-		}
-
-		char buffer[256];
-		sprintf_s(buffer, sizeof(buffer), " (%s Revision %u)", !m_ptable->m_szDateSaved.empty() ? m_ptable->m_szDateSaved.c_str() : "N.A.", m_ptable->m_numTimesSaved);
-		strncat_s(szFoo, buffer, sizeof(szFoo)-strnlen_s(szFoo, sizeof(szFoo))-1);
-
-		if (strnlen_s(szFoo,sizeof(szFoo)) > 0)
-		{
-			DebugPrint(DBG_SPRITE_SIZE/2, line * 20 + 10, szFoo, true);
-			line += 2;
-			DebugPrint(DBG_SPRITE_SIZE/2, line * 20 + 10, "========================================", true);
-			line += 2;
-		}
-
-		for (unsigned int i2 = 0; i2 < 2; ++i2)
-		{
-			const string& s = (i2 == 0) ? m_ptable->m_szBlurb : m_ptable->m_szDescription;
-			int length = (int)s.length();
-			const char *desc = s.c_str();
-			while (length > 0)
-			{
-				unsigned int o = 0;
-				for (unsigned int i = 0; i < 100; ++i, ++o)
-					if (desc[i] != '\n' && desc[i] != 0)
-						szFoo[o] = desc[i];
-					else
-						break;
-
-				szFoo[o] = 0;
-
-				DebugPrint(DBG_SPRITE_SIZE/2, line * 20 + 10, szFoo, true);
-
-				if (o < 100)
-					o++;
-				length -= o;
-				desc += o;
-
-				line++;
-			}
-
-			if (i2 == 0 && !s.empty())
-			{
-				line++;
-				DebugPrint(DBG_SPRITE_SIZE/2, line * 20 + 10, "========================================", true);
-				line+=2;
-			}
-		}
-	}
+   return info.str();
 }
-#endif
 
 void Player::PrepareVideoBuffersNormal()
 {
@@ -4830,14 +3880,7 @@ void Player::PrepareVideoBuffersNormal()
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
-   if (m_cameraMode)
-      UpdateCameraModeDisplay();
-
-#ifdef USE_IMGUI
-   RenderHUD_IMGUI();
-#else
-   UpdateHUD();
-#endif
+   m_liveUI->Render();
 
    m_pin3d.m_pd3dPrimaryDevice->EndScene();
 }
@@ -5015,14 +4058,7 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 
-   if (m_cameraMode)
-      UpdateCameraModeDisplay();
-
-#ifdef USE_IMGUI
-   RenderHUD_IMGUI();
-#else
-   UpdateHUD();
-#endif
+   m_liveUI->Render();
 
    m_pin3d.m_pd3dPrimaryDevice->EndScene();
 }
@@ -5145,122 +4181,6 @@ void Player::UpdateBackdropSettings(const bool up)
    }
 }
 
-void Player::UpdateCameraModeDisplay()
-{
-   // Don't display camera info when in info mode
-   if (GetInfoMode() != IF_NONE)
-      return;
-
-   // Don't display camera info when camera is not aligned with screen
-   if (round(fmod(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 90.0f)) > 0.0f)
-      return;
-
-   float x = 0.f, y = 0.f;
-   if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 270.0f)
-   {
-       x = (float)(m_wnd_width - 256);
-       y = (float)(m_wnd_height - DBG_SPRITE_SIZE-10);
-   }
-   else if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 90.0f)
-       x = (float)(-DBG_SPRITE_SIZE/1.3);
-
-   SetDebugOutputPosition(x, y);
-
-   DebugPrint(0, 10, "Camera / Light / Material Edit Mode");
-   DebugPrint(0, 50, "Left / Right flipper key = decrease / increase value");
-   DebugPrint(0, 70, "Left / Right magna save key = previous / next option");
-   DebugPrint(0, 90, "Left / Right nudge key = rotate table orientation (if enabled in the Key settings)");
-
-   char szFoo[128];
-   switch (m_backdropSettingActive)
-   {
-   case 0:
-   {
-      sprintf_s(szFoo, sizeof(szFoo), "Inclination: %.3f", m_ptable->m_BG_inclination[m_ptable->m_BG_current_set]);
-      break;
-   }
-   case 1:
-   {
-      sprintf_s(szFoo, sizeof(szFoo), "Field Of View: %.3f", m_ptable->m_BG_FOV[m_ptable->m_BG_current_set]);
-      break;
-   }
-   case 2:
-   {
-      sprintf_s(szFoo, sizeof(szFoo), "Layback: %.3f", m_ptable->m_BG_layback[m_ptable->m_BG_current_set]);
-      break;
-   }
-   case 3:
-   {
-      sprintf_s(szFoo, sizeof(szFoo), "X/Y Scale: %.3f / %.3f", m_ptable->m_BG_scalex[m_ptable->m_BG_current_set], m_ptable->m_BG_scaley[m_ptable->m_BG_current_set]);
-      break;
-   }
-   case 4:
-   {
-      sprintf_s(szFoo, sizeof(szFoo), "X Scale: %.3f", m_ptable->m_BG_scalex[m_ptable->m_BG_current_set]);
-      break;
-   }
-   case 5:
-   {
-      sprintf_s(szFoo, sizeof(szFoo), "Y Scale: %.3f", m_ptable->m_BG_scaley[m_ptable->m_BG_current_set]);
-      break;
-   }
-   case 6:
-   {
-      sprintf_s(szFoo, sizeof(szFoo), "Z Scale: %.3f", m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
-      break;
-   }
-   case 7:
-   {
-      sprintf_s(szFoo, sizeof(szFoo), "X Offset: %.3f", m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set]);
-      break;
-   }
-   case 8:
-   {
-      sprintf_s(szFoo, sizeof(szFoo), "Y Offset: %.3f", m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set]);
-      break;
-   }
-   case 9:
-   {
-      sprintf_s(szFoo, sizeof(szFoo), "Z Offset: %.3f", m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set]);
-      break;
-   }
-   case 10:
-   {
-      sprintf_s(szFoo, sizeof(szFoo), "Light Emission Scale: %.3f", m_ptable->m_lightEmissionScale);
-      break;
-   }
-   case 11:
-   {
-      sprintf_s(szFoo, sizeof(szFoo), "Light Range: %.3f", m_ptable->m_lightRange);
-      break;
-   }
-   case 12:
-   {
-      sprintf_s(szFoo, sizeof(szFoo), "Light Height: %.3f", m_ptable->m_lightHeight);
-      break;
-   }
-   case 13:
-   {
-      sprintf_s(szFoo, sizeof(szFoo), "Environment Emission: %.3f", m_ptable->m_envEmissionScale);
-      break;
-   }
-   default:
-   {
-      sprintf_s(szFoo, sizeof(szFoo), "N/A");
-      break;
-   }
-   }
-   DebugPrint(0, 150, szFoo);
-   sprintf_s(szFoo, sizeof(szFoo), "Camera at X: %.2f Y: %.2f Z: %.2f,  Rotation: %.2f", -m_pin3d.m_proj.m_matView._41, (m_ptable->m_BG_current_set == 0 || m_ptable->m_BG_current_set == 2) ? m_pin3d.m_proj.m_matView._42 : -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43, m_ptable->m_BG_rotation[m_ptable->m_BG_current_set]); // DT & FSS
-   DebugPrint(0, 130, szFoo);
-   DebugPrint(0, 190, "Navigate around with the Arrow Keys and Left Alt Key (if enabled in the Key settings)");
-   if(g_pvp->m_povEdit)
-      DebugPrint(0, 210, "Start Key: export POV file and quit, or Credit Key: quit without export");
-   else
-      DebugPrint(0, 210, "Start Key: reset POV to old values");
-   DebugPrint(0, 250, "Use the Debugger / Interactive Editor to change Lights / Materials");
-}
-
 void Player::LockForegroundWindow(const bool enable)
 {
     if (m_fullScreen || (m_wnd_width == m_screenwidth && m_wnd_height == m_screenheight)) // detect windowed fullscreen
@@ -5300,6 +4220,11 @@ void Player::Render()
 
    if (!m_pause)
       m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(startRenderUsec / 1000)); // trigger key events mainly for VPM<->VP roundtrip
+
+   // Kill the profiler so that it does not affect performance => FIXME move to player
+   if (m_infoMode != IF_PROFILING && m_infoMode != IF_PROFILING_SPLIT_RENDERING)
+      m_pin3d.m_gpu_profiler.Shutdown();
+
 
    // Try to bring PinMAME window back on top
    if (m_overall_frames < 10)
@@ -5441,9 +4366,7 @@ void Player::Render()
          if (m_fps > localvsync*ADAPT_VSYNC_FACTOR)
             vsync = true;
 
-#ifdef USE_IMGUI
-   UpdateHUD_IMGUI();
-#endif
+   m_liveUI->Update();
 
    if (GetAOMode() == 2)
       PrepareVideoBuffersAO();
@@ -5588,15 +4511,6 @@ void Player::Render()
          m_showWindowedCaption = !m_showWindowedCaption;
       }
 
-#ifndef ENABLE_IMGUI
-      // Little hack when not using IMGUI: we delay modal state to render one more frame with table info shown
-      static bool close_delay = true;
-      if (close_delay)
-         close_delay = false;
-      else
-      {
-#endif
-
       // Show option dialog, with visible mouse cursor if hidden, then restore state
       PauseMusic();
       while(ShowCursor(FALSE)>=0) ;
@@ -5616,10 +4530,6 @@ void Player::Render()
       case ID_DEBUGWINDOW: m_showDebugger = true; break;
       }
 
-#ifndef ENABLE_IMGUI
-      close_delay = true;
-      }
-#endif
    }
 
    // Brute force stop: blast into space
@@ -6524,10 +5434,8 @@ void Player::DoDebugObjectMenu(const int x, const int y)
 
 LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-#ifdef USE_IMGUI
     if (ImGui_ImplWin32_WndProcHandler(GetHwnd(), uMsg, wParam, lParam))
       return true;
-#endif
 
     switch (uMsg)
     {

@@ -317,6 +317,7 @@
     <ClCompile Include="inc\tinyxml2\tinyxml2.cpp">
       <Filter>inc\tinyxml2</Filter>
     </ClCompile>
+    <ClCompile Include="LiveUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1601,6 +1602,9 @@
     </ClInclude>
     <ClInclude Include="inc\tinyxml2\tinyxml2.h">
       <Filter>inc\tinyxml2</Filter>
+    </ClInclude>
+    <ClInclude Include="LiveUI.h">
+      <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

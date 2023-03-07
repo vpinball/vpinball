@@ -317,6 +317,7 @@
     <ClCompile Include="inc\BAM\BAMView.cpp">
       <Filter>inc\BAM</Filter>
     </ClCompile>
+    <ClCompile Include="LiveUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1604,6 +1605,9 @@
     </ClInclude>
     <ClInclude Include="inc\BAM\BAMView.h">
       <Filter>inc\BAM</Filter>
+    </ClInclude>
+    <ClInclude Include="LiveUI.h">
+      <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

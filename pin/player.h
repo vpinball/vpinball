@@ -5,6 +5,7 @@
 #include "Debugger.h"
 #include "typedefs3D.h"
 #include "pininput.h"
+#include "LiveUI.h"
 
 #define DEFAULT_PLAYER_WIDTH 1024
 #define DEFAULT_PLAYER_FS_WIDTH 1920
@@ -329,10 +330,6 @@ private:
    void SSRefl();
    void StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool SMAA, const bool DLAA, const bool NFAA, const bool FXAA1, const bool FXAA2, const bool FXAA3, const unsigned int sharpen, const bool depth_available);
 
-   void UpdateHUD_IMGUI();
-   void RenderHUD_IMGUI();
-   void UpdateHUD();
-
    void PrepareVideoBuffersNormal();
    void PrepareVideoBuffersAO();
    void FlipVideoBuffers(const bool vsync);
@@ -345,6 +342,8 @@ public:
    void LockForegroundWindow(const bool enable);
    void Render();
    void RenderDynamics();
+
+   string GetPerfInfo();
 
    void SetViewVector(const Vertex3Ds &viewVec);
    void DrawStatics();
@@ -393,6 +392,8 @@ public:
    MeshBuffer *m_ballMeshBuffer = nullptr;
    MeshBuffer *m_ballTrailMeshBuffer = nullptr;
    bool m_antiStretchBall;
+
+   void EnableStaticPrePass(const bool use_prepass) { if (m_dynamicMode == use_prepass) { m_dynamicMode = !use_prepass; InitStatic(); } }
 
    bool m_dynamicMode;
    bool m_cameraMode;
@@ -614,6 +615,8 @@ private:
    FILE *m_fplaylog;
 #endif
 
+   LiveUI *m_liveUI = nullptr;
+
    Vertex2D m_BallStretch;
 
    float m_NudgeShake;         // whether to shake the screen during nudges and how much
@@ -627,7 +630,8 @@ private:
 
    bool m_pseudoPause;      // Nothing is moving, but we're still redrawing
 
-   bool m_supportsTouch;    // Display is a touchscreen?
+public:
+   bool m_supportsTouch; // Display is a touchscreen?
    bool m_showTouchMessage;
 
    U32 m_phys_iterations;
@@ -657,6 +661,7 @@ private:
    U32 m_script_max;
    U32 m_script_max_total;
 
+private:
    FrameQueueLimiter m_limiter;
 
    // only called from ctor
@@ -664,12 +669,9 @@ private:
    // only called from dtor
    void Shutdown();
 
-   void CreateDebugFont();
-   void SetDebugOutputPosition(const float x, const float y);
-   void DebugPrint(int x, int y, LPCSTR text, bool center = false);
-
    void SetScreenOffset(const float x, const float y);     // set render offset in screen coordinates, e.g., for the nudge shake
 
+public:
    InfoMode m_infoMode = IF_NONE;
    unsigned int m_infoProbeIndex = 0;
 
@@ -679,6 +681,7 @@ private:
    InfoMode GetInfoMode() const;
    ProfilingMode GetProfilingMode() const;
 
+private:
    void InitShader();
    void CalcBallAspectRatio();
    void GetBallAspectRatio(const Ball * const pball, Vertex2D &stretch, const float zHeight);
@@ -686,10 +689,9 @@ private:
 
 public:
    void StopPlayer();
-   void ToggleFPS();
+   void ShowUI();
 
    void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D(1.0f));
-   void UpdateCameraModeDisplay();
    void UpdateBackdropSettings(const bool up);
    void UpdateBallShaderMatrix();
 
@@ -721,13 +723,4 @@ public:
    Texture *m_ballImage;
    Texture *m_decalImage;
    DebuggerDialog m_debuggerDialog;
-
-private:
-#ifdef ENABLE_SDL
-   TTF_Font *m_pFont;
-#else
-   ID3DXFont *m_pFont;
-   LPD3DXSPRITE m_fontSprite;
-   RECT     m_fontRect;
-#endif
 };
