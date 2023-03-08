@@ -5,8 +5,6 @@
 
 #include "droidsans.h"
 
-#include <format>
-
 #include "imgui/imgui.h"
 #ifdef ENABLE_SDL
 #include "imgui/imgui_impl_opengl3.h"
@@ -252,7 +250,7 @@ LiveUI::LiveUI(RenderDevice *rd)
 
    ImGui_ImplWin32_EnableDpiAwareness();
    float dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(rd->getHwnd());
-   io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 16.0f * dpi);
+   io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 13.0f * dpi);
    ImGui::GetStyle().ScaleAllSizes(dpi);
 
 #ifdef ENABLE_SDL
@@ -495,7 +493,8 @@ void LiveUI::UpdateMainUI()
          info << " by " << m_table->m_szAuthor;
       if (!m_table->m_szVersion.empty())
          info << " (" << m_table->m_szVersion << ")";
-      info << std::format(" ({:s} Revision {:d})\n", !m_table->m_szDateSaved.empty() ? m_table->m_szDateSaved : "N.A.", m_table->m_numTimesSaved);
+      //info << std::format(" ({:s} Revision {:d})\n", !m_table->m_szDateSaved.empty() ? m_table->m_szDateSaved : "N.A.", m_table->m_numTimesSaved);
+      info << " (" << (!m_table->m_szDateSaved.empty() ? m_table->m_szDateSaved : "N.A.") << " Revision " << m_table->m_numTimesSaved << ")\n";
       size_t line_length = info.str().size();
       info << std::string(line_length, '=') << "\n";
       if (!m_table->m_szBlurb.empty())
