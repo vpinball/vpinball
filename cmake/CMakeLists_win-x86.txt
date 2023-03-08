@@ -228,6 +228,8 @@ add_executable(vpinball WIN32
    imgui/imgui_impl_dx9.h
    imgui/imgui_impl_win32.cpp
    imgui/imgui_impl_win32.h
+   imgui/imgui_stdlib.cpp
+   imgui/imgui_stdlib.h
    imgui/imgui_tables.cpp
    imgui/imgui_widgets.cpp
    imgui/imgui_internal.h

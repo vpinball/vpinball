@@ -26,6 +26,14 @@ inline vec4 convertColor(const COLORREF c, const float w = 1.0f)
 	return vec4(r,g,b,w);
 }
 
+inline COLORREF convertColorRGB(const vec4 color)
+{
+   int r = clamp((int)(color.x * 255 + 0.5), 0, 255);
+   int g = clamp((int)(color.y * 255 + 0.5), 0, 255);
+   int b = clamp((int)(color.z * 255 + 0.5), 0, 255);
+   return RGB(r, g, b);
+}
+
 inline float invGammaApprox(const float c)
 {
 	return c * (c * (c * 0.305306011f + 0.682171111f) + 0.012522878f); /*pow(color,2.2f);*/ // pow does still matter on current CPUs

@@ -234,8 +234,8 @@ void RenderProbeDialog::SaveProbeFromUI(RenderProbe *const pb)
       plane.z = vz;
       plane.w = vw;
       pb->SetType(type);
-      pb->SetBaseRoughness(roughness_base);
-      pb->SetClearRoughness(roughness_clear);
+      pb->SetBaseRoughness((int)roughness_base);
+      pb->SetClearRoughness((int)roughness_clear);
       pb->SetReflectionPlane(plane);
       pb->SetReflectionMode((RenderProbe::ReflectionMode)reflectionMode);
       CCO(PinTable) *const pt = g_pvp->GetActiveTable();

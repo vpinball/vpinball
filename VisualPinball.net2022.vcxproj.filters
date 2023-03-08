@@ -318,6 +318,9 @@
       <Filter>inc\BAM</Filter>
     </ClCompile>
     <ClCompile Include="LiveUI.cpp" />
+    <ClCompile Include="imgui\imgui_stdlib.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1608,6 +1611,9 @@
     </ClInclude>
     <ClInclude Include="LiveUI.h">
       <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_stdlib.h">
+      <Filter>imgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
