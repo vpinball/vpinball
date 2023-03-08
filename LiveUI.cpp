@@ -86,6 +86,245 @@ public:
     }
 };*/
 
+// Maps directinput keycode used by VPX to ImGui keycode enum
+// TODO I think this is not fully ok, since I would guess that VPX is keyboard layout neutral while ImGui is likely not => this needs more testing (AZERTY/QWERTY/...)
+static constexpr ImGuiKey dikToImGuiKeys[] = {
+   ImGuiKey_None,
+   ImGuiKey_Escape, //DIK_ESCAPE          0x01
+   ImGuiKey_1, //DIK_1               0x02
+   ImGuiKey_2, //DIK_2               0x03
+   ImGuiKey_3, //DIK_3               0x04
+   ImGuiKey_4, //DIK_4               0x05
+   ImGuiKey_5, //DIK_5               0x06
+   ImGuiKey_6, //DIK_6               0x07
+   ImGuiKey_7, //DIK_7               0x08
+   ImGuiKey_8, //DIK_8               0x09
+   ImGuiKey_9, //DIK_9               0x0A
+   ImGuiKey_0, //DIK_0               0x0B
+   ImGuiKey_Minus, //DIK_MINUS           0x0C    /* - on main keyboard */
+   ImGuiKey_Equal, //DIK_EQUALS          0x0D
+   ImGuiKey_Backspace, //DIK_BACK            0x0E    /* backspace */
+   ImGuiKey_Tab, //DIK_TAB             0x0F
+   ImGuiKey_Q, //DIK_Q               0x10
+   ImGuiKey_W, //DIK_W               0x11
+   ImGuiKey_E, //DIK_E               0x12
+   ImGuiKey_R, //DIK_R               0x13
+   ImGuiKey_T, //DIK_T               0x14
+   ImGuiKey_Y, //DIK_Y               0x15
+   ImGuiKey_U, //DIK_U               0x16
+   ImGuiKey_I, //DIK_I               0x17
+   ImGuiKey_O, //DIK_O               0x18
+   ImGuiKey_P, //DIK_P               0x19
+   ImGuiKey_LeftBracket, //DIK_LBRACKET        0x1A
+   ImGuiKey_RightBracket, //DIK_RBRACKET        0x1B
+   ImGuiKey_Enter, //DIK_RETURN          0x1C    /* Enter on main keyboard */
+   ImGuiKey_LeftCtrl, //DIK_LCONTROL        0x1D
+   ImGuiKey_A, //DIK_A               0x1E
+   ImGuiKey_S, //DIK_S               0x1F
+   ImGuiKey_D, //DIK_D               0x20
+   ImGuiKey_F, //DIK_F               0x21
+   ImGuiKey_G, //DIK_G               0x22
+   ImGuiKey_H, //DIK_H               0x23
+   ImGuiKey_J, //DIK_J               0x24
+   ImGuiKey_K, //DIK_K               0x25
+   ImGuiKey_L, //DIK_L               0x26
+   ImGuiKey_Semicolon, //DIK_SEMICOLON       0x27
+   ImGuiKey_Apostrophe, //DIK_APOSTROPHE      0x28
+   ImGuiKey_GraveAccent, //DIK_GRAVE           0x29    /* accent grave */
+   ImGuiKey_LeftShift, //DIK_LSHIFT          0x2A
+   ImGuiKey_Backslash, //DIK_BACKSLASH       0x2B
+   ImGuiKey_Z, //DIK_Z               0x2C
+   ImGuiKey_X, //DIK_X               0x2D
+   ImGuiKey_C, //DIK_C               0x2E
+   ImGuiKey_V, //DIK_V               0x2F
+   ImGuiKey_B, //DIK_B               0x30
+   ImGuiKey_N, //DIK_N               0x31
+   ImGuiKey_M, //DIK_M               0x32
+   ImGuiKey_Comma, //DIK_COMMA           0x33
+   ImGuiKey_Period, //DIK_PERIOD          0x34    /* . on main keyboard */
+   ImGuiKey_Slash, //DIK_SLASH           0x35    /* / on main keyboard */
+   ImGuiKey_RightShift, //DIK_RSHIFT          0x36
+   ImGuiKey_KeypadMultiply, //DIK_MULTIPLY        0x37    /* * on numeric keypad */
+   ImGuiKey_Menu, //DIK_LMENU           0x38    /* left Alt */
+   ImGuiKey_Space, //DIK_SPACE           0x39
+   ImGuiKey_CapsLock, //DIK_CAPITAL         0x3A
+   ImGuiKey_F1, //DIK_F1              0x3B
+   ImGuiKey_F2, //DIK_F2              0x3C
+   ImGuiKey_F3, //DIK_F3              0x3D
+   ImGuiKey_F4, //DIK_F4              0x3E
+   ImGuiKey_F5, //DIK_F5              0x3F
+   ImGuiKey_F6, //DIK_F6              0x40
+   ImGuiKey_F7, //DIK_F7              0x41
+   ImGuiKey_F8, //DIK_F8              0x42
+   ImGuiKey_F9, //DIK_F9              0x43
+   ImGuiKey_F10, //DIK_F10             0x44
+   ImGuiKey_NumLock, //DIK_NUMLOCK         0x45
+   ImGuiKey_ScrollLock, //DIK_SCROLL          0x46    /* Scroll Lock */
+   ImGuiKey_Keypad7, //DIK_NUMPAD7         0x47
+   ImGuiKey_Keypad8, //DIK_NUMPAD8         0x48
+   ImGuiKey_Keypad9, //DIK_NUMPAD9         0x49
+   ImGuiKey_KeypadSubtract, //DIK_SUBTRACT        0x4A    /* - on numeric keypad */
+   ImGuiKey_Keypad4, //DIK_NUMPAD4         0x4B
+   ImGuiKey_Keypad5, //DIK_NUMPAD5         0x4C
+   ImGuiKey_Keypad6, //DIK_NUMPAD6         0x4D
+   ImGuiKey_KeypadAdd, //DIK_ADD             0x4E    /* + on numeric keypad */
+   ImGuiKey_Keypad1, //DIK_NUMPAD1         0x4F
+   ImGuiKey_Keypad2, //DIK_NUMPAD2         0x50
+   ImGuiKey_Keypad3, //DIK_NUMPAD3         0x51
+   ImGuiKey_Keypad0, //DIK_NUMPAD0         0x52
+   ImGuiKey_KeypadDecimal, //DIK_DECIMAL         0x53    /* . on numeric keypad */
+   ImGuiKey_None, //0x54
+   ImGuiKey_None, //0x55
+   ImGuiKey_None, //DIK_OEM_102         0x56    /* < > | on UK/Germany keyboards */
+   ImGuiKey_F11, //DIK_F11             0x57
+   ImGuiKey_F12, //DIK_F12             0x58
+   ImGuiKey_None, //0x59
+   ImGuiKey_None, //0x5A
+   ImGuiKey_None, //0x5B
+   ImGuiKey_None, //0x5C
+   ImGuiKey_None, //0x5D
+   ImGuiKey_None, //0x5E
+   ImGuiKey_None, //0x5F
+   ImGuiKey_None, //0x60
+   ImGuiKey_None, //0x61
+   ImGuiKey_None, //0x62
+   ImGuiKey_None, //0x63
+   ImGuiKey_None, //DIK_F13             0x64    /*                     (NEC PC98) */
+   ImGuiKey_None, //DIK_F14             0x65    /*                     (NEC PC98) */
+   ImGuiKey_None, //DIK_F15             0x66    /*                     (NEC PC98) */
+   ImGuiKey_None, //0x67
+   ImGuiKey_None, //0x68
+   ImGuiKey_None, //0x69
+   ImGuiKey_None, //0x6A
+   ImGuiKey_None, //0x6B
+   ImGuiKey_None, //0x6C
+   ImGuiKey_None, //0x6D
+   ImGuiKey_None, //0x6E
+   ImGuiKey_None, //0x6F
+
+   ImGuiKey_None, //0x70
+   ImGuiKey_None, //0x71
+   ImGuiKey_None, //0x72
+   ImGuiKey_None, //0x73
+   ImGuiKey_None, //0x74
+   ImGuiKey_None, //0x75
+   ImGuiKey_None, //0x76
+   ImGuiKey_None, //0x77
+   ImGuiKey_None, //0x78
+   ImGuiKey_None, //0x79
+   ImGuiKey_None, //0x7A
+   ImGuiKey_None, //0x7B
+   ImGuiKey_None, //0x7C
+   ImGuiKey_None, //0x7D
+   ImGuiKey_None, //0x7E
+   ImGuiKey_None, //0x7F
+
+   ImGuiKey_None, //0x80
+   ImGuiKey_None, //0x81
+   ImGuiKey_None, //0x82
+   ImGuiKey_None, //0x83
+   ImGuiKey_None, //0x84
+   ImGuiKey_None, //0x85
+   ImGuiKey_None, //0x86
+   ImGuiKey_None, //0x87
+   ImGuiKey_None, //0x88
+   ImGuiKey_None, //0x89
+   ImGuiKey_None, //0x8A
+   ImGuiKey_None, //0x8B
+   ImGuiKey_None, //0x8C
+   ImGuiKey_None, //0x8D
+   ImGuiKey_None, //0x8E
+   ImGuiKey_None, //0x8F
+
+   ImGuiKey_None, //0x90
+   ImGuiKey_None, //0x91
+   ImGuiKey_None, //0x92
+   ImGuiKey_None, //0x93
+   ImGuiKey_None, //0x94
+   ImGuiKey_None, //0x95
+   ImGuiKey_None, //0x96
+   ImGuiKey_None, //0x97
+   ImGuiKey_None, //0x98
+   ImGuiKey_None, //0x99
+   ImGuiKey_None, //0x9A
+   ImGuiKey_None, //0x9B
+
+   ImGuiKey_KeypadEnter, //#define DIK_NUMPADENTER     0x9C    /* Enter on numeric keypad */
+   ImGuiKey_RightCtrl, //DIK_RCONTROL        0x9D
+
+   ImGuiKey_None, //0x9E
+   ImGuiKey_None, //0x9F
+
+   ImGuiKey_None, //0xA0
+   ImGuiKey_None, //0xA1
+   ImGuiKey_None, //0xA2
+   ImGuiKey_None, //0xA3
+   ImGuiKey_None, //0xA4
+   ImGuiKey_None, //0xA5
+   ImGuiKey_None, //0xA6
+   ImGuiKey_None, //0xA7
+   ImGuiKey_None, //0xA8
+   ImGuiKey_None, //0xA9
+   ImGuiKey_None, //0xAA
+   ImGuiKey_None, //0xAB
+   ImGuiKey_None, //0xAC
+   ImGuiKey_None, //0xAD
+   ImGuiKey_None, //0xAE
+   ImGuiKey_None, //0xAF
+
+   ImGuiKey_None, //0xB0
+   ImGuiKey_None, //0xB1
+   ImGuiKey_None, //0xB2
+   ImGuiKey_None, //0xB3
+   ImGuiKey_None, //0xB4
+
+   ImGuiKey_KeypadDivide, //#define DIK_DIVIDE          0xB5    /* / on numeric keypad */
+   ImGuiKey_None, //0xB6
+   ImGuiKey_None, //#define DIK_SYSRQ           0xB7
+   ImGuiKey_RightAlt, //DIK_RMENU           0xB8    /* right Alt */
+
+   ImGuiKey_None, //0xB9
+   ImGuiKey_None, //0xBA
+   ImGuiKey_None, //0xBB
+   ImGuiKey_None, //0xBC
+   ImGuiKey_None, //0xBD
+   ImGuiKey_None, //0xBE
+   ImGuiKey_None, //0xBF
+
+   ImGuiKey_None, //0xC0
+   ImGuiKey_None, //0xC1
+   ImGuiKey_None, //0xC2
+   ImGuiKey_None, //0xC3
+   ImGuiKey_None, //0xC4
+   ImGuiKey_None, //0xC5
+   ImGuiKey_None, //0xC6
+
+   ImGuiKey_Home, //DIK_HOME            0xC7    /* Home on arrow keypad */
+   ImGuiKey_UpArrow, //DIK_UP              0xC8    /* UpArrow on arrow keypad */
+   ImGuiKey_PageUp, //DIK_PRIOR           0xC9    /* PgUp on arrow keypad */
+   ImGuiKey_None, //0xCA
+   ImGuiKey_LeftArrow, //DIK_LEFT            0xCB    /* LeftArrow on arrow keypad */
+   ImGuiKey_None, //0xCC
+   ImGuiKey_RightArrow, //DIK_RIGHT           0xCD    /* RightArrow on arrow keypad */
+   ImGuiKey_None, //0xCE
+   ImGuiKey_End, //DIK_END             0xCF    /* End on arrow keypad */
+   ImGuiKey_DownArrow, //DIK_DOWN            0xD0    /* DownArrow on arrow keypad */
+   ImGuiKey_PageDown, //DIK_NEXT            0xD1    /* PgDn on arrow keypad */
+   ImGuiKey_Insert, //DIK_INSERT          0xD2    /* Insert on arrow keypad */
+   ImGuiKey_Delete, //DIK_DELETE          0xD3    /* Delete on arrow keypad */
+
+   ImGuiKey_None, //0xD4
+   ImGuiKey_None, //0xD5
+   ImGuiKey_None, //0xD6
+   ImGuiKey_None, //0xD7
+   ImGuiKey_None, //0xD8
+   ImGuiKey_None, //0xD9
+   ImGuiKey_None, //0xDA
+
+   ImGuiKey_LeftSuper, //DIK_LWIN            0xDB    /* Left Windows key */
+   ImGuiKey_RightSuper, //DIK_RWIN            0xDC    /* Right Windows key */
+   ImGuiKey_None, //DIK_APPS            0xDD    /* AppMenu key */
+};
 
 void SetupImGuiStyle()
 {
@@ -237,6 +476,7 @@ LiveUI::LiveUI(RenderDevice *rd)
    : m_rd(rd)
 {
    m_StartTime_usec = usec();
+   m_disable_esc = LoadValueBoolWithDefault(regKey[RegName::Player], "DisableESC"s, m_disable_esc);
 
    IMGUI_CHECKVERSION();
    ImGui::CreateContext();
@@ -273,6 +513,16 @@ LiveUI::~LiveUI()
       ImPlot::DestroyContext();
       ImGui::DestroyContext();
    }
+}
+
+bool LiveUI::HasKeyboardCapture() const
+{
+   return ImGui::GetIO().WantCaptureKeyboard;
+}
+
+bool LiveUI::HasMouseCapture() const
+{
+   return ImGui::GetIO().WantCaptureKeyboard;
 }
 
 void LiveUI::Render()
@@ -349,7 +599,7 @@ void LiveUI::Update()
    }
    else
 #endif
-   if (m_inMainUI)
+   if (m_ShowUI > 0)
    {
       // Main UI
       m_rotate = 0;
@@ -512,25 +762,37 @@ void LiveUI::UpdateMainUI()
    }
 
    // Directly open the modal dialog at root level on user interaction
+   static U32 openTime = 0;
    if (!ImGui::IsPopupOpen(title))
    {
       ui_pos = UI_ROOT;
       ImGui::OpenPopup(title);
+      openTime = msec();
    }
 
    // Main UI window
    if (ImGui::BeginPopupModal(title, NULL, ImGuiWindowFlags_AlwaysAutoResize))
    {
+      bool enableKeyboardShortcuts = (msec() - openTime) > 250;
       switch (ui_pos)
       {
       //////////////////////////////////////////////////////////////////////////
       // Root UI panel
       case UI_ROOT:
       {
-         if (ImGui::Button("Resume Game")) // || ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
+         static U32 quitToEditor = 0; // Long press keyboard shortcut
+         if (((ImGui::IsKeyDown(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc)  || ImGui::IsKeyDown(dikToImGuiKeys[m_player->m_rgKeys[eExitGame]])))
          {
-            m_inMainUI = false;
+            if (quitToEditor == 0 && !enableKeyboardShortcuts)
+               quitToEditor = msec();
+         }
+         else
+            quitToEditor = 0;
+         // Resume: click on the button, or press escape key
+         if (ImGui::Button("Resume Game") || (enableKeyboardShortcuts && quitToEditor == 0 && ((ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc))))
+         {
             ImGui::CloseCurrentPopup();
+            m_ShowUI = false;
          }
          if (ImGui::Button("Camera Settings"))
             ui_pos = UI_CAMERA_SETTINGS;
@@ -547,16 +809,18 @@ void LiveUI::UpdateMainUI()
 #endif
          if (ImGui::Button("Renderer Inspection"))
             ui_pos = UI_RENDERER_INSPECTION;
-         if (ImGui::Button("Debugger")) // || ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_D)))
+         if (ImGui::Button("Debugger") || (enableKeyboardShortcuts && ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eDebugger]])))
          {
             m_player->m_showDebugger = true;
-            m_inMainUI = false;
             ImGui::CloseCurrentPopup();
+            m_ShowUI = false;
          }
-         if (ImGui::Button("Quit to editor")) // || ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Q)))
+         // Quit: click on the button, or press exit button, or long press exit button / escape key
+         if (ImGui::Button("Quit to editor") || (enableKeyboardShortcuts && ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eExitGame]])) || (quitToEditor != 0 && (msec() - quitToEditor) > m_table->m_tblExitConfirm))
          {
             m_table->QuitPlayer(Player::CS_STOP_PLAY);
             ImGui::CloseCurrentPopup();
+            m_ShowUI = false;
          }
          break;
       }

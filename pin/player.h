@@ -615,8 +615,6 @@ private:
    FILE *m_fplaylog;
 #endif
 
-   LiveUI *m_liveUI = nullptr;
-
    Vertex2D m_BallStretch;
 
    float m_NudgeShake;         // whether to shake the screen during nudges and how much
@@ -631,6 +629,8 @@ private:
    bool m_pseudoPause;      // Nothing is moving, but we're still redrawing
 
 public:
+   LiveUI *m_liveUI = nullptr;
+
    bool m_supportsTouch; // Display is a touchscreen?
    bool m_showTouchMessage;
 
