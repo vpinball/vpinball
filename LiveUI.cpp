@@ -1,4 +1,5 @@
 #include "stdafx.h"
+
 #include "LiveUI.h"
 
 #include "Shader.h"
@@ -13,6 +14,7 @@
 #endif
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/implot/implot.h"
+#include "imgui/imgui_stdlib.h"
 
 #if __cplusplus >= 202002L && !defined(__clang__)
 #define stable_sort std::ranges::stable_sort
@@ -23,6 +25,14 @@
 #ifdef ENABLE_BAM
 #include "BAM/BAMView.h"
 #endif
+
+// Titles (used as Ids) of modal dialogs
+#define ID_MODAL_SPLASH "In Game UI"
+#define ID_VIDEO_SETTINGS "Video Options"
+#define ID_AUDIO_SETTINGS "Audio Options"
+#define ID_RENDERER_INSPECTION "Renderer Inspection"
+
+#define PROP_WIDTH 125 * m_dpi
 
 // utility structure for realtime plot //!! cleanup
 class ScrollingData
@@ -326,7 +336,7 @@ static constexpr ImGuiKey dikToImGuiKeys[] = {
    ImGuiKey_None, //DIK_APPS            0xDD    /* AppMenu key */
 };
 
-void SetupImGuiStyle()
+static void SetupImGuiStyle(float overall_alpha)
 {
    // Rounded Visual Studio style by RedNicStone from ImThemes
    ImGuiStyle &style = ImGui::GetStyle();
@@ -363,58 +373,58 @@ void SetupImGuiStyle()
    style.SelectableTextAlign = ImVec2(0.0f, 0.0f);
 
    style.Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-   style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.5921568870544434f, 0.5921568870544434f, 0.5921568870544434f, 1.0f);
-   style.Colors[ImGuiCol_WindowBg] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, 1.0f);
-   style.Colors[ImGuiCol_ChildBg] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, 1.0f);
-   style.Colors[ImGuiCol_PopupBg] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, 1.0f);
-   style.Colors[ImGuiCol_Border] = ImVec4(0.3058823645114899f, 0.3058823645114899f, 0.3058823645114899f, 1.0f);
-   style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.3058823645114899f, 0.3058823645114899f, 0.3058823645114899f, 1.0f);
-   style.Colors[ImGuiCol_FrameBg] = ImVec4(0.2000000029802322f, 0.2000000029802322f, 0.2156862765550613f, 1.0f);
-   style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.1137254908680916f, 0.5921568870544434f, 0.9254902005195618f, 1.0f);
-   style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.0f, 0.4666666686534882f, 0.7843137383460999f, 1.0f);
-   style.Colors[ImGuiCol_TitleBg] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, 1.0f);
-   style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, 1.0f);
-   style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, 1.0f);
-   style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.2000000029802322f, 0.2000000029802322f, 0.2156862765550613f, 1.0f);
-   style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.2000000029802322f, 0.2000000029802322f, 0.2156862765550613f, 1.0f);
-   style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.321568638086319f, 0.321568638086319f, 0.3333333432674408f, 1.0f);
-   style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.3529411852359772f, 0.3529411852359772f, 0.3725490272045135f, 1.0f);
-   style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.3529411852359772f, 0.3529411852359772f, 0.3725490272045135f, 1.0f);
-   style.Colors[ImGuiCol_CheckMark] = ImVec4(0.0f, 0.4666666686534882f, 0.7843137383460999f, 1.0f);
-   style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.1137254908680916f, 0.5921568870544434f, 0.9254902005195618f, 1.0f);
-   style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.0f, 0.4666666686534882f, 0.7843137383460999f, 1.0f);
-   style.Colors[ImGuiCol_Button] = ImVec4(0.2000000029802322f, 0.2000000029802322f, 0.2156862765550613f, 1.0f);
-   style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.1137254908680916f, 0.5921568870544434f, 0.9254902005195618f, 1.0f);
-   style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.1137254908680916f, 0.5921568870544434f, 0.9254902005195618f, 1.0f);
-   style.Colors[ImGuiCol_Header] = ImVec4(0.2000000029802322f, 0.2000000029802322f, 0.2156862765550613f, 1.0f);
-   style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.1137254908680916f, 0.5921568870544434f, 0.9254902005195618f, 1.0f);
-   style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.0f, 0.4666666686534882f, 0.7843137383460999f, 1.0f);
-   style.Colors[ImGuiCol_Separator] = ImVec4(0.3058823645114899f, 0.3058823645114899f, 0.3058823645114899f, 1.0f);
-   style.Colors[ImGuiCol_SeparatorHovered] = ImVec4(0.3058823645114899f, 0.3058823645114899f, 0.3058823645114899f, 1.0f);
-   style.Colors[ImGuiCol_SeparatorActive] = ImVec4(0.3058823645114899f, 0.3058823645114899f, 0.3058823645114899f, 1.0f);
-   style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, 1.0f);
-   style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.2000000029802322f, 0.2000000029802322f, 0.2156862765550613f, 1.0f);
-   style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.321568638086319f, 0.321568638086319f, 0.3333333432674408f, 1.0f);
-   style.Colors[ImGuiCol_Tab] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, 1.0f);
-   style.Colors[ImGuiCol_TabHovered] = ImVec4(0.1137254908680916f, 0.5921568870544434f, 0.9254902005195618f, 1.0f);
-   style.Colors[ImGuiCol_TabActive] = ImVec4(0.0f, 0.4666666686534882f, 0.7843137383460999f, 1.0f);
-   style.Colors[ImGuiCol_TabUnfocused] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, 1.0f);
-   style.Colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.0f, 0.4666666686534882f, 0.7843137383460999f, 1.0f);
-   style.Colors[ImGuiCol_PlotLines] = ImVec4(0.0f, 0.4666666686534882f, 0.7843137383460999f, 1.0f);
-   style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.1137254908680916f, 0.5921568870544434f, 0.9254902005195618f, 1.0f);
-   style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.0f, 0.4666666686534882f, 0.7843137383460999f, 1.0f);
-   style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.1137254908680916f, 0.5921568870544434f, 0.9254902005195618f, 1.0f);
-   style.Colors[ImGuiCol_TableHeaderBg] = ImVec4(0.1882352977991104f, 0.1882352977991104f, 0.2000000029802322f, 1.0f);
-   style.Colors[ImGuiCol_TableBorderStrong] = ImVec4(0.3098039329051971f, 0.3098039329051971f, 0.3490196168422699f, 1.0f);
-   style.Colors[ImGuiCol_TableBorderLight] = ImVec4(0.2274509817361832f, 0.2274509817361832f, 0.2470588237047195f, 1.0f);
-   style.Colors[ImGuiCol_TableRowBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
-   style.Colors[ImGuiCol_TableRowBgAlt] = ImVec4(1.0f, 1.0f, 1.0f, 0.05999999865889549f);
-   style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.0f, 0.4666666686534882f, 0.7843137383460999f, 1.0f);
-   style.Colors[ImGuiCol_DragDropTarget] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, 1.0f);
-   style.Colors[ImGuiCol_NavHighlight] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, 1.0f);
-   style.Colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 0.699999988079071f);
-   style.Colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.800000011920929f, 0.800000011920929f, 0.800000011920929f, 0.2000000029802322f);
-   style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, 1.0f);
+   style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.5921568870544434f, 0.5921568870544434f, 0.5921568870544434f, overall_alpha);
+   style.Colors[ImGuiCol_WindowBg] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, overall_alpha);
+   style.Colors[ImGuiCol_ChildBg] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, overall_alpha);
+   style.Colors[ImGuiCol_PopupBg] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, overall_alpha);
+   style.Colors[ImGuiCol_Border] = ImVec4(0.3058823645114899f, 0.3058823645114899f, 0.3058823645114899f, overall_alpha);
+   style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.3058823645114899f, 0.3058823645114899f, 0.3058823645114899f, overall_alpha);
+   style.Colors[ImGuiCol_FrameBg] = ImVec4(0.2000000029802322f, 0.2000000029802322f, 0.2156862765550613f, overall_alpha);
+   style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.1137254908680916f, 0.5921568870544434f, 0.9254902005195618f, overall_alpha);
+   style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.0f, 0.4666666686534882f, 0.7843137383460999f, overall_alpha);
+   style.Colors[ImGuiCol_TitleBg] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, overall_alpha);
+   style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, overall_alpha);
+   style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, overall_alpha);
+   style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.2000000029802322f, 0.2000000029802322f, 0.2156862765550613f, overall_alpha);
+   style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.2000000029802322f, 0.2000000029802322f, 0.2156862765550613f, overall_alpha);
+   style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.321568638086319f, 0.321568638086319f, 0.3333333432674408f, overall_alpha);
+   style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.3529411852359772f, 0.3529411852359772f, 0.3725490272045135f, overall_alpha);
+   style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.3529411852359772f, 0.3529411852359772f, 0.3725490272045135f, overall_alpha);
+   style.Colors[ImGuiCol_CheckMark] = ImVec4(0.0f, 0.4666666686534882f, 0.7843137383460999f, overall_alpha);
+   style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.1137254908680916f, 0.5921568870544434f, 0.9254902005195618f, overall_alpha);
+   style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.0f, 0.4666666686534882f, 0.7843137383460999f, overall_alpha);
+   style.Colors[ImGuiCol_Button] = ImVec4(0.2000000029802322f, 0.2000000029802322f, 0.2156862765550613f, overall_alpha);
+   style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.1137254908680916f, 0.5921568870544434f, 0.9254902005195618f, overall_alpha);
+   style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.1137254908680916f, 0.5921568870544434f, 0.9254902005195618f, overall_alpha);
+   style.Colors[ImGuiCol_Header] = ImVec4(0.2000000029802322f, 0.2000000029802322f, 0.2156862765550613f, overall_alpha);
+   style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.1137254908680916f, 0.5921568870544434f, 0.9254902005195618f, overall_alpha);
+   style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.0f, 0.4666666686534882f, 0.7843137383460999f, overall_alpha);
+   style.Colors[ImGuiCol_Separator] = ImVec4(0.3058823645114899f, 0.3058823645114899f, 0.3058823645114899f, overall_alpha);
+   style.Colors[ImGuiCol_SeparatorHovered] = ImVec4(0.3058823645114899f, 0.3058823645114899f, 0.3058823645114899f, overall_alpha);
+   style.Colors[ImGuiCol_SeparatorActive] = ImVec4(0.3058823645114899f, 0.3058823645114899f, 0.3058823645114899f, overall_alpha);
+   style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, overall_alpha);
+   style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.2000000029802322f, 0.2000000029802322f, 0.2156862765550613f, overall_alpha);
+   style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.321568638086319f, 0.321568638086319f, 0.3333333432674408f, overall_alpha);
+   style.Colors[ImGuiCol_Tab] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, overall_alpha);
+   style.Colors[ImGuiCol_TabHovered] = ImVec4(0.1137254908680916f, 0.5921568870544434f, 0.9254902005195618f, overall_alpha);
+   style.Colors[ImGuiCol_TabActive] = ImVec4(0.0f, 0.4666666686534882f, 0.7843137383460999f, overall_alpha);
+   style.Colors[ImGuiCol_TabUnfocused] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, overall_alpha);
+   style.Colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.0f, 0.4666666686534882f, 0.7843137383460999f, overall_alpha);
+   style.Colors[ImGuiCol_PlotLines] = ImVec4(0.0f, 0.4666666686534882f, 0.7843137383460999f, overall_alpha);
+   style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.1137254908680916f, 0.5921568870544434f, 0.9254902005195618f, overall_alpha);
+   style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.0f, 0.4666666686534882f, 0.7843137383460999f, overall_alpha);
+   style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.1137254908680916f, 0.5921568870544434f, 0.9254902005195618f, overall_alpha);
+   style.Colors[ImGuiCol_TableHeaderBg] = ImVec4(0.1882352977991104f, 0.1882352977991104f, 0.2000000029802322f, overall_alpha);
+   style.Colors[ImGuiCol_TableBorderStrong] = ImVec4(0.3098039329051971f, 0.3098039329051971f, 0.3490196168422699f, overall_alpha);
+   style.Colors[ImGuiCol_TableBorderLight] = ImVec4(0.2274509817361832f, 0.2274509817361832f, 0.2470588237047195f, overall_alpha);
+   style.Colors[ImGuiCol_TableRowBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f * overall_alpha);
+   style.Colors[ImGuiCol_TableRowBgAlt] = ImVec4(1.0f, 1.0f, 1.0f, 0.05999999865889549f * overall_alpha);
+   style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.0f, 0.4666666686534882f, 0.7843137383460999f, overall_alpha);
+   style.Colors[ImGuiCol_DragDropTarget] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, overall_alpha);
+   style.Colors[ImGuiCol_NavHighlight] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, overall_alpha);
+   style.Colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 0.699999988079071f * overall_alpha);
+   style.Colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.800000011920929f, 0.800000011920929f, 0.800000011920929f, 0.2000000029802322f * overall_alpha);
+   style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.1450980454683304f, 0.1450980454683304f, 0.1490196138620377f, overall_alpha);
 }
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
@@ -471,12 +481,60 @@ static void HelpSplash(std::string text, int rotation)
    ImGui::End();
 }
 
+static void HelpEditableHeader(IEditable* editable)
+{
+   string title;
+   switch (editable->GetItemType())
+   {
+   // Missing: eItemLightCenter, eItemDragPoint, eItemCollection
+   case eItemBumper: title = "Bumper"s; break;
+   case eItemDecal: title = "Decal"s; break;
+   case eItemDispReel: title = "Reel"s; break;
+   case eItemGate: title = "Gate"s; break;
+   case eItemFlasher: title = "Flasher"s; break;
+   case eItemFlipper: title = "Flipper"s; break;
+   case eItemHitTarget: title = "Target"s; break;
+   case eItemKicker: title = "Kicker"s; break;
+   case eItemLight: title = "Light"s; break;
+   case eItemLightSeq: title = "Light Sequencer"s; break;
+   case eItemPlunger: title = "Plunger"s; break;
+   case eItemPrimitive: title = ((Primitive *)editable)->IsPlayfield() ? "Playfield" : "Primitive"s; break;
+   case eItemRamp: title = "Ramp"s; break;
+   case eItemRubber: title = "Rubber"s; break;
+   case eItemSpinner: title = "Spinner"s; break;
+   case eItemSurface: title = "Surface"s; break;
+   case eItemTable: title = "Table"s; break;
+   case eItemTextbox: title = "TextBox"s; break;
+   case eItemTimer: title = "Timer"s; break;
+   case eItemTrigger: title = "Trigger"s; break;
+   }
+   HelpTextCentered(title.c_str());
+   string name = editable->GetName();
+   if (ImGui::InputText("Name", &name))
+      editable->SetName(name);
+   if (editable->GetItemType() != eItemLight && editable->GetItemType() != eItemTable)
+   {
+      ImGui::Separator();
+      HelpTextCentered("WARNING ! WARNING !");
+      ImGui::NewLine();
+      HelpTextCentered("Changes are not persisted");
+   }
+   ImGui::Separator();
+}
+
 
 LiveUI::LiveUI(RenderDevice *rd)
    : m_rd(rd)
 {
    m_StartTime_usec = usec();
+   m_app = g_pvp;
+   m_player = g_pplayer;
+   m_table = g_pplayer->m_ptable;
+   m_pininput = &(g_pplayer->m_pininput);
+   m_pin3d = &(g_pplayer->m_pin3d);
    m_disable_esc = LoadValueBoolWithDefault(regKey[RegName::Player], "DisableESC"s, m_disable_esc);
+   m_old_player_dynamic_mode = m_player->m_dynamicMode;
+   m_old_player_camera_mode = m_player->m_cameraMode;
 
    IMGUI_CHECKVERSION();
    ImGui::CreateContext();
@@ -486,12 +544,12 @@ LiveUI::LiveUI(RenderDevice *rd)
    
    ImGui_ImplWin32_Init(rd->getHwnd());
    
-   SetupImGuiStyle();
+   SetupImGuiStyle(1.0f);
 
    ImGui_ImplWin32_EnableDpiAwareness();
-   float dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(rd->getHwnd());
-   io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 13.0f * dpi);
-   ImGui::GetStyle().ScaleAllSizes(dpi);
+   m_dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(rd->getHwnd());
+   io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 13.0f * m_dpi);
+   ImGui::GetStyle().ScaleAllSizes(m_dpi);
 
 #ifdef ENABLE_SDL
    ImGui_ImplOpenGL3_Init();
@@ -538,7 +596,7 @@ void LiveUI::Render()
          {
             LiveUI *lui = (LiveUI *)cmd->UserCallbackData;
             Matrix3D matRotate, matTranslate;
-            matRotate.RotateZMatrix(lui->m_rotate * M_PI / 2.0f);
+            matRotate.RotateZMatrix((float)(lui->m_rotate * M_PI / 2.0f));
             switch (lui->m_rotate)
             {
             case 1: matTranslate.SetTranslation(ImGui::GetIO().DisplaySize.x, 0, 0); break;
@@ -590,43 +648,35 @@ void LiveUI::Update()
    ImGui_ImplWin32_NewFrame();
    ImGui::NewFrame();
 
-#ifdef ENABLE_BAM
-   if (g_pplayer->m_infoMode == IF_BAM_MENU)
-   {
-      // Head tracking menu
-      m_rotate = 0;
-      BAMView::drawMenu();
-   }
-   else
-#endif
-   if (m_ShowUI > 0)
+   if (m_ShowUI)
    {
       // Main UI
       m_rotate = 0;
       UpdateMainUI();
    }
-   else if (g_pplayer->m_cameraMode)
-   {
-      // Camera mode info text
-      // this is not a normal UI aligned to the monitor orientation but an overlay used when playing, therefore it should be rotated like the playfield to face the user and only displays for right angles
-      m_rotate = ((int)(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] / 90.0f)) & 3;
-      if (m_rotate * 90.0f == g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set])
-         UpdateCameraModeUI();
-   }
    else
    {
-      // Info tooltips
-      // this is not a normal UI aligned to the monitor orientation but an overlay used when playing, therefore it should be rotated like the playfield to face the user and only displays for right angles
+      // Info overlays: this is not a normal UI aligned to the monitor orientation but an overlay used when playing, 
+      // therefore it is rotated like the playfield to face the user and only displays for right angles
       m_rotate = ((int)(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] / 90.0f)) & 3;
       if (m_rotate * 90.0f == g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set])
       {
-         if (g_pplayer->m_closing == Player::CS_PLAYING && (g_pplayer->m_stereo3D != STEREO_OFF && !g_pplayer->m_stereo3Denabled && (usec() < m_StartTime_usec + 4e+6))) // show for max. 4 seconds
-         HelpSplash("3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on", m_rotate);
-         //!! visualize with real buttons or at least the areas?? Add extra buttons?
-         if (g_pplayer->m_closing == Player::CS_PLAYING && g_pplayer->m_supportsTouch && g_pplayer->m_showTouchMessage && (usec() < m_StartTime_usec + 12e+6)) // show for max. 12 seconds
-            HelpSplash("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
-                       "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit",
-               m_rotate);
+         if (g_pplayer->m_cameraMode)
+            // Camera mode info text
+            UpdateCameraModeUI();
+         else
+         {
+            // Info tooltips
+            if (g_pplayer->m_closing == Player::CS_PLAYING
+               && (g_pplayer->m_stereo3D != STEREO_OFF && !g_pplayer->m_stereo3Denabled && (usec() < m_StartTime_usec + 4e+6))) // show for max. 4 seconds
+               HelpSplash("3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on", m_rotate);
+            //!! visualize with real buttons or at least the areas?? Add extra buttons?
+            if (g_pplayer->m_closing == Player::CS_PLAYING && g_pplayer->m_supportsTouch && g_pplayer->m_showTouchMessage
+               && (usec() < m_StartTime_usec + 12e+6)) // show for max. 12 seconds
+               HelpSplash("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
+                           "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit",
+                  m_rotate);
+         }
       }
    }
 
@@ -693,412 +743,165 @@ void LiveUI::UpdateCameraModeUI()
    ImGui::End();
 }
 
+void LiveUI::PausePlayer(bool pause)
+{
+   g_pplayer->m_debugWindowActive = pause;
+   g_pplayer->RecomputePauseState();
+   g_pplayer->RecomputePseudoPauseState();
+}
+
+void LiveUI::EnterEditMode()
+{
+   // FIXME for the time being all modification are erased when exiting (due to backup restore)
+   // m_table->RestoreBackup();
+   m_player->EnableStaticPrePass(false);
+   m_player->m_cameraMode = false;
+}
+
+void LiveUI::ExitEditMode()
+{
+   // FIXME for the time being all modification are erased when exiting (due to backup restore)
+   // m_table->BackupForPlay();
+   m_player->EnableStaticPrePass(!m_old_player_dynamic_mode);
+   m_player->m_cameraMode = m_old_player_camera_mode;
+   SetupImGuiStyle(1.0f);
+}
+
+void LiveUI::OpenMainUI()
+{
+   if (!m_ShowUI)
+   {
+      m_ShowUI = true;
+      m_ShowBAMModal = false;
+      m_ShowSplashModal = true;
+      m_OpenUITime = msec();
+      PausePlayer(true);
+   }
+}
+
+void LiveUI::HideUI()
+{ 
+   if (m_ShowUI) 
+   {
+      m_ShowUI = false;
+      PausePlayer(false);
+   }
+}
 
 void LiveUI::UpdateMainUI()
 {
-   // UI Context
-   VPinball *m_app = g_pvp;
-   Player *m_player = g_pplayer;
-   PinTable *m_table = g_pplayer->m_ptable;
-   PinInput *m_pininput = &(g_pplayer->m_pininput);
-   Pin3D *m_pin3d = &(g_pplayer->m_pin3d);
+   m_show_fps = 0;
+   m_menubar_height = 0.0f;
+   m_toolbar_height = 0.0f;
 
-   enum UILocation
+   // Gives some transparency when positioning camera to better view camera view bounds
+   // TODO for some reasons, this breaks the modal background behavior
+   //SetupImGuiStyle(m_selection.type == LiveUI::Selection::SelectionType::S_CAMERA ? 0.3f : 1.0f);
+
+   bool popup_video_settings = false;
+   bool popup_audio_settings = false;
+   bool popup_renderer_inspection = false;
+
+   bool hide_parts = false;
+   if (ImGui::IsPopupOpen(ID_RENDERER_INSPECTION))
    {
-      UI_ROOT,
-      UI_CAMERA_SETTINGS,
-      UI_AUDIO_SETTINGS,
-      UI_VIDEO_SETTINGS,
-      UI_RENDERER_INSPECTION,
-      UI_HEADTRACKING,
-   };
-   static UILocation ui_pos = UI_ROOT;
-
-   int fps_mode = 0;
-
-   bool display_table_info = ui_pos == UI_ROOT;
-
-   const char *title;
-   ImGuiStyle &style = ImGui::GetStyle();
-   style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0, 0, 0, !display_table_info && (ui_pos == UI_ROOT || ui_pos == UI_AUDIO_SETTINGS) ? 0.5f : 0.0f);
-   switch (ui_pos)
+      hide_parts = true;
+      m_player->EnableStaticPrePass(!m_old_player_dynamic_mode);
+   }
+   else
    {
-   case UI_ROOT: title = "Settings###In Game UI"; break;
-   case UI_CAMERA_SETTINGS: title = "Settings > Camera Point of View###In Game UI"; break;
-   case UI_AUDIO_SETTINGS: title = "Settings > Audio Options###In Game UI"; break;
-   case UI_VIDEO_SETTINGS: title = "Settings > Video Options###In Game UI"; break;
-   case UI_RENDERER_INSPECTION: title = "Settings > Renderer Inspection###In Game UI"; break;
-   case UI_HEADTRACKING: title = "Settings > Head Tracking###In Game UI"; break;
+      m_player->EnableStaticPrePass(false);
    }
 
-   // Display table name,author,version and blurb and description
-   if (display_table_info)
+   // Main menubar
+   if (!hide_parts)
    {
-      std::ostringstream info;
-      if (!m_table->m_szTableName.empty())
-         info << m_table->m_szTableName;
-      else
-         info << "Table";
-      if (!m_table->m_szAuthor.empty())
-         info << " by " << m_table->m_szAuthor;
-      if (!m_table->m_szVersion.empty())
-         info << " (" << m_table->m_szVersion << ")";
-      //info << std::format(" ({:s} Revision {:d})\n", !m_table->m_szDateSaved.empty() ? m_table->m_szDateSaved : "N.A.", m_table->m_numTimesSaved);
-      info << " (" << (!m_table->m_szDateSaved.empty() ? m_table->m_szDateSaved : "N.A.") << " Revision " << m_table->m_numTimesSaved << ")\n";
-      size_t line_length = info.str().size();
-      info << std::string(line_length, '=') << "\n";
-      if (!m_table->m_szBlurb.empty())
-         info << m_table->m_szBlurb << std::string(line_length, '=') << "\n";
-      if (!m_table->m_szDescription.empty())
-         info << m_table->m_szDescription;
-      ImGuiWindowFlags window_flags
-         = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-      ImGui::SetNextWindowBgAlpha(0.5f);
-      ImGui::SetNextWindowPos(ImVec2(0, 0));
-      ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
-      ImGui::Begin("Table Info", NULL, window_flags);
-      HelpTextCentered(info.str().c_str());
-      ImGui::End();
-   }
-
-   // Directly open the modal dialog at root level on user interaction
-   static U32 openTime = 0;
-   if (!ImGui::IsPopupOpen(title))
-   {
-      ui_pos = UI_ROOT;
-      ImGui::OpenPopup(title);
-      openTime = msec();
-   }
-
-   // Main UI window
-   if (ImGui::BeginPopupModal(title, NULL, ImGuiWindowFlags_AlwaysAutoResize))
-   {
-      bool enableKeyboardShortcuts = (msec() - openTime) > 250;
-      switch (ui_pos)
+      if (ImGui::BeginMainMenuBar())
       {
-      //////////////////////////////////////////////////////////////////////////
-      // Root UI panel
-      case UI_ROOT:
-      {
-         static U32 quitToEditor = 0; // Long press keyboard shortcut
-         if (((ImGui::IsKeyDown(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc)  || ImGui::IsKeyDown(dikToImGuiKeys[m_player->m_rgKeys[eExitGame]])))
+         if (ImGui::BeginMenu("Preferences"))
          {
-            if (quitToEditor == 0 && !enableKeyboardShortcuts)
-               quitToEditor = msec();
-         }
-         else
-            quitToEditor = 0;
-         // Resume: click on the button, or press escape key
-         if (ImGui::Button("Resume Game") || (enableKeyboardShortcuts && quitToEditor == 0 && ((ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc))))
-         {
-            ImGui::CloseCurrentPopup();
-            m_ShowUI = false;
-         }
-         if (ImGui::Button("Camera Settings"))
-            ui_pos = UI_CAMERA_SETTINGS;
-         /* if (ImGui::Button("Audio Settings"))
-               ui_pos = UI_AUDIO_SETTINGS;*/
-         if (ImGui::Button("Video Settings"))
-            ui_pos = UI_VIDEO_SETTINGS;
+            //if (ImGui::MenuItem("Audio Options"))
+            //   popup_audio_settings = true;
+            if (ImGui::MenuItem("Video Options"))
+               popup_video_settings = true;
 #ifdef ENABLE_BAM
-         if (ImGui::Button("Head Tracking"))
-         {
-            m_player->m_infoMode = IF_BAM_MENU;
-            ImGui::CloseCurrentPopup();
-         }
+            if (ImGui::MenuItem("BAM Headtracking"))
+               m_ShowBAMModal = true;
 #endif
-         if (ImGui::Button("Renderer Inspection"))
-            ui_pos = UI_RENDERER_INSPECTION;
-         if (ImGui::Button("Debugger") || (enableKeyboardShortcuts && ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eDebugger]])))
-         {
-            m_player->m_showDebugger = true;
-            ImGui::CloseCurrentPopup();
-            m_ShowUI = false;
+            if (ImGui::MenuItem("Renderer inspection"))
+               popup_renderer_inspection = true;
+            ImGui::EndMenu();
          }
-         // Quit: click on the button, or press exit button, or long press exit button / escape key
-         if (ImGui::Button("Quit to editor") || (enableKeyboardShortcuts && ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eExitGame]])) || (quitToEditor != 0 && (msec() - quitToEditor) > m_table->m_tblExitConfirm))
-         {
-            m_table->QuitPlayer(Player::CS_STOP_PLAY);
-            ImGui::CloseCurrentPopup();
-            m_ShowUI = false;
-         }
-         break;
+         m_menubar_height = ImGui::GetWindowSize().y;
+         ImGui::EndMainMenuBar();
       }
 
-      //////////////////////////////////////////////////////////////////////////
-      // Camera settings (point of view, import/export,...)
-      case UI_CAMERA_SETTINGS:
+      // Main toolbar
+      m_toolbar_height = 20 * m_dpi;
+      ImGuiViewport *viewport = ImGui::GetMainViewport();
+      ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x, viewport->Pos.y + m_menubar_height));
+      ImGui::SetNextWindowSize(ImVec2(viewport->Size.x, m_toolbar_height));
+      ImGuiWindowFlags window_flags = 0 | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
+      ImGui::Begin("TOOLBAR", NULL, window_flags);
+      ImGui::PopStyleVar();
+      // TODO add controls (play/pause, switch to editable data,...)
+      /* if (ImGui::Button("Resume Game"))
       {
-         static bool old_player_dynamic_mode = m_player->m_dynamicMode;
-         static bool old_player_camera_mode = m_player->m_cameraMode;
-         m_player->EnableStaticPrePass(false);
+         ExitEditMode();
+         HideUI();
+      }*/
+      ImGui::End();
 
-         if (!m_app->m_povEdit)
-         {
-            if (ImGui::Button("Reset"))
-            {
-               bool old_camera_mode = m_player->m_cameraMode;
-               m_player->m_cameraMode = true;
-               m_pininput->FireKeyEvent(DISPID_GameEvents_KeyDown, m_player->m_rgKeys[eStartGameKey]);
-               m_player->m_cameraMode = old_camera_mode;
-               m_pin3d->InitLights(); // Needed to update shaders with new light settings
-               const vec4 st(m_table->m_envEmissionScale * m_player->m_globalEmissionScale,
-                  m_pin3d->m_envTexture ? (float)m_pin3d->m_envTexture->m_height /*+m_pin3d->m_envTexture->m_width)*0.5f*/
-                                        : (float)m_pin3d->m_builtinEnvTexture.m_height /*+m_pin3d->m_builtinEnvTexture.m_width)*0.5f*/,
-                  0.f, 0.f);
-               m_rd->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-#ifdef SEPARATE_CLASSICLIGHTSHADER
-               m_rd->classicLightShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-#endif
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Import"))
-            {
-               m_table->ImportBackdropPOV(string());
-               m_pin3d->InitLights(); // Needed to update shaders with new light settings
-               const vec4 st(m_table->m_envEmissionScale * m_player->m_globalEmissionScale,
-                  m_pin3d->m_envTexture ? (float)m_pin3d->m_envTexture->m_height /*+m_pin3d->m_envTexture->m_width)*0.5f*/
-                                        : (float)m_pin3d->m_builtinEnvTexture.m_height /*+m_pin3d->m_builtinEnvTexture.m_width)*0.5f*/,
-                  0.f, 0.f);
-               m_rd->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-#ifdef SEPARATE_CLASSICLIGHTSHADER
-               m_rd->classicLightShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-#endif
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Export"))
-               m_table->ExportBackdropPOV(string());
-            ImGui::SameLine();
-         }
-         if (ImGui::Button("Back"))
-         {
-            m_player->EnableStaticPrePass(!old_player_dynamic_mode);
-            m_player->m_cameraMode = old_player_camera_mode;
-            ui_pos = UI_ROOT;
-         }
-
-         ImGui::NewLine();
-
-         ImGui::Checkbox("Interactive camera mode", &m_player->m_cameraMode);
-
-         ImGui::NewLine();
-
-         for (int i = 0; i < 14; i++)
-         {
-            if (m_player->m_cameraMode && (i == m_player->m_backdropSettingActive || (m_player->m_backdropSettingActive == 3 && (i == 4 || i == 5))))
-               ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-            switch (i)
-            {
-            case 0:
-               if (ImGui::InputFloat("Inclination", &(m_table->m_BG_inclination[m_table->m_BG_current_set]), 0.2f, 1.0f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
-                  m_table->SetNonUndoableDirty(eSaveDirty);
-               break;
-            case 1:
-               if (ImGui::InputFloat("Field Of View", &(m_table->m_BG_FOV[m_table->m_BG_current_set]), 0.2f, 1.0f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
-                  m_table->SetNonUndoableDirty(eSaveDirty);
-               break;
-            case 2:
-               if (ImGui::InputFloat("Layback", &(m_table->m_BG_layback[m_table->m_BG_current_set]), 0.2f, 1.0f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
-                  m_table->SetNonUndoableDirty(eSaveDirty);
-               ImGui::NewLine();
-               break;
-            case 4:
-               if (ImGui::InputFloat("X Scale", &(m_table->m_BG_scalex[m_table->m_BG_current_set]), 0.002f, 0.01f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
-                  m_table->SetNonUndoableDirty(eSaveDirty);
-               break;
-            case 5:
-               if (ImGui::InputFloat("Y Scale", &(m_table->m_BG_scaley[m_table->m_BG_current_set]), 0.002f, 0.01f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
-                  m_table->SetNonUndoableDirty(eSaveDirty);
-               break;
-            case 6:
-               if (ImGui::InputFloat("Z Scale", &(m_table->m_BG_scalez[m_table->m_BG_current_set]), 0.002f, 0.01f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
-                  m_table->SetNonUndoableDirty(eSaveDirty);
-               ImGui::NewLine();
-               break;
-            case 7:
-               if (ImGui::InputFloat("X Offset", &(m_table->m_BG_xlatex[m_table->m_BG_current_set]), 10.0f, 50.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
-                  m_table->SetNonUndoableDirty(eSaveDirty);
-               break;
-            case 8:
-               if (ImGui::InputFloat("Y Offset", &(m_table->m_BG_xlatey[m_table->m_BG_current_set]), 10.0f, 50.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
-                  m_table->SetNonUndoableDirty(eSaveDirty);
-               break;
-            case 9:
-               if (ImGui::InputFloat("Z Offset", &(m_table->m_BG_xlatez[m_table->m_BG_current_set]), 10.0f, 50.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
-                  m_table->SetNonUndoableDirty(eSaveDirty);
-               ImGui::NewLine();
-               break;
-            case 10:
-               if (ImGui::InputFloat("Light Emission Scale", &(m_table->m_lightEmissionScale), 20000.0f, 100000.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
-               {
-                  m_table->SetNonUndoableDirty(eSaveDirty);
-                  m_pin3d->InitLights(); // Needed to update shaders with new light settings
-               }
-               break;
-            case 11:
-               if (ImGui::InputFloat("Light Range", &(m_table->m_lightRange), 200.0f, 1000.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
-                  m_table->SetNonUndoableDirty(eSaveDirty);
-               break;
-            case 12:
-               if (ImGui::InputFloat("Light Height", &(m_table->m_lightHeight), 20.0f, 100.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
-                  m_table->SetNonUndoableDirty(eSaveDirty);
-               ImGui::NewLine();
-               break;
-            case 13:
-               if (ImGui::InputFloat("Environment Emission", &(m_table->m_envEmissionScale), 0.1f, 0.5f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
-               {
-                  m_table->SetNonUndoableDirty(eSaveDirty);
-                  const vec4 st(m_table->m_envEmissionScale * m_player->m_globalEmissionScale,
-                     m_pin3d->m_envTexture ? (float)m_pin3d->m_envTexture->m_height /*+m_pin3d->m_envTexture->m_width)*0.5f*/
-                                           : (float)m_pin3d->m_builtinEnvTexture.m_height /*+m_pin3d->m_builtinEnvTexture.m_width)*0.5f*/,
-                     0.f, 0.f);
-                  m_rd->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-#ifdef SEPARATE_CLASSICLIGHTSHADER
-                  m_rd->classicLightShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-#endif
-               }
-               break;
-            }
-            if (m_player->m_cameraMode && (i == m_player->m_backdropSettingActive || (m_player->m_backdropSettingActive == 3 && (i == 4 || i == 5))))
-               ImGui::PopStyleColor();
-         }
-
-         ImGui::NewLine();
-
-         if (ImGui::InputFloat("Rotation", &(m_table->m_BG_rotation[m_table->m_BG_current_set]), 90.f, 90.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
-            m_table->SetNonUndoableDirty(eSaveDirty);
-
-         ImGui::NewLine();
-
-         ImGui::Text("Camera at X: %.2f Y: %.2f Z: %.2f,  Rotation: %.2f", -m_pin3d->m_proj.m_matView._41,
-            (m_table->m_BG_current_set == 0 || m_table->m_BG_current_set == 2) ? m_pin3d->m_proj.m_matView._42 : -m_pin3d->m_proj.m_matView._42, m_pin3d->m_proj.m_matView._43,
-            m_table->m_BG_rotation[m_table->m_BG_current_set]);
-
-         if (m_player->m_cameraMode)
-         {
-            ImGui::NewLine();
-            ImGui::Text("Left / Right flipper key = decrease / increase value highlighted in green");
-            ImGui::Text("Left / Right magna save key = previous / next option");
-            ImGui::NewLine();
-            ImGui::Text("Left / Right nudge key = rotate table orientation (if enabled in the Key settings)");
-            ImGui::Text("Navigate around with the Arrow Keys and Left Alt Key (if enabled in the Key settings)");
-            if (m_app->m_povEdit)
-               ImGui::Text("Start Key: export POV file and quit, or Credit Key: quit without export");
-            else
-               ImGui::Text("Start Key: reset POV to old values");
-         }
-         break;
-      }
-
-      //////////////////////////////////////////////////////////////////////////
-      // Video options
-      case UI_VIDEO_SETTINGS:
-      {
-         fps_mode = 1; // Show FPS while adjusting video options
-
-         if (ImGui::Button("Back"))
-            ui_pos = UI_ROOT;
-
-         ImGui::NewLine();
-
-         ImGui::Text("Global settings");
-
-         ImGui::NewLine();
-
-         if (ImGui::Checkbox("Force Bloom filter off", &m_player->m_bloomOff))
-            SaveValueBool(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "ForceBloomOff"s, m_player->m_bloomOff);
-
-         if (m_table->m_useFXAA == -1)
-         {
-            const char *postprocessed_aa_items[] = { "Disabled", "Fast FXAA", "Standard FXAA", "Quality FXAA", "Fast NFAA", "Standard DLAA", "Quality SMAA" };
-            if (ImGui::Combo("Postprocessed AA", &m_player->m_FXAA, postprocessed_aa_items, IM_ARRAYSIZE(postprocessed_aa_items)))
-               SaveValueInt(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "FXAA"s, m_player->m_FXAA);
-         }
-
-         const char *sharpen_items[] = { "Disabled", "CAS", "Bilateral CAS" };
-         if (ImGui::Combo("Sharpen", &m_player->m_sharpen, sharpen_items, IM_ARRAYSIZE(sharpen_items)))
-            SaveValueInt(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "Sharpen"s, m_player->m_sharpen);
-
-         if (ImGui::Checkbox("Enable stereo rendering", &m_player->m_stereo3Denabled))
-            SaveValueBool(regKey[RegName::Player], "Stereo3DEnabled"s, m_player->m_stereo3Denabled);
-
-         ImGui::NewLine();
-
-         ImGui::Text("Table settings");
-
-         ImGui::NewLine();
-
-         if (ImGui::InputFloat("Bloom Strength", &(m_table->m_bloom_strength), 0.1f, 1.0f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
-            m_table->SetNonUndoableDirty(eSaveDirty);
-
-         break;
-      }
-
-      //////////////////////////////////////////////////////////////////////////
-      // Renderer inspection (display individual render passes, performance indicators,...)
-      case UI_RENDERER_INSPECTION:
-      {
-         if (ImGui::Button("Back"))
-            ui_pos = UI_ROOT;
-
-         ImGui::NewLine();
-
-         static bool show_fps_plot = false;
-         ImGui::Checkbox("Display FPS plots", &show_fps_plot);
-         fps_mode = show_fps_plot ? 2 : 1;
-
-         ImGui::NewLine();
-
-         ImGui::Text("Display single render pass:");
-         static int pass_selection = IF_FPS;
-         ImGui::RadioButton("Disabled", &pass_selection, IF_FPS);
-         ImGui::RadioButton("Profiler", &pass_selection, IF_PROFILING);
-         ImGui::RadioButton("Profiler (Split rendering)", &pass_selection, IF_PROFILING_SPLIT_RENDERING);
-         ImGui::RadioButton("Static prerender pass", &pass_selection, IF_STATIC_ONLY);
-         ImGui::RadioButton("Dynamic render pass", &pass_selection, IF_DYNAMIC_ONLY);
-         ImGui::RadioButton("Transmitted light pass", &pass_selection, IF_LIGHT_BUFFER_ONLY);
-         if (m_player->GetAOMode() != 0)
-            ImGui::RadioButton("Ambient Occlusion pass", &pass_selection, IF_AO_ONLY);
-         for (int i = 0; i < 2 * m_table->m_vrenderprobe.size(); i++)
-         {
-            string name = m_table->m_vrenderprobe[i >> 1]->GetName() + ((i & 1) == 0 ? " - Static pass" : " - Dynamic pass");
-            ImGui::RadioButton(name.c_str(), &pass_selection, 100 + i);
-         }
-         if (pass_selection < 100)
-            m_player->m_infoMode = (InfoMode)pass_selection;
-         else
-         {
-            m_player->m_infoMode = IF_RENDER_PROBES;
-            m_player->m_infoProbeIndex = pass_selection - 100;
-         }
-
-         ImGui::NewLine();
-
-         ImGui::Text(m_player->GetPerfInfo().c_str());
-      }
-      }
-
-      ImGui::EndPopup();
+      // Side panels
+      UpdateOutlinerUI();
+      UpdatePropertyUI();
    }
 
-   // Display simple FPS window
-   if (fps_mode > 0)
+   // Modal dialogs
+   if (popup_video_settings)
+      ImGui::OpenPopup(ID_VIDEO_SETTINGS);
+   if (ImGui::IsPopupOpen(ID_VIDEO_SETTINGS))
+      UpdateVideoOptionsModal();
+
+   if (popup_audio_settings)
+      ImGui::OpenPopup(ID_AUDIO_SETTINGS);
+   if (ImGui::IsPopupOpen(ID_AUDIO_SETTINGS))
+      UpdateAudioOptionsModal();
+
+   if (popup_renderer_inspection)
+      ImGui::OpenPopup(ID_RENDERER_INSPECTION);
+   if (ImGui::IsPopupOpen(ID_RENDERER_INSPECTION))
+      UpdateRendererInspectionModal();
+
+   if (m_ShowSplashModal && !ImGui::IsPopupOpen(ID_MODAL_SPLASH))
+      ImGui::OpenPopup(ID_MODAL_SPLASH);
+   if (m_ShowSplashModal)
+      UpdateMainSplashModal();
+
+#ifdef ENABLE_BAM
+   if (m_ShowBAMModal)
+      BAMView::drawMenu();
+#endif
+
+   // Overlays
+   if (m_show_fps > 0)
    {
+      // Display simple FPS window
       ImGuiWindowFlags window_flags
          = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-      ImGui::SetNextWindowBgAlpha(0.35f);
-      ImGui::SetNextWindowPos(ImVec2(10, 10));
+      ImGui::SetNextWindowBgAlpha(0.75f);
+      ImGui::SetNextWindowPos(ImVec2(10, 10 + m_menubar_height + m_toolbar_height));
       ImGui::Begin("FPS", NULL, window_flags);
       const float fpsAvg = (m_player->m_fpsCount == 0) ? 0.0f : m_player->m_fpsAvg / (float)m_player->m_fpsCount;
       ImGui::Text("FPS: %.1f (%.1f avg)", m_player->m_fps + 0.01f, fpsAvg + 0.01f);
       ImGui::End();
    }
-
-   // Display FPS window with plots
-   if (fps_mode == 2)
+   if (m_show_fps == 2)
    {
+      // Display FPS window with plots
       ImGui::SetNextWindowSize(ImVec2(530, 550), ImGuiCond_FirstUseEver);
-      ImGui::SetNextWindowPos(ImVec2((float)(m_player->m_wnd_width - 530 - 10), 10), ImGuiCond_FirstUseEver);
+      ImGui::SetNextWindowPos(ImVec2((float)(m_player->m_wnd_width - 530 - 10), 10 + m_menubar_height + m_toolbar_height), ImGuiCond_FirstUseEver);
       ImGui::Begin("Plots");
       //!! This example assumes 60 FPS. Higher FPS requires larger buffer size.
       static ScrollingData sdata1, sdata2, sdata3, sdata4, sdata5, sdata6;
@@ -1166,4 +969,636 @@ void LiveUI::UpdateMainUI()
       }
       ImGui::End();
    }
+
+   // Handle uncaught mouse & keyboard interaction
+   if (!ImGui::GetIO().WantCaptureMouse)
+   {
+      // TODO mouse interaction with viewport: selection, camera,...
+      if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+      {
+         ImVec2 drag = ImGui::GetMouseDragDelta();
+      }
+   }
+   if (!ImGui::GetIO().WantCaptureKeyboard)
+   {
+      if (!m_ShowSplashModal && ImGui::IsKeyDown(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc)
+      {
+         ExitEditMode();
+         m_ShowSplashModal = true;
+      }
+   }
 }
+
+void LiveUI::UpdateOutlinerUI()
+{
+   ImGuiViewport *viewport = ImGui::GetMainViewport();
+   float pane_width = 200 * m_dpi;
+   ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x, viewport->Pos.y + m_menubar_height + m_toolbar_height));
+   ImGui::SetNextWindowSize(ImVec2(pane_width, viewport->Size.y - m_menubar_height - m_toolbar_height));
+   ImGuiWindowFlags window_flags = 0 | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize
+      | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4.0f * m_dpi, 4.0f * m_dpi));
+   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+   ImGui::Begin("OUTLINER", NULL, window_flags);
+   if (ImGui::TreeNodeEx("View Setups", ImGuiTreeNodeFlags_DefaultOpen))
+   {
+      if (ImGui::Selectable("Desktop"))
+      {
+         m_selection.type = Selection::SelectionType::S_CAMERA;
+         m_selection.camera = 0;
+         m_table->m_BG_current_set = 0;
+      }
+      if (ImGui::Selectable("Cabinet"))
+      {
+         m_selection.type = Selection::SelectionType::S_CAMERA;
+         m_selection.camera = 1;
+         m_table->m_BG_current_set = 1;
+      }
+      if (ImGui::Selectable("Full Single Screen"))
+      {
+         m_selection.type = Selection::SelectionType::S_CAMERA;
+         m_selection.camera = 2;
+         m_table->m_BG_current_set = 2;
+      }
+      ImGui::TreePop();
+   }
+   if (ImGui::TreeNode("Materials"))
+   {
+      for (size_t t = 0; t < m_table->m_materials.size(); t++)
+      {
+         Material *material = m_table->m_materials[t];
+         if (ImGui::Selectable(material->m_szName.c_str()))
+         {
+            m_selection.type = Selection::SelectionType::S_MATERIAL;
+            m_selection.material = material;
+         }
+      }
+      ImGui::TreePop();
+   }
+   if (ImGui::TreeNodeEx("Layers", ImGuiTreeNodeFlags_DefaultOpen))
+   {
+      // Very very unefficient
+      std::unordered_map<std::string, vector<IEditable *>> layers;
+      for (size_t t = 0; t < m_table->m_vedit.size(); t++)
+      {
+         ISelect *const psel = m_table->m_vedit[t]->GetISelect();
+         if (psel != nullptr)
+         {
+            auto iter = layers.find(psel->m_layerName);
+            if (iter != layers.end())
+            {
+               iter->second.push_back(m_table->m_vedit[t]);
+            }
+            else
+            {
+               vector<IEditable *> list;
+               list.push_back(m_table->m_vedit[t]);
+               layers[psel->m_layerName] = list;
+            }
+         }
+      }
+      std::vector<std::string> keys;
+      keys.reserve(layers.size());
+      for (auto &it : layers)
+         keys.push_back(it.first);
+      std::sort(keys.begin(), keys.end());
+      for (auto &it : keys)
+      {
+         if (it == ""s) // Skip unaffected editables (like live playfield)
+            continue;
+         if (ImGui::TreeNode(it.c_str()))
+         {
+            auto list = layers[it];
+            for (size_t t = 0; t < list.size(); t++)
+            {
+               if (ImGui::Selectable(list[t]->GetName()))
+               {
+                  m_selection.type = LiveUI::Selection::SelectionType::S_EDITABLE;
+                  m_selection.editable = list[t];
+               }
+            }
+            ImGui::TreePop();
+         }
+      }
+      ImGui::TreePop();
+   }
+   ImGui::End();
+   ImGui::PopStyleVar(3);
+}
+
+void LiveUI::UpdatePropertyUI()
+{
+   ImGuiViewport *viewport = ImGui::GetMainViewport();
+   float pane_width = 250 * m_dpi;
+   ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x + viewport->Size.x - pane_width, viewport->Pos.y + m_menubar_height + m_toolbar_height));
+   ImGui::SetNextWindowSize(ImVec2(pane_width, viewport->Size.y - m_menubar_height - m_toolbar_height));
+   ImGuiWindowFlags window_flags = 0 | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
+      | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4.0f * m_dpi, 4.0f * m_dpi));
+   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+   ImGui::Begin("PROPERTIES", NULL, window_flags);
+   ImGui::PushItemWidth(PROP_WIDTH);
+   switch (m_selection.type)
+   {
+   case Selection::SelectionType::S_NONE: TableProperties(); break;
+   case Selection::SelectionType::S_CAMERA: CameraProperties(); break;
+   case Selection::SelectionType::S_MATERIAL: MaterialProperties(); break;
+   case Selection::SelectionType::S_EDITABLE: 
+      HelpEditableHeader(m_selection.editable);
+      switch (m_selection.editable->GetItemType())
+      {
+      // eItemFlipper, eItemTimer, eItemPlunger, eItemTextbox, eItemBumper, eItemTrigger, eItemKicker, eItemDecal, eItemGate, eItemSpinner, eItemTable,
+      // eItemLightCenter, eItemDragPoint, eItemCollection, eItemDispReel, eItemLightSeq, eItemFlasher, eItemRubber, eItemHitTarget,
+      case eItemFlasher: FlasherProperties(); break;
+      case eItemLight: LightProperties(); break;
+      case eItemPrimitive: PrimitiveProperties(); break;
+      case eItemSurface: SurfaceProperties(); break;
+      case eItemRamp: RampProperties(); break;
+      }
+      break;
+   }
+   ImGui::PopItemWidth();
+   ImGui::End();
+   ImGui::PopStyleVar(3);
+}
+
+void LiveUI::UpdateAudioOptionsModal()
+{
+   bool p_open = true;
+   if (ImGui::BeginPopupModal(ID_AUDIO_SETTINGS, &p_open, ImGuiWindowFlags_AlwaysAutoResize))
+   {
+
+      ImGui::EndPopup();
+   }
+}
+
+void LiveUI::UpdateVideoOptionsModal()
+{
+   bool p_open = true;
+   if (ImGui::BeginPopupModal(ID_VIDEO_SETTINGS, &p_open, ImGuiWindowFlags_AlwaysAutoResize))
+   {
+      m_show_fps = 1; // Show FPS overlay while tweaking render options
+
+      ImGui::Text("Global settings");
+      ImGui::NewLine();
+      if (ImGui::Checkbox("Force Bloom filter off", &m_player->m_bloomOff))
+         SaveValueBool(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "ForceBloomOff"s, m_player->m_bloomOff);
+      if (m_table->m_useFXAA == -1)
+      {
+         const char *postprocessed_aa_items[] = { "Disabled", "Fast FXAA", "Standard FXAA", "Quality FXAA", "Fast NFAA", "Standard DLAA", "Quality SMAA" };
+         if (ImGui::Combo("Postprocessed AA", &m_player->m_FXAA, postprocessed_aa_items, IM_ARRAYSIZE(postprocessed_aa_items)))
+            SaveValueInt(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "FXAA"s, m_player->m_FXAA);
+      }
+      const char *sharpen_items[] = { "Disabled", "CAS", "Bilateral CAS" };
+      if (ImGui::Combo("Sharpen", &m_player->m_sharpen, sharpen_items, IM_ARRAYSIZE(sharpen_items)))
+         SaveValueInt(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "Sharpen"s, m_player->m_sharpen);
+      if (ImGui::Checkbox("Enable stereo rendering", &m_player->m_stereo3Denabled))
+         SaveValueBool(regKey[RegName::Player], "Stereo3DEnabled"s, m_player->m_stereo3Denabled);
+      ImGui::EndPopup();
+   }
+}
+
+void LiveUI::UpdateRendererInspectionModal()
+{
+   bool p_open = true;
+   ImGui::SetNextWindowSize(ImVec2(550 * m_dpi, 0));
+   if (ImGui::BeginPopupModal(ID_RENDERER_INSPECTION, &p_open))
+   {
+      static bool show_fps_plot = false;
+      ImGui::Checkbox("Display FPS plots", &show_fps_plot);
+      m_show_fps = show_fps_plot ? 2 : 1;
+      ImGui::NewLine();
+      ImGui::Text("Display single render pass:");
+      static int pass_selection = IF_FPS;
+      ImGui::RadioButton("Disabled", &pass_selection, IF_FPS);
+      ImGui::RadioButton("Profiler", &pass_selection, IF_PROFILING);
+      ImGui::RadioButton("Profiler (Split rendering)", &pass_selection, IF_PROFILING_SPLIT_RENDERING);
+      ImGui::RadioButton("Static prerender pass", &pass_selection, IF_STATIC_ONLY);
+      ImGui::RadioButton("Dynamic render pass", &pass_selection, IF_DYNAMIC_ONLY);
+      ImGui::RadioButton("Transmitted light pass", &pass_selection, IF_LIGHT_BUFFER_ONLY);
+      if (m_player->GetAOMode() != 0)
+         ImGui::RadioButton("Ambient Occlusion pass", &pass_selection, IF_AO_ONLY);
+      for (int i = 0; i < 2 * m_table->m_vrenderprobe.size(); i++)
+      {
+         string name = m_table->m_vrenderprobe[i >> 1]->GetName() + ((i & 1) == 0 ? " - Static pass" : " - Dynamic pass");
+         ImGui::RadioButton(name.c_str(), &pass_selection, 100 + i);
+      }
+      if (pass_selection < 100)
+         m_player->m_infoMode = (InfoMode)pass_selection;
+      else
+      {
+         m_player->m_infoMode = IF_RENDER_PROBES;
+         m_player->m_infoProbeIndex = pass_selection - 100;
+      }
+      ImGui::NewLine();
+      ImGui::Text(m_player->GetPerfInfo().c_str());
+      ImGui::EndPopup();
+   }
+}
+
+void LiveUI::UpdateMainSplashModal()
+{
+   bool enableKeyboardShortcuts = (msec() - m_OpenUITime) > 250;
+
+   ImGuiStyle &style = ImGui::GetStyle();
+   // FIXME push style
+   style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0, 0, 0, 0.0f);
+
+   // Display table name,author,version and blurb and description
+   {
+      std::ostringstream info;
+      if (!m_table->m_szTableName.empty())
+         info << m_table->m_szTableName;
+      else
+         info << "Table";
+      if (!m_table->m_szAuthor.empty())
+         info << " by " << m_table->m_szAuthor;
+      if (!m_table->m_szVersion.empty())
+         info << " (" << m_table->m_szVersion << ")";
+      //info << std::format(" ({:s} Revision {:d})\n", !m_table->m_szDateSaved.empty() ? m_table->m_szDateSaved : "N.A.", m_table->m_numTimesSaved);
+      info << " (" << (!m_table->m_szDateSaved.empty() ? m_table->m_szDateSaved : "N.A.") << " Revision " << m_table->m_numTimesSaved << ")\n";
+      size_t line_length = info.str().size();
+      info << std::string(line_length, '=') << "\n";
+      if (!m_table->m_szBlurb.empty())
+         info << m_table->m_szBlurb << std::string(line_length, '=') << "\n";
+      if (!m_table->m_szDescription.empty())
+         info << m_table->m_szDescription;
+      ImGuiWindowFlags window_flags
+         = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+      ImGui::SetNextWindowBgAlpha(0.5f);
+      ImGui::SetNextWindowPos(ImVec2(0, 0));
+      ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+      ImGui::Begin("Table Info", NULL, window_flags);
+      HelpTextCentered(info.str().c_str());
+      ImGui::End();
+   }
+
+   ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
+   if (ImGui::BeginPopupModal(ID_MODAL_SPLASH, NULL, window_flags))
+   {
+      ImVec2 size(100 * m_dpi, 0);
+      static U32 quitToEditor = 0; // Long press keyboard shortcut
+      if (((ImGui::IsKeyDown(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc) || ImGui::IsKeyDown(dikToImGuiKeys[m_player->m_rgKeys[eExitGame]])))
+      {
+         if (quitToEditor == 0 && !enableKeyboardShortcuts)
+            quitToEditor = msec();
+      }
+      else
+         quitToEditor = 0;
+      // Resume: click on the button, or press escape key
+      if (ImGui::Button("Resume Game", size) || (enableKeyboardShortcuts && quitToEditor == 0 && ((ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc))))
+      {
+         ImGui::CloseCurrentPopup();
+         HideUI();
+      }
+      if (ImGui::Button("Live Editor", size))
+      {
+         m_ShowSplashModal = false;
+         ImGui::CloseCurrentPopup();
+         EnterEditMode();
+      }
+      if (ImGui::Button("Debugger", size) || (enableKeyboardShortcuts && ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eDebugger]])))
+      {
+         ImGui::CloseCurrentPopup();
+         HideUI();
+         m_player->m_showDebugger = true;
+      }
+      // Quit: click on the button, or press exit button, or long press exit button / escape key
+      if (ImGui::Button("Quit to editor", size) || (enableKeyboardShortcuts && ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eExitGame]]))
+         || (quitToEditor != 0 && (msec() - quitToEditor) > m_table->m_tblExitConfirm))
+      {
+         ImGui::CloseCurrentPopup();
+         HideUI();
+         m_table->QuitPlayer(Player::CS_STOP_PLAY);
+      }
+      ImGui::EndPopup();
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Property panes
+//
+
+void LiveUI::TableProperties()
+{
+   HelpEditableHeader(m_table);
+   if (ImGui::CollapsingHeader("User", ImGuiTreeNodeFlags_DefaultOpen))
+   {
+   }
+   if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen))
+   {
+   }
+   if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen))
+   {
+   }
+   if (ImGui::CollapsingHeader("Lights", ImGuiTreeNodeFlags_DefaultOpen))
+   {
+      vec4 ambient = convertColor(m_table->m_lightAmbient);
+      if (ImGui::ColorEdit3("Ambient Color", ambient))
+         m_table->m_lightAmbient = convertColorRGB(ambient);
+      ImGui::Separator();
+      vec4 emission = convertColor(m_table->m_Light[0].emission);
+      if (ImGui::ColorEdit3("Light Emission Color", emission))
+         m_table->m_Light[0].emission = convertColorRGB(emission);
+      if (ImGui::InputFloat("Light Emission Scale", &(m_table->m_lightEmissionScale), 20000.0f, 100000.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
+      {
+         m_table->SetNonUndoableDirty(eSaveDirty);
+         m_pin3d->InitLights(); // Needed to update shaders with new light settings
+      }
+      if (ImGui::InputFloat("Light Height", &(m_table->m_lightHeight), 20.0f, 100.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
+         m_table->SetNonUndoableDirty(eSaveDirty);
+      if (ImGui::InputFloat("Light Range", &(m_table->m_lightRange), 200.0f, 1000.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
+         m_table->SetNonUndoableDirty(eSaveDirty);
+      ImGui::Separator();
+      // TODO Missing: environment texture
+      if (ImGui::InputFloat("Environment Emission Scale", &(m_table->m_envEmissionScale), 0.1f, 0.5f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+      {
+         m_table->SetNonUndoableDirty(eSaveDirty);
+         const vec4 st(m_table->m_envEmissionScale * m_player->m_globalEmissionScale,
+            m_pin3d->m_envTexture ? (float)m_pin3d->m_envTexture->m_height /*+m_pin3d->m_envTexture->m_width)*0.5f*/
+                                  : (float)m_pin3d->m_builtinEnvTexture.m_height /*+m_pin3d->m_builtinEnvTexture.m_width)*0.5f*/,
+            0.f, 0.f);
+         m_rd->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+         #ifdef SEPARATE_CLASSICLIGHTSHADER
+         m_rd->classicLightShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+         #endif
+      }
+      if (ImGui::InputFloat("Ambient Occlusion Scale", &(m_table->m_AOScale), 0.1f, 1.0f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+         m_table->SetNonUndoableDirty(eSaveDirty);
+      if (ImGui::InputFloat("Bloom Strength", &(m_table->m_bloom_strength), 0.1f, 1.0f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+         m_table->SetNonUndoableDirty(eSaveDirty);
+      if (ImGui::InputFloat("Screen Space Reflection Scale", &(m_table->m_SSRScale), 0.1f, 1.0f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+         m_table->SetNonUndoableDirty(eSaveDirty);
+   }
+}
+
+void LiveUI::CameraProperties()
+{
+   switch (m_selection.camera)
+   {
+   case 0: ImGui::Text("Camera: Desktop"); break;
+   case 1: ImGui::Text("Camera: Full Single Screen"); break;
+   case 2: ImGui::Text("Camera: Cabinet"); break;
+   default: return; // unsupported
+   }
+   ImGui::Separator();
+
+   if (ImGui::Button("Reset"))
+   {
+      bool old_camera_mode = m_player->m_cameraMode;
+      m_player->m_cameraMode = true;
+      m_pininput->FireKeyEvent(DISPID_GameEvents_KeyDown, m_player->m_rgKeys[eStartGameKey]);
+      m_player->m_cameraMode = old_camera_mode;
+      m_pin3d->InitLights(); // Needed to update shaders with new light settings
+      const vec4 st(m_table->m_envEmissionScale * m_player->m_globalEmissionScale,
+         m_pin3d->m_envTexture ? (float)m_pin3d->m_envTexture->m_height /*+m_pin3d->m_envTexture->m_width)*0.5f*/
+                               : (float)m_pin3d->m_builtinEnvTexture.m_height /*+m_pin3d->m_builtinEnvTexture.m_width)*0.5f*/,
+         0.f, 0.f);
+      m_rd->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+      #ifdef SEPARATE_CLASSICLIGHTSHADER
+      m_rd->classicLightShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+      #endif
+   }
+   ImGui::SameLine();
+   if (ImGui::Button("Import"))
+   {
+      m_table->ImportBackdropPOV(string());
+      m_pin3d->InitLights(); // Needed to update shaders with new light settings
+      const vec4 st(m_table->m_envEmissionScale * m_player->m_globalEmissionScale,
+         m_pin3d->m_envTexture ? (float)m_pin3d->m_envTexture->m_height /*+m_pin3d->m_envTexture->m_width)*0.5f*/
+                               : (float)m_pin3d->m_builtinEnvTexture.m_height /*+m_pin3d->m_builtinEnvTexture.m_width)*0.5f*/,
+         0.f, 0.f);
+      m_rd->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+      #ifdef SEPARATE_CLASSICLIGHTSHADER
+      m_rd->classicLightShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+      #endif
+   }
+   ImGui::SameLine();
+   if (ImGui::Button("Export"))
+      m_table->ExportBackdropPOV(string());
+   ImGui::NewLine();
+   ImGui::Checkbox("Interactive camera mode", &m_player->m_cameraMode);
+   ImGui::NewLine();
+   for (int i = 0; i < 14; i++)
+   {
+      if (m_player->m_cameraMode && (i == m_player->m_backdropSettingActive || (m_player->m_backdropSettingActive == 3 && (i == 4 || i == 5))))
+         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+      switch (i)
+      {
+      case 0:
+         if (ImGui::InputFloat("Inclination", &(m_table->m_BG_inclination[m_selection.camera]), 0.2f, 1.0f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+            m_table->SetNonUndoableDirty(eSaveDirty);
+         break;
+      case 1:
+         if (ImGui::InputFloat("Field Of View", &(m_table->m_BG_FOV[m_selection.camera]), 0.2f, 1.0f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+            m_table->SetNonUndoableDirty(eSaveDirty);
+         break;
+      case 2:
+         if (ImGui::InputFloat("Layback", &(m_table->m_BG_layback[m_selection.camera]), 0.2f, 1.0f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+            m_table->SetNonUndoableDirty(eSaveDirty);
+         ImGui::NewLine();
+         break;
+      case 4:
+         if (ImGui::InputFloat("X Scale", &(m_table->m_BG_scalex[m_selection.camera]), 0.002f, 0.01f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+            m_table->SetNonUndoableDirty(eSaveDirty);
+         break;
+      case 5:
+         if (ImGui::InputFloat("Y Scale", &(m_table->m_BG_scaley[m_selection.camera]), 0.002f, 0.01f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+            m_table->SetNonUndoableDirty(eSaveDirty);
+         break;
+      case 6:
+         if (ImGui::InputFloat("Z Scale", &(m_table->m_BG_scalez[m_selection.camera]), 0.002f, 0.01f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+            m_table->SetNonUndoableDirty(eSaveDirty);
+         ImGui::NewLine();
+         break;
+      case 7:
+         if (ImGui::InputFloat("X Offset", &(m_table->m_BG_xlatex[m_selection.camera]), 10.0f, 50.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
+            m_table->SetNonUndoableDirty(eSaveDirty);
+         break;
+      case 8:
+         if (ImGui::InputFloat("Y Offset", &(m_table->m_BG_xlatey[m_selection.camera]), 10.0f, 50.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
+            m_table->SetNonUndoableDirty(eSaveDirty);
+         break;
+      case 9:
+         if (ImGui::InputFloat("Z Offset", &(m_table->m_BG_xlatez[m_selection.camera]), 10.0f, 50.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
+            m_table->SetNonUndoableDirty(eSaveDirty);
+         ImGui::NewLine();
+         break;
+      }
+      if (m_player->m_cameraMode && (i == m_player->m_backdropSettingActive || (m_player->m_backdropSettingActive == 3 && (i == 4 || i == 5))))
+         ImGui::PopStyleColor();
+   }
+   ImGui::NewLine();
+   if (ImGui::InputFloat("Rotation", &(m_table->m_BG_rotation[m_selection.camera]), 90.f, 90.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
+      m_table->SetNonUndoableDirty(eSaveDirty);
+   ImGui::Separator();
+   ImGui::Text("Absolute position\nX: %.2f\nY: %.2f\nZ: %.2f", -m_pin3d->m_proj.m_matView._41,
+      (m_selection.camera == 0 || m_selection.camera == 2) ? m_pin3d->m_proj.m_matView._42 : -m_pin3d->m_proj.m_matView._42, 
+      m_pin3d->m_proj.m_matView._43);
+}
+
+void LiveUI::MaterialProperties()
+{
+   Material *material = (Material *)m_selection.material;
+   HelpTextCentered("Material");
+   string name = material->m_szName;
+   if (ImGui::InputText("Name", &name))
+   {
+      material->m_szName = name;
+      m_table->AddDbgMaterial(material);
+   }
+   ImGui::Separator();
+
+   if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen))
+   {
+      vec4 base = convertColor(material->m_cBase);
+      if (ImGui::ColorEdit3("Base Color", base))
+      {
+         material->m_cBase = convertColorRGB(base);
+         m_table->AddDbgMaterial(material);
+      }
+      if (ImGui::InputFloat("Wrap Lighting", &(material->m_fWrapLighting), 0.02f, 0.1f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+         m_table->AddDbgMaterial(material);
+
+      vec4 glossy = convertColor(material->m_cGlossy);
+      if (ImGui::ColorEdit3("Glossy Color", glossy))
+      {
+         material->m_cGlossy = convertColorRGB(glossy);
+         m_table->AddDbgMaterial(material);
+      }
+      if (ImGui::InputFloat("Glossy Image Lerp", &(material->m_fGlossyImageLerp), 0.02f, 0.1f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+         m_table->AddDbgMaterial(material);
+
+      if (ImGui::InputFloat("Shininess", &(material->m_fRoughness), 0.02f, 0.1f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+         m_table->AddDbgMaterial(material);
+
+      vec4 clearcoat = convertColor(material->m_cClearcoat);
+      if (ImGui::ColorEdit3("Clearcoat Color", clearcoat))
+      {
+         material->m_cClearcoat = convertColorRGB(clearcoat);
+         m_table->AddDbgMaterial(material);
+      }
+
+      if (ImGui::InputFloat("Edge Brightness", &(material->m_fEdge), 0.02f, 0.1f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+         m_table->AddDbgMaterial(material);
+   }
+
+   if (ImGui::CollapsingHeader("Transparency", ImGuiTreeNodeFlags_DefaultOpen))
+   {
+      if (ImGui::Checkbox("Enable Transparency", &(material->m_bOpacityActive)))
+         m_table->AddDbgMaterial(material);
+      if (ImGui::InputFloat("Opacity", &(material->m_fOpacity), 0.02f, 0.1f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+         m_table->AddDbgMaterial(material);
+      if (ImGui::InputFloat("Edge Opacity", &(material->m_fEdgeAlpha), 0.02f, 0.1f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+         m_table->AddDbgMaterial(material);
+      if (ImGui::InputFloat("Thickness", &(material->m_fThickness), 0.02f, 0.1f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
+         m_table->AddDbgMaterial(material);
+      vec4 refraction = convertColor(material->m_cRefractionTint);
+      if (ImGui::ColorEdit3("Refraction Tint", refraction))
+      {
+         material->m_cRefractionTint = convertColorRGB(refraction);
+         m_table->AddDbgMaterial(material);
+      }
+   }
+
+   /* MaterialType m_type;
+   */
+}
+
+void LiveUI::FlasherProperties() {
+
+}
+
+void LiveUI::LightProperties()
+{
+   Light *light = (Light *)m_selection.editable;
+   if (ImGui::InputFloat("Intensity", &(light->m_d.m_intensity), 0.1f, 1.0f, "%.1f", ImGuiInputTextFlags_CharsDecimal))
+   {
+      light->m_d.m_currentIntensity = light->m_d.m_intensity * light->m_d.m_intensity_scale * light->m_inPlayState;
+      m_table->AddDbgLight(light);
+   }
+
+   vec4 color = convertColor(light->m_d.m_color);
+   if (ImGui::ColorEdit3("Light Color", color))
+   {
+      light->m_d.m_color = convertColorRGB(color);
+      m_table->AddDbgLight(light);
+   }
+   vec4 burst = convertColor(light->m_d.m_color2);
+   if (ImGui::ColorEdit3("Center Burst", burst))
+   {
+      light->m_d.m_color2 = convertColorRGB(burst);
+      m_table->AddDbgLight(light);
+   }
+   if (ImGui::InputFloat("Falloff Range", &(light->m_d.m_falloff), 10.f, 100.f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
+      m_table->AddDbgLight(light);
+   if (ImGui::InputFloat("Falloff Power", &(light->m_d.m_falloff_power), 0.1f, 0.5f, "%.2f", ImGuiInputTextFlags_CharsDecimal))
+      m_table->AddDbgLight(light);
+
+   ImGui::Separator();
+}
+
+void LiveUI::PrimitiveProperties()
+{
+   Primitive *editable = (Primitive *)m_selection.editable;
+   if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen))
+   {
+      if (ImGui::Checkbox("Static Rendering", &(editable->m_d.m_staticRendering)))
+         m_table->SetNonUndoableDirty(eSaveDirty);
+      if (ImGui::Checkbox("Visible", &(editable->m_d.m_visible)))
+         m_table->SetNonUndoableDirty(eSaveDirty);
+      if (ImGui::Checkbox("Reflection Enabled", &(editable->m_d.m_reflectionEnabled)))
+         m_table->SetNonUndoableDirty(eSaveDirty);
+   }
+   if (ImGui::CollapsingHeader("Position", ImGuiTreeNodeFlags_DefaultOpen))
+   {
+      ImGui::Text("Base Position & Size");
+      if (ImGui::InputFloat3("Position", &(editable->m_d.m_vPosition.x), "%.0f", ImGuiInputTextFlags_CharsDecimal))
+         m_table->SetNonUndoableDirty(eSaveDirty);
+      if (ImGui::InputFloat3("Size", &(editable->m_d.m_vSize.x), "%.0f", ImGuiInputTextFlags_CharsDecimal))
+         m_table->SetNonUndoableDirty(eSaveDirty);
+      ImGui::Separator();
+      ImGui::Text("Rotation and Translation");
+   }
+   if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen))
+   {
+   }
+}
+
+void LiveUI::RampProperties()
+{
+
+}
+
+void LiveUI::RubberProperties()
+{
+   Rubber *editable = (Rubber *)m_selection.editable;
+   if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen))
+   {
+      if (ImGui::Checkbox("Static Rendering", &(editable->m_d.m_staticRendering)))
+         m_table->SetNonUndoableDirty(eSaveDirty);
+      if (ImGui::Checkbox("Visible", &(editable->m_d.m_visible)))
+         m_table->SetNonUndoableDirty(eSaveDirty);
+      if (ImGui::Checkbox("Reflection Enabled", &(editable->m_d.m_reflectionEnabled)))
+         m_table->SetNonUndoableDirty(eSaveDirty);
+   }
+   if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen))
+   {
+   }
+   if (ImGui::CollapsingHeader("Timer", ImGuiTreeNodeFlags_DefaultOpen))
+   {
+      if (ImGui::Checkbox("Enabled", &(editable->m_d.m_tdr.m_TimerEnabled)))
+         m_table->SetNonUndoableDirty(eSaveDirty);
+      if (ImGui::InputInt("Interval (ms)", &(editable->m_d.m_tdr.m_TimerInterval)))
+         m_table->SetNonUndoableDirty(eSaveDirty);
+   }
+}
+
+void LiveUI::SurfaceProperties()
+{
+
+}
+
