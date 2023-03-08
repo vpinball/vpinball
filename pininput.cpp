@@ -1926,7 +1926,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
    const DIDEVICEOBJECTDATA * __restrict input;
    while ((input = GetTail(/*curr_sim_msec*/)))
    {
-      if (input->dwSequence == APP_MOUSE && g_pplayer)
+      if (input->dwSequence == APP_MOUSE && g_pplayer && !g_pplayer->m_liveUI->HasMouseCapture())
       {
          if (g_pplayer->m_throwBalls)
             ProcessThrowBalls(input);
@@ -1943,7 +1943,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
          }
       }
 
-      if (input->dwSequence == APP_KEYBOARD)
+      if (input->dwSequence == APP_KEYBOARD && (g_pplayer ==nullptr || !g_pplayer->m_liveUI->HasKeyboardCapture()))
       {
          // Camera mode fly around:
          if (g_pplayer && g_pplayer->m_cameraMode && m_enableCameraModeFlyAround)
@@ -1989,15 +1989,8 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
             // Check if we have started a game yet.
             if (started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled)
             {
-               if (input->dwData & 0x80) { //on key down only
-                  m_first_stamp = curr_time_msec;
-                  m_exit_stamp = curr_time_msec;
-               }
-               else
-               { //on key up only
-                  m_exit_stamp = 0;
+               if (input->dwData & 0x80)
                   g_pplayer->ShowUI();
-               }
             }
          }
          else
