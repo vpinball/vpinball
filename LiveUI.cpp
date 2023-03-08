@@ -1297,11 +1297,11 @@ void LiveUI::TableProperties()
    if (ImGui::CollapsingHeader("Lights", ImGuiTreeNodeFlags_DefaultOpen))
    {
       vec4 ambient = convertColor(m_table->m_lightAmbient);
-      if (ImGui::ColorEdit3("Ambient Color", ambient))
+      if (ImGui::ColorEdit3("Ambient Color", (float*)(&ambient)))
          m_table->m_lightAmbient = convertColorRGB(ambient);
       ImGui::Separator();
       vec4 emission = convertColor(m_table->m_Light[0].emission);
-      if (ImGui::ColorEdit3("Light Emission Color", emission))
+      if (ImGui::ColorEdit3("Light Emission Color", (float*)(&emission)))
          m_table->m_Light[0].emission = convertColorRGB(emission);
       if (ImGui::InputFloat("Light Emission Scale", &(m_table->m_lightEmissionScale), 20000.0f, 100000.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal))
       {
@@ -1455,7 +1455,7 @@ void LiveUI::MaterialProperties()
    if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen))
    {
       vec4 base = convertColor(material->m_cBase);
-      if (ImGui::ColorEdit3("Base Color", base))
+      if (ImGui::ColorEdit3("Base Color", (float*)(&base)))
       {
          material->m_cBase = convertColorRGB(base);
          m_table->AddDbgMaterial(material);
@@ -1464,7 +1464,7 @@ void LiveUI::MaterialProperties()
          m_table->AddDbgMaterial(material);
 
       vec4 glossy = convertColor(material->m_cGlossy);
-      if (ImGui::ColorEdit3("Glossy Color", glossy))
+      if (ImGui::ColorEdit3("Glossy Color", (float*)(&glossy)))
       {
          material->m_cGlossy = convertColorRGB(glossy);
          m_table->AddDbgMaterial(material);
@@ -1476,7 +1476,7 @@ void LiveUI::MaterialProperties()
          m_table->AddDbgMaterial(material);
 
       vec4 clearcoat = convertColor(material->m_cClearcoat);
-      if (ImGui::ColorEdit3("Clearcoat Color", clearcoat))
+      if (ImGui::ColorEdit3("Clearcoat Color", (float*)(&clearcoat)))
       {
          material->m_cClearcoat = convertColorRGB(clearcoat);
          m_table->AddDbgMaterial(material);
@@ -1497,7 +1497,7 @@ void LiveUI::MaterialProperties()
       if (ImGui::InputFloat("Thickness", &(material->m_fThickness), 0.02f, 0.1f, "%.3f", ImGuiInputTextFlags_CharsDecimal))
          m_table->AddDbgMaterial(material);
       vec4 refraction = convertColor(material->m_cRefractionTint);
-      if (ImGui::ColorEdit3("Refraction Tint", refraction))
+      if (ImGui::ColorEdit3("Refraction Tint", (float*)(&refraction)))
       {
          material->m_cRefractionTint = convertColorRGB(refraction);
          m_table->AddDbgMaterial(material);
@@ -1522,13 +1522,13 @@ void LiveUI::LightProperties()
    }
 
    vec4 color = convertColor(light->m_d.m_color);
-   if (ImGui::ColorEdit3("Light Color", color))
+   if (ImGui::ColorEdit3("Light Color", (float*)(&color)))
    {
       light->m_d.m_color = convertColorRGB(color);
       m_table->AddDbgLight(light);
    }
    vec4 burst = convertColor(light->m_d.m_color2);
-   if (ImGui::ColorEdit3("Center Burst", burst))
+   if (ImGui::ColorEdit3("Center Burst", (float*)(&burst)))
    {
       light->m_d.m_color2 = convertColorRGB(burst);
       m_table->AddDbgLight(light);
