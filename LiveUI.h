@@ -13,6 +13,7 @@ public:
    bool HasMouseCapture() const;
 
    void OpenMainUI();
+   void ToggleFPS();
 
 private:
    // Interactive Camera Mode
