@@ -1264,12 +1264,12 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
    if (m_joyexitgamekey == n)
    {
       if (DISPID_GameEvents_KeyDown == updown)
-         g_pplayer->ShowUI();
+         g_pplayer->m_liveUI->OpenMainUI();
    }
    if (m_joyframecount == n)
    {
       if (DISPID_GameEvents_KeyDown == updown)
-         g_pplayer->ShowUI();
+         g_pplayer->m_liveUI->ToggleFPS();
    }
    if (m_joyvolumeup == n)   FireKeyEvent(updown, g_pplayer->m_rgKeys[eVolumeUp]);
    if (m_joyvolumedown == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eVolumeDown]);
@@ -1477,7 +1477,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
             if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // pause menu
             {
                if (DISPID_GameEvents_KeyDown == updown)
-                  g_pplayer->ShowUI();
+                  g_pplayer->m_liveUI->OpenMainUI();
             }
             else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // volume down
                 FireKeyEvent(updown, g_pplayer->m_rgKeys[eVolumeDown]);
@@ -1953,7 +1953,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
          if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eFrameCount])
          {
             if ((input->dwData & 0x80) != 0)
-               g_pplayer->ShowUI();
+               g_pplayer->m_liveUI->ToggleFPS();
          }
          else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eEnable3D])
          {
@@ -1990,7 +1990,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
             if (started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled)
             {
                if (input->dwData & 0x80)
-                  g_pplayer->ShowUI();
+                  g_pplayer->m_liveUI->OpenMainUI();
             }
          }
          else

@@ -682,6 +682,92 @@ void LiveUI::Update()
       }
    }
 
+   // FPS Overlays
+   if (m_show_fps > 0)
+   {
+      // Display simple FPS window
+      ImGuiWindowFlags window_flags
+         = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+      ImGui::SetNextWindowBgAlpha(0.75f);
+      ImGui::SetNextWindowPos(ImVec2(10, 10 + m_menubar_height + m_toolbar_height));
+      ImGui::Begin("FPS", NULL, window_flags);
+      const float fpsAvg = (m_player->m_fpsCount == 0) ? 0.0f : m_player->m_fpsAvg / (float)m_player->m_fpsCount;
+      ImGui::Text("FPS: %.1f (%.1f avg)", m_player->m_fps + 0.01f, fpsAvg + 0.01f);
+      ImGui::End();
+   }
+   if (m_show_fps == 2)
+   {
+      // Display FPS window with plots
+      ImGui::SetNextWindowSize(ImVec2(530, 550), ImGuiCond_FirstUseEver);
+      ImGui::SetNextWindowPos(ImVec2((float)(m_player->m_wnd_width - 530 - 10), 10 + m_menubar_height + m_toolbar_height), ImGuiCond_FirstUseEver);
+      ImGui::Begin("Plots");
+      //!! This example assumes 60 FPS. Higher FPS requires larger buffer size.
+      static ScrollingData sdata1, sdata2, sdata3, sdata4, sdata5, sdata6;
+      //static RollingData   rdata1, rdata2;
+      static double t = 0.f;
+      t += ImGui::GetIO().DeltaTime;
+
+      sdata6.AddPoint((float)t, float(1e-3 * m_player->m_script_period) * 1.f);
+      sdata5.AddPoint((float)t, sdata5.GetLast().y * 0.95f + sdata6.GetLast().y * 0.05f);
+
+      sdata4.AddPoint((float)t, float(1e-3 * (m_player->m_phys_period - m_player->m_script_period)) * 5.f);
+      sdata3.AddPoint((float)t, sdata3.GetLast().y * 0.95f + sdata4.GetLast().y * 0.05f);
+
+      sdata2.AddPoint((float)t, m_player->m_fps * 0.003f);
+      //rdata2.AddPoint((float)t, m_fps * 0.003f);
+      sdata1.AddPoint((float)t, sdata1.GetLast().y * 0.95f + sdata2.GetLast().y * 0.05f);
+      //rdata1.AddPoint((float)t, sdata1.GetLast().y*0.95f + sdata2.GetLast().y*0.05f);
+
+      static float history = 2.5f;
+      ImGui::SliderFloat("History", &history, 1, 10, "%.1f s");
+      //rdata1.Span = history;
+      //rdata2.Span = history;
+      constexpr int rt_axis = ImPlotAxisFlags_NoTickLabels;
+      if (ImPlot::BeginPlot("##ScrollingFPS", ImVec2(-1, 150), ImPlotFlags_None))
+      {
+         ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
+         ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis | ImPlotAxisFlags_LockMin);
+         ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
+         ImPlot::PlotLine("FPS", &sdata2.Data[0].x, &sdata2.Data[0].y, sdata2.Data.size(), 0, sdata2.Offset, 2 * sizeof(float));
+         ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
+         ImPlot::PlotLine("Smoothed FPS", &sdata1.Data[0].x, &sdata1.Data[0].y, sdata1.Data.size(), 0, sdata1.Offset, 2 * sizeof(float));
+         ImPlot::PopStyleColor();
+         ImPlot::EndPlot();
+      }
+      /*
+      if (ImPlot::BeginPlot("##RollingFPS", ImVec2(-1, 150), ImPlotFlags_Default)) {
+         ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
+         ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis);
+         ImPlot::SetupAxis(ImAxis_X1, 0, history, ImGuiCond_Always);
+         ImPlot::PlotLine("Average FPS", &rdata1.Data[0].x, &rdata1.Data[0].y, rdata1.Data.size(), 0, 0, 2 * sizeof(float));
+         ImPlot::PlotLine("FPS", &rdata2.Data[0].x, &rdata2.Data[0].y, rdata2.Data.size(), 0, 0, 2 * sizeof(float));
+         ImPlot::EndPlot();
+      }*/
+      if (ImPlot::BeginPlot("##ScrollingPhysics", ImVec2(-1, 150), ImPlotFlags_None))
+      {
+         ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
+         ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis | ImPlotAxisFlags_LockMin);
+         ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
+         ImPlot::PlotLine("ms Physics", &sdata4.Data[0].x, &sdata4.Data[0].y, sdata4.Data.size(), 0, sdata4.Offset, 2 * sizeof(float));
+         ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
+         ImPlot::PlotLine("Smoothed ms Physics", &sdata3.Data[0].x, &sdata3.Data[0].y, sdata3.Data.size(), 0, sdata3.Offset, 2 * sizeof(float));
+         ImPlot::PopStyleColor();
+         ImPlot::EndPlot();
+      }
+      if (ImPlot::BeginPlot("##ScrollingScript", ImVec2(-1, 150), ImPlotFlags_None))
+      {
+         ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
+         ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis | ImPlotAxisFlags_LockMin);
+         ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
+         ImPlot::PlotLine("ms Script", &sdata6.Data[0].x, &sdata6.Data[0].y, sdata6.Data.size(), 0, sdata6.Offset, 2 * sizeof(float));
+         ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
+         ImPlot::PlotLine("Smoothed ms Script", &sdata5.Data[0].x, &sdata5.Data[0].y, sdata5.Data.size(), 0, sdata5.Offset, 2 * sizeof(float));
+         ImPlot::PopStyleColor();
+         ImPlot::EndPlot();
+      }
+      ImGui::End();
+   }
+
    ImGui::EndFrame();
 }
 
@@ -786,6 +872,11 @@ void LiveUI::OpenMainUI()
    }
 }
 
+void LiveUI::ToggleFPS()
+{
+   m_show_fps = (m_show_fps + 1) % 3;
+}
+
 void LiveUI::HideUI()
 { 
    if (m_ShowUI) 
@@ -797,7 +888,6 @@ void LiveUI::HideUI()
 
 void LiveUI::UpdateMainUI()
 {
-   m_show_fps = 0;
    m_menubar_height = 0.0f;
    m_toolbar_height = 0.0f;
 
@@ -890,92 +980,6 @@ void LiveUI::UpdateMainUI()
    if (m_ShowBAMModal)
       BAMView::drawMenu();
 #endif
-
-   // Overlays
-   if (m_show_fps > 0)
-   {
-      // Display simple FPS window
-      constexpr ImGuiWindowFlags window_flags
-         = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-      ImGui::SetNextWindowBgAlpha(0.75f);
-      ImGui::SetNextWindowPos(ImVec2(10, 10 + m_menubar_height + m_toolbar_height));
-      ImGui::Begin("FPS", nullptr, window_flags);
-      const float fpsAvg = (m_player->m_fpsCount == 0) ? 0.0f : m_player->m_fpsAvg / (float)m_player->m_fpsCount;
-      ImGui::Text("FPS: %.1f (%.1f avg)", m_player->m_fps + 0.01f, fpsAvg + 0.01f);
-      ImGui::End();
-   }
-   if (m_show_fps == 2)
-   {
-      // Display FPS window with plots
-      ImGui::SetNextWindowSize(ImVec2(530, 550), ImGuiCond_FirstUseEver);
-      ImGui::SetNextWindowPos(ImVec2((float)(m_player->m_wnd_width - 530 - 10), 10 + m_menubar_height + m_toolbar_height), ImGuiCond_FirstUseEver);
-      ImGui::Begin("Plots");
-      //!! This example assumes 60 FPS. Higher FPS requires larger buffer size.
-      static ScrollingData sdata1, sdata2, sdata3, sdata4, sdata5, sdata6;
-      //static RollingData   rdata1, rdata2;
-      static double t = 0.f;
-      t += ImGui::GetIO().DeltaTime;
-
-      sdata6.AddPoint((float)t, float(1e-3 * m_player->m_script_period) * 1.f);
-      sdata5.AddPoint((float)t, sdata5.GetLast().y * 0.95f + sdata6.GetLast().y * 0.05f);
-
-      sdata4.AddPoint((float)t, float(1e-3 * (m_player->m_phys_period - m_player->m_script_period)) * 5.f);
-      sdata3.AddPoint((float)t, sdata3.GetLast().y * 0.95f + sdata4.GetLast().y * 0.05f);
-
-      sdata2.AddPoint((float)t, m_player->m_fps * 0.003f);
-      //rdata2.AddPoint((float)t, m_fps * 0.003f);
-      sdata1.AddPoint((float)t, sdata1.GetLast().y * 0.95f + sdata2.GetLast().y * 0.05f);
-      //rdata1.AddPoint((float)t, sdata1.GetLast().y * 0.95f + sdata2.GetLast().y * 0.05f);
-
-      static float history = 2.5f;
-      ImGui::SliderFloat("History", &history, 1, 10, "%.1f s");
-      //rdata1.Span = history;
-      //rdata2.Span = history;
-      constexpr int rt_axis = ImPlotAxisFlags_NoTickLabels;
-      if (ImPlot::BeginPlot("##ScrollingFPS", ImVec2(-1, 150), ImPlotFlags_None))
-      {
-         ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
-         ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis | ImPlotAxisFlags_LockMin);
-         ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
-         ImPlot::PlotLine("FPS", &sdata2.Data[0].x, &sdata2.Data[0].y, sdata2.Data.size(), 0, sdata2.Offset, 2 * sizeof(float));
-         ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
-         ImPlot::PlotLine("Smoothed FPS", &sdata1.Data[0].x, &sdata1.Data[0].y, sdata1.Data.size(), 0, sdata1.Offset, 2 * sizeof(float));
-         ImPlot::PopStyleColor();
-         ImPlot::EndPlot();
-      }
-      /*
-      if (ImPlot::BeginPlot("##RollingFPS", ImVec2(-1, 150), ImPlotFlags_Default)) {
-         ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
-         ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis);
-         ImPlot::SetupAxis(ImAxis_X1, 0, history, ImGuiCond_Always);
-         ImPlot::PlotLine("Average FPS", &rdata1.Data[0].x, &rdata1.Data[0].y, rdata1.Data.size(), 0, 0, 2 * sizeof(float));
-         ImPlot::PlotLine("FPS", &rdata2.Data[0].x, &rdata2.Data[0].y, rdata2.Data.size(), 0, 0, 2 * sizeof(float));
-         ImPlot::EndPlot();
-      }*/
-      if (ImPlot::BeginPlot("##ScrollingPhysics", ImVec2(-1, 150), ImPlotFlags_None))
-      {
-         ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
-         ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis | ImPlotAxisFlags_LockMin);
-         ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
-         ImPlot::PlotLine("ms Physics", &sdata4.Data[0].x, &sdata4.Data[0].y, sdata4.Data.size(), 0, sdata4.Offset, 2 * sizeof(float));
-         ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
-         ImPlot::PlotLine("Smoothed ms Physics", &sdata3.Data[0].x, &sdata3.Data[0].y, sdata3.Data.size(), 0, sdata3.Offset, 2 * sizeof(float));
-         ImPlot::PopStyleColor();
-         ImPlot::EndPlot();
-      }
-      if (ImPlot::BeginPlot("##ScrollingScript", ImVec2(-1, 150), ImPlotFlags_None))
-      {
-         ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
-         ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis | ImPlotAxisFlags_LockMin);
-         ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
-         ImPlot::PlotLine("ms Script", &sdata6.Data[0].x, &sdata6.Data[0].y, sdata6.Data.size(), 0, sdata6.Offset, 2 * sizeof(float));
-         ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1.f, 0, 0, 0.25f));
-         ImPlot::PlotLine("Smoothed ms Script", &sdata5.Data[0].x, &sdata5.Data[0].y, sdata5.Data.size(), 0, sdata5.Offset, 2 * sizeof(float));
-         ImPlot::PopStyleColor();
-         ImPlot::EndPlot();
-      }
-      ImGui::End();
-   }
 
    // Handle uncaught mouse & keyboard interaction
    if (!ImGui::GetIO().WantCaptureMouse)
@@ -1145,8 +1149,6 @@ void LiveUI::UpdateVideoOptionsModal()
    bool p_open = true;
    if (ImGui::BeginPopupModal(ID_VIDEO_SETTINGS, &p_open, ImGuiWindowFlags_AlwaysAutoResize))
    {
-      m_show_fps = 1; // Show FPS overlay while tweaking render options
-
       ImGui::Text("Global settings");
       ImGui::NewLine();
       if (ImGui::Checkbox("Force Bloom filter off", &m_player->m_bloomOff))
@@ -1172,10 +1174,6 @@ void LiveUI::UpdateRendererInspectionModal()
    ImGui::SetNextWindowSize(ImVec2(550.f * m_dpi, 0));
    if (ImGui::BeginPopupModal(ID_RENDERER_INSPECTION, &p_open))
    {
-      static bool show_fps_plot = false;
-      ImGui::Checkbox("Display FPS plots", &show_fps_plot);
-      m_show_fps = show_fps_plot ? 2 : 1;
-      ImGui::NewLine();
       ImGui::Text("Display single render pass:");
       static int pass_selection = IF_FPS;
       ImGui::RadioButton("Disabled", &pass_selection, IF_FPS);
