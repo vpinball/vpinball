@@ -636,6 +636,24 @@ void LiveUI::Render()
 #endif
 }
 
+void LiveUI::OpenMainUI()
+{
+   // Opens the main UI. This will only open the main splash modal which allows to go further in the live UI.
+   if (!m_ShowUI && !m_ShowSplashModal)
+   {
+      m_ShowUI = false;
+      m_ShowBAMModal = false;
+      m_ShowSplashModal = true;
+      m_OpenUITime = msec();
+      PausePlayer(true);
+   }
+}
+
+void LiveUI::ToggleFPS()
+{
+   m_show_fps = (m_show_fps + 1) % 3;
+}
+
 void LiveUI::Update()
 {
    // For the time being, the UI is only available inside a running player
@@ -650,7 +668,7 @@ void LiveUI::Update()
    ImGui_ImplWin32_NewFrame();
    ImGui::NewFrame();
 
-   if (m_ShowUI)
+   if (m_ShowUI || m_ShowSplashModal)
    {
       // Main UI
       m_rotate = 0;
@@ -860,30 +878,11 @@ void LiveUI::ExitEditMode()
    SetupImGuiStyle(1.0f);
 }
 
-void LiveUI::OpenMainUI()
-{
-   if (!m_ShowUI)
-   {
-      m_ShowUI = true;
-      m_ShowBAMModal = false;
-      m_ShowSplashModal = true;
-      m_OpenUITime = msec();
-      PausePlayer(true);
-   }
-}
-
-void LiveUI::ToggleFPS()
-{
-   m_show_fps = (m_show_fps + 1) % 3;
-}
-
 void LiveUI::HideUI()
 { 
-   if (m_ShowUI) 
-   {
-      m_ShowUI = false;
-      PausePlayer(false);
-   }
+   m_ShowSplashModal = false;
+   m_ShowUI = false;
+   PausePlayer(false);
 }
 
 void LiveUI::UpdateMainUI()
@@ -899,7 +898,7 @@ void LiveUI::UpdateMainUI()
    bool popup_audio_settings = false;
    bool popup_renderer_inspection = false;
 
-   bool hide_parts = false;
+   bool hide_parts = !m_ShowUI;
    if (ImGui::IsPopupOpen(ID_RENDERER_INSPECTION))
    {
       hide_parts = true;
@@ -1259,6 +1258,7 @@ void LiveUI::UpdateMainSplashModal()
       }
       if (ImGui::Button("Live Editor", size))
       {
+         m_ShowUI = true;
          m_ShowSplashModal = false;
          ImGui::CloseCurrentPopup();
          EnterEditMode();
