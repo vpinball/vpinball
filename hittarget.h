@@ -175,7 +175,9 @@ public:
    void SetMeshType(const TargetType type);
    void UpdateStatusBarInfo() final;
 
-   HitTargetData    m_d;
+   HitTarget *CopyForPlay(PinTable *live_table);
+
+   HitTargetData m_d;
 
    bool             m_hitEvent;
 

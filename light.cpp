@@ -23,6 +23,44 @@ Light::~Light()
    FreeBuffers();
 }
 
+Light *Light::CopyForPlay(PinTable *live_table)
+{
+   CComObject<Light> *dst;
+   CComObject<Light>::CreateInstance(&dst);
+   dst->AddRef();
+   dst->Init(live_table, 0.f, 0.f, false);
+   memcpy(dst->m_wzName, m_wzName, MAXNAMEBUFFER * sizeof(m_wzName[0]));
+   dst->m_d = m_d;
+   dst->m_oldLayerIndex = m_oldLayerIndex;
+   dst->m_layerName = m_layerName;
+   dst->m_isVisible = m_isVisible;
+   dst->m_locked = m_locked;
+   // Light specific copy
+   dst->m_surfaceHeight = m_surfaceHeight;
+   dst->m_inPlayState = m_inPlayState;
+   dst->m_lockedByLS = m_lockedByLS;
+   dst->m_rgblinkpattern = m_rgblinkpattern;
+   dst->m_blinkinterval = m_blinkinterval;
+   dst->m_duration = m_duration;
+   dst->m_finalLightState = m_finalLightState;
+   dst->m_surfaceMaterial = m_surfaceMaterial;
+   dst->m_surfaceTexture = m_surfaceTexture;
+   dst->m_lightcenter = m_lightcenter;
+   dst->m_initSurfaceHeight = m_initSurfaceHeight;
+   dst->m_maxDist = m_maxDist;
+   dst->m_updateBulbLightHeight = m_updateBulbLightHeight;
+   dst->m_roundLight = m_roundLight;
+   for (size_t i = 0; i < dst->m_vdpoint.size(); i++)
+      dst->m_vdpoint[i]->Release(); // Remove default points
+   dst->m_vdpoint.clear();
+   for (size_t i = 0; i < m_vdpoint.size(); i++)
+   {
+      m_vdpoint[i]->AddRef();
+      dst->m_vdpoint.push_back(m_vdpoint[i]);
+   }
+   return dst;
+}
+
 HRESULT Light::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
    m_ptable = ptable;

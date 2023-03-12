@@ -78,6 +78,8 @@ public:
    char *GetFontName();
    HFONT GetFont();
 
+   Textbox *CopyForPlay(PinTable *live_table);
+
    IFont *m_pIFont;
 
    TextboxData m_d;

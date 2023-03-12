@@ -106,6 +106,7 @@ public:
 #if 0
    float GetSurfaceHeight(float x, float y) const;
 #endif
+   Rubber *CopyForPlay(PinTable *live_table);
 
    RubberData m_d;
 

@@ -96,6 +96,8 @@ public:
    float GetCloseAngle() const;
    void SetCloseAngle(const float angle);
 
+   Gate *CopyForPlay(PinTable *live_table);
+
    GateData m_d;
 
 private:

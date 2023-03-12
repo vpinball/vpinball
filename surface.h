@@ -129,6 +129,8 @@ public:
 
    bool     StaticRendering() const { return (!m_d.m_droppable && !m_isDynamic); }
 
+   Surface *CopyForPlay(PinTable *live_table);
+
    SurfaceData m_d;
    bool m_disabled;
 

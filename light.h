@@ -158,6 +158,8 @@ public:
 
    void RenderBulbMesh();
 
+   Light *CopyForPlay(PinTable *live_table);
+
    LightData m_d;
 
    float m_inPlayState; // 0..1 is modulated from off to on, 2 is blinking

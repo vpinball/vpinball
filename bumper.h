@@ -107,6 +107,8 @@ public:
 
    void WriteRegDefaults() final;
 
+   Bumper *CopyForPlay(PinTable *live_table);
+
    BumperData m_d;
 
    BumperHitCircle *m_pbumperhitcircle;

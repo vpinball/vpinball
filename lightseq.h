@@ -182,6 +182,8 @@ public:
    long     GetUpdateInterval() const { return m_d.m_updateinterval; }
    void     SetUpdateInterval(const long value) { m_d.m_updateinterval = max((long)1, value); }
 
+   LightSeq *CopyForPlay(PinTable *live_table);
+
    LightSeqData m_d;
 
 private:

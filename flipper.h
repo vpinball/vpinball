@@ -171,6 +171,8 @@ public:
           m_d.m_FlipperRadiusMin = max(value,0.0f);
       }
 
+      Flipper *CopyForPlay(PinTable *live_table);
+
       FlipperData m_d;
       PinTable *m_ptable;
 

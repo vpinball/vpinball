@@ -306,6 +306,8 @@ public:
 
    void setInPlayState(const bool newVal);
 
+   Primitive *CopyForPlay(PinTable *live_table);
+
    static INT_PTR CALLBACK ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
    Mesh m_mesh;
