@@ -31,7 +31,7 @@ constexpr RECT touchregion[8] = { //left,top,right,bottom (in % of screen)
    { 50, 0, 100, 10 },    // Exit
    { 50, 10, 100, 50 },   // 2nd Right Button
    { 50, 50, 100, 90 },   // 1st Right Button (Flipper)
-   { 50, 90, 100, 100 } }; // Plunger
+   { 50, 90, 100, 100 } };// Plunger
 
 EnumAssignKeys touchkeymap[8] = {
    eAddCreditKey, //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -656,6 +656,7 @@ void Player::Shutdown()
    captureStop();
 
    delete m_liveUI;
+   m_liveUI = nullptr;
 
    if(m_toogle_DTFS && m_ptable->m_BG_current_set != 2)
       m_ptable->m_BG_current_set ^= 1;
@@ -1353,11 +1354,10 @@ HRESULT Player::Init()
          m_implicitPlayfieldMesh->m_d.m_vSize.Set(1.0f, 1.0f, 1.0f);
          m_implicitPlayfieldMesh->m_d.m_depthBias = 1000.0f; // Draw before the other objects
          m_implicitPlayfieldMesh->m_mesh.m_vertices.resize(4);
-         unsigned int offs = 0;
          for (unsigned int y = 0; y <= 1; ++y)
-            for (unsigned int x = 0; x <= 1; ++x, ++offs)
+            for (unsigned int x = 0; x <= 1; ++x)
             {
-               int offs = x + y * 2;
+               const unsigned int offs = x + y * 2;
                m_implicitPlayfieldMesh->m_mesh.m_vertices[offs].x = (x & 1) ? m_ptable->m_right : m_ptable->m_left;
                m_implicitPlayfieldMesh->m_mesh.m_vertices[offs].y = (y & 1) ? m_ptable->m_bottom : m_ptable->m_top;
                m_implicitPlayfieldMesh->m_mesh.m_vertices[offs].z = 0.0f;
@@ -2737,7 +2737,7 @@ void Player::UpdatePhysics()
 
    if (m_noTimeCorrect) // After debugging script
    {
-      // Shift whole game foward in time
+      // Shift whole game forward in time
       m_StartTime_usec       += initial_time_usec - m_curPhysicsFrameTime;
       m_nextPhysicsFrameTime += initial_time_usec - m_curPhysicsFrameTime;
       m_curPhysicsFrameTime   = initial_time_usec; // 0 time frame
@@ -2748,12 +2748,12 @@ void Player::UpdatePhysics()
 #ifndef EVENPHYSICSTIME
    if (m_debugWindowActive || m_userDebugPaused)
    {
-      // Shift whole game foward in time
+      // Shift whole game forward in time
       m_StartTime_usec       += initial_time_usec - m_curPhysicsFrameTime;
       m_nextPhysicsFrameTime += initial_time_usec - m_curPhysicsFrameTime;
       if (m_step)
       {
-         // Walk one physics step foward
+         // Walk one physics step forward
          m_curPhysicsFrameTime = initial_time_usec - PHYSICS_STEPTIME;
          m_step = false;
       }
@@ -3255,8 +3255,8 @@ void Player::Bloom()
    if (m_ptable->m_bloom_strength <= 0.0f || m_bloomOff || GetInfoMode() == IF_LIGHT_BUFFER_ONLY)
       return;
 
-   double w = (double)m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth();
-   double h = (double)m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight();
+   const double w = (double)m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth();
+   const double h = (double)m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight();
    const float shiftedVerts[4 * 5] =
    {
        1.0f,  1.0f, 0.0f, 1.0f + (float)(2.25 / w), 0.0f + (float)(2.25 / h),
@@ -3609,7 +3609,7 @@ string Player::GetPerfInfo()
    //   (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, quantizeUnsignedPercent(m_globalEmissionScale));
    info << "FPS: " << (m_fps + 0.01f) << " (" << (fpsAvg + 0.01f) << " avg)  Display " << (GetInfoMode() == IF_STATIC_ONLY ? "only static" : "all") << " Objects ("
         << ((RenderDevice::m_stats_drawn_triangles + 999) / 1000) << "k/"
-        << ((stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000) << "k Triangles)  DayNight " 
+        << ((stats_drawn_static_triangles + RenderDevice::m_stats_drawn_triangles + 999) / 1000) << "k Triangles)  DayNight " 
         << quantizeUnsignedPercent(m_globalEmissionScale) << "%%\n";
 
    const U32 period = m_lastFrameDuration;
@@ -3769,8 +3769,6 @@ void Player::PrepareVideoBuffersNormal()
 
    if (stereo || ss_refl)
       renderedRT->UpdateDepthSampler(); // do not put inside BeginScene/EndScene Block
-
-   double w = (double)renderedRT->GetWidth(), h = (double)renderedRT->GetHeight();
 
    m_pin3d.m_pd3dPrimaryDevice->BeginScene();
 
@@ -4006,8 +4004,6 @@ void Player::PrepareVideoBuffersAO()
    else
       ouputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
    ouputRT->Activate(true);
-
-   double w = (double)renderedRT->GetWidth(), h = (double)renderedRT->GetHeight();
 
    // copy framebuffer over from texture and tonemap/gamma
    int render_w = renderedRT->GetWidth(), render_h = renderedRT->GetHeight();
@@ -4526,7 +4522,7 @@ void Player::Render()
          if (m_showWindowedCaption)
          {
             HRESULT hr = SaveValueInt((m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosX"s, x);
-                     hr = SaveValueInt((m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosY"s, y + captionheight);
+                    hr = SaveValueInt((m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosY"s, y + captionheight);
          }
 
          m_showWindowedCaption = !m_showWindowedCaption;

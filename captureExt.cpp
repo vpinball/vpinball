@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include <thread>
 #include "captureExt.h"
 
 // See for reference implementation: https://github.com/microsoft/Windows-classic-samples/blob/main/Samples/DXGIDesktopDuplication/cpp/DuplicationManager.cpp)
@@ -12,6 +11,8 @@ void captureStartup() { }
 void captureStop() { }
 
 #else
+
+#include <thread>
 
 // The capture thread will do most of the capture work, it must:
 // 1. Find DMD or PUP windows, if enabled.

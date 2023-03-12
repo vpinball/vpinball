@@ -187,8 +187,8 @@ RenderTarget::RenderTarget(RenderDevice* rd, const string& name, const int width
    {
       // MSAA is made through a rendering surface that must be resolved a texture to be sampled
       // In theory, we should check adapter support using CheckDeviceMultiSampleType before creating but nowadays most GPU do support what VPX request
-      D3DMULTISAMPLE_TYPE ms_type = (D3DMULTISAMPLE_TYPE) (D3DMULTISAMPLE_NONE + nMSAASamples);
-      DWORD ms_quality = 0;
+      const D3DMULTISAMPLE_TYPE ms_type = (D3DMULTISAMPLE_TYPE) (D3DMULTISAMPLE_NONE + nMSAASamples);
+      constexpr DWORD ms_quality = 0;
       CHECKD3D(m_rd->GetCoreDevice()->CreateRenderTarget(width, height, (D3DFORMAT)format, ms_type, ms_quality, FALSE, &m_color_surface, nullptr));
       if (with_depth && !m_shared_depth)
          CHECKD3D(m_rd->GetCoreDevice()->CreateDepthStencilSurface(width, height, D3DFMT_D16, ms_type, ms_quality, FALSE, &m_depth_surface, nullptr));

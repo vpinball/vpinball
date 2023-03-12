@@ -5,7 +5,7 @@
 class LiveUI
 {
 public:
-   LiveUI(RenderDevice* rd);
+   LiveUI(RenderDevice* const rd);
    ~LiveUI();
    void Update();
    void Render();
@@ -76,8 +76,8 @@ private:
    bool m_ShowUI = false;
    bool m_ShowSplashModal = false;
    bool m_ShowBAMModal = false;
+   bool m_disable_esc = false; // Option for keyboard shortcuts
    U32 m_OpenUITime = 0; // Used to delay keyboard shortcut
    U64 m_StartTime_usec = 0; // Used for timed splash overlays
-   bool m_disable_esc = false; // Option for keyboard shortcuts
    int m_show_fps = 0; // 0=disabled / 1=FPS / 2=FPS+dynamic plot
 };

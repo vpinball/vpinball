@@ -26,7 +26,7 @@ inline vec4 convertColor(const COLORREF c, const float w = 1.0f)
 	return vec4(r,g,b,w);
 }
 
-inline COLORREF convertColorRGB(const vec4 color)
+inline COLORREF convertColorRGB(const vec4& color)
 {
    const int r = clamp((int)(color.x * 255.f + 0.5f), 0, 255);
    const int g = clamp((int)(color.y * 255.f + 0.5f), 0, 255);

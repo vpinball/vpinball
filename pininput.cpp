@@ -1943,7 +1943,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
          }
       }
 
-      if (input->dwSequence == APP_KEYBOARD && (g_pplayer ==nullptr || !g_pplayer->m_liveUI->HasKeyboardCapture()))
+      if (input->dwSequence == APP_KEYBOARD && (g_pplayer == nullptr || !g_pplayer->m_liveUI->HasKeyboardCapture()))
       {
          // Camera mode fly around:
          if (g_pplayer && g_pplayer->m_cameraMode && m_enableCameraModeFlyAround)
