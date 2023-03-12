@@ -1410,24 +1410,28 @@ PinTable::~PinTable()
 
    m_vpinball->m_ps.ClearStoppedCopiedWavs();
 
-   for (size_t i = 0; i < m_vsound.size(); i++)
-      delete m_vsound[i];
+   if (!is_live_instance)
+   { // Sounds, Fonts and images are owned by the editor's table, live table instances just use shallow copy, so don't release them
+      for (size_t i = 0; i < m_vsound.size(); i++)
+         delete m_vsound[i];
 
-   for (size_t i = 0; i < m_vimage.size(); i++)
-      delete m_vimage[i];
+      for (size_t i = 0; i < m_vimage.size(); i++)
+         delete m_vimage[i];
+  
+      for (size_t i = 0; i < m_vfont.size(); i++)
+      {
+         m_vfont[i]->UnRegister();
+         delete m_vfont[i];
+      }
+   }
 
    for (size_t i = 0; i < m_materials.size(); ++i)
       delete m_materials[i];
 
-   for (size_t i = 0; i < m_vfont.size(); i++)
-   {
-      m_vfont[i]->UnRegister();
-      delete m_vfont[i];
-   }
-
    for (int i = 0; i < m_vcollection.size(); i++)
       m_vcollection.ElementAt(i)->Release();
 
+   m_pcv->CleanUpScriptEngine();
    m_pcv->Release();
    m_pcv = nullptr;
 
@@ -1553,7 +1557,8 @@ void PinTable::SetDefaultView()
 
 void PinTable::SetCaption(const string& szCaption)
 {
-   m_mdiTable->SetWindowText(szCaption.c_str());
+   if (m_mdiTable != nullptr && m_mdiTable->IsWindow())
+      m_mdiTable->SetWindowText(szCaption.c_str());
    m_pcv->SetCaption(szCaption);
 }
 
@@ -2140,12 +2145,204 @@ void PinTable::HandleLoadFailure()
    g_pvp->m_table_played_via_SelectTableOnStart = false;
 }
 
-// also creates Player instance
 void PinTable::Play(const bool cameraMode)
 {
+   // Creates Player instance with a shallow duplicate of this table
    if (g_pplayer)
       return; // Can't play twice
 
+   PinTable *src = this;
+   CComObject<PinTable> *live_table;
+   CComObject<PinTable>::CreateInstance(&live_table);
+   live_table->AddRef();
+   live_table->is_live_instance = true;
+
+   CComObject<PinTable> *dst = live_table;
+   const size_t cchar = SendMessage(src->m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+   char *const szText = new char[cchar + 1];
+   SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
+   SendMessage(dst->m_pcv->m_hwndScintilla, SCI_SETTEXT, 0, (size_t)szText);
+   delete[] szText;
+
+   dst->m_left = src->m_left;
+   dst->m_top = src->m_top;
+   dst->m_right = src->m_right;
+   dst->m_bottom = src->m_bottom;
+   dst->m_BG_enable_FSS = src->m_BG_enable_FSS;
+   dst->m_overridePhysics = src->m_overridePhysics;
+   dst->m_overridePhysicsFlipper = src->m_overridePhysicsFlipper;
+   dst->m_Gravity = src->m_Gravity;
+   dst->m_friction = src->m_friction;
+   dst->m_elasticity = src->m_elasticity;
+   dst->m_elasticityFalloff = src->m_elasticityFalloff;
+   dst->m_scatter = src->m_scatter;
+   dst->m_defaultScatter = src->m_defaultScatter;
+   dst->m_nudgeTime = src->m_nudgeTime;
+   dst->m_plungerNormalize = src->m_plungerNormalize;
+   dst->m_plungerFilter = src->m_plungerFilter;
+   dst->m_PhysicsMaxLoops = src->m_PhysicsMaxLoops;
+   dst->m_renderEMReels = src->m_renderEMReels;
+   dst->m_renderDecals = src->m_renderDecals;
+   dst->m_offset = src->m_offset;
+   dst->m_zoom = src->m_zoom;
+   dst->m_angletiltMax = src->m_angletiltMax;
+   dst->m_angletiltMin = src->m_angletiltMin;
+   dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
+   dst->m_3DZPD = src->m_3DZPD;
+   dst->m_3DOffset = src->m_3DOffset;
+   dst->m_overwriteGlobalStereo3D = src->m_overwriteGlobalStereo3D;
+   dst->m_image = src->m_image;
+   dst->m_ImageBackdropNightDay = src->m_ImageBackdropNightDay;
+   dst->m_imageColorGrade = src->m_imageColorGrade;
+   dst->m_ballImage = src->m_ballImage;
+   dst->m_ballImageDecal = src->m_ballImageDecal;
+   dst->m_envImage = src->m_envImage;
+   dst->m_notesText = src->m_notesText;
+   dst->m_szScreenShot = src->m_szScreenShot;
+   dst->m_backdrop = src->m_backdrop;
+   dst->m_glassheight = src->m_glassheight;
+   dst->m_tableheight = src->m_tableheight;
+   dst->m_playfieldMaterial = src->m_playfieldMaterial;
+   dst->m_colorbackdrop = src->m_colorbackdrop;
+   dst->m_globalDifficulty = src->m_globalDifficulty;
+   dst->m_lightAmbient = src->m_lightAmbient;
+   dst->m_lightHeight = src->m_lightHeight;
+   dst->m_lightRange = src->m_lightRange;
+   dst->m_lightEmissionScale = src->m_lightEmissionScale;
+   dst->m_envEmissionScale = src->m_envEmissionScale;
+   dst->m_globalEmissionScale = src->m_globalEmissionScale;
+   dst->m_AOScale = src->m_AOScale;
+   dst->m_SSRScale = src->m_SSRScale;
+   dst->m_TableSoundVolume = src->m_TableSoundVolume;
+   dst->m_TableMusicVolume = src->m_TableMusicVolume;
+   dst->m_TableAdaptiveVSync = src->m_TableAdaptiveVSync;
+   dst->m_useReflectionForBalls = src->m_useReflectionForBalls;
+   dst->m_playfieldReflectionStrength = src->m_playfieldReflectionStrength;
+   dst->m_useTrailForBalls = src->m_useTrailForBalls;
+   dst->m_BallDecalMode = src->m_BallDecalMode;
+   dst->m_ballPlayfieldReflectionStrength = src->m_ballPlayfieldReflectionStrength;
+   dst->m_defaultBulbIntensityScaleOnBall = src->m_defaultBulbIntensityScaleOnBall;
+   dst->m_ballTrailStrength = src->m_ballTrailStrength;
+   dst->m_userDetailLevel = src->m_userDetailLevel;
+   dst->m_overwriteGlobalDetailLevel = src->m_overwriteGlobalDetailLevel;
+   dst->m_grid = src->m_grid;
+   dst->m_reflectElementsOnPlayfield = src->m_reflectElementsOnPlayfield;
+   dst->m_useAA = src->m_useAA;
+   dst->m_useFXAA = src->m_useFXAA;
+   dst->m_useAO = src->m_useAO;
+   dst->m_useSSR = src->m_useSSR;
+   dst->m_bloom_strength = src->m_bloom_strength;
+   dst->m_useAA = src->m_useAA;
+   dst->m_useAA = src->m_useAA;
+   dst->m_useAA = src->m_useAA;
+   memcpy(dst->m_wzName, src->m_wzName, MAXNAMEBUFFER * sizeof(src->m_wzName[0]));
+
+   dst->m_Light[0].emission = m_Light[0].emission;
+
+   for (int i = 0; i < 3; i++)
+   {
+      dst->m_BG_rotation[i] = src->m_BG_rotation[i];
+      dst->m_BG_inclination[i] = src->m_BG_inclination[i];
+      dst->m_BG_layback[i] = src->m_BG_layback[i];
+      dst->m_BG_FOV[i] = src->m_BG_FOV[i];
+      dst->m_BG_xlatex[i] = src->m_BG_xlatex[i];
+      dst->m_BG_xlatey[i] = src->m_BG_xlatey[i];
+      dst->m_BG_xlatez[i] = src->m_BG_xlatez[i];
+      dst->m_BG_scalex[i] = src->m_BG_scalex[i];
+      dst->m_BG_scaley[i] = src->m_BG_scaley[i];
+      dst->m_BG_scalez[i] = src->m_BG_scalez[i];
+      dst->m_BG_image[i] = src->m_BG_image[i];
+   }
+   for (size_t i = 0; i < src->m_materials.size(); i++)
+      dst->m_materials.push_back(new Material(src->m_materials[i]));
+
+   // Don't perform deep copy for these parts that can't be modified by the script
+   for (size_t i = 0; i < src->m_vimage.size(); i++)
+      dst->m_vimage.push_back(src->m_vimage[i]);
+   for (size_t i = 0; i < src->m_vsound.size(); i++)
+      dst->m_vsound.push_back(src->m_vsound[i]);
+   for (size_t i = 0; i < src->m_vfont.size(); i++)
+      dst->m_vfont.push_back(src->m_vfont[i]);
+
+   std::unordered_map<IEditable *, IEditable *> startup_to_live;
+   std::unordered_map<IEditable *, IEditable *> live_to_startup;
+
+   for (size_t i = 0; i < src->m_vedit.size(); i++)
+   {
+      IEditable *edit_dst = nullptr;
+      switch (src->m_vedit[i]->GetItemType())
+      {
+      case eItemBumper:    edit_dst = ((Bumper *)   src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemDecal:     edit_dst = ((Decal *)    src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemDispReel:  edit_dst = ((DispReel *) src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemFlasher:   edit_dst = ((Flasher *)  src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemFlipper:   edit_dst = ((Flipper *)  src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemGate:      edit_dst = ((Gate *)     src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemHitTarget: edit_dst = ((HitTarget *)src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemKicker:    edit_dst = ((Kicker *)   src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemLight:     edit_dst = ((Light *)    src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemLightSeq:  edit_dst = ((LightSeq *) src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemPlunger:   edit_dst = ((Plunger *)  src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemPrimitive: edit_dst = ((Primitive *)src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemRamp:      edit_dst = ((Ramp *)     src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemRubber:    edit_dst = ((Rubber *)   src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemSpinner:   edit_dst = ((Spinner *)  src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemSurface:   edit_dst = ((Surface *)  src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemTextbox:   edit_dst = ((Textbox *)  src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemTimer:     edit_dst = ((Timer *)    src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemTrigger:   edit_dst = ((Trigger *)  src->m_vedit[i])->CopyForPlay(live_table); break;
+      }
+      if (edit_dst != nullptr)
+      {
+         live_table->m_vedit.push_back(edit_dst);
+         if (edit_dst->GetScriptable())
+            live_table->m_pcv->AddItem(edit_dst->GetScriptable(), false);
+         startup_to_live[src->m_vedit[i]] = edit_dst;
+         live_to_startup[edit_dst] = src->m_vedit[i];
+      }
+   }
+
+   for (int i = 0; i < m_vcollection.size(); i++)
+   {
+      CComObject<Collection> *pcol;
+      CComObject<Collection>::CreateInstance(&pcol);
+      pcol->AddRef();
+      memcpy(pcol->m_wzName, m_vcollection[i].m_wzName, MAXNAMEBUFFER * sizeof(pcol->m_wzName[0]));
+      pcol->m_fireEvents = m_vcollection[i].m_fireEvents;
+      pcol->m_stopSingleEvents = m_vcollection[i].m_stopSingleEvents;
+      pcol->m_groupElements = m_vcollection[i].m_groupElements;
+      for (int j = 0; j < m_vcollection[i].m_visel.size(); ++j)
+      {
+         if (startup_to_live.contains(m_vcollection[i].m_visel[j].GetIEditable()))
+         {
+            auto edit_item = startup_to_live[m_vcollection[i].m_visel[j].GetIEditable()];
+            edit_item->m_vCollection.push_back(pcol);
+            edit_item->m_viCollection.push_back(pcol->m_visel.size());
+            pcol->m_visel.push_back(edit_item->GetISelect());
+         }
+      }
+      live_table->m_vcollection.push_back(pcol);
+      live_table->m_pcv->AddItem(pcol, false);
+   }
+
+   live_table->m_pcv->AddItem(live_table, false);
+   live_table->m_pcv->AddItem(live_table->m_psgt, true);
+   live_table->m_pcv->AddItem(live_table->m_pcv->m_pdm, false);
+
+   for (size_t i = 0; i < m_vrenderprobe.size(); i++)
+   {
+      RenderProbe *rp = new RenderProbe();
+      rp->SetBaseRoughness(m_vrenderprobe[i]->GetBaseRoughness());
+      rp->SetClearRoughness(m_vrenderprobe[i]->GetClearRoughness());
+      rp->SetType(m_vrenderprobe[i]->GetType());
+      rp->SetName(m_vrenderprobe[i]->GetName());
+      rp->SetReflectionMode(m_vrenderprobe[i]->GetReflectionMode());
+      vec4 plane;
+      m_vrenderprobe[i]->GetReflectionPlane(plane);
+      rp->SetReflectionPlane(plane);
+      live_table->m_vrenderprobe.push_back(rp);
+   }
+      
    PLOGI << "Starting Play mode [table: " << m_szTableName << ", camera mode: " << cameraMode << "]";
    
    mixer_get_volume();
@@ -2162,7 +2359,7 @@ void PinTable::Play(const bool cameraMode)
    m_progressDialog.SetProgress(1);
    m_progressDialog.SetName("Backing Up Table State...");
 
-   BackupForPlay();
+   /* BackupForPlay();
 
    m_backupLayback = m_BG_layback[m_BG_current_set];
    m_backupRotation = m_BG_rotation[m_BG_current_set];
@@ -2177,53 +2374,53 @@ void PinTable::Play(const bool cameraMode)
    m_backupLightHeight = m_lightHeight;
    m_backupLightRange = m_lightRange;
    m_backupEmisionScale = m_lightEmissionScale;
-   m_backupEnvEmissionScale = m_envEmissionScale;
+   m_backupEnvEmissionScale = m_envEmissionScale;*/
 
    g_keepUndoRecords = false;
 
-   m_pcv->m_scriptError = false;
-   m_pcv->Compile(false);
+   live_table->m_pcv->m_scriptError = false;
+   live_table->m_pcv->Compile(false);
 
-   if (!m_pcv->m_scriptError)
+   if (!live_table->m_pcv->m_scriptError)
    {
       // set up the texture & material hashtables for faster access
-      m_textureMap.clear();
-      for (size_t i = 0; i < m_vimage.size(); i++)
-         m_textureMap[m_vimage[i]->m_szName] = m_vimage[i];
-      m_materialMap.clear();
-      for (size_t i = 0; i < m_materials.size(); i++)
-         m_materialMap[m_materials[i]->m_szName] = m_materials[i];
-      m_lightMap.clear();
-      for (size_t i = 0; i < m_vedit.size(); i++)
+      live_table->m_textureMap.clear();
+      for (size_t i = 0; i < live_table->m_vimage.size(); i++)
+         live_table->m_textureMap[live_table->m_vimage[i]->m_szName] = live_table->m_vimage[i];
+      live_table->m_materialMap.clear();
+      for (size_t i = 0; i < live_table->m_materials.size(); i++)
+         live_table->m_materialMap[live_table->m_materials[i]->m_szName] = live_table->m_materials[i];
+      live_table->m_lightMap.clear();
+      for (size_t i = 0; i < live_table->m_vedit.size(); i++)
       {
-         IEditable *const pe = m_vedit[i];
+         IEditable *const pe = live_table->m_vedit[i];
          if (pe->GetItemType() == ItemTypeEnum::eItemLight)
-            m_lightMap[pe->GetName()] = (Light*)pe;
+            live_table->m_lightMap[pe->GetName()] = (Light *)pe;
       }
-      m_renderprobeMap.clear();
-      for (size_t i = 0; i < m_vrenderprobe.size(); i++)
-         m_renderprobeMap[m_vrenderprobe[i]->GetName()] = m_vrenderprobe[i];
+      live_table->m_renderprobeMap.clear();
+      for (size_t i = 0; i < live_table->m_vrenderprobe.size(); i++)
+         live_table->m_renderprobeMap[live_table->m_vrenderprobe[i]->GetName()] = live_table->m_vrenderprobe[i];
 
       // parse the (optional) override-physics-sets that can be set globally
       float fOverrideContactScatterAngle;
       if (m_overridePhysics)
       {
-         m_fOverrideGravityConstant = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsGravityConstant" + std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_GRAVITY);
-         m_fOverrideGravityConstant *= GRAVITYCONST;
-         m_fOverrideContactFriction = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsContactFriction"+std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_CONTACTFRICTION);
-         m_fOverrideElasticity = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsElasticity" + std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_ELASTICITY);
-         m_fOverrideElasticityFalloff = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsElasticityFalloff"+std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_ELASTICITY_FALLOFF);
-         m_fOverrideScatterAngle = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsScatterAngle" + std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_PFSCATTERANGLE);
+         live_table->m_fOverrideGravityConstant = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsGravityConstant" + std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_GRAVITY);
+         live_table->m_fOverrideGravityConstant *= GRAVITYCONST;
+         live_table->m_fOverrideContactFriction = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsContactFriction"+std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_CONTACTFRICTION);
+         live_table->m_fOverrideElasticity = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsElasticity" + std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_ELASTICITY);
+         live_table->m_fOverrideElasticityFalloff = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsElasticityFalloff"+std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_ELASTICITY_FALLOFF);
+         live_table->m_fOverrideScatterAngle = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsScatterAngle" + std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_PFSCATTERANGLE);
          fOverrideContactScatterAngle = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsContactScatterAngle"+std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_SCATTERANGLE);
-         m_fOverrideMinSlope = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsMinSlope" + std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_MIN_SLOPE);
-         m_fOverrideMaxSlope = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsMaxSlope" + std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_MAX_SLOPE);
+         live_table->m_fOverrideMinSlope = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsMinSlope" + std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_MIN_SLOPE);
+         live_table->m_fOverrideMaxSlope = LoadValueFloatWithDefault(regKey[RegName::Player], "TablePhysicsMaxSlope" + std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_MAX_SLOPE);
       }
 
       c_hardScatter = ANGTORAD(m_overridePhysics ? fOverrideContactScatterAngle : m_defaultScatter);
 
       // create Player and init that one
 
-      g_pplayer = new Player(cameraMode, this);
+      g_pplayer = new Player(cameraMode, this, live_table);
       g_pplayer->CreateWnd();
       const float minSlope = (m_overridePhysics ? m_fOverrideMinSlope : m_angletiltMin);
       const float maxSlope = (m_overridePhysics ? m_fOverrideMaxSlope : m_angletiltMax);
@@ -2238,14 +2435,28 @@ void PinTable::Play(const bool cameraMode)
       HandleLoadFailure();
 }
 
-// called before Player instance gets deleted
+void PinTable::OnPlayerStopped()
+{
+   assert(g_pplayer != nullptr && g_pplayer->m_pEditorTable == this);
+   // The running player has stopped, get back to editing this table
+   delete g_pplayer;
+   g_pplayer = nullptr;
+   m_vpinball->ToggleToolbar();
+   mixer_shutdown();
+   hid_shutdown();
+   m_vpinball->ShowWindow(SW_SHOW);
+   m_vpinball->SetForegroundWindow();
+   SetFocus();
+   SetActiveWindow();
+   SetDirtyDraw();
+}
+
 void PinTable::StopPlaying()
 {
+   // called on a live table instance, before Player instance gets deleted (during Player's destructor)
+
    // Unhook script connections
    //m_pcv->m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
-
-   if(m_pcv)
-      m_pcv->SetEnabled(true);
 
    // Stop all sounds
    // In case we were playing any of the main buffers
@@ -2261,7 +2472,7 @@ void PinTable::StopPlaying()
    m_lightMap.clear();
    m_renderprobeMap.clear();
 
-   RestoreBackup();
+   // RestoreBackup();
    g_keepUndoRecords = true;
 
    UpdateDbgMaterial();
@@ -10401,40 +10612,6 @@ void PinTable::OnInitialUpdate()
     m_vpinball->SetEnableMenuItems();
 }
 
-BOOL PinTable::OnCommand(WPARAM wparam, LPARAM lparam)
-{
-    UNREFERENCED_PARAMETER(lparam);
-
-    switch (LOWORD(wparam))
-    {
-        case ID_TABLE_STOP_PLAY:
-        {
-            if (g_pplayer)
-            {
-                g_pplayer->SendMessage(WM_CLOSE, 0, 0);
-                StopPlaying();
-            }
-            return TRUE;
-        }
-        case ID_TABLE_PLAYER_STOPPED:
-        {
-            delete g_pplayer;
-            g_pplayer = nullptr;
-
-            m_vpinball->ToggleToolbar();
-            mixer_shutdown();
-            hid_shutdown();
-            m_vpinball->ShowWindow(SW_SHOW);
-            m_vpinball->SetForegroundWindow();
-            SetFocus();
-            SetActiveWindow();
-            SetDirtyDraw();
-            return TRUE;
-        }
-    }
-    return FALSE;
-}
-
 BOOL PinTable::OnEraseBkgnd(CDC& dc)
 {
    return TRUE;
@@ -10575,7 +10752,6 @@ PinTableMDI::~PinTableMDI()
         m_table->FVerifySaveToClose();
 
         RemoveFromVectorSingle(m_vpinball->m_vtable, (CComObject<PinTable>*)m_table);
-        m_table->m_pcv->CleanUpScriptEngine();
 
         m_table->Release();
     }

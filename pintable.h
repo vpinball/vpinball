@@ -357,11 +357,10 @@ public:
    void FireKeyEvent(int dispid, int keycode);
 
    void HandleLoadFailure();
-
-   // also creates Player instance
-   void Play(const bool cameraMode);
-   // called before Player instance gets deleted
-   void StopPlaying();
+   
+   void Play(const bool cameraMode); // Duplicate table into a live instance, create a player to run it, suspend edit mode
+   void OnPlayerStopped(); // Called after player has stopped, to get back to edit state
+   void StopPlaying(); // Called on a live instance of the table (copy for playing) before Player instance gets deleted
 
    void ImportSound(const HWND hwndListView, const string &filename);
    void ReImportSound(const HWND hwndListView, PinSound *const pps, const string &filename);
@@ -588,6 +587,8 @@ public:
 
    string m_szFileName;
    string m_szTitle;
+
+   bool is_live_instance = false; // true for live shallow copy of a table
 
    // editor viewport
    Vertex2D m_offset;
@@ -841,7 +842,6 @@ public:
 
    virtual void OnInitialUpdate() override;
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
-   virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam) override;
    virtual BOOL OnEraseBkgnd(CDC &dc) override;
 
    void SetMouseCursor();
@@ -891,7 +891,7 @@ public:
    CString GetNotesText() const { return m_notesText; }
 
 private:
-   PinTableMDI *m_mdiTable;
+   PinTableMDI *m_mdiTable = nullptr;
    CString m_notesText;
    robin_hood::unordered_map<string, Texture *, StringHashFunctor, StringComparator> m_textureMap; // hash table to speed up texture lookup by name
    robin_hood::unordered_map<string, Material *, StringHashFunctor, StringComparator> m_materialMap; // hash table to speed up material lookup by name
