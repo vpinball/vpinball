@@ -1410,7 +1410,7 @@ PinTable::~PinTable()
 
    m_vpinball->m_ps.ClearStoppedCopiedWavs();
 
-   if (!is_live_instance)
+   if (!m_isLiveInstance)
    { // Sounds, Fonts and images are owned by the editor's table, live table instances just use shallow copy, so don't release them
       for (size_t i = 0; i < m_vsound.size(); i++)
          delete m_vsound[i];
@@ -2155,7 +2155,7 @@ void PinTable::Play(const bool cameraMode)
    CComObject<PinTable> *live_table;
    CComObject<PinTable>::CreateInstance(&live_table);
    live_table->AddRef();
-   live_table->is_live_instance = true;
+   live_table->m_isLiveInstance = true;
 
    CComObject<PinTable> *dst = live_table;
    const size_t cchar = SendMessage(src->m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
@@ -2264,9 +2264,6 @@ void PinTable::Play(const bool cameraMode)
    for (size_t i = 0; i < src->m_vfont.size(); i++)
       dst->m_vfont.push_back(src->m_vfont[i]);
 
-   std::unordered_map<IEditable *, IEditable *> startup_to_live;
-   std::unordered_map<IEditable *, IEditable *> live_to_startup;
-
    for (size_t i = 0; i < src->m_vedit.size(); i++)
    {
       IEditable *edit_dst = nullptr;
@@ -2297,8 +2294,8 @@ void PinTable::Play(const bool cameraMode)
          live_table->m_vedit.push_back(edit_dst);
          if (edit_dst->GetScriptable())
             live_table->m_pcv->AddItem(edit_dst->GetScriptable(), false);
-         startup_to_live[src->m_vedit[i]] = edit_dst;
-         live_to_startup[edit_dst] = src->m_vedit[i];
+         m_startupToLive[src->m_vedit[i]] = edit_dst;
+         m_liveToStartup[edit_dst] = src->m_vedit[i];
       }
    }
 
@@ -2313,9 +2310,9 @@ void PinTable::Play(const bool cameraMode)
       pcol->m_groupElements = m_vcollection[i].m_groupElements;
       for (int j = 0; j < m_vcollection[i].m_visel.size(); ++j)
       {
-         if (startup_to_live.contains(m_vcollection[i].m_visel[j].GetIEditable()))
+         if (m_startupToLive.find(m_vcollection[i].m_visel[j].GetIEditable()) != m_startupToLive.end())
          {
-            auto edit_item = startup_to_live[m_vcollection[i].m_visel[j].GetIEditable()];
+            auto edit_item = m_startupToLive[m_vcollection[i].m_visel[j].GetIEditable()];
             edit_item->m_vCollection.push_back(pcol);
             edit_item->m_viCollection.push_back(pcol->m_visel.size());
             pcol->m_visel.push_back(edit_item->GetISelect());
