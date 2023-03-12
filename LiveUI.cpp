@@ -4,7 +4,7 @@
 
 #include "Shader.h"
 
-#include "droidsans.h"
+#include "inc/droidsans.h"
 
 #include "imgui/imgui.h"
 #ifdef ENABLE_SDL
@@ -18,8 +18,10 @@
 
 #if __cplusplus >= 202002L && !defined(__clang__)
 #define stable_sort std::ranges::stable_sort
+#define sort std::ranges::sort
 #else
 #define stable_sort std::stable_sort
+#define sort std::sort
 #endif
 
 #ifdef ENABLE_BAM
@@ -32,7 +34,7 @@
 #define ID_AUDIO_SETTINGS "Audio Options"
 #define ID_RENDERER_INSPECTION "Renderer Inspection"
 
-#define PROP_WIDTH 125 * m_dpi
+#define PROP_WIDTH (125.f * m_dpi)
 
 // utility structure for realtime plot //!! cleanup
 class ScrollingData
@@ -336,7 +338,7 @@ static constexpr ImGuiKey dikToImGuiKeys[] = {
    ImGuiKey_None, //DIK_APPS            0xDD    /* AppMenu key */
 };
 
-static void SetupImGuiStyle(float overall_alpha)
+static void SetupImGuiStyle(const float overall_alpha)
 {
    // Rounded Visual Studio style by RedNicStone from ImThemes
    ImGuiStyle &style = ImGui::GetStyle();
@@ -441,10 +443,10 @@ static void HelpMarker(const char *desc)
    }
 }
 
-static void HelpTextCentered(std::string text)
+static void HelpTextCentered(const std::string& text)
 {
-   ImVec2 win_size = ImGui::GetWindowSize();
-   ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
+   const ImVec2 win_size = ImGui::GetWindowSize();
+   const ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
 
    // calculate the indentation that centers the text on one line, relative
    // to window left, regardless of the `ImGuiStyleVar_WindowPadding` value
@@ -452,7 +454,7 @@ static void HelpTextCentered(std::string text)
 
    // if text is too long to be drawn on one line, `text_indentation` can
    // become too small or even negative, so we check a minimum indentation
-   float min_indentation = 20.0f;
+   constexpr float min_indentation = 20.0f;
    if (text_indentation <= min_indentation)
       text_indentation = min_indentation;
 
@@ -462,21 +464,21 @@ static void HelpTextCentered(std::string text)
    ImGui::PopTextWrapPos();
 }
 
-static void HelpSplash(std::string text, int rotation)
+static void HelpSplash(const std::string& text, int rotation)
 {
    ImVec2 win_size = ImGui::GetIO().DisplaySize;
-   ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
+   const ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
    if (rotation == 1 || rotation == 3)
    {
-      float tmp = win_size.x;
+      const float tmp = win_size.x;
       win_size.x = win_size.y;
       win_size.y = tmp;
    }
-   ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+   constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
    ImGui::SetNextWindowBgAlpha(0.35f);
    ImGui::SetNextWindowPos(ImVec2((win_size.x - text_size.x - 10) / 2, (win_size.y - text_size.y - 10) / 2));
    ImGui::SetNextWindowSize(ImVec2(text_size.x + 20, text_size.y + 20));
-   ImGui::Begin("ToolTip", NULL, window_flags);
+   ImGui::Begin("ToolTip", nullptr, window_flags);
    ImGui::Text(text.c_str());
    ImGui::End();
 }
@@ -498,7 +500,7 @@ static void HelpEditableHeader(IEditable* editable)
    case eItemLight: title = "Light"s; break;
    case eItemLightSeq: title = "Light Sequencer"s; break;
    case eItemPlunger: title = "Plunger"s; break;
-   case eItemPrimitive: title = ((Primitive *)editable)->IsPlayfield() ? "Playfield" : "Primitive"s; break;
+   case eItemPrimitive: title = ((Primitive *)editable)->IsPlayfield() ? "Playfield"s : "Primitive"s; break;
    case eItemRamp: title = "Ramp"s; break;
    case eItemRubber: title = "Rubber"s; break;
    case eItemSpinner: title = "Spinner"s; break;
@@ -508,22 +510,22 @@ static void HelpEditableHeader(IEditable* editable)
    case eItemTimer: title = "Timer"s; break;
    case eItemTrigger: title = "Trigger"s; break;
    }
-   HelpTextCentered(title.c_str());
+   HelpTextCentered(title);
    string name = editable->GetName();
    if (ImGui::InputText("Name", &name))
       editable->SetName(name);
    if (editable->GetItemType() != eItemLight && editable->GetItemType() != eItemTable)
    {
       ImGui::Separator();
-      HelpTextCentered("WARNING ! WARNING !");
+      HelpTextCentered("WARNING ! WARNING !"s);
       ImGui::NewLine();
-      HelpTextCentered("Changes are not persisted");
+      HelpTextCentered("Changes are not persistent"s);
    }
    ImGui::Separator();
 }
 
 
-LiveUI::LiveUI(RenderDevice *rd)
+LiveUI::LiveUI(RenderDevice* const rd)
    : m_rd(rd)
 {
    m_StartTime_usec = usec();
@@ -594,9 +596,9 @@ void LiveUI::Render()
       ImGui::GetBackgroundDrawList()->AddCallback(
          [](const ImDrawList *parent_list, const ImDrawCmd *cmd)
          {
-            LiveUI *lui = (LiveUI *)cmd->UserCallbackData;
+            LiveUI *const lui = (LiveUI *)cmd->UserCallbackData;
             Matrix3D matRotate, matTranslate;
-            matRotate.RotateZMatrix((float)(lui->m_rotate * M_PI / 2.0f));
+            matRotate.RotateZMatrix((float)(lui->m_rotate * (M_PI / 2.0)));
             switch (lui->m_rotate)
             {
             case 1: matTranslate.SetTranslation(ImGui::GetIO().DisplaySize.x, 0, 0); break;
@@ -605,8 +607,8 @@ void LiveUI::Render()
             }
             matTranslate.Multiply(matRotate, matTranslate);
 #ifdef ENABLE_SDL
-            float L = 0, R = ImGui::GetIO().DisplaySize.x;
-            float T = 0, B = ImGui::GetIO().DisplaySize.y;
+            const float L = 0, R = ImGui::GetIO().DisplaySize.x;
+            const float T = 0, B = ImGui::GetIO().DisplaySize.y;
             Matrix3D matProj(
                2.0f / (R - L), 0.0f, 0.0f, 0.0f, 
                0.0f, 2.0f / (T - B), 0.0f, 0.0f, 
@@ -616,7 +618,7 @@ void LiveUI::Render()
             GLint shaderHandle;
             glGetIntegerv(GL_CURRENT_PROGRAM, &shaderHandle);
             GLuint attribLocationProjMtx = glGetUniformLocation(shaderHandle, "ProjMtx");
-            glUniformMatrix4fv(attribLocationProjMtx, 1, GL_FALSE, (float*)  & (matProj.m[0]));
+            glUniformMatrix4fv(attribLocationProjMtx, 1, GL_FALSE, (float*)&(matProj.m[0]));
             glDisable(GL_SCISSOR_TEST);
 #else
             lui->m_rd->GetCoreDevice()->SetTransform(D3DTS_WORLD, (const D3DXMATRIX *)&matTranslate);
@@ -659,7 +661,7 @@ void LiveUI::Update()
       // Info overlays: this is not a normal UI aligned to the monitor orientation but an overlay used when playing, 
       // therefore it is rotated like the playfield to face the user and only displays for right angles
       m_rotate = ((int)(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] / 90.0f)) & 3;
-      if (m_rotate * 90.0f == g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set])
+      if ((float)m_rotate * 90.0f == g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set])
       {
          if (g_pplayer->m_cameraMode)
             // Camera mode info text
@@ -668,11 +670,11 @@ void LiveUI::Update()
          {
             // Info tooltips
             if (g_pplayer->m_closing == Player::CS_PLAYING
-               && (g_pplayer->m_stereo3D != STEREO_OFF && !g_pplayer->m_stereo3Denabled && (usec() < m_StartTime_usec + 4e+6))) // show for max. 4 seconds
+               && (g_pplayer->m_stereo3D != STEREO_OFF && !g_pplayer->m_stereo3Denabled && (usec() < m_StartTime_usec + (U64)4e+6))) // show for max. 4 seconds
                HelpSplash("3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on", m_rotate);
             //!! visualize with real buttons or at least the areas?? Add extra buttons?
             if (g_pplayer->m_closing == Player::CS_PLAYING && g_pplayer->m_supportsTouch && g_pplayer->m_showTouchMessage
-               && (usec() < m_StartTime_usec + 12e+6)) // show for max. 12 seconds
+               && (usec() < m_StartTime_usec + (U64)12e+6)) // show for max. 12 seconds
                HelpSplash("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
                            "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit",
                   m_rotate);
@@ -685,16 +687,10 @@ void LiveUI::Update()
 
 void LiveUI::UpdateCameraModeUI()
 {
-   // UI Context
-   VPinball *m_app = g_pvp;
-   Player *m_player = g_pplayer;
-   PinTable *m_table = g_pplayer->m_ptable;
-   Pin3D *m_pin3d = &(g_pplayer->m_pin3d);
-
-   ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+   constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
    ImGui::SetNextWindowBgAlpha(0.35f);
    ImGui::SetNextWindowPos(ImVec2(10, 10));
-   ImGui::Begin("CameraMode", NULL, window_flags);
+   ImGui::Begin("CameraMode", nullptr, window_flags);
 
    for (int i = 0; i < 14; i++)
    {
@@ -748,6 +744,17 @@ void LiveUI::PausePlayer(bool pause)
    g_pplayer->m_debugWindowActive = pause;
    g_pplayer->RecomputePauseState();
    g_pplayer->RecomputePseudoPauseState();
+
+   if (pause)
+   {
+      while (ShowCursor(FALSE)>=0) ;
+      while (ShowCursor(TRUE)<0) ;
+   }
+   else
+   {
+      while (ShowCursor(TRUE)<0) ;
+      while (ShowCursor(FALSE)>=0) ;
+   }
 }
 
 void LiveUI::EnterEditMode()
@@ -828,7 +835,7 @@ void LiveUI::UpdateMainUI()
             if (ImGui::MenuItem("BAM Headtracking"))
                m_ShowBAMModal = true;
 #endif
-            if (ImGui::MenuItem("Renderer inspection"))
+            if (ImGui::MenuItem("Renderer Inspection"))
                popup_renderer_inspection = true;
             ImGui::EndMenu();
          }
@@ -837,13 +844,13 @@ void LiveUI::UpdateMainUI()
       }
 
       // Main toolbar
-      m_toolbar_height = 20 * m_dpi;
-      ImGuiViewport *viewport = ImGui::GetMainViewport();
+      m_toolbar_height = 20.f * m_dpi;
+      const ImGuiViewport *const viewport = ImGui::GetMainViewport();
       ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x, viewport->Pos.y + m_menubar_height));
       ImGui::SetNextWindowSize(ImVec2(viewport->Size.x, m_toolbar_height));
-      ImGuiWindowFlags window_flags = 0 | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
+      constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
       ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
-      ImGui::Begin("TOOLBAR", NULL, window_flags);
+      ImGui::Begin("TOOLBAR", nullptr, window_flags);
       ImGui::PopStyleVar();
       // TODO add controls (play/pause, switch to editable data,...)
       /* if (ImGui::Button("Resume Game"))
@@ -888,11 +895,11 @@ void LiveUI::UpdateMainUI()
    if (m_show_fps > 0)
    {
       // Display simple FPS window
-      ImGuiWindowFlags window_flags
+      constexpr ImGuiWindowFlags window_flags
          = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
       ImGui::SetNextWindowBgAlpha(0.75f);
       ImGui::SetNextWindowPos(ImVec2(10, 10 + m_menubar_height + m_toolbar_height));
-      ImGui::Begin("FPS", NULL, window_flags);
+      ImGui::Begin("FPS", nullptr, window_flags);
       const float fpsAvg = (m_player->m_fpsCount == 0) ? 0.0f : m_player->m_fpsAvg / (float)m_player->m_fpsCount;
       ImGui::Text("FPS: %.1f (%.1f avg)", m_player->m_fps + 0.01f, fpsAvg + 0.01f);
       ImGui::End();
@@ -918,7 +925,7 @@ void LiveUI::UpdateMainUI()
       sdata2.AddPoint((float)t, m_player->m_fps * 0.003f);
       //rdata2.AddPoint((float)t, m_fps * 0.003f);
       sdata1.AddPoint((float)t, sdata1.GetLast().y * 0.95f + sdata2.GetLast().y * 0.05f);
-      //rdata1.AddPoint((float)t, sdata1.GetLast().y*0.95f + sdata2.GetLast().y*0.05f);
+      //rdata1.AddPoint((float)t, sdata1.GetLast().y * 0.95f + sdata2.GetLast().y * 0.05f);
 
       static float history = 2.5f;
       ImGui::SliderFloat("History", &history, 1, 10, "%.1f s");
@@ -962,7 +969,7 @@ void LiveUI::UpdateMainUI()
          ImPlot::SetupAxis(ImAxis_Y1, nullptr, rt_axis | ImPlotAxisFlags_LockMin);
          ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
          ImPlot::PlotLine("ms Script", &sdata6.Data[0].x, &sdata6.Data[0].y, sdata6.Data.size(), 0, sdata6.Offset, 2 * sizeof(float));
-         ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
+         ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1.f, 0, 0, 0.25f));
          ImPlot::PlotLine("Smoothed ms Script", &sdata5.Data[0].x, &sdata5.Data[0].y, sdata5.Data.size(), 0, sdata5.Offset, 2 * sizeof(float));
          ImPlot::PopStyleColor();
          ImPlot::EndPlot();
@@ -976,7 +983,7 @@ void LiveUI::UpdateMainUI()
       // TODO mouse interaction with viewport: selection, camera,...
       if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
       {
-         ImVec2 drag = ImGui::GetMouseDragDelta();
+         //ImVec2 drag = ImGui::GetMouseDragDelta();
       }
    }
    if (!ImGui::GetIO().WantCaptureKeyboard)
@@ -991,16 +998,16 @@ void LiveUI::UpdateMainUI()
 
 void LiveUI::UpdateOutlinerUI()
 {
-   ImGuiViewport *viewport = ImGui::GetMainViewport();
-   float pane_width = 200 * m_dpi;
+   const ImGuiViewport * const viewport = ImGui::GetMainViewport();
+   const float pane_width = 200.f * m_dpi;
    ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x, viewport->Pos.y + m_menubar_height + m_toolbar_height));
    ImGui::SetNextWindowSize(ImVec2(pane_width, viewport->Size.y - m_menubar_height - m_toolbar_height));
-   ImGuiWindowFlags window_flags = 0 | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize
+   constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize
       | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4.0f * m_dpi, 4.0f * m_dpi));
    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-   ImGui::Begin("OUTLINER", NULL, window_flags);
+   ImGui::Begin("OUTLINER", nullptr, window_flags);
    if (ImGui::TreeNodeEx("View Setups", ImGuiTreeNodeFlags_DefaultOpen))
    {
       if (ImGui::Selectable("Desktop"))
@@ -1062,7 +1069,7 @@ void LiveUI::UpdateOutlinerUI()
       keys.reserve(layers.size());
       for (auto &it : layers)
          keys.push_back(it.first);
-      std::sort(keys.begin(), keys.end());
+      sort(keys.begin(), keys.end());
       for (auto &it : keys)
       {
          if (it == ""s) // Skip unaffected editables (like live playfield)
@@ -1089,16 +1096,16 @@ void LiveUI::UpdateOutlinerUI()
 
 void LiveUI::UpdatePropertyUI()
 {
-   ImGuiViewport *viewport = ImGui::GetMainViewport();
-   float pane_width = 250 * m_dpi;
+   const ImGuiViewport *const viewport = ImGui::GetMainViewport();
+   const float pane_width = 250.f * m_dpi;
    ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x + viewport->Size.x - pane_width, viewport->Pos.y + m_menubar_height + m_toolbar_height));
    ImGui::SetNextWindowSize(ImVec2(pane_width, viewport->Size.y - m_menubar_height - m_toolbar_height));
-   ImGuiWindowFlags window_flags = 0 | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
+   constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
       | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4.0f * m_dpi, 4.0f * m_dpi));
    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-   ImGui::Begin("PROPERTIES", NULL, window_flags);
+   ImGui::Begin("PROPERTIES", nullptr, window_flags);
    ImGui::PushItemWidth(PROP_WIDTH);
    switch (m_selection.type)
    {
@@ -1129,7 +1136,6 @@ void LiveUI::UpdateAudioOptionsModal()
    bool p_open = true;
    if (ImGui::BeginPopupModal(ID_AUDIO_SETTINGS, &p_open, ImGuiWindowFlags_AlwaysAutoResize))
    {
-
       ImGui::EndPopup();
    }
 }
@@ -1163,7 +1169,7 @@ void LiveUI::UpdateVideoOptionsModal()
 void LiveUI::UpdateRendererInspectionModal()
 {
    bool p_open = true;
-   ImGui::SetNextWindowSize(ImVec2(550 * m_dpi, 0));
+   ImGui::SetNextWindowSize(ImVec2(550.f * m_dpi, 0));
    if (ImGui::BeginPopupModal(ID_RENDERER_INSPECTION, &p_open))
    {
       static bool show_fps_plot = false;
@@ -1180,7 +1186,7 @@ void LiveUI::UpdateRendererInspectionModal()
       ImGui::RadioButton("Transmitted light pass", &pass_selection, IF_LIGHT_BUFFER_ONLY);
       if (m_player->GetAOMode() != 0)
          ImGui::RadioButton("Ambient Occlusion pass", &pass_selection, IF_AO_ONLY);
-      for (int i = 0; i < 2 * m_table->m_vrenderprobe.size(); i++)
+      for (size_t i = 0; i < 2 * m_table->m_vrenderprobe.size(); i++)
       {
          string name = m_table->m_vrenderprobe[i >> 1]->GetName() + ((i & 1) == 0 ? " - Static pass" : " - Dynamic pass");
          ImGui::RadioButton(name.c_str(), &pass_selection, 100 + i);
@@ -1200,11 +1206,11 @@ void LiveUI::UpdateRendererInspectionModal()
 
 void LiveUI::UpdateMainSplashModal()
 {
-   bool enableKeyboardShortcuts = (msec() - m_OpenUITime) > 250;
+   const bool enableKeyboardShortcuts = (msec() - m_OpenUITime) > 250;
 
    ImGuiStyle &style = ImGui::GetStyle();
    // FIXME push style
-   style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0, 0, 0, 0.0f);
+   style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0, 0, 0, 0);
 
    // Display table name,author,version and blurb and description
    {
@@ -1219,26 +1225,26 @@ void LiveUI::UpdateMainSplashModal()
          info << " (" << m_table->m_szVersion << ")";
       //info << std::format(" ({:s} Revision {:d})\n", !m_table->m_szDateSaved.empty() ? m_table->m_szDateSaved : "N.A.", m_table->m_numTimesSaved);
       info << " (" << (!m_table->m_szDateSaved.empty() ? m_table->m_szDateSaved : "N.A.") << " Revision " << m_table->m_numTimesSaved << ")\n";
-      size_t line_length = info.str().size();
+      const size_t line_length = info.str().size();
       info << std::string(line_length, '=') << "\n";
       if (!m_table->m_szBlurb.empty())
          info << m_table->m_szBlurb << std::string(line_length, '=') << "\n";
       if (!m_table->m_szDescription.empty())
          info << m_table->m_szDescription;
-      ImGuiWindowFlags window_flags
+      constexpr ImGuiWindowFlags window_flags
          = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
       ImGui::SetNextWindowBgAlpha(0.5f);
       ImGui::SetNextWindowPos(ImVec2(0, 0));
       ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
-      ImGui::Begin("Table Info", NULL, window_flags);
-      HelpTextCentered(info.str().c_str());
+      ImGui::Begin("Table Info", nullptr, window_flags);
+      HelpTextCentered(info.str());
       ImGui::End();
    }
 
-   ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
-   if (ImGui::BeginPopupModal(ID_MODAL_SPLASH, NULL, window_flags))
+   constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
+   if (ImGui::BeginPopupModal(ID_MODAL_SPLASH, nullptr, window_flags))
    {
-      ImVec2 size(100 * m_dpi, 0);
+      const ImVec2 size(100.f * m_dpi, 0);
       static U32 quitToEditor = 0; // Long press keyboard shortcut
       if (((ImGui::IsKeyDown(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc) || ImGui::IsKeyDown(dikToImGuiKeys[m_player->m_rgKeys[eExitGame]])))
       {
@@ -1348,7 +1354,7 @@ void LiveUI::CameraProperties()
 
    if (ImGui::Button("Reset"))
    {
-      bool old_camera_mode = m_player->m_cameraMode;
+      const bool old_camera_mode = m_player->m_cameraMode;
       m_player->m_cameraMode = true;
       m_pininput->FireKeyEvent(DISPID_GameEvents_KeyDown, m_player->m_rgKeys[eStartGameKey]);
       m_player->m_cameraMode = old_camera_mode;
@@ -1508,8 +1514,8 @@ void LiveUI::MaterialProperties()
    */
 }
 
-void LiveUI::FlasherProperties() {
-
+void LiveUI::FlasherProperties()
+{
 }
 
 void LiveUI::LightProperties()
@@ -1570,7 +1576,6 @@ void LiveUI::PrimitiveProperties()
 
 void LiveUI::RampProperties()
 {
-
 }
 
 void LiveUI::RubberProperties()
@@ -1599,6 +1604,4 @@ void LiveUI::RubberProperties()
 
 void LiveUI::SurfaceProperties()
 {
-
 }
-
