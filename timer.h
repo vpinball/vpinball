@@ -88,6 +88,8 @@ public:
    STDMETHOD(get_Enabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Enabled)(/*[in]*/ VARIANT_BOOL newVal);
 
+   Timer *CopyForPlay(PinTable *live_table);
+
    TimerData m_d;
 
 private:

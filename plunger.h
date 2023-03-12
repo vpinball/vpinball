@@ -152,14 +152,16 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
+   Plunger* CopyForPlay(PinTable *live_table);
+
    PlungerData m_d;
 
 private:
-   PinTable *m_ptable;
+   PinTable *m_ptable = nullptr;
 
    MeshBuffer *m_meshBuffer = nullptr;
 
-   HitPlunger *m_phitplunger;
+   HitPlunger *m_phitplunger = nullptr;
 
    //
    // Plunger animation details.  We calculate these in RenderSetup()
@@ -167,13 +169,13 @@ private:
    //
 
    // number of animation frames
-   int m_cframes;
+   int m_cframes = 0;
 
    // number of vertices per animation frame
-   int m_vtsPerFrame;
+   int m_vtsPerFrame = 0;
 
    // number of triangle indices per frame
-   int m_indicesPerFrame;
+   int m_indicesPerFrame = 0;
 
 // IPlunger
 public:

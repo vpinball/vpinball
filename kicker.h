@@ -85,6 +85,8 @@ public:
 
    void WriteRegDefaults() final;
 
+   Kicker *CopyForPlay(PinTable *live_table);
+
    KickerData m_d;
 
    vector<Vertex3Ds> m_hitMesh;
@@ -145,7 +147,7 @@ public:
    STDMETHOD(get_Legacy)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Legacy)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_LastCapturedBall)(/*[out, retval]*/ IBall **pVal);
-   };
+};
 
 class KickerHitCircle : public HitCircle
 {

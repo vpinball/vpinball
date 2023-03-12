@@ -88,6 +88,8 @@ public:
    float GetAngleMin() const;
    void  SetAngleMin(const float angle);
 
+   Spinner *CopyForPlay(PinTable *live_table);
+
    SpinnerData m_d;
 
 private:

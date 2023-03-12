@@ -87,6 +87,8 @@ public:
 
    void EnsureSize();
 
+   Decal *CopyForPlay(PinTable *live_table);
+
    DecalData m_d;
    IFont *m_pIFont;
 

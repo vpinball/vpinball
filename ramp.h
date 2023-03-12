@@ -116,6 +116,8 @@ public:
    float GetSurfaceHeight(float x, float y) const;
    bool isHabitrail() const;
 
+   Ramp *CopyForPlay(PinTable *live_table);
+
    RampData m_d;
 
 private:

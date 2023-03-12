@@ -104,6 +104,8 @@ public:
    void TriggerAnimationHit();
    void TriggerAnimationUnhit();
 
+   Trigger *CopyForPlay(PinTable *live_table);
+
    TriggerData m_d;
 
    bool m_hitEnabled;		// for custom shape triggers
