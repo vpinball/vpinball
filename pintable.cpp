@@ -2254,7 +2254,12 @@ void PinTable::Play(const bool cameraMode)
       dst->m_BG_image[i] = src->m_BG_image[i];
    }
    for (size_t i = 0; i < src->m_materials.size(); i++)
-      dst->m_materials.push_back(new Material(src->m_materials[i]));
+   {
+      Material *mat = new Material(src->m_materials[i]);
+      dst->m_materials.push_back(mat);
+      dst->m_startupToLive[src->m_materials[i]] = mat;
+      dst->m_liveToStartup[mat] = src->m_materials[i];
+   }
 
    // Don't perform deep copy for these parts that can't be modified by the script
    for (size_t i = 0; i < src->m_vimage.size(); i++)
@@ -2288,14 +2293,15 @@ void PinTable::Play(const bool cameraMode)
       case eItemTextbox:   edit_dst = ((Textbox *)  src->m_vedit[i])->CopyForPlay(live_table); break;
       case eItemTimer:     edit_dst = ((Timer *)    src->m_vedit[i])->CopyForPlay(live_table); break;
       case eItemTrigger:   edit_dst = ((Trigger *)  src->m_vedit[i])->CopyForPlay(live_table); break;
+      default: assert(false); // Unexpected table part
       }
       if (edit_dst != nullptr)
       {
          live_table->m_vedit.push_back(edit_dst);
          if (edit_dst->GetScriptable())
             live_table->m_pcv->AddItem(edit_dst->GetScriptable(), false);
-         m_startupToLive[src->m_vedit[i]] = edit_dst;
-         m_liveToStartup[edit_dst] = src->m_vedit[i];
+         dst->m_startupToLive[src->m_vedit[i]] = edit_dst;
+         dst->m_liveToStartup[edit_dst] = src->m_vedit[i];
       }
    }
 
@@ -2310,9 +2316,9 @@ void PinTable::Play(const bool cameraMode)
       pcol->m_groupElements = m_vcollection[i].m_groupElements;
       for (int j = 0; j < m_vcollection[i].m_visel.size(); ++j)
       {
-         if (m_startupToLive.find(m_vcollection[i].m_visel[j].GetIEditable()) != m_startupToLive.end())
+         if (dst->m_startupToLive.find(m_vcollection[i].m_visel[j].GetIEditable()) != dst->m_startupToLive.end())
          {
-            auto edit_item = m_startupToLive[m_vcollection[i].m_visel[j].GetIEditable()];
+            auto edit_item = (IEditable*) dst->m_startupToLive[m_vcollection[i].m_visel[j].GetIEditable()];
             edit_item->m_vCollection.push_back(pcol);
             edit_item->m_viCollection.push_back(pcol->m_visel.size());
             pcol->m_visel.push_back(edit_item->GetISelect());

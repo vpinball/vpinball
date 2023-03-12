@@ -589,8 +589,8 @@ public:
    string m_szTitle;
 
    bool m_isLiveInstance = false; // true for live shallow copy of a table
-   std::unordered_map<IEditable *, IEditable *> m_startupToLive; // For live table, maps back and forth to startup table editable parts
-   std::unordered_map<IEditable *, IEditable *> m_liveToStartup;
+   std::unordered_map<void *, void *> m_startupToLive; // For live table, maps back and forth to startup table editable parts, materials,...
+   std::unordered_map<void *, void *> m_liveToStartup;
 
    // editor viewport
    Vertex2D m_offset;
