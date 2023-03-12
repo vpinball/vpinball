@@ -50,7 +50,8 @@ private:
    // UI Context
    VPinball *m_app;
    Player *m_player;
-   PinTable *m_table;
+   PinTable *m_table; // The edited table
+   PinTable *m_live_table; // The live copy of the edited being played by the player
    PinInput *m_pininput;
    Pin3D *m_pin3d;
    struct Selection

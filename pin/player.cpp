@@ -69,7 +69,10 @@ INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 #endif
 #endif
 
-Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(cameraMode)
+Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *const live_table)
+   : m_cameraMode(cameraMode)
+   , m_pEditorTable(editor_table)
+   , m_ptable(live_table)
 {
    m_ballShader = nullptr;
    m_dynamicMode = m_cameraMode; // We can move the camera => disable static pre-rendering
@@ -124,8 +127,6 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    m_pactiveball = nullptr;
 
    m_curPlunger = JOYRANGEMN - 1;
-
-   m_ptable = ptable;
 
 #ifdef ENABLE_VR
    const int vrDetectionMode = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "AskToTurnOn"s, 0);
@@ -348,6 +349,8 @@ Player::~Player()
        delete m_pBCTarget;
        m_pBCTarget = nullptr;
     }
+    m_ptable->StopPlaying();
+    delete m_ptable;
 }
 
 void Player::PreRegisterClass(WNDCLASS& wc)
@@ -797,8 +800,7 @@ void Player::ShowUI()
    m_liveUI->OpenMainUI();
 }
 
-InfoMode Player::GetInfoMode() const
-{
+InfoMode Player::GetInfoMode() const {
    return m_infoMode;
 }
 
@@ -1189,8 +1191,8 @@ HRESULT Player::Init()
 
    //m_hSongCompletionEvent = CreateEvent( nullptr, TRUE, FALSE, nullptr );
 
-   m_ptable->m_progressDialog.SetProgress(10);
-   m_ptable->m_progressDialog.SetName("Initializing Visuals..."s);
+   m_pEditorTable->m_progressDialog.SetProgress(10);
+   m_pEditorTable->m_progressDialog.SetName("Initializing Visuals..."s);
 
    InitKeys();
 
@@ -1387,8 +1389,8 @@ HRESULT Player::Init()
       pf_reflection_probe->SetReflectionMode(m_pfReflectionMode);
    }
 
-   m_ptable->m_progressDialog.SetProgress(30);
-   m_ptable->m_progressDialog.SetName("Initializing Physics..."s);
+   m_pEditorTable->m_progressDialog.SetProgress(30);
+   m_pEditorTable->m_progressDialog.SetName("Initializing Physics..."s);
 
    // Initialize new nudging.
    m_tableVel.SetZero();
@@ -1443,7 +1445,7 @@ HRESULT Player::Init()
             CHAR wzDst[256];
             sprintf_s(wzDst, sizeof(wzDst), "Initializing Object-Physics %s...", bstr2);
             delete [] bstr2;
-            m_ptable->m_progressDialog.SetName(wzDst);
+            m_pEditorTable->m_progressDialog.SetName(wzDst);
          }
 #endif
          const size_t currentsize = m_vho.size();
@@ -1460,8 +1462,8 @@ HRESULT Player::Init()
       }
    }
 
-   m_ptable->m_progressDialog.SetProgress(45);
-   m_ptable->m_progressDialog.SetName("Initializing Octree..."s);
+   m_pEditorTable->m_progressDialog.SetProgress(45);
+   m_pEditorTable->m_progressDialog.SetName("Initializing Octree..."s);
 
    g_pvp->ProfileLog("Octree"s);
 
@@ -1493,8 +1495,8 @@ HRESULT Player::Init()
 
    //----------------------------------------------------------------------------------
 
-   m_ptable->m_progressDialog.SetProgress(60);
-   m_ptable->m_progressDialog.SetName("Rendering Table..."s);
+   m_pEditorTable->m_progressDialog.SetProgress(60);
+   m_pEditorTable->m_progressDialog.SetName("Rendering Table..."s);
 
    g_pvp->ProfileLog("Render Table"s);
 
@@ -1591,7 +1593,7 @@ HRESULT Player::Init()
    // Direct all renders to the back buffer.
    m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->Activate();
 
-   m_ptable->m_progressDialog.SetProgress(90);
+   m_pEditorTable->m_progressDialog.SetProgress(90);
 
 
 #ifdef DEBUG_BALL_SPIN
@@ -1626,7 +1628,7 @@ HRESULT Player::Init()
    VertexBuffer* ballTrailVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, (MAX_BALL_TRAIL_POS - 2) * 2 + 4, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
    m_ballTrailMeshBuffer = new MeshBuffer(ballTrailVertexBuffer);
 
-   m_ptable->m_progressDialog.SetName("Starting Game Scripts..."s);
+   m_pEditorTable->m_progressDialog.SetName("Starting Game Scripts..."s);
 
    g_pvp->ProfileLog("Start Scripts"s);
 
@@ -1659,8 +1661,8 @@ HRESULT Player::Init()
    PLOGD.printf("End Frame");
 #endif
 
-   m_ptable->m_progressDialog.SetProgress(100);
-   m_ptable->m_progressDialog.SetName("Starting..."s);
+   m_pEditorTable->m_progressDialog.SetProgress(100);
+   m_pEditorTable->m_progressDialog.SetName("Starting..."s);
 
    g_pvp->GetPropertiesDocker()->EnableWindow(FALSE);
    g_pvp->GetLayersDocker()->EnableWindow(FALSE);
@@ -1669,9 +1671,9 @@ HRESULT Player::Init()
    if(g_pvp->GetNotesDocker()!=nullptr)
       g_pvp->GetNotesDocker()->EnableWindow(FALSE);
 
-   m_ptable->EnableWindow(FALSE);
+   m_pEditorTable->EnableWindow(FALSE);
 
-   m_ptable->m_progressDialog.Destroy();
+   m_pEditorTable->m_progressDialog.Destroy();
 
    // Show the window (even without preview, we need to create a window).
    ShowWindow(SW_SHOW);
@@ -1801,8 +1803,8 @@ void Player::InitStatic()
 
       // Finish the frame.
       m_pin3d.m_pd3dPrimaryDevice->EndScene();
-      if (m_ptable->m_progressDialog.IsWindow())
-         m_ptable->m_progressDialog.SetProgress(60 +(((30 * (n_iter + 1 - iter)) / (n_iter + 1))));
+      if (m_pEditorTable->m_progressDialog.IsWindow())
+         m_pEditorTable->m_progressDialog.SetProgress(60 +(((30 * (n_iter + 1 - iter)) / (n_iter + 1))));
 
       stats_drawn_static_triangles = RenderDevice::m_stats_drawn_triangles;
    }
@@ -4486,7 +4488,8 @@ void Player::Render()
    // Crash back to the editor
    if (m_ptable->m_pcv->m_scriptError)
    {
-      m_ptable->SendMessage(WM_COMMAND, ID_TABLE_STOP_PLAY, 0);
+      // Stop playing (send close window message)
+      SendMessage(WM_CLOSE, 0, 0);
    }
 
    // Close requested with user input: toggle window border and show dialog box since this aalso give access to debugger
@@ -4546,7 +4549,6 @@ void Player::Render()
       case ID_QUIT: m_closing = CS_STOP_PLAY; break;
       case ID_DEBUGWINDOW: m_showDebugger = true; break;
       }
-
    }
 
    // Brute force stop: blast into space
@@ -4563,11 +4565,8 @@ void Player::Render()
       PauseMusic();
       while (ShowCursor(FALSE) >= 0) ;
       while(ShowCursor(TRUE)<0) ;
-
-#ifdef ENABLE_SDL
-      StopPlayer();
-#endif
-      m_ptable->SendMessage(WM_COMMAND, ID_TABLE_STOP_PLAY, 0);
+      // Stop playing (send close window message)
+      SendMessage(WM_CLOSE, 0, 0);
       return;
    }
 
@@ -5458,32 +5457,23 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case MM_MIXM_CONTROL_CHANGE:
         mixer_get_volume();
-
         break;
 
     case WM_CLOSE:
     {
         // In Windows 10 1803, there may be a significant lag waiting for WM_DESTROY if script is not closed first.   
-        // Shut down script first if in exclusive mode.  
-        if (m_fullScreen)
-            StopPlayer();
-
+        StopPlayer();
         break;
     }
     case WM_DESTROY:
     {
-        if (!m_fullScreen)
-            StopPlayer();
-
         Shutdown();
-        m_ptable->SendMessage(WM_COMMAND, ID_TABLE_PLAYER_STOPPED, 0);
-
+        m_pEditorTable->OnPlayerStopped();
         return 0;
     }
     case WM_KEYDOWN:
         m_drawCursor = false;
         SetCursor(nullptr);
-
         break;
 
     case WM_MOUSEMOVE:
@@ -5627,7 +5617,7 @@ void Player::StopPlayer()
    g_pvp->GetToolbarDocker()->EnableWindow();
    if(g_pvp->GetNotesDocker()!=nullptr)
       g_pvp->GetNotesDocker()->EnableWindow();
-   m_ptable->EnableWindow();
+   m_pEditorTable->EnableWindow();
 
    LockForegroundWindow(false);
 }

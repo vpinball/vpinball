@@ -531,7 +531,10 @@ LiveUI::LiveUI(RenderDevice* const rd)
    m_StartTime_usec = usec();
    m_app = g_pvp;
    m_player = g_pplayer;
+   // FIXME update with the new startup/live table system
+   // m_table = g_pplayer->m_pEditorTable;
    m_table = g_pplayer->m_ptable;
+   m_live_table = g_pplayer->m_ptable;
    m_pininput = &(g_pplayer->m_pininput);
    m_pin3d = &(g_pplayer->m_pin3d);
    m_disable_esc = LoadValueBoolWithDefault(regKey[RegName::Player], "DisableESC"s, m_disable_esc);

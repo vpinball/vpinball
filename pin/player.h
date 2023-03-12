@@ -308,7 +308,7 @@ struct TimerOnOff
 class Player : public CWnd
 {
 public:
-   Player(const bool cameraMode, PinTable * const ptable);
+   Player(const bool cameraMode, PinTable *const editor_table, PinTable *const live_table);
    virtual ~Player();
 
    void CreateWnd(HWND parent = 0);
@@ -398,7 +398,8 @@ public:
    bool m_dynamicMode;
    bool m_cameraMode;
    int m_backdropSettingActive;
-   PinTable *m_ptable;
+   PinTable * const m_pEditorTable; // The untouched version of the table, as it is in the editor (The Player needs it to interact with the UI)
+   PinTable * const m_ptable; // The played table, which can be modified by the script
 
    Pin3D m_pin3d;
 
