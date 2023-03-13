@@ -4,7 +4,8 @@
 
 #include "Shader.h"
 
-#include "inc/droidsans.h"
+#include "inc/fonts/DroidSans.h"
+#include "inc/fonts/OpenFontIcons.h"
 
 #include "imgui/imgui.h"
 #ifdef ENABLE_SDL
@@ -549,8 +550,13 @@ LiveUI::LiveUI(RenderDevice* const rd)
 
    ImGui_ImplWin32_EnableDpiAwareness();
    m_dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(rd->getHwnd());
-   io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 13.0f * m_dpi);
    ImGui::GetStyle().ScaleAllSizes(m_dpi);
+   io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 13.0f * m_dpi);
+   ImFontConfig icons_config;
+   icons_config.MergeMode = true;
+   icons_config.PixelSnapH = true;
+   icons_config.GlyphMinAdvanceX = 13.0f * m_dpi;
+   io.Fonts->AddFontFromMemoryCompressedTTF(openfonticons_compressed_data, openfonticons_compressed_size, 13.0f * m_dpi, &icons_config);
 
 #ifdef ENABLE_SDL
    ImGui_ImplOpenGL3_Init();
@@ -1225,7 +1231,7 @@ void LiveUI::UpdateRendererInspectionModal()
       for (size_t i = 0; i < 2 * m_table->m_vrenderprobe.size(); i++)
       {
          string name = m_table->m_vrenderprobe[i >> 1]->GetName() + ((i & 1) == 0 ? " - Static pass" : " - Dynamic pass");
-         ImGui::RadioButton(name.c_str(), &pass_selection, 100 + i);
+         ImGui::RadioButton(name.c_str(), &pass_selection, 100 + (int) i);
       }
       if (pass_selection < 100)
          m_player->m_infoMode = (InfoMode)pass_selection;
@@ -1640,7 +1646,7 @@ void LiveUI::PropCheckbox(const char *label, bool is_live, bool *startup_v, bool
       const bool synced = ((*ov) == (*v));
       if (synced)
          ImGui::BeginDisabled();
-      if (ImGui::Button("S"))
+      if (ImGui::Button(ICON_OFI_SAVE))
       {
          *ov = *v;
          if (is_live)
@@ -1704,7 +1710,7 @@ void LiveUI::PropFloat(const char *label, bool is_live, float *startup_v, float 
       const bool synced = ((*ov) == (*v));
       if (synced)
          ImGui::BeginDisabled();
-      if (ImGui::Button("S"))
+      if (ImGui::Button(ICON_OFI_SAVE))
       {
          *ov = *v;
          if (is_live)
@@ -1756,7 +1762,7 @@ void LiveUI::PropInt(const char *label, bool is_live, int *startup_v, int *live_
       const bool synced = ((*ov) == (*v));
       if (synced)
          ImGui::BeginDisabled();
-      if (ImGui::Button("S"))
+      if (ImGui::Button(ICON_OFI_SAVE))
       {
          *ov = *v;
          if (is_live)
@@ -1816,7 +1822,7 @@ void LiveUI::PropRGB(const char *label, bool is_live, COLORREF *startup_v, COLOR
       const bool synced = ((*ov) == (*v));
       if (synced)
          ImGui::BeginDisabled();
-      if (ImGui::Button("S"))
+      if (ImGui::Button(ICON_OFI_SAVE))
       {
          *ov = *v;
          if (is_live)
@@ -1875,7 +1881,7 @@ void LiveUI::PropVec3(const char *label, bool is_live, Vertex3Ds *startup_v, Ver
       const bool synced = (v->x == ov->x) && (v->y == ov->y) && (v->z == ov->z);
       if (synced)
          ImGui::BeginDisabled();
-      if (ImGui::Button("S"))
+      if (ImGui::Button(ICON_OFI_SAVE))
       {
          *ov = *v;
          if (is_live)
