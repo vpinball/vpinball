@@ -396,11 +396,7 @@ public:
    Shader *flasherShader;
    Shader *lightShader;
    Shader *StereoShader;
-#ifdef SEPARATE_CLASSICLIGHTSHADER
-   Shader *classicLightShader;
-#else
-#define classicLightShader basicShader
-#endif
+   #define classicLightShader basicShader
 
    //Shader* m_curShader; // for caching
 

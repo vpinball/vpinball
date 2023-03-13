@@ -1,31 +1,6 @@
+// This file is included and compiled within the Basic shader effect file (perhaps we could move the code directly inside it)
+
 //!! This shader and the accompanying code in light.cpp is a bit messy for the backglass mode of lights!
-
-#ifdef SEPARATE_CLASSICLIGHTSHADER
-#define NUM_BALL_LIGHTS 0 // just to avoid having too much constant mem allocated
-
-#include "Helpers.fxh"
-
-// transformation matrices
-const float4x4 matWorldViewProj : WORLDVIEWPROJ;
-const float4x4 matWorldView     : WORLDVIEW;
-const float3x4 matWorldViewInverseTranspose;
-const float4x3 matView;
-//const float4x4 matViewInverseInverseTranspose; // matView used instead and multiplied from other side
-
-texture Texture0; // base texture
- 
-#include "Material.fxh"
-
-const float3 cGlossy_ImageLerp; // actually doesn't feature image lerp
-const float3 cClearcoat_EdgeAlpha; // actually doesn't feature edge-alpha
-//!! No value is under 0.02
-//!! Non-metals value are un-intuitively low: 0.02-0.08
-//!! Gemstones are 0.05-0.17
-//!! Metals have high specular reflectance:  0.5-1.0
-
-//const float  alphaTestValue;
-#endif
-
 sampler2D tex_light_color : TEXUNIT0 = sampler_state // base texture
 {
    Texture = (Texture0);

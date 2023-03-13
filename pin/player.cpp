@@ -1010,16 +1010,13 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    matrices.matWorldViewInverseTranspose.Invert();
    matrices.matWorldViewInverseTranspose.Transpose();
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_SDL // OpenGL
    m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorldViewProj[0].m[0][0], eyes * 16 * sizeof(float));
    m_pin3d.m_pd3dPrimaryDevice->lightShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorldViewProj[0].m[0][0], eyes * 16 * sizeof(float));
    m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorldViewProj[0].m[0][0], eyes * 16 * sizeof(float));
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorld.m[0][0], (eyes + 4) * 16 * sizeof(float));
-#ifdef SEPARATE_CLASSICLIGHTSHADER
-   m_pin3d.m_pd3dPrimaryDevice->lightShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorld.m[0][0], (eyes + 4) * 16 * sizeof(float));
-#endif
 
-#else // For DX9
+#else // DirectX 9
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorld, &matrices.matWorld);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matView, &matrices.matView);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
@@ -1028,13 +1025,6 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
    m_pin3d.m_pd3dPrimaryDevice->lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
    m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-#ifdef SEPARATE_CLASSICLIGHTSHADER
-   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix(SHADER_matWorld, &matrices.matWorld);
-   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix(SHADER_matView, &matrices.matView);
-   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
-   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix(SHADER_matWorldViewInverseTranspose, &matWorldViewInvTrans);
-   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-#endif
 
    //memcpy(temp.m, matView.m, 4 * 4 * sizeof(float));
    //temp.Transpose();
@@ -1042,9 +1032,6 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    //memcpy(matViewInvInvTrans.m, temp.m, 4 * 4 * sizeof(float));
 
    //m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix("matViewInverseInverseTranspose", &matViewInvInvTrans);
-#ifdef SEPARATE_CLASSICLIGHTSHADER
-   //m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetMatrix("matViewInverseInverseTranspose", &matViewInvInvTrans);
-#endif
 #endif
 }
 
@@ -1063,9 +1050,6 @@ void Player::InitShader()
    UpdateBasicShaderMatrix();
    //vec4 cam( worldViewProj._41, worldViewProj._42, worldViewProj._43, 1 );
    //m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector("camera", &cam);
-#ifdef SEPARATE_CLASSICLIGHTSHADER
-   //m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetVector("camera", &cam);
-#endif
 
 #ifdef ENABLE_SDL
    // In VR we scale the scene to the controller scale, so the shader needs to scale light range accordingly
@@ -1078,15 +1062,8 @@ void Player::InitShader()
 
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_env, m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.m_builtinEnvTexture);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_diffuse_env, m_pin3d.m_envRadianceTexture);
-#ifdef SEPARATE_CLASSICLIGHTSHADER
-   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetTexture(SHADER_tex_env, m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.m_builtinEnvTexture);
-   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetTexture(SHADER_tex_diffuse_env, m_pin3d.m_envRadianceTexture);
-#endif
    const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-#ifdef SEPARATE_CLASSICLIGHTSHADER
-   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-#endif
 
    InitBallShader();
 }
@@ -1540,9 +1517,6 @@ HRESULT Player::Init()
    // Initialize lighting (maybe move to pin3d ? in InitLights ?)
    const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-#ifdef SEPARATE_CLASSICLIGHTSHADER
-   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-#endif
 
    // Setup anisotropic filtering
    const bool forceAniso = LoadValueBoolWithDefault(regKey[RegName::Player], "ForceAnisotropicFiltering"s, true);
@@ -4196,9 +4170,6 @@ void Player::UpdateBackdropSettings(const bool up)
          m_ptable->m_envEmissionScale = 0.f;
       const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
       m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-      #ifdef SEPARATE_CLASSICLIGHTSHADER
-      m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-      #endif
       m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }

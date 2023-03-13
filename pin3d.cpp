@@ -637,9 +637,6 @@ void Pin3D::DrawBackground()
 void Pin3D::InitLights()
 {
    //m_pd3dPrimaryDevice->basicShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
-#ifdef SEPARATE_CLASSICLIGHTSHADER
-   //m_pd3dPrimaryDevice->classicLightShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
-#endif
 
    g_pplayer->m_ptable->m_Light[0].pos.x = g_pplayer->m_ptable->m_right*0.5f;
    g_pplayer->m_ptable->m_Light[1].pos.x = g_pplayer->m_ptable->m_right*0.5f;
@@ -680,9 +677,6 @@ void Pin3D::InitLights()
    }
 
    m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_packedLights, (vec4*) l, sizeof(CLight) * MAX_LIGHT_SOURCES / (4 * sizeof(float)));
-#ifdef SEPARATE_CLASSICLIGHTSHADER
-   m_pd3dPrimaryDevice->classicLightShader->SetFloat4v(SHADER_packedLights, (vec4*) l, sizeof(CLight) * MAX_LIGHT_SOURCES / (4 * sizeof(float)));
-#endif
 #endif
 
    vec4 amb_lr = convertColor(g_pplayer->m_ptable->m_lightAmbient, g_pplayer->m_ptable->m_lightRange);
@@ -690,10 +684,6 @@ void Pin3D::InitLights()
    amb_lr.y *= g_pplayer->m_globalEmissionScale;
    amb_lr.z *= g_pplayer->m_globalEmissionScale;
    m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_cAmbient_LightRange, &amb_lr);
-#ifdef SEPARATE_CLASSICLIGHTSHADER
-   m_pd3dPrimaryDevice->classicLightShader->SetVector(SHADER_cAmbient_LightRange, &amb_lr);
-#endif
-
 }
 
 // currently unused

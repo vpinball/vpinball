@@ -1360,9 +1360,6 @@ void LiveUI::TableProperties(bool is_live)
                                       : (float)ui->m_pin3d->m_builtinEnvTexture.m_height /*+m_pin3d->m_builtinEnvTexture.m_width)*0.5f*/,
             0.f, 0.f);
          ui->m_rd->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-         #ifdef SEPARATE_CLASSICLIGHTSHADER
-         ui->m_rd->classicLightShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-         #endif
       };
       PropFloat("Environment Em. Scale", is_live, &(m_table->m_envEmissionScale), m_live_table ? &(m_live_table->m_envEmissionScale) : nullptr, 0.1f, 0.5f, "%.3f",
          ImGuiInputTextFlags_CharsDecimal, upd_env_em_scale);
@@ -1397,9 +1394,6 @@ void LiveUI::CameraProperties(bool is_live)
                                : (float)m_pin3d->m_builtinEnvTexture.m_height /*+m_pin3d->m_builtinEnvTexture.m_width)*0.5f*/,
          0.f, 0.f);
       m_rd->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-      #ifdef SEPARATE_CLASSICLIGHTSHADER
-      m_rd->classicLightShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-      #endif
    }
    ImGui::SameLine();
    if (ImGui::Button("Import"))
@@ -1411,9 +1405,6 @@ void LiveUI::CameraProperties(bool is_live)
                                : (float)m_pin3d->m_builtinEnvTexture.m_height /*+m_pin3d->m_builtinEnvTexture.m_width)*0.5f*/,
          0.f, 0.f);
       m_rd->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-      #ifdef SEPARATE_CLASSICLIGHTSHADER
-      m_rd->classicLightShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-      #endif
    }
    ImGui::SameLine();
    if (ImGui::Button("Export"))
