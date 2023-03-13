@@ -22,6 +22,14 @@
 #include "../math/bluenoise.h"
 #include "../inc/winsdk/legacy_touch.h"
 
+#if __cplusplus >= 202002L && !defined(__clang__)
+#define stable_sort std::ranges::stable_sort
+#define sort std::ranges::sort
+#else
+#define stable_sort std::stable_sort
+#define sort std::sort
+#endif
+
 
 constexpr RECT touchregion[8] = { //left,top,right,bottom (in % of screen)
    { 0, 0, 50, 10 },      // ExtraBall

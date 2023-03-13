@@ -1829,11 +1829,11 @@ void PinTable::GetUniqueName(const WCHAR *const wzRoot, WCHAR * const wzUniqueNa
    int suffix = 1;
    bool found = false;
    WCHAR * const wzName = new WCHAR[wzUniqueName_maxlength];
-   WCHAR wzSuffix[4];
 
    while (!found)
    {
       WideStrNCopy(wzRoot, wzName, wzUniqueName_maxlength-3);
+      WCHAR wzSuffix[4];
       _itow_s(suffix, wzSuffix, sizeof(wzSuffix)/sizeof(wzSuffix[0]), 10);
       if(suffix < 10)
          WideStrCat(L"0", wzName, wzUniqueName_maxlength);
@@ -1921,9 +1921,9 @@ void PinTable::UIRenderPass2(Sur * const psur)
       const float gridsize = (float)m_vpinball->m_gridSize;
 
       const int beginx = (int)(rlt.x / gridsize);
-      const float lenx = (rrb.x - rlt.x) / gridsize;//(((rc.right - rc.left)/m_zoom));
+      const int lenx = (int)((rrb.x - rlt.x) / gridsize);//(((rc.right - rc.left)/m_zoom));
       const int beginy = (int)(rlt.y / gridsize);
-      const float leny = (rrb.y - rlt.y) / gridsize;//(((rc.bottom - rc.top)/m_zoom));
+      const int leny = (int)((rrb.y - rlt.y) / gridsize);//(((rc.bottom - rc.top)/m_zoom));
 
       psur->SetObject(nullptr); // Don't hit test gridlines
 
@@ -2009,7 +2009,7 @@ void PinTable::Render3DProjection(Sur * const psur)
    pinproj.FitCameraToVertices(vvertex3D, aspect, rotation, inclination, FOV, m_BG_xlatez[m_BG_current_set], m_BG_layback[m_BG_current_set]);
    pinproj.m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
    pinproj.m_matWorld.SetIdentity();
-   Matrix3D proj = Matrix3D::MatrixPerspectiveFovLH(ANGTORAD(FOV), aspect, pinproj.m_rznear, pinproj.m_rzfar);
+   const Matrix3D proj = Matrix3D::MatrixPerspectiveFovLH(ANGTORAD(FOV), aspect, pinproj.m_rznear, pinproj.m_rzfar);
    memcpy(pinproj.m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
    memcpy(pinproj.m_matProj[1].m, proj.m, sizeof(float) * 4 * 4);
 
@@ -3937,7 +3937,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                 }
 
             // search for duplicate names, delete dupes
-            if (m_vimage.size() > 0)
+            if (!m_vimage.empty())
                for (size_t i = 0; i < m_vimage.size() - 1; ++i)
                   for (size_t i2 = i+1; i2 < m_vimage.size(); ++i2)
                      if (m_vimage[i]->m_szName == m_vimage[i2]->m_szName && m_vimage[i]->m_szPath == m_vimage[i2]->m_szPath)
@@ -4578,8 +4578,7 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    //!! meh to all of this: kill old raw sound data and DSound/BASS stuff, then copy new one over
 
    pps->UnInitialize();
-   if(pps->m_pdata)
-       delete[] pps->m_pdata;
+   delete[] pps->m_pdata;
 
    *pps = *ppsNew;
 
@@ -5115,7 +5114,7 @@ void PinTable::FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, ISelec
 {
    const LocalString ls16(IDS_ASSIGN_TO_LAYER2);
    mainMenu.AppendMenu(MF_POPUP | MF_STRING, (size_t)layerSubMenu.GetHandle(), ls16.m_szbuffer);
-   vector<string> layerNames = g_pvp->GetLayersListDialog()->GetAllLayerNames();
+   const vector<string> layerNames = g_pvp->GetLayersListDialog()->GetAllLayerNames();
    int i = 0;
    for (const auto &name : layerNames)
    {
@@ -6138,7 +6137,6 @@ void PinTable::ExportBackdropPOV(const string& filename)
 	else
 		povFileName = filename;
 
-    char strBuf[MAX_PATH];
     xml_document<> xmlDoc;
     try
     {
@@ -6150,6 +6148,7 @@ void PinTable::ExportBackdropPOV(const string& filename)
         //root node
         xml_node<>*root = xmlDoc.allocate_node(node_element, "POV");
 
+        char strBuf[MAX_PATH];
         xml_node<>*desktop = xmlDoc.allocate_node(node_element, "desktop");
         sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_inclination[BG_DESKTOP]);
         const string dti(strBuf);
@@ -7273,7 +7272,7 @@ void PinTable::ReImportImage(Texture * const ppi, const string& filename)
 
    if (tex == nullptr)
    {
-      if (ppb) delete ppb;
+      delete ppb;
       return;
    }
 

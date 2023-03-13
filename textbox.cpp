@@ -534,8 +534,7 @@ HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backu
    bw.WriteTag(FID(FONT));
    IPersistStream * ips;
    m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
-   HRESULT hr;
-   hr = ips->Save(pstm, TRUE);
+   const HRESULT hr = ips->Save(pstm, TRUE);
 
    bw.WriteTag(FID(ENDB));
 
