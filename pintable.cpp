@@ -2136,12 +2136,7 @@ void PinTable::SetDirtyDraw()
 
 void PinTable::HandleLoadFailure()
 {
-   RestoreBackup();
-   g_keepUndoRecords = true;
-   m_pcv->EndSession();
-
    m_progressDialog.Destroy();
-
    g_pvp->m_table_played_via_SelectTableOnStart = false;
 }
 
@@ -2362,24 +2357,8 @@ void PinTable::Play(const bool cameraMode)
    m_progressDialog.SetProgress(1);
    m_progressDialog.SetName("Backing Up Table State...");
 
-   /* BackupForPlay();
-
-   m_backupLayback = m_BG_layback[m_BG_current_set];
-   m_backupRotation = m_BG_rotation[m_BG_current_set];
-   m_backupInclination = m_BG_inclination[m_BG_current_set];
-   m_backupOffset.x = m_BG_xlatex[m_BG_current_set];
-   m_backupOffset.y = m_BG_xlatey[m_BG_current_set];
-   m_backupOffset.z = m_BG_xlatez[m_BG_current_set];
-   m_backupScale.x = m_BG_scalex[m_BG_current_set];
-   m_backupScale.y = m_BG_scaley[m_BG_current_set];
-   m_backupScale.z = m_BG_scalez[m_BG_current_set];
-   m_backupFOV = m_BG_FOV[m_BG_current_set];
-   m_backupLightHeight = m_lightHeight;
-   m_backupLightRange = m_lightRange;
-   m_backupEmisionScale = m_lightEmissionScale;
-   m_backupEnvEmissionScale = m_envEmissionScale;*/
-
-   g_keepUndoRecords = false;
+   // FIXME remove g_keepUndoRecords: this hack is no more needed now that we use a table copy instead of the edited one for playing
+   // g_keepUndoRecords = false;
 
    live_table->m_pcv->m_scriptError = false;
    live_table->m_pcv->Compile(false);
@@ -2430,12 +2409,13 @@ void PinTable::Play(const bool cameraMode)
       const float slope = minSlope + (maxSlope - minSlope) * m_globalDifficulty;
       g_pplayer->SetGravity(slope, m_overridePhysics ? m_fOverrideGravityConstant : m_Gravity);
 
-      m_pcv->SetEnabled(false); // Can't edit script while playing
-
       m_vpinball->ToggleToolbar();
    }
    else
+   {
+      live_table->Release();
       HandleLoadFailure();
+   }
 }
 
 void PinTable::OnPlayerStopped()
@@ -2475,11 +2455,9 @@ void PinTable::StopPlaying()
    m_lightMap.clear();
    m_renderprobeMap.clear();
 
-   // RestoreBackup();
-   g_keepUndoRecords = true;
-
-   UpdateDbgMaterial();
-   UpdateDbgLight();
+   // FIXME remove debug material/lights (or fix them using the new live/startup table)
+   // UpdateDbgMaterial();
+   // UpdateDbgLight();
 
    BeginAutoSaveCounter();
 

@@ -1126,9 +1126,9 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	CComObject<PinTable>* const pt = g_pvp->GetActiveTable();
 	if (pt)
 	{
-		SetVisible(true);
-		ShowWindow(SW_RESTORE);
-		ColorError(nLine, nChar);
+		pt->m_pcv->SetVisible(true);
+      pt->m_pcv->ShowWindow(SW_RESTORE);
+      pt->m_pcv->ColorError(nLine, nChar);
 	}
 
 	// Check if this is a compile error or a runtime error
@@ -1158,8 +1158,11 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	const wstring errorStr{errorStream.str()};
 
 	// Show the error in the last error log
-	AppendLastErrorTextW(errorStr);
-	SetLastErrorVisibility(true);
+   if (pt)
+   {
+      pt->m_pcv->AppendLastErrorTextW(errorStr);
+      pt->m_pcv->SetLastErrorVisibility(true);
+   }
 
 	// Also pop up a dialog if this is a runtime error
 	if (isRuntimeError && !m_suppressErrorDialogs)
@@ -1171,13 +1174,13 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 		g_pvp->EnableWindow(TRUE);
 
 		if (pt != nullptr)
-			::SetFocus(m_hwndScintilla);
+         ::SetFocus(pt->m_pcv->m_hwndScintilla);
 	}
 
 	g_pvp->EnableWindow(TRUE);
 
 	if (pt != nullptr)
-		::SetFocus(m_hwndScintilla);
+      ::SetFocus(pt->m_pcv->m_hwndScintilla);
 
 	return S_OK;
 }
@@ -1283,9 +1286,9 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	CComObject<PinTable>* const pt = g_pvp->GetActiveTable();
 	if (pt)
 	{
-		SetVisible(true);
-		ShowWindow(SW_RESTORE);
-		ColorError(nLine, nChar);
+		pt->m_pcv->SetVisible(true);
+      pt->m_pcv->ShowWindow(SW_RESTORE);
+      pt->m_pcv->ColorError(nLine, nChar);
 	}
 	
 	// Error log content
@@ -1378,9 +1381,12 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 
 	const wstring errorStr{errorStream.str()};
 
-	// Show the error in the last error log
-	AppendLastErrorTextW(errorStr);
-	SetLastErrorVisibility(true);
+	// Show the error in the last error log of the active table
+   if (pt != nullptr)
+   {
+      pt->m_pcv->AppendLastErrorTextW(errorStr);
+      pt->m_pcv->SetLastErrorVisibility(true);
+   }
 
 	// Also pop up a dialog
 	if (!m_suppressErrorDialogs)
@@ -1396,7 +1402,7 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 		g_pvp->EnableWindow(TRUE);
 
 		if (pt != nullptr)
-			::SetFocus(m_hwndScintilla);
+         ::SetFocus(pt->m_pcv->m_hwndScintilla);
 	}
 
 	return S_OK;
