@@ -1019,28 +1019,40 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       }
       else if (keycode == g_pplayer->m_rgKeys[eStartGameKey] && dispid == DISPID_GameEvents_KeyDown)
       {
-         if(!g_pvp->m_povEdit)
+         int view_setup = g_pplayer->m_ptable->m_BG_current_set;
+         PinTable *src, *dst;
+         if (!g_pvp->m_povEdit)
          {
-            g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set] = g_pplayer->m_ptable->m_backupLayback;
-            g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] = g_pplayer->m_ptable->m_backupRotation;
-            g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set] = g_pplayer->m_ptable->m_backupInclination;
-            g_pplayer->m_ptable->m_BG_xlatex[g_pplayer->m_ptable->m_BG_current_set] = g_pplayer->m_ptable->m_backupOffset.x;
-            g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set] = g_pplayer->m_ptable->m_backupOffset.y;
-            g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set] = g_pplayer->m_ptable->m_backupOffset.z;
-            g_pplayer->m_ptable->m_BG_scalex[g_pplayer->m_ptable->m_BG_current_set] = g_pplayer->m_ptable->m_backupScale.x;
-            g_pplayer->m_ptable->m_BG_scaley[g_pplayer->m_ptable->m_BG_current_set] = g_pplayer->m_ptable->m_backupScale.y;
-            g_pplayer->m_ptable->m_BG_scalez[g_pplayer->m_ptable->m_BG_current_set] = g_pplayer->m_ptable->m_backupScale.z;
-            g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set] = g_pplayer->m_ptable->m_backupFOV;
-            g_pplayer->m_ptable->m_lightHeight = g_pplayer->m_ptable->m_backupLightHeight;
-            g_pplayer->m_ptable->m_lightRange = g_pplayer->m_ptable->m_backupLightRange;
-            g_pplayer->m_ptable->m_lightEmissionScale = g_pplayer->m_ptable->m_backupEmisionScale;
-            g_pplayer->m_ptable->m_envEmissionScale = g_pplayer->m_ptable->m_backupEnvEmissionScale;
-            g_pplayer->m_pin3d.m_cam.x = 0;
-            g_pplayer->m_pin3d.m_cam.y = 0;
-            g_pplayer->m_pin3d.m_cam.z = 0;
+            // Reset POV: copy from startup table to the live one
+            src = g_pplayer->m_pEditorTable;
+            dst = g_pplayer->m_ptable;
          }
          else
          {
+            // Validate POV: copy from live table to the startup one
+            src = g_pplayer->m_ptable;
+            dst = g_pplayer->m_pEditorTable;
+         }
+         dst->m_BG_layback[view_setup] = src->m_BG_layback[view_setup];
+         dst->m_BG_rotation[view_setup] = src->m_BG_rotation[view_setup];
+         dst->m_BG_inclination[view_setup] = src->m_BG_inclination[view_setup];
+         dst->m_BG_xlatex[view_setup] = src->m_BG_xlatex[view_setup];
+         dst->m_BG_xlatey[view_setup] = src->m_BG_xlatey[view_setup];
+         dst->m_BG_xlatez[view_setup] = src->m_BG_xlatez[view_setup];
+         dst->m_BG_scalex[view_setup] = src->m_BG_scalex[view_setup];
+         dst->m_BG_scaley[view_setup] = src->m_BG_scaley[view_setup];
+         dst->m_BG_scalez[view_setup] = src->m_BG_scalez[view_setup];
+         dst->m_BG_FOV[view_setup] = src->m_BG_FOV[view_setup];
+         dst->m_lightHeight = src->m_lightHeight;
+         dst->m_lightRange = src->m_lightRange;
+         dst->m_lightEmissionScale = src->m_lightEmissionScale;
+         dst->m_envEmissionScale = src->m_envEmissionScale;
+         g_pplayer->m_pin3d.m_cam.x = 0;
+         g_pplayer->m_pin3d.m_cam.y = 0;
+         g_pplayer->m_pin3d.m_cam.z = 0;
+         if (g_pvp->m_povEdit)
+         {
+            // Export POV file then quit player
             string szPOVFilename = g_pplayer->m_ptable->m_szFileName;
             if (ReplaceExtensionFromFilename(szPOVFilename, "pov"s))
                g_pplayer->m_ptable->ExportBackdropPOV(szPOVFilename);

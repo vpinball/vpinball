@@ -790,30 +790,30 @@ void LiveUI::Update()
 
 void LiveUI::UpdateCameraModeUI()
 {
+   PinTable* table = m_live_table;
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
    ImGui::SetNextWindowBgAlpha(0.35f);
    ImGui::SetNextWindowPos(ImVec2(10, 10));
    ImGui::Begin("CameraMode", nullptr, window_flags);
-
    for (int i = 0; i < 14; i++)
    {
       if (m_player->m_cameraMode && (i == m_player->m_backdropSettingActive || (m_player->m_backdropSettingActive == 3 && (i == 4 || i == 5))))
          ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
       switch (i)
       {
-      case 0: ImGui::Text("Inclination: %.3f", m_table->m_BG_inclination[m_table->m_BG_current_set]); break;
-      case 1: ImGui::Text("Field Of View: %.3f", m_table->m_BG_FOV[m_table->m_BG_current_set]); break;
-      case 2: ImGui::Text("Layback: %.3f", m_table->m_BG_layback[m_table->m_BG_current_set]); ImGui::NewLine(); break;
-      case 4: ImGui::Text("X Scale: %.3f", m_table->m_BG_scalex[m_table->m_BG_current_set]); break;
-      case 5: ImGui::Text("Y Scale: %.3f", m_table->m_BG_scaley[m_table->m_BG_current_set]); break;
-      case 6: ImGui::Text("Z Scale: %.3f", m_table->m_BG_scalez[m_table->m_BG_current_set]); ImGui::NewLine(); break;
-      case 7: ImGui::Text("X Offset: %.0f", m_table->m_BG_xlatex[m_table->m_BG_current_set]); break;
-      case 8: ImGui::Text("Y Offset: %.0f", m_table->m_BG_xlatey[m_table->m_BG_current_set]); break;
-      case 9: ImGui::Text("Z Offset: %.0f", m_table->m_BG_xlatez[m_table->m_BG_current_set]); ImGui::NewLine(); break;
-      case 10: ImGui::Text("Light Emission Scale: %.0f", m_table->m_lightEmissionScale); break;
-      case 11: ImGui::Text("Light Range: %.0f", m_table->m_lightRange); break;
-      case 12: ImGui::Text("Light Height: %.0f", m_table->m_lightHeight); ImGui::NewLine(); break;
-      case 13: ImGui::Text("Environment Emission: %.3f", m_table->m_envEmissionScale); break;
+      case 0: ImGui::Text("Inclination: %.3f", table->m_BG_inclination[table->m_BG_current_set]); break;
+      case 1: ImGui::Text("Field Of View: %.3f", table->m_BG_FOV[table->m_BG_current_set]); break;
+      case 2: ImGui::Text("Layback: %.3f", table->m_BG_layback[table->m_BG_current_set]); ImGui::NewLine(); break;
+      case 4: ImGui::Text("X Scale: %.3f", table->m_BG_scalex[table->m_BG_current_set]); break;
+      case 5: ImGui::Text("Y Scale: %.3f", table->m_BG_scaley[table->m_BG_current_set]); break;
+      case 6: ImGui::Text("Z Scale: %.3f", table->m_BG_scalez[table->m_BG_current_set]); ImGui::NewLine(); break;
+      case 7: ImGui::Text("X Offset: %.0f", table->m_BG_xlatex[table->m_BG_current_set]); break;
+      case 8: ImGui::Text("Y Offset: %.0f", table->m_BG_xlatey[table->m_BG_current_set]); break;
+      case 9: ImGui::Text("Z Offset: %.0f", table->m_BG_xlatez[table->m_BG_current_set]); ImGui::NewLine(); break;
+      case 10: ImGui::Text("Light Emission Scale: %.0f", table->m_lightEmissionScale); break;
+      case 11: ImGui::Text("Light Range: %.0f", table->m_lightRange); break;
+      case 12: ImGui::Text("Light Height: %.0f", table->m_lightHeight); ImGui::NewLine(); break;
+      case 13: ImGui::Text("Environment Emission: %.3f", table->m_envEmissionScale); break;
       }
       if (m_player->m_cameraMode && (i == m_player->m_backdropSettingActive || (m_player->m_backdropSettingActive == 3 && (i == 4 || i == 5))))
          ImGui::PopStyleColor();
@@ -821,9 +821,11 @@ void LiveUI::UpdateCameraModeUI()
 
    ImGui::NewLine();
 
-   ImGui::Text("Camera at X: %.2f Y: %.2f Z: %.2f,  Rotation: %.2f", -m_pin3d->m_proj.m_matView._41,
-      (m_table->m_BG_current_set == 0 || m_table->m_BG_current_set == 2) ? m_pin3d->m_proj.m_matView._42 : -m_pin3d->m_proj.m_matView._42, m_pin3d->m_proj.m_matView._43,
-      m_table->m_BG_rotation[m_table->m_BG_current_set]);
+   ImGui::Text("Camera at X: %.2f Y: %.2f Z: %.2f,  Rotation: %.2f", 
+      -m_pin3d->m_proj.m_matView._41,
+      (table->m_BG_current_set == 0 || table->m_BG_current_set == 2) ? m_pin3d->m_proj.m_matView._42 : -m_pin3d->m_proj.m_matView._42, 
+      m_pin3d->m_proj.m_matView._43,
+      table->m_BG_rotation[table->m_BG_current_set]);
 
    if (m_player->m_cameraMode)
    {
