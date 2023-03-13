@@ -786,6 +786,4 @@ technique kickerBoolean
    }
 }
 
-#ifndef SEPARATE_CLASSICLIGHTSHADER
- #include "ClassicLightShader.hlsl"
-#endif
+#include "ClassicLightShader.hlsl"

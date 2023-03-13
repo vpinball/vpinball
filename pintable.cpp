@@ -2421,7 +2421,7 @@ void PinTable::Play(const bool cameraMode)
 void PinTable::OnPlayerStopped()
 {
    assert(g_pplayer != nullptr && g_pplayer->m_pEditorTable == this);
-   // The running player has stopped, get back to editing this table
+   // The running player has stopped, get back to editing this table which is the one the player was started for
    delete g_pplayer;
    g_pplayer = nullptr;
    m_vpinball->ToggleToolbar();
@@ -2436,6 +2436,7 @@ void PinTable::OnPlayerStopped()
 
 void PinTable::StopPlaying()
 {
+   assert(g_pplayer != nullptr && g_pplayer->m_ptable == this);
    // called on a live table instance, before Player instance gets deleted (during Player's destructor)
 
    // Unhook script connections

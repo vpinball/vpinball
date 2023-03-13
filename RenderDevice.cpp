@@ -24,9 +24,6 @@
 #include "FBShader.h"
 #include "FlasherShader.h"
 #include "LightShader.h"
-#ifdef SEPARATE_CLASSICLIGHTSHADER
-#include "ClassicLightShader.h"
-#endif
 #endif
 
 // SMAA:
@@ -1188,7 +1185,7 @@ bool RenderDevice::LoadShaders()
    lightShader = new Shader(this);
 
    bool shaderCompilationOkay = true;
-#ifdef ENABLE_SDL
+#ifdef ENABLE_SDL // OpenGL
    char glShaderPath[MAX_PATH];
    /*DWORD length =*/ GetModuleFileName(nullptr, glShaderPath, MAX_PATH);
    Shader::Defines = ""s;
@@ -1226,20 +1223,12 @@ bool RenderDevice::LoadShaders()
       StereoShader = new Shader(this);
       shaderCompilationOkay = StereoShader->Load("StereoShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
    }
-#ifdef SEPARATE_CLASSICLIGHTSHADER
-   classicLightShader = new Shader(this);
-   shaderCompilationOkay = classicLightShader->Load("ClassicLightShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
-#endif
-#else // ENABLE_SDL
+#else // DirectX 9
    shaderCompilationOkay = basicShader->Load("BasicShader.hlsl"s, g_basicShaderCode, sizeof(g_basicShaderCode)) && shaderCompilationOkay;
    shaderCompilationOkay = DMDShader->Load("DMDShader.hlsl"s, g_dmdShaderCode, sizeof(g_dmdShaderCode)) && shaderCompilationOkay;
    shaderCompilationOkay = FBShader->Load("FBShader.hlsl"s, g_FBShaderCode, sizeof(g_FBShaderCode)) && shaderCompilationOkay;
    shaderCompilationOkay = flasherShader->Load("FlasherShader.hlsl"s, g_flasherShaderCode, sizeof(g_flasherShaderCode)) && shaderCompilationOkay;
    shaderCompilationOkay = lightShader->Load("LightShader.hlsl"s, g_lightShaderCode, sizeof(g_lightShaderCode)) && shaderCompilationOkay;
-#ifdef SEPARATE_CLASSICLIGHTSHADER
-   classicLightShader = new Shader(this);
-   shaderCompilationOkay = classicLightShader->Load("ClassicLightShader.hlsl"s, sg_classicLightShaderCode, sizeof(g_classicLightShaderCode)) && shaderCompilationOkay;
-#endif
 #endif
 
    if (!shaderCompilationOkay)
@@ -1406,16 +1395,6 @@ void RenderDevice::FreeShader()
       delete lightShader;
       lightShader = nullptr;
    }
-#ifdef SEPARATE_CLASSICLIGHTSHADER
-   if (classicLightShader)
-   {
-      classicLightShader->SetTextureNull(SHADER_tex_light_base);
-      classicLightShader->SetTextureNull(SHADER_tex_env);
-      classicLightShader->SetTextureNull(SHADER_tex_diffuse_env);
-      delete classicLightShader;
-      classicLightShader = nullptr;
-   }
-#endif
 }
 
 RenderDevice::~RenderDevice()
