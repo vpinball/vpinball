@@ -4498,6 +4498,7 @@ void Player::Render()
    {
       // Stop playing (send close window message)
       SendMessage(WM_CLOSE, 0, 0);
+      return;
    }
 
    // Close requested with user input: toggle window border and show dialog box since this aalso give access to debugger

@@ -864,16 +864,12 @@ void LiveUI::PausePlayer(bool pause)
 
 void LiveUI::EnterEditMode()
 {
-   // FIXME for the time being all modification are erased when exiting (due to backup restore)
-   // m_table->RestoreBackup();
    m_player->EnableStaticPrePass(false);
    m_player->m_cameraMode = false;
 }
 
 void LiveUI::ExitEditMode()
 {
-   // FIXME for the time being all modification are erased when exiting (due to backup restore)
-   // m_table->BackupForPlay();
    m_player->EnableStaticPrePass(!m_old_player_dynamic_mode);
    m_player->m_cameraMode = m_old_player_camera_mode;
    SetupImGuiStyle(1.0f);
