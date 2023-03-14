@@ -37,6 +37,21 @@
 #define ID_RENDERER_INSPECTION "Renderer Inspection"
 
 #define PROP_WIDTH (125.f * m_dpi)
+#define PROP_TIMER(is_live, startup_obj, live_obj)                                                                                                                                                                  \
+   if (ImGui::CollapsingHeader("Timer", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE) \
+   { \
+      PropCheckbox("Enabled", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_tdr.m_TimerEnabled) : nullptr, live_obj ? &(live_obj->m_d.m_tdr.m_TimerEnabled) : nullptr); \
+      PropInt("Interval (ms)", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_tdr.m_TimerInterval) : nullptr, live_obj ? &(live_obj->m_d.m_tdr.m_TimerInterval) : nullptr); \
+      ImGui::EndTable(); \
+   }
+#define BEGIN_PROP_TABLE ImGui::BeginTable("props", 2, ImGuiTableFlags_Borders)
+#define PROP_TABLE_SETUP \
+   if (ImGui::TableGetRowIndex() == -1) \
+   { \
+      ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthStretch); \
+      ImGui::TableSetupColumn("Sync", ImGuiTableColumnFlags_WidthFixed); \
+   }
+
 
 #define ICON_SAVE ICON_FK_FLOPPY_O
 
@@ -651,6 +666,8 @@ void LiveUI::OpenMainUI()
    // Opens the main UI. This will only open the main splash modal which allows to go further in the live UI.
    if (!m_ShowUI && !m_ShowSplashModal)
    {
+      while (ShowCursor(FALSE)>=0) ;
+      while (ShowCursor(TRUE)<0) ;
       m_ShowUI = false;
       m_ShowBAMModal = false;
       m_ShowSplashModal = true;
@@ -860,17 +877,6 @@ void LiveUI::PausePlayer(bool pause)
    g_pplayer->m_debugWindowActive = pause;
    g_pplayer->RecomputePauseState();
    g_pplayer->RecomputePseudoPauseState();
-
-   if (pause)
-   {
-      while (ShowCursor(FALSE)>=0) ;
-      while (ShowCursor(TRUE)<0) ;
-   }
-   else
-   {
-      while (ShowCursor(TRUE)<0) ;
-      while (ShowCursor(FALSE)>=0) ;
-   }
 }
 
 void LiveUI::EnterEditMode()
@@ -891,6 +897,8 @@ void LiveUI::HideUI()
    m_ShowSplashModal = false;
    m_ShowUI = false;
    PausePlayer(false);
+   while (ShowCursor(TRUE)<0) ;
+   while (ShowCursor(FALSE)>=0) ;
 }
 
 void LiveUI::UpdateMainUI()
@@ -1347,8 +1355,6 @@ void LiveUI::UpdateMainSplashModal()
 // Property panes
 //
 
-#define BEGIN_PROP_TABLE ImGui::BeginTable("props", 2, ImGuiTableFlags_Borders)
-
 void LiveUI::TableProperties(bool is_live)
 {
    HelpEditableHeader(is_live, m_table, m_live_table);
@@ -1366,27 +1372,27 @@ void LiveUI::TableProperties(bool is_live)
    }
    if (ImGui::CollapsingHeader("Lights", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
-      PropRGB("Ambient Color", is_live, &(m_table->m_lightAmbient), m_live_table ? &(m_live_table->m_lightAmbient) : nullptr);
+      PropRGB("Ambient Color", m_table, is_live, &(m_table->m_lightAmbient), m_live_table ? &(m_live_table->m_lightAmbient) : nullptr);
       PropSeparator();
-      PropRGB("Light Em. Color", is_live, &(m_table->m_Light[0].emission), m_live_table ? &(m_live_table->m_Light[0].emission) : nullptr);
-      auto reinit_lights = [](LiveUI *ui, float prev, float v) { ui->m_pin3d->InitLights(); }; // Needed to update shaders with new light settings 
-      PropFloat("Light Em. Scale", is_live, &(m_table->m_lightEmissionScale), m_live_table ? &(m_live_table->m_lightEmissionScale) : nullptr, 20000.0f, 100000.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal, reinit_lights);
-      PropFloat("Light Height", is_live, &(m_table->m_lightHeight), m_live_table ? &(m_live_table->m_lightHeight) : nullptr, 20.0f, 100.0f, "%.0f");
-      PropFloat("Light Range", is_live, &(m_table->m_lightRange), m_live_table ? &(m_live_table->m_lightRange) : nullptr, 200.0f, 1000.0f, "%.0f");
+      PropRGB("Light Em. Color", m_table, is_live, &(m_table->m_Light[0].emission), m_live_table ? &(m_live_table->m_Light[0].emission) : nullptr);
+      auto reinit_lights = [](LiveUI *ui, bool is_live, float prev, float v) { ui->m_pin3d->InitLights(); }; // Needed to update shaders with new light settings 
+      PropFloat("Light Em. Scale", m_table, is_live, &(m_table->m_lightEmissionScale), m_live_table ? &(m_live_table->m_lightEmissionScale) : nullptr, 20000.0f, 100000.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal, reinit_lights);
+      PropFloat("Light Height", m_table, is_live, &(m_table->m_lightHeight), m_live_table ? &(m_live_table->m_lightHeight) : nullptr, 20.0f, 100.0f, "%.0f");
+      PropFloat("Light Range", m_table, is_live, &(m_table->m_lightRange), m_live_table ? &(m_live_table->m_lightRange) : nullptr, 200.0f, 1000.0f, "%.0f");
       PropSeparator();
       // TODO Missing: environment texture combo
-      auto upd_env_em_scale = [](LiveUI* ui, float prev, float v) {
+      auto upd_env_em_scale = [](LiveUI *ui, bool is_live, float prev, float v)
+      {
          const vec4 st(v * ui->m_player->m_globalEmissionScale,
             ui->m_pin3d->m_envTexture ? (float)ui->m_pin3d->m_envTexture->m_height /*+m_pin3d->m_envTexture->m_width)*0.5f*/
                                       : (float)ui->m_pin3d->m_builtinEnvTexture.m_height /*+m_pin3d->m_builtinEnvTexture.m_width)*0.5f*/,
             0.f, 0.f);
          ui->m_rd->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
       };
-      PropFloat("Environment Em. Scale", is_live, &(m_table->m_envEmissionScale), m_live_table ? &(m_live_table->m_envEmissionScale) : nullptr, 0.1f, 0.5f, "%.3f",
-         ImGuiInputTextFlags_CharsDecimal, upd_env_em_scale);
-      PropFloat("Ambient Occlusion Scale", is_live, &(m_table->m_AOScale), m_live_table ? &(m_live_table->m_AOScale) : nullptr, 0.1f, 1.0f);
-      PropFloat("Bloom Strength", is_live, &(m_table->m_bloom_strength), m_live_table ? &(m_live_table->m_bloom_strength) : nullptr, 0.1f, 1.0f);
-      PropFloat("Screen Space Reflection Scale", is_live, &(m_table->m_SSRScale), m_live_table ? &(m_live_table->m_SSRScale) : nullptr, 0.1f, 1.0f);
+      PropFloat("Environment Em. Scale", m_table, is_live, &(m_table->m_envEmissionScale), m_live_table ? &(m_live_table->m_envEmissionScale) : nullptr, 0.1f, 0.5f, "%.3f", ImGuiInputTextFlags_CharsDecimal, upd_env_em_scale);
+      PropFloat("Ambient Occlusion Scale", m_table, is_live, &(m_table->m_AOScale), m_live_table ? &(m_live_table->m_AOScale) : nullptr, 0.1f, 1.0f);
+      PropFloat("Bloom Strength", m_table, is_live, &(m_table->m_bloom_strength), m_live_table ? &(m_live_table->m_bloom_strength) : nullptr, 0.1f, 1.0f);
+      PropFloat("Screen Space Reflection Scale", m_table, is_live, &(m_table->m_SSRScale), m_live_table ? &(m_live_table->m_SSRScale) : nullptr, 0.1f, 1.0f);
       ImGui::EndTable();
    }
 }
@@ -1442,37 +1448,37 @@ void LiveUI::CameraProperties(bool is_live)
          switch (i)
          {
          case 0:
-            PropFloat("Inclination", is_live, &(m_table->m_BG_inclination[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_inclination[m_selection.camera]) : nullptr, 0.2f, 1.0f);
+            PropFloat("Inclination", m_table, is_live, &(m_table->m_BG_inclination[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_inclination[m_selection.camera]) : nullptr, 0.2f, 1.0f);
             break;
          case 1:
-            PropFloat("Field Of View", is_live, &(m_table->m_BG_FOV[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_FOV[m_selection.camera]) : nullptr, 0.2f, 1.0f);
+            PropFloat("Field Of View", m_table, is_live, &(m_table->m_BG_FOV[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_FOV[m_selection.camera]) : nullptr, 0.2f, 1.0f);
             break;
          case 2:
-            PropFloat("Layback", is_live, &(m_table->m_BG_layback[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_layback[m_selection.camera]) : nullptr, 0.2f, 1.0f);
+            PropFloat("Layback", m_table, is_live, &(m_table->m_BG_layback[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_layback[m_selection.camera]) : nullptr, 0.2f, 1.0f);
             break;
          case 4:
-            PropFloat("X Scale", is_live, &(m_table->m_BG_scalex[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_scalex[m_selection.camera]) : nullptr, 0.002f, 0.01f);
+            PropFloat("X Scale", m_table, is_live, &(m_table->m_BG_scalex[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_scalex[m_selection.camera]) : nullptr, 0.002f, 0.01f);
             break;
          case 5:
-            PropFloat("Y Scale", is_live, &(m_table->m_BG_scaley[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_scaley[m_selection.camera]) : nullptr, 0.002f, 0.01f);
+            PropFloat("Y Scale", m_table, is_live, &(m_table->m_BG_scaley[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_scaley[m_selection.camera]) : nullptr, 0.002f, 0.01f);
             break;
          case 6:
-            PropFloat("Z Scale", is_live, &(m_table->m_BG_scalez[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_scalez[m_selection.camera]) : nullptr, 0.002f, 0.01f);
+            PropFloat("Z Scale", m_table, is_live, &(m_table->m_BG_scalez[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_scalez[m_selection.camera]) : nullptr, 0.002f, 0.01f);
             break;
          case 7:
-            PropFloat("X Offset", is_live, &(m_table->m_BG_xlatex[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_xlatex[m_selection.camera]) : nullptr, 10.0f, 50.0f, "%.0f");
+            PropFloat("X Offset", m_table, is_live, &(m_table->m_BG_xlatex[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_xlatex[m_selection.camera]) : nullptr, 10.0f, 50.0f, "%.0f");
             break;
          case 8:
-            PropFloat("Y Offset", is_live, &(m_table->m_BG_xlatey[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_xlatey[m_selection.camera]) : nullptr, 10.0f, 50.0f, "%.0f");
+            PropFloat("Y Offset", m_table, is_live, &(m_table->m_BG_xlatey[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_xlatey[m_selection.camera]) : nullptr, 10.0f, 50.0f, "%.0f");
             break;
          case 9:
-            PropFloat("Z Offset", is_live, &(m_table->m_BG_xlatez[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_xlatez[m_selection.camera]) : nullptr, 10.0f, 50.0f, "%.0f");
+            PropFloat("Z Offset", m_table, is_live, &(m_table->m_BG_xlatez[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_xlatez[m_selection.camera]) : nullptr, 10.0f, 50.0f, "%.0f");
             break;
          }
          if (m_player->m_cameraMode && (i == m_player->m_backdropSettingActive || (m_player->m_backdropSettingActive == 3 && (i == 4 || i == 5))))
             ImGui::PopStyleColor();
       }
-      PropFloat("Rotation", true, &(m_table->m_BG_rotation[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_rotation[m_selection.camera]) : nullptr, 90.f, 90.0f, "%.0f");
+      PropFloat("Rotation", m_table, true, &(m_table->m_BG_rotation[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_rotation[m_selection.camera]) : nullptr, 90.f, 90.0f, "%.0f");
       ImGui::EndTable();
    }
    ImGui::Separator();
@@ -1499,22 +1505,22 @@ void LiveUI::MaterialProperties(bool is_live)
    if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       // FIXME add MaterialType m_type;
-      PropRGB("Base Color", is_live, startup_material ? &(startup_material->m_cBase) : nullptr, live_material ? &(live_material->m_cBase) : nullptr);
-      PropFloat("Wrap Lighting", is_live, startup_material ? &(startup_material->m_fWrapLighting) : nullptr, live_material ? &(live_material->m_fWrapLighting) : nullptr, 0.02f, 0.1f);
-      PropRGB("Glossy Color", is_live, startup_material ? &(startup_material->m_cGlossy) : nullptr, live_material ? &(live_material->m_cGlossy) : nullptr);
-      PropFloat("Glossy Image Lerp", is_live, startup_material ? &(startup_material->m_fGlossyImageLerp) : nullptr, live_material ? &(live_material->m_fGlossyImageLerp) : nullptr, 0.02f, 0.1f);
-      PropFloat("Shininess", is_live, startup_material ? &(startup_material->m_fRoughness) : nullptr, live_material ? &(live_material->m_fRoughness) : nullptr, 0.02f, 0.1f);
-      PropRGB("Clearcoat Color", is_live, startup_material ? &(startup_material->m_cClearcoat) : nullptr, live_material ? &(live_material->m_cClearcoat) : nullptr);
-      PropFloat("Edge Brightness", is_live, startup_material ? &(startup_material->m_fEdge) : nullptr, live_material ? &(live_material->m_fEdge) : nullptr, 0.02f, 0.1f);
+      PropRGB("Base Color", m_table, is_live, startup_material ? &(startup_material->m_cBase) : nullptr, live_material ? &(live_material->m_cBase) : nullptr);
+      PropFloat("Wrap Lighting", m_table, is_live, startup_material ? &(startup_material->m_fWrapLighting) : nullptr, live_material ? &(live_material->m_fWrapLighting) : nullptr, 0.02f, 0.1f);
+      PropRGB("Glossy Color", m_table, is_live, startup_material ? &(startup_material->m_cGlossy) : nullptr, live_material ? &(live_material->m_cGlossy) : nullptr);
+      PropFloat("Glossy Image Lerp", m_table, is_live, startup_material ? &(startup_material->m_fGlossyImageLerp) : nullptr, live_material ? &(live_material->m_fGlossyImageLerp) : nullptr, 0.02f, 0.1f);
+      PropFloat("Shininess", m_table, is_live, startup_material ? &(startup_material->m_fRoughness) : nullptr, live_material ? &(live_material->m_fRoughness) : nullptr, 0.02f, 0.1f);
+      PropRGB("Clearcoat Color", m_table, is_live, startup_material ? &(startup_material->m_cClearcoat) : nullptr, live_material ? &(live_material->m_cClearcoat) : nullptr);
+      PropFloat("Edge Brightness", m_table, is_live, startup_material ? &(startup_material->m_fEdge) : nullptr, live_material ? &(live_material->m_fEdge) : nullptr, 0.02f, 0.1f);
       ImGui::EndTable();
    }
    if (ImGui::CollapsingHeader("Transparency", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
-      PropCheckbox("Enable Transparency", is_live, startup_material ? &(startup_material->m_bOpacityActive) : nullptr, live_material ? &(live_material->m_bOpacityActive) : nullptr);
-      PropFloat("Opacity", is_live, startup_material ? &(startup_material->m_fOpacity) : nullptr, live_material ? &(live_material->m_fOpacity) : nullptr, 0.02f, 0.1f);
-      PropFloat("Edge Opacity", is_live, startup_material ? &(startup_material->m_fEdgeAlpha) : nullptr, live_material ? &(live_material->m_fEdgeAlpha) : nullptr, 0.02f, 0.1f);
-      PropFloat("Thickness", is_live, startup_material ? &(startup_material->m_fThickness) : nullptr, live_material ? &(live_material->m_fThickness) : nullptr, 0.02f, 0.1f);
-      PropRGB("Refraction Tint", is_live, startup_material ? &(startup_material->m_cRefractionTint) : nullptr, live_material ? &(live_material->m_cRefractionTint) : nullptr);
+      PropCheckbox("Enable Transparency", m_table, is_live, startup_material ? &(startup_material->m_bOpacityActive) : nullptr, live_material ? &(live_material->m_bOpacityActive) : nullptr);
+      PropFloat("Opacity", m_table, is_live, startup_material ? &(startup_material->m_fOpacity) : nullptr, live_material ? &(live_material->m_fOpacity) : nullptr, 0.02f, 0.1f);
+      PropFloat("Edge Opacity", m_table, is_live, startup_material ? &(startup_material->m_fEdgeAlpha) : nullptr, live_material ? &(live_material->m_fEdgeAlpha) : nullptr, 0.02f, 0.1f);
+      PropFloat("Thickness", m_table, is_live, startup_material ? &(startup_material->m_fThickness) : nullptr, live_material ? &(live_material->m_fThickness) : nullptr, 0.02f, 0.1f);
+      PropRGB("Refraction Tint", m_table, is_live, startup_material ? &(startup_material->m_cRefractionTint) : nullptr, live_material ? &(live_material->m_cRefractionTint) : nullptr);
       ImGui::EndTable();
    }
 }
@@ -1527,19 +1533,98 @@ void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_lig
 {
    if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
-      auto upd_light = [startup_light, live_light](LiveUI *ui, float prev, float v)
+      auto upd_intensity = [startup_light, live_light](LiveUI *ui, bool is_live, float prev, float v)
       {
-         startup_light->m_d.m_currentIntensity = startup_light->m_d.m_intensity * startup_light->m_d.m_intensity_scale * startup_light->m_inPlayState;
-         live_light->m_d.m_currentIntensity = live_light->m_d.m_intensity * live_light->m_d.m_intensity_scale * live_light->m_inPlayState;
+         Light *light = (is_live ? live_light : startup_light);
+         if (prev > 0.1 && v > 0.1)
+         {
+            float fade_up_ms = prev / light->m_d.m_fadeSpeedUp;
+            light->m_d.m_fadeSpeedUp = fade_up_ms < 0.1 ? 100000.0f : v / fade_up_ms;
+            float fade_down_ms = prev / light->m_d.m_fadeSpeedDown;
+            light->m_d.m_fadeSpeedDown = fade_down_ms < 0.1 ? 100000.0f : v / fade_down_ms;
+         }
+         startup_light->m_currentIntensity = startup_light->m_d.m_intensity * startup_light->m_d.m_intensity_scale * startup_light->m_inPlayState;
+         live_light->m_currentIntensity = live_light->m_d.m_intensity * live_light->m_d.m_intensity_scale * live_light->m_inPlayState;
       };
-      PropFloat("Intensity", is_live, startup_light ? &(startup_light->m_d.m_intensity) : nullptr, live_light ? &(live_light->m_d.m_intensity) : nullptr, 0.1f, 1.0f, "%.1f", ImGuiInputTextFlags_CharsDecimal, upd_light);
-      PropRGB("Light Color", is_live, startup_light ? &(startup_light->m_d.m_color) : nullptr, live_light ? &(live_light->m_d.m_color) : nullptr);
-      PropRGB("Center Burst", is_live, startup_light ? &(startup_light->m_d.m_color2) : nullptr, live_light ? &(live_light->m_d.m_color2) : nullptr);
-      PropFloat("Falloff Range", is_live, startup_light ? &(startup_light->m_d.m_falloff) : nullptr, live_light ? &(live_light->m_d.m_falloff) : nullptr, 10.f, 100.f, "%.0f");
-      PropFloat("Falloff Power", is_live, startup_light ? &(startup_light->m_d.m_falloff) : nullptr, live_light ? &(live_light->m_d.m_falloff) : nullptr, 0.1f, 0.5f, "%.2f");
+      float startup_fadeup = startup_light ? (startup_light->m_d.m_intensity / startup_light->m_d.m_fadeSpeedUp) : 0.f;
+      float live_fadeup = live_light ? (live_light->m_d.m_intensity / live_light->m_d.m_fadeSpeedUp) : 0.f;
+      auto upd_fade_up = [startup_light, live_light](LiveUI *ui, bool is_live, float prev, float v)
+      { 
+         Light *light = (is_live ? live_light : startup_light);
+         light->m_d.m_fadeSpeedUp = v < 0.1 ? 100000.0f : light->m_d.m_intensity / v; 
+      };
+      float startup_fadedown = startup_light ? (startup_light->m_d.m_intensity / startup_light->m_d.m_fadeSpeedDown) : 0.f;
+      float live_fadedown = live_light ? (live_light->m_d.m_intensity / live_light->m_d.m_fadeSpeedDown) : 0.f;
+      auto upd_fade_down = [startup_light, live_light](LiveUI *ui, bool is_live, float prev, float v)
+      {
+         Light *light = (is_live ? live_light : startup_light);
+         light->m_d.m_fadeSpeedDown = v < 0.1 ? 100000.0f : light->m_d.m_intensity / v;
+      };
+      bool startup_shadow = startup_light->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS;
+      bool live_shadow = live_light->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS;
+      auto upd_shadow = [startup_light, live_light](LiveUI *ui, bool is_live, bool prev, bool v)
+      {
+         Light *light = (is_live ? live_light : startup_light);
+         light->m_d.m_shadows = v ? ShadowMode::RAYTRACED_BALL_SHADOWS : ShadowMode::NONE;
+      };
+      PropSeparator("Light Settings");
+      PropFloat("Intensity", startup_light, is_live, startup_light ? &(startup_light->m_d.m_intensity) : nullptr, live_light ? &(live_light->m_d.m_intensity) : nullptr, 0.1f, 1.0f, "%.1f", ImGuiInputTextFlags_CharsDecimal, upd_intensity);
+      const string faders[] = { "None"s, "Linear"s, "Incandescent"s };
+      PropCombo("Fader", startup_light, is_live, startup_light ? (int *)&(startup_light->m_d.m_fader) : nullptr, live_light ? (int *)&(live_light->m_d.m_fader) : nullptr, 3, faders);
+      PropFloat("Fade Up (ms)", startup_light, is_live, startup_light ? &startup_fadeup : nullptr, live_light ? &live_fadeup : nullptr, 10.0f, 50.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal, upd_fade_up);
+      PropFloat("Fade Down (ms)", startup_light, is_live, startup_light ? &startup_fadedown : nullptr, live_light ? &live_fadedown : nullptr, 10.0f, 50.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal, upd_fade_down);
+      PropRGB("Light Color", startup_light, is_live, startup_light ? &(startup_light->m_d.m_color) : nullptr, live_light ? &(live_light->m_d.m_color) : nullptr);
+      PropRGB("Center Burst", startup_light, is_live, startup_light ? &(startup_light->m_d.m_color2) : nullptr, live_light ? &(live_light->m_d.m_color2) : nullptr);
+      PropFloat("Falloff Range", startup_light, is_live, startup_light ? &(startup_light->m_d.m_falloff) : nullptr, live_light ? &(live_light->m_d.m_falloff) : nullptr, 10.f, 100.f, "%.0f");
+      PropFloat("Falloff Power", startup_light, is_live, startup_light ? &(startup_light->m_d.m_falloff_power) : nullptr, live_light ? &(live_light->m_d.m_falloff_power) : nullptr, 0.1f, 0.5f, "%.2f");
+      PropSeparator("Render Mode");
+      // Missing render mode properties
+      PropSeparator("Bulb");
+      PropCheckbox("Render bulb", startup_light, is_live, startup_light ? &(startup_light->m_d.m_showBulbMesh) : nullptr, live_light ? &(live_light->m_d.m_showBulbMesh) : nullptr);
+      PropCheckbox("Static rendering", startup_light, is_live, startup_light ? &(startup_light->m_d.m_staticBulbMesh) : nullptr, live_light ? &(live_light->m_d.m_staticBulbMesh) : nullptr);
+      PropFloat("Bulb Size", startup_light, is_live, startup_light ? &(startup_light->m_d.m_meshRadius) : nullptr, live_light ? &(live_light->m_d.m_meshRadius) : nullptr, 1.0f, 5.0f, "%.0f");
+      PropSeparator("Ball reflections & Shadows");
+      PropCheckbox("Show Reflection on Balls", startup_light, is_live, startup_light ? &(startup_light->m_d.m_showReflectionOnBall) : nullptr, live_light ? &(live_light->m_d.m_showReflectionOnBall) : nullptr);
+      PropCheckbox("Raytraced ball shadows", startup_light, is_live, startup_light ? &startup_shadow : nullptr, live_light ? &live_shadow : nullptr, upd_shadow);
+      PropSeparator("Position");
+      PropFloat("X", startup_light, is_live, startup_light ? &(startup_light->m_d.m_vCenter.x) : nullptr, live_light ? &(live_light->m_d.m_vCenter.x) : nullptr, 0.1f, 0.5f, "%.1f");
+      PropFloat("Y", startup_light, is_live, startup_light ? &(startup_light->m_d.m_vCenter.y) : nullptr, live_light ? &(live_light->m_d.m_vCenter.y) : nullptr, 0.1f, 0.5f, "%.1f");
+      PropFloat("Z", startup_light, is_live, startup_light ? &(startup_light->m_d.m_height) : nullptr, live_light ? &(live_light->m_d.m_height) : nullptr, 0.1f, 0.5f, "%.1f");
+
       ImGui::EndTable();
    }
-   ImGui::Separator();
+   if (ImGui::CollapsingHeader("States", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   {
+      auto upd_inplaystate = [startup_light, live_light](LiveUI *ui, bool is_live, float prev, float v)
+      {
+         Light *light = (is_live ? live_light : startup_light);
+         light->setInPlayState(v > 1 ? LightStateBlinking : v);
+      };
+      PropFloat("State", startup_light, is_live, startup_light ? &(startup_light->m_d.m_state) : nullptr, live_light ? &(live_light->m_d.m_state) : nullptr, 0.1f, 0.5f, "%.1f", ImGuiInputTextFlags_CharsDecimal, upd_inplaystate);
+      // Missing blink pattern
+      PropInt("Blink interval", startup_light, is_live, startup_light ? &(startup_light->m_d.m_blinkinterval) : nullptr, live_light ? &(live_light->m_d.m_blinkinterval) : nullptr);
+      ImGui::EndTable();
+   }
+   PROP_TIMER(is_live, startup_light, live_light)
+   if (is_live && ImGui::CollapsingHeader("Live state", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   {
+      PROP_TABLE_SETUP
+      ImGui::BeginDisabled();
+      ImGui::TableNextColumn();
+      ImGui::InputFloat("Intensity", &live_light->m_currentIntensity);
+      ImGui::TableNextColumn();
+      ImGui::Button(ICON_SAVE "##t2");
+      if (live_light->m_d.m_fader == FADER_INCANDESCENT)
+      {
+         ImGui::TableNextColumn();
+         float temperature = (float)live_light->m_currentFilamentTemperature;
+         ImGui::InputFloat("Filament Temperature", &temperature);
+         ImGui::TableNextColumn();
+         ImGui::Button(ICON_SAVE "##t1");
+      }
+      ImGui::EndDisabled();
+      ImGui::EndTable();
+   }
 }
 
 void LiveUI::PrimitiveProperties(bool is_live, Primitive *startup_obj, Primitive *live_obj)
@@ -1547,32 +1632,32 @@ void LiveUI::PrimitiveProperties(bool is_live, Primitive *startup_obj, Primitive
    if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       PropSeparator("Render Options");
-      PropCheckbox("Static Rendering", is_live, startup_obj ? &(startup_obj->m_d.m_staticRendering) : nullptr, live_obj ? &(live_obj->m_d.m_staticRendering) : nullptr);
-      PropCheckbox("Visible", is_live, startup_obj ? &(startup_obj->m_d.m_visible) : nullptr, live_obj ? &(live_obj->m_d.m_visible) : nullptr);
-      PropCheckbox("Reflection Enabled", is_live, startup_obj ? &(startup_obj->m_d.m_reflectionEnabled) : nullptr, live_obj ? &(live_obj->m_d.m_reflectionEnabled) : nullptr);
-      PropFloat("Depth Bias", is_live, startup_obj ? &(startup_obj->m_d.m_depthBias) : nullptr, live_obj ? &(live_obj->m_d.m_depthBias) : nullptr, 10.f, 50.f, "%.0f");
-      PropCheckbox("Render Backfaces", is_live, startup_obj ? &(startup_obj->m_d.m_backfacesEnabled) : nullptr, live_obj ? &(live_obj->m_d.m_backfacesEnabled) : nullptr);
-      PropCheckbox("Additive Blend", is_live, startup_obj ? &(startup_obj->m_d.m_addBlend) : nullptr, live_obj ? &(live_obj->m_d.m_addBlend) : nullptr);
+      PropCheckbox("Static Rendering", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_staticRendering) : nullptr, live_obj ? &(live_obj->m_d.m_staticRendering) : nullptr);
+      PropCheckbox("Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_visible) : nullptr, live_obj ? &(live_obj->m_d.m_visible) : nullptr);
+      PropCheckbox("Reflection Enabled", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_reflectionEnabled) : nullptr, live_obj ? &(live_obj->m_d.m_reflectionEnabled) : nullptr);
+      PropFloat("Depth Bias", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_depthBias) : nullptr, live_obj ? &(live_obj->m_d.m_depthBias) : nullptr, 10.f, 50.f, "%.0f");
+      PropCheckbox("Render Backfaces", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_backfacesEnabled) : nullptr, live_obj ? &(live_obj->m_d.m_backfacesEnabled) : nullptr);
+      PropCheckbox("Additive Blend", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_addBlend) : nullptr, live_obj ? &(live_obj->m_d.m_addBlend) : nullptr);
       PropSeparator("Material");
-      PropFloat("Disable Light", is_live, startup_obj ? &(startup_obj->m_d.m_disableLightingTop) : nullptr, live_obj ? &(live_obj->m_d.m_disableLightingTop) : nullptr, 0.01f, 0.05f, "%.3f");
-      PropFloat("Disable Light from below", is_live, startup_obj ? &(startup_obj->m_d.m_disableLightingBelow) : nullptr, live_obj ? &(live_obj->m_d.m_disableLightingBelow) : nullptr, 0.01f, 0.05f, "%.3f");
+      PropFloat("Disable Light", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_disableLightingTop) : nullptr, live_obj ? &(live_obj->m_d.m_disableLightingTop) : nullptr, 0.01f, 0.05f, "%.3f");
+      PropFloat("Disable Light from below", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_disableLightingBelow) : nullptr, live_obj ? &(live_obj->m_d.m_disableLightingBelow) : nullptr, 0.01f, 0.05f, "%.3f");
       ImGui::EndTable();
    }
    if (ImGui::CollapsingHeader("Position", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       PropSeparator("Base Position & Size");
-      PropVec3("Position", is_live, startup_obj ? &(startup_obj->m_d.m_vPosition) : nullptr, live_obj ? &(live_obj->m_d.m_vPosition) : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal);
-      PropVec3("Size", is_live, startup_obj ? &(startup_obj->m_d.m_vSize) : nullptr, live_obj ? &(live_obj->m_d.m_vSize) : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal);
+      PropVec3("Position", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_vPosition) : nullptr, live_obj ? &(live_obj->m_d.m_vPosition) : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal);
+      PropVec3("Size", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_vSize) : nullptr, live_obj ? &(live_obj->m_d.m_vSize) : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal);
       PropSeparator("Rotation and Translation");
-      PropFloat("Rot. X", is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[0]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[0]) : nullptr, 1.f, 5.f, "%.3f");
-      PropFloat("Rot. Y", is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[1]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[1]) : nullptr, 1.f, 5.f, "%.3f");
-      PropFloat("Rot. Z", is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[2]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[2]) : nullptr, 1.f, 5.f, "%.3f");
-      PropFloat("Trans. X", is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[3]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[3]) : nullptr, 10.f, 50.f, "%.3f");
-      PropFloat("Trans. Y", is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[4]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[4]) : nullptr, 10.f, 50.f, "%.3f");
-      PropFloat("Trans. Z", is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[5]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[5]) : nullptr, 10.f, 50.f, "%.3f");
-      PropFloat("Obj. Rot. X", is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[6]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[6]) : nullptr, 1.f, 5.f, "%.3f");
-      PropFloat("Obj. Rot. Y", is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[7]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[7]) : nullptr, 1.f, 5.f, "%.3f");
-      PropFloat("Obj. Rot. Z", is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[8]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[8]) : nullptr, 1.f, 5.f, "%.3f");
+      PropFloat("Rot. X", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[0]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[0]) : nullptr, 1.f, 5.f, "%.3f");
+      PropFloat("Rot. Y", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[1]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[1]) : nullptr, 1.f, 5.f, "%.3f");
+      PropFloat("Rot. Z", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[2]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[2]) : nullptr, 1.f, 5.f, "%.3f");
+      PropFloat("Trans. X", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[3]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[3]) : nullptr, 10.f, 50.f, "%.3f");
+      PropFloat("Trans. Y", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[4]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[4]) : nullptr, 10.f, 50.f, "%.3f");
+      PropFloat("Trans. Z", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[5]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[5]) : nullptr, 10.f, 50.f, "%.3f");
+      PropFloat("Obj. Rot. X", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[6]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[6]) : nullptr, 1.f, 5.f, "%.3f");
+      PropFloat("Obj. Rot. Y", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[7]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[7]) : nullptr, 1.f, 5.f, "%.3f");
+      PropFloat("Obj. Rot. Z", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[8]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[8]) : nullptr, 1.f, 5.f, "%.3f");
       ImGui::EndTable();
    }
    if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen))
@@ -1588,21 +1673,16 @@ void LiveUI::RubberProperties(bool is_live, Rubber *startup_obj, Rubber *live_ob
 {
    if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
-      PropCheckbox("Static Rendering", is_live, startup_obj ? &(startup_obj->m_d.m_staticRendering) : nullptr, live_obj ? &(live_obj->m_d.m_staticRendering) : nullptr);
-      PropCheckbox("Visible", is_live, startup_obj ? &(startup_obj->m_d.m_visible) : nullptr, live_obj ? &(live_obj->m_d.m_visible) : nullptr);
-      PropCheckbox("Reflection Enabled", is_live, startup_obj ? &(startup_obj->m_d.m_reflectionEnabled) : nullptr, live_obj ? &(live_obj->m_d.m_reflectionEnabled) : nullptr);
+      PropCheckbox("Static Rendering", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_staticRendering) : nullptr, live_obj ? &(live_obj->m_d.m_staticRendering) : nullptr);
+      PropCheckbox("Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_visible) : nullptr, live_obj ? &(live_obj->m_d.m_visible) : nullptr);
+      PropCheckbox("Reflection Enabled", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_reflectionEnabled) : nullptr, live_obj ? &(live_obj->m_d.m_reflectionEnabled) : nullptr);
       ImGui::EndTable();
    }
    if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       ImGui::EndTable();
    }
-   if (ImGui::CollapsingHeader("Timer", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
-   {
-      PropCheckbox("Enabled", is_live, startup_obj ? &(startup_obj->m_d.m_tdr.m_TimerEnabled) : nullptr, live_obj ? &(live_obj->m_d.m_tdr.m_TimerEnabled) : nullptr);
-      PropInt("Interval (ms)", is_live, startup_obj ? &(startup_obj->m_d.m_tdr.m_TimerInterval) : nullptr, live_obj ? &(live_obj->m_d.m_tdr.m_TimerInterval) : nullptr);
-      ImGui::EndTable();
-   }
+   PROP_TIMER(is_live, startup_obj, live_obj)
 }
 
 void LiveUI::SurfaceProperties(bool is_live, Surface *startup_obj, Surface *live_obj)
@@ -1617,27 +1697,20 @@ void LiveUI::SurfaceProperties(bool is_live, Surface *startup_obj, Surface *live
 
 void LiveUI::PropSeparator(const char *label)
 {
-   if (ImGui::TableGetRowIndex() == -1)
-   {
-      ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthStretch);
-      ImGui::TableSetupColumn("Sync", ImGuiTableColumnFlags_WidthFixed);
-   }
+   PROP_TABLE_SETUP
    ImGui::TableNextColumn();
    if (label)
       ImGui::Text(label);
    ImGui::TableNextColumn();
 }
 
-void LiveUI::PropCheckbox(const char *label, bool is_live, bool *startup_v, bool *live_v)
+void LiveUI::PropCheckbox(const char *label, IEditable *undo_obj, bool is_live, bool *startup_v, bool *live_v, OnBoolPropChange chg_callback)
 {
    bool *v = is_live ? live_v : startup_v;
    bool *ov = is_live ? startup_v : live_v;
 
-   if (ImGui::TableGetRowIndex() == -1)
-   {
-      ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthStretch);
-      ImGui::TableSetupColumn("Sync", ImGuiTableColumnFlags_WidthFixed);
-   }
+   PROP_TABLE_SETUP
+
    ImGui::TableNextColumn();
    if (v == nullptr)
    {
@@ -1649,8 +1722,11 @@ void LiveUI::PropCheckbox(const char *label, bool is_live, bool *startup_v, bool
    ImGui::PushID(label);
 
    // Main edit field
+   bool prev_v = *v;
    if (ImGui::Checkbox(label, v))
    {
+      if (chg_callback)
+         chg_callback(this, is_live, prev_v, *v);
       if (!is_live)
          m_table->SetNonUndoableDirty(eSaveDirty);
    }
@@ -1662,9 +1738,12 @@ void LiveUI::PropCheckbox(const char *label, bool is_live, bool *startup_v, bool
       const bool synced = ((*ov) == (*v));
       if (synced)
          ImGui::BeginDisabled();
+      bool prev_ov = *ov;
       if (ImGui::Button(ICON_SAVE))
       {
          *ov = *v;
+         if (chg_callback)
+            chg_callback(this, !is_live, prev_ov, *ov);
          if (is_live)
             m_table->SetNonUndoableDirty(eSaveDirty);
       }
@@ -1683,7 +1762,7 @@ void LiveUI::PropCheckbox(const char *label, bool is_live, bool *startup_v, bool
    ImGui::PopID();
 }
 
-void LiveUI::PropFloat(const char *label, bool is_live, float *startup_v, float *live_v, float step, float step_fast, const char *format, ImGuiInputTextFlags flags, OnFloatPropChange chg_callback)
+void LiveUI::PropFloat(const char *label, IEditable* undo_obj, bool is_live, float *startup_v, float *live_v, float step, float step_fast, const char *format, ImGuiInputTextFlags flags, OnFloatPropChange chg_callback)
 {
    /* 
    TODO update undo stack instead of SetNonUndoableDirty
@@ -1697,11 +1776,7 @@ void LiveUI::PropFloat(const char *label, bool is_live, float *startup_v, float 
    float *v = is_live ? live_v : startup_v;
    float *ov = is_live ? startup_v : live_v;
 
-   if (ImGui::TableGetRowIndex() == -1)
-   {
-      ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthStretch);
-      ImGui::TableSetupColumn("Sync", ImGuiTableColumnFlags_WidthFixed);
-   }
+   PROP_TABLE_SETUP
 
    ImGui::TableNextColumn();
    if (v == nullptr)
@@ -1714,11 +1789,11 @@ void LiveUI::PropFloat(const char *label, bool is_live, float *startup_v, float 
    ImGui::PushID(label);
 
    // Main edit field
-   float prev = *v;
+   float prev_v = *v;
    if (ImGui::InputFloat(label, v, step, step_fast, format, flags))
    {
       if (chg_callback)
-         chg_callback(this, prev, *v);
+         chg_callback(this, is_live, prev_v, *v);
       if (!is_live)
          m_table->SetNonUndoableDirty(eSaveDirty);
    }
@@ -1730,9 +1805,12 @@ void LiveUI::PropFloat(const char *label, bool is_live, float *startup_v, float 
       const bool synced = ((*ov) == (*v));
       if (synced)
          ImGui::BeginDisabled();
+      float prev_ov = *ov;
       if (ImGui::Button(ICON_SAVE))
       {
          *ov = *v;
+         if (chg_callback)
+            chg_callback(this, !is_live, prev_ov, *ov);
          if (is_live)
             m_table->SetNonUndoableDirty(eSaveDirty);
       }
@@ -1751,16 +1829,12 @@ void LiveUI::PropFloat(const char *label, bool is_live, float *startup_v, float 
    ImGui::PopID();
 }
 
-void LiveUI::PropInt(const char *label, bool is_live, int *startup_v, int *live_v)
+void LiveUI::PropInt(const char *label, IEditable *undo_obj, bool is_live, int *startup_v, int *live_v)
 {
    int *v = is_live ? live_v : startup_v;
    int *ov = is_live ? startup_v : live_v;
 
-   if (ImGui::TableGetRowIndex() == -1)
-   {
-      ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthStretch);
-      ImGui::TableSetupColumn("Sync", ImGuiTableColumnFlags_WidthFixed);
-   }
+   PROP_TABLE_SETUP
 
    ImGui::TableNextColumn();
    if (v == nullptr)
@@ -1807,16 +1881,12 @@ void LiveUI::PropInt(const char *label, bool is_live, int *startup_v, int *live_
    ImGui::PopID();
 }
 
-void LiveUI::PropRGB(const char *label, bool is_live, COLORREF *startup_v, COLORREF *live_v, ImGuiColorEditFlags flags)
+void LiveUI::PropRGB(const char *label, IEditable *undo_obj, bool is_live, COLORREF *startup_v, COLORREF *live_v, ImGuiColorEditFlags flags)
 {
    COLORREF *v = is_live ? live_v : startup_v;
    COLORREF *ov = is_live ? startup_v : live_v;
 
-   if (ImGui::TableGetRowIndex() == -1)
-   {
-      ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthStretch);
-      ImGui::TableSetupColumn("Sync", ImGuiTableColumnFlags_WidthFixed);
-   }
+   PROP_TABLE_SETUP
 
    ImGui::TableNextColumn();
    if (v == nullptr)
@@ -1871,16 +1941,12 @@ void LiveUI::PropRGB(const char *label, bool is_live, COLORREF *startup_v, COLOR
    ImGui::PopID();
 }
 
-void LiveUI::PropVec3(const char *label, bool is_live, Vertex3Ds *startup_v, Vertex3Ds *live_v, const char *format, ImGuiInputTextFlags flags)
+void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, Vertex3Ds *startup_v, Vertex3Ds *live_v, const char *format, ImGuiInputTextFlags flags)
 {
    Vertex3Ds *v = is_live ? live_v : startup_v;
    Vertex3Ds *ov = is_live ? startup_v : live_v;
 
-   if (ImGui::TableGetRowIndex() == -1)
-   {
-      ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthStretch);
-      ImGui::TableSetupColumn("Sync", ImGuiTableColumnFlags_WidthFixed);
-   }
+   PROP_TABLE_SETUP
 
    ImGui::TableNextColumn();
    if (v == nullptr)
@@ -1911,6 +1977,67 @@ void LiveUI::PropVec3(const char *label, bool is_live, Vertex3Ds *startup_v, Ver
    if (ov != nullptr)
    {
       const bool synced = (v->x == ov->x) && (v->y == ov->y) && (v->z == ov->z);
+      if (synced)
+         ImGui::BeginDisabled();
+      if (ImGui::Button(ICON_SAVE))
+      {
+         *ov = *v;
+         if (is_live)
+            m_table->SetNonUndoableDirty(eSaveDirty);
+      }
+      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+      {
+         ImGui::BeginTooltip();
+         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+         ImGui::Text("Copy this value to the %s version", is_live ? "startup" : "live");
+         ImGui::PopTextWrapPos();
+         ImGui::EndTooltip();
+      }
+      if (synced)
+         ImGui::EndDisabled();
+   }
+
+   ImGui::PopID();
+}
+
+void LiveUI::PropCombo(const char* label, IEditable* undo_obj, bool is_live, int* startup_v, int* live_v, int n_values, const string labels[])
+{
+   int *v = is_live ? live_v : startup_v;
+   int *ov = is_live ? startup_v : live_v;
+
+   PROP_TABLE_SETUP
+
+   ImGui::TableNextColumn();
+   if (v == nullptr)
+   {
+      // Missing value just skip
+      ImGui::TableNextColumn();
+      return;
+   }
+
+   ImGui::PushID(label);
+
+   // Main edit field
+   const char *preview_value = labels[*v].c_str();
+   if (ImGui::BeginCombo(label, preview_value))
+   {
+      for (int i = 0; i < n_values; i++)
+      {
+         if (ImGui::Selectable(labels[i].c_str()))
+         {
+            *v = i;
+            if (!is_live)
+               m_table->SetNonUndoableDirty(eSaveDirty);
+         }
+      }
+      ImGui::EndCombo();
+   }
+
+   // Sync button (also show if there are difference between live and startup through the enable state)
+   ImGui::TableNextColumn();
+   if (ov != nullptr)
+   {
+      const bool synced = ((*ov) == (*v));
       if (synced)
          ImGui::BeginDisabled();
       if (ImGui::Button(ICON_SAVE))

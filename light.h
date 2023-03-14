@@ -36,10 +36,10 @@ public:
    float m_intensity_scale;
    float m_fadeSpeedUp;
    float m_fadeSpeedDown;
-   float m_currentIntensity;
-   double m_currentFilamentTemperature;
 
    float m_state; // 0..1 is modulated from off to on, 2 is blinking
+   string m_rgblinkpattern;
+   int m_blinkinterval;
    COLORREF m_color;
    COLORREF m_color2; // color full
    TimerDataRoot m_tdr;
@@ -160,15 +160,17 @@ public:
 
    Light *CopyForPlay(PinTable *live_table);
 
+   void AddLightmap(IEditable *lightmap);
+
+   // Light definition
    LightData m_d;
 
+   // Live data
    float m_inPlayState; // 0..1 is modulated from off to on, 2 is blinking
+   float m_currentIntensity;
+   double m_currentFilamentTemperature;
    float m_surfaceHeight;
    bool  m_lockedByLS;
-   string m_rgblinkpattern;
-   int m_blinkinterval;
-
-   void AddLightmap(IEditable *lightmap);
 
 private:
 
@@ -307,17 +309,17 @@ private:
       if (m_timenextblink <= time_msec)
       {
          m_iblinkframe++;
-         if (m_iblinkframe >= (U32)m_rgblinkpattern.length() || m_rgblinkpattern[m_iblinkframe] == '\0')
+          if (m_iblinkframe >= (U32)m_d.m_rgblinkpattern.length() || m_d.m_rgblinkpattern[m_iblinkframe] == '\0')
             m_iblinkframe = 0;
 
-         m_timenextblink += m_blinkinterval;
+         m_timenextblink += m_d.m_blinkinterval;
       }
    }
 
    void RestartBlinker(const U32 cur_time_msec)
    {
       m_iblinkframe = 0;
-      m_timenextblink = cur_time_msec + m_blinkinterval;
+      m_timenextblink = cur_time_msec + m_d.m_blinkinterval;
       m_timerDurationEndTime = cur_time_msec + m_duration;
    }
 };
