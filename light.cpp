@@ -35,13 +35,13 @@ Light *Light::CopyForPlay(PinTable *live_table)
    dst->m_layerName = m_layerName;
    dst->m_isVisible = m_isVisible;
    dst->m_locked = m_locked;
-   // Light specific copy
+   // Light specific copy and live data (not really needed)
+   dst->m_currentIntensity = m_currentIntensity;
+   dst->m_currentFilamentTemperature = m_currentFilamentTemperature;
+   dst->m_duration = m_duration;
    dst->m_surfaceHeight = m_surfaceHeight;
    dst->m_inPlayState = m_inPlayState;
    dst->m_lockedByLS = m_lockedByLS;
-   dst->m_rgblinkpattern = m_rgblinkpattern;
-   dst->m_blinkinterval = m_blinkinterval;
-   dst->m_duration = m_duration;
    dst->m_finalLightState = m_finalLightState;
    dst->m_surfaceMaterial = m_surfaceMaterial;
    dst->m_surfaceTexture = m_surfaceTexture;
@@ -101,11 +101,11 @@ void Light::SetDefaults(const bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
 
-   hr = LoadValue(regKey, "BlinkPattern"s, m_rgblinkpattern);
+   hr = LoadValue(regKey, "BlinkPattern"s, m_d.m_rgblinkpattern);
    if ((hr != S_OK) || !fromMouseClick)
-      m_rgblinkpattern = "10";
+      m_d.m_rgblinkpattern = "10";
 
-   m_blinkinterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "BlinkInterval"s, 125) : 125;
+   m_d.m_blinkinterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "BlinkInterval"s, 125) : 125;
    m_d.m_intensity = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Intensity"s, 10.0f) : 10.0f;
    m_d.m_transmissionScale = fromMouseClick ? LoadValueFloatWithDefault(regKey, "TransmissionScale"s, 0.5f) : 0.f; // difference in defaults is intended
 
@@ -143,8 +143,8 @@ void Light::WriteRegDefaults()
    SaveValueInt(regKey, "Color"s, m_d.m_color);
    SaveValueInt(regKey, "ColorFull"s, m_d.m_color2);
    SaveValue(regKey, "OffImage"s, m_d.m_szImage);
-   SaveValue(regKey, "BlinkPattern"s, m_rgblinkpattern);
-   SaveValueInt(regKey, "BlinkInterval"s, m_blinkinterval);
+   SaveValue(regKey, "BlinkPattern"s, m_d.m_rgblinkpattern);
+   SaveValueInt(regKey, "BlinkInterval"s, m_d.m_blinkinterval);
    //SaveValueInt(regKey,"BorderColor"s, m_d.m_bordercolor);
    SaveValue(regKey, "Surface"s, m_d.m_szSurface);
    SaveValueFloat(regKey, "FadeSpeedUp"s, m_d.m_fadeSpeedUp);
@@ -431,7 +431,7 @@ void Light::RenderDynamic()
    if (m_d.m_BulbLight ||
       (!m_d.m_BulbLight && (m_surfaceTexture == (offTexel = m_ptable->GetImage(m_d.m_szImage))) && (offTexel != nullptr) && !m_backglass && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
    {
-      if (m_d.m_currentIntensity == 0.f)
+      if (m_currentIntensity == 0.f)
          return;
       if (lightColor_intensity.x == 0.f && lightColor_intensity.y == 0.f && lightColor_intensity.z == 0.f &&
          lightColor2_falloff_power.x == 0.f && lightColor2_falloff_power.y == 0.f && lightColor2_falloff_power.z == 0.f)
@@ -484,7 +484,7 @@ void Light::RenderDynamic()
       pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
       pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_REVSUBTRACT);
 
-      lightColor_intensity.w = m_d.m_currentIntensity * 0.02f; //!! make configurable?
+      lightColor_intensity.w = m_currentIntensity * 0.02f; //!! make configurable?
       if (m_d.m_BulbLight && g_pplayer->IsRenderPass(Player::LIGHT_BUFFER))
          lightColor_intensity.w *= m_d.m_transmissionScale;
       pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
@@ -520,7 +520,7 @@ void Light::RenderDynamic()
       else
          pd3dDevice->classicLightShader->SetTechniqueMetal(SHADER_TECHNIQUE_light_without_texture, m_surfaceMaterial);
 
-      lightColor_intensity.w = m_d.m_currentIntensity;
+      lightColor_intensity.w = m_currentIntensity;
       pd3dDevice->classicLightShader->SetLightColorIntensity(lightColor_intensity);
    }
    else
@@ -538,7 +538,7 @@ void Light::RenderDynamic()
       pd3dDevice->lightShader->SetFloat(SHADER_blend_modulate_vs_add, !g_pplayer->IsRenderPass(Player::LIGHT_BUFFER) ? min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
       pd3dDevice->lightShader->SetTechnique(m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS ? SHADER_TECHNIQUE_bulb_light_with_ball_shadows : SHADER_TECHNIQUE_bulb_light);
 
-      lightColor_intensity.w = m_d.m_currentIntensity;
+      lightColor_intensity.w = m_currentIntensity;
       if (g_pplayer->IsRenderPass(Player::LIGHT_BUFFER))
          lightColor_intensity.w *= m_d.m_transmissionScale;
       pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
@@ -711,9 +711,9 @@ void Light::RenderSetup()
    else if (m_duration > 0 && m_inPlayState != 0.f)
       m_timerDurationEndTime = g_pplayer->m_time_msec + m_duration;
 
-   const float state = (m_inPlayState == (float)LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState;
-   m_d.m_currentFilamentTemperature = (state < 0.5f) ? 293.0 : 2700.0;
-   m_d.m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale * state;
+   const float state = (m_inPlayState == (float)LightStateBlinking) ? (m_d.m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState;
+   m_currentFilamentTemperature = (state < 0.5f) ? 293.0 : 2700.0;
+   m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale * state;
 
    if (m_d.m_showBulbMesh)
    {
@@ -767,9 +767,9 @@ void Light::AddLightmap(IEditable *lightmap)
 { 
    m_lightmaps.push_back(lightmap);
    if (lightmap->GetItemType() == ItemTypeEnum::eItemPrimitive)
-      ((Primitive *)lightmap)->put_Opacity(100.0f * m_d.m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale));
+      ((Primitive *)lightmap)->put_Opacity(100.0f * m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale));
    else if (lightmap->GetItemType() == ItemTypeEnum::eItemFlasher)
-      ((Flasher *)lightmap)->put_Opacity((long)(100.0f * m_d.m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale)));
+      ((Flasher *)lightmap)->put_Opacity((long)(100.0f * m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale)));
 }
 
 void Light::UpdateAnimation(const float diff_time_msec)
@@ -785,56 +785,56 @@ void Light::UpdateAnimation(const float diff_time_msec)
    if (m_inPlayState == (float)LightStateBlinking)
       UpdateBlinker(g_pplayer->m_time_msec);
 
-   const float m_previousIntensity = m_d.m_currentIntensity;
+   const float m_previousIntensity = m_currentIntensity;
 
-   const float lightState = (m_inPlayState == (float)LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState;
+   const float lightState = (m_inPlayState == (float)LightStateBlinking) ? (m_d.m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState;
    const float targetIntensity = m_d.m_intensity * m_d.m_intensity_scale * lightState;
-   if (m_d.m_currentIntensity != targetIntensity)
+   if (m_currentIntensity != targetIntensity)
    {
       switch (m_d.m_fader)
       {
-      case FADER_NONE: m_d.m_currentIntensity = targetIntensity; break;
+      case FADER_NONE: m_currentIntensity = targetIntensity; break;
       case FADER_LINEAR:
-         if (m_d.m_currentIntensity < targetIntensity)
+         if (m_currentIntensity < targetIntensity)
          {
-            m_d.m_currentIntensity += m_d.m_fadeSpeedUp * diff_time_msec;
-            if (m_d.m_currentIntensity > targetIntensity)
-               m_d.m_currentIntensity = targetIntensity;
+            m_currentIntensity += m_d.m_fadeSpeedUp * diff_time_msec;
+            if (m_currentIntensity > targetIntensity)
+               m_currentIntensity = targetIntensity;
          }
-         else if (m_d.m_currentIntensity > targetIntensity)
+         else if (m_currentIntensity > targetIntensity)
          {
-            m_d.m_currentIntensity -= m_d.m_fadeSpeedDown * diff_time_msec;
-            if (m_d.m_currentIntensity < targetIntensity)
-               m_d.m_currentIntensity = targetIntensity;
+            m_currentIntensity -= m_d.m_fadeSpeedDown * diff_time_msec;
+            if (m_currentIntensity < targetIntensity)
+               m_currentIntensity = targetIntensity;
          }
          break;
       case FADER_INCANDESCENT:
       {
-         const double fadeSpeed = m_d.m_intensity / (m_d.m_currentIntensity < targetIntensity ? m_d.m_fadeSpeedUp : m_d.m_fadeSpeedDown); // Fade speed in ms
+         const double fadeSpeed = m_d.m_intensity / (m_currentIntensity < targetIntensity ? m_d.m_fadeSpeedUp : m_d.m_fadeSpeedDown); // Fade speed in ms
          const double remaining_time = diff_time_msec * (0.001 * 40.0 / fadeSpeed); // Apply a speed factor (a bulb with this characteristics reach full power between 30 and 40ms so we modulate around this)
          if (lightState)
          {
             const double U = 6.3 * powf(lightState, 0.25f); // Modulating by Emission^0.25 is not fully correct (ignoring visible/non visible wavelengths) but an acceptable approximation
-            m_d.m_currentFilamentTemperature = bulb_heat_up(BULB_44, m_d.m_currentFilamentTemperature, remaining_time, U, 0.0);
+            m_currentFilamentTemperature = bulb_heat_up(BULB_44, m_currentFilamentTemperature, remaining_time, U, 0.0);
          }
          else
          {
-            m_d.m_currentFilamentTemperature = bulb_cool_down(BULB_44, m_d.m_currentFilamentTemperature, remaining_time);
+            m_currentFilamentTemperature = bulb_cool_down(BULB_44, m_currentFilamentTemperature, remaining_time);
          }
-         m_d.m_currentIntensity = (float)(bulb_filament_temperature_to_emission(m_d.m_currentFilamentTemperature) * m_d.m_intensity * m_d.m_intensity_scale);
-         OutputDebugString(std::to_string(m_d.m_currentFilamentTemperature).append("\n"s).c_str());
+         m_currentIntensity = (float)(bulb_filament_temperature_to_emission(m_currentFilamentTemperature) * m_d.m_intensity * m_d.m_intensity_scale);
+         OutputDebugString(std::to_string(m_currentFilamentTemperature).append("\n"s).c_str());
       }
       break;
       }
    }
 
-   if (m_previousIntensity != m_d.m_currentIntensity)
+   if (m_previousIntensity != m_currentIntensity)
    {
       for (size_t i = 0; i < m_lightmaps.size(); ++i)
          if (m_lightmaps[i]->GetItemType() == ItemTypeEnum::eItemPrimitive)
-            ((Primitive *)m_lightmaps[i])->put_Opacity(100.0f * m_d.m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale));
+            ((Primitive *)m_lightmaps[i])->put_Opacity(100.0f * m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale));
          else if (m_lightmaps[i]->GetItemType() == ItemTypeEnum::eItemFlasher)
-            ((Flasher *)m_lightmaps[i])->put_Opacity((long)(100.0f * m_d.m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale)));
+            ((Flasher *)m_lightmaps[i])->put_Opacity((long)(100.0f * m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale)));
       FireGroupEvent(DISPID_AnimateEvents_Animate);
    }
 }
@@ -878,9 +878,9 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupF
    bw.WriteInt(FID(COL2), m_d.m_color2);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteString(FID(BPAT), m_rgblinkpattern);
+   bw.WriteString(FID(BPAT), m_d.m_rgblinkpattern);
    bw.WriteString(FID(IMG1), m_d.m_szImage);
-   bw.WriteInt(FID(BINT), m_blinkinterval);
+   bw.WriteInt(FID(BINT), m_d.m_blinkinterval);
    //bw.WriteInt(FID(BCOL), m_d.m_bordercolor);
    bw.WriteFloat(FID(BWTH), m_d.m_intensity);
    bw.WriteFloat(FID(TRMS), m_d.m_transmissionScale);
@@ -929,8 +929,8 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
    m_d.m_color = RGB(255, 255, 0);
    m_d.m_color2 = RGB(255, 255, 255);
 
-   m_rgblinkpattern = "10";
-   m_blinkinterval = 125;
+   m_d.m_rgblinkpattern = "10";
+   m_d.m_blinkinterval = 125;
    //m_d.m_borderwidth = 0;
    //m_d.m_bordercolor = RGB(0,0,0);
 
@@ -973,8 +973,8 @@ bool Light::LoadToken(const int id, BiffReader * const pbr)
    case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
    case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
    case FID(SHAP): m_roundLight = true; break;
-   case FID(BPAT): pbr->GetString(m_rgblinkpattern); break;
-   case FID(BINT): pbr->GetInt(m_blinkinterval); break;
+   case FID(BPAT): pbr->GetString(m_d.m_rgblinkpattern); break;
+   case FID(BINT): pbr->GetInt(m_d.m_blinkinterval); break;
    //case FID(BCOL): pbr->GetInt(m_d.m_bordercolor); break;
    case FID(BWTH): pbr->GetFloat(m_d.m_intensity); break;
    case FID(TRMS): pbr->GetFloat(m_d.m_transmissionScale); break;
@@ -1281,7 +1281,7 @@ void Light::InitShape()
 STDMETHODIMP Light::get_BlinkPattern(BSTR *pVal)
 {
    WCHAR wz[NUM_RGB_BLINK_PATTERN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_rgblinkpattern.c_str(), -1, wz, NUM_RGB_BLINK_PATTERN);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_rgblinkpattern.c_str(), -1, wz, NUM_RGB_BLINK_PATTERN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1291,10 +1291,10 @@ STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
 {
    char sz[NUM_RGB_BLINK_PATTERN];
    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, sz, NUM_RGB_BLINK_PATTERN, nullptr, nullptr);
-   m_rgblinkpattern = sz;
+   m_d.m_rgblinkpattern = sz;
 
-   if (m_rgblinkpattern.empty())
-      m_rgblinkpattern = "0"; // "10" ?
+   if (m_d.m_rgblinkpattern.empty())
+      m_d.m_rgblinkpattern = "0"; // "10" ?
 
    if (g_pplayer)
       RestartBlinker(g_pplayer->m_time_msec);
@@ -1304,16 +1304,16 @@ STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
 
 STDMETHODIMP Light::get_BlinkInterval(long *pVal)
 {
-   *pVal = m_blinkinterval;
+   *pVal = m_d.m_blinkinterval;
 
    return S_OK;
 }
 
 STDMETHODIMP Light::put_BlinkInterval(long newVal)
 {
-   m_blinkinterval = newVal;
+   m_d.m_blinkinterval = newVal;
    if (g_pplayer)
-      m_timenextblink = g_pplayer->m_time_msec + m_blinkinterval;
+      m_timenextblink = g_pplayer->m_time_msec + m_d.m_blinkinterval;
 
    return S_OK;
 }
@@ -1330,7 +1330,7 @@ STDMETHODIMP Light::Duration(float startState, long newVal, float endState)
         if (m_inPlayState == (float)LightStateBlinking)
         {
             m_iblinkframe = 0;
-            m_timenextblink = g_pplayer->m_time_msec + m_blinkinterval;
+         m_timenextblink = g_pplayer->m_time_msec + m_d.m_blinkinterval;
         }
     }
 
@@ -1348,7 +1348,7 @@ STDMETHODIMP Light::get_Intensity(float *pVal)
 STDMETHODIMP Light::put_Intensity(float newVal)
 {
    m_d.m_intensity = max(0.f, newVal);
-   m_d.m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale * ((m_inPlayState == (float)LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState);
+   m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale * ((m_inPlayState == (float)LightStateBlinking) ? (m_d.m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState);
 
    return S_OK;
 }
@@ -1377,7 +1377,7 @@ STDMETHODIMP Light::get_IntensityScale(float *pVal)
 STDMETHODIMP Light::put_IntensityScale(float newVal)
 {
    m_d.m_intensity_scale = max(newVal,0.f);
-   m_d.m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale * ((m_inPlayState == (float)LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState);
+   m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale * ((m_inPlayState == (float)LightStateBlinking) ? (m_d.m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState);
 
    return S_OK;
 }
@@ -1632,7 +1632,7 @@ STDMETHODIMP Light::GetInPlayState(float* pVal)
 
 STDMETHODIMP Light::GetInPlayStateBool(VARIANT_BOOL* pVal)
 {
-    const bool isOn = (m_inPlayState == (float)LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_inPlayState != 0.f);
+    const bool isOn = (m_inPlayState == (float)LightStateBlinking) ? (m_d.m_rgblinkpattern[m_iblinkframe] == '1') : (m_inPlayState != 0.f);
 
     *pVal = FTOVB(isOn);
     return S_OK;
@@ -1640,14 +1640,14 @@ STDMETHODIMP Light::GetInPlayStateBool(VARIANT_BOOL* pVal)
 
 STDMETHODIMP Light::GetInPlayIntensity(float *pVal)
 {
-   *pVal = m_d.m_currentIntensity;
+   *pVal = m_currentIntensity;
 
    return S_OK;
 }
 
 STDMETHODIMP Light::get_FilamentTemperature(float *pVal)
 {
-   double T = bulb_emission_to_filament_temperature(m_d.m_currentIntensity / m_d.m_intensity * m_d.m_intensity_scale); 
+   double T = bulb_emission_to_filament_temperature(m_currentIntensity / m_d.m_intensity * m_d.m_intensity_scale); 
    *pVal = (float)T;
 
    return S_OK;

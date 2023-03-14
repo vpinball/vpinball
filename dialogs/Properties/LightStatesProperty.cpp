@@ -27,9 +27,9 @@ void LightStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
             PropertyDialog::UpdateComboBox(m_stateList, m_stateCombo, m_stateList[(int)state]);
         }
         if (dispid == IDC_BLINK_PATTERN_EDIT || dispid == -1)
-            m_blinkPatternEdit.SetWindowText(light->m_rgblinkpattern.c_str());
+            m_blinkPatternEdit.SetWindowText(light->m_d.m_rgblinkpattern.c_str());
         if (dispid == DISPID_Light_BlinkInterval || dispid == -1)
-            PropertyDialog::SetIntTextbox(m_blinkIntervalEdit, light->m_blinkinterval);
+            PropertyDialog::SetIntTextbox(m_blinkIntervalEdit, light->m_d.m_blinkinterval);
         //only show the first element on multi-select
         break;
     }
@@ -60,16 +60,16 @@ void LightStatesProperty::UpdateProperties(const int dispid)
             case IDC_BLINK_PATTERN_EDIT:
             {
                 const string pattern(m_blinkPatternEdit.GetWindowText().c_str());
-                if (pattern != light->m_rgblinkpattern)
+                if (pattern != light->m_d.m_rgblinkpattern)
                 {
                     PropertyDialog::StartUndo(light);
-                    light->m_rgblinkpattern = pattern;
+                    light->m_d.m_rgblinkpattern = pattern;
                     PropertyDialog::EndUndo(light);
                 }
                 break;
             }
             case DISPID_Light_BlinkInterval:
-                CHECK_UPDATE_ITEM(light->m_blinkinterval, PropertyDialog::GetIntTextbox(m_blinkIntervalEdit), light);
+                CHECK_UPDATE_ITEM(light->m_d.m_blinkinterval, PropertyDialog::GetIntTextbox(m_blinkIntervalEdit), light);
                 break;
             default:
                 break;
