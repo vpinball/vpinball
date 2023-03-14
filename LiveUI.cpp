@@ -949,7 +949,17 @@ void LiveUI::UpdateMainUI()
       ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
       ImGui::Begin("TOOLBAR", nullptr, window_flags);
       ImGui::PopStyleVar();
-      // TODO add controls (play/pause, switch to editable data,...)
+      if (ImGui::Button(g_pplayer->m_debugWindowActive ? ICON_FK_PLAY : ICON_FK_PAUSE))
+      {
+         PausePlayer(!g_pplayer->m_debugWindowActive);
+      }
+      ImGui::SameLine();
+      if (ImGui::Button(ICON_FK_STOP))
+      {
+         ImGui::CloseCurrentPopup();
+         HideUI();
+         m_table->QuitPlayer(Player::CS_STOP_PLAY);
+      }
       /* if (ImGui::Button("Resume Game"))
       {
          ExitEditMode();
