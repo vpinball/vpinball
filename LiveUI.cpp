@@ -5,7 +5,8 @@
 #include "Shader.h"
 
 #include "inc/fonts/DroidSans.h"
-#include "inc/fonts/OpenFontIcons.h"
+#include "inc/fonts/IconsForkAwesome.h"
+#include "inc/fonts/ForkAwesome.h"
 
 #include "imgui/imgui.h"
 #ifdef ENABLE_SDL
@@ -37,7 +38,7 @@
 
 #define PROP_WIDTH (125.f * m_dpi)
 
-#define ICON_SAVE "S"
+#define ICON_SAVE ICON_FK_FLOPPY_O
 
 // utility structure for realtime plot //!! cleanup
 class ScrollingData
@@ -553,12 +554,14 @@ LiveUI::LiveUI(RenderDevice* const rd)
    ImGui_ImplWin32_EnableDpiAwareness();
    m_dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(rd->getHwnd());
    ImGui::GetStyle().ScaleAllSizes(m_dpi);
+
    io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 13.0f * m_dpi);
    ImFontConfig icons_config;
    icons_config.MergeMode = true;
    icons_config.PixelSnapH = true;
    icons_config.GlyphMinAdvanceX = 13.0f * m_dpi;
-   io.Fonts->AddFontFromMemoryCompressedTTF(openfonticons_compressed_data, openfonticons_compressed_size, 13.0f * m_dpi, &icons_config);
+   static const ImWchar icons_ranges[] = { ICON_MIN_FK, ICON_MAX_16_FK, 0 };
+   io.Fonts->AddFontFromMemoryCompressedTTF(fork_awesome_compressed_data, fork_awesome_compressed_size, 13.0f * m_dpi, &icons_config, icons_ranges);
 
 #ifdef ENABLE_SDL
    ImGui_ImplOpenGL3_Init();
