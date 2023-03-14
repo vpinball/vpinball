@@ -966,8 +966,8 @@ void Surface::PrepareSlingshots()
    unsigned short *ibuf;
    slingIBuffer->lock(0, 0, (void**)&ibuf, VertexBuffer::WRITEONLY);
    memcpy(ibuf, rgIdx, m_vlinesling.size() * 24 * sizeof(unsigned short));
-   slingIBuffer->unlock();
    delete[] rgIdx;
+   slingIBuffer->unlock();
 
    delete m_slingshotMeshBuffer;
    m_slingshotMeshBuffer = new MeshBuffer(slingshotVBuffer, slingIBuffer);

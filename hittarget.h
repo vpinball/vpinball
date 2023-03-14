@@ -6,7 +6,7 @@
 #define AFX_HITTARGET_H__A67DE998_7D97_4E03_BE91_55BFD3A48DB6__INCLUDED_
 
 #include "resource.h"
-#include <inc/robin_hood.h>
+#include "inc/robin_hood.h"
 
 // Indices for RotAndTra:
 //     RotX = 0

@@ -488,29 +488,29 @@ void ImageDialog::Export()
             ofn.lpstrDefExt = ext2.c_str() + idx2 + 1;
             // check which default file extension should be selected
             ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0JPEG (.jpg/.jpeg)\0*.jpg;*.jpeg;\0IFF (.iff)\0*.IFF;\0PCX (.pcx)\0*.PCX;\0PICT (.pict)\0*.PICT;\0Photoshop (.psd)\0*.psd;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0WEBP (.webp)\0*.webp;\0EXR (.exr)\0*.exr;\0HDR (.hdr)\0*.hdr\0";
-            if(!_stricmp(ofn.lpstrDefExt,"png"))
+            if(!lstrcmpi(ofn.lpstrDefExt,"png"))
                ofn.nFilterIndex = 1;
-            else if (!_stricmp(ofn.lpstrDefExt, "bmp"))
+            else if (!lstrcmpi(ofn.lpstrDefExt, "bmp"))
                ofn.nFilterIndex = 2;
-            else if (!_stricmp(ofn.lpstrDefExt, "jpg") || !_stricmp(ofn.lpstrDefExt, "jpeg"))
+            else if (!lstrcmpi(ofn.lpstrDefExt, "jpg") || !lstrcmpi(ofn.lpstrDefExt, "jpeg"))
                ofn.nFilterIndex = 3;
-            else if (!_stricmp(ofn.lpstrDefExt, "iff"))
+            else if (!lstrcmpi(ofn.lpstrDefExt, "iff"))
                ofn.nFilterIndex = 4;
-            else if (!_stricmp(ofn.lpstrDefExt, "pcx"))
+            else if (!lstrcmpi(ofn.lpstrDefExt, "pcx"))
                ofn.nFilterIndex = 5;
-            else if (!_stricmp(ofn.lpstrDefExt, "pict"))
+            else if (!lstrcmpi(ofn.lpstrDefExt, "pict"))
                ofn.nFilterIndex = 6;
-            else if (!_stricmp(ofn.lpstrDefExt, "psd"))
+            else if (!lstrcmpi(ofn.lpstrDefExt, "psd"))
                ofn.nFilterIndex = 7;
-            else if (!_stricmp(ofn.lpstrDefExt, "tga"))
+            else if (!lstrcmpi(ofn.lpstrDefExt, "tga"))
                ofn.nFilterIndex = 8;
-            else if (!_stricmp(ofn.lpstrDefExt, "tif") || !_stricmp(ofn.lpstrDefExt, "tiff"))
+            else if (!lstrcmpi(ofn.lpstrDefExt, "tif") || !lstrcmpi(ofn.lpstrDefExt, "tiff"))
                ofn.nFilterIndex = 9;
-            else if (!_stricmp(ofn.lpstrDefExt, "webp"))
+            else if (!lstrcmpi(ofn.lpstrDefExt, "webp"))
                ofn.nFilterIndex = 10;
-            else if (!_stricmp(ofn.lpstrDefExt, "exr"))
+            else if (!lstrcmpi(ofn.lpstrDefExt, "exr"))
                ofn.nFilterIndex = 11;
-            else if (!_stricmp(ofn.lpstrDefExt, "hdr"))
+            else if (!lstrcmpi(ofn.lpstrDefExt, "hdr"))
                ofn.nFilterIndex = 12;
 
             string g_initDir;

@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h" 
-#include "forsyth.h"
+#include "inc/forsyth.h"
 #include "objloader.h"
 #include "inc/miniz.c"
 #include "inc/progmesh.h"

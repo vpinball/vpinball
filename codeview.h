@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Commdlg.h>
+#include <commdlg.h>
 #include <activscp.h>
 #include <activdbg.h>
 #include <atlcom.h>
@@ -48,6 +48,7 @@ class DebuggerModule :
 
    STDMETHOD(Print)(VARIANT *pvar);
 
+public:
    void Init(CodeViewer * const pcv);
 
    IDispatch *GetDispatch() final { return (IDispatch *)this; }

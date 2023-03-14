@@ -421,7 +421,7 @@ void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList,
         bool texelFound = false;
         for (const auto texel : contentList)
         {
-            if (strncmp(texel->m_szName.c_str(), selectName.c_str(), MAXTOKEN) == 0) //!! _stricmp?
+            if (strncmp(texel->m_szName.c_str(), selectName.c_str(), MAXTOKEN) == 0) //!! lstrcmpi?
                 texelFound = true;
             need_reset |= combo.FindStringExact(1, texel->m_szName.c_str()) == CB_ERR; // Combo does not contain an image from the image list
         }

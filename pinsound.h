@@ -86,7 +86,7 @@ public:
       const size_t pos = m_szPath.find_last_of('.');
       if(pos == string::npos)
          return true;
-      return (_stricmp(m_szPath.substr(pos+1).c_str(), "wav") == 0);
+      return (lstrcmpi(m_szPath.substr(pos+1).c_str(), "wav") == 0);
    }
 #else
    bool IsWav() const
@@ -94,7 +94,7 @@ public:
       const size_t pos = m_szPath.find_last_of('.');
       if(pos == string::npos)
          return true;
-      return (_stricmp(m_szPath.substr(pos+1).c_str(), "wav") == 0);
+      return (lstrcmpi(m_szPath.substr(pos+1).c_str(), "wav") == 0);
    }
    bool IsWav2() const { return IsWav(); }
 #endif

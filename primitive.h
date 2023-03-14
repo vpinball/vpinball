@@ -6,7 +6,7 @@
 #define AFX_PRIMITIVE_H__31CD2D6B_9BDD_4B1B_BC62_B9DE588A0CAA__INCLUDED_
 
 #include "resource.h"
-#include <inc/robin_hood.h>
+#include "inc/robin_hood.h"
 
 class Mesh final
 {
@@ -283,7 +283,7 @@ public:
    void ExportMeshDialog() final;
 
    bool IsPlayfield() const { return wcscmp(m_wzName, L"playfield_mesh") == 0; }
-   bool IsBackglass() const { return _stricmp(m_d.m_szImage.c_str(), "backglassimage") == 0; }
+   bool IsBackglass() const { return lstrcmpi(m_d.m_szImage.c_str(), "backglassimage") == 0; }
 
    float GetAlpha() const { return m_d.m_alpha; }
    void SetAlpha(const float value) { m_d.m_alpha = max(value, 0.f); }

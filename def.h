@@ -177,7 +177,7 @@ class LocalString final
 public:
    LocalString(const int resid);
 
-   char m_szbuffer[256];
+   char m_szbuffer[256] = { 0 };
 };
 
 class LocalStringW final
@@ -185,7 +185,7 @@ class LocalStringW final
 public:
    LocalStringW(const int resid);
 
-   WCHAR m_szbuffer[256];
+   WCHAR m_szbuffer[256] = { 0 };
 };
 
 #ifndef M_PI
@@ -216,10 +216,10 @@ public:
 #elif (defined(__linux) || defined(__linux__))
 #define GET_PLATFORM_OS "linux"
 #elif defined(__APPLE__)
-#ifdef TARGET_OS_IOS
+#if defined(TARGET_OS_IOS) && TARGET_OS_IOS
 #define GET_PLATFORM_OS "ios"
-#elif TARGET_OS_TV
-#define GET_PLATFORM_OS "ostv"
+#elif defined(TARGET_OS_TV) && TARGET_OS_TV
+#define GET_PLATFORM_OS "tvos"
 #else
 #define GET_PLATFORM_OS "macos"
 #endif

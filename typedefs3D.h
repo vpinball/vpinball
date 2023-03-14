@@ -6,9 +6,9 @@
 #else
  #include <glad/gles2.h>
 #endif
- #include <sdl2/SDL_opengl.h>
- #include <sdl2/SDL.h>
- #include <sdl2/SDL_ttf.h>
+ #include <SDL2/SDL_opengl.h>
+ #include <SDL2/SDL.h>
+ #include <SDL2/SDL_ttf.h>
 #else
  #include "inc/minid3d9.h"
  #include <d3dx9.h>

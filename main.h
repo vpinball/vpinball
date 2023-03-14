@@ -42,22 +42,23 @@
 //#include <cstdio>
 //#include "wchar.h"
 
+#ifdef _MSC_VER
 #define PATH_SEPARATOR_CHAR '\\'
 #define PATH_SEPARATOR_WCHAR L'\\'
-
-#ifdef _MSC_VER
 #define PATH_TABLES  ("c:"s + PATH_SEPARATOR_CHAR + "Visual Pinball" + PATH_SEPARATOR_CHAR + "tables"  + PATH_SEPARATOR_CHAR)
 #define PATH_SCRIPTS ("c:"s + PATH_SEPARATOR_CHAR + "Visual Pinball" + PATH_SEPARATOR_CHAR + "scripts" + PATH_SEPARATOR_CHAR)
 #define PATH_MUSIC   ("c:"s + PATH_SEPARATOR_CHAR + "Visual Pinball" + PATH_SEPARATOR_CHAR + "music"   + PATH_SEPARATOR_CHAR)
 #define PATH_USER    ("c:"s + PATH_SEPARATOR_CHAR + "Visual Pinball" + PATH_SEPARATOR_CHAR + "user"    + PATH_SEPARATOR_CHAR)
 #else
+#define PATH_SEPARATOR_CHAR '/'
+#define PATH_SEPARATOR_WCHAR L'/'
 #define PATH_TABLES  (string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".vpinball" + PATH_SEPARATOR_CHAR + "tables"  + PATH_SEPARATOR_CHAR)
 #define PATH_SCRIPTS (string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".vpinball" + PATH_SEPARATOR_CHAR + "scripts" + PATH_SEPARATOR_CHAR)
 #define PATH_MUSIC   (string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".vpinball" + PATH_SEPARATOR_CHAR + "music"   + PATH_SEPARATOR_CHAR)
 #define PATH_USER    (string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".vpinball" + PATH_SEPARATOR_CHAR + "user"    + PATH_SEPARATOR_CHAR)
 #endif
 
-#include <OLEAUTO.h>
+#include <oleauto.h>
 
 #include <wincrypt.h>
 

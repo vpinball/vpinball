@@ -140,7 +140,7 @@ void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb
    else if (surf->m_format == BaseTexture::BW)
       format = colorFormat::GREY8;
    else
-      assert(false);
+      assert(false); // Unsupported image format
    if (force_linear_rgb)
    {
       if (format == colorFormat::SRGB)

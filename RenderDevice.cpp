@@ -16,7 +16,7 @@
 #ifdef ENABLE_SDL
 #include "typedefs3D.h"
 #include "TextureManager.h"
-#include "sdl2/SDL_syswm.h"
+#include <SDL2/SDL_syswm.h>
 #else
 #include "Material.h"
 #include "BasicShader.h"

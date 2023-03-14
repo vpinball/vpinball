@@ -50,6 +50,29 @@ enum EnumAssignKeys
    eEscape,
    eCKeys
 };
+
+static constexpr RECT touchregion[8] = { //left,top,right,bottom (in % of screen)
+   { 0, 0, 50, 10 },      // ExtraBall
+   { 0, 10, 50, 50 },     // 2nd Left Button
+   { 0, 50, 50, 90 },     // 1st Left Button (Flipper)
+   { 0, 90, 50, 100 },    // Start
+   { 50, 0, 100, 10 },    // Exit
+   { 50, 10, 100, 50 },   // 2nd Right Button
+   { 50, 50, 100, 90 },   // 1st Right Button (Flipper)
+   { 50, 90, 100, 100 }   // Plunger
+};
+
+static EnumAssignKeys touchkeymap[8] = {
+   eAddCreditKey, //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   eLeftMagnaSave,
+   eLeftFlipperKey,
+   eStartGameKey,
+   eExitGame,
+   eRightMagnaSave,
+   eRightFlipperKey,
+   ePlungerKey
+};
+
 static const char* regkey_string[eCKeys] = {
    "LFlipKey",
    "RFlipKey",

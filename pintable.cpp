@@ -1819,7 +1819,7 @@ bool PinTable::IsNameUnique(const WCHAR * const wzName) const
 
 void PinTable::GetUniqueName(const ItemTypeEnum type, WCHAR * const wzUniqueName, const DWORD wzUniqueName_maxlength) const
 {
-   WCHAR wzRoot[256];
+   WCHAR wzRoot[256] = { 0 };
    GetTypeNameForType(type, wzRoot);
    GetUniqueName(wzRoot, wzUniqueName, wzUniqueName_maxlength);
 }
@@ -1833,7 +1833,7 @@ void PinTable::GetUniqueName(const WCHAR *const wzRoot, WCHAR * const wzUniqueNa
    while (!found)
    {
       WideStrNCopy(wzRoot, wzName, wzUniqueName_maxlength-3);
-      WCHAR wzSuffix[4];
+      WCHAR wzSuffix[4] = { 0 };
       _itow_s(suffix, wzSuffix, sizeof(wzSuffix)/sizeof(wzSuffix[0]), 10);
       if(suffix < 10)
          WideStrCat(L"0", wzName, wzUniqueName_maxlength);
@@ -3132,7 +3132,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 		   return hr;
 	   }
 
-	   pps->m_outputTarget = (StrStrI(pps->m_szName.c_str(), "bgout_") != nullptr) || (_stricmp(pps->m_szPath.c_str(), "* Backglass Output *") == 0) // legacy behavior, where the BG selection was encoded into the strings directly
+	   pps->m_outputTarget = (StrStrI(pps->m_szName.c_str(), "bgout_") != nullptr) || (lstrcmpi(pps->m_szPath.c_str(), "* Backglass Output *") == 0) // legacy behavior, where the BG selection was encoded into the strings directly
 	                      || toBackglassOutput ? SNDOUT_BACKGLASS : SNDOUT_TABLE;
    }
 
@@ -7479,14 +7479,14 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
    else
       assert(!"unknown format");
 
-   if ((_stricmp(m_image.c_str(), ppi->m_szName.c_str()) == 0)
-    || (_stricmp(m_ballImage.c_str(), ppi->m_szName.c_str()) == 0) 
-    || (_stricmp(m_ballImageDecal.c_str(), ppi->m_szName.c_str()) == 0)
-    || (_stricmp(m_envImage.c_str(), ppi->m_szName.c_str()) == 0)
-    || (_stricmp(m_BG_image[BG_DESKTOP].c_str(), ppi->m_szName.c_str()) == 0)
-    || (_stricmp(m_BG_image[BG_FSS].c_str(), ppi->m_szName.c_str()) == 0)
-    || (_stricmp(m_BG_image[BG_FULLSCREEN].c_str(), ppi->m_szName.c_str()) == 0)
-    || (_stricmp(m_imageColorGrade.c_str(), ppi->m_szName.c_str()) == 0))
+   if ((lstrcmpi(m_image.c_str(), ppi->m_szName.c_str()) == 0)
+    || (lstrcmpi(m_ballImage.c_str(), ppi->m_szName.c_str()) == 0)
+    || (lstrcmpi(m_ballImageDecal.c_str(), ppi->m_szName.c_str()) == 0)
+    || (lstrcmpi(m_envImage.c_str(), ppi->m_szName.c_str()) == 0)
+    || (lstrcmpi(m_BG_image[BG_DESKTOP].c_str(), ppi->m_szName.c_str()) == 0)
+    || (lstrcmpi(m_BG_image[BG_FSS].c_str(), ppi->m_szName.c_str()) == 0)
+    || (lstrcmpi(m_BG_image[BG_FULLSCREEN].c_str(), ppi->m_szName.c_str()) == 0)
+    || (lstrcmpi(m_imageColorGrade.c_str(), ppi->m_szName.c_str()) == 0))
    {
        ListView_SetItemText(hwndListView, index, 3, (LPSTR)usedStringYes);
    }
@@ -7504,84 +7504,84 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
                case eItemDispReel:
                {
                    const DispReel * const pReel = (DispReel*)pEdit;
-                   if(_stricmp(pReel->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+                   if(lstrcmpi(pReel->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
                        inUse = true;
                    break;
                }
                case eItemPrimitive:
                {
                    const Primitive * const pPrim = (Primitive*)pEdit;
-                   if ((_stricmp(pPrim->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0) || (_stricmp(pPrim->m_d.m_szNormalMap.c_str(), ppi->m_szName.c_str()) == 0))
+                   if ((lstrcmpi(pPrim->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0) || (lstrcmpi(pPrim->m_d.m_szNormalMap.c_str(), ppi->m_szName.c_str()) == 0))
                        inUse = true;
                    break;
                }
                case eItemRamp:
                {
                    const Ramp * const pRamp = (Ramp*)pEdit;
-                   if (_stricmp(pRamp->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+                   if (lstrcmpi(pRamp->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
                        inUse = true;
                    break;
                }
                case eItemSurface:
                {
                    const Surface * const pSurf = (Surface*)pEdit;
-                   if ((_stricmp(pSurf->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0) || (_stricmp(pSurf->m_d.m_szSideImage.c_str(), ppi->m_szName.c_str()) == 0))
+                   if ((lstrcmpi(pSurf->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0) || (lstrcmpi(pSurf->m_d.m_szSideImage.c_str(), ppi->m_szName.c_str()) == 0))
                        inUse = true;
                    break;
                }
                case eItemDecal:
                {
                    const Decal * const pDecal = (Decal*)pEdit;
-                   if (_stricmp(pDecal->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+                   if (lstrcmpi(pDecal->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
                        inUse = true;
                    break;
                }
                case eItemFlasher:
                {
                    const Flasher * const pFlash = (Flasher*)pEdit;
-                   if ((_stricmp(pFlash->m_d.m_szImageA.c_str(), ppi->m_szName.c_str()) == 0) || (_stricmp(pFlash->m_d.m_szImageB.c_str(), ppi->m_szName.c_str()) == 0))
+                   if ((lstrcmpi(pFlash->m_d.m_szImageA.c_str(), ppi->m_szName.c_str()) == 0) || (lstrcmpi(pFlash->m_d.m_szImageB.c_str(), ppi->m_szName.c_str()) == 0))
                        inUse = true;
                    break;
                }
                case eItemFlipper:
                {
                    const Flipper * const pFlip = (Flipper*)pEdit;
-                   if (_stricmp(pFlip->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+                   if (lstrcmpi(pFlip->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
                        inUse = true;
                    break;
                }
                case eItemHitTarget:
                {
                    const HitTarget * const pHit = (HitTarget*)pEdit;
-                   if (_stricmp(pHit->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+                   if (lstrcmpi(pHit->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
                        inUse = true;
                    break;
                }
                case eItemLight:
                {
                    const Light * const pLight = (Light*)pEdit;
-                   if (_stricmp(pLight->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+                   if (lstrcmpi(pLight->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
                        inUse = true;
                    break;
                }
                case eItemPlunger:
                {
                    const Plunger * const pPlung = (Plunger*)pEdit;
-                   if (_stricmp(pPlung->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+                   if (lstrcmpi(pPlung->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
                        inUse = true;
                    break;
                }
                case eItemRubber:
                {
                    const Rubber * const pRub = (Rubber*)pEdit;
-                   if (_stricmp(pRub->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+                   if (lstrcmpi(pRub->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
                        inUse = true;
                    break;
                }
                case eItemSpinner:
                {
                    const Spinner * const pSpin = (Spinner*)pEdit;
-                   if (_stricmp(pSpin->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+                   if (lstrcmpi(pSpin->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
                        inUse = true;
                    break;
                }
@@ -7781,85 +7781,85 @@ int PinTable::AddListMaterial(HWND hwndListView, Material * const pmat)
          case eItemPrimitive:
          {
             const Primitive * const pPrim = (Primitive*)pEdit;
-            if ((_stricmp(pPrim->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (_stricmp(pPrim->m_d.m_szPhysicsMaterial.c_str(), pmat->m_szName.c_str()) == 0))
+            if ((lstrcmpi(pPrim->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (lstrcmpi(pPrim->m_d.m_szPhysicsMaterial.c_str(), pmat->m_szName.c_str()) == 0))
                inUse = true;
             break;
          }
          case eItemRamp:
          {
             const Ramp * const pRamp = (Ramp*)pEdit;
-            if ((_stricmp(pRamp->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (_stricmp(pRamp->m_d.m_szPhysicsMaterial.c_str(), pmat->m_szName.c_str()) == 0))
+            if ((lstrcmpi(pRamp->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (lstrcmpi(pRamp->m_d.m_szPhysicsMaterial.c_str(), pmat->m_szName.c_str()) == 0))
                inUse = true;
             break;
          }
          case eItemSurface:
          {
             const Surface * const pSurf = (Surface*)pEdit;
-            if ((_stricmp(pSurf->m_d.m_szPhysicsMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (_stricmp(pSurf->m_d.m_szSideMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (_stricmp(pSurf->m_d.m_szTopMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (_stricmp(pSurf->m_d.m_szSlingShotMaterial.c_str(), pmat->m_szName.c_str()) == 0))
+            if ((lstrcmpi(pSurf->m_d.m_szPhysicsMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (lstrcmpi(pSurf->m_d.m_szSideMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (lstrcmpi(pSurf->m_d.m_szTopMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (lstrcmpi(pSurf->m_d.m_szSlingShotMaterial.c_str(), pmat->m_szName.c_str()) == 0))
                inUse = true;
             break;
          }
          case eItemDecal:
          {
             const Decal * const pDecal = (Decal*)pEdit;
-            if ((_stricmp(pDecal->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0))
+            if ((lstrcmpi(pDecal->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0))
                inUse = true;
             break;
          }
          case eItemFlipper:
          {
             const Flipper * const pFlip = (Flipper*)pEdit;
-            if ((_stricmp(pFlip->m_d.m_szRubberMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (_stricmp(pFlip->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0))
+            if ((lstrcmpi(pFlip->m_d.m_szRubberMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (lstrcmpi(pFlip->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0))
                inUse = true;
             break;
          }
          case eItemHitTarget:
          {
             const HitTarget * const pHit = (HitTarget*)pEdit;
-            if ((_stricmp(pHit->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (_stricmp(pHit->m_d.m_szPhysicsMaterial.c_str(), pmat->m_szName.c_str()) == 0))
+            if ((lstrcmpi(pHit->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (lstrcmpi(pHit->m_d.m_szPhysicsMaterial.c_str(), pmat->m_szName.c_str()) == 0))
                inUse = true;
             break;
          }
          case eItemPlunger:
          {
             const Plunger * const pPlung = (Plunger*)pEdit;
-            if (_stricmp(pPlung->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0)
+            if (lstrcmpi(pPlung->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0)
                inUse = true;
             break;
          }
          case eItemSpinner:
          {
             const Spinner * const pSpin = (Spinner*)pEdit;
-            if (_stricmp(pSpin->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0)
+            if (lstrcmpi(pSpin->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0)
                inUse = true;
             break;
          }
          case eItemRubber:
          {
             const Rubber * const pRub = (Rubber*)pEdit;
-            if ((_stricmp(pRub->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (_stricmp(pRub->m_d.m_szPhysicsMaterial.c_str(), pmat->m_szName.c_str()) == 0))
+            if ((lstrcmpi(pRub->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (lstrcmpi(pRub->m_d.m_szPhysicsMaterial.c_str(), pmat->m_szName.c_str()) == 0))
                inUse = true;
             break;
          }
          case eItemBumper:
          {
             const Bumper * const pBump = (Bumper*)pEdit;
-            if ((_stricmp(pBump->m_d.m_szCapMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (_stricmp(pBump->m_d.m_szBaseMaterial.c_str(), pmat->m_szName.c_str()) == 0) ||
-                (_stricmp(pBump->m_d.m_szSkirtMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (_stricmp(pBump->m_d.m_szRingMaterial.c_str(), pmat->m_szName.c_str()) == 0))
+            if ((lstrcmpi(pBump->m_d.m_szCapMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (lstrcmpi(pBump->m_d.m_szBaseMaterial.c_str(), pmat->m_szName.c_str()) == 0) ||
+                (lstrcmpi(pBump->m_d.m_szSkirtMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (lstrcmpi(pBump->m_d.m_szRingMaterial.c_str(), pmat->m_szName.c_str()) == 0))
                inUse = true;
             break;
          }
          case eItemKicker:
          {
             const Kicker * const pKick = (Kicker*)pEdit;
-            if (_stricmp(pKick->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0)
+            if (lstrcmpi(pKick->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0)
                inUse = true;
             break;
          }
          case eItemTrigger:
          {
             const Trigger * const pTrig = (Trigger*)pEdit;
-            if (_stricmp(pTrig->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0)
+            if (lstrcmpi(pTrig->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0)
                inUse = true;
             break;
          }

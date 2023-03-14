@@ -20,7 +20,9 @@ Decal::Decal()
 
 Decal::~Decal()
 {
-   m_pIFont->Release();
+   if (m_pIFont)
+      m_pIFont->Release();
+
    if (m_textImg)
       delete m_textImg;
    delete m_meshBuffer;

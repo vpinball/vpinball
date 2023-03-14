@@ -1028,7 +1028,7 @@ Class cvpmBallStack
 				If isObject(mExitKicker) Then
 					If kForce < 1 Then kForce = 1
 					kDir = kBaseDir + (Rnd - 0.5)*KickAngleVar
-					vpmTimer.AddTimer (ii-1)*200, "vpmCreateBall(" & mExitKicker.Name & ").Kick " &_
+					vpmTimer.AddTimer 200*(ii-1), "vpmCreateBall(" & mExitKicker.Name & ").Kick " &_
 					  CInt(kDir) & "," & Replace(kForce,",",".") & "," & Replace(KickZ,",",".") & " '"
 				End If
 				kForce = kForce * 0.8

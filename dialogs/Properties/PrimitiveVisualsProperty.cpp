@@ -102,7 +102,7 @@ void PrimitiveVisualsProperty::UpdateLightmapComboBox(const PinTable *table, con
         bool texelFound = false;
            for (const auto texel : lights)
         {
-           if (strncmp(texel->GetName(), selectName.c_str(), MAXTOKEN) == 0) //!! _stricmp?
+           if (strncmp(texel->GetName(), selectName.c_str(), MAXTOKEN) == 0) //!! lstrcmpi?
               texelFound = true;
            need_reset |= combo.FindStringExact(1, texel->GetName()) == CB_ERR; // Combo does not contain an image from the image list
         }
@@ -127,7 +127,7 @@ void PrimitiveVisualsProperty::UpdateRenderProbeComboBox(const vector<RenderProb
         bool texelFound = false;
         for (const auto texel : contentList)
         {
-            if (strncmp(texel->GetName().c_str(), selectName.c_str(), MAXTOKEN) == 0) //!! _stricmp?
+            if (strncmp(texel->GetName().c_str(), selectName.c_str(), MAXTOKEN) == 0) //!! lstrcmpi?
                 texelFound = true;
             need_reset |= combo.FindStringExact(1, texel->GetName().c_str()) == CB_ERR; // Combo does not contain an image from the image list
         }

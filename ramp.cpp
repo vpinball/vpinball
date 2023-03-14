@@ -1655,7 +1655,7 @@ STDMETHODIMP Ramp::put_Image(BSTR newVal)
        return E_FAIL;
    }
 
-   if(_stricmp(szImage, m_d.m_szImage.c_str()) != 0)
+   if(lstrcmpi(szImage, m_d.m_szImage.c_str()) != 0)
    {
       m_d.m_szImage = szImage;
       m_dynamicVertexBufferRegenerate = true;

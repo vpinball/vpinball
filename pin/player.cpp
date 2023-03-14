@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #ifdef ENABLE_SDL
-#include "sdl2/SDL_syswm.h"
+#include <SDL2/SDL_syswm.h>
 #endif
 
 #ifdef ENABLE_BAM
@@ -29,27 +29,6 @@
 #define stable_sort std::stable_sort
 #define sort std::sort
 #endif
-
-
-constexpr RECT touchregion[8] = { //left,top,right,bottom (in % of screen)
-   { 0, 0, 50, 10 },      // ExtraBall
-   { 0, 10, 50, 50 },     // 2nd Left Button
-   { 0, 50, 50, 90 },     // 1st Left Button (Flipper)
-   { 0, 90, 50, 100 },    // Start
-   { 50, 0, 100, 10 },    // Exit
-   { 50, 10, 100, 50 },   // 2nd Right Button
-   { 50, 50, 100, 90 },   // 1st Right Button (Flipper)
-   { 50, 90, 100, 100 } };// Plunger
-
-EnumAssignKeys touchkeymap[8] = {
-   eAddCreditKey, //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   eLeftMagnaSave,
-   eLeftFlipperKey,
-   eStartGameKey,
-   eExitGame,
-   eRightMagnaSave,
-   eRightFlipperKey,
-   ePlungerKey };
 
 #if !(_WIN32_WINNT >= 0x0500)
  #define KEYEVENTF_SCANCODE    0x0008
@@ -107,6 +86,8 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
    m_pause = false;
    m_step = false;
 #endif
+
+   m_supportsTouch = false;
 
    m_pseudoPause = false;
    m_pauseRefCount = 0;
@@ -559,7 +540,25 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    //SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
    // Create the window.
-   m_sdl_playfieldHwnd = SDL_CreateWindow("Visual Pinball Player SDL", cs.x, cs.y, cs.cx, cs.cy, SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | (m_fullScreen ? SDL_WINDOW_FULLSCREEN : 0));
+   Uint32 flags = SDL_WINDOW_OPENGL | (m_fullScreen ? SDL_WINDOW_FULLSCREEN : 0);
+#ifdef _MSC_VER
+   flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN;
+#elif defined(__APPLE__) && !TARGET_OS_TV
+   if (LoadValueBoolWithDefault(regKey[RegName::Player], "HighDPI"s, true))
+      flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+#endif
+
+#ifndef _MSC_VER
+   int display = LoadValueIntWithDefault(regKey[RegName::Player], "Display"s, -1);
+   if ((display >= getNumberOfDisplays()) || (g_pvp->m_primaryDisplay) || (display == -1))
+      display = 0; 
+
+   cs.x = SDL_WINDOWPOS_CENTERED_DISPLAY(display);
+   cs.y = SDL_WINDOWPOS_CENTERED_DISPLAY(display);
+#endif
+
+   m_sdl_playfieldHwnd = SDL_CreateWindow("Visual Pinball Player SDL", cs.x, cs.y, cs.cx, cs.cy, flags);
+
    SDL_SysWMinfo wmInfo;
    SDL_VERSION(&wmInfo.version);
    SDL_GetWindowWMInfo(m_sdl_playfieldHwnd, &wmInfo);
@@ -583,6 +582,11 @@ void Player::CreateWnd(HWND parent /* = 0 */)
 
 void Player::OnInitialUpdate()
 {
+#ifndef _MSC_VER
+#if (defined(__APPLE__) && TARGET_OS_IOS) || defined(__ANDROID__)
+    m_supportsTouch = true;
+#endif
+#else
     // Check for Touch support
     m_supportsTouch = ((GetSystemMetrics(SM_DIGITIZER) & NID_READY) != 0) && ((GetSystemMetrics(SM_DIGITIZER) & NID_MULTI_INPUT) != 0)
         && (GetSystemMetrics(SM_MAXIMUMTOUCHES) != 0);
@@ -650,6 +654,7 @@ void Player::OnInitialUpdate()
 
         SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_GESTURE_PRESSANDTAP, 0, sizeof(enabled), &enabled);
     }
+#endif
 
     mixer_init(GetHwnd());
     hid_init();

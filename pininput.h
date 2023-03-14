@@ -8,8 +8,8 @@
 #endif
 
 #ifdef ENABLE_SDL_INPUT //!! test
-#include <sdl2/SDL.h>
-#include <sdl2/SDL_gamecontroller.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_gamecontroller.h>
 #endif
 
 #ifdef ENABLE_IGAMECONTROLLER //!! not implemented yet

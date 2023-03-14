@@ -104,7 +104,7 @@ void FlasherVisualsProperty::UpdateLightmapComboBox(const PinTable *table, const
         bool texelFound = false;
         for (const auto texel : lights)
         {
-            if (strncmp(texel->GetName(), selectName.c_str(), MAXTOKEN) == 0) //!! _stricmp?
+            if (strncmp(texel->GetName(), selectName.c_str(), MAXTOKEN) == 0) //!! lstrcmpi?
                texelFound = true;
             need_reset |= combo.FindStringExact(1, texel->GetName()) == CB_ERR; // Combo does not contain an image from the image list
         }

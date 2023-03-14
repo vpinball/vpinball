@@ -1817,9 +1817,9 @@ int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOpti
    if (nItem2 == -1 || nItem1 == -1)
       return 0;
    if (lpsd->sortUpDown == 1)
-      return (_stricmp(buf1, buf2));
+      return (lstrcmpi(buf1, buf2));
    else
-      return (_stricmp(buf1, buf2) * -1);
+      return (lstrcmpi(buf1, buf2) * -1);
 }
 
 int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)

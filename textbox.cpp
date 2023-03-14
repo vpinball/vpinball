@@ -11,7 +11,8 @@ Textbox::Textbox()
 
 Textbox::~Textbox()
 {
-   m_pIFont->Release();
+   if (m_pIFont)
+      m_pIFont->Release();
 }
 
 Textbox *Textbox::CopyForPlay(PinTable *live_table)

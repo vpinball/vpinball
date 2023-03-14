@@ -250,7 +250,7 @@ public:
       GetSystemInfo(&sysinfo);
       m_vpinball.m_logicalNumberOfProcessors = sysinfo.dwNumberOfProcessors; //!! this ignores processor groups, so if at some point we need extreme multi threading, implement this in addition!
 #else
-      m_vpinball.m_logicalNumberOfProcessors = 1; //!!
+      m_vpinball.m_logicalNumberOfProcessors = SDL_GetCPUCount();
 #endif
 
       IsOnWine(); // init static variable in there
