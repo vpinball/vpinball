@@ -890,7 +890,10 @@ private:
    bool m_moving;
 };
 
-class ScriptGlobalTable : public CComObjectRootEx<CComSingleThreadModel>, public IDispatchImpl<ITableGlobal, &IID_ITableGlobal, &LIBID_VPinballLib>, public IScriptable
+class ScriptGlobalTable : 
+   public CComObjectRootEx<CComSingleThreadModel>, 
+   public IDispatchImpl<ITableGlobal, &IID_ITableGlobal, &LIBID_VPinballLib>, 
+   public IScriptable
 {
 public:
    // Headers to support communication between the game and the script.

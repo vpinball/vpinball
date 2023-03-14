@@ -951,7 +951,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
    if (captureExternalDMD()) // If DMD capture is enabled check if external DMD exists
       return S_OK;
 
-   SAFEARRAY *psa = pVal.parray;
+   SAFEARRAY *psa = V_ARRAY(&pVal);
 
    if (psa && g_pplayer && g_pplayer->m_dmd.x > 0 && g_pplayer->m_dmd.y > 0)
    {
@@ -981,7 +981,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
       VARIANT *p;
       SafeArrayAccessData(psa,(void**)&p);
       for (int ofs = 0; ofs < size; ++ofs)
-         data[ofs] = p[ofs].cVal; // store raw values (0..100), let shader do the rest
+         data[ofs] = V_UI4(&p[ofs]); // store raw values (0..100), let shader do the rest
       SafeArrayUnaccessData(psa);
 
       if (g_pplayer->m_scaleFX_DMD)
@@ -998,7 +998,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
    if (captureExternalDMD()) // If DMD capture is enabled check if external DMD exists
       return S_OK;
 
-	SAFEARRAY *psa = pVal.parray;
+	SAFEARRAY *psa = V_ARRAY(&pVal);
 
 	if (psa && g_pplayer && g_pplayer->m_dmd.x > 0 && g_pplayer->m_dmd.y > 0)
 	{
@@ -1028,7 +1028,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
 		VARIANT *p;
 		SafeArrayAccessData(psa, (void **)&p);
 		for (int ofs = 0; ofs < size; ++ofs)
-			data[ofs] = p[ofs].uintVal | 0xFF000000u; // store RGB values and let shader do the rest (set alpha to let shader know that this is RGB and not just brightness)
+			data[ofs] = V_UI4(&p[ofs]) | 0xFF000000u; // store RGB values and let shader do the rest (set alpha to let shader know that this is RGB and not just brightness)
 		SafeArrayUnaccessData(psa);
 
 		if (g_pplayer->m_scaleFX_DMD)
@@ -3864,7 +3864,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                      {
                         hr = LoadImageFromStream(pstmItem, i, loadfileversion, false);
                         if (FAILED(hr))
-                           return;
+                           return hr;
                         pstmItem->Release();
                         pstmItem = nullptr;
                      }

@@ -182,7 +182,7 @@ BiffWriter::BiffWriter(IStream *pistream, const HCRYPTHASH hcrypthash)
    m_hcrypthash = hcrypthash;
 }
 
-HRESULT BiffWriter::WriteBytes(const void *pv, const unsigned long count, unsigned long *foo)
+HRESULT BiffWriter::WriteBytes(const void *pv, const ULONG count, ULONG *foo)
 {
    if (m_hcrypthash)
       CryptHashData(m_hcrypthash, (BYTE *)pv, count, 0);
@@ -383,7 +383,7 @@ BiffReader::BiffReader(IStream *pistream, ILoadable *piloadable, void *ppassdata
    m_hcryptkey = hcryptkey;
 }
 
-HRESULT BiffReader::ReadBytes(void * const pv, const unsigned long count, unsigned long * const foo)
+HRESULT BiffReader::ReadBytes(void * const pv, const ULONG count, ULONG * const foo)
 {
    const bool iow = IsOnWine();
    if (iow)
@@ -618,19 +618,19 @@ FastIStorage::~FastIStorage()
    SAFE_VECTOR_DELETE(m_wzName);
 }
 
-long __stdcall FastIStorage::QueryInterface(const struct _GUID &, void **)
+HRESULT __stdcall FastIStorage::QueryInterface(const struct _GUID &, void **)
 {
    return S_OK;
 }
 
-unsigned long __stdcall FastIStorage::AddRef()
+ULONG __stdcall FastIStorage::AddRef()
 {
    m_cref++;
 
    return S_OK;
 }
 
-unsigned long __stdcall FastIStorage::Release()
+ULONG __stdcall FastIStorage::Release()
 {
    m_cref--;
 
@@ -642,7 +642,7 @@ unsigned long __stdcall FastIStorage::Release()
    return S_OK;
 }
 
-long __stdcall FastIStorage::CreateStream(const WCHAR *wzName, unsigned long, unsigned long, unsigned long, struct IStream **ppstm)
+HRESULT __stdcall FastIStorage::CreateStream(const WCHAR *wzName, ULONG, ULONG, ULONG, struct IStream **ppstm)
 {
    FastIStream * const pfs = new FastIStream();
    const int wzNameLen = lstrlenW(wzName) + 1;
@@ -658,12 +658,12 @@ long __stdcall FastIStorage::CreateStream(const WCHAR *wzName, unsigned long, un
    return S_OK;
 }
 
-long __stdcall FastIStorage::OpenStream(const WCHAR *, void *, unsigned long, unsigned long, struct IStream **)
+HRESULT __stdcall FastIStorage::OpenStream(const WCHAR *, void *, ULONG, ULONG, struct IStream **)
 {
    return S_OK;
 }
 
-long __stdcall FastIStorage::CreateStorage(const WCHAR *wzName, unsigned long, unsigned long, unsigned long, struct IStorage **ppstg)
+HRESULT __stdcall FastIStorage::CreateStorage(const WCHAR *wzName, ULONG, ULONG, ULONG, struct IStorage **ppstg)
 {
    FastIStorage * const pfs = new FastIStorage();
    const int wzNameLen = lstrlenW(wzName) + 1;
@@ -679,12 +679,12 @@ long __stdcall FastIStorage::CreateStorage(const WCHAR *wzName, unsigned long, u
    return S_OK;
 }
 
-long __stdcall FastIStorage::OpenStorage(const WCHAR *, struct IStorage *, unsigned long, WCHAR **, unsigned long, struct IStorage **)
+HRESULT __stdcall FastIStorage::OpenStorage(const WCHAR *, struct IStorage *, ULONG, WCHAR **, ULONG, struct IStorage **)
 {
    return S_OK;
 }
 
-long __stdcall FastIStorage::CopyTo(unsigned long, const struct _GUID *, WCHAR **, struct IStorage *pstgNew)
+HRESULT __stdcall FastIStorage::CopyTo(ULONG, const struct _GUID *, WCHAR **, struct IStorage *pstgNew)
 {
    HRESULT hr;
    IStorage *pstgT;
@@ -715,52 +715,52 @@ long __stdcall FastIStorage::CopyTo(unsigned long, const struct _GUID *, WCHAR *
    return S_OK;
 }
 
-long __stdcall FastIStorage::MoveElementTo(const WCHAR *, struct IStorage *, const WCHAR *, unsigned long)
+HRESULT __stdcall FastIStorage::MoveElementTo(const WCHAR *, struct IStorage *, const WCHAR *, ULONG)
 {
    return S_OK;
 }
 
-long __stdcall FastIStorage::Commit(unsigned long)
+HRESULT __stdcall FastIStorage::Commit(ULONG)
 {
    return S_OK;
 }
 
-long __stdcall FastIStorage::Revert()
+HRESULT __stdcall FastIStorage::Revert()
 {
    return S_OK;
 }
 
-long __stdcall FastIStorage::EnumElements(unsigned long, void *, unsigned long, struct IEnumSTATSTG **)
+HRESULT __stdcall FastIStorage::EnumElements(ULONG, void *, ULONG, struct IEnumSTATSTG **)
 {
    return S_OK;
 }
 
-long __stdcall FastIStorage::DestroyElement(const WCHAR *)
+HRESULT __stdcall FastIStorage::DestroyElement(const WCHAR *)
 {
    return S_OK;
 }
 
-long __stdcall FastIStorage::RenameElement(const WCHAR *, const WCHAR *)
+HRESULT __stdcall FastIStorage::RenameElement(const WCHAR *, const WCHAR *)
 {
    return S_OK;
 }
 
-long __stdcall FastIStorage::SetElementTimes(const WCHAR *, const struct _FILETIME *, const struct _FILETIME *, const struct _FILETIME *)
+HRESULT __stdcall FastIStorage::SetElementTimes(const WCHAR *, const struct _FILETIME *, const struct _FILETIME *, const struct _FILETIME *)
 {
    return S_OK;
 }
 
-long __stdcall FastIStorage::SetClass(const struct _GUID &)
+HRESULT __stdcall FastIStorage::SetClass(const struct _GUID &)
 {
    return S_OK;
 }
 
-long __stdcall FastIStorage::SetStateBits(unsigned long, unsigned long)
+HRESULT __stdcall FastIStorage::SetStateBits(ULONG, ULONG)
 {
    return S_OK;
 }
 
-long __stdcall FastIStorage::Stat(struct tagSTATSTG *, unsigned long)
+HRESULT __stdcall FastIStorage::Stat(struct tagSTATSTG *, ULONG)
 {
    return S_OK;
 }
@@ -799,19 +799,19 @@ void FastIStream::SetSize(const unsigned int i)
    }
 }
 
-long __stdcall FastIStream::QueryInterface(const struct _GUID &, void **)
+HRESULT __stdcall FastIStream::QueryInterface(const struct _GUID &, void **)
 {
    return S_OK;
 }
 
-unsigned long __stdcall FastIStream::AddRef()
+ULONG __stdcall FastIStream::AddRef()
 {
    m_cref++;
 
    return S_OK;
 }
 
-unsigned long __stdcall FastIStream::Release()
+ULONG __stdcall FastIStream::Release()
 {
    m_cref--;
 
@@ -823,7 +823,7 @@ unsigned long __stdcall FastIStream::Release()
    return S_OK;
 }
 
-long __stdcall FastIStream::Read(void *pv, const unsigned long count, unsigned long *foo)
+HRESULT __stdcall FastIStream::Read(void *pv, const ULONG count, ULONG *foo)
 {
    memcpy(pv, m_rg + m_cSeek, count);
    m_cSeek += count;
@@ -834,7 +834,7 @@ long __stdcall FastIStream::Read(void *pv, const unsigned long count, unsigned l
    return S_OK;
 }
 
-long __stdcall FastIStream::Write(const void *pv, const unsigned long count, unsigned long *foo)
+HRESULT __stdcall FastIStream::Write(const void *pv, const ULONG count, ULONG *foo)
 {
    if ((m_cSeek + (unsigned int)count) > m_cMax)
       SetSize(max(m_cSeek * 2, m_cSeek + (unsigned int)count));
@@ -850,7 +850,7 @@ long __stdcall FastIStream::Write(const void *pv, const unsigned long count, uns
    return S_OK;
 }
 
-long __stdcall FastIStream::Seek(union _LARGE_INTEGER li, const unsigned long origin, union _ULARGE_INTEGER *puiOut)
+HRESULT __stdcall FastIStream::Seek(union _LARGE_INTEGER li, const ULONG origin, union _ULARGE_INTEGER *puiOut)
 {
    switch (origin)
    {
@@ -869,42 +869,42 @@ long __stdcall FastIStream::Seek(union _LARGE_INTEGER li, const unsigned long or
    return S_OK;
 }
 
-long __stdcall FastIStream::SetSize(union _ULARGE_INTEGER)
+HRESULT __stdcall FastIStream::SetSize(union _ULARGE_INTEGER)
 {
    return S_OK;
 }
 
-long __stdcall FastIStream::CopyTo(struct IStream *, union _ULARGE_INTEGER, union _ULARGE_INTEGER *, union _ULARGE_INTEGER *)
+HRESULT __stdcall FastIStream::CopyTo(struct IStream *, union _ULARGE_INTEGER, union _ULARGE_INTEGER *, union _ULARGE_INTEGER *)
 {
    return S_OK;
 }
 
-long __stdcall FastIStream::Commit(unsigned long)
+HRESULT __stdcall FastIStream::Commit(ULONG)
 {
    return S_OK;
 }
 
-long __stdcall FastIStream::Revert()
+HRESULT __stdcall FastIStream::Revert()
 {
    return S_OK;
 }
 
-long __stdcall FastIStream::LockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, unsigned long)
+HRESULT __stdcall FastIStream::LockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, ULONG)
 {
    return S_OK;
 }
 
-long __stdcall FastIStream::UnlockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, unsigned long)
+HRESULT __stdcall FastIStream::UnlockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, ULONG)
 {
    return S_OK;
 }
 
-long __stdcall FastIStream::Stat(struct tagSTATSTG *, unsigned long)
+HRESULT __stdcall FastIStream::Stat(struct tagSTATSTG *, ULONG)
 {
    return S_OK;
 }
 
-long __stdcall FastIStream::Clone(struct IStream **)
+HRESULT __stdcall FastIStream::Clone(struct IStream **)
 {
    return S_OK;
 }

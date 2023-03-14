@@ -3926,7 +3926,7 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
    const bool enableLog = LoadValueBoolWithDefault(regKey[RegName::Editor], "EnableLog"s, false);
    const bool logScript = enableLog && LoadValueBoolWithDefault(regKey[RegName::Editor], "LogScriptOutput"s, true);
 
-   if (pvar->vt == VT_EMPTY || pvar->vt == VT_NULL || pvar->vt == VT_ERROR)
+   if (V_VT(pvar) == VT_EMPTY || V_VT(pvar) == VT_NULL || V_VT(pvar) == VT_ERROR)
    {
       if (g_pplayer->m_hwndDebugOutput)
          m_pcv->AddToDebugOutput("");

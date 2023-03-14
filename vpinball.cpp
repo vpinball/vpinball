@@ -164,14 +164,6 @@ void VPinball::GetMyPath()
    char szPath[MAXSTRING];
 #ifdef _MSC_VER
    GetModuleFileName(nullptr, szPath, MAXSTRING);
-#else
-#ifdef __APPLE__
-   uint32_t pathSize = (uint32_t)sizeof(szPath);
-   _NSGetExecutablePath(szPath, &pathSize);
-#else
-   readlink( "/proc/self/exe", szPath, MAXSTRING );
-#endif
-#endif
    char *szEnd = szPath + lstrlen(szPath);
 
    // search for first backslash
@@ -184,6 +176,14 @@ void VPinball::GetMyPath()
 
    // truncate the filename
    *(szEnd + 1) = '\0'; // Get rid of exe name
+#elif __ANDROID__
+   const string szStoragePath = string() + SDL_AndroidGetInternalStoragePath() + PATH_SEPARATOR_CHAR;
+   strcpy(szPath, szStoragePath.c_str());
+#else 
+   const char* const szBasePath = SDL_GetBasePath();
+   strcpy(szPath, szBasePath);
+   SDL_free(szBasePath);
+#endif
 
    // store 2x
    m_szMyPath = szPath;

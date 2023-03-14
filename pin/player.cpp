@@ -412,6 +412,7 @@ void Player::PreCreate(CREATESTRUCT& cs)
         x += (m_screenwidth - m_wnd_width) / 2;
         y += (m_screenheight - m_wnd_height) / 2;
 
+#ifdef _MSC_VER
         // is this a non-fullscreen window? -> get previously saved window position
         if ((m_wnd_height != m_screenheight) || (m_wnd_width != m_screenwidth))
         {
@@ -428,6 +429,7 @@ void Player::PreCreate(CREATESTRUCT& cs)
                 x = xn;
                 y = yn;
             }
+#endif
         }
     }
 

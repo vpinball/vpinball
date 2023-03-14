@@ -1029,7 +1029,7 @@ void upscale(DWORD *const data, const int2 &res, const bool is_brightness_data);
 
 STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!! use 64bit instead of 8bit to reduce overhead??
 {
-   SAFEARRAY *psa = pVal.parray;
+   SAFEARRAY *psa = V_ARRAY(&pVal);
 
    if (psa && m_dmdSize.x > 0 && m_dmdSize.y > 0)
    {
@@ -1059,7 +1059,7 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
       VARIANT *p;
       SafeArrayAccessData(psa, (void **)&p);
       for (int ofs = 0; ofs < size; ++ofs)
-         data[ofs] = p[ofs].cVal; // store raw values (0..100), let shader do the rest
+         data[ofs] = V_UI4(&p[ofs]); // store raw values (0..100), let shader do the rest
       SafeArrayUnaccessData(psa);
 
       if (g_pplayer->m_scaleFX_DMD)
@@ -1073,7 +1073,7 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
 
 STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as input //!! use 64bit instead of 32bit to reduce overhead??
 {
-   SAFEARRAY *psa = pVal.parray;
+   SAFEARRAY *psa = V_ARRAY(&pVal);
 
    if (psa && m_dmdSize.x > 0 && m_dmdSize.y > 0)
    {
@@ -1103,7 +1103,7 @@ STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as 
       VARIANT *p;
       SafeArrayAccessData(psa, (void **)&p);
       for (int ofs = 0; ofs < size; ++ofs)
-         data[ofs] = p[ofs].uintVal | 0xFF000000u; // store RGB values and let shader do the rest (set alpha to let shader know that this is RGB and not just brightness)
+         data[ofs] = V_UI4(&p[ofs]) | 0xFF000000u; // store RGB values and let shader do the rest (set alpha to let shader know that this is RGB and not just brightness)
       SafeArrayUnaccessData(psa);
 
       if (g_pplayer->m_scaleFX_DMD)

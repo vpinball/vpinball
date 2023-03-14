@@ -36,7 +36,7 @@
 #include "imgui_impl_dx9.h"
 
 // DirectX
-#include "..\inc\minid3d9.h"
+#include "../inc/minid3d9.h"
 
 // DirectX data
 struct ImGui_ImplDX9_Data
