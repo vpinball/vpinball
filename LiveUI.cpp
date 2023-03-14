@@ -37,6 +37,8 @@
 
 #define PROP_WIDTH (125.f * m_dpi)
 
+#define ICON_SAVE "S"
+
 // utility structure for realtime plot //!! cleanup
 class ScrollingData
 {
@@ -1623,7 +1625,6 @@ void LiveUI::PropCheckbox(const char *label, bool is_live, bool *startup_v, bool
       ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthStretch);
       ImGui::TableSetupColumn("Sync", ImGuiTableColumnFlags_WidthFixed);
    }
-
    ImGui::TableNextColumn();
    if (v == nullptr)
    {
@@ -1631,6 +1632,8 @@ void LiveUI::PropCheckbox(const char *label, bool is_live, bool *startup_v, bool
       ImGui::TableNextColumn();
       return;
    }
+
+   ImGui::PushID(label);
 
    // Main edit field
    if (ImGui::Checkbox(label, v))
@@ -1646,7 +1649,7 @@ void LiveUI::PropCheckbox(const char *label, bool is_live, bool *startup_v, bool
       const bool synced = ((*ov) == (*v));
       if (synced)
          ImGui::BeginDisabled();
-      if (ImGui::Button(ICON_OFI_SAVE))
+      if (ImGui::Button(ICON_SAVE))
       {
          *ov = *v;
          if (is_live)
@@ -1663,6 +1666,8 @@ void LiveUI::PropCheckbox(const char *label, bool is_live, bool *startup_v, bool
       if (synced)
          ImGui::EndDisabled();
    }
+
+   ImGui::PopID();
 }
 
 void LiveUI::PropFloat(const char *label, bool is_live, float *startup_v, float *live_v, float step, float step_fast, const char *format, ImGuiInputTextFlags flags, OnFloatPropChange chg_callback)
@@ -1693,6 +1698,8 @@ void LiveUI::PropFloat(const char *label, bool is_live, float *startup_v, float 
       return;
    }
 
+   ImGui::PushID(label);
+
    // Main edit field
    float prev = *v;
    if (ImGui::InputFloat(label, v, step, step_fast, format, flags))
@@ -1710,7 +1717,7 @@ void LiveUI::PropFloat(const char *label, bool is_live, float *startup_v, float 
       const bool synced = ((*ov) == (*v));
       if (synced)
          ImGui::BeginDisabled();
-      if (ImGui::Button(ICON_OFI_SAVE))
+      if (ImGui::Button(ICON_SAVE))
       {
          *ov = *v;
          if (is_live)
@@ -1727,6 +1734,8 @@ void LiveUI::PropFloat(const char *label, bool is_live, float *startup_v, float 
       if (synced)
          ImGui::EndDisabled();
    }
+
+   ImGui::PopID();
 }
 
 void LiveUI::PropInt(const char *label, bool is_live, int *startup_v, int *live_v)
@@ -1748,6 +1757,8 @@ void LiveUI::PropInt(const char *label, bool is_live, int *startup_v, int *live_
       return;
    }
 
+   ImGui::PushID(label);
+
    // Main edit field
    if (ImGui::InputInt(label, v))
    {
@@ -1762,7 +1773,7 @@ void LiveUI::PropInt(const char *label, bool is_live, int *startup_v, int *live_
       const bool synced = ((*ov) == (*v));
       if (synced)
          ImGui::BeginDisabled();
-      if (ImGui::Button(ICON_OFI_SAVE))
+      if (ImGui::Button(ICON_SAVE))
       {
          *ov = *v;
          if (is_live)
@@ -1779,6 +1790,8 @@ void LiveUI::PropInt(const char *label, bool is_live, int *startup_v, int *live_
       if (synced)
          ImGui::EndDisabled();
    }
+
+   ImGui::PopID();
 }
 
 void LiveUI::PropRGB(const char *label, bool is_live, COLORREF *startup_v, COLORREF *live_v, ImGuiColorEditFlags flags)
@@ -1799,6 +1812,8 @@ void LiveUI::PropRGB(const char *label, bool is_live, COLORREF *startup_v, COLOR
       ImGui::TableNextColumn();
       return;
    }
+
+   ImGui::PushID(label);
 
    // Main edit field
    float col[3];
@@ -1822,7 +1837,7 @@ void LiveUI::PropRGB(const char *label, bool is_live, COLORREF *startup_v, COLOR
       const bool synced = ((*ov) == (*v));
       if (synced)
          ImGui::BeginDisabled();
-      if (ImGui::Button(ICON_OFI_SAVE))
+      if (ImGui::Button(ICON_SAVE))
       {
          *ov = *v;
          if (is_live)
@@ -1839,6 +1854,8 @@ void LiveUI::PropRGB(const char *label, bool is_live, COLORREF *startup_v, COLOR
       if (synced)
          ImGui::EndDisabled();
    }
+
+   ImGui::PopID();
 }
 
 void LiveUI::PropVec3(const char *label, bool is_live, Vertex3Ds *startup_v, Vertex3Ds *live_v, const char *format, ImGuiInputTextFlags flags)
@@ -1859,6 +1876,8 @@ void LiveUI::PropVec3(const char *label, bool is_live, Vertex3Ds *startup_v, Ver
       ImGui::TableNextColumn();
       return;
    }
+
+   ImGui::PushID(label);
 
    // Main edit field
    float col[3];
@@ -1881,7 +1900,7 @@ void LiveUI::PropVec3(const char *label, bool is_live, Vertex3Ds *startup_v, Ver
       const bool synced = (v->x == ov->x) && (v->y == ov->y) && (v->z == ov->z);
       if (synced)
          ImGui::BeginDisabled();
-      if (ImGui::Button(ICON_OFI_SAVE))
+      if (ImGui::Button(ICON_SAVE))
       {
          *ov = *v;
          if (is_live)
@@ -1898,4 +1917,6 @@ void LiveUI::PropVec3(const char *label, bool is_live, Vertex3Ds *startup_v, Ver
       if (synced)
          ImGui::EndDisabled();
    }
+
+   ImGui::PopID();
 }
