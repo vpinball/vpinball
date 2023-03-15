@@ -179,6 +179,8 @@ public:
       return *this;
    }
 
+   bool operator==(const Vertex3Ds& v) const { return (x==v.x) && (y==v.y) && (z==v.z); }
+
    void Normalize()
    {
       const float oneoverlength = 1.0f / sqrtf(x*x + y*y + z*z);
