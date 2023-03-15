@@ -42,8 +42,6 @@ static unsigned int stats_drawn_static_triangles = 0;
 
 #define RECOMPUTEBUTTONCHECK WM_USER+100
 
-INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
 #if (defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
 #ifdef _MSC_VER
  #define init_cpu_detection int regs[4]; __cpuid(regs, 1);
@@ -4479,64 +4477,9 @@ void Player::Render()
       return;
    }
 
-   // Close requested with user input: toggle window border and show dialog box since this aalso give access to debugger
+   // Close requested with user input
    if (m_closing == CS_USER_INPUT && !g_pvp->m_disable_pause_menu)
-   {
-      // TODO add a dedicated, simple UI for this which would always work and would be less cumbersome to find for user (from video settings?)
-      // add or remove caption, border and buttons (only if in windowed mode?) to allow user to move the player window
-      const int captionheight = GetSystemMetrics(SM_CYCAPTION);
-      if (!m_fullScreen && (m_showWindowedCaption || (!m_showWindowedCaption && ((m_screenheight - m_wnd_height) >= (captionheight * 2))))) // We have enough room for a frame? //!! *2 ??
-      {
-         int x, y;
-#ifdef ENABLE_SDL
-         SDL_SetWindowBordered(m_sdl_playfieldHwnd, !m_showWindowedCaption ? SDL_TRUE : SDL_FALSE);
-         SDL_GetWindowPosition(m_sdl_playfieldHwnd, &x, &y);
-#else
-         RECT rect;
-         ::GetWindowRect(GetHwnd(), &rect);
-         x = rect.left;
-         y = rect.top;
-
-         // Add/Remove a pretty window border and standard control boxes.
-         const int windowflags = m_showWindowedCaption ? WS_POPUP : (WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN);
-         const int windowflagsex = m_showWindowedCaption ? 0 : WS_EX_OVERLAPPEDWINDOW;
-
-         //!! does not respect borders so far!!! -> remove them or change width/height accordingly ?? otherwise ignore as eventually it will be restored anyway??
-         //!! like this the render window is scaled and thus implicitly blurred though!
-         SetWindowLongPtr(GWL_STYLE, windowflags);
-         SetWindowLongPtr(GWL_EXSTYLE, windowflagsex);
-         SetWindowPos(nullptr, x, m_showWindowedCaption ? (y + captionheight) : (y - captionheight), m_wnd_width, m_wnd_height + (m_showWindowedCaption ? 0 : captionheight), SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-         ShowWindow(SW_SHOW);
-#endif
-         // Save position of non-fullscreen player window to registry, and only if it was potentially moved around (i.e. when caption was already visible)
-         if (m_showWindowedCaption)
-         {
-            HRESULT hr = SaveValueInt((m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosX"s, x);
-                    hr = SaveValueInt((m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosY"s, y + captionheight);
-         }
-
-         m_showWindowedCaption = !m_showWindowedCaption;
-      }
-
-      // Show option dialog, with visible mouse cursor if hidden, then restore state
-      PauseMusic();
-      while(ShowCursor(FALSE)>=0) ;
-      while(ShowCursor(TRUE)<0) ;
-      size_t option = DialogBox(g_pvp->theInstance, MAKEINTRESOURCE(IDD_GAMEPAUSE), GetHwnd(), PauseProc);
-      m_closing = CS_PLAYING;
-      m_noTimeCorrect = true; // Skip the time we were in the dialog
-      UnpauseMusic();
-      if (g_pplayer->m_fullScreen || (g_pplayer->m_wnd_width == g_pplayer->m_screenwidth && g_pplayer->m_wnd_height == g_pplayer->m_screenheight)) // detect windowed fullscreen
-      {
-         while(ShowCursor(TRUE)<0) ;
-         while(ShowCursor(FALSE)>=0) ;
-      }
-      switch (option)
-      {
-      case ID_QUIT: m_closing = CS_STOP_PLAY; break;
-      case ID_DEBUGWINDOW: m_showDebugger = true; break;
-      }
-   }
+      m_liveUI->OpenMainUI();
 
    // Brute force stop: blast into space
    if (m_closing == CS_FORCE_STOP)
@@ -5607,71 +5550,6 @@ void Player::StopPlayer()
    m_pEditorTable->EnableWindow();
 
    LockForegroundWindow(false);
-}
-
-INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-   switch (uMsg)
-   {
-      case WM_INITDIALOG:
-      {
-         RECT rcDialog,rcMain;
-         GetWindowRect(GetParent(hwndDlg), &rcMain);
-         GetWindowRect(hwndDlg, &rcDialog);
-
-         SetWindowPos(hwndDlg, nullptr,
-            (rcMain.right + rcMain.left) / 2 - (rcDialog.right - rcDialog.left) / 2,
-            (rcMain.bottom + rcMain.top) / 2 - (rcDialog.bottom - rcDialog.top) / 2,
-            0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
-
-         if (g_pvp->m_open_minimized)
-            SetWindowText(GetDlgItem(hwndDlg, ID_QUIT), "Quit"); // Replace "Quit to Editor" with "Quit"
-
-         return TRUE;
-      }
-      case WM_COMMAND:
-      {
-         switch (HIWORD(wParam))
-         {
-            case BN_CLICKED:
-            {
-               switch (LOWORD(wParam))
-               {
-               case IDCANCEL:
-               case ID_RESUME:
-               {
-                  EndDialog(hwndDlg, ID_RESUME);
-                  break;
-               }
-               case ID_DEBUGWINDOW:
-               {
-                     g_pplayer->m_debugMode = true;
-                     if (!g_pplayer->m_debuggerDialog.IsWindow())
-                     {
-                         g_pplayer->m_debuggerDialog.Create(g_pplayer->GetHwnd());
-                         g_pplayer->m_debuggerDialog.ShowWindow();
-                     }
-                     else
-                     {
-                         g_pplayer->m_debuggerDialog.ShowWindow(SW_SHOW);
-                         g_pplayer->m_debuggerDialog.SetActiveWindow();
-                     }
-
-                     EndDialog(hwndDlg, ID_DEBUGWINDOW);
-                  break;
-               }
-               case ID_QUIT:
-               {
-                  EndDialog(hwndDlg, ID_QUIT);
-                  break;
-               }
-               }
-               break;
-            }//case BN_CLICKED:
-         }//switch (HIWORD(wParam))
-      }
-   }
-   return FALSE;
 }
 
 #ifdef PLAYBACK
