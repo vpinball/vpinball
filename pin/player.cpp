@@ -671,6 +671,9 @@ void Player::Shutdown()
 #endif
    captureStop();
 
+   while (ShowCursor(FALSE) >= 0) ;
+   while(ShowCursor(TRUE)<0) ;
+
    delete m_liveUI;
    m_liveUI = nullptr;
 
@@ -4493,8 +4496,6 @@ void Player::Render()
    if (m_closing == CS_STOP_PLAY)
    {
       PauseMusic();
-      while (ShowCursor(FALSE) >= 0) ;
-      while(ShowCursor(TRUE)<0) ;
       // Stop playing (send close window message)
       SendMessage(WM_CLOSE, 0, 0);
       return;
