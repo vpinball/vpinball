@@ -4339,7 +4339,7 @@ void Player::Render()
    }
    else
 #endif
-   if (m_dynamicMode)
+   if (m_cameraMode)
    {
       m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation());
    }

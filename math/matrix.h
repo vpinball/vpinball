@@ -69,6 +69,8 @@ public:
    static vec3 TransformCoord(const vec3 &ec, const Matrix3D &mat);
    vec3 operator+ (const vec3& m) const;
    vec3 operator- (const vec3& m) const;
+   vec3 operator* (const float s) const;
+   vec3 operator/ (const float s) const;
 };
 #endif
 
@@ -552,7 +554,7 @@ public:
       D3DXVec3Normalize(&zaxis, &a_e);
       D3DXVec3Cross(&xaxis, &up, &zaxis);
       D3DXVec3Normalize(&xaxis, &xaxis);
-      D3DXVec3Cross(&yaxis, &zaxis, &zaxis);
+      D3DXVec3Cross(&yaxis, &zaxis, &xaxis);
       const float dotX = D3DXVec3Dot(&xaxis, &eye);
       const float dotY = D3DXVec3Dot(&yaxis, &eye);
       const float dotZ = D3DXVec3Dot(&zaxis, &eye);

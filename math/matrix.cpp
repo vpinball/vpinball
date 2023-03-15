@@ -230,4 +230,12 @@ vec3 vec3::operator- (const vec3& m) const {
    return vec3(x - m.x, y - m.y, z - m.z);
 }
 
+vec3 vec3::operator*(const float s) const {
+   return vec3(x * s, y * s, z * s);
+}
+
+vec3 vec3::operator/(const float s) const {
+   return vec3(x / s, y / s, z / s);
+}
+
 #endif
