@@ -101,4 +101,8 @@ private:
    U32 m_OpenUITime = 0; // Used to delay keyboard shortcut
    U64 m_StartTime_usec = 0; // Used for timed splash overlays
    int m_show_fps = 0; // 0=disabled / 1=FPS / 2=FPS+dynamic plot
+
+   // Editor camera
+   bool m_useEditorCam = false;
+   vec3 m_CamEye, m_CamAt, m_CamUp;
 };

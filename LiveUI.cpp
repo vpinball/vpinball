@@ -559,6 +559,11 @@ LiveUI::LiveUI(RenderDevice* const rd)
    m_old_player_dynamic_mode = m_player->m_dynamicMode;
    m_old_player_camera_mode = m_player->m_cameraMode;
 
+   // Straight above
+   m_CamEye = vec3(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, m_live_table->m_bottom * 1.5f);
+   m_CamAt = vec3(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.0f);
+   m_CamUp = vec3(0.0f, -1.0f, 0.0f);
+
    IMGUI_CHECKVERSION();
    ImGui::CreateContext();
    ImPlot::CreateContext();
@@ -687,9 +692,9 @@ void LiveUI::ToggleFPS()
 void LiveUI::Update()
 {
    // For the time being, the UI is only available inside a running player
-   if (g_pplayer == nullptr || g_pplayer->m_closing != Player::CS_PLAYING)
+   if (m_player == nullptr || m_player->m_closing != Player::CS_PLAYING)
       return;
-
+   
 #ifdef ENABLE_SDL
    ImGui_ImplOpenGL3_NewFrame();
 #else
@@ -1013,18 +1018,111 @@ void LiveUI::UpdateMainUI()
    if (!ImGui::GetIO().WantCaptureMouse)
    {
       // TODO mouse interaction with viewport: selection, camera,...
-      if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+
+      // Zoom in/out with mouse wheel
+      if (m_useEditorCam && ImGui::GetIO().MouseWheel != 0)
       {
-         //ImVec2 drag = ImGui::GetMouseDragDelta();
+         vec3 v = m_CamEye - m_CamAt;
+         float length = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+         float newLength = length - ImGui::GetIO().MouseWheel * (length > 200 ? 100.0f : length > 100 ? 10.0f : 2.0f);
+         if (newLength > 1.0f)
+            m_CamEye = m_CamAt + v * (newLength / length);
+      }
+
+      // Orbit around look at point, or pan along screen (with Shift)
+      if (m_useEditorCam && ImGui::IsMouseDown(ImGuiMouseButton_Middle))
+      {
+         ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle);
+         ImGui::ResetMouseDragDelta(ImGuiMouseButton_Middle);
+         Matrix3D mView = Matrix3D::MatrixLookAtLH(m_CamEye, m_CamAt, m_CamUp);
+         vec3 xaxis = vec3(mView.m[0][0], mView.m[0][1], mView.m[0][2]);
+         vec3 yaxis = vec3(mView.m[1][0], mView.m[1][1], mView.m[1][2]);
+         if (ImGui::GetIO().KeyShift)
+         {
+            m_CamEye = m_CamEye - xaxis * drag.x + yaxis * drag.y;
+            m_CamAt = m_CamAt - xaxis * drag.x + yaxis * drag.y;
+         }
+         else
+         {
+            // Following code kinda 'works' but does not do the intended job at all (which would be to behave like Blender's camera)
+            for (int i = 0; i < 2; i++)
+            {
+               Matrix3D mRot;
+               vec3 axis = i == 0 ? xaxis : yaxis;
+               float alpha = -(i == 0 ? drag.y : drag.x) * 0.01f;
+               float cs = cos(alpha), om_cs = 1.0f - cs, sn = sin(alpha), om_sn = 1.0f - sn;
+               mRot.SetIdentity();
+               mRot._11 = cs + om_cs * axis.x * axis.x;
+               mRot._12 = om_cs * axis.x * axis.y - sn * axis.z;
+               mRot._13 = om_cs * axis.x * axis.z + sn * axis.y;
+               mRot._21 = om_cs * axis.x * axis.y + sn * axis.z;
+               mRot._22 = cs + om_cs * axis.y * axis.y;
+               mRot._23 = om_cs * axis.y * axis.z - sn * axis.x;
+               mRot._31 = om_cs * axis.x * axis.z - sn * axis.y;
+               mRot._32 = om_cs * axis.y * axis.z + sn * axis.x;
+               mRot._33 = cs + om_cs * axis.z * axis.z;
+               Vertex3Ds eye = Vertex3Ds(m_CamEye.x, m_CamEye.y, m_CamEye.z);
+               Vertex3Ds at = Vertex3Ds(m_CamAt.x, m_CamAt.y, m_CamAt.z);
+               Vertex3Ds v = eye - at;
+               v = at + mRot.MultiplyVectorNoTranslate(v);
+               m_CamEye = vec3(v.x, v.y, v.z);
+               v = Vertex3Ds(m_CamUp.x, m_CamUp.y, m_CamUp.z);
+               v = mRot.MultiplyVectorNoTranslate(v);
+               v.Normalize();
+               m_CamUp = vec3(v.x, v.y, v.z);
+            }
+         }
       }
    }
    if (!ImGui::GetIO().WantCaptureKeyboard)
    {
       if (!m_ShowSplashModal && ImGui::IsKeyDown(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc)
       {
+         // Open Main modal dialog
          ExitEditMode();
          m_ShowSplashModal = true;
       }
+      if (!m_ShowSplashModal)
+      {
+         if (ImGui::IsKeyDown(ImGuiKey_Keypad7))
+         {
+            // Editor Camera to Top
+            m_useEditorCam = true;
+            m_CamAt = vec3(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.0f);
+            m_CamEye = m_CamAt + vec3(0.0f, 0.0f, m_live_table->m_bottom * 1.5f);
+            m_CamUp = vec3(0.0f, -1.0f, 0.0f);
+         }
+         if (ImGui::IsKeyDown(ImGuiKey_Keypad1))
+         {
+            // Editor Camera to Front
+            m_useEditorCam = true;
+            m_CamAt = vec3(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.0f);
+            m_CamEye = m_CamAt + vec3(0.0f, m_live_table->m_right * 1.5f, 0.0f);
+            m_CamUp = vec3(0.0f, 0.0f, 1.0f);
+         }
+         if (ImGui::IsKeyDown(ImGuiKey_Keypad3))
+         {
+            // Editor Camera to Right
+            m_useEditorCam = true;
+            m_CamAt = vec3(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.0f);
+            m_CamEye = m_CamAt + vec3(m_live_table->m_bottom * 2.0f, 0.0f, 0.0f);
+            m_CamUp = vec3(0.0f, 0.0f, 1.0f);
+         }
+      }
+   }
+
+   if (m_useEditorCam)
+   {
+      // Apply editor camera to renderer
+      Matrix3D mView = Matrix3D::MatrixLookAtLH(m_CamEye, m_CamAt, m_CamUp);
+      memcpy(m_pin3d->m_proj.m_matView.m, mView.m, sizeof(float) * 4 * 4);
+      Matrix3D proj = Matrix3D::MatrixPerspectiveFovLH(ANGTORAD(39.6f), ((float)m_pin3d->m_viewPort.Width) / ((float)m_pin3d->m_viewPort.Height), 10.0f, 10000.0f);
+      memcpy(m_pin3d->m_proj.m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
+      m_pin3d->UpdateMatrices();
+   }
+   else
+   {
+      m_pin3d->InitLayout(m_live_table->m_BG_enable_FSS, m_live_table->GetMaxSeparation());
    }
 }
 
@@ -1051,11 +1149,17 @@ void LiveUI::UpdateOutlinerUI()
          {
             if (ImGui::TreeNodeEx("View Setups"))
             {
+               if (ImGui::Selectable("Live Editor Camera"))
+               {
+                  m_selection.type = Selection::SelectionType::S_NONE;
+                  m_useEditorCam = true;
+               }
                if (ImGui::Selectable("Desktop"))
                {
                   m_selection.type = Selection::SelectionType::S_CAMERA;
                   m_selection.is_live = is_live;
                   m_selection.camera = 0;
+                  m_useEditorCam = false;
                   table->m_BG_current_set = 0;
                }
                if (ImGui::Selectable("Cabinet"))
@@ -1063,6 +1167,7 @@ void LiveUI::UpdateOutlinerUI()
                   m_selection.type = Selection::SelectionType::S_CAMERA;
                   m_selection.is_live = is_live;
                   m_selection.camera = 1;
+                  m_useEditorCam = false;
                   table->m_BG_current_set = 1;
                }
                if (ImGui::Selectable("Full Single Screen"))
@@ -1070,6 +1175,7 @@ void LiveUI::UpdateOutlinerUI()
                   m_selection.type = Selection::SelectionType::S_CAMERA;
                   m_selection.is_live = is_live;
                   m_selection.camera = 2;
+                  m_useEditorCam = false;
                   table->m_BG_current_set = 2;
                }
                ImGui::TreePop();
@@ -1401,10 +1507,10 @@ void LiveUI::UpdateMainSplashModal()
             ImVec2 drag = ImGui::GetMouseDragDelta();
             int x, y;
 #ifdef ENABLE_SDL
-            SDL_GetWindowPosition(m_sdl_playfieldHwnd, &x, &y);
+            SDL_GetWindowPosition(m_player->m_sdl_playfieldHwnd, &x, &y);
             x += (int)drag.x;
             y += (int)drag.y;
-            SDL_SetWindowPosition(m_sdl_playfieldHwnd, x, y);
+            SDL_SetWindowPosition(m_player->m_sdl_playfieldHwnd, x, y);
 #else
             auto rect = m_player->GetWindowRect();
             x = rect.left + (int)drag.x;
