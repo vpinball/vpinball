@@ -33,6 +33,7 @@ private:
    void UpdateRendererInspectionModal();
 
    // UI Selection & properties
+   void BallProperties(bool is_live);
    void CameraProperties(bool is_live);
    void MaterialProperties(bool is_live);
    void TableProperties(bool is_live);
@@ -44,8 +45,10 @@ private:
    void SurfaceProperties(bool is_live, Surface *startup_obj, Surface *live_obj);
 
    // Helpers for property edition
-   typedef std::function<void(LiveUI*, bool is_live, float prev, float v)> OnFloatPropChange;
-   typedef std::function<void(LiveUI *, bool is_live, bool prev, bool v)> OnBoolPropChange;
+   typedef std::function<void(bool is_live, float prev, float v)> OnFloatPropChange;
+   typedef std::function<void(bool is_live, int prev, int v)> OnIntPropChange;
+   typedef std::function<void(bool is_live, bool prev, bool v)> OnBoolPropChange;
+   typedef std::function<void(bool is_live, string prev, string v)> OnStringPropChange;
    void PropSeparator(const char *label = nullptr);
    void PropCheckbox(const char *label, IEditable *undo_obj, bool is_live, bool *startup_v, bool *live_v, OnBoolPropChange chg_callback = nullptr);
    void PropFloat(const char *label, IEditable* undo_obj, bool is_live, float *startup_v, float *live_v, float step, float step_fast, const char *format = "%.3f", ImGuiInputTextFlags flags = ImGuiInputTextFlags_CharsDecimal, OnFloatPropChange chg_callback = nullptr);
@@ -53,6 +56,7 @@ private:
    void PropRGB(const char *label, IEditable *undo_obj, bool is_live, COLORREF *startup_v, COLORREF *live_v, ImGuiColorEditFlags flags = 0);
    void PropVec3(const char *label, IEditable* undo_obj, bool is_live, Vertex3Ds *startup_v, Vertex3Ds *live_v, const char *format = "%.3f", ImGuiInputTextFlags flags = ImGuiInputTextFlags_CharsDecimal);
    void PropCombo(const char *label, IEditable *undo_obj, bool is_live, int *startup_v, int *live_v, int n_values, const string labels[]);
+   void PropImageCombo(const char *label, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, OnStringPropChange chg_callback = nullptr);
 
    // Enter/Exit edit mode (manage table backup, dynamic mode,...)
    void HideUI();
@@ -69,13 +73,14 @@ private:
    Pin3D *m_pin3d;
    struct Selection
    {
-      enum SelectionType { S_NONE, S_CAMERA, S_MATERIAL, S_EDITABLE } type = S_NONE;
+      enum SelectionType { S_NONE, S_CAMERA, S_MATERIAL, S_BALL, S_EDITABLE } type = S_NONE;
       bool is_live;
       union
       {
          int camera;
          IEditable* editable;
          Material *material;
+         int ball_index;
       };
    } m_selection;
 

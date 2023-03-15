@@ -505,7 +505,11 @@ static void HelpSplash(const std::string& text, int rotation)
 static void HelpEditableHeader(bool is_live, IEditable *editable, IEditable *live_editable)
 {
    string title;
-   switch (editable->GetItemType())
+   IEditable *notnull_editable = editable ? editable : live_editable;
+   IEditable *select_editable = is_live ? live_editable : editable;
+   if (notnull_editable == nullptr)
+      return;
+   switch (notnull_editable->GetItemType())
    {
    // Missing: eItemLightCenter, eItemDragPoint, eItemCollection
    case eItemBumper: title = "Bumper"s; break;
@@ -519,7 +523,7 @@ static void HelpEditableHeader(bool is_live, IEditable *editable, IEditable *liv
    case eItemLight: title = "Light"s; break;
    case eItemLightSeq: title = "Light Sequencer"s; break;
    case eItemPlunger: title = "Plunger"s; break;
-   case eItemPrimitive: title = ((Primitive *)editable)->IsPlayfield() ? "Playfield"s : "Primitive"s; break;
+   case eItemPrimitive: title = ((Primitive *)notnull_editable)->IsPlayfield() ? "Playfield"s : "Primitive"s; break;
    case eItemRamp: title = "Ramp"s; break;
    case eItemRubber: title = "Rubber"s; break;
    case eItemSpinner: title = "Spinner"s; break;
@@ -529,10 +533,9 @@ static void HelpEditableHeader(bool is_live, IEditable *editable, IEditable *liv
    case eItemTimer: title = "Timer"s; break;
    case eItemTrigger: title = "Trigger"s; break;
    }
-   ImGui::NewLine();
    HelpTextCentered(title);
    ImGui::BeginDisabled(is_live); // Do not edit name of live objects, it would likely break the script
-   string name = (is_live ? live_editable : editable)->GetName();
+   string name = select_editable ? select_editable->GetName() : ""s;
    if (ImGui::InputText("Name", &name))
    {
       editable->SetName(name);
@@ -1046,7 +1049,7 @@ void LiveUI::UpdateOutlinerUI()
          PinTable *table = is_live ? m_live_table : m_table;
          if (ImGui::BeginTabItem(is_live ? "Live" : "Startup", nullptr))
          {
-            if (ImGui::TreeNodeEx("View Setups", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::TreeNodeEx("View Setups"))
             {
                if (ImGui::Selectable("Desktop"))
                {
@@ -1081,6 +1084,32 @@ void LiveUI::UpdateOutlinerUI()
                      m_selection.type = Selection::SelectionType::S_MATERIAL;
                      m_selection.is_live = is_live;
                      m_selection.material = material;
+                  }
+               }
+               ImGui::TreePop();
+            }
+            if (is_live && ImGui::TreeNode("Live Objects"))
+            {
+               for (size_t t = 0; t < table->m_vedit.size(); t++)
+               {
+                  ISelect *const psel = table->m_vedit[t]->GetISelect();
+                  if (psel != nullptr && psel->m_layerName.empty())
+                  {
+                     if (ImGui::Selectable(table->m_vedit[t]->GetName()))
+                     {
+                        m_selection.type = LiveUI::Selection::SelectionType::S_EDITABLE;
+                        m_selection.is_live = is_live;
+                        m_selection.editable = table->m_vedit[t];
+                     }
+                  }
+               }
+               for (size_t t = 0; t < m_player->m_vball.size(); t++)
+               {
+                  if (ImGui::Selectable("Ball #"s.append(std::to_string(m_player->m_vball[t]->m_id)).c_str()))
+                  {
+                     m_selection.type = Selection::SelectionType::S_BALL;
+                     m_selection.is_live = is_live;
+                     m_selection.ball_index = (int) t;
                   }
                }
                ImGui::TreePop();
@@ -1164,30 +1193,38 @@ void LiveUI::UpdatePropertyUI()
          const bool is_live = (tab == 1);
          if (ImGui::BeginTabItem(is_live ? "Live" : "Startup", nullptr))
          {
-
+            ImGui::NewLine();
             switch (m_selection.type)
             {
             case Selection::SelectionType::S_NONE: TableProperties(is_live); break; // Use header tab for live since table is displayed when there si no selection
             case Selection::SelectionType::S_CAMERA: CameraProperties(is_live); break;
             case Selection::SelectionType::S_MATERIAL: MaterialProperties(is_live); break;
+            case Selection::SelectionType::S_BALL: BallProperties(is_live); break;
             case Selection::SelectionType::S_EDITABLE:
             {
                const bool is_live_selected = m_selection.is_live;
                IEditable *live_obj = (IEditable *)(is_live_selected ? m_selection.editable : m_live_table->m_startupToLive[m_selection.editable]);
                IEditable *startup_obj = (IEditable *)(is_live_selected ? m_live_table->m_liveToStartup[m_selection.editable] : m_selection.editable);
-               assert(std::find(m_live_table->m_vedit.begin(), m_live_table->m_vedit.end(), live_obj) != m_live_table->m_vedit.end());
-               assert(std::find(m_table->m_vedit.begin(), m_table->m_vedit.end(), startup_obj) != m_table->m_vedit.end());
-               HelpEditableHeader(is_live, startup_obj, live_obj);
-               switch (m_selection.editable->GetItemType())
+               assert(live_obj == nullptr || std::find(m_live_table->m_vedit.begin(), m_live_table->m_vedit.end(), live_obj) != m_live_table->m_vedit.end());
+               assert(startup_obj == nullptr || std::find(m_table->m_vedit.begin(), m_table->m_vedit.end(), startup_obj) != m_table->m_vedit.end());
+               if ((is_live && live_obj == nullptr) || (!is_live && startup_obj == nullptr))
                {
-               // eItemFlipper, eItemTimer, eItemPlunger, eItemTextbox, eItemBumper, eItemTrigger, eItemKicker, eItemDecal, eItemGate, eItemSpinner, eItemTable,
-               // eItemLightCenter, eItemDragPoint, eItemCollection, eItemDispReel, eItemLightSeq, eItemHitTarget,
-               case eItemFlasher: FlasherProperties(is_live, (Flasher *) startup_obj, (Flasher *)live_obj); break;
-               case eItemLight: LightProperties(is_live, (Light *)startup_obj, (Light *)live_obj); break;
-               case eItemPrimitive: PrimitiveProperties(is_live, (Primitive *)startup_obj, (Primitive *)live_obj); break;
-               case eItemSurface: SurfaceProperties(is_live, (Surface *)startup_obj, (Surface *)live_obj); break;
-               case eItemRamp: RampProperties(is_live, (Ramp *)startup_obj, (Ramp *)live_obj); break;
-               case eItemRubber: RubberProperties(is_live, (Rubber *)startup_obj, (Rubber *)live_obj); break;
+                  HelpTextCentered("No Object");
+               }
+               else
+               {
+                  HelpEditableHeader(is_live, startup_obj, live_obj);
+                  switch (m_selection.editable->GetItemType())
+                  {
+                  // eItemFlipper, eItemTimer, eItemPlunger, eItemTextbox, eItemBumper, eItemTrigger, eItemKicker, eItemDecal, eItemGate, eItemSpinner, eItemTable,
+                  // eItemLightCenter, eItemDragPoint, eItemCollection, eItemDispReel, eItemLightSeq, eItemHitTarget,
+                  case eItemFlasher: FlasherProperties(is_live, (Flasher *) startup_obj, (Flasher *)live_obj); break;
+                  case eItemLight: LightProperties(is_live, (Light *)startup_obj, (Light *)live_obj); break;
+                  case eItemPrimitive: PrimitiveProperties(is_live, (Primitive *)startup_obj, (Primitive *)live_obj); break;
+                  case eItemSurface: SurfaceProperties(is_live, (Surface *)startup_obj, (Surface *)live_obj); break;
+                  case eItemRamp: RampProperties(is_live, (Ramp *)startup_obj, (Ramp *)live_obj); break;
+                  case eItemRubber: RubberProperties(is_live, (Rubber *)startup_obj, (Rubber *)live_obj); break;
+                  }
                }
                break;
             }
@@ -1410,19 +1447,19 @@ void LiveUI::TableProperties(bool is_live)
       PropRGB("Ambient Color", m_table, is_live, &(m_table->m_lightAmbient), m_live_table ? &(m_live_table->m_lightAmbient) : nullptr);
       PropSeparator();
       PropRGB("Light Em. Color", m_table, is_live, &(m_table->m_Light[0].emission), m_live_table ? &(m_live_table->m_Light[0].emission) : nullptr);
-      auto reinit_lights = [](LiveUI *ui, bool is_live, float prev, float v) { ui->m_pin3d->InitLights(); }; // Needed to update shaders with new light settings 
+      auto reinit_lights = [this](bool is_live, float prev, float v) { m_pin3d->InitLights(); }; // Needed to update shaders with new light settings 
       PropFloat("Light Em. Scale", m_table, is_live, &(m_table->m_lightEmissionScale), m_live_table ? &(m_live_table->m_lightEmissionScale) : nullptr, 20000.0f, 100000.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal, reinit_lights);
       PropFloat("Light Height", m_table, is_live, &(m_table->m_lightHeight), m_live_table ? &(m_live_table->m_lightHeight) : nullptr, 20.0f, 100.0f, "%.0f");
       PropFloat("Light Range", m_table, is_live, &(m_table->m_lightRange), m_live_table ? &(m_live_table->m_lightRange) : nullptr, 200.0f, 1000.0f, "%.0f");
       PropSeparator();
       // TODO Missing: environment texture combo
-      auto upd_env_em_scale = [](LiveUI *ui, bool is_live, float prev, float v)
+      auto upd_env_em_scale = [this](bool is_live, float prev, float v)
       {
-         const vec4 st(v * ui->m_player->m_globalEmissionScale,
-            ui->m_pin3d->m_envTexture ? (float)ui->m_pin3d->m_envTexture->m_height /*+m_pin3d->m_envTexture->m_width)*0.5f*/
-                                      : (float)ui->m_pin3d->m_builtinEnvTexture.m_height /*+m_pin3d->m_builtinEnvTexture.m_width)*0.5f*/,
+         const vec4 st(v * m_player->m_globalEmissionScale,
+            m_pin3d->m_envTexture ? (float)m_pin3d->m_envTexture->m_height /*+m_pin3d->m_envTexture->m_width)*0.5f*/
+                                      : (float)m_pin3d->m_builtinEnvTexture.m_height /*+m_pin3d->m_builtinEnvTexture.m_width)*0.5f*/,
             0.f, 0.f);
-         ui->m_rd->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+         m_rd->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
       };
       PropFloat("Environment Em. Scale", m_table, is_live, &(m_table->m_envEmissionScale), m_live_table ? &(m_live_table->m_envEmissionScale) : nullptr, 0.1f, 0.5f, "%.3f", ImGuiInputTextFlags_CharsDecimal, upd_env_em_scale);
       PropFloat("Ambient Occlusion Scale", m_table, is_live, &(m_table->m_AOScale), m_live_table ? &(m_live_table->m_AOScale) : nullptr, 0.1f, 1.0f);
@@ -1522,6 +1559,39 @@ void LiveUI::CameraProperties(bool is_live)
       m_pin3d->m_proj.m_matView._43);
 }
 
+void LiveUI::BallProperties(bool is_live)
+{
+   if (!is_live)
+      return;
+   Ball *ball = m_player->m_vball[m_selection.ball_index];
+   HelpTextCentered("Ball #"s.append(std::to_string(ball->m_id)).c_str());
+   ImGui::Separator();
+   if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   {
+      auto upd_ball_tex = [this, ball](bool is_live, string prev, string v) { ball->m_pinballEnv = m_live_table->GetImage(ball->m_image); };
+      auto upd_ball_decal = [this, ball](bool is_live, string prev, string v) { ball->m_pinballDecal = m_live_table->GetImage(ball->m_imageDecal); };
+      PropCheckbox("Visible", nullptr, is_live, nullptr, ball ? &(ball->m_visible) : nullptr);
+      PropRGB("Color", nullptr, is_live, nullptr, ball ? &(ball->m_color) : nullptr);
+      PropImageCombo("Image", nullptr, is_live, nullptr, ball ? &(ball->m_image) : nullptr, m_live_table, upd_ball_tex);
+      PropImageCombo("Decal", nullptr, is_live, nullptr, ball ? &(ball->m_imageDecal) : nullptr, m_live_table, upd_ball_decal);
+      PropCheckbox("Decal mode", nullptr, is_live, nullptr, ball ? &(ball->m_decalMode) : nullptr);
+      PropFloat("PF Reflection Strength", nullptr, is_live, nullptr, ball ? &(ball->m_playfieldReflectionStrength) : nullptr, 0.02f, 0.1f);
+      PropFloat("Bulb Intensity Scale", nullptr, is_live, nullptr, ball ? &(ball->m_bulb_intensity_scale) : nullptr, 0.02f, 0.1f);
+      PropCheckbox("Reflection enabled", nullptr, is_live, nullptr, ball ? &(ball->m_reflectionEnabled) : nullptr);
+      PropCheckbox("Reflection forced", nullptr, is_live, nullptr, ball ? &(ball->m_forceReflection) : nullptr);
+      ImGui::EndTable();
+   }
+   if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   {
+      PropVec3("Position", nullptr, is_live, nullptr, ball ? &(ball->m_d.m_pos) : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal);
+      PropFloat("Radius", nullptr, is_live, nullptr, ball ? &(ball->m_d.m_radius) : nullptr, 0.02f, 0.1f);
+      PropFloat("Mass", nullptr, is_live, nullptr, ball ? &(ball->m_d.m_mass) : nullptr, 0.02f, 0.1f);
+      PropVec3("Velocity", nullptr, is_live, nullptr, ball ? &(ball->m_d.m_vel) : nullptr, "%.3f", ImGuiInputTextFlags_CharsDecimal);
+      PropVec3("Angular Momentum", nullptr, is_live, nullptr, ball ? &(ball->m_angularmomentum) : nullptr, "%.3f", ImGuiInputTextFlags_CharsDecimal);
+      ImGui::EndTable();
+   }
+}
+
 void LiveUI::MaterialProperties(bool is_live)
 {
    Material *live_material = (Material *)(m_selection.is_live ? m_selection.editable : m_live_table->m_startupToLive[m_selection.editable]);
@@ -1568,7 +1638,7 @@ void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_lig
 {
    if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
-      auto upd_intensity = [startup_light, live_light](LiveUI *ui, bool is_live, float prev, float v)
+      auto upd_intensity = [startup_light, live_light](bool is_live, float prev, float v)
       {
          Light *light = (is_live ? live_light : startup_light);
          if (prev > 0.1 && v > 0.1)
@@ -1583,21 +1653,21 @@ void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_lig
       };
       float startup_fadeup = startup_light ? (startup_light->m_d.m_intensity / startup_light->m_d.m_fadeSpeedUp) : 0.f;
       float live_fadeup = live_light ? (live_light->m_d.m_intensity / live_light->m_d.m_fadeSpeedUp) : 0.f;
-      auto upd_fade_up = [startup_light, live_light](LiveUI *ui, bool is_live, float prev, float v)
+      auto upd_fade_up = [startup_light, live_light](bool is_live, float prev, float v)
       { 
          Light *light = (is_live ? live_light : startup_light);
          light->m_d.m_fadeSpeedUp = v < 0.1 ? 100000.0f : light->m_d.m_intensity / v; 
       };
       float startup_fadedown = startup_light ? (startup_light->m_d.m_intensity / startup_light->m_d.m_fadeSpeedDown) : 0.f;
       float live_fadedown = live_light ? (live_light->m_d.m_intensity / live_light->m_d.m_fadeSpeedDown) : 0.f;
-      auto upd_fade_down = [startup_light, live_light](LiveUI *ui, bool is_live, float prev, float v)
+      auto upd_fade_down = [startup_light, live_light](bool is_live, float prev, float v)
       {
          Light *light = (is_live ? live_light : startup_light);
          light->m_d.m_fadeSpeedDown = v < 0.1 ? 100000.0f : light->m_d.m_intensity / v;
       };
       bool startup_shadow = startup_light->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS;
       bool live_shadow = live_light->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS;
-      auto upd_shadow = [startup_light, live_light](LiveUI *ui, bool is_live, bool prev, bool v)
+      auto upd_shadow = [startup_light, live_light](bool is_live, bool prev, bool v)
       {
          Light *light = (is_live ? live_light : startup_light);
          light->m_d.m_shadows = v ? ShadowMode::RAYTRACED_BALL_SHADOWS : ShadowMode::NONE;
@@ -1630,7 +1700,7 @@ void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_lig
    }
    if (ImGui::CollapsingHeader("States", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
-      auto upd_inplaystate = [startup_light, live_light](LiveUI *ui, bool is_live, float prev, float v)
+      auto upd_inplaystate = [startup_light, live_light](bool is_live, float prev, float v)
       {
          Light *light = (is_live ? live_light : startup_light);
          light->setInPlayState(v > 1 ? LightStateBlinking : v);
@@ -1687,9 +1757,9 @@ void LiveUI::PrimitiveProperties(bool is_live, Primitive *startup_obj, Primitive
       PropFloat("Rot. X", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[0]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[0]) : nullptr, 1.f, 5.f, "%.3f");
       PropFloat("Rot. Y", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[1]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[1]) : nullptr, 1.f, 5.f, "%.3f");
       PropFloat("Rot. Z", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[2]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[2]) : nullptr, 1.f, 5.f, "%.3f");
-      PropFloat("Trans. X", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[3]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[3]) : nullptr, 10.f, 50.f, "%.3f");
-      PropFloat("Trans. Y", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[4]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[4]) : nullptr, 10.f, 50.f, "%.3f");
-      PropFloat("Trans. Z", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[5]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[5]) : nullptr, 10.f, 50.f, "%.3f");
+      PropFloat("Trans. X", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[3]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[3]) : nullptr, 10.f, 50.f, "%.1f");
+      PropFloat("Trans. Y", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[4]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[4]) : nullptr, 10.f, 50.f, "%.1f");
+      PropFloat("Trans. Z", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[5]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[5]) : nullptr, 10.f, 50.f, "%.1f");
       PropFloat("Obj. Rot. X", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[6]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[6]) : nullptr, 1.f, 5.f, "%.3f");
       PropFloat("Obj. Rot. Y", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[7]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[7]) : nullptr, 1.f, 5.f, "%.3f");
       PropFloat("Obj. Rot. Z", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[8]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[8]) : nullptr, 1.f, 5.f, "%.3f");
@@ -1730,6 +1800,59 @@ void LiveUI::SurfaceProperties(bool is_live, Surface *startup_obj, Surface *live
 // Property field helpers
 //
 
+#define PROP_HELPER_BEGIN(type)                                                                                                                                                              \
+   PROP_TABLE_SETUP                                                                                                                                                                          \
+   type *v = is_live ? live_v : startup_v;                                                                                                                                                   \
+   type *ov = is_live ? startup_v : live_v;                                                                                                                                                  \
+   ImGui::TableNextColumn();                                                                                                                                                                 \
+   if (v == nullptr)                                                                                                                                                                         \
+   {                                                                                                                                                                                         \
+      /* Missing value just skip */                                                                                                                                                          \
+      ImGui::TableNextColumn();                                                                                                                                                              \
+      return;                                                                                                                                                                                \
+   }                                                                                                                                                                                         \
+   ImGui::PushID(label); \
+   type prev_v = *v;
+
+#define PROP_HELPER_SYNC(type)                                                                                                                                                               \
+   /* Sync button(also show if there are difference between live and startup through the enable state) */                                                                                    \
+   ImGui::TableNextColumn();                                                                                                                                                                 \
+   if (ov != nullptr)                                                                                                                                                                        \
+   {                                                                                                                                                                                         \
+      const bool synced = ((*ov) == (*v));                                                                                                                                                   \
+      if (synced)                                                                                                                                                                            \
+         ImGui::BeginDisabled(); \
+      type prev_ov = *ov; \
+      if (ImGui::Button(ICON_SAVE)) \
+      { \
+         *ov = *v; \
+
+/* 
+TODO update undo stack instead of SetNonUndoableDirty
+psel->GetIEditable()->BeginUndo();
+psel->GetIEditable()->MarkForUndo();
+// Change value
+psel->GetIEditable()->EndUndo();
+psel->GetIEditable()->SetDirtyDraw();
+*/
+
+#define PROP_HELPER_END                                                                                                                                                                      \
+      if (is_live) \
+         m_table->SetNonUndoableDirty(eSaveDirty); \
+   }                                                                                                                                                                                         \
+   if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))                                                                                                                                   \
+   {                                                                                                                                                                                         \
+      ImGui::BeginTooltip();                                                                                                                                                                 \
+      ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);                                                                                                                                  \
+      ImGui::Text("Copy this value to the %s version", is_live ? "startup" : "live");                                                                                                        \
+      ImGui::PopTextWrapPos();                                                                                                                                                               \
+      ImGui::EndTooltip();                                                                                                                                                                   \
+   }                                                                                                                                                                                         \
+   if (synced)                                                                                                                                                                               \
+      ImGui::EndDisabled();                                                                                                                                                                  \
+   }                                                                                                                                                                                         \
+   ImGui::PopID();
+
 void LiveUI::PropSeparator(const char *label)
 {
    PROP_TABLE_SETUP
@@ -1741,199 +1864,51 @@ void LiveUI::PropSeparator(const char *label)
 
 void LiveUI::PropCheckbox(const char *label, IEditable *undo_obj, bool is_live, bool *startup_v, bool *live_v, OnBoolPropChange chg_callback)
 {
-   bool *v = is_live ? live_v : startup_v;
-   bool *ov = is_live ? startup_v : live_v;
-
-   PROP_TABLE_SETUP
-
-   ImGui::TableNextColumn();
-   if (v == nullptr)
-   {
-      // Missing value just skip
-      ImGui::TableNextColumn();
-      return;
-   }
-
-   ImGui::PushID(label);
-
-   // Main edit field
-   bool prev_v = *v;
+   PROP_HELPER_BEGIN(bool)
    if (ImGui::Checkbox(label, v))
    {
       if (chg_callback)
-         chg_callback(this, is_live, prev_v, *v);
+         chg_callback(is_live, prev_v, *v);
       if (!is_live)
          m_table->SetNonUndoableDirty(eSaveDirty);
    }
-
-   // Save button (also show if there are difference between live and startup through the enable state)
-   ImGui::TableNextColumn();
-   if (ov != nullptr)
-   {
-      const bool synced = ((*ov) == (*v));
-      if (synced)
-         ImGui::BeginDisabled();
-      bool prev_ov = *ov;
-      if (ImGui::Button(ICON_SAVE))
-      {
-         *ov = *v;
-         if (chg_callback)
-            chg_callback(this, !is_live, prev_ov, *ov);
-         if (is_live)
-            m_table->SetNonUndoableDirty(eSaveDirty);
-      }
-      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-      {
-         ImGui::BeginTooltip();
-         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-         ImGui::Text("Copy this value to the %s version", is_live ? "startup" : "live");
-         ImGui::PopTextWrapPos();
-         ImGui::EndTooltip();
-      }
-      if (synced)
-         ImGui::EndDisabled();
-   }
-
-   ImGui::PopID();
+   PROP_HELPER_SYNC(bool)
+   if (chg_callback)
+      chg_callback(!is_live, prev_ov, *ov);
+   PROP_HELPER_END
 }
 
 void LiveUI::PropFloat(const char *label, IEditable* undo_obj, bool is_live, float *startup_v, float *live_v, float step, float step_fast, const char *format, ImGuiInputTextFlags flags, OnFloatPropChange chg_callback)
 {
-   /* 
-   TODO update undo stack instead of SetNonUndoableDirty
-   psel->GetIEditable()->BeginUndo();
-   psel->GetIEditable()->MarkForUndo();
-   // Change value
-   psel->GetIEditable()->EndUndo();
-   psel->GetIEditable()->SetDirtyDraw();
-   */
-
-   float *v = is_live ? live_v : startup_v;
-   float *ov = is_live ? startup_v : live_v;
-
-   PROP_TABLE_SETUP
-
-   ImGui::TableNextColumn();
-   if (v == nullptr)
-   {
-      // Missing value just skip
-      ImGui::TableNextColumn();
-      return;
-   }
-
-   ImGui::PushID(label);
-
-   // Main edit field
-   float prev_v = *v;
+   PROP_HELPER_BEGIN(float)
    if (ImGui::InputFloat(label, v, step, step_fast, format, flags))
    {
       if (chg_callback)
-         chg_callback(this, is_live, prev_v, *v);
+         chg_callback(is_live, prev_v, *v);
       if (!is_live)
          m_table->SetNonUndoableDirty(eSaveDirty);
    }
-
-   // Sync button (also show if there are difference between live and startup through the enable state)
-   ImGui::TableNextColumn();
-   if (ov != nullptr)
-   {
-      const bool synced = ((*ov) == (*v));
-      if (synced)
-         ImGui::BeginDisabled();
-      float prev_ov = *ov;
-      if (ImGui::Button(ICON_SAVE))
-      {
-         *ov = *v;
-         if (chg_callback)
-            chg_callback(this, !is_live, prev_ov, *ov);
-         if (is_live)
-            m_table->SetNonUndoableDirty(eSaveDirty);
-      }
-      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
-      {
-         ImGui::BeginTooltip();
-         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-         ImGui::Text("Copy this value to the %s version", is_live ? "startup" : "live");
-         ImGui::PopTextWrapPos();
-         ImGui::EndTooltip();
-      }
-      if (synced)
-         ImGui::EndDisabled();
-   }
-
-   ImGui::PopID();
+   PROP_HELPER_SYNC(float)
+   if (chg_callback)
+      chg_callback(!is_live, prev_ov, *ov);
+   PROP_HELPER_END
 }
 
 void LiveUI::PropInt(const char *label, IEditable *undo_obj, bool is_live, int *startup_v, int *live_v)
 {
-   int *v = is_live ? live_v : startup_v;
-   int *ov = is_live ? startup_v : live_v;
-
-   PROP_TABLE_SETUP
-
-   ImGui::TableNextColumn();
-   if (v == nullptr)
-   {
-      // Missing value just skip
-      ImGui::TableNextColumn();
-      return;
-   }
-
-   ImGui::PushID(label);
-
-   // Main edit field
+   PROP_HELPER_BEGIN(int)
    if (ImGui::InputInt(label, v))
    {
       if (!is_live)
          m_table->SetNonUndoableDirty(eSaveDirty);
    }
-
-   // Sync button (also show if there are difference between live and startup through the enable state)
-   ImGui::TableNextColumn();
-   if (ov != nullptr)
-   {
-      const bool synced = ((*ov) == (*v));
-      if (synced)
-         ImGui::BeginDisabled();
-      if (ImGui::Button(ICON_SAVE))
-      {
-         *ov = *v;
-         if (is_live)
-            m_table->SetNonUndoableDirty(eSaveDirty);
-      }
-      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
-      {
-         ImGui::BeginTooltip();
-         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-         ImGui::Text("Copy this value to the %s version", is_live ? "startup" : "live");
-         ImGui::PopTextWrapPos();
-         ImGui::EndTooltip();
-      }
-      if (synced)
-         ImGui::EndDisabled();
-   }
-
-   ImGui::PopID();
+   PROP_HELPER_SYNC(int)
+   PROP_HELPER_END
 }
 
 void LiveUI::PropRGB(const char *label, IEditable *undo_obj, bool is_live, COLORREF *startup_v, COLORREF *live_v, ImGuiColorEditFlags flags)
 {
-   COLORREF *v = is_live ? live_v : startup_v;
-   COLORREF *ov = is_live ? startup_v : live_v;
-
-   PROP_TABLE_SETUP
-
-   ImGui::TableNextColumn();
-   if (v == nullptr)
-   {
-      // Missing value just skip
-      ImGui::TableNextColumn();
-      return;
-   }
-
-   ImGui::PushID(label);
-
-   // Main edit field
+   PROP_HELPER_BEGIN(COLORREF)
    float col[3];
    col[0] = (float)((*v) & 255) * (float)(1.0 / 255.0);
    col[1] = (float)((*v) & 65280) * (float)(1.0 / 65280.0);
@@ -1947,57 +1922,14 @@ void LiveUI::PropRGB(const char *label, IEditable *undo_obj, bool is_live, COLOR
       if (!is_live)
          m_table->SetNonUndoableDirty(eSaveDirty);
    }
-
-   // Sync button (also show if there are difference between live and startup through the enable state)
-   ImGui::TableNextColumn();
-   if (ov != nullptr)
-   {
-      const bool synced = ((*ov) == (*v));
-      if (synced)
-         ImGui::BeginDisabled();
-      if (ImGui::Button(ICON_SAVE))
-      {
-         *ov = *v;
-         if (is_live)
-            m_table->SetNonUndoableDirty(eSaveDirty);
-      }
-      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
-      {
-         ImGui::BeginTooltip();
-         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-         ImGui::Text("Copy this value to the %s version", is_live ? "startup" : "live");
-         ImGui::PopTextWrapPos();
-         ImGui::EndTooltip();
-      }
-      if (synced)
-         ImGui::EndDisabled();
-   }
-
-   ImGui::PopID();
+   PROP_HELPER_SYNC(COLORREF)
+   PROP_HELPER_END
 }
 
 void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, Vertex3Ds *startup_v, Vertex3Ds *live_v, const char *format, ImGuiInputTextFlags flags)
 {
-   Vertex3Ds *v = is_live ? live_v : startup_v;
-   Vertex3Ds *ov = is_live ? startup_v : live_v;
-
-   PROP_TABLE_SETUP
-
-   ImGui::TableNextColumn();
-   if (v == nullptr)
-   {
-      // Missing value just skip
-      ImGui::TableNextColumn();
-      return;
-   }
-
-   ImGui::PushID(label);
-
-   // Main edit field
-   float col[3];
-   col[0] = v->x;
-   col[1] = v->y;
-   col[2] = v->z;
+   PROP_HELPER_BEGIN(Vertex3Ds)
+   float col[3] = { v->x, v->y, v->z };
    if (ImGui::InputFloat3(label, col, format, flags))
    {
       v->x = col[0];
@@ -2006,53 +1938,13 @@ void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, Vert
       if (!is_live)
          m_table->SetNonUndoableDirty(eSaveDirty);
    }
-
-   // Sync button (also show if there are difference between live and startup through the enable state)
-   ImGui::TableNextColumn();
-   if (ov != nullptr)
-   {
-      const bool synced = (v->x == ov->x) && (v->y == ov->y) && (v->z == ov->z);
-      if (synced)
-         ImGui::BeginDisabled();
-      if (ImGui::Button(ICON_SAVE))
-      {
-         *ov = *v;
-         if (is_live)
-            m_table->SetNonUndoableDirty(eSaveDirty);
-      }
-      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
-      {
-         ImGui::BeginTooltip();
-         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-         ImGui::Text("Copy this value to the %s version", is_live ? "startup" : "live");
-         ImGui::PopTextWrapPos();
-         ImGui::EndTooltip();
-      }
-      if (synced)
-         ImGui::EndDisabled();
-   }
-
-   ImGui::PopID();
+   PROP_HELPER_SYNC(Vertex3Ds)
+   PROP_HELPER_END
 }
 
 void LiveUI::PropCombo(const char* label, IEditable* undo_obj, bool is_live, int* startup_v, int* live_v, int n_values, const string labels[])
 {
-   int *v = is_live ? live_v : startup_v;
-   int *ov = is_live ? startup_v : live_v;
-
-   PROP_TABLE_SETUP
-
-   ImGui::TableNextColumn();
-   if (v == nullptr)
-   {
-      // Missing value just skip
-      ImGui::TableNextColumn();
-      return;
-   }
-
-   ImGui::PushID(label);
-
-   // Main edit field
+   PROP_HELPER_BEGIN(int)
    const char *preview_value = labels[*v].c_str();
    if (ImGui::BeginCombo(label, preview_value))
    {
@@ -2067,31 +1959,35 @@ void LiveUI::PropCombo(const char* label, IEditable* undo_obj, bool is_live, int
       }
       ImGui::EndCombo();
    }
-
-   // Sync button (also show if there are difference between live and startup through the enable state)
-   ImGui::TableNextColumn();
-   if (ov != nullptr)
-   {
-      const bool synced = ((*ov) == (*v));
-      if (synced)
-         ImGui::BeginDisabled();
-      if (ImGui::Button(ICON_SAVE))
-      {
-         *ov = *v;
-         if (is_live)
-            m_table->SetNonUndoableDirty(eSaveDirty);
-      }
-      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
-      {
-         ImGui::BeginTooltip();
-         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-         ImGui::Text("Copy this value to the %s version", is_live ? "startup" : "live");
-         ImGui::PopTextWrapPos();
-         ImGui::EndTooltip();
-      }
-      if (synced)
-         ImGui::EndDisabled();
-   }
-
-   ImGui::PopID();
+   PROP_HELPER_SYNC(int)
+   PROP_HELPER_END
 }
+
+void LiveUI::PropImageCombo(const char *label, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, OnStringPropChange chg_callback)
+{
+   PROP_HELPER_BEGIN(string)
+   const char *preview_value = (*v).c_str();
+   if (ImGui::BeginCombo(label, preview_value))
+   {
+      for (size_t i = 0; i < table->m_vimage.size(); i++)
+      {
+         if (ImGui::Selectable(table->m_vimage[i]->m_szName.c_str()))
+         {
+            *v = table->m_vimage[i]->m_szName;
+            if (chg_callback)
+               chg_callback(!is_live, prev_v, *v);
+            if (!is_live)
+               m_table->SetNonUndoableDirty(eSaveDirty);
+         }
+      }
+      ImGui::EndCombo();
+   }
+   PROP_HELPER_SYNC(string)
+   if (chg_callback)
+      chg_callback(!is_live, prev_ov, *ov);
+   PROP_HELPER_END
+}
+
+#undef PROP_HELPER_BEGIN
+#undef PROP_HELPER_SYNC
+#undef PROP_HELPER_END
