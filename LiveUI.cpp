@@ -1280,7 +1280,8 @@ void LiveUI::UpdateMainSplashModal()
    // Display table name,author,version and blurb and description
    {
       std::ostringstream info;
-      info << "\n\n\n\n";
+      if (m_ShowUI) // Move below menu & toolbar
+         info << "\n\n\n\n";
       if (!m_table->m_szTableName.empty())
          info << m_table->m_szTableName;
       else
@@ -1346,7 +1347,41 @@ void LiveUI::UpdateMainSplashModal()
          HideUI();
          m_table->QuitPlayer(Player::CS_STOP_PLAY);
       }
+      ImVec2 pos = ImGui::GetWindowPos();
+      ImVec2 max = ImGui::GetWindowSize();
+      bool hovered = ImGui::IsWindowHovered();
       ImGui::EndPopup();
+
+      // Handle dragging mouse to allow dragging the main application window
+      max.x += pos.x;
+      max.y += pos.y;
+      static ImVec2 initial_pos;
+      if (m_player && !m_player->m_fullScreen && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+      {
+         if (!hovered  && !(pos.x <= initial_pos.x && initial_pos.x <= max.x && pos.y <= initial_pos.y && initial_pos.y <= max.y))
+         {
+
+            ImVec2 drag = ImGui::GetMouseDragDelta();
+            int x, y;
+#ifdef ENABLE_SDL
+            SDL_GetWindowPosition(m_sdl_playfieldHwnd, &x, &y);
+            x += (int)drag.x;
+            y += (int)drag.y;
+            SDL_SetWindowPosition(m_sdl_playfieldHwnd, x, y);
+#else
+            auto rect = m_player->GetWindowRect();
+            x = rect.left + (int)drag.x;
+            y = rect.top + (int)drag.y;
+            m_player->SetWindowPos(nullptr, x, y, m_player->m_wnd_width, m_player->m_wnd_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+#endif
+            SaveValueInt((m_player->m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosX"s, x);
+            SaveValueInt((m_player->m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosY"s, y);
+         }
+      }
+      else
+      {
+         initial_pos = ImGui::GetMousePos();
+      }
    }
 }
 
