@@ -743,16 +743,6 @@ BEGIN
     LTEXT           "Note:\nInserting a negative value in this Flipper section will not modify the respective table-specific Flipper setting",IDC_STATIC,144,79,53,84
 END
 
-IDD_GAMEPAUSE DIALOGEX 0, 0, 78, 80
-STYLE DS_SETFONT | WS_POPUP | WS_BORDER
-FONT 8, "MS Sans Serif", 0, 0, 0x0
-BEGIN
-    DEFPUSHBUTTON   "&Resume Game",ID_RESUME,7,17,64,14
-    PUSHBUTTON      "&Debugger/Intera.Edit",ID_DEBUGWINDOW,7,40,64,14
-    PUSHBUTTON      "&Quit to Editor",ID_QUIT,7,59,64,14
-    CTEXT           "Paused",IDC_STATIC,7,4,64,10
-END
-
 IDD_EDITOR_OPTIONS DIALOGEX 0, 0, 356, 199
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Editor/UI Options"
@@ -2561,10 +2551,6 @@ BEGIN
     BEGIN
         RIGHTMARGIN, 198
         BOTTOMMARGIN, 374
-    END
-
-    IDD_GAMEPAUSE, DIALOG
-    BEGIN
     END
 
     IDD_EDITOR_OPTIONS, DIALOG

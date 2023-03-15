@@ -364,7 +364,6 @@
 #define IDC_RIGHTTILTBUTTON             268
 #define IDD_AUDIO_OPTIONS               268
 #define IDC_PLUNGERBUTTON               269
-#define IDD_GAMEPAUSE                   269
 #define IDC_CENTERTILTBUTTON            270
 #define IDD_PROPBACKGLASS               270
 #define IDR_CODEVIEWACCEL               271
