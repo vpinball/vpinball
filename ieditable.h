@@ -177,6 +177,25 @@ public:
 	static const int CursorID = IDC_##ResName; \
 	static const unsigned AllowedViews = AllwdViews;
 
+#define STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type, table) \
+   type *dst = (type *)COMCreateAndInit(table, 0.f, 0.f); \
+   memcpy(dst->m_wzName, m_wzName, MAXNAMEBUFFER * sizeof(m_wzName[0])); \
+   dst->m_oldLayerIndex = m_oldLayerIndex; \
+   dst->m_layerName = m_layerName; \
+   dst->m_isVisible = m_isVisible; \
+   dst->m_locked = m_locked; \
+   dst->m_d = m_d;
+
+#define STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(type, table, points) \
+	STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type, table) \
+   for (size_t i = 0; i < dst->points.size(); i++) \
+      dst->points[i]->Release(); \
+   dst->points.clear(); \
+   for (size_t i = 0; i < points.size(); i++) \
+   { \
+      points[i]->AddRef(); \
+      dst->points.push_back(points[i]); \
+   }
 
 class EventProxyBase;
 class ObjLoader;
