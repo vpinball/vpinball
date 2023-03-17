@@ -488,9 +488,6 @@ public:
    void SetZoom(float zoom);
    void SetMyScrollInfo();
 
-   void BackupForPlay();
-   void RestoreBackup();
-
    void BeginUndo();
    void EndUndo();
    void Undo();
