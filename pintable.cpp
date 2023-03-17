@@ -2357,9 +2357,6 @@ void PinTable::Play(const bool cameraMode)
    m_progressDialog.SetProgress(1);
    m_progressDialog.SetName("Backing Up Table State...");
 
-   // FIXME remove g_keepUndoRecords: this hack is no more needed now that we use a table copy instead of the edited one for playing
-   // g_keepUndoRecords = false;
-
    live_table->m_pcv->m_scriptError = false;
    live_table->m_pcv->Compile(false);
 

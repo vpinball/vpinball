@@ -20,32 +20,20 @@ public:
 };
 
 #define STARTUNDO \
-	if (g_keepUndoRecords) \
-		{ \
-		BeginUndo(); \
-		MarkForUndo(); \
-		}
+	BeginUndo(); \
+	MarkForUndo();
 
 #define STOPUNDO \
-	if (g_keepUndoRecords) \
-		{ \
-		EndUndo(); \
-		SetDirtyDraw(); \
-		}
+	EndUndo(); \
+	SetDirtyDraw();
 
 #define STARTUNDOSELECT \
-	if (g_keepUndoRecords) \
-		{ \
-		GetIEditable()->BeginUndo(); \
-		GetIEditable()->MarkForUndo(); \
-		}
+	GetIEditable()->BeginUndo(); \
+	GetIEditable()->MarkForUndo();
 
 #define STOPUNDOSELECT \
-	if (g_keepUndoRecords) \
-		{ \
-		GetIEditable()->EndUndo(); \
-		GetIEditable()->SetDirtyDraw(); \
-		}
+	GetIEditable()->EndUndo(); \
+	GetIEditable()->SetDirtyDraw();
 
 
 #define INITVBA(ItemType) \
