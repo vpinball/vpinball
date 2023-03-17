@@ -578,7 +578,10 @@ LiveUI::LiveUI(RenderDevice* const rd)
    m_dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(rd->getHwnd());
    ImGui::GetStyle().ScaleAllSizes(m_dpi);
 
-   io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 13.0f * m_dpi);
+   float overlaySize = min(32.f * m_dpi, min(m_player->m_wnd_width, m_player->m_wnd_height) / (26 * 2.0f)); // Fit 26 lines of text on screen
+   m_overlayFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, overlaySize);
+
+   m_baseFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 13.0f * m_dpi);
    ImFontConfig icons_config;
    icons_config.MergeMode = true;
    icons_config.PixelSnapH = true;
@@ -634,9 +637,9 @@ void LiveUI::Render()
             matRotate.RotateZMatrix((float)(lui->m_rotate * (M_PI / 2.0)));
             switch (lui->m_rotate)
             {
-            case 1: matTranslate.SetTranslation(ImGui::GetIO().DisplaySize.x, 0, 0); break;
+            case 1: matTranslate.SetTranslation(ImGui::GetIO().DisplaySize.y, 0, 0); break;
             case 2: matTranslate.SetTranslation(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y, 0); break;
-            case 3: matTranslate.SetTranslation(0, ImGui::GetIO().DisplaySize.y, 0); break;
+            case 3: matTranslate.SetTranslation(0, ImGui::GetIO().DisplaySize.x, 0); break;
             }
             matTranslate.Multiply(matRotate, matTranslate);
 #ifdef ENABLE_SDL
@@ -662,6 +665,12 @@ void LiveUI::Render()
    }
    ImGui::Render();
    ImDrawData *draw_data = ImGui::GetDrawData();
+   if (m_rotate == 1 || m_rotate == 3)
+   {
+      float tmp = draw_data->DisplaySize.x;
+      draw_data->DisplaySize.x = draw_data->DisplaySize.y;
+      draw_data->DisplaySize.y = tmp;
+   }
 #ifdef ENABLE_SDL
    ImGui_ImplOpenGL3_RenderDrawData(draw_data);
 #else
@@ -701,19 +710,33 @@ void LiveUI::Update()
    ImGui_ImplDX9_NewFrame();
 #endif
    ImGui_ImplWin32_NewFrame();
+   if (m_ShowUI || m_ShowSplashModal)
+      m_rotate = 0;
+   else
+   {
+      // If we are showing overlays, apply main camera rotation
+      m_rotate = ((int)(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] / 90.0f)) & 3;
+      if (m_rotate == 1 || m_rotate == 3)
+      {
+         ImGuiIO &io = ImGui::GetIO();
+         float tmp = io.DisplaySize.x;
+         io.DisplaySize.x = io.DisplaySize.y;
+         io.DisplaySize.y = tmp;
+      }
+   }
    ImGui::NewFrame();
+   ImGui::PushFont(m_baseFont);
 
    if (m_ShowUI || m_ShowSplashModal)
    {
       // Main UI
-      m_rotate = 0;
       UpdateMainUI();
    }
    else
    {
       // Info overlays: this is not a normal UI aligned to the monitor orientation but an overlay used when playing, 
       // therefore it is rotated like the playfield to face the user and only displays for right angles
-      m_rotate = ((int)(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] / 90.0f)) & 3;
+      ImGui::PushFont(m_overlayFont);
       if ((float)m_rotate * 90.0f == g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set])
       {
          if (g_pplayer->m_cameraMode)
@@ -733,6 +756,7 @@ void LiveUI::Update()
                   m_rotate);
          }
       }
+      ImGui::PopFont();
    }
 
    // FPS Overlays
@@ -751,9 +775,11 @@ void LiveUI::Update()
    if (m_show_fps == 2)
    {
       // Display FPS window with plots
-      ImGui::SetNextWindowSize(ImVec2(530, 550), ImGuiCond_FirstUseEver);
-      ImGui::SetNextWindowPos(ImVec2((float)(m_player->m_wnd_width - 530 - 10), 10 + m_menubar_height + m_toolbar_height), ImGuiCond_FirstUseEver);
-      ImGui::Begin("Plots");
+      constexpr ImGuiWindowFlags window_flags
+         = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+      ImGui::SetNextWindowSize(ImVec2(530, 500));
+      ImGui::SetNextWindowPos(ImVec2((float)(m_player->m_wnd_width - 530 - 10), 10 + m_menubar_height + m_toolbar_height));
+      ImGui::Begin("Plots", nullptr, window_flags);
       //!! This example assumes 60 FPS. Higher FPS requires larger buffer size.
       static ScrollingData sdata1, sdata2, sdata3, sdata4, sdata5, sdata6;
       //static RollingData   rdata1, rdata2;
@@ -771,8 +797,9 @@ void LiveUI::Update()
       sdata1.AddPoint((float)t, sdata1.GetLast().y * 0.95f + sdata2.GetLast().y * 0.05f);
       //rdata1.AddPoint((float)t, sdata1.GetLast().y*0.95f + sdata2.GetLast().y*0.05f);
 
+      // Do not show controls since mouse events are not translated with regards to screen rotation
       static float history = 2.5f;
-      ImGui::SliderFloat("History", &history, 1, 10, "%.1f s");
+      //ImGui::SliderFloat("History", &history, 1, 10, "%.1f s");
       //rdata1.Span = history;
       //rdata2.Span = history;
       constexpr int rt_axis = ImPlotAxisFlags_NoTickLabels;
@@ -821,15 +848,17 @@ void LiveUI::Update()
       ImGui::End();
    }
 
+   ImGui::PopFont();
    ImGui::EndFrame();
 }
 
 void LiveUI::UpdateCameraModeUI()
 {
+   static float last_frame_height = -100; // Hide first frame below display bounds
    PinTable* table = m_live_table;
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
    ImGui::SetNextWindowBgAlpha(0.35f);
-   ImGui::SetNextWindowPos(ImVec2(10, 10));
+   ImGui::SetNextWindowPos(ImVec2(10, ImGui::GetIO().DisplaySize.y - 10 - last_frame_height));
    ImGui::Begin("CameraMode", nullptr, window_flags);
    for (int i = 0; i < 14; i++)
    {
@@ -877,6 +906,7 @@ void LiveUI::UpdateCameraModeUI()
          ImGui::Text("Start Key: reset POV to old values");
    }
 
+   last_frame_height = ImGui::GetWindowHeight();
    ImGui::End();
 }
 
