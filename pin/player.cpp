@@ -680,6 +680,27 @@ void Player::Shutdown()
    if(m_toogle_DTFS && m_ptable->m_BG_current_set != 2)
       m_ptable->m_BG_current_set ^= 1;
 
+   if (m_cameraMode)
+   {
+      // Save edited camera to editor's table
+      PinTable *src = m_ptable, *dst = m_pEditorTable;
+      for (int i = 0; i < 3; i++)
+      {
+         dst->m_BG_rotation[i] = src->m_BG_rotation[i];
+         dst->m_BG_inclination[i] = src->m_BG_inclination[i];
+         dst->m_BG_layback[i] = src->m_BG_layback[i];
+         dst->m_BG_FOV[i] = src->m_BG_FOV[i];
+         dst->m_BG_xlatex[i] = src->m_BG_xlatex[i];
+         dst->m_BG_xlatey[i] = src->m_BG_xlatey[i];
+         dst->m_BG_xlatez[i] = src->m_BG_xlatez[i];
+         dst->m_BG_scalex[i] = src->m_BG_scalex[i];
+         dst->m_BG_scaley[i] = src->m_BG_scaley[i];
+         dst->m_BG_scalez[i] = src->m_BG_scalez[i];
+         dst->m_BG_image[i] = src->m_BG_image[i];
+      }
+      m_pEditorTable->SetNonUndoableDirty(eSaveDirty);
+   }
+
    m_pininput.UnInit();
 
    delete m_ballMeshBuffer;
@@ -4088,62 +4109,52 @@ void Player::UpdateBackdropSettings(const bool up)
    case 0:
    {
       m_ptable->m_BG_inclination[m_ptable->m_BG_current_set] += thesign;
-      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 1:
    {
       m_ptable->m_BG_FOV[m_ptable->m_BG_current_set] += thesign;
-      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 2:
    {
       m_ptable->m_BG_layback[m_ptable->m_BG_current_set] += thesign;
-      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 3:
    {
       m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] += 0.01f*thesign;
       m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] += 0.01f*thesign;
-      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 4:
    {
        m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] += 0.01f*thesign;
-       m_ptable->SetNonUndoableDirty(eSaveDirty);
        break;
    }
    case 5:
    {
       m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] += 0.01f*thesign;
-      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 6:
    {
       m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] += 0.01f*thesign;
-      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 7:
    {
       m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set] += thesign;
-      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 8:
    {
       m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set] += thesign;
-      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 9:
    {
       m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set] += thesign*50.0f;
-      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 10:
@@ -4152,7 +4163,6 @@ void Player::UpdateBackdropSettings(const bool up)
       if (m_ptable->m_lightEmissionScale < 0.f)
          m_ptable->m_lightEmissionScale = 0.f;
       m_pin3d.InitLights();
-      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 11:
@@ -4160,7 +4170,6 @@ void Player::UpdateBackdropSettings(const bool up)
       m_ptable->m_lightRange += thesign*1000.f;
       if (m_ptable->m_lightRange < 0.f)
          m_ptable->m_lightRange = 0.f;
-      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 12:
@@ -4168,7 +4177,6 @@ void Player::UpdateBackdropSettings(const bool up)
       m_ptable->m_lightHeight += thesign*100.f;
       if (m_ptable->m_lightHeight < 100.f)
          m_ptable->m_lightHeight = 100.f;
-      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 13:
@@ -4178,7 +4186,6 @@ void Player::UpdateBackdropSettings(const bool up)
          m_ptable->m_envEmissionScale = 0.f;
       const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
       m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    default:
