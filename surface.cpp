@@ -24,28 +24,10 @@ Surface::~Surface()
 
 Surface *Surface::CopyForPlay(PinTable *live_table)
 {
-   CComObject<Surface> *dst;
-   CComObject<Surface>::CreateInstance(&dst);
-   dst->AddRef();
-   dst->Init(live_table, 0.f, 0.f, false);
-   memcpy(dst->m_wzName, m_wzName, MAXNAMEBUFFER * sizeof(m_wzName[0]));
-   dst->m_d = m_d;
-   dst->m_oldLayerIndex = m_oldLayerIndex;
-   dst->m_layerName = m_layerName;
-   dst->m_isVisible = m_isVisible;
-   dst->m_locked = m_locked;
-   // Surface specific copy
+   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Surface, live_table, m_vdpoint)
    dst->m_isWall = m_isWall;
    dst->m_isDynamic = m_isDynamic;
    dst->m_isDropped = m_isDropped;
-   for (size_t i = 0; i < dst->m_vdpoint.size(); i++)
-      dst->m_vdpoint[i]->Release(); // Remove default points
-   dst->m_vdpoint.clear();
-   for (size_t i = 0; i < m_vdpoint.size(); i++)
-   {
-      m_vdpoint[i]->AddRef();
-      dst->m_vdpoint.push_back(m_vdpoint[i]);
-   }
    return dst;
 }
 

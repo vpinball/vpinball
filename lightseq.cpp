@@ -10,17 +10,7 @@ LightSeq::~LightSeq()
 
 LightSeq *LightSeq::CopyForPlay(PinTable *live_table)
 {
-   CComObject<LightSeq> *dst;
-   CComObject<LightSeq>::CreateInstance(&dst);
-   dst->AddRef();
-   dst->Init(live_table, 0.f, 0.f, false);
-   memcpy(dst->m_wzName, m_wzName, MAXNAMEBUFFER * sizeof(m_wzName[0]));
-   dst->m_d = m_d;
-   dst->m_oldLayerIndex = m_oldLayerIndex;
-   dst->m_layerName = m_layerName;
-   dst->m_isVisible = m_isVisible;
-   dst->m_locked = m_locked;
-   // LightSeq specific copy
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(LightSeq, live_table)
    dst->m_backglass = m_backglass;
    return dst;
 }
