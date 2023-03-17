@@ -1366,8 +1366,6 @@ PinTable::PinTable()
    m_3DOffset = 0.0f;
    m_overwriteGlobalStereo3D = false;
 
-   m_dbgChangedMaterials.clear();
-
    m_tblNudgeRead = Vertex2D(0.f,0.f);
    m_tblNudgeReadTilt = 0.0f;
    m_tblNudgePlumb = Vertex2D(0.f,0.f);
@@ -2451,10 +2449,6 @@ void PinTable::StopPlaying()
    m_materialMap.clear();
    m_lightMap.clear();
    m_renderprobeMap.clear();
-
-   // FIXME remove debug material/lights (or fix them using the new live/startup table)
-   // UpdateDbgMaterial();
-   // UpdateDbgLight();
 
    BeginAutoSaveCounter();
 
@@ -7610,88 +7604,6 @@ void PinTable::AddMaterial(Material * const pmat)
    }
 
    m_materials.push_back(pmat);
-}
-
-void PinTable::AddDbgMaterial(const Material * const pmat)
-{
-   bool alreadyIn = false;
-   size_t i;
-
-   for (i = 0; i < m_dbgChangedMaterials.size(); i++)
-   {
-      if (pmat->m_szName==m_dbgChangedMaterials[i]->m_szName)
-      {
-         alreadyIn = true;
-         break;
-      }
-   }
-      
-   if (alreadyIn)
-   {
-      m_dbgChangedMaterials[i]->m_type = pmat->m_type;
-      m_dbgChangedMaterials[i]->m_bOpacityActive = pmat->m_bOpacityActive;
-      m_dbgChangedMaterials[i]->m_cBase = pmat->m_cBase;
-      m_dbgChangedMaterials[i]->m_cClearcoat = pmat->m_cClearcoat;
-      m_dbgChangedMaterials[i]->m_cGlossy = pmat->m_cGlossy;
-      m_dbgChangedMaterials[i]->m_fEdge = pmat->m_fEdge;
-      m_dbgChangedMaterials[i]->m_fEdgeAlpha = pmat->m_fEdgeAlpha;
-      m_dbgChangedMaterials[i]->m_fOpacity = pmat->m_fOpacity;
-      m_dbgChangedMaterials[i]->m_fRoughness = pmat->m_fRoughness;
-      m_dbgChangedMaterials[i]->m_fGlossyImageLerp = pmat->m_fGlossyImageLerp;
-      m_dbgChangedMaterials[i]->m_fThickness = pmat->m_fThickness;
-      m_dbgChangedMaterials[i]->m_fWrapLighting = pmat->m_fWrapLighting;
-   }
-   else
-   {
-      Material * const newMat = new Material();
-      newMat->m_type = pmat->m_type;
-      newMat->m_bOpacityActive = pmat->m_bOpacityActive;
-      newMat->m_cBase = pmat->m_cBase;
-      newMat->m_cClearcoat = pmat->m_cClearcoat;
-      newMat->m_cGlossy = pmat->m_cGlossy;
-      newMat->m_fEdge = pmat->m_fEdge;
-      newMat->m_fEdgeAlpha = pmat->m_fEdgeAlpha;
-      newMat->m_fOpacity = pmat->m_fOpacity;
-      newMat->m_fRoughness = pmat->m_fRoughness;
-      newMat->m_fGlossyImageLerp = pmat->m_fGlossyImageLerp;
-      newMat->m_fThickness = pmat->m_fThickness;
-      newMat->m_fWrapLighting = pmat->m_fWrapLighting;
-      newMat->m_szName = pmat->m_szName;
-      m_dbgChangedMaterials.push_back(newMat);
-   }
-}
-
-void PinTable::UpdateDbgMaterial()
-{
-   bool somethingChanged = false;
-   for (size_t i = 0; i < m_dbgChangedMaterials.size(); i++)
-   {
-      const Material * const pmat = m_dbgChangedMaterials[i];
-      for (size_t t = 0; t < m_materials.size(); t++)
-      {
-         if(pmat->m_szName==m_materials[t]->m_szName)
-         {
-            Material * const mat = m_materials[t];
-            mat->m_type = pmat->m_type;
-            mat->m_bOpacityActive = pmat->m_bOpacityActive;
-            mat->m_cBase = pmat->m_cBase;
-            mat->m_cClearcoat = pmat->m_cClearcoat;
-            mat->m_cGlossy = pmat->m_cGlossy;
-            mat->m_fEdge = pmat->m_fEdge;
-            mat->m_fEdgeAlpha = pmat->m_fEdgeAlpha;
-            mat->m_fOpacity = pmat->m_fOpacity;
-            mat->m_fRoughness = pmat->m_fRoughness;
-            mat->m_fGlossyImageLerp = pmat->m_fGlossyImageLerp;
-            mat->m_fThickness = pmat->m_fThickness;
-            mat->m_fWrapLighting = pmat->m_fWrapLighting;
-            somethingChanged = true;
-            break;
-         }
-      }
-   }
-   m_dbgChangedMaterials.clear();
-   if (somethingChanged)
-      SetNonUndoableDirty(eSaveDirty);
 }
 
 int PinTable::AddListMaterial(HWND hwndListView, Material * const pmat)
