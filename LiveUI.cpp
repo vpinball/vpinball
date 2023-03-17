@@ -643,8 +643,8 @@ void LiveUI::Render()
             }
             matTranslate.Multiply(matRotate, matTranslate);
 #ifdef ENABLE_SDL
-            const float L = 0, R = ImGui::GetIO().DisplaySize.x;
-            const float T = 0, B = ImGui::GetIO().DisplaySize.y;
+            const float L = 0, R = (lui->m_rotate == 1 || lui->m_rotate == 3) ? ImGui::GetIO().DisplaySize.y : ImGui::GetIO().DisplaySize.x;
+            const float T = 0, B = (lui->m_rotate == 1 || lui->m_rotate == 3) ? ImGui::GetIO().DisplaySize.x : ImGui::GetIO().DisplaySize.y;
             Matrix3D matProj(
                2.0f / (R - L), 0.0f, 0.0f, 0.0f, 
                0.0f, 2.0f / (T - B), 0.0f, 0.0f, 
