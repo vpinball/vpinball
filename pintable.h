@@ -466,7 +466,7 @@ public:
    HRESULT SaveCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash);
    HRESULT WriteInfoValue(IStorage *pstg, const WCHAR *const wzName, const string &szValue, HCRYPTHASH hcrypthash);
    HRESULT ReadInfoValue(IStorage *pstg, const WCHAR *const wzName, char **pszValue, HCRYPTHASH hcrypthash);
-   HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay) override;
+   HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo) override;
    HRESULT LoadGameFromFilename(const string &szFileName);
    HRESULT LoadGameFromStorage(IStorage *pstgRoot);
    HRESULT LoadInfo(IStorage *pstg, HCRYPTHASH hcrypthash, int version);

@@ -147,7 +147,7 @@ public:
 	virtual void EndPlay(); \
 	virtual void Delete() {IEditable::Delete();} \
 	virtual void Uncreate() {IEditable::Uncreate();} \
-	virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay); \
+	virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo); \
 	virtual ItemTypeEnum GetItemType() const { return ItemType; } \
 	virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey); \
 	virtual HRESULT InitPostLoad(); \
@@ -237,7 +237,7 @@ public:
    virtual Hitable *GetIHitable() { return nullptr; }
    virtual const Hitable *GetIHitable() const { return nullptr; }
 
-   virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay) = 0;
+   virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo) = 0;
    virtual void ClearForOverwrite();
    virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) = 0;
    virtual HRESULT InitPostLoad() = 0;

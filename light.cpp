@@ -847,7 +847,7 @@ void Light::MoveOffset(const float dx, const float dy)
    }
 }
 
-HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
+HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
 {
    BiffWriter bw(pstm, hcrypthash);
 

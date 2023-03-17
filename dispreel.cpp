@@ -487,7 +487,7 @@ void DispReel::PutCenter(const Vertex2D& pv)
    m_d.m_v2.y = pv.y + getBoxHeight();
 }
 
-HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
+HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
 {
    BiffWriter bw(pstm, hcrypthash);
 

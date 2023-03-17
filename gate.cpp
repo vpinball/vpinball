@@ -610,7 +610,7 @@ void Gate::PutCenter(const Vertex2D& pv)
    m_d.m_vCenter = pv;
 }
 
-HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
+HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
 {
    BiffWriter bw(pstm, hcrypthash);
 

@@ -553,7 +553,7 @@ void Flasher::DoCommand(int icmd, int x, int y)
    }
 }
 
-HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
+HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
 {
    BiffWriter bw(pstm, hcrypthash);
 

@@ -728,7 +728,7 @@ void Rubber::ClearForOverwrite()
    ClearPointsForOverwrite();
 }
 
-HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
+HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
 {
    BiffWriter bw(pstm, hcrypthash);
 

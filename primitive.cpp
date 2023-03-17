@@ -1509,7 +1509,7 @@ void Primitive::PutCenter(const Vertex2D& pv)
 //////////////////////////////
 
 
-HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
+HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
 {
    BiffWriter bw(pstm, hcrypthash);
 
@@ -1561,8 +1561,8 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool bac
    bw.WriteBool(FID(DIPT), m_d.m_displayTexture);
    bw.WriteBool(FID(OSNM), m_d.m_objectSpaceNormalMap);
 
-   // No need to backup the meshes for play as the script cannot change them 
-   if (m_d.m_use3DMesh && !backupForPlay)
+   // Don't save the meshes for undo/redo
+   if (m_d.m_use3DMesh && !saveForUndo)
    {
       bw.WriteString(FID(M3DN), m_d.m_meshFileName);
       bw.WriteInt(FID(M3VN), (int)m_mesh.NumVertices());

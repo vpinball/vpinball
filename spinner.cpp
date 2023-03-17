@@ -516,7 +516,7 @@ void Spinner::SetDefaultPhysics(const bool fromMouseClick)
    m_d.m_damping = fromMouseClick ? LoadValueFloatWithDefault(regKey[RegName::DefaultPropsSpinner], "AntiFriction"s, 0.9879f) : 0.9879f;
 }
 
-HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
+HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
 {
    BiffWriter bw(pstm, hcrypthash);
 

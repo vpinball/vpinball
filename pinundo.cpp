@@ -44,7 +44,7 @@ void PinUndo::BeginUndo()
    }
 }
 
-void PinUndo::MarkForUndo(IEditable * const pie, const bool backupForPlay)
+void PinUndo::MarkForUndo(IEditable * const pie, const bool saveForUndo)
 {
    if (g_pplayer)
       return;
@@ -63,7 +63,7 @@ void PinUndo::MarkForUndo(IEditable * const pie, const bool backupForPlay)
 
    UndoRecord * const pur = m_vur[m_vur.size() - 1];
 
-   pur->MarkForUndo(pie, backupForPlay);
+   pur->MarkForUndo(pie, saveForUndo);
 }
 
 void PinUndo::MarkForCreate(IEditable * const pie)
@@ -209,7 +209,7 @@ UndoRecord::~UndoRecord()
       m_vieDelete[i]->Release();
 }
 
-void UndoRecord::MarkForUndo(IEditable * const pie, const bool backupForPlay)
+void UndoRecord::MarkForUndo(IEditable * const pie, const bool saveForUndo)
 {
    if (FindIndexOf(m_vieMark, pie) != -1) // Been marked already
       return;

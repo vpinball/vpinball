@@ -3417,7 +3417,7 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
    return S_OK;
 }
 
-HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
+HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
 {
    BiffWriter bw(pstm, hcrypthash);
 
