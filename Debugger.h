@@ -1,30 +1,6 @@
 #pragma once
 
 class DebuggerDialog;
-class DbgLightDialog : public CDialog
-{
-public:
-    DbgLightDialog();
-
-protected:
-    BOOL OnInitDialog() override;
-    void OnOK() override;
-    BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
-    void OnClose() override;
-    INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
-
-private:
-    Light           *GetLight();
-    void            SetCheckButtonState(const Light *plight);
-
-    CComboBox       m_lightsCombo;
-    HWND            m_hLightOnCheck;
-    HWND            m_hLightOffCheck;
-    HWND            m_hLightBlinkCheck;
-    CColorDialog    m_colorDialog;
-    ColorButton     m_colorButton;
-    ColorButton     m_colorButton2;
-};
 
 class DbgMaterialDialog : public CDialog
 {
@@ -72,7 +48,6 @@ private:
     CEdit   m_ballSizeEdit;
     CEdit   m_ballMassEdit;
 
-    DbgLightDialog    m_lightDialog;
     DbgMaterialDialog m_materialDialog;
 
     CResizer  m_resizer;

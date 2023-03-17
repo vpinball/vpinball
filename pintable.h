@@ -567,8 +567,6 @@ public:
    void ListMaterials(HWND hwndListView);
    int AddListMaterial(HWND hwndListView, Material *const pmat);
    void RemoveMaterial(Material *const pmat);
-   void AddDbgLight(Light *const plight);
-   void UpdateDbgLight();
    void AddMaterial(Material *const pmat);
    void AddDbgMaterial(const Material *const pmat);
    void UpdateDbgMaterial();
@@ -817,8 +815,6 @@ public:
       COLORREF color2;
       float lightstate;
    };
-
-   vector<DebugLightData *> m_dbgChangedLights;
 
 #ifdef UNUSED_TILT //!! currently unused (see NudgeGetTilt())
    int m_jolt_amount;
