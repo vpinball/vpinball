@@ -2232,6 +2232,7 @@ void PinTable::Play(const bool cameraMode)
    dst->m_Light[0].emission = m_Light[0].emission;
 
    dst->m_BG_current_set = src->m_BG_current_set;
+   dst->m_currentBackglassMode = src->m_currentBackglassMode;
    for (int i = 0; i < 3; i++)
    {
       dst->m_BG_rotation[i] = src->m_BG_rotation[i];
