@@ -1367,7 +1367,6 @@ PinTable::PinTable()
    m_overwriteGlobalStereo3D = false;
 
    m_dbgChangedMaterials.clear();
-   m_dbgChangedLights.clear();
 
    m_tblNudgeRead = Vertex2D(0.f,0.f);
    m_tblNudgeReadTilt = 0.0f;
@@ -7829,86 +7828,6 @@ void PinTable::RemoveMaterial(Material * const pmat)
 
    delete pmat;
 }
-
-void PinTable::AddDbgLight(Light * const plight)
-{
-    bool alreadyIn = false;
-    size_t i;
-    const char * const lightName = GetElementName(plight);
-
-    for (i = 0; i < m_dbgChangedMaterials.size(); i++)
-    {
-        if (strcmp(lightName, m_dbgChangedLights[i]->name) == 0)
-        {
-            alreadyIn = true;
-            break;
-        }
-    }
-    if (alreadyIn)
-    {
-        m_dbgChangedLights[i]->color1 = plight->m_d.m_color;
-        m_dbgChangedLights[i]->color2 = plight->m_d.m_color2;
-        plight->get_BulbModulateVsAdd(&m_dbgChangedLights[i]->bulbModulateVsAdd);
-        plight->get_FadeSpeedDown(&m_dbgChangedLights[i]->fadeSpeedDown);
-        plight->get_FadeSpeedUp(&m_dbgChangedLights[i]->fadeSpeedUp);
-        plight->get_State(&m_dbgChangedLights[i]->lightstate);
-        plight->get_Falloff(&m_dbgChangedLights[i]->falloff);
-        plight->get_FalloffPower(&m_dbgChangedLights[i]->falloffPower);
-        plight->get_Intensity(&m_dbgChangedLights[i]->intensity);
-        plight->get_TransmissionScale(&m_dbgChangedLights[i]->transmissionScale);
-    }
-    else
-    {
-        DebugLightData * const data = new DebugLightData;
-        data->color1 = plight->m_d.m_color;
-        data->color2 = plight->m_d.m_color2;
-        plight->get_BulbModulateVsAdd(&data->bulbModulateVsAdd);
-        plight->get_FadeSpeedDown(&data->fadeSpeedDown);
-        plight->get_FadeSpeedUp(&data->fadeSpeedUp);
-        plight->get_State(&data->lightstate);
-        plight->get_Falloff(&data->falloff);
-        plight->get_FalloffPower(&data->falloffPower);
-        plight->get_Intensity(&data->intensity);
-        plight->get_TransmissionScale(&data->transmissionScale);
-        strncpy_s(data->name, lightName, sizeof(data->name)-1);
-        m_dbgChangedLights.push_back(data);
-    }
-}
-
-void PinTable::UpdateDbgLight()
-{
-    bool somethingChanged = false;
-    for (size_t i = 0; i < m_dbgChangedLights.size(); i++)
-    {
-        const DebugLightData * const data = m_dbgChangedLights[i];
-        for (size_t t = 0; t < m_vedit.size(); t++)
-        {
-            if (m_vedit[t]->GetItemType() == eItemLight)
-            {
-                Light * const plight = (Light*)m_vedit[t];
-                if (strcmp(data->name, GetElementName(plight)) == 0)
-                {
-                    plight->m_d.m_color = data->color1;
-                    plight->m_d.m_color2 = data->color2;
-                    plight->m_d.m_fadeSpeedDown = data->fadeSpeedDown;
-                    plight->m_d.m_fadeSpeedUp = data->fadeSpeedUp;
-                    plight->m_d.m_falloff = data->falloff;
-                    plight->m_d.m_falloff_power = data->falloffPower;
-                    plight->m_d.m_intensity = data->intensity;
-                    plight->m_d.m_modulate_vs_add = data->bulbModulateVsAdd;
-                    plight->m_d.m_transmissionScale = data->transmissionScale;
-                    plight->m_d.m_state = data->lightstate;
-                    somethingChanged = true;
-                    break;
-                }
-            }
-        }
-    }
-    m_dbgChangedLights.clear();
-    if (somethingChanged)
-        SetNonUndoableDirty(eSaveDirty);
-}
-
 
 bool PinTable::GetImageLink(const Texture * const ppi) const
 {

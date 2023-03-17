@@ -52,7 +52,6 @@
 #define IDC_REELS_EDIT                  11
 #define DISPID_Decal_Font               12
 #define DISPID_ROTRA1                   12
-#define IDC_DBG_LIGHT_INTENSITY         12
 #define IDC_TEXTBOX_TRANSP_CHECK        12
 #define IDC_BACK_TRANSP_CHECK           12
 #define IDC_INTENSITY                   12
@@ -399,7 +398,6 @@
 #define IDR_HITTARGET                   280
 #define IDC_BROWSE_BALL_IMAGE           280
 #define IDC_UPDATE_ALL_BUTTON           280
-#define IDC_DBGLIGHTSBUTTON             280
 #define IDC_DEFAULT_COLORS_BUTTON       280
 #define IDC_TEST                        280
 #define IDC_POINT_COPY_BUTTON           280
@@ -574,7 +572,6 @@
 #define IDC_TARGET_MOVE_SPEED_EDIT      377
 #define IDC_THROW_BALLS_SIZE_EDIT       377
 #define IDC_THROW_BALL_SIZE_EDIT2       377
-#define IDC_DBG_LIGHT_FADE_UP_EDIT      377
 #define IDI_GATE                        377
 #define IDC_HEIGHT_EDIT                 378
 #define DISPID_SIDES                    378
@@ -791,12 +788,10 @@
 #define IDC_CENTER_MESH                 479
 #define IDC_CVP_CHKBOX_HELPWITHDWELL    479
 #define IDC_OVERWRITE_BALL_IMAGE_CHECK  479
-#define IDC_DBG_LIGHT_OFF_CHECK         479
 #define IDC_IMPORT_MATERIAL             480
 #define IDC_COLLISION_REDUCTION_FACTOR  481
 #define IDC_DEFAULTS                    482
 #define IDC_CHECK5                      488
-#define IDC_DBG_LIGHT_BLINKING_CHECK    488
 #define IDC_SM3DSOUND                   488
 #define IDC_DYNAMIC_DN                  489
 #define IDC_DN_LONGITUDE                490
@@ -931,7 +926,6 @@
 #define IDD_MESH_IMPORT_DIALOG          619
 #define IDD_PROPHITTARGET_VISUALS       620
 #define IDD_PROPHITTARGET_PHYSICS       622
-#define IDD_DBGLIGHTDIALOG              623
 #define IDD_DBGMATERIALDIALOG           624
 #define IDC_BG_FSS                      625
 #define IDC_ENABLE_CAMERA_FLY_AROUND    626
@@ -1011,7 +1005,6 @@
 #define IDC_CHECK2                      727
 #define IDC_STATIC_BULB_MESH            727
 #define IDC_IMPORT_ANIM_SEQUENCE        727
-#define IDC_DBG_LIGHT_ON_CHECK          727
 #define IDC_DEFAULT_GROUP_COLLECTION_CHECK 727
 #define IDC_CVP_EDIT_AUTOCHARS          728
 #define IDC_DEFAULT_GROUP_COLLECTION_CHECK2 728
@@ -1034,9 +1027,6 @@
 #define IDC_DOF_TARGETS                 744
 #define IDC_DOF_DROPTARGETS             745
 #define IDC_DOF_FORCEDISABLE            746
-#define IDC_DBG_LIGHT_FALLOFF           748
-#define IDC_DBG_LIGHT_FALLOFF_POWER     749
-#define IDC_DBG_LIGHT_FADE_DOWN_EDIT    754
 #define IDC_DBG_MATERIAL_GLOSSY_IMGLERP_EDIT 755
 #define IDC_ASPECT_RATIO_GROUP          756
 #define IDC_MATERIALCOMBO               757
@@ -1055,9 +1045,7 @@
 #define IDC_DELETE_LAYER_BUTTON         765
 #define IDC_RESET_WINDOW                765
 #define IDC_LAYER_FILTER_CASE_BUTTON    766
-#define IDC_DBG_BULB_MODULATE_VS_ADD    766
 #define IDC_COLOR_BUTTON2               766
-#define IDC_DBG_TRANSMISSION_SCALE      767
 #define IDC_COLOR_BUTTON3               767
 #define IDC_STATIC_GLOSSY_IMGLERP       768
 #define IDC_COLOR_BUTTON4               768
