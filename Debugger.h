@@ -1,28 +1,5 @@
 #pragma once
 
-class DebuggerDialog;
-
-class DbgMaterialDialog : public CDialog
-{
-public:
-    DbgMaterialDialog();
-
-protected:
-    BOOL OnInitDialog() override;
-    void OnOK() override;
-    BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
-    void OnClose() override;
-    INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
-
-private:
-    CComboBox    m_materialsCombo;
-    CColorDialog m_colorDialog;
-    ColorButton  m_colorButton1;
-    ColorButton  m_colorButton2;
-    ColorButton  m_colorButton3;
-    ColorButton  m_colorButton4;
-};
-
 class DebuggerDialog : public CDialog
 {
 public:
@@ -47,9 +24,6 @@ private:
     HWND    m_hBallControlCheck;
     CEdit   m_ballSizeEdit;
     CEdit   m_ballMassEdit;
-
-    DbgMaterialDialog m_materialDialog;
-
     CResizer  m_resizer;
     CEdit     m_notesEdit;
 };

@@ -568,8 +568,6 @@ public:
    int AddListMaterial(HWND hwndListView, Material *const pmat);
    void RemoveMaterial(Material *const pmat);
    void AddMaterial(Material *const pmat);
-   void AddDbgMaterial(const Material *const pmat);
-   void UpdateDbgMaterial();
 
    bool IsMaterialNameUnique(const string &name) const;
    Material *GetMaterial(const string &name) const;
@@ -798,23 +796,6 @@ public:
    bool m_renderEMReels;
    bool m_overwriteGlobalStereo3D;
    bool m_reflectElementsOnPlayfield;
-
-   vector<Material *> m_dbgChangedMaterials;
-
-   struct DebugLightData
-   {
-      char name[MAX_PATH];
-      float falloff;
-      float falloffPower;
-      float intensity;
-      float bulbModulateVsAdd;
-      float transmissionScale;
-      float fadeSpeedUp;
-      float fadeSpeedDown;
-      COLORREF color1;
-      COLORREF color2;
-      float lightstate;
-   };
 
 #ifdef UNUSED_TILT //!! currently unused (see NudgeGetTilt())
    int m_jolt_amount;
