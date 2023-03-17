@@ -193,7 +193,7 @@ public:
       return size;
    }
 
-   HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
+   HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
    {
       BiffWriter bw(pstm, hcrypthash);
       bw.WriteInt(FID(TYPE), m_type);

@@ -461,7 +461,7 @@ public:
    const ISelect *GetISelect() const final { return nullptr; }
 
    //ILoadable
-   HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay);
+   HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo);
    HRESULT LoadData(IStream *pstm, PinTable *ppt, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
    bool LoadToken(const int id, BiffReader * const pbr) final;
 

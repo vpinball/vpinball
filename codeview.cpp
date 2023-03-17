@@ -3741,7 +3741,7 @@ STDMETHODIMP Collection::get_Name(BSTR *pVal)
    return S_OK;
 }
 
-HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
+HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
 {
    BiffWriter bw(pstm, hcrypthash);
 
