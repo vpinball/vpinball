@@ -3493,6 +3493,25 @@ void Player::RenderDynamics()
 {
    TRACE_FUNCTION();
 
+   // Update ball pos uniforms
+#define MAX_BALL_SHADOW 8
+   vec4 balls[MAX_BALL_SHADOW];
+   int p = 0;
+   for (size_t i = 0; i < m_vball.size() && p < MAX_BALL_SHADOW; i++)
+   {
+      Ball *const pball = m_vball[i];
+      if (!pball->m_visible)
+         continue;
+      balls[p] = vec4(pball->m_d.m_pos.x, pball->m_d.m_pos.y, pball->m_d.m_pos.z, pball->m_d.m_radius);
+      p++;
+   }
+   for (; p < MAX_BALL_SHADOW; p++)
+      balls[p] = vec4(-1000.f, -1000.f, -1000.f, 0.0f);
+#ifdef SEPARATE_CLASSICLIGHTSHADER
+   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetValue("balls", balls, sizeof(vec4)*MAX_BALL_SHADOW);
+#endif
+   m_pin3d.m_pd3dPrimaryDevice->lightShader->SetValue("balls", balls, sizeof(vec4)*MAX_BALL_SHADOW);
+
    unsigned int reflection_path = 0;
    if (!m_cameraMode)
    {

@@ -26,13 +26,44 @@ VS_LIGHTBULB_OUTPUT vs_lightbulb_main (const in float4 vPosition : POSITION0/*,
    return Out; 
 }
 
+#define NUM_BALLS 8
+const float4 balls[NUM_BALLS];
+
+// Raytraced ball shadows
+float get_light_ball_shadow(const float3 light_pos, const float3 light_dir, const float light_dist)
+{
+	float result = 1.0;
+	for (int i = 0; i < NUM_BALLS; i++)
+	{
+		const float ball_r = balls[i].w;
+		[branch] if (ball_r == 0.0) // early out as soon as first 'invalid' ball is detected
+			return result;
+		const float3 ball_pos = balls[i].xyz;
+		const float3 light_ball_ray = ball_pos - light_pos;
+		const float dot_lbr_lr_divld = dot(light_ball_ray, light_dir) / (light_dist * light_dist);
+		// Don't cast shadow behind the light or before occluder
+		[branch] if (dot_lbr_lr_divld > 0.0 && dot_lbr_lr_divld < 1.0)
+		{
+			const float3 dist = light_ball_ray - dot_lbr_lr_divld * light_dir;
+			const float d2 = length(dist);
+			const float light_r = 10.0; // light radius in VPX units
+			const float smoothness = light_r - light_r * dot_lbr_lr_divld;
+			result *= 0.1 + 0.9 * smoothstep(ball_r-smoothness, ball_r+smoothness, d2);
+		}
+	}
+	return result;
+}
+
 float4 PS_BulbLight(const in VS_LIGHTBULB_OUTPUT IN) : COLOR
 {
-	const float len = length(lightCenter_maxRange.xyz - IN.tablePos) * lightCenter_maxRange.w;
+	const float3 light_dir = IN.tablePos - lightCenter_maxRange.xyz;
+	const float light_dist = length(light_dir);
+	const float len = light_dist * lightCenter_maxRange.w;
 	const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
 	const float3 lcolor = lerp(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
+	const float shadow = get_light_ball_shadow(lightCenter_maxRange.xyz, light_dir, light_dist);
 	return float4(
-	 lcolor*(-blend_modulate_vs_add*atten*lightColor_intensity.w), // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
+	 lcolor*(-blend_modulate_vs_add*atten*lightColor_intensity.w*shadow), // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
 	 1.0/blend_modulate_vs_add - 1.0); //saturate(atten*lightColor_intensity.w));
 }
 

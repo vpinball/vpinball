@@ -1,6 +1,10 @@
 VP 10.7.4 Changelog
 ------------------------
 
+FEATURES:
+
+- add native ball shadows for bulb lights
+
 FIXES:
 
 - fix analogue nudge not working for joysticks/gamepads in XInput mode
