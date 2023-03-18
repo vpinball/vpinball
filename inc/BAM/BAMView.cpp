@@ -216,7 +216,8 @@ std::wstring GetFileNameForSettingsXML()
    HMODULE hm = NULL;
    path[0] = 0;
 
-   if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)&GetFileNameForSettingsXML, &hm) == 0)
+   //if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)&GetFileNameForSettingsXML, &hm) == 0)
+   if ((hm = GetModuleHandle((LPCSTR)&GetFileNameForSettingsXML)) == 0)
    {
       int ret = GetLastError();
       TRACE("GetModuleHandle failed");
@@ -476,7 +477,7 @@ void init()
 void drawMenu()
 {
    ImGuiIO& io = ImGui::GetIO();
-   ImGui::SetNextWindowSizeConstraints(ImVec2(350, 300), ImVec2(FLT_MAX, FLT_MAX));
+   ImGui::SetNextWindowSizeConstraints(ImVec2(350, 320), ImVec2(FLT_MAX, FLT_MAX));
 
    bool p_open = true;
    if (ImGui::BeginPopupModal("Headtracking Settings", &p_open))
@@ -526,7 +527,7 @@ void drawMenu()
       }
       ImGui::SameLine();
 
-      ImGui::Indent(std::max(150.0f, i - 80.0f));
+      ImGui::Indent(std::max(150.0f, i - 100.0f));
       if (ImGui::Button("Save", ImVec2(60, 30)))
       {
          SaveXML(&g_TableSettings);
