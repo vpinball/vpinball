@@ -3860,6 +3860,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                         pstmItem->Release();
                         pstmItem = nullptr;
                      }
+                     return hr;
                   });
                   cloadeditems++;
                }

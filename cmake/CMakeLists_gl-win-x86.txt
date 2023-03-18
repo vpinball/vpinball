@@ -30,7 +30,6 @@ add_compile_definitions(
    ENABLE_SDL_INPUT
    ENABLE_SDL
    ENABLE_XINPUT
-   ENABLE_BAM
    USE_DINPUT8
 )
 

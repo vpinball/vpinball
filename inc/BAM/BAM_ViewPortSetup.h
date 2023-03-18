@@ -1,5 +1,4 @@
 #pragma once
-#ifdef ENABLE_BAM
 /**
  *  Copyright (C) 2016 Rafal Janicki
  *
@@ -205,4 +204,3 @@ void BuildProjectionMatrix(
 	ProjectionMatrix[4] = P[0] * -_sin + P[4] * _cos;
 	ProjectionMatrix[5] = P[1] * -_sin + P[5] * _cos;
 }
-#endif

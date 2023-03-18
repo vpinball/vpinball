@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#ifdef ENABLE_BAM
 #include "BAM\BAM_ViewPortSetup.h"
 #include "BAM\BAM_Tracker.h"
 #include "imgui\imgui.h"
@@ -479,7 +478,8 @@ void drawMenu()
    ImGuiIO& io = ImGui::GetIO();
    ImGui::SetNextWindowSizeConstraints(ImVec2(350, 300), ImVec2(FLT_MAX, FLT_MAX));
 
-   if (ImGui::Begin("BAM MENU", &settings.isVisible))
+   bool p_open = true;
+   if (ImGui::BeginPopupModal("Headtracking Settings", &p_open))
    {
       if (ImGui::CollapsingHeader("Global Settings", ImGuiTreeNodeFlags_DefaultOpen))
       {
@@ -526,15 +526,13 @@ void drawMenu()
       }
       ImGui::SameLine();
 
-      ImGui::Indent(std::max(150.0f, i - 70.0f));
+      ImGui::Indent(std::max(150.0f, i - 80.0f));
       if (ImGui::Button("Save", ImVec2(60, 30)))
       {
          SaveXML(&g_TableSettings);
       }
+      ImGui::EndPopup();
    }
-
-   ImGui::End();
-   ImGui::EndFrame();
 }
 
 void createProjectionAndViewMatrix(float* const __restrict P, float* const __restrict V)
@@ -544,4 +542,3 @@ void createProjectionAndViewMatrix(float* const __restrict P, float* const __res
       _ceateProjectionAndViewMatrix(P, V);
 }
 } // namespace BAMView
-#endif
