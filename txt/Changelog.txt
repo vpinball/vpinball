@@ -111,6 +111,25 @@ FIXES:
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
 - see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
 
+VP 10.7.4 Changelog
+------------------------
+
+FEATURES:
+
+- add native ball shadows for bulb lights
+
+FIXES:
+
+- fix analogue nudge not working for joysticks/gamepads in XInput mode
+
+- fix some problems with playing sounds via BASS: pitch/frequency change and loop/restart should now be matching the 'old' player
+
+- fix Light Debugger dialog 2nd color button
+
+- improve script editing performance again
+
+- see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
+
 VP 10.7.3 Changelog
 ------------------------
 
