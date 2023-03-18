@@ -26,15 +26,14 @@
 #define sort std::sort
 #endif
 
-#ifdef ENABLE_BAM
 #include "BAM/BAMView.h"
-#endif
 
 // Titles (used as Ids) of modal dialogs
 #define ID_MODAL_SPLASH "In Game UI"
 #define ID_VIDEO_SETTINGS "Video Options"
 #define ID_AUDIO_SETTINGS "Audio Options"
 #define ID_RENDERER_INSPECTION "Renderer Inspection"
+#define ID_BAM_SETTINGS "Headtracking Settings"
 
 #define PROP_WIDTH (125.f * m_dpi)
 #define PROP_TIMER(is_live, startup_obj, live_obj)                                                                                                                                                                  \
@@ -686,7 +685,6 @@ void LiveUI::OpenMainUI()
       while (ShowCursor(FALSE)>=0) ;
       while (ShowCursor(TRUE)<0) ;
       m_ShowUI = false;
-      m_ShowBAMModal = false;
       m_ShowSplashModal = true;
       m_OpenUITime = msec();
       PausePlayer(true);
@@ -951,6 +949,7 @@ void LiveUI::UpdateMainUI()
    bool popup_video_settings = false;
    bool popup_audio_settings = false;
    bool popup_renderer_inspection = false;
+   bool popup_headtracking = false;
 
    bool hide_parts = !m_ShowUI;
    if (ImGui::IsPopupOpen(ID_RENDERER_INSPECTION))
@@ -974,10 +973,8 @@ void LiveUI::UpdateMainUI()
             //   popup_audio_settings = true;
             if (ImGui::MenuItem("Video Options"))
                popup_video_settings = true;
-#ifdef ENABLE_BAM
             if (ImGui::MenuItem("BAM Headtracking"))
-               m_ShowBAMModal = true;
-#endif
+               popup_headtracking = true;
             if (ImGui::MenuItem("Renderer Inspection"))
                popup_renderer_inspection = true;
             ImGui::EndMenu();
@@ -1018,7 +1015,7 @@ void LiveUI::UpdateMainUI()
       UpdatePropertyUI();
    }
 
-   // Modal dialogs
+   // Popups & Modal dialogs
    if (popup_video_settings)
       ImGui::OpenPopup(ID_VIDEO_SETTINGS);
    if (ImGui::IsPopupOpen(ID_VIDEO_SETTINGS))
@@ -1034,15 +1031,15 @@ void LiveUI::UpdateMainUI()
    if (ImGui::IsPopupOpen(ID_RENDERER_INSPECTION))
       UpdateRendererInspectionModal();
 
+   if (popup_headtracking)
+      ImGui::OpenPopup(ID_BAM_SETTINGS);
+   if (ImGui::IsPopupOpen(ID_BAM_SETTINGS))
+      UpdateHeadTrackingModal();
+
    if (m_ShowSplashModal && !ImGui::IsPopupOpen(ID_MODAL_SPLASH))
       ImGui::OpenPopup(ID_MODAL_SPLASH);
    if (m_ShowSplashModal)
       UpdateMainSplashModal();
-
-#ifdef ENABLE_BAM
-   if (m_ShowBAMModal)
-      BAMView::drawMenu();
-#endif
 
    // Handle uncaught mouse & keyboard interaction
    if (!ImGui::GetIO().WantCaptureMouse)
@@ -1406,6 +1403,11 @@ void LiveUI::UpdateVideoOptionsModal()
          SaveValueBool(regKey[RegName::Player], "Stereo3DEnabled"s, m_player->m_stereo3Denabled);
       ImGui::EndPopup();
    }
+}
+
+void LiveUI::UpdateHeadTrackingModal()
+{
+   BAMView::drawMenu();
 }
 
 void LiveUI::UpdateRendererInspectionModal()

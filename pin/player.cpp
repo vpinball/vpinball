@@ -4,9 +4,7 @@
 #include <SDL2/SDL_syswm.h>
 #endif
 
-#ifdef ENABLE_BAM
 #include "BAM/BAMView.h"
-#endif
 
 #include "imgui/imgui_impl_win32.h"
 
@@ -210,10 +208,8 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
       m_VSync = LoadValueIntWithDefault(regKey[RegName::Player], "AdaptiveVSync"s, 0);
    }
 
-#ifdef ENABLE_BAM
    m_headTracking = LoadValueBoolWithDefault(regKey[RegName::Player], "BAMheadTracking"s, false);
    m_dynamicMode |= m_headTracking; // disable static pre-rendering when head tracking is activated
-#endif
 
    m_ballImage = nullptr;
    m_decalImage = nullptr;
@@ -4338,15 +4334,12 @@ void Player::Render()
    }
    else
 #endif
-#ifdef ENABLE_BAM
    if ((m_stereo3D != STEREO_VR) && m_headTracking)
    {
       // #ravarcade: UpdateBAMHeadTracking will set proj/view matrix to add BAM view and head tracking
       m_pin3d.UpdateBAMHeadTracking();
    }
-   else
-#endif
-   if (m_cameraMode)
+   else if (m_cameraMode)
    {
       m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation());
    }

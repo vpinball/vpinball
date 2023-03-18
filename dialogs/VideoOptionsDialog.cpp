@@ -590,8 +590,6 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SHIFT_WND(IDC_POST_PROCESS_COMBO, -9)
    SHIFT_WND(IDC_SHARPEN_LABEL, -4)
    SHIFT_WND(IDC_SHARPEN_COMBO, -4)
-   GetDlgItem(IDC_HEADTRACKING).ShowWindow(false);
-   GetDlgItem(IDC_HEADTRACKING).EnableWindow(false);
 #endif
 
    return TRUE;

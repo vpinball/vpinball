@@ -3,12 +3,7 @@
 #include "Shader.h"
 #include "math/math.h"
 #include "inc/ThreadPool.h"
-#ifdef ENABLE_BAM
-//#include "BAM/BAM_ViewPortSetup.h"
-//#include "BAM/BAM_Tracker.h"
 #include "BAM/BAMView.h"
-//#include "BAM/BAMView.cpp"
-#endif
 
 int NumVideoBytes = 0;
 
@@ -489,9 +484,7 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
    if (!m_pd3dPrimaryDevice->LoadShaders())
       return E_FAIL;
 
-#ifdef ENABLE_BAM
    BAMView::init();
-#endif
 
    const bool compressTextures = LoadValueBoolWithDefault(regKey[RegName::Player], "CompressTextures"s, false);
    m_pd3dPrimaryDevice->CompressTextures(compressTextures);
@@ -1265,9 +1258,7 @@ void PinProjection::TransformVertices(const Vertex3Ds * const rgv, const WORD * 
    }
 }
 
-#ifdef ENABLE_BAM
 void Pin3D::UpdateBAMHeadTracking()
 {
    BAMView::createProjectionAndViewMatrix(&m_proj.m_matProj[0]._11, &m_proj.m_matView._11);
 }
-#endif

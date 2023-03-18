@@ -26,11 +26,12 @@ private:
    void UpdateOutlinerUI();
    void UpdatePropertyUI();
 
-   // Modals
+   // Pop ups & Modals
    void UpdateMainSplashModal();
    void UpdateAudioOptionsModal();
    void UpdateVideoOptionsModal();
    void UpdateRendererInspectionModal();
+   void UpdateHeadTrackingModal();
 
    // UI Selection & properties
    void BallProperties(bool is_live);
@@ -98,7 +99,6 @@ private:
    // UI state
    bool m_ShowUI = false;
    bool m_ShowSplashModal = false;
-   bool m_ShowBAMModal = false;
    bool m_disable_esc = false; // Option for keyboard shortcuts
    U32 m_OpenUITime = 0; // Used to delay keyboard shortcut
    U64 m_StartTime_usec = 0; // Used for timed splash overlays
