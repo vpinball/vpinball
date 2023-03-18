@@ -1,13 +1,13 @@
 #include "stdafx.h"
 
-#include <rapidxml_utils.hpp>
-
 #include "backGlass.h"
 #include "RenderDevice.h"
 #include "Shader.h"
 #include "captureExt.h"
+#include "backGlass.h"
 #ifdef ENABLE_VR
- #include <fstream>
+#include <fstream>
+#include "tinyxml2\tinyxml2.h"
 #endif
 
 //#define WRITE_BACKGLASS_IMAGES
@@ -102,43 +102,55 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
    char* data = nullptr;
 
    try {
-      rapidxml::file<> b2sFile(b2sFileName.c_str());
-      rapidxml::xml_document<> b2sTree;
-      b2sTree.parse<0>(b2sFile.data());
-      auto rootNode = b2sTree.first_node("DirectB2SData");
+      tinyxml2::XMLDocument b2sTree;
+      std::stringstream buffer;
+      std::ifstream myFile(b2sFileName.c_str());
+      buffer << myFile.rdbuf();
+      myFile.close();
+      auto xml = buffer.str();
+      if (b2sTree.Parse(xml.c_str(), xml.size()))
+      {
+         PLOGE << "Failed to parse B2S file";
+         return;
+      }
+      auto rootNode = b2sTree.FirstChildElement("DirectB2SData");
       if (!rootNode) {
+         PLOGE << "Invalid B2S file, missing DirectB2SData";
          return;
       }
       size_t data_len = 0;
-      auto currentNode = rootNode->first_node();
+      auto currentNode = rootNode->FirstChildElement();
       while (currentNode) {//Iterate all Nodes within DirectB2SData
-         char* nodeName = currentNode->name();
+         auto nodeName = currentNode->Name();
          if (strcmp(nodeName, "VRDMDLocation") == 0) {
-            auto attrib = currentNode->first_attribute("LocX");
-            if (attrib) m_backglass_dmd.x = atoi(attrib->value());
-            attrib = currentNode->first_attribute("LocY");
-            if (attrib) m_backglass_dmd.y = atoi(attrib->value());
-            attrib = currentNode->first_attribute("Width");
-            if (attrib) m_backglass_dmd_width = atoi(attrib->value());
-            attrib = currentNode->first_attribute("Height");
-            if (attrib) m_backglass_dmd_height = atoi(attrib->value());
+            auto attrib = currentNode->FindAttribute("LocX");
+            if (attrib) m_backglass_dmd.x = atoi(attrib->Value());
+            attrib = currentNode->FindAttribute("LocY");
+            if (attrib) m_backglass_dmd.y = atoi(attrib->Value());
+            attrib = currentNode->FindAttribute("Width");
+            if (attrib) m_backglass_dmd_width = atoi(attrib->Value());
+            attrib = currentNode->FindAttribute("Height");
+            if (attrib) m_backglass_dmd_height = atoi(attrib->Value());
          }
          else if (strcmp(nodeName, "GrillHeight") == 0) {
-            auto attrib = currentNode->first_attribute("Value");
-            if (attrib) m_backglass_grill_height = atoi(attrib->value());
+            auto attrib = currentNode->FindAttribute("Value");
+            if (attrib) m_backglass_grill_height = atoi(attrib->Value());
          }
          else if (strcmp(nodeName, "Illumination") == 0) {
-            auto illuminationNode = currentNode->first_node();
+            auto illuminationNode = currentNode->FirstChildElement();
             int bulb = 1;
             while (illuminationNode) {//Iterate all Nodes within Illumination
-               auto attrib = illuminationNode->first_attribute("Image");
+               auto attrib = illuminationNode->FindAttribute("Image");
                if (attrib) {
-                  if (data_len < attrib->value_size() * 3 / 4 + 1) {
+                  auto val = attrib->Value();
+                  auto val_size = strlen(val);
+                  if (data_len < val_size * 3 / 4 + 1)
+                  {
                      delete [] data;
-                     data_len = attrib->value_size() * 3 / 4 + 1;
+                     data_len = val_size * 3 / 4 + 1;
                      data = new char[data_len];
                   }
-                  size_t size = decode_base64(attrib->value(), data, attrib->value_size(), data_len);
+                  size_t size = decode_base64(val, data, val_size, data_len);
 #ifdef WRITE_BACKGLASS_IMAGES
                   if (WRITE_BACKGLASS_IMAGES > 0 && size > 0) {//Write Image to disk. Also check if the base64 decoder is working...
                      string imageFileName = b2sFileName;
@@ -154,22 +166,25 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
                      //Handle Bulb light images
                   }
                }
-               illuminationNode = illuminationNode->next_sibling();
+               illuminationNode = illuminationNode->NextSiblingElement();
                bulb++;
             }
          }
          else if (strcmp(nodeName, "Images") == 0) {
-            auto imagesNode = currentNode->first_node();
+            auto imagesNode = currentNode->FirstChildElement();
             while (imagesNode) {//Iterate all Nodes within Images
-               auto attrib = imagesNode->first_attribute("Value");
+               auto attrib = imagesNode->FindAttribute("Value");
                if (attrib) {
-                  if (data_len < attrib->value_size() * 3 / 4 + 1) {
+                  auto val = attrib->Value();
+                  auto val_size = strlen(val);
+                  if (data_len < val_size * 3 / 4 + 1)
+                  {
                      delete [] data;
-                     data_len = attrib->value_size() * 3 / 4 + 1;
+                     data_len = val_size * 3 / 4 + 1;
                      data = new char[data_len];
                   }
-                  size_t size = decode_base64(attrib->value(), data, attrib->value_size(), data_len);
-                  if ((size > 0) && (strcmp(imagesNode->name(), "BackglassImage") == 0)) {
+                  size_t size = decode_base64(val, data, val_size, data_len);
+                  if ((size > 0) && (strcmp(imagesNode->Name(), "BackglassImage") == 0)) {
                      m_loaded_image = BaseTexture::CreateFromData(data, size);
                      m_loaded_image->RemoveAlpha();
                      m_backgroundTexture = m_pd3dDevice->m_texMan.LoadTexture(m_loaded_image, SF_TRILINEAR, SA_CLAMP, SA_CLAMP, false);
@@ -188,10 +203,10 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
                   }
 #endif
                }
-               imagesNode = imagesNode->next_sibling();
+               imagesNode = imagesNode->NextSiblingElement();
             }
          }
-         currentNode = currentNode->next_sibling();
+         currentNode = currentNode->NextSiblingElement();
       }
    }
    catch (...) {//If file does not exist, or something else goes wrong just disable the Backglass. This is very experimental anyway.
