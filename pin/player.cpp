@@ -672,7 +672,7 @@ void Player::Shutdown()
    captureStop();
 
    while (ShowCursor(FALSE) >= 0) ;
-   while(ShowCursor(TRUE)<0) ;
+   while(ShowCursor(TRUE) < 0) ;
 
    delete m_liveUI;
    m_liveUI = nullptr;
@@ -4513,7 +4513,7 @@ void Player::Render()
    {
       PauseMusic();
       while (ShowCursor(FALSE) >= 0) ;
-      while(ShowCursor(TRUE)<0) ;
+      while(ShowCursor(TRUE) < 0) ;
       SendMessage(g_pvp->GetHwnd(), WM_COMMAND, ID_FILE_EXIT, NULL);
       return;
    }
@@ -4523,8 +4523,8 @@ void Player::Render()
    {
       m_debugMode = true;
       m_showDebugger = false;
-      while(ShowCursor(FALSE)>=0) ;
-      while(ShowCursor(TRUE)<0) ;
+      while(ShowCursor(FALSE) >= 0) ;
+      while(ShowCursor(TRUE) < 0) ;
 
       if (!m_debuggerDialog.IsWindow())
       {

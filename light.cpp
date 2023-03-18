@@ -1315,7 +1315,7 @@ STDMETHODIMP Light::Duration(float startState, long newVal, float endState)
         if (m_inPlayState == (float)LightStateBlinking)
         {
             m_iblinkframe = 0;
-         m_timenextblink = g_pplayer->m_time_msec + m_d.m_blinkinterval;
+            m_timenextblink = g_pplayer->m_time_msec + m_d.m_blinkinterval;
         }
     }
 

@@ -578,7 +578,7 @@ LiveUI::LiveUI(RenderDevice* const rd)
    m_dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(rd->getHwnd());
    ImGui::GetStyle().ScaleAllSizes(m_dpi);
 
-   float overlaySize = min(32.f * m_dpi, min(m_player->m_wnd_width, m_player->m_wnd_height) / (26 * 2.0f)); // Fit 26 lines of text on screen
+   float overlaySize = min(32.f * m_dpi, min(m_player->m_wnd_width, m_player->m_wnd_height) / (26.f * 2.0f)); // Fit 26 lines of text on screen
    m_overlayFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, overlaySize);
 
    m_baseFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 13.0f * m_dpi);
@@ -586,7 +586,7 @@ LiveUI::LiveUI(RenderDevice* const rd)
    icons_config.MergeMode = true;
    icons_config.PixelSnapH = true;
    icons_config.GlyphMinAdvanceX = 13.0f * m_dpi;
-   static const ImWchar icons_ranges[] = { ICON_MIN_FK, ICON_MAX_16_FK, 0 };
+   static constexpr ImWchar icons_ranges[] = { ICON_MIN_FK, ICON_MAX_16_FK, 0 };
    io.Fonts->AddFontFromMemoryCompressedTTF(fork_awesome_compressed_data, fork_awesome_compressed_size, 13.0f * m_dpi, &icons_config, icons_ranges);
 
 #ifdef ENABLE_SDL
@@ -783,7 +783,7 @@ void LiveUI::Update()
       //!! This example assumes 60 FPS. Higher FPS requires larger buffer size.
       static ScrollingData sdata1, sdata2, sdata3, sdata4, sdata5, sdata6;
       //static RollingData   rdata1, rdata2;
-      static double t = 0.f;
+      static double t = 0.;
       t += ImGui::GetIO().DeltaTime;
 
       sdata6.AddPoint((float)t, float(1e-3 * m_player->m_script_period) * 1.f);
@@ -854,7 +854,7 @@ void LiveUI::Update()
 
 void LiveUI::UpdateCameraModeUI()
 {
-   static float last_frame_height = -100; // Hide first frame below display bounds
+   static float last_frame_height = -100.f; // Hide first frame below display bounds
    PinTable* table = m_live_table;
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
    ImGui::SetNextWindowBgAlpha(0.35f);
@@ -1052,9 +1052,9 @@ void LiveUI::UpdateMainUI()
       // Zoom in/out with mouse wheel
       if (m_useEditorCam && ImGui::GetIO().MouseWheel != 0)
       {
-         vec3 v = m_CamEye - m_CamAt;
-         float length = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-         float newLength = length - ImGui::GetIO().MouseWheel * (length > 200 ? 100.0f : length > 100 ? 10.0f : 2.0f);
+         const vec3 v = m_CamEye - m_CamAt;
+         const float length = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
+         const float newLength = length - ImGui::GetIO().MouseWheel * (length > 200.f ? 100.0f : length > 100.f ? 10.0f : 2.0f);
          if (newLength > 1.0f)
             m_CamEye = m_CamAt + v * (newLength / length);
       }
@@ -1146,7 +1146,7 @@ void LiveUI::UpdateMainUI()
       // Apply editor camera to renderer
       Matrix3D mView = Matrix3D::MatrixLookAtLH(m_CamEye, m_CamAt, m_CamUp);
       memcpy(m_pin3d->m_proj.m_matView.m, mView.m, sizeof(float) * 4 * 4);
-      Matrix3D proj = Matrix3D::MatrixPerspectiveFovLH(ANGTORAD(39.6f), ((float)m_pin3d->m_viewPort.Width) / ((float)m_pin3d->m_viewPort.Height), 10.0f, 10000.0f);
+      Matrix3D proj = Matrix3D::MatrixPerspectiveFovLH(ANGTORAD(39.6f), (float)((double)m_pin3d->m_viewPort.Width / (double)m_pin3d->m_viewPort.Height), 10.0f, 10000.0f);
       memcpy(m_pin3d->m_proj.m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
       m_pin3d->UpdateMatrices();
    }
@@ -1777,12 +1777,12 @@ void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_lig
       auto upd_intensity = [startup_light, live_light](bool is_live, float prev, float v)
       {
          Light *light = (is_live ? live_light : startup_light);
-         if (prev > 0.1 && v > 0.1)
+         if (prev > 0.1f && v > 0.1f)
          {
-            float fade_up_ms = prev / light->m_d.m_fadeSpeedUp;
-            light->m_d.m_fadeSpeedUp = fade_up_ms < 0.1 ? 100000.0f : v / fade_up_ms;
-            float fade_down_ms = prev / light->m_d.m_fadeSpeedDown;
-            light->m_d.m_fadeSpeedDown = fade_down_ms < 0.1 ? 100000.0f : v / fade_down_ms;
+            const float fade_up_ms = prev / light->m_d.m_fadeSpeedUp;
+            light->m_d.m_fadeSpeedUp = fade_up_ms < 0.1f ? 100000.0f : v / fade_up_ms;
+            const float fade_down_ms = prev / light->m_d.m_fadeSpeedDown;
+            light->m_d.m_fadeSpeedDown = fade_down_ms < 0.1f ? 100000.0f : v / fade_down_ms;
          }
          startup_light->m_currentIntensity = startup_light->m_d.m_intensity * startup_light->m_d.m_intensity_scale * startup_light->m_inPlayState;
          live_light->m_currentIntensity = live_light->m_d.m_intensity * live_light->m_d.m_intensity_scale * live_light->m_inPlayState;
@@ -1792,14 +1792,14 @@ void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_lig
       auto upd_fade_up = [startup_light, live_light](bool is_live, float prev, float v)
       { 
          Light *light = (is_live ? live_light : startup_light);
-         light->m_d.m_fadeSpeedUp = v < 0.1 ? 100000.0f : light->m_d.m_intensity / v; 
+         light->m_d.m_fadeSpeedUp = v < 0.1f ? 100000.0f : light->m_d.m_intensity / v; 
       };
       float startup_fadedown = startup_light ? (startup_light->m_d.m_intensity / startup_light->m_d.m_fadeSpeedDown) : 0.f;
       float live_fadedown = live_light ? (live_light->m_d.m_intensity / live_light->m_d.m_fadeSpeedDown) : 0.f;
       auto upd_fade_down = [startup_light, live_light](bool is_live, float prev, float v)
       {
          Light *light = (is_live ? live_light : startup_light);
-         light->m_d.m_fadeSpeedDown = v < 0.1 ? 100000.0f : light->m_d.m_intensity / v;
+         light->m_d.m_fadeSpeedDown = v < 0.1f ? 100000.0f : light->m_d.m_intensity / v;
       };
       bool startup_shadow = startup_light->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS;
       bool live_shadow = live_light->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS;
@@ -1839,7 +1839,7 @@ void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_lig
       auto upd_inplaystate = [startup_light, live_light](bool is_live, float prev, float v)
       {
          Light *light = (is_live ? live_light : startup_light);
-         light->setInPlayState(v > 1 ? LightStateBlinking : v);
+         light->setInPlayState(v > 1.f ? (float)LightStateBlinking : v);
       };
       PropFloat("State", startup_light, is_live, startup_light ? &(startup_light->m_d.m_state) : nullptr, live_light ? &(live_light->m_d.m_state) : nullptr, 0.1f, 0.5f, "%.1f", ImGuiInputTextFlags_CharsDecimal, upd_inplaystate);
       // Missing blink pattern
