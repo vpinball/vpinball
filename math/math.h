@@ -35,7 +35,7 @@ __forceinline float atan2_approx_div2PI(const float y, const float x)
     return (y < 0.f) ? -angle : angle;
 }
 
-#if defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
+#ifdef ENABLE_SSE_OPTIMIZATIONS
 __forceinline float precise_divide(const float a, const float b)
 {
     return _mm_cvtss_f32(_mm_div_ss(_mm_set_ss(a), _mm_set_ss(b)));
@@ -51,7 +51,7 @@ __forceinline double force_add_in_order(const double a, const double b, const do
     return _mm_cvtsd_f64(_mm_add_sd(_mm_add_sd(_mm_set_sd(a), _mm_set_sd(b)),_mm_set_sd(c)));
 }
 #else
-#pragma message("Warning: No precise divide")
+#pragma message ("Warning: No precise divide")
 #define precise_divide(a,b) ((a)/(b)) //!!
 #endif
 

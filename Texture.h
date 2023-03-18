@@ -116,7 +116,7 @@ inline void copy_bgra_rgba(unsigned int* const __restrict dst, const unsigned in
 {
     size_t o = 0;
 
-#if defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
+#ifdef ENABLE_SSE_OPTIMIZATIONS
     // align output writes
     for (; ((reinterpret_cast<size_t>(dst+o) & 15) != 0) && o < size; ++o)
     {
@@ -141,6 +141,8 @@ inline void copy_bgra_rgba(unsigned int* const __restrict dst, const unsigned in
        _mm_store_si128(reinterpret_cast<__m128i*>(dst+o), _mm_or_si128(ga, rb));
     }
     // leftover writes below
+#else
+#pragma message ("Warning: No SSE texture conversion")
 #endif
 
     for (; o < size; ++o)

@@ -1,6 +1,12 @@
 #include "stdafx.h"
 #include "quadtree.h"
 
+#ifdef ENABLE_SSE_OPTIMIZATIONS
+#define QUADTREE_SSE_LEAFTEST
+#else
+#pragma message ("Warning: No SSE quadtree tests")
+#endif
+
 HitQuadtree::~HitQuadtree()
 {
 #ifndef USE_EMBREE
@@ -340,7 +346,7 @@ void HitQuadtree::InitSseArrays()
 #ifndef USE_EMBREE
 void HitQuadtree::HitTestBall(const Ball * const pball, CollisionEvent& coll) const
 {
-#if defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
+#ifdef QUADTREE_SSE_LEAFTEST
 
    HitTestBallSse(pball, coll);
 
@@ -391,7 +397,7 @@ void HitQuadtree::HitTestBall(const Ball * const pball, CollisionEvent& coll) co
 //
 }
 
-#if defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
+#ifdef QUADTREE_SSE_LEAFTEST
 void HitQuadtree::HitTestBallSse(const Ball * const pball, CollisionEvent& coll) const
 {
    const HitQuadtree* stack[128]; //!! should be enough, but better implement test in construction to not exceed this

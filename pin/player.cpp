@@ -42,7 +42,7 @@ static unsigned int stats_drawn_static_triangles = 0;
 
 #define RECOMPUTEBUTTONCHECK WM_USER+100
 
-#if (defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
+#if (defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
 #ifdef _MSC_VER
  #define init_cpu_detection int regs[4]; __cpuid(regs, 1);
  #define detect_no_sse (regs[3] & 0x002000000) == 0
@@ -62,7 +62,7 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
    m_ballShader = nullptr;
    m_dynamicMode = m_cameraMode; // We can move the camera => disable static pre-rendering
 
-#if !(defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
+#if !(defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
  #pragma message ( "Warning: No CPU float ignore denorm implemented" )
 #else
    {
