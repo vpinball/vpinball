@@ -237,6 +237,10 @@ add_executable(vpinball WIN32
    imgui/implot/implot.h
    imgui/implot/implot_items.cpp
    imgui/implot/implot_internal.h
+   inc/BAM/BAMView.cpp
+   inc/BAM/BAMView.h
+   inc/BAM/BAM_Tracker.h
+   inc/BAM/BAM_ViewPortSetup.h
    inc/gpuprofiler.cpp
    inc/gpuprofiler.h
    inc/serial.cpp
