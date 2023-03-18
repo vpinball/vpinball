@@ -3,7 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include "PhysicsOptionsDialog.h"
-#include "tinyxml2\tinyxml2.h"
+#include "tinyxml2/tinyxml2.h"
 
 constexpr unsigned int num_physicsoptions = 8;
 static char * physicsoptions[num_physicsoptions] ={ nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };

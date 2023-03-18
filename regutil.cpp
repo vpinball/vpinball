@@ -10,7 +10,7 @@
 #ifdef ENABLE_INI
 //!! when to save registry? on dialog exits? on player start/end? on table load/unload? UI stuff?
 
-#include "tinyxml2\tinyxml2.h"
+#include "tinyxml2/tinyxml2.h"
 #include <fstream>
 
 static tinyxml2::XMLDocument xmlDoc;

@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <atlsafe.h>
 #include "objloader.h"
-#include "tinyxml2\tinyxml2.h"
+#include "tinyxml2/tinyxml2.h"
 #include <fstream>
 #include <sstream>
 #include "Shader.h"
@@ -4109,6 +4109,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
          }
       }
    }
+
    return hr;
 }
 

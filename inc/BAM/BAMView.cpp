@@ -1,8 +1,8 @@
 #include "stdafx.h"
-#include "BAM\BAM_ViewPortSetup.h"
-#include "BAM\BAM_Tracker.h"
-#include "imgui\imgui.h"
-#include "tinyxml2\tinyxml2.h"
+#include "BAM/BAM_ViewPortSetup.h"
+#include "BAM/BAM_Tracker.h"
+#include "imgui/imgui.h"
+#include "tinyxml2/tinyxml2.h"
 #include "BAMView.h"
 
 namespace BAMView
