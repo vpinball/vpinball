@@ -1,12 +1,9 @@
 #include "stdafx.h"
 #include "resource.h"
-#include <rapidxml.hpp>
-#include <rapidxml_print.hpp>
 #include <fstream>
 #include <sstream>
 #include "PhysicsOptionsDialog.h"
-
-using namespace rapidxml;
+#include "tinyxml2\tinyxml2.h"
 
 constexpr unsigned int num_physicsoptions = 8;
 static char * physicsoptions[num_physicsoptions] ={ nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
@@ -231,103 +228,100 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 SaveValue(regKey[RegName::RecentDir], "PhysicsDir"s, newInitDir);
             }
 
-            xml_document<> xmlDoc;
-            xml_node<>*dcl = xmlDoc.allocate_node(node_declaration);
-            dcl->append_attribute(xmlDoc.allocate_attribute("version", "1.0"));
-            dcl->append_attribute(xmlDoc.allocate_attribute("encoding", "utf-8"));
-            xmlDoc.append_node(dcl);
+            tinyxml2::XMLDocument xmlDoc;
 
-            //root node
-            xml_node<>*root = xmlDoc.allocate_node(node_element, "physics");
-            xml_node<>*flipper = xmlDoc.allocate_node(node_element, "flipper");
-            xml_node<>*table = xmlDoc.allocate_node(node_element, "table");
+            auto root = xmlDoc.NewElement("physics");
+            auto physFlip = xmlDoc.NewElement("flipper");
+            auto physTab = xmlDoc.NewElement("table");
 
-            const string fs(GetItemText(DISPID_Flipper_Speed));
-            xml_node<>*flipSpeed = xmlDoc.allocate_node(node_element, "speed", fs.c_str());
-            flipper->append_node(flipSpeed);
+            auto node = xmlDoc.NewElement("speed");
+            node->SetText(GetItemText(DISPID_Flipper_Speed));
+            physFlip->InsertEndChild(node);
 
-            const string fps(GetItemText(19));
-            xml_node<>*flipPhysStrength = xmlDoc.allocate_node(node_element, "strength", fps.c_str());
-            flipper->append_node(flipPhysStrength);
+            node = xmlDoc.NewElement("strength");
+            node->SetText(GetItemText(19));
+            physFlip->InsertEndChild(node);
 
-            const string fe(GetItemText(21));
-            xml_node<>*flipElasticity = xmlDoc.allocate_node(node_element, "elasticity", fe.c_str());
-            flipper->append_node(flipElasticity);
+            node = xmlDoc.NewElement("elasticity");
+            node->SetText(GetItemText(21));
+            physFlip->InsertEndChild(node);
 
-            const string fsc(GetItemText(112));
-            xml_node<>*flipScatter = xmlDoc.allocate_node(node_element, "scatter", fsc.c_str());
-            flipper->append_node(flipScatter);
+            node = xmlDoc.NewElement("scatter");
+            node->SetText(GetItemText(112));
+            physFlip->InsertEndChild(node);
 
-            const string ftd(GetItemText(113));
-            xml_node<>*flipTorqueDamping = xmlDoc.allocate_node(node_element, "eosTorque", ftd.c_str());
-            flipper->append_node(flipTorqueDamping);
+            node = xmlDoc.NewElement("eosTorque");
+            node->SetText(GetItemText(113));
+            physFlip->InsertEndChild(node);
 
-            const string ftda(GetItemText(189));
-            xml_node<>*flipTorqueDampingAngle = xmlDoc.allocate_node(node_element, "eosTorqueAngle", ftda.c_str());
-            flipper->append_node(flipTorqueDampingAngle);
+            node = xmlDoc.NewElement("eosTorqueAngle");
+            node->SetText(GetItemText(189));
+            physFlip->InsertEndChild(node);
 
-            const string frs(GetItemText(23));
-            xml_node<>*flipReturnStrength = xmlDoc.allocate_node(node_element, "returnStrength", frs.c_str());
-            flipper->append_node(flipReturnStrength);
+            node = xmlDoc.NewElement("returnStrength");
+            node->SetText(GetItemText(23));
+            physFlip->InsertEndChild(node);
 
-            const string fef(GetItemText(22));
-            xml_node<>*flipElasticityFalloff = xmlDoc.allocate_node(node_element, "elasticityFalloff", fef.c_str());
-            flipper->append_node(flipElasticityFalloff);
+            node = xmlDoc.NewElement("elasticityFalloff");
+            node->SetText(GetItemText(22));
+            physFlip->InsertEndChild(node);
 
-            const string ff(GetItemText(109));
-            xml_node<>*flipfriction = xmlDoc.allocate_node(node_element, "friction", ff.c_str());
-            flipper->append_node(flipfriction);
+            node = xmlDoc.NewElement("friction");
+            node->SetText(GetItemText(109));
+            physFlip->InsertEndChild(node);
 
-            const string fcru(GetItemText(110));
-            xml_node<>*flipCoilRampUp = xmlDoc.allocate_node(node_element, "coilRampUp", fcru.c_str());
-            flipper->append_node(flipCoilRampUp);
+            node = xmlDoc.NewElement("coilRampUp");
+            node->SetText(GetItemText(110));
+            physFlip->InsertEndChild(node);
 
-            const string tgc(GetItemText(1100));
-            xml_node<>*tabGravityConst = xmlDoc.allocate_node(node_element, "gravityConstant", tgc.c_str());
-            table->append_node(tabGravityConst);
+            node = xmlDoc.NewElement("gravityConstant");
+            node->SetText(GetItemText(1100));
+            physTab->InsertEndChild(node);
 
-            const string tcf(GetItemText(1101));
-            xml_node<>*tabContactFriction = xmlDoc.allocate_node(node_element, "contactFriction", tcf.c_str());
-            table->append_node(tabContactFriction);
+            node = xmlDoc.NewElement("contactFriction");
+            node->SetText(GetItemText(1101));
+            physTab->InsertEndChild(node);
 
-            const string te(GetItemText(1708));
-            xml_node<>*tabElasticity = xmlDoc.allocate_node(node_element, "elasticity", te.c_str());
-            table->append_node(tabElasticity);
+            node = xmlDoc.NewElement("elasticity");
+            node->SetText(GetItemText(1708));
+            physTab->InsertEndChild(node);
 
-            const string tef(GetItemText(1709));
-            xml_node<>*tabElasticityFalloff = xmlDoc.allocate_node(node_element, "elasticityFalloff", tef.c_str());
-            table->append_node(tabElasticityFalloff);
+            node = xmlDoc.NewElement("elasticityFalloff");
+            node->SetText(GetItemText(1709));
+            physTab->InsertEndChild(node);
 
-            const string tsa(GetItemText(1710));
-            xml_node<>*tabScatterAngle = xmlDoc.allocate_node(node_element, "playfieldScatter", tsa.c_str());
-            table->append_node(tabScatterAngle);
+            node = xmlDoc.NewElement("defaultElementScatter");
+            node->SetText(GetItemText(1102));
+            physTab->InsertEndChild(node);
 
-            const string tcsa(GetItemText(1102));
-            xml_node<>*tabContactScatterAngle = xmlDoc.allocate_node(node_element, "defaultElementScatter", tcsa.c_str());
-            table->append_node(tabContactScatterAngle);
+            node = xmlDoc.NewElement("playfieldScatter");
+            node->SetText(GetItemText(1710));
+            physTab->InsertEndChild(node);
 
-            const string tmns(GetItemText(1103));
-            xml_node<>*tabMinSlope = xmlDoc.allocate_node(node_element, "playfieldminslope", tmns.c_str());
-            table->append_node(tabMinSlope);
+            node = xmlDoc.NewElement("playfieldminslope");
+            node->SetText(GetItemText(1103));
+            physTab->InsertEndChild(node);
 
-            const string tmxs(GetItemText(1104));
-            xml_node<>*tabMaxSlope = xmlDoc.allocate_node(node_element, "playfieldmaxslope", tmxs.c_str());
-            table->append_node(tabMaxSlope);
+            node = xmlDoc.NewElement("playfieldmaxslope");
+            node->SetText(GetItemText(1104));
+            physTab->InsertEndChild(node);
 
-            const string sn(GetItemText(1110));
-            xml_node<>*settingName = xmlDoc.allocate_node(node_element, "name", sn.c_str());
-            root->append_node(settingName);
+            auto settingName = xmlDoc.NewElement("name");
+            settingName->SetText(GetItemText(1110));
+            root->InsertEndChild(settingName);
+            root->InsertEndChild(physTab);
+            root->InsertEndChild(physFlip);
+            xmlDoc.InsertEndChild(xmlDoc.NewDeclaration());
+            xmlDoc.InsertEndChild(root);
 
-            root->append_node(table);
-            root->append_node(flipper);
-            xmlDoc.append_node(root);
+            tinyxml2::XMLPrinter prn;
+            xmlDoc.Print(&prn);
 
             std::ofstream myfile(ofn.lpstrFile);
-            myfile << xmlDoc;
+            myfile << prn.CStr();
             myfile.close();
 
             SetFocus();
-
             break;
         }
 
@@ -375,55 +369,59 @@ bool PhysicsOptionsDialog::LoadSetting()
     if (index != string::npos)
         hr = SaveValue(regKey[RegName::RecentDir], "PhysicsDir"s, szFileName[0].substr(0, index));
 
-    xml_document<> xmlDoc;
+    tinyxml2::XMLDocument xmlDoc;
     try
     {
         std::stringstream buffer;
         std::ifstream myFile(szFileName[0]);
         buffer << myFile.rdbuf();
         myFile.close();
+        auto xml = buffer.str();
+        if (xmlDoc.Parse(xml.c_str(), xml.size()))
+        {
+            ShowError("Error parsing VPP XML file");
+            return false;
+        }
+        auto root = xmlDoc.FirstChildElement("physics");
+        auto table = root->FirstChildElement("table");
+        auto flipper = root->FirstChildElement("flipper");
 
-        xmlDoc.parse<0>((char*)buffer.str().c_str());
-        const xml_node<> *root = xmlDoc.first_node("physics");
-        const xml_node<> *table = root->first_node("table");
-        const xml_node<> *flipper = root->first_node("flipper");
-
-        strncpy_s(loadValues.gravityConstant, table->first_node("gravityConstant")->value(), sizeof(loadValues.gravityConstant)-1);
-        strncpy_s(loadValues.contactFriction, table->first_node("contactFriction")->value(), sizeof(loadValues.contactFriction)-1);
-        strncpy_s(loadValues.tableElasticity, table->first_node("elasticity")->value(), sizeof(loadValues.tableElasticity)-1);
-        strncpy_s(loadValues.tableElasticityFalloff, table->first_node("elasticityFalloff")->value(), sizeof(loadValues.tableElasticityFalloff)-1);
-        strncpy_s(loadValues.playfieldScatter, table->first_node("playfieldScatter")->value(), sizeof(loadValues.playfieldScatter)-1);
-        strncpy_s(loadValues.defaultElementScatter, table->first_node("defaultElementScatter")->value(), sizeof(loadValues.defaultElementScatter)-1);
-        const xml_node<char> *tmp = table->first_node("playfieldminslope");
+        strncpy_s(loadValues.gravityConstant, table->FirstChildElement("gravityConstant")->GetText(), sizeof(loadValues.gravityConstant) - 1);
+        strncpy_s(loadValues.contactFriction, table->FirstChildElement("contactFriction")->GetText(), sizeof(loadValues.contactFriction) - 1);
+        strncpy_s(loadValues.tableElasticity, table->FirstChildElement("elasticity")->GetText(), sizeof(loadValues.tableElasticity) - 1);
+        strncpy_s(loadValues.tableElasticityFalloff, table->FirstChildElement("elasticityFalloff")->GetText(), sizeof(loadValues.tableElasticityFalloff) - 1);
+        strncpy_s(loadValues.playfieldScatter, table->FirstChildElement("playfieldScatter")->GetText(), sizeof(loadValues.playfieldScatter) - 1);
+        strncpy_s(loadValues.defaultElementScatter, table->FirstChildElement("defaultElementScatter")->GetText(), sizeof(loadValues.defaultElementScatter) - 1);
+        auto tmp = table->FirstChildElement("playfieldminslope");
         if(tmp)
-           strncpy_s(loadValues.minSlope, sizeof(loadValues.minSlope), tmp->value(), sizeof(loadValues.minSlope)-1);
+            strncpy_s(loadValues.minSlope, sizeof(loadValues.minSlope), tmp->GetText(), sizeof(loadValues.minSlope) - 1);
         else
            sprintf_s(loadValues.minSlope, sizeof(loadValues.minSlope), "%f", DEFAULT_TABLE_MIN_SLOPE);
-        tmp = table->first_node("playfieldmaxslope");
+        tmp = table->FirstChildElement("playfieldmaxslope");
         if(tmp)
-           strncpy_s(loadValues.maxSlope, sizeof(loadValues.maxSlope), tmp->value(), sizeof(loadValues.maxSlope)-1);
+           strncpy_s(loadValues.maxSlope, sizeof(loadValues.maxSlope), tmp->GetText(), sizeof(loadValues.maxSlope) - 1);
         else
            sprintf_s(loadValues.maxSlope, sizeof(loadValues.maxSlope), "%f", DEFAULT_TABLE_MAX_SLOPE);
-        strncpy_s(loadValues.speed, flipper->first_node("speed")->value(), sizeof(loadValues.speed)-1);
-        strncpy_s(loadValues.strength, flipper->first_node("strength")->value(), sizeof(loadValues.strength)-1);
-        strncpy_s(loadValues.elasticity, flipper->first_node("elasticity")->value(), sizeof(loadValues.elasticity)-1);
-        strncpy_s(loadValues.scatter, flipper->first_node("scatter")->value(), sizeof(loadValues.scatter)-1);
-        strncpy_s(loadValues.eosTorque, flipper->first_node("eosTorque")->value(), sizeof(loadValues.eosTorque)-1);
-        strncpy_s(loadValues.eosTorqueAngle, flipper->first_node("eosTorqueAngle")->value(), sizeof(loadValues.eosTorqueAngle)-1);
-        strncpy_s(loadValues.returnStrength, flipper->first_node("returnStrength")->value(), sizeof(loadValues.returnStrength)-1);
-        strncpy_s(loadValues.elasticityFalloff, flipper->first_node("elasticityFalloff")->value(), sizeof(loadValues.elasticityFalloff)-1);
-        strncpy_s(loadValues.friction, flipper->first_node("friction")->value(), sizeof(loadValues.friction)-1);
-        strncpy_s(loadValues.coilRampup, flipper->first_node("coilRampUp")->value(), sizeof(loadValues.coilRampup)-1);
+        strncpy_s(loadValues.speed, flipper->FirstChildElement("speed")->GetText(), sizeof(loadValues.speed) - 1);
+        strncpy_s(loadValues.strength, flipper->FirstChildElement("strength")->GetText(), sizeof(loadValues.strength) - 1);
+        strncpy_s(loadValues.elasticity, flipper->FirstChildElement("elasticity")->GetText(), sizeof(loadValues.elasticity) - 1);
+        strncpy_s(loadValues.scatter, flipper->FirstChildElement("scatter")->GetText(), sizeof(loadValues.scatter) - 1);
+        strncpy_s(loadValues.eosTorque, flipper->FirstChildElement("eosTorque")->GetText(), sizeof(loadValues.eosTorque) - 1);
+        strncpy_s(loadValues.eosTorqueAngle, flipper->FirstChildElement("eosTorqueAngle")->GetText(), sizeof(loadValues.eosTorqueAngle) - 1);
+        strncpy_s(loadValues.returnStrength, flipper->FirstChildElement("returnStrength")->GetText(), sizeof(loadValues.returnStrength) - 1);
+        strncpy_s(loadValues.elasticityFalloff, flipper->FirstChildElement("elasticityFalloff")->GetText(), sizeof(loadValues.elasticityFalloff) - 1);
+        strncpy_s(loadValues.friction, flipper->FirstChildElement("friction")->GetText(), sizeof(loadValues.friction) - 1);
+        strncpy_s(loadValues.coilRampup, flipper->FirstChildElement("coilRampUp")->GetText(), sizeof(loadValues.coilRampup) - 1);
 
-        strncpy_s(loadValues.name, root->first_node("name")->value(), sizeof(loadValues.name)-1);
+        strncpy_s(loadValues.name, root->FirstChildElement("name")->GetText(), sizeof(loadValues.name) - 1);
     }
     catch(...)
     {
         ShowError("Error parsing physics settings file");
-        xmlDoc.clear();
+        xmlDoc.Clear();
         return false;
     }
-    xmlDoc.clear();
+    xmlDoc.Clear();
 
     return true;
 }
