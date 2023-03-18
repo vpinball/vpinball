@@ -810,7 +810,6 @@ void Trigger::RenderSetup()
    if (!m_d.m_visible || m_d.m_shape == TriggerNone)
       return;
 
-   const Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    const WORD* indices;
    switch(m_d.m_shape)
    {

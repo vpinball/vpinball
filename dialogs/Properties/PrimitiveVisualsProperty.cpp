@@ -76,7 +76,7 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
            m_baseMaterialCombo->EnableWindow(!prim->IsPlayfield());
 
         // Disable 'disable from light from below' for static part to avoid confusing the user
-        if (m_disableLightFromBelowEdit && dispid == IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW || dispid == -1)
+        if (dispid == IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW || dispid == -1)
            m_disableLightFromBelowEdit.EnableWindow(!prim->m_d.m_staticRendering);
 
         UpdateBaseVisuals(prim, &prim->m_d, dispid);

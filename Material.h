@@ -43,7 +43,8 @@ public:
    };
 
    inline Material() :
-         m_fWrapLighting(0.0f)
+         m_type(MaterialType::BASIC)
+       , m_fWrapLighting(0.0f)
        , m_fRoughness(0.0f)
        , m_fGlossyImageLerp(1.0f)
        , m_fThickness(0.05f)
@@ -53,7 +54,6 @@ public:
        , m_cBase(0xB469FF)
        , m_cGlossy(0)
        , m_cClearcoat(0)
-       , m_type(MaterialType::BASIC)
        , m_bOpacityActive(false)
        , m_fElasticity(0.0f)
        , m_fElasticityFalloff(0.0f)
@@ -67,7 +67,8 @@ public:
    inline Material(MaterialType type, float wrapLighting, float roughness, float glossyImageLerp, float thickness, float edge, float edgeAlpha, float opacity,
        COLORREF base, COLORREF glossy, COLORREF clearcoat, bool opacityActive,
        float elasticity, float elasticityFalloff, float friction, float scatterAngle, COLORREF refractionTint) :
-         m_fWrapLighting(wrapLighting)
+         m_type(type)
+       , m_fWrapLighting(wrapLighting)
        , m_fRoughness(roughness)
        , m_fGlossyImageLerp(glossyImageLerp)
        , m_fThickness(thickness)
@@ -77,7 +78,6 @@ public:
        , m_cBase(base)
        , m_cGlossy(glossy)
        , m_cClearcoat(clearcoat)
-       , m_type(type)
        , m_bOpacityActive(opacityActive)
        , m_fElasticity(elasticity)
        , m_fElasticityFalloff(elasticityFalloff)
@@ -89,7 +89,8 @@ public:
    }
 
    inline Material(const Material * const pmat) :
-         m_fWrapLighting(pmat->m_fWrapLighting)
+         m_type(pmat->m_type)
+       , m_fWrapLighting(pmat->m_fWrapLighting)
        , m_fRoughness(pmat->m_fRoughness)
        , m_fGlossyImageLerp(pmat->m_fGlossyImageLerp)
        , m_fThickness(pmat->m_fThickness)
@@ -99,7 +100,6 @@ public:
        , m_cBase(pmat->m_cBase)
        , m_cGlossy(pmat->m_cGlossy)
        , m_cClearcoat(pmat->m_cClearcoat)
-       , m_type(pmat->m_type)
        , m_bOpacityActive(pmat->m_bOpacityActive)
        , m_fElasticity(pmat->m_fElasticity)
        , m_fElasticityFalloff(pmat->m_fElasticityFalloff)

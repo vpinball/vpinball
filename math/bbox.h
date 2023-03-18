@@ -44,8 +44,7 @@ public:
    FRect() {}
 
    FRect(const float x1, const float x2, const float y1, const float y2)
-      : left(x1), right(x2),
-      top(y1), bottom(y2)
+      : left(x1), top(y1), right(x2), bottom(y2)
    {}
 
    void Clear()

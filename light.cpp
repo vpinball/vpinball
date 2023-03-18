@@ -605,7 +605,9 @@ void Light::PrepareMoversCustom()
 
 void Light::UpdateCustomMoverVBuffer()
 {
+#ifdef ENABLE_SDL
    RenderDevice *const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+#endif
 
    float height = m_initSurfaceHeight;
    if (m_d.m_BulbLight)

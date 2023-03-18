@@ -475,8 +475,8 @@ public:
    void ReadAccelerometerCalibration();
    virtual IEditable *GetIEditable() override { return (IEditable *)this; }
    virtual const IEditable *GetIEditable() const override { return (const IEditable *)this; }
-   virtual void Delete() { } // Can't delete table itself
-   virtual void Uncreate() { }
+   virtual void Delete() override { } // Can't delete table itself
+   virtual void Uncreate() override { }
    virtual bool LoadToken(const int id, BiffReader *const pbr) override;
 
    virtual IDispatch *GetPrimary() { return this->GetDispatch(); }
@@ -582,8 +582,8 @@ public:
    string m_szTitle;
 
    bool m_isLiveInstance = false; // true for live shallow copy of a table
-   std::unordered_map<void *, void *> m_startupToLive; // For live table, maps back and forth to startup table editable parts, materials,...
-   std::unordered_map<void *, void *> m_liveToStartup;
+   robin_hood::unordered_map<void *, void *> m_startupToLive; // For live table, maps back and forth to startup table editable parts, materials,...
+   robin_hood::unordered_map<void *, void *> m_liveToStartup;
 
    // editor viewport
    Vertex2D m_offset;

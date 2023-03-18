@@ -3587,7 +3587,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
       const int record_size = m_materials[i]->GetSaveSize() + 2 *sizeof(int);
       HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
       CComPtr<IStream> spStream;
-      HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
+      const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
       m_materials[i]->SaveData(spStream, NULL, false);
       BiffWriter sub_bw(spStream, NULL);
       sub_bw.WriteTag(FID(ENDB));
@@ -3607,7 +3607,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
       const int record_size = m_vrenderprobe[i]->GetSaveSize() + 2 *sizeof(int);
       HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
       CComPtr<IStream> spStream;
-      HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
+      const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
       m_vrenderprobe[i]->SaveData(spStream, NULL, false);
       BiffWriter sub_bw(spStream, NULL);
       sub_bw.WriteTag(FID(ENDB));
@@ -4440,7 +4440,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       ::GlobalUnlock(hMem);
       Material *rpb = new Material();
       CComPtr<IStream> spStream;
-      HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
+      const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
       if (rpb->LoadData(spStream, this, pbr->m_version, NULL, NULL) != S_OK)
       {
          assert(!"Invalid binary image file");
@@ -4459,7 +4459,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       ::GlobalUnlock(hMem);
       RenderProbe *rpb = new RenderProbe();
       CComPtr<IStream> spStream;
-      HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
+      const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
       if (rpb->LoadData(spStream, this, pbr->m_version, NULL, NULL) != S_OK)
       {
          assert(!"Invalid binary image file");

@@ -1080,7 +1080,7 @@ void LiveUI::UpdateMainUI()
                Matrix3D mRot;
                vec3 axis = i == 0 ? xaxis : yaxis;
                float alpha = -(i == 0 ? drag.y : drag.x) * 0.01f;
-               float cs = cos(alpha), om_cs = 1.0f - cs, sn = sin(alpha), om_sn = 1.0f - sn;
+               float cs = cos(alpha), om_cs = 1.0f - cs, sn = sin(alpha);//, om_sn = 1.0f - sn;
                mRot.SetIdentity();
                mRot._11 = cs + om_cs * axis.x * axis.x;
                mRot._12 = om_cs * axis.x * axis.y - sn * axis.z;
@@ -1253,7 +1253,7 @@ void LiveUI::UpdateOutlinerUI()
             if (ImGui::TreeNodeEx("Layers", ImGuiTreeNodeFlags_DefaultOpen))
             {
                // Very very unefficient...
-               std::unordered_map<std::string, vector<IEditable *>> layers;
+               robin_hood::unordered_map<std::string, vector<IEditable *>> layers;
                for (size_t t = 0; t < table->m_vedit.size(); t++)
                {
                   ISelect *const psel = table->m_vedit[t]->GetISelect();

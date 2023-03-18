@@ -506,8 +506,8 @@ BOOL VideoOptionsDialog::OnInitDialog()
    const bool video10bit = LoadValueBoolWithDefault(regKey[RegName::Player], "Render10Bit"s, false);
    SendMessage(GetDlgItem(IDC_10BIT_VIDEO).GetHwnd(), BM_SETCHECK, video10bit ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const int depthcur = LoadValueIntWithDefault(regKey[RegName::Player], "ColorDepth"s, 32);
-   const int refreshrate = LoadValueIntWithDefault(regKey[RegName::Player], "RefreshRate"s, 0);
+   //const int depthcur = LoadValueIntWithDefault(regKey[RegName::Player], "ColorDepth"s, 32);
+   //const int refreshrate = LoadValueIntWithDefault(regKey[RegName::Player], "RefreshRate"s, 0);
 
    int display;
    hr = LoadValue(regKey[RegName::Player], "Display"s, display);

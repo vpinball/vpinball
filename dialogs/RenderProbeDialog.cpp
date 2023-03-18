@@ -9,8 +9,6 @@ RenderProbeDialog::RenderProbeDialog() : CDialog(IDD_RENDERPROBE)
 
 BOOL RenderProbeDialog::OnInitDialog()
 {
-   CCO(PinTable)* const pt = g_pvp->GetActiveTable();
-
    hListHwnd = GetDlgItem(IDC_RENDERPROBE_LIST).GetHwnd();
 
    ListView_SetExtendedListViewStyle(hListHwnd, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
@@ -73,8 +71,6 @@ void RenderProbeDialog::UpdateList()
 
 INT_PTR RenderProbeDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   CCO(PinTable) *const pt = g_pvp->GetActiveTable();
-
    switch (uMsg)
    {
    case WM_NOTIFY:

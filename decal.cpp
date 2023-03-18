@@ -444,7 +444,9 @@ static constexpr WORD rgi0123[4] = { 0, 1, 2, 3 };
 
 void Decal::RenderSetup()
 {
+#ifdef ENABLE_SDL
    RenderDevice *const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+#endif
 
    PreRenderText();
 

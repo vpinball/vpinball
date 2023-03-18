@@ -3,7 +3,7 @@
 extern const string PLAYFIELD_REFLECTION_RENDERPROBE_NAME;
 
 // A render probe is a render of the scene to an offscreen render target which is later used for shading scene parts, for example for reflections
-class RenderProbe : ILoadable
+class RenderProbe final : ILoadable
 {
 public:
    enum ProbeType

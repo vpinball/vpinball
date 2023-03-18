@@ -2162,8 +2162,6 @@ STDMETHODIMP Primitive::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
-   const Texture * const tex = m_ptable->GetImage(szImage);
-
    m_d.m_szImage = szImage;
 
    return S_OK;

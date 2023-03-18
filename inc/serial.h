@@ -55,7 +55,7 @@ enum serial_err
 class serial
 {
 public:
-   serial() : configured(false),fd(INVALID_HANDLE_VALUE) {}
+   serial() : fd(INVALID_HANDLE_VALUE), configured(false) {}
 
    bool open(const string &device);
    void close();

@@ -1124,12 +1124,6 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 #endif
 
    // Buffers for post-processing (postprocess is done at scene resolution, on a LDR render target without MSAA or full scene supersampling)
-#ifdef ENABLE_SDL
-    colorFormat pp_format = video10bit ? colorFormat::RGB10 : colorFormat::RGB8;
-#else
-    colorFormat pp_format = video10bit ? colorFormat::RGBA10 : colorFormat::RGBA8;
-#endif
-
    if (video10bit && (m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA))
       ShowError("SMAA or DLAA post-processing AA should not be combined with 10bit-output rendering (will result in visible artifacts)!");
 
