@@ -5,8 +5,7 @@
 #include <algorithm>
 #include <atlsafe.h>
 #include "objloader.h"
-#include <rapidxml.hpp>
-#include <rapidxml_print.hpp>
+#include "tinyxml2\tinyxml2.h"
 #include <fstream>
 #include <sstream>
 #include "Shader.h"
@@ -17,8 +16,6 @@
 
 #include "inc/serial.h"
 static serial Serial;
-
-using namespace rapidxml;
 
 #define HASHLENGTH 16
 
@@ -5914,7 +5911,7 @@ void PinTable::ImportBackdropPOV(const string& filename)
     else
        szFileName.push_back(filename);
 
-    xml_document<> xmlDoc;
+    tinyxml2::XMLDocument xmlDoc;
 
     try
     {
@@ -5922,143 +5919,147 @@ void PinTable::ImportBackdropPOV(const string& filename)
         std::ifstream myFile(szFileName[0]);
         buffer << myFile.rdbuf();
         myFile.close();
+        auto xml = buffer.str();
 
-        xmlDoc.parse<0>((char*)buffer.str().c_str());
-
-        xml_node<> *root = xmlDoc.first_node("POV");
-        if(!root)
+        if (xmlDoc.Parse(xml.c_str(), xml.size()))
         {
-            ShowError("Error parsing POV XML file: root is nullptr");
-            xmlDoc.clear();
-            return;
+           ShowError("Error parsing POV XML file");
+           return;
         }
 
-        xml_node<> *desktop = root->first_node("desktop");
+        auto root = xmlDoc.FirstChildElement("POV");
+        if (root == nullptr)
+        {
+           ShowError("Error parsing POV XML file: root 'POV' element is missing");
+           xmlDoc.Clear();
+           return;
+        }
+
+        auto desktop = root->FirstChildElement("desktop");
         if(!desktop)
         {
-            ShowError("Error parsing POV XML file: desktop is nullptr");
-            xmlDoc.clear();
-            return;
+            ShowError("Error parsing POV XML file: 'desktop' element is missing");
+           xmlDoc.Clear();
+           return;
         }
-        sscanf_s(desktop->first_node("inclination")->value(), "%f", &m_BG_inclination[BG_DESKTOP]);
-        sscanf_s(desktop->first_node("fov")->value(), "%f", &m_BG_FOV[BG_DESKTOP]);
-        sscanf_s(desktop->first_node("layback")->value(), "%f", &m_BG_layback[BG_DESKTOP]);
-        sscanf_s(desktop->first_node("rotation")->value(), "%f", &m_BG_rotation[BG_DESKTOP]);
-        sscanf_s(desktop->first_node("xscale")->value(), "%f", &m_BG_scalex[BG_DESKTOP]);
-        sscanf_s(desktop->first_node("yscale")->value(), "%f", &m_BG_scaley[BG_DESKTOP]);
-        sscanf_s(desktop->first_node("zscale")->value(), "%f", &m_BG_scalez[BG_DESKTOP]);
-        sscanf_s(desktop->first_node("xoffset")->value(), "%f", &m_BG_xlatex[BG_DESKTOP]);
-        sscanf_s(desktop->first_node("yoffset")->value(), "%f", &m_BG_xlatey[BG_DESKTOP]);
-        sscanf_s(desktop->first_node("zoffset")->value(), "%f", &m_BG_xlatez[BG_DESKTOP]);
+        sscanf_s(desktop->FirstChildElement("inclination")->GetText(), "%f", &m_BG_inclination[BG_DESKTOP]);
+        sscanf_s(desktop->FirstChildElement("fov")->GetText(), "%f", &m_BG_FOV[BG_DESKTOP]);
+        sscanf_s(desktop->FirstChildElement("layback")->GetText(), "%f", &m_BG_layback[BG_DESKTOP]);
+        sscanf_s(desktop->FirstChildElement("rotation")->GetText(), "%f", &m_BG_rotation[BG_DESKTOP]);
+        sscanf_s(desktop->FirstChildElement("xscale")->GetText(), "%f", &m_BG_scalex[BG_DESKTOP]);
+        sscanf_s(desktop->FirstChildElement("yscale")->GetText(), "%f", &m_BG_scaley[BG_DESKTOP]);
+        sscanf_s(desktop->FirstChildElement("zscale")->GetText(), "%f", &m_BG_scalez[BG_DESKTOP]);
+        sscanf_s(desktop->FirstChildElement("xoffset")->GetText(), "%f", &m_BG_xlatex[BG_DESKTOP]);
+        sscanf_s(desktop->FirstChildElement("yoffset")->GetText(), "%f", &m_BG_xlatey[BG_DESKTOP]);
+        sscanf_s(desktop->FirstChildElement("zoffset")->GetText(), "%f", &m_BG_xlatez[BG_DESKTOP]);
 
-        xml_node<> *fullscreen = root->first_node("fullscreen");
+        auto fullscreen = root->FirstChildElement("fullscreen");
         if(!fullscreen)
         {
-            ShowError("Error parsing POV XML file: fullscreen is nullptr");
-            xmlDoc.clear();
+            ShowError("Error parsing POV XML file: 'fullscreen' element is missing");
             return;
         }
 
-        sscanf_s(fullscreen->first_node("inclination")->value(), "%f", &m_BG_inclination[BG_FULLSCREEN]);
-        sscanf_s(fullscreen->first_node("fov")->value(), "%f", &m_BG_FOV[BG_FULLSCREEN]);
-        sscanf_s(fullscreen->first_node("layback")->value(), "%f", &m_BG_layback[BG_FULLSCREEN]);
-        sscanf_s(fullscreen->first_node("rotation")->value(), "%f", &m_BG_rotation[BG_FULLSCREEN]);
-        sscanf_s(fullscreen->first_node("xscale")->value(), "%f", &m_BG_scalex[BG_FULLSCREEN]);
-        sscanf_s(fullscreen->first_node("yscale")->value(), "%f", &m_BG_scaley[BG_FULLSCREEN]);
-        sscanf_s(fullscreen->first_node("zscale")->value(), "%f", &m_BG_scalez[BG_FULLSCREEN]);
-        sscanf_s(fullscreen->first_node("xoffset")->value(), "%f", &m_BG_xlatex[BG_FULLSCREEN]);
-        sscanf_s(fullscreen->first_node("yoffset")->value(), "%f", &m_BG_xlatey[BG_FULLSCREEN]);
-        sscanf_s(fullscreen->first_node("zoffset")->value(), "%f", &m_BG_xlatez[BG_FULLSCREEN]);
+        sscanf_s(fullscreen->FirstChildElement("inclination")->GetText(), "%f", &m_BG_inclination[BG_FULLSCREEN]);
+        sscanf_s(fullscreen->FirstChildElement("fov")->GetText(), "%f", &m_BG_FOV[BG_FULLSCREEN]);
+        sscanf_s(fullscreen->FirstChildElement("layback")->GetText(), "%f", &m_BG_layback[BG_FULLSCREEN]);
+        sscanf_s(fullscreen->FirstChildElement("rotation")->GetText(), "%f", &m_BG_rotation[BG_FULLSCREEN]);
+        sscanf_s(fullscreen->FirstChildElement("xscale")->GetText(), "%f", &m_BG_scalex[BG_FULLSCREEN]);
+        sscanf_s(fullscreen->FirstChildElement("yscale")->GetText(), "%f", &m_BG_scaley[BG_FULLSCREEN]);
+        sscanf_s(fullscreen->FirstChildElement("zscale")->GetText(), "%f", &m_BG_scalez[BG_FULLSCREEN]);
+        sscanf_s(fullscreen->FirstChildElement("xoffset")->GetText(), "%f", &m_BG_xlatex[BG_FULLSCREEN]);
+        sscanf_s(fullscreen->FirstChildElement("yoffset")->GetText(), "%f", &m_BG_xlatey[BG_FULLSCREEN]);
+        sscanf_s(fullscreen->FirstChildElement("zoffset")->GetText(), "%f", &m_BG_xlatez[BG_FULLSCREEN]);
         oldFormatLoaded = true;
 
-        xml_node<> *fullsinglescreen = root->first_node("fullsinglescreen");
+        auto fullsinglescreen = root->FirstChildElement("fullsinglescreen");
         if(!fullsinglescreen)
         {
-            ShowError("Error parsing POV XML file: fullsinglescreen is nullptr");
-            xmlDoc.clear();
+            ShowError("Error parsing POV XML file: 'fullsinglescreen' is missing");
+            xmlDoc.Clear();
             return;
         }
-        sscanf_s(fullsinglescreen->first_node("inclination")->value(), "%f", &m_BG_inclination[BG_FSS]);
-        sscanf_s(fullsinglescreen->first_node("fov")->value(), "%f", &m_BG_FOV[BG_FSS]);
-        sscanf_s(fullsinglescreen->first_node("layback")->value(), "%f", &m_BG_layback[BG_FSS]);
-        sscanf_s(fullsinglescreen->first_node("rotation")->value(), "%f", &m_BG_rotation[BG_FSS]);
-        sscanf_s(fullsinglescreen->first_node("xscale")->value(), "%f", &m_BG_scalex[BG_FSS]);
-        sscanf_s(fullsinglescreen->first_node("yscale")->value(), "%f", &m_BG_scaley[BG_FSS]);
-        sscanf_s(fullsinglescreen->first_node("zscale")->value(), "%f", &m_BG_scalez[BG_FSS]);
-        sscanf_s(fullsinglescreen->first_node("xoffset")->value(), "%f", &m_BG_xlatex[BG_FSS]);
-        sscanf_s(fullsinglescreen->first_node("yoffset")->value(), "%f", &m_BG_xlatey[BG_FSS]);
-        sscanf_s(fullsinglescreen->first_node("zoffset")->value(), "%f", &m_BG_xlatez[BG_FSS]);
+        sscanf_s(fullsinglescreen->FirstChildElement("inclination")->GetText(), "%f", &m_BG_inclination[BG_FSS]);
+        sscanf_s(fullsinglescreen->FirstChildElement("fov")->GetText(), "%f", &m_BG_FOV[BG_FSS]);
+        sscanf_s(fullsinglescreen->FirstChildElement("layback")->GetText(), "%f", &m_BG_layback[BG_FSS]);
+        sscanf_s(fullsinglescreen->FirstChildElement("rotation")->GetText(), "%f", &m_BG_rotation[BG_FSS]);
+        sscanf_s(fullsinglescreen->FirstChildElement("xscale")->GetText(), "%f", &m_BG_scalex[BG_FSS]);
+        sscanf_s(fullsinglescreen->FirstChildElement("yscale")->GetText(), "%f", &m_BG_scaley[BG_FSS]);
+        sscanf_s(fullsinglescreen->FirstChildElement("zscale")->GetText(), "%f", &m_BG_scalez[BG_FSS]);
+        sscanf_s(fullsinglescreen->FirstChildElement("xoffset")->GetText(), "%f", &m_BG_xlatex[BG_FSS]);
+        sscanf_s(fullsinglescreen->FirstChildElement("yoffset")->GetText(), "%f", &m_BG_xlatey[BG_FSS]);
+        sscanf_s(fullsinglescreen->FirstChildElement("zoffset")->GetText(), "%f", &m_BG_xlatez[BG_FSS]);
 
-        xml_node<>* custom = root->first_node("customsettings");
+        auto custom = root->FirstChildElement("customsettings");
         if (custom)
         {
-            xml_node<char> *node = custom->first_node("SSAA");
-            if (node) sscanf_s(node->value(), "%i", &m_useAA);
-            node = custom->first_node("postprocAA");
-            if (node) sscanf_s(node->value(), "%i", &m_useFXAA);
-            node = custom->first_node("ingameAO");
-            if (node) sscanf_s(node->value(), "%i", &m_useAO);
-            node = custom->first_node("ScSpReflect");
-            if (node) sscanf_s(node->value(), "%i", &m_useSSR);
-            node = custom->first_node("FPSLimiter");
-            if (node) sscanf_s(node->value(), "%i", &m_TableAdaptiveVSync);
-            node = custom->first_node("OverwriteDetailsLevel");
+            auto node = custom->FirstChildElement("SSAA");
+            if (node) sscanf_s(node->GetText(), "%i", &m_useAA);
+            node = custom->FirstChildElement("postprocAA");
+            if (node) sscanf_s(node->GetText(), "%i", &m_useFXAA);
+            node = custom->FirstChildElement("ingameAO");
+            if (node) sscanf_s(node->GetText(), "%i", &m_useAO);
+            node = custom->FirstChildElement("ScSpReflect");
+            if (node) sscanf_s(node->GetText(), "%i", &m_useSSR);
+            node = custom->FirstChildElement("FPSLimiter");
+            if (node) sscanf_s(node->GetText(), "%i", &m_TableAdaptiveVSync);
+            node = custom->FirstChildElement("OverwriteDetailsLevel");
             if (node)
             {
                 int value;
-                sscanf_s(node->value(), "%i", &value);
+                sscanf_s(node->GetText(), "%i", &value);
                 m_overwriteGlobalDetailLevel = (value == 1);
             }
-            node = custom->first_node("DetailsLevel");
-            if (node) sscanf_s(node->value(), "%i", &m_userDetailLevel);
-            node = custom->first_node("BallReflection");
-            if (node) sscanf_s(node->value(), "%i", &m_useReflectionForBalls);
-            node = custom->first_node("BallTrail");
-            if (node) sscanf_s(node->value(), "%i", &m_useTrailForBalls);
-            node = custom->first_node("BallTrailStrength");
-            if (node) sscanf_s(node->value(), "%f", &m_ballTrailStrength);
-            node = custom->first_node("OverwriteNightDay");
+            node = custom->FirstChildElement("DetailsLevel");
+            if (node) sscanf_s(node->GetText(), "%i", &m_userDetailLevel);
+            node = custom->FirstChildElement("BallReflection");
+            if (node) sscanf_s(node->GetText(), "%i", &m_useReflectionForBalls);
+            node = custom->FirstChildElement("BallTrail");
+            if (node) sscanf_s(node->GetText(), "%i", &m_useTrailForBalls);
+            node = custom->FirstChildElement("BallTrailStrength");
+            if (node) sscanf_s(node->GetText(), "%f", &m_ballTrailStrength);
+            node = custom->FirstChildElement("OverwriteNightDay");
             if (node)
             {
                 int value;
-                sscanf_s(node->value(), "%i", &value);
+                sscanf_s(node->GetText(), "%i", &value);
                 m_overwriteGlobalDayNight = (value == 1);
             }
-            node = custom->first_node("NightDayLevel");
+            node = custom->FirstChildElement("NightDayLevel");
             if (node)
             {
                 int value;
-                sscanf_s(node->value(), "%i", &value);
+                sscanf_s(node->GetText(), "%i", &value);
                 SetGlobalEmissionScale(value);
             }
-            node = custom->first_node("GameplayDifficulty");
+            node = custom->FirstChildElement("GameplayDifficulty");
             if (node)
             {
                 float value;
-                sscanf_s(node->value(), "%f", &value);
+                sscanf_s(node->GetText(), "%f", &value);
                 SetGlobalDifficulty(value);
             }
-            node = custom->first_node("PhysicsSet");
-            if (node) sscanf_s(node->value(), "%i", &m_overridePhysics);
-            node = custom->first_node("IncludeFlipperPhysics");
+            node = custom->FirstChildElement("PhysicsSet");
+            if (node) sscanf_s(node->GetText(), "%i", &m_overridePhysics);
+            node = custom->FirstChildElement("IncludeFlipperPhysics");
             if (node)
             {
                 int value;
-                sscanf_s(node->value(), "%i", &value);
+                sscanf_s(node->GetText(), "%i", &value);
                 m_overridePhysicsFlipper = (value == 1);
             }
-            node = custom->first_node("SoundVolume");
+            node = custom->FirstChildElement("SoundVolume");
             if (node) 
             {
                 int value;
-                sscanf_s(node->value(), "%i", &value);
+                sscanf_s(node->GetText(), "%i", &value);
                 SetTableSoundVolume(value);
             }
-            node = custom->first_node("MusicVolume");
+            node = custom->FirstChildElement("MusicVolume");
             if (node)
             {
                 int value;
-                sscanf_s(node->value(), "%i", &value);
+                sscanf_s(node->GetText(), "%i", &value);
                 SetTableMusicVolume(value);
             }
         }
@@ -6072,14 +6073,15 @@ void PinTable::ImportBackdropPOV(const string& filename)
          ShowError("Error parsing POV XML file");
     }
 
-    xmlDoc.clear();
+    xmlDoc.Clear();
+
     // update properties UI
     m_vpinball->SetPropSel(m_vmultisel); 
 }
 
 void PinTable::ExportBackdropPOV(const string& filename)
 {
-	string povFileName;
+   string povFileName;
 	if (filename.empty())
 	{
 		OPENFILENAME ofn = {};
@@ -6109,217 +6111,116 @@ void PinTable::ExportBackdropPOV(const string& filename)
 	else
 		povFileName = filename;
 
-    xml_document<> xmlDoc;
+   tinyxml2::XMLDocument xmlDoc;
+
     try
     {
-        xml_node<>*dcl = xmlDoc.allocate_node(node_declaration);
-        dcl->append_attribute(xmlDoc.allocate_attribute("version", "1.0"));
-        dcl->append_attribute(xmlDoc.allocate_attribute("encoding", "utf-8"));
-        xmlDoc.append_node(dcl);
+      auto root = xmlDoc.NewElement("POV");
+      for (int i = 0; i < 3; i++)
+      {
+         auto view = xmlDoc.NewElement(i == 0 ? "desktop" : i == 1 ? "fullscreen" : "fullsinglescreen");
+         auto node = xmlDoc.NewElement("inclination");
+         node->SetText(m_BG_inclination[i]);
+         view->InsertEndChild(node);
+         node = xmlDoc.NewElement("fov");
+         node->SetText(m_BG_FOV[i]);
+         view->InsertEndChild(node);
+         node = xmlDoc.NewElement("layback");
+         node->SetText(m_BG_layback[i]);
+         view->InsertEndChild(node);
+         node = xmlDoc.NewElement("rotation");
+         node->SetText(m_BG_rotation[i]);
+         view->InsertEndChild(node);
+         node = xmlDoc.NewElement("xscale");
+         node->SetText(m_BG_scalex[i]);
+         view->InsertEndChild(node);
+         node = xmlDoc.NewElement("yscale");
+         node->SetText(m_BG_scaley[i]);
+         view->InsertEndChild(node);
+         node = xmlDoc.NewElement("zscale");
+         node->SetText(m_BG_scalez[i]);
+         view->InsertEndChild(node);
+         node = xmlDoc.NewElement("xoffset");
+         node->SetText(m_BG_xlatex[i]);
+         view->InsertEndChild(node);
+         node = xmlDoc.NewElement("yoffset");
+         node->SetText(m_BG_xlatey[i]);
+         view->InsertEndChild(node);
+         node = xmlDoc.NewElement("zoffset");
+         node->SetText(m_BG_xlatez[i]);
+         view->InsertEndChild(node);
+         root->InsertEndChild(view);
+      }
 
-        //root node
-        xml_node<>*root = xmlDoc.allocate_node(node_element, "POV");
+      auto custom = xmlDoc.NewElement("customsettings");
+      auto node = xmlDoc.NewElement("SSAA");
+      node->SetText(m_useAA);
+      custom->InsertEndChild(node);
+      node = xmlDoc.NewElement("postprocAA");
+      node->SetText(m_useFXAA);
+      custom->InsertEndChild(node);
+      node = xmlDoc.NewElement("ingameAO");
+      node->SetText(m_useAO);
+      custom->InsertEndChild(node);
+      node = xmlDoc.NewElement("ScSpReflect");
+      node->SetText(m_useSSR);
+      custom->InsertEndChild(node);
+      node = xmlDoc.NewElement("FPSLimiter");
+      node->SetText(m_TableAdaptiveVSync);
+      custom->InsertEndChild(node);
+      node = xmlDoc.NewElement("OverwriteDetailsLevel");
+      node->SetText(m_overwriteGlobalDetailLevel ? 1 : 0);
+      custom->InsertEndChild(node);
+      node = xmlDoc.NewElement("DetailsLevel");
+      node->SetText(m_userDetailLevel);
+      custom->InsertEndChild(node);
+      node = xmlDoc.NewElement("BallReflection");
+      node->SetText(m_useReflectionForBalls);
+      custom->InsertEndChild(node);
+      node = xmlDoc.NewElement("BallTrail");
+      node->SetText(m_useTrailForBalls);
+      custom->InsertEndChild(node);
+      node = xmlDoc.NewElement("BallTrailStrength");
+      node->SetText(m_ballTrailStrength);
+      custom->InsertEndChild(node);
+      node = xmlDoc.NewElement("OverwriteNightDay");
+      node->SetText(m_overwriteGlobalDayNight ? 1 : 0);
+      custom->InsertEndChild(node);
+      node = xmlDoc.NewElement("NightDayLevel");
+      node->SetText(GetGlobalEmissionScale());
+      custom->InsertEndChild(node);
+      node = xmlDoc.NewElement("GameplayDifficulty");
+      node->SetText(GetGlobalDifficulty());
+      custom->InsertEndChild(node);
+      node = xmlDoc.NewElement("PhysicsSet");
+      node->SetText(m_overridePhysics);
+      custom->InsertEndChild(node);
+      node = xmlDoc.NewElement("IncludeFlipperPhysics");
+      node->SetText(m_overridePhysicsFlipper ? 1 : 0);
+      custom->InsertEndChild(node);
+      node = xmlDoc.NewElement("SoundVolume");
+      node->SetText(GetTableSoundVolume());
+      custom->InsertEndChild(node);
+      node = xmlDoc.NewElement("MusicVolume");
+      node->SetText(GetTableMusicVolume());
+      custom->InsertEndChild(node);
+      root->InsertEndChild(custom);
 
-        char strBuf[MAX_PATH];
-        xml_node<>*desktop = xmlDoc.allocate_node(node_element, "desktop");
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_inclination[BG_DESKTOP]);
-        const string dti(strBuf);
-        xml_node<>*dtIncl = xmlDoc.allocate_node(node_element, "inclination", dti.c_str());
-        desktop->append_node(dtIncl);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_FOV[BG_DESKTOP]);
-        const string dtf(strBuf);
-        xml_node<>*dtFov = xmlDoc.allocate_node(node_element, "fov", dtf.c_str());
-        desktop->append_node(dtFov);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_layback[BG_DESKTOP]);
-        const string dtl(strBuf);
-        xml_node<>*dtLayback = xmlDoc.allocate_node(node_element, "layback", dtl.c_str());
-        desktop->append_node(dtLayback);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_rotation[BG_DESKTOP]);
-        const string dtr(strBuf);
-        xml_node<>*dtRotation = xmlDoc.allocate_node(node_element, "rotation", dtr.c_str());
-        desktop->append_node(dtRotation);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_scalex[BG_DESKTOP]);
-        const string dtsx(strBuf);
-        xml_node<>*dtScalex = xmlDoc.allocate_node(node_element, "xscale", dtsx.c_str());
-        desktop->append_node(dtScalex);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_scaley[BG_DESKTOP]);
-        const string dtsy(strBuf);
-        xml_node<>*dtScaley = xmlDoc.allocate_node(node_element, "yscale", dtsy.c_str());
-        desktop->append_node(dtScaley);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_scalez[BG_DESKTOP]);
-        const string dtsz(strBuf);
-        xml_node<>*dtScalez = xmlDoc.allocate_node(node_element, "zscale", dtsz.c_str());
-        desktop->append_node(dtScalez);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_xlatex[BG_DESKTOP]);
-        const string dtox(strBuf);
-        xml_node<>*dtOffsetx = xmlDoc.allocate_node(node_element, "xoffset", dtox.c_str());
-        desktop->append_node(dtOffsetx);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_xlatey[BG_DESKTOP]);
-        const string dtoy(strBuf);
-        xml_node<>*dtOffsety = xmlDoc.allocate_node(node_element, "yoffset", dtoy.c_str());
-        desktop->append_node(dtOffsety);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_xlatez[BG_DESKTOP]);
-        const string dtoz(strBuf);
-        xml_node<>*dtOffsetz = xmlDoc.allocate_node(node_element, "zoffset", dtoz.c_str());
-        desktop->append_node(dtOffsetz);
+        xmlDoc.InsertEndChild(xmlDoc.NewDeclaration());
+        xmlDoc.InsertEndChild(root);
 
-        root->append_node(desktop);
+        tinyxml2::XMLPrinter prn;
+        xmlDoc.Print(&prn);
 
-        xml_node<>*fullscreen = xmlDoc.allocate_node(node_element, "fullscreen");
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_inclination[BG_FULLSCREEN]);
-        const string fsi(strBuf);
-        xml_node<>*fsIncl = xmlDoc.allocate_node(node_element, "inclination", fsi.c_str());
-        fullscreen->append_node(fsIncl);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_FOV[BG_FULLSCREEN]);
-        const string fsf(strBuf);
-        xml_node<>*fsFov = xmlDoc.allocate_node(node_element, "fov", fsf.c_str());
-        fullscreen->append_node(fsFov);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_layback[BG_FULLSCREEN]);
-        const string fsl(strBuf);
-        xml_node<>*fsLayback = xmlDoc.allocate_node(node_element, "layback", fsl.c_str());
-        fullscreen->append_node(fsLayback);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_rotation[BG_FULLSCREEN]);
-        const string fsr(strBuf);
-        xml_node<>*fsRotation = xmlDoc.allocate_node(node_element, "rotation", fsr.c_str());
-        fullscreen->append_node(fsRotation);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_scalex[BG_FULLSCREEN]);
-        const string fssx(strBuf);
-        xml_node<>*fsScalex = xmlDoc.allocate_node(node_element, "xscale", fssx.c_str());
-        fullscreen->append_node(fsScalex);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_scaley[BG_FULLSCREEN]);
-        const string fssy(strBuf);
-        xml_node<>*fsScaley = xmlDoc.allocate_node(node_element, "yscale", fssy.c_str());
-        fullscreen->append_node(fsScaley);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_scalez[BG_FULLSCREEN]);
-        const string fssz(strBuf);
-        xml_node<>*fsScalez = xmlDoc.allocate_node(node_element, "zscale", fssz.c_str());
-        fullscreen->append_node(fsScalez);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_xlatex[BG_FULLSCREEN]);
-        const string fsox(strBuf);
-        xml_node<>*fsOffsetx = xmlDoc.allocate_node(node_element, "xoffset", fsox.c_str());
-        fullscreen->append_node(fsOffsetx);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_xlatey[BG_FULLSCREEN]);
-        const string fsoy(strBuf);
-        xml_node<>*fsOffsety = xmlDoc.allocate_node(node_element, "yoffset", fsoy.c_str());
-        fullscreen->append_node(fsOffsety);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_xlatez[BG_FULLSCREEN]);
-        const string fsoz(strBuf);
-        xml_node<>*fsOffsetz = xmlDoc.allocate_node(node_element, "zoffset", fsoz.c_str());
-        fullscreen->append_node(fsOffsetz);
-
-        root->append_node(fullscreen);
-
-        xml_node<>*fullsinglescreen = xmlDoc.allocate_node(node_element, "fullsinglescreen");
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_inclination[BG_FSS]);
-        const string fssi(strBuf);
-        xml_node<>*fssIncl = xmlDoc.allocate_node(node_element, "inclination", fssi.c_str());
-        fullsinglescreen->append_node(fssIncl);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_FOV[BG_FSS]);
-        const string fssf(strBuf);
-        xml_node<>*fssFov = xmlDoc.allocate_node(node_element, "fov", fssf.c_str());
-        fullsinglescreen->append_node(fssFov);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_layback[BG_FSS]);
-        const string fssl(strBuf);
-        xml_node<>*fssLayback = xmlDoc.allocate_node(node_element, "layback", fssl.c_str());
-        fullsinglescreen->append_node(fssLayback);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_rotation[BG_FSS]);
-        const string fssr(strBuf);
-        xml_node<>*fssRotation = xmlDoc.allocate_node(node_element, "rotation", fssr.c_str());
-        fullsinglescreen->append_node(fssRotation);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_scalex[BG_FSS]);
-        const string fsssx(strBuf);
-        xml_node<>*fssScalex = xmlDoc.allocate_node(node_element, "xscale", fsssx.c_str());
-        fullsinglescreen->append_node(fssScalex);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_scaley[BG_FSS]);
-        const string fsssy(strBuf);
-        xml_node<>*fssScaley = xmlDoc.allocate_node(node_element, "yscale", fsssy.c_str());
-        fullsinglescreen->append_node(fssScaley);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_scalez[BG_FSS]);
-        const string fsssz(strBuf);
-        xml_node<>*fssScalez = xmlDoc.allocate_node(node_element, "zscale", fsssz.c_str());
-        fullsinglescreen->append_node(fssScalez);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_xlatex[BG_FSS]);
-        const string fssox(strBuf);
-        xml_node<>*fssOffsetx = xmlDoc.allocate_node(node_element, "xoffset", fssox.c_str());
-        fullsinglescreen->append_node(fssOffsetx);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_xlatey[BG_FSS]);
-        const string fssoy(strBuf);
-        xml_node<>*fssOffsety = xmlDoc.allocate_node(node_element, "yoffset", fssoy.c_str());
-        fullsinglescreen->append_node(fssOffsety);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_BG_xlatez[BG_FSS]);
-        const string fssoz(strBuf);
-        xml_node<>*fssOffsetz = xmlDoc.allocate_node(node_element, "zoffset", fssoz.c_str());
-        fullsinglescreen->append_node(fssOffsetz);
-
-        root->append_node(fullsinglescreen);
-
-        xml_node<>* custom = xmlDoc.allocate_node(node_element, "customsettings");
-        const std::string cuaa = std::to_string(m_useAA);
-        xml_node<>* userSSAA = xmlDoc.allocate_node(node_element, "SSAA", cuaa.c_str());
-        custom->append_node(userSSAA);
-        const std::string cufxaa = std::to_string(m_useFXAA);
-        xml_node<>* userFXAA = xmlDoc.allocate_node(node_element, "postprocAA", cufxaa.c_str());
-        custom->append_node(userFXAA);
-        const std::string cuao = std::to_string(m_useAO);
-        xml_node<>* userAO = xmlDoc.allocate_node(node_element, "ingameAO", cuao.c_str());
-        custom->append_node(userAO);
-        const std::string cussr = std::to_string(m_useSSR);
-        xml_node<>* userSSR = xmlDoc.allocate_node(node_element, "ScSpReflect", cussr.c_str());
-        custom->append_node(userSSR);
-        const std::string cfps = std::to_string(m_TableAdaptiveVSync);
-        xml_node<>* userFpsLimit = xmlDoc.allocate_node(node_element, "FPSLimiter", cfps.c_str());
-        custom->append_node(userFpsLimit);
-        const std::string codl = std::to_string(m_overwriteGlobalDetailLevel);
-        xml_node<>* userOverwriteDetail = xmlDoc.allocate_node(node_element, "OverwriteDetailsLevel", codl.c_str());
-        custom->append_node(userOverwriteDetail);
-        const std::string cudl = std::to_string(m_userDetailLevel);
-        xml_node<>* userDetail = xmlDoc.allocate_node(node_element, "DetailsLevel", cudl.c_str());
-        custom->append_node(userDetail);
-        const std::string curb = std::to_string(m_useReflectionForBalls);
-        xml_node<>* userReflectBall = xmlDoc.allocate_node(node_element, "BallReflection", curb.c_str());
-        custom->append_node(userReflectBall);
-        const std::string cutb = std::to_string(m_useTrailForBalls);
-        xml_node<>* userTrailBalls = xmlDoc.allocate_node(node_element, "BallTrail", cutb.c_str());
-        custom->append_node(userTrailBalls);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", m_ballTrailStrength);
-        const std::string cubs(strBuf);
-        xml_node<>* userTrailStrength = xmlDoc.allocate_node(node_element, "BallTrailStrength", cubs.c_str());
-        custom->append_node(userTrailStrength);
-        const std::string codn = std::to_string(m_overwriteGlobalDayNight);
-        xml_node<>* userOverwriteDayNight = xmlDoc.allocate_node(node_element, "OverwriteNightDay", codn.c_str());
-        custom->append_node(userOverwriteDayNight);
-        const std::string cndl = std::to_string(GetGlobalEmissionScale());
-        xml_node<>* userDayNight = xmlDoc.allocate_node(node_element, "NightDayLevel", cndl.c_str());
-        custom->append_node(userDayNight);
-        sprintf_s(strBuf, sizeof(strBuf), "%f", GetGlobalDifficulty());
-        const std::string cgd(strBuf);
-        xml_node<>* userDifficutly = xmlDoc.allocate_node(node_element, "GameplayDifficulty", cgd.c_str());
-        custom->append_node(userDifficutly);
-        const std::string cop = std::to_string(m_overridePhysics);
-        xml_node<>* userPhysics = xmlDoc.allocate_node(node_element, "PhysicsSet", cop.c_str());
-        custom->append_node(userPhysics);
-        const std::string copf = std::to_string(m_overridePhysicsFlipper);
-        xml_node<>* userFlipperPhysics = xmlDoc.allocate_node(node_element, "IncludeFlipperPhysics", copf.c_str());
-        custom->append_node(userFlipperPhysics);
-        const std::string cusv = std::to_string(GetTableSoundVolume());
-        xml_node<>* userSoundVol = xmlDoc.allocate_node(node_element, "SoundVolume", cusv.c_str()); 
-        custom->append_node(userSoundVol);
-        const std::string cumv = std::to_string(GetTableMusicVolume());
-        xml_node<>* userMusicVol = xmlDoc.allocate_node(node_element, "MusicVolume", cumv.c_str());
-        custom->append_node(userMusicVol);
-
-        root->append_node(custom);
-
-        xmlDoc.append_node(root);
         std::ofstream myfile(povFileName);
-        myfile << xmlDoc;
+        myfile << prn.CStr();
         myfile.close();
     }
     catch (...)
     {
         ShowError("Error exporting POV settings!");
     }
-    xmlDoc.clear();
+    xmlDoc.Clear();
 }
 
 void PinTable::SelectItem(IScriptable *piscript)
@@ -9629,7 +9530,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 
 void PinTable::ImportVPP(const string& filename)
 {
-   xml_document<> xmlDoc;
+   tinyxml2::XMLDocument xmlDoc;
    float FlipperPhysicsMass, FlipperPhysicsStrength, FlipperPhysicsElasticity, FlipperPhysicsScatter, FlipperPhysicsTorqueDamping, FlipperPhysicsTorqueDampingAngle, FlipperPhysicsReturnStrength, FlipperPhysicsElasticityFalloff, FlipperPhysicsFriction, FlipperPhysicsCoilRampUp;
    try
    {
@@ -9637,18 +9538,23 @@ void PinTable::ImportVPP(const string& filename)
       std::ifstream myFile(filename);
       buffer << myFile.rdbuf();
       myFile.close();
+      auto xml = buffer.str();
 
-      xmlDoc.parse<0>((char*)buffer.str().c_str());
-      xml_node<> *root = xmlDoc.first_node("physics");
-      xml_node<> *physTab = root->first_node("table");
-      xml_node<> *physFlip = root->first_node("flipper");
+      if (xmlDoc.Parse(xml.c_str(), xml.size()))
+      {
+         ShowError("Error parsing VPP XML file");
+         return;
+      }
+      auto root = xmlDoc.FirstChildElement("physics");
+      auto physTab = root->FirstChildElement("table");
+      auto physFlip = root->FirstChildElement("flipper");
 
       char str[16];
       float val;
 
-      if(physTab->first_node("gravityConstant") != nullptr)
+      if(physTab->FirstChildElement("gravityConstant") != nullptr)
       {
-          strncpy_s(str, physTab->first_node("gravityConstant")->value(), sizeof(str)-1);
+          strncpy_s(str, physTab->FirstChildElement("gravityConstant")->GetText(), sizeof(str)-1);
           sscanf_s(str, "%f", &val);
           put_Gravity(val);
       }
@@ -9656,54 +9562,54 @@ void PinTable::ImportVPP(const string& filename)
           ShowError("gravityConstant is missing");
 
 
-      if (physTab->first_node("contactFriction") != nullptr)
+      if (physTab->FirstChildElement("contactFriction") != nullptr)
       {
-          strncpy_s(str, physTab->first_node("contactFriction")->value(), sizeof(str)-1);
+          strncpy_s(str, physTab->FirstChildElement("contactFriction")->GetText(), sizeof(str)-1);
           sscanf_s(str, "%f", &val);
           put_Friction(val);
       }
       else
           ShowError("contactFriction is missing");
 
-      if (physTab->first_node("elasticity") != nullptr)
+      if (physTab->FirstChildElement("elasticity") != nullptr)
       {
-          strncpy_s(str, physTab->first_node("elasticity")->value(), sizeof(str)-1);
+          strncpy_s(str, physTab->FirstChildElement("elasticity")->GetText(), sizeof(str)-1);
           sscanf_s(str, "%f", &val);
           put_Elasticity(val);
       }
       else
           ShowError("elasticity is missing");
 
-      if (physTab->first_node("elasticityFalloff") != nullptr)
+      if (physTab->FirstChildElement("elasticityFalloff") != nullptr)
       {
-          strncpy_s(str, physTab->first_node("elasticityFalloff")->value(), sizeof(str)-1);
+          strncpy_s(str, physTab->FirstChildElement("elasticityFalloff")->GetText(), sizeof(str)-1);
           sscanf_s(str, "%f", &val);
           put_ElasticityFalloff(val);
       }
       else
           ShowError("elasticityFalloff is missing");
 
-      if (physTab->first_node("playfieldScatter") != nullptr)
+      if (physTab->FirstChildElement("playfieldScatter") != nullptr)
       {
-          strncpy_s(str, physTab->first_node("playfieldScatter")->value(), sizeof(str)-1);
+          strncpy_s(str, physTab->FirstChildElement("playfieldScatter")->GetText(), sizeof(str)-1);
           sscanf_s(str, "%f", &val);
           put_Scatter(val);
       }
       else
           ShowError("playfieldScatter is missing");
 
-      if (physTab->first_node("defaultElementScatter") != nullptr)
+      if (physTab->FirstChildElement("defaultElementScatter") != nullptr)
       {
-          strncpy_s(str, physTab->first_node("defaultElementScatter")->value(), sizeof(str)-1);
+          strncpy_s(str, physTab->FirstChildElement("defaultElementScatter")->GetText(), sizeof(str)-1);
           sscanf_s(str, "%f", &val);
           put_DefaultScatter(val);
       }
       else
           ShowError("defaultElementScatter is missing");
 
-      if (physTab->first_node("playfieldminslope") != nullptr)
+      if (physTab->FirstChildElement("playfieldminslope") != nullptr)
       {
-          strncpy_s(str, physTab->first_node("playfieldminslope")->value(), sizeof(str)-1);
+          strncpy_s(str, physTab->FirstChildElement("playfieldminslope")->GetText(), sizeof(str)-1);
           sscanf_s(str, "%f", &val);
           put_SlopeMin(val);
       }
@@ -9711,9 +9617,9 @@ void PinTable::ImportVPP(const string& filename)
       //    ShowError("playfieldminslope is missing"); //was added lateron, so don't error
           put_SlopeMin(DEFAULT_TABLE_MIN_SLOPE);
 
-      if (physTab->first_node("playfieldmaxslope") != nullptr)
+      if (physTab->FirstChildElement("playfieldmaxslope") != nullptr)
       {
-          strncpy_s(str, physTab->first_node("playfieldmaxslope")->value(), sizeof(str)-1);
+          strncpy_s(str, physTab->FirstChildElement("playfieldmaxslope")->GetText(), sizeof(str)-1);
           sscanf_s(str, "%f", &val);
           put_SlopeMax(val);
       }
@@ -9721,9 +9627,9 @@ void PinTable::ImportVPP(const string& filename)
       //    ShowError("playfieldmaxslope is missing"); //was added lateron, so don't error
           put_SlopeMax(DEFAULT_TABLE_MAX_SLOPE);
 
-      if(physFlip->first_node("speed") != nullptr)
+      if(physFlip->FirstChildElement("speed") != nullptr)
       {
-          strncpy_s(str, physFlip->first_node("speed")->value(), sizeof(str)-1);
+          strncpy_s(str, physFlip->FirstChildElement("speed")->GetText(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsMass);
       }
       else
@@ -9732,9 +9638,9 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsMass = 0.0f;
       }
 
-      if(physFlip->first_node("strength") != nullptr)
+      if(physFlip->FirstChildElement("strength") != nullptr)
       {
-          strncpy_s(str, physFlip->first_node("strength")->value(), sizeof(str)-1);
+          strncpy_s(str, physFlip->FirstChildElement("strength")->GetText(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsStrength);
       }
       else
@@ -9743,9 +9649,9 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsStrength = 0.0f;
       }
 
-      if(physFlip->first_node("elasticity") != nullptr)
+      if(physFlip->FirstChildElement("elasticity") != nullptr)
       {
-          strncpy_s(str, physFlip->first_node("elasticity")->value(), sizeof(str)-1);
+          strncpy_s(str, physFlip->FirstChildElement("elasticity")->GetText(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsElasticity);
       }
       else
@@ -9754,9 +9660,9 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsElasticity = 0.0f;
       }
 
-      if(physFlip->first_node("scatter") != nullptr)
+      if(physFlip->FirstChildElement("scatter") != nullptr)
       {
-          strncpy_s(str, physFlip->first_node("scatter")->value(), sizeof(str)-1);
+          strncpy_s(str, physFlip->FirstChildElement("scatter")->GetText(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsScatter);
       }
       else
@@ -9765,9 +9671,9 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsScatter = 0.0f;
       }
 
-      if(physFlip->first_node("eosTorque") != nullptr)
+      if(physFlip->FirstChildElement("eosTorque") != nullptr)
       {
-          strncpy_s(str, physFlip->first_node("eosTorque")->value(), sizeof(str)-1);
+          strncpy_s(str, physFlip->FirstChildElement("eosTorque")->GetText(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsTorqueDamping);
       }
       else
@@ -9776,9 +9682,9 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsTorqueDamping = 0.0f;
       }
 
-      if(physFlip->first_node("eosTorqueAngle") != nullptr)
+      if(physFlip->FirstChildElement("eosTorqueAngle") != nullptr)
       {
-          strncpy_s(str, physFlip->first_node("eosTorqueAngle")->value(), sizeof(str)-1);
+          strncpy_s(str, physFlip->FirstChildElement("eosTorqueAngle")->GetText(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsTorqueDampingAngle);
       }
       else
@@ -9788,9 +9694,9 @@ void PinTable::ImportVPP(const string& filename)
       }
 
 
-      if(physFlip->first_node("returnStrength") != nullptr)
+      if(physFlip->FirstChildElement("returnStrength") != nullptr)
       {
-          strncpy_s(str, physFlip->first_node("returnStrength")->value(), sizeof(str)-1);
+          strncpy_s(str, physFlip->FirstChildElement("returnStrength")->GetText(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsReturnStrength);
       }
       else
@@ -9800,9 +9706,9 @@ void PinTable::ImportVPP(const string& filename)
       }
 
 
-      if(physFlip->first_node("elasticityFalloff") != nullptr)
+      if(physFlip->FirstChildElement("elasticityFalloff") != nullptr)
       {
-          strncpy_s(str, physFlip->first_node("elasticityFalloff")->value(), sizeof(str)-1);
+          strncpy_s(str, physFlip->FirstChildElement("elasticityFalloff")->GetText(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsElasticityFalloff);
       }
       else
@@ -9811,9 +9717,9 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsElasticityFalloff = 0.0f;
       }
 
-      if(physFlip->first_node("friction") != nullptr)
+      if(physFlip->FirstChildElement("friction") != nullptr)
       {
-          strncpy_s(str, physFlip->first_node("friction")->value(), sizeof(str)-1);
+          strncpy_s(str, physFlip->FirstChildElement("friction")->GetText(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsFriction);
       }
       else
@@ -9822,9 +9728,9 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsFriction = 0.0f;
       }
 
-      if(physFlip->first_node("coilRampUp") != nullptr)
+      if(physFlip->FirstChildElement("coilRampUp") != nullptr)
       {
-          strncpy_s(str, physFlip->first_node("coilRampUp")->value(), sizeof(str)-1);
+          strncpy_s(str, physFlip->FirstChildElement("coilRampUp")->GetText(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsCoilRampUp);
       }
       else
@@ -9837,7 +9743,7 @@ void PinTable::ImportVPP(const string& filename)
    {
       ShowError("Error parsing physics settings file");
    }
-   xmlDoc.clear();
+   xmlDoc.Clear();
 
    for (size_t i = 0; i < m_vedit.size(); i++)
       if (m_vedit[i]->GetItemType() == eItemFlipper)
@@ -9913,110 +9819,107 @@ STDMETHODIMP PinTable::ExportPhysics()
        SaveValue(regKey[RegName::RecentDir], "PhysicsDir"s, newInitDir);
    }
 
-   xml_document<> xmlDoc;
-   xml_node<>*dcl = xmlDoc.allocate_node(node_declaration);
-   dcl->append_attribute(xmlDoc.allocate_attribute("version", "1.0"));
-   dcl->append_attribute(xmlDoc.allocate_attribute("encoding", "utf-8"));
-   xmlDoc.append_node(dcl);
+   tinyxml2::XMLDocument xmlDoc;
 
-   //root node
-   xml_node<>*root = xmlDoc.allocate_node(node_element, "physics");
-   xml_node<>*physFlip = xmlDoc.allocate_node(node_element, "flipper");
-   xml_node<>*physTab = xmlDoc.allocate_node(node_element, "table");
+   auto root = xmlDoc.NewElement("physics");
+   auto physFlip = xmlDoc.NewElement("flipper");
+   auto physTab = xmlDoc.NewElement("table");
 
    float val;
-   char fspeed[16], fstrength[16], felasticity[16], fscatter[16], ftorquedamping[16], ftorquedampingangle[16], freturn[16], felasticityFalloff[16], fFriction[16], fRampup[16];
 
    flipper->get_Mass(&val); // was speed
-   sprintf_s(fspeed, sizeof(fspeed), "%f", val);
-   xml_node<>*flipSpeed = xmlDoc.allocate_node(node_element, "speed", fspeed);
-   physFlip->append_node(flipSpeed);
+   auto node = xmlDoc.NewElement("speed");
+   node->SetText(val);
+   physFlip->InsertEndChild(node);
 
    flipper->get_Strength(&val);
-   sprintf_s(fstrength, sizeof(fstrength), "%f", val);
-   xml_node<>*flipPhysStrength = xmlDoc.allocate_node(node_element, "strength", fstrength);
-   physFlip->append_node(flipPhysStrength);
+   node = xmlDoc.NewElement("strength");
+   node->SetText(val);
+   physFlip->InsertEndChild(node);
 
    flipper->get_Elasticity(&val);
-   sprintf_s(felasticity, sizeof(felasticity), "%f", val);
-   xml_node<>*flipElasticity = xmlDoc.allocate_node(node_element, "elasticity", felasticity);
-   physFlip->append_node(flipElasticity);
+   node = xmlDoc.NewElement("elasticity");
+   node->SetText(val);
+   physFlip->InsertEndChild(node);
 
    flipper->get_Scatter(&val); // was scatter angle
-   sprintf_s(fscatter, sizeof(fscatter), "%f", val);
-   xml_node<>*flipScatter = xmlDoc.allocate_node(node_element, "scatter", fscatter);
-   physFlip->append_node(flipScatter);
+   node = xmlDoc.NewElement("scatter");
+   node->SetText(val);
+   physFlip->InsertEndChild(node);
 
    flipper->get_EOSTorque(&val);
-   sprintf_s(ftorquedamping, sizeof(ftorquedamping), "%f", val);
-   xml_node<>*flipTorqueDamping = xmlDoc.allocate_node(node_element, "eosTorque", ftorquedamping);
-   physFlip->append_node(flipTorqueDamping);
+   node = xmlDoc.NewElement("eosTorque");
+   node->SetText(val);
+   physFlip->InsertEndChild(node);
 
    flipper->get_EOSTorqueAngle(&val);
-   sprintf_s(ftorquedampingangle, sizeof(ftorquedampingangle), "%f", val);
-   xml_node<>*flipTorqueDampingAngle = xmlDoc.allocate_node(node_element, "eosTorqueAngle", ftorquedampingangle);
-   physFlip->append_node(flipTorqueDampingAngle);
+   node = xmlDoc.NewElement("eosTorqueAngle");
+   node->SetText(val);
+   physFlip->InsertEndChild(node);
 
    flipper->get_Return(&val);
-   sprintf_s(freturn, sizeof(freturn), "%f", val);
-   xml_node<>*flipReturnStrength = xmlDoc.allocate_node(node_element, "returnStrength", freturn);
-   physFlip->append_node(flipReturnStrength);
+   node = xmlDoc.NewElement("returnStrength");
+   node->SetText(val);
+   physFlip->InsertEndChild(node);
 
    flipper->get_ElasticityFalloff(&val);
-   sprintf_s(felasticityFalloff, sizeof(felasticityFalloff), "%f", val);
-   xml_node<>*flipElasticityFalloff = xmlDoc.allocate_node(node_element, "elasticityFalloff", felasticityFalloff);
-   physFlip->append_node(flipElasticityFalloff);
+   node = xmlDoc.NewElement("elasticityFalloff");
+   node->SetText(val);
+   physFlip->InsertEndChild(node);
 
    flipper->get_Friction(&val);
-   sprintf_s(fFriction, sizeof(fFriction), "%f", val);
-   xml_node<>*flipfriction = xmlDoc.allocate_node(node_element, "friction", fFriction);
-   physFlip->append_node(flipfriction);
+   node = xmlDoc.NewElement("friction");
+   node->SetText(val);
+   physFlip->InsertEndChild(node);
 
    flipper->get_RampUp(&val);
-   sprintf_s(fRampup, sizeof(fRampup), "%f", val);
-   xml_node<>*flipCoilRampUp = xmlDoc.allocate_node(node_element, "coilRampUp", fRampup);
-   physFlip->append_node(flipCoilRampUp);
-
-   char tgravity[16], tFriction[16], tDefaultScatter[16], telasticity[16], telasticityFallOff[16], tcontactScatter[16];
+   node = xmlDoc.NewElement("coilRampUp");
+   node->SetText(val);
+   physFlip->InsertEndChild(node);
 
    get_Gravity(&val);
-   sprintf_s(tgravity, sizeof(tgravity), "%f", val);
-   xml_node<>*tabGravityConst = xmlDoc.allocate_node(node_element, "gravityConstant", tgravity);
-   physTab->append_node(tabGravityConst);
+   node = xmlDoc.NewElement("gravityConstant");
+   node->SetText(val);
+   physTab->InsertEndChild(node);
 
    get_Friction(&val);
-   sprintf_s(tFriction, sizeof(tFriction), "%f", val);
-   xml_node<>*tabContactFriction = xmlDoc.allocate_node(node_element, "contactFriction", tFriction);
-   physTab->append_node(tabContactFriction);
+   node = xmlDoc.NewElement("contactFriction");
+   node->SetText(val);
+   physTab->InsertEndChild(node);
 
    get_Elasticity(&val);
-   sprintf_s(telasticity, sizeof(telasticity), "%f", val);
-   xml_node<>*tabElasticity = xmlDoc.allocate_node(node_element, "elasticity", telasticity);
-   physTab->append_node(tabElasticity);
+   node = xmlDoc.NewElement("elasticity");
+   node->SetText(val);
+   physTab->InsertEndChild(node);
 
    get_ElasticityFalloff(&val);
-   sprintf_s(telasticityFallOff, sizeof(telasticityFallOff), "%f", val);
-   xml_node<>*tabElasticityFalloff = xmlDoc.allocate_node(node_element, "elasticityFalloff", telasticityFallOff);
-   physTab->append_node(tabElasticityFalloff);
+   node = xmlDoc.NewElement("elasticityFalloff");
+   node->SetText(val);
+   physTab->InsertEndChild(node);
 
    get_DefaultScatter(&val);
-   sprintf_s(tDefaultScatter, sizeof(tDefaultScatter), "%f", val);
-   xml_node<>*tabScatterAngle = xmlDoc.allocate_node(node_element, "defaultElementScatter", tDefaultScatter);
-   physTab->append_node(tabScatterAngle);
+   node = xmlDoc.NewElement("defaultElementScatter");
+   node->SetText(val);
+   physTab->InsertEndChild(node);
 
    get_Scatter(&val);
-   sprintf_s(tcontactScatter, sizeof(tcontactScatter), "%f", val);
-   xml_node<>*tabContactScatterAngle = xmlDoc.allocate_node(node_element, "playfieldScatter", tcontactScatter);
-   physTab->append_node(tabContactScatterAngle);
+   node = xmlDoc.NewElement("playfieldScatter");
+   node->SetText(val);
+   physTab->InsertEndChild(node);
 
-   xml_node<>*settingName = xmlDoc.allocate_node(node_element, "name", m_szTitle.c_str());
-   root->append_node(settingName);
-   root->append_node(physTab);
-   root->append_node(physFlip);
-   xmlDoc.append_node(root);
+   auto settingName = xmlDoc.NewElement("name");
+   settingName->SetText(m_szTitle.c_str());
+   root->InsertEndChild(settingName);
+   root->InsertEndChild(physTab);
+   root->InsertEndChild(physFlip);
+   xmlDoc.InsertEndChild(xmlDoc.NewDeclaration());
+   xmlDoc.InsertEndChild(root);
+
+   tinyxml2::XMLPrinter prn;
+   xmlDoc.Print(&prn);
 
    std::ofstream myfile(ofn.lpstrFile);
-   myfile << xmlDoc;
+   myfile << prn.CStr();
    myfile.close();
 
    return S_OK;
