@@ -579,7 +579,6 @@ public:
          Sleep(THREADS_PAUSE); //wait for any threads to finish
 
          SaveXMLregistry(m_vpinball.m_szMyPath);
-         ClearXMLregistry();
       }
       return 0;
    }

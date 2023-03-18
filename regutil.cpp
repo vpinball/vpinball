@@ -3,22 +3,22 @@
 #define VP_REGKEY_GENERAL "Software\\Visual Pinball\\"
 #define VP_REGKEY "Software\\Visual Pinball\\VP10\\"
 
+#ifndef ENABLE_INI
 //#define ENABLE_INI
+#endif
+
 #ifdef ENABLE_INI
 //!! when to save registry? on dialog exits? on player start/end? on table load/unload? UI stuff?
 
-#include <rapidxml.hpp>
-#include <rapidxml_print.hpp>
+#include "tinyxml2\tinyxml2.h"
 #include <fstream>
 
-using namespace rapidxml;
-
-static xml_document<> xmlDoc;
-static xml_node<> *xmlNode[RegName::Num] = {};
+static tinyxml2::XMLDocument xmlDoc;
+static tinyxml2::XMLElement *xmlNode[RegName::Num] = {};
 static string xmlContent;
 
 // if ini does not exist yet, loop over reg values of each subkey and fill all in
-static void InitXMLnodeFromRegistry(xml_node<> *const node, const string &szPath)
+static void InitXMLnodeFromRegistry(tinyxml2::XMLElement *const node, const string &szPath)
 {
    HKEY hk;
    LONG res = RegOpenKeyEx(HKEY_CURRENT_USER, szPath.c_str(), 0, KEY_READ, &hk);
@@ -85,18 +85,13 @@ static void InitXMLnodeFromRegistry(xml_node<> *const node, const string &szPath
          assert(!"Bad RegKey");
       }
 
-      xml_node<> *vnode = node->first_node(szName);
-      if (vnode)
+      auto vnode = node->FirstChildElement(szName);
+      if (vnode == nullptr)
       {
-         delete[] vnode->value();
-         vnode->value(copy);
+         vnode = xmlDoc.NewElement(szName);
+         node->InsertEndChild(vnode);
       }
-      else
-      {
-         const char *const tmp = xmlDoc.allocate_string(szName);
-         vnode = xmlDoc.allocate_node(node_element, tmp, copy);
-         node->append_node(vnode);
-      }
+      vnode->SetValue(copy);
    }
 
    RegCloseKey(hk);
@@ -104,22 +99,12 @@ static void InitXMLnodeFromRegistry(xml_node<> *const node, const string &szPath
 
 void SaveXMLregistry(const string &path)
 {
-   std::ofstream myFile(path + "VPinballX.ini");
-   myFile << xmlDoc;
-   myFile.close();
-}
+   tinyxml2::XMLPrinter prn;
+   xmlDoc.Print(&prn);
 
-void ClearXMLregistry()
-{
-   // free self allocated strings
-   for (unsigned int i = 0; i < RegName::Num; ++i)
-   {
-      xml_node<> * const node = xmlNode[i];
-      for (xml_node<> *child = node->first_node(); child; child = child->next_sibling())
-      {
-         delete [] child->value();
-      }
-   }
+   std::ofstream myFile(path + "VPinballX.ini");
+   myFile << prn.CStr();
+   myFile.close();
 }
 
 void InitXMLregistry(const string &path)
@@ -135,35 +120,34 @@ void InitXMLregistry(const string &path)
    xmlContent = buffer.str();
    if (xmlContent.empty())
    {
-      xml_node<> *dcl = xmlDoc.allocate_node(node_declaration);
-      dcl->append_attribute(xmlDoc.allocate_attribute("version", "1.0"));
-      dcl->append_attribute(xmlDoc.allocate_attribute("encoding", "utf-8"));
-      xmlDoc.append_node(dcl);
+      xmlDoc.InsertEndChild(xmlDoc.NewDeclaration());
    }
    else
-      xmlDoc.parse<parse_declaration_node | parse_comment_nodes | parse_normalize_whitespace>((char*)xmlContent.c_str());
-
-   xmlNode[RegName::Controller] = xmlDoc.first_node(regKey[RegName::Controller].c_str());
-   if (!xmlNode[RegName::Controller])
    {
-      xmlNode[RegName::Controller] = xmlDoc.allocate_node(node_element, regKey[RegName::Controller].c_str());
-      xmlDoc.append_node(xmlNode[RegName::Controller]);
+      xmlDoc.Parse(xmlContent.c_str(), xmlContent.size());
    }
 
-   xml_node<> *root = xmlDoc.first_node("VP10");
+   xmlNode[RegName::Controller] = xmlDoc.FirstChildElement(regKey[RegName::Controller].c_str());
+   if (!xmlNode[RegName::Controller])
+   {
+      xmlNode[RegName::Controller] = xmlDoc.NewElement(regKey[RegName::Controller].c_str());
+      xmlDoc.InsertEndChild(xmlNode[RegName::Controller]);
+   }
+
+   auto root = xmlDoc.FirstChildElement("VP10");
    if (!root)
    {
-      root = xmlDoc.allocate_node(node_element, "VP10");
-      xmlDoc.append_node(root);
+      root = xmlDoc.NewElement("VP10");
+      xmlDoc.InsertEndChild(root);
    }
 
    for (unsigned int i = RegName::Controller+1; i < RegName::Num; ++i)
    {
-      xmlNode[i] = root->first_node(regKey[i].c_str());
+      xmlNode[i] = root->FirstChildElement(regKey[i].c_str());
       if (!xmlNode[i])
       {
-         xmlNode[i] = xmlDoc.allocate_node(node_element, regKey[i].c_str());
-         root->append_node(xmlNode[i]);
+         xmlNode[i] = xmlDoc.NewElement(regKey[i].c_str());
+         root->InsertEndChild(xmlNode[i]);
       }
    }
 
@@ -172,25 +156,24 @@ void InitXMLregistry(const string &path)
    {
       string regpath(i == 0 ? VP_REGKEY_GENERAL : VP_REGKEY);
       regpath += regKey[i];
-      xml_node<> *node = xmlNode[i];
+      auto node = xmlNode[i];
 
-      if (node->first_node() == nullptr)
+      if (node->FirstChildElement() == nullptr)
          InitXMLnodeFromRegistry(node, regpath); // does not exist in XML yet? -> load from registry
       else
-      for (xml_node<> *child = node->first_node(); child; child = child->next_sibling()) // exists? -> replace all text-entries (=internally allocated) via value(), with a self-allocated value(textcopy) so that we can overwrite it later-on more easily without leaking mem
+      for (auto child = node->FirstChildElement(); child; child = child->NextSiblingElement()) // exists? -> replace all text-entries (=internally allocated) via value(), with a self-allocated value(textcopy) so that we can overwrite it later-on more easily without leaking mem
       {
-         const char *const value = child->value();
+         const char *const value = child->Value();
          const size_t len = strlen(value)+1;
          char *const copy = new char[len];
          strcpy_s(copy, len, value);
-         child->value(copy);
+         child->SetValue(copy);
       }
    }
 }
 #else
 void InitXMLregistry(const string &path) {}
 void SaveXMLregistry(const string &path) {}
-void ClearXMLregistry() {}
 #endif
 
 static HRESULT LoadValue(const string &szKey, const string &szValue, DWORD &type, void *pvalue, DWORD size);
@@ -272,7 +255,7 @@ static HRESULT LoadValue(const string &szKey, const string &szValue, DWORD &type
    }
 
 #ifdef ENABLE_INI
-   xml_node<> *node = nullptr;
+   tinyxml2::XMLElement* node = nullptr;
    for (unsigned int i = 0; i < RegName::Num; ++i)
       if (szKey == regKey[i])
       {
@@ -286,10 +269,10 @@ static HRESULT LoadValue(const string &szKey, const string &szValue, DWORD &type
       return E_FAIL;
    }
 
-   node = node->first_node(szValue.c_str());
+   node = node->FirstChildElement(szValue.c_str());
    if (node)
    {
-      const char *const value = node->value();
+      const char *const value = node->Value();
       if (type == REG_SZ)
       {
          const DWORD len = (DWORD)strlen(value) + 1;
@@ -363,7 +346,7 @@ static HRESULT SaveValue(const string &szKey, const string &szValue, const DWORD
       return E_FAIL;
 
 #ifdef ENABLE_INI
-   xml_node<> *node = nullptr;
+   tinyxml2::XMLElement *node = nullptr;
    for (unsigned int i = 0; i < RegName::Num; ++i)
       if (szKey == regKey[i])
       {
@@ -402,18 +385,13 @@ static HRESULT SaveValue(const string &szKey, const string &szValue, const DWORD
       return E_FAIL;
    }
 
-   xml_node<> *vnode = node->first_node(szValue.c_str());
-   if (vnode)
+   auto vnode = node->FirstChildElement(szValue.c_str());
+   if (vnode == nullptr)
    {
-      delete[] vnode->value();
-      vnode->value(copy);
+      vnode = xmlDoc.NewElement(szValue.c_str());
+      node->InsertEndChild(vnode);
    }
-   else
-   {
-      const char *const tmp = xmlDoc.allocate_string(szValue.c_str());
-      vnode = xmlDoc.allocate_node(node_element, tmp, copy);
-      node->append_node(vnode);      
-   }
+   vnode->SetValue(copy);
 #endif
 
    string szPath(szKey == regKey[RegName::Controller] ? VP_REGKEY_GENERAL : VP_REGKEY);

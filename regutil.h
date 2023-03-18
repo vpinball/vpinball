@@ -49,7 +49,6 @@ static const string regKey[RegName::Num]
 
 void SaveXMLregistry(const string &path);
 void InitXMLregistry(const string &path);
-void ClearXMLregistry(); // clears self-allocated strings
 
 
 HRESULT LoadValue(const string &szKey, const string &zValue, string &buffer);
