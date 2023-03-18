@@ -5921,7 +5921,7 @@ void PinTable::ImportBackdropPOV(const string& filename)
         myFile.close();
         auto xml = buffer.str();
 
-        if (xmlDoc.Parse(xml.c_str(), xml.size()))
+        if (xmlDoc.Parse(xml.c_str()))
         {
            ShowError("Error parsing POV XML file");
            return;
@@ -9540,7 +9540,7 @@ void PinTable::ImportVPP(const string& filename)
       myFile.close();
       auto xml = buffer.str();
 
-      if (xmlDoc.Parse(xml.c_str(), xml.size()))
+      if (xmlDoc.Parse(xml.c_str()))
       {
          ShowError("Error parsing VPP XML file");
          return;

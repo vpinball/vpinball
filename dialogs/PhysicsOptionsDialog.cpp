@@ -377,7 +377,7 @@ bool PhysicsOptionsDialog::LoadSetting()
         buffer << myFile.rdbuf();
         myFile.close();
         auto xml = buffer.str();
-        if (xmlDoc.Parse(xml.c_str(), xml.size()))
+        if (xmlDoc.Parse(xml.c_str()))
         {
             ShowError("Error parsing VPP XML file");
             return false;

@@ -91,7 +91,7 @@ static void InitXMLnodeFromRegistry(tinyxml2::XMLElement *const node, const stri
          vnode = xmlDoc.NewElement(szName);
          node->InsertEndChild(vnode);
       }
-      vnode->SetValue(copy);
+      vnode->SetText(copy);
    }
 
    RegCloseKey(hk);
@@ -119,35 +119,46 @@ void InitXMLregistry(const string &path)
 
    xmlContent = buffer.str();
    if (xmlContent.empty())
-   {
       xmlDoc.InsertEndChild(xmlDoc.NewDeclaration());
-   }
    else
    {
-      xmlDoc.Parse(xmlContent.c_str(), xmlContent.size());
+      auto error = xmlDoc.Parse(xmlContent.c_str());
+      int zz = 1;
    }
 
    xmlNode[RegName::Controller] = xmlDoc.FirstChildElement(regKey[RegName::Controller].c_str());
-   if (!xmlNode[RegName::Controller])
+   if (xmlNode[RegName::Controller] == nullptr)
    {
       xmlNode[RegName::Controller] = xmlDoc.NewElement(regKey[RegName::Controller].c_str());
       xmlDoc.InsertEndChild(xmlNode[RegName::Controller]);
    }
 
    auto root = xmlDoc.FirstChildElement("VP10");
-   if (!root)
+   if (root == nullptr)
    {
       root = xmlDoc.NewElement("VP10");
       xmlDoc.InsertEndChild(root);
    }
-
-   for (unsigned int i = RegName::Controller+1; i < RegName::Num; ++i)
+   auto defProps = root->FirstChildElement("DefaultProps");
+   if (defProps == nullptr)
    {
-      xmlNode[i] = root->FirstChildElement(regKey[i].c_str());
-      if (!xmlNode[i])
+      defProps = xmlDoc.NewElement("DefaultProps");
+      root->InsertEndChild(defProps);
+   }
+   for (unsigned int i = RegName::Controller + 1; i < RegName::Num; ++i)
+   {
+      auto parent = root;
+      auto key = regKey[i];
+      if (key.find("\\") != string::npos)
       {
-         xmlNode[i] = xmlDoc.NewElement(regKey[i].c_str());
-         root->InsertEndChild(xmlNode[i]);
+         key = key.substr(key.find("\\") + 1);
+         parent = defProps;
+      }
+      xmlNode[i] = parent->FirstChildElement(key.c_str());
+      if (xmlNode[i] == nullptr)
+      {
+         xmlNode[i] = xmlDoc.NewElement(key.c_str());
+         parent->InsertEndChild(xmlNode[i]);
       }
    }
 
@@ -157,18 +168,8 @@ void InitXMLregistry(const string &path)
       string regpath(i == 0 ? VP_REGKEY_GENERAL : VP_REGKEY);
       regpath += regKey[i];
       auto node = xmlNode[i];
-
       if (node->FirstChildElement() == nullptr)
          InitXMLnodeFromRegistry(node, regpath); // does not exist in XML yet? -> load from registry
-      else
-      for (auto child = node->FirstChildElement(); child; child = child->NextSiblingElement()) // exists? -> replace all text-entries (=internally allocated) via value(), with a self-allocated value(textcopy) so that we can overwrite it later-on more easily without leaking mem
-      {
-         const char *const value = child->Value();
-         const size_t len = strlen(value)+1;
-         char *const copy = new char[len];
-         strcpy_s(copy, len, value);
-         child->SetValue(copy);
-      }
    }
 }
 #else
@@ -272,7 +273,7 @@ static HRESULT LoadValue(const string &szKey, const string &szValue, DWORD &type
    node = node->FirstChildElement(szValue.c_str());
    if (node)
    {
-      const char *const value = node->Value();
+      const char *const value = node->GetText();
       if (type == REG_SZ)
       {
          const DWORD len = (DWORD)strlen(value) + 1;
@@ -391,7 +392,7 @@ static HRESULT SaveValue(const string &szKey, const string &szValue, const DWORD
       vnode = xmlDoc.NewElement(szValue.c_str());
       node->InsertEndChild(vnode);
    }
-   vnode->SetValue(copy);
+   vnode->SetText(copy);
 #endif
 
    string szPath(szKey == regKey[RegName::Controller] ? VP_REGKEY_GENERAL : VP_REGKEY);
