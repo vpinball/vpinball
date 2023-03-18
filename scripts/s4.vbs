@@ -55,7 +55,7 @@ Private Sub s4ShowDips
 		With vpmDips
 			.AddForm  80, 290, "DIP Switches"
 			.AddFrame  0,0, 100,"Sound", 0,_
-			  Array("Dip 1",&H000000001,"Synth Sound",&H00000002)
+			  Array("Dip 1",&H00000001,"Synth Sound",&H00000002)
 			.AddFrame  0,50, 100,"Function / Data", 0,_
 				    Array("DIP F8 (1)" ,&H00000100,"DIP F7 (2)",&H00000200,"DIP F6 (4)",&H00000400,"DIP F5 (8)",&H00000800,_
 	    			      "DIP F4 (16)",&H00001000,"DIP F3",&H00002000,"DIP F2",&H00004000,"DIP F1",32768,_
@@ -114,7 +114,7 @@ Function vpmKeyUp(ByVal keycode)
 			Case keySlamDoorHit  .Switch(swSlamTilt)     = False
 			Case keyHiscoreReset .Switch(swHiScoreReset) = False
 			Case keyEnter        .Switch(swEnter)        = False
-			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
+			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyAddBall      .Pause = True : vpmAddBall  : .Pause = False
 			Case keyReset        .Stop : BeginModal : .Run : vpmTimer.Reset : EndModal

@@ -54,7 +54,7 @@ Private Sub s7ShowDips
 		With vpmDips
 			.AddForm  80, 60, "DIP Switches"
 			.AddFrame  0,0, 60,"Sound", 0,_
-		       Array("DIP 1",&H000000001,"DIP 2",&H00000002)
+		       Array("DIP 1",&H00000001,"DIP 2",&H00000002)
 			.AddFrame  0,45, 60,"Game", 0,_
 		       Array("DIP M8",&H00000100,"DIP M7",&H00000200,"DIP M6",&H00000400,"DIP M5",&H00000800,_
 			       "DIP M4",&H00001000,"DIP M3",&H00002000,"DIP M2",&H00004000,"DIP M1",32768,_
@@ -115,7 +115,7 @@ Function vpmKeyUp(ByVal keycode)
 			Case keySoundDiag    .Switch(swSoundDiag)   = False
 			Case keyMasterEnter  .Switch(swMasterEnter) = False
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = False
-			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
+			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyAddBall      .Pause = True : vpmAddBall  : .Pause = False
 			Case keyShowDips     If IsObject(vpmShowDips) Then .Pause = True : vpmShowDips : .Pause = False
