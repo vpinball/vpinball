@@ -985,6 +985,9 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
       m_vtable.push_back(ppt);
 
       ppt->m_szTitle = TitleFromFilename(szFileName);
+      const DWORD attr = GetFileAttributes(szFileName.c_str());
+      if ((attr != INVALID_FILE_ATTRIBUTES) && (attr & FILE_ATTRIBUTE_READONLY))
+         ppt->m_szTitle += " [READ ONLY]";
       ppt->InitTablePostLoad();
 
       AddMDITable(mdiTable);
