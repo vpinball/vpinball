@@ -9907,6 +9907,16 @@ STDMETHODIMP PinTable::ExportPhysics()
    node->SetText(val);
    physTab->InsertEndChild(node);
 
+   get_SlopeMin(&val);
+   node = xmlDoc.NewElement("playfieldminslope");
+   node->SetText(val);
+   physTab->InsertEndChild(node);
+
+   get_SlopeMax(&val);
+   node = xmlDoc.NewElement("playfieldmaxslope");
+   node->SetText(val);
+   physTab->InsertEndChild(node);
+
    auto settingName = xmlDoc.NewElement("name");
    settingName->SetText(m_szTitle.c_str());
    root->InsertEndChild(settingName);
