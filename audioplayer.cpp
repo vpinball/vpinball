@@ -45,7 +45,14 @@ AudioPlayer::AudioPlayer()
           DSAudioDevices DSads;
           if (!FAILED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
           {
-              if ((size_t)DSidx >= DSads.size() || DSads[DSidx]->guid != nullptr) // primary device has guid nullptr, so use BASS_idx = -1 in that case
+              if ((size_t)DSidx >= DSads.size())
+              {
+                 for (size_t i = 0; i < DSads.size(); i++)
+                    delete DSads[i];
+                 break;
+              }
+
+              if (DSads[DSidx]->guid != nullptr) // primary device has guid nullptr, so use BASS_idx = -1 in that case
               {
                   BASS_DEVICEINFO dinfo;
                   for (int i = 1; BASS_GetDeviceInfo(i, &dinfo); i++) // 0 = no sound/no device
