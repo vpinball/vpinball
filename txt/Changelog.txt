@@ -102,6 +102,8 @@ FIXES:
 
 - improve script editing performance again
 
+- fix crash if sound card(s) hardware/driver setup changed
+
 - update example tables with new raytraced ball shadows enabled
 
 - update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
@@ -127,6 +129,8 @@ FIXES:
 - fix Light Debugger dialog 2nd color button
 
 - improve script editing performance again
+
+- fix crash if sound card(s) hardware/driver setup changed
 
 - see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
 
