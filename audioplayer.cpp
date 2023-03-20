@@ -45,7 +45,7 @@ AudioPlayer::AudioPlayer()
           DSAudioDevices DSads;
           if (!FAILED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
           {
-              if ((size_t)DSidx >= DSads.size() || DSads[DSidx]->guid != nullptr) // primary device has guid nullptr, so use BASS_idx = -1 in that case
+              if ((size_t)DSidx < DSads.size() && DSads[DSidx]->guid != nullptr) // primary device has guid nullptr, so use BASS_idx = -1 in that case
               {
                   BASS_DEVICEINFO dinfo;
                   for (int i = 1; BASS_GetDeviceInfo(i, &dinfo); i++) // 0 = no sound/no device
@@ -78,9 +78,9 @@ AudioPlayer::AudioPlayer()
       if (!BASS_Init((idx == 0) ? bass_STD_idx : bass_BG_idx, 44100, (SoundMode3D != SNDCFG_SND3D2CH) && (idx == 0) ? 0 /*| BASS_DEVICE_MONO*/ /*| BASS_DEVICE_DSOUND*/ : 0, g_pvp->GetHwnd(), nullptr)) // note that sample rate is usually ignored and set depending on the input/file automatically
       {
          const int code = BASS_ErrorGetCode();
-         string bla2;
-         BASS_ErrorMapCode(code, bla2);
-         g_pvp->MessageBox(("BASS music/sound library initialization error " + std::to_string(code) + ": " + bla2).c_str(), "Error", MB_ICONERROR);
+         string bla;
+         BASS_ErrorMapCode(code, bla);
+         g_pvp->MessageBox(("BASS music/sound library initialization error " + std::to_string(code) + ": " + bla).c_str(), "Error", MB_ICONERROR);
       }
       if (/*SoundMode3D == SNDCFG_SND3D2CH &&*/ bass_STD_idx == bass_BG_idx) // skip 2nd device if it's the same and 3D is disabled //!!! for now try to just use one even if 3D! and then adapt channel settings if sample is a backglass sample
          break;
@@ -149,9 +149,9 @@ bool AudioPlayer::MusicInit(const string& szFileName, const string& alt_szFileNa
    if (m_stream == 0)
    {
       const int code = BASS_ErrorGetCode();
-      string bla2;
-      BASS_ErrorMapCode(code, bla2);
-      g_pvp->MessageBox(("BASS music/sound library cannot load \"" + szFileName + "\" (error " + std::to_string(code) + ": " + bla2 + ')').c_str(), "Error", MB_ICONERROR);
+      string bla;
+      BASS_ErrorMapCode(code, bla);
+      g_pvp->MessageBox(("BASS music/sound library cannot load \"" + szFileName + "\" (error " + std::to_string(code) + ": " + bla + ')').c_str(), "Error", MB_ICONERROR);
       return false;
    }
 
