@@ -857,7 +857,7 @@ void Surface::PrepareWallsAtHeight()
    vector<WORD> topBottomIndices, sideIndices;
    GenerateMesh(topBottomBuf, sideBuf, topBottomIndices, sideIndices);
 
-   VertexBuffer *VBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, sideBuf.size() + topBottomBuf.size(), USAGE_STATIC, MY_D3DFVF_NOTEX2_VERTEX);
+   VertexBuffer *VBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, static_cast<const unsigned int>(sideBuf.size() + topBottomBuf.size()), USAGE_STATIC, MY_D3DFVF_NOTEX2_VERTEX);
    Vertex3D_NoTex2 *verts;
    VBuffer->lock(0, 0, (void**)&verts, VertexBuffer::WRITEONLY);
    memcpy(verts, sideBuf.data(), sizeof(Vertex3D_NoTex2) * sideBuf.size());
@@ -892,7 +892,7 @@ void Surface::PrepareSlingshots()
 {
    const float slingbottom = (m_d.m_heighttop - m_d.m_heightbottom) * 0.2f + m_d.m_heightbottom;
    const float slingtop = (m_d.m_heighttop - m_d.m_heightbottom) * 0.8f + m_d.m_heightbottom;
-   const unsigned int n_lines = m_vlinesling.size();
+   const unsigned int n_lines = static_cast<const unsigned int>(m_vlinesling.size());
 
    Vertex3D_NoTex2 *const rgv3D = new Vertex3D_NoTex2[n_lines * 9];
    unsigned short *const rgIdx = new unsigned short[n_lines * 24];
@@ -1053,7 +1053,7 @@ void Surface::RenderSlingshots()
       }
    }
    pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_slingshotMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_vlinesling.size() * 24);
+   pd3dDevice->DrawMesh(m_slingshotMeshBuffer, RenderDevice::TRIANGLELIST, 0, static_cast<DWORD>(m_vlinesling.size() * 24));
    pd3dDevice->basicShader->End();
 
    //pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
