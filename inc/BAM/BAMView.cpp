@@ -296,7 +296,7 @@ std::string LoadFile(std::wstring path)
    std::string out;
    out.resize(static_cast<size_t>(size.QuadPart));
    DWORD bytesReaded = 0;
-   ReadFile(hFile, (void*)out.c_str(), static_cast<size_t>(size.QuadPart), &bytesReaded, &ol);
+   ReadFile(hFile, (void*)out.c_str(), static_cast<DWORD>(size.QuadPart), &bytesReaded, &ol);
 
    CloseHandle(hFile);
    return out;
@@ -509,7 +509,7 @@ void drawMenu()
       {
          auto& t = g_TableSettings;
          ImGui::DragFloat3("Translation", t.translation);
-         ImGui::DragFloat3("Scale", t.scale, 0.01);
+         ImGui::DragFloat3("Scale", t.scale, 0.01f);
          ImGui::DragFloat("Angle", &t.angle, 0.05f, -180.0f, 180.0f, "%.01f");
          if (!BAM.IsBAMTrackerPresent())
          {

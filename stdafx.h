@@ -1,5 +1,8 @@
 #pragma once
 
+// Disable Warning C4635: XML document comment target: badly-formed XML
+#pragma warning(disable : 4635)
+
 //#define DISABLE_FORCE_NVIDIA_OPTIMUS // do not enable NVIDIA Optimus cards (on Laptops, etc) by default
 
 //#define DISABLE_FORCE_AMD_HIGHPERF // do not enable AMD high performance device (on Laptops, etc) by default

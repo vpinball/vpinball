@@ -349,7 +349,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    for (size_t i = 0; i < MSAASampleCount; ++i)
       SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) MSAASampleNames[i]);
    const int MSAASamples = LoadValueIntWithDefault(regKey[RegName::Player], "MSAASamples"s, 1);
-   const int CurrMSAAPos = std::find(MSAASamplesOpts, MSAASamplesOpts + (sizeof(MSAASamplesOpts) / sizeof(MSAASamplesOpts[0])), MSAASamples) - MSAASamplesOpts;
+   const int CurrMSAAPos = static_cast<const int>(std::find(MSAASamplesOpts, MSAASamplesOpts + (sizeof(MSAASamplesOpts) / sizeof(MSAASamplesOpts[0])), MSAASamples) - MSAASamplesOpts);
    SendMessage(hwnd, CB_SETCURSEL, CurrMSAAPos, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
