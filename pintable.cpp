@@ -2140,6 +2140,11 @@ void PinTable::Play(const bool cameraMode)
    if (g_pplayer)
       return; // Can't play twice
 
+   m_vpinball->ShowSubDialog(m_progressDialog, !g_pvp->m_open_minimized);
+
+   m_progressDialog.SetProgress(1);
+   m_progressDialog.SetName("Creating Live Table...");
+
    PinTable *src = this;
    CComObject<PinTable> *live_table;
    CComObject<PinTable>::CreateInstance(&live_table);
@@ -2286,14 +2291,9 @@ void PinTable::Play(const bool cameraMode)
       case eItemTrigger:   edit_dst = ((Trigger *)  src->m_vedit[i])->CopyForPlay(live_table); break;
       default: assert(false); // Unexpected table part
       }
-      if (edit_dst != nullptr)
-      {
-         live_table->m_vedit.push_back(edit_dst);
-         if (edit_dst->GetScriptable())
-            live_table->m_pcv->AddItem(edit_dst->GetScriptable(), false);
-         dst->m_startupToLive[src->m_vedit[i]] = edit_dst;
-         dst->m_liveToStartup[edit_dst] = src->m_vedit[i];
-      }
+      live_table->m_vedit.push_back(edit_dst);
+      dst->m_startupToLive[src->m_vedit[i]] = edit_dst;
+      dst->m_liveToStartup[edit_dst] = src->m_vedit[i];
    }
 
    for (int i = 0; i < m_vcollection.size(); i++)
@@ -2347,11 +2347,6 @@ void PinTable::Play(const bool cameraMode)
    const string szLoadDir = PathFromFilename(m_szFileName);
    // make sure the load directory is the active directory
    SetCurrentDirectory(szLoadDir.c_str());
-
-   m_vpinball->ShowSubDialog(m_progressDialog, !g_pvp->m_open_minimized);
-
-   m_progressDialog.SetProgress(1);
-   m_progressDialog.SetName("Backing Up Table State...");
 
    live_table->m_pcv->m_scriptError = false;
    live_table->m_pcv->Compile(false);

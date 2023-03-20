@@ -167,7 +167,11 @@ public:
 
 #define STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type, table) \
    type *dst = (type *)COMCreateAndInit(table, 0.f, 0.f); \
+   if (dst->GetScriptable()) \
+      table->m_pcv->RemoveItem(dst->GetScriptable()); \
    memcpy(dst->m_wzName, m_wzName, MAXNAMEBUFFER * sizeof(m_wzName[0])); \
+   if (dst->GetScriptable()) \
+      table->m_pcv->AddItem(dst->GetScriptable(), false); \
    dst->m_oldLayerIndex = m_oldLayerIndex; \
    dst->m_layerName = m_layerName; \
    dst->m_isVisible = m_isVisible; \
