@@ -120,7 +120,7 @@ void VertexBuffer::CreatePendingSharedBuffer()
    glBindBuffer(GL_ARRAY_BUFFER, vb);
    glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_STATIC_DRAW);
    int* refCount = new int();
-   (*refCount) = pendingSharedBuffers.size();
+   (*refCount) = (int) pendingSharedBuffers.size();
    #else // DirectX 9
    IDirect3DVertexBuffer9* vb = nullptr;
    CHECKD3D(m_rd->GetCoreDevice()->CreateVertexBuffer(size, D3DUSAGE_WRITEONLY, 0 /* pendingSharedBuffers[0]->m_fvf */, D3DPOOL_DEFAULT, &vb, nullptr));

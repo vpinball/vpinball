@@ -51,6 +51,12 @@ private:
 #ifdef ENABLE_SDL
    GLuint m_vb = 0;
    int* m_sharedBufferRefCount = nullptr;
+
+public:
+   GLuint GetBuffer() const { return m_vb; }
+   bool IsSharedBuffer() const { return m_sharedBufferRefCount != nullptr; }
+   bool HasPendingUploads() const { return m_pendingUploads.size() > 0; }
+
 #else
    IDirect3DVertexBuffer9* m_vb = nullptr;
 #endif
