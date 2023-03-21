@@ -1476,7 +1476,6 @@ RenderDevice::~RenderDevice()
       mDwmEnableComposition(DWM_EC_ENABLECOMPOSITION);
 #else
    MeshBuffer::ClearSharedBuffers();
-   VertexBuffer::ClearSharedBuffers();
    IndexBuffer::ClearSharedBuffers();
    for (auto binding : m_samplerBindings)
       delete binding;
@@ -2161,7 +2160,7 @@ void RenderDevice::DrawMesh(MeshBuffer* mb, const PrimitiveTypes type, const DWO
    if (mb->m_ib == nullptr)
    {
 #ifdef ENABLE_SDL
-      glDrawArrays(type, mb->m_vb->getOffset(), indexCount);
+      glDrawArrays(type, mb->m_vb->GetVertexOffset(), indexCount);
 #else
       CHECKD3D(m_pD3DDevice->DrawPrimitive((D3DPRIMITIVETYPE)type, 0, np));
 #endif
@@ -2171,7 +2170,7 @@ void RenderDevice::DrawMesh(MeshBuffer* mb, const PrimitiveTypes type, const DWO
 #ifdef ENABLE_SDL
       const int offset = mb->m_ib->getOffset() + (mb->m_ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? 2 : 4) * startIndice;
 #ifndef __OPENGLES__
-      glDrawElementsBaseVertex(type, indexCount, mb->m_ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)offset, mb->m_vb->getOffset());
+      glDrawElementsBaseVertex(type, indexCount, mb->m_ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)offset, mb->m_vb->GetVertexOffset());
 #else
       glDrawElements(mb->m_type, indexCount, mb->m_ib->getIndexFormat() == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)(intptr_t)offset);
 #endif
