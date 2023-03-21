@@ -27,7 +27,7 @@ MeshBuffer::MeshBuffer(VertexBuffer* vb, IndexBuffer* ib) : m_vb(vb), m_ib(ib)
 MeshBuffer::~MeshBuffer()
 {
 #ifdef ENABLE_SDL
-   if (m_isSharedVAO)
+   /* if (m_isSharedVAO)
    {
       // Shared VAO are ref counted
       GLuint vb = m_vb->getBuffer();
@@ -43,7 +43,7 @@ MeshBuffer::~MeshBuffer()
          }
       }
    }
-   else if (m_vao != 0)
+   else*/ if (m_vao != 0)
    {
       glDeleteVertexArrays(1, &m_vao);
       m_vao = 0;
@@ -76,7 +76,9 @@ void MeshBuffer::bind()
       if (m_ib)
          m_ib->bind();
       // If index & vertex buffer are using shared buffers (for static objects), then this buffer should use a shared VAO
-      m_isSharedVAO = m_vb->useSharedBuffer() && (m_ib == nullptr || m_ib->useSharedBuffer());
+      m_isSharedVAO = false;
+      
+      /* m_vb->useSharedBuffer() && (m_ib == nullptr || m_ib->useSharedBuffer());
       if (m_isSharedVAO)
       {
          GLuint vb = m_vb->getBuffer();
@@ -94,7 +96,7 @@ void MeshBuffer::bind()
             m_vao = existing->vao;
             glBindVertexArray(m_vao);
          }
-      }
+      }*/
       curVAO = m_vao;
    }
    else 
@@ -106,7 +108,7 @@ void MeshBuffer::bind()
       }
       // Upload any pending data to GPU buffer
       // FIXME this is broken, so force binding
-      if (true || !m_vb->isUploaded() || (m_ib && !m_vb->isUploaded()))
+      if (true) // || !m_vb->isUploaded() || (m_ib && !m_vb->isUploaded()))
       {
          m_vb->bind();
          Shader::GetCurrentShader()->setAttributeFormat(m_vb->m_fvf);
