@@ -72,7 +72,7 @@ VertexBuffer::~VertexBuffer()
    {
       delete[] m_pendingUploads[j].data;
    }
-#ifdef ENABLE_SDL
+#if defined(ENABLE_SDL) // OpenGL
    if (m_sharedBufferRefCount != nullptr)
    {
       (*m_sharedBufferRefCount)--;
@@ -85,7 +85,7 @@ VertexBuffer::~VertexBuffer()
    }
    else if (m_vb != 0)
       glDeleteBuffers(1, &m_vb);
-#else
+#else // DirectX 9
    SAFE_RELEASE(m_vb);
 #endif
 }

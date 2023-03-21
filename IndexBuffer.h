@@ -37,25 +37,16 @@ class IndexBuffer final
 {
 public:
    enum Format {
-#ifdef ENABLE_SDL
-      FMT_INDEX16 = 16,
-      FMT_INDEX32 = 32
-#else
-      FMT_INDEX16 = D3DFMT_INDEX16,
-      FMT_INDEX32 = D3DFMT_INDEX32
-#endif
+      FMT_INDEX16, FMT_INDEX32
    };
 
    enum LockFlags
    {
 #ifdef ENABLE_SDL
       WRITEONLY,
-      NOOVERWRITE,
       DISCARDCONTENTS
 #else
       WRITEONLY = 0,                        // in DX9, this is specified during VB creation
-      NOOVERWRITE = D3DLOCK_NOOVERWRITE,    // meaning: no recently drawn vertices are overwritten. only works with dynamic VBs.
-                                            // it's only needed for VBs which are locked several times per frame
       DISCARDCONTENTS = D3DLOCK_DISCARD     // discard previous contents; only works with dynamic VBs
 #endif
    };
@@ -67,46 +58,37 @@ public:
    IndexBuffer(RenderDevice* rd, const vector<WORD>& indices);
    ~IndexBuffer();
 
+   unsigned int GetOffset() const { return m_offset; }
+   unsigned int GetIndexOffset() const { return m_offset / m_sizePerIndex; }
+
    void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void** dataBuffer, const DWORD flags);
    void unlock();
-   void release();
    void bind();
 
+   RenderDevice* const m_rd;
+   const unsigned int m_indexCount;
+   const unsigned int m_sizePerIndex;
+   const unsigned int m_size;
+   const bool m_isStatic;
+   const Format m_indexFormat;
+
 private:
-   RenderDevice* m_rd;
-   DWORD m_usage;
-   unsigned int m_sizePerIndex;
-   Format m_indexFormat;
+   void CreatePendingSharedBuffer();
+
+   struct PendingUpload
+   {
+      unsigned int offset;
+      unsigned int size;
+      BYTE* data;
+   };
+   vector<PendingUpload> m_pendingUploads;
+   PendingUpload m_lock = { 0, 0, nullptr };
+   int m_offset = 0;
+   static vector<IndexBuffer*> pendingSharedBuffers;
 
 #ifdef ENABLE_SDL
-public:
-   GLuint getOffset() const { return m_offset; }
-   GLuint getBuffer() const { return m_buffer; }
-   bool useSharedBuffer() const { return m_sharedBuffer; }
-   Format getIndexFormat() const { return m_indexFormat; }
-
-   static void ClearSharedBuffers();
-
-private:
-   GLuint m_count;
-   GLuint m_size;
-   bool m_isUploaded;
-   bool m_sharedBuffer;
-
-   // CPU memory management
-   unsigned int m_offsetToLock;
-   unsigned int m_sizeToLock;
-   void* m_dataBuffer = nullptr;
-
-   //GPU memory management
-   GLuint m_buffer = 0;
-   GLuint m_offset = 0; // Offset if stored in a shared GPU buffer
-
-   void UploadData();
-   void addToNotUploadedBuffers();
-
-   static vector<IndexBuffer*> notUploadedBuffers;
-   static void UploadBuffers(RenderDevice* rd);
+   GLuint m_ib = 0;
+   int* m_sharedBufferRefCount = nullptr;
 #else
    IDirect3DIndexBuffer9* m_ib = nullptr;
 #endif
