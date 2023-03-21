@@ -5,7 +5,7 @@
 extern unsigned m_curLockCalls;
 
 #ifdef ENABLE_SDL
-vector<MeshBuffer::SharedVAO> MeshBuffer::sharedVAOs;
+vector<MeshBuffer::SharedVAO*> MeshBuffer::sharedVAOs;
 #endif
 
 #include "Shader.h"
@@ -24,23 +24,16 @@ MeshBuffer::MeshBuffer(VertexBuffer* vb, IndexBuffer* ib) : m_vb(vb), m_ib(ib)
 MeshBuffer::~MeshBuffer()
 {
 #ifdef ENABLE_SDL
-   /* if (m_isSharedVAO)
+   if (m_sharedVAO != nullptr)
    {
-      // Shared VAO are ref counted
-      GLuint vb = m_vb->getBuffer();
-      GLuint ib = m_ib == nullptr ? 0 : m_ib->getBuffer();
-      std::vector<SharedVAO>::iterator existing = std::find_if(sharedVAOs.begin(), sharedVAOs.end(), [vb, ib](SharedVAO v) { return v.vb == vb && v.ib == ib; });
-      if (existing != sharedVAOs.end())
+      m_sharedVAO->ref_count--;
+      if (m_sharedVAO->ref_count == 0)
       {
-         existing->ref_count--;
-         if (existing->ref_count == 0)
-         {
-            glDeleteVertexArrays(1, &existing->vao);
-            sharedVAOs.erase(existing);
-         }
+         glDeleteVertexArrays(1, &m_sharedVAO->vao);
+         RemoveFromVectorSingle(sharedVAOs, m_sharedVAO);
       }
    }
-   else*/ if (m_vao != 0)
+   else if (m_vao != 0)
    {
       glDeleteVertexArrays(1, &m_vao);
       m_vao = 0;
@@ -49,14 +42,6 @@ MeshBuffer::~MeshBuffer()
    delete m_vb;
    delete m_ib;
 }
-
-#ifdef ENABLE_SDL
-void MeshBuffer::ClearSharedBuffers()
-{
-   // FIXME add some debug logging since a well behaving application should not have any shared VAO still alive at this point
-   sharedVAOs.clear();
-}
-#endif
 
 void MeshBuffer::bind()
 {
@@ -73,27 +58,25 @@ void MeshBuffer::bind()
       if (m_ib)
          m_ib->bind();
       // If index & vertex buffer are using shared buffers (for static objects), then this buffer should use a shared VAO
-      m_isSharedVAO = false;
-      
-      /* m_vb->useSharedBuffer() && (m_ib == nullptr || m_ib->useSharedBuffer());
-      if (m_isSharedVAO)
+      if (m_vb->IsSharedBuffer() && (m_ib == nullptr || m_ib->IsSharedBuffer()))
       {
-         GLuint vb = m_vb->getBuffer();
-         GLuint ib = m_ib == nullptr ? 0 : m_ib->getBuffer();
-         std::vector<SharedVAO>::iterator existing = std::find_if(sharedVAOs.begin(), sharedVAOs.end(), [vb, ib](SharedVAO v) { return v.vb == vb && v.ib == ib; });
+         GLuint vb = m_vb->GetBuffer();
+         GLuint ib = m_ib == nullptr ? 0 : m_ib->GetBuffer();
+         std::vector<SharedVAO*>::iterator existing = std::find_if(sharedVAOs.begin(), sharedVAOs.end(), [vb, ib](SharedVAO* v) { return v->vb == vb && v->ib == ib; });
          if (existing == sharedVAOs.end())
          {
-            SharedVAO vao = { vb, ib, m_vao, 1 };
-            sharedVAOs.push_back(vao);
+            m_sharedVAO = new SharedVAO { vb, ib, m_vao, 1 };
+            sharedVAOs.push_back(m_sharedVAO);
          }
          else
          {
-            existing->ref_count++;
+            m_sharedVAO = *existing;
+            m_sharedVAO->ref_count++;
             glDeleteVertexArrays(1, &m_vao);
-            m_vao = existing->vao;
+            m_vao = m_sharedVAO->vao;
             glBindVertexArray(m_vao);
          }
-      }*/
+      }
       curVAO = m_vao;
    }
    else 
@@ -103,15 +86,10 @@ void MeshBuffer::bind()
          glBindVertexArray(m_vao);
          curVAO = m_vao;
       }
-      // Upload any pending data to GPU buffer
-      // FIXME this is broken, so force binding
-      if (true) // || !m_vb->isUploaded() || (m_ib && !m_vb->isUploaded()))
-      {
-         m_vb->bind();
-         Shader::GetCurrentShader()->setAttributeFormat(m_vb->m_fvf);
-         if (m_ib)
-            m_ib->bind();
-      }
+      m_vb->bind();
+      Shader::GetCurrentShader()->setAttributeFormat(m_vb->m_fvf);
+      if (m_ib)
+         m_ib->bind();
    }
 #else
    m_vb->bind();
@@ -120,6 +98,9 @@ void MeshBuffer::bind()
    m_vb->m_rd->SetVertexDeclaration(m_vertexDeclaration);
 #endif
 }
+
+
+
 
 vector<IndexBuffer*> IndexBuffer::pendingSharedBuffers;
 
@@ -238,7 +219,7 @@ void IndexBuffer::CreatePendingSharedBuffer()
    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, GL_STATIC_DRAW);
    int* refCount = new int();
-   (*refCount) = pendingSharedBuffers.size();
+   (*refCount) = (int) pendingSharedBuffers.size();
    #else // DirectX 9
    IDirect3DIndexBuffer9* ib = nullptr;
    CHECKD3D(m_rd->GetCoreDevice()->CreateIndexBuffer(

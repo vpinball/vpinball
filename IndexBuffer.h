@@ -17,17 +17,14 @@ public:
    IndexBuffer* const m_ib;
 
 #ifdef ENABLE_SDL
-public:
-   static void ClearSharedBuffers();
-
 private:
    GLuint m_vao = 0;
-   bool m_isSharedVAO = false;
    struct SharedVAO
    {
       GLuint vb, ib, vao, ref_count;
    };
-   static vector<SharedVAO> sharedVAOs;
+   SharedVAO* m_sharedVAO = nullptr;
+   static vector<SharedVAO*> sharedVAOs;
 #else
    VertexDeclaration* const m_vertexDeclaration;
 #endif
@@ -36,8 +33,10 @@ private:
 class IndexBuffer final
 {
 public:
-   enum Format {
-      FMT_INDEX16, FMT_INDEX32
+   enum Format
+   {
+      FMT_INDEX16,
+      FMT_INDEX32
    };
 
    enum LockFlags
@@ -46,8 +45,8 @@ public:
       WRITEONLY,
       DISCARDCONTENTS
 #else
-      WRITEONLY = 0,                        // in DX9, this is specified during VB creation
-      DISCARDCONTENTS = D3DLOCK_DISCARD     // discard previous contents; only works with dynamic VBs
+      WRITEONLY = 0, // in DX9, this is specified during VB creation
+      DISCARDCONTENTS = D3DLOCK_DISCARD // discard previous contents; only works with dynamic VBs
 #endif
    };
 
@@ -89,6 +88,12 @@ private:
 #ifdef ENABLE_SDL
    GLuint m_ib = 0;
    int* m_sharedBufferRefCount = nullptr;
+
+public:
+   GLuint GetBuffer() const { return m_ib; }
+   bool IsSharedBuffer() const { return m_sharedBufferRefCount != nullptr; }
+   bool HasPendingUploads() const { return m_pendingUploads.size() > 0;  }
+
 #else
    IDirect3DIndexBuffer9* m_ib = nullptr;
 #endif
