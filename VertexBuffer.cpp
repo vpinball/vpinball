@@ -62,7 +62,7 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
 {
    BYTE* const data = new BYTE[vertexCount * m_sizePerVertex];
    memcpy(data, verts, vertexCount * m_sizePerVertex);
-   PendingUpload pending(0, vertexCount * m_sizePerVertex, data);
+   PendingUpload pending { 0, vertexCount * m_sizePerVertex, data };
    m_pendingUploads.push_back(pending);
 }
 
