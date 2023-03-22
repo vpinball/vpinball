@@ -745,7 +745,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 
    if (m_stereo3D == STEREO_VR || m_vsync > refreshrate)
       m_vsync = 0;
-   SDL_GL_SetSwapInterval(m_vsync);
+   SDL_GL_SetSwapInterval(m_vsync == 2 ? -1 : !!m_vsync); // 0 for immediate updates, 1 for updates synchronized with the vertical retrace, -1 for adaptive vsync
 
    m_maxaniso = 0;
    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &m_maxaniso);
@@ -1499,7 +1499,7 @@ void RenderDevice::Flip(const bool vsync)
    //glFlush();
    //glFinish();
 #endif
-
+   //!! misses vsync handling (e.g. manually trigger vsync)
 #else
 
    bool dwm = false;

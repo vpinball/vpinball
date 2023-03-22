@@ -4354,6 +4354,10 @@ void Player::Render()
    int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
    if (localvsync > m_refreshrate) // cannot sync, just limit to selected framerate
       localvsync = 0;
+#ifdef ENABLE_SDL
+   else if (localvsync == 2) // adaptive sync to refresh rate handled by SDL_GL_SetSwapInterval
+      localvsync = 0;
+#endif
    else if (localvsync > 1) // adaptive sync to refresh rate
       localvsync = m_refreshrate;
 
