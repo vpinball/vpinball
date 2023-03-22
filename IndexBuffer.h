@@ -16,7 +16,7 @@ public:
    VertexBuffer* const m_vb;
    IndexBuffer* const m_ib;
 
-#ifdef ENABLE_SDL
+#if defined(ENABLE_SDL) // OpenGL
 private:
    GLuint m_vao = 0;
    struct SharedVAO
@@ -25,8 +25,8 @@ private:
    };
    SharedVAO* m_sharedVAO = nullptr;
    static vector<SharedVAO*> sharedVAOs;
-#else
-   VertexDeclaration* const m_vertexDeclaration;
+#else // DirectX 9
+   IDirect3DVertexDeclaration9* const m_vertexDeclaration;
 #endif
 };
 
@@ -62,7 +62,7 @@ public:
 
    void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void** dataBuffer, const DWORD flags);
    void unlock();
-   void bind();
+   void Upload();
 
    RenderDevice* const m_rd;
    const unsigned int m_indexCount;
@@ -92,9 +92,11 @@ private:
 public:
    GLuint GetBuffer() const { return m_ib; }
    bool IsSharedBuffer() const { return m_sharedBufferRefCount != nullptr; }
-   bool HasPendingUploads() const { return m_pendingUploads.size() > 0;  }
 
 #else
    IDirect3DIndexBuffer9* m_ib = nullptr;
+
+public:
+   IDirect3DIndexBuffer9* GetBuffer() const { return m_ib; }
 #endif
 };

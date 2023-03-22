@@ -13,11 +13,15 @@
 
 #include "RenderDevice.h"
 #include "Shader.h"
-#ifdef ENABLE_SDL
+#include "shader/AreaTex.h"
+#include "shader/SearchTex.h"
+
+#if defined(ENABLE_SDL) // OpenGL
 #include "typedefs3D.h"
 #include "TextureManager.h"
 #include <SDL2/SDL_syswm.h>
-#else
+
+#else // DirectX 9
 #include "Material.h"
 #include "BasicShader.h"
 #include "DMDShader.h"
@@ -26,11 +30,11 @@
 #include "LightShader.h"
 #endif
 
-// SMAA:
-#include "shader/AreaTex.h"
-#include "shader/SearchTex.h"
 
-#ifndef ENABLE_SDL
+#if defined(ENABLE_SDL) // OpenGL
+GLuint RenderDevice::m_samplerStateCache[3 * 3 * 5];
+
+#else // DirectX 9
 #pragma comment(lib, "d3d9.lib")        // TODO: put into build system
 #pragma comment(lib, "d3dx9.lib")       // TODO: put into build system
 #if _MSC_VER >= 1900
@@ -62,6 +66,31 @@ static bool IsWindowsVistaOr7()
 
    return vista || win7;
 }
+
+constexpr D3DVERTEXELEMENT9 VertexTexelElement[] =
+{
+   { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
+   { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
+   D3DDECL_END()
+};
+
+constexpr D3DVERTEXELEMENT9 VertexNormalTexelElement[] =
+{
+   { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
+   { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0 },  // normal
+   { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
+   D3DDECL_END()
+};
+
+// pre-transformed, take care that this is a float4 and needs proper w component setup (also see https://docs.microsoft.com/en-us/windows/desktop/direct3d9/mapping-fvf-codes-to-a-directx-9-declaration)
+constexpr D3DVERTEXELEMENT9 VertexTrafoTexelElement[] =
+{
+   { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITIONT, 0 }, // transformed pos
+   { 0, 4 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD,  1 }, // (mostly, except for classic lights) unused, there to be able to share same code as VertexNormalTexelElement
+   { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD,  0 }, // tex0
+   D3DDECL_END()
+};
+
 #endif
 
 typedef HRESULT(STDAPICALLTYPE *pRGV)(LPOSVERSIONINFOEXW osi);
@@ -88,88 +117,6 @@ bool IsWindows10_1803orAbove()
 
    return false;
 }
-
-#ifdef ENABLE_SDL
-//my definition for SDL    GLint size;    GLenum type;    GLboolean normalized;    GLsizei stride;
-//D3D definition   WORD Stream;    WORD Offset;    BYTE Type;    BYTE Method;    BYTE Usage;    BYTE UsageIndex;
-constexpr VertexElement VertexTexelElement[] =
-{
-   { 3, GL_FLOAT, GL_FALSE, 0, "POSITION0" },
-   { 2, GL_FLOAT, GL_FALSE, 0, "TEXCOORD0" },
-   { 0, 0, 0, 0, nullptr}
-   /*   { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
-      { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
-      D3DDECL_END()*/
-};
-
-constexpr VertexElement VertexNormalTexelElement[] =
-{
-   { 3, GL_FLOAT, GL_FALSE, 0, "POSITION0" },
-   { 3, GL_FLOAT, GL_FALSE, 0, "NORMAL0" },
-   { 2, GL_FLOAT, GL_FALSE, 0, "TEXCOORD0" },
-   { 0, 0, 0, 0, nullptr}
-/*
-      { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
-      { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },  // normal
-      { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
-      D3DDECL_END()*/
-};
-
-constexpr VertexElement VertexTrafoTexelElement[] =
-{
-   { 4, GL_FLOAT, GL_FALSE, 0, "POSITION0" },
-   { 2, GL_FLOAT, GL_FALSE, 0, nullptr },//legacy?
-   { 2, GL_FLOAT, GL_FALSE, 0, "TEXCOORD0" },
-   { 0, 0, 0, 0, nullptr }
-
-   /*   { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITIONT, 0 }, // transformed pos
-   { 0, 4 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD,  1 }, // (mostly, except for classic lights) unused, there to be able to share same code as VertexNormalTexelElement
-   { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 }, // tex0
-   D3DDECL_END()*/
-};
-
-GLuint RenderDevice::m_samplerStateCache[3 * 3 * 5];
-
-#else
-constexpr VertexElement VertexTexelElement[] =
-{
-   { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
-   { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
-   D3DDECL_END()
-};
-
-constexpr VertexElement VertexNormalTexelElement[] =
-{
-   { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
-   { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0 },  // normal
-   { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
-   D3DDECL_END()
-};
-
-// pre-transformed, take care that this is a float4 and needs proper w component setup (also see https://docs.microsoft.com/en-us/windows/desktop/direct3d9/mapping-fvf-codes-to-a-directx-9-declaration)
-constexpr VertexElement VertexTrafoTexelElement[] =
-{
-   { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITIONT, 0 }, // transformed pos
-   { 0, 4 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD,  1 }, // (mostly, except for classic lights) unused, there to be able to share same code as VertexNormalTexelElement
-   { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD,  0 }, // tex0
-   D3DDECL_END()
-};
-
-static unsigned int fvfToSize(const DWORD fvf)
-{
-   switch (fvf)
-   {
-   case MY_D3DFVF_NOTEX2_VERTEX:
-   case MY_D3DTRANSFORMED_NOTEX2_VERTEX:
-      return sizeof(Vertex3D_NoTex2);
-   case MY_D3DFVF_TEX:
-      return sizeof(Vertex3D_TexelOnly);
-   default:
-      assert(!"Unknown FVF type in fvfToSize");
-      return 0;
-   }
-}
-#endif
 
 static unsigned int ComputePrimitiveCount(const RenderDevice::PrimitiveTypes type, const int vertexCount)
 {
@@ -647,7 +594,6 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
     m_stats_drawn_triangles = 0;
 
-    currentDeclaration = nullptr;
     //m_curShader = nullptr;
 
     // initialize performance counters
@@ -1129,9 +1075,9 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 
 #ifndef ENABLE_SDL
    // create default vertex declarations for shaders
-   CreateVertexDeclaration(VertexTexelElement, &m_pVertexTexelDeclaration);
-   CreateVertexDeclaration(VertexNormalTexelElement, &m_pVertexNormalTexelDeclaration);
-   CreateVertexDeclaration(VertexTrafoTexelElement, &m_pVertexTrafoTexelDeclaration);
+   CHECKD3D(m_pD3DDevice->CreateVertexDeclaration(VertexTexelElement, &m_pVertexTexelDeclaration));
+   CHECKD3D(m_pD3DDevice->CreateVertexDeclaration(VertexNormalTexelElement, &m_pVertexNormalTexelDeclaration));
+   CHECKD3D(m_pD3DDevice->CreateVertexDeclaration(VertexTrafoTexelElement, &m_pVertexTrafoTexelDeclaration));
 #endif
 
    // Vertex buffers
@@ -2102,26 +2048,6 @@ void RenderDevice::SetClipPlane0(const vec4 &plane)
 #endif
 }
 
-void RenderDevice::CreateVertexDeclaration(const VertexElement * const element, VertexDeclaration ** declaration)
-{
-#ifndef ENABLE_SDL
-   CHECKD3D(m_pD3DDevice->CreateVertexDeclaration(element, declaration));
-#endif
-}
-
-void RenderDevice::SetVertexDeclaration(VertexDeclaration * declaration)
-{
-#ifndef ENABLE_SDL
-   if (declaration != currentDeclaration)
-   {
-      CHECKD3D(m_pD3DDevice->SetVertexDeclaration(declaration));
-      currentDeclaration = declaration;
-
-      m_curStateChanges++;
-   }
-#endif
-}
-
 void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
 {
 #ifdef ENABLE_SDL
@@ -2134,8 +2060,13 @@ void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
    // having a VB and lock/copying stuff each time is slower on DX9 :/ (is it still true ? looks overly complicated for a very marginal benefit)
    ApplyRenderStates();
    m_stats_drawn_triangles += 2;
-   SetVertexDeclaration(m_pVertexTexelDeclaration);
-   CHECKD3D(m_pD3DDevice->DrawPrimitiveUP((D3DPRIMITIVETYPE)RenderDevice::TRIANGLESTRIP, 2, vertices, fvfToSize(MY_D3DFVF_TEX)));
+   if (m_currentVertexDeclaration != m_pVertexTexelDeclaration)
+   {
+      CHECKD3D(m_pD3DDevice->SetVertexDeclaration(m_pVertexTexelDeclaration));
+      m_currentVertexDeclaration = m_pVertexTexelDeclaration;
+      m_curStateChanges++;
+   }
+   CHECKD3D(m_pD3DDevice->DrawPrimitiveUP((D3DPRIMITIVETYPE)RenderDevice::TRIANGLESTRIP, 2, vertices, sizeof(Vertex3D_TexelOnly)));
    m_curVertexBuffer = nullptr; // DrawPrimitiveUP sets the VB to nullptr
    m_curDrawCalls++;
 #endif

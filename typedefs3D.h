@@ -124,16 +124,6 @@ struct ViewPort  {
    };
 };
 
-struct VertexElement {
-   GLint size;
-   GLenum type;
-   GLboolean normalized;
-   GLsizei stride;
-   const GLchar* name;
-};
-
-typedef VertexElement* VertexDeclaration;
-
 enum memoryPool {
    SYSTEM = 0,
    DEFAULT = 1
@@ -146,10 +136,7 @@ enum clearType {
 
 #else
 
-typedef LPD3DXFONT FontHandle;
 typedef D3DVIEWPORT9 ViewPort;
-typedef D3DVERTEXELEMENT9 VertexElement;
-typedef IDirect3DVertexDeclaration9 VertexDeclaration;
 
 enum colorFormat {
    GREY8 = D3DFMT_L8,
