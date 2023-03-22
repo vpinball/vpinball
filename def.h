@@ -123,7 +123,6 @@ inline void ref_count_trigger(const ULONG r, const char *file, const int line) /
 #endif
 
 #define SAFE_PINSOUND_RELEASE(p) { if(p) { const ULONG rcc = (p)->Release(); if(rcc != 0) ref_count_trigger(rcc, __FILE__, __LINE__); (p)=nullptr; } }
-#define SAFE_BUFFER_RELEASE(p)	{ if(p) { (p)->release(); delete (p); (p)=nullptr; } }
 
 #define hrNotImplemented ResultFromScode(E_NOTIMPL)
 
