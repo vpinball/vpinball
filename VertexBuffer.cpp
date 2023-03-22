@@ -10,7 +10,6 @@ static unsigned int fvfToSize(const DWORD fvf)
    switch (fvf)
    {
    case MY_D3DFVF_NOTEX2_VERTEX:
-   case MY_D3DTRANSFORMED_NOTEX2_VERTEX:
       return sizeof(Vertex3D_NoTex2);
    case MY_D3DFVF_TEX:
       return sizeof(Vertex3D_TexelOnly);

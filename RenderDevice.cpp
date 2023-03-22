@@ -82,15 +82,6 @@ constexpr D3DVERTEXELEMENT9 VertexNormalTexelElement[] =
    D3DDECL_END()
 };
 
-// pre-transformed, take care that this is a float4 and needs proper w component setup (also see https://docs.microsoft.com/en-us/windows/desktop/direct3d9/mapping-fvf-codes-to-a-directx-9-declaration)
-constexpr D3DVERTEXELEMENT9 VertexTrafoTexelElement[] =
-{
-   { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITIONT, 0 }, // transformed pos
-   { 0, 4 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD,  1 }, // (mostly, except for classic lights) unused, there to be able to share same code as VertexNormalTexelElement
-   { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD,  0 }, // tex0
-   D3DDECL_END()
-};
-
 #endif
 
 typedef HRESULT(STDAPICALLTYPE *pRGV)(LPOSVERSIONINFOEXW osi);
@@ -1077,7 +1068,6 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    // create default vertex declarations for shaders
    CHECKD3D(m_pD3DDevice->CreateVertexDeclaration(VertexTexelElement, &m_pVertexTexelDeclaration));
    CHECKD3D(m_pD3DDevice->CreateVertexDeclaration(VertexNormalTexelElement, &m_pVertexNormalTexelDeclaration));
-   CHECKD3D(m_pD3DDevice->CreateVertexDeclaration(VertexTrafoTexelElement, &m_pVertexTrafoTexelDeclaration));
 #endif
 
    // Vertex buffers
@@ -1355,16 +1345,11 @@ RenderDevice::~RenderDevice()
    //m_pD3DDevice->SetVertexDeclaration(nullptr); // invalid call
    //m_pD3DDevice->SetRenderTarget(0, nullptr); // invalid call
    m_pD3DDevice->SetDepthStencilSurface(nullptr);
+   SAFE_RELEASE(m_pVertexTexelDeclaration);
+   SAFE_RELEASE(m_pVertexNormalTexelDeclaration);
 #endif
 
    FreeShader();
-
-#ifndef ENABLE_SDL
-   SAFE_RELEASE(m_pVertexTexelDeclaration);
-   SAFE_RELEASE(m_pVertexNormalTexelDeclaration);
-   //SAFE_RELEASE(m_pVertexNormalTexelTexelDeclaration);
-   SAFE_RELEASE(m_pVertexTrafoTexelDeclaration);
-#endif
 
    m_texMan.UnloadAll();
    delete m_pOffscreenBackBufferTexture;
