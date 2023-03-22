@@ -36,7 +36,6 @@ MeshBuffer::~MeshBuffer()
    else if (m_vao != 0)
    {
       glDeleteVertexArrays(1, &m_vao);
-      m_vao = 0;
    }
 #endif
    delete m_vb;
@@ -45,57 +44,93 @@ MeshBuffer::~MeshBuffer()
 
 void MeshBuffer::bind()
 {
+   RenderDevice* rd = m_vb->m_rd;
 #ifdef ENABLE_SDL
-   static GLuint curVAO = 0;
-   // Create or reuse VAO
    if (m_vao == 0)
    {
-      glGenVertexArrays(1, &m_vao);
-      glBindVertexArray(m_vao);
-      m_vb->bind();
-      // this needs that the attribute layout is enforced in the shaders using layout(location=...)
-      Shader::GetCurrentShader()->setAttributeFormat(m_vb->m_fvf);
-      if (m_ib)
-         m_ib->bind();
-      // If index & vertex buffer are using shared buffers (for static objects), then this buffer should use a shared VAO
-      if (m_vb->IsSharedBuffer() && (m_ib == nullptr || m_ib->IsSharedBuffer()))
+      // If index & vertex buffer are using shared buffers (for static objects), then we can also use a shared VAO
+      bool isShared = m_vb->IsSharedBuffer() && (m_ib == nullptr || m_ib->IsSharedBuffer());
+      if (isShared)
       {
-         GLuint vb = m_vb->GetBuffer();
-         GLuint ib = m_ib == nullptr ? 0 : m_ib->GetBuffer();
+         GLuint vb = m_vb->GetBuffer(), ib = m_ib == nullptr ? 0 : m_ib->GetBuffer();
          std::vector<SharedVAO*>::iterator existing = std::find_if(sharedVAOs.begin(), sharedVAOs.end(), [vb, ib](SharedVAO* v) { return v->vb == vb && v->ib == ib; });
-         if (existing == sharedVAOs.end())
-         {
-            m_sharedVAO = new SharedVAO { vb, ib, m_vao, 1 };
-            sharedVAOs.push_back(m_sharedVAO);
-         }
-         else
+         if (existing != sharedVAOs.end())
          {
             m_sharedVAO = *existing;
             m_sharedVAO->ref_count++;
-            glDeleteVertexArrays(1, &m_vao);
             m_vao = m_sharedVAO->vao;
-            glBindVertexArray(m_vao);
          }
       }
-      curVAO = m_vao;
-   }
-   else 
-   {
-      if (curVAO != m_vao)
+      if (m_vao == 0)
       {
+         glGenVertexArrays(1, &m_vao);
          glBindVertexArray(m_vao);
-         curVAO = m_vao;
+         rd->m_curVAO = m_vao;
+         m_vb->Upload();
+         glBindBuffer(GL_ARRAY_BUFFER, m_vb->GetBuffer());
+         if (m_ib != nullptr)
+         {
+            m_ib->Upload();
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ib->GetBuffer());
+         }
+         // this needs the attribute layout to be enforced in the shaders using layout(location=...)
+         switch (m_vb->m_fvf)
+         {
+         case MY_D3DFVF_NOTEX2_VERTEX:
+         case MY_D3DTRANSFORMED_NOTEX2_VERTEX:
+            glEnableVertexAttribArray(0); // Position
+            glEnableVertexAttribArray(1); // Normal
+            glEnableVertexAttribArray(2); // Texture Coordinate
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 32, (void*)0);
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 32, (void*)12);
+            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 32, (void*)24);
+            break;
+         case MY_D3DFVF_TEX:
+            glEnableVertexAttribArray(0); // Position
+            glEnableVertexAttribArray(1); // Texture Coordinate
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 20, (void*)0);
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 20, (void*)12);
+            break;
+         default: assert(false); // Unsupported FVF
+         }
+         if (isShared)
+         {
+            m_sharedVAO = new SharedVAO { m_vb->GetBuffer(), m_ib == nullptr ? 0 : m_ib->GetBuffer(), m_vao, 1 };
+            sharedVAOs.push_back(m_sharedVAO);
+         }
       }
-      m_vb->bind();
-      Shader::GetCurrentShader()->setAttributeFormat(m_vb->m_fvf);
-      if (m_ib)
-         m_ib->bind();
    }
+   if (rd->m_curVAO != m_vao)
+   {
+      glBindVertexArray(m_vao);
+      rd->m_curVAO = m_vao;
+   }
+   m_vb->Upload();
+   if (m_ib != nullptr)
+      m_ib->Upload();
+
 #else
-   m_vb->bind();
-   if (m_ib)
-      m_ib->bind();
-   m_vb->m_rd->SetVertexDeclaration(m_vertexDeclaration);
+   m_vb->Upload();
+   if (rd->m_curVertexBuffer != m_vb)
+   {
+      CHECKD3D(rd->GetCoreDevice()->SetStreamSource(0, m_vb->GetBuffer(), m_vb->GetOffset(), m_vb->m_sizePerVertex));
+      rd->m_curVertexBuffer = m_vb;
+   }
+   if (rd->m_currentVertexDeclaration != m_vertexDeclaration)
+   {
+      CHECKD3D(rd->GetCoreDevice()->SetVertexDeclaration(m_vertexDeclaration));
+      rd->m_currentVertexDeclaration = m_vertexDeclaration;
+      rd->m_curStateChanges++;
+   }
+   if (m_ib != nullptr)
+   {
+      m_ib->Upload();
+      if (rd->m_curIndexBuffer != m_ib)
+      {
+         CHECKD3D(rd->GetCoreDevice()->SetIndices(m_ib->GetBuffer()));
+         rd->m_curIndexBuffer = m_ib;
+      }
+   }
 #endif
 }
 
@@ -124,7 +159,6 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const 
       glGenBuffers(1, &m_ib);
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ib);
       glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_size, nullptr, m_isStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
-      m_rd->m_curIndexBuffer = this;
 
       #else // DirectX 9
       // NB: We always specify WRITEONLY since MSDN states,
@@ -259,7 +293,7 @@ void IndexBuffer::CreatePendingSharedBuffer()
    #endif
 }
 
-void IndexBuffer::bind()
+void IndexBuffer::Upload()
 {
    if (!m_ib)
       CreatePendingSharedBuffer();
@@ -285,17 +319,5 @@ void IndexBuffer::bind()
          delete[] upload.data;
       }
       m_pendingUploads.clear();
-   }
-
-   if (m_rd->m_curIndexBuffer != this)
-   {
-      #if defined(ENABLE_SDL) // OpenGL
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ib);
-
-      #else // DirectX 9
-      CHECKD3D(m_rd->GetCoreDevice()->SetIndices(m_ib));
-
-      #endif
-      m_rd->m_curIndexBuffer = this;
    }
 }

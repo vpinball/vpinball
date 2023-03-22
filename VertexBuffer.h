@@ -21,11 +21,12 @@ public:
    VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, const DWORD usage, const DWORD fvf, const float* verts);
    ~VertexBuffer();
 
+   unsigned int GetOffset() const { return m_offset; }
    unsigned int GetVertexOffset() const { return m_offset / m_sizePerVertex; }
 
    void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags);
    void unlock();
-   void bind();
+   void Upload();
 
    RenderDevice* const m_rd;
    const unsigned int m_vertexCount;
@@ -55,9 +56,11 @@ private:
 public:
    GLuint GetBuffer() const { return m_vb; }
    bool IsSharedBuffer() const { return m_sharedBufferRefCount != nullptr; }
-   bool HasPendingUploads() const { return m_pendingUploads.size() > 0; }
 
 #else
    IDirect3DVertexBuffer9* m_vb = nullptr;
+
+public:
+   IDirect3DVertexBuffer9* GetBuffer() const { return m_vb; }
 #endif
 };

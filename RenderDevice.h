@@ -277,9 +277,6 @@ public:
 
    void FreeShader();
 
-   void CreateVertexDeclaration(const VertexElement * const element, VertexDeclaration ** declaration);
-   void SetVertexDeclaration(VertexDeclaration * declaration);
-
 #ifdef ENABLE_SDL
    int getGLVersion() const { return m_GLversion; }
 #else
@@ -335,8 +332,6 @@ private:
 
    unsigned int m_adapter; // index of the display adapter to use
 
-   VertexDeclaration *currentDeclaration; // for caching
-
 public:
    void SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v);
 
@@ -371,11 +366,6 @@ private:
    MeshBuffer* m_quadDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads
 
 public:
-   // for caching
-   VertexBuffer* m_curVertexBuffer = nullptr;
-   IndexBuffer* m_curIndexBuffer = nullptr;
-
-public:
 #ifndef ENABLE_SDL
    bool m_useNvidiaApi;
    bool m_INTZ_support;
@@ -408,9 +398,16 @@ public:
 
    static unsigned int m_stats_drawn_triangles;
 
-#ifndef ENABLE_SDL
-   VertexDeclaration* m_pVertexTexelDeclaration;
-   VertexDeclaration* m_pVertexNormalTexelDeclaration;
-   VertexDeclaration* m_pVertexTrafoTexelDeclaration;
+#if defined(ENABLE_SDL) // OpenGL
+   GLuint m_curVAO = 0;
+   
+#else // DirectX9
+   VertexBuffer* m_curVertexBuffer = nullptr;
+   IndexBuffer* m_curIndexBuffer = nullptr;
+
+   IDirect3DVertexDeclaration9* m_currentVertexDeclaration = nullptr;
+   IDirect3DVertexDeclaration9* m_pVertexTexelDeclaration = nullptr;
+   IDirect3DVertexDeclaration9* m_pVertexNormalTexelDeclaration = nullptr;
+   IDirect3DVertexDeclaration9* m_pVertexTrafoTexelDeclaration = nullptr;
 #endif
 };

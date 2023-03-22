@@ -45,7 +45,6 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
       glGenBuffers(1, &m_vb);
       glBindBuffer(GL_ARRAY_BUFFER, m_vb);
       glBufferData(GL_ARRAY_BUFFER, m_size, nullptr, m_isStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
-      m_rd->m_curVertexBuffer = this;
 
       #else // DirectX 9
       // NB: We always specify WRITEONLY since MSDN states,
@@ -159,7 +158,7 @@ void VertexBuffer::CreatePendingSharedBuffer()
    #endif
 }
 
-void VertexBuffer::bind()
+void VertexBuffer::Upload()
 {
    if (!m_vb)
       CreatePendingSharedBuffer();
@@ -185,17 +184,5 @@ void VertexBuffer::bind()
          delete[] upload.data;
       }
       m_pendingUploads.clear();
-   }
-
-   if (m_rd->m_curVertexBuffer != this)
-   {
-      #if defined(ENABLE_SDL) // OpenGL
-      glBindBuffer(GL_ARRAY_BUFFER, m_vb);
-
-      #else // DirectX 9
-      CHECKD3D(m_rd->GetCoreDevice()->SetStreamSource(0, m_vb, m_offset, m_sizePerVertex));
-
-      #endif
-      m_rd->m_curVertexBuffer = this;
    }
 }
