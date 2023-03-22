@@ -426,16 +426,15 @@ void Light::RenderDynamic()
    RenderDevice::RenderStateCache initial_state;
    pd3dDevice->CopyRenderStates(true, initial_state);
 
-   if (!m_backglass)
-   {
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
-      constexpr float depthbias = -1.0f;
-      pd3dDevice->SetRenderStateDepthBias(depthbias);
-   }
-   else
+   if (m_backglass)
    {
       pd3dDevice->SetRenderStateDepthBias(0.0f);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+   }
+   else
+   {
+      pd3dDevice->SetRenderStateDepthBias(-1.0f);
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
    }
 
    if (m_backglass || (m_ptable->m_tblMirrorEnabled ^ g_pplayer->IsRenderPass(Player::REFLECTION_PASS)))
@@ -479,18 +478,22 @@ void Light::RenderDynamic()
       pd3dDevice->lightShader->End();
    }
 
+   Shader *shader = m_d.m_BulbLight ? pd3dDevice->lightShader : pd3dDevice->classicLightShader;
+   shader->SetLightData(center_range);
+   shader->SetLightColor2FalloffPower(lightColor2_falloff_power);
+   lightColor_intensity.w = m_currentIntensity;
+   if (g_pplayer->IsRenderPass(Player::LIGHT_BUFFER))
+      lightColor_intensity.w *= m_d.m_transmissionScale;
+   shader->SetLightColorIntensity(lightColor_intensity);
+
    if (!m_d.m_BulbLight)
    {
-      pd3dDevice->classicLightShader->SetLightData(center_range);
-      pd3dDevice->classicLightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
-      pd3dDevice->classicLightShader->SetBool(SHADER_disableVertexShader, m_backglass);
-      pd3dDevice->classicLightShader->SetLightImageBackglassMode(m_d.m_imageMode, m_backglass);
-      pd3dDevice->classicLightShader->SetMaterial(m_surfaceMaterial);
-
+      shader->SetLightImageBackglassMode(m_d.m_imageMode, m_backglass);
+      shader->SetMaterial(m_surfaceMaterial);
       if (offTexel != nullptr)
       {
-         pd3dDevice->classicLightShader->SetTechniqueMetal(SHADER_TECHNIQUE_light_with_texture, m_surfaceMaterial);
-         pd3dDevice->classicLightShader->SetTexture(SHADER_tex_light_color, offTexel, SF_TRILINEAR, SA_CLAMP, SA_CLAMP);
+         shader->SetTechniqueMetal(SHADER_TECHNIQUE_light_with_texture, m_surfaceMaterial);
+         shader->SetTexture(SHADER_tex_light_color, offTexel, SF_TRILINEAR, SA_CLAMP, SA_CLAMP);
          // Was: if (m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl && !m_backglass)*/
          // TOTAN and Flintstones inserts break if alpha blending is disabled here.
          // Also see below if changing again
@@ -502,30 +505,17 @@ void Light::RenderDynamic()
          }
       }
       else
-         pd3dDevice->classicLightShader->SetTechniqueMetal(SHADER_TECHNIQUE_light_without_texture, m_surfaceMaterial);
-
-      lightColor_intensity.w = m_currentIntensity;
-      pd3dDevice->classicLightShader->SetLightColorIntensity(lightColor_intensity);
+         shader->SetTechniqueMetal(SHADER_TECHNIQUE_light_without_texture, m_surfaceMaterial);
    }
    else
    {
-      pd3dDevice->lightShader->SetLightData(center_range);
-      pd3dDevice->lightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
-
       const Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       ppin3d->EnableAlphaBlend(false, false, false);
       //pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  RenderDevice::SRC_ALPHA);  // add the lightcontribution
       pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
       pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_REVSUBTRACT);
-
-      pd3dDevice->lightShader->SetBool(SHADER_disableVertexShader, m_backglass);
-      pd3dDevice->lightShader->SetFloat(SHADER_blend_modulate_vs_add, !g_pplayer->IsRenderPass(Player::LIGHT_BUFFER) ? min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
-      pd3dDevice->lightShader->SetTechnique(m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS ? SHADER_TECHNIQUE_bulb_light_with_ball_shadows : SHADER_TECHNIQUE_bulb_light);
-
-      lightColor_intensity.w = m_currentIntensity;
-      if (g_pplayer->IsRenderPass(Player::LIGHT_BUFFER))
-         lightColor_intensity.w *= m_d.m_transmissionScale;
-      pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
+      shader->SetFloat(SHADER_blend_modulate_vs_add, !g_pplayer->IsRenderPass(Player::LIGHT_BUFFER) ? min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
+      shader->SetTechnique(m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS ? SHADER_TECHNIQUE_bulb_light_with_ball_shadows : SHADER_TECHNIQUE_bulb_light);
    }
 
    // (maybe) update, then render light shape
@@ -537,14 +527,30 @@ void Light::RenderDynamic()
       m_updateBulbLightHeight = false;
    }
 
-   Shader *shader = m_d.m_BulbLight ? pd3dDevice->lightShader : pd3dDevice->classicLightShader;
+   if (m_backglass)
+   {
+      const int eyes = g_pplayer->m_stereo3D != STEREO_OFF ? 2 : 1;
+      Matrix3D matWorldViewProj[2]; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
+      matWorldViewProj[0].SetIdentity();
+      matWorldViewProj[0]._11 = 2.0f / (float)pd3dDevice->GetBackBufferTexture()->GetWidth();
+      matWorldViewProj[0]._41 = -1.0f;
+      matWorldViewProj[0]._22 = -2.0f / (float)pd3dDevice->GetBackBufferTexture()->GetHeight();
+      matWorldViewProj[0]._42 = 1.0f;
+      #ifdef ENABLE_SDL
+      memcpy(&matWorldViewProj[1], &matWorldViewProj[0], 4 * 4 * sizeof(float));
+      shader->SetUniformBlock(SHADER_matrixBlock, &matWorldViewProj[0].m[0][0], eyes * 16 * sizeof(float));
+      #else
+      shader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0]);
+      #endif
+   }
+
    shader->Begin();
    pd3dDevice->DrawMesh(m_customMoverMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_customMoverIndexNum);
    shader->End();
 
    // Restore state
-   pd3dDevice->classicLightShader->SetBool(SHADER_disableVertexShader, false); // Needed since this uniform is shared with techniques of basic shader
-   pd3dDevice->lightShader->SetBool(SHADER_disableVertexShader, false);
+   if (m_backglass)
+      g_pplayer->UpdateBasicShaderMatrix();
    pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
@@ -596,8 +602,7 @@ void Light::PrepareMoversCustom()
    customMoverIBuffer->unlock();
 
    m_customMoverVertexNum = (unsigned int)m_vvertex.size();
-   const DWORD vertexType = (!m_backglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;
-   VertexBuffer * customMoverVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_customMoverVertexNum, 0, vertexType);
+   VertexBuffer *customMoverVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_customMoverVertexNum, 0, MY_D3DFVF_NOTEX2_VERTEX);
 
    m_customMoverMeshBuffer = new MeshBuffer(customMoverVBuffer, customMoverIBuffer);
 
@@ -606,10 +611,6 @@ void Light::PrepareMoversCustom()
 
 void Light::UpdateCustomMoverVBuffer()
 {
-#ifdef ENABLE_SDL
-   RenderDevice *const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-#endif
-
    float height = m_initSurfaceHeight;
    if (m_d.m_BulbLight)
    {
@@ -623,15 +624,14 @@ void Light::UpdateCustomMoverVBuffer()
    const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
    const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
 
-   const float  mult = getBGxmult();
-   const float ymult = getBGymult();
+   const float mult = m_backglass ? getBGxmult() : 1.f;
+   const float ymult = m_backglass ? getBGymult() : 1.f;
 
    Vertex3D_NoTex2 *buf;
    m_customMoverMeshBuffer->m_vb->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    for (unsigned int t = 0; t < m_customMoverVertexNum; t++)
    {
       const RenderVertex * const pv0 = &m_vvertex[t];
-
       if (!m_backglass)
       {
          buf[t].x = pv0->x;
@@ -650,31 +650,21 @@ void Light::UpdateCustomMoverVBuffer()
             buf[t].tu = 0.5f + (pv0->x - m_d.m_vCenter.x) * inv_maxdist;
             buf[t].tv = 0.5f + (pv0->y - m_d.m_vCenter.y) * inv_maxdist;
          }
-
-         buf[t].nx = 0; buf[t].ny = 0; buf[t].nz = 1.0f;
       }
       else
       {
-         const float x = pv0->x* mult - 0.5f;
-         const float y = pv0->y*ymult - 0.5f;
-
-#ifdef ENABLE_SDL
-         buf[t].x =        2.0f * x / (float)pd3dDevice->GetBackBufferTexture()->GetWidth() - 1.0f;
-         buf[t].y = 1.0f - 2.0f * y / (float)pd3dDevice->GetBackBufferTexture()->GetHeight();
-#else
-         buf[t].x = x;
-         buf[t].y = y;
-#endif
+         // Backdrop position
+         buf[t].x = pv0->x * mult - 0.5f;
+         buf[t].y = pv0->y * ymult - 0.5f;
          buf[t].z = 0.0f;
 
-         buf[t].nx = 1.f; //!! for backglass we use no vertex shader (D3DDECLUSAGE_POSITIONT), thus w component is actually mapped to nx, and that must be 1
-         buf[t].ny = pv0->x * (float)(1.0 / EDITOR_BG_WIDTH); //!! abuses normal to pass tex coord via TEXCOORD1.xy to shader for non-bulbs :/
-         buf[t].nz = pv0->y * (float)(1.0 / EDITOR_BG_HEIGHT);
-
-         //!! in backglass mode, position is also passed in via texture coords (due to D3DDECLUSAGE_POSITIONT again)
-         buf[t].tu = x;
-         buf[t].tv = y;
+         buf[t].tu = pv0->x * (float)(1.0 / EDITOR_BG_WIDTH);
+         buf[t].tv = pv0->y * (float)(1.0 / EDITOR_BG_HEIGHT);
       }
+
+      buf[t].nx = 0;
+      buf[t].ny = 0;
+      buf[t].nz = 1.0f;
    }
    m_customMoverMeshBuffer->m_vb->unlock();
 }
