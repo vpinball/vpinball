@@ -1739,6 +1739,8 @@ void Player::InitStatic()
    
    RenderTarget *accumulationSurface = m_dynamicMode ? nullptr : m_pin3d.m_pddsStatic->Duplicate("Accumulation"s);
 
+   RenderTarget *renderRT = GetAOMode() == 1 ? m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture() : m_pin3d.m_pddsStatic;
+
    // if rendering static/with heavy oversampling, disable the aniso/trilinear filter to get a sharper/more precise result overall!
    if (!m_dynamicMode)
       m_pin3d.m_pd3dPrimaryDevice->SetMainTextureDefaultFiltering(SF_BILINEAR);
@@ -1770,7 +1772,7 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->BeginScene();
 
       // Direct all renders to the "static" buffer
-      m_pin3d.m_pddsStatic->Activate();
+      renderRT->Activate();
 
       m_pin3d.DrawBackground();
 
@@ -1783,7 +1785,7 @@ void Player::InitStatic()
          DrawStatics();
          m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
 
-         // Rendering is done to m_pin3d.m_pddsStatic then accumulated to accumulationSurface
+         // Rendering is done to the static render target then accumulated to accumulationSurface
          // We use the framebuffer mirror shader which copies a weighted version of the bound texture
          accumulationSurface->Activate(true);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
@@ -1797,15 +1799,14 @@ void Player::InitStatic()
             m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
-            (float)(1.0 / (double)m_pin3d.m_pddsStatic->GetWidth()), (float)(1.0 / (double)m_pin3d.m_pddsStatic->GetHeight()),
+            (float)(1.0 / (double)renderRT->GetWidth()), (float)(1.0 / (double)renderRT->GetHeight()),
             (float)((double)STATIC_PRERENDER_ITERATIONS), 1.0f);
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_pin3d.m_pddsStatic->GetColorSampler());
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderRT->GetColorSampler());
          m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
          m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
          m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
          m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
-         m_pin3d.m_pddsStatic->Activate();
       }
 
       // Finish the frame.
@@ -1819,7 +1820,7 @@ void Player::InitStatic()
    if (accumulationSurface)
    {
       // copy back weighted antialiased color result to the static render target, keeping depth untouched
-      accumulationSurface->CopyTo(m_pin3d.m_pddsStatic, true, false);
+      accumulationSurface->CopyTo(renderRT, true, false);
       delete accumulationSurface;
    }
 
@@ -1834,12 +1835,7 @@ void Player::InitStatic()
    {
       const bool useAA = ((m_AAfactor != 1.0f) && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
 
-      m_pin3d.m_pddsStatic->CopyTo(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()); // save Z buffer and render (cannot be called inside BeginScene -> EndScene cycle)
-
-      RenderTarget *tmpDepth = m_pin3d.m_pddsStatic->Duplicate("TmpDepth"s);
-      m_pin3d.m_pddsStatic->CopyTo(tmpDepth);
-
-      m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->CopyTo(m_pin3d.m_pddsStatic); // Restore saved Z buffer and render (cannot be called inside BeginScene -> EndScene cycle)
+      renderRT->CopyTo(m_pin3d.m_pddsStatic, false, true);
 
       m_pin3d.m_pd3dPrimaryDevice->BeginScene();
 
@@ -1848,19 +1844,16 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
 
-      m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(0)->Activate();
-      m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
-
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, tmpDepth->GetDepthSampler());
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, renderRT->GetDepthSampler());
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao_dither, &m_pin3d.m_aoDitherTexture, SF_NONE, SA_REPEAT, SA_REPEAT, true); // FIXME the force linear RGB is not honored in VR
-      const vec4 ao_s_tb(m_ptable->m_AOScale, 0.1f, 0.f,0.f);
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_AO_scale_timeblur, &ao_s_tb);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_AO_scale_timeblur, m_ptable->m_AOScale, 0.1f, 0.f, 0.f);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_AO);
 
       for (unsigned int i = 0; i < 50; ++i) // 50 iterations to get AO smooth
       {
-         if (i != 0)
-            m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(0)->Activate();
+         m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(0)->Activate();
+         if (i == 0)
+            m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler()); //!! ?
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler()); //!! ?
@@ -1876,16 +1869,14 @@ void Player::InitStatic()
       }
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_depth);
-      delete tmpDepth;
 
       m_pin3d.m_pddsStatic->Activate(false);
 
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderRT->GetColorSampler());
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderRT->GetColorSampler());
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao, m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler());
 
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
-         (float)(1.0 / m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth()), (float)(1.0 / m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight()), 1.0f, 1.0f);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderRT->GetWidth()), (float)(1.0 / renderRT->GetHeight()), 1.0f, 1.0f);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAA ? SHADER_TECHNIQUE_fb_tonemap_AO_static : SHADER_TECHNIQUE_fb_tonemap_AO_no_filter_static);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();

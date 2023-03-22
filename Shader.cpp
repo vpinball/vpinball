@@ -1587,7 +1587,7 @@ void Shader::setAttributeFormat(DWORD fvf)
       const int location = m_techniques[m_technique]->attributeLocation[i].location;
       if (location >= 0) {
          size_t offset;
-         glEnableVertexAttribArray(m_techniques[m_technique]->attributeLocation[i].location);
+         glEnableVertexAttribArray(location);
          switch (i) {
          case SHADER_ATTRIBUTE_POS:
             offset = 0;
@@ -1604,7 +1604,7 @@ void Shader::setAttributeFormat(DWORD fvf)
             offset = 0;
             break;
          }
-         glVertexAttribPointer(m_techniques[m_technique]->attributeLocation[i].location, m_techniques[m_technique]->attributeLocation[i].size, GL_FLOAT, GL_FALSE,
+         glVertexAttribPointer(location, m_techniques[m_technique]->attributeLocation[i].size, GL_FLOAT, GL_FALSE,
             (fvf == MY_D3DFVF_TEX) ? 20 : 32, (void*)offset);
       }
    }
