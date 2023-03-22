@@ -45,27 +45,15 @@ out vec3 normal_gs;
 
 void main()
 {
-    if (disableVertexShader)
-    {
-        // Backglass mode: vertices are pretransformed, following DX9 format, leading to this somewhat messy processing
-        gl_Position = float4(vPosition, 1.0);
-        tex0_gs = float2(vNormal.y, vNormal.z);
-        tablePos_gs = float3(tc.x, tc.y, 0.0);
-        worldPos_gs = float3(tc.x, tc.y, 0.0);
-        normal_gs = float3(0.0, -1.0, 0.0);
-    }
-    else
-    {
-        // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
-        float3 P = (matWorldView * vec4(vPosition,1.0)).xyz;
-        float3 N = normalize((matWorldViewInverseTranspose * vNormal).xyz);
+    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
+    float3 P = (matWorldView * vec4(vPosition,1.0)).xyz;
+    float3 N = normalize((matWorldViewInverseTranspose * vNormal).xyz);
 
-        gl_Position = float4(vPosition, 1.0);
-        tex0_gs = tc;
-        tablePos_gs = vPosition.xyz;
-        worldPos_gs = P;
-        normal_gs = N;
-   }
+    gl_Position = float4(vPosition, 1.0);
+    tex0_gs = tc;
+    tablePos_gs = vPosition.xyz;
+    worldPos_gs = P;
+    normal_gs = N;
 }
 
 ////gs_light_main
@@ -87,11 +75,9 @@ void main()
    gl_ViewportIndex = gl_InvocationID;
    if (gl_ViewportIndex == 0 || !ignoreStereo)
    {
-      for (int i=0;i<gl_in.length();i++) {
-         if (disableVertexShader)
-             gl_Position = gl_in[i].gl_Position;
-         else
-             gl_Position = matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position;
+      for (int i=0;i<gl_in.length();i++)
+      {
+         gl_Position = matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position;
          tex0 = tex0_gs[i];
          worldPos = worldPos_gs[i];
          tablePos = tablePos_gs[i];

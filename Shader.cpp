@@ -207,7 +207,6 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_UNIFORM(SUT_Bool, lightingOff),
    SHADER_UNIFORM(SUT_Bool, is_metal), // OpenGL only [managed by DirectX Effect framework on DirectX]
    SHADER_UNIFORM(SUT_Bool, doNormalMapping), // OpenGL only [managed by DirectX Effect framework on DirectX]
-   SHADER_UNIFORM(SUT_Bool, disableVertexShader), // OpenGL only to support pretransformed vertices
    // -- Samplers (a texture reference with sampling configuration) --
    // DMD shader
    SHADER_SAMPLER(tex_dmd, Texture0, SA_CLAMP, SA_CLAMP, SF_NONE), // DMD
