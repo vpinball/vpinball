@@ -135,7 +135,6 @@ enum SaveDirtyState
 
 #define MY_D3DFVF_TEX                   0
 #define MY_D3DFVF_NOTEX2_VERTEX         1
-#define MY_D3DTRANSFORMED_NOTEX2_VERTEX 2 //!! delete
 
 //These Structs are used for rendering and loading meshes. They must match the VertexDeclaration in RenderDevice.cpp and the loaded meshes.
 class Vertex3D_TexelOnly final // for rendering, uses MY_D3DFVF_TEX
@@ -153,7 +152,7 @@ public:
 
 
 // NB: this struct MUST NOT BE CHANGED as the Primitive class uses it for file I/O...
-class Vertex3D_NoTex2 final // for rendering, uses MY_D3DFVF_NOTEX2_VERTEX or MY_D3DTRANSFORMED_NOTEX2_VERTEX
+class Vertex3D_NoTex2 final // for rendering, uses MY_D3DFVF_NOTEX2_VERTEX
 {
 public:
    // Position
@@ -162,9 +161,9 @@ public:
    D3DVALUE z;
 
    // Normals
-   D3DVALUE nx; // w component if MY_D3DTRANSFORMED_NOTEX2_VERTEX
-   D3DVALUE ny; // tex coord (1) if MY_D3DTRANSFORMED_NOTEX2_VERTEX
-   D3DVALUE nz; // dto.
+   D3DVALUE nx;
+   D3DVALUE ny;
+   D3DVALUE nz;
 
    // Texture coordinates (0)
    D3DVALUE tu;

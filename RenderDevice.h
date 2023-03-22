@@ -408,6 +408,5 @@ public:
    IDirect3DVertexDeclaration9* m_currentVertexDeclaration = nullptr;
    IDirect3DVertexDeclaration9* m_pVertexTexelDeclaration = nullptr;
    IDirect3DVertexDeclaration9* m_pVertexNormalTexelDeclaration = nullptr;
-   IDirect3DVertexDeclaration9* m_pVertexTrafoTexelDeclaration = nullptr;
 #endif
 };
