@@ -120,13 +120,13 @@ void _ceateProjectionAndViewMatrix(float* const __restrict P, float* const __res
    const float tableGlass = t->m_glassheight;
    const float minSlope = (t->m_overridePhysics ? t->m_fOverrideMinSlope : t->m_angletiltMin);
    const float maxSlope = (t->m_overridePhysics ? t->m_fOverrideMaxSlope : t->m_angletiltMax);
-   const float slope = minSlope + (maxSlope - minSlope) * t->m_globalDifficulty;
+   //const float slope = minSlope + (maxSlope - minSlope) * t->m_globalDifficulty;
    rotation = (rotation + settings.rotation) % 4;
 
    // Data from config file (Settings):
    float DisplaySize;
-   float DisplayNativeWidth;
-   float DisplayNativeHeight;
+   double DisplayNativeWidth;
+   double DisplayNativeHeight;
    float AboveScreen;
    float InsideScreen;
 
@@ -137,13 +137,13 @@ void _ceateProjectionAndViewMatrix(float* const __restrict P, float* const __res
    if (BAM.IsBAMTrackerPresent())
    {
       // we use Screen Width & Height as Native Resolution. Only aspect ration is important
-      DisplayNativeWidth = static_cast<float>(BAM.GetScreenWidth()); // [mm]
-      DisplayNativeHeight = static_cast<float>(BAM.GetScreenHeight()); // [mm]
+      DisplayNativeWidth = BAM.GetScreenWidth(); // [mm]
+      DisplayNativeHeight = BAM.GetScreenHeight(); // [mm]
    }
    else
    {
-      DisplayNativeWidth = static_cast<float>(resolutionWidth);
-      DisplayNativeHeight = static_cast<float>(resolutionHeight);
+      DisplayNativeWidth = static_cast<double>(resolutionWidth);
+      DisplayNativeHeight = static_cast<double>(resolutionHeight);
    }
 
    if (settings.swapWidthHeight)
@@ -161,8 +161,8 @@ void _ceateProjectionAndViewMatrix(float* const __restrict P, float* const __res
    }
    else
    {
-      DisplayNativeWidth *= 1300 / DisplayNativeHeight;
-      DisplayNativeHeight = 1300.0f;
+      DisplayNativeWidth *= 1300.0 / DisplayNativeHeight;
+      DisplayNativeHeight = 1300.0;
       ViewerPositionX = g_TableSettings.camera[0];
       ViewerPositionY = g_TableSettings.camera[1];
       ViewerPositionZ = g_TableSettings.camera[2];
@@ -173,11 +173,11 @@ void _ceateProjectionAndViewMatrix(float* const __restrict P, float* const __res
    DisplaySize = (float)(sqrt(w * w + h * h) / 25.4); // [mm] -> [inchs]
 
    // constant params for this project
-   AboveScreen = 200.0; // 0.2m
-   InsideScreen = 2000.0; // 2.0m
+   AboveScreen = 200.0f; // 0.2m
+   InsideScreen = 2000.0f; // 2.0m
 
    // Data build projection matrix
-   BuildProjectionMatrix(P, DisplaySize, DisplayNativeWidth, DisplayNativeHeight, (float)resolutionWidth, (float)resolutionHeight, 0.0f, 0.0f, (float)resolutionWidth,
+   BuildProjectionMatrix(P, DisplaySize, (float)DisplayNativeWidth, (float)DisplayNativeHeight, (float)resolutionWidth, (float)resolutionHeight, 0.0f, 0.0f, (float)resolutionWidth,
       (float)resolutionHeight, ViewerPositionX, ViewerPositionY, ViewerPositionZ, -AboveScreen, InsideScreen, rotation);
 
    // Build View matrix from parts: Translation, Scale, Rotation
@@ -185,15 +185,15 @@ void _ceateProjectionAndViewMatrix(float* const __restrict P, float* const __res
    const float VT[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -ViewerPositionX, -ViewerPositionY, -ViewerPositionZ, 1 };
 
    // --- Scale, ... some math
-   const float pixelsToMillimeters = (float)(25.4 * DisplaySize / sqrt(DisplayNativeWidth * DisplayNativeWidth + DisplayNativeHeight * DisplayNativeHeight));
-   const float pixelsToMillimetersX = pixelsToMillimeters * DisplayNativeWidth / resolutionWidth;
-   const float pixelsToMillimetersY = pixelsToMillimeters * DisplayNativeHeight / resolutionHeight;
-   const float ptm = rotation & 1 ? pixelsToMillimetersX : pixelsToMillimetersY;
-   const float tableLengthInMillimeters = ptm * tableLength;
-   const float displayLengthInMillimeters = ptm * (rotation & 1 ? pixelsToMillimeters * DisplayNativeWidth : pixelsToMillimeters * DisplayNativeHeight);
+   const double pixelsToMillimeters = 25.4 * DisplaySize / sqrt(DisplayNativeWidth * DisplayNativeWidth + DisplayNativeHeight * DisplayNativeHeight);
+   const double pixelsToMillimetersX = pixelsToMillimeters * DisplayNativeWidth / resolutionWidth;
+   const double pixelsToMillimetersY = pixelsToMillimeters * DisplayNativeHeight / resolutionHeight;
+   const double ptm = rotation & 1 ? pixelsToMillimetersX : pixelsToMillimetersY;
+   const double tableLengthInMillimeters = ptm * tableLength;
+   const double displayLengthInMillimeters = ptm * (rotation & 1 ? pixelsToMillimeters * DisplayNativeWidth : pixelsToMillimeters * DisplayNativeHeight);
 
    // --- Scale world to fit in screen
-   const float scale = displayLengthInMillimeters / tableLengthInMillimeters; // calc here scale
+   const float scale = (float)(displayLengthInMillimeters / tableLengthInMillimeters); // calc here scale
 
    // combine all to one matrix
    const float I[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
@@ -213,7 +213,7 @@ std::wstring GetFileNameForSettingsXML()
 {
    const wchar_t* SettingsXML = L"BAMViewSettings.xml";
    wchar_t path[2048]; // [MAX_PATH] ;
-   HMODULE hm = NULL;
+   HMODULE hm;
    path[0] = 0;
 
    //if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)&GetFileNameForSettingsXML, &hm) == 0)
@@ -250,7 +250,7 @@ std::string GetTableName()
    return dst ? dst + 1 : "Unknown";
 }
 
-bool SaveFile(std::wstring path, const void* data, SIZE_T size)
+bool SaveFile(const std::wstring& path, const void* data, SIZE_T size)
 {
    HANDLE hFile;
 
@@ -288,7 +288,7 @@ std::string LoadFile(std::wstring path)
    LARGE_INTEGER size;
    if (!GetFileSizeEx(hFile, &size))
    {
-      DWORD err = GetLastError();
+      err = GetLastError();
       CloseHandle(hFile);
       return "";
    }
@@ -430,7 +430,7 @@ void LoadXML()
    auto fn = GetFileNameForSettingsXML();
    auto xml = LoadFile(fn);
 
-   if (xml.size() == 0)
+   if (xml.empty())
       return;
 
    if (doc.Parse(xml.c_str(), xml.size()))
@@ -476,7 +476,7 @@ void init()
 
 void drawMenu()
 {
-   ImGuiIO& io = ImGui::GetIO();
+   //ImGuiIO& io = ImGui::GetIO();
    ImGui::SetNextWindowSizeConstraints(ImVec2(350, 320), ImVec2(FLT_MAX, FLT_MAX));
 
    bool p_open = true;
@@ -527,7 +527,7 @@ void drawMenu()
       }
       ImGui::SameLine();
 
-      ImGui::Indent(std::max(150.0f, i - 100.0f));
+      ImGui::Indent(std::max(150.0f, (float)i - 100.0f));
       if (ImGui::Button("Save", ImVec2(60, 30)))
       {
          SaveXML(&g_TableSettings);

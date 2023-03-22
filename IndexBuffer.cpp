@@ -167,7 +167,7 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const vector<unsigned int>& indices)
 
 IndexBuffer::~IndexBuffer()
 {
-   for (int j = 0; j < m_pendingUploads.size(); j++)
+   for (size_t j = 0; j < m_pendingUploads.size(); j++)
    {
       delete[] m_pendingUploads[j].data;
    }
@@ -209,7 +209,7 @@ void IndexBuffer::unlock()
 void IndexBuffer::CreatePendingSharedBuffer()
 {
    UINT size = 0;
-   for (int i = 0; i < pendingSharedBuffers.size(); i++)
+   for (size_t i = 0; i < pendingSharedBuffers.size(); i++)
    {
       size += pendingSharedBuffers[i]->m_size;
    }
@@ -228,13 +228,13 @@ void IndexBuffer::CreatePendingSharedBuffer()
    CHECKD3D(ib->Lock(0, size, (void**)&data, 0));
    #endif
    UINT offset = 0;
-   for (int i = 0; i < pendingSharedBuffers.size(); i++)
+   for (size_t i = 0; i < pendingSharedBuffers.size(); i++)
    {
       IndexBuffer* buffer = pendingSharedBuffers[i];
       assert(buffer->m_indexFormat == pendingSharedBuffers[0]->m_indexFormat);
       buffer->m_ib = ib;
       buffer->m_offset = offset;
-      for (int j = 0; j < buffer->m_pendingUploads.size(); j++)
+      for (size_t j = 0; j < buffer->m_pendingUploads.size(); j++)
       {
          PendingUpload& upload = buffer->m_pendingUploads[j];
          #ifdef ENABLE_SDL // OpenGL
@@ -266,7 +266,7 @@ void IndexBuffer::bind()
 
    if (m_pendingUploads.size() > 0)
    {
-      for (int j = 0; j < m_pendingUploads.size(); j++)
+      for (size_t j = 0; j < m_pendingUploads.size(); j++)
       {
          PendingUpload& upload = m_pendingUploads[j];
 

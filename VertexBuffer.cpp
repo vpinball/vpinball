@@ -68,7 +68,7 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
 
 VertexBuffer::~VertexBuffer()
 {
-   for (int j = 0; j < m_pendingUploads.size(); j++)
+   for (size_t j = 0; j < m_pendingUploads.size(); j++)
    {
       delete[] m_pendingUploads[j].data;
    }
@@ -110,7 +110,7 @@ void VertexBuffer::unlock()
 void VertexBuffer::CreatePendingSharedBuffer()
 {
    UINT size = 0;
-   for (int i = 0; i < pendingSharedBuffers.size(); i++)
+   for (size_t i = 0; i < pendingSharedBuffers.size(); i++)
    {
       size += pendingSharedBuffers[i]->m_size;
    }
@@ -128,13 +128,13 @@ void VertexBuffer::CreatePendingSharedBuffer()
    CHECKD3D(vb->Lock(0, size, (void**)&data, 0));
    #endif
    UINT offset = 0;
-   for (int i = 0; i < pendingSharedBuffers.size(); i++)
+   for (size_t i = 0; i < pendingSharedBuffers.size(); i++)
    {
       VertexBuffer* buffer = pendingSharedBuffers[i];
       assert(buffer->m_fvf == pendingSharedBuffers[0]->m_fvf);
       buffer->m_vb = vb;
       buffer->m_offset = offset;
-      for (int j = 0; j < buffer->m_pendingUploads.size(); j++)
+      for (size_t j = 0; j < buffer->m_pendingUploads.size(); j++)
       {
          PendingUpload& upload = buffer->m_pendingUploads[j];
          #ifdef ENABLE_SDL // OpenGL
@@ -166,7 +166,7 @@ void VertexBuffer::bind()
 
    if (m_pendingUploads.size() > 0)
    {
-      for (int j = 0; j < m_pendingUploads.size(); j++)
+      for (size_t j = 0; j < m_pendingUploads.size(); j++)
       {
          PendingUpload& upload = m_pendingUploads[j];
 
