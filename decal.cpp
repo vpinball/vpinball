@@ -471,8 +471,7 @@ void Decal::RenderSetup()
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
 
-   const DWORD vertexType = m_backglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX;
-   VertexBuffer* vertexBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, 4, 0, vertexType);
+   VertexBuffer *vertexBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, 4, 0, MY_D3DFVF_NOTEX2_VERTEX);
 
 
    Vertex3D_NoTex2 *vertices;
@@ -504,18 +503,9 @@ void Decal::RenderSetup()
 
       for (int i = 0; i < 4; ++i)
       {
-#ifdef ENABLE_SDL
-         vertices[i].x =        2.0f * (vertices[i].x * mult  - 0.5f) / (float)pd3dDevice->GetBackBufferTexture()->GetWidth() - 1.0f;
-         vertices[i].y = 1.0f - 2.0f * (vertices[i].y * ymult - 0.5f) / (float)pd3dDevice->GetBackBufferTexture()->GetHeight();
-#else
          vertices[i].x = vertices[i].x * mult  - 0.5f;
          vertices[i].y = vertices[i].y * ymult - 0.5f;
-#endif
          vertices[i].z = 0.0f;
-
-         vertices[i].nx = 1.0f; //!! as this is the w component due to MY_D3DTRANSFORMED_NOTEX2_VERTEX usage
-         vertices[i].ny = 0.0f;
-         vertices[i].nz = 0.0f;
       }
    }
 
@@ -606,14 +596,29 @@ void Decal::RenderObject()
       pd3dDevice->basicShader->SetVector(SHADER_cBase_Alpha, &staticColor);
    }
 
-   pd3dDevice->basicShader->SetBool(SHADER_disableVertexShader, m_backglass);
+   if (m_backglass)
+   {
+      const int eyes = g_pplayer->m_stereo3D != STEREO_OFF ? 2 : 1;
+      Matrix3D matWorldViewProj[2]; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
+      matWorldViewProj[0].SetIdentity();
+      matWorldViewProj[0]._11 = 2.0f / (float)pd3dDevice->GetBackBufferTexture()->GetWidth();
+      matWorldViewProj[0]._41 = -1.0f;
+      matWorldViewProj[0]._22 = -2.0f / (float)pd3dDevice->GetBackBufferTexture()->GetHeight();
+      matWorldViewProj[0]._42 = 1.0f;
+      #ifdef ENABLE_SDL
+      memcpy(&matWorldViewProj[1], &matWorldViewProj[0], 4 * 4 * sizeof(float));
+      pd3dDevice->basicShader->SetUniformBlock(SHADER_matrixBlock, &matWorldViewProj[0].m[0][0], eyes * 16 * sizeof(float));
+      #else
+      pd3dDevice->basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0]);
+      #endif
+   }
 
    pd3dDevice->basicShader->Begin();
    pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLEFAN, 0, 4);
    pd3dDevice->basicShader->End();
 
-   pd3dDevice->basicShader->SetBool(SHADER_disableVertexShader, false);
-
+   if (m_backglass)
+      g_pplayer->UpdateBasicShaderMatrix();
    pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
