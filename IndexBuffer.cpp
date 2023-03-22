@@ -199,6 +199,8 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const vector<unsigned int>& indices)
 
 IndexBuffer::~IndexBuffer()
 {
+   if (!m_ib)
+      RemoveFromVectorSingle(pendingSharedBuffers, this);
    for (size_t j = 0; j < m_pendingUploads.size(); j++)
    {
       delete[] m_pendingUploads[j].data;

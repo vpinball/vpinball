@@ -66,6 +66,8 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
 
 VertexBuffer::~VertexBuffer()
 {
+   if (!m_vb)
+      RemoveFromVectorSingle(pendingSharedBuffers, this);
    for (size_t j = 0; j < m_pendingUploads.size(); j++)
    {
       delete[] m_pendingUploads[j].data;
