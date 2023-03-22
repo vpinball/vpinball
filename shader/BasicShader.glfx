@@ -6,8 +6,6 @@ precision highp float;
 #define noperspective
 #endif
 
-uniform bool disableVertexShader; // To support pretransformed vertices (used by decals and classic lights for backglass)
-
 ////DEFINES
 #include "Helpers.fxh"
 
@@ -261,13 +259,8 @@ void main()
    gl_ViewportIndex = gl_InvocationID;
    for (int i=0;i<gl_in.length();i++) {
       //Default
-      if (disableVertexShader)
-         gl_Position = gl_in[i].gl_Position;
-      else
-      {
-         gl_Position = matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position;
-         gl_ClipDistance[0] = dot(gl_Position, clip_planes[gl_InvocationID]); // For Render Dynamic Mirror when enabling clipping.
-      }
+      gl_Position = matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position;
+      gl_ClipDistance[0] = dot(gl_Position, clip_planes[gl_InvocationID]); // For Render Dynamic Mirror when enabling clipping.
       //Custom
       tex01 = tex01_gs[i];
       vec2 screen_space = 0.5 * (gl_Position.xy / gl_Position.w) + vec2(0.5);
@@ -307,13 +300,8 @@ void main()
    gl_ViewportIndex = gl_InvocationID;
    for (int i=0;i<gl_in.length();i++) {
       //Default
-      if (disableVertexShader)
-         gl_Position = gl_in[i].gl_Position;
-      else
-      {
-         gl_Position = matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position;
-         gl_ClipDistance[0] = dot(gl_Position, clip_planes[gl_InvocationID]); // For Render Dynamic Mirror when enabling clipping.
-      }
+      gl_Position = matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position;
+      gl_ClipDistance[0] = dot(gl_Position, clip_planes[gl_InvocationID]); // For Render Dynamic Mirror when enabling clipping.
       //Custom
       vec2 screen_space = 0.5 * (gl_Position.xy / gl_Position.w) + vec2(0.5);
 #if (eyes == 1)
