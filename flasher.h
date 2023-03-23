@@ -153,7 +153,7 @@ private:
    unsigned int m_numVertices;
    int m_numPolys;
    float m_minx, m_maxx, m_miny, m_maxy;
-   Vertex3D_TexelOnly *m_vertices;
+   Vertex3D_NoTex2 *m_vertices;
 
    PropertyPane *m_propVisual;
 
