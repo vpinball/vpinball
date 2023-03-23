@@ -1079,12 +1079,12 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
       -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
    };
    delete m_quadMeshBuffer;
-   VertexBuffer* quadVertexBuffer = new VertexBuffer(this, 4, USAGE_STATIC, MY_D3DFVF_TEX, verts);
+   VertexBuffer* quadVertexBuffer = new VertexBuffer(this, 4, verts, false, MY_D3DFVF_TEX);
    m_quadMeshBuffer = new MeshBuffer(quadVertexBuffer);
 
 #ifdef ENABLE_SDL
    delete m_quadDynMeshBuffer;
-   VertexBuffer* quadDynVertexBuffer = new VertexBuffer(this, 4, USAGE_DYNAMIC, MY_D3DFVF_TEX);
+   VertexBuffer* quadDynVertexBuffer = new VertexBuffer(this, 4, nullptr, true, MY_D3DFVF_TEX);
    m_quadDynMeshBuffer = new MeshBuffer(quadDynVertexBuffer);
 #endif
 

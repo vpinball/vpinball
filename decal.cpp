@@ -471,7 +471,7 @@ void Decal::RenderSetup()
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
 
-   VertexBuffer *vertexBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, 4, 0, MY_D3DFVF_NOTEX2_VERTEX);
+   VertexBuffer *vertexBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, 4);
 
 
    Vertex3D_NoTex2 *vertices;

@@ -137,12 +137,12 @@ void MeshBuffer::bind()
 
 vector<IndexBuffer*> IndexBuffer::pendingSharedBuffers;
 
-IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format)
+IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const bool isDynamic, const IndexBuffer::Format format)
    : m_rd(rd)
    , m_indexCount(numIndices)
    , m_indexFormat(format)
    , m_sizePerIndex(format == FMT_INDEX16 ? 2 : 4)
-   , m_isStatic(usage == 0 || usage == USAGE_STATIC)
+   , m_isStatic(!isDynamic)
    , m_size(numIndices * (format == FMT_INDEX16 ? 2 : 4))
 {
    if (m_isStatic)
@@ -170,7 +170,7 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const 
 }
 
 IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const unsigned int* indices)
-   : IndexBuffer(rd, numIndices, 0, IndexBuffer::FMT_INDEX32)
+   : IndexBuffer(rd, numIndices, false, IndexBuffer::FMT_INDEX32)
 {
    void* buf;
    lock(0, 0, &buf, WRITEONLY);
@@ -179,7 +179,7 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const 
 }
 
 IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const WORD* indices)
-   : IndexBuffer(rd, numIndices, 0, IndexBuffer::FMT_INDEX16)
+   : IndexBuffer(rd, numIndices, false, IndexBuffer::FMT_INDEX16)
 {
    void* buf;
    lock(0, 0, &buf, WRITEONLY);

@@ -868,14 +868,14 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 
 void Flipper::RenderSetup()
 {
-   IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, flipperBaseNumIndices * 2, USAGE_STATIC, IndexBuffer::FMT_INDEX16);
+   IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, flipperBaseNumIndices * 2);
    WORD *bufI;
    indexBuffer->lock(0, 0, (void**)&bufI, IndexBuffer::WRITEONLY);
    memcpy(bufI, flipperBaseIndices, flipperBaseNumIndices * sizeof(flipperBaseIndices[0]));
    for (int i = 0; i < flipperBaseNumIndices; i++)
       bufI[flipperBaseNumIndices + i] = flipperBaseIndices[i] + flipperBaseVertices;
    indexBuffer->unlock();
-   VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, flipperBaseVertices * 2, 0, MY_D3DFVF_NOTEX2_VERTEX);
+   VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, flipperBaseVertices * 2);
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    GenerateBaseMesh(buf);

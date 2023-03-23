@@ -631,7 +631,7 @@ void Bumper::RenderSetup()
    {
       m_baseTexture.CreateFromResource(IDB_BUMPER_BASE);
       IndexBuffer* baseIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperBaseNumIndices, bumperBaseIndices);
-      VertexBuffer* baseVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperBaseNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
+      VertexBuffer* baseVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperBaseNumVertices);
       Vertex3D_NoTex2 *buf;
       baseVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
       GenerateBaseMesh(buf);
@@ -644,7 +644,7 @@ void Bumper::RenderSetup()
    {
       m_skirtTexture.CreateFromResource(IDB_BUMPER_SKIRT);
       IndexBuffer* socketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperSocketNumIndices, bumperSocketIndices);
-      VertexBuffer* socketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperSocketNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
+      VertexBuffer* socketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperSocketNumVertices, nullptr, true);
       Vertex3D_NoTex2 *buf;
       socketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
       GenerateSocketMesh(buf);
@@ -657,7 +657,7 @@ void Bumper::RenderSetup()
    {
       m_ringTexture.CreateFromResource(IDB_BUMPER_RING);
       IndexBuffer* ringIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperRingNumIndices, bumperRingIndices);
-      VertexBuffer* ringVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperRingNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
+      VertexBuffer *ringVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperRingNumVertices, nullptr, true);
       m_ringVertices = new Vertex3D_NoTex2[bumperRingNumVertices];
       GenerateRingMesh(m_ringVertices);
       Vertex3D_NoTex2 *buf;
@@ -672,7 +672,7 @@ void Bumper::RenderSetup()
    {
       m_capTexture.CreateFromResource(IDB_BUMPERCAP);
       IndexBuffer* capIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperCapNumIndices, bumperCapIndices);
-      VertexBuffer* capVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperCapNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
+      VertexBuffer* capVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperCapNumVertices);
       Vertex3D_NoTex2 *buf;
       capVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
       GenerateCapMesh(buf);

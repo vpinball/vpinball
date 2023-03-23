@@ -17,8 +17,7 @@ public:
 #endif
    };
 
-   VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, const DWORD usage, const DWORD fvf);
-   VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, const DWORD usage, const DWORD fvf, const float* verts);
+   VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, const float* verts = nullptr, const bool isDynamic = false, const DWORD fvf = MY_D3DFVF_NOTEX2_VERTEX);
    ~VertexBuffer();
 
    unsigned int GetOffset() const { return m_offset; }
