@@ -537,8 +537,25 @@ void Light::RenderDynamic()
       matWorldViewProj[0]._22 = -2.0f / (float)pd3dDevice->GetBackBufferTexture()->GetHeight();
       matWorldViewProj[0]._42 = 1.0f;
       #ifdef ENABLE_SDL
-      memcpy(&matWorldViewProj[1], &matWorldViewProj[0], 4 * 4 * sizeof(float));
-      shader->SetUniformBlock(SHADER_matrixBlock, &matWorldViewProj[0].m[0][0], eyes * 16 * sizeof(float));
+      if (shader == pd3dDevice->lightShader)
+      {
+         memcpy(&matWorldViewProj[1], &matWorldViewProj[0], 4 * 4 * sizeof(float));
+         shader->SetUniformBlock(SHADER_matrixBlock, &matWorldViewProj[0].m[0][0], eyes * 16 * sizeof(float));
+      }
+      else
+      {
+         struct
+         {
+            Matrix3D matWorld;
+            Matrix3D matView;
+            Matrix3D matWorldView;
+            Matrix3D matWorldViewInverseTranspose;
+            Matrix3D matWorldViewProj[2];
+         } matrices;
+         memcpy(&matrices.matWorldViewProj[0], &matWorldViewProj[0], 4 * 4 * sizeof(float));
+         memcpy(&matrices.matWorldViewProj[1], &matWorldViewProj[0], 4 * 4 * sizeof(float));
+         shader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorld.m[0][0], (eyes + 4) * 16 * sizeof(float));
+      }
       #else
       shader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0]);
       #endif

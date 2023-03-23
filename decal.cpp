@@ -599,17 +599,26 @@ void Decal::RenderObject()
    if (m_backglass)
    {
       const int eyes = g_pplayer->m_stereo3D != STEREO_OFF ? 2 : 1;
-      Matrix3D matWorldViewProj[2]; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
-      matWorldViewProj[0].SetIdentity();
-      matWorldViewProj[0]._11 = 2.0f / (float)pd3dDevice->GetBackBufferTexture()->GetWidth();
-      matWorldViewProj[0]._41 = -1.0f;
-      matWorldViewProj[0]._22 = -2.0f / (float)pd3dDevice->GetBackBufferTexture()->GetHeight();
-      matWorldViewProj[0]._42 = 1.0f;
+      Matrix3D matWorldViewProj; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
+      matWorldViewProj.SetIdentity();
+      matWorldViewProj._11 = 2.0f / (float)pd3dDevice->GetBackBufferTexture()->GetWidth();
+      matWorldViewProj._41 = -1.0f;
+      matWorldViewProj._22 = -2.0f / (float)pd3dDevice->GetBackBufferTexture()->GetHeight();
+      matWorldViewProj._42 = 1.0f;
       #ifdef ENABLE_SDL
-      memcpy(&matWorldViewProj[1], &matWorldViewProj[0], 4 * 4 * sizeof(float));
-      pd3dDevice->basicShader->SetUniformBlock(SHADER_matrixBlock, &matWorldViewProj[0].m[0][0], eyes * 16 * sizeof(float));
+      struct
+      {
+         Matrix3D matWorld;
+         Matrix3D matView;
+         Matrix3D matWorldView;
+         Matrix3D matWorldViewInverseTranspose;
+         Matrix3D matWorldViewProj[2];
+      } matrices;
+      memcpy(&matrices.matWorldViewProj[0], &matWorldViewProj, 4 * 4 * sizeof(float));
+      memcpy(&matrices.matWorldViewProj[1], &matWorldViewProj, 4 * 4 * sizeof(float));
+      pd3dDevice->basicShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorld.m[0][0], (eyes + 4) * 16 * sizeof(float));
       #else
-      pd3dDevice->basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0]);
+      pd3dDevice->basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
       #endif
    }
 
