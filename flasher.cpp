@@ -330,12 +330,12 @@ void Flasher::UpdateMesh()
        0.f);
    tempMatrix.Multiply(TMatrix, tempMatrix);
 
-   Vertex3D_TexelOnly *buf;
+   Vertex3D_NoTex2 *buf;
    m_meshBuffer->m_vb->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);
 
    for (unsigned int i = 0; i < m_numVertices; i++)
    {
-      Vertex3D_TexelOnly vert = m_vertices[i];
+      Vertex3D_NoTex2 vert = m_vertices[i];
       tempMatrix.MultiplyVector(vert, vert);
       buf[i] = vert;
    }
@@ -388,15 +388,15 @@ void Flasher::RenderSetup()
    memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
    dynamicIndexBuffer->unlock();
 
-   VertexBuffer* dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, nullptr, true, MY_D3DFVF_TEX);
-   NumVideoBytes += (int)(m_numVertices * sizeof(Vertex3D_TexelOnly));
+   VertexBuffer* dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, nullptr, true);
+   NumVideoBytes += (int)(m_numVertices * sizeof(Vertex3D_NoTex2));
 
    delete m_meshBuffer;
    m_meshBuffer = new MeshBuffer(dynamicVertexBuffer, dynamicIndexBuffer);
 
    if (m_vertices)
       delete[] m_vertices;
-   m_vertices = new Vertex3D_TexelOnly[m_numVertices];
+   m_vertices = new Vertex3D_NoTex2[m_numVertices];
 
    m_minx = FLT_MAX;
    m_miny = FLT_MAX;
@@ -416,7 +416,7 @@ void Flasher::RenderSetup()
       if (pv0->y > m_maxy) m_maxy = pv0->y;
       if (pv0->y < m_miny) m_miny = pv0->y;
    }
-
+   
    const float inv_width = 1.0f / (m_maxx - m_minx);
    const float inv_height = 1.0f / (m_maxy - m_miny);
    const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
