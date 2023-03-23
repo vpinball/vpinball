@@ -555,7 +555,7 @@ void Gate::GenerateWireMesh(Vertex3D_NoTex2 *buf)
 void Gate::RenderSetup()
 {
    IndexBuffer *bracketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, gateBracketNumIndices, gateBracketIndices);
-   VertexBuffer *bracketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, gateBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX);
+   VertexBuffer *bracketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, gateBracketNumVertices);
    SetGateType(m_d.m_type);
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    Vertex3D_NoTex2 *buf;
@@ -566,7 +566,7 @@ void Gate::RenderSetup()
    m_bracketMeshBuffer = new MeshBuffer(bracketVertexBuffer, bracketIndexBuffer);
 
    IndexBuffer *wireIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, m_indices);
-   VertexBuffer *wireVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX);
+   VertexBuffer *wireVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, nullptr, true);
    wireVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
    GenerateWireMesh(buf);
    wireVertexBuffer->unlock();

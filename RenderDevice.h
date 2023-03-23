@@ -74,16 +74,6 @@ enum TransformStateType {
 #endif
 };
 
-enum UsageFlags {
-#ifdef ENABLE_SDL
-   USAGE_STATIC = GL_STATIC_DRAW,
-   USAGE_DYNAMIC = GL_DYNAMIC_DRAW
-#else
-   USAGE_STATIC = D3DUSAGE_WRITEONLY,    // to be used for vertex/index buffers which are uploaded once and never touched again
-   USAGE_DYNAMIC = D3DUSAGE_DYNAMIC      // to be used for vertex/index buffers which are locked every frame/very often
-#endif
-};
-
 class Shader;
 
 class RenderDevice final

@@ -237,7 +237,7 @@ public:
 
       if (!m_buffers[m_curIdx])
       {
-         VertexBuffer *vb = new VertexBuffer(pd3dDevice, 1024, 0, MY_D3DFVF_NOTEX2_VERTEX);
+         VertexBuffer *vb = new VertexBuffer(pd3dDevice, 1024);
          m_buffers[m_curIdx] = new MeshBuffer(vb);
       }
 

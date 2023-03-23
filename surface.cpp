@@ -857,7 +857,7 @@ void Surface::PrepareWallsAtHeight()
    vector<WORD> topBottomIndices, sideIndices;
    GenerateMesh(topBottomBuf, sideBuf, topBottomIndices, sideIndices);
 
-   VertexBuffer *VBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, static_cast<const unsigned int>(sideBuf.size() + topBottomBuf.size()), USAGE_STATIC, MY_D3DFVF_NOTEX2_VERTEX);
+   VertexBuffer *VBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, static_cast<const unsigned int>(sideBuf.size() + topBottomBuf.size()));
    Vertex3D_NoTex2 *verts;
    VBuffer->lock(0, 0, (void**)&verts, VertexBuffer::WRITEONLY);
    memcpy(verts, sideBuf.data(), sizeof(Vertex3D_NoTex2) * sideBuf.size());
@@ -875,7 +875,7 @@ void Surface::PrepareWallsAtHeight()
    for (unsigned int i = 0; i < m_numPolys * 3; i++)
       topBottomIndices.push_back(topBottomIndices[i] + m_numVertices * 2);
 
-   IndexBuffer *IBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)topBottomIndices.size() + (unsigned int)sideIndices.size(), USAGE_STATIC, IndexBuffer::FMT_INDEX16);
+   IndexBuffer *IBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)topBottomIndices.size() + (unsigned int)sideIndices.size());
    WORD* buf;
    IBuffer->lock(0, 0, (void**)&buf, IndexBuffer::WRITEONLY);
    memcpy(buf, sideIndices.data(), sideIndices.size() * sizeof(WORD));
@@ -937,14 +937,14 @@ void Surface::PrepareSlingshots()
       ComputeNormals(rgv3D + offset, 9, rgiSlingshot, 24);
    }
 
-   VertexBuffer *slingshotVBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, n_lines * 9, 0, MY_D3DFVF_NOTEX2_VERTEX);
+   VertexBuffer *slingshotVBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, n_lines * 9);
    Vertex3D_NoTex2 *buf;
    slingshotVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    memcpy(buf, rgv3D, m_vlinesling.size() * 9 * sizeof(Vertex3D_NoTex2));
    slingshotVBuffer->unlock();
    delete[] rgv3D;
 
-   IndexBuffer *slingIBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, n_lines * 24, USAGE_STATIC, IndexBuffer::FMT_INDEX16);
+   IndexBuffer *slingIBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, n_lines * 24);
    unsigned short *ibuf;
    slingIBuffer->lock(0, 0, (void**)&ibuf, VertexBuffer::WRITEONLY);
    memcpy(ibuf, rgIdx, m_vlinesling.size() * 24 * sizeof(unsigned short));

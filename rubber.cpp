@@ -1469,7 +1469,8 @@ void Rubber::GenerateVertexBuffer()
    GenerateMesh();
 
    delete m_meshBuffer;
-   VertexBuffer* dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, m_d.m_staticRendering ? USAGE_STATIC : USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, (float*) m_vertices.data());
+   VertexBuffer *dynamicVertexBuffer
+      = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, (float *)m_vertices.data() , !m_d.m_staticRendering);
    IndexBuffer *dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_ringIndices);
    m_meshBuffer = new MeshBuffer(dynamicVertexBuffer, dynamicIndexBuffer);
 

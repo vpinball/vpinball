@@ -816,7 +816,7 @@ void HitTarget::RenderSetup()
 
    GenerateMesh(m_transformedVertices);
    delete m_meshBuffer;
-   VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, (float *)m_transformedVertices.data());
+   VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)m_numVertices, (float *)m_transformedVertices.data(), true);
    IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, m_indices);
    m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer);
 

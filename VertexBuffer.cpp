@@ -21,15 +21,15 @@ static unsigned int fvfToSize(const DWORD fvf)
 
 vector<VertexBuffer*> VertexBuffer::pendingSharedBuffers;
 
-VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, const DWORD usage, const DWORD fvf)
+VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, const float* verts, const bool isDynamic, const DWORD fvf)
    : m_rd(rd)
    , m_vertexCount(vertexCount)
    , m_fvf(fvf)
    , m_sizePerVertex(fvfToSize(fvf))
-   , m_isStatic(usage == 0 || usage == USAGE_STATIC)
+   , m_isStatic(!isDynamic)
    , m_size(fvfToSize(fvf) * vertexCount)
 {
-   #ifndef __OPENGLES__
+#ifndef __OPENGLES__
    // Disabled since OpenGL ES does not support glDrawElementsBaseVertex and we need it unless we remap the indices when creating the index buffer (and we should)
    if (m_isStatic)
    {
@@ -38,30 +38,28 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
       pendingSharedBuffers.push_back(this);
    }
    else
-   #endif
+#endif
    {
-      #if defined(ENABLE_SDL) // OpenGL
+#if defined(ENABLE_SDL) // OpenGL
       glGenBuffers(1, &m_vb);
       glBindBuffer(GL_ARRAY_BUFFER, m_vb);
       glBufferData(GL_ARRAY_BUFFER, m_size, nullptr, m_isStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
 
-      #else // DirectX 9
+#else // DirectX 9
       // NB: We always specify WRITEONLY since MSDN states,
       // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
       // This means we cannot read from vertex buffers, but I don't think we need to.
       CHECKD3D(rd->GetCoreDevice()->CreateVertexBuffer(m_size, D3DUSAGE_WRITEONLY | (m_isStatic ? 0 : D3DUSAGE_DYNAMIC), 0, D3DPOOL_DEFAULT, &m_vb, nullptr));
 
-      #endif
+#endif
    }
-}
-
-VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, const DWORD usage, const DWORD fvf, const float* verts)
-   : VertexBuffer(rd, vertexCount, usage, fvf)
-{
-   BYTE* const data = new BYTE[vertexCount * m_sizePerVertex];
-   memcpy(data, verts, vertexCount * m_sizePerVertex);
-   PendingUpload pending { 0, vertexCount * m_sizePerVertex, data };
-   m_pendingUploads.push_back(pending);
+   if (verts != nullptr)
+   {
+      BYTE* const data = new BYTE[vertexCount * m_sizePerVertex];
+      memcpy(data, verts, vertexCount * m_sizePerVertex);
+      PendingUpload pending { 0, vertexCount * m_sizePerVertex, data };
+      m_pendingUploads.push_back(pending);
+   }
 }
 
 VertexBuffer::~VertexBuffer()
