@@ -236,7 +236,7 @@ BackGlass::~BackGlass()
 
 void BackGlass::Render()
 {
-   RenderDevice::RenderStateCache initial_state;
+   RenderState initial_state;
    m_pd3dDevice->CopyRenderStates(true, initial_state);
    if (g_pplayer->m_texPUP)
    {
@@ -272,11 +272,11 @@ void BackGlass::Render()
       m_pd3dDevice->DMDShader->SetTexture(SHADER_tex_sprite, m_backgroundFallback, SF_TRILINEAR, SA_CLAMP, SA_CLAMP);
    else return;
 
-   m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
-   m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
-   m_pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+   m_pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+   m_pd3dDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+   m_pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
 
-   m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
+   m_pd3dDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
 
    m_pd3dDevice->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_noDMD);
 

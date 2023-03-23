@@ -1274,7 +1274,7 @@ void Flasher::RenderDynamic()
       return;
 
    RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderDevice::RenderStateCache initial_state;
+   RenderState initial_state;
    pd3dDevice->CopyRenderStates(true, initial_state);
 
    const bool alphadmd = (m_d.m_modulate_vs_add < 1.f);
@@ -1290,13 +1290,13 @@ void Flasher::RenderDynamic()
        }
 
        pd3dDevice->SetRenderStateDepthBias(0.0f);
-       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+       pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
 
-       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+       pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
        if (g_pplayer->IsRenderPass(Player::TRANSPARENT_DMD_PASS) && alphadmd)
           g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_addBlend);
        else
-          pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
+          pd3dDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
 
        /*const unsigned int alphamode = 1; //!! make configurable?
        // add
@@ -1360,7 +1360,7 @@ void Flasher::RenderDynamic()
        }
 
        pd3dDevice->SetRenderStateDepthBias(0.0f);
-       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+       pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
 
        Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
        Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
@@ -1416,10 +1416,10 @@ void Flasher::RenderDynamic()
        if (m_lightmap != nullptr && m_lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS)
           pd3dDevice->flasherShader->SetVector(SHADER_lightCenter_doShadow, m_lightmap->m_d.m_vCenter.x, m_lightmap->m_d.m_vCenter.y, m_lightmap->GetCurrentHeight(), 1.0f);
 
-       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
+       pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
        g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_addBlend, false, false);
-       pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_addBlend ? RenderDevice::INVSRC_COLOR : RenderDevice::INVSRC_ALPHA);
-       pd3dDevice->SetRenderState(RenderDevice::BLENDOP, m_d.m_addBlend ? RenderDevice::BLENDOP_REVSUBTRACT : RenderDevice::BLENDOP_ADD);
+       pd3dDevice->SetRenderState(RenderState::DESTBLEND, m_d.m_addBlend ? RenderState::INVSRC_COLOR : RenderState::INVSRC_ALPHA);
+       pd3dDevice->SetRenderState(RenderState::BLENDOP, m_d.m_addBlend ? RenderState::BLENDOP_REVSUBTRACT : RenderState::BLENDOP_ADD);
 
        pd3dDevice->flasherShader->Begin();
        pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);

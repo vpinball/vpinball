@@ -1188,7 +1188,7 @@ void Primitive::ExportMesh(ObjLoader& loader)
 void Primitive::RenderObject()
 {
    RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderDevice::RenderStateCache initial_state;
+   RenderState initial_state;
    pd3dDevice->CopyRenderStates(true, initial_state);
 
    if (m_d.m_groupdRendering)
@@ -1233,8 +1233,8 @@ void Primitive::RenderObject()
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
    pd3dDevice->SetRenderStateDepthBias(0.f);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-   pd3dDevice->SetRenderStateCulling(m_d.m_backfacesEnabled && mat->m_bOpacityActive ? RenderDevice::CULL_CW : RenderDevice::CULL_CCW);
+   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+   pd3dDevice->SetRenderStateCulling(m_d.m_backfacesEnabled && mat->m_bOpacityActive ? RenderState::CULL_CW : RenderState::CULL_CCW);
 
    if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
       // Force disable light from below for objects marked as static since there is no light from below during pre-render pass (to get the same result in dynamic mode & static mode)
@@ -1288,13 +1288,13 @@ void Primitive::RenderObject()
    if (m_d.m_addBlend)
    {
       g_pplayer->m_pin3d.EnableAlphaBlend(true);
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
+      pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
       pd3dDevice->basicShader->SetFlasherColorAlpha(vec4(color.x * color.w, color.y * color.w, color.z * color.w, color.w));
    }
    else
    {
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+      pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
       const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
       pd3dDevice->basicShader->SetFlasherColorAlpha(color);
    }
@@ -1343,7 +1343,7 @@ void Primitive::RenderObject()
    if (is_reflection_only_pass)
    { // If the primitive is already rendered (dynamic pass after a static prepass, or multipass rendering due to alpha blending) => only render additive reflections (primitive itself is already rendered in the static prepass)
       g_pplayer->m_pin3d.EnableAlphaBlend(true);
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
+      pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_basic_refl_only_without_texture);
    }
    else
@@ -1359,7 +1359,7 @@ void Primitive::RenderObject()
    // also draw the back of the primitive faces
    if (m_d.m_backfacesEnabled && mat->m_bOpacityActive)
    {
-      pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+      pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
       pd3dDevice->basicShader->Begin();
       pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
       pd3dDevice->basicShader->End();

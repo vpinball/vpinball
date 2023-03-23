@@ -451,7 +451,7 @@ void Shader::SetMaterial(const Material* const mat, const bool has_alpha)
    if (bOpacityActive && (has_alpha || alpha < 1.0f))
       g_pplayer->m_pin3d.EnableAlphaBlend(false);
    else
-      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
+      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
 }
 
 void Shader::SetDisableLighting(const float value) // only set top

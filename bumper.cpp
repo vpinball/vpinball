@@ -393,12 +393,12 @@ void Bumper::RenderDynamic()
       return;
 
    RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderDevice::RenderStateCache initial_state;
+   RenderState initial_state;
    pd3dDevice->CopyRenderStates(true, initial_state);
 
    pd3dDevice->SetRenderStateDepthBias(0.0f);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-   pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+   pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
 
    if (m_d.m_ringVisible)
    {
@@ -430,7 +430,7 @@ void Bumper::RenderDynamic()
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
       pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, &m_skirtTexture);
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat);
-      pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+      pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
       RenderSocket(mat);
    }
 
@@ -440,7 +440,7 @@ void Bumper::RenderDynamic()
       if (mat->m_bOpacityActive)
       {
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat);
-         pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+         pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
          RenderBase(mat);
       }
    }
@@ -451,7 +451,7 @@ void Bumper::RenderDynamic()
       if (mat->m_bOpacityActive)
       {
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat);
-         pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+         pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
          RenderCap(mat);
       }
    }
@@ -766,7 +766,7 @@ void Bumper::RenderStatic()
       return;
 
    RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderDevice::RenderStateCache initial_state;
+   RenderState initial_state;
    pd3dDevice->CopyRenderStates(true, initial_state);
 
    if (m_d.m_baseVisible)

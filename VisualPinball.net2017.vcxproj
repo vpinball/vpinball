@@ -884,6 +884,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="ramp.cpp" />
     <ClCompile Include="regutil.cpp" />
     <ClCompile Include="RenderDevice.cpp" />
+    <ClCompile Include="RenderState.cpp" />
     <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="slintf.cpp" />
@@ -1366,6 +1367,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="ramp.h" />
     <ClInclude Include="regutil.h" />
     <ClInclude Include="RenderDevice.h" />
+    <ClInclude Include="RenderState.h" />
     <ClInclude Include="RenderProbe.h" />
     <ClInclude Include="RenderTarget.h" />
     <ClInclude Include="resource.h" />

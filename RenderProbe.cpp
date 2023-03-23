@@ -207,7 +207,7 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
 
    RenderTarget* previousRT = RenderTarget::GetCurrentRenderTarget();
    RenderDevice* p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderDevice::RenderStateCache initial_state;
+   RenderState initial_state;
    p3dDevice->CopyRenderStates(true, initial_state);
 
    g_pplayer->m_render_mask |= Player::REFLECTION_PASS;
@@ -253,7 +253,7 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    p3dDevice->SetClipPlane0(clip_plane);
    p3dDevice->SetRenderStateClipPlane0(true);
 
-   p3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW); // re-init/thrash cache entry due to the hacky nature of the table mirroring
+   p3dDevice->SetRenderStateCulling(RenderState::CULL_CCW); // re-init/thrash cache entry due to the hacky nature of the table mirroring
 
    // Flip camera
    Matrix3D viewMat, initialViewMat;

@@ -585,7 +585,7 @@ void Trigger::RenderDynamic()
       return;
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderDevice::RenderStateCache initial_state;
+   RenderState initial_state;
    pd3dDevice->CopyRenderStates(true, initial_state);
 
    if (m_animHeightOffset != m_vertexBuffer_animHeightOffset)
@@ -613,9 +613,9 @@ void Trigger::RenderDynamic()
    pd3dDevice->basicShader->SetMaterial(mat, false);
 
    pd3dDevice->SetRenderStateDepthBias(0.0f);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
    if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD || m_d.m_shape == TriggerInder)
-      pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+      pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
 
    pd3dDevice->basicShader->Begin();
    pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);

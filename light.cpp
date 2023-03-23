@@ -356,7 +356,7 @@ void Light::RenderBulbMesh()
    mat.m_cClearcoat = 0;
 
    RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderDevice::RenderStateCache initial_state;
+   RenderState initial_state;
    pd3dDevice->CopyRenderStates(true, initial_state);
 
    pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
@@ -423,24 +423,24 @@ void Light::RenderDynamic()
    }
 
    RenderDevice *const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderDevice::RenderStateCache initial_state;
+   RenderState initial_state;
    pd3dDevice->CopyRenderStates(true, initial_state);
 
    if (m_backglass)
    {
       pd3dDevice->SetRenderStateDepthBias(0.0f);
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+      pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
    }
    else
    {
       pd3dDevice->SetRenderStateDepthBias(-1.0f);
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
+      pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    }
 
    if (m_backglass || (m_ptable->m_tblMirrorEnabled ^ g_pplayer->IsRenderPass(Player::REFLECTION_PASS)))
-      pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+      pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
    else
-      pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+      pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
 
    Vertex2D centerHUD;
    centerHUD.x = m_d.m_vCenter.x;
@@ -463,9 +463,9 @@ void Light::RenderDynamic()
 
       const Pin3D *const ppin3d = &g_pplayer->m_pin3d;
       ppin3d->EnableAlphaBlend(false, false, false);
-      //pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  RenderDevice::SRC_ALPHA);  // add the lightcontribution
-      pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
-      pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_REVSUBTRACT);
+      //pd3dDevice->SetRenderState(RenderState::SRCBLEND,  RenderState::SRC_ALPHA);  // add the lightcontribution
+      pd3dDevice->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
+      pd3dDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_REVSUBTRACT);
 
       lightColor_intensity.w = m_currentIntensity * 0.02f; //!! make configurable?
       if (m_d.m_BulbLight && g_pplayer->IsRenderPass(Player::LIGHT_BUFFER))
@@ -499,9 +499,9 @@ void Light::RenderDynamic()
          // Also see below if changing again
          if (!m_backglass)
          {
-            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
-            pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::ONE);
-            pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::ONE);
+            pd3dDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+            pd3dDevice->SetRenderState(RenderState::SRCBLEND, RenderState::ONE);
+            pd3dDevice->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
          }
       }
       else
@@ -512,8 +512,8 @@ void Light::RenderDynamic()
       const Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       ppin3d->EnableAlphaBlend(false, false, false);
       //pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  RenderDevice::SRC_ALPHA);  // add the lightcontribution
-      pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
-      pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_REVSUBTRACT);
+      pd3dDevice->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
+      pd3dDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_REVSUBTRACT);
       shader->SetFloat(SHADER_blend_modulate_vs_add, !g_pplayer->IsRenderPass(Player::LIGHT_BUFFER) ? min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
       shader->SetTechnique(m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS ? SHADER_TECHNIQUE_bulb_light_with_ball_shadows : SHADER_TECHNIQUE_bulb_light);
    }
