@@ -688,17 +688,17 @@ void HitTarget::UpdateAnimation(const float diff_time_msec)
 void HitTarget::RenderObject()
 {
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderDevice::RenderStateCache initial_state;
+   RenderState initial_state;
    pd3dDevice->CopyRenderStates(true, initial_state);
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
    pd3dDevice->SetRenderStateDepthBias(0.0f);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
 #ifdef TWOSIDED_TRANSPARENCY
    pd3dDevice->SetRenderStateCulling(mat->m_bOpacityActive ? RenderDevice::CULL_CW : RenderDevice::CULL_CCW);
 #else
-   pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+   pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
 #endif
 
    if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)

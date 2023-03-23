@@ -1033,8 +1033,8 @@ void Surface::RenderSlingshots()
    pd3dDevice->basicShader->SetMaterial(mat, false);
 
    pd3dDevice->SetRenderStateDepthBias(0.0f);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-   pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+   pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
 
    for (size_t i = 0; i < m_vlinesling.size(); i++)
    {
@@ -1065,7 +1065,7 @@ void Surface::RenderWallsAtHeight(const bool drop)
       return;
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderDevice::RenderStateCache initial_state;
+   RenderState initial_state;
    pd3dDevice->CopyRenderStates(true, initial_state);
 
    if ((m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f) && (m_d.m_sideVisible || m_d.m_topBottomVisible))
@@ -1077,16 +1077,16 @@ void Surface::RenderWallsAtHeight(const bool drop)
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
 
       pd3dDevice->SetRenderStateDepthBias(0.0f);
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+      pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
 
       if (mat->m_bOpacityActive || !m_isDynamic)
-         pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+          pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
       else
       {
          if (m_d.m_topBottomVisible && m_isDynamic)
-            pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+              pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
          else
-            pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+              pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
       }
       Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
       if (pinSide)
@@ -1114,12 +1114,12 @@ void Surface::RenderWallsAtHeight(const bool drop)
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
 
       pd3dDevice->SetRenderStateDepthBias(0.0f);
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+      pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
 
       if (mat->m_bOpacityActive || !m_isDynamic)
-         pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+         pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
       else
-         pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+         pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
 
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
       if (pin)
@@ -1144,9 +1144,9 @@ void Surface::RenderWallsAtHeight(const bool drop)
       if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
       {
          if (mat->m_bOpacityActive || !m_isDynamic)
-            pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+            pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
          else
-            pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CW);
+            pd3dDevice->SetRenderStateCulling(RenderState::CULL_CW);
 
          pd3dDevice->basicShader->Begin();
          pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);

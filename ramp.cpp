@@ -917,8 +917,8 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
     * since the texture coordinates always stay within [0,1] anyway. */
    SamplerAddressMode sam = m_d.m_imagealignment == ImageModeWrap ? SA_CLAMP : SA_REPEAT;
    pd3dDevice->SetRenderStateDepthBias(0.0f);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-   pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+   pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (!pin)
    {
@@ -2180,7 +2180,7 @@ void Ramp::RenderRamp(const Material * const mat)
    }
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderDevice::RenderStateCache initial_state;
+   RenderState initial_state;
    pd3dDevice->CopyRenderStates(true, initial_state);
 
    if (isHabitrail())
@@ -2191,8 +2191,8 @@ void Ramp::RenderRamp(const Material * const mat)
          GenerateVertexBuffer();
 
       pd3dDevice->SetRenderStateDepthBias(0.0f);
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-      pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE); // as both floor and walls are thinwalled
+      pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+      pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE); // as both floor and walls are thinwalled
 
       //Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);

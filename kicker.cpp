@@ -527,28 +527,28 @@ void Kicker::RenderDynamic()
    if (m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole || m_d.m_kickertype == KickerHoleSimple || m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb || m_d.m_kickertype == KickerCup2)
    {
       RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-      RenderDevice::RenderStateCache initial_state;
+      RenderState initial_state;
       pd3dDevice->CopyRenderStates(true, initial_state);
 
       pd3dDevice->SetRenderStateDepthBias(0.0f);
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+      pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
       if (m_d.m_kickertype != KickerHoleSimple)
-         pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+         pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
       else
-         pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+         pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
 
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_kickerBoolean, mat);
       pd3dDevice->basicShader->SetFloat(SHADER_fKickerScale, m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
-      pd3dDevice->SetRenderState(RenderDevice::ZFUNC, RenderDevice::Z_ALWAYS);
+      pd3dDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_ALWAYS);
 
       pd3dDevice->basicShader->Begin();
       pd3dDevice->DrawMesh(m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, kickerPlateNumIndices);
       pd3dDevice->basicShader->End();
 
-      pd3dDevice->SetRenderState(RenderDevice::ZFUNC, RenderDevice::Z_LESSEQUAL);
+      pd3dDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
 
       if (m_d.m_kickertype != KickerHoleSimple)
       {

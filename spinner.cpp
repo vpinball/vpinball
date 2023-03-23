@@ -371,7 +371,7 @@ void Spinner::RenderDynamic()
       return;
 
    RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderDevice::RenderStateCache initial_state;
+   RenderState initial_state;
    pd3dDevice->CopyRenderStates(true, initial_state);
 
    UpdatePlate(nullptr);
@@ -379,8 +379,8 @@ void Spinner::RenderDynamic()
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
    pd3dDevice->SetRenderStateDepthBias(0.0f);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-   pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+   pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
 
    Texture * const image = m_ptable->GetImage(m_d.m_szImage);
    if (image)

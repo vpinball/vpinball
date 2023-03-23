@@ -54,6 +54,7 @@
     <ClCompile Include="ramp.cpp" />
     <ClCompile Include="regutil.cpp" />
     <ClCompile Include="RenderDevice.cpp" />
+    <ClCompile Include="RenderState.cpp" />
     <ClCompile Include="slintf.cpp" />
     <ClCompile Include="spinner.cpp" />
     <ClCompile Include="stdafx.cpp" />
@@ -953,6 +954,9 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="RenderDevice.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderState.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">

@@ -556,7 +556,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     m_INTZ_support = false;
     NVAPIinit = false;
 
-    m_current_renderstate.state = m_renderstate.state = 0;
+    m_current_renderstate.m_state = m_renderstate.m_state = 0;
 
     m_stats_drawn_triangles = 0;
 
@@ -603,8 +603,8 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 {
    assert(g_pplayer != nullptr); // Player must be created to give access to the output window
-   m_current_renderstate.state = m_renderstate.state = 0;
-   m_current_renderstate.depth_bias = m_renderstate.depth_bias = 0.0f;
+   m_current_renderstate.m_state = m_renderstate.m_state = 0;
+   m_current_renderstate.m_depthBias = m_renderstate.m_depthBias = 0.0f;
    colorFormat back_buffer_format;
 
 #ifdef ENABLE_SDL
@@ -757,7 +757,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    }
    m_autogen_mipmap = true;
 
-   SetRenderState(RenderDevice::ZFUNC, RenderDevice::Z_LESSEQUAL);
+   SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
 
 #else
    ///////////////////////////////////
@@ -1092,17 +1092,17 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    UploadAndSetSMAATextures();
 
    // Setup a defined initial render state
-   SetRenderState(ALPHABLENDENABLE, RS_FALSE);
-   SetRenderState(ZENABLE, RS_TRUE);
-   SetRenderState(BLENDOP, BLENDOP_ADD);
-   SetRenderState(CLIPPLANEENABLE, RS_FALSE);
-   SetRenderState(CULLMODE, CULL_NONE);
-   SetRenderState(DESTBLEND, SRC_ALPHA);
-   SetRenderState(SRCBLEND, INVSRC_ALPHA);
-   SetRenderState(ZWRITEENABLE, RS_TRUE);
-   SetRenderState(COLORWRITEENABLE, RGBMASK_RGBA);
-   m_current_renderstate.state = (~m_renderstate.state) & ((1 << 21) - 1);
-   m_current_renderstate.depth_bias = m_renderstate.depth_bias - 1.0f;
+   SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+   SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
+   SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
+   SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_FALSE);
+   SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   SetRenderState(RenderState::DESTBLEND, RenderState::SRC_ALPHA);
+   SetRenderState(RenderState::SRCBLEND, RenderState::INVSRC_ALPHA);
+   SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+   SetRenderState(RenderState::COLORWRITEENABLE, RenderState::RGBMASK_RGBA);
+   m_current_renderstate.m_state = (~m_renderstate.m_state) & ((1 << 21) - 1);
+   m_current_renderstate.m_depthBias = m_renderstate.m_depthBias - 1.0f;
    ApplyRenderStates();
 }
 
@@ -1720,108 +1720,33 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
 #endif
 }
 
-#define RENDER_STATE(name, bitpos, bitsize)                                                         \
-   const uint32_t RENDER_STATE_SHIFT_##name = bitpos;                                               \
-   const uint32_t RENDER_STATE_MASK_##name = ((0x00000001u << (bitsize)) - 1) << (bitpos);          \
-   const uint32_t RENDER_STATE_CLEAR_MASK_##name = ~(((0x00000001u << (bitsize)) - 1) << (bitpos));
-// These definition must be copy/pasted to RenderDevice.h/cpp when modified to keep the implementation in sync
-RENDER_STATE(ALPHABLENDENABLE, 0, 1) // RS_FALSE or RS_TRUE
-RENDER_STATE(ZENABLE, 1, 1) // RS_FALSE or RS_TRUE
-RENDER_STATE(BLENDOP, 2, 2) // Operation from BLENDOP_MAX, BLENDOP_ADD, BLENDOP_SUB, BLENDOP_REVSUBTRACT
-RENDER_STATE(CLIPPLANEENABLE, 4, 1) // PLANE0 or 0 (for disable)
-RENDER_STATE(CULLMODE, 5, 2) // CULL_NONE, CULL_CW, CULL_CCW
-RENDER_STATE(DESTBLEND, 7, 3) // ZERO, ONE, SRC_ALPHA, DST_ALPHA, INVSRC_ALPHA, INVSRC_COLOR
-RENDER_STATE(SRCBLEND, 10, 3) // ZERO, ONE, SRC_ALPHA, DST_ALPHA, INVSRC_ALPHA, INVSRC_COLOR
-RENDER_STATE(ZFUNC, 13, 3) // Operation from Z_ALWAYS, Z_LESS, Z_LESSEQUAL, Z_GREATER, Z_GREATEREQUAL
-RENDER_STATE(ZWRITEENABLE, 16, 1) // RS_FALSE or RS_TRUE
-RENDER_STATE(COLORWRITEENABLE, 17, 4) // RGBA mask (4 bits)
-#undef RENDER_STATE
+void RenderDevice::SetRenderState(const RenderState::RenderStates p1, const RenderState::RenderStateValue p2) { m_renderstate.SetRenderState(p1, p2); }
 
-#define RENDER_STATE(name, bitpos, bitsize) { RENDER_STATE_SHIFT_##name, RENDER_STATE_MASK_##name, RENDER_STATE_CLEAR_MASK_##name },
-// These definition must be copy/pasted to RenderDevice.h/cpp when modified to keep the implementation in sync
-const RenderDevice::RenderStateMask RenderDevice::render_state_masks[RENDERSTATE_COUNT] {
-   RENDER_STATE(ALPHABLENDENABLE, 0, 1) // RS_FALSE or RS_TRUE
-   RENDER_STATE(ZENABLE, 1, 1) // RS_FALSE or RS_TRUE
-   RENDER_STATE(BLENDOP, 2, 2) // Operation from BLENDOP_MAX, BLENDOP_ADD, BLENDOP_SUB, BLENDOP_REVSUBTRACT
-   RENDER_STATE(CLIPPLANEENABLE, 4, 1) // PLANE0 or 0 (for disable)
-   RENDER_STATE(CULLMODE, 5, 2) // CULL_NONE, CULL_CW, CULL_CCW
-   RENDER_STATE(DESTBLEND, 7, 3) // ZERO, ONE, SRC_ALPHA, DST_ALPHA, INVSRC_ALPHA, INVSRC_COLOR
-   RENDER_STATE(SRCBLEND, 10, 3) // ZERO, ONE, SRC_ALPHA, DST_ALPHA, INVSRC_ALPHA, INVSRC_COLOR
-   RENDER_STATE(ZFUNC, 13, 3) // Operation from Z_ALWAYS, Z_LESS, Z_LESSEQUAL, Z_GREATER, Z_GREATEREQUAL
-   RENDER_STATE(ZWRITEENABLE, 16, 1) // RS_FALSE or RS_TRUE
-   RENDER_STATE(COLORWRITEENABLE, 17, 4) // RGBA mask (4 bits)
-};
-#undef RENDER_STATE
+void RenderDevice::SetRenderStateClipPlane0(const bool enabled) { SetRenderState(RenderState::CLIPPLANEENABLE, (RenderState::RenderStateValue)(enabled ? 1 : 0)); }
 
-void RenderDevice::SetRenderState(const RenderStates p1, const RenderStateValue p2)
-{
-   assert(((p2 << render_state_masks[p1].shift) & ~render_state_masks[p1].mask) == 0);
-   m_renderstate.state &= render_state_masks[p1].clear_mask;
-   m_renderstate.state |= p2 << render_state_masks[p1].shift;
+void RenderDevice::SetRenderStateCulling(RenderState::RenderStateValue cull) {
+   m_renderstate.SetRenderStateCulling((RenderState::RenderStateValue)cull);
 }
 
-void RenderDevice::SetRenderStateClipPlane0(const bool enabled) { SetRenderState(CLIPPLANEENABLE, (RenderStateValue)(enabled ? 1 : 0)); }
+void RenderDevice::SetRenderStateDepthBias(float bias) { m_renderstate.SetRenderStateDepthBias(bias); }
 
-void RenderDevice::SetRenderStateCulling(RenderStateValue cull)
-{
-   if (g_pplayer && (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->IsRenderPass(Player::REFLECTION_PASS)))
-   {
-      if (cull == CULL_CCW)
-         cull = CULL_CW;
-      else if (cull == CULL_CW)
-         cull = CULL_CCW;
-   }
-   SetRenderState(CULLMODE, cull);
-}
-
-void RenderDevice::SetRenderStateDepthBias(float bias) { m_renderstate.depth_bias = bias; }
-
-void RenderDevice::CopyRenderStates(const bool copyTo, RenderStateCache& state)
+void RenderDevice::CopyRenderStates(const bool copyTo, RenderState& state)
 {
    if (copyTo)
    {
-      state.state = m_renderstate.state;
-      state.depth_bias = m_renderstate.depth_bias;
+      state.m_state = m_renderstate.m_state;
+      state.m_depthBias = m_renderstate.m_depthBias;
    }
    else
    {
-      m_renderstate.state = state.state;
-      m_renderstate.depth_bias = state.depth_bias;
+      m_renderstate.m_state = state.m_state;
+      m_renderstate.m_depthBias = state.m_depthBias;
    }
 }
 
 const string RenderDevice::GetRenderStateLog() const
 {
-   const auto blend = (m_renderstate.state & RENDER_STATE_MASK_ALPHABLENDENABLE) != 0;
-   const auto z_test = (m_renderstate.state & RENDER_STATE_MASK_ZENABLE) != 0;
-   const auto blend_op = (m_renderstate.state & RENDER_STATE_MASK_BLENDOP) >> RENDER_STATE_SHIFT_BLENDOP;
-   const auto clip_plane = (m_renderstate.state & RENDER_STATE_MASK_CLIPPLANEENABLE) != 0;
-   const auto cull_mode = (m_renderstate.state & RENDER_STATE_MASK_CULLMODE) >> RENDER_STATE_SHIFT_CULLMODE;
-   const auto blend_dest = (m_renderstate.state & RENDER_STATE_MASK_DESTBLEND) >> RENDER_STATE_SHIFT_DESTBLEND;
-   const auto blend_src = (m_renderstate.state & RENDER_STATE_MASK_SRCBLEND) >> RENDER_STATE_SHIFT_SRCBLEND;
-   const auto z_func = (m_renderstate.state & RENDER_STATE_MASK_ZFUNC) >> RENDER_STATE_SHIFT_ZFUNC;
-   const auto z_write = (m_renderstate.state & RENDER_STATE_MASK_ZWRITEENABLE) != 0;
-   const auto color_write = (m_renderstate.state & RENDER_STATE_MASK_COLORWRITEENABLE) >> RENDER_STATE_SHIFT_COLORWRITEENABLE;
-   static const string cull_modes[] = { " ___ "s, " CW  "s, " CCW "s };
-   static const string functions[] = { " __ "s, " <  "s, " <= "s, " >  "s, " >= "s };
-   static const string blend_modes[] = { " M "s, " A "s, " R "s };
-   static const string blend_functions[] = { "  0  "s, "  1  "s, " SA  "s, " DA  "s, " RSA "s, " RSC "s };
-   string s { "Blend: {"s };
-   s.append(blend ? " B " : " _ ");
-   s.append(blend_modes[blend_op]);
-   s.append(blend_functions[blend_dest]);
-   s.append(blend_functions[blend_src]);
-   s.append("} Depth: {");
-   s.append(z_test ? " Z " : " _ ");
-   s.append(functions[z_func]);
-   s.append(z_write ? " ZW " : " __ ");
-   s.append("} Clip:");
-   s.append(clip_plane ? " C " : " _ ");
-   s.append("Cull:");
-   s.append(cull_modes[cull_mode]);
-   s.append("Mask: ");
-   s += (char)((color_write < 10 ? 48 : 55) + color_write);
-   return s;
+   return m_renderstate.GetLog();
 }
 
 void RenderDevice::ApplyRenderStates()
@@ -1839,7 +1764,7 @@ void RenderDevice::ApplyRenderStates()
 #endif
 
    int val;
-   unsigned renderstate_mask = m_current_renderstate.state ^ m_renderstate.state; // Identify differences
+   unsigned renderstate_mask = m_current_renderstate.m_state ^ m_renderstate.m_state; // Identify differences
    while (renderstate_mask)
    {
       // Iterate over set bits, starting from the least significant ones
@@ -1848,7 +1773,7 @@ void RenderDevice::ApplyRenderStates()
       {
       case RENDER_STATE_MASK_ALPHABLENDENABLE:
          renderstate_mask &= RENDER_STATE_CLEAR_MASK_ALPHABLENDENABLE;
-         val = m_renderstate.state & RENDER_STATE_MASK_ALPHABLENDENABLE;
+         val = m_renderstate.m_state & RENDER_STATE_MASK_ALPHABLENDENABLE;
 #ifdef ENABLE_SDL
          if (val) glEnable(GL_BLEND); else glDisable(GL_BLEND);
 #else
@@ -1858,7 +1783,7 @@ void RenderDevice::ApplyRenderStates()
 
       case RENDER_STATE_MASK_ZENABLE:
          renderstate_mask &= RENDER_STATE_CLEAR_MASK_ZENABLE;
-         val = m_renderstate.state & RENDER_STATE_MASK_ZENABLE;
+         val = m_renderstate.m_state & RENDER_STATE_MASK_ZENABLE;
 #ifdef ENABLE_SDL
          if (val) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
 #else
@@ -1870,7 +1795,7 @@ void RenderDevice::ApplyRenderStates()
       case 0x00000004u:
       case 0x00000008u:
          renderstate_mask &= RENDER_STATE_CLEAR_MASK_BLENDOP;
-         val = (m_renderstate.state & RENDER_STATE_MASK_BLENDOP) >> RENDER_STATE_SHIFT_BLENDOP;
+         val = (m_renderstate.m_state & RENDER_STATE_MASK_BLENDOP) >> RENDER_STATE_SHIFT_BLENDOP;
 #ifdef ENABLE_SDL
          glBlendEquation(blend_modes[val]);
 #else
@@ -1880,11 +1805,11 @@ void RenderDevice::ApplyRenderStates()
 
       case RENDER_STATE_MASK_CLIPPLANEENABLE:
          renderstate_mask &= RENDER_STATE_CLEAR_MASK_CLIPPLANEENABLE;
-         val = m_renderstate.state & RENDER_STATE_MASK_CLIPPLANEENABLE;
+         val = m_renderstate.m_state & RENDER_STATE_MASK_CLIPPLANEENABLE;
 #ifdef ENABLE_SDL
          if (val) glEnable(GL_CLIP_DISTANCE0); else glDisable(GL_CLIP_DISTANCE0);
 #else
-         CHECKD3D(m_pD3DDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, val ? PLANE0 : 0));
+         CHECKD3D(m_pD3DDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, val ? RenderState::PLANE0 : 0));
 #endif
          break;
 
@@ -1892,7 +1817,7 @@ void RenderDevice::ApplyRenderStates()
       case 0x00000020u:
       case 0x00000040u:
          renderstate_mask &= RENDER_STATE_CLEAR_MASK_CULLMODE;
-         val = (m_renderstate.state & RENDER_STATE_MASK_CULLMODE) >> RENDER_STATE_SHIFT_CULLMODE;
+         val = (m_renderstate.m_state & RENDER_STATE_MASK_CULLMODE) >> RENDER_STATE_SHIFT_CULLMODE;
 #ifdef ENABLE_SDL
          if (val == 0)
             glDisable(GL_CULL_FACE);
@@ -1915,12 +1840,12 @@ void RenderDevice::ApplyRenderStates()
 #ifdef ENABLE_SDL
          {
             renderstate_mask &= RENDER_STATE_CLEAR_MASK_SRCBLEND; // Both are performed together for OpenGL
-            int src = (m_renderstate.state & RENDER_STATE_MASK_SRCBLEND) >> RENDER_STATE_SHIFT_SRCBLEND;
-            int dst = (m_renderstate.state & RENDER_STATE_MASK_DESTBLEND) >> RENDER_STATE_SHIFT_DESTBLEND;
+            int src = (m_renderstate.m_state & RENDER_STATE_MASK_SRCBLEND) >> RENDER_STATE_SHIFT_SRCBLEND;
+            int dst = (m_renderstate.m_state & RENDER_STATE_MASK_DESTBLEND) >> RENDER_STATE_SHIFT_DESTBLEND;
             glBlendFunc(blend_functions[src], blend_functions[dst]);
          }
 #else
-         val = (m_renderstate.state & RENDER_STATE_MASK_DESTBLEND) >> RENDER_STATE_SHIFT_DESTBLEND;
+         val = (m_renderstate.m_state & RENDER_STATE_MASK_DESTBLEND) >> RENDER_STATE_SHIFT_DESTBLEND;
          CHECKD3D(m_pD3DDevice->SetRenderState(D3DRS_DESTBLEND, blend_functions[val]));
 #endif
          break;
@@ -1932,12 +1857,12 @@ void RenderDevice::ApplyRenderStates()
          renderstate_mask &= RENDER_STATE_CLEAR_MASK_SRCBLEND;
 #ifdef ENABLE_SDL
          {
-            int src = (m_renderstate.state & RENDER_STATE_MASK_SRCBLEND) >> RENDER_STATE_SHIFT_SRCBLEND;
-            int dst = (m_renderstate.state & RENDER_STATE_MASK_DESTBLEND) >> RENDER_STATE_SHIFT_DESTBLEND;
+            int src = (m_renderstate.m_state & RENDER_STATE_MASK_SRCBLEND) >> RENDER_STATE_SHIFT_SRCBLEND;
+            int dst = (m_renderstate.m_state & RENDER_STATE_MASK_DESTBLEND) >> RENDER_STATE_SHIFT_DESTBLEND;
             glBlendFunc(blend_functions[src], blend_functions[dst]);
          }
 #else
-         val = (m_renderstate.state & RENDER_STATE_MASK_SRCBLEND) >> RENDER_STATE_SHIFT_SRCBLEND;
+         val = (m_renderstate.m_state & RENDER_STATE_MASK_SRCBLEND) >> RENDER_STATE_SHIFT_SRCBLEND;
          CHECKD3D(m_pD3DDevice->SetRenderState(D3DRS_SRCBLEND, blend_functions[val]));
 #endif
          break;
@@ -1947,7 +1872,7 @@ void RenderDevice::ApplyRenderStates()
       case 0x00004000u:
       case 0x00008000u:
          renderstate_mask &= RENDER_STATE_CLEAR_MASK_ZFUNC;
-         val = (m_renderstate.state & RENDER_STATE_MASK_ZFUNC) >> RENDER_STATE_SHIFT_ZFUNC;
+         val = (m_renderstate.m_state & RENDER_STATE_MASK_ZFUNC) >> RENDER_STATE_SHIFT_ZFUNC;
 #ifdef ENABLE_SDL
          glDepthFunc(functions[val]);
 #else
@@ -1957,7 +1882,7 @@ void RenderDevice::ApplyRenderStates()
 
       case RENDER_STATE_MASK_ZWRITEENABLE:
          renderstate_mask &= RENDER_STATE_CLEAR_MASK_ZWRITEENABLE;
-         val = m_renderstate.state & RENDER_STATE_MASK_ZWRITEENABLE;
+         val = m_renderstate.m_state & RENDER_STATE_MASK_ZWRITEENABLE;
 #ifdef ENABLE_SDL
          glDepthMask(val ? GL_TRUE : GL_FALSE);
 #else
@@ -1971,7 +1896,7 @@ void RenderDevice::ApplyRenderStates()
       case 0x00080000u:
       case 0x00100000u:
          renderstate_mask &= RENDER_STATE_CLEAR_MASK_COLORWRITEENABLE;
-         val = (m_renderstate.state & RENDER_STATE_MASK_COLORWRITEENABLE) >> RENDER_STATE_SHIFT_COLORWRITEENABLE;
+         val = (m_renderstate.m_state & RENDER_STATE_MASK_COLORWRITEENABLE) >> RENDER_STATE_SHIFT_COLORWRITEENABLE;
 #ifdef ENABLE_SDL
          glColorMask((val & 1) ? GL_TRUE : GL_FALSE, (val & 2) ? GL_TRUE : GL_FALSE, (val & 4) ? GL_TRUE : GL_FALSE, (val & 8) ? GL_TRUE : GL_FALSE);
 #else
@@ -1984,22 +1909,22 @@ void RenderDevice::ApplyRenderStates()
       }
       m_curStateChanges++;
    }
-   m_current_renderstate.state = m_renderstate.state;
+   m_current_renderstate.m_state = m_renderstate.m_state;
 
-   if (m_current_renderstate.depth_bias != m_renderstate.depth_bias)
+   if (m_current_renderstate.m_depthBias != m_renderstate.m_depthBias)
    {
-      m_current_renderstate.depth_bias = m_renderstate.depth_bias;
+      m_current_renderstate.m_depthBias = m_renderstate.m_depthBias;
       m_curStateChanges++;
 #ifdef ENABLE_SDL
-      if (m_renderstate.depth_bias == 0.0f)
+      if (m_renderstate.m_depthBias == 0.0f)
          glDisable(GL_POLYGON_OFFSET_FILL);
       else
       {
          glEnable(GL_POLYGON_OFFSET_FILL);
-         glPolygonOffset(0.0f, m_renderstate.depth_bias);
+         glPolygonOffset(0.0f, m_renderstate.m_depthBias);
       }
 #else
-      CHECKD3D(m_pD3DDevice->SetRenderState(D3DRS_DEPTHBIAS, float_as_uint(m_renderstate.depth_bias * BASEDEPTHBIAS)));
+      CHECKD3D(m_pD3DDevice->SetRenderState(D3DRS_DEPTHBIAS, float_as_uint(m_renderstate.m_depthBias * BASEDEPTHBIAS)));
 #endif
    }
 }
@@ -2145,12 +2070,12 @@ void RenderDevice::DrawGaussianBlur(Sampler* source, RenderTarget* tmp, RenderTa
    }
 
    RenderTarget* initial_rt = RenderTarget::GetCurrentRenderTarget();
-   RenderStateCache initial_state;
+   RenderState initial_state;
    CopyRenderStates(true, initial_state);
-   SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
-   SetRenderStateCulling(RenderDevice::CULL_NONE);
-   SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
-   SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
+   SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+   SetRenderStateCulling(RenderState::CULL_NONE);
+   SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+   SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    {
       FBShader->SetTextureNull(SHADER_tex_fb_filtered);
       tmp->Activate(true); // switch to temporary output buffer for horizontal phase of gaussian blur

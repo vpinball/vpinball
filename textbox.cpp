@@ -279,14 +279,14 @@ void Textbox::RenderDynamic()
       return;
 
    RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderDevice::RenderStateCache initial_state;
+   RenderState initial_state;
    pd3dDevice->CopyRenderStates(true, initial_state);
    if (m_ptable->m_tblMirrorEnabled ^ g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
-      pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_NONE);
+      pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
    else
-      pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+      pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
    pd3dDevice->SetRenderStateDepthBias(0.0f);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
 
    constexpr float mult  = (float)(1.0 / EDITOR_BG_WIDTH);
    constexpr float ymult = (float)(1.0 / EDITOR_BG_HEIGHT);
@@ -303,7 +303,7 @@ void Textbox::RenderDynamic()
 
    if (dmd)
    {
-      pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
+      pd3dDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
       g_pplayer->DMDdraw(x, y, width, height, m_d.m_fontcolor, m_d.m_intensity_scale); //!! replace??!
    }
    else if (m_texture)
