@@ -4484,7 +4484,7 @@ void Player::Render()
       exit(-9999); 
 
    // Promote stop play to close application if started minimized without user interaction
-   if (m_closing == CS_STOP_PLAY && g_pvp->m_open_minimized && !g_pvp->m_disable_pause_menu)
+   if (m_closing == CS_STOP_PLAY && g_pvp->m_open_minimized && g_pvp->m_disable_pause_menu)
       m_closing = CS_CLOSE_APP;
 
    // Close player back to editor
