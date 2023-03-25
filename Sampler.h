@@ -5,7 +5,7 @@
 
 class RenderDevice;
 
-enum SamplerFilter
+enum SamplerFilter : unsigned int
 {
    SF_NONE, // No filtering at all. DX: MIPFILTER = NONE; MAGFILTER = POINT; MINFILTER = POINT; / OpenGL Nearest/Nearest
    SF_POINT, // Point sampled (aka nearest mipmap) texture filtering.
@@ -15,7 +15,7 @@ enum SamplerFilter
    SF_UNDEFINED, // Used for undefined default values
 };
 
-enum SamplerAddressMode
+enum SamplerAddressMode : unsigned int
 {
    SA_REPEAT,
    SA_CLAMP,

@@ -1702,7 +1702,7 @@ void LiveUI::BallProperties(bool is_live)
    if (!is_live)
       return;
    Ball *ball = m_player->m_vball[m_selection.ball_index];
-   HelpTextCentered("Ball #"s.append(std::to_string(ball->m_id)).c_str());
+   HelpTextCentered("Ball #"s.append(std::to_string(ball->m_id)));
    ImGui::Separator();
    if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
@@ -1803,8 +1803,8 @@ void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_lig
          Light *light = (is_live ? live_light : startup_light);
          light->m_d.m_fadeSpeedDown = v < 0.1f ? 100000.0f : light->m_d.m_intensity / v;
       };
-      bool startup_shadow = startup_light->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS;
-      bool live_shadow = live_light->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS;
+      bool startup_shadow = startup_light ? (startup_light->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS) : ShadowMode::NONE;
+      bool live_shadow = live_light ? (live_light->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS) : ShadowMode::NONE;
       auto upd_shadow = [startup_light, live_light](bool is_live, bool prev, bool v)
       {
          Light *light = (is_live ? live_light : startup_light);

@@ -2,9 +2,9 @@
 #include "RenderState.h"
 
 #define RENDER_STATE(name, bitpos, bitsize)                                                                                                                                                  \
-   const uint32_t RENDER_STATE_SHIFT_##name = bitpos;                                                                                                                                        \
-   const uint32_t RENDER_STATE_MASK_##name = ((0x00000001u << (bitsize)) - 1) << (bitpos);                                                                                                   \
-   const uint32_t RENDER_STATE_CLEAR_MASK_##name = ~(((0x00000001u << (bitsize)) - 1) << (bitpos));
+   constexpr uint32_t RENDER_STATE_SHIFT_##name = bitpos;                                                                                                                                        \
+   constexpr uint32_t RENDER_STATE_MASK_##name = ((0x00000001u << (bitsize)) - 1) << (bitpos);                                                                                                   \
+   constexpr uint32_t RENDER_STATE_CLEAR_MASK_##name = ~(((0x00000001u << (bitsize)) - 1) << (bitpos));
 // These definition must be copy/pasted to RenderState.h/cpp when modified to keep the implementation in sync
 RENDER_STATE(ALPHABLENDENABLE, 0, 1) // RS_FALSE or RS_TRUE
 RENDER_STATE(ZENABLE, 1, 1) // RS_FALSE or RS_TRUE
@@ -19,8 +19,8 @@ RENDER_STATE(COLORWRITEENABLE, 17, 4) // RGBA mask (4 bits)
 #undef RENDER_STATE
 
 #define RENDER_STATE(name, bitpos, bitsize) { RENDER_STATE_SHIFT_##name, RENDER_STATE_MASK_##name, RENDER_STATE_CLEAR_MASK_##name },
-// These definition must be copy/pasted to RenderState.h/cpp when modified to keep the implementation in sync
-const RenderState::RenderStateMask RenderState::render_state_masks[RENDERSTATE_COUNT] {
+// These definitions must be copy/pasted to RenderState.h/cpp when modified to keep the implementation in sync
+constexpr RenderState::RenderStateMask RenderState::render_state_masks[RENDERSTATE_COUNT] {
    RENDER_STATE(ALPHABLENDENABLE, 0, 1) // RS_FALSE or RS_TRUE
    RENDER_STATE(ZENABLE, 1, 1) // RS_FALSE or RS_TRUE
    RENDER_STATE(BLENDOP, 2, 2) // Operation from BLENDOP_MAX, BLENDOP_ADD, BLENDOP_SUB, BLENDOP_REVSUBTRACT
@@ -129,7 +129,7 @@ void RenderState::Apply(RenderDevice* device)
    constexpr int functions[] = { D3DCMP_ALWAYS, D3DCMP_LESS, D3DCMP_LESSEQUAL, D3DCMP_GREATER, D3DCMP_GREATEREQUAL };
    constexpr int blend_modes[] = { D3DBLENDOP_MAX, D3DBLENDOP_ADD, D3DBLENDOP_REVSUBTRACT };
    constexpr int blend_functions[] = { D3DBLEND_ZERO, D3DBLEND_ONE, D3DBLEND_SRCALPHA, D3DBLEND_DESTALPHA, D3DBLEND_INVSRCALPHA, D3DBLEND_INVSRCCOLOR };
-   IDirect3DDevice9* d3dDevice = device->GetCoreDevice();
+   IDirect3DDevice9* const d3dDevice = device->GetCoreDevice();
 #endif
 
    int val;
@@ -247,8 +247,8 @@ void RenderState::Apply(RenderDevice* device)
          { // Only apply if blending is enabled
             #ifdef ENABLE_SDL
             {
-               int src = (m_state & RENDER_STATE_MASK_SRCBLEND) >> RENDER_STATE_SHIFT_SRCBLEND;
-               int dst = (m_state & RENDER_STATE_MASK_DESTBLEND) >> RENDER_STATE_SHIFT_DESTBLEND;
+               const int src = (m_state & RENDER_STATE_MASK_SRCBLEND) >> RENDER_STATE_SHIFT_SRCBLEND;
+               const int dst = (m_state & RENDER_STATE_MASK_DESTBLEND) >> RENDER_STATE_SHIFT_DESTBLEND;
                glBlendFunc(blend_functions[src], blend_functions[dst]);
             }
             #else

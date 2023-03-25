@@ -4457,6 +4457,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       if (rpb->LoadData(spStream, this, pbr->m_version, NULL, NULL) != S_OK)
       {
          assert(!"Invalid binary image file");
+         delete rpb;
          return false;
       }
       m_vrenderprobe.push_back(rpb);

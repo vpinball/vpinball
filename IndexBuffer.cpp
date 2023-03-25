@@ -254,17 +254,18 @@ void IndexBuffer::ApplyOffset(VertexBuffer* vb)
    for (size_t j = 0; j < m_pendingUploads.size(); j++)
    {
       PendingUpload& upload = m_pendingUploads[j];
-      unsigned int offset = vb->GetVertexOffset();
-      unsigned int count = upload.size / m_sizePerIndex;
+      const unsigned int offset = vb->GetVertexOffset();
+      const unsigned int count = upload.size / m_sizePerIndex;
       if (m_indexFormat == FMT_INDEX16)
       {
-         U16* indices = (U16*) upload.data;
+         U16* const __restrict indices = (U16*) upload.data;
          for (unsigned int i = 0; i < count; i++)
             indices[i] += offset;
       }
       else // FMT_INDEX32
       {
-         U32* indices = (U32*) upload.data;
+         assert(m_indexFormat == FMT_INDEX32);
+         U32* const __restrict indices = (U32*) upload.data;
          for (unsigned int i = 0; i < count; i++)
             indices[i] += offset;
       }
