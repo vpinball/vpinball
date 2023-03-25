@@ -26,7 +26,7 @@ static struct {
   double                      specific_heat[3000];
 } locals;
 
-bulb_tLampCharacteristics bulbs[BULB_MAX] = {
+static bulb_tLampCharacteristics bulbs[BULB_MAX] = {
    { 0.000001549619403110030, 0.000000203895434417560, 1.70020865326503000 }, // #44 Bulb characteristics (6.3V, 250mA, 1.26W, 5lm)
    { 0.000000929872857822516, 0.000000087040748856477, 2.83368108877505000 }, // #47 Bulb characteristics (6.3V, 150mA, 0.95W, 6.3lm)
    { 0.000001239604749734440, 0.000000140555683560514, 2.12526081658129000 }, // #86 Bulb characteristics (6.3V, 200mA, 1.58W, 11.3lm)
