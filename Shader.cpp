@@ -289,9 +289,10 @@ Shader* Shader::current_shader = nullptr;
 Shader* Shader::GetCurrentShader() { return current_shader;  }
 
 Shader::Shader(RenderDevice* renderDevice)
-   : currentMaterial(Material::MaterialType::BASIC, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, 0xCCCCCCCC, 0xCCCCCCCC, 0xCCCCCCCC, false, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, 0xCCCCCCCC)
+   : currentMaterial(Material::MaterialType::BASIC, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, 0xCCCCCCCC, 0xCCCCCCCC, 0xCCCCCCCC, false, -FLT_MAX, -FLT_MAX,
+      -FLT_MAX, -FLT_MAX, 0xCCCCCCCC)
+   , m_renderDevice(renderDevice)
 {
-   m_renderDevice = renderDevice;
    m_technique = SHADER_TECHNIQUE_INVALID;
    memset(m_uniformCache, 0, sizeof(UniformCache) * SHADER_UNIFORM_COUNT * (SHADER_TECHNIQUE_COUNT + 1));
    memset(m_isCacheValid, 0, sizeof(bool) * SHADER_TECHNIQUE_COUNT);
