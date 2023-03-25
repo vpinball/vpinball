@@ -1075,16 +1075,16 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
       -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
    };
    delete m_quadMeshBuffer;
-   VertexBuffer* quadVertexBuffer = new VertexBuffer(this, 4, verts, false, MY_D3DFVF_TEX);
+   VertexBuffer* quadVertexBuffer = new VertexBuffer(this, 4, verts, false, VertexFormat::VF_POS_TEX);
    m_quadMeshBuffer = new MeshBuffer(quadVertexBuffer);
 
 #ifdef ENABLE_SDL
    delete m_quadPNTDynMeshBuffer;
-   VertexBuffer* quadPNTDynVertexBuffer = new VertexBuffer(this, 4, nullptr, true, MY_D3DFVF_NOTEX2_VERTEX);
+   VertexBuffer* quadPNTDynVertexBuffer = new VertexBuffer(this, 4, nullptr, true, VertexFormat::VF_POS_NORMAL_TEX);
    m_quadPNTDynMeshBuffer = new MeshBuffer(quadPNTDynVertexBuffer);
 
    delete m_quadPTDynMeshBuffer;
-   VertexBuffer* quadPTDynVertexBuffer = new VertexBuffer(this, 4, nullptr, true, MY_D3DFVF_TEX);
+   VertexBuffer* quadPTDynVertexBuffer = new VertexBuffer(this, 4, nullptr, true, VertexFormat::VF_POS_TEX);
    m_quadPTDynMeshBuffer = new MeshBuffer(quadPTDynVertexBuffer);
 #endif
 
@@ -1838,24 +1838,34 @@ void RenderDevice::DrawMesh(MeshBuffer* mb, const PrimitiveTypes type, const DWO
 
    if (mb->m_ib == nullptr)
    {
-#ifdef ENABLE_SDL
+      #ifdef ENABLE_SDL
       glDrawArrays(type, mb->m_vb->GetVertexOffset(), indexCount);
-#else
+      #else
       CHECKD3D(m_pD3DDevice->DrawPrimitive((D3DPRIMITIVETYPE)type, 0, np));
-#endif
+      #endif
    }
    else
    {
-#ifdef ENABLE_SDL
-      const int offset = mb->m_ib->GetOffset() + startIndice * mb->m_ib->m_sizePerIndex;
-#ifndef __OPENGLES__
-      glDrawElementsBaseVertex(type, indexCount, mb->m_ib->m_indexFormat == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)offset, mb->m_vb->GetVertexOffset());
-#else
-      glDrawElements(mb->m_type, indexCount, mb->m_ib->m_indexFormat == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)(intptr_t)offset);
-#endif
-#else
-      CHECKD3D(m_pD3DDevice->DrawIndexedPrimitive((D3DPRIMITIVETYPE)type, 0, 0, mb->m_vb->m_vertexCount, mb->m_ib->GetIndexOffset() + startIndice, np));
-#endif
+      #ifdef ENABLE_SDL
+      const int indexOffset = mb->m_ib->GetOffset() + startIndice * mb->m_ib->m_sizePerIndex;
+      const GLenum indexType = mb->m_ib->m_indexFormat == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
+      if (mb->m_isVBOffsetApplied || mb->m_vb->m_offset == 0)
+      {
+         //glDrawElements(type, indexCount, indexType, (void*)(intptr_t)indexOffset);
+         glDrawRangeElements(type, mb->m_vb->GetVertexOffset(), mb->m_vb->GetVertexOffset() + mb->m_vb->m_vertexCount, indexCount, indexType, (void*)(intptr_t)indexOffset);
+      }
+      else
+      {
+         #if defined(__OPENGLES__)
+         assert(false); // OpenGL ES does not support offseted vertices. The buffers must be built accordingly
+         #else
+         //glDrawElementsBaseVertex(type, indexCount, indexType, (void*)indexOffset, mb->m_vb->GetVertexOffset());
+         glDrawRangeElementsBaseVertex(type, mb->m_vb->GetVertexOffset(), mb->m_vb->GetVertexOffset() + mb->m_vb->m_vertexCount, indexCount, indexType, (void*)indexOffset, mb->m_vb->GetVertexOffset());
+         #endif
+      }
+      #else
+      CHECKD3D(m_pD3DDevice->DrawIndexedPrimitive((D3DPRIMITIVETYPE)type, mb->m_isVBOffsetApplied ? 0 : mb->m_vb->GetVertexOffset(), 0, mb->m_vb->m_vertexCount, mb->m_ib->GetIndexOffset() + startIndice, np));
+      #endif
    }
    m_curDrawCalls++;
 }

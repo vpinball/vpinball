@@ -415,7 +415,7 @@ void Spinner::RenderSetup()
    delete m_bracketMeshBuffer;
    IndexBuffer *bracketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerBracketNumFaces, spinnerBracketIndices);
    VertexBuffer *bracketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerBracketNumVertices);
-   m_bracketMeshBuffer = new MeshBuffer(bracketVertexBuffer, bracketIndexBuffer);
+   m_bracketMeshBuffer = new MeshBuffer(bracketVertexBuffer, bracketIndexBuffer, true);
 
    m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
 
@@ -443,7 +443,7 @@ void Spinner::RenderSetup()
    delete m_plateMeshBuffer;
    IndexBuffer* plateIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerPlateNumFaces, spinnerPlateIndices);
    VertexBuffer* plateVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerPlateNumVertices, nullptr, true);
-   m_plateMeshBuffer = new MeshBuffer(plateVertexBuffer, plateIndexBuffer);
+   m_plateMeshBuffer = new MeshBuffer(plateVertexBuffer, plateIndexBuffer, true);
 
    m_vertexBuffer_spinneranimangle = -FLT_MAX;
    UpdatePlate(nullptr);

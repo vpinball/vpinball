@@ -1184,7 +1184,7 @@ void Player::InitBallShader()
    delete m_ballMeshBuffer;
    IndexBuffer* ballIndexBuffer = new IndexBuffer(m_pin3d.m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
    VertexBuffer* ballVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, (float*)(lowDetailBall ? basicBallLo : basicBallMid));
-   m_ballMeshBuffer = new MeshBuffer(ballVertexBuffer, ballIndexBuffer);
+   m_ballMeshBuffer = new MeshBuffer(ballVertexBuffer, ballIndexBuffer, true);
 
    vec4 amb_lr = convertColor(m_ptable->m_lightAmbient, m_ptable->m_lightRange);
    amb_lr.x *= m_globalEmissionScale;
@@ -1625,7 +1625,7 @@ HRESULT Player::Init()
 
       assert(m_ballDebugPoints == nullptr);
       delete m_ballDebugPoints;
-      VertexBuffer *ballDebugPoints = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, (unsigned int)ballDbgVtx.size(), (float *)ballDbgVtx.data(), false, MY_D3DFVF_TEX);
+      VertexBuffer *ballDebugPoints = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, (unsigned int)ballDbgVtx.size(), (float *)ballDbgVtx.data(), false, VertexFormat::VF_POS_TEX);
       m_ballDebugPoints = new MeshBuffer(ballDebugPoints);
    }
 #endif

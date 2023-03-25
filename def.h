@@ -133,11 +133,14 @@ enum SaveDirtyState
    eSaveDirty
 };
 
-#define MY_D3DFVF_TEX                   0
-#define MY_D3DFVF_NOTEX2_VERTEX         1
+enum VertexFormat
+{
+   VF_POS_TEX,
+   VF_POS_NORMAL_TEX
+};
 
 //These Structs are used for rendering and loading meshes. They must match the VertexDeclaration in RenderDevice.cpp and the loaded meshes.
-class Vertex3D_TexelOnly final // for rendering, uses MY_D3DFVF_TEX
+class Vertex3D_TexelOnly final // for rendering, uses VF_POS_TEX
 {
 public:
    // Position
@@ -152,7 +155,7 @@ public:
 
 
 // NB: this struct MUST NOT BE CHANGED as the Primitive class uses it for file I/O...
-class Vertex3D_NoTex2 final // for rendering, uses MY_D3DFVF_NOTEX2_VERTEX
+class Vertex3D_NoTex2 final // for rendering, uses VF_POS_NORMAL_TEX
 {
 public:
    // Position

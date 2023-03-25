@@ -422,9 +422,9 @@ void Kicker::RenderSetup()
       }
 
       delete m_plateMeshBuffer;
-      IndexBuffer *plateIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, kickerPlateNumIndices, kickerPlateIndices);
       VertexBuffer *plateVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, kickerPlateNumVertices, (float*)buf);
-      m_plateMeshBuffer = new MeshBuffer(plateVertexBuffer, plateIndexBuffer);
+      IndexBuffer *plateIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, kickerPlateNumIndices, kickerPlateIndices);
+      m_plateMeshBuffer = new MeshBuffer(plateVertexBuffer, plateIndexBuffer, true);
 
       delete[] buf;
    }
@@ -505,13 +505,13 @@ void Kicker::RenderSetup()
    //
 
    delete m_meshBuffer;
-   IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, indices);
    VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices);
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    GenerateMesh(buf);
    vertexBuffer->unlock();
-   m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer);
+   IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, indices);
+   m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer, true);
 }
 
 void Kicker::SetDefaultPhysics(const bool fromMouseClick)

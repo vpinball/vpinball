@@ -610,18 +610,17 @@ void Light::PrepareMoversCustom()
       return;
    }
 
+   m_customMoverVertexNum = (unsigned int)m_vvertex.size();
+   VertexBuffer *customMoverVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_customMoverVertexNum);
+
    m_customMoverIndexNum = (unsigned int)vtri.size();
    IndexBuffer* customMoverIBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16);
-
    WORD* bufi;
    customMoverIBuffer->lock(0, 0, (void**)&bufi, IndexBuffer::WRITEONLY);
    memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
    customMoverIBuffer->unlock();
 
-   m_customMoverVertexNum = (unsigned int)m_vvertex.size();
-   VertexBuffer *customMoverVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_customMoverVertexNum);
-
-   m_customMoverMeshBuffer = new MeshBuffer(customMoverVBuffer, customMoverIBuffer);
+   m_customMoverMeshBuffer = new MeshBuffer(customMoverVBuffer, customMoverIBuffer, true);
 
    UpdateCustomMoverVBuffer();
 }
@@ -716,7 +715,7 @@ void Light::RenderSetup()
       delete m_bulbLightMeshBuffer;
       IndexBuffer* bulbLightIndexBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbLightNumFaces, bulbLightIndices);
       VertexBuffer* bulbLightVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbLightNumVertices);
-      m_bulbLightMeshBuffer = new MeshBuffer(bulbLightVBuffer, bulbLightIndexBuffer);
+      m_bulbLightMeshBuffer = new MeshBuffer(bulbLightVBuffer, bulbLightIndexBuffer, true);
 
       Vertex3D_NoTex2 *buf;
       bulbLightVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
@@ -736,7 +735,7 @@ void Light::RenderSetup()
       delete m_bulbSocketMeshBuffer;
       IndexBuffer* bulbSocketIndexBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbSocketNumFaces, bulbSocketIndices);
       VertexBuffer *bulbSocketVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbSocketNumVertices);
-      m_bulbSocketMeshBuffer = new MeshBuffer(bulbSocketVBuffer, bulbSocketIndexBuffer);
+      m_bulbSocketMeshBuffer = new MeshBuffer(bulbSocketVBuffer, bulbSocketIndexBuffer, true);
 
       bulbSocketVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
       for (unsigned int i = 0; i < bulbSocketNumVertices; i++)

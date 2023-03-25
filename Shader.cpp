@@ -1596,15 +1596,14 @@ void Shader::setAttributeFormat(DWORD fvf)
             break;
          case SHADER_ATTRIBUTE_TC:
          case SHADER_ATTRIBUTE_TEX:
-            offset = (fvf == MY_D3DFVF_TEX) ? 12 : 24;
+            offset = (fvf == VertexFormat::VF_POS_TEX) ? 12 : 24;
             break;
          default:
             ReportError("Unknown Attribute", 666, __FILE__, __LINE__);
             offset = 0;
             break;
          }
-         glVertexAttribPointer(location, m_techniques[m_technique]->attributeLocation[i].size, GL_FLOAT, GL_FALSE,
-            (fvf == MY_D3DFVF_TEX) ? 20 : 32, (void*)offset);
+         glVertexAttribPointer(location, m_techniques[m_technique]->attributeLocation[i].size, GL_FLOAT, GL_FALSE, (fvf == VertexFormat::VF_POS_TEX) ? 20 : 32, (void*)offset);
       }
    }
 }

@@ -11,13 +11,18 @@ vector<MeshBuffer::SharedVAO*> MeshBuffer::sharedVAOs;
 #include "Shader.h"
 #include "VertexBuffer.h"
 
-MeshBuffer::MeshBuffer(VertexBuffer* vb, IndexBuffer* ib) : m_vb(vb), m_ib(ib)
+MeshBuffer::MeshBuffer(VertexBuffer* vb, IndexBuffer* ib, const bool applyVertexBufferOffsetToIndexBuffer)
+   : m_vb(vb)
+   , m_ib(ib)
+   , m_isVBOffsetApplied(applyVertexBufferOffsetToIndexBuffer)
 #ifndef ENABLE_SDL
    , m_vertexDeclaration(
-      vb->m_fvf == MY_D3DFVF_NOTEX2_VERTEX ? m_vb->m_rd->m_pVertexNormalTexelDeclaration :
-      vb->m_fvf == MY_D3DFVF_TEX ? m_vb->m_rd->m_pVertexTexelDeclaration : nullptr)
+      vb->m_vertexFormat == VertexFormat::VF_POS_NORMAL_TEX ? m_vb->m_rd->m_pVertexNormalTexelDeclaration :
+      vb->m_vertexFormat == VertexFormat::VF_POS_TEX ? m_vb->m_rd->m_pVertexTexelDeclaration : nullptr)
 #endif
 {
+   if (m_ib != nullptr && applyVertexBufferOffsetToIndexBuffer)
+      m_ib->ApplyOffset(m_vb);
 }
 
 MeshBuffer::~MeshBuffer()
@@ -73,9 +78,9 @@ void MeshBuffer::bind()
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ib->GetBuffer());
          }
          // this needs the attribute layout to be enforced in the shaders using layout(location=...)
-         switch (m_vb->m_fvf)
+         switch (m_vb->m_vertexFormat)
          {
-         case MY_D3DFVF_NOTEX2_VERTEX:
+         case VertexFormat::VF_POS_NORMAL_TEX:
             glEnableVertexAttribArray(0); // Position
             glEnableVertexAttribArray(1); // Normal
             glEnableVertexAttribArray(2); // Texture Coordinate
@@ -83,7 +88,7 @@ void MeshBuffer::bind()
             glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 32, (void*)12);
             glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 32, (void*)24);
             break;
-         case MY_D3DFVF_TEX:
+         case VertexFormat::VF_POS_TEX:
             glEnableVertexAttribArray(0); // Position
             glEnableVertexAttribArray(1); // Texture Coordinate
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 20, (void*)0);
@@ -109,10 +114,11 @@ void MeshBuffer::bind()
 
 #else
    m_vb->Upload();
-   if (rd->m_curVertexBuffer != m_vb)
+   IDirect3DVertexBuffer9* vb = m_vb->GetBuffer();
+   if (rd->m_curVertexBuffer != vb)
    {
-      CHECKD3D(rd->GetCoreDevice()->SetStreamSource(0, m_vb->GetBuffer(), m_vb->GetOffset(), m_vb->m_sizePerVertex));
-      rd->m_curVertexBuffer = m_vb;
+      CHECKD3D(rd->GetCoreDevice()->SetStreamSource(0, vb, 0, m_vb->m_sizePerVertex));
+      rd->m_curVertexBuffer = vb;
    }
    if (rd->m_currentVertexDeclaration != m_vertexDeclaration)
    {
@@ -123,10 +129,11 @@ void MeshBuffer::bind()
    if (m_ib != nullptr)
    {
       m_ib->Upload();
-      if (rd->m_curIndexBuffer != m_ib)
+      IDirect3DIndexBuffer9 * ib = m_ib->GetBuffer();
+      if (rd->m_curIndexBuffer != ib)
       {
-         CHECKD3D(rd->GetCoreDevice()->SetIndices(m_ib->GetBuffer()));
-         rd->m_curIndexBuffer = m_ib;
+         CHECKD3D(rd->GetCoreDevice()->SetIndices(ib));
+         rd->m_curIndexBuffer = ib;
       }
    }
 #endif
@@ -238,6 +245,30 @@ void IndexBuffer::unlock()
    PendingUpload upload = m_lock;
    m_pendingUploads.push_back(upload);
    m_lock.data = nullptr;
+}
+
+void IndexBuffer::ApplyOffset(VertexBuffer* vb)
+{
+   if (vb->m_offset == 0)
+      return;
+   for (size_t j = 0; j < m_pendingUploads.size(); j++)
+   {
+      PendingUpload& upload = m_pendingUploads[j];
+      unsigned int offset = vb->GetVertexOffset();
+      unsigned int count = upload.size / m_sizePerIndex;
+      if (m_indexFormat == FMT_INDEX16)
+      {
+         U16* indices = (U16*) upload.data;
+         for (unsigned int i = 0; i < count; i++)
+            indices[i] += offset;
+      }
+      else // FMT_INDEX32
+      {
+         U32* indices = (U32*) upload.data;
+         for (unsigned int i = 0; i < count; i++)
+            indices[i] += offset;
+      }
+   }
 }
 
 void IndexBuffer::CreatePendingSharedBuffer()

@@ -328,9 +328,8 @@ public:
    GLuint m_curVAO = 0;
    
 #else // DirectX9
-   VertexBuffer* m_curVertexBuffer = nullptr;
-   IndexBuffer* m_curIndexBuffer = nullptr;
-
+   IDirect3DVertexBuffer9* m_curVertexBuffer = nullptr;
+   IDirect3DIndexBuffer9* m_curIndexBuffer = nullptr;
    IDirect3DVertexDeclaration9* m_currentVertexDeclaration = nullptr;
    IDirect3DVertexDeclaration9* m_pVertexTexelDeclaration = nullptr;
    IDirect3DVertexDeclaration9* m_pVertexNormalTexelDeclaration = nullptr;
