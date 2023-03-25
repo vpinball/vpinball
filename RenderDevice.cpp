@@ -556,8 +556,6 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     m_INTZ_support = false;
     NVAPIinit = false;
 
-    m_current_renderstate.m_state = m_renderstate.m_state = 0;
-
     m_stats_drawn_triangles = 0;
 
     mDwmIsCompositionEnabled = (pDICE)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmIsCompositionEnabled"); //!! remove as soon as win xp support dropped and use static link
@@ -603,8 +601,6 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 {
    assert(g_pplayer != nullptr); // Player must be created to give access to the output window
-   m_current_renderstate.m_state = m_renderstate.m_state = 0;
-   m_current_renderstate.m_depthBias = m_renderstate.m_depthBias = 0.0f;
    colorFormat back_buffer_format;
 
 #ifdef ENABLE_SDL
@@ -1095,16 +1091,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    // Always load the (small) SMAA textures since SMAA can be toggled at runtime through the live UI
    UploadAndSetSMAATextures();
 
-   // Setup a defined initial render state
-   SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-   SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
-   SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
-   SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_FALSE);
-   SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-   SetRenderState(RenderState::DESTBLEND, RenderState::SRC_ALPHA);
-   SetRenderState(RenderState::SRCBLEND, RenderState::INVSRC_ALPHA);
-   SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-   SetRenderState(RenderState::COLORWRITEENABLE, RenderState::RGBMASK_RGBA);
+   // Force applying a defined initial render state
    m_current_renderstate.m_state = (~m_renderstate.m_state) & ((1 << 21) - 1);
    m_current_renderstate.m_depthBias = m_renderstate.m_depthBias - 1.0f;
    ApplyRenderStates();
@@ -1756,7 +1743,7 @@ void RenderDevice::ApplyRenderStates()
    m_renderstate.Apply(this);
 }
 
-void RenderDevice::SetClipPlane0(const vec4 &plane)
+void RenderDevice::SetClipPlane(const vec4 &plane)
 {
 #ifdef ENABLE_SDL
    const int eyes = m_stereo3D == STEREO_OFF ? 1 : 2;
