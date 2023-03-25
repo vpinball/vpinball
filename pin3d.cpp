@@ -568,7 +568,7 @@ void Pin3D::InitRenderState(RenderDevice * const pd3dDevice)
 
    pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
 
-   pd3dDevice->SetRenderStateClipPlane0(false);
+   pd3dDevice->SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_FALSE);
 
    // initialize first texture stage
 #ifndef ENABLE_SDL

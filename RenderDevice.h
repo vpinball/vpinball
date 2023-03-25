@@ -163,14 +163,13 @@ public:
 
    bool DepthBufferReadBackAvailable();
 
+   RenderState& GetActiveRenderState() { return m_current_renderstate; }
    void SetClipPlane0(const vec4 &plane);
    void SetRenderState(const RenderState::RenderStates p1, const RenderState::RenderStateValue p2);
    void SetRenderStateCulling(RenderState::RenderStateValue cull);
    void SetRenderStateDepthBias(float bias);
-   void SetRenderStateClipPlane0(const bool enabled);
    void CopyRenderStates(const bool copyTo, RenderState& state);
    void ApplyRenderStates();
-   const string GetRenderStateLog() const;
 
 private:
    RenderState m_current_renderstate, m_renderstate;
