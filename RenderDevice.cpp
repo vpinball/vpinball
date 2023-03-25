@@ -1083,9 +1083,13 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    m_quadMeshBuffer = new MeshBuffer(quadVertexBuffer);
 
 #ifdef ENABLE_SDL
-   delete m_quadDynMeshBuffer;
-   VertexBuffer* quadDynVertexBuffer = new VertexBuffer(this, 4, nullptr, true, MY_D3DFVF_TEX);
-   m_quadDynMeshBuffer = new MeshBuffer(quadDynVertexBuffer);
+   delete m_quadPNTDynMeshBuffer;
+   VertexBuffer* quadPNTDynVertexBuffer = new VertexBuffer(this, 4, nullptr, true, MY_D3DFVF_NOTEX2_VERTEX);
+   m_quadPNTDynMeshBuffer = new MeshBuffer(quadPNTDynVertexBuffer);
+
+   delete m_quadPTDynMeshBuffer;
+   VertexBuffer* quadPTDynVertexBuffer = new VertexBuffer(this, 4, nullptr, true, MY_D3DFVF_TEX);
+   m_quadPTDynMeshBuffer = new MeshBuffer(quadPTDynVertexBuffer);
 #endif
 
    // Always load the (small) SMAA textures since SMAA can be toggled at runtime through the live UI
@@ -1330,10 +1334,8 @@ void RenderDevice::FreeShader()
 RenderDevice::~RenderDevice()
 {
    delete m_quadMeshBuffer;
-   m_quadMeshBuffer = nullptr;
-
-   delete m_quadDynMeshBuffer;
-   m_quadDynMeshBuffer = nullptr;
+   delete m_quadPTDynMeshBuffer;
+   delete m_quadPNTDynMeshBuffer;
 
 #ifndef ENABLE_SDL
    //
@@ -1785,12 +1787,13 @@ void RenderDevice::SetClipPlane0(const vec4 &plane)
 
 void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
 {
+   assert(Shader::GetCurrentShader() == FBShader); // FrameBuffer shader is the only one using Position/Texture vertex format, so assert it is bound
 #ifdef ENABLE_SDL
    Vertex3D_TexelOnly* bufvb;
-   m_quadDynMeshBuffer->m_vb->lock(0, 0, (void**)&bufvb, VertexBuffer::DISCARDCONTENTS);
+   m_quadPTDynMeshBuffer->m_vb->lock(0, 0, (void**)&bufvb, VertexBuffer::DISCARDCONTENTS);
    memcpy(bufvb, vertices, 4 * sizeof(Vertex3D_TexelOnly));
-   m_quadDynMeshBuffer->m_vb->unlock();
-   DrawMesh(m_quadDynMeshBuffer, TRIANGLESTRIP, 0, 4);
+   m_quadPTDynMeshBuffer->m_vb->unlock();
+   DrawMesh(m_quadPTDynMeshBuffer, TRIANGLESTRIP, 0, 4);
 #else
    // having a VB and lock/copying stuff each time is slower on DX9 :/ (is it still true ? looks overly complicated for a very marginal benefit)
    ApplyRenderStates();
@@ -1807,8 +1810,33 @@ void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
 #endif
 }
 
-void RenderDevice::DrawFullscreenTexturedQuad()
+void RenderDevice::DrawTexturedQuad(const Vertex3D_NoTex2* vertices)
 {
+   assert(Shader::GetCurrentShader() != FBShader); // FrameBuffer shader is the only one using Position/Texture vertex format, so assert it is bound
+#ifdef ENABLE_SDL
+   Vertex3D_NoTex2* bufvb;
+   m_quadPNTDynMeshBuffer->m_vb->lock(0, 0, (void**)&bufvb, VertexBuffer::DISCARDCONTENTS);
+   memcpy(bufvb, vertices, 4 * sizeof(Vertex3D_NoTex2));
+   m_quadPNTDynMeshBuffer->m_vb->unlock();
+   DrawMesh(m_quadPNTDynMeshBuffer, TRIANGLESTRIP, 0, 4);
+#else
+   // having a VB and lock/copying stuff each time is slower on DX9 :/ (is it still true ? looks overly complicated for a very marginal benefit)
+   ApplyRenderStates();
+   m_stats_drawn_triangles += 2;
+   if (m_currentVertexDeclaration != m_pVertexNormalTexelDeclaration)
+   {
+      CHECKD3D(m_pD3DDevice->SetVertexDeclaration(m_pVertexNormalTexelDeclaration));
+      m_currentVertexDeclaration = m_pVertexNormalTexelDeclaration;
+      m_curStateChanges++;
+   }
+   CHECKD3D(m_pD3DDevice->DrawPrimitiveUP((D3DPRIMITIVETYPE)RenderDevice::TRIANGLESTRIP, 2, vertices, sizeof(Vertex3D_NoTex2)));
+   m_curVertexBuffer = nullptr; // DrawPrimitiveUP sets the VB to nullptr
+   m_curDrawCalls++;
+#endif
+}
+
+void RenderDevice::DrawFullscreenTexturedQuad() {
+   assert(Shader::GetCurrentShader() == FBShader); // FrameBuffer shader is the only one using Position/Texture vertex format, so assert it is bound
    DrawMesh(m_quadMeshBuffer, TRIANGLESTRIP, 0, 4);
 }
 

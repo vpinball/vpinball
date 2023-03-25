@@ -45,7 +45,8 @@ out vec4 color;
 ////vs_main
 
 layout(location=0) in vec3 vPosition;
-layout(location=1) in vec2 tc;
+layout(location=1) in vec3 vNormal;
+layout(location=2) in vec2 tc;
 
 out vec2 tex0_gs;
 

@@ -48,6 +48,7 @@ struct VS_OUTPUT_2D
 };
 
 VS_OUTPUT_2D vs_simple_main (const in float4 vPosition : POSITION0,
+                             // const in float3 vNormal   : NORMAL0, Part of vertex format but unused
                              const in float2 tc        : TEXCOORD0)
 {
    VS_OUTPUT_2D Out;

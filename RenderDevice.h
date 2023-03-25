@@ -177,6 +177,7 @@ private:
 public:
    void DrawMesh(MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount);
    void DrawTexturedQuad(const Vertex3D_TexelOnly* vertices);
+   void DrawTexturedQuad(const Vertex3D_NoTex2* vertices);
    void DrawFullscreenTexturedQuad();
    
    void DrawGaussianBlur(Sampler* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size);
@@ -287,7 +288,8 @@ private:
    bool m_dwm_enabled;
 
    MeshBuffer* m_quadMeshBuffer = nullptr; // internal vb for rendering quads
-   MeshBuffer* m_quadDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads
+   MeshBuffer* m_quadPNTDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads (position/normal/texture)
+   MeshBuffer* m_quadPTDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads (position/texture)
 
 public:
 #ifndef ENABLE_SDL
