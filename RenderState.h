@@ -1,26 +1,9 @@
 #pragma once
 
-#define RENDER_STATE(name, bitpos, bitsize)                                                                                                                                                  \
-   const uint32_t RENDER_STATE_SHIFT_##name = bitpos;                                                                                                                                        \
-   const uint32_t RENDER_STATE_MASK_##name = ((0x00000001u << (bitsize)) - 1) << (bitpos);                                                                                                   \
-   const uint32_t RENDER_STATE_CLEAR_MASK_##name = ~(((0x00000001u << (bitsize)) - 1) << (bitpos));
-// These definition must be copy/pasted to RenderState.h/cpp when modified to keep the implementation in sync
-RENDER_STATE(ALPHABLENDENABLE, 0, 1) // RS_FALSE or RS_TRUE
-RENDER_STATE(ZENABLE, 1, 1) // RS_FALSE or RS_TRUE
-RENDER_STATE(BLENDOP, 2, 2) // Operation from BLENDOP_MAX, BLENDOP_ADD, BLENDOP_SUB, BLENDOP_REVSUBTRACT
-RENDER_STATE(CLIPPLANEENABLE, 4, 1) // PLANE0 or 0 (for disable)
-RENDER_STATE(CULLMODE, 5, 2) // CULL_NONE, CULL_CW, CULL_CCW
-RENDER_STATE(DESTBLEND, 7, 3) // ZERO, ONE, SRC_ALPHA, DST_ALPHA, INVSRC_ALPHA, INVSRC_COLOR
-RENDER_STATE(SRCBLEND, 10, 3) // ZERO, ONE, SRC_ALPHA, DST_ALPHA, INVSRC_ALPHA, INVSRC_COLOR
-RENDER_STATE(ZFUNC, 13, 3) // Operation from Z_ALWAYS, Z_LESS, Z_LESSEQUAL, Z_GREATER, Z_GREATEREQUAL
-RENDER_STATE(ZWRITEENABLE, 16, 1) // RS_FALSE or RS_TRUE
-RENDER_STATE(COLORWRITEENABLE, 17, 4) // RGBA mask (4 bits)
-#undef RENDER_STATE
-
 class RenderState final
 {
 public:
-#define RENDER_STATE(name, bitpos, bitsize) name,
+   #define RENDER_STATE(name, bitpos, bitsize) name,
    // These definition must be copy/pasted between RenderState.h/cpp when modified to keep the implementation in sync
    enum RenderStates
    {
@@ -37,7 +20,7 @@ public:
       RENDERSTATE_COUNT,
       RENDERSTATE_INVALID
    };
-#undef RENDER_STATE
+   #undef RENDER_STATE
 
    enum RenderStateValue
    {
@@ -77,7 +60,8 @@ public:
    void SetRenderState(const RenderStates p1, const RenderStateValue p2);
    void SetRenderStateCulling(RenderStateValue cull);
    void SetRenderStateDepthBias(float bias);
-   void SetRenderStateClipPlane(const bool enabled);
+
+   void Apply(RenderDevice* device);
 
    const string GetLog() const;
 
