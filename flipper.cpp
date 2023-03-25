@@ -881,7 +881,7 @@ void Flipper::RenderSetup()
    GenerateBaseMesh(buf);
    vertexBuffer->unlock();
    delete m_meshBuffer;
-   m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer);
+   m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer, true);
    m_lastAngle = 123486.0f;
 }
 

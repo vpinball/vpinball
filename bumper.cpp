@@ -637,7 +637,7 @@ void Bumper::RenderSetup()
       GenerateBaseMesh(buf);
       baseVertexBuffer->unlock();
       delete m_baseMeshBuffer;
-      m_baseMeshBuffer = new MeshBuffer(baseVertexBuffer, baseIndexBuffer);
+      m_baseMeshBuffer = new MeshBuffer(baseVertexBuffer, baseIndexBuffer, true);
    }
 
    if (m_d.m_skirtVisible)
@@ -650,7 +650,7 @@ void Bumper::RenderSetup()
       GenerateSocketMesh(buf);
       socketVertexBuffer->unlock();
       delete m_socketMeshBuffer;
-      m_socketMeshBuffer = new MeshBuffer(socketVertexBuffer, socketIndexBuffer);
+      m_socketMeshBuffer = new MeshBuffer(socketVertexBuffer, socketIndexBuffer, true);
    }
 
    if (m_d.m_ringVisible)
@@ -665,7 +665,7 @@ void Bumper::RenderSetup()
       memcpy(buf, m_ringVertices, bumperRingNumVertices*sizeof(Vertex3D_NoTex2));
       ringVertexBuffer->unlock();
       delete m_ringMeshBuffer;
-      m_ringMeshBuffer = new MeshBuffer(ringVertexBuffer, ringIndexBuffer);
+      m_ringMeshBuffer = new MeshBuffer(ringVertexBuffer, ringIndexBuffer, true);
    }
 
    if (m_d.m_capVisible)
@@ -678,7 +678,7 @@ void Bumper::RenderSetup()
       GenerateCapMesh(buf);
       capVertexBuffer->unlock();
       delete m_capMeshBuffer;
-      m_capMeshBuffer = new MeshBuffer(capVertexBuffer, capIndexBuffer);
+      m_capMeshBuffer = new MeshBuffer(capVertexBuffer, capIndexBuffer, true);
    }
 }
 

@@ -9,12 +9,13 @@ class IndexBuffer;
 class MeshBuffer final
 {
 public:
-   MeshBuffer(VertexBuffer* vb, IndexBuffer* ib = nullptr);
+   MeshBuffer(VertexBuffer* vb, IndexBuffer* ib = nullptr, const bool applyVertexBufferOffsetToIndexBuffer = false);
    ~MeshBuffer();
    void bind();
 
    VertexBuffer* const m_vb;
    IndexBuffer* const m_ib;
+   const bool m_isVBOffsetApplied; // True if vertex buffer offset is already applied to index buffer
 
 #if defined(ENABLE_SDL) // OpenGL
 private:
@@ -62,6 +63,7 @@ public:
 
    void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void** dataBuffer, const DWORD flags);
    void unlock();
+   void ApplyOffset(VertexBuffer* vb);
    void Upload();
 
    RenderDevice* const m_rd;

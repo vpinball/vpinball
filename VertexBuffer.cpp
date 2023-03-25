@@ -9,9 +9,9 @@ static unsigned int fvfToSize(const DWORD fvf)
 {
    switch (fvf)
    {
-   case MY_D3DFVF_NOTEX2_VERTEX:
+   case VertexFormat::VF_POS_NORMAL_TEX:
       return sizeof(Vertex3D_NoTex2);
-   case MY_D3DFVF_TEX:
+   case VertexFormat::VF_POS_TEX:
       return sizeof(Vertex3D_TexelOnly);
    default:
       assert(false); // Unsupported FVF
@@ -21,19 +21,30 @@ static unsigned int fvfToSize(const DWORD fvf)
 
 vector<VertexBuffer*> VertexBuffer::pendingSharedBuffers;
 
-VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, const float* verts, const bool isDynamic, const DWORD fvf)
+unsigned int VertexBuffer::getPendingSharedBufferSize()
+{
+   unsigned int size = 0;
+   for (size_t i = 0; i < pendingSharedBuffers.size(); i++)
+      size += pendingSharedBuffers[i]->m_size;
+   return size;
+}
+
+VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, const float* verts, const bool isDynamic, const VertexFormat fvf)
    : m_rd(rd)
    , m_vertexCount(vertexCount)
-   , m_fvf(fvf)
+   , m_vertexFormat(fvf)
    , m_sizePerVertex(fvfToSize(fvf))
    , m_isStatic(!isDynamic)
    , m_size(fvfToSize(fvf) * vertexCount)
+   , m_offset(isDynamic || (pendingSharedBuffers.size() == 0) || (pendingSharedBuffers[0]->m_vertexFormat != fvf) || (getPendingSharedBufferSize() + fvfToSize(fvf) * vertexCount > 65535) ? 0 : getPendingSharedBufferSize())
+   , m_vertexOffset((isDynamic || (pendingSharedBuffers.size() == 0) || (pendingSharedBuffers[0]->m_vertexFormat != fvf) || (getPendingSharedBufferSize() + fvfToSize(fvf) * vertexCount > 65535) ? 0 : getPendingSharedBufferSize()) / fvfToSize(fvf))
 {
 #ifndef __OPENGLES__
    // Disabled since OpenGL ES does not support glDrawElementsBaseVertex and we need it unless we remap the indices when creating the index buffer (and we should)
    if (m_isStatic)
    {
-      if (pendingSharedBuffers.size() > 0 && pendingSharedBuffers[0]->m_fvf != m_fvf)
+      if ((pendingSharedBuffers.size() > 0 && pendingSharedBuffers[0]->m_vertexFormat != m_vertexFormat) // Split on vertex format change
+         || (getPendingSharedBufferSize() + fvfToSize(fvf) * vertexCount > 65535)) // Split to avoid exceeding index buffer 16 bit limit
          CreatePendingSharedBuffer();
       pendingSharedBuffers.push_back(this);
    }
@@ -107,11 +118,7 @@ void VertexBuffer::unlock()
 
 void VertexBuffer::CreatePendingSharedBuffer()
 {
-   UINT size = 0;
-   for (size_t i = 0; i < pendingSharedBuffers.size(); i++)
-   {
-      size += pendingSharedBuffers[i]->m_size;
-   }
+   UINT size = getPendingSharedBufferSize();
    #if defined(ENABLE_SDL) // OpenGL
    GLuint vb = 0;
    glGenBuffers(1, &vb);
@@ -121,29 +128,26 @@ void VertexBuffer::CreatePendingSharedBuffer()
    (*refCount) = (int) pendingSharedBuffers.size();
    #else // DirectX 9
    IDirect3DVertexBuffer9* vb = nullptr;
-   CHECKD3D(m_rd->GetCoreDevice()->CreateVertexBuffer(size, D3DUSAGE_WRITEONLY, 0 /* pendingSharedBuffers[0]->m_fvf */, D3DPOOL_DEFAULT, &vb, nullptr));
+   CHECKD3D(m_rd->GetCoreDevice()->CreateVertexBuffer(size, D3DUSAGE_WRITEONLY, 0 /* pendingSharedBuffers[0]->m_vertexFormat */, D3DPOOL_DEFAULT, &vb, nullptr));
    UINT8* data;
    CHECKD3D(vb->Lock(0, size, (void**)&data, 0));
    #endif
-   UINT offset = 0;
    for (size_t i = 0; i < pendingSharedBuffers.size(); i++)
    {
       VertexBuffer* buffer = pendingSharedBuffers[i];
-      assert(buffer->m_fvf == pendingSharedBuffers[0]->m_fvf);
+      assert(buffer->m_vertexFormat == pendingSharedBuffers[0]->m_vertexFormat);
       buffer->m_vb = vb;
-      buffer->m_offset = offset;
       for (size_t j = 0; j < buffer->m_pendingUploads.size(); j++)
       {
          PendingUpload& upload = buffer->m_pendingUploads[j];
          #ifdef ENABLE_SDL // OpenGL
-         glBufferSubData(GL_ARRAY_BUFFER, offset + upload.offset, upload.size, upload.data);
+         glBufferSubData(GL_ARRAY_BUFFER, buffer->m_offset + upload.offset, upload.size, upload.data);
          #else // DirectX 9
-         memcpy(data + offset + upload.offset, upload.data, upload.size);
+         memcpy(data + buffer->m_offset + upload.offset, upload.data, upload.size);
          #endif
          delete[] upload.data;
       }
       buffer->m_pendingUploads.clear();
-      offset += buffer->m_size;
       #if defined(ENABLE_SDL) // OpenGL
       buffer->m_sharedBufferRefCount = refCount;
       #else // DirectX 9

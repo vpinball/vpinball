@@ -818,7 +818,7 @@ void HitTarget::RenderSetup()
    delete m_meshBuffer;
    VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)m_numVertices, (float *)m_transformedVertices.data(), true);
    IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, m_indices);
-   m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer);
+   m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer, true);
 
    m_moveAnimationOffset = 0.0f;
    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple)
