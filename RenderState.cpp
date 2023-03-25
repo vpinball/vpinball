@@ -9,7 +9,7 @@
 RENDER_STATE(ALPHABLENDENABLE, 0, 1) // RS_FALSE or RS_TRUE
 RENDER_STATE(ZENABLE, 1, 1) // RS_FALSE or RS_TRUE
 RENDER_STATE(BLENDOP, 2, 2) // Operation from BLENDOP_MAX, BLENDOP_ADD, BLENDOP_SUB, BLENDOP_REVSUBTRACT
-RENDER_STATE(CLIPPLANEENABLE, 4, 1) // PLANE0 or 0 (for disable)
+RENDER_STATE(CLIPPLANEENABLE, 4, 1) // RS_TRUE or RS_FALSE
 RENDER_STATE(CULLMODE, 5, 2) // CULL_NONE, CULL_CW, CULL_CCW
 RENDER_STATE(DESTBLEND, 7, 3) // ZERO, ONE, SRC_ALPHA, DST_ALPHA, INVSRC_ALPHA, INVSRC_COLOR
 RENDER_STATE(SRCBLEND, 10, 3) // ZERO, ONE, SRC_ALPHA, DST_ALPHA, INVSRC_ALPHA, INVSRC_COLOR
@@ -24,7 +24,7 @@ const RenderState::RenderStateMask RenderState::render_state_masks[RENDERSTATE_C
    RENDER_STATE(ALPHABLENDENABLE, 0, 1) // RS_FALSE or RS_TRUE
    RENDER_STATE(ZENABLE, 1, 1) // RS_FALSE or RS_TRUE
    RENDER_STATE(BLENDOP, 2, 2) // Operation from BLENDOP_MAX, BLENDOP_ADD, BLENDOP_SUB, BLENDOP_REVSUBTRACT
-   RENDER_STATE(CLIPPLANEENABLE, 4, 1) // PLANE0 or 0 (for disable)
+   RENDER_STATE(CLIPPLANEENABLE, 4, 1) // RS_TRUE or RS_FALSE
    RENDER_STATE(CULLMODE, 5, 2) // CULL_NONE, CULL_CW, CULL_CCW
    RENDER_STATE(DESTBLEND, 7, 3) // ZERO, ONE, SRC_ALPHA, DST_ALPHA, INVSRC_ALPHA, INVSRC_COLOR
    RENDER_STATE(SRCBLEND, 10, 3) // ZERO, ONE, SRC_ALPHA, DST_ALPHA, INVSRC_ALPHA, INVSRC_COLOR
@@ -34,6 +34,28 @@ const RenderState::RenderStateMask RenderState::render_state_masks[RENDERSTATE_C
 };
 #undef RENDER_STATE
 
+RenderState::RenderState()
+   : m_state(0x001f5146)
+   , m_depthBias(0.f)
+{
+   // Default render state is:
+   // Blend: { _  A  SA   RSA } Depth: { Z  <=  ZW } Clip: _ Cull: CCW Mask: F
+   #if 0
+   // Kept to easily check default state constant
+   SetRenderState(ALPHABLENDENABLE, RS_FALSE);
+   SetRenderState(ZENABLE, RS_TRUE);
+   SetRenderState(BLENDOP, BLENDOP_ADD);
+   SetRenderState(CLIPPLANEENABLE, RS_FALSE);
+   SetRenderState(CULLMODE, CULL_CCW);
+   SetRenderState(DESTBLEND, SRC_ALPHA);
+   SetRenderState(SRCBLEND, INVSRC_ALPHA);
+   SetRenderState(ZFUNC, Z_LESSEQUAL);
+   SetRenderState(ZWRITEENABLE, RS_TRUE);
+   SetRenderState(COLORWRITEENABLE, RGBMASK_RGBA);
+   OutputDebugString(GetLog().c_str());
+   OutputDebugString("\n");
+   #endif
+}
 
 void RenderState::SetRenderState(const RenderStates p1, const RenderStateValue p2)
 {
@@ -167,7 +189,7 @@ void RenderState::Apply(RenderDevice* device)
          #ifdef ENABLE_SDL
          if (val) glEnable(GL_CLIP_DISTANCE0); else glDisable(GL_CLIP_DISTANCE0);
          #else
-         CHECKD3D(d3dDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, val ? RenderState::PLANE0 : 0));
+         CHECKD3D(d3dDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, val ? 1 : 0));
          #endif
          break;
 

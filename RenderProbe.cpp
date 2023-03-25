@@ -250,7 +250,7 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
 
    // Set the clip plane to only render objects above the reflection plane (do not reflect what is under or the plane itself)
    vec4 clip_plane = vec4(-m_reflection_plane.x, -m_reflection_plane.y, -m_reflection_plane.z, m_reflection_plane.w);
-   p3dDevice->SetClipPlane0(clip_plane);
+   p3dDevice->SetClipPlane(clip_plane);
    p3dDevice->SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_TRUE);
 
    p3dDevice->SetRenderStateCulling(RenderState::CULL_CCW); // re-init/thrash cache entry due to the hacky nature of the table mirroring

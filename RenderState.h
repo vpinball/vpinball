@@ -10,7 +10,7 @@ public:
       RENDER_STATE(ALPHABLENDENABLE, 0, 1) // RS_FALSE or RS_TRUE
       RENDER_STATE(ZENABLE, 1, 1) // RS_FALSE or RS_TRUE
       RENDER_STATE(BLENDOP, 2, 2) // Operation from BLENDOP_MAX, BLENDOP_ADD, BLENDOP_SUB, BLENDOP_REVSUBTRACT
-      RENDER_STATE(CLIPPLANEENABLE, 4, 1) // PLANE0 or 0 (for disable)
+      RENDER_STATE(CLIPPLANEENABLE, 4, 1) // RS_TRUE or RS_FALSE
       RENDER_STATE(CULLMODE, 5, 2) // CULL_NONE, CULL_CW, CULL_CCW
       RENDER_STATE(DESTBLEND, 7, 3) // ZERO, ONE, SRC_ALPHA, DST_ALPHA, INVSRC_ALPHA, INVSRC_COLOR
       RENDER_STATE(SRCBLEND, 10, 3) // ZERO, ONE, SRC_ALPHA, DST_ALPHA, INVSRC_ALPHA, INVSRC_COLOR
@@ -48,14 +48,14 @@ public:
       DST_ALPHA = 3,
       INVSRC_ALPHA = 4,
       INVSRC_COLOR = 5,
-      //Clipping planes
-      PLANE0 = 1,
       //Color mask
       RGBMASK_NONE = 0x00000000u,
       RGBMASK_RGBA = 0x0000000Fu,
 
       UNDEFINED
    };
+
+   RenderState();
 
    void SetRenderState(const RenderStates p1, const RenderStateValue p2);
    void SetRenderStateCulling(RenderStateValue cull);
