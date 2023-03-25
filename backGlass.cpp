@@ -282,15 +282,16 @@ void BackGlass::Render()
 
    m_pd3dDevice->DMDShader->SetVector(SHADER_vColor_Intensity, 1.0f, 1.0f, 1.0f, 1.0f);
 
-   static constexpr float Verts[4 * 5] =
-      {
-         1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-         0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-         1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-         0.0f, 0.0f, 0.0f, 0.0f, 1.0f
-      };
+   Vertex3D_NoTex2 vertices[4] =
+   {
+      { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
+      { 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f },
+      { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f },
+      { 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }
+   };
+
    m_pd3dDevice->DMDShader->Begin();
-   m_pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)Verts);
+   m_pd3dDevice->DrawTexturedQuad(vertices);
    m_pd3dDevice->DMDShader->End();
 
    m_pd3dDevice->CopyRenderStates(false, initial_state);

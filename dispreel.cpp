@@ -258,21 +258,21 @@ void DispReel::RenderDynamic()
       const float u1 = m_digitTexCoords[m_reelInfo[r].currentValue].u_max;
       const float v1 = m_digitTexCoords[m_reelInfo[r].currentValue].v_max;
 
-      float Verts[4 * 5] =
+      Vertex3D_NoTex2 vertices[4] =
       {
-         1.0f, 1.0f, 0.0f, u1, v1,
-         0.0f, 1.0f, 0.0f, u0, v1,
-         1.0f, 0.0f, 0.0f, u1, v0,
-         0.0f, 0.0f, 0.0f, u0, v0
+         { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, u1, v1 },
+         { 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, u0, v1 },
+         { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, u1, v0 },
+         { 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, u0, v0 }
       };
 
       for (unsigned int i = 0; i < 4; ++i)
       {
-         Verts[i * 5    ] =        (Verts[i * 5    ] * m_renderwidth  + x1)*2.0f - 1.0f;
-         Verts[i * 5 + 1] = 1.0f - (Verts[i * 5 + 1] * m_renderheight + y1)*2.0f;
+         vertices[i].x =        (vertices[i].x * m_renderwidth  + x1)*2.0f - 1.0f;
+         vertices[i].y = 1.0f - (vertices[i].y * m_renderheight + y1)*2.0f;
       }
 
-      pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)Verts);
+      pd3dDevice->DrawTexturedQuad(vertices);
 
       // move to the next reel
       x1 += renderspacingx + m_renderwidth;

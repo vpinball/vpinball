@@ -3024,18 +3024,18 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD); //!! DMD_UPSCALE ?? -> should just work
 #endif
 
-      float DMDVerts[4 * 5] =
+      Vertex3D_NoTex2 vertices[4] =
       {
-         1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-         0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-         1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-         0.0f, 0.0f, 0.0f, 0.0f, 0.0f
+         { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f },
+         { 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
+         { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
+         { 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
       };
 
       for (unsigned int i = 0; i < 4; ++i)
       {
-         DMDVerts[i * 5    ] =        (DMDVerts[i * 5    ] * w + x)*2.0f - 1.0f;
-         DMDVerts[i * 5 + 1] = 1.0f - (DMDVerts[i * 5 + 1] * h + y)*2.0f;
+         vertices[i].x =        (vertices[i].x * w + x)*2.0f - 1.0f;
+         vertices[i].y = 1.0f - (vertices[i].y * h + y) * 2.0f;
       }
 
       const vec4 c = convertColor(DMDcolor, intensity);
@@ -3050,7 +3050,7 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTexture(SHADER_tex_dmd, m_texdmd, SF_NONE, SA_CLAMP, SA_CLAMP);
 
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->Begin();
-      m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)DMDVerts);
+      m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad(vertices);
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->End();
 
       m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
@@ -3061,18 +3061,18 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
 {
    RenderDevice * const pd3dDevice = backdrop ? m_pin3d.m_pd3dSecondaryDevice : m_pin3d.m_pd3dPrimaryDevice;
 
-   float Verts[4 * 5] =
+   Vertex3D_NoTex2 vertices[4] =
    {
-       1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-       0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-       1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-       0.0f, 0.0f, 0.0f, 0.0f, 0.0f
+      { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f },
+      { 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
+      { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
+      { 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
    };
 
    for (unsigned int i = 0; i < 4; ++i)
    {
-      Verts[i * 5] = (Verts[i * 5] * width + posx)*2.0f - 1.0f;
-      Verts[i * 5 + 1] = 1.0f - (Verts[i * 5 + 1] * height + posy)*2.0f;
+      vertices[i].x =        (vertices[i].x * width  + posx)*2.0f - 1.0f;
+      vertices[i].y = 1.0f - (vertices[i].y * height + posy) * 2.0f;
    }
 
    pd3dDevice->DMDShader->SetTechnique(tex ? SHADER_TECHNIQUE_basic_noDMD : SHADER_TECHNIQUE_basic_noDMD_notex);
@@ -3084,7 +3084,7 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
       pd3dDevice->DMDShader->SetTexture(SHADER_tex_sprite, tex, SF_NONE, SA_REPEAT, SA_REPEAT);
 
    pd3dDevice->DMDShader->Begin();
-   pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)Verts);
+   pd3dDevice->DrawTexturedQuad(vertices);
    pd3dDevice->DMDShader->End();
 }
 
@@ -3092,18 +3092,18 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
 {
    RenderDevice * const pd3dDevice = backdrop ? m_pin3d.m_pd3dSecondaryDevice : m_pin3d.m_pd3dPrimaryDevice;
 
-   float Verts[4 * 5] =
+   Vertex3D_NoTex2 vertices[4] =
    {
-      1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-      0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-      1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-      0.0f, 0.0f, 0.0f, 0.0f, 0.0f
+      { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f },
+      { 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
+      { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
+      { 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
    };
 
    for (unsigned int i = 0; i < 4; ++i)
    {
-      Verts[i * 5    ] =        (Verts[i * 5    ] * width  + posx)*2.0f - 1.0f;
-      Verts[i * 5 + 1] = 1.0f - (Verts[i * 5 + 1] * height + posy)*2.0f;
+      vertices[i].x =        (vertices[i].x * width  + posx)*2.0f - 1.0f;
+      vertices[i].y = 1.0f - (vertices[i].y * height + posy) * 2.0f;
    }
 
    pd3dDevice->DMDShader->SetTechnique(tex ? SHADER_TECHNIQUE_basic_noDMD : SHADER_TECHNIQUE_basic_noDMD_notex);
@@ -3115,7 +3115,7 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
       pd3dDevice->DMDShader->SetTexture(SHADER_tex_sprite, tex);
 
    pd3dDevice->DMDShader->Begin();
-   pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)Verts);
+   pd3dDevice->DrawTexturedQuad(vertices);
    pd3dDevice->DMDShader->End();
 }
 
@@ -3257,12 +3257,12 @@ void Player::Bloom()
 
    const double w = (double)m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth();
    const double h = (double)m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight();
-   const float shiftedVerts[4 * 5] =
+   const Vertex3D_TexelOnly shiftedVerts[4] =
    {
-       1.0f,  1.0f, 0.0f, 1.0f + (float)(2.25 / w), 0.0f + (float)(2.25 / h),
-      -1.0f,  1.0f, 0.0f, 0.0f + (float)(2.25 / w), 0.0f + (float)(2.25 / h),
-       1.0f, -1.0f, 0.0f, 1.0f + (float)(2.25 / w), 1.0f + (float)(2.25 / h),
-      -1.0f, -1.0f, 0.0f, 0.0f + (float)(2.25 / w), 1.0f + (float)(2.25 / h)
+      {  1.0f,  1.0f, 0.0f, 1.0f + (float)(2.25 / w), 0.0f + (float)(2.25 / h) },
+      { -1.0f,  1.0f, 0.0f, 0.0f + (float)(2.25 / w), 0.0f + (float)(2.25 / h) },
+      {  1.0f, -1.0f, 0.0f, 1.0f + (float)(2.25 / w), 1.0f + (float)(2.25 / h) },
+      { -1.0f, -1.0f, 0.0f, 0.0f + (float)(2.25 / w), 1.0f + (float)(2.25 / h) }
    };
    {
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_filtered);
@@ -3275,7 +3275,7 @@ void Player::Bloom()
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_bloom);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
-      m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)shiftedVerts);
+      m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad(shiftedVerts);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
    }
 
@@ -3851,14 +3851,14 @@ void Player::PrepareVideoBuffersNormal()
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAA || infoMode == IF_RENDER_PROBES ? SHADER_TECHNIQUE_fb_tonemap : (m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_tonemap_no_filterRG : (m_BWrendering == 2 ? SHADER_TECHNIQUE_fb_tonemap_no_filterR : SHADER_TECHNIQUE_fb_tonemap_no_filterRGB)));
 
    m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
-   const float shiftedVerts[4 * 5] =
+   const Vertex3D_TexelOnly shiftedVerts[4] =
    {
-       1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 0.0f,
-      -1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 0.0f,
-       1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 1.0f,
-      -1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 1.0f
+      {  1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 0.0f },
+      { -1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 0.0f },
+      {  1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 1.0f },
+      { -1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 1.0f }
    };
-   m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad((Vertex3D_TexelOnly *)shiftedVerts);
+   m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad(shiftedVerts);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
    renderedRT = ouputRT;
 
@@ -4053,14 +4053,14 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(infoMode == IF_AO_ONLY ? SHADER_TECHNIQUE_fb_AO : (useAA || infoMode == IF_RENDER_PROBES ? SHADER_TECHNIQUE_fb_tonemap_AO : SHADER_TECHNIQUE_fb_tonemap_AO_no_filter));
 
    m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin();
-   const float shiftedVerts[4 * 5] =
+   const Vertex3D_TexelOnly shiftedVerts[4] =
    {
-       1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 0.0f,
-      -1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 0.0f,
-       1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 1.0f,
-      -1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 1.0f
+      {  1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 0.0f },
+      { -1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 0.0f },
+      {  1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 1.0f },
+      { -1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 1.0f }
    };
-   m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad((Vertex3D_TexelOnly *)shiftedVerts);
+   m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad(shiftedVerts);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
    renderedRT = ouputRT;
 
