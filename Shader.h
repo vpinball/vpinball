@@ -338,7 +338,7 @@ public:
    uint32_t CopyUniformCache(const bool copyTo, const ShaderTechniques technique, UniformCache (&m_uniformCache)[SHADER_UNIFORM_COUNT]);
 
 private:
-   RenderDevice *m_renderDevice;
+   RenderDevice* const m_renderDevice;
    static Shader* current_shader;
    ShaderTechniques m_technique;
    string m_shaderCodeName;
