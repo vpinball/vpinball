@@ -707,6 +707,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    LookAt(eye, at, up, (float *)(m_camView.m));
    m_selectionTransform.SetTranslation(-m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.0f);
    m_selectionTransform.SetIdentity();
+   ImGuizmo::AllowAxisFlip(false);
 
    ImGui_ImplWin32_Init(rd->getHwnd());
 
@@ -1172,30 +1173,75 @@ void LiveUI::UpdateMainUI()
       {
          Perspective(39.6f, io.DisplaySize.x / io.DisplaySize.y, 10.0f, 10000.0f, (float *)(m_camProj.m));
       }
-      float viewManipulateRight = ImGui::GetIO().DisplaySize.x - m_properties_width - 16;
-      float viewManipulateTop = m_toolbar_height + m_menubar_height + 16;
-      ImGuizmo::OPERATION mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-      ImGuizmo::MODE mCurrentGizmoMode = ImGuizmo::WORLD;
-      int gizmoCount = 1;
-      static const float identityMatrix[16] = { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f };
       float* cameraView = (float *)(m_camView.m);
       float *cameraProjection = (float *)(m_camProj.m); 
+      ImGuizmo::OPERATION mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+      ImGuizmo::MODE mCurrentGizmoMode = ImGuizmo::WORLD;
+
       /* Matrix3D gridMatrix;
+      static const float identityMatrix[16] = { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f };
       gridMatrix.RotateXMatrix(M_PI * 0.5f);
       gridMatrix.Scale(10.0f, 1.0f, 10.0f);
       ImGuizmo::DrawGrid((const float *)(m_camView.m), (const float *)(m_camProj.m), (const float *)(gridMatrix.m), 100.f); */
       //ImGuizmo::DrawGrid(cameraView, cameraProjection, identityMatrix, 100.f);
-      //ImGuizmo::DrawCubes(cameraView, cameraProjection, (float *)(m_selectionTransform.m), gizmoCount);
-      //ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, (float *)(m_selectionTransform.m));
-      //ImGuizmo::ViewManipulate(cameraView, m_camDistance, ImVec2(viewManipulateRight - 128, viewManipulateTop), ImVec2(128, 128), 0x10101010);
-      Matrix3D prevView(m_camView);
-      ImGuizmo::ViewManipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, (float *)(m_selectionTransform.m), m_camDistance,
-         ImVec2(viewManipulateRight - 128, viewManipulateTop + 16), ImVec2(128, 128), 0x10101010);
-      if (memcmp(cameraView, (float *)(prevView.m), 16 * sizeof(float)) != 0)
+
+      bool hasGuizmo = false;
+      if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.is_live && m_selection.editable->GetItemType() == eItemPrimitive)
       {
-         // switch to perspective when user orbit the view
-         m_orthoCam = false;
+         hasGuizmo = true;
+
+         Primitive *p = (Primitive *)m_selection.editable;
+
+         // scale matrix
+         Matrix3D Smatrix;
+         //Smatrix.SetScaling(p->m_d.m_vSize.x, p->m_d.m_vSize.y, p->m_d.m_vSize.z);
+         Smatrix.SetIdentity();
+
+         // translation matrix
+         Matrix3D Tmatrix;
+         Tmatrix.SetTranslation(-p->m_d.m_vPosition.x, p->m_d.m_vPosition.y, p->m_d.m_vPosition.z + m_live_table->m_tableheight);
+
+         // translation + rotation matrix
+         Matrix3D RTmatrix;
+         RTmatrix.SetTranslation(p->m_d.m_aRotAndTra[3], p->m_d.m_aRotAndTra[4], p->m_d.m_aRotAndTra[5]);
+
+         Matrix3D tempMatrix;
+         tempMatrix.RotateZMatrix(ANGTORAD(p->m_d.m_aRotAndTra[2]));
+         tempMatrix.Multiply(RTmatrix, RTmatrix);
+         tempMatrix.RotateYMatrix(ANGTORAD(p->m_d.m_aRotAndTra[1]));
+         tempMatrix.Multiply(RTmatrix, RTmatrix);
+         tempMatrix.RotateXMatrix(ANGTORAD(p->m_d.m_aRotAndTra[0]));
+         tempMatrix.Multiply(RTmatrix, RTmatrix);
+
+         tempMatrix.RotateZMatrix(ANGTORAD(p->m_d.m_aRotAndTra[8]));
+         tempMatrix.Multiply(RTmatrix, RTmatrix);
+         tempMatrix.RotateYMatrix(ANGTORAD(p->m_d.m_aRotAndTra[7]));
+         tempMatrix.Multiply(RTmatrix, RTmatrix);
+         tempMatrix.RotateXMatrix(ANGTORAD(p->m_d.m_aRotAndTra[6]));
+         tempMatrix.Multiply(RTmatrix, RTmatrix);
+
+         Matrix3D fullMatrix;
+         fullMatrix = Smatrix;
+         //RTmatrix.Multiply(fullMatrix, fullMatrix);
+         Tmatrix.Multiply(fullMatrix, fullMatrix); // fullMatrix = Smatrix * RTmatrix * Tmatrix
+         //Smatrix.SetScaling(1.0f, 1.0f, m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+         //Smatrix.Multiply(fullMatrix, fullMatrix);
+
+         m_selectionTransform = fullMatrix;
+         ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, (float *)(m_selectionTransform.m));
       }
+
+      // Camera orbit manipulator
+      Matrix3D prevView(m_camView);
+      float viewManipulateRight = ImGui::GetIO().DisplaySize.x - m_properties_width - 16;
+      float viewManipulateTop = m_toolbar_height + m_menubar_height + 16;
+      if (hasGuizmo)
+         ImGuizmo::ViewManipulate(cameraView, m_camDistance, ImVec2(viewManipulateRight - 128, viewManipulateTop + 16), ImVec2(128, 128), 0x10101010);
+      else
+         ImGuizmo::ViewManipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, (float *)(m_selectionTransform.m), m_camDistance,
+            ImVec2(viewManipulateRight - 128, viewManipulateTop + 16), ImVec2(128, 128), 0x10101010);
+      if (memcmp(cameraView, (float *)(prevView.m), 16 * sizeof(float)) != 0)
+         m_orthoCam = false; // switch to perspective when user orbit the view
    }
 
    // Popups & Modal dialogs
@@ -1274,9 +1320,35 @@ void LiveUI::UpdateMainUI()
       {
          if (ImGui::IsKeyPressed(ImGuiKey_Keypad5))
          {
-            // Editor Camera to Top
+            // Editor toggle orthographic / perspective
             m_useEditorCam = true;
             m_orthoCam = !m_orthoCam;
+         }
+         if (ImGui::IsKeyPressed(ImGuiKey_KeypadDecimal))
+         {
+            // Editor Camera center on selection
+            m_useEditorCam = true;
+            Matrix3D view(m_camView);
+            view.Invert();
+            vec3 up(view._21, view._22, view._23);
+            vec3 dir(view._31, view._32, view._33);
+            vec3 pos(view._41, view._42, view._43);
+            vec3 camTarget = pos - m_camDistance * dir;
+            vec3 newTarget = camTarget;
+            if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemPrimitive)
+            {
+               switch (m_selection.editable->GetItemType())
+               {
+               case eItemPrimitive:
+               {
+                  Primitive *p = (Primitive *)m_selection.editable;
+                  newTarget = vec3(-p->m_d.m_vPosition.x, p->m_d.m_vPosition.y, p->m_d.m_vPosition.z + m_live_table->m_tableheight);
+                  break;
+               }
+               }
+            }
+            vec3 newEye = newTarget + m_camDistance * dir;
+            LookAt(&newEye.x, &newTarget.x, &up.x, (float *)(m_camView.m));
          }
          if (ImGui::IsKeyPressed(ImGuiKey_Keypad7))
          {
