@@ -1281,9 +1281,9 @@ void LiveUI::UpdateMainUI()
          vec3 up(view._21, view._22, view._23);
          vec3 dir(view._31, view._32, view._33);
          vec3 pos(view._41, view._42, view._43);
-         vec3 camTarget = pos - m_camDistance * dir;
-         m_camDistance *= pow(1.1, -ImGui::GetIO().MouseWheel);
-         vec3 newEye = camTarget + m_camDistance * dir;
+         vec3 camTarget = pos - dir * m_camDistance;
+         m_camDistance *= (float) pow(1.1, -ImGui::GetIO().MouseWheel);
+         vec3 newEye = camTarget + dir * m_camDistance;
          LookAt(&newEye.x, &camTarget.x, &up.x, (float *)(m_camView.m));
       }
 
@@ -1299,7 +1299,7 @@ void LiveUI::UpdateMainUI()
          vec3 up(view._21, view._22, view._23);
          vec3 dir(view._31, view._32, view._33);
          vec3 pos(view._41, view._42, view._43);
-         vec3 camTarget = pos - m_camDistance * dir;
+         vec3 camTarget = pos - dir * m_camDistance;
          if (ImGui::GetIO().KeyShift)
          {
             pos = pos - right * drag.x + up * drag.y;
@@ -1333,7 +1333,7 @@ void LiveUI::UpdateMainUI()
             vec3 up(view._21, view._22, view._23);
             vec3 dir(view._31, view._32, view._33);
             vec3 pos(view._41, view._42, view._43);
-            vec3 camTarget = pos - m_camDistance * dir;
+            vec3 camTarget = pos - dir * m_camDistance;
             vec3 newTarget = camTarget;
             if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemPrimitive)
             {
@@ -1347,7 +1347,7 @@ void LiveUI::UpdateMainUI()
                }
                }
             }
-            vec3 newEye = newTarget + m_camDistance * dir;
+            vec3 newEye = newTarget + dir * m_camDistance;
             LookAt(&newEye.x, &newTarget.x, &up.x, (float *)(m_camView.m));
          }
          if (ImGui::IsKeyPressed(ImGuiKey_Keypad7))
@@ -1360,10 +1360,10 @@ void LiveUI::UpdateMainUI()
             vec3 up(view._21, view._22, view._23);
             vec3 dir(view._31, view._32, view._33);
             vec3 pos(view._41, view._42, view._43);
-            vec3 camTarget = pos - m_camDistance * dir;
+            vec3 camTarget = pos - dir * m_camDistance;
             vec3 newUp(0.f, -1.f, 0.f);
             vec3 newDir(0.f, 0.f, ImGui::GetIO().KeyCtrl ? -1.f : 1.f);
-            vec3 newEye = camTarget + m_camDistance * newDir;
+            vec3 newEye = camTarget + newDir * m_camDistance;
             LookAt(&newEye.x, &camTarget.x, &newUp.x, (float *)(m_camView.m));
          }
          if (ImGui::IsKeyPressed(ImGuiKey_Keypad1))
@@ -1376,10 +1376,10 @@ void LiveUI::UpdateMainUI()
             vec3 up(view._21, view._22, view._23);
             vec3 dir(view._31, view._32, view._33);
             vec3 pos(view._41, view._42, view._43);
-            vec3 camTarget = pos - m_camDistance * dir;
+            vec3 camTarget = pos - dir * m_camDistance;
             vec3 newUp(0.f, 0.f, 1.f);
             vec3 newDir(0.f, ImGui::GetIO().KeyCtrl ? -1.f : 1.f, 0.f);
-            vec3 newEye = camTarget + m_camDistance * newDir;
+            vec3 newEye = camTarget + newDir * m_camDistance;
             LookAt(&newEye.x, &camTarget.x, &newUp.x, (float *)(m_camView.m));
          }
          if (ImGui::IsKeyPressed(ImGuiKey_Keypad3))
@@ -1392,10 +1392,10 @@ void LiveUI::UpdateMainUI()
             vec3 up(view._21, view._22, view._23);
             vec3 dir(view._31, view._32, view._33);
             vec3 pos(view._41, view._42, view._43);
-            vec3 camTarget = pos - m_camDistance * dir;
+            vec3 camTarget = pos - dir * m_camDistance;
             vec3 newUp(0.f, 0.f, 1.f);
             vec3 newDir(ImGui::GetIO().KeyCtrl ? 1.f : -1.f, 0.f, 0.f);
-            vec3 newEye = camTarget + m_camDistance * newDir;
+            vec3 newEye = camTarget + newDir * m_camDistance;
             LookAt(&newEye.x, &camTarget.x, &newUp.x, (float *)(m_camView.m));
          }
       }
