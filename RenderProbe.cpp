@@ -351,6 +351,8 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    const bool render_dynamic = !is_static && (mode >= REFL_UNSYNCED_DYNAMIC);
    DoRenderReflectionProbe(render_static, render_balls, render_dynamic);
 
+   ApplyRoughness(RenderTarget::GetCurrentRenderTarget(), m_roughness_base);
+
    previousRT->Activate();
 }
 
@@ -424,6 +426,4 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
       g_pplayer->UpdateBasicShaderMatrix();
    if (render_balls)
       g_pplayer->UpdateBallShaderMatrix();
-
-   ApplyRoughness(RenderTarget::GetCurrentRenderTarget(), m_roughness_base);
 }
