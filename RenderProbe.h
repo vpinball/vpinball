@@ -52,14 +52,18 @@ public:
    void RenderSetup();
    void MarkDirty(); // Mark this probe as dirty, should be called when starting a new frame
    bool IsRendering() const; // Rendering is not reentrant so GetProbe should not be called when this returns true
+   void PreRenderStatic(); // Allows to precompute static parts
    RenderTarget* GetProbe(const bool is_static); // Request render probe, eventually rendering it if it is dirty
    void EndPlay();
 
 private:
    int GetRoughnessDownscale(const int roughness);
    void ApplyRoughness(RenderTarget* probe, const int roughness);
-   void RenderReflectionProbe(const bool is_static);
    void RenderScreenSpaceTransparency(const bool is_static);
+
+   void PreRenderStaticReflectionProbe();
+   void RenderReflectionProbe(const bool is_static);
+   void DoRenderReflectionProbe(const bool render_static, const bool render_balls, const bool render_dynamic);
 
    ProbeType m_type = PLANE_REFLECTION;
    bool m_dirty = true;

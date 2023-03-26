@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "RenderProbe.h"
+#include "Shader.h"
+#include "math/bluenoise.h"
 
 const string PLAYFIELD_REFLECTION_RENDERPROBE_NAME = "Playfield Reflections"s;
 
@@ -91,6 +93,14 @@ void RenderProbe::EndPlay()
 void RenderProbe::MarkDirty()
 { 
    m_dirty = true;
+}
+
+void RenderProbe::PreRenderStatic()
+{
+   if (m_type == PLANE_REFLECTION)
+   {
+      PreRenderStaticReflectionProbe();
+   }
 }
 
 RenderTarget *RenderProbe::GetProbe(const bool is_static)
@@ -196,6 +206,95 @@ void RenderProbe::SetReflectionMode(ReflectionMode mode)
    m_reflection_mode = mode;
 }
 
+void RenderProbe::PreRenderStaticReflectionProbe()
+{
+   // For dynamic reflection mode, in static camera mode, we prerender static elements (like for main view) to get better antialiasing and overall performance
+   if (g_pplayer->m_dynamicMode || min(m_reflection_mode, g_pplayer->m_pfReflectionMode) != REFL_DYNAMIC)
+      return;
+
+   RenderTarget* previousRT = RenderTarget::GetCurrentRenderTarget();
+   RenderDevice* p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
+   if (m_staticRT == nullptr)
+   {
+      const int downscale = GetRoughnessDownscale(m_roughness_base);
+      const int w = p3dDevice->GetBackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetBackBufferTexture()->GetHeight() / downscale;
+      m_staticRT = new RenderTarget(p3dDevice, "StaticReflProbe"s, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, p3dDevice->GetBackBufferTexture()->GetStereo(),
+         "Failed to create plane reflection static render target", nullptr);
+   }
+
+   RenderTarget* accumulationSurface = m_staticRT->Duplicate("Accumulation"s);
+
+   // if rendering static/with heavy oversampling, disable the aniso/trilinear filter to get a sharper/more precise result overall!
+   p3dDevice->SetMainTextureDefaultFiltering(SF_BILINEAR);
+
+   //#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
+   // loop for X times and accumulate/average these renderings
+   // NOTE: iter == 0 MUST ALWAYS PRODUCE an offset of 0,0!
+   int n_iter = STATIC_PRERENDER_ITERATIONS - 1;
+   for (int iter = n_iter; iter >= 0; --iter) // just do one iteration if in dynamic camera/light/material tweaking mode
+   {
+      RenderDevice::m_stats_drawn_triangles = 0;
+
+      float u1 = xyLDBNbnot[iter * 2]; //      (float)iter*(float)(1.0                                /STATIC_PRERENDER_ITERATIONS);
+      float u2 = xyLDBNbnot[iter * 2 + 1]; //fmodf((float)iter*(float)(STATIC_PRERENDER_ITERATIONS_KOROBOV/STATIC_PRERENDER_ITERATIONS), 1.f);
+      // the following line implements filter importance sampling for a small gauss (i.e. less jaggies as it also samples neighboring pixels) -> but also potentially more artifacts in compositing!
+      gaussianDistribution(u1, u2, 0.5f, 0.0f); //!! first 0.5 could be increased for more blur, but is pretty much what is recommended
+      // sanity check to be sure to limit filter area to 3x3 in practice, as the gauss transformation is unbound (which is correct, but for our use-case/limited amount of samples very bad)
+      assert(u1 > -1.5f && u1 < 1.5f);
+      assert(u2 > -1.5f && u2 < 1.5f);
+      // Last iteration MUST set a sample offset of 0,0 so that final depth buffer features 'correctly' centered pixel sample
+      assert(iter != 0 || (u1 == 0.f && u2 == 0.f));
+
+      // Setup Camera,etc matrices for each iteration, applying antialiasing offset
+      g_pplayer->m_pin3d.InitLayout(g_pplayer->m_ptable->m_BG_enable_FSS, g_pplayer->m_ptable->GetMaxSeparation(), u1, u2);
+
+      // Now begin rendering of static buffer
+      p3dDevice->BeginScene();
+
+      RenderState initial_state;
+      p3dDevice->CopyRenderStates(true, initial_state);
+      m_staticRT->Activate();
+      p3dDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
+      DoRenderReflectionProbe(true, false, false);
+      p3dDevice->CopyRenderStates(false, initial_state);
+
+      // Rendering is done to the static render target then accumulated to accumulationSurface
+      // We use the framebuffer mirror shader which copies a weighted version of the bound texture
+      accumulationSurface->Activate(true);
+      p3dDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+      p3dDevice->SetRenderState(RenderState::SRCBLEND, RenderState::ONE);
+      p3dDevice->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
+      p3dDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
+      p3dDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+      p3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+      p3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
+      if (iter == STATIC_PRERENDER_ITERATIONS - 1)
+         p3dDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
+      p3dDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
+      p3dDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / (double)m_staticRT->GetWidth()), (float)(1.0 / (double)m_staticRT->GetHeight()), (float)((double)STATIC_PRERENDER_ITERATIONS), 1.0f);
+      p3dDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_staticRT->GetColorSampler());
+      p3dDevice->FBShader->Begin();
+      p3dDevice->DrawFullscreenTexturedQuad();
+      p3dDevice->FBShader->End();
+      p3dDevice->FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
+      p3dDevice->CopyRenderStates(false, initial_state);
+
+      // Finish the frame.
+      p3dDevice->EndScene();
+   }
+
+   // copy back weighted antialiased color result to the static render target, keeping depth untouched
+   accumulationSurface->CopyTo(m_staticRT, true, false);
+   delete accumulationSurface;
+
+   // if rendering static/with heavy oversampling, re-enable the aniso/trilinear filter now for the normal rendering
+   const bool forceAniso = LoadValueBoolWithDefault(regKey[RegName::Player], "ForceAnisotropicFiltering"s, true);
+   p3dDevice->SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
+
+   previousRT->Activate();
+}
+
 void RenderProbe::RenderReflectionProbe(const bool is_static)
 {
    ReflectionMode mode = min(m_reflection_mode, g_pplayer->m_pfReflectionMode);
@@ -207,10 +306,6 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
 
    RenderTarget* previousRT = RenderTarget::GetCurrentRenderTarget();
    RenderDevice* p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderState initial_state;
-   p3dDevice->CopyRenderStates(true, initial_state);
-
-   g_pplayer->m_render_mask |= Player::REFLECTION_PASS;
 
    // Prepare to render into the reflection back buffer
    if (is_static)
@@ -244,9 +339,28 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
       else
       {
          m_dynamicRT->Activate();
-         p3dDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
+         if (mode == REFL_DYNAMIC && m_staticRT != nullptr)
+            m_staticRT->CopyTo(m_dynamicRT);
+         else
+            p3dDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
       }
    }
+
+   const bool render_static = is_static || (mode == REFL_DYNAMIC && m_staticRT == nullptr);
+   const bool render_balls = !is_static && (mode != REFL_NONE && mode != REFL_STATIC);
+   const bool render_dynamic = !is_static && (mode >= REFL_UNSYNCED_DYNAMIC);
+   DoRenderReflectionProbe(render_static, render_balls, render_dynamic);
+
+   previousRT->Activate();
+}
+
+void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool render_balls, const bool render_dynamic)
+{
+   RenderDevice* p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderState initial_state;
+   p3dDevice->CopyRenderStates(true, initial_state);
+
+   g_pplayer->m_render_mask |= Player::REFLECTION_PASS;
 
    // Set the clip plane to only render objects above the reflection plane (do not reflect what is under or the plane itself)
    vec4 clip_plane = vec4(-m_reflection_plane.x, -m_reflection_plane.y, -m_reflection_plane.z, m_reflection_plane.w);
@@ -262,17 +376,17 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    // Reflect against reflection plane given by its normal (formula from https://en.wikipedia.org/wiki/Transformation_matrix#Reflection_2)
    Matrix3D reflect;
    reflect._11 = 1.0f - 2.0f * m_reflection_plane.x * m_reflection_plane.x;
-   reflect._12 =      - 2.0f * m_reflection_plane.x * m_reflection_plane.y;
-   reflect._13 =      - 2.0f * m_reflection_plane.x * m_reflection_plane.z;
-   reflect._14 =      - 2.0f * m_reflection_plane.x * m_reflection_plane.w;
-   reflect._21 =      - 2.0f * m_reflection_plane.y * m_reflection_plane.x;
+   reflect._12 = -2.0f * m_reflection_plane.x * m_reflection_plane.y;
+   reflect._13 = -2.0f * m_reflection_plane.x * m_reflection_plane.z;
+   reflect._14 = -2.0f * m_reflection_plane.x * m_reflection_plane.w;
+   reflect._21 = -2.0f * m_reflection_plane.y * m_reflection_plane.x;
    reflect._22 = 1.0f - 2.0f * m_reflection_plane.y * m_reflection_plane.y;
-   reflect._23 =      - 2.0f * m_reflection_plane.y * m_reflection_plane.z;
-   reflect._24 =      - 2.0f * m_reflection_plane.y * m_reflection_plane.w;
-   reflect._31 =      - 2.0f * m_reflection_plane.z * m_reflection_plane.x;
-   reflect._32 =      - 2.0f * m_reflection_plane.z * m_reflection_plane.y;
+   reflect._23 = -2.0f * m_reflection_plane.y * m_reflection_plane.z;
+   reflect._24 = -2.0f * m_reflection_plane.y * m_reflection_plane.w;
+   reflect._31 = -2.0f * m_reflection_plane.z * m_reflection_plane.x;
+   reflect._32 = -2.0f * m_reflection_plane.z * m_reflection_plane.y;
    reflect._33 = 1.0f - 2.0f * m_reflection_plane.z * m_reflection_plane.z;
-   reflect._34 =      - 2.0f * m_reflection_plane.z * m_reflection_plane.w;
+   reflect._34 = -2.0f * m_reflection_plane.z * m_reflection_plane.w;
    reflect._41 = 0.0f;
    reflect._42 = 0.0f;
    reflect._43 = 0.0f;
@@ -282,10 +396,6 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    // reflect.SetTranslation(-m_reflection_plane.w * m_reflection_plane.x * 2.0f, -m_reflection_plane.w * m_reflection_plane.y * 2.0f, -m_reflection_plane.w * m_reflection_plane.z * 2.0f);
    //viewMat = reflect * viewMat;
    p3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
-
-   const bool render_static = is_static || (mode == REFL_DYNAMIC);
-   const bool render_balls = !is_static && (mode != REFL_NONE && mode != REFL_STATIC);
-   const bool render_dynamic = !is_static && (mode >= REFL_UNSYNCED_DYNAMIC);
 
    if (render_static || render_dynamic)
       g_pplayer->UpdateBasicShaderMatrix();
@@ -305,7 +415,7 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    {
       g_pplayer->DrawDynamics(true);
    }
-   
+
    // Restore initial render states and camera
    g_pplayer->m_render_mask &= ~Player::REFLECTION_PASS;
    p3dDevice->CopyRenderStates(false, initial_state);
@@ -316,6 +426,4 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
       g_pplayer->UpdateBallShaderMatrix();
 
    ApplyRoughness(RenderTarget::GetCurrentRenderTarget(), m_roughness_base);
-
-   previousRT->Activate();
 }
