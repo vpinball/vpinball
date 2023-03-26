@@ -322,6 +322,9 @@
     <ClCompile Include="imgui\imgui_stdlib.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="imgui\ImGuizmo.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1617,6 +1620,9 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imgui_stdlib.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\ImGuizmo.h">
       <Filter>imgui</Filter>
     </ClInclude>
   </ItemGroup>

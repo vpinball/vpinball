@@ -93,6 +93,8 @@ private:
    ImFont *m_overlayFont = nullptr;
    float m_menubar_height = 0.0f;
    float m_toolbar_height = 0.0f;
+   float m_outliner_width = 0.0f;
+   float m_properties_width = 0.0f;
    bool m_old_player_dynamic_mode;
    bool m_old_player_camera_mode;
 
@@ -106,5 +108,8 @@ private:
 
    // Editor camera
    bool m_useEditorCam = false;
-   vec3 m_CamEye, m_CamAt, m_CamUp;
+   bool m_orthoCam = true;
+   Matrix3D m_camView, m_camProj;
+   Matrix3D m_selectionTransform; 
+   float m_camDistance;
 };

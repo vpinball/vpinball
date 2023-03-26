@@ -232,6 +232,8 @@ add_executable(vpinball WIN32
    imgui/imgui_tables.cpp
    imgui/imgui_widgets.cpp
    imgui/imgui_internal.h
+   imgui/ImGuizmo.cpp
+   imgui/ImGuizmo.h
    imgui/implot/implot.cpp
    imgui/implot/implot.h
    imgui/implot/implot_items.cpp

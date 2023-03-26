@@ -17,6 +17,7 @@
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/implot/implot.h"
 #include "imgui/imgui_stdlib.h"
+#include "imgui/ImGuizmo.h"
 
 #if __cplusplus >= 202002L && !defined(__clang__)
 #define stable_sort std::ranges::stable_sort
@@ -53,6 +54,133 @@
 
 
 #define ICON_SAVE ICON_FK_FLOPPY_O
+
+void Frustum(float left, float right, float bottom, float top, float znear, float zfar, float *m16)
+{
+   float temp, temp2, temp3, temp4;
+   temp = 2.0f * znear;
+   temp2 = right - left;
+   temp3 = top - bottom;
+   temp4 = zfar - znear;
+   m16[0] = temp / temp2;
+   m16[1] = 0.0;
+   m16[2] = 0.0;
+   m16[3] = 0.0;
+   m16[4] = 0.0;
+   m16[5] = temp / temp3;
+   m16[6] = 0.0;
+   m16[7] = 0.0;
+   m16[8] = (right + left) / temp2;
+   m16[9] = (top + bottom) / temp3;
+   m16[10] = (-zfar - znear) / temp4;
+   m16[11] = -1.0f;
+   m16[12] = 0.0;
+   m16[13] = 0.0;
+   m16[14] = (-temp * zfar) / temp4;
+   m16[15] = 0.0;
+}
+
+void Perspective(float fovyInDegrees, float aspectRatio, float znear, float zfar, float *m16)
+{
+   float ymax, xmax;
+   ymax = znear * tanf(fovyInDegrees * 3.141592f / 180.0f);
+   xmax = ymax * aspectRatio;
+   Frustum(-xmax, xmax, -ymax, ymax, znear, zfar, m16);
+}
+
+void Cross(const float *a, const float *b, float *r)
+{
+   r[0] = a[1] * b[2] - a[2] * b[1];
+   r[1] = a[2] * b[0] - a[0] * b[2];
+   r[2] = a[0] * b[1] - a[1] * b[0];
+}
+
+float Dot(const float *a, const float *b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+
+void Normalize(const float *a, float *r)
+{
+   float il = 1.f / (sqrtf(Dot(a, a)) + FLT_EPSILON);
+   r[0] = a[0] * il;
+   r[1] = a[1] * il;
+   r[2] = a[2] * il;
+}
+
+void LookAt(const float *eye, const float *at, const float *up, float *m16)
+{
+   float X[3], Y[3], Z[3], tmp[3];
+
+   tmp[0] = eye[0] - at[0];
+   tmp[1] = eye[1] - at[1];
+   tmp[2] = eye[2] - at[2];
+   Normalize(tmp, Z);
+   Normalize(up, Y);
+
+   Cross(Y, Z, tmp);
+   Normalize(tmp, X);
+
+   Cross(Z, X, tmp);
+   Normalize(tmp, Y);
+
+   m16[0] = X[0];
+   m16[1] = Y[0];
+   m16[2] = Z[0];
+   m16[3] = 0.0f;
+   m16[4] = X[1];
+   m16[5] = Y[1];
+   m16[6] = Z[1];
+   m16[7] = 0.0f;
+   m16[8] = X[2];
+   m16[9] = Y[2];
+   m16[10] = Z[2];
+   m16[11] = 0.0f;
+   m16[12] = -Dot(X, eye);
+   m16[13] = -Dot(Y, eye);
+   m16[14] = -Dot(Z, eye);
+   m16[15] = 1.0f;
+}
+
+void OrthoGraphic(const float l, float r, float b, const float t, float zn, const float zf, float *m16)
+{
+   m16[0] = 2 / (r - l);
+   m16[1] = 0.0f;
+   m16[2] = 0.0f;
+   m16[3] = 0.0f;
+   m16[4] = 0.0f;
+   m16[5] = 2 / (t - b);
+   m16[6] = 0.0f;
+   m16[7] = 0.0f;
+   m16[8] = 0.0f;
+   m16[9] = 0.0f;
+   m16[10] = 1.0f / (zf - zn);
+   m16[11] = 0.0f;
+   m16[12] = (l + r) / (l - r);
+   m16[13] = (t + b) / (b - t);
+   m16[14] = zn / (zn - zf);
+   m16[15] = 1.0f;
+}
+
+inline void rotationY(const float angle, float *m16)
+{
+   float c = cosf(angle);
+   float s = sinf(angle);
+
+   m16[0] = c;
+   m16[1] = 0.0f;
+   m16[2] = -s;
+   m16[3] = 0.0f;
+   m16[4] = 0.0f;
+   m16[5] = 1.f;
+   m16[6] = 0.0f;
+   m16[7] = 0.0f;
+   m16[8] = s;
+   m16[9] = 0.0f;
+   m16[10] = c;
+   m16[11] = 0.0f;
+   m16[12] = 0.f;
+   m16[13] = 0.f;
+   m16[14] = 0.f;
+   m16[15] = 1.0f;
+}
 
 // utility structure for realtime plot //!! cleanup
 class ScrollingData
@@ -543,8 +671,7 @@ static void HelpEditableHeader(bool is_live, IEditable *editable, IEditable *liv
    ImGui::Separator();
 }
 
-
-LiveUI::LiveUI(RenderDevice* const rd)
+LiveUI::LiveUI(RenderDevice *const rd)
    : m_rd(rd)
 {
    m_StartTime_usec = usec();
@@ -558,16 +685,28 @@ LiveUI::LiveUI(RenderDevice* const rd)
    m_old_player_dynamic_mode = m_player->m_dynamicMode;
    m_old_player_camera_mode = m_player->m_cameraMode;
 
-   // Straight above
-   m_CamEye = vec3(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, m_live_table->m_bottom * 1.5f);
-   m_CamAt = vec3(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.0f);
-   m_CamUp = vec3(0.0f, -1.0f, 0.0f);
+   m_selection.type = Selection::SelectionType::S_NONE;
+   m_useEditorCam = false;
 
    IMGUI_CHECKVERSION();
    ImGui::CreateContext();
    ImPlot::CreateContext();
    ImGuiIO &io = ImGui::GetIO();
    io.IniFilename = nullptr; //don't use an ini file for configuration
+
+   // Editor camera position. We use a right handed system for easy ImGuizmo integration while VPX renderer is left handed, so reverse X axis
+   m_orthoCam = true;
+   m_camDistance = m_live_table->m_bottom * 0.7f;
+   bool isPerspective = false;
+   float viewWidth = 10.f; // for orthographic
+   float camYAngle = 165.f / 180.f * 3.14159f;
+   float camXAngle = 32.f / 180.f * 3.14159f;
+   float eye[] = { -m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, m_camDistance };
+   float at[] = { -m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.f };
+   float up[] = { 0.f, -1.f, 0.f };
+   LookAt(eye, at, up, (float *)(m_camView.m));
+   m_selectionTransform.SetTranslation(-m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.0f);
+   m_selectionTransform.SetIdentity();
 
    ImGui_ImplWin32_Init(rd->getHwnd());
 
@@ -723,6 +862,10 @@ void LiveUI::Update()
       }
    }
    ImGui::NewFrame();
+   ImGuizmo::SetOrthographic(m_orthoCam);
+   ImGuizmo::BeginFrame();
+   ImGuiIO &io = ImGui::GetIO();
+   ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
    ImGui::PushFont(m_baseFont);
 
    if (m_ShowUI || m_ShowSplashModal)
@@ -1015,6 +1158,46 @@ void LiveUI::UpdateMainUI()
       UpdatePropertyUI();
    }
 
+   // View gizmo
+   if (m_useEditorCam)
+   {
+      ImGuiIO &io = ImGui::GetIO();
+      if (m_orthoCam)
+      {
+         float viewHeight = m_camDistance;
+         float viewWidth = viewHeight * io.DisplaySize.x / io.DisplaySize.y;
+         OrthoGraphic(-viewWidth, viewWidth, -viewHeight, viewHeight, 10.f, -10000.f, (float *)(m_camProj.m));
+      }
+      else
+      {
+         Perspective(39.6f, io.DisplaySize.x / io.DisplaySize.y, 10.0f, 10000.0f, (float *)(m_camProj.m));
+      }
+      float viewManipulateRight = ImGui::GetIO().DisplaySize.x - m_properties_width - 16;
+      float viewManipulateTop = m_toolbar_height + m_menubar_height + 16;
+      ImGuizmo::OPERATION mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+      ImGuizmo::MODE mCurrentGizmoMode = ImGuizmo::WORLD;
+      int gizmoCount = 1;
+      static const float identityMatrix[16] = { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f };
+      float* cameraView = (float *)(m_camView.m);
+      float *cameraProjection = (float *)(m_camProj.m); 
+      /* Matrix3D gridMatrix;
+      gridMatrix.RotateXMatrix(M_PI * 0.5f);
+      gridMatrix.Scale(10.0f, 1.0f, 10.0f);
+      ImGuizmo::DrawGrid((const float *)(m_camView.m), (const float *)(m_camProj.m), (const float *)(gridMatrix.m), 100.f); */
+      //ImGuizmo::DrawGrid(cameraView, cameraProjection, identityMatrix, 100.f);
+      //ImGuizmo::DrawCubes(cameraView, cameraProjection, (float *)(m_selectionTransform.m), gizmoCount);
+      //ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, (float *)(m_selectionTransform.m));
+      //ImGuizmo::ViewManipulate(cameraView, m_camDistance, ImVec2(viewManipulateRight - 128, viewManipulateTop), ImVec2(128, 128), 0x10101010);
+      Matrix3D prevView(m_camView);
+      ImGuizmo::ViewManipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, (float *)(m_selectionTransform.m), m_camDistance,
+         ImVec2(viewManipulateRight - 128, viewManipulateTop + 16), ImVec2(128, 128), 0x10101010);
+      if (memcmp(cameraView, (float *)(prevView.m), 16 * sizeof(float)) != 0)
+      {
+         // switch to perspective when user orbit the view
+         m_orthoCam = false;
+      }
+   }
+
    // Popups & Modal dialogs
    if (popup_video_settings)
       ImGui::OpenPopup(ID_VIDEO_SETTINGS);
@@ -1044,60 +1227,38 @@ void LiveUI::UpdateMainUI()
    // Handle uncaught mouse & keyboard interaction
    if (!ImGui::GetIO().WantCaptureMouse)
    {
-      // TODO mouse interaction with viewport: selection, camera,...
-
       // Zoom in/out with mouse wheel
       if (m_useEditorCam && ImGui::GetIO().MouseWheel != 0)
       {
-         const vec3 v = m_CamEye - m_CamAt;
-         const float length = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
-         const float newLength = length - ImGui::GetIO().MouseWheel * (length > 200.f ? 100.0f : length > 100.f ? 10.0f : 2.0f);
-         if (newLength > 1.0f)
-            m_CamEye = m_CamAt + v * (newLength / length);
+         Matrix3D view(m_camView);
+         view.Invert();
+         vec3 up(view._21, view._22, view._23);
+         vec3 dir(view._31, view._32, view._33);
+         vec3 pos(view._41, view._42, view._43);
+         vec3 camTarget = pos - m_camDistance * dir;
+         m_camDistance *= pow(1.1, -ImGui::GetIO().MouseWheel);
+         vec3 newEye = camTarget + m_camDistance * dir;
+         LookAt(&newEye.x, &camTarget.x, &up.x, (float *)(m_camView.m));
       }
 
-      // Orbit around look at point, or pan along screen (with Shift)
+      // Pan mouse
       if (m_useEditorCam && ImGui::IsMouseDown(ImGuiMouseButton_Middle))
       {
          ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle);
          ImGui::ResetMouseDragDelta(ImGuiMouseButton_Middle);
-         Matrix3D mView = Matrix3D::MatrixLookAtLH(m_CamEye, m_CamAt, m_CamUp);
-         vec3 xaxis = vec3(mView.m[0][0], mView.m[0][1], mView.m[0][2]);
-         vec3 yaxis = vec3(mView.m[1][0], mView.m[1][1], mView.m[1][2]);
+         m_useEditorCam = true;
+         Matrix3D view(m_camView);
+         view.Invert();
+         vec3 right(view._11, view._12, view._13);
+         vec3 up(view._21, view._22, view._23);
+         vec3 dir(view._31, view._32, view._33);
+         vec3 pos(view._41, view._42, view._43);
+         vec3 camTarget = pos - m_camDistance * dir;
          if (ImGui::GetIO().KeyShift)
          {
-            m_CamEye = m_CamEye - xaxis * drag.x + yaxis * drag.y;
-            m_CamAt = m_CamAt - xaxis * drag.x + yaxis * drag.y;
-         }
-         else
-         {
-            // Following code kinda 'works' but does not do the intended job at all (which would be to behave like Blender's camera)
-            for (int i = 0; i < 2; i++)
-            {
-               Matrix3D mRot;
-               vec3 axis = i == 0 ? xaxis : yaxis;
-               float alpha = -(i == 0 ? drag.y : drag.x) * 0.01f;
-               float cs = cos(alpha), om_cs = 1.0f - cs, sn = sin(alpha);//, om_sn = 1.0f - sn;
-               mRot.SetIdentity();
-               mRot._11 = cs + om_cs * axis.x * axis.x;
-               mRot._12 = om_cs * axis.x * axis.y - sn * axis.z;
-               mRot._13 = om_cs * axis.x * axis.z + sn * axis.y;
-               mRot._21 = om_cs * axis.x * axis.y + sn * axis.z;
-               mRot._22 = cs + om_cs * axis.y * axis.y;
-               mRot._23 = om_cs * axis.y * axis.z - sn * axis.x;
-               mRot._31 = om_cs * axis.x * axis.z - sn * axis.y;
-               mRot._32 = om_cs * axis.y * axis.z + sn * axis.x;
-               mRot._33 = cs + om_cs * axis.z * axis.z;
-               Vertex3Ds eye = Vertex3Ds(m_CamEye.x, m_CamEye.y, m_CamEye.z);
-               Vertex3Ds at = Vertex3Ds(m_CamAt.x, m_CamAt.y, m_CamAt.z);
-               Vertex3Ds v = eye - at;
-               v = at + mRot.MultiplyVectorNoTranslate(v);
-               m_CamEye = vec3(v.x, v.y, v.z);
-               v = Vertex3Ds(m_CamUp.x, m_CamUp.y, m_CamUp.z);
-               v = mRot.MultiplyVectorNoTranslate(v);
-               v.Normalize();
-               m_CamUp = vec3(v.x, v.y, v.z);
-            }
+            pos = pos - right * drag.x + up * drag.y;
+            camTarget = camTarget - right * drag.x + up * drag.y;
+            LookAt(&pos.x, &camTarget.x, &up.x, (float *)(m_camView.m));
          }
       }
    }
@@ -1111,40 +1272,72 @@ void LiveUI::UpdateMainUI()
       }
       if (!m_ShowSplashModal)
       {
-         if (ImGui::IsKeyDown(ImGuiKey_Keypad7))
+         if (ImGui::IsKeyPressed(ImGuiKey_Keypad5))
          {
             // Editor Camera to Top
             m_useEditorCam = true;
-            m_CamAt = vec3(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.0f);
-            m_CamEye = m_CamAt + vec3(0.0f, 0.0f, m_live_table->m_bottom * 1.5f);
-            m_CamUp = vec3(0.0f, -1.0f, 0.0f);
+            m_orthoCam = !m_orthoCam;
          }
-         if (ImGui::IsKeyDown(ImGuiKey_Keypad1))
+         if (ImGui::IsKeyPressed(ImGuiKey_Keypad7))
          {
-            // Editor Camera to Front
+            // Editor Camera to Top / Bottom
             m_useEditorCam = true;
-            m_CamAt = vec3(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.0f);
-            m_CamEye = m_CamAt + vec3(0.0f, m_live_table->m_right * 1.5f, 0.0f);
-            m_CamUp = vec3(0.0f, 0.0f, 1.0f);
+            m_orthoCam = true;
+            Matrix3D view(m_camView);
+            view.Invert();
+            vec3 up(view._21, view._22, view._23);
+            vec3 dir(view._31, view._32, view._33);
+            vec3 pos(view._41, view._42, view._43);
+            vec3 camTarget = pos - m_camDistance * dir;
+            vec3 newUp(0.f, -1.f, 0.f);
+            vec3 newDir(0.f, 0.f, ImGui::GetIO().KeyCtrl ? -1.f : 1.f);
+            vec3 newEye = camTarget + m_camDistance * newDir;
+            LookAt(&newEye.x, &camTarget.x, &newUp.x, (float *)(m_camView.m));
          }
-         if (ImGui::IsKeyDown(ImGuiKey_Keypad3))
+         if (ImGui::IsKeyPressed(ImGuiKey_Keypad1))
          {
-            // Editor Camera to Right
+            // Editor Camera to Front / Back
             m_useEditorCam = true;
-            m_CamAt = vec3(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.0f);
-            m_CamEye = m_CamAt + vec3(m_live_table->m_bottom * 2.0f, 0.0f, 0.0f);
-            m_CamUp = vec3(0.0f, 0.0f, 1.0f);
+            m_orthoCam = true;
+            Matrix3D view(m_camView);
+            view.Invert();
+            vec3 up(view._21, view._22, view._23);
+            vec3 dir(view._31, view._32, view._33);
+            vec3 pos(view._41, view._42, view._43);
+            vec3 camTarget = pos - m_camDistance * dir;
+            vec3 newUp(0.f, 0.f, 1.f);
+            vec3 newDir(0.f, ImGui::GetIO().KeyCtrl ? -1.f : 1.f, 0.f);
+            vec3 newEye = camTarget + m_camDistance * newDir;
+            LookAt(&newEye.x, &camTarget.x, &newUp.x, (float *)(m_camView.m));
+         }
+         if (ImGui::IsKeyPressed(ImGuiKey_Keypad3))
+         {
+            // Editor Camera to Right / Left
+            m_useEditorCam = true;
+            m_orthoCam = true;
+            Matrix3D view(m_camView);
+            view.Invert();
+            vec3 up(view._21, view._22, view._23);
+            vec3 dir(view._31, view._32, view._33);
+            vec3 pos(view._41, view._42, view._43);
+            vec3 camTarget = pos - m_camDistance * dir;
+            vec3 newUp(0.f, 0.f, 1.f);
+            vec3 newDir(ImGui::GetIO().KeyCtrl ? 1.f : -1.f, 0.f, 0.f);
+            vec3 newEye = camTarget + m_camDistance * newDir;
+            LookAt(&newEye.x, &camTarget.x, &newUp.x, (float *)(m_camView.m));
          }
       }
    }
 
    if (m_useEditorCam)
    {
-      // Apply editor camera to renderer
-      Matrix3D mView = Matrix3D::MatrixLookAtLH(m_CamEye, m_CamAt, m_CamUp);
-      memcpy(m_pin3d->m_proj.m_matView.m, mView.m, sizeof(float) * 4 * 4);
-      Matrix3D proj = Matrix3D::MatrixPerspectiveFovLH(ANGTORAD(39.6f), (float)((double)m_pin3d->m_viewPort.Width / (double)m_pin3d->m_viewPort.Height), 10.0f, 10000.0f);
-      memcpy(m_pin3d->m_proj.m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
+      // Apply editor camera to renderer (move view from right handed to left handed)
+      memcpy(m_pin3d->m_proj.m_matProj[0].m, m_camProj.m, sizeof(float) * 4 * 4);
+      float mat[16];
+      memcpy(mat, m_camView.m, sizeof(float) * 4 * 4);
+      for (int i = 0; i < 4; i++)
+         mat[i] = -mat[i];
+      memcpy(m_pin3d->m_proj.m_matView.m, mat, sizeof(float) * 4 * 4);
       m_pin3d->UpdateMatrices();
    }
    else
@@ -1300,7 +1493,7 @@ void LiveUI::UpdateOutlinerUI()
       }
       ImGui::EndTabBar();
    }
-
+   m_outliner_width = ImGui::GetWindowWidth();
    ImGui::End();
    ImGui::PopStyleVar(3);
 }
@@ -1368,6 +1561,7 @@ void LiveUI::UpdatePropertyUI()
       ImGui::EndTabBar();
    }
    ImGui::PopItemWidth();
+   m_properties_width = ImGui::GetWindowWidth();
    ImGui::End();
    ImGui::PopStyleVar(3);
 }
@@ -1505,6 +1699,7 @@ void LiveUI::UpdateMainSplashModal()
       {
          m_ShowUI = true;
          m_ShowSplashModal = false;
+         m_useEditorCam = true;
          ImGui::CloseCurrentPopup();
          EnterEditMode();
       }

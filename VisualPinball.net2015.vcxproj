@@ -796,6 +796,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\VideoOptionsDialog.cpp" />
     <ClCompile Include="dialogs\VROptionsDialog.cpp" />
     <ClCompile Include="flasher.cpp" />
+    <ClCompile Include="imgui\ImGuizmo.cpp" />
     <ClCompile Include="imgui\imgui_stdlib.cpp" />
     <ClCompile Include="inc\BAM\BAMView.cpp" />
     <ClCompile Include="inc\glad\glad.c">
@@ -1200,6 +1201,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="ieditable.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
+    <ClInclude Include="imgui\ImGuizmo.h" />
     <ClInclude Include="imgui\imgui_impl_opengl3.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
