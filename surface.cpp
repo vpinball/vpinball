@@ -1076,17 +1076,17 @@ void Surface::RenderWallsAtHeight(const bool drop)
    {
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
 
-      RenderState sideRS;
       if (mat->m_bOpacityActive || !m_isDynamic)
-          sideRS.SetRenderStateCulling(RenderState::CULL_NONE);
+          pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
       else
       {
          if (m_d.m_topBottomVisible && m_isDynamic)
-              sideRS.SetRenderStateCulling(RenderState::CULL_NONE);
+              pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
          else
-              sideRS.SetRenderStateCulling(RenderState::CULL_CCW);
+              pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
       }
-      Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
+
+      Texture *const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
       if (pinSide)
       {
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat);
@@ -1102,7 +1102,6 @@ void Surface::RenderWallsAtHeight(const bool drop)
 
       // combine drawcalls into one (hopefully faster)
       pd3dDevice->basicShader->Begin();
-      pd3dDevice->CopyRenderStates(false, sideRS);
       pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numVertices * 6);
       pd3dDevice->basicShader->End();
    }
@@ -1111,12 +1110,11 @@ void Surface::RenderWallsAtHeight(const bool drop)
    if (m_d.m_topBottomVisible && (m_numPolys > 0))
    {
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
-      RenderState topBottomRS;
 
       if (mat->m_bOpacityActive || !m_isDynamic)
-         topBottomRS.SetRenderStateCulling(RenderState::CULL_NONE);
+         pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
       else
-         topBottomRS.SetRenderStateCulling(RenderState::CULL_CCW);
+         pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
 
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
       if (pin)
@@ -1134,21 +1132,18 @@ void Surface::RenderWallsAtHeight(const bool drop)
 
       // Top
       pd3dDevice->basicShader->Begin();
-      pd3dDevice->CopyRenderStates(false, topBottomRS);
       pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (drop ? m_numPolys * 3 : 0), m_numPolys * 3);
       pd3dDevice->basicShader->End();
 
       // Only render Bottom for Reflections
       if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
       {
-         RenderState topBottomReflRS;
          if (mat->m_bOpacityActive || !m_isDynamic)
-            topBottomReflRS.SetRenderStateCulling(RenderState::CULL_NONE);
+            pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
          else
-            topBottomReflRS.SetRenderStateCulling(RenderState::CULL_CW);
+            pd3dDevice->SetRenderStateCulling(RenderState::CULL_CW);
 
          pd3dDevice->basicShader->Begin();
-         pd3dDevice->CopyRenderStates(false, topBottomReflRS);
          pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);
          pd3dDevice->basicShader->End();
       }
