@@ -1822,6 +1822,7 @@ void Player::InitStatic()
       // copy back weighted antialiased color result to the static render target, keeping depth untouched
       accumulationSurface->CopyTo(renderRT, true, false);
       delete accumulationSurface;
+      renderRT->Activate(); // avoid having an active render target set to a destroyed framebuffer
    }
 
    // if rendering static/with heavy oversampling, re-enable the aniso/trilinear filter now for the normal rendering
@@ -1893,7 +1894,14 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->ReleaseAORenderTargets();
    }
 
-   g_pvp->ProfileLog("AO/Static PreRender End"s);
+   g_pvp->ProfileLog("Reflection Probe PreRender Start"s);
+
+   for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); i++)
+   {
+      m_ptable->m_vrenderprobe[i]->PreRenderStatic();
+   }
+
+   g_pvp->ProfileLog("Static PreRender End"s);
    
    m_render_mask &= ~STATIC_PREPASS;
 }
