@@ -339,14 +339,14 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
       else
       {
          m_dynamicRT->Activate();
-         if (mode == REFL_DYNAMIC && m_staticRT != nullptr)
+         if (mode == REFL_DYNAMIC && m_staticRT != nullptr && !g_pplayer->m_dynamicMode)
             m_staticRT->CopyTo(m_dynamicRT);
          else
             p3dDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
       }
    }
 
-   const bool render_static = is_static || (mode == REFL_DYNAMIC && m_staticRT == nullptr);
+   const bool render_static = is_static || (mode == REFL_DYNAMIC && (m_staticRT == nullptr || g_pplayer->m_dynamicMode));
    const bool render_balls = !is_static && (mode != REFL_NONE && mode != REFL_STATIC);
    const bool render_dynamic = !is_static && (mode >= REFL_UNSYNCED_DYNAMIC);
    DoRenderReflectionProbe(render_static, render_balls, render_dynamic);
