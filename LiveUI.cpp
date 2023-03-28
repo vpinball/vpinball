@@ -1540,27 +1540,24 @@ void LiveUI::UpdateOutlinerUI()
                   m_selection.type = Selection::SelectionType::S_NONE;
                   m_useEditorCam = true;
                }
-               if (ImGui::Selectable("Desktop"))
+               Selection cam0(Selection::SelectionType::S_CAMERA, is_live, 0);
+               if (ImGui::Selectable("Desktop", m_selection == cam0))
                {
-                  m_selection.type = Selection::SelectionType::S_CAMERA;
-                  m_selection.is_live = is_live;
-                  m_selection.camera = 0;
+                  m_selection = cam0;
                   m_useEditorCam = false;
                   table->m_BG_current_set = 0;
                }
-               if (ImGui::Selectable("Cabinet"))
+               Selection cam1(Selection::SelectionType::S_CAMERA, is_live, 1);
+               if (ImGui::Selectable("Cabinet", m_selection == cam1))
                {
-                  m_selection.type = Selection::SelectionType::S_CAMERA;
-                  m_selection.is_live = is_live;
-                  m_selection.camera = 1;
+                  m_selection = cam1;
                   m_useEditorCam = false;
                   table->m_BG_current_set = 1;
                }
-               if (ImGui::Selectable("Full Single Screen"))
+               Selection cam2(Selection::SelectionType::S_CAMERA, is_live, 2);
+               if (ImGui::Selectable("Full Single Screen", m_selection == cam2))
                {
-                  m_selection.type = Selection::SelectionType::S_CAMERA;
-                  m_selection.is_live = is_live;
-                  m_selection.camera = 2;
+                  m_selection = cam2;
                   m_useEditorCam = false;
                   table->m_BG_current_set = 2;
                }
@@ -1571,12 +1568,9 @@ void LiveUI::UpdateOutlinerUI()
                for (size_t t = 0; t < table->m_materials.size(); t++)
                {
                   Material *material = table->m_materials[t];
-                  if (ImGui::Selectable(material->m_szName.c_str()))
-                  {
-                     m_selection.type = Selection::SelectionType::S_MATERIAL;
-                     m_selection.is_live = is_live;
-                     m_selection.material = material;
-                  }
+                  Selection sel(is_live, material);
+                  if (ImGui::Selectable(material->m_szName.c_str(), m_selection == sel))
+                     m_selection = sel;
                }
                ImGui::TreePop();
             }
@@ -1587,22 +1581,16 @@ void LiveUI::UpdateOutlinerUI()
                   ISelect *const psel = table->m_vedit[t]->GetISelect();
                   if (psel != nullptr && psel->m_layerName.empty())
                   {
-                     if (ImGui::Selectable(table->m_vedit[t]->GetName()))
-                     {
-                        m_selection.type = LiveUI::Selection::SelectionType::S_EDITABLE;
-                        m_selection.is_live = is_live;
-                        m_selection.editable = table->m_vedit[t];
-                     }
+                     Selection sel(is_live, table->m_vedit[t]);
+                     if (ImGui::Selectable(table->m_vedit[t]->GetName(), m_selection == sel))
+                        m_selection = sel;
                   }
                }
                for (size_t t = 0; t < m_player->m_vball.size(); t++)
                {
-                  if (ImGui::Selectable("Ball #"s.append(std::to_string(m_player->m_vball[t]->m_id)).c_str()))
-                  {
-                     m_selection.type = Selection::SelectionType::S_BALL;
-                     m_selection.is_live = is_live;
-                     m_selection.ball_index = (int) t;
-                  }
+                  Selection sel(Selection::SelectionType::S_BALL, is_live, (int)t);
+                  if (ImGui::Selectable("Ball #"s.append(std::to_string(m_player->m_vball[t]->m_id)).c_str(), m_selection == sel))
+                     m_selection = sel;
                }
                ImGui::TreePop();
             }
@@ -1642,12 +1630,9 @@ void LiveUI::UpdateOutlinerUI()
                      auto list = layers[it];
                      for (size_t t = 0; t < list.size(); t++)
                      {
-                        if (ImGui::Selectable(list[t]->GetName()))
-                        {
-                           m_selection.type = LiveUI::Selection::SelectionType::S_EDITABLE;
-                           m_selection.is_live = is_live;
-                           m_selection.editable = list[t];
-                        }
+                        Selection sel(is_live, list[t]);
+                        if (ImGui::Selectable(list[t]->GetName(), m_selection == sel))
+                           m_selection = sel;
                      }
                      ImGui::TreePop();
                   }
