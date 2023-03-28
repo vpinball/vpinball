@@ -85,6 +85,25 @@ private:
          Material *material;
          int ball_index;
       };
+      Selection() {};
+      Selection(SelectionType t, bool live, int ball) { type = t; is_live = live; ball_index = ball; };
+      Selection(bool live, IEditable *data) { type = S_EDITABLE; is_live = live; editable = data; };
+      Selection(bool live, Material *data) { type = S_MATERIAL; is_live = live; material = data; };
+      bool operator==(Selection s)
+      {
+         if (type != s.type || is_live != s.is_live)
+            return false;
+         switch (type)
+         {
+         case S_NONE: return true;
+         case S_CAMERA: return camera == s.camera;
+         case S_MATERIAL: return material == s.material;
+         case S_BALL: return ball_index == s.ball_index;
+         case S_EDITABLE: return editable == s.editable;
+         }
+         assert(false);
+         return false;
+      };
    } m_selection;
 
    // Rendering
