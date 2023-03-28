@@ -3,6 +3,7 @@
 #include "stdafx.h"
 
 #include "imgui/imgui.h"
+#include "imgui/ImGuizmo.h"
 
 class LiveUI
 {
@@ -56,6 +57,7 @@ private:
    void PropInt(const char *label, IEditable *undo_obj, bool is_live, int *startup_v, int *live_v);
    void PropRGB(const char *label, IEditable *undo_obj, bool is_live, COLORREF *startup_v, COLORREF *live_v, ImGuiColorEditFlags flags = 0);
    void PropVec3(const char *label, IEditable* undo_obj, bool is_live, Vertex3Ds *startup_v, Vertex3Ds *live_v, const char *format = "%.3f", ImGuiInputTextFlags flags = ImGuiInputTextFlags_CharsDecimal);
+   void PropVec3(const char *label, IEditable *undo_obj, bool is_live, float *startup_v, float *live_v, const char *format = "%.3f", ImGuiInputTextFlags flags = ImGuiInputTextFlags_CharsDecimal);
    void PropCombo(const char *label, IEditable *undo_obj, bool is_live, int *startup_v, int *live_v, int n_values, const string labels[]);
    void PropImageCombo(const char *label, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, OnStringPropChange chg_callback = nullptr);
 
@@ -106,10 +108,15 @@ private:
    U64 m_StartTime_usec = 0; // Used for timed splash overlays
    int m_show_fps = 0; // 0=disabled / 1=FPS / 2=FPS+dynamic plot
 
+   // 3D editor
+   ImGuizmo::OPERATION m_gizmoOperation = ImGuizmo::NONE;
+   ImGuizmo::MODE m_gizmoMode = ImGuizmo::WORLD;
+   bool GetSelectionTransform(Matrix3D& transform);
+   void SetSelectionTransform(Matrix3D& transform, bool clearPosition = false, bool clearScale = false, bool clearRotation = false);
+
    // Editor camera
    bool m_useEditorCam = false;
    bool m_orthoCam = true;
    Matrix3D m_camView, m_camProj;
-   Matrix3D m_selectionTransform; 
    float m_camDistance;
 };

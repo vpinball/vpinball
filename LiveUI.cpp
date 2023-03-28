@@ -701,12 +701,10 @@ LiveUI::LiveUI(RenderDevice *const rd)
    float viewWidth = 10.f; // for orthographic
    float camYAngle = 165.f / 180.f * 3.14159f;
    float camXAngle = 32.f / 180.f * 3.14159f;
-   float eye[] = { -m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, m_camDistance };
-   float at[] = { -m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.f };
+   float eye[] = { m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, -m_camDistance };
+   float at[] = { m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.f };
    float up[] = { 0.f, -1.f, 0.f };
    LookAt(eye, at, up, (float *)(m_camView.m));
-   m_selectionTransform.SetTranslation(-m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.0f);
-   m_selectionTransform.SetIdentity();
    ImGuizmo::AllowAxisFlip(false);
 
    ImGui_ImplWin32_Init(rd->getHwnd());
@@ -1175,8 +1173,6 @@ void LiveUI::UpdateMainUI()
       }
       float* cameraView = (float *)(m_camView.m);
       float *cameraProjection = (float *)(m_camProj.m); 
-      ImGuizmo::OPERATION mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-      ImGuizmo::MODE mCurrentGizmoMode = ImGuizmo::WORLD;
 
       /* Matrix3D gridMatrix;
       static const float identityMatrix[16] = { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f };
@@ -1185,62 +1181,26 @@ void LiveUI::UpdateMainUI()
       ImGuizmo::DrawGrid((const float *)(m_camView.m), (const float *)(m_camProj.m), (const float *)(gridMatrix.m), 100.f); */
       //ImGuizmo::DrawGrid(cameraView, cameraProjection, identityMatrix, 100.f);
 
-      bool hasGuizmo = false;
-      if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.is_live && m_selection.editable->GetItemType() == eItemPrimitive)
+      Matrix3D transform;
+      if (GetSelectionTransform(transform))
       {
-         hasGuizmo = true;
-
-         Primitive *p = (Primitive *)m_selection.editable;
-
-         // scale matrix
-         Matrix3D Smatrix;
-         //Smatrix.SetScaling(p->m_d.m_vSize.x, p->m_d.m_vSize.y, p->m_d.m_vSize.z);
-         Smatrix.SetIdentity();
-
-         // translation matrix
-         Matrix3D Tmatrix;
-         Tmatrix.SetTranslation(-p->m_d.m_vPosition.x, p->m_d.m_vPosition.y, p->m_d.m_vPosition.z + m_live_table->m_tableheight);
-
-         // translation + rotation matrix
-         Matrix3D RTmatrix;
-         RTmatrix.SetTranslation(p->m_d.m_aRotAndTra[3], p->m_d.m_aRotAndTra[4], p->m_d.m_aRotAndTra[5]);
-
-         Matrix3D tempMatrix;
-         tempMatrix.RotateZMatrix(ANGTORAD(p->m_d.m_aRotAndTra[2]));
-         tempMatrix.Multiply(RTmatrix, RTmatrix);
-         tempMatrix.RotateYMatrix(ANGTORAD(p->m_d.m_aRotAndTra[1]));
-         tempMatrix.Multiply(RTmatrix, RTmatrix);
-         tempMatrix.RotateXMatrix(ANGTORAD(p->m_d.m_aRotAndTra[0]));
-         tempMatrix.Multiply(RTmatrix, RTmatrix);
-
-         tempMatrix.RotateZMatrix(ANGTORAD(p->m_d.m_aRotAndTra[8]));
-         tempMatrix.Multiply(RTmatrix, RTmatrix);
-         tempMatrix.RotateYMatrix(ANGTORAD(p->m_d.m_aRotAndTra[7]));
-         tempMatrix.Multiply(RTmatrix, RTmatrix);
-         tempMatrix.RotateXMatrix(ANGTORAD(p->m_d.m_aRotAndTra[6]));
-         tempMatrix.Multiply(RTmatrix, RTmatrix);
-
-         Matrix3D fullMatrix;
-         fullMatrix = Smatrix;
-         //RTmatrix.Multiply(fullMatrix, fullMatrix);
-         Tmatrix.Multiply(fullMatrix, fullMatrix); // fullMatrix = Smatrix * RTmatrix * Tmatrix
-         //Smatrix.SetScaling(1.0f, 1.0f, m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
-         //Smatrix.Multiply(fullMatrix, fullMatrix);
-
-         m_selectionTransform = fullMatrix;
-         ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, (float *)(m_selectionTransform.m));
+         float camViewLH[16];
+         memcpy(camViewLH, m_camView.m, sizeof(float) * 4 * 4);
+         for (int i = 8; i < 12; i++)
+            camViewLH[i] = -camViewLH[i];
+         Matrix3D prevTransform(transform);
+         ImGuizmo::Manipulate(camViewLH, cameraProjection, m_gizmoOperation, m_gizmoMode, (float *)(transform.m));
+         if (memcmp(transform.m, prevTransform.m, 16 * sizeof(float)) != 0)
+            SetSelectionTransform(transform);
       }
 
       // Camera orbit manipulator
       Matrix3D prevView(m_camView);
       float viewManipulateRight = ImGui::GetIO().DisplaySize.x - m_properties_width - 16;
       float viewManipulateTop = m_toolbar_height + m_menubar_height + 16;
-      if (hasGuizmo)
-         ImGuizmo::ViewManipulate(cameraView, m_camDistance, ImVec2(viewManipulateRight - 128, viewManipulateTop + 16), ImVec2(128, 128), 0x10101010);
-      else
-         ImGuizmo::ViewManipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, (float *)(m_selectionTransform.m), m_camDistance,
-            ImVec2(viewManipulateRight - 128, viewManipulateTop + 16), ImVec2(128, 128), 0x10101010);
-      if (memcmp(cameraView, (float *)(prevView.m), 16 * sizeof(float)) != 0)
+      ImGuizmo::ViewManipulate(cameraView, cameraProjection, m_gizmoOperation, m_gizmoMode, cameraView, m_camDistance,
+         ImVec2(viewManipulateRight - 128, viewManipulateTop + 16), ImVec2(128, 128), 0x10101010);
+      if (memcmp(cameraView, prevView.m, 16 * sizeof(float)) != 0)
          m_orthoCam = false; // switch to perspective when user orbit the view
    }
 
@@ -1310,21 +1270,71 @@ void LiveUI::UpdateMainUI()
    }
    if (!ImGui::GetIO().WantCaptureKeyboard)
    {
-      if (!m_ShowSplashModal && ImGui::IsKeyDown(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc)
-      {
-         // Open Main modal dialog
-         ExitEditMode();
-         m_ShowSplashModal = true;
-      }
       if (!m_ShowSplashModal)
       {
-         if (ImGui::IsKeyPressed(ImGuiKey_Keypad5))
+         if (ImGui::IsKeyPressed(ImGuiKey_Escape) && m_gizmoOperation != ImGuizmo::NONE)
+         {
+            // Cancel current operation
+            m_gizmoOperation = ImGuizmo::NONE;
+         }
+         else if (ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc)
+         {
+            // Open Main modal dialog
+            ExitEditMode();
+            m_ShowSplashModal = true;
+         }
+         else if (m_useEditorCam && ImGui::IsKeyPressed(ImGuiKey_G))
+         {
+            // Grab (translate)
+            if (ImGui::GetIO().KeyAlt)
+            {
+               Matrix3D transform;
+               if (GetSelectionTransform(transform))
+                  SetSelectionTransform(transform, true, false, false);
+            }
+            else
+            {
+               m_gizmoOperation = ImGuizmo::TRANSLATE;
+               m_gizmoMode = m_gizmoOperation == ImGuizmo::TRANSLATE ? (m_gizmoMode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL) : ImGuizmo::WORLD;
+            }
+         }
+         else if (m_useEditorCam && ImGui::IsKeyPressed(ImGuiKey_S))
+         {
+            // Scale
+            if (ImGui::GetIO().KeyAlt)
+            {
+               Matrix3D transform;
+               if (GetSelectionTransform(transform))
+                  SetSelectionTransform(transform, false, true, false);
+            }
+            else
+            {
+               m_gizmoOperation = ImGuizmo::SCALE;
+               m_gizmoMode = m_gizmoOperation == ImGuizmo::SCALE ? (m_gizmoMode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL) : ImGuizmo::WORLD;
+            }
+         }
+         else if (m_useEditorCam && ImGui::IsKeyPressed(ImGuiKey_R))
+         {
+            // Rotate
+            if (ImGui::GetIO().KeyAlt)
+            {
+               Matrix3D transform;
+               if (GetSelectionTransform(transform))
+                  SetSelectionTransform(transform, false, false, true);
+            }
+            else
+            {
+               m_gizmoOperation = ImGuizmo::ROTATE;
+               m_gizmoMode = m_gizmoOperation == ImGuizmo::ROTATE ? (m_gizmoMode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL) : ImGuizmo::WORLD;
+            }
+         }
+         else if (ImGui::IsKeyPressed(ImGuiKey_Keypad5))
          {
             // Editor toggle orthographic / perspective
             m_useEditorCam = true;
             m_orthoCam = !m_orthoCam;
          }
-         if (ImGui::IsKeyPressed(ImGuiKey_KeypadDecimal))
+         else if (ImGui::IsKeyPressed(ImGuiKey_KeypadDecimal))
          {
             // Editor Camera center on selection
             m_useEditorCam = true;
@@ -1342,7 +1352,7 @@ void LiveUI::UpdateMainUI()
                case eItemPrimitive:
                {
                   Primitive *p = (Primitive *)m_selection.editable;
-                  newTarget = vec3(-p->m_d.m_vPosition.x, p->m_d.m_vPosition.y, p->m_d.m_vPosition.z + m_live_table->m_tableheight);
+                  newTarget = vec3(p->m_d.m_vPosition.x, p->m_d.m_vPosition.y, p->m_d.m_vPosition.z + m_live_table->m_tableheight);
                   break;
                }
                }
@@ -1350,7 +1360,7 @@ void LiveUI::UpdateMainUI()
             vec3 newEye = newTarget + dir * m_camDistance;
             LookAt(&newEye.x, &newTarget.x, &up.x, (float *)(m_camView.m));
          }
-         if (ImGui::IsKeyPressed(ImGuiKey_Keypad7))
+         else if (ImGui::IsKeyPressed(ImGuiKey_Keypad7))
          {
             // Editor Camera to Top / Bottom
             m_useEditorCam = true;
@@ -1362,11 +1372,11 @@ void LiveUI::UpdateMainUI()
             vec3 pos(view._41, view._42, view._43);
             vec3 camTarget = pos - dir * m_camDistance;
             vec3 newUp(0.f, -1.f, 0.f);
-            vec3 newDir(0.f, 0.f, ImGui::GetIO().KeyCtrl ? -1.f : 1.f);
+            vec3 newDir(0.f, 0.f, ImGui::GetIO().KeyCtrl ? 1.f : -1.f);
             vec3 newEye = camTarget + newDir * m_camDistance;
             LookAt(&newEye.x, &camTarget.x, &newUp.x, (float *)(m_camView.m));
          }
-         if (ImGui::IsKeyPressed(ImGuiKey_Keypad1))
+         else if (ImGui::IsKeyPressed(ImGuiKey_Keypad1))
          {
             // Editor Camera to Front / Back
             m_useEditorCam = true;
@@ -1377,12 +1387,12 @@ void LiveUI::UpdateMainUI()
             vec3 dir(view._31, view._32, view._33);
             vec3 pos(view._41, view._42, view._43);
             vec3 camTarget = pos - dir * m_camDistance;
-            vec3 newUp(0.f, 0.f, 1.f);
+            vec3 newUp(0.f, 0.f, -1.f);
             vec3 newDir(0.f, ImGui::GetIO().KeyCtrl ? -1.f : 1.f, 0.f);
             vec3 newEye = camTarget + newDir * m_camDistance;
             LookAt(&newEye.x, &camTarget.x, &newUp.x, (float *)(m_camView.m));
          }
-         if (ImGui::IsKeyPressed(ImGuiKey_Keypad3))
+         else if (ImGui::IsKeyPressed(ImGuiKey_Keypad3))
          {
             // Editor Camera to Right / Left
             m_useEditorCam = true;
@@ -1405,9 +1415,9 @@ void LiveUI::UpdateMainUI()
    {
       // Apply editor camera to renderer (move view from right handed to left handed)
       memcpy(m_pin3d->m_proj.m_matProj[0].m, m_camProj.m, sizeof(float) * 4 * 4);
-      float mat[16];
+      float mat[16]; // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
       memcpy(mat, m_camView.m, sizeof(float) * 4 * 4);
-      for (int i = 0; i < 4; i++)
+      for (int i = 8; i < 12; i++)
          mat[i] = -mat[i];
       memcpy(m_pin3d->m_proj.m_matView.m, mat, sizeof(float) * 4 * 4);
       m_pin3d->UpdateMatrices();
@@ -1415,6 +1425,90 @@ void LiveUI::UpdateMainUI()
    else
    {
       m_pin3d->InitLayout(m_live_table->m_BG_enable_FSS, m_live_table->GetMaxSeparation());
+   }
+}
+
+bool LiveUI::GetSelectionTransform(Matrix3D& transform)
+{
+   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemPrimitive)
+   {
+      Primitive *p = (Primitive *)m_selection.editable;
+      Matrix3D Smatrix;
+      Smatrix.SetScaling(p->m_d.m_vSize.x, p->m_d.m_vSize.y, p->m_d.m_vSize.z);
+      Matrix3D Tmatrix;
+      Tmatrix.SetTranslation(p->m_d.m_vPosition.x, p->m_d.m_vPosition.y, p->m_d.m_vPosition.z + m_live_table->m_tableheight);
+      Matrix3D Rmatrix;
+      Matrix3D tempMatrix;
+      Rmatrix.RotateZMatrix(ANGTORAD(p->m_d.m_aRotAndTra[2]));
+      tempMatrix.RotateYMatrix(ANGTORAD(p->m_d.m_aRotAndTra[1]));
+      tempMatrix.Multiply(Rmatrix, Rmatrix);
+      tempMatrix.RotateXMatrix(ANGTORAD(p->m_d.m_aRotAndTra[0]));
+      tempMatrix.Multiply(Rmatrix, Rmatrix);
+      transform = Smatrix;
+      Rmatrix.Multiply(transform, transform);
+      Tmatrix.Multiply(transform, transform); // fullMatrix = Scale * Rotate * Translate
+      return true;
+   }
+   return false;
+}
+
+void LiveUI::SetSelectionTransform(Matrix3D &newTransform, bool clearPosition, bool clearScale, bool clearRotation)
+{
+   Matrix3D transform = newTransform;
+   Vertex3Ds right(transform._11, transform._12, transform._13);
+   Vertex3Ds up(transform._21, transform._22, transform._23);
+   Vertex3Ds dir(transform._31, transform._32, transform._33);
+   float xscale = right.Length();
+   float yscale = up.Length();
+   float zscale = dir.Length();
+   transform._11 /= xscale; // Normalize transform to evaluate rotation
+   transform._12 /= xscale;
+   transform._13 /= xscale;
+   transform._21 /= yscale;
+   transform._22 /= yscale;
+   transform._23 /= yscale;
+   transform._31 /= zscale;
+   transform._32 /= zscale;
+   transform._33 /= zscale;
+   if (clearScale)
+      xscale = yscale = zscale = 1.f;
+
+   float posX = transform._41;
+   float posY = transform._42;
+   float posZ = transform._43;
+   if (clearPosition)
+      posX = posY = posZ = 0.f;
+
+   // Derived from https://learnopencv.com/rotation-matrix-to-euler-angles/
+   float rotX, rotY, rotZ;
+   float sy = sqrtf(transform._11 * transform._11 + transform._21 * transform._21);
+   if (sy > 1e-6f)
+   {
+      rotX = -RADTOANG(atan2f(transform._32, transform._33));
+      rotY = -RADTOANG(atan2f(-transform._31, sy));
+      rotZ = -RADTOANG(atan2f(transform._21, transform._11));
+   }
+   else
+   {
+      rotX = -RADTOANG(atan2f(transform._23, transform._22));
+      rotY = -RADTOANG(atan2f(-transform._22, sy));
+      rotZ = 0.f;
+   }
+   if (clearRotation)
+      rotX = rotY = rotZ = 0.f;
+
+   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemPrimitive)
+   {
+      Primitive *p = (Primitive *)m_selection.editable;
+      p->m_d.m_vPosition.x = posX;
+      p->m_d.m_vPosition.y = posY;
+      p->m_d.m_vPosition.z = posZ;
+      p->m_d.m_aRotAndTra[0] = rotX;
+      p->m_d.m_aRotAndTra[1] = rotY;
+      p->m_d.m_aRotAndTra[2] = rotZ;
+      p->m_d.m_vSize.x = xscale;
+      p->m_d.m_vSize.y = yscale;
+      p->m_d.m_vSize.z = zscale;
    }
 }
 
@@ -2155,19 +2249,13 @@ void LiveUI::PrimitiveProperties(bool is_live, Primitive *startup_obj, Primitive
    }
    if (ImGui::CollapsingHeader("Position", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
-      PropSeparator("Base Position & Size");
+      PropSeparator("Position, Rotation & Size");
       PropVec3("Position", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_vPosition) : nullptr, live_obj ? &(live_obj->m_d.m_vPosition) : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal);
-      PropVec3("Size", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_vSize) : nullptr, live_obj ? &(live_obj->m_d.m_vSize) : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal);
-      PropSeparator("Rotation and Translation");
-      PropFloat("Rot. X", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[0]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[0]) : nullptr, 1.f, 5.f, "%.3f");
-      PropFloat("Rot. Y", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[1]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[1]) : nullptr, 1.f, 5.f, "%.3f");
-      PropFloat("Rot. Z", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[2]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[2]) : nullptr, 1.f, 5.f, "%.3f");
-      PropFloat("Trans. X", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[3]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[3]) : nullptr, 10.f, 50.f, "%.1f");
-      PropFloat("Trans. Y", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[4]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[4]) : nullptr, 10.f, 50.f, "%.1f");
-      PropFloat("Trans. Z", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[5]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[5]) : nullptr, 10.f, 50.f, "%.1f");
-      PropFloat("Obj. Rot. X", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[6]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[6]) : nullptr, 1.f, 5.f, "%.3f");
-      PropFloat("Obj. Rot. Y", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[7]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[7]) : nullptr, 1.f, 5.f, "%.3f");
-      PropFloat("Obj. Rot. Z", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[8]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[8]) : nullptr, 1.f, 5.f, "%.3f");
+      PropVec3("Orientation", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[0]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[0]) : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal);
+      PropVec3("Scale", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_vSize) : nullptr, live_obj ? &(live_obj->m_d.m_vSize) : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal);
+      PropSeparator("Additional Transform");
+      PropVec3("Translation", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[3]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[3]) : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal);
+      PropVec3("Rotation", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[6]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[6]) : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal);
       ImGui::EndTable();
    }
    if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen))
@@ -2328,6 +2416,18 @@ void LiveUI::PropRGB(const char *label, IEditable *undo_obj, bool is_live, COLOR
          m_table->SetNonUndoableDirty(eSaveDirty);
    }
    PROP_HELPER_SYNC(COLORREF)
+   PROP_HELPER_END
+}
+
+void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, float *startup_v, float *live_v, const char *format, ImGuiInputTextFlags flags)
+{
+   PROP_HELPER_BEGIN(float)
+   if (ImGui::InputFloat3(label, v, format, flags))
+   {
+      if (!is_live)
+         m_table->SetNonUndoableDirty(eSaveDirty);
+   }
+   PROP_HELPER_SYNC(float)
    PROP_HELPER_END
 }
 
