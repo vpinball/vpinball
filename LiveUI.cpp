@@ -1345,18 +1345,9 @@ void LiveUI::UpdateMainUI()
             vec3 pos(view._41, view._42, view._43);
             vec3 camTarget = pos - dir * m_camDistance;
             vec3 newTarget = camTarget;
-            if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemPrimitive)
-            {
-               switch (m_selection.editable->GetItemType())
-               {
-               case eItemPrimitive:
-               {
-                  Primitive *p = (Primitive *)m_selection.editable;
-                  newTarget = vec3(p->m_d.m_vPosition.x, p->m_d.m_vPosition.y, p->m_d.m_vPosition.z + m_live_table->m_tableheight);
-                  break;
-               }
-               }
-            }
+            Matrix3D transform;
+            if (GetSelectionTransform(transform))
+               newTarget = vec3(transform._41, transform._42, transform._43);
             vec3 newEye = newTarget + dir * m_camDistance;
             LookAt(&newEye.x, &newTarget.x, &up.x, (float *)(m_camView.m));
          }
@@ -1447,6 +1438,12 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
       transform = Smatrix;
       Rmatrix.Multiply(transform, transform);
       Tmatrix.Multiply(transform, transform); // fullMatrix = Scale * Rotate * Translate
+      return true;
+   }
+   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemLight)
+   {
+      Light *l = (Light *)m_selection.editable;
+      transform.SetTranslation(l->m_d.m_vCenter.x, l->m_d.m_vCenter.y, l->m_d.m_height);
       return true;
    }
    return false;
