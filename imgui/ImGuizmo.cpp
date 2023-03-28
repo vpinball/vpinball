@@ -1502,6 +1502,21 @@ namespace IMGUIZMO_NAMESPACE
       }
    }
 
+   static void DrawOriginGizmo(OPERATION op, int type)
+   {
+      ImDrawList* drawList = gContext.mDrawList;
+      if (!drawList)
+      {
+         return;
+      }
+
+      // colors
+      ImU32 colors[7];
+      ComputeColors(colors, type, TRANSLATE);
+
+      drawList->AddCircleFilled(gContext.mScreenSquareCenter, gContext.mStyle.CenterCircleSize, colors[0], 32);
+   }
+
    static void DrawTranslationGizmo(OPERATION op, int type)
    {
       ImDrawList* drawList = gContext.mDrawList;
@@ -2523,6 +2538,7 @@ namespace IMGUIZMO_NAMESPACE
       gContext.mOperation = operation;
       if (!gContext.mbUsingBounds)
       {
+         DrawOriginGizmo(operation, type);
          DrawRotationGizmo(operation, type);
          DrawTranslationGizmo(operation, type);
          DrawScaleGizmo(operation, type);
