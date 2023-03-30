@@ -22,7 +22,8 @@ VS_LIGHTBULB_OUTPUT vs_lightbulb_main (const in float4 vPosition : POSITION0/*,
    VS_LIGHTBULB_OUTPUT Out;
 
    Out.pos = mul(vPosition, matWorldViewProj);
-   Out.pos.z = max(Out.pos.z, 0.00001); // clamp lights to near clip plane to avoid them being partially clipped
+   //Disabled since this would move backdrop lights behind other backdrop parts (rendered at z = 0), this could be readded with a max at 0, but I don't get why we would need this type of hack
+   //Out.pos.z = max(Out.pos.z, 0.00001); // clamp lights to near clip plane to avoid them being partially clipped
    Out.tablePos = vPosition.xyz;
 
    return Out; 
