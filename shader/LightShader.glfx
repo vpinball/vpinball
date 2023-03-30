@@ -67,7 +67,8 @@ void main()
       for (int i=0;i<gl_in.length();i++) {
          //Default
          gl_Position = matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position;
-         gl_Position.z = max(gl_Position.z, 0.00006103515625); // clamp lights to near clip plane to avoid them being partially clipped // 0.00006103515625 due to 16bit half float
+         //Disabled since this would move backdrop lights behind other backdrop parts (rendered at z = 0), this could be readded with a max at 0, but I don't get why we would need this type of hack
+         //gl_Position.z = max(gl_Position.z, 0.00006103515625); // clamp lights to near clip plane to avoid them being partially clipped // 0.00006103515625 due to 16bit half float
          //Custom
          tablePos = tablePos_gs[i];
          //Default
