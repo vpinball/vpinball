@@ -46,6 +46,15 @@ MeshBuffer::~MeshBuffer()
    delete m_ib;
 }
 
+unsigned int MeshBuffer::GetSortKey() const
+{
+   #ifdef ENABLE_SDL // OpenGL
+   return m_vao;
+   #else // DirectX 9
+   return ((unsigned int)vb) ^ ((unsigned int)ib);
+   #endif
+}
+
 void MeshBuffer::bind()
 {
    RenderDevice* rd = m_vb->m_rd;

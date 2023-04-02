@@ -39,7 +39,7 @@ public:
 private:
    void CreatePendingSharedBuffer();
    static vector<VertexBuffer*> pendingSharedBuffers;
-   static unsigned int getPendingSharedBufferSize();
+   static unsigned int getPendingSharedBufferCount();
 
    struct PendingUpload
    {

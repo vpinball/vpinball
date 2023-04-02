@@ -12,6 +12,7 @@ public:
    MeshBuffer(VertexBuffer* vb, IndexBuffer* ib = nullptr, const bool applyVertexBufferOffsetToIndexBuffer = false);
    ~MeshBuffer();
    void bind();
+   unsigned int GetSortKey() const;
 
    VertexBuffer* const m_vb;
    IndexBuffer* const m_ib;
