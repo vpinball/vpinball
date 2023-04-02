@@ -1072,6 +1072,8 @@ void LiveUI::ExitEditMode()
    m_player->EnableStaticPrePass(!m_old_player_dynamic_mode);
    m_player->m_cameraMode = m_old_player_camera_mode;
    SetupImGuiStyle(1.0f);
+   m_useEditorCam = false;
+   m_pin3d->InitLayout(m_live_table->m_BG_enable_FSS, m_live_table->GetMaxSeparation());
 }
 
 void LiveUI::HideUI()
@@ -1284,7 +1286,6 @@ void LiveUI::UpdateMainUI()
          else if (ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc)
          {
             // Open Main modal dialog
-            ExitEditMode();
             m_ShowSplashModal = true;
          }
          else if (m_useEditorCam && ImGui::IsKeyPressed(ImGuiKey_G))
@@ -1847,6 +1848,7 @@ void LiveUI::UpdateMainSplashModal()
       // Resume: click on the button, or press escape key
       if (ImGui::Button("Resume Game", size) || (enableKeyboardShortcuts && quitToEditor == 0 && ((ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc))))
       {
+         ExitEditMode();
          ImGui::CloseCurrentPopup();
          HideUI();
       }
@@ -1860,6 +1862,7 @@ void LiveUI::UpdateMainSplashModal()
       }
       if (ImGui::Button("Debugger", size) || (enableKeyboardShortcuts && ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eDebugger]])))
       {
+         ExitEditMode();
          ImGui::CloseCurrentPopup();
          HideUI();
          m_player->m_showDebugger = true;
