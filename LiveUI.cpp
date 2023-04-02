@@ -809,7 +809,11 @@ void LiveUI::Render()
       draw_data->DisplaySize.y = tmp;
    }
 #ifdef ENABLE_SDL
+   if (GLAD_GL_VERSION_4_3)
+      glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "ImGui");
    ImGui_ImplOpenGL3_RenderDrawData(draw_data);
+   if (GLAD_GL_VERSION_4_3)
+      glPopDebugGroup();
 #else
    ImGui_ImplDX9_RenderDrawData(draw_data);
 #endif

@@ -141,6 +141,13 @@ ShaderTechniques Shader::getTechniqueByName(const string& name)
    return SHADER_TECHNIQUE_INVALID;
 }
 
+string Shader::GetTechniqueName(ShaderTechniques technique)
+{
+   assert(0 <= technique && technique < SHADER_TECHNIQUE_COUNT);
+   return shaderTechniqueNames[technique];
+}
+
+
 #define SHADER_UNIFORM(type, name) { type, #name, ""s, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED }
 #define SHADER_SAMPLER(name, tex_name, default_clampu, default_clampv, default_filter) { SUT_Sampler, #name, #tex_name, default_clampu, default_clampv, default_filter }
 Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
@@ -625,7 +632,7 @@ void Shader::SetTechnique(ShaderTechniques technique)
    m_technique = technique;
 }
 
-uint32_t Shader::CopyUniformCache(const bool copyTo, const ShaderTechniques technique, UniformCache (&uniformCache)[SHADER_UNIFORM_COUNT])
+uint32_t Shader::CopyUniformCache(const bool copyTo, const ShaderTechniques technique, UniformCache (&uniformCache)[SHADER_UNIFORM_COUNT], Sampler* (&textureCache)[TEXTURESET_STATE_CACHE_SIZE])
 {
    UniformCache* src_cache = copyTo ? m_uniformCache[SHADER_TECHNIQUE_COUNT] : uniformCache;
    UniformCache* dst_cache = copyTo ? uniformCache : m_uniformCache[SHADER_TECHNIQUE_COUNT];
@@ -638,6 +645,10 @@ uint32_t Shader::CopyUniformCache(const bool copyTo, const ShaderTechniques tech
 #else
       // For DX9 Effect framework uniform binding state is per shader, so we only use the first array
       UniformDesc desc = m_uniform_desc[uniformName];
+      if (copyTo)
+         memcpy(textureCache, m_texture_cache, TEXTURESET_STATE_CACHE_SIZE * sizeof(Sampler*));
+      else
+         memcpy(m_texture_cache, textureCache, TEXTURESET_STATE_CACHE_SIZE * sizeof(Sampler*));
 #endif
       UniformCache* src = &(src_cache[uniformName]);
       UniformCache* dst = &(dst_cache[uniformName]);
@@ -1041,8 +1052,12 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
             }
          }
          // Bind the sampler
-         glUniform1i(desc.location, tex_unit->unit);
-         m_renderDevice->m_curParameterChanges++;
+         if (m_uniformCache[m_technique][uniformName].val.i != tex_unit->unit)
+         {
+            glUniform1i(desc.location, tex_unit->unit);
+            m_renderDevice->m_curParameterChanges++;
+            m_uniformCache[m_technique][uniformName].val.i = tex_unit->unit;
+         }
          // Mark this texture unit as the last used one, and age all the others
          for (int i = tex_unit->use_rank - 1; i >= 0; i--)
          {
@@ -1284,7 +1299,24 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
          success = false;
       }
    }
-   if ((WRITE_SHADER_FILES == 2) || ((WRITE_SHADER_FILES == 1) && !success)) {
+
+   if (GLAD_GL_VERSION_4_3)
+   {
+      string vs_name = shaderCodeName + ".VS"s;
+      string gs_name = shaderCodeName + ".GS"s;
+      string fs_name = shaderCodeName + ".FS"s;
+      if (shaderprogram > 0)
+         glObjectLabel(GL_PROGRAM, shaderprogram, shaderCodeName.length(), shaderCodeName.c_str());
+      if (vertexShader > 0)
+         glObjectLabel(GL_SHADER, vertexShader, vs_name.length(), vs_name.c_str());
+      if (geometryShader > 0) 
+         glObjectLabel(GL_SHADER, geometryShader, gs_name.length(), gs_name.c_str());
+      if (fragmentShader > 0)
+         glObjectLabel(GL_SHADER, fragmentShader, fs_name.length(), fs_name.c_str());
+   }
+
+   if ((WRITE_SHADER_FILES == 2) || ((WRITE_SHADER_FILES == 1) && !success))
+   {
       std::ofstream shaderCode;
       const string szPath = Shader::shaderPath + "log" + PATH_SEPARATOR_CHAR + shaderCodeName;
       shaderCode.open(szPath + ".vert");

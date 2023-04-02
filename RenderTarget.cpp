@@ -131,6 +131,18 @@ RenderTarget::RenderTarget(RenderDevice* rd, const string& name, const int width
       }
    }
 
+   if (GLAD_GL_VERSION_4_3)
+   {
+      glObjectLabel(GL_FRAMEBUFFER, m_framebuffer, name.length(), name.c_str());
+      string color_name = name + ".Color"s;
+      glObjectLabel(GL_TEXTURE, m_color_tex, color_name.length(), color_name.c_str());
+      if (with_depth && !m_shared_depth)
+      {
+         string depth_name = name + ".Depth"s;
+         glObjectLabel(GL_TEXTURE, m_depth_tex, depth_name.length(), depth_name.c_str());
+      }
+   }
+
    constexpr GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
    glDrawBuffers(1, DrawBuffers);
 
