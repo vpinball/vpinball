@@ -335,7 +335,10 @@ public:
          void* data = nullptr; // uniform blocks or float vector block
       } val;
    };
-   uint32_t CopyUniformCache(const bool copyTo, const ShaderTechniques technique, UniformCache (&m_uniformCache)[SHADER_UNIFORM_COUNT]);
+   static constexpr unsigned int TEXTURESET_STATE_CACHE_SIZE = 32;
+   uint32_t CopyUniformCache(const bool copyTo, const ShaderTechniques technique, UniformCache (&uniformCache)[SHADER_UNIFORM_COUNT], Sampler* (&textureCache)[TEXTURESET_STATE_CACHE_SIZE]);
+
+   static string GetTechniqueName(ShaderTechniques technique);
 
 private:
    RenderDevice* const m_renderDevice;
@@ -435,7 +438,6 @@ public:
    ID3DXEffect * m_shader;
    UniformDesc m_uniform_desc[SHADER_UNIFORM_COUNT];
    ShaderTechniques m_bound_technique = ShaderTechniques::SHADER_TECHNIQUE_INVALID;
-   static constexpr DWORD TEXTURESET_STATE_CACHE_SIZE = 32;
    Sampler* m_texture_cache[TEXTURESET_STATE_CACHE_SIZE];
    Sampler* m_bound_texture[TEXTURESET_STATE_CACHE_SIZE];
 
