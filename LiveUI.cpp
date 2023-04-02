@@ -909,7 +909,7 @@ void LiveUI::Update()
       ImGui::SetNextWindowPos(ImVec2(10, 10 + m_menubar_height + m_toolbar_height));
       ImGui::Begin("FPS", nullptr, window_flags);
       const float fpsAvg = (m_player->m_fpsCount == 0) ? 0.0f : m_player->m_fpsAvg / (float)m_player->m_fpsCount;
-      ImGui::Text("FPS: %.1f (%.1f avg)", m_player->m_fps + 0.01f, fpsAvg + 0.01f);
+      ImGui::Text("FPS: %.1f (%.1f %5.1fms avg)", m_player->m_fps + 0.01f, fpsAvg + 0.01f, 1000.0f / (fpsAvg + 0.01f));
       ImGui::End();
    }
    if (m_show_fps == 2)
@@ -1099,7 +1099,7 @@ void LiveUI::UpdateMainUI()
       hide_parts = true;
       m_player->EnableStaticPrePass(!m_old_player_dynamic_mode);
    }
-   else
+   else if (!m_ShowSplashModal)
    {
       m_player->EnableStaticPrePass(false);
    }
@@ -1440,12 +1440,15 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
       Tmatrix.Multiply(transform, transform); // fullMatrix = Scale * Rotate * Translate
       return true;
    }
+
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemLight)
    {
       Light *l = (Light *)m_selection.editable;
-      transform.SetTranslation(l->m_d.m_vCenter.x, l->m_d.m_vCenter.y, l->m_d.m_height);
+      const float height = (m_selection.is_live ? m_live_table : m_table)->GetSurfaceHeight(l->m_d.m_szSurface, l->m_d.m_vCenter.x, l->m_d.m_vCenter.y);
+      transform.SetTranslation(l->m_d.m_vCenter.x, l->m_d.m_vCenter.y, height + l->m_d.m_height);
       return true;
    }
+
    return false;
 }
 
