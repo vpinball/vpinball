@@ -61,6 +61,8 @@ public:
    void SetRenderStateCulling(RenderStateValue cull);
    void SetRenderStateDepthBias(float bias);
 
+   bool IsOpaque() const;
+
    void Apply(RenderDevice* device);
 
    const string GetLog() const;

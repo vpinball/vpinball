@@ -12,6 +12,7 @@
 #endif
 
 #include "RenderDevice.h"
+#include "RenderCommand.h"
 #include "Shader.h"
 #include "shader/AreaTex.h"
 #include "shader/SearchTex.h"
@@ -151,12 +152,12 @@ void ReportFatalError(const HRESULT hr, const char *file, const int line)
    char msg[2048+128];
 #ifdef ENABLE_SDL
    sprintf_s(msg, sizeof(msg), "GL Fatal Error 0x%0002X %s in %s:%d", hr, glErrorToString(hr), file, line);
-   ShowError(msg);
 #else
    sprintf_s(msg, sizeof(msg), "Fatal error %s (0x%x: %s) at %s:%d", DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
-   ShowError(msg);
-   exit(-1);
 #endif
+   ShowError(msg);
+   assert(false);
+   exit(-1);
 }
 
 void ReportError(const char *errorText, const HRESULT hr, const char *file, const int line)
@@ -544,7 +545,7 @@ static pDEC mDwmEnableComposition = nullptr;
 RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
     : m_windowHwnd(hwnd), m_width(width), m_height(height), m_fullscreen(fullscreen), 
       m_colorDepth(colordepth), m_vsync(VSync), m_AAfactor(AAfactor), m_stereo3D(stereo3D),
-      m_ssRefl(ss_refl), m_disableDwm(disable_dwm), m_sharpen(sharpen), m_FXAA(FXAA), m_BWrendering(BWrendering), m_texMan(*this)
+      m_ssRefl(ss_refl), m_disableDwm(disable_dwm), m_sharpen(sharpen), m_FXAA(FXAA), m_BWrendering(BWrendering), m_texMan(*this), m_renderFrame(this)
 {
 #ifdef ENABLE_SDL
 #ifdef ENABLE_VR
@@ -1222,7 +1223,7 @@ void RenderDevice::SwapAORenderTargets()
 void RenderDevice::ResolveMSAA()
 { 
    if (m_pOffscreenMSAABackBufferTexture != m_pOffscreenBackBufferTexture)
-      m_pOffscreenMSAABackBufferTexture->CopyTo(m_pOffscreenBackBufferTexture);
+      BlitRenderTarget(m_pOffscreenMSAABackBufferTexture, m_pOffscreenBackBufferTexture, true, true);
 }
 
 bool RenderDevice::DepthBufferReadBackAvailable()
@@ -1325,14 +1326,11 @@ RenderDevice::~RenderDevice()
    delete m_quadPNTDynMeshBuffer;
 
 #ifndef ENABLE_SDL
-   //
    m_pD3DDevice->SetStreamSource(0, nullptr, 0, 0);
    m_pD3DDevice->SetIndices(nullptr);
    m_pD3DDevice->SetVertexShader(nullptr);
    m_pD3DDevice->SetPixelShader(nullptr);
    m_pD3DDevice->SetFVF(D3DFVF_XYZ);
-   //m_pD3DDevice->SetVertexDeclaration(nullptr); // invalid call
-   //m_pD3DDevice->SetRenderTarget(0, nullptr); // invalid call
    m_pD3DDevice->SetDepthStencilSurface(nullptr);
    SAFE_RELEASE(m_pVertexTexelDeclaration);
    SAFE_RELEASE(m_pVertexNormalTexelDeclaration);
@@ -1427,14 +1425,14 @@ RenderDevice::~RenderDevice()
 void RenderDevice::BeginScene()
 {
 #ifndef ENABLE_SDL
-   CHECKD3D(m_pD3DDevice->BeginScene());
+   //CHECKD3D(m_pD3DDevice->BeginScene());
 #endif
 }
 
 void RenderDevice::EndScene()
 {
 #ifndef ENABLE_SDL
-   CHECKD3D(m_pD3DDevice->EndScene());
+   //CHECKD3D(m_pD3DDevice->EndScene());
 #endif
 }
 
@@ -1467,6 +1465,8 @@ bool RenderDevice::SetMaximumPreRenderedFrames(const DWORD frames)
 
 void RenderDevice::Flip(const bool vsync)
 {
+   FlushRenderFrame();
+
 #ifdef ENABLE_SDL
    SDL_GL_SwapWindow(m_sdl_playfieldHwnd);
 #ifdef ENABLE_VR
@@ -1772,105 +1772,85 @@ void RenderDevice::SetClipPlane(const vec4 &plane)
 #endif
 }
 
+void RenderDevice::FlushRenderFrame()
+{
+   m_renderFrame.Execute();
+   m_currentPass = nullptr;
+}
+
+void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt, bool ignoreStereo)
+{
+   if (rt == nullptr)
+   {
+      m_currentPass = nullptr;
+   }
+   else if (m_currentPass == nullptr || rt != m_currentPass->m_rt)
+   {
+      m_currentPass = new RenderPass(name, rt);
+      if (rt->m_lastRenderPass != nullptr)
+         m_currentPass->AddPrecursor(rt->m_lastRenderPass);
+      m_renderFrame.AddPass(m_currentPass);
+      rt->m_lastRenderPass = m_currentPass;
+   }
+}
+
+void RenderDevice::AddRenderTargetDependency(RenderTarget* rt)
+{
+   if (m_currentPass != nullptr && rt->m_lastRenderPass != nullptr)
+   {
+      m_currentPass->AddPrecursor(rt->m_lastRenderPass);
+   }
+}
+
+void RenderDevice::Clear(const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil)
+{
+   ApplyRenderStates();
+   RenderCommand* cmd = m_renderFrame.NewCommand();
+   cmd->SetClear(flags, color);
+   m_currentPass->Submit(cmd);
+}
+
+void RenderDevice::BlitRenderTarget(RenderTarget* source, RenderTarget* destination, bool copyColor, bool copyDepth)
+{
+   assert(m_currentPass->m_rt == destination); // We must be on a render pass targeted at the destination for correct render pass sorting
+   AddRenderTargetDependency(source);
+   RenderCommand* cmd = m_renderFrame.NewCommand();
+   cmd->SetCopy(source, destination, copyColor, copyDepth);
+   m_currentPass->Submit(cmd);
+}
+
 void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
 {
-   assert(Shader::GetCurrentShader() == FBShader); // FrameBuffer shader is the only one using Position/Texture vertex format, so assert it is bound
-#ifdef ENABLE_SDL
-   Vertex3D_TexelOnly* bufvb;
-   m_quadPTDynMeshBuffer->m_vb->lock(0, 0, (void**)&bufvb, VertexBuffer::DISCARDCONTENTS);
-   memcpy(bufvb, vertices, 4 * sizeof(Vertex3D_TexelOnly));
-   m_quadPTDynMeshBuffer->m_vb->unlock();
-   DrawMesh(m_quadPTDynMeshBuffer, TRIANGLESTRIP, 0, 4);
-#else
-   // having a VB and lock/copying stuff each time is slower on DX9 :/ (is it still true ? looks overly complicated for a very marginal benefit)
+   assert(Shader::GetCurrentShader() == FBShader); // FrameBuffer shader is the only one using Position/Texture vertex format
    ApplyRenderStates();
-   m_stats_drawn_triangles += 2;
-   if (m_currentVertexDeclaration != m_pVertexTexelDeclaration)
-   {
-      CHECKD3D(m_pD3DDevice->SetVertexDeclaration(m_pVertexTexelDeclaration));
-      m_currentVertexDeclaration = m_pVertexTexelDeclaration;
-      m_curStateChanges++;
-   }
-   CHECKD3D(m_pD3DDevice->DrawPrimitiveUP((D3DPRIMITIVETYPE)RenderDevice::TRIANGLESTRIP, 2, vertices, sizeof(Vertex3D_TexelOnly)));
-   m_curVertexBuffer = nullptr; // DrawPrimitiveUP sets the VB to nullptr
-   m_curDrawCalls++;
-#endif
+   RenderCommand* cmd = m_renderFrame.NewCommand();
+   cmd->SetDrawTexturedQuad(vertices);
+   m_currentPass->Submit(cmd);
 }
 
 void RenderDevice::DrawTexturedQuad(const Vertex3D_NoTex2* vertices)
 {
-   assert(Shader::GetCurrentShader() != FBShader); // FrameBuffer shader is the only one using Position/Texture vertex format, so assert it is bound
-#ifdef ENABLE_SDL
-   Vertex3D_NoTex2* bufvb;
-   m_quadPNTDynMeshBuffer->m_vb->lock(0, 0, (void**)&bufvb, VertexBuffer::DISCARDCONTENTS);
-   memcpy(bufvb, vertices, 4 * sizeof(Vertex3D_NoTex2));
-   m_quadPNTDynMeshBuffer->m_vb->unlock();
-   DrawMesh(m_quadPNTDynMeshBuffer, TRIANGLESTRIP, 0, 4);
-#else
-   // having a VB and lock/copying stuff each time is slower on DX9 :/ (is it still true ? looks overly complicated for a very marginal benefit)
+   assert(Shader::GetCurrentShader() != FBShader); // FrameBuffer shader is the only one using Position/Texture vertex format
    ApplyRenderStates();
-   m_stats_drawn_triangles += 2;
-   if (m_currentVertexDeclaration != m_pVertexNormalTexelDeclaration)
-   {
-      CHECKD3D(m_pD3DDevice->SetVertexDeclaration(m_pVertexNormalTexelDeclaration));
-      m_currentVertexDeclaration = m_pVertexNormalTexelDeclaration;
-      m_curStateChanges++;
-   }
-   CHECKD3D(m_pD3DDevice->DrawPrimitiveUP((D3DPRIMITIVETYPE)RenderDevice::TRIANGLESTRIP, 2, vertices, sizeof(Vertex3D_NoTex2)));
-   m_curVertexBuffer = nullptr; // DrawPrimitiveUP sets the VB to nullptr
-   m_curDrawCalls++;
-#endif
+   RenderCommand* cmd = m_renderFrame.NewCommand();
+   cmd->SetDrawTexturedQuad(vertices);
+   m_currentPass->Submit(cmd);
 }
 
 void RenderDevice::DrawFullscreenTexturedQuad() {
-   assert(Shader::GetCurrentShader() == FBShader); // FrameBuffer shader is the only one using Position/Texture vertex format, so assert it is bound
+   assert(Shader::GetCurrentShader() == FBShader); // FrameBuffer shader is the only one using Position/Texture vertex format
    DrawMesh(m_quadMeshBuffer, TRIANGLESTRIP, 0, 4);
 }
 
 void RenderDevice::DrawMesh(MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount)
 {
    ApplyRenderStates();
-
-   const unsigned int np = ComputePrimitiveCount(type, indexCount);
-   m_stats_drawn_triangles += np;
-
-   mb->bind();
-
-   if (mb->m_ib == nullptr)
-   {
-      #ifdef ENABLE_SDL
-      glDrawArrays(type, mb->m_vb->GetVertexOffset(), indexCount);
-      #else
-      CHECKD3D(m_pD3DDevice->DrawPrimitive((D3DPRIMITIVETYPE)type, 0, np));
-      #endif
-   }
-   else
-   {
-      #ifdef ENABLE_SDL
-      const int indexOffset = mb->m_ib->GetOffset() + startIndice * mb->m_ib->m_sizePerIndex;
-      const GLenum indexType = mb->m_ib->m_indexFormat == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
-      if (mb->m_isVBOffsetApplied || mb->m_vb->m_offset == 0)
-      {
-         //glDrawElements(type, indexCount, indexType, (void*)(intptr_t)indexOffset);
-         glDrawRangeElements(type, mb->m_vb->GetVertexOffset(), mb->m_vb->GetVertexOffset() + mb->m_vb->m_vertexCount, indexCount, indexType, (void*)(intptr_t)indexOffset);
-      }
-      else
-      {
-         #if defined(__OPENGLES__)
-         assert(false); // OpenGL ES does not support offseted vertices. The buffers must be built accordingly
-         #else
-         //glDrawElementsBaseVertex(type, indexCount, indexType, (void*)indexOffset, mb->m_vb->GetVertexOffset());
-         glDrawRangeElementsBaseVertex(type, mb->m_vb->GetVertexOffset(), mb->m_vb->GetVertexOffset() + mb->m_vb->m_vertexCount, indexCount, indexType, (void*)indexOffset, mb->m_vb->GetVertexOffset());
-         #endif
-      }
-      #else
-      CHECKD3D(m_pD3DDevice->DrawIndexedPrimitive((D3DPRIMITIVETYPE)type, mb->m_isVBOffsetApplied ? 0 : mb->m_vb->GetVertexOffset(), 0, mb->m_vb->m_vertexCount, mb->m_ib->GetIndexOffset() + startIndice, np));
-      #endif
-   }
-   m_curDrawCalls++;
+   RenderCommand* cmd = m_renderFrame.NewCommand();
+   cmd->SetDrawMesh(mb, type, startIndice, indexCount);
+   m_currentPass->Submit(cmd);
 }
 
-void RenderDevice::DrawGaussianBlur(Sampler* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size)
+void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size)
 {
    ShaderTechniques tech_h, tech_v;
    if (kernel_size < 8)
@@ -1919,7 +1899,7 @@ void RenderDevice::DrawGaussianBlur(Sampler* source, RenderTarget* tmp, RenderTa
       tech_v = SHADER_TECHNIQUE_fb_blur_vert39x39;
    }
 
-   RenderTarget* initial_rt = RenderTarget::GetCurrentRenderTarget();
+   RenderTarget* initial_rt = GetCurrentRenderTarget();
    RenderState initial_state;
    CopyRenderStates(true, initial_state);
    SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
@@ -1928,8 +1908,9 @@ void RenderDevice::DrawGaussianBlur(Sampler* source, RenderTarget* tmp, RenderTa
    SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    {
       FBShader->SetTextureNull(SHADER_tex_fb_filtered);
-      tmp->Activate(true); // switch to temporary output buffer for horizontal phase of gaussian blur
-      FBShader->SetTexture(SHADER_tex_fb_filtered, source);
+      SetRenderTarget("Horizontal Blur"s, tmp, true); // switch to temporary output buffer for horizontal phase of gaussian blur
+      AddRenderTargetDependency(source);
+      FBShader->SetTexture(SHADER_tex_fb_filtered, source->GetColorSampler());
       FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / source->GetWidth()), (float)(1.0 / source->GetHeight()), 1.0f, 1.0f);
       FBShader->SetTechnique(tech_h);
       FBShader->Begin();
@@ -1938,16 +1919,17 @@ void RenderDevice::DrawGaussianBlur(Sampler* source, RenderTarget* tmp, RenderTa
    }
    {
       FBShader->SetTextureNull(SHADER_tex_fb_filtered);
-      dest->Activate(true); // switch to output buffer for vertical phase of gaussian blur
+      SetRenderTarget("Vertical Blur"s, dest, true); // switch to output buffer for vertical phase of gaussian blur
+      AddRenderTargetDependency(tmp);
       FBShader->SetTexture(SHADER_tex_fb_filtered, tmp->GetColorSampler());
-      FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / tmp->GetColorSampler()->GetWidth()), (float)(1.0 / tmp->GetColorSampler()->GetHeight()), 1.0f, 1.0f);
+      FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / tmp->GetWidth()), (float)(1.0 / tmp->GetHeight()), 1.0f, 1.0f);
       FBShader->SetTechnique(tech_v);
       FBShader->Begin();
       DrawFullscreenTexturedQuad();
       FBShader->End();
    }
    CopyRenderStates(false, initial_state);
-   initial_rt->Activate();
+   SetRenderTarget(""s, initial_rt);
 }
 
 void RenderDevice::SetTransform(const TransformStateType p1, const Matrix3D * p2, const int count)
@@ -1991,40 +1973,6 @@ void RenderDevice::SetMainTextureDefaultFiltering(const SamplerFilter filter)
    Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_B, filter);
    Shader::SetDefaultSamplerFilter(SHADER_tex_base_color, filter);
    Shader::SetDefaultSamplerFilter(SHADER_tex_base_normalmap, filter);
-}
-
-void RenderDevice::Clear(const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil)
-{
-   ApplyRenderStates();
-
-#ifdef ENABLE_SDL
-   // Default OpenGL Values
-   static float clear_z = 1.f;
-   static GLint clear_s = 0;
-   static D3DCOLOR clear_color = 0;
-   if (clear_s != stencil)
-   {
-      clear_s = stencil;
-      glClearStencil(stencil);
-   }
-   if (clear_z != z)
-   {
-      clear_z = z;
-      glClearDepthf(z);
-   }
-   if (clear_color != color)
-   {
-      clear_color = color;
-      const float r = (float)(color & 0xff) / 255.0f;
-      const float g = (float)((color & 0xff00) >> 8) / 255.0f;
-      const float b = (float)((color & 0xff0000) >> 16) / 255.0f;
-      const float a = (float)((color & 0xff000000) >> 24) / 255.0f;
-      glClearColor(r, g, b, a);
-   }
-   glClear(flags);
-#else
-   CHECKD3D(m_pD3DDevice->Clear(0, nullptr, flags, color, z, stencil));
-#endif
 }
 
 #ifdef ENABLE_SDL

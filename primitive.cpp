@@ -1303,6 +1303,7 @@ void Primitive::RenderObject()
    // setup for applying refractions from screen space probe
    if (refractions)
    {
+      pd3dDevice->AddRenderTargetDependency(refractions);
       const vec4 color = convertColor(mat->m_cRefractionTint);
       pd3dDevice->basicShader->SetVector(SHADER_refractionTint, &color);
       pd3dDevice->basicShader->SetTexture(SHADER_tex_refraction, refractions->GetColorSampler());
@@ -1319,6 +1320,7 @@ void Primitive::RenderObject()
    // setup for applying reflections from reflection probe
    if (reflections)
    {
+      pd3dDevice->AddRenderTargetDependency(reflections);
       pd3dDevice->basicShader->SetFloat(SHADER_mirrorFactor, m_d.m_reflectionStrength);
       Matrix3D matWorldViewInverseTranspose; // This is clearly suboptimal since this transposed inverse is already computed, but the impact is minimal
       vec3 plane_normal;
