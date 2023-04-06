@@ -39,7 +39,8 @@ public:
 private:
    void CreatePendingSharedBuffer();
    static vector<VertexBuffer*> pendingSharedBuffers;
-   static unsigned int getPendingSharedBufferCount();
+   static unsigned int GetPendingSharedBufferCount();
+   static unsigned int GetSharedBufferVertexOffset(const unsigned int vertexCount, const VertexFormat fvf);
 
    struct PendingUpload
    {
@@ -49,7 +50,8 @@ private:
    };
    vector<PendingUpload> m_pendingUploads;
    PendingUpload m_lock = { 0, 0, nullptr };
-   
+   bool m_uploaded = false;
+
 #ifdef ENABLE_SDL
    GLuint m_vb = 0;
    int* m_sharedBufferRefCount = nullptr;
