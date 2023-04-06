@@ -829,6 +829,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="inc\serial.cpp" />
     <ClCompile Include="inc\tinyxml2\tinyxml2.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
+    <ClCompile Include="MeshBuffer.cpp" />
     <ClCompile Include="LiveUI.cpp" />
     <ClCompile Include="math\math.cpp" />
     <ClCompile Include="MemoryStatus.cpp" />
@@ -885,6 +886,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="ramp.cpp" />
     <ClCompile Include="regutil.cpp" />
     <ClCompile Include="RenderDevice.cpp" />
+    <ClCompile Include="RenderCommand.cpp" />
+    <ClCompile Include="RenderFrame.cpp" />
+    <ClCompile Include="RenderPass.cpp" />
     <ClCompile Include="RenderState.cpp" />
     <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -1295,6 +1299,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="inc\win32xx\include\wxx_wincore.h" />
     <ClInclude Include="inc\win32xx\include\wxx_wincore0.h" />
     <ClInclude Include="IndexBuffer.h" />
+    <ClInclude Include="MeshBuffer.h" />
     <ClInclude Include="iselect.h" />
     <ClInclude Include="kdtree.h" />
     <ClInclude Include="kicker.h" />
@@ -1368,7 +1373,10 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="quadtree.h" />
     <ClInclude Include="ramp.h" />
     <ClInclude Include="regutil.h" />
+    <ClInclude Include="RenderCommand.h" />
     <ClInclude Include="RenderDevice.h" />
+    <ClInclude Include="RenderFrame.h" />
+    <ClInclude Include="RenderPass.h" />
     <ClInclude Include="RenderState.h" />
     <ClInclude Include="RenderProbe.h" />
     <ClInclude Include="RenderTarget.h" />

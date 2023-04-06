@@ -10,7 +10,10 @@
 #include "RenderState.h"
 #include "IndexBuffer.h"
 #include "VertexBuffer.h"
+#include "MeshBuffer.h"
 #include "TextureManager.h"
+#include "RenderFrame.h"
+#include "RenderPass.h"
 
 #ifdef ENABLE_VR
 #include <openvr.h>
@@ -113,7 +116,16 @@ public:
    void BeginScene();
    void EndScene();
 
+   void SetRenderTarget(const string& passName, RenderTarget* rt, bool ignoreStereo = false);
+   void AddRenderTargetDependency(RenderTarget* rt);
    void Clear(const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil);
+   void BlitRenderTarget(RenderTarget* source, RenderTarget* destination, const bool copyColor = true, const bool copyDepth = true);
+   void DrawMesh(MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount);
+   void DrawTexturedQuad(const Vertex3D_TexelOnly* vertices);
+   void DrawTexturedQuad(const Vertex3D_NoTex2* vertices);
+   void DrawFullscreenTexturedQuad();
+   void DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size);
+   void FlushRenderFrame();
    void Flip(const bool vsync);
 
    bool SetMaximumPreRenderedFrames(const DWORD frames);
@@ -175,13 +187,6 @@ private:
    RenderState m_current_renderstate, m_renderstate;
 
 public:
-   void DrawMesh(MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount);
-   void DrawTexturedQuad(const Vertex3D_TexelOnly* vertices);
-   void DrawTexturedQuad(const Vertex3D_NoTex2* vertices);
-   void DrawFullscreenTexturedQuad();
-   
-   void DrawGaussianBlur(Sampler* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size);
-
    void SetViewport(const ViewPort*);
    void GetViewport(ViewPort*);
 
@@ -287,6 +292,7 @@ private:
    bool m_dwm_was_enabled;
    bool m_dwm_enabled;
 
+public:
    MeshBuffer* m_quadMeshBuffer = nullptr; // internal vb for rendering quads
    MeshBuffer* m_quadPNTDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads (position/normal/texture)
    MeshBuffer* m_quadPTDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads (position/texture)
@@ -318,6 +324,14 @@ public:
 
    TextureManager m_texMan;
 
+
+   RenderTarget* GetCurrentRenderTarget() { return m_currentPass == nullptr ? nullptr : m_currentPass->m_rt; }
+
+private :
+   RenderFrame m_renderFrame;
+   RenderPass* m_currentPass = nullptr;
+
+public:
 #ifdef ENABLE_SDL
    std::vector<SamplerBinding*> m_samplerBindings;
 #endif

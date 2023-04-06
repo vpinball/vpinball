@@ -2,6 +2,7 @@
 
 #include "typedefs3D.h"
 class RenderDevice;
+class RenderPass;
 
 class RenderTarget final
 {
@@ -38,8 +39,10 @@ public:
    IDirect3DSurface9* GetCoreColorSurface() { return m_color_surface; }
 #endif
 
-private:
    const string m_name;
+   RenderPass* m_lastRenderPass = nullptr;
+
+private:
    int m_width;
    int m_height;
    colorFormat m_format;

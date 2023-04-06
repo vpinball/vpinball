@@ -82,6 +82,13 @@ void RenderState::SetRenderStateDepthBias(float bias)
    m_depthBias = bias;
 }
 
+bool RenderState::IsOpaque() const
+{
+   return (m_state & RENDER_STATE_MASK_ALPHABLENDENABLE) == 0 // Mesh does not use framebuffer color blending
+      && (m_state & RENDER_STATE_MASK_ZENABLE) != 0 // Depth testing is enabled
+      && ((m_state & RENDER_STATE_MASK_ZFUNC) >> RENDER_STATE_SHIFT_ZFUNC) == Z_LESSEQUAL ; // Depth testing use default depth camparison
+}
+
 const string RenderState::GetLog() const
 {
    const auto blend = (m_state & RENDER_STATE_MASK_ALPHABLENDENABLE) != 0;

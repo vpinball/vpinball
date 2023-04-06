@@ -149,12 +149,12 @@ void RenderProbe::ApplyRoughness(RenderTarget* probe, const int roughness)
       {
          // FIXME adjust the kernels to have as many as there are roughness levels
          constexpr float kernel[] = { 0.f, 7.f, 9.f, 11.f, 13.f, 15.f, 19.f, 23.f, 27.f, 39.f, 39.f, 39.f, 39.f };
-         p3dDevice->DrawGaussianBlur(probe->GetColorSampler(), m_blurRT, probe, kernel[roughness]);
+         p3dDevice->DrawGaussianBlur(probe, m_blurRT, probe, kernel[roughness]);
       }
       else
       {
          constexpr float kernel[] = { 0.f, 7.f, 9.f, 13.f, 15.f, 19.f, 23.f, 13.f, 15.f, 19.f, 23.f, 27.f, 39.f };
-         p3dDevice->DrawGaussianBlur(probe->GetColorSampler(), m_blurRT, probe, kernel[roughness]);
+         p3dDevice->DrawGaussianBlur(probe, m_blurRT, probe, kernel[roughness]);
       }
    }
 }
@@ -173,7 +173,7 @@ void RenderProbe::RenderScreenSpaceTransparency(const bool is_static)
       m_dynamicRT
          = new RenderTarget(p3dDevice, "RefractionProbe"s,  w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, StereoMode::STEREO_OFF, "Failed to create refraction render target", nullptr);
    }
-   p3dDevice->GetMSAABackBufferTexture()->CopyTo(m_dynamicRT);
+   p3dDevice->BlitRenderTarget(p3dDevice->GetMSAABackBufferTexture(), m_dynamicRT, true, true);
    ApplyRoughness(m_dynamicRT, m_roughness_base);
 }
 
@@ -212,8 +212,8 @@ void RenderProbe::PreRenderStaticReflectionProbe()
    if (g_pplayer->m_dynamicMode || min(m_reflection_mode, g_pplayer->m_pfReflectionMode) != REFL_DYNAMIC)
       return;
 
-   RenderTarget* previousRT = RenderTarget::GetCurrentRenderTarget();
    RenderDevice* p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderTarget* previousRT = p3dDevice->GetCurrentRenderTarget();
 
    if (m_staticRT == nullptr)
    {
@@ -254,14 +254,16 @@ void RenderProbe::PreRenderStaticReflectionProbe()
 
       RenderState initial_state;
       p3dDevice->CopyRenderStates(true, initial_state);
-      m_staticRT->Activate();
+      p3dDevice->SetRenderTarget("PreRender Reflection"s, m_staticRT);
+      p3dDevice->AddRenderTargetDependency(accumulationSurface);
       p3dDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
       DoRenderReflectionProbe(true, false, false);
       p3dDevice->CopyRenderStates(false, initial_state);
 
       // Rendering is done to the static render target then accumulated to accumulationSurface
       // We use the framebuffer mirror shader which copies a weighted version of the bound texture
-      accumulationSurface->Activate(true);
+      p3dDevice->SetRenderTarget("PreRender Accumulate Reflection"s, accumulationSurface, true);
+      p3dDevice->AddRenderTargetDependency(m_staticRT);
       p3dDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
       p3dDevice->SetRenderState(RenderState::SRCBLEND, RenderState::ONE);
       p3dDevice->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
@@ -285,14 +287,15 @@ void RenderProbe::PreRenderStaticReflectionProbe()
    }
 
    // copy back weighted antialiased color result to the static render target, keeping depth untouched
-   accumulationSurface->CopyTo(m_staticRT, true, false);
+   p3dDevice->SetRenderTarget("PreRender Store Reflection"s, m_staticRT);
+   p3dDevice->BlitRenderTarget(accumulationSurface, m_staticRT, true, false);
+   p3dDevice->FlushRenderFrame();
    delete accumulationSurface;
+   p3dDevice->SetRenderTarget(""s, previousRT);
 
    // if rendering static/with heavy oversampling, re-enable the aniso/trilinear filter now for the normal rendering
    const bool forceAniso = LoadValueBoolWithDefault(regKey[RegName::Player], "ForceAnisotropicFiltering"s, true);
    p3dDevice->SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
-
-   previousRT->Activate();
 }
 
 void RenderProbe::RenderReflectionProbe(const bool is_static)
@@ -304,8 +307,8 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    // Rendering reflection is not reentrant and would fail (clip plane are view matrices are not cached)
    assert(!g_pplayer->IsRenderPass(Player::REFLECTION_PASS));
 
-   RenderTarget* previousRT = RenderTarget::GetCurrentRenderTarget();
    RenderDevice* p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderTarget* previousRT = p3dDevice->GetCurrentRenderTarget();
 
    // Prepare to render into the reflection back buffer
    if (is_static)
@@ -317,7 +320,7 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
          m_staticRT = new RenderTarget(p3dDevice, "StaticReflProbe"s, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, p3dDevice->GetBackBufferTexture()->GetStereo(),
             "Failed to create plane reflection static render target", nullptr);
       }
-      m_staticRT->Activate();
+      p3dDevice->SetRenderTarget("Reflection"s, m_staticRT);
       p3dDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
    }
    else
@@ -332,15 +335,15 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
       if (mode == REFL_SYNCED_DYNAMIC && m_staticRT != nullptr)
       {
          // Intialize dynamic depth buffer from static one to avoid incorrect overlaps of staticly rendered parts by dynamic ones (this does not prevent overlaps the other way around though)
-         m_staticRT->CopyTo(m_dynamicRT, false, true);
-         m_dynamicRT->Activate();
+         p3dDevice->BlitRenderTarget(m_staticRT, m_dynamicRT, true, false);
+         p3dDevice->SetRenderTarget("Reflection"s, m_dynamicRT);
          p3dDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
       }
       else
       {
-         m_dynamicRT->Activate();
+         p3dDevice->SetRenderTarget("Reflection"s, m_dynamicRT);
          if (mode == REFL_DYNAMIC && m_staticRT != nullptr && !g_pplayer->m_dynamicMode)
-            m_staticRT->CopyTo(m_dynamicRT);
+            p3dDevice->BlitRenderTarget(m_staticRT, m_dynamicRT, true, true);
          else
             p3dDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
       }
@@ -351,9 +354,9 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    const bool render_dynamic = !is_static && (mode >= REFL_UNSYNCED_DYNAMIC);
    DoRenderReflectionProbe(render_static, render_balls, render_dynamic);
 
-   ApplyRoughness(RenderTarget::GetCurrentRenderTarget(), m_roughness_base);
+   ApplyRoughness(p3dDevice->GetCurrentRenderTarget(), m_roughness_base);
 
-   previousRT->Activate();
+   p3dDevice->SetRenderTarget(""s, previousRT);
 }
 
 void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool render_balls, const bool render_dynamic)

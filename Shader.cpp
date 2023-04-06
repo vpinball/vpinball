@@ -803,7 +803,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    case SUT_DataBlock: // Uniform blocks
       #ifdef ENABLE_SDL
       assert(src->count == 0 || src->count == desc.count);
-      if ((src->count != 0) && (isCacheInvalid || dst->count == 0 || memcmp(src->val.data, dst->val.data, src->count) != 0))
+      if (isCacheInvalid || dst->count != src->count || memcmp(src->val.data, dst->val.data, src->count) != 0)
       {
          if (dst->count == 0)
          {

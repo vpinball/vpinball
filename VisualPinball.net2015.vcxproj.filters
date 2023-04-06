@@ -291,6 +291,7 @@
       <Filter>inc</Filter>
     </ClCompile>
     <ClCompile Include="IndexBuffer.cpp" />
+    <ClCompile Include="MeshBuffer.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="RenderTarget.cpp" />
@@ -325,6 +326,9 @@
     <ClCompile Include="imgui\ImGuizmo.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="RenderCommand.cpp" />
+    <ClCompile Include="RenderFrame.cpp" />
+    <ClCompile Include="RenderPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1559,6 +1563,9 @@
     <ClInclude Include="IndexBuffer.h">
       <Filter>headers</Filter>
     </ClInclude>
+    <ClInclude Include="MeshBuffer.h">
+      <Filter>headers</Filter>
+    </ClInclude>
     <ClInclude Include="Shader.h">
       <Filter>headers</Filter>
     </ClInclude>
@@ -1624,6 +1631,15 @@
     </ClInclude>
     <ClInclude Include="imgui\ImGuizmo.h">
       <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderCommand.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderFrame.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderPass.h">
+      <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
