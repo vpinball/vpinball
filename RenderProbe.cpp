@@ -166,15 +166,17 @@ void RenderProbe::ApplyRoughness(RenderTarget* probe, const int roughness)
 void RenderProbe::RenderScreenSpaceTransparency(const bool is_static)
 {
    RenderDevice* p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderTarget* previousRT = p3dDevice->GetCurrentRenderTarget();
    if (m_dynamicRT == nullptr)
    {
       const int downscale = GetRoughnessDownscale(m_roughness_base);
       const int w = p3dDevice->GetBackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetBackBufferTexture()->GetHeight() / downscale;
-      m_dynamicRT
-         = new RenderTarget(p3dDevice, "RefractionProbe"s,  w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, StereoMode::STEREO_OFF, "Failed to create refraction render target", nullptr);
+      m_dynamicRT = new RenderTarget(p3dDevice, "RefractionProbe"s,  w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, StereoMode::STEREO_OFF, "Failed to create refraction render target", nullptr);
    }
+   p3dDevice->SetRenderTarget("Refraction"s, m_dynamicRT);
    p3dDevice->BlitRenderTarget(p3dDevice->GetMSAABackBufferTexture(), m_dynamicRT, true, true);
    ApplyRoughness(m_dynamicRT, m_roughness_base);
+   p3dDevice->SetRenderTarget(""s, previousRT);
 }
 
 
