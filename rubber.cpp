@@ -1473,6 +1473,8 @@ void Rubber::GenerateVertexBuffer()
    IndexBuffer *dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_ringIndices);
    m_meshBuffer = new MeshBuffer(dynamicVertexBuffer, dynamicIndexBuffer, true);
 
+   UpdateRubber(true, m_d.m_height);
+
    m_dynamicVertexBufferRegenerate = false;
 }
 
