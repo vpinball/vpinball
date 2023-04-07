@@ -13,7 +13,7 @@ precision highp float;
 
 uniform mat4 orientation;
 
-layout(std140) uniform matrixBlock {
+layout(std140) uniform ballMatrixBlock {
 	mat4 matView;
 	mat4 matWorldView;
 	mat4 matWorldViewInverse;

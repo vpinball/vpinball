@@ -616,7 +616,7 @@ void Decal::RenderObject()
       } matrices;
       memcpy(&matrices.matWorldViewProj[0], &matWorldViewProj, 4 * 4 * sizeof(float));
       memcpy(&matrices.matWorldViewProj[1], &matWorldViewProj, 4 * 4 * sizeof(float));
-      pd3dDevice->basicShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorld.m[0][0], (eyes + 4) * 16 * sizeof(float));
+      pd3dDevice->basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
       #else
       pd3dDevice->basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
       #endif

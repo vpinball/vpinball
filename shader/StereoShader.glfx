@@ -166,8 +166,8 @@ void main()
 {
 	const float3 lcol = tex2D(tex_stereo_fb, float2(0.5*tex0.x,tex0.y)).rgb;
 	const float3 rcol = tex2D(tex_stereo_fb, float2(0.5*tex0.x+0.5,tex0.y)).rgb;
-	const float3 l = (ms_zpd_ya_td.w > 11.0) ? rcol : lcol; // > 10.0 means: flip the eye color
-	const float3 r = (ms_zpd_ya_td.w > 11.0) ? lcol : rcol; // > 10.0 means: flip the eye color
+	const float3 l = (ms_zpd_ya_td.w > 11.0) ? rcol : lcol; // > 11.0 means: flip the eye color
+	const float3 r = (ms_zpd_ya_td.w > 11.0) ? lcol : rcol; // > 11.0 means: flip the eye color
 	color = float4(anaglyph(l, r), 1.0);
 }
 

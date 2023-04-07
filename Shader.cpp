@@ -148,80 +148,105 @@ string Shader::GetTechniqueName(ShaderTechniques technique)
 }
 
 
-#define SHADER_UNIFORM(type, name) { type, #name, ""s, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED }
-#define SHADER_SAMPLER(name, tex_name, default_clampu, default_clampv, default_filter) { SUT_Sampler, #name, #tex_name, default_clampu, default_clampv, default_filter }
+#define SHADER_UNIFORM(type, name, count) { type, #name, count, ""s, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED }
+#define SHADER_SAMPLER(name, tex_name, default_clampu, default_clampv, default_filter) { SUT_Sampler, #name, 1, #tex_name, default_clampu, default_clampv, default_filter }
 Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
-   // -- Matrices --
-   SHADER_UNIFORM(SUT_DataBlock, matrixBlock), // OpenGL only, matrices as a float block
-   SHADER_UNIFORM(SUT_Float4x4, matWorld), // DX9 only
-   SHADER_UNIFORM(SUT_Float4x3, matView), // DX9 only
-   SHADER_UNIFORM(SUT_Float4x4, matProj),
-   SHADER_UNIFORM(SUT_Float4x4, matWorldViewProj), // DX9 only
-   SHADER_UNIFORM(SUT_Float4x4, matWorldView), // DX9 only
-   SHADER_UNIFORM(SUT_Float4x3, matWorldViewInverse), // DX9 only
-   SHADER_UNIFORM(SUT_Float3x4, matWorldViewInverseTranspose), // DX9 only
-   SHADER_UNIFORM(SUT_Float4x3, orientation),
-   // -- Floats --
-   SHADER_UNIFORM(SUT_Float, RenderBall),
-   SHADER_UNIFORM(SUT_Float, blend_modulate_vs_add),
-   SHADER_UNIFORM(SUT_Float, alphaTestValue),
-   SHADER_UNIFORM(SUT_Float, eye),
-   SHADER_UNIFORM(SUT_Float, fKickerScale),
-   SHADER_UNIFORM(SUT_Float, fSceneScale), // OpenGL only (VR only)
-   SHADER_UNIFORM(SUT_Float, mirrorFactor),
-   SHADER_UNIFORM(SUT_Float, refractionThickness),
-   // -- Vectors and Float Arrays --
-   SHADER_UNIFORM(SUT_Float4, Roughness_WrapL_Edge_Thickness),
-   SHADER_UNIFORM(SUT_Float4, cBase_Alpha),
-   SHADER_UNIFORM(SUT_Float4, lightCenter_doShadow),
-   SHADER_UNIFORM(SUT_Float4, lightCenter_maxRange),
-   SHADER_UNIFORM(SUT_Float4, lightColor2_falloff_power),
-   SHADER_UNIFORM(SUT_Float4, lightColor_intensity),
-   SHADER_UNIFORM(SUT_Float2, fenvEmissionScale_TexWidth),
-   SHADER_UNIFORM(SUT_Float4, invTableRes_playfield_height_reflection),
-   SHADER_UNIFORM(SUT_Float4, cAmbient_LightRange),
-   SHADER_UNIFORM(SUT_Float4, cClearcoat_EdgeAlpha),
-   SHADER_UNIFORM(SUT_Float4, cGlossy_ImageLerp),
-   SHADER_UNIFORM(SUT_Float3, refractionTint),
-   SHADER_UNIFORM(SUT_Float2, fDisableLighting_top_below),
-   SHADER_UNIFORM(SUT_Float4, backBoxSize),
-   SHADER_UNIFORM(SUT_Float4, vColor_Intensity),
-   SHADER_UNIFORM(SUT_Float4, w_h_height),
-   SHADER_UNIFORM(SUT_Float4, alphaTestValueAB_filterMode_addBlend),
-   SHADER_UNIFORM(SUT_Float3, amount_blend_modulate_vs_add_flasherMode),
-   SHADER_UNIFORM(SUT_Float4, staticColor_Alpha),
-   SHADER_UNIFORM(SUT_Float4, ms_zpd_ya_td),
-   SHADER_UNIFORM(SUT_Float2, Anaglyph_DeSaturation_Contrast),
-   SHADER_UNIFORM(SUT_Float4, vRes_Alpha_time),
-   SHADER_UNIFORM(SUT_Float4, SSR_bumpHeight_fresnelRefl_scale_FS),
-   SHADER_UNIFORM(SUT_Float2, AO_scale_timeblur),
-   SHADER_UNIFORM(SUT_Float3, mirrorNormal),
-   SHADER_UNIFORM(SUT_Float4v, balls),
-   SHADER_UNIFORM(SUT_Float4v, clip_planes), // OpenGL only
-   SHADER_UNIFORM(SUT_Float4v, lightEmission), // OpenGL only
-   SHADER_UNIFORM(SUT_Float4v, lightPos), // OpenGL only
-   SHADER_UNIFORM(SUT_Float4v, packedLights), // DX9 only
-   // -- Integer and Bool --
-   SHADER_UNIFORM(SUT_Bool, ignoreStereo),
-   SHADER_UNIFORM(SUT_Bool, disableLighting),
-   SHADER_UNIFORM(SUT_Int, lightSources),
-   SHADER_UNIFORM(SUT_Bool, color_grade),
-   SHADER_UNIFORM(SUT_Bool, do_bloom),
-   SHADER_UNIFORM(SUT_Bool, objectSpaceNormalMap),
-   SHADER_UNIFORM(SUT_Bool, do_dither),
-   SHADER_UNIFORM(SUT_Bool, doReflections),
-   SHADER_UNIFORM(SUT_Bool, doRefractions),
-   SHADER_UNIFORM(SUT_Bool, lightingOff),
-   SHADER_UNIFORM(SUT_Bool, is_metal), // OpenGL only [managed by DirectX Effect framework on DirectX]
-   SHADER_UNIFORM(SUT_Bool, doNormalMapping), // OpenGL only [managed by DirectX Effect framework on DirectX]
-   // -- Samplers (a texture reference with sampling configuration) --
-   // DMD shader
+   // Shared uniforms
+   SHADER_UNIFORM(SUT_Float, alphaTestValue, 1),
+   SHADER_UNIFORM(SUT_Float4x4, matProj, 1),
+   SHADER_UNIFORM(SUT_Float4x4, matWorldViewProj, 1), // +1 Matrix for stereo
+   #ifdef ENABLE_SDL // OpenGL
+   SHADER_UNIFORM(SUT_DataBlock, basicMatrixBlock, 5 * 16 * 4), // +1 Matrix for stereo
+   SHADER_UNIFORM(SUT_DataBlock, ballMatrixBlock, 4 * 16 * 4), // +1 Matrix for stereo
+   SHADER_UNIFORM(SUT_Bool, ignoreStereo, 1), // Force single invocation for bulb light buffer in OpenGL
+   #else // DirectX 9
+   SHADER_UNIFORM(SUT_Float4x4, matWorld, 1),
+   SHADER_UNIFORM(SUT_Float4x3, matView, 1),
+   SHADER_UNIFORM(SUT_Float4x4, matWorldView, 1),
+   SHADER_UNIFORM(SUT_Float4x3, matWorldViewInverse, 1),
+   SHADER_UNIFORM(SUT_Float3x4, matWorldViewInverseTranspose, 1),
+   #endif
+   SHADER_UNIFORM(SUT_Float4, lightCenter_doShadow, 1), // Basic & Flasher (for ball shadows)
+   SHADER_UNIFORM(SUT_Float4v, balls, 8), // Basic & Flasher (for ball shadows)
+   SHADER_UNIFORM(SUT_Float4, staticColor_Alpha, 1), // Basic & Flasher
+   SHADER_UNIFORM(SUT_Float4, w_h_height, 1), // Post process & Basic (for screen space reflection/refraction)
+
+   // Shared material for Ball, Basic and Classic light shaders
+   #ifdef ENABLE_SDL // OpenGL
+   SHADER_UNIFORM(SUT_Float4v, clip_planes, 1), // +1 Matrix for stereo
+   SHADER_UNIFORM(SUT_Float4v, basicLightEmission, 2),
+   SHADER_UNIFORM(SUT_Float4v, basicLightPos, 2),
+   SHADER_UNIFORM(SUT_Float4v, ballLightEmission, 10),
+   SHADER_UNIFORM(SUT_Float4v, ballLightPos, 10),
+   SHADER_UNIFORM(SUT_Bool, is_metal, 1), // OpenGL only [managed by DirectX Effect framework on DirectX]
+   SHADER_UNIFORM(SUT_Bool, doNormalMapping, 1), // OpenGL only [managed by DirectX Effect framework on DirectX]
+   #else // DirectX 9
+   SHADER_UNIFORM(SUT_Float4v, basicPackedLights, 3),
+   SHADER_UNIFORM(SUT_Float4v, ballPackedLights, 15),
+   #endif
+   SHADER_UNIFORM(SUT_Float, fSceneScale, 1), // VR only
+   SHADER_UNIFORM(SUT_Float4, Roughness_WrapL_Edge_Thickness, 1),
+   SHADER_UNIFORM(SUT_Float4, cBase_Alpha, 1),
+   SHADER_UNIFORM(SUT_Float2, fDisableLighting_top_below, 1),
+   SHADER_UNIFORM(SUT_Float2, fenvEmissionScale_TexWidth, 1),
+   SHADER_UNIFORM(SUT_Float4, cAmbient_LightRange, 1),
+   SHADER_SAMPLER(tex_env, Texture1, SA_REPEAT, SA_CLAMP, SF_TRILINEAR), // environment
+   SHADER_SAMPLER(tex_diffuse_env, Texture2, SA_REPEAT, SA_CLAMP, SF_BILINEAR), // diffuse environment contribution/radiance
+
+   // Basic Shader
+   SHADER_UNIFORM(SUT_Float, fKickerScale, 1),
+   SHADER_UNIFORM(SUT_Float, mirrorFactor, 1),
+   SHADER_UNIFORM(SUT_Float, refractionThickness, 1),
+   SHADER_UNIFORM(SUT_Float4, cClearcoat_EdgeAlpha, 1),
+   SHADER_UNIFORM(SUT_Float4, cGlossy_ImageLerp, 1),
+   SHADER_UNIFORM(SUT_Float3, refractionTint, 1),
+   SHADER_UNIFORM(SUT_Float3, mirrorNormal, 1),
+   SHADER_UNIFORM(SUT_Bool, objectSpaceNormalMap, 1),
+   SHADER_UNIFORM(SUT_Bool, doReflections, 1),
+   SHADER_UNIFORM(SUT_Bool, doRefractions, 1),
+   SHADER_SAMPLER(tex_base_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
+   SHADER_SAMPLER(tex_base_transmission, Texture3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // bulb light/transmission buffer texture
+   SHADER_SAMPLER(tex_base_normalmap, Texture4, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // normal map texture
+   SHADER_SAMPLER(tex_reflection, Texture5, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // plane reflection
+   SHADER_SAMPLER(tex_refraction, Texture6, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // screen space refraction
+   SHADER_SAMPLER(tex_probe_depth, Texture7, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // depth probe
+
+   // Ball Shader
+   SHADER_UNIFORM(SUT_Float4x3, orientation, 1),
+   SHADER_UNIFORM(SUT_Float, RenderBall, 1),
+   SHADER_UNIFORM(SUT_Float4, invTableRes_playfield_height_reflection, 1),
+   SHADER_UNIFORM(SUT_Bool, disableLighting, 1),
+   SHADER_SAMPLER(tex_ball_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
+   SHADER_SAMPLER(tex_ball_playfield, Texture4, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // playfield
+   SHADER_SAMPLER(tex_ball_decal, Texture3, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // ball decal
+
+   // Light Shader
+   SHADER_UNIFORM(SUT_Float, blend_modulate_vs_add, 1),
+   SHADER_UNIFORM(SUT_Float4, lightCenter_maxRange, 1), // Classic and Halo
+   SHADER_UNIFORM(SUT_Float4, lightColor2_falloff_power, 1), // Classic and Halo
+   SHADER_UNIFORM(SUT_Float4, lightColor_intensity, 1), // Classic and Halo
+   SHADER_UNIFORM(SUT_Bool, lightingOff, 1), // Classic only
+   SHADER_SAMPLER(tex_light_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // Classic only
+
+   // DMD Shader
+   SHADER_UNIFORM(SUT_Float4, vRes_Alpha_time, 1),
+   SHADER_UNIFORM(SUT_Float4, backBoxSize, 1),
+   SHADER_UNIFORM(SUT_Float4, vColor_Intensity, 1),
    SHADER_SAMPLER(tex_dmd, Texture0, SA_CLAMP, SA_CLAMP, SF_NONE), // DMD
    SHADER_SAMPLER(tex_sprite, Texture0, SA_MIRROR, SA_MIRROR, SF_TRILINEAR), // Sprite
-   // Flasher shader
+
+   // Flasher Shader
+   SHADER_UNIFORM(SUT_Float4, alphaTestValueAB_filterMode_addBlend, 1),
+   SHADER_UNIFORM(SUT_Float3, amount_blend_modulate_vs_add_flasherMode, 1),
    SHADER_SAMPLER(tex_flasher_A, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
    SHADER_SAMPLER(tex_flasher_B, Texture1, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // texB
-   // FB shader
+
+   // Post Process Shader
+   SHADER_UNIFORM(SUT_Bool, color_grade, 1),
+   SHADER_UNIFORM(SUT_Bool, do_bloom, 1),
+   SHADER_UNIFORM(SUT_Bool, do_dither, 1),
+   SHADER_UNIFORM(SUT_Float4, SSR_bumpHeight_fresnelRefl_scale_FS, 1),
+   SHADER_UNIFORM(SUT_Float2, AO_scale_timeblur, 1),
    SHADER_SAMPLER(tex_fb_unfiltered, Texture0, SA_CLAMP, SA_CLAMP, SF_NONE), // Framebuffer (unfiltered)
    SHADER_SAMPLER(tex_fb_filtered, Texture0, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Framebuffer (filtered)
    SHADER_SAMPLER(tex_bloom, Texture1, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Bloom
@@ -229,29 +254,16 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_SAMPLER(tex_ao, Texture3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // AO Result
    SHADER_SAMPLER(tex_depth, Texture4, SA_CLAMP, SA_CLAMP, SF_NONE), // Depth
    SHADER_SAMPLER(tex_ao_dither, Texture5, SA_REPEAT, SA_REPEAT, SF_NONE), // AO dither
-   // Shared material samplers for Ball, Basic and Classic light shaders
-   SHADER_SAMPLER(tex_env, Texture1, SA_REPEAT, SA_CLAMP, SF_TRILINEAR), // environment
-   SHADER_SAMPLER(tex_diffuse_env, Texture2, SA_REPEAT, SA_CLAMP, SF_BILINEAR), // diffuse environment contribution/radiance
-   // Ball shader
-   SHADER_SAMPLER(tex_ball_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
-   SHADER_SAMPLER(tex_ball_playfield, Texture4, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // playfield
-   SHADER_SAMPLER(tex_ball_decal, Texture3, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // ball decal
-   // Basic shader
-   SHADER_SAMPLER(tex_base_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
-   SHADER_SAMPLER(tex_base_transmission, Texture3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // bulb light/transmission buffer texture
-   SHADER_SAMPLER(tex_base_normalmap, Texture4, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // normal map texture
-   SHADER_SAMPLER(tex_reflection, Texture5, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // plane reflection
-   SHADER_SAMPLER(tex_refraction, Texture6, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // screen space refraction
-   SHADER_SAMPLER(tex_probe_depth, Texture7, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // depth probe
-   // Classic light shader
-   SHADER_SAMPLER(tex_light_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
-   // Stereo shader (VPVR only, combine the 2 rendered eyes into a single one)
-   SHADER_SAMPLER(tex_stereo_fb, Undefined, SA_CLAMP, SA_CLAMP, SF_NONE), // Framebuffer (unfiltered)
-   // SMAA shader
-   SHADER_SAMPLER(edgesTex, edgesTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR),
-   SHADER_SAMPLER(blendTex, blendTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR),
-   SHADER_SAMPLER(areaTex, areaTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR),
-   SHADER_SAMPLER(searchTex, searchTex2D, SA_CLAMP, SA_CLAMP, SF_NONE),
+   SHADER_SAMPLER(edgesTex, edgesTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // SMAA
+   SHADER_SAMPLER(blendTex, blendTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // SMAA
+   SHADER_SAMPLER(areaTex, areaTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // SMAA
+   SHADER_SAMPLER(searchTex, searchTex2D, SA_CLAMP, SA_CLAMP, SF_NONE), // SMAA
+   SHADER_UNIFORM(SUT_Float4, ms_zpd_ya_td, 1), // Anaglyph Stereo
+   SHADER_UNIFORM(SUT_Float2, Anaglyph_DeSaturation_Contrast, 1), // Anaglyph Stereo
+   #ifdef ENABLE_SDL // OpenGL
+   SHADER_UNIFORM(SUT_Float, eye, 1), // For stereo shader
+   SHADER_SAMPLER(tex_stereo_fb, Undefined, SA_CLAMP, SA_CLAMP, SF_NONE), // Stereo shader (combine the 2 rendered eyes into a single one)
+   #endif
 };
 #undef SHADER_UNIFORM
 #undef SHADER_SAMPLER
@@ -261,8 +273,7 @@ ShaderUniforms Shader::getUniformByName(const string& name)
    for (int i = 0; i < SHADER_UNIFORM_COUNT; ++i)
       if (name == shaderUniformNames[i].name)
          return (ShaderUniforms)i;
-
-   LOG(1, m_shaderCodeName, string("getUniformByName Could not find uniform ").append(name).append(" in shaderUniformNames."));
+   PLOGE << "[" << m_shaderCodeName << "] getUniformByName Could not find uniform " << name << " in shaderUniformNames";
    return SHADER_UNIFORM_INVALID;
 }
 
@@ -287,8 +298,7 @@ ShaderAttributes Shader::getAttributeByName(const string& name)
    for (int i = 0; i < SHADER_ATTRIBUTE_COUNT; ++i)
       if (name == shaderAttributeNames[i])
          return ShaderAttributes(i);
-
-   LOG(1, m_shaderCodeName, string("getAttributeByName Could not find attribute ").append(name).append(" in shaderAttributeNames."));
+   PLOGE << "[" << m_shaderCodeName << "] getAttributeByName Could not find attribute " << name << " in shaderAttributeNames";
    return SHADER_ATTRIBUTE_INVALID;
 }
 
@@ -300,6 +310,23 @@ Shader::Shader(RenderDevice* renderDevice)
       -FLT_MAX, -FLT_MAX, 0xCCCCCCCC)
    , m_renderDevice(renderDevice)
 {
+   #ifdef ENABLE_SDL
+   if (renderDevice->m_stereo3D != STEREO_OFF)
+   {
+      shaderUniformNames[SHADER_matWorldViewProj].count = 2;
+      shaderUniformNames[SHADER_basicMatrixBlock].count = 6 * 16 * 4;
+      shaderUniformNames[SHADER_ballMatrixBlock].count = 5 * 16 * 4;
+      shaderUniformNames[SHADER_clip_planes].count = 2;
+   }
+   else
+   {
+      shaderUniformNames[SHADER_matWorldViewProj].count = 1;
+      shaderUniformNames[SHADER_basicMatrixBlock].count = 5 * 16 * 4;
+      shaderUniformNames[SHADER_ballMatrixBlock].count = 4 * 16 * 4;
+      shaderUniformNames[SHADER_clip_planes].count = 1;
+   }
+   #endif
+
    m_technique = SHADER_TECHNIQUE_INVALID;
    memset(m_uniformCache, 0, sizeof(UniformCache) * SHADER_UNIFORM_COUNT * (SHADER_TECHNIQUE_COUNT + 1));
    memset(m_isCacheValid, 0, sizeof(bool) * SHADER_TECHNIQUE_COUNT);
@@ -673,22 +700,30 @@ uint32_t Shader::CopyUniformCache(const bool copyTo, const ShaderTechniques tech
    return sampler_hash;
 }
 
-void Shader::SetMatrix(const ShaderUniforms hParameter, const Matrix3D* pMatrix)
+void Shader::SetMatrix(const ShaderUniforms uniformName, const float* pMatrix)
 {
-   assert(0 <= hParameter && hParameter < SHADER_UNIFORM_COUNT);
-   UniformCache* elem = &m_uniformCache[SHADER_TECHNIQUE_COUNT][hParameter];
-   assert(elem->count == 0);
-   memcpy(elem->val.fv, pMatrix->m, 16 * sizeof(float));
-   ApplyUniform(hParameter);
-}
-
-void Shader::SetMatrix(const ShaderUniforms hParameter, const D3DXMATRIX* pMatrix)
-{
-   assert(0 <= hParameter && hParameter < SHADER_UNIFORM_COUNT);
-   UniformCache* elem = &m_uniformCache[SHADER_TECHNIQUE_COUNT][hParameter];
-   assert(elem->count == 0);
-   memcpy(elem->val.fv, pMatrix->m, 16 * sizeof(float));
-   ApplyUniform(hParameter);
+   assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+   ShaderUniform desc = shaderUniformNames[uniformName];
+   UniformCache* elem = &m_uniformCache[SHADER_TECHNIQUE_COUNT][uniformName];
+   if (desc.count > 1)
+   {
+      if (elem->count == 0)
+      {
+         elem->count = desc.count * 16 * sizeof(float);
+         elem->val.data = malloc(elem->count);
+      }
+      else
+      {
+         assert(elem->count == desc.count * 16 * sizeof(float));
+      }
+      memcpy(elem->val.data, pMatrix, desc.count * 16 * sizeof(float));
+   }
+   else
+   {
+      assert(elem->count == 0);
+      memcpy(elem->val.fv, pMatrix, 16 * sizeof(float));
+   }
+   ApplyUniform(uniformName);
 }
 
 void Shader::SetVector(const ShaderUniforms hParameter, const vec4* pVector)
@@ -789,20 +824,20 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    UniformCache* src = &(m_uniformCache[SHADER_TECHNIQUE_COUNT][uniformName]);
 #ifdef ENABLE_SDL
    // For OpenGL uniform binding state is per technique (i.e. program)
-   auto desc = m_techniques[m_technique]->uniform_desc[uniformName];
+   UniformDesc desc = m_techniques[m_technique]->uniform_desc[uniformName];
    UniformCache* dst = &(m_uniformCache[m_technique][uniformName]);
    if (desc.location < 0)
       return;
 #else
    // For DX9 Effect framework uniform binding state is per shader, so we only use the first array
-   auto desc = m_uniform_desc[uniformName];
+   UniformDesc desc = m_uniform_desc[uniformName];
    UniformCache* dst = &(m_uniformCache[0][uniformName]);
 #endif
    switch (desc.uniform.type)
    {
    case SUT_DataBlock: // Uniform blocks
       #ifdef ENABLE_SDL
-      assert(src->count == 0 || src->count == desc.count);
+      assert(src->count == 0 || src->count == desc.uniform.count);
       if (isCacheInvalid || dst->count != src->count || memcmp(src->val.data, dst->val.data, src->count) != 0)
       {
          if (dst->count == 0)
@@ -814,6 +849,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          glBindBuffer(GL_UNIFORM_BUFFER, desc.blockBuffer);
          glBufferData(GL_UNIFORM_BUFFER, src->count, src->val.data, GL_STREAM_DRAW);
          m_renderDevice->m_curParameterChanges++;
+         //glUniform4fv(desc.location, desc.uniform.count / (4 * sizeof(float)), (float*)src->val.data);
       }
       glUniformBlockBinding(m_techniques[m_technique]->program, desc.location, 0);
       glBindBufferRange(GL_UNIFORM_BUFFER, 0, desc.blockBuffer, 0, src->count);
@@ -900,7 +936,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
       }
       break;
    case SUT_Float4v:
-      assert(src->count == 0 || src->count == desc.count * 4 * sizeof(float));
+      assert(src->count == 0 || src->count == desc.uniform.count * 4 * sizeof(float));
       if ((src->count != 0) && (isCacheInvalid || dst->count == 0 || memcmp(src->val.data, dst->val.data, src->count) != 0))
       {
          if (dst->count == 0)
@@ -910,9 +946,9 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          }
          memcpy(dst->val.data, src->val.data, src->count);
          #ifdef ENABLE_SDL
-         glUniform4fv(desc.location, desc.count, (float*) src->val.data);
+         glUniform4fv(desc.location, desc.uniform.count, (float*)src->val.data);
          #else
-         CHECKD3D(m_shader->SetFloatArray(desc.handle, (float*) src->val.data, desc.count * 4));
+         CHECKD3D(m_shader->SetFloatArray(desc.handle, (float*) src->val.data, desc.uniform.count * 4));
          #endif
          m_renderDevice->m_curParameterChanges++;
       }
@@ -920,16 +956,38 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    case SUT_Float3x4:
    case SUT_Float4x3:
    case SUT_Float4x4:
-      assert(src->count == 0);
-      if (isCacheInvalid || memcmp(src->val.fv, dst->val.fv, 4 * 4 * sizeof(float)) != 0)
+      if (desc.uniform.count == 1)
       {
-         memcpy(dst->val.fv, src->val.fv, 4 * 4 * sizeof(float));
+         assert(src->count == 0);
+         if (isCacheInvalid || memcmp(src->val.fv, dst->val.fv, 4 * 4 * sizeof(float)) != 0)
+         {
+            memcpy(dst->val.fv, src->val.fv, 4 * 4 * sizeof(float));
+            #ifdef ENABLE_SDL
+            glUniformMatrix4fv(desc.location, 1, GL_FALSE, src->val.fv);
+            #else
+            /*CHECKD3D(*/ m_shader->SetMatrix(desc.handle, (D3DXMATRIX*) src->val.fv) /*)*/; // leads to invalid calls when setting some of the matrices (as hlsl compiler optimizes some down to less than 4x4)
+            #endif
+            m_renderDevice->m_curParameterChanges++;
+         }
+      }
+      else
+      {
          #ifdef ENABLE_SDL
-         glUniformMatrix4fv(desc.location, 1, GL_FALSE, src->val.fv);
+         assert(src->count == 0 || src->count == desc.uniform.count * 16 * sizeof(float));
+         if (isCacheInvalid || dst->count != src->count || memcmp(src->val.data, dst->val.data, src->count) != 0)
+         {
+            if (dst->count == 0)
+            {
+               dst->count = src->count;
+               dst->val.data = malloc(src->count);
+            }
+            memcpy(dst->val.data, src->val.data, src->count);
+            m_renderDevice->m_curParameterChanges++;
+            glUniformMatrix4fv(desc.location, desc.uniform.count, GL_FALSE, (GLfloat*)src->val.data);
+         }
          #else
-         /*CHECKD3D(*/ m_shader->SetMatrix(desc.handle, (D3DXMATRIX*) src->val.fv) /*)*/; // leads to invalid calls when setting some of the matrices (as hlsl compiler optimizes some down to less than 4x4)
+         assert(false); // Unsupported on DX9
          #endif
-         m_renderDevice->m_curParameterChanges++;
       }
       break;
 #ifndef ENABLE_SDL
@@ -1306,13 +1364,13 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
       string gs_name = shaderCodeName + ".GS"s;
       string fs_name = shaderCodeName + ".FS"s;
       if (shaderprogram > 0)
-         glObjectLabel(GL_PROGRAM, shaderprogram, shaderCodeName.length(), shaderCodeName.c_str());
+         glObjectLabel(GL_PROGRAM, shaderprogram, (GLsizei) shaderCodeName.length(), shaderCodeName.c_str());
       if (vertexShader > 0)
-         glObjectLabel(GL_SHADER, vertexShader, vs_name.length(), vs_name.c_str());
+         glObjectLabel(GL_SHADER, vertexShader, (GLsizei) vs_name.length(), vs_name.c_str());
       if (geometryShader > 0) 
-         glObjectLabel(GL_SHADER, geometryShader, gs_name.length(), gs_name.c_str());
+         glObjectLabel(GL_SHADER, geometryShader, (GLsizei) gs_name.length(), gs_name.c_str());
       if (fragmentShader > 0)
-         glObjectLabel(GL_SHADER, fragmentShader, fs_name.length(), fs_name.c_str());
+         glObjectLabel(GL_SHADER, fragmentShader, (GLsizei) fs_name.length(), fs_name.c_str());
    }
 
    if ((WRITE_SHADER_FILES == 2) || ((WRITE_SHADER_FILES == 1) && !success))
@@ -1342,8 +1400,6 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
    if (success) {
       shader = new ShaderTechnique { -1, shaderCodeName };
       shader->program = shaderprogram;
-      for (int i = 0; i < SHADER_ATTRIBUTE_COUNT; ++i)
-         shader->attributeLocation[i] = { 0, -1, 0 };
       for (int i = 0; i < SHADER_UNIFORM_COUNT; ++i)
          shader->uniform_desc[i].location = -1;
 
@@ -1382,8 +1438,8 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
                assert(uniform.type != SUT_Float4x4 || type == GL_FLOAT_MAT4);
                assert(uniform.type != SUT_DataBlock); // Unused so unimplemented
                assert(uniform.type != SUT_Sampler || type == GL_SAMPLER_2D);
+               assert(uniform.count == size);
                shader->uniform_desc[uniformIndex].uniform = uniform;
-               shader->uniform_desc[uniformIndex].count = size;
                shader->uniform_desc[uniformIndex].location = location;
                if (shaderUniformNames[uniformIndex].type == SUT_Sampler)
                {
@@ -1416,45 +1472,12 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
             {
                auto uniform = shaderUniformNames[uniformIndex];
                assert(uniform.type == ShaderUniformType::SUT_DataBlock);
+               assert(uniform.count == size);
                shader->uniform_desc[uniformIndex].uniform = uniform;
-               shader->uniform_desc[uniformIndex].count = size;
                shader->uniform_desc[uniformIndex].location = location;
                glGenBuffers(1, &shader->uniform_desc[uniformIndex].blockBuffer);
                m_uniforms[technique].push_back(uniformIndex);
             }
-         }
-      }
-
-      glGetProgramiv(shaderprogram, GL_ACTIVE_ATTRIBUTES, &count);
-      for (int i = 0; i < SHADER_ATTRIBUTE_COUNT; ++i)
-         shader->attributeLocation[i] = { 0, -1, 0};
-      for (int i = 0;i < count;++i) {
-         GLenum type;
-         int size;
-         int length;
-         char attributeName[256];
-         glGetActiveAttrib(shader->program, (GLuint)i, 256, &length, &size, &type, attributeName);
-         int location = glGetAttribLocation(shader->program, attributeName);
-         if (location >= 0) {
-            attributeLoc newLoc = {};
-            newLoc.location = location;
-            newLoc.type = type;
-            switch (type) {
-            case GL_FLOAT_VEC2:
-               newLoc.size = 2 * size;
-               break;
-            case GL_FLOAT_VEC3:
-               newLoc.size = 3 * size;
-               break;
-            case GL_FLOAT_VEC4:
-               newLoc.size = 4 * size;
-               break;
-            default:
-               newLoc.size = size;
-               break;
-            }
-            auto index = getAttributeByName(attributeName);
-            if (index < SHADER_ATTRIBUTE_COUNT) shader->attributeLocation[index] = newLoc;
          }
       }
    }
@@ -1610,48 +1633,18 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
    return true;
 }
 
-void Shader::setAttributeFormat(DWORD fvf)
+void Shader::SetUniformBlock(const ShaderUniforms uniformName, const float* pMatrix)
 {
-   if (m_technique == SHADER_TECHNIQUE_INVALID)
-      return;
-   for (int i = 0; i < SHADER_ATTRIBUTE_COUNT; ++i)
-   {
-      const int location = m_techniques[m_technique]->attributeLocation[i].location;
-      if (location >= 0) {
-         size_t offset;
-         glEnableVertexAttribArray(location);
-         switch (i) {
-         case SHADER_ATTRIBUTE_POS:
-            offset = 0;
-            break;
-         case SHADER_ATTRIBUTE_NORM:
-            offset = 12;
-            break;
-         case SHADER_ATTRIBUTE_TC:
-         case SHADER_ATTRIBUTE_TEX:
-            offset = (fvf == VertexFormat::VF_POS_TEX) ? 12 : 24;
-            break;
-         default:
-            ReportError("Unknown Attribute", 666, __FILE__, __LINE__);
-            offset = 0;
-            break;
-         }
-         glVertexAttribPointer(location, m_techniques[m_technique]->attributeLocation[i].size, GL_FLOAT, GL_FALSE, (fvf == VertexFormat::VF_POS_TEX) ? 20 : 32, (void*)offset);
-      }
-   }
-}
-
-void Shader::SetUniformBlock(const ShaderUniforms hParameter, const float* pMatrix, const size_t size)
-{
-   if (hParameter >= SHADER_UNIFORM_COUNT) return;
-   UniformCache* elem = &m_uniformCache[SHADER_TECHNIQUE_COUNT][hParameter];
+   assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+   ShaderUniform desc = shaderUniformNames[uniformName];
+   UniformCache* elem = &m_uniformCache[SHADER_TECHNIQUE_COUNT][uniformName];
    if (elem->count == 0)
    {
-      elem->count = size;
-      elem->val.data = malloc(size);
+      elem->count = desc.count;
+      elem->val.data = malloc(desc.count);
    }
-   memcpy(elem->val.data, pMatrix, size);
-   ApplyUniform(hParameter);
+   memcpy(elem->val.data, pMatrix, desc.count);
+   ApplyUniform(uniformName);
 }
 
 #else
@@ -1779,10 +1772,10 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
       {
          auto uniform = shaderUniformNames[uniformIndex];
          assert(uniform.type == type);
+         assert(uniform.count == count);
          m_uniform_desc[uniformIndex].uniform = uniform;
          m_uniform_desc[uniformIndex].handle = parameter;
          m_uniform_desc[uniformIndex].tex_handle = nullptr;
-         m_uniform_desc[uniformIndex].count = count;
          m_uniform_desc[uniformIndex].sampler = -1;
          if (type == ShaderUniformType::SUT_Sampler)
          {

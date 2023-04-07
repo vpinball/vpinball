@@ -10,11 +10,15 @@
 
 #ifdef GLSL
 #if iLightPointBallsNum == iLightPointNum // basic shader
-uniform vec4 lightPos[iLightPointNum];
-uniform vec4 lightEmission[iLightPointNum];
-#else
-uniform vec4 lightPos[iLightPointBallsNum];
-uniform vec4 lightEmission[iLightPointBallsNum];
+uniform vec4 basicLightPos[iLightPointNum];
+uniform vec4 basicLightEmission[iLightPointNum];
+#define lightPos basicLightPos
+#define lightEmission basicLightEmission
+#else // ball shader
+uniform vec4 ballLightPos[iLightPointBallsNum];
+uniform vec4 ballLightEmission[iLightPointBallsNum];
+#define lightPos ballLightPos
+#define lightEmission ballLightEmission
 #endif
 
 #else // HLSL
@@ -24,11 +28,13 @@ struct CLight
    float3 vEmission;
 };
 #if iLightPointBallsNum == iLightPointNum // basic shader
-const float4 packedLights[3]; //!! 4x3 = NUM_LIGHTSx6
-static const CLight lights[iLightPointBallsNum] = (CLight[iLightPointBallsNum])packedLights;
-#else                                     // ball shader
-const float4 packedLights[15]; //!! 4x15 = (NUM_LIGHTS+NUM_BALL_LIGHTS)x6
-static const CLight lights[iLightPointBallsNum] = (CLight[iLightPointBallsNum])packedLights;
+const float4 basicPackedLights[3]; //!! 4x3 = NUM_LIGHTSx6
+static const CLight lights[iLightPointBallsNum] = (CLight[iLightPointBallsNum])basicPackedLights;
+#define packedLights basicPackedLights
+#else // ball shader
+const float4 ballPackedLights[15]; //!! 4x15 = (NUM_LIGHTS+NUM_BALL_LIGHTS)x6
+static const CLight lights[iLightPointBallsNum] = (CLight[iLightPointBallsNum])ballPackedLights;
+#define packedLights ballPackedLights
 #endif
 #endif
 

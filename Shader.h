@@ -149,81 +149,106 @@ enum ShaderUniformType
 // Samplers defines how to sample a texture. For DX9, they are defined in the effect files, only the texture reference is set through the API.
 // Otherwise, the sampler states can be directly overriden through DX9Device->SetSamplerState (per tex unit), being carefull that the effect
 // framework will also apply the ones defined in the effect file during Technique->Begin call (so either don't define them, or reapply).
-#define SHADER_UNIFORM(type, name) SHADER_##name
+#define SHADER_UNIFORM(type, name, count) SHADER_##name
 #define SHADER_SAMPLER(name, tex_name, default_clampu, default_clampv, default_filter) SHADER_##name
 enum ShaderUniforms
 {
-   // -- Matrices --
-   SHADER_UNIFORM(SUT_DataBlock, matrixBlock), // OpenGL only, matrices as a float block
-   SHADER_UNIFORM(SUT_Float4x4, matWorld), // DX9 only
-   SHADER_UNIFORM(SUT_Float4x3, matView), // DX9 only
-   SHADER_UNIFORM(SUT_Float4x4, matProj),
-   SHADER_UNIFORM(SUT_Float4x4, matWorldViewProj), // DX9 only
-   SHADER_UNIFORM(SUT_Float4x4, matWorldView), // DX9 only
-   SHADER_UNIFORM(SUT_Float4x3, matWorldViewInverse), // DX9 only
-   SHADER_UNIFORM(SUT_Float3x4, matWorldViewInverseTranspose), // DX9 only
-   SHADER_UNIFORM(SUT_Float4x3, orientation),
-   // -- Floats --
-   SHADER_UNIFORM(SUT_Float, RenderBall),
-   SHADER_UNIFORM(SUT_Float, blend_modulate_vs_add),
-   SHADER_UNIFORM(SUT_Float, alphaTestValue),
-   SHADER_UNIFORM(SUT_Float, eye),
-   SHADER_UNIFORM(SUT_Float, fKickerScale),
-   SHADER_UNIFORM(SUT_Float, fSceneScale), // OpenGL only (VR only)
-   SHADER_UNIFORM(SUT_Float, mirrorFactor),
-   SHADER_UNIFORM(SUT_Float, refractionThickness),
-   // -- Vectors and Float Arrays --
-   SHADER_UNIFORM(SUT_Float4, Roughness_WrapL_Edge_Thickness),
-   SHADER_UNIFORM(SUT_Float4, cBase_Alpha),
-   SHADER_UNIFORM(SUT_Float4, lightCenter_doShadow),
-   SHADER_UNIFORM(SUT_Float4, lightCenter_maxRange),
-   SHADER_UNIFORM(SUT_Float4, lightColor2_falloff_power),
-   SHADER_UNIFORM(SUT_Float4, lightColor_intensity),
-   SHADER_UNIFORM(SUT_Float2, fenvEmissionScale_TexWidth),
-   SHADER_UNIFORM(SUT_Float4, invTableRes_playfield_height_reflection),
-   SHADER_UNIFORM(SUT_Float4, cAmbient_LightRange),
-   SHADER_UNIFORM(SUT_Float4, cClearcoat_EdgeAlpha),
-   SHADER_UNIFORM(SUT_Float4, cGlossy_ImageLerp),
-   SHADER_UNIFORM(SUT_Float3, refractionTint),
-   SHADER_UNIFORM(SUT_Float2, fDisableLighting_top_below),
-   SHADER_UNIFORM(SUT_Float4, backBoxSize),
-   SHADER_UNIFORM(SUT_Float4, vColor_Intensity),
-   SHADER_UNIFORM(SUT_Float4, w_h_height),
-   SHADER_UNIFORM(SUT_Float4, alphaTestValueAB_filterMode_addBlend),
-   SHADER_UNIFORM(SUT_Float3, amount_blend_modulate_vs_add_flasherMode),
-   SHADER_UNIFORM(SUT_Float4, staticColor_Alpha),
-   SHADER_UNIFORM(SUT_Float4, ms_zpd_ya_td),
-   SHADER_UNIFORM(SUT_Float2, Anaglyph_DeSaturation_Contrast),
-   SHADER_UNIFORM(SUT_Float4, vRes_Alpha_time),
-   SHADER_UNIFORM(SUT_Float4, SSR_bumpHeight_fresnelRefl_scale_FS),
-   SHADER_UNIFORM(SUT_Float2, AO_scale_timeblur),
-   SHADER_UNIFORM(SUT_Float3, mirrorNormal),
-   SHADER_UNIFORM(SUT_Float4v, balls),
-   SHADER_UNIFORM(SUT_Float4v, clip_planes), // OpenGL only
-   SHADER_UNIFORM(SUT_Float4v, lightEmission), // OpenGL only
-   SHADER_UNIFORM(SUT_Float4v, lightPos), // OpenGL only
-   SHADER_UNIFORM(SUT_Float4v, packedLights), // DX9 only
-   // -- Integer and Bool --
-   SHADER_UNIFORM(SUT_Bool, ignoreStereo),
-   SHADER_UNIFORM(SUT_Bool, disableLighting),
-   SHADER_UNIFORM(SUT_Int, lightSources),
-   SHADER_UNIFORM(SUT_Bool, color_grade),
-   SHADER_UNIFORM(SUT_Bool, do_bloom),
-   SHADER_UNIFORM(SUT_Bool, objectSpaceNormalMap),
-   SHADER_UNIFORM(SUT_Bool, do_dither),
-   SHADER_UNIFORM(SUT_Bool, doReflections),
-   SHADER_UNIFORM(SUT_Bool, doRefractions),
-   SHADER_UNIFORM(SUT_Bool, lightingOff),
-   SHADER_UNIFORM(SUT_Bool, is_metal), // OpenGL only [managed by DirectX Effect framework on DirectX]
-   SHADER_UNIFORM(SUT_Bool, doNormalMapping), // OpenGL only [managed by DirectX Effect framework on DirectX]
-   // -- Samplers (a texture reference with sampling configuration) --
-   // DMD shader
+   // Shared uniforms
+   SHADER_UNIFORM(SUT_Float, alphaTestValue, 1),
+   SHADER_UNIFORM(SUT_Float4x4, matProj, 1),
+   SHADER_UNIFORM(SUT_Float4x4, matWorldViewProj, 1), // +1 Matrix for stereo
+   #ifdef ENABLE_SDL // OpenGL
+   SHADER_UNIFORM(SUT_DataBlock, basicMatrixBlock, 5 * 16 * 4), // +1 Matrix for stereo
+   SHADER_UNIFORM(SUT_DataBlock, ballMatrixBlock, 4 * 16 * 4), // +1 Matrix for stereo
+   SHADER_UNIFORM(SUT_Bool, ignoreStereo, 1), // Force single invocation for bulb light buffer in OpenGL
+   #else // DirectX 9
+   SHADER_UNIFORM(SUT_Float4x4, matWorld, 1),
+   SHADER_UNIFORM(SUT_Float4x3, matView, 1),
+   SHADER_UNIFORM(SUT_Float4x4, matWorldView, 1),
+   SHADER_UNIFORM(SUT_Float4x3, matWorldViewInverse, 1),
+   SHADER_UNIFORM(SUT_Float3x4, matWorldViewInverseTranspose, 1),
+   #endif
+   SHADER_UNIFORM(SUT_Float4, lightCenter_doShadow, 1), // Basic & Flasher (for ball shadows)
+   SHADER_UNIFORM(SUT_Float4v, balls, 8), // Basic & Flasher (for ball shadows)
+   SHADER_UNIFORM(SUT_Float4, staticColor_Alpha, 1), // Basic & Flasher
+   SHADER_UNIFORM(SUT_Float4, w_h_height, 1), // Post process & Basic (for screen space reflection/refraction)
+
+   // Shared material for Ball, Basic and Classic light shaders
+   #ifdef ENABLE_SDL // OpenGL
+   SHADER_UNIFORM(SUT_Float4v, clip_planes, 1), // +1 Matrix for stereo
+   SHADER_UNIFORM(SUT_Float4v, basicLightEmission, 2),
+   SHADER_UNIFORM(SUT_Float4v, basicLightPos, 2),
+   SHADER_UNIFORM(SUT_Float4v, ballLightEmission, 10),
+   SHADER_UNIFORM(SUT_Float4v, ballLightPos, 10),
+   SHADER_UNIFORM(SUT_Bool, is_metal, 1), // OpenGL only [managed by DirectX Effect framework on DirectX]
+   SHADER_UNIFORM(SUT_Bool, doNormalMapping, 1), // OpenGL only [managed by DirectX Effect framework on DirectX]
+   #else // DirectX 9
+   SHADER_UNIFORM(SUT_Float4v, basicPackedLights, 3),
+   SHADER_UNIFORM(SUT_Float4v, ballPackedLights, 15),
+   #endif
+   SHADER_UNIFORM(SUT_Float, fSceneScale, 1), // VR only
+   SHADER_UNIFORM(SUT_Float4, Roughness_WrapL_Edge_Thickness, 1),
+   SHADER_UNIFORM(SUT_Float4, cBase_Alpha, 1),
+   SHADER_UNIFORM(SUT_Float2, fDisableLighting_top_below, 1),
+   SHADER_UNIFORM(SUT_Float2, fenvEmissionScale_TexWidth, 1),
+   SHADER_UNIFORM(SUT_Float4, cAmbient_LightRange, 1),
+   SHADER_SAMPLER(tex_env, Texture1, SA_REPEAT, SA_CLAMP, SF_TRILINEAR), // environment
+   SHADER_SAMPLER(tex_diffuse_env, Texture2, SA_REPEAT, SA_CLAMP, SF_BILINEAR), // diffuse environment contribution/radiance
+
+   // Basic Shader
+   SHADER_UNIFORM(SUT_Float, fKickerScale, 1),
+   SHADER_UNIFORM(SUT_Float, mirrorFactor, 1),
+   SHADER_UNIFORM(SUT_Float, refractionThickness, 1),
+   SHADER_UNIFORM(SUT_Float4, cClearcoat_EdgeAlpha, 1),
+   SHADER_UNIFORM(SUT_Float4, cGlossy_ImageLerp, 1),
+   SHADER_UNIFORM(SUT_Float3, refractionTint, 1),
+   SHADER_UNIFORM(SUT_Float3, mirrorNormal, 1),
+   SHADER_UNIFORM(SUT_Bool, objectSpaceNormalMap, 1),
+   SHADER_UNIFORM(SUT_Bool, doReflections, 1),
+   SHADER_UNIFORM(SUT_Bool, doRefractions, 1),
+   SHADER_SAMPLER(tex_base_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
+   SHADER_SAMPLER(tex_base_transmission, Texture3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // bulb light/transmission buffer texture
+   SHADER_SAMPLER(tex_base_normalmap, Texture4, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // normal map texture
+   SHADER_SAMPLER(tex_reflection, Texture5, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // plane reflection
+   SHADER_SAMPLER(tex_refraction, Texture6, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // screen space refraction
+   SHADER_SAMPLER(tex_probe_depth, Texture7, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // depth probe
+
+   // Ball Shader
+   SHADER_UNIFORM(SUT_Float4x3, orientation, 1),
+   SHADER_UNIFORM(SUT_Float, RenderBall, 1),
+   SHADER_UNIFORM(SUT_Float4, invTableRes_playfield_height_reflection, 1),
+   SHADER_UNIFORM(SUT_Bool, disableLighting, 1),
+   SHADER_SAMPLER(tex_ball_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
+   SHADER_SAMPLER(tex_ball_playfield, Texture4, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // playfield
+   SHADER_SAMPLER(tex_ball_decal, Texture3, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // ball decal
+
+   // Light Shader
+   SHADER_UNIFORM(SUT_Float, blend_modulate_vs_add, 1),
+   SHADER_UNIFORM(SUT_Float4, lightCenter_maxRange, 1), // Classic and Halo
+   SHADER_UNIFORM(SUT_Float4, lightColor2_falloff_power, 1), // Classic and Halo
+   SHADER_UNIFORM(SUT_Float4, lightColor_intensity, 1), // Classic and Halo
+   SHADER_UNIFORM(SUT_Bool, lightingOff, 1), // Classic only
+   SHADER_SAMPLER(tex_light_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // Classic only
+
+   // DMD Shader
+   SHADER_UNIFORM(SUT_Float4, vRes_Alpha_time, 1),
+   SHADER_UNIFORM(SUT_Float4, backBoxSize, 1),
+   SHADER_UNIFORM(SUT_Float4, vColor_Intensity, 1),
    SHADER_SAMPLER(tex_dmd, Texture0, SA_CLAMP, SA_CLAMP, SF_NONE), // DMD
    SHADER_SAMPLER(tex_sprite, Texture0, SA_MIRROR, SA_MIRROR, SF_TRILINEAR), // Sprite
-   // Flasher shader
+
+   // Flasher Shader
+   SHADER_UNIFORM(SUT_Float4, alphaTestValueAB_filterMode_addBlend, 1),
+   SHADER_UNIFORM(SUT_Float3, amount_blend_modulate_vs_add_flasherMode, 1),
    SHADER_SAMPLER(tex_flasher_A, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
    SHADER_SAMPLER(tex_flasher_B, Texture1, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // texB
-   // FB shader
+
+   // Post Process Shader
+   SHADER_UNIFORM(SUT_Bool, color_grade, 1),
+   SHADER_UNIFORM(SUT_Bool, do_bloom, 1),
+   SHADER_UNIFORM(SUT_Bool, do_dither, 1),
+   SHADER_UNIFORM(SUT_Float4, SSR_bumpHeight_fresnelRefl_scale_FS, 1),
+   SHADER_UNIFORM(SUT_Float2, AO_scale_timeblur, 1),
    SHADER_SAMPLER(tex_fb_unfiltered, Texture0, SA_CLAMP, SA_CLAMP, SF_NONE), // Framebuffer (unfiltered)
    SHADER_SAMPLER(tex_fb_filtered, Texture0, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Framebuffer (filtered)
    SHADER_SAMPLER(tex_bloom, Texture1, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Bloom
@@ -231,29 +256,17 @@ enum ShaderUniforms
    SHADER_SAMPLER(tex_ao, Texture3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // AO Result
    SHADER_SAMPLER(tex_depth, Texture4, SA_CLAMP, SA_CLAMP, SF_NONE), // Depth
    SHADER_SAMPLER(tex_ao_dither, Texture5, SA_REPEAT, SA_REPEAT, SF_NONE), // AO dither
-   // Shared material samplers for Ball, Basic and Classic light shaders
-   SHADER_SAMPLER(tex_env, Texture1, SA_REPEAT, SA_CLAMP, SF_TRILINEAR), // environment
-   SHADER_SAMPLER(tex_diffuse_env, Texture2, SA_REPEAT, SA_CLAMP, SF_BILINEAR), // diffuse environment contribution/radiance
-   // Ball shader
-   SHADER_SAMPLER(tex_ball_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
-   SHADER_SAMPLER(tex_ball_playfield, Texture4, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // playfield
-   SHADER_SAMPLER(tex_ball_decal, Texture3, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // ball decal
-   // Basic shader
-   SHADER_SAMPLER(tex_base_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
-   SHADER_SAMPLER(tex_base_transmission, Texture3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // bulb light/transmission buffer texture
-   SHADER_SAMPLER(tex_base_normalmap, Texture4, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // normal map texture
-   SHADER_SAMPLER(tex_reflection, Texture5, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // plane reflection
-   SHADER_SAMPLER(tex_refraction, Texture6, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // screen space refraction
-   SHADER_SAMPLER(tex_probe_depth, Texture7, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // depth probe
-   // Classic light shader
-   SHADER_SAMPLER(tex_light_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
-   // Stereo shader (VPVR only, combine the 2 rendered eyes into a single one)
-   SHADER_SAMPLER(tex_stereo_fb, Undefined, SA_CLAMP, SA_CLAMP, SF_NONE), // Framebuffer (unfiltered)
-   // SMAA shader
-   SHADER_SAMPLER(edgesTex, edgesTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR),
-   SHADER_SAMPLER(blendTex, blendTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR),
-   SHADER_SAMPLER(areaTex, areaTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR),
-   SHADER_SAMPLER(searchTex, searchTex2D, SA_CLAMP, SA_CLAMP, SF_NONE),
+   SHADER_SAMPLER(edgesTex, edgesTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // SMAA
+   SHADER_SAMPLER(blendTex, blendTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // SMAA
+   SHADER_SAMPLER(areaTex, areaTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // SMAA
+   SHADER_SAMPLER(searchTex, searchTex2D, SA_CLAMP, SA_CLAMP, SF_NONE), // SMAA
+   SHADER_UNIFORM(SUT_Float4, ms_zpd_ya_td, 1), // Anaglyph Stereo
+   SHADER_UNIFORM(SUT_Float2, Anaglyph_DeSaturation_Contrast, 1), // Anaglyph Stereo
+   #ifdef ENABLE_SDL // OpenGL
+   SHADER_UNIFORM(SUT_Float, eye, 1), // For stereo shader
+   SHADER_SAMPLER(tex_stereo_fb, Undefined, SA_CLAMP, SA_CLAMP, SF_NONE), // Stereo shader (combine the 2 rendered eyes into a single one)
+   #endif
+
    SHADER_UNIFORM_COUNT,
    SHADER_UNIFORM_INVALID
 };
@@ -308,15 +321,16 @@ public:
    void SetTechniqueMetal(ShaderTechniques technique, const Material& mat, const bool doNormalMapping = false, const bool doReflection = false, const bool doRefraction = false);
    ShaderTechniques GetCurrentTechnique() { return m_technique; }
 
-   void SetMatrix(const ShaderUniforms hParameter, const D3DXMATRIX* pMatrix);
-   void SetMatrix(const ShaderUniforms hParameter, const Matrix3D* pMatrix);
+   void SetMatrix(const ShaderUniforms uniformName, const D3DXMATRIX* pMatrix) { SetMatrix(uniformName, &(pMatrix->m[0][0])); }
+   void SetMatrix(const ShaderUniforms uniformName, const Matrix3D* pMatrix) { SetMatrix(uniformName, &(pMatrix->m[0][0])); }
+   void SetMatrix(const ShaderUniforms uniformName, const float* pMatrix);
    void SetVector(const ShaderUniforms hParameter, const vec4* pVector);
    void SetVector(const ShaderUniforms hParameter, const float x, const float y, const float z, const float w);
    void SetFloat(const ShaderUniforms hParameter, const float f);
    void SetInt(const ShaderUniforms hParameter, const int i);
    void SetBool(const ShaderUniforms hParameter, const bool b);
    void SetFloat4v(const ShaderUniforms hParameter, const vec4* pData, const unsigned int count);
-   void SetUniformBlock(const ShaderUniforms hParameter, const float* pMatrix, const size_t size);
+   void SetUniformBlock(const ShaderUniforms hParameter, const float* pMatrix);
 
    static void SetDefaultSamplerFilter(const ShaderUniforms sampler, const SamplerFilter sf);
 
@@ -368,6 +382,7 @@ private:
    {
       ShaderUniformType type;
       string name;
+      unsigned int count;
       string tex_name;
       SamplerAddressMode default_clampu;
       SamplerAddressMode default_clampv;
@@ -389,7 +404,6 @@ private:
    struct UniformDesc
    {
       ShaderUniform uniform;
-      int count;
 #ifdef ENABLE_SDL
       GLint location; // Location of the uniform
       GLuint blockBuffer;
@@ -406,18 +420,11 @@ private:
 
 #ifdef ENABLE_SDL
 
-   struct attributeLoc
-   {
-      GLenum type;
-      int location;
-      int size;
-   };
    struct ShaderTechnique
    {
       int index;
       const string& name;
       GLuint program;
-      attributeLoc attributeLocation[SHADER_ATTRIBUTE_COUNT];
       UniformDesc uniform_desc[SHADER_UNIFORM_COUNT];
    };
 
@@ -429,8 +436,6 @@ private:
    ShaderTechnique* m_techniques[SHADER_TECHNIQUE_COUNT];
 
 public:
-   void setAttributeFormat(const DWORD fvf);
-
    static string shaderPath;
    static string Defines;
 

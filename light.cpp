@@ -540,7 +540,7 @@ void Light::RenderDynamic()
       if (shader == pd3dDevice->lightShader)
       {
          memcpy(&matWorldViewProj[1], &matWorldViewProj[0], 4 * 4 * sizeof(float));
-         shader->SetUniformBlock(SHADER_matrixBlock, &matWorldViewProj[0].m[0][0], eyes * 16 * sizeof(float));
+         shader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0].m[0][0]);
       }
       else
       {
@@ -554,7 +554,7 @@ void Light::RenderDynamic()
          } matrices;
          memcpy(&matrices.matWorldViewProj[0], &matWorldViewProj[0], 4 * 4 * sizeof(float));
          memcpy(&matrices.matWorldViewProj[1], &matWorldViewProj[0], 4 * 4 * sizeof(float));
-         shader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorld.m[0][0], (eyes + 4) * 16 * sizeof(float));
+         shader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
       }
       #else
       shader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0]);
