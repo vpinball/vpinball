@@ -15,9 +15,7 @@ precision highp float;
 #define Filter_Multiply 3.
 #define Filter_Screen   4.
 
-layout(std140) uniform matrixBlock {
-   mat4 matWorldViewProj[eyes];
-};
+uniform mat4 matWorldViewProj[eyes];
 
 ////VERTEX
 

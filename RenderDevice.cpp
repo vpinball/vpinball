@@ -1298,13 +1298,14 @@ void RenderDevice::FreeShader()
       delete FBShader;
       FBShader = nullptr;
    }
+   #ifdef ENABLE_SDL
    if (StereoShader)
    {
       StereoShader->SetTextureNull(SHADER_tex_stereo_fb);
-
       delete StereoShader;
       StereoShader = nullptr;
    }
+   #endif
    if (flasherShader)
    {
       flasherShader->SetTextureNull(SHADER_tex_flasher_A);
@@ -1821,7 +1822,7 @@ void RenderDevice::BlitRenderTarget(RenderTarget* source, RenderTarget* destinat
 
 void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
 {
-   assert(Shader::GetCurrentShader() == FBShader); // FrameBuffer shader is the only one using Position/Texture vertex format
+   assert(Shader::GetCurrentShader() == FBShader || Shader::GetCurrentShader() == StereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
    ApplyRenderStates();
    RenderCommand* cmd = m_renderFrame.NewCommand();
    cmd->SetDrawTexturedQuad(vertices);
@@ -1830,7 +1831,7 @@ void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
 
 void RenderDevice::DrawTexturedQuad(const Vertex3D_NoTex2* vertices)
 {
-   assert(Shader::GetCurrentShader() != FBShader); // FrameBuffer shader is the only one using Position/Texture vertex format
+   assert(Shader::GetCurrentShader() != FBShader && Shader::GetCurrentShader() != StereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
    ApplyRenderStates();
    RenderCommand* cmd = m_renderFrame.NewCommand();
    cmd->SetDrawTexturedQuad(vertices);
@@ -1838,7 +1839,7 @@ void RenderDevice::DrawTexturedQuad(const Vertex3D_NoTex2* vertices)
 }
 
 void RenderDevice::DrawFullscreenTexturedQuad() {
-   assert(Shader::GetCurrentShader() == FBShader); // FrameBuffer shader is the only one using Position/Texture vertex format
+   assert(Shader::GetCurrentShader() == FBShader || Shader::GetCurrentShader() == StereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
    DrawMesh(m_quadMeshBuffer, TRIANGLESTRIP, 0, 4);
 }
 

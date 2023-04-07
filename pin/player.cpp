@@ -1036,10 +1036,10 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    matrices.matWorldViewInverseTranspose.Transpose();
 
 #ifdef ENABLE_SDL // OpenGL
-   m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorldViewProj[0].m[0][0], eyes * 16 * sizeof(float));
-   m_pin3d.m_pd3dPrimaryDevice->lightShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorldViewProj[0].m[0][0], eyes * 16 * sizeof(float));
-   m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorldViewProj[0].m[0][0], eyes * 16 * sizeof(float));
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matWorld.m[0][0], (eyes + 4) * 16 * sizeof(float));
+   m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0].m[0][0]);
+   m_pin3d.m_pd3dPrimaryDevice->lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0].m[0][0]);
+   m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0].m[0][0]);
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
 
 #else // DirectX 9
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorld, &matrices.matWorld);
@@ -1124,7 +1124,7 @@ void Player::UpdateBallShaderMatrix()
    matrices.matWorldViewInverse.Invert();
 
 #ifdef ENABLE_SDL
-   m_ballShader->SetUniformBlock(SHADER_matrixBlock, &matrices.matView.m[0][0], (eyes + 3) * 16 * sizeof(float));
+   m_ballShader->SetUniformBlock(SHADER_ballMatrixBlock, &matrices.matView.m[0][0]);
 #else
    m_ballShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
    m_ballShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
@@ -5036,10 +5036,10 @@ void Player::DrawBalls()
       }
 
 #ifdef ENABLE_SDL
-      m_ballShader->SetFloat4v(SHADER_lightPos, (vec4 *)lightPos, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
-      m_ballShader->SetFloat4v(SHADER_lightEmission, (vec4 *)lightEmission, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
+      m_ballShader->SetFloat4v(SHADER_ballLightPos, (vec4 *)lightPos, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
+      m_ballShader->SetFloat4v(SHADER_ballLightEmission, (vec4 *)lightEmission, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
 #else
-      m_ballShader->SetFloat4v(SHADER_packedLights, (vec4 *)l, sizeof(CLight) * (MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES) / (4 * sizeof(float)));
+      m_ballShader->SetFloat4v(SHADER_ballPackedLights, (vec4 *)l, sizeof(CLight) * (MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES) / (4 * sizeof(float)));
 #endif
 
       // now for a weird hack: make material more rough, depending on how near the nearest lightsource is, to 'emulate' the area of the bulbs (as VP only features point lights so far)

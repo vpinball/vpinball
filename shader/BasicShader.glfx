@@ -13,7 +13,7 @@ precision highp float;
 
 #define NUM_BALL_LIGHTS 0 // just to avoid having too much constant mem allocated
 
-layout(std140) uniform matrixBlock {
+layout(std140) uniform basicMatrixBlock {
 	mat4 matWorld;
 	mat4 matView;
 	mat4 matWorldView;

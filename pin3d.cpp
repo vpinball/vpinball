@@ -647,8 +647,8 @@ void Pin3D::InitLights()
       memcpy(&lightEmission[i], &emission, sizeof(float) * 3);
    }
 
-   m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_lightPos, (vec4*) lightPos, MAX_LIGHT_SOURCES);
-   m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_lightEmission, (vec4*) lightEmission, MAX_LIGHT_SOURCES);
+   m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_basicLightPos, (vec4*) lightPos, MAX_LIGHT_SOURCES);
+   m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_basicLightEmission, (vec4*) lightEmission, MAX_LIGHT_SOURCES);
 #else
    struct CLight
    {
@@ -663,7 +663,7 @@ void Pin3D::InitLights()
       memcpy(&l[i].vEmission, &emission, sizeof(float) * 3);
    }
 
-   m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_packedLights, (vec4*) l, sizeof(CLight) * MAX_LIGHT_SOURCES / (4 * sizeof(float)));
+   m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_basicPackedLights, (vec4*) l, sizeof(CLight) * MAX_LIGHT_SOURCES / (4 * sizeof(float)));
 #endif
 
    vec4 amb_lr = convertColor(g_pplayer->m_ptable->m_lightAmbient, g_pplayer->m_ptable->m_lightRange);

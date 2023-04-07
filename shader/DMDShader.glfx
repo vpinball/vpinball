@@ -13,9 +13,7 @@ uniform vec4 vColor_Intensity;
 uniform vec4 vRes_Alpha_time;
 uniform float alphaTestValue;
 
-layout(std140) uniform matrixBlock {
-   mat4 matWorldViewProj[eyes];
-};
+uniform mat4 matWorldViewProj[eyes];
 
 //!! split into pure sprite & pure DMD?
 
