@@ -15,6 +15,7 @@ public:
 
    bool IsFullClear(const bool hasDepth) const;
    bool IsDrawCommand() const { return m_command != RC_CLEAR && m_command != RC_COPY; }
+   bool IsDrawMeshCommand() const { return m_command == RC_DRAW_MESH; }
    inline RenderState GetRenderState() const { return m_renderState; }
    inline ShaderTechniques GetShaderTechnique() const { return m_shaderTechnique; }
    inline MeshBuffer* GetMeshBuffer() const { return m_mb; }

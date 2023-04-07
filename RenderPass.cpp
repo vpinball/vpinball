@@ -129,11 +129,14 @@ void RenderPass::Execute()
                   return m_min_depth[r1->technique] < m_min_depth[r2->technique];*/
                return r1->GetShaderTechnique() > r2->GetShaderTechnique();
             }
-            unsigned int mbS1 = r1->GetMeshBuffer()->GetSortKey();
-            unsigned int mbS2 = r2->GetMeshBuffer()->GetSortKey();
-            if (mbS1 != mbS2)
+            if (r1->IsDrawMeshCommand() && r2->IsDrawMeshCommand())
             {
-               return mbS1 < mbS2;
+               unsigned int mbS1 = r1->GetMeshBuffer()->GetSortKey();
+               unsigned int mbS2 = r2->GetMeshBuffer()->GetSortKey();
+               if (mbS1 != mbS2)
+               {
+                  return mbS1 < mbS2;
+               }
             }
             // TODO sort by uniform/texture hash
             return r1->GetRenderState().m_state < r2->GetRenderState().m_state;
