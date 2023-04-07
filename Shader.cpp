@@ -1448,6 +1448,16 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
                   // This will cause error for static pre-render which, done before bulb light transmission is evaluated and bound
                   SetTextureNull(uniformIndex);
                }
+               if (shaderUniformNames[uniformIndex].type == SUT_Float4v)
+               {
+                  UniformCache* elem = &m_uniformCache[SHADER_TECHNIQUE_COUNT][uniformIndex];
+                  if (elem->count == 0)
+                  {
+                     elem->count = uniform.count * 4 * sizeof(float);
+                     elem->val.data = malloc(elem->count);
+                     memset(elem->val.data, 0, elem->count);
+                  }
+               }
             }
          }
       }
