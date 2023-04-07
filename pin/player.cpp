@@ -1767,9 +1767,11 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->BeginScene();
 
       // Direct all renders to the "static" buffer
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender Draw"s, renderRT);
-
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender Background"s, renderRT);
       m_pin3d.DrawBackground();
+      m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
+
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender Draw"s, renderRT);
 
       if (!m_dynamicMode)
       {
@@ -1777,6 +1779,7 @@ void Player::InitStatic()
          m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
 
          // Render static parts
+         UpdateBasicShaderMatrix();
          DrawStatics();
          m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
 
@@ -1807,6 +1810,7 @@ void Player::InitStatic()
       }
 
       // Finish the frame.
+      m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
       m_pin3d.m_pd3dPrimaryDevice->EndScene();
       if (m_pEditorTable->m_progressDialog.IsWindow())
          m_pEditorTable->m_progressDialog.SetProgress(60 +(((30 * (n_iter + 1 - iter)) / (n_iter + 1))));
@@ -3202,11 +3206,8 @@ void Player::RenderDynamics()
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
    m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
 
-   if (m_dynamicMode)
-   {
-      UpdateBasicShaderMatrix();
-      UpdateBallShaderMatrix();
-   }
+   UpdateBasicShaderMatrix();
+   UpdateBallShaderMatrix();
 
    // Update Bulb light buffer
    DrawBulbLightBuffer();
