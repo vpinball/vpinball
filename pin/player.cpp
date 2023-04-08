@@ -3436,6 +3436,9 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
 
          RenderTarget *leftTexture = m_pin3d.m_pd3dPrimaryDevice->GetOffscreenVR(0);
          RenderTarget *rightTexture = m_pin3d.m_pd3dPrimaryDevice->GetOffscreenVR(1);
+         
+         // Render frame before blitting it to the VR headset
+         m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
 
          switch (blitMode)
          {
