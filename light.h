@@ -173,6 +173,7 @@ public:
    bool  m_lockedByLS;
 
 private:
+   Vertex3Ds m_position;
 
    class LightCenter final : public ISelect
    {

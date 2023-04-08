@@ -256,7 +256,7 @@ void RenderCommand::SetCopy(RenderTarget* from, RenderTarget* to, bool color, bo
    m_copyDepth = depth;
 }
 
-void RenderCommand::SetDrawMesh(MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount)
+void RenderCommand::SetDrawMesh(MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount, float depth)
 {
    m_command = Command::RC_DRAW_MESH;
    m_mb = mb;
@@ -264,6 +264,7 @@ void RenderCommand::SetDrawMesh(MeshBuffer* mb, const RenderDevice::PrimitiveTyp
    m_startIndice = startIndice;
    m_indicesCount = indexCount;
    m_rd->CopyRenderStates(true, m_renderState);
+   m_depth = depth;
    m_shader = Shader::GetCurrentShader();
    m_shaderTechnique = m_shader->GetCurrentTechnique();
    Shader::GetCurrentShader()->CopyUniformCache(true, m_shaderTechnique, m_uniformState, m_textureState);

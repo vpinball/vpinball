@@ -187,6 +187,7 @@ private:
 
       HitFlipper *m_phitflipper;
       float m_lastAngle;
+      Vertex3Ds m_position;
 
 // IFlipper
 public:

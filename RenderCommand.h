@@ -26,7 +26,7 @@ public:
    // Build from render device live state
    void SetClear(DWORD clearFlags, DWORD clearARGB);
    void SetCopy(RenderTarget* from, RenderTarget* to, bool color, bool depth);
-   void SetDrawMesh(MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount);
+   void SetDrawMesh(MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount, float depth);
    void SetDrawTexturedQuad(const Vertex3D_TexelOnly* vertices);
    void SetDrawTexturedQuad(const Vertex3D_NoTex2* vertices);
 
