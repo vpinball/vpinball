@@ -424,7 +424,7 @@ void Kicker::RenderSetup()
       delete m_plateMeshBuffer;
       VertexBuffer *plateVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, kickerPlateNumVertices, (float*)buf);
       IndexBuffer *plateIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, kickerPlateNumIndices, kickerPlateIndices);
-      m_plateMeshBuffer = new MeshBuffer(plateVertexBuffer, plateIndexBuffer, true);
+      m_plateMeshBuffer = new MeshBuffer(m_wzName + L".Plate"s, plateVertexBuffer, plateIndexBuffer, true);
 
       delete[] buf;
    }
@@ -511,7 +511,7 @@ void Kicker::RenderSetup()
    GenerateMesh(buf);
    vertexBuffer->unlock();
    IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, indices);
-   m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer, true);
+   m_meshBuffer = new MeshBuffer(m_wzName + L".Kicker"s, vertexBuffer, indexBuffer, true);
 }
 
 void Kicker::SetDefaultPhysics(const bool fromMouseClick)

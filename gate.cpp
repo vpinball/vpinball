@@ -563,7 +563,7 @@ void Gate::RenderSetup()
    GenerateBracketMesh(buf);
    bracketVertexBuffer->unlock();
    delete m_bracketMeshBuffer;
-   m_bracketMeshBuffer = new MeshBuffer(bracketVertexBuffer, bracketIndexBuffer, true);
+   m_bracketMeshBuffer = new MeshBuffer(m_wzName + L".Bracket"s, bracketVertexBuffer, bracketIndexBuffer, true);
 
    IndexBuffer *wireIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, m_indices);
    VertexBuffer *wireVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, nullptr, true);
@@ -571,7 +571,7 @@ void Gate::RenderSetup()
    GenerateWireMesh(buf);
    wireVertexBuffer->unlock();
    delete m_wireMeshBuffer;
-   m_wireMeshBuffer = new MeshBuffer(wireVertexBuffer, wireIndexBuffer, true);
+   m_wireMeshBuffer = new MeshBuffer(m_wzName + L".Wire"s, wireVertexBuffer, wireIndexBuffer, true);
 }
 
 void Gate::UpdateAnimation(const float diff_time_msec)

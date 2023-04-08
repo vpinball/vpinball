@@ -9,6 +9,7 @@ class IndexBuffer;
 class MeshBuffer final
 {
 public:
+   MeshBuffer(const wstring& name, VertexBuffer* vb, IndexBuffer* ib = nullptr, const bool applyVertexBufferOffsetToIndexBuffer = false);
    MeshBuffer(VertexBuffer* vb, IndexBuffer* ib = nullptr, const bool applyVertexBufferOffsetToIndexBuffer = false);
    ~MeshBuffer();
    void bind();
@@ -17,6 +18,7 @@ public:
    VertexBuffer* const m_vb;
    IndexBuffer* const m_ib;
    const bool m_isVBOffsetApplied; // True if vertex buffer offset is already applied to index buffer
+   const string m_name;
 
 #if defined(ENABLE_SDL) // OpenGL
 private:
