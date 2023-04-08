@@ -1352,11 +1352,14 @@ HRESULT Player::Init()
    // Add a playfield primitive if it is missing
    m_implicitPlayfieldMesh = nullptr;
    bool hasExplicitPlayfield = false;
-   for (size_t i = 0; i < m_ptable->m_vedit.size() && !hasExplicitPlayfield; i++)
+   for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
    {
       IEditable *const pedit = m_ptable->m_vedit[i];
       if (pedit->GetItemType() == ItemTypeEnum::eItemPrimitive && ((Primitive *)pedit)->IsPlayfield())
+      {
          hasExplicitPlayfield = true;
+         break;
+      }
    }
    if (!hasExplicitPlayfield)
    {
@@ -3058,7 +3061,7 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
       for (unsigned int i = 0; i < 4; ++i)
       {
          vertices[i].x =        (vertices[i].x * w + x)*2.0f - 1.0f;
-         vertices[i].y = 1.0f - (vertices[i].y * h + y) * 2.0f;
+         vertices[i].y = 1.0f - (vertices[i].y * h + y)*2.0f;
       }
 
       const vec4 c = convertColor(DMDcolor, intensity);
@@ -3095,7 +3098,7 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
    for (unsigned int i = 0; i < 4; ++i)
    {
       vertices[i].x =        (vertices[i].x * width  + posx)*2.0f - 1.0f;
-      vertices[i].y = 1.0f - (vertices[i].y * height + posy) * 2.0f;
+      vertices[i].y = 1.0f - (vertices[i].y * height + posy)*2.0f;
    }
 
    pd3dDevice->DMDShader->SetTechnique(tex ? SHADER_TECHNIQUE_basic_noDMD : SHADER_TECHNIQUE_basic_noDMD_notex);
@@ -3126,7 +3129,7 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
    for (unsigned int i = 0; i < 4; ++i)
    {
       vertices[i].x =        (vertices[i].x * width  + posx)*2.0f - 1.0f;
-      vertices[i].y = 1.0f - (vertices[i].y * height + posy) * 2.0f;
+      vertices[i].y = 1.0f - (vertices[i].y * height + posy)*2.0f;
    }
 
    pd3dDevice->DMDShader->SetTechnique(tex ? SHADER_TECHNIQUE_basic_noDMD : SHADER_TECHNIQUE_basic_noDMD_notex);
@@ -3248,7 +3251,7 @@ void Player::RenderDynamics()
 
 void Player::SSRefl()
 {
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("ScreenSPace Reflection"s, m_pin3d.m_pd3dPrimaryDevice->GetReflectionBufferTexture());
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("ScreenSpace Reflection"s, m_pin3d.m_pd3dPrimaryDevice->GetReflectionBufferTexture());
    m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture());
 
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
