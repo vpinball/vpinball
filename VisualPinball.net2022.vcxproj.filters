@@ -53,8 +53,6 @@
     <ClCompile Include="quadtree.cpp" />
     <ClCompile Include="ramp.cpp" />
     <ClCompile Include="regutil.cpp" />
-    <ClCompile Include="RenderDevice.cpp" />
-    <ClCompile Include="RenderState.cpp" />
     <ClCompile Include="slintf.cpp" />
     <ClCompile Include="spinner.cpp" />
     <ClCompile Include="stdafx.cpp" />
@@ -290,13 +288,6 @@
     <ClCompile Include="inc\serial.cpp">
       <Filter>inc</Filter>
     </ClCompile>
-    <ClCompile Include="IndexBuffer.cpp" />
-    <ClCompile Include="MeshBuffer.cpp" />
-    <ClCompile Include="VertexBuffer.cpp" />
-    <ClCompile Include="TextureManager.cpp" />
-    <ClCompile Include="RenderTarget.cpp" />
-    <ClCompile Include="Sampler.cpp" />
-    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="backGlass.cpp" />
     <ClCompile Include="captureExt.cpp" />
     <ClCompile Include="imgui\imgui_impl_opengl3.cpp">
@@ -308,7 +299,6 @@
     <ClCompile Include="dialogs\VROptionsDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="RenderProbe.cpp" />
     <ClCompile Include="dialogs\RenderProbeDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
@@ -326,9 +316,45 @@
     <ClCompile Include="imgui\ImGuizmo.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="RenderCommand.cpp" />
-    <ClCompile Include="RenderFrame.cpp" />
-    <ClCompile Include="RenderPass.cpp" />
+    <ClCompile Include="RenderCommand.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderDevice.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderFrame.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderPass.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderProbe.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderState.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderTarget.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="IndexBuffer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshBuffer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureManager.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Sampler.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="VertexBuffer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -771,6 +797,9 @@
     </Filter>
     <Filter Include="inc\BAM">
       <UniqueIdentifier>{c38add25-cdb8-4aea-810a-d2cd4dbd1010}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="renderer">
+      <UniqueIdentifier>{3d81e6c0-9785-4460-bd19-c8c25e24ae1b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
