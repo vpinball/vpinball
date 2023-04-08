@@ -1325,7 +1325,7 @@ void Primitive::RenderObject()
       Matrix3D matWorldViewInverseTranspose; // This is clearly suboptimal since this transposed inverse is already computed, but the impact is minimal
       vec3 plane_normal;
       reflection_probe->GetReflectionPlaneNormal(plane_normal);
-      pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &matWorldViewInverseTranspose);
+      pd3dDevice->GetTransform(RenderDevice::TRANSFORMSTATE_VIEW, &matWorldViewInverseTranspose);
       matWorldViewInverseTranspose.Invert();
       matWorldViewInverseTranspose.Transpose();
       matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal, plane_normal);

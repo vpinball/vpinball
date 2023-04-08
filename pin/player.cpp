@@ -1016,9 +1016,9 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
       Matrix3D matWorldViewInverseTranspose;
       Matrix3D matWorldViewProj[2];
    } matrices;
-   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_WORLD, &matWorld);
-   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &matrices.matView);
-   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_PROJECTION, matProj, eyes);
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(RenderDevice::TRANSFORMSTATE_WORLD, &matWorld);
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(RenderDevice::TRANSFORMSTATE_VIEW, &matrices.matView);
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(RenderDevice::TRANSFORMSTATE_PROJECTION, matProj, eyes);
 
    matrices.matWorld = objectTrafo * matWorld;
    matrices.matWorldView = matrices.matWorld * matrices.matView;
@@ -1063,9 +1063,9 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 void Player::InitShader()
 {
    /*D3DMATRIX worldMat,viewMat,projMat;
-   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_WORLD, &worldMat );
-   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
-   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_PROJECTION, &projMat);
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(RenderDevice::TRANSFORMSTATE_WORLD, &worldMat );
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(RenderDevice::TRANSFORMSTATE_VIEW, &viewMat);
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(RenderDevice::TRANSFORMSTATE_PROJECTION, &projMat);
 
    D3DXMATRIX matProj(projMat);
    D3DXMATRIX matView(viewMat);
@@ -1104,9 +1104,9 @@ void Player::UpdateBallShaderMatrix()
       Matrix3D matWorldViewInverse;
       Matrix3D matWorldViewProj[2];
    } matrices;
-   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_WORLD, &matWorld, 1);
-   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &matrices.matView, 1);
-   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_PROJECTION, matProj, eyes);
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(RenderDevice::TRANSFORMSTATE_WORLD, &matWorld, 1);
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(RenderDevice::TRANSFORMSTATE_VIEW, &matrices.matView, 1);
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(RenderDevice::TRANSFORMSTATE_PROJECTION, matProj, eyes);
 
    matrices.matWorldView = matWorld * matrices.matView;
 
@@ -3190,7 +3190,7 @@ void Player::RenderDynamics()
    // Setup the projection matrices used for refraction
    const int eyes = m_stereo3D != STEREO_OFF ? 2 : 1;
    Matrix3D matProj[2];
-   m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_PROJECTION, matProj, eyes);
+   m_pin3d.m_pd3dPrimaryDevice->GetTransform(RenderDevice::TRANSFORMSTATE_PROJECTION, matProj, eyes);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matProj, &matProj[0]);
 
    // Update ball pos uniforms
@@ -5232,7 +5232,7 @@ void Player::DrawBalls()
             for (int k = 0; k < 3; ++k)
                matRot.m[j][k] = pball->m_orientation.m_d[k][j];
          matNew.Multiply(matRot, matNew);
-         m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_WORLD, &matNew);
+         m_pin3d.m_pd3dPrimaryDevice->SetTransform(RenderDevice::TRANSFORMSTATE_WORLD, &matNew);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
 
          // draw points
@@ -5241,7 +5241,7 @@ void Player::DrawBalls()
          m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballDebugPoints, RenderDevice::POINTLIST, 0, 12);
 
          // reset transform
-         m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);
+         m_pin3d.m_pd3dPrimaryDevice->SetTransform(RenderDevice::TRANSFORMSTATE_WORLD, &matOrig);
       }
 #endif
 
