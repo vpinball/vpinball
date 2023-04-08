@@ -1351,8 +1351,14 @@ HRESULT Player::Init()
 
    // Add a playfield primitive if it is missing
    m_implicitPlayfieldMesh = nullptr;
-   const IEditable *const piEdit = m_ptable->GetElementByName("playfield_mesh");
-   if (piEdit == nullptr || piEdit->GetItemType() != ItemTypeEnum::eItemPrimitive)
+   bool hasExplicitPlayfield = false;
+   for (size_t i = 0; i < m_ptable->m_vedit.size() && !hasExplicitPlayfield; i++)
+   {
+      IEditable *const pedit = m_ptable->m_vedit[i];
+      if (pedit->GetItemType() == ItemTypeEnum::eItemPrimitive && ((Primitive *)pedit)->IsPlayfield())
+         hasExplicitPlayfield = true;
+   }
+   if (!hasExplicitPlayfield)
    {
       m_implicitPlayfieldMesh = (Primitive *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemPrimitive, m_ptable, 0, 0);
       if (m_implicitPlayfieldMesh)
