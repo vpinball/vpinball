@@ -862,7 +862,7 @@ void Trigger::RenderSetup()
    delete m_meshBuffer;
    IndexBuffer *triggerIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, indices);
    VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, (float*) m_triggerVertices, true);
-   m_meshBuffer = new MeshBuffer(vertexBuffer, triggerIndexBuffer, true);
+   m_meshBuffer = new MeshBuffer(m_wzName, vertexBuffer, triggerIndexBuffer, true);
 }
 
 void Trigger::RenderStatic()

@@ -1077,7 +1077,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    };
    delete m_quadMeshBuffer;
    VertexBuffer* quadVertexBuffer = new VertexBuffer(this, 4, verts, false, VertexFormat::VF_POS_TEX);
-   m_quadMeshBuffer = new MeshBuffer(quadVertexBuffer);
+   m_quadMeshBuffer = new MeshBuffer(L"Fullscreen Quad"s, quadVertexBuffer);
 
 #ifdef ENABLE_SDL
    delete m_quadPNTDynMeshBuffer;
