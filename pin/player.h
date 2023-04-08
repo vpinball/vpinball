@@ -238,7 +238,7 @@ public:
       if (!m_buffers[m_curIdx])
       {
          VertexBuffer *vb = new VertexBuffer(pd3dDevice, 1024);
-         m_buffers[m_curIdx] = new MeshBuffer(vb);
+         m_buffers[m_curIdx] = new MeshBuffer(L"FrameLimiter"s,  vb);
       }
 
       // idea: locking a static vertex buffer stalls the pipeline if that VB is still

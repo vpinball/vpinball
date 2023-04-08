@@ -308,7 +308,7 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
    }
    vertexBuffer->unlock();
    delete prims[0]->m_meshBuffer;
-   prims[0]->m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer, true);
+   prims[0]->m_meshBuffer = new MeshBuffer(m_wzName + L".RenderGroup"s, vertexBuffer, indexBuffer, true);
 }
 
 HRESULT Primitive::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
@@ -1427,7 +1427,7 @@ void Primitive::RenderSetup()
    delete m_meshBuffer;
    VertexBuffer* vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)m_mesh.NumVertices(), nullptr, !(m_d.m_staticRendering || m_mesh.m_animationFrames.size() == 0));
    IndexBuffer* indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_mesh.m_indices);
-   m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer, true);
+   m_meshBuffer = new MeshBuffer(m_wzName, vertexBuffer, indexBuffer, true);
 
    // Compute and upload mesh to let a chance for renderdevice to share the buffers with other static objects
    RecalculateMatrices();

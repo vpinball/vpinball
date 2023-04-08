@@ -9,8 +9,17 @@ vector<MeshBuffer::SharedVAO*> MeshBuffer::sharedVAOs;
 #include "Shader.h"
 #include "VertexBuffer.h"
 
+#include <locale>
+#include <codecvt>
+
 MeshBuffer::MeshBuffer(VertexBuffer* vb, IndexBuffer* ib, const bool applyVertexBufferOffsetToIndexBuffer)
-   : m_vb(vb)
+   : MeshBuffer(L""s, vb, ib, applyVertexBufferOffsetToIndexBuffer)
+{
+}
+
+MeshBuffer::MeshBuffer(const wstring& name, VertexBuffer* vb, IndexBuffer* ib, const bool applyVertexBufferOffsetToIndexBuffer)
+   : m_name(std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(name))
+   , m_vb(vb)
    , m_ib(ib)
    , m_isVBOffsetApplied(applyVertexBufferOffsetToIndexBuffer)
 #ifndef ENABLE_SDL
