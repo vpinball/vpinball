@@ -37,7 +37,7 @@ RenderCommand* RenderFrame::NewCommand()
    return item;
 }
 
-void RenderFrame::Execute()
+void RenderFrame::Execute(const bool log)
 {
    if (m_passes.size() == 0)
       return;
@@ -51,7 +51,7 @@ void RenderFrame::Execute()
    #endif
    for (RenderPass* pass : sortedPasses)
    {
-      pass->Execute();
+      pass->Execute(log);
       if (m_commandPool.size() < 1024)
          pass->RecycleCommands(m_commandPool);
       delete pass;

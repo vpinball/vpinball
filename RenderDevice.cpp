@@ -1775,8 +1775,9 @@ void RenderDevice::SetClipPlane(const vec4 &plane)
 
 void RenderDevice::FlushRenderFrame()
 {
-   m_renderFrame.Execute();
+   m_renderFrame.Execute(m_logNextFrame);
    m_currentPass = nullptr;
+   m_logNextFrame = false;
 }
 
 void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt, bool ignoreStereo)

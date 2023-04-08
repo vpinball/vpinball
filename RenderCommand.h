@@ -19,8 +19,9 @@ public:
    inline RenderState GetRenderState() const { return m_renderState; }
    inline ShaderTechniques GetShaderTechnique() const { return m_shaderTechnique; }
    inline MeshBuffer* GetMeshBuffer() const { return m_mb; }
+   inline float GetDepth() const { return m_depth; }
 
-   void Execute();
+   void Execute(const bool log = false);
 
    // Build from render device live state
    void SetClear(DWORD clearFlags, DWORD clearARGB);
@@ -66,4 +67,5 @@ private:
    RenderDevice::PrimitiveTypes m_primitiveType;
    unsigned int m_indicesCount = 0;
    unsigned int m_startIndice = 0;
+   float m_depth = 0.f;
 };

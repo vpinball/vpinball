@@ -125,6 +125,7 @@ public:
    void DrawTexturedQuad(const Vertex3D_NoTex2* vertices);
    void DrawFullscreenTexturedQuad();
    void DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size);
+   void LogNextFrame() { m_logNextFrame = true; };
    void FlushRenderFrame();
    void Flip(const bool vsync);
 
@@ -185,6 +186,7 @@ public:
 
 private:
    RenderState m_current_renderstate, m_renderstate;
+   bool m_logNextFrame = false; // Output a log of next frame to main application log
 
 public:
    void SetViewport(const ViewPort*);

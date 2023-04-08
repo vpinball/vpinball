@@ -521,7 +521,7 @@ void Decal::RenderSetup()
    vertexBuffer->unlock();
 
    delete m_meshBuffer;
-   m_meshBuffer = new MeshBuffer(vertexBuffer);
+   m_meshBuffer = new MeshBuffer(m_wzName, vertexBuffer);
 }
 
 float Decal::GetDepth(const Vertex3Ds& viewDir) const

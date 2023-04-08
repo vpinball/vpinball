@@ -836,6 +836,8 @@ void LiveUI::OpenMainUI()
 void LiveUI::ToggleFPS()
 {
    m_show_fps = (m_show_fps + 1) % 3;
+   if (m_show_fps == 0)
+      m_rd->LogNextFrame();
 }
 
 void LiveUI::Update()

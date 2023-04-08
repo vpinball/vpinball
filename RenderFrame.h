@@ -11,7 +11,7 @@ public:
    ~RenderFrame();
 
    void AddPass(RenderPass* pass);
-   void Execute();
+   void Execute(const bool log = false);
 
    RenderCommand* NewCommand();
 

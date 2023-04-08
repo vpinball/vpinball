@@ -107,7 +107,7 @@ private:
    } m_selection;
 
    // Rendering
-   const RenderDevice* m_rd;
+   RenderDevice* const m_rd;
    int m_rotate = 0;
    float m_dpi = 1.0f;
    ImFont *m_baseFont = nullptr;
