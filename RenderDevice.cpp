@@ -1936,36 +1936,37 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
 
 void RenderDevice::SetTransform(const TransformStateType p1, const Matrix3D * p2, const int count)
 {
-#ifdef ENABLE_SDL
    switch (p1)
    {
-   case TRANSFORMSTATE_WORLD: m_MatWorld = *p2; break;
-   case TRANSFORMSTATE_VIEW: m_MatView = *p2; break;
-   case TRANSFORMSTATE_PROJECTION:
-      for (int i = 0; i < count; ++i)
-         m_MatProj[i] = p2[i];
+   case TRANSFORMSTATE_WORLD:
+      m_matWorld = *p2;
+      break;
+   case TRANSFORMSTATE_VIEW:
+   {
+      m_matView = *p2;
+      Matrix3D view(m_matView);
+      view.Invert();
+      m_viewVec.Set(view._31, view._32, view._33);
       break;
    }
-#else
-   CHECKD3D(m_pD3DDevice->SetTransform((D3DTRANSFORMSTATETYPE)p1, (D3DMATRIX*)p2));
-#endif
+   case TRANSFORMSTATE_PROJECTION:
+      for (int i = 0; i < count; ++i)
+         m_matProj[i] = p2[i];
+      break;
+   }
 }
 
 void RenderDevice::GetTransform(const TransformStateType p1, Matrix3D* p2, const int count)
 {
-#ifdef ENABLE_SDL
    switch (p1)
    {
-   case TRANSFORMSTATE_WORLD: *p2 = m_MatWorld; break;
-   case TRANSFORMSTATE_VIEW: *p2 = m_MatView; break;
+   case TRANSFORMSTATE_WORLD: *p2 = m_matWorld; break;
+   case TRANSFORMSTATE_VIEW: *p2 = m_matView; break;
    case TRANSFORMSTATE_PROJECTION:
       for (int i = 0; i < count; ++i)
-         p2[i] = m_MatProj[i];
+         p2[i] = m_matProj[i];
       break;
    }
-#else
-   CHECKD3D(m_pD3DDevice->GetTransform((D3DTRANSFORMSTATETYPE)p1, (D3DMATRIX*)p2));
-#endif
 }
 
 void RenderDevice::SetMainTextureDefaultFiltering(const SamplerFilter filter)
@@ -2127,7 +2128,7 @@ void RenderDevice::InitVR() {
       for (int j = 0;j < 4;j++)
          matProjection.m[j][i] = left_eye_proj.m[i][j];
 
-   m_matProj[0] = matEye2Head * matProjection;
+   m_vrMatProj[0] = matEye2Head * matProjection;
 
    //Calculate right EyeProjection Matrix relative to HMD position
    for (int i = 0;i < 3;i++)
@@ -2144,7 +2145,7 @@ void RenderDevice::InitVR() {
       for (int j = 0;j < 4;j++)
          matProjection.m[j][i] = right_eye_proj.m[i][j];
 
-   m_matProj[1] = matEye2Head * matProjection;
+   m_vrMatProj[1] = matEye2Head * matProjection;
 
    if (vr::k_unMaxTrackedDeviceCount > 0) {
       m_rTrackedDevicePose = new vr::TrackedDevicePose_t[vr::k_unMaxTrackedDeviceCount];
@@ -2170,7 +2171,7 @@ void RenderDevice::UpdateVRPosition()
 
    vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 
-   m_matView.SetIdentity();
+   m_vrMatView.SetIdentity();
    for (unsigned int device = 0; device < vr::k_unMaxTrackedDeviceCount; device++)
    {
       if ((m_rTrackedDevicePose[device].bPoseIsValid) && (m_pHMD->GetTrackedDeviceClass(device) == vr::TrackedDeviceClass_HMD))
@@ -2178,12 +2179,12 @@ void RenderDevice::UpdateVRPosition()
          hmdPosition = m_rTrackedDevicePose[device];
          for (int i = 0; i < 3; i++)
             for (int j = 0; j < 4; j++)
-               m_matView.m[j][i] = hmdPosition.mDeviceToAbsoluteTracking.m[i][j];
+               m_vrMatView.m[j][i] = hmdPosition.mDeviceToAbsoluteTracking.m[i][j];
          break;
       }
    }
-   m_matView.Invert();
-   m_matView = m_tableWorld * m_matView;
+   m_vrMatView.Invert();
+   m_vrMatView = m_tableWorld * m_vrMatView;
 }
 
 void RenderDevice::tableUp()
@@ -2240,7 +2241,7 @@ void RenderDevice::updateTableMatrix()
 
 void RenderDevice::SetTransformVR()
 {
-   SetTransform(TRANSFORMSTATE_PROJECTION, m_matProj, m_stereo3D != STEREO_OFF ? 2:1);
-   SetTransform(TRANSFORMSTATE_VIEW, &m_matView, 1);
+   SetTransform(TRANSFORMSTATE_PROJECTION, m_vrMatProj, m_stereo3D != STEREO_OFF ? 2:1);
+   SetTransform(TRANSFORMSTATE_VIEW, &m_vrMatView, 1);
 }
 #endif

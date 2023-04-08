@@ -66,18 +66,6 @@ bool getDisplaySetupByID(const int display, int &x, int &y, int &width, int &hei
 int getDisplayList(vector<DisplayConfig>& displays);
 int getPrimaryDisplay();
 
-enum TransformStateType {
-#ifdef ENABLE_SDL
-   TRANSFORMSTATE_WORLD = 0,
-   TRANSFORMSTATE_VIEW = 1,
-   TRANSFORMSTATE_PROJECTION = 2
-#else
-   TRANSFORMSTATE_WORLD = D3DTS_WORLD,
-   TRANSFORMSTATE_VIEW = D3DTS_VIEW,
-   TRANSFORMSTATE_PROJECTION = D3DTS_PROJECTION
-#endif
-};
-
 class Shader;
 
 class RenderDevice final
@@ -107,6 +95,12 @@ public:
       LINESTRIP = D3DPT_LINESTRIP
    };
 #endif
+
+   enum TransformStateType {
+      TRANSFORMSTATE_WORLD,
+      TRANSFORMSTATE_VIEW,
+      TRANSFORMSTATE_PROJECTION
+   };
 
    RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering);
    ~RenderDevice();
@@ -166,8 +160,8 @@ private:
    static vr::IVRSystem* m_pHMD;
    float m_slope, m_orientation, m_tablex, m_tabley, m_tablez;
    vr::TrackedDevicePose_t hmdPosition;
-   Matrix3D m_matProj[2];
-   Matrix3D m_matView;
+   Matrix3D m_vrMatProj[2];
+   Matrix3D m_vrMatView;
    Matrix3D m_tableWorld;
    vr::TrackedDevicePose_t* m_rTrackedDevicePose;
 
@@ -268,27 +262,25 @@ public:
    void SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v);
 
 private:
+   Matrix3D m_matWorld, m_matView, m_matProj[2];
+
 #ifdef ENABLE_SDL
+   GLfloat m_maxaniso;
+   int m_GLversion;
    static GLuint m_samplerStateCache[3 * 3 * 5];
 #else
+   DWORD m_maxaniso;
+   bool m_mag_aniso;
    static constexpr DWORD TEXTURESET_STATE_CACHE_SIZE = 32;
    SamplerFilter m_bound_filter[TEXTURESET_STATE_CACHE_SIZE];
    SamplerAddressMode m_bound_clampu[TEXTURESET_STATE_CACHE_SIZE];
    SamplerAddressMode m_bound_clampv[TEXTURESET_STATE_CACHE_SIZE];
 #endif
 
-#ifdef ENABLE_SDL
-   GLfloat m_maxaniso;
-   int m_GLversion;
-   Matrix3D m_MatWorld, m_MatView, m_MatProj[2];
-#else
-   DWORD m_maxaniso;
-   bool m_mag_aniso;
-#endif
-
 public:
    bool m_autogen_mipmap;
    bool m_compress_textures;
+   Vertex3Ds m_viewVec;
 
 private:
    bool m_dwm_was_enabled;

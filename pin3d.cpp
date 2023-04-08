@@ -705,13 +705,13 @@ void Pin3D::UpdateMatrices()
    {
       // FIXME RenderDevice should update directly the pinprojection instead of duplicating and copying
       m_pd3dPrimaryDevice->SetTransformVR();
-      m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_PROJECTION, m_proj.m_matProj, 2);
-      m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &m_proj.m_matView, 1);
+      m_pd3dPrimaryDevice->GetTransform(RenderDevice::TRANSFORMSTATE_PROJECTION, m_proj.m_matProj, 2);
+      m_pd3dPrimaryDevice->GetTransform(RenderDevice::TRANSFORMSTATE_VIEW, &m_proj.m_matView, 1);
    } else
 #endif
-   m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_PROJECTION, m_proj.m_matProj, m_stereo3D != STEREO_OFF  ? 2 : 1);
-   m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &m_proj.m_matView);
-   m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_WORLD, &m_proj.m_matWorld);
+   m_pd3dPrimaryDevice->SetTransform(RenderDevice::TRANSFORMSTATE_PROJECTION, m_proj.m_matProj, m_stereo3D != STEREO_OFF ? 2 : 1);
+   m_pd3dPrimaryDevice->SetTransform(RenderDevice::TRANSFORMSTATE_VIEW, &m_proj.m_matView);
+   m_pd3dPrimaryDevice->SetTransform(RenderDevice::TRANSFORMSTATE_WORLD, &m_proj.m_matWorld);
    m_proj.CacheTransform();
 }
 
