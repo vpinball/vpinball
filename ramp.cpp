@@ -1130,7 +1130,7 @@ void Ramp::PrepareHabitrail()
    {
       IndexBuffer *dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_meshIndices);
       VertexBuffer *dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, (float *)tmpBuf1);
-      m_meshBuffer = new MeshBuffer(dynamicVertexBuffer, dynamicIndexBuffer, true);
+      m_meshBuffer = new MeshBuffer(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
       break;
    }
    case RampType2Wire:
@@ -1150,7 +1150,7 @@ void Ramp::PrepareHabitrail()
          indices[m_numIndices + i] = indices[i] + m_numVertices;
       IndexBuffer *dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices * 2, indices);
       VertexBuffer *dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices * 2, (float *)vertices);
-      m_meshBuffer = new MeshBuffer(dynamicVertexBuffer, dynamicIndexBuffer, true);
+      m_meshBuffer = new MeshBuffer(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
       m_numVertices *= 2;
       m_numIndices *= 2;
       delete[] vertices;
@@ -1180,7 +1180,7 @@ void Ramp::PrepareHabitrail()
       }
       IndexBuffer *dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices * 3, indices);
       VertexBuffer *dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices * 3, (float *)vertices);
-      m_meshBuffer = new MeshBuffer(dynamicVertexBuffer, dynamicIndexBuffer, true);
+      m_meshBuffer = new MeshBuffer(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
       m_numVertices *= 3;
       m_numIndices *= 3;
       delete[] vertices;
@@ -1213,7 +1213,7 @@ void Ramp::PrepareHabitrail()
       }
       IndexBuffer *dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices * 4, indices);
       VertexBuffer *dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices * 4, (float *)vertices);
-      m_meshBuffer = new MeshBuffer(dynamicVertexBuffer, dynamicIndexBuffer, true);
+      m_meshBuffer = new MeshBuffer(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
       m_numVertices *= 4;
       m_numIndices *= 4;
       delete[] vertices;
@@ -2479,7 +2479,7 @@ void Ramp::GenerateVertexBuffer()
    delete m_meshBuffer;
    VertexBuffer* dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices * 3, (float*) tmpBuffer); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
    IndexBuffer* dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_meshIndices);
-   m_meshBuffer = new MeshBuffer(dynamicVertexBuffer, dynamicIndexBuffer, true);
+   m_meshBuffer = new MeshBuffer(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
    delete[] tmpBuffer;
 }
 

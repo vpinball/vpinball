@@ -857,7 +857,7 @@ void Plunger::RenderSetup()
 
    // Create the mesh buffer
    delete m_meshBuffer;
-   m_meshBuffer = new MeshBuffer(vertexBuffer, indexBuffer, true);
+   m_meshBuffer = new MeshBuffer(m_wzName, vertexBuffer, indexBuffer, true);
 
    // done with the index scratch pad
    delete[] indices;
