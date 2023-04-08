@@ -341,6 +341,10 @@ void Light::ClearForOverwrite()
 
 void Light::RenderBulbMesh()
 {
+   RenderDevice *const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderState initial_state;
+   pd3dDevice->CopyRenderStates(true, initial_state);
+
    Material mat;
    mat.m_cBase = 0x181818;
    mat.m_fWrapLighting = 0.5f;
@@ -354,17 +358,9 @@ void Light::RenderBulbMesh()
    mat.m_fGlossyImageLerp = 1.0f;
    mat.m_fThickness = 0.05f;
    mat.m_cClearcoat = 0;
-
-   RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderState initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
-
    pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
    pd3dDevice->basicShader->SetMaterial(&mat, false);
-
-   pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_bulbSocketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbSocketNumFaces);
-   pd3dDevice->basicShader->End();
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_position, m_d.m_depthBias, m_bulbSocketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbSocketNumFaces);
 
    mat.m_cBase = 0;
    mat.m_fWrapLighting = 0.5f;
@@ -380,10 +376,8 @@ void Light::RenderBulbMesh()
    mat.m_cClearcoat = 0xFFFFFF;
    pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
    pd3dDevice->basicShader->SetMaterial(&mat, false);
-
-   pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
-   pd3dDevice->basicShader->End();
+   Vertex3Ds bulbPos(m_position.x, m_position.y, m_position.z + m_d.m_height * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
 
    pd3dDevice->CopyRenderStates(false, initial_state);
 }
@@ -473,9 +467,8 @@ void Light::RenderDynamic()
       pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
       pd3dDevice->lightShader->SetFloat(SHADER_blend_modulate_vs_add, 0.00001f); // additive, but avoid full 0, as it disables the blend
 
-      pd3dDevice->lightShader->Begin();
-      pd3dDevice->DrawMesh(m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
-      pd3dDevice->lightShader->End();
+      Vertex3Ds bulbPos(m_position.x, m_position.y, m_position.z + m_d.m_height * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+      pd3dDevice->DrawMesh(pd3dDevice->lightShader, bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
    }
 
    Shader *shader = m_d.m_BulbLight ? pd3dDevice->lightShader : pd3dDevice->classicLightShader;
@@ -561,9 +554,7 @@ void Light::RenderDynamic()
       #endif
    }
 
-   shader->Begin();
-   pd3dDevice->DrawMesh(m_customMoverMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_customMoverIndexNum);
-   shader->End();
+   pd3dDevice->DrawMesh(shader, m_position, m_d.m_depthBias, m_customMoverMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_customMoverIndexNum);
 
    // Restore state
    if (m_backglass)
@@ -697,6 +688,7 @@ void Light::RenderSetup()
    m_surfaceTexture = m_ptable->GetSurfaceImage(m_d.m_szSurface);
 
    m_surfaceHeight = m_initSurfaceHeight;
+   m_position.Set(m_d.m_vCenter.x, m_d.m_vCenter.y, m_initSurfaceHeight);
 
    if (m_inPlayState == (float)LightStateBlinking)
       RestartBlinker(g_pplayer->m_time_msec);

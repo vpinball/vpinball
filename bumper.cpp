@@ -295,9 +295,8 @@ void Bumper::RenderBase(const Material * const baseMaterial)
    pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, &m_baseTexture);
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
-   pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
-   pd3dDevice->basicShader->End();
+   Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, pos, 0.f, m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
 }
 
 void Bumper::RenderSocket(const Material * const socketMaterial)
@@ -308,9 +307,8 @@ void Bumper::RenderSocket(const Material * const socketMaterial)
    pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, &m_skirtTexture);
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
-   pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
-   pd3dDevice->basicShader->End();
+   Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + 5.0f);
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, pos, 0.f, m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
 }
 
 void Bumper::RenderCap(const Material * const capMaterial)
@@ -321,9 +319,8 @@ void Bumper::RenderCap(const Material * const capMaterial)
    pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, &m_capTexture);
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
-   pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
-   pd3dDevice->basicShader->End();
+   Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, pos, 0.f, m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
 }
 
 void Bumper::UpdateSkirt(const bool doCalculation)
@@ -420,9 +417,8 @@ void Bumper::RenderDynamic()
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
 
       // render ring
-      pd3dDevice->basicShader->Begin();
-      pd3dDevice->DrawMesh(m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
-      pd3dDevice->basicShader->End();
+      Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + m_pbumperhitcircle->m_bumperanim_ringAnimOffset);
+      pd3dDevice->DrawMesh(pd3dDevice->basicShader, pos, 0.f, m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
    }
 
    if (m_d.m_skirtVisible)

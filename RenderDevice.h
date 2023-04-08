@@ -114,6 +114,7 @@ public:
    void AddRenderTargetDependency(RenderTarget* rt);
    void Clear(const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil);
    void BlitRenderTarget(RenderTarget* source, RenderTarget* destination, const bool copyColor = true, const bool copyDepth = true);
+   void DrawMesh(Shader* shader, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount);
    void DrawMesh(MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount);
    void DrawTexturedQuad(const Vertex3D_TexelOnly* vertices);
    void DrawTexturedQuad(const Vertex3D_NoTex2* vertices);
