@@ -3,9 +3,6 @@
 #include "RenderCommand.h"
 #include "RenderDevice.h"
 
-// Enable frame logging
-//#define WIN_LOG
-
 RenderPass::RenderPass(const string& name, RenderTarget* const rt, const bool ignoreStereo)
    : m_rt(rt)
    , m_ignoreStereo(ignoreStereo)
@@ -73,17 +70,12 @@ void RenderPass::Submit(RenderCommand* command)
    m_commands.push_back(command);
 }
 
-void RenderPass::Execute()
+void RenderPass::Execute(const bool log)
 {
    if (m_commands.size() > 0)
    {
-      #ifdef WIN_LOG
-      OutputDebugString("Pass '");
-      OutputDebugString(m_name.c_str());
-      OutputDebugString("' [RT=");
-      OutputDebugString(m_rt->m_name.c_str());
-      OutputDebugString("]\n");
-      #endif
+      if (log)
+         PLOGI << "Pass '" << m_name << "' [RT=" << m_rt->m_name << "]";
 
       #ifdef ENABLE_SDL
       if (GLAD_GL_VERSION_4_3)
@@ -129,6 +121,8 @@ void RenderPass::Execute()
                   return m_min_depth[r1->technique] < m_min_depth[r2->technique];*/
                return r1->GetShaderTechnique() > r2->GetShaderTechnique();
             }
+            if (r1->GetDepth() != r2->GetDepth())
+               return r1->GetDepth() < r2->GetDepth();
             if (r1->IsDrawMeshCommand() && r2->IsDrawMeshCommand())
             {
                unsigned int mbS1 = r1->GetMeshBuffer()->GetSortKey();
@@ -148,15 +142,11 @@ void RenderPass::Execute()
 
       m_rt->Activate(m_ignoreStereo);
       for (RenderCommand* cmd : m_commands)
-         cmd->Execute();
+         cmd->Execute(log);
 
       #ifdef ENABLE_SDL
       if (GLAD_GL_VERSION_4_3)
          glPopDebugGroup();
-      #endif
-      
-      #ifdef WIN_LOG
-      OutputDebugString("\n");
       #endif
    }
    m_rt->m_lastRenderPass = nullptr;

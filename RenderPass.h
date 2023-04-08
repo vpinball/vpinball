@@ -13,7 +13,7 @@ public:
    void Sort(vector<RenderPass*>& sortedPasses);
    
    void Submit(RenderCommand* command);
-   void Execute();
+   void Execute(const bool log = false);
 
    void RecycleCommands(std::vector<RenderCommand*>& commandPool);
 

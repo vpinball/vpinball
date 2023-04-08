@@ -1,9 +1,6 @@
 #include "stdafx.h"
 #include "RenderCommand.h"
 
-// Enable frame logging
-//#define WIN_LOG
-
 RenderCommand::RenderCommand(RenderDevice* rd)
    : m_rd(rd)
 {
@@ -24,15 +21,14 @@ bool RenderCommand::IsFullClear(const bool hasDepth) const
       return false;
 }
 
-void RenderCommand::Execute()
+void RenderCommand::Execute(const bool log)
 {
    switch (m_command)
    {
    case RC_CLEAR:
    {
-      #ifdef WIN_LOG
-      OutputDebugString("> Clear\n");
-      #endif
+      if (log)
+         PLOGI << "> Clear";
       m_renderState.Apply(m_rd);
       const D3DVALUE z = 1.0f;
       const DWORD stencil = 0L;
@@ -69,13 +65,8 @@ void RenderCommand::Execute()
 
    case RC_COPY:
    {
-      #ifdef WIN_LOG
-      OutputDebugString("> Copy ");
-      OutputDebugString(m_copyFrom->m_name.c_str());
-      OutputDebugString(" => ");
-      OutputDebugString(m_copyTo->m_name.c_str());
-      OutputDebugString("\n");
-      #endif
+      if (log)
+         PLOGI << "> Copy " << m_copyFrom->m_name << " => " << m_copyTo->m_name;
 
       // Original VPX code state that on DirectX 9 StretchRect must not be called between BeginScene/EndScene.
       // This does not seem to appear in Microsoft's docs and I could not find any glitch.
@@ -103,9 +94,6 @@ void RenderCommand::Execute()
       {
       case RC_DRAW_QUAD_PT:
       {
-         #ifdef WIN_LOG
-         OutputDebugString("> Draw Quad PT  ");
-         #endif
          m_rd->m_stats_drawn_triangles += 2;
          #ifdef ENABLE_SDL
             void* bufvb;
@@ -130,9 +118,6 @@ void RenderCommand::Execute()
 
       case RC_DRAW_QUAD_PNT:
       {
-         #ifdef WIN_LOG
-         OutputDebugString("> Draw Quad PNT ");
-         #endif
          m_rd->m_stats_drawn_triangles += 2;
          #ifdef ENABLE_SDL
             void* bufvb;
@@ -157,10 +142,6 @@ void RenderCommand::Execute()
 
       case RC_DRAW_MESH:
       {
-         #ifdef WIN_LOG
-         OutputDebugString("> Draw Mesh     ");
-         #endif
-
          unsigned int np; 
          switch (m_primitiveType)
          {
@@ -222,16 +203,24 @@ void RenderCommand::Execute()
       }
       m_shader->End();
 
-      #ifdef WIN_LOG
-      std::stringstream ss;
-      ss << std::setw(40) << Shader::GetTechniqueName(m_shaderTechnique) << std::setw(0) << " " << m_renderState.GetLog();
-      if (m_command == RC_DRAW_MESH)
+      if (log)
       {
-         ss << " MB:" << std::setw(4) << std::hex << m_mb->GetSortKey() << std::dec << " IndCount: " << std::setw(8) << m_indicesCount << " " << m_mb->m_name;
+         std::stringstream ss;
+         if (m_command == RC_DRAW_QUAD_PT)
+            ss << "> Draw Quad PT  ";
+         else if (m_command == RC_DRAW_QUAD_PNT)
+            ss << "> Draw Quad PNT ";
+         else if (m_command == RC_DRAW_MESH)
+            ss << "> Draw Mesh     ";
+         ss << std::setw(40) << Shader::GetTechniqueName(m_shaderTechnique) << std::setw(0) << " " << m_renderState.GetLog();
+         if (m_command == RC_DRAW_MESH)
+         {
+            ss << " Depth: " << std::setw(8) << m_depth;
+            ss << " MB:" << std::setw(4) << std::hex << m_mb->GetSortKey() << std::dec;
+            ss << " IndCount: " << std::setw(8) << m_indicesCount << " " << m_mb->m_name;
+         }
+         PLOGI << ss.str();
       }
-      ss << std::endl;
-      OutputDebugString(ss.str().c_str());
-      #endif
       break;
    }
    }
