@@ -383,7 +383,6 @@ void RenderTarget::Activate(const bool ignoreStereo)
    {
    case STEREO_OFF:
       glViewport(0, 0, m_width, m_height);
-      m_rd->lightShader->SetBool(SHADER_ignoreStereo, true); // For non-stereo lightbulb texture, can't use pre-processor for this
       break;
    case STEREO_TB: // Render left eye in the upper part, and right eye in the lower part
    case STEREO_INT:
@@ -394,7 +393,6 @@ void RenderTarget::Activate(const bool ignoreStereo)
       viewPorts[4] = 0.0f;
       viewPorts[5] = (float)(m_height * 0.5);
       glViewportArrayv(0, 2, viewPorts);
-      m_rd->lightShader->SetBool(SHADER_ignoreStereo, false);
       break;
    default: //For all other stereo mode, render left eye in the left part, and right eye in the right part
       glViewport(0, 0, m_width / 2, m_height); // Set default viewport width/height values of all viewports before we define the array or we get undefined behaviour in shader (flickering viewports).
@@ -403,7 +401,6 @@ void RenderTarget::Activate(const bool ignoreStereo)
       viewPorts[4] = (float)(m_width * 0.5);
       viewPorts[5] = 0.0f;
       glViewportArrayv(0, 2, viewPorts);
-      m_rd->lightShader->SetBool(SHADER_ignoreStereo, false);
       break;
    }
 #else

@@ -13,7 +13,7 @@ uniform vec4 vColor_Intensity;
 uniform vec4 vRes_Alpha_time;
 uniform float alphaTestValue;
 
-uniform mat4 matWorldViewProj[eyes];
+uniform mat4 matWorldViewProj[N_EYES];
 
 //!! split into pure sprite & pure DMD?
 
@@ -23,7 +23,7 @@ uniform mat4 matWorldViewProj[eyes];
 #extension GL_ARB_viewport_array : enable
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
-#if eyes == 1
+#if N_EYES == 1
    layout(invocations = 1) in;
 #else
    layout(invocations = 2) in;

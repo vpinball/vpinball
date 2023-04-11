@@ -216,7 +216,7 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
 			0.5 + atan2_approx_div2PI(R.y, R.x),
 			acos_approx_divPI(R.z));
 
-#if !enable_VR
+#if !ENABLE_VR
 	   if (glossyMax > 0.0)
 		  color += DoEnvmapGlossy(N, V, Ruv, glossy, Roughness_WrapL_Edge_Thickness.x);
 

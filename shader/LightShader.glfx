@@ -9,7 +9,7 @@ precision highp float;
 ////DEFINES
 #include "Helpers.fxh"
 
-uniform mat4 matWorldViewProj[eyes];
+uniform mat4 matWorldViewProj[N_EYES];
 
 
 ////VERTEX
@@ -28,7 +28,7 @@ layout(triangle_strip, max_vertices = 3) out;
 uniform bool ignoreStereo; // Must be able to force only one invocation for drawing bulb light texture
 
 // Use geometry invocations for stereo rendering
-#if (eyes == 1)
+#if (N_EYES == 1)
    layout(invocations = 1) in;
 #else
    layout(invocations = 2) in;
