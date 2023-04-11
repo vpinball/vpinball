@@ -1849,7 +1849,8 @@ void RenderDevice::DrawMesh(Shader* shader, const Vertex3Ds& center, const float
    shader->Begin(); // TODO do not actually bind it, just copy the shader state (needs shader state cleanup first)
    ApplyRenderStates(); // TODO do not actually apply it, just copy the state
    RenderCommand* cmd = m_renderFrame.NewCommand();
-   float depth = depthBias - (m_viewVec.x * center.x + m_viewVec.y * center.y + m_viewVec.z * center.z);
+   // float depth = depthBias - center.z; // Legacy sorting order (only along negative z axis, which is reversed for reflections)
+   float depth = depthBias + (m_viewVec.x * center.x + m_viewVec.y * center.y + m_viewVec.z * center.z);
    cmd->SetDrawMesh(mb, type, startIndice, indexCount, depth);
    m_currentPass->Submit(cmd);
    shader->End();

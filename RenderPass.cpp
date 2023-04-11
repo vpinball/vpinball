@@ -88,7 +88,6 @@ void RenderPass::Execute(const bool log)
 
       struct
       {
-         // TODO add depth + depthbias sorting (for the time being, we rely on the render command to be pre sorted which breaks in VR)
          inline bool operator()(const RenderCommand* r1, const RenderCommand* r2) const
          {
             // Move Clear/Copy command at the beginniing of the pass
@@ -96,6 +95,7 @@ void RenderPass::Execute(const bool log)
                return true;
             if (!r2->IsDrawCommand())
                return false;
+
             // Move kickers before other draw calls.
             // Kickers disable depth test to be visible through playfield. This would make them to be rendered after opaques, but since they hack depth, they need to be rendered before balls
             // > The right fix would be to remove the kicker hack (use stencil masking, alpha punch or CSG on playfield), this would also solve rendering kicker in VR
@@ -103,15 +103,24 @@ void RenderPass::Execute(const bool log)
                return true;
             if (r2->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean || r2->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean_isMetal)
                return false;
-            // Blended items: for the time being, don't sort blended command
+            
+            // Non opaque items: render them after opaque ones, sorted back to front since their rendering depends on the framebuffer
             bool transparent1 = !r1->GetRenderState().IsOpaque();
-            if (transparent1)
-               return false;
             bool transparent2 = !r2->GetRenderState().IsOpaque();
+            if (transparent1)
+            {
+               if (transparent2)
+               {
+                  if (r1->GetDepth() == r2->GetDepth())
+                     return false;
+                  return r1->GetDepth() > r2->GetDepth(); // Back to front
+               }
+               return false;
+            }
             if (transparent2)
                return true;
-            // Opaque items
-            // FIXME kicker shader must be drawn before ball shader since it tweaks it's z to appear in front of the playfield, but must stay behind the ball
+            
+            // Opaque items: render them front to back (to limit overdraw, thanks to early depth test), limiting shader/mesh buffer/sampler/uniform/state changes
             if (r1->GetShaderTechnique() != r2->GetShaderTechnique())
             {
                // TODO sort by minimum depth of the technique
@@ -122,7 +131,7 @@ void RenderPass::Execute(const bool log)
                return r1->GetShaderTechnique() > r2->GetShaderTechnique();
             }
             if (r1->GetDepth() != r2->GetDepth())
-               return r1->GetDepth() < r2->GetDepth();
+               return r1->GetDepth() < r2->GetDepth(); // Front to back
             if (r1->IsDrawMeshCommand() && r2->IsDrawMeshCommand())
             {
                unsigned int mbS1 = r1->GetMeshBuffer()->GetSortKey();
@@ -132,12 +141,11 @@ void RenderPass::Execute(const bool log)
                   return mbS1 < mbS2;
                }
             }
-            // TODO sort by uniform/texture hash
             return r1->GetRenderState().m_state < r2->GetRenderState().m_state;
          }
       } sortFunc;
 
-      // For the time being, stable sort is needed since we don't want to change the order of blended draw calls
+      // stable sort is needed since we don't want to change the order of blended draw calls between frames
       stable_sort(m_commands.begin(), m_commands.end(), sortFunc);
 
       m_rt->Activate(m_ignoreStereo);
