@@ -302,22 +302,27 @@ RenderTarget* RenderTarget::Duplicate(const string& name, const bool shareDepthS
    return new RenderTarget(m_rd, name, m_width, m_height, m_format, m_has_depth, m_nMSAASamples, m_stereo, "Failed to duplicate render target", shareDepthSurface ? this : nullptr);
 }
 
-void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool copyDepth)
+void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool copyDepth,
+   const int x1, const int y1, const int w1, const int h1,
+   const int x2, const int y2, const int w2, const int h2)
 {
-   int w1 = GetWidth(), h1 = GetHeight(), w2 = dest->GetWidth(), h2 = dest->GetHeight();
+   int px1 = x1 == -1 ? 0 : x1, py1 = y1 == -1 ? 0 : y1;
+   int pw1 = w1 == -1 ? GetWidth() : w1, ph1 = h1 == -1 ? GetHeight() : h1;
+   int px2 = x2 == -1 ? 0 : x2, py2 = y2 == -1 ? 0 : y2;
+   int pw2 = w2 == -1 ? dest->GetWidth() : w2, ph2 = h2 == -1 ? dest->GetHeight() : h2;
 #ifdef ENABLE_SDL
    if (w1 == w2 && h1 == h2)
    {
       int bitmask = (copyColor ? GL_COLOR_BUFFER_BIT : 0) | (m_has_depth && dest->m_has_depth && copyDepth ? GL_DEPTH_BUFFER_BIT : 0);
 #ifndef __OPENGLES__
       if (GLAD_GL_VERSION_4_5)
-         glBlitNamedFramebuffer(GetCoreFrameBuffer(), dest->GetCoreFrameBuffer(), 0, 0, w1, h1, 0, 0, w2, h2, bitmask, GL_NEAREST);
+         glBlitNamedFramebuffer(GetCoreFrameBuffer(), dest->GetCoreFrameBuffer(), px1, py1, px1 + pw1, py1 + ph1, px2, py2, px2 + pw2, py2 + ph2, bitmask, GL_NEAREST);
       else
 #endif
       {
          glBindFramebuffer(GL_READ_FRAMEBUFFER, GetCoreFrameBuffer());
          glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetCoreFrameBuffer());
-         glBlitFramebuffer(0, 0, w1, h1, 0, 0, w2, h2, bitmask, GL_NEAREST);
+         glBlitFramebuffer(px1, py1, px1 + pw1, py1 + ph1, px2, py2, px2 + pw2, py2 + ph2, bitmask, GL_NEAREST);
       }
    }
    else
@@ -326,26 +331,26 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
       {
 #ifndef __OPENGLES__
          if (GLAD_GL_VERSION_4_5)
-            glBlitNamedFramebuffer(GetCoreFrameBuffer(), dest->GetCoreFrameBuffer(), 0, 0, w1, h1, 0, 0, w2, h2, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+            glBlitNamedFramebuffer(GetCoreFrameBuffer(), dest->GetCoreFrameBuffer(), px1, py1, px1 + pw1, py1 + ph1, px2, py2, px2 + pw2, py2 + ph2, GL_COLOR_BUFFER_BIT, GL_LINEAR);
          else
 #endif
          {
             glBindFramebuffer(GL_READ_FRAMEBUFFER, GetCoreFrameBuffer());
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetCoreFrameBuffer());
-            glBlitFramebuffer(0, 0, w1, h1, 0, 0, w2, h2, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+            glBlitFramebuffer(px1, py1, px1 + pw1, py1 + ph1, px2, py2, px2 + pw2, py2 + ph2, GL_COLOR_BUFFER_BIT, GL_LINEAR);
          }
       }
       if (m_has_depth && dest->m_has_depth && copyDepth)
       {
 #ifndef __OPENGLES__
          if (GLAD_GL_VERSION_4_5)
-            glBlitNamedFramebuffer(GetCoreFrameBuffer(), dest->GetCoreFrameBuffer(), 0, 0, w1, h1, 0, 0, w2, h2, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+            glBlitNamedFramebuffer(GetCoreFrameBuffer(), dest->GetCoreFrameBuffer(), px1, py1, px1 + pw1, py1 + ph1, px2, py2, px2 + pw2, py2 + ph2, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
          else
 #endif
          {
             glBindFramebuffer(GL_READ_FRAMEBUFFER, GetCoreFrameBuffer());
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetCoreFrameBuffer());
-            glBlitFramebuffer(0, 0, w1, h1, 0, 0, w2, h2, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+            glBlitFramebuffer(px1, py1, px1 + pw1, py1 + ph1, px2, py2, px2 + pw2, py2 + ph2, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
          }
       }
    }
