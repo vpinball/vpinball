@@ -113,7 +113,9 @@ public:
    void SetRenderTarget(const string& passName, RenderTarget* rt, bool ignoreStereo = false);
    void AddRenderTargetDependency(RenderTarget* rt);
    void Clear(const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil);
-   void BlitRenderTarget(RenderTarget* source, RenderTarget* destination, const bool copyColor = true, const bool copyDepth = true);
+   void BlitRenderTarget(RenderTarget* source, RenderTarget* destination, const bool copyColor = true, const bool copyDepth = true,  
+      const int x1 = -1, const int y1 = -1, const int w1 = -1, const int h1 = -1,
+      const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1);
    void DrawMesh(Shader* shader, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount);
    void DrawMesh(MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount);
    void DrawTexturedQuad(const Vertex3D_TexelOnly* vertices);

@@ -15,8 +15,8 @@ bool RenderCommand::IsFullClear(const bool hasDepth) const
 {
    if (m_command == RC_CLEAR)
       return hasDepth ? m_clearFlags == (clearType::TARGET | clearType::ZBUFFER) : (m_clearFlags & clearType::TARGET) != 0;
-   else if (m_command == RC_COPY)
-      return hasDepth ? m_copyColor && m_copyDepth : m_copyColor;
+   //else if (m_command == RC_COPY)
+   //   return hasDepth ? m_copyColor && m_copyDepth : m_copyColor;
    else
       return false;
 }
@@ -73,7 +73,9 @@ void RenderCommand::Execute(const bool log)
       #ifndef ENABLE_SDL
       //CHECKD3D(m_rd->GetCoreDevice()->EndScene());
       #endif
-      m_copyFrom->CopyTo(m_copyTo, m_copyColor, m_copyDepth);
+      m_copyFrom->CopyTo(m_copyTo, m_copyColor, m_copyDepth,
+         (int) m_copySrcRect.x, (int) m_copySrcRect.y, (int) m_copySrcRect.z, (int) m_copySrcRect.w, 
+         (int) m_copyDstRect.x, (int) m_copyDstRect.y, (int) m_copyDstRect.z, (int) m_copyDstRect.w);
       #ifndef ENABLE_SDL
       //CHECKD3D(m_rd->GetCoreDevice()->BeginScene());
       #endif
@@ -247,17 +249,22 @@ void RenderCommand::SetClear(DWORD clearFlags, DWORD clearARGB)
       m_renderState.SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
 }
 
-void RenderCommand::SetCopy(RenderTarget* from, RenderTarget* to, bool color, bool depth)
+void RenderCommand::SetCopy(RenderTarget* from, RenderTarget* to, bool color, bool depth,
+   const int x1, const int y1, const int w1, const int h1,
+   const int x2, const int y2, const int w2, const int h2)
 {
    m_command = Command::RC_COPY;
    m_copyFrom = from;
    m_copyTo = to;
    m_copyColor = color;
    m_copyDepth = depth;
+   m_copySrcRect = vec4(x1, y1, w1, h1);
+   m_copyDstRect = vec4(x2, y2, w2, h2);
 }
 
 void RenderCommand::SetDrawMesh(MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount, float depth)
 {
+   assert(mb != nullptr);
    m_command = Command::RC_DRAW_MESH;
    m_mb = mb;
    m_primitiveType = type;

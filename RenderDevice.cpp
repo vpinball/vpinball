@@ -1812,12 +1812,14 @@ void RenderDevice::Clear(const DWORD flags, const D3DCOLOR color, const D3DVALUE
    m_currentPass->Submit(cmd);
 }
 
-void RenderDevice::BlitRenderTarget(RenderTarget* source, RenderTarget* destination, bool copyColor, bool copyDepth)
+void RenderDevice::BlitRenderTarget(RenderTarget* source, RenderTarget* destination, bool copyColor, bool copyDepth,
+   const int x1, const int y1, const int w1, const int h1,
+   const int x2, const int y2, const int w2, const int h2)
 {
    assert(m_currentPass->m_rt == destination); // We must be on a render pass targeted at the destination for correct render pass sorting
    AddRenderTargetDependency(source);
    RenderCommand* cmd = m_renderFrame.NewCommand();
-   cmd->SetCopy(source, destination, copyColor, copyDepth);
+   cmd->SetCopy(source, destination, copyColor, copyDepth, x1, y1, w1, h1, x2, y2, w2, h2);
    m_currentPass->Submit(cmd);
 }
 
