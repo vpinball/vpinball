@@ -16,7 +16,7 @@
 // uniform bool disableVertexShader; // To support pretransformed vertices (used for backglass)
 
 // Use geometry invocations for stereo rendering
-// #if (eyes == 1)
+// #if (N_EYES == 1)
 //    layout(invocations = 1) in;
 // #else
 //    layout(invocations = 2) in;

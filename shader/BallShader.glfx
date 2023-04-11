@@ -17,7 +17,7 @@ layout(std140) uniform ballMatrixBlock {
 	mat4 matView;
 	mat4 matWorldView;
 	mat4 matWorldViewInverse;
-	mat4 matWorldViewProj[eyes];
+	mat4 matWorldViewProj[N_EYES];
 };
 
 ////VERTEX
@@ -26,7 +26,7 @@ layout(std140) uniform ballMatrixBlock {
 #extension GL_ARB_viewport_array : enable
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
-#if (eyes == 1)
+#if (N_EYES == 1)
    layout(invocations = 1) in;
 #else
    layout(invocations = 2) in;
@@ -187,7 +187,7 @@ float3 ballLightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float
 float3 PFDoPointLight(const float3 pos, const float3 N, const float3 diffuse, const int i) 
 {
    //!! do in vertex shader?! or completely before?!
-#if enable_VR
+#if ENABLE_VR
    const float3 lightDir = ((matView * vec4(lightPos[i].xyz, 1.0)).xyz - pos) / fSceneScale; // In VR we need to scale to the overall scene scaling
 #else
    //const float3 lightDir = mul_w1(lightPos[i].xyz, matView) - pos;

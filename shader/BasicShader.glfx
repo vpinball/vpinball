@@ -19,12 +19,12 @@ layout(std140) uniform basicMatrixBlock {
 	mat4 matWorldView;
 	mat3x4 matWorldViewInverseTranspose;
 	vec4 unusedFillerFormatWorldViewInverseTranspose;
-	mat4 matWorldViewProj[eyes];
+	mat4 matWorldViewProj[N_EYES];
 };
 
 uniform bool ignoreStereo; // Must be able to force only one invocation for drawing bulb light texture
 
-uniform vec4 clip_planes[eyes];
+uniform vec4 clip_planes[N_EYES];
 
 ////VERTEX
 
@@ -35,7 +35,7 @@ layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
 
 // Use geometry invocations for stereo rendering
-#if (eyes == 1)
+#if (N_EYES == 1)
    layout(invocations = 1) in;
 #else
    layout(invocations = 2) in;
@@ -264,10 +264,10 @@ void main()
       //Custom
       tex01 = tex01_gs[i];
       vec2 screen_space = 0.5 * (gl_Position.xy / gl_Position.w) + vec2(0.5);
-#if (eyes == 1)
+#if (N_EYES == 1)
       tex03.xy = screen_space; // Sampling from a normal screen space texture
 #else
-#if stereo_vert
+#if VERTICAL_STEREO
       tex03.xy = vec2(screen_space.x, 0.5 * (screen_space.y + gl_InvocationID)); // Sampling from a vertical stereo screen space texture
 #else
       tex03.xy = vec2(0.5 * (screen_space.x + gl_InvocationID), screen_space.y); // Sampling from a horizontal stereo screen space texture
@@ -304,10 +304,10 @@ void main()
       gl_ClipDistance[0] = dot(gl_Position, clip_planes[gl_InvocationID]); // For Render Dynamic Mirror when enabling clipping.
       //Custom
       vec2 screen_space = 0.5 * (gl_Position.xy / gl_Position.w) + vec2(0.5);
-#if (eyes == 1)
+#if (N_EYES == 1)
       tex03.xy = screen_space; // Sampling from a normal screen space texture
 #else
-#if stereo_vert
+#if VERTICAL_STEREO
       tex03.xy = vec2(screen_space.x, 0.5 * (screen_space.y + gl_InvocationID)); // Sampling from a vertical stereo screen space texture
 #else
       tex03.xy = vec2(0.5 * (screen_space.x + gl_InvocationID), screen_space.y); // Sampling from a horizontal stereo screen space texture
@@ -346,10 +346,10 @@ void main()
       gl_Position.z = (matWorldViewProj[gl_InvocationID]*P2).z;
       //Custom
       vec2 screen_space = 0.5 * (gl_Position.xy / gl_Position.w) + vec2(0.5);
-#if (eyes == 1)
+#if (N_EYES == 1)
       tex03.xy = screen_space; // Sampling from a normal screen space texture
 #else
-#if stereo_vert
+#if VERTICAL_STEREO
       tex03.xy = vec2(screen_space.x, 0.5 * (screen_space.y + gl_InvocationID)); // Sampling from a vertical stereo screen space texture
 #else
       tex03.xy = vec2(0.5 * (screen_space.x + gl_InvocationID), screen_space.y); // Sampling from a horizontal stereo screen space texture
