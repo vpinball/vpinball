@@ -160,7 +160,6 @@ enum ShaderUniforms
    #ifdef ENABLE_SDL // OpenGL
    SHADER_UNIFORM(SUT_DataBlock, basicMatrixBlock, 5 * 16 * 4), // +1 Matrix for stereo
    SHADER_UNIFORM(SUT_DataBlock, ballMatrixBlock, 4 * 16 * 4), // +1 Matrix for stereo
-   SHADER_UNIFORM(SUT_Bool, ignoreStereo, 1), // Force single invocation for bulb light buffer in OpenGL
    #else // DirectX 9
    SHADER_UNIFORM(SUT_Float4x4, matWorld, 1),
    SHADER_UNIFORM(SUT_Float4x3, matView, 1),
