@@ -22,8 +22,6 @@ layout(std140) uniform basicMatrixBlock {
 	mat4 matWorldViewProj[N_EYES];
 };
 
-uniform bool ignoreStereo; // Must be able to force only one invocation for drawing bulb light texture
-
 uniform vec4 clip_planes[N_EYES];
 
 ////VERTEX

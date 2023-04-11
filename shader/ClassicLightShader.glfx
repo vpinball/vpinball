@@ -72,20 +72,17 @@ out vec3 normal;
 
 void main()
 {
-   gl_ViewportIndex = gl_InvocationID;
-   if (gl_ViewportIndex == 0 || !ignoreStereo)
-   {
-      for (int i=0;i<gl_in.length();i++)
-      {
-         gl_Position = matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position;
-         tex0 = tex0_gs[i];
-         worldPos = worldPos_gs[i];
-         tablePos = tablePos_gs[i];
-         normal = normal_gs[i];
-         EmitVertex();
-      }
-      EndPrimitive();
-   }
+    gl_ViewportIndex = gl_InvocationID;
+    for (int i=0;i<gl_in.length();i++)
+    {
+        gl_Position = matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position;
+        tex0 = tex0_gs[i];
+        worldPos = worldPos_gs[i];
+        tablePos = tablePos_gs[i];
+        normal = normal_gs[i];
+        EmitVertex();
+    }
+    EndPrimitive();
 }
 
 ////PS_LightWithTexel

@@ -1793,22 +1793,6 @@ void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt, bool ig
          m_currentPass->AddPrecursor(rt->m_lastRenderPass);
       m_renderFrame.AddPass(m_currentPass);
       rt->m_lastRenderPass = m_currentPass;
-      #ifdef ENABLE_SDL
-      switch (ignoreStereo ? STEREO_OFF : rt->GetStereo())
-      {
-      case STEREO_OFF:
-         lightShader->SetBool(SHADER_ignoreStereo, true); // For non-stereo lightbulb texture, can't use pre-processor for this
-         break;
-      case STEREO_TB: // Render left eye in the upper part, and right eye in the lower part
-      case STEREO_INT:
-      case STEREO_FLIPPED_INT:
-         lightShader->SetBool(SHADER_ignoreStereo, false);
-         break;
-      default: //For all other stereo mode, render left eye in the left part, and right eye in the right part
-         lightShader->SetBool(SHADER_ignoreStereo, false);
-         break;
-      }
-      #endif
    }
 }
 
