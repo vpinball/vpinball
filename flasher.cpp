@@ -1347,9 +1347,8 @@ void Flasher::RenderDynamic()
        if (texdmd != nullptr)
           pd3dDevice->DMDShader->SetTexture(SHADER_tex_dmd, texdmd, SF_NONE, SA_CLAMP, SA_CLAMP);
 
-       pd3dDevice->DMDShader->Begin();
-       pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
-       pd3dDevice->DMDShader->End();
+       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height);
+       pd3dDevice->DrawMesh(pd3dDevice->DMDShader, pos, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
    }
    else if (!(g_pplayer->IsRenderPass(Player::TRANSPARENT_DMD_PASS) || g_pplayer->IsRenderPass(Player::OPAQUE_DMD_PASS)))
    {
@@ -1421,9 +1420,8 @@ void Flasher::RenderDynamic()
        pd3dDevice->SetRenderState(RenderState::DESTBLEND, m_d.m_addBlend ? RenderState::INVSRC_COLOR : RenderState::INVSRC_ALPHA);
        pd3dDevice->SetRenderState(RenderState::BLENDOP, m_d.m_addBlend ? RenderState::BLENDOP_REVSUBTRACT : RenderState::BLENDOP_ADD);
 
-       pd3dDevice->flasherShader->Begin();
-       pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
-       pd3dDevice->flasherShader->End();
+       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height);
+       pd3dDevice->DrawMesh(pd3dDevice->flasherShader, pos, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
 
        pd3dDevice->flasherShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
    }

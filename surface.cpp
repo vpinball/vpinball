@@ -539,6 +539,12 @@ void Surface::EndPlay()
    FreeBuffers();
 }
 
+void Surface::UpdateBounds()
+{
+   const Vertex2D center2D = GetPointCenter();
+   m_boundingSphereCenter.Set(center2D.x, center2D.y, m_d.m_heighttop * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+}
+
 void Surface::MoveOffset(const float dx, const float dy)
 {
    for (size_t i = 0; i < m_vdpoint.size(); i++)
@@ -959,6 +965,8 @@ void Surface::RenderSetup()
 {
    const float oldBottomHeight = m_d.m_heightbottom;
    const float oldTopHeight = m_d.m_heighttop;
+   
+   UpdateBounds();
 
    m_d.m_heightbottom *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    m_d.m_heighttop *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
@@ -1052,9 +1060,7 @@ void Surface::RenderSlingshots()
           }
       }
    }
-   pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_slingshotMeshBuffer, RenderDevice::TRIANGLELIST, 0, static_cast<DWORD>(m_vlinesling.size() * 24));
-   pd3dDevice->basicShader->End();
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, 0.f, m_slingshotMeshBuffer, RenderDevice::TRIANGLELIST, 0, static_cast<DWORD>(m_vlinesling.size() * 24));
 
    //pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 }
@@ -1101,9 +1107,7 @@ void Surface::RenderWallsAtHeight(const bool drop)
       }
 
       // combine drawcalls into one (hopefully faster)
-      pd3dDevice->basicShader->Begin();
-      pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numVertices * 6);
-      pd3dDevice->basicShader->End();
+      pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numVertices * 6);
    }
 
    // render top&bottom
@@ -1131,9 +1135,7 @@ void Surface::RenderWallsAtHeight(const bool drop)
       }
 
       // Top
-      pd3dDevice->basicShader->Begin();
-      pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (drop ? m_numPolys * 3 : 0), m_numPolys * 3);
-      pd3dDevice->basicShader->End();
+      pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (drop ? m_numPolys * 3 : 0), m_numPolys * 3);
 
       // Only render Bottom for Reflections
       if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
@@ -1143,9 +1145,7 @@ void Surface::RenderWallsAtHeight(const bool drop)
          else
             pd3dDevice->SetRenderStateCulling(RenderState::CULL_CW);
 
-         pd3dDevice->basicShader->Begin();
-         pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);
-         pd3dDevice->basicShader->End();
+         pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);
       }
    }
 

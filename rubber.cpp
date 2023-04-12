@@ -687,8 +687,15 @@ float Rubber::GetDepth(const Vertex3Ds& viewDir) const
    return viewDir.x * center2D.x + viewDir.y * center2D.y + viewDir.z * m_d.m_height;
 }
 
+void Rubber::UpdateBounds()
+{
+   const Vertex2D center2D = GetPointCenter();
+   m_boundingSphereCenter.Set(center2D.x, center2D.y, m_d.m_height);
+}
+
 void Rubber::RenderSetup()
 {
+   UpdateBounds();
    GenerateVertexBuffer();
 }
 
@@ -1275,9 +1282,7 @@ void Rubber::RenderObject()
       pd3dDevice->basicShader->SetMaterial(mat, false);
    }
 
-   pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-   pd3dDevice->basicShader->End();
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
 
    pd3dDevice->CopyRenderStates(false, initial_state);
 }

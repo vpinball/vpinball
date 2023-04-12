@@ -254,9 +254,7 @@ void Plunger::RenderDynamic()
       pd3dDevice->basicShader->SetMaterial(mat, false);
    }
 
-   pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, frame * m_indicesPerFrame, m_indicesPerFrame);
-   pd3dDevice->basicShader->End();
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, 0.f /*m_boundingSphereRadius*/, m_meshBuffer, RenderDevice::TRIANGLELIST, frame * m_indicesPerFrame, m_indicesPerFrame);
 
    pd3dDevice->CopyRenderStates(false, initial_state);
 }
@@ -754,6 +752,10 @@ void Plunger::RenderSetup()
          //y1 += 0;
       }
    }
+   
+   // for sorting and bounding
+   m_boundingSphereRadius = 0.5f * (m_d.m_stroke + m_d.m_height);
+   m_boundingSphereCenter.Set(m_d.m_v.x, 0.5f * (m_d.m_v.y - m_d.m_stroke + m_d.m_v.y + m_d.m_height), zScale * (zheight + m_d.m_width * (PlungerTypeFlat ? 1.25f : 1.f)));
 
    // set up the vertex index list
    unsigned int *const indices = new unsigned int[m_indicesPerFrame * m_cframes];

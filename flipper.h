@@ -187,7 +187,9 @@ private:
 
       HitFlipper *m_phitflipper;
       float m_lastAngle;
-      Vertex3Ds m_position;
+
+   Vertex3Ds m_boundingSphereCenter;
+   //float m_boundingSphereRadius = -1.f;
 
 // IFlipper
 public:

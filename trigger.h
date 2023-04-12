@@ -137,6 +137,8 @@ private:
    bool m_doAnimation;
    bool m_moveDown;
 
+   Vertex3Ds m_boundingSphereCenter;
+
 // ITrigger
 public:
    STDMETHOD(get_TriggerShape)(/*[out, retval]*/ TriggerShape *pVal);

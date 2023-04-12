@@ -166,6 +166,10 @@ private:
    bool m_isDynamic;
    bool m_isDropped;
 
+   Vertex3Ds m_boundingSphereCenter;
+   //float m_boundingSphereRadius = -1.f;
+   void UpdateBounds();
+
 // ISurface
 public:
    STDMETHOD(get_SideVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
