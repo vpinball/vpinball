@@ -411,17 +411,10 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
 
    if (render_static)
       g_pplayer->DrawStatics();
-
    if (render_dynamic)
-   {
-      g_pplayer->SetViewVector(Vertex3Ds(0.f, 0.f, 1.f));
       g_pplayer->DrawDynamics(false);
-      g_pplayer->SetViewVector(Vertex3Ds(0.f, 0.f, -1.f));
-   }
    else if (render_balls)
-   {
       g_pplayer->DrawDynamics(true);
-   }
 
    // Restore initial render states and camera
    g_pplayer->m_render_mask &= ~Player::REFLECTION_PASS;
