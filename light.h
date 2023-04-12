@@ -173,8 +173,6 @@ public:
    bool  m_lockedByLS;
 
 private:
-   Vertex3Ds m_position;
-
    class LightCenter final : public ISelect
    {
    public:
@@ -235,6 +233,10 @@ private:
    bool  m_roundLight; // pre-VPX compatibility
 
    vector<IEditable *> m_lightmaps; // Populated when playing with primitives and flashers declared as lightmaps of this light
+
+   Vertex3Ds m_boundingSphereCenter;
+   //float m_boundingSphereRadius = -1.f;
+   void UpdateBounds();
 
 public:
    STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);

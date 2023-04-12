@@ -177,6 +177,9 @@ private:
    // number of triangle indices per frame
    int m_indicesPerFrame = 0;
 
+   Vertex3Ds m_boundingSphereCenter;
+   float m_boundingSphereRadius = -1.f;
+
 // IPlunger
 public:
    STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);

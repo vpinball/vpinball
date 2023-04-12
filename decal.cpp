@@ -448,6 +448,8 @@ void Decal::RenderSetup()
    RenderDevice *const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 #endif
 
+   UpdateBounds();
+   
    PreRenderText();
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
@@ -528,6 +530,17 @@ float Decal::GetDepth(const Vertex3Ds& viewDir) const
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    return !m_backglass ? (viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z*height) : 0.f;
+}
+
+void Decal::UpdateBounds()
+{
+   if (m_backglass)
+      m_boundingSphereCenter.Set(0.f, 0.f, 0.f);
+   else
+   {
+      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+      m_boundingSphereCenter.Set(m_d.m_vCenter.x, m_d.m_vCenter.y, height);
+   }
 }
 
 void Decal::RenderObject()
@@ -622,9 +635,7 @@ void Decal::RenderObject()
       #endif
    }
 
-   pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLEFAN, 0, 4);
-   pd3dDevice->basicShader->End();
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLEFAN, 0, 4);
 
    if (m_backglass)
       g_pplayer->UpdateBasicShaderMatrix();

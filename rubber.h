@@ -144,6 +144,9 @@ private:
    void GenerateMesh(const int _accuracy = -1, const bool createHitShape = false);
    void DrawRubberMesh(Sur * const psur);
 
+   Vertex3Ds m_boundingSphereCenter;
+   void UpdateBounds();
+
    // IRamp
 public:
    STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);

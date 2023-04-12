@@ -445,15 +445,15 @@ void Gate::RenderObject()
    pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
 
    pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
-   pd3dDevice->basicShader->Begin();
+
+   Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
 
    // render bracket
    if (m_d.m_showBracket)
-      pd3dDevice->DrawMesh(m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
-   // render wire
-   pd3dDevice->DrawMesh(m_wireMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+      pd3dDevice->DrawMesh(pd3dDevice->basicShader, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
 
-   pd3dDevice->basicShader->End();
+   // render wire
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, pos, 0.f, m_wireMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
 
    pd3dDevice->CopyRenderStates(false, initial_state);
 }

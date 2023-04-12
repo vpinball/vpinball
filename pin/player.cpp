@@ -5033,9 +5033,8 @@ void Player::DrawBalls()
       else //if (!m_cabinetMode && !pball->m_decalMode)
          m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBall);
 
-      m_ballShader->Begin();
-      m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
-      m_ballShader->End();
+      Vertex3Ds pos(pball->m_d.m_pos.x, pball->m_d.m_pos.y, zheight);
+      m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballShader, pos, 0.f, m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
 
       // ball trails
       if ((!g_pplayer->IsRenderPass(Player::REFLECTION_PASS)) && // do not render trails in reflection pass

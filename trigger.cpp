@@ -617,9 +617,7 @@ void Trigger::RenderDynamic()
    if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD || m_d.m_shape == TriggerInder)
       pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
 
-   pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-   pd3dDevice->basicShader->End();
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
 
    pd3dDevice->CopyRenderStates(false, initial_state);
 }
@@ -690,6 +688,8 @@ void Trigger::GenerateMesh()
    const Vertex3D_NoTex2 *verts;
    float zoffset = (m_d.m_shape == TriggerButton) ? 5.0f : 0.0f;
    if (m_d.m_shape == TriggerWireC) zoffset = -19.0f;
+
+   m_boundingSphereCenter.Set(m_d.m_vCenter.x, m_d.m_vCenter.y, baseHeight);
 
    switch(m_d.m_shape)
    {

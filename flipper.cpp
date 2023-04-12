@@ -641,7 +641,7 @@ void Flipper::RenderDynamic()
       matTrafo.Multiply(matTemp, matTrafo);
    }
    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_position, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, flipperBaseNumIndices);
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, flipperBaseNumIndices);
 
    //render rubber
    if (m_d.m_rubberthickness > 0.f)
@@ -657,7 +657,7 @@ void Flipper::RenderDynamic()
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
          pd3dDevice->basicShader->SetMaterial(mat, false);
       }
-      pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_position, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, flipperBaseNumIndices, flipperBaseNumIndices);
+      pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, flipperBaseNumIndices, flipperBaseNumIndices);
    }
    g_pplayer->UpdateBasicShaderMatrix();
 
@@ -780,7 +780,7 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
    fullMatrix.RotateZMatrix(ANGTORAD(180.0f));
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
-   m_position.Set(m_d.m_Center.x, m_d.m_Center.y, height);
+   m_boundingSphereCenter.Set(m_d.m_Center.x, m_d.m_Center.y, height);
 
    // calc angle needed to fix P0 location
    const float sinAngle = clamp((m_d.m_BaseRadius - m_d.m_EndRadius) / m_d.m_FlipperRadius,-1.f,1.f);

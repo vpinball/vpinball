@@ -186,6 +186,9 @@ private:
    void GenerateWireMesh(Vertex3D_NoTex2 **meshBuf, Vertex3D_NoTex2 **meshBuf2);
    void GenerateRampMesh(Vertex3D_NoTex2 **meshBuf);
 
+   Vertex3Ds m_boundingSphereCenter;
+   void UpdateBounds();
+
    // IRamp
 public:
    STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);

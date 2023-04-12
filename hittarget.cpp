@@ -720,17 +720,13 @@ void HitTarget::RenderObject()
    }
 
    // draw the mesh
-   pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-   pd3dDevice->basicShader->End();
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
 
 #ifdef TWOSIDED_TRANSPARENCY
    if (mat->m_bOpacityActive)
    {
       pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
-      pd3dDevice->basicShader->Begin();
-      pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-      pd3dDevice->basicShader->End();
+      pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
    }
 #endif
 

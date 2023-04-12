@@ -1379,11 +1379,13 @@ void Primitive::RenderDynamic()
 
    if (m_d.m_staticRendering)
    {
+      if (g_pplayer->m_dynamicMode)
+         return; // don't render in dynamic mode since object will be rendered during 'static' pass
       RenderProbe *reflection_probe = m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
       if (reflection_probe == nullptr || reflection_probe->IsRendering() || reflection_probe->GetProbe(false) == nullptr)
-         return; //don't render static except if we have dynamic reflections to render above the staticly prerendered primitive
+         return; // don't render static except if we have dynamic reflections to render above the staticly prerendered primitive
    }
-   if (m_lockedByLS) 
+   if (m_lockedByLS)
    {
        //don't render in LS when state off
        if (!m_inPlayState) return;
@@ -1470,7 +1472,6 @@ void Primitive::RenderStatic()
        if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
            return;
    }
-
    RenderObject();
 }
 

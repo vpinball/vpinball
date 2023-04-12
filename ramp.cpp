@@ -887,6 +887,13 @@ float Ramp::GetDepth(const Vertex3Ds& viewDir) const
    return m_d.m_depthBias + viewDir.x * center2D.x + viewDir.y * center2D.y + viewDir.z * centerZ;
 }
 
+void Ramp::UpdateBounds()
+{
+   const Vertex2D center2D = GetPointCenter();
+   m_boundingSphereCenter.Set(center2D.x, center2D.y, 0.5f * (m_d.m_heightbottom + m_d.m_heighttop));
+}
+
+
 //
 // license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Ramp/RampHitGenerator.cs
@@ -931,9 +938,8 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
       pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat);
       pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
    }
-   pd3dDevice->basicShader->Begin();
-   pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-   pd3dDevice->basicShader->End();
+
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
 }
 
 //
@@ -1251,6 +1257,8 @@ void Ramp::RenderSetup()
    const Material *const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    // don't render transparent ramps into static buffer, these are done per frame later-on
    m_isStaticRendering = mat == nullptr || !mat->m_bOpacityActive;
+
+   UpdateBounds();
 }
 
 void Ramp::UpdateAnimation(const float diff_time_msec)
@@ -2220,15 +2228,12 @@ void Ramp::RenderRamp(const Material * const mat)
       if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f && (!pin || m_d.m_imageWalls))
       {
          // both walls with image and floor
-         pd3dDevice->basicShader->Begin();
-         pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6 * 3);
-         pd3dDevice->basicShader->End();
+         pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6 * 3);
       }
       else
       {
          // only floor
-         pd3dDevice->basicShader->Begin();
-         pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6);
+         pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6);
 
          if (m_d.m_rightwallheightvisible != 0.f || m_d.m_leftwallheightvisible != 0.f)
          {
@@ -2240,14 +2245,12 @@ void Ramp::RenderRamp(const Material * const mat)
             }
 
             if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f) //only render left & right side if the height is >0
-               pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6, (m_rampVertex - 1) * 6 * 2);
+               pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6, (m_rampVertex - 1) * 6 * 2);
             else if (m_d.m_rightwallheightvisible != 0.f) //only render right side if the height is >0
-               pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6, (m_rampVertex - 1) * 6);
+               pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6, (m_rampVertex - 1) * 6);
             else if (m_d.m_leftwallheightvisible != 0.f) //only render left side if the height is >0
-               pd3dDevice->DrawMesh(m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6 * 2, (m_rampVertex - 1) * 6);
+               pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6 * 2, (m_rampVertex - 1) * 6);
          }
-
-         pd3dDevice->basicShader->End();
       }
 
       //pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE); //!! not necessary anymore
