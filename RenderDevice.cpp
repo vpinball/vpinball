@@ -1223,7 +1223,12 @@ void RenderDevice::SwapAORenderTargets()
 void RenderDevice::ResolveMSAA()
 { 
    if (m_pOffscreenMSAABackBufferTexture != m_pOffscreenBackBufferTexture)
+   {
+      RenderTarget* initial_rt = GetCurrentRenderTarget();
+      SetRenderTarget("Resolve MSAA"s, m_pOffscreenBackBufferTexture);
       BlitRenderTarget(m_pOffscreenMSAABackBufferTexture, m_pOffscreenBackBufferTexture, true, true);
+      SetRenderTarget(""s, initial_rt);
+   }
 }
 
 bool RenderDevice::DepthBufferReadBackAvailable()
