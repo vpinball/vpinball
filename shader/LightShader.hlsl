@@ -61,7 +61,9 @@ float4 PS_BulbLight(const in VS_LIGHTBULB_OUTPUT IN) : COLOR
 	const float len = light_dist * lightCenter_maxRange.w;
 	const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
 	const float3 lcolor = lerp(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
-	const float shadow = get_light_ball_shadow(lightCenter_maxRange.xyz, light_dir, light_dist);
+	float shadow = 1.0;
+	[branch] if(lightCenter_maxRange.w > 0.002) // 1/500 (=large, almost/to table filling lights)
+		shadow = get_light_ball_shadow(lightCenter_maxRange.xyz, light_dir, light_dist);
 	return float4(
 	 lcolor*(-blend_modulate_vs_add*atten*lightColor_intensity.w*shadow), // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
 	 1.0/blend_modulate_vs_add - 1.0); //saturate(atten*lightColor_intensity.w));
@@ -69,9 +71,9 @@ float4 PS_BulbLight(const in VS_LIGHTBULB_OUTPUT IN) : COLOR
 
 technique bulb_light
 {
-   pass P0
-   {
+	pass P0
+	{
 		vertexshader = compile vs_3_0 vs_lightbulb_main();
 		pixelshader  = compile ps_3_0 PS_BulbLight();
-   }
+	}
 }
