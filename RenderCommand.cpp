@@ -96,7 +96,7 @@ void RenderCommand::Execute(const bool log)
       {
       case RC_DRAW_QUAD_PT:
       {
-         m_rd->m_stats_drawn_triangles += 2;
+         m_rd->m_curDrawnTriangles += 2;
          #ifdef ENABLE_SDL
             void* bufvb;
             m_rd->m_quadPTDynMeshBuffer->m_vb->lock(0, 0, &bufvb, VertexBuffer::DISCARDCONTENTS);
@@ -120,7 +120,7 @@ void RenderCommand::Execute(const bool log)
 
       case RC_DRAW_QUAD_PNT:
       {
-         m_rd->m_stats_drawn_triangles += 2;
+         m_rd->m_curDrawnTriangles += 2;
          #ifdef ENABLE_SDL
             void* bufvb;
             m_rd->m_quadPNTDynMeshBuffer->m_vb->lock(0, 0, &bufvb, VertexBuffer::DISCARDCONTENTS);
@@ -155,9 +155,7 @@ void RenderCommand::Execute(const bool log)
          case RenderDevice::TRIANGLEFAN: np = std::max(0u, m_indicesCount - 2); break;
          default: assert(false);
          }
-         m_rd->m_stats_drawn_triangles += np;
-
-         // m_stats_drawn_triangles += np;
+         m_rd->m_curDrawnTriangles += np;
 
          m_mb->bind();
 

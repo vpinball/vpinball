@@ -231,7 +231,10 @@ public:
          return;
 
       if (m_buffers[m_curIdx])
-         pd3dDevice->DrawMesh(m_buffers[m_curIdx], RenderDevice::TRIANGLEFAN, 0, 3);
+      {
+         Vertex3Ds pos(0.f, 0.f, 0.f);
+         pd3dDevice->DrawMesh(pd3dDevice->basicShader, pos, 0.f, m_buffers[m_curIdx], RenderDevice::TRIANGLEFAN, 0, 3);
+      }
 
       m_curIdx = (m_curIdx + 1) % m_buffers.size();
 
@@ -659,13 +662,17 @@ public:
    U32 m_phys_iterations;
 
    // all kinds of stats tracking, incl. FPS measurement
-   U32 m_lastfpstime;
-   U32 m_cframes;
-   float m_fps;
-   float m_fpsAvg;
-   U32 m_fpsCount;
-   U64 m_lastTime_usec;
-   U32 m_lastFrameDuration;
+   U64 m_lastTime_usec; // Timestamped marked when updating frmae counters
+   U32 m_lastFrameDuration; // Last frame duration
+   U32 m_avgFrameDuration; // Summed duration of summed frame count (reset on user request)
+   U32 m_avgFrameCount; // Number of frame duration summed up (reset on user request)
+   U32 m_secFrameDuration; // Summed duration of summed frame count (reset once per second)
+   U32 m_secFrameCount; // Number of frame duration summed up (reset once per second)
+   float m_fps; // Average number of frames per second, updated once per second
+   U64 m_frame_collect; // Time spent (us) to collect all render commands
+   U64 m_frame_submit; // Time spent (us) to submit all render commands
+   U64 m_frame_flip; // Time spent (us) to flip framebuffer
+
    U32 m_max;
    U32 m_max_total;
    U64 m_count;

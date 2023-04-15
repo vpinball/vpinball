@@ -117,12 +117,12 @@ public:
       const int x1 = -1, const int y1 = -1, const int w1 = -1, const int h1 = -1,
       const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1);
    void DrawMesh(Shader* shader, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount);
-   void DrawMesh(MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount);
    void DrawTexturedQuad(const Vertex3D_TexelOnly* vertices);
    void DrawTexturedQuad(const Vertex3D_NoTex2* vertices);
    void DrawFullscreenTexturedQuad();
    void DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size);
-   void LogNextFrame() { m_logNextFrame = true; };
+   void LogNextFrame() { m_logNextFrame = true; }
+   bool IsLogNextFrame() const { return m_logNextFrame; }
    void FlushRenderFrame();
    void Flip(const bool vsync);
 
@@ -333,7 +333,7 @@ public:
    std::vector<SamplerBinding*> m_samplerBindings;
 #endif
 
-   static unsigned int m_stats_drawn_triangles;
+   unsigned int m_curDrawnTriangles, m_frameDrawnTriangles;
 
 #if defined(ENABLE_SDL) // OpenGL
    GLuint m_curVAO = 0;

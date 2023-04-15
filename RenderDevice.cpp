@@ -524,8 +524,6 @@ int getPrimaryDisplay()
 
 ////////////////////////////////////////////////////////////////////
 
-unsigned int RenderDevice::m_stats_drawn_triangles = 0;
-
 #ifndef ENABLE_SDL
 #ifdef USE_D3D9EX
  typedef HRESULT(WINAPI *pD3DC9Ex)(UINT SDKVersion, IDirect3D9Ex**);
@@ -557,8 +555,6 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     m_INTZ_support = false;
     NVAPIinit = false;
 
-    m_stats_drawn_triangles = 0;
-
     mDwmIsCompositionEnabled = (pDICE)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmIsCompositionEnabled"); //!! remove as soon as win xp support dropped and use static link
     mDwmEnableComposition = (pDEC)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmEnableComposition"); //!! remove as soon as win xp support dropped and use static link
     mDwmFlush = (pDF)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmFlush"); //!! remove as soon as win xp support dropped and use static link
@@ -581,10 +577,6 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
         m_dwm_enabled = false;
     }
 #endif
-
-    m_stats_drawn_triangles = 0;
-
-    //m_curShader = nullptr;
 
     // initialize performance counters
     m_curDrawCalls = m_frameDrawCalls = 0;
@@ -1512,7 +1504,8 @@ void RenderDevice::Flip(const bool vsync)
    m_frameTextureChanges = m_curTextureChanges;
    m_frameParameterChanges = m_curParameterChanges;
    m_frameTechniqueChanges = m_curTechniqueChanges;
-   m_curDrawCalls = m_curStateChanges = m_curTextureChanges = m_curParameterChanges = m_curTechniqueChanges = 0;
+   m_frameDrawnTriangles = m_curDrawnTriangles;
+   m_curDrawCalls = m_curStateChanges = m_curTextureChanges = m_curParameterChanges = m_curTechniqueChanges = m_curDrawnTriangles = 0;
    m_frameTextureUpdates = m_curTextureUpdates;
    m_curTextureUpdates = 0;
 
@@ -1848,7 +1841,8 @@ void RenderDevice::DrawTexturedQuad(const Vertex3D_NoTex2* vertices)
 
 void RenderDevice::DrawFullscreenTexturedQuad() {
    assert(Shader::GetCurrentShader() == FBShader || Shader::GetCurrentShader() == StereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
-   DrawMesh(m_quadMeshBuffer, TRIANGLESTRIP, 0, 4);
+   Vertex3Ds pos(0.f, 0.f, 0.f);
+   DrawMesh(Shader::GetCurrentShader(), pos, 0.f, m_quadMeshBuffer, TRIANGLESTRIP, 0, 4);
 }
 
 void RenderDevice::DrawMesh(Shader* shader, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount)
@@ -1859,15 +1853,6 @@ void RenderDevice::DrawMesh(Shader* shader, const Vertex3Ds& center, const float
    // Full depth sorting. Disabled since this would break old table and, for the time being, view vector is not homogeneously defined between Normal/VR/LiveUI
    // float depth = depthBias + (m_viewVec.x * center.x + m_viewVec.y * center.y + m_viewVec.z * center.z);
    cmd->SetDrawMesh(shader, mb, type, startIndice, indexCount, depth);
-   m_currentPass->Submit(cmd);
-}
-
-// FIXME remove when all draw calls will be made with a mesh depth
-void RenderDevice::DrawMesh(MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount)
-{
-   ApplyRenderStates();
-   RenderCommand* cmd = m_renderFrame.NewCommand();
-   cmd->SetDrawMesh(Shader::GetCurrentShader(), mb, type, startIndice, indexCount, 0.f);
    m_currentPass->Submit(cmd);
 }
 

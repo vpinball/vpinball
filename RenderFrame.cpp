@@ -44,7 +44,15 @@ void RenderFrame::Execute(const bool log)
 
    // Sort passes to avoid useless render target switching, and allow merging passes for better draw call sorting/batching
    vector<RenderPass*> sortedPasses;
-   m_passes.back()->Sort(sortedPasses);
+   if (log)
+   {
+      const double start = usec();
+      m_passes.back()->Sort(sortedPasses);
+      PLOGI << "Rendering Frame [" << sortedPasses.size() << " passes out of " << m_passes.size() << " submitted passes]";
+      PLOGI << "> Pass sort took " << std::fixed << std::setw(8) << std::setprecision(3) << (usec() - start) << "us";
+   }
+   else
+      m_passes.back()->Sort(sortedPasses);
    
    #ifndef ENABLE_SDL
    CHECKD3D(m_rd->GetCoreDevice()->BeginScene());

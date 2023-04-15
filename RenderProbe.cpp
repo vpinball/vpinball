@@ -233,10 +233,11 @@ void RenderProbe::PreRenderStaticReflectionProbe()
    //#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
    // loop for X times and accumulate/average these renderings
    // NOTE: iter == 0 MUST ALWAYS PRODUCE an offset of 0,0!
+   unsigned int nTris = p3dDevice->m_curDrawnTriangles;
    int n_iter = STATIC_PRERENDER_ITERATIONS - 1;
    for (int iter = n_iter; iter >= 0; --iter) // just do one iteration if in dynamic camera/light/material tweaking mode
    {
-      RenderDevice::m_stats_drawn_triangles = 0;
+      p3dDevice->m_curDrawnTriangles = 0;
 
       float u1 = xyLDBNbnot[iter * 2]; //      (float)iter*(float)(1.0                                /STATIC_PRERENDER_ITERATIONS);
       float u2 = xyLDBNbnot[iter * 2 + 1]; //fmodf((float)iter*(float)(STATIC_PRERENDER_ITERATIONS_KOROBOV/STATIC_PRERENDER_ITERATIONS), 1.f);
@@ -287,6 +288,7 @@ void RenderProbe::PreRenderStaticReflectionProbe()
       // Finish the frame.
       p3dDevice->EndScene();
    }
+   p3dDevice->m_curDrawnTriangles += nTris;
 
    // copy back weighted antialiased color result to the static render target, keeping depth untouched
    p3dDevice->SetRenderTarget("PreRender Store Reflection"s, m_staticRT);

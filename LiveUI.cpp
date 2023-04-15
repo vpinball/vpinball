@@ -838,6 +838,8 @@ void LiveUI::ToggleFPS()
    m_show_fps = (m_show_fps + 1) % 3;
    if (m_show_fps == 0)
       m_rd->LogNextFrame();
+   if (m_show_fps == 1)
+      g_pplayer->InitFPS();
 }
 
 void LiveUI::Update()
@@ -914,7 +916,7 @@ void LiveUI::Update()
       ImGui::SetNextWindowBgAlpha(0.75f);
       ImGui::SetNextWindowPos(ImVec2(10, 10 + m_menubar_height + m_toolbar_height));
       ImGui::Begin("FPS", nullptr, window_flags);
-      const float fpsAvg = (m_player->m_fpsCount == 0) ? 0.0f : m_player->m_fpsAvg / (float)m_player->m_fpsCount;
+      const float fpsAvg = (m_player->m_avgFrameDuration == 0) ? 0.0f : ((float)((double)1000000.0 * m_player->m_avgFrameCount / m_player->m_avgFrameDuration));
       ImGui::Text("FPS: %.1f (%.1f %5.1fms avg)", m_player->m_fps + 0.01f, fpsAvg + 0.01f, 1000.0f / (fpsAvg + 0.01f));
       ImGui::End();
    }
@@ -1106,6 +1108,9 @@ void LiveUI::UpdateMainUI()
    {
       hide_parts = true;
       m_player->EnableStaticPrePass(!m_old_player_dynamic_mode);
+      m_player->m_cameraMode = m_old_player_camera_mode;
+      m_useEditorCam = false;
+      m_pin3d->InitLayout(m_live_table->m_BG_enable_FSS, m_live_table->GetMaxSeparation());
    }
    else if (!m_ShowSplashModal)
    {
