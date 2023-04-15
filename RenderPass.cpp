@@ -74,9 +74,6 @@ void RenderPass::Execute(const bool log)
 {
    if (m_commands.size() > 0)
    {
-      if (log)
-         PLOGI << "Pass '" << m_name << "' [RT=" << m_rt->m_name << ", " << m_commands.size() << " commands]";
-
       #ifdef ENABLE_SDL
       if (GLAD_GL_VERSION_4_3)
       {
@@ -146,7 +143,15 @@ void RenderPass::Execute(const bool log)
       } sortFunc;
 
       // stable sort is needed since we don't want to change the order of blended draw calls between frames
-      stable_sort(m_commands.begin(), m_commands.end(), sortFunc);
+      if (log)
+      {
+         const double start = usec();
+         stable_sort(m_commands.begin(), m_commands.end(), sortFunc);
+         PLOGI << "Pass '" << m_name << "' [RT=" << m_rt->m_name << ", " << m_commands.size() << " commands, sort: " << std::fixed << std::setw(8) << std::setprecision(3) << (usec() - start)
+               << "us]";
+      }
+      else
+         stable_sort(m_commands.begin(), m_commands.end(), sortFunc);
 
       m_rt->Activate(m_ignoreStereo);
       for (RenderCommand* cmd : m_commands)

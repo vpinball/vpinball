@@ -805,11 +805,12 @@ void Player::Shutdown()
 
 void Player::InitFPS()
 {
-    m_lastfpstime = m_time_msec;
-    m_cframes = 0;
-    m_fps = 0.0f;
-    m_fpsAvg = 0.0f;
-    m_fpsCount = 0;
+   m_avgFrameDuration = 0;
+   m_avgFrameCount = 0;
+   m_secFrameDuration = 0;
+   m_secFrameCount = 0;
+   m_fps = 0.f;
+
     m_total = 0;
     m_count = 0;
     m_max = 0;
@@ -1757,7 +1758,7 @@ void Player::InitStatic()
    int n_iter = m_dynamicMode ? 0 : (STATIC_PRERENDER_ITERATIONS - 1);
    for (int iter = n_iter; iter >= 0; --iter) // just do one iteration if in dynamic camera/light/material tweaking mode
    {
-      RenderDevice::m_stats_drawn_triangles = 0;
+      m_pin3d.m_pd3dPrimaryDevice->m_curDrawnTriangles = 0;
 
       float u1 = xyLDBNbnot[iter*2  ];  //      (float)iter*(float)(1.0                                /STATIC_PRERENDER_ITERATIONS);
       float u2 = xyLDBNbnot[iter*2+1];  //fmodf((float)iter*(float)(STATIC_PRERENDER_ITERATIONS_KOROBOV/STATIC_PRERENDER_ITERATIONS), 1.f);
@@ -1823,8 +1824,6 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->EndScene();
       if (m_pEditorTable->m_progressDialog.IsWindow())
          m_pEditorTable->m_progressDialog.SetProgress(60 +(((30 * (n_iter + 1 - iter)) / (n_iter + 1))));
-
-      stats_drawn_static_triangles = RenderDevice::m_stats_drawn_triangles;
    }
 
    if (accumulationSurface)
@@ -1918,6 +1917,9 @@ void Player::InitStatic()
    {
       m_ptable->m_vrenderprobe[i]->PreRenderStatic();
    }
+
+   // Stoee the total number of triangle prerendered (including for render probes)
+   stats_drawn_static_triangles = m_pin3d.m_pd3dPrimaryDevice->m_curDrawnTriangles;
 
    g_pvp->ProfileLog("Static PreRender End"s);
    
@@ -2799,24 +2801,6 @@ void Player::UpdatePhysics()
       initial_time_usec = m_curPhysicsFrameTime;
 #endif
 
-   //if (ShowStats())
-   {
-      m_lastFrameDuration = (U32)(initial_time_usec - m_lastTime_usec);
-      if (m_lastFrameDuration > 1000000)
-         m_lastFrameDuration = 0;
-      m_lastTime_usec = initial_time_usec;
-
-      m_cframes++;
-      if ((m_time_msec - m_lastfpstime) > 1000)
-      {
-         m_fps = (float)((double)m_cframes * 1000.0 / (m_time_msec - m_lastfpstime));
-         m_lastfpstime = m_time_msec;
-         m_fpsAvg += m_fps;
-         m_fpsCount++;
-         m_cframes = 0;
-      }
-   }
-
    m_script_period = 0;
 
 #ifdef LOG
@@ -3549,22 +3533,17 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
 
 string Player::GetPerfInfo()
 {
+   // Make it more or less readable by updating only once per second
+   static string txt;
+   static U32 lastUpdate = -1;
+   U32 now = msec();
+   if (lastUpdate != -1 && now - lastUpdate < 1000)
+      return txt;
+
+   lastUpdate = now;
    std::ostringstream info;
    info << std::fixed << std::setprecision(1);
-   const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
-
-	// Draw the amount of video memory used. !! Disabled until we can compute this correctly.
-   // info << " Used Graphics Memory: " << std::setprecision(2) << (float)NumVideoBytes / (float)(1024 * 1024)) << std::setprecision(1) << " MB\n";
-
-   // Draw the framerate.
-   //info << std::format("FPS: {:.1f} ({:.1f} avg)  Display {:s} Objects ({:d}k/{:d}k Triangles)  DayNight {:d}%%\n", m_fps + 0.01f, fpsAvg + 0.01f,
-   //   GetInfoMode() == IF_STATIC_ONLY ? "only static" : "all", (RenderDevice::m_stats_drawn_triangles + 999) / 1000,
-   //   (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, quantizeUnsignedPercent(m_globalEmissionScale));
-   info << "FPS: " << (m_fps + 0.01f) << " (" << (fpsAvg + 0.01f) << " avg)  Display " << (GetInfoMode() == IF_STATIC_ONLY ? "only static" : "all") << " Objects ("
-        << ((RenderDevice::m_stats_drawn_triangles + 999) / 1000) << "k/"
-        << ((stats_drawn_static_triangles + RenderDevice::m_stats_drawn_triangles + 999) / 1000) << "k Triangles)  DayNight " 
-        << quantizeUnsignedPercent(m_globalEmissionScale) << "%%\n";
-
+   const float fpsAvg = (m_avgFrameDuration == 0) ? 0.0f : ((float)((double)1000000.0 * m_avgFrameCount / m_avgFrameDuration));
    const U32 period = m_lastFrameDuration;
    if (period > m_max || m_time_msec - m_lastMaxChangeTime > 1000)
       m_max = period;
@@ -3604,39 +3583,46 @@ string Player::GetPerfInfo()
       m_count++;
    }
 
-   //info << std::format("Overall: {:.1f} ms ({:.1f} ({:.1f}) avg {:.1f} max)\n", float(1e-3 * period), float(1e-3 * (double)m_total / (double)m_count), float(1e-3 * m_max), float(1e-3 * m_max_total));
-   //info << std::format("{:4.1f}%% Physics: {:.1f} ms ({:.1f} ({:.1f} {:4.1f}%%) avg {:.1f} max)\n", float((m_phys_period - m_script_period) * 100.0 / period),
-   //   float(1e-3 * (m_phys_period - m_script_period)), float(1e-3 * (double)m_phys_total / (double)m_count), float(1e-3 * m_phys_max), float((double)m_phys_total * 100.0 / (double)m_total),
-   //   float(1e-3 * m_phys_max_total));
-   //info << std::format("{:4.1f}%% Scripts: {:.1f} ms ({:.1f} ({:.1f} {:4.1f}%%) avg {:.1f} max)\n", float(m_script_period * 100.0 / period), float(1e-3 * m_script_period),
-   //   float(1e-3 * (double)m_script_total / (double)m_count), float(1e-3 * m_script_max), float((double)m_script_total * 100.0 / (double)m_total), float(1e-3 * m_script_max_total));
-   info << std::setw(4);
-   info << "Overall: " << (float(1e-3 * m_max)) << " ms(" << (float(1e-3 * period)) << "(" << (float(1e-3 * (double)m_total / (double)m_count)) << ")avg " << (float(1e-3 * m_max_total))
-        << " max)\n ";
-   info << float((m_phys_period - m_script_period) * 100.0 / period) << "%% Physics: " << (float(1e-3 * (m_phys_period - m_script_period))) << " ms ("
-        << (float(1e-3 * (double)m_phys_total / (double)m_count)) << " (" << (float(1e-3 * m_phys_max)) << " " << (float((double)m_phys_total * 100.0 / (double)m_total))
-        << "%%) avg " << (float(1e-3 * m_phys_max_total)) << " max)\n";
-   info << (float(m_script_period * 100.0 / period)) << "%% Scripts: " << (float(1e-3 * m_script_period)) << " ms (" << (float(1e-3 * (double)m_script_total / (double)m_count)) << " ("
-        << (float(1e-3 * m_script_max)) << " " << (float((double)m_script_total * 100.0 / (double)m_total)) << "%%) avg " << (float(1e-3 * m_script_max_total)) << " max)\n";
-   info << std::setw(1);
+   // Draw the amount of video memory used. !! Disabled until we can compute this correctly.
+   // info << " Used Graphics Memory: " << std::setprecision(2) << (float)NumVideoBytes / (float)(1024 * 1024)) << std::setprecision(1) << " MB\n";
 
-#ifndef ENABLE_SDL
-   // performance counters
+   // Overall frame informations
+   info << std::fixed << std::setw(4) << std::setprecision(1);
+   info << "Overall: " << (float(1e-3 * m_max)) << "ms max (last second), " << (float(1e-3 * period)) << "ms, " 
+        << (float(1e-3 * (double)m_total / (double)m_count)) << "ms avg, " << (float(1e-3 * m_max_total)) << "ms max\n";
+   info << "> Physics: " << float((m_phys_period - m_script_period) * 100.0 / period) << "%%, " << (float(1e-3 * (m_phys_period - m_script_period))) << "ms, "
+        << (float(1e-3 * (double)m_phys_total / (double)m_count)) << "ms avg, " << (float(1e-3 * m_phys_max)) << "ms max (last second), " 
+        << (float((double)m_phys_total * 100.0 / (double)m_total)) << "%% avg, " << (float(1e-3 * m_phys_max_total)) << "ms max\n";
+   info << "> Script:    " << (float(m_script_period * 100.0 / period)) << "%%, " << (float(1e-3 * m_script_period)) << "ms, "
+        << (float(1e-3 * (double)m_script_total / (double)m_count)) << "ms avg, " << (float(1e-3 * m_script_max)) << "ms max (last second), "
+        << (float((double)m_script_total * 100.0 / (double)m_total)) << "%% avg, " << (float(1e-3 * m_script_max_total)) << "ms max\n";
    info << "\n";
+
+   // Overall frame timings
+   info << std::fixed << std::setw(4) << std::setprecision(1);
+   info << "Frame time:     " << (1000.0f / (m_fps + 0.01f)) << "ms [Average: " << (1000.0f / (fpsAvg + 0.01f)) << "ms], FPS: " << (m_fps + 0.01f)
+        << " [Average: " << (fpsAvg + 0.01f) << "]\n";
+   info << "Frame collect:  " << (m_frame_collect / 1000.0) << "ms\n";
+   info << "Frame submit: " << (m_frame_submit / 1000.0) << "ms\n";
+   info << "Frame flip:       " << (m_frame_flip / 1000.0) << "ms\n";
+   info << "\n";
+
+   // performance counters
+   info << "Triangles: " << ((m_pin3d.m_pd3dPrimaryDevice->m_frameDrawnTriangles + 999) / 1000) << "k per frame, "
+        << ((stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_frameDrawnTriangles + 999) / 1000) << "k overall. DayNight " << quantizeUnsignedPercent(m_globalEmissionScale)
+        << "%%\n";
    info << "Draw calls: " << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumDrawCalls() << "  (" << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumLockCalls() << " Locks)\n";
    info << "State changes: " << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumStateChanges() << "\n";
    info << "Texture changes: " << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureChanges() << " (" << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureUploads() << " Uploads)\n";
    info << "Shader/Parameter changes: " << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTechniqueChanges() << " / " << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumParameterChanges() << " ("
-      << material_flips << " Material ID changes)\n";
+        << material_flips << " Material ID changes)\n";
    info << "Objects: " << (unsigned int)m_vHitTrans.size() << " Transparent, " << (unsigned int)m_vHitNonTrans.size() << " Solid\n";
    info << "\n";
-#endif
 
-   // info << std::format("Physics: {:d} iterations per frame ({:d} avg {:d} max)    Ball Velocity / Ang.Vel.: {:.1f} {:.1f}\n", 
+   // Physics informations
    info << "Physics: " << m_phys_iterations << " iterations per frame (" << ((U32)(m_phys_total_iterations / m_count)) << " avg " << m_phys_max_iterations
         << " max)    Ball Velocity / Ang.Vel.: " << (m_pactiveball ? (m_pactiveball->m_d.m_vel + (float)PHYS_FACTOR * m_gravity).Length() : -1.f) << " "
         << (m_pactiveball ? (m_pactiveball->m_angularmomentum / m_pactiveball->Inertia()).Length() : -1.f) << "\n";
-
 #ifdef DEBUGPHYSICS
    info << std::setprecision(5);
    info << "Hits:" << c_hitcnts << " Collide:" << c_collisioncnt << " Ctacs:" << c_contactcnt;
@@ -3649,7 +3635,6 @@ string Player::GetPerfInfo()
    info << std::setprecision(1);
 #endif
 
-   //info << std::format("Left Flipper keypress to rotate: {:.1f} ms ({:d} f) to eos: {:.1f} ms ({:d} f)\n",
    info << "Left Flipper keypress to rotate: "
       << ((INT64)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) / 1000.) << " ms ("
       << ((int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame)) << " f) to eos: "
@@ -3672,30 +3657,26 @@ string Player::GetPerfInfo()
       info << std::setw(4) << std::setprecision(2);
       if (GetProfilingMode() == PF_ENABLED)
       {
-         // info << std::format(" Draw time: {:.2f} ms\n", float(1000.0 * dTDrawTotal));
          info << " Draw time: " << float(1000.0 * dTDrawTotal) << " ms\n";
          for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
          {
-            //info << std::format("   {:s}: {:.2f} ms ({:4.1f}%%)\n", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)),
-            //   float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
             info << "   " << GTS_name[gts] << ": " << float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)) << " ms (" << float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal) << "%%)\n";
          }
-         // info << std::format(" Frame time: {:.2f} ms\n", float(1000.0 * (dTDrawTotal + m_pin3d.m_gpu_profiler.DtAvg(GTS_EndFrame))));
          info << " Frame time: " << float(1000.0 * (dTDrawTotal + m_pin3d.m_gpu_profiler.DtAvg(GTS_EndFrame))) << " ms\n";
       }
       else
       {
          for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
          {
-            // info << std::format(" {:s}: {:.2f} ms ({:4.1f}%%)\n", GTS_name_item[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)),
-            //   float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
             info << " " << GTS_name_item[gts] << ": " << float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)) << " ms (" << float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal)
                  << "%%)\n";
          }
       }
    }
 
-   return info.str();
+   txt = info.str();
+
+   return txt;
 }
 
 void Player::PrepareVideoBuffersNormal()
@@ -3855,11 +3836,6 @@ void Player::PrepareVideoBuffersNormal()
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-
-   m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
-   m_liveUI->Render();
-
-   m_pin3d.m_pd3dPrimaryDevice->EndScene();
 }
 
 void Player::FlipVideoBuffers(const bool vsync)
@@ -4039,11 +4015,6 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-
-   m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
-   m_liveUI->Render();
-
-   m_pin3d.m_pd3dPrimaryDevice->EndScene();
 }
 
 void Player::SetScreenOffset(const float x, const float y)
@@ -4181,7 +4152,6 @@ void Player::Render()
    // The optional postprocessing is done from m_pd3dPrimaryDevice->GetPostProcessRenderTarget1() to the main output framebuffer
 
    // In pause mode: input, physics, animation and audio are not processed but rendering is still performed. This allows to modify properties (transform, visibility,..) using the debugger and get direct feedback
-
    const U64 startRenderUsec = usec();
 
    if (!m_pause)
@@ -4190,7 +4160,6 @@ void Player::Render()
    // Kill the profiler so that it does not affect performance => FIXME move to player
    if (m_infoMode != IF_PROFILING && m_infoMode != IF_PROFILING_SPLIT_RENDERING)
       m_pin3d.m_gpu_profiler.Shutdown();
-
 
    // Try to bring PinMAME window back on top
    if (m_overall_frames < 10)
@@ -4239,8 +4208,6 @@ void Player::Render()
 
    m_LastKnownGoodCounter++;
 
-   RenderDevice::m_stats_drawn_triangles = 0;
-
    m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Render Scene"s, m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture());
    if (m_stereo3D == STEREO_VR || GetInfoMode() == IF_DYNAMIC_ONLY)
    {
@@ -4279,6 +4246,7 @@ void Player::Render()
    if (GetProfilingMode() == PF_ENABLED)
       m_pin3d.m_gpu_profiler.BeginFrame(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
 #endif
+   U64 usecTimeStamp = usec();
 
    // Update camera point of view
 #ifdef ENABLE_VR
@@ -4333,12 +4301,23 @@ void Player::Render()
          if (m_fps > localvsync*ADAPT_VSYNC_FACTOR)
             vsync = true;
 
-   m_liveUI->Update();
-
    if (GetAOMode() == 2)
       PrepareVideoBuffersAO();
    else
       PrepareVideoBuffersNormal();
+
+   m_liveUI->Update();
+
+   m_frame_collect = usec() - usecTimeStamp;
+   usecTimeStamp = usec();
+
+   m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
+   m_liveUI->Render();
+
+   m_frame_submit = usec() - usecTimeStamp;
+   usecTimeStamp = usec();
+
+   m_pin3d.m_pd3dPrimaryDevice->EndScene();
 
    // DJRobX's crazy latency-reduction code active? Insert some Physics updates before vsync'ing
    if (!m_pause && m_minphyslooptime > 0)
@@ -4346,10 +4325,32 @@ void Player::Render()
       UpdatePhysics();
       m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(startRenderUsec / 1000)); // trigger key events mainly for VPM<->VP rountrip
    }
+
+   usecTimeStamp = usec();
    FlipVideoBuffers(vsync);
+   m_frame_flip = usec() - usecTimeStamp;
 
    if (GetProfilingMode() != PF_DISABLED)
       m_pin3d.m_gpu_profiler.EndFrame();
+
+   // Update FPS counter
+   m_lastFrameDuration = (U32)(usecTimeStamp - m_lastTime_usec);
+   if (m_lastFrameDuration > 1000000)
+      m_lastFrameDuration = 0;
+   else
+   {
+      m_avgFrameDuration += m_lastFrameDuration;
+      m_avgFrameCount++;
+      m_secFrameDuration += m_lastFrameDuration;
+      m_secFrameCount ++;
+      if (m_secFrameDuration > 1000000)
+      {
+         m_fps = (float)((double)1000000.0 * m_secFrameCount / m_secFrameDuration);
+         m_secFrameCount = 0;
+         m_secFrameDuration = 0;
+      }
+   }
+   m_lastTime_usec = usecTimeStamp;
 
 #ifndef ACCURATETIMERS
    // do the en/disable changes for the timers that piled up
@@ -5128,9 +5129,7 @@ void Player::DrawBalls()
             m_pin3d.EnableAlphaBlend(false);
 
             m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBallTrail);
-            m_ballShader->Begin();
-            m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballTrailMeshBuffer, RenderDevice::TRIANGLESTRIP, 0, num_rgv3D);
-            m_ballShader->End();
+            m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballShader, pos, 0.f, m_ballTrailMeshBuffer, RenderDevice::TRIANGLESTRIP, 0, num_rgv3D);
          }
       }
 
@@ -5153,7 +5152,7 @@ void Player::DrawBalls()
          // draw points
          constexpr float ptsize = 5.0f;
          m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_POINTSIZE, float_as_uint(ptsize));
-         m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballDebugPoints, RenderDevice::POINTLIST, 0, 12);
+         m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballShader, pos, 0.f, m_ballDebugPoints, RenderDevice::POINTLIST, 0, 12);
 
          // reset transform
          m_pin3d.m_pd3dPrimaryDevice->SetTransform(RenderDevice::TRANSFORMSTATE_WORLD, &matOrig);
