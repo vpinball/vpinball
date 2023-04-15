@@ -262,7 +262,7 @@ void RenderCommand::SetCopy(RenderTarget* from, RenderTarget* to, bool color, bo
    m_copyDstRect = vec4(x2, y2, w2, h2);
 }
 
-void RenderCommand::SetDrawMesh(MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount, float depth)
+void RenderCommand::SetDrawMesh(Shader* shader, MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount, float depth)
 {
    assert(mb != nullptr);
    m_command = Command::RC_DRAW_MESH;
@@ -272,9 +272,9 @@ void RenderCommand::SetDrawMesh(MeshBuffer* mb, const RenderDevice::PrimitiveTyp
    m_indicesCount = indexCount;
    m_rd->CopyRenderStates(true, m_renderState);
    m_depth = depth;
-   m_shader = Shader::GetCurrentShader();
+   m_shader = shader;
    m_shaderTechnique = m_shader->GetCurrentTechnique();
-   Shader::GetCurrentShader()->CopyUniformCache(true, m_shaderTechnique, m_uniformState, m_textureState);
+   m_shader->CopyUniformCache(true, m_shaderTechnique, m_uniformState, m_textureState);
 }
 
 void RenderCommand::SetDrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
@@ -284,7 +284,7 @@ void RenderCommand::SetDrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
    m_rd->CopyRenderStates(true, m_renderState);
    m_shader = Shader::GetCurrentShader();
    m_shaderTechnique = m_shader->GetCurrentTechnique();
-   Shader::GetCurrentShader()->CopyUniformCache(true, m_shaderTechnique, m_uniformState, m_textureState);
+   m_shader->CopyUniformCache(true, m_shaderTechnique, m_uniformState, m_textureState);
 }
 
 void RenderCommand::SetDrawTexturedQuad(const Vertex3D_NoTex2* vertices)
@@ -294,6 +294,6 @@ void RenderCommand::SetDrawTexturedQuad(const Vertex3D_NoTex2* vertices)
    m_rd->CopyRenderStates(true, m_renderState);
    m_shader = Shader::GetCurrentShader();
    m_shaderTechnique = m_shader->GetCurrentTechnique();
-   Shader::GetCurrentShader()->CopyUniformCache(true, m_shaderTechnique, m_uniformState, m_textureState);
+   m_shader->CopyUniformCache(true, m_shaderTechnique, m_uniformState, m_textureState);
 }
 

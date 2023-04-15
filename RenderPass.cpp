@@ -75,7 +75,7 @@ void RenderPass::Execute(const bool log)
    if (m_commands.size() > 0)
    {
       if (log)
-         PLOGI << "Pass '" << m_name << "' [RT=" << m_rt->m_name << "]";
+         PLOGI << "Pass '" << m_name << "' [RT=" << m_rt->m_name << ", " << m_commands.size() << " commands]";
 
       #ifdef ENABLE_SDL
       if (GLAD_GL_VERSION_4_3)
