@@ -28,7 +28,7 @@ public:
    void SetCopy(RenderTarget* from, RenderTarget* to, bool color, bool depth,  
       const int x1 = -1, const int y1 = -1, const int w1 = -1, const int h1 = -1,
       const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1);
-   void SetDrawMesh(MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount, float depth);
+   void SetDrawMesh(Shader* shader, MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount, float depth);
    void SetDrawTexturedQuad(const Vertex3D_TexelOnly* vertices);
    void SetDrawTexturedQuad(const Vertex3D_NoTex2* vertices);
 

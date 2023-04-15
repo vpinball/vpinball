@@ -1853,14 +1853,13 @@ void RenderDevice::DrawFullscreenTexturedQuad() {
 
 void RenderDevice::DrawMesh(Shader* shader, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount)
 {
-   shader->Begin(); // TODO do not actually bind it, just copy the shader state (needs shader state cleanup first)
-   ApplyRenderStates(); // TODO do not actually apply it, just copy the state
    RenderCommand* cmd = m_renderFrame.NewCommand();
-   // float depth = depthBias - center.z; // Legacy sorting order (only along negative z axis, which is reversed for reflections)
-   float depth = depthBias + (m_viewVec.x * center.x + m_viewVec.y * center.y + m_viewVec.z * center.z);
-   cmd->SetDrawMesh(mb, type, startIndice, indexCount, depth);
+   // Legacy sorting order (only along negative z axis, which is reversed for reflections)
+   float depth = g_pplayer->IsRenderPass(Player::REFLECTION_PASS) ? depthBias + center.z : depthBias - center.z;
+   // Full depth sorting. Disabled since this would break old table and, for the time being, view vector is not homogeneously defined between Normal/VR/LiveUI
+   // float depth = depthBias + (m_viewVec.x * center.x + m_viewVec.y * center.y + m_viewVec.z * center.z);
+   cmd->SetDrawMesh(shader, mb, type, startIndice, indexCount, depth);
    m_currentPass->Submit(cmd);
-   shader->End();
 }
 
 // FIXME remove when all draw calls will be made with a mesh depth
@@ -1868,7 +1867,7 @@ void RenderDevice::DrawMesh(MeshBuffer* mb, const PrimitiveTypes type, const DWO
 {
    ApplyRenderStates();
    RenderCommand* cmd = m_renderFrame.NewCommand();
-   cmd->SetDrawMesh(mb, type, startIndice, indexCount, 0.f);
+   cmd->SetDrawMesh(Shader::GetCurrentShader(), mb, type, startIndice, indexCount, 0.f);
    m_currentPass->Submit(cmd);
 }
 
