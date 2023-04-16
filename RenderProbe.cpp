@@ -269,9 +269,6 @@ void RenderProbe::PreRenderStaticReflectionProbe()
       // Setup Camera,etc matrices for each iteration, applying antialiasing offset
       g_pplayer->m_pin3d.InitLayout(g_pplayer->m_ptable->m_BG_enable_FSS, g_pplayer->m_ptable->GetMaxSeparation(), u1, u2);
 
-      // Now begin rendering of static buffer
-      p3dDevice->BeginScene();
-
       RenderState initial_state;
       p3dDevice->CopyRenderStates(true, initial_state);
       p3dDevice->SetRenderTarget("PreRender Reflection"s, m_prerenderRT);
@@ -302,9 +299,6 @@ void RenderProbe::PreRenderStaticReflectionProbe()
       p3dDevice->FBShader->End();
       p3dDevice->FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
       p3dDevice->CopyRenderStates(false, initial_state);
-
-      // Finish the frame.
-      p3dDevice->EndScene();
    }
    p3dDevice->m_curDrawnTriangles += nTris;
 

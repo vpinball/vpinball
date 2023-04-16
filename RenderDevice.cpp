@@ -1420,20 +1420,6 @@ RenderDevice::~RenderDevice()
 #endif
 }
 
-void RenderDevice::BeginScene()
-{
-#ifndef ENABLE_SDL
-   //CHECKD3D(m_pD3DDevice->BeginScene());
-#endif
-}
-
-void RenderDevice::EndScene()
-{
-#ifndef ENABLE_SDL
-   //CHECKD3D(m_pD3DDevice->EndScene());
-#endif
-}
-
 /*static void FlushGPUCommandBuffer(IDirect3DDevice9* pd3dDevice)
 {
    IDirect3DQuery9* pEventQuery;

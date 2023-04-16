@@ -1778,9 +1778,6 @@ void Player::InitStatic()
       // Setup Camera,etc matrices for each iteration.
       m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation(), u1, u2);
 
-      // Now begin rendering of static buffer
-      m_pin3d.m_pd3dPrimaryDevice->BeginScene();
-
       // Direct all renders to the "static" buffer
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender Background"s, renderRT);
       m_pin3d.DrawBackground();
@@ -1830,7 +1827,6 @@ void Player::InitStatic()
 
       // Finish the frame.
       m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
-      m_pin3d.m_pd3dPrimaryDevice->EndScene();
       if (m_pEditorTable->m_progressDialog.IsWindow())
          m_pEditorTable->m_progressDialog.SetProgress(60 +(((30 * (n_iter + 1 - iter)) / (n_iter + 1))));
    }
@@ -1857,8 +1853,6 @@ void Player::InitStatic()
 
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender AO Save Depth"s, m_pin3d.m_pddsStatic);
       m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderRT, m_pin3d.m_pddsStatic, false, true);
-
-      m_pin3d.m_pd3dPrimaryDevice->BeginScene();
 
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_NONE);
@@ -1911,8 +1905,6 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-
-      m_pin3d.m_pd3dPrimaryDevice->EndScene();
 
       m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame(); // Execute before destroying the render targets
 
@@ -3719,8 +3711,6 @@ void Player::PrepareVideoBuffersNormal()
    if (stereo || ss_refl)
       renderedRT->UpdateDepthSampler(); // do not put inside BeginScene/EndScene Block
 
-   m_pin3d.m_pd3dPrimaryDevice->BeginScene();
-
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_NONE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
@@ -3888,8 +3878,6 @@ void Player::PrepareVideoBuffersAO()
    RenderTarget *ouputRT = nullptr;
 
    renderedRT->UpdateDepthSampler(); // do not put inside BeginScene/EndScene Block
-
-   m_pin3d.m_pd3dPrimaryDevice->BeginScene();
 
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_NONE);
@@ -4286,10 +4274,8 @@ void Player::Render()
 
    if (GetInfoMode() != IF_STATIC_ONLY)
    {
-      m_pin3d.m_pd3dPrimaryDevice->BeginScene();
       m_pin3d.UpdateMatrices();
       RenderDynamics();
-      m_pin3d.m_pd3dPrimaryDevice->EndScene();
    }
 
    // Resolve MSAA buffer to a normal one (noop if not using MSAA), allowing sampling it for postprocessing
@@ -4330,8 +4316,6 @@ void Player::Render()
    m_frame_submit = usec() - usecTimeStamp;
 
    m_liveUI->Render();
-
-   m_pin3d.m_pd3dPrimaryDevice->EndScene();
 
    // DJRobX's crazy latency-reduction code active? Insert some Physics updates before vsync'ing
    if (!m_pause && m_minphyslooptime > 0)
