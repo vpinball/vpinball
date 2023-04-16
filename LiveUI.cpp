@@ -1103,23 +1103,10 @@ void LiveUI::UpdateMainUI()
    bool popup_renderer_inspection = false;
    bool popup_headtracking = false;
 
-   bool hide_parts = !m_ShowUI;
-   if (ImGui::IsPopupOpen(ID_RENDERER_INSPECTION))
-   {
-      hide_parts = true;
-      m_player->EnableStaticPrePass(!m_old_player_dynamic_mode);
-      m_player->m_cameraMode = m_old_player_camera_mode;
-      m_useEditorCam = false;
-      m_pin3d->InitLayout(m_live_table->m_BG_enable_FSS, m_live_table->GetMaxSeparation());
-   }
-   else if (!m_ShowSplashModal)
+   // Main menubar
+   if (!m_RendererInspection)
    {
       m_player->EnableStaticPrePass(false);
-   }
-
-   // Main menubar
-   if (!hide_parts)
-   {
       if (ImGui::BeginMainMenuBar())
       {
          if (ImGui::BeginMenu("Preferences"))
@@ -1131,7 +1118,7 @@ void LiveUI::UpdateMainUI()
             if (ImGui::MenuItem("BAM Headtracking"))
                popup_headtracking = true;
             if (ImGui::MenuItem("Renderer Inspection"))
-               popup_renderer_inspection = true;
+               m_RendererInspection = true;
             ImGui::EndMenu();
          }
          m_menubar_height = ImGui::GetWindowSize().y;
@@ -1228,9 +1215,7 @@ void LiveUI::UpdateMainUI()
    if (ImGui::IsPopupOpen(ID_AUDIO_SETTINGS))
       UpdateAudioOptionsModal();
 
-   if (popup_renderer_inspection)
-      ImGui::OpenPopup(ID_RENDERER_INSPECTION);
-   if (ImGui::IsPopupOpen(ID_RENDERER_INSPECTION))
+   if (m_RendererInspection)
       UpdateRendererInspectionModal();
 
    if (popup_headtracking)
@@ -1769,9 +1754,13 @@ void LiveUI::UpdateHeadTrackingModal()
 
 void LiveUI::UpdateRendererInspectionModal()
 {
-   bool p_open = true;
+   m_player->EnableStaticPrePass(!m_old_player_dynamic_mode);
+   m_player->m_cameraMode = m_old_player_camera_mode;
+   m_useEditorCam = false;
+   m_pin3d->InitLayout(m_live_table->m_BG_enable_FSS, m_live_table->GetMaxSeparation());
+
    ImGui::SetNextWindowSize(ImVec2(550.f * m_dpi, 0));
-   if (ImGui::BeginPopupModal(ID_RENDERER_INSPECTION, &p_open))
+   if (ImGui::Begin(ID_RENDERER_INSPECTION, &m_RendererInspection))
    {
       ImGui::Text("Display single render pass:");
       static int pass_selection = IF_FPS;
@@ -1902,7 +1891,7 @@ void LiveUI::UpdateRendererInspectionModal()
       // Other detailled informations
       ImGui::Text(m_player->GetPerfInfo().c_str());
       
-      ImGui::EndPopup();
+      ImGui::End();
    }
 }
 
