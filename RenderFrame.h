@@ -10,13 +10,14 @@ public:
    RenderFrame(RenderDevice* renderDevice);
    ~RenderFrame();
 
-   void AddPass(RenderPass* pass);
+   RenderPass* AddPass(const string& name, RenderTarget* const rt, const bool ignoreStereo);
    void Execute(const bool log = false);
 
    RenderCommand* NewCommand();
 
 private:
    RenderDevice* const m_rd;
-   std::vector<RenderPass*> m_passes;
-   std::vector<RenderCommand*> m_commandPool;
+   vector<RenderPass*> m_passes;
+   vector<RenderPass*> m_passPool;
+   vector<RenderCommand*> m_commandPool;
 };

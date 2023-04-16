@@ -1786,10 +1786,9 @@ void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt, bool ig
    }
    else if (m_currentPass == nullptr || rt != m_currentPass->m_rt)
    {
-      m_currentPass = new RenderPass(name, rt, ignoreStereo);
+      m_currentPass = m_renderFrame.AddPass(name, rt, ignoreStereo);
       if (rt->m_lastRenderPass != nullptr)
          m_currentPass->AddPrecursor(rt->m_lastRenderPass);
-      m_renderFrame.AddPass(m_currentPass);
       rt->m_lastRenderPass = m_currentPass;
    }
 }
