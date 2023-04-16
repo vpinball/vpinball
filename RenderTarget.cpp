@@ -284,14 +284,19 @@ RenderTarget::~RenderTarget()
 #endif
 }
    
-void RenderTarget::UpdateDepthSampler()
+void RenderTarget::UpdateDepthSampler(bool insideBeginEnd)
 {
 #if !defined(DISABLE_FORCE_NVIDIA_OPTIMUS) && !defined(ENABLE_SDL)
    if (m_has_depth && m_use_alternate_depth && m_rd->NVAPIinit)
    {
+      // do not put inside BeginScene/EndScene Block
+      if (insideBeginEnd)
+         m_rd->GetCoreDevice()->EndScene();
       // From IDirect3DSurface9 to IDirect3DTexture9
       // CHECKNVAPI(NvAPI_D3D9_AliasSurfaceAsTexture(m_rd->GetCoreDevice(), m_depth_surface, &m_depth_tex, 0));
       CHECKNVAPI(NvAPI_D3D9_StretchRectEx(m_rd->GetCoreDevice(), m_depth_surface, nullptr, m_depth_tex, nullptr, D3DTEXF_NONE));
+      if (insideBeginEnd)
+         m_rd->GetCoreDevice()->BeginScene();
    }
 #endif
 }

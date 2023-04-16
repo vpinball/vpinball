@@ -20,6 +20,7 @@ public:
 
    RenderTarget* m_rt;
    string m_name;
+   bool m_depthReadback = false;
 
 private:
    bool m_ignoreStereo;

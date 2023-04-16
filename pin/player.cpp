@@ -3238,7 +3238,7 @@ void Player::RenderDynamics()
 void Player::SSRefl()
 {
    m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("ScreenSpace Reflection"s, m_pin3d.m_pd3dPrimaryDevice->GetReflectionBufferTexture());
-   m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture());
+   m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture(), true);
 
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
@@ -3503,7 +3503,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
       outputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Stereo"s, outputRT, true);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
-      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture());
+      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture(), true);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
@@ -3708,9 +3708,6 @@ void Player::PrepareVideoBuffersNormal()
    RenderTarget *renderedRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture();
    RenderTarget *outputRT = nullptr;
 
-   if (stereo || ss_refl)
-      renderedRT->UpdateDepthSampler(); // do not put inside BeginScene/EndScene Block
-
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_NONE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
@@ -3877,8 +3874,6 @@ void Player::PrepareVideoBuffersAO()
    RenderTarget *renderedRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture();
    RenderTarget *ouputRT = nullptr;
 
-   renderedRT->UpdateDepthSampler(); // do not put inside BeginScene/EndScene Block
-
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_NONE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
@@ -3943,7 +3938,7 @@ void Player::PrepareVideoBuffersAO()
    else
       ouputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
    m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Tonemap/Dither/ColorGrade"s, ouputRT, true);
-   m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
+   m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT, true);
    m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture());
    m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1));
 

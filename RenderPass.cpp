@@ -21,6 +21,7 @@ void RenderPass::Reset(const string& name, RenderTarget* const rt, const bool ig
    m_rt = rt;
    m_ignoreStereo = ignoreStereo;
    m_name = name;
+   m_depthReadback = false;
    m_sortKey = 0;
    m_commands.clear();
    m_dependencies.clear();
@@ -58,6 +59,7 @@ void RenderPass::Sort(vector<RenderPass*>& sortedPasses)
    if (sortedPasses.size() > 0 && sortedPasses.back()->m_rt == m_rt)
    {
       // Merge passes
+      sortedPasses.back()->m_depthReadback |= m_depthReadback;
       sortedPasses.back()->m_commands.insert(sortedPasses.back()->m_commands.end(), m_commands.begin(), m_commands.end());
       m_commands.clear();
    }
@@ -164,8 +166,12 @@ void RenderPass::Execute(const bool log)
          stable_sort(m_commands.begin(), m_commands.end(), sortFunc);
 
       m_rt->Activate(m_ignoreStereo);
+
       for (RenderCommand* cmd : m_commands)
          cmd->Execute(log);
+
+      if (m_depthReadback)
+         m_rt->UpdateDepthSampler(true);
 
       #ifdef ENABLE_SDL
       if (GLAD_GL_VERSION_4_3)

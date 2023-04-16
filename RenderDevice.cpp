@@ -1779,10 +1779,11 @@ void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt, bool ig
    }
 }
 
-void RenderDevice::AddRenderTargetDependency(RenderTarget* rt)
+void RenderDevice::AddRenderTargetDependency(RenderTarget* rt, const bool needDepth)
 {
    if (m_currentPass != nullptr && rt->m_lastRenderPass != nullptr)
    {
+      rt->m_lastRenderPass->m_depthReadback |= needDepth;
       m_currentPass->AddPrecursor(rt->m_lastRenderPass);
    }
 }
