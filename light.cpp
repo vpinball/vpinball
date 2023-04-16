@@ -559,7 +559,8 @@ void Light::RenderDynamic()
       #endif
    }
 
-   pd3dDevice->DrawMesh(shader, m_boundingSphereCenter, m_d.m_depthBias, m_customMoverMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_customMoverIndexNum);
+   Vertex3Ds pos0(0.f, 0.f, 0.f);
+   pd3dDevice->DrawMesh(shader, m_backglass ? pos0 : m_boundingSphereCenter, m_backglass ? 0.f : m_d.m_depthBias, m_customMoverMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_customMoverIndexNum);
 
    // Restore state
    if (m_backglass)
