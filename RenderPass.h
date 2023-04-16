@@ -8,6 +8,7 @@ class RenderPass final
 public:
    RenderPass(const string& name, RenderTarget* const rt, const bool ignoreStereo = false);
    ~RenderPass();
+   void Reset(const string& name, RenderTarget* const rt, const bool ignoreStereo = false);
 
    void AddPrecursor(RenderPass* dependency);
    void Sort(vector<RenderPass*>& sortedPasses);
@@ -17,12 +18,12 @@ public:
 
    void RecycleCommands(std::vector<RenderCommand*>& commandPool);
 
-   RenderTarget* const m_rt;
-   const string m_name;
+   RenderTarget* m_rt;
+   string m_name;
 
 private:
+   bool m_ignoreStereo;
    int m_sortKey = 0;
-   const bool m_ignoreStereo;
-   std::vector<RenderCommand*> m_commands;
-   std::vector<RenderPass*> m_dependencies; // List of render passes that must have been performed before executing this pass
+   vector<RenderCommand*> m_commands;
+   vector<RenderPass*> m_dependencies; // List of render passes that must have been performed before executing this pass
 };

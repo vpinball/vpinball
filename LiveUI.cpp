@@ -1776,8 +1776,10 @@ void LiveUI::UpdateRendererInspectionModal()
       ImGui::Text("Display single render pass:");
       static int pass_selection = IF_FPS;
       ImGui::RadioButton("Disabled", &pass_selection, IF_FPS);
+      #ifndef ENABLE_SDL // No GPU profiler for OpenGL
       ImGui::RadioButton("Profiler", &pass_selection, IF_PROFILING);
       ImGui::RadioButton("Profiler (Split rendering)", &pass_selection, IF_PROFILING_SPLIT_RENDERING);
+      #endif
       ImGui::RadioButton("Static prerender pass", &pass_selection, IF_STATIC_ONLY);
       ImGui::RadioButton("Dynamic render pass", &pass_selection, IF_DYNAMIC_ONLY);
       ImGui::RadioButton("Transmitted light pass", &pass_selection, IF_LIGHT_BUFFER_ONLY);
@@ -1796,7 +1798,110 @@ void LiveUI::UpdateRendererInspectionModal()
          m_player->m_infoProbeIndex = pass_selection - 100;
       }
       ImGui::NewLine();
+      // Main frame timing table
+      if (ImGui::BeginTable("Timings", 6, ImGuiTableFlags_Borders))
+      {
+         const U32 period = m_player->m_lastFrameDuration;
+         ImGui::TableSetupColumn("##Cat", ImGuiTableColumnFlags_WidthFixed);
+         ImGui::TableSetupColumn("Time", ImGuiTableColumnFlags_WidthFixed);
+         ImGui::TableSetupColumn("Ratio", ImGuiTableColumnFlags_WidthFixed);
+         ImGui::TableSetupColumn("Avg Time", ImGuiTableColumnFlags_WidthFixed);
+         ImGui::TableSetupColumn("Avg Ratio", ImGuiTableColumnFlags_WidthFixed);
+         ImGui::TableSetupColumn("Additional informations", ImGuiTableColumnFlags_WidthStretch);
+         ImGui::TableHeadersRow();
+
+         // Overall frame timing
+         const float fpsAvg = m_player->m_avgFrameDuration == 0 ? 0.0f : ((float)((double)1000000.0 * m_player->m_avgFrameCount / m_player->m_avgFrameDuration));
+         // info << "Overall: " << (float(1e-3 * m_max)) << "ms max (last second), " << (float(1e-3 * m_max_total)) << "ms max\n";
+         ImGui::TableNextColumn();
+         ImGui::Text("Frame");
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1fms", 1000.0f / (m_player->m_fps + 0.01f));
+         ImGui::TableNextColumn();
+         ImGui::Text("100.0%%");
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1fms", 1000.0f / (fpsAvg + 0.01f));
+         ImGui::TableNextColumn();
+         ImGui::Text("100.0%%");
+         ImGui::TableNextColumn();
+         ImGui::Text("FPS: %4.1f (%4.1f average)", m_player->m_fps, fpsAvg);
+         ImGui::TableNextRow();
+         // Renderer command collect timing
+         ImGui::TableNextColumn();
+         ImGui::Text("> Collect");
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1fms", 1e-3 * m_player->m_frame_collect);
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1f%%", m_player->m_frame_collect * 100.0 / period);
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1fms", 1e-3 * (double)m_player->m_frame_collect_total / (double)m_player->m_count);
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1f%%", (double)m_player->m_frame_collect_total * 100.0 / (double)m_player->m_total);
+         ImGui::TableNextRow();
+         // Renderer command submit timing
+         ImGui::TableNextColumn();
+         ImGui::Text("> Submit");
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1fms", 1e-3 * m_player->m_frame_submit);
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1f%%", m_player->m_frame_submit * 100.0 / period);
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1fms", 1e-3 * (double)m_player->m_frame_submit_total / (double)m_player->m_count);
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1f%%", (double)m_player->m_frame_submit_total * 100.0 / (double)m_player->m_total);
+         ImGui::TableNextRow();
+         // Renderer frame flip timing
+         ImGui::TableNextColumn();
+         ImGui::Text("> Flip");
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1fms", 1e-3 * m_player->m_frame_flip);
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1f%%", m_player->m_frame_flip * 100.0 / period);
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1fms", 1e-3 * (double)m_player->m_frame_flip_total / (double)m_player->m_count);
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1f%%", (double)m_player->m_frame_flip_total * 100.0 / (double)m_player->m_total);
+         ImGui::TableNextRow();
+         // Physics timing
+         U32 frame_phys = m_player->m_phys_period - m_player->m_script_period;
+         ImGui::TableNextColumn();
+         ImGui::Text("> Physics");
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1fms", 1e-3 * frame_phys);
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1f%%", frame_phys * 100.0 / period);
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1fms", 1e-3 * (double) m_player->m_phys_total / (double) m_player->m_count);
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1f%%", (double)m_player->m_phys_total * 100.0 / (double)m_player->m_total);
+         ImGui::TableNextColumn();
+         ImGui::Text("Max: %4.1fms (over last second), %4.1fms", 1e-3 * m_player->m_phys_max, 1e-3 * m_player->m_phys_max_total);
+         ImGui::TableNextRow();
+         // Script timing
+         ImGui::TableNextColumn();
+         ImGui::Text("> Timers");
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1fms", 1e-3 * m_player->m_script_period);
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1f%%", m_player->m_script_period * 100.0 / period);
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1fms", 1e-3 * (double)m_player->m_script_total / (double)m_player->m_count);
+         ImGui::TableNextColumn();
+         ImGui::Text("%4.1f%%", (double)m_player->m_script_total * 100.0 / (double)m_player->m_total);
+         ImGui::TableNextColumn();
+         ImGui::Text("Max: %4.1fms (over last second), %4.1fms", 1e-3 * m_player->m_script_max, 1e-3 * m_player->m_script_max_total);
+         ImGui::TableNextRow();
+
+         ImGui::EndTable();
+
+         ImGui::Text("Press F11 to reset average timings");
+         if (ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eFrameCount]]))
+            m_player->InitFPS();
+         ImGui::NewLine();
+      }
+      // Other detailled informations
       ImGui::Text(m_player->GetPerfInfo().c_str());
+      
       ImGui::EndPopup();
    }
 }

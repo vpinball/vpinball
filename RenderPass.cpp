@@ -16,6 +16,16 @@ RenderPass::~RenderPass()
       delete item;
 }
 
+void RenderPass::Reset(const string& name, RenderTarget* const rt, const bool ignoreStereo)
+{
+   m_rt = rt;
+   m_ignoreStereo = ignoreStereo;
+   m_name = name;
+   m_sortKey = 0;
+   m_commands.clear();
+   m_dependencies.clear();
+}
+
 void RenderPass::RecycleCommands(std::vector<RenderCommand*>& commandPool)
 {
    commandPool.insert(commandPool.end(), m_commands.begin(), m_commands.end());

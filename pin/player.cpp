@@ -811,6 +811,10 @@ void Player::InitFPS()
    m_secFrameCount = 0;
    m_fps = 0.f;
 
+   m_frame_collect_total = 0;
+   m_frame_submit_total = 0;
+   m_frame_flip_total = 0;
+
     m_total = 0;
     m_count = 0;
     m_max = 0;
@@ -3572,6 +3576,9 @@ string Player::GetPerfInfo()
       m_phys_total = m_phys_period - m_script_period;
       m_phys_total_iterations = m_phys_iterations;
       m_script_total = m_script_period;
+      m_frame_collect_total = m_frame_collect;
+      m_frame_submit_total = m_frame_submit;
+      m_frame_flip_total = m_frame_flip;
       m_count = 1;
    }
    else
@@ -3580,34 +3587,34 @@ string Player::GetPerfInfo()
       m_phys_total += m_phys_period - m_script_period;
       m_phys_total_iterations += m_phys_iterations;
       m_script_total += m_script_period;
+      m_frame_collect_total += m_frame_collect;
+      m_frame_submit_total += m_frame_submit;
+      m_frame_flip_total += m_frame_flip;
       m_count++;
    }
 
    // Draw the amount of video memory used. !! Disabled until we can compute this correctly.
    // info << " Used Graphics Memory: " << std::setprecision(2) << (float)NumVideoBytes / (float)(1024 * 1024)) << std::setprecision(1) << " MB\n";
 
-   // Overall frame informations
+   // Overall frame informations (disbaled since it is now displayed in a cleaner ImGui table)
+   /*
    info << std::fixed << std::setw(4) << std::setprecision(1);
+   info << "Frame: " << (1000.0f / (m_fps + 0.01f)) << "ms [Average: " << (1000.0f / (fpsAvg + 0.01f)) << "ms], FPS: " << (m_fps + 0.01f) << " [Average: " << (fpsAvg + 0.01f)
+        << "]\n";
    info << "Overall: " << (float(1e-3 * m_max)) << "ms max (last second), " << (float(1e-3 * period)) << "ms, " 
         << (float(1e-3 * (double)m_total / (double)m_count)) << "ms avg, " << (float(1e-3 * m_max_total)) << "ms max\n";
+   info << "> Collect: " << float((m_frame_collect) * 100.0 / period) << "%%, " << (float(1e-3 * (m_frame_collect))) << "ms\n";
+   info << "> Submit:  " << float((m_frame_submit)*100.0 / period) << "%%, " << (float(1e-3 * (m_frame_submit))) << "ms\n";
+   info << "> Flip:    " << float((m_frame_flip)*100.0 / period) << "%%, " << (float(1e-3 * (m_frame_flip))) << "ms\n";
    info << "> Physics: " << float((m_phys_period - m_script_period) * 100.0 / period) << "%%, " << (float(1e-3 * (m_phys_period - m_script_period))) << "ms, "
         << (float(1e-3 * (double)m_phys_total / (double)m_count)) << "ms avg, " << (float(1e-3 * m_phys_max)) << "ms max (last second), " 
         << (float((double)m_phys_total * 100.0 / (double)m_total)) << "%% avg, " << (float(1e-3 * m_phys_max_total)) << "ms max\n";
    info << "> Script:    " << (float(m_script_period * 100.0 / period)) << "%%, " << (float(1e-3 * m_script_period)) << "ms, "
         << (float(1e-3 * (double)m_script_total / (double)m_count)) << "ms avg, " << (float(1e-3 * m_script_max)) << "ms max (last second), "
         << (float((double)m_script_total * 100.0 / (double)m_total)) << "%% avg, " << (float(1e-3 * m_script_max_total)) << "ms max\n";
-   info << "\n";
+   info << "\n";*/
 
-   // Overall frame timings
-   info << std::fixed << std::setw(4) << std::setprecision(1);
-   info << "Frame time:     " << (1000.0f / (m_fps + 0.01f)) << "ms [Average: " << (1000.0f / (fpsAvg + 0.01f)) << "ms], FPS: " << (m_fps + 0.01f)
-        << " [Average: " << (fpsAvg + 0.01f) << "]\n";
-   info << "Frame collect:  " << (m_frame_collect / 1000.0) << "ms\n";
-   info << "Frame submit: " << (m_frame_submit / 1000.0) << "ms\n";
-   info << "Frame flip:       " << (m_frame_flip / 1000.0) << "ms\n";
-   info << "\n";
-
-   // performance counters
+   // Renderer addtional informations
    info << "Triangles: " << ((m_pin3d.m_pd3dPrimaryDevice->m_frameDrawnTriangles + 999) / 1000) << "k per frame, "
         << ((stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_frameDrawnTriangles + 999) / 1000) << "k overall. DayNight " << quantizeUnsignedPercent(m_globalEmissionScale)
         << "%%\n";
@@ -3619,7 +3626,7 @@ string Player::GetPerfInfo()
    info << "Objects: " << (unsigned int)m_vHitTrans.size() << " Transparent, " << (unsigned int)m_vHitNonTrans.size() << " Solid\n";
    info << "\n";
 
-   // Physics informations
+   // Physics addtional informations
    info << "Physics: " << m_phys_iterations << " iterations per frame (" << ((U32)(m_phys_total_iterations / m_count)) << " avg " << m_phys_max_iterations
         << " max)    Ball Velocity / Ang.Vel.: " << (m_pactiveball ? (m_pactiveball->m_d.m_vel + (float)PHYS_FACTOR * m_gravity).Length() : -1.f) << " "
         << (m_pactiveball ? (m_pactiveball->m_angularmomentum / m_pactiveball->Inertia()).Length() : -1.f) << "\n";
@@ -3640,12 +3647,13 @@ string Player::GetPerfInfo()
       << ((int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame)) << " f) to eos: "
       << ((INT64)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) / 1000.) << " ms ("
       << ((int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame)) << " f)\n";
-   info << "\n";
 
    // Draw performance readout - at end of CPU frame, so hopefully the previous frame
    //  (whose data we're getting) will have finished on the GPU by now.
+   #ifndef ENABLE_SDL // No GPU profiler for OpenGL
    if (GetProfilingMode() != PF_DISABLED && m_closing == CS_PLAYING && !m_cameraMode)
    {
+      info << "\n";
       info << "Detailed (approximate) GPU profiling:\n";
 
       m_pin3d.m_gpu_profiler.WaitForDataAndUpdate();
@@ -3673,6 +3681,7 @@ string Player::GetPerfInfo()
          }
       }
    }
+   #endif
 
    txt = info.str();
 
@@ -4246,7 +4255,7 @@ void Player::Render()
    if (GetProfilingMode() == PF_ENABLED)
       m_pin3d.m_gpu_profiler.BeginFrame(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
 #endif
-   U64 usecTimeStamp = usec();
+   U64 usecTimeStamp = usec(); // Time stamp for render command collect timing (missing the initial clear/blit but this shoumd be neglictable)
 
    // Update camera point of view
 #ifdef ENABLE_VR
@@ -4306,16 +4315,15 @@ void Player::Render()
    else
       PrepareVideoBuffersNormal();
 
+   m_frame_collect = usec() - usecTimeStamp;
+
    m_liveUI->Update();
 
-   m_frame_collect = usec() - usecTimeStamp;
    usecTimeStamp = usec();
-
    m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
-   m_liveUI->Render();
-
    m_frame_submit = usec() - usecTimeStamp;
-   usecTimeStamp = usec();
+
+   m_liveUI->Render();
 
    m_pin3d.m_pd3dPrimaryDevice->EndScene();
 
