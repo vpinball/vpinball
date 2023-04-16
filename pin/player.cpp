@@ -147,7 +147,7 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
       if (LoadValueBoolWithDefault(regKey[useVR ? RegName::PlayerVR : RegName::Player], "BallReflection"s, true))
          m_pfReflectionMode = RenderProbe::REFL_STATIC_N_BALLS;
       if (LoadValueBoolWithDefault(regKey[useVR ? RegName::PlayerVR : RegName::Player], "PFRefl"s, true))
-         m_pfReflectionMode = RenderProbe::REFL_UNSYNCED_DYNAMIC;
+         m_pfReflectionMode = RenderProbe::REFL_STATIC_N_DYNAMIC;
    }
    // Apply table specific overrides
    if (!m_ptable->m_reflectElementsOnPlayfield)
@@ -1741,6 +1741,7 @@ void Player::InitStatic()
    if (m_stereo3D == STEREO_VR)
       return;
 
+   RenderTarget *prevRT = m_pin3d.m_pd3dPrimaryDevice->GetCurrentRenderTarget();
    m_render_mask |= STATIC_PREPASS;
 
    // The code will fail if the static render target is MSAA (the copy operation we are performing is not allowed)
@@ -1791,6 +1792,10 @@ void Player::InitStatic()
       {
          RenderState initial_state;
          m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
+
+         // Mark all probes to be re-rendered for this frame (only if needed, lazily rendered)
+         for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); ++i)
+            m_ptable->m_vrenderprobe[i]->MarkDirty();
 
          // Render static parts
          UpdateBasicShaderMatrix();
@@ -1928,6 +1933,7 @@ void Player::InitStatic()
    g_pvp->ProfileLog("Static PreRender End"s);
    
    m_render_mask &= ~STATIC_PREPASS;
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(""s, prevRT);
 }
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)
