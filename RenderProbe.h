@@ -16,11 +16,10 @@ public:
    {
       REFL_NONE, // No reflections
       REFL_BALLS, // Only balls reflections
-      REFL_STATIC, // Only static reflections
+      REFL_STATIC, // Only static (prerendered) reflections
       REFL_STATIC_N_BALLS, // Static reflections and balls, without depth sync (static or dynamic reflection may be rendered while they should be occluded)
-      REFL_UNSYNCED_DYNAMIC, // Static and dynamic reflections, without depth sync (static or dynamic reflection may be rendered while they should be occluded)
-      REFL_SYNCED_DYNAMIC, // Static and dynamic reflections, with depth sync (static reflection may be rendered while they should be occluded)
-      REFL_DYNAMIC // All reflections are dynamic allowing for correct occlusion between them at the cost of performance
+      REFL_STATIC_N_DYNAMIC, // Static and dynamic reflections, without depth sync (static or dynamic reflection may be rendered while they should be occluded)
+      REFL_DYNAMIC // All reflections are dynamic allowing for correct occlusion between them at the cost of performance (static are still prerendered)
    };
 
    RenderProbe();
@@ -72,7 +71,7 @@ private:
    int m_roughness_clear = 0; // Roughness level to be used when there is a roughness map (lerp between base and clear according to roughness map)
    bool m_rendering = false;
    RenderTarget* m_blurRT = nullptr;
-   RenderTarget* m_staticRT = nullptr;
+   RenderTarget* m_prerenderRT = nullptr;
    RenderTarget* m_dynamicRT = nullptr;
 
    // Properties for reflection probe

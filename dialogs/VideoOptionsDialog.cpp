@@ -91,7 +91,8 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    SendMessage(GetDlgItem(IDC_DYNAMIC_AO).GetHwnd(), BM_SETCHECK, profile == 2 ? BST_CHECKED : BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_ENABLE_AO).GetHwnd(), BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_SETCHECK, profile == 2 ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd(), CB_SETCURSEL, profile == 0 ? RenderProbe::REFL_UNSYNCED_DYNAMIC : (profile == 2 ? RenderProbe::REFL_DYNAMIC : RenderProbe::REFL_STATIC_N_BALLS), 0);
+   SendMessage(GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd(), CB_SETCURSEL,
+      profile == 0 ? RenderProbe::REFL_STATIC_N_DYNAMIC : (profile == 2 ? RenderProbe::REFL_DYNAMIC : RenderProbe::REFL_STATIC_N_BALLS), 0);
 
    if (profile == 0)
    {
@@ -373,7 +374,6 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static Only");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static & Balls");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static & Unsynced Dynamic");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static & Synced Dynamic");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Dynamic");
    int pfr = LoadValueIntWithDefault(regKey[RegName::Player], "PFReflection"s, -1);
    RenderProbe::ReflectionMode pfReflection;
@@ -385,7 +385,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
       if (LoadValueBoolWithDefault(regKey[RegName::Player], "BallReflection"s, true))
          pfReflection = RenderProbe::REFL_STATIC_N_BALLS;
       if (LoadValueBoolWithDefault(regKey[RegName::Player], "PFRefl"s, true))
-         pfReflection = RenderProbe::REFL_UNSYNCED_DYNAMIC;
+         pfReflection = RenderProbe::REFL_STATIC_N_DYNAMIC;
    }
    SendMessage(hwnd, CB_SETCURSEL, pfReflection, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
