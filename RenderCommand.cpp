@@ -213,9 +213,9 @@ void RenderCommand::Execute(const bool log)
          else if (m_command == RC_DRAW_MESH)
             ss << "> Draw Mesh     ";
          ss << std::setw(40) << Shader::GetTechniqueName(m_shaderTechnique) << std::setw(0) << " " << m_renderState.GetLog();
+         ss << " Depth: " << std::fixed << std::setw(8) << std::setprecision(2) << m_depth;
          if (m_command == RC_DRAW_MESH)
          {
-            ss << " Depth: " << std::fixed << std::setw(8) << std::setprecision(2) << m_depth;
             ss << " MB:" << std::setw(4) << std::hex << m_mb->GetSortKey() << std::dec;
             ss << " IndCount: " << std::setw(8) << m_indicesCount << " " << m_mb->m_name;
          }
@@ -280,6 +280,7 @@ void RenderCommand::SetDrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
    m_command = Command::RC_DRAW_QUAD_PT;
    memcpy(m_vertices, vertices, 4 * sizeof(Vertex3D_TexelOnly));
    m_rd->CopyRenderStates(true, m_renderState);
+   m_depth = 0.f;
    m_shader = Shader::GetCurrentShader();
    m_shaderTechnique = m_shader->GetCurrentTechnique();
    m_shader->CopyUniformCache(true, m_shaderTechnique, m_uniformState, m_textureState);
@@ -290,6 +291,7 @@ void RenderCommand::SetDrawTexturedQuad(const Vertex3D_NoTex2* vertices)
    m_command = Command::RC_DRAW_QUAD_PNT;
    memcpy(m_vertices, vertices, 4 * sizeof(Vertex3D_NoTex2));
    m_rd->CopyRenderStates(true, m_renderState);
+   m_depth = 0.f;
    m_shader = Shader::GetCurrentShader();
    m_shaderTechnique = m_shader->GetCurrentTechnique();
    m_shader->CopyUniformCache(true, m_shaderTechnique, m_uniformState, m_textureState);
