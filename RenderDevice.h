@@ -107,9 +107,6 @@ public:
    void CreateDevice(int &refreshrate, UINT adapterIndex = D3DADAPTER_DEFAULT);
    bool LoadShaders();
 
-   void BeginScene();
-   void EndScene();
-
    void SetRenderTarget(const string& passName, RenderTarget* rt, bool ignoreStereo = false);
    void AddRenderTargetDependency(RenderTarget* rt);
    void Clear(const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil);
