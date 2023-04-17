@@ -121,7 +121,6 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(stereo_Int),
    SHADER_TECHNIQUE(stereo_Flipped_Int),
    SHADER_TECHNIQUE(stereo_anaglyph),
-   SHADER_TECHNIQUE(stereo_AMD_DEBUG),
    SHADER_TECHNIQUE_COUNT,
    SHADER_TECHNIQUE_INVALID
 };
