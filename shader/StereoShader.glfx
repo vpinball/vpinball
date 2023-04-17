@@ -135,31 +135,6 @@ void main()
    color = tex2D(tex_stereo_fb, float2(tex0.x,0.5*tex0.y + ((frac(gl_FragCoord.y*0.5) < 0.5) ? 0.5 : 0.0)));
 }
 
-////vs_main_amd
-
-void main()
-{
-   gl_Position = vec4(vPosition.x, vPosition.y, 0.0, 1.0);
-   tex0 = float2(tc.x, 1.0-tc.y);
-}
-
-////ps_main_amd
-
-uniform float eye;
-
-void main()
-{
-   float x;
-   if (eye>1.5) {
-      x = tex0.x;
-   } else if (eye<0.5) {
-      x = tex0.x*0.5;
-   } else {
-      x = tex0.x*0.5+0.5;
-   }
-   color = tex2D(tex_stereo_fb, float2(x,tex0.y));
-}
-
 ////ps_main_stereo_anaglyph
 
 void main()
@@ -176,5 +151,4 @@ void main()
 
 stereo_Int:P0:vs_main_no_trafo():ps_main_int()
 stereo_Flipped_Int:P0:vs_main_no_trafo():ps_main_flipped_int()
-stereo_AMD_DEBUG:P0:vs_main_amd():ps_main_amd()
 stereo_anaglyph:P0:vs_main_no_trafo():ps_main_stereo_anaglyph()
