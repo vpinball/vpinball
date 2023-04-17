@@ -63,13 +63,13 @@ uniform bool objectSpaceNormalMap;
 
 uniform bool is_metal;
 uniform bool doNormalMapping;
-uniform bool doReflections;
 uniform bool doRefractions;
 
 uniform mat4 matProj; // Separated from matrix block since we only need to set it once per frame
 
-uniform float refractionThickness;
-uniform float3 refractionTint;
+uniform float4 refractionTint_thickness;
+#define refractionTint (refractionTint_thickness.rgb)
+#define refractionThickness (refractionTint_thickness.w)
 
 #include "Material_GL.fxh"
 
@@ -85,8 +85,10 @@ uniform float alphaTestValue;
 
 uniform float4 w_h_height;
 
-uniform float mirrorFactor;
-uniform float3 mirrorNormal;
+uniform float4 mirrorNormal_factor;
+#define mirrorNormal (mirrorNormal_factor.xyz)
+#define mirrorFactor (mirrorNormal_factor.w)
+#define doReflections (mirrorNormal_factor.w > 0.0)
 
 out vec4 color;
 

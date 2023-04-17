@@ -103,8 +103,9 @@ const float alphaTestValue;
 
 const float4 w_h_height;
 
-const float mirrorFactor;
-const float3 mirrorNormal;
+const float4 mirrorNormal_factor;
+#define mirrorNormal (mirrorNormal_factor.xyz)
+#define mirrorFactor (mirrorNormal_factor.w)
 
 // DX9 needs these to be defined outside of the shader (unless, you get a X4014 error), so use the effect framework for these
 //uniform bool is_metal;
@@ -112,8 +113,9 @@ const float3 mirrorNormal;
 //const bool doReflections;
 //const bool doRefractions;
 
-const float refractionThickness;
-const float3 refractionTint;
+const float4 refractionTint_thickness;
+#define refractionTint (refractionTint_thickness.rgb)
+#define refractionThickness (refractionTint_thickness.w)
 
 struct VS_OUTPUT 
 {
