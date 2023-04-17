@@ -1299,16 +1299,14 @@ void Primitive::RenderObject()
       pd3dDevice->basicShader->SetFlasherColorAlpha(color);
    }
 
-
    // setup for applying refractions from screen space probe
    if (refractions)
    {
       pd3dDevice->AddRenderTargetDependency(refractions);
-      const vec4 color = convertColor(mat->m_cRefractionTint);
-      pd3dDevice->basicShader->SetVector(SHADER_refractionTint, &color);
+      const vec4 color = convertColor(mat->m_cRefractionTint, m_d.m_refractionThickness);
+      pd3dDevice->basicShader->SetVector(SHADER_refractionTint_thickness, &color);
       pd3dDevice->basicShader->SetTexture(SHADER_tex_refraction, refractions->GetColorSampler());
       pd3dDevice->basicShader->SetTexture(SHADER_tex_probe_depth, refractions->GetDepthSampler());
-      pd3dDevice->basicShader->SetFloat(SHADER_refractionThickness, m_d.m_refractionThickness);
    }
 
    // Check if this primitive is used as a lightmap and should be convoluted with the light shadows
@@ -1318,10 +1316,9 @@ void Primitive::RenderObject()
    bool is_reflection_only_pass = false;
 
    // setup for applying reflections from reflection probe
-   if (reflections)
+   if (reflections && m_d.m_reflectionStrength > 0.f)
    {
       pd3dDevice->AddRenderTargetDependency(reflections);
-      pd3dDevice->basicShader->SetFloat(SHADER_mirrorFactor, m_d.m_reflectionStrength);
       Matrix3D matWorldViewInverseTranspose; // This is clearly suboptimal since this transposed inverse is already computed, but the impact is minimal
       vec3 plane_normal;
       reflection_probe->GetReflectionPlaneNormal(plane_normal);
@@ -1329,7 +1326,7 @@ void Primitive::RenderObject()
       matWorldViewInverseTranspose.Invert();
       matWorldViewInverseTranspose.Transpose();
       matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal, plane_normal);
-      pd3dDevice->basicShader->SetVector(SHADER_mirrorNormal, plane_normal.x,plane_normal.y,plane_normal.z,0.f);
+      pd3dDevice->basicShader->SetVector(SHADER_mirrorNormal_factor, plane_normal.x, plane_normal.y, plane_normal.z, m_d.m_reflectionStrength);
       pd3dDevice->basicShader->SetTexture(SHADER_tex_reflection, reflections->GetColorSampler());
       is_reflection_only_pass = m_d.m_staticRendering && !g_pplayer->IsRenderPass(Player::STATIC_PREPASS) && !g_pplayer->m_dynamicMode;
       if (!is_reflection_only_pass && mat->m_bOpacityActive && (mat->m_fOpacity < 1.0f || (pin && pin->has_alpha())))
@@ -1366,9 +1363,12 @@ void Primitive::RenderObject()
 
    // Restore state
    g_pplayer->UpdateBasicShaderMatrix();
+   if (reflections && m_d.m_reflectionStrength > 0.f)
+      pd3dDevice->basicShader->SetVector(SHADER_mirrorNormal_factor, 0.f, 0.f, 0.f, 0.f);
    pd3dDevice->basicShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
    pd3dDevice->basicShader->SetFlasherColorAlpha(previousFlasherColorAlpha);
-   pd3dDevice->basicShader->SetDisableLighting(vec4(0.f, 0.f, 0.f, 0.f));
+   if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
+      pd3dDevice->basicShader->SetDisableLighting(vec4(0.f, 0.f, 0.f, 0.f));
    pd3dDevice->CopyRenderStates(false, initial_state);
 }
 

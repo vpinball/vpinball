@@ -195,15 +195,14 @@ enum ShaderUniforms
 
    // Basic Shader
    SHADER_UNIFORM(SUT_Float, fKickerScale, 1),
-   SHADER_UNIFORM(SUT_Float, mirrorFactor, 1),
-   SHADER_UNIFORM(SUT_Float, refractionThickness, 1),
    SHADER_UNIFORM(SUT_Float4, cClearcoat_EdgeAlpha, 1),
    SHADER_UNIFORM(SUT_Float4, cGlossy_ImageLerp, 1),
-   SHADER_UNIFORM(SUT_Float3, refractionTint, 1),
-   SHADER_UNIFORM(SUT_Float3, mirrorNormal, 1),
-   SHADER_UNIFORM(SUT_Bool, objectSpaceNormalMap, 1),
-   SHADER_UNIFORM(SUT_Bool, doReflections, 1),
+   #ifdef ENABLE_SDL // OpenGL
    SHADER_UNIFORM(SUT_Bool, doRefractions, 1),
+   #endif
+   SHADER_UNIFORM(SUT_Float4, refractionTint_thickness, 1),
+   SHADER_UNIFORM(SUT_Float4, mirrorNormal_factor, 1),
+   SHADER_UNIFORM(SUT_Bool, objectSpaceNormalMap, 1),
    SHADER_SAMPLER(tex_base_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
    SHADER_SAMPLER(tex_base_transmission, Texture3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // bulb light/transmission buffer texture
    SHADER_SAMPLER(tex_base_normalmap, Texture4, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // normal map texture
@@ -362,19 +361,7 @@ private:
 
    Material currentMaterial;
 
-   vec4 currentDisableLighting; // x and y: top and below, z and w unused
-
-   float currentAlphaTestValue;
-
    vec4 currentFlasherColor; // all flasher only-data
-   vec4 currentFlasherData;
-   vec4 currentFlasherData2; // w unused
-
-   vec4 currentLightColor; // all light only-data
-   vec4 currentLightColor2;
-   vec4 currentLightData;
-   unsigned int currentLightImageMode;
-   unsigned int currentLightBackglassMode;
 
    struct ShaderUniform
    {

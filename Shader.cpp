@@ -193,15 +193,14 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
 
    // Basic Shader
    SHADER_UNIFORM(SUT_Float, fKickerScale, 1),
-   SHADER_UNIFORM(SUT_Float, mirrorFactor, 1),
-   SHADER_UNIFORM(SUT_Float, refractionThickness, 1),
    SHADER_UNIFORM(SUT_Float4, cClearcoat_EdgeAlpha, 1),
    SHADER_UNIFORM(SUT_Float4, cGlossy_ImageLerp, 1),
-   SHADER_UNIFORM(SUT_Float3, refractionTint, 1),
-   SHADER_UNIFORM(SUT_Float3, mirrorNormal, 1),
-   SHADER_UNIFORM(SUT_Bool, objectSpaceNormalMap, 1),
-   SHADER_UNIFORM(SUT_Bool, doReflections, 1),
+   #ifdef ENABLE_SDL // OpenGL
    SHADER_UNIFORM(SUT_Bool, doRefractions, 1),
+   #endif
+   SHADER_UNIFORM(SUT_Float4, refractionTint_thickness, 1),
+   SHADER_UNIFORM(SUT_Float4, mirrorNormal_factor, 1),
+   SHADER_UNIFORM(SUT_Bool, objectSpaceNormalMap, 1),
    SHADER_SAMPLER(tex_base_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
    SHADER_SAMPLER(tex_base_transmission, Texture3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // bulb light/transmission buffer texture
    SHADER_SAMPLER(tex_base_normalmap, Texture4, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // normal map texture
@@ -336,16 +335,7 @@ Shader::Shader(RenderDevice* renderDevice)
    memset(m_texture_cache, 0, sizeof(IDirect3DTexture9*) * TEXTURESET_STATE_CACHE_SIZE);
    memset(m_bound_texture, 0, sizeof(IDirect3DTexture9*) * TEXTURESET_STATE_CACHE_SIZE);
 #endif
-   currentAlphaTestValue = -FLT_MAX;
-   currentDisableLighting = vec4(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-   currentFlasherData = vec4(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-   currentFlasherData2 = vec4(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
    currentFlasherColor = vec4(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-   currentLightColor = vec4(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-   currentLightColor2 = vec4(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-   currentLightData = vec4(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-   currentLightImageMode = ~0u;
-   currentLightBackglassMode = ~0u;
 }
 
 Shader::~Shader()
@@ -489,41 +479,23 @@ void Shader::SetMaterial(const Material* const mat, const bool has_alpha)
 
 void Shader::SetDisableLighting(const float value) // only set top
 {
-   if (currentDisableLighting.x != value || currentDisableLighting.y != 0.f)
-   {
-      currentDisableLighting.x = value;
-      currentDisableLighting.y = 0.f;
-      currentDisableLighting.z = 0.f;
-      currentDisableLighting.w = 0.f;
-      SetVector(SHADER_fDisableLighting_top_below, &currentDisableLighting);
-   }
+   SetVector(SHADER_fDisableLighting_top_below, value, 0.f, 0.f, 0.f);
 }
 
 void Shader::SetDisableLighting(const vec4& value) // sets the two top and below lighting flags, z and w unused
 {
-   if (currentDisableLighting.x != value.x || currentDisableLighting.y != value.y)
-   {
-      currentDisableLighting = value;
-      SetVector(SHADER_fDisableLighting_top_below, &value);
-   }
+   SetVector(SHADER_fDisableLighting_top_below, &value);
 }
 
 void Shader::SetAlphaTestValue(const float value)
 {
-   if (currentAlphaTestValue != value)
-   {
-      currentAlphaTestValue = value;
-      SetFloat(SHADER_alphaTestValue, value);
-   }
+   SetFloat(SHADER_alphaTestValue, value);
 }
 
 void Shader::SetFlasherColorAlpha(const vec4& color)
 {
-   if (currentFlasherColor.x != color.x || currentFlasherColor.y != color.y || currentFlasherColor.z != color.z || currentFlasherColor.w != color.w)
-   {
-      currentFlasherColor = color;
-      SetVector(SHADER_staticColor_Alpha, &color);
-   }
+   currentFlasherColor = color;
+   SetVector(SHADER_staticColor_Alpha, &color);
 }
 
 vec4 Shader::GetCurrentFlasherColorAlpha() const
@@ -533,53 +505,28 @@ vec4 Shader::GetCurrentFlasherColorAlpha() const
 
 void Shader::SetFlasherData(const vec4& c1, const vec4& c2)
 {
-   if (currentFlasherData.x != c1.x || currentFlasherData.y != c1.y || currentFlasherData.z != c1.z || currentFlasherData.w != c1.w)
-   {
-      currentFlasherData = c1;
-      SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, &c1);
-   }
-   if (currentFlasherData2.x != c2.x || currentFlasherData2.y != c2.y || currentFlasherData2.z != c2.z || currentFlasherData2.w != c2.w)
-   {
-      currentFlasherData2 = c2;
-      SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, &c2);
-   }
+   SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, &c1);
+   SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, &c2);
 }
 
 void Shader::SetLightColorIntensity(const vec4& color)
 {
-   if (currentLightColor.x != color.x || currentLightColor.y != color.y || currentLightColor.z != color.z || currentLightColor.w != color.w)
-   {
-      currentLightColor = color;
-      SetVector(SHADER_lightColor_intensity, &color);
-   }
+   SetVector(SHADER_lightColor_intensity, &color);
 }
 
 void Shader::SetLightColor2FalloffPower(const vec4& color)
 {
-   if (currentLightColor2.x != color.x || currentLightColor2.y != color.y || currentLightColor2.z != color.z || currentLightColor2.w != color.w)
-   {
-      currentLightColor2 = color;
-      SetVector(SHADER_lightColor2_falloff_power, &color);
-   }
+   SetVector(SHADER_lightColor2_falloff_power, &color);
 }
 
 void Shader::SetLightData(const vec4& color)
 {
-   if (currentLightData.x != color.x || currentLightData.y != color.y || currentLightData.z != color.z || currentLightData.w != color.w)
-   {
-      currentLightData = color;
-      SetVector(SHADER_lightCenter_maxRange, &color);
-   }
+   SetVector(SHADER_lightCenter_maxRange, &color);
 }
 
 void Shader::SetLightImageBackglassMode(const bool imageMode, const bool backglassMode)
 {
-   if (currentLightImageMode != (unsigned int)imageMode || currentLightBackglassMode != (unsigned int)backglassMode)
-   {
-      currentLightImageMode = (unsigned int)imageMode;
-      currentLightBackglassMode = (unsigned int)backglassMode;
-      SetBool(SHADER_lightingOff, imageMode || backglassMode); // at the moment can be combined into a single bool due to what the shader actually does in the end
-   }
+   SetBool(SHADER_lightingOff, imageMode || backglassMode); // at the moment can be combined into a single bool due to what the shader actually does in the end
 }
 
 void Shader::SetTechniqueMetal(ShaderTechniques technique, const Material& mat, const bool doNormalMapping, const bool doReflections, const bool doRefractions)
@@ -587,9 +534,9 @@ void Shader::SetTechniqueMetal(ShaderTechniques technique, const Material& mat, 
    const bool isMetal = mat.m_type == Material::MaterialType::METAL;
    ShaderTechniques tech = technique;
 #ifdef ENABLE_SDL
+   // For OpenGL doReflections is computed from the reflection factor
    SetBool(SHADER_is_metal, isMetal);
    SetBool(SHADER_doNormalMapping, doNormalMapping);
-   SetBool(SHADER_doReflections, doReflections);
    SetBool(SHADER_doRefractions, doRefractions);
 #else
    switch (technique)
