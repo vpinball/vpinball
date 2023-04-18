@@ -3247,7 +3247,7 @@ void Player::SSRefl()
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao_dither, &m_pin3d.m_aoDitherTexture, SF_NONE, SA_REPEAT, SA_REPEAT, true); // FIXME the force linear RGB is not honored in VR
 
    // FIXME check if size should not be taken from renderdevice to account for VR (double width) or supersampling
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height,
       (float)(1.0 / m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth()), (float)(1.0 / m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight()), 1.0f /*radical_inverse(m_overall_frames%2048)*/, 1.0f);
 
    const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
