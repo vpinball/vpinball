@@ -32,7 +32,7 @@ float normal_fade_factor(const float3 n)
 
 void main()
 {
-	const float2 u = tex0 + w_h_height.xy*0.5;
+	const float2 u = tex0;
 
 	const float3 color0 = texNoLod(tex_fb_unfiltered, u).xyz; // original pixel
 

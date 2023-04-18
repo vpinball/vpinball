@@ -28,7 +28,7 @@ float normal_fade_factor(const float3 n)
 
 float4 ps_main_fb_ss_refl(in VS_OUTPUT_2D IN) : COLOR
 {
-	const float2 u = IN.tex0 + w_h_height.xy*0.5;
+	const float2 u = IN.tex0;
 
 	const float3 color0 = texNoLod(tex_fb_unfiltered, u).xyz; // original pixel
 
