@@ -173,9 +173,6 @@ void ReportError(const char *errorText, const HRESULT hr, const char *file, cons
 #endif
 }
 
-unsigned m_curLockCalls, m_frameLockCalls;
-unsigned int RenderDevice::Perf_GetNumLockCalls() const { return m_frameLockCalls; }
-
 #if 0 //def ENABLE_SDL // not used anymore
 void checkGLErrors(const char *file, const int line) {
    GLenum err;
@@ -577,18 +574,6 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
         m_dwm_enabled = false;
     }
 #endif
-
-    // initialize performance counters
-    m_curDrawCalls = m_frameDrawCalls = 0;
-    m_curStateChanges = m_frameStateChanges = 0;
-    m_curTextureChanges = m_frameTextureChanges = 0;
-    m_curParameterChanges = m_frameParameterChanges = 0;
-    m_curTechniqueChanges = m_frameTechniqueChanges = 0;
-    m_curTextureUpdates = m_frameTextureUpdates = 0;
-
-    m_curLockCalls = m_frameLockCalls = 0; //!! meh
-
-    StereoShader = nullptr;
 }
 
 void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
@@ -1486,15 +1471,19 @@ void RenderDevice::Flip(const bool vsync)
 #endif
    // reset performance counters
    m_frameDrawCalls = m_curDrawCalls;
+   m_curDrawCalls = 0;
    m_frameStateChanges = m_curStateChanges;
+   m_curStateChanges = 0;
    m_frameTextureChanges = m_curTextureChanges;
+   m_curTextureChanges = 0;
    m_frameParameterChanges = m_curParameterChanges;
+   m_curParameterChanges = 0;
    m_frameTechniqueChanges = m_curTechniqueChanges;
+   m_curTechniqueChanges = 0;
    m_frameDrawnTriangles = m_curDrawnTriangles;
-   m_curDrawCalls = m_curStateChanges = m_curTextureChanges = m_curParameterChanges = m_curTechniqueChanges = m_curDrawnTriangles = 0;
+   m_curDrawnTriangles = 0;
    m_frameTextureUpdates = m_curTextureUpdates;
    m_curTextureUpdates = 0;
-
    m_frameLockCalls = m_curLockCalls;
    m_curLockCalls = 0;
 }

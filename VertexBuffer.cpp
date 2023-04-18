@@ -3,8 +3,6 @@
 #include "RenderDevice.h"
 #include "Shader.h"
 
-extern unsigned m_curLockCalls;
-
 static unsigned int fvfToSize(const DWORD fvf)
 {
    switch (fvf)
@@ -113,7 +111,7 @@ void VertexBuffer::lock(const unsigned int offsetToLock, const unsigned int size
 {
    assert(!m_isStatic || !m_uploaded);
    assert(m_lock.data == nullptr); // Lock is not reentrant
-   m_curLockCalls++;
+   m_rd->m_curLockCalls++;
    m_lock.offset = offsetToLock;
    m_lock.size = sizeToLock == 0 ? m_size : sizeToLock;
    m_lock.data = new BYTE[m_lock.size];
