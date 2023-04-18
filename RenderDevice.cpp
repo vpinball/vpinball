@@ -1077,60 +1077,23 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 
 bool RenderDevice::LoadShaders()
 {
-   basicShader = new Shader(this);
-   DMDShader = new Shader(this);
-   FBShader = new Shader(this);
-   flasherShader = new Shader(this);
-   lightShader = new Shader(this);
-
-   bool shaderCompilationOkay = true;
 #ifdef ENABLE_SDL // OpenGL
-   char glShaderPath[MAX_PATH];
-   /*DWORD length =*/ GetModuleFileName(nullptr, glShaderPath, MAX_PATH);
-   Shader::Defines = ""s;
-   if (m_stereo3D == STEREO_OFF)
-   {
-      Shader::Defines.append("#define N_EYES 1\n"s);
-      Shader::Defines.append("#define ENABLE_VR 0\n"s);
-      Shader::Defines.append("#define VERTICAL_STEREO 0\n"s);
-   }
-   else if (m_stereo3D == STEREO_VR)
-   {
-      Shader::Defines.append("#define N_EYES 2\n"s);
-      Shader::Defines.append("#define ENABLE_VR 1\n"s);
-      Shader::Defines.append("#define VERTICAL_STEREO 0\n"s);
-   }
-   else
-   {
-      Shader::Defines.append("#define N_EYES 2\n"s);
-      Shader::Defines.append("#define ENABLE_VR 0\n"s);
-      if (m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT)
-         Shader::Defines.append("#define VERTICAL_STEREO 1\n"s);
-      else
-         Shader::Defines.append("#define VERTICAL_STEREO 0\n"s);
-   }
-   Shader::shaderPath = string(glShaderPath);
-   Shader::shaderPath = Shader::shaderPath.substr(0, Shader::shaderPath.find_last_of("\\/"));
-   Shader::shaderPath.append(PATH_SEPARATOR_CHAR + "shader"s + PATH_SEPARATOR_CHAR);
-   shaderCompilationOkay = basicShader->Load("BasicShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
-   shaderCompilationOkay = DMDShader->Load(m_stereo3D == STEREO_VR ? "DMDShaderVR.glfx"s : "DMDShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
-   shaderCompilationOkay = FBShader->Load("FBShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
-   shaderCompilationOkay = FBShader->Load("SMAA.glfx"s, nullptr, 0) && shaderCompilationOkay;
-   shaderCompilationOkay = flasherShader->Load("FlasherShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
-   shaderCompilationOkay = lightShader->Load("LightShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
-   if (m_stereo3D != STEREO_OFF) {
-      StereoShader = new Shader(this);
-      shaderCompilationOkay = StereoShader->Load("StereoShader.glfx"s, nullptr, 0) && shaderCompilationOkay;
-   }
+   basicShader = new Shader(this, "BasicShader.glfx"s);
+   DMDShader = new Shader(this, m_stereo3D == STEREO_VR ? "DMDShaderVR.glfx"s : "DMDShader.glfx"s);
+   FBShader = new Shader(this, "FBShader.glfx"s, "SMAA.glfx"s);
+   flasherShader = new Shader(this, "FlasherShader.glfx"s);
+   lightShader = new Shader(this, "LightShader.glfx"s);
+   if (m_stereo3D != STEREO_OFF)
+      StereoShader = new Shader(this, "StereoShader.glfx"s);
 #else // DirectX 9
-   shaderCompilationOkay = basicShader->Load("BasicShader.hlsl"s, g_basicShaderCode, sizeof(g_basicShaderCode)) && shaderCompilationOkay;
-   shaderCompilationOkay = DMDShader->Load("DMDShader.hlsl"s, g_dmdShaderCode, sizeof(g_dmdShaderCode)) && shaderCompilationOkay;
-   shaderCompilationOkay = FBShader->Load("FBShader.hlsl"s, g_FBShaderCode, sizeof(g_FBShaderCode)) && shaderCompilationOkay;
-   shaderCompilationOkay = flasherShader->Load("FlasherShader.hlsl"s, g_flasherShaderCode, sizeof(g_flasherShaderCode)) && shaderCompilationOkay;
-   shaderCompilationOkay = lightShader->Load("LightShader.hlsl"s, g_lightShaderCode, sizeof(g_lightShaderCode)) && shaderCompilationOkay;
+   basicShader = new Shader(this, "BasicShader.hlsl"s, g_basicShaderCode, sizeof(g_basicShaderCode));
+   DMDShader = new Shader(this, "DMDShader.hlsl"s, g_dmdShaderCode, sizeof(g_dmdShaderCode));
+   FBShader = new Shader(this, "FBShader.hlsl"s, g_FBShaderCode, sizeof(g_FBShaderCode));
+   flasherShader = new Shader(this, "FlasherShader.hlsl"s, g_flasherShaderCode, sizeof(g_flasherShaderCode));
+   lightShader = new Shader(this, "LightShader.hlsl"s, g_lightShaderCode, sizeof(g_lightShaderCode));
 #endif
 
-   if (!shaderCompilationOkay)
+   if (basicShader->HasError() || DMDShader->HasError() || FBShader->HasError() || flasherShader->HasError() || lightShader->HasError() || (StereoShader != nullptr && StereoShader->HasError()))
    {
       ReportError("Fatal Error: shader compilation failed!", -1, __FILE__, __LINE__);
       return false;

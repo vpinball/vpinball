@@ -992,11 +992,6 @@ void Pin3D::EnableAlphaBlend(const bool additiveBlending, const bool set_dest_bl
       m_pd3dPrimaryDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
 }
 
-void Pin3D::Flip(const bool vsync)
-{
-   m_pd3dPrimaryDevice->Flip(vsync);
-}
-
 Vertex3Ds Pin3D::Unproject(const Vertex3Ds& point)
 {
    m_proj.CacheTransform(); // compute m_matrixTotal

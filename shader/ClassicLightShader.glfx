@@ -28,7 +28,7 @@ uniform vec4 lightColor_intensity;
 uniform vec4 lightColor2_falloff_power;
 uniform vec4 lightCenter_maxRange;
 
-const bool lightingOff;
+uniform bool lightingOff;
 
 uniform sampler2D tex_light_color; // base texture
 

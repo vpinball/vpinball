@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Shader.h"
+
 class RenderDevice;
 class RenderPass;
 class RenderCommand;
@@ -20,4 +22,12 @@ private:
    vector<RenderPass*> m_passes;
    vector<RenderPass*> m_passPool;
    vector<RenderCommand*> m_commandPool;
+
+   // Shader state
+   Shader::ShaderState* m_basicShaderState = nullptr;
+   Shader::ShaderState* m_DMDShaderState = nullptr;
+   Shader::ShaderState* m_FBShaderState = nullptr;
+   Shader::ShaderState* m_flasherShaderState = nullptr;
+   Shader::ShaderState* m_lightShaderState = nullptr;
+   Shader::ShaderState* m_ballShaderState = nullptr;
 };
