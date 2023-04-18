@@ -144,8 +144,7 @@ public:
 #ifdef ENABLE_VR
    void InitVR();
    bool IsVRReady() const { return m_pHMD != nullptr; }
-   void SetTransformVR();
-   void UpdateVRPosition();
+   void UpdateVRPosition(Matrix3D matProj[2], Matrix3D& matView);
    void tableUp();
    void tableDown();
    void recenterTable();
@@ -161,7 +160,6 @@ private:
    float m_slope, m_orientation, m_tablex, m_tabley, m_tablez;
    vr::TrackedDevicePose_t hmdPosition;
    Matrix3D m_vrMatProj[2];
-   Matrix3D m_vrMatView;
    Matrix3D m_tableWorld;
    vr::TrackedDevicePose_t* m_rTrackedDevicePose;
 

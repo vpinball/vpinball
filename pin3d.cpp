@@ -700,15 +700,6 @@ Matrix3D ComputeLaybackTransform(const float layback)
 
 void Pin3D::UpdateMatrices()
 {
-#ifdef ENABLE_VR
-   if (m_stereo3D == STEREO_VR && m_pd3dPrimaryDevice->IsVRReady())
-   {
-      // FIXME RenderDevice should update directly the pinprojection instead of duplicating and copying
-      m_pd3dPrimaryDevice->SetTransformVR();
-      m_pd3dPrimaryDevice->GetTransform(RenderDevice::TRANSFORMSTATE_PROJECTION, m_proj.m_matProj, 2);
-      m_pd3dPrimaryDevice->GetTransform(RenderDevice::TRANSFORMSTATE_VIEW, &m_proj.m_matView, 1);
-   } else
-#endif
    m_pd3dPrimaryDevice->SetTransform(RenderDevice::TRANSFORMSTATE_PROJECTION, m_proj.m_matProj, m_stereo3D != STEREO_OFF ? 2 : 1);
    m_pd3dPrimaryDevice->SetTransform(RenderDevice::TRANSFORMSTATE_VIEW, &m_proj.m_matView);
    m_pd3dPrimaryDevice->SetTransform(RenderDevice::TRANSFORMSTATE_WORLD, &m_proj.m_matWorld);
@@ -942,7 +933,7 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
 
 #ifdef ENABLE_SDL
    if (m_stereo3D != STEREO_OFF) {
-      // Create eye projection matrices for stereo
+      // Create eye projection matrices for stereo (not VR but anaglyph,...)
       float top = m_proj.m_rznear * tanf(ANGTORAD(FOV) / 2.0f);
       float bottom = -top;
       float right = top * aspect;

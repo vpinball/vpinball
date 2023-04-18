@@ -4250,17 +4250,16 @@ void Player::Render()
    usecTimeStamp = usec() - clearTiming; // Time stamp for render command collect timing (adjusted to include the initial clear/blit but this shoumd be neglictable)
 
    // Update camera point of view
-#ifdef ENABLE_VR
    if (m_stereo3D == STEREO_VR)
    {
+      #ifdef ENABLE_VR
       if (m_pin3d.m_pd3dPrimaryDevice->IsVRReady())
-         m_pin3d.m_pd3dPrimaryDevice->UpdateVRPosition();
+         m_pin3d.m_pd3dPrimaryDevice->UpdateVRPosition(m_pin3d.m_proj.m_matProj, m_pin3d.m_proj.m_matView);
       else
-         m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation());
+      #endif
+      m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation());
    }
-   else
-#endif
-   if ((m_stereo3D != STEREO_VR) && m_headTracking)
+   else if (m_headTracking)
    {
       // #ravarcade: UpdateBAMHeadTracking will set proj/view matrix to add BAM view and head tracking
       m_pin3d.UpdateBAMHeadTracking();
