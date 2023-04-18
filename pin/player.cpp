@@ -4305,15 +4305,14 @@ void Player::Render()
    else
       PrepareVideoBuffersNormal();
 
-   m_frame_collect = usec() - usecTimeStamp;
-
    m_liveUI->Update();
+
+   m_frame_collect = usec() - usecTimeStamp;
 
    usecTimeStamp = usec();
    m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
-   m_frame_submit = usec() - usecTimeStamp;
-
    m_liveUI->Render();
+   m_frame_submit = usec() - usecTimeStamp;
 
    // DJRobX's crazy latency-reduction code active? Insert some Physics updates before vsync'ing
    if (!m_pause && m_minphyslooptime > 0)
