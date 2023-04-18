@@ -2,8 +2,6 @@
 #include "IndexBuffer.h"
 #include "RenderDevice.h"
 
-extern unsigned m_curLockCalls;
-
 vector<IndexBuffer*> IndexBuffer::pendingSharedBuffers;
 
 IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const bool isDynamic, const IndexBuffer::Format format)
@@ -95,7 +93,7 @@ IndexBuffer::~IndexBuffer()
 void IndexBuffer::lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags)
 {
    assert(m_lock.data == nullptr); // Lock is not reentrant
-   m_curLockCalls++;
+   m_rd->m_curLockCalls++;
    m_lock.offset = offsetToLock;
    m_lock.size = sizeToLock == 0 ? m_size : sizeToLock;
    m_lock.data = new BYTE[m_lock.size];

@@ -193,13 +193,13 @@ public:
    void CompressTextures(const bool enable) { m_compress_textures = enable; }
 
    // performance counters
-   unsigned int Perf_GetNumDrawCalls() const      { return m_frameDrawCalls; }
-   unsigned int Perf_GetNumStateChanges() const   { return m_frameStateChanges; }
-   unsigned int Perf_GetNumTextureChanges() const { return m_frameTextureChanges; }
+   unsigned int Perf_GetNumDrawCalls() const        { return m_frameDrawCalls; }
+   unsigned int Perf_GetNumStateChanges() const     { return m_frameStateChanges; }
+   unsigned int Perf_GetNumTextureChanges() const   { return m_frameTextureChanges; }
    unsigned int Perf_GetNumParameterChanges() const { return m_frameParameterChanges; }
    unsigned int Perf_GetNumTechniqueChanges() const { return m_frameTechniqueChanges; }
-   unsigned int Perf_GetNumTextureUploads() const { return m_frameTextureUpdates; }
-   unsigned int Perf_GetNumLockCalls() const;
+   unsigned int Perf_GetNumTextureUploads() const   { return m_frameTextureUpdates; }
+   unsigned int Perf_GetNumLockCalls() const        { return m_frameLockCalls; }
 
    void FreeShader();
 
@@ -299,19 +299,20 @@ public:
 #endif
 
    // performance counters
-   unsigned int m_curDrawCalls, m_frameDrawCalls;
-   unsigned int m_curStateChanges, m_frameStateChanges;
-   unsigned int m_curTextureChanges, m_frameTextureChanges;
-   unsigned int m_curParameterChanges, m_frameParameterChanges;
-   unsigned int m_curTechniqueChanges, m_frameTechniqueChanges;
-   unsigned int m_curTextureUpdates, m_frameTextureUpdates;
+   unsigned int m_curDrawCalls = 0, m_frameDrawCalls = 0;
+   unsigned int m_curStateChanges = 0, m_frameStateChanges = 0;
+   unsigned int m_curTextureChanges = 0, m_frameTextureChanges = 0;
+   unsigned int m_curParameterChanges = 0, m_frameParameterChanges = 0;
+   unsigned int m_curTechniqueChanges = 0, m_frameTechniqueChanges = 0;
+   unsigned int m_curTextureUpdates = 0, m_frameTextureUpdates = 0;
+   unsigned int m_curLockCalls = 0, m_frameLockCalls = 0;
 
-   Shader *basicShader;
-   Shader *DMDShader;
-   Shader *FBShader;
-   Shader *flasherShader;
-   Shader *lightShader;
-   Shader *StereoShader;
+   Shader *basicShader = nullptr;
+   Shader *DMDShader = nullptr;
+   Shader *FBShader = nullptr;
+   Shader *flasherShader = nullptr;
+   Shader *lightShader = nullptr;
+   Shader *StereoShader = nullptr;
    #define classicLightShader basicShader
 
    //Shader* m_curShader; // for caching
