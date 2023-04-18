@@ -4,11 +4,11 @@
 RenderCommand::RenderCommand(RenderDevice* rd)
    : m_rd(rd)
 {
-   memset(m_uniformState, 0, SHADER_UNIFORM_COUNT * sizeof(Shader::UniformCache));
 }
 
 RenderCommand::~RenderCommand()
 {
+   delete m_shaderState;
 }
 
 bool RenderCommand::IsFullClear(const bool hasDepth) const
@@ -89,7 +89,7 @@ void RenderCommand::Execute(const bool log)
    {
       m_renderState.Apply(m_rd);
       m_shader->SetTechnique(m_shaderTechnique);
-      m_shader->CopyUniformCache(false, m_shaderTechnique, m_uniformState, m_textureState);
+      m_shader->m_state->CopyTo(false, m_shaderState, m_shaderTechnique);
       m_shader->Begin();
       m_rd->m_curDrawCalls++;
       switch (m_command)
@@ -272,7 +272,12 @@ void RenderCommand::SetDrawMesh(Shader* shader, MeshBuffer* mb, const RenderDevi
    m_depth = depth;
    m_shader = shader;
    m_shaderTechnique = m_shader->GetCurrentTechnique();
-   m_shader->CopyUniformCache(true, m_shaderTechnique, m_uniformState, m_textureState);
+   if (m_shaderState == nullptr || m_shaderState->m_shader != m_shader)
+   {
+      delete m_shaderState;
+      m_shaderState = new Shader::ShaderState(m_shader);
+   }
+   m_shader->m_state->CopyTo(true, m_shaderState, m_shaderTechnique);
 }
 
 void RenderCommand::SetDrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
@@ -283,7 +288,12 @@ void RenderCommand::SetDrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
    m_depth = 0.f;
    m_shader = Shader::GetCurrentShader();
    m_shaderTechnique = m_shader->GetCurrentTechnique();
-   m_shader->CopyUniformCache(true, m_shaderTechnique, m_uniformState, m_textureState);
+   if (m_shaderState == nullptr || m_shaderState->m_shader != m_shader)
+   {
+      delete m_shaderState;
+      m_shaderState = new Shader::ShaderState(m_shader);
+   }
+   m_shader->m_state->CopyTo(true, m_shaderState, m_shaderTechnique);
 }
 
 void RenderCommand::SetDrawTexturedQuad(const Vertex3D_NoTex2* vertices)
@@ -294,6 +304,11 @@ void RenderCommand::SetDrawTexturedQuad(const Vertex3D_NoTex2* vertices)
    m_depth = 0.f;
    m_shader = Shader::GetCurrentShader();
    m_shaderTechnique = m_shader->GetCurrentTechnique();
-   m_shader->CopyUniformCache(true, m_shaderTechnique, m_uniformState, m_textureState);
+   if (m_shaderState == nullptr || m_shaderState->m_shader != m_shader)
+   {
+      delete m_shaderState;
+      m_shaderState = new Shader::ShaderState(m_shader);
+   }
+   m_shader->m_state->CopyTo(true, m_shaderState, m_shaderTechnique);
 }
 

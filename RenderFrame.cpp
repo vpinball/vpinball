@@ -17,6 +17,12 @@ RenderFrame::~RenderFrame()
       delete item;
    for (auto item : m_passes)
       delete item;
+   delete m_basicShaderState;
+   delete m_DMDShaderState;
+   delete m_FBShaderState;
+   delete m_flasherShaderState;
+   delete m_lightShaderState;
+   delete m_ballShaderState;
 }
 
 RenderPass* RenderFrame::AddPass(const string& name, RenderTarget* const rt, const bool ignoreStereo)
@@ -55,6 +61,25 @@ void RenderFrame::Execute(const bool log)
    if (m_passes.size() == 0)
       return;
 
+   // Save render/shader states
+   if (m_basicShaderState == nullptr)
+   {
+      m_basicShaderState = new Shader::ShaderState(m_rd->basicShader);
+      m_DMDShaderState = new Shader::ShaderState(m_rd->DMDShader);
+      m_FBShaderState = new Shader::ShaderState(m_rd->FBShader);
+      m_flasherShaderState = new Shader::ShaderState(m_rd->flasherShader);
+      m_lightShaderState = new Shader::ShaderState(m_rd->lightShader);
+      m_ballShaderState = new Shader::ShaderState(g_pplayer->m_ballShader);
+   }
+   RenderState prevState;
+   m_rd->CopyRenderStates(true, prevState);
+   m_rd->basicShader->m_state->CopyTo(true, m_basicShaderState);
+   m_rd->DMDShader->m_state->CopyTo(true, m_DMDShaderState);
+   m_rd->FBShader->m_state->CopyTo(true, m_FBShaderState);
+   m_rd->flasherShader->m_state->CopyTo(true, m_flasherShaderState);
+   m_rd->lightShader->m_state->CopyTo(true, m_lightShaderState);
+   g_pplayer->m_ballShader->m_state->CopyTo(true, m_ballShaderState);
+
    // Sort passes to avoid useless render target switching, and allow merging passes for better draw call sorting/batching
    vector<RenderPass*> sortedPasses;
    sortedPasses.reserve(m_passes.size());
@@ -83,4 +108,13 @@ void RenderFrame::Execute(const bool log)
    CHECKD3D(m_rd->GetCoreDevice()->EndScene());
    #endif
    m_passes.clear();
+
+   // Restore render/shader states
+   m_rd->CopyRenderStates(false, prevState);
+   m_rd->basicShader->m_state->CopyTo(false, m_basicShaderState);
+   m_rd->DMDShader->m_state->CopyTo(false, m_DMDShaderState);
+   m_rd->FBShader->m_state->CopyTo(false, m_FBShaderState);
+   m_rd->flasherShader->m_state->CopyTo(false, m_flasherShaderState);
+   m_rd->lightShader->m_state->CopyTo(false, m_lightShaderState);
+   g_pplayer->m_ballShader->m_state->CopyTo(false, m_ballShaderState);
 }

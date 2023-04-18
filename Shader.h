@@ -1,9 +1,9 @@
 #pragma once
 
 #ifdef _DEBUG
-//Writes all compile/parse errors/warnings to a file. (0=never, 1=only errors, 2=warnings, 3=info)
+// Writes all compile/parse errors/warnings to the application log. (0=never, 1=only errors, 2=warnings, 3=info)
 #define DEBUG_LEVEL_LOG 1
-//Writes all shaders that are compiled to separate files (e.g. ShaderName_Technique_Pass.vs and .fs) (0=never, 1=only if compile failed, 2=always)
+// Writes all shaders that are compiled to the application log (0=never, 1=only if compile failed, 2=always)
 #define WRITE_SHADER_FILES 1
 #else 
 #define DEBUG_LEVEL_LOG 0
@@ -285,24 +285,32 @@ enum ShaderAttributes
 
 class Shader final
 {
+private:
+   Shader(RenderDevice *renderDevice, const std::string& src1, const std::string& src2, const BYTE* code, unsigned int codeSize);
+   bool Load(const std::string& name, const BYTE* code, unsigned int codeSize);
+   
 public:
-   Shader(RenderDevice *renderDevice);
+   #ifdef ENABLE_SDL // OpenGL
+   Shader(RenderDevice *renderDevice, const std::string& src1, const std::string& src2 = ""s) : Shader(renderDevice, src1, src2, nullptr, 0) { }
+   #else // DirectX 9
+   Shader(RenderDevice *renderDevice, const std::string& name, const BYTE* code, unsigned int codeSize) : Shader(renderDevice, name, ""s, code, codeSize) { }
+   #endif
    ~Shader();
 
-   bool Load(const std::string& name, const BYTE* code, unsigned int codeSize);
+   bool HasError() const { return m_hasError; }
 
    void Begin();
    void End();
 
-   void SetTexture(const ShaderUniforms texelName, BaseTexture* texel, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED, const bool force_linear_rgb = false);
-   void SetTexture(const ShaderUniforms texelName, Texture* texel, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED, const bool force_linear_rgb = false);
-   void SetTexture(const ShaderUniforms texelName, Sampler* texel);
-   void SetTextureNull(const ShaderUniforms texelName);
+   static Shader* GetCurrentShader();
+   static string GetTechniqueName(ShaderTechniques technique);
+   void SetTechnique(const ShaderTechniques technique);
+   void SetTechniqueMetal(ShaderTechniques technique, const Material& mat, const bool doNormalMapping = false, const bool doReflection = false, const bool doRefraction = false);
+   ShaderTechniques GetCurrentTechnique() { return m_technique; }
+
+   static void SetDefaultSamplerFilter(const ShaderUniforms sampler, const SamplerFilter sf);
 
    void SetMaterial(const Material * const mat, const bool has_alpha = true);
-
-   void SetDisableLighting(const float value); // only set top
-   void SetDisableLighting(const vec4& value); // sets the two top and below lighting flags, z and w unused
    void SetAlphaTestValue(const float value);
    void SetFlasherColorAlpha(const vec4& color);
    vec4 GetCurrentFlasherColorAlpha() const;
@@ -314,42 +322,148 @@ public:
 
    //
 
-   void SetTechnique(const ShaderTechniques technique);
-   void SetTechniqueMetal(ShaderTechniques technique, const Material& mat, const bool doNormalMapping = false, const bool doReflection = false, const bool doRefraction = false);
-   ShaderTechniques GetCurrentTechnique() { return m_technique; }
-
+   bool HasUniform(const ShaderUniforms uniformName) const { return m_stateOffsets[uniformName] != -1; }
+   void SetFloat(const ShaderUniforms uniformName, const float f) { m_state->SetFloat(uniformName, f); }
+   void SetMatrix(const ShaderUniforms uniformName, const float* pMatrix) { m_state->SetMatrix(uniformName, pMatrix); }
+   void SetInt(const ShaderUniforms uniformName, const int i) { m_state->SetInt(uniformName, i); }
+   void SetBool(const ShaderUniforms uniformName, const bool b) { m_state->SetBool(uniformName, b); }
+   void SetUniformBlock(const ShaderUniforms uniformName, const float* pMatrix) { m_state->SetUniformBlock(uniformName, pMatrix); }
    void SetMatrix(const ShaderUniforms uniformName, const D3DXMATRIX* pMatrix) { SetMatrix(uniformName, &(pMatrix->m[0][0])); }
    void SetMatrix(const ShaderUniforms uniformName, const Matrix3D* pMatrix) { SetMatrix(uniformName, &(pMatrix->m[0][0])); }
-   void SetMatrix(const ShaderUniforms uniformName, const float* pMatrix);
-   void SetVector(const ShaderUniforms hParameter, const vec4* pVector);
-   void SetVector(const ShaderUniforms hParameter, const float x, const float y, const float z, const float w);
-   void SetFloat(const ShaderUniforms hParameter, const float f);
-   void SetInt(const ShaderUniforms hParameter, const int i);
-   void SetBool(const ShaderUniforms hParameter, const bool b);
-   void SetFloat4v(const ShaderUniforms hParameter, const vec4* pData, const unsigned int count);
-   void SetUniformBlock(const ShaderUniforms hParameter, const float* pMatrix);
-
-   static void SetDefaultSamplerFilter(const ShaderUniforms sampler, const SamplerFilter sf);
-
-   static Shader* GetCurrentShader();
-
-   // state of what is actually bound per technique, and what is expected for the next begin/end
-   struct UniformCache
+   void SetVector(const ShaderUniforms uniformName, const vec4* pVector) { m_state->SetVector(uniformName, pVector); }
+   void SetVector(const ShaderUniforms uniformName, const float x, const float y, const float z, const float w) { vec4 v(x, y, z, w); m_state->SetVector(uniformName, &v); }
+   void SetFloat4v(const ShaderUniforms uniformName, const vec4* pData, const unsigned int count) { m_state->SetVector(uniformName, pData, count); }
+   void SetTexture(const ShaderUniforms uniformName, Sampler* sampler) { m_state->SetTexture(uniformName, sampler); }
+   void SetTextureNull(const ShaderUniforms uniformName) { SetTexture(uniformName, (Sampler*)nullptr); }
+   void SetTexture(const ShaderUniforms uniformName, Texture* texel, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED, const bool force_linear_rgb = false)
    {
-      size_t count = -1; // number of elements for uniform blocks and float vectors
-      union UniformValue
-      {
-         int i; // integer and boolean
-         float f; // float value
-         float fv[16]; // float vectors and matrices
-         Sampler* sampler; // texture samplers
-         void* data = nullptr; // uniform blocks or float vector block
-      } val;
-   };
-   static constexpr unsigned int TEXTURESET_STATE_CACHE_SIZE = 32;
-   uint32_t CopyUniformCache(const bool copyTo, const ShaderTechniques technique, UniformCache (&uniformCache)[SHADER_UNIFORM_COUNT], Sampler* (&textureCache)[TEXTURESET_STATE_CACHE_SIZE]);
+      SetTexture(uniformName, texel->m_pdsBuffer, filter, clampU, clampV, force_linear_rgb);
+   }
+   void SetTexture(const ShaderUniforms uniformName, BaseTexture* texel, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED, const bool force_linear_rgb = false);
 
-   static string GetTechniqueName(ShaderTechniques technique);
+   class ShaderState
+   {
+   public:
+      ShaderState(Shader* shader)
+         : m_shader(shader)
+         , m_state(new BYTE[shader->m_stateSize])
+      {
+      }
+      ~ShaderState() { delete[] m_state; }
+      void CopyTo(const bool copyTo, ShaderState* other, const ShaderTechniques technique = SHADER_TECHNIQUE_INVALID)
+      {
+         assert(other->m_shader == m_shader);
+         if (copyTo)
+            memcpy(other->m_state, m_state, m_shader->m_stateSize);
+         else
+            memcpy(m_state, other->m_state, m_shader->m_stateSize);
+      }
+      void CopyTo(const bool copyTo, ShaderState* other, const ShaderUniforms uniformName)
+      {
+         assert(other->m_shader == m_shader);
+         assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         assert(m_shader->m_stateOffsets[uniformName] != -1);
+         if (copyTo)
+            memcpy(other->m_state + m_shader->m_stateOffsets[uniformName], m_state + m_shader->m_stateOffsets[uniformName], m_shader->m_stateSizes[uniformName]);
+         else
+            memcpy(m_state + m_shader->m_stateOffsets[uniformName], other->m_state + m_shader->m_stateOffsets[uniformName], m_shader->m_stateSizes[uniformName]);
+      }
+      void SetBool(const ShaderUniforms uniformName, const bool b)
+      {
+         assert(GetCurrentShader() == nullptr);
+         assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         assert(m_shader->m_stateOffsets[uniformName] != -1);
+         assert(shaderUniformNames[uniformName].type == SUT_Bool);
+         assert(shaderUniformNames[uniformName].count == 1);
+         *(bool*)(m_state + m_shader->m_stateOffsets[uniformName]) = b;
+      }
+      void SetInt(const ShaderUniforms uniformName, const int i)
+      {
+         assert(GetCurrentShader() == nullptr);
+         assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         assert(m_shader->m_stateOffsets[uniformName] != -1);
+         assert(shaderUniformNames[uniformName].type == SUT_Int);
+         assert(shaderUniformNames[uniformName].count == 1);
+         *(int*)(m_state + m_shader->m_stateOffsets[uniformName]) = i;
+      }
+      void SetFloat(const ShaderUniforms uniformName, const float f)
+      {
+         assert(GetCurrentShader() == nullptr);
+         assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         assert(m_shader->m_stateOffsets[uniformName] != -1);
+         assert(shaderUniformNames[uniformName].type == SUT_Float);
+         assert(shaderUniformNames[uniformName].count == 1);
+         *(float*)(m_state + m_shader->m_stateOffsets[uniformName]) = f;
+      }
+      float GetFloat(const ShaderUniforms uniformName)
+      {
+         assert(GetCurrentShader() == nullptr);
+         assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         assert(m_shader->m_stateOffsets[uniformName] != -1);
+         assert(shaderUniformNames[uniformName].type == SUT_Float);
+         assert(shaderUniformNames[uniformName].count == 1);
+         return *(float*)(m_state + m_shader->m_stateOffsets[uniformName]);
+      }
+      void SetVector(const ShaderUniforms uniformName, const vec4* pData, const unsigned int count = 1)
+      {
+         assert(GetCurrentShader() == nullptr);
+         assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         assert(m_shader->m_stateOffsets[uniformName] != -1);
+         assert(shaderUniformNames[uniformName].type == SUT_Float2 || shaderUniformNames[uniformName].type == SUT_Float3 || shaderUniformNames[uniformName].type == SUT_Float4 || shaderUniformNames[uniformName].type == SUT_Float4v);
+         assert(shaderUniformNames[uniformName].count == count);
+         int n = shaderUniformNames[uniformName].type == SUT_Float2 ? 2 : shaderUniformNames[uniformName].type == SUT_Float3 ? 3 : 4;
+         memcpy(m_state + m_shader->m_stateOffsets[uniformName], pData, count * n * sizeof(float));
+      }
+      vec4 GetVector(const ShaderUniforms uniformName)
+      {
+         assert(GetCurrentShader() == nullptr);
+         assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         assert(m_shader->m_stateOffsets[uniformName] != -1);
+         assert(shaderUniformNames[uniformName].type == SUT_Float2 || shaderUniformNames[uniformName].type == SUT_Float3 || shaderUniformNames[uniformName].type == SUT_Float4 || shaderUniformNames[uniformName].type == SUT_Float4v);
+         int n = shaderUniformNames[uniformName].type == SUT_Float2 ? 2 : shaderUniformNames[uniformName].type == SUT_Float3 ? 3 : 4;
+         vec4 result;
+         result.x = ((float*)(m_state + m_shader->m_stateOffsets[uniformName]))[0];
+         result.y = ((float*)(m_state + m_shader->m_stateOffsets[uniformName]))[1];
+         result.z = n > 2 ? ((float*)(m_state + m_shader->m_stateOffsets[uniformName]))[2] : 0.f;
+         result.w = n > 3 ? ((float*)(m_state + m_shader->m_stateOffsets[uniformName]))[3] : 0.f;
+         return result;
+      }
+      void SetMatrix(const ShaderUniforms uniformName, const float* pMatrix, const unsigned int count = 1)
+      {
+         assert(GetCurrentShader() == nullptr);
+         assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         assert(m_shader->m_stateOffsets[uniformName] != -1);
+         assert(shaderUniformNames[uniformName].type == SUT_Float3x4 || shaderUniformNames[uniformName].type == SUT_Float4x3 || shaderUniformNames[uniformName].type == SUT_Float4x4);
+         memcpy(m_state + m_shader->m_stateOffsets[uniformName], pMatrix, count * 16 * sizeof(float));
+      }
+      void SetUniformBlock(const ShaderUniforms uniformName, const float* pMatrix)
+      {
+         assert(GetCurrentShader() == nullptr);
+         assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         assert(m_shader->m_stateOffsets[uniformName] != -1);
+         assert(shaderUniformNames[uniformName].type == SUT_DataBlock);
+         memcpy(m_state + m_shader->m_stateOffsets[uniformName], pMatrix, m_shader->m_stateSizes[uniformName]);
+      }
+      void SetTexture(const ShaderUniforms uniformName, Sampler* sampler)
+      {
+         assert(GetCurrentShader() == nullptr);
+         assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         assert(shaderUniformNames[uniformName].type == SUT_Sampler);
+         #ifdef ENABLE_SDL // OpenGL
+         assert(m_shader->m_stateOffsets[uniformName] != -1);
+         *(Sampler**)(m_state + m_shader->m_stateOffsets[uniformName]) = sampler;
+         #else // DirectX 9
+         ShaderUniforms alias = m_shader->m_uniform_desc[uniformName].tex_alias;
+         assert(m_shader->m_stateOffsets[alias] != -1);
+         *(Sampler**)(m_state + m_shader->m_stateOffsets[alias]) = sampler;
+         #endif
+      }
+
+      Shader* const m_shader;
+      BYTE* const m_state;
+   };
+
+   ShaderState* m_state = nullptr; // State that will be applied for the next begin/end pair
 
 private:
    RenderDevice* const m_renderDevice;
@@ -357,11 +471,12 @@ private:
    ShaderTechniques m_technique;
    string m_shaderCodeName;
 
-   // caches:
+   bool m_hasError = false; // True if loading the shader failed
+   unsigned int m_stateSize = 0; // Overall size of a shader state data block
+   int m_stateOffsets[SHADER_UNIFORM_COUNT]; // Position of each uniform inside the state data block
+   int m_stateSizes[SHADER_UNIFORM_COUNT]; // Byte size of each uniform inside the state data block
 
-   Material currentMaterial;
-
-   vec4 currentFlasherColor; // all flasher only-data
+   void ApplyUniform(const ShaderUniforms uniformName);
 
    struct ShaderUniform
    {
@@ -380,31 +495,21 @@ private:
    ShaderAttributes getAttributeByName(const string& name);
    ShaderTechniques getTechniqueByName(const string& name);
 
-   void ApplyUniform(const ShaderUniforms uniformName);
+   vector<ShaderUniforms> m_uniforms[SHADER_TECHNIQUE_COUNT]; // Uniforms used by each technique
+   
+   // caches:
+   Material currentMaterial;
+   vec4 currentFlasherColor; // all flasher only-data
 
-   std::vector<ShaderUniforms> m_uniforms[SHADER_TECHNIQUE_COUNT];
-   bool m_isCacheValid[SHADER_TECHNIQUE_COUNT];
-   UniformCache m_uniformCache[SHADER_TECHNIQUE_COUNT + 1][SHADER_UNIFORM_COUNT];
-
+#ifdef ENABLE_SDL // OpenGL
+   ShaderState* m_boundState[SHADER_TECHNIQUE_COUNT]; // The state currently applied to the backend (per technique for OpenGL)
+   static ShaderTechniques m_boundTechnique; // This is global for OpenGL
    struct UniformDesc
    {
       ShaderUniform uniform;
-#ifdef ENABLE_SDL
       GLint location; // Location of the uniform
       GLuint blockBuffer;
-#else
-      D3DXHANDLE handle; // Handle of the constant
-      D3DXHANDLE tex_handle; // For samplers, handle fo the associated texture constant
-      int sampler; // For samplers texture unit defined in the effect file
-#endif
    };
-
-#if DEBUG_LEVEL_LOG > 0
-   void LOG(const int level, const string& fileNameRoot, const string& message);
-#endif
-
-#ifdef ENABLE_SDL
-
    struct ShaderTechnique
    {
       int index;
@@ -412,24 +517,28 @@ private:
       GLuint program;
       UniformDesc uniform_desc[SHADER_UNIFORM_COUNT];
    };
+   ShaderTechnique* m_techniques[SHADER_TECHNIQUE_COUNT];
+   string m_shaderPath = ""s;
 
-   std::ofstream* logFile;
    bool parseFile(const string& fileNameRoot, const string& fileName, int level, robin_hood::unordered_map<string, string>& values, const string& parentMode);
    string analyzeFunction(const string& shaderCodeName, const string& technique, const string& functionName, const robin_hood::unordered_map<string, string>& values);
    ShaderTechnique* compileGLShader(const ShaderTechniques technique, const string& fileNameRoot, const string& shaderCodeName, const string& vertex, const string& geometry, const string& fragment);
 
-   ShaderTechnique* m_techniques[SHADER_TECHNIQUE_COUNT];
-
-public:
-   static string shaderPath;
-   static string Defines;
-
-#else
-   ID3DXEffect * m_shader;
+#else // DirectX 9
+   struct UniformDesc
+   {
+      ShaderUniform uniform;
+      ShaderUniforms tex_alias; // For samplers, reference to the uniform which is used to define the texture (multiple uniform can be linked to the same texture for DX9, for OpenGL alias to itself)
+      D3DXHANDLE handle; // Handle of the constant
+      D3DXHANDLE tex_handle; // For samplers, handle fo the associated texture constant
+      int sampler; // For samplers texture unit defined in the effect file
+   };
    UniformDesc m_uniform_desc[SHADER_UNIFORM_COUNT];
-   ShaderTechniques m_bound_technique = ShaderTechniques::SHADER_TECHNIQUE_INVALID;
-   Sampler* m_texture_cache[TEXTURESET_STATE_CACHE_SIZE];
-   Sampler* m_bound_texture[TEXTURESET_STATE_CACHE_SIZE];
+   ShaderState* m_boundState = nullptr; // The state currently applied to the backend (per shader for DirectX effect framework)
+   ShaderTechniques m_boundTechnique = ShaderTechniques::SHADER_TECHNIQUE_INVALID; // The bound technique (per shader for DirectX)
+   ID3DXEffect* m_shader;
+   static constexpr unsigned int TEXTURESET_STATE_CACHE_SIZE = 32;
+   Sampler* m_boundTexture[TEXTURESET_STATE_CACHE_SIZE];
 
 public:
    ID3DXEffect* Core() const { return m_shader; }

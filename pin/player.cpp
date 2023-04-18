@@ -1081,14 +1081,15 @@ void Player::InitShader()
    //vec4 cam( worldViewProj._41, worldViewProj._42, worldViewProj._43, 1 );
    //m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector("camera", &cam);
 
-#ifdef ENABLE_SDL
+   #ifdef ENABLE_SDL
    // In VR we scale the scene to the controller scale, so the shader needs to scale light range accordingly
-#ifdef ENABLE_VR
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetFloat(SHADER_fSceneScale, m_pin3d.m_pd3dPrimaryDevice->m_scale);
-#else
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetFloat(SHADER_fSceneScale, 1.0f);
-#endif
-#endif
+   if (m_pin3d.m_pd3dPrimaryDevice->basicShader->HasUniform(SHADER_fSceneScale))
+      #ifdef ENABLE_VR
+      m_pin3d.m_pd3dPrimaryDevice->basicShader->SetFloat(SHADER_fSceneScale, m_pin3d.m_pd3dPrimaryDevice->m_scale);
+      #else
+      m_pin3d.m_pd3dPrimaryDevice->basicShader->SetFloat(SHADER_fSceneScale, 1.0f);
+      #endif
+   #endif
 
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_env, m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.m_builtinEnvTexture);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_diffuse_env, m_pin3d.m_envRadianceTexture);
@@ -1148,17 +1149,17 @@ void Player::UpdateBallShaderMatrix()
 
 void Player::InitBallShader()
 {
-   m_ballShader = new Shader(m_pin3d.m_pd3dPrimaryDevice);
- #ifdef ENABLE_SDL
-   m_ballShader->Load("BallShader.glfx", nullptr, 0);
+#ifdef ENABLE_SDL
+   m_ballShader = new Shader(m_pin3d.m_pd3dPrimaryDevice, "BallShader.glfx"s);
    // In VR we scale the scene to the controller scale, so the shader needs to scale light range accordingly
-#ifdef ENABLE_VR
-   m_ballShader->SetFloat(SHADER_fSceneScale, m_pin3d.m_pd3dPrimaryDevice->m_scale);
+   if (m_pin3d.m_pd3dPrimaryDevice->basicShader->HasUniform(SHADER_fSceneScale))
+      #ifdef ENABLE_VR
+      m_ballShader->SetFloat(SHADER_fSceneScale, m_pin3d.m_pd3dPrimaryDevice->m_scale);
+      #else
+      m_ballShader->SetFloat(SHADER_fSceneScale, 1.0f);
+      #endif
 #else
-   m_ballShader->SetFloat(SHADER_fSceneScale, 1.0f);
-#endif
-#else
-   m_ballShader->Load("BallShader.hlsl"s, g_ballShaderCode, sizeof(g_ballShaderCode));
+   m_ballShader = new Shader(m_pin3d.m_pd3dPrimaryDevice, "BallShader.hlsl"s, g_ballShaderCode, sizeof(g_ballShaderCode));
 #endif
 
    UpdateBallShaderMatrix();
@@ -3843,8 +3844,8 @@ void Player::PrepareVideoBuffersNormal()
 void Player::FlipVideoBuffers(const bool vsync)
 {
    // display frame
-   m_pin3d.Flip(vsync);
-
+   m_pin3d.m_pd3dPrimaryDevice->Flip(vsync);
+   
    // switch to texture output buffer again
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_filtered);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
@@ -4206,6 +4207,7 @@ void Player::Render()
 
    m_LastKnownGoodCounter++;
 
+   U64 usecTimeStamp = usec(); // Time stamp for render command collect timing
    m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Render Scene"s, m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture());
    if (m_stereo3D == STEREO_VR || GetInfoMode() == IF_DYNAMIC_ONLY)
    {
@@ -4218,6 +4220,7 @@ void Player::Render()
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pddsStatic);
       m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture()); // cannot be called inside BeginScene -> EndScene cycle
    }
+   U64 clearTiming = usec() - usecTimeStamp;
 
    // Physics/Timer updates, done at the last moment, especially to handle key input (VP<->VPM roundtrip) and animation triggers
    //if ( !cameraMode )
@@ -4244,7 +4247,7 @@ void Player::Render()
    if (GetProfilingMode() == PF_ENABLED)
       m_pin3d.m_gpu_profiler.BeginFrame(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
 #endif
-   U64 usecTimeStamp = usec(); // Time stamp for render command collect timing (missing the initial clear/blit but this shoumd be neglictable)
+   usecTimeStamp = usec() - clearTiming; // Time stamp for render command collect timing (adjusted to include the initial clear/blit but this shoumd be neglictable)
 
    // Update camera point of view
 #ifdef ENABLE_VR

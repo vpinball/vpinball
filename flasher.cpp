@@ -1409,7 +1409,8 @@ void Flasher::RenderDynamic()
 
        const vec4 flasherData2((float)m_d.m_filterAmount / 100.0f, min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f), // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
           flasherMode, 0.f);
-       pd3dDevice->flasherShader->SetFlasherData(flasherData, flasherData2);
+       pd3dDevice->flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, &flasherData);
+       pd3dDevice->flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, &flasherData2);
 
        // Check if this flasher is used as a lightmap and should be convoluted with the light shadows
        if (m_lightmap != nullptr && m_lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS)

@@ -47,8 +47,7 @@ private:
    Command m_command;
    Shader* m_shader = nullptr;
    ShaderTechniques m_shaderTechnique = ShaderTechniques::SHADER_TECHNIQUE_INVALID;
-   Shader::UniformCache m_uniformState[SHADER_UNIFORM_COUNT];
-   Sampler* m_textureState[Shader::TEXTURESET_STATE_CACHE_SIZE];
+   Shader::ShaderState* m_shaderState = nullptr;
    RenderState m_renderState;
 
    // For RC_CLEAR
