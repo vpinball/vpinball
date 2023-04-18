@@ -2106,14 +2106,14 @@ void RenderDevice::InitVR() {
    updateTableMatrix();
 }
 
-void RenderDevice::UpdateVRPosition()
+void RenderDevice::UpdateVRPosition(Matrix3D matProj[2], Matrix3D& matView)
 {
    if (!m_pHMD)
       return;
 
    vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 
-   m_vrMatView.SetIdentity();
+   matView.SetIdentity();
    for (unsigned int device = 0; device < vr::k_unMaxTrackedDeviceCount; device++)
    {
       if ((m_rTrackedDevicePose[device].bPoseIsValid) && (m_pHMD->GetTrackedDeviceClass(device) == vr::TrackedDeviceClass_HMD))
@@ -2121,12 +2121,14 @@ void RenderDevice::UpdateVRPosition()
          hmdPosition = m_rTrackedDevicePose[device];
          for (int i = 0; i < 3; i++)
             for (int j = 0; j < 4; j++)
-               m_vrMatView.m[j][i] = hmdPosition.mDeviceToAbsoluteTracking.m[i][j];
+               matView.m[j][i] = hmdPosition.mDeviceToAbsoluteTracking.m[i][j];
          break;
       }
    }
-   m_vrMatView.Invert();
-   m_vrMatView = m_tableWorld * m_vrMatView;
+   matView.Invert();
+   matView = m_tableWorld * matView;
+
+   memcpy(matProj, m_vrMatProj, 2 * 16 * sizeof(float));
 }
 
 void RenderDevice::tableUp()
@@ -2179,11 +2181,5 @@ void RenderDevice::updateTableMatrix()
    tmp.SetIdentity();
    tmp.SetTranslation(m_tablex / 100.0f, m_tablez / 100.0f, -m_tabley / 100.0f);
    m_tableWorld = m_tableWorld * tmp;
-}
-
-void RenderDevice::SetTransformVR()
-{
-   SetTransform(TRANSFORMSTATE_PROJECTION, m_vrMatProj, m_stereo3D != STEREO_OFF ? 2:1);
-   SetTransform(TRANSFORMSTATE_VIEW, &m_vrMatView, 1);
 }
 #endif
