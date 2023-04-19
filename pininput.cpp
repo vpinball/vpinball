@@ -1998,11 +1998,18 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
          }
          else if (((input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eEscape]) && !m_disable_esc) || (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame]))
          {
-            // Check if we have started a game yet.
-            if (started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled)
+            // Check if we have started a game yet, and do not trigger if the UI is already opened (keyboard is handled in it)
+            if (!g_pplayer->m_liveUI->IsOpened() && (started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled))
             {
-               if (input->dwData & 0x80)
-                  g_pplayer->m_liveUI->OpenMainUI();
+               if (input->dwData & 0x80) { //on key down only
+                  m_first_stamp = curr_time_msec;
+                  m_exit_stamp = curr_time_msec;
+               }
+               else
+               { //on key up only
+                  g_pplayer->m_liveUI->OpenMainUI(); // Open UI on key up since a long press should not trigger the UI (direct exit from the app)
+                  m_exit_stamp = 0;
+               }
             }
          }
          else
