@@ -324,12 +324,12 @@ public:
 
    bool HasUniform(const ShaderUniforms uniformName) const { return m_stateOffsets[uniformName] != -1; }
    void SetFloat(const ShaderUniforms uniformName, const float f) { m_state->SetFloat(uniformName, f); }
-   void SetMatrix(const ShaderUniforms uniformName, const float* pMatrix) { m_state->SetMatrix(uniformName, pMatrix); }
+   void SetMatrix(const ShaderUniforms uniformName, const float* pMatrix, const unsigned int count = 1) { m_state->SetMatrix(uniformName, pMatrix, count); }
    void SetInt(const ShaderUniforms uniformName, const int i) { m_state->SetInt(uniformName, i); }
    void SetBool(const ShaderUniforms uniformName, const bool b) { m_state->SetBool(uniformName, b); }
    void SetUniformBlock(const ShaderUniforms uniformName, const float* pMatrix) { m_state->SetUniformBlock(uniformName, pMatrix); }
-   void SetMatrix(const ShaderUniforms uniformName, const D3DXMATRIX* pMatrix) { SetMatrix(uniformName, &(pMatrix->m[0][0])); }
-   void SetMatrix(const ShaderUniforms uniformName, const Matrix3D* pMatrix) { SetMatrix(uniformName, &(pMatrix->m[0][0])); }
+   void SetMatrix(const ShaderUniforms uniformName, const D3DXMATRIX* pMatrix, const unsigned int count = 1) { SetMatrix(uniformName, &(pMatrix->m[0][0]), count); }
+   void SetMatrix(const ShaderUniforms uniformName, const Matrix3D* pMatrix, const unsigned int count = 1) { SetMatrix(uniformName, &(pMatrix->m[0][0]), count); }
    void SetVector(const ShaderUniforms uniformName, const vec4* pVector) { m_state->SetVector(uniformName, pVector); }
    void SetVector(const ShaderUniforms uniformName, const float x, const float y, const float z, const float w) { vec4 v(x, y, z, w); m_state->SetVector(uniformName, &v); }
    void SetFloat4v(const ShaderUniforms uniformName, const vec4* pData, const unsigned int count) { m_state->SetVector(uniformName, pData, count); }
