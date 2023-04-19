@@ -16,7 +16,7 @@ static bool oldScaleValue = false;
 static float scaleRelative = 1.0f;
 static float scaleAbsolute = 55.0f;
 
-static constexpr char rgszKeyName[][10] = {
+static char rgszKeyName[][10] = {
    "",
    "Escape", //DIK_ESCAPE          0x01
    "1", //DIK_1               0x02
@@ -287,6 +287,23 @@ static size_t getBestMatchingAAfactorIndex(float f)
 
 VROptionsDialog::VROptionsDialog() : CDialog(IDD_VR_OPTIONS)
 {
+   // Adjust keyboard translation to user keyboard layout
+   HKL layout = GetKeyboardLayout(0);
+   BYTE State[256];
+   // Translate for a default keyboard state
+   //if (GetKeyboardState(State) != FALSE)
+   memset(State, 0, sizeof(State));
+   State[VK_CAPITAL] = 1; // Get CAPS LOCK variant of the key
+   for (int scancode = 0x00; scancode <= 0xDD; scancode++)
+   {
+      BYTE result[2];
+      UINT vk = MapVirtualKeyEx(scancode, 1, layout);
+      if (rgszKeyName[scancode][1] == 0 && ToAsciiEx(vk, scancode, State, (LPWORD)result, 0, layout) == 1)
+      {
+         rgszKeyName[scancode][0] = (char)result[0];
+         rgszKeyName[scancode][1] = 0;
+      }
+   }
 }
 
 void VROptionsDialog::AddToolTip(const char * const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)

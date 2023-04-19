@@ -15,6 +15,7 @@ public:
    bool HasKeyboardCapture() const;
    bool HasMouseCapture() const;
 
+   bool IsOpened() const { return m_ShowUI || m_ShowSplashModal; }
    void OpenMainUI();
    void ToggleFPS();
 

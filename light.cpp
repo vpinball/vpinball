@@ -537,8 +537,9 @@ void Light::RenderDynamic()
       #ifdef ENABLE_SDL
       if (shader == pd3dDevice->lightShader)
       {
-         memcpy(&matWorldViewProj[1], &matWorldViewProj[0], 4 * 4 * sizeof(float));
-         shader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0].m[0][0]);
+         if (eyes > 1)
+            memcpy(&matWorldViewProj[1], &matWorldViewProj[0], 4 * 4 * sizeof(float));
+         shader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0].m[0][0], eyes);
       }
       else
       {

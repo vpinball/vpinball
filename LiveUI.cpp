@@ -245,7 +245,11 @@ public:
 };*/
 
 // Maps directinput keycode used by VPX to ImGui keycode enum
-// TODO I think this is not fully ok, since I would guess that VPX is keyboard layout neutral while ImGui is likely not => this needs more testing (AZERTY/QWERTY/...)
+// FIXME This is not ok and will fail for all non QWERTY keyboards, since VPX (DirectInput Keyboard) is keyboard layout neutral while ImGui is layout aware
+// For the time being, this is used to translate global shortcuts for:
+// - Debugger (default is D which should be ok on all keyboards), 
+// - FPS display (default is F11 which should be ok)
+// - Exit (default is Escape which should be ok)
 static constexpr ImGuiKey dikToImGuiKeys[] = {
    ImGuiKey_None,
    ImGuiKey_Escape,    //DIK_ESCAPE          0x01
@@ -1938,16 +1942,8 @@ void LiveUI::UpdateMainSplashModal()
    if (ImGui::BeginPopupModal(ID_MODAL_SPLASH, nullptr, window_flags))
    {
       const ImVec2 size(100.f * m_dpi, 0);
-      static U32 quitToEditor = 0; // Long press keyboard shortcut
-      if (((ImGui::IsKeyDown(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc) || ImGui::IsKeyDown(dikToImGuiKeys[m_player->m_rgKeys[eExitGame]])))
-      {
-         if (quitToEditor == 0 && !enableKeyboardShortcuts)
-            quitToEditor = msec();
-      }
-      else
-         quitToEditor = 0;
       // Resume: click on the button, or press escape key
-      if (ImGui::Button("Resume Game", size) || (enableKeyboardShortcuts && quitToEditor == 0 && ((ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc))))
+      if (ImGui::Button("Resume Game", size) || (enableKeyboardShortcuts && ((ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc))))
       {
          ExitEditMode();
          ImGui::CloseCurrentPopup();
@@ -1968,9 +1964,8 @@ void LiveUI::UpdateMainSplashModal()
          HideUI();
          m_player->m_showDebugger = true;
       }
-      // Quit: click on the button, or press exit button, or long press exit button / escape key
-      if (ImGui::Button("Quit to editor", size) || (enableKeyboardShortcuts && ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eExitGame]]))
-         || (quitToEditor != 0 && (msec() - quitToEditor) > m_table->m_tblExitConfirm))
+      // Quit: click on the button, or press exit button
+      if (ImGui::Button("Quit to editor", size) || (enableKeyboardShortcuts && ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eExitGame]])))
       {
          ImGui::CloseCurrentPopup();
          HideUI();
