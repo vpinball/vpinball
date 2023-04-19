@@ -1041,9 +1041,9 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    matrices.matWorldViewInverseTranspose.Transpose();
 
 #ifdef ENABLE_SDL // OpenGL
-   m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0].m[0][0]);
-   m_pin3d.m_pd3dPrimaryDevice->lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0].m[0][0]);
-   m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0].m[0][0]);
+   m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0].m[0][0], eyes);
+   m_pin3d.m_pd3dPrimaryDevice->lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0].m[0][0], eyes);
+   m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0].m[0][0], eyes);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
 
 #else // DirectX 9
