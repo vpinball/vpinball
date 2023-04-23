@@ -280,13 +280,13 @@ void RenderCommand::SetDrawMesh(Shader* shader, MeshBuffer* mb, const RenderDevi
    m_shader->m_state->CopyTo(true, m_shaderState, m_shaderTechnique);
 }
 
-void RenderCommand::SetDrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
+void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices)
 {
    m_command = Command::RC_DRAW_QUAD_PT;
    memcpy(m_vertices, vertices, 4 * sizeof(Vertex3D_TexelOnly));
    m_rd->CopyRenderStates(true, m_renderState);
    m_depth = 0.f;
-   m_shader = Shader::GetCurrentShader();
+   m_shader = shader;
    m_shaderTechnique = m_shader->GetCurrentTechnique();
    if (m_shaderState == nullptr || m_shaderState->m_shader != m_shader)
    {
@@ -296,13 +296,13 @@ void RenderCommand::SetDrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
    m_shader->m_state->CopyTo(true, m_shaderState, m_shaderTechnique);
 }
 
-void RenderCommand::SetDrawTexturedQuad(const Vertex3D_NoTex2* vertices)
+void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices)
 {
    m_command = Command::RC_DRAW_QUAD_PNT;
    memcpy(m_vertices, vertices, 4 * sizeof(Vertex3D_NoTex2));
    m_rd->CopyRenderStates(true, m_renderState);
    m_depth = 0.f;
-   m_shader = Shader::GetCurrentShader();
+   m_shader = shader;
    m_shaderTechnique = m_shader->GetCurrentTechnique();
    if (m_shaderState == nullptr || m_shaderState->m_shader != m_shader)
    {

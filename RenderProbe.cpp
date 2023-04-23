@@ -294,9 +294,7 @@ void RenderProbe::PreRenderStaticReflectionProbe()
       p3dDevice->FBShader->SetVector(
          SHADER_w_h_height, (float)(1.0 / (double)m_prerenderRT->GetWidth()), (float)(1.0 / (double)m_prerenderRT->GetHeight()), (float)((double)STATIC_PRERENDER_ITERATIONS), 1.0f);
       p3dDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_prerenderRT->GetColorSampler());
-      p3dDevice->FBShader->Begin();
-      p3dDevice->DrawFullscreenTexturedQuad();
-      p3dDevice->FBShader->End();
+      p3dDevice->DrawFullscreenTexturedQuad(p3dDevice->FBShader);
       p3dDevice->FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
       p3dDevice->CopyRenderStates(false, initial_state);
    }

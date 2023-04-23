@@ -29,8 +29,8 @@ public:
       const int x1 = -1, const int y1 = -1, const int w1 = -1, const int h1 = -1,
       const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1);
    void SetDrawMesh(Shader* shader, MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount, float depth);
-   void SetDrawTexturedQuad(const Vertex3D_TexelOnly* vertices);
-   void SetDrawTexturedQuad(const Vertex3D_NoTex2* vertices);
+   void SetDrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices);
+   void SetDrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices);
 
 private:
    enum Command
@@ -49,6 +49,7 @@ private:
    ShaderTechniques m_shaderTechnique = ShaderTechniques::SHADER_TECHNIQUE_INVALID;
    Shader::ShaderState* m_shaderState = nullptr;
    RenderState m_renderState;
+   bool m_isTransparent;
 
    // For RC_CLEAR
    DWORD m_clearARGB = 0;

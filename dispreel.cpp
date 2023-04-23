@@ -243,8 +243,6 @@ void DispReel::RenderDynamic()
 
    pd3dDevice->DMDShader->SetTexture(SHADER_tex_sprite, pin, SF_TRILINEAR, SA_REPEAT, SA_REPEAT);
 
-   pd3dDevice->DMDShader->Begin();
-
    // set up all the reel positions within the object frame
    const float renderspacingx = max(0.0f, m_d.m_reelspacing / (float)EDITOR_BG_WIDTH);
    const float renderspacingy = max(0.0f, m_d.m_reelspacing / (float)EDITOR_BG_HEIGHT);
@@ -272,12 +270,11 @@ void DispReel::RenderDynamic()
          vertices[i].y = 1.0f - (vertices[i].y * m_renderheight + y1)*2.0f;
       }
 
-      pd3dDevice->DrawTexturedQuad(vertices);
+      pd3dDevice->DrawTexturedQuad(pd3dDevice->DMDShader, vertices);
 
       // move to the next reel
       x1 += renderspacingx + m_renderwidth;
    }
-   pd3dDevice->DMDShader->End();
 
    pd3dDevice->DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
 
