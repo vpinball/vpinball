@@ -51,6 +51,7 @@ public:
    void UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb);
    void SetClamp(const SamplerAddressMode clampu, const SamplerAddressMode clampv);
    void SetFilter(const SamplerFilter filter);
+   void SetName(const string& name);
 
    bool IsLinear() const { return m_isLinear; }
    int GetWidth() const { return m_width; }

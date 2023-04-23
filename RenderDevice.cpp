@@ -1456,6 +1456,7 @@ void RenderDevice::UploadAndSetSMAATextures()
    BaseTexture* searchBaseTex = new BaseTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, BaseTexture::BW);
    memcpy(searchBaseTex->data(), searchTexBytes, SEARCHTEX_SIZE);
    m_SMAAsearchTexture = new Sampler(this, searchBaseTex, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE);
+   m_SMAAsearchTexture->SetName("SMAA Search"s);
    delete searchBaseTex;
 
    // FIXME use standard BaseTexture / Sampler code instead
@@ -1500,6 +1501,7 @@ void RenderDevice::UploadAndSetSMAATextures()
    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, (void*)areaTexBytes);
    glGenerateMipmap(GL_TEXTURE_2D); // Generate mip-maps, when using TexStorage will generate same amount as specified in TexStorage, otherwise good idea to limit by GL_TEXTURE_MAX_LEVEL
    m_SMAAareaTexture = new Sampler(this, glTexture, true, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR);
+   m_SMAAareaTexture->SetName("SMAA Area"s);
 #else
    {
       IDirect3DTexture9 *sysTex, *tex;
@@ -1522,6 +1524,7 @@ void RenderDevice::UploadAndSetSMAATextures()
       SAFE_RELEASE(sysTex);
 
       m_SMAAareaTexture = new Sampler(this, tex, true, true);
+      m_SMAAareaTexture->SetName("SMAA Area"s);
    }
 #endif
 }

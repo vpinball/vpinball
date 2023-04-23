@@ -11,6 +11,21 @@ Sampler* TextureManager::LoadTexture(BaseTexture* memtex, const SamplerFilter fi
    if (it == m_map.end())
    {
       Sampler* sampler = new Sampler(&m_rd, memtex, force_linear_rgb, clampU, clampV, filter);
+      if (g_pplayer->m_pin3d.m_envRadianceTexture == memtex)
+         sampler->SetName("Env Radiance");
+      else if (g_pplayer->m_pin3d.m_envTexture->m_pdsBuffer == memtex)
+         sampler->SetName("Env");
+      else
+      {
+         for (Texture* image : g_pplayer->m_ptable->m_vimage)
+         {
+            if (image->m_pdsBuffer == memtex)
+            {
+               sampler->SetName(image->m_szName.c_str());
+               break;
+            }
+         }
+      }
       sampler->m_dirty = false;
       m_map[memtex] = sampler;
       return sampler;
