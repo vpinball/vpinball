@@ -189,6 +189,14 @@ void Sampler::SetFilter(const SamplerFilter filter)
    m_filter = filter;
 }
 
+void Sampler::SetName(const string& name)
+{
+   #ifdef ENABLE_SDL
+   if (GLAD_GL_VERSION_4_3)
+      glObjectLabel(GL_TEXTURE, m_texture, name.length(), name.c_str());
+   #endif
+}
+
 #ifdef ENABLE_SDL
 GLuint Sampler::CreateTexture(unsigned int Width, unsigned int Height, unsigned int Levels, colorFormat Format, void* data, int stereo)
 {
