@@ -48,7 +48,9 @@ public:
    const Format m_indexFormat;
 
 private:
-   void CreatePendingSharedBuffer();
+   bool IsCreated() const { return m_ib; }
+   static void CreatePendingSharedBuffer();
+   static vector<IndexBuffer*> pendingSharedBuffers;
 
    struct PendingUpload
    {
@@ -59,7 +61,6 @@ private:
    vector<PendingUpload> m_pendingUploads;
    PendingUpload m_lock = { 0, 0, nullptr };
    int m_offset = 0;
-   static vector<IndexBuffer*> pendingSharedBuffers;
 
 #ifdef ENABLE_SDL
    GLuint m_ib = 0;
