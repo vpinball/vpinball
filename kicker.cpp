@@ -546,7 +546,7 @@ void Kicker::RenderDynamic()
 
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
       
-      pd3dDevice->DrawMesh(pd3dDevice->basicShader, pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, kickerPlateNumIndices);
+      pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, kickerPlateNumIndices);
 
       pd3dDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
 
@@ -561,7 +561,7 @@ void Kicker::RenderDynamic()
       g_pplayer->m_pin3d.EnableAlphaBlend(false);
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
 
-      pd3dDevice->DrawMesh(pd3dDevice->basicShader, pos, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+      pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), pos, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
 
       pd3dDevice->CopyRenderStates(false, initial_state);
    }

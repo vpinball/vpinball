@@ -95,6 +95,32 @@ void RenderPass::Execute(const bool log)
       }
       #endif
 
+      /*
+      Before 10.8, render command were not buffered and processed in the following order (* is optional static prepass):
+	      - Playfield *
+	      - Static render,  not decals * => Unsorted
+	      - Static render decals * => Unsorted
+	      - Dynamic render Opaque, not DMD => Unsorted (front to back, state changes,…)
+	      - Dynamic render Opaque DMD => Unsorted (front to back, state changes,…)
+	      - Balls
+	      - Dynamic render Transparent, not DMD => Sorted back to front
+	      - Dynamic render Transparent DMD => Sorted back to front
+      Note that:
+         - Kickers are rendered with a "pass always" depth test
+         - Transparent parts do write to depth buffer (they can be used as masks)
+         - Depth sorting is not done based on view vector but on depth bias and absolute z coordinate
+
+      For 10.8, the render command sorting has been designed to ensure backward compatibility:
+	      - Identify transparent parts in a backward compatible way (using IsTransparent, and not according to real 'transparency' state as evaluated from depth & blend state)
+	      - Sort render commands with the following constraints:
+		      . Draw kickers first (at least before balls)
+		      . TODO Sort opaque DMD after other opaques
+		      . TODO Sort transparent DMD after other transparents
+		      . Sort opaque parts together based on efficiency (state, real view depth, whatever…)
+		      . Use existing sorting of transparent parts (based on absolute z and depthbias)
+		      . TODO Sort "deferred draw light render commands" after opaque and before transparents
+		      . TODO Group draw call of each refraction probe together (after the first part, based on default sorting)
+      */
       struct
       {
          inline bool operator()(const RenderCommand* r1, const RenderCommand* r2) const
@@ -114,8 +140,8 @@ void RenderPass::Execute(const bool log)
                return false;
             
             // Non opaque items: render them after opaque ones, sorted back to front since their rendering depends on the framebuffer
-            bool transparent1 = !r1->GetRenderState().IsOpaque();
-            bool transparent2 = !r2->GetRenderState().IsOpaque();
+            bool transparent1 = r1->IsTransparent(); // !r1->GetRenderState().IsOpaque();
+            bool transparent2 = r2->IsTransparent(); // !r2->GetRenderState().IsOpaque();
             if (transparent1)
             {
                if (transparent2)

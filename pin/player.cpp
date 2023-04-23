@@ -4563,7 +4563,7 @@ void Player::GetBallAspectRatio(const Ball * const pball, Vertex2D &stretch, con
    m_ballShader->SetTechnique("RenderBallReflection");
 
    m_ballShader->Begin();
-   m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
+   m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballMeshBuffer, false, RenderDevice::TRIANGLELIST, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
    m_ballShader->End();
 
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
@@ -4989,7 +4989,7 @@ void Player::DrawBalls()
          m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBall);
 
       Vertex3Ds pos(pball->m_d.m_pos.x, pball->m_d.m_pos.y, zheight);
-      m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballShader, pos, 0.f, m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
+      m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballShader, false, pos, 0.f, m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
 
       // ball trails
       if ((!g_pplayer->IsRenderPass(Player::REFLECTION_PASS)) && // do not render trails in reflection pass
@@ -5083,7 +5083,7 @@ void Player::DrawBalls()
             m_pin3d.EnableAlphaBlend(false);
 
             m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBallTrail);
-            m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballShader, pos, 0.f, m_ballTrailMeshBuffer, RenderDevice::TRIANGLESTRIP, 0, num_rgv3D);
+            m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballShader, false, pos, 0.f, m_ballTrailMeshBuffer, RenderDevice::TRIANGLESTRIP, 0, num_rgv3D);
          }
       }
 
@@ -5106,7 +5106,7 @@ void Player::DrawBalls()
          // draw points
          constexpr float ptsize = 5.0f;
          m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_POINTSIZE, float_as_uint(ptsize));
-         m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballShader, pos, 0.f, m_ballDebugPoints, RenderDevice::POINTLIST, 0, 12);
+         m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballShader, false, pos, 0.f, m_ballDebugPoints, RenderDevice::POINTLIST, 0, 12);
 
          // reset transform
          m_pin3d.m_pd3dPrimaryDevice->SetTransform(RenderDevice::TRANSFORMSTATE_WORLD, &matOrig);

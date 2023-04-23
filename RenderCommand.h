@@ -14,6 +14,7 @@ public:
    ~RenderCommand();
 
    bool IsFullClear(const bool hasDepth) const;
+   bool IsTransparent() const { return m_isTransparent; }
    bool IsDrawCommand() const { return m_command != RC_CLEAR && m_command != RC_COPY; }
    bool IsDrawMeshCommand() const { return m_command == RC_DRAW_MESH; }
    inline RenderState GetRenderState() const { return m_renderState; }
@@ -28,7 +29,7 @@ public:
    void SetCopy(RenderTarget* from, RenderTarget* to, bool color, bool depth,  
       const int x1 = -1, const int y1 = -1, const int w1 = -1, const int h1 = -1,
       const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1);
-   void SetDrawMesh(Shader* shader, MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount, float depth);
+   void SetDrawMesh(Shader* shader, MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount, const bool isTransparent, const float depth);
    void SetDrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices);
    void SetDrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices);
 

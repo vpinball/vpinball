@@ -260,7 +260,8 @@ void RenderCommand::SetCopy(RenderTarget* from, RenderTarget* to, bool color, bo
    m_copyDstRect = vec4(x2, y2, w2, h2);
 }
 
-void RenderCommand::SetDrawMesh(Shader* shader, MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount, float depth)
+void RenderCommand::SetDrawMesh(Shader* shader, MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, 
+   const DWORD startIndice, const DWORD indexCount,const bool isTransparent, const float depth)
 {
    assert(mb != nullptr);
    m_command = Command::RC_DRAW_MESH;
@@ -270,6 +271,7 @@ void RenderCommand::SetDrawMesh(Shader* shader, MeshBuffer* mb, const RenderDevi
    m_indicesCount = indexCount;
    m_rd->CopyRenderStates(true, m_renderState);
    m_depth = depth;
+   m_isTransparent = isTransparent;
    m_shader = shader;
    m_shaderTechnique = m_shader->GetCurrentTechnique();
    if (m_shaderState == nullptr || m_shaderState->m_shader != m_shader)

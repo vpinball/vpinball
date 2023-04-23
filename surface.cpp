@@ -1060,7 +1060,8 @@ void Surface::RenderSlingshots()
           }
       }
    }
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, 0.f, m_slingshotMeshBuffer, RenderDevice::TRIANGLELIST, 0, static_cast<DWORD>(m_vlinesling.size() * 24));
+   pd3dDevice->DrawMesh(
+      pd3dDevice->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_slingshotMeshBuffer, RenderDevice::TRIANGLELIST, 0, static_cast<DWORD>(m_vlinesling.size() * 24));
 
    //pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
 }
@@ -1107,7 +1108,7 @@ void Surface::RenderWallsAtHeight(const bool drop)
       }
 
       // combine drawcalls into one (hopefully faster)
-      pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numVertices * 6);
+      pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numVertices * 6);
    }
 
    // render top&bottom
@@ -1135,7 +1136,8 @@ void Surface::RenderWallsAtHeight(const bool drop)
       }
 
       // Top
-      pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (drop ? m_numPolys * 3 : 0), m_numPolys * 3);
+      pd3dDevice->DrawMesh(
+         pd3dDevice->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (drop ? m_numPolys * 3 : 0), m_numPolys * 3);
 
       // Only render Bottom for Reflections
       if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
@@ -1145,7 +1147,8 @@ void Surface::RenderWallsAtHeight(const bool drop)
          else
             pd3dDevice->SetRenderStateCulling(RenderState::CULL_CW);
 
-         pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);
+         pd3dDevice->DrawMesh(
+            pd3dDevice->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);
       }
    }
 

@@ -450,10 +450,10 @@ void Gate::RenderObject()
 
    // render bracket
    if (m_d.m_showBracket)
-      pd3dDevice->DrawMesh(pd3dDevice->basicShader, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
+      pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
 
    // render wire
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, pos, 0.f, m_wireMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), pos, 0.f, m_wireMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
 
    pd3dDevice->CopyRenderStates(false, initial_state);
 }
