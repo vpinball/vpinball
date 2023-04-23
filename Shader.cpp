@@ -367,6 +367,14 @@ Shader::Shader(RenderDevice* renderDevice, const std::string& src1, const std::s
       {
          m_boundState[i] = new ShaderState(this);
          memset(m_boundState[i]->m_state, 0, m_stateSize);
+         for (ShaderUniforms uniform : m_uniforms[i])
+         {
+            if (shaderUniformNames[uniform].type == SUT_Sampler)
+            {
+               m_boundState[i]->SetTexture(uniform, m_renderDevice->m_nullTexture);
+               m_state->SetTexture(uniform, m_renderDevice->m_nullTexture);
+            }
+         }
       }
       else
          m_boundState[i] = nullptr;
@@ -667,73 +675,51 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
       // DX9 implementation uses preaffected texture units, not samplers, so these can not be used for OpenGL. This would cause some collisions.
       Sampler* texel = *(Sampler**)src;
       SamplerBinding* tex_unit = nullptr;
-      if (texel == nullptr)
-      { // For null texture, use OpenGL texture 0 which is a predefined texture that always returns (0, 0, 0, 1)
-         for (auto binding : m_renderDevice->m_samplerBindings)
+      assert(texel != nullptr);
+      SamplerFilter filter = texel->GetFilter();
+      SamplerAddressMode clampu = texel->GetClampU();
+      SamplerAddressMode clampv = texel->GetClampV();
+      if (filter == SF_UNDEFINED)
+      {
+         filter = shaderUniformNames[uniformName].default_filter;
+         if (filter == SF_UNDEFINED)
+            filter = SF_NONE;
+      }
+      if (clampu == SA_UNDEFINED)
+      {
+         clampu = shaderUniformNames[uniformName].default_clampu;
+         if (clampu == SA_UNDEFINED)
+            clampu = SA_CLAMP;
+      }
+      if (clampv == SA_UNDEFINED)
+      {
+         clampv = shaderUniformNames[uniformName].default_clampv;
+         if (clampv == SA_UNDEFINED)
+            clampv = SA_CLAMP;
+      }
+      for (auto binding : texel->m_bindings)
+      {
+         if (binding->filter == filter && binding->clamp_u == clampu && binding->clamp_v == clampv)
          {
-            if (binding->sampler == nullptr)
-            {
-               tex_unit = binding;
-               break;
-            }
-         }
-         if (tex_unit == nullptr)
-         {
-            tex_unit = m_renderDevice->m_samplerBindings.back();
-            if (tex_unit->sampler != nullptr)
-               tex_unit->sampler->m_bindings.erase(tex_unit);
-            tex_unit->sampler = nullptr;
-            glActiveTexture(GL_TEXTURE0 + tex_unit->unit);
-            glBindTexture(GL_TEXTURE_2D, 0);
-            m_renderDevice->m_curTextureChanges++;
+            tex_unit = binding;
+            break;
          }
       }
-      else
+      // Setup a texture unit if not already bound to one
+      if (tex_unit == nullptr)
       {
-         SamplerFilter filter = texel->GetFilter();
-         SamplerAddressMode clampu = texel->GetClampU();
-         SamplerAddressMode clampv = texel->GetClampV();
-         if (filter == SF_UNDEFINED)
-         {
-            filter = shaderUniformNames[uniformName].default_filter;
-            if (filter == SF_UNDEFINED)
-               filter = SF_NONE;
-         }
-         if (clampu == SA_UNDEFINED)
-         {
-            clampu = shaderUniformNames[uniformName].default_clampu;
-            if (clampu == SA_UNDEFINED)
-               clampu = SA_CLAMP;
-         }
-         if (clampv == SA_UNDEFINED)
-         {
-            clampv = shaderUniformNames[uniformName].default_clampv;
-            if (clampv == SA_UNDEFINED)
-               clampv = SA_CLAMP;
-         }
-         for (auto binding : texel->m_bindings)
-         {
-            if (binding->filter == filter && binding->clamp_u == clampu && binding->clamp_v == clampv)
-            {
-               tex_unit = binding;
-               break;
-            }
-         }
-         if (tex_unit == nullptr)
-         {
-            tex_unit = m_renderDevice->m_samplerBindings.back();
-            if (tex_unit->sampler != nullptr)
-               tex_unit->sampler->m_bindings.erase(tex_unit);
-            tex_unit->sampler = texel;
-            tex_unit->filter = filter;
-            tex_unit->clamp_u = clampu;
-            tex_unit->clamp_v = clampv;
-            texel->m_bindings.insert(tex_unit);
-            glActiveTexture(GL_TEXTURE0 + tex_unit->unit);
-            glBindTexture(GL_TEXTURE_2D, texel->GetCoreTexture());
-            m_renderDevice->m_curTextureChanges++;
-            m_renderDevice->SetSamplerState(tex_unit->unit, filter, clampu, clampv);
-         }
+         tex_unit = m_renderDevice->m_samplerBindings.back();
+         if (tex_unit->sampler != nullptr)
+            tex_unit->sampler->m_bindings.erase(tex_unit);
+         tex_unit->sampler = texel;
+         tex_unit->filter = filter;
+         tex_unit->clamp_u = clampu;
+         tex_unit->clamp_v = clampv;
+         texel->m_bindings.insert(tex_unit);
+         glActiveTexture(GL_TEXTURE0 + tex_unit->unit);
+         glBindTexture(GL_TEXTURE_2D, texel->GetCoreTexture());
+         m_renderDevice->m_curTextureChanges++;
+         m_renderDevice->SetSamplerState(tex_unit->unit, filter, clampu, clampv);
       }
       // Bind the sampler
       if (*(int*)dst != tex_unit->unit)
