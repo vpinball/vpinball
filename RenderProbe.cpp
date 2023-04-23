@@ -297,13 +297,15 @@ void RenderProbe::PreRenderStaticReflectionProbe()
       p3dDevice->DrawFullscreenTexturedQuad(p3dDevice->FBShader);
       p3dDevice->FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
       p3dDevice->CopyRenderStates(false, initial_state);
+
+      p3dDevice->FlushRenderFrame();
    }
    p3dDevice->m_curDrawnTriangles += nTris;
 
    // copy back weighted antialiased color result to the static render target, keeping depth untouched
    p3dDevice->SetRenderTarget("PreRender Store Reflection"s, m_prerenderRT);
    p3dDevice->BlitRenderTarget(accumulationSurface, m_prerenderRT, true, false);
-   p3dDevice->FlushRenderFrame();
+   p3dDevice->FlushRenderFrame(); // Execute before destroying the render target
    delete accumulationSurface;
    p3dDevice->SetRenderTarget(""s, previousRT);
 
