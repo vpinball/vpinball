@@ -22,8 +22,8 @@ vector<VertexBuffer*> VertexBuffer::pendingSharedBuffers;
 unsigned int VertexBuffer::GetPendingSharedBufferCount()
 {
    unsigned int size = 0;
-   for (size_t i = 0; i < pendingSharedBuffers.size(); i++)
-      size += pendingSharedBuffers[i]->m_vertexCount;
+   for (VertexBuffer* buffer : pendingSharedBuffers)
+      size += buffer->m_vertexCount;
    return size;
 }
 
@@ -83,12 +83,10 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
 
 VertexBuffer::~VertexBuffer()
 {
-   if (!m_vb)
+   if (!IsCreated())
       RemoveFromVectorSingle(pendingSharedBuffers, this);
-   for (size_t j = 0; j < m_pendingUploads.size(); j++)
-   {
-      delete[] m_pendingUploads[j].data;
-   }
+   for (PendingUpload upload : m_pendingUploads)
+      delete[] upload.data;
 #if defined(ENABLE_SDL) // OpenGL
    if (m_sharedBufferRefCount != nullptr)
    {
@@ -131,60 +129,66 @@ void VertexBuffer::CreatePendingSharedBuffer()
    if (pendingSharedBuffers.size() == 0)
       return;
    UINT size = GetPendingSharedBufferCount() * pendingSharedBuffers[0]->m_sizePerVertex;
+
    #if defined(ENABLE_SDL) // OpenGL
-   GLuint vb = 0;
-   glGenBuffers(1, &vb);
-   glBindBuffer(GL_ARRAY_BUFFER, vb);
-   glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_STATIC_DRAW);
-   int* refCount = new int();
-   (*refCount) = (int) pendingSharedBuffers.size();
+   UINT8* data = (UINT8*)malloc(size);
+
    #else // DirectX 9
    IDirect3DVertexBuffer9* vb = nullptr;
-   CHECKD3D(m_rd->GetCoreDevice()->CreateVertexBuffer(size, D3DUSAGE_WRITEONLY, 0 /* pendingSharedBuffers[0]->m_vertexFormat */, D3DPOOL_DEFAULT, &vb, nullptr));
+   CHECKD3D(pendingSharedBuffers[0]->m_rd->GetCoreDevice()->CreateVertexBuffer(size, D3DUSAGE_WRITEONLY, 0 /* pendingSharedBuffers[0]->m_vertexFormat */, D3DPOOL_DEFAULT, &vb, nullptr));
    UINT8* data;
    CHECKD3D(vb->Lock(0, size, (void**)&data, 0));
    #endif
-   for (size_t i = 0; i < pendingSharedBuffers.size(); i++)
+
+   for (VertexBuffer* buffer : pendingSharedBuffers)
    {
-      VertexBuffer* buffer = pendingSharedBuffers[i];
       assert(buffer->m_vertexFormat == pendingSharedBuffers[0]->m_vertexFormat);
-      buffer->m_vb = vb;
       for (size_t j = 0; j < buffer->m_pendingUploads.size(); j++)
       {
          PendingUpload& upload = buffer->m_pendingUploads[j];
-         #ifdef ENABLE_SDL // OpenGL
-         glBufferSubData(GL_ARRAY_BUFFER, buffer->m_offset + upload.offset, upload.size, upload.data);
-         #else // DirectX 9
          memcpy(data + buffer->m_offset + upload.offset, upload.data, upload.size);
-         #endif
          delete[] upload.data;
       }
       buffer->m_pendingUploads.clear();
       buffer->m_uploaded = true;
-      #if defined(ENABLE_SDL) // OpenGL
-      buffer->m_sharedBufferRefCount = refCount;
-      #else // DirectX 9
-      vb->AddRef();
-      #endif
    }
-   pendingSharedBuffers.clear();
-   #ifndef ENABLE_SDL // DirectX 9
+
+   #if defined(ENABLE_SDL) // OpenGL
+   GLuint vb = 0;
+   glGenBuffers(1, &vb);
+   glBindBuffer(GL_ARRAY_BUFFER, vb);
+   glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+   free(data);
+   int* refCount = new int();
+   (*refCount) = (int)pendingSharedBuffers.size();
+   for (VertexBuffer* buffer : pendingSharedBuffers)
+   {
+      buffer->m_vb = vb;
+      buffer->m_sharedBufferRefCount = refCount;
+   }
+
+   #else ENABLE_SDL // DirectX 9
    CHECKD3D(vb->Unlock());
+   for (VertexBuffer* buffer : pendingSharedBuffers)
+   {
+      buffer->m_vb = vb;
+      vb->AddRef();
+   }
    vb->Release();
+
    #endif
+   pendingSharedBuffers.clear();
 }
 
 void VertexBuffer::Upload()
 {
-   if (!m_vb)
+   if (!IsCreated())
       CreatePendingSharedBuffer();
 
    if (m_pendingUploads.size() > 0)
    {
-      for (size_t j = 0; j < m_pendingUploads.size(); j++)
+      for (PendingUpload upload : m_pendingUploads)
       {
-         PendingUpload& upload = m_pendingUploads[j];
-
          #if defined(ENABLE_SDL) // OpenGL
          glBindBuffer(GL_ARRAY_BUFFER, m_vb);
          glBufferSubData(GL_ARRAY_BUFFER, m_offset + upload.offset, upload.size, upload.data);

@@ -66,12 +66,11 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const vector<unsigned int>& indices)
 
 IndexBuffer::~IndexBuffer()
 {
-   if (!m_ib)
+   if (!IsCreated())
       RemoveFromVectorSingle(pendingSharedBuffers, this);
-   for (size_t j = 0; j < m_pendingUploads.size(); j++)
-   {
-      delete[] m_pendingUploads[j].data;
-   }
+   for (PendingUpload upload : m_pendingUploads)
+      delete[] upload.data;
+
 #if defined(ENABLE_SDL) // OpenGL
    if (m_sharedBufferRefCount != nullptr)
    {
@@ -111,9 +110,8 @@ void IndexBuffer::ApplyOffset(VertexBuffer* vb)
 {
    if (vb->m_offset == 0)
       return;
-   for (size_t j = 0; j < m_pendingUploads.size(); j++)
+   for (PendingUpload upload : m_pendingUploads)
    {
-      PendingUpload& upload = m_pendingUploads[j];
       const unsigned int offset = vb->GetVertexOffset();
       const unsigned int count = upload.size / m_sizePerIndex;
       if (m_indexFormat == FMT_INDEX16)
@@ -135,67 +133,70 @@ void IndexBuffer::ApplyOffset(VertexBuffer* vb)
 void IndexBuffer::CreatePendingSharedBuffer()
 {
    UINT size = 0;
-   for (size_t i = 0; i < pendingSharedBuffers.size(); i++)
-   {
-      size += pendingSharedBuffers[i]->m_size;
-   }
+   for (IndexBuffer* buffer : pendingSharedBuffers)
+      size += buffer->m_size;
+
    #if defined(ENABLE_SDL) // OpenGL
-   GLuint ib = 0;
-   glGenBuffers(1, &ib);
-   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
-   glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, GL_STATIC_DRAW);
-   int* refCount = new int();
-   (*refCount) = (int) pendingSharedBuffers.size();
+   UINT8* data = (UINT8*)malloc(size);
+
    #else // DirectX 9
    IDirect3DIndexBuffer9* ib = nullptr;
-   CHECKD3D(m_rd->GetCoreDevice()->CreateIndexBuffer(
+   CHECKD3D(pendingSharedBuffers[0]->m_rd->GetCoreDevice()->CreateIndexBuffer(
       size, D3DUSAGE_WRITEONLY, pendingSharedBuffers[0]->m_indexFormat == FMT_INDEX16 ? D3DFMT_INDEX16 : D3DFMT_INDEX32, D3DPOOL_DEFAULT, &ib, nullptr));
    UINT8* data;
    CHECKD3D(ib->Lock(0, size, (void**)&data, 0));
    #endif
+
    UINT offset = 0;
-   for (size_t i = 0; i < pendingSharedBuffers.size(); i++)
+   for (IndexBuffer* buffer : pendingSharedBuffers)
    {
-      IndexBuffer* buffer = pendingSharedBuffers[i];
       assert(buffer->m_indexFormat == pendingSharedBuffers[0]->m_indexFormat);
-      buffer->m_ib = ib;
       buffer->m_offset = offset;
-      for (size_t j = 0; j < buffer->m_pendingUploads.size(); j++)
+      for (PendingUpload upload : buffer->m_pendingUploads)
       {
-         PendingUpload& upload = buffer->m_pendingUploads[j];
-         #ifdef ENABLE_SDL // OpenGL
-         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset + upload.offset, upload.size, upload.data);
-         #else // DirectX 9
          memcpy(data + offset + upload.offset, upload.data, upload.size);
-         #endif
          delete[] upload.data;
       }
       buffer->m_pendingUploads.clear();
       offset += buffer->m_size;
-      #if defined(ENABLE_SDL) // OpenGL
-      buffer->m_sharedBufferRefCount = refCount;
-      #else // DirectX 9
-      ib->AddRef();
-      #endif
    }
-   pendingSharedBuffers.clear();
-   #ifndef ENABLE_SDL // DirectX 9
+
+   #if defined(ENABLE_SDL) // OpenGL
+   GLuint ib = 0;
+   glGenBuffers(1, &ib);
+   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
+   glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+   free(data);
+   int* refCount = new int();
+   (*refCount) = (int)pendingSharedBuffers.size();
+   for (IndexBuffer* buffer : pendingSharedBuffers)
+   {
+      buffer->m_ib = ib;
+      buffer->m_sharedBufferRefCount = refCount;
+   }
+
+   #else // DirectX 9
    CHECKD3D(ib->Unlock());
+   for (IndexBuffer* buffer : pendingSharedBuffers)
+   {
+      buffer->m_ib = ib;
+      ib->AddRef();
+   }
    ib->Release();
+
    #endif
+   pendingSharedBuffers.clear();
 }
 
 void IndexBuffer::Upload()
 {
-   if (!m_ib)
+   if (!IsCreated())
       CreatePendingSharedBuffer();
 
    if (m_pendingUploads.size() > 0)
    {
-      for (size_t j = 0; j < m_pendingUploads.size(); j++)
+      for (PendingUpload upload : m_pendingUploads)
       {
-         PendingUpload& upload = m_pendingUploads[j];
-
          #if defined(ENABLE_SDL) // OpenGL
          glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ib);
          glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, m_offset + upload.offset, upload.size, upload.data);

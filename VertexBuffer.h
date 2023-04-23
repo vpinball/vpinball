@@ -37,7 +37,8 @@ public:
    const unsigned int m_vertexOffset; // Offset in vertices of the data inside the native GPU array
 
 private:
-   void CreatePendingSharedBuffer();
+   bool IsCreated() const { return m_vb; }
+   static void CreatePendingSharedBuffer();
    static vector<VertexBuffer*> pendingSharedBuffers;
    static unsigned int GetPendingSharedBufferCount();
    static unsigned int GetSharedBufferVertexOffset(const unsigned int vertexCount, const VertexFormat fvf);
