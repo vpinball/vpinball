@@ -967,6 +967,13 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
        hr = m_pD3DDevice->SetDialogBoxMode(TRUE);*/ // needs D3DPRESENTFLAG_LOCKABLE_BACKBUFFER, but makes rendering slower on some systems :/
 #endif
 
+   // Create default texture
+   BaseTexture* surf = new BaseTexture(1, 1, BaseTexture::Format::RGBA);
+   memset(surf->data(), 0, 4);
+   m_nullTexture = new Sampler(this, surf, false);
+   m_nullTexture->SetName("Null"s);
+   delete surf;
+
    // Retrieve a reference to the back buffer.
    int back_buffer_width, back_buffer_height;
 #ifdef ENABLE_SDL
@@ -1270,6 +1277,7 @@ RenderDevice::~RenderDevice()
    delete m_quadMeshBuffer;
    delete m_quadPTDynMeshBuffer;
    delete m_quadPNTDynMeshBuffer;
+   delete m_nullTexture;
 
 #ifndef ENABLE_SDL
    m_pD3DDevice->SetStreamSource(0, nullptr, 0, 0);
