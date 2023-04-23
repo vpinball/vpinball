@@ -1332,7 +1332,7 @@ void Primitive::RenderObject()
       if (!is_reflection_only_pass && mat->m_bOpacityActive && (mat->m_fOpacity < 1.0f || (pin && pin->has_alpha())))
       { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
          pd3dDevice->basicShader->SetTechniqueMetal(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat, nMap, false, false);
-         pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_d.m_vPosition, m_d.m_depthBias, 
+         pd3dDevice->DrawMesh(pd3dDevice->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_d.m_vPosition, m_d.m_depthBias, 
             m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
          is_reflection_only_pass = true;
       }
@@ -1350,14 +1350,14 @@ void Primitive::RenderObject()
    }
 
    // draw the mesh
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_d.m_vPosition, m_d.m_depthBias, 
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_d.m_vPosition, m_d.m_depthBias, 
       m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
 
    // also draw the back of the primitive faces
    if (m_d.m_backfacesEnabled && mat->m_bOpacityActive)
    {
       pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-      pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_d.m_vPosition, m_d.m_depthBias, 
+      pd3dDevice->DrawMesh(pd3dDevice->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_d.m_vPosition, m_d.m_depthBias, 
          m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
    }
 

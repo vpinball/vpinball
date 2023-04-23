@@ -233,7 +233,7 @@ public:
       if (m_buffers[m_curIdx])
       {
          Vertex3Ds pos(0.f, 0.f, 0.f);
-         pd3dDevice->DrawMesh(pd3dDevice->basicShader, pos, 0.f, m_buffers[m_curIdx], RenderDevice::TRIANGLEFAN, 0, 3);
+         pd3dDevice->DrawMesh(pd3dDevice->basicShader, false, pos, 0.f, m_buffers[m_curIdx], RenderDevice::TRIANGLEFAN, 0, 3);
       }
 
       m_curIdx = (m_curIdx + 1) % m_buffers.size();

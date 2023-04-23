@@ -641,7 +641,7 @@ void Flipper::RenderDynamic()
       matTrafo.Multiply(matTemp, matTrafo);
    }
    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, flipperBaseNumIndices);
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, flipperBaseNumIndices);
 
    //render rubber
    if (m_d.m_rubberthickness > 0.f)
@@ -657,7 +657,7 @@ void Flipper::RenderDynamic()
          pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
          pd3dDevice->basicShader->SetMaterial(mat, false);
       }
-      pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, flipperBaseNumIndices, flipperBaseNumIndices);
+      pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, flipperBaseNumIndices, flipperBaseNumIndices);
    }
    g_pplayer->UpdateBasicShaderMatrix();
 

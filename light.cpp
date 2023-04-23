@@ -365,7 +365,7 @@ void Light::RenderBulbMesh()
    mat.m_cClearcoat = 0;
    pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
    pd3dDevice->basicShader->SetMaterial(&mat, false);
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_boundingSphereCenter, m_d.m_depthBias, m_bulbSocketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbSocketNumFaces);
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), m_boundingSphereCenter, m_d.m_depthBias, m_bulbSocketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbSocketNumFaces);
 
    mat.m_cBase = 0;
    mat.m_fWrapLighting = 0.5f;
@@ -382,7 +382,7 @@ void Light::RenderBulbMesh()
    pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
    pd3dDevice->basicShader->SetMaterial(&mat, false);
    Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
 
    pd3dDevice->CopyRenderStates(false, initial_state);
 }
@@ -473,7 +473,7 @@ void Light::RenderDynamic()
       pd3dDevice->lightShader->SetFloat(SHADER_blend_modulate_vs_add, 0.00001f); // additive, but avoid full 0, as it disables the blend
 
       Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
-      pd3dDevice->DrawMesh(pd3dDevice->lightShader, bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
+      pd3dDevice->DrawMesh(pd3dDevice->lightShader, IsTransparent(), bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
    }
 
    Shader *shader = m_d.m_BulbLight ? pd3dDevice->lightShader : pd3dDevice->classicLightShader;
@@ -561,7 +561,8 @@ void Light::RenderDynamic()
    }
 
    Vertex3Ds pos0(0.f, 0.f, 0.f);
-   pd3dDevice->DrawMesh(shader, m_backglass ? pos0 : m_boundingSphereCenter, m_backglass ? 0.f : m_d.m_depthBias, m_customMoverMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_customMoverIndexNum);
+   pd3dDevice->DrawMesh(shader, IsTransparent(), m_backglass ? pos0 : m_boundingSphereCenter, m_backglass ? 0.f : m_d.m_depthBias, m_customMoverMeshBuffer, RenderDevice::TRIANGLELIST, 0,
+      m_customMoverIndexNum);
 
    // Restore state
    if (m_backglass)

@@ -1792,17 +1792,18 @@ void RenderDevice::DrawFullscreenTexturedQuad(Shader* shader)
 {
    assert(Shader::GetCurrentShader() == FBShader || Shader::GetCurrentShader() == StereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
    Vertex3Ds pos(0.f, 0.f, 0.f);
-   DrawMesh(shader, pos, 0.f, m_quadMeshBuffer, TRIANGLESTRIP, 0, 4);
+   DrawMesh(shader, false, pos, 0.f, m_quadMeshBuffer, TRIANGLESTRIP, 0, 4);
 }
 
-void RenderDevice::DrawMesh(Shader* shader, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount)
+void RenderDevice::DrawMesh(Shader* shader, const bool isTransparent, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount)
 {
    RenderCommand* cmd = m_renderFrame.NewCommand();
    // Legacy sorting order (only along negative z axis, which is reversed for reflections)
    float depth = g_pplayer->IsRenderPass(Player::REFLECTION_PASS) ? depthBias + center.z : depthBias - center.z;
    // Full depth sorting. Disabled since this would break old table and, for the time being, view vector is not homogeneously defined between Normal/VR/LiveUI
-   // float depth = depthBias + (m_viewVec.x * center.x + m_viewVec.y * center.y + m_viewVec.z * center.z);
-   cmd->SetDrawMesh(shader, mb, type, startIndice, indexCount, depth);
+   //float depth = isTransparent ? g_pplayer->IsRenderPass(Player::REFLECTION_PASS) ? depthBias + center.z : depthBias - center.z
+   //                            : depthBias + (m_viewVec.x * center.x + m_viewVec.y * center.y + m_viewVec.z * center.z);
+   cmd->SetDrawMesh(shader, mb, type, startIndice, indexCount, depth, isTransparent);
    m_currentPass->Submit(cmd);
 }
 
