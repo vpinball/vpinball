@@ -290,9 +290,7 @@ void BackGlass::Render()
       { 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }
    };
 
-   m_pd3dDevice->DMDShader->Begin();
-   m_pd3dDevice->DrawTexturedQuad(vertices);
-   m_pd3dDevice->DMDShader->End();
+   m_pd3dDevice->DrawTexturedQuad(m_pd3dDevice->DMDShader, vertices);
 
    m_pd3dDevice->CopyRenderStates(false, initial_state);
 }

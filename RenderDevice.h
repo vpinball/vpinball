@@ -114,9 +114,9 @@ public:
       const int x1 = -1, const int y1 = -1, const int w1 = -1, const int h1 = -1,
       const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1);
    void DrawMesh(Shader* shader, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount);
-   void DrawTexturedQuad(const Vertex3D_TexelOnly* vertices);
-   void DrawTexturedQuad(const Vertex3D_NoTex2* vertices);
-   void DrawFullscreenTexturedQuad();
+   void DrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices);
+   void DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices);
+   void DrawFullscreenTexturedQuad(Shader* shader);
    void DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size);
    void LogNextFrame() { m_logNextFrame = true; }
    bool IsLogNextFrame() const { return m_logNextFrame; }

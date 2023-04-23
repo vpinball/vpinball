@@ -1770,28 +1770,29 @@ void RenderDevice::BlitRenderTarget(RenderTarget* source, RenderTarget* destinat
    m_currentPass->Submit(cmd);
 }
 
-void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
+void RenderDevice::DrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices)
 {
-   assert(Shader::GetCurrentShader() == FBShader || Shader::GetCurrentShader() == StereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
+   assert(shader == FBShader || shader == StereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
    ApplyRenderStates();
    RenderCommand* cmd = m_renderFrame.NewCommand();
-   cmd->SetDrawTexturedQuad(vertices);
+   cmd->SetDrawTexturedQuad(shader, vertices);
    m_currentPass->Submit(cmd);
 }
 
-void RenderDevice::DrawTexturedQuad(const Vertex3D_NoTex2* vertices)
+void RenderDevice::DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices)
 {
-   assert(Shader::GetCurrentShader() != FBShader && Shader::GetCurrentShader() != StereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
+   assert(shader != FBShader && shader != StereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
    ApplyRenderStates();
    RenderCommand* cmd = m_renderFrame.NewCommand();
-   cmd->SetDrawTexturedQuad(vertices);
+   cmd->SetDrawTexturedQuad(shader, vertices);
    m_currentPass->Submit(cmd);
 }
 
-void RenderDevice::DrawFullscreenTexturedQuad() {
+void RenderDevice::DrawFullscreenTexturedQuad(Shader* shader)
+{
    assert(Shader::GetCurrentShader() == FBShader || Shader::GetCurrentShader() == StereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
    Vertex3Ds pos(0.f, 0.f, 0.f);
-   DrawMesh(Shader::GetCurrentShader(), pos, 0.f, m_quadMeshBuffer, TRIANGLESTRIP, 0, 4);
+   DrawMesh(shader, pos, 0.f, m_quadMeshBuffer, TRIANGLESTRIP, 0, 4);
 }
 
 void RenderDevice::DrawMesh(Shader* shader, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount)
@@ -1868,9 +1869,7 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
       FBShader->SetTexture(SHADER_tex_fb_filtered, source->GetColorSampler());
       FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / source->GetWidth()), (float)(1.0 / source->GetHeight()), 1.0f, 1.0f);
       FBShader->SetTechnique(tech_h);
-      FBShader->Begin();
-      DrawFullscreenTexturedQuad();
-      FBShader->End();
+      DrawFullscreenTexturedQuad(FBShader);
    }
    {
       FBShader->SetTextureNull(SHADER_tex_fb_filtered);
@@ -1879,9 +1878,7 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
       FBShader->SetTexture(SHADER_tex_fb_filtered, tmp->GetColorSampler());
       FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / tmp->GetWidth()), (float)(1.0 / tmp->GetHeight()), 1.0f, 1.0f);
       FBShader->SetTechnique(tech_v);
-      FBShader->Begin();
-      DrawFullscreenTexturedQuad();
-      FBShader->End();
+      DrawFullscreenTexturedQuad(FBShader);
    }
    CopyRenderStates(false, initial_state);
    SetRenderTarget(""s, initial_rt);
