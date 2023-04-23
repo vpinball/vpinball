@@ -386,7 +386,15 @@ Shader::Shader(RenderDevice* renderDevice, const std::string& src1, const std::s
    #else // DirectX 9
    m_boundState = new ShaderState(this);
    memset(m_boundState->m_state, 0, m_stateSize);
-   #endif
+   for (ShaderUniforms uniform : m_uniforms[0])
+   {
+      if (shaderUniformNames[uniform].type == SUT_Sampler)
+      {
+         m_boundState->SetTexture(uniform, m_renderDevice->m_nullTexture);
+         m_state->SetTexture(uniform, m_renderDevice->m_nullTexture);
+      }
+   }
+#endif
 }
 
 Shader::~Shader()
@@ -861,6 +869,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
 
          // Bind the texture to the shader
          Sampler* tex = *(Sampler**)src;
+         assert(tex != nullptr);
          IDirect3DTexture9* const bounded = m_boundTexture[unit] ? m_boundTexture[unit]->GetCoreTexture() : nullptr;
          IDirect3DTexture9* const tobound = tex ? tex->GetCoreTexture() : nullptr;
          if (bounded != tobound)
@@ -871,7 +880,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          }
 
          // Apply the texture sampling states
-         if (tex)
+         if (tex != m_renderDevice->m_nullTexture)
          {
             //CHECKD3D(m_renderDevice->GetCoreDevice()->SetSamplerState(unit, D3DSAMP_SRGBTEXTURE, !tex->IsLinear()));
             SamplerFilter filter = tex->GetFilter();
