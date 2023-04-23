@@ -334,7 +334,7 @@ public:
    void SetVector(const ShaderUniforms uniformName, const float x, const float y, const float z, const float w) { vec4 v(x, y, z, w); m_state->SetVector(uniformName, &v); }
    void SetFloat4v(const ShaderUniforms uniformName, const vec4* pData, const unsigned int count) { m_state->SetVector(uniformName, pData, count); }
    void SetTexture(const ShaderUniforms uniformName, Sampler* sampler) { m_state->SetTexture(uniformName, sampler); }
-   void SetTextureNull(const ShaderUniforms uniformName) { SetTexture(uniformName, (Sampler*)nullptr); }
+   void SetTextureNull(const ShaderUniforms uniformName);
    void SetTexture(const ShaderUniforms uniformName, Texture* texel, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED, const bool force_linear_rgb = false)
    {
       SetTexture(uniformName, texel->m_pdsBuffer, filter, clampU, clampV, force_linear_rgb);
@@ -449,6 +449,7 @@ public:
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
          assert(shaderUniformNames[uniformName].type == SUT_Sampler);
+         assert(sampler != nullptr);
          #ifdef ENABLE_SDL // OpenGL
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          *(Sampler**)(m_state + m_shader->m_stateOffsets[uniformName]) = sampler;

@@ -229,6 +229,7 @@ private:
 public:
    Sampler* m_SMAAsearchTexture = nullptr;
    Sampler* m_SMAAareaTexture = nullptr;
+   Sampler* m_nullTexture = nullptr;
 
 private:
 #ifndef ENABLE_SDL

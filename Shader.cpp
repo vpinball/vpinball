@@ -434,9 +434,14 @@ void Shader::End()
 #endif
 }
 
+void Shader::SetTextureNull(const ShaderUniforms uniformName)
+{
+   SetTexture(uniformName, m_renderDevice->m_nullTexture);
+}
+
 void Shader::SetTexture(const ShaderUniforms uniformName, BaseTexture* texel, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb)
 {
-   SetTexture(uniformName, texel ? m_renderDevice->m_texMan.LoadTexture(texel, filter, clampU, clampV, force_linear_rgb) : (Sampler*)nullptr);
+   SetTexture(uniformName, texel ? m_renderDevice->m_texMan.LoadTexture(texel, filter, clampU, clampV, force_linear_rgb) : m_renderDevice->m_nullTexture);
 }
 
 void Shader::SetMaterial(const Material* const mat, const bool has_alpha)
