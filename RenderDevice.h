@@ -259,8 +259,6 @@ public:
    void SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v);
 
 private:
-   Matrix3D m_matWorld, m_matView, m_matProj[2];
-
 #ifdef ENABLE_SDL
    GLfloat m_maxaniso;
    int m_GLversion;
@@ -277,7 +275,6 @@ private:
 public:
    bool m_autogen_mipmap;
    bool m_compress_textures;
-   Vertex3Ds m_viewVec;
 
 private:
    bool m_dwm_was_enabled;

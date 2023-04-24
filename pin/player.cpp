@@ -1011,9 +1011,6 @@ static bool CompareHitableImage(const Hitable* h1, const Hitable* h2)
 
 void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 {
-   const int nEyes = m_stereo3D != STEREO_OFF ? 2 : 1;
-   Matrix3D matWorld;
-   Matrix3D matProj[2];
    struct {
       Matrix3D matWorld;
       Matrix3D matView;
@@ -1021,27 +1018,14 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
       Matrix3D matWorldViewInverseTranspose;
       Matrix3D matWorldViewProj[2];
    } matrices;
-   matWorld = m_pin3d.GetMVP().GetModel();
+   m_pin3d.GetMVP().SetModel(objectTrafo);
+   matrices.matWorld = m_pin3d.GetMVP().GetModel();
    matrices.matView = m_pin3d.GetMVP().GetView();
+   matrices.matWorldView = m_pin3d.GetMVP().GetModelView();
+   matrices.matWorldViewInverseTranspose = m_pin3d.GetMVP().GetModelViewInverseTranspose();
+   const int nEyes = m_stereo3D != STEREO_OFF ? 2 : 1;
    for (int eye = 0; eye < nEyes; eye++)
-      matProj[eye] = m_pin3d.GetMVP().GetProj(eye);
-
-   matrices.matWorld = objectTrafo * matWorld;
-   matrices.matWorldView = matrices.matWorld * matrices.matView;
-   for (int eye = 0; eye < nEyes; eye++)
-      matrices.matWorldViewProj[eye] = matrices.matWorldView * matProj[eye];
-
-   if (m_ptable->m_tblMirrorEnabled)
-   {
-      const Matrix3D flipx(-1, 0, 0, 0,  0,  1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1);
-      const Matrix3D flipy( 1, 0, 0, 0,  0, -1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1);
-      const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
-      for (int eye = 0; eye < nEyes; eye++)
-         matrices.matWorldViewProj[eye] = matrices.matWorldViewProj[eye] * (rotation != 0.0f ? flipy : flipx);
-   }
-   memcpy(matrices.matWorldViewInverseTranspose.m, matrices.matWorldView.m, 4 * 4 * sizeof(float));
-   matrices.matWorldViewInverseTranspose.Invert();
-   matrices.matWorldViewInverseTranspose.Transpose();
+      matrices.matWorldViewProj[eye] = m_pin3d.GetMVP().GetModelViewProj(eye);
 
 #ifdef ENABLE_SDL // OpenGL
    m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0].m[0][0], nEyes);
@@ -1058,13 +1042,6 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
    m_pin3d.m_pd3dPrimaryDevice->lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
    m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-
-   //memcpy(temp.m, matView.m, 4 * 4 * sizeof(float));
-   //temp.Transpose();
-   //D3DXMATRIX matViewInvInvTrans;
-   //memcpy(matViewInvInvTrans.m, temp.m, 4 * 4 * sizeof(float));
-
-   //m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix("matViewInverseInverseTranspose", &matViewInvInvTrans);
 #endif
 }
 
@@ -1094,52 +1071,26 @@ void Player::InitShader()
 
 void Player::UpdateBallShaderMatrix()
 {
-   const int nEyes = m_stereo3D != STEREO_OFF ? 2 : 1;
-   Matrix3D matWorld;
-   Matrix3D matProj[2];
    struct {
       Matrix3D matView;
       Matrix3D matWorldView;
       Matrix3D matWorldViewInverse;
       Matrix3D matWorldViewProj[2];
    } matrices;
-   matWorld = m_pin3d.GetMVP().GetModel();
+   m_pin3d.GetMVP().SetModel(Matrix3D(1.0f));
    matrices.matView = m_pin3d.GetMVP().GetView();
+   matrices.matWorldView = m_pin3d.GetMVP().GetModelView();
+   matrices.matWorldViewInverse = m_pin3d.GetMVP().GetModelViewInverse();
+   const int nEyes = m_stereo3D != STEREO_OFF ? 2 : 1;
    for (int eye = 0; eye < nEyes; eye++)
-      matProj[eye] = m_pin3d.GetMVP().GetProj(eye);
-
-   matrices.matWorldView = matWorld * matrices.matView;
-
-   for (int eye = 0; eye < nEyes; eye++)
-      matrices.matWorldViewProj[eye] = matrices.matWorldView * matProj[eye];
-
-   if (m_ptable->m_tblMirrorEnabled)
-   {
-      const Matrix3D flipx(-1, 0, 0, 0,  0,  1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1);
-      const Matrix3D flipy( 1, 0, 0, 0,  0, -1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1);
-      const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
-      for (int eye = 0; eye < nEyes; eye++)
-         matrices.matWorldViewProj[eye] = matrices.matWorldViewProj[eye] * (rotation != 0.f ? flipy : flipx);
-   }
-
-   memcpy(matrices.matWorldViewInverse.m, matrices.matWorldView.m, 4 * 4 * sizeof(float));
-   matrices.matWorldViewInverse.Invert();
-
+      matrices.matWorldViewProj[eye] = m_pin3d.GetMVP().GetModelViewProj(eye);
 #ifdef ENABLE_SDL
    m_ballShader->SetUniformBlock(SHADER_ballMatrixBlock, &matrices.matView.m[0][0]);
 #else
    m_ballShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
    m_ballShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
    m_ballShader->SetMatrix(SHADER_matWorldViewInverse, &matrices.matWorldViewInverse);
-   //m_ballShader->SetMatrix(SHADER_matWorldViewInverseTranspose, &matrices.matWorldViewInvTrans);
    m_ballShader->SetMatrix(SHADER_matView, &matrices.matView);
-
-   //memcpy(temp.m, matView.m, 4 * 4 * sizeof(float));
-   //temp.Transpose();
-   //D3DXMATRIX matViewInvInvTrans;
-   //memcpy(matViewInvInvTrans.m, temp.m, 4 * 4 * sizeof(float));
-
-   //m_ballShader->SetMatrix(SHADER_matViewInverseInverseTranspose, &matViewInvInvTrans);
 #endif
 }
 
@@ -1521,7 +1472,7 @@ HRESULT Player::Init()
 
    g_pvp->ProfileLog("Render Table"s);
 
-   //g_viewDir = m_pin3d.m_viewVec;
+   // Global view direction used for presorting
    g_viewDir = Vertex3Ds(0, 0, -1.0f);
 
    InitShader();
