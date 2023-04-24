@@ -1319,12 +1319,9 @@ void Primitive::RenderObject()
    if (reflections && m_d.m_reflectionStrength > 0.f)
    {
       pd3dDevice->AddRenderTargetDependency(reflections);
-      Matrix3D matWorldViewInverseTranspose; // This is clearly suboptimal since this transposed inverse is already computed, but the impact is minimal
       vec3 plane_normal;
       reflection_probe->GetReflectionPlaneNormal(plane_normal);
-      pd3dDevice->GetTransform(RenderDevice::TRANSFORMSTATE_VIEW, &matWorldViewInverseTranspose);
-      matWorldViewInverseTranspose.Invert();
-      matWorldViewInverseTranspose.Transpose();
+      Matrix3D matWorldViewInverseTranspose = g_pplayer->m_pin3d.GetMVP().GetModelViewInverseTranspose();
       matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal, plane_normal);
       pd3dDevice->basicShader->SetVector(SHADER_mirrorNormal_factor, plane_normal.x, plane_normal.y, plane_normal.z, m_d.m_reflectionStrength);
       pd3dDevice->basicShader->SetTexture(SHADER_tex_reflection, reflections->GetColorSampler());
