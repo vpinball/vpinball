@@ -1790,7 +1790,7 @@ void RenderDevice::DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* verti
 
 void RenderDevice::DrawFullscreenTexturedQuad(Shader* shader)
 {
-   assert(Shader::GetCurrentShader() == FBShader || Shader::GetCurrentShader() == StereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
+   assert(shader == FBShader || shader == StereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
    Vertex3Ds pos(0.f, 0.f, 0.f);
    DrawMesh(shader, false, pos, 0.f, m_quadMeshBuffer, TRIANGLESTRIP, 0, 4);
 }

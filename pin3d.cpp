@@ -5,8 +5,6 @@
 #include "inc/ThreadPool.h"
 #include "BAM/BAMView.h"
 
-int NumVideoBytes = 0;
-
 Pin3D::Pin3D()
 {
    m_pd3dPrimaryDevice = nullptr;

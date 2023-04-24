@@ -857,7 +857,6 @@ void Trigger::RenderSetup()
    }
    }
 
-   NumVideoBytes += m_numVertices * (int)sizeof(Vertex3D_NoTex2);
    GenerateMesh();
    delete m_meshBuffer;
    IndexBuffer *triggerIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, indices);
