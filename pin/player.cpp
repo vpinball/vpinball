@@ -5092,7 +5092,7 @@ void Player::DrawBalls()
       {
          // set transform
          Matrix3D matOrig, matNew, matRot;
-         matOrig = m_pin3d.GetWorldTransform();
+         matOrig = m_pin3d.m_proj.m_matWorld;
          matNew.SetTranslation(pball->m_d.m_pos);
          matOrig.Multiply(matNew, matNew);
          matRot.SetIdentity();
