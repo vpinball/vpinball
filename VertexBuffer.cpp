@@ -60,9 +60,25 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
 #endif
    {
 #if defined(ENABLE_SDL) // OpenGL
-      glGenBuffers(1, &m_vb);
-      glBindBuffer(GL_ARRAY_BUFFER, m_vb);
-      glBufferData(GL_ARRAY_BUFFER, m_size, nullptr, m_isStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
+      #ifndef __OPENGLES__
+      if (GLAD_GL_VERSION_4_5)
+      {
+         glCreateBuffers(1, &m_vb);
+         glNamedBufferStorage(m_vb, m_size, nullptr, GL_DYNAMIC_STORAGE_BIT);
+      }
+      else if (GLAD_GL_VERSION_4_4)
+      {
+         glGenBuffers(1, &m_vb);
+         glBindBuffer(GL_ARRAY_BUFFER, m_vb);
+         glBufferStorage(GL_ARRAY_BUFFER, m_size, nullptr, GL_DYNAMIC_STORAGE_BIT);
+      }
+      else
+      #endif
+      {
+         glGenBuffers(1, &m_vb);
+         glBindBuffer(GL_ARRAY_BUFFER, m_vb);
+         glBufferData(GL_ARRAY_BUFFER, m_size, nullptr, GL_DYNAMIC_DRAW);
+      }
 
 #else // DirectX 9
       // NB: We always specify WRITEONLY since MSDN states,
@@ -74,10 +90,10 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
    }
    if (verts != nullptr)
    {
-      BYTE* const data = new BYTE[vertexCount * m_sizePerVertex];
-      memcpy(data, verts, vertexCount * m_sizePerVertex);
-      PendingUpload pending { 0, vertexCount * m_sizePerVertex, data };
-      m_pendingUploads.push_back(pending);
+      void* data;
+      lock(0, 0, &data, 0);
+      memcpy(data, verts, m_size);
+      unlock();
    }
 }
 
@@ -112,6 +128,7 @@ void VertexBuffer::lock(const unsigned int offsetToLock, const unsigned int size
    m_rd->m_curLockCalls++;
    m_lock.offset = offsetToLock;
    m_lock.size = sizeToLock == 0 ? m_size : sizeToLock;
+   assert(m_lock.offset + m_lock.size <= m_size);
    m_lock.data = new BYTE[m_lock.size];
    *dataBuffer = m_lock.data;
 }
@@ -132,6 +149,7 @@ void VertexBuffer::CreatePendingSharedBuffer()
 
    #if defined(ENABLE_SDL) // OpenGL
    UINT8* data = (UINT8*)malloc(size);
+   assert(data != nullptr);
 
    #else // DirectX 9
    IDirect3DVertexBuffer9* vb = nullptr;
@@ -146,6 +164,8 @@ void VertexBuffer::CreatePendingSharedBuffer()
       for (size_t j = 0; j < buffer->m_pendingUploads.size(); j++)
       {
          PendingUpload& upload = buffer->m_pendingUploads[j];
+         assert(buffer->m_offset + upload.offset >= 0);
+         assert(buffer->m_offset + upload.offset + upload.size <= size);
          memcpy(data + buffer->m_offset + upload.offset, upload.data, upload.size);
          delete[] upload.data;
       }
@@ -155,9 +175,25 @@ void VertexBuffer::CreatePendingSharedBuffer()
 
    #if defined(ENABLE_SDL) // OpenGL
    GLuint vb = 0;
-   glGenBuffers(1, &vb);
-   glBindBuffer(GL_ARRAY_BUFFER, vb);
-   glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+   #ifndef __OPENGLES__
+   if (GLAD_GL_VERSION_4_5)
+   {
+      glCreateBuffers(1, &vb);
+      glNamedBufferStorage(vb, size, data, 0);
+   }
+   else if (GLAD_GL_VERSION_4_4)
+   {
+      glGenBuffers(1, &vb);
+      glBindBuffer(GL_ARRAY_BUFFER, vb);
+      glBufferStorage(GL_ARRAY_BUFFER, size, data, 0);
+   }
+   else
+   #endif
+   {
+      glGenBuffers(1, &vb);
+      glBindBuffer(GL_ARRAY_BUFFER, vb);
+      glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+   }
    free(data);
    int* refCount = new int();
    (*refCount) = (int)pendingSharedBuffers.size();
@@ -190,8 +226,15 @@ void VertexBuffer::Upload()
       for (PendingUpload upload : m_pendingUploads)
       {
          #if defined(ENABLE_SDL) // OpenGL
-         glBindBuffer(GL_ARRAY_BUFFER, m_vb);
-         glBufferSubData(GL_ARRAY_BUFFER, m_offset + upload.offset, upload.size, upload.data);
+         #ifndef __OPENGLES__
+         if (GLAD_GL_VERSION_4_5)
+            glNamedBufferSubData(m_vb, m_offset + upload.offset, upload.size, upload.data);
+         else
+         #endif
+         {
+            glBindBuffer(GL_ARRAY_BUFFER, m_vb);
+            glBufferSubData(GL_ARRAY_BUFFER, m_offset + upload.offset, upload.size, upload.data);
+         }
 
          #else // DirectX 9
          // It would be better to perform a single lock but in fact, I don't think there are situations where more than one update is pending

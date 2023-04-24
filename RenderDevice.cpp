@@ -188,116 +188,52 @@ void checkGLErrors(const char *file, const int line) {
 #endif
 
 // Callback function for printing debug statements
-#if defined(ENABLE_SDL) && defined(_DEBUG)
-#ifndef __OPENGLES__
+#if defined(ENABLE_SDL) && defined(_DEBUG) && !defined(__OPENGLES__)
 void APIENTRY GLDebugMessageCallback(GLenum source, GLenum type, GLuint id,
                                      GLenum severity, GLsizei length,
                                      const GLchar *msg, const void *data)
 {
-    char* _source;
-    switch (source) {
-        case GL_DEBUG_SOURCE_API:
-        _source = (LPSTR) "API";
-        break;
-
-        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
-        _source = (LPSTR) "WINDOW SYSTEM";
-        break;
-
-        case GL_DEBUG_SOURCE_SHADER_COMPILER:
-        _source = (LPSTR) "SHADER COMPILER";
-        break;
-
-        case GL_DEBUG_SOURCE_THIRD_PARTY:
-        _source = (LPSTR) "THIRD PARTY";
-        break;
-
-        case GL_DEBUG_SOURCE_APPLICATION:
-        _source = (LPSTR) "APPLICATION";
-        break;
-
-        case GL_DEBUG_SOURCE_OTHER:
-        _source = (LPSTR) "UNKNOWN";
-        break;
-
-        default:
-        _source = (LPSTR) "UNHANDLED";
-        break;
-    }
-
-    char* _type;
-    switch (type) {
-        case GL_DEBUG_TYPE_ERROR:
-        _type = (LPSTR) "ERROR";
-        break;
-
-        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-        _type = (LPSTR) "DEPRECATED BEHAVIOR";
-        break;
-
-        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-        _type = (LPSTR) "UNDEFINED BEHAVIOR";
-        break;
-
-        case GL_DEBUG_TYPE_PORTABILITY:
-        _type = (LPSTR) "PORTABILITY";
-        break;
-
-        case GL_DEBUG_TYPE_PERFORMANCE:
-        _type = (LPSTR) "PERFORMANCE";
-        break;
-
-        case GL_DEBUG_TYPE_OTHER:
-        _type = (LPSTR) "OTHER";
-        break;
-
-        case GL_DEBUG_TYPE_MARKER:
-        _type = (LPSTR) "MARKER";
-        break;
-
-        case GL_DEBUG_TYPE_PUSH_GROUP:
-        _type = (LPSTR) "GL_DEBUG_TYPE_PUSH_GROUP";
-        break;
-
-        case GL_DEBUG_TYPE_POP_GROUP:
-        _type = (LPSTR) "GL_DEBUG_TYPE_POP_GROUP";
-        break;
-
-    	default:
-        _type = (LPSTR) "UNHANDLED";
-        break;
-    }
-
-    char* _severity;
-    switch (severity) {
-        case GL_DEBUG_SEVERITY_HIGH:
-        _severity = (LPSTR) "HIGH";
-        break;
-
-        case GL_DEBUG_SEVERITY_MEDIUM:
-        _severity = (LPSTR) "MEDIUM";
-        break;
-
-        case GL_DEBUG_SEVERITY_LOW:
-        _severity = (LPSTR) "LOW";
-        break;
-
-        case GL_DEBUG_SEVERITY_NOTIFICATION:
-        _severity = (LPSTR) "NOTIFICATION";
-        break;
-
-        default:
-        _severity = (LPSTR) "UNHANDLED";
-        break;
-    }
-
-    //if(severity != GL_DEBUG_SEVERITY_NOTIFICATION)
-    fprintf(stderr,"%d: %s of %s severity, raised from %s: %s\n", id, _type, _severity, _source, msg);
-
-    if (type == GL_DEBUG_TYPE_ERROR || type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR || severity == GL_DEBUG_SEVERITY_HIGH)
-        ShowError(msg);
+   char* _source;
+   switch (source) {
+      case GL_DEBUG_SOURCE_API: _source = (LPSTR) "API"; break;
+      case GL_DEBUG_SOURCE_WINDOW_SYSTEM: _source = (LPSTR) "WINDOW SYSTEM"; break;
+      case GL_DEBUG_SOURCE_SHADER_COMPILER: _source = (LPSTR) "SHADER COMPILER"; break;
+      case GL_DEBUG_SOURCE_THIRD_PARTY: _source = (LPSTR) "THIRD PARTY"; break;
+      case GL_DEBUG_SOURCE_APPLICATION: _source = (LPSTR) "APPLICATION"; break;
+      case GL_DEBUG_SOURCE_OTHER: _source = (LPSTR) "UNKNOWN"; break;
+      default: _source = (LPSTR) "UNHANDLED"; break;
+   }
+   char* _type;
+   switch (type) {
+   case GL_DEBUG_TYPE_ERROR: _type = (LPSTR) "ERROR"; break;
+   case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: _type = (LPSTR) "DEPRECATED BEHAVIOR"; break;
+   case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: _type = (LPSTR) "UNDEFINED BEHAVIOR"; break;
+   case GL_DEBUG_TYPE_PORTABILITY: _type = (LPSTR) "PORTABILITY"; break;
+   case GL_DEBUG_TYPE_PERFORMANCE: _type = (LPSTR) "PERFORMANCE"; break;
+   case GL_DEBUG_TYPE_OTHER: _type = (LPSTR) "OTHER"; break;
+   case GL_DEBUG_TYPE_MARKER: _type = (LPSTR) "MARKER"; break;
+   case GL_DEBUG_TYPE_PUSH_GROUP: _type = (LPSTR) "GL_DEBUG_TYPE_PUSH_GROUP"; break;
+   case GL_DEBUG_TYPE_POP_GROUP: _type = (LPSTR) "GL_DEBUG_TYPE_POP_GROUP"; break;
+   default: _type = (LPSTR) "UNHANDLED"; break;
+   }
+   char* _severity;
+   switch (severity) {
+      case GL_DEBUG_SEVERITY_HIGH: _severity = (LPSTR) "HIGH"; break;
+      case GL_DEBUG_SEVERITY_MEDIUM: _severity = (LPSTR) "MEDIUM"; break;
+      case GL_DEBUG_SEVERITY_LOW: _severity = (LPSTR) "LOW"; break;
+      case GL_DEBUG_SEVERITY_NOTIFICATION: _severity = (LPSTR) "NOTIFICATION"; break;
+      default: _severity = (LPSTR) "UNHANDLED"; break;
+   }
+   if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
+   {
+      // FIXME this will crash if the drivers performs the call on the wrong thread (nvogl does...)
+      assert(false);
+      PLOGE << "OpenGL Error #" << id << ": " << _type << " of " << _severity << "severity, raised from " << _source << ": " << msg;
+      fprintf(stderr, "%d: %s of %s severity, raised from %s: %s\n", id, _type, _severity, _source, msg);
+      if (type == GL_DEBUG_TYPE_ERROR || type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR || severity == GL_DEBUG_SEVERITY_HIGH)
+         ShowError(msg);
+   }
 }
-#endif
 #endif
 
 ////////////////////////////////////////////////////////////////////
