@@ -476,7 +476,7 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
 
 HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, const int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl)
 {
-   m_proj.m_stereo3D = m_stereo3D = stereo3D;
+   m_stereo3D = stereo3D;
    m_mvp = new ModelViewProj(m_stereo3D == STEREO_OFF ? 1 : 2);
    m_AAfactor = AAfactor;
 
@@ -786,6 +786,8 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
    for (size_t i = 0; i < g_pplayer->m_ptable->m_vedit.size(); ++i)
       g_pplayer->m_ptable->m_vedit[i]->GetBoundingVertices(vvertex3D);
 
+   PinProjection m_proj; // Used to compute MVP for desktop/cab view (not headtracking, VR or live editor)
+   m_proj.m_stereo3D = m_stereo3D; 
    m_proj.m_rcviewport.left = 0;
    m_proj.m_rcviewport.top = 0;
    m_proj.m_rcviewport.right = m_viewPort.Width;
@@ -1146,5 +1148,10 @@ void PinProjection::ComputeNearFarPlane(const vector<Vertex3Ds>& verts)
 
 void Pin3D::UpdateBAMHeadTracking()
 {
-   BAMView::createProjectionAndViewMatrix(&m_proj.m_matProj[0]._11, &m_proj.m_matView._11);
+   Matrix3D m_matView;
+   Matrix3D m_matProj[2];
+   BAMView::createProjectionAndViewMatrix(&m_matProj[0]._11, &m_matView._11);
+   m_mvp->SetView(m_matView);
+   for (int eye = 0; eye < m_mvp->m_nEyes; eye++)
+      m_mvp->SetProj(eye, m_matProj[eye]);
 }

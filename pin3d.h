@@ -89,7 +89,6 @@ private:
    mutable Vertex3Ds m_viewVec;
 };
 
-
 class PinProjection
 {
 public:
@@ -151,8 +150,6 @@ private:
    StereoMode m_stereo3D;
 
    ModelViewProj* m_mvp = nullptr; // Store the active Model / View / Projection
-
-   PinProjection m_proj; // Used to compute MVP for desktop/cab view (not headtracking, VR or live editor)
 
    // Data members
 public:
