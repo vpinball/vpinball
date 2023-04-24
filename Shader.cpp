@@ -1089,8 +1089,13 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
 
       glLinkProgram(shaderprogram);
 
+      glDetachShader(shaderprogram, vertexShader);
+      if (geometryShader > 0)
+         glDetachShader(shaderprogram, geometryShader);
+      glDetachShader(shaderprogram, fragmentShader);
+
       glGetProgramiv(shaderprogram, GL_LINK_STATUS, (int *)&result);
-      if (result == FALSE)
+      if (result == GL_FALSE)
       {
          GLint maxLength;
          glGetProgramiv(shaderprogram, GL_INFO_LOG_LENGTH, &maxLength);
@@ -1255,7 +1260,7 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
    m_shaderPath = string(glShaderPath);
    m_shaderPath = m_shaderPath.substr(0, m_shaderPath.find_last_of("\\/"));
    m_shaderPath.append(PATH_SEPARATOR_CHAR + "shader"s + PATH_SEPARATOR_CHAR);
-   PLOGI << "Start parsing file";
+   PLOGI << "Parsing file " << name;
    robin_hood::unordered_map<string, string> values;
    const bool parsing = parseFile(m_shaderCodeName, m_shaderCodeName, 0, values, "GLOBAL");
    if (!parsing) {
@@ -1264,9 +1269,6 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
       sprintf_s(msg, sizeof(msg), "Fatal Error: Shader parsing of %s failed!", m_shaderCodeName.c_str());
       ReportError(msg, -1, __FILE__, __LINE__);
       return false;
-   }
-   else {
-      PLOGI << "Parsing successful. Start compiling shaders";
    }
    robin_hood::unordered_map<string, string>::iterator it = values.find("GLOBAL");
    string global = (it != values.end()) ? it->second : string();
@@ -1309,6 +1311,7 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
             }
             else
             {
+               PLOGI << "Compiling technique: " << shaderTechniqueNames[technique];
                string vertexShaderCode = vertex;
                vertexShaderCode.append("\n//").append(_technique).append("\n//").append(element[2]).append("\n");
                vertexShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[2], values)).append("\0");

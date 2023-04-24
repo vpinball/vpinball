@@ -1618,7 +1618,7 @@ HRESULT Player::Init()
 
 #ifdef DEBUG_BALL_SPIN
    {
-      vector< Vertex3D_TexelOnly > ballDbgVtx;
+      vector<Vertex3D_NoTex2> ballDbgVtx;
       for (int j = -1; j <= 1; ++j)
       {
          const int numPts = (j == 0) ? 6 : 3;
@@ -1626,10 +1626,13 @@ HRESULT Player::Init()
          for (int i = 0; i < numPts; ++i)
          {
             const float phi = (float)(i * (2.0*M_PI) / numPts);
-            Vertex3D_TexelOnly vtx;
-            vtx.x = 25.0f * cosf(theta) * cosf(phi);
-            vtx.y = 25.0f * cosf(theta) * sinf(phi);
-            vtx.z = 25.0f * sinf(theta);
+            Vertex3D_NoTex2 vtx;
+            vtx.nx = cosf(theta) * cosf(phi);
+            vtx.ny = cosf(theta) * sinf(phi);
+            vtx.nz = sinf(theta);
+            vtx.x = 25.0f * vtx.nx;
+            vtx.y = 25.0f * vtx.ny;
+            vtx.z = 25.0f * vtx.nz;
             vtx.tu = 0.f;
             vtx.tv = 0.f;
             ballDbgVtx.push_back(vtx);
@@ -1638,7 +1641,7 @@ HRESULT Player::Init()
 
       assert(m_ballDebugPoints == nullptr);
       delete m_ballDebugPoints;
-      VertexBuffer *ballDebugPoints = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, (unsigned int)ballDbgVtx.size(), (float *)ballDbgVtx.data(), false, VertexFormat::VF_POS_TEX);
+      VertexBuffer *ballDebugPoints = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, (unsigned int)ballDbgVtx.size(), (float *)ballDbgVtx.data(), false);
       m_ballDebugPoints = new MeshBuffer(L"Ball.Debug"s, ballDebugPoints);
    }
 #endif

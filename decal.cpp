@@ -635,7 +635,7 @@ void Decal::RenderObject()
       #endif
    }
 
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLEFAN, 0, 4);
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLESTRIP, 0, 4);
 
    if (m_backglass)
       g_pplayer->UpdateBasicShaderMatrix();

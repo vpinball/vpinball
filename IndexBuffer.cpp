@@ -21,9 +21,25 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const 
    else
    {
       #if defined(ENABLE_SDL) // OpenGL
-      glGenBuffers(1, &m_ib);
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ib);
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_size, nullptr, m_isStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
+      #ifndef __OPENGLES__
+      if (GLAD_GL_VERSION_4_5)
+      {
+         glCreateBuffers(1, &m_ib);
+         glNamedBufferStorage(m_ib, m_size, nullptr, GL_DYNAMIC_STORAGE_BIT);
+      }
+      else if (GLAD_GL_VERSION_4_4)
+      {
+         glGenBuffers(1, &m_ib);
+         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ib);
+         glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, m_size, nullptr, GL_DYNAMIC_STORAGE_BIT);
+      }
+      else
+      #endif
+      {
+         glGenBuffers(1, &m_ib);
+         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ib);
+         glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_size, nullptr, GL_DYNAMIC_DRAW);
+      }
 
       #else // DirectX 9
       // NB: We always specify WRITEONLY since MSDN states,
@@ -163,9 +179,25 @@ void IndexBuffer::CreatePendingSharedBuffer()
 
    #if defined(ENABLE_SDL) // OpenGL
    GLuint ib = 0;
-   glGenBuffers(1, &ib);
-   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
-   glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+   #ifndef __OPENGLES__
+   if (GLAD_GL_VERSION_4_5)
+   {
+      glCreateBuffers(1, &ib);
+      glNamedBufferStorage(ib, size, data, 0);
+   }
+   else if (GLAD_GL_VERSION_4_4)
+   {
+      glGenBuffers(1, &ib);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
+      glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, size, data, 0);
+   }
+   else
+   #endif
+   {
+      glGenBuffers(1, &ib);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+   }
    free(data);
    int* refCount = new int();
    (*refCount) = (int)pendingSharedBuffers.size();
@@ -198,8 +230,15 @@ void IndexBuffer::Upload()
       for (PendingUpload upload : m_pendingUploads)
       {
          #if defined(ENABLE_SDL) // OpenGL
-         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ib);
-         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, m_offset + upload.offset, upload.size, upload.data);
+         #ifndef __OPENGLES__
+         if (GLAD_GL_VERSION_4_5)
+            glNamedBufferSubData(m_ib, m_offset + upload.offset, upload.size, upload.data);
+         else
+         #endif
+         {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ib);
+            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, m_offset + upload.offset, upload.size, upload.data);
+         }
 
          #else // DirectX 9
          // It would be better to perform a single lock but in fact, I don't think there are situations where more than one update is pending
