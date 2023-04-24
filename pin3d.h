@@ -5,8 +5,6 @@
 #include "Texture.h"
 #include "backGlass.h"
 
-extern int NumVideoBytes;
-
 class PinProjection
 {
 public:

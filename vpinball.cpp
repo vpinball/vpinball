@@ -935,7 +935,6 @@ void VPinball::DoPlay(const bool _cameraMode)
 {
    ProfileLog("DoPlay"s);
 
-   NumVideoBytes = 0;
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
       ptCur->Play(_cameraMode);

@@ -381,7 +381,6 @@ void Flasher::RenderSetup()
    }
 
    IndexBuffer* dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numPolys * 3, 0, IndexBuffer::FMT_INDEX16);
-   NumVideoBytes += (int)(m_numPolys * 3 * sizeof(WORD));
 
    WORD* bufi;
    dynamicIndexBuffer->lock(0, 0, (void**)&bufi, IndexBuffer::WRITEONLY);
@@ -389,7 +388,6 @@ void Flasher::RenderSetup()
    dynamicIndexBuffer->unlock();
 
    VertexBuffer* dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, nullptr, true);
-   NumVideoBytes += (int)(m_numVertices * sizeof(Vertex3D_NoTex2));
 
    delete m_meshBuffer;
    m_meshBuffer = new MeshBuffer(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);

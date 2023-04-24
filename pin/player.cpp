@@ -3562,9 +3562,6 @@ string Player::GetPerfInfo()
       m_count++;
    }
 
-   // Draw the amount of video memory used. !! Disabled until we can compute this correctly.
-   // info << " Used Graphics Memory: " << std::setprecision(2) << (float)NumVideoBytes / (float)(1024 * 1024)) << std::setprecision(1) << " MB\n";
-
    // Overall frame informations (disbaled since it is now displayed in a cleaner ImGui table)
    /*
    info << std::fixed << std::setw(4) << std::setprecision(1);
