@@ -767,14 +767,6 @@ void Pin3D::InitLayoutFS()
 
    //m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
 
-   // Compute view vector
-   /*Matrix3D temp, viewRot;
-   temp = m_proj.m_matView;
-   temp.Invert();
-   temp.GetRotationPart( viewRot );
-   viewRot.MultiplyVector(Vertex3Ds(0, 0, 1), m_viewVec);
-   m_viewVec.Normalize();*/
-
    InitLights();
 }
 #endif
@@ -933,14 +925,6 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
       m_mvp->SetProj(eye, m_proj.m_matProj[eye]);
 
    //m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
-
-   // Compute view vector
-   /*Matrix3D temp, viewRot;
-   temp = m_proj.m_matView;
-   temp.Invert();
-   temp.GetRotationPart( viewRot );
-   viewRot.MultiplyVector(Vertex3Ds(0, 0, 1), m_viewVec);
-   m_viewVec.Normalize();*/
 
    InitLights();
 }

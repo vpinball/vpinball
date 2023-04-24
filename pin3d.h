@@ -23,6 +23,7 @@ public:
    const Matrix3D& GetModelViewInverse() const { Update(); return m_matModelViewInverse; }
    const Matrix3D& GetModelViewInverseTranspose() const { Update(); return m_matModelViewInverseTranspose; }
    const Matrix3D& GetModelViewProj(const unsigned int eye) const { Update(); return m_matModelViewProj[eye]; }
+   const Vertex3Ds& GetViewVec() const { Update(); return m_viewVec; }
 
    const unsigned int m_nEyes;
    const FlipMode m_flip;
@@ -67,6 +68,12 @@ private:
             break;
          }
          }
+         Matrix3D temp, viewRot;
+         temp = m_matView;
+         temp.Invert();
+         temp.GetRotationPart(viewRot);
+         viewRot.MultiplyVector(Vertex3Ds(0, 0, 1), m_viewVec);
+         m_viewVec.NormalizeSafe();
       }
    }
 
@@ -79,6 +86,7 @@ private:
    mutable Matrix3D m_matModelViewInverse;
    mutable Matrix3D m_matModelViewInverseTranspose;
    mutable Matrix3D m_matModelViewProj[6];
+   mutable Vertex3Ds m_viewVec;
 };
 
 
@@ -165,8 +173,6 @@ public:
    // free-camera-mode-fly-around parameters
    Vertex3Ds m_cam;
    float m_inc;
-
-   //Vertex3Ds m_viewVec;        // direction the camera is facing
 
    ViewPort m_viewPort; // Viewport of the screen output (different from render size for VR, anaglyph, superscaling,...)
    float m_AAfactor;
