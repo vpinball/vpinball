@@ -1039,11 +1039,11 @@ void LiveUI::UpdateCameraModeUI()
    ImGui::NewLine();
 
    ImGui::Text("Camera at X: %.2f Y: %.2f Z: %.2f,  Rotation: %.2f", 
-      -m_pin3d->m_proj.m_matView._41,
-      (table->m_BG_current_set == 0 || table->m_BG_current_set == 2) ? m_pin3d->m_proj.m_matView._42 : -m_pin3d->m_proj.m_matView._42, 
-      m_pin3d->m_proj.m_matView._43,
+      -m_pin3d->GetMVP().GetView()._41,
+      (table->m_BG_current_set == 0 || table->m_BG_current_set == 2) ? m_pin3d->GetMVP().GetView()._42 : -m_pin3d->GetMVP().GetView()._42, 
+      m_pin3d->GetMVP().GetView()._43,
       table->m_BG_rotation[table->m_BG_current_set]);
-
+   
    if (m_player->m_cameraMode)
    {
       ImGui::NewLine();
@@ -1406,13 +1406,13 @@ void LiveUI::UpdateMainUI()
    if (m_useEditorCam)
    {
       // Apply editor camera to renderer (move view from right handed to left handed)
-      memcpy(m_pin3d->m_proj.m_matProj[0].m, m_camProj.m, sizeof(float) * 4 * 4);
-      float mat[16]; // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
-      memcpy(mat, m_camView.m, sizeof(float) * 4 * 4);
-      for (int i = 8; i < 12; i++)
-         mat[i] = -mat[i];
-      memcpy(m_pin3d->m_proj.m_matView.m, mat, sizeof(float) * 4 * 4);
-      m_pin3d->UpdateMatrices();
+      Matrix3D mat(m_camView); // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
+      mat._31 = -mat._31;
+      mat._32 = -mat._32;
+      mat._33 = -mat._33;
+      mat._34 = -mat._34;
+      m_pin3d->GetMVP().SetView(mat);
+      m_pin3d->GetMVP().SetProj(0, m_camProj);
    }
    else
    {
@@ -2141,9 +2141,9 @@ void LiveUI::CameraProperties(bool is_live)
       ImGui::EndTable();
    }
    ImGui::Separator();
-   ImGui::Text("Absolute position:\nX: %.2f  Y: %.2f  Z: %.2f", -m_pin3d->m_proj.m_matView._41,
-      (m_selection.camera == 0 || m_selection.camera == 2) ? m_pin3d->m_proj.m_matView._42 : -m_pin3d->m_proj.m_matView._42, 
-      m_pin3d->m_proj.m_matView._43);
+   ImGui::Text("Absolute position:\nX: %.2f  Y: %.2f  Z: %.2f", -m_pin3d->GetMVP().GetView()._41,
+      (m_selection.camera == 0 || m_selection.camera == 2) ? m_pin3d->GetMVP().GetView()._42 : -m_pin3d->GetMVP().GetView()._42, 
+      m_pin3d->GetMVP().GetView()._43);
 }
 
 void LiveUI::BallProperties(bool is_live)

@@ -54,7 +54,13 @@ Pin3D::~Pin3D()
 void Pin3D::TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, const WORD * const __restrict rgi, const int count, Vertex2D * const __restrict rgvout) const
 {
    RECT viewport { 0, 0, m_viewPort.Width, m_viewPort.Height };
-   m_proj.m_matrixTotal[0].TransformVertices(rgv, rgi, count, rgvout, viewport);
+   m_mvp->GetModelViewProj(0).TransformVertices(rgv, rgi, count, rgvout, viewport);
+}
+
+void Pin3D::TransformVertices(const Vertex3Ds* const __restrict rgv, const WORD* const __restrict rgi, const int count, Vertex2D* const __restrict rgvout) const
+{
+   RECT viewport { 0, 0, m_viewPort.Width, m_viewPort.Height };
+   m_mvp->GetModelViewProj(0).TransformVertices(rgv, rgi, count, rgvout, viewport);
 }
 
 BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
@@ -667,15 +673,8 @@ Matrix3D ComputeLaybackTransform(const float layback)
    return matTrans;
 }
 
-void Pin3D::UpdateMatrices()
-{
-   m_pd3dPrimaryDevice->SetTransform(RenderDevice::TRANSFORMSTATE_PROJECTION, m_proj.m_matProj, m_stereo3D != STEREO_OFF ? 2 : 1);
-   m_pd3dPrimaryDevice->SetTransform(RenderDevice::TRANSFORMSTATE_VIEW, &m_proj.m_matView);
-   m_pd3dPrimaryDevice->SetTransform(RenderDevice::TRANSFORMSTATE_WORLD, &m_proj.m_matWorld);
-   m_proj.CacheTransform();
-}
-
 // This part is legacy and not used anymore
+#if 0
 void Pin3D::InitLayoutFS()
 {
    TRACE_FUNCTION();
@@ -768,8 +767,6 @@ void Pin3D::InitLayoutFS()
 
    //m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
 
-   UpdateMatrices();
-
    // Compute view vector
    /*Matrix3D temp, viewRot;
    temp = m_proj.m_matView;
@@ -780,6 +777,7 @@ void Pin3D::InitLayoutFS()
 
    InitLights();
 }
+#endif
 
 // here is where the tables camera / rotation / scale is setup
 // flashers are ignored in the calculation of boundaries to center the
@@ -930,12 +928,11 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
    }
 
    m_mvp->SetModel(m_proj.m_matWorld);
-   m_mvp->SetView(m_proj.m_matWorld);
+   m_mvp->SetView(m_proj.m_matView);
    for (int eye = 0; eye < m_mvp->m_nEyes; eye++)
       m_mvp->SetProj(eye, m_proj.m_matProj[eye]);
 
    //m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
-   UpdateMatrices();
 
    // Compute view vector
    /*Matrix3D temp, viewRot;
@@ -960,9 +957,7 @@ void Pin3D::EnableAlphaBlend(const bool additiveBlending, const bool set_dest_bl
 
 Vertex3Ds Pin3D::Unproject(const Vertex3Ds& point)
 {
-   m_proj.CacheTransform(); // compute m_matrixTotal
-
-   Matrix3D m2 = m_proj.m_matrixTotal[0]; // = world * view * proj
+   Matrix3D m2 = m_mvp->GetModelViewProj(0);
    m2.Invert();
    const Vertex3Ds p(
        2.0f * (point.x - (float)m_viewPort.X) / (float)m_viewPort.Width - 1.0f,
@@ -1163,22 +1158,6 @@ void PinProjection::ComputeNearFarPlane(const vector<Vertex3Ds>& verts)
 
    // FIXME for the time being, the result is not that good since neither primitives vertices are taken in account, nor reflected geometry, so just add a margin
    m_rzfar += 1000.0f;
-}
-
-void PinProjection::CacheTransform()
-{
-   Matrix3D matT;
-   m_matProj[0].Multiply(m_matView, matT);        // matT = matView * matProj
-   matT.Multiply(m_matWorld, m_matrixTotal[0]);   // total = matWorld * matView * matProj
-   if (m_stereo3D != STEREO_OFF ) {
-      m_matProj[1].Multiply(m_matView, matT);
-      matT.Multiply(m_matWorld, m_matrixTotal[1]);
-   }
-}
-
-void PinProjection::TransformVertices(const Vertex3Ds * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const
-{
-   m_matrixTotal[0].TransformVertices(rgv, rgi, count, rgvout, m_rcviewport);
 }
 
 void Pin3D::UpdateBAMHeadTracking()

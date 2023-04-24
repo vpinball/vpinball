@@ -2015,8 +2015,6 @@ void PinTable::Render3DProjection(Sur * const psur)
    pinproj.RotateView(inclination, 0, 0);
    pinproj.MultiplyView(ComputeLaybackTransform(m_BG_layback[m_BG_current_set]));
 
-   pinproj.CacheTransform();
-
    psur->SetFillColor(RGB(200, 200, 200));
    psur->SetBorderColor(-1, false, 0);
 
@@ -2031,7 +2029,10 @@ void PinTable::Render3DProjection(Sur * const psur)
    rgvIn[7].x = m_left;  rgvIn[7].y = m_bottom; rgvIn[7].z = 50.0f;
 
    Vertex2D rgvOut[8];
-   pinproj.TransformVertices(rgvIn, nullptr, 8, rgvOut);
+   Matrix3D matT;
+   pinproj.m_matProj[0].Multiply(pinproj.m_matView, matT); // matT = matView * matProj
+   matT.Multiply(pinproj.m_matWorld, matT); // matT = matWorld * matView * matProj
+   matT.TransformVertices(rgvIn, nullptr, 8, rgvOut, pinproj.m_rcviewport);
    psur->Polygon(rgvOut, 8);
 }
 

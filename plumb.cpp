@@ -161,7 +161,7 @@ void plumb_draw()
    HRESULT				ReturnCode;
 
    // Save the current transformation state.
-   ReturnCode = g_pplayer->m_pin3d.m_pd3dPrimaryDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
+   RestoreWorldMatrix = g_pplayer->m_pin3d.GetMVP().GetModel(); 
    // Save the current render state.
    //Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, &(RestoreRenderState));
    // Save the current texture state.

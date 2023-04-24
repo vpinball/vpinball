@@ -1629,13 +1629,14 @@ void RenderDevice::ApplyRenderStates()
 
 void RenderDevice::SetClipPlane(const vec4 &plane)
 {
+   // FIXME shouldn't we set the Model matrix to identity first ?
 #ifdef ENABLE_SDL
    const int eyes = m_stereo3D == STEREO_OFF ? 1 : 2;
    Matrix3D mT;
    float clip_planes[2][4];
    for (int eye = 0; eye < eyes; ++eye)
    {
-      memcpy(mT.m, g_pplayer->m_pin3d.m_proj.m_matrixTotal[eye].m, 64); // = world * view * proj
+      memcpy(mT.m, g_pplayer->m_pin3d.GetMVP().GetModelViewProj(0).m, 64); // = world * view * proj
       mT.Invert();
       mT.Transpose();
       clip_planes[eye][0] = mT._11 * plane.x + mT._21 * plane.y + mT._31 * plane.z + mT._41 * plane.w;
@@ -1645,7 +1646,7 @@ void RenderDevice::SetClipPlane(const vec4 &plane)
    }
    basicShader->SetFloat4v(SHADER_clip_planes, (vec4 *)clip_planes, eyes);
 #else
-   Matrix3D mT = g_pplayer->m_pin3d.m_proj.m_matrixTotal[0]; // = world * view * proj
+   Matrix3D mT = g_pplayer->m_pin3d.GetMVP().GetModelViewProj(0); // = world * view * proj
    mT.Invert();
    mT.Transpose();
    const D3DXMATRIX m(mT);
@@ -1819,41 +1820,6 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
    }
    CopyRenderStates(false, initial_state);
    SetRenderTarget(""s, initial_rt);
-}
-
-void RenderDevice::SetTransform(const TransformStateType p1, const Matrix3D * p2, const int count)
-{
-   switch (p1)
-   {
-   case TRANSFORMSTATE_WORLD:
-      m_matWorld = *p2;
-      break;
-   case TRANSFORMSTATE_VIEW:
-   {
-      m_matView = *p2;
-      Matrix3D view(m_matView);
-      view.Invert();
-      m_viewVec.Set(view._31, view._32, view._33);
-      break;
-   }
-   case TRANSFORMSTATE_PROJECTION:
-      for (int i = 0; i < count; ++i)
-         m_matProj[i] = p2[i];
-      break;
-   }
-}
-
-void RenderDevice::GetTransform(const TransformStateType p1, Matrix3D* p2, const int count)
-{
-   switch (p1)
-   {
-   case TRANSFORMSTATE_WORLD: *p2 = m_matWorld; break;
-   case TRANSFORMSTATE_VIEW: *p2 = m_matView; break;
-   case TRANSFORMSTATE_PROJECTION:
-      for (int i = 0; i < count; ++i)
-         p2[i] = m_matProj[i];
-      break;
-   }
 }
 
 void RenderDevice::SetMainTextureDefaultFiltering(const SamplerFilter filter)
@@ -2051,29 +2017,31 @@ void RenderDevice::InitVR() {
    updateTableMatrix();
 }
 
-void RenderDevice::UpdateVRPosition(Matrix3D matProj[2], Matrix3D& matView)
+void RenderDevice::UpdateVRPosition(ModelViewProj& mvp)
 {
    if (!m_pHMD)
       return;
 
-   vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
+   mvp.SetProj(0, m_vrMatProj[0]);
+   mvp.SetProj(1, m_vrMatProj[1]);
 
-   matView.SetIdentity();
+   vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
    for (unsigned int device = 0; device < vr::k_unMaxTrackedDeviceCount; device++)
    {
       if ((m_rTrackedDevicePose[device].bPoseIsValid) && (m_pHMD->GetTrackedDeviceClass(device) == vr::TrackedDeviceClass_HMD))
       {
          hmdPosition = m_rTrackedDevicePose[device];
+         Matrix3D matView;
+         matView.SetIdentity();
          for (int i = 0; i < 3; i++)
             for (int j = 0; j < 4; j++)
                matView.m[j][i] = hmdPosition.mDeviceToAbsoluteTracking.m[i][j];
+         matView.Invert();
+         matView = m_tableWorld * matView;
+         mvp.SetView(matView);
          break;
       }
    }
-   matView.Invert();
-   matView = m_tableWorld * matView;
-
-   memcpy(matProj, m_vrMatProj, 2 * 16 * sizeof(float));
 }
 
 void RenderDevice::tableUp()

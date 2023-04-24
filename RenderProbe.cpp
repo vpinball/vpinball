@@ -368,7 +368,7 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
 
    // Flip camera
    Matrix3D viewMat, initialViewMat;
-   p3dDevice->GetTransform(RenderDevice::TRANSFORMSTATE_VIEW, &viewMat, 1);
+   viewMat = g_pplayer->m_pin3d.GetMVP().GetView();
    memcpy(initialViewMat.m, viewMat.m, 4 * 4 * sizeof(float));
    // Reflect against reflection plane given by its normal (formula from https://en.wikipedia.org/wiki/Transformation_matrix#Reflection_2)
    Matrix3D reflect;
@@ -392,7 +392,7 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    // Translate the camera on the other side of the plane (move by twice the distance along its normal)
    // reflect.SetTranslation(-m_reflection_plane.w * m_reflection_plane.x * 2.0f, -m_reflection_plane.w * m_reflection_plane.y * 2.0f, -m_reflection_plane.w * m_reflection_plane.z * 2.0f);
    //viewMat = reflect * viewMat;
-   p3dDevice->SetTransform(RenderDevice::TRANSFORMSTATE_VIEW, &viewMat);
+   g_pplayer->m_pin3d.GetMVP().SetView(viewMat);
 
    if (render_static || render_dynamic)
       g_pplayer->UpdateBasicShaderMatrix();
@@ -409,7 +409,7 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    // Restore initial render states and camera
    g_pplayer->m_render_mask &= ~Player::REFLECTION_PASS;
    p3dDevice->CopyRenderStates(false, initial_state);
-   p3dDevice->SetTransform(RenderDevice::TRANSFORMSTATE_VIEW, &initialViewMat);
+   g_pplayer->m_pin3d.GetMVP().SetView(initialViewMat);
    if (render_static || render_dynamic)
       g_pplayer->UpdateBasicShaderMatrix();
    if (render_balls)

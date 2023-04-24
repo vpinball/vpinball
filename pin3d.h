@@ -92,15 +92,12 @@ public:
 
    void FitCameraToVerticesFS(const vector<Vertex3Ds>& pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback);
    void FitCameraToVertices(const vector<Vertex3Ds>& pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback);
-   void CacheTransform();      // compute m_matrixTotal = m_World * m_View * m_Proj
-   void TransformVertices(const Vertex3Ds * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const;
 
    void ComputeNearFarPlane(const vector<Vertex3Ds>& verts);
 
    Matrix3D m_matWorld;
    Matrix3D m_matView;
    Matrix3D m_matProj[2];
-   Matrix3D m_matrixTotal[2];
    StereoMode m_stereo3D;
 
    RECT m_rcviewport;
@@ -118,10 +115,11 @@ public:
 
    HRESULT InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl);
 
-   void InitLayoutFS();
+   // void InitLayoutFS(); // Legacy
    void InitLayout(const bool FSS_mode, const float max_separation, const float xpixoff = 0.f, const float ypixoff = 0.f);
 
    void TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, const WORD * const __restrict rgi, const int count, Vertex2D * const __restrict rgvout) const;
+   void TransformVertices(const Vertex3Ds* const __restrict rgv, const WORD* const __restrict rgi, const int count, Vertex2D* const __restrict rgvout) const;
 
    Vertex3Ds Unproject(const Vertex3Ds& point);
    Vertex3Ds Get3DPointFrom2D(const POINT& p);
@@ -133,7 +131,6 @@ public:
    ModelViewProj& GetMVP() { return *m_mvp; }
 
    void InitLights();
-   void UpdateMatrices();
 
    BackGlass* m_backGlass;
 
@@ -146,6 +143,8 @@ private:
    StereoMode m_stereo3D;
 
    ModelViewProj* m_mvp = nullptr; // Store the active Model / View / Projection
+
+   PinProjection m_proj; // Used to compute MVP for desktop/cab view (not headtracking, VR or live editor)
 
    // Data members
 public:
@@ -162,8 +161,6 @@ public:
 
    Texture* m_envTexture;
    BaseTexture* m_envRadianceTexture;
-
-   PinProjection m_proj; // Used to compute MVP for desktop/cab view (not headtracking or VR)
 
    // free-camera-mode-fly-around parameters
    Vertex3Ds m_cam;

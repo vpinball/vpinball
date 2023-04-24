@@ -67,6 +67,7 @@ int getDisplayList(vector<DisplayConfig>& displays);
 int getPrimaryDisplay();
 
 class Shader;
+class ModelViewProj;
 
 class RenderDevice final
 {
@@ -144,7 +145,7 @@ public:
 #ifdef ENABLE_VR
    void InitVR();
    bool IsVRReady() const { return m_pHMD != nullptr; }
-   void UpdateVRPosition(Matrix3D matProj[2], Matrix3D& matView);
+   void UpdateVRPosition(ModelViewProj& mvp);
    void tableUp();
    void tableDown();
    void recenterTable();
@@ -183,9 +184,6 @@ private:
 public:
    void SetViewport(const ViewPort*);
    void GetViewport(ViewPort*);
-
-   void SetTransform(const TransformStateType p1, const Matrix3D* p2, const int count = 1);
-   void GetTransform(const TransformStateType p1, Matrix3D* p2, const int count = 1);
 
    void SetMainTextureDefaultFiltering(const SamplerFilter filter);
    void CompressTextures(const bool enable) { m_compress_textures = enable; }
