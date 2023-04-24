@@ -1803,7 +1803,7 @@ void RenderDevice::DrawMesh(Shader* shader, const bool isTransparent, const Vert
    // Full depth sorting. Disabled since this would break old table and, for the time being, view vector is not homogeneously defined between Normal/VR/LiveUI
    //float depth = isTransparent ? g_pplayer->IsRenderPass(Player::REFLECTION_PASS) ? depthBias + center.z : depthBias - center.z
    //                            : depthBias + (m_viewVec.x * center.x + m_viewVec.y * center.y + m_viewVec.z * center.z);
-   cmd->SetDrawMesh(shader, mb, type, startIndice, indexCount, depth, isTransparent);
+   cmd->SetDrawMesh(shader, mb, type, startIndice, indexCount, isTransparent, depth);
    m_currentPass->Submit(cmd);
 }
 
