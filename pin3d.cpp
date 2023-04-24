@@ -21,6 +21,8 @@ Pin3D::Pin3D()
 
 Pin3D::~Pin3D()
 {
+   delete m_mvp;
+
    m_gpu_profiler.Shutdown();
 
    m_pd3dPrimaryDevice->FreeShader();
@@ -51,40 +53,8 @@ Pin3D::~Pin3D()
 
 void Pin3D::TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, const WORD * const __restrict rgi, const int count, Vertex2D * const __restrict rgvout) const
 {
-   // Get the width and height of the viewport. This is needed to scale the
-   // transformed vertices to fit the render window.
-   const float rClipWidth = (float)m_viewPort.Width*0.5f;
-   const float rClipHeight = (float)m_viewPort.Height*0.5f;
-   const float xoffset = (float)m_viewPort.X;
-   const float yoffset = (float)m_viewPort.Y;
-
-   // Transform each vertex through the current matrix set
-   for (int i = 0; i < count; ++i)
-   {
-      const int l = rgi ? rgi[i] : i;
-
-      // Get the untransformed vertex position
-      const float x = rgv[l].x;
-      const float y = rgv[l].y;
-      const float z = rgv[l].z;
-
-      // Transform it through the current matrix set
-      const float xp = m_proj.m_matrixTotal[0]._11*x + m_proj.m_matrixTotal[0]._21*y + m_proj.m_matrixTotal[0]._31*z + m_proj.m_matrixTotal[0]._41;
-      const float yp = m_proj.m_matrixTotal[0]._12*x + m_proj.m_matrixTotal[0]._22*y + m_proj.m_matrixTotal[0]._32*z + m_proj.m_matrixTotal[0]._42;
-      const float wp = m_proj.m_matrixTotal[0]._14*x + m_proj.m_matrixTotal[0]._24*y + m_proj.m_matrixTotal[0]._34*z + m_proj.m_matrixTotal[0]._44;
-
-      // Finally, scale the vertices to screen coords. This step first
-      // "flattens" the coordinates from 3D space to 2D device coordinates,
-      // by dividing each coordinate by the wp value. Then, the x- and
-      // y-components are transformed from device coords to screen coords.
-      // Note 1: device coords range from -1 to +1 in the viewport.
-      const float inv_wp = 1.0f / wp;
-      const float vTx = (1.0f + xp*inv_wp) * rClipWidth + xoffset;
-      const float vTy = (1.0f - yp*inv_wp) * rClipHeight + yoffset;
-
-      rgvout[l].x = vTx;
-      rgvout[l].y = vTy;
-   }
+   RECT viewport { 0, 0, m_viewPort.Width, m_viewPort.Height };
+   m_proj.m_matrixTotal[0].TransformVertices(rgv, rgi, count, rgvout, viewport);
 }
 
 BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
@@ -501,6 +471,7 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
 HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, const int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl)
 {
    m_proj.m_stereo3D = m_stereo3D = stereo3D;
+   m_mvp = new ModelViewProj(m_stereo3D == STEREO_OFF ? 1 : 2);
    m_AAfactor = AAfactor;
 
    // set the expected viewport for the newly created device (it may be modified upon creation)
@@ -704,6 +675,7 @@ void Pin3D::UpdateMatrices()
    m_proj.CacheTransform();
 }
 
+// This part is legacy and not used anymore
 void Pin3D::InitLayoutFS()
 {
    TRACE_FUNCTION();
@@ -957,6 +929,11 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
       projTrans.Multiply(m_proj.m_matProj[1], m_proj.m_matProj[1]);
    }
 
+   m_mvp->SetModel(m_proj.m_matWorld);
+   m_mvp->SetView(m_proj.m_matWorld);
+   for (int eye = 0; eye < m_mvp->m_nEyes; eye++)
+      m_mvp->SetProj(eye, m_proj.m_matProj[eye]);
+
    //m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
    UpdateMatrices();
 
@@ -1199,41 +1176,9 @@ void PinProjection::CacheTransform()
    }
 }
 
-// transforms the backdrop
 void PinProjection::TransformVertices(const Vertex3Ds * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const
 {
-   const float rClipWidth = (float)(m_rcviewport.right - m_rcviewport.left)*0.5f;
-   const float rClipHeight = (float)(m_rcviewport.bottom - m_rcviewport.top)*0.5f;
-   const float xoffset = (float)m_rcviewport.left;
-   const float yoffset = (float)m_rcviewport.top;
-
-   // Transform each vertex through the current matrix set
-   for (int i = 0; i < count; ++i)
-   {
-      const int l = rgi ? rgi[i] : i;
-
-      // Get the untransformed vertex position
-      const float x = rgv[l].x;
-      const float y = rgv[l].y;
-      const float z = rgv[l].z;
-
-      // Transform it through the current matrix set
-      const float xp = m_matrixTotal[0]._11*x + m_matrixTotal[0]._21*y + m_matrixTotal[0]._31*z + m_matrixTotal[0]._41;
-      const float yp = m_matrixTotal[0]._12*x + m_matrixTotal[0]._22*y + m_matrixTotal[0]._32*z + m_matrixTotal[0]._42;
-      const float wp = m_matrixTotal[0]._14*x + m_matrixTotal[0]._24*y + m_matrixTotal[0]._34*z + m_matrixTotal[0]._44;
-
-      // Finally, scale the vertices to screen coords. This step first
-      // "flattens" the coordinates from 3D space to 2D device coordinates,
-      // by dividing each coordinate by the wp value. Then, the x- and
-      // y-components are transformed from device coords to screen coords.
-      // Note 1: device coords range from -1 to +1 in the viewport.
-      const float inv_wp = 1.0f / wp;
-      const float vTx = (1.0f + xp*inv_wp) * rClipWidth + xoffset;
-      const float vTy = (1.0f - yp*inv_wp) * rClipHeight + yoffset;
-
-      rgvout[l].x = vTx;
-      rgvout[l].y = vTy;
-   }
+   m_matrixTotal[0].TransformVertices(rgv, rgi, count, rgvout, m_rcviewport);
 }
 
 void Pin3D::UpdateBAMHeadTracking()

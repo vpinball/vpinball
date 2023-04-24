@@ -587,4 +587,42 @@ public:
       //!! This code should be validated!
       return Matrix3D(cr * cy, sr, cr * sy, 0.0f, -sr * cp * sy - sp * sy, cr * cp, sr * cp * sy + sp * cy, 0.0f, -sr * sp * cy - cp * sy, -cr * sp, -sr * sp * sy + cp * cy, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
    }
+
+   template <class T> void TransformVertices(const T* const __restrict rgv, const WORD* const __restrict rgi, const int count, Vertex2D* const __restrict rgvout, const RECT& viewPort) const
+   {
+      // Get the width and height of the viewport. This is needed to scale the
+      // transformed vertices to fit the render window.
+      const float rClipWidth = (float)(viewPort.right - viewPort.left) * 0.5f;
+      const float rClipHeight = (float)(viewPort.bottom - viewPort.top) * 0.5f;
+      const float xoffset = (float)viewPort.left;
+      const float yoffset = (float)viewPort.top;
+
+      // Transform each vertex through the current matrix set
+      for (int i = 0; i < count; ++i)
+      {
+         const int l = rgi ? rgi[i] : i;
+
+         // Get the untransformed vertex position
+         const float x = rgv[l].x;
+         const float y = rgv[l].y;
+         const float z = rgv[l].z;
+
+         // Transform it through the current matrix set
+         const float xp = _11 * x + _21 * y + _31 * z + _41;
+         const float yp = _12 * x + _22 * y + _32 * z + _42;
+         const float wp = _14 * x + _24 * y + _34 * z + _44;
+
+         // Finally, scale the vertices to screen coords. This step first
+         // "flattens" the coordinates from 3D space to 2D device coordinates,
+         // by dividing each coordinate by the wp value. Then, the x- and
+         // y-components are transformed from device coords to screen coords.
+         // Note 1: device coords range from -1 to +1 in the viewport.
+         const float inv_wp = 1.0f / wp;
+         const float vTx = (1.0f + xp * inv_wp) * rClipWidth + xoffset;
+         const float vTy = (1.0f - yp * inv_wp) * rClipHeight + yoffset;
+
+         rgvout[l].x = vTx;
+         rgvout[l].y = vTy;
+      }
+   }
 };
