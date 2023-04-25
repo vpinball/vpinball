@@ -114,6 +114,8 @@ public:
    void BlitRenderTarget(RenderTarget* source, RenderTarget* destination, const bool copyColor = true, const bool copyDepth = true,  
       const int x1 = -1, const int y1 = -1, const int w1 = -1, const int h1 = -1,
       const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1);
+   void SubmitVR(RenderTarget* source);
+   void RenderLiveUI();
    void DrawMesh(Shader* shader, const bool isTransparent, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount);
    void DrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices);
    void DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices);
@@ -132,7 +134,6 @@ public:
    RenderTarget* GetPostProcessRenderTarget1();
    RenderTarget* GetPostProcessRenderTarget2();
    RenderTarget* GetPostProcessRenderTarget(RenderTarget* renderedRT);
-   RenderTarget* GetOffscreenVR(int eye) const { return eye == 0 ? m_pOffscreenVRLeft : m_pOffscreenVRRight; }
    RenderTarget* GetReflectionBufferTexture() const { return m_pReflectionBufferTexture; }
    RenderTarget* GetBloomBufferTexture() const { return m_pBloomBufferTexture; }
    RenderTarget* GetBloomTmpBufferTexture() const { return m_pBloomTmpBufferTexture; }
@@ -245,8 +246,6 @@ private:
    RenderTarget* m_pOffscreenBackBufferTexture = nullptr;
    RenderTarget* m_pPostProcessRenderTarget1 = nullptr;
    RenderTarget* m_pPostProcessRenderTarget2 = nullptr;
-   RenderTarget* m_pOffscreenVRLeft = nullptr;
-   RenderTarget* m_pOffscreenVRRight = nullptr;
    RenderTarget* m_pBloomBufferTexture = nullptr;
    RenderTarget* m_pBloomTmpBufferTexture = nullptr;
    RenderTarget* m_pReflectionBufferTexture = nullptr;

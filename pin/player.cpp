@@ -3346,51 +3346,19 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
       // For VR, copy each eye to the HMD texture and render the wanted preview if activated
       if (m_stereo3D == STEREO_VR)
       {
-#ifdef ENABLE_VR
+         #ifdef ENABLE_VR
          assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
          int w = renderedRT->GetWidth() / 2, h = renderedRT->GetHeight();
-
-         RenderTarget *leftTexture = m_pin3d.m_pd3dPrimaryDevice->GetOffscreenVR(0);
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Left Eye"s, leftTexture);
-         m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
-         m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, leftTexture, true, false, 0, 0, w, h);
-
-         RenderTarget *rightTexture = m_pin3d.m_pd3dPrimaryDevice->GetOffscreenVR(1);
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Right Eye"s, rightTexture);
-         m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
-         m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, rightTexture, true, false, w, 0, w, h);
-
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Preview"s, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
-         m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(leftTexture);
-         m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(rightTexture);
+         m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          if (m_vrPreview == VRPREVIEW_LEFT)
             m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), true, false, 0, 0, w, h);
          else if (m_vrPreview == VRPREVIEW_RIGHT)
             m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), true, false, w, 0, w, h);
          else if (m_vrPreview == VRPREVIEW_BOTH)
             m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), true, false);
-
-         if (m_pin3d.m_pd3dPrimaryDevice->IsVRReady())
-         {
-            vr::Texture_t leftEyeTexture = { (void *)leftTexture->GetColorSampler()->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
-            vr::EVRCompositorError error = vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
-            if (error != vr::VRCompositorError_None)
-            {
-               char msg[128];
-               sprintf_s(msg, sizeof(msg), "VRCompositor Submit Left Error %u", error);
-               ShowError(msg);
-            }
-            vr::Texture_t rightEyeTexture = { (void *)rightTexture->GetColorSampler()->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
-            error = vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
-            if (error != vr::VRCompositorError_None)
-            {
-               char msg[128];
-               sprintf_s(msg, sizeof(msg), "VRCompositor Submit Right Error %u", error);
-               ShowError(msg);
-            }
-            //vr::VRCompositor()->PostPresentHandoff(); // PostPresentHandoff gives mixed results, improved GPU frametime for some, worse CPU frametime for others, troublesome enough to not warrants it's usage for now
-         }
-#endif
+         m_pin3d.m_pd3dPrimaryDevice->SubmitVR(renderedRT);
+         #endif
       }
       else if (m_stereo3D >= STEREO_ANAGLYPH_RC && m_stereo3D <= STEREO_ANAGLYPH_AB)
       {
@@ -4212,12 +4180,12 @@ void Player::Render()
       PrepareVideoBuffersNormal();
 
    m_liveUI->Update();
+   m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
 
    m_frame_collect = usec() - usecTimeStamp;
 
    usecTimeStamp = usec();
    m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
-   m_liveUI->Render();
    m_frame_submit = usec() - usecTimeStamp;
 
    // DJRobX's crazy latency-reduction code active? Insert some Physics updates before vsync'ing

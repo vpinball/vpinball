@@ -125,11 +125,17 @@ void RenderPass::Execute(const bool log)
       {
          inline bool operator()(const RenderCommand* r1, const RenderCommand* r2) const
          {
-            // Move Clear/Copy command at the beginniing of the pass
+            // Move Clear/Copy command at the beginning of the pass
             if (!r1->IsDrawCommand())
                return true;
             if (!r2->IsDrawCommand())
                return false;
+
+            // Move LiveUI command at the end of the pass
+            if (r1->IsDrawLiveUICommand())
+               return false;
+            if (r2->IsDrawLiveUICommand())
+               return true;
 
             // Move kickers before other draw calls.
             // Kickers disable depth test to be visible through playfield. This would make them to be rendered after opaques, but since they hack depth, they need to be rendered before balls

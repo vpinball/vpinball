@@ -57,7 +57,7 @@ enum StereoMode
 #endif
 
 enum colorFormat {
-   GREY8 = GL_RED,
+   GREY8 = GL_R8,
    RED16F = GL_R16F,
 
    GREY_ALPHA = GL_RG8,

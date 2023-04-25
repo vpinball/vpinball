@@ -395,7 +395,6 @@ void VROptionsDialog::ResetVideoPreferences()
 
    //AMD Debug
    SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_SETCURSEL, 1, 0);
-   SendMessage(GetDlgItem(IDC_COMBO_BLIT).GetHwnd(), CB_SETCURSEL, 0, 0);
 }
 
 BOOL VROptionsDialog::OnInitDialog()
@@ -421,7 +420,6 @@ BOOL VROptionsDialog::OnInitDialog()
       AddToolTip("Enables playfield reflections.\r\n\r\n'Dynamic' is recommended and will give the best result but may harm performance.\r\n\r\n'Static Only' has no performance cost except in VR.\r\n\r\nOther options are trade-off between quality and performance.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd());
       //AMD Debug
       AddToolTip("Pixel format for VR Rendering.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd());
-      AddToolTip("Blitting technique for VR Rendering.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_COMBO_BLIT).GetHwnd());
    }
 
    char tmp[256];
@@ -597,12 +595,6 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"RGBA 16F");
    const int textureModeVR = LoadValueIntWithDefault(regKey[RegName::Player], "textureModeVR"s, 1);
    SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_SETCURSEL, textureModeVR, 0);
-
-   SendMessage(GetDlgItem(IDC_COMBO_BLIT).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Blit (Recommended)");
-   SendMessage(GetDlgItem(IDC_COMBO_BLIT).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"BlitNamed");
-   SendMessage(GetDlgItem(IDC_COMBO_BLIT).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Shader");
-   const int blitModeVR = LoadValueIntWithDefault(regKey[RegName::Player], "blitModeVR"s, 0);
-   SendMessage(GetDlgItem(IDC_COMBO_BLIT).GetHwnd(), CB_SETCURSEL, blitModeVR, 0);
 
    int key;
    for (unsigned int i = eTableRecenter; i <= eTableDown; ++i)
@@ -858,9 +850,6 @@ void VROptionsDialog::OnOK()
    //AMD Debugging
    const size_t textureModeVR = SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_GETCURSEL, 0, 0);
    SaveValueInt(regKey[RegName::Player], "textureModeVR"s, (int)textureModeVR);
-
-   const size_t blitModeVR = SendMessage(GetDlgItem(IDC_COMBO_BLIT).GetHwnd(), CB_GETCURSEL, 0, 0);
-   SaveValueInt(regKey[RegName::Player], "blitModeVR"s, (int)blitModeVR);
 
    LRESULT vrPreview = SendMessage(GetDlgItem(IDC_VR_PREVIEW).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (vrPreview == LB_ERR)
