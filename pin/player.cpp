@@ -3349,14 +3349,28 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
          #ifdef ENABLE_VR
          assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
          int w = renderedRT->GetWidth() / 2, h = renderedRT->GetHeight();
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Preview"s, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
+         
+         RenderTarget *leftTexture = m_pin3d.m_pd3dPrimaryDevice->GetOffscreenVR(0);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Left Eye"s, leftTexture);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
+         m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, leftTexture, true, false, 0, 0, w, h);
+
+         RenderTarget *rightTexture = m_pin3d.m_pd3dPrimaryDevice->GetOffscreenVR(1);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Right Eye"s, rightTexture);
+         m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
+         m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, rightTexture, true, false, w, 0, w, h);
+
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("VR Preview"s, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
+         m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
+         m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(leftTexture);
+         m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(rightTexture);
          if (m_vrPreview == VRPREVIEW_LEFT)
             m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), true, false, 0, 0, w, h);
          else if (m_vrPreview == VRPREVIEW_RIGHT)
             m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), true, false, w, 0, w, h);
          else if (m_vrPreview == VRPREVIEW_BOTH)
             m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), true, false);
+
          m_pin3d.m_pd3dPrimaryDevice->SubmitVR(renderedRT);
          #endif
       }
