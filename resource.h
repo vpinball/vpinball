@@ -1119,7 +1119,6 @@
 #define IDC_MULTIPLE_ELEMENTS_SELECTED_STATIC 830
 #define IDC_VR_OFFSET_Y_LABEL           830
 #define IDC_VR_OFFSET_Z_LABEL           831
-#define IDC_COMBO_BLIT                  832
 #define IDC_ASSIGN_BUTTON               833
 #define IDC_COMBO_TEXTURE               833
 #define IDC_LAYER_EDIT_BUTTON           834

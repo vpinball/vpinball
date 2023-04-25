@@ -83,6 +83,45 @@ void RenderCommand::Execute(const bool log)
       break;
    }
 
+   case RC_SUBMIT_VR:
+   {
+      if (log)
+         PLOGI << "> Submit VR";
+      #if defined(ENABLE_VR) && defined(ENABLE_SDL)
+      if (m_rd->IsVRReady())
+      {
+         vr::Texture_t eyeTexture = { (void*)m_copyFrom->GetColorSampler()->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
+         vr::VRTextureBounds_t leftBounds = { 0.f, 0.f, 0.5f, 1.f };
+         vr::VRTextureBounds_t rightBounds = { 0.5f, 0.f, 1.0f, 1.f };
+         vr::EVRCompositorError errorLeft = vr::VRCompositor()->Submit(vr::Eye_Left, &eyeTexture, &leftBounds);
+         vr::EVRCompositorError errorRight = vr::VRCompositor()->Submit(vr::Eye_Right, &eyeTexture, &rightBounds);
+         glFlush();
+         if (errorLeft != vr::VRCompositorError_None)
+         {
+            char msg[128];
+            sprintf_s(msg, sizeof(msg), "VRCompositor Submit Left Error %u", errorLeft);
+            ShowError(msg);
+         }
+         if (errorRight != vr::VRCompositorError_None)
+         {
+            char msg[128];
+            sprintf_s(msg, sizeof(msg), "VRCompositor Submit Right Error %u", errorRight);
+            ShowError(msg);
+         }
+         //vr::VRCompositor()->PostPresentHandoff(); // PostPresentHandoff gives mixed results, improved GPU frametime for some, worse CPU frametime for others, troublesome enough to not warrants it's usage for now
+      }
+      #endif
+      break;
+   }
+
+   case RC_DRAW_LIVEUI:
+   {
+      if (log)
+         PLOGI << "> Draw LiveUI";
+      g_pplayer->m_liveUI->Render();
+      break;
+   }
+
    case RC_DRAW_QUAD_PT:
    case RC_DRAW_QUAD_PNT:
    case RC_DRAW_MESH:
@@ -257,11 +296,23 @@ void RenderCommand::SetCopy(RenderTarget* from, RenderTarget* to, bool color, bo
    m_copyTo = to;
    m_copyColor = color;
    m_copyDepth = depth;
-   m_copySrcRect = vec4(x1, y1, w1, h1);
-   m_copyDstRect = vec4(x2, y2, w2, h2);
+   m_copySrcRect = vec4((const float)x1, (const float)y1, (const float)w1, (const float)h1);
+   m_copyDstRect = vec4((const float)x2, (const float)y2, (const float)w2, (const float)h2);
 }
 
-void RenderCommand::SetDrawMesh(Shader* shader, MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, 
+void RenderCommand::SetSubmitVR(RenderTarget* from)
+{
+   m_command = Command::RC_SUBMIT_VR;
+   m_copyFrom = from;
+}
+
+void RenderCommand::SetRenderLiveUI()
+{
+   m_command = Command::RC_DRAW_LIVEUI;
+}
+
+void RenderCommand::SetDrawMesh(
+   Shader* shader, MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, 
    const DWORD startIndice, const DWORD indexCount,const bool isTransparent, const float depth)
 {
    assert(mb != nullptr);
