@@ -4444,7 +4444,7 @@ void Player::GetBallAspectRatio(const Ball * const pball, Vertex2D &stretch, con
       rgvIn[t].z = basicBallLo[i].z*pball->m_d.m_radius + zHeight;
    }
    
-   RECT viewport { 0, 0, m_pin3d.m_viewPort.Width, m_pin3d.m_viewPort.Height };
+   RECT viewport { 0, 0, (LONG)m_pin3d.m_viewPort.Width, (LONG)m_pin3d.m_viewPort.Height };
    m_pin3d.TransformVertices(rgvIn, nullptr, basicBallLoNumVertices / 2, rgvOut);
    
    float maxX = -FLT_MAX;

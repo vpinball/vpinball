@@ -53,13 +53,13 @@ Pin3D::~Pin3D()
 
 void Pin3D::TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, const WORD * const __restrict rgi, const int count, Vertex2D * const __restrict rgvout) const
 {
-   RECT viewport { 0, 0, m_viewPort.Width, m_viewPort.Height };
+   RECT viewport { 0, 0, (LONG)m_viewPort.Width, (LONG)m_viewPort.Height };
    m_mvp->GetModelViewProj(0).TransformVertices(rgv, rgi, count, rgvout, viewport);
 }
 
 void Pin3D::TransformVertices(const Vertex3Ds* const __restrict rgv, const WORD* const __restrict rgi, const int count, Vertex2D* const __restrict rgvout) const
 {
-   RECT viewport { 0, 0, m_viewPort.Width, m_viewPort.Height };
+   RECT viewport { 0, 0, (LONG)m_viewPort.Width, (LONG)m_viewPort.Height };
    m_mvp->GetModelViewProj(0).TransformVertices(rgv, rgi, count, rgvout, viewport);
 }
 
@@ -923,7 +923,7 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
 
    m_mvp->SetModel(m_proj.m_matWorld);
    m_mvp->SetView(m_proj.m_matView);
-   for (int eye = 0; eye < m_mvp->m_nEyes; eye++)
+   for (unsigned int eye = 0; eye < m_mvp->m_nEyes; eye++)
       m_mvp->SetProj(eye, m_proj.m_matProj[eye]);
 
    //m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
@@ -1152,6 +1152,6 @@ void Pin3D::UpdateBAMHeadTracking()
    Matrix3D m_matProj[2];
    BAMView::createProjectionAndViewMatrix(&m_matProj[0]._11, &m_matView._11);
    m_mvp->SetView(m_matView);
-   for (int eye = 0; eye < m_mvp->m_nEyes; eye++)
+   for (unsigned int eye = 0; eye < m_mvp->m_nEyes; eye++)
       m_mvp->SetProj(eye, m_matProj[eye]);
 }
