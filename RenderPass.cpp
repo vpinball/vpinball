@@ -189,7 +189,7 @@ void RenderPass::Execute(const bool log)
       // stable sort is needed since we don't want to change the order of blended draw calls between frames
       if (log)
       {
-         const double start = usec();
+         U64 start = usec();
          stable_sort(m_commands.begin(), m_commands.end(), sortFunc);
          PLOGI << "Pass '" << m_name << "' [RT=" << m_rt->m_name << ", " << m_commands.size() << " commands, sort: " << std::fixed << std::setw(8) << std::setprecision(3) << (usec() - start)
                << "us]";
