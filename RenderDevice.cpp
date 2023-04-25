@@ -2034,12 +2034,12 @@ void RenderDevice::UpdateVRPosition(ModelViewProj& mvp)
    {
       if ((m_rTrackedDevicePose[device].bPoseIsValid) && (m_pHMD->GetTrackedDeviceClass(device) == vr::TrackedDeviceClass_HMD))
       {
-         hmdPosition = m_rTrackedDevicePose[device];
+         m_hmdPosition = m_rTrackedDevicePose[device];
          Matrix3D matView;
          matView.SetIdentity();
          for (int i = 0; i < 3; i++)
             for (int j = 0; j < 4; j++)
-               matView.m[j][i] = hmdPosition.mDeviceToAbsoluteTracking.m[i][j];
+               matView.m[j][i] = m_hmdPosition.mDeviceToAbsoluteTracking.m[i][j];
          matView.Invert();
          matView = m_tableWorld * matView;
          mvp.SetView(matView);
@@ -2066,15 +2066,15 @@ void RenderDevice::tableDown()
 
 void RenderDevice::recenterTable()
 {
-   m_orientation = -RADTOANG(atan2(hmdPosition.mDeviceToAbsoluteTracking.m[0][2], hmdPosition.mDeviceToAbsoluteTracking.m[0][0]));
+   m_orientation = -RADTOANG(atan2(m_hmdPosition.mDeviceToAbsoluteTracking.m[0][2], m_hmdPosition.mDeviceToAbsoluteTracking.m[0][0]));
    if (m_orientation < 0.0f)
       m_orientation += 360.0f;
    const float w = 100.f * 0.5f * m_scale * (g_pplayer->m_ptable->m_right - g_pplayer->m_ptable->m_left);
    const float h = 100.f * m_scale * (g_pplayer->m_ptable->m_bottom - g_pplayer->m_ptable->m_top) + 20.0f;
    const float c = cos(ANGTORAD(m_orientation));
    const float s = sin(ANGTORAD(m_orientation));
-   m_tablex = 100.0f * hmdPosition.mDeviceToAbsoluteTracking.m[0][3] - c * w + s * h;
-   m_tabley = -100.0f * hmdPosition.mDeviceToAbsoluteTracking.m[2][3] + s * w + c * h;
+   m_tablex = 100.0f * m_hmdPosition.mDeviceToAbsoluteTracking.m[0][3] - c * w + s * h;
+   m_tabley = -100.0f * m_hmdPosition.mDeviceToAbsoluteTracking.m[2][3] + s * w + c * h;
    updateTableMatrix();
 }
 

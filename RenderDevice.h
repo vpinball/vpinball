@@ -160,7 +160,7 @@ public:
 private:
    static vr::IVRSystem* m_pHMD;
    float m_slope, m_orientation, m_tablex, m_tabley, m_tablez;
-   vr::TrackedDevicePose_t hmdPosition;
+   vr::TrackedDevicePose_t m_hmdPosition;
    Matrix3D m_vrMatProj[2];
    Matrix3D m_tableWorld;
    vr::TrackedDevicePose_t* m_rTrackedDevicePose;
