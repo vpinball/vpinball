@@ -134,6 +134,7 @@ public:
    RenderTarget* GetPostProcessRenderTarget1();
    RenderTarget* GetPostProcessRenderTarget2();
    RenderTarget* GetPostProcessRenderTarget(RenderTarget* renderedRT);
+   RenderTarget* GetOffscreenVR(int eye) const { return eye == 0 ? m_pOffscreenVRLeft : m_pOffscreenVRRight; }
    RenderTarget* GetReflectionBufferTexture() const { return m_pReflectionBufferTexture; }
    RenderTarget* GetBloomBufferTexture() const { return m_pBloomBufferTexture; }
    RenderTarget* GetBloomTmpBufferTexture() const { return m_pBloomTmpBufferTexture; }
@@ -246,6 +247,8 @@ private:
    RenderTarget* m_pOffscreenBackBufferTexture = nullptr;
    RenderTarget* m_pPostProcessRenderTarget1 = nullptr;
    RenderTarget* m_pPostProcessRenderTarget2 = nullptr;
+   RenderTarget* m_pOffscreenVRLeft = nullptr;
+   RenderTarget* m_pOffscreenVRRight = nullptr;
    RenderTarget* m_pBloomBufferTexture = nullptr;
    RenderTarget* m_pBloomTmpBufferTexture = nullptr;
    RenderTarget* m_pReflectionBufferTexture = nullptr;

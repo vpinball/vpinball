@@ -952,6 +952,31 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    m_pBloomBufferTexture = new RenderTarget(this, "BloomBuffer1"s, m_width / 4, m_height / 4, render_format, false, 1, m_stereo3D, "Fatal Error: unable to create bloom buffer!");
    m_pBloomTmpBufferTexture = m_pBloomBufferTexture->Duplicate("BloomBuffer2"s);
 
+   #ifdef ENABLE_SDL
+   if (m_stereo3D == STEREO_VR) {
+      //AMD Debugging
+      colorFormat renderBufferFormatVR;
+      const int textureModeVR = LoadValueIntWithDefault(regKey[RegName::Player], "textureModeVR"s, 1);
+      switch (textureModeVR) {
+      case 0:
+         renderBufferFormatVR = RGB8;
+         break;
+      case 2:
+         renderBufferFormatVR = RGB16F;
+         break;
+      case 3:
+         renderBufferFormatVR = RGBA16F;
+         break;
+      case 1:
+      default:
+         renderBufferFormatVR = RGBA8;
+         break;
+      }
+      m_pOffscreenVRLeft = new RenderTarget(this, "VRLeft"s, m_width / 2, m_height, renderBufferFormatVR, false, 1, STEREO_OFF, "Fatal Error: unable to create left eye buffer!");
+      m_pOffscreenVRRight = new RenderTarget(this, "VRRight"s, m_width / 2, m_height, renderBufferFormatVR, false, 1, STEREO_OFF, "Fatal Error: unable to create right eye buffer!");
+   }
+   #endif
+
    // Buffers for post-processing (postprocess is done at scene resolution, on a LDR render target without MSAA or full scene supersampling)
    if (video10bit && (m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA))
       ShowError("SMAA or DLAA post-processing AA should not be combined with 10bit-output rendering (will result in visible artifacts)!");
@@ -1032,24 +1057,8 @@ RenderTarget* RenderDevice::GetPostProcessRenderTarget1()
    if (m_pPostProcessRenderTarget1 == nullptr)
    {
       // Buffers for post-processing (postprocess is done at scene resolution, on a LDR render target without MSAA nor full scene supersampling)
-      // Post process framebuffer are also used as the source for OpenVR eye texture submission, therefore for VR the format is the one selected by the user
 #ifdef ENABLE_SDL
       colorFormat pp_format = GetBackBufferTexture()->GetColorFormat() == RGBA10 ? colorFormat::RGBA10 : colorFormat::RGBA8;
-      if (m_stereo3D == STEREO_VR)
-      {
-         // AMD Debugging
-         colorFormat renderBufferFormatVR;
-         const int textureModeVR = LoadValueIntWithDefault(regKey[RegName::Player], "textureModeVR"s, 1);
-         switch (textureModeVR)
-         {
-         case 0: renderBufferFormatVR = RGB8; break;
-         case 2: renderBufferFormatVR = RGB16F; break;
-         case 3: renderBufferFormatVR = RGBA16F; break;
-         case 1:
-         default: renderBufferFormatVR = RGBA8; break;
-         }
-         pp_format = renderBufferFormatVR;
-      }
 #else
       colorFormat pp_format = GetBackBufferTexture()->GetColorFormat() == RGBA10 ? colorFormat::RGBA10 : colorFormat::RGBA8;
 #endif
@@ -1228,6 +1237,8 @@ RenderDevice::~RenderDevice()
    delete m_pBloomBufferTexture;
    delete m_pBloomTmpBufferTexture;
    delete m_pBackBuffer;
+   delete m_pOffscreenVRLeft;
+   delete m_pOffscreenVRRight;
 
    delete m_pAORenderTarget1;
    delete m_pAORenderTarget2;

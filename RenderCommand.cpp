@@ -90,24 +90,27 @@ void RenderCommand::Execute(const bool log)
       #if defined(ENABLE_VR) && defined(ENABLE_SDL)
       if (m_rd->IsVRReady())
       {
-         vr::Texture_t eyeTexture = { (void*)m_copyFrom->GetColorSampler()->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
-         vr::VRTextureBounds_t leftBounds = { 0.f, 0.f, 0.5f, 1.f };
-         vr::VRTextureBounds_t rightBounds = { 0.5f, 0.f, 1.0f, 1.f };
-         vr::EVRCompositorError errorLeft = vr::VRCompositor()->Submit(vr::Eye_Left, &eyeTexture, &leftBounds);
-         vr::EVRCompositorError errorRight = vr::VRCompositor()->Submit(vr::Eye_Right, &eyeTexture, &rightBounds);
-         glFlush();
+         RenderTarget* leftTexture = m_rd->GetOffscreenVR(0);
+         vr::Texture_t leftEyeTexture = { (void*)leftTexture->GetColorSampler()->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
+         vr::EVRCompositorError errorLeft = vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
          if (errorLeft != vr::VRCompositorError_None)
          {
             char msg[128];
             sprintf_s(msg, sizeof(msg), "VRCompositor Submit Left Error %u", errorLeft);
             ShowError(msg);
          }
+
+         RenderTarget* rightTexture = m_rd->GetOffscreenVR(1);
+         vr::Texture_t rightEyeTexture = { (void*)rightTexture->GetColorSampler()->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
+         vr::EVRCompositorError errorRight = vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
          if (errorRight != vr::VRCompositorError_None)
          {
             char msg[128];
             sprintf_s(msg, sizeof(msg), "VRCompositor Submit Right Error %u", errorRight);
             ShowError(msg);
          }
+
+         glFlush();
          //vr::VRCompositor()->PostPresentHandoff(); // PostPresentHandoff gives mixed results, improved GPU frametime for some, worse CPU frametime for others, troublesome enough to not warrants it's usage for now
       }
       #endif
