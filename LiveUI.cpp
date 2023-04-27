@@ -1595,6 +1595,16 @@ void LiveUI::UpdateOutlinerUI()
                }
                ImGui::TreePop();
             }
+            if (ImGui::TreeNode("Render Probes"))
+            {
+               for (RenderProbe *probe : table->m_vrenderprobe)
+               {
+                  Selection sel(is_live, probe);
+                  if (ImGui::Selectable(probe->GetName().c_str(), m_selection == sel))
+                     m_selection = sel;
+               }
+               ImGui::TreePop();
+            }
             if (ImGui::TreeNodeEx("Layers", ImGuiTreeNodeFlags_DefaultOpen))
             {
                // Very very unefficient...
@@ -1678,6 +1688,7 @@ void LiveUI::UpdatePropertyUI()
             case Selection::SelectionType::S_CAMERA: CameraProperties(is_live); break;
             case Selection::SelectionType::S_MATERIAL: MaterialProperties(is_live); break;
             case Selection::SelectionType::S_BALL: BallProperties(is_live); break;
+            case Selection::SelectionType::S_RENDERPROBE: RenderProbeProperties(is_live); break;
             case Selection::SelectionType::S_EDITABLE:
             {
                const bool is_live_selected = m_selection.is_live;
@@ -2146,6 +2157,69 @@ void LiveUI::CameraProperties(bool is_live)
       m_pin3d->GetMVP().GetView()._43);
 }
 
+void LiveUI::RenderProbeProperties(bool is_live)
+{
+   RenderProbe *live_probe = (RenderProbe *)(m_selection.is_live ? m_selection.renderprobe : m_live_table->m_startupToLive[m_selection.renderprobe]);
+   RenderProbe *startup_probe = (RenderProbe *)(m_selection.is_live ? m_live_table->m_liveToStartup[m_selection.renderprobe] : m_selection.renderprobe);
+   HelpTextCentered("Render Probe");
+   string name = ((RenderProbe *)m_selection.renderprobe)->GetName();
+   ImGui::BeginDisabled(is_live); // Editing the name of a live item can break the script
+   if (ImGui::InputText("Name", &name))
+   {
+      // FIXME add undo
+      if (startup_probe)
+         startup_probe->SetName(name);
+   }
+   ImGui::EndDisabled();
+   ImGui::Separator();
+   if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   {
+      const string types[] = { "Reflection"s, "Refraction"s };
+
+      auto upd_normal = [startup_probe, live_probe](bool is_live, vec3& prev, vec3& v)
+      {
+         RenderProbe *probe = (is_live ? live_probe : startup_probe);
+         if (probe)
+         {
+            vec4 plane;
+            probe->GetReflectionPlane(plane);
+            plane.x = v.x;
+            plane.y = v.y;
+            plane.z = v.z;
+            probe->SetReflectionPlane(plane);
+         }
+      };
+      vec4 startup_plane, live_plane;
+      Vertex3Ds startup_normal, live_normal;
+      if (startup_probe)
+      {
+         startup_probe->GetReflectionPlane(startup_plane);
+         startup_normal = Vertex3Ds(startup_plane.x, startup_plane.y, startup_plane.z);
+      }
+      if (live_probe)
+      {
+         live_probe->GetReflectionPlane(live_plane);
+         live_normal = Vertex3Ds(live_plane.x, live_plane.y, live_plane.z);
+      }
+      PropVec3("Normal", nullptr, is_live, startup_probe ? &startup_normal : nullptr, live_probe ? &live_normal : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal, upd_normal);
+
+      auto upd_distance = [startup_probe, live_probe](bool is_live, float prev, float v)
+      {
+         RenderProbe *probe = (is_live ? live_probe : startup_probe);
+         if (probe)
+         {
+            vec4 plane;
+            probe->GetReflectionPlane(plane);
+            plane.w = v;
+            probe->SetReflectionPlane(plane);
+         }
+      };
+      PropFloat("Distance", nullptr, is_live, startup_probe ? &startup_plane.w : nullptr, live_probe ? &live_plane.w : nullptr, 1.f, 10.f, "%.0f", ImGuiInputTextFlags_CharsDecimal, upd_distance);
+
+      ImGui::EndTable();
+   }
+}
+
 void LiveUI::BallProperties(bool is_live)
 {
    if (!is_live)
@@ -2507,11 +2581,17 @@ void LiveUI::PropRGB(const char *label, IEditable *undo_obj, bool is_live, COLOR
    PROP_HELPER_END
 }
 
-void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, float *startup_v, float *live_v, const char *format, ImGuiInputTextFlags flags)
+void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, float *startup_v, float *live_v, const char *format, ImGuiInputTextFlags flags, OnVec3PropChange chg_callback)
 {
    PROP_HELPER_BEGIN(float)
+   vec3 v1(v[0], v[1], v[2]);
    if (ImGui::InputFloat3(label, v, format, flags))
    {
+      if (chg_callback)
+      {
+         vec3 v2(v[0], v[1], v[2]);
+         chg_callback(is_live, v1, v2);
+      }
       if (!is_live)
          m_table->SetNonUndoableDirty(eSaveDirty);
    }
@@ -2519,7 +2599,7 @@ void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, floa
    PROP_HELPER_END
 }
 
-void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, Vertex3Ds *startup_v, Vertex3Ds *live_v, const char *format, ImGuiInputTextFlags flags)
+void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, Vertex3Ds *startup_v, Vertex3Ds *live_v, const char *format, ImGuiInputTextFlags flags, OnVec3PropChange chg_callback)
 {
    PROP_HELPER_BEGIN(Vertex3Ds)
    float col[3] = { v->x, v->y, v->z };
@@ -2528,6 +2608,11 @@ void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, Vert
       v->x = col[0];
       v->y = col[1];
       v->z = col[2];
+      if (chg_callback)
+      {
+         vec3 v1(prev_v.x, prev_v.y, prev_v.z), v2(v->x, v->y, v->z);
+         chg_callback(is_live, v1, v2);
+      }
       if (!is_live)
          m_table->SetNonUndoableDirty(eSaveDirty);
    }
@@ -2568,7 +2653,7 @@ void LiveUI::PropImageCombo(const char *label, IEditable *undo_obj, bool is_live
          {
             *v = table->m_vimage[i]->m_szName;
             if (chg_callback)
-               chg_callback(!is_live, prev_v, *v);
+               chg_callback(is_live, prev_v, *v);
             if (!is_live)
                m_table->SetNonUndoableDirty(eSaveDirty);
          }
