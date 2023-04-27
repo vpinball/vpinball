@@ -22,6 +22,7 @@ public:
 
    unsigned int GetOffset() const { return m_offset; }
    unsigned int GetVertexOffset() const { return m_vertexOffset; }
+   bool IsSharedBuffer() const { return m_sharedBuffer->buffers.size() > 1; }
 
    void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags);
    void unlock();
@@ -33,15 +34,24 @@ public:
    const unsigned int m_vertexCount; // Number of vertices
    const unsigned int m_sizePerVertex; // Size of each vertex
    const unsigned int m_size; // Size in bytes of the array
-   const unsigned int m_offset; // Offset in bytes of the data inside the native GPU array
-   const unsigned int m_vertexOffset; // Offset in vertices of the data inside the native GPU array
 
 private:
+   struct SharedBuffer
+   {
+      vector<VertexBuffer*> buffers;
+      unsigned int count = 0;
+      VertexFormat format;
+      bool isStatic;
+   };
+
    bool IsCreated() const { return m_vb; }
-   static void CreatePendingSharedBuffer();
-   static vector<VertexBuffer*> pendingSharedBuffers;
-   static unsigned int GetPendingSharedBufferCount();
-   static unsigned int GetSharedBufferVertexOffset(const unsigned int vertexCount, const VertexFormat fvf);
+
+   SharedBuffer* m_sharedBuffer = nullptr;
+   unsigned int m_offset = 0; // Offset in bytes of the data inside the native GPU array
+   unsigned int m_vertexOffset = 0; // Offset in vertices of the data inside the native GPU array
+
+   static void CreateSharedBuffer(SharedBuffer* sharedBuffer);
+   static vector<SharedBuffer*> pendingSharedBuffers;
 
    struct PendingUpload
    {
@@ -51,15 +61,12 @@ private:
    };
    vector<PendingUpload> m_pendingUploads;
    PendingUpload m_lock = { 0, 0, nullptr };
-   bool m_uploaded = false;
 
 #ifdef ENABLE_SDL
    GLuint m_vb = 0;
-   int* m_sharedBufferRefCount = nullptr;
 
 public:
    GLuint GetBuffer() const { return m_vb; }
-   bool IsSharedBuffer() const { return m_sharedBufferRefCount != nullptr; }
 
 #else
    IDirect3DVertexBuffer9* m_vb = nullptr;

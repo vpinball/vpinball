@@ -7,35 +7,13 @@ static unsigned int fvfToSize(const DWORD fvf)
 {
    switch (fvf)
    {
-   case VertexFormat::VF_POS_NORMAL_TEX:
-      return sizeof(Vertex3D_NoTex2);
-   case VertexFormat::VF_POS_TEX:
-      return sizeof(Vertex3D_TexelOnly);
-   default:
-      assert(false); // Unsupported FVF
-      return 0;
+   case VertexFormat::VF_POS_NORMAL_TEX: return sizeof(Vertex3D_NoTex2);
+   case VertexFormat::VF_POS_TEX: return sizeof(Vertex3D_TexelOnly);
+   default: assert(false); return 0; // Unsupported Vertex Format
    }
 }
 
-vector<VertexBuffer*> VertexBuffer::pendingSharedBuffers;
-
-unsigned int VertexBuffer::GetPendingSharedBufferCount()
-{
-   unsigned int size = 0;
-   for (VertexBuffer* buffer : pendingSharedBuffers)
-      size += buffer->m_vertexCount;
-   return size;
-}
-
-unsigned int VertexBuffer::GetSharedBufferVertexOffset(const unsigned int vertexCount, const VertexFormat fvf)
-{
-   if (pendingSharedBuffers.size() > 0 && pendingSharedBuffers[0]->m_vertexFormat != fvf)
-      return 0;
-   int pendingSharedBufferCount = GetPendingSharedBufferCount();
-   if (pendingSharedBufferCount + vertexCount > 65535)
-      return 0;
-   return pendingSharedBufferCount;
-}
+vector<VertexBuffer::SharedBuffer*> VertexBuffer::pendingSharedBuffers;
 
 VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, const float* verts, const bool isDynamic, const VertexFormat fvf)
    : m_rd(rd)
@@ -44,50 +22,29 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
    , m_sizePerVertex(fvfToSize(fvf))
    , m_isStatic(!isDynamic)
    , m_size(fvfToSize(fvf) * vertexCount)
-   , m_offset(isDynamic ? 0 : GetSharedBufferVertexOffset(vertexCount, fvf) * fvfToSize(fvf))
-   , m_vertexOffset(isDynamic ? 0 : GetSharedBufferVertexOffset(vertexCount, fvf))
 {
-#ifndef __OPENGLES__
+   #ifndef __OPENGLES__
    // Disabled since OpenGL ES does not support glDrawElementsBaseVertex and we need it unless we remap the indices when creating the index buffer (and we should)
-   if (m_isStatic)
+   for (SharedBuffer* block : pendingSharedBuffers)
    {
-      if ((pendingSharedBuffers.size() > 0 && pendingSharedBuffers[0]->m_vertexFormat != m_vertexFormat) // Split on vertex format change
-         || (m_vertexCount + GetPendingSharedBufferCount() > 65535)) // Split to avoid exceeding index buffer 16 bit limit
-         CreatePendingSharedBuffer();
-      pendingSharedBuffers.push_back(this);
+      if (block->format == fvf && block->isStatic == m_isStatic && block->count + vertexCount <= 65535)
+      {
+         m_sharedBuffer = block;
+         break;
+      }
    }
-   else
-#endif
+   #endif
+   if (m_sharedBuffer == nullptr)
    {
-#if defined(ENABLE_SDL) // OpenGL
-      #ifndef __OPENGLES__
-      if (GLAD_GL_VERSION_4_5)
-      {
-         glCreateBuffers(1, &m_vb);
-         glNamedBufferStorage(m_vb, m_size, nullptr, GL_DYNAMIC_STORAGE_BIT);
-      }
-      else if (GLAD_GL_VERSION_4_4)
-      {
-         glGenBuffers(1, &m_vb);
-         glBindBuffer(GL_ARRAY_BUFFER, m_vb);
-         glBufferStorage(GL_ARRAY_BUFFER, m_size, nullptr, GL_DYNAMIC_STORAGE_BIT);
-      }
-      else
-      #endif
-      {
-         glGenBuffers(1, &m_vb);
-         glBindBuffer(GL_ARRAY_BUFFER, m_vb);
-         glBufferData(GL_ARRAY_BUFFER, m_size, nullptr, GL_DYNAMIC_DRAW);
-      }
-
-#else // DirectX 9
-      // NB: We always specify WRITEONLY since MSDN states,
-      // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
-      // This means we cannot read from vertex buffers, but I don't think we need to.
-      CHECKD3D(rd->GetCoreDevice()->CreateVertexBuffer(m_size, D3DUSAGE_WRITEONLY | (m_isStatic ? 0 : D3DUSAGE_DYNAMIC), 0, D3DPOOL_DEFAULT, &m_vb, nullptr));
-
-#endif
+      m_sharedBuffer = new SharedBuffer();
+      m_sharedBuffer->format = fvf;
+      m_sharedBuffer->isStatic = m_isStatic;
+      pendingSharedBuffers.push_back(m_sharedBuffer);
    }
+   m_vertexOffset = m_sharedBuffer->count;
+   m_offset = m_vertexOffset * m_sizePerVertex;
+   m_sharedBuffer->buffers.push_back(this);
+   m_sharedBuffer->count += vertexCount;
    if (verts != nullptr)
    {
       void* data;
@@ -99,31 +56,25 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
 
 VertexBuffer::~VertexBuffer()
 {
-   if (!IsCreated())
-      RemoveFromVectorSingle(pendingSharedBuffers, this);
    for (PendingUpload upload : m_pendingUploads)
       delete[] upload.data;
-#if defined(ENABLE_SDL) // OpenGL
-   if (m_sharedBufferRefCount != nullptr)
+   RemoveFromVectorSingle(m_sharedBuffer->buffers, this);
+   if (m_sharedBuffer->buffers.size() == 0)
    {
-      (*m_sharedBufferRefCount)--;
-      if ((*m_sharedBufferRefCount) == 0)
-      {
-         delete m_sharedBufferRefCount;
-         if (m_vb != 0)
-            glDeleteBuffers(1, &m_vb);
-      }
+      RemoveFromVectorSingle(pendingSharedBuffers, m_sharedBuffer);
+      if (IsCreated())
+      #if defined(ENABLE_SDL) // OpenGL
+         glDeleteBuffers(1, &m_vb);
+      #else // DirectX 9
+         SAFE_RELEASE(m_vb);
+      #endif
+      delete m_sharedBuffer;
    }
-   else if (m_vb != 0)
-      glDeleteBuffers(1, &m_vb);
-#else // DirectX 9
-   SAFE_RELEASE(m_vb);
-#endif
 }
 
 void VertexBuffer::lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags)
 {
-   assert(!m_isStatic || !m_uploaded);
+   assert(!m_isStatic || !IsCreated()); // Static buffers can't be locked after first upload
    assert(m_lock.data == nullptr); // Lock is not reentrant
    m_rd->m_curLockCalls++;
    m_lock.offset = offsetToLock;
@@ -141,36 +92,34 @@ void VertexBuffer::unlock()
    m_lock.data = nullptr;
 }
 
-void VertexBuffer::CreatePendingSharedBuffer()
+void VertexBuffer::CreateSharedBuffer(SharedBuffer* sharedBuffer)
 {
-   if (pendingSharedBuffers.size() == 0)
-      return;
-   UINT size = GetPendingSharedBufferCount() * pendingSharedBuffers[0]->m_sizePerVertex;
+   RemoveFromVectorSingle(pendingSharedBuffers, sharedBuffer);
+   unsigned int size = sharedBuffer->count * fvfToSize(sharedBuffer->format);
 
    #if defined(ENABLE_SDL) // OpenGL
    UINT8* data = (UINT8*)malloc(size);
-   assert(data != nullptr);
 
    #else // DirectX 9
+   // NB: We always specify WRITEONLY since MSDN states,
+   // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
+   // This means we cannot read from vertex buffers, but I don't think we need to.
    IDirect3DVertexBuffer9* vb = nullptr;
-   CHECKD3D(pendingSharedBuffers[0]->m_rd->GetCoreDevice()->CreateVertexBuffer(size, D3DUSAGE_WRITEONLY, 0 /* pendingSharedBuffers[0]->m_vertexFormat */, D3DPOOL_DEFAULT, &vb, nullptr));
+   CHECKD3D(sharedBuffer->buffers[0]->m_rd->GetCoreDevice()->CreateVertexBuffer(size, D3DUSAGE_WRITEONLY | (sharedBuffer->isStatic ? 0 : D3DUSAGE_DYNAMIC), 0 /* sharedBuffer->format */, D3DPOOL_DEFAULT, &vb, nullptr));
    UINT8* data;
    CHECKD3D(vb->Lock(0, size, (void**)&data, 0));
    #endif
 
-   for (VertexBuffer* buffer : pendingSharedBuffers)
+   for (VertexBuffer* buffer : sharedBuffer->buffers)
    {
-      assert(buffer->m_vertexFormat == pendingSharedBuffers[0]->m_vertexFormat);
-      for (size_t j = 0; j < buffer->m_pendingUploads.size(); j++)
+      for (PendingUpload upload : buffer->m_pendingUploads)
       {
-         PendingUpload& upload = buffer->m_pendingUploads[j];
          assert(buffer->m_offset + upload.offset >= 0);
-         assert(buffer->m_offset + upload.offset + upload.size <= size);
+         assert(buffer->m_offset + upload.offset + upload.size <= sharedBuffer->count * buffer->m_sizePerVertex);
          memcpy(data + buffer->m_offset + upload.offset, upload.data, upload.size);
          delete[] upload.data;
       }
       buffer->m_pendingUploads.clear();
-      buffer->m_uploaded = true;
    }
 
    #if defined(ENABLE_SDL) // OpenGL
@@ -179,53 +128,40 @@ void VertexBuffer::CreatePendingSharedBuffer()
    if (GLAD_GL_VERSION_4_5)
    {
       glCreateBuffers(1, &vb);
-      glNamedBufferStorage(vb, size, data, 0);
+      glNamedBufferStorage(vb, size, data, sharedBuffer->isStatic ? 0 : GL_DYNAMIC_STORAGE_BIT);
    }
    else if (GLAD_GL_VERSION_4_4)
    {
       glGenBuffers(1, &vb);
       glBindBuffer(GL_ARRAY_BUFFER, vb);
-      glBufferStorage(GL_ARRAY_BUFFER, size, data, 0);
+      glBufferStorage(GL_ARRAY_BUFFER, size, data, sharedBuffer->isStatic ? 0 : GL_DYNAMIC_STORAGE_BIT);
    }
    else
    #endif
    {
       glGenBuffers(1, &vb);
       glBindBuffer(GL_ARRAY_BUFFER, vb);
-      glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, size, data, sharedBuffer->isStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
    }
    free(data);
-   int* refCount = new int();
-   (*refCount) = (int)pendingSharedBuffers.size();
-   for (VertexBuffer* buffer : pendingSharedBuffers)
-   {
-      buffer->m_vb = vb;
-      buffer->m_sharedBufferRefCount = refCount;
-   }
 
    #else ENABLE_SDL // DirectX 9
    CHECKD3D(vb->Unlock());
-   for (VertexBuffer* buffer : pendingSharedBuffers)
-   {
-      buffer->m_vb = vb;
-      vb->AddRef();
-   }
-   vb->Release();
-
    #endif
-   pendingSharedBuffers.clear();
+
+   for (VertexBuffer* buffer : sharedBuffer->buffers)
+      buffer->m_vb = vb;
 }
 
 void VertexBuffer::Upload()
 {
    if (!IsCreated())
-      CreatePendingSharedBuffer();
-
-   if (m_pendingUploads.size() > 0)
+      CreateSharedBuffer(m_sharedBuffer);
+   else if (m_pendingUploads.size() > 0)
    {
       for (PendingUpload upload : m_pendingUploads)
       {
-         #if defined(ENABLE_SDL) // OpenGL
+         #if defined(ENABLE_SDL) // OpenGL & OpenGL ES
          #ifndef __OPENGLES__
          if (GLAD_GL_VERSION_4_5)
             glNamedBufferSubData(m_vb, m_offset + upload.offset, upload.size, upload.data);
@@ -237,7 +173,6 @@ void VertexBuffer::Upload()
          }
 
          #else // DirectX 9
-         // It would be better to perform a single lock but in fact, I don't think there are situations where more than one update is pending
          UINT8* data;
          CHECKD3D(m_vb->Lock(m_offset + upload.offset, upload.size, (void**)&data, 0));
          memcpy(data, upload.data, upload.size);
@@ -247,6 +182,5 @@ void VertexBuffer::Upload()
          delete[] upload.data;
       }
       m_pendingUploads.clear();
-      m_uploaded = true;
    }
 }

@@ -214,7 +214,7 @@ void RenderCommand::Execute(const bool log)
             #ifdef ENABLE_SDL
             const int indexOffset = m_mb->m_ib->GetOffset() + m_startIndice * m_mb->m_ib->m_sizePerIndex;
             const GLenum indexType = m_mb->m_ib->m_indexFormat == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
-            if (m_mb->m_isVBOffsetApplied || m_mb->m_vb->m_offset == 0)
+            if (m_mb->m_isVBOffsetApplied || m_mb->m_vb->GetOffset() == 0)
             {
                //glDrawElements(type, indexCount, indexType, (void*)(intptr_t)indexOffset);
                glDrawRangeElements(m_primitiveType, 
