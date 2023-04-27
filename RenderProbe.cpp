@@ -359,8 +359,11 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
 
    g_pplayer->m_render_mask |= Player::REFLECTION_PASS;
 
+   Vertex3Ds n(m_reflection_plane.x, m_reflection_plane.y, m_reflection_plane.z);
+   n.Normalize();
+
    // Set the clip plane to only render objects above the reflection plane (do not reflect what is under or the plane itself)
-   vec4 clip_plane = vec4(-m_reflection_plane.x, -m_reflection_plane.y, -m_reflection_plane.z, m_reflection_plane.w);
+   vec4 clip_plane = vec4(-n.x, -n.y, -n.z, m_reflection_plane.w);
    p3dDevice->SetClipPlane(clip_plane);
    p3dDevice->SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_TRUE);
 
@@ -372,26 +375,23 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    memcpy(initialViewMat.m, viewMat.m, 4 * 4 * sizeof(float));
    // Reflect against reflection plane given by its normal (formula from https://en.wikipedia.org/wiki/Transformation_matrix#Reflection_2)
    Matrix3D reflect;
-   reflect._11 = 1.0f - 2.0f * m_reflection_plane.x * m_reflection_plane.x;
-   reflect._12 = -2.0f * m_reflection_plane.x * m_reflection_plane.y;
-   reflect._13 = -2.0f * m_reflection_plane.x * m_reflection_plane.z;
-   reflect._14 = -2.0f * m_reflection_plane.x * m_reflection_plane.w;
-   reflect._21 = -2.0f * m_reflection_plane.y * m_reflection_plane.x;
-   reflect._22 = 1.0f - 2.0f * m_reflection_plane.y * m_reflection_plane.y;
-   reflect._23 = -2.0f * m_reflection_plane.y * m_reflection_plane.z;
-   reflect._24 = -2.0f * m_reflection_plane.y * m_reflection_plane.w;
-   reflect._31 = -2.0f * m_reflection_plane.z * m_reflection_plane.x;
-   reflect._32 = -2.0f * m_reflection_plane.z * m_reflection_plane.y;
-   reflect._33 = 1.0f - 2.0f * m_reflection_plane.z * m_reflection_plane.z;
-   reflect._34 = -2.0f * m_reflection_plane.z * m_reflection_plane.w;
-   reflect._41 = 0.0f;
-   reflect._42 = 0.0f;
-   reflect._43 = 0.0f;
-   reflect._44 = 1.0f;
+   reflect.SetIdentity();
+   reflect._11 = 1.0f - 2.0f * n.x * n.x;
+   reflect._12 =      - 2.0f * n.x * n.y;
+   reflect._13 =      - 2.0f * n.x * n.z;
+
+   reflect._21 =      - 2.0f * n.y * n.x;
+   reflect._22 = 1.0f - 2.0f * n.y * n.y;
+   reflect._23 =      - 2.0f * n.y * n.z;
+
+   reflect._31 =      - 2.0f * n.z * n.x;
+   reflect._32 =      - 2.0f * n.z * n.y;
+   reflect._33 = 1.0f - 2.0f * n.z * n.z;
+
+   reflect._41 = 2.0f * n.x * m_reflection_plane.w;
+   reflect._42 = 2.0f * n.y * m_reflection_plane.w;
+   reflect._43 = 2.0f * n.z * m_reflection_plane.w;
    viewMat = reflect * viewMat;
-   // Translate the camera on the other side of the plane (move by twice the distance along its normal)
-   // reflect.SetTranslation(-m_reflection_plane.w * m_reflection_plane.x * 2.0f, -m_reflection_plane.w * m_reflection_plane.y * 2.0f, -m_reflection_plane.w * m_reflection_plane.z * 2.0f);
-   //viewMat = reflect * viewMat;
    g_pplayer->m_pin3d.GetMVP().SetView(viewMat);
 
    if (render_static || render_dynamic)

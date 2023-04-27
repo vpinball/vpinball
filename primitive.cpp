@@ -1323,7 +1323,9 @@ void Primitive::RenderObject()
       reflection_probe->GetReflectionPlaneNormal(plane_normal);
       Matrix3D matWorldViewInverseTranspose = g_pplayer->m_pin3d.GetMVP().GetModelViewInverseTranspose();
       matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal, plane_normal);
-      pd3dDevice->basicShader->SetVector(SHADER_mirrorNormal_factor, plane_normal.x, plane_normal.y, plane_normal.z, m_d.m_reflectionStrength);
+      Vertex3Ds n(plane_normal.x, plane_normal.y, plane_normal.z);
+      n.Normalize();
+      pd3dDevice->basicShader->SetVector(SHADER_mirrorNormal_factor, n.x, n.y, n.z, m_d.m_reflectionStrength);
       pd3dDevice->basicShader->SetTexture(SHADER_tex_reflection, reflections->GetColorSampler());
       is_reflection_only_pass = m_d.m_staticRendering && !g_pplayer->IsRenderPass(Player::STATIC_PREPASS) && !g_pplayer->m_dynamicMode;
       if (!is_reflection_only_pass && mat->m_bOpacityActive && (mat->m_fOpacity < 1.0f || (pin && pin->has_alpha())))

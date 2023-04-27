@@ -36,6 +36,7 @@ private:
    void UpdateHeadTrackingModal();
 
    // UI Selection & properties
+   void RenderProbeProperties(bool is_live);
    void BallProperties(bool is_live);
    void CameraProperties(bool is_live);
    void MaterialProperties(bool is_live);
@@ -52,13 +53,14 @@ private:
    typedef std::function<void(bool is_live, int prev, int v)> OnIntPropChange;
    typedef std::function<void(bool is_live, bool prev, bool v)> OnBoolPropChange;
    typedef std::function<void(bool is_live, string prev, string v)> OnStringPropChange;
+   typedef std::function<void(bool is_live, vec3& prev, vec3& v)> OnVec3PropChange;
    void PropSeparator(const char *label = nullptr);
    void PropCheckbox(const char *label, IEditable *undo_obj, bool is_live, bool *startup_v, bool *live_v, OnBoolPropChange chg_callback = nullptr);
    void PropFloat(const char *label, IEditable* undo_obj, bool is_live, float *startup_v, float *live_v, float step, float step_fast, const char *format = "%.3f", ImGuiInputTextFlags flags = ImGuiInputTextFlags_CharsDecimal, OnFloatPropChange chg_callback = nullptr);
    void PropInt(const char *label, IEditable *undo_obj, bool is_live, int *startup_v, int *live_v);
    void PropRGB(const char *label, IEditable *undo_obj, bool is_live, COLORREF *startup_v, COLORREF *live_v, ImGuiColorEditFlags flags = 0);
-   void PropVec3(const char *label, IEditable* undo_obj, bool is_live, Vertex3Ds *startup_v, Vertex3Ds *live_v, const char *format = "%.3f", ImGuiInputTextFlags flags = ImGuiInputTextFlags_CharsDecimal);
-   void PropVec3(const char *label, IEditable *undo_obj, bool is_live, float *startup_v, float *live_v, const char *format = "%.3f", ImGuiInputTextFlags flags = ImGuiInputTextFlags_CharsDecimal);
+   void PropVec3(const char *label, IEditable* undo_obj, bool is_live, Vertex3Ds *startup_v, Vertex3Ds *live_v, const char *format = "%.3f", ImGuiInputTextFlags flags = ImGuiInputTextFlags_CharsDecimal, OnVec3PropChange chg_callback = nullptr);
+   void PropVec3(const char *label, IEditable *undo_obj, bool is_live, float *startup_v, float *live_v, const char *format = "%.3f", ImGuiInputTextFlags flags = ImGuiInputTextFlags_CharsDecimal, OnVec3PropChange chg_callback = nullptr);
    void PropCombo(const char *label, IEditable *undo_obj, bool is_live, int *startup_v, int *live_v, int n_values, const string labels[]);
    void PropImageCombo(const char *label, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, OnStringPropChange chg_callback = nullptr);
 
@@ -77,19 +79,21 @@ private:
    Pin3D *m_pin3d;
    struct Selection
    {
-      enum SelectionType { S_NONE, S_CAMERA, S_MATERIAL, S_BALL, S_EDITABLE } type = S_NONE;
+      enum SelectionType { S_NONE, S_CAMERA, S_MATERIAL, S_BALL, S_EDITABLE, S_RENDERPROBE } type = S_NONE;
       bool is_live;
       union
       {
          int camera;
          IEditable* editable;
          Material *material;
+         RenderProbe *renderprobe;
          int ball_index;
       };
       Selection() {};
       Selection(SelectionType t, bool live, int ball) { type = t; is_live = live; ball_index = ball; };
       Selection(bool live, IEditable *data) { type = S_EDITABLE; is_live = live; editable = data; };
       Selection(bool live, Material *data) { type = S_MATERIAL; is_live = live; material = data; };
+      Selection(bool live, RenderProbe *data) { type = S_RENDERPROBE; is_live = live; renderprobe = data; };
       bool operator==(Selection s)
       {
          if (type != s.type || is_live != s.is_live)
@@ -101,6 +105,7 @@ private:
          case S_MATERIAL: return material == s.material;
          case S_BALL: return ball_index == s.ball_index;
          case S_EDITABLE: return editable == s.editable;
+         case S_RENDERPROBE: return renderprobe == s.renderprobe;
          }
          assert(false);
          return false;
