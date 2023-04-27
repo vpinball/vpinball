@@ -2,54 +2,35 @@
 #include "IndexBuffer.h"
 #include "RenderDevice.h"
 
-vector<IndexBuffer*> IndexBuffer::pendingSharedBuffers;
+vector<IndexBuffer::SharedBuffer*> IndexBuffer::pendingSharedBuffers;
 
-IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const bool isDynamic, const IndexBuffer::Format format)
+IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int indexCount, const bool isDynamic, const IndexBuffer::Format format)
    : m_rd(rd)
-   , m_indexCount(numIndices)
+   , m_indexCount(indexCount)
    , m_indexFormat(format)
    , m_sizePerIndex(format == FMT_INDEX16 ? 2 : 4)
    , m_isStatic(!isDynamic)
-   , m_size(numIndices * (format == FMT_INDEX16 ? 2 : 4))
+   , m_size(indexCount * (format == FMT_INDEX16 ? 2 : 4))
 {
-   if (m_isStatic)
+   for (SharedBuffer* block : pendingSharedBuffers)
    {
-      if (pendingSharedBuffers.size() > 0 && pendingSharedBuffers[0]->m_indexFormat != m_indexFormat)
-         CreatePendingSharedBuffer();
-      pendingSharedBuffers.push_back(this);
+      if (block->format == m_indexFormat && block->isStatic == m_isStatic)
+      {
+         m_sharedBuffer = block;
+         break;
+      }
    }
-   else
+   if (m_sharedBuffer == nullptr)
    {
-      #if defined(ENABLE_SDL) // OpenGL
-      #ifndef __OPENGLES__
-      if (GLAD_GL_VERSION_4_5)
-      {
-         glCreateBuffers(1, &m_ib);
-         glNamedBufferStorage(m_ib, m_size, nullptr, GL_DYNAMIC_STORAGE_BIT);
-      }
-      else if (GLAD_GL_VERSION_4_4)
-      {
-         glGenBuffers(1, &m_ib);
-         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ib);
-         glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, m_size, nullptr, GL_DYNAMIC_STORAGE_BIT);
-      }
-      else
-      #endif
-      {
-         glGenBuffers(1, &m_ib);
-         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ib);
-         glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_size, nullptr, GL_DYNAMIC_DRAW);
-      }
-
-      #else // DirectX 9
-      // NB: We always specify WRITEONLY since MSDN states,
-      // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
-      // This means we cannot read from index buffers, but I don't think we need to.
-      CHECKD3D(rd->GetCoreDevice()->CreateIndexBuffer(m_size, D3DUSAGE_WRITEONLY | (m_isStatic ? 0 : D3DUSAGE_DYNAMIC),
-         m_indexFormat == FMT_INDEX16 ? D3DFMT_INDEX16 : D3DFMT_INDEX32, D3DPOOL_DEFAULT, &m_ib, nullptr));
-
-      #endif
+      m_sharedBuffer = new SharedBuffer();
+      m_sharedBuffer->format = m_indexFormat;
+      m_sharedBuffer->isStatic = m_isStatic;
+      pendingSharedBuffers.push_back(m_sharedBuffer);
    }
+   m_indexOffset = m_sharedBuffer->count;
+   m_offset = m_indexOffset * m_sizePerIndex;
+   m_sharedBuffer->buffers.push_back(this);
+   m_sharedBuffer->count += indexCount;
 }
 
 IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const unsigned int* indices)
@@ -82,31 +63,25 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const vector<unsigned int>& indices)
 
 IndexBuffer::~IndexBuffer()
 {
-   if (!IsCreated())
-      RemoveFromVectorSingle(pendingSharedBuffers, this);
    for (PendingUpload upload : m_pendingUploads)
       delete[] upload.data;
-
-#if defined(ENABLE_SDL) // OpenGL
-   if (m_sharedBufferRefCount != nullptr)
+   RemoveFromVectorSingle(m_sharedBuffer->buffers, this);
+   if (m_sharedBuffer->buffers.size() == 0)
    {
-      (*m_sharedBufferRefCount)--;
-      if ((*m_sharedBufferRefCount) == 0)
-      {
-         delete m_sharedBufferRefCount;
-         if (m_ib != 0)
-            glDeleteBuffers(1, &m_ib);
-      }
+      RemoveFromVectorSingle(pendingSharedBuffers, m_sharedBuffer);
+      if (IsCreated())
+      #if defined(ENABLE_SDL) // OpenGL
+         glDeleteBuffers(1, &m_ib);
+      #else // DirectX 9
+         SAFE_RELEASE(m_ib);
+      #endif
+      delete m_sharedBuffer;
    }
-   else if (m_ib != 0)
-      glDeleteBuffers(1, &m_ib);
-#else // DirectX 9
-   SAFE_RELEASE(m_ib);
-#endif
 }
 
 void IndexBuffer::lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags)
 {
+   assert(!m_isStatic || !IsCreated()); // Static buffers can't be locked after first upload
    assert(m_lock.data == nullptr); // Lock is not reentrant
    m_rd->m_curLockCalls++;
    m_lock.offset = offsetToLock;
@@ -124,7 +99,7 @@ void IndexBuffer::unlock()
 
 void IndexBuffer::ApplyOffset(VertexBuffer* vb)
 {
-   if (vb->m_offset == 0)
+   if (vb->GetOffset() == 0)
       return;
    for (PendingUpload upload : m_pendingUploads)
    {
@@ -146,86 +121,69 @@ void IndexBuffer::ApplyOffset(VertexBuffer* vb)
    }
 }
 
-void IndexBuffer::CreatePendingSharedBuffer()
+void IndexBuffer::CreateSharedBuffer(SharedBuffer* sharedBuffer)
 {
-   UINT size = 0;
-   for (IndexBuffer* buffer : pendingSharedBuffers)
-      size += buffer->m_size;
-
+   RemoveFromVectorSingle(pendingSharedBuffers, sharedBuffer);
+   unsigned int size = sharedBuffer->count * (sharedBuffer->format == FMT_INDEX16 ? 2 : 4);
+   
    #if defined(ENABLE_SDL) // OpenGL
    UINT8* data = (UINT8*)malloc(size);
 
    #else // DirectX 9
    IDirect3DIndexBuffer9* ib = nullptr;
-   CHECKD3D(pendingSharedBuffers[0]->m_rd->GetCoreDevice()->CreateIndexBuffer(
-      size, D3DUSAGE_WRITEONLY, pendingSharedBuffers[0]->m_indexFormat == FMT_INDEX16 ? D3DFMT_INDEX16 : D3DFMT_INDEX32, D3DPOOL_DEFAULT, &ib, nullptr));
+   CHECKD3D(sharedBuffer->buffers[0]->m_rd->GetCoreDevice()->CreateIndexBuffer(size, D3DUSAGE_WRITEONLY | (sharedBuffer->isStatic ? 0 : D3DUSAGE_DYNAMIC), sharedBuffer->format == FMT_INDEX16 ? D3DFMT_INDEX16 : D3DFMT_INDEX32, D3DPOOL_DEFAULT, &ib, nullptr));
    UINT8* data;
    CHECKD3D(ib->Lock(0, size, (void**)&data, 0));
    #endif
 
-   UINT offset = 0;
-   for (IndexBuffer* buffer : pendingSharedBuffers)
+   for (IndexBuffer* buffer : sharedBuffer->buffers)
    {
-      assert(buffer->m_indexFormat == pendingSharedBuffers[0]->m_indexFormat);
-      buffer->m_offset = offset;
       for (PendingUpload upload : buffer->m_pendingUploads)
       {
-         memcpy(data + offset + upload.offset, upload.data, upload.size);
+         assert(buffer->m_offset + upload.offset >= 0);
+         assert(buffer->m_offset + upload.offset + upload.size <= sharedBuffer->count * (sharedBuffer->format == FMT_INDEX16 ? 2 : 4));
+         memcpy(data + buffer->m_offset + upload.offset, upload.data, upload.size);
          delete[] upload.data;
       }
       buffer->m_pendingUploads.clear();
-      offset += buffer->m_size;
    }
 
-   #if defined(ENABLE_SDL) // OpenGL
+   #if defined(ENABLE_SDL) // OpenGL && OpenGL ES
    GLuint ib = 0;
    #ifndef __OPENGLES__
    if (GLAD_GL_VERSION_4_5)
    {
       glCreateBuffers(1, &ib);
-      glNamedBufferStorage(ib, size, data, 0);
+      glNamedBufferStorage(ib, size, data, sharedBuffer->isStatic ? 0 : GL_DYNAMIC_STORAGE_BIT);
    }
    else if (GLAD_GL_VERSION_4_4)
    {
       glGenBuffers(1, &ib);
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
-      glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, size, data, 0);
+      glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, size, data, sharedBuffer->isStatic ? 0 : GL_DYNAMIC_STORAGE_BIT);
    }
    else
    #endif
    {
       glGenBuffers(1, &ib);
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, sharedBuffer->isStatic ? 0 : GL_DYNAMIC_STORAGE_BIT);
    }
    free(data);
-   int* refCount = new int();
-   (*refCount) = (int)pendingSharedBuffers.size();
-   for (IndexBuffer* buffer : pendingSharedBuffers)
-   {
-      buffer->m_ib = ib;
-      buffer->m_sharedBufferRefCount = refCount;
-   }
 
    #else // DirectX 9
    CHECKD3D(ib->Unlock());
-   for (IndexBuffer* buffer : pendingSharedBuffers)
-   {
-      buffer->m_ib = ib;
-      ib->AddRef();
-   }
-   ib->Release();
-
    #endif
-   pendingSharedBuffers.clear();
+
+   for (IndexBuffer* buffer : sharedBuffer->buffers)
+      buffer->m_ib = ib;
 }
 
 void IndexBuffer::Upload()
 {
    if (!IsCreated())
-      CreatePendingSharedBuffer();
-
-   if (m_pendingUploads.size() > 0)
+      CreateSharedBuffer(m_sharedBuffer);
+   else if (m_pendingUploads.size() > 0)
    {
       for (PendingUpload upload : m_pendingUploads)
       {

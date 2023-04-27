@@ -33,7 +33,8 @@ public:
    ~IndexBuffer();
 
    unsigned int GetOffset() const { return m_offset; }
-   unsigned int GetIndexOffset() const { return m_offset / m_sizePerIndex; }
+   unsigned int GetIndexOffset() const { return m_indexOffset; }
+   bool IsSharedBuffer() const { return m_sharedBuffer->buffers.size() > 1; }
 
    void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void** dataBuffer, const DWORD flags);
    void unlock();
@@ -48,9 +49,22 @@ public:
    const Format m_indexFormat;
 
 private:
+   struct SharedBuffer
+   {
+      vector<IndexBuffer*> buffers;
+      unsigned int count = 0;
+      Format format;
+      bool isStatic;
+   };
+
    bool IsCreated() const { return m_ib; }
-   static void CreatePendingSharedBuffer();
-   static vector<IndexBuffer*> pendingSharedBuffers;
+
+   SharedBuffer* m_sharedBuffer = nullptr;
+   unsigned int m_offset = 0; // Offset in bytes of the data inside the native GPU array
+   unsigned int m_indexOffset = 0; // Offset in indices of the data inside the native GPU array
+
+   static void CreateSharedBuffer(SharedBuffer* sharedBuffer);
+   static vector<SharedBuffer*> pendingSharedBuffers;
 
    struct PendingUpload
    {
@@ -60,15 +74,12 @@ private:
    };
    vector<PendingUpload> m_pendingUploads;
    PendingUpload m_lock = { 0, 0, nullptr };
-   int m_offset = 0;
 
 #ifdef ENABLE_SDL
    GLuint m_ib = 0;
-   int* m_sharedBufferRefCount = nullptr;
 
 public:
    GLuint GetBuffer() const { return m_ib; }
-   bool IsSharedBuffer() const { return m_sharedBufferRefCount != nullptr; }
 
 #else
    IDirect3DIndexBuffer9* m_ib = nullptr;
