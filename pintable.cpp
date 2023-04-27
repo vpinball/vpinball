@@ -2160,6 +2160,7 @@ void PinTable::Play(const bool cameraMode)
    delete[] szText;
 
    dst->m_szTitle = src->m_szTitle;
+   dst->m_szFileName = src->m_szFileName;
    dst->m_left = src->m_left;
    dst->m_top = src->m_top;
    dst->m_right = src->m_right;
