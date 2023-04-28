@@ -83,6 +83,13 @@ FEATURES:
 - add new log file functionality (vpinball.log), with script and error informations
   logging can be en/disabled in the UI/Editor preferences
 
+- the settings are now stored in a file named 'VPinballX.ini'. This file will be automatically initialized from existing settings if found in Windows registry. This change was made to:
+  - allow easier edition (manually or by a third party application),
+  - allow to have settings per installation: if 2 versions of VPX are installed in 2 different folders, each of them will use their local setting file,
+  - settings are the same and can be shared between Windows version of VPX and the standalone version (Linux, Mac, Android, iOS, Raspberry,...),
+  - allow to see all the available settings at once (not so easy before, since there are a few hundreds of them),
+  - allow easier collaboration by being able to share the setting file with bug reports.
+
 FIXES:
 
 - fix analogue nudge not working for joysticks/gamepads in XInput mode
