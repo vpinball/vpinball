@@ -719,7 +719,6 @@ private:
 
 public:
    void StopPlayer();
-   void ShowUI();
 
    void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D(1.0f));
    void UpdateBackdropSettings(const bool up);

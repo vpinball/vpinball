@@ -1057,11 +1057,7 @@ RenderTarget* RenderDevice::GetPostProcessRenderTarget1()
    if (m_pPostProcessRenderTarget1 == nullptr)
    {
       // Buffers for post-processing (postprocess is done at scene resolution, on a LDR render target without MSAA nor full scene supersampling)
-#ifdef ENABLE_SDL
       colorFormat pp_format = GetBackBufferTexture()->GetColorFormat() == RGBA10 ? colorFormat::RGBA10 : colorFormat::RGBA8;
-#else
-      colorFormat pp_format = GetBackBufferTexture()->GetColorFormat() == RGBA10 ? colorFormat::RGBA10 : colorFormat::RGBA8;
-#endif
       m_pPostProcessRenderTarget1 = new RenderTarget(this, "PostProcess1"s, m_width, m_height, pp_format, false, 1, STEREO_OFF, "Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!");
    }
    return m_pPostProcessRenderTarget1;
