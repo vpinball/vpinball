@@ -833,11 +833,6 @@ void Player::InitFPS()
     m_script_max_total = 0;
 }
 
-void Player::ShowUI()
-{
-   m_liveUI->OpenMainUI();
-}
-
 InfoMode Player::GetInfoMode() const {
    return m_infoMode;
 }
@@ -4326,8 +4321,14 @@ void Player::Render()
    }
 
    // Close requested with user input
-   if (m_closing == CS_USER_INPUT && !g_pvp->m_disable_pause_menu)
-      m_liveUI->OpenMainUI();
+   if (m_closing == CS_USER_INPUT)
+   {
+      m_closing = CS_PLAYING;
+      if (g_pvp->m_disable_pause_menu)
+         m_closing = CS_STOP_PLAY;
+      else
+         m_liveUI->OpenMainUI();
+   }
 
    // Brute force stop: blast into space
    if (m_closing == CS_FORCE_STOP)

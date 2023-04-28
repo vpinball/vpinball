@@ -535,6 +535,7 @@ public:
        {
            if (!szTableFileName.empty())
            {
+               PLOGI << "Loading table from command line option: " << szTableFileName;
                m_vpinball.LoadFileName(szTableFileName, !play);
                m_vpinball.m_table_played_via_command_line = play;
            }
