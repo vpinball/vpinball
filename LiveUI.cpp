@@ -898,7 +898,8 @@ void LiveUI::Update()
          {
             // Info tooltips
             if (g_pplayer->m_closing == Player::CS_PLAYING
-               && (g_pplayer->m_stereo3D != STEREO_OFF && !g_pplayer->m_stereo3Denabled && (usec() < m_StartTime_usec + (U64)4e+6))) // show for max. 4 seconds
+               && (g_pplayer->m_stereo3D != STEREO_OFF && g_pplayer->m_stereo3D != STEREO_VR && !g_pplayer->m_stereo3Denabled
+                  && (usec() < m_StartTime_usec + (U64)4e+6))) // show for max. 4 seconds
                HelpSplash("3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on", m_rotate);
             //!! visualize with real buttons or at least the areas?? Add extra buttons?
             if (g_pplayer->m_closing == Player::CS_PLAYING && g_pplayer->m_supportsTouch && g_pplayer->m_showTouchMessage
