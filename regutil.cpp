@@ -1,13 +1,126 @@
 #include "stdafx.h"
 
+// Settings can be stored in an INI file with ENABLE_INI_SETTINGS, or an XML file with ENABLE_XML_SETTINGS, or in the windows registry
+#ifndef ENABLE_INI_SETTINGS
+//#define ENABLE_INI_SETTINGS
+#endif
+
 #define VP_REGKEY_GENERAL "Software\\Visual Pinball\\"
 #define VP_REGKEY "Software\\Visual Pinball\\VP10\\"
 
-#ifndef ENABLE_INI
-//#define ENABLE_INI
-#endif
+#ifdef ENABLE_INI_SETTINGS // INI file
+#include "mINI/ini.h"
+mINI::INIStructure ini;
 
-#ifdef ENABLE_INI
+void InitRegistry(const string &path)
+{
+   mINI::INIFile file(path + "VPinballX.ini");
+   if (!file.read(ini))
+   {
+      // Load failed: initialize from a default setting file
+      PLOGI << "Settings file was not found at '" << path << "VPinballX.ini" << "' creating a default one";
+      HMODULE handle = ::GetModuleHandle(NULL);
+      HRSRC rc = ::FindResource(handle, MAKEINTRESOURCE(IDR_DEFAULT_INI), MAKEINTRESOURCE(INI_FILE));
+      HGLOBAL rcData = ::LoadResource(handle, rc);
+      DWORD size = ::SizeofResource(handle, rc);
+      const char * data = static_cast<const char *>(::LockResource(rcData));
+      std::ofstream defaultFile(path + "VPinballX.ini");
+      defaultFile << data;
+      defaultFile.close();
+      if (!file.read(ini))
+      {
+         PLOGE << "Loading of default settings file failed";
+      }
+
+      // Get default values from windows registry
+      #ifdef WIN32
+      for (unsigned int j = 0; j < RegName::Num; j++)
+      {
+         // We do not save version of played tables in the ini file
+         if (j == RegName::Version)
+            continue;
+
+         string regpath(j == 0 ? VP_REGKEY_GENERAL : VP_REGKEY);
+         regpath += regKey[j];
+
+         HKEY hk;
+         LONG res = RegOpenKeyEx(HKEY_CURRENT_USER, regpath.c_str(), 0, KEY_READ, &hk);
+         if (res != ERROR_SUCCESS)
+            return;
+
+         for (DWORD Index = 0;; ++Index)
+         {
+            DWORD dwSize = MAX_PATH;
+            TCHAR szName[MAX_PATH];
+            res = RegEnumValue(hk, Index, szName, &dwSize, nullptr, nullptr, nullptr, nullptr);
+            if (res != ERROR_SUCCESS)
+               break;
+
+            if (dwSize == 0 || szName[0] == '\0')
+               continue;
+            // detect whitespace and skip, as no whitespace allowed in XML tags
+            bool whitespace = false;
+            unsigned int i = 0;
+            while (szName[i])
+               if (isspace(szName[i]))
+               {
+                  whitespace = true;
+                  break;
+               }
+               else
+                  ++i;
+            if (whitespace)
+               continue;
+
+            dwSize = MAXSTRING;
+            BYTE pvalue[MAXSTRING];
+            DWORD type = REG_NONE;
+            res = RegQueryValueEx(hk, szName, nullptr, &type, pvalue, &dwSize);
+            if (res != ERROR_SUCCESS)
+               continue;
+
+            // old Win32xx and Win32xx 9+ docker keys
+            if (strcmp((char *)pvalue, "Dock Windows") == 0) // should not happen, as a folder, not value.. BUT also should save these somehow and restore for Win32++, or not ?
+               continue;
+            if (strcmp((char *)pvalue, "Dock Settings") == 0) // should not happen, as a folder, not value.. BUT also should save these somehow and restore for Win32++, or not ?
+               continue;
+
+            char *copy;
+            if (type == REG_SZ)
+            {
+               const size_t size = strlen((char *)pvalue);
+               copy = new char[size + 1];
+               memcpy(copy, pvalue, size);
+               copy[size] = '\0';
+            }
+            else if (type == REG_DWORD)
+            {
+               const string tmp = std::to_string(*(DWORD *)pvalue);
+               const size_t len = tmp.length() + 1;
+               copy = new char[len];
+               strcpy_s(copy, len, tmp.c_str());
+            }
+            else
+            {
+               copy = nullptr;
+               assert(!"Bad RegKey");
+            }
+
+            ini[regKey[j]][szName] = copy;
+         }
+         RegCloseKey(hk);
+      }
+      #endif
+   }
+}
+
+void SaveRegistry(const string &path)
+{
+   mINI::INIFile file(path + "VPinballX.ini");
+   file.write(ini, true);
+}
+
+#elif defined(ENABLE_XML_SETTINGS) // (legacy) XML file
 //!! when to save registry? on dialog exits? on player start/end? on table load/unload? UI stuff?
 
 #include "tinyxml2/tinyxml2.h"
@@ -97,7 +210,7 @@ static void InitXMLnodeFromRegistry(tinyxml2::XMLElement *const node, const stri
    RegCloseKey(hk);
 }
 
-void SaveXMLregistry(const string &path)
+void SaveRegistry(const string &path)
 {
    tinyxml2::XMLPrinter prn;
    xmlDoc.Print(&prn);
@@ -107,7 +220,7 @@ void SaveXMLregistry(const string &path)
    myFile.close();
 }
 
-void InitXMLregistry(const string &path)
+void InitRegistry(const string &path)
 {
    std::stringstream buffer;
    std::ifstream myFile(path + "VPinballX.ini");
@@ -172,9 +285,11 @@ void InitXMLregistry(const string &path)
          InitXMLnodeFromRegistry(node, regpath); // does not exist in XML yet? -> load from registry
    }
 }
-#else
-void InitXMLregistry(const string &path) {}
-void SaveXMLregistry(const string &path) {}
+
+#else // Windows Registry
+void InitRegistry(const string &path) {}
+void SaveRegistry(const string &path) {}
+
 #endif
 
 static HRESULT LoadValue(const string &szKey, const string &szValue, DWORD &type, void *pvalue, DWORD size);
@@ -255,7 +370,43 @@ static HRESULT LoadValue(const string &szKey, const string &szValue, DWORD &type
       return E_FAIL;
    }
 
-#ifdef ENABLE_INI
+#ifdef ENABLE_INI_SETTINGS
+   if (ini[szKey].has(szValue))
+   {
+      string value = ini[szKey][szValue];
+      if (value.length() == 0)
+      {
+         // Value is empty (just a marker for text formatting), consider it as undefined
+         type = REG_NONE;
+         return E_FAIL;
+      }
+      else if (type == REG_SZ)
+      {
+         const DWORD len = (DWORD)strlen(value.c_str()) + 1;
+         const DWORD len_min = min(len, size) - 1;
+         memcpy(pvalue, value.c_str(), len_min);
+         ((char *)pvalue)[len_min] = '\0';
+         return S_OK;
+      }
+      else if (type == REG_DWORD)
+      {
+         *((DWORD *)pvalue) = (DWORD)atoll(value.c_str());
+         return S_OK;
+      }
+      else
+      {
+         assert(!"Bad Type");
+         type = REG_NONE;
+         return E_FAIL;
+      }
+   }
+   else
+   {
+      type = REG_NONE;
+      return E_FAIL;
+   }
+
+#elif defined(ENABLE_XML_SETTINGS)
    tinyxml2::XMLElement* node = nullptr;
    for (unsigned int i = 0; i < RegName::Num; ++i)
       if (szKey == regKey[i])
@@ -299,6 +450,7 @@ static HRESULT LoadValue(const string &szKey, const string &szValue, DWORD &type
       type = REG_NONE;
       return E_FAIL;
    }
+
 #else
    string szPath(szKey == regKey[RegName::Controller] ? VP_REGKEY_GENERAL : VP_REGKEY);
    szPath += szKey;
@@ -346,7 +498,30 @@ static HRESULT SaveValue(const string &szKey, const string &szValue, const DWORD
    if (szValue.empty() || size == 0)
       return E_FAIL;
 
-#ifdef ENABLE_INI
+#ifdef ENABLE_INI_SETTINGS
+   char *copy;
+   if (type == REG_SZ)
+   {
+      copy = new char[size + 1];
+      memcpy(copy, pvalue, size);
+      copy[size] = '\0';
+   }
+   else if (type == REG_DWORD)
+   {
+      const string tmp = std::to_string(*(DWORD *)pvalue);
+      const size_t len = tmp.length() + 1;
+      copy = new char[len];
+      strcpy_s(copy, len, tmp.c_str());
+   }
+   else
+   {
+      assert(!"Bad RegKey");
+      return E_FAIL;
+   }
+   ini[szKey][szValue] = copy;
+   return S_OK;
+
+#elif defined(ENABLE_XML_SETTINGS)
    tinyxml2::XMLElement *node = nullptr;
    for (unsigned int i = 0; i < RegName::Num; ++i)
       if (szKey == regKey[i])
@@ -393,7 +568,9 @@ static HRESULT SaveValue(const string &szKey, const string &szValue, const DWORD
       node->InsertEndChild(vnode);
    }
    vnode->SetText(copy);
-#endif
+   return S_OK;
+
+#else
 
    string szPath(szKey == regKey[RegName::Controller] ? VP_REGKEY_GENERAL : VP_REGKEY);
    szPath += szKey;
@@ -411,6 +588,7 @@ static HRESULT SaveValue(const string &szKey, const string &szValue, const DWORD
    }
 
    return (RetVal == ERROR_SUCCESS) ? S_OK : E_FAIL;
+#endif
 }
 
 HRESULT SaveValueBool(const string &szKey, const string &szValue, const bool val)

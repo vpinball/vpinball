@@ -255,7 +255,7 @@ public:
 
       IsOnWine(); // init static variable in there
 
-      InitXMLregistry(m_vpinball.m_szMyPath);
+      InitRegistry(m_vpinball.m_szMyPath);
 
       SetupLogger();
       PLOGI << "Starting VPX...";
@@ -579,7 +579,7 @@ public:
          _Module.RevokeClassObjects();
          Sleep(THREADS_PAUSE); //wait for any threads to finish
 
-         SaveXMLregistry(m_vpinball.m_szMyPath);
+         SaveRegistry(m_vpinball.m_szMyPath);
       }
       return 0;
    }

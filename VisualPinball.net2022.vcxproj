@@ -217,7 +217,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;shader;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENABLE_INI_SETTINGS;COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -279,7 +279,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;shader;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ENABLE_SDL_INPUT;ENABLE_SDL;COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENABLE_INI_SETTINGS;ENABLE_SDL_INPUT;ENABLE_SDL;COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -348,7 +348,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;shader;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;DEBUGPHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENABLE_INI_SETTINGS;COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;DEBUGPHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -409,7 +409,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;shader;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ENABLE_SDL_INPUT;ENABLE_SDL;COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;DEBUGPHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENABLE_INI_SETTINGS;ENABLE_SDL_INPUT;ENABLE_SDL;COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;DEBUGPHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -473,7 +473,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;shader;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENABLE_INI_SETTINGS;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -537,7 +537,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;shader;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ENABLE_SDL_INPUT;ENABLE_SDL;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENABLE_INI_SETTINGS;ENABLE_SDL_INPUT;ENABLE_SDL;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -610,7 +610,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;shader;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENABLE_INI_SETTINGS;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -681,7 +681,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;shader;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ENABLE_SDL_INPUT;ENABLE_SDL;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENABLE_INI_SETTINGS;ENABLE_SDL_INPUT;ENABLE_SDL;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -996,6 +996,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\Default VPinballX.ini" />
     <None Include="shader\SMAA.fxh" />
     <None Include="shader\BallShader.glfx" />
     <None Include="shader\BallShadows.fxh" />
