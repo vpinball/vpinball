@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "KeysConfigDialog.h"
+#include <filesystem>
 
 #if defined(IMSPANISH)
 #define TOOLBAR_WIDTH 152
@@ -116,6 +117,7 @@ VPinball::VPinball()
    m_hbmInPlayMode = nullptr;
 
    GetMyPath();				//Store path of vpinball.exe in m_szMyPath and m_wzMyPath
+   GetMyPrefPath();			//Store preference path of vpinball.exe in m_szMyPath and m_wzMyPath
 
 #ifdef _WIN64
    m_scintillaDll = LoadLibrary("SciLexerVP64.DLL");
@@ -190,6 +192,33 @@ void VPinball::GetMyPath()
    WCHAR wzPath[MAXSTRING];
    MultiByteToWideCharNull(CP_ACP, 0, szPath, -1, wzPath, MAXSTRING);
    m_wzMyPath = wzPath;
+}
+
+#include <shlobj_core.h>
+void VPinball::GetMyPrefPath()
+{
+#ifdef WIN32
+   // Defaults to using the application directory
+   // This means that settings are per application install, this also needs this directory to be write enabled
+   // TODO we could defaults to AppData directory (see SDL_GetPrefPath implementation which is exactly what we would need)
+   m_szMyPrefPath = m_szMyPath;
+#elif defined(__ANDROID__)
+   char *szPrefPath = SDL_GetPrefPath(NULL, NULL);
+   m_szMyPrefPath = szPrefPath;
+   SDL_free(szPrefPath);
+#elif defined(__APPLE__) && defined(TARGET_OS_IOS) && TARGET_OS_IOS
+   char *szPrefPath = SDL_GetPrefPath("../..", "Documents");
+   m_szMyPrefPath = szPrefPath;
+   SDL_free(szPrefPath);
+#elif defined(__APPLE__) && defined(TARGET_OS_TV) && TARGET_OS_TV
+   char *szPrefPath = SDL_GetPrefPath(NULL, "Documents");
+   m_szMyPrefPath = szPrefPath;
+   SDL_free(szPrefPath);
+#else
+   m_szMyPrefPath = string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".vpinball" + PATH_SEPARATOR_CHAR;
+#endif
+   if (!DirExists(m_szMyPrefPath))
+      std::filesystem::create_directory(m_szMyPrefPath);
 }
 
 ///<summary>

@@ -70,6 +70,7 @@ private:
    void InitRegValues();
    bool CanClose();
    void GetMyPath();
+   void GetMyPrefPath();
    void UpdateRecentFileList(const string& szfilename);
 
    bool ApcHost_OnTranslateMessage(MSG* pmsg);
@@ -221,6 +222,7 @@ public:
 
    string m_szMyPath;
    wstring m_wzMyPath;
+   string m_szMyPrefPath;
    string m_currentTablePath;
 
    int m_autosaveTime;
