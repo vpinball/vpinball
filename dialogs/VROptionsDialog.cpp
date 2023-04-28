@@ -540,23 +540,23 @@ BOOL VROptionsDialog::OnInitDialog()
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrFarPlane);
    SetDlgItemText(IDC_FAR_PLANE, tmp);
 
-   const float vrSlope = LoadValueFloatWithDefault(regKey[RegName::Player], "VRSlope"s, 6.5f);
+   const float vrSlope = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "Slope"s, 6.5f);
    sprintf_s(tmp, sizeof(tmp), "%0.2f", vrSlope);
    SetDlgItemText(IDC_VR_SLOPE, tmp);
 
-   const float vrOrientation = LoadValueFloatWithDefault(regKey[RegName::Player], "VROrientation"s, 0.0f);
+   const float vrOrientation = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "Orientation"s, 0.0f);
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrOrientation);
    SetDlgItemText(IDC_3D_VR_ORIENTATION, tmp);
 
-   const float vrX = LoadValueFloatWithDefault(regKey[RegName::Player], "VRTableX"s, 0.0f);
+   const float vrX = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "TableX"s, 0.0f);
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrX);
    SetDlgItemText(IDC_VR_OFFSET_X, tmp);
 
-   const float vrY = LoadValueFloatWithDefault(regKey[RegName::Player], "VRTableY"s, 0.0f);
+   const float vrY = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "TableY"s, 0.0f);
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrY);
    SetDlgItemText(IDC_VR_OFFSET_Y, tmp);
 
-   const float vrZ = LoadValueFloatWithDefault(regKey[RegName::Player], "VRTableZ"s, 80.0f);
+   const float vrZ = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "TableZ"s, 80.0f);
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrZ);
    SetDlgItemText(IDC_VR_OFFSET_Z, tmp);
 
@@ -593,7 +593,7 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"RGBA 8 (Recommended)");
    SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"RGB 16F");
    SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"RGBA 16F");
-   const int textureModeVR = LoadValueIntWithDefault(regKey[RegName::Player], "textureModeVR"s, 1);
+   const int textureModeVR = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "EyeFBFormat"s, 1);
    SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_SETCURSEL, textureModeVR, 0);
 
    int key;
@@ -849,7 +849,7 @@ void VROptionsDialog::OnOK()
 
    //AMD Debugging
    const size_t textureModeVR = SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_GETCURSEL, 0, 0);
-   SaveValueInt(regKey[RegName::Player], "textureModeVR"s, (int)textureModeVR);
+   SaveValueInt(regKey[RegName::PlayerVR], "EyeFBFormat"s, (int)textureModeVR);
 
    LRESULT vrPreview = SendMessage(GetDlgItem(IDC_VR_PREVIEW).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (vrPreview == LB_ERR)
@@ -867,15 +867,15 @@ void VROptionsDialog::OnOK()
    SaveValue(regKey[RegName::PlayerVR], "farPlane"s, GetDlgItemText(IDC_FAR_PLANE).c_str());
 
    //For compatibility keep these in Player instead of PlayerVR
-   SaveValue(regKey[RegName::Player], "VRSlope"s, GetDlgItemText(IDC_VR_SLOPE).c_str());
+   SaveValue(regKey[RegName::PlayerVR], "Slope"s, GetDlgItemText(IDC_VR_SLOPE).c_str());
 
-   SaveValue(regKey[RegName::Player], "VROrientation"s, GetDlgItemText(IDC_3D_VR_ORIENTATION).c_str());
+   SaveValue(regKey[RegName::PlayerVR], "Orientation"s, GetDlgItemText(IDC_3D_VR_ORIENTATION).c_str());
 
-   SaveValue(regKey[RegName::Player], "VRTableX"s, GetDlgItemText(IDC_VR_OFFSET_X).c_str());
+   SaveValue(regKey[RegName::PlayerVR], "TableX"s, GetDlgItemText(IDC_VR_OFFSET_X).c_str());
 
-   SaveValue(regKey[RegName::Player], "VRTableY"s, GetDlgItemText(IDC_VR_OFFSET_Y).c_str());
+   SaveValue(regKey[RegName::PlayerVR], "TableY"s, GetDlgItemText(IDC_VR_OFFSET_Y).c_str());
 
-   SaveValue(regKey[RegName::Player], "VRTableZ"s, GetDlgItemText(IDC_VR_OFFSET_Z).c_str());
+   SaveValue(regKey[RegName::PlayerVR], "TableZ"s, GetDlgItemText(IDC_VR_OFFSET_Z).c_str());
 
    const bool bloomOff = SendMessage(GetDlgItem(IDC_BLOOM_OFF).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
    SaveValueBool(regKey[RegName::PlayerVR], "ForceBloomOff"s, bloomOff);
