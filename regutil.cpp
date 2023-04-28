@@ -17,6 +17,7 @@ void InitRegistry(const string &path)
    mINI::INIFile file(path + "VPinballX.ini");
    if (!file.read(ini))
    {
+#ifdef WIN32
       // Load failed: initialize from a default setting file
       PLOGI << "Settings file was not found at '" << path << "VPinballX.ini" << "' creating a default one";
       HMODULE handle = ::GetModuleHandle(NULL);
@@ -33,7 +34,6 @@ void InitRegistry(const string &path)
       }
 
       // Get default values from windows registry
-      #ifdef WIN32
       for (unsigned int j = 0; j < RegName::Num; j++)
       {
          // We do not save version of played tables in the ini file
@@ -110,7 +110,7 @@ void InitRegistry(const string &path)
          }
          RegCloseKey(hk);
       }
-      #endif
+#endif
    }
 }
 
