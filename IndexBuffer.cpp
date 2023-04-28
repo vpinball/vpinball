@@ -167,7 +167,7 @@ void IndexBuffer::CreateSharedBuffer(SharedBuffer* sharedBuffer)
    {
       glGenBuffers(1, &ib);
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, sharedBuffer->isStatic ? 0 : GL_DYNAMIC_STORAGE_BIT);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, sharedBuffer->isStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
    }
    free(data);
 
